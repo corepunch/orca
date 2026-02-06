@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<Project Name="Example" StartupScreen="Example/Screens/Application">
+  <ScreenLibrary Name="Screens" IsExternal="true"/>
+  <ImageLibrary Name="Images" IsExternal="true"/>
+  <PropertyTypeLibrary Name="Property Types">
+    <PropertyType Name="Speed" Type="float" Namespace="Custom"/>
+  </PropertyTypeLibrary>
+  <MessageLibrary Name="Messages">
+    <SystemMessage Name="SystemMessage" key="q" message="KeyDown"/>
+    <SystemMessage Name="SystemMessage" message="WindowClosed"/>
+    <SystemMessage Name="SystemMessage" message="RequestReload"/>
+  </MessageLibrary>
+</Project>

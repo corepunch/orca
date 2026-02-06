@@ -1,0 +1,30 @@
+<response>
+	<Scene name="Level01" id="1001">
+		<Node name="WorldRoot" id="2001">
+			<Camera name="MainCamera" id="2101" />
+			<Light name="SunLight" id="2201" />
+			
+			<Mesh name="Ground" id="2301" />
+			<Mesh name="Character" id="2302">
+				<Animation name="IdleAnim" id="2401" />
+			</Mesh>
+			<Mesh name="Rock01" id="2303" />
+		</Node>
+
+		<Canvas name="UIRoot" id="3001">
+			<Panel name="HUD" id="3101">
+				<Text name="ScoreLabel" id="3201" />
+				<Text name="ScoreValue" id="3202" />
+			</Panel>
+			
+			<Panel name="HealthBar" id="3102">
+				<Image name="BarBackground" id="3301" />
+				<Image name="BarFill" id="3302" />
+			</Panel>
+			
+			<Button name="PauseButton" id="3401">
+				<Text name="Label" id="3501" />
+			</Button>
+		</Canvas>
+	</Scene>
+</response>

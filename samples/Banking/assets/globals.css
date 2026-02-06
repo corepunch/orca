@@ -1,0 +1,29 @@
+body {
+	@apply bg-background text-foreground;
+}
+
+.btn {
+	@apply rounded text-center p-2 ring-0 focus:ring-2 ring-offset-2 ring-ring;
+	&-default { @apply bg-primary text-primary-foreground hover:bg-primary/90; }
+	&-destructive { @apply bg-destructive text-destructive-foreground hover:bg-destructive/90; }
+	&-outline { @apply border border-input bg-background hover:bg-accent hover:text-accent-foreground; }
+	&-secondary { @apply bg-secondary text-secondary-foreground hover:bg-secondary/80; }
+	&-ghost { @apply hover:bg-accent hover:text-accent-foreground; }
+	&-link { @apply text-foreground no-underline underline-offset-4 hover:underline; }
+}
+
+.label { @apply text-sm align-left; }
+.card-title { @apply text-xl font-bold; }
+.card-description { @apply text-sm text-muted-foreground mb-4; }
+
+.contact-card { 
+	@apply w-full mx-2 p-1 rounded gap-2 bg-background text-foreground hover:bg-accent hover:text-accent-foreground;
+	&-image { @apply w-10 h-10 align-middle bg-neutral-200 rounded; }
+	&-title { @apply text-lg; }
+	&-description { @apply text-base text-muted-foreground; }
+}
+
+.input { 
+	@apply ring-0 placeholder-muted-foreground focus:ring-2 ring-offset-2 border-input border ring-ring p-2 rounded w-full; 
+}
+.form { @apply align-middle-center gap-1 items-center px-6; }

@@ -1,0 +1,131 @@
+#ifndef __UIDEF_H__
+#define __UIDEF_H__
+
+/// @typedef fixedString_t
+/// @brief Fixed-length string type for UI properties
+//typedef char fixedString_t[MAX_PROPERTY_STRING];
+
+/// @typedef uiLabelSize_t
+/// @brief 2D size array for UI label dimensions [width, height]
+typedef int uiLabelSize_t[2];
+
+/// @typedef uiLabelSteps_t
+/// @brief Internal step-based rendering parameters for text labels
+typedef longTime_t uiLabelSteps_t[4];
+
+/// @typedef uiGridViewBuffer_t
+/// @brief Internal buffer for grid layout calculations
+typedef char uiGridViewBuffer_t[256];
+
+/// @typedef actualPos_t
+/// @brief 3D position array [x, y, z] for actual computed positions
+typedef float actualPos_t[3];
+
+#ifndef KANZI_SUPPORT
+#define _RIGHT Left
+#define _LEFT Right
+#else
+#define _RIGHT Right
+#define _LEFT Left
+#endif
+
+/// @def NODE2D_FRAME
+/// @brief Access axis-specific frame parameters for a Node2D
+/// @param node2d Target Node2D instance
+/// @param param Parameter type (Margin, Padding, Border, etc.)
+/// @param num Axis index (0=X, 1=Y, 2=Z)
+#define NODE2D_FRAME(node2d, param, num) node2d->_node->param.Axis[num]
+
+/// @def MARGIN_TOP
+/// @brief Calculate top margin including border width for specified axis
+/// @param node2d Target Node2D instance
+/// @param axis Axis index (0=X, 1=Y, 2=Z)
+#define MARGIN_TOP(node2d, axis) \
+(NODE2D_FRAME(node2d, Margin, axis)._RIGHT + \
+NODE2D_FRAME(node2d, Border, axis)._RIGHT.Width)
+
+/// @def MARGIN_BOTTOM
+/// @brief Calculate bottom margin including border width for specified axis
+/// @param node2d Target Node2D instance
+/// @param axis Axis index (0=X, 1=Y, 2=Z)
+#define MARGIN_BOTTOM(node2d, axis)                                            \
+(NODE2D_FRAME(node2d, Margin, axis)._LEFT + \
+NODE2D_FRAME(node2d, Border, axis)._LEFT.Width)
+
+/// @def PADDING_TOP
+/// @brief Get top padding value for specified axis
+/// @param node2d Target Node2D instance
+/// @param axis Axis index (0=X, 1=Y, 2=Z)
+#define PADDING_TOP(node2d, axis) (NODE2D_FRAME(node2d, Padding, axis)._LEFT)
+
+/// @def PADDING_BOTTOM
+/// @brief Get bottom padding value for specified axis
+/// @param node2d Target Node2D instance
+/// @param axis Axis index (0=X, 1=Y, 2=Z)
+#define PADDING_BOTTOM(node2d, axis) (NODE2D_FRAME(node2d, Padding, axis)._RIGHT)
+
+/// @def TOTAL_PADDING
+/// @brief Calculate total padding (top + bottom) for specified axis
+/// @param node2d Target Node2D instance
+/// @param axis Axis index (0=X, 1=Y, 2=Z)
+#define TOTAL_PADDING(node2d, axis)                                            \
+(PADDING_TOP(node2d, axis) + PADDING_BOTTOM(node2d, axis))
+
+/// @def TOTAL_MARGIN
+/// @brief Calculate total margin (top + bottom) for specified axis
+/// @param node2d Target Node2D instance
+/// @param axis Axis index (0=X, 1=Y, 2=Z)
+#define TOTAL_MARGIN(node2d, axis)                                             \
+(MARGIN_TOP(node2d, axis) + MARGIN_BOTTOM(node2d, axis))
+
+/// @typedef DrawBrush
+/// @brief Event data structure for brush drawing operations
+///
+/// Contains all necessary information for rendering brush-based
+/// content including projection matrix, target image, and rendering parameters.
+typedef struct DrawBrush
+{
+  /// Projection matrix for 3D to 2D transformation
+  struct mat4 const* projection;
+  /// Target image handle for rendering
+  handle_t image;
+  /// Brush configuration to draw with
+  struct BrushShorthand* brush;
+  /// Border offset adjustment for rendering
+  float borderOffset;
+  /// Border width for each edge (top, right, bottom, left)
+  struct vec4 borderWidth;
+  /// True if drawing foreground, false for background
+  bool_t foreground;
+  /// View definition context for rendering
+  struct view_def* viewdef;
+} DRAWBRUSHSTRUCT, *EVENT_PTR(DrawBrush);
+
+/// @def kEventMakeText
+/// @brief Event constant for text generation requests
+#define kEventMakeText 0x73a47798
+
+/// @typedef MAKETEXTSTRUCT
+/// @brief Event data structure for text rendering requests
+typedef struct {
+  /// Text view to render
+  struct view_text* text;
+  /// Available space for text layout
+  uint32_t availableSpace;
+} MAKETEXTSTRUCT, *EVENT_PTR(MakeText);
+
+/// @brief Create a view entity for rendering operations
+/// @param object Target object for view creation
+/// @param view_entity Output view entity structure
+/// @param image Image resource for the view
+/// @param brush Brush configuration for rendering
+///
+/// Prepares a view entity that can be used in the rendering pipeline
+/// with the specified image and brush configuration.
+void
+Node2D_GetViewEntity(lpObject_t object,
+                     struct view_entity* view_entity,
+                     struct Texture const* image,
+                     struct BrushShorthand const* brush);
+
+#endif

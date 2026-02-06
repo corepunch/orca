@@ -1,0 +1,14 @@
+<Screen Width="1024" Height="1024" ResizeMode="CanResize">
+	<Grid Rows="16px 400px auto" Spacing="1">
+		<LayerPrefabPlaceholder PlaceholderTemplate="Editor/Scripts/MenuBar" />
+		<LayerPrefabPlaceholder PlaceholderTemplate="Editor/Scripts/Preview" />
+		<Grid Columns="320px auto 320px" Spacing="1">
+			<LayerPrefabPlaceholder PlaceholderTemplate="Editor/Scripts/OutlineView" URL="startup-screen" />
+			<LayerPrefabPlaceholder PlaceholderTemplate="Editor/Scripts/Inspector" />
+			<LayerPrefabPlaceholder PlaceholderTemplate="Editor/Scripts/OutlineView" URL="project-overview" Sort="true" />
+		</Grid>
+	</Grid>
+	<Node2D Name="DragItem" Width="0" Height="0" Visible="false" IgnoreHitTest="true">
+		<TerminalView Name="Label" Width="256" Height="16" BufferWidth="256" BufferHeight="1" />
+	</Node2D>
+</Screen>

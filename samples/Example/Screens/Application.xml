@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<Screen Name="Application" Height="768" Width="1024">
+  <TextBlock Name="TextBlock" FontSize="40" LayoutTransform="400 20 0 1 1" Text="Hello World"/>
+  <ImageView Name="Image" Image="Example/Images/peacock"/>
+</Screen>

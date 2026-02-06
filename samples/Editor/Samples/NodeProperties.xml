@@ -1,0 +1,13 @@
+<response name="Character" type="Model" id="2302">
+	<float name="Health" value="100.0" />
+	<bool name="Visible" value="true" />
+	<float name="UVOffset" value="0.0 0.0" />
+	<float name="Position" value="0.0 1.5 0.0" />
+	<float name="Scale" value="1.0 1.0 1.0" />
+	<enum name="State" value="Idle">
+		<value>Idle</value>
+		<value>Walking</value>
+		<value>Running</value>
+		<value>Jumping</value>
+	</enum>
+</response>

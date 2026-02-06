@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<Project Name="Banking" StartupScreen="Banking/App">
+  <ProjectReferenceLibrary>
+    <ProjectReferenceItem Name="applications">applications</ProjectReferenceItem>
+    <ProjectReferenceItem Name="assets">assets</ProjectReferenceItem>
+    <ProjectReferenceItem Name="appwrite">lib/appwrite</ProjectReferenceItem>
+    <ProjectReferenceItem Name="html">lib/html</ProjectReferenceItem>
+    <ProjectReferenceItem Name="routing">lib/routing</ProjectReferenceItem>
+    <ProjectReferenceItem Name="model">model</ProjectReferenceItem>
+    <ProjectReferenceItem Name="root">root</ProjectReferenceItem>
+    <ProjectReferenceItem Name="config">config</ProjectReferenceItem>
+    <ProjectReferenceItem Name="tailwind">tailwind</ProjectReferenceItem>
+  </ProjectReferenceLibrary>
+  <MessageLibrary Name="Messages">
+    <SystemMessage Message="KeyDown" Key="q">return</SystemMessage>
+    <SystemMessage Message="WindowClosed">return</SystemMessage>
+    <SystemMessage Message="RequestReload">window:refresh()</SystemMessage>
+  </MessageLibrary>
+</Project>

@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<Project Name="Editor" StartupScreen="Editor/Screens/Screen">
+  <ProjectReferenceLibrary Name="Project Refereces">
+    <!-- <ProjectReferenceItem Name="ICHMIMain">../hmi_main/ICHMIMain/projects/high/ICHMIMain</ProjectReferenceItem> -->
+  </ProjectReferenceLibrary>
+  <MessageLibrary Name="Messages">
+    <SystemMessage message="KeyDown" key="q">return</SystemMessage>
+    <SystemMessage message="WindowClosed">return</SystemMessage>
+    <SystemMessage message="RequestReload">return PROJECTFILE</SystemMessage>
+  </MessageLibrary>
+</Project>

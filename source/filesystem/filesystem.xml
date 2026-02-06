@@ -1,0 +1,207 @@
+<module name="filesystem" namespace="orca" on-luaopen="on_filesystem_module_registered" prefix="FS_">
+  <event name="ReadCommands" type="void"/>
+  <resource type="Package"/>
+  <component name="Workspace">
+  </component>
+  <component name="Project">
+    <handles event="Start"/>
+    <property name="HalfFloatTextureFormat" type="bool"/>
+    <property name="HalfFloatTextureFormatLinear" type="bool"/>
+    <property name="HalfFloatColorAttachment" type="bool"/>
+    <property name="RenderToMipmapLevels" type="bool"/>
+    <property name="ExternalTexture" type="bool"/>
+    <!--    <property name="StartupScreen" type="Screen" pointer="true"/>-->
+    <property name="StartupScreen" type="fixed"/>
+    <property name="PreviewWindowBackgroundColor" type="color"/>
+    <property name="MessageLimitPerFrame" type="int"/>
+    <property name="GlobalTimelineStartTime" type="int"/>
+    <property name="GlobalTimelineEndTime" type="int"/>
+    <property name="BinaryExportDirectory" type="fixed"/>
+    <property name="ApplicationExportDirectory" type="fixed"/>
+    <!--    <ProjectResourceKeepAliveBehavior>DEFAULT</ProjectResourceKeepAliveBehavior>-->
+    <!--    <ProjectShaderKeepAliveBehavior>KEEP_ALIVE</ProjectShaderKeepAliveBehavior>-->
+    <property name="IsMasterProject" type="bool" default="false"/>
+    <!--    <KZBEndianness>LITTLE_ENDIAN</KZBEndianness>-->
+    <property name="OptimizeMeshes" type="bool" default="false"/>
+    <property name="TargetPlatformVertexCacheSize" type="int" default="24"/>
+    <property name="PlotAnimations" type="bool" default="false"/>
+    <!--    <ProjectDefaultVertexAttributeDataType>FLOAT_16</ProjectDefaultVertexAttributeDataType>-->
+    <property name="RoundImagesToNearestPowerOf2" type="bool" default="false"/>
+    <property name="ProjectExportShaderSourceCode" type="bool" default="true"/>
+    <property name="ProjectExportMainKzbWithBakedThemes" type="bool" default="false"/>
+    <property name="ProjectGroupByThemeNameInBakedThemeExport" type="bool" default="true"/>
+    <property name="IsLocalizationEnabled" type="bool" default="false"/>
+    <!--    <PreviewOpenGLESWrapper>NONE</PreviewOpenGLESWrapper>-->
+    <!--    <PreviewDebugReleaseConfiguration>RELEASE</PreviewDebugReleaseConfiguration>-->
+    <!--    <PreviewVisualStudioVersion>VS2015</PreviewVisualStudioVersion>-->
+    <!--    <PreviewWorkingDirectory>..\..\..\..\..\..\bin</PreviewWorkingDirectory>-->
+    <property name="FullScreenPreviewLayer" type="bool" default="false"/>
+    <property name="ShowChildrenInLayerThumbnails" type="bool" default="true"/>
+    <property name="CompositionDesignSize" type="vec2" defaul="-1 -1"/>
+    <property name="ProjectUsePremultipliedAlpha" type="bool" default="true"/>
+    <!--    <ProjectPngCompressionLevel>Default</ProjectPngCompressionLevel>-->
+    <property name="ProjectRemoveICCProfilesOfPngs" type="bool" default="true"/>
+    <property name="BinaryFileName" type="fixed" default="&lt;Project_Name&gt;.kzb"/>
+    <!--    <TargetGraphicsApi>ES20</TargetGraphicsApi>-->
+    <!--    <ProfileExportType>PATCH</ProfileExportType>-->
+    <property name="IsAssetPackage" type="bool" default="false"/>
+    <!--    <ExportedKzbFormat>Kzb</ExportedKzbFormat>-->
+    <property name="KanziConnectEnabled" type="bool" default="false"/>
+    <!--    <ProjectDescriptionsFileName>&lt;project_name&gt;_descriptions.txt</ProjectDescriptionsFileName>-->
+    <property name="DefaultMaterial" type="fixed"/>
+    
+    <field name="isPackage" type="bool"/>
+    <field name="package" type="Package" pointer="true"/>
+  </component>
+  
+  <component name="Library">
+    <property name="IsExternal" type="bool"/>
+  </component>
+  
+  <component name="AnimationClipLibrary" parent="Library" default="Animation Clips"/>
+  <component name="ScreenLibrary" parent="Library" default="Screens"/>
+  <component name="MaterialTypeLibrary" parent="Library" default="Shaders"/>
+  <component name="MaterialLibrary" parent="Library" default="Materials"/>
+  <component name="BrushLibrary" parent="Library" default="Brushes"/>
+  <component name="MeshLibrary" parent="Library" default="Mesh Data"/>
+  <component name="TimelineSequenceLibrary" parent="Library" default="Timeline Sequences"/>
+  <component name="SceneObjectLibrary" parent="Library" default="Objects"/>
+  <component name="ComposerLibrary" parent="Library" default="Render Passes"/>
+  <component name="PipelineItemLibrary" parent="Library" default="Pipeline Items"/>
+  <component name="SceneLibrary" parent="Library" default="Scenes"/>
+  <component name="TrajectoryLibrary" parent="Library" default="Trajectories"/>
+  <component name="TransitionLibrary" parent="Library" default="Transitions"/>
+  <component name="SplineLibrary" parent="Library" default="Splines"/>
+  <component name="PrefabLibrary" parent="Library" default="Prefabs" content="Node"/>
+  <component name="ProjectReferenceLibrary" parent="Library" default="Project References">
+    <handles event="Attached"/>
+  </component>
+  <component name="ProfileLibrary" parent="Library" default="Profiles"/>
+  <component name="EnginePluginLibrary" parent="Library" default="Engine Plugins">
+    <handles event="Attached"/>
+  </component>
+  <component name="ShortcutLibrary" parent="Library" default="Bookmarks"/>
+  <component name="LayerLibrary" parent="Library" default="Layers"/>
+  <component name="AnimationLibrary" parent="Library" default="Animation Data"/>
+  <component name="TagLibrary" parent="Library" default="Tags"/>
+  <component name="ThemeLibrary" parent="Library" default="Themes"/>
+  <component name="ResourceExportTagLibrary" parent="Library" default="Resource Export Tags"/>
+  <component name="LocaleLibrary" parent="Library" default="Localization"/>
+  <component name="DataSourceLibrary" parent="Library" default="Data Sources"/>
+  <component name="PageTransitionCollectionLibrary" parent="Library" default="Page Transitions"/>
+  <!--  <component name="ResourceFilesItem"/>-->
+  <component name="TextureLibrary" parent="Library" default="Textures"/>
+  <component name="StyleLibrary" parent="Library" default="Styles"/>
+  <component name="StateManagerLibrary" parent="Library" default="State Managers"/>
+  <component name="ConnectServiceLibrary" parent="Library" default="Connect Services"/>
+  <component name="ConnectUserServiceLibrary" parent="Library" default="Connect User Services"/>
+  <component name="PropertyTypeLibrary" parent="Library" default="Property Types"/>
+  
+  <!--  { LIBRARY(ComponentTypeLibrary), "Components", "Component", FALSE },-->
+  <!--  { LIBRARY(DataSourceTypeLibrary), "DataSourceTypes", "DataSourceType", FALSE },-->
+  <!--  { LIBRARY(RenderPassTypeLibrary), "RenderPassTypes", "RenderPassType", FALSE },-->
+  <!--  { LIBRARY(NodeComponentTypeLibrary), "NodeComponentTypes", "NodeComponentType", FALSE },-->
+  <!--  { LIBRARY(TriggerActionTypeLibrary), "TriggerActionTypes", "TriggerActionType", FALSE },-->
+  <!--  { LIBRARY(MessageTypeLibrary), "MessageTypes", "MessageType", FALSE },-->
+  <!--  { LIBRARY(BrushTypeLibrary), "BrushTypes", "BrushType", FALSE },-->
+  
+  <component name="MessageLibrary" parent="Library" default="Messages"/>
+  <component name="SystemMessage">
+    <property name="Message" type="fixed"/>
+    <property name="Key" type="fixed"/>
+  </component>
+  
+  <component name="ImageLibrary" parent="Library" default="Images"/>
+  <component name="FontLibrary" parent="Library" default="Fonts"/>
+  
+  <component name="ProjectReferenceItem"/>
+  <component name="LocaleReferenceItem"/>
+  <component name="Tag">
+    <property name="TagIsInherited" type="bool"/>
+  </component>
+  <component name="EnginePlugin"/>
+  <component name="EngineMetaclass">
+    <property name="BaseClassName" type="fixed"/>
+    
+  </component>
+  <component name="ThemeGroup">
+    <property name="SelectedDictionary" type="fixed"/>
+  </component>
+  <component name="Theme">
+    <property name="IsThemeVisible" type="bool"/>
+  </component>
+  <component name="Entry"/>
+  <component name="ThemeDefaultValuesDictionary"/>
+  
+  <function name="GetWorkspace">
+    <summary>Retrieves main workspace object.</summary>
+    <returns type="Object" pointer="true"/>
+  </function>
+  
+  <function name="GetBaseName">
+    <summary>Gets the base filename from a path</summary>
+    <details>Extracts the filename component from a file path, including the extension. For example, given "/path/to/file. txt", returns "file.txt".  This is useful for displaying filenames or logging without the full directory path.</details>
+    <arg name="path" type="string">The file path to extract the basename from</arg>
+    <returns type="string">Pointer to the base filename within the original path string</returns>
+  </function>
+  
+  <function name="GetPathName">
+    <summary>Extracts the path without query parameters</summary>
+    <details>Copies the path into the provided buffer, truncating at the first '?' character if present. This is useful for removing query string parameters from paths (e.g., "file.txt?param=value" becomes "file.txt"). The output buffer is zeroed before copying, and the copy is limited to the maximum buffer length.</details>
+    <arg name="path" type="string">The file path to process</arg>
+    <arg name="out" type="string">Output buffer to receive the path without query parameters</arg>
+    <arg name="maxlen" type="int">Maximum length of the output buffer</arg>
+    <returns type="string">Pointer to the output buffer containing the cleaned path</returns>
+  </function>
+  
+  <function name="GetDirName">
+    <summary>Extracts the directory path from a full file path</summary>
+    <details>Copies the directory component from a file path into the provided buffer.   For example, given "/path/to/file.txt", writes "/path/to" to the output buffer. The result does not include a trailing slash.  Returns null if the buffer size is insufficient.</details>
+    <arg name="path" type="string">The file path to extract the directory from</arg>
+    <arg name="out" type="string">Output buffer to receive the directory path</arg>
+    <arg name="maxlen" type="int">Size of the output buffer</arg>
+    <returns type="string">Pointer to the output buffer containing the directory path, or null on failure</returns>
+  </function>
+  
+  <function name="JoinPaths">
+    <summary>Joins two path segments into a complete path</summary>
+    <details>Combines two path components into a single path string, automatically handling path separators. For example, joining "/path/to" and "file.txt" produces "/path/to/file. txt". The function handles cases where the first path may or may not end with a separator.</details>
+    <arg name="path1" type="string">The first path component (typically a directory)</arg>
+    <arg name="path2" type="string">The second path component (typically a filename or subdirectory)</arg>
+    <returns type="string">Newly allocated string containing the joined path</returns>
+  </function>
+  
+  <function name="PathFromModule">
+    <summary>Converts a module name to a file path</summary>
+    <details>Translates a module identifier or name into its corresponding file system path. This is useful for locating resource files, scripts, or other assets associated with a particular module. The exact conversion depends on the module naming convention and directory structure.</details>
+    <arg name="module" type="string">The module name to convert</arg>
+    <returns type="string">File path corresponding to the module</returns>
+  </function>
+  
+  <function name="HasChangedFiles">
+    <summary>Checks if any tracked files have been modified</summary>
+    <details>Returns true if any of the currently opened and tracked files (such as scripts, shaders, or other resources) have been modified on disk since they were last loaded.  This is typically used for hot-reloading functionality, allowing the application to detect when files need to be reloaded during development or runtime.</details>
+    <returns type="bool">True if any tracked files have been modified, false otherwise</returns>
+  </function>
+  
+  <function name="MakeDirectory">
+    <summary>Creates a directory at the specified path</summary>
+    <details>Creates a new directory at the given path. Returns true if the directory was successfully created or already exists, false if creation failed (e.g., due to permission issues or invalid path). May create intermediate directories if needed, depending on the implementation. </details>
+    <arg name="path" type="string">The path of the directory to create</arg>
+    <returns type="bool">True if the directory was created or already exists, false on failure</returns>
+  </function>
+  
+  <function name="FileExists">
+    <summary>Checks if a file exists at the specified path</summary>
+    <details>Returns true if a file exists at the given path, false otherwise.  This function only checks for file existence and does not verify read permissions or whether the path points to a directory.</details>
+    <arg name="path" type="string">The file path to check for existence</arg>
+    <returns type="bool">True if the file exists, false otherwise</returns>
+  </function>
+
+  <function name="AddSearchPath" lua="true">
+    <summary>Adds a package to the resource search path</summary>
+    <details>Creates a package from the specified directory path and adds it to the global resource search path. When loading resources (such as UI files, scripts, textures, or other assets), the system will search through all added packages in order to locate the requested file. The Lua state is used to maintain the list of active packages for script integration.  The function returns the created package for further reference or manipulation.</details>
+    <arg name="path" type="string">The directory of the package to add to the search path</arg>
+    <returns type="Package" pointer="true">Pointer to the created and registered package</returns>
+  </function>
+</module>

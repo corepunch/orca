@@ -1,0 +1,649 @@
+<module name="geometry" namespace="orca">
+  <enums name="RotationOrder">
+    <summary>Euler angle rotation order enumeration</summary>
+    <details>Specifies the order in which rotations are applied around the X, Y, and Z axes. Different orders produce different final orientations for the same euler angles.</details>
+    <enum name="XYZ">Rotate around X axis first, then Y, then Z</enum>
+    <enum name="XZY">Rotate around X axis first, then Z, then Y</enum>
+    <enum name="YZX">Rotate around Y axis first, then Z, then X</enum>
+    <enum name="YXZ">Rotate around Y axis first, then X, then Z</enum>
+    <enum name="ZXY">Rotate around Z axis first, then X, then Y</enum>
+    <enum name="ZYX">Rotate around Z axis first, then Y, then X</enum>
+  </enums>
+
+  <struct name="vec2" prefix="VEC2_" export="Vector2D" sealed="true">
+    <summary>2D vector structure</summary>
+    <details>Represents a point or direction in 2D space with x and y components. Supports common vector operations like addition, scaling, and distance calculations.</details>
+    <field type="float" name="x">X coordinate component</field>
+    <field type="float" name="y">Y coordinate component</field>
+    <method name="Set">
+      <summary>Sets the vector components</summary>
+      <arg type="float" name="x">New X component value</arg>
+      <arg type="float" name="y">New Y component value</arg>
+    </method>
+    <method name="Scale" const="true">
+      <summary>Returns a scaled copy of the vector</summary>
+      <arg type="float" name="s">Scale factor to apply</arg>
+      <returns type="vec2">New scaled vector</returns>
+    </method>
+    <method name="Add" export="__add" const="true">
+      <summary>Adds two vectors component-wise</summary>
+      <arg type="vec2" name="other" pointer="true" const="true">Vector to add</arg>
+      <returns type="vec2">Sum of the two vectors</returns>
+    </method>
+    <method name="Mul" export="__mul" const="true">
+      <summary>Multiplies two vectors component-wise</summary>
+      <arg type="vec2" name="other" pointer="true" const="true">Vector to multiply with</arg>
+      <returns type="vec2">Component-wise product</returns>
+    </method>
+    <method name="Div" export="__div" const="true">
+      <summary>Divides two vectors component-wise</summary>
+      <arg type="vec2" name="other" pointer="true" const="true">Vector to divide by</arg>
+      <returns type="vec2">Component-wise division result</returns>
+    </method>
+    <method name="Sub" export="__sub" const="true">
+      <summary>Subtracts one vector from another</summary>
+      <arg type="vec2" name="other" pointer="true" const="true">Vector to subtract</arg>
+      <returns type="vec2">Difference of the two vectors</returns>
+    </method>
+    <method name="Unm" export="__unm" const="true">
+      <summary>Returns the negated vector</summary>
+      <returns type="vec2">Vector with negated components</returns>
+    </method>
+    <method name="Dot" const="true">
+      <summary>Calculates dot product with another vector</summary>
+      <arg type="vec2" name="other" pointer="true" const="true">Vector to calculate dot product with</arg>
+      <returns type="float">Dot product result</returns>
+    </method>
+    <method name="Lengthsq" const="true">
+      <summary>Returns the squared length of the vector</summary>
+      <details>More efficient than Len() when only comparing magnitudes, avoids square root calculation.</details>
+      <returns type="float">Squared magnitude of the vector</returns>
+    </method>
+    <method name="Len" const="true">
+      <summary>Returns the length (magnitude) of the vector</summary>
+      <returns type="float">Length of the vector</returns>
+    </method>
+    <method name="Distance" const="true">
+      <summary>Calculates distance to another vector</summary>
+      <arg type="vec2" name="other" const="true" pointer="true">Target vector to measure distance to</arg>
+      <returns type="float">Distance between the two vectors</returns>
+    </method>
+    <method name="Normalize">
+      <summary>Normalizes the vector in place to unit length</summary>
+      <details>Modifies the vector to have length 1 while preserving direction. Does nothing if vector has zero length.</details>
+    </method>
+    <method name="Lerp" const="true">
+      <summary>Linear interpolation between this vector and another</summary>
+      <arg type="vec2" name="other" const="true" pointer="true">Target vector to interpolate towards</arg>
+      <arg type="float" name="t">Interpolation factor (0.0 = this vector, 1.0 = other vector)</arg>
+      <returns type="vec2">Interpolated vector</returns>
+    </method>
+    <method name="Mad" const="true">
+      <summary>Multiply-add operation: returns this + (s * other)</summary>
+      <arg type="float" name="s">Scale factor for the other vector</arg>
+      <arg type="vec2" name="other" const="true" pointer="true">Vector to scale and add</arg>
+      <returns type="vec2">Result of multiply-add operation</returns>
+    </method>
+  </struct>
+
+  <struct name="vec3" prefix="VEC3_" export="Vector3D" sealed="true">
+    <summary>3D vector structure</summary>
+    <details>Represents a point or direction in 3D space with x, y, and z components. Supports vector math operations, interpolation, and curve calculations.</details>
+    <field type="float" name="x">X coordinate component</field>
+    <field type="float" name="y">Y coordinate component</field>
+    <field type="float" name="z">Z coordinate component</field>
+    <method name="Dot" const="true">
+      <summary>Calculates dot product with another vector</summary>
+      <arg type="vec3" name="other" pointer="true" const="true">Vector to calculate dot product with</arg>
+      <returns type="float">Dot product result</returns>
+    </method>
+    <method name="Lengthsq" const="true">
+      <summary>Returns the squared length of the vector</summary>
+      <details>More efficient than Len() when only comparing magnitudes, avoids square root calculation.</details>
+      <returns type="float">Squared magnitude of the vector</returns>
+    </method>
+    <method name="Len" const="true">
+      <summary>Returns the length (magnitude) of the vector</summary>
+      <returns type="float">Length of the vector</returns>
+    </method>
+    <method name="Bezier" const="true">
+      <summary>Cubic Bezier curve interpolation</summary>
+      <details>Calculates a point on a cubic Bezier curve defined by four control points using parameter t.</details>
+      <arg type="vec3" name="b" pointer="true" const="true">Second control point</arg>
+      <arg type="vec3" name="c" pointer="true" const="true">Third control point</arg>
+      <arg type="vec3" name="d" pointer="true" const="true">Fourth control point</arg>
+      <arg type="float" name="t">Curve parameter (0.0 to 1.0)</arg>
+      <returns type="vec3">Point on the Bezier curve</returns>
+    </method>
+    <method name="Hermite" const="true">
+      <summary>Hermite spline interpolation</summary>
+      <details>Calculates a point on a Hermite spline curve with tangent control for smooth interpolation.</details>
+      <arg type="vec3" name="b" pointer="true" const="true">Second control point</arg>
+      <arg type="vec3" name="c" pointer="true" const="true">Third control point</arg>
+      <arg type="vec3" name="d" pointer="true" const="true">Fourth control point</arg>
+      <arg type="float" name="t">Curve parameter (0.0 to 1.0)</arg>
+      <returns type="vec3">Point on the Hermite curve</returns>
+    </method>
+    <method name="Lerp" const="true">
+      <summary>Linear interpolation between this vector and another</summary>
+      <arg type="vec3" name="other" pointer="true" const="true">Target vector to interpolate towards</arg>
+      <arg type="float" name="t">Interpolation factor (0.0 = this vector, 1.0 = other vector)</arg>
+      <returns type="vec3">Interpolated vector</returns>
+    </method>
+    <method name="Cross" const="true">
+      <summary>Calculates cross product with another vector</summary>
+      <details>Returns a vector perpendicular to both input vectors, following right-hand rule.</details>
+      <arg type="vec3" name="other" pointer="true" const="true">Vector to calculate cross product with</arg>
+      <returns type="vec3">Cross product result vector</returns>
+    </method>
+    <method name="Sub" export="__sub" const="true">
+      <summary>Subtracts one vector from another</summary>
+      <arg type="vec3" name="other" pointer="true" const="true">Vector to subtract</arg>
+      <returns type="vec3">Difference of the two vectors</returns>
+    </method>
+    <method name="Add" export="__add" const="true">
+      <summary>Adds two vectors component-wise</summary>
+      <arg type="vec3" name="other" pointer="true" const="true">Vector to add</arg>
+      <returns type="vec3">Sum of the two vectors</returns>
+    </method>
+    <method name="Mad" const="true">
+      <summary>Multiply-add operation: returns this + (s * other)</summary>
+      <arg type="float" name="s">Scale factor for the other vector</arg>
+      <arg type="vec3" name="other" pointer="true" const="true">Vector to scale and add</arg>
+      <returns type="vec3">Result of multiply-add operation</returns>
+    </method>
+    <method name="Mul" export="__mul" const="true">
+      <summary>Multiplies two vectors component-wise</summary>
+      <arg type="vec3" name="other" pointer="true" const="true">Vector to multiply with</arg>
+      <returns type="vec3">Component-wise product</returns>
+    </method>
+    <method name="Scale" const="true">
+      <summary>Returns a scaled copy of the vector</summary>
+      <arg type="float" name="s">Scale factor to apply</arg>
+      <returns type="vec3">New scaled vector</returns>
+    </method>
+    <method name="Normalize">
+      <summary>Normalizes the vector in place to unit length</summary>
+      <details>Modifies the vector to have length 1 while preserving direction. Does nothing if vector has zero length.</details>
+    </method>
+    <method name="Set">
+      <summary>Sets the vector components</summary>
+      <arg type="float" name="x">New X component value</arg>
+      <arg type="float" name="y">New Y component value</arg>
+      <arg type="float" name="z">New Z component value</arg>
+    </method>
+    <method name="Clear">
+      <summary>Sets all components to zero</summary>
+    </method>
+    <method name="Unm" export="__unm" const="true">
+      <summary>Returns the negated vector</summary>
+      <returns type="vec3">Vector with negated components</returns>
+    </method> 
+    <method name="Distance" const="true">
+      <summary>Calculates distance to another vector</summary>
+      <arg type="vec3" name="other" pointer="true" const="true">Target vector to measure distance to</arg>
+      <returns type="float">Distance between the two vectors</returns>
+    </method>
+  </struct>
+
+  <struct name="vec4" prefix="VEC4_" export="Vector4D" sealed="true">
+    <summary>4D vector structure</summary>
+    <details>Represents a 4-component vector with x, y, z, and w components. Commonly used for homogeneous coordinates, quaternions, or RGBA colors.</details>
+    <field type="float" name="x">X coordinate component</field>
+    <field type="float" name="y">Y coordinate component</field>
+    <field type="float" name="z">Z coordinate component</field>
+    <field type="float" name="w">W coordinate component</field>
+    <method name="Set">
+      <summary>Sets all vector components</summary>
+      <arg type="float" name="x">New X component value</arg>
+      <arg type="float" name="y">New Y component value</arg>
+      <arg type="float" name="z">New Z component value</arg>
+      <arg type="float" name="w">New W component value</arg>
+    </method>
+    <method name="Scale" const="true">
+      <summary>Returns a scaled copy of the vector</summary>
+      <arg type="float" name="s">Scale factor to apply</arg>
+      <returns type="vec4">New scaled vector</returns>
+    </method>
+    <method name="Add" export="__add" const="true">
+      <summary>Adds two vectors component-wise</summary>
+      <arg type="vec4" name="other" pointer="true" const="true">Vector to add</arg>
+      <returns type="vec4">Sum of the two vectors</returns>
+    </method>
+    <method name="Unm" export="__unm" const="true">
+      <summary>Returns the negated vector</summary>
+      <returns type="vec4">Vector with negated components</returns>
+    </method>
+    <method name="Lerp" const="true">
+      <summary>Linear interpolation between this vector and another</summary>
+      <arg type="vec4" name="other" pointer="true" const="true">Target vector to interpolate towards</arg>
+      <arg type="float" name="t">Interpolation factor (0.0 = this vector, 1.0 = other vector)</arg>
+      <returns type="vec4">Interpolated vector</returns>
+    </method>
+  </struct>
+
+  <struct name="box2" prefix="BOX2_" export="Box2D">
+    <summary>2D axis-aligned bounding box</summary>
+    <details>Represents a rectangular region in 2D space defined by minimum and maximum corner points. Used for collision detection and spatial queries.</details>
+    <field name="min" type="vec2">Minimum corner point (bottom-left)</field>
+    <field name="max" type="vec2">Maximum corner point (top-right)</field>
+    <method name="Center" const="true">
+      <summary>Calculates the center point of the box</summary>
+      <returns type="vec2">Center point of the bounding box</returns>
+    </method>
+    <method name="MoveTo">
+      <summary>Moves the box so its center is at the specified location</summary>
+      <arg name="location" type="vec2" pointer="true" const="true">New center position</arg>
+    </method>
+    <method name="ContainsPoint" const="true">
+      <summary>Tests if a point is inside the box</summary>
+      <arg name="point" type="vec2" pointer="true" const="true">Point to test</arg>
+      <returns type="bool">True if point is inside the box</returns>
+    </method>
+  </struct>
+
+  <struct name="box3" prefix="BOX3_" export="Box3D">
+    <summary>3D axis-aligned bounding box</summary>
+    <details>Represents a rectangular volume in 3D space defined by minimum and maximum corner points. Used for 3D collision detection and spatial culling.</details>
+    <field name="min" type="vec3">Minimum corner point</field>
+    <field name="max" type="vec3">Maximum corner point</field>
+    <method name="Center" const="true">
+      <summary>Calculates the center point of the box</summary>
+      <returns type="vec3">Center point of the bounding box</returns>
+    </method>
+  </struct>
+
+  <struct name="rect" prefix="RECT_" export="Rect">
+    <summary>2D rectangle structure</summary>
+    <details>Represents a rectangle using position (x, y) and dimensions (width, height). Provides utility methods for containment tests and transformations.</details>
+    <field name="x" type="float">Left edge X coordinate</field>
+    <field name="y" type="float">Top edge Y coordinate</field>
+    <field name="width" type="float">Rectangle width</field>
+    <field name="height" type="float">Rectangle height</field>
+    <method name="Contains" const="true">
+      <summary>Tests if a point is inside the rectangle</summary>
+      <arg name="point" type="vec2" pointer="true" const="true">Point to test</arg>
+      <returns type="bool">True if point is inside the rectangle</returns>
+    </method>
+    <method name="Scale" const="true">
+      <summary>Returns a scaled copy of the rectangle</summary>
+      <arg name="scale" type="float">Scale factor to apply</arg>
+      <returns type="rect">New scaled rectangle</returns>
+    </method>
+    <method name="Center" const="true">
+      <summary>Calculates the center point of the rectangle</summary>
+      <returns type="vec2">Center point of the rectangle</returns>
+    </method>
+    <method name="Fit" const="true">
+      <summary>Scales rectangle to fit within given dimensions while preserving aspect ratio</summary>
+      <arg name="big" type="vec2" pointer="true" const="true">Target dimensions to fit within</arg>
+      <returns type="rect">Fitted rectangle</returns>
+    </method>
+  </struct>
+
+  <struct name="quat" prefix="QUAT_" export="Quaternion">
+    <summary>Quaternion for 3D rotations</summary>
+    <details>Represents a rotation in 3D space using quaternion mathematics. Provides smooth interpolation and avoids gimbal lock issues common with Euler angles.</details>
+    <field name="x" type="float">X component of quaternion</field>
+    <field name="y" type="float">Y component of quaternion</field>
+    <field name="z" type="float">Z component of quaternion</field>
+    <field name="w" type="float">W component (scalar part) of quaternion</field>
+    <method name="FromEuler" static="true">
+      <summary>Creates quaternion from Euler angles</summary>
+      <arg name="euler" type="vec3" pointer="true" const="true">Euler angles in radians (x=pitch, y=yaw, z=roll)</arg>
+      <arg name="order" type="RotationOrder">Order to apply rotations</arg>
+      <returns type="quat">Quaternion representing the rotation</returns>
+    </method>
+    <method name="FromMatrix" static="true">
+      <summary>Extracts quaternion from rotation matrix</summary>
+      <arg name="matrix" type="mat4" pointer="true" const="true">4x4 transformation matrix</arg>
+      <returns type="quat">Quaternion representing the matrix rotation</returns>
+    </method>
+    <method name="DotProduct" const="true">
+      <summary>Calculates dot product with another quaternion</summary>
+      <arg name="other" type="quat" pointer="true" const="true">Quaternion to calculate dot product with</arg>
+      <returns type="float">Dot product result</returns>
+    </method>
+    <method name="Length" const="true">
+      <summary>Returns the magnitude of the quaternion</summary>
+      <returns type="float">Length of the quaternion</returns>
+    </method>
+    <method name="Unm" const="true">
+      <summary>Returns the conjugate of the quaternion</summary>
+      <details>Conjugate quaternion represents the inverse rotation.</details>
+      <returns type="quat">Conjugate quaternion</returns>
+    </method>
+    <method name="Normalized" const="true">
+      <summary>Returns a normalized copy of the quaternion</summary>
+      <details>Unit quaternions are required for representing rotations properly.</details>
+      <returns type="quat">Normalized quaternion</returns>
+    </method>
+    <method name="Slerp" const="true">
+      <summary>Spherical linear interpolation between quaternions</summary>
+      <details>Provides smooth rotation interpolation along the shortest path on the quaternion sphere.</details>
+      <arg name="q" type="quat" pointer="true" const="true">Target quaternion to interpolate towards</arg>
+      <arg name="t" type="float">Interpolation factor (0.0 = this quat, 1.0 = target quat)</arg>
+      <returns type="quat">Interpolated quaternion</returns>
+    </method>
+    <method name="Sqlerp" const="true">
+      <summary>Squad (spherical cubic) interpolation between quaternions</summary>
+      <details>Higher-order spherical interpolation using four quaternions for smoother curves than Slerp.</details>
+      <arg name="b" type="quat" pointer="true" const="true">Second control quaternion</arg>
+      <arg name="c" type="quat" pointer="true" const="true">Third control quaternion</arg>
+      <arg name="d" type="quat" pointer="true" const="true">Fourth control quaternion</arg>
+      <arg name="t" type="float">Interpolation parameter (0.0 to 1.0)</arg>
+      <returns type="quat">Interpolated quaternion</returns>
+    </method>
+  </struct>
+
+  <struct name="mat3" prefix="MAT3_" export="Matrix2D">
+    <summary>3x3 transformation matrix</summary>
+    <details>Represents 2D transformations and 3D normal transformations. Stored in column-major order as a 9-element float array.</details>
+    <field name="v" type="float" array="9">Matrix elements in column-major order</field>
+    <method name="Identity" static="true">
+      <summary>Creates an identity matrix</summary>
+      <returns type="mat3">3x3 identity matrix</returns>
+    </method>
+    <method name="Normal" static="true">
+      <summary>Creates normal transformation matrix from 4x4 matrix</summary>
+      <details>Extracts the upper-left 3x3 portion and inverts/transposes it for transforming normal vectors.</details>
+      <arg name="matrix" type="mat4" pointer="true" const="true">Source 4x4 transformation matrix</arg>
+      <returns type="mat3">Normal transformation matrix</returns>
+    </method>
+    <method name="Translate">
+      <summary>Applies translation to the matrix</summary>
+      <arg name="offset" type="vec2" pointer="true" const="true">Translation offset</arg>
+    </method>
+    <method name="Scale">
+      <summary>Applies scaling to the matrix</summary>
+      <arg name="scale" type="vec2" pointer="true" const="true">Scale factors for X and Y axes</arg>
+    </method>
+  </struct>
+
+  <struct name="mat4" prefix="MAT4_" export="Matrix3D" sealed="true">
+    <summary>4x4 transformation matrix</summary>
+    <details>Represents 3D transformations including translation, rotation, and scaling. Stored in column-major order as a 16-element float array. Used for camera projections and object transformations.</details>
+    <field name="v" type="float" array="16">Matrix elements in column-major order</field>
+    <method name="Identity" static="true">
+      <summary>Creates an identity matrix</summary>
+      <returns type="mat4">4x4 identity matrix</returns>
+    </method>
+    <method name="Translate">
+      <summary>Applies translation to the matrix</summary>
+      <arg name="offset" type="vec3" pointer="true" const="true">Translation offset</arg>
+    </method>
+    <method name="Rotate">
+      <summary>Applies rotation using Euler angles</summary>
+      <arg name="euler" type="vec3" pointer="true" const="true">Euler angles in radians (x=pitch, y=yaw, z=roll)</arg>
+      <arg name="order" type="RotationOrder">Order to apply rotations</arg>
+    </method>
+    <method name="Scale">
+      <summary>Applies scaling to the matrix</summary>
+      <arg name="scale" type="vec3" pointer="true" const="true">Scale factors for X, Y, and Z axes</arg>
+    </method>
+    <method name="Multiply" export="__mul" const="true">
+      <summary>Multiplies this matrix with another</summary>
+      <details>Matrix multiplication is not commutative - order matters for transformations.</details>
+      <arg name="other" type="mat4" pointer="true" const="true">Matrix to multiply with</arg>
+      <returns type="mat4">Result of matrix multiplication</returns>
+    </method>
+    <method name="Ortho" static="true">
+      <summary>Creates orthographic projection matrix</summary>
+      <details>Used for 2D rendering or 3D scenes without perspective distortion.</details>
+      <arg name="left" type="float">Left clipping plane</arg>  
+      <arg name="right" type="float">Right clipping plane</arg>  
+      <arg name="bottom" type="float">Bottom clipping plane</arg> 
+      <arg name="top" type="float">Top clipping plane</arg> 
+      <arg name="znear" type="float">Near clipping plane distance</arg> 
+      <arg name="zfar" type="float">Far clipping plane distance</arg> 
+      <returns type="mat4">Orthographic projection matrix</returns>
+    </method>
+    <method name="Perspective" static="true">
+      <summary>Creates perspective projection matrix</summary>
+      <details>Used for 3D rendering with realistic perspective distortion.</details>
+      <arg name="radians" type="float">Field of view angle in radians</arg> 
+      <arg name="aspect" type="float">Aspect ratio (width/height)</arg> 
+      <arg name="znear" type="float">Near clipping plane distance</arg> 
+      <arg name="zfar" type="float">Far clipping plane distance</arg> 
+      <returns type="mat4">Perspective projection matrix</returns>
+    </method>
+    <method name="LookAt" static="true">
+      <summary>Creates view matrix for camera positioning</summary>
+      <details>Positions and orients a camera to look from eye position towards a target direction.</details>
+      <arg name="eye" type="vec3" pointer="true" const="true">Camera position</arg>
+      <arg name="direction" type="vec3" pointer="true" const="true">Direction the camera is looking</arg>
+      <arg name="up" type="vec3" pointer="true" const="true">Up vector for camera orientation</arg>
+      <returns type="mat4">View transformation matrix</returns>
+    </method>
+    <method name="Inverse" const="true">
+      <summary>Calculates the inverse matrix</summary>
+      <details>Returns the matrix that undoes this transformation. May be numerically unstable for near-singular matrices.</details>
+      <returns type="mat4">Inverse transformation matrix</returns>
+    </method>
+    <method name="Transpose" const="true">
+      <summary>Returns the transposed matrix</summary>
+      <details>Swaps rows and columns. For orthogonal matrices, transpose equals inverse.</details>
+      <returns type="mat4">Transposed matrix</returns>
+    </method>
+    <method name="Rotate4">
+      <summary>Applies quaternion rotation to the matrix</summary>
+      <arg name="quat" type="vec4" pointer="true" const="true">Quaternion representing rotation (as vec4)</arg>
+    </method>
+    <method name="MultiplyVector3D" const="true">
+      <summary>Transforms a 3D point by this matrix</summary>
+      <details>Applies the full 4x4 transformation to a 3D point, treating it as a homogeneous coordinate with w=1.</details>
+      <arg name="point" type="vec3" pointer="true" const="true">3D point to transform</arg>
+      <returns type="vec3">Transformed point</returns>
+    </method>
+    <method name="FromRotationOrigin" static="true">
+      <summary>Creates matrix from rotation around a specific origin point</summary>
+      <arg name="rotation" type="quat" pointer="true" const="true">Rotation quaternion</arg>
+      <arg name="origin" type="vec3" pointer="true" const="true">Point to rotate around</arg>
+      <returns type="mat4">Transformation matrix</returns>
+    </method>
+    <method name="FromRotationTranslationScaleOrigin" static="true">
+      <summary>Creates full transformation matrix with custom origin</summary>
+      <details>Combines rotation, translation, and scaling around a specified origin point in the correct order.</details>
+      <arg name="rotation" type="quat" pointer="true" const="true">Rotation quaternion</arg>
+      <arg name="translation" type="vec3" pointer="true" const="true">Translation offset</arg>
+      <arg name="scale" type="vec3" pointer="true" const="true">Scale factors</arg>
+      <arg name="origin" type="vec3" pointer="true" const="true">Origin point for transformations</arg>
+      <returns type="mat4">Combined transformation matrix</returns>
+    </method>
+    <method name="FromTranslation" static="true">
+      <summary>Creates translation-only matrix</summary>
+      <arg name="translation" type="vec3" pointer="true" const="true">Translation offset</arg>
+      <returns type="mat4">Translation matrix</returns>
+    </method>
+    <method name="RotateQuat">
+      <summary>Applies quaternion rotation to the matrix</summary>
+      <arg name="rotation" type="quat" pointer="true" const="true">Rotation quaternion</arg>
+    </method>
+  </struct>
+
+  <struct name="bounds" export="Bounds">
+    <summary>1D range bounds</summary>
+    <details>Represents a range with minimum and maximum values. Used for clamping values or defining valid ranges.</details>
+    <field name="min" type="float">Minimum value of the range</field>
+    <field name="max" type="float">Maximum value of the range</field>
+  </struct>
+
+  <struct name="plane3" prefix="plane3_" export="Plane">
+    <summary>3D plane representation</summary>
+    <details>Represents an infinite plane in 3D space using the equation ax + by + cz + d = 0. Used for clipping, collision detection, and spatial partitioning.</details>
+    <field name="a" type="float">X component of plane normal</field>
+    <field name="b" type="float">Y component of plane normal</field>
+    <field name="c" type="float">Z component of plane normal</field>
+    <field name="d" type="float">Distance from origin along normal</field>
+    <method name="Normalize">
+      <summary>Normalizes the plane equation</summary>
+      <details>Ensures the normal vector (a, b, c) has unit length for consistent distance calculations.</details>
+    </method>
+    <method name="MultiplyVector3D" const="true">
+      <summary>Calculates signed distance from point to plane</summary>
+      <details>Returns positive distance if point is on the side of the plane that the normal points towards, negative otherwise.</details>
+      <arg name="point" type="vec3" pointer="true" const="true">3D point to test</arg>
+      <returns type="float">Signed distance from point to plane</returns>
+    </method>
+  </struct>
+
+  <struct name="sphere3" export="Sphere">
+    <summary>3D sphere representation</summary>
+    <details>Represents a sphere in 3D space defined by center point and radius. Used for collision detection, bounding volumes, and spatial queries.</details>
+    <field name="center" type="vec3">Center point of the sphere</field>
+    <field name="radius" type="float">Radius of the sphere</field>
+  </struct>
+
+  <struct name="frustum3" prefix="frustum_" export="Frustum">
+    <summary>3D viewing frustum</summary>
+    <details>Represents a truncated pyramid used for camera view volumes and culling. Defined by six planes that bound the visible region.</details>
+    <field name="left" type="plane3">Left clipping plane</field>
+    <field name="right" type="plane3">Right clipping plane</field>
+    <field name="bottom" type="plane3">Bottom clipping plane</field>
+    <field name="top" type="plane3">Top clipping plane</field>
+    <field name="front" type="plane3">Near clipping plane</field>
+    <field name="back" type="plane3">Far clipping plane</field>
+    <method name="Calculate" static="true">
+      <summary>Extracts frustum planes from projection matrix</summary>
+      <details>Calculates the six clipping planes from a combined view-projection matrix for frustum culling.</details>
+      <arg name="matrix" type="mat4" pointer="true" const="true">View-projection matrix</arg>
+      <returns type="frustum3">Calculated frustum with normalized planes</returns>
+    </method>
+    <method name="ContainsPoint" const="true">
+      <summary>Tests if a point is inside the frustum</summary>
+      <arg name="point" type="vec3" pointer="true" const="true">3D point to test</arg>
+      <returns type="bool">True if point is inside all frustum planes</returns>
+    </method>
+    <method name="ContainsSphere" const="true">
+      <summary>Tests if a sphere intersects the frustum</summary>
+      <arg name="sphere" type="sphere3" pointer="true" const="true">Sphere to test</arg>
+      <returns type="bool">True if sphere intersects or is inside frustum</returns>
+    </method>
+    <method name="ContainsBox" const="true">
+      <summary>Tests if a transformed bounding box intersects the frustum</summary>
+      <arg name="box" type="box3" pointer="true" const="true">Axis-aligned bounding box</arg>
+      <arg name="matrix" type="mat4" pointer="true" const="true">Transformation matrix for the box</arg>
+      <returns type="bool">True if transformed box intersects frustum</returns>
+    </method>
+    <method name="ContainsAABox" const="true">
+      <summary>Tests if an axis-aligned box intersects the frustum</summary>
+      <arg name="box" type="box3" pointer="true" const="true">Axis-aligned bounding box to test</arg>
+      <returns type="bool">True if box intersects frustum</returns>
+    </method>
+  </struct>
+
+  <struct name="transform2" prefix="transform2_" export="Transform2D">
+    <summary>2D transformation structure</summary>
+    <details>Encapsulates 2D translation, rotation, and scaling. Provides convenient interface for common 2D transformations and matrix conversion.</details>
+    <field name="translation" type="vec2">Translation offset</field>
+    <field name="rotation" type="float">Rotation angle in radians</field>
+    <field name="scale" type="vec2">Scale factors for X and Y axes</field>
+    <method name="Identity" static="true">
+      <summary>Creates identity transformation</summary>
+      <details>No translation, zero rotation, unit scale.</details>
+      <returns type="transform2">Identity transform</returns>
+    </method>
+    <method name="ToMatrix3D" const="true">
+      <summary>Converts to 4x4 transformation matrix</summary>
+      <details>Creates a 4x4 matrix representing the 2D transformation, useful for integration with 3D rendering pipelines.</details>
+      <arg name="pivot" type="vec2" pointer="true" const="true">Pivot point for rotation and scaling</arg>
+      <returns type="mat4">4x4 transformation matrix</returns>
+    </method>
+  </struct> 
+
+  <struct name="transform3" prefix="transform3_" export="Transform3D">
+    <summary>3D transformation structure</summary>
+    <details>Encapsulates 3D translation, rotation (as Euler angles), and scaling. Provides convenient interface for common 3D transformations.</details>
+    <field name="translation" type="vec3">Translation offset</field>
+    <field name="rotation" type="vec3">Euler angles in radians (x=pitch, y=yaw, z=roll)</field>
+    <field name="scale" type="vec3">Scale factors for X, Y, and Z axes</field>
+    <method name="Identity" static="true">
+      <summary>Creates identity transformation</summary>
+      <details>No translation, zero rotation, unit scale.</details>
+      <returns type="transform3">Identity transform</returns>
+    </method>
+    <method name="ToMatrix3D" const="true">
+      <summary>Converts to 4x4 transformation matrix</summary>
+      <details>Combines translation, rotation, and scaling into a single transformation matrix with specified pivot point.</details>
+      <arg name="pivot" type="vec3" pointer="true" const="true">Pivot point for rotation and scaling</arg>
+      <returns type="mat4">4x4 transformation matrix</returns>
+    </method>
+  </struct> 
+
+  <struct name="triangle3" prefix="triangle3_" export="Triangle3D">
+    <summary>3D triangle primitive</summary>
+    <details>Represents a triangle in 3D space defined by three vertices. Used for mesh geometry, collision detection, and ray casting.</details>
+    <field name="a" type="vec3">First vertex of the triangle</field>
+    <field name="b" type="vec3">Second vertex of the triangle</field>
+    <field name="c" type="vec3">Third vertex of the triangle</field>
+    <method name="normal" const="true">
+      <summary>Calculates the triangle's surface normal</summary>
+      <details>Returns normalized vector perpendicular to triangle surface using cross product of edge vectors.</details>
+      <returns type="vec3">Unit normal vector</returns>
+    </method>
+  </struct>
+
+  <struct name="line3" prefix="line3_" export="Line3D">
+    <summary>3D line segment</summary>
+    <details>Represents a line segment in 3D space defined by two endpoints. Provides intersection testing with various geometric primitives.</details>
+    <field name="a" type="vec3">Start point of the line segment</field>
+    <field name="b" type="vec3">End point of the line segment</field>
+    <method name="intersect_sphere3" const="true">
+      <summary>Tests intersection with a sphere</summary>
+      <arg name="sphere" type="sphere3" pointer="true" const="true">Sphere to test intersection with</arg>
+      <arg name="out" type="vec3" pointer="true">Output parameter for intersection point</arg>
+      <returns type="bool">True if intersection occurs, false otherwise</returns>
+    </method>
+    <method name="intersect_plane3" const="true">
+      <summary>Tests intersection with a plane</summary>
+      <arg name="plane" type="plane3" pointer="true" const="true">Plane to test intersection with</arg>
+      <arg name="out" type="vec3" pointer="true">Output parameter for intersection point</arg>
+      <returns type="bool">True if intersection occurs, false otherwise</returns>
+    </method>
+    <method name="intersect_triangle" const="true">
+      <summary>Tests intersection with a triangle</summary>
+      <details>Uses ray-triangle intersection algorithm to find intersection point within triangle bounds.</details>
+      <arg name="triangle" type="triangle3" pointer="true" const="true">Triangle to test intersection with</arg>
+      <arg name="out" type="vec3" pointer="true">Output parameter for intersection point</arg>
+      <returns type="bool">True if intersection occurs within triangle, false otherwise</returns>
+    </method>
+    <method name="intersect_box3" const="true">
+      <summary>Tests intersection with a 3D bounding box</summary>
+      <arg name="box" type="box3" pointer="true" const="true">Bounding box to test intersection with</arg>
+      <arg name="out" type="vec3" pointer="true">Output parameter for intersection point</arg>
+      <returns type="bool">True if intersection occurs, false otherwise</returns>
+    </method>
+  </struct> 
+
+  <struct name="edges" export="Edges">
+    <summary>Edge insets structure</summary>
+    <details>Represents spacing or padding values for all four edges of a rectangular region. Commonly used for UI layout and margin calculations.</details>
+    <field name="left" type="float">Left edge spacing</field>
+    <field name="top" type="float">Top edge spacing</field>
+    <field name="right" type="float">Right edge spacing</field>
+    <field name="bottom" type="float">Bottom edge spacing</field>
+  </struct>
+
+  <struct name="color" prefix="COLOR_" export="Color" sealed="true">
+    <summary>RGBA color representation</summary>
+    <details>Represents a color with red, green, blue, and alpha (transparency) components. Values typically range from 0.0 to 1.0.</details>
+    <field name="r" type="float">Red component (0.0 to 1.0)</field>
+    <field name="g" type="float">Green component (0.0 to 1.0)</field>
+    <field name="b" type="float">Blue component (0.0 to 1.0)</field>
+    <field name="a" type="float">Alpha (transparency) component (0.0 = transparent, 1.0 = opaque)</field>
+
+    <method name="Lerp" const="true">
+      <summary>Linear interpolation between colors</summary>
+      <details>Blends between this color and another, interpolating each component separately.</details>
+      <arg name="other" type="color" pointer="true" const="true">Target color to interpolate towards</arg>
+      <arg name="t" type="float">Interpolation factor (0.0 = this color, 1.0 = other color)</arg>
+      <returns type="color">Interpolated color</returns>
+    </method>
+    <method name="Parse" static="true">
+      <summary>Parses color from string representation</summary>
+      <details>Supports various color formats including hex codes (#RGB, #RRGGBB), named colors, and RGB/RGBA notation.</details>
+      <arg name="code" type="string">Color string to parse</arg>
+      <returns type="color">Parsed color value</returns>
+    </method>
+  </struct>
+</module>

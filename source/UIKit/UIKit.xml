@@ -1,0 +1,773 @@
+<module name="UIKit" namespace="orca" on-luaopen="on_ui_module_registered">
+  <include file="source/renderer/api/renderer.h"/>
+  <include file="include/renderer.h"/>
+  <include file="source/UIKit/uidef.h"/>
+
+  <external struct="Object"/>
+  <external struct="view_text"/>
+  <external struct="text_info"/>
+
+  <event name="GetSize" type="void"/>
+  <event name="Submit" type="void"/>
+
+  <enums name="Direction">
+    <summary>Defines the primary axis for layout operations</summary>
+    <enum name="Horizontal">Left-to-right horizontal layout</enum>
+    <enum name="Vertical">Top-to-bottom vertical layout</enum>
+    <enum name="Depth">Front-to-back depth layout (3D)</enum>
+  </enums>
+
+  <enums name="Box3Field">
+    <summary>Fields of a 3D box, used to describe position and size components</summary>
+    <enum name="X">X-coordinate of the box origin</enum>
+    <enum name="Y">Y-coordinate of the box origin</enum>
+    <enum name="Z">Z-coordinate of the box origin</enum>
+    <enum name="Width">Width of the box along the X axis</enum>
+    <enum name="Height">Height of the box along the Y axis</enum>
+    <enum name="Depth">Depth of the box along the Z axis</enum>
+  </enums>
+
+  <enums name="TextHorizontalAlignment">
+    <summary>Horizontal text alignment options within text bounds</summary>
+    <enum name="Left">Align text to the left edge</enum>
+    <enum name="Center">Center text horizontally</enum>
+    <enum name="Right">Align text to the right edge</enum>
+  </enums>
+
+  <enums name="TextVerticalAlignment">
+    <summary>Vertical text alignment options within text bounds</summary>
+    <enum name="Top">Align text to the top</enum>
+    <enum name="Center">Center text vertically</enum>
+    <enum name="Bottom">Align text to the bottom</enum>
+    <enum name="Baseline">Align to text baseline</enum>
+  </enums>
+
+  <enums name="HorizontalAlignment">
+    <summary>Horizontal alignment of elements within their parent container</summary>
+    <enum name="Left">Align to left edge of container</enum>
+    <enum name="Center">Center within container</enum>
+    <enum name="Right">Align to right edge of container</enum>
+    <enum name="Stretch">Stretch to fill container width</enum>
+  </enums>
+
+  <enums name="VerticalAlignment">
+    <summary>Vertical alignment of elements within their parent container</summary>
+    <enum name="Top">Align to top edge of container</enum>
+    <enum name="Center">Center within container</enum>
+    <enum name="Bottom">Align to bottom edge of container</enum>
+    <enum name="Stretch">Stretch to fill container height</enum>
+  </enums>
+
+  <enums name="AlignItems">
+    <summary>Cross-axis alignment in flexbox-style layout containers</summary>
+    <enum name="Start">Align to start of cross axis</enum>
+    <enum name="Center">Center on cross axis</enum>
+    <enum name="End">Align to end of cross axis</enum>
+    <enum name="Stretch">Stretch across cross axis</enum>
+    <enum name="Baseline">Align to text baseline</enum>
+  </enums>
+
+  <enums name="DepthAlignment">
+    <summary>3D depth alignment options for positioning along Z-axis</summary>
+    <enum name="Near">Align to near clipping plane</enum>
+    <enum name="Center">Center in depth</enum>
+    <enum name="Far">Align to far clipping plane</enum>
+    <enum name="Stretch">Stretch across depth</enum>
+  </enums>
+
+  <enums name="Overflow">
+    <summary>Content overflow handling strategies</summary>
+    <enum name="Visible">Content overflows container bounds</enum>
+    <enum name="Hidden">Clip overflowing content</enum>
+    <enum name="Clip">Hard clipping without scrollbars</enum>
+    <enum name="Scroll">Show scrollbars for overflow</enum>
+    <enum name="Auto">Automatic scrollbar behavior</enum>
+  </enums>
+
+  <enums name="ForegroundHint">
+    <enum name="None">No special foreground treatment</enum>
+    <enum name="Translucent">Hint for translucent foreground</enum>
+    <enum name="Opaque">Hint for opaque foreground optimization</enum>
+  </enums>
+
+  <enums name="JustifyContent">
+    <summary>Main-axis content distribution in flexbox-style layouts</summary>
+    <enum name="Start">Pack items to start</enum>
+    <enum name="End">Pack items to end</enum>
+    <enum name="Center">Center items</enum>
+    <enum name="SpaceBetween">Distribute with space between</enum>
+    <enum name="SpaceAround">Distribute with space around</enum>
+    <enum name="SpaceEvenly">Distribute with even spacing</enum>
+  </enums>
+
+  <enums name="FontWeight">
+    <summary>Font weight options for typography</summary>
+    <enum name="Normal">Standard font weight</enum>
+    <enum name="Bold">Bold font weight</enum>
+  </enums>
+
+  <enums name="FontStyle">
+    <summary>Font style options for typography</summary>
+    <enum name="Normal">Regular font style</enum>
+    <enum name="Italic">Italic font style</enum>
+  </enums>
+
+  <enums name="BorderStyle">
+    <summary>Visual styles for element borders</summary>
+    <enum name="None">No border</enum>
+    <enum name="Hidden">Hidden border (takes space but invisible)</enum>
+    <enum name="Dotted">Dotted border pattern</enum>
+    <enum name="Dashed">Dashed border pattern</enum>
+    <enum name="Solid">Solid continuous border</enum>
+    <enum name="Double">Double line border</enum>
+    <enum name="Groove">3D grooved border effect</enum>
+    <enum name="Ridge">3D ridged border effect</enum>
+    <enum name="Inset">3D inset border effect</enum>
+    <enum name="Outset">3D outset border effect</enum>
+  </enums>
+
+  <enums name="PlaybackMode">
+    <summary>Animation playback behavior modes</summary>
+    <enum name="Normal">Standard forward playback</enum>
+    <enum name="Reverse">Reverse playback from end to start</enum>
+    <enum name="Pingpong">Alternating forward/reverse playback</enum>
+  </enums>
+
+  <enums name="ButtonType">
+    <summary>Button behavior types for different interaction patterns</summary>
+    <enum name="Normal">Standard interactive button</enum>
+    <enum name="Submit">Form submission button with special handling</enum>
+  </enums>
+
+  <enums name="InputType">
+    <summary>Input control behavior types for different data entry needs</summary>
+    <enum name="Text">Single or multi-line text input </enum>
+    <enum name="Password">Masked password input for security </enum>
+    <enum name="Number">Numeric input with validation </enum>
+    <enum name="Checkbox">Boolean checkbox control </enum>
+    <enum name="Radio">Radio button for exclusive selection </enum>
+  </enums>
+
+  <enums name="Sizing">
+    <summary>Size calculation modes for layout operations</summary>
+    <enum name="PlusMargin">Include margins in size calculation</enum>
+    <enum name="SizeOnly">Return only the base size</enum>
+    <enum name="MinusPadding">Subtract padding from size</enum>
+  </enums>
+
+  <struct name="BorderRadiusShorthand">
+    <summary>Corner rounding configuration for rectangular elements</summary>
+    <details>Similar to CSS border-radius, allows independent control of each corner's rounding radius.</details>
+    <field name="TopLeftRadius" type="float">Top-left corner radius</field>
+    <field name="TopRightRadius" type="float">Top-right corner radius</field>
+    <field name="BottomRightRadius" type="float">Bottom-right corner radius</field>
+    <field name="BottomLeftRadius" type="float">Bottom-left corner radius</field>
+  </struct>
+
+  <struct name="BorderEdgeShorthand">
+    <summary>Complete border definition for one edge</summary>
+    <field name="Width" type="float">{0} border thickness in pixels</field>
+    <field name="Style" type="BorderStyle">Visual style of the {0} border</field>
+    <field name="Color" type="color">{0} border color</field>
+  </struct>
+
+  <struct name="BorderSideShorthand">
+    <summary>Border definitions for both sides of an axis</summary>
+    <field name="Left" type="BorderEdgeShorthand">Leading edge border (left/top/near)</field>
+    <field name="Right" type="BorderEdgeShorthand">Trailing edge border (right/bottom/far)</field>
+  </struct>
+
+  <struct name="BorderShorthand">
+    <summary>Complete border definition for rectangular element</summary>
+    <shorthand name="BorderWidth" physical="Border.Axis[0]" userdata="Border%sWidth">Shorthand for setting spacing inside a node along its edges. Represents the inner spacing (padding) between the node's content and its border for all edges. Similar to the CSS `padding` shorthand property.</shorthand>
+    <shorthand name="BorderStyle" physical="Border.Axis[0]" userdata="Border%sStyle">Shorthand for defining the line style of borders along each edge. Specifies the border style (solid, dashed, etc.) per edge, similar to CSS `border-style`.</shorthand>
+    <shorthand name="BorderColor" physical="Border.Axis[0]" userdata="Border%sColor">Shorthand for defining the color of borders along each edge. Specifies the border color for each edge individually, similar to CSS `border-color`.</shorthand>
+    <field name="Radius" type="BorderRadiusShorthand">Border radius definition per corner</field>
+    <field name="Axis" type="BorderSideShorthand" array="3">Border definition per axis</field>
+  </struct>
+
+  <struct name="EdgeShorthand">
+    <summary>Spacing values for opposite edges of an axis</summary>
+    <field name="Left" type="float">Leading edge value (left for horizontal, top for vertical, near for depth)</field>
+    <field name="Right" type="float">Trailing edge value (right for horizontal, bottom for vertical, far for depth)</field>
+  </struct>
+
+  <struct name="AlignmentShorthand">
+    <summary>Axis-specific alignment parameters.</summary>
+    <details>Stores per-axis alignment information (e.g., Horizontal, Vertical, Depth). Used by Node and its derived classes to control alignment.</details>
+    <field name="Axis" type="int" array="3">Alignment of the element within its parent (similar to HorizontalAlignment/VerticalAlignment in XAML).</field>
+  </struct>
+
+  <struct name="FontShorthand">
+    <summary>Complete font specification including weight, style, size, and family</summary>
+    <field name="Weight" type="FontWeight">Font weight (normal or bold)</field>
+    <field name="Style" type="FontStyle">Font style (normal or italic)</field>
+    <field name="Size" type="float">Font size in points</field>
+    <field name="Family" type="FontFamily" pointer="true">Font family reference</field>
+  </struct>
+
+  <struct name="BrushShorthand">
+    <summary>Represents a generic brush used for filling UI elements.</summary>
+    <details>A brush can be used as a background, foreground, or any paintable property. It supports multiple types of fills; each field corresponds to one type of fill.</details>
+    <field name="Color" type="color">Solid color fill. Conceptually similar to a CSS `color` or `background-color`.</field>
+    <field name="Image" type="Texture" pointer="true">Texture/image fill. Conceptually similar to a CSS `background-image`.</field>
+    <field name="Material" type="Material" pointer="true">Custom material or shader fill. Advanced fill using shader/material settings for effects beyond simple color or image.</field>
+  </struct>
+
+  <struct name="ShadowShorthand">
+    <summary>Drop shadow effect configuration</summary>
+    <details>Defines a drop shadow with offset, blur, spread, and color. Similar to CSS box-shadow property.</details>
+    <field name="Offset" type="vec2">Shadow offset from element (x, y)</field>
+    <field name="BlurRadius" type="float">Blur amount for shadow softness</field>
+    <field name="SpreadRadius" type="float">Shadow expansion beyond element bounds</field>
+    <field name="Color" type="color">Shadow color and opacity</field>
+  </struct>
+
+  <struct name="RingShorthand">
+    <summary>Decorative ring/outline effect around elements</summary>
+    <details>Creates an outline ring around elements, similar to CSS outline or focus ring indicators. Useful for accessibility and visual feedback.</details>
+    <field name="Offset" type="float">Distance from element edge to ring</field>
+    <field name="Width" type="float">Ring thickness in pixels</field>
+    <field name="Color" type="color">Ring color and opacity</field>
+  </struct>
+
+  <struct name="OverflowShorthand">
+    <summary>Per-axis overflow behavior configuration</summary>
+    <details>Controls how content that exceeds container bounds is handled for each axis independently.</details>
+    <field name="x" type="Overflow">Horizontal overflow handling</field>
+    <field name="y" type="Overflow">Vertical overflow handling</field>
+  </struct>
+
+  <struct name="UnderlineShorthand">
+    <summary>Defines shorthand underline properties (offset, width, and color).</summary>
+    <field name="Offset" type="float">Vertical offset of the underline from the baseline.</field>
+    <field name="Width" type="float">Line thickness of the underline.</field>
+    <field name="Color" type="color">Color of the underline.</field>
+  </struct>
+
+  <struct name="Thickness">
+    <summary>Uniform thickness specification for all four edges</summary>
+    <details>Used for properties that need different values for each edge, such as padding, margin, or border thickness.</details>
+    <field name="Top" type="float">Top edge thickness</field>
+    <field name="Right" type="float">Right edge thickness</field>
+    <field name="Bottom" type="float">Bottom edge thickness</field>
+    <field name="Left" type="float">Left edge thickness</field>
+  </struct>
+
+  <struct name="MarginShorthand">
+    <summary>External spacing configuration for rectangular elements</summary>
+    <details>Similar to CSS margin, allows independent control of each edge external spacing.</details>
+    <field name="Axis" type="EdgeShorthand" array="3">External spacing per axis</field>
+  </struct>
+
+  <struct name="SizeAxisShorthand">
+    <summary>Complete sizing definition for one axis</summary>
+    <field name="Requested" type="float">Requested {0} size in pixels</field>
+    <field name="Min" type="float">Minimum allowable {0} size along</field>
+    <field name="Actual" type="float">Actual (calculated) {0} size after layout resolution</field>
+    <field name="Scroll" type="float">Total {0} size required for scrolling content</field>
+  </struct>
+
+  <struct name="SizeShorthand">
+    <summary>Sizing configuration of elements (e.g., Width, Height, Depth)</summary>
+    <details>You can set values and the engine will try it's best to preserve those.</details>
+    <field name="Axis" type="SizeAxisShorthand" array="3">A number value per axis</field>
+  </struct>
+
+  <component name="DataObject">
+    <summary>Base class for data-holding objects within the framework</summary>
+    <details>Provides fundamental data management capabilities and serves as the base for objects that participate in data binding operations.</details>
+  </component>
+
+  <component name="AnimationPlayer">
+    <summary>Controls playback of animations within the UI engine.</summary>
+    <details>Provides functionality for starting, stopping, and repeating animations on scene objects. Supports different playback modes, timing adjustments, and restoration of original property values.</details>
+    <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    <property name="AutoplayEnabled" type="bool">Enables or disables automatic playback on initialization.</property>
+    <property name="DurationScale" type="float">Scales the playback speed of the animation. A value greater than 1.0 speeds up playback, while values between 0.0 and 1.0 slow it down.</property>
+    <property name="PlaybackMode" type="PlaybackMode">Defines how the animation should be played.</property>
+    <property name="RelativePlayback" type="bool">When true, playback is relative to the current state rather than starting from an absolute base state.</property>
+    <property name="RepeatCount" type="int"> Number of times the animation should repeat. Use -1 (or another sentinel value, depending on implementation) to indicate infinite looping.</property>
+    <property name="RestoreOriginalValuesAfterPlayback" type="bool">Restores the original property values after the animation ends.</property>
+    <property name="Timeline" type="Timeline" pointer="true">Reference to the animation timeline that defines keyframes and transitions.</property>
+  </component>
+
+  <component name="Trigger">
+    <summary>Base class for event-driven actions within the UI system</summary>
+    <details>Triggers respond to various conditions and can execute actions like property changes or method calls. Part of the reactive UI behavior system.</details>
+    <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    <handles event="PropertyChanged"/>
+    <handles event="Attached"/>
+    <property name="Property" type="fixed">Target property name to monitor or modify </property>
+    <property name="Value" type="int">Associated value for the trigger condition </property>
+  </component>
+
+  <component name="OnPropertyChangedTrigger">
+    <summary>Responds to property value changes on specified nodes</summary>
+    <details>Monitors a named property on a source node and triggers actions when the property value changes. Useful for reactive UI updates.</details>
+    <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    <handles event="PropertyChanged"/>
+    <property name="SourceNode" type="fixed">Name or identifier of the node to monitor </property>
+    <property name="Property" type="fixed">Property name to watch for changes </property>
+  </component>
+
+  <component name="OnAttachedTrigger">
+    <summary>Triggers when an element is attached to the visual tree</summary>
+    <details>Useful for initialization actions that should occur when an element becomes part of the active UI hierarchy.</details>
+    <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    <handles event="Attached"/>
+  </component>
+
+  <component name="EventTrigger">
+    <summary>Responds to routed UI events (mouse, keyboard, etc.)</summary>
+    <details>Listens for specific routed events and can execute actions in response. Supports the standard UI event bubbling system.</details>
+    <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    <handles event="HandleMessage"/>
+    <property name="RoutedEvent" type="fixed">Name of the routed event to handle (e.g., "MouseDown", "KeyPress") </property>
+  </component>
+
+  <component name="Setter">
+    <summary>Applies property values when triggered by specified conditions</summary>
+    <details>Part of the trigger system - sets target properties to specific values when the associated trigger condition is met.</details>
+    <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    <handles event="Triggered"/>
+    <property name="Trigger" type="Trigger" pointer="true">Triggering condition or state image </property>
+    <property name="Property" type="fixed">Target property name to set </property>
+    <property name="Value" type="fixed">Value to apply to the property </property>
+  </component>
+
+<!--  <component name="Project">-->
+<!--    <summary>Top-level project configuration and settings</summary>-->
+<!--    <details>Defines global project parameters including screen dimensions and project identification. Typically one per application.</details>-->
+<!--    <property name="Name" type="fixed">Project identifier or display name </property>-->
+<!--    <property name="ScreenWidth" type="int">Target screen width in pixels </property>-->
+<!--    <property name="ScreenHeight" type="int">Target screen height in pixels </property>-->
+<!--  </component>-->
+
+  <component name="Handler">
+    <summary>Executes custom functions when triggered by specified conditions</summary>
+    <details>More flexible than Setter - can call arbitrary functions on target objects rather than just setting properties.</details>
+    <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    <handles event="Triggered"/>
+    <property name="Trigger" type="Trigger" pointer="true">Triggering condition or state image </property>
+    <property name="Target" type="Object" pointer="true">Target object to call function on </property>
+    <property name="Function" type="fixed">Function name to execute on target </property>
+  </component>
+  
+  <component name="Brush">
+    <summary>Base class for all brush types used in rendering.</summary>
+    <details>Brush defines the general interface for drawing surfaces or filling shapes with visual content. It serves as the root for more specific brushes like ColorBrush, TextureBrush, and MaterialBrush, which define concrete rendering behaviors.</details>
+  </component>
+  
+  <component name="ColorBrush" parent="Brush">
+    <summary>Brush that fills an area with a solid color.</summary>
+    <details>ColorBrush applies a uniform color to a drawable surface. It is typically used for flat-colored elements such as backgrounds, highlights, or overlays where no texture or material is required.</details>
+    <property name="Color" type="color">The color value used to fill the target area.</property>
+  </component>
+  
+<!--  <component name="TextureBrush" parent="Brush">-->
+<!--    <summary>Brush that fills an area with a texture.</summary>-->
+<!--    <details>TextureBrush maps an image texture onto a surface. It supports using repeating or stretched textures to define patterns, backgrounds, or image-based fills.</details>-->
+<!--    <property name="Texture" type="Texture">The texture resource used for drawing.</property>-->
+<!--  </component>-->
+<!--  -->
+<!--  <component name="MaterialBrush" parent="Brush">-->
+<!--    <summary>Brush that fills an area using a material definition.</summary>-->
+<!--    <details>MaterialBrush renders its target using a Material resource, which may include shader parameters, normal maps, and other advanced rendering attributes. This allows for dynamic visual effects and physically based rendering techniques.</details>-->
+<!--    <property name="Material" type="Material">The material resource used for rendering.</property>-->
+<!--  </component>-->
+
+  <component name="Node">
+    <summary>Base class for all UI engine nodes.</summary>
+    <details>Node is the fundamental class for all engine objects (e.g., Node2D, Node3D, RenderPass). It manages shared functionality such as size, layout, visibility, opacity, tags, and data context. You normally work with derived classes rather than creating instances of Node directly.</details>
+    <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    <handles event="ThemeChanged"/>
+    <handles event="GetSize"/>
+    <handles event="IsVisible"/>
+    <property name="Size" type="SizeShorthand">Sizing configuration of this element</property>
+    <property name="Margin" type="MarginShorthand">External spacing around the element</property>
+    <property name="Padding" type="MarginShorthand">Internal spacing between element border and content</property>
+    <property name="Border" type="BorderShorthand">Border definition along each axis</property>
+    <property name="Alignment" type="AlignmentShorthand">Alignment definition for each axis.</property>
+    <property name="Font" type="FontShorthand" default=".Size=DEFAULT_FONT_SIZE">Font definition used for text rendering. Contains typeface, size, and style information.</property>
+    <property name="Visible" type="bool" default="TRUE">Whether this node is visible in the scene.</property>
+    <property name="QuickHide" type="bool">If true, node is quickly hidden without triggering full visibility transitions.</property>
+    <property name="VisibleAmountInParent" type="float" default="1">Specifies how much of the node is visible within its parent container. Value in range [0.0, 1.0].</property>
+    <property name="Opacity" type="float" default="1">Opacity of the node, range [0.0 = transparent, 1.0 = fully opaque].</property>
+    <property name="Tags" type="objectTags">Tag collection for categorizing or querying nodes.</property>
+    <property name="DataContext" type="DataObject" pointer="true">Data context (used for data binding, similar to XAML's DataContext).</property>
+  </component>
+
+  <component name="TextBlockConcept">
+    <summary>Shared concept for text rendering in 2D and 3D nodes.</summary>
+    <details>This class is not instantiated directly. Instead, it provides the common properties and functionality for text rendering, used internally by higher-level components such as 2D and 3D text nodes. The concept encapsulates text content, resources, formatting options, alignment, and font configuration.</details>
+    <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    <handles event="Create"/>
+    <handles event="MakeText"/>
+    <property name="Text" type="fixed">The short text string displayed in the block, limited to 64 bytes. If you need more space consider using `TextResourceID`.</property>
+    <property name="TextResourceID" type="fixed">Resource identifier for localized text lookup.</property>
+    <property name="TextResourceConfiguration" type="fixed">Configuration key used when resolving text resources.</property>
+    <property name="PlaceholderText" type="fixed">Placeholder text displayed when no main text is set.</property>
+    <property name="TextOverflow" type="fixed">Defines how overflowing text should be handled (clip, ellipsis, etc.).</property>
+    <property name="HighlightColor" type="color">Color used for highlighting portions of the text.</property>
+    <property name="Placeholder" type="BrushShorthand">Brush definition for rendering placeholder text.</property>
+    <property name="Underline" type="UnderlineShorthand">Underline style applied to the text.</property>
+    <property name="UseFullFontHeight" type="bool" default="TRUE">When true, uses the font's full height for layout calculations.</property>
+    <property name="ConstrainContentHeight" type="bool" default="TRUE">Constrains the content height to the text's bounding box.</property>
+    <property name="WordWrap" type="bool">Enables automatic word wrapping of the text.</property>
+    <property name="RemoveSideBearingsProperty" type="bool">Removes side bearings (spacing) defined by the font.</property>
+    <property name="LetterSpacing" type="float">Additional spacing applied between letters.</property>
+    <property name="LineHeight" type="float" default="1">Line height multiplier for multi-line text layout.</property>
+    <property name="CharacterSpacing" type="float">Extra spacing between characters, beyond kerning.</property>
+    <property name="FixedCharacterWidth" type="float">Forces a fixed width per character (monospace effect).</property>
+    <property name="TextHorizontalAlignment" type="TextHorizontalAlignment">Horizontal alignment of the text within its bounds.</property>
+    <property name="TextVerticalAlignment" type="TextVerticalAlignment">Vertical alignment of the text within its bounds.</property>
+    <field name="_steps" type="uiLabelSteps">Internal step-based rendering parameters.</field>
+    <field name="_size" type="uiLabelSize">Internal text size metrics.</field>
+    <field name="_node" type="Node" pointer="true">Reference to the owning node using this concept.</field>
+    <field name="_text" type="view_text">Internal view representation of the text.</field>
+    <field name="_textinfo" type="text_info">Internal text information structure.</field>
+    <field name="_font" type="FontShorthand" pointer="true">Reference to the font shorthand configuration.</field>
+  </component>
+
+  <component name="Node2D" parent="Node" children="Node2D">
+    <summary>Primary class for 2D UI elements with comprehensive rendering capabilities</summary>
+    <details>Extends Node with 2D-specific functionality including transforms, visual effects, composition, and event handling. This is the base class for most visible UI elements. \snippet docs/creating_node2d.lua</details>
+    <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    <handles event="UpdateMatrix"/>
+    <handles event="Create"/>
+    <handles event="Destroy"/>
+    <handles event="UpdateGeometry"/>
+    <handles event="DrawBrush"/>
+    <handles event="UpdateLayout"/>
+    <handles event="HandleMessage"/>
+    <handles event="ScrollWheel"/>
+    <handles event="MouseMoved"/>
+    <handles event="HitTest"/>
+    <property name="LayoutTransform" type="transform2" default=".scale={1,1}">Transformation applied during layout calculations. Similar to WPF `LayoutTransform`. Affects size and positioning but does not influence local rendering.</property>
+    <property name="RenderTransform" type="transform2" default=".scale={1,1}">Transformation applied at render time. Similar to WPF `RenderTransform`. Affects how the element is drawn (rotation, scale, skew, etc.) without altering layout.</property>
+    <property name="RenderTransformOrigin" type="vec2">The origin point for applying RenderTransform. Equivalent to WPF `RenderTransformOrigin`. Defines pivot relative to the element.</property>
+    <property name="ContentOffset" type="vec2">Pixel offset applied to the element's content. Can be used for subpixel positioning or scrolling adjustments.</property>
+    <property name="Matrix" type="mat4" private="true">Final transformation matrix applied to the node. Computed result of layout, render, and parent transforms.</property>
+    <property name="RenderTarget" type="Texture" pointer="true">Optional render target for offscreen drawing. When set, the node is rendered into this texture/image instead of directly on screen.</property>
+    <property name="Background" type="BrushShorthand">Background brush for the element. Equivalent to WPF `Background`. Supports solid color, image, or material.</property>
+    <property name="Foreground" type="BrushShorthand">Foreground brush for the element. Equivalent to WPF `Foreground`. Typically used for text or shape fills.</property>
+    <property name="BoxShadow" type="ShadowShorthand">Shadow applied to the element's box. Equivalent to CSS `box-shadow` or WPF `DropShadowEffect`.</property>
+    <property name="Overflow" type="OverflowShorthand">Defines overflow behavior for child content. Equivalent to CSS `overflow`. Controls clipping and scroll behavior.</property>
+    <property name="Ring" type="RingShorthand">Decorative ring effect applied around the element. Similar in purpose to CSS `outline` or focus ring indicators.</property>
+    <!-- <property name="BorderRadius" type="BorderRadiusShorthand">Border radius for rounding corners. Equivalent to CSS `border-radius`.</property> -->
+    <property name="CompositionBrush" type="Material" pointer="true">Custom composition brush for advanced rendering. Equivalent to UWP `CompositionBrush`. Can be used for effects or visuals beyond standard brushes.</property>
+    <property name="CompositionDesignSize" type="vec2">Virtual design size when using composition rendering. Defines the expected size for the composition surface.</property>
+    <property name="SizeToContent" type="bool">Whether the element resizes itself to fit its content. Equivalent to WPF `SizeToContent`.</property>
+    <property name="OffscreenRendering" type="bool">Enables rendering to an offscreen surface before compositing. Useful for caching effects or complex visuals.</property>
+    <property name="ForceComposition" type="bool">Forces use of the composition system even when not required. Equivalent to enabling composition layers for debugging or effects.</property>
+    <property name="CacheResult" type="bool">Enables caching of rendering results. Similar to WPF `CacheMode`. Reduces redraw cost at the expense of memory.</property>
+    <property name="SnapToPixel" type="bool">Snaps rendering to device pixels. Equivalent to WPF `SnapsToDevicePixels`. Improves text sharpness.</property>
+    <property name="ClipChildren" type="bool">Controls whether children are clipped to the bounds of the element. Equivalent to WPF `ClipToBounds`.</property>
+    <property name="ContentStretch" type="bool">Determines if content stretches to fill available space. Equivalent to WPF `Stretch` when applied to child content.</property>
+    <property name="Hovered" type="bool" private="true">Indicates if the element is currently hovered by pointer/mouse. Equivalent to WPF `IsMouseOver`.</property>
+    <property name="IgnoreHitTest" type="bool">Marks object as ignored during hit testing (mouse interaction).</property>
+    <property name="ForegroundHint" type="ForegroundHint">Hint for how foreground should be rendered. May be used for accessibility, high-contrast, or text rendering optimizations.</property>
+    <!-- <property name="MouseDown" type="event">Event fired when mouse button is pressed over element </property>
+    <property name="MouseUp" type="event">Event fired when mouse button is released over element </property>
+    <property name="MouseDrag" type="event">Event fired during mouse drag operations </property>
+    <property name="GotFocus" type="event">Event fired when element receives keyboard focus </property>
+    <property name="LostFocus" type="event">Event fired when element loses keyboard focus </property>
+    <property name="KeyDown" type="event">Event fired when key is pressed while element has focus </property>
+    <property name="KeyUp" type="event">Event fired when key is released while element has focus </property> -->
+    <field name="_node" type="Node" pointer="true">Internal node reference </field>
+    <field name="_object" type="Object" pointer="true">Internal object reference </field>
+    <field name="_userdata" type="int">User-defined data storage </field>
+    <field name="_rect" type="rect">Internal rectangle bounds </field>
+    <field name="_actual_pos" type="actualPos">Internal computed position </field>
+    <field name="_opacity" type="float">Internal opacity value </field>
+    <field name="_bbox_flags" type="int">Internal bounding box flags </field>
+    <method name="IsFrameSet">
+      <summary>Check if a specific frame property is set on a Node2D</summary>
+      <arg name="field" type="Box3Field"/>
+      <returns type="bool"/>
+    </method>
+    <method name="SetFrame">
+      <summary>Set a frame property value on a Node2D</summary>
+      <arg name="field" type="Box3Field"/>
+      <arg name="value" type="float"/>
+    </method>
+    <method name="GetFrame">
+      <summary>Get a frame property value from a Node2D</summary>
+      <arg name="field" type="Box3Field"/>
+      <returns type="float"/>
+    </method>
+    <method name="Measure">
+      <summary>Perform the measure phase of layout for a Node2D</summary>
+      <details>Calculates the desired size of the node and its children based on content and layout constraints.</details>
+      <arg name="direction" type="Direction"/>
+      <arg name="availableSize" type="float"/>
+      <arg name="forceRemeasure" type="bool"/>
+    </method>
+    <method name="Arrange">
+      <summary>Perform the arrange phase of layout for a Node2D</summary>
+      <details>Positions the node and its children within the specified bounds after the measure phase has determined desired sizes.</details>
+      <arg name="bounds" type="bounds"/>
+      <arg name="direction" type="Direction"/>
+    </method>
+    <!-- <method name="GetViewEntity">
+      <summary>Create a view entity for rendering operations</summary>
+      <details>Prepares a view entity that can be used in the rendering pipeline with the specified image and brush configuration.</details>
+      <arg name="Object" type="Object" pointer="true"/>
+      <arg name="view_entity" type="view_entity" pointer="true"/>
+      <arg name="image" type="Texture" const="true" pointer="true"/>
+      <arg name="brush" type="BrushShorthand" const="true" pointer="true"/>
+    </method> -->
+    <method name="GetBounds">
+      <summary>Get the layout bounds of a Node2D along a specific axis</summary>
+      <arg name="axis" type="Direction"/>
+      <returns type="bounds"/>
+    </method>
+    <method name="GetRect">
+      <summary>Get the 2D rectangle bounds of a Node2D</summary>
+      <returns type="rect"/>
+    </method>
+    <method name="GetBackgroundRect">
+      <summary>Get the background rendering rectangle for a Node2D</summary>
+      <details>May differ from the main rectangle due to border radius, shadows, or other visual effects.</details>
+      <returns type="rect"/>
+    </method>
+    <method name="GetSize">
+      <summary>Utility function for calculating node dimensions with different sizing modes</summary>
+      <details>Provides convenient access to node sizes with different interpretations of what "size" means in various layout contexts.</details>
+      <arg name="axis" type="Direction"/>
+      <arg name="sizing" type="Sizing"/>
+      <returns type="float"/>
+    </method>
+  </component>
+
+  <component name="PrefabView2D" parent="Node2D">
+    <summary>Container for loading and displaying prefabricated UI components</summary>
+    <details>Allows loading of pre-designed UI layouts from external resources. Useful for reusable UI components and modular design patterns.</details>
+    <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    <handles event="LoadView"/>
+    <property name="SCA" type="fixed">Scene archive identifier or path </property>
+    <property name="Prefab" type="fixed">Prefab resource name within the archive </property>
+    <field name="_loadedSCA" type="int">Hashed value of currently loaded SCA</field>
+    <field name="_loadedPrefab" type="int">Hashed value of loaded prefab instance </field>
+  </component>
+
+  <component name="TextBlock" parent="Node2D" concept="TextBlockConcept">
+    <summary>Concrete implementation of text display combining Node2D and TextBlockConcept</summary>
+    <details>Primary class for displaying static text with full typography control. Combines 2D rendering capabilities with comprehensive text formatting options.</details>
+    <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    <handles event="UpdateLayout"/>
+    <handles event="ForegroundContent"/>
+    <handles event="UpdateGeometry"/>
+    <handles event="Create"/>
+    <handles event="DrawBrush"/>
+    <field name="_node2D" type="Node2D" pointer="true">Internal reference to the underlying Node2D instance </field>
+  </component>
+
+  <component name="Input" parent="TextBlock">
+    <summary>Interactive text input control with multiple input modes</summary>
+    <details>Extends TextBlock to provide editable text capabilities. Supports various input types including text, password, numeric, checkbox, and radio button modes.</details>
+    <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    <handles event="Create"/>
+    <handles event="DrawBrush"/>
+    <handles event="MakeText"/>
+    <handles event="KeyDown"/>
+    <handles event="KillFocus"/>
+    <handles event="LeftMouseUp"/>
+    <handles event="UpdateLayout"/>
+    <property name="Name" type="fixed">Input identifier for forms and data binding </property>
+    <property name="Type" type="InputType">Input behavior type (text, password, etc.) </property>
+    <property name="Cursor" type="int">Current text cursor position </property>
+    <property name="Multiline" type="bool">Allow multiple lines of text input </property>
+    <property name="Checked" type="bool">Checked state for checkbox/radio types </property>
+    <field name="_checkmark" type="Texture" pointer="true">Internal checkmark image for checkbox rendering</field>
+  </component>
+
+  <component name="Button" parent="TextBlock">
+    <summary>Interactive button control for user actions</summary>
+    <details>Extends TextBlock to provide clickable button functionality. Handles mouse and keyboard activation with customizable button types.</details>
+    <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    <handles event="Create"/>
+    <handles event="LeftMouseUp"/>
+    <handles event="KeyDown"/>
+    <property name="Type" type="ButtonType">Button behavior type (normal or submit) </property>
+  </component>
+
+  <component name="Label" parent="TextBlock">
+    <summary>Text label with optional association to form controls</summary>
+    <details>Displays static text that can be associated with input controls for accessibility. Clicking the label can transfer focus to associated control.</details>
+    <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    <handles event="LeftMouseUp"/>
+    <property name="For" type="fixed">Identifier of associated form control </property>
+  </component>
+
+  <component name="StackView" parent="Node2D">
+    <summary>Linear layout container arranging children in a single direction</summary>
+    <details>Provides flexbox-style linear layout with configurable direction, alignment, spacing, and content justification. Children are arranged sequentially along the specified axis.</details>
+    <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    <handles event="UpdateLayout"/>
+    <property name="Reversed" type="bool">Reverse the order of child elements </property>
+    <property name="Direction" type="Direction">Layout direction (horizontal or vertical) </property>
+    <property name="AlignItems" type="AlignItems">Cross-axis alignment of children </property>
+    <property name="JustifyContent" type="JustifyContent">Main-axis distribution of children </property>
+    <property name="Spacing" type="float">Space between adjacent children </property>
+  </component>
+
+  <component name="Form" parent="StackView">
+    <summary>Specialized stack view for form input collection and submission</summary>
+    <details>Extends StackView with form-specific functionality including automatic input collection and submission handling.</details>
+    <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    <handles event="Create"/>
+    <handles event="Submit"/>{</component>
+
+  <component name="CollectionView" parent="Node2D">
+    <summary>Container for dynamic collections of data-driven items</summary>
+    <details>Manages collections of UI elements, typically data-bound to dynamic data sources. Provides efficient rendering of large item sets.</details>
+    <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    <handles event="UpdateLayout"/>
+    <property name="Direction" type="Direction">Primary layout direction for items </property>
+    <property name="Spacing" type="float">Space between collection items </property>
+  </component>
+
+  <component name="Control" parent="Node2D">
+    <summary>Base class for interactive UI controls with state management</summary>
+    <details>Provides common state properties for interactive elements including press, hover, focus, and disabled states.</details>
+    <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    <property name="Pressed" type="bool">Currently being pressed by user input </property>
+    <property name="Disabled" type="bool">Interaction disabled, typically grayed out </property>
+    <property name="Hovered" type="bool">Mouse pointer is over the control </property>
+    <property name="Focused" type="bool">Control has keyboard focus </property>
+    <property name="Value" type="bool">Generic boolean value for toggle controls </property>
+    <property name="Scale" type="float">Visual scale factor for size adjustments </property>
+  </component>
+
+  <enums name="ResizeMode">
+    <summary>Defines how the window can be resized by the user or system.</summary>
+    <enum name="NoResize">The window size is fixed. The user cannot resize or maximize the window.</enum>
+    <enum name="CanMinimize">The user can minimize the window, but resizing and maximizing are disabled.</enum>
+    <enum name="CanResize">The user can freely resize the window and maximize it.</enum>
+    <enum name="CanResizeWithGrip">The user can resize and maximize the window. A resize grip is displayed in the lower-right corner if the platform supports it.</enum>
+  </enums>
+
+  <component name="Screen" parent="Node2D">
+    <summary>Top-level container representing a display surface or window</summary>
+    <details>Provides the root rendering context for UI hierarchies. Manages screen-level operations like clearing and render target management.</details>
+    <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    <handles event="RenderScreen"/>
+    <handles event="UpdateLayout"/>
+    <handles event="Create"/>
+    <handles event="Destroy"/>
+    <property name="ClearColor" type="color">Background clear color for the screen </property>
+    <property name="ResizeMode" type="ResizeMode">Specifies how the window can be resized or displayed</property>
+    <field name="_rt" type="Texture" pointer="true">Internal render target for the screen</field>
+    <field name="_size" type="uint">Currently set size (to resize window when changed).</field>
+    <field name="_initialized" type="bool">Used to set initial window size</field>
+  </component>
+
+  <component name="Cinematic" parent="Node2D">
+    <summary>Video or animation playback view for media content</summary>
+    <details>Handles playback of video files or frame-based animations with timing control and fade effects.</details>
+    <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    <handles event="DrawBrush"/>
+    <property name="FileName" type="fixed">Path to media file for playback </property>
+    <property name="FrameRate" type="float">Playback frame rate (frames per second) </property>
+    <property name="NumFrames" type="float">Total number of frames in the media </property>
+    <property name="FadeOut" type="float">Fade-out duration in seconds </property>
+    <field name="_playing" type="bool">Internal playback state flag </field>
+    <field name="_starttime" type="longTime">Internal playback start timestamp </field>
+  </component>
+
+  <component name="Grid" parent="Node2D">
+    <summary>Grid-based layout container with configurable rows and columns</summary>
+    <details>Arranges children in a 2D grid pattern with flexible sizing. Supports both fixed and dynamic grid definitions.</details>
+    <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    <handles event="UpdateLayout"/>
+    <property name="Columns" type="fixed">Column definition string (e.g., "1fr 2fr 100px") </property>
+    <property name="Rows" type="fixed">Row definition string (e.g., "auto 1fr auto") </property>
+    <property name="Direction" type="Direction">Primary fill direction for auto-placement </property>
+    <property name="Spacing" type="float">Space between grid cells </property>
+    <property name="CellWidth" type="float">Default width for auto-sized cells </property>
+    <property name="CellHeight" type="float">Default height for auto-sized cells </property>
+    <field name="_buffer" type="uiGridViewBuffer">Internal buffer for grid calculations </field>
+  </component>
+
+  <enums name="Stretch">
+    <summary>Specifies how the content of an element is resized to fill its layout area</summary>
+    <enum name="None">Do not scale the content; display at its native size</enum>
+    <enum name="Fill">Scale content to fill both width and height, ignoring aspect ratio</enum>
+    <enum name="Uniform">Scale content uniformly to fit within the area, preserving aspect ratio</enum>
+    <enum name="UniformToFill">Scale content uniformly to fill the area, preserving aspect ratio but cropping if necessary</enum>
+  </enums>
+
+  <component name="ImageView" parent="Node2D">
+    <summary>Displays image content with advanced rendering and scaling options</summary>
+    <details>Renders static images with support for nine-patch scaling, blend modes, and viewport control. Handles both loaded images and images loaded from file paths.</details>
+    <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    <handles event="UpdateLayout"/>
+    <handles event="ForegroundContent"/>
+    <handles event="DrawBrush"/>
+    <handles event="LoadView"/>
+    <property name="Src" type="fixed">Image source path or resource identifier </property>
+    <property name="Image" type="Texture" pointer="true">Direct reference to loaded image </property>
+    <property name="Edges" type="vec4">Edge inset values for nine-patch rendering </property>
+    <property name="Insets" type="vec4">Content inset values for image positioning </property>
+    <property name="Viewbox" type="vec4" default="0 0 1 1">Viewport rectangle for image cropping/scaling </property>
+    <property name="Stretch" type="Stretch">Determines how the image is scaled to fill its allocated layout space</property>
+    <field name="_loadedImage" type="int">Hashed value of loaded image resource </field>
+  </component>
+
+  <component name="NinePatchImage" parent="Node2D">
+    <summary>Specialized image view for nine-patch (stretchable) images</summary>
+    <details>Renders images that can be stretched while preserving corner and edge regions. Commonly used for UI panels, buttons, and borders that need to scale to different sizes.</details>
+    <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    <handles event="UpdateLayout"/>
+    <handles event="ForegroundContent"/>
+    <handles event="DrawBrush"/>
+    <property name="StretchTypeTop" type="float">Top edge stretch behavior factor </property>
+    <property name="StretchTypeBottom" type="float">Bottom edge stretch behavior factor </property>
+    <property name="StretchTypeLeft" type="float">Left edge stretch behavior factor </property>
+    <property name="StretchTypeRight" type="float">Right edge stretch behavior factor </property>
+    <property name="StretchTypeCenter" type="float">Center region stretch behavior factor </property>
+    <property name="ImageTopLeft" type="Texture" pointer="true">Top-left corner image (non-stretchable) </property>
+    <property name="ImageTop" type="Texture" pointer="true">Top edge image (horizontally stretchable) </property>
+    <property name="ImageTopRight" type="Texture" pointer="true">Top-right corner image (non-stretchable) </property>
+    <property name="ImageLeft" type="Texture" pointer="true">Left edge image (vertically stretchable) </property>
+    <property name="ImageCenter" type="Texture" pointer="true">Center region image (stretchable in both directions) </property>
+    <property name="ImageRight" type="Texture" pointer="true">Right edge image (vertically stretchable) </property>
+    <property name="ImageBottomLeft" type="Texture" pointer="true">Bottom-left corner image (non-stretchable) </property>
+    <property name="ImageBottom" type="Texture" pointer="true">Bottom edge image (horizontally stretchable) </property>
+    <property name="ImageBottomRight" type="Texture" pointer="true">Bottom-right corner image (non-stretchable) </property>
+  </component>
+
+  <component name="TerminalView" parent="Node2D">
+    <summary>Displays a fixed-size text grid using a monospace layout</summary>
+    <details>Renders a character matrix (e.g., 80×24) where each cell represents a single glyph. Functions like a monospace canvas for text-mode visualization, ideal for console-style output, terminal emulation, or retro graphics where characters act as pixels.</details>
+    <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    <handles event="Create"/>
+    <handles event="DrawBrush"/>
+    <handles event="PushProperty"/>
+    <handles event="ScrollWheel"/>
+    <property name="BufferWidth" type="int" default="256">Buffer width</property>
+    <property name="BufferHeight" type="int" default="256">Buffer height</property>
+    <property name="Cursor" type="int">Cursor position</property>
+    <property name="SelectedIndex" type="int">Selected item index</property>
+    <property name="DropShadow" type="bool">Draw shadow underneath this view</property>
+    <field name="_buffer" type="int" pointer="true">Buffer used for characters</field>
+    <field name="_scroll" type="vec2">Scroll position</field>
+    <field name="_contentHeight" type="int">Current page length</field>
+  </component>
+
+  <enums name="StyleType">
+    <summary>Specifies the classification of a style and how it is applied to components.</summary>
+    <details>StyleType determines the purpose and scope of a style definition. Generic styles apply globally to all matching targets, while specialized types define overrides or theme-specific variants for more controlled styling behavior.</details>
+    <enum name="Generic">Base style applied to all components of the specified target type. Serves as a default visual definition.</enum>
+    <enum name="Named">Style associated with a specific theme or visual skin. Used to switch appearance dynamically based on active theme.</enum>
+  </enums>
+  
+  <component name="Style">
+    <summary>Defines a reusable set of property values and visual configurations for a target component type.</summary>
+    <details>Style enables consistent appearance and behavior across multiple components by grouping property definitions under a named style. Each style specifies its target type and classification, such as Generic, Theme, or Override. Styles can be applied globally, by theme, or locally to individual instances, allowing flexible and maintainable UI customization.</details>
+    <property name="TargetType" type="fixed">Specifies the component type this style targets. Only components of the given type or its derived types will use the style.</property>
+    <property name="Type" type="StyleType">Defines the classification of this style, such as Generic, Theme, Override, Local, or Template, determining its scope and application behavior.</property>
+  </component>
+</module>

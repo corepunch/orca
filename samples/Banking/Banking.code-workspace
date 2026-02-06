@@ -1,0 +1,23 @@
+{
+	"folders": [
+		{
+			"name": "Banking",
+			"path": "."
+		},
+		{
+			"path": "../Editor"
+		}
+	],
+	"settings": {
+        // "xml.fileAssociations": [
+        //     {
+        //         "pattern": "**/Prefabs/*.xml", // Pattern to match your XML files
+        //         "systemId": "/Users/igor/Developer/ui-framework/projects/Editor/stackview_schema.xsd" // Replace with your namespace URL
+        //     }
+        // ],
+		"xml.catalogs": [
+			"/Users/igor/Developer/ui-framework/projects/Editor/catalog.xml"
+		],
+		"makefile.configureOnOpen": false
+	},
+}
