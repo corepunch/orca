@@ -102,6 +102,10 @@ static struct PropertyDesc const ProjectProperties[kProjectNumProperties] = {
 	Project, "KanziConnectEnabled", KanziConnectEnabled, kDataTypeBool),
 	/* Project.DefaultMaterial */ DECL(0x0c93d3a3, 0x3c678158,
 	Project, "DefaultMaterial", DefaultMaterial, kDataTypeFixed),
+	/* Project.Width */ DECL(0x3b42dfbf, 0x2a30723c,
+	Project, "Width", Width, kDataTypeInt),
+	/* Project.Height */ DECL(0x1bd13562, 0xdab148ab,
+	Project, "Height", Height, kDataTypeInt),
 };
 static struct Project ProjectDefaults = {
 	.IsMasterProject = FALSE,

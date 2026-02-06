@@ -1731,6 +1731,8 @@
 	IsAssetPackage (true|false) #IMPLIED
 	KanziConnectEnabled (true|false) #IMPLIED
 	DefaultMaterial CDATA #IMPLIED
+	Width CDATA #IMPLIED
+	Height CDATA #IMPLIED
 ">
 <!ELEMENT Project.HalfFloatTextureFormat (#PCDATA | Binding)*>
 <!ATTLIST Project.HalfFloatTextureFormat Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
@@ -1792,7 +1794,11 @@
 <!ATTLIST Project.KanziConnectEnabled Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Project.DefaultMaterial (#PCDATA | Binding)*>
 <!ATTLIST Project.DefaultMaterial Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % ProjectElements "Project.HalfFloatTextureFormat|Project.HalfFloatTextureFormatLinear|Project.HalfFloatColorAttachment|Project.RenderToMipmapLevels|Project.ExternalTexture|Project.StartupScreen|Project.PreviewWindowBackgroundColor|Project.MessageLimitPerFrame|Project.GlobalTimelineStartTime|Project.GlobalTimelineEndTime|Project.BinaryExportDirectory|Project.ApplicationExportDirectory|Project.IsMasterProject|Project.OptimizeMeshes|Project.TargetPlatformVertexCacheSize|Project.PlotAnimations|Project.RoundImagesToNearestPowerOf2|Project.ProjectExportShaderSourceCode|Project.ProjectExportMainKzbWithBakedThemes|Project.ProjectGroupByThemeNameInBakedThemeExport|Project.IsLocalizationEnabled|Project.FullScreenPreviewLayer|Project.ShowChildrenInLayerThumbnails|Project.CompositionDesignSize|Project.ProjectUsePremultipliedAlpha|Project.ProjectRemoveICCProfilesOfPngs|Project.BinaryFileName|Project.IsAssetPackage|Project.KanziConnectEnabled|Project.DefaultMaterial">
+<!ELEMENT Project.Width (#PCDATA | Binding)*>
+<!ATTLIST Project.Width Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Project.Height (#PCDATA | Binding)*>
+<!ATTLIST Project.Height Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % ProjectElements "Project.HalfFloatTextureFormat|Project.HalfFloatTextureFormatLinear|Project.HalfFloatColorAttachment|Project.RenderToMipmapLevels|Project.ExternalTexture|Project.StartupScreen|Project.PreviewWindowBackgroundColor|Project.MessageLimitPerFrame|Project.GlobalTimelineStartTime|Project.GlobalTimelineEndTime|Project.BinaryExportDirectory|Project.ApplicationExportDirectory|Project.IsMasterProject|Project.OptimizeMeshes|Project.TargetPlatformVertexCacheSize|Project.PlotAnimations|Project.RoundImagesToNearestPowerOf2|Project.ProjectExportShaderSourceCode|Project.ProjectExportMainKzbWithBakedThemes|Project.ProjectGroupByThemeNameInBakedThemeExport|Project.IsLocalizationEnabled|Project.FullScreenPreviewLayer|Project.ShowChildrenInLayerThumbnails|Project.CompositionDesignSize|Project.ProjectUsePremultipliedAlpha|Project.ProjectRemoveICCProfilesOfPngs|Project.BinaryFileName|Project.IsAssetPackage|Project.KanziConnectEnabled|Project.DefaultMaterial|Project.Width|Project.Height">
 <!ELEMENT Project EMPTY>
 <!ATTLIST Project %ProjectAttribs;>
 <!ENTITY % LibraryAttribs "

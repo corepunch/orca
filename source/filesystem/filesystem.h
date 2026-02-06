@@ -497,6 +497,8 @@ struct Project {
 	bool_t IsAssetPackage;
 	bool_t KanziConnectEnabled;
 	fixedString_t DefaultMaterial;
+	int32_t Width;
+	int32_t Height;
 	bool_t isPackage;
 	lpPackage_t package;
 };

@@ -39,6 +39,8 @@ enum ProjectProperties {
 	kProjectIsAssetPackage,
 	kProjectKanziConnectEnabled,
 	kProjectDefaultMaterial,
+	kProjectWidth,
+	kProjectHeight,
 	kProjectNumProperties
 };
 
@@ -72,6 +74,8 @@ enum ProjectProperties {
 #define ID_Project_IsAssetPackage 0xfebfd568
 #define ID_Project_KanziConnectEnabled 0xb2dbb3f4
 #define ID_Project_DefaultMaterial 0x3c678158
+#define ID_Project_Width 0x2a30723c
+#define ID_Project_Height 0xdab148ab
 #define ID_Library 0xa8532270
 #define GetLibrary(_P)((struct Library*)((_P)?OBJ_GetComponent(_P,ID_Library):NULL))
 #define Library_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_Library,sizeof(struct Library),_N)

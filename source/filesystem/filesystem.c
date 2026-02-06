@@ -703,18 +703,10 @@ FS_LoadXML(lpcString_t szObjectName)
   path_t pszFileName = { 0 };
   strcpy(pszFileName, szObjectName);
   strcat(pszFileName, ".xml");
-
-  struct file* file = FS_LoadFile(pszFileName);
-
-  if (!file) {
-    Con_Error("Can't find XML file: %s", pszFileName);
-    return NULL;
+  struct _xmlDoc* doc = NULL;
+  xmlWith(struct file, file, FS_LoadFile(pszFileName), FS_FreeFile) {
+    doc = xmlReadMemory((char*)file->data, file->size, szObjectName, NULL, XML_FLAGS);
   }
-
-  struct _xmlDoc* doc =
-  xmlReadMemory((char*)file->data, file->size, szObjectName, NULL, XML_FLAGS);
-  FS_FreeFile(file);
-
   return doc;
 }
 

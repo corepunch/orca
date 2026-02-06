@@ -49,7 +49,11 @@
     <property name="KanziConnectEnabled" type="bool" default="false"/>
     <!--    <ProjectDescriptionsFileName>&lt;project_name&gt;_descriptions.txt</ProjectDescriptionsFileName>-->
     <property name="DefaultMaterial" type="fixed"/>
-    
+
+    <!-- These probably don't belong in Project? -->
+    <property name="Width" type="int"/>
+    <property name="Height" type="int"/>
+
     <field name="isPackage" type="bool"/>
     <field name="package" type="Package" pointer="true"/>
   </component>
