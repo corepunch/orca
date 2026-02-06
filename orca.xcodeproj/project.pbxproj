@@ -953,7 +953,6 @@
 				78B137AD2AF3CC4E00AAAE53 /* orca.c */,
 				7808CD8C2D9EC93100D484F9 /* backend */,
 				78C7374E2B8F60C600FD598E /* core */,
-				78FD532E2D929AE700122823 /* debug */,
 				786F2B1D2E12EE7F00B519AB /* editor */,
 				7810D2662D58B1B800DB632F /* filesystem */,
 				789D757D2BD0F4A900E2ADB9 /* geometry */,
@@ -1024,6 +1023,7 @@
 				783976FE2E54B25900DCFC0F /* core.h */,
 				7808CD952DA1B43D00D484F9 /* behaviour.lua */,
 				7839770A2E60758500DCFC0F /* core.xml */,
+				78FD532F2D929AFE00122823 /* debug.c */,
 			);
 			path = core;
 			sourceTree = "<group>";
@@ -1103,14 +1103,6 @@
 				783977022E54CA5A00DCFC0F /* renderer.h */,
 			);
 			path = api;
-			sourceTree = "<group>";
-		};
-		78FD532E2D929AE700122823 /* debug */ = {
-			isa = PBXGroup;
-			children = (
-				78FD532F2D929AFE00122823 /* debug.c */,
-			);
-			path = debug;
 			sourceTree = "<group>";
 		};
 		78FD53372D940BB200122823 /* vsomeip */ = {
