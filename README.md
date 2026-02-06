@@ -88,7 +88,7 @@ sudo pacman -S libpng freetype2 libjpeg-turbo lua libxml2 lz4 zlib curl
 To install dependencies on **macOS**, use **Homebrew**:
 
 ```sh
-brew install libpng freetype jpeg lua libxml2 lz4 zlib curl
+brew install libpng freetype jpeg-turbo lua libxml2 lz4 zlib curl pkg-config
 ```
 
 ## Building the Project
