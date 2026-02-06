@@ -123,32 +123,38 @@ To run the project, ensure that the `../icui` folder is present, as it contains 
 
 ## Why MoonScript?
 
-The Banking sample app demonstrates MoonScript's advantages over XML and pure Lua. See <a>samples/Banking</a> for a complete example.
+ORCA supports multiple approaches for building applications, each with their own strengths:
+
+- **MoonScript**: Best for app-building with hot reloading and rapid development
+- **XML**: Editor-friendly for graphics-heavy applications like instrument clusters (Editor is currently work-in-progress)
+- **Pure Lua**: Full control with traditional Lua syntax
 
 ### Benefits Over XML
 
-**XML approach** (verbose configuration):
+**XML approach** (UI screen definition):
 ```xml
-<ProjectReferenceLibrary>
-  <ProjectReferenceItem Name="applications">applications</ProjectReferenceItem>
-  <ProjectReferenceItem Name="assets">assets</ProjectReferenceItem>
-  <ProjectReferenceItem Name="appwrite">lib/appwrite</ProjectReferenceItem>
-</ProjectReferenceLibrary>
+<Screen Name="Application" Height="768" Width="1024">
+  <TextBlock Name="TextBlock" FontSize="40" LayoutTransform="400 20 0 1 1" Text="Hello World"/>
+  <ImageView Name="Image" Image="Example/Images/peacock"/>
+</Screen>
 ```
 
 **MoonScript approach** (clean and expressive):
 ```moonscript
-class App extends Application
-  @include "applications.users"
-  @include "applications.chat"
+class Application extends Screen
+  Height: 768
+  Width: 1024
   
-  @stylesheet require "tailwind"
-  @stylesheet "assets/globals.css"
+  body: =>
+    textblock ".text-block", Text: "Hello World", FontSize: 40
+    imageview ".image", Image: "Example/Images/peacock"
 ```
 
-✅ **60% less code**  
+✅ **More concise syntax**  
 ✅ **Native language constructs instead of markup**  
-✅ **Better IDE support and refactoring**
+✅ **Better for programmatic UI logic**
+
+**Note**: XML remains useful for visual editor workflows and is still required for project configuration files.
 
 ### Benefits Over Pure Lua
 
@@ -158,19 +164,19 @@ Let's compare the same UI component in both languages using ORCA's framework:
 ```lua
 local StackView = require("orca.ui").StackView
 
-local ContactCard = StackView:extend({
+local ContactCard = StackView:extend {
   apply = function(self)
     return "contact-card"
   end,
   
   body = function(self)
-    img({ Src = "https://picsum.photos/64" })
+    img { src = "https://picsum.photos/64" }
     stack(".flex-col", function()
       p(".contact-card-title", self.user.name)
       p(".contact-card-description", "@" .. self.user["$id"])
     end)
   end
-})
+}
 ```
 
 **MoonScript with ORCA** (clean and elegant):
@@ -180,7 +186,7 @@ import StackView from require "orca.ui"
 class ContactCard extends StackView
   apply: => "contact-card"
   body: =>
-    img Src: "https://picsum.photos/64"
+    img src: "https://picsum.photos/64"
     stack ".flex-col", ->
       p ".contact-card-title", @user.name
       p ".contact-card-description", "@"..@user["$id"]
@@ -284,9 +290,9 @@ Even with ORCA's simplified `extend()` API, MoonScript gives you:
 - ✅ **Cleaner class definitions** without manual table construction
 - ✅ **Compiles to readable Lua** (easy to debug, uses your `extend()` under the hood)
 - ✅ **Full Lua compatibility** (use any Lua library)
-- ✅ **Perfect for UI/DSL code** (see the Banking app's clean component structure)
+- ✅ **Perfect for UI/DSL code** with clean component structure
 
-For the complete working example, explore the <a>Banking sample app</a>.
+Explore the sample applications to see these approaches in action.
 
 ## License
 
