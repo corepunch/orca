@@ -1,6 +1,5 @@
 // clang-format off
 #include <stdio.h>
-#include <jerror.h>
 #include <jpeglib.h>
 // clang-format on
 

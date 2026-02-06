@@ -120,16 +120,17 @@ move_pz2:
 
 modules:
 #	python3 tools/conv-lua.py presentation
-	python3 tools/conv-module.py \
-	source/geometry/geom.xml \
-	source/core/core.xml \
-	source/renderer/api/renderer.xml \
-	source/UIKit/UIKit.xml \
-	source/SceneKit/SceneKit.xml \
-	source/filesystem/filesystem.xml
+	cd tools && \
+	python3 conv-module.py \
+	../source/geometry/geom.xml \
+	../source/core/core.xml \
+	../source/renderer/api/renderer.xml \
+	../source/UIKit/UIKit.xml \
+	../source/SceneKit/SceneKit.xml \
+	../source/filesystem/filesystem.xml && cd ..
 
 fonts:
-	python3 tools/conv-font.py \
-	images/vga8x12_extra_chars.png \
-	source/renderer/builtin/r_builtin_charset2.c \
-	images_vga8x12_extra_chars_png
+	python3 cd tools && \
+	../images/vga8x12_extra_chars.png \
+	../source/renderer/builtin/r_builtin_charset2.c \
+	images_vga8x12_extra_chars_png && cd ..

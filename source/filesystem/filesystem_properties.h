@@ -313,8 +313,8 @@ enum PropertyTypeLibraryProperties {
 };
 
 #define ID_MessageLibrary 0x0333204f
-#define GetMessageLibrary(_P)((struct WI_MessageLibrary*)((_P)?OBJ_GetComponent(_P,ID_MessageLibrary):NULL))
-#define MessageLibrary_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_MessageLibrary,sizeof(struct WI_MessageLibrary),_N)
+#define GetMessageLibrary(_P)((struct MessageLibrary*)((_P)?OBJ_GetComponent(_P,ID_MessageLibrary):NULL))
+#define MessageLibrary_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_MessageLibrary,sizeof(struct MessageLibrary),_N)
 enum MessageLibraryProperties {
 	kMessageLibraryNumProperties
 };

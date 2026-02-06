@@ -5,9 +5,7 @@ g_structs = {}
 g_enums = {}
 g_components = {}
 g_resources = {}
-
 g_attribs = []
-
 g_article = None
 g_html = ET.Element('html', attrib={'xmlns':'http://www.w3.org/2001/XMLSchema' })
 g_head = ET.SubElement(g_html, 'head')
@@ -18,8 +16,8 @@ g_body = ET.SubElement(g_html, 'body')
 g_wrapper = ET.SubElement(g_body, 'div', {'class': 'adjustable-sidebar-width full-width-container topic-wrapper'})
 g_sidebar = ET.SubElement(g_wrapper, 'div', {'class': 'sidebar'})
 g_content = ET.SubElement(g_wrapper, 'main', {'class': 'content'})
-
 g_dtd = open("schemas/orca.dtd", "w")
+g_output = "../docs/index.html"
 
 def tokenize(code):
 	token_re = re.compile(
@@ -943,7 +941,7 @@ if __name__ == "__main__":
 
 	tree = ET.ElementTree(g_html)
 	# ET.indent(tree, space="\t", level=0)
-	tree.write('../../docs/index.html', encoding="utf-8", method="html")
+	tree.write(g_output, encoding="utf-8", method="html")
 
 	with open("schemas/append.dtd") as f:
 		g_dtd.write(f.read())

@@ -1108,7 +1108,7 @@ ORCA_API struct ClassDesc _PropertyTypeLibrary = {
 };
 static struct PropertyDesc const MessageLibraryProperties[kMessageLibraryNumProperties] = {
 };
-static struct WI_MessageLibrary MessageLibraryDefaults = {};
+static struct MessageLibrary MessageLibraryDefaults = {};
 LRESULT MessageLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
 }
@@ -1128,7 +1128,7 @@ ORCA_API struct ClassDesc _MessageLibrary = {
 	.Xmlns = "None",
 	.ParentClasses = {&_Library, NULL},
 	.ClassID = ID_MessageLibrary,
-	.ClassSize = sizeof(struct WI_MessageLibrary),
+	.ClassSize = sizeof(struct MessageLibrary),
 	.Properties = MessageLibraryProperties,
 	.ObjProc = MessageLibraryProc,
 	.Defaults = &MessageLibraryDefaults,

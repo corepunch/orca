@@ -330,8 +330,8 @@ luaX_pushPropertyTypeLibrary(lua_State *L, lpcPropertyTypeLibrary_t PropertyType
 ORCA_API lpPropertyTypeLibrary_t
 luaX_checkPropertyTypeLibrary(lua_State *L, int idx);
 
-typedef struct WI_MessageLibrary MessageLibrary_t, *lpMessageLibrary_t;
-typedef struct WI_MessageLibrary const cMessageLibrary_t, *lpcMessageLibrary_t;
+typedef struct MessageLibrary MessageLibrary_t, *lpMessageLibrary_t;
+typedef struct MessageLibrary const cMessageLibrary_t, *lpcMessageLibrary_t;
 /// @brief Push MessageLibrary onto Lua stack.
 ORCA_API void
 luaX_pushMessageLibrary(lua_State *L, lpcMessageLibrary_t MessageLibrary);
@@ -672,9 +672,9 @@ typedef struct PropertyTypeLibrary const *PropertyTypeLibraryCPtr;
 struct PropertyTypeLibrary {
 };
 
-typedef struct WI_MessageLibrary MessageLibrary, *MessageLibraryPtr;
-typedef struct WI_MessageLibrary const *MessageLibraryCPtr;
-struct WI_MessageLibrary {
+typedef struct MessageLibrary MessageLibrary, *MessageLibraryPtr;
+typedef struct MessageLibrary const *MessageLibraryCPtr;
+struct MessageLibrary {
 };
 
 typedef struct SystemMessage SystemMessage, *SystemMessagePtr;
