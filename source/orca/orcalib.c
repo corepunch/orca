@@ -7,6 +7,7 @@
 
 #include <include/api.h>
 #include <include/version.h>
+#include <source/core/core.h>
 
 int luaL_preload(lua_State* L, lpcString_t name, lua_CFunction f) {
   lua_getglobal(L, "package");
@@ -62,6 +63,89 @@ int f_registerEngineClass(lua_State *L) {
   return 0;
 }
 
+static int next_coroutine_id = 1;
+
+int f_async(lua_State *L) {
+  // Get task function and arguments
+  luaL_checktype(L, 1, LUA_TFUNCTION);
+  
+  // Create coroutine
+  lua_State* co = lua_newthread(L);
+  int thread_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+  
+  // Push task to coroutine
+  lua_pushvalue(L, 1);
+  lua_xmove(L, co, 1);
+  
+  // Copy arguments to coroutine
+  int nargs = lua_gettop(L) - 1;
+  if (nargs > 0) {
+    for (int i = 2; i <= lua_gettop(L); i++) {
+      lua_pushvalue(L, i);
+    }
+    lua_xmove(L, co, nargs);
+  }
+  
+  // Get handler_id
+  int handler_id = next_coroutine_id++;
+  
+  // Create resume_handler closure
+  lua_newtable(L);  // handler table
+  lua_pushinteger(L, thread_ref);
+  lua_setfield(L, -2, "thread_ref");
+  lua_pushinteger(L, nargs);
+  lua_setfield(L, -2, "nargs");
+  lua_pushboolean(L, 1); // first_call
+  lua_setfield(L, -2, "first_call");
+  
+  lua_pushvalue(L, -1); // duplicate handler table
+  
+  // Create resume_handler function
+  luaL_dostring(L,
+    "local handler_table = ...\n"
+    "return function()\n"
+    "  local thread_ref = handler_table.thread_ref\n"
+    "  local co = debug.getregistry()[thread_ref]\n"
+    "  if not co then return false end\n"
+    "  \n"
+    "  local ok, result = coroutine.resume(co)\n"
+    "  if not ok then\n"
+    "    print('Coroutine error:', result)\n"
+    "    return false\n"
+    "  end\n"
+    "  \n"
+    "  if coroutine.status(co) ~= 'dead' then\n"
+    "    return true\n"
+    "  else\n"
+    "    debug.getregistry()[thread_ref] = nil\n"
+    "    return false\n"
+    "  end\n"
+    "end\n"
+  );
+  
+  lua_insert(L, -2); // move function before handler table
+  lua_call(L, 1, 1); // call with handler table, returns resume_handler
+  
+  // Store handler in registry
+  lua_getfield(L, LUA_REGISTRYINDEX, "__coroutine_handlers");
+  lua_pushinteger(L, handler_id);
+  lua_pushvalue(L, -3); // resume_handler
+  lua_settable(L, -3);
+  lua_pop(L, 1); // pop handlers table
+  
+  // Post initial kEventCoroutineResume
+  WI_PostMessageW(NULL, kEventCoroutineResume, handler_id, NULL);
+  
+  // Return handler info
+  lua_newtable(L);
+  lua_pushinteger(L, handler_id);
+  lua_setfield(L, -2, "id");
+  lua_rawgeti(L, LUA_REGISTRYINDEX, thread_ref);
+  lua_setfield(L, -2, "coroutine");
+  
+  return 1;
+}
+
 ORCA_API int luaopen_orca(lua_State* L)
 {
   fprintf(stderr, "Available modules: ");
@@ -87,39 +171,8 @@ ORCA_API int luaopen_orca(lua_State* L)
   lua_newtable(L);
   lua_setfield(L, LUA_REGISTRYINDEX, "__coroutine_handlers");
   
-  // Event-based coroutine system
-  luaL_dostring(L,
-                "local next_id = 1\n"
-                "return function(task, ...)\n"
-                "  local co = coroutine.create(task)\n"
-                "  local args = {...}\n"
-                "  local handler_id = next_id\n"
-                "  next_id = next_id + 1\n"
-                "  \n"
-                "  local function resume_handler()\n"
-                "    local ok, result = coroutine.resume(co, table.unpack(args))\n"
-                "    if not ok then\n"
-                "      print('Coroutine error:', result)\n"
-                "      return false\n"
-                "    end\n"
-                "    if coroutine.status(co) ~= 'dead' then\n"
-                "      args = {} -- Clear args after first call\n"
-                "      return true\n"
-                "    else\n"
-                "      return false\n"
-                "    end\n"
-                "  end\n"
-                "  \n"
-                "  -- Store handler in registry\n"
-                "  local handlers = debug.getregistry().__coroutine_handlers\n"
-                "  handlers[handler_id] = resume_handler\n"
-                "  \n"
-                "  -- Post initial resume event via C API\n"
-                "  local orca_core = require('orca.core')\n"
-                "  orca_core.post_coroutine_resume(handler_id)\n"
-                "  \n"
-                "  return { id = handler_id, coroutine = co }\n"
-                "end\n");
+  // Register async function
+  lua_pushcfunction(L, f_async);
   lua_setfield(L, -2, "async");
   
   return 1;
