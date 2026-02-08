@@ -63,8 +63,6 @@ int f_registerEngineClass(lua_State *L) {
   return 0;
 }
 
-static int next_coroutine_id = 1;
-
 int f_async(lua_State *L) {
   // Get task function and arguments
   luaL_checktype(L, 1, LUA_TFUNCTION);
@@ -86,9 +84,6 @@ int f_async(lua_State *L) {
     }
     lua_xmove(L, co, nargs);
   }
-  
-  // Get handler_id
-  int handler_id = next_coroutine_id++;
   
   // Create resume_handler closure
   lua_newtable(L);  // handler table
@@ -127,19 +122,16 @@ int f_async(lua_State *L) {
   lua_insert(L, -2); // move function before handler table
   lua_call(L, 1, 1); // call with handler table, returns resume_handler
   
-  // Store handler in registry
-  lua_getfield(L, LUA_REGISTRYINDEX, "__coroutine_handlers");
-  lua_pushinteger(L, handler_id);
-  lua_pushvalue(L, -3); // resume_handler
-  lua_settable(L, -3);
-  lua_pop(L, 1); // pop handlers table
+  // Store handler in registry using luaL_ref
+  lua_pushvalue(L, -1); // duplicate resume_handler
+  int handler_ref = luaL_ref(L, LUA_REGISTRYINDEX);
   
   // Post initial kEventCoroutineResume
-  WI_PostMessageW(NULL, kEventCoroutineResume, handler_id, NULL);
+  WI_PostMessageW(NULL, kEventCoroutineResume, handler_ref, NULL);
   
   // Return handler info
   lua_newtable(L);
-  lua_pushinteger(L, handler_id);
+  lua_pushinteger(L, handler_ref);
   lua_setfield(L, -2, "id");
   lua_rawgeti(L, LUA_REGISTRYINDEX, thread_ref);
   lua_setfield(L, -2, "coroutine");
@@ -168,10 +160,6 @@ ORCA_API int luaopen_orca(lua_State* L)
   lua_pushstring(L, __DATE__);
   lua_setfield(L, -2, "build");
 
-  // Create registry table for coroutine handlers
-  lua_newtable(L);
-  lua_setfield(L, LUA_REGISTRYINDEX, "__coroutine_handlers");
-  
   // Register async function
   lua_pushcfunction(L, f_async);
   lua_setfield(L, -2, "async");

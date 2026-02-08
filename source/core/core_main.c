@@ -247,45 +247,33 @@ bool_t CORE_HandleKeyEvent(lua_State *L, struct WI_Message* msg);
 
 bool_t CORE_HandleCoroutineEvent(lua_State *L, struct WI_Message* msg) {
   if (msg->message == kEventCoroutineResume) {
-    uint32_t handler_id = msg->wParam;
+    int handler_ref = msg->wParam;
     
-    // Get the handler from registry
-    lua_getfield(L, LUA_REGISTRYINDEX, "__coroutine_handlers");
-    if (lua_istable(L, -1)) {
-      lua_pushinteger(L, handler_id);
-      lua_gettable(L, -2);
-      
-      if (lua_isfunction(L, -1)) {
-        // Call the resume_handler function
-        if (lua_pcall(L, 0, 1, 0) == LUA_OK) {
-          bool_t should_continue = lua_toboolean(L, -1);
-          lua_pop(L, 1);
-          
-          if (should_continue) {
-            // Post another kEventCoroutineResume to continue
-            WI_PostMessageW(msg->hobj, kEventCoroutineResume, handler_id, NULL);
-          } else {
-            // Coroutine is done, clean up handler
-            lua_getfield(L, LUA_REGISTRYINDEX, "__coroutine_handlers");
-            lua_pushinteger(L, handler_id);
-            lua_pushnil(L);
-            lua_settable(L, -3);
-            lua_pop(L, 1); // pop handlers table
-            
-            // Post stop event
-            WI_PostMessageW(msg->hobj, kEventCoroutineStop, handler_id, NULL);
-          }
+    // Get the handler from registry using luaL_rawgeti
+    lua_rawgeti(L, LUA_REGISTRYINDEX, handler_ref);
+    
+    if (lua_isfunction(L, -1)) {
+      // Call the resume_handler function
+      if (lua_pcall(L, 0, 1, 0) == LUA_OK) {
+        bool_t should_continue = lua_toboolean(L, -1);
+        lua_pop(L, 1);
+        
+        if (should_continue) {
+          // Post another kEventCoroutineResume to continue
+          WI_PostMessageW(msg->hobj, kEventCoroutineResume, handler_ref, NULL);
         } else {
-          Con_Error("Coroutine resume error: %s", lua_tostring(L, -1));
-          lua_pop(L, 1);
+          // Coroutine is done, clean up handler using luaL_unref
+          luaL_unref(L, LUA_REGISTRYINDEX, handler_ref);
+          
+          // Post stop event
+          WI_PostMessageW(msg->hobj, kEventCoroutineStop, handler_ref, NULL);
         }
       } else {
-        lua_pop(L, 1); // pop non-function value
+        Con_Error("Coroutine resume error: %s", lua_tostring(L, -1));
+        lua_pop(L, 1);
       }
-      
-      lua_pop(L, 1); // pop handlers table
     } else {
-      lua_pop(L, 1); // pop non-table value
+      lua_pop(L, 1); // pop non-function value
     }
     return TRUE;
   }
