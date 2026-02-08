@@ -198,6 +198,8 @@
 		786A4BD12E86B06500C40C9F /* TerminalView.c in Sources */ = {isa = PBXBuildFile; fileRef = 786A4BD02E86B05E00C40C9F /* TerminalView.c */; };
 		786F2B332E12EE7F00B519AB /* ed_local.h in Headers */ = {isa = PBXBuildFile; fileRef = 786F2B152E12EE7F00B519AB /* ed_local.h */; };
 		788483222E867CA000DB9C1F /* w_plugins.c in Sources */ = {isa = PBXBuildFile; fileRef = 788483212E867C9C00DB9C1F /* w_plugins.c */; };
+		78932BF62F38D6D5007C59CC /* liborca.platform.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; };
+		78932BF72F38D6D5007C59CC /* liborca.platform.so in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		7896A18E2E45275B00086970 /* liborca.ui.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA74D2E1556FF00FFCFD9 /* liborca.ui.so */; };
 		78B139CE2AF3DF5800AAAE53 /* orca.c in Sources */ = {isa = PBXBuildFile; fileRef = 78B137AD2AF3CC4E00AAAE53 /* orca.c */; };
 		78BCC2102E62FA3A00CA0A41 /* UIKit_export.c in Sources */ = {isa = PBXBuildFile; fileRef = 78BCC20F2E62FA3A00CA0A41 /* UIKit_export.c */; };
@@ -242,6 +244,13 @@
 			remoteGlobalIDString = 7810D25D2D58A81100DB632F;
 			remoteInfo = orca;
 		};
+		78932BF82F38D6D5007C59CC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 78B136992AF3CA3A00AAAE53 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 783C96FB2F263E7600612323;
+			remoteInfo = orca.platform;
+		};
 		78994F652E8525FD00A0227F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 78B136992AF3CA3A00AAAE53 /* Project object */;
@@ -277,6 +286,17 @@
 			files = (
 				7814FD572DF86F3F00625D2F /* libfbxsdk.dylib in CopyFiles */,
 			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		78932BFA2F38D6D5007C59CC /* Embed Libraries */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				78932BF72F38D6D5007C59CC /* liborca.platform.so in Embed Libraries */,
+			);
+			name = "Embed Libraries";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		78B139A22AF3DE9800AAAE53 /* CopyFiles */ = {
@@ -532,6 +552,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				78932BF62F38D6D5007C59CC /* liborca.platform.so in Frameworks */,
 				78E4A9CD2E94206B00E3A503 /* liborca.system.so in Frameworks */,
 				781CA7FB2E15B3AA00FFCFD9 /* liborca.vsomeip.so in Frameworks */,
 				781CA7EB2E15B30100FFCFD9 /* liborca.network.so in Frameworks */,
@@ -1269,10 +1290,12 @@
 				7810D25B2D58A81100DB632F /* Sources */,
 				7810D25C2D58A81100DB632F /* Frameworks */,
 				7810D3122D5902B300DB632F /* CopyFiles */,
+				78932BFA2F38D6D5007C59CC /* Embed Libraries */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				78932BF92F38D6D5007C59CC /* PBXTargetDependency */,
 			);
 			name = orca;
 			packageProductDependencies = (
@@ -1958,6 +1981,11 @@
 			isa = PBXTargetDependency;
 			target = 7810D25D2D58A81100DB632F /* orca */;
 			targetProxy = 7814FD472DF861A500625D2F /* PBXContainerItemProxy */;
+		};
+		78932BF92F38D6D5007C59CC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 783C96FB2F263E7600612323 /* orca.platform */;
+			targetProxy = 78932BF82F38D6D5007C59CC /* PBXContainerItemProxy */;
 		};
 		78994F662E8525FD00A0227F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;

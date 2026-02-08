@@ -29,7 +29,7 @@ int f_peek_iterator(lua_State* L)
     case kEventWindowChangedScreen:
     case kEventWindowResized:
     case 0x23d83fd3: // kEventReadCommands
-      msg.hobj = __userdata;
+      msg.target = __userdata;
       break;
   }
   struct WI_Message* out = lua_newuserdata(L, sizeof(struct WI_Message));
@@ -75,7 +75,7 @@ typedef int (*message_proc_t)(lua_State*, struct WI_Message*);
 static message_proc_t clients[MAX_CLIENTS];
 
 bool_t SV_DispatchMessage(lua_State* L, struct WI_Message* msg) {
-  if (!msg->hobj)
+  if (!msg->target)
     return FALSE;
   for (int i = 0; i < MAX_CLIENTS; i++) {
     if (clients[i] && clients[i](L, msg)) {

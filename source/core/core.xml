@@ -37,7 +37,9 @@
   <event name="Attached" type="void"/>
   <event name="Release" type="void"/>
   <event name="Destroy" type="void"/>
-  
+  <event name="ResumeCoroutine"/>
+  <event name="StopCoroutine"/>
+
   <resource type="localization"/>
   <resource type="game"/>
   <resource type="Property" no-lua="true"/>

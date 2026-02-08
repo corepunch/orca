@@ -165,12 +165,12 @@ CORE_Update(struct lua_State* L,
   core.realtime = time;
   core.frame++;
   
-  luaX_import(L, "orca", "step_coroutines");
-  lua_call(L, 0, 1);
-  if (lua_toboolean(L, -1)) {
-    WI_PostMessageW(root, kEventWindowPaint, winsize, NULL);
-  }
-  lua_pop(L, 1);
+//  luaX_import(L, "orca", "step_coroutines");
+//  lua_call(L, 0, 1);
+//  if (lua_toboolean(L, -1)) {
+//    WI_PostMessageW(root, kEventWindowPaint, winsize, NULL);
+//  }
+//  lua_pop(L, 1);
   
   OBJ_Awake(root, L);
   OBJ_Animate(root, L);
@@ -255,8 +255,8 @@ bool_t CORE_HandleKeyEvent(lua_State *L, struct WI_Message* msg);
 int CORE_ProcessMessage(lua_State *L, struct WI_Message* msg) {
   switch (msg->message) {
     case kEventWindowPaint:
-      CORE_Update(L, msg->hobj, msg->wParam, WI_GetMilliseconds());
-//      WI_PostMessageW(msg->hobj, kEventWindowPaint, msg->wParam, NULL);
+      CORE_Update(L, msg->target, msg->wParam, WI_GetMilliseconds());
+//      WI_PostMessageW(msg->target, kEventWindowPaint, msg->wParam, NULL);
       break;
     case kEventLeftMouseDown:
     case kEventRightMouseDown:
@@ -273,6 +273,26 @@ int CORE_ProcessMessage(lua_State *L, struct WI_Message* msg) {
     case kEventKeyDown:
     case kEventKeyUp:
       return CORE_HandleKeyEvent(L, msg);
+    case kEventResumeCoroutine:
+//      lua_rawgeti(L, LUA_REGISTRYINDEX, (intptr_t)msg->lParam);
+//      lua_State *thread = lua_tothread(L, -1);
+      switch (lua_resume(msg->target, L, msg->wParam, NULL)) {
+        case LUA_OK:
+          WI_PostMessageW(msg->target, kEventStopCoroutine, msg->wParam, msg->lParam);
+          break;
+        case LUA_YIELD:
+          WI_PostMessageW(msg->target, kEventResumeCoroutine, msg->wParam, msg->lParam);
+          break;
+        default:
+          WI_PostMessageW(msg->target, kEventStopCoroutine, msg->wParam, msg->lParam);
+          fprintf(stderr, "co.resume(): %s\n", lua_tostring(msg->target, -1));
+          break;
+      }
+      lua_pop(L, 1);
+      return FALSE;
+    case kEventStopCoroutine:
+      luaL_unref(L, LUA_REGISTRYINDEX, (int)(intptr_t)msg->lParam);
+      return FALSE;
     default:
       return CORE_HandleObjectMessage(L, msg);
   }
