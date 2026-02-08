@@ -80,7 +80,8 @@ int f_async(lua_State *L) {
   // Copy arguments to coroutine
   int nargs = lua_gettop(L) - 1;
   if (nargs > 0) {
-    for (int i = 2; i <= lua_gettop(L); i++) {
+    int initial_top = lua_gettop(L);
+    for (int i = 2; i <= initial_top; i++) {
       lua_pushvalue(L, i);
     }
     lua_xmove(L, co, nargs);
