@@ -119,30 +119,36 @@ push_json_string(lua_State* L, lpcString_t* s)
           // Parse \uXXXX Unicode escape sequence
           read_ptr++; // Skip 'u'
           unsigned int codepoint = 0;
+          int valid_unicode = 1;
           for (int i = 0; i < 4; i++) {
             int hex_val = parse_hex_digit(read_ptr[i]);
             if (hex_val < 0) {
-              // Invalid hex digit, just copy the literal sequence
-              *write_ptr++ = '\\';
-              *write_ptr++ = 'u';
-              goto copy_normally;
+              valid_unicode = 0;
+              break;
             }
             codepoint = (codepoint << 4) | hex_val;
           }
-          read_ptr += 4; // Skip the 4 hex digits
-          // Convert codepoint to UTF-8
-          int utf8_len = unicode_to_utf8(codepoint, write_ptr);
-          write_ptr += utf8_len;
+          if (valid_unicode) {
+            read_ptr += 4; // Skip the 4 hex digits
+            // Convert codepoint to UTF-8
+            int utf8_len = unicode_to_utf8(codepoint, write_ptr);
+            write_ptr += utf8_len;
+          } else {
+            // Invalid Unicode escape - copy literal backslash and 'u'
+            *write_ptr++ = '\\';
+            *write_ptr++ = 'u';
+            // read_ptr already points past 'u'
+          }
           break;
         }
         default:
-          // Unknown escape sequence, copy backslash and character
+          // Unknown escape sequence - per JSON spec, this is invalid
+          // For robustness, copy the backslash and character literally
           *write_ptr++ = '\\';
           *write_ptr++ = *read_ptr++;
           break;
       }
     } else {
-copy_normally:
       *write_ptr++ = *read_ptr++; // Copy normally
     }
   }
