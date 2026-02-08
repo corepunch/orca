@@ -439,5 +439,21 @@ ORCA_API int luaopen_orca_network(lua_State* L)
   lua_setfield(L, -2, "__index");
   lua_setfield(L, -2, API_TYPE_RESPONSE);
   
+  const char *lua_code =
+  "local function url_encode(str)\n"
+  "  if not str then return \"\" end\n"
+  "  str = string.gsub(str, \"([^%w%-%.%_%~])\", function(c)\n"
+  "    return string.format(\"%%%02X\", string.byte(c))\n"
+  "  end)\n"
+  "  return str\n"
+  "end\n"
+  "return url_encode\n";
+
+  if (luaL_dostring(L, lua_code)) {
+    return luaL_error(L, "Can't load 'url_encode' function: %s", lua_tostring(L, -1));
+  } else {
+    lua_setfield(L, -2, "url");  /* assuming table at -2 */
+  }
+
   return 1;
 }

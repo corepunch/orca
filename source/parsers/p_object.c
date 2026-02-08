@@ -204,7 +204,7 @@ void FS_RegisterObject(lpObject_t object, lpcString_t path) {
     lpObject_t library = OBJ_FindByPath(FS_GetWorkspace(), tmp);
     FS_GetDirName(tmp, dir, sizeof(dir));
     if (!library && OBJ_FindChild(FS_GetWorkspace(), dir, FALSE)) {
-      Con_Error("Could not find library %s, creating", tmp);
+//      Con_Error("Could not find library %s, creating", tmp);
       xmlWith(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFreeDoc) {
         xmlNodePtr root = xmlNewNode(NULL, XMLSTR("Library"));
         xmlSetProp(root, XMLSTR("Name"), XMLSTR(FS_GetBaseName(tmp)));

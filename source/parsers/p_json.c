@@ -115,6 +115,34 @@ int lua_json_parse(lua_State* L)
 
 ORCA_API int luaopen_orca_parsers_json(lua_State* L)
 {
-  luaL_newlib(L, ((luaL_Reg[]){ { "parse", lua_json_parse }, { NULL, NULL } }));
+  luaL_newlib(L, ((luaL_Reg[]){
+    { "parse", lua_json_parse },
+    { NULL, NULL }
+  }));
+  
+  const char *lua_code =
+  "local function encode_json(data)\n"
+  "  local buffer, isarray, value = {}, #data > 0, nil\n"
+  "  for k, v in (isarray and ipairs or pairs)(data) do\n"
+  "    if string.sub(k, 1, 2) ~= \"__\" then\n"
+  "      if type(v) == 'table' then value = encode_json(v)\n"
+  "      elseif type(v) == 'number' then value = string.format('%g', v)\n"
+  "      elseif type(v) == 'boolean' then value = v and \"true\" or \"false\"\n"
+  "      elseif v == nil then value = \"null\"\n"
+  "      else value = string.format('\"%s\"', tostring(v))\n"
+  "      end\n"
+  "      table.insert(buffer, isarray and value or string.format('\"%s\":%s', k, value))\n"
+  "    end\n"
+  "  end\n"
+  "  return (isarray and \"[\" or \"{\") .. table.concat(buffer, \",\") .. (isarray and \"]\" or \"}\")\n"
+  "end\n"
+  "return encode_json\n";
+  
+  if (luaL_dostring(L, lua_code)) {
+    return luaL_error(L, "Can't create 'encode_json' function");
+  } else {
+    lua_setfield(L, -2, "encode");
+  }
+  
   return 1;
 }
