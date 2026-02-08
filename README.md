@@ -2,48 +2,6 @@
 
 ## Installation
 
-### Installing LuaRocks and MoonScript
-
-**LuaRocks** is Lua's package manager, and **MoonScript** is a programming language that compiles to Lua with a more elegant, Python-like syntax.
-
-#### Linux
-
-First, install LuaRocks:
-
-```sh
-# Ubuntu/Debian
-sudo apt install -y luarocks
-
-# Fedora
-sudo dnf install -y luarocks
-
-# Arch Linux
-sudo pacman -S luarocks
-```
-
-Then install MoonScript via LuaRocks:
-
-```sh
-sudo luarocks install moonscript
-```
-
-#### macOS
-
-Using Homebrew:
-
-```sh
-brew install luarocks
-luarocks install moonscript
-```
-
-#### Verifying Installation
-
-Check that MoonScript is installed correctly:
-
-```sh
-moonc -v
-```
-
 ### Linux
 
 To install the required dependencies on **Linux**, run the following commands:
@@ -116,10 +74,6 @@ This will clean the build, compile the project (which takes 3-5 seconds), and im
 ### Required Data Folder
 
 To run the project, ensure that the `../icui` folder is present, as it contains necessary data files. Reach out to **@icherna** to obtain the required data packages.
-
-## Usage
-
-(Explain how to use the project here)
 
 ## Why MoonScript?
 
@@ -293,6 +247,49 @@ Even with ORCA's simplified `extend()` API, MoonScript gives you:
 - ✅ **Perfect for UI/DSL code** with clean component structure
 
 Explore the sample applications to see these approaches in action.
+
+
+### Installing LuaRocks and MoonScript
+
+**LuaRocks** is Lua's package manager, and **MoonScript** is a programming language that compiles to Lua with a more elegant, Python-like syntax.
+
+#### Linux
+
+First, install LuaRocks:
+
+```sh
+# Ubuntu/Debian
+sudo apt install -y luarocks
+
+# Fedora
+sudo dnf install -y luarocks
+
+# Arch Linux
+sudo pacman -S luarocks
+```
+
+Then install MoonScript via LuaRocks:
+
+```sh
+sudo luarocks install moonscript
+```
+
+#### macOS
+
+Using Homebrew:
+
+```sh
+brew install luarocks
+luarocks install moonscript
+```
+
+#### Verifying Installation
+
+Check that MoonScript is installed correctly:
+
+```sh
+moonc -v
+```
 
 ## License
 
