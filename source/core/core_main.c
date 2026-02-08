@@ -276,7 +276,15 @@ int CORE_ProcessMessage(lua_State *L, struct WI_Message* msg) {
     case kEventResumeCoroutine:
 //      lua_rawgeti(L, LUA_REGISTRYINDEX, (intptr_t)msg->lParam);
 //      lua_State *thread = lua_tothread(L, -1);
-      switch (lua_resume(msg->target, L, msg->wParam, NULL)) {
+      if (!L) {
+        fprintf(stderr, "co.resume(): L is NULL!\n");
+        return FALSE;
+      }
+      if (!msg->target) {
+        fprintf(stderr, "co.resume(): msg->target is NULL!\n");
+        return FALSE;
+      }
+      switch (lua_resume(msg->target, NULL, msg->wParam, NULL)) {
         case LUA_OK:
           WI_PostMessageW(msg->target, kEventStopCoroutine, msg->wParam, msg->lParam);
           break;
