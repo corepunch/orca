@@ -165,13 +165,6 @@ CORE_Update(struct lua_State* L,
   core.realtime = time;
   core.frame++;
   
-  luaX_import(L, "orca", "step_coroutines");
-  lua_call(L, 0, 1);
-  if (lua_toboolean(L, -1)) {
-    WI_PostMessageW(root, kEventWindowPaint, winsize, NULL);
-  }
-  lua_pop(L, 1);
-  
   OBJ_Awake(root, L);
   OBJ_Animate(root, L);
   OBJ_LoadPrefabs(root, L);
@@ -252,8 +245,64 @@ int lua_pushclass(lua_State* L, struct ClassDesc* cl)
 bool_t CORE_HandleObjectMessage(lua_State *L, struct WI_Message* msg);
 bool_t CORE_HandleKeyEvent(lua_State *L, struct WI_Message* msg);
 
+bool_t CORE_HandleCoroutineEvent(lua_State *L, struct WI_Message* msg) {
+  if (msg->message == kEventCoroutineResume) {
+    uint32_t handler_id = msg->wParam;
+    
+    // Get the handler from registry
+    lua_getfield(L, LUA_REGISTRYINDEX, "__coroutine_handlers");
+    if (lua_istable(L, -1)) {
+      lua_pushinteger(L, handler_id);
+      lua_gettable(L, -2);
+      
+      if (lua_isfunction(L, -1)) {
+        // Call the resume_handler function
+        if (lua_pcall(L, 0, 1, 0) == LUA_OK) {
+          bool_t should_continue = lua_toboolean(L, -1);
+          lua_pop(L, 1);
+          
+          if (should_continue) {
+            // Post another kEventCoroutineResume to continue
+            WI_PostMessageW(msg->hobj, kEventCoroutineResume, handler_id, NULL);
+          } else {
+            // Coroutine is done, clean up handler
+            lua_getfield(L, LUA_REGISTRYINDEX, "__coroutine_handlers");
+            lua_pushinteger(L, handler_id);
+            lua_pushnil(L);
+            lua_settable(L, -3);
+            lua_pop(L, 1); // pop handlers table
+            
+            // Post stop event
+            WI_PostMessageW(msg->hobj, kEventCoroutineStop, handler_id, NULL);
+          }
+        } else {
+          Con_Error("Coroutine resume error: %s", lua_tostring(L, -1));
+          lua_pop(L, 1);
+        }
+      } else {
+        lua_pop(L, 1); // pop non-function value
+      }
+      
+      lua_pop(L, 1); // pop handlers table
+    } else {
+      lua_pop(L, 1); // pop non-table value
+    }
+    return TRUE;
+  }
+  
+  if (msg->message == kEventCoroutineStop) {
+    // Cleanup already done in kEventCoroutineResume handler
+    return TRUE;
+  }
+  
+  return FALSE;
+}
+
 int CORE_ProcessMessage(lua_State *L, struct WI_Message* msg) {
   switch (msg->message) {
+    case kEventCoroutineResume:
+    case kEventCoroutineStop:
+      return CORE_HandleCoroutineEvent(L, msg);
     case kEventWindowPaint:
       CORE_Update(L, msg->hobj, msg->wParam, WI_GetMilliseconds());
 //      WI_PostMessageW(msg->hobj, kEventWindowPaint, msg->wParam, NULL);

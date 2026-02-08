@@ -126,7 +126,6 @@ modules:
 	../source/core/core.xml \
 	../source/renderer/api/renderer.xml \
 	../source/UIKit/UIKit.xml \
-	../source/SceneKit/SceneKit.xml \
 	../source/filesystem/filesystem.xml && cd ..
 
 fonts:

@@ -83,39 +83,44 @@ ORCA_API int luaopen_orca(lua_State* L)
   lua_pushstring(L, __DATE__);
   lua_setfield(L, -2, "build");
 
+  // Create registry table for coroutine handlers
   lua_newtable(L);
-  lua_setglobal(L, "__coroutines");
-
+  lua_setfield(L, LUA_REGISTRYINDEX, "__coroutine_handlers");
+  
+  // Event-based coroutine system
   luaL_dostring(L,
+                "local next_id = 1\n"
                 "return function(task, ...)\n"
-                "  local co = {\n"
-                "    error = print,\n"
-                "    args = { coroutine.create(task), ... }\n"
-                "  }\n"
-                "  table.insert(__coroutines, co)\n"
-                "  return co\n"
+                "  local co = coroutine.create(task)\n"
+                "  local args = {...}\n"
+                "  local handler_id = next_id\n"
+                "  next_id = next_id + 1\n"
+                "  \n"
+                "  local function resume_handler()\n"
+                "    local ok, result = coroutine.resume(co, table.unpack(args))\n"
+                "    if not ok then\n"
+                "      print('Coroutine error:', result)\n"
+                "      return false\n"
+                "    end\n"
+                "    if coroutine.status(co) ~= 'dead' then\n"
+                "      args = {} -- Clear args after first call\n"
+                "      return true\n"
+                "    else\n"
+                "      return false\n"
+                "    end\n"
+                "  end\n"
+                "  \n"
+                "  -- Store handler in registry\n"
+                "  local handlers = debug.getregistry().__coroutine_handlers\n"
+                "  handlers[handler_id] = resume_handler\n"
+                "  \n"
+                "  -- Post initial resume event via C API\n"
+                "  local orca_core = require('orca.core')\n"
+                "  orca_core.post_coroutine_resume(handler_id)\n"
+                "  \n"
+                "  return { id = handler_id, coroutine = co }\n"
                 "end\n");
   lua_setfield(L, -2, "async");
-
-  luaL_dostring(
-    L,
-    "return function()\n"
-    "  local finished = {}\n"
-    "  for i, co in ipairs(__coroutines) do\n"
-    "    local ok, result = coroutine.resume(table.unpack(co.args))\n"
-    "    if not ok then\n"
-    "      co.error(result)\n"
-    "      table.insert(finished, i)\n"
-    "    elseif coroutine.status(table.unpack(co.args)) == 'dead' then\n"
-    "      table.insert(finished, i)\n"
-    "    end\n"
-    "  end\n"
-    "  for i = #finished, 1, -1 do\n"
-    "    table.remove(__coroutines, finished[i])\n"
-    "  end\n"
-    "  return #__coroutines > 0\n"
-    "end\n");
-  lua_setfield(L, -2, "step_coroutines");
   
   return 1;
 }

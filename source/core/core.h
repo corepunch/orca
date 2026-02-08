@@ -127,6 +127,12 @@ typedef void* ReleaseEventPtr;
 #define kEventDestroy 0x4d76a4e5
 typedef void* DestroyEventPtr;
 
+#define kEventCoroutineResume 0x676c5faa
+typedef void* CoroutineResumeEventPtr;
+
+#define kEventCoroutineStop 0xd9cd4325
+typedef void* CoroutineStopEventPtr;
+
 typedef struct localization localization_t, *lplocalization_t;
 typedef struct localization const clocalization_t, *lpclocalization_t;
 /// @brief Push localization onto Lua stack.
