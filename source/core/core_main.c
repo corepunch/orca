@@ -158,7 +158,6 @@ CORE_Update(struct lua_State* L,
             uint32_t winsize,
             longTime_t time)
 {
-  struct WI_Size windowSize = {LOWORD(winsize), HIWORD(winsize)};
   _fps[_counter++%MAX_FPS_CACHE] = (int)(time - core.realtime);
   _numbindings = 0;
 
@@ -172,8 +171,8 @@ CORE_Update(struct lua_State* L,
   OBJ_UpdateProperties(root);
   
   OBJ_SendMessageW(root, kEventUpdateLayout, 0, &(UPDATELAYOUTSTRUCT){
-    .Width = windowSize.width,
-    .Height = windowSize.height,
+    .Width = LOWORD(winsize),
+    .Height = HIWORD(winsize),
     .Force = FALSE,
   });
   
@@ -183,8 +182,8 @@ CORE_Update(struct lua_State* L,
   });
   
   OBJ_SendMessageW(root, kEventRenderScreen, 0, &(RENDERSCREENSTRUCT) {
-    .width = windowSize.width,
-    .height = windowSize.height,
+    .width = LOWORD(winsize),
+    .height = HIWORD(winsize),
     .stereo = 0,
     .target = 0,
     .angle = 0,
@@ -281,7 +280,8 @@ int CORE_ProcessMessage(lua_State *L, struct WI_Message* msg) {
         default:
           WI_PostMessageW(msg->target, kEventStopCoroutine, msg->wParam, msg->lParam);
           if (!lua_isnil(msg->target, -1)) {
-            fprintf(stderr, "co.resume(): %s\n", lua_tostring(msg->target, -1));
+            lpcString_t err = lua_tostring(msg->target, -1);
+            if (err) fprintf(stderr, "co.resume(): %s\n", err);
           }
           break;
       }
