@@ -62,6 +62,15 @@ int f_registerEngineClass(lua_State *L) {
   return 0;
 }
 
+static int f_async(lua_State* L) {
+  const int nargs = lua_gettop(L);
+  lua_State* co = lua_newthread(L);
+  int ref = luaL_ref(L, LUA_REGISTRYINDEX);
+  lua_xmove(L, co, nargs);
+  WI_PostMessageW(co, kEventResumeCoroutine, nargs-1, (void*)(intptr_t)ref);
+  return 0;
+}
+
 ORCA_API int luaopen_orca(lua_State* L)
 {
   fprintf(stderr, "Available modules: ");
@@ -79,43 +88,11 @@ ORCA_API int luaopen_orca(lua_State* L)
   lua_pushstring(L, ORCA_VERSION);
   lua_setfield(L, -2, "version");
 
-
   lua_pushstring(L, __DATE__);
   lua_setfield(L, -2, "build");
 
-  lua_newtable(L);
-  lua_setglobal(L, "__coroutines");
-
-  luaL_dostring(L,
-                "return function(task, ...)\n"
-                "  local co = {\n"
-                "    error = print,\n"
-                "    args = { coroutine.create(task), ... }\n"
-                "  }\n"
-                "  table.insert(__coroutines, co)\n"
-                "  return co\n"
-                "end\n");
+  lua_pushcfunction(L, f_async);
   lua_setfield(L, -2, "async");
-
-  luaL_dostring(
-    L,
-    "return function()\n"
-    "  local finished = {}\n"
-    "  for i, co in ipairs(__coroutines) do\n"
-    "    local ok, result = coroutine.resume(table.unpack(co.args))\n"
-    "    if not ok then\n"
-    "      co.error(result)\n"
-    "      table.insert(finished, i)\n"
-    "    elseif coroutine.status(table.unpack(co.args)) == 'dead' then\n"
-    "      table.insert(finished, i)\n"
-    "    end\n"
-    "  end\n"
-    "  for i = #finished, 1, -1 do\n"
-    "    table.remove(__coroutines, finished[i])\n"
-    "  end\n"
-    "  return #__coroutines > 0\n"
-    "end\n");
-  lua_setfield(L, -2, "step_coroutines");
   
   return 1;
 }

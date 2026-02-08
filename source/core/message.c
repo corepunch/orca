@@ -104,7 +104,7 @@ CORE_HandleKeyEvent(lua_State *L, struct WI_Message* e)
 bool_t
 CORE_HandleObjectMessage(lua_State *L, struct WI_Message* msg)
 {
-  for (lpObject_t hobj = msg->hobj; hobj; hobj = OBJ_GetParent(hobj))
+  for (lpObject_t hobj = msg->target; hobj; hobj = OBJ_GetParent(hobj))
   {
     if (OBJ_FindCallbackForID(hobj, msg->message))
     {

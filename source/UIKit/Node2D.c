@@ -466,7 +466,7 @@ int ui_handle_event(lua_State* L, struct WI_Message *msg) {
     case kEventOtherMouseDragged:
     case kEventMouseMoved:
     case kEventScrollWheel:
-      return UI_HandleMouseEvent(L, msg->hobj, msg);
+      return UI_HandleMouseEvent(L, msg->target, msg);
     default:
       return FALSE;
   }

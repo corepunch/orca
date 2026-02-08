@@ -475,7 +475,7 @@ int filesystem_handle_event(lua_State *L, struct WI_Message *msg) {
       xmlDocDump(stdout, doc);
       //      xmlDocDump(stderr, doc);
     }
-    WI_PostMessageW(msg->hobj, kEventReadCommands, 0, NULL);
+    WI_PostMessageW(msg->target, kEventReadCommands, 0, NULL);
     return TRUE;
   } else {
     return FALSE;
