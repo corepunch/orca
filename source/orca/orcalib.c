@@ -64,11 +64,10 @@ int f_registerEngineClass(lua_State *L) {
 
 static int f_async(lua_State* L) {
   const int nargs = lua_gettop(L);
-  lua_State* thread = lua_newthread(L);
-  int ref = luaL_ref(L, LUA_REGISTRYINDEX); // stores thread in registry
-  lua_xmove(L, thread, nargs);
-//  lua_resume(thread, L, nargs, NULL); << this works
-  WI_PostMessageW(thread, kEventResumeCoroutine, nargs, (void*)(intptr_t)ref);
+  lua_State* co = lua_newthread(L);
+  int ref = luaL_ref(L, LUA_REGISTRYINDEX);
+  lua_xmove(L, co, nargs);
+  WI_PostMessageW(co, kEventResumeCoroutine, nargs-1, (void*)(intptr_t)ref);
   return 0;
 }
 

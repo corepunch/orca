@@ -13,6 +13,7 @@
 "  end\n"
 "  return self\n"
 "end\n"
+
 "function Behaviour:rebuild(body)\n"
 "  orca.async(self.__rebuild, self, body)\n"
 "end\n"
@@ -53,10 +54,10 @@
 "end\n"
 
 "function Behaviour:async(...)\n"
-"  orca.async(...).error = function(error)\n"
-"    self.error = error\n"
-"    self:rebuild()\n"
-"  end\n"
+"  orca.async(...) -- .error = function(error)\n"
+"  --  self.error = error\n"
+"  --  self:rebuild()\n"
+"  -- end\n"
 "end\n"
 
 "function Behaviour:is(class)\n"
