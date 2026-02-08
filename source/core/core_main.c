@@ -281,7 +281,7 @@ int CORE_ProcessMessage(lua_State *L, struct WI_Message* msg) {
           WI_PostMessageW(msg->target, kEventStopCoroutine, msg->wParam, msg->lParam);
           break;
         case LUA_YIELD:
-          WI_PostMessageW(msg->target, kEventResumeCoroutine, msg->wParam, msg->lParam);
+          WI_PostMessageW(msg->target, kEventResumeCoroutine, 0, msg->lParam);
           break;
         default:
           WI_PostMessageW(msg->target, kEventStopCoroutine, msg->wParam, msg->lParam);

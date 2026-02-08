@@ -67,8 +67,8 @@ static int f_async(lua_State* L) {
   lua_State* thread = lua_newthread(L);
   int ref = luaL_ref(L, LUA_REGISTRYINDEX); // stores thread in registry
   lua_xmove(L, thread, nargs);
-//  lua_resume(thread, L, nargs, NULL); << this works
-  WI_PostMessageW(thread, kEventResumeCoroutine, nargs, (void*)(intptr_t)ref);
+//  lua_resume(thread, L, nargs - 1, NULL); << this works
+  WI_PostMessageW(thread, kEventResumeCoroutine, nargs - 1, (void*)(intptr_t)ref);
   return 0;
 }
 
