@@ -67,6 +67,11 @@ push_json_array(lua_State* L, lpcString_t* s)
 static int
 unicode_to_utf8(unsigned int codepoint, char* output)
 {
+  // Ensure codepoint is within BMP range
+  if (codepoint > 0xFFFF) {
+    return 0; // Invalid codepoint
+  }
+  
   if (codepoint <= 0x7F) {
     // 1-byte sequence: 0xxxxxxx
     output[0] = (char)codepoint;
@@ -120,7 +125,8 @@ push_json_string(lua_State* L, lpcString_t* s)
           read_ptr++; // Skip 'u'
           unsigned int codepoint = 0;
           int valid_unicode = 1;
-          for (int i = 0; i < 4; i++) {
+          int i;
+          for (i = 0; i < 4; i++) {
             int hex_val = parse_hex_digit(read_ptr[i]);
             if (hex_val < 0) {
               valid_unicode = 0;
@@ -137,7 +143,8 @@ push_json_string(lua_State* L, lpcString_t* s)
             // Invalid Unicode escape - copy literal backslash and 'u'
             *write_ptr++ = '\\';
             *write_ptr++ = 'u';
-            // read_ptr already points past 'u'
+            // Continue processing from current position
+            // (read_ptr already points to first invalid char)
           }
           break;
         }
