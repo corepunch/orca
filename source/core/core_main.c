@@ -505,6 +505,13 @@ int f_registerPropertyTypes(lua_State *L) {
   return 0;
 }
 
+int f_post_coroutine_resume(lua_State *L) {
+  uint32_t handler_id = luaL_checkinteger(L, 1);
+  // Post kEventCoroutineResume with handler_id in wParam
+  WI_PostMessageW(NULL, kEventCoroutineResume, handler_id, NULL);
+  return 0;
+}
+
 void
 on_core_module_registered(lua_State* L)
 {
@@ -549,5 +556,8 @@ on_core_module_registered(lua_State* L)
   
   lua_pushcfunction(L, f_registerPropertyTypes);
   lua_setfield(L, -2, "registerPropertyTypes");
+  
+  lua_pushcfunction(L, f_post_coroutine_resume);
+  lua_setfield(L, -2, "post_coroutine_resume");
 }
 
