@@ -1,4 +1,4 @@
-<img width="2048" height="1024" alt="81721baf-2b92-41fd-9092-3f1e0c140b79" src="https://github.com/user-attachments/assets/d67dbb13-443d-4385-bd7d-3de1ba4e291f" />
+<img width="2048" height="1024" alt="81721baf-2b92-41fd-9092-3f1e0c140b79" src="https://github.com/user-attachments/assets/b1d1945c-7f6d-433e-85a7-00631d17b105" />
 
 ## Installation
 
