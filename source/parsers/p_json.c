@@ -1,6 +1,7 @@
 #include <include/api.h>
 
 #include <ctype.h>
+#include <stdio.h>
 
 lpcString_t
 skip_whitespace(lpcString_t* s)
@@ -90,18 +91,7 @@ unicode_to_utf8(unsigned int codepoint, char* output)
   }
 }
 
-// Parse a hex digit (0-9, A-F, a-f) to its numeric value
-static int
-parse_hex_digit(char c)
-{
-  if (c >= '0' && c <= '9')
-    return c - '0';
-  if (c >= 'A' && c <= 'F')
-    return c - 'A' + 10;
-  if (c >= 'a' && c <= 'f')
-    return c - 'a' + 10;
-  return -1;
-}
+
 
 void
 push_json_string(lua_State* L, lpcString_t* s)
@@ -123,18 +113,10 @@ push_json_string(lua_State* L, lpcString_t* s)
         case 'u': {
           // Parse \uXXXX Unicode escape sequence
           read_ptr++; // Skip 'u'
-          unsigned int codepoint = 0;
-          int valid_unicode = 1;
-          int i;
-          for (i = 0; i < 4; i++) {
-            int hex_val = parse_hex_digit(read_ptr[i]);
-            if (hex_val < 0) {
-              valid_unicode = 0;
-              break;
-            }
-            codepoint = (codepoint << 4) | hex_val;
-          }
-          if (valid_unicode) {
+          unsigned int d1, d2, d3, d4;
+          // Use sscanf to parse exactly 4 hex digits
+          if (sscanf(read_ptr, "%1x%1x%1x%1x", &d1, &d2, &d3, &d4) == 4) {
+            unsigned int codepoint = (d1 << 12) | (d2 << 8) | (d3 << 4) | d4;
             read_ptr += 4; // Skip the 4 hex digits
             // Convert codepoint to UTF-8
             int utf8_len = unicode_to_utf8(codepoint, write_ptr);
