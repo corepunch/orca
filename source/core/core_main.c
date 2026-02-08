@@ -274,21 +274,21 @@ int CORE_ProcessMessage(lua_State *L, struct WI_Message* msg) {
     case kEventKeyUp:
       return CORE_HandleKeyEvent(L, msg);
     case kEventResumeCoroutine:
-      lua_rawgeti(L, LUA_REGISTRYINDEX, (intptr_t)msg->lParam);
-      lua_State *thread = lua_tothread(L, -1);
-      switch (lua_resume(thread, L, msg->wParam, NULL)) {
+//      lua_rawgeti(L, LUA_REGISTRYINDEX, (intptr_t)msg->lParam);
+//      lua_State *thread = lua_tothread(L, -1);
+      switch (lua_resume(msg->target, L, msg->wParam, NULL)) {
         case LUA_OK:
-          WI_PostMessageW(thread, kEventStopCoroutine, msg->wParam, msg->lParam);
+          WI_PostMessageW(msg->target, kEventStopCoroutine, msg->wParam, msg->lParam);
           break;
         case LUA_YIELD:
-          WI_PostMessageW(thread, kEventResumeCoroutine, msg->wParam, msg->lParam);
+          WI_PostMessageW(msg->target, kEventResumeCoroutine, msg->wParam, msg->lParam);
           break;
         default:
-          WI_PostMessageW(thread, kEventStopCoroutine, msg->wParam, msg->lParam);
-          fprintf(stderr, "co.resume(): %s\n", lua_tostring(thread, -1));
+          WI_PostMessageW(msg->target, kEventStopCoroutine, msg->wParam, msg->lParam);
+          fprintf(stderr, "co.resume(): %s\n", lua_tostring(msg->target, -1));
           break;
       }
-      lua_pop(L, 1);
+//      lua_pop(L, 1);
       return FALSE;
     case kEventStopCoroutine:
       luaL_unref(L, LUA_REGISTRYINDEX, (int)(intptr_t)msg->lParam);
