@@ -1,4 +1,4 @@
-# ORCA Framework 
+<img width="1024" height="682" alt="a9cd99d7-5620-4ecb-8563-32ce136ab858" src="https://github.com/user-attachments/assets/c53f9e28-b2fc-4498-a516-c2e1c6ed3ede" />
 
 ## Installation
 
