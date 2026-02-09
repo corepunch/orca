@@ -43,7 +43,7 @@ jobs:
           name: orca-linux
           path: |
             build/bin/orca
-            build/lib/liborca.so
+            build/lib/liborca.*
 
   build-macos:
     runs-on: macos-latest
@@ -75,4 +75,4 @@ jobs:
           name: orca-macos
           path: |
             build/bin/orca
-            build/lib/liborca.so
+            build/lib/liborca.*
