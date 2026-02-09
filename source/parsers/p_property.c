@@ -22,6 +22,7 @@ Token_Create(lpcString_t code)
   return _compile(code, "binding");
 }
 
+static lpcString_t image_ext[] = { ".png", ".jpeg", ".jpg", NULL };
 
 static void
 PROP_ParseObjectValue(lua_State *L,
@@ -29,20 +30,37 @@ PROP_ParseObjectValue(lua_State *L,
                       lpcString_t path)
 {
   path_t tmp={0};
-  strncpy(tmp, path, sizeof(tmp)-1);
-  strcat(tmp, "/");
-  lpObject_t known = OBJ_FindKnownPrefab(tmp, NULL);
+  snprintf(tmp, sizeof(tmp), "%s/", path);
+  lpObject_t known = OBJ_FindKnownPrefab(tmp, NULL), object = NULL;
   if (known) {
     PROP_SetValue(prop, &known);
     return;
   }
   xmlWith(xmlDoc, doc, FS_LoadXML(path), xmlFreeDoc) {
-    lpObject_t object = OBJ_LoadDocument(L, doc);
+    object = OBJ_LoadDocument(L, doc);
     if (!object) {
       Con_Error("Can't load object %s", path);
       continue;
     }
     PROP_SetValue(prop, &object);
+  }
+  
+  // Load image without xml
+  if (!object &&
+      PROP_GetType(prop) == kDataTypeObject &&
+      PROP_GetDesc(prop) &&
+      !strcmp(PROP_GetDesc(prop)->TypeString, "Texture"))
+  {
+    for (lpcString_t *ext = image_ext; *ext; ext++) {
+      char xml[1024]={0};
+      snprintf(tmp, sizeof(tmp), "%s%s", path, *ext);
+      if (FS_FileExists(tmp)) {
+        snprintf(xml, sizeof(xml), "<Image Source=\"%s%s\" />", path, *ext);
+        xmlWith(xmlDoc, doc, xmlReadMemory(xml, (int)strlen(xml), path, NULL, XML_FLAGS), xmlFreeDoc) {
+          PROP_SetValue(prop, &(lpObject_t) { OBJ_LoadDocument(L, doc) });
+        }
+      }
+    }
   }
 }
 
