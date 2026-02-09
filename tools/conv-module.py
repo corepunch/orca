@@ -1,4 +1,4 @@
-import sys, re
+import sys, re, io, os
 import xml.etree.ElementTree as ET
 
 g_structs = {}
@@ -688,7 +688,6 @@ def component_parse(root, component, parser):
 
 	w(s, f"enum {cname}Properties {{")
 
-	import io
 	parser.props = io.StringIO()
 
 	for shorthand in component.findall("shorthand"):
@@ -851,7 +850,9 @@ global_parsers={
 }
 
 def read_xml(filename):
-	print(filename)
+	if not os.path.exists(filename):
+		print(f"File not found: {filename}")
+		return
 	tree = ET.parse(filename)
 	root = tree.getroot()
 	parser = ParserState(filename)
@@ -936,8 +937,7 @@ def read_xml(filename):
   
 if __name__ == "__main__":
 	for i in range(len(sys.argv)-1):
-		xml_file = sys.argv[i+1]
-		read_xml(xml_file)
+		read_xml(sys.argv[i+1])
 
 	tree = ET.ElementTree(g_html)
 	# ET.indent(tree, space="\t", level=0)
