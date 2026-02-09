@@ -49,10 +49,10 @@ To install dependencies on **macOS**, use **Homebrew**:
 brew install libpng freetype jpeg-turbo lua libxml2 lz4 zlib curl pkg-config
 ```
 
-**Note**: If `pkg-config` fails to find `freetype`, you may need to run:
+**Note**: If `pkg-config` fails to find packages, you may need to run:
 
 ```sh
-brew link --overwrite freetype
+brew link --overwrite freetype jpeg-turbo
 ```
 
 ## Building the Project
@@ -308,6 +308,39 @@ Check that MoonScript is installed correctly:
 ```sh
 moonc -v
 ```
+
+## Setting Up VSCode XML Autocomplete
+
+For better XML editing experience in VSCode with autocomplete and validation:
+
+1. Install the **Red Hat XML** extension in VSCode
+
+2. Create a `.vscode/settings.json` file in your project directory (e.g., `samples/Example/.vscode/settings.json`):
+
+```json
+{
+  "xml.fileAssociations": [
+    {
+      "pattern": "**/Prefabs/*.xml",
+      "systemId": "../../tools/schemas/orca.dtd"
+    },
+    {
+      "pattern": "**/Screens/*.xml",
+      "systemId": "../../tools/schemas/orca.dtd"
+    },
+    {
+      "pattern": "**/Materials/*.xml",
+      "systemId": "../../tools/schemas/orca.dtd"
+    },
+    {
+      "pattern": "**/Shaders/*.xml",
+      "systemId": "../../tools/schemas/shader.dtd"
+    }
+  ]
+}
+```
+
+**Note**: The paths in `systemId` are relative to the project directory. Adjust them based on your project structure relative to the `tools/schemas/` directory.
 
 ## License
 
