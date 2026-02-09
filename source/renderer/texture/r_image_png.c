@@ -1,4 +1,4 @@
-#include <libpng16/png.h>
+#include <png.h>
 
 #include "../r_local.h"
 
