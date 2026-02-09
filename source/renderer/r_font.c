@@ -225,18 +225,15 @@ T_GetSize(FT_Face face, struct view_text const* text, struct rect* rcursor)
       rcursor->height = FT_SCALE(lineHeight);
     }
     if (isspace(charcode)) {
-      if (eos) {
-        spaceWidth = 0;
-      }
+      // if (eos) spaceWidth = 0;
       if (textwidth == 0) {
-//        textwidth += spaceWidth; << what was this???
         // first word print anyway
       } else if (textwidth + wordwidth + spaceWidth > text->availableWidth) {
         textSize.height += /*text->lineSpacing **/ FT_SCALE(lineHeight);
         textSize.width = MAX(textSize.width, textwidth);
         textwidth = 0;
         prev_glyph_index = 0;
-      } else {//if (charcode != '\n') {
+      } else { // if (charcode != '\n') {
         textwidth += spaceWidth;
       }
       textwidth += wordwidth;
@@ -330,7 +327,7 @@ Text_Print(struct view_text const* input, struct Texture** img, bool_t reuse)
         x = 0;
         prevchar = 0;
         prev_glyph_index = 0;
-      } else {//if (charcode != '\n') {
+      } else { // if (charcode != '\n') {
         x += spaceWidth;
         textwidth += spaceWidth;
       }
