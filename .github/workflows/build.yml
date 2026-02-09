@@ -84,7 +84,7 @@ jobs:
           elif [ -d "$LUA_PREFIX/include" ]; then
             LUA_INCLUDE_DIR="$LUA_PREFIX/include"
           else
-            echo "Warning: Could not find Lua include directory"
+            echo "Warning: Could not find Lua include directory at $LUA_PREFIX/include/lua or $LUA_PREFIX/include"
             LUA_INCLUDE_DIR="$LUA_PREFIX/include"
           fi
           
@@ -105,7 +105,10 @@ jobs:
           # Verify the setup
           echo "Lua include directory: $LUA_INCLUDE_DIR"
           echo "Checking lua5.4 pkg-config:"
-          pkg-config --cflags --libs lua5.4 || echo "Warning: lua5.4 pkg-config check failed"
+          if ! pkg-config --cflags --libs lua5.4; then
+            echo "Warning: lua5.4 pkg-config check failed"
+            pkg-config --cflags --libs lua5.4 2>&1 || true
+          fi
 
       - name: Build
         run: make
