@@ -70,6 +70,14 @@ jobs:
             curl \
             pkg-config
 
+      - name: Setup Lua pkg-config
+        run: |
+          # Create lua5.4.pc symlink for compatibility
+          LUA_PC_DIR=$(brew --prefix)/lib/pkgconfig
+          if [ -f "$LUA_PC_DIR/lua.pc" ] && [ ! -f "$LUA_PC_DIR/lua5.4.pc" ]; then
+            ln -s "$LUA_PC_DIR/lua.pc" "$LUA_PC_DIR/lua5.4.pc"
+          fi
+
       - name: Build
         run: make
 
