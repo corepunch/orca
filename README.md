@@ -81,14 +81,6 @@ Or simply use:
 make example
 ```
 
-For a clean build and immediate execution with the data folder, use:
-
-```sh
-make andrun
-```
-
-This will clean the build, compile the project (which takes 3-5 seconds), and immediately run the application with the `../icui` data folder.
-
 ### Required Data Folder
 
 To run the project, ensure that the `../icui` folder is present, as it contains necessary data files. Reach out to **@icherna** to obtain the required data packages.
