@@ -225,9 +225,6 @@ T_GetSize(FT_Face face, struct view_text const* text, struct rect* rcursor)
       rcursor->height = FT_SCALE(lineHeight);
     }
     if (isspace(charcode)) {
-      if (eos) {
-        spaceWidth = 0;
-      }
       if (textwidth == 0) {
 //        textwidth += spaceWidth; << what was this???
         // first word print anyway
