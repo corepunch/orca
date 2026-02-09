@@ -63,49 +63,12 @@ jobs:
             libpng \
             freetype \
             jpeg-turbo \
-            lua \
+            lua@5.4 \
             libxml2 \
             lz4 \
             zlib \
             curl \
             pkg-config
-
-      - name: Setup Lua for pkg-config
-        run: |
-          # Homebrew's lua provides lua.pc, but Makefile expects lua5.4
-          # Create a lua5.4.pc that points to the Homebrew Lua installation
-          LUA_PC_DIR=$(brew --prefix)/lib/pkgconfig
-          LUA_PREFIX=$(brew --prefix lua)
-          LUA_VERSION=$(lua -v 2>&1 | grep -oE '[0-9]+\.[0-9]+' | head -1)
-          
-          # Set include directory to parent of lua/ subdirectory
-          # This allows #include <lua/lua.h> to work correctly
-          LUA_INCLUDE_DIR="$LUA_PREFIX/include"
-          
-          # Create lua5.4.pc file if it doesn't exist
-          if [ ! -f "$LUA_PC_DIR/lua5.4.pc" ]; then
-            echo "prefix=$LUA_PREFIX" > "$LUA_PC_DIR/lua5.4.pc"
-            echo "exec_prefix=\${prefix}" >> "$LUA_PC_DIR/lua5.4.pc"
-            echo "libdir=\${exec_prefix}/lib" >> "$LUA_PC_DIR/lua5.4.pc"
-            echo "includedir=$LUA_INCLUDE_DIR" >> "$LUA_PC_DIR/lua5.4.pc"
-            echo "" >> "$LUA_PC_DIR/lua5.4.pc"
-            echo "Name: Lua" >> "$LUA_PC_DIR/lua5.4.pc"
-            echo "Description: An Extensible Extension Language" >> "$LUA_PC_DIR/lua5.4.pc"
-            echo "Version: $LUA_VERSION" >> "$LUA_PC_DIR/lua5.4.pc"
-            echo "Libs: -L\${libdir} -llua" >> "$LUA_PC_DIR/lua5.4.pc"
-            echo "Cflags: -I\${includedir}" >> "$LUA_PC_DIR/lua5.4.pc"
-          fi
-          
-          # Verify the setup
-          echo "Lua prefix: $LUA_PREFIX"
-          echo "Lua include directory: $LUA_INCLUDE_DIR"
-          echo "Checking lua5.4 pkg-config:"
-          if ! pkg-config --cflags --libs lua5.4; then
-            echo "Warning: lua5.4 pkg-config check failed"
-            pkg-config --cflags --libs lua5.4 2>&1 || true
-          fi
-          echo "Checking if Lua headers exist:"
-          ls -la "$LUA_INCLUDE_DIR/lua/" || echo "Lua headers not found at $LUA_INCLUDE_DIR/lua/"
 
       - name: Build
         run: make
