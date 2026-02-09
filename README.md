@@ -2,7 +2,26 @@
 
 ## Installation
 
-### Linux
+### Quick Install with LuaRocks
+
+The easiest way to install ORCA is via LuaRocks:
+
+```sh
+luarocks install orca
+```
+
+Then in your Lua code:
+
+```lua
+local orca = require "orca"
+local ui = require "orca.ui"
+```
+
+See [LUAROCKS.md](LUAROCKS.md) for detailed LuaRocks installation and usage instructions.
+
+### Manual Installation
+
+#### Linux
 
 To install the required dependencies on **Linux**, run the following commands:
 
