@@ -3,7 +3,7 @@
   <ScreenLibrary Name="Screens" IsExternal="true"/>
   <ImageLibrary Name="Images" IsExternal="true"/>
   <PropertyTypeLibrary Name="Property Types">
-    <PropertyType Name="Speed" Type="float" Namespace="Custom"/>
+    <PropertyType Name="Speed" DataType="Float" Category="Custom"/>
   </PropertyTypeLibrary>
   <MessageLibrary Name="Messages">
     <SystemMessage Message="KeyDown" Key="q">return</SystemMessage>
