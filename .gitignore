@@ -11,6 +11,7 @@ DerivedData/
 *.so
 *.kzproj
 .*
+!.github
 .DS_Store
 *.mesh
 amg
