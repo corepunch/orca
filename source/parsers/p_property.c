@@ -1,6 +1,7 @@
 #include "xml_local.h"
 
 #include <include/renderer.h>
+#include <source/filesystem/filesystem.h>
 
 #define InitProperty(pobj, szKey, type, value)                           \
 PROP_SetValue(PROP_Create(L, pobj, szKey, type, NULL), value)
@@ -22,7 +23,7 @@ Token_Create(lpcString_t code)
   return _compile(code, "binding");
 }
 
-static lpcString_t image_ext[] = { ".png", ".jpeg", ".jpg", NULL };
+static lpcString_t image_ext[] = { "", ".png", ".jpeg", ".jpg", NULL };
 
 static void
 PROP_ParseObjectValue(lua_State *L,
@@ -52,13 +53,34 @@ PROP_ParseObjectValue(lua_State *L,
       !strcmp(PROP_GetDesc(prop)->TypeString, "Texture"))
   {
     for (lpcString_t *ext = image_ext; *ext; ext++) {
-      char xml[1024]={0};
-      snprintf(tmp, sizeof(tmp), "%s%s", path, *ext);
+      ospathfmt_t unmasked;
+      strncpy(unmasked, path, strchr(path,'?') ?
+              MIN(sizeof(unmasked), strchr(path, '?') - path) :
+              sizeof(unmasked));
+      snprintf(tmp, sizeof(tmp), "%s%s", unmasked, *ext);
       if (FS_FileExists(tmp)) {
-        snprintf(xml, sizeof(xml), "<Image Source=\"%s%s\" />", path, *ext);
-        xmlWith(xmlDoc, doc, xmlReadMemory(xml, (int)strlen(xml), path, NULL, XML_FLAGS), xmlFreeDoc) {
-          PROP_SetValue(prop, &(lpObject_t) { OBJ_LoadDocument(L, doc) });
+        xmlWith(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFreeDoc) {
+          reqArg_t args[16]={0};
+          xmlWith(char, str, strdup(path), free) {
+            FS_ParseArgs(str, args, sizeof(args)/sizeof(*args));
+            xmlNodePtr root = xmlNewNode(NULL, XMLSTR("Image"));
+            xmlSetProp(root, XMLSTR("Name"), XMLSTR(FS_GetBaseName(unmasked)));
+            xmlSetProp(root, XMLSTR("Source"), XMLSTR(tmp));
+            for (reqArg_t *it = args; it-args<sizeof(args)/sizeof(*args);it++) {
+              if (*it->name) {
+                *it->name = toupper(*it->name);
+                xmlSetProp(root, XMLSTR(it->name), XMLSTR(it->value));
+              }
+            }
+            xmlDocSetRootElement(doc, root);
+            doc->URL = xmlStrdup(XMLSTR(tmp));
+            PROP_SetValue(prop, &(lpObject_t) { OBJ_LoadDocument(L, doc) });
+          }
         }
+//        snprintf(xml, sizeof(xml), "<Image Source=\"%s%s\" />", path, *ext);
+//        xmlWith(xmlDoc, doc, xmlReadMemory(xml, (int)strlen(xml), path, NULL, XML_FLAGS), xmlFreeDoc) {
+//          PROP_SetValue(prop, OBJ_LoadDocument(L, doc) });
+//        }
       }
     }
   }
@@ -413,37 +435,11 @@ PDESC_Parse(lpObject_t hobj,
     case kDataTypeObjectTags:
       *((objectTags_t*)dest) = parse_tags(tags, string);
       break;
-    case kDataTypeObject:
-      if (FS_FileExists(string)) {
-        xmlWith(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFreeDoc) {
-          reqArg_t args[16]={0};
-          xmlWith(char, str, strdup(string), free) {
-            lpcString_t path=FS_ParseArgs(str, args, sizeof(args)/sizeof(*args));
-            xmlNodePtr root = xmlNewNode(NULL, XMLSTR("Image"));
-            xmlSetProp(root, XMLSTR("Name"), XMLSTR(FS_GetBaseName(path)));
-            xmlSetProp(root, XMLSTR("Source"), XMLSTR(path));
-            for (reqArg_t *it = args; it-args<sizeof(args)/sizeof(*args);it++) {
-              if (*it->name) {
-                *it->name = toupper(*it->name);
-                xmlSetProp(root, XMLSTR(it->name), XMLSTR(it->value));
-              }
-            }
-            xmlDocSetRootElement(doc, root);
-            doc->URL = xmlStrdup(XMLSTR(string));
-            extern lua_State* global_L;
-            lpObject_t object = OBJ_LoadDocument(global_L, doc);
-            PROP_SetValue(property, &object);
-          }
-        }
-//        struct file *file = FS_LoadFile(string);
-//        if (file->size > 4 && *(int*)file->data == MAKE_FOURCC('<','s','v','g')) {
-//        }
-      } else xmlWith(xmlDoc, doc, FS_LoadXML(string), xmlFreeDoc) {
-        extern lua_State* global_L;
-        lpObject_t object = OBJ_LoadDocument(global_L, doc);
-        PROP_SetValue(property, &object);
-      }
+    case kDataTypeObject: {
+      extern lua_State* global_L;
+      PROP_ParseObjectValue(global_L, property, string);
       break;
+    }
     case kDataTypeGroup:
       FOR_LOOP(i, pdesc->NumComponents) {
         lpcPropertyDesc_t inner = &pdesc[i + 1];
