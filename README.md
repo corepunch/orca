@@ -51,6 +51,12 @@ brew install libpng freetype jpeg-turbo lua libxml2 lz4 zlib curl pkg-config
 
 ## Building the Project
 
+Before building, you must initialize and update the git submodules to fetch the platform package:
+
+```sh
+git submodule update --init --recursive
+```
+
 To build the project, run:
 
 ```sh
