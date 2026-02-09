@@ -332,5 +332,5 @@ For better XML editing experience in VSCode with autocomplete and validation:
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENCE](LICENCE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
