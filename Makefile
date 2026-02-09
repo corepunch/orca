@@ -34,7 +34,7 @@ else
 	LDFLAGS += -Wl,-rpath,'$$ORIGIN/../../$(LIBDIR)'
 endif
 
-.PHONY: default all CLEAN directories unite buildlib app platform
+.PHONY: default all CLEAN directories unite buildlib app platform example
 
 default: directories modules unite
 all: default
@@ -92,6 +92,9 @@ andrun: unite
 
 run:
 	$(TARGET) $(DATADIR)
+
+example:
+	$(TARGET) samples/Example
 
 debug:
 	gdb -ex "run $(DATADIR)" -ex "bt" -ex "quit" --args $(TARGET) $(DATADIR)

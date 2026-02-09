@@ -16,6 +16,7 @@ This guide will help you get started with the ORCA Framework by creating your fi
 Before you begin, make sure you have:
 
 - Installed all required dependencies (see [README.md](README.md) for installation instructions)
+- Initialized git submodules: `git submodule update --init --recursive`
 - Built the ORCA Framework using `make`
 - Access to the required data folder (`../icui`)
 
@@ -297,12 +298,17 @@ Define system message handlers:
 
 Once you've created your project:
 
-1. **Build the ORCA Framework** (if not already built):
+1. **Initialize git submodules** (if not already done):
+```sh
+git submodule update --init --recursive
+```
+
+2. **Build the ORCA Framework** (if not already built):
 ```sh
 make
 ```
 
-2. **Run your project**:
+3. **Run your project**:
 ```sh
 make run PROJECT=/path/to/your/project/package.xml
 ```
