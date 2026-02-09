@@ -11,7 +11,7 @@ TARGET = $(BINDIR)/$(APPNAME)
 TARGETLIB = $(LIBDIR)/lib$(LIBNAME).so
 PLATFORM_LIBDIR = libs/platform
 #LIBS = -lm -ldl -lpthread -llua5.4 -lfreetype -lpng -ljpeg -lz -llz4 -lcurl -lxml2 -lplatform
-LIBS = -ldl -lpthread -lz -llz4 -lcurl -lplatform
+LIBS = -ldl -lpthread -lz -lcurl -lplatform
 CC = gcc
 CFLAGS = -x c -g -fpic -I. -I$(CURDIR)
 LDFLAGS = -L$(LIBDIR)
@@ -23,8 +23,8 @@ SOURCEMODULES2 = $(addprefix /, $(MODULES))
 UNITEOBJECTS = $(addsuffix .o, $(MODULES))
 UNITE = $(patsubst %.c, %.o, $(foreach dir,$(SOURCEMODULES),$(wildcard $(dir)/*.c)))
 #using pkg-config
-CFLAGS += $(shell pkg-config --cflags lua5.4 libjpeg freetype2 libxml-2.0 2>/dev/null)
-LDFLAGS += $(shell pkg-config --libs lua5.4 freetype2 libjpeg libpng libxml-2.0 2>/dev/null)
+CFLAGS += $(shell pkg-config --cflags liblz4 lua5.4 libjpeg freetype2 libxml-2.0 2>/dev/null)
+LDFLAGS += $(shell pkg-config --libs liblz4 lua5.4 freetype2 libjpeg libpng libxml-2.0 2>/dev/null)
 
 ifeq ($(shell uname -s),Darwin)
 	LIBS += -framework OpenGL -framework IOSurface
