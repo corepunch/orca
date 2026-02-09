@@ -49,7 +49,19 @@ To install dependencies on **macOS**, use **Homebrew**:
 brew install libpng freetype jpeg-turbo lua libxml2 lz4 zlib curl pkg-config
 ```
 
+**Note**: If `pkg-config` fails to find packages, you may need to run:
+
+```sh
+brew link --overwrite freetype jpeg-turbo
+```
+
 ## Building the Project
+
+Before building, you must initialize and update the git submodules to fetch the platform package:
+
+```sh
+git submodule update --init --recursive
+```
 
 To build the project, run:
 
@@ -57,23 +69,17 @@ To build the project, run:
 make
 ```
 
-To run the project after building, use:
+After building, you can run the example application:
 
 ```sh
-make run
+build/bin/orca samples/Example
 ```
 
-For a clean build and immediate execution, use:
+Or simply use:
 
 ```sh
-make andrun
+make example
 ```
-
-This will clean the build, compile the project (which takes 3-5 seconds), and immediately run the application with the `../icui` data folder.
-
-### Required Data Folder
-
-To run the project, ensure that the `../icui` folder is present, as it contains necessary data files. Reach out to **@icherna** to obtain the required data packages.
 
 ## Why MoonScript?
 
@@ -290,6 +296,39 @@ Check that MoonScript is installed correctly:
 ```sh
 moonc -v
 ```
+
+## Setting Up VSCode XML Autocomplete
+
+For better XML editing experience in VSCode with autocomplete and validation:
+
+1. Install the **Red Hat XML** extension in VSCode
+
+2. Create a `.vscode/settings.json` file in your project directory (e.g., `samples/Example/.vscode/settings.json`):
+
+```json
+{
+  "xml.fileAssociations": [
+    {
+      "pattern": "**/Prefabs/*.xml",
+      "systemId": "../../tools/schemas/orca.dtd"
+    },
+    {
+      "pattern": "**/Screens/*.xml",
+      "systemId": "../../tools/schemas/orca.dtd"
+    },
+    {
+      "pattern": "**/Materials/*.xml",
+      "systemId": "../../tools/schemas/orca.dtd"
+    },
+    {
+      "pattern": "**/Shaders/*.xml",
+      "systemId": "../../tools/schemas/shader.dtd"
+    }
+  ]
+}
+```
+
+**Note**: The paths in `systemId` are relative to the project directory. Adjust them based on your project structure relative to the `tools/schemas/` directory.
 
 ## License
 
