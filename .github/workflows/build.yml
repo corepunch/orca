@@ -63,7 +63,7 @@ jobs:
             libpng \
             freetype \
             jpeg-turbo \
-            lua@5.4 \
+            lua \
             libxml2 \
             lz4 \
             zlib \
