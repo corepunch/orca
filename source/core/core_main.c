@@ -244,13 +244,10 @@ int lua_pushclass(lua_State* L, struct ClassDesc* cl)
 bool_t CORE_HandleObjectMessage(lua_State *L, struct WI_Message* msg);
 bool_t CORE_HandleKeyEvent(lua_State *L, struct WI_Message* msg);
 
-static uint32_t dwLastSize = MAKEDWORD(640, 480);
-
 int CORE_ProcessMessage(lua_State *L, struct WI_Message* msg) {
   int tmp=0;
   switch (msg->message) {
     case kEventWindowPaint:
-      dwLastSize = msg->wParam;
       CORE_Update(L, msg->target, msg->wParam, WI_GetMilliseconds());
 //      WI_PostMessageW(msg->target, kEventWindowPaint, msg->wParam, NULL);
       break;
@@ -290,7 +287,7 @@ int CORE_ProcessMessage(lua_State *L, struct WI_Message* msg) {
     case kEventStopCoroutine:
       luaL_unref(L, LUA_REGISTRYINDEX, (int)(intptr_t)msg->lParam);
       WI_RemoveFromQueue(msg->target);
-      WI_PostMessageW(NULL, kEventWindowPaint, dwLastSize, 0);
+      WI_PostMessageW(NULL, kEventWindowPaint, WI_GetSize(NULL), 0);
       return FALSE;
     default:
       return CORE_HandleObjectMessage(L, msg);

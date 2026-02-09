@@ -7,7 +7,6 @@
   <Texture.MipmapMode Value="Base"/>
   <Texture.MagnificationFilter Value="Linear"/>
   <Texture.MinificationFilter Value="Linear"/>
-  <IsFileMissing Value="false"/>
   <Image.FileExportEmptyWhenFileIsMissing Value="false"/>
   <Image.FileExportAlways Value="false"/>
   <Image.FileExportSourceTexture Value="false"/>
