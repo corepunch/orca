@@ -9,6 +9,10 @@ on:
       - main
   workflow_dispatch:
 
+# Sets permissions of the GITHUB_TOKEN
+permissions:
+  contents: read
+
 jobs:
   build-linux:
     runs-on: ubuntu-latest
