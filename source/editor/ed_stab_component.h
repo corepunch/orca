@@ -2,9 +2,7 @@
 
 #include <source/UIKit/UIKit.h>
 
-#ifdef ORCA_FEATURE_3D
 #include <source/SceneKit/SceneKit.h>
-#endif
 
 lpcClassDesc_t
 get_node_class_desc(lpObject_t object)
@@ -18,9 +16,7 @@ OBJ_IsPrefabView(lpcObject_t object)
   FOR_EACH_LIST(struct component, cmp, object ? _GetComponents((void*)object) : NULL) {
     switch (cmp->pcls->ClassID) {
       case ID_PrefabView2D:
-#ifdef ORCA_FEATURE_3D
       case ID_PrefabView3D:
-#endif
         return TRUE;
     }
   }

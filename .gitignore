@@ -16,7 +16,6 @@ DerivedData/
 amg
 amg-full
 **/vscode-syntax
-source/SceneKit
 
 # Prerequisites
 *.d

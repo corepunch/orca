@@ -190,12 +190,10 @@ static GLuint _LoadGLShader(GLenum type, struct shader_desc* def)
 
   FOR_LOOP(i, dwNumTexts) pszCodes[i] = pszTexts[i];
 
-#ifdef ORCA_FEATURE_3D
   uint32_t _ApplyLighting(struct shader_desc*,lpcString_t *,uint32_t);
   if (type == GL_VERTEX_SHADER) {
     dwNumTexts = _ApplyLighting(def, pszCodes, dwNumTexts);
   }
-#endif
 
   pszCodes[dwNumTexts++] = type == GL_VERTEX_SHADER ? def->VertexShader : def->FragmentShader;
 
@@ -705,12 +703,161 @@ Shader_EnumUniforms(struct shader const* shader,
   return NOERROR;
 }
 
-#ifdef ORCA_FEATURE_3D
-#include "../SceneKit/shader_stab.h"
-#else
+static lpcString_t _PhongPointLight =
+"vec3 PhongPointLight(mat4 light) {\n"
+"  vec3   normal = u_normalTransform * a_normal;\n"
+"  vec3   vertex = (u_modelTransform * vec4(a_position.xyz, 1.0)).xyz;\n"
+"  vec3   viewDir = normalize(u_cameraPosition - vertex);\n"
+"  float  intensity = light[2][2];\n"
+"  float  range = light[2][3];\n"
+"  vec3   toLight = light[0].xyz - vertex;\n"
+"  float  dist = length(toLight);\n"
+"  vec3   L = toLight / dist;\n"
+"  float  att = clamp(1.0 - (dist / range), 0.0, 1.0);\n"
+"  float  NdotL = max(dot(normal, L), 0.0);\n"
+"  vec3   diffuse = NdotL * light[1].xyz;\n"
+"  vec3   halfway = normalize(L + viewDir);\n"
+"  float  spec = pow(max(dot(normal, halfway), 0.0), 32.0);\n"
+"  vec3   specular = spec * light[1].xyz;\n"
+"  return att * att * intensity * (diffuse + specular);\n"
+"}\n";
+
+//static lpcString_t _PBRPointLight_alt =
+//"vec3 PBRPointLight(mat4 light, float metallic, float smoothness, vec3 albedo) {\n"
+//"  vec3   normal = normalize(u_normalTransform * a_normal);\n"
+//"  vec3   vertex = (u_modelTransform * vec4(a_position.xyz, 1.0)).xyz;\n"
+//"  vec3   viewDir = normalize(u_cameraPosition - vertex);\n"
+//"  float  intensity = light[2][2];\n"
+//"  float  range = light[2][3];\n"
+//"  vec3   toLight = light[0].xyz - vertex;\n"
+//"  float  dist = length(toLight);\n"
+//"  vec3   L = toLight / dist;\n"
+//"  float  att = clamp(1.0 - (dist / range), 0.0, 1.0);\n"
+//"  float  NdotL = max(dot(normal, L), 0.0);\n"
+//"  vec3   lightColor = light[1].xyz;\n"
+//"  vec3   diffuseColor = albedo * (1.0 - metallic);\n"
+//"  vec3   specularColor = mix(vec3(0.04), albedo, metallic);\n"
+//"  vec3   halfway = normalize(L + viewDir);\n"
+//"  float  NdotH = max(dot(normal, halfway), 0.0);\n"
+//"  float  shininess = mix(8.0, 128.0, smoothness);\n"
+//"  float  spec = pow(NdotH, shininess);\n"
+//"  vec3   diffuse = diffuseColor * NdotL * lightColor;\n"
+//"  vec3   specular = specularColor * spec * lightColor;\n"
+//"  return att * att * intensity * (diffuse + specular);\n"
+//"}\n";
+
+static lpcString_t _PBRPointLight =
+"vec3 PBRPointLight(mat4 light, float metallic, float smoothness, vec3 albedo) {\n"
+"  vec3   normal = normalize(u_normalTransform * a_normal);\n"
+"  vec3   vertex = (u_modelTransform * vec4(a_position.xyz, 1.0)).xyz;\n"
+"  vec3   viewDir = normalize(u_cameraPosition - vertex);\n"
+"  float  intensity = light[2][2];\n"
+"  float  range = light[2][3];\n"
+"  vec3   toLight = light[0].xyz - vertex;\n"
+"  float  dist = length(toLight);\n"
+"  vec3   L = toLight / dist;\n"
+"  float  NdotL = max(dot(normal, L), 0.0);\n"
+"  vec3   lightColor = light[1].xyz;\n"
+"  vec3   diffuseColor = albedo * (1.0 - metallic);\n"
+"  vec3   specularColor = mix(vec3(0.04), albedo, metallic);\n"
+"  vec3   halfway = normalize(L + viewDir);\n"
+"  float  NdotH = max(dot(normal, halfway), 0.0);\n"
+"  float  shininess = mix(8.0, 128.0, smoothness);\n"
+"  float  spec = pow(NdotH, shininess);\n"
+"  vec3   diffuse = diffuseColor * NdotL * lightColor;\n"
+"  vec3   specular = specularColor * spec * lightColor;\n"
+"  float  distSqr = dist * dist;\n"
+"  float  k = 2.0f;\n"
+"  float  rangeFactor = dist / range;\n"
+"  float  falloff = clamp(1.0 - rangeFactor * rangeFactor, 0.0, 1.0);\n"
+"  float  att = intensity / (distSqr + k) * falloff * falloff;\n"
+"  return att * intensity * (diffuse + specular);\n"
+"}\n";
+
 HANDLER(Shader, Start) {
-  fprintf(stderr, "Error: Shader support is part of SceneKit extension.\n");
-  abort();
+  uint32_t NumUniforms = 0;
+  struct shader_desc desc = { .Name = OBJ_GetName(hObject) };
+  for (lpProperty_t p=OBJ_GetProperties(hObject);p;p=PROP_GetNext(p)){
+    struct uniform_def ud = {0};
+    lpcString_t local = PROP_GetName(p);
+    if (strrchr(local, '.')) {
+      local = strrchr(local, '.') + 1;
+    }
+    strncpy(ud.Name, local, sizeof(ud.Name));
+    switch (PROP_GetType(p)) {
+      case kDataTypeObject:
+        if (!strcmp(PROP_GetUserData(p), "Texture")) {
+          ud.Type = UT_SAMPLER_2D;
+          break;
+        } else {
+          continue;
+        }
+      case kDataTypeFloat: ud.Type = UT_FLOAT; break;
+      case kDataTypeVector2D: ud.Type = UT_FLOAT_VEC2; break;
+      case kDataTypeVector3D: ud.Type = UT_FLOAT_VEC3; break;
+      case kDataTypeVector4D: ud.Type = UT_FLOAT_VEC4; break;
+        //      case kDataTypeMatrix3: ud.Type = UT_FLOAT_MAT3; break;
+      case kDataTypeMatrix3D: ud.Type = UT_FLOAT_MAT4; break;
+      case kDataTypeInt: ud.Type = UT_INT; break;
+      case kDataTypeBool: ud.Type = UT_BOOL; break;
+      case kDataTypeEnum: ud.Type = UT_INT; break;
+      case kDataTypeColor:
+        ud.Type = UT_COLOR;
+        ud.Default[0] = 1;
+        ud.Default[1] = 1;
+        ud.Default[2] = 1;
+        ud.Default[3] = 1;
+        break;
+      default:
+        continue;
+    }
+    desc.Uniforms[NumUniforms++] = ud;
+  }
+  FOR_EACH_OBJECT(hChild, hObject) {
+    if (GetVertexShader(hChild)) {
+      lpVertexShader_t vs = GetVertexShader(hChild);
+      desc.VertexShader = OBJ_GetTextContent(hChild);
+      desc.Shading = vs->Shading;
+      desc.Version = MAX(desc.Version, vs->Version);
+    } else if (GetFragmentShader(hChild)) {
+      lpFragmentShader_t fs = GetFragmentShader(hChild);
+      desc.FragmentShader = OBJ_GetTextContent(hChild);
+      desc.FragmentOut = fs->Out;
+      desc.Version = MAX(desc.Version, fs->Version);
+    }
+  }
+  GLuint prognum = _CreateGLProgram(&desc);
+  if (prognum != 0) {
+    Shader_Create(prognum, &desc, &pShader->shader);
+    memcpy(&pShader->shader->target,
+           &desc.UniversalTarget,
+           sizeof(struct shader_universal_target));
+  } else {
+    Con_Error("Can't register shader %s", OBJ_GetName(hObject));
+    Shader_LoadFromDef(&shader_error, &pShader->shader);
+  }
+  return TRUE;
 }
-HANDLER(Shader, Destroy) { return 0;}
-#endif
+
+HANDLER(Shader, Destroy) {
+  Shader_Release(pShader->shader);
+  return TRUE;
+}
+
+uint32_t
+_ApplyLighting(struct shader_desc* def,
+               lpcString_t *pszCodes,
+               uint32_t dwNumTexts)
+{
+  switch (def->Shading) {
+    case kShadingUnlit:
+      break;
+    case kShadingPhong:
+      pszCodes[dwNumTexts++] = _PhongPointLight;
+      break;
+    case kShadingStandard:
+      pszCodes[dwNumTexts++] = _PBRPointLight;
+      break;
+  }
+  return dwNumTexts;
+}

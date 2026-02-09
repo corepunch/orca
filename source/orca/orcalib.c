@@ -45,9 +45,7 @@ static luaL_Reg const orca_modules[] = {
   { "orca.parsers.json", luaopen_orca_parsers_json },
   { "orca.parsers.xml", luaopen_orca_parsers_xml },
   { "orca.renderer", luaopen_orca_renderer },
-#ifdef ORCA_FEATURE_3D
   { "orca.SceneKit", luaopen_orca_SceneKit },
-#endif
   { "orca.backend", luaopen_orca_backend },
   { "orca.system", luaopen_orca_system },
   { "orca.ui", luaopen_orca_UIKit },

@@ -1,0 +1,234 @@
+<module name="SceneKit" namespace="orca">
+  <include file="source/renderer/api/renderer.h"/>
+  <include file="include/renderer.h"/>
+  <include file="source/UIKit/UIKit.h"/>
+
+  <enums name="StencilOp">
+    <summary>Operations performed on stencil buffer values when stencil tests pass or fail</summary>
+    <enum name="Keep">Keep the current stencil buffer value unchanged</enum>
+    <enum name="Zero">Set the stencil buffer value to zero</enum>
+    <enum name="Replace">Replace stencil buffer value with the reference value</enum>
+    <enum name="Increment">Increment stencil buffer value, clamping to maximum</enum>
+    <enum name="IncrementWrap">Increment stencil buffer value, wrapping to zero at maximum</enum>
+    <enum name="Decrement">Decrement stencil buffer value, clamping to zero</enum>
+    <enum name="DecrementWrap">Decrement stencil buffer value, wrapping to maximum at zero</enum>
+    <enum name="Invert">Bitwise invert the stencil buffer value</enum>
+  </enums>
+
+  <enums name="ViewportMode">
+    <summary>Coordinate systems for viewport and scissor rectangle specification</summary>
+    <enum name="Relative">Coordinates specified as normalized values (0.0 to 1.0) relative to render target size</enum>
+    <enum name="Absolute">Coordinates specified in absolute pixels</enum>
+  </enums>
+
+  <enums name="CullMode">
+    <summary>Face culling modes to optimize rendering by discarding non-visible triangle faces</summary>
+    <enum name="None">No face culling - render both front and back faces</enum>
+    <enum name="Back">Cull back-facing triangles (standard for solid objects)</enum>
+    <enum name="Front">Cull front-facing triangles (useful for interior views or special effects)</enum>
+  </enums>
+
+  <enums name="ColorWriteMode">
+    <summary>Control which color channels are written to the framebuffer during rendering</summary>
+    <enum name="None">Disable all color channel writes (useful for depth-only or stencil-only passes)</enum>
+    <enum name="RGB">Write to red, green, and blue channels only</enum>
+    <enum name="RGBA">Write to all four color channels including alpha</enum>
+    <enum name="R">Write to red channel only</enum>
+    <enum name="G">Write to green channel only</enum>
+    <enum name="B">Write to blue channel only</enum>
+    <enum name="GB">Write to green and blue channels only</enum>
+    <enum name="A">Write to alpha channel only</enum>
+  </enums>
+
+  <enums name="FovType">
+    <summary>Field of view calculation methods for camera projection</summary>
+    <enum name="Xfov">Field of view specified as horizontal angle in degrees</enum>
+    <enum name="Yfov">Field of view specified as vertical angle in degrees (most common)</enum>
+  </enums>
+
+  <enums name="ProjectionType">
+    <summary>Camera projection modes for 3D to 2D transformation</summary>
+    <enum name="Perspective">Perspective projection with realistic depth foreshortening</enum>
+    <enum name="Orthographic">Orthographic projection with parallel lines (no perspective distortion)</enum>
+  </enums>
+
+  <enums name="LightType">
+    <summary>Types of light sources for scene illumination</summary>
+    <enum name="Point">Omnidirectional point light source (like a light bulb)</enum>
+    <enum name="Spot">Directional spot light with cone-shaped illumination area</enum>
+  </enums>
+
+  <component name="Node3D" parent="Node" children="Node3D">
+    <summary>Base class for all 3D scene graph nodes with transform and positioning capabilities</summary>
+    <details>Provides fundamental 3D transformation properties including layout transforms, render transforms, and matrix calculations. All 3D objects in the scene inherit from this component.</details>
+    <handles event="UpdateMatrix"/>
+    <property name="LayoutTransform" type="transform3" default=".scale={1,1,1}">Transform applied during layout phase for positioning within parent containers</property>
+    <property name="RenderTransform" type="transform3" default=".scale={1,1,1}">Additional transform applied during rendering for animations and effects</property>
+    <property name="RenderTransformOrigin" type="vec3">Origin point for render transform operations (rotation, scaling center)</property>
+    <property name="ContentOffset" type="vec3">Offset applied to child content within this node's local coordinate system</property>
+    <property name="Matrix" type="mat4">Final combined transformation matrix (computed automatically)</property>
+    <property name="CalculatedOffset" type="float">Computed offset value used for trajectory list positioning</property>
+    <field name="_opacity" type="float"/>
+  </component>
+
+  <component name="Scene" parent="Node3D">
+    <summary>Root container for 3D scene content with camera and rendering configuration</summary>
+    <details>Represents a complete 3D scene that can be rendered to a viewport. Manages cameras, render passes, and global scene properties like environment lighting.</details>
+    <handles event="UpdateMatrix"/>
+    <property name="Camera" type="fixed">Name of the primary camera used for scene rendering</property>
+    <property name="PreviewCamera" type="fixed">Name of camera used for preview rendering in design tools</property>
+    <property name="HitTestCamera" type="fixed">Name of camera used for 3D hit testing and mouse interaction</property>
+    <property name="RenderPass" type="RenderPass" pointer="true">Custom render pass chain for advanced rendering effects</property>
+    <property name="BackgroundTimelineSequence" type="fixed">TODO: add support?</property>
+    <property name="ComposerOverride" type="RenderPass" pointer="true">Override render pass for post-processing composition effects</property>
+    <property name="EnvironmentTexture" type="Texture" pointer="true">Environment map texture for reflections and ambient lighting</property>
+  </component>
+
+  <component name="Model3D" parent="Node3D">
+    <summary>3D model renderer that displays mesh geometry with materials</summary>
+    <details>Core component for rendering 3D models. Combines a mesh (geometry) with a material (shading) to create visible 3D objects in the scene.</details>
+    <handles event="Render"/>
+    <property name="Mesh" type="Mesh" pointer="true">3D mesh geometry defining the shape of the model</property>
+    <property name="Material" type="Material" pointer="true">Material defining surface appearance, textures, and shading properties</property>
+  </component>
+
+  <component name="PlaneMeshNode" parent="Model3D">
+    <summary>Procedural plane mesh generator for creating rectangular surfaces</summary>
+    <details>Automatically generates plane geometry with configurable dimensions and texture coordinates. Useful for ground planes, UI surfaces, and simple rectangular objects.</details>
+    <handles event="Render"/>
+    <property name="PlaneWidth" type="float">Width of the generated plane in world units</property>
+    <property name="PlaneHeight" type="float">Height of the generated plane in world units</property>
+    <property name="PlaneInvertU" type="bool">Invert horizontal texture coordinates (flip texture horizontally)</property>
+    <property name="PlaneInvertV" type="bool">Invert vertical texture coordinates (flip texture vertically)</property>
+    <property name="GenerateTangents" type="bool">Generate tangent vectors for normal mapping (requires additional memory)</property>
+    <property name="GenerateNormals" type="bool">Generate vertex normals for proper lighting (usually true for lit surfaces)</property>
+    <property name="MeshMaterial" type="Material" pointer="true">Override material specifically for the generated mesh geometry</property>
+  </component>
+
+  <component name="Camera" parent="Node3D">
+    <summary>3D camera for scene viewing and projection configuration</summary>
+    <details>Defines the viewpoint and projection parameters for rendering 3D scenes. Supports both perspective and orthographic projections with configurable field of view, clipping planes, and stereo rendering.</details>
+    <property name="Fov" type="float">Field of view angle in degrees (60-90 typical for perspective cameras)</property>
+    <property name="FovType" type="FovType">Whether field of view is measured horizontally or vertically</property>
+    <property name="ProjectionType" type="ProjectionType">Perspective or orthographic projection mode</property>
+    <property name="ZNear" type="float">Near clipping plane distance (objects closer than this are not rendered)</property>
+    <property name="ZFar" type="float">Far clipping plane distance (objects farther than this are not rendered)</property>
+    <property name="EyeSeparation" type="float">Distance between left and right eyes for stereoscopic rendering</property>
+    <property name="FocalDistance" type="float">Focus distance for depth of field and stereo convergence</property>
+    <property name="OrthogonalPlaneHeight" type="float">Height of viewing volume for orthographic projection</property>
+    <property name="ZPositive" type="bool">Whether positive Z axis points toward or away from viewer</property>
+  </component>
+
+  <component name="TrajectoryList3D" parent="Node3D">
+    <summary>Layout container that arranges child nodes along a 3D trajectory path</summary>
+    <details>Positions child elements along a curved or linear trajectory in 3D space. Supports scrolling, looping, and selection behaviors for creating carousels, paths, and animated sequences.</details>
+    <handles event="UpdateMatrix"/>
+    <property name="Trajectory" type="Trajectory" pointer="true">3D path shape defining the trajectory curve for child positioning</property>
+    <property name="ScrollAxis" type="vec2">Primary and secondary scroll directions for trajectory navigation</property>
+    <property name="Looping" type="bool">Whether trajectory wraps around at the ends (creates infinite loop)</property>
+    <property name="Spacing" type="float">Distance between adjacent items along the trajectory path</property>
+    <property name="SelectionBehavior" type="float">Controls how selection affects item positioning and scaling</property>
+    <property name="SelectedItemIndex" type="float">Index of currently selected item (supports fractional values for smooth transitions)</property>
+  </component>
+
+  <component name="Viewport3D" parent="Node2D" children="Node3D">
+    <summary>2D viewport component that renders 3D scene content</summary>
+    <details>Bridge between 2D UI layout and 3D scene rendering. Allows embedding 3D scenes within 2D user interfaces with independent camera and rendering configuration.</details>
+    <handles event="ForegroundContent"/>
+    <property name="Camera" type="fixed">Name of camera to use for 3D scene rendering within this viewport</property>
+    <property name="PreviewCamera" type="fixed">Name of camera used for design-time preview rendering</property>
+    <property name="HitTestCamera" type="fixed">Name of camera used for 3D hit testing within the viewport area</property>
+    <property name="RenderPass" type="RenderPass" pointer="true">Custom render pass chain for viewport-specific effects</property>
+    <property name="Scene" type="fixed">TODO: add support?</property>
+  </component>
+
+  <component name="PrefabView3D" parent="Node3D">
+    <summary>Dynamic loader for 3D prefab assets and scene files</summary>
+    <details>Loads and instantiates 3D content from external files. Supports both SCA (Scene Archive) and prefab formats for modular scene composition and asset reuse.</details>
+    <handles event="LoadView"/>
+    <property name="SCA" type="fixed">Adds "hmi_plugins/{{SCA}}" to search paths and loads from "prefabs/{{SCA}}"</property>
+    <property name="Prefab" type="fixed">Path to prefab asset file to instantiate</property>
+    <field name="_loadedSCA" type="int"/>
+    <field name="_loadedPrefab" type="int"/>
+  </component>
+
+  <component name="RenderPass" parent="Node">
+    <summary>Base class for render pass components in the rendering pipeline</summary>
+    <details>Abstract base for all render pass types. Render passes define stages in the rendering pipeline, allowing complex effects through multi-pass rendering, post-processing, and custom rendering operations.</details>
+  </component>
+
+  <component name="CompositionTargetRenderPass" parent="RenderPass">
+    <summary>Render pass that outputs to the final composition target</summary>
+    <details>Terminal render pass in the pipeline that writes to the final framebuffer or render target. Used as the last step in multi-pass rendering chains.</details>
+  </component>
+
+  <component name="BlitRenderPass" parent="RenderPass">
+    <summary>Render pass for copying (blitting) between render targets</summary>
+    <details>Efficiently copies pixel data from one render target to another. Commonly used for post-processing effects, texture copying, and multi-target rendering workflows.</details>
+  </component>
+
+  <component name="ClearRenderPass" parent="RenderPass">
+    <summary>Render pass for clearing framebuffer contents</summary>
+    <details>Clears color, depth, and stencil buffers to specified values. Essential for proper multi-pass rendering and avoiding artifacts from previous frame data.</details>
+    <property name="ClearColor" type="color">Color value to clear the color buffer (RGBA format)</property>
+    <property name="ClearDepth" type="float">Depth value to clear the depth buffer (typically 1.0 for far plane)</property>
+    <property name="ClearStencil" type="int">Integer value to clear the stencil buffer (typically 0)</property>
+  </component>
+
+  <component name="DrawObjectsRenderPass" parent="RenderPass">
+    <summary>Render pass for drawing scene objects with tag-based filtering</summary>
+    <details>Renders scene geometry based on object tags and camera configuration. Allows selective rendering of object groups for advanced multi-pass effects and optimization.</details>
+    <property name="Camera" type="fixed">Name of camera to use for object rendering and view/projection matrices</property>
+    <property name="IncludeTags" type="objectTags">Object tags that must be present for objects to be rendered</property>
+    <property name="ExcludeTags" type="objectTags">Object tags that prevent objects from being rendered</property>
+  </component>
+
+  <component name="PipelineStateRenderPass" parent="RenderPass">
+    <summary>Render pass for configuring graphics pipeline state</summary>
+    <details>Sets up the complete graphics pipeline state including blending, culling, depth testing, stencil operations, and viewport configuration. Essential for controlling how geometry is rasterized and composited.</details>
+    <property name="BlendMode" type="BlendMode">Color blending mode for transparency and compositing effects</property>
+    <property name="ColorWriteMode" type="ColorWriteMode">Which color channels are written to the framebuffer</property>
+    <property name="CullMode" type="CullMode">Triangle face culling mode for performance optimization</property>
+    <property name="DepthTestFunction" type="CompareFunc">Comparison function for depth buffer testing</property>
+    <property name="DepthWriteEnabled" type="bool">Whether to write depth values to the depth buffer</property>
+    <property name="ViewportMode" type="ViewportMode" default="Relative">Coordinate system for viewport rectangle specification</property>
+    <property name="ScissorMode" type="ViewportMode" default="Relative">Coordinate system for scissor rectangle specification</property>
+    <property name="Viewport" type="vec4">Viewport rectangle (x, y, width, height) for rendering area</property>
+    <property name="Scissor" type="vec4">Scissor rectangle (x, y, width, height) for pixel clipping</property>
+    <property name="StencilTestFunction" type="CompareFunc">Comparison function for stencil buffer testing</property>
+    <property name="StencilReferenceValue" type="int">Reference value used in stencil test comparisons</property>
+    <property name="StencilMask" type="int">Bitmask applied to stencil values before testing</property>
+    <property name="StencilFailOperation" type="StencilOp">Operation when stencil test fails</property>
+    <property name="StencilPassDepthFailOperation" type="StencilOp">Operation when stencil test passes but depth test fails</property>
+    <property name="StencilPassDepthPassOperation" type="StencilOp">Operation when both stencil and depth tests pass</property>
+    <property name="StencilWriteEnabled" type="bool">Whether to write computed stencil values to the stencil buffer</property>
+  </component>
+
+  <component name="TextBlock3D" parent="Node3D" concept="TextBlockConcept">
+    <summary>3D text renderer for displaying typography in 3D space</summary>
+    <details>Renders text as 3D geometry that can be positioned, rotated, and scaled in 3D space. Supports font styling and integrates with the 3D lighting and material system.</details>
+    <handles event="Render"/>
+    <handles event="Create"/>
+    <field name="_node3D" type="Node3D" pointer="true"/>
+  </component>
+
+  <component name="Light3D" parent="Node3D">
+    <summary>3D light source for scene illumination and shadow casting</summary>
+    <details>Provides dynamic lighting for 3D scenes with support for point and spot light types. Affects material shading, shadow casting, and overall scene atmosphere.</details>
+    <handles event="Render"/>
+    <property name="Color" type="color">RGB color and intensity of the light emission</property>
+    <property name="SpotAngle" type="vec2">Inner and outer cone angles for spot lights (X=inner, Y=outer in degrees)</property>
+    <property name="Intensity" type="float" default="1">Brightness multiplier for light output (1.0 = normal intensity)</property>
+    <property name="Range" type="float" default="10">Maximum distance at which light affects surfaces (for performance optimization)</property>
+    <property name="Type" type="LightType">Type of light source (point or spot)</property>
+  </component>
+
+  <component name="SpriteView" parent="Node3D">
+    <summary>Billboard sprite renderer for 2D images in 3D space</summary>
+    <details>Displays 2D images as billboards that automatically face the camera. Useful for particle effects, UI elements in 3D, icons, and other 2D content that needs 3D positioning.</details>
+    <handles event="Render"/>
+    <property name="Image" type="Texture" pointer="true">2D image texture to display on the billboard sprite</property>
+    <property name="Bounds" type="vec4">Texture coordinates and sizing (X=U, Y=V, Z=width, W=height)</property>
+  </component>
+
+</module>

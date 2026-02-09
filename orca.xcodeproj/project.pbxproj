@@ -174,8 +174,6 @@
 		782E9EEB2E97EF6F009C3946 /* filesystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 782E9EE62E97EF6F009C3946 /* filesystem.h */; };
 		782E9EEC2E984174009C3946 /* liborca.filesystem.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA6E12E15241200FFCFD9 /* liborca.filesystem.so */; };
 		782E9EEE2E98E94C009C3946 /* p_project.c in Sources */ = {isa = PBXBuildFile; fileRef = 782E9EED2E98E946009C3946 /* p_project.c */; };
-		7831E45C2F34D8D300236E4E /* shader_stab.h in Headers */ = {isa = PBXBuildFile; fileRef = 7831E45B2F34D8D000236E4E /* shader_stab.h */; };
-		7831E45E2F34DBDA00236E4E /* model_stab.h in Headers */ = {isa = PBXBuildFile; fileRef = 7831E45D2F34DBD700236E4E /* model_stab.h */; };
 		7831E4602F34DD0000236E4E /* r_tangents.h in Headers */ = {isa = PBXBuildFile; fileRef = 7831E45F2F34DCF700236E4E /* r_tangents.h */; };
 		783976FF2E54B25B00DCFC0F /* core.h in Headers */ = {isa = PBXBuildFile; fileRef = 783976FE2E54B25900DCFC0F /* core.h */; };
 		783977032E54CA5E00DCFC0F /* renderer.h in Headers */ = {isa = PBXBuildFile; fileRef = 783977022E54CA5A00DCFC0F /* renderer.h */; };
@@ -361,8 +359,6 @@
 		782E9EE72E97EF6F009C3946 /* filesystem_export.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = filesystem_export.c; sourceTree = "<group>"; };
 		782E9EE82E97EF6F009C3946 /* filesystem_properties.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = filesystem_properties.h; sourceTree = "<group>"; };
 		782E9EED2E98E946009C3946 /* p_project.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = p_project.c; sourceTree = "<group>"; };
-		7831E45B2F34D8D000236E4E /* shader_stab.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = shader_stab.h; sourceTree = "<group>"; };
-		7831E45D2F34DBD700236E4E /* model_stab.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = model_stab.h; sourceTree = "<group>"; };
 		7831E45F2F34DCF700236E4E /* r_tangents.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = r_tangents.h; sourceTree = "<group>"; };
 		78346DE62C96EFE800E0CFD1 /* SceneKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SceneKit.h; sourceTree = "<group>"; };
 		78346DE92C96F06100E0CFD1 /* PrefabView3D.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = PrefabView3D.c; sourceTree = "<group>"; };
@@ -799,8 +795,6 @@
 		78346DE52C96EFC900E0CFD1 /* SceneKit */ = {
 			isa = PBXGroup;
 			children = (
-				7831E45D2F34DBD700236E4E /* model_stab.h */,
-				7831E45B2F34D8D000236E4E /* shader_stab.h */,
 				780C82682E01EE7100228DEC /* Light3D.c */,
 				78C7376B2B8F60C600FD598E /* Model3D.c */,
 				78766BBE2C93208400A2DF11 /* Node3D.c */,
@@ -1189,10 +1183,8 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7831E45E2F34DBDA00236E4E /* model_stab.h in Headers */,
 				781CA7452E154E5300FFCFD9 /* SceneKit.h in Headers */,
 				78BCC2192E64472E00CA0A41 /* SceneKit_properties.h in Headers */,
-				7831E45C2F34D8D300236E4E /* shader_stab.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2578,7 +2570,6 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
-					ORCA_FEATURE_3D,
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -2652,7 +2643,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_PREPROCESSOR_DEFINITIONS = ORCA_FEATURE_3D;
+				GCC_PREPROCESSOR_DEFINITIONS = "";
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
