@@ -22,10 +22,14 @@
 #include <lua5.3/lauxlib.h>
 #include <lua5.3/lua.h>
 #include <lua5.3/lualib.h>
-#else
+#elif __has_include(<lua/lua.h>)
 #include <lua/lauxlib.h>
 #include <lua/lua.h>
 #include <lua/lualib.h>
+#else
+#include <lauxlib.h>
+#include <lua.h>
+#include <lualib.h>
 #endif
 
 #include <libxml/tree.h>
