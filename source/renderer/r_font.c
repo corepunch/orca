@@ -198,7 +198,7 @@ T_GetSize(FT_Face face, struct view_text const* text, struct rect* rcursor)
   struct WI_Size textSize = { 0, (int)FT_SCALE(lineHeight) };
   uint32_t textwidth = 0;
   uint32_t wordwidth = 0;
-  float spaceWidth = 0;
+  FT_Pos spaceWidth = 0;
   uint32_t cursor = 0;
   FT_UInt prev_glyph_index = 0;
 
@@ -211,7 +211,7 @@ T_GetSize(FT_Face face, struct view_text const* text, struct rect* rcursor)
     return textSize;
 
   if (FT_Load_CharGlyph(face, ' ', FT_LOAD_DEFAULT)) {
-    spaceWidth = FT_SCALE(face->glyph->metrics.horiAdvance);
+    spaceWidth = (uint32_t)FT_SCALE(face->glyph->metrics.horiAdvance);
   }
 
   for (lpcString_t str = text->string;; cursor++) {
@@ -224,13 +224,13 @@ T_GetSize(FT_Face face, struct view_text const* text, struct rect* rcursor)
       rcursor->width = 0;
       rcursor->height = FT_SCALE(lineHeight);
     }
-
     if (isspace(charcode)) {
+      printf("Next line \"%s\" %d %d %d %d\n", str, textwidth, wordwidth, (int)spaceWidth, text->availableWidth);
       if (eos) {
         spaceWidth = 0;
       }
       if (textwidth == 0) {
-        textwidth += spaceWidth;
+//        textwidth += spaceWidth; << what was this???
         // first word print anyway
       } else if (textwidth + wordwidth + spaceWidth > text->availableWidth) {
         textSize.height += /*text->lineSpacing **/ FT_SCALE(lineHeight);
@@ -305,8 +305,7 @@ Text_Print(struct view_text const* input, struct Texture** img, bool_t reuse)
   // FT_SCALE(descender)); 		textSize.height += FT_SCALE(lineHeight);
   //	}
 
-  byte_t* image_data =
-    ZeroAlloc(textSize.width * textSize.height * sizeof(uint8_t));
+  byte_t* image_data = ZeroAlloc(textSize.width * textSize.height * sizeof(uint8_t));
 
   if (image_data == NULL)
     return E_OUTOFMEMORY;
@@ -322,6 +321,7 @@ Text_Print(struct view_text const* input, struct Texture** img, bool_t reuse)
     bool_t const eos = !*str;
     uint32_t const charcode = *str ? u8_readchar(&str) : ' ';
     if (isspace(charcode)) {
+      printf("Print line \"%s\" %d %d %d %d\n", str, textwidth, wordwidth, (int)spaceWidth, text.availableWidth);
       // first word print anyway
       if (textwidth == 0) {
         x += spaceWidth;
@@ -471,8 +471,8 @@ Font_Load(lpcString_t szFileName)
 HRESULT
 Text_GetInsets(struct view_text const* text, struct edges* edges)
 {
-  if (FT_Set_Pixel_Sizes(
-        T_GetFontFace(text), 0, text->fontSize * text->backingScale) ||
+  if (FT_Set_Pixel_Sizes(T_GetFontFace(text), 0,
+                         text->fontSize * text->backingScale) ||
       (text->flags & RF_USE_FONT_HEIGHT)) {
     *edges = (struct edges){ 0 };
     return S_OK;
