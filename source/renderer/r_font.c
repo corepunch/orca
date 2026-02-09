@@ -225,7 +225,6 @@ T_GetSize(FT_Face face, struct view_text const* text, struct rect* rcursor)
       rcursor->height = FT_SCALE(lineHeight);
     }
     if (isspace(charcode)) {
-      printf("Next line \"%s\" %d %d %d %d\n", str, textwidth, wordwidth, (int)spaceWidth, text->availableWidth);
       if (eos) {
         spaceWidth = 0;
       }
@@ -321,7 +320,6 @@ Text_Print(struct view_text const* input, struct Texture** img, bool_t reuse)
     bool_t const eos = !*str;
     uint32_t const charcode = *str ? u8_readchar(&str) : ' ';
     if (isspace(charcode)) {
-      printf("Print line \"%s\" %d %d %d %d\n", str, textwidth, wordwidth, (int)spaceWidth, text.availableWidth);
       // first word print anyway
       if (textwidth == 0) {
         x += spaceWidth;
