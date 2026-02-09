@@ -49,6 +49,12 @@ To install dependencies on **macOS**, use **Homebrew**:
 brew install libpng freetype jpeg-turbo lua libxml2 lz4 zlib curl pkg-config
 ```
 
+**Note**: If `pkg-config` fails to find `freetype`, you may need to run:
+
+```sh
+brew link --overwrite freetype
+```
+
 ## Building the Project
 
 Before building, you must initialize and update the git submodules to fetch the platform package:
@@ -63,13 +69,19 @@ To build the project, run:
 make
 ```
 
-To run the project after building, use:
+After building, you can run the example application:
 
 ```sh
-make run
+build/bin/orca samples/Example
 ```
 
-For a clean build and immediate execution, use:
+Or simply use:
+
+```sh
+make example
+```
+
+For a clean build and immediate execution with the data folder, use:
 
 ```sh
 make andrun
