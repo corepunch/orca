@@ -1,4 +1,8 @@
+#if __has_include(<libpng16/png.h>)
+#include <libpng16/png.h>
+#else
 #include <png.h>
+#endif
 
 #include "../r_local.h"
 
