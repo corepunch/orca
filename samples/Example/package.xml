@@ -6,8 +6,8 @@
     <PropertyType Name="Speed" Type="float" Namespace="Custom"/>
   </PropertyTypeLibrary>
   <MessageLibrary Name="Messages">
-    <SystemMessage Name="SystemMessage" key="q" message="KeyDown"/>
-    <SystemMessage Name="SystemMessage" message="WindowClosed"/>
-    <SystemMessage Name="SystemMessage" message="RequestReload"/>
+    <SystemMessage Message="KeyDown" Key="q">return</SystemMessage>
+    <SystemMessage Message="WindowClosed">return</SystemMessage>
+    <SystemMessage Message="RequestReload">window:refresh()</SystemMessage>
   </MessageLibrary>
 </Project>
