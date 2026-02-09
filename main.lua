@@ -53,7 +53,7 @@ function M.run(config)
     local Screen = require(config.startup_screen)
     screen = Screen()
   else
-    error("No startup_screen specified in config")
+    error("No startup_screen specified in config. Please provide config.startup_screen as a module path (e.g., \"screens.MainScreen\")")
   end
   
   -- Initialize editor with the screen
@@ -92,7 +92,7 @@ end
 
 -- Helper function to create a message handler matcher
 -- @param conditions table of conditions to match (e.g., {Message = "KeyDown", key = "q"})
--- @param action function or string to execute when matched
+-- @param action function to execute when matched
 function M.messageHandler(conditions, action)
   return {
     match = function(msg)
@@ -110,7 +110,13 @@ function M.messageHandler(conditions, action)
       return true
     end,
     action = type(action) == "function" and action or function()
-      loadstring(action)()
+      -- For string actions, use load() (Lua 5.2+) instead of deprecated loadstring
+      local fn, err = load(action)
+      if fn then
+        fn()
+      else
+        error("Invalid action string: " .. tostring(err))
+      end
     end
   }
 end
