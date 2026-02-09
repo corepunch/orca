@@ -1,0 +1,78 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y \
+            libpng-dev \
+            libfreetype6-dev \
+            libjpeg-dev \
+            liblua5.4-dev \
+            libxml2-dev \
+            liblz4-dev \
+            zlib1g-dev \
+            libcurl4-openssl-dev \
+            libwayland-dev \
+            libegl1-mesa-dev \
+            libgles2-mesa-dev
+
+      - name: Build
+        run: make
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: orca-linux
+          path: |
+            build/bin/orca
+            build/lib/liborca.so
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          brew install \
+            libpng \
+            freetype \
+            jpeg-turbo \
+            lua \
+            libxml2 \
+            lz4 \
+            zlib \
+            curl \
+            pkg-config
+
+      - name: Build
+        run: make
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: orca-macos
+          path: |
+            build/bin/orca
+            build/lib/liborca.so
