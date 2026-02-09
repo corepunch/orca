@@ -13,7 +13,10 @@ PLATFORM_LIBDIR = libs/platform
 #LIBS = -lm -ldl -lpthread -llua5.4 -lfreetype -lpng -ljpeg -lz -llz4 -lcurl -lxml2 -lplatform
 LIBS = -ldl -lpthread -lcurl -lplatform
 CC = gcc
-CFLAGS = -x c -g -fpic -I. -I$(CURDIR)
+# Allow CFLAGS to be passed from luarocks, but ensure we have base flags
+CFLAGS ?= -O2 -g
+# Always add these flags, even if CFLAGS is passed from outside
+override CFLAGS += -fpic -I. -I$(CURDIR)
 LDFLAGS = -L$(LIBDIR)
 MODULES = geometry orca platform sysutil console localization parsers UIKit debug network renderer filesystem core SceneKit vsomeip server editor backend
 SOURCEMODULES = $(addprefix ${SOURCEDIR}/, $(MODULES))
@@ -23,8 +26,8 @@ SOURCEMODULES2 = $(addprefix /, $(MODULES))
 UNITEOBJECTS = $(addsuffix .o, $(MODULES))
 UNITE = $(patsubst %.c, %.o, $(foreach dir,$(SOURCEMODULES),$(wildcard $(dir)/*.c)))
 #using pkg-config
-CFLAGS += $(shell pkg-config --cflags zlib liblz4 lua5.4 libjpeg freetype2 libxml-2.0 2>/dev/null)
-LDFLAGS += $(shell pkg-config --libs zlib liblz4 lua5.4 freetype2 libjpeg libpng libxml-2.0 2>/dev/null)
+override CFLAGS += $(shell pkg-config --cflags zlib liblz4 lua5.4 libjpeg freetype2 libxml-2.0 2>/dev/null)
+override LDFLAGS += $(shell pkg-config --libs zlib liblz4 lua5.4 freetype2 libjpeg libpng libxml-2.0 2>/dev/null)
 
 ifeq ($(shell uname -s),Darwin)
 	LIBS += -framework OpenGL -framework IOSurface
@@ -55,7 +58,7 @@ platform:
 buildunite: clean $(SOURCEMODULES2)
 
 buildlib: platform
-	$(CC) $(addprefix ${OBJECTDIR}/,$(UNITEOBJECTS)) -shared -Wall $(LIBS) -o $(TARGETLIB) $(LDFLAGS)
+	$(CC) $(addprefix ${OBJECTDIR}/,$(UNITEOBJECTS)) -shared -Wall $(LIBS) -o $(TARGETLIB) $(LDFLAGS) -Wl,-rpath,'$$ORIGIN'
 
 app: platform
 	$(CC) $(CFLAGS) $(SOURCEDIR)/orca.c -Wall $(LIBS) -o $(TARGET) $(LDFLAGS)
@@ -151,8 +154,8 @@ install: all
 	mkdir -p $(INST_LUADIR)/orca
 	# Install the binary
 	install -m 0755 $(TARGET) $(INST_BINDIR)/
-	# Install the shared library
-	install -m 0755 $(TARGETLIB) $(INST_LIBDIR)/
+	# Install the shared library (rename for Lua's require system)
+	install -m 0755 $(TARGETLIB) $(INST_LIBDIR)/orca.so
 	# Install the platform library
 	install -m 0755 $(LIBDIR)/libplatform.so $(INST_LIBDIR)/
 	# Install Lua modules

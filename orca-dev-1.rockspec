@@ -28,36 +28,9 @@ dependencies = {
   "lua >= 5.4, < 5.5"
 }
 
-external_dependencies = {
-  LIBPNG = {
-    header = "png.h",
-    library = "png"
-  },
-  FREETYPE = {
-    header = "ft2build.h",
-    library = "freetype"
-  },
-  JPEG = {
-    header = "jpeglib.h",
-    library = "jpeg"
-  },
-  XML2 = {
-    header = "libxml/tree.h",
-    library = "xml2"
-  },
-  LZ4 = {
-    header = "lz4.h",
-    library = "lz4"
-  },
-  ZLIB = {
-    header = "zlib.h",
-    library = "z"
-  },
-  CURL = {
-    header = "curl/curl.h",
-    library = "curl"
-  }
-}
+-- Note: External dependencies (libpng, freetype, jpeg, xml2, lz4, zlib, curl)
+-- are detected via pkg-config in the Makefile. Ensure these are installed
+-- on your system before building.
 
 build = {
   type = "make",
