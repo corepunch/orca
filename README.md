@@ -81,10 +81,6 @@ Or simply use:
 make example
 ```
 
-### Required Data Folder
-
-To run the project, ensure that the `../icui` folder is present, as it contains necessary data files. Reach out to **@icherna** to obtain the required data packages.
-
 ## Why MoonScript?
 
 ORCA supports multiple approaches for building applications, each with their own strengths:
