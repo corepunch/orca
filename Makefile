@@ -34,7 +34,13 @@ else
 	LDFLAGS += -Wl,-rpath,'$$ORIGIN/../../$(LIBDIR)'
 endif
 
-.PHONY: default all CLEAN directories unite buildlib app platform example
+# LuaRocks installation directories (can be overridden)
+INST_PREFIX ?= /usr/local
+INST_BINDIR ?= $(INST_PREFIX)/bin
+INST_LIBDIR ?= $(INST_PREFIX)/lib/lua/5.4
+INST_LUADIR ?= $(INST_PREFIX)/share/lua/5.4
+
+.PHONY: default all CLEAN directories unite buildlib app platform example install
 
 default: directories modules unite
 all: default
@@ -137,3 +143,18 @@ fonts:
 	../images/vga8x12_extra_chars.png \
 	../source/renderer/builtin/r_builtin_charset2.c \
 	images_vga8x12_extra_chars_png && cd ..
+
+# Install target for LuaRocks
+install: all
+	mkdir -p $(INST_BINDIR)
+	mkdir -p $(INST_LIBDIR)
+	mkdir -p $(INST_LUADIR)/orca
+	# Install the binary
+	install -m 0755 $(TARGET) $(INST_BINDIR)/
+	# Install the shared library
+	install -m 0755 $(TARGETLIB) $(INST_LIBDIR)/
+	# Install the platform library
+	install -m 0755 $(LIBDIR)/libplatform.so $(INST_LIBDIR)/
+	# Install Lua modules
+	install -m 0644 source/core/behaviour.lua $(INST_LUADIR)/orca/behaviour.lua
+	install -m 0644 main.lua $(INST_LUADIR)/orca/main.lua
