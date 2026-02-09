@@ -78,15 +78,9 @@ jobs:
           LUA_PREFIX=$(brew --prefix lua)
           LUA_VERSION=$(lua -v 2>&1 | grep -oE '[0-9]+\.[0-9]+' | head -1)
           
-          # Detect the correct include directory
-          if [ -d "$LUA_PREFIX/include/lua" ]; then
-            LUA_INCLUDE_DIR="$LUA_PREFIX/include/lua"
-          elif [ -d "$LUA_PREFIX/include" ]; then
-            LUA_INCLUDE_DIR="$LUA_PREFIX/include"
-          else
-            echo "Warning: Could not find Lua include directory at $LUA_PREFIX/include/lua or $LUA_PREFIX/include"
-            LUA_INCLUDE_DIR="$LUA_PREFIX/include"
-          fi
+          # Set include directory to parent of lua/ subdirectory
+          # This allows #include <lua/lua.h> to work correctly
+          LUA_INCLUDE_DIR="$LUA_PREFIX/include"
           
           # Create lua5.4.pc file if it doesn't exist
           if [ ! -f "$LUA_PC_DIR/lua5.4.pc" ]; then
@@ -103,12 +97,15 @@ jobs:
           fi
           
           # Verify the setup
+          echo "Lua prefix: $LUA_PREFIX"
           echo "Lua include directory: $LUA_INCLUDE_DIR"
           echo "Checking lua5.4 pkg-config:"
           if ! pkg-config --cflags --libs lua5.4; then
             echo "Warning: lua5.4 pkg-config check failed"
             pkg-config --cflags --libs lua5.4 2>&1 || true
           fi
+          echo "Checking if Lua headers exist:"
+          ls -la "$LUA_INCLUDE_DIR/lua/" || echo "Lua headers not found at $LUA_INCLUDE_DIR/lua/"
 
       - name: Build
         run: make
