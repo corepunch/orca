@@ -70,13 +70,32 @@ jobs:
             curl \
             pkg-config
 
-      - name: Setup Lua pkg-config
+      - name: Setup Lua for pkg-config
         run: |
-          # Create lua5.4.pc symlink for compatibility
+          # Homebrew's lua provides lua.pc, but Makefile expects lua5.4
+          # Create a lua5.4.pc that points to the Homebrew Lua installation
           LUA_PC_DIR=$(brew --prefix)/lib/pkgconfig
-          if [ -f "$LUA_PC_DIR/lua.pc" ] && [ ! -f "$LUA_PC_DIR/lua5.4.pc" ]; then
-            ln -s "$LUA_PC_DIR/lua.pc" "$LUA_PC_DIR/lua5.4.pc"
+          LUA_PREFIX=$(brew --prefix lua)
+          LUA_VERSION=$(lua -v 2>&1 | grep -oE '[0-9]+\.[0-9]+' | head -1)
+          
+          # Create lua5.4.pc file if it doesn't exist
+          if [ ! -f "$LUA_PC_DIR/lua5.4.pc" ]; then
+            echo "prefix=$LUA_PREFIX" > "$LUA_PC_DIR/lua5.4.pc"
+            echo "exec_prefix=\${prefix}" >> "$LUA_PC_DIR/lua5.4.pc"
+            echo "libdir=\${exec_prefix}/lib" >> "$LUA_PC_DIR/lua5.4.pc"
+            echo "includedir=\${prefix}/include/lua" >> "$LUA_PC_DIR/lua5.4.pc"
+            echo "" >> "$LUA_PC_DIR/lua5.4.pc"
+            echo "Name: Lua" >> "$LUA_PC_DIR/lua5.4.pc"
+            echo "Description: An Extensible Extension Language" >> "$LUA_PC_DIR/lua5.4.pc"
+            echo "Version: $LUA_VERSION" >> "$LUA_PC_DIR/lua5.4.pc"
+            echo "Requires:" >> "$LUA_PC_DIR/lua5.4.pc"
+            echo "Libs: -L\${libdir} -llua" >> "$LUA_PC_DIR/lua5.4.pc"
+            echo "Cflags: -I\${includedir}" >> "$LUA_PC_DIR/lua5.4.pc"
           fi
+          
+          # Verify the setup
+          echo "Checking lua5.4 pkg-config:"
+          pkg-config --cflags --libs lua5.4 || echo "Warning: lua5.4 pkg-config check failed"
 
       - name: Build
         run: make
