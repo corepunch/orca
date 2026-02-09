@@ -16,7 +16,7 @@ CC = gcc
 # Allow CFLAGS to be passed from luarocks, but ensure we have base flags
 CFLAGS ?= -O2 -g
 # Always add these flags, even if CFLAGS is passed from outside
-override CFLAGS += -fpic -I. -I$(CURDIR)
+CFLAGS += -fpic -I. -I$(CURDIR)
 LDFLAGS = -L$(LIBDIR)
 MODULES = geometry orca platform sysutil console localization parsers UIKit debug network renderer filesystem core SceneKit vsomeip server editor backend
 SOURCEMODULES = $(addprefix ${SOURCEDIR}/, $(MODULES))
@@ -25,9 +25,8 @@ HEADERS = $(wildcard *.h)
 SOURCEMODULES2 = $(addprefix /, $(MODULES))
 UNITEOBJECTS = $(addsuffix .o, $(MODULES))
 UNITE = $(patsubst %.c, %.o, $(foreach dir,$(SOURCEMODULES),$(wildcard $(dir)/*.c)))
-#using pkg-config
-override CFLAGS += $(shell pkg-config --cflags zlib liblz4 lua5.4 libjpeg freetype2 libxml-2.0 2>/dev/null)
-override LDFLAGS += $(shell pkg-config --libs zlib liblz4 lua5.4 freetype2 libjpeg libpng libxml-2.0 2>/dev/null)
+CFLAGS += $(shell pkg-config --cflags zlib liblz4 lua5.4 libjpeg freetype2 libxml-2.0 2>/dev/null)
+LDFLAGS += $(shell pkg-config --libs zlib liblz4 lua5.4 freetype2 libjpeg libpng libxml-2.0 2>/dev/null)
 
 ifeq ($(shell uname -s),Darwin)
 	LIBS += -framework OpenGL -framework IOSurface
