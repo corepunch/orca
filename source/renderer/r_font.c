@@ -191,20 +191,30 @@ FT_Load_CharGlyph(FT_Face face, FT_ULong charcode, FT_Int32 load_flags)
   return TRUE;
 }
 
-/// Context structure for measuring text runs
+/// Context structure for measuring text runs.
+/// This accumulates measurement state across multiple runs.
 typedef struct {
-  struct ViewText const* text;
-  struct WI_Size textSize;
-  uint32_t textwidth;
-  uint32_t wordwidth;
-  uint32_t cursor;
-  FT_UInt prev_glyph_index;
-  FT_Pos maxLineHeight;
-  struct rect* rcursor;
-  bool_t isFirstRun;
+  struct ViewText const* text;     ///< The text being measured
+  struct WI_Size textSize;         ///< Accumulated text dimensions
+  uint32_t textwidth;              ///< Current line width
+  uint32_t wordwidth;              ///< Current word width
+  uint32_t cursor;                 ///< Character position cursor
+  FT_UInt prev_glyph_index;        ///< Previous glyph for kerning
+  FT_Pos maxLineHeight;            ///< Maximum line height encountered
+  struct rect* rcursor;            ///< Optional cursor rectangle output
+  bool_t isFirstRun;               ///< TRUE if this is the first run
 } MeasureContext;
 
-/// Callback to measure a single run - called by enumRunsFunc
+/// Callback to measure a single text run.
+/// Called by the caller's enumRunsFunc for each run.
+/// This function:
+/// 1. Sets the appropriate font face and size for the run
+/// 2. Measures each character considering word wrapping
+/// 3. Tracks maximum line height across runs
+/// 4. Applies kerning within the run
+/// @param run The text run to measure
+/// @param userData Pointer to MeasureContext
+/// @return TRUE to continue to next run, FALSE to stop
 static bool_t
 T_MeasureRunCallback(struct ViewTextRun const* run, void* userData)
 {
@@ -280,6 +290,21 @@ T_MeasureRunCallback(struct ViewTextRun const* run, void* userData)
   return TRUE; // Continue to next run
 }
 
+/// Calculate the size required to render text.
+/// Supports both single-run and multi-run text via the enumRunsFunc callback.
+/// 
+/// For single-run text (enumRunsFunc == NULL):
+///   - Measures text->run only
+/// 
+/// For multi-run text (enumRunsFunc != NULL):
+///   - Calls enumRunsFunc which should call T_MeasureRunCallback for each run
+///   - Each run can have different font, size, and style
+///   - Line height is determined by the tallest font used on each line
+/// 
+/// @param face Legacy parameter (unused for multi-run, kept for compatibility)
+/// @param text The text to measure
+/// @param rcursor Optional output for cursor rectangle position
+/// @return The dimensions (width x height) required to render the text
 static struct WI_Size
 T_GetSize(FT_Face face, struct ViewText const* text, struct rect* rcursor)
 {
@@ -355,6 +380,10 @@ Text_Print(struct ViewText const* input, struct Texture** img, bool_t reuse)
   if (image_data == NULL)
     return E_OUTOFMEMORY;
 
+  // TODO: Add multi-run support using enumRunsFunc callback pattern
+  // Similar to T_GetSize, create a RenderContext and T_RenderRunCallback
+  // to render each run with proper font face switching
+  
   float spaceWidth = 0;
   if (FT_Load_CharGlyph(face, ' ', FT_LOAD_DEFAULT)) {
     spaceWidth = FT_SCALE(face->glyph->metrics.horiAdvance);

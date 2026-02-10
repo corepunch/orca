@@ -442,44 +442,79 @@ typedef enum
   FS_COUNT,
 } FONTSTYLE;
 
+/// Represents a single text run with specific formatting.
+/// A text run is a contiguous sequence of text with uniform formatting properties
+/// such as font, size, and style. Multiple runs can be combined to create rich text.
 struct ViewTextRun
 {
-  lpcString_t string;
-  struct font* font;
-  uint32_t fontSize;
-  FONTSTYLE fontStyle;
-  float letterSpacing;
-  uint32_t fixedCharacterWidth;
+  lpcString_t string;              ///< UTF-8 text content of this run
+  struct font* font;               ///< Font to use (NULL = use default)
+  uint32_t fontSize;               ///< Font size in pixels
+  FONTSTYLE fontStyle;             ///< Font style (normal, bold, italic, etc.)
+  float letterSpacing;             ///< Additional spacing between letters
+  uint32_t fixedCharacterWidth;    ///< Fixed character width (0 = proportional)
 };
 
 /// Callback function type for processing each text run.
-/// The renderer provides this callback to process each run.
+/// The renderer provides this callback to process each run during enumeration.
 /// @param run The current text run being processed
 /// @param userData User-defined data passed to the callback
 /// @return TRUE to continue enumeration, FALSE to stop
 typedef bool_t (*EnumTextRunProc)(struct ViewTextRun const* run, void* userData);
 
-/// Callback function type for enumerating text runs.
-/// The caller (e.g., TextBlock) implements this to provide runs to the renderer.
-/// The implementation should call the provided callback for each run.
+/// Callback function type for enumerating text runs (WinAPI-style enumeration).
+/// The caller (e.g., TextBlock) implements this to provide multiple runs to the renderer.
+/// The implementation should call the provided callback for each run in sequence.
+///
+/// Example implementation:
+/// @code
+/// bool_t MyEnumRuns(EnumTextRunProc callback, void* callbackData, void* userData) {
+///   MyTextBlock* block = (MyTextBlock*)userData;
+///   for (int i = 0; i < block->runCount; i++) {
+///     if (!callback(&block->runs[i], callbackData))
+///       return FALSE;  // Caller requested stop
+///   }
+///   return TRUE;
+/// }
+/// @endcode
+///
 /// @param callback The renderer's callback to process each run
 /// @param callbackData Data to pass to the callback
 /// @param userData Caller's data (e.g., TextBlock instance)
 /// @return TRUE if enumeration completed successfully
 typedef bool_t (*EnumTextRunsProc)(EnumTextRunProc callback, void* callbackData, void* userData);
 
+/// View representation of text for rendering.
+/// Supports both single-run (simple) text and multi-run (rich) text via callbacks.
+///
+/// Single-run usage (backward compatible):
+/// @code
+/// struct ViewText text = {
+///   .run = { .string = "Hello", .fontSize = 12, ... },
+///   .enumRunsFunc = NULL  // Single run mode
+/// };
+/// @endcode
+///
+/// Multi-run usage (rich text):
+/// @code
+/// struct ViewText text = {
+///   .run = { .string = "Primary", .fontSize = 12, ... },  // Primary run
+///   .enumRunsFunc = MyEnumRuns,  // Function to enumerate additional runs
+///   .enumRunsData = myTextBlock  // Data for enumRunsFunc
+/// };
+/// @endcode
 struct ViewText
 {
-  struct ViewTextRun run;
-  uint32_t flags;
-  uint32_t availableWidth;
-  float lineSpacing;
-  float backingScale;
-  uint32_t cursor;
-  uint32_t underlineWidth;
-  uint32_t underlineOffset;
-  EnumTextRunsProc enumRunsFunc;  ///< Optional: caller's function to enumerate runs
-  void* enumRunsData;              ///< Optional: caller's data for enumRunsFunc
+  struct ViewTextRun run;          ///< Primary/default text run (always used)
+  uint32_t flags;                  ///< Rendering flags (RF_USE_FONT_HEIGHT, etc.)
+  uint32_t availableWidth;         ///< Maximum width for text wrapping
+  float lineSpacing;               ///< Line spacing multiplier
+  float backingScale;              ///< DPI scaling factor
+  uint32_t cursor;                 ///< Cursor position for editing
+  uint32_t underlineWidth;         ///< Underline thickness (0 = none)
+  uint32_t underlineOffset;        ///< Underline offset from baseline
+  EnumTextRunsProc enumRunsFunc;  ///< Optional: callback to enumerate multiple runs
+  void* enumRunsData;              ///< Optional: user data for enumRunsFunc
 };
 
 // typedef struct screen_rect {
