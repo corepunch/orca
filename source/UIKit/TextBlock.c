@@ -126,6 +126,13 @@ HANDLER(TextBlockConcept, MakeText)
 //  lpcString_t szTextContent = OBJ_GetTextContent(hObject);
   pViewText->run[0] = _MakeViewTextRun(hObject, pTextRun, _GetTextBlockText(hObject, pTextBlockConcept, pTextRun));
   pViewText->numTextRuns = 1;
+  FOR_EACH_OBJECT(run, hObject) {
+    TextRunPtr tr = GetTextRun(run);
+    if (tr) {
+      lpcString_t str = *tr->Text?tr->Text:OBJ_GetTextContent(run);
+      pViewText->run[pViewText->numTextRuns++] = _MakeViewTextRun(hObject, tr, str);
+    }
+  }
   pViewText->flags = pTextBlockConcept->UseFullFontHeight ? RF_USE_FONT_HEIGHT : 0;
 //  pViewText->lineSpacing = pTextRun->LineHeight;
   pViewText->availableWidth = pMakeText->availableSpace;
