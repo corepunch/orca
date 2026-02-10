@@ -113,6 +113,7 @@ T_GetLineMaxBaseline(struct ViewText const* pViewText,
   FT_Int wordWidth = 0;
   FT_UInt prev_glyph_index = 0;
   bool_t firstBaseline = TRUE;
+  FT_Int const maxLineWidth = pViewText->availableWidth * pViewText->scale;
   
   for (struct ViewTextRun const *run = startRun;
        run - pViewText->run < pViewText->numTextRuns;
@@ -140,9 +141,15 @@ T_GetLineMaxBaseline(struct ViewText const* pViewText,
       uint32_t const charcode = u8_readchar(&str);
       
       if (isspace(charcode)) {
+        // Check for newline before processing space
+        if (charcode == '\n') {
+          // Newline - end of current line
+          return maxBaseline;
+        }
+        
         if (lineWidth == 0) {
           lineWidth += spaceWidth;
-        } else if (lineWidth + wordWidth + spaceWidth > pViewText->availableWidth * pViewText->scale) {
+        } else if (lineWidth + wordWidth + spaceWidth > maxLineWidth) {
           // Word wrap - end of current line
           return maxBaseline;
         } else {
@@ -150,11 +157,6 @@ T_GetLineMaxBaseline(struct ViewText const* pViewText,
         }
         lineWidth += wordWidth;
         wordWidth = 0;
-        
-        if (charcode == '\n') {
-          // Newline - end of current line
-          return maxBaseline;
-        }
       } else if (!FT_Load_CharGlyph(face, charcode, FT_LOAD_DEFAULT)) {
         FT_UInt glyph_index = FT_Get_Char_Index(face, charcode);
         FT_Pos advance = FT_SCALE(face->glyph->metrics.horiAdvance);
@@ -410,8 +412,8 @@ Text_Print(struct ViewText const* pViewText,
       lineheight = MAX(lineheight, FT_MulFix(face->height, face->size->metrics.y_scale));
       
       // Calculate line baseline at the start of a new line
-      // We detect line start when text and word widths are 0 and x is at start position
-      if (textwidth == 0 && wordwidth == 0 && x <= 0) {
+      // We detect line start when text and word widths are 0 and x is exactly at start position
+      if (textwidth == 0 && wordwidth == 0 && x == 0) {
         lineBaseline = T_GetLineMaxBaseline(pViewText, run, last, textwidth, spaceWidth);
       }
       
