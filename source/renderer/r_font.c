@@ -149,13 +149,14 @@ T_GetLineMaxBaseline(struct ViewText const* pViewText,
         
         if (lineWidth == 0) {
           lineWidth += spaceWidth;
+          lineWidth += wordWidth;
         } else if (lineWidth + wordWidth + spaceWidth > maxLineWidth) {
           // Word wrap - end of current line
           return maxBaseline;
         } else {
           lineWidth += spaceWidth;
+          lineWidth += wordWidth;
         }
-        lineWidth += wordWidth;
         wordWidth = 0;
       } else if (!FT_Load_CharGlyph(face, charcode, FT_LOAD_DEFAULT)) {
         FT_UInt glyph_index = FT_Get_Char_Index(face, charcode);
@@ -412,8 +413,9 @@ Text_Print(struct ViewText const* pViewText,
       lineheight = MAX(lineheight, FT_MulFix(face->height, face->size->metrics.y_scale));
       
       // Calculate line baseline at the start of a new line
-      // We detect line start when text and word widths are 0 and x is exactly at start position
-      if (textwidth == 0 && wordwidth == 0 && x == 0) {
+      // We detect line start when text and word widths are 0 and x is at initial position
+      // (either -spaceWidth for first line, or 0 after word wrap)
+      if (textwidth == 0 && wordwidth == 0 && (x == 0 || x == -spaceWidth)) {
         lineBaseline = T_GetLineMaxBaseline(pViewText, run, last, textwidth, spaceWidth);
       }
       
