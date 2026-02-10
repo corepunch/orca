@@ -459,7 +459,7 @@ struct ViewTextRun
 
 struct ViewText
 {
-  struct ViewTextRun run;//[MAX_TEXT_RUNS];
+  struct ViewTextRun run[MAX_TEXT_RUNS];
   uint32_t flags;
   uint32_t availableWidth;
   uint32_t cursor;

@@ -27,7 +27,7 @@ is_updated(lpObject_t hObject,
 }
 
 static float
-text_pos(struct vec2 const* padding,
+text_pos(lpcvec2_t padding,
          uint32_t align,
          float size,
          float space)
@@ -124,7 +124,7 @@ HANDLER(TextBlockConcept, MakeText)
   TextRunPtr pTextRun = GetTextRun(hObject);
   struct ViewText* pViewText = pMakeText->text;
 //  lpcString_t szTextContent = OBJ_GetTextContent(hObject);
-  pViewText->run = _MakeViewTextRun(hObject, pTextRun, _GetTextBlockText(hObject, pTextBlockConcept, pTextRun));
+  pViewText->run[0] = _MakeViewTextRun(hObject, pTextRun, _GetTextBlockText(hObject, pTextBlockConcept, pTextRun));
   pViewText->numTextRuns = 1;
   pViewText->flags = pTextBlockConcept->UseFullFontHeight ? RF_USE_FONT_HEIGHT : 0;
 //  pViewText->lineSpacing = pTextRun->LineHeight;
@@ -203,7 +203,7 @@ HANDLER(TextBlock, DrawBrush)
   TextBlockConceptPtr text = GetTextBlockConcept(hObject);
   TextRunPtr run = GetTextRun(hObject);
 
-  if (text->PlaceholderText == run->_text.run.string && pDrawBrush->foreground) {
+  if (text->PlaceholderText == run->_text.run[0].string && pDrawBrush->foreground) {
     static struct BrushShorthand zero = { 0 };
     if (memcmp(&text->Placeholder, &zero, sizeof(struct BrushShorthand))) {
       pDrawBrush->brush = &text->Placeholder;

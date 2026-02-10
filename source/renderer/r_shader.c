@@ -514,7 +514,7 @@ Shader_BindMaterial(struct shader const* shader,
     .height = view->viewSize.y * WI_GetScaling(),
   };
 
-  if (ent->text && ent->text->run.string) {
+  if (ent->text && ent->text->numTextRuns && ent->text->run->string) {
     struct Texture const* label = Text_GetImage(ent->text);
     if (label) {
       texture = label;
