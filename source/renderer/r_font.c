@@ -191,80 +191,128 @@ FT_Load_CharGlyph(FT_Face face, FT_ULong charcode, FT_Int32 load_flags)
   return TRUE;
 }
 
-static struct WI_Size
-T_GetSize(FT_Face face, struct ViewText const* text, struct rect* rcursor)
+/// Context structure for measuring text runs
+typedef struct {
+  struct ViewText const* text;
+  struct WI_Size textSize;
+  uint32_t textwidth;
+  uint32_t wordwidth;
+  uint32_t cursor;
+  FT_UInt prev_glyph_index;
+  FT_Pos maxLineHeight;
+  struct rect* rcursor;
+  bool_t isFirstRun;
+} MeasureContext;
+
+/// Callback to measure a single run - called by enumRunsFunc
+static bool_t
+T_MeasureRunCallback(struct ViewTextRun const* run, void* userData)
 {
+  MeasureContext* ctx = (MeasureContext*)userData;
+  FT_Face face = T_GetFontFace(run);
+  
+  if (FT_Set_Pixel_Sizes(face, 0, run->fontSize))
+    return TRUE; // Continue to next run even if this fails
+  
   FT_Pos lineHeight = FT_MulFix(face->height, face->size->metrics.y_scale);
-  struct WI_Size textSize = { 0, (int)FT_SCALE(lineHeight) };
-  uint32_t textwidth = 0;
-  uint32_t wordwidth = 0;
+  ctx->maxLineHeight = MAX(ctx->maxLineHeight, lineHeight);
+  
   FT_Pos spaceWidth = 0;
-  uint32_t cursor = 0;
-  FT_UInt prev_glyph_index = 0;
-
-  //	if (!(text->flags & RF_USE_FONT_HEIGHT)) {
-  //		textSize.height = (uint32_t)(text->run.fontSize +
-  // FT_SCALE(descender));
-  //	}
-
-  if (FT_Set_Pixel_Sizes(face, 0, text->run.fontSize))
-    return textSize;
-
   if (FT_Load_CharGlyph(face, ' ', FT_LOAD_DEFAULT)) {
     spaceWidth = (uint32_t)FT_SCALE(face->glyph->metrics.horiAdvance);
   }
+  
+  // Don't add space before the first run
+  if (!ctx->isFirstRun && run->string && *run->string) {
+    // Add space between runs (can be customized per run if needed)
+    ctx->wordwidth += spaceWidth;
+  }
+  ctx->isFirstRun = FALSE;
+  
+  for (lpcString_t str = run->string; str && *str;) {
+    uint32_t const charcode = u8_readchar(&str);
 
-  for (lpcString_t str = text->run.string;; cursor++) {
-    bool_t const eos = !*str;
-    uint32_t const charcode = *str ? u8_readchar(&str) : ' ';
-
-    if (cursor == text->cursor && rcursor) {
-      rcursor->x = textwidth + wordwidth;
-      rcursor->y = textSize.height - FT_SCALE(lineHeight);
-      rcursor->width = 0;
-      rcursor->height = FT_SCALE(lineHeight);
+    if (ctx->cursor == ctx->text->cursor && ctx->rcursor) {
+      ctx->rcursor->x = ctx->textwidth + ctx->wordwidth;
+      ctx->rcursor->y = ctx->textSize.height - FT_SCALE(ctx->maxLineHeight);
+      ctx->rcursor->width = 0;
+      ctx->rcursor->height = FT_SCALE(ctx->maxLineHeight);
     }
+    ctx->cursor++;
+    
     if (isspace(charcode)) {
-      // if (eos) spaceWidth = 0;
-      if (textwidth == 0) {
-        textwidth += spaceWidth;
-        // first word print anyway
-      } else if (textwidth + wordwidth + spaceWidth > text->availableWidth) {
-        textSize.height += /*text->lineSpacing **/ FT_SCALE(lineHeight);
-        textSize.width = MAX(textSize.width, textwidth);
-        textwidth = 0;
-        prev_glyph_index = 0;
-      } else { // if (charcode != '\n') {
-        textwidth += spaceWidth;
+      if (ctx->textwidth == 0) {
+        ctx->textwidth += spaceWidth;
+      } else if (ctx->textwidth + ctx->wordwidth + spaceWidth > ctx->text->availableWidth) {
+        ctx->textSize.height += FT_SCALE(ctx->maxLineHeight);
+        ctx->textSize.width = MAX(ctx->textSize.width, ctx->textwidth);
+        ctx->textwidth = 0;
+        ctx->prev_glyph_index = 0;
+      } else {
+        ctx->textwidth += spaceWidth;
       }
-      textwidth += wordwidth;
-      wordwidth = 0;
-      textSize.width = MAX(textSize.width, textwidth);
-      if (eos) {
-        break;
-      } else if (charcode == '\n') {
-        textwidth = 0;
-        prev_glyph_index = 0;
-        textSize.height += /*text->lineSpacing **/ FT_SCALE(lineHeight);
+      ctx->textwidth += ctx->wordwidth;
+      ctx->wordwidth = 0;
+      ctx->textSize.width = MAX(ctx->textSize.width, ctx->textwidth);
+      if (charcode == '\n') {
+        ctx->textwidth = 0;
+        ctx->prev_glyph_index = 0;
+        ctx->textSize.height += FT_SCALE(ctx->maxLineHeight);
       }
     } else if (FT_Load_CharGlyph(face, charcode, FT_LOAD_DEFAULT)) {
       FT_UInt glyph_index = FT_Get_Char_Index(face, charcode);
       FT_Pos advance = FT_SCALE(face->glyph->metrics.horiAdvance);
       
       // Apply kerning adjustment
-      if (prev_glyph_index && glyph_index) {
+      if (ctx->prev_glyph_index && glyph_index) {
         FT_Vector kerning;
-        if (FT_Get_Kerning(face, prev_glyph_index, glyph_index,
+        if (FT_Get_Kerning(face, ctx->prev_glyph_index, glyph_index,
                            FT_KERNING_DEFAULT, &kerning) == 0) {
-          wordwidth += FT_SCALE(kerning.x);
+          ctx->wordwidth += FT_SCALE(kerning.x);
         }
       }
       
-      wordwidth += advance;
-      prev_glyph_index = glyph_index;
+      ctx->wordwidth += advance;
+      ctx->prev_glyph_index = glyph_index;
     }
   }
-  return textSize;
+  
+  return TRUE; // Continue to next run
+}
+
+static struct WI_Size
+T_GetSize(FT_Face face, struct ViewText const* text, struct rect* rcursor)
+{
+  MeasureContext ctx = {
+    .text = text,
+    .textSize = { 0, 0 },
+    .textwidth = 0,
+    .wordwidth = 0,
+    .cursor = 0,
+    .prev_glyph_index = 0,
+    .maxLineHeight = 0,
+    .rcursor = rcursor,
+    .isFirstRun = TRUE
+  };
+  
+  // If enumRunsFunc callback is provided, let the caller enumerate runs
+  if (text->enumRunsFunc) {
+    text->enumRunsFunc(T_MeasureRunCallback, &ctx, text->enumRunsData);
+  } else {
+    // Legacy single-run mode: measure only the primary run
+    T_MeasureRunCallback(&text->run, &ctx);
+  }
+  
+  // Finalize: commit any remaining word width
+  ctx.textwidth += ctx.wordwidth;
+  ctx.textSize.width = MAX(ctx.textSize.width, ctx.textwidth);
+  
+  // Set initial height based on maximum line height encountered
+  if (ctx.maxLineHeight > 0) {
+    ctx.textSize.height = MAX(ctx.textSize.height, (int)FT_SCALE(ctx.maxLineHeight));
+  }
+  
+  return ctx.textSize;
 }
 
 HRESULT

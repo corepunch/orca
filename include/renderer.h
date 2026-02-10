@@ -452,6 +452,22 @@ struct ViewTextRun
   uint32_t fixedCharacterWidth;
 };
 
+/// Callback function type for processing each text run.
+/// The renderer provides this callback to process each run.
+/// @param run The current text run being processed
+/// @param userData User-defined data passed to the callback
+/// @return TRUE to continue enumeration, FALSE to stop
+typedef bool_t (*EnumTextRunProc)(struct ViewTextRun const* run, void* userData);
+
+/// Callback function type for enumerating text runs.
+/// The caller (e.g., TextBlock) implements this to provide runs to the renderer.
+/// The implementation should call the provided callback for each run.
+/// @param callback The renderer's callback to process each run
+/// @param callbackData Data to pass to the callback
+/// @param userData Caller's data (e.g., TextBlock instance)
+/// @return TRUE if enumeration completed successfully
+typedef bool_t (*EnumTextRunsProc)(EnumTextRunProc callback, void* callbackData, void* userData);
+
 struct ViewText
 {
   struct ViewTextRun run;
@@ -462,6 +478,8 @@ struct ViewText
   uint32_t cursor;
   uint32_t underlineWidth;
   uint32_t underlineOffset;
+  EnumTextRunsProc enumRunsFunc;  ///< Optional: caller's function to enumerate runs
+  void* enumRunsData;              ///< Optional: caller's data for enumRunsFunc
 };
 
 // typedef struct screen_rect {
