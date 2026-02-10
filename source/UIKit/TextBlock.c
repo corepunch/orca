@@ -128,7 +128,7 @@ HANDLER(TextBlockConcept, MakeText)
   pViewText->numTextRuns = 1;
   FOR_EACH_OBJECT(run, hObject) {
     TextRunPtr tr = GetTextRun(run);
-    if (tr) {
+    if (tr && pViewText->numTextRuns < MAX_TEXT_RUNS) {
       lpcString_t str = *tr->Text?tr->Text:OBJ_GetTextContent(run);
       pViewText->run[pViewText->numTextRuns++] = _MakeViewTextRun(hObject, tr, str);
     }
