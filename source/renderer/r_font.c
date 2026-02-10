@@ -5,6 +5,7 @@
 #include FT_OUTLINE_H
 #include FT_SYSTEM_H
 #include FT_TRUETYPE_TABLES_H
+#include <string.h>
 
 #include "r_local.h"
 
@@ -330,7 +331,50 @@ Text_Print(struct ViewText const* pViewText,
       bool_t const eos = !*str;
       uint32_t const charcode = *str ? u8_readchar(&str) : ' ';
       lineheight = MAX(lineheight, FT_MulFix(face->height, face->size->metrics.y_scale));
-      baseline = MAX(baseline, FT_SCALE(ascender));
+      FT_Pos new_baseline = FT_SCALE(ascender);
+      if (new_baseline > baseline && x > 0) {
+        // Baseline has increased, need to move already written pixels down
+        FT_Pos baseline_shift = new_baseline - baseline;
+        
+        // Move pixels in the current line down by baseline_shift
+        // In the inverted coordinate system: higher inv values = lower on screen
+        // We need to process from bottom to top to avoid overwriting unmoved data
+        
+        // Calculate the range of rows that might contain data for this line
+        long max_row = y + FT_SCALE(lineheight);
+        long min_row = y;
+        
+        // Move from highest row number (bottom of line) to lowest (top of line)
+        for (long row = max_row; row >= min_row; row--) {
+          if (row >= textSize.height || row < 0) continue;
+          
+          long new_row = row + baseline_shift;
+          if (new_row >= textSize.height) continue;
+          
+          long inv = textSize.height - row - 1;
+          long new_inv = textSize.height - new_row - 1;
+          
+          if (inv < 0 || inv >= textSize.height) continue;
+          if (new_inv < 0 || new_inv >= textSize.height) continue;
+          
+          // Move this row to the new position
+          memmove(&image_data[new_inv * textSize.width],
+                  &image_data[inv * textSize.width],
+                  textSize.width * sizeof(uint8_t));
+        }
+        
+        // Clear the rows that are now empty at the top of the moved region
+        for (long row = min_row; row < min_row + baseline_shift; row++) {
+          if (row >= textSize.height || row < 0) continue;
+          long inv = textSize.height - row - 1;
+          if (inv < 0 || inv >= textSize.height) continue;
+          memset(&image_data[inv * textSize.width], 0, textSize.width * sizeof(uint8_t));
+        }
+        
+        baseline = new_baseline;
+      } else {
+        baseline = new_baseline;
+      }
       if (isspace(charcode)) {
         if (textwidth == 0) { // first word print anyway
           x += spaceWidth;
