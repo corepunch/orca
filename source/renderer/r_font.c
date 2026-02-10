@@ -334,23 +334,18 @@ Text_Print(struct ViewText const* pViewText,
       bool_t const eos = !*str;
       uint32_t const charcode = *str ? u8_readchar(&str) : ' ';
       lineheight = MAX(lineheight, FT_MulFix(face->height, face->size->metrics.y_scale));
-      FT_Pos new_baseline = FT_SCALE(ascender);
-      if (new_baseline > baseline && x > 0) {
-        // Move already written pixels down by the difference in baseline
-        FT_Pos baseline_shift = new_baseline - baseline;
-        for (long row = y + FT_SCALE(lineheight); row >= y; row--) {
-          if (row < 0 || row >= textSize.height) continue;
-          long new_row = row + baseline_shift;
-          if (new_row >= textSize.height) continue;
-          long inv = textSize.height - row - 1;
-          long new_inv = textSize.height - new_row - 1;
-          if (inv < 0 || new_inv < 0) continue;
-          memmove(&image_data[new_inv * textSize.width],
-                  &image_data[inv * textSize.width],
-                  textSize.width * sizeof(uint8_t));
+      if (FT_SCALE(ascender) > baseline && x > 0) {
+        FT_Pos baseline_shift = FT_SCALE(ascender) - baseline;
+        long src_inv = textSize.height - y - FT_SCALE(lineheight) - 1;
+        long dst_inv = src_inv - baseline_shift;
+        long num_rows = FT_SCALE(lineheight) + 1;
+        if (src_inv >= 0 && dst_inv >= 0 && src_inv + num_rows <= textSize.height) {
+          memmove(&image_data[dst_inv * textSize.width],
+                  &image_data[src_inv * textSize.width],
+                  num_rows * textSize.width * sizeof(uint8_t));
         }
       }
-      baseline = new_baseline;
+      baseline = MAX(baseline, FT_SCALE(ascender));
       if (isspace(charcode)) {
         if (textwidth == 0) { // first word print anyway
           x += spaceWidth;
