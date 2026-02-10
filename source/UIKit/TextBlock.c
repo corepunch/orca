@@ -66,52 +66,70 @@ mesh_rect(Node2DPtr pNode2D,
   };
 }
 
-HANDLER(TextBlockConcept, MakeText)
+static lpcString_t
+_GetTextBlockText(lpObject_t hObject,
+                  TextBlockConceptPtr pTextBlockConcept,
+                  TextRunPtr pTextRun)
 {
-  TextRunPtr pTextRun = GetTextRun(hObject);
-  struct FontShorthand font = *pTextBlockConcept->_font;
+  lpProperty_t hProp = TextRun_GetProperty(hObject, kTextRunText);
+  if (*pTextRun->Text)
+  {
+    return pTextRun->Text;
+  }
+  else if (*pTextBlockConcept->TextResourceID && !PROP_HasProgram(hProp))
+  {
+    return Loc_GetString(pTextBlockConcept->TextResourceID, LOC_TEXT);
+  }
+  else if (OBJ_GetTextContent(hObject) && *OBJ_GetTextContent(hObject))
+  {
+    return OBJ_GetTextContent(hObject);
+  }
+  else
+  {
+    return pTextBlockConcept->PlaceholderText;
+  }
+}
+
+static struct ViewTextRun
+_MakeViewTextRun(lpObject_t hObject, TextRunPtr pTextRun, lpcString_t szText)
+{
+  struct FontShorthand font = *pTextRun->_font;
   for (lpObject_t node = hObject; node; node = OBJ_GetParent(node)) {
     if (Node_GetProperty(node, kNodeFontSize)) {
       font.Size = GetNode(node)->Font.Size;
       break;
     }
   }
-  struct ViewText* text = pMakeText->text;
-  lpcString_t szTextContent = OBJ_GetTextContent(hObject);
-  text->run = (struct ViewTextRun){
-    .string = pTextBlockConcept->PlaceholderText,
+  struct ViewTextRun view = {
+    .string = szText,
     .font = font.Family ? font.Family->font : NULL,
     .fontSize = font.Size,
     .letterSpacing = pTextRun->LetterSpacing,
     .fixedCharacterWidth = pTextRun->FixedCharacterWidth,
+    .underlineWidth = pTextRun->Underline.Width,
+    .underlineOffset = pTextRun->Underline.Offset,
     .fontStyle = 0,
   };
-  
-  text->flags = pTextBlockConcept->UseFullFontHeight ? RF_USE_FONT_HEIGHT : 0;
-  text->lineSpacing = pTextRun->LineHeight;
-  text->underlineWidth = pTextRun->Underline.Width;
-  text->underlineOffset = pTextRun->Underline.Offset;
-  text->availableWidth = pMakeText->availableSpace;
-  text->backingScale = WI_GetScaling();
-
-  lpProperty_t hProp =
-    TextBlockConcept_GetProperty(hObject, kTextRunText);
-
-  if (pTextBlockConcept->_font->Weight == kFontWeightBold) {
-    text->run.fontStyle += FS_BOLD;
+  if (font.Weight == kFontWeightBold) {
+    view.fontStyle += FS_BOLD;
   }
-  if (pTextBlockConcept->_font->Style == kFontStyleItalic) {
-    text->run.fontStyle += FS_ITALIC;
+  if (font.Style == kFontStyleItalic) {
+    view.fontStyle += FS_ITALIC;
   }
+  return view;
+}
 
-  if (*pTextRun->Text) {
-    text->run.string = pTextRun->Text;
-  } else if (*pTextBlockConcept->TextResourceID && !PROP_HasProgram(hProp)) {
-    text->run.string = Loc_GetString(pTextBlockConcept->TextResourceID, LOC_TEXT);
-  } else if (szTextContent && *szTextContent) {
-    text->run.string = szTextContent = OBJ_GetTextContent(hObject);
-  }
-
+HANDLER(TextBlockConcept, MakeText)
+{
+  TextRunPtr pTextRun = GetTextRun(hObject);
+  struct ViewText* pViewText = pMakeText->text;
+//  lpcString_t szTextContent = OBJ_GetTextContent(hObject);
+  pViewText->run = _MakeViewTextRun(hObject, pTextRun, _GetTextBlockText(hObject, pTextBlockConcept, pTextRun));
+  pViewText->numTextRuns = 1;
+  pViewText->flags = pTextBlockConcept->UseFullFontHeight ? RF_USE_FONT_HEIGHT : 0;
+//  pViewText->lineSpacing = pTextRun->LineHeight;
+  pViewText->availableWidth = pMakeText->availableSpace;
+  pViewText->scale = WI_GetScaling();
   return TRUE;
 }
 
@@ -232,6 +250,11 @@ HANDLER(TextBlock, Create)
 HANDLER(TextBlockConcept, Create)
 {
   pTextBlockConcept->_node = GetNode(hObject);
-  pTextBlockConcept->_font = &GetNode(hObject)->Font;
+  return FALSE;
+}
+
+HANDLER(TextRun, Create)
+{
+  pTextRun->_font = &GetNode(hObject)->Font;
   return FALSE;
 }

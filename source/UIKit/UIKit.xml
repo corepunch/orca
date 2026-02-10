@@ -402,6 +402,7 @@
     <summary>Shared concept for text rendering in 2D and 3D nodes.</summary>
     <details>This class is not instantiated directly. Instead, it provides the common properties and functionality for text rendering, used internally by higher-level components such as 2D and 3D text nodes. The concept encapsulates text content, resources, formatting options, alignment, and font configuration.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    <handles event="Create"/>
     <property name="Text" type="fixed">The short text string displayed in the block, limited to 64 bytes. If you need more space consider using `TextResourceID`.</property>
     <property name="Underline" type="UnderlineShorthand">Underline style applied to the text.</property>
     <property name="LetterSpacing" type="float">Additional spacing applied between letters.</property>
@@ -412,6 +413,7 @@
     <field name="_size" type="uiLabelSize">Internal text size metrics.</field>
     <field name="_text" type="ViewText">Internal view representation of the text.</field>
     <field name="_textinfo" type="text_info">Internal text information structure.</field>
+    <field name="_font" type="FontShorthand" pointer="true">Reference to the font shorthand configuration.</field>
   </component>
   
   <component name="TextBlockConcept" parent="TextRun">
@@ -433,7 +435,6 @@
     <property name="TextVerticalAlignment" type="TextVerticalAlignment">Vertical alignment of the text within its bounds.</property>
     <field name="_steps" type="uiLabelSteps">Internal step-based rendering parameters.</field>
     <field name="_node" type="Node" pointer="true">Reference to the owning node using this concept.</field>
-    <field name="_font" type="FontShorthand" pointer="true">Reference to the font shorthand configuration.</field>
   </component>
 
   <component name="Node2D" parent="Node" children="Node2D">

@@ -168,18 +168,6 @@ FT_Shutdown(void)
   FT_Done_FreeType(fg.ft);
   fg.ft = NULL;
 }
-
-static struct ViewText*
-T_Scale(struct ViewText const* input, float scale, struct ViewText* output)
-{
-  memcpy(output, input, sizeof(struct ViewText));
-  output->run.fontSize *= scale;
-  output->run.fixedCharacterWidth *= scale;
-  output->availableWidth *= scale;
-  output->underlineWidth *= scale;
-  return output;
-}
-
 bool_t
 FT_Load_CharGlyph(FT_Face face, FT_ULong charcode, FT_Int32 load_flags)
 {
@@ -192,7 +180,9 @@ FT_Load_CharGlyph(FT_Face face, FT_ULong charcode, FT_Int32 load_flags)
 }
 
 static struct WI_Size
-T_GetSize(FT_Face face, struct ViewText const* text, struct rect* rcursor)
+T_GetSize(FT_Face face,
+          struct ViewText const* text,
+          struct rect* rcursor)
 {
   FT_Pos lineHeight = FT_MulFix(face->height, face->size->metrics.y_scale);
   struct WI_Size textSize = { 0, (int)FT_SCALE(lineHeight) };
@@ -203,11 +193,11 @@ T_GetSize(FT_Face face, struct ViewText const* text, struct rect* rcursor)
   FT_UInt prev_glyph_index = 0;
 
   //	if (!(text->flags & RF_USE_FONT_HEIGHT)) {
-  //		textSize.height = (uint32_t)(text->run.fontSize +
+  //		textSize.height = (uint32_t)(text->run.fontSize * text->scale +
   // FT_SCALE(descender));
   //	}
 
-  if (FT_Set_Pixel_Sizes(face, 0, text->run.fontSize))
+  if (FT_Set_Pixel_Sizes(face, 0, text->run.fontSize * text->scale))
     return textSize;
 
   if (FT_Load_CharGlyph(face, ' ', FT_LOAD_DEFAULT)) {
@@ -229,7 +219,7 @@ T_GetSize(FT_Face face, struct ViewText const* text, struct rect* rcursor)
       if (textwidth == 0) {
         textwidth += spaceWidth;
         // first word print anyway
-      } else if (textwidth + wordwidth + spaceWidth > text->availableWidth) {
+      } else if (textwidth + wordwidth + spaceWidth > text->availableWidth * text->scale) {
         textSize.height += /*text->lineSpacing **/ FT_SCALE(lineHeight);
         textSize.width = MAX(textSize.width, textwidth);
         textwidth = 0;
@@ -268,15 +258,13 @@ T_GetSize(FT_Face face, struct ViewText const* text, struct rect* rcursor)
 }
 
 HRESULT
-Text_Print(struct ViewText const* input, struct Texture** img, bool_t reuse)
+Text_Print(struct ViewText const* pViewText,
+           struct Texture** pTexture,
+           bool_t bReuseTexture)
 {
-  struct ViewText text;
+  FT_Face const face = T_GetFontFace(&pViewText->run);
 
-  FT_Face const face = T_GetFontFace(&input->run);
-
-  T_Scale(input, input->backingScale, &text);
-
-  if (FT_Set_Pixel_Sizes(face, 0, text.run.fontSize))
+  if (FT_Set_Pixel_Sizes(face, 0, pViewText->run.fontSize * pViewText->scale))
     return E_UNEXPECTED;
 
   FT_Pos const ascender = FT_MulFix(face->ascender, face->size->metrics.y_scale);
@@ -286,19 +274,19 @@ Text_Print(struct ViewText const* input, struct Texture** img, bool_t reuse)
   FT_Pos const baseline = FT_SCALE(ascender);
   FT_Pos const underline_y = baseline - FT_SCALE(underline); // You can adjust this slightly if needed
 
-  struct WI_Size textSize = T_GetSize(face, &text, NULL);
+  struct WI_Size textSize = T_GetSize(face, pViewText, NULL);
 
   if (textSize.width == 0)
     return E_INVALIDARG;
 
-  textSize.height /= input->backingScale;
-  textSize.height *= input->backingScale;
+  textSize.height /= pViewText->scale;
+  textSize.height *= pViewText->scale;
 
-  textSize.width /= input->backingScale;
-  textSize.width *= input->backingScale;
+  textSize.width /= pViewText->scale;
+  textSize.width *= pViewText->scale;
 
-  //	if ((text.flags & RF_USE_FONT_HEIGHT) == 0) {
-  //		textSize.height -= (uint32_t)(text.fontSize +
+  //	if ((pViewText->flags & RF_USE_FONT_HEIGHT) == 0) {
+  //		textSize.height -= (uint32_t)(pViewText->fontSize +
   // FT_SCALE(descender)); 		textSize.height += FT_SCALE(lineHeight);
   //	}
 
@@ -314,7 +302,7 @@ Text_Print(struct ViewText const* input, struct Texture** img, bool_t reuse)
 
   int textwidth = 0, wordwidth = 0, prevchar = 0, x = -spaceWidth, y = 0;
   FT_UInt prev_glyph_index = 0;
-  for (lpcString_t str = text.run.string, print = str, last = str;; last = str) {
+  for (lpcString_t str = pViewText->run.string, print = str, last = str;; last = str) {
     bool_t const eos = !*str;
     uint32_t const charcode = *str ? u8_readchar(&str) : ' ';
     if (isspace(charcode)) {
@@ -323,7 +311,7 @@ Text_Print(struct ViewText const* input, struct Texture** img, bool_t reuse)
         x += spaceWidth;
         textwidth += spaceWidth;
         // first word print anyway
-      } else if (textwidth + wordwidth + spaceWidth > text.availableWidth) {
+      } else if (textwidth + wordwidth + spaceWidth > pViewText->availableWidth * pViewText->scale) {
         textwidth = 0;
         y += FT_SCALE(lineHeight);
         x = 0;
@@ -371,7 +359,7 @@ Text_Print(struct ViewText const* input, struct Texture** img, bool_t reuse)
           }
         }
         
-        for (long i = 0; i < text.underlineWidth; i++) {
+        for (long i = 0; i < pViewText->run.underlineWidth * pViewText->scale; i++) {
           for (long j = prevchar; j < x + x_off + bitmap->width; j++) {
             long row = underline_y + i;
             long inv = textSize.height - row - 1;
@@ -413,17 +401,17 @@ Text_Print(struct ViewText const* input, struct Texture** img, bool_t reuse)
     }
   }
 
-  if (reuse && *img) {
-    Texture_Reallocate(*img,
+  if (bReuseTexture && *pTexture) {
+    Texture_Reallocate(*pTexture,
                        &(CREATEIMGSTRUCT){ .Width = textSize.width,
                                            .Height = textSize.height,
                                            .Format = kTextureFormatAlpha8,
                                            .MinFilter = kTextureFilterLinear,
                                            .MagFilter = kTextureFilterLinear,
                                            .ImageData = image_data });
-    (*img)->Scale = input->backingScale;
-    (*img)->Width = textSize.width / MAX(1, (*img)->Scale);
-    (*img)->Height = textSize.height / MAX(1, (*img)->Scale);
+    (*pTexture)->Scale = pViewText->scale;
+    (*pTexture)->Width = textSize.width / MAX(1, (*pTexture)->Scale);
+    (*pTexture)->Height = textSize.height / MAX(1, (*pTexture)->Scale);
     free(image_data);
     return S_OK;
   }
@@ -437,16 +425,16 @@ Text_Print(struct ViewText const* input, struct Texture** img, bool_t reuse)
       .Format = kTextureFormatAlpha8,
       .ImageData = image_data,
     },
-    img);
+    pTexture);
 
   free(image_data);
 
   if (FAILED(hr)) {
     return hr;
   } else {
-    (*img)->Scale = input->backingScale;
-    (*img)->Width = textSize.width / MAX(1, (*img)->Scale);
-    (*img)->Height = textSize.height / MAX(1, (*img)->Scale);
+    (*pTexture)->Scale = pViewText->scale;
+    (*pTexture)->Width = textSize.width / MAX(1, (*pTexture)->Scale);
+    (*pTexture)->Height = textSize.height / MAX(1, (*pTexture)->Scale);
     return S_OK;
   }
 }
@@ -454,7 +442,7 @@ Text_Print(struct ViewText const* input, struct Texture** img, bool_t reuse)
 struct font*
 Font_Load(lpcString_t szFileName)
 {
-  struct file* pFile=FS_LoadFile(szFileName);
+  struct file* pFile = FS_LoadFile(szFileName);
   if (pFile) {
     struct font* pFont = ZeroAlloc(sizeof(struct font));
     Font_LoadFromMemory(pFile->data, pFile->size, pFont);
@@ -466,47 +454,41 @@ Font_Load(lpcString_t szFileName)
 }
 
 HRESULT
-Text_GetInsets(struct ViewText const* text, struct edges* edges)
+Text_GetInsets(struct ViewText const* text,
+               struct edges* edges)
 {
-  if (FT_Set_Pixel_Sizes(T_GetFontFace(&text->run), 0,
-                         text->run.fontSize * text->backingScale) ||
-      (text->flags & RF_USE_FONT_HEIGHT)) {
+  if (FT_Set_Pixel_Sizes(T_GetFontFace(&text->run), 0, text->run.fontSize * text->scale) || (text->flags & RF_USE_FONT_HEIGHT)) {
     *edges = (struct edges){ 0 };
     return S_OK;
   }
   FT_Face const face = T_GetFontFace(&text->run);
-  FT_Pos const ascender =
-    FT_MulFix(face->ascender, face->size->metrics.y_scale);
-  FT_Pos const descender =
-    FT_MulFix(face->descender, face->size->metrics.y_scale);
+  FT_Pos const ascender = FT_MulFix(face->ascender, face->size->metrics.y_scale);
+  FT_Pos const descender = FT_MulFix(face->descender, face->size->metrics.y_scale);
   *edges = (struct edges){
     .left = 0,
     .right = 0,
-    .top = ceil(FT_SCALE(ascender - descender) / text->backingScale -
-                text->run.fontSize),
-    .bottom = -ceil(FT_SCALE(descender) / text->backingScale),
+    .top = ceil(FT_SCALE(ascender - descender) / text->scale - text->run.fontSize * text->scale),
+    .bottom = -ceil(FT_SCALE(descender) / text->scale),
   };
   return S_OK;
 }
 
 HRESULT
-Text_GetInfo(struct ViewText const* input, struct text_info* info)
+Text_GetInfo(struct ViewText const* pViewText,
+             struct text_info* info)
 {
-  struct ViewText text;
-  float scale = 1.0f / (float)input->backingScale;
-  FT_Face const face = T_GetFontFace(&input->run);
-  T_Scale(input, input->backingScale, &text);
-  if (FT_Set_Pixel_Sizes(face, 0, text.run.fontSize))
+  FT_Face const face = T_GetFontFace(&pViewText->run);
+  if (FT_Set_Pixel_Sizes(face, 0, pViewText->run.fontSize * pViewText->scale))
     return E_UNEXPECTED;
-  struct WI_Size textSize = T_GetSize(face, &text, &info->cursor);
-  info->txWidth = textSize.width * scale;
-  info->txHeight = textSize.height * scale;
-  info->cursor.x *= scale;
-  info->cursor.y *= scale;
-  info->cursor.width *= scale;
-  info->cursor.height *= scale;
+  struct WI_Size textSize = T_GetSize(face, pViewText, &info->cursor);
+  info->txWidth = textSize.width / pViewText->scale;
+  info->txHeight = textSize.height / pViewText->scale;
+  info->cursor.x /= pViewText->scale;
+  info->cursor.y /= pViewText->scale;
+  info->cursor.width /= pViewText->scale;
+  info->cursor.height /= pViewText->scale;
   info->cursor.width += CARET_WIDTH;
-  Text_GetInsets(&text, &info->txInsets);
+  Text_GetInsets(pViewText, &info->txInsets);
   return NOERROR;
 }
 

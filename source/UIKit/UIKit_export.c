@@ -1528,6 +1528,7 @@ ORCA_API struct ClassDesc _Node = {
 	.Defaults = &NodeDefaults,
 	.NumProperties = kNodeNumProperties,
 };
+LRESULT TextRun_Create(lpObject_t, lpTextRun_t, wParam_t, CreateEventPtr);
 static struct PropertyDesc const TextRunProperties[kTextRunNumProperties] = {
 	/* TextRun.Text */ DECL(0x3e142d5e, 0xcba1ea6c,
 	TextRun, "Text", Text, kDataTypeFixed),
@@ -1555,6 +1556,8 @@ static struct TextRun TextRunDefaults = {
 };
 LRESULT TextRunProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
+		case 0x990de47d: // Create
+			return TextRun_Create(object, cmp, wparm, lparm);
 }
 	return FALSE;
 }

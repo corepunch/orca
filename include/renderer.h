@@ -449,19 +449,22 @@ struct ViewTextRun
   uint32_t fontSize;
   FONTSTYLE fontStyle;
   float letterSpacing;
+  float lineSpacing;
   uint32_t fixedCharacterWidth;
+  uint32_t underlineWidth;
+  uint32_t underlineOffset;
 };
+
+#define MAX_TEXT_RUNS 256
 
 struct ViewText
 {
-  struct ViewTextRun run;
+  struct ViewTextRun run;//[MAX_TEXT_RUNS];
   uint32_t flags;
   uint32_t availableWidth;
-  float lineSpacing;
-  float backingScale;
   uint32_t cursor;
-  uint32_t underlineWidth;
-  uint32_t underlineOffset;
+  uint32_t numTextRuns;
+  float scale;
 };
 
 // typedef struct screen_rect {
