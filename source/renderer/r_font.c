@@ -296,7 +296,6 @@ T_GetSize(struct ViewText const* text,
       FT_UInt const charcode = *str ? u8_readchar(&str) : ' ';
 
       lineheight = MAX(lineheight, FT_MulFix(face->height, face->size->metrics.y_scale));
-      textSize.height = MAX(textSize.height, (int)FT_SCALE(lineheight));
 
       if (cursor == text->cursor && rcursor) {
         rcursor->x = textwidth + wordwidth;
@@ -313,7 +312,7 @@ T_GetSize(struct ViewText const* text,
           textSize.height += /*text->lineSpacing **/ FT_SCALE(lineheight);
           textSize.width = MAX(textSize.width, textwidth);
           textwidth = 0;
-          lineheight = 0;
+          lineheight = FT_MulFix(face->height, face->size->metrics.y_scale);
           prev_glyph_index = 0;
         } else { // if (charcode != '\n') {
           textwidth += spaceWidth;
@@ -346,7 +345,7 @@ T_GetSize(struct ViewText const* text,
       }
     }
   }
-  return textSize;
+  return (struct WI_Size){textSize.width, textSize.height + (int)FT_SCALE(lineheight)};
 }
 
 HRESULT
@@ -373,7 +372,7 @@ Text_Print(struct ViewText const* pViewText,
   FT_Int y = 0;
   FT_UInt prev_glyph_index = 0;
   FT_Pos lineheight = 0;
-  FT_Pos lineBaseline = 0;
+  FT_Pos baseline = 0;
   
   byte_t* image_data = ZeroAlloc(textSize.width * textSize.height * sizeof(uint8_t));
   
@@ -385,13 +384,13 @@ Text_Print(struct ViewText const* pViewText,
        run++)
   {
     FT_Face const face = T_GetFontFace(run);
-    if (FT_Set_Pixel_Sizes(face, 0, run->fontSize * pViewText->scale))
+    if (FT_Set_Pixel_Sizes(face, 0, run->fontSize * pViewText->scale)) {
+      free(image_data);
       return E_UNEXPECTED;
+    }
     FT_Pos const ascender = FT_MulFix(face->ascender, face->size->metrics.y_scale);
     FT_Pos const underline = FT_MulFix(face->underline_position, face->size->metrics.y_scale);
     // FT_Pos const descender = FT_MulFix(face->descender, face->size->metrics.y_scale);
-    FT_Pos const baseline = FT_SCALE(ascender);
-    FT_Pos const underline_y = lineBaseline - FT_SCALE(underline); // You can adjust this slightly if needed
     //	if ((pViewText->flags & RF_USE_FONT_HEIGHT) == 0) {
     //		textSize.height -= (uint32_t)(pViewText->fontSize + FT_SCALE(descender));
     //    textSize.height += FT_SCALE(lineHeight);
@@ -411,14 +410,7 @@ Text_Print(struct ViewText const* pViewText,
       bool_t const eos = !*str;
       uint32_t const charcode = *str ? u8_readchar(&str) : ' ';
       lineheight = MAX(lineheight, FT_MulFix(face->height, face->size->metrics.y_scale));
-      
-      // Calculate line baseline at the start of a new line
-      // We detect line start when text and word widths are 0 and x is at initial position
-      // (either -spaceWidth for first line, or 0 after word wrap)
-      if (textwidth == 0 && wordwidth == 0 && (x == 0 || x == -spaceWidth)) {
-        lineBaseline = T_GetLineMaxBaseline(pViewText, run, last, textwidth, spaceWidth);
-      }
-      
+      baseline = MAX(baseline, FT_SCALE(ascender));
       if (isspace(charcode)) {
         if (textwidth == 0) { // first word print anyway
           x += spaceWidth;
@@ -427,7 +419,8 @@ Text_Print(struct ViewText const* pViewText,
           textwidth = 0;
           y += FT_SCALE(lineheight);
           x = 0;
-          lineheight = 0;
+          lineheight = FT_MulFix(face->height, face->size->metrics.y_scale);
+          baseline = FT_SCALE(ascender);
           prevchar = 0;
           prev_glyph_index = 0;
           // Reset line baseline for the new line
@@ -471,7 +464,7 @@ Text_Print(struct ViewText const* pViewText,
           
           for (long i = 0; i < run->underlineWidth * pViewText->scale; i++) {
             for (long j = prevchar; j < x + x_off + bitmap->width; j++) {
-              long row = underline_y + i;
+              long row = baseline - FT_SCALE(underline) + i;
               long inv = textSize.height - row - 1;
               image_data[j + inv * textSize.width] = 255;
             }
