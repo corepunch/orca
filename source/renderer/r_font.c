@@ -336,56 +336,18 @@ Text_Print(struct ViewText const* pViewText,
       lineheight = MAX(lineheight, FT_MulFix(face->height, face->size->metrics.y_scale));
       FT_Pos new_baseline = FT_SCALE(ascender);
       if (new_baseline > baseline && x > 0) {
-        // Baseline has increased, need to move already written pixels down
-        // baseline_shift is guaranteed positive due to the condition above
+        // Move already written pixels down by the difference in baseline
         FT_Pos baseline_shift = new_baseline - baseline;
-        
-        // Move pixels in the current line down by baseline_shift
-        // In the inverted coordinate system: higher inv values = lower on screen
-        
-        // Calculate the range of rows that might contain data for this line
-        // lineheight is in 26.6 fixed-point format, so we need FT_SCALE to convert to pixels
-        long max_row = y + FT_SCALE(lineheight);
-        long min_row = y;
-        
-        // Optimize: calculate the actual range to move, considering boundaries
-        long first_row_to_move = min_row;
-        long last_row_to_move = max_row;
-        
-        // Adjust range to stay within image bounds
-        if (last_row_to_move >= textSize.height) {
-          last_row_to_move = textSize.height - 1;
-        }
-        if (first_row_to_move < 0) {
-          first_row_to_move = 0;
-        }
-        
-        // Check if we have valid range and destination
-        if (first_row_to_move <= last_row_to_move && 
-            last_row_to_move + baseline_shift < textSize.height) {
-          
-          // Calculate inverted coordinates for the entire block to move
-          long first_inv = textSize.height - last_row_to_move - 1;
-          long last_inv = textSize.height - first_row_to_move - 1;
-          long dest_first_inv = textSize.height - (last_row_to_move + baseline_shift) - 1;
-          
-          // Move the entire block in one operation (from top to bottom in inverted coords)
-          long num_rows = last_inv - first_inv + 1;
-          if (num_rows > 0 && first_inv >= 0 && dest_first_inv >= 0 && 
-              last_inv < textSize.height && dest_first_inv + num_rows <= textSize.height) {
-            memmove(&image_data[dest_first_inv * textSize.width],
-                    &image_data[first_inv * textSize.width],
-                    num_rows * textSize.width * sizeof(uint8_t));
-            
-            // Clear the rows that are now empty at the top of the moved region
-            for (long row = min_row; row < min_row + baseline_shift && row < textSize.height; row++) {
-              if (row < 0) continue;
-              long inv = textSize.height - row - 1;
-              if (inv >= 0 && inv < textSize.height) {
-                memset(&image_data[inv * textSize.width], 0, textSize.width * sizeof(uint8_t));
-              }
-            }
-          }
+        for (long row = y + FT_SCALE(lineheight); row >= y; row--) {
+          if (row < 0 || row >= textSize.height) continue;
+          long new_row = row + baseline_shift;
+          if (new_row >= textSize.height) continue;
+          long inv = textSize.height - row - 1;
+          long new_inv = textSize.height - new_row - 1;
+          if (inv < 0 || new_inv < 0) continue;
+          memmove(&image_data[new_inv * textSize.width],
+                  &image_data[inv * textSize.width],
+                  textSize.width * sizeof(uint8_t));
         }
       }
       baseline = new_baseline;
