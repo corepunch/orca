@@ -29,9 +29,9 @@ struct localization;
 struct uniform;
 struct font;
 struct WI_Buffer;
-struct view_text;
-struct view_entity;
-struct view_def;
+struct ViewText;
+struct ViewEntity;
+struct ViewDef;
 struct view_camera;
 struct Package;
 struct token;
@@ -511,7 +511,7 @@ typedef struct _FOREGROUNDCONTENTSTRUCT
 
 // Node3D messages
 
-typedef struct view_def* EVENT_PTR(Render);
+typedef struct ViewDef* EVENT_PTR(Render);
 
 typedef struct _ARRANGECHILDRENSTRUCT
 {

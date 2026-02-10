@@ -119,7 +119,7 @@ HANDLER(NinePatchImage, DrawBrush)
       .width = grid_value(row + 1, node_width, widths) - origin.x,
       .height = (grid_value(column + 1, node_height, heights) - origin.y),
     };
-    struct view_entity entity;
+    struct ViewEntity entity;
 
     Node2D_GetViewEntity(hObject, &entity, images[index], pDrawBrush->brush);
 

@@ -426,7 +426,7 @@ _FindUnf(struct uniform const* unf,
 
 void
 Shader_BindConstants(struct shader const* shader,
-										 struct view_entity const* e)
+										 struct ViewEntity const* e)
 {
   int nextunit = 0;
   FOR_LOOP(index, shader->numConstants)
@@ -497,8 +497,8 @@ Shader_BindConstants(struct shader const* shader,
 
 void
 Shader_BindMaterial(struct shader const* shader,
-                    struct view_def const* view,
-                    struct view_entity const* ent)
+                    struct ViewDef const* view,
+                    struct ViewEntity const* ent)
 {
   R_Call(glActiveTexture, GL_TEXTURE0);
   R_Call(glUseProgram, shader->prognum);
@@ -514,12 +514,12 @@ Shader_BindMaterial(struct shader const* shader,
     .height = view->viewSize.y * WI_GetScaling(),
   };
 
-  if (ent->text && ent->text->string) {
+  if (ent->text && ent->text->numTextRuns && ent->text->run->string) {
     struct Texture const* label = Text_GetImage(ent->text);
     if (label) {
       texture = label;
-      ((struct view_entity *)ent)->rect.width = label->Width;
-      ((struct view_entity *)ent)->rect.height = label->Height;
+      ((struct ViewEntity *)ent)->rect.width = label->Width;
+      ((struct ViewEntity *)ent)->rect.height = label->Height;
     }
   }
 

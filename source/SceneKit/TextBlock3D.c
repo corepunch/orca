@@ -6,7 +6,7 @@
 
 #if 0
 static void
-text_from_label(lpObject_t  hObject, struct TextBlock3D *label, struct view_text* text)
+text_from_label(lpObject_t  hObject, struct TextBlock3D *label, struct ViewText* text)
 {
 	text->font          = label->Font;
 	text->fontSize      = label->FontSize;
@@ -21,7 +21,7 @@ text_from_label(lpObject_t  hObject, struct TextBlock3D *label, struct view_text
 static struct rect
 mesh_rect(lpObject_t  hObject, struct TextBlock3D *frame)
 {
-	struct view_text     text = {0};
+	struct ViewText     text = {0};
 	struct text_info info;
 	text_from_label(hObject, frame, &text);
 	Text_GetInfo(&text, info);
@@ -41,9 +41,9 @@ mesh_rect(lpObject_t  hObject, struct TextBlock3D *frame)
 HANDLER(TextBlock3D, Render)
 {
 #if 0
-	struct view_text text;
+	struct ViewText text;
 	text_from_label(hObject, pTextBlock3D, &text);
-	struct view_entity entity = {
+	struct ViewEntity entity = {
 		.debugName   = OBJ_GetName(hObject),
 		.type        = ET_PLANE,
 		.opacity     = GetNode3D(hObject)->_opacity,
@@ -55,22 +55,22 @@ HANDLER(TextBlock3D, Render)
 	R_DrawEntity(parm, &entity);
 #endif
   
-  TextBlockConceptPtr output = GetTextBlockConcept(hObject);
+  TextRunPtr pTextRun = GetTextRun(hObject);
   OBJ_SendMessageW(hObject, kEventMakeText, 0, &(MAKETEXTSTRUCT){
-                     .text = &output->_text,
+                     .text = &pTextRun->_text,
                      .availableSpace = 512
                    });
-  Text_GetInfo(&output->_text, &output->_textinfo);
+  Text_GetInfo(&pTextRun->_text, &pTextRun->_textinfo);
   
-  float w = output->_textinfo.txWidth;
-  float h = output->_textinfo.txHeight;
+  float w = pTextRun->_textinfo.txWidth;
+  float h = pTextRun->_textinfo.txHeight;
   
-  struct view_entity entity = {
+  struct ViewEntity entity = {
     .debugName = OBJ_GetName(hObject),
     .texture = 0,
     .radius = (struct vec4){0},
     .rect = (struct rect){-w/2,-h/2,w,h},
-    .text = &output->_text,
+    .text = &pTextRun->_text,
     .opacity = GetNode3D(hObject)->_opacity,
     .matrix = GetNode3D(hObject)->Matrix,
     .color = {1,1,1,1},
@@ -81,7 +81,6 @@ HANDLER(TextBlock3D, Render)
   scale = MAT4_Identity();
   MAT4_Scale(&scale, &(struct vec3) { 0.1, 0.1, 0.1 });
   entity.matrix = MAT4_Multiply(&GetNode3D(hObject)->Matrix, &scale);
-
   entity.textureMatrix = MAT3_Identity();
   entity.textureMatrix.v[4] = -1;
   entity.textureMatrix.v[7] =  1;

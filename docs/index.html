@@ -104,6 +104,7 @@
 </span></a><a class="leaf-link" href="#Brush"><i class="fa-solid fa-layer-group icon"></i><span>Brush
 </span></a><a class="leaf-link" href="#ColorBrush"><i class="fa-solid fa-layer-group icon"></i><span>ColorBrush
 </span></a><a class="leaf-link" href="#Node"><i class="fa-solid fa-layer-group icon"></i><span>Node
+</span></a><a class="leaf-link" href="#TextRun"><i class="fa-solid fa-layer-group icon"></i><span>TextRun
 </span></a><a class="leaf-link" href="#TextBlockConcept"><i class="fa-solid fa-layer-group icon"></i><span>TextBlockConcept
 </span></a><a class="leaf-link" href="#Node2D"><i class="fa-solid fa-layer-group icon"></i><span>Node2D
 </span></a><a class="leaf-link" href="#PrefabView2D"><i class="fa-solid fa-layer-group icon"></i><span>PrefabView2D
@@ -1682,16 +1683,12 @@
 <div class="small-abstract"><span>Tag collection for categorizing or querying nodes.
 </span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">DataContext</span>: <a class="type-identifier-link" href="#DataObject">DataObject</a></code></div>
 <div class="small-abstract"><span>Data context (used for data binding, similar to XAML's DataContext).
-</span></div></div><div id="TextBlockConcept" class="class" data-name="TextBlockConcept" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
-</div><h1 class="header">TextBlockConcept
+</span></div></div><div id="TextRun" class="class" data-name="TextRun" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><h1 class="header">TextRun
 </h1><div class="abstract">Shared concept for text rendering in 2D and 3D nodes.
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.TextBlockConcept</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">This class is not instantiated directly. Instead, it provides the common properties and functionality for text rendering, used internally by higher-level components such as 2D and 3D text nodes. The concept encapsulates text content, resources, formatting options, alignment, and font configuration.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_steps</span>: <span>uiLabelSteps</span></code></div>
-<div class="small-abstract"><span>Internal step-based rendering parameters.
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_size</span>: <span>uiLabelSize</span></code></div>
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.TextRun</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">This class is not instantiated directly. Instead, it provides the common properties and functionality for text rendering, used internally by higher-level components such as 2D and 3D text nodes. The concept encapsulates text content, resources, formatting options, alignment, and font configuration.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_size</span>: <span>uiLabelSize</span></code></div>
 <div class="small-abstract"><span>Internal text size metrics.
-</span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">_node</span>: <a class="type-identifier-link" href="#Node">Node</a></code></div>
-<div class="small-abstract"><span>Reference to the owning node using this concept.
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_text</span>: <span>view_text</span></code></div>
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_text</span>: <span>ViewText</span></code></div>
 <div class="small-abstract"><span>Internal view representation of the text.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_textinfo</span>: <span>text_info</span></code></div>
 <div class="small-abstract"><span>Internal text information structure.
@@ -1699,24 +1696,6 @@
 <div class="small-abstract"><span>Reference to the font shorthand configuration.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Text</span>: <span>fixed</span></code></div>
 <div class="small-abstract"><span>The short text string displayed in the block, limited to 64 bytes. If you need more space consider using </span><code class="token-keyword">TextResourceID</code><span>.
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">TextResourceID</span>: <span>fixed</span></code></div>
-<div class="small-abstract"><span>Resource identifier for localized text lookup.
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">TextResourceConfiguration</span>: <span>fixed</span></code></div>
-<div class="small-abstract"><span>Configuration key used when resolving text resources.
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">PlaceholderText</span>: <span>fixed</span></code></div>
-<div class="small-abstract"><span>Placeholder text displayed when no main text is set.
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">TextOverflow</span>: <span>fixed</span></code></div>
-<div class="small-abstract"><span>Defines how overflowing text should be handled (clip, ellipsis, etc.).
-</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">HighlightColor</span>: <a class="type-identifier-link" href="#color">color</a></code></div>
-<div class="small-abstract"><span>Color used for highlighting portions of the text.
-</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Placeholder</span>: <a class="type-identifier-link" href="#BrushShorthand">BrushShorthand</a></code></div>
-<div class="small-abstract"><span>Brush definition for rendering placeholder text.
-</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">PlaceholderColor</span>: <a class="type-identifier-link" href="#color">color</a></code></div>
-<div class="small-abstract"><span>Solid color fill. Conceptually similar to a CSS </span><code class="token-keyword">color</code><span> or </span><code class="token-keyword">background-color</code><span>.
-</span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">PlaceholderImage</span>: <a class="type-identifier-link" href="#Texture">Texture</a></code></div>
-<div class="small-abstract"><span>Texture/image fill. Conceptually similar to a CSS </span><code class="token-keyword">background-image</code><span>.
-</span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">PlaceholderMaterial</span>: <a class="type-identifier-link" href="#Material">Material</a></code></div>
-<div class="small-abstract"><span>Custom material or shader fill. Advanced fill using shader/material settings for effects beyond simple color or image.
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Underline</span>: <a class="type-identifier-link" href="#UnderlineShorthand">UnderlineShorthand</a></code></div>
 <div class="small-abstract"><span>Underline style applied to the text.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">UnderlineOffset</span>: <span>float</span></code></div>
@@ -1725,14 +1704,6 @@
 <div class="small-abstract"><span>Line thickness of the underline.
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">UnderlineColor</span>: <a class="type-identifier-link" href="#color">color</a></code></div>
 <div class="small-abstract"><span>Color of the underline.
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">UseFullFontHeight</span>: <span>bool</span></code></div>
-<div class="small-abstract"><span>When true, uses the font's full height for layout calculations.
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ConstrainContentHeight</span>: <span>bool</span></code></div>
-<div class="small-abstract"><span>Constrains the content height to the text's bounding box.
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">WordWrap</span>: <span>bool</span></code></div>
-<div class="small-abstract"><span>Enables automatic word wrapping of the text.
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RemoveSideBearingsProperty</span>: <span>bool</span></code></div>
-<div class="small-abstract"><span>Removes side bearings (spacing) defined by the font.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">LetterSpacing</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Additional spacing applied between letters.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">LineHeight</span>: <span>float</span></code></div>
@@ -1741,6 +1712,37 @@
 <div class="small-abstract"><span>Extra spacing between characters, beyond kerning.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">FixedCharacterWidth</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Forces a fixed width per character (monospace effect).
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RemoveSideBearingsProperty</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Removes side bearings (spacing) defined by the font.
+</span></div></div><div id="TextBlockConcept" class="class" data-name="TextBlockConcept" data-inherits="TextRun" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><h1 class="header">TextBlockConcept
+</h1><div class="abstract">Shared concept for text rendering in 2D and 3D nodes.
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.TextBlockConcept</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#TextRun" class="name base">TextRun</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">This class is not instantiated directly. Instead, it provides the common properties and functionality for text rendering, used internally by higher-level components such as 2D and 3D text nodes. The concept encapsulates text content, resources, formatting options, alignment, and font configuration.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_steps</span>: <span>uiLabelSteps</span></code></div>
+<div class="small-abstract"><span>Internal step-based rendering parameters.
+</span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">_node</span>: <a class="type-identifier-link" href="#Node">Node</a></code></div>
+<div class="small-abstract"><span>Reference to the owning node using this concept.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">TextResourceID</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Resource identifier for localized text lookup.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">TextResourceConfiguration</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Configuration key used when resolving text resources.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">PlaceholderText</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Placeholder text displayed when no main text is set.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">TextOverflow</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Defines how overflowing text should be handled (clip, ellipsis, etc.).
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Placeholder</span>: <a class="type-identifier-link" href="#BrushShorthand">BrushShorthand</a></code></div>
+<div class="small-abstract"><span>Brush definition for rendering placeholder text.
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">PlaceholderColor</span>: <a class="type-identifier-link" href="#color">color</a></code></div>
+<div class="small-abstract"><span>Solid color fill. Conceptually similar to a CSS </span><code class="token-keyword">color</code><span> or </span><code class="token-keyword">background-color</code><span>.
+</span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">PlaceholderImage</span>: <a class="type-identifier-link" href="#Texture">Texture</a></code></div>
+<div class="small-abstract"><span>Texture/image fill. Conceptually similar to a CSS </span><code class="token-keyword">background-image</code><span>.
+</span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">PlaceholderMaterial</span>: <a class="type-identifier-link" href="#Material">Material</a></code></div>
+<div class="small-abstract"><span>Custom material or shader fill. Advanced fill using shader/material settings for effects beyond simple color or image.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">UseFullFontHeight</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>When true, uses the font's full height for layout calculations.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ConstrainContentHeight</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Constrains the content height to the text's bounding box.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">WordWrap</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Enables automatic word wrapping of the text.
 </span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">TextHorizontalAlignment</span>: <a class="type-identifier-link" href="#TextHorizontalAlignment">TextHorizontalAlignment</a></code></div>
 <div class="small-abstract"><span>Horizontal alignment of the text within its bounds.
 </span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">TextVerticalAlignment</span>: <a class="type-identifier-link" href="#TextVerticalAlignment">TextVerticalAlignment</a></code></div>

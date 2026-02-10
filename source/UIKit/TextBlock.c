@@ -27,7 +27,7 @@ is_updated(lpObject_t hObject,
 }
 
 static float
-text_pos(struct vec2 const* padding,
+text_pos(lpcvec2_t padding,
          uint32_t align,
          float size,
          float space)
@@ -66,55 +66,83 @@ mesh_rect(Node2DPtr pNode2D,
   };
 }
 
-HANDLER(TextBlockConcept, MakeText)
+static lpcString_t
+_GetTextBlockText(lpObject_t hObject,
+                  TextBlockConceptPtr pTextBlockConcept,
+                  TextRunPtr pTextRun)
 {
-  TextBlockConceptPtr label = pTextBlockConcept;
-  struct FontShorthand font = *label->_font;
+  lpProperty_t hProp = TextRun_GetProperty(hObject, kTextRunText);
+  if (*pTextRun->Text)
+  {
+    return pTextRun->Text;
+  }
+  else if (*pTextBlockConcept->TextResourceID && !PROP_HasProgram(hProp))
+  {
+    return Loc_GetString(pTextBlockConcept->TextResourceID, LOC_TEXT);
+  }
+  else if (OBJ_GetTextContent(hObject) && *OBJ_GetTextContent(hObject))
+  {
+    return OBJ_GetTextContent(hObject);
+  }
+  else
+  {
+    return pTextBlockConcept->PlaceholderText;
+  }
+}
+
+static struct ViewTextRun
+_MakeViewTextRun(lpObject_t hObject, TextRunPtr pTextRun, lpcString_t szText)
+{
+  struct FontShorthand font = *pTextRun->_font;
   for (lpObject_t node = hObject; node; node = OBJ_GetParent(node)) {
     if (Node_GetProperty(node, kNodeFontSize)) {
       font.Size = GetNode(node)->Font.Size;
       break;
     }
   }
-  struct view_text* text = pMakeText->text;
-  lpcString_t szTextContent = OBJ_GetTextContent(hObject);
-  text->string = label->PlaceholderText;
-  text->font = font.Family?font.Family->font:NULL;
-  text->fontSize = font.Size;
-  text->flags = label->UseFullFontHeight ? RF_USE_FONT_HEIGHT : 0;
-  text->lineSpacing = label->LineHeight;
-  text->letterSpacing = label->LetterSpacing;
-  text->underlineWidth = label->Underline.Width;
-  text->underlineOffset = label->Underline.Offset;
-  text->fixedCharacterWidth = label->FixedCharacterWidth;
-  text->availableWidth = pMakeText->availableSpace;
-  text->fontStyle = 0;
-  text->backingScale = WI_GetScaling();
-
-  lpProperty_t hProp =
-    TextBlockConcept_GetProperty(hObject, kTextBlockConceptText);
-
-  if (label->_font->Weight == kFontWeightBold) {
-    text->fontStyle += FS_BOLD;
+  struct ViewTextRun view = {
+    .string = szText,
+    .font = font.Family ? font.Family->font : NULL,
+    .fontSize = font.Size,
+    .letterSpacing = pTextRun->LetterSpacing,
+    .fixedCharacterWidth = pTextRun->FixedCharacterWidth,
+    .underlineWidth = pTextRun->Underline.Width,
+    .underlineOffset = pTextRun->Underline.Offset,
+    .fontStyle = 0,
+  };
+  if (font.Weight == kFontWeightBold) {
+    view.fontStyle += FS_BOLD;
   }
-  if (label->_font->Style == kFontStyleItalic) {
-    text->fontStyle += FS_ITALIC;
+  if (font.Style == kFontStyleItalic) {
+    view.fontStyle += FS_ITALIC;
   }
+  return view;
+}
 
-  if (*label->Text) {
-    text->string = label->Text;
-  } else if (*label->TextResourceID && !PROP_HasProgram(hProp)) {
-    text->string = Loc_GetString(label->TextResourceID, LOC_TEXT);
-  } else if (szTextContent && *szTextContent) {
-    text->string = szTextContent = OBJ_GetTextContent(hObject);
+HANDLER(TextBlockConcept, MakeText)
+{
+  TextRunPtr pTextRun = GetTextRun(hObject);
+  struct ViewText* pViewText = pMakeText->text;
+//  lpcString_t szTextContent = OBJ_GetTextContent(hObject);
+  pViewText->run[0] = _MakeViewTextRun(hObject, pTextRun, _GetTextBlockText(hObject, pTextBlockConcept, pTextRun));
+  pViewText->numTextRuns = 1;
+  FOR_EACH_OBJECT(run, hObject) {
+    TextRunPtr tr = GetTextRun(run);
+    if (tr && pViewText->numTextRuns < MAX_TEXT_RUNS) {
+      lpcString_t str = *tr->Text?tr->Text:OBJ_GetTextContent(run);
+      pViewText->run[pViewText->numTextRuns++] = _MakeViewTextRun(hObject, tr, str);
+    }
   }
-
+  pViewText->flags = pTextBlockConcept->UseFullFontHeight ? RF_USE_FONT_HEIGHT : 0;
+//  pViewText->lineSpacing = pTextRun->LineHeight;
+  pViewText->availableWidth = pMakeText->availableSpace;
+  pViewText->scale = WI_GetScaling();
   return TRUE;
 }
 
 HANDLER(TextBlock, UpdateLayout)
 {
-  TextBlockConceptPtr output = GetTextBlockConcept(hObject);
+  TextRunPtr output = GetTextRun(hObject);
 
   //	if (!is_updated(hObject, STEP_AXIS_X + pContentSize->axis) && *target
   //!=
@@ -146,7 +174,7 @@ HANDLER(TextBlock, ForegroundContent)
   //    TextBlockConceptPtr label = GetTextBlockConcept(hObject);
   //    if (is_updated(hObject, STEP_IMAGE))
   //    {
-  //        struct view_text text = text_from_label(hObject, label);
+  //        struct ViewText text = text_from_label(hObject, label);
   //        Text_Print(&text, &label->_image, TRUE);
   //    }
   //    pForegroundContent->result = label->_image;
@@ -156,9 +184,9 @@ HANDLER(TextBlock, ForegroundContent)
 HANDLER(TextBlock, UpdateGeometry)
 {
   if (is_updated(hObject, STEP_GEOMETRY)) {
-    TextBlockConceptPtr label = GetTextBlockConcept(hObject);
-    struct rect const rect = mesh_rect(pTextBlock->_node2D, label, &label->_textinfo);
-    struct edges insets = label->_textinfo.txInsets;
+    TextRunPtr run = GetTextRun(hObject);
+    struct rect const rect = mesh_rect(pTextBlock->_node2D, GetTextBlockConcept(hObject), &run->_textinfo);
+    struct edges insets = run->_textinfo.txInsets;
     struct rect const geom = {
       .x = floorf(rect.x - insets.left),
       .y = floorf(rect.y - insets.top),
@@ -178,13 +206,14 @@ HANDLER(TextBlock, DrawBrush)
 			!pDrawBrush->foreground)
     return FALSE;
 
-  struct view_entity entity;
-  TextBlockConceptPtr output = GetTextBlockConcept(hObject);
+  struct ViewEntity entity;
+  TextBlockConceptPtr text = GetTextBlockConcept(hObject);
+  TextRunPtr run = GetTextRun(hObject);
 
-  if (output->PlaceholderText == output->_text.string && pDrawBrush->foreground) {
+  if (text->PlaceholderText == run->_text.run[0].string && pDrawBrush->foreground) {
     static struct BrushShorthand zero = { 0 };
-    if (memcmp(&output->Placeholder, &zero, sizeof(struct BrushShorthand))) {
-      pDrawBrush->brush = &output->Placeholder;
+    if (memcmp(&text->Placeholder, &zero, sizeof(struct BrushShorthand))) {
+      pDrawBrush->brush = &text->Placeholder;
     }
   }
 
@@ -196,10 +225,10 @@ HANDLER(TextBlock, DrawBrush)
     entity.rect = pTextBlock->_node2D->_rect;
 //    TextBlockConceptPtr label = GetTextBlockConcept(hObject);
 //    entity.rect = mesh_rect(pTextBlock->_node2D, label, &label->_textinfo);
-    entity.text = &output->_text;
-    lpProperty_t hProp = TextBlockConcept_GetProperty(hObject, kTextBlockConceptText);
-    if (*output->TextResourceID && !PROP_HasProgram(hProp)) {
-      Loc_GetString(output->TextResourceID, LOC_TEXT);
+    entity.text = &run->_text;
+    lpProperty_t hProp = TextRun_GetProperty(hObject, kTextRunText);
+    if (*text->TextResourceID && !PROP_HasProgram(hProp)) {
+      Loc_GetString(text->TextResourceID, LOC_TEXT);
     }
   } else {
     entity.rect = Node2D_GetBackgroundRect(pTextBlock->_node2D);
@@ -228,6 +257,11 @@ HANDLER(TextBlock, Create)
 HANDLER(TextBlockConcept, Create)
 {
   pTextBlockConcept->_node = GetNode(hObject);
-  pTextBlockConcept->_font = &GetNode(hObject)->Font;
+  return FALSE;
+}
+
+HANDLER(TextRun, Create)
+{
+  pTextRun->_font = &GetNode(hObject)->Font;
   return FALSE;
 }

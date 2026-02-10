@@ -93,13 +93,13 @@ R_ClearScreen(struct color color, float depth, byte_t stencil)
 }
 
 HRESULT
-R_DrawLines(struct view_def const* view, PDRAWLINESSTRUCT def)
+R_DrawLines(struct ViewDef const* view, PDRAWLINESSTRUCT def)
 {
-  struct view_entity ent;
+  struct ViewEntity ent;
   struct Shader* shader = &tr.shaders[SHADER_VERTEXCOLOR];
   GLuint posattr = shader->shader->attributes[VERTEX_SEMANTIC_POSITION];
 
-  memset(&ent, 0, sizeof(struct view_entity));
+  memset(&ent, 0, sizeof(struct ViewEntity));
 
   ent.opacity = 1;
   ent.matrix = def->matrix;
@@ -118,17 +118,20 @@ R_DrawLines(struct view_def const* view, PDRAWLINESSTRUCT def)
 }
 
 uint32_t
-R_GetTextHash(struct view_text* text)
+R_GetTextHash(struct ViewText* text)
 {
-  uint32_t size = sizeof(struct view_text) - sizeof(lpcString_t);
-  uint32_t text_hash = fnv1a32(text->string);
-  uint32_t format_hash =
-    fnv1a32_range((lpcString_t)&text->font, ((lpcString_t)&text->font) + size);
+  uint32_t size = sizeof(struct ViewText) - sizeof(lpcString_t);
+  uint32_t text_hash = 0;
+  uint32_t format_hash = 0;
+  for (struct ViewTextRun *run = text->run; run - text->run < text->numTextRuns; run++) {
+    text_hash ^= fnv1a32(run->string);
+    format_hash ^= fnv1a32_range((lpcString_t)&run->font, ((lpcString_t)&run->font) + size);
+  }
   return text_hash ^ format_hash;
 }
 
 struct Texture*
-Text_GetImage(struct view_text* text)
+Text_GetImage(struct ViewText* text)
 {
   uint32_t value = R_GetTextHash(text);
   FOR_LOOP(i, MAX_TEXTCACHE)
@@ -154,7 +157,7 @@ DRAWVERT
 vertex_new2(float x, float y, float u, float v);
 
 struct model*
-CreateNinePatchMesh(struct view_entity* ent)
+CreateNinePatchMesh(struct ViewEntity* ent)
 {
   DRAWSURF dsurf;
   struct model* geometry;
@@ -205,7 +208,7 @@ CreateNinePatchMesh(struct view_entity* ent)
 }
 
 static void
-_DrawDebug(struct view_entity* ent, struct view_def const* view)
+_DrawDebug(struct ViewEntity* ent, struct ViewDef const* view)
 {
   float const w = ent->rect.width;
   float const h = ent->rect.height;
@@ -221,7 +224,7 @@ _DrawDebug(struct view_entity* ent, struct view_def const* view)
 }
 
 static void
-_UpdateCinematicEntity(struct view_entity* ent)
+_UpdateCinematicEntity(struct ViewEntity* ent)
 {
   Cin_Load((lpcString_t)&ent->ninepatch, ent->frame);
 
@@ -238,7 +241,7 @@ _UpdateCinematicEntity(struct view_entity* ent)
 }
 
 HRESULT
-R_DrawEntity(struct view_def const* view, struct view_entity* ent)
+R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
 {
 #ifdef GL_SAMPLER_2D_RECT
   lpcTexture_t texture = ent->texture;
@@ -338,8 +341,8 @@ R_DrawImage(PDRAWIMAGESTRUCT parm)
 {
   struct Texture* image = parm->img ? parm->img : tr.textures[TX_WHITE];
   struct WI_Size screen = _GetRenderTargetSize();
-  struct view_def view = { 0 };
-  struct view_entity ent = {
+  struct ViewDef view = { 0 };
+  struct ViewEntity ent = {
     .texture = parm->img,
     .rect = parm->rect,
     .blendMode = BLEND_MODE_OPAQUE,
@@ -546,7 +549,7 @@ R_InitResources(void)
 }
 
 static void
-_InitFullscreen(struct view_def* view)
+_InitFullscreen(struct ViewDef* view)
 {
   GLint vp[4];
   struct WI_Size window;
@@ -585,7 +588,7 @@ R_DrawConsole(PDRAWCONSOLESTRUCT parm)
 
   R_SetPointFiltering();
 
-  struct view_entity ent = {
+  struct ViewEntity ent = {
     .rect = {
       (int)(parm->Rect.x),
       (int)(parm->Rect.y),
@@ -598,7 +601,7 @@ R_DrawConsole(PDRAWCONSOLESTRUCT parm)
     .shader = &tr.shaders[SHADER_CHARSET],
   };
 
-  struct view_def view;
+  struct ViewDef view;
 
   _InitFullscreen(&view);
 
@@ -606,7 +609,7 @@ R_DrawConsole(PDRAWCONSOLESTRUCT parm)
   ent.textureMatrix = MAT3_Identity();
 
   if (parm->DrawShadow) {
-    struct view_entity outline = ent;
+    struct ViewEntity outline = ent;
     outline.rect.x += 8;
     outline.rect.y += 8;
     outline.blendMode = BLEND_MODE_PREMULTIPLIED_ALPHA;
@@ -618,7 +621,7 @@ R_DrawConsole(PDRAWCONSOLESTRUCT parm)
   
 //  if (parm->DrawOutline) {
 //    int width = 1;
-//    struct view_entity outline = ent;
+//    struct ViewEntity outline = ent;
 //    outline.opacity = 1;
 //    outline.shader = 0;
 //    outline.blendMode = BLEND_MODE_OPAQUE;
@@ -693,7 +696,7 @@ R_DrawToolbarIcon(PDRAWTOOLBARICONSTRUCT parm)
 {
   R_SetPointFiltering();
   
-  struct view_entity ent = {
+  struct ViewEntity ent = {
     .rect = {parm->x, parm->y, 24, 24},
     .opacity = 1.0,
     .blendMode = BLEND_MODE_ALPHA,
@@ -701,7 +704,7 @@ R_DrawToolbarIcon(PDRAWTOOLBARICONSTRUCT parm)
     .shader = &tr.shaders[SHADER_UI],
   };
   
-  struct view_def view;
+  struct ViewDef view;
   
   _InitFullscreen(&view);
   
@@ -729,7 +732,7 @@ R_DrawToolbarIcon(PDRAWTOOLBARICONSTRUCT parm)
 //
 //  R_SetPointFiltering();
 //
-//  struct view_entity ent = {
+//  struct ViewEntity ent = {
 //    .rect = parm->Rect,
 //    .opacity = 1,
 //    .blendMode = BLEND_MODE_ALPHA,
@@ -737,7 +740,7 @@ R_DrawToolbarIcon(PDRAWTOOLBARICONSTRUCT parm)
 //    .shader = tr.shaders[SHADER_CHARSET],
 //  };
 //
-//  struct view_def view;
+//  struct ViewDef view;
 //
 //  _InitFullscreen(&view);
 //
@@ -755,7 +758,7 @@ R_DrawToolbarIcon(PDRAWTOOLBARICONSTRUCT parm)
 //    parm->Scroll.y / (CONSOLE_CHAR_HEIGHT * parm->Height);
 //
 //  if (parm->DrawShadow) {
-//    struct view_entity outline = ent;
+//    struct ViewEntity outline = ent;
 //    outline.rect.x += 12;
 //    outline.rect.y += 12;
 //    outline.blendMode = BLEND_MODE_PREMULTIPLIED_ALPHA;
@@ -766,7 +769,7 @@ R_DrawToolbarIcon(PDRAWTOOLBARICONSTRUCT parm)
 //  }
 //
 //  if (parm->DrawOutline) {
-//    struct view_entity outline = ent;
+//    struct ViewEntity outline = ent;
 //    outline.opacity = 1;
 //    outline.shader = 0;
 //    outline.blendMode = BLEND_MODE_OPAQUE;

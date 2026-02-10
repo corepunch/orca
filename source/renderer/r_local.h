@@ -296,9 +296,9 @@ Font_Load(lpcString_t);
 
 // text
 struct Texture*
-Text_GetImage(struct view_text*);
+Text_GetImage(struct ViewText*);
 HRESULT
-Text_Print(struct view_text const*, struct Texture**, bool_t /*reuse*/);
+Text_Print(struct ViewText const*, struct Texture**, bool_t /*reuse*/);
 
 // shape
 struct shape*
@@ -358,12 +358,12 @@ HRESULT
 Shader_LoadFromDef(struct shader_desc*, struct shader**);
 void
 Shader_BindMaterial(struct shader const*,
-										struct view_def const*,
-										struct view_entity const*);
+										struct ViewDef const*,
+										struct ViewEntity const*);
 
 void
 Shader_BindConstants(struct shader const*,
-										 struct view_entity const*);
+										 struct ViewEntity const*);
 void
 Shader_BindAttributes(struct shader const*,
 											struct model const*);

@@ -5,7 +5,7 @@
 
 HANDLER(Light3D, Render)
 {
-//  struct view_entity entity = {
+//  struct ViewEntity entity = {
 //    .debugName = OBJ_GetName(hObject),
 //    .model = pModel3D->Mesh,
 //    .opacity = GetNode3D(hObject)->_opacity,

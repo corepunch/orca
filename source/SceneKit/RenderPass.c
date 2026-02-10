@@ -47,7 +47,7 @@ ScreenRect_Create(enum ViewportMode mode,
 if (IS_DEFINED(RP_NAME)) curr.PIPE_NAME = (int)rp->RP_NAME;
 
 static void
-_ModifyPipelineState(lpObject_t obj, PPIPELINESTATE ps, struct view_def* viewdef)
+_ModifyPipelineState(lpObject_t obj, PPIPELINESTATE ps, struct ViewDef* viewdef)
 {
   struct PipelineStateRenderPass* rp = GetPipelineStateRenderPass(obj);
   PIPELINESTATE curr;
@@ -112,7 +112,7 @@ _FindCamera(lpObject_t scene, lpcString_t name)
 }
 
 static struct mat4
-_GetProjectionMatrix(struct view_camera* c, struct view_def* vd)
+_GetProjectionMatrix(struct view_camera* c, struct ViewDef* vd)
 {
   float aspect = vd->viewSize.x / vd->viewSize.y;
   float fov = (c->verticalFOV ? c->fov : (c->fov / aspect)) * 1.05f;
@@ -145,7 +145,7 @@ void
 R_DrawEntities(lpObject_t object,
                objectTags_t incl,
                objectTags_t excl,
-               struct view_def* viewdef)
+               struct ViewDef* viewdef)
 {
   struct Node* node = GetNode(object);
   if (OBJ_IsHidden(object) || (excl & node->Tags))
@@ -165,11 +165,11 @@ R_DrawEntities(lpObject_t object,
 }
 
 void
-_OBJ_Draws(lpObject_t obj, lpObject_t scene, struct view_def* original)
+_OBJ_Draws(lpObject_t obj, lpObject_t scene, struct ViewDef* original)
 {
   lpObject_t cam = NULL;
   struct view_camera viewcam;
-  struct view_def vd = *original;
+  struct ViewDef vd = *original;
   struct DrawObjectsRenderPass* rp = GetDrawObjectsRenderPass(obj);
 
   if (!*rp->Camera || !(cam = _FindCamera(scene, rp->Camera))) {
@@ -192,7 +192,7 @@ _OBJ_Draws(lpObject_t obj, lpObject_t scene, struct view_def* original)
 }
 
 void
-R_RenderPassDraw(lpObject_t hObj, lpObject_t scene, struct view_def* viewdef)
+R_RenderPassDraw(lpObject_t hObj, lpObject_t scene, struct ViewDef* viewdef)
 {
   PIPELINESTATE prev;
   if (GetDrawObjectsRenderPass(hObj)) {
@@ -232,7 +232,7 @@ R_DefaultPipelineState(void)
 }
 
 static void
-DrawEntities(struct view_def* vd, lpObject_t object)
+DrawEntities(struct ViewDef* vd, lpObject_t object)
 {
   if (OBJ_IsHidden(object))
     return;
@@ -244,7 +244,7 @@ DrawEntities(struct view_def* vd, lpObject_t object)
 }
 
 void
-R_RenderViewport(lpObject_t scene, struct view_def* vd)
+R_RenderViewport(lpObject_t scene, struct ViewDef* vd)
 {
   lpObject_t obj = vd->renderPass;
   PIPELINESTATE prev;

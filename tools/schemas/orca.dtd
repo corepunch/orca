@@ -835,38 +835,61 @@
 <!ENTITY % NodeElements "Node.Size|Node.HorizontalSize|Node.Width|Node.MinWidth|Node.ActualWidth|Node.ScrollWidth|Node.VerticalSize|Node.Height|Node.MinHeight|Node.ActualHeight|Node.ScrollHeight|Node.DepthSize|Node.Depth|Node.MinDepth|Node.ActualDepth|Node.ScrollDepth|Node.Margin|Node.HorizontalMargin|Node.MarginLeft|Node.MarginRight|Node.VerticalMargin|Node.MarginTop|Node.MarginBottom|Node.DepthMargin|Node.MarginFront|Node.MarginBack|Node.Padding|Node.HorizontalPadding|Node.PaddingLeft|Node.PaddingRight|Node.VerticalPadding|Node.PaddingTop|Node.PaddingBottom|Node.DepthPadding|Node.PaddingFront|Node.PaddingBack|Node.Border|Node.BorderRadius|Node.BorderRadiusTopLeftRadius|Node.BorderRadiusTopRightRadius|Node.BorderRadiusBottomRightRadius|Node.BorderRadiusBottomLeftRadius|Node.HorizontalBorder|Node.BorderLeft|Node.BorderLeftWidth|Node.BorderLeftStyle|Node.BorderLeftColor|Node.BorderRight|Node.BorderRightWidth|Node.BorderRightStyle|Node.BorderRightColor|Node.VerticalBorder|Node.BorderTop|Node.BorderTopWidth|Node.BorderTopStyle|Node.BorderTopColor|Node.BorderBottom|Node.BorderBottomWidth|Node.BorderBottomStyle|Node.BorderBottomColor|Node.DepthBorder|Node.BorderFront|Node.BorderFrontWidth|Node.BorderFrontStyle|Node.BorderFrontColor|Node.BorderBack|Node.BorderBackWidth|Node.BorderBackStyle|Node.BorderBackColor|Node.Alignment|Node.HorizontalAlignment|Node.VerticalAlignment|Node.DepthAlignment|Node.Font|Node.FontWeight|Node.FontStyle|Node.FontSize|Node.FontFamily|Node.Visible|Node.QuickHide|Node.VisibleAmountInParent|Node.Opacity|Node.Tags|Node.DataContext">
 <!ELEMENT Node EMPTY>
 <!ATTLIST Node %NodeAttribs;>
-<!ENTITY % TextBlockConceptAttribs "
+<!ENTITY % TextRunAttribs "
 	Name CDATA #REQUIRED
 	Style CDATA #IMPLIED
 	IsDisabled (true|false) #IMPLIED
 	StateManager CDATA #IMPLIED
 	Text CDATA #IMPLIED
-	TextResourceID CDATA #IMPLIED
-	TextResourceConfiguration CDATA #IMPLIED
-	PlaceholderText CDATA #IMPLIED
-	TextOverflow CDATA #IMPLIED
-	HighlightColor CDATA #IMPLIED
-	Placeholder CDATA #IMPLIED
-	PlaceholderColor CDATA #IMPLIED
-	PlaceholderImage CDATA #IMPLIED
-	PlaceholderMaterial CDATA #IMPLIED
 	Underline CDATA #IMPLIED
 	UnderlineOffset CDATA #IMPLIED
 	UnderlineWidth CDATA #IMPLIED
 	UnderlineColor CDATA #IMPLIED
-	UseFullFontHeight (true|false) #IMPLIED
-	ConstrainContentHeight (true|false) #IMPLIED
-	WordWrap (true|false) #IMPLIED
-	RemoveSideBearingsProperty (true|false) #IMPLIED
 	LetterSpacing CDATA #IMPLIED
 	LineHeight CDATA #IMPLIED
 	CharacterSpacing CDATA #IMPLIED
 	FixedCharacterWidth CDATA #IMPLIED
+	RemoveSideBearingsProperty (true|false) #IMPLIED
+">
+<!ELEMENT TextRun.Text (#PCDATA | Binding)*>
+<!ATTLIST TextRun.Text Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextRun.Underline (#PCDATA | Binding)*>
+<!ATTLIST TextRun.Underline Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextRun.UnderlineOffset (#PCDATA | Binding)*>
+<!ATTLIST TextRun.UnderlineOffset Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextRun.UnderlineWidth (#PCDATA | Binding)*>
+<!ATTLIST TextRun.UnderlineWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextRun.UnderlineColor (#PCDATA | Binding)*>
+<!ATTLIST TextRun.UnderlineColor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextRun.LetterSpacing (#PCDATA | Binding)*>
+<!ATTLIST TextRun.LetterSpacing Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextRun.LineHeight (#PCDATA | Binding)*>
+<!ATTLIST TextRun.LineHeight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextRun.CharacterSpacing (#PCDATA | Binding)*>
+<!ATTLIST TextRun.CharacterSpacing Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextRun.FixedCharacterWidth (#PCDATA | Binding)*>
+<!ATTLIST TextRun.FixedCharacterWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextRun.RemoveSideBearingsProperty (#PCDATA | Binding)*>
+<!ATTLIST TextRun.RemoveSideBearingsProperty Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % TextRunElements "TextRun.Text|TextRun.Underline|TextRun.UnderlineOffset|TextRun.UnderlineWidth|TextRun.UnderlineColor|TextRun.LetterSpacing|TextRun.LineHeight|TextRun.CharacterSpacing|TextRun.FixedCharacterWidth|TextRun.RemoveSideBearingsProperty">
+<!ELEMENT TextRun EMPTY>
+<!ATTLIST TextRun %TextRunAttribs;>
+<!ENTITY % TextBlockConceptAttribs "
+	%TextRunAttribs;
+	TextResourceID CDATA #IMPLIED
+	TextResourceConfiguration CDATA #IMPLIED
+	PlaceholderText CDATA #IMPLIED
+	TextOverflow CDATA #IMPLIED
+	Placeholder CDATA #IMPLIED
+	PlaceholderColor CDATA #IMPLIED
+	PlaceholderImage CDATA #IMPLIED
+	PlaceholderMaterial CDATA #IMPLIED
+	UseFullFontHeight (true|false) #IMPLIED
+	ConstrainContentHeight (true|false) #IMPLIED
+	WordWrap (true|false) #IMPLIED
 	TextHorizontalAlignment (%TextHorizontalAlignment;) #IMPLIED
 	TextVerticalAlignment (%TextVerticalAlignment;) #IMPLIED
 ">
-<!ELEMENT TextBlockConcept.Text (#PCDATA | Binding)*>
-<!ATTLIST TextBlockConcept.Text Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT TextBlockConcept.TextResourceID (#PCDATA | Binding)*>
 <!ATTLIST TextBlockConcept.TextResourceID Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT TextBlockConcept.TextResourceConfiguration (#PCDATA | Binding)*>
@@ -875,8 +898,6 @@
 <!ATTLIST TextBlockConcept.PlaceholderText Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT TextBlockConcept.TextOverflow (#PCDATA | Binding)*>
 <!ATTLIST TextBlockConcept.TextOverflow Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT TextBlockConcept.HighlightColor (#PCDATA | Binding)*>
-<!ATTLIST TextBlockConcept.HighlightColor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT TextBlockConcept.Placeholder (#PCDATA | Binding)*>
 <!ATTLIST TextBlockConcept.Placeholder Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT TextBlockConcept.PlaceholderColor (#PCDATA | Binding)*>
@@ -885,35 +906,17 @@
 <!ATTLIST TextBlockConcept.PlaceholderImage Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT TextBlockConcept.PlaceholderMaterial (#PCDATA | Binding)*>
 <!ATTLIST TextBlockConcept.PlaceholderMaterial Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT TextBlockConcept.Underline (#PCDATA | Binding)*>
-<!ATTLIST TextBlockConcept.Underline Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT TextBlockConcept.UnderlineOffset (#PCDATA | Binding)*>
-<!ATTLIST TextBlockConcept.UnderlineOffset Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT TextBlockConcept.UnderlineWidth (#PCDATA | Binding)*>
-<!ATTLIST TextBlockConcept.UnderlineWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT TextBlockConcept.UnderlineColor (#PCDATA | Binding)*>
-<!ATTLIST TextBlockConcept.UnderlineColor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT TextBlockConcept.UseFullFontHeight (#PCDATA | Binding)*>
 <!ATTLIST TextBlockConcept.UseFullFontHeight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT TextBlockConcept.ConstrainContentHeight (#PCDATA | Binding)*>
 <!ATTLIST TextBlockConcept.ConstrainContentHeight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT TextBlockConcept.WordWrap (#PCDATA | Binding)*>
 <!ATTLIST TextBlockConcept.WordWrap Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT TextBlockConcept.RemoveSideBearingsProperty (#PCDATA | Binding)*>
-<!ATTLIST TextBlockConcept.RemoveSideBearingsProperty Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT TextBlockConcept.LetterSpacing (#PCDATA | Binding)*>
-<!ATTLIST TextBlockConcept.LetterSpacing Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT TextBlockConcept.LineHeight (#PCDATA | Binding)*>
-<!ATTLIST TextBlockConcept.LineHeight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT TextBlockConcept.CharacterSpacing (#PCDATA | Binding)*>
-<!ATTLIST TextBlockConcept.CharacterSpacing Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT TextBlockConcept.FixedCharacterWidth (#PCDATA | Binding)*>
-<!ATTLIST TextBlockConcept.FixedCharacterWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT TextBlockConcept.TextHorizontalAlignment (#PCDATA | Binding)*>
 <!ATTLIST TextBlockConcept.TextHorizontalAlignment Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT TextBlockConcept.TextVerticalAlignment (#PCDATA | Binding)*>
 <!ATTLIST TextBlockConcept.TextVerticalAlignment Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % TextBlockConceptElements "TextBlockConcept.Text|TextBlockConcept.TextResourceID|TextBlockConcept.TextResourceConfiguration|TextBlockConcept.PlaceholderText|TextBlockConcept.TextOverflow|TextBlockConcept.HighlightColor|TextBlockConcept.Placeholder|TextBlockConcept.PlaceholderColor|TextBlockConcept.PlaceholderImage|TextBlockConcept.PlaceholderMaterial|TextBlockConcept.Underline|TextBlockConcept.UnderlineOffset|TextBlockConcept.UnderlineWidth|TextBlockConcept.UnderlineColor|TextBlockConcept.UseFullFontHeight|TextBlockConcept.ConstrainContentHeight|TextBlockConcept.WordWrap|TextBlockConcept.RemoveSideBearingsProperty|TextBlockConcept.LetterSpacing|TextBlockConcept.LineHeight|TextBlockConcept.CharacterSpacing|TextBlockConcept.FixedCharacterWidth|TextBlockConcept.TextHorizontalAlignment|TextBlockConcept.TextVerticalAlignment">
+<!ENTITY % TextBlockConceptElements "TextBlockConcept.TextResourceID|TextBlockConcept.TextResourceConfiguration|TextBlockConcept.PlaceholderText|TextBlockConcept.TextOverflow|TextBlockConcept.Placeholder|TextBlockConcept.PlaceholderColor|TextBlockConcept.PlaceholderImage|TextBlockConcept.PlaceholderMaterial|TextBlockConcept.UseFullFontHeight|TextBlockConcept.ConstrainContentHeight|TextBlockConcept.WordWrap|TextBlockConcept.TextHorizontalAlignment|TextBlockConcept.TextVerticalAlignment|%TextRunElements;">
 <!ELEMENT TextBlockConcept EMPTY>
 <!ATTLIST TextBlockConcept %TextBlockConceptAttribs;>
 <!ENTITY % Node2DAttribs "
@@ -1531,7 +1534,7 @@
 <!ELEMENT Viewport3D.Scene (#PCDATA | Binding)*>
 <!ATTLIST Viewport3D.Scene Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % Viewport3DElements "Viewport3D.Camera|Viewport3D.PreviewCamera|Viewport3D.HitTestCamera|Viewport3D.RenderPass|Viewport3D.Scene|%Node2DElements;">
-<!ELEMENT Viewport3D (PropertyType|PropertyEnumValue|Texture|Image|RenderTargetTexture|CubeMapTexture|IOSurfaceTexture|VertexShader|FragmentShader|Shader|Material|Mesh|FontFamily|Trajectory|Timeline|DataObject|AnimationPlayer|Trigger|OnPropertyChangedTrigger|OnAttachedTrigger|EventTrigger|Setter|Handler|Brush|ColorBrush|Node|TextBlockConcept|Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Style|Node3D|Scene|Model3D|PlaneMeshNode|Camera|TrajectoryList3D|Viewport3D|PrefabView3D|RenderPass|CompositionTargetRenderPass|BlitRenderPass|ClearRenderPass|DrawObjectsRenderPass|PipelineStateRenderPass|TextBlock3D|Light3D|SpriteView|Resource|StyleSheet|ObjectPrefabPlaceholder|%Viewport3DElements;)*>
+<!ELEMENT Viewport3D (PropertyType|PropertyEnumValue|Texture|Image|RenderTargetTexture|CubeMapTexture|IOSurfaceTexture|VertexShader|FragmentShader|Shader|Material|Mesh|FontFamily|Trajectory|Timeline|DataObject|AnimationPlayer|Trigger|OnPropertyChangedTrigger|OnAttachedTrigger|EventTrigger|Setter|Handler|Brush|ColorBrush|Node|TextRun|TextBlockConcept|Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Style|Node3D|Scene|Model3D|PlaneMeshNode|Camera|TrajectoryList3D|Viewport3D|PrefabView3D|RenderPass|CompositionTargetRenderPass|BlitRenderPass|ClearRenderPass|DrawObjectsRenderPass|PipelineStateRenderPass|TextBlock3D|Light3D|SpriteView|Resource|StyleSheet|ObjectPrefabPlaceholder|%Viewport3DElements;)*>
 <!ATTLIST Viewport3D %Viewport3DAttribs;>
 <!ENTITY % PrefabView3DAttribs "
 	%Node3DAttribs;

@@ -28,7 +28,7 @@ struct font;
 struct model;
 struct shape;
 struct user_data;
-struct view_text;
+struct ViewText;
 
 typedef void* handle_t;
 typedef uint32_t DRAWINDEX, *PDRAWINDEX;
@@ -258,12 +258,12 @@ enum entity_type
   ET_CINEMATIC,
 };
 
-struct view_entity
+struct ViewEntity
 {
   lpcString_t debugName;
   enum entity_type type;
   struct mat4 matrix;
-  struct view_text* text;
+  struct ViewText* text;
   struct Mesh const* mesh;
   struct Shader const* shader;
   struct Texture const* texture;
@@ -315,7 +315,7 @@ struct view_camera
   bool_t verticalFOV;
 };
 
-struct view_def
+struct ViewDef
 {
   struct mat4 projectionMatrix;
   struct mat4 viewMatrix;
@@ -442,21 +442,29 @@ typedef enum
   FS_COUNT,
 } FONTSTYLE;
 
-struct view_text
+struct ViewTextRun
 {
   lpcString_t string;
   struct font* font;
-  uint32_t flags;
   uint32_t fontSize;
   FONTSTYLE fontStyle;
-  uint32_t availableWidth;
-  float lineSpacing;
   float letterSpacing;
-  float backingScale;
+  float lineSpacing;
   uint32_t fixedCharacterWidth;
-  uint32_t cursor;
   uint32_t underlineWidth;
   uint32_t underlineOffset;
+};
+
+#define MAX_TEXT_RUNS 256
+
+struct ViewText
+{
+  struct ViewTextRun run[MAX_TEXT_RUNS];
+  uint32_t flags;
+  uint32_t availableWidth;
+  uint32_t cursor;
+  uint32_t numTextRuns;
+  float scale;
 };
 
 // typedef struct screen_rect {
@@ -494,8 +502,8 @@ typedef void (*SHADERENUMPROC)(struct _SHADERCONST *, void*);
 
 ORCA_API HRESULT R_Init(uint32_t width, uint32_t height, bool_t offscreen);
 ORCA_API HRESULT R_Shutdown(void);
-ORCA_API HRESULT R_DrawLines(struct view_def const*, PDRAWLINESSTRUCT);
-ORCA_API HRESULT R_DrawEntity(struct view_def const*, struct view_entity*);
+ORCA_API HRESULT R_DrawLines(struct ViewDef const*, PDRAWLINESSTRUCT);
+ORCA_API HRESULT R_DrawEntity(struct ViewDef const*, struct ViewEntity*);
 ORCA_API HRESULT R_DrawConsole(PDRAWCONSOLESTRUCT);
 ORCA_API HRESULT R_DrawImage(PDRAWIMAGESTRUCT);
 ORCA_API HRESULT R_DrawToolbarIcon(PDRAWTOOLBARICONSTRUCT parm);
@@ -505,7 +513,7 @@ ORCA_API HRESULT R_SetPipelineState(PPIPELINESTATE);
 ORCA_API HRESULT R_GetPipelineState(PPIPELINESTATE);
 ORCA_API HRESULT R_BindFramebuffer(struct Texture*);
 ORCA_API HRESULT RenderTexture_Create(PCREATERTSTRUCT, struct Texture**);
-ORCA_API HRESULT Text_GetInfo(struct view_text const*, struct text_info*);
+ORCA_API HRESULT Text_GetInfo(struct ViewText const*, struct text_info*);
 ORCA_API HRESULT Image_GetInfo(struct Texture const*, struct image_info*);
 ORCA_API HRESULT Shader_EnumUniforms(struct shader const*, SHADERENUMPROC, void*);
 ORCA_API HRESULT Shape_GetPointLocation(struct shape const*, float, struct vec3*);

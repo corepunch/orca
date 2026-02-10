@@ -18,10 +18,10 @@ typedef struct _DRAW2DCONTENTSTRUCT
 
 HANDLER(Node2D, Draw2DContent);
 
-static struct view_def*
-Init_ViewDef(struct view_def* view, Draw2DContentEventPtr parms)
+static struct ViewDef*
+Init_ViewDef(struct ViewDef* view, Draw2DContentEventPtr parms)
 {
-  memset(view, 0, sizeof(struct view_def));
+  memset(view, 0, sizeof(struct ViewDef));
 
   view->viewMatrix = MAT4_Identity();
 
@@ -97,8 +97,8 @@ draw_children(lpObject_t hObject,
   } else if (!node2D->RenderTarget) {
     Node2D_Draw2DContent(hObject, node2D, 0, &tmp);
   } else if (!node2D->OffscreenRendering) {
-    struct view_entity entity;
-    struct view_def viewdef;
+    struct ViewEntity entity;
+    struct ViewDef viewdef;
     handle_t rt = node2D->RenderTarget;
     Node2D_GetViewEntity(hObject, &entity, rt, 0);
     Init_ViewDef(&viewdef, pDraw2DContent);
@@ -127,7 +127,7 @@ HANDLER(Node2D, DrawBrush)
     return FALSE;
   }
 
-  struct view_entity entity;
+  struct ViewEntity entity;
 
   Node2D_GetViewEntity(hObject,&entity,pDrawBrush->image,pDrawBrush->brush);
 
@@ -302,7 +302,7 @@ HANDLER(Screen, RenderScreen) {
 
 void
 Node2D_GetViewEntity(lpObject_t hObject,
-                     struct view_entity* entity,
+                     struct ViewEntity* entity,
 										 struct Texture const* image,
 										 struct BrushShorthand const* brush)
 {
@@ -310,7 +310,7 @@ Node2D_GetViewEntity(lpObject_t hObject,
 
   Node2DPtr node2d = GetNode2D(hObject);
 
-  memset(entity, 0, sizeof(struct view_entity));
+  memset(entity, 0, sizeof(struct ViewEntity));
 
   entity->textureMatrix = MAT3_Identity();
   entity->uniforms = uniforms;
@@ -394,7 +394,7 @@ HANDLER(Node2D, Draw2DContent)
   }
 
   uint32_t flags = OBJ_GetFlags(hObject);
-  struct view_def viewdef;
+  struct ViewDef viewdef;
 
   Init_ViewDef(&viewdef, pDraw2DContent);
 

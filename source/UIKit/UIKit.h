@@ -249,6 +249,15 @@ luaX_pushNode(lua_State *L, lpcNode_t Node);
 ORCA_API lpNode_t
 luaX_checkNode(lua_State *L, int idx);
 
+typedef struct TextRun TextRun_t, *lpTextRun_t;
+typedef struct TextRun const cTextRun_t, *lpcTextRun_t;
+/// @brief Push TextRun onto Lua stack.
+ORCA_API void
+luaX_pushTextRun(lua_State *L, lpcTextRun_t TextRun);
+/// @brief Check TextRun form Lua stack at index.
+ORCA_API lpTextRun_t
+luaX_checkTextRun(lua_State *L, int idx);
+
 typedef struct TextBlockConcept TextBlockConcept_t, *lpTextBlockConcept_t;
 typedef struct TextBlockConcept const cTextBlockConcept_t, *lpcTextBlockConcept_t;
 /// @brief Push TextBlockConcept onto Lua stack.
@@ -416,8 +425,8 @@ luaX_checkStyle(lua_State *L, int idx);
 #include <source/UIKit/uidef.h>
 typedef struct Object Object_t, *lpObject_t;
 typedef struct Object const cObject_t, *lpcObject_t;
-typedef struct view_text view_text_t, *lpview_text_t;
-typedef struct view_text const cview_text_t, *lpcview_text_t;
+typedef struct ViewText ViewText_t, *lpViewText_t;
+typedef struct ViewText const cViewText_t, *lpcViewText_t;
 typedef struct text_info text_info_t, *lptext_info_t;
 typedef struct text_info const ctext_info_t, *lpctext_info_t;
 #define kEventGetSize 0x80d9e0ee
@@ -758,34 +767,39 @@ struct Node {
 	lpDataObject_t DataContext; /// Data context (used for data binding, similar to XAML's DataContext).
 };
 
-typedef struct TextBlockConcept TextBlockConcept, *TextBlockConceptPtr;
-typedef struct TextBlockConcept const *TextBlockConceptCPtr;
+typedef struct TextRun TextRun, *TextRunPtr;
+typedef struct TextRun const *TextRunCPtr;
 /// @brief Shared concept for text rendering in 2D and 3D nodes.
-struct TextBlockConcept {
+struct TextRun {
 	fixedString_t Text; /// The short text string displayed in the block, limited to 64 bytes. If you need more space consider using `TextResourceID`.
-	fixedString_t TextResourceID; /// Resource identifier for localized text lookup.
-	fixedString_t TextResourceConfiguration; /// Configuration key used when resolving text resources.
-	fixedString_t PlaceholderText; /// Placeholder text displayed when no main text is set.
-	fixedString_t TextOverflow; /// Defines how overflowing text should be handled (clip, ellipsis, etc.).
-	color_t HighlightColor; /// Color used for highlighting portions of the text.
-	BrushShorthand_t Placeholder; /// Brush definition for rendering placeholder text.
 	UnderlineShorthand_t Underline; /// Underline style applied to the text.
-	bool_t UseFullFontHeight; /// When true, uses the font's full height for layout calculations.
-	bool_t ConstrainContentHeight; /// Constrains the content height to the text's bounding box.
-	bool_t WordWrap; /// Enables automatic word wrapping of the text.
-	bool_t RemoveSideBearingsProperty; /// Removes side bearings (spacing) defined by the font.
 	float LetterSpacing; /// Additional spacing applied between letters.
 	float LineHeight; /// Line height multiplier for multi-line text layout.
 	float CharacterSpacing; /// Extra spacing between characters, beyond kerning.
 	float FixedCharacterWidth; /// Forces a fixed width per character (monospace effect).
+	bool_t RemoveSideBearingsProperty; /// Removes side bearings (spacing) defined by the font.
+	uiLabelSize_t _size; /// Internal text size metrics.
+	ViewText_t _text; /// Internal view representation of the text.
+	text_info_t _textinfo; /// Internal text information structure.
+	lpFontShorthand_t _font; /// Reference to the font shorthand configuration.
+};
+
+typedef struct TextBlockConcept TextBlockConcept, *TextBlockConceptPtr;
+typedef struct TextBlockConcept const *TextBlockConceptCPtr;
+/// @brief Shared concept for text rendering in 2D and 3D nodes.
+struct TextBlockConcept {
+	fixedString_t TextResourceID; /// Resource identifier for localized text lookup.
+	fixedString_t TextResourceConfiguration; /// Configuration key used when resolving text resources.
+	fixedString_t PlaceholderText; /// Placeholder text displayed when no main text is set.
+	fixedString_t TextOverflow; /// Defines how overflowing text should be handled (clip, ellipsis, etc.).
+	BrushShorthand_t Placeholder; /// Brush definition for rendering placeholder text.
+	bool_t UseFullFontHeight; /// When true, uses the font's full height for layout calculations.
+	bool_t ConstrainContentHeight; /// Constrains the content height to the text's bounding box.
+	bool_t WordWrap; /// Enables automatic word wrapping of the text.
 	eTextHorizontalAlignment_t TextHorizontalAlignment; /// Horizontal alignment of the text within its bounds.
 	eTextVerticalAlignment_t TextVerticalAlignment; /// Vertical alignment of the text within its bounds.
 	uiLabelSteps_t _steps; /// Internal step-based rendering parameters.
-	uiLabelSize_t _size; /// Internal text size metrics.
 	lpNode_t _node; /// Reference to the owning node using this concept.
-	view_text_t _text; /// Internal view representation of the text.
-	text_info_t _textinfo; /// Internal text information structure.
-	lpFontShorthand_t _font; /// Reference to the font shorthand configuration.
 };
 
 typedef struct Node2D Node2D, *Node2DPtr;
