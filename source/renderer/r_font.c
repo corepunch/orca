@@ -19,6 +19,7 @@
 #define FT_ERROR(...) Con_Error("FONT: " __VA_ARGS__)
 #define FT_SCALE(x) ((x) >> 6)
 #define FT_FONTSCALE(font)
+#define FT_Pixel uint8_t
 
 #define CARET_WIDTH 2
 
@@ -334,12 +335,18 @@ Text_Print(struct ViewText const* pViewText,
       bool_t const eos = !*str;
       uint32_t const charcode = *str ? u8_readchar(&str) : ' ';
       lineheight = MAX(lineheight, FT_MulFix(face->height, face->size->metrics.y_scale));
-      if (FT_SCALE(ascender) > baseline && x > 0) {
+      if (x && FT_SCALE(ascender) > baseline) {
         FT_Pos baseline_shift = FT_SCALE(ascender) - baseline;
-        byte_t* line_start = &image_data[(textSize.height - y - FT_SCALE(lineheight) - 1) * textSize.width];
-        long line_height = FT_SCALE(lineheight) + 1;
-        if (line_start - baseline_shift * textSize.width >= image_data) {
-          memmove(line_start - baseline_shift * textSize.width, line_start, line_height * textSize.width * sizeof(uint8_t));
+        FT_Pos src_inv = textSize.height - y - FT_SCALE(lineheight) - 1;
+        FT_Pos dst_inv = src_inv - baseline_shift;
+        FT_Pos num_rows = FT_SCALE(lineheight) + 1;
+        if (src_inv >= 0 && dst_inv >= 0 && src_inv + num_rows <= textSize.height) {
+          memmove(&image_data[dst_inv * textSize.width],
+                  &image_data[src_inv * textSize.width],
+                  num_rows * textSize.width * sizeof(FT_Pixel));
+          // Clear the freed-up space
+          memset(&image_data[src_inv * textSize.width], 0, 
+                 baseline_shift * textSize.width * sizeof(FT_Pixel));
         }
       }
       baseline = MAX(baseline, FT_SCALE(ascender));
