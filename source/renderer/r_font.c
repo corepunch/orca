@@ -99,6 +99,86 @@ T_GetFontFace(struct ViewTextRun const* run)
   return fg.font->faces[FS_NORMAL].face;
 }
 
+// Helper function to find the maximum baseline for the current line
+// Returns the maximum baseline in scaled units
+static FT_Pos
+T_GetLineMaxBaseline(struct ViewText const* pViewText,
+                     struct ViewTextRun const* startRun,
+                     lpcString_t startStr,
+                     FT_Int currentLineWidth,
+                     FT_Pos spaceWidth)
+{
+  FT_Pos maxBaseline = 0;
+  FT_Int lineWidth = currentLineWidth;
+  FT_Int wordWidth = 0;
+  FT_UInt prev_glyph_index = 0;
+  bool_t firstBaseline = TRUE;
+  FT_Int const maxLineWidth = pViewText->availableWidth * pViewText->scale;
+  
+  for (struct ViewTextRun const *run = startRun;
+       run - pViewText->run < pViewText->numTextRuns;
+       run++)
+  {
+    FT_Face const face = T_GetFontFace(run);
+    if (FT_Set_Pixel_Sizes(face, 0, run->fontSize * pViewText->scale))
+      break;
+    
+    FT_Pos const ascender = FT_MulFix(face->ascender, face->size->metrics.y_scale);
+    FT_Pos const baseline = FT_SCALE(ascender);
+    if (firstBaseline) {
+      maxBaseline = baseline;
+      firstBaseline = FALSE;
+    } else {
+      maxBaseline = MAX(maxBaseline, baseline);
+    }
+    
+    // Reset glyph index when starting a new run
+    prev_glyph_index = 0;
+    
+    lpcString_t str = (run == startRun) ? startStr : run->string;
+    
+    for (; *str; ) {
+      uint32_t const charcode = u8_readchar(&str);
+      
+      if (isspace(charcode)) {
+        // Check for newline before processing space
+        if (charcode == '\n') {
+          // Newline - end of current line
+          return maxBaseline;
+        }
+        
+        if (lineWidth == 0) {
+          lineWidth += spaceWidth;
+          lineWidth += wordWidth;
+        } else if (lineWidth + wordWidth + spaceWidth > maxLineWidth) {
+          // Word wrap - end of current line
+          return maxBaseline;
+        } else {
+          lineWidth += spaceWidth;
+          lineWidth += wordWidth;
+        }
+        wordWidth = 0;
+      } else if (!FT_Load_CharGlyph(face, charcode, FT_LOAD_DEFAULT)) {
+        FT_UInt glyph_index = FT_Get_Char_Index(face, charcode);
+        FT_Pos advance = FT_SCALE(face->glyph->metrics.horiAdvance);
+        
+        if (prev_glyph_index && glyph_index) {
+          FT_Vector kerning;
+          if (FT_Get_Kerning(face, prev_glyph_index, glyph_index,
+                             FT_KERNING_DEFAULT, &kerning) == 0) {
+            wordWidth += FT_SCALE(kerning.x);
+          }
+        }
+        
+        wordWidth += advance;
+        prev_glyph_index = glyph_index;
+      }
+    }
+  }
+  
+  return maxBaseline;
+}
+
 HRESULT
 Font_Release(struct font* font)
 {
@@ -343,6 +423,8 @@ Text_Print(struct ViewText const* pViewText,
           baseline = FT_SCALE(ascender);
           prevchar = 0;
           prev_glyph_index = 0;
+          // Reset line baseline for the new line
+          lineBaseline = T_GetLineMaxBaseline(pViewText, run, str, textwidth, spaceWidth);
         } else { // if (charcode != '\n') {
           x += spaceWidth;
           textwidth += spaceWidth;
@@ -356,7 +438,7 @@ Text_Print(struct ViewText const* pViewText,
           FT_Bitmap* bitmap = &face->glyph->bitmap;
           FT_Pos advance = FT_SCALE(metrics->horiAdvance);
           FT_Pos x_off = FT_SCALE(metrics->horiBearingX);
-          FT_Pos y_off = baseline - FT_SCALE(metrics->horiBearingY);
+          FT_Pos y_off = lineBaseline - FT_SCALE(metrics->horiBearingY);
           FT_UInt glyph_index = FT_Get_Char_Index(face, ch);
           if (prev_glyph_index && glyph_index) {
             FT_Vector kerning;
@@ -396,9 +478,12 @@ Text_Print(struct ViewText const* pViewText,
           textwidth = 0;
           y += FT_SCALE(lineheight);
           x = -spaceWidth;
+          lineheight = 0;
           prevchar = 0;
           prev_glyph_index = 0;
           print = str;
+          // Reset line baseline for the new line
+          lineBaseline = T_GetLineMaxBaseline(pViewText, run, str, textwidth, spaceWidth);
         } else {
           print = str;
           textwidth += wordwidth;
