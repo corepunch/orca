@@ -87,8 +87,7 @@ T_GetFontFace(struct ViewTextRun const* run)
     if (run->font->faces[run->fontStyle].face) {
       return run->font->faces[run->fontStyle].face;
     }
-    FOR_LOOP(i, FS_COUNT)
-    {
+    FOR_LOOP(i, FS_COUNT) {
       if (run->font->faces[i].face) {
         return run->font->faces[i].face;
       }
@@ -184,11 +183,11 @@ T_GetSize(struct ViewText const* text,
           struct rect* rcursor)
 {
   struct WI_Size textSize = { 0 };
-  uint32_t textwidth = 0;
-  uint32_t wordwidth = 0;
-  FT_Pos spaceWidth = 0;
-  uint32_t cursor = 0;
+  FT_UInt textwidth = 0;
+  FT_UInt wordwidth = 0;
+  FT_UInt cursor = 0;
   FT_UInt prev_glyph_index = 0;
+  FT_Pos spaceWidth = 0;
 
   //	if (!(text->flags & RF_USE_FONT_HEIGHT)) {
   //		textSize.height = (uint32_t)(text->run.fontSize * text->scale +
@@ -210,8 +209,8 @@ T_GetSize(struct ViewText const* text,
     textSize.height = MAX(textSize.height, (int)FT_SCALE(lineHeight));
 
     for (lpcString_t str = run->string;; cursor++) {
-      bool_t const eos = !*str;
-      uint32_t const charcode = *str ? u8_readchar(&str) : ' ';
+      FT_Bool const eos = !*str;
+      FT_UInt const charcode = *str ? u8_readchar(&str) : ' ';
       
       if (cursor == text->cursor && rcursor) {
         rcursor->x = textwidth + wordwidth;
@@ -297,30 +296,24 @@ Text_Print(struct ViewText const* pViewText,
        run++)
   {
     FT_Face const face = T_GetFontFace(run);
-    
     if (FT_Set_Pixel_Sizes(face, 0, run->fontSize * pViewText->scale))
       return E_UNEXPECTED;
-    
     FT_Pos const ascender = FT_MulFix(face->ascender, face->size->metrics.y_scale);
     FT_Pos const underline = FT_MulFix(face->underline_position, face->size->metrics.y_scale);
     // FT_Pos const descender = FT_MulFix(face->descender, face->size->metrics.y_scale);
     FT_Pos const lineHeight = FT_MulFix(face->height, face->size->metrics.y_scale);
     FT_Pos const baseline = FT_SCALE(ascender);
     FT_Pos const underline_y = baseline - FT_SCALE(underline); // You can adjust this slightly if needed
-    
     //	if ((pViewText->flags & RF_USE_FONT_HEIGHT) == 0) {
     //		textSize.height -= (uint32_t)(pViewText->fontSize + FT_SCALE(descender));
     //    textSize.height += FT_SCALE(lineHeight);
     //	}
-    
     if (FT_Load_CharGlyph(face, ' ', FT_LOAD_DEFAULT)) {
       spaceWidth = FT_SCALE(face->glyph->metrics.horiAdvance);
     }
-
     if (x == INT_MIN) {
       x = -spaceWidth;
     }
-
     for (lpcString_t str = run->string, print = str, last = str;; last = str) {
       bool_t const eos = !*str;
       uint32_t const charcode = *str ? u8_readchar(&str) : ' ';
@@ -344,21 +337,16 @@ Text_Print(struct ViewText const* pViewText,
           int ch = u8_readchar(&print);
           if (!FT_Load_CharGlyph(face, ch, FT_LOAD_DEFAULT))
             continue;
-          
           FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
-          
           FT_Glyph_Metrics* metrics = &face->glyph->metrics;
           FT_Bitmap* bitmap = &face->glyph->bitmap;
           FT_Pos advance = FT_SCALE(metrics->horiAdvance);
           FT_Pos x_off = FT_SCALE(metrics->horiBearingX);
           FT_Pos y_off = baseline - FT_SCALE(metrics->horiBearingY);
-          
-          // Apply kerning adjustment
           FT_UInt glyph_index = FT_Get_Char_Index(face, ch);
           if (prev_glyph_index && glyph_index) {
             FT_Vector kerning;
-            if (FT_Get_Kerning(face, prev_glyph_index, glyph_index,
-                               FT_KERNING_DEFAULT, &kerning) == 0) {
+            if (FT_Get_Kerning(face, prev_glyph_index, glyph_index, FT_KERNING_DEFAULT, &kerning) == 0) {
               x += FT_SCALE(kerning.x);
             }
           }
