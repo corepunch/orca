@@ -344,7 +344,7 @@ Text_Print(struct ViewText const* pViewText,
         // In the inverted coordinate system: higher inv values = lower on screen
         
         // Calculate the range of rows that might contain data for this line
-        // Note: lineheight is already scaled (from FT_MulFix above), so we use FT_SCALE here
+        // lineheight is in 26.6 fixed-point format, so we need FT_SCALE to convert to pixels
         long max_row = y + FT_SCALE(lineheight);
         long min_row = y;
         
