@@ -157,7 +157,12 @@ DynamicTextBlock_AddRun(DynamicTextBlock* block, struct ViewTextRun const* run)
 {
   if (block->runCount >= block->runCapacity) {
     int newCapacity = block->runCapacity == 0 ? 4 : block->runCapacity * 2;
-    block->runs = realloc(block->runs, newCapacity * sizeof(struct ViewTextRun));
+    struct ViewTextRun* newRuns = realloc(block->runs, newCapacity * sizeof(struct ViewTextRun));
+    if (!newRuns) {
+      // Handle allocation failure
+      return;
+    }
+    block->runs = newRuns;
     block->runCapacity = newCapacity;
   }
   block->runs[block->runCount++] = *run;

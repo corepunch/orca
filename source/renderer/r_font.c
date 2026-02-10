@@ -202,7 +202,6 @@ typedef struct {
   FT_UInt prev_glyph_index;        ///< Previous glyph for kerning
   FT_Pos maxLineHeight;            ///< Maximum line height encountered
   struct rect* rcursor;            ///< Optional cursor rectangle output
-  bool_t isFirstRun;               ///< TRUE if this is the first run
 } MeasureContext;
 
 /// Callback to measure a single text run.
@@ -221,8 +220,11 @@ T_MeasureRunCallback(struct ViewTextRun const* run, void* userData)
   MeasureContext* ctx = (MeasureContext*)userData;
   FT_Face face = T_GetFontFace(run);
   
-  if (FT_Set_Pixel_Sizes(face, 0, run->fontSize))
-    return TRUE; // Continue to next run even if this fails
+  if (FT_Set_Pixel_Sizes(face, 0, run->fontSize)) {
+    // Log error but continue to next run for robustness
+    Con_Printf("Warning: Failed to set font size %u for text run\n", run->fontSize);
+    return TRUE;
+  }
   
   FT_Pos lineHeight = FT_MulFix(face->height, face->size->metrics.y_scale);
   ctx->maxLineHeight = MAX(ctx->maxLineHeight, lineHeight);
@@ -232,12 +234,8 @@ T_MeasureRunCallback(struct ViewTextRun const* run, void* userData)
     spaceWidth = (uint32_t)FT_SCALE(face->glyph->metrics.horiAdvance);
   }
   
-  // Don't add space before the first run
-  if (!ctx->isFirstRun && run->string && *run->string) {
-    // Add space between runs (can be customized per run if needed)
-    ctx->wordwidth += spaceWidth;
-  }
-  ctx->isFirstRun = FALSE;
+  // Note: No automatic spacing between runs. Caller should include spacing
+  // in the run strings themselves (e.g., "Hello " instead of "Hello")
   
   for (lpcString_t str = run->string; str && *str;) {
     uint32_t const charcode = u8_readchar(&str);
@@ -316,8 +314,7 @@ T_GetSize(FT_Face face, struct ViewText const* text, struct rect* rcursor)
     .cursor = 0,
     .prev_glyph_index = 0,
     .maxLineHeight = 0,
-    .rcursor = rcursor,
-    .isFirstRun = TRUE
+    .rcursor = rcursor
   };
   
   // If enumRunsFunc callback is provided, let the caller enumerate runs
