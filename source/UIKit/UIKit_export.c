@@ -1469,16 +1469,6 @@ static struct PropertyDesc const NodeProperties[kNodeNumProperties] = {
 		Node, "VerticalAlignment", Alignment.Axis[1], kDataTypeEnum, .TypeString="Top,Center,Bottom,Stretch"),
 		/* Node.DepthAlignment */ DECL(0x7ef540ff, 0x5b191ce3,
 		Node, "DepthAlignment", Alignment.Axis[2], kDataTypeEnum, .TypeString="Near,Center,Far,Stretch"),
-	/* Node.Font */ DECL(0xa77a5eb0, 0x0f056b44,
-	Node, "Font", Font, kDataTypeGroup, .TypeString="FontShorthand", .NumComponents=4),
-		/* Node.FontWeight */ DECL(0xd0616ad0, 0x43a6adb4,
-		Node, "FontWeight", Font.Weight, kDataTypeEnum, .TypeString="Normal,Bold"),
-		/* Node.FontStyle */ DECL(0x6c164db5, 0xdcc4bfe9,
-		Node, "FontStyle", Font.Style, kDataTypeEnum, .TypeString="Normal,Italic"),
-		/* Node.FontSize */ DECL(0xa26a44e1, 0x82715b1d,
-		Node, "FontSize", Font.Size, kDataTypeFloat),
-		/* Node.FontFamily */ DECL(0xf6319880, 0x9cb6ac4c,
-		Node, "FontFamily", Font.Family, kDataTypeObject, .TypeString="FontFamily"),
 	/* Node.Visible */ DECL(0x592a4941, 0xe1936ee5,
 	Node, "Visible", Visible, kDataTypeBool),
 	/* Node.QuickHide */ DECL(0x20d9ba7c, 0x7e26e1b0,
@@ -1493,7 +1483,6 @@ static struct PropertyDesc const NodeProperties[kNodeNumProperties] = {
 	Node, "DataContext", DataContext, kDataTypeObject, .TypeString="DataObject"),
 };
 static struct Node NodeDefaults = {
-	.Font = (struct FontShorthand) { .Size=DEFAULT_FONT_SIZE },
 	.Visible = TRUE,
 	.VisibleAmountInParent = 1,
 	.Opacity = 1,
@@ -1528,10 +1517,19 @@ ORCA_API struct ClassDesc _Node = {
 	.Defaults = &NodeDefaults,
 	.NumProperties = kNodeNumProperties,
 };
-LRESULT TextRun_Create(lpObject_t, lpTextRun_t, wParam_t, CreateEventPtr);
 static struct PropertyDesc const TextRunProperties[kTextRunNumProperties] = {
 	/* TextRun.Text */ DECL(0x3e142d5e, 0xcba1ea6c,
 	TextRun, "Text", Text, kDataTypeFixed),
+	/* TextRun.Font */ DECL(0xa77a5eb0, 0x3900dfa2,
+	TextRun, "Font", Font, kDataTypeGroup, .TypeString="FontShorthand", .NumComponents=4),
+		/* TextRun.FontWeight */ DECL(0xd0616ad0, 0x69432eea,
+		TextRun, "FontWeight", Font.Weight, kDataTypeEnum, .TypeString="Normal,Bold"),
+		/* TextRun.FontStyle */ DECL(0x6c164db5, 0xbcedda87,
+		TextRun, "FontStyle", Font.Style, kDataTypeEnum, .TypeString="Normal,Italic"),
+		/* TextRun.FontSize */ DECL(0xa26a44e1, 0x307249cb,
+		TextRun, "FontSize", Font.Size, kDataTypeFloat),
+		/* TextRun.FontFamily */ DECL(0xf6319880, 0x2991bcb6,
+		TextRun, "FontFamily", Font.Family, kDataTypeObject, .TypeString="FontFamily"),
 	/* TextRun.Underline */ DECL(0x9a85011f, 0x0b0d856d,
 	TextRun, "Underline", Underline, kDataTypeGroup, .TypeString="UnderlineShorthand", .NumComponents=3),
 		/* TextRun.UnderlineOffset */ DECL(0x34ec6004, 0x0a823d42,
@@ -1552,12 +1550,11 @@ static struct PropertyDesc const TextRunProperties[kTextRunNumProperties] = {
 	TextRun, "RemoveSideBearingsProperty", RemoveSideBearingsProperty, kDataTypeBool),
 };
 static struct TextRun TextRunDefaults = {
+	.Font = (struct FontShorthand) { .Size=DEFAULT_FONT_SIZE },
 	.LineHeight = 1,
 };
 LRESULT TextRunProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x990de47d: // Create
-			return TextRun_Create(object, cmp, wparm, lparm);
 }
 	return FALSE;
 }

@@ -186,11 +186,6 @@ enum NodeProperties {
 	kNodeHorizontalAlignment,
 	kNodeVerticalAlignment,
 	kNodeDepthAlignment,
-	kNodeFont,
-	kNodeFontWeight,
-	kNodeFontStyle,
-	kNodeFontSize,
-	kNodeFontFamily,
 	kNodeVisible,
 	kNodeQuickHide,
 	kNodeVisibleAmountInParent,
@@ -276,11 +271,6 @@ enum NodeProperties {
 #define ID_Node_HorizontalAlignment 0xe230b1ee
 #define ID_Node_VerticalAlignment 0x1c45d168
 #define ID_Node_DepthAlignment 0x5b191ce3
-#define ID_Node_Font 0x0f056b44
-#define ID_Node_FontWeight 0x43a6adb4
-#define ID_Node_FontStyle 0xdcc4bfe9
-#define ID_Node_FontSize 0x82715b1d
-#define ID_Node_FontFamily 0x9cb6ac4c
 #define ID_Node_Visible 0xe1936ee5
 #define ID_Node_QuickHide 0x7e26e1b0
 #define ID_Node_VisibleAmountInParent 0xbe0696b2
@@ -292,6 +282,11 @@ enum NodeProperties {
 #define TextRun_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_TextRun,sizeof(struct TextRun),_N)
 enum TextRunProperties {
 	kTextRunText,
+	kTextRunFont,
+	kTextRunFontWeight,
+	kTextRunFontStyle,
+	kTextRunFontSize,
+	kTextRunFontFamily,
 	kTextRunUnderline,
 	kTextRunUnderlineOffset,
 	kTextRunUnderlineWidth,
@@ -305,6 +300,11 @@ enum TextRunProperties {
 };
 
 #define ID_TextRun_Text 0xcba1ea6c
+#define ID_TextRun_Font 0x3900dfa2
+#define ID_TextRun_FontWeight 0x69432eea
+#define ID_TextRun_FontStyle 0xbcedda87
+#define ID_TextRun_FontSize 0x307249cb
+#define ID_TextRun_FontFamily 0x2991bcb6
 #define ID_TextRun_Underline 0x0b0d856d
 #define ID_TextRun_UnderlineOffset 0x0a823d42
 #define ID_TextRun_UnderlineWidth 0xc80a55b7

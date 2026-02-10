@@ -758,7 +758,6 @@ struct Node {
 	MarginShorthand_t Padding; /// Internal spacing between element border and content
 	BorderShorthand_t Border; /// Border definition along each axis
 	AlignmentShorthand_t Alignment; /// Alignment definition for each axis.
-	FontShorthand_t Font; /// Font definition used for text rendering. Contains typeface, size, and style information.
 	bool_t Visible; /// Whether this node is visible in the scene.
 	bool_t QuickHide; /// If true, node is quickly hidden without triggering full visibility transitions.
 	float VisibleAmountInParent; /// Specifies how much of the node is visible within its parent container. Value in range [0.0, 1.0].
@@ -772,6 +771,7 @@ typedef struct TextRun const *TextRunCPtr;
 /// @brief Shared concept for text rendering in 2D and 3D nodes.
 struct TextRun {
 	fixedString_t Text; /// The short text string displayed in the block, limited to 64 bytes. If you need more space consider using `TextResourceID`.
+	FontShorthand_t Font; /// Font definition used for text rendering. Contains typeface, size, and style information.
 	UnderlineShorthand_t Underline; /// Underline style applied to the text.
 	float LetterSpacing; /// Additional spacing applied between letters.
 	float LineHeight; /// Line height multiplier for multi-line text layout.
