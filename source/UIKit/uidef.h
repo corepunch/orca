@@ -98,7 +98,7 @@ typedef struct DrawBrush
   /// True if drawing foreground, false for background
   bool_t foreground;
   /// View definition context for rendering
-  struct view_def* viewdef;
+  struct ViewDef* viewdef;
 } DRAWBRUSHSTRUCT, *EVENT_PTR(DrawBrush);
 
 /// @def kEventMakeText
@@ -109,14 +109,14 @@ typedef struct DrawBrush
 /// @brief Event data structure for text rendering requests
 typedef struct {
   /// Text view to render
-  struct view_text* text;
+  struct ViewText* text;
   /// Available space for text layout
   uint32_t availableSpace;
 } MAKETEXTSTRUCT, *EVENT_PTR(MakeText);
 
 /// @brief Create a view entity for rendering operations
 /// @param object Target object for view creation
-/// @param view_entity Output view entity structure
+/// @param ViewEntity Output view entity structure
 /// @param image Image resource for the view
 /// @param brush Brush configuration for rendering
 ///
@@ -124,7 +124,7 @@ typedef struct {
 /// with the specified image and brush configuration.
 void
 Node2D_GetViewEntity(lpObject_t object,
-                     struct view_entity* view_entity,
+                     struct ViewEntity* ViewEntity,
                      struct Texture const* image,
                      struct BrushShorthand const* brush);
 

@@ -425,8 +425,8 @@ luaX_checkStyle(lua_State *L, int idx);
 #include <source/UIKit/uidef.h>
 typedef struct Object Object_t, *lpObject_t;
 typedef struct Object const cObject_t, *lpcObject_t;
-typedef struct view_text view_text_t, *lpview_text_t;
-typedef struct view_text const cview_text_t, *lpcview_text_t;
+typedef struct ViewText view_text_t, *lpview_text_t;
+typedef struct ViewText const cview_text_t, *lpcview_text_t;
 typedef struct text_info text_info_t, *lptext_info_t;
 typedef struct text_info const ctext_info_t, *lpctext_info_t;
 #define kEventGetSize 0x80d9e0ee
@@ -777,6 +777,7 @@ struct TextRun {
 	float LineHeight; /// Line height multiplier for multi-line text layout.
 	float CharacterSpacing; /// Extra spacing between characters, beyond kerning.
 	float FixedCharacterWidth; /// Forces a fixed width per character (monospace effect).
+	bool_t RemoveSideBearingsProperty; /// Removes side bearings (spacing) defined by the font.
 	uiLabelSize_t _size; /// Internal text size metrics.
 	view_text_t _text; /// Internal view representation of the text.
 	text_info_t _textinfo; /// Internal text information structure.
@@ -790,12 +791,10 @@ struct TextBlockConcept {
 	fixedString_t TextResourceConfiguration; /// Configuration key used when resolving text resources.
 	fixedString_t PlaceholderText; /// Placeholder text displayed when no main text is set.
 	fixedString_t TextOverflow; /// Defines how overflowing text should be handled (clip, ellipsis, etc.).
-	color_t HighlightColor; /// Color used for highlighting portions of the text.
 	BrushShorthand_t Placeholder; /// Brush definition for rendering placeholder text.
 	bool_t UseFullFontHeight; /// When true, uses the font's full height for layout calculations.
 	bool_t ConstrainContentHeight; /// Constrains the content height to the text's bounding box.
 	bool_t WordWrap; /// Enables automatic word wrapping of the text.
-	bool_t RemoveSideBearingsProperty; /// Removes side bearings (spacing) defined by the font.
 	eTextHorizontalAlignment_t TextHorizontalAlignment; /// Horizontal alignment of the text within its bounds.
 	eTextVerticalAlignment_t TextVerticalAlignment; /// Vertical alignment of the text within its bounds.
 	uiLabelSteps_t _steps; /// Internal step-based rendering parameters.

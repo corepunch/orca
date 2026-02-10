@@ -68,7 +68,7 @@ mesh_rect(Node2DPtr pNode2D,
 
 HANDLER(TextBlockConcept, MakeText)
 {
-  TextRunPtr run = GetTextRun(hObject);
+  TextRunPtr pTextRun = GetTextRun(hObject);
   struct FontShorthand font = *pTextBlockConcept->_font;
   for (lpObject_t node = hObject; node; node = OBJ_GetParent(node)) {
     if (Node_GetProperty(node, kNodeFontSize)) {
@@ -76,17 +76,17 @@ HANDLER(TextBlockConcept, MakeText)
       break;
     }
   }
-  struct view_text* text = pMakeText->text;
+  struct ViewText* text = pMakeText->text;
   lpcString_t szTextContent = OBJ_GetTextContent(hObject);
   text->string = pTextBlockConcept->PlaceholderText;
   text->font = font.Family?font.Family->font:NULL;
   text->fontSize = font.Size;
   text->flags = pTextBlockConcept->UseFullFontHeight ? RF_USE_FONT_HEIGHT : 0;
-  text->lineSpacing = run->LineHeight;
-  text->letterSpacing = run->LetterSpacing;
-  text->underlineWidth = run->Underline.Width;
-  text->underlineOffset = run->Underline.Offset;
-  text->fixedCharacterWidth = run->FixedCharacterWidth;
+  text->lineSpacing = pTextRun->LineHeight;
+  text->letterSpacing = pTextRun->LetterSpacing;
+  text->underlineWidth = pTextRun->Underline.Width;
+  text->underlineOffset = pTextRun->Underline.Offset;
+  text->fixedCharacterWidth = pTextRun->FixedCharacterWidth;
   text->availableWidth = pMakeText->availableSpace;
   text->fontStyle = 0;
   text->backingScale = WI_GetScaling();
@@ -101,8 +101,8 @@ HANDLER(TextBlockConcept, MakeText)
     text->fontStyle += FS_ITALIC;
   }
 
-  if (*run->Text) {
-    text->string = run->Text;
+  if (*pTextRun->Text) {
+    text->string = pTextRun->Text;
   } else if (*pTextBlockConcept->TextResourceID && !PROP_HasProgram(hProp)) {
     text->string = Loc_GetString(pTextBlockConcept->TextResourceID, LOC_TEXT);
   } else if (szTextContent && *szTextContent) {
@@ -146,7 +146,7 @@ HANDLER(TextBlock, ForegroundContent)
   //    TextBlockConceptPtr label = GetTextBlockConcept(hObject);
   //    if (is_updated(hObject, STEP_IMAGE))
   //    {
-  //        struct view_text text = text_from_label(hObject, label);
+  //        struct ViewText text = text_from_label(hObject, label);
   //        Text_Print(&text, &label->_image, TRUE);
   //    }
   //    pForegroundContent->result = label->_image;
@@ -178,7 +178,7 @@ HANDLER(TextBlock, DrawBrush)
 			!pDrawBrush->foreground)
     return FALSE;
 
-  struct view_entity entity;
+  struct ViewEntity entity;
   TextBlockConceptPtr text = GetTextBlockConcept(hObject);
   TextRunPtr run = GetTextRun(hObject);
 

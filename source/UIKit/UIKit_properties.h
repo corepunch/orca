@@ -300,6 +300,7 @@ enum TextRunProperties {
 	kTextRunLineHeight,
 	kTextRunCharacterSpacing,
 	kTextRunFixedCharacterWidth,
+	kTextRunRemoveSideBearingsProperty,
 	kTextRunNumProperties
 };
 
@@ -312,6 +313,7 @@ enum TextRunProperties {
 #define ID_TextRun_LineHeight 0x45c78196
 #define ID_TextRun_CharacterSpacing 0xda8217e7
 #define ID_TextRun_FixedCharacterWidth 0xb71765fa
+#define ID_TextRun_RemoveSideBearingsProperty 0xc20f6de6
 #define ID_TextBlockConcept 0x4903089d
 #define GetTextBlockConcept(_P)((struct TextBlockConcept*)((_P)?OBJ_GetComponent(_P,ID_TextBlockConcept):NULL))
 #define TextBlockConcept_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_TextBlockConcept,sizeof(struct TextBlockConcept),_N)
@@ -320,7 +322,6 @@ enum TextBlockConceptProperties {
 	kTextBlockConceptTextResourceConfiguration,
 	kTextBlockConceptPlaceholderText,
 	kTextBlockConceptTextOverflow,
-	kTextBlockConceptHighlightColor,
 	kTextBlockConceptPlaceholder,
 	kTextBlockConceptPlaceholderColor,
 	kTextBlockConceptPlaceholderImage,
@@ -328,7 +329,6 @@ enum TextBlockConceptProperties {
 	kTextBlockConceptUseFullFontHeight,
 	kTextBlockConceptConstrainContentHeight,
 	kTextBlockConceptWordWrap,
-	kTextBlockConceptRemoveSideBearingsProperty,
 	kTextBlockConceptTextHorizontalAlignment,
 	kTextBlockConceptTextVerticalAlignment,
 	kTextBlockConceptNumProperties
@@ -338,7 +338,6 @@ enum TextBlockConceptProperties {
 #define ID_TextBlockConcept_TextResourceConfiguration 0x445231c0
 #define ID_TextBlockConcept_PlaceholderText 0xadd54a35
 #define ID_TextBlockConcept_TextOverflow 0x9717f5b0
-#define ID_TextBlockConcept_HighlightColor 0x91a171c2
 #define ID_TextBlockConcept_Placeholder 0x78889986
 #define ID_TextBlockConcept_PlaceholderColor 0x8f53db89
 #define ID_TextBlockConcept_PlaceholderImage 0x2275c70b
@@ -346,7 +345,6 @@ enum TextBlockConceptProperties {
 #define ID_TextBlockConcept_UseFullFontHeight 0x95fcf16b
 #define ID_TextBlockConcept_ConstrainContentHeight 0x8468e688
 #define ID_TextBlockConcept_WordWrap 0x34b71f41
-#define ID_TextBlockConcept_RemoveSideBearingsProperty 0x40b7c724
 #define ID_TextBlockConcept_TextHorizontalAlignment 0xe480096b
 #define ID_TextBlockConcept_TextVerticalAlignment 0xbf0260e5
 #define ID_Node2D 0x6c63a2ab

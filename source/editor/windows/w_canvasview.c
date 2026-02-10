@@ -29,7 +29,7 @@ uint8_t glyph_x[] = {0x43,0x87,0xCB,0x87,0xC3,0x87,0x4B};
 static void
 R_DrawLine(LPMATRIX4 matrix, float x1, float y1, float x2, float y2)
 {
-  struct view_def vd = {0};
+  struct ViewDef vd = {0};
   VECTOR3 points[] = {{x1,y1},{x2,y2}};
   vd.viewMatrix = MAT4_Identity();
   memcpy(&vd.projectionMatrix, matrix, sizeof(struct mat4));
@@ -39,7 +39,7 @@ R_DrawLine(LPMATRIX4 matrix, float x1, float y1, float x2, float y2)
   data.numPoints = 2;
   data.points = points;
   R_DrawLines(&vd, &data);
-  // struct view_entity ent = {
+  // struct ViewEntity ent = {
   //   .rect = { 100, 0, 1, 100 },
   //   .color = { 1, 1, 0, 1 },
   //   .opacity = 1,
@@ -52,8 +52,8 @@ R_DrawLine(LPMATRIX4 matrix, float x1, float y1, float x2, float y2)
 static void
 R_DrawRect(LPMATRIX4 matrix, LPRECT rect)
 {
-  struct view_def vd = {0};
-  struct view_entity ent = {
+  struct ViewDef vd = {0};
+  struct ViewEntity ent = {
     .rect = *rect,
     .color = { 1, 1, 0, 1 },
     .opacity = 1,
@@ -76,7 +76,7 @@ R_DrawHandle(LPMATRIX4 local, float w, float h, float u, float v)
 }
 
 static void R_DrawNumber(LPMATRIX4 matrix, int number, float x, float y) {
-  struct view_def vd = {0};
+  struct ViewDef vd = {0};
   DRAWLINESSTRUCT data = {0};
   VECTOR3 buffer[64]={0};
   data.matrix = MAT4_Identity();

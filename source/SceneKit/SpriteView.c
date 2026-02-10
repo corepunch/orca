@@ -32,7 +32,7 @@ HANDLER(SpriteView, Render)
     }
   }
   
-  struct view_entity entity = {
+  struct ViewEntity entity = {
     .debugName = OBJ_GetName(hObject),
     .radius = (struct vec4){0},
     .rect = (struct rect){

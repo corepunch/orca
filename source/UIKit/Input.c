@@ -7,7 +7,7 @@ HANDLER(Input, DrawBrush)
   TextBlockPtr pTextBlock = GetTextBlock(hObject);
   TextRunPtr pTextRun = GetTextRun(hObject);
 
-  struct view_entity entity;
+  struct ViewEntity entity;
 
   if (pDrawBrush->foreground && core_GetFocus() == hObject) {
     memset(&entity, 0, sizeof(entity));

@@ -16,7 +16,7 @@ HANDLER(Cinematic, DrawBrush)
 			!pDrawBrush->foreground)
 		return FALSE;
 
-  struct view_entity entity;
+  struct ViewEntity entity;
 
   longTime_t realtime = UI_GetTime();
   longTime_t endtime =

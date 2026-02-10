@@ -81,7 +81,7 @@ static FT_UInt u8_readchar(lpcString_t* text)
 }
 
 static FT_Face
-T_GetFontFace(struct view_text const* tf)
+T_GetFontFace(struct ViewText const* tf)
 {
   if (tf->font) {
     if (tf->font->faces[tf->fontStyle].face) {
@@ -169,10 +169,10 @@ FT_Shutdown(void)
   fg.ft = NULL;
 }
 
-static struct view_text*
-T_Scale(struct view_text const* input, float scale, struct view_text* output)
+static struct ViewText*
+T_Scale(struct ViewText const* input, float scale, struct ViewText* output)
 {
-  memcpy(output, input, sizeof(struct view_text));
+  memcpy(output, input, sizeof(struct ViewText));
   output->fontSize *= scale;
   output->fixedCharacterWidth *= scale;
   output->availableWidth *= scale;
@@ -192,7 +192,7 @@ FT_Load_CharGlyph(FT_Face face, FT_ULong charcode, FT_Int32 load_flags)
 }
 
 static struct WI_Size
-T_GetSize(FT_Face face, struct view_text const* text, struct rect* rcursor)
+T_GetSize(FT_Face face, struct ViewText const* text, struct rect* rcursor)
 {
   FT_Pos lineHeight = FT_MulFix(face->height, face->size->metrics.y_scale);
   struct WI_Size textSize = { 0, (int)FT_SCALE(lineHeight) };
@@ -268,9 +268,9 @@ T_GetSize(FT_Face face, struct view_text const* text, struct rect* rcursor)
 }
 
 HRESULT
-Text_Print(struct view_text const* input, struct Texture** img, bool_t reuse)
+Text_Print(struct ViewText const* input, struct Texture** img, bool_t reuse)
 {
-  struct view_text text;
+  struct ViewText text;
 
   FT_Face const face = T_GetFontFace(input);
 
@@ -466,7 +466,7 @@ Font_Load(lpcString_t szFileName)
 }
 
 HRESULT
-Text_GetInsets(struct view_text const* text, struct edges* edges)
+Text_GetInsets(struct ViewText const* text, struct edges* edges)
 {
   if (FT_Set_Pixel_Sizes(T_GetFontFace(text), 0,
                          text->fontSize * text->backingScale) ||
@@ -490,9 +490,9 @@ Text_GetInsets(struct view_text const* text, struct edges* edges)
 }
 
 HRESULT
-Text_GetInfo(struct view_text const* input, struct text_info* info)
+Text_GetInfo(struct ViewText const* input, struct text_info* info)
 {
-  struct view_text text;
+  struct ViewText text;
   float scale = 1.0f / (float)input->backingScale;
   FT_Face const face = T_GetFontFace(input);
   T_Scale(input, input->backingScale, &text);

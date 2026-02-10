@@ -53,7 +53,7 @@ Viewport3D_renderpass(lpObject_t viewport)
 }
 
 static void collect_lights(lpObject_t object,
-                           struct view_def *viewdef)
+                           struct ViewDef *viewdef)
 {
   Light3DPtr light = GetLight3D(object);
   if (light && viewdef->num_lights < MAX_VIEW_LIGHTS) {
@@ -68,7 +68,7 @@ static void collect_lights(lpObject_t object,
   FOR_EACH_CHILD(object, collect_lights, viewdef);
 }
 
-void R_RenderViewport(lpObject_t, struct view_def*);
+void R_RenderViewport(lpObject_t, struct ViewDef*);
 
 HANDLER(Viewport3D, ForegroundContent)
 {
@@ -78,14 +78,14 @@ HANDLER(Viewport3D, ForegroundContent)
   struct rect viewrect = Node2D_GetRect(GetNode2D(hObject));
   struct rect scrnrect = Node2D_GetRect(GetNode2D(screen));
 
-  // struct view_entity entity = {
+  // struct ViewEntity entity = {
   //   .type = ET_VIEWPORT,
   //   .rect = { scrnrect.width, scrnrect.height, viewrect.width,
   //   viewrect.height }, .camera      = .renderPass  =
   //   Viewport3D_renderpass(hObject),
   // };
 
-  struct view_def viewdef = {
+  struct ViewDef viewdef = {
     .viewport = hObject,
     .viewSize.x = viewrect.width,
     .viewSize.y = viewrect.height,

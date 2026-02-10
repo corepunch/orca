@@ -7,7 +7,7 @@
 void
 _CollectUniforms(lpObject_t,
                  struct Material*,
-                 struct view_entity*,
+                 struct ViewEntity*,
                  struct uniform*,
                  uint32_t);
 
@@ -21,7 +21,7 @@ HANDLER(PlaneMeshNode, Render)
   
   static struct uniform uniforms[MAX_UNIFORMS];
 
-  struct view_entity entity = {
+  struct ViewEntity entity = {
     .debugName = OBJ_GetName(hObject),
     .type = ET_PLANE,
     .opacity = GetNode3D(hObject)->_opacity,

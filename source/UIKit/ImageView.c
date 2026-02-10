@@ -65,7 +65,7 @@ HANDLER(ImageView, DrawBrush)
   uint32_t width = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
   uint32_t height = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
   struct vec2 imgsize = _GetImageSize(hObject, pImageView);
-  struct view_entity entity;
+  struct ViewEntity entity;
 
 	if (!memcmp(pDrawBrush->brush,
 							&(struct BrushShorthand){0},

@@ -1547,6 +1547,8 @@ static struct PropertyDesc const TextRunProperties[kTextRunNumProperties] = {
 	TextRun, "CharacterSpacing", CharacterSpacing, kDataTypeFloat),
 	/* TextRun.FixedCharacterWidth */ DECL(0xfe97e678, 0xb71765fa,
 	TextRun, "FixedCharacterWidth", FixedCharacterWidth, kDataTypeFloat),
+	/* TextRun.RemoveSideBearingsProperty */ DECL(0xbd23c708, 0xc20f6de6,
+	TextRun, "RemoveSideBearingsProperty", RemoveSideBearingsProperty, kDataTypeBool),
 };
 static struct TextRun TextRunDefaults = {
 	.LineHeight = 1,
@@ -1586,8 +1588,6 @@ static struct PropertyDesc const TextBlockConceptProperties[kTextBlockConceptNum
 	TextBlockConcept, "PlaceholderText", PlaceholderText, kDataTypeFixed),
 	/* TextBlockConcept.TextOverflow */ DECL(0x3dcadc9c, 0x9717f5b0,
 	TextBlockConcept, "TextOverflow", TextOverflow, kDataTypeFixed),
-	/* TextBlockConcept.HighlightColor */ DECL(0xbb372fb6, 0x91a171c2,
-	TextBlockConcept, "HighlightColor", HighlightColor, kDataTypeColor),
 	/* TextBlockConcept.Placeholder */ DECL(0x8987413a, 0x78889986,
 	TextBlockConcept, "Placeholder", Placeholder, kDataTypeGroup, .TypeString="BrushShorthand", .NumComponents=3),
 		/* TextBlockConcept.PlaceholderColor */ DECL(0xb272976d, 0x8f53db89,
@@ -1602,8 +1602,6 @@ static struct PropertyDesc const TextBlockConceptProperties[kTextBlockConceptNum
 	TextBlockConcept, "ConstrainContentHeight", ConstrainContentHeight, kDataTypeBool),
 	/* TextBlockConcept.WordWrap */ DECL(0x468540fd, 0x34b71f41,
 	TextBlockConcept, "WordWrap", WordWrap, kDataTypeBool),
-	/* TextBlockConcept.RemoveSideBearingsProperty */ DECL(0xbd23c708, 0x40b7c724,
-	TextBlockConcept, "RemoveSideBearingsProperty", RemoveSideBearingsProperty, kDataTypeBool),
 	/* TextBlockConcept.TextHorizontalAlignment */ DECL(0xf46faf37, 0xe480096b,
 	TextBlockConcept, "TextHorizontalAlignment", TextHorizontalAlignment, kDataTypeEnum, .TypeString="Left,Center,Right"),
 	/* TextBlockConcept.TextVerticalAlignment */ DECL(0xbc8a8a99, 0xbf0260e5,

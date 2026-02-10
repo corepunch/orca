@@ -849,6 +849,7 @@
 	LineHeight CDATA #IMPLIED
 	CharacterSpacing CDATA #IMPLIED
 	FixedCharacterWidth CDATA #IMPLIED
+	RemoveSideBearingsProperty (true|false) #IMPLIED
 ">
 <!ELEMENT TextRun.Text (#PCDATA | Binding)*>
 <!ATTLIST TextRun.Text Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
@@ -868,7 +869,9 @@
 <!ATTLIST TextRun.CharacterSpacing Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT TextRun.FixedCharacterWidth (#PCDATA | Binding)*>
 <!ATTLIST TextRun.FixedCharacterWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % TextRunElements "TextRun.Text|TextRun.Underline|TextRun.UnderlineOffset|TextRun.UnderlineWidth|TextRun.UnderlineColor|TextRun.LetterSpacing|TextRun.LineHeight|TextRun.CharacterSpacing|TextRun.FixedCharacterWidth">
+<!ELEMENT TextRun.RemoveSideBearingsProperty (#PCDATA | Binding)*>
+<!ATTLIST TextRun.RemoveSideBearingsProperty Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % TextRunElements "TextRun.Text|TextRun.Underline|TextRun.UnderlineOffset|TextRun.UnderlineWidth|TextRun.UnderlineColor|TextRun.LetterSpacing|TextRun.LineHeight|TextRun.CharacterSpacing|TextRun.FixedCharacterWidth|TextRun.RemoveSideBearingsProperty">
 <!ELEMENT TextRun EMPTY>
 <!ATTLIST TextRun %TextRunAttribs;>
 <!ENTITY % TextBlockConceptAttribs "
@@ -877,7 +880,6 @@
 	TextResourceConfiguration CDATA #IMPLIED
 	PlaceholderText CDATA #IMPLIED
 	TextOverflow CDATA #IMPLIED
-	HighlightColor CDATA #IMPLIED
 	Placeholder CDATA #IMPLIED
 	PlaceholderColor CDATA #IMPLIED
 	PlaceholderImage CDATA #IMPLIED
@@ -885,7 +887,6 @@
 	UseFullFontHeight (true|false) #IMPLIED
 	ConstrainContentHeight (true|false) #IMPLIED
 	WordWrap (true|false) #IMPLIED
-	RemoveSideBearingsProperty (true|false) #IMPLIED
 	TextHorizontalAlignment (%TextHorizontalAlignment;) #IMPLIED
 	TextVerticalAlignment (%TextVerticalAlignment;) #IMPLIED
 ">
@@ -897,8 +898,6 @@
 <!ATTLIST TextBlockConcept.PlaceholderText Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT TextBlockConcept.TextOverflow (#PCDATA | Binding)*>
 <!ATTLIST TextBlockConcept.TextOverflow Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT TextBlockConcept.HighlightColor (#PCDATA | Binding)*>
-<!ATTLIST TextBlockConcept.HighlightColor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT TextBlockConcept.Placeholder (#PCDATA | Binding)*>
 <!ATTLIST TextBlockConcept.Placeholder Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT TextBlockConcept.PlaceholderColor (#PCDATA | Binding)*>
@@ -913,13 +912,11 @@
 <!ATTLIST TextBlockConcept.ConstrainContentHeight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT TextBlockConcept.WordWrap (#PCDATA | Binding)*>
 <!ATTLIST TextBlockConcept.WordWrap Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT TextBlockConcept.RemoveSideBearingsProperty (#PCDATA | Binding)*>
-<!ATTLIST TextBlockConcept.RemoveSideBearingsProperty Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT TextBlockConcept.TextHorizontalAlignment (#PCDATA | Binding)*>
 <!ATTLIST TextBlockConcept.TextHorizontalAlignment Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT TextBlockConcept.TextVerticalAlignment (#PCDATA | Binding)*>
 <!ATTLIST TextBlockConcept.TextVerticalAlignment Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % TextBlockConceptElements "TextBlockConcept.TextResourceID|TextBlockConcept.TextResourceConfiguration|TextBlockConcept.PlaceholderText|TextBlockConcept.TextOverflow|TextBlockConcept.HighlightColor|TextBlockConcept.Placeholder|TextBlockConcept.PlaceholderColor|TextBlockConcept.PlaceholderImage|TextBlockConcept.PlaceholderMaterial|TextBlockConcept.UseFullFontHeight|TextBlockConcept.ConstrainContentHeight|TextBlockConcept.WordWrap|TextBlockConcept.RemoveSideBearingsProperty|TextBlockConcept.TextHorizontalAlignment|TextBlockConcept.TextVerticalAlignment|%TextRunElements;">
+<!ENTITY % TextBlockConceptElements "TextBlockConcept.TextResourceID|TextBlockConcept.TextResourceConfiguration|TextBlockConcept.PlaceholderText|TextBlockConcept.TextOverflow|TextBlockConcept.Placeholder|TextBlockConcept.PlaceholderColor|TextBlockConcept.PlaceholderImage|TextBlockConcept.PlaceholderMaterial|TextBlockConcept.UseFullFontHeight|TextBlockConcept.ConstrainContentHeight|TextBlockConcept.WordWrap|TextBlockConcept.TextHorizontalAlignment|TextBlockConcept.TextVerticalAlignment|%TextRunElements;">
 <!ELEMENT TextBlockConcept EMPTY>
 <!ATTLIST TextBlockConcept %TextBlockConceptAttribs;>
 <!ENTITY % Node2DAttribs "

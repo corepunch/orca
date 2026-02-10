@@ -6,7 +6,7 @@
 void
 _CollectUniforms(lpObject_t hObject,
                  struct Material* mat,
-                 struct view_entity* ent,
+                 struct ViewEntity* ent,
                  struct uniform* u,
                  uint32_t blendMode)
 {
@@ -45,7 +45,7 @@ HANDLER(Model3D, Render)
   if (!pModel3D->Mesh)
     return FALSE;
 
-  struct view_entity ent = {
+  struct ViewEntity ent = {
     .debugName = OBJ_GetName(hObject),
     .mesh = pModel3D->Mesh,
     .opacity = GetNode3D(hObject)->_opacity,

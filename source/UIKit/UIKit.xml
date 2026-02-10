@@ -4,7 +4,7 @@
   <include file="source/UIKit/uidef.h"/>
 
   <external struct="Object"/>
-  <external struct="view_text"/>
+  <external struct="ViewText"/>
   <external struct="text_info"/>
 
   <event name="GetSize" type="void"/>
@@ -404,22 +404,14 @@
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <property name="Text" type="fixed">The short text string displayed in the block, limited to 64 bytes. If you need more space consider using `TextResourceID`.</property>
     <property name="Underline" type="UnderlineShorthand">Underline style applied to the text.</property>
-    <!--    <property name="UseFullFontHeight" type="bool" default="TRUE">When true, uses the font's full height for layout calculations.</property>-->
-    <!--    <property name="ConstrainContentHeight" type="bool" default="TRUE">Constrains the content height to the text's bounding box.</property>-->
-    <!--    <property name="WordWrap" type="bool">Enables automatic word wrapping of the text.</property>-->
-    <!--    <property name="RemoveSideBearingsProperty" type="bool">Removes side bearings (spacing) defined by the font.</property>-->
     <property name="LetterSpacing" type="float">Additional spacing applied between letters.</property>
     <property name="LineHeight" type="float" default="1">Line height multiplier for multi-line text layout.</property>
     <property name="CharacterSpacing" type="float">Extra spacing between characters, beyond kerning.</property>
     <property name="FixedCharacterWidth" type="float">Forces a fixed width per character (monospace effect).</property>
-    <!--    <property name="TextHorizontalAlignment" type="TextHorizontalAlignment">Horizontal alignment of the text within its bounds.</property>-->
-    <!--    <property name="TextVerticalAlignment" type="TextVerticalAlignment">Vertical alignment of the text within its bounds.</property>-->
-    <!--    <field name="_steps" type="uiLabelSteps">Internal step-based rendering parameters.</field>-->
+    <property name="RemoveSideBearingsProperty" type="bool">Removes side bearings (spacing) defined by the font.</property>
     <field name="_size" type="uiLabelSize">Internal text size metrics.</field>
-    <!--    <field name="_node" type="Node" pointer="true">Reference to the owning node using this concept.</field>-->
-    <field name="_text" type="view_text">Internal view representation of the text.</field>
+    <field name="_text" type="ViewText">Internal view representation of the text.</field>
     <field name="_textinfo" type="text_info">Internal text information structure.</field>
-    <!--    <field name="_font" type="FontShorthand" pointer="true">Reference to the font shorthand configuration.</field>-->
   </component>
   
   <component name="TextBlockConcept" parent="TextRun">
@@ -428,29 +420,19 @@
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <handles event="Create"/>
     <handles event="MakeText"/>
-<!--    <property name="Text" type="fixed">The short text string displayed in the block, limited to 64 bytes. If you need more space consider using `TextResourceID`.</property>-->
     <property name="TextResourceID" type="fixed">Resource identifier for localized text lookup.</property>
     <property name="TextResourceConfiguration" type="fixed">Configuration key used when resolving text resources.</property>
     <property name="PlaceholderText" type="fixed">Placeholder text displayed when no main text is set.</property>
     <property name="TextOverflow" type="fixed">Defines how overflowing text should be handled (clip, ellipsis, etc.).</property>
-    <property name="HighlightColor" type="color">Color used for highlighting portions of the text.</property>
+<!--    <property name="HighlightColor" type="color">Color used for highlighting portions of the text.</property>-->
     <property name="Placeholder" type="BrushShorthand">Brush definition for rendering placeholder text.</property>
-<!--    <property name="Underline" type="UnderlineShorthand">Underline style applied to the text.</property>-->
     <property name="UseFullFontHeight" type="bool" default="TRUE">When true, uses the font's full height for layout calculations.</property>
     <property name="ConstrainContentHeight" type="bool" default="TRUE">Constrains the content height to the text's bounding box.</property>
     <property name="WordWrap" type="bool">Enables automatic word wrapping of the text.</property>
-    <property name="RemoveSideBearingsProperty" type="bool">Removes side bearings (spacing) defined by the font.</property>
-<!--    <property name="LetterSpacing" type="float">Additional spacing applied between letters.</property>-->
-<!--    <property name="LineHeight" type="float" default="1">Line height multiplier for multi-line text layout.</property>-->
-<!--    <property name="CharacterSpacing" type="float">Extra spacing between characters, beyond kerning.</property>-->
-<!--    <property name="FixedCharacterWidth" type="float">Forces a fixed width per character (monospace effect).</property>-->
     <property name="TextHorizontalAlignment" type="TextHorizontalAlignment">Horizontal alignment of the text within its bounds.</property>
     <property name="TextVerticalAlignment" type="TextVerticalAlignment">Vertical alignment of the text within its bounds.</property>
     <field name="_steps" type="uiLabelSteps">Internal step-based rendering parameters.</field>
-<!--    <field name="_size" type="uiLabelSize">Internal text size metrics.</field>-->
     <field name="_node" type="Node" pointer="true">Reference to the owning node using this concept.</field>
-<!--    <field name="_text" type="view_text">Internal view representation of the text.</field>-->
-<!--    <field name="_textinfo" type="text_info">Internal text information structure.</field>-->
     <field name="_font" type="FontShorthand" pointer="true">Reference to the font shorthand configuration.</field>
   </component>
 
@@ -538,7 +520,7 @@
       <summary>Create a view entity for rendering operations</summary>
       <details>Prepares a view entity that can be used in the rendering pipeline with the specified image and brush configuration.</details>
       <arg name="Object" type="Object" pointer="true"/>
-      <arg name="view_entity" type="view_entity" pointer="true"/>
+      <arg name="ViewEntity" type="ViewEntity" pointer="true"/>
       <arg name="image" type="Texture" const="true" pointer="true"/>
       <arg name="brush" type="BrushShorthand" const="true" pointer="true"/>
     </method> -->
