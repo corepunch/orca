@@ -200,6 +200,9 @@ T_GetSize(struct ViewText const* text,
        run++)
   {
     FT_Face const face = T_GetFontFace(run);
+    if (!face) {
+      continue;
+    }
     if (FT_Set_Pixel_Sizes(face, 0, run->fontSize * text->scale)) {
       return textSize;
     }
@@ -209,6 +212,9 @@ T_GetSize(struct ViewText const* text,
     FT_Pos lineHeight = FT_MulFix(face->height, face->size->metrics.y_scale);
     textSize.height = MAX(textSize.height, (int)FT_SCALE(lineHeight));
 
+    if (!run->string) {
+      continue;
+    }
     for (lpcString_t str = run->string;; cursor++) {
       bool_t const eos = !*str;
       uint32_t const charcode = *str ? u8_readchar(&str) : ' ';
@@ -298,6 +304,9 @@ Text_Print(struct ViewText const* pViewText,
   {
     FT_Face const face = T_GetFontFace(run);
     
+    if (!face) {
+      continue;
+    }
     if (FT_Set_Pixel_Sizes(face, 0, run->fontSize * pViewText->scale))
       return E_UNEXPECTED;
     
@@ -321,6 +330,9 @@ Text_Print(struct ViewText const* pViewText,
       x = -spaceWidth;
     }
 
+    if (!run->string) {
+      continue;
+    }
     for (lpcString_t str = run->string, print = str, last = str;; last = str) {
       bool_t const eos = !*str;
       uint32_t const charcode = *str ? u8_readchar(&str) : ' ';
@@ -382,6 +394,10 @@ Text_Print(struct ViewText const* pViewText,
             for (long j = prevchar; j < x + x_off + bitmap->width; j++) {
               long row = underline_y + i;
               long inv = textSize.height - row - 1;
+              if (row >= textSize.height || row < 0)
+                continue;
+              if (j >= textSize.width || j < 0)
+                continue;
               image_data[j + inv * textSize.width] = 255;
             }
           }
@@ -482,6 +498,9 @@ Text_GetInsets(struct ViewText const* text,
        run++)
   {
     FT_Face const face = T_GetFontFace(run);
+    if (!face) {
+      continue;
+    }
     if (FT_Set_Pixel_Sizes(face, 0, run->fontSize * text->scale) ||
         (text->flags & RF_USE_FONT_HEIGHT))
     {
