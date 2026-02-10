@@ -55,22 +55,22 @@ HANDLER(TextBlock3D, Render)
 	R_DrawEntity(parm, &entity);
 #endif
   
-  TextBlockConceptPtr output = GetTextBlockConcept(hObject);
+  TextRunPtr pTextRun = GetTextRun(hObject);
   OBJ_SendMessageW(hObject, kEventMakeText, 0, &(MAKETEXTSTRUCT){
-                     .text = &output->_text,
+                     .text = &pTextRun->_text,
                      .availableSpace = 512
                    });
-  Text_GetInfo(&output->_text, &output->_textinfo);
+  Text_GetInfo(&pTextRun->_text, &pTextRun->_textinfo);
   
-  float w = output->_textinfo.txWidth;
-  float h = output->_textinfo.txHeight;
+  float w = pTextRun->_textinfo.txWidth;
+  float h = pTextRun->_textinfo.txHeight;
   
   struct view_entity entity = {
     .debugName = OBJ_GetName(hObject),
     .texture = 0,
     .radius = (struct vec4){0},
     .rect = (struct rect){-w/2,-h/2,w,h},
-    .text = &output->_text,
+    .text = &pTextRun->_text,
     .opacity = GetNode3D(hObject)->_opacity,
     .matrix = GetNode3D(hObject)->Matrix,
     .color = {1,1,1,1},
@@ -81,7 +81,6 @@ HANDLER(TextBlock3D, Render)
   scale = MAT4_Identity();
   MAT4_Scale(&scale, &(struct vec3) { 0.1, 0.1, 0.1 });
   entity.matrix = MAT4_Multiply(&GetNode3D(hObject)->Matrix, &scale);
-
   entity.textureMatrix = MAT3_Identity();
   entity.textureMatrix.v[4] = -1;
   entity.textureMatrix.v[7] =  1;

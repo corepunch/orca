@@ -1528,11 +1528,56 @@ ORCA_API struct ClassDesc _Node = {
 	.Defaults = &NodeDefaults,
 	.NumProperties = kNodeNumProperties,
 };
+static struct PropertyDesc const TextRunProperties[kTextRunNumProperties] = {
+	/* TextRun.Text */ DECL(0x3e142d5e, 0xcba1ea6c,
+	TextRun, "Text", Text, kDataTypeFixed),
+	/* TextRun.Underline */ DECL(0x9a85011f, 0x0b0d856d,
+	TextRun, "Underline", Underline, kDataTypeGroup, .TypeString="UnderlineShorthand", .NumComponents=3),
+		/* TextRun.UnderlineOffset */ DECL(0x34ec6004, 0x0a823d42,
+		TextRun, "UnderlineOffset", Underline.Offset, kDataTypeFloat),
+		/* TextRun.UnderlineWidth */ DECL(0xee253b91, 0xc80a55b7,
+		TextRun, "UnderlineWidth", Underline.Width, kDataTypeFloat),
+		/* TextRun.UnderlineColor */ DECL(0x00c40cce, 0xcacb7660,
+		TextRun, "UnderlineColor", Underline.Color, kDataTypeColor),
+	/* TextRun.LetterSpacing */ DECL(0x44b2c826, 0x83b2ad0c,
+	TextRun, "LetterSpacing", LetterSpacing, kDataTypeFloat),
+	/* TextRun.LineHeight */ DECL(0xb5107238, 0x45c78196,
+	TextRun, "LineHeight", LineHeight, kDataTypeFloat),
+	/* TextRun.CharacterSpacing */ DECL(0x04055b71, 0xda8217e7,
+	TextRun, "CharacterSpacing", CharacterSpacing, kDataTypeFloat),
+	/* TextRun.FixedCharacterWidth */ DECL(0xfe97e678, 0xb71765fa,
+	TextRun, "FixedCharacterWidth", FixedCharacterWidth, kDataTypeFloat),
+};
+static struct TextRun TextRunDefaults = {
+	.LineHeight = 1,
+};
+LRESULT TextRunProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+}
+	return FALSE;
+}
+void luaX_pushTextRun(lua_State *L, lpcTextRun_t TextRun) {
+	luaX_pushObject(L, CMP_GetObject(TextRun));
+}
+lpTextRun_t luaX_checkTextRun(lua_State *L, int idx) {
+	return GetTextRun(luaX_checkObject(L, idx));
+}
+ORCA_API struct ClassDesc _TextRun = {
+	.ClassName = "TextRun",
+	.DefaultName = "TextRun",
+	.ContentType = "TextRun",
+	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
+	.ParentClasses = {NULL},
+	.ClassID = ID_TextRun,
+	.ClassSize = sizeof(struct TextRun),
+	.Properties = TextRunProperties,
+	.ObjProc = TextRunProc,
+	.Defaults = &TextRunDefaults,
+	.NumProperties = kTextRunNumProperties,
+};
 LRESULT TextBlockConcept_Create(lpObject_t, lpTextBlockConcept_t, wParam_t, CreateEventPtr);
 LRESULT TextBlockConcept_MakeText(lpObject_t, lpTextBlockConcept_t, wParam_t, MakeTextEventPtr);
 static struct PropertyDesc const TextBlockConceptProperties[kTextBlockConceptNumProperties] = {
-	/* TextBlockConcept.Text */ DECL(0x3e142d5e, 0x5186094a,
-	TextBlockConcept, "Text", Text, kDataTypeFixed),
 	/* TextBlockConcept.TextResourceID */ DECL(0x43c114fb, 0x7617ef4f,
 	TextBlockConcept, "TextResourceID", TextResourceID, kDataTypeFixed),
 	/* TextBlockConcept.TextResourceConfiguration */ DECL(0x73dd50ec, 0x445231c0,
@@ -1551,14 +1596,6 @@ static struct PropertyDesc const TextBlockConceptProperties[kTextBlockConceptNum
 		TextBlockConcept, "PlaceholderImage", Placeholder.Image, kDataTypeObject, .TypeString="Texture"),
 		/* TextBlockConcept.PlaceholderMaterial */ DECL(0x6d974ebf, 0x16a577db,
 		TextBlockConcept, "PlaceholderMaterial", Placeholder.Material, kDataTypeObject, .TypeString="Material"),
-	/* TextBlockConcept.Underline */ DECL(0x9a85011f, 0x4a3c0c33,
-	TextBlockConcept, "Underline", Underline, kDataTypeGroup, .TypeString="UnderlineShorthand", .NumComponents=3),
-		/* TextBlockConcept.UnderlineOffset */ DECL(0x34ec6004, 0x813042c0,
-		TextBlockConcept, "UnderlineOffset", Underline.Offset, kDataTypeFloat),
-		/* TextBlockConcept.UnderlineWidth */ DECL(0xee253b91, 0x956ec925,
-		TextBlockConcept, "UnderlineWidth", Underline.Width, kDataTypeFloat),
-		/* TextBlockConcept.UnderlineColor */ DECL(0x00c40cce, 0xaf1cae72,
-		TextBlockConcept, "UnderlineColor", Underline.Color, kDataTypeColor),
 	/* TextBlockConcept.UseFullFontHeight */ DECL(0x27e35097, 0x95fcf16b,
 	TextBlockConcept, "UseFullFontHeight", UseFullFontHeight, kDataTypeBool),
 	/* TextBlockConcept.ConstrainContentHeight */ DECL(0xda466bac, 0x8468e688,
@@ -1567,14 +1604,6 @@ static struct PropertyDesc const TextBlockConceptProperties[kTextBlockConceptNum
 	TextBlockConcept, "WordWrap", WordWrap, kDataTypeBool),
 	/* TextBlockConcept.RemoveSideBearingsProperty */ DECL(0xbd23c708, 0x40b7c724,
 	TextBlockConcept, "RemoveSideBearingsProperty", RemoveSideBearingsProperty, kDataTypeBool),
-	/* TextBlockConcept.LetterSpacing */ DECL(0x44b2c826, 0x06a4b75a,
-	TextBlockConcept, "LetterSpacing", LetterSpacing, kDataTypeFloat),
-	/* TextBlockConcept.LineHeight */ DECL(0xb5107238, 0x371eb97c,
-	TextBlockConcept, "LineHeight", LineHeight, kDataTypeFloat),
-	/* TextBlockConcept.CharacterSpacing */ DECL(0x04055b71, 0xba0c5da5,
-	TextBlockConcept, "CharacterSpacing", CharacterSpacing, kDataTypeFloat),
-	/* TextBlockConcept.FixedCharacterWidth */ DECL(0xfe97e678, 0x0a9b58e4,
-	TextBlockConcept, "FixedCharacterWidth", FixedCharacterWidth, kDataTypeFloat),
 	/* TextBlockConcept.TextHorizontalAlignment */ DECL(0xf46faf37, 0xe480096b,
 	TextBlockConcept, "TextHorizontalAlignment", TextHorizontalAlignment, kDataTypeEnum, .TypeString="Left,Center,Right"),
 	/* TextBlockConcept.TextVerticalAlignment */ DECL(0xbc8a8a99, 0xbf0260e5,
@@ -1583,7 +1612,6 @@ static struct PropertyDesc const TextBlockConceptProperties[kTextBlockConceptNum
 static struct TextBlockConcept TextBlockConceptDefaults = {
 	.UseFullFontHeight = TRUE,
 	.ConstrainContentHeight = TRUE,
-	.LineHeight = 1,
 };
 LRESULT TextBlockConceptProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
@@ -1600,12 +1628,13 @@ void luaX_pushTextBlockConcept(lua_State *L, lpcTextBlockConcept_t TextBlockConc
 lpTextBlockConcept_t luaX_checkTextBlockConcept(lua_State *L, int idx) {
 	return GetTextBlockConcept(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _TextRun;
 ORCA_API struct ClassDesc _TextBlockConcept = {
 	.ClassName = "TextBlockConcept",
 	.DefaultName = "TextBlockConcept",
-	.ContentType = "TextBlockConcept",
+	.ContentType = "TextRun",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = {&_TextRun, NULL},
 	.ClassID = ID_TextBlockConcept,
 	.ClassSize = sizeof(struct TextBlockConcept),
 	.Properties = TextBlockConceptProperties,
@@ -2562,6 +2591,9 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	// Node
 	lua_pushclass(L, &_Node);
 	lua_setfield(L, -2, "Node");
+	// TextRun
+	lua_pushclass(L, &_TextRun);
+	lua_setfield(L, -2, "TextRun");
 	// TextBlockConcept
 	lua_pushclass(L, &_TextBlockConcept);
 	lua_setfield(L, -2, "TextBlockConcept");

@@ -398,35 +398,59 @@
     <property name="DataContext" type="DataObject" pointer="true">Data context (used for data binding, similar to XAML's DataContext).</property>
   </component>
 
-  <component name="TextBlockConcept">
+  <component name="TextRun">
+    <summary>Shared concept for text rendering in 2D and 3D nodes.</summary>
+    <details>This class is not instantiated directly. Instead, it provides the common properties and functionality for text rendering, used internally by higher-level components such as 2D and 3D text nodes. The concept encapsulates text content, resources, formatting options, alignment, and font configuration.</details>
+    <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    <property name="Text" type="fixed">The short text string displayed in the block, limited to 64 bytes. If you need more space consider using `TextResourceID`.</property>
+    <property name="Underline" type="UnderlineShorthand">Underline style applied to the text.</property>
+    <!--    <property name="UseFullFontHeight" type="bool" default="TRUE">When true, uses the font's full height for layout calculations.</property>-->
+    <!--    <property name="ConstrainContentHeight" type="bool" default="TRUE">Constrains the content height to the text's bounding box.</property>-->
+    <!--    <property name="WordWrap" type="bool">Enables automatic word wrapping of the text.</property>-->
+    <!--    <property name="RemoveSideBearingsProperty" type="bool">Removes side bearings (spacing) defined by the font.</property>-->
+    <property name="LetterSpacing" type="float">Additional spacing applied between letters.</property>
+    <property name="LineHeight" type="float" default="1">Line height multiplier for multi-line text layout.</property>
+    <property name="CharacterSpacing" type="float">Extra spacing between characters, beyond kerning.</property>
+    <property name="FixedCharacterWidth" type="float">Forces a fixed width per character (monospace effect).</property>
+    <!--    <property name="TextHorizontalAlignment" type="TextHorizontalAlignment">Horizontal alignment of the text within its bounds.</property>-->
+    <!--    <property name="TextVerticalAlignment" type="TextVerticalAlignment">Vertical alignment of the text within its bounds.</property>-->
+    <!--    <field name="_steps" type="uiLabelSteps">Internal step-based rendering parameters.</field>-->
+    <field name="_size" type="uiLabelSize">Internal text size metrics.</field>
+    <!--    <field name="_node" type="Node" pointer="true">Reference to the owning node using this concept.</field>-->
+    <field name="_text" type="view_text">Internal view representation of the text.</field>
+    <field name="_textinfo" type="text_info">Internal text information structure.</field>
+    <!--    <field name="_font" type="FontShorthand" pointer="true">Reference to the font shorthand configuration.</field>-->
+  </component>
+  
+  <component name="TextBlockConcept" parent="TextRun">
     <summary>Shared concept for text rendering in 2D and 3D nodes.</summary>
     <details>This class is not instantiated directly. Instead, it provides the common properties and functionality for text rendering, used internally by higher-level components such as 2D and 3D text nodes. The concept encapsulates text content, resources, formatting options, alignment, and font configuration.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <handles event="Create"/>
     <handles event="MakeText"/>
-    <property name="Text" type="fixed">The short text string displayed in the block, limited to 64 bytes. If you need more space consider using `TextResourceID`.</property>
+<!--    <property name="Text" type="fixed">The short text string displayed in the block, limited to 64 bytes. If you need more space consider using `TextResourceID`.</property>-->
     <property name="TextResourceID" type="fixed">Resource identifier for localized text lookup.</property>
     <property name="TextResourceConfiguration" type="fixed">Configuration key used when resolving text resources.</property>
     <property name="PlaceholderText" type="fixed">Placeholder text displayed when no main text is set.</property>
     <property name="TextOverflow" type="fixed">Defines how overflowing text should be handled (clip, ellipsis, etc.).</property>
     <property name="HighlightColor" type="color">Color used for highlighting portions of the text.</property>
     <property name="Placeholder" type="BrushShorthand">Brush definition for rendering placeholder text.</property>
-    <property name="Underline" type="UnderlineShorthand">Underline style applied to the text.</property>
+<!--    <property name="Underline" type="UnderlineShorthand">Underline style applied to the text.</property>-->
     <property name="UseFullFontHeight" type="bool" default="TRUE">When true, uses the font's full height for layout calculations.</property>
     <property name="ConstrainContentHeight" type="bool" default="TRUE">Constrains the content height to the text's bounding box.</property>
     <property name="WordWrap" type="bool">Enables automatic word wrapping of the text.</property>
     <property name="RemoveSideBearingsProperty" type="bool">Removes side bearings (spacing) defined by the font.</property>
-    <property name="LetterSpacing" type="float">Additional spacing applied between letters.</property>
-    <property name="LineHeight" type="float" default="1">Line height multiplier for multi-line text layout.</property>
-    <property name="CharacterSpacing" type="float">Extra spacing between characters, beyond kerning.</property>
-    <property name="FixedCharacterWidth" type="float">Forces a fixed width per character (monospace effect).</property>
+<!--    <property name="LetterSpacing" type="float">Additional spacing applied between letters.</property>-->
+<!--    <property name="LineHeight" type="float" default="1">Line height multiplier for multi-line text layout.</property>-->
+<!--    <property name="CharacterSpacing" type="float">Extra spacing between characters, beyond kerning.</property>-->
+<!--    <property name="FixedCharacterWidth" type="float">Forces a fixed width per character (monospace effect).</property>-->
     <property name="TextHorizontalAlignment" type="TextHorizontalAlignment">Horizontal alignment of the text within its bounds.</property>
     <property name="TextVerticalAlignment" type="TextVerticalAlignment">Vertical alignment of the text within its bounds.</property>
     <field name="_steps" type="uiLabelSteps">Internal step-based rendering parameters.</field>
-    <field name="_size" type="uiLabelSize">Internal text size metrics.</field>
+<!--    <field name="_size" type="uiLabelSize">Internal text size metrics.</field>-->
     <field name="_node" type="Node" pointer="true">Reference to the owning node using this concept.</field>
-    <field name="_text" type="view_text">Internal view representation of the text.</field>
-    <field name="_textinfo" type="text_info">Internal text information structure.</field>
+<!--    <field name="_text" type="view_text">Internal view representation of the text.</field>-->
+<!--    <field name="_textinfo" type="text_info">Internal text information structure.</field>-->
     <field name="_font" type="FontShorthand" pointer="true">Reference to the font shorthand configuration.</field>
   </component>
 

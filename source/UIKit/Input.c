@@ -2,20 +2,19 @@
 
 #include <source/UIKit/UIKit.h>
 
-
 HANDLER(Input, DrawBrush)
 {
   TextBlockPtr pTextBlock = GetTextBlock(hObject);
-  TextBlockConceptPtr output = GetTextBlockConcept(hObject);
+  TextRunPtr pTextRun = GetTextRun(hObject);
 
   struct view_entity entity;
 
   if (pDrawBrush->foreground && core_GetFocus() == hObject) {
     memset(&entity, 0, sizeof(entity));
     Node2D_GetViewEntity(hObject, &entity, NULL, pDrawBrush->brush);
-    entity.rect = output->_textinfo.cursor;
-    entity.rect.x += output->_textinfo.txInsets.left;
-    entity.rect.y += output->_textinfo.txInsets.top;
+    entity.rect = pTextRun->_textinfo.cursor;
+    entity.rect.x += pTextRun->_textinfo.txInsets.left;
+    entity.rect.y += pTextRun->_textinfo.txInsets.top;
     entity.rect.x += PADDING_TOP(pTextBlock->_node2D, 0);
     entity.rect.y += PADDING_TOP(pTextBlock->_node2D, 1);
     entity.text = NULL;
@@ -81,8 +80,7 @@ _NextTabStop(lpObject_t hObject)
 
 HANDLER(Input, KeyDown)
 {
-  TextBlockConceptPtr pText = GetTextBlockConcept(hObject);
-  LPSTR szText = pText->Text;
+  LPSTR szText = GetTextRun(hObject)->Text;
   uint32_t dwLength = (uint32_t)strlen(szText);
 
   switch (pKeyDown->keyCode) {

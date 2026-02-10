@@ -287,11 +287,35 @@ enum NodeProperties {
 #define ID_Node_Opacity 0xb6882472
 #define ID_Node_Tags 0xec56af24
 #define ID_Node_DataContext 0x80b43db0
+#define ID_TextRun 0x4362c3d7
+#define GetTextRun(_P)((struct TextRun*)((_P)?OBJ_GetComponent(_P,ID_TextRun):NULL))
+#define TextRun_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_TextRun,sizeof(struct TextRun),_N)
+enum TextRunProperties {
+	kTextRunText,
+	kTextRunUnderline,
+	kTextRunUnderlineOffset,
+	kTextRunUnderlineWidth,
+	kTextRunUnderlineColor,
+	kTextRunLetterSpacing,
+	kTextRunLineHeight,
+	kTextRunCharacterSpacing,
+	kTextRunFixedCharacterWidth,
+	kTextRunNumProperties
+};
+
+#define ID_TextRun_Text 0xcba1ea6c
+#define ID_TextRun_Underline 0x0b0d856d
+#define ID_TextRun_UnderlineOffset 0x0a823d42
+#define ID_TextRun_UnderlineWidth 0xc80a55b7
+#define ID_TextRun_UnderlineColor 0xcacb7660
+#define ID_TextRun_LetterSpacing 0x83b2ad0c
+#define ID_TextRun_LineHeight 0x45c78196
+#define ID_TextRun_CharacterSpacing 0xda8217e7
+#define ID_TextRun_FixedCharacterWidth 0xb71765fa
 #define ID_TextBlockConcept 0x4903089d
 #define GetTextBlockConcept(_P)((struct TextBlockConcept*)((_P)?OBJ_GetComponent(_P,ID_TextBlockConcept):NULL))
 #define TextBlockConcept_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_TextBlockConcept,sizeof(struct TextBlockConcept),_N)
 enum TextBlockConceptProperties {
-	kTextBlockConceptText,
 	kTextBlockConceptTextResourceID,
 	kTextBlockConceptTextResourceConfiguration,
 	kTextBlockConceptPlaceholderText,
@@ -301,24 +325,15 @@ enum TextBlockConceptProperties {
 	kTextBlockConceptPlaceholderColor,
 	kTextBlockConceptPlaceholderImage,
 	kTextBlockConceptPlaceholderMaterial,
-	kTextBlockConceptUnderline,
-	kTextBlockConceptUnderlineOffset,
-	kTextBlockConceptUnderlineWidth,
-	kTextBlockConceptUnderlineColor,
 	kTextBlockConceptUseFullFontHeight,
 	kTextBlockConceptConstrainContentHeight,
 	kTextBlockConceptWordWrap,
 	kTextBlockConceptRemoveSideBearingsProperty,
-	kTextBlockConceptLetterSpacing,
-	kTextBlockConceptLineHeight,
-	kTextBlockConceptCharacterSpacing,
-	kTextBlockConceptFixedCharacterWidth,
 	kTextBlockConceptTextHorizontalAlignment,
 	kTextBlockConceptTextVerticalAlignment,
 	kTextBlockConceptNumProperties
 };
 
-#define ID_TextBlockConcept_Text 0x5186094a
 #define ID_TextBlockConcept_TextResourceID 0x7617ef4f
 #define ID_TextBlockConcept_TextResourceConfiguration 0x445231c0
 #define ID_TextBlockConcept_PlaceholderText 0xadd54a35
@@ -328,18 +343,10 @@ enum TextBlockConceptProperties {
 #define ID_TextBlockConcept_PlaceholderColor 0x8f53db89
 #define ID_TextBlockConcept_PlaceholderImage 0x2275c70b
 #define ID_TextBlockConcept_PlaceholderMaterial 0x16a577db
-#define ID_TextBlockConcept_Underline 0x4a3c0c33
-#define ID_TextBlockConcept_UnderlineOffset 0x813042c0
-#define ID_TextBlockConcept_UnderlineWidth 0x956ec925
-#define ID_TextBlockConcept_UnderlineColor 0xaf1cae72
 #define ID_TextBlockConcept_UseFullFontHeight 0x95fcf16b
 #define ID_TextBlockConcept_ConstrainContentHeight 0x8468e688
 #define ID_TextBlockConcept_WordWrap 0x34b71f41
 #define ID_TextBlockConcept_RemoveSideBearingsProperty 0x40b7c724
-#define ID_TextBlockConcept_LetterSpacing 0x06a4b75a
-#define ID_TextBlockConcept_LineHeight 0x371eb97c
-#define ID_TextBlockConcept_CharacterSpacing 0xba0c5da5
-#define ID_TextBlockConcept_FixedCharacterWidth 0x0a9b58e4
 #define ID_TextBlockConcept_TextHorizontalAlignment 0xe480096b
 #define ID_TextBlockConcept_TextVerticalAlignment 0xbf0260e5
 #define ID_Node2D 0x6c63a2ab

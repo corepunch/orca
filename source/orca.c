@@ -32,7 +32,6 @@ struct { lpcString_t name, *target; } argsmap[] = {
   { "-server=", &args.server },
 };
 
-
 static void
 get_exe_filename(LPSTR buf, uint32_t sz)
 {
