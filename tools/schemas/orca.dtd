@@ -652,11 +652,6 @@
 	HorizontalAlignment (%HorizontalAlignment;) #IMPLIED
 	VerticalAlignment (%VerticalAlignment;) #IMPLIED
 	DepthAlignment (%DepthAlignment;) #IMPLIED
-	Font CDATA #IMPLIED
-	FontWeight (%FontWeight;) #IMPLIED
-	FontStyle (%FontStyle;) #IMPLIED
-	FontSize CDATA #IMPLIED
-	FontFamily CDATA #IMPLIED
 	Visible (true|false) #IMPLIED
 	QuickHide (true|false) #IMPLIED
 	VisibleAmountInParent CDATA #IMPLIED
@@ -810,16 +805,6 @@
 <!ATTLIST Node.VerticalAlignment Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Node.DepthAlignment (#PCDATA | Binding)*>
 <!ATTLIST Node.DepthAlignment Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.Font (#PCDATA | Binding)*>
-<!ATTLIST Node.Font Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.FontWeight (#PCDATA | Binding)*>
-<!ATTLIST Node.FontWeight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.FontStyle (#PCDATA | Binding)*>
-<!ATTLIST Node.FontStyle Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.FontSize (#PCDATA | Binding)*>
-<!ATTLIST Node.FontSize Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.FontFamily (#PCDATA | Binding)*>
-<!ATTLIST Node.FontFamily Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Node.Visible (#PCDATA | Binding)*>
 <!ATTLIST Node.Visible Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Node.QuickHide (#PCDATA | Binding)*>
@@ -832,7 +817,7 @@
 <!ATTLIST Node.Tags Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Node.DataContext (#PCDATA | Binding)*>
 <!ATTLIST Node.DataContext Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % NodeElements "Node.Size|Node.HorizontalSize|Node.Width|Node.MinWidth|Node.ActualWidth|Node.ScrollWidth|Node.VerticalSize|Node.Height|Node.MinHeight|Node.ActualHeight|Node.ScrollHeight|Node.DepthSize|Node.Depth|Node.MinDepth|Node.ActualDepth|Node.ScrollDepth|Node.Margin|Node.HorizontalMargin|Node.MarginLeft|Node.MarginRight|Node.VerticalMargin|Node.MarginTop|Node.MarginBottom|Node.DepthMargin|Node.MarginFront|Node.MarginBack|Node.Padding|Node.HorizontalPadding|Node.PaddingLeft|Node.PaddingRight|Node.VerticalPadding|Node.PaddingTop|Node.PaddingBottom|Node.DepthPadding|Node.PaddingFront|Node.PaddingBack|Node.Border|Node.BorderRadius|Node.BorderRadiusTopLeftRadius|Node.BorderRadiusTopRightRadius|Node.BorderRadiusBottomRightRadius|Node.BorderRadiusBottomLeftRadius|Node.HorizontalBorder|Node.BorderLeft|Node.BorderLeftWidth|Node.BorderLeftStyle|Node.BorderLeftColor|Node.BorderRight|Node.BorderRightWidth|Node.BorderRightStyle|Node.BorderRightColor|Node.VerticalBorder|Node.BorderTop|Node.BorderTopWidth|Node.BorderTopStyle|Node.BorderTopColor|Node.BorderBottom|Node.BorderBottomWidth|Node.BorderBottomStyle|Node.BorderBottomColor|Node.DepthBorder|Node.BorderFront|Node.BorderFrontWidth|Node.BorderFrontStyle|Node.BorderFrontColor|Node.BorderBack|Node.BorderBackWidth|Node.BorderBackStyle|Node.BorderBackColor|Node.Alignment|Node.HorizontalAlignment|Node.VerticalAlignment|Node.DepthAlignment|Node.Font|Node.FontWeight|Node.FontStyle|Node.FontSize|Node.FontFamily|Node.Visible|Node.QuickHide|Node.VisibleAmountInParent|Node.Opacity|Node.Tags|Node.DataContext">
+<!ENTITY % NodeElements "Node.Size|Node.HorizontalSize|Node.Width|Node.MinWidth|Node.ActualWidth|Node.ScrollWidth|Node.VerticalSize|Node.Height|Node.MinHeight|Node.ActualHeight|Node.ScrollHeight|Node.DepthSize|Node.Depth|Node.MinDepth|Node.ActualDepth|Node.ScrollDepth|Node.Margin|Node.HorizontalMargin|Node.MarginLeft|Node.MarginRight|Node.VerticalMargin|Node.MarginTop|Node.MarginBottom|Node.DepthMargin|Node.MarginFront|Node.MarginBack|Node.Padding|Node.HorizontalPadding|Node.PaddingLeft|Node.PaddingRight|Node.VerticalPadding|Node.PaddingTop|Node.PaddingBottom|Node.DepthPadding|Node.PaddingFront|Node.PaddingBack|Node.Border|Node.BorderRadius|Node.BorderRadiusTopLeftRadius|Node.BorderRadiusTopRightRadius|Node.BorderRadiusBottomRightRadius|Node.BorderRadiusBottomLeftRadius|Node.HorizontalBorder|Node.BorderLeft|Node.BorderLeftWidth|Node.BorderLeftStyle|Node.BorderLeftColor|Node.BorderRight|Node.BorderRightWidth|Node.BorderRightStyle|Node.BorderRightColor|Node.VerticalBorder|Node.BorderTop|Node.BorderTopWidth|Node.BorderTopStyle|Node.BorderTopColor|Node.BorderBottom|Node.BorderBottomWidth|Node.BorderBottomStyle|Node.BorderBottomColor|Node.DepthBorder|Node.BorderFront|Node.BorderFrontWidth|Node.BorderFrontStyle|Node.BorderFrontColor|Node.BorderBack|Node.BorderBackWidth|Node.BorderBackStyle|Node.BorderBackColor|Node.Alignment|Node.HorizontalAlignment|Node.VerticalAlignment|Node.DepthAlignment|Node.Visible|Node.QuickHide|Node.VisibleAmountInParent|Node.Opacity|Node.Tags|Node.DataContext">
 <!ELEMENT Node EMPTY>
 <!ATTLIST Node %NodeAttribs;>
 <!ENTITY % TextRunAttribs "
@@ -841,6 +826,11 @@
 	IsDisabled (true|false) #IMPLIED
 	StateManager CDATA #IMPLIED
 	Text CDATA #IMPLIED
+	Font CDATA #IMPLIED
+	FontWeight (%FontWeight;) #IMPLIED
+	FontStyle (%FontStyle;) #IMPLIED
+	FontSize CDATA #IMPLIED
+	FontFamily CDATA #IMPLIED
 	Underline CDATA #IMPLIED
 	UnderlineOffset CDATA #IMPLIED
 	UnderlineWidth CDATA #IMPLIED
@@ -853,6 +843,16 @@
 ">
 <!ELEMENT TextRun.Text (#PCDATA | Binding)*>
 <!ATTLIST TextRun.Text Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextRun.Font (#PCDATA | Binding)*>
+<!ATTLIST TextRun.Font Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextRun.FontWeight (#PCDATA | Binding)*>
+<!ATTLIST TextRun.FontWeight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextRun.FontStyle (#PCDATA | Binding)*>
+<!ATTLIST TextRun.FontStyle Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextRun.FontSize (#PCDATA | Binding)*>
+<!ATTLIST TextRun.FontSize Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextRun.FontFamily (#PCDATA | Binding)*>
+<!ATTLIST TextRun.FontFamily Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT TextRun.Underline (#PCDATA | Binding)*>
 <!ATTLIST TextRun.Underline Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT TextRun.UnderlineOffset (#PCDATA | Binding)*>
@@ -871,7 +871,7 @@
 <!ATTLIST TextRun.FixedCharacterWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT TextRun.RemoveSideBearingsProperty (#PCDATA | Binding)*>
 <!ATTLIST TextRun.RemoveSideBearingsProperty Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % TextRunElements "TextRun.Text|TextRun.Underline|TextRun.UnderlineOffset|TextRun.UnderlineWidth|TextRun.UnderlineColor|TextRun.LetterSpacing|TextRun.LineHeight|TextRun.CharacterSpacing|TextRun.FixedCharacterWidth|TextRun.RemoveSideBearingsProperty">
+<!ENTITY % TextRunElements "TextRun.Text|TextRun.Font|TextRun.FontWeight|TextRun.FontStyle|TextRun.FontSize|TextRun.FontFamily|TextRun.Underline|TextRun.UnderlineOffset|TextRun.UnderlineWidth|TextRun.UnderlineColor|TextRun.LetterSpacing|TextRun.LineHeight|TextRun.CharacterSpacing|TextRun.FixedCharacterWidth|TextRun.RemoveSideBearingsProperty">
 <!ELEMENT TextRun EMPTY>
 <!ATTLIST TextRun %TextRunAttribs;>
 <!ENTITY % TextBlockConceptAttribs "

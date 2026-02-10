@@ -93,12 +93,18 @@ _GetTextBlockText(lpObject_t hObject,
 static struct ViewTextRun
 _MakeViewTextRun(lpObject_t hObject, TextRunPtr pTextRun, lpcString_t szText)
 {
-  struct FontShorthand font = *pTextRun->_font;
+  struct FontShorthand font = pTextRun->Font;
   for (lpObject_t node = hObject; node; node = OBJ_GetParent(node)) {
-    if (Node_GetProperty(node, kNodeFontSize)) {
-      font.Size = GetNode(node)->Font.Size;
+    lpProperty_t plist = OBJ_GetProperties(node);
+    lpProperty_t p = PROP_FindByLongID(plist, ID_TextRun_FontSize);
+    if (p) {
+      font.Size = *(float const *)PROP_GetValue(p);
       break;
     }
+//    if (Node_GetProperty(node, kNodeFontSize)) {
+//      font.Size = GetNode(node)->Font.Size;
+//      break;
+//    }
   }
   struct ViewTextRun view = {
     .string = szText,
@@ -129,8 +135,8 @@ HANDLER(TextBlockConcept, MakeText)
   FOR_EACH_OBJECT(run, hObject) {
     TextRunPtr tr = GetTextRun(run);
     if (tr && pViewText->numTextRuns < MAX_TEXT_RUNS) {
-      lpcString_t str = *tr->Text?tr->Text:OBJ_GetTextContent(run);
-      pViewText->run[pViewText->numTextRuns++] = _MakeViewTextRun(hObject, tr, str);
+      lpcString_t str = *tr->Text ? tr->Text : OBJ_GetTextContent(run);
+      pViewText->run[pViewText->numTextRuns++] = _MakeViewTextRun(run, tr, str);
     }
   }
   pViewText->flags = pTextBlockConcept->UseFullFontHeight ? RF_USE_FONT_HEIGHT : 0;
@@ -257,11 +263,5 @@ HANDLER(TextBlock, Create)
 HANDLER(TextBlockConcept, Create)
 {
   pTextBlockConcept->_node = GetNode(hObject);
-  return FALSE;
-}
-
-HANDLER(TextRun, Create)
-{
-  pTextRun->_font = &GetNode(hObject)->Font;
   return FALSE;
 }

@@ -389,7 +389,6 @@
     <property name="Padding" type="MarginShorthand">Internal spacing between element border and content</property>
     <property name="Border" type="BorderShorthand">Border definition along each axis</property>
     <property name="Alignment" type="AlignmentShorthand">Alignment definition for each axis.</property>
-    <property name="Font" type="FontShorthand" default=".Size=DEFAULT_FONT_SIZE">Font definition used for text rendering. Contains typeface, size, and style information.</property>
     <property name="Visible" type="bool" default="TRUE">Whether this node is visible in the scene.</property>
     <property name="QuickHide" type="bool">If true, node is quickly hidden without triggering full visibility transitions.</property>
     <property name="VisibleAmountInParent" type="float" default="1">Specifies how much of the node is visible within its parent container. Value in range [0.0, 1.0].</property>
@@ -402,8 +401,8 @@
     <summary>Shared concept for text rendering in 2D and 3D nodes.</summary>
     <details>This class is not instantiated directly. Instead, it provides the common properties and functionality for text rendering, used internally by higher-level components such as 2D and 3D text nodes. The concept encapsulates text content, resources, formatting options, alignment, and font configuration.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="Create"/>
     <property name="Text" type="fixed">The short text string displayed in the block, limited to 64 bytes. If you need more space consider using `TextResourceID`.</property>
+    <property name="Font" type="FontShorthand" default=".Size=DEFAULT_FONT_SIZE">Font definition used for text rendering. Contains typeface, size, and style information.</property>
     <property name="Underline" type="UnderlineShorthand">Underline style applied to the text.</property>
     <property name="LetterSpacing" type="float">Additional spacing applied between letters.</property>
     <property name="LineHeight" type="float" default="1">Line height multiplier for multi-line text layout.</property>
