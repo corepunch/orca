@@ -268,6 +268,8 @@ T_GetSize(struct ViewText const* text,
   return (struct WI_Size){textSize.width, textSize.height + (int)FT_SCALE(lineheight)};
 }
 
+#define FT_Pixel uint8_t
+
 HRESULT
 Text_Print(struct ViewText const* pViewText,
            struct Texture** pTexture,
@@ -294,7 +296,7 @@ Text_Print(struct ViewText const* pViewText,
   FT_Pos lineheight = 0;
   FT_Pos baseline = 0;
   
-  byte_t* image_data = ZeroAlloc(textSize.width * textSize.height * sizeof(uint8_t));
+  FT_Pixel* image_data = ZeroAlloc(textSize.width * textSize.height * sizeof(FT_Pixel));
   
   if (image_data == NULL)
     return E_OUTOFMEMORY;
@@ -327,8 +329,22 @@ Text_Print(struct ViewText const* pViewText,
     prev_glyph_index = 0;
 
     for (lpcString_t str = run->string, print = str, last = str;; last = str) {
-      bool_t const eos = !*str;
-      uint32_t const charcode = *str ? u8_readchar(&str) : ' ';
+      FT_Bool const eos = !*str;
+      FT_UInt const charcode = *str ? u8_readchar(&str) : ' ';
+      // adjust existing baseline
+      if (x && FT_SCALE(ascender) > baseline) {
+        FT_Pos baseline_shift = FT_SCALE(ascender) - baseline;
+        FT_Pos src_inv = textSize.height - y - FT_SCALE(lineheight) - 1;
+        FT_Pos dst_inv = src_inv - baseline_shift;
+        FT_Pos num_rows = FT_SCALE(lineheight) + 1;
+        if (src_inv >= 0 && dst_inv >= 0 && src_inv + num_rows <= textSize.height) {
+          memmove(&image_data[dst_inv * textSize.width],
+                  &image_data[src_inv * textSize.width],
+                  num_rows * textSize.width * sizeof(FT_Pixel));
+          memset(&image_data[src_inv * textSize.width], 0,
+                 baseline_shift * textSize.width * sizeof(FT_Pixel));
+        }
+      }
       lineheight = MAX(lineheight, FT_MulFix(face->height, face->size->metrics.y_scale));
       baseline = MAX(baseline, FT_SCALE(ascender));
       if (isspace(charcode)) {
