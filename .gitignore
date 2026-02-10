@@ -70,3 +70,4 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+_codeql_detected_source_root
