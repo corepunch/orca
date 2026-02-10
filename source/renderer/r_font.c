@@ -336,13 +336,10 @@ Text_Print(struct ViewText const* pViewText,
       lineheight = MAX(lineheight, FT_MulFix(face->height, face->size->metrics.y_scale));
       if (FT_SCALE(ascender) > baseline && x > 0) {
         FT_Pos baseline_shift = FT_SCALE(ascender) - baseline;
-        long src_inv = textSize.height - y - FT_SCALE(lineheight) - 1;
-        long dst_inv = src_inv - baseline_shift;
-        long num_rows = FT_SCALE(lineheight) + 1;
-        if (src_inv >= 0 && dst_inv >= 0 && src_inv + num_rows <= textSize.height) {
-          memmove(&image_data[dst_inv * textSize.width],
-                  &image_data[src_inv * textSize.width],
-                  num_rows * textSize.width * sizeof(uint8_t));
+        byte_t* line_start = &image_data[(textSize.height - y - FT_SCALE(lineheight) - 1) * textSize.width];
+        long line_height = FT_SCALE(lineheight) + 1;
+        if (line_start - baseline_shift * textSize.width >= image_data) {
+          memmove(line_start - baseline_shift * textSize.width, line_start, line_height * textSize.width * sizeof(uint8_t));
         }
       }
       baseline = MAX(baseline, FT_SCALE(ascender));
