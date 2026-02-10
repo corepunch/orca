@@ -332,7 +332,7 @@ Text_Print(struct ViewText const* pViewText,
       FT_Bool const eos = !*str;
       FT_UInt const charcode = *str ? u8_readchar(&str) : ' ';
       // adjust existing baseline
-      if (x && FT_SCALE(ascender) > baseline) {
+      if (x > 0 && FT_SCALE(ascender) > baseline) {
         FT_Pos baseline_shift = FT_SCALE(ascender) - baseline;
         FT_Pos src_inv = textSize.height - y - FT_SCALE(lineheight) - 1;
         FT_Pos dst_inv = src_inv - baseline_shift;
