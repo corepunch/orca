@@ -425,8 +425,8 @@ luaX_checkStyle(lua_State *L, int idx);
 #include <source/UIKit/uidef.h>
 typedef struct Object Object_t, *lpObject_t;
 typedef struct Object const cObject_t, *lpcObject_t;
-typedef struct ViewText view_text_t, *lpview_text_t;
-typedef struct ViewText const cview_text_t, *lpcview_text_t;
+typedef struct ViewText ViewText_t, *lpViewText_t;
+typedef struct ViewText const cViewText_t, *lpcViewText_t;
 typedef struct text_info text_info_t, *lptext_info_t;
 typedef struct text_info const ctext_info_t, *lpctext_info_t;
 #define kEventGetSize 0x80d9e0ee
@@ -779,7 +779,7 @@ struct TextRun {
 	float FixedCharacterWidth; /// Forces a fixed width per character (monospace effect).
 	bool_t RemoveSideBearingsProperty; /// Removes side bearings (spacing) defined by the font.
 	uiLabelSize_t _size; /// Internal text size metrics.
-	view_text_t _text; /// Internal view representation of the text.
+	ViewText_t _text; /// Internal view representation of the text.
 	text_info_t _textinfo; /// Internal text information structure.
 };
 

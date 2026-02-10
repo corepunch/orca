@@ -121,9 +121,9 @@ uint32_t
 R_GetTextHash(struct ViewText* text)
 {
   uint32_t size = sizeof(struct ViewText) - sizeof(lpcString_t);
-  uint32_t text_hash = fnv1a32(text->string);
+  uint32_t text_hash = fnv1a32(text->run.string);
   uint32_t format_hash =
-    fnv1a32_range((lpcString_t)&text->font, ((lpcString_t)&text->font) + size);
+    fnv1a32_range((lpcString_t)&text->run.font, ((lpcString_t)&text->run.font) + size);
   return text_hash ^ format_hash;
 }
 

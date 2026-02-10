@@ -442,18 +442,23 @@ typedef enum
   FS_COUNT,
 } FONTSTYLE;
 
-struct ViewText
+struct ViewTextRun
 {
   lpcString_t string;
   struct font* font;
-  uint32_t flags;
   uint32_t fontSize;
   FONTSTYLE fontStyle;
+  float letterSpacing;
+  uint32_t fixedCharacterWidth;
+};
+
+struct ViewText
+{
+  struct ViewTextRun run;
+  uint32_t flags;
   uint32_t availableWidth;
   float lineSpacing;
-  float letterSpacing;
   float backingScale;
-  uint32_t fixedCharacterWidth;
   uint32_t cursor;
   uint32_t underlineWidth;
   uint32_t underlineOffset;

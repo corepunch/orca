@@ -81,21 +81,21 @@ static FT_UInt u8_readchar(lpcString_t* text)
 }
 
 static FT_Face
-T_GetFontFace(struct ViewText const* tf)
+T_GetFontFace(struct ViewTextRun const* run)
 {
-  if (tf->font) {
-    if (tf->font->faces[tf->fontStyle].face) {
-      return tf->font->faces[tf->fontStyle].face;
+  if (run->font) {
+    if (run->font->faces[run->fontStyle].face) {
+      return run->font->faces[run->fontStyle].face;
     }
     FOR_LOOP(i, FS_COUNT)
     {
-      if (tf->font->faces[i].face) {
-        return tf->font->faces[i].face;
+      if (run->font->faces[i].face) {
+        return run->font->faces[i].face;
       }
     }
   }
-  if (fg.font->faces[tf->fontStyle].face) {
-    return fg.font->faces[tf->fontStyle].face;
+  if (fg.font->faces[run->fontStyle].face) {
+    return fg.font->faces[run->fontStyle].face;
   }
   return fg.font->faces[FS_NORMAL].face;
 }
@@ -173,8 +173,8 @@ static struct ViewText*
 T_Scale(struct ViewText const* input, float scale, struct ViewText* output)
 {
   memcpy(output, input, sizeof(struct ViewText));
-  output->fontSize *= scale;
-  output->fixedCharacterWidth *= scale;
+  output->run.fontSize *= scale;
+  output->run.fixedCharacterWidth *= scale;
   output->availableWidth *= scale;
   output->underlineWidth *= scale;
   return output;
@@ -203,18 +203,18 @@ T_GetSize(FT_Face face, struct ViewText const* text, struct rect* rcursor)
   FT_UInt prev_glyph_index = 0;
 
   //	if (!(text->flags & RF_USE_FONT_HEIGHT)) {
-  //		textSize.height = (uint32_t)(text->fontSize +
+  //		textSize.height = (uint32_t)(text->run.fontSize +
   // FT_SCALE(descender));
   //	}
 
-  if (FT_Set_Pixel_Sizes(face, 0, text->fontSize))
+  if (FT_Set_Pixel_Sizes(face, 0, text->run.fontSize))
     return textSize;
 
   if (FT_Load_CharGlyph(face, ' ', FT_LOAD_DEFAULT)) {
     spaceWidth = (uint32_t)FT_SCALE(face->glyph->metrics.horiAdvance);
   }
 
-  for (lpcString_t str = text->string;; cursor++) {
+  for (lpcString_t str = text->run.string;; cursor++) {
     bool_t const eos = !*str;
     uint32_t const charcode = *str ? u8_readchar(&str) : ' ';
 
@@ -272,11 +272,11 @@ Text_Print(struct ViewText const* input, struct Texture** img, bool_t reuse)
 {
   struct ViewText text;
 
-  FT_Face const face = T_GetFontFace(input);
+  FT_Face const face = T_GetFontFace(&input->run);
 
   T_Scale(input, input->backingScale, &text);
 
-  if (FT_Set_Pixel_Sizes(face, 0, text.fontSize))
+  if (FT_Set_Pixel_Sizes(face, 0, text.run.fontSize))
     return E_UNEXPECTED;
 
   FT_Pos const ascender = FT_MulFix(face->ascender, face->size->metrics.y_scale);
@@ -314,7 +314,7 @@ Text_Print(struct ViewText const* input, struct Texture** img, bool_t reuse)
 
   int textwidth = 0, wordwidth = 0, prevchar = 0, x = -spaceWidth, y = 0;
   FT_UInt prev_glyph_index = 0;
-  for (lpcString_t str = text.string, print = str, last = str;; last = str) {
+  for (lpcString_t str = text.run.string, print = str, last = str;; last = str) {
     bool_t const eos = !*str;
     uint32_t const charcode = *str ? u8_readchar(&str) : ' ';
     if (isspace(charcode)) {
@@ -468,13 +468,13 @@ Font_Load(lpcString_t szFileName)
 HRESULT
 Text_GetInsets(struct ViewText const* text, struct edges* edges)
 {
-  if (FT_Set_Pixel_Sizes(T_GetFontFace(text), 0,
-                         text->fontSize * text->backingScale) ||
+  if (FT_Set_Pixel_Sizes(T_GetFontFace(&text->run), 0,
+                         text->run.fontSize * text->backingScale) ||
       (text->flags & RF_USE_FONT_HEIGHT)) {
     *edges = (struct edges){ 0 };
     return S_OK;
   }
-  FT_Face const face = T_GetFontFace(text);
+  FT_Face const face = T_GetFontFace(&text->run);
   FT_Pos const ascender =
     FT_MulFix(face->ascender, face->size->metrics.y_scale);
   FT_Pos const descender =
@@ -483,7 +483,7 @@ Text_GetInsets(struct ViewText const* text, struct edges* edges)
     .left = 0,
     .right = 0,
     .top = ceil(FT_SCALE(ascender - descender) / text->backingScale -
-                text->fontSize),
+                text->run.fontSize),
     .bottom = -ceil(FT_SCALE(descender) / text->backingScale),
   };
   return S_OK;
@@ -494,9 +494,9 @@ Text_GetInfo(struct ViewText const* input, struct text_info* info)
 {
   struct ViewText text;
   float scale = 1.0f / (float)input->backingScale;
-  FT_Face const face = T_GetFontFace(input);
+  FT_Face const face = T_GetFontFace(&input->run);
   T_Scale(input, input->backingScale, &text);
-  if (FT_Set_Pixel_Sizes(face, 0, text.fontSize))
+  if (FT_Set_Pixel_Sizes(face, 0, text.run.fontSize))
     return E_UNEXPECTED;
   struct WI_Size textSize = T_GetSize(face, &text, &info->cursor);
   info->txWidth = textSize.width * scale;

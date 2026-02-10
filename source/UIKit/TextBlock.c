@@ -78,35 +78,38 @@ HANDLER(TextBlockConcept, MakeText)
   }
   struct ViewText* text = pMakeText->text;
   lpcString_t szTextContent = OBJ_GetTextContent(hObject);
-  text->string = pTextBlockConcept->PlaceholderText;
-  text->font = font.Family?font.Family->font:NULL;
-  text->fontSize = font.Size;
+  text->run = (struct ViewTextRun){
+    .string = pTextBlockConcept->PlaceholderText,
+    .font = font.Family ? font.Family->font : NULL,
+    .fontSize = font.Size,
+    .letterSpacing = pTextRun->LetterSpacing,
+    .fixedCharacterWidth = pTextRun->FixedCharacterWidth,
+    .fontStyle = 0,
+  };
+  
   text->flags = pTextBlockConcept->UseFullFontHeight ? RF_USE_FONT_HEIGHT : 0;
   text->lineSpacing = pTextRun->LineHeight;
-  text->letterSpacing = pTextRun->LetterSpacing;
   text->underlineWidth = pTextRun->Underline.Width;
   text->underlineOffset = pTextRun->Underline.Offset;
-  text->fixedCharacterWidth = pTextRun->FixedCharacterWidth;
   text->availableWidth = pMakeText->availableSpace;
-  text->fontStyle = 0;
   text->backingScale = WI_GetScaling();
 
   lpProperty_t hProp =
     TextBlockConcept_GetProperty(hObject, kTextRunText);
 
   if (pTextBlockConcept->_font->Weight == kFontWeightBold) {
-    text->fontStyle += FS_BOLD;
+    text->run.fontStyle += FS_BOLD;
   }
   if (pTextBlockConcept->_font->Style == kFontStyleItalic) {
-    text->fontStyle += FS_ITALIC;
+    text->run.fontStyle += FS_ITALIC;
   }
 
   if (*pTextRun->Text) {
-    text->string = pTextRun->Text;
+    text->run.string = pTextRun->Text;
   } else if (*pTextBlockConcept->TextResourceID && !PROP_HasProgram(hProp)) {
-    text->string = Loc_GetString(pTextBlockConcept->TextResourceID, LOC_TEXT);
+    text->run.string = Loc_GetString(pTextBlockConcept->TextResourceID, LOC_TEXT);
   } else if (szTextContent && *szTextContent) {
-    text->string = szTextContent = OBJ_GetTextContent(hObject);
+    text->run.string = szTextContent = OBJ_GetTextContent(hObject);
   }
 
   return TRUE;
@@ -182,7 +185,7 @@ HANDLER(TextBlock, DrawBrush)
   TextBlockConceptPtr text = GetTextBlockConcept(hObject);
   TextRunPtr run = GetTextRun(hObject);
 
-  if (text->PlaceholderText == run->_text.string && pDrawBrush->foreground) {
+  if (text->PlaceholderText == run->_text.run.string && pDrawBrush->foreground) {
     static struct BrushShorthand zero = { 0 };
     if (memcmp(&text->Placeholder, &zero, sizeof(struct BrushShorthand))) {
       pDrawBrush->brush = &text->Placeholder;
