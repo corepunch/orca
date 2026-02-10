@@ -311,7 +311,7 @@ Text_Print(struct view_text const* input, struct Texture** img, bool_t reuse)
     spaceWidth = FT_SCALE(face->glyph->metrics.horiAdvance);
   }
 
-  int textwidth = 0, wordwidth = 0, prevchar = 0, x = -spaceWidth, y = 0;
+  int textwidth = 0, wordwidth = 0, prevchar = 0, x = 0, y = 0;
   FT_UInt prev_glyph_index = 0;
   for (lpcString_t str = text.string, print = str, last = str;; last = str) {
     bool_t const eos = !*str;
@@ -384,7 +384,7 @@ Text_Print(struct view_text const* input, struct Texture** img, bool_t reuse)
       } else if (charcode == '\n') {
         textwidth = 0;
         y += FT_SCALE(lineHeight);
-        x = -spaceWidth;
+        x = 0;
         prevchar = 0;
         prev_glyph_index = 0;
         print = str;
