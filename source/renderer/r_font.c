@@ -227,6 +227,7 @@ T_GetSize(FT_Face face, struct view_text const* text, struct rect* rcursor)
     if (isspace(charcode)) {
       // if (eos) spaceWidth = 0;
       if (textwidth == 0) {
+        textwidth += spaceWidth;
         // first word print anyway
       } else if (textwidth + wordwidth + spaceWidth > text->availableWidth) {
         textSize.height += /*text->lineSpacing **/ FT_SCALE(lineHeight);
@@ -320,6 +321,7 @@ Text_Print(struct view_text const* input, struct Texture** img, bool_t reuse)
       // first word print anyway
       if (textwidth == 0) {
         x += spaceWidth;
+        textwidth += spaceWidth;
         // first word print anyway
       } else if (textwidth + wordwidth + spaceWidth > text.availableWidth) {
         textwidth = 0;

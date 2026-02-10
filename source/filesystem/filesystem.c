@@ -715,29 +715,24 @@ void FS_MoveFileSystem(struct Package *src, struct Package *dest) {
   src->next = NULL;
 }
 
+static void FS_FreePack(PPACK pack) {
+  fclose(pack->handle);
+  free(pack->files);
+  free(pack);
+}
+
 static void FS_Release(struct Package *search) {
 #ifdef MONITOR_FILES
-  FOR_EACH_LIST(struct _MONITOREDFILE, mf, search->monitoredFiles)
-  {
-    free(mf);
-  }
+  FOR_EACH_LIST(struct _MONITOREDFILE, mf, search->monitoredFiles) free(mf);
 #endif
-  if (search->next) {
-    FS_Release(search->next);
-  }
-  if (search->doc) {
-    xmlFreeDoc(search->doc);
-  }
-  if (search->pack) {
-    fclose(search->pack->handle);
-    free(search->pack->files);
-    free(search->pack);
-  }
+  SafeDelete(search->next, FS_Release);
+  SafeDelete(search->doc, xmlFreeDoc);
+  SafeDelete(search->pack, FS_FreePack);
   free(search);
 }
 
 void FS_Shutdown(void) {
-  FS_Release(MainBundle);
+  SafeDelete(MainBundle, FS_Release);
   MainBundle = NULL;
 }
 

@@ -20,6 +20,8 @@
 #include <mach-o/dyld.h>
 #endif
 
+#define ORCA_FEATURE_DEBUG
+
 struct args {
   lpcString_t plugins;
   lpcString_t server;
@@ -98,10 +100,10 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirname) {
       fprintf(mem, "local Screen = require '%s'\n", StartupScreen);
       fprintf(mem, "local screen = Screen()\n");
     }
-
+#ifdef ORCA_FEATURE_DEBUG
     fprintf(mem, "local editor = require 'orca.editor'\n");
     fprintf(mem, "editor.setScreen(screen)\n");
-
+#endif
 //    fprintf(mem, "print 'Project %s was initialized'\n", szProjectPath);
     fprintf(mem, "while true do for msg in s.getMessage(screen) do\n");
     //    fprintf(mem, "if m:is'KeyDown' and m.key=='q' then\nreturn 'closed'\nelse");
@@ -149,6 +151,7 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirname) {
     fprintf(mem, "end end\n");
     fclose(mem);
   }
+  printf("%s\n", buf);
   if (luaL_loadbuffer(L, buf, size, "@main") || lua_pcall(L, 0, 1, 0)) {
     Con_Error("Uncaught exception: %s", lua_tostring(L, -1));
     lua_pop(L, 1);
