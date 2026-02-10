@@ -188,6 +188,7 @@ T_GetSize(struct ViewText const* text,
   FT_UInt cursor = 0;
   FT_UInt prev_glyph_index = 0;
   FT_Pos spaceWidth = 0;
+  FT_Pos lineheight = 0;
 
   //	if (!(text->flags & RF_USE_FONT_HEIGHT)) {
   //		textSize.height = (uint32_t)(text->run.fontSize * text->scale +
@@ -205,8 +206,6 @@ T_GetSize(struct ViewText const* text,
     if (FT_Load_CharGlyph(face, ' ', FT_LOAD_DEFAULT)) {
       spaceWidth = (uint32_t)FT_SCALE(face->glyph->metrics.horiAdvance);
     }
-    FT_Pos lineHeight = FT_MulFix(face->height, face->size->metrics.y_scale);
-    textSize.height = MAX(textSize.height, (int)FT_SCALE(lineHeight));
 
     // Reset glyph index when starting a new run to prevent incorrect kerning
     // between glyphs from different fonts
@@ -215,12 +214,15 @@ T_GetSize(struct ViewText const* text,
     for (lpcString_t str = run->string;; cursor++) {
       FT_Bool const eos = !*str;
       FT_UInt const charcode = *str ? u8_readchar(&str) : ' ';
-      
+
+      lineheight = MAX(lineheight, FT_MulFix(face->height, face->size->metrics.y_scale));
+      textSize.height = MAX(textSize.height, (int)FT_SCALE(lineheight));
+
       if (cursor == text->cursor && rcursor) {
         rcursor->x = textwidth + wordwidth;
-        rcursor->y = textSize.height - FT_SCALE(lineHeight);
+        rcursor->y = textSize.height - FT_SCALE(lineheight);
         rcursor->width = 0;
-        rcursor->height = FT_SCALE(lineHeight);
+        rcursor->height = FT_SCALE(lineheight);
       }
       if (isspace(charcode)) {
         // if (eos) spaceWidth = 0;
@@ -228,9 +230,10 @@ T_GetSize(struct ViewText const* text,
           textwidth += spaceWidth;
           // first word print anyway
         } else if (textwidth + wordwidth + spaceWidth > text->availableWidth * text->scale) {
-          textSize.height += /*text->lineSpacing **/ FT_SCALE(lineHeight);
+          textSize.height += /*text->lineSpacing **/ FT_SCALE(lineheight);
           textSize.width = MAX(textSize.width, textwidth);
           textwidth = 0;
+          lineheight = 0;
           prev_glyph_index = 0;
         } else { // if (charcode != '\n') {
           textwidth += spaceWidth;
@@ -243,7 +246,7 @@ T_GetSize(struct ViewText const* text,
         } else if (charcode == '\n') {
           textwidth = 0;
           prev_glyph_index = 0;
-          textSize.height += /*text->lineSpacing **/ FT_SCALE(lineHeight);
+          textSize.height += /*text->lineSpacing **/ FT_SCALE(lineheight);
         }
       } else if (FT_Load_CharGlyph(face, charcode, FT_LOAD_DEFAULT)) {
         FT_UInt glyph_index = FT_Get_Char_Index(face, charcode);
@@ -289,6 +292,7 @@ Text_Print(struct ViewText const* pViewText,
   FT_Int x = INT_MIN;
   FT_Int y = 0;
   FT_UInt prev_glyph_index = 0;
+  FT_Pos lineheight = 0;
   
   byte_t* image_data = ZeroAlloc(textSize.width * textSize.height * sizeof(uint8_t));
   
@@ -305,7 +309,6 @@ Text_Print(struct ViewText const* pViewText,
     FT_Pos const ascender = FT_MulFix(face->ascender, face->size->metrics.y_scale);
     FT_Pos const underline = FT_MulFix(face->underline_position, face->size->metrics.y_scale);
     // FT_Pos const descender = FT_MulFix(face->descender, face->size->metrics.y_scale);
-    FT_Pos const lineHeight = FT_MulFix(face->height, face->size->metrics.y_scale);
     FT_Pos const baseline = FT_SCALE(ascender);
     FT_Pos const underline_y = baseline - FT_SCALE(underline); // You can adjust this slightly if needed
     //	if ((pViewText->flags & RF_USE_FONT_HEIGHT) == 0) {
@@ -326,16 +329,16 @@ Text_Print(struct ViewText const* pViewText,
     for (lpcString_t str = run->string, print = str, last = str;; last = str) {
       bool_t const eos = !*str;
       uint32_t const charcode = *str ? u8_readchar(&str) : ' ';
+      lineheight = MAX(lineheight, FT_MulFix(face->height, face->size->metrics.y_scale));
       if (isspace(charcode)) {
-        // first word print anyway
-        if (textwidth == 0) {
+        if (textwidth == 0) { // first word print anyway
           x += spaceWidth;
           textwidth += spaceWidth;
-          // first word print anyway
         } else if (textwidth + wordwidth + spaceWidth > pViewText->availableWidth * pViewText->scale) {
           textwidth = 0;
-          y += FT_SCALE(lineHeight);
+          y += FT_SCALE(lineheight);
           x = 0;
+          lineheight = 0;
           prevchar = 0;
           prev_glyph_index = 0;
         } else { // if (charcode != '\n') {
@@ -389,7 +392,7 @@ Text_Print(struct ViewText const* pViewText,
           break;
         } else if (charcode == '\n') {
           textwidth = 0;
-          y += FT_SCALE(lineHeight);
+          y += FT_SCALE(lineheight);
           x = -spaceWidth;
           prevchar = 0;
           prev_glyph_index = 0;
