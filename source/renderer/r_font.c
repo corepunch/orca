@@ -295,6 +295,9 @@ Text_Print(struct ViewText const* pViewText,
   FT_Pos lineheight = 0;
   FT_Pos baseline = 0;
   
+  // NOTE: Currently using uint8_t for Alpha8 texture format.
+  // If RGBA format (uint32_t) is needed in the future, add #ifdef here
+  // and adjust memmove/memset calls in the baseline shifting code below.
   byte_t* image_data = ZeroAlloc(textSize.width * textSize.height * sizeof(uint8_t));
   
   if (image_data == NULL)
