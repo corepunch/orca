@@ -209,6 +209,10 @@ T_GetSize(struct ViewText const* text,
     FT_Pos lineHeight = FT_MulFix(face->height, face->size->metrics.y_scale);
     textSize.height = MAX(textSize.height, (int)FT_SCALE(lineHeight));
 
+    // Reset glyph index when starting a new run to prevent incorrect kerning
+    // between glyphs from different fonts
+    prev_glyph_index = 0;
+
     for (lpcString_t str = run->string;; cursor++) {
       bool_t const eos = !*str;
       uint32_t const charcode = *str ? u8_readchar(&str) : ' ';
@@ -320,6 +324,10 @@ Text_Print(struct ViewText const* pViewText,
     if (x == INT_MIN) {
       x = -spaceWidth;
     }
+
+    // Reset glyph index when starting a new run to prevent incorrect kerning
+    // between glyphs from different fonts
+    prev_glyph_index = 0;
 
     for (lpcString_t str = run->string, print = str, last = str;; last = str) {
       bool_t const eos = !*str;
