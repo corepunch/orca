@@ -740,15 +740,15 @@
 		7810D2662D58B1B800DB632F /* filesystem */ = {
 			isa = PBXGroup;
 			children = (
-				782E9EE62E97EF6F009C3946 /* filesystem.h */,
 				782E9EE72E97EF6F009C3946 /* filesystem_export.c */,
-				782E9EE82E97EF6F009C3946 /* filesystem_properties.h */,
-				782E9EE52E97EE59009C3946 /* filesystem.xml */,
 				78B136F42AF3CC4E00AAAE53 /* filesystem.c */,
 				781FC4A52E894AC400571445 /* popen2.c */,
 				781FC4A72E8D7CB800571445 /* server.c */,
 				786BFC852AF7E97900216782 /* w_filesystem.c */,
+				782E9EE82E97EF6F009C3946 /* filesystem_properties.h */,
+				782E9EE62E97EF6F009C3946 /* filesystem.h */,
 				7810D30F2D58F7FA00DB632F /* fs_local.h */,
+				782E9EE52E97EE59009C3946 /* filesystem.xml */,
 			);
 			path = filesystem;
 			sourceTree = "<group>";

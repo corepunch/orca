@@ -341,7 +341,9 @@ Text_Print(struct ViewText const* pViewText,
           memmove(&image_data[dst_inv * textSize.width],
                   &image_data[src_inv * textSize.width],
                   num_rows * textSize.width * sizeof(FT_Pixel));
-          memset(&image_data[src_inv * textSize.width], 0,
+//          memset(&image_data[src_inv * textSize.width], 0,
+//                 baseline_shift * textSize.width * sizeof(FT_Pixel));
+          memset(&image_data[(dst_inv + num_rows) * textSize.width], 0,
                  baseline_shift * textSize.width * sizeof(FT_Pixel));
         }
       }
