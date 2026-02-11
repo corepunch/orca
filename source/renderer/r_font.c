@@ -529,16 +529,20 @@ Text_GetInfo(struct ViewText const* pViewText,
 
 HANDLER(FontFamily, Start) {
   if (*pFontFamily->Regular) {
-    pFontFamily->regular = Font_Load(pFontFamily->Regular, pFontFamily);
+    /*pFontFamily->regular = */
+    Font_Load(pFontFamily->Regular, pFontFamily);
   }
   if (*pFontFamily->Bold) {
-    pFontFamily->bold = Font_Load(pFontFamily->Bold, pFontFamily);
+    /*pFontFamily->bold = */
+    Font_Load(pFontFamily->Bold, pFontFamily);
   }
   if (*pFontFamily->Italic) {
-    pFontFamily->italic = Font_Load(pFontFamily->Italic, pFontFamily);
+    /*pFontFamily->italic = */
+    Font_Load(pFontFamily->Italic, pFontFamily);
   }
   if (*pFontFamily->BoldItalic) {
-    pFontFamily->bolditalic = Font_Load(pFontFamily->BoldItalic, pFontFamily);
+    /*pFontFamily->bolditalic = */
+    Font_Load(pFontFamily->BoldItalic, pFontFamily);
   }
   return TRUE;
 }
