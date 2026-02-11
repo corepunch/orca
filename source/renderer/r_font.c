@@ -132,7 +132,7 @@ Font_LoadFromMemory(void* buffer, int fileSize, struct font* font)
     return E_INVALIDARG;
   }
 
-  FONTSTYLE fs = FS_NORMAL;
+  FontStyle fs = FS_NORMAL;
 
   TT_OS2* os2 = (TT_OS2*)FT_Get_Sfnt_Table(face, ft_sfnt_os2);
   TT_Postscript* post = (TT_Postscript*)FT_Get_Sfnt_Table(face, ft_sfnt_post);
@@ -286,7 +286,7 @@ Text_Print(struct ViewText const* pViewText,
   textSize.width /= pViewText->scale;
   textSize.width *= pViewText->scale;
   
-  float spaceWidth = 0;
+  FT_Int spaceWidth = 0;
   FT_Int textwidth = 0;
   FT_Int wordwidth = 0;
   FT_Int prevchar = 0;
@@ -318,7 +318,7 @@ Text_Print(struct ViewText const* pViewText,
     //    textSize.height += FT_SCALE(lineHeight);
     //	}
     if (FT_Load_CharGlyph(face, ' ', FT_LOAD_DEFAULT)) {
-      spaceWidth = FT_SCALE(face->glyph->metrics.horiAdvance);
+      spaceWidth = (FT_Int)FT_SCALE(face->glyph->metrics.horiAdvance);
     }
     if (x == INT_MIN) {
       x = -spaceWidth;

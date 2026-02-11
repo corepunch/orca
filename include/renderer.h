@@ -440,19 +440,19 @@ typedef enum
   FS_ITALIC,
   FS_BOLD_ITALIC,
   FS_COUNT,
-} FONTSTYLE;
+} FontStyle;
 
 struct ViewTextRun
 {
   lpcString_t string;
-  struct font* font;
+  lpfont_t font;
+  FontStyle fontStyle;
   uint32_t fontSize;
-  FONTSTYLE fontStyle;
-  float letterSpacing;
-  float lineSpacing;
   uint32_t fixedCharacterWidth;
   uint32_t underlineWidth;
   uint32_t underlineOffset;
+  float letterSpacing;
+  float lineSpacing;
 };
 
 #define MAX_TEXT_RUNS 256
