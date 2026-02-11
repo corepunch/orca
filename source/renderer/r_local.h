@@ -58,7 +58,7 @@
 
 #define WINDOWS_TABLE "__windows"
 
-struct font;
+struct fontface;
 struct Texture;
 struct shader;
 struct model;
@@ -291,8 +291,8 @@ extern struct shader_desc shader_vertexcolor;
 extern struct shader_desc shader_error;
 
 // font
-struct font*
-Font_Load(lpcString_t);
+struct fontface*
+Font_Load(lpcString_t, lpFontFamily_t);
 
 // text
 struct Texture*
@@ -314,7 +314,7 @@ FT_Shutdown(void);
 
 // font
 HRESULT
-Font_Release(struct font*);
+Font_Release(struct fontface*);
 
 // texture
 HRESULT

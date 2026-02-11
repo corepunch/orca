@@ -7,10 +7,10 @@
 	.Offset=offsetof(struct CLASS, FIELD), \
 	.Flags=TYPE, ##__VA_ARGS__ }
 
-void luaX_pushfont(lua_State *L, lpcfont_t font) {
-	lua_pushlightuserdata(L, (lpfont_t)font);
+void luaX_pushfontface(lua_State *L, lpcfontface_t fontface) {
+	lua_pushlightuserdata(L, (lpfontface_t)fontface);
 }
-lpfont_t luaX_checkfont(lua_State *L, int idx) {
+lpfontface_t luaX_checkfontface(lua_State *L, int idx) {
 	return lua_touserdata(L, idx);
 }
 void luaX_pushtimeline(lua_State *L, lpctimeline_t timeline) {
@@ -660,6 +660,12 @@ LRESULT FontFamily_Destroy(lpObject_t, lpFontFamily_t, wParam_t, DestroyEventPtr
 static struct PropertyDesc const FontFamilyProperties[kFontFamilyNumProperties] = {
 	/* FontFamily.Regular */ DECL(0xe750f2b7, 0xb39a4ebe,
 	FontFamily, "Regular", Regular, kDataTypeFixed),
+	/* FontFamily.Bold */ DECL(0x45768d96, 0xb22930ed,
+	FontFamily, "Bold", Bold, kDataTypeFixed),
+	/* FontFamily.Italic */ DECL(0x8db0c08d, 0x1eb759ae,
+	FontFamily, "Italic", Italic, kDataTypeFixed),
+	/* FontFamily.BoldItalic */ DECL(0x6e1d4e1a, 0xb7a86f05,
+	FontFamily, "BoldItalic", BoldItalic, kDataTypeFixed),
 };
 static struct FontFamily FontFamilyDefaults = {0};
 LRESULT FontFamilyProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {

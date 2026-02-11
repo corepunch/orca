@@ -388,10 +388,19 @@
 	IsDisabled (true|false) #IMPLIED
 	StateManager CDATA #IMPLIED
 	Regular CDATA #IMPLIED
+	Bold CDATA #IMPLIED
+	Italic CDATA #IMPLIED
+	BoldItalic CDATA #IMPLIED
 ">
 <!ELEMENT FontFamily.Regular (#PCDATA | Binding)*>
 <!ATTLIST FontFamily.Regular Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % FontFamilyElements "FontFamily.Regular">
+<!ELEMENT FontFamily.Bold (#PCDATA | Binding)*>
+<!ATTLIST FontFamily.Bold Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT FontFamily.Italic (#PCDATA | Binding)*>
+<!ATTLIST FontFamily.Italic Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT FontFamily.BoldItalic (#PCDATA | Binding)*>
+<!ATTLIST FontFamily.BoldItalic Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % FontFamilyElements "FontFamily.Regular|FontFamily.Bold|FontFamily.Italic|FontFamily.BoldItalic">
 <!ELEMENT FontFamily EMPTY>
 <!ATTLIST FontFamily %FontFamilyAttribs;>
 <!ENTITY % TrajectoryAttribs "

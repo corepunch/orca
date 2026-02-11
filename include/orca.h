@@ -27,7 +27,6 @@ struct renderer;
 struct game;
 struct localization;
 struct uniform;
-struct font;
 struct WI_Buffer;
 struct ViewText;
 struct ViewEntity;

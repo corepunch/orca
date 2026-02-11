@@ -24,7 +24,7 @@
 
 struct Texture;
 struct shader;
-struct font;
+struct fontface;
 struct model;
 struct shape;
 struct user_data;
@@ -445,7 +445,7 @@ typedef enum
 struct ViewTextRun
 {
   lpcString_t string;
-  lpfont_t font;
+  lpcFontFamily_t fontFamily; // NOTE: must be second field for R_GetTextHash()
   FontStyle fontStyle;
   uint32_t fontSize;
   uint32_t fixedCharacterWidth;

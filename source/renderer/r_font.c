@@ -38,20 +38,15 @@ static char const trailingBytesForUTF8[256] = {
   2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5
 };
 
-typedef struct _FONTFACE
+struct fontface
 {
   FT_Face face;
   void* mem;
-}* PFONTFACE;
-
-struct font
-{
-  struct _FONTFACE faces[FS_COUNT];
 };
 
 static struct _FONTGLOBALS
 {
-  struct font* font;
+  FontFamily font;
   void* ft;
 } fg = { 0 };
 
@@ -83,44 +78,37 @@ static FT_UInt u8_readchar(lpcString_t* text)
 static FT_Face
 T_GetFontFace(struct ViewTextRun const* run)
 {
-  if (run->font) {
-    if (run->font->faces[run->fontStyle].face) {
-      return run->font->faces[run->fontStyle].face;
+  if (run->fontFamily) {
+    if ((&run->fontFamily->regular)[run->fontStyle]) {
+      return (&run->fontFamily->regular)[run->fontStyle]->face;
     }
     FOR_LOOP(i, FS_COUNT) {
-      if (run->font->faces[i].face) {
-        return run->font->faces[i].face;
+      if ((&run->fontFamily->regular)[i]) {
+        return (&run->fontFamily->regular)[i]->face;
       }
     }
   }
-  if (fg.font->faces[run->fontStyle].face) {
-    return fg.font->faces[run->fontStyle].face;
+  if ((&fg.font.regular)[run->fontStyle]) {
+    return (&fg.font.regular)[run->fontStyle]->face;
   }
-  return fg.font->faces[FS_NORMAL].face;
+  return fg.font.regular->face;
 }
 
 HRESULT
-Font_Release(struct font* font)
+Font_Release(struct fontface* font)
 {
-  if (!font) {
-    return S_OK;
-  }
-  FOR_LOOP(i, FS_COUNT)
-  {
-    if (font->faces[i].face) {
-      FT_Done_Face(font->faces[i].face);
-      free(font->faces[i].mem);
-    }
-  }
+  FT_Done_Face(font->face);
+  free(font->mem);
+  free(font);
   return S_OK;
 }
 
-static HRESULT
-Font_LoadFromMemory(void* buffer, int fileSize, struct font* font)
+static struct fontface*
+Font_LoadFromMemory(void* buffer, int fileSize, FontFamily_t* family)
 {
   FT_Face face;
   if (!fg.ft)
-    return E_NOINTERFACE;
+    return NULL;
 
   void* mem = ZeroAlloc(fileSize);
   memcpy(mem, buffer, fileSize);
@@ -129,7 +117,7 @@ Font_LoadFromMemory(void* buffer, int fileSize, struct font* font)
   if (FT_New_Memory_Face(fg.ft, mem, fileSize, 0, &face)) {
     FT_ERROR("FreeType2, unable to allocate new face");
     free(mem);
-    return E_INVALIDARG;
+    return NULL;
   }
 
   FontStyle fs = FS_NORMAL;
@@ -142,10 +130,13 @@ Font_LoadFromMemory(void* buffer, int fileSize, struct font* font)
   if (post && post->italicAngle != 0)
     fs += FS_ITALIC;
 
-  font->faces[fs].face = face;
-  font->faces[fs].mem = mem;
+  struct fontface *fontface = malloc(sizeof(struct fontface));
+  fontface->face = face;
+  fontface->mem = mem;
 
-  return NOERROR;
+  (&family->regular)[fs] = fontface;
+  
+  return fontface;
 }
 
 void
@@ -156,14 +147,17 @@ FT_Init(void)
   }
   //    fg.font = Font_LoadFromMemory((void *)Gudea_Bold_ttf,
   //    Gudea_Bold_ttf_len);
-  fg.font = ZeroAlloc(sizeof(struct font));
-  RegisterDefaultFont(fg.font);
+  RegisterDefaultFont(&fg.font);
 }
 
 void
 FT_Shutdown(void)
 {
-  Font_Release(fg.font);
+  SafeDelete(fg.font.regular, Font_Release);
+  SafeDelete(fg.font.bold, Font_Release);
+  SafeDelete(fg.font.italic, Font_Release);
+  SafeDelete(fg.font.bolditalic, Font_Release);
+
   FT_Done_FreeType(fg.ft);
   fg.ft = NULL;
 }
@@ -183,10 +177,10 @@ T_GetSize(struct ViewText const* text,
           struct rect* rcursor)
 {
   struct WI_Size textSize = { 0 };
-  FT_UInt textwidth = 0;
-  FT_UInt wordwidth = 0;
-  FT_UInt cursor = 0;
-  FT_UInt prev_glyph_index = 0;
+  FT_Int textwidth = 0;
+  FT_Int wordwidth = 0;
+  FT_Int cursor = 0;
+  FT_Int prev_glyph_index = 0;
   FT_Pos spaceWidth = 0;
   FT_Pos lineheight = 0;
 
@@ -206,10 +200,10 @@ T_GetSize(struct ViewText const* text,
     if (FT_Load_CharGlyph(face, ' ', FT_LOAD_DEFAULT)) {
       spaceWidth = (uint32_t)FT_SCALE(face->glyph->metrics.horiAdvance);
     }
-
     // Reset glyph index when starting a new run to prevent incorrect kerning
     // between glyphs from different fonts
     prev_glyph_index = 0;
+//    textwidth -= spaceWidth;
 
     for (lpcString_t str = run->string;; cursor++) {
       FT_Bool const eos = !*str;
@@ -223,6 +217,7 @@ T_GetSize(struct ViewText const* text,
         rcursor->width = 0;
         rcursor->height = FT_SCALE(lineheight);
       }
+      
       if (isspace(charcode)) {
         // if (eos) spaceWidth = 0;
         if (textwidth == 0) {
@@ -265,7 +260,7 @@ T_GetSize(struct ViewText const* text,
       }
     }
   }
-  return (struct WI_Size){textSize.width, textSize.height + (int)FT_SCALE(lineheight)};
+  return (struct WI_Size){MAX(0,(int)textSize.width), textSize.height + (int)FT_SCALE(lineheight)};
 }
 
 #define FT_Pixel uint8_t
@@ -290,8 +285,7 @@ Text_Print(struct ViewText const* pViewText,
   FT_Int textwidth = 0;
   FT_Int wordwidth = 0;
   FT_Int prevchar = 0;
-  FT_Int x = INT_MIN;
-  FT_Int y = 0;
+  FT_Int x = 0, y = 0;
   FT_UInt prev_glyph_index = 0;
   FT_Pos lineheight = 0;
   FT_Pos baseline = 0;
@@ -320,13 +314,11 @@ Text_Print(struct ViewText const* pViewText,
     if (FT_Load_CharGlyph(face, ' ', FT_LOAD_DEFAULT)) {
       spaceWidth = (FT_Int)FT_SCALE(face->glyph->metrics.horiAdvance);
     }
-    if (x == INT_MIN) {
-      x = -spaceWidth;
-    }
-
+    
     // Reset glyph index when starting a new run to prevent incorrect kerning
     // between glyphs from different fonts
     prev_glyph_index = 0;
+    x -= spaceWidth;
 
     for (lpcString_t str = run->string, print = str, last = str;; last = str) {
       FT_Bool const eos = !*str;
@@ -479,15 +471,14 @@ Text_Print(struct ViewText const* pViewText,
   }
 }
 
-struct font*
-Font_Load(lpcString_t szFileName)
+struct fontface*
+Font_Load(lpcString_t szFileName, lpFontFamily_t pFontFamily)
 {
   struct file* pFile = FS_LoadFile(szFileName);
   if (pFile) {
-    struct font* pFont = ZeroAlloc(sizeof(struct font));
-    Font_LoadFromMemory(pFile->data, pFile->size, pFont);
+    struct fontface *face = Font_LoadFromMemory(pFile->data, pFile->size, pFontFamily);
     FS_FreeFile(pFile);
-    return pFont;
+    return face;
   } else {
     return NULL;
   }
@@ -537,11 +528,25 @@ Text_GetInfo(struct ViewText const* pViewText,
 }
 
 HANDLER(FontFamily, Start) {
-  pFontFamily->font = Font_Load(pFontFamily->Regular);
+  if (*pFontFamily->Regular) {
+    pFontFamily->regular = Font_Load(pFontFamily->Regular, pFontFamily);
+  }
+  if (*pFontFamily->Bold) {
+    pFontFamily->bold = Font_Load(pFontFamily->Bold, pFontFamily);
+  }
+  if (*pFontFamily->Italic) {
+    pFontFamily->italic = Font_Load(pFontFamily->Italic, pFontFamily);
+  }
+  if (*pFontFamily->BoldItalic) {
+    pFontFamily->bolditalic = Font_Load(pFontFamily->BoldItalic, pFontFamily);
+  }
   return TRUE;
 }
 
 HANDLER(FontFamily, Destroy) {
-  Font_Release(pFontFamily->font);
+  SafeDelete(pFontFamily->regular, Font_Release);
+  SafeDelete(pFontFamily->bold, Font_Release);
+  SafeDelete(pFontFamily->italic, Font_Release);
+  SafeDelete(pFontFamily->bolditalic, Font_Release);
   return TRUE;
 }

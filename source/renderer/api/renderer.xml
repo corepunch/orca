@@ -1,5 +1,5 @@
 <module name="renderer" namespace="orca">
-  <resource type="font"/>
+  <resource type="fontface"/>
   <resource type="timeline"/>
   <resource type="shader"/>
   <resource type="model"/>
@@ -417,8 +417,14 @@
     <details>Loads and manages a TrueType font file for rendering text in the scene. Provides glyph data and metrics for text layout and rendering. May be extended in the future to support font families with variants (regular, bold, italic) similar to CSS font-family specifications.</details>
     <handles event="Start">Called when the mesh component is initialized. Used to load the mesh geometry from the specified source and set up rendering resources.</handles>
     <handles event="Destroy">Called when the mesh component is being destroyed. Used to clean up mesh data, release GPU buffers, and free associated resources.</handles>
-    <property name="Regular" type="fixed">Path or identifier to the TrueType font file (.ttf). Specifies the location of the font resource to load (e.g., file path, asset ID, or resource name).</property>
-    <field name="font" type="font" pointer="true">Internal pointer to the loaded font data.</field>
+    <property name="Regular" type="fixed">Path of the TrueType font file to be used as the regular font variant.</property>
+    <property name="Bold" type="fixed">Path of the TrueType font file to be used as the bold font variant.</property>
+    <property name="Italic" type="fixed">Path of the TrueType font file to be used as the italic font variant.</property>
+    <property name="BoldItalic" type="fixed">Path of the TrueType font file to be used as the bold italic font variant.</property>
+    <field name="regular" type="fontface" pointer="true">Internal pointer to the loaded font data.</field>
+    <field name="bold" type="fontface" pointer="true">Internal pointer to the loaded font data.</field>
+    <field name="italic" type="fontface" pointer="true">Internal pointer to the loaded font data.</field>
+    <field name="bolditalic" type="fontface" pointer="true">Internal pointer to the loaded font data.</field>
   </component>
 
   <component name="Trajectory">

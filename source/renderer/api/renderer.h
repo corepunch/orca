@@ -132,14 +132,14 @@ luaX_pushTimeline(lua_State *L, lpcTimeline_t Timeline);
 ORCA_API lpTimeline_t
 luaX_checkTimeline(lua_State *L, int idx);
 
-typedef struct font font_t, *lpfont_t;
-typedef struct font const cfont_t, *lpcfont_t;
-/// @brief Push font onto Lua stack.
+typedef struct fontface fontface_t, *lpfontface_t;
+typedef struct fontface const cfontface_t, *lpcfontface_t;
+/// @brief Push fontface onto Lua stack.
 ORCA_API void
-luaX_pushfont(lua_State *L, lpcfont_t font);
-/// @brief Check font form Lua stack at index.
-ORCA_API lpfont_t
-luaX_checkfont(lua_State *L, int idx);
+luaX_pushfontface(lua_State *L, lpcfontface_t fontface);
+/// @brief Check fontface form Lua stack at index.
+ORCA_API lpfontface_t
+luaX_checkfontface(lua_State *L, int idx);
 
 typedef struct timeline timeline_t, *lptimeline_t;
 typedef struct timeline const ctimeline_t, *lpctimeline_t;
@@ -495,8 +495,14 @@ typedef struct FontFamily FontFamily, *FontFamilyPtr;
 typedef struct FontFamily const *FontFamilyCPtr;
 /// @brief TrueType font resource for text rendering
 struct FontFamily {
-	fixedString_t Regular; /// Path or identifier to the TrueType font file (.ttf). Specifies the location of the font resource to load (e.g., file path, asset ID, or resource name).
-	lpfont_t font; /// Internal pointer to the loaded font data.
+	fixedString_t Regular; /// Path of the TrueType font file to be used as the regular font variant.
+	fixedString_t Bold; /// Path of the TrueType font file to be used as the bold font variant.
+	fixedString_t Italic; /// Path of the TrueType font file to be used as the italic font variant.
+	fixedString_t BoldItalic; /// Path of the TrueType font file to be used as the bold italic font variant.
+	lpfontface_t regular; /// Internal pointer to the loaded font data.
+	lpfontface_t bold; /// Internal pointer to the loaded font data.
+	lpfontface_t italic; /// Internal pointer to the loaded font data.
+	lpfontface_t bolditalic; /// Internal pointer to the loaded font data.
 };
 
 typedef struct Trajectory Trajectory, *TrajectoryPtr;

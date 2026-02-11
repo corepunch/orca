@@ -1098,10 +1098,22 @@
 </span></div></div><div id="FontFamily" class="class" data-name="FontFamily" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
 </div><h1 class="header">FontFamily
 </h1><div class="abstract">TrueType font resource for text rendering
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">renderer.FontFamily</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Loads and manages a TrueType font file for rendering text in the scene. Provides glyph data and metrics for text layout and rendering. May be extended in the future to support font families with variants (regular, bold, italic) similar to CSS font-family specifications.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>resource </span><span class="identifier">font</span>: <span>font</span></code></div>
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">renderer.FontFamily</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Loads and manages a TrueType font file for rendering text in the scene. Provides glyph data and metrics for text layout and rendering. May be extended in the future to support font families with variants (regular, bold, italic) similar to CSS font-family specifications.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>resource </span><span class="identifier">regular</span>: <span>fontface</span></code></div>
+<div class="small-abstract"><span>Internal pointer to the loaded font data.
+</span></div><div class="topic"><code class="decorator"><span>resource </span><span class="identifier">bold</span>: <span>fontface</span></code></div>
+<div class="small-abstract"><span>Internal pointer to the loaded font data.
+</span></div><div class="topic"><code class="decorator"><span>resource </span><span class="identifier">italic</span>: <span>fontface</span></code></div>
+<div class="small-abstract"><span>Internal pointer to the loaded font data.
+</span></div><div class="topic"><code class="decorator"><span>resource </span><span class="identifier">bolditalic</span>: <span>fontface</span></code></div>
 <div class="small-abstract"><span>Internal pointer to the loaded font data.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Regular</span>: <span>fixed</span></code></div>
-<div class="small-abstract"><span>Path or identifier to the TrueType font file (.ttf). Specifies the location of the font resource to load (e.g., file path, asset ID, or resource name).
+<div class="small-abstract"><span>Path of the TrueType font file to be used as the regular font variant.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Bold</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Path of the TrueType font file to be used as the bold font variant.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Italic</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Path of the TrueType font file to be used as the italic font variant.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BoldItalic</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Path of the TrueType font file to be used as the bold italic font variant.
 </span></div></div><div id="Trajectory" class="class" data-name="Trajectory" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
 </div><h1 class="header">Trajectory
 </h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">renderer.Trajectory</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code></div><div id="Timeline" class="class" data-name="Timeline" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component

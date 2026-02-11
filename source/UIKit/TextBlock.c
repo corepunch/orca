@@ -108,7 +108,7 @@ _MakeViewTextRun(lpObject_t hObject, TextRunPtr pTextRun, lpcString_t szText)
   }
   struct ViewTextRun view = {
     .string = szText,
-    .font = font.Family ? font.Family->font : NULL,
+    .fontFamily = font.Family,
     .fontSize = font.Size,
     .letterSpacing = pTextRun->LetterSpacing,
     .fixedCharacterWidth = pTextRun->FixedCharacterWidth,

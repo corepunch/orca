@@ -221,10 +221,16 @@ enum MeshProperties {
 #define FontFamily_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_FontFamily,sizeof(struct FontFamily),_N)
 enum FontFamilyProperties {
 	kFontFamilyRegular,
+	kFontFamilyBold,
+	kFontFamilyItalic,
+	kFontFamilyBoldItalic,
 	kFontFamilyNumProperties
 };
 
 #define ID_FontFamily_Regular 0xb39a4ebe
+#define ID_FontFamily_Bold 0xb22930ed
+#define ID_FontFamily_Italic 0x1eb759ae
+#define ID_FontFamily_BoldItalic 0xb7a86f05
 #define ID_Trajectory 0x4cf7cbf8
 #define GetTrajectory(_P)((struct Trajectory*)((_P)?OBJ_GetComponent(_P,ID_Trajectory):NULL))
 #define Trajectory_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_Trajectory,sizeof(struct Trajectory),_N)
