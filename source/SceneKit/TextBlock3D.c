@@ -56,11 +56,12 @@ HANDLER(TextBlock3D, Render)
 #endif
   
   TextRunPtr pTextRun = GetTextRun(hObject);
+  TextBlockConceptPtr pTextBlock = GetTextBlockConcept(hObject);
   OBJ_SendMessageW(hObject, kEventMakeText, 0, &(MAKETEXTSTRUCT){
-                     .text = &pTextRun->_text,
+                     .text = pTextBlock->_text,
                      .availableSpace = 512
                    });
-  Text_GetInfo(&pTextRun->_text, &pTextRun->_textinfo);
+  Text_GetInfo(pTextBlock->_text, &pTextRun->_textinfo);
   
   float w = pTextRun->_textinfo.txWidth;
   float h = pTextRun->_textinfo.txHeight;
@@ -70,7 +71,7 @@ HANDLER(TextBlock3D, Render)
     .texture = 0,
     .radius = (struct vec4){0},
     .rect = (struct rect){-w/2,-h/2,w,h},
-    .text = &pTextRun->_text,
+    .text = pTextBlock->_text,
     .opacity = GetNode3D(hObject)->_opacity,
     .matrix = GetNode3D(hObject)->Matrix,
     .color = {1,1,1,1},

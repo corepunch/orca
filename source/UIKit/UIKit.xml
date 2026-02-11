@@ -410,7 +410,6 @@
     <property name="FixedCharacterWidth" type="float">Forces a fixed width per character (monospace effect).</property>
     <property name="RemoveSideBearingsProperty" type="bool">Removes side bearings (spacing) defined by the font.</property>
     <field name="_size" type="uiLabelSize">Internal text size metrics.</field>
-    <field name="_text" type="ViewText">Internal view representation of the text.</field>
     <field name="_textinfo" type="text_info">Internal text information structure.</field>
     <field name="_font" type="FontShorthand" pointer="true">Reference to the font shorthand configuration.</field>
   </component>
@@ -420,6 +419,7 @@
     <details>This class is not instantiated directly. Instead, it provides the common properties and functionality for text rendering, used internally by higher-level components such as 2D and 3D text nodes. The concept encapsulates text content, resources, formatting options, alignment, and font configuration.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <handles event="Create"/>
+    <handles event="Destroy"/>
     <handles event="MakeText"/>
     <property name="TextResourceID" type="fixed">Resource identifier for localized text lookup.</property>
     <property name="TextResourceConfiguration" type="fixed">Configuration key used when resolving text resources.</property>
@@ -434,6 +434,7 @@
     <property name="TextVerticalAlignment" type="TextVerticalAlignment">Vertical alignment of the text within its bounds.</property>
     <field name="_steps" type="uiLabelSteps">Internal step-based rendering parameters.</field>
     <field name="_node" type="Node" pointer="true">Reference to the owning node using this concept.</field>
+    <field name="_text" type="ViewText" pointer="true">Internal view representation of the text.</field>
   </component>
 
   <component name="Node2D" parent="Node" children="Node2D">

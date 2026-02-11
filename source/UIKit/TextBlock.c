@@ -91,14 +91,13 @@ _GetTextBlockText(lpObject_t hObject,
 }
 
 static struct ViewTextRun
-_MakeViewTextRun(lpObject_t hObject, TextRunPtr pTextRun, lpcString_t szText)
+_MakeViewTextRun(lpObject_t hObject, TextRun_t text, lpcString_t szText)
 {
-  struct FontShorthand font = pTextRun->Font;
   for (lpObject_t node = hObject; node; node = OBJ_GetParent(node)) {
     lpProperty_t plist = OBJ_GetProperties(node);
     lpProperty_t p = PROP_FindByLongID(plist, ID_TextRun_FontSize);
     if (p) {
-      font.Size = *(float const *)PROP_GetValue(p);
+      text.Font.Size = *(float const *)PROP_GetValue(p);
       break;
     }
 //    if (Node_GetProperty(node, kNodeFontSize)) {
@@ -108,18 +107,18 @@ _MakeViewTextRun(lpObject_t hObject, TextRunPtr pTextRun, lpcString_t szText)
   }
   struct ViewTextRun view = {
     .string = szText,
-    .fontFamily = font.Family,
-    .fontSize = font.Size,
-    .letterSpacing = pTextRun->LetterSpacing,
-    .fixedCharacterWidth = pTextRun->FixedCharacterWidth,
-    .underlineWidth = pTextRun->Underline.Width,
-    .underlineOffset = pTextRun->Underline.Offset,
+    .fontFamily = text.Font.Family,
+    .fontSize = text.Font.Size,
+    .letterSpacing = text.LetterSpacing,
+    .fixedCharacterWidth = text.FixedCharacterWidth,
+    .underlineWidth = text.Underline.Width,
+    .underlineOffset = text.Underline.Offset,
     .fontStyle = 0,
   };
-  if (font.Weight == kFontWeightBold) {
+  if (text.Font.Weight == kFontWeightBold) {
     view.fontStyle += FS_BOLD;
   }
-  if (font.Style == kFontStyleItalic) {
+  if (text.Font.Style == kFontStyleItalic) {
     view.fontStyle += FS_ITALIC;
   }
   return view;
@@ -130,13 +129,28 @@ HANDLER(TextBlockConcept, MakeText)
   TextRunPtr pTextRun = GetTextRun(hObject);
   struct ViewText* pViewText = pMakeText->text;
 //  lpcString_t szTextContent = OBJ_GetTextContent(hObject);
-  pViewText->run[0] = _MakeViewTextRun(hObject, pTextRun, _GetTextBlockText(hObject, pTextBlockConcept, pTextRun));
+  pViewText->run[0] = _MakeViewTextRun(hObject, *pTextRun, _GetTextBlockText(hObject, pTextBlockConcept, pTextRun));
   pViewText->numTextRuns = 1;
   FOR_EACH_OBJECT(run, hObject) {
     TextRunPtr tr = GetTextRun(run);
     if (tr && pViewText->numTextRuns < MAX_TEXT_RUNS) {
       lpcString_t str = *tr->Text ? tr->Text : OBJ_GetTextContent(run);
-      pViewText->run[pViewText->numTextRuns++] = _MakeViewTextRun(run, tr, str);
+      TextRun_t base = *pTextRun;
+      if (TextRun_GetProperty(run, kTextRunFont)) base.Font = tr->Font;
+      if (TextRun_GetProperty(run, kTextRunFontWeight)) base.Font.Weight = tr->Font.Weight;
+      if (TextRun_GetProperty(run, kTextRunFontStyle)) base.Font.Style = tr->Font.Style;
+      if (TextRun_GetProperty(run, kTextRunFontSize)) base.Font.Size = tr->Font.Size;
+      if (TextRun_GetProperty(run, kTextRunFontFamily)) base.Font.Family = tr->Font.Family;
+      if (TextRun_GetProperty(run, kTextRunUnderline)) base.Underline = tr->Underline;
+      if (TextRun_GetProperty(run, kTextRunUnderlineOffset)) base.Underline.Offset = tr->Underline.Offset;
+      if (TextRun_GetProperty(run, kTextRunUnderlineWidth)) base.Underline.Width = tr->Underline.Width;
+      if (TextRun_GetProperty(run, kTextRunUnderlineColor)) base.Underline.Color = tr->Underline.Color;
+      if (TextRun_GetProperty(run, kTextRunLetterSpacing)) base.LetterSpacing = tr->LetterSpacing;
+      if (TextRun_GetProperty(run, kTextRunLineHeight)) base.LineHeight = tr->LineHeight;
+      if (TextRun_GetProperty(run, kTextRunCharacterSpacing)) base.CharacterSpacing = tr->CharacterSpacing;
+      if (TextRun_GetProperty(run, kTextRunFixedCharacterWidth)) base.FixedCharacterWidth = tr->FixedCharacterWidth;
+      if (TextRun_GetProperty(run, kTextRunRemoveSideBearingsProperty)) base.RemoveSideBearingsProperty = tr->RemoveSideBearingsProperty;
+      pViewText->run[pViewText->numTextRuns++] = _MakeViewTextRun(run, base, str);
     }
   }
   pViewText->flags = pTextBlockConcept->UseFullFontHeight ? RF_USE_FONT_HEIGHT : 0;
@@ -149,6 +163,7 @@ HANDLER(TextBlockConcept, MakeText)
 HANDLER(TextBlock, UpdateLayout)
 {
   TextRunPtr output = GetTextRun(hObject);
+  TextBlockConceptPtr textblock = GetTextBlockConcept(hObject);
 
   //	if (!is_updated(hObject, STEP_AXIS_X + pContentSize->axis) && *target
   //!=
@@ -158,10 +173,10 @@ HANDLER(TextBlock, UpdateLayout)
 
   float padding = TOTAL_PADDING(GetNode2D(hObject), kDirectionHorizontal);
   OBJ_SendMessageW(hObject, kEventMakeText, 0, &(MAKETEXTSTRUCT){
-                     .text = &output->_text,
+                     .text = textblock->_text,
                      .availableSpace = pUpdateLayout->Width - padding
                    });
-  Text_GetInfo(&output->_text, &output->_textinfo);
+  Text_GetInfo(textblock->_text, &output->_textinfo);
 
   output->_size[0] = output->_textinfo.txWidth + TOTAL_PADDING(pTextBlock->_node2D, 0);
   output->_size[1] = output->_textinfo.txHeight + TOTAL_PADDING(pTextBlock->_node2D, 1);
@@ -216,7 +231,7 @@ HANDLER(TextBlock, DrawBrush)
   TextBlockConceptPtr text = GetTextBlockConcept(hObject);
   TextRunPtr run = GetTextRun(hObject);
 
-  if (text->PlaceholderText == run->_text.run[0].string && pDrawBrush->foreground) {
+  if (text->PlaceholderText == text->_text->run[0].string && pDrawBrush->foreground) {
     static struct BrushShorthand zero = { 0 };
     if (memcmp(&text->Placeholder, &zero, sizeof(struct BrushShorthand))) {
       pDrawBrush->brush = &text->Placeholder;
@@ -231,7 +246,7 @@ HANDLER(TextBlock, DrawBrush)
     entity.rect = pTextBlock->_node2D->_rect;
 //    TextBlockConceptPtr label = GetTextBlockConcept(hObject);
 //    entity.rect = mesh_rect(pTextBlock->_node2D, label, &label->_textinfo);
-    entity.text = &run->_text;
+    entity.text = text->_text;
     lpProperty_t hProp = TextRun_GetProperty(hObject, kTextRunText);
     if (*text->TextResourceID && !PROP_HasProgram(hProp)) {
       Loc_GetString(text->TextResourceID, LOC_TEXT);
@@ -263,5 +278,12 @@ HANDLER(TextBlock, Create)
 HANDLER(TextBlockConcept, Create)
 {
   pTextBlockConcept->_node = GetNode(hObject);
+  pTextBlockConcept->_text = ZeroAlloc(sizeof(struct ViewText) + sizeof(struct ViewTextRun) * MAX_TEXT_RUNS);
+  return FALSE;
+}
+
+HANDLER(TextBlockConcept, Destroy)
+{
+  SafeDelete(pTextBlockConcept->_text, free);
   return FALSE;
 }

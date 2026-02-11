@@ -459,12 +459,12 @@ struct ViewTextRun
 
 struct ViewText
 {
-  struct ViewTextRun run[MAX_TEXT_RUNS];
   uint32_t flags;
   uint32_t availableWidth;
   uint32_t cursor;
   uint32_t numTextRuns;
   float scale;
+  struct ViewTextRun run[];
 };
 
 // typedef struct screen_rect {

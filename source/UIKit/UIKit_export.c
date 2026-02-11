@@ -1578,6 +1578,7 @@ ORCA_API struct ClassDesc _TextRun = {
 	.NumProperties = kTextRunNumProperties,
 };
 LRESULT TextBlockConcept_Create(lpObject_t, lpTextBlockConcept_t, wParam_t, CreateEventPtr);
+LRESULT TextBlockConcept_Destroy(lpObject_t, lpTextBlockConcept_t, wParam_t, DestroyEventPtr);
 LRESULT TextBlockConcept_MakeText(lpObject_t, lpTextBlockConcept_t, wParam_t, MakeTextEventPtr);
 static struct PropertyDesc const TextBlockConceptProperties[kTextBlockConceptNumProperties] = {
 	/* TextBlockConcept.TextResourceID */ DECL(0x43c114fb, 0x7617ef4f,
@@ -1615,6 +1616,8 @@ LRESULT TextBlockConceptProc(lpObject_t object, void* cmp, uint32_t message, wPa
 	switch (message) {
 		case 0x990de47d: // Create
 			return TextBlockConcept_Create(object, cmp, wparm, lparm);
+		case 0x4d76a4e5: // Destroy
+			return TextBlockConcept_Destroy(object, cmp, wparm, lparm);
 		case 0x73a47798: // MakeText
 			return TextBlockConcept_MakeText(object, cmp, wparm, lparm);
 }

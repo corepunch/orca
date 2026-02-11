@@ -779,7 +779,6 @@ struct TextRun {
 	float FixedCharacterWidth; /// Forces a fixed width per character (monospace effect).
 	bool_t RemoveSideBearingsProperty; /// Removes side bearings (spacing) defined by the font.
 	uiLabelSize_t _size; /// Internal text size metrics.
-	ViewText_t _text; /// Internal view representation of the text.
 	text_info_t _textinfo; /// Internal text information structure.
 	lpFontShorthand_t _font; /// Reference to the font shorthand configuration.
 };
@@ -800,6 +799,7 @@ struct TextBlockConcept {
 	eTextVerticalAlignment_t TextVerticalAlignment; /// Vertical alignment of the text within its bounds.
 	uiLabelSteps_t _steps; /// Internal step-based rendering parameters.
 	lpNode_t _node; /// Reference to the owning node using this concept.
+	lpViewText_t _text; /// Internal view representation of the text.
 };
 
 typedef struct Node2D Node2D, *Node2DPtr;

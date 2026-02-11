@@ -1690,8 +1690,6 @@
 </h1><div class="abstract">Shared concept for text rendering in 2D and 3D nodes.
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.TextRun</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">This class is not instantiated directly. Instead, it provides the common properties and functionality for text rendering, used internally by higher-level components such as 2D and 3D text nodes. The concept encapsulates text content, resources, formatting options, alignment, and font configuration.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_size</span>: <span>uiLabelSize</span></code></div>
 <div class="small-abstract"><span>Internal text size metrics.
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_text</span>: <span>ViewText</span></code></div>
-<div class="small-abstract"><span>Internal view representation of the text.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_textinfo</span>: <span>text_info</span></code></div>
 <div class="small-abstract"><span>Internal text information structure.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_font</span>: <a class="type-identifier-link" href="#FontShorthand">FontShorthand</a></code></div>
@@ -1733,6 +1731,8 @@
 <div class="small-abstract"><span>Internal step-based rendering parameters.
 </span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">_node</span>: <a class="type-identifier-link" href="#Node">Node</a></code></div>
 <div class="small-abstract"><span>Reference to the owning node using this concept.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_text</span>: <span>ViewText</span></code></div>
+<div class="small-abstract"><span>Internal view representation of the text.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">TextResourceID</span>: <span>fixed</span></code></div>
 <div class="small-abstract"><span>Resource identifier for localized text lookup.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">TextResourceConfiguration</span>: <span>fixed</span></code></div>
