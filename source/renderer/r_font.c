@@ -213,7 +213,7 @@ T_GetSize(struct ViewText const* text,
 
     for (lpcString_t str = run->string;; cursor++) {
       FT_Bool const eos = !*str;
-      FT_UInt const charcode = *str ? u8_readchar(&str) : ' ';
+      FT_UInt const charcode = *str ? u8_readchar(&str) : 0;
 
       lineheight = MAX(lineheight, FT_MulFix(face->height, face->size->metrics.y_scale));
 
@@ -223,6 +223,14 @@ T_GetSize(struct ViewText const* text,
         rcursor->width = 0;
         rcursor->height = FT_SCALE(lineheight);
       }
+      
+      if (eos) {
+        textwidth += wordwidth;
+        wordwidth = 0;
+        textSize.width = MAX(textSize.width, textwidth);
+        break;
+      }
+      
       if (isspace(charcode)) {
         // if (eos) spaceWidth = 0;
         if (textwidth == 0) {
@@ -240,9 +248,7 @@ T_GetSize(struct ViewText const* text,
         textwidth += wordwidth;
         wordwidth = 0;
         textSize.width = MAX(textSize.width, textwidth);
-        if (eos) {
-          break;
-        } else if (charcode == '\n') {
+        if (charcode == '\n') {
           textwidth = 0;
           prev_glyph_index = 0;
           textSize.height += /*text->lineSpacing **/ FT_SCALE(lineheight);
@@ -290,7 +296,7 @@ Text_Print(struct ViewText const* pViewText,
   FT_Int textwidth = 0;
   FT_Int wordwidth = 0;
   FT_Int prevchar = 0;
-  FT_Int x = INT_MIN;
+  FT_Int x = 0;
   FT_Int y = 0;
   FT_UInt prev_glyph_index = 0;
   FT_Pos lineheight = 0;
@@ -320,9 +326,6 @@ Text_Print(struct ViewText const* pViewText,
     if (FT_Load_CharGlyph(face, ' ', FT_LOAD_DEFAULT)) {
       spaceWidth = (FT_Int)FT_SCALE(face->glyph->metrics.horiAdvance);
     }
-    if (x == INT_MIN) {
-      x = -spaceWidth;
-    }
 
     // Reset glyph index when starting a new run to prevent incorrect kerning
     // between glyphs from different fonts
@@ -330,7 +333,7 @@ Text_Print(struct ViewText const* pViewText,
 
     for (lpcString_t str = run->string, print = str, last = str;; last = str) {
       FT_Bool const eos = !*str;
-      FT_UInt const charcode = *str ? u8_readchar(&str) : ' ';
+      FT_UInt const charcode = *str ? u8_readchar(&str) : 0;
       // adjust existing baseline
       if (x > 0 && FT_SCALE(ascender) > baseline) {
         FT_Pos baseline_shift = FT_SCALE(ascender) - baseline;
@@ -349,6 +352,57 @@ Text_Print(struct ViewText const* pViewText,
       }
       lineheight = MAX(lineheight, FT_MulFix(face->height, face->size->metrics.y_scale));
       baseline = MAX(baseline, FT_SCALE(ascender));
+      
+      if (eos) {
+        // Print accumulated word at end of run
+        while (print < last) {
+          int ch = u8_readchar(&print);
+          if (!FT_Load_CharGlyph(face, ch, FT_LOAD_DEFAULT))
+            continue;
+          FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
+          FT_Glyph_Metrics* metrics = &face->glyph->metrics;
+          FT_Bitmap* bitmap = &face->glyph->bitmap;
+          FT_Pos advance = FT_SCALE(metrics->horiAdvance);
+          FT_Pos x_off = FT_SCALE(metrics->horiBearingX);
+          FT_Pos y_off = baseline - FT_SCALE(metrics->horiBearingY);
+          FT_UInt glyph_index = FT_Get_Char_Index(face, ch);
+          if (prev_glyph_index && glyph_index) {
+            FT_Vector kerning;
+            if (FT_Get_Kerning(face, prev_glyph_index, glyph_index, FT_KERNING_DEFAULT, &kerning) == 0) {
+              x += FT_SCALE(kerning.x);
+            }
+          }
+          prev_glyph_index = glyph_index;
+          
+          for (int i = 0; i < (int)bitmap->rows; i++) {
+            long row = y + i + y_off;
+            for (int j = 0; j < (int)bitmap->width; j++) {
+              float p = bitmap->buffer[i * bitmap->pitch + j];
+              long column = x + j + x_off;
+              if (row >= textSize.height || row < 0)
+                continue;
+              if (column >= textSize.width || column < 0)
+                continue;
+              long inv = textSize.height - row - 1;
+              image_data[column + inv * textSize.width] = p;
+            }
+          }
+          
+          for (long i = 0; i < run->underlineWidth * pViewText->scale; i++) {
+            for (long j = prevchar; j < x + x_off + bitmap->width; j++) {
+              long row = baseline - FT_SCALE(underline) + i;
+              long inv = textSize.height - row - 1;
+              image_data[j + inv * textSize.width] = 255;
+            }
+          }
+          prevchar = (int)(x + x_off + bitmap->width);
+          x += advance;
+        }
+        textwidth += wordwidth;
+        wordwidth = 0;
+        break;
+      }
+      
       if (isspace(charcode)) {
         if (textwidth == 0) { // first word print anyway
           x += spaceWidth;
@@ -408,12 +462,10 @@ Text_Print(struct ViewText const* pViewText,
           prevchar = (int)(x + x_off + bitmap->width);
           x += advance;
         }
-        if (eos) {
-          break;
-        } else if (charcode == '\n') {
+        if (charcode == '\n') {
           textwidth = 0;
           y += FT_SCALE(lineheight);
-          x = -spaceWidth;
+          x = 0;
           prevchar = 0;
           prev_glyph_index = 0;
           print = str;
