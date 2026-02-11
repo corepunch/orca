@@ -206,6 +206,8 @@ T_GetSize(struct ViewText const* text,
 //    textwidth -= spaceWidth;
 
     for (lpcString_t str = run->string;; cursor++) {
+      if (!strncmp(str, "<u>", 3)) {str+=3;continue;}
+      if (!strncmp(str, "</u>", 4)) {str+=4;continue;}
       FT_Bool const eos = !*str;
       FT_UInt const charcode = *str ? u8_readchar(&str) : ' ';
 
@@ -265,6 +267,19 @@ T_GetSize(struct ViewText const* text,
 
 #define FT_Pixel uint8_t
 
+static void write_char(FT_Bitmap *bitmap, uint8_t *image_data,
+                       const struct WI_Size *textSize, FT_Pos x, FT_Pos y) {
+  for (FT_Pos i = 0, row = y; i < bitmap->rows; i++, row++) {
+    for (FT_Pos j = 0, column = x; j < (int)bitmap->width; j++, column++) {
+      uint8_t p = bitmap->buffer[i * bitmap->pitch + j];
+      if (row >= textSize->height || row < 0) continue;
+      if (column >= textSize->width || column < 0) continue;
+      FT_Pixel *pix = image_data + column + (textSize->height - row - 1) * textSize->width;
+      *pix = MAX(*pix, p);
+    }
+  }
+}
+
 HRESULT
 Text_Print(struct ViewText const* pViewText,
            struct Texture** pTexture,
@@ -289,6 +304,7 @@ Text_Print(struct ViewText const* pViewText,
   FT_UInt prev_glyph_index = 0;
   FT_Pos lineheight = 0;
   FT_Pos baseline = 0;
+  FT_Int ul = 0;
   
   FT_Pixel* image_data = ZeroAlloc(textSize.width * textSize.height * sizeof(FT_Pixel));
   
@@ -321,6 +337,8 @@ Text_Print(struct ViewText const* pViewText,
     x -= spaceWidth;
 
     for (lpcString_t str = run->string, print = str, last = str;; last = str) {
+      if (!strncmp(str, "<u>", 3)) {str+=3;continue;}
+      if (!strncmp(str, "</u>", 4)) {str+=4;continue;}
       FT_Bool const eos = !*str;
       FT_UInt const charcode = *str ? u8_readchar(&str) : ' ';
       // adjust existing baseline
@@ -358,6 +376,8 @@ Text_Print(struct ViewText const* pViewText,
           textwidth += spaceWidth;
         }
         while (print < last) {
+          if (!strncmp(print, "<u>", 3)) {print+=3;ul++;continue;}
+          if (!strncmp(print, "</u>", 4)) {print+=4;ul--;continue;}
           int ch = u8_readchar(&print);
           if (!FT_Load_CharGlyph(face, ch, FT_LOAD_DEFAULT))
             continue;
@@ -376,23 +396,11 @@ Text_Print(struct ViewText const* pViewText,
           }
           prev_glyph_index = glyph_index;
           
-          for (int i = 0; i < (int)bitmap->rows; i++) {
-            long row = y + i + y_off;
-            for (int j = 0; j < (int)bitmap->width; j++) {
-              float p = bitmap->buffer[i * bitmap->pitch + j];
-              long column = x + j + x_off;
-              if (row >= textSize.height || row < 0)
-                continue;
-              if (column >= textSize.width || column < 0)
-                continue;
-              long inv = textSize.height - row - 1;
-              image_data[column + inv * textSize.width] = p;
-            }
-          }
-          
-          for (long i = 0; i < run->underlineWidth * pViewText->scale; i++) {
+          write_char(bitmap, image_data, &textSize, x + x_off, y + y_off);
+
+          for (long i = 0; i < MAX(ul?1:0, run->underlineWidth) * pViewText->scale; i++) {
             for (long j = prevchar; j < x + x_off + bitmap->width; j++) {
-              long row = baseline - FT_SCALE(underline) + i;
+              long row = baseline - FT_SCALE(underline) + i + y;
               long inv = textSize.height - row - 1;
               image_data[j + inv * textSize.width] = 255;
             }
