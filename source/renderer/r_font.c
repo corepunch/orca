@@ -232,26 +232,27 @@ T_GetSize(struct ViewText const* text,
       }
       
       if (isspace(charcode)) {
-        // if (eos) spaceWidth = 0;
-        if (textwidth == 0) {
-          textwidth += spaceWidth;
-          // first word print anyway
-        } else if (textwidth + wordwidth + spaceWidth > text->availableWidth * text->scale) {
-          textSize.height += /*text->lineSpacing **/ FT_SCALE(lineheight);
-          textSize.width = MAX(textSize.width, textwidth);
-          textwidth = 0;
-          lineheight = FT_MulFix(face->height, face->size->metrics.y_scale);
-          prev_glyph_index = 0;
-        } else { // if (charcode != '\n') {
-          textwidth += spaceWidth;
-        }
+        // Add the completed word first
         textwidth += wordwidth;
         wordwidth = 0;
         textSize.width = MAX(textSize.width, textwidth);
+        
+        // Then handle the space we just encountered
         if (charcode == '\n') {
           textwidth = 0;
           prev_glyph_index = 0;
           textSize.height += /*text->lineSpacing **/ FT_SCALE(lineheight);
+        } else {
+          // Check if adding space would cause wrapping
+          if (textwidth > 0 && textwidth + spaceWidth > text->availableWidth * text->scale) {
+            textSize.height += /*text->lineSpacing **/ FT_SCALE(lineheight);
+            textSize.width = MAX(textSize.width, textwidth);
+            textwidth = 0;
+            lineheight = FT_MulFix(face->height, face->size->metrics.y_scale);
+            prev_glyph_index = 0;
+          } else {
+            textwidth += spaceWidth;
+          }
         }
       } else if (FT_Load_CharGlyph(face, charcode, FT_LOAD_DEFAULT)) {
         FT_UInt glyph_index = FT_Get_Char_Index(face, charcode);
@@ -404,21 +405,7 @@ Text_Print(struct ViewText const* pViewText,
       }
       
       if (isspace(charcode)) {
-        if (textwidth == 0) { // first word print anyway
-          x += spaceWidth;
-          textwidth += spaceWidth;
-        } else if (textwidth + wordwidth + spaceWidth > pViewText->availableWidth * pViewText->scale) {
-          textwidth = 0;
-          y += FT_SCALE(lineheight);
-          x = 0;
-          lineheight = FT_MulFix(face->height, face->size->metrics.y_scale);
-          baseline = FT_SCALE(ascender);
-          prevchar = 0;
-          prev_glyph_index = 0;
-        } else { // if (charcode != '\n') {
-          x += spaceWidth;
-          textwidth += spaceWidth;
-        }
+        // First, print the accumulated word
         while (print < last) {
           int ch = u8_readchar(&print);
           if (!FT_Load_CharGlyph(face, ch, FT_LOAD_DEFAULT))
@@ -462,6 +449,12 @@ Text_Print(struct ViewText const* pViewText,
           prevchar = (int)(x + x_off + bitmap->width);
           x += advance;
         }
+        
+        // Add the word width to textwidth
+        textwidth += wordwidth;
+        wordwidth = 0;
+        
+        // Then handle the space we just encountered
         if (charcode == '\n') {
           textwidth = 0;
           y += FT_SCALE(lineheight);
@@ -471,8 +464,19 @@ Text_Print(struct ViewText const* pViewText,
           print = str;
         } else {
           print = str;
-          textwidth += wordwidth;
-          wordwidth = 0;
+          // Check if adding space would cause wrapping
+          if (textwidth > 0 && textwidth + spaceWidth > pViewText->availableWidth * pViewText->scale) {
+            textwidth = 0;
+            y += FT_SCALE(lineheight);
+            x = 0;
+            lineheight = FT_MulFix(face->height, face->size->metrics.y_scale);
+            baseline = FT_SCALE(ascender);
+            prevchar = 0;
+            prev_glyph_index = 0;
+          } else {
+            x += spaceWidth;
+            textwidth += spaceWidth;
+          }
         }
       } else if (FT_Load_CharGlyph(face, charcode, FT_LOAD_DEFAULT)) {
         FT_UInt glyph_index = FT_Get_Char_Index(face, charcode);
