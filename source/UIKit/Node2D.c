@@ -370,6 +370,7 @@ handle:
       OBJ_SetFocus(sender);
       break;
     case kEventLeftMouseUp:
+      OBJ_SetFocus(sender);
       if (lua_getfield(L, LUA_REGISTRYINDEX, DRAG_SESSION) == LUA_TTABLE) {
         luaX_parsefield(bool_t, active, -1, lua_toboolean);
         luaX_parsefield(lpObject_t , view, -1, luaX_checkObject);
