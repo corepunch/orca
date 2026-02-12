@@ -1023,7 +1023,11 @@ def write_test_file():
 				for line in code_lines:
 					if line.strip():
 						# Remove common leading whitespace and add one tab
-						adjusted_line = line[min_indent:] if len(line) >= min_indent else line
+						# Handle lines with less indentation than min_indent by stripping all leading whitespace
+						if len(line) >= min_indent:
+							adjusted_line = line[min_indent:]
+						else:
+							adjusted_line = line.lstrip()
 						f.write(f"\t{adjusted_line}\n")
 					else:
 						f.write("\n")
