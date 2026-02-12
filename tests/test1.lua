@@ -13,6 +13,13 @@ local function test_text_block_layout()
 	assert(screen:findChild "Text" == text_node, "Text block should be found as a child of the screen")
 	assert(text_node.ActualWidth > 0, "Text block should have a positive ActualWidth after layout update")
 
+	local old_width = text_node.ActualWidth
+	local padding = 10
+	text_node.Padding = padding
+	screen:updateLayout(screen.Width, screen.Height)
+	
+	assert(text_node.ActualWidth == old_width + padding * 2, "Text block ActualWidth should increase after adding padding")
+
 	text_node:removeFromParent()
 
 	assert(screen:findChild "Text" == nil, "Text block should be removed from the screen")
@@ -20,19 +27,21 @@ local function test_text_block_layout()
 end
 
 local function test_stack_view_layout()
-	local test_stack_margin = 100
-	local test_stack_spacing = 10
-	local test_node_height = 100
+	local config = {
+		stack_margin = 100,
+		stack_spacing = 10,
+		node_height = 100
+	}
 	local stack = ui.StackView {
 		Name = "Stack",
 		Direction = "Vertical",
-		Margin = test_stack_margin,
+		Margin = config.stack_margin,
 		HorizontalAlignment = "Stretch",
-		Spacing = test_stack_spacing
+		Spacing = config.stack_spacing
 	}
 
-	local node1 = ui.TextBlock { Text = "Node 1", Height = test_node_height }
-	local node2 = ui.TextBlock { Text = "Node 2", Height = test_node_height }
+	local node1 = ui.TextBlock { Text = "Node 1", Height = config.node_height }
+	local node2 = ui.TextBlock { Text = "Node 2", Height = config.node_height }
 
 	stack:addChild(node1)
 	stack:addChild(node2)
@@ -41,8 +50,8 @@ local function test_stack_view_layout()
 	screen:updateLayout(screen.Width, screen.Height)
 
 	assert(stack.HorizontalAlignment == "Stretch", "StackView HorizontalAlignment should be 'Stretch'")
-	assert(stack.ActualWidth == screen.Width - 2 * test_stack_margin, "StackView ActualWidth should account for horizontal margins")
-	assert(stack.ActualHeight == 2 * test_node_height + test_stack_spacing, "StackView ActualHeight should account for child heights and spacing")
+	assert(stack.ActualWidth == screen.Width - 2 * config.stack_margin, "StackView ActualWidth should account for horizontal margins")
+	assert(stack.ActualHeight == 2 * config.node_height + config.stack_spacing, "StackView ActualHeight should account for child heights and spacing")
 
 	screen:clear()
 
