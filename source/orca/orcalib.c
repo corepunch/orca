@@ -8,6 +8,14 @@
 #include <include/api.h>
 #include <include/version.h>
 
+#define EASY_MODULE_ACCESS
+
+#ifdef EASY_MODULE_ACCESS
+#define MODULE_NAME_BUFFER_SIZE 256
+// Maximum key length: buffer size - "orca." prefix including period (5 chars) - null terminator (1 char) = 250
+#define MAX_MODULE_KEY_LENGTH 250
+#endif
+
 int luaL_preload(lua_State* L, lpcString_t name, lua_CFunction f) {
   lua_getglobal(L, "package");
   lua_getfield(L, -1, "preload");
@@ -69,6 +77,55 @@ static int f_async(lua_State* L) {
   return 0;
 }
 
+#ifdef EASY_MODULE_ACCESS
+static int f_orca_index(lua_State* L) {
+  size_t key_len;
+  const char* key = luaL_checklstring(L, 2, &key_len);
+  
+  // First check if the value already exists in the table
+  lua_pushvalue(L, 2);
+  lua_rawget(L, 1);
+  if (!lua_isnil(L, -1)) {
+    return 1;
+  }
+  lua_pop(L, 1);
+  
+  // Check key length to prevent buffer overflow
+  if (key_len > MAX_MODULE_KEY_LENGTH) {
+    fprintf(stderr, "Module key '%s' exceeds maximum length (%zu > %d)\n", 
+            key, key_len, MAX_MODULE_KEY_LENGTH);
+    lua_pushnil(L);
+    return 1;
+  }
+  
+  // Try to require "orca.<key>"
+  char module_name[MODULE_NAME_BUFFER_SIZE];
+  snprintf(module_name, sizeof(module_name), "orca.%s", key);
+  
+  // Call require(module_name)
+  lua_getglobal(L, "require");
+  lua_pushstring(L, module_name);
+  
+  // Use pcall to catch any errors
+  if (lua_pcall(L, 1, 1, 0) == 0) {
+    // Cache the result in the table
+    lua_pushvalue(L, -1);
+    lua_setfield(L, 1, key);
+    return 1;
+  } else {
+    // If require failed, log error and return nil
+    // luaL_tolstring converts the error (at -1) to a string and pushes it on the stack
+    // Stack after luaL_tolstring: [..., error, error_string]
+    const char* err_msg = luaL_tolstring(L, -1, NULL);
+    // Use the error message immediately before popping
+    fprintf(stderr, "Failed to load module '%s': %s\n", module_name, err_msg);
+    lua_pop(L, 2);  // Pop the converted string and the original error
+    lua_pushnil(L);
+    return 1;
+  }
+}
+#endif
+
 ORCA_API int luaopen_orca(lua_State* L)
 {
   for (luaL_Reg const* fn = orca_modules; fn->name; fn++) {
@@ -88,6 +145,14 @@ ORCA_API int luaopen_orca(lua_State* L)
 
   lua_pushcfunction(L, f_async);
   lua_setfield(L, -2, "async");
+  
+#ifdef EASY_MODULE_ACCESS
+  // Create a metatable for the orca module
+  lua_newtable(L);
+  lua_pushcfunction(L, f_orca_index);
+  lua_setfield(L, -2, "__index");
+  lua_setmetatable(L, -2);
+#endif
   
   return 1;
 }

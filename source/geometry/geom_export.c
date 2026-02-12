@@ -28,6 +28,10 @@ static int f_new_vec2(lua_State *L) {
 	// }
 	return 1;
 }
+static int f_vec2___call(lua_State *L) {
+	lua_remove(L, 1); // remove vec2 from stack
+	return f_new_vec2(L);
+}
 static int f_vec2_set(lua_State *L) {
 	lpvec2_t self = luaX_checkvec2(L, 1);
 	float x = luaL_checknumber(L, 2);
@@ -185,6 +189,12 @@ int luaopen_orca_vec2(lua_State *L) {
 		{ "__unm", f_vec2___unm },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_vec2___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushvec3(lua_State *L, lpcvec3_t data) {
@@ -205,6 +215,10 @@ static int f_new_vec3(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_vec3___call(lua_State *L) {
+	lua_remove(L, 1); // remove vec3 from stack
+	return f_new_vec3(L);
 }
 static int f_vec3_dot(lua_State *L) {
 	lpcvec3_t self = luaX_checkvec3(L, 1);
@@ -406,6 +420,12 @@ int luaopen_orca_vec3(lua_State *L) {
 		{ "__unm", f_vec3___unm },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_vec3___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushvec4(lua_State *L, lpcvec4_t data) {
@@ -427,6 +447,10 @@ static int f_new_vec4(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_vec4___call(lua_State *L) {
+	lua_remove(L, 1); // remove vec4 from stack
+	return f_new_vec4(L);
 }
 static int f_vec4_set(lua_State *L) {
 	lpvec4_t self = luaX_checkvec4(L, 1);
@@ -518,6 +542,12 @@ int luaopen_orca_vec4(lua_State *L) {
 		{ "__unm", f_vec4___unm },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_vec4___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushbox2(lua_State *L, lpcbox2_t data) {
@@ -535,6 +565,10 @@ static int f_new_box2(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_box2___call(lua_State *L) {
+	lua_remove(L, 1); // remove box2 from stack
+	return f_new_box2(L);
 }
 static int f_box2_center(lua_State *L) {
 	lpcbox2_t self = luaX_checkbox2(L, 1);
@@ -594,6 +628,12 @@ int luaopen_orca_box2(lua_State *L) {
 		{ "__index", f_box2___index },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_box2___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushbox3(lua_State *L, lpcbox3_t data) {
@@ -611,6 +651,10 @@ static int f_new_box3(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_box3___call(lua_State *L) {
+	lua_remove(L, 1); // remove box3 from stack
+	return f_new_box3(L);
 }
 static int f_box3_center(lua_State *L) {
 	lpcbox3_t self = luaX_checkbox3(L, 1);
@@ -651,6 +695,12 @@ int luaopen_orca_box3(lua_State *L) {
 		{ "__index", f_box3___index },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_box3___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushrect(lua_State *L, lpcrect_t data) {
@@ -672,6 +722,10 @@ static int f_new_rect(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_rect___call(lua_State *L) {
+	lua_remove(L, 1); // remove rect from stack
+	return f_new_rect(L);
 }
 static int f_rect_contains(lua_State *L) {
 	lpcrect_t self = luaX_checkrect(L, 1);
@@ -754,6 +808,12 @@ int luaopen_orca_rect(lua_State *L) {
 		{ "__index", f_rect___index },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_rect___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushquat(lua_State *L, lpcquat_t data) {
@@ -775,6 +835,10 @@ static int f_new_quat(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_quat___call(lua_State *L) {
+	lua_remove(L, 1); // remove quat from stack
+	return f_new_quat(L);
 }
 static int f_quat_fromEuler(lua_State *L) {
 	lpcvec3_t euler = luaX_checkvec3(L, 1);
@@ -894,6 +958,12 @@ int luaopen_orca_quat(lua_State *L) {
 		{ "fromMatrix", f_quat_fromMatrix },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_quat___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushmat3(lua_State *L, lpcmat3_t data) {
@@ -911,6 +981,10 @@ static int f_new_mat3(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_mat3___call(lua_State *L) {
+	lua_remove(L, 1); // remove mat3 from stack
+	return f_new_mat3(L);
 }
 static int f_mat3_identity(lua_State *L) {
 	mat3_t output = MAT3_Identity();
@@ -961,6 +1035,12 @@ int luaopen_orca_mat3(lua_State *L) {
 		{ "normal", f_mat3_normal },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_mat3___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushmat4(lua_State *L, lpcmat4_t data) {
@@ -978,6 +1058,10 @@ static int f_new_mat4(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_mat4___call(lua_State *L) {
+	lua_remove(L, 1); // remove mat4 from stack
+	return f_new_mat4(L);
 }
 static int f_mat4_identity(lua_State *L) {
 	mat4_t output = MAT4_Identity();
@@ -1141,6 +1225,12 @@ int luaopen_orca_mat4(lua_State *L) {
 		{ "fromTranslation", f_mat4_fromTranslation },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_mat4___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushbounds(lua_State *L, lpcbounds_t data) {
@@ -1160,6 +1250,10 @@ static int f_new_bounds(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_bounds___call(lua_State *L) {
+	lua_remove(L, 1); // remove bounds from stack
+	return f_new_bounds(L);
 }
 int f_bounds___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -1191,6 +1285,12 @@ int luaopen_orca_bounds(lua_State *L) {
 		{ "__index", f_bounds___index },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_bounds___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushplane3(lua_State *L, lpcplane3_t data) {
@@ -1212,6 +1312,10 @@ static int f_new_plane3(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_plane3___call(lua_State *L) {
+	lua_remove(L, 1); // remove plane3 from stack
+	return f_new_plane3(L);
 }
 static int f_plane3_normalize(lua_State *L) {
 	lpplane3_t self = luaX_checkplane3(L, 1);
@@ -1273,6 +1377,12 @@ int luaopen_orca_plane3(lua_State *L) {
 		{ "__index", f_plane3___index },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_plane3___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushsphere3(lua_State *L, lpcsphere3_t data) {
@@ -1291,6 +1401,10 @@ static int f_new_sphere3(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_sphere3___call(lua_State *L) {
+	lua_remove(L, 1); // remove sphere3 from stack
+	return f_new_sphere3(L);
 }
 int f_sphere3___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -1322,6 +1436,12 @@ int luaopen_orca_sphere3(lua_State *L) {
 		{ "__index", f_sphere3___index },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_sphere3___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushfrustum3(lua_State *L, lpcfrustum3_t data) {
@@ -1339,6 +1459,10 @@ static int f_new_frustum3(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_frustum3___call(lua_State *L) {
+	lua_remove(L, 1); // remove frustum3 from stack
+	return f_new_frustum3(L);
 }
 static int f_frustum3_calculate(lua_State *L) {
 	lpcmat4_t matrix = luaX_checkmat4(L, 1);
@@ -1442,6 +1566,12 @@ int luaopen_orca_frustum3(lua_State *L) {
 		{ "calculate", f_frustum3_calculate },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_frustum3___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushtransform2(lua_State *L, lpctransform2_t data) {
@@ -1460,6 +1590,10 @@ static int f_new_transform2(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_transform2___call(lua_State *L) {
+	lua_remove(L, 1); // remove transform2 from stack
+	return f_new_transform2(L);
 }
 static int f_transform2_identity(lua_State *L) {
 	transform2_t output = transform2_Identity();
@@ -1513,6 +1647,12 @@ int luaopen_orca_transform2(lua_State *L) {
 		{ "identity", f_transform2_identity },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_transform2___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushtransform3(lua_State *L, lpctransform3_t data) {
@@ -1530,6 +1670,10 @@ static int f_new_transform3(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_transform3___call(lua_State *L) {
+	lua_remove(L, 1); // remove transform3 from stack
+	return f_new_transform3(L);
 }
 static int f_transform3_identity(lua_State *L) {
 	transform3_t output = transform3_Identity();
@@ -1583,6 +1727,12 @@ int luaopen_orca_transform3(lua_State *L) {
 		{ "identity", f_transform3_identity },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_transform3___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushtriangle3(lua_State *L, lpctriangle3_t data) {
@@ -1600,6 +1750,10 @@ static int f_new_triangle3(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_triangle3___call(lua_State *L) {
+	lua_remove(L, 1); // remove triangle3 from stack
+	return f_new_triangle3(L);
 }
 static int f_triangle3_normal(lua_State *L) {
 	lpctriangle3_t self = luaX_checktriangle3(L, 1);
@@ -1646,6 +1800,12 @@ int luaopen_orca_triangle3(lua_State *L) {
 		{ "__index", f_triangle3___index },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_triangle3___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushline3(lua_State *L, lpcline3_t data) {
@@ -1663,6 +1823,10 @@ static int f_new_line3(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_line3___call(lua_State *L) {
+	lua_remove(L, 1); // remove line3 from stack
+	return f_new_line3(L);
 }
 static int f_line3_intersect_sphere3(lua_State *L) {
 	lpcline3_t self = luaX_checkline3(L, 1);
@@ -1738,6 +1902,12 @@ int luaopen_orca_line3(lua_State *L) {
 		{ "__index", f_line3___index },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_line3___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushedges(lua_State *L, lpcedges_t data) {
@@ -1759,6 +1929,10 @@ static int f_new_edges(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_edges___call(lua_State *L) {
+	lua_remove(L, 1); // remove edges from stack
+	return f_new_edges(L);
 }
 int f_edges___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -1802,6 +1976,12 @@ int luaopen_orca_edges(lua_State *L) {
 		{ "__index", f_edges___index },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_edges___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushcolor(lua_State *L, lpccolor_t data) {
@@ -1823,6 +2003,10 @@ static int f_new_color(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_color___call(lua_State *L) {
+	lua_remove(L, 1); // remove color from stack
+	return f_new_color(L);
 }
 static int f_color_lerp(lua_State *L) {
 	lpccolor_t self = luaX_checkcolor(L, 1);
@@ -1884,6 +2068,12 @@ int luaopen_orca_color(lua_State *L) {
 		{ "parse", f_color_parse },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_color___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 ORCA_API int luaopen_orca_geometry(lua_State *L) {

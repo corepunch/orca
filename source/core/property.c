@@ -471,7 +471,8 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
 void _pushproperty(lua_State* L,
                    eDataType_t type,
                    void *value,
-                   lpcString_t typestring)
+                   lpcString_t typestring,
+                   size_t datasize)
 {
   switch (type) {
     case kDataTypeBool:
@@ -524,13 +525,13 @@ void _pushproperty(lua_State* L,
       }
       break;
     }
-    default: {
-      uint32_t DATATYPE_GetSize(eDataType_t type);
-      void* self = lua_newuserdata(L, DATATYPE_GetSize(type));
+    case kDataTypeGroup:
+      memcpy(lua_newuserdata(L, datasize), value, datasize);
       luaL_setmetatable(L, typestring);
-      memcpy(self, value, DATATYPE_GetSize(type));
       break;
-    }
+    default:
+      fprintf(stderr, "push(): Unsupported property type %d\n", type);
+      break;
   }
 }
 
@@ -540,7 +541,7 @@ void luaX_pushProperty(lua_State* L, lpcProperty_t property)
     lua_pushnil(L);
     return;
   }
-  _pushproperty(L, property->type, property->value, property->userdata);
+  _pushproperty(L, property->type, property->value, property->userdata, property->pdesc?property->pdesc->DataSize:4);
 }
 
 INLINE bool_t
@@ -642,13 +643,6 @@ PROP_GetShortName(lpcProperty_t property)
 }
 
 uint32_t
-DATATYPE_GetSize(eDataType_t type)
-{
-  return (uint32_t)psize[type];
-}
-
-
-uint32_t
 PROP_GetSize(lpcProperty_t property)
 {
   if (property->type == kDataTypeGroup) {
@@ -657,11 +651,11 @@ PROP_GetSize(lpcProperty_t property)
       eDataType_t type = (property->pdesc+i+1)->DataType;
       if (type == kDataTypeGroup)
         continue;
-      size += DATATYPE_GetSize(type);
+      size += property->pdesc->DataSize;
     }
     return size;
   } else {
-    return DATATYPE_GetSize(property->type);
+    return (uint32_t)psize[property->type];
   }
 }
 

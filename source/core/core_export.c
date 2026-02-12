@@ -5,6 +5,7 @@
 	.id=&(struct ID){.Name=#CLASS"."NAME,.Identifier=SHORT}, \
 	.FullIdentifier=LONG, \
 	.Offset=offsetof(struct CLASS, FIELD), \
+	.DataSize=sizeof(((struct CLASS *)NULL)->FIELD), \
 	.DataType=TYPE, ##__VA_ARGS__ }
 
 void luaX_pushlocalization(lua_State *L, lpclocalization_t localization) {
@@ -594,6 +595,7 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "__setcontext", f_Object___setcontext },
 		{ NULL, NULL },
 	}), 0);
+
 	return 1;
 }
 static int f_core_getFocus(lua_State *L) {
