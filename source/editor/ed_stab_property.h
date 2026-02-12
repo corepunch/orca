@@ -57,7 +57,7 @@ PDESC_Print(lpcPropertyDesc_t pdesc, LPSTR buffer, DWORD len, float const* pf)
     case kDataTypeTransform3D:
     case kDataTypeEdges:
       snprintf(buffer, len, "%g", pf[0]);
-      FOR_LOOP(i, DATATYPE_GetSize(pdesc->DataType)/sizeof(float)-1) {
+      FOR_LOOP(i, (int)pdesc->DataSize/sizeof(float)-1) {
         size_t buflen = strlen(buffer);
         snprintf(buffer + buflen, len - buflen, " %g", pf[i+1]);
       }
