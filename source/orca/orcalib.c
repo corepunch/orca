@@ -92,7 +92,7 @@ static int f_orca_index(lua_State* L) {
   }
   
   // Try to require "orca.<key>"
-  char module_name[MODULE_NAME_BUFFER_SIZE];
+  char module_name[MODULE_NAME_BUFFER_SIZE] = {0};
   snprintf(module_name, sizeof(module_name), "orca.%s", key);
   
   // Call require(module_name)
