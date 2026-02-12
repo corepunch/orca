@@ -108,10 +108,11 @@ static int f_orca_index(lua_State* L) {
   } else {
     // If require failed, log error and return nil
     // The error message is on top of the stack
-    const char* err_msg = lua_tostring(L, -1);
-    fprintf(stderr, "Failed to load module '%s': %s\n", 
-            module_name, err_msg ? err_msg : "(error message unavailable)");
-    lua_pop(L, 1);
+    // Use luaL_tolstring to convert any error object to a string
+    size_t msg_len;
+    const char* err_msg = luaL_tolstring(L, -1, &msg_len);
+    fprintf(stderr, "Failed to load module '%s': %s\n", module_name, err_msg);
+    lua_pop(L, 2);  // Pop both the error and the converted string
     lua_pushnil(L);
     return 1;
   }
