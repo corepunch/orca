@@ -9,7 +9,7 @@
 #include <include/version.h>
 
 #define MODULE_NAME_BUFFER_SIZE 256
-// Maximum key length: buffer size - "orca." (5 chars) - null terminator (1 char) = 250
+// Maximum key length: buffer size - "orca." prefix including period (5 chars) - null terminator (1 char) = 250
 #define MAX_MODULE_KEY_LENGTH 250
 
 int luaL_preload(lua_State* L, lpcString_t name, lua_CFunction f) {
@@ -94,7 +94,7 @@ static int f_orca_index(lua_State* L) {
   }
   
   // Try to require "orca.<key>"
-  char module_name[MODULE_NAME_BUFFER_SIZE] = {0};
+  char module_name[MODULE_NAME_BUFFER_SIZE];
   snprintf(module_name, sizeof(module_name), "orca.%s", key);
   
   // Call require(module_name)
@@ -112,6 +112,7 @@ static int f_orca_index(lua_State* L) {
     // luaL_tolstring converts the error (at -1) to a string and pushes it on the stack
     // Stack after luaL_tolstring: [..., error, error_string]
     const char* err_msg = luaL_tolstring(L, -1, NULL);
+    // Use the error message immediately before popping
     fprintf(stderr, "Failed to load module '%s': %s\n", module_name, err_msg);
     lua_pop(L, 2);  // Pop the converted string and the original error
     lua_pushnil(L);
