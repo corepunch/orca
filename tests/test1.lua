@@ -1,10 +1,9 @@
-require "orca"
-local ui = require "orca.ui"
+local orca = require "orca"
 
-local screen = ui.Screen { Width = 1024, Height = 768 }
+local screen = orca.ui.Screen { Width = 1024, Height = 768 }
 
 local function test_text_block_layout()
-	local text_node = ui.TextBlock { Name = "Text", Text = "Hello, Orca!" }
+	local text_node = orca.ui.TextBlock { Name = "Text", Text = "Hello, Orca!" }
 
 	screen:addChild(text_node)
 	screen:updateLayout(screen.Width, screen.Height)
@@ -41,7 +40,7 @@ local function test_stack_view_layout()
 		stack_spacing = 10,
 		node_height = 100
 	}
-	local stack = ui.StackView {
+	local stack = orca.ui.StackView {
 		Name = "Stack",
 		Direction = "Vertical",
 		Margin = config.stack_margin,
@@ -49,8 +48,8 @@ local function test_stack_view_layout()
 		Spacing = config.stack_spacing
 	}
 
-	local node1 = ui.TextBlock { Text = "Node 1", Height = config.node_height }
-	local node2 = ui.TextBlock { Text = "Node 2", Height = config.node_height }
+	local node1 = orca.ui.TextBlock { Text = "Node 1", Height = config.node_height }
+	local node2 = orca.ui.TextBlock { Text = "Node 2", Height = config.node_height }
 
 	stack:addChild(node1)
 	stack:addChild(node2)
@@ -66,6 +65,8 @@ local function test_stack_view_layout()
 
 	assert(screen.children() == nil, "Screen should have no children after clear")
 end
+
+assert(type(orca.async) == 'function', "orca.async should be a function")
 
 test_text_block_layout()
 test_stack_view_layout()
