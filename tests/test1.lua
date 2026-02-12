@@ -16,6 +16,15 @@ local function test_text_block_layout()
 	local old_width = text_node.ActualWidth
 	local padding = 10
 	text_node.Padding = padding
+
+	assert(text_node.PaddingLeft == padding, "LeftPadding should be set to the specified padding value")
+	assert(text_node.PaddingRight == padding, "RightPadding should be set to the specified padding value")
+	assert(text_node.PaddingTop == padding, "TopPadding should be set to the specified padding value")
+	assert(text_node.PaddingBottom == padding, "BottomPadding should be set to the specified padding value")
+
+	-- assert(text_node.HorizontalPadding.Left == padding, "HorizontalPadding should be set to the specified padding value")
+	-- assert(text_node.VerticalPadding.Left == padding, "VerticalPadding should be set to the specified padding value")
+
 	screen:updateLayout(screen.Width, screen.Height)
 	
 	assert(text_node.ActualWidth == old_width + padding * 2, "Text block ActualWidth should increase after adding padding")
