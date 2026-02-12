@@ -69,6 +69,39 @@ static int f_async(lua_State* L) {
   return 0;
 }
 
+static int f_orca_index(lua_State* L) {
+  const char* key = luaL_checkstring(L, 2);
+  
+  // First check if the value already exists in the table
+  lua_pushvalue(L, 2);
+  lua_rawget(L, 1);
+  if (!lua_isnil(L, -1)) {
+    return 1;
+  }
+  lua_pop(L, 1);
+  
+  // Try to require "orca.<key>"
+  char module_name[256];
+  snprintf(module_name, sizeof(module_name), "orca.%s", key);
+  
+  // Call require(module_name)
+  lua_getglobal(L, "require");
+  lua_pushstring(L, module_name);
+  
+  // Use pcall to catch any errors
+  if (lua_pcall(L, 1, 1, 0) == 0) {
+    // Cache the result in the table
+    lua_pushvalue(L, -1);
+    lua_setfield(L, 1, key);
+    return 1;
+  } else {
+    // If require failed, pop the error and return nil
+    lua_pop(L, 1);
+    lua_pushnil(L);
+    return 1;
+  }
+}
+
 ORCA_API int luaopen_orca(lua_State* L)
 {
   for (luaL_Reg const* fn = orca_modules; fn->name; fn++) {
@@ -88,6 +121,12 @@ ORCA_API int luaopen_orca(lua_State* L)
 
   lua_pushcfunction(L, f_async);
   lua_setfield(L, -2, "async");
+  
+  // Create a metatable for the orca module
+  lua_newtable(L);
+  lua_pushcfunction(L, f_orca_index);
+  lua_setfield(L, -2, "__index");
+  lua_setmetatable(L, -2);
   
   return 1;
 }
