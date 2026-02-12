@@ -11,7 +11,7 @@ it.should = function(description, test_fn)
 		print("✓ it should " .. description)
 	else
 		print("✗ it should " .. description)
-		error(err)
+		error("Test failed: " .. description .. "\n" .. tostring(err))
 	end
 end
 
