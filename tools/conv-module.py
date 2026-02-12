@@ -461,6 +461,10 @@ def struct_parse(root, struct, parser):
 		w(e, f"\t// if (lua_istable(L, 1)) {{")
 		w(e, f"\t// }}")
 		w(e, f"\treturn 1;\n}}")
+		w(e, f"static int f_{name}___call(lua_State *L) {{")
+		w(e, f"\tlua_remove(L, 1); // remove {name} from stack")
+		w(e, f"\treturn f_new_{name}(L);")
+		w(e, f"}}")
 	elif struct.find('init') is not None:
 		w(e, f"int f_new_{name}(lua_State *L);")
 	# write methods
@@ -520,7 +524,15 @@ def struct_parse(root, struct, parser):
 			continue
 		w(e, f"\t\t{{ \"{camel_case(method_name)}\", {export_get_name(struct, method)} }},")
 	w(e, f"\t\t{{ NULL, NULL }},")
-	w(e, f"\t}}), 0);\n\treturn 1;\n}}")
+	w(e, f"\t}}), 0);\n")
+
+	if is_struct:# or struct.find('init') is not None:
+		w(e, f"\tlua_newtable(L);")
+		w(e, f"\tlua_pushcfunction(L, f_{name}___call);")
+		w(e, f"\tlua_setfield(L, -2, \"__call\");")
+		w(e, f"\tlua_setmetatable(L, -2);\n")
+
+	w(e, f"\treturn 1;\n}}")
 
 def enums_parse(_, enums, parser):
 	e, h = parser.export, parser.header
@@ -884,7 +896,7 @@ def read_xml(filename):
 		w(e, "\t.FullIdentifier=LONG, \\")
 		# w(e, "\t.Name=NAME, \\")
 		w(e, "\t.Offset=offsetof(struct CLASS, FIELD), \\")
-		# w(e, "\t.DataSize=sizeof(((struct CLASS *)NULL)->FIELD), \\")
+		w(e, "\t.DataSize=sizeof(((struct CLASS *)NULL)->FIELD), \\")
 		w(e, "\t.DataType=TYPE, ##__VA_ARGS__ }")
 
 	w(e, "")

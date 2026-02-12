@@ -313,6 +313,7 @@ struct PropertyDesc
   uint32_t FullIdentifier;
   uint32_t Offset;
   uint32_t DataType;
+  size_t DataSize;
   lpcString_t TypeString;
   uint32_t NumComponents;
   struct ID *id;

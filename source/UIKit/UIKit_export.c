@@ -5,6 +5,7 @@
 	.id=&(struct ID){.Name=#CLASS"."NAME,.Identifier=SHORT}, \
 	.FullIdentifier=LONG, \
 	.Offset=offsetof(struct CLASS, FIELD), \
+	.DataSize=sizeof(((struct CLASS *)NULL)->FIELD), \
 	.DataType=TYPE, ##__VA_ARGS__ }
 
 static const char *_Direction[] = {"horizontal","vertical","depth",NULL};
@@ -171,6 +172,10 @@ static int f_new_BorderRadiusShorthand(lua_State *L) {
 	// }
 	return 1;
 }
+static int f_BorderRadiusShorthand___call(lua_State *L) {
+	lua_remove(L, 1); // remove BorderRadiusShorthand from stack
+	return f_new_BorderRadiusShorthand(L);
+}
 int f_BorderRadiusShorthand___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0xd5ac3a0b: // TopLeftRadius
@@ -213,6 +218,12 @@ int luaopen_orca_BorderRadiusShorthand(lua_State *L) {
 		{ "__index", f_BorderRadiusShorthand___index },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_BorderRadiusShorthand___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushBorderEdgeShorthand(lua_State *L, lpcBorderEdgeShorthand_t data) {
@@ -231,6 +242,10 @@ static int f_new_BorderEdgeShorthand(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_BorderEdgeShorthand___call(lua_State *L) {
+	lua_remove(L, 1); // remove BorderEdgeShorthand from stack
+	return f_new_BorderEdgeShorthand(L);
 }
 int f_BorderEdgeShorthand___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -268,6 +283,12 @@ int luaopen_orca_BorderEdgeShorthand(lua_State *L) {
 		{ "__index", f_BorderEdgeShorthand___index },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_BorderEdgeShorthand___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushBorderSideShorthand(lua_State *L, lpcBorderSideShorthand_t data) {
@@ -285,6 +306,10 @@ static int f_new_BorderSideShorthand(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_BorderSideShorthand___call(lua_State *L) {
+	lua_remove(L, 1); // remove BorderSideShorthand from stack
+	return f_new_BorderSideShorthand(L);
 }
 int f_BorderSideShorthand___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -316,6 +341,12 @@ int luaopen_orca_BorderSideShorthand(lua_State *L) {
 		{ "__index", f_BorderSideShorthand___index },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_BorderSideShorthand___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushBorderShorthand(lua_State *L, lpcBorderShorthand_t data) {
@@ -333,6 +364,10 @@ static int f_new_BorderShorthand(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_BorderShorthand___call(lua_State *L) {
+	lua_remove(L, 1); // remove BorderShorthand from stack
+	return f_new_BorderShorthand(L);
 }
 int f_BorderShorthand___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -358,6 +393,12 @@ int luaopen_orca_BorderShorthand(lua_State *L) {
 		{ "__index", f_BorderShorthand___index },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_BorderShorthand___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushEdgeShorthand(lua_State *L, lpcEdgeShorthand_t data) {
@@ -377,6 +418,10 @@ static int f_new_EdgeShorthand(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_EdgeShorthand___call(lua_State *L) {
+	lua_remove(L, 1); // remove EdgeShorthand from stack
+	return f_new_EdgeShorthand(L);
 }
 int f_EdgeShorthand___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -408,6 +453,12 @@ int luaopen_orca_EdgeShorthand(lua_State *L) {
 		{ "__index", f_EdgeShorthand___index },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_EdgeShorthand___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushAlignmentShorthand(lua_State *L, lpcAlignmentShorthand_t data) {
@@ -425,6 +476,10 @@ static int f_new_AlignmentShorthand(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_AlignmentShorthand___call(lua_State *L) {
+	lua_remove(L, 1); // remove AlignmentShorthand from stack
+	return f_new_AlignmentShorthand(L);
 }
 int f_AlignmentShorthand___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -444,6 +499,12 @@ int luaopen_orca_AlignmentShorthand(lua_State *L) {
 		{ "__index", f_AlignmentShorthand___index },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_AlignmentShorthand___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushFontShorthand(lua_State *L, lpcFontShorthand_t data) {
@@ -462,6 +523,10 @@ static int f_new_FontShorthand(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_FontShorthand___call(lua_State *L) {
+	lua_remove(L, 1); // remove FontShorthand from stack
+	return f_new_FontShorthand(L);
 }
 int f_FontShorthand___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -505,6 +570,12 @@ int luaopen_orca_FontShorthand(lua_State *L) {
 		{ "__index", f_FontShorthand___index },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_FontShorthand___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushBrushShorthand(lua_State *L, lpcBrushShorthand_t data) {
@@ -522,6 +593,10 @@ static int f_new_BrushShorthand(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_BrushShorthand___call(lua_State *L) {
+	lua_remove(L, 1); // remove BrushShorthand from stack
+	return f_new_BrushShorthand(L);
 }
 int f_BrushShorthand___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -559,6 +634,12 @@ int luaopen_orca_BrushShorthand(lua_State *L) {
 		{ "__index", f_BrushShorthand___index },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_BrushShorthand___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushShadowShorthand(lua_State *L, lpcShadowShorthand_t data) {
@@ -578,6 +659,10 @@ static int f_new_ShadowShorthand(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_ShadowShorthand___call(lua_State *L) {
+	lua_remove(L, 1); // remove ShadowShorthand from stack
+	return f_new_ShadowShorthand(L);
 }
 int f_ShadowShorthand___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -621,6 +706,12 @@ int luaopen_orca_ShadowShorthand(lua_State *L) {
 		{ "__index", f_ShadowShorthand___index },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_ShadowShorthand___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushRingShorthand(lua_State *L, lpcRingShorthand_t data) {
@@ -640,6 +731,10 @@ static int f_new_RingShorthand(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_RingShorthand___call(lua_State *L) {
+	lua_remove(L, 1); // remove RingShorthand from stack
+	return f_new_RingShorthand(L);
 }
 int f_RingShorthand___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -677,6 +772,12 @@ int luaopen_orca_RingShorthand(lua_State *L) {
 		{ "__index", f_RingShorthand___index },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_RingShorthand___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushOverflowShorthand(lua_State *L, lpcOverflowShorthand_t data) {
@@ -694,6 +795,10 @@ static int f_new_OverflowShorthand(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_OverflowShorthand___call(lua_State *L) {
+	lua_remove(L, 1); // remove OverflowShorthand from stack
+	return f_new_OverflowShorthand(L);
 }
 int f_OverflowShorthand___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -725,6 +830,12 @@ int luaopen_orca_OverflowShorthand(lua_State *L) {
 		{ "__index", f_OverflowShorthand___index },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_OverflowShorthand___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushUnderlineShorthand(lua_State *L, lpcUnderlineShorthand_t data) {
@@ -744,6 +855,10 @@ static int f_new_UnderlineShorthand(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_UnderlineShorthand___call(lua_State *L) {
+	lua_remove(L, 1); // remove UnderlineShorthand from stack
+	return f_new_UnderlineShorthand(L);
 }
 int f_UnderlineShorthand___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -781,6 +896,12 @@ int luaopen_orca_UnderlineShorthand(lua_State *L) {
 		{ "__index", f_UnderlineShorthand___index },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_UnderlineShorthand___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushThickness(lua_State *L, lpcThickness_t data) {
@@ -802,6 +923,10 @@ static int f_new_Thickness(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_Thickness___call(lua_State *L) {
+	lua_remove(L, 1); // remove Thickness from stack
+	return f_new_Thickness(L);
 }
 int f_Thickness___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -845,6 +970,12 @@ int luaopen_orca_Thickness(lua_State *L) {
 		{ "__index", f_Thickness___index },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_Thickness___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushMarginShorthand(lua_State *L, lpcMarginShorthand_t data) {
@@ -862,6 +993,10 @@ static int f_new_MarginShorthand(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_MarginShorthand___call(lua_State *L) {
+	lua_remove(L, 1); // remove MarginShorthand from stack
+	return f_new_MarginShorthand(L);
 }
 int f_MarginShorthand___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -881,6 +1016,12 @@ int luaopen_orca_MarginShorthand(lua_State *L) {
 		{ "__index", f_MarginShorthand___index },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_MarginShorthand___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushSizeAxisShorthand(lua_State *L, lpcSizeAxisShorthand_t data) {
@@ -902,6 +1043,10 @@ static int f_new_SizeAxisShorthand(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_SizeAxisShorthand___call(lua_State *L) {
+	lua_remove(L, 1); // remove SizeAxisShorthand from stack
+	return f_new_SizeAxisShorthand(L);
 }
 int f_SizeAxisShorthand___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -945,6 +1090,12 @@ int luaopen_orca_SizeAxisShorthand(lua_State *L) {
 		{ "__index", f_SizeAxisShorthand___index },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_SizeAxisShorthand___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 void luaX_pushSizeShorthand(lua_State *L, lpcSizeShorthand_t data) {
@@ -962,6 +1113,10 @@ static int f_new_SizeShorthand(lua_State *L) {
 	// if (lua_istable(L, 1)) {
 	// }
 	return 1;
+}
+static int f_SizeShorthand___call(lua_State *L) {
+	lua_remove(L, 1); // remove SizeShorthand from stack
+	return f_new_SizeShorthand(L);
 }
 int f_SizeShorthand___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -981,6 +1136,12 @@ int luaopen_orca_SizeShorthand(lua_State *L) {
 		{ "__index", f_SizeShorthand___index },
 		{ NULL, NULL },
 	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_SizeShorthand___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 static struct PropertyDesc const DataObjectProperties[kDataObjectNumProperties] = {
