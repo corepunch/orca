@@ -80,6 +80,13 @@ static int f_orca_index(lua_State* L) {
   }
   lua_pop(L, 1);
   
+  // Check key length to prevent buffer overflow
+  size_t key_len = strlen(key);
+  if (key_len > 240) {  // "orca." is 5 chars, leave room for null terminator
+    lua_pushnil(L);
+    return 1;
+  }
+  
   // Try to require "orca.<key>"
   char module_name[256];
   snprintf(module_name, sizeof(module_name), "orca.%s", key);
@@ -95,7 +102,10 @@ static int f_orca_index(lua_State* L) {
     lua_setfield(L, 1, key);
     return 1;
   } else {
-    // If require failed, pop the error and return nil
+    // If require failed, log error and return nil
+    // The error message is on top of the stack
+    fprintf(stderr, "Warning: Failed to load module '%s': %s\n", 
+            module_name, lua_tostring(L, -1));
     lua_pop(L, 1);
     lua_pushnil(L);
     return 1;
