@@ -41,6 +41,9 @@ jobs:
       - name: Build
         run: make
 
+      - name: Test
+        run: make test
+
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
@@ -72,6 +75,9 @@ jobs:
 
       - name: Build
         run: make
+
+      - name: Test
+        run: make test
 
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
