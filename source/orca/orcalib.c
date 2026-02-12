@@ -8,6 +8,9 @@
 #include <include/api.h>
 #include <include/version.h>
 
+#define MODULE_NAME_BUFFER_SIZE 256
+#define MAX_MODULE_KEY_LENGTH 240  // Buffer size - "orca." prefix (5) - null terminator (1)
+
 int luaL_preload(lua_State* L, lpcString_t name, lua_CFunction f) {
   lua_getglobal(L, "package");
   lua_getfield(L, -1, "preload");
@@ -82,13 +85,13 @@ static int f_orca_index(lua_State* L) {
   lua_pop(L, 1);
   
   // Check key length to prevent buffer overflow
-  if (key_len > 240) {  // "orca." is 5 chars, leave room for null terminator
+  if (key_len > MAX_MODULE_KEY_LENGTH) {
     lua_pushnil(L);
     return 1;
   }
   
   // Try to require "orca.<key>"
-  char module_name[256];
+  char module_name[MODULE_NAME_BUFFER_SIZE];
   snprintf(module_name, sizeof(module_name), "orca.%s", key);
   
   // Call require(module_name)
