@@ -1,5 +1,0 @@
-<?xml version="1.0"?>
-<Screen Name="some">
-  <TextBlock Name="Noname123" Text="hello world"/>
-  <ImageView Name="Noname456"/>
-</Screen>
