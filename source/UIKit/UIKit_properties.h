@@ -151,10 +151,10 @@ enum NodeProperties {
 		kNodeBorderStyle,
 		kNodeBorderColor,
 	kNodeBorderRadius,
-	kNodeBorderRadiusTopLeftRadius,
-	kNodeBorderRadiusTopRightRadius,
-	kNodeBorderRadiusBottomRightRadius,
-	kNodeBorderRadiusBottomLeftRadius,
+	kNodeBorderTopLeftRadius,
+	kNodeBorderTopRightRadius,
+	kNodeBorderBottomRightRadius,
+	kNodeBorderBottomLeftRadius,
 	kNodeHorizontalBorder,
 	kNodeBorderLeft,
 	kNodeBorderLeftWidth,
@@ -236,10 +236,10 @@ enum NodeProperties {
 #define ID_Node_BorderStyle 0x88c40c44
 #define ID_Node_BorderColor 0x85e5d732
 #define ID_Node_BorderRadius 0x867eed01
-#define ID_Node_BorderRadiusTopLeftRadius 0x0c4c3b6f
-#define ID_Node_BorderRadiusTopRightRadius 0x6cbd9fa0
-#define ID_Node_BorderRadiusBottomRightRadius 0x6bcb9a9a
-#define ID_Node_BorderRadiusBottomLeftRadius 0x86ebce99
+#define ID_Node_BorderTopLeftRadius 0xa13859b5
+#define ID_Node_BorderTopRightRadius 0xbe725f4e
+#define ID_Node_BorderBottomRightRadius 0xe9173b64
+#define ID_Node_BorderBottomLeftRadius 0x9511fd4b
 #define ID_Node_HorizontalBorder 0x011608c7
 #define ID_Node_BorderLeft 0xc27a852a
 #define ID_Node_BorderLeftWidth 0x02c8fa36

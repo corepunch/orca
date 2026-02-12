@@ -136,11 +136,11 @@ add_subproperty(xmlNodePtr xml,
 {
   path_t buf;
   PDESC_Print(pdesc, buf, sizeof(buf), dest);
-  xmlNodePtr n = _xmlAddProp(xml, pdesc->id->Name, buf, pdesc->Flags&T_TYPEMASK);
+  xmlNodePtr n = _xmlAddProp(xml, pdesc->id->Name, buf, pdesc->DataType);
   if (PROP_FindByLongID(OBJ_GetProperties(obj), pdesc->FullIdentifier)) {
     _xmlSetProp(n, "data-set", "true");
   }
-  switch (pdesc->Flags&T_TYPEMASK) {
+  switch (pdesc->DataType) {
     case kDataTypeObject:
       _xmlSetProp(n, "data-content", pdesc->TypeString);
       break;
@@ -223,7 +223,7 @@ SV_CMD(GET, node)
     }
     add_subproperty(group, object, &(struct PropertyDesc) {
       .id=&(struct ID){.Name = PROP_GetName(p)},
-      .Flags = PROP_GetType(p),
+      .DataType = PROP_GetType(p),
       .TypeString = PROP_GetUserData(p),
     }, PROP_GetValue(p));
   }

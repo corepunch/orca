@@ -183,7 +183,7 @@ PROP_SetFlag(lpProperty_t property, uint32_t value)
 eDataType_t
 PROP_GetType(lpcProperty_t property)
 {
-  return property->type&T_TYPEMASK;
+  return property->type;
 }
 
 enum uniform_precision
@@ -340,7 +340,7 @@ CMP_CreateProperty(lua_State* L,
   property->longIdentifier = desc->FullIdentifier;
   property->shortIdentifier = desc->id->Identifier;
   property->next = NULL;
-  property->type = desc->Flags&T_TYPEMASK;
+  property->type = desc->DataType;
   property->object = CMP_GetOwner(comp);
   property->userdata = desc->TypeString;
   property->pdesc = desc;
@@ -391,7 +391,13 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
   switch (luatype) {
     case LUA_TSTRING:
 			p->type = p->type == kDataTypeNone ? kDataTypeFixed : p->type;
-			PROP_Parse(p, luaL_checkstring(L, idx));
+      if (p->type == kDataTypeFixed) {
+        strncpy(p->value, luaL_checkstring(L, idx), MAX_PROPERTY_STRING);
+        p->flags &= ~PF_NIL;
+        p->flags |= PF_MODIFIED;
+      } else {
+        PROP_Parse(p, luaL_checkstring(L, idx));
+      }
       break;
     case LUA_TBOOLEAN:
       if (p->type == kDataTypeNone)
@@ -401,11 +407,28 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
       PROP_SetValue(p, &number);
       break;
     case LUA_TNUMBER:
-      if (p->type == kDataTypeNone)
-        p->type = kDataTypeFloat;
-      assert(p->type == kDataTypeInt || p->type == kDataTypeFloat);
-      number = luaL_checknumber(L, idx);
-      PROP_SetValue(p, &number);
+      if (p->type == kDataTypeGroup) {
+        uint32_t k = 0;
+        FOR_LOOP(j, p->pdesc->NumComponents) {
+          switch (p->pdesc[j+1].DataType) {
+            case kDataTypeFloat:
+              ((float*)p->value)[k++] = luaL_checknumber(L, idx);
+              break;
+            case kDataTypeInt:
+              ((int*)p->value)[k++] = luaL_checknumber(L, idx);
+              break;
+            case kDataTypeGroup:
+              // skip
+              break;
+            default:
+              return luaL_error(L, "incorrect type %d in group property %s for number input", p->pdesc[j+1].DataType, p->name);
+          }
+        }
+      } else{
+        assert(p->type == kDataTypeInt || p->type == kDataTypeFloat);
+        number = luaL_checknumber(L, idx);
+        PROP_SetValue(p, &number);
+      }
       break;
     case LUA_TTABLE:
       if (p->type == kDataTypeObject) {
@@ -415,24 +438,26 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
       }
       break;
     case LUA_TUSERDATA:
-      if (p->type == kDataTypeObject &&
-          (udata = luaL_testudata(L, idx, API_TYPE_OBJECT))) {
-        PROP_SetValue(p, &udata);
-        break;
-      }
-      if (p->type == kDataTypeGroup && (udata = luaL_testudata(L, idx, p->userdata))) {
-        PROP_SetValue(p, udata);
-        break;
-      } else if (p->type == kDataTypeVector2D) {
-        PROP_SetValue(p, luaL_checkudata(L, idx, "vec2"));
-      } else if (p->type == kDataTypeVector3D) {
-        PROP_SetValue(p, luaL_checkudata(L, idx, "vec3"));
-      } else if (p->type == kDataTypeVector4D) {
-        PROP_SetValue(p, luaL_checkudata(L, idx, "vec4"));
-      } else {
-        return luaL_error(
-          L, "incorrect input (lua_type=%d) for (type=%d) %s property\n",
-													lua_type(L, idx), p->type, p->name);
+      switch (p->type) {
+        case kDataTypeObject:
+          if ((udata = luaL_testudata(L, idx, API_TYPE_OBJECT))) PROP_SetValue(p, &udata);
+          else return luaL_error(L, "Incorrect userdata for %s %s property\n", API_TYPE_OBJECT, p->name);
+          break;
+        case kDataTypeGroup:
+          if ((udata = luaL_testudata(L, idx, p->userdata))) PROP_SetValue(p, udata);
+          else return luaL_error(L, "Incorrect userdata for %s %s property\n", p->userdata, p->name);
+          break;
+        case kDataTypeVector2D:
+          PROP_SetValue(p, luaL_checkudata(L, idx, "vec2"));
+          break;
+        case kDataTypeVector3D:
+          PROP_SetValue(p, luaL_checkudata(L, idx, "vec3"));
+          break;
+        case kDataTypeVector4D:
+          PROP_SetValue(p, luaL_checkudata(L, idx, "vec4"));
+          break;
+        default:
+          return luaL_error(L, "Incorrect input (lua_type=%d) for (type=%d) %s property\n", lua_type(L, idx), p->type, p->name);
       }
       break;
     case LUA_TLIGHTUSERDATA:
@@ -629,14 +654,14 @@ PROP_GetSize(lpcProperty_t property)
   if (property->type == kDataTypeGroup) {
     uint32_t size = 0;
     FOR_LOOP(i, property->pdesc->NumComponents) {
-      eDataType_t type = (property->pdesc+i+1)->Flags&T_TYPEMASK;
+      eDataType_t type = (property->pdesc+i+1)->DataType;
       if (type == kDataTypeGroup)
         continue;
       size += DATATYPE_GetSize(type);
     }
     return size;
   } else {
-    return DATATYPE_GetSize(property->type&T_TYPEMASK);
+    return DATATYPE_GetSize(property->type);
   }
 }
 
@@ -707,13 +732,17 @@ PROP_GetDesc(lpcProperty_t prop) {
 void
 PROP_Parse(lpProperty_t p, lpcString_t string)
 {
-  _PDESC_Parse(p->object, p->pdesc ? p->pdesc: &(struct PropertyDesc){
-    .Flags = p->type,
-    .TypeString = p->userdata,
-  }, p, string, p->value);
-  p->flags &= ~PF_NIL;
-  p->flags |= PF_MODIFIED;
-  OBJ_SetDirty(p->object);
+  if (!_PDESC_Parse) {
+    fprintf(stderr, "PDESC_Parse is not registered, do 'require' of 'orca.parsers.xml' first\n");
+  } else {
+    _PDESC_Parse(p->object, p->pdesc ? p->pdesc: &(struct PropertyDesc){
+      .DataType = p->type,
+      .TypeString = p->userdata,
+    }, p, string, p->value);
+    p->flags &= ~PF_NIL;
+    p->flags |= PF_MODIFIED;
+    OBJ_SetDirty(p->object);
+  }
 }
 
 #include <source/editor/ed_stab_property.h>

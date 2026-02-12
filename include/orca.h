@@ -288,9 +288,6 @@ enum
 
 typedef char fixedString_t[MAX_PROPERTY_STRING];
 
-#define T_TYPEMASK (((uint32_t)-1) >> 4)
-#define T_PRIVATE ~(((uint32_t)-1) >> 1)
-
 enum property_attribute
 {
   ATTR_WHOLE_PROPERTY,
@@ -315,7 +312,7 @@ struct PropertyDesc
 {
   uint32_t FullIdentifier;
   uint32_t Offset;
-  uint32_t Flags;
+  uint32_t DataType;
   lpcString_t TypeString;
   uint32_t NumComponents;
   struct ID *id;

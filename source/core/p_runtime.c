@@ -492,7 +492,7 @@ PROP_Import(lpProperty_t prop,
     } else if (PROP_GetType(prop) == kDataTypeGroup) {
       lpcPropertyDesc_t pd = PROP_GetDesc(prop);
       FOR_LOOP(i, pd->NumComponents) {
-        eDataType_t type = (pd+1+i)->Flags&T_TYPEMASK;
+        eDataType_t type = (pd+1+i)->DataType;
         if (!DATA_IsVector(type) && type != kDataTypeGroup)
           return FALSE;
       }

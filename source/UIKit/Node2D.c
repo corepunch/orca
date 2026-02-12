@@ -484,6 +484,7 @@ static int f_beginDraggingSession(lua_State *L) {
 
 void on_ui_module_registered(lua_State* L) {
   g_L = L;
+  API_CallRequire(L, "orca.core", 0);
   lua_getglobal(L, "SERVER");
   is_server = lua_toboolean(L, -1);
   lua_pop(L, 1);

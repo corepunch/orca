@@ -5,7 +5,7 @@
 	.id=&(struct ID){.Name=#CLASS"."NAME,.Identifier=SHORT}, \
 	.FullIdentifier=LONG, \
 	.Offset=offsetof(struct CLASS, FIELD), \
-	.Flags=TYPE, ##__VA_ARGS__ }
+	.DataType=TYPE, ##__VA_ARGS__ }
 
 void luaX_pushfontface(lua_State *L, lpcfontface_t fontface) {
 	lua_pushlightuserdata(L, (lpfontface_t)fontface);

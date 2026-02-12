@@ -163,6 +163,30 @@ OBJ_Release(lua_State *L, lpObject_t self);
 ORCA_API bool_t
 OBJ_Equals(lpcObject_t self, lpcObject_t other);
 
+/// @brief Initializes the core component when it is loaded, an essential lifecycle method.
+ORCA_API void
+OBJ_Awake(lua_State *L, lpObject_t self);
+
+/// @brief Runs object animations.
+ORCA_API void
+OBJ_Animate(lua_State *L, lpObject_t self);
+
+/// @brief Loads and instantiates prefabs.
+ORCA_API void
+OBJ_LoadPrefabs(lua_State *L, lpObject_t self);
+
+/// @brief Processes pending events.
+ORCA_API void
+OBJ_ProcesEvents(lua_State *L, lpObject_t self);
+
+/// @brief Updates object properties.
+ORCA_API void
+OBJ_UpdateProperties(lpObject_t self);
+
+/// @brief Updates object layout.
+ORCA_API void
+OBJ_UpdateLayout(lpObject_t self, int32_t width, int32_t height);
+
 /// @brief Add a child object.
 ORCA_API void
 OBJ_AddChild(lpObject_t self, lpObject_t child, bool_t is_template);

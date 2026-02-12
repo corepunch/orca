@@ -5,7 +5,7 @@
 	.id=&(struct ID){.Name=#CLASS"."NAME,.Identifier=SHORT}, \
 	.FullIdentifier=LONG, \
 	.Offset=offsetof(struct CLASS, FIELD), \
-	.Flags=TYPE, ##__VA_ARGS__ }
+	.DataType=TYPE, ##__VA_ARGS__ }
 
 void luaX_pushlocalization(lua_State *L, lpclocalization_t localization) {
 	lua_pushlightuserdata(L, (lplocalization_t)localization);
@@ -37,6 +37,38 @@ static int f_Object___eq(lua_State *L) {
 	bool_t output = OBJ_Equals(self, other);
 	lua_pushboolean(L, output);
 	return 1;
+}
+static int f_Object_awake(lua_State *L) {
+	lpObject_t self = luaX_checkObject(L, 1);
+	OBJ_Awake(L, self);
+	return 0;
+}
+static int f_Object_animate(lua_State *L) {
+	lpObject_t self = luaX_checkObject(L, 1);
+	OBJ_Animate(L, self);
+	return 0;
+}
+static int f_Object_loadPrefabs(lua_State *L) {
+	lpObject_t self = luaX_checkObject(L, 1);
+	OBJ_LoadPrefabs(L, self);
+	return 0;
+}
+static int f_Object_procesEvents(lua_State *L) {
+	lpObject_t self = luaX_checkObject(L, 1);
+	OBJ_ProcesEvents(L, self);
+	return 0;
+}
+static int f_Object_updateProperties(lua_State *L) {
+	lpObject_t self = luaX_checkObject(L, 1);
+	OBJ_UpdateProperties(self);
+	return 0;
+}
+static int f_Object_updateLayout(lua_State *L) {
+	lpObject_t self = luaX_checkObject(L, 1);
+	int32_t width = luaL_checknumber(L, 2);
+	int32_t height = luaL_checknumber(L, 3);
+	OBJ_UpdateLayout(self, width, height);
+	return 0;
 }
 static int f_Object_addChild(lua_State *L) {
 	lpObject_t self = luaX_checkObject(L, 1);
@@ -375,6 +407,24 @@ int f_Object___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x5c6e1222: // clear
 		lua_pushcfunction(L, f_Object_clear);
+		return 1;
+	case 0xd71034dc: // awake
+		lua_pushcfunction(L, f_Object_awake);
+		return 1;
+	case 0xe79c66b0: // animate
+		lua_pushcfunction(L, f_Object_animate);
+		return 1;
+	case 0xd43670bc: // loadPrefabs
+		lua_pushcfunction(L, f_Object_loadPrefabs);
+		return 1;
+	case 0x7297c03c: // procesEvents
+		lua_pushcfunction(L, f_Object_procesEvents);
+		return 1;
+	case 0x8aef52d9: // updateProperties
+		lua_pushcfunction(L, f_Object_updateProperties);
+		return 1;
+	case 0x37fc391a: // updateLayout
+		lua_pushcfunction(L, f_Object_updateLayout);
 		return 1;
 	case 0x14e0dba2: // addChild
 		lua_pushcfunction(L, f_Object_addChild);

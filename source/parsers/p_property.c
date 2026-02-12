@@ -374,7 +374,7 @@ PDESC_Parse(lpObject_t hobj,
 {
   //  lpcString_t corners[4] = { "TopLeft", "TopRight", "BottomRight", "BottomLeft" };
   float* v = dest;
-  switch (pdesc->Flags&T_TYPEMASK) {
+  switch (pdesc->DataType) {
     case kDataTypeNone:
       break;
     case kDataTypeBool:

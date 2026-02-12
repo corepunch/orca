@@ -70,6 +70,38 @@
       <returns type="bool">True if the objects are the same instance, false if they are different objects</returns>
     </method>
     
+    <method name="Awake" lua="true">
+      <summary>Initializes the core component when it is loaded, an essential lifecycle method.</summary>
+      <details>Perform setup and dependency wiring here before other logic runs.</details>
+    </method>
+
+    <method name="Animate" lua="true">
+      <summary>Runs object animations.</summary>
+      <details>Invokes the animation pipeline for this object and its hierarchy.</details>
+    </method>
+
+    <method name="LoadPrefabs" lua="true">
+      <summary>Loads and instantiates prefabs.</summary>
+      <details>Resolves and loads prefab resources for this object tree.</details>
+    </method>
+
+    <method name="ProcesEvents" lua="true">
+      <summary>Processes pending events.</summary>
+      <details>Dispatches queued events through the object hierarchy.</details>
+    </method>
+
+    <method name="UpdateProperties">
+      <summary>Updates object properties.</summary>
+      <details>Applies property changes and recalculates dependent state.</details>
+    </method>
+
+    <method name="UpdateLayout">
+      <summary>Updates object layout.</summary>
+      <details>Recalculates layout based on current properties and hierarchy.</details>
+      <arg name="width" type="int">Available width for layout calculations</arg>
+      <arg name="height" type="int">Available height for layout calculations</arg>
+    </method>
+
     <method name="AddChild">
       <summary>Add a child object.</summary>
       <details>Adds the specified object as a child of this object in the hierarchy. If the child already has a parent, it is first removed from that parent's children list using REMOVE_FROM_LIST. The child is then added to the end of this object's children list and its parent pointer is set to this object. An "Attached" message is sent to the newly added child. If is_template is true, the OF_TEMPLATE flag is set on this object to indicate it contains template children.</details>

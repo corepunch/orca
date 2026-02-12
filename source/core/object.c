@@ -208,12 +208,14 @@ void OBJ_AddChild(lpObject_t self, lpObject_t child, bool_t is_template)
 }
 
 void
-OBJ_LoadPrefabs(lpObject_t object, lua_State* L)
+OBJ_LoadPrefabs(lua_State* L, lpObject_t object)
 {
   if (!OBJ_IsHidden(object)) {
     OBJ_SendMessage(object, "LoadView", 0, L);
   }
-  FOR_EACH_CHILD(object, OBJ_LoadPrefabs, L);
+  FOR_EACH_OBJECT(child, object) {
+    OBJ_LoadPrefabs(L, child);
+  }
 }
 
 void
@@ -344,7 +346,7 @@ PROP_ExecuteChangedCallback(lua_State* L,
 
 
 void
-OBJ_Awake(lpObject_t object, lua_State* L)
+OBJ_Awake(lua_State* L, lpObject_t object)
 {
   if (!(object->flags & OF_UPDATED_ONCE)) {
     lpcString_t cb = OBJ_FindCallbackForID(object, kEventAwake);
@@ -361,7 +363,7 @@ OBJ_Awake(lpObject_t object, lua_State* L)
     OBJ_ApplyStyles(object, FALSE);
     object->flags |= OF_UPDATED_ONCE;
   }
-  FOR_EACH_CHILD(object, OBJ_Awake, L);
+  FOR_EACH_OBJECT(child, object) OBJ_Awake(L, child);
 }
 
 void
@@ -411,7 +413,7 @@ _CreateProjectProperty(lpObject_t object, uint32_t ident)
 {
   lpcPropertyDesc_t pt = OBJ_FindPropertyType(ident);
   if (pt) {
-    return PROP_Create(NULL,object,pt->id->Name,pt->Flags&T_TYPEMASK,pt->TypeString);
+    return PROP_Create(NULL,object,pt->id->Name,pt->DataType,pt->TypeString);
   }
   return NULL;
 }
@@ -599,12 +601,12 @@ OBJ_FindChild(lpObject_t object,
 }
 
 void
-OBJ_ProcesEvents(lpObject_t object, lua_State* L)
+OBJ_ProcesEvents(lua_State* L, lpObject_t object)
 {
   SM_EnsureStateManagerInitialized(object);
   PROP_ProcessEvents(L, OBJ_GetProperties(object), object);
   OBJ_UpdateTimers(object);
-  FOR_EACH_CHILD(object, OBJ_ProcesEvents, L);
+  FOR_EACH_OBJECT(it, object) OBJ_ProcesEvents(L, it);
 }
 
 HRESULT

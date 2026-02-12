@@ -71,12 +71,9 @@ static int f_async(lua_State* L) {
 
 ORCA_API int luaopen_orca(lua_State* L)
 {
-  fprintf(stderr, "Available modules: ");
   for (luaL_Reg const* fn = orca_modules; fn->name; fn++) {
-    fprintf(stderr, "%s ", &fn->name[5]);
     luaL_preload(L, fn->name, fn->func);
   }
-  fprintf(stderr, "\n");
 
   luaL_newlib(L, ((luaL_Reg[]){
     { "registerEngineClass", f_registerEngineClass },

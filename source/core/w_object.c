@@ -250,9 +250,8 @@ bool_t OBJAPI(SetProperty, lpcString_t name) {
 			}
   }
   if (!strcmp(name, "modal")) {
-    void OBJ_Awake(lpObject_t object, lua_State* L);
     OBJ_SetModal(self, luaX_checkObject(L, 3));
-    OBJ_Awake(luaX_checkObject(L, 3), L);
+    OBJ_Awake(L, luaX_checkObject(L, 3));
     OBJ_SendMessageW(luaX_checkObject(L, 3), kEventAttached, 0, self);
     return TRUE;
   }

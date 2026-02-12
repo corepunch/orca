@@ -236,7 +236,7 @@ Axis = [
 	(re.compile(r"(.+)\.Axis\[0\]"), r"Horizontal\1"),
 	(re.compile(r"(.+)\.Axis\[1\]"), r"Vertical\1"),
 	(re.compile(r"(.+)\.Axis\[2\]"), r"Depth\1"),
-	(re.compile(r"BorderRadius\.(.+)Radius"), r"Border\1Radius"),
+	(re.compile(r"Border\.Radius\.(.+)Radius"), r"Border\1Radius"),
 ]
 
 class ParserState:
@@ -603,23 +603,22 @@ def component_property(root, cmp, path, property, parser, indent):
 		# 	typedata = f"T_{ptype[:-2].upper()}"
 		# else:
 		typedata = f"kDataType{ptype[:1].upper()+ptype[1:]}"
-		private = property.get('private') and "|T_PRIVATE" or ""
 		if struct:
 			export_as = struct.get('export')
 			nfields = struct_property(root, cmp, struct, None, str(), indent)
-			typedata = f"kDataType{export_as}{private}" if export_as else f"kDataTypeGroup{private}, .TypeString=\"{ptype}\", .NumComponents={nfields}"
+			typedata = f"kDataType{export_as}" if export_as else f"kDataTypeGroup, .TypeString=\"{ptype}\", .NumComponents={nfields}"
 			decor = 'struct'
 		elif ptype in g_enums or sname in g_enums:
 			enum = g_enums.get(ptype) or g_enums.get(sname)
 			values = [e.get('name') for e in enum.findall('enum')]
 			ptype = enum.get('name')
-			typedata = f"kDataTypeEnum{private}, .TypeString=\"{','.join(values)}\""
+			typedata = f"kDataTypeEnum, .TypeString=\"{','.join(values)}\""
 			decor = 'enum'
 		# elif ptype in g_resources:
-		# 	typedata = f"T_HANDLE{private}, .TypeString=\"{ptype.capitalize()}\""
+		# 	typedata = f"T_HANDLE, .TypeString=\"{ptype.capitalize()}\""
 		# 	decor = 'resource'
 		elif ptype in g_components:
-			typedata = f"kDataTypeObject{private}, .TypeString=\"{ptype}\""
+			typedata = f"kDataTypeObject, .TypeString=\"{ptype}\""
 			decor = 'object'
 		if parser:
 			w(parser.export, f"{indent}/* {cname}.{sname} */ DECL({hash(sname)}, {hash(cname+'.'+sname)},\n{indent}{cname}, \"{sname}\", {path}, {typedata}),")
@@ -886,7 +885,7 @@ def read_xml(filename):
 		# w(e, "\t.Name=NAME, \\")
 		w(e, "\t.Offset=offsetof(struct CLASS, FIELD), \\")
 		# w(e, "\t.DataSize=sizeof(((struct CLASS *)NULL)->FIELD), \\")
-		w(e, "\t.Flags=TYPE, ##__VA_ARGS__ }")
+		w(e, "\t.DataType=TYPE, ##__VA_ARGS__ }")
 
 	w(e, "")
 

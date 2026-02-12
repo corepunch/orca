@@ -192,12 +192,18 @@ _WillStretch(Node2DPtr node, StackViewCPtr pStackView)
 }
 
 static void
-_GetChildSize(lpObject_t hChild, UpdateLayoutEventPtr data, float* output)
+_GetChildSize(lpObject_t hChild,
+              UpdateLayoutEventPtr data,
+              int dir,
+              float* output)
 {
   UPDATELAYOUTSTRUCT data_1 = *data;
   Node2DPtr pSubView = GetNode2D(hChild);
-  data_1.Width -= TOTAL_MARGIN(pSubView, 0);
-  data_1.Height -= TOTAL_MARGIN(pSubView, 1);
+  // NOTE: not needed?
+//  data_1.Width -= TOTAL_MARGIN(pSubView, 0);
+//  data_1.Height -= TOTAL_MARGIN(pSubView, 1);
+  data_1.Size[!dir] -= TOTAL_MARGIN(pSubView, !dir);
+
   OBJ_SendMessageW(hChild, kEventUpdateLayout, 0, &data_1);
   FOR_EXEC(i, 2, output[i] = Node2D_GetSize(pSubView, i, kSizingPlusMargin));
 }
@@ -221,7 +227,7 @@ HANDLER(StackView, UpdateLayout)
       dwNumAutos++;
       continue;
     }
-    _GetChildSize(hChild, &data, fsize);
+    _GetChildSize(hChild, &data, dir, fsize);
     data.Size[dir] -= fsize[dir] + gap;
     size[dir] += fsize[dir] + gap;
     // workaround for Kanzi stacks
@@ -239,7 +245,7 @@ HANDLER(StackView, UpdateLayout)
     {
       if (!_WillStretch(GetNode2D(hChild), pStackView))
         continue;
-      _GetChildSize(hChild, &data, fsize);
+      _GetChildSize(hChild, &data, dir, fsize);
       size[!dir] = MAX(fsize[!dir], size[!dir]);
     }
     size[dir] = pUpdateLayout->Size[dir] - TOTAL_MARGIN(pNode2D, dir);

@@ -25,11 +25,13 @@
 struct args {
   lpcString_t plugins;
   lpcString_t server;
+  lpcString_t test;
 } args = {0};
 
 struct { lpcString_t name, *target; } argsmap[] = {
   { "-plugins=", &args.plugins },
   { "-server=", &args.server },
+  { "-test=", &args.test },
 };
 
 static void
@@ -59,7 +61,7 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirname) {
     "orca.filesystem",
     "orca.renderer",
     "orca.parsers.xml",
-    "orca.ui",
+    "orca.UIKit",
     "orca.SceneKit",
   };
   size_t size = 0;
@@ -183,6 +185,7 @@ int main (int argc, LPSTR *argv)
   if (!szProject) {
     Con_Error("Usage: orca [options] <project_dir>\n");
     Con_Error("Options:");
+    Con_Error("\t-test=true/false         Open in Test mode");
     Con_Error("\t-editor=true/false       Open in Editor mode");
     Con_Error("\t-plugins=<plugins_dir>   Set the plugins directory");
     return 1;
@@ -254,7 +257,14 @@ int main (int argc, LPSTR *argv)
     lua_pushstring(L, szProject);
     lua_setglobal(L, "DATADIR");
     
-    szProject = RunProject(L, szProject);
+    if (strstr(szProject, ".lua")) {
+      if (luaL_dofile(L, szProject) != LUA_OK) {
+        fprintf(stderr, "%s\n", lua_tostring(L, -1));
+      }
+      szProject = NULL;
+    } else {
+      szProject = RunProject(L, szProject);
+    }
 
     lua_getglobal(L, "SERVER");
     if (lua_toboolean(L, -1)) {

@@ -13,7 +13,7 @@ ORCA_API int luaopen_orca_network(lua_State* L);
 HANDLER(PropertyType, Attached) {
   pPropertyType->_desc.id = (struct ID *)hObject;
   pPropertyType->_desc.FullIdentifier = OBJ_GetIdentifier(hObject);
-  pPropertyType->_desc.Flags = pPropertyType->DataType;
+  pPropertyType->_desc.DataType = pPropertyType->DataType;
   pPropertyType->_desc.TypeString = pPropertyType->TargetType;
 //  if (OBJ_CheckName(hObject, "ActiveContext")) return 0;
   OBJ_RegisterPropertyType(&pPropertyType->_desc);
@@ -141,10 +141,6 @@ void UI_Shutdown(void) {
 // bool_t UI_GetProperty(uint32_t, PPROPDEF);
 
 int API_HandleEvent(struct lua_State* L, struct WI_Message* e);
-void OBJ_LoadPrefabs(lpObject_t, lua_State*);
-void OBJ_ProcesEvents(lpObject_t, lua_State*);
-void OBJ_Awake(lpObject_t, lua_State*);
-void OBJ_Animate(lpObject_t, lua_State*);
 
 #define MAX_FPS_CACHE 64
 static int _fps[MAX_FPS_CACHE]={0};
@@ -152,8 +148,16 @@ static int _counter=0;
 
 int _numbindings=0;
 
+void OBJ_UpdateLayout(lpObject_t obj, int width, int height) {
+  OBJ_SendMessageW(obj, kEventUpdateLayout, 0, &(UPDATELAYOUTSTRUCT){
+    .Width = width,
+    .Height = height,
+    .Force = FALSE,
+  });
+}
+
 void
-CORE_Update(struct lua_State* L,
+CORE_Update(lua_State* L,
             lpObject_t root,
             uint32_t winsize,
             longTime_t time)
@@ -164,10 +168,10 @@ CORE_Update(struct lua_State* L,
   core.realtime = time;
   core.frame++;
   
-  OBJ_Awake(root, L);
-  OBJ_Animate(root, L);
-  OBJ_LoadPrefabs(root, L);
-  OBJ_ProcesEvents(root, L);
+  OBJ_Awake(L, root);
+  OBJ_Animate(L, root);
+  OBJ_LoadPrefabs(L, root);
+  OBJ_ProcesEvents(L, root);
   OBJ_UpdateProperties(root);
   
   OBJ_SendMessageW(root, kEventUpdateLayout, 0, &(UPDATELAYOUTSTRUCT){
@@ -452,7 +456,7 @@ int f_registerPropertyType(lua_State *L) {
   ds->id->Name = (void*)(ds->id+1);
   ds->id->Identifier = fnv1a32(name);
   ds->FullIdentifier = fnv1a32(name);
-  ds->Flags = type;
+  ds->DataType = type;
   strncpy((char*)ds->id->Name, name, MAX_PROPERTY_STRING);
   lua_setfield(L, LUA_REGISTRYINDEX, n);
   OBJ_RegisterPropertyType(ds);

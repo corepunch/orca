@@ -73,10 +73,10 @@ OBJ_EnumClassProperties(lpObject_t object,
     FOR_LOOP(i, cmp->pcls->NumProperties)
     {
       lpcPropertyDesc_t pdesc = &cmp->pcls->Properties[i];
-      if (pdesc->Flags&T_PRIVATE)
+      if (pdesc->DataType == kDataTypeMatrix3D)
         continue;
       fnProc(object, pdesc, cmp->pcls, cmp->pUserData+pdesc->Offset, parm);
-      if ((pdesc->Flags&T_TYPEMASK) == kDataTypeGroup) {
+      if (pdesc->DataType == kDataTypeGroup) {
         i += pdesc->NumComponents;
       }
     }
@@ -213,7 +213,7 @@ OBJ_PushClassProperty(lua_State *L, lpObject_t object, uint32_t id)
     FOR_LOOP(i, cmp->pcls->NumProperties) {
       lpcPropertyDesc_t pdesc = &cmp->pcls->Properties[i];
       if (pdesc->id->Identifier == id) {
-        _pushproperty(L, pdesc->Flags&T_TYPEMASK, cmp->pUserData + pdesc->Offset, pdesc->TypeString);
+        _pushproperty(L, pdesc->DataType, cmp->pUserData + pdesc->Offset, pdesc->TypeString);
         return TRUE;
       }
     }

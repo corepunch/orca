@@ -114,7 +114,7 @@ void OBJAPI(DoTween) {
 }
 
 void
-OBJ_Animate(lpObject_t object, lua_State* L)
+OBJ_Animate(lua_State* L, lpObject_t object)
 {
   if (OBJ_IsHidden(object))
     return;
@@ -177,7 +177,7 @@ OBJ_Animate(lpObject_t object, lua_State* L)
     }
   }
   
-  FOR_EACH_CHILD(object, OBJ_Animate, L);
+  FOR_EACH_OBJECT(it, object) OBJ_Animate(L, it);
 }
 
 void

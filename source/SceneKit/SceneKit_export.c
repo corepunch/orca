@@ -5,7 +5,7 @@
 	.id=&(struct ID){.Name=#CLASS"."NAME,.Identifier=SHORT}, \
 	.FullIdentifier=LONG, \
 	.Offset=offsetof(struct CLASS, FIELD), \
-	.Flags=TYPE, ##__VA_ARGS__ }
+	.DataType=TYPE, ##__VA_ARGS__ }
 
 static const char *_StencilOp[] = {"keep","zero","replace","increment","incrementwrap","decrement","decrementwrap","invert",NULL};
 eStencilOp_t luaX_checkStencilOp(lua_State *L, int idx) {

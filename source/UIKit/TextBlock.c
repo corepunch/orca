@@ -229,7 +229,6 @@ HANDLER(TextBlock, DrawBrush)
 
   struct ViewEntity entity;
   TextBlockConceptPtr text = GetTextBlockConcept(hObject);
-  TextRunPtr run = GetTextRun(hObject);
 
   if (text->PlaceholderText == text->_text->run[0].string && pDrawBrush->foreground) {
     static struct BrushShorthand zero = { 0 };

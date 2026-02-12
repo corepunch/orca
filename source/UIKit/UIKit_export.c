@@ -5,7 +5,7 @@
 	.id=&(struct ID){.Name=#CLASS"."NAME,.Identifier=SHORT}, \
 	.FullIdentifier=LONG, \
 	.Offset=offsetof(struct CLASS, FIELD), \
-	.Flags=TYPE, ##__VA_ARGS__ }
+	.DataType=TYPE, ##__VA_ARGS__ }
 
 static const char *_Direction[] = {"horizontal","vertical","depth",NULL};
 eDirection_t luaX_checkDirection(lua_State *L, int idx) {
@@ -1399,14 +1399,14 @@ static struct PropertyDesc const NodeProperties[kNodeNumProperties] = {
 		Node, "BorderColor", Border.Axis[0], kDataTypeEdges, .TypeString="Border%sColor"),
 		/* Node.BorderRadius */ DECL(0xb8e9fe05, 0x867eed01,
 		Node, "BorderRadius", Border.Radius, kDataTypeGroup, .TypeString="BorderRadiusShorthand", .NumComponents=4),
-			/* Node.BorderRadiusTopLeftRadius */ DECL(0x319ccd4b, 0x0c4c3b6f,
-			Node, "BorderRadiusTopLeftRadius", Border.Radius.TopLeftRadius, kDataTypeFloat),
-			/* Node.BorderRadiusTopRightRadius */ DECL(0x579cab64, 0x6cbd9fa0,
-			Node, "BorderRadiusTopRightRadius", Border.Radius.TopRightRadius, kDataTypeFloat),
-			/* Node.BorderRadiusBottomRightRadius */ DECL(0xcd47000e, 0x6bcb9a9a,
-			Node, "BorderRadiusBottomRightRadius", Border.Radius.BottomRightRadius, kDataTypeFloat),
-			/* Node.BorderRadiusBottomLeftRadius */ DECL(0xabbc6175, 0x86ebce99,
-			Node, "BorderRadiusBottomLeftRadius", Border.Radius.BottomLeftRadius, kDataTypeFloat),
+			/* Node.BorderTopLeftRadius */ DECL(0x22252041, 0xa13859b5,
+			Node, "BorderTopLeftRadius", Border.Radius.TopLeftRadius, kDataTypeFloat),
+			/* Node.BorderTopRightRadius */ DECL(0x789f0d82, 0xbe725f4e,
+			Node, "BorderTopRightRadius", Border.Radius.TopRightRadius, kDataTypeFloat),
+			/* Node.BorderBottomRightRadius */ DECL(0xc321a1f8, 0xe9173b64,
+			Node, "BorderBottomRightRadius", Border.Radius.BottomRightRadius, kDataTypeFloat),
+			/* Node.BorderBottomLeftRadius */ DECL(0x700e8e07, 0x9511fd4b,
+			Node, "BorderBottomLeftRadius", Border.Radius.BottomLeftRadius, kDataTypeFloat),
 		/* Node.HorizontalBorder */ DECL(0x8e755b43, 0x011608c7,
 		Node, "HorizontalBorder", Border.Axis[0], kDataTypeGroup, .TypeString="BorderSideShorthand", .NumComponents=8),
 			/* Node.BorderLeft */ DECL(0xe0c4927e, 0xc27a852a,
@@ -1675,7 +1675,7 @@ static struct PropertyDesc const Node2DProperties[kNode2DNumProperties] = {
 	/* Node2D.ContentOffset */ DECL(0x35a57c45, 0xb5cb609b,
 	Node2D, "ContentOffset", ContentOffset, kDataTypeVector2D),
 	/* Node2D.Matrix */ DECL(0xe9d1810c, 0x09a64b02,
-	Node2D, "Matrix", Matrix, kDataTypeMatrix3D|T_PRIVATE),
+	Node2D, "Matrix", Matrix, kDataTypeMatrix3D),
 	/* Node2D.RenderTarget */ DECL(0x64abadd0, 0x441af9f6,
 	Node2D, "RenderTarget", RenderTarget, kDataTypeObject, .TypeString="Texture"),
 	/* Node2D.Background */ DECL(0xbafc0abd, 0x59353973,

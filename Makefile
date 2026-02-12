@@ -164,3 +164,6 @@ install: all
 	# Install Lua modules
 	install -m 0644 source/core/behaviour.lua $(INST_LUADIR)/orca/behaviour.lua
 	install -m 0644 main.lua $(INST_LUADIR)/orca/main.lua
+
+test:
+	$(TARGET) tests/test.lua

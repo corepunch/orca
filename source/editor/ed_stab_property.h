@@ -38,7 +38,7 @@ void UI_FillOutPropDef(HOBJ object, HPROP p, LPPROPDEF lpPropDef) {
 ORCA_API void
 PDESC_Print(lpcPropertyDesc_t pdesc, LPSTR buffer, DWORD len, float const* pf)
 {
-  switch (pdesc->Flags&T_TYPEMASK) {
+  switch (pdesc->DataType) {
     case kDataTypeBool:
       strcpy(buffer, *(int*)pf ? "true" : "false");
       break;
@@ -57,7 +57,7 @@ PDESC_Print(lpcPropertyDesc_t pdesc, LPSTR buffer, DWORD len, float const* pf)
     case kDataTypeTransform3D:
     case kDataTypeEdges:
       snprintf(buffer, len, "%g", pf[0]);
-      FOR_LOOP(i, DATATYPE_GetSize(pdesc->Flags&T_TYPEMASK)/sizeof(float)-1) {
+      FOR_LOOP(i, DATATYPE_GetSize(pdesc->DataType)/sizeof(float)-1) {
         size_t buflen = strlen(buffer);
         snprintf(buffer + buflen, len - buflen, " %g", pf[i+1]);
       }
@@ -91,7 +91,7 @@ PDESC_Print(lpcPropertyDesc_t pdesc, LPSTR buffer, DWORD len, float const* pf)
       bool_t add_space = FALSE;
       FOR_LOOP(i, pdesc->NumComponents) {
         lpcPropertyDesc_t p = pdesc+i+1;
-        if ((p->Flags&T_TYPEMASK) == kDataTypeGroup) continue;
+        if ((p->DataType) == kDataTypeGroup) continue;
         void* d =(char*)pf + p->Offset - pdesc->Offset;
         if (add_space) {strcat(buffer, " "); buffer++; len--;};
         PDESC_Print(p, buffer, len, d);
@@ -122,14 +122,14 @@ PDESC_Print(lpcPropertyDesc_t pdesc, LPSTR buffer, DWORD len, float const* pf)
       break;
     }
     default:
-      Con_Error("Unknown type %d in property %s\n", pdesc->Flags&T_TYPEMASK, pdesc->id->Name);
+      Con_Error("Unknown type %d in property %s\n", pdesc->DataType, pdesc->id->Name);
       break;
   }
 }
 
 void PROP_Print(HPROP p, LPSTR buffer, DWORD len) {
   PDESC_Print(p->pdesc ? p->pdesc: &(struct PropertyDesc){
-    .Flags = p->type,
+    .DataType = p->type,
     .TypeString = p->userdata,
   }, buffer, len, PROP_GetValue(p));
 }
