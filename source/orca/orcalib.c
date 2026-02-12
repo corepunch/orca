@@ -70,7 +70,8 @@ static int f_async(lua_State* L) {
 }
 
 static int f_orca_index(lua_State* L) {
-  const char* key = luaL_checkstring(L, 2);
+  size_t key_len;
+  const char* key = luaL_checklstring(L, 2, &key_len);
   
   // First check if the value already exists in the table
   lua_pushvalue(L, 2);
@@ -81,7 +82,6 @@ static int f_orca_index(lua_State* L) {
   lua_pop(L, 1);
   
   // Check key length to prevent buffer overflow
-  size_t key_len = strlen(key);
   if (key_len > 240) {  // "orca." is 5 chars, leave room for null terminator
     lua_pushnil(L);
     return 1;
@@ -104,8 +104,9 @@ static int f_orca_index(lua_State* L) {
   } else {
     // If require failed, log error and return nil
     // The error message is on top of the stack
+    const char* err_msg = lua_tostring(L, -1);
     fprintf(stderr, "Warning: Failed to load module '%s': %s\n", 
-            module_name, lua_tostring(L, -1));
+            module_name, err_msg ? err_msg : "(error message unavailable)");
     lua_pop(L, 1);
     lua_pushnil(L);
     return 1;
