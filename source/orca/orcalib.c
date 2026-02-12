@@ -9,7 +9,8 @@
 #include <include/version.h>
 
 #define MODULE_NAME_BUFFER_SIZE 256
-#define MAX_MODULE_KEY_LENGTH 240  // Buffer size - "orca." prefix (5) - null terminator (1)
+// Maximum key length: buffer size - "orca." (5 chars) - null terminator (1 char) = 250
+#define MAX_MODULE_KEY_LENGTH 250
 
 int luaL_preload(lua_State* L, lpcString_t name, lua_CFunction f) {
   lua_getglobal(L, "package");
@@ -108,7 +109,7 @@ static int f_orca_index(lua_State* L) {
     // If require failed, log error and return nil
     // The error message is on top of the stack
     const char* err_msg = lua_tostring(L, -1);
-    fprintf(stderr, "Warning: Failed to load module '%s': %s\n", 
+    fprintf(stderr, "Failed to load module '%s': %s\n", 
             module_name, err_msg ? err_msg : "(error message unavailable)");
     lua_pop(L, 1);
     lua_pushnil(L);
