@@ -448,13 +448,13 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
           else return luaL_error(L, "Incorrect userdata for %s %s property\n", p->userdata, p->name);
           break;
         case kDataTypeVector2D:
-          PROP_SetValue(p, luaL_checkudata(L, idx, "vec2"));
+          PROP_SetValue(p, luaX_checkvec2(L, idx));
           break;
         case kDataTypeVector3D:
-          PROP_SetValue(p, luaL_checkudata(L, idx, "vec3"));
+          PROP_SetValue(p, luaX_checkvec3(L, idx));
           break;
         case kDataTypeVector4D:
-          PROP_SetValue(p, luaL_checkudata(L, idx, "vec4"));
+          PROP_SetValue(p, luaX_checkvec4(L, idx));
           break;
         default:
           return luaL_error(L, "Incorrect input (lua_type=%d) for (type=%d) %s property\n", lua_type(L, idx), p->type, p->name);
@@ -720,7 +720,7 @@ void
 PROP_Parse(lpProperty_t p, lpcString_t string)
 {
   if (!_PDESC_Parse) {
-    fprintf(stderr, "PDESC_Parse is not registered, do 'require' of 'orca.parsers.xml' first\n");
+    fprintf(stderr, "PDESC_Parse() is not registered, do 'require \"orca.parsers.xml\"' first\n");
   } else {
     _PDESC_Parse(p->object, p->pdesc ? p->pdesc: &(struct PropertyDesc){
       .DataType = p->type,

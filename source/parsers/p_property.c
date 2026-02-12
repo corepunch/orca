@@ -23,7 +23,7 @@ Token_Create(lpcString_t code)
   return _compile(code, "binding");
 }
 
-static lpcString_t image_ext[] = { "", ".png", ".jpeg", ".jpg", NULL };
+static lpcString_t image_ext[] = { "", ".png", ".jpeg", ".jpg", ".svg", NULL };
 
 static void
 PROP_ParseObjectValue(lua_State *L,

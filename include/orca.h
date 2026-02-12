@@ -279,12 +279,8 @@ enum
  Property data structures
  */
 
-#define PROPERTY_SINGLE 4
 #define MAX_PROPERTY_STRING 256
-#define MAX_PROPERTIES 65536
-#define MAX_BINDING_ARGS 16
-
-#define PF_IS_BOOLEAN 256
+//#define MAX_PROPERTIES 65536
 
 typedef char fixedString_t[MAX_PROPERTY_STRING];
 
