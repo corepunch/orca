@@ -970,7 +970,15 @@ def write_test_file():
 	if not g_tests:
 		return  # No tests to generate
 	
-	test_file_path = "../tests/generated_tests.lua"
+	# Use os.path to construct path relative to current directory
+	test_file_path = os.path.join(os.path.dirname(__file__), "..", "tests", "generated_tests.lua")
+	test_file_path = os.path.normpath(test_file_path)
+	
+	def sanitize_identifier(name):
+		"""Sanitize a name to be a valid Lua identifier."""
+		# Replace non-alphanumeric characters with underscores
+		return re.sub(r'[^a-zA-Z0-9_]', '_', name)
+	
 	with open(test_file_path, "w") as f:
 		f.write("-- Auto-generated test file from XML specifications\n")
 		f.write("-- Do not edit manually - regenerate using 'make modules'\n\n")
@@ -988,14 +996,35 @@ def write_test_file():
 		for interface, tests in tests_by_interface.items():
 			f.write(f"-- Tests for {interface}\n")
 			for test_info in tests:
-				func_name = f"test_{interface}_{test_info['method']}_{test_info['test_name']}"
+				# Sanitize all parts of the function name
+				safe_interface = sanitize_identifier(interface)
+				safe_method = sanitize_identifier(test_info['method'])
+				safe_test_name = sanitize_identifier(test_info['test_name'])
+				func_name = f"test_{safe_interface}_{safe_method}_{safe_test_name}"
+				
 				f.write(f"\nlocal function {func_name}()\n")
 				if test_info['description']:
 					f.write(f"\t-- {test_info['description']}\n")
-				# Indent the test code
-				for line in test_info['code'].split('\n'):
+				
+				# Preserve original indentation by stripping common leading whitespace
+				code_lines = test_info['code'].split('\n')
+				# Find minimum indentation (ignoring empty lines)
+				min_indent = float('inf')
+				for line in code_lines:
+					if line.strip():  # Skip empty lines
+						indent = len(line) - len(line.lstrip())
+						min_indent = min(min_indent, indent)
+				
+				# If no non-empty lines found, set min_indent to 0
+				if min_indent == float('inf'):
+					min_indent = 0
+				
+				# Write lines with adjusted indentation
+				for line in code_lines:
 					if line.strip():
-						f.write(f"\t{line}\n")
+						# Remove common leading whitespace and add one tab
+						adjusted_line = line[min_indent:] if len(line) >= min_indent else line
+						f.write(f"\t{adjusted_line}\n")
 					else:
 						f.write("\n")
 				f.write("end\n")
@@ -1009,7 +1038,12 @@ def write_test_file():
 		
 		for interface, tests in tests_by_interface.items():
 			for test_info in tests:
-				func_name = f"test_{interface}_{test_info['method']}_{test_info['test_name']}"
+				# Use sanitized names for function reference
+				safe_interface = sanitize_identifier(interface)
+				safe_method = sanitize_identifier(test_info['method'])
+				safe_test_name = sanitize_identifier(test_info['test_name'])
+				func_name = f"test_{safe_interface}_{safe_method}_{safe_test_name}"
+				# Use original names for display
 				test_display_name = f"{interface}.{test_info['method']}.{test_info['test_name']}"
 				f.write(f"\t\t{{ name = \"{test_display_name}\", func = {func_name} }},\n")
 		
