@@ -91,6 +91,12 @@ int f_dispatch_message(lua_State* L) {
 }
 
 bool_t SV_RegisterMessageProc(int (*proc)(lua_State*, struct WI_Message *)) {
+  // Check if processor is already registered to prevent duplicates
+  for (int i = 0; i < MAX_CLIENTS; i++) {
+    if (clients[i] == proc) {
+      return FALSE; // Already registered, no-op
+    }
+  }
   memmove(&clients[1], &clients[0], (MAX_CLIENTS - 1) * sizeof(clients[0]));
   clients[0] = proc;
   return FALSE;
