@@ -349,6 +349,53 @@ For better XML editing experience in VSCode with autocomplete and validation:
 
 **Note**: The paths in `systemId` are relative to the project directory. Adjust them based on your project structure relative to the `tools/schemas/` directory.
 
+## Testing
+
+ORCA includes a unit testing framework that allows you to define tests directly in the XML API definition files.
+
+### Running Tests
+
+After building the project:
+
+```sh
+# Run auto-generated unit tests
+./build/bin/orca tests/generated_tests.lua
+
+# Run manual integration tests
+./build/bin/orca tests/test1.lua
+
+# Or use the make target
+make test
+```
+
+### Writing Unit Tests
+
+You can add test specifications directly in the XML files (e.g., `source/core/core.xml`) alongside function definitions:
+
+```xml
+<method name="FindChild">
+  <summary>Find a child object by name.</summary>
+  <arg name="name" type="string">The exact name of the child object to locate</arg>
+  <returns type="Object" pointer="true">Pointer to the child object or null</returns>
+  
+  <test name="find_immediate_child">
+    <description>Test finding an immediate child by name</description>
+    <code><![CDATA[
+local parent = orca.ui.Screen { Name = "Parent", Width = 800, Height = 600 }
+local child = orca.ui.TextBlock { Name = "Child1", Text = "Hello" }
+parent:addChild(child)
+local found = parent:findChild("Child1", false)
+assert(found == child, "Should find immediate child by name")
+parent:clear()
+    ]]></code>
+  </test>
+</method>
+```
+
+When you run `make modules`, these test specifications are automatically extracted and compiled into `tests/generated_tests.lua`.
+
+For detailed information on writing and running tests, see [docs/UNIT_TESTS.md](docs/UNIT_TESTS.md).
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
