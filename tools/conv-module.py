@@ -7,6 +7,7 @@ g_components = {}
 g_resources = {}
 g_attribs = []
 g_article = None
+g_tests = []  # Collect all tests from XML
 g_html = ET.Element('html', attrib={'xmlns':'http://www.w3.org/2001/XMLSchema' })
 g_head = ET.SubElement(g_html, 'head')
 ET.SubElement(g_head, 'link', { "rel":"stylesheet", "href":"doc.css" })
@@ -363,9 +364,27 @@ def export_write_method(node, method, file):
 		w(file, f"\t{ret} output = {call};\n\t{export_push_var(returns, 'output')};\n\treturn 1;")
 	w(file, f"}}")
 
+def collect_tests_from_method(root, method, interface_name):
+	"""Collect test specifications from a method element."""
+	for test in method.findall('test'):
+		test_name = test.get('name')
+		description = test.findtext('description') or ''
+		code = test.findtext('code') or ''
+		# Clean up CDATA content
+		code = code.strip()
+		g_tests.append({
+			'interface': interface_name,
+			'method': method.get('name'),
+			'test_name': test_name,
+			'description': description,
+			'code': code
+		})
+
 def function_parse(root, function, parser):
 	header_write_method(root, function, parser.header)
 	export_write_method(root, function, parser.export)
+	# Collect tests from functions too
+	collect_tests_from_method(root, function, root.get('name'))
 
 def write_struct_def(root, struct, h):
 	sname, sbrief = struct.get('name'), struct.findtext('summary')
@@ -945,6 +964,77 @@ def read_xml(filename):
 	w(e, f"\treturn 1;\n}}") 
 
 	w(h, f"#endif")
+
+def write_test_file():
+	"""Generate a Lua test file from collected test specifications."""
+	if not g_tests:
+		return  # No tests to generate
+	
+	test_file_path = "../tests/generated_tests.lua"
+	with open(test_file_path, "w") as f:
+		f.write("-- Auto-generated test file from XML specifications\n")
+		f.write("-- Do not edit manually - regenerate using 'make modules'\n\n")
+		f.write("local orca = require \"orca\"\n\n")
+		
+		# Group tests by interface
+		tests_by_interface = {}
+		for test in g_tests:
+			interface = test['interface']
+			if interface not in tests_by_interface:
+				tests_by_interface[interface] = []
+			tests_by_interface[interface].append(test)
+		
+		# Generate test functions
+		for interface, tests in tests_by_interface.items():
+			f.write(f"-- Tests for {interface}\n")
+			for test_info in tests:
+				func_name = f"test_{interface}_{test_info['method']}_{test_info['test_name']}"
+				f.write(f"\nlocal function {func_name}()\n")
+				if test_info['description']:
+					f.write(f"\t-- {test_info['description']}\n")
+				# Indent the test code
+				for line in test_info['code'].split('\n'):
+					if line.strip():
+						f.write(f"\t{line}\n")
+					else:
+						f.write("\n")
+				f.write("end\n")
+		
+		# Generate test runner
+		f.write("\n-- Run all tests\n")
+		f.write("local function run_all_tests()\n")
+		f.write("\tlocal passed = 0\n")
+		f.write("\tlocal failed = 0\n")
+		f.write("\tlocal tests = {\n")
+		
+		for interface, tests in tests_by_interface.items():
+			for test_info in tests:
+				func_name = f"test_{interface}_{test_info['method']}_{test_info['test_name']}"
+				test_display_name = f"{interface}.{test_info['method']}.{test_info['test_name']}"
+				f.write(f"\t\t{{ name = \"{test_display_name}\", func = {func_name} }},\n")
+		
+		f.write("\t}\n\n")
+		f.write("\tfor _, test in ipairs(tests) do\n")
+		f.write("\t\tlocal success, err = pcall(test.func)\n")
+		f.write("\t\tif success then\n")
+		f.write("\t\t\tprint(\"✓ PASSED: \" .. test.name)\n")
+		f.write("\t\t\tpassed = passed + 1\n")
+		f.write("\t\telse\n")
+		f.write("\t\t\tprint(\"✗ FAILED: \" .. test.name)\n")
+		f.write("\t\t\tprint(\"  Error: \" .. tostring(err))\n")
+		f.write("\t\t\tfailed = failed + 1\n")
+		f.write("\t\tend\n")
+		f.write("\tend\n\n")
+		f.write("\tprint(\"\\n\" .. string.rep(\"=\", 50))\n")
+		f.write("\tprint(string.format(\"Tests: %d passed, %d failed, %d total\", passed, failed, passed + failed))\n")
+		f.write("\tprint(string.rep(\"=\", 50))\n")
+		f.write("\treturn failed == 0\n")
+		f.write("end\n\n")
+		f.write("-- Execute tests\n")
+		f.write("local success = run_all_tests()\n")
+		f.write("os.exit(success and 0 or 1)\n")
+	
+	print(f"Generated {len(g_tests)} tests in {test_file_path}")
   
 if __name__ == "__main__":
 	for i in range(len(sys.argv)-1):
@@ -956,6 +1046,9 @@ if __name__ == "__main__":
 
 	with open("schemas/append.dtd") as f:
 		g_dtd.write(f.read())
+	
+	# Generate test file from collected tests
+	write_test_file()
 
 	# _b = ET.SubElement(g_xsd, "xs:simpleType", {"name":"Attribute"})
 	# _b = ET.SubElement(_b, "xs:restriction", {"base":"xs:string"})

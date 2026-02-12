@@ -107,6 +107,17 @@
       <details>Adds the specified object as a child of this object in the hierarchy. If the child already has a parent, it is first removed from that parent's children list using REMOVE_FROM_LIST. The child is then added to the end of this object's children list and its parent pointer is set to this object. An "Attached" message is sent to the newly added child. If is_template is true, the OF_TEMPLATE flag is set on this object to indicate it contains template children.</details>
       <arg name="child" type="Object" pointer="true">The child object to add to this object's hierarchy</arg>
       <arg name="is_template" type="bool">If true, marks this object with the OF_TEMPLATE flag to indicate it contains template children</arg>
+      <test name="add_child_to_parent">
+        <description>Test adding a child to a parent object</description>
+        <code><![CDATA[
+local parent = orca.ui.Screen { Name = "Parent", Width = 800, Height = 600 }
+local child = orca.ui.TextBlock { Name = "Child", Text = "Test" }
+parent:addChild(child)
+local found = parent:findChild("Child", false)
+assert(found == child, "Child should be added to parent and findable")
+parent:clear()
+        ]]></code>
+      </test>
     </method>
     
     <method name="RemoveFromParent" lua="true">
@@ -135,6 +146,32 @@
       <arg name="name" type="string">The exact name of the child object to locate</arg>
       <arg name="recursive" type="bool">If true, searches recursively through all descendants; if false, searches only immediate children</arg>
       <returns type="Object" pointer="true">Pointer to the first child object found with the matching name, or null if no match is found</returns>
+      <test name="find_immediate_child">
+        <description>Test finding an immediate child by name</description>
+        <code><![CDATA[
+local parent = orca.ui.Screen { Name = "Parent", Width = 800, Height = 600 }
+local child = orca.ui.TextBlock { Name = "Child1", Text = "Hello" }
+parent:addChild(child)
+local found = parent:findChild("Child1", false)
+assert(found == child, "Should find immediate child by name")
+assert(parent:findChild("NonExistent", false) == nil, "Should return nil for non-existent child")
+parent:clear()
+        ]]></code>
+      </test>
+      <test name="find_recursive_child">
+        <description>Test finding a nested child recursively</description>
+        <code><![CDATA[
+local grandparent = orca.ui.Screen { Name = "GrandParent", Width = 800, Height = 600 }
+local parent = orca.ui.StackView { Name = "Parent" }
+local child = orca.ui.TextBlock { Name = "DeepChild", Text = "Nested" }
+parent:addChild(child)
+grandparent:addChild(parent)
+local found = grandparent:findChild("DeepChild", true)
+assert(found == child, "Should find deeply nested child with recursive search")
+assert(grandparent:findChild("DeepChild", false) == nil, "Should not find nested child without recursive search")
+grandparent:clear()
+        ]]></code>
+      </test>
     </method>
     
     <method name="DispatchEvent" lua="true">
@@ -188,12 +225,30 @@
       <summary>Retrieves the object's name identifier</summary>
       <details>Returns the string name assigned to this object instance for identification and lookup purposes.</details>
       <returns type="string">Current name of the object</returns>
+      <test name="get_object_name">
+        <description>Test retrieving object name</description>
+        <code><![CDATA[
+local obj = orca.ui.TextBlock { Name = "TestObject" }
+assert(obj:getName() == "TestObject", "getName should return the object's name")
+obj:removeFromParent()
+        ]]></code>
+      </test>
     </method>
     
     <method name="SetName">
       <summary>Sets the object's name identifier</summary>
       <details>Assigns a new name to this object for identification. Names are typically used for hierarchical lookups and debugging.</details>
       <arg name="name" type="string">New name to assign to the object</arg>
+      <test name="set_object_name">
+        <description>Test setting object name</description>
+        <code><![CDATA[
+local obj = orca.ui.TextBlock { Name = "OriginalName" }
+assert(obj:getName() == "OriginalName", "Initial name should be OriginalName")
+obj:setName("NewName")
+assert(obj:getName() == "NewName", "Name should be updated to NewName")
+obj:removeFromParent()
+        ]]></code>
+      </test>
     </method>
     
     <method name="GetClassName" const="true">
