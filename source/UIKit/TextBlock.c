@@ -260,7 +260,7 @@ HANDLER(TextBlock, DrawBrush)
   if (entity.rect.width == 0 || entity.rect.height == 0) {
     return TRUE;
   }
-  
+
   R_DrawEntity(pDrawBrush->viewdef, &entity);
 
   return TRUE;

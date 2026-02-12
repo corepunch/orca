@@ -29,6 +29,10 @@ local function test_text_block_layout()
 	-- Verify that the text block has a positive ActualWidth after layout update
 	assert(text_node.ActualWidth > 0, "Text block should have a positive ActualWidth after layout update")
 
+	-- Verify that common classes and properties are available
+	assert(type(orca.ui.TextBlock) == 'table', "orca.ui.TextBlock should be a table")
+	assert(type(orca.ui.EdgeShorthand) == 'table', "orca.ui.EdgeShorthand should be a table")
+
 	text_node.HorizontalMargin = orca.ui.EdgeShorthand(config.horizontal_margin.left, config.horizontal_margin.right)
 	text_node.Padding = config.padding
 
@@ -45,6 +49,13 @@ local function test_text_block_layout()
 	-- Verify that the horizontal padding properties are set correctly
 	assert(text_node.HorizontalPadding.Left == config.padding, "HorizontalPadding should be set to the specified padding value")
 	assert(text_node.VerticalPadding.Left == config.padding, "VerticalPadding should be set to the specified padding value")
+
+	text_node.BorderRadius = 5
+
+	assert(text_node.BorderTopLeftRadius == 5, "BorderTopLeftRadius should be set to the specified value")
+	assert(text_node.BorderTopRightRadius == 5, "BorderTopRightRadius should be set to the specified value")
+	assert(text_node.BorderBottomLeftRadius == 5, "BorderBottomLeftRadius should be set to the specified value")
+	assert(text_node.BorderBottomRightRadius == 5, "BorderBottomRightRadius should be set to the specified value")
 
 	screen:updateLayout(screen.Width, screen.Height)
 	

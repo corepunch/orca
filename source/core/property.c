@@ -645,15 +645,8 @@ PROP_GetShortName(lpcProperty_t property)
 uint32_t
 PROP_GetSize(lpcProperty_t property)
 {
-  if (property->type == kDataTypeGroup) {
-    uint32_t size = 0;
-    FOR_LOOP(i, property->pdesc->NumComponents) {
-      eDataType_t type = (property->pdesc+i+1)->DataType;
-      if (type == kDataTypeGroup)
-        continue;
-      size += property->pdesc->DataSize;
-    }
-    return size;
+  if (property->pdesc) {
+    return (uint32_t)property->pdesc->DataSize;
   } else {
     return (uint32_t)psize[property->type];
   }
@@ -731,6 +724,7 @@ PROP_Parse(lpProperty_t p, lpcString_t string)
   } else {
     _PDESC_Parse(p->object, p->pdesc ? p->pdesc: &(struct PropertyDesc){
       .DataType = p->type,
+      .DataSize = PROP_GetSize(p),
       .TypeString = p->userdata,
     }, p, string, p->value);
     p->flags &= ~PF_NIL;

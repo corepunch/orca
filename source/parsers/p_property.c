@@ -372,7 +372,6 @@ PDESC_Parse(lpObject_t hobj,
             lpcString_t string,
             void* dest)
 {
-  //  lpcString_t corners[4] = { "TopLeft", "TopRight", "BottomRight", "BottomLeft" };
   float* v = dest;
   switch (pdesc->DataType) {
     case kDataTypeNone:
@@ -440,15 +439,19 @@ PDESC_Parse(lpObject_t hobj,
       PROP_ParseObjectValue(global_L, property, string);
       break;
     }
-    case kDataTypeGroup:
+    case kDataTypeGroup: {
+      lpcString_t s = string;
       FOR_LOOP(i, pdesc->NumComponents) {
         lpcPropertyDesc_t inner = &pdesc[i + 1];
         uint32_t offset = inner->Offset - pdesc->Offset;
-        void* destptr = ((byte_t*)dest) + offset;
-        SkipSpace(string);
-        if (!*(string = PDESC_Parse(hobj, inner, property, string, destptr)))
-          break;
+        SkipSpace(s);
+        if (!*s) s = string; // loop over
+        SkipSpace(s);
+        s = PDESC_Parse(hobj, inner, property, s, ((byte_t*)dest) + offset);
+//        if (!*(s = PDESC_Parse(hobj, inner, property, s, ((byte_t*)dest) + offset)))
+//          break;
       }
+    }
       break;
     default:
       assert(!"Unknown type in property");

@@ -224,6 +224,7 @@ SV_CMD(GET, node)
     add_subproperty(group, object, &(struct PropertyDesc) {
       .id=&(struct ID){.Name = PROP_GetName(p)},
       .DataType = PROP_GetType(p),
+      .DataSize = PROP_GetSize(p),
       .TypeString = PROP_GetUserData(p),
     }, PROP_GetValue(p));
   }
