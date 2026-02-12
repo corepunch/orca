@@ -166,4 +166,4 @@ install: all
 	install -m 0644 main.lua $(INST_LUADIR)/orca/main.lua
 
 test:
-	$(TARGET) tests/test.lua
+	$(TARGET) tests/test1.lua
