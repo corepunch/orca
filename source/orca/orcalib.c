@@ -8,9 +8,13 @@
 #include <include/api.h>
 #include <include/version.h>
 
+#define EASY_MODULE_ACCESS
+
+#ifdef EASY_MODULE_ACCESS
 #define MODULE_NAME_BUFFER_SIZE 256
 // Maximum key length: buffer size - "orca." prefix including period (5 chars) - null terminator (1 char) = 250
 #define MAX_MODULE_KEY_LENGTH 250
+#endif
 
 int luaL_preload(lua_State* L, lpcString_t name, lua_CFunction f) {
   lua_getglobal(L, "package");
@@ -73,6 +77,7 @@ static int f_async(lua_State* L) {
   return 0;
 }
 
+#ifdef EASY_MODULE_ACCESS
 static int f_orca_index(lua_State* L) {
   size_t key_len;
   const char* key = luaL_checklstring(L, 2, &key_len);
@@ -119,6 +124,7 @@ static int f_orca_index(lua_State* L) {
     return 1;
   }
 }
+#endif
 
 ORCA_API int luaopen_orca(lua_State* L)
 {
@@ -140,11 +146,13 @@ ORCA_API int luaopen_orca(lua_State* L)
   lua_pushcfunction(L, f_async);
   lua_setfield(L, -2, "async");
   
+#ifdef EASY_MODULE_ACCESS
   // Create a metatable for the orca module
   lua_newtable(L);
   lua_pushcfunction(L, f_orca_index);
   lua_setfield(L, -2, "__index");
   lua_setmetatable(L, -2);
+#endif
   
   return 1;
 }
