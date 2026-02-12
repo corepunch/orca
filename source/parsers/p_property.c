@@ -401,7 +401,7 @@ PDESC_Parse(lpObject_t hobj,
     case kDataTypeTransform3D:
     case kDataTypeMatrix3D:
     case kDataTypeFloat:
-      FOR_LOOP(i, PROP_GetSize(property)/sizeof(float)) {
+      FOR_LOOP(i, (int)pdesc->DataSize/sizeof(float)) {
         v[i] = *string ? strtof(string, (LPSTR*)&string) : v[0];
         if (!strncmp(string, "px", 2)) {
           string += 2;
@@ -448,11 +448,9 @@ PDESC_Parse(lpObject_t hobj,
         if (!*s) s = string; // loop over
         SkipSpace(s);
         s = PDESC_Parse(hobj, inner, property, s, ((byte_t*)dest) + offset);
-//        if (!*(s = PDESC_Parse(hobj, inner, property, s, ((byte_t*)dest) + offset)))
-//          break;
       }
+      return s;
     }
-      break;
     default:
       assert(!"Unknown type in property");
       break;
