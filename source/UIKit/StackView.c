@@ -237,7 +237,8 @@ HANDLER(StackView, UpdateLayout)
       size[!dir] = MAX(fsize[!dir], size[!dir]);
   }
 
-  if (dwNumAutos > 0) {
+  if (dwNumAutos > 0)
+  {
     float spacing = gap * (dwNumAutos - 1);
     data.Size[dir] = (data.Size[dir] - spacing) / dwNumAutos;
     FOR_EACH_LAYOUTABLE(hChild, pNode2D->_object)
@@ -252,11 +253,8 @@ HANDLER(StackView, UpdateLayout)
 
   FOR_LOOP(i, 2)
   {
-    float fsize = MAX(0, size[i]) + TOTAL_PADDING(pNode2D, i);
-    if (fsize==0) {
-      fsize = data.Size[i];
-    }
-    Node2D_SetFrame(pNode2D, kBox3FieldWidth + i, fsize);
+    float const fsize = MAX(0, size[i]) ? MAX(0, size[i]) : data.Size[i];
+    Node2D_SetFrame(pNode2D, kBox3FieldWidth + i, fsize + TOTAL_PADDING(pNode2D, i));
     Node2D_Measure(pNode2D, i, pUpdateLayout->Size[i], FALSE);
   }
 
