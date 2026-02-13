@@ -78,6 +78,7 @@ LRESULT CALLBACK TextInputWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
             );
             
             // Get font metrics
+            // Note: In production code, check if pData->hFont is NULL before using it
             HDC hdc = GetDC(hwnd);
             HFONT hOldFont = (HFONT)SelectObject(hdc, pData->hFont);
             TEXTMETRIC tm;
@@ -346,7 +347,9 @@ LRESULT CALLBACK TextInputWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
             if (pszText) {
                 size_t newLen = strlen(pszText);
                 if (newLen < pData->bufferSize) {
-                    strcpy(pData->buffer, pszText);
+                    // Use strncpy for bounds checking (or strcpy_s on Windows)
+                    strncpy(pData->buffer, pszText, pData->bufferSize - 1);
+                    pData->buffer[pData->bufferSize - 1] = '\0';
                     pData->textLength = newLen;
                     pData->caretPos = newLen;
                     
@@ -522,9 +525,9 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 GetWindowText(hwndInput1, buffer1, sizeof(buffer1));
                 GetWindowText(hwndInput2, buffer2, sizeof(buffer2));
                 
-                // Display them
+                // Display them (using snprintf for bounds checking)
                 char message[512];
-                sprintf(message, "Username: %s\nPassword: %s", buffer1, buffer2);
+                snprintf(message, sizeof(message), "Username: %s\nPassword: %s", buffer1, buffer2);
                 MessageBox(hwnd, message, "Input Values", MB_OK | MB_ICONINFORMATION);
             }
             return 0;
