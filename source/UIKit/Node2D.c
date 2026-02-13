@@ -98,6 +98,9 @@ Node2D_IsFrameSet(Node2DPtr pNode2D, enum Box3Field parm)
 void
 Node2D_SetFrame(Node2DPtr pNode2D, enum Box3Field parm, float value)
 {
+  if (value == 960) {
+    int a=0;
+  }
   switch (parm) {
     case kBox3FieldWidth:
     case kBox3FieldHeight:

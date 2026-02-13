@@ -130,10 +130,6 @@ lua_setfield(L, LUA_REGISTRYINDEX, IID);
 #define FOR_LOOP(property, max)                                                \
   for (uint32_t property = 0, end = (max); property < end; ++property)
 
-#define FOR_EXEC(property, max, cmd)                                           \
-  for (uint32_t property = 0, end = (max); property < end; ++property)         \
-    cmd;
-
 #define MAKELONG(low, high)                                                    \
   ((uint32_t)(((uint16_t)(low)) | ((uint32_t)((uint16_t)(high)) << 16)))
 

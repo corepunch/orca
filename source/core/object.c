@@ -692,12 +692,13 @@ lpObject_t OBJ_GetNext(lpcObject_t object) {
 }
 
 lpObject_t OBJ_GetRoot(lpObject_t object) {
-  for (; object; object = object->parent) {
-    if (object->SourceFile) {
-      return object;
-    }
+  if (object->SourceFile) {
+    return object;
+  } else if (object->parent) {
+    return OBJ_GetRoot(object->parent);
+  } else {
+    return object;
   }
-  return NULL;
 }
 
 lpProperty_t OBJ_GetProperties(lpcObject_t object) {

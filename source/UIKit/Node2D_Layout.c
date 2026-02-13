@@ -76,14 +76,13 @@ Node2D_Measure(Node2DPtr node,
   //	float size = Node2D_GetFrame(pNode2D, kBox3FieldWidth + axis) - padding;
   static enum NodeProperties _props[] = { kNodeWidth, kNodeHeight, kNodeDepth };
   float* size = &NODE2D_FRAME(node, Size, axis).Requested;
-  float margin = TOTAL_MARGIN(node, axis);
   //	float  padding = TOTAL_PADDING(pNode2D, axis);
   bool_t stretch = NODE2D_FRAME(node, Alignment, axis) == kUIAlignStretch;
   bool_t isRoot = OBJ_GetParent(node->_object) == NULL;
   lpProperty_t sizeProperty = Node_GetProperty(node->_object, _props[axis]);
   /* Process normally */
   if (stretch || isRoot) {
-    Node2D_SetFrame(node, kBox3FieldWidth + axis, space - margin);
+    Node2D_SetFrame(node, kBox3FieldWidth + axis, space);
   } else if (!PROP_IsNull(sizeProperty)) {
     if (PROP_HasProgram(sizeProperty)) {
       // recalculate size
@@ -99,7 +98,7 @@ Node2D_Measure(Node2DPtr node,
     int const size[] = { image.bmWidth, image.bmHeight, 0 };
     Node2D_SetFrame(node, kBox3FieldWidth + axis, size[axis]);
   } else if (force) {
-    Node2D_SetFrame(node, kBox3FieldWidth + axis, space - margin);
+    Node2D_SetFrame(node, kBox3FieldWidth + axis, space);
   }
 }
 
@@ -142,8 +141,8 @@ HANDLER(Node2D, UpdateLayout)
   {
     OBJ_SendMessageW(hChild, kEventUpdateLayout, 0,
       &(UPDATELAYOUTSTRUCT){
-        .Width = Node2D_GetSize(pNode2D, kDirectionHorizontal, kSizingMinusPadding),
-        .Height = Node2D_GetSize(pNode2D, kDirectionVertical, kSizingMinusPadding),
+        .Width = Node2D_GetSize(pNode2D, kDirectionHorizontal, kSizingMinusPadding) - TOTAL_MARGIN(GetNode2D(hChild), 0),
+        .Height = Node2D_GetSize(pNode2D, kDirectionVertical, kSizingMinusPadding) - TOTAL_MARGIN(GetNode2D(hChild), 1),
         .Force = pUpdateLayout->Force,
       });
     FOR_LOOP(i, 2)
