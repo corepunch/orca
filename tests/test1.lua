@@ -161,9 +161,30 @@ local function test_input_interaction()
 	input:removeFromParent()
 end
 
+local function test_grid_view_layout()
+	local config = {
+		header = 64,
+		footer = 48,
+		margin = 8,
+	}
+	local rows = string.format("%dpx auto %dpx", config.header, config.footer)
+	local grid = screen + orca.ui.Grid { Rows = rows }
+	local header = grid + orca.ui.Node2D { Margin = config.margin }
+	local content = grid + orca.ui.Node2D { Margin = config.margin }
+	local footer = grid + orca.ui.Node2D { Margin = config.margin }
+	screen:updateLayout(screen.Width, screen.Height)
+	assert(grid.ActualWidth == screen.Width, "GridView ActualWidth should match screen width when horizontal alignment is 'Stretch'")
+	assert(grid.ActualHeight == screen.Height, "GridView ActualHeight should match screen height when vertical alignment is 'Stretch'")
+	assert(header.ActualWidth == screen.Width - config.margin * 2, "Header row should have the specified height minus vertical margins")
+	assert(header.ActualHeight == config.header - config.margin * 2, "Header row should have the specified height minus vertical margins")
+	assert(content.ActualHeight == screen.Height - config.footer - config.header - config.margin * 2, "Content row should take up remaining space between header and footer, accounting for margins")
+	assert(footer.ActualHeight == config.footer - config.margin * 2, "Footer row should have the specified height minus vertical margins")
+end
+
 assert(type(orca.async) == 'function', "orca.async should be a function")
 
 test_text_block_layout()
 test_stack_view_layout()
 test_button_interaction()
 test_input_interaction()
+test_grid_view_layout()

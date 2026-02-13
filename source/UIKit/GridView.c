@@ -192,8 +192,8 @@ HANDLER(Grid, UpdateLayout)
     };
     OBJ_SendMessageW(hChild, kEventUpdateLayout, 0,
       &(UPDATELAYOUTSTRUCT){
-        .Width  = cell[0] ? cell[0]->width : pUpdateLayout->Width,
-        .Height = cell[1] ? cell[1]->width : pUpdateLayout->Height,
+        .Width  = (cell[0] ? cell[0]->width : pUpdateLayout->Width) - TOTAL_MARGIN(subview, 0),
+        .Height = (cell[1] ? cell[1]->width : pUpdateLayout->Height) - TOTAL_MARGIN(subview, 1),
       });
     FOR_LOOP(i, 2)
     {
