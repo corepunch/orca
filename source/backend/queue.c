@@ -85,8 +85,18 @@ bool_t SV_DispatchMessage(lua_State* L, struct WI_Message* msg) {
   return FALSE;
 }
 
+int f_event_new(lua_State* L);
 int f_dispatch_message(lua_State* L) {
-  lua_pushboolean(L, SV_DispatchMessage(L, luaL_checkudata(L, 1, "Event")));
+  if (lua_istable(L, 1)) {
+    lua_pushcfunction(L, f_event_new);
+    lua_insert(L, -2);
+    lua_call(L, 1, 1);
+    lua_pushcfunction(L, f_dispatch_message);
+    lua_insert(L, -2);
+    lua_call(L, 1, 1);
+  } else {
+    lua_pushboolean(L, SV_DispatchMessage(L, luaL_checkudata(L, 1, "Event")));
+  }
   return 1;
 }
 

@@ -65,6 +65,41 @@ int f_event_index(lua_State* L)
   return luaL_error(L, "No field %s in Event", name);
 }
 
+static lpObject_t f_checkObject(lua_State* L, int arg) {
+  if (lua_type(L, arg) == LUA_TTABLE) {
+    luaX_parsefield(lpObject_t, __userdata, arg, luaL_checkudata, API_TYPE_OBJECT);
+    return __userdata;
+  } else {
+    return luaL_checkudata(L, arg, API_TYPE_OBJECT);
+  }
+}
+
+int f_event_new(lua_State* L) {
+  struct WI_Message* msg = lua_newuserdata(L, sizeof(struct WI_Message));
+  luaL_setmetatable(L, "Event");
+  if (lua_type(L, 1) == LUA_TTABLE) {
+    lua_pushnil(L);  // first key
+    while (lua_next(L, 1) != 0) {
+      if (lua_type(L, -2) == LUA_TSTRING) {
+        const char* key = lua_tostring(L, -2);
+        if (strcmp(key, "target") == 0) {
+          msg->target = f_checkObject(L, -1);
+        } else if (strcmp(key, "message") == 0) {
+          msg->message = fnv1a32(luaL_checkstring(L, -1));
+        } else if (strcmp(key, "x") == 0) {
+          msg->x = luaL_checknumber(L, -1);
+        } else if (strcmp(key, "y") == 0) {
+          msg->y = luaL_checknumber(L, -1);
+        } else if (strcmp(key, "async") == 0) {
+          msg->syncronous = !lua_toboolean(L, -1);
+        }
+      }
+      lua_pop(L, 1); // remove value, keep key for next iteration
+    }
+  }
+  return 1;
+}
+
 ORCA_API int luaopen_orca_backend(lua_State* L)
 {
   luaL_newlib(L,
@@ -73,8 +108,12 @@ ORCA_API int luaopen_orca_backend(lua_State* L)
                              { NULL, NULL } }));
 
   luaL_newmetatable(L, "Event");
-  luaL_setfuncs(
-    L, ((luaL_Reg[]){ { "__index", f_event_index }, { NULL, NULL } }), 0);
+  lua_pushcfunction(L, f_event_index);
+  lua_setfield(L, -2, "__index");
+//  lua_setfield(L, -2, "Event");
+  lua_pop(L, 1);
+  
+  lua_pushcfunction(L, f_event_new);
   lua_setfield(L, -2, "Event");
 
   return 1;

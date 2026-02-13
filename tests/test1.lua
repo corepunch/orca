@@ -13,14 +13,13 @@ local function test_text_block_layout()
 		padding = 10,
 		radius = 5
 	}
-	local text = orca.ui.TextBlock {
+	local text = screen + orca.ui.TextBlock {
 		Name = "Text", 
 		Text = config.text,
 		HorizontalMargin = orca.ui.EdgeShorthand(config.margin.left, config.margin.right),
 		BorderRadius = config.radius, -- this should apply the same radius to all corners
 	}
 
-	screen:addChild(text)
 	screen:updateLayout(screen.Width, screen.Height)
 	
 	screen.testFunction = function (self) return self.Name end
@@ -91,29 +90,25 @@ local function test_stack_view_layout()
 		node_height = 50,
 		node_margin = 5,
 	}
-	local stack = orca.ui.StackView {
+	local stack = screen + orca.ui.StackView {
 		Name = "Stack",
 		Direction = "Vertical",
 		Margin = config.stack_margin,
 		HorizontalAlignment = "Stretch",
 		Spacing = config.stack_spacing
 	}
-	local node1 = orca.ui.TextBlock {
+	local node1 = stack + orca.ui.TextBlock {
 		Text = "Node without margin",
 		Height = config.node_height,
 		HorizontalAlignment = "Stretch",
 	}
-	local node2 = orca.ui.TextBlock {
+	local node2 = stack + orca.ui.TextBlock {
 		Text = "Node with margin",
 		Height = config.node_height,
 		HorizontalAlignment = "Stretch",
 		Margin = config.node_margin
 	}
 
-	stack:addChild(node1)
-	stack:addChild(node2)
-
-	screen:addChild(stack)
 	screen:updateLayout(screen.Width, screen.Height)
 
 	-- Verify stack view properties and layout
@@ -124,7 +119,18 @@ local function test_stack_view_layout()
 	assert(node1.ActualWidth == stack.ActualWidth, "Child node ActualWidth should match stack ActualWidth when horizontal alignment is 'Stretch'")
 	assert(node2.ActualWidth == stack.ActualWidth - 2 * config.node_margin, "Child node ActualWidth should account for parent stack margins")
 
-	screen:clear()
+	local clicked = false
+	local button = screen + orca.ui.Button { Width = 100, Height = 100, onLeftMouseDown = function () clicked = true end }
+	screen:updateLayout(screen.Width, screen.Height)
+	orca.backend.dispatchMessage {
+		target = screen,
+		message = "LeftMouseDown",
+		x = 50,
+		y = 25,
+		async = false
+	}
+	assert(clicked, "Button onLeftMouseDown handler should be triggered by the event")
+	button:removeFromParent()
 end
 
 assert(type(orca.async) == 'function', "orca.async should be a function")
