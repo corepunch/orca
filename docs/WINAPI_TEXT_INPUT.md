@@ -80,12 +80,20 @@ LRESULT CALLBACK TextInputWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
             // Get font metrics
             // Note: In production code, check if pData->hFont is NULL before using it
             HDC hdc = GetDC(hwnd);
-            HFONT hOldFont = (HFONT)SelectObject(hdc, pData->hFont);
-            TEXTMETRIC tm;
-            GetTextMetrics(hdc, &tm);
-            pData->charWidth = tm.tmAveCharWidth;
-            pData->charHeight = tm.tmHeight;
-            SelectObject(hdc, hOldFont);
+            if (pData->hFont) {
+                HFONT hOldFont = (HFONT)SelectObject(hdc, pData->hFont);
+                TEXTMETRIC tm;
+                GetTextMetrics(hdc, &tm);
+                pData->charWidth = tm.tmAveCharWidth;
+                pData->charHeight = tm.tmHeight;
+                SelectObject(hdc, hOldFont);
+            } else {
+                // Fallback to system font metrics
+                TEXTMETRIC tm;
+                GetTextMetrics(hdc, &tm);
+                pData->charWidth = tm.tmAveCharWidth;
+                pData->charHeight = tm.tmHeight;
+            }
             ReleaseDC(hwnd, hdc);
             
             SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)pData);
@@ -346,19 +354,19 @@ LRESULT CALLBACK TextInputWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
             const char* pszText = (const char*)lParam;
             if (pszText) {
                 size_t newLen = strlen(pszText);
-                if (newLen < pData->bufferSize) {
-                    // Use strncpy for bounds checking (or strcpy_s on Windows)
-                    strncpy(pData->buffer, pszText, pData->bufferSize - 1);
-                    pData->buffer[pData->bufferSize - 1] = '\0';
-                    pData->textLength = newLen;
-                    pData->caretPos = newLen;
-                    
-                    if (pData->hasFocus) {
-                        SetCaretPos(5 + pData->caretPos * pData->charWidth, 5);
-                    }
-                    InvalidateRect(hwnd, NULL, TRUE);
-                    return TRUE;
+                size_t copyLen = (newLen < pData->bufferSize - 1) ? newLen : pData->bufferSize - 1;
+                
+                // Use strncpy for bounds checking (or strcpy_s on Windows)
+                strncpy(pData->buffer, pszText, copyLen);
+                pData->buffer[copyLen] = '\0';
+                pData->textLength = copyLen;  // Set to actual copied length
+                pData->caretPos = copyLen;
+                
+                if (pData->hasFocus) {
+                    SetCaretPos(5 + pData->caretPos * pData->charWidth, 5);
                 }
+                InvalidateRect(hwnd, NULL, TRUE);
+                return TRUE;
             }
             return FALSE;
         }
