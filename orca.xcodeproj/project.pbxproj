@@ -103,7 +103,7 @@
 		781CA77D2E1557EC00FFCFD9 /* liborca.core.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7662E15575600FFCFD9 /* liborca.core.so */; };
 		781CA77E2E1557F300FFCFD9 /* liborca.geometry.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA6CE2E15024F00FFCFD9 /* liborca.geometry.so */; };
 		781CA77F2E1557F300FFCFD9 /* liborca.core.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7662E15575600FFCFD9 /* liborca.core.so */; };
-		781CA78A2E155CB400FFCFD9 /* backend.c in Sources */ = {isa = PBXBuildFile; fileRef = 7808CD8D2D9EC93A00D484F9 /* backend.c */; };
+		781CA78A2E155CB400FFCFD9 /* event.c in Sources */ = {isa = PBXBuildFile; fileRef = 7808CD8D2D9EC93A00D484F9 /* event.c */; };
 		781CA78B2E155CB400FFCFD9 /* queue.c in Sources */ = {isa = PBXBuildFile; fileRef = 7808CD8F2D9ECB2400D484F9 /* queue.c */; };
 		781CA78C2E155CC400FFCFD9 /* liborca.backend.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7862E155C9C00FFCFD9 /* liborca.backend.so */; };
 		781CA7962E155D1400FFCFD9 /* ed_commands.c in Sources */ = {isa = PBXBuildFile; fileRef = 786F2B132E12EE7F00B519AB /* ed_commands.c */; };
@@ -320,7 +320,7 @@
 /* Begin PBXFileReference section */
 		5D44D6C92E5A31C000A2D26B /* geom.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = geom.h; sourceTree = "<group>"; };
 		5D44D6CD2E5E31A600A2D26B /* geom.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = geom.xml; sourceTree = "<group>"; };
-		7808CD8D2D9EC93A00D484F9 /* backend.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = backend.c; sourceTree = "<group>"; };
+		7808CD8D2D9EC93A00D484F9 /* event.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = event.c; sourceTree = "<group>"; };
 		7808CD8F2D9ECB2400D484F9 /* queue.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = queue.c; sourceTree = "<group>"; };
 		7808CD912D9ECE9A00D484F9 /* message.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = message.c; sourceTree = "<group>"; };
 		7808CD932DA1B42D00D484F9 /* callbacks.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = callbacks.c; sourceTree = "<group>"; };
@@ -731,7 +731,7 @@
 		7808CD8C2D9EC93100D484F9 /* backend */ = {
 			isa = PBXGroup;
 			children = (
-				7808CD8D2D9EC93A00D484F9 /* backend.c */,
+				7808CD8D2D9EC93A00D484F9 /* event.c */,
 				7808CD8F2D9ECB2400D484F9 /* queue.c */,
 			);
 			path = backend;
@@ -1852,7 +1852,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				781CA78A2E155CB400FFCFD9 /* backend.c in Sources */,
+				781CA78A2E155CB400FFCFD9 /* event.c in Sources */,
 				781CA78B2E155CB400FFCFD9 /* queue.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
