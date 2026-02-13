@@ -93,19 +93,19 @@ local function test_stack_view_layout()
 	local stack = screen + orca.ui.StackView {
 		Name = "Stack",
 		Direction = "Vertical",
-		Margin = config.stack_margin,
 		HorizontalAlignment = "Stretch",
+		Margin = config.stack_margin,
 		Spacing = config.stack_spacing
 	}
 	local node1 = stack + orca.ui.TextBlock {
 		Text = "Node without margin",
-		Height = config.node_height,
 		HorizontalAlignment = "Stretch",
+		Height = config.node_height,
 	}
 	local node2 = stack + orca.ui.TextBlock {
 		Text = "Node with margin",
-		Height = config.node_height,
 		HorizontalAlignment = "Stretch",
+		Height = config.node_height,
 		Margin = config.node_margin
 	}
 
