@@ -74,10 +74,13 @@ _cmd(TerminalViewPtr t, lpcString_t str, struct tstate *state)
 static int f_println(lua_State *L) {
   struct tstate state = { .foreground = 7 };
   TerminalViewPtr t = GetTerminalView(luaX_checkObject(L, 1));
+  lua_Integer len = 0;
   lua_getfield(L, 1, ITEMS_LIST);
-  lua_len(L, -1);
-  lua_Integer len = lua_tointeger(L, -1);
-  lua_pop(L, 1);
+  if (!lua_isnil(L, -1)) {
+    lua_len(L, -1);
+    len = lua_tointeger(L, -1);
+    lua_pop(L, 1);
+  }
   if (lua_isnil(L, 2)) {
     len = 0;
   } else {

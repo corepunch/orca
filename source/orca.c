@@ -98,9 +98,18 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirname) {
     }
 
     xmlWith(xmlChar, StartupScreen, xmlGetProp(root, XMLSTR("StartupScreen")), xmlFree) {
-      fprintf(mem, "local Screen = require '%s'\n", StartupScreen);
-      fprintf(mem, "local screen = Screen()\n");
-    }
+//      fprintf(mem, "local Screen = require '%s'\n", StartupScreen);
+//      fprintf(mem, "local screen = Screen()\n");
+      fprintf(mem, "local ok, screen = pcall(require, '%s')\n", StartupScreen);
+      fprintf(mem, "if ok then screen = screen()\n");
+      fprintf(mem, "else local err = screen\n");
+      fprintf(mem, "screen = orca.ui.Screen()\n");
+//      fprintf(mem, "local term = orca.ui.TerminalView {Width=screen.Width, Height=screen.Height, BufferWidth=256, BufferHeight=256}\n");
+//      fprintf(mem, "term:println(nil, err)\n");
+//      fprintf(mem, "screen:addChild(term)\n");
+      fprintf(mem, "screen:addChild(orca.ui.TextBlock(err))\n");
+      fprintf(mem, "end\n");
+  }
 #ifdef ORCA_FEATURE_DEBUG
     fprintf(mem, "local editor = require 'orca.editor'\n");
     fprintf(mem, "editor.setScreen(screen)\n");
@@ -144,8 +153,9 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirname) {
         has_written = TRUE;
       }
     }
-//    fprintf(mem, "\ns.dispatchMessage(msg)");
-    fprintf(mem, "\nif s.dispatchMessage(msg) then screen:paint(ref.getSize()) end \n");
+    fprintf(mem, "\nlocal ok, res = pcall(s.dispatchMessage, msg)\n");
+    fprintf(mem, "if not ok then print(res) screen:clear() screen:addChild(orca.ui.TextBlock(res)) end\n");
+//    fprintf(mem, "\nif s.dispatchMessage(msg) then screen:paint(ref.getSize()) end \n");
     if (has_written) {
       fprintf(mem, "end\n");
     }
@@ -155,6 +165,7 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirname) {
   if (luaL_loadbuffer(L, buf, size, "@main") || lua_pcall(L, 0, 1, 0)) {
     Con_Error("Uncaught exception: %s", lua_tostring(L, -1));
     lua_pop(L, 1);
+    free(buf);
     return NULL;
   }
   if (lua_type(L, -1) == LUA_TSTRING) {
@@ -162,7 +173,6 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirname) {
     strncpy(result, luaL_checkstring(L, -1), sizeof(result));
     return result;
   }
-  
   free(buf);
   return NULL;
 }
