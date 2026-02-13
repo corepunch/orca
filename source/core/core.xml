@@ -20,7 +20,7 @@
   <event name="Char" type="WI_Message"/>
   <event name="WindowPaint"/>
   <event name="WindowClosed"/>
-  <event name="WindowResized"/>
+  <event name="WindowResized" type="void"/>
   <event name="WindowChangedScreen"/>
   <event name="KillFocus" type="void"/>
   <event name="SetFocus" type="void"/>

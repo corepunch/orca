@@ -8,6 +8,7 @@
 #define SCROLL_SENSIVITY 1.2f
 #define BUFFER_WIDTH 256
 #define BUFFER_HEIGHT 256
+#define TAB_SIZE 4
 #define MEMSIZE(T) (T->BufferWidth*T->BufferHeight*4)
 
 #define kEventPaint 0x36b37bd3
@@ -88,7 +89,7 @@ static int f_println(lua_State *L) {
     lua_seti(L, -2, ++len);
   }
   lua_pop(L, 1);
-  int n = lua_gettop(L);
+  int n = lua_gettop(L), c = t->Cursor;
   state.item = len;
   for (int arg = 3; arg <= n; arg++) {
     size_t slen;
@@ -97,6 +98,11 @@ static int f_println(lua_State *L) {
     for (lpcString_t s = str; s - str < slen; prev = *s, s++) {
       if (*s == '\x21' && *(s+1) == '[') {
         s = _cmd(t, ++s, &state);
+      } else if (*s == '\n') {
+        t->Cursor = ((t->Cursor / t->BufferWidth) + 1) * t->BufferWidth;
+      } else if (*s == '\t') {
+        int start = (t->Cursor / t->BufferWidth) * t->BufferWidth;
+        t->Cursor = start + (((t->Cursor - start) / TAB_SIZE) + 1) * TAB_SIZE;
       } else {
         state.glyph = (uint8_t)*s;
         t->_buffer[t->Cursor++] = *(uint32_t*)&state;
@@ -108,7 +114,7 @@ static int f_println(lua_State *L) {
     state.glyph = 0;
     t->_buffer[t->Cursor++] = *(uint32_t*)&state;
   }
-  t->_contentHeight++;
+  t->_contentHeight += MAX(1, (t->Cursor - c) / t->BufferWidth);
   lua_pushinteger(L, len);
   return 1;
 }

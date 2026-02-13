@@ -93,6 +93,8 @@ typedef struct WI_Message* CharEventPtr;
 #define kEventWindowPaint 0x7ef9e53b
 #define kEventWindowClosed 0x7268e69d
 #define kEventWindowResized 0xa216e847
+typedef void* WindowResizedEventPtr;
+
 #define kEventWindowChangedScreen 0x5fe6b4bf
 #define kEventKillFocus 0xa7c0f8d7
 typedef void* KillFocusEventPtr;

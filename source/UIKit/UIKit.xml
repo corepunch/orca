@@ -664,6 +664,7 @@
     <handles event="UpdateLayout"/>
     <handles event="Create"/>
     <handles event="Destroy"/>
+    <handles event="WindowResized"/>
     <property name="ClearColor" type="color">Background clear color for the screen </property>
     <property name="ResizeMode" type="ResizeMode">Specifies how the window can be resized or displayed</property>
     <field name="_rt" type="Texture" pointer="true">Internal render target for the screen</field>

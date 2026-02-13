@@ -516,3 +516,8 @@ HANDLER(Screen, Destroy) {
   return FALSE;
 }
 
+HANDLER(Screen, WindowResized) {
+  GetNode(hObject)->Size.Axis[0].Requested = LOWORD(wParam);
+  GetNode(hObject)->Size.Axis[1].Requested = HIWORD(wParam);
+  return FALSE;
+}

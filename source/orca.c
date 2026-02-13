@@ -104,10 +104,13 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirname) {
       fprintf(mem, "if ok then screen = screen()\n");
       fprintf(mem, "else local err = screen\n");
       fprintf(mem, "screen = orca.ui.Screen()\n");
-//      fprintf(mem, "local term = orca.ui.TerminalView {Width=screen.Width, Height=screen.Height, BufferWidth=256, BufferHeight=256}\n");
-//      fprintf(mem, "term:println(nil, err)\n");
-//      fprintf(mem, "screen:addChild(term)\n");
-      fprintf(mem, "screen:addChild(orca.ui.TextBlock(err))\n");
+      fprintf(mem, "local term = orca.ui.TerminalView {\n");
+      fprintf(mem, "\tBufferWidth=screen.Width/8,\n");
+      fprintf(mem, "\tBufferHeight=screen.Height/16}\n");
+      fprintf(mem, "term:println(nil, err)\n");
+      fprintf(mem, "screen:addChild(term)\n");
+      fprintf(mem, "print(err)\n");
+//      fprintf(mem, "screen:addChild(orca.ui.TextBlock(err))\n");
       fprintf(mem, "end\n");
   }
 #ifdef ORCA_FEATURE_DEBUG

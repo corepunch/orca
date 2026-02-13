@@ -2325,6 +2325,7 @@ LRESULT Screen_RenderScreen(lpObject_t, lpScreen_t, wParam_t, RenderScreenEventP
 LRESULT Screen_UpdateLayout(lpObject_t, lpScreen_t, wParam_t, UpdateLayoutEventPtr);
 LRESULT Screen_Create(lpObject_t, lpScreen_t, wParam_t, CreateEventPtr);
 LRESULT Screen_Destroy(lpObject_t, lpScreen_t, wParam_t, DestroyEventPtr);
+LRESULT Screen_WindowResized(lpObject_t, lpScreen_t, wParam_t, WindowResizedEventPtr);
 static struct PropertyDesc const ScreenProperties[kScreenNumProperties] = {
 	/* Screen.ClearColor */ DECL(0xeb16b675, 0x1bfc36dd,
 	Screen, "ClearColor", ClearColor, kDataTypeColor),
@@ -2342,6 +2343,8 @@ LRESULT ScreenProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wpar
 			return Screen_Create(object, cmp, wparm, lparm);
 		case 0x4d76a4e5: // Destroy
 			return Screen_Destroy(object, cmp, wparm, lparm);
+		case 0xa216e847: // WindowResized
+			return Screen_WindowResized(object, cmp, wparm, lparm);
 }
 	return FALSE;
 }
