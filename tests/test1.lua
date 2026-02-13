@@ -116,12 +116,18 @@ local function test_stack_view_layout()
 	assert(stack.ActualWidth == screen.Width - 2 * config.stack_margin, "StackView ActualWidth should account for horizontal margins")
 	assert(stack.ActualHeight == 2 * config.node_height + 2 * config.node_margin + config.stack_spacing, "StackView ActualHeight should account for child heights and spacing")
 
+	-- Verify child node properties and layout
 	assert(node1.ActualWidth == stack.ActualWidth, "Child node ActualWidth should match stack ActualWidth when horizontal alignment is 'Stretch'")
 	assert(node2.ActualWidth == stack.ActualWidth - 2 * config.node_margin, "Child node ActualWidth should account for parent stack margins")
 
+	screen:clear()
+end
+
+local function test_button_interaction()
 	local clicked = false
 	local button = screen + orca.ui.Button { Width = 100, Height = 100, onLeftMouseDown = function () clicked = true end }
 	screen:updateLayout(screen.Width, screen.Height)
+	-- Simulate a left mouse down event on the button
 	orca.backend.dispatchMessage {
 		target = screen,
 		message = "LeftMouseDown",
@@ -129,11 +135,35 @@ local function test_stack_view_layout()
 		y = 25,
 		async = false
 	}
+	-- Verify that the button's onLeftMouseDown handler was triggered and that the button is focused
 	assert(clicked, "Button onLeftMouseDown handler should be triggered by the event")
+	assert(button:isFocused(), "Button should be focused after receiving a mouse down event")
 	button:removeFromParent()
+end
+
+local function test_input_interaction()
+	local config = { text = "Hello World!" }
+	local input = screen + orca.ui.Input { Width = 100, Height = 100 }
+	input:setFocus()
+	screen:updateLayout(screen.Width, screen.Height)
+	-- Simulate a left mouse down event on the button
+	for i = 1, #config.text do
+		orca.backend.dispatchMessage {
+			target = screen, -- we target the screen here because the input should be focused and receive the key down events
+			message = "KeyDown",
+			key = string.byte(config.text:sub(i, i)),
+			text = config.text:sub(i, i),
+			async = false
+		}
+	end
+	-- Verify that the input's Text property has been updated to match the simulated key presses and that the input is focused
+	assert(input.Text == config.text, "Input text should match the simulated key presses")
+	input:removeFromParent()
 end
 
 assert(type(orca.async) == 'function', "orca.async should be a function")
 
 test_text_block_layout()
 test_stack_view_layout()
+test_button_interaction()
+test_input_interaction()

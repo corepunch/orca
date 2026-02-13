@@ -124,12 +124,15 @@ HANDLER(Input, KeyDown)
       pInput->Cursor = MIN(pInput->Cursor + 1, dwLength);
       break;
     default:
-      szText[dwLength + 1] = 0;
-      for (uint32_t s = dwLength; s > pInput->Cursor; s--) {
-        szText[s] = szText[s - 1];
+      if (pInput->Cursor < MAX_PROPERTY_STRING) {
+        szText[dwLength + 1] = 0;
+        for (uint32_t s = dwLength; s > pInput->Cursor; s--) {
+          szText[s] = szText[s - 1];
+        }
+        szText[pInput->Cursor++] = *(LPSTR)&pKeyDown->lParam;
       }
-      szText[pInput->Cursor++] = *(LPSTR)&pKeyDown->lParam;
       SV_PostMessage(hObject, "Char", 0, 0);
+      break;
   }
   OBJ_SetDirty(hObject);
   return TRUE;

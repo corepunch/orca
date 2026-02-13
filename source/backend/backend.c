@@ -82,16 +82,14 @@ int f_event_new(lua_State* L) {
     while (lua_next(L, 1) != 0) {
       if (lua_type(L, -2) == LUA_TSTRING) {
         const char* key = lua_tostring(L, -2);
-        if (strcmp(key, "target") == 0) {
-          msg->target = f_checkObject(L, -1);
-        } else if (strcmp(key, "message") == 0) {
-          msg->message = fnv1a32(luaL_checkstring(L, -1));
-        } else if (strcmp(key, "x") == 0) {
-          msg->x = luaL_checknumber(L, -1);
-        } else if (strcmp(key, "y") == 0) {
-          msg->y = luaL_checknumber(L, -1);
-        } else if (strcmp(key, "async") == 0) {
-          msg->syncronous = !lua_toboolean(L, -1);
+        if (strcmp(key, "target") == 0) { msg->target = f_checkObject(L, -1);
+        } else if (strcmp(key, "message") == 0) { msg->message = fnv1a32(luaL_checkstring(L, -1));
+        } else if (strcmp(key, "x") == 0) { msg->x = luaL_checknumber(L, -1);
+        } else if (strcmp(key, "y") == 0) { msg->y = luaL_checknumber(L, -1);
+        } else if (strcmp(key, "key") == 0) { msg->keyCode = luaL_checknumber(L, -1);
+        } else if (strcmp(key, "modflags") == 0) { msg->modflags = luaL_checknumber(L, -1);
+        } else if (strcmp(key, "async") == 0) { msg->syncronous = !lua_toboolean(L, -1);
+        } else if (strcmp(key, "text") == 0) { strncpy((char*)&msg->lParam, luaL_checkstring(L, -1), sizeof(msg->lParam));
         }
       }
       lua_pop(L, 1); // remove value, keep key for next iteration
