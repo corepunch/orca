@@ -48,6 +48,8 @@ HANDLER(Input, DrawBrush)
 
 HANDLER(Input, MakeText)
 {
+  LPSTR szText = GetTextRun(hObject)->Text;
+  pInput->Cursor = MIN((int)strlen(szText), pInput->Cursor);
   pMakeText->text->cursor = pInput->Cursor;
   return FALSE;
 }
@@ -104,6 +106,7 @@ HANDLER(Input, KeyDown)
     case WI_KEY_ENTER:
       if (!pInput->Multiline) {
         OBJ_SetFocus(NULL);
+        SV_PostMessage(hObject, "Submit", 0, szText);
       } else {
         szText[dwLength + 1] = 0;
         for (uint32_t s = dwLength; s > pInput->Cursor; s--) {

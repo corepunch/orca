@@ -4,6 +4,7 @@
 
 #include <source/UIKit/UIKit.h>
 
+#define PLACEHOLDER_OPACITY 0.33f
 
 enum label_step
 {
@@ -229,11 +230,13 @@ HANDLER(TextBlock, DrawBrush)
 
   struct ViewEntity entity;
   TextBlockConceptPtr text = GetTextBlockConcept(hObject);
-
+  float modopacity = 1.f;
   if (text->PlaceholderText == text->_text->run[0].string && pDrawBrush->foreground) {
     static struct BrushShorthand zero = { 0 };
     if (memcmp(&text->Placeholder, &zero, sizeof(struct BrushShorthand))) {
       pDrawBrush->brush = &text->Placeholder;
+    } else {
+      modopacity = PLACEHOLDER_OPACITY;
     }
   }
 
@@ -241,6 +244,7 @@ HANDLER(TextBlock, DrawBrush)
 
   if (pDrawBrush->foreground) {
     entity.texture = 0;
+    entity.opacity *= modopacity;
     entity.radius = (struct vec4){0};
     entity.rect = pTextBlock->_node2D->_rect;
 //    TextBlockConceptPtr label = GetTextBlockConcept(hObject);
