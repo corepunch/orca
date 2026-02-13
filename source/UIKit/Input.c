@@ -12,6 +12,8 @@ HANDLER(Input, DrawBrush)
   if (pDrawBrush->foreground && core_GetFocus() == hObject) {
     memset(&entity, 0, sizeof(entity));
     Node2D_GetViewEntity(hObject, &entity, NULL, pDrawBrush->brush);
+    memset(&entity.borderWidth, 0, sizeof(entity.borderWidth));
+    memset(&entity.radius, 0, sizeof(entity.radius));
     entity.rect = pTextRun->_textinfo.cursor;
     entity.rect.x += pTextRun->_textinfo.txInsets.left;
     entity.rect.y += pTextRun->_textinfo.txInsets.top;

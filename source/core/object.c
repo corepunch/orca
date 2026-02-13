@@ -634,7 +634,7 @@ ANIM_FindByName(lpKeyframeAnim_t anims, lpcString_t name);
 void
 OBJ_SetFocus(lpObject_t pobj)
 {
-  if (core.focus == pobj || pobj->flags&OF_NOACTIVATE)
+  if (core.focus == pobj || (pobj && (pobj->flags & OF_NOACTIVATE)))
     return;
   if (core.focus) {
     SV_PostMessage(core.focus, "KillFocus", 0, pobj);

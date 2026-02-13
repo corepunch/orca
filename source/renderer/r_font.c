@@ -215,7 +215,7 @@ T_GetSize(struct ViewText const* text,
 
       if (cursor == text->cursor && rcursor) {
         rcursor->x = textwidth + wordwidth;
-        rcursor->y = textSize.height - FT_SCALE(lineheight);
+        rcursor->y = textSize.height;
         rcursor->width = 0;
         rcursor->height = FT_SCALE(lineheight);
       }
