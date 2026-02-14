@@ -312,7 +312,8 @@ Model_CreateRoundedRectangle(struct model** ppModel)
 {
   // 4 corners * ROUNDED_VERTICES + 4 center vertices (one per corner)
   DRAWVERT vertices[4 * ROUNDED_VERTICES + 4];
-  DRAWINDEX indices[4 * ROUNDED_VERTICES * 3];
+  // Fan triangles + edge quads + center quad: 4*(ROUNDED_VERTICES-1) + 4*2 + 2
+  DRAWINDEX indices[4 * ROUNDED_VERTICES * 3 + 30];
   uint32_t vidx = 0, iidx = 0;
   vec2_t crn[] = {{1,1}, {0,1}, {0,0}, {1,0}};
   
@@ -349,7 +350,8 @@ Model_CreateRoundedRectangle(struct model** ppModel)
   for (uint32_t c = 0; c < 4; c++) {
     uint32_t centerIdx = c * (ROUNDED_VERTICES + 1);
     uint32_t cornerStart = centerIdx + 1;
-    uint32_t nextCornerStart = ((c + 1) % 4) * (ROUNDED_VERTICES + 1) + 1;
+    uint32_t nextCenterIdx = ((c + 1) % 4) * (ROUNDED_VERTICES + 1);
+    uint32_t nextCornerStart = nextCenterIdx + 1;
     
     // Create fan triangles for the rounded corner
     for (uint32_t i = 0; i < ROUNDED_VERTICES - 1; i++) {
@@ -358,11 +360,24 @@ Model_CreateRoundedRectangle(struct model** ppModel)
       indices[iidx++] = cornerStart + i + 1;
     }
     
-    // Connect last vertex of this corner to first vertex of next corner
+    // Connect this corner to next corner with 2 triangles (forming a quad)
     indices[iidx++] = centerIdx;
     indices[iidx++] = cornerStart + ROUNDED_VERTICES - 1;
+    indices[iidx++] = nextCenterIdx;
+    
+    indices[iidx++] = cornerStart + ROUNDED_VERTICES - 1;
     indices[iidx++] = nextCornerStart;
+    indices[iidx++] = nextCenterIdx;
   }
+  
+  // Add quad in the middle connecting all 4 center vertices
+  indices[iidx++] = 0;  // Center 0 (top-right)
+  indices[iidx++] = 1 * (ROUNDED_VERTICES + 1);  // Center 1 (top-left)
+  indices[iidx++] = 2 * (ROUNDED_VERTICES + 1);  // Center 2 (bottom-left)
+  
+  indices[iidx++] = 0;  // Center 0 (top-right)
+  indices[iidx++] = 2 * (ROUNDED_VERTICES + 1);  // Center 2 (bottom-left)
+  indices[iidx++] = 3 * (ROUNDED_VERTICES + 1);  // Center 3 (bottom-right)
   
   DRAWSURFATTR attr[] = { VERTEX_SEMANTIC_POSITION,
     VERTEX_ATTR_DATATYPE_FLOAT32,
