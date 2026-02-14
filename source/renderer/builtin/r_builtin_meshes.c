@@ -307,15 +307,8 @@ Model_CreateRectangle(struct rect const* f,
 HRESULT
 Model_CreateRoundedRectangle(struct model** ppModel)
 {
-  // Calculate total vertices: 4 corners * ROUNDED_VERTICES + center vertex
-  uint32_t const cornerVerts = ROUNDED_VERTICES;
-  uint32_t const totalVerts = 4 * cornerVerts + 1;
-  
-  DRAWVERT vertices[totalVerts];
-  // Approximate: 4 triangular fans (one per corner), each with cornerVerts triangles
-  // Each triangle needs 3 indices, but fan reuses center and previous vertex
-  // So per corner: cornerVerts triangles = cornerVerts * 3 indices
-  DRAWINDEX indices[4 * cornerVerts * 3];
+  DRAWVERT vertices[4 * ROUNDED_VERTICES + 1];
+  DRAWINDEX indices[4 * ROUNDED_VERTICES * 3];
   
   uint32_t vidx = 0;
   uint32_t iidx = 0;
@@ -326,8 +319,8 @@ Model_CreateRoundedRectangle(struct model** ppModel)
   
   // Generate vertices for each corner
   // Top-right corner: x from 0.001 to 1.0, y from 0.001 to 1.0
-  for (uint32_t i = 0; i < cornerVerts; i++) {
-    float angle = (float)i / (float)(cornerVerts - 1) * M_PI_2; // 0 to PI/2
+  for (uint32_t i = 0; i < ROUNDED_VERTICES; i++) {
+    float angle = (float)i / (float)(ROUNDED_VERTICES - 1) * M_PI_2; // 0 to PI/2
     float x = 0.001f + (1.0f - 0.001f) * cos(angle);
     float y = 0.001f + (1.0f - 0.001f) * sin(angle);
     float u = 0.5f + x * 0.5f;
@@ -336,8 +329,8 @@ Model_CreateRoundedRectangle(struct model** ppModel)
   }
   
   // Top-left corner: x from -0.001 to -1.0, y from 0.001 to 1.0
-  for (uint32_t i = 0; i < cornerVerts; i++) {
-    float angle = (float)i / (float)(cornerVerts - 1) * M_PI_2; // 0 to PI/2
+  for (uint32_t i = 0; i < ROUNDED_VERTICES; i++) {
+    float angle = (float)i / (float)(ROUNDED_VERTICES - 1) * M_PI_2; // 0 to PI/2
     float x = -0.001f - (1.0f - 0.001f) * sin(angle);
     float y = 0.001f + (1.0f - 0.001f) * cos(angle);
     float u = 0.5f + x * 0.5f;
@@ -346,8 +339,8 @@ Model_CreateRoundedRectangle(struct model** ppModel)
   }
   
   // Bottom-left corner: x from -0.001 to -1.0, y from -0.001 to -1.0
-  for (uint32_t i = 0; i < cornerVerts; i++) {
-    float angle = (float)i / (float)(cornerVerts - 1) * M_PI_2; // 0 to PI/2
+  for (uint32_t i = 0; i < ROUNDED_VERTICES; i++) {
+    float angle = (float)i / (float)(ROUNDED_VERTICES - 1) * M_PI_2; // 0 to PI/2
     float x = -0.001f - (1.0f - 0.001f) * cos(angle);
     float y = -0.001f - (1.0f - 0.001f) * sin(angle);
     float u = 0.5f + x * 0.5f;
@@ -356,8 +349,8 @@ Model_CreateRoundedRectangle(struct model** ppModel)
   }
   
   // Bottom-right corner: x from 0.001 to 1.0, y from -0.001 to -1.0
-  for (uint32_t i = 0; i < cornerVerts; i++) {
-    float angle = (float)i / (float)(cornerVerts - 1) * M_PI_2; // 0 to PI/2
+  for (uint32_t i = 0; i < ROUNDED_VERTICES; i++) {
+    float angle = (float)i / (float)(ROUNDED_VERTICES - 1) * M_PI_2; // 0 to PI/2
     float x = 0.001f + (1.0f - 0.001f) * sin(angle);
     float y = -0.001f - (1.0f - 0.001f) * cos(angle);
     float u = 0.5f + x * 0.5f;
@@ -367,16 +360,16 @@ Model_CreateRoundedRectangle(struct model** ppModel)
   
   // Generate indices for triangular fans (one per corner)
   for (uint32_t corner = 0; corner < 4; corner++) {
-    uint32_t cornerStart = 1 + corner * cornerVerts;
-    for (uint32_t i = 0; i < cornerVerts - 1; i++) {
+    uint32_t cornerStart = 1 + corner * ROUNDED_VERTICES;
+    for (uint32_t i = 0; i < ROUNDED_VERTICES - 1; i++) {
       indices[iidx++] = centerIdx;
       indices[iidx++] = cornerStart + i;
       indices[iidx++] = cornerStart + i + 1;
     }
     // Connect last vertex of this corner to first vertex of next corner
-    uint32_t nextCornerStart = 1 + ((corner + 1) % 4) * cornerVerts;
+    uint32_t nextCornerStart = 1 + ((corner + 1) % 4) * ROUNDED_VERTICES;
     indices[iidx++] = centerIdx;
-    indices[iidx++] = cornerStart + cornerVerts - 1;
+    indices[iidx++] = cornerStart + ROUNDED_VERTICES - 1;
     indices[iidx++] = nextCornerStart;
   }
   
