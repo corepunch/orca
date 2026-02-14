@@ -312,8 +312,8 @@ Model_CreateRoundedRectangle(struct model** ppModel)
 {
   // 4 corners * ROUNDED_VERTICES + 4 center vertices (one per corner)
   DRAWVERT vertices[4 * ROUNDED_VERTICES + 4];
-  // Fan triangles + edge quads + center quad: 4*(ROUNDED_VERTICES-1) + 4*2 + 2
-  DRAWINDEX indices[4 * ROUNDED_VERTICES * 3 + 30];
+  // Fan triangles + edge quads + center quad: (4*(ROUNDED_VERTICES-1) + 4*2 + 2) * 3 indices
+  DRAWINDEX indices[(4 * (ROUNDED_VERTICES - 1) + 4 * 2 + 2) * 3];
   uint32_t vidx = 0, iidx = 0;
   vec2_t crn[] = {{1,1}, {0,1}, {0,0}, {1,0}};
   
