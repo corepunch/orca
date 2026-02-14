@@ -330,9 +330,9 @@ Model_CreateRoundedRectangle(struct model** ppModel)
     *(int*)&v.color = -1;
     verts[vidx++] = v;
 
-    // Generate rounded corner vertices
+    // Generate rounded corner vertices (evenly spaced from 0 to PI/2 inclusive)
     for (uint32_t i = 0; i < ROUNDED_VERTICES; i++) {
-      float angle = (float)i / (float)(ROUNDED_VERTICES - 1) * M_PI_2; // 0 to PI/2
+      float angle = (float)i / (float)(ROUNDED_VERTICES - 1) * M_PI_2;
       memset(&v, 0, sizeof(DRAWVERT));
       VEC3_Set(&v.xyz, crn[c].x, crn[c].y, 0);
       switch(c) {
@@ -359,7 +359,8 @@ Model_CreateRoundedRectangle(struct model** ppModel)
     ADD_TRIANGLE(centerIdx, nextCornerStart, nextCornerStart + 1);
   }
 
-  // Generate base rectangle
+  // Generate base rectangle (connects the 4 corner center vertices)
+  // This creates the interior quad; shader expands corners to fill gaps
   ADD_TRIANGLE(3 * (ROUNDED_VERTICES + 1), 1 * (ROUNDED_VERTICES + 1), 0 * (ROUNDED_VERTICES + 1));
   ADD_TRIANGLE(1 * (ROUNDED_VERTICES + 1), 2 * (ROUNDED_VERTICES + 1), 3 * (ROUNDED_VERTICES + 1));
 
@@ -420,9 +421,9 @@ Model_CreateRoundedBorder(struct model** ppModel)
     *(int*)&v.color = -1;
     verts[vidx++] = v;
 
-    // Generate rounded corner vertices (outer then inner for each angle)
+    // Generate rounded corner vertices (outer then inner for each angle, evenly spaced from 0 to PI/2 inclusive)
     for (uint32_t i = 0; i < ROUNDED_VERTICES; i++) {
-      float angle = (float)i / (float)(ROUNDED_VERTICES - 1) * M_PI_2; // 0 to PI/2
+      float angle = (float)i / (float)(ROUNDED_VERTICES - 1) * M_PI_2;
       
       // Outer vertex
       memset(&v, 0, sizeof(DRAWVERT));
