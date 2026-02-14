@@ -310,75 +310,70 @@ Model_CreateRectangle(struct rect const* f,
 HRESULT
 Model_CreateRoundedRectangle(struct model** ppModel)
 {
-  DRAWVERT vertices[4 * ROUNDED_VERTICES];
+  // 4 corners * ROUNDED_VERTICES + 4 center vertices (one per corner)
+  DRAWVERT vertices[4 * ROUNDED_VERTICES + 4];
   DRAWINDEX indices[4 * ROUNDED_VERTICES * 3];
-  
-  uint32_t vidx = 0;
-  uint32_t iidx = 0;
+  uint32_t vidx = 0, iidx = 0;
+  vec2_t crn[] = {{1,1}, {0,1}, {0,0}, {1,0}};
   
   // Generate all 4 corners in a single loop
-  for (uint32_t corner = 0; corner < 4; corner++) {
-    // Corner positions: (1,1), (0,1), (0,0), (1,0)
-    float cornerX = (corner == 0 || corner == 3) ? 1.0f : 0.0f;
-    float cornerY = (corner == 0 || corner == 1) ? 1.0f : 0.0f;
+  for (uint32_t c = 0; c < 4; c++) {
+    // Add center vertex for this corner (for the rounded corner fan)
+    DRAWVERT centerVertex;
+    memset(&centerVertex, 0, sizeof(DRAWVERT));
+    VEC3_Set(&centerVertex.xyz, crn[c].x, crn[c].y, 0);
+    VEC2_Set(&centerVertex.texcoord[0], crn[c].x, 1-crn[c].y);
+    VEC2_Set(&centerVertex.texcoord[1], 0, 0); // No offset for center vertex
+    *(int*)&centerVertex.color = -1;
+    vertices[vidx++] = centerVertex;
     
+    // Generate rounded corner vertices
     for (uint32_t i = 0; i < ROUNDED_VERTICES; i++) {
       float angle = (float)i / (float)(ROUNDED_VERTICES - 1) * M_PI_2; // 0 to PI/2
-      
-      // Calculate normalized offset direction for this vertex in the corner arc
-      float offsetX = 0.0f, offsetY = 0.0f;
-      switch(corner) {
-        case 0: // Top-right
-          offsetX = cos(angle);
-          offsetY = sin(angle);
-          break;
-        case 1: // Top-left
-          offsetX = -sin(angle);
-          offsetY = cos(angle);
-          break;
-        case 2: // Bottom-left
-          offsetX = -cos(angle);
-          offsetY = -sin(angle);
-          break;
-        case 3: // Bottom-right
-          offsetX = sin(angle);
-          offsetY = -cos(angle);
-          break;
-      }
-      
       DRAWVERT vertex;
       memset(&vertex, 0, sizeof(DRAWVERT));
-      VEC3_Set(&vertex.xyz, cornerX, cornerY, 0);
-      VEC2_Set(&vertex.texcoord[0], cornerX, cornerY);
-      VEC2_Set(&vertex.texcoord[1], offsetX, offsetY);  // Offset direction for radius expansion
-      vertex.color.r = 255;
-      vertex.color.g = 255;
-      vertex.color.b = 255;
-      vertex.color.a = 255;
+      VEC3_Set(&vertex.xyz, crn[c].x, crn[c].y, 0);
+      VEC2_Set(&vertex.texcoord[0], crn[c].x, 1-crn[c].y);
+      switch(c) {
+        case 0: VEC2_Set(&vertex.texcoord[1], cos(angle), sin(angle)); break;
+        case 1: VEC2_Set(&vertex.texcoord[1], -sin(angle), cos(angle)); break;
+        case 2: VEC2_Set(&vertex.texcoord[1], -cos(angle), -sin(angle)); break;
+        case 3: VEC2_Set(&vertex.texcoord[1], sin(angle), -cos(angle)); break;
+      }
+      *(int*)&vertex.color = -1;
       vertices[vidx++] = vertex;
     }
   }
   
-  // Simple quad topology: two triangles connecting the 4 corners
-  // Using first vertex of each corner group
-  indices[iidx++] = 0;                      // Corner 0 (top-right)
-  indices[iidx++] = ROUNDED_VERTICES;       // Corner 1 (top-left)
-  indices[iidx++] = 2 * ROUNDED_VERTICES;   // Corner 2 (bottom-left)
-  
-  indices[iidx++] = 0;                      // Corner 0 (top-right)
-  indices[iidx++] = 2 * ROUNDED_VERTICES;   // Corner 2 (bottom-left)
-  indices[iidx++] = 3 * ROUNDED_VERTICES;   // Corner 3 (bottom-right)
+  // Generate indices around the rectangle perimeter
+  for (uint32_t c = 0; c < 4; c++) {
+    uint32_t centerIdx = c * (ROUNDED_VERTICES + 1);
+    uint32_t cornerStart = centerIdx + 1;
+    uint32_t nextCornerStart = ((c + 1) % 4) * (ROUNDED_VERTICES + 1) + 1;
+    
+    // Create fan triangles for the rounded corner
+    for (uint32_t i = 0; i < ROUNDED_VERTICES - 1; i++) {
+      indices[iidx++] = centerIdx;
+      indices[iidx++] = cornerStart + i;
+      indices[iidx++] = cornerStart + i + 1;
+    }
+    
+    // Connect last vertex of this corner to first vertex of next corner
+    indices[iidx++] = centerIdx;
+    indices[iidx++] = cornerStart + ROUNDED_VERTICES - 1;
+    indices[iidx++] = nextCornerStart;
+  }
   
   DRAWSURFATTR attr[] = { VERTEX_SEMANTIC_POSITION,
-                          VERTEX_ATTR_DATATYPE_FLOAT32,
-                          VERTEX_SEMANTIC_TEXCOORD0,
-                          VERTEX_ATTR_DATATYPE_FLOAT32,
-                          VERTEX_SEMANTIC_TEXCOORD1,
-                          VERTEX_ATTR_DATATYPE_FLOAT32,
-                          VERTEX_SEMANTIC_COLOR,
-                          VERTEX_ATTR_DATATYPE_UINT8 |
-                            VERTEX_ATTR_DATATYPE_NORMALIZED,
-                          VERTEX_SEMANTIC_COUNT };
+    VERTEX_ATTR_DATATYPE_FLOAT32,
+    VERTEX_SEMANTIC_TEXCOORD0,
+    VERTEX_ATTR_DATATYPE_FLOAT32,
+    VERTEX_SEMANTIC_TEXCOORD1,
+    VERTEX_ATTR_DATATYPE_FLOAT32,
+    VERTEX_SEMANTIC_COLOR,
+    VERTEX_ATTR_DATATYPE_UINT8 |
+    VERTEX_ATTR_DATATYPE_NORMALIZED,
+    VERTEX_SEMANTIC_COUNT };
   
   DRAWSURF dsurf;
   dsurf.vertices = vertices;
