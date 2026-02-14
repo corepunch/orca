@@ -203,6 +203,7 @@ enum
   MD_RECTANGLE,
   MD_PLANE,
   MD_DOT,
+  MD_ROUNDED_RECT,
   MD_COUNT
 };
 
@@ -346,6 +347,8 @@ Model_CreateRectangle(struct rect const*,
                       struct rect const*,
                       enum vertex_order,
                       struct model**);
+HRESULT
+Model_CreateRoundedRectangle(struct model** ppModel);
 HRESULT
 Model_Save(struct model* mesh, lpcString_t filename);
 HRESULT

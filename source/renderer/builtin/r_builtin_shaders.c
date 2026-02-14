@@ -83,7 +83,7 @@ struct shader_desc shader_ui = {
     { "u_color", UT_COLOR, PRECISION_LOW },
     { "u_radius", UT_FLOAT_VEC4, PRECISION_LOW },
     { "u_borderWidth", UT_FLOAT_VEC4, PRECISION_LOW },
-    { "u_rectangle", UT_FLOAT_VEC4, PRECISION_LOW },
+    { "u_rect", UT_FLOAT_VEC4, PRECISION_LOW },
     { "u_opacity", UT_FLOAT, PRECISION_LOW },
   },
     .Attributes = {
@@ -96,34 +96,19 @@ struct shader_desc shader_ui = {
       { "v_texcoord0", UT_FLOAT_VEC2 },
     },
     .VertexShader =
+  "#define r u_radius\n"
   "void main() {\n"
-  "  gl_Position = u_modelViewProjectionTransform * a_position;\n"
-  "  v_texcoord0 = (u_textureTransform * vec3(a_texcoord0.xy, 1.0)).xy;\n"
-  "  vec2 borderOffset = vec2(u_borderWidth.x + u_borderWidth.y, u_borderWidth.z + u_borderWidth.w);\n"
-  "  v_texcoord0 = v_texcoord0 * (vec2(1.0) + borderOffset) - u_borderWidth.yz;\n"
+  "  vec2 s = step(vec2(0.5), a_position.xy);\n"
+  "  float rad = mix(mix(r.x, r.y, s.x), mix(r.w, r.z, s.y), s.y);\n"
+  "  vec2 pos = a_position.xy * u_rect.zw + a_texcoord0 * rad;\n"
+  "  vec3 tex = vec3(pos.x / u_rect.z, 1.0 - pos.y / u_rect.w, 1.0);\n"
+  "  gl_Position = u_modelViewProjectionTransform * vec4(pos, 0, 1);\n"
+  "  v_texcoord0 = (u_textureTransform * tex).xy;\n"
   "}\n",
     .FragmentShader =
-  "float mask(vec2 r0, vec2 r1) {\n"
-  "  vec2 dist = clamp(v_texcoord0, r0, vec2(1.0) - r0) - v_texcoord0;\n"
-  "  return step(length(dist * r1.yx), r1.x * r1.y);\n"
-  "}\n"
   "void main() {\n"
-  "  vec2 border;\n"
-  "  vec2 radius = mix(\n"
-  "    mix(u_radius.yy, u_radius.zz, step(v_texcoord0.y, 0.5)),\n"
-  "    mix(u_radius.xx, u_radius.ww, step(v_texcoord0.y, 0.5)),\n"
-  "    step(v_texcoord0.x, 0.5)) / u_rectangle.zw;\n"
-  "  border.x = mix(u_borderWidth.y, u_borderWidth.x, step(0.5, v_texcoord0.x));\n"
-  "  border.y = mix(u_borderWidth.z, u_borderWidth.w, step(0.5, v_texcoord0.y));\n"
-  "  float m_1 = mask(radius, radius + border);\n"
-  "  float m_2 = mask(radius, radius);\n"
-  "  fragColor = texture(u_texture, v_texcoord0);\n"
-  "  fragColor *= u_color;\n"
-  "  fragColor *= u_color.a;\n"
-  "  fragColor *= u_opacity;\n"
-  "  if (length(u_radius)>0.0001)\n"
-  "  fragColor *= mix(m_1 - m_2, m_2, step(dot(vec4(1),u_borderWidth), 0.0001));\n"
-//  	"  fragColor += vec4(0.1);"
+  "  fragColor = texture(u_texture, v_texcoord0) * u_color * u_color.a * u_opacity;\n"
+  "  fragColor += vec4(0.1);"
   "}\n"
 };
 
