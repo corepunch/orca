@@ -305,73 +305,72 @@ Model_CreateRectangle(struct rect const* f,
 }
 
 // Creates a rounded rectangle mesh for shader-based rendering with variable radius.
-// Generates a mesh in -1...1 coordinate space with center near 0 (top-right: 0.001..1.0).
-// The mesh consists of a center vertex and 4 corners with ROUNDED_VERTICES each.
+// Generates a mesh in 0...1 coordinate space with corners collapsed to single points.
+// The mesh uses texcoord[1] to store offset directions for shader-based corner expansion.
 HRESULT
 Model_CreateRoundedRectangle(struct model** ppModel)
 {
-  DRAWVERT vertices[4 * ROUNDED_VERTICES + 1];
+  DRAWVERT vertices[4 * ROUNDED_VERTICES];
   DRAWINDEX indices[4 * ROUNDED_VERTICES * 3];
   
   uint32_t vidx = 0;
   uint32_t iidx = 0;
   
-  // Center vertex at origin (very close to 0)
-  vertices[vidx++] = vertex_new2(0.0f, 0.0f, 0.5f, 0.5f);
-  uint32_t centerIdx = 0;
-  
-  // Generate vertices for each corner
-  // Top-right corner: x from 0.001 to 1.0, y from 0.001 to 1.0
-  for (uint32_t i = 0; i < ROUNDED_VERTICES; i++) {
-    float angle = (float)i / (float)(ROUNDED_VERTICES - 1) * M_PI_2; // 0 to PI/2
-    float x = 0.001f + (1.0f - 0.001f) * cos(angle);
-    float y = 0.001f + (1.0f - 0.001f) * sin(angle);
-    float u = 0.5f + x * 0.5f;
-    float v = 0.5f + y * 0.5f;
-    vertices[vidx++] = vertex_new2(x, y, u, v);
-  }
-  
-  // Top-left corner: x from -0.001 to -1.0, y from 0.001 to 1.0
-  for (uint32_t i = 0; i < ROUNDED_VERTICES; i++) {
-    float angle = (float)i / (float)(ROUNDED_VERTICES - 1) * M_PI_2; // 0 to PI/2
-    float x = -0.001f - (1.0f - 0.001f) * sin(angle);
-    float y = 0.001f + (1.0f - 0.001f) * cos(angle);
-    float u = 0.5f + x * 0.5f;
-    float v = 0.5f + y * 0.5f;
-    vertices[vidx++] = vertex_new2(x, y, u, v);
-  }
-  
-  // Bottom-left corner: x from -0.001 to -1.0, y from -0.001 to -1.0
-  for (uint32_t i = 0; i < ROUNDED_VERTICES; i++) {
-    float angle = (float)i / (float)(ROUNDED_VERTICES - 1) * M_PI_2; // 0 to PI/2
-    float x = -0.001f - (1.0f - 0.001f) * cos(angle);
-    float y = -0.001f - (1.0f - 0.001f) * sin(angle);
-    float u = 0.5f + x * 0.5f;
-    float v = 0.5f + y * 0.5f;
-    vertices[vidx++] = vertex_new2(x, y, u, v);
-  }
-  
-  // Bottom-right corner: x from 0.001 to 1.0, y from -0.001 to -1.0
-  for (uint32_t i = 0; i < ROUNDED_VERTICES; i++) {
-    float angle = (float)i / (float)(ROUNDED_VERTICES - 1) * M_PI_2; // 0 to PI/2
-    float x = 0.001f + (1.0f - 0.001f) * sin(angle);
-    float y = -0.001f - (1.0f - 0.001f) * cos(angle);
-    float u = 0.5f + x * 0.5f;
-    float v = 0.5f + y * 0.5f;
-    vertices[vidx++] = vertex_new2(x, y, u, v);
+  // Generate all 4 corners in a single loop
+  // Each corner is collapsed to a point, with texcoord[1] storing the offset direction
+  for (uint32_t corner = 0; corner < 4; corner++) {
+    // Corner positions: (1,1), (0,1), (0,0), (1,0)
+    float cornerX = (corner == 0 || corner == 3) ? 1.0f : 0.0f;
+    float cornerY = (corner == 0 || corner == 1) ? 1.0f : 0.0f;
+    
+    for (uint32_t i = 0; i < ROUNDED_VERTICES; i++) {
+      float angle = (float)i / (float)(ROUNDED_VERTICES - 1) * M_PI_2; // 0 to PI/2
+      
+      // Calculate normalized offset direction for this vertex in the corner arc
+      float offsetX = 0.0f, offsetY = 0.0f;
+      switch(corner) {
+        case 0: // Top-right
+          offsetX = cos(angle);
+          offsetY = sin(angle);
+          break;
+        case 1: // Top-left
+          offsetX = -sin(angle);
+          offsetY = cos(angle);
+          break;
+        case 2: // Bottom-left
+          offsetX = -cos(angle);
+          offsetY = -sin(angle);
+          break;
+        case 3: // Bottom-right
+          offsetX = sin(angle);
+          offsetY = -cos(angle);
+          break;
+      }
+      
+      DRAWVERT vertex;
+      memset(&vertex, 0, sizeof(DRAWVERT));
+      VEC3_Set(&vertex.xyz, cornerX, cornerY, 0);
+      VEC2_Set(&vertex.texcoord[0], cornerX, cornerY);
+      VEC2_Set(&vertex.texcoord[1], offsetX, offsetY);  // Offset direction for radius expansion
+      vertex.color.r = 255;
+      vertex.color.g = 255;
+      vertex.color.b = 255;
+      vertex.color.a = 255;
+      vertices[vidx++] = vertex;
+    }
   }
   
   // Generate indices for triangular fans (one per corner)
   for (uint32_t corner = 0; corner < 4; corner++) {
-    uint32_t cornerStart = 1 + corner * ROUNDED_VERTICES;
+    uint32_t cornerStart = corner * ROUNDED_VERTICES;
     for (uint32_t i = 0; i < ROUNDED_VERTICES - 1; i++) {
-      indices[iidx++] = centerIdx;
+      indices[iidx++] = cornerStart;  // First vertex of corner as fan center
       indices[iidx++] = cornerStart + i;
       indices[iidx++] = cornerStart + i + 1;
     }
     // Connect last vertex of this corner to first vertex of next corner
-    uint32_t nextCornerStart = 1 + ((corner + 1) % 4) * ROUNDED_VERTICES;
-    indices[iidx++] = centerIdx;
+    uint32_t nextCornerStart = ((corner + 1) % 4) * ROUNDED_VERTICES;
+    indices[iidx++] = cornerStart;
     indices[iidx++] = cornerStart + ROUNDED_VERTICES - 1;
     indices[iidx++] = nextCornerStart;
   }
@@ -379,6 +378,8 @@ Model_CreateRoundedRectangle(struct model** ppModel)
   DRAWSURFATTR attr[] = { VERTEX_SEMANTIC_POSITION,
                           VERTEX_ATTR_DATATYPE_FLOAT32,
                           VERTEX_SEMANTIC_TEXCOORD0,
+                          VERTEX_ATTR_DATATYPE_FLOAT32,
+                          VERTEX_SEMANTIC_TEXCOORD1,
                           VERTEX_ATTR_DATATYPE_FLOAT32,
                           VERTEX_SEMANTIC_COLOR,
                           VERTEX_ATTR_DATATYPE_UINT8 |
