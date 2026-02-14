@@ -347,6 +347,10 @@ Model_CreateRectangle(struct rect const*,
                       enum vertex_order,
                       struct model**);
 HRESULT
+Model_CreateRoundedRectangle(struct model**);
+HRESULT
+Model_CreateRoundedBorder(struct model**);
+HRESULT
 Model_Save(struct model* mesh, lpcString_t filename);
 HRESULT
 Model_GenerateTangents(PDRAWSURF model);
