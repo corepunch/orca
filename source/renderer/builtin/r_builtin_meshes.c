@@ -2,6 +2,7 @@
 
 #define QUAD(a, b, c, d) a, d, c, d, a, b,
 #define SPHERE_SEGMENTS 16
+#define ROUNDED_VERTICES 16
 
 static DRAWVERT
 R_MakeVertex(float x,
@@ -300,5 +301,101 @@ Model_CreateRectangle(struct rect const* f,
   dsurf.numIndices = sizeof(indices) / sizeof(DRAWINDEX);
   dsurf.numSubmeshes = 0;
 
+  return Model_Create(attr, &dsurf, ppModel);
+}
+
+HRESULT
+Model_CreateRoundedRectangle(struct model** ppModel)
+{
+  // Calculate total vertices: 4 corners * ROUNDED_VERTICES + center vertex
+  uint32_t const cornerVerts = ROUNDED_VERTICES;
+  uint32_t const totalVerts = 4 * cornerVerts + 1;
+  
+  DRAWVERT vertices[totalVerts];
+  // Approximate: 4 triangular fans (one per corner), each with cornerVerts triangles
+  // Each triangle needs 3 indices, but fan reuses center and previous vertex
+  // So per corner: cornerVerts triangles = cornerVerts * 3 indices
+  DRAWINDEX indices[4 * cornerVerts * 3];
+  
+  uint32_t vidx = 0;
+  uint32_t iidx = 0;
+  
+  // Center vertex at origin (very close to 0)
+  vertices[vidx++] = vertex_new2(0.0f, 0.0f, 0.5f, 0.5f);
+  uint32_t centerIdx = 0;
+  
+  // Generate vertices for each corner
+  // Top-right corner: x from 0.001 to 1.0, y from 0.001 to 1.0
+  for (uint32_t i = 0; i < cornerVerts; i++) {
+    float angle = (float)i / (float)(cornerVerts - 1) * M_PI_2; // 0 to PI/2
+    float x = 0.001f + (1.0f - 0.001f) * cos(angle);
+    float y = 0.001f + (1.0f - 0.001f) * sin(angle);
+    float u = 0.5f + x * 0.5f;
+    float v = 0.5f + y * 0.5f;
+    vertices[vidx++] = vertex_new2(x, y, u, v);
+  }
+  
+  // Top-left corner: x from -0.001 to -1.0, y from 0.001 to 1.0
+  for (uint32_t i = 0; i < cornerVerts; i++) {
+    float angle = (float)i / (float)(cornerVerts - 1) * M_PI_2; // 0 to PI/2
+    float x = -0.001f - (1.0f - 0.001f) * sin(angle);
+    float y = 0.001f + (1.0f - 0.001f) * cos(angle);
+    float u = 0.5f + x * 0.5f;
+    float v = 0.5f + y * 0.5f;
+    vertices[vidx++] = vertex_new2(x, y, u, v);
+  }
+  
+  // Bottom-left corner: x from -0.001 to -1.0, y from -0.001 to -1.0
+  for (uint32_t i = 0; i < cornerVerts; i++) {
+    float angle = (float)i / (float)(cornerVerts - 1) * M_PI_2; // 0 to PI/2
+    float x = -0.001f - (1.0f - 0.001f) * cos(angle);
+    float y = -0.001f - (1.0f - 0.001f) * sin(angle);
+    float u = 0.5f + x * 0.5f;
+    float v = 0.5f + y * 0.5f;
+    vertices[vidx++] = vertex_new2(x, y, u, v);
+  }
+  
+  // Bottom-right corner: x from 0.001 to 1.0, y from -0.001 to -1.0
+  for (uint32_t i = 0; i < cornerVerts; i++) {
+    float angle = (float)i / (float)(cornerVerts - 1) * M_PI_2; // 0 to PI/2
+    float x = 0.001f + (1.0f - 0.001f) * sin(angle);
+    float y = -0.001f - (1.0f - 0.001f) * cos(angle);
+    float u = 0.5f + x * 0.5f;
+    float v = 0.5f + y * 0.5f;
+    vertices[vidx++] = vertex_new2(x, y, u, v);
+  }
+  
+  // Generate indices for triangular fans (one per corner)
+  for (uint32_t corner = 0; corner < 4; corner++) {
+    uint32_t cornerStart = 1 + corner * cornerVerts;
+    for (uint32_t i = 0; i < cornerVerts - 1; i++) {
+      indices[iidx++] = centerIdx;
+      indices[iidx++] = cornerStart + i;
+      indices[iidx++] = cornerStart + i + 1;
+    }
+    // Connect last vertex of this corner to first vertex of next corner
+    uint32_t nextCornerStart = 1 + ((corner + 1) % 4) * cornerVerts;
+    indices[iidx++] = centerIdx;
+    indices[iidx++] = cornerStart + cornerVerts - 1;
+    indices[iidx++] = nextCornerStart;
+  }
+  
+  DRAWSURFATTR attr[] = { VERTEX_SEMANTIC_POSITION,
+                          VERTEX_ATTR_DATATYPE_FLOAT32,
+                          VERTEX_SEMANTIC_TEXCOORD0,
+                          VERTEX_ATTR_DATATYPE_FLOAT32,
+                          VERTEX_SEMANTIC_COLOR,
+                          VERTEX_ATTR_DATATYPE_UINT8 |
+                            VERTEX_ATTR_DATATYPE_NORMALIZED,
+                          VERTEX_SEMANTIC_COUNT };
+  
+  DRAWSURF dsurf;
+  dsurf.vertices = vertices;
+  dsurf.indices = indices;
+  dsurf.neighbors = NULL;
+  dsurf.numVertices = vidx;
+  dsurf.numIndices = iidx;
+  dsurf.numSubmeshes = 0;
+  
   return Model_Create(attr, &dsurf, ppModel);
 }
