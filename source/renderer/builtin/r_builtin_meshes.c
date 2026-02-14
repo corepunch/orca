@@ -2,7 +2,7 @@
 
 #define QUAD(a, b, c, d) a, d, c, d, a, b,
 #define SPHERE_SEGMENTS 16
-#define ROUNDED_VERTICES 16
+#define ROUNDED_VERTICES 16  // Number of vertices per corner in rounded rectangle mesh
 
 static DRAWVERT
 R_MakeVertex(float x,
@@ -304,6 +304,9 @@ Model_CreateRectangle(struct rect const* f,
   return Model_Create(attr, &dsurf, ppModel);
 }
 
+// Creates a rounded rectangle mesh for shader-based rendering with variable radius.
+// Generates a mesh in -1...1 coordinate space with center near 0 (top-right: 0.001..1.0).
+// The mesh consists of a center vertex and 4 corners with ROUNDED_VERTICES each.
 HRESULT
 Model_CreateRoundedRectangle(struct model** ppModel)
 {
