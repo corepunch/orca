@@ -2,6 +2,7 @@
 
 #define QUAD(a, b, c, d) a, d, c, d, a, b,
 #define SPHERE_SEGMENTS 16
+#define ROUNDED_VERTICES 16  // Number of vertices per corner in rounded rectangle mesh
 
 static DRAWVERT
 R_MakeVertex(float x,
@@ -300,5 +301,102 @@ Model_CreateRectangle(struct rect const* f,
   dsurf.numIndices = sizeof(indices) / sizeof(DRAWINDEX);
   dsurf.numSubmeshes = 0;
 
+  return Model_Create(attr, &dsurf, ppModel);
+}
+
+// Creates a rounded rectangle mesh for shader-based rendering with variable radius.
+// Generates a mesh in 0...1 coordinate space with corners collapsed to single points.
+// The mesh uses texcoord[1] to store offset directions for shader-based corner expansion.
+HRESULT
+Model_CreateRoundedRectangle(struct model** ppModel)
+{
+  // 4 corners * ROUNDED_VERTICES + 4 center vertices (one per corner)
+  DRAWVERT vertices[4 * ROUNDED_VERTICES + 4];
+  // Fan triangles + edge quads + center quad: (4*(ROUNDED_VERTICES-1) + 4*2 + 2) * 3 indices
+  DRAWINDEX indices[(4 * (ROUNDED_VERTICES - 1) + 4 * 2 + 2) * 3];
+  uint32_t vidx = 0, iidx = 0;
+  vec2_t crn[] = {{1,1}, {0,1}, {0,0}, {1,0}};
+  
+  // Generate all 4 corners in a single loop
+  for (uint32_t c = 0; c < 4; c++) {
+    // Add center vertex for this corner (for the rounded corner fan)
+    DRAWVERT centerVertex;
+    memset(&centerVertex, 0, sizeof(DRAWVERT));
+    VEC3_Set(&centerVertex.xyz, crn[c].x, crn[c].y, 0);
+    VEC2_Set(&centerVertex.texcoord[0], crn[c].x, 1-crn[c].y);
+    VEC2_Set(&centerVertex.texcoord[1], 0, 0); // No offset for center vertex
+    *(int*)&centerVertex.color = -1;
+    vertices[vidx++] = centerVertex;
+    
+    // Generate rounded corner vertices
+    for (uint32_t i = 0; i < ROUNDED_VERTICES; i++) {
+      float angle = (float)i / (float)(ROUNDED_VERTICES - 1) * M_PI_2; // 0 to PI/2
+      DRAWVERT vertex;
+      memset(&vertex, 0, sizeof(DRAWVERT));
+      VEC3_Set(&vertex.xyz, crn[c].x, crn[c].y, 0);
+      VEC2_Set(&vertex.texcoord[0], crn[c].x, 1-crn[c].y);
+      switch(c) {
+        case 0: VEC2_Set(&vertex.texcoord[1], cos(angle), sin(angle)); break;
+        case 1: VEC2_Set(&vertex.texcoord[1], -sin(angle), cos(angle)); break;
+        case 2: VEC2_Set(&vertex.texcoord[1], -cos(angle), -sin(angle)); break;
+        case 3: VEC2_Set(&vertex.texcoord[1], sin(angle), -cos(angle)); break;
+      }
+      *(int*)&vertex.color = -1;
+      vertices[vidx++] = vertex;
+    }
+  }
+  
+  // Generate indices around the rectangle perimeter
+  for (uint32_t c = 0; c < 4; c++) {
+    uint32_t centerIdx = c * (ROUNDED_VERTICES + 1);
+    uint32_t cornerStart = centerIdx + 1;
+    uint32_t nextCenterIdx = ((c + 1) % 4) * (ROUNDED_VERTICES + 1);
+    uint32_t nextCornerStart = nextCenterIdx + 1;
+    
+    // Create fan triangles for the rounded corner
+    for (uint32_t i = 0; i < ROUNDED_VERTICES - 1; i++) {
+      indices[iidx++] = centerIdx;
+      indices[iidx++] = cornerStart + i;
+      indices[iidx++] = cornerStart + i + 1;
+    }
+    
+    // Connect this corner to next corner with 2 triangles (forming a quad)
+    indices[iidx++] = centerIdx;
+    indices[iidx++] = cornerStart + ROUNDED_VERTICES - 1;
+    indices[iidx++] = nextCenterIdx;
+    
+    indices[iidx++] = cornerStart + ROUNDED_VERTICES - 1;
+    indices[iidx++] = nextCornerStart;
+    indices[iidx++] = nextCenterIdx;
+  }
+  
+  // Add quad in the middle connecting all 4 center vertices
+  indices[iidx++] = 0;  // Center 0 (top-right)
+  indices[iidx++] = 1 * (ROUNDED_VERTICES + 1);  // Center 1 (top-left)
+  indices[iidx++] = 2 * (ROUNDED_VERTICES + 1);  // Center 2 (bottom-left)
+  
+  indices[iidx++] = 0;  // Center 0 (top-right)
+  indices[iidx++] = 2 * (ROUNDED_VERTICES + 1);  // Center 2 (bottom-left)
+  indices[iidx++] = 3 * (ROUNDED_VERTICES + 1);  // Center 3 (bottom-right)
+  
+  DRAWSURFATTR attr[] = { VERTEX_SEMANTIC_POSITION,
+    VERTEX_ATTR_DATATYPE_FLOAT32,
+    VERTEX_SEMANTIC_TEXCOORD0,
+    VERTEX_ATTR_DATATYPE_FLOAT32,
+    VERTEX_SEMANTIC_TEXCOORD1,
+    VERTEX_ATTR_DATATYPE_FLOAT32,
+    VERTEX_SEMANTIC_COLOR,
+    VERTEX_ATTR_DATATYPE_UINT8 |
+    VERTEX_ATTR_DATATYPE_NORMALIZED,
+    VERTEX_SEMANTIC_COUNT };
+  
+  DRAWSURF dsurf;
+  dsurf.vertices = vertices;
+  dsurf.indices = indices;
+  dsurf.neighbors = NULL;
+  dsurf.numVertices = vidx;
+  dsurf.numIndices = iidx;
+  dsurf.numSubmeshes = 0;
+  
   return Model_Create(attr, &dsurf, ppModel);
 }
