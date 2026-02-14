@@ -317,7 +317,6 @@ Model_CreateRoundedRectangle(struct model** ppModel)
   uint32_t iidx = 0;
   
   // Generate all 4 corners in a single loop
-  // Each corner is collapsed to a point, with texcoord[1] storing the offset direction
   for (uint32_t corner = 0; corner < 4; corner++) {
     // Corner positions: (1,1), (0,1), (0,0), (1,0)
     float cornerX = (corner == 0 || corner == 3) ? 1.0f : 0.0f;
@@ -360,20 +359,15 @@ Model_CreateRoundedRectangle(struct model** ppModel)
     }
   }
   
-  // Generate indices for triangular fans (one per corner)
-  for (uint32_t corner = 0; corner < 4; corner++) {
-    uint32_t cornerStart = corner * ROUNDED_VERTICES;
-    for (uint32_t i = 0; i < ROUNDED_VERTICES - 1; i++) {
-      indices[iidx++] = cornerStart;  // First vertex of corner as fan center
-      indices[iidx++] = cornerStart + i;
-      indices[iidx++] = cornerStart + i + 1;
-    }
-    // Connect last vertex of this corner to first vertex of next corner
-    uint32_t nextCornerStart = ((corner + 1) % 4) * ROUNDED_VERTICES;
-    indices[iidx++] = cornerStart;
-    indices[iidx++] = cornerStart + ROUNDED_VERTICES - 1;
-    indices[iidx++] = nextCornerStart;
-  }
+  // Simple quad topology: two triangles connecting the 4 corners
+  // Using first vertex of each corner group
+  indices[iidx++] = 0;                      // Corner 0 (top-right)
+  indices[iidx++] = ROUNDED_VERTICES;       // Corner 1 (top-left)
+  indices[iidx++] = 2 * ROUNDED_VERTICES;   // Corner 2 (bottom-left)
+  
+  indices[iidx++] = 0;                      // Corner 0 (top-right)
+  indices[iidx++] = 2 * ROUNDED_VERTICES;   // Corner 2 (bottom-left)
+  indices[iidx++] = 3 * ROUNDED_VERTICES;   // Corner 3 (bottom-right)
   
   DRAWSURFATTR attr[] = { VERTEX_SEMANTIC_POSITION,
                           VERTEX_ATTR_DATATYPE_FLOAT32,
