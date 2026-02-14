@@ -26,24 +26,19 @@ Token_Create(lpcString_t code)
 static lpcString_t image_ext[] = { "", ".png", ".jpeg", ".jpg", ".svg", NULL };
 
 static void
-PROP_ParseObjectValue(lua_State *L,
-                      lpProperty_t prop,
-                      lpcString_t path)
+PROP_ParseObjectValue(lua_State *L, lpProperty_t prop, lpcString_t path)
 {
   path_t tmp={0};
   snprintf(tmp, sizeof(tmp), "%s/", path);
   lpObject_t known = OBJ_FindKnownPrefab(tmp, NULL), object = NULL;
+  
   if (known) {
     PROP_SetValue(prop, &known);
     return;
   }
+  
   xmlWith(xmlDoc, doc, FS_LoadXML(path), xmlFreeDoc) {
     object = OBJ_LoadDocument(L, doc);
-    if (!object) {
-      Con_Error("Can't load object %s", path);
-      continue;
-    }
-    PROP_SetValue(prop, &object);
   }
   
   // Load image without xml
@@ -53,7 +48,7 @@ PROP_ParseObjectValue(lua_State *L,
       !strcmp(PROP_GetDesc(prop)->TypeString, "Texture"))
   {
     for (lpcString_t *ext = image_ext; *ext; ext++) {
-      ospathfmt_t unmasked;
+      ospathfmt_t unmasked = {0};
       strncpy(unmasked, path, strchr(path,'?') ?
               MIN(sizeof(unmasked), strchr(path, '?') - path) :
               sizeof(unmasked));
@@ -75,6 +70,7 @@ PROP_ParseObjectValue(lua_State *L,
             xmlDocSetRootElement(doc, root);
             doc->URL = xmlStrdup(XMLSTR(tmp));
             PROP_SetValue(prop, &(lpObject_t) { OBJ_LoadDocument(L, doc) });
+            return;
           }
         }
 //        snprintf(xml, sizeof(xml), "<Image Source=\"%s%s\" />", path, *ext);
@@ -83,6 +79,12 @@ PROP_ParseObjectValue(lua_State *L,
 //        }
       }
     }
+  }
+  
+  if (object) {
+    PROP_SetValue(prop, &object);
+  } else {
+    Con_Error("Can't load object %s", path);
   }
 }
 
@@ -356,6 +358,8 @@ _ParseEdges(lpObject_t hobj,
     snprintf(buf, sizeof(buf), pdesc->TypeString, _edges[i]);
     lpcPropertyDesc_t d = pdesc;
     for (; d->id && strcmp(d->id->Name, buf); d++);
+    if (!d->id)
+      break;
     lpcString_t s = PDESC_Parse(hobj, d, p, tmp[i], dest + (d->Offset - pdesc->Offset));
     SkipSpace(s);
     tmp[i + 1] = *s ? s : tmp[(i + 1) % MIN(2, i + 1)];

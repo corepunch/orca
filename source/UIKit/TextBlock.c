@@ -35,12 +35,12 @@ text_pos(lpcvec2_t padding,
 {
   switch (align) {
     case kTextHorizontalAlignmentRight:
-      return space - size + padding->y;
+      return space - size + padding->x;
     case kTextHorizontalAlignmentCenter:
-      return padding->y + (space - padding->x - padding->y - size) / 2;
+      return padding->x + (space - padding->x - padding->y - size) / 2;
     case kTextHorizontalAlignmentLeft:
     default:
-      return padding->y;
+      return padding->x;
   }
 }
 

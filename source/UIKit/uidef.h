@@ -29,54 +29,13 @@ typedef float actualPos_t[3];
 #define _LEFT Left
 #endif
 
-/// @def NODE2D_FRAME
-/// @brief Access axis-specific frame parameters for a Node2D
-/// @param node2d Target Node2D instance
-/// @param param Parameter type (Margin, Padding, Border, etc.)
-/// @param num Axis index (0=X, 1=Y, 2=Z)
 #define NODE2D_FRAME(node2d, param, num) node2d->_node->param.Axis[num]
-
-/// @def MARGIN_TOP
-/// @brief Calculate top margin including border width for specified axis
-/// @param node2d Target Node2D instance
-/// @param axis Axis index (0=X, 1=Y, 2=Z)
-#define MARGIN_TOP(node2d, axis) \
-(NODE2D_FRAME(node2d, Margin, axis)._RIGHT + \
-NODE2D_FRAME(node2d, Border, axis)._RIGHT.Width)
-
-/// @def MARGIN_BOTTOM
-/// @brief Calculate bottom margin including border width for specified axis
-/// @param node2d Target Node2D instance
-/// @param axis Axis index (0=X, 1=Y, 2=Z)
-#define MARGIN_BOTTOM(node2d, axis)                                            \
-(NODE2D_FRAME(node2d, Margin, axis)._LEFT + \
-NODE2D_FRAME(node2d, Border, axis)._LEFT.Width)
-
-/// @def PADDING_TOP
-/// @brief Get top padding value for specified axis
-/// @param node2d Target Node2D instance
-/// @param axis Axis index (0=X, 1=Y, 2=Z)
-#define PADDING_TOP(node2d, axis) (NODE2D_FRAME(node2d, Padding, axis)._LEFT)
-
-/// @def PADDING_BOTTOM
-/// @brief Get bottom padding value for specified axis
-/// @param node2d Target Node2D instance
-/// @param axis Axis index (0=X, 1=Y, 2=Z)
-#define PADDING_BOTTOM(node2d, axis) (NODE2D_FRAME(node2d, Padding, axis)._RIGHT)
-
-/// @def TOTAL_PADDING
-/// @brief Calculate total padding (top + bottom) for specified axis
-/// @param node2d Target Node2D instance
-/// @param axis Axis index (0=X, 1=Y, 2=Z)
-#define TOTAL_PADDING(node2d, axis)                                            \
-(PADDING_TOP(node2d, axis) + PADDING_BOTTOM(node2d, axis))
-
-/// @def TOTAL_MARGIN
-/// @brief Calculate total margin (top + bottom) for specified axis
-/// @param node2d Target Node2D instance
-/// @param axis Axis index (0=X, 1=Y, 2=Z)
-#define TOTAL_MARGIN(node2d, axis)                                             \
-(MARGIN_TOP(node2d, axis) + MARGIN_BOTTOM(node2d, axis))
+#define MARGIN_TOP(node2d, axis) (NODE2D_FRAME(node2d, Margin, axis)._RIGHT + NODE2D_FRAME(node2d, Border, axis)._RIGHT.Width)
+#define MARGIN_BOTTOM(node2d, axis) (NODE2D_FRAME(node2d, Margin, axis)._LEFT + NODE2D_FRAME(node2d, Border, axis)._LEFT.Width)
+#define PADDING_TOP(node2d, axis) (NODE2D_FRAME(node2d, Padding, axis)._RIGHT)
+#define PADDING_BOTTOM(node2d, axis) (NODE2D_FRAME(node2d, Padding, axis)._LEFT)
+#define TOTAL_PADDING(node2d, axis) (PADDING_TOP(node2d, axis) + PADDING_BOTTOM(node2d, axis))
+#define TOTAL_MARGIN(node2d, axis) (MARGIN_TOP(node2d, axis) + MARGIN_BOTTOM(node2d, axis))
 
 /// @typedef DrawBrush
 /// @brief Event data structure for brush drawing operations

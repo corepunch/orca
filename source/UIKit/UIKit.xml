@@ -179,9 +179,9 @@
 
   <struct name="BorderShorthand">
     <summary>Complete border definition for rectangular element</summary>
-    <shorthand name="BorderWidth" physical="Border.Axis[0]" userdata="Border%sWidth">Shorthand for setting spacing inside a node along its edges. Represents the inner spacing (padding) between the node's content and its border for all edges. Similar to the CSS `padding` shorthand property.</shorthand>
-    <shorthand name="BorderStyle" physical="Border.Axis[0]" userdata="Border%sStyle">Shorthand for defining the line style of borders along each edge. Specifies the border style (solid, dashed, etc.) per edge, similar to CSS `border-style`.</shorthand>
-    <shorthand name="BorderColor" physical="Border.Axis[0]" userdata="Border%sColor">Shorthand for defining the color of borders along each edge. Specifies the border color for each edge individually, similar to CSS `border-color`.</shorthand>
+    <shorthand name="BorderWidth" physical="Border.Axis[0]" userdata="Node.Border%sWidth">Shorthand for setting spacing inside a node along its edges. Represents the inner spacing (padding) between the node's content and its border for all edges. Similar to the CSS `padding` shorthand property.</shorthand>
+    <shorthand name="BorderStyle" physical="Border.Axis[0]" userdata="Node.Border%sStyle">Shorthand for defining the line style of borders along each edge. Specifies the border style (solid, dashed, etc.) per edge, similar to CSS `border-style`.</shorthand>
+    <shorthand name="BorderColor" physical="Border.Axis[0]" userdata="Node.Border%sColor">Shorthand for defining the color of borders along each edge. Specifies the border color for each edge individually, similar to CSS `border-color`.</shorthand>
     <field name="Radius" type="BorderRadiusShorthand">Border radius definition per corner</field>
     <field name="Axis" type="BorderSideShorthand" array="3">Border definition per axis</field>
   </struct>
