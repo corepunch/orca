@@ -499,9 +499,10 @@ on_core_module_registered(lua_State* L)
   
   int luaopen_orca_behaviour(lua_State*);
   luaopen_orca_behaviour(L);
-  //  lua_setfield(L, -2, "Behaviour");
+  lua_pushvalue(L, -1);
   lua_setglobal(L, "BEHAVIOUR");
-  
+  lua_setfield(L, -2, "Behaviour");
+
   // Create commands table
   lua_newtable(L);
   lua_setfield(L, LUA_REGISTRYINDEX, CORE_COMMANDS);
