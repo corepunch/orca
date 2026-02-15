@@ -157,8 +157,9 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirname) {
       }
     }
     fprintf(mem, "\nlocal ok, res = pcall(s.dispatchMessage, msg)\n");
-    fprintf(mem, "if not ok then print(res) screen:clear() screen:addChild(orca.ui.TextBlock(res)) end\n");
+    fprintf(mem, "if not ok then print(res) screen:clear() screen:addChild(orca.ui.TextBlock(res))\n");
 //    fprintf(mem, "\nif s.dispatchMessage(msg) then screen:paint(ref.getSize()) end \n");
+    fprintf(mem, "\nelseif res then screen:paint(ref.getSize()) end \n");
     if (has_written) {
       fprintf(mem, "end\n");
     }
