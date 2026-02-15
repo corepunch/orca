@@ -89,6 +89,7 @@ struct shader_desc shader_ui = {
     .Attributes = {
       { "a_position", UT_FLOAT_VEC4 },
       { "a_texcoord0", UT_FLOAT_VEC2 },
+      { "a_texcoord1", UT_FLOAT_VEC2 },
     },
     .Shared = {
       { "v_position", UT_FLOAT_VEC4 },
@@ -97,18 +98,22 @@ struct shader_desc shader_ui = {
     },
     .VertexShader =
   "#define r u_radius\n"
+  "#define b u_borderWidth\n"
+  "#define p a_position\n"
   "void main() {\n"
-  "  vec2 s = step(vec2(0.5), a_position.xy);\n"
-  "  float rad = mix(mix(r.x, r.y, s.x), mix(r.w, r.z, s.y), s.y);\n"
-  "  vec2 pos = a_position.xy * u_rect.zw + a_texcoord0 * rad;\n"
+  "  vec2 s = step(vec2(0.5), p.xy);\n"
+  "  vec2 m = min(p.xy, 1.0 - p.xy);\n"
+  "  vec2 pos = p.xy * u_rect.zw;\n"
+  "  pos += a_texcoord0 * mix(r.xw, r.yz, s);\n"
+  "  pos += a_texcoord1 * mix(b.wz, b.yx, step(m, m.yx));\n"
   "  vec3 tex = vec3(pos.x / u_rect.z, 1.0 - pos.y / u_rect.w, 1.0);\n"
-  "  gl_Position = u_modelViewProjectionTransform * vec4(pos, 0, 1);\n"
   "  v_texcoord0 = (u_textureTransform * tex).xy;\n"
+  "  gl_Position = u_modelViewProjectionTransform * vec4(pos, 0, 1);\n"
   "}\n",
     .FragmentShader =
   "void main() {\n"
   "  fragColor = texture(u_texture, v_texcoord0) * u_color * u_color.a * u_opacity;\n"
-  "  fragColor += vec4(0.1);"
+//  "  fragColor += vec4(0.1);"
   "}\n"
 };
 

@@ -26,7 +26,7 @@ static lpcString_t uniforms[kShaderUniform_Count] = {
   "u_cursorPosition",               // kShaderUniform_CursorPosition
   "u_radius",                       // kShaderUniform_Radius
   "u_borderWidth",                  // kShaderUniform_BorderWidth
-  "u_rect",                    // kShaderUniform_Rectangle
+  "u_rect",                         // kShaderUniform_Rectangle
   "u_lights",                       // kShaderUniform_Lights
 };
 

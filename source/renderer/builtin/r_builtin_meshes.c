@@ -304,9 +304,6 @@ Model_CreateRectangle(struct rect const* f,
   return Model_Create(attr, &dsurf, ppModel);
 }
 
-// Creates a rounded rectangle mesh for shader-based rendering with variable radius.
-// Generates a mesh in 0...1 coordinate space with corners collapsed to single points.
-// The mesh uses texcoord[1] to store offset directions for shader-based corner expansion.
 HRESULT
 Model_CreateRoundedRectangle(struct model** ppModel)
 {
@@ -328,19 +325,15 @@ Model_CreateRoundedRectangle(struct model** ppModel)
     VEC2_Set(&v.texcoord[0], d.x, d.y);
     *(int*)&v.color = -1;
     verts[vidx++] = v;
-
     // Generate rounded corner vertices
     for (uint32_t i = 0; i < ROUNDED_VERTICES; i++) {
-      float angle = (float)i / (float)(ROUNDED_VERTICES - 1) * M_PI_2; // 0 to PI/2
+      float a = (float)i / (float)(ROUNDED_VERTICES - 1) * M_PI_2; // 0 to PI/2
+      float x = cos(a), y = sin(a);
+      vec2_t b[] = {{x,y}, {-y,x}, {-x,-y}, {y,-x}};
       memset(&v, 0, sizeof(DRAWVERT));
-      VEC3_Set(&v.xyz, crn[c].x, crn[c].y, 0);
-      switch(c) {
-        case 0: VEC2_Set(&v.texcoord[0], d.x+cos(angle), d.y+sin(angle)); break;
-        case 1: VEC2_Set(&v.texcoord[0], d.x-sin(angle), d.y+cos(angle)); break;
-        case 2: VEC2_Set(&v.texcoord[0], d.x-cos(angle), d.y-sin(angle)); break;
-        case 3: VEC2_Set(&v.texcoord[0], d.x+sin(angle), d.y-cos(angle)); break;
-      }
       *(int*)&v.color = -1;
+      VEC3_Set(&v.xyz, crn[c].x, crn[c].y, 0);
+      VEC2_Set(&v.texcoord[0], d.x+b[c].x, d.y+b[c].y);
       verts[vidx++] = v;
     }
   }
@@ -362,13 +355,60 @@ Model_CreateRoundedRectangle(struct model** ppModel)
   ADD_TRIANGLE(3 * (ROUNDED_VERTICES + 1), 1 * (ROUNDED_VERTICES + 1), 0 * (ROUNDED_VERTICES + 1));
   ADD_TRIANGLE(1 * (ROUNDED_VERTICES + 1), 2 * (ROUNDED_VERTICES + 1), 3 * (ROUNDED_VERTICES + 1));
 
-  DRAWSURFATTR attr[] = { VERTEX_SEMANTIC_POSITION,
-    VERTEX_ATTR_DATATYPE_FLOAT32,
-    VERTEX_SEMANTIC_TEXCOORD0,
-    VERTEX_ATTR_DATATYPE_FLOAT32,
-    VERTEX_SEMANTIC_COLOR,
-    VERTEX_ATTR_DATATYPE_UINT8 |
-    VERTEX_ATTR_DATATYPE_NORMALIZED,
+  DRAWSURFATTR attr[] = {
+    VERTEX_SEMANTIC_POSITION, VERTEX_ATTR_DATATYPE_FLOAT32,
+    VERTEX_SEMANTIC_TEXCOORD0, VERTEX_ATTR_DATATYPE_FLOAT32,
+    VERTEX_SEMANTIC_COLOR, VERTEX_ATTR_DATATYPE_UINT8 | VERTEX_ATTR_DATATYPE_NORMALIZED,
+    VERTEX_SEMANTIC_COUNT };
+  
+  DRAWSURF dsurf;
+  dsurf.vertices = verts;
+  dsurf.indices = tris;
+  dsurf.neighbors = NULL;
+  dsurf.numVertices = vidx;
+  dsurf.numIndices = iidx;
+  dsurf.numSubmeshes = 0;
+  
+  return Model_Create(attr, &dsurf, ppModel);
+}
+
+HRESULT
+Model_CreateRoundedBorder(struct model** ppModel)
+{
+  DRAWVERT verts[8 * ROUNDED_VERTICES];
+  DRAWINDEX tris[24 * ROUNDED_VERTICES];
+  DRAWVERT v;
+  uint32_t vidx = 0, iidx = 0;
+  vec2_t crn[] = {{1,1}, {0,1}, {0,0}, {1,0}};
+  
+  // Generate all 4 corners in a single loop
+  for (uint32_t c = 0; c < 4; c++) {
+    vec2_t d = { 1 - crn[c].x * 2, 1 - crn[c].y * 2 };
+    // Generate rounded corner vertices
+    for (uint32_t i = 0; i < ROUNDED_VERTICES; i++) {
+      float a = (float)i / (float)(ROUNDED_VERTICES - 1) * M_PI_2; // 0 to PI/2
+      float x = cos(a), y = sin(a);
+      vec2_t b[] = {{x,y}, {-y,x}, {-x,-y}, {y,-x}};
+      memset(&v, 0, sizeof(DRAWVERT));
+      *(int*)&v.color = -1;
+      VEC3_Set(&v.xyz, crn[c].x, crn[c].y, 0);
+      VEC2_Set(&v.texcoord[0], d.x+b[c].x, d.y+b[c].y);
+      VEC2_Set(&v.texcoord[1], 0, 0);
+      verts[vidx++] = v;
+      VEC2_Set(&v.texcoord[1], b[c].x, b[c].y);
+      verts[vidx++] = v;
+    }
+  }
+  // Generate indices around the rectangle perimeter
+  for (uint32_t i = 0, d = 8 * ROUNDED_VERTICES; i < d; i++) {
+    ADD_TRIANGLE(i, (i + 1) % d, (i + 2) % d);
+  }
+  
+  DRAWSURFATTR attr[] = {
+    VERTEX_SEMANTIC_POSITION, VERTEX_ATTR_DATATYPE_FLOAT32,
+    VERTEX_SEMANTIC_TEXCOORD0, VERTEX_ATTR_DATATYPE_FLOAT32,
+    VERTEX_SEMANTIC_TEXCOORD1, VERTEX_ATTR_DATATYPE_FLOAT32,
+    VERTEX_SEMANTIC_COLOR, VERTEX_ATTR_DATATYPE_UINT8 | VERTEX_ATTR_DATATYPE_NORMALIZED,
     VERTEX_SEMANTIC_COUNT };
   
   DRAWSURF dsurf;
