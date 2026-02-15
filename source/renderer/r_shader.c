@@ -26,7 +26,7 @@ static lpcString_t uniforms[kShaderUniform_Count] = {
   "u_cursorPosition",               // kShaderUniform_CursorPosition
   "u_radius",                       // kShaderUniform_Radius
   "u_borderWidth",                  // kShaderUniform_BorderWidth
-  "u_rectangle",                    // kShaderUniform_Rectangle
+  "u_rect",                         // kShaderUniform_Rectangle
   "u_lights",                       // kShaderUniform_Lights
 };
 
@@ -523,24 +523,24 @@ Shader_BindMaterial(struct shader const* shader,
     }
   }
 
-  if (ent->rect.width != 0 && ent->rect.height != 0 && !ent->mesh) {
-    struct vec4 w = {
-      ent->borderWidth.x + ent->borderOffset,
-      ent->borderWidth.y + ent->borderOffset,
-      ent->borderWidth.z + ent->borderOffset,
-      ent->borderWidth.w + ent->borderOffset
-    };
-    MAT4_Translate(&rectangle_scale_model, &(struct vec3){
-      ent->rect.x - w.y,
-      ent->rect.y - w.w,
-      0
-    });
-    MAT4_Scale(&rectangle_scale_model, &(struct vec3){
-      ent->rect.width + w.x + w.y,
-      ent->rect.height + w.z + w.w,
-      1
-    });
-  }
+//  if (ent->rect.width != 0 && ent->rect.height != 0 && !ent->mesh) {
+//    struct vec4 w = {
+//      ent->borderWidth.x + ent->borderOffset,
+//      ent->borderWidth.y + ent->borderOffset,
+//      ent->borderWidth.z + ent->borderOffset,
+//      ent->borderWidth.w + ent->borderOffset
+//    };
+//    MAT4_Translate(&rectangle_scale_model, &(struct vec3){
+//      ent->rect.x - w.y,
+//      ent->rect.y - w.w,
+//      0
+//    });
+//    MAT4_Scale(&rectangle_scale_model, &(struct vec3){
+//      ent->rect.width + w.x + w.y,
+//      ent->rect.height + w.z + w.w,
+//      1
+//    });
+//  }
 
   float w = MAX(1, ent->rect.width + ent->borderOffset);
   float h = MAX(1, ent->rect.height + ent->borderOffset);
@@ -559,10 +559,9 @@ Shader_BindMaterial(struct shader const* shader,
       continue;
     switch (uniform) {
       case kShaderUniform_ModelTransform:
-        tmp = MAT4_Multiply(&ent->matrix, &rectangle_scale_model);
-        R_Call(glUniformMatrix4fv, location, 1, GL_FALSE, tmp.v);
-        //			R_Call(glUniformMatrix4fv, location, 1,
-        // GL_FALSE, ent->matrix.v);
+//        tmp = MAT4_Multiply(&ent->matrix, &rectangle_scale_model);
+//        R_Call(glUniformMatrix4fv, location, 1, GL_FALSE, tmp.v);
+        R_Call(glUniformMatrix4fv, location, 1,GL_FALSE, ent->matrix.v);
         break;
       case kShaderUniform_ModelViewTransform:
         tmp = MAT4_Multiply(&view->viewMatrix, &ent->matrix);
@@ -597,8 +596,9 @@ Shader_BindMaterial(struct shader const* shader,
       case kShaderUniform_ModelViewProjectionTransform:
         mvp = MAT4_Multiply(&view->projectionMatrix, &view->viewMatrix);
         tmp = MAT4_Multiply(&mvp, &ent->matrix);
-        mvp = MAT4_Multiply(&tmp, &rectangle_scale_model);
-        R_Call(glUniformMatrix4fv, location, 1, GL_FALSE, mvp.v);
+//        mvp = MAT4_Multiply(&tmp, &rectangle_scale_model);
+//        R_Call(glUniformMatrix4fv, location, 1, GL_FALSE, mvp.v);
+        R_Call(glUniformMatrix4fv, location, 1, GL_FALSE, tmp.v);
         break;
       case kShaderUniform_Opacity:
         R_Call(glUniform1f, location, ent->opacity);
@@ -627,8 +627,7 @@ Shader_BindMaterial(struct shader const* shader,
         R_SetPointFiltering();
         break;
       case kShaderUniform_CinematicPalette:
-        Texture_Bind(
-          tr.textures[TX_CINEMATICPALETTE], GL_TEXTURE_2D, location, 2);
+        Texture_Bind(tr.textures[TX_CINEMATICPALETTE], GL_TEXTURE_2D, location, 2);
         R_SetPointFiltering();
         break;
       case kShaderUniform_Viewport:
@@ -649,12 +648,11 @@ Shader_BindMaterial(struct shader const* shader,
                MAX(EPSILON, MIN(MIN(w, h), ent->radius.w + ent->borderOffset)));
         break;
       case kShaderUniform_BorderWidth:
-        R_Call(
-          glUniform4f, location,
-               ent->borderWidth.x / w,
-               ent->borderWidth.y / w,
-               ent->borderWidth.z / h,
-               ent->borderWidth.w / h);
+        R_Call(glUniform4f, location,
+               ent->borderWidth.x,
+               ent->borderWidth.y,
+               ent->borderWidth.z,
+               ent->borderWidth.w);
         break;
       case kShaderUniform_Rectangle:
         R_Call(glUniform4f, location, 0, 0, w, h);

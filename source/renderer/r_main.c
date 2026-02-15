@@ -262,7 +262,7 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
     _DrawDebug(ent, view);
     return NOERROR;
   }
-
+  struct vec4 zero = {0};
   if (model == NULL) {
     switch (ent->type) {
       case ET_CINEMATIC:
@@ -273,7 +273,15 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
       case ET_PLANE: model = tr.models[MD_PLANE]; break;
       case ET_DOT: model = tr.models[MD_DOT]; break;
       case ET_NINEPATCH: model = CreateNinePatchMesh(ent); break;
-      default: model = tr.models[MD_RECTANGLE]; break;
+//      default: model = tr.models[MD_RECTANGLE]; break;
+//      default: model = tr.models[MD_ROUNDED_RECT]; break;
+      default:
+        if (memcmp(&ent->borderWidth, &zero, sizeof(struct vec4))) {
+          model = tr.models[MD_ROUNDED_BORDER];
+        } else {
+          model = tr.models[MD_ROUNDED_RECT];
+        }
+        break;
     }
   }
   
@@ -541,6 +549,9 @@ R_InitResources(void)
                         NULL,
                         VERTEX_ORDER_DEFAULT,
                         tr.models+MD_RECTANGLE);
+  
+  Model_CreateRoundedRectangle(tr.models+MD_ROUNDED_RECT);
+  Model_CreateRoundedBorder(tr.models+MD_ROUNDED_BORDER);
 
   Model_CreatePlane(1, 1, tr.models+MD_PLANE);
   Model_CreatePlane(0, 0, tr.models+MD_DOT);

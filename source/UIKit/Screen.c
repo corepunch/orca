@@ -423,14 +423,14 @@ HANDLER(Node2D, Draw2DContent)
       }});
   }
   
-  struct vec4 borderWidth = {
+  struct vec4 BorderWidth = {
     NODE2D_FRAME(pNode2D, Border, 0).Left.Width,
     NODE2D_FRAME(pNode2D, Border, 0).Right.Width,
     NODE2D_FRAME(pNode2D, Border, 1).Left.Width,
     NODE2D_FRAME(pNode2D, Border, 1).Right.Width,
-  }, zero = {0};
+  }, Zero = {0};
 
-  if (memcmp(&borderWidth, &zero, sizeof(struct vec4))) {
+  if (memcmp(&BorderWidth, &Zero, sizeof(struct vec4))) {
     struct color color = {0}, zero = {0};
     FOR_LOOP(i, 2) {
       if (memcmp(&NODE2D_FRAME(pNode2D, Border, i).Left.Color, &zero, sizeof(color))) {
@@ -442,7 +442,7 @@ HANDLER(Node2D, Draw2DContent)
     }
     OBJ_SendMessageW(hObject, kEventDrawBrush, 0, &(DRAWBRUSHSTRUCT){
       .projection = &pDraw2DContent->ProjectionMatrix,
-      .borderWidth = borderWidth,
+      .borderWidth = BorderWidth,
       .foreground = FALSE,
       .viewdef = &viewdef,
       .brush = &(struct BrushShorthand) {
