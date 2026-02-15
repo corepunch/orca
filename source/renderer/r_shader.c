@@ -655,7 +655,7 @@ Shader_BindMaterial(struct shader const* shader,
                ent->borderWidth.w);
         break;
       case kShaderUniform_Rectangle:
-        R_Call(glUniform4f, location, 0, 0, w, h);
+        R_Call(glUniform4fv, location, 1, (GLfloat const*)&ent->rect);
         break;
       case kShaderUniform_Lights:
         R_Call(glUniformMatrix4fv, location, view->num_lights, FALSE, (float*)&view->lights);

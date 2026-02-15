@@ -106,7 +106,7 @@ struct shader_desc shader_ui = {
   "  vec2 pos = a_position.xy * u_rect.zw + a_texcoord0 * rad + a_texcoord1 * brd;\n"
   "  vec3 tex = vec3(pos.x / u_rect.z, 1.0 - pos.y / u_rect.w, 1.0);\n"
   "  v_texcoord0 = (u_textureTransform * tex).xy;\n"
-  "  gl_Position = u_modelViewProjectionTransform * vec4(pos, 0, 1);\n"
+  "  gl_Position = u_modelViewProjectionTransform * vec4(pos + u_rect.xy, 0, 1);\n"
   "}\n",
     .FragmentShader =
   "void main() {\n"
