@@ -101,7 +101,7 @@ struct shader_desc shader_ui = {
   "#define b u_borderWidth\n"
   "void main() {\n"
   "  vec2 s = step(vec2(0.5), a_position.xy);\n"
-  "  float rad = mix(mix(r.x, r.y, s.x), mix(r.w, r.z, s.y), s.y);\n"
+  "  float rad = mix(mix(r.x, r.y, s.x), mix(r.w, r.z, s.x), s.y);\n"
   "  vec2 brd = vec2(mix(b.x, b.y, s.x), mix(b.z, b.w, s.y));\n"
   "  vec2 pos = a_position.xy * u_rect.zw + a_texcoord0 * rad + a_texcoord1 * brd;\n"
   "  vec3 tex = vec3(pos.x / u_rect.z, 1.0 - pos.y / u_rect.w, 1.0);\n"
