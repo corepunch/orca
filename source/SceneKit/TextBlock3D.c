@@ -72,9 +72,11 @@ HANDLER(TextBlock3D, Render)
     .radius = (struct vec4){0},
     .rect = (struct rect){-w/2,-h/2,w,h},
     .text = pTextBlock->_text,
-    .opacity = GetNode3D(hObject)->_opacity,
+    .material = (struct ViewMaterial) {
+      .opacity = GetNode3D(hObject)->_opacity,
+      .color = {1,1,1,1},
+    },
     .matrix = GetNode3D(hObject)->Matrix,
-    .color = {1,1,1,1},
     .blendMode = BLEND_MODE_PREMULTIPLIED_ALPHA,
   };
   

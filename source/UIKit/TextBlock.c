@@ -237,7 +237,7 @@ HANDLER(TextBlock, DrawBrush)
 
   if (pDrawBrush->foreground) {
     entity.texture = 0;
-    entity.opacity *= modopacity;
+    entity.material.opacity *= modopacity;
     entity.radius = (struct vec4){0};
     entity.rect = pTextBlock->_node2D->_rect;
 //    TextBlockConceptPtr label = GetTextBlockConcept(hObject);

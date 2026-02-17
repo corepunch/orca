@@ -306,8 +306,9 @@ struct shader_desc shader_button = {
 //    { "u_texture", UT_SAMPLER_2D, PRECISION_LOW },
     { "u_color", UT_COLOR, PRECISION_LOW },
     { "u_rect", UT_FLOAT_VEC4, PRECISION_LOW },
-    { "u_lightDir", UT_FLOAT_VEC3, PRECISION_LOW },
-    { "u_specularPower", UT_FLOAT, PRECISION_LOW },
+    { "u_lightDir", UT_FLOAT_VEC3, PRECISION_LOW, 0, {0, -1, -0.5} },
+    { "u_specularPower", UT_FLOAT, PRECISION_LOW, 0, {1.5} },
+    { "u_viewDir", UT_FLOAT_VEC3, PRECISION_LOW, 0, {0.0, 0.0, 1.0}}
   },
   .Attributes = {
     { "a_position", UT_FLOAT_VEC4 },
@@ -333,24 +334,48 @@ struct shader_desc shader_button = {
   "}\n",
   .FragmentShader =
   "void main() {\n"
-  "  vec3 u_lightDir = vec3(0,1,-1);\n"
-  "  float u_specularPower = 1.5;\n"
   "  vec3 lightDir = normalize(u_lightDir);\n"
   "  vec3 normal = normalize(v_normal);\n"
+  "  vec3 viewDir = normalize(u_viewDir);\n"
+  "  vec3 invLight = vec3(lightDir.x,-lightDir.y,lightDir.z);"
+  
   // Diffuse lighting
-  "  float diff = max(dot(normal, lightDir), 0.0);\n"
+  "  float diff = max(dot(normal, invLight), 0.0);\n"
+  
   // Refraction within the glossy button
-  "  float refr = pow(diff, 8.0);\n"
+  "  vec3 refractedLight = refract(invLight, normal, 0.66);\n"
+  "  float refr = pow(max(dot(-normal, refractedLight), 0.0), 8.0);"
+  
   // Specular lighting (glossy button effect)
-  // Fixed view direction for UI elements in screen space
-
-  "  vec3 viewDir = normalize(vec3(0.0, 0.0, 1.0));\n"
-  "  vec3 reflectDir = reflect(vec3(lightDir.x,-lightDir.y,lightDir.z * 0.5), normal);\n"
+  "  vec3 reflectDir = reflect(lightDir, normal);\n"
   "  float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_specularPower);\n"
-  "  spec = smoothstep(0.25, 0.55, spec) * 0.35;"
-    
+  "  spec = smoothstep(0.25, 0.55, spec) * 0.5;"
+  
+//  "  float u_roughness = 0.4; //0.28\n"
+//  "  float u_gloss     = 1.5; \n"
+//  "  float u_F0        = 0.04; // plastic button \n"
+//  
+//  "  vec3 reflectDir = reflect(lightDir, normal);\n"
+//  "  float NoV = max(dot(normal, viewDir), 0.0);\n"
+//  "  float RoV = max(dot(viewDir, reflectDir), 0.0);\n"
+//  "\n"
+//  "  // Physical roughness -> Phong exponent mapping\n"
+//  "  float r = clamp(u_roughness, 0.04, 1.0);\n"
+//  "  float shininess = (2.0 / (r * r)) - 2.0;\n"
+//  "\n"
+//  "  // Normalized Phong (energy conserving)\n"
+//  "  float normFactor = (shininess + 2.0) * 0.15915494;\n"   // 1/(2*pi)\n"
+//  "  float spec = normFactor * pow(RoV, shininess);\n"
+//  "\n"
+//  "  // Schlick Fresnel (physically correct rim boost)\n"
+//  "  vec3 F = vec3(u_F0) + (1.0 - vec3(u_F0)) * pow(1.0 - RoV, 5.0);\n"
+//  "\n"
+//  "  vec3 specular = u_gloss * spec * F;\n"
+
+  
   // Rim lighting for depth
   "  float rimLight = pow(dot(viewDir, -normal), 0.75);\n"
+
   // Combine texture, color, and lighting
   "  float baseColor = mix(0.35, 1.75, (diff + refr) * rimLight);"
   "  fragColor = vec4(u_color.rgb * baseColor, 1.0) * u_opacity + vec4(spec);\n"

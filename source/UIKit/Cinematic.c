@@ -34,14 +34,14 @@ HANDLER(Cinematic, DrawBrush)
 
   if (realtime > endtime) {
     entity.frame = pCinematic->NumFrames - 1;
-    entity.opacity =
+    entity.material.opacity =
       1 - MIN(1, (float)(realtime - endtime) / pCinematic->FadeOut);
   } else {
     entity.frame =
       (uint32_t)(realtime - pCinematic->_starttime) / pCinematic->FrameRate;
   }
 
-  if (entity.opacity > 0) {
+  if (entity.material.opacity > 0) {
     assert(sizeof(entity.ninepatch) == MAX_PROPERTY_STRING);
     memcpy(&entity.ninepatch, pCinematic->FileName, MAX_PROPERTY_STRING);
     R_DrawEntity(pDrawBrush->viewdef, &entity);

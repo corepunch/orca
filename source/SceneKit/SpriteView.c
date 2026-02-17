@@ -41,9 +41,11 @@ HANDLER(SpriteView, Render)
     },
     .texture = pSpriteView->Image,
     .textureMatrix = texmat,
-    .opacity = GetNode3D(hObject)->_opacity,
     .matrix = GetNode3D(hObject)->Matrix,
-    .color = {1,1,1,1},
+    .material = (struct ViewMaterial){
+      .opacity = GetNode3D(hObject)->_opacity,
+      .color = {1,1,1,1},
+    },
     .blendMode = BLEND_MODE_ALPHA,
   };
   

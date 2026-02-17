@@ -102,7 +102,7 @@ draw_children(lpObject_t hObject,
     handle_t rt = node2D->RenderTarget;
     Node2D_GetViewEntity(hObject, &entity, rt, 0);
     Init_ViewDef(&viewdef, pDraw2DContent);
-    entity.opacity = 1;
+    entity.material.opacity = 1;
     tmp.OnlyDecorations = TRUE;
     Node2D_Draw2DContent(hObject, node2D, 0, &tmp);
     //		struct rect frame = Node2D_GetRect(node2D);
@@ -317,7 +317,7 @@ Node2D_GetViewEntity(lpObject_t hObject,
   entity->numUniforms = OBJ_GetUniforms(hObject, uniforms);
   entity->blendMode = BLEND_MODE_PREMULTIPLIED_ALPHA;
   entity->debugName = OBJ_GetName(hObject);
-  entity->opacity = node2d->_opacity;
+  entity->material.opacity = node2d->_opacity;
   entity->rect = node2d->_rect;
   entity->matrix = node2d->Matrix;
   entity->radius = *(struct vec4*)&node2d->_node->Border.Radius;
@@ -333,7 +333,7 @@ Node2D_GetViewEntity(lpObject_t hObject,
 	} else if (brush->Image) {
 		entity->texture = brush->Image;
 	} else {
-		entity->color = brush->Color;
+		entity->material.color = brush->Color;
 	}
 }
 

@@ -14,9 +14,9 @@ HANDLER(Button, DrawBrush) {
   struct ViewEntity entity;
   Node2D_GetViewEntity(hObject,&entity,pDrawBrush->image,pDrawBrush->brush);
   entity.type = ET_CAPSULE;
-  entity.color = pDrawBrush->brush->Color;// (color_t){0.4,0.6,0.8,1};
+  entity.material.color = pDrawBrush->brush->Color;// (color_t){0.4,0.6,0.8,1};
   
-  float opacity = entity.opacity;
+  float opacity = entity.material.opacity;
   rect_t r = entity.rect;
   
   r.x -= PADDING_TOP(GetNode2D(hObject), 0);
@@ -25,14 +25,14 @@ HANDLER(Button, DrawBrush) {
   r.height += TOTAL_PADDING(GetNode2D(hObject), 1);
   
   entity.rect = RECT_Expand(&r, 1);
-  entity.opacity *= 0.5;
-  entity.color = (color_t){0,0,0,1};
+  entity.material.opacity *= 0.5;
+  entity.material.color = (color_t){0,0,0,1};
 
   R_DrawEntity(pDrawBrush->viewdef, &entity);
 
-  entity.opacity = opacity;
   entity.rect = r;
-  entity.color = pDrawBrush->brush->Color;// (color_t){0.4,0.6,0.8,1};
+  entity.material.opacity = opacity;
+  entity.material.color = pDrawBrush->brush->Color;// (color_t){0.4,0.6,0.8,1};
 
   R_DrawEntity(pDrawBrush->viewdef, &entity);
 

@@ -24,7 +24,7 @@ HANDLER(PlaneMeshNode, Render)
   struct ViewEntity entity = {
     .debugName = OBJ_GetName(hObject),
     .type = ET_PLANE,
-    .opacity = GetNode3D(hObject)->_opacity,
+    .material.opacity = GetNode3D(hObject)->_opacity,
     .matrix = GetNode3D(hObject)->Matrix,
     .rect = { 0, 0, pPlaneMeshNode->PlaneWidth, pPlaneMeshNode->PlaneHeight },
   };

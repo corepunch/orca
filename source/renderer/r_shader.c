@@ -444,7 +444,7 @@ Shader_BindConstants(struct shader const* shader,
     }
     if (desc->identifier == hash_BlendIntensity ||
         desc->identifier == hash__BlendIntensity) {
-      *value = e->opacity;
+      *value = e->material.opacity;
     }
     struct Texture *ptr = *(struct Texture **)value;
 		// Don't set values that were already set with builtins
@@ -504,7 +504,7 @@ Shader_BindMaterial(struct shader const* shader,
   R_Call(glUseProgram, shader->prognum);
 
   struct Texture const* texture = ent->texture ? ent->texture : tr.textures[TX_WHITE];
-  struct color color = ent->color;
+  struct color color = ent->material.color;
   struct mat4 tmp, mvp;
   struct rect fviewport = {
     .x = 0,
@@ -576,7 +576,7 @@ Shader_BindMaterial(struct shader const* shader,
         R_Call(glUniformMatrix4fv, location, 1, GL_FALSE, tmp.v);
         break;
       case kShaderUniform_Opacity:
-        R_Call(glUniform1f, location, ent->opacity);
+        R_Call(glUniform1f, location, ent->material.opacity);
         break;
       case kShaderUniform_Texture:
         if (texture->IOSurface) {

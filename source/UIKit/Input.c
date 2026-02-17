@@ -42,14 +42,16 @@ HANDLER(Input, DrawBrush)
     entity.rect.width = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
     entity.rect.height = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
     entity.radius = (struct vec4) {4,4,4,4};
-    entity.color = (struct color) {0.898,0.561,0.133,1};
-    entity.opacity = 0.5;
+    entity.material = (struct ViewMaterial) {
+      .color = (struct color) {0.898,0.561,0.133,1},
+      .opacity = 0.5,
+    };
     R_DrawEntity(pDrawBrush->viewdef, &entity);
 
     if (pInput->Checked) {
       entity.radius = (struct vec4) {0,0,0,0};
-      entity.color = (struct color) {0,0,0,1};
-      entity.opacity = 1;
+      entity.material.color = (struct color) {0,0,0,1};
+      entity.material.opacity = 1;
       entity.texture = pInput->_checkmark;
       R_DrawEntity(pDrawBrush->viewdef, &entity);
     }

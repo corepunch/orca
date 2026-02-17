@@ -101,9 +101,11 @@ R_DrawLines(struct ViewDef const* view, PDRAWLINESSTRUCT def)
 
   memset(&ent, 0, sizeof(struct ViewEntity));
 
-  ent.opacity = 1;
+  ent.material = (struct ViewMaterial) {
+    .opacity = 1,
+    .color = def->color,
+  };
   ent.matrix = def->matrix;
-  ent.color = def->color;
 
   Shader_BindMaterial(shader->shader, view, &ent);
 
@@ -360,11 +362,13 @@ R_DrawImage(PDRAWIMAGESTRUCT parm)
     .texture = parm->img,
     .rect = parm->rect,
     .blendMode = BLEND_MODE_OPAQUE,
-    .opacity = 1,
+    .material = (struct ViewMaterial) {
+      .opacity = 1,
+      .color = parm->color,
+    },
 #ifdef GL_SAMPLER_2D_RECT
     .shader = image->IOSurface ? &tr.shaders[SHADER_RECTANGLE] : NULL,
 #endif
-    .color = parm->color,
   };
 
   R_SetViewportRect(&(struct rect){ 0, 0, screen.width, screen.height });
@@ -614,7 +618,9 @@ R_DrawConsole(PDRAWCONSOLESTRUCT parm)
       (int)(parm->Rect.width),
       (int)(parm->Rect.height)
     },
-    .opacity = 1.0,
+    .material = (struct ViewMaterial) {
+      .opacity = 1.0,
+    },
     .blendMode = BLEND_MODE_ALPHA,
     .texture = tr.textures[TX_DEBUG],
     .shader = &tr.shaders[SHADER_CHARSET],
@@ -632,7 +638,7 @@ R_DrawConsole(PDRAWCONSOLESTRUCT parm)
     outline.rect.x += 8;
     outline.rect.y += 8;
     outline.blendMode = BLEND_MODE_PREMULTIPLIED_ALPHA;
-    outline.opacity = 0.75;
+    outline.material.opacity = 0.75;
     outline.shader = 0;
     outline.texture = tr.textures[TX_BLACK];
     R_DrawEntity(&view, &outline);
@@ -669,10 +675,11 @@ R_DrawConsole(PDRAWCONSOLESTRUCT parm)
   u_selectedItem->defaults[1] = 1;
 
   if (parm->SoftSelection) {
-    ent.opacity = 1;
+    ent.material.opacity = 1;
+    
     R_DrawEntity(&view, &ent);
     
-    ent.opacity = 0.25;
+    ent.material.opacity = 0.25;
   }
   
   if (parm->SelectedItem) {
@@ -701,7 +708,7 @@ R_DrawConsole(PDRAWCONSOLESTRUCT parm)
   ent.rect.width = width;
   ent.rect.y -= ent.rect.height * parm->Scroll.y / (parm->Height * CONSOLE_CHAR_HEIGHT);
   ent.rect.height = ent.rect.height * size;
-  ent.opacity = 0.5;
+  ent.material.opacity = 0.5;
   if (size < 1) {
     R_DrawEntity(&view, &ent);
   }
@@ -717,7 +724,9 @@ R_DrawToolbarIcon(PDRAWTOOLBARICONSTRUCT parm)
   
   struct ViewEntity ent = {
     .rect = {parm->x, parm->y, 24, 24},
-    .opacity = 1.0,
+    .material = (struct ViewMaterial) {
+      .opacity = 1.0,
+    },
     .blendMode = BLEND_MODE_ALPHA,
     .texture = tr.textures[TX_TOOLBAR],
     .shader = &tr.shaders[SHADER_UI],

@@ -259,16 +259,22 @@ enum entity_type
   ET_CINEMATIC,
 };
 
+struct ViewMaterial
+{
+  struct color color;
+  float opacity;
+};
+
 struct ViewEntity
 {
   lpcString_t debugName;
   enum entity_type type;
   struct mat4 matrix;
+  struct ViewMaterial material;
   struct ViewText* text;
   struct Mesh const* mesh;
   struct Shader const* shader;
   struct Texture const* texture;
-	struct color color;
   struct mat3 textureMatrix;
   struct uniform const* uniforms;
   uint32_t numUniforms;
@@ -278,7 +284,6 @@ struct ViewEntity
   struct vec4 borderWidth;
   float borderOffset;
   enum blend_mode blendMode;
-  float opacity;
   uint32_t submesh;
   uint32_t flags;
   uint32_t camera;

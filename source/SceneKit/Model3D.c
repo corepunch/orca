@@ -48,7 +48,7 @@ HANDLER(Model3D, Render)
   struct ViewEntity ent = {
     .debugName = OBJ_GetName(hObject),
     .mesh = pModel3D->Mesh,
-    .opacity = GetNode3D(hObject)->_opacity,
+    .material.opacity = GetNode3D(hObject)->_opacity,
     .matrix = GetNode3D(hObject)->Matrix,
   };
 
