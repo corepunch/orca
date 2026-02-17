@@ -221,11 +221,9 @@ T_GetSize(struct ViewText const* text,
       }
       
       if (isspace(charcode)) {
-//         if (eos) spaceWidth = 0;
+        if (eos && (run+1) - text->run >= text->numTextRuns) spaceWidth = 0;
         if (textwidth == 0) {
-          if (!eos && (run+1) - text->run < text->numTextRuns) {
             textwidth += spaceWidth;
-          }
           // first word print anyway
         } else if (textwidth + wordwidth + spaceWidth > text->availableWidth * text->scale) {
           textSize.height += /*text->lineSpacing **/ FT_SCALE(lineheight);
