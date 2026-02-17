@@ -433,52 +433,90 @@ Model_CreateCapsule(float width, float height, float depth, float cylindriness, 
   #define RINGS 8
   
   float minDim = (height < depth) ? height : depth;
-  float r = minDim * 0.5f * cylindriness;
-  float h = height - 2.0f * r;
-  float ws = width / minDim, ds = depth / minDim;
+  float radius = minDim * 0.5f * cylindriness;
+  float cylinderHeight = height - 2.0f * radius;
+  float widthScale = width / minDim;
+  float depthScale = depth / minDim;
   
-  DRAWVERT verts[(SEGS+1) * (RINGS*2 + 3)];
-  DRAWINDEX tris[SEGS * (RINGS*2 + 2) * 6];
+  // Calculate actual array sizes:
+  // Top hemisphere: RINGS+1 rings, Cylinder: 2 rings, Bottom hemisphere: RINGS+1 rings
+  // Total: (RINGS+1) + 2 + (RINGS+1) = RINGS*2 + 4 rings
+  uint32_t numRings = RINGS * 2 + 4;
+  uint32_t numVertices = numRings * (SEGS + 1);
+  uint32_t numQuadRows = numRings - 1;
+  uint32_t numIndices = numQuadRows * SEGS * 6;
+  
+  DRAWVERT verts[numVertices];
+  DRAWINDEX tris[numIndices];
   uint32_t vidx = 0, iidx = 0;
   
-  // Generate all vertices: top hemisphere, cylinder, bottom hemisphere
-  for (uint32_t part = 0; part < 3; part++) {
-    uint32_t numRings = (part == 1) ? 2 : RINGS + 1;
-    for (uint32_t ring = 0; ring < numRings; ring++) {
-      float phi, y, rr;
-      if (part == 0) { // Top hemisphere
-        phi = (float)ring / RINGS * M_PI_2;
-        y = cos(phi) * r + h * 0.5f;
-        rr = sin(phi) * r;
-      } else if (part == 1) { // Cylinder
-        phi = M_PI_2;
-        y = (ring == 0) ? h * 0.5f : -h * 0.5f;
-        rr = r;
-      } else { // Bottom hemisphere
-        phi = M_PI_2 + (float)ring / RINGS * M_PI_2;
-        y = cos(phi) * r - h * 0.5f;
-        rr = sin(phi) * r;
-      }
+  // Generate top hemisphere vertices
+  for (uint32_t ring = 0; ring <= RINGS; ring++) {
+    float phi = (float)ring / (float)RINGS * M_PI_2;
+    float y = cos(phi) * radius + cylinderHeight * 0.5f;
+    float ringRadius = sin(phi) * radius;
+    
+    for (uint32_t seg = 0; seg <= SEGS; seg++) {
+      float theta = (float)seg / (float)SEGS * 2.0f * M_PI;
+      float x = cos(theta) * ringRadius * widthScale;
+      float z = sin(theta) * ringRadius * depthScale;
+      float nx = cos(theta) * sin(phi);
+      float ny = cos(phi);
+      float nz = sin(theta) * sin(phi);
+      float u = (float)seg / (float)SEGS;
+      float v = (float)ring / (float)RINGS * 0.25f;
       
-      for (uint32_t s = 0; s <= SEGS; s++) {
-        float t = (float)s / SEGS * 2.0f * M_PI;
-        float ct = cos(t), st = sin(t);
-        float nx = ct * sin(phi), ny = cos(phi), nz = st * sin(phi);
-        float u = (float)s / SEGS;
-        float v = (part == 0) ? (float)ring / RINGS * 0.25f :
-                  (part == 1) ? 0.25f + (ring == 0 ? 0.0f : 0.5f) :
-                                0.75f + (float)ring / RINGS * 0.25f;
-        verts[vidx++] = R_MakeVertex(ct * rr * ws, y, st * rr * ds, u, v, nx, ny, nz);
-      }
+      verts[vidx++] = R_MakeVertex(x, y, z, u, v, nx, ny, nz);
+    }
+  }
+  
+  // Generate cylinder body vertices (2 rings)
+  for (uint32_t i = 0; i < 2; i++) {
+    float y = (i == 0) ? cylinderHeight * 0.5f : -cylinderHeight * 0.5f;
+    
+    for (uint32_t seg = 0; seg <= SEGS; seg++) {
+      float theta = (float)seg / (float)SEGS * 2.0f * M_PI;
+      float x = cos(theta) * radius * widthScale;
+      float z = sin(theta) * radius * depthScale;
+      float nx = cos(theta);
+      float nz = sin(theta);
+      float u = (float)seg / (float)SEGS;
+      float v = 0.25f + (i == 0 ? 0.0f : 0.5f);
+      
+      verts[vidx++] = R_MakeVertex(x, y, z, u, v, nx, 0, nz);
+    }
+  }
+  
+  // Generate bottom hemisphere vertices
+  for (uint32_t ring = 0; ring <= RINGS; ring++) {
+    float phi = M_PI_2 + (float)ring / (float)RINGS * M_PI_2;
+    float y = cos(phi) * radius - cylinderHeight * 0.5f;
+    float ringRadius = sin(phi) * radius;
+    
+    for (uint32_t seg = 0; seg <= SEGS; seg++) {
+      float theta = (float)seg / (float)SEGS * 2.0f * M_PI;
+      float x = cos(theta) * ringRadius * widthScale;
+      float z = sin(theta) * ringRadius * depthScale;
+      float nx = cos(theta) * sin(phi);
+      float ny = cos(phi);
+      float nz = sin(theta) * sin(phi);
+      float u = (float)seg / (float)SEGS;
+      float v = 0.75f + (float)ring / (float)RINGS * 0.25f;
+      
+      verts[vidx++] = R_MakeVertex(x, y, z, u, v, nx, ny, nz);
     }
   }
   
   // Generate indices for all quads
-  for (uint32_t i = 0; i < (RINGS*2 + 2); i++) {
+  for (uint32_t i = 0; i < numQuadRows; i++) {
     for (uint32_t s = 0; s < SEGS; s++) {
-      uint32_t base = i * (SEGS+1) + s;
-      tris[iidx++] = base; tris[iidx++] = base + SEGS+1; tris[iidx++] = base + 1;
-      tris[iidx++] = base + 1; tris[iidx++] = base + SEGS+1; tris[iidx++] = base + SEGS+2;
+      uint32_t base = i * (SEGS + 1) + s;
+      tris[iidx++] = base;
+      tris[iidx++] = base + SEGS + 1;
+      tris[iidx++] = base + 1;
+      tris[iidx++] = base + 1;
+      tris[iidx++] = base + SEGS + 1;
+      tris[iidx++] = base + SEGS + 2;
     }
   }
   
