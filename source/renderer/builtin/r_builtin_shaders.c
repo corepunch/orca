@@ -338,6 +338,8 @@ struct shader_desc shader_button = {
   "    vec3 diffuse = vec3(diff * 0.8 + 0.2);\n"
   "    \n"
   "    // Specular lighting (glossy button effect)\n"
+  "    // Fixed view direction for UI elements in screen space\n"
+  "    // For 3D scenes, consider passing camera position and computing viewDir from fragment position\n"
   "    vec3 viewDir = normalize(vec3(0.0, 0.0, 1.0));\n"
   "    vec3 reflectDir = reflect(-lightDir, normal);\n"
   "    float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_specularPower);\n"

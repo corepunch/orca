@@ -433,8 +433,12 @@ Model_CreateCapsule(float width, float height, float depth, float cylindriness, 
   #define CAPSULE_SEGMENTS 16
   #define CAPSULE_RINGS 8
   
+  // Calculate dimension scaling - use minimum of height and depth for uniform rounding
+  float minDimension = (height < depth) ? height : depth;
+  float radiusScale = 1.0f / minDimension;
+  
   // Calculate the radius for the rounded caps based on cylindriness
-  float radius = (height < depth ? height : depth) * 0.5f * cylindriness;
+  float radius = minDimension * 0.5f * cylindriness;
   float cylinderHeight = height - 2.0f * radius;
   
   // If cylindriness is 0, just create a box
@@ -442,11 +446,21 @@ Model_CreateCapsule(float width, float height, float depth, float cylindriness, 
     return Model_CreateBox(width, height * 0.5f, depth * 0.5f, ppModel);
   }
   
+  // Vertex count: (segments+1) vertices per ring
+  // Rings: (CAPSULE_RINGS+1) for top hemisphere + (CAPSULE_RINGS+1) for bottom + 2 for cylinder
   uint32_t vertexCount = (CAPSULE_SEGMENTS + 1) * ((CAPSULE_RINGS + 1) * 2 + 2);
+  // Index count: 6 indices per quad, CAPSULE_SEGMENTS quads per ring
   uint32_t indexCount = CAPSULE_SEGMENTS * (CAPSULE_RINGS * 2 + 2) * 6;
   
   DRAWVERT* vertices = (DRAWVERT*)malloc(vertexCount * sizeof(DRAWVERT));
   DRAWINDEX* indices = (DRAWINDEX*)malloc(indexCount * sizeof(DRAWINDEX));
+  
+  // Check for allocation failure
+  if (!vertices || !indices) {
+    if (vertices) free(vertices);
+    if (indices) free(indices);
+    return E_OUTOFMEMORY;
+  }
   
   uint32_t vIdx = 0;
   uint32_t iIdx = 0;
@@ -459,8 +473,8 @@ Model_CreateCapsule(float width, float height, float depth, float cylindriness, 
     
     for (uint32_t seg = 0; seg <= CAPSULE_SEGMENTS; seg++) {
       float theta = (float)seg / (float)CAPSULE_SEGMENTS * 2.0f * M_PI;
-      float x = cos(theta) * ringRadius * (width / (depth < height ? depth : height));
-      float z = sin(theta) * ringRadius * (depth / (depth < height ? depth : height));
+      float x = cos(theta) * ringRadius * (width * radiusScale);
+      float z = sin(theta) * ringRadius * (depth * radiusScale);
       
       float nx = cos(theta) * sin(phi);
       float ny = cos(phi);
@@ -479,8 +493,8 @@ Model_CreateCapsule(float width, float height, float depth, float cylindriness, 
     
     for (uint32_t seg = 0; seg <= CAPSULE_SEGMENTS; seg++) {
       float theta = (float)seg / (float)CAPSULE_SEGMENTS * 2.0f * M_PI;
-      float x = cos(theta) * radius * (width / (depth < height ? depth : height));
-      float z = sin(theta) * radius * (depth / (depth < height ? depth : height));
+      float x = cos(theta) * radius * (width * radiusScale);
+      float z = sin(theta) * radius * (depth * radiusScale);
       
       float nx = cos(theta);
       float nz = sin(theta);
@@ -500,8 +514,8 @@ Model_CreateCapsule(float width, float height, float depth, float cylindriness, 
     
     for (uint32_t seg = 0; seg <= CAPSULE_SEGMENTS; seg++) {
       float theta = (float)seg / (float)CAPSULE_SEGMENTS * 2.0f * M_PI;
-      float x = cos(theta) * ringRadius * (width / (depth < height ? depth : height));
-      float z = sin(theta) * ringRadius * (depth / (depth < height ? depth : height));
+      float x = cos(theta) * ringRadius * (width * radiusScale);
+      float z = sin(theta) * ringRadius * (depth * radiusScale);
       
       float nx = cos(theta) * sin(phi);
       float ny = cos(phi);
