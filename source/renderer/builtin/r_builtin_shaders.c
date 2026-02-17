@@ -306,8 +306,8 @@ struct shader_desc shader_button = {
 //    { "u_texture", UT_SAMPLER_2D, PRECISION_LOW },
     { "u_color", UT_COLOR, PRECISION_LOW },
     { "u_rect", UT_FLOAT_VEC4, PRECISION_LOW },
-    { "u_lightDir", UT_FLOAT_VEC3, PRECISION_LOW },
-    { "u_specularPower", UT_FLOAT, PRECISION_LOW },
+    { "u_lightDir", UT_FLOAT_VEC3, PRECISION_LOW, 0, {0.0f, 1.0f, -1.0f} },
+    { "u_specularPower", UT_FLOAT, PRECISION_LOW, 0, {32.0f} },
   },
   .Attributes = {
     { "a_position", UT_FLOAT_VEC4 },
@@ -333,26 +333,27 @@ struct shader_desc shader_button = {
   "}\n",
   .FragmentShader =
   "void main() {\n"
-  "  vec3 u_lightDir = vec3(0,1,-1);\n"
-  "  float u_specularPower = 1.5;\n"
   "  vec3 lightDir = normalize(u_lightDir);\n"
   "  vec3 normal = normalize(v_normal);\n"
+  "  vec3 viewDir = normalize(vec3(0.0, 0.0, 1.0));\n"
+  "\n"
   // Diffuse lighting
   "  float diff = max(dot(normal, lightDir), 0.0);\n"
-  // Refraction within the glossy button
-  "  float refr = pow(diff, 8.0);\n"
-  // Specular lighting (glossy button effect)
-  // Fixed view direction for UI elements in screen space
-
-  "  vec3 viewDir = normalize(vec3(0.0, 0.0, 1.0));\n"
-  "  vec3 reflectDir = reflect(vec3(lightDir.x,-lightDir.y,lightDir.z * 0.5), normal);\n"
-  "  float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_specularPower);\n"
-  "  spec = smoothstep(0.25, 0.55, spec) * 0.35;"
-    
+  "\n"
+  // Refraction within the glossy button - use refracted light direction based on surface normal
+  "  vec3 refractedLight = refract(-lightDir, normal, 0.66);\n"
+  "  float refr = pow(max(dot(normal, refractedLight), 0.0), 8.0);\n"
+  "\n"
+  // Specular lighting using Blinn-Phong model (more physics-based)
+  "  vec3 halfDir = normalize(lightDir + viewDir);\n"
+  "  float spec = pow(max(dot(normal, halfDir), 0.0), u_specularPower);\n"
+  "  spec *= 0.35;\n"
+  "\n"
   // Rim lighting for depth
   "  float rimLight = pow(dot(viewDir, -normal), 0.75);\n"
+  "\n"
   // Combine texture, color, and lighting
-  "  float baseColor = mix(0.35, 1.75, (diff + refr) * rimLight);"
+  "  float baseColor = mix(0.35, 1.75, (diff + refr) * rimLight);\n"
   "  fragColor = vec4(u_color.rgb * baseColor, 1.0) * u_opacity + vec4(spec);\n"
   "}\n"
 };
