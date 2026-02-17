@@ -541,6 +541,7 @@ R_InitResources(void)
   Shader_LoadFromDef(&shader_vertexcolor, &tr.shaders[SHADER_VERTEXCOLOR].shader);
   Shader_LoadFromDef(&shader_error, &tr.shaders[SHADER_ERROR].shader);
   Shader_LoadFromDef(&shader_button, &tr.shaders[SHADER_BUTTON].shader);
+  Shader_LoadFromDef(&shader_roundedbox, &tr.shaders[SHADER_ROUNDEDBOX].shader);
 #ifdef GL_SAMPLER_2D_RECT
   Shader_LoadFromDef(&shader_rect, &tr.shaders[SHADER_RECTANGLE].shader);
 #endif

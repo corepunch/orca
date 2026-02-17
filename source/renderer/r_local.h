@@ -193,6 +193,7 @@ enum
   SHADER_CHARSET,
   SHADER_CINEMATIC,
   SHADER_BUTTON,
+  SHADER_ROUNDEDBOX,
 #ifdef GL_SAMPLER_2D_RECT
   SHADER_RECTANGLE,
 #endif
@@ -295,6 +296,7 @@ extern struct shader_desc shader_cinematic;
 extern struct shader_desc shader_vertexcolor;
 extern struct shader_desc shader_error;
 extern struct shader_desc shader_button;
+extern struct shader_desc shader_roundedbox;
 
 // font
 struct fontface*
