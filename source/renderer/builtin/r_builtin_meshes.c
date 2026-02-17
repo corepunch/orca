@@ -490,7 +490,15 @@ Model_CreateCapsule(float width, float height, float depth, float cylindriness, 
     VERTEX_SEMANTIC_COUNT
   };
   
-  DRAWSURF dsurf = { verts, tris, NULL, vidx, iidx, 0 };
+  DRAWSURF dsurf;
+  dsurf.vertices = verts;
+  dsurf.indices = tris;
+  dsurf.submeshes = NULL;
+  dsurf.neighbors = NULL;
+  dsurf.numVertices = vidx;
+  dsurf.numIndices = iidx;
+  dsurf.numSubmeshes = 0;
+  
   return Model_Create(attr, &dsurf, ppModel);
   
   #undef SEGS
