@@ -597,6 +597,7 @@
     <handles event="Create"/>
     <handles event="LeftMouseUp"/>
     <handles event="KeyDown"/>
+    <handles event="DrawBrush"/>
     <property name="Type" type="ButtonType">Button behavior type (normal or submit) </property>
   </component>
 

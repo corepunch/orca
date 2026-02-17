@@ -505,7 +505,6 @@ Shader_BindMaterial(struct shader const* shader,
 
   struct Texture const* texture = ent->texture ? ent->texture : tr.textures[TX_WHITE];
   struct color color = ent->color;
-  struct mat4 rectangle_scale_model = MAT4_Identity();
   struct mat4 tmp, mvp;
   struct rect fviewport = {
     .x = 0,
@@ -523,28 +522,8 @@ Shader_BindMaterial(struct shader const* shader,
     }
   }
 
-//  if (ent->rect.width != 0 && ent->rect.height != 0 && !ent->mesh) {
-//    struct vec4 w = {
-//      ent->borderWidth.x + ent->borderOffset,
-//      ent->borderWidth.y + ent->borderOffset,
-//      ent->borderWidth.z + ent->borderOffset,
-//      ent->borderWidth.w + ent->borderOffset
-//    };
-//    MAT4_Translate(&rectangle_scale_model, &(struct vec3){
-//      ent->rect.x - w.y,
-//      ent->rect.y - w.w,
-//      0
-//    });
-//    MAT4_Scale(&rectangle_scale_model, &(struct vec3){
-//      ent->rect.width + w.x + w.y,
-//      ent->rect.height + w.z + w.w,
-//      1
-//    });
-//  }
-
   float w = MAX(1, ent->rect.width + ent->borderOffset);
   float h = MAX(1, ent->rect.height + ent->borderOffset);
-//  float r = MIN(MIN(w, h), ent->radius + ent->borderOffset);
 
 	if (!memcmp(&color, &(struct color){0}, sizeof(struct color))) {
 		color = (struct color){1, 1, 1, 1};
@@ -559,8 +538,6 @@ Shader_BindMaterial(struct shader const* shader,
       continue;
     switch (uniform) {
       case kShaderUniform_ModelTransform:
-//        tmp = MAT4_Multiply(&ent->matrix, &rectangle_scale_model);
-//        R_Call(glUniformMatrix4fv, location, 1, GL_FALSE, tmp.v);
         R_Call(glUniformMatrix4fv, location, 1,GL_FALSE, ent->matrix.v);
         break;
       case kShaderUniform_ModelViewTransform:
@@ -596,8 +573,6 @@ Shader_BindMaterial(struct shader const* shader,
       case kShaderUniform_ModelViewProjectionTransform:
         mvp = MAT4_Multiply(&view->projectionMatrix, &view->viewMatrix);
         tmp = MAT4_Multiply(&mvp, &ent->matrix);
-//        mvp = MAT4_Multiply(&tmp, &rectangle_scale_model);
-//        R_Call(glUniformMatrix4fv, location, 1, GL_FALSE, mvp.v);
         R_Call(glUniformMatrix4fv, location, 1, GL_FALSE, tmp.v);
         break;
       case kShaderUniform_Opacity:
