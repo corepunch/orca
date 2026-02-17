@@ -5,22 +5,41 @@
 lpObject_t
 _NextTabStop(lpObject_t hObject);
 
+#define USE_STANDARD_BUTTON
+
 HANDLER(Button, DrawBrush) {
+#ifdef USE_STANDARD_BUTTON
   if (pDrawBrush->foreground) return FALSE;
   
   struct ViewEntity entity;
   Node2D_GetViewEntity(hObject,&entity,pDrawBrush->image,pDrawBrush->brush);
   entity.type = ET_CAPSULE;
-  entity.color = (color_t){0.5,0.75,1,1};
+  entity.color = pDrawBrush->brush->Color;// (color_t){0.4,0.6,0.8,1};
   
-  entity.rect.x -= PADDING_TOP(GetNode2D(hObject), 0);
-  entity.rect.y -= PADDING_TOP(GetNode2D(hObject), 1);
-  entity.rect.width += TOTAL_PADDING(GetNode2D(hObject), 0);
-  entity.rect.height += TOTAL_PADDING(GetNode2D(hObject), 1);
-    
+  float opacity = entity.opacity;
+  rect_t r = entity.rect;
+  
+  r.x -= PADDING_TOP(GetNode2D(hObject), 0);
+  r.y -= PADDING_TOP(GetNode2D(hObject), 1);
+  r.width += TOTAL_PADDING(GetNode2D(hObject), 0);
+  r.height += TOTAL_PADDING(GetNode2D(hObject), 1);
+  
+  entity.rect = RECT_Expand(&r, 1);
+  entity.opacity *= 0.5;
+  entity.color = (color_t){0,0,0,1};
+
   R_DrawEntity(pDrawBrush->viewdef, &entity);
 
+  entity.opacity = opacity;
+  entity.rect = r;
+  entity.color = pDrawBrush->brush->Color;// (color_t){0.4,0.6,0.8,1};
+
+  R_DrawEntity(pDrawBrush->viewdef, &entity);
+
+  return TRUE;
+#else
   return FALSE;
+#endif
 }
 
 HANDLER(Button, LeftMouseUp)

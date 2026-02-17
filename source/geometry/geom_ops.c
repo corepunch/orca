@@ -326,6 +326,18 @@ RECT_Scale(struct rect const* rect, float scale)
   return screen;
 }
 
+struct rect
+RECT_Expand(struct rect const* rect, float scale)
+{
+  struct rect const screen = {
+    .x = rect->x - scale,
+    .y = rect->y - scale,
+    .width = rect->width + scale * 2,
+    .height = rect->height + scale * 2,
+  };
+  return screen;
+}
+
 struct vec2
 RECT_Center(struct rect const* rect)
 {

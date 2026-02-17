@@ -270,6 +270,11 @@
       <arg name="scale" type="float">Scale factor to apply</arg>
       <returns type="rect">New scaled rectangle</returns>
     </method>
+    <method name="Expand" const="true">
+      <summary>Returns a expanded copy of the rectangle</summary>
+      <arg name="padding" type="float">Padding to apply on each side</arg>
+      <returns type="rect">New expanded rectangle</returns>
+    </method>
     <method name="Center" const="true">
       <summary>Calculates the center point of the rectangle</summary>
       <returns type="vec2">Center point of the rectangle</returns>

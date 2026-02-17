@@ -393,6 +393,10 @@ RECT_Contains(lpcrect_t self, lpcvec2_t point);
 ORCA_API rect_t
 RECT_Scale(lpcrect_t self, float scale);
 
+/// @brief Returns a expanded copy of the rectangle
+ORCA_API rect_t
+RECT_Expand(lpcrect_t self, float padding);
+
 /// @brief Calculates the center point of the rectangle
 ORCA_API vec2_t
 RECT_Center(lpcrect_t self);

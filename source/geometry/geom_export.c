@@ -741,6 +741,13 @@ static int f_rect_scale(lua_State *L) {
 	luaX_pushrect(L, &output);
 	return 1;
 }
+static int f_rect_expand(lua_State *L) {
+	lpcrect_t self = luaX_checkrect(L, 1);
+	float padding = luaL_checknumber(L, 2);
+	rect_t output = RECT_Expand(self, padding);
+	luaX_pushrect(L, &output);
+	return 1;
+}
 static int f_rect_center(lua_State *L) {
 	lpcrect_t self = luaX_checkrect(L, 1);
 	vec2_t output = RECT_Center(self);
@@ -773,6 +780,9 @@ int f_rect___index(lua_State *L) {
 		return 1;
 	case 0x82971c71: // scale
 		lua_pushcfunction(L, f_rect_scale);
+		return 1;
+	case 0xf7faaee1: // expand
+		lua_pushcfunction(L, f_rect_expand);
 		return 1;
 	case 0x058c4484: // center
 		lua_pushcfunction(L, f_rect_center);
