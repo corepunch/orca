@@ -350,34 +350,14 @@ struct shader_desc shader_button = {
   "  vec3 reflectDir = reflect(lightDir, normal);\n"
   "  float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_specularPower);\n"
   "  spec = smoothstep(0.25, 0.55, spec) * 0.5;"
-  
-//  "  float u_roughness = 0.4; //0.28\n"
-//  "  float u_gloss     = 1.5; \n"
-//  "  float u_F0        = 0.04; // plastic button \n"
-//  
-//  "  vec3 reflectDir = reflect(lightDir, normal);\n"
-//  "  float NoV = max(dot(normal, viewDir), 0.0);\n"
-//  "  float RoV = max(dot(viewDir, reflectDir), 0.0);\n"
-//  "\n"
-//  "  // Physical roughness -> Phong exponent mapping\n"
-//  "  float r = clamp(u_roughness, 0.04, 1.0);\n"
-//  "  float shininess = (2.0 / (r * r)) - 2.0;\n"
-//  "\n"
-//  "  // Normalized Phong (energy conserving)\n"
-//  "  float normFactor = (shininess + 2.0) * 0.15915494;\n"   // 1/(2*pi)\n"
-//  "  float spec = normFactor * pow(RoV, shininess);\n"
-//  "\n"
-//  "  // Schlick Fresnel (physically correct rim boost)\n"
-//  "  vec3 F = vec3(u_F0) + (1.0 - vec3(u_F0)) * pow(1.0 - RoV, 5.0);\n"
-//  "\n"
-//  "  vec3 specular = u_gloss * spec * F;\n"
-
-  
+    
   // Rim lighting for depth
-  "  float rimLight = pow(dot(viewDir, -normal), 0.75);\n"
+  "  float NdotV = max(dot(viewDir, -normal), 0.0);"
+  "  float F0 = 0.04;" // base reflectance, ~0.04 for plastics
+  "  float fresnel = F0 + (1.0 - F0) * pow(1 - NdotV, 1.0);"
 
   // Combine texture, color, and lighting
-  "  float baseColor = mix(0.35, 1.75, (diff + refr) * rimLight);"
+  "  float baseColor = mix(0.45, 1.75, (diff + refr) * (1.0 - fresnel));"
   "  fragColor = vec4(u_color.rgb * baseColor, 1.0) * u_opacity + vec4(spec);\n"
   "}\n"
 };
