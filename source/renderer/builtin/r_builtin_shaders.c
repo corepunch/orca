@@ -344,7 +344,7 @@ struct shader_desc shader_button = {
   
   // Refraction within the glossy button
   "  vec3 refractedLight = refract(invLight, normal, 0.66);\n"
-  "  float refr = pow(max(dot(-normal, refractedLight), 0.0), 8.0);"
+  "  float refr = pow(max(dot(-normal, refractedLight), 0.0), 8.0) * 2.0;"
   
   // Specular lighting (glossy button effect)
   "  vec3 reflectDir = reflect(lightDir, normal);\n"
