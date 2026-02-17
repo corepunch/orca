@@ -207,6 +207,7 @@ enum
   MD_ROUNDED_RECT,
   MD_ROUNDED_BORDER,
   MD_CAPSULE,
+  MD_ROUNDED_BOX,
   MD_COUNT
 };
 
@@ -355,6 +356,8 @@ HRESULT
 Model_CreateRoundedRectangle(struct model** ppModel);
 HRESULT
 Model_CreateRoundedBorder(struct model** ppModel);
+HRESULT
+Model_CreateRoundedBox(float width, float height, float depth, float radius, struct model** ppModel);
 HRESULT
 Model_CreateCapsule(float width, float height, float depth, float cylindriness, struct model** ppModel);
 HRESULT

@@ -19,6 +19,22 @@ R_MakeVertex(float x, float y, float z, float u, float v, float nx, float ny, fl
   return vertex;
 }
 
+static DRAWVERT
+R_MakeVertexWithWeight(float x, float y, float z, float u, float v, float nx, float ny, float nz, float wx, float wy, float wz)
+{
+  DRAWVERT vertex;
+  memset(&vertex, 0, sizeof(DRAWVERT));
+  VEC3_Set(&vertex.xyz, x, y, z);
+  VEC2_Set(&vertex.texcoord[0], u, v);
+  VEC3_Set(&vertex.normal, nx, ny, nz);
+  VEC4_Set(&vertex.weight, wx, wy, wz, 0.0f);
+  vertex.color.r = 255;
+  vertex.color.g = 255;
+  vertex.color.b = 255;
+  vertex.color.a = 255;
+  return vertex;
+}
+
 HRESULT
 Model_CreatePlane(float w, float h, struct model** ppModel)
 {
@@ -413,6 +429,123 @@ Model_CreateRoundedBorder(struct model** ppModel)
   dsurf.numSubmeshes = 0;
   
   return Model_Create(attr, &dsurf, ppModel);
+}
+
+HRESULT
+Model_CreateRoundedBox(float width, float height, float depth, float radius, struct model** ppModel)
+{
+  if (radius <= 0.0f) return Model_CreateBox(width * 0.5f, height * 0.5f, depth * 0.5f, ppModel);
+  
+  float maxRadius = width < height ? (width < depth ? width : depth) : (height < depth ? height : depth);
+  maxRadius *= 0.5f;
+  if (radius > maxRadius) radius = maxRadius;
+
+  #define SEGS 8
+  
+  float boxWidth = width - 2.0f * radius;
+  float boxHeight = height - 2.0f * radius;
+  float boxDepth = depth - 2.0f * radius;
+  
+  // 8 corners * (SEGS+1)^2 vertices per corner (quarter sphere)
+  // 6 faces * varying vertices for flat regions
+  // For simplicity, we'll generate vertices for all 8 corner spheres
+  uint32_t vertsPerCorner = (SEGS + 1) * (SEGS + 1);
+  uint32_t numVertices = 8 * vertsPerCorner;
+  uint32_t trisPerCorner = SEGS * SEGS * 2 * 3;
+  uint32_t numIndices = 8 * trisPerCorner;
+  
+  DRAWVERT verts[numVertices];
+  DRAWINDEX tris[numIndices];
+  uint32_t vidx = 0, iidx = 0;
+  
+  // Define 8 corner positions (centers of the corner spheres)
+  vec3_t corners[8] = {
+    { boxWidth * 0.5f,  boxHeight * 0.5f,  boxDepth * 0.5f},  // +X +Y +Z
+    {-boxWidth * 0.5f,  boxHeight * 0.5f,  boxDepth * 0.5f},  // -X +Y +Z
+    {-boxWidth * 0.5f, -boxHeight * 0.5f,  boxDepth * 0.5f},  // -X -Y +Z
+    { boxWidth * 0.5f, -boxHeight * 0.5f,  boxDepth * 0.5f},  // +X -Y +Z
+    { boxWidth * 0.5f,  boxHeight * 0.5f, -boxDepth * 0.5f},  // +X +Y -Z
+    {-boxWidth * 0.5f,  boxHeight * 0.5f, -boxDepth * 0.5f},  // -X +Y -Z
+    {-boxWidth * 0.5f, -boxHeight * 0.5f, -boxDepth * 0.5f},  // -X -Y -Z
+    { boxWidth * 0.5f, -boxHeight * 0.5f, -boxDepth * 0.5f},  // +X -Y -Z
+  };
+  
+  // Define which octant each corner sphere occupies
+  int octants[8][3] = {
+    {1, 1, 1}, {-1, 1, 1}, {-1, -1, 1}, {1, -1, 1},
+    {1, 1, -1}, {-1, 1, -1}, {-1, -1, -1}, {1, -1, -1}
+  };
+  
+  // Generate vertices for each corner
+  for (uint32_t corner = 0; corner < 8; corner++) {
+    uint32_t cornerStart = vidx;
+    
+    for (uint32_t i = 0; i <= SEGS; i++) {
+      float phi = (float)i / (float)SEGS * M_PI_2;
+      
+      for (uint32_t j = 0; j <= SEGS; j++) {
+        float theta = (float)j / (float)SEGS * M_PI_2;
+        
+        // Compute sphere point in octant (normalized direction from corner center)
+        float x = sin(phi) * cos(theta);
+        float y = cos(phi);
+        float z = sin(phi) * sin(theta);
+        
+        // Apply octant sign
+        x *= octants[corner][0];
+        y *= octants[corner][1];
+        z *= octants[corner][2];
+        
+        // Position at corner center (to be offset by weight * radius in shader)
+        float px = corners[corner].x;
+        float py = corners[corner].y;
+        float pz = corners[corner].z;
+        
+        float u = (float)j / (float)SEGS;
+        float v = (float)i / (float)SEGS;
+        
+        // Store offset direction in weight field (shader will multiply by radius)
+        verts[vidx++] = R_MakeVertexWithWeight(px, py, pz, u, v, x, y, z, x, y, z);
+      }
+    }
+    
+    // Generate indices for this corner
+    for (uint32_t i = 0; i < SEGS; i++) {
+      for (uint32_t j = 0; j < SEGS; j++) {
+        uint32_t base = cornerStart + i * (SEGS + 1) + j;
+        
+        tris[iidx++] = base;
+        tris[iidx++] = base + 1;
+        tris[iidx++] = base + SEGS + 1;
+        
+        tris[iidx++] = base + 1;
+        tris[iidx++] = base + SEGS + 2;
+        tris[iidx++] = base + SEGS + 1;
+      }
+    }
+  }
+  
+  DRAWSURFATTR attr[] = {
+    VERTEX_SEMANTIC_POSITION, VERTEX_ATTR_DATATYPE_FLOAT32,
+    VERTEX_SEMANTIC_TEXCOORD0, VERTEX_ATTR_DATATYPE_FLOAT32,
+    VERTEX_SEMANTIC_NORMAL, VERTEX_ATTR_DATATYPE_FLOAT32,
+    VERTEX_SEMANTIC_WEIGHT, VERTEX_ATTR_DATATYPE_FLOAT32,
+    VERTEX_SEMANTIC_COLOR, VERTEX_ATTR_DATATYPE_UINT8 | VERTEX_ATTR_DATATYPE_NORMALIZED,
+    VERTEX_SEMANTIC_COUNT
+  };
+
+  DRAWSURF dsurf;
+  dsurf.vertices = verts;
+  dsurf.indices = tris;
+  dsurf.submeshes = NULL;
+  dsurf.neighbors = NULL;
+  dsurf.numVertices = vidx;
+  dsurf.numIndices = iidx;
+  dsurf.numSubmeshes = 0;
+
+  return Model_Create(attr, &dsurf, ppModel);
+
+  #undef SEGS
 }
 
 HRESULT
