@@ -555,14 +555,10 @@ R_InitResources(void)
   Texture_CreateDebug(tr.textures+TX_DEBUG);
   Texture_CreateCinematic(tr.textures+TX_CINEMATIC);
 
-  Model_CreateRectangle(&(struct rect){ 0, 0, 1, 1 },
-                        NULL,
-                        VERTEX_ORDER_DEFAULT,
-                        tr.models+MD_RECTANGLE);
-  
+  Model_CreateRectangle(&(struct rect){ 0, 0, 1, 1 }, NULL, VERTEX_ORDER_DEFAULT, tr.models+MD_RECTANGLE);  
   Model_CreateRoundedRectangle(tr.models+MD_ROUNDED_RECT);
   Model_CreateRoundedBorder(tr.models+MD_ROUNDED_BORDER);
-  Model_CreateCapsule(1.0f, 1.0f, 1.0f, 0.99f, tr.models+MD_CAPSULE);
+  Model_CreateCapsule(1.0f, 1.0f, 1.0f, tr.models+MD_CAPSULE);
 
   Model_CreatePlane(1, 1, tr.models+MD_PLANE);
   Model_CreatePlane(0, 0, tr.models+MD_DOT);
