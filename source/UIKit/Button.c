@@ -2,9 +2,26 @@
 
 #include <source/UIKit/UIKit.h>
 
-
 lpObject_t
 _NextTabStop(lpObject_t hObject);
+
+HANDLER(Button, DrawBrush) {
+  if (pDrawBrush->foreground) return FALSE;
+  
+  struct ViewEntity entity;
+  Node2D_GetViewEntity(hObject,&entity,pDrawBrush->image,pDrawBrush->brush);
+  entity.type = ET_CAPSULE;
+  entity.color = (color_t){0.5,0.75,1,1};
+  
+  entity.rect.x -= PADDING_TOP(GetNode2D(hObject), 0);
+  entity.rect.y -= PADDING_TOP(GetNode2D(hObject), 1);
+  entity.rect.width += TOTAL_PADDING(GetNode2D(hObject), 0);
+  entity.rect.height += TOTAL_PADDING(GetNode2D(hObject), 1);
+    
+  R_DrawEntity(pDrawBrush->viewdef, &entity);
+
+  return FALSE;
+}
 
 HANDLER(Button, LeftMouseUp)
 {

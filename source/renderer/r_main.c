@@ -275,6 +275,12 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
       case ET_NINEPATCH: model = CreateNinePatchMesh(ent); break;
 //      default: model = tr.models[MD_RECTANGLE]; break;
 //      default: model = tr.models[MD_ROUNDED_RECT]; break;
+      case ET_CAPSULE:
+        model = tr.models[MD_CAPSULE];
+        shader = &tr.shaders[SHADER_BUTTON];
+//        MAT4_Translate(&ent->matrix, &(vec3_t){ent->rect.width/2, ent->rect.height/2, 0});
+//        MAT4_Scale(&ent->matrix, &(vec3_t){ent->rect.width, ent->rect.height, 0});
+        break;
       default:
         if (memcmp(&ent->borderWidth, &zero, sizeof(struct vec4))) {
           model = tr.models[MD_ROUNDED_BORDER];
@@ -531,6 +537,7 @@ R_InitResources(void)
   Shader_LoadFromDef(&shader_cinematic, &tr.shaders[SHADER_CINEMATIC].shader);
   Shader_LoadFromDef(&shader_vertexcolor, &tr.shaders[SHADER_VERTEXCOLOR].shader);
   Shader_LoadFromDef(&shader_error, &tr.shaders[SHADER_ERROR].shader);
+  Shader_LoadFromDef(&shader_button, &tr.shaders[SHADER_BUTTON].shader);
 #ifdef GL_SAMPLER_2D_RECT
   Shader_LoadFromDef(&shader_rect, &tr.shaders[SHADER_RECTANGLE].shader);
 #endif
@@ -552,6 +559,7 @@ R_InitResources(void)
   
   Model_CreateRoundedRectangle(tr.models+MD_ROUNDED_RECT);
   Model_CreateRoundedBorder(tr.models+MD_ROUNDED_BORDER);
+  Model_CreateCapsule(1.0f, 1.0f, 1.0f, 0.99f, tr.models+MD_CAPSULE);
 
   Model_CreatePlane(1, 1, tr.models+MD_PLANE);
   Model_CreatePlane(0, 0, tr.models+MD_DOT);

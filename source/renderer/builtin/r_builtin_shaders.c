@@ -293,3 +293,75 @@ struct shader_desc shader_error = {
 };
 
 #endif
+
+struct shader_desc shader_button = {
+  .Name = "Button Shader",
+  .Version = 150,
+  .Precision = PRECISION_LOW,
+  .FragmentOut = "fragColor",
+  .Uniforms = {
+    { "u_modelViewProjectionTransform", UT_FLOAT_MAT4, PRECISION_HIGH },
+    { "u_normalTransform", UT_FLOAT_MAT3, PRECISION_HIGH },
+    { "u_opacity", UT_FLOAT, PRECISION_LOW },
+    { "u_texture", UT_SAMPLER_2D, PRECISION_LOW },
+    { "u_color", UT_COLOR, PRECISION_LOW },
+    { "u_rect", UT_FLOAT_VEC4, PRECISION_LOW },
+    { "u_lightDir", UT_FLOAT_VEC3, PRECISION_LOW },
+    { "u_specularPower", UT_FLOAT, PRECISION_LOW },
+  },
+  .Attributes = {
+    { "a_position", UT_FLOAT_VEC4 },
+    { "a_normal", UT_FLOAT_VEC3 },
+    { "a_texcoord0", UT_FLOAT_VEC2 },
+    { "a_color", UT_FLOAT_VEC4 },
+  },
+  .Shared = {
+    { "v_normal", UT_FLOAT_VEC3 },
+    { "v_texcoord0", UT_FLOAT_VEC2 },
+    { "v_color", UT_COLOR },
+    { "v_worldPos", UT_FLOAT_VEC3 },
+  },
+  .VertexShader =
+  "void main() {\n"
+  "  vec3 pos = a_position.xyz;// * u_rect.zww;// + a_texcoord0 * rad + a_texcoord1 * brd;\n"
+  "  float koeff = u_rect.w / u_rect.z;\n"
+  "  float inflat = 1.0 - 0.5 * u_rect.w / u_rect.z;\n"
+  "  pos.x = mix((pos.x + 1.0) * koeff - inflat, (pos.x - 1.0) * koeff + inflat, pos.x > 0.0);\n"
+  "  pos *= u_rect.zww;\n"
+//  "  vec3 tex = vec3(pos.x / u_rect.z, 1.0 - pos.y / u_rect.w, 1.0);\n"
+  "  gl_Position = u_modelViewProjectionTransform *  vec4(pos.xy + u_rect.xy + u_rect.zw/2.0, pos.z, 1.0);\n"
+  "  v_texcoord0 = a_texcoord0;\n"
+  "  v_color = a_color;\n"
+  "  v_normal = normalize(u_normalTransform * a_normal);\n"
+  "  v_worldPos = a_position.xyz;\n"
+  "}\n",
+  .FragmentShader =
+  "void main() {\n vec3 u_lightDir=vec3(-1,-1,-1);\n"
+  "  vec3 lightDir = normalize(u_lightDir);\n"
+  "  vec3 normal = normalize(v_normal);\n"
+  "  \n"
+  "  // Diffuse lighting\n"
+  "  float diff = max(dot(normal, lightDir), 0.0);\n"
+  "  vec3 diffuse = vec3(diff * 0.8 + 0.2);\n"
+  "  \n"
+  "  // Specular lighting (glossy button effect)\n"
+  "  // Fixed view direction for UI elements in screen space\n"
+  "  // For 3D scenes, consider passing camera position and computing viewDir from fragment position\n"
+  "  vec3 viewDir = normalize(vec3(0.0, 0.0, 1.0));\n"
+  "  vec3 reflectDir = reflect(-lightDir, normal);\n"
+  "  float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_specularPower);\n"
+  "  vec3 specular = vec3(spec * 0.5);\n"
+  "  \n"
+  "  // Rim lighting for depth\n"
+  "  float rimPower = 1.0 - max(dot(viewDir, normal), 0.0);\n"
+  "  vec3 rimLight = vec3(pow(rimPower, 3.0) * 0.3);\n"
+  "  \n"
+  "  // Combine texture, color, and lighting\n"
+  "  vec4 texColor = texture(u_texture, v_texcoord0);\n"
+  "  vec3 baseColor = texColor.rgb * u_color.rgb * v_color.rgb;\n"
+  "  vec3 finalColor = baseColor * (diffuse + specular + rimLight);\n"
+  "  \n"
+  "  fragColor = u_color * vec4(diffuse,1);//vec4(finalColor, texColor.a * u_color.a * v_color.a * u_opacity);\n"
+  "}\n"
+};
+

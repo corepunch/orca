@@ -2094,6 +2094,7 @@ ORCA_API struct ClassDesc _Input = {
 LRESULT Button_Create(lpObject_t, lpButton_t, wParam_t, CreateEventPtr);
 LRESULT Button_LeftMouseUp(lpObject_t, lpButton_t, wParam_t, LeftMouseUpEventPtr);
 LRESULT Button_KeyDown(lpObject_t, lpButton_t, wParam_t, KeyDownEventPtr);
+LRESULT Button_DrawBrush(lpObject_t, lpButton_t, wParam_t, DrawBrushEventPtr);
 static struct PropertyDesc const ButtonProperties[kButtonNumProperties] = {
 	/* Button.Type */ DECL(0xd155d06d, 0x843eb785,
 	Button, "Type", Type, kDataTypeEnum, .TypeString="Normal,Submit"),
@@ -2107,6 +2108,8 @@ LRESULT ButtonProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wpar
 			return Button_LeftMouseUp(object, cmp, wparm, lparm);
 		case 0x83b19b78: // KeyDown
 			return Button_KeyDown(object, cmp, wparm, lparm);
+		case 0x0875c1d1: // DrawBrush
+			return Button_DrawBrush(object, cmp, wparm, lparm);
 }
 	return FALSE;
 }
