@@ -2,10 +2,15 @@
 
 #include <source/UIKit/UIKit.h>
 
+float
+text_pos(EdgeShorthand_t padding, uint32_t align, float size, float space);
+
 HANDLER(Input, DrawBrush)
 {
-  TextBlockPtr pTextBlock = GetTextBlock(hObject);
+//  TextBlockPtr pTextBlock = GetTextBlock(hObject);
   TextRunPtr pTextRun = GetTextRun(hObject);
+  Node2DPtr pNode2D = GetNode2D(hObject);
+  TextBlockConceptPtr pTextBlockConcept = GetTextBlockConcept(hObject);
 
   struct ViewEntity entity;
 
@@ -14,12 +19,18 @@ HANDLER(Input, DrawBrush)
     Node2D_GetViewEntity(hObject, &entity, NULL, pDrawBrush->brush);
     memset(&entity.borderWidth, 0, sizeof(entity.borderWidth));
     memset(&entity.radius, 0, sizeof(entity.radius));
+    entity.text = NULL;
     entity.rect = pTextRun->_textinfo.cursor;
     entity.rect.x += pTextRun->_textinfo.txInsets.left;
     entity.rect.y += pTextRun->_textinfo.txInsets.top;
-    entity.rect.x += PADDING_TOP(pTextBlock->_node2D, 0);
-    entity.rect.y += PADDING_TOP(pTextBlock->_node2D, 1);
-    entity.text = NULL;
+    entity.rect.x += text_pos(NODE2D_FRAME(pNode2D, Padding, 0),
+                              pTextBlockConcept->TextHorizontalAlignment,
+                              pTextRun->_textinfo.txWidth,
+                              Node2D_GetFrame(pNode2D, kBox3FieldWidth));
+    entity.rect.y += text_pos(NODE2D_FRAME(pNode2D, Padding, 1),
+                              pTextBlockConcept->TextVerticalAlignment,
+                              pTextRun->_textinfo.txHeight,
+                              Node2D_GetFrame(pNode2D, kBox3FieldHeight));
 
     R_DrawEntity(pDrawBrush->viewdef, &entity);
   }

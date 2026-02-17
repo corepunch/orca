@@ -4,7 +4,7 @@
 
 #include <source/UIKit/UIKit.h>
 
-#define PLACEHOLDER_OPACITY 0.33f
+#define PLACEHOLDER_OPACITY 0.5f
 
 enum label_step
 {
@@ -27,20 +27,17 @@ is_updated(lpObject_t hObject,
   }
 }
 
-static float
-text_pos(lpcvec2_t padding,
-         uint32_t align,
-         float size,
-         float space)
+float
+text_pos(EdgeShorthand_t padding, uint32_t align, float size, float space)
 {
   switch (align) {
     case kTextHorizontalAlignmentRight:
-      return space - size + padding->x;
+      return space - size + padding.Left;
     case kTextHorizontalAlignmentCenter:
-      return padding->x + (space - padding->x - padding->y - size) / 2;
+      return padding.Left + (space - padding.Left - padding.Right - size) / 2;
     case kTextHorizontalAlignmentLeft:
     default:
-      return padding->x;
+      return padding.Left;
   }
 }
 
@@ -49,19 +46,15 @@ mesh_rect(Node2DPtr pNode2D,
           TextBlockConceptPtr frame,
           struct text_info* pTextInfo)
 {
-  struct rect const rect = {
-    .width = Node2D_GetFrame(pNode2D, kBox3FieldWidth),
-    .height = Node2D_GetFrame(pNode2D, kBox3FieldHeight),
-  };
   return (struct rect){
-    .x = text_pos((struct vec2*)&NODE2D_FRAME(pNode2D, Padding, 0),
+    .x = text_pos(NODE2D_FRAME(pNode2D, Padding, 0),
                   frame->TextHorizontalAlignment,
                   pTextInfo->txWidth,
-                  rect.width),
-    .y = text_pos((struct vec2*)&NODE2D_FRAME(pNode2D, Padding, 1),
+                  Node2D_GetFrame(pNode2D, kBox3FieldWidth)),
+    .y = text_pos(NODE2D_FRAME(pNode2D, Padding, 1),
                   frame->TextVerticalAlignment,
                   pTextInfo->txHeight,
-                  rect.height),
+                  Node2D_GetFrame(pNode2D, kBox3FieldHeight)),
     .width = pTextInfo->txWidth,
     .height = pTextInfo->txHeight,
   };
