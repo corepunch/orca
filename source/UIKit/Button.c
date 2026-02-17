@@ -31,8 +31,10 @@ HANDLER(Button, DrawBrush) {
   R_DrawEntity(pDrawBrush->viewdef, &entity);
 
   entity.rect = r;
-  entity.material.opacity = opacity;
-  entity.material.color = pDrawBrush->brush->Color;// (color_t){0.4,0.6,0.8,1};
+  entity.material = (struct ViewMaterial) {
+    .opacity = opacity,
+    .color = pDrawBrush->brush->Color,// (color_t){0.4,0.6,0.8,1};
+  };
 
   R_DrawEntity(pDrawBrush->viewdef, &entity);
 
