@@ -425,154 +425,61 @@ Model_CreateRoundedBorder(struct model** ppModel)
 HRESULT
 Model_CreateCapsule(float width, float height, float depth, float cylindriness, struct model** ppModel)
 {
-  // cylindriness: 0.0 = box, 1.0 = full capsule
-  // Clamp cylindriness to valid range
   if (cylindriness < 0.0f) cylindriness = 0.0f;
   if (cylindriness > 1.0f) cylindriness = 1.0f;
+  if (cylindriness < 0.001f) return Model_CreateBox(width, height * 0.5f, depth * 0.5f, ppModel);
   
-  #define CAPSULE_SEGMENTS 16
-  #define CAPSULE_RINGS 8
+  #define SEGS 16
+  #define RINGS 8
+  #define QUAD(a,b,c,d) a,d,c, d,a,b,
   
-  // Calculate dimension scaling - use minimum of height and depth for uniform rounding
-  float minDimension = (height < depth) ? height : depth;
-  float radiusScale = 1.0f / minDimension;
+  float minDim = (height < depth) ? height : depth;
+  float r = minDim * 0.5f * cylindriness;
+  float h = height - 2.0f * r;
+  float ws = width / minDim, ds = depth / minDim;
   
-  // Calculate the radius for the rounded caps based on cylindriness
-  float radius = minDimension * 0.5f * cylindriness;
-  float cylinderHeight = height - 2.0f * radius;
+  DRAWVERT verts[(SEGS+1) * (RINGS*2 + 3)];
+  DRAWINDEX tris[SEGS * (RINGS*2 + 2) * 6];
+  uint32_t vidx = 0, iidx = 0;
   
-  // If cylindriness is 0, just create a box
-  if (cylindriness < 0.001f) {
-    return Model_CreateBox(width, height * 0.5f, depth * 0.5f, ppModel);
-  }
-  
-  // Vertex count: (segments+1) vertices per ring
-  // Rings: (CAPSULE_RINGS+1) for top hemisphere + (CAPSULE_RINGS+1) for bottom + 2 for cylinder
-  uint32_t vertexCount = (CAPSULE_SEGMENTS + 1) * ((CAPSULE_RINGS + 1) * 2 + 2);
-  // Index count: 6 indices per quad, CAPSULE_SEGMENTS quads per ring
-  uint32_t indexCount = CAPSULE_SEGMENTS * (CAPSULE_RINGS * 2 + 2) * 6;
-  
-  DRAWVERT* vertices = (DRAWVERT*)malloc(vertexCount * sizeof(DRAWVERT));
-  DRAWINDEX* indices = (DRAWINDEX*)malloc(indexCount * sizeof(DRAWINDEX));
-  
-  // Check for allocation failure
-  if (!vertices || !indices) {
-    if (vertices) free(vertices);
-    if (indices) free(indices);
-    return E_OUTOFMEMORY;
-  }
-  
-  uint32_t vIdx = 0;
-  uint32_t iIdx = 0;
-  
-  // Generate top hemisphere
-  for (uint32_t ring = 0; ring <= CAPSULE_RINGS; ring++) {
-    float phi = (float)ring / (float)CAPSULE_RINGS * M_PI_2;
-    float y = cos(phi) * radius + cylinderHeight * 0.5f;
-    float ringRadius = sin(phi) * radius;
-    
-    for (uint32_t seg = 0; seg <= CAPSULE_SEGMENTS; seg++) {
-      float theta = (float)seg / (float)CAPSULE_SEGMENTS * 2.0f * M_PI;
-      float x = cos(theta) * ringRadius * (width * radiusScale);
-      float z = sin(theta) * ringRadius * (depth * radiusScale);
+  // Generate all vertices: top hemisphere, cylinder, bottom hemisphere
+  for (uint32_t part = 0; part < 3; part++) {
+    uint32_t numRings = (part == 1) ? 2 : RINGS + 1;
+    for (uint32_t ring = 0; ring < numRings; ring++) {
+      float phi, y, rr;
+      if (part == 0) { // Top hemisphere
+        phi = (float)ring / RINGS * M_PI_2;
+        y = cos(phi) * r + h * 0.5f;
+        rr = sin(phi) * r;
+      } else if (part == 1) { // Cylinder
+        phi = M_PI_2;
+        y = (ring == 0) ? h * 0.5f : -h * 0.5f;
+        rr = r;
+      } else { // Bottom hemisphere
+        phi = M_PI_2 + (float)ring / RINGS * M_PI_2;
+        y = cos(phi) * r - h * 0.5f;
+        rr = sin(phi) * r;
+      }
       
-      float nx = cos(theta) * sin(phi);
-      float ny = cos(phi);
-      float nz = sin(theta) * sin(phi);
-      
-      float u = (float)seg / (float)CAPSULE_SEGMENTS;
-      float v = (float)ring / (float)CAPSULE_RINGS * 0.25f;
-      
-      vertices[vIdx++] = R_MakeVertex(x, y, z, u, v, nx, ny, nz);
+      for (uint32_t s = 0; s <= SEGS; s++) {
+        float t = (float)s / SEGS * 2.0f * M_PI;
+        float ct = cos(t), st = sin(t);
+        float nx = ct * sin(phi), ny = cos(phi), nz = st * sin(phi);
+        float u = (float)s / SEGS;
+        float v = (part == 0) ? (float)ring / RINGS * 0.25f :
+                  (part == 1) ? 0.25f + (ring == 0 ? 0.0f : 0.5f) :
+                                0.75f + (float)ring / RINGS * 0.25f;
+        verts[vidx++] = R_MakeVertex(ct * rr * ws, y, st * rr * ds, u, v, nx, ny, nz);
+      }
     }
   }
   
-  // Generate cylinder body
-  for (uint32_t i = 0; i <= 1; i++) {
-    float yPos = (i == 0) ? cylinderHeight * 0.5f : -cylinderHeight * 0.5f;
-    
-    for (uint32_t seg = 0; seg <= CAPSULE_SEGMENTS; seg++) {
-      float theta = (float)seg / (float)CAPSULE_SEGMENTS * 2.0f * M_PI;
-      float x = cos(theta) * radius * (width * radiusScale);
-      float z = sin(theta) * radius * (depth * radiusScale);
-      
-      float nx = cos(theta);
-      float nz = sin(theta);
-      
-      float u = (float)seg / (float)CAPSULE_SEGMENTS;
-      float v = 0.25f + (i == 0 ? 0.0f : 0.5f);
-      
-      vertices[vIdx++] = R_MakeVertex(x, yPos, z, u, v, nx, 0, nz);
-    }
-  }
-  
-  // Generate bottom hemisphere
-  for (uint32_t ring = 0; ring <= CAPSULE_RINGS; ring++) {
-    float phi = M_PI_2 + (float)ring / (float)CAPSULE_RINGS * M_PI_2;
-    float y = cos(phi) * radius - cylinderHeight * 0.5f;
-    float ringRadius = sin(phi) * radius;
-    
-    for (uint32_t seg = 0; seg <= CAPSULE_SEGMENTS; seg++) {
-      float theta = (float)seg / (float)CAPSULE_SEGMENTS * 2.0f * M_PI;
-      float x = cos(theta) * ringRadius * (width * radiusScale);
-      float z = sin(theta) * ringRadius * (depth * radiusScale);
-      
-      float nx = cos(theta) * sin(phi);
-      float ny = cos(phi);
-      float nz = sin(theta) * sin(phi);
-      
-      float u = (float)seg / (float)CAPSULE_SEGMENTS;
-      float v = 0.75f + (float)ring / (float)CAPSULE_RINGS * 0.25f;
-      
-      vertices[vIdx++] = R_MakeVertex(x, y, z, u, v, nx, ny, nz);
-    }
-  }
-  
-  // Generate indices for top hemisphere
-  for (uint32_t ring = 0; ring < CAPSULE_RINGS; ring++) {
-    for (uint32_t seg = 0; seg < CAPSULE_SEGMENTS; seg++) {
-      uint32_t current = ring * (CAPSULE_SEGMENTS + 1) + seg;
-      uint32_t next = current + CAPSULE_SEGMENTS + 1;
-      
-      indices[iIdx++] = current;
-      indices[iIdx++] = next;
-      indices[iIdx++] = current + 1;
-      
-      indices[iIdx++] = current + 1;
-      indices[iIdx++] = next;
-      indices[iIdx++] = next + 1;
-    }
-  }
-  
-  // Generate indices for cylinder body
-  uint32_t cylinderStart = (CAPSULE_RINGS + 1) * (CAPSULE_SEGMENTS + 1);
-  for (uint32_t seg = 0; seg < CAPSULE_SEGMENTS; seg++) {
-    uint32_t current = cylinderStart + seg;
-    uint32_t next = current + CAPSULE_SEGMENTS + 1;
-    
-    indices[iIdx++] = current;
-    indices[iIdx++] = next;
-    indices[iIdx++] = current + 1;
-    
-    indices[iIdx++] = current + 1;
-    indices[iIdx++] = next;
-    indices[iIdx++] = next + 1;
-  }
-  
-  // Generate indices for bottom hemisphere
-  uint32_t bottomStart = cylinderStart + 2 * (CAPSULE_SEGMENTS + 1);
-  for (uint32_t ring = 0; ring < CAPSULE_RINGS; ring++) {
-    for (uint32_t seg = 0; seg < CAPSULE_SEGMENTS; seg++) {
-      uint32_t current = bottomStart + ring * (CAPSULE_SEGMENTS + 1) + seg;
-      uint32_t next = current + CAPSULE_SEGMENTS + 1;
-      
-      indices[iIdx++] = current;
-      indices[iIdx++] = next;
-      indices[iIdx++] = current + 1;
-      
-      indices[iIdx++] = current + 1;
-      indices[iIdx++] = next;
-      indices[iIdx++] = next + 1;
+  // Generate indices for all quads
+  for (uint32_t i = 0; i < (RINGS*2 + 2); i++) {
+    for (uint32_t s = 0; s < SEGS; s++) {
+      uint32_t base = i * (SEGS+1) + s;
+      tris[iidx++] = base; tris[iidx++] = base + SEGS+1; tris[iidx++] = base + 1;
+      tris[iidx++] = base + 1; tris[iidx++] = base + SEGS+1; tris[iidx++] = base + SEGS+2;
     }
   }
   
@@ -584,21 +491,10 @@ Model_CreateCapsule(float width, float height, float depth, float cylindriness, 
     VERTEX_SEMANTIC_COUNT
   };
   
-  DRAWSURF dsurf;
-  dsurf.vertices = vertices;
-  dsurf.indices = indices;
-  dsurf.neighbors = NULL;
-  dsurf.numVertices = vIdx;
-  dsurf.numIndices = iIdx;
-  dsurf.numSubmeshes = 0;
+  DRAWSURF dsurf = { verts, tris, NULL, vidx, iidx, 0 };
+  return Model_Create(attr, &dsurf, ppModel);
   
-  HRESULT result = Model_Create(attr, &dsurf, ppModel);
-  
-  free(vertices);
-  free(indices);
-  
-  return result;
-  
-  #undef CAPSULE_SEGMENTS
-  #undef CAPSULE_RINGS
+  #undef SEGS
+  #undef RINGS
+  #undef QUAD
 }
