@@ -293,3 +293,66 @@ struct shader_desc shader_error = {
 };
 
 #endif
+
+struct shader_desc shader_button = {
+  .Name = "Button Shader",
+  .Version = 150,
+  .Precision = PRECISION_LOW,
+  .FragmentOut = "fragColor",
+  .Uniforms = {
+    { "u_modelViewProjectionTransform", UT_FLOAT_MAT4, PRECISION_HIGH },
+    { "u_normalTransform", UT_FLOAT_MAT3, PRECISION_HIGH },
+    { "u_opacity", UT_FLOAT, PRECISION_LOW },
+    { "u_texture", UT_SAMPLER_2D, PRECISION_LOW },
+    { "u_color", UT_COLOR, PRECISION_LOW },
+    { "u_lightDir", UT_FLOAT_VEC3, PRECISION_LOW },
+    { "u_specularPower", UT_FLOAT, PRECISION_LOW },
+  },
+  .Attributes = {
+    { "a_position", UT_FLOAT_VEC4 },
+    { "a_normal", UT_FLOAT_VEC3 },
+    { "a_texcoord0", UT_FLOAT_VEC2 },
+    { "a_color", UT_FLOAT_VEC4 },
+  },
+  .Shared = {
+    { "v_normal", UT_FLOAT_VEC3 },
+    { "v_texcoord0", UT_FLOAT_VEC2 },
+    { "v_color", UT_COLOR },
+    { "v_worldPos", UT_FLOAT_VEC3 },
+  },
+  .VertexShader =
+  "void main() {\n"
+  "    gl_Position = u_modelViewProjectionTransform * a_position;\n"
+  "    v_texcoord0 = a_texcoord0;\n"
+  "    v_color = a_color;\n"
+  "    v_normal = normalize(u_normalTransform * a_normal);\n"
+  "    v_worldPos = a_position.xyz;\n"
+  "}\n",
+  .FragmentShader =
+  "void main() {\n"
+  "    vec3 lightDir = normalize(u_lightDir);\n"
+  "    vec3 normal = normalize(v_normal);\n"
+  "    \n"
+  "    // Diffuse lighting\n"
+  "    float diff = max(dot(normal, lightDir), 0.0);\n"
+  "    vec3 diffuse = vec3(diff * 0.8 + 0.2);\n"
+  "    \n"
+  "    // Specular lighting (glossy button effect)\n"
+  "    vec3 viewDir = normalize(vec3(0.0, 0.0, 1.0));\n"
+  "    vec3 reflectDir = reflect(-lightDir, normal);\n"
+  "    float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_specularPower);\n"
+  "    vec3 specular = vec3(spec * 0.5);\n"
+  "    \n"
+  "    // Rim lighting for depth\n"
+  "    float rimPower = 1.0 - max(dot(viewDir, normal), 0.0);\n"
+  "    vec3 rimLight = vec3(pow(rimPower, 3.0) * 0.3);\n"
+  "    \n"
+  "    // Combine texture, color, and lighting\n"
+  "    vec4 texColor = texture(u_texture, v_texcoord0);\n"
+  "    vec3 baseColor = texColor.rgb * u_color.rgb * v_color.rgb;\n"
+  "    vec3 finalColor = baseColor * (diffuse + specular + rimLight);\n"
+  "    \n"
+  "    fragColor = vec4(finalColor, texColor.a * u_color.a * v_color.a * u_opacity);\n"
+  "}\n"
+};
+
