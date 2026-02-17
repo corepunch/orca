@@ -282,6 +282,10 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
 //        MAT4_Translate(&ent->matrix, &(vec3_t){ent->rect.width/2, ent->rect.height/2, 0});
 //        MAT4_Scale(&ent->matrix, &(vec3_t){ent->rect.width, ent->rect.height, 0});
         break;
+      case ET_ROUNDED_BOX:
+        model = tr.models[MD_ROUNDED_BOX];
+        shader = &tr.shaders[SHADER_ROUNDEDBOX];
+        break;
       default:
         if (memcmp(&ent->borderWidth, &zero, sizeof(struct vec4))) {
           model = tr.models[MD_ROUNDED_BORDER];

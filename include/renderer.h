@@ -256,6 +256,7 @@ enum entity_type
   ET_NINEPATCH,
   ET_VIEWPORT,
   ET_CAPSULE,
+  ET_ROUNDED_BOX,
   ET_CINEMATIC,
 };
 
