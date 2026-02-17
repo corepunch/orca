@@ -341,6 +341,7 @@ struct shader_desc shader_button = {
   "  float diff = max(dot(normal, lightDir), 0.0);\n"
   "\n"
   // Refraction within the glossy button - use refracted light direction based on surface normal
+  // Using IOR of 0.66 to approximate glass-like material. refract() returns zero on total internal reflection.
   "  vec3 refractedLight = refract(-lightDir, normal, 0.66);\n"
   "  float refr = pow(max(dot(normal, refractedLight), 0.0), 8.0);\n"
   "\n"
@@ -353,6 +354,7 @@ struct shader_desc shader_button = {
   "  float rimLight = pow(dot(viewDir, -normal), 0.75);\n"
   "\n"
   // Combine texture, color, and lighting
+  // Base color ranges from 0.35 (minimum brightness) to 1.75 (maximum brightness with lighting)
   "  float baseColor = mix(0.35, 1.75, (diff + refr) * rimLight);\n"
   "  fragColor = vec4(u_color.rgb * baseColor, 1.0) * u_opacity + vec4(spec);\n"
   "}\n"
