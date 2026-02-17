@@ -431,7 +431,6 @@ Model_CreateCapsule(float width, float height, float depth, float cylindriness, 
   
   #define SEGS 16
   #define RINGS 8
-  #define QUAD(a,b,c,d) a,d,c, d,a,b,
   
   float minDim = (height < depth) ? height : depth;
   float r = minDim * 0.5f * cylindriness;
@@ -496,5 +495,4 @@ Model_CreateCapsule(float width, float height, float depth, float cylindriness, 
   
   #undef SEGS
   #undef RINGS
-  #undef QUAD
 }
