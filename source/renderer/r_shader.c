@@ -503,7 +503,7 @@ Shader_BindMaterial(struct shader const* shader,
   R_Call(glActiveTexture, GL_TEXTURE0);
   R_Call(glUseProgram, shader->prognum);
 
-  struct Texture const* texture = ent->texture ? ent->texture : tr.textures[TX_WHITE];
+  struct Texture const* texture = ent->material.texture ? ent->material.texture : tr.textures[TX_WHITE];
   struct color color = ent->material.color;
   struct mat4 tmp, mvp;
   struct rect fviewport = {
@@ -568,7 +568,7 @@ Shader_BindMaterial(struct shader const* shader,
         R_Call(glUniformMatrix4fv, location, 1, GL_TRUE, tmp.v);
         break;
       case kShaderUniform_TextureTransform:
-        R_Call(glUniformMatrix3fv, location, 1, GL_FALSE, ent->textureMatrix.v);
+        R_Call(glUniformMatrix3fv, location, 1, GL_FALSE, ent->material.textureMatrix.v);
         break;
       case kShaderUniform_ModelViewProjectionTransform:
         mvp = MAT4_Multiply(&view->projectionMatrix, &view->viewMatrix);

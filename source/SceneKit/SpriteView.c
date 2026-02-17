@@ -39,14 +39,14 @@ HANDLER(SpriteView, Render)
       -0.005f*viewbox.width, -0.005f*viewbox.height,
       0.01f*viewbox.width, 0.01f*viewbox.height
     },
-    .texture = pSpriteView->Image,
-    .textureMatrix = texmat,
     .matrix = GetNode3D(hObject)->Matrix,
     .material = (struct ViewMaterial){
       .opacity = GetNode3D(hObject)->_opacity,
       .color = {1,1,1,1},
+      .texture = pSpriteView->Image,
+      .textureMatrix = texmat,
+      .blendMode = BLEND_MODE_ALPHA,
     },
-    .blendMode = BLEND_MODE_ALPHA,
   };
   
   R_DrawEntity(pRender, &entity);

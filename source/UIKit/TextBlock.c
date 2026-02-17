@@ -236,7 +236,7 @@ HANDLER(TextBlock, DrawBrush)
   Node2D_GetViewEntity(hObject, &entity, pDrawBrush->image, pDrawBrush->brush);
 
   if (pDrawBrush->foreground) {
-    entity.texture = 0;
+    entity.material.texture = 0;
     entity.material.opacity *= modopacity;
     entity.radius = (struct vec4){0};
     entity.rect = pTextBlock->_node2D->_rect;

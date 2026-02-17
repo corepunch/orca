@@ -104,7 +104,7 @@ HANDLER(ImageView, DrawBrush)
 
   entity.type = ET_NINEPATCH;
   entity.rect = GetNode2D(hObject)->_rect;
-  entity.blendMode = OBJ_GetInteger(hObject, ID_Material_BlendMode, kBlendModeAlpha);
+  entity.material.blendMode = OBJ_GetInteger(hObject, ID_Material_BlendMode, kBlendModeAlpha);
 
   if (pImageView->Stretch == kStretchUniform) {
     entity.rect = RECT_Fit(&entity.rect, &imgsize);

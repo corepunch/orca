@@ -52,7 +52,7 @@ HANDLER(Input, DrawBrush)
       entity.radius = (struct vec4) {0,0,0,0};
       entity.material.color = (struct color) {0,0,0,1};
       entity.material.opacity = 1;
-      entity.texture = pInput->_checkmark;
+      entity.material.texture = pInput->_checkmark;
       R_DrawEntity(pDrawBrush->viewdef, &entity);
     }
   }

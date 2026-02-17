@@ -58,8 +58,8 @@ R_DrawRect(LPMATRIX4 matrix, LPRECT rect)
     .material = (struct ViewMaterial) {
       .color = { 1, 1, 0, 1 },
       .opacity = 1,
+      .blendMode = BLEND_MODE_OPAQUE,
     },
-    .blendMode = BLEND_MODE_OPAQUE,
   };
   memcpy(&vd.projectionMatrix, matrix, sizeof(struct mat4));
   ent.matrix = MAT4_Identity();

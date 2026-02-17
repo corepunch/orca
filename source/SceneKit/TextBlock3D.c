@@ -68,25 +68,25 @@ HANDLER(TextBlock3D, Render)
   
   struct ViewEntity entity = {
     .debugName = OBJ_GetName(hObject),
-    .texture = 0,
     .radius = (struct vec4){0},
     .rect = (struct rect){-w/2,-h/2,w,h},
     .text = pTextBlock->_text,
     .material = (struct ViewMaterial) {
       .opacity = GetNode3D(hObject)->_opacity,
       .color = {1,1,1,1},
+      .texture = 0,
+      .blendMode = BLEND_MODE_PREMULTIPLIED_ALPHA,
     },
     .matrix = GetNode3D(hObject)->Matrix,
-    .blendMode = BLEND_MODE_PREMULTIPLIED_ALPHA,
   };
   
   struct mat4 scale;
   scale = MAT4_Identity();
   MAT4_Scale(&scale, &(struct vec3) { 0.1, 0.1, 0.1 });
   entity.matrix = MAT4_Multiply(&GetNode3D(hObject)->Matrix, &scale);
-  entity.textureMatrix = MAT3_Identity();
-  entity.textureMatrix.v[4] = -1;
-  entity.textureMatrix.v[7] =  1;
+  entity.material.textureMatrix = MAT3_Identity();
+  entity.material.textureMatrix.v[4] = -1;
+  entity.material.textureMatrix.v[7] =  1;
   
 //  lpProperty_t hProp =
 //  TextBlockConcept_GetProperty(hObject, kTextBlockConceptText);

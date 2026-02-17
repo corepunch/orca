@@ -261,7 +261,10 @@ enum entity_type
 
 struct ViewMaterial
 {
+  struct Texture const* texture;
+  struct mat3 textureMatrix;
   struct color color;
+  enum blend_mode blendMode;
   float opacity;
 };
 
@@ -274,8 +277,6 @@ struct ViewEntity
   struct ViewText* text;
   struct Mesh const* mesh;
   struct Shader const* shader;
-  struct Texture const* texture;
-  struct mat3 textureMatrix;
   struct uniform const* uniforms;
   uint32_t numUniforms;
   uint32_t frame;
@@ -283,7 +284,6 @@ struct ViewEntity
   struct vec4 radius;
   struct vec4 borderWidth;
   float borderOffset;
-  enum blend_mode blendMode;
   uint32_t submesh;
   uint32_t flags;
   uint32_t camera;

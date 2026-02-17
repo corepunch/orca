@@ -231,11 +231,10 @@ _UpdateCinematicEntity(struct ViewEntity* ent)
   Cin_Load((lpcString_t)&ent->ninepatch, ent->frame);
 
   ent->matrix = MAT4_Identity();
-  ent->textureMatrix = MAT3_Identity();
-
-  ent->texture = tr.textures[TX_CINEMATIC];
-  ent->textureMatrix.v[4] = -1;
-  ent->textureMatrix.v[7] = 1;
+  ent->material.textureMatrix = MAT3_Identity();
+  ent->material.texture = tr.textures[TX_CINEMATIC];
+  ent->material.textureMatrix.v[4] = -1;
+  ent->material.textureMatrix.v[7] = 1;
   ent->rect.x += (ent->rect.width - tr.textures[TX_CINEMATIC]->Width) / 2;
   ent->rect.y += (ent->rect.height - tr.textures[TX_CINEMATIC]->Height) / 2;
   ent->rect.width = tr.textures[TX_CINEMATIC]->Width;
@@ -246,14 +245,14 @@ HRESULT
 R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
 {
 #ifdef GL_SAMPLER_2D_RECT
-  lpcTexture_t texture = ent->texture;
+  lpcTexture_t texture = ent->material.texture;
   uint32_t fallback = SHADER_UI;
   if (texture && texture->IOSurface) {
     fallback = SHADER_RECTANGLE;
-    ent->textureMatrix.v[0] *= texture->Width;
-    ent->textureMatrix.v[4] *= texture->Height;
-    ent->textureMatrix.v[6] *= texture->Width;
-    ent->textureMatrix.v[7] *= texture->Height;
+    ent->material.textureMatrix.v[0] *= texture->Width;
+    ent->material.textureMatrix.v[4] *= texture->Height;
+    ent->material.textureMatrix.v[6] *= texture->Width;
+    ent->material.textureMatrix.v[7] *= texture->Height;
   }
   lpcShader_t shader = ent->shader ? ent->shader : &tr.shaders[fallback];
 #else
@@ -295,8 +294,8 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
   
   struct shader_universal_target const *target = &shader->shader->target;
 
-  if (ent->blendMode != BLEND_MODE_INHERIT) {
-    R_SetBlendMode(ent->blendMode);
+  if (ent->material.blendMode != BLEND_MODE_INHERIT) {
+    R_SetBlendMode(ent->material.blendMode);
   } else if (target->HasBlendMode) {
     R_SetBlendMode(target->BlendMode);
   }
@@ -359,12 +358,12 @@ R_DrawImage(PDRAWIMAGESTRUCT parm)
   struct WI_Size screen = _GetRenderTargetSize();
   struct ViewDef view = { 0 };
   struct ViewEntity ent = {
-    .texture = parm->img,
     .rect = parm->rect,
-    .blendMode = BLEND_MODE_OPAQUE,
     .material = (struct ViewMaterial) {
+      .texture = parm->img,
       .opacity = 1,
       .color = parm->color,
+      .blendMode = BLEND_MODE_OPAQUE,
     },
 #ifdef GL_SAMPLER_2D_RECT
     .shader = image->IOSurface ? &tr.shaders[SHADER_RECTANGLE] : NULL,
@@ -375,22 +374,22 @@ R_DrawImage(PDRAWIMAGESTRUCT parm)
 
   view.viewMatrix = MAT4_Identity();
   ent.matrix = MAT4_Identity();
-  ent.textureMatrix = MAT3_Identity();
+  ent.material.textureMatrix = MAT3_Identity();
 
   view.projectionMatrix = MAT4_Ortho(0, screen.width, screen.height, 0, -1, 1);
 
 //  if (image->IOSurface) {
 //#ifdef GL_SAMPLER_2D_RECT
-//    ent.textureMatrix.v[0] = parm->uv.width * screen.width;
-//    ent.textureMatrix.v[4] = parm->uv.height * screen.height;
-//    ent.textureMatrix.v[6] = parm->uv.x * screen.width;
-//    ent.textureMatrix.v[7] = parm->uv.y * screen.height;
+//    ent.material.textureMatrix.v[0] = parm->uv.width * screen.width;
+//    ent.material.textureMatrix.v[4] = parm->uv.height * screen.height;
+//    ent.material.textureMatrix.v[6] = parm->uv.x * screen.width;
+//    ent.material.textureMatrix.v[7] = parm->uv.y * screen.height;
 //#endif
 //  } else {
-    ent.textureMatrix.v[0] = parm->uv.width;
-    ent.textureMatrix.v[4] = parm->uv.height;
-    ent.textureMatrix.v[6] = parm->uv.x;
-    ent.textureMatrix.v[7] = parm->uv.y;
+    ent.material.textureMatrix.v[0] = parm->uv.width;
+    ent.material.textureMatrix.v[4] = parm->uv.height;
+    ent.material.textureMatrix.v[6] = parm->uv.x;
+    ent.material.textureMatrix.v[7] = parm->uv.y;
 //  }
   
   R_DrawEntity(&view, &ent);
@@ -620,9 +619,9 @@ R_DrawConsole(PDRAWCONSOLESTRUCT parm)
     },
     .material = (struct ViewMaterial) {
       .opacity = 1.0,
+      .texture = tr.textures[TX_DEBUG],
+      .blendMode = BLEND_MODE_ALPHA,
     },
-    .blendMode = BLEND_MODE_ALPHA,
-    .texture = tr.textures[TX_DEBUG],
     .shader = &tr.shaders[SHADER_CHARSET],
   };
 
@@ -631,16 +630,16 @@ R_DrawConsole(PDRAWCONSOLESTRUCT parm)
   _InitFullscreen(&view);
 
   ent.matrix = MAT4_Identity();
-  ent.textureMatrix = MAT3_Identity();
+  ent.material.textureMatrix = MAT3_Identity();
 
   if (parm->DrawShadow) {
     struct ViewEntity outline = ent;
+    outline.shader = NULL;
     outline.rect.x += 8;
     outline.rect.y += 8;
-    outline.blendMode = BLEND_MODE_PREMULTIPLIED_ALPHA;
+    outline.material.blendMode = BLEND_MODE_PREMULTIPLIED_ALPHA;
     outline.material.opacity = 0.75;
-    outline.shader = 0;
-    outline.texture = tr.textures[TX_BLACK];
+    outline.material.texture = tr.textures[TX_BLACK];
     R_DrawEntity(&view, &outline);
   }
   
@@ -658,11 +657,11 @@ R_DrawConsole(PDRAWCONSOLESTRUCT parm)
 //    R_DrawEntity(&view, &outline);
 //  }
   
-  ent.textureMatrix.v[0] = parm->Rect.width / (CONSOLE_CHAR_WIDTH * parm->Width);
-  ent.textureMatrix.v[4] = -parm->Rect.height / (CONSOLE_CHAR_HEIGHT * parm->Height);
-  ent.textureMatrix.v[7] = parm->Rect.height / (CONSOLE_CHAR_HEIGHT * parm->Height);
-  ent.textureMatrix.v[6] += parm->Scroll.x / (CONSOLE_CHAR_WIDTH * parm->Width);
-  ent.textureMatrix.v[7] -= parm->Scroll.y / (CONSOLE_CHAR_HEIGHT * parm->Height);
+  ent.material.textureMatrix.v[0] = parm->Rect.width / (CONSOLE_CHAR_WIDTH * parm->Width);
+  ent.material.textureMatrix.v[4] = -parm->Rect.height / (CONSOLE_CHAR_HEIGHT * parm->Height);
+  ent.material.textureMatrix.v[7] = parm->Rect.height / (CONSOLE_CHAR_HEIGHT * parm->Height);
+  ent.material.textureMatrix.v[6] += parm->Scroll.x / (CONSOLE_CHAR_WIDTH * parm->Width);
+  ent.material.textureMatrix.v[7] -= parm->Scroll.y / (CONSOLE_CHAR_HEIGHT * parm->Height);
 
   struct Shader *shader = &tr.shaders[SHADER_CHARSET];
   struct _SHADERCONST *u_selectedItem = _FindShaderConst(shader->shader, 0x1605eab3);
@@ -702,12 +701,12 @@ R_DrawConsole(PDRAWCONSOLESTRUCT parm)
 //  if (parm->StickHeader) {
   int width = 4;
   float size = ent.rect.height / ((parm->Height-1) * CONSOLE_CHAR_HEIGHT);
-  ent.texture = NULL;
   ent.shader = NULL;
   ent.rect.x = ent.rect.x + ent.rect.width - width;
   ent.rect.width = width;
   ent.rect.y -= ent.rect.height * parm->Scroll.y / (parm->Height * CONSOLE_CHAR_HEIGHT);
   ent.rect.height = ent.rect.height * size;
+  ent.material.texture = NULL;
   ent.material.opacity = 0.5;
   if (size < 1) {
     R_DrawEntity(&view, &ent);
@@ -726,9 +725,9 @@ R_DrawToolbarIcon(PDRAWTOOLBARICONSTRUCT parm)
     .rect = {parm->x, parm->y, 24, 24},
     .material = (struct ViewMaterial) {
       .opacity = 1.0,
+      .texture = tr.textures[TX_TOOLBAR],
+      .blendMode = BLEND_MODE_ALPHA,
     },
-    .blendMode = BLEND_MODE_ALPHA,
-    .texture = tr.textures[TX_TOOLBAR],
     .shader = &tr.shaders[SHADER_UI],
   };
   
@@ -737,12 +736,12 @@ R_DrawToolbarIcon(PDRAWTOOLBARICONSTRUCT parm)
   _InitFullscreen(&view);
   
   ent.matrix = MAT4_Identity();
-  ent.textureMatrix = MAT3_Identity();
+  ent.material.textureMatrix = MAT3_Identity();
   
   int num = 96;
   
-  ent.textureMatrix.v[0] = 1.f/num;
-  ent.textureMatrix.v[6] = ((float)parm->icon)/num;
+  ent.material.textureMatrix.v[0] = 1.f/num;
+  ent.material.textureMatrix.v[6] = ((float)parm->icon)/num;
 
   R_DrawEntity(&view, &ent);
 
@@ -773,16 +772,16 @@ R_DrawToolbarIcon(PDRAWTOOLBARICONSTRUCT parm)
 //  _InitFullscreen(&view);
 //
 //  ent.matrix = MAT4_Identity();
-//  ent.textureMatrix = MAT3_Identity();
+//  ent.material.textureMatrix = MAT3_Identity();
 //
-//  ent.textureMatrix.v[0] =
+//  ent.material.textureMatrix.v[0] =
 //    parm->Rect.width / (CONSOLE_CHAR_WIDTH * parm->Width);
-//  ent.textureMatrix.v[4] =
+//  ent.material.textureMatrix.v[4] =
 //    -parm->Rect.height / (CONSOLE_CHAR_HEIGHT * parm->Height);
-//  ent.textureMatrix.v[7] =
+//  ent.material.textureMatrix.v[7] =
 //    parm->Rect.height / (CONSOLE_CHAR_HEIGHT * parm->Height);
-//  ent.textureMatrix.v[6] += parm->Scroll.x / (CONSOLE_CHAR_WIDTH * parm->Width);
-//  ent.textureMatrix.v[7] -=
+//  ent.material.textureMatrix.v[6] += parm->Scroll.x / (CONSOLE_CHAR_WIDTH * parm->Width);
+//  ent.material.textureMatrix.v[7] -=
 //    parm->Scroll.y / (CONSOLE_CHAR_HEIGHT * parm->Height);
 //
 //  if (parm->DrawShadow) {
