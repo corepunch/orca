@@ -252,7 +252,7 @@ _UpdateCinematicEntity(struct ViewEntity* ent)
 // R_DrawEntity: Renders a single entity to the current render target
 //
 // Supports mesh pointer boxing: ent.mesh can be either:
-//   - A real Mesh pointer (when mesh_is_ptr() returns true)
+//   - A real Mesh pointer (when BOX_IS_PTR() returns true)
 //   - A boxed entity type constant like BOX_PTR(Mesh, BOXED_MESH_CAPSULE), etc.
 //
 // Usage example: ent.mesh = BOX_PTR(Mesh, BOXED_MESH_CAPSULE);
@@ -278,9 +278,9 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
   // Handle mesh pointer boxing: mesh can be either a real pointer or a boxed tag value
   struct model /*const*/* model = NULL;
   if (ent->mesh) {
-    if (mesh_is_ptr((MeshRef)ent->mesh)) {
+    if (BOX_IS_PTR((uintptr_t)ent->mesh)) {
       // Real mesh pointer - extract the model
-      model = ((struct Mesh const*)mesh_get_ptr((MeshRef)ent->mesh))->model;
+      model = ((struct Mesh const*)BOX_GET_PTR((uintptr_t)ent->mesh))->model;
     }
     // else: mesh is a boxed tag value, will be handled below
   }
@@ -292,8 +292,8 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
   struct vec4 zero = {0};
   
   // If no model yet, check for boxed mesh tags
-  if (model == NULL && ent->mesh && !mesh_is_ptr((MeshRef)ent->mesh)) {
-    enum boxed_mesh_type mesh_tag = (enum boxed_mesh_type)((MeshRef)ent->mesh & MESH_TAG_MASK);
+  if (model == NULL && ent->mesh && !BOX_IS_PTR((uintptr_t)ent->mesh)) {
+    enum boxed_mesh_type mesh_tag = (enum boxed_mesh_type)((uintptr_t)ent->mesh & MESH_TAG_MASK);
     
     switch (mesh_tag) {
       case BOXED_MESH_CINEMATIC:

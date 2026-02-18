@@ -247,9 +247,6 @@ struct uniform
   float Value[4];
 };
 
-// Mesh pointer boxing - tagged pointer system for mesh references
-typedef uintptr_t MeshRef;
-
 // Boxed mesh type enum - cast to struct Mesh const* for use in ViewEntity.mesh
 enum boxed_mesh_type {
   BOXED_MESH_RECTANGLE = 1,
@@ -261,12 +258,6 @@ enum boxed_mesh_type {
   BOXED_MESH_NINEPATCH = 7,
   BOXED_MESH_CINEMATIC = 8,
 };
-
-// Helper macros for mesh pointer boxing
-#define mesh_is_ptr(m) (((m) & MESH_TAG_MASK) == 0)
-#define mesh_get_ptr(m) ((void*)((m) & MESH_PTR_MASK))
-#define mesh_from_ptr(p) ((MeshRef)(p))
-#define BOX_PTR(TYPE, ID) ((struct TYPE const*)ID)
 
 // Visual appearance properties for rendering.
 // Note: This struct intentionally does NOT contain uniforms because uniforms
@@ -296,7 +287,7 @@ struct ViewMaterial
 // See DESIGN_DECISION_UNIFORMS.md for full rationale.
 //
 // Mesh pointer boxing: The mesh field holds either a real Mesh pointer or a boxed
-// entity type constant (MESH_RECTANGLE, MESH_CAPSULE, etc.). Use mesh_is_ptr() to check.
+// entity type constant (MESH_RECTANGLE, MESH_CAPSULE, etc.). Use BOX_IS_PTR() to check.
 // Example: ent.mesh = MESH_CAPSULE;
 struct ViewEntity
 {
