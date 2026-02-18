@@ -447,7 +447,7 @@ Model_CreateRoundedBox(float width, float height, float depth, float radius, str
 #define LON_SEGS 16
 #define RINGS (4 * LAT_SEGS + 3)
 #define COLS  (4 * (LON_SEGS + 1) + 3)
-#define CLAMP(v, h) fmaxf(-h, fminf(h, (v < 0 ? -1e9f : 1e9f)))
+#define CLAMP(v, h) ((v) < 0 ? -h : h)
   
   uint32_t maxVertices = RINGS * COLS;
   uint32_t maxIndices  = (RINGS - 1) * (COLS - 1) * 6;
@@ -521,11 +521,11 @@ Model_CreateRoundedBox(float width, float height, float depth, float radius, str
   free(verts); free(tris);
   return hr;
   
-#undef CLAMP
-#undef COLS
-#undef RINGS
-#undef LON_SEGS
 #undef LAT_SEGS
+#undef LON_SEGS
+#undef RINGS
+#undef COLS
+#undef CLAMP
 }
 
 HRESULT
