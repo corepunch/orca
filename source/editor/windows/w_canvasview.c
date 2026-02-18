@@ -54,7 +54,7 @@ R_DrawRect(LPMATRIX4 matrix, LPRECT rect)
 {
   struct ViewDef vd = {0};
   struct ViewEntity ent = {
-    .rect = *rect,
+    .bbox = BOX3_FromRect(*rect),
     .material = (struct ViewMaterial) {
       .color = { 1, 1, 0, 1 },
       .opacity = 1,

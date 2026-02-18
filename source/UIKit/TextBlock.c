@@ -239,22 +239,24 @@ HANDLER(TextBlock, DrawBrush)
     entity.material.texture = 0;
     entity.material.opacity *= modopacity;
     entity.radius = (struct vec4){0};
-    entity.rect = pTextBlock->_node2D->_rect;
+    entity.bbox = BOX3_FromRect(pTextBlock->_node2D->_rect);
 //    TextBlockConceptPtr label = GetTextBlockConcept(hObject);
-//    entity.rect = mesh_rect(pTextBlock->_node2D, label, &label->_textinfo);
+//    entity.bbox = BOX3_FromRect(mesh_rect(pTextBlock->_node2D, label, &label->_textinfo));
     entity.text = text->_text;
     lpProperty_t hProp = TextRun_GetProperty(hObject, kTextRunText);
     if (*text->TextResourceID && !PROP_HasProgram(hProp)) {
       Loc_GetString(text->TextResourceID, LOC_TEXT);
     }
   } else {
-    entity.rect = Node2D_GetBackgroundRect(pTextBlock->_node2D);
+    entity.bbox = BOX3_FromRect(Node2D_GetBackgroundRect(pTextBlock->_node2D));
   }
 
   entity.borderWidth = pDrawBrush->borderWidth;
   entity.borderOffset = pDrawBrush->borderOffset;
 
-  if (entity.rect.width == 0 || entity.rect.height == 0) {
+  float bbox_width = entity.bbox.max.x - entity.bbox.min.x;
+  float bbox_height = entity.bbox.max.y - entity.bbox.min.y;
+  if (bbox_width == 0 || bbox_height == 0) {
     return TRUE;
   }
 

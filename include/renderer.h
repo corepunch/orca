@@ -269,6 +269,20 @@ struct ViewMaterial
   float opacity;
 };
 
+// Helper macro to convert rect (x, y, width, height) to box3 (min, max)
+#define BOX3_FromRect(r) \
+  ((struct box3){ \
+    .min = { (r).x, (r).y, 0 }, \
+    .max = { (r).x + (r).width, (r).y + (r).height, 0 } \
+  })
+
+// Helper macro to create box3 from x, y, width, height values
+#define BOX3_FromXYWH(x_, y_, w_, h_) \
+  ((struct box3){ \
+    .min = { (x_), (y_), 0 }, \
+    .max = { (x_) + (w_), (y_) + (h_), 0 } \
+  })
+
 struct ViewEntity
 {
   lpcString_t debugName;
@@ -281,7 +295,7 @@ struct ViewEntity
   struct uniform const* uniforms;
   uint32_t numUniforms;
   uint32_t frame;
-  struct rect rect;
+  struct box3 bbox;
   struct vec4 radius;
   struct vec4 borderWidth;
   float borderOffset;

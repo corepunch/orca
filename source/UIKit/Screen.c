@@ -132,10 +132,12 @@ HANDLER(Node2D, DrawBrush)
   Node2D_GetViewEntity(hObject,&entity,pDrawBrush->image,pDrawBrush->brush);
 
   if (!pDrawBrush->foreground) {
-		entity.rect = Node2D_GetBackgroundRect(pNode2D);
+		entity.bbox = BOX3_FromRect(Node2D_GetBackgroundRect(pNode2D));
 		if (pNode2D->ClipChildren) {
-			entity.rect.width = MAX(pNode2D->_node->Size.Axis[0].Scroll, entity.rect.width);
-			entity.rect.height = MAX(pNode2D->_node->Size.Axis[1].Scroll, entity.rect.height);
+			float new_width = MAX(pNode2D->_node->Size.Axis[0].Scroll, entity.bbox.max.x - entity.bbox.min.x);
+			float new_height = MAX(pNode2D->_node->Size.Axis[1].Scroll, entity.bbox.max.y - entity.bbox.min.y);
+			entity.bbox.max.x = entity.bbox.min.x + new_width;
+			entity.bbox.max.y = entity.bbox.min.y + new_height;
 		}
   }
 

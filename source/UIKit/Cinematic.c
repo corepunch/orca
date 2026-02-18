@@ -29,7 +29,7 @@ HANDLER(Cinematic, DrawBrush)
 
   Node2D_GetViewEntity(hObject, &entity, 0, pDrawBrush->brush);
 
-  entity.rect = GetNode2D(hObject)->_rect;
+  entity.bbox = BOX3_FromRect(GetNode2D(hObject)->_rect);
   entity.type = ET_CINEMATIC;
 
   if (realtime > endtime) {

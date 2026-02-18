@@ -20,17 +20,23 @@ HANDLER(Input, DrawBrush)
     memset(&entity.borderWidth, 0, sizeof(entity.borderWidth));
     memset(&entity.radius, 0, sizeof(entity.radius));
     entity.text = NULL;
-    entity.rect = pTextRun->_textinfo.cursor;
-    entity.rect.x += pTextRun->_textinfo.txInsets.left;
-    entity.rect.y += pTextRun->_textinfo.txInsets.top;
-    entity.rect.x += text_pos(NODE2D_FRAME(pNode2D, Padding, 0),
+    entity.bbox = BOX3_FromRect(pTextRun->_textinfo.cursor);
+    entity.bbox.min.x += pTextRun->_textinfo.txInsets.left;
+    entity.bbox.min.y += pTextRun->_textinfo.txInsets.top;
+    entity.bbox.max.x += pTextRun->_textinfo.txInsets.left;
+    entity.bbox.max.y += pTextRun->_textinfo.txInsets.top;
+    float offset_x = text_pos(NODE2D_FRAME(pNode2D, Padding, 0),
                               pTextBlockConcept->TextHorizontalAlignment,
                               pTextRun->_textinfo.txWidth,
                               Node2D_GetFrame(pNode2D, kBox3FieldWidth));
-    entity.rect.y += text_pos(NODE2D_FRAME(pNode2D, Padding, 1),
+    float offset_y = text_pos(NODE2D_FRAME(pNode2D, Padding, 1),
                               pTextBlockConcept->TextVerticalAlignment,
                               pTextRun->_textinfo.txHeight,
                               Node2D_GetFrame(pNode2D, kBox3FieldHeight));
+    entity.bbox.min.x += offset_x;
+    entity.bbox.min.y += offset_y;
+    entity.bbox.max.x += offset_x;
+    entity.bbox.max.y += offset_y;
 
     R_DrawEntity(pDrawBrush->viewdef, &entity);
   }
@@ -39,8 +45,10 @@ HANDLER(Input, DrawBrush)
     memset(&entity, 0, sizeof(entity));
     Node2DPtr pNode2D = GetNode2D(hObject);
     Node2D_GetViewEntity(hObject, &entity, NULL, pDrawBrush->brush);
-    entity.rect.width = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
-    entity.rect.height = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
+    float w = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
+    float h = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
+    entity.bbox.max.x = entity.bbox.min.x + w;
+    entity.bbox.max.y = entity.bbox.min.y + h;
     entity.radius = (struct vec4) {4,4,4,4};
     entity.material = (struct ViewMaterial) {
       .color = (struct color) {0.898,0.561,0.133,1},

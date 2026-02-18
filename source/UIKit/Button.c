@@ -17,12 +17,15 @@ HANDLER(Button, DrawBrush) {
   entity.material.color = pDrawBrush->brush->Color;// (color_t){0.4,0.6,0.8,1};
   
   float opacity = entity.material.opacity;
-  rect_t r = entity.rect;
+  float r_x = entity.bbox.min.x;
+  float r_y = entity.bbox.min.y;
+  float r_width = entity.bbox.max.x - entity.bbox.min.x;
+  float r_height = entity.bbox.max.y - entity.bbox.min.y;
   
-  r.x -= PADDING_TOP(GetNode2D(hObject), 0);
-  r.y -= PADDING_TOP(GetNode2D(hObject), 1);
-  r.width += TOTAL_PADDING(GetNode2D(hObject), 0);
-  r.height += TOTAL_PADDING(GetNode2D(hObject), 1);
+  r_x -= PADDING_TOP(GetNode2D(hObject), 0);
+  r_y -= PADDING_TOP(GetNode2D(hObject), 1);
+  r_width += TOTAL_PADDING(GetNode2D(hObject), 0);
+  r_height += TOTAL_PADDING(GetNode2D(hObject), 1);
   
 //  entity.rect = RECT_Expand(&r, 1);
 //  entity.material.opacity *= 0.5;
@@ -30,7 +33,7 @@ HANDLER(Button, DrawBrush) {
 //
 //  R_DrawEntity(pDrawBrush->viewdef, &entity);
 
-  entity.rect = r;
+  entity.bbox = BOX3_FromXYWH(r_x, r_y, r_width, r_height);
   entity.material = (struct ViewMaterial) {
     .opacity = opacity,
     .color = pDrawBrush->brush->Color,// (color_t){0.4,0.6,0.8,1};

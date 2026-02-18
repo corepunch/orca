@@ -362,7 +362,7 @@ R_DrawImage(PDRAWIMAGESTRUCT parm)
   struct WI_Size screen = _GetRenderTargetSize();
   struct ViewDef view = { 0 };
   struct ViewEntity ent = {
-    .rect = parm->rect,
+    .bbox = BOX3_FromRect(parm->rect),
     .material = (struct ViewMaterial) {
       .texture = parm->img,
       .opacity = 1,
@@ -613,12 +613,7 @@ R_DrawConsole(PDRAWCONSOLESTRUCT parm)
   R_SetPointFiltering();
 
   struct ViewEntity ent = {
-    .rect = {
-      (int)(parm->Rect.x),
-      (int)(parm->Rect.y),
-      (int)(parm->Rect.width),
-      (int)(parm->Rect.height)
-    },
+    .bbox = BOX3_FromRect(parm->Rect),
     .material = (struct ViewMaterial) {
       .opacity = 1.0,
       .texture = tr.textures[TX_DEBUG],
@@ -637,8 +632,10 @@ R_DrawConsole(PDRAWCONSOLESTRUCT parm)
   if (parm->DrawShadow) {
     struct ViewEntity outline = ent;
     outline.shader = NULL;
-    outline.rect.x += 8;
-    outline.rect.y += 8;
+    outline.bbox.min.x += 8;
+    outline.bbox.min.y += 8;
+    outline.bbox.max.x += 8;
+    outline.bbox.max.y += 8;
     outline.material.blendMode = BLEND_MODE_PREMULTIPLIED_ALPHA;
     outline.material.opacity = 0.75;
     outline.material.texture = tr.textures[TX_BLACK];
@@ -702,12 +699,16 @@ R_DrawConsole(PDRAWCONSOLESTRUCT parm)
 
 //  if (parm->StickHeader) {
   int width = 4;
-  float size = ent.rect.height / ((parm->Height-1) * CONSOLE_CHAR_HEIGHT);
+  float bbox_height = ent.bbox.max.y - ent.bbox.min.y;
+  float bbox_width = ent.bbox.max.x - ent.bbox.min.x;
+  float size = bbox_height / ((parm->Height-1) * CONSOLE_CHAR_HEIGHT);
   ent.shader = NULL;
-  ent.rect.x = ent.rect.x + ent.rect.width - width;
-  ent.rect.width = width;
-  ent.rect.y -= ent.rect.height * parm->Scroll.y / (parm->Height * CONSOLE_CHAR_HEIGHT);
-  ent.rect.height = ent.rect.height * size;
+  float new_x = ent.bbox.min.x + bbox_width - width;
+  ent.bbox.max.x = new_x + width;
+  ent.bbox.min.x = new_x;
+  float scroll_offset = bbox_height * parm->Scroll.y / (parm->Height * CONSOLE_CHAR_HEIGHT);
+  ent.bbox.min.y -= scroll_offset;
+  ent.bbox.max.y = ent.bbox.min.y + bbox_height * size;
   ent.material.texture = NULL;
   ent.material.opacity = 0.5;
   if (size < 1) {
@@ -724,7 +725,7 @@ R_DrawToolbarIcon(PDRAWTOOLBARICONSTRUCT parm)
   R_SetPointFiltering();
   
   struct ViewEntity ent = {
-    .rect = {parm->x, parm->y, 24, 24},
+    .bbox = BOX3_FromXYWH(parm->x, parm->y, 24, 24),
     .material = (struct ViewMaterial) {
       .opacity = 1.0,
       .texture = tr.textures[TX_TOOLBAR],

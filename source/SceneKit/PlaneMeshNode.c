@@ -26,7 +26,7 @@ HANDLER(PlaneMeshNode, Render)
     .type = ET_PLANE,
     .material.opacity = GetNode3D(hObject)->_opacity,
     .matrix = GetNode3D(hObject)->Matrix,
-    .rect = { 0, 0, pPlaneMeshNode->PlaneWidth, pPlaneMeshNode->PlaneHeight },
+    .bbox = BOX3_FromXYWH(0, 0, pPlaneMeshNode->PlaneWidth, pPlaneMeshNode->PlaneHeight),
   };
   struct Material *mat = mod->Material ? mod->Material : pPlaneMeshNode->MeshMaterial;
   const int blend = OBJ_GetInteger(hObject, ID_Material_BlendMode, kBlendModeAlpha);

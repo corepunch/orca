@@ -123,7 +123,7 @@ HANDLER(NinePatchImage, DrawBrush)
 
     Node2D_GetViewEntity(hObject, &entity, images[index], pDrawBrush->brush);
 
-    entity.rect = frame;
+    entity.bbox = BOX3_FromRect(frame);
 
     R_DrawEntity(pDrawBrush->viewdef, &entity);
   }
