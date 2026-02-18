@@ -357,34 +357,47 @@ VIDX(bases[c3],row,col), VIDX(bases[c2],row,col))
   uint32_t vidx = 0, iidx = 0;
   uint32_t bases[8];
   
-  // Octant signs: +X+Y+Z, -X+Y+Z, -X-Y+Z, +X-Y+Z, +X+Y-Z, -X+Y-Z, -X-Y-Z, +X-Y-Z
+  // Corner positions and octant signs
+  // Corners: 0=+++, 1=-++, 2=--+, 3=+-+, 4=++-, 5=-+-, 6=---, 7=+--
+  vec3_t corners[8] = {
+    { bw,  bh,  bd}, {-bw,  bh,  bd}, {-bw, -bh,  bd}, { bw, -bh,  bd},
+    { bw,  bh, -bd}, {-bw,  bh, -bd}, {-bw, -bh, -bd}, { bw, -bh, -bd}
+  };
   static const int8_t oct[8][3] = {
     { 1, 1, 1}, {-1, 1, 1}, {-1,-1, 1}, { 1,-1, 1},
     { 1, 1,-1}, {-1, 1,-1}, {-1,-1,-1}, { 1,-1,-1}
   };
   
+  // Generate corner sphere vertices
+  // phi (i): angle from +Y axis (0 = top, SEGS = equator)
+  // theta (j): angle in XZ plane - remapped per octant for correct alignment
   for (uint32_t c = 0; c < 8; c++) {
     bases[c] = vidx;
-    float cx = oct[c][0]*bw, cy = oct[c][1]*bh, cz = oct[c][2]*bd;
     
     for (uint32_t i = 0; i <= SEGS; i++) {
       float phi = (float)i/SEGS * M_PI_2;
       float sp = sinf(phi), cp = cosf(phi);
+      
       for (uint32_t j = 0; j <= SEGS; j++) {
         float theta = (float)j/SEGS * M_PI_2;
-        // Remap theta per-axis so boundary at j=0/SEGS lands on the axis-aligned direction
+        // Remap theta per octant so boundaries align with box edges
         float ct = oct[c][0]*oct[c][2] < 0 ? sinf(theta) : cosf(theta);
         float st = oct[c][0]*oct[c][2] < 0 ? cosf(theta) : sinf(theta);
+        
         float nx = oct[c][0] * sp * ct;
         float ny = oct[c][1] * cp;
         float nz = oct[c][2] * sp * st;
-        verts[vidx++] = R_MakeVertexWithWeight(cx, cy, cz,
-                                               (float)j/SEGS, (float)i/SEGS,
-                                               nx, ny, nz,
-                                               nx, ny, nz); // weight = offset dir, shader multiplies by radius
+        
+        verts[vidx++] = R_MakeVertexWithWeight(
+          corners[c].x, corners[c].y, corners[c].z,
+          (float)j/SEGS, (float)i/SEGS,
+          nx, ny, nz,
+          nx, ny, nz  // weight = offset direction
+        );
       }
     }
     
+    // Corner triangles
     for (uint32_t i = 0; i < SEGS; i++)
       for (uint32_t j = 0; j < SEGS; j++)
         ADD_QUAD(VIDX(bases[c], i,   j  ), VIDX(bases[c], i+1, j  ),
@@ -412,13 +425,13 @@ VIDX(bases[c3],row,col), VIDX(bases[c2],row,col))
   EDGE(4, 0,1,SEGS,   7, 0,1,SEGS);
   EDGE(5, 0,1,SEGS,   6, 0,1,SEGS);
   
-  // 6 faces -- one quad per face using the outermost corner boundary vertices
-  FACE(0,1,2,3,  SEGS,SEGS);  // +Z
-  FACE(4,5,6,7,  SEGS,   0);  // -Z
-  FACE(0,1,5,4,     0,   0);  // +Y
-  FACE(3,2,6,7,  SEGS,   0);  // -Y
-  FACE(0,3,7,4,  SEGS,   0);  // +X
-  FACE(1,2,6,5,  SEGS,SEGS);  // -X
+  // 6 faces using corner boundary vertices
+  FACE(0,1,2,3,  SEGS,SEGS);  // Front (+Z): phi=SEGS, theta=SEGS
+  FACE(4,5,6,7,  SEGS,   0);  // Back (-Z): phi=SEGS, theta=0
+  FACE(0,1,5,4,     0,   0);  // Top (+Y): phi=0, theta=0
+  FACE(3,2,6,7,  SEGS,   0);  // Bottom (-Y): phi=SEGS, theta=0
+  FACE(0,4,7,3,     0,   0);  // Right (+X): phi=0, theta=0
+  FACE(1,5,6,2,     0,SEGS);  // Left (-X): phi=0, theta=SEGS
   
   DRAWSURFATTR attr[] = {
     VERTEX_SEMANTIC_POSITION,  VERTEX_ATTR_DATATYPE_FLOAT32,
