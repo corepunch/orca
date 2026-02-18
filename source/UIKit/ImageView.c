@@ -102,7 +102,7 @@ HANDLER(ImageView, DrawBrush)
                       (lpcrect_t)&pImageView->Viewbox,
                       &entity.ninepatch);
 
-  entity.type = ET_NINEPATCH;
+  entity.mesh = BOX_PTR(Mesh, BOXED_MESH_NINEPATCH);
   entity.bbox = BOX3_FromRect(GetNode2D(hObject)->_rect);
   entity.material.blendMode = OBJ_GetInteger(hObject, ID_Material_BlendMode, kBlendModeAlpha);
 
@@ -115,7 +115,7 @@ HANDLER(ImageView, DrawBrush)
     };
     temp_rect = RECT_Fit(&temp_rect, &imgsize);
     entity.bbox = BOX3_FromRect(temp_rect);
-    entity.type = ET_RECTANGLE;
+    entity.mesh = BOX_PTR(Mesh, BOXED_MESH_RECTANGLE);
   }
   
   R_DrawEntity(pDrawBrush->viewdef, &entity);

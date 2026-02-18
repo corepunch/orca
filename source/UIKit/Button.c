@@ -13,7 +13,7 @@ HANDLER(Button, DrawBrush) {
   
   struct ViewEntity entity;
   Node2D_GetViewEntity(hObject,&entity,pDrawBrush->image,pDrawBrush->brush);
-  entity.type = ET_ROUNDED_BOX;
+  entity.mesh = BOX_PTR(Mesh, BOXED_MESH_ROUNDED_BOX);
   entity.material.color = pDrawBrush->brush->Color;// (color_t){0.4,0.6,0.8,1};
   
   float opacity = entity.material.opacity;

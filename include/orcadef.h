@@ -15,6 +15,17 @@
 #define FPS_BUFFER_SIZE 64
 #define PACKET_HEADER 10 // two ints and a short
 #define LERP(a, b, t) (a) * (1 - (t)) + (b) * (t)
+
+// Mesh pointer boxing - tagged pointer system for mesh references
+#define MESH_TAG_MASK   0x7ULL
+#define MESH_PTR_MASK  (~MESH_TAG_MASK)
+
+// Helper macros for mesh pointer boxing
+#define BOX_IS_PTR(m) (((m) & MESH_TAG_MASK) == 0)
+#define BOX_GET_PTR(m) ((void*)((m) & MESH_PTR_MASK))
+#define BOX_FROM_PTR(p) ((uintptr_t)(p))
+#define BOX_PTR(TYPE, ID) ((struct TYPE const*)ID)
+
 #define LOWORD(l) ((uint16_t)(l & 0xFFFF))
 #define HIWORD(l) ((uint16_t)((l >> 16) & 0xFFFF))
 #define MAKEDWORD(low, high)                                                   \

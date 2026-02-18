@@ -247,17 +247,16 @@ struct uniform
   float Value[4];
 };
 
-enum entity_type
-{
-  ET_MODEL,
-  ET_RECTANGLE,
-  ET_PLANE,
-  ET_DOT,
-  ET_NINEPATCH,
-  ET_VIEWPORT,
-  ET_CAPSULE,
-  ET_ROUNDED_BOX,
-  ET_CINEMATIC,
+// Boxed mesh type enum - cast to struct Mesh const* for use in ViewEntity.mesh
+enum boxed_mesh_type {
+  BOXED_MESH_RECTANGLE = 1,
+  BOXED_MESH_TEAPOT = 2,
+  BOXED_MESH_PLANE = 3,
+  BOXED_MESH_DOT = 4,
+  BOXED_MESH_CAPSULE = 5,
+  BOXED_MESH_ROUNDED_BOX = 6,
+  BOXED_MESH_NINEPATCH = 7,
+  BOXED_MESH_CINEMATIC = 8,
 };
 
 // Visual appearance properties for rendering.
@@ -286,9 +285,12 @@ struct ViewMaterial
 // Note: uniforms are stored here (not in ViewMaterial) because they aggregate shader
 // parameters from multiple sources: both object properties AND material properties.
 // See DESIGN_DECISION_UNIFORMS.md for full rationale.
+//
+// Mesh pointer boxing: The mesh field holds either a real Mesh pointer or a boxed
+// entity type constant (MESH_RECTANGLE, MESH_CAPSULE, etc.). Use BOX_IS_PTR() to check.
+// Example: ent.mesh = MESH_CAPSULE;
 struct ViewEntity
 {
-  enum entity_type type;
   struct mat4 matrix;
   struct ViewMaterial material;
   struct ViewText* text;
