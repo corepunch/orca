@@ -284,8 +284,8 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
     shader = (lpcShader_t)BOX_GET_PTR((uintptr_t)ent->shader);
   } else {
     // Boxed shader type - use directly as index into tr.shaders
-    enum boxed_shader_type shader_type = (enum boxed_shader_type)((uintptr_t)ent->shader & MESH_TAG_MASK);
-    shader = &tr.shaders[shader_type];
+    enum boxed_shader_type boxed_shader = (enum boxed_shader_type)((uintptr_t)ent->shader & MESH_TAG_MASK);
+    shader = &tr.shaders[boxed_shader];
   }
   
   // Handle mesh pointer boxing: mesh can be either a real pointer or a boxed tag value
