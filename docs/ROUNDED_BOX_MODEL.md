@@ -128,12 +128,12 @@ This design allows:
 ## Performance
 
 The rounded box model is efficiently generated with:
-- **Complete geometry**: 8 corners + 12 edges + 6 faces
-- **Vertex count**: ~900-1000 vertices (varies with SEGS parameter)
-  - 8 corners × (SEGS+1)² vertices = 648 vertices
-  - 12 edges × (SEGS+1) × 2 vertices = 216 vertices  
-  - 6 faces × 4 vertices = 24 vertices
+- **Vertex-efficient design**: Only corner vertices are generated; edges and faces reuse them via indexing
+- **Vertex count**: 648 vertices (8 corners × (SEGS+1)² vertices)
 - **Triangle count**: ~1400-1500 triangles
+  - 8 corners: ~1152 triangles
+  - 12 edges: ~192 triangles (reusing corner vertices)
+  - 6 faces: ~12 triangles (reusing corner vertices)
 - Indexed triangle rendering
 - Pre-calculated normals for lighting
 - Single model instance can be reused with varying radii

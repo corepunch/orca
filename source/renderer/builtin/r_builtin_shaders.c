@@ -349,7 +349,7 @@ struct shader_desc shader_button = {
   // Specular lighting (glossy button effect)
   "  vec3 reflectDir = reflect(lightDir, normal);\n"
   "  float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_specularPower);\n"
-  "  spec = smoothstep(0.25, 0.55, spec) * 0.5;"
+  "  spec = smoothstep(0.25, 0.55, spec) * 0.33;"
     
   // Rim lighting for depth
   "  float NdotV = max(dot(viewDir, -normal), 0.0);"
