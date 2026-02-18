@@ -249,6 +249,14 @@ _UpdateCinematicEntity(struct ViewEntity* ent)
   ent->bbox.max.y = ent->bbox.min.y + tr.textures[TX_CINEMATIC]->Height;
 }
 
+// R_DrawEntity: Renders a single entity to the current render target
+//
+// Supports mesh pointer boxing: ent.mesh can be either:
+//   - A real Mesh pointer (when mesh_is_ptr() returns true)
+//   - A boxed entity type constant like MESH_ENTITY_CAPSULE, MESH_ENTITY_RECTANGLE, etc.
+//
+// Usage example: ent.mesh = MESH_ENTITY_CAPSULE;
+// This eliminates the need to set a separate type field for common entity types.
 HRESULT
 R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
 {
@@ -266,41 +274,80 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
 #else
   lpcShader_t shader = ent->shader ? ent->shader : &tr.shaders[SHADER_UI];
 #endif
-  struct model /*const*/* model = ent->mesh?ent->mesh->model:NULL;
+  
+  // Handle mesh pointer boxing: mesh can be either a real pointer or a boxed tag value
+  struct model /*const*/* model = NULL;
+  if (ent->mesh) {
+    if (mesh_is_ptr((MeshRef)ent->mesh)) {
+      // Real mesh pointer - extract the model
+      model = ((struct Mesh const*)mesh_get_ptr((MeshRef)ent->mesh))->model;
+    }
+    // else: mesh is a boxed tag value, will be handled below
+  }
+  
   if (ent->flags & RF_DRAW_DEBUG) {
     _DrawDebug(ent, view);
     return NOERROR;
   }
   struct vec4 zero = {0};
+  
+  // If no model yet, check for boxed mesh tags or use entity type
   if (model == NULL) {
-    switch (ent->type) {
-      case ET_CINEMATIC:
-        _UpdateCinematicEntity(ent);
-        shader = &tr.shaders[SHADER_CINEMATIC];
-        model = tr.models[MD_RECTANGLE];
-        break;
-      case ET_PLANE: model = tr.models[MD_PLANE]; break;
-      case ET_DOT: model = tr.models[MD_DOT]; break;
-      case ET_NINEPATCH: model = CreateNinePatchMesh(ent); break;
-//      default: model = tr.models[MD_RECTANGLE]; break;
-//      default: model = tr.models[MD_ROUNDED_RECT]; break;
-      case ET_CAPSULE:
-        model = tr.models[MD_CAPSULE];
-        shader = &tr.shaders[SHADER_BUTTON];
-//        MAT4_Translate(&ent->matrix, &(vec3_t){ent->rect.width/2, ent->rect.height/2, 0});
-//        MAT4_Scale(&ent->matrix, &(vec3_t){ent->rect.width, ent->rect.height, 0});
-        break;
-      case ET_ROUNDED_BOX:
-        model = tr.models[MD_ROUNDED_BOX];
-        shader = &tr.shaders[SHADER_ROUNDEDBOX];
-        break;
-      default:
+    // Check if mesh is a boxed entity type constant
+    if (ent->mesh && !mesh_is_ptr((MeshRef)ent->mesh)) {
+      MeshRef mesh_tag = (MeshRef)ent->mesh;
+      if (mesh_tag == (MeshRef)MESH_ENTITY_RECTANGLE) {
         if (memcmp(&ent->borderWidth, &zero, sizeof(struct vec4))) {
           model = tr.models[MD_ROUNDED_BORDER];
         } else {
           model = tr.models[MD_ROUNDED_RECT];
         }
-        break;
+      } else if (mesh_tag == (MeshRef)MESH_ENTITY_PLANE) {
+        model = tr.models[MD_PLANE];
+      } else if (mesh_tag == (MeshRef)MESH_ENTITY_DOT) {
+        model = tr.models[MD_DOT];
+      } else if (mesh_tag == (MeshRef)MESH_ENTITY_CAPSULE) {
+        model = tr.models[MD_CAPSULE];
+        shader = &tr.shaders[SHADER_BUTTON];
+      } else if (mesh_tag == (MeshRef)MESH_ENTITY_ROUNDED_BOX) {
+        model = tr.models[MD_ROUNDED_BOX];
+        shader = &tr.shaders[SHADER_ROUNDEDBOX];
+      } else if (mesh_tag == (MeshRef)MESH_ENTITY_TEAPOT) {
+        // Teapot could use a sphere or custom model in the future
+        model = tr.models[MD_PLANE]; // placeholder
+      }
+    }
+    // Fallback to entity type field for backward compatibility
+    else {
+      switch (ent->type) {
+        case ET_CINEMATIC:
+          _UpdateCinematicEntity(ent);
+          shader = &tr.shaders[SHADER_CINEMATIC];
+          model = tr.models[MD_RECTANGLE];
+          break;
+        case ET_PLANE: model = tr.models[MD_PLANE]; break;
+        case ET_DOT: model = tr.models[MD_DOT]; break;
+        case ET_NINEPATCH: model = CreateNinePatchMesh(ent); break;
+//      default: model = tr.models[MD_RECTANGLE]; break;
+//      default: model = tr.models[MD_ROUNDED_RECT]; break;
+        case ET_CAPSULE:
+          model = tr.models[MD_CAPSULE];
+          shader = &tr.shaders[SHADER_BUTTON];
+//        MAT4_Translate(&ent->matrix, &(vec3_t){ent->rect.width/2, ent->rect.height/2, 0});
+//        MAT4_Scale(&ent->matrix, &(vec3_t){ent->rect.width, ent->rect.height, 0});
+          break;
+        case ET_ROUNDED_BOX:
+          model = tr.models[MD_ROUNDED_BOX];
+          shader = &tr.shaders[SHADER_ROUNDEDBOX];
+          break;
+        default:
+          if (memcmp(&ent->borderWidth, &zero, sizeof(struct vec4))) {
+            model = tr.models[MD_ROUNDED_BORDER];
+          } else {
+            model = tr.models[MD_ROUNDED_RECT];
+          }
+          break;
+      }
     }
   }
   

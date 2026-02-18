@@ -260,6 +260,16 @@ enum entity_type
   ET_CINEMATIC,
 };
 
+// Mesh pointer boxing - entity type constants as boxed Mesh pointers
+// These allow using ent.mesh = ET_CAPSULE; instead of setting a separate type field
+// Use mesh_is_ptr() to distinguish real Mesh pointers from these tagged constants
+#define MESH_ENTITY_RECTANGLE   ((struct Mesh const*)0x1)
+#define MESH_ENTITY_PLANE       ((struct Mesh const*)0x2)
+#define MESH_ENTITY_DOT         ((struct Mesh const*)0x3)
+#define MESH_ENTITY_CAPSULE     ((struct Mesh const*)0x4)
+#define MESH_ENTITY_ROUNDED_BOX ((struct Mesh const*)0x5)
+#define MESH_ENTITY_TEAPOT      ((struct Mesh const*)0x6)
+
 // Visual appearance properties for rendering.
 // Note: This struct intentionally does NOT contain uniforms because uniforms
 // are aggregated from multiple sources (both object properties and material
@@ -286,6 +296,11 @@ struct ViewMaterial
 // Note: uniforms are stored here (not in ViewMaterial) because they aggregate shader
 // parameters from multiple sources: both object properties AND material properties.
 // See DESIGN_DECISION_UNIFORMS.md for full rationale.
+//
+// Future: The mesh field could be changed to MeshRef (defined in orcadef.h) to use
+// pointer boxing. This would allow encoding entity type information directly in the
+// mesh field using tagged pointers, potentially replacing the separate type field.
+// See mesh_is_ptr(), mesh_get_ptr(), mesh_from_ptr() in orcadef.h for the boxing API.
 struct ViewEntity
 {
   enum entity_type type;
