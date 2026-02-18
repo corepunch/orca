@@ -661,15 +661,16 @@ Model_CreateRoundedBox(float width, float height, float depth, float radius, str
 }
 
 HRESULT
-Model_CreateCapsule(float width, float height, float depth, float cylindriness, struct model** ppModel)
+Model_CreateCapsule(float width, float height, float depth, struct model** ppModel)
 {
-  if (cylindriness < 0.0f) cylindriness = 0.0f;
-  if (cylindriness > 1.0f) cylindriness = 1.0f;
-  if (cylindriness < 0.001f) return Model_CreateBox(width * 0.5f, height * 0.5f, depth * 0.5f, ppModel);
+//  if (cylindriness < 0.0f) cylindriness = 0.0f;
+//  if (cylindriness > 1.0f) cylindriness = 1.0f;
+//  if (cylindriness < 0.001f) return Model_CreateBox(width * 0.5f, height * 0.5f, depth * 0.5f, ppModel);
 
   #define SEGS 16
   #define RINGS 8
 
+  float cylindriness = 0.99f;
   float minDim = (height < depth) ? height : depth;
   float radius = minDim * 0.5f * cylindriness;
   float cylinderLength = width - 2.0f * radius;
