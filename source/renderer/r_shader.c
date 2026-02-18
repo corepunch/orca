@@ -631,25 +631,20 @@ Shader_BindMaterial(struct shader const* shader,
         break;
       case kShaderUniform_BBoxTransform: {
         // Create a transformation matrix that encodes bbox scale and translation
-        // This matrix transforms from normalized [0,1] space to bbox space
+        // This matrix transforms from unit [0,1] space to bbox [min,max] space
+        // Matrix operation: result = min + position * size
         struct vec3 size = {
           ent->bbox.max.x - ent->bbox.min.x,
           ent->bbox.max.y - ent->bbox.min.y,
           ent->bbox.max.z - ent->bbox.min.z
         };
-        struct vec3 center = {
-          (ent->bbox.min.x + ent->bbox.max.x) * 0.5f,
-          (ent->bbox.min.y + ent->bbox.max.y) * 0.5f,
-          (ent->bbox.min.z + ent->bbox.max.z) * 0.5f
-        };
-        // Matrix that scales by size and translates to center
-        // This is equivalent to: translate(center) * scale(size)
+        // In column-major order: scale on diagonal, translation in 4th column
         struct mat4 bboxTransform = {
           .v = {
             size.x, 0, 0, 0,
             0, size.y, 0, 0,
             0, 0, size.z, 0,
-            center.x, center.y, center.z, 1
+            ent->bbox.min.x, ent->bbox.min.y, ent->bbox.min.z, 1
           }
         };
         R_Call(glUniformMatrix4fv, location, 1, GL_FALSE, bboxTransform.v);
