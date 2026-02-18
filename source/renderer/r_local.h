@@ -193,6 +193,7 @@ enum
   SHADER_CHARSET,
   SHADER_CINEMATIC,
   SHADER_BUTTON,
+  SHADER_ROUNDEDBOX,
 #ifdef GL_SAMPLER_2D_RECT
   SHADER_RECTANGLE,
 #endif
@@ -207,6 +208,7 @@ enum
   MD_ROUNDED_RECT,
   MD_ROUNDED_BORDER,
   MD_CAPSULE,
+  MD_ROUNDED_BOX,
   MD_COUNT
 };
 
@@ -294,6 +296,7 @@ extern struct shader_desc shader_cinematic;
 extern struct shader_desc shader_vertexcolor;
 extern struct shader_desc shader_error;
 extern struct shader_desc shader_button;
+extern struct shader_desc shader_roundedbox;
 
 // font
 struct fontface*
@@ -355,6 +358,8 @@ HRESULT
 Model_CreateRoundedRectangle(struct model** ppModel);
 HRESULT
 Model_CreateRoundedBorder(struct model** ppModel);
+HRESULT
+Model_CreateRoundedBox(float width, float height, float depth, float radius, struct model** ppModel);
 HRESULT
 Model_CreateCapsule(float width, float height, float depth, struct model** ppModel);
 HRESULT

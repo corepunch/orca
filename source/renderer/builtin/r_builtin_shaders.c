@@ -362,3 +362,69 @@ struct shader_desc shader_button = {
   "}\n"
 };
 
+struct shader_desc shader_roundedbox = {
+  .Name = "Rounded Box Shader",
+  .Version = 150,
+  .Precision = PRECISION_LOW,
+  .FragmentOut = "fragColor",
+  .Uniforms = {
+    { "u_modelViewProjectionTransform", UT_FLOAT_MAT4, PRECISION_HIGH },
+    { "u_normalTransform", UT_FLOAT_MAT3, PRECISION_HIGH },
+    { "u_opacity", UT_FLOAT, PRECISION_LOW },
+    { "u_color", UT_COLOR, PRECISION_LOW },
+    { "u_radius", UT_FLOAT_VEC4, PRECISION_LOW },
+    { "u_rect", UT_FLOAT_VEC4, PRECISION_LOW },
+    { "u_lightDir", UT_FLOAT_VEC3, PRECISION_LOW, 0, {0, -1, -0.5} },
+    { "u_specularPower", UT_FLOAT, PRECISION_LOW, 0, {1.5} },
+    { "u_viewDir", UT_FLOAT_VEC3, PRECISION_LOW, 0, {0.0, 0.0, 1.0}}
+  },
+  .Attributes = {
+    { "a_position", UT_FLOAT_VEC4 },
+    { "a_normal", UT_FLOAT_VEC3 },
+    { "a_texcoord0", UT_FLOAT_VEC2 },
+    { "a_weight", UT_FLOAT_VEC4 },
+  },
+  .Shared = {
+    { "v_normal", UT_FLOAT_VEC3 },
+    { "v_texcoord0", UT_FLOAT_VEC2 },
+    { "v_worldPos", UT_FLOAT_VEC3 },
+  },
+  .VertexShader =
+  "void main() {\n"
+  "  vec3 pos = a_position.xyz * u_rect.zww + a_weight.xyz * u_radius.x;\n"
+  "  gl_Position = u_modelViewProjectionTransform * vec4(pos.xy + u_rect.xy + u_rect.zw/2.0, pos.z, 1.0);\n"
+  "  v_texcoord0 = a_texcoord0;\n"
+  "  v_normal = normalize(u_normalTransform * a_normal);\n"
+  "  v_worldPos = pos;\n"
+  "}\n",
+  .FragmentShader =
+  "void main() {\n"
+  "  vec3 lightDir = normalize(u_lightDir);\n"
+  "  vec3 normal = normalize(v_normal);\n"
+  "  vec3 viewDir = normalize(u_viewDir);\n"
+  "  vec3 invLight = vec3(lightDir.x,-lightDir.y,lightDir.z);"
+  
+  // Diffuse lighting
+  "  float diff = max(dot(normal, invLight), 0.0);\n"
+  
+  // Refraction within the glossy button
+  "  vec3 refractedLight = refract(invLight, normal, 0.66);\n"
+  "  float refr = pow(max(dot(-normal, refractedLight), 0.0), 8.0) * 2.0;"
+  
+  // Specular lighting (glossy button effect)
+  "  vec3 reflectDir = reflect(lightDir, normal);\n"
+  "  float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_specularPower);\n"
+  "  spec = smoothstep(0.25, 0.55, spec) * 0.5;"
+    
+  // Rim lighting for depth
+  "  float NdotV = max(dot(viewDir, -normal), 0.0);"
+  "  float F0 = 0.04;" // base reflectance, ~0.04 for plastics
+  "  float fresnel = F0 + (1.0 - F0) * pow(1 - NdotV, 1.0);"
+
+  // Combine texture, color, and lighting
+  "  float baseColor = mix(0.45, 1.75, (diff + refr) * (1.0 - fresnel));"
+  "  fragColor = vec4(u_color.rgb * baseColor, 1.0) * u_opacity + vec4(spec);\n"
+  "}\n"
+};
+
+
