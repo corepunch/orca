@@ -237,7 +237,7 @@ _UpdateCinematicEntity(struct ViewEntity* ent)
   ent->material.texture = tr.textures[TX_CINEMATIC];
   ent->material.textureMatrix.v[4] = -1;
   ent->material.textureMatrix.v[7] = 1;
-  
+
   float bbox_width = ent->bbox.max.x - ent->bbox.min.x;
   float bbox_height = ent->bbox.max.y - ent->bbox.min.y;
   float offset_x = (bbox_width - tr.textures[TX_CINEMATIC]->Width) / 2;

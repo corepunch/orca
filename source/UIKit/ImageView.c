@@ -107,9 +107,12 @@ HANDLER(ImageView, DrawBrush)
   entity.material.blendMode = OBJ_GetInteger(hObject, ID_Material_BlendMode, kBlendModeAlpha);
 
   if (pImageView->Stretch == kStretchUniform) {
-    struct rect temp_rect = { entity.bbox.min.x, entity.bbox.min.y, 
-                               entity.bbox.max.x - entity.bbox.min.x, 
-                               entity.bbox.max.y - entity.bbox.min.y };
+    struct rect temp_rect = {
+      entity.bbox.min.x,
+      entity.bbox.min.y,
+      entity.bbox.max.x - entity.bbox.min.x,
+      entity.bbox.max.y - entity.bbox.min.y
+    };
     temp_rect = RECT_Fit(&temp_rect, &imgsize);
     entity.bbox = BOX3_FromRect(temp_rect);
     entity.type = ET_RECTANGLE;
