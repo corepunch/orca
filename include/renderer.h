@@ -277,15 +277,16 @@ enum boxed_mesh_type {
 #define mesh_is_ptr(m) (((m) & MESH_TAG_MASK) == 0)
 #define mesh_get_ptr(m) ((void*)((m) & MESH_PTR_MASK))
 #define mesh_from_ptr(p) ((MeshRef)(p))
+#define BOX_PTR(TYPE, ID) ((struct TYPE const*)ID)
 
 // Boxed entity type constants - use these instead of ET_* enum in ViewEntity.mesh
 // Cast enum values to Mesh pointers (safe because we check with mesh_is_ptr before dereferencing)
-#define MESH_RECTANGLE   ((struct Mesh const*)BOXED_MESH_RECTANGLE)
-#define MESH_TEAPOT      ((struct Mesh const*)BOXED_MESH_TEAPOT)
-#define MESH_PLANE       ((struct Mesh const*)BOXED_MESH_PLANE)
-#define MESH_DOT         ((struct Mesh const*)BOXED_MESH_DOT)
-#define MESH_CAPSULE     ((struct Mesh const*)BOXED_MESH_CAPSULE)
-#define MESH_ROUNDED_BOX ((struct Mesh const*)BOXED_MESH_ROUNDED_BOX)
+#define MESH_RECTANGLE   BOX_PTR(Mesh, BOXED_MESH_RECTANGLE)
+#define MESH_TEAPOT      BOX_PTR(Mesh, BOXED_MESH_TEAPOT)
+#define MESH_PLANE       BOX_PTR(Mesh, BOXED_MESH_PLANE)
+#define MESH_DOT         BOX_PTR(Mesh, BOXED_MESH_DOT)
+#define MESH_CAPSULE     BOX_PTR(Mesh, BOXED_MESH_CAPSULE)
+#define MESH_ROUNDED_BOX BOX_PTR(Mesh, BOXED_MESH_ROUNDED_BOX)
 
 // Visual appearance properties for rendering.
 // Note: This struct intentionally does NOT contain uniforms because uniforms
