@@ -292,43 +292,52 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
   struct vec4 zero = {0};
   
   // If no model yet, check for boxed mesh tags
-  if (model == NULL && ent->mesh && !BOX_IS_PTR((uintptr_t)ent->mesh)) {
-    enum boxed_mesh_type mesh_tag = (enum boxed_mesh_type)((uintptr_t)ent->mesh & MESH_TAG_MASK);
-    
-    switch (mesh_tag) {
-      case BOXED_MESH_CINEMATIC:
-        _UpdateCinematicEntity(ent);
-        shader = &tr.shaders[SHADER_CINEMATIC];
-        model = tr.models[MD_RECTANGLE];
-        break;
-      case BOXED_MESH_NINEPATCH:
-        model = CreateNinePatchMesh(ent);
-        break;
-      case BOXED_MESH_RECTANGLE:
-        if (memcmp(&ent->borderWidth, &zero, sizeof(struct vec4))) {
-          model = tr.models[MD_ROUNDED_BORDER];
-        } else {
-          model = tr.models[MD_ROUNDED_RECT];
-        }
-        break;
-      case BOXED_MESH_PLANE:
-        model = tr.models[MD_PLANE];
-        break;
-      case BOXED_MESH_DOT:
-        model = tr.models[MD_DOT];
-        break;
-      case BOXED_MESH_CAPSULE:
-        model = tr.models[MD_CAPSULE];
-        shader = &tr.shaders[SHADER_BUTTON];
-        break;
-      case BOXED_MESH_ROUNDED_BOX:
-        model = tr.models[MD_ROUNDED_BOX];
-        shader = &tr.shaders[SHADER_ROUNDEDBOX];
-        break;
-      case BOXED_MESH_TEAPOT:
-        // Teapot could use a sphere or custom model in the future
-        model = tr.models[MD_PLANE]; // placeholder
-        break;
+  if (model == NULL) {
+    if (ent->mesh && !BOX_IS_PTR((uintptr_t)ent->mesh)) {
+      enum boxed_mesh_type mesh_tag = (enum boxed_mesh_type)((uintptr_t)ent->mesh & MESH_TAG_MASK);
+      
+      switch (mesh_tag) {
+        case BOXED_MESH_CINEMATIC:
+          _UpdateCinematicEntity(ent);
+          shader = &tr.shaders[SHADER_CINEMATIC];
+          model = tr.models[MD_RECTANGLE];
+          break;
+        case BOXED_MESH_NINEPATCH:
+          model = CreateNinePatchMesh(ent);
+          break;
+        case BOXED_MESH_RECTANGLE:
+          if (memcmp(&ent->borderWidth, &zero, sizeof(struct vec4))) {
+            model = tr.models[MD_ROUNDED_BORDER];
+          } else {
+            model = tr.models[MD_ROUNDED_RECT];
+          }
+          break;
+        case BOXED_MESH_PLANE:
+          model = tr.models[MD_PLANE];
+          break;
+        case BOXED_MESH_DOT:
+          model = tr.models[MD_DOT];
+          break;
+        case BOXED_MESH_CAPSULE:
+          model = tr.models[MD_CAPSULE];
+          shader = &tr.shaders[SHADER_BUTTON];
+          break;
+        case BOXED_MESH_ROUNDED_BOX:
+          model = tr.models[MD_ROUNDED_BOX];
+          shader = &tr.shaders[SHADER_ROUNDEDBOX];
+          break;
+        case BOXED_MESH_TEAPOT:
+          // Teapot could use a sphere or custom model in the future
+          model = tr.models[MD_PLANE]; // placeholder
+          break;
+      }
+    } else if (!ent->mesh) {
+      // Default case when mesh is NULL - treat as rectangle
+      if (memcmp(&ent->borderWidth, &zero, sizeof(struct vec4))) {
+        model = tr.models[MD_ROUNDED_BORDER];
+      } else {
+        model = tr.models[MD_ROUNDED_RECT];
+      }
     }
   }
   
