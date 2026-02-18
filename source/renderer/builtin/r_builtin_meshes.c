@@ -439,15 +439,15 @@ Model_CreateRoundedBox(float width, float height, float depth, float radius, str
   float maxRadius = fminf(fminf(width, height), depth) * 0.5f;
   if (radius > maxRadius) radius = maxRadius;
   
-  float hx = (width  - 2.0f * radius) * 0.5f;
-  float hy = (height - 2.0f * radius) * 0.5f;
-  float hz = (depth  - 2.0f * radius) * 0.5f;
+  float hx = width * 0.5f; //(width  - 2.0f * radius) * 0.5f;
+  float hy = height * 0.5f; //(height - 2.0f * radius) * 0.5f;
+  float hz = depth * 0.5f; //(depth  - 2.0f * radius) * 0.5f;
   
 #define LAT_SEGS 16
 #define LON_SEGS 16
 #define RINGS (4 * LAT_SEGS + 3)
 #define COLS  (4 * (LON_SEGS + 1) + 3)
-#define CLAMP(v, h) ((v) < 0 ? -h : h)
+#define FLIP(v, h) ((v) < 0 ? -h : h)
   
   uint32_t maxVertices = RINGS * COLS;
   uint32_t maxIndices  = (RINGS - 1) * (COLS - 1) * 6;
@@ -488,7 +488,7 @@ Model_CreateRoundedBox(float width, float height, float depth, float radius, str
     for (int ci = 0; ci < ncols; ci++) {
       float theta = theta_samples[ci];
       float nx = sin_p * cosf(theta), ny = cos_p, nz = sin_p * sinf(theta);
-      float cx = CLAMP(nx, hx), cy = CLAMP(ny, hy), cz = CLAMP(nz, hz);
+      float cx = FLIP(nx, hx), cy = FLIP(ny, hy), cz = FLIP(nz, hz);
       float px = cx + radius * nx, py = cy + radius * ny, pz = cz + radius * nz;
       float u = theta / (2.0f * (float)M_PI), v = phi / (float)M_PI;
       verts[vidx++] = R_MakeVertexWithWeight(px, py, pz, u, v, nx, ny, nz, nx, ny, nz);
@@ -525,7 +525,7 @@ Model_CreateRoundedBox(float width, float height, float depth, float radius, str
 #undef LON_SEGS
 #undef RINGS
 #undef COLS
-#undef CLAMP
+#undef FLIP
 }
 
 HRESULT
