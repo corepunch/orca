@@ -476,10 +476,6 @@ Model_CreateRoundedBox(float width, float height, float depth, float radius, str
   
   uint32_t vidx = 0, iidx = 0;
   
-  // Build the phi sample list (latitude angles, 0=north pole, PI=south pole)
-  // We insert a duplicate at the top-cap crease and bottom-cap crease.
-  float phi_crease = (hy > 0.0f) ? asinf(hy / radius) : 0.0f; // not quite: see below
-  
   // Actually, the crease angle measured from the equator is asin(hy/radius),
   // so from the north pole it is PI/2 - asin(hy/radius).
   float phi_top    = (float)M_PI_2 - asinf(fminf(hy / radius, 1.0f));
