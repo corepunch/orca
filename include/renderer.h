@@ -248,6 +248,7 @@ struct uniform
 };
 
 // Boxed mesh type enum - cast to struct Mesh const* for use in ViewEntity.mesh
+// These values match the MD_* model indices in r_local.h, allowing direct indexing into tr.models
 enum boxed_mesh_type {
   BOXED_MESH_RECTANGLE = 1,
   BOXED_MESH_TEAPOT = 2,

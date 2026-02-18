@@ -610,6 +610,7 @@ R_InitResources(void)
 
   Model_CreatePlane(1, 1, tr.models+MD_PLANE);
   Model_CreatePlane(0, 0, tr.models+MD_DOT);
+  Model_CreatePlane(1, 1, tr.models+MD_TEAPOT); // Placeholder for teapot - currently uses plane
   
   glEnable(GL_FRAMEBUFFER_SRGB);
 }
