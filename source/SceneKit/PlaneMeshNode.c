@@ -22,7 +22,6 @@ HANDLER(PlaneMeshNode, Render)
   static struct uniform uniforms[MAX_UNIFORMS];
 
   struct ViewEntity entity = {
-    .debugName = OBJ_GetName(hObject),
     .type = ET_PLANE,
     .material.opacity = GetNode3D(hObject)->_opacity,
     .matrix = GetNode3D(hObject)->Matrix,

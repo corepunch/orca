@@ -67,7 +67,6 @@ HANDLER(TextBlock3D, Render)
   float h = pTextRun->_textinfo.txHeight;
   
   struct ViewEntity entity = {
-    .debugName = OBJ_GetName(hObject),
     .radius = (struct vec4){0},
     .bbox = BOX3_FromRect(((struct rect){-w/2,-h/2,w,h})),
     .text = pTextBlock->_text,

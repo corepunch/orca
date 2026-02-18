@@ -314,7 +314,6 @@ Node2D_GetViewEntity(lpObject_t hObject,
 
   memset(entity, 0, sizeof(struct ViewEntity));
 
-  entity->debugName = OBJ_GetName(hObject);
   entity->bbox = BOX3_FromRect(node2d->_rect);
   entity->matrix = node2d->Matrix;
   entity->radius = *(struct vec4*)&node2d->_node->Border.Radius;

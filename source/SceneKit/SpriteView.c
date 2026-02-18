@@ -33,7 +33,6 @@ HANDLER(SpriteView, Render)
   }
   
   struct ViewEntity entity = {
-    .debugName = OBJ_GetName(hObject),
     .radius = (struct vec4){0},
     .bbox = BOX3_FromRect(((struct rect){
       -0.005f*viewbox.width, -0.005f*viewbox.height,

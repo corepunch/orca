@@ -288,21 +288,19 @@ struct ViewMaterial
 // See DESIGN_DECISION_UNIFORMS.md for full rationale.
 struct ViewEntity
 {
-  lpcString_t debugName;
   enum entity_type type;
   struct mat4 matrix;
   struct ViewMaterial material;
   struct ViewText* text;
   struct Mesh const* mesh;
   struct Shader const* shader;
-  uint32_t frame;
   struct box3 bbox;
   struct vec4 radius;
   struct vec4 borderWidth;
   float borderOffset;
   uint32_t submesh;
   uint32_t flags;
-  uint32_t camera;
+  uint32_t frame;
   struct mat4 ninepatch; // also has other usecases
 };
 
