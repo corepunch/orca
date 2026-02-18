@@ -260,6 +260,10 @@ enum entity_type
   ET_CINEMATIC,
 };
 
+// Visual appearance properties for rendering.
+// Note: This struct intentionally does NOT contain uniforms because uniforms
+// are aggregated from multiple sources (both object properties and material
+// properties). See DESIGN_DECISION_UNIFORMS.md for full rationale.
 struct ViewMaterial
 {
   struct Texture const* texture;
@@ -276,6 +280,10 @@ struct ViewMaterial
     .max = { (r).x + (r).width, (r).y + (r).height, 0 } \
   })
 
+// Complete rendering descriptor for an entity, aggregating all data needed for rendering.
+// Note: uniforms are stored here (not in ViewMaterial) because they aggregate shader
+// parameters from multiple sources: both object properties AND material properties.
+// See DESIGN_DECISION_UNIFORMS.md for full rationale.
 struct ViewEntity
 {
   lpcString_t debugName;
@@ -285,8 +293,8 @@ struct ViewEntity
   struct ViewText* text;
   struct Mesh const* mesh;
   struct Shader const* shader;
-  struct uniform const* uniforms;
-  uint32_t numUniforms;
+  struct uniform const* uniforms;     // Shader parameters from object + material
+  uint32_t numUniforms;                // Count of shader parameters
   uint32_t frame;
   struct box3 bbox;
   struct vec4 radius;
