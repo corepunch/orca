@@ -172,8 +172,10 @@ CreateNinePatchMesh(struct ViewEntity* ent)
 
   for (int y = 0, i = 0; y < 4; y++) {
     for (int x = 0; x < 4; x++, i++) {
+      float bbox_width = ent->bbox.max.x - ent->bbox.min.x;
+      float bbox_height = ent->bbox.max.y - ent->bbox.min.y;
       vertices[i] = vertex_new2(
-        _x[x] / ent->rect.width, _y[y] / ent->rect.height, _u[x], 1 - _v[y]);
+        _x[x] / bbox_width, _y[y] / bbox_height, _u[x], 1 - _v[y]);
     }
   }
 
@@ -212,8 +214,8 @@ CreateNinePatchMesh(struct ViewEntity* ent)
 static void
 _DrawDebug(struct ViewEntity* ent, struct ViewDef const* view)
 {
-  float const w = ent->rect.width;
-  float const h = ent->rect.height;
+  float const w = ent->bbox.max.x - ent->bbox.min.x;
+  float const h = ent->bbox.max.y - ent->bbox.min.y;
   struct vec3 const points[] = {
     { 0, 0, 0 }, { w, 0, 0 }, { w, h, 0 }, { 0, h, 0 }, { 0, 0, 0 },
   };
@@ -235,10 +237,16 @@ _UpdateCinematicEntity(struct ViewEntity* ent)
   ent->material.texture = tr.textures[TX_CINEMATIC];
   ent->material.textureMatrix.v[4] = -1;
   ent->material.textureMatrix.v[7] = 1;
-  ent->rect.x += (ent->rect.width - tr.textures[TX_CINEMATIC]->Width) / 2;
-  ent->rect.y += (ent->rect.height - tr.textures[TX_CINEMATIC]->Height) / 2;
-  ent->rect.width = tr.textures[TX_CINEMATIC]->Width;
-  ent->rect.height = tr.textures[TX_CINEMATIC]->Height;
+  
+  float bbox_width = ent->bbox.max.x - ent->bbox.min.x;
+  float bbox_height = ent->bbox.max.y - ent->bbox.min.y;
+  float offset_x = (bbox_width - tr.textures[TX_CINEMATIC]->Width) / 2;
+  float offset_y = (bbox_height - tr.textures[TX_CINEMATIC]->Height) / 2;
+  
+  ent->bbox.min.x += offset_x;
+  ent->bbox.min.y += offset_y;
+  ent->bbox.max.x = ent->bbox.min.x + tr.textures[TX_CINEMATIC]->Width;
+  ent->bbox.max.y = ent->bbox.min.y + tr.textures[TX_CINEMATIC]->Height;
 }
 
 HRESULT
@@ -725,7 +733,7 @@ R_DrawToolbarIcon(PDRAWTOOLBARICONSTRUCT parm)
   R_SetPointFiltering();
   
   struct ViewEntity ent = {
-    .bbox = BOX3_FromXYWH(parm->x, parm->y, 24, 24),
+    .bbox = BOX3_FromRect((struct rect){parm->x, parm->y, 24, 24}),
     .material = (struct ViewMaterial) {
       .opacity = 1.0,
       .texture = tr.textures[TX_TOOLBAR],

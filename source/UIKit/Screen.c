@@ -320,7 +320,7 @@ Node2D_GetViewEntity(lpObject_t hObject,
   entity->material.opacity = node2d->_opacity;
   entity->material.texture = image;
   entity->material.textureMatrix = MAT3_Identity();
-  entity->rect = node2d->_rect;
+  entity->bbox = BOX3_FromRect(node2d->_rect);
   entity->matrix = node2d->Matrix;
   entity->radius = *(struct vec4*)&node2d->_node->Border.Radius;
 	

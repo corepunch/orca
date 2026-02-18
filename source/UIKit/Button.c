@@ -33,7 +33,7 @@ HANDLER(Button, DrawBrush) {
 //
 //  R_DrawEntity(pDrawBrush->viewdef, &entity);
 
-  entity.bbox = BOX3_FromXYWH(r_x, r_y, r_width, r_height);
+  entity.bbox = BOX3_FromRect((struct rect){r_x, r_y, r_width, r_height});
   entity.material = (struct ViewMaterial) {
     .opacity = opacity,
     .color = pDrawBrush->brush->Color,// (color_t){0.4,0.6,0.8,1};

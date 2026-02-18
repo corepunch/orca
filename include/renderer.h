@@ -276,13 +276,6 @@ struct ViewMaterial
     .max = { (r).x + (r).width, (r).y + (r).height, 0 } \
   })
 
-// Helper macro to create box3 from x, y, width, height values
-#define BOX3_FromXYWH(x_, y_, w_, h_) \
-  ((struct box3){ \
-    .min = { (x_), (y_), 0 }, \
-    .max = { (x_) + (w_), (y_) + (h_), 0 } \
-  })
-
 struct ViewEntity
 {
   lpcString_t debugName;
