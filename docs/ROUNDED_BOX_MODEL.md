@@ -82,11 +82,29 @@ The vertex position represents the **center of the corner sphere**, and `a_weigh
 - `u_opacity` - Global opacity (0.0 to 1.0)
 - `u_color` - Tint color
 - `u_radius` - Corner radius (vec4, only .x is used)
-- `u_bboxMin` - Minimum corner of bounding box (vec3)
-- `u_bboxMax` - Maximum corner of bounding box (vec3)
+- `u_bboxTransform` - Bounding box transformation matrix (mat4) that encodes scale and translation
 - `u_lightDir` - Light direction (normalized)
 - `u_specularPower` - Controls glossiness
 - `u_viewDir` - View direction for reflections
+
+### Bounding Box Transformation Matrix
+
+Instead of passing separate `u_bboxMin` and `u_bboxMax` vectors, the shader now uses a single `u_bboxTransform` matrix that encodes both the size and center of the bounding box. This matrix transforms positions from local model space to bbox space:
+
+```glsl
+// Extract size from matrix columns
+vec3 rectSize = vec3(length(u_bboxTransform[0].xyz), 
+                     length(u_bboxTransform[1].xyz), 
+                     length(u_bboxTransform[2].xyz));
+
+// Transform position using the matrix
+vec4 worldPos = u_bboxTransform * vec4(localPos, 1.0);
+```
+
+This approach:
+- Reduces uniform count (1 mat4 instead of 2 vec3s)
+- Follows standard graphics pipeline patterns
+- Enables potential future optimizations (e.g., combining with model matrix)
 
 ### Usage Example
 

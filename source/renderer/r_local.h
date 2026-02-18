@@ -100,8 +100,7 @@ enum shader_uniform
   kShaderUniform_CursorPosition,
   kShaderUniform_Radius,
   kShaderUniform_BorderWidth,
-  kShaderUniform_BBoxMin,
-  kShaderUniform_BBoxMax,
+  kShaderUniform_BBoxTransform,
   kShaderUniform_Lights,
   kShaderUniform_Count
 };

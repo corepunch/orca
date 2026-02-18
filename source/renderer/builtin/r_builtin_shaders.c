@@ -83,8 +83,7 @@ struct shader_desc shader_ui = {
     { "u_color", UT_COLOR, PRECISION_LOW },
     { "u_radius", UT_FLOAT_VEC4, PRECISION_LOW },
     { "u_borderWidth", UT_FLOAT_VEC4, PRECISION_LOW },
-    { "u_bboxMin", UT_FLOAT_VEC3, PRECISION_LOW },
-    { "u_bboxMax", UT_FLOAT_VEC3, PRECISION_LOW },
+    { "u_bboxTransform", UT_FLOAT_MAT4, PRECISION_LOW },
     { "u_opacity", UT_FLOAT, PRECISION_LOW },
   },
     .Attributes = {
@@ -104,11 +103,12 @@ struct shader_desc shader_ui = {
   "  vec2 s = step(vec2(0.5), a_position.xy);\n"
   "  float rad = mix(mix(r.x, r.y, s.x), mix(r.w, r.z, s.x), s.y);\n"
   "  vec2 brd = vec2(mix(b.x, b.y, s.x), mix(b.z, b.w, s.y));\n"
-  "  vec2 rectSize = u_bboxMax.xy - u_bboxMin.xy;\n"
+  "  vec2 rectSize = vec2(length(u_bboxTransform[0].xyz), length(u_bboxTransform[1].xyz));\n"
   "  vec2 pos = a_position.xy * rectSize + a_texcoord0 * rad + a_texcoord1 * brd;\n"
   "  vec3 tex = vec3(pos.x / rectSize.x, 1.0 - pos.y / rectSize.y, 1.0);\n"
   "  v_texcoord0 = (u_textureTransform * tex).xy;\n"
-  "  gl_Position = u_modelViewProjectionTransform * vec4(pos + u_bboxMin.xy, 0, 1);\n"
+  "  vec4 localPos = vec4(a_position.xy * rectSize + a_texcoord0 * rad + a_texcoord1 * brd, 0, 1);\n"
+  "  gl_Position = u_modelViewProjectionTransform * (u_bboxTransform * localPos);\n"
   "}\n",
     .FragmentShader =
   "void main() {\n"
@@ -163,8 +163,6 @@ struct shader_desc shader_charset= {
     { "u_texture", UT_SAMPLER_2D, PRECISION_LOW },
     { "u_charset", UT_SAMPLER_2D, PRECISION_LOW },
     { "u_palette", UT_SAMPLER_2D, PRECISION_LOW },
-    { "u_bboxMin", UT_FLOAT_VEC3, PRECISION_LOW },
-    { "u_bboxMax", UT_FLOAT_VEC3, PRECISION_LOW },
     { "u_color", UT_COLOR, PRECISION_LOW },
     { "u_textureSize", UT_FLOAT_VEC2, PRECISION_LOW },
     { "u_selectedItem", UT_FLOAT_VEC2, PRECISION_LOW },
@@ -308,8 +306,7 @@ struct shader_desc shader_button = {
     { "u_opacity", UT_FLOAT, PRECISION_LOW },
 //    { "u_texture", UT_SAMPLER_2D, PRECISION_LOW },
     { "u_color", UT_COLOR, PRECISION_LOW },
-    { "u_bboxMin", UT_FLOAT_VEC3, PRECISION_LOW },
-    { "u_bboxMax", UT_FLOAT_VEC3, PRECISION_LOW },
+    { "u_bboxTransform", UT_FLOAT_MAT4, PRECISION_LOW },
     { "u_lightDir", UT_FLOAT_VEC3, PRECISION_LOW, 0, {0, -1, -0.5} },
     { "u_specularPower", UT_FLOAT, PRECISION_LOW, 0, {1.5} },
     { "u_viewDir", UT_FLOAT_VEC3, PRECISION_LOW, 0, {0.0, 0.0, 1.0}}
@@ -326,14 +323,12 @@ struct shader_desc shader_button = {
   },
   .VertexShader =
   "void main() {\n"
-  "  vec3 pos = a_position.xyz;// * u_rect.zww;// + a_texcoord0 * rad + a_texcoord1 * brd;\n"
-  "  vec3 rectSize = u_bboxMax - u_bboxMin;\n"
+  "  vec3 pos = a_position.xyz;\n"
+  "  vec3 rectSize = vec3(length(u_bboxTransform[0].xyz), length(u_bboxTransform[1].xyz), length(u_bboxTransform[2].xyz));\n"
   "  float koeff = rectSize.y / rectSize.x;\n"
   "  pos.x = mix((pos.x + 0.5) * koeff - 0.5, (pos.x - 0.5) * koeff + 0.5, pos.x > 0.0);\n"
   "  pos *= rectSize.xyy;\n"
-//  "  vec3 tex = vec3(pos.x / u_rect.z, 1.0 - pos.y / u_rect.w, 1.0);\n"
-  "  vec3 rectCenter = mix(u_bboxMin, u_bboxMax, vec3(0.5));\n"
-  "  gl_Position = u_modelViewProjectionTransform *  vec4(pos.xy + rectCenter.xy, pos.z, 1.0);\n"
+  "  gl_Position = u_modelViewProjectionTransform * (u_bboxTransform * vec4(pos, 1.0));\n"
   "  v_texcoord0 = a_texcoord0;\n"
   "  v_normal = normalize(u_normalTransform * a_normal);\n"
   "  v_worldPos = a_position.xyz;\n"
@@ -379,8 +374,7 @@ struct shader_desc shader_roundedbox = {
     { "u_opacity", UT_FLOAT, PRECISION_LOW },
     { "u_color", UT_COLOR, PRECISION_LOW },
     { "u_radius", UT_FLOAT_VEC4, PRECISION_LOW },
-    { "u_bboxMin", UT_FLOAT_VEC3, PRECISION_LOW },
-    { "u_bboxMax", UT_FLOAT_VEC3, PRECISION_LOW },
+    { "u_bboxTransform", UT_FLOAT_MAT4, PRECISION_LOW },
     { "u_lightDir", UT_FLOAT_VEC3, PRECISION_LOW, 0, {0, -1, -0.5} },
     { "u_specularPower", UT_FLOAT, PRECISION_LOW, 0, {1.5} },
     { "u_viewDir", UT_FLOAT_VEC3, PRECISION_LOW, 0, {0.0, 0.0, 1.0}}
@@ -398,10 +392,9 @@ struct shader_desc shader_roundedbox = {
   },
   .VertexShader =
   "void main() {\n"
-  "  vec3 rectSize = u_bboxMax - u_bboxMin;\n"
+  "  vec3 rectSize = vec3(length(u_bboxTransform[0].xyz), length(u_bboxTransform[1].xyz), length(u_bboxTransform[2].xyz));\n"
   "  vec3 pos = a_position.xyz * rectSize + a_weight.xyz * u_radius.x;\n"
-  "  vec3 rectCenter = mix(u_bboxMin, u_bboxMax, vec3(0.5));\n"
-  "  gl_Position = u_modelViewProjectionTransform * vec4(pos.xy + rectCenter.xy, pos.z, 1.0);\n"
+  "  gl_Position = u_modelViewProjectionTransform * (u_bboxTransform * vec4(pos, 1.0));\n"
   "  v_texcoord0 = a_texcoord0;\n"
   "  v_normal = normalize(u_normalTransform * a_normal);\n"
   "  v_worldPos = pos;\n"

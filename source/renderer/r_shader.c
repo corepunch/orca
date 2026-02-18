@@ -26,8 +26,7 @@ static lpcString_t uniforms[kShaderUniform_Count] = {
   "u_cursorPosition",               // kShaderUniform_CursorPosition
   "u_radius",                       // kShaderUniform_Radius
   "u_borderWidth",                  // kShaderUniform_BorderWidth
-  "u_bboxMin",                      // kShaderUniform_BBoxMin
-  "u_bboxMax",                      // kShaderUniform_BBoxMax
+  "u_bboxTransform",                // kShaderUniform_BBoxTransform
   "u_lights",                       // kShaderUniform_Lights
 };
 
@@ -630,18 +629,32 @@ Shader_BindMaterial(struct shader const* shader,
                ent->borderWidth.z,
                ent->borderWidth.w);
         break;
-      case kShaderUniform_BBoxMin:
-        R_Call(glUniform3f, location,
-               ent->bbox.min.x,
-               ent->bbox.min.y,
-               ent->bbox.min.z);
+      case kShaderUniform_BBoxTransform: {
+        // Create a transformation matrix that encodes bbox scale and translation
+        // This matrix transforms from normalized [0,1] space to bbox space
+        struct vec3 size = {
+          ent->bbox.max.x - ent->bbox.min.x,
+          ent->bbox.max.y - ent->bbox.min.y,
+          ent->bbox.max.z - ent->bbox.min.z
+        };
+        struct vec3 center = {
+          (ent->bbox.min.x + ent->bbox.max.x) * 0.5f,
+          (ent->bbox.min.y + ent->bbox.max.y) * 0.5f,
+          (ent->bbox.min.z + ent->bbox.max.z) * 0.5f
+        };
+        // Matrix that scales by size and translates to center
+        // This is equivalent to: translate(center) * scale(size)
+        struct mat4 bboxTransform = {
+          .v = {
+            size.x, 0, 0, 0,
+            0, size.y, 0, 0,
+            0, 0, size.z, 0,
+            center.x, center.y, center.z, 1
+          }
+        };
+        R_Call(glUniformMatrix4fv, location, 1, GL_FALSE, bboxTransform.v);
         break;
-      case kShaderUniform_BBoxMax:
-        R_Call(glUniform3f, location,
-               ent->bbox.max.x,
-               ent->bbox.max.y,
-               ent->bbox.max.z);
-        break;
+      }
       case kShaderUniform_Lights:
         R_Call(glUniformMatrix4fv, location, view->num_lights, FALSE, (float*)&view->lights);
         break;
