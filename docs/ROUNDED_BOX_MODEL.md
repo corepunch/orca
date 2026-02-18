@@ -89,22 +89,35 @@ The vertex position represents the **center of the corner sphere**, and `a_weigh
 
 ### Bounding Box Transformation Matrix
 
-Instead of passing separate `u_bboxMin` and `u_bboxMax` vectors, the shader now uses a single `u_bboxTransform` matrix that encodes both the size and center of the bounding box. This matrix transforms positions from local model space to bbox space:
+Instead of passing separate `u_bboxMin` and `u_bboxMax` vectors, the shader now uses a single `u_bboxTransform` matrix that encodes both the size and minimum position of the bounding box. This matrix transforms positions from unit [0,1] space to bbox [min,max] space:
 
 ```glsl
-// Extract size from matrix columns
-vec3 rectSize = vec3(length(u_bboxTransform[0].xyz), 
-                     length(u_bboxTransform[1].xyz), 
-                     length(u_bboxTransform[2].xyz));
+// Extract size directly from matrix diagonal (no sqrt needed)
+vec3 rectSize = vec3(u_bboxTransform[0].x, u_bboxTransform[1].y, u_bboxTransform[2].z);
+
+// Extract min position from translation column
+vec3 rectMin = u_bboxTransform[3].xyz;
+
+// Compute center if needed
+vec3 rectCenter = rectMin + rectSize * 0.5;
 
 // Transform position using the matrix
 vec4 worldPos = u_bboxTransform * vec4(localPos, 1.0);
 ```
 
+**Matrix structure:**
+```
+[size.x  0       0       0     ]
+[0       size.y  0       0     ]
+[0       0       size.z  0     ]
+[min.x   min.y   min.z   1     ]
+```
+
 This approach:
 - Reduces uniform count (1 mat4 instead of 2 vec3s)
 - Follows standard graphics pipeline patterns
-- Enables potential future optimizations (e.g., combining with model matrix)
+- Enables efficient scale extraction from diagonal (no sqrt needed)
+- Allows potential future optimizations (e.g., combining with model matrix)
 
 ### Usage Example
 
