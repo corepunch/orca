@@ -82,7 +82,8 @@ The vertex position represents the **center of the corner sphere**, and `a_weigh
 - `u_opacity` - Global opacity (0.0 to 1.0)
 - `u_color` - Tint color
 - `u_radius` - Corner radius (vec4, only .x is used)
-- `u_rect` - Rectangle dimensions and position
+- `u_bboxMin` - Minimum corner of bounding box (vec3)
+- `u_bboxMax` - Maximum corner of bounding box (vec3)
 - `u_lightDir` - Light direction (normalized)
 - `u_specularPower` - Controls glossiness
 - `u_viewDir` - View direction for reflections
