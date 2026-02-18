@@ -253,9 +253,9 @@ _UpdateCinematicEntity(struct ViewEntity* ent)
 //
 // Supports mesh pointer boxing: ent.mesh can be either:
 //   - A real Mesh pointer (when mesh_is_ptr() returns true)
-//   - A boxed entity type constant like MESH_CAPSULE, MESH_RECTANGLE, etc.
+//   - A boxed entity type constant like BOX_PTR(Mesh, BOXED_MESH_CAPSULE), etc.
 //
-// Usage example: ent.mesh = MESH_CAPSULE;
+// Usage example: ent.mesh = BOX_PTR(Mesh, BOXED_MESH_CAPSULE);
 // This eliminates the need to set a separate type field for common entity types.
 HRESULT
 R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
@@ -293,32 +293,42 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
   
   // If no model yet, check for boxed mesh tags
   if (model == NULL && ent->mesh && !mesh_is_ptr((MeshRef)ent->mesh)) {
-    MeshRef mesh_tag = (MeshRef)ent->mesh;
-    if (mesh_tag == (MeshRef)MESH_CINEMATIC) {
-      _UpdateCinematicEntity(ent);
-      shader = &tr.shaders[SHADER_CINEMATIC];
-      model = tr.models[MD_RECTANGLE];
-    } else if (mesh_tag == (MeshRef)MESH_NINEPATCH) {
-      model = CreateNinePatchMesh(ent);
-    } else if (mesh_tag == (MeshRef)MESH_RECTANGLE) {
-      if (memcmp(&ent->borderWidth, &zero, sizeof(struct vec4))) {
-        model = tr.models[MD_ROUNDED_BORDER];
-      } else {
-        model = tr.models[MD_ROUNDED_RECT];
-      }
-    } else if (mesh_tag == (MeshRef)MESH_PLANE) {
-      model = tr.models[MD_PLANE];
-    } else if (mesh_tag == (MeshRef)MESH_DOT) {
-      model = tr.models[MD_DOT];
-    } else if (mesh_tag == (MeshRef)MESH_CAPSULE) {
-      model = tr.models[MD_CAPSULE];
-      shader = &tr.shaders[SHADER_BUTTON];
-    } else if (mesh_tag == (MeshRef)MESH_ROUNDED_BOX) {
-      model = tr.models[MD_ROUNDED_BOX];
-      shader = &tr.shaders[SHADER_ROUNDEDBOX];
-    } else if (mesh_tag == (MeshRef)MESH_TEAPOT) {
-      // Teapot could use a sphere or custom model in the future
-      model = tr.models[MD_PLANE]; // placeholder
+    enum boxed_mesh_type mesh_tag = (enum boxed_mesh_type)((MeshRef)ent->mesh & MESH_TAG_MASK);
+    
+    switch (mesh_tag) {
+      case BOXED_MESH_CINEMATIC:
+        _UpdateCinematicEntity(ent);
+        shader = &tr.shaders[SHADER_CINEMATIC];
+        model = tr.models[MD_RECTANGLE];
+        break;
+      case BOXED_MESH_NINEPATCH:
+        model = CreateNinePatchMesh(ent);
+        break;
+      case BOXED_MESH_RECTANGLE:
+        if (memcmp(&ent->borderWidth, &zero, sizeof(struct vec4))) {
+          model = tr.models[MD_ROUNDED_BORDER];
+        } else {
+          model = tr.models[MD_ROUNDED_RECT];
+        }
+        break;
+      case BOXED_MESH_PLANE:
+        model = tr.models[MD_PLANE];
+        break;
+      case BOXED_MESH_DOT:
+        model = tr.models[MD_DOT];
+        break;
+      case BOXED_MESH_CAPSULE:
+        model = tr.models[MD_CAPSULE];
+        shader = &tr.shaders[SHADER_BUTTON];
+        break;
+      case BOXED_MESH_ROUNDED_BOX:
+        model = tr.models[MD_ROUNDED_BOX];
+        shader = &tr.shaders[SHADER_ROUNDEDBOX];
+        break;
+      case BOXED_MESH_TEAPOT:
+        // Teapot could use a sphere or custom model in the future
+        model = tr.models[MD_PLANE]; // placeholder
+        break;
     }
   }
   
@@ -357,7 +367,7 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
 
   //    tr.mesh_render++;
 
-  if (ent->mesh == MESH_NINEPATCH) {
+  if (ent->mesh == BOX_PTR(Mesh, BOXED_MESH_NINEPATCH)) {
     Model_Release(model);
   }
 

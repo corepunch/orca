@@ -45,7 +45,7 @@ HANDLER(TextBlock3D, Render)
 	text_from_label(hObject, pTextBlock3D, &text);
 	struct ViewEntity entity = {
 		.debugName   = OBJ_GetName(hObject),
-		.mesh        = MESH_PLANE,
+		.mesh        = BOX_PTR(Mesh, BOXED_MESH_PLANE),
 		.opacity     = GetNode3D(hObject)->_opacity,
 		.matrix      = GetNode3D(hObject)->Matrix,
 		.bbox        = BOX3_FromRect(mesh_rect(hObject, pTextBlock3D)),

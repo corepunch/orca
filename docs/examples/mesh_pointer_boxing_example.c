@@ -8,7 +8,7 @@ void example_traditional_way(void) {
     // Old way - using a separate type field (no longer available)
     // This is now replaced by mesh pointer boxing
     struct ViewEntity ent = {0};
-    ent.mesh = MESH_CAPSULE;  // Set entity type via mesh field
+    ent.mesh = BOX_PTR(Mesh, BOXED_MESH_CAPSULE);  // Set entity type via mesh field
     
     // Set other properties...
     ent.material.color = ColorWhite;
@@ -21,7 +21,7 @@ void example_traditional_way(void) {
 void example_new_way_boxed_pointer(void) {
     // New way - using mesh pointer boxing
     struct ViewEntity ent = {0};
-    ent.mesh = MESH_CAPSULE;  // Boxed entity type constant!
+    ent.mesh = BOX_PTR(Mesh, BOXED_MESH_CAPSULE);  // Boxed entity type constant!
     // No need to set ent.type
     
     // Set other properties...
@@ -49,12 +49,12 @@ void example_all_entity_types(void) {
     struct ViewEntity entities[6] = {0};
     
     // Different entity types using mesh boxing
-    entities[0].mesh = MESH_RECTANGLE;
-    entities[1].mesh = MESH_PLANE;
-    entities[2].mesh = MESH_DOT;
-    entities[3].mesh = MESH_CAPSULE;
-    entities[4].mesh = MESH_ROUNDED_BOX;
-    entities[5].mesh = MESH_TEAPOT;
+    entities[0].mesh = BOX_PTR(Mesh, BOXED_MESH_RECTANGLE);
+    entities[1].mesh = BOX_PTR(Mesh, BOXED_MESH_PLANE);
+    entities[2].mesh = BOX_PTR(Mesh, BOXED_MESH_DOT);
+    entities[3].mesh = BOX_PTR(Mesh, BOXED_MESH_CAPSULE);
+    entities[4].mesh = BOX_PTR(Mesh, BOXED_MESH_ROUNDED_BOX);
+    entities[5].mesh = BOX_PTR(Mesh, BOXED_MESH_TEAPOT);
     
     // Configure and render each entity...
     // for (int i = 0; i < 6; i++) {
@@ -70,20 +70,23 @@ void example_checking_mesh_type(struct ViewEntity* ent) {
             struct Mesh const* mesh = (struct Mesh const*)mesh_get_ptr((MeshRef)ent->mesh);
             // Use mesh->model, mesh->Material, etc.
         } else {
-            // It's a boxed entity type
-            MeshRef tag = (MeshRef)ent->mesh;
-            if (tag == (MeshRef)MESH_CAPSULE) {
-                // Handle capsule entity
-            } else if (tag == (MeshRef)MESH_RECTANGLE) {
-                // Handle rectangle entity
+            // It's a boxed entity type - use switch on masked value
+            enum boxed_mesh_type tag = (enum boxed_mesh_type)((MeshRef)ent->mesh & MESH_TAG_MASK);
+            switch (tag) {
+                case BOXED_MESH_CAPSULE:
+                    // Handle capsule entity
+                    break;
+                case BOXED_MESH_RECTANGLE:
+                    // Handle rectangle entity
+                    break;
+                // etc.
             }
-            // etc.
         }
     }
 }
 
 // Benefits of mesh pointer boxing:
-// 1. Cleaner API: ent.mesh = MESH_CAPSULE is more intuitive
+// 1. Cleaner API: ent.mesh = BOX_PTR(Mesh, BOXED_MESH_CAPSULE) is more intuitive
 // 2. One field instead of two (mesh vs type)
 // 3. No ABI break - mesh field is still struct Mesh const*
 // 4. Backward compatible - old code using type field still works

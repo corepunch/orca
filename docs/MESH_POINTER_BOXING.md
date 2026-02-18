@@ -45,15 +45,14 @@ enum boxed_mesh_type {
 
 ### Entity Type Constants (in `renderer.h`)
 
+Use the `BOX_PTR` macro to create boxed entity type constants inline:
+
 ```c
-// Enum values cast to Mesh pointers using BOX_PTR macro
-// Safe because we always check with mesh_is_ptr() before dereferencing
-#define MESH_RECTANGLE   BOX_PTR(Mesh, BOXED_MESH_RECTANGLE)
-#define MESH_TEAPOT      BOX_PTR(Mesh, BOXED_MESH_TEAPOT)
-#define MESH_PLANE       BOX_PTR(Mesh, BOXED_MESH_PLANE)
-#define MESH_DOT         BOX_PTR(Mesh, BOXED_MESH_DOT)
-#define MESH_CAPSULE     BOX_PTR(Mesh, BOXED_MESH_CAPSULE)
-#define MESH_ROUNDED_BOX BOX_PTR(Mesh, BOXED_MESH_ROUNDED_BOX)
+// Use BOX_PTR inline to box enum values as Mesh pointers
+ent.mesh = BOX_PTR(Mesh, BOXED_MESH_RECTANGLE);
+ent.mesh = BOX_PTR(Mesh, BOXED_MESH_CAPSULE);
+ent.mesh = BOX_PTR(Mesh, BOXED_MESH_TEAPOT);
+// etc.
 ```
 
 ## Usage Examples
@@ -69,7 +68,7 @@ ent.mesh = NULL;  // Old way with separate type field
 You can now write:
 ```c
 ViewEntity ent = {0};
-ent.mesh = MESH_CAPSULE;
+ent.mesh = BOX_PTR(Mesh, BOXED_MESH_CAPSULE);
 ```
 
 ### Checking mesh type in code
@@ -81,18 +80,21 @@ if (ent.mesh) {
         struct Mesh const* mesh = (struct Mesh const*)mesh_get_ptr((MeshRef)ent.mesh);
         model = mesh->model;
     } else {
-        // It's an entity type constant - determine which one
-        if ((MeshRef)ent.mesh == (MeshRef)MESH_CAPSULE) {
-            model = tr.models[MD_CAPSULE];
+        // It's a boxed entity type constant - use switch on masked value
+        enum boxed_mesh_type mesh_tag = (enum boxed_mesh_type)((MeshRef)ent.mesh & MESH_TAG_MASK);
+        switch (mesh_tag) {
+            case BOXED_MESH_CAPSULE:
+                model = tr.models[MD_CAPSULE];
+                break;
+            // ... etc
         }
-        // ... etc
     }
 }
 ```
 
 ## Safety
 
-The boxed pointers (MESH_RECTANGLE, MESH_CAPSULE, etc.) are enum values cast to pointers. These are **never dereferenced** - the code always checks `mesh_is_ptr()` first to distinguish real pointers from boxed enum values. This makes the system safe even though the underlying values are small integers.
+The boxed pointers (created with `BOX_PTR(Mesh, BOXED_MESH_*)`) are enum values cast to pointers. These are **never dereferenced** - the code always checks `mesh_is_ptr()` first to distinguish real pointers from boxed enum values. This makes the system safe even though the underlying values are small integers.
 
 ## Benefits
 
