@@ -432,16 +432,11 @@ Model_CreateRoundedBorder(struct model** ppModel)
 }
 
 HRESULT
-Model_CreateRoundedBox(float width, float height, float depth, float radius, struct model** ppModel)
+Model_CreateRoundedBox(float width, float height, float depth, struct model** ppModel)
 {
-  if (radius <= 0.0f) return Model_CreateBox(width * 0.5f, height * 0.5f, depth * 0.5f, ppModel);
-  
-  float maxRadius = fminf(fminf(width, height), depth) * 0.5f;
-  if (radius > maxRadius) radius = maxRadius;
-  
-  float hx = width * 0.5f; //(width  - 2.0f * radius) * 0.5f;
-  float hy = height * 0.5f; //(height - 2.0f * radius) * 0.5f;
-  float hz = depth * 0.5f; //(depth  - 2.0f * radius) * 0.5f;
+  float hx = width * 0.5f;
+  float hy = height * 0.5f;
+  float hz = depth * 0.5f;
   
 #define LAT_SEGS 16
 #define LON_SEGS 16
@@ -458,18 +453,15 @@ Model_CreateRoundedBox(float width, float height, float depth, float radius, str
   
   uint32_t vidx = 0, iidx = 0;
   
-  float phi_top = (float)M_PI_2 - asinf(fminf(hy / radius, 1.0f));
-  float phi_bot = (float)M_PI - phi_top;
-  
   float phi_samples[RINGS];
   int nrings = 0;
-  for (int i = 0; i <= LAT_SEGS; i++) phi_samples[nrings++] = phi_top * ((float)i / LAT_SEGS);
-  phi_samples[nrings++] = phi_top;
+  for (int i = 0; i <= LAT_SEGS; i++) phi_samples[nrings++] = (float)M_PI_2 * ((float)i / LAT_SEGS);
+  phi_samples[nrings++] = (float)M_PI_2;
   for (int i = 1; i < 2 * LAT_SEGS; i++)
-    phi_samples[nrings++] = phi_top + (phi_bot - phi_top) * ((float)i / (2 * LAT_SEGS));
-  phi_samples[nrings++] = phi_bot;
+    phi_samples[nrings++] = (float)M_PI_2 + (float)M_PI_2 * ((float)i / (2 * LAT_SEGS));
+  phi_samples[nrings++] = (float)M_PI;
   for (int i = 0; i <= LAT_SEGS; i++)
-    phi_samples[nrings++] = phi_bot + ((float)M_PI - phi_bot) * ((float)i / LAT_SEGS);
+    phi_samples[nrings++] = (float)M_PI + (float)M_PI_2 * ((float)i / LAT_SEGS);
   assert(nrings == RINGS);
   
   float theta_samples[COLS];
@@ -489,9 +481,8 @@ Model_CreateRoundedBox(float width, float height, float depth, float radius, str
       float theta = theta_samples[ci];
       float nx = sin_p * cosf(theta), ny = cos_p, nz = sin_p * sinf(theta);
       float cx = FLIP(nx, hx), cy = FLIP(ny, hy), cz = FLIP(nz, hz);
-      float px = cx + radius * nx, py = cy + radius * ny, pz = cz + radius * nz;
       float u = theta / (2.0f * (float)M_PI), v = phi / (float)M_PI;
-      verts[vidx++] = R_MakeVertexWithWeight(px, py, pz, u, v, nx, ny, nz, nx, ny, nz);
+      verts[vidx++] = R_MakeVertexWithWeight(cx, cy, cz, u, v, nx, ny, nz, -nx, -ny, -nz);
     }
   }
   

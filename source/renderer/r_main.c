@@ -564,7 +564,7 @@ R_InitResources(void)
   Model_CreateRoundedRectangle(tr.models+MD_ROUNDED_RECT);
   Model_CreateRoundedBorder(tr.models+MD_ROUNDED_BORDER);
   Model_CreateCapsule(1.0f, 1.0f, 1.0f, tr.models+MD_CAPSULE);
-  Model_CreateRoundedBox(1.0f, 1.0f, 1.0f, 0.2f, tr.models+MD_ROUNDED_BOX);
+  Model_CreateRoundedBox(1.0f, 1.0f, 1.0f, tr.models+MD_ROUNDED_BOX);
 
   Model_CreatePlane(1, 1, tr.models+MD_PLANE);
   Model_CreatePlane(0, 0, tr.models+MD_DOT);

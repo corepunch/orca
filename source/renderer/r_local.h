@@ -359,7 +359,7 @@ Model_CreateRoundedRectangle(struct model** ppModel);
 HRESULT
 Model_CreateRoundedBorder(struct model** ppModel);
 HRESULT
-Model_CreateRoundedBox(float width, float height, float depth, float radius, struct model** ppModel);
+Model_CreateRoundedBox(float width, float height, float depth, struct model** ppModel);
 HRESULT
 Model_CreateCapsule(float width, float height, float depth, struct model** ppModel);
 HRESULT
