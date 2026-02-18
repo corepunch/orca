@@ -288,40 +288,41 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
   } else if (BOX_IS_PTR((uintptr_t)ent->mesh)) {
     // Real mesh pointer - extract the model
     model = ((struct Mesh const*)BOX_GET_PTR((uintptr_t)ent->mesh))->model;
-  } else switch (((uintptr_t)ent->mesh & MESH_TAG_MASK)) {
-    case BOXED_MESH_CINEMATIC:
-      _UpdateCinematicEntity(ent);
-      shader = &tr.shaders[SHADER_CINEMATIC];
-      model = tr.models[MD_RECTANGLE];
-      break;
-    case BOXED_MESH_NINEPATCH:
-      model = CreateNinePatchMesh(ent);
-      break;
-    case BOXED_MESH_RECTANGLE:
-      if (memcmp(&ent->borderWidth, &zero, sizeof(struct vec4))) {
-        model = tr.models[MD_ROUNDED_BORDER];
-      } else {
-        model = tr.models[MD_ROUNDED_RECT];
-      }
-      break;
-    case BOXED_MESH_PLANE:
-      model = tr.models[MD_PLANE];
-      break;
-    case BOXED_MESH_DOT:
-      model = tr.models[MD_DOT];
-      break;
-    case BOXED_MESH_CAPSULE:
-      model = tr.models[MD_CAPSULE];
-      shader = &tr.shaders[SHADER_BUTTON];
-      break;
-    case BOXED_MESH_ROUNDED_BOX:
-      model = tr.models[MD_ROUNDED_BOX];
-      shader = &tr.shaders[SHADER_ROUNDEDBOX];
-      break;
-    case BOXED_MESH_TEAPOT:
-      // Teapot could use a sphere or custom model in the future
-      model = tr.models[MD_PLANE]; // placeholder
-      break;
+  } else {
+    // Boxed mesh type - enum value can be used directly as index into tr.models
+    enum boxed_mesh_type mesh_type = (enum boxed_mesh_type)((uintptr_t)ent->mesh & MESH_TAG_MASK);
+    
+    // Handle special cases that need additional processing or shader override
+    switch (mesh_type) {
+      case BOXED_MESH_CINEMATIC:
+        _UpdateCinematicEntity(ent);
+        shader = &tr.shaders[SHADER_CINEMATIC];
+        model = tr.models[MD_RECTANGLE];
+        break;
+      case BOXED_MESH_NINEPATCH:
+        model = CreateNinePatchMesh(ent);
+        break;
+      case BOXED_MESH_RECTANGLE:
+        if (memcmp(&ent->borderWidth, &zero, sizeof(struct vec4))) {
+          model = tr.models[MD_ROUNDED_BORDER];
+        } else {
+          model = tr.models[MD_ROUNDED_RECT];
+        }
+        break;
+      case BOXED_MESH_CAPSULE:
+        model = tr.models[mesh_type]; // Direct index since MD_CAPSULE == BOXED_MESH_CAPSULE
+        shader = &tr.shaders[SHADER_BUTTON];
+        break;
+      case BOXED_MESH_ROUNDED_BOX:
+        model = tr.models[mesh_type]; // Direct index since MD_ROUNDED_BOX == BOXED_MESH_ROUNDED_BOX
+        shader = &tr.shaders[SHADER_ROUNDEDBOX];
+        break;
+      default:
+        // For simple cases, use enum value directly as index into tr.models
+        // This works because MD_* values now match BOXED_MESH_* values
+        model = tr.models[mesh_type];
+        break;
+    }
   }
   
   if (ent->flags & RF_DRAW_DEBUG) {

@@ -190,15 +190,20 @@ enum
   SHADER_COUNT,
 };
 
+// Merged mesh enum - matches boxed_mesh_type values from renderer.h
+// Index 0 is unused to allow boxed values to work as direct indices
 enum
 {
-  MD_RECTANGLE,
-  MD_PLANE,
-  MD_DOT,
-  MD_ROUNDED_RECT,
-  MD_ROUNDED_BORDER,
-  MD_CAPSULE,
-  MD_ROUNDED_BOX,
+  MD_RECTANGLE = 1,      // BOXED_MESH_RECTANGLE
+  MD_TEAPOT = 2,         // BOXED_MESH_TEAPOT (placeholder)
+  MD_PLANE = 3,          // BOXED_MESH_PLANE
+  MD_DOT = 4,            // BOXED_MESH_DOT
+  MD_CAPSULE = 5,        // BOXED_MESH_CAPSULE
+  MD_ROUNDED_BOX = 6,    // BOXED_MESH_ROUNDED_BOX
+  MD_NINEPATCH = 7,      // BOXED_MESH_NINEPATCH (dynamic, no static model)
+  MD_CINEMATIC = 8,      // BOXED_MESH_CINEMATIC (uses MD_RECTANGLE model)
+  MD_ROUNDED_RECT = 9,   // Rectangle with rounded corners (no boxed type)
+  MD_ROUNDED_BORDER = 10, // Rectangle with rounded border (no boxed type)
   MD_COUNT
 };
 

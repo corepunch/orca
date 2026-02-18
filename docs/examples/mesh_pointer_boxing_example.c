@@ -70,17 +70,13 @@ void example_checking_mesh_type(struct ViewEntity* ent) {
             struct Mesh const* mesh = (struct Mesh const*)mesh_get_ptr((MeshRef)ent->mesh);
             // Use mesh->model, mesh->Material, etc.
         } else {
-            // It's a boxed entity type - use switch on masked value
-            enum boxed_mesh_type tag = (enum boxed_mesh_type)((MeshRef)ent->mesh & MESH_TAG_MASK);
-            switch (tag) {
-                case BOXED_MESH_CAPSULE:
-                    // Handle capsule entity
-                    break;
-                case BOXED_MESH_RECTANGLE:
-                    // Handle rectangle entity
-                    break;
-                // etc.
-            }
+            // It's a boxed entity type - can use directly as index in most cases
+            enum boxed_mesh_type mesh_type = (enum boxed_mesh_type)((MeshRef)ent->mesh & MESH_TAG_MASK);
+            
+            // For simple types, can directly index tr.models since enum values match
+            struct model* model = tr.models[mesh_type];
+            
+            // Some types still need special handling (see R_DrawEntity for details)
         }
     }
 }
@@ -90,3 +86,4 @@ void example_checking_mesh_type(struct ViewEntity* ent) {
 // 2. One field instead of two (mesh vs type)
 // 3. No ABI break - mesh field is still struct Mesh const*
 // 4. Backward compatible - old code using type field still works
+// 5. Enum values now match model array indices, reducing switch/case needs

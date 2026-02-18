@@ -80,14 +80,14 @@ if (ent.mesh) {
         struct Mesh const* mesh = (struct Mesh const*)mesh_get_ptr((MeshRef)ent.mesh);
         model = mesh->model;
     } else {
-        // It's a boxed entity type constant - use switch on masked value
-        enum boxed_mesh_type mesh_tag = (enum boxed_mesh_type)((MeshRef)ent.mesh & MESH_TAG_MASK);
-        switch (mesh_tag) {
-            case BOXED_MESH_CAPSULE:
-                model = tr.models[MD_CAPSULE];
-                break;
-            // ... etc
-        }
+        // It's a boxed entity type - use directly as index into tr.models
+        // The enum values now match between boxed_mesh_type and MD_* constants
+        enum boxed_mesh_type mesh_type = (enum boxed_mesh_type)((MeshRef)ent.mesh & MESH_TAG_MASK);
+        
+        // For most cases, can use directly:
+        model = tr.models[mesh_type]; // Works for PLANE, DOT, CAPSULE, etc.
+        
+        // Some types need special handling (RECTANGLE with borders, CINEMATIC, NINEPATCH)
     }
 }
 ```
