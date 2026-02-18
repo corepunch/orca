@@ -309,12 +309,15 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
           model = tr.models[MD_ROUNDED_RECT];
         }
         break;
+      case BOXED_MESH_TEAPOT:
+        model = tr.models[MD_PLANE]; // Teapot uses plane as placeholder
+        break;
       case BOXED_MESH_CAPSULE:
-        model = tr.models[mesh_type]; // Direct index since MD_CAPSULE == BOXED_MESH_CAPSULE
+        model = tr.models[mesh_type];
         shader = &tr.shaders[SHADER_BUTTON];
         break;
       case BOXED_MESH_ROUNDED_BOX:
-        model = tr.models[mesh_type]; // Direct index since MD_ROUNDED_BOX == BOXED_MESH_ROUNDED_BOX
+        model = tr.models[mesh_type];
         shader = &tr.shaders[SHADER_ROUNDEDBOX];
         break;
       default:
@@ -602,15 +605,16 @@ R_InitResources(void)
   Texture_CreateDebug(tr.textures+TX_DEBUG);
   Texture_CreateCinematic(tr.textures+TX_CINEMATIC);
 
-  Model_CreateRectangle(&(struct rect){ 0, 0, 1, 1 }, NULL, VERTEX_ORDER_DEFAULT, tr.models+MD_RECTANGLE);  
-  Model_CreateRoundedRectangle(tr.models+MD_ROUNDED_RECT);
-  Model_CreateRoundedBorder(tr.models+MD_ROUNDED_BORDER);
-  Model_CreateCapsule(1.0f, 1.0f, 1.0f, tr.models+MD_CAPSULE);
-  Model_CreateRoundedBox(1.0f, 1.0f, 1.0f, 0.2f, tr.models+MD_ROUNDED_BOX);
-
+  Model_CreateRectangle(&(struct rect){ 0, 0, 1, 1 }, NULL, VERTEX_ORDER_DEFAULT, tr.models+MD_RECTANGLE);
+  tr.models[MD_TEAPOT] = NULL; // Teapot is a placeholder, uses MD_PLANE model
   Model_CreatePlane(1, 1, tr.models+MD_PLANE);
   Model_CreatePlane(0, 0, tr.models+MD_DOT);
-  Model_CreatePlane(1, 1, tr.models+MD_TEAPOT); // Placeholder for teapot - currently uses plane
+  Model_CreateCapsule(1.0f, 1.0f, 1.0f, tr.models+MD_CAPSULE);
+  Model_CreateRoundedBox(1.0f, 1.0f, 1.0f, 0.2f, tr.models+MD_ROUNDED_BOX);
+  tr.models[MD_NINEPATCH] = NULL; // Dynamic mesh, created on demand
+  tr.models[MD_CINEMATIC] = NULL; // Uses MD_RECTANGLE, no separate model needed
+  Model_CreateRoundedRectangle(tr.models+MD_ROUNDED_RECT);
+  Model_CreateRoundedBorder(tr.models+MD_ROUNDED_BORDER);
   
   glEnable(GL_FRAMEBUFFER_SRGB);
 }
