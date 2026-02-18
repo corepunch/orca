@@ -247,37 +247,25 @@ struct uniform
   float Value[4];
 };
 
-// Boxed mesh type enum - cast to struct Mesh const* for use in ViewEntity.mesh
-// These values match the MD_* model indices, allowing direct indexing into tr.models
-enum boxed_mesh_type {
-  BOXED_MESH_RECTANGLE = 1,
-  BOXED_MESH_TEAPOT = 2,
-  BOXED_MESH_PLANE = 3,
-  BOXED_MESH_DOT = 4,
-  BOXED_MESH_CAPSULE = 5,
-  BOXED_MESH_ROUNDED_BOX = 6,
-  BOXED_MESH_NINEPATCH = 7,
-  BOXED_MESH_CINEMATIC = 8,
-};
-
-// Model enum - internal mesh models accessible via tr.models[]
-// Values match boxed_mesh_type to allow direct indexing
+// Model enum - mesh models accessible via tr.models[]
 // Index 0 is unused to allow boxed values to work as direct indices
+// Use with BOX_PTR for mesh boxing: ent.mesh = BOX_PTR(Mesh, MD_CAPSULE)
 enum model_type {
-  MD_RECTANGLE = 1,      // BOXED_MESH_RECTANGLE
-  MD_TEAPOT = 2,         // BOXED_MESH_TEAPOT (placeholder)
-  MD_PLANE = 3,          // BOXED_MESH_PLANE
-  MD_DOT = 4,            // BOXED_MESH_DOT
-  MD_CAPSULE = 5,        // BOXED_MESH_CAPSULE
-  MD_ROUNDED_BOX = 6,    // BOXED_MESH_ROUNDED_BOX
-  MD_NINEPATCH = 7,      // BOXED_MESH_NINEPATCH (dynamic, no static model)
-  MD_CINEMATIC = 8,      // BOXED_MESH_CINEMATIC (uses MD_RECTANGLE model)
-  MD_ROUNDED_RECT = 9,   // Rectangle with rounded corners (no boxed type)
-  MD_ROUNDED_BORDER = 10, // Rectangle with rounded border (no boxed type)
+  MD_RECTANGLE = 1,
+  MD_TEAPOT = 2,         // Placeholder, uses MD_PLANE model
+  MD_PLANE = 3,
+  MD_DOT = 4,
+  MD_CAPSULE = 5,
+  MD_ROUNDED_BOX = 6,
+  MD_NINEPATCH = 7,      // Dynamic, no static model
+  MD_CINEMATIC = 8,      // Uses MD_RECTANGLE model
+  MD_ROUNDED_RECT = 9,   // Rectangle with rounded corners
+  MD_ROUNDED_BORDER = 10, // Rectangle with rounded border
   MD_COUNT
 };
 
 // Shader type enum for builtin shaders
+// Use with BOX_PTR for shader boxing: ent.shader = BOX_PTR(Shader, SHADER_BUTTON)
 enum shader_type {
   SHADER_DEFAULT,
   SHADER_UI,
@@ -291,22 +279,6 @@ enum shader_type {
   SHADER_RECTANGLE,
 #endif
   SHADER_COUNT,
-};
-
-// Boxed shader type enum - cast to struct Shader const* for use in ViewEntity.shader
-// These values match shader_type indices, allowing direct indexing into tr.shaders
-enum boxed_shader_type {
-  BOXED_SHADER_DEFAULT = 0,
-  BOXED_SHADER_UI = 1,
-  BOXED_SHADER_VERTEXCOLOR = 2,
-  BOXED_SHADER_ERROR = 3,
-  BOXED_SHADER_CHARSET = 4,
-  BOXED_SHADER_CINEMATIC = 5,
-  BOXED_SHADER_BUTTON = 6,
-  BOXED_SHADER_ROUNDEDBOX = 7,
-#ifdef GL_SAMPLER_2D_RECT
-  BOXED_SHADER_RECTANGLE = 8,
-#endif
 };
 
 // Visual appearance properties for rendering.

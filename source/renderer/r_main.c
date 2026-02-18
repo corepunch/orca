@@ -284,8 +284,8 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
     shader = (lpcShader_t)BOX_GET_PTR((uintptr_t)ent->shader);
   } else {
     // Boxed shader type - use directly as index into tr.shaders
-    enum boxed_shader_type boxed_shader = (enum boxed_shader_type)((uintptr_t)ent->shader & MESH_TAG_MASK);
-    shader = &tr.shaders[boxed_shader];
+    enum shader_type shader_index = (enum shader_type)((uintptr_t)ent->shader & MESH_TAG_MASK);
+    shader = &tr.shaders[shader_index];
   }
   
   // Handle mesh pointer boxing: mesh can be either a real pointer or a boxed tag value
@@ -303,30 +303,29 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
     model = ((struct Mesh const*)BOX_GET_PTR((uintptr_t)ent->mesh))->model;
   } else {
     // Boxed mesh type - enum value can be used directly as index into tr.models
-    enum boxed_mesh_type mesh_type = (enum boxed_mesh_type)((uintptr_t)ent->mesh & MESH_TAG_MASK);
+    enum model_type mesh_type = (enum model_type)((uintptr_t)ent->mesh & MESH_TAG_MASK);
     
     // Handle special cases that need additional processing
     switch (mesh_type) {
-      case BOXED_MESH_CINEMATIC:
+      case MD_CINEMATIC:
         _UpdateCinematicEntity(ent);
         model = tr.models[MD_RECTANGLE];
         break;
-      case BOXED_MESH_NINEPATCH:
+      case MD_NINEPATCH:
         model = CreateNinePatchMesh(ent);
         break;
-      case BOXED_MESH_RECTANGLE:
+      case MD_RECTANGLE:
         if (memcmp(&ent->borderWidth, &zero, sizeof(struct vec4))) {
           model = tr.models[MD_ROUNDED_BORDER];
         } else {
           model = tr.models[MD_ROUNDED_RECT];
         }
         break;
-      case BOXED_MESH_TEAPOT:
+      case MD_TEAPOT:
         model = tr.models[MD_PLANE]; // Teapot uses plane as placeholder
         break;
       default:
         // For simple cases, use enum value directly as index into tr.models
-        // This works because MD_* values now match BOXED_MESH_* values
         model = tr.models[mesh_type];
         break;
     }
