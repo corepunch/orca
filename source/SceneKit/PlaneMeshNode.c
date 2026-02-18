@@ -22,7 +22,7 @@ HANDLER(PlaneMeshNode, Render)
   static struct uniform uniforms[MAX_UNIFORMS];
 
   struct ViewEntity entity = {
-    .type = ET_PLANE,
+    .mesh = MESH_PLANE,
     .material.opacity = GetNode3D(hObject)->_opacity,
     .matrix = GetNode3D(hObject)->Matrix,
     .bbox = BOX3_FromRect(((struct rect){0, 0,
@@ -34,7 +34,7 @@ HANDLER(PlaneMeshNode, Render)
 
   // Workaround for PixelAlignedTexture
   if (pPlaneMeshNode->PlaneWidth == 0) {
-    entity.type = ET_DOT;
+    entity.mesh = MESH_DOT;
   }
 
   R_DrawEntity(pRender, &entity);

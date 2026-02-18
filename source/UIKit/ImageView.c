@@ -102,7 +102,7 @@ HANDLER(ImageView, DrawBrush)
                       (lpcrect_t)&pImageView->Viewbox,
                       &entity.ninepatch);
 
-  entity.type = ET_NINEPATCH;
+  entity.mesh = MESH_NINEPATCH;
   entity.bbox = BOX3_FromRect(GetNode2D(hObject)->_rect);
   entity.material.blendMode = OBJ_GetInteger(hObject, ID_Material_BlendMode, kBlendModeAlpha);
 
