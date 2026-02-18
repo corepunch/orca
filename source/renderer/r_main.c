@@ -270,10 +270,23 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
     ent->material.textureMatrix.v[6] *= texture->Width;
     ent->material.textureMatrix.v[7] *= texture->Height;
   }
-  lpcShader_t shader = ent->shader ? ent->shader : &tr.shaders[fallback];
 #else
-  lpcShader_t shader = ent->shader ? ent->shader : &tr.shaders[SHADER_UI];
+  uint32_t fallback = SHADER_UI;
 #endif
+  
+  // Handle shader pointer boxing: shader can be either a real pointer or a boxed tag value
+  lpcShader_t shader = NULL;
+  if (!ent->shader) {
+    // Default shader when not specified
+    shader = &tr.shaders[fallback];
+  } else if (BOX_IS_PTR((uintptr_t)ent->shader)) {
+    // Real shader pointer
+    shader = (lpcShader_t)BOX_GET_PTR((uintptr_t)ent->shader);
+  } else {
+    // Boxed shader type - use directly as index into tr.shaders
+    enum boxed_shader_type shader_type = (enum boxed_shader_type)((uintptr_t)ent->shader & MESH_TAG_MASK);
+    shader = &tr.shaders[shader_type];
+  }
   
   // Handle mesh pointer boxing: mesh can be either a real pointer or a boxed tag value
   struct model /*const*/* model = NULL;
@@ -292,11 +305,10 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
     // Boxed mesh type - enum value can be used directly as index into tr.models
     enum boxed_mesh_type mesh_type = (enum boxed_mesh_type)((uintptr_t)ent->mesh & MESH_TAG_MASK);
     
-    // Handle special cases that need additional processing or shader override
+    // Handle special cases that need additional processing
     switch (mesh_type) {
       case BOXED_MESH_CINEMATIC:
         _UpdateCinematicEntity(ent);
-        shader = &tr.shaders[SHADER_CINEMATIC];
         model = tr.models[MD_RECTANGLE];
         break;
       case BOXED_MESH_NINEPATCH:
@@ -311,14 +323,6 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
         break;
       case BOXED_MESH_TEAPOT:
         model = tr.models[MD_PLANE]; // Teapot uses plane as placeholder
-        break;
-      case BOXED_MESH_CAPSULE:
-        model = tr.models[mesh_type];
-        shader = &tr.shaders[SHADER_BUTTON];
-        break;
-      case BOXED_MESH_ROUNDED_BOX:
-        model = tr.models[mesh_type];
-        shader = &tr.shaders[SHADER_ROUNDEDBOX];
         break;
       default:
         // For simple cases, use enum value directly as index into tr.models

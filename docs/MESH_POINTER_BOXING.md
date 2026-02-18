@@ -1,14 +1,14 @@
-# Mesh Pointer Boxing
+# Mesh and Shader Pointer Boxing
 
 ## Overview
 
-The mesh pointer boxing system allows encoding entity type information directly in the `mesh` field of `ViewEntity`, eliminating the need for a separate `type` field in many cases.
+The pointer boxing system allows encoding type information directly in the `mesh` and `shader` fields of `ViewEntity`, using tagged pointers to distinguish between real pointers and special enum values.
 
 ## How It Works
 
 The system uses tagged pointers to distinguish between:
-1. **Real mesh pointers** - Actual `Mesh*` objects (tag bits are 0)
-2. **Entity type constants** - Special enum values cast to pointers like `MESH_CAPSULE`
+1. **Real pointers** - Actual `Mesh*` or `Shader*` objects (tag bits are 0)
+2. **Type constants** - Special enum values cast to pointers like `BOXED_MESH_CAPSULE` or `BOXED_SHADER_BUTTON`
 
 Since pointers are typically aligned to 8 bytes, the lower 3 bits are always zero for real pointers. We use these bits to encode type information.
 
@@ -34,6 +34,20 @@ enum boxed_mesh_type {
   BOXED_MESH_DOT = 4,
   BOXED_MESH_CAPSULE = 5,
   BOXED_MESH_ROUNDED_BOX = 6,
+  BOXED_MESH_NINEPATCH = 7,
+  BOXED_MESH_CINEMATIC = 8,
+};
+
+// Boxed shader type enum
+enum boxed_shader_type {
+  BOXED_SHADER_DEFAULT = 0,
+  BOXED_SHADER_UI = 1,
+  BOXED_SHADER_VERTEXCOLOR = 2,
+  BOXED_SHADER_ERROR = 3,
+  BOXED_SHADER_CHARSET = 4,
+  BOXED_SHADER_CINEMATIC = 5,
+  BOXED_SHADER_BUTTON = 6,
+  BOXED_SHADER_ROUNDEDBOX = 7,
 };
 
 // Helper macros
@@ -43,16 +57,20 @@ enum boxed_mesh_type {
 #define BOX_PTR(TYPE, ID) ((struct TYPE const*)ID)
 ```
 
-### Entity Type Constants (in `renderer.h`)
+### Usage Examples
 
-Use the `BOX_PTR` macro to create boxed entity type constants inline:
+Use the `BOX_PTR` macro to create boxed type constants inline:
 
 ```c
-// Use BOX_PTR inline to box enum values as Mesh pointers
+// Box mesh types
 ent.mesh = BOX_PTR(Mesh, BOXED_MESH_RECTANGLE);
 ent.mesh = BOX_PTR(Mesh, BOXED_MESH_CAPSULE);
 ent.mesh = BOX_PTR(Mesh, BOXED_MESH_TEAPOT);
-// etc.
+
+// Box shader types (caller-driven shader selection)
+ent.shader = BOX_PTR(Shader, BOXED_SHADER_BUTTON);
+ent.shader = BOX_PTR(Shader, BOXED_SHADER_ROUNDEDBOX);
+ent.shader = BOX_PTR(Shader, BOXED_SHADER_CINEMATIC);
 ```
 
 ## Usage Examples

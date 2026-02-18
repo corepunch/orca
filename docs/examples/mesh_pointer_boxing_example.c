@@ -56,6 +56,10 @@ void example_all_entity_types(void) {
     entities[4].mesh = BOX_PTR(Mesh, BOXED_MESH_ROUNDED_BOX);
     entities[5].mesh = BOX_PTR(Mesh, BOXED_MESH_TEAPOT);
     
+    // Caller-driven shader selection using shader boxing
+    entities[3].shader = BOX_PTR(Shader, BOXED_SHADER_BUTTON); // Capsule with button shader
+    entities[4].shader = BOX_PTR(Shader, BOXED_SHADER_ROUNDEDBOX); // Rounded box with its shader
+    
     // Configure and render each entity...
     // for (int i = 0; i < 6; i++) {
     //     entities[i].material.opacity = 1.0;
