@@ -63,15 +63,13 @@ enum boxed_mesh_type {
 Instead of:
 ```c
 ViewEntity ent = {0};
-ent.type = ET_CAPSULE;
-ent.mesh = NULL;
+ent.mesh = NULL;  // Old way with separate type field
 ```
 
 You can now write:
 ```c
 ViewEntity ent = {0};
 ent.mesh = MESH_CAPSULE;
-// type field can be left unset or used for other purposes
 ```
 
 ### Checking mesh type in code

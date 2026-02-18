@@ -5,10 +5,10 @@
 #include <include/renderer.h>
 
 void example_traditional_way(void) {
-    // Traditional way - using the type field
+    // Old way - using a separate type field (no longer available)
+    // This is now replaced by mesh pointer boxing
     struct ViewEntity ent = {0};
-    ent.type = ET_CAPSULE;
-    ent.mesh = NULL;  // No mesh, just a primitive type
+    ent.mesh = MESH_CAPSULE;  // Set entity type via mesh field
     
     // Set other properties...
     ent.material.color = ColorWhite;

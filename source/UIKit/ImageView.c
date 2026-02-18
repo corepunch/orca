@@ -115,7 +115,7 @@ HANDLER(ImageView, DrawBrush)
     };
     temp_rect = RECT_Fit(&temp_rect, &imgsize);
     entity.bbox = BOX3_FromRect(temp_rect);
-    entity.type = ET_RECTANGLE;
+    entity.mesh = MESH_RECTANGLE;
   }
   
   R_DrawEntity(pDrawBrush->viewdef, &entity);

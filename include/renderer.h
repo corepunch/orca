@@ -247,19 +247,6 @@ struct uniform
   float Value[4];
 };
 
-enum entity_type
-{
-  ET_MODEL,
-  ET_RECTANGLE,
-  ET_PLANE,
-  ET_DOT,
-  ET_NINEPATCH,
-  ET_VIEWPORT,
-  ET_CAPSULE,
-  ET_ROUNDED_BOX,
-  ET_CINEMATIC,
-};
-
 // Mesh pointer boxing - tagged pointer system for mesh references
 typedef uintptr_t MeshRef;
 
@@ -271,6 +258,8 @@ enum boxed_mesh_type {
   BOXED_MESH_DOT = 4,
   BOXED_MESH_CAPSULE = 5,
   BOXED_MESH_ROUNDED_BOX = 6,
+  BOXED_MESH_NINEPATCH = 7,
+  BOXED_MESH_CINEMATIC = 8,
 };
 
 // Helper macros for mesh pointer boxing
@@ -287,6 +276,8 @@ enum boxed_mesh_type {
 #define MESH_DOT         BOX_PTR(Mesh, BOXED_MESH_DOT)
 #define MESH_CAPSULE     BOX_PTR(Mesh, BOXED_MESH_CAPSULE)
 #define MESH_ROUNDED_BOX BOX_PTR(Mesh, BOXED_MESH_ROUNDED_BOX)
+#define MESH_NINEPATCH   BOX_PTR(Mesh, BOXED_MESH_NINEPATCH)
+#define MESH_CINEMATIC   BOX_PTR(Mesh, BOXED_MESH_CINEMATIC)
 
 // Visual appearance properties for rendering.
 // Note: This struct intentionally does NOT contain uniforms because uniforms
@@ -315,12 +306,11 @@ struct ViewMaterial
 // parameters from multiple sources: both object properties AND material properties.
 // See DESIGN_DECISION_UNIFORMS.md for full rationale.
 //
-// Mesh pointer boxing: The mesh field can hold either a real Mesh pointer or a boxed
+// Mesh pointer boxing: The mesh field holds either a real Mesh pointer or a boxed
 // entity type constant (MESH_RECTANGLE, MESH_CAPSULE, etc.). Use mesh_is_ptr() to check.
-// Example: ent.mesh = MESH_CAPSULE; instead of ent.type = ET_CAPSULE;
+// Example: ent.mesh = MESH_CAPSULE;
 struct ViewEntity
 {
-  enum entity_type type;
   struct mat4 matrix;
   struct ViewMaterial material;
   struct ViewText* text;

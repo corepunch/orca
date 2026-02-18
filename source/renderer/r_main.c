@@ -291,63 +291,34 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
   }
   struct vec4 zero = {0};
   
-  // If no model yet, check for boxed mesh tags or use entity type
-  if (model == NULL) {
-    // Check if mesh is a boxed entity type constant
-    if (ent->mesh && !mesh_is_ptr((MeshRef)ent->mesh)) {
-      MeshRef mesh_tag = (MeshRef)ent->mesh;
-      if (mesh_tag == (MeshRef)MESH_RECTANGLE) {
-        if (memcmp(&ent->borderWidth, &zero, sizeof(struct vec4))) {
-          model = tr.models[MD_ROUNDED_BORDER];
-        } else {
-          model = tr.models[MD_ROUNDED_RECT];
-        }
-      } else if (mesh_tag == (MeshRef)MESH_PLANE) {
-        model = tr.models[MD_PLANE];
-      } else if (mesh_tag == (MeshRef)MESH_DOT) {
-        model = tr.models[MD_DOT];
-      } else if (mesh_tag == (MeshRef)MESH_CAPSULE) {
-        model = tr.models[MD_CAPSULE];
-        shader = &tr.shaders[SHADER_BUTTON];
-      } else if (mesh_tag == (MeshRef)MESH_ROUNDED_BOX) {
-        model = tr.models[MD_ROUNDED_BOX];
-        shader = &tr.shaders[SHADER_ROUNDEDBOX];
-      } else if (mesh_tag == (MeshRef)MESH_TEAPOT) {
-        // Teapot could use a sphere or custom model in the future
-        model = tr.models[MD_PLANE]; // placeholder
+  // If no model yet, check for boxed mesh tags
+  if (model == NULL && ent->mesh && !mesh_is_ptr((MeshRef)ent->mesh)) {
+    MeshRef mesh_tag = (MeshRef)ent->mesh;
+    if (mesh_tag == (MeshRef)MESH_CINEMATIC) {
+      _UpdateCinematicEntity(ent);
+      shader = &tr.shaders[SHADER_CINEMATIC];
+      model = tr.models[MD_RECTANGLE];
+    } else if (mesh_tag == (MeshRef)MESH_NINEPATCH) {
+      model = CreateNinePatchMesh(ent);
+    } else if (mesh_tag == (MeshRef)MESH_RECTANGLE) {
+      if (memcmp(&ent->borderWidth, &zero, sizeof(struct vec4))) {
+        model = tr.models[MD_ROUNDED_BORDER];
+      } else {
+        model = tr.models[MD_ROUNDED_RECT];
       }
-    }
-    // Fallback to entity type field for backward compatibility
-    else {
-      switch (ent->type) {
-        case ET_CINEMATIC:
-          _UpdateCinematicEntity(ent);
-          shader = &tr.shaders[SHADER_CINEMATIC];
-          model = tr.models[MD_RECTANGLE];
-          break;
-        case ET_PLANE: model = tr.models[MD_PLANE]; break;
-        case ET_DOT: model = tr.models[MD_DOT]; break;
-        case ET_NINEPATCH: model = CreateNinePatchMesh(ent); break;
-//      default: model = tr.models[MD_RECTANGLE]; break;
-//      default: model = tr.models[MD_ROUNDED_RECT]; break;
-        case ET_CAPSULE:
-          model = tr.models[MD_CAPSULE];
-          shader = &tr.shaders[SHADER_BUTTON];
-//        MAT4_Translate(&ent->matrix, &(vec3_t){ent->rect.width/2, ent->rect.height/2, 0});
-//        MAT4_Scale(&ent->matrix, &(vec3_t){ent->rect.width, ent->rect.height, 0});
-          break;
-        case ET_ROUNDED_BOX:
-          model = tr.models[MD_ROUNDED_BOX];
-          shader = &tr.shaders[SHADER_ROUNDEDBOX];
-          break;
-        default:
-          if (memcmp(&ent->borderWidth, &zero, sizeof(struct vec4))) {
-            model = tr.models[MD_ROUNDED_BORDER];
-          } else {
-            model = tr.models[MD_ROUNDED_RECT];
-          }
-          break;
-      }
+    } else if (mesh_tag == (MeshRef)MESH_PLANE) {
+      model = tr.models[MD_PLANE];
+    } else if (mesh_tag == (MeshRef)MESH_DOT) {
+      model = tr.models[MD_DOT];
+    } else if (mesh_tag == (MeshRef)MESH_CAPSULE) {
+      model = tr.models[MD_CAPSULE];
+      shader = &tr.shaders[SHADER_BUTTON];
+    } else if (mesh_tag == (MeshRef)MESH_ROUNDED_BOX) {
+      model = tr.models[MD_ROUNDED_BOX];
+      shader = &tr.shaders[SHADER_ROUNDEDBOX];
+    } else if (mesh_tag == (MeshRef)MESH_TEAPOT) {
+      // Teapot could use a sphere or custom model in the future
+      model = tr.models[MD_PLANE]; // placeholder
     }
   }
   
@@ -386,7 +357,7 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
 
   //    tr.mesh_render++;
 
-  if (ent->type == ET_NINEPATCH) {
+  if (ent->mesh == MESH_NINEPATCH) {
     Model_Release(model);
   }
 
