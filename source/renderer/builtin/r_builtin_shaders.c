@@ -391,8 +391,7 @@ struct shader_desc shader_roundedbox = {
   },
   .VertexShader =
   "void main() {\n"
-  "  vec3 pos = a_position.xyz + a_weight.xyz * u_radius.x;\n"
-  "  pos *= u_rect.zww;\n"
+  "  vec3 pos = a_position.xyz * u_rect.zww + a_weight.xyz * u_radius.x;\n"
   "  gl_Position = u_modelViewProjectionTransform * vec4(pos.xy + u_rect.xy + u_rect.zw/2.0, pos.z, 1.0);\n"
   "  v_texcoord0 = a_texcoord0;\n"
   "  v_normal = normalize(u_normalTransform * a_normal);\n"
