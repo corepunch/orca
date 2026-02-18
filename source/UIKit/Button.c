@@ -36,7 +36,9 @@ HANDLER(Button, DrawBrush) {
     .color = pDrawBrush->brush->Color,// (color_t){0.4,0.6,0.8,1};
   };
   
-  entity.radius.x = 20;
+  entity.radius.x = 8;
+  entity.radius.y = 8;
+  entity.radius.z = 8;
 
   R_DrawEntity(pDrawBrush->viewdef, &entity);
 

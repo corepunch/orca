@@ -7,32 +7,12 @@
 static DRAWVERT
 R_MakeVertex(float x, float y, float z, float u, float v, float nx, float ny, float nz)
 {
-  DRAWVERT vertex;
-  memset(&vertex, 0, sizeof(DRAWVERT));
-  VEC3_Set(&vertex.xyz, x, y, z);
-  VEC2_Set(&vertex.texcoord[0], u, v);
-  VEC3_Set(&vertex.normal, nx, ny, nz);
-  vertex.color.r = 255;
-  vertex.color.g = 255;
-  vertex.color.b = 255;
-  vertex.color.a = 255;
-  return vertex;
-}
-
-static DRAWVERT
-R_MakeVertexWithWeight(float x, float y, float z, float u, float v, float nx, float ny, float nz, float wx, float wy, float wz)
-{
-  DRAWVERT vertex;
-  memset(&vertex, 0, sizeof(DRAWVERT));
-  VEC3_Set(&vertex.xyz, x, y, z);
-  VEC2_Set(&vertex.texcoord[0], u, v);
-  VEC3_Set(&vertex.normal, nx, ny, nz);
-  VEC4_Set(&vertex.weight, wx, wy, wz, 0.0f);
-  vertex.color.r = 255;
-  vertex.color.g = 255;
-  vertex.color.b = 255;
-  vertex.color.a = 255;
-  return vertex;
+  return (DRAWVERT) {
+    .xyz = { x, y, z },
+    .texcoord = { { u, v } },
+    .normal = { nx, ny, nz },
+    .color = { -1, -1, -1, -1 },
+  };
 }
 
 HRESULT
@@ -439,15 +419,15 @@ Model_CreateRoundedBox(float width, float height, float depth, float radius, str
   float maxRadius = fminf(fminf(width, height), depth) * 0.5f;
   if (radius > maxRadius) radius = maxRadius;
   
-  float hx = width * 0.5f; //(width  - 2.0f * radius) * 0.5f;
-  float hy = height * 0.5f; //(height - 2.0f * radius) * 0.5f;
-  float hz = depth * 0.5f; //(depth  - 2.0f * radius) * 0.5f;
+  float hx = (width)/*  - 2.0f * radius)*/ * 0.5f;
+  float hy = (height)/* - 2.0f * radius)*/ * 0.5f;
+  float hz = (depth)/*  - 2.0f * radius)*/ * 0.5f;
   
 #define LAT_SEGS 16
 #define LON_SEGS 16
 #define RINGS (4 * LAT_SEGS + 3)
 #define COLS  (4 * (LON_SEGS + 1) + 3)
-#define FLIP(v, h) ((v) < 0 ? -h : h)
+#define FLIP(v, h) ((v) < 0 ? -(h) : (h))
   
   uint32_t maxVertices = RINGS * COLS;
   uint32_t maxIndices  = (RINGS - 1) * (COLS - 1) * 6;
@@ -489,9 +469,15 @@ Model_CreateRoundedBox(float width, float height, float depth, float radius, str
       float theta = theta_samples[ci];
       float nx = sin_p * cosf(theta), ny = cos_p, nz = sin_p * sinf(theta);
       float cx = FLIP(nx, hx), cy = FLIP(ny, hy), cz = FLIP(nz, hz);
-      float px = cx + radius * nx, py = cy + radius * ny, pz = cz + radius * nz;
+//      float px = cx + radius * nx, py = cy + radius * ny, pz = cz + radius * nz;
       float u = theta / (2.0f * (float)M_PI), v = phi / (float)M_PI;
-      verts[vidx++] = R_MakeVertexWithWeight(px, py, pz, u, v, nx, ny, nz, nx, ny, nz);
+      verts[vidx++] = (DRAWVERT) {
+        .xyz = { cx, cy, cz },
+        .texcoord = { { u, v } },
+        .normal = { nx, ny, nz },
+        .weight = { nx-cx*2, ny-cy*2, nz-cz*2 },
+        .color = { -1, -1, -1, -1 },
+      };
     }
   }
   
