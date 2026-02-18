@@ -269,6 +269,8 @@ struct ViewMaterial
   struct Texture const* texture;
   struct mat3 textureMatrix;
   struct color color;
+  struct uniform const* uniforms;      // Shader parameters from object + material
+  uint32_t numUniforms;                // Count of shader parameters
   enum blend_mode blendMode;
   float opacity;
 };
@@ -293,8 +295,6 @@ struct ViewEntity
   struct ViewText* text;
   struct Mesh const* mesh;
   struct Shader const* shader;
-  struct uniform const* uniforms;     // Shader parameters from object + material
-  uint32_t numUniforms;                // Count of shader parameters
   uint32_t frame;
   struct box3 bbox;
   struct vec4 radius;

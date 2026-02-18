@@ -159,17 +159,6 @@ struct shader
   GLint attributes[VERTEX_SEMANTIC_COUNT];
 };
 
-#define MATERIAL_SIZE(NUM_UNIFORMS)                                            \
-  (sizeof(struct _MATERIAL) + sizeof(struct uniform) * NUM_UNIFORMS)
-
-struct _MATERIAL
-{
-  handle_t shader;
-  enum blend_mode blendMode;
-  uint32_t numUniforms;
-  struct uniform uniforms[];
-};
-
 struct shape
 {
   float lineLength;

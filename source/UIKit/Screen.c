@@ -314,23 +314,25 @@ Node2D_GetViewEntity(lpObject_t hObject,
 
   memset(entity, 0, sizeof(struct ViewEntity));
 
-  entity->uniforms = uniforms;
-  entity->numUniforms = OBJ_GetUniforms(hObject, uniforms);
   entity->debugName = OBJ_GetName(hObject);
-  entity->material.opacity = node2d->_opacity;
-  entity->material.texture = image;
-  entity->material.textureMatrix = MAT3_Identity();
   entity->bbox = BOX3_FromRect(node2d->_rect);
   entity->matrix = node2d->Matrix;
   entity->radius = *(struct vec4*)&node2d->_node->Border.Radius;
-	
+  entity->material = (struct ViewMaterial) {
+    .opacity = node2d->_opacity,
+    .texture = image,
+    .textureMatrix = MAT3_Identity(),
+    .uniforms = uniforms,
+    .numUniforms = OBJ_GetUniforms(hObject, uniforms),
+  };
 	if (!brush) {
 	} else if (brush->Material) {
     // if (material->blendMode != BLEND_MODE_INHERIT)
     // entity->blendMode = (enum blend_mode)material->blendMode;
     entity->shader = brush->Material->Shader;
-    entity->numUniforms += OBJ_GetUniforms(CMP_GetObject(brush->Material),
-                                           uniforms + entity->numUniforms);
+    entity->material.numUniforms +=
+    OBJ_GetUniforms(CMP_GetObject(brush->Material),
+                    uniforms + entity->material.numUniforms);
 	} else if (brush->Image) {
 		entity->material.texture = brush->Image;
 	} else {

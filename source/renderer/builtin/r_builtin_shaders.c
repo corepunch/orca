@@ -317,12 +317,11 @@ struct shader_desc shader_button = {
   .Attributes = {
     { "a_position", UT_FLOAT_VEC4 },
     { "a_normal", UT_FLOAT_VEC3 },
-    { "a_texcoord0", UT_FLOAT_VEC2 },
+//    { "a_texcoord0", UT_FLOAT_VEC2 },
   },
   .Shared = {
     { "v_normal", UT_FLOAT_VEC3 },
-    { "v_texcoord0", UT_FLOAT_VEC2 },
-    { "v_worldPos", UT_FLOAT_VEC3 },
+//    { "v_texcoord0", UT_FLOAT_VEC2 },
   },
   .VertexShader =
   "void main() {\n"
@@ -334,9 +333,8 @@ struct shader_desc shader_button = {
 //  "  vec3 tex = vec3(pos.x / u_rect.z, 1.0 - pos.y / u_rect.w, 1.0);\n"
   "  vec3 rectCenter = mix(u_bboxMin, u_bboxMax, vec3(0.5));\n"
   "  gl_Position = u_modelViewProjectionTransform *  vec4(pos.xy + rectCenter.xy, pos.z, 1.0);\n"
-  "  v_texcoord0 = a_texcoord0;\n"
+//  "  v_texcoord0 = a_texcoord0;\n"
   "  v_normal = normalize(u_normalTransform * a_normal);\n"
-  "  v_worldPos = a_position.xyz;\n"
   "}\n",
   .FragmentShader =
   "void main() {\n"
@@ -388,13 +386,13 @@ struct shader_desc shader_roundedbox = {
   .Attributes = {
     { "a_position", UT_FLOAT_VEC4 },
     { "a_normal", UT_FLOAT_VEC3 },
-    { "a_texcoord0", UT_FLOAT_VEC2 },
+//    { "a_texcoord0", UT_FLOAT_VEC2 },
     { "a_weight", UT_FLOAT_VEC4 },
   },
   .Shared = {
     { "v_normal", UT_FLOAT_VEC3 },
-    { "v_texcoord0", UT_FLOAT_VEC2 },
-    { "v_worldPos", UT_FLOAT_VEC3 },
+//    { "v_texcoord0", UT_FLOAT_VEC2 },
+//    { "v_worldPos", UT_FLOAT_VEC3 },
   },
   .VertexShader =
   "void main() {\n"
@@ -402,9 +400,9 @@ struct shader_desc shader_roundedbox = {
   "  vec3 pos = a_position.xyz * rectSize + a_weight.xyz * u_radius.x;\n"
   "  vec3 rectCenter = mix(u_bboxMin, u_bboxMax, vec3(0.5));\n"
   "  gl_Position = u_modelViewProjectionTransform * vec4(pos.xy + rectCenter.xy, pos.z, 1.0);\n"
-  "  v_texcoord0 = a_texcoord0;\n"
+//  "  v_texcoord0 = a_texcoord0;\n"
   "  v_normal = normalize(u_normalTransform * a_normal);\n"
-  "  v_worldPos = pos;\n"
+//  "  v_worldPos = pos;\n"
   "}\n",
   .FragmentShader =
   "void main() {\n"
