@@ -434,230 +434,201 @@ Model_CreateRoundedBorder(struct model** ppModel)
 HRESULT
 Model_CreateRoundedBox(float width, float height, float depth, float radius, struct model** ppModel)
 {
-  if (radius <= 0.0f) return Model_CreateBox(width * 0.5f, height * 0.5f, depth * 0.5f, ppModel);
+  if (radius <= 0.0f)
+    return Model_CreateBox(width * 0.5f, height * 0.5f, depth * 0.5f, ppModel);
   
-  float maxRadius = width < height ? (width < depth ? width : depth) : (height < depth ? height : depth);
-  maxRadius *= 0.5f;
+  float maxRadius = fminf(fminf(width, height), depth) * 0.5f;
   if (radius > maxRadius) radius = maxRadius;
-
-  #define SEGS 8
   
-  float boxWidth = width - 2.0f * radius;
-  float boxHeight = height - 2.0f * radius;
-  float boxDepth = depth - 2.0f * radius;
+  // Half-extents of the inner box (corner sphere centers live here)
+  float hx = (width  - 2.0f * radius) * 0.5f;
+  float hy = (height - 2.0f * radius) * 0.5f;
+  float hz = (depth  - 2.0f * radius) * 0.5f;
   
-  // Calculate vertex and index counts
-  // 8 corners * (SEGS+1)^2 vertices per corner
-  // 12 edges * (SEGS+1) * 2 vertices per edge
-  // 6 faces * 4 vertices per face
-  uint32_t cornerVerts = 8 * (SEGS + 1) * (SEGS + 1);
-  uint32_t edgeVerts = 12 * (SEGS + 1) * 2;
-  uint32_t faceVerts = 6 * 4;
-  uint32_t maxVertices = cornerVerts + edgeVerts + faceVerts;
+  // Latitude/longitude subdivision. More lats needed to represent
+  // the flat face regions cleanly; we duplicate seams at ±face boundaries.
+  //
+  // We sample a full sphere in [0, PI] x [0, 2*PI] but inject extra
+  // rings/columns at the 6 "crease" angles so edges stay sharp.
+  //
+  //   phi   breaks at: asin(hy/R)  and  PI - asin(hy/R)   (top/bottom caps)
+  //   theta breaks at: atan2(hz,hx), PI-..., PI+..., 2PI-...  (4 vertical creases)
+  //
+  // Each break duplicates a ring/column (two verts at same angle, different
+  // "which box face" membership) so UVs and normals can be face-local.
   
-  uint32_t cornerIndices = 8 * SEGS * SEGS * 6;
-  uint32_t edgeIndices = 12 * SEGS * 6;
-  uint32_t faceIndices = 6 * 6;
-  uint32_t maxIndices = cornerIndices + edgeIndices + faceIndices;
+#define LAT_SEGS   16   // per-quadrant latitude  segments
+#define LON_SEGS   16   // per-quadrant longitude segments
   
-  DRAWVERT verts[maxVertices];
-  DRAWINDEX tris[maxIndices];
+  // Total rings  = 4 quadrants * LAT_SEGS + 1, plus 2 duplicate crease rings
+  // Total cols   = 4 quadrants * LON_SEGS + 1, plus 4 duplicate crease cols
+  // We keep it simple: just use a flat grid and remap each (i,j) sample.
+  
+#define RINGS (4 * LAT_SEGS + 1 + 2)   // +2 for top/bottom crease dupes
+#define COLS  (4 * (LON_SEGS + 1) + 3)   // +4 for 4 side crease dupes
+  
+  uint32_t maxVertices = (uint32_t)(RINGS * COLS);
+  uint32_t maxIndices  = (uint32_t)((RINGS - 1) * (COLS - 1) * 6);
+  
+  DRAWVERT  *verts = malloc(sizeof(DRAWVERT)  * maxVertices);
+  DRAWINDEX *tris  = malloc(sizeof(DRAWINDEX) * maxIndices);
+  if (!verts || !tris) { free(verts); free(tris); return E_OUTOFMEMORY; }
+  
   uint32_t vidx = 0, iidx = 0;
   
-  // Define 8 corner positions (centers of the corner spheres)
-  vec3_t corners[8] = {
-    { boxWidth * 0.5f,  boxHeight * 0.5f,  boxDepth * 0.5f},  // 0: +X +Y +Z
-    {-boxWidth * 0.5f,  boxHeight * 0.5f,  boxDepth * 0.5f},  // 1: -X +Y +Z
-    {-boxWidth * 0.5f, -boxHeight * 0.5f,  boxDepth * 0.5f},  // 2: -X -Y +Z
-    { boxWidth * 0.5f, -boxHeight * 0.5f,  boxDepth * 0.5f},  // 3: +X -Y +Z
-    { boxWidth * 0.5f,  boxHeight * 0.5f, -boxDepth * 0.5f},  // 4: +X +Y -Z
-    {-boxWidth * 0.5f,  boxHeight * 0.5f, -boxDepth * 0.5f},  // 5: -X +Y -Z
-    {-boxWidth * 0.5f, -boxHeight * 0.5f, -boxDepth * 0.5f},  // 6: -X -Y -Z
-    { boxWidth * 0.5f, -boxHeight * 0.5f, -boxDepth * 0.5f},  // 7: +X -Y -Z
-  };
+  // Build the phi sample list (latitude angles, 0=north pole, PI=south pole)
+  // We insert a duplicate at the top-cap crease and bottom-cap crease.
+  float phi_crease = (hy > 0.0f) ? asinf(hy / radius) : 0.0f; // not quite: see below
   
-  // Define which octant each corner sphere occupies
-  int octants[8][3] = {
-    {1, 1, 1}, {-1, 1, 1}, {-1, -1, 1}, {1, -1, 1},
-    {1, 1, -1}, {-1, 1, -1}, {-1, -1, -1}, {1, -1, -1}
-  };
+  // Actually, the crease angle measured from the equator is asin(hy/radius),
+  // so from the north pole it is PI/2 - asin(hy/radius).
+  float phi_top    = (float)M_PI_2 - asinf(fminf(hy / radius, 1.0f));
+  float phi_bot    = (float)M_PI   - phi_top;
   
-  // Generate vertices for each corner
-  for (uint32_t corner = 0; corner < 8; corner++) {
-    uint32_t cornerStart = vidx;
+  // Collect phi samples: evenly spaced in [0,phi_top], duplicate at phi_top,
+  // evenly spaced across the middle band, duplicate at phi_bot, then to PI.
+  // For simplicity we generate them into a small array.
+  float phi_samples[RINGS];
+  int   nrings = 0;
+  {
+    // Top cap: LAT_SEGS+1 values in [0, phi_top]
+    for (int i = 0; i <= LAT_SEGS; i++)
+      phi_samples[nrings++] = phi_top * ((float)i / LAT_SEGS);
     
-    for (uint32_t i = 0; i <= SEGS; i++) {
-      float phi = (float)i / (float)SEGS * M_PI_2;
-      
-      for (uint32_t j = 0; j <= SEGS; j++) {
-        float theta = (float)j / (float)SEGS * M_PI_2;
-        
-        // Compute sphere point in octant (normalized direction from corner center)
-        float x = sin(phi) * cos(theta);
-        float y = cos(phi);
-        float z = sin(phi) * sin(theta);
-        
-        // Apply octant sign
-        x *= octants[corner][0];
-        y *= octants[corner][1];
-        z *= octants[corner][2];
-        
-        // Position at corner center (to be offset by weight * radius in shader)
-        float px = corners[corner].x;
-        float py = corners[corner].y;
-        float pz = corners[corner].z;
-        
-        float u = (float)j / (float)SEGS;
-        float v = (float)i / (float)SEGS;
-        
-        // Store offset direction in weight field (shader will multiply by radius)
-        verts[vidx++] = R_MakeVertexWithWeight(px, py, pz, u, v, x, y, z, x, y, z);
-      }
+    // Duplicate phi_top (crease: same angle, different face ownership)
+    phi_samples[nrings++] = phi_top;
+    
+    // Middle band: LAT_SEGS-1 interior values strictly between phi_top and phi_bot
+    // (2*LAT_SEGS samples spanning the middle, excluding endpoints already added)
+    for (int i = 1; i < 2 * LAT_SEGS; i++)
+      phi_samples[nrings++] = phi_top + (phi_bot - phi_top) * ((float)i / (2 * LAT_SEGS));
+    
+    // Duplicate phi_bot
+    phi_samples[nrings++] = phi_bot;
+    
+    // Bottom cap: LAT_SEGS+1 values in [phi_bot, PI]
+    for (int i = 0; i <= LAT_SEGS; i++)
+      phi_samples[nrings++] = phi_bot + ((float)M_PI - phi_bot) * ((float)i / LAT_SEGS);
+  }
+  assert(nrings == RINGS);
+  
+  // Collect theta samples: evenly spaced per quadrant, duplicate at each crease.
+  // Crease angles (measured from +X in XZ plane):
+  float th[4];
+  th[0] = atan2f(hz, hx);           // first quadrant crease (+X/+Z boundary)
+  th[1] = (float)M_PI - th[0];      // second quadrant
+  th[2] = (float)M_PI + th[0];      // third quadrant
+  th[3] = 2.0f * (float)M_PI - th[0]; // fourth quadrant
+  
+  float theta_samples[COLS];
+  int   ncols = 0;
+  {
+    float quad_start[4] = { 0.0f, (float)M_PI_2, (float)M_PI, 1.5f * (float)M_PI };
+    float quad_end[4]   = { (float)M_PI_2, (float)M_PI, 1.5f * (float)M_PI, 2.0f * (float)M_PI };
+    
+    for (int q = 0; q < 4; q++) {
+      // LON_SEGS+1 values per quadrant
+      for (int j = 0; j <= LON_SEGS; j++)
+        theta_samples[ncols++] = quad_start[q] + (quad_end[q] - quad_start[q]) * ((float)j / LON_SEGS);
+      // Duplicate at quadrant boundary (except the very last one closes the loop)
+      if (q < 3)
+        theta_samples[ncols++] = quad_end[q];
     }
+  }
+  assert(ncols == COLS);
+  
+  // ---------------------------------------------------------------------------
+  // Core mapping: sphere direction -> rounded-box surface point + normal
+  // ---------------------------------------------------------------------------
+  // Given unit sphere dir (nx, ny, nz):
+  //   center = (clamp(nx, -hx, hx), clamp(ny, -hy, hy), clamp(nz, -hz, hz))
+  //   position = center + radius * (nx, ny, nz)
+  //   normal   = (nx, ny, nz)   [already unit length from sphere]
+  //
+  // This is the SDF-derived formula for a rounded box. It works because:
+  //   - Inside a corner octant: all three clamps are at their max -> corner sphere
+  //   - Inside an edge band:    one clamp is interior     -> cylinder cap
+  //   - On a flat face:         two clamps are interior   -> flat region
+  // ---------------------------------------------------------------------------
+  
+  for (int ri = 0; ri < nrings; ri++) {
+    float phi   = phi_samples[ri];
+    float sin_p = sinf(phi);
+    float cos_p = cosf(phi);
     
-    // Generate indices for this corner
-    for (uint32_t i = 0; i < SEGS; i++) {
-      for (uint32_t j = 0; j < SEGS; j++) {
-        uint32_t base = cornerStart + i * (SEGS + 1) + j;
-        
-        tris[iidx++] = base;
-        tris[iidx++] = base + 1;
-        tris[iidx++] = base + SEGS + 1;
-        
-        tris[iidx++] = base + 1;
-        tris[iidx++] = base + SEGS + 2;
-        tris[iidx++] = base + SEGS + 1;
-      }
+    for (int ci = 0; ci < ncols; ci++) {
+      float theta = theta_samples[ci];
+      
+      // Unit sphere point (Y-up convention, theta in XZ)
+      float nx = sin_p * cosf(theta);
+      float ny = cos_p;
+      float nz = sin_p * sinf(theta);
+      
+      // Clamp to inner box extents -> nearest point on inner box surface
+      float cx = fmaxf(-hx, fminf(hx, nx * 1e9f)); // large scale to get sign
+      float cy = fmaxf(-hy, fminf(hy, ny * 1e9f));
+      float cz = fmaxf(-hz, fminf(hz, nz * 1e9f));
+      // (we just want sign/clamp, not actual scale; see cleaner version below)
+      
+      // Cleaner: the inner-box center is just sign(n) * h, clamped
+      cx = fmaxf(-hx, fminf(hx, (nx < 0 ? -1e9f : 1e9f)));
+      cy = fmaxf(-hy, fminf(hy, (ny < 0 ? -1e9f : 1e9f)));
+      cz = fmaxf(-hz, fminf(hz, (nz < 0 ? -1e9f : 1e9f)));
+      
+      // Surface position
+      float px = cx + radius * nx;
+      float py = cy + radius * ny;
+      float pz = cz + radius * nz;
+      
+      // UV: spherical, normalized to [0,1]
+      float u = theta / (2.0f * (float)M_PI);
+      float v = phi   / (float)M_PI;
+      
+      verts[vidx++] = R_MakeVertexWithWeight(px, py, pz, u, v,
+                                             nx, ny, nz,   // normal
+                                             nx, ny, nz);  // weight (sphere dir)
     }
   }
   
-  // Generate 12 edges (cylinders connecting corners)
-  // Edge definition: [corner1, corner2, axis (0=X, 1=Y, 2=Z)]
-  int edges[12][3] = {
-    // Front face (Z+) edges
-    {0, 1, 0}, {1, 2, 1}, {2, 3, 0}, {3, 0, 1},
-    // Back face (Z-) edges
-    {4, 5, 0}, {5, 6, 1}, {6, 7, 0}, {7, 4, 1},
-    // Connecting edges
-    {0, 4, 2}, {1, 5, 2}, {2, 6, 2}, {3, 7, 2}
-  };
-  
-  for (uint32_t e = 0; e < 12; e++) {
-    int c1 = edges[e][0];
-    int c2 = edges[e][1];
-    int axis = edges[e][2];
-    uint32_t edgeStart = vidx;
-    
-    // Determine the plane perpendicular to the edge
-    for (uint32_t seg = 0; seg <= SEGS; seg++) {
-      float t = (float)seg / (float)SEGS;
+  // Generate indices as a simple grid (skip degenerate quads at seam)
+  for (int ri = 0; ri < nrings - 1; ri++) {
+    for (int ci = 0; ci < ncols - 1; ci++) {
+      uint32_t a = (uint32_t)( ri      * ncols + ci    );
+      uint32_t b = (uint32_t)( ri      * ncols + ci + 1);
+      uint32_t c = (uint32_t)((ri + 1) * ncols + ci    );
+      uint32_t d = (uint32_t)((ri + 1) * ncols + ci + 1);
       
-      // Interpolate along edge
-      vec3_t edgePos = {
-        corners[c1].x + t * (corners[c2].x - corners[c1].x),
-        corners[c1].y + t * (corners[c2].y - corners[c1].y),
-        corners[c1].z + t * (corners[c2].z - corners[c1].z)
-      };
-      
-      // Create two vertices for the edge cylinder
-      vec3_t offset1 = {0, 0, 0};
-      vec3_t offset2 = {0, 0, 0};
-      
-      if (axis == 0) { // Edge along X
-        offset1.y = octants[c1][1];
-        offset1.z = octants[c1][2];
-        offset2.y = octants[c1][1];
-        offset2.z = 0;
-      } else if (axis == 1) { // Edge along Y
-        offset1.x = octants[c1][0];
-        offset1.z = octants[c1][2];
-        offset2.x = 0;
-        offset2.z = octants[c1][2];
-      } else { // Edge along Z
-        offset1.x = octants[c1][0];
-        offset1.y = octants[c1][1];
-        offset2.x = octants[c1][0];
-        offset2.y = 0;
-      }
-      
-      verts[vidx++] = R_MakeVertexWithWeight(edgePos.x, edgePos.y, edgePos.z, 
-                                              t, 0, offset1.x, offset1.y, offset1.z,
-                                              offset1.x, offset1.y, offset1.z);
-      verts[vidx++] = R_MakeVertexWithWeight(edgePos.x, edgePos.y, edgePos.z,
-                                              t, 1, offset2.x, offset2.y, offset2.z,
-                                              offset2.x, offset2.y, offset2.z);
+      tris[iidx++] = a; tris[iidx++] = b; tris[iidx++] = c;
+      tris[iidx++] = b; tris[iidx++] = d; tris[iidx++] = c;
     }
-    
-    // Generate indices for edge
-    for (uint32_t seg = 0; seg < SEGS; seg++) {
-      uint32_t base = edgeStart + seg * 2;
-      
-      tris[iidx++] = base;
-      tris[iidx++] = base + 2;
-      tris[iidx++] = base + 1;
-      
-      tris[iidx++] = base + 1;
-      tris[iidx++] = base + 2;
-      tris[iidx++] = base + 3;
-    }
-  }
-  
-  // Generate 6 flat faces
-  // Face definition: [corner indices (4), normal axis]
-  struct { int corners[4]; vec3_t normal; vec3_t weight; } faces[6] = {
-    {{0, 3, 2, 1}, {0, 0, 1}, {0, 0, 0}},   // Front (+Z)
-    {{4, 5, 6, 7}, {0, 0, -1}, {0, 0, 0}},  // Back (-Z)
-    {{0, 1, 5, 4}, {0, 1, 0}, {0, 0, 0}},   // Top (+Y)
-    {{3, 7, 6, 2}, {0, -1, 0}, {0, 0, 0}},  // Bottom (-Y)
-    {{0, 4, 7, 3}, {1, 0, 0}, {0, 0, 0}},   // Right (+X)
-    {{1, 2, 6, 5}, {-1, 0, 0}, {0, 0, 0}}   // Left (-X)
-  };
-  
-  for (uint32_t f = 0; f < 6; f++) {
-    uint32_t faceStart = vidx;
-    
-    for (uint32_t v = 0; v < 4; v++) {
-      int ci = faces[f].corners[v];
-      vec3_t pos = corners[ci];
-      float u = (v == 1 || v == 2) ? 1.0f : 0.0f;
-      float fv = (v == 2 || v == 3) ? 1.0f : 0.0f;
-      
-      verts[vidx++] = R_MakeVertexWithWeight(pos.x, pos.y, pos.z, u, fv,
-                                              faces[f].normal.x, faces[f].normal.y, faces[f].normal.z,
-                                              0, 0, 0); // No weight offset for flat faces
-    }
-    
-    // Two triangles for the face
-    tris[iidx++] = faceStart + 0;
-    tris[iidx++] = faceStart + 1;
-    tris[iidx++] = faceStart + 2;
-    
-    tris[iidx++] = faceStart + 0;
-    tris[iidx++] = faceStart + 2;
-    tris[iidx++] = faceStart + 3;
   }
   
   DRAWSURFATTR attr[] = {
-    VERTEX_SEMANTIC_POSITION, VERTEX_ATTR_DATATYPE_FLOAT32,
+    VERTEX_SEMANTIC_POSITION,  VERTEX_ATTR_DATATYPE_FLOAT32,
     VERTEX_SEMANTIC_TEXCOORD0, VERTEX_ATTR_DATATYPE_FLOAT32,
-    VERTEX_SEMANTIC_NORMAL, VERTEX_ATTR_DATATYPE_FLOAT32,
-    VERTEX_SEMANTIC_WEIGHT, VERTEX_ATTR_DATATYPE_FLOAT32,
-    VERTEX_SEMANTIC_COLOR, VERTEX_ATTR_DATATYPE_UINT8 | VERTEX_ATTR_DATATYPE_NORMALIZED,
+    VERTEX_SEMANTIC_NORMAL,    VERTEX_ATTR_DATATYPE_FLOAT32,
+    VERTEX_SEMANTIC_WEIGHT,    VERTEX_ATTR_DATATYPE_FLOAT32,
+    VERTEX_SEMANTIC_COLOR,     VERTEX_ATTR_DATATYPE_UINT8 | VERTEX_ATTR_DATATYPE_NORMALIZED,
     VERTEX_SEMANTIC_COUNT
   };
-
-  DRAWSURF dsurf;
-  dsurf.vertices = verts;
-  dsurf.indices = tris;
-  dsurf.submeshes = NULL;
-  dsurf.neighbors = NULL;
-  dsurf.numVertices = vidx;
-  dsurf.numIndices = iidx;
-  dsurf.numSubmeshes = 0;
-
-  return Model_Create(attr, &dsurf, ppModel);
-
-  #undef SEGS
+  
+  DRAWSURF dsurf = {
+    .vertices    = verts,
+    .indices     = tris,
+    .submeshes   = NULL,
+    .neighbors   = NULL,
+    .numVertices = vidx,
+    .numIndices  = iidx,
+    .numSubmeshes = 0,
+  };
+  
+  HRESULT hr = Model_Create(attr, &dsurf, ppModel);
+  free(verts);
+  free(tris);
+  return hr;
+  
+#undef LAT_SEGS
+#undef LON_SEGS
 }
 
 HRESULT
