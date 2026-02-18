@@ -446,28 +446,34 @@ Model_CreateRoundedBox(float width, float height, float depth, float radius, str
   float boxHeight = height - 2.0f * radius;
   float boxDepth = depth - 2.0f * radius;
   
-  // 8 corners * (SEGS+1)^2 vertices per corner (quarter sphere)
-  // 6 faces * varying vertices for flat regions
-  // For simplicity, we'll generate vertices for all 8 corner spheres
-  uint32_t vertsPerCorner = (SEGS + 1) * (SEGS + 1);
-  uint32_t numVertices = 8 * vertsPerCorner;
-  uint32_t trisPerCorner = SEGS * SEGS * 2 * 3;
-  uint32_t numIndices = 8 * trisPerCorner;
+  // Calculate vertex and index counts
+  // 8 corners * (SEGS+1)^2 vertices per corner
+  // 12 edges * (SEGS+1) * 2 vertices per edge
+  // 6 faces * 4 vertices per face
+  uint32_t cornerVerts = 8 * (SEGS + 1) * (SEGS + 1);
+  uint32_t edgeVerts = 12 * (SEGS + 1) * 2;
+  uint32_t faceVerts = 6 * 4;
+  uint32_t maxVertices = cornerVerts + edgeVerts + faceVerts;
   
-  DRAWVERT verts[numVertices];
-  DRAWINDEX tris[numIndices];
+  uint32_t cornerIndices = 8 * SEGS * SEGS * 6;
+  uint32_t edgeIndices = 12 * SEGS * 6;
+  uint32_t faceIndices = 6 * 6;
+  uint32_t maxIndices = cornerIndices + edgeIndices + faceIndices;
+  
+  DRAWVERT verts[maxVertices];
+  DRAWINDEX tris[maxIndices];
   uint32_t vidx = 0, iidx = 0;
   
   // Define 8 corner positions (centers of the corner spheres)
   vec3_t corners[8] = {
-    { boxWidth * 0.5f,  boxHeight * 0.5f,  boxDepth * 0.5f},  // +X +Y +Z
-    {-boxWidth * 0.5f,  boxHeight * 0.5f,  boxDepth * 0.5f},  // -X +Y +Z
-    {-boxWidth * 0.5f, -boxHeight * 0.5f,  boxDepth * 0.5f},  // -X -Y +Z
-    { boxWidth * 0.5f, -boxHeight * 0.5f,  boxDepth * 0.5f},  // +X -Y +Z
-    { boxWidth * 0.5f,  boxHeight * 0.5f, -boxDepth * 0.5f},  // +X +Y -Z
-    {-boxWidth * 0.5f,  boxHeight * 0.5f, -boxDepth * 0.5f},  // -X +Y -Z
-    {-boxWidth * 0.5f, -boxHeight * 0.5f, -boxDepth * 0.5f},  // -X -Y -Z
-    { boxWidth * 0.5f, -boxHeight * 0.5f, -boxDepth * 0.5f},  // +X -Y -Z
+    { boxWidth * 0.5f,  boxHeight * 0.5f,  boxDepth * 0.5f},  // 0: +X +Y +Z
+    {-boxWidth * 0.5f,  boxHeight * 0.5f,  boxDepth * 0.5f},  // 1: -X +Y +Z
+    {-boxWidth * 0.5f, -boxHeight * 0.5f,  boxDepth * 0.5f},  // 2: -X -Y +Z
+    { boxWidth * 0.5f, -boxHeight * 0.5f,  boxDepth * 0.5f},  // 3: +X -Y +Z
+    { boxWidth * 0.5f,  boxHeight * 0.5f, -boxDepth * 0.5f},  // 4: +X +Y -Z
+    {-boxWidth * 0.5f,  boxHeight * 0.5f, -boxDepth * 0.5f},  // 5: -X +Y -Z
+    {-boxWidth * 0.5f, -boxHeight * 0.5f, -boxDepth * 0.5f},  // 6: -X -Y -Z
+    { boxWidth * 0.5f, -boxHeight * 0.5f, -boxDepth * 0.5f},  // 7: +X -Y -Z
   };
   
   // Define which octant each corner sphere occupies
@@ -523,6 +529,112 @@ Model_CreateRoundedBox(float width, float height, float depth, float radius, str
         tris[iidx++] = base + SEGS + 1;
       }
     }
+  }
+  
+  // Generate 12 edges (cylinders connecting corners)
+  // Edge definition: [corner1, corner2, axis (0=X, 1=Y, 2=Z)]
+  int edges[12][3] = {
+    // Front face (Z+) edges
+    {0, 1, 0}, {1, 2, 1}, {2, 3, 0}, {3, 0, 1},
+    // Back face (Z-) edges
+    {4, 5, 0}, {5, 6, 1}, {6, 7, 0}, {7, 4, 1},
+    // Connecting edges
+    {0, 4, 2}, {1, 5, 2}, {2, 6, 2}, {3, 7, 2}
+  };
+  
+  for (uint32_t e = 0; e < 12; e++) {
+    int c1 = edges[e][0];
+    int c2 = edges[e][1];
+    int axis = edges[e][2];
+    uint32_t edgeStart = vidx;
+    
+    // Determine the plane perpendicular to the edge
+    for (uint32_t seg = 0; seg <= SEGS; seg++) {
+      float t = (float)seg / (float)SEGS;
+      
+      // Interpolate along edge
+      vec3_t edgePos = {
+        corners[c1].x + t * (corners[c2].x - corners[c1].x),
+        corners[c1].y + t * (corners[c2].y - corners[c1].y),
+        corners[c1].z + t * (corners[c2].z - corners[c1].z)
+      };
+      
+      // Create two vertices for the edge cylinder
+      vec3_t offset1 = {0, 0, 0};
+      vec3_t offset2 = {0, 0, 0};
+      
+      if (axis == 0) { // Edge along X
+        offset1.y = octants[c1][1];
+        offset1.z = octants[c1][2];
+        offset2.y = octants[c1][1];
+        offset2.z = 0;
+      } else if (axis == 1) { // Edge along Y
+        offset1.x = octants[c1][0];
+        offset1.z = octants[c1][2];
+        offset2.x = 0;
+        offset2.z = octants[c1][2];
+      } else { // Edge along Z
+        offset1.x = octants[c1][0];
+        offset1.y = octants[c1][1];
+        offset2.x = octants[c1][0];
+        offset2.y = 0;
+      }
+      
+      verts[vidx++] = R_MakeVertexWithWeight(edgePos.x, edgePos.y, edgePos.z, 
+                                              t, 0, offset1.x, offset1.y, offset1.z,
+                                              offset1.x, offset1.y, offset1.z);
+      verts[vidx++] = R_MakeVertexWithWeight(edgePos.x, edgePos.y, edgePos.z,
+                                              t, 1, offset2.x, offset2.y, offset2.z,
+                                              offset2.x, offset2.y, offset2.z);
+    }
+    
+    // Generate indices for edge
+    for (uint32_t seg = 0; seg < SEGS; seg++) {
+      uint32_t base = edgeStart + seg * 2;
+      
+      tris[iidx++] = base;
+      tris[iidx++] = base + 2;
+      tris[iidx++] = base + 1;
+      
+      tris[iidx++] = base + 1;
+      tris[iidx++] = base + 2;
+      tris[iidx++] = base + 3;
+    }
+  }
+  
+  // Generate 6 flat faces
+  // Face definition: [corner indices (4), normal axis]
+  struct { int corners[4]; vec3_t normal; vec3_t weight; } faces[6] = {
+    {{0, 3, 2, 1}, {0, 0, 1}, {0, 0, 0}},   // Front (+Z)
+    {{4, 5, 6, 7}, {0, 0, -1}, {0, 0, 0}},  // Back (-Z)
+    {{0, 1, 5, 4}, {0, 1, 0}, {0, 0, 0}},   // Top (+Y)
+    {{3, 7, 6, 2}, {0, -1, 0}, {0, 0, 0}},  // Bottom (-Y)
+    {{0, 4, 7, 3}, {1, 0, 0}, {0, 0, 0}},   // Right (+X)
+    {{1, 2, 6, 5}, {-1, 0, 0}, {0, 0, 0}}   // Left (-X)
+  };
+  
+  for (uint32_t f = 0; f < 6; f++) {
+    uint32_t faceStart = vidx;
+    
+    for (uint32_t v = 0; v < 4; v++) {
+      int ci = faces[f].corners[v];
+      vec3_t pos = corners[ci];
+      float u = (v == 1 || v == 2) ? 1.0f : 0.0f;
+      float fv = (v == 2 || v == 3) ? 1.0f : 0.0f;
+      
+      verts[vidx++] = R_MakeVertexWithWeight(pos.x, pos.y, pos.z, u, fv,
+                                              faces[f].normal.x, faces[f].normal.y, faces[f].normal.z,
+                                              0, 0, 0); // No weight offset for flat faces
+    }
+    
+    // Two triangles for the face
+    tris[iidx++] = faceStart + 0;
+    tris[iidx++] = faceStart + 1;
+    tris[iidx++] = faceStart + 2;
+    
+    tris[iidx++] = faceStart + 0;
+    tris[iidx++] = faceStart + 2;
+    tris[iidx++] = faceStart + 3;
   }
   
   DRAWSURFATTR attr[] = {

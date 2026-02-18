@@ -31,8 +31,10 @@ The rounded box model uses a **weight-based offset** approach for efficient shad
 
 The geometry consists of:
 1. **8 corner spheres** - Quarter-spheres at each corner of the box
-2. **Weight-based displacement** - Vertices store their offset direction in the `weight` attribute
-3. **Parametric radius** - Radius can be adjusted at render time via shader uniforms
+2. **12 edge cylinders** - Rounded edges connecting the corners
+3. **6 flat faces** - Rectangular faces between the edges
+4. **Weight-based displacement** - Vertices store their offset direction in the `weight` attribute
+5. **Parametric radius** - Radius can be adjusted at render time via shader uniforms
 
 ### Key Difference from 2D Rounded Rectangle
 
@@ -126,8 +128,12 @@ This design allows:
 ## Performance
 
 The rounded box model is efficiently generated with:
-- **648 vertices** total (8 corners × 81 vertices per corner)
-- **1152 triangles** (8 corners × 144 triangles per corner)
+- **Complete geometry**: 8 corners + 12 edges + 6 faces
+- **Vertex count**: ~900-1000 vertices (varies with SEGS parameter)
+  - 8 corners × (SEGS+1)² vertices = 648 vertices
+  - 12 edges × (SEGS+1) × 2 vertices = 216 vertices  
+  - 6 faces × 4 vertices = 24 vertices
+- **Triangle count**: ~1400-1500 triangles
 - Indexed triangle rendering
 - Pre-calculated normals for lighting
 - Single model instance can be reused with varying radii
