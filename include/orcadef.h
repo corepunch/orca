@@ -172,33 +172,6 @@ enum
   type_service,
 };
 
-// Mesh pointer boxing - tagged pointer type and helper functions
-typedef uintptr_t MeshRef;
-
-#define MESH_TAG_PTR    0x0
-#define MESH_TAG_RECT   0x1
-#define MESH_TAG_TEAPOT 0x2
-
-static inline int mesh_is_ptr(MeshRef m) {
-    return (m & MESH_TAG_MASK) == MESH_TAG_PTR;
-}
-
-static inline void* mesh_get_ptr(MeshRef m) {
-    return (void*)(m & MESH_PTR_MASK);
-}
-
-static inline MeshRef mesh_from_ptr(void* p) {
-    return (MeshRef)p; // lower bits assumed zero
-}
-
-static inline MeshRef mesh_rect(void) {
-    return MESH_TAG_RECT;
-}
-
-static inline MeshRef mesh_teapot(void) {
-    return MESH_TAG_TEAPOT;
-}
-
 INLINE void
 _keep(void const* ptr)
 {

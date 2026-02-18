@@ -253,9 +253,9 @@ _UpdateCinematicEntity(struct ViewEntity* ent)
 //
 // Supports mesh pointer boxing: ent.mesh can be either:
 //   - A real Mesh pointer (when mesh_is_ptr() returns true)
-//   - A boxed entity type constant like MESH_ENTITY_CAPSULE, MESH_ENTITY_RECTANGLE, etc.
+//   - A boxed entity type constant like MESH_CAPSULE, MESH_RECTANGLE, etc.
 //
-// Usage example: ent.mesh = MESH_ENTITY_CAPSULE;
+// Usage example: ent.mesh = MESH_CAPSULE;
 // This eliminates the need to set a separate type field for common entity types.
 HRESULT
 R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
@@ -296,23 +296,23 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
     // Check if mesh is a boxed entity type constant
     if (ent->mesh && !mesh_is_ptr((MeshRef)ent->mesh)) {
       MeshRef mesh_tag = (MeshRef)ent->mesh;
-      if (mesh_tag == (MeshRef)MESH_ENTITY_RECTANGLE) {
+      if (mesh_tag == (MeshRef)MESH_RECTANGLE) {
         if (memcmp(&ent->borderWidth, &zero, sizeof(struct vec4))) {
           model = tr.models[MD_ROUNDED_BORDER];
         } else {
           model = tr.models[MD_ROUNDED_RECT];
         }
-      } else if (mesh_tag == (MeshRef)MESH_ENTITY_PLANE) {
+      } else if (mesh_tag == (MeshRef)MESH_PLANE) {
         model = tr.models[MD_PLANE];
-      } else if (mesh_tag == (MeshRef)MESH_ENTITY_DOT) {
+      } else if (mesh_tag == (MeshRef)MESH_DOT) {
         model = tr.models[MD_DOT];
-      } else if (mesh_tag == (MeshRef)MESH_ENTITY_CAPSULE) {
+      } else if (mesh_tag == (MeshRef)MESH_CAPSULE) {
         model = tr.models[MD_CAPSULE];
         shader = &tr.shaders[SHADER_BUTTON];
-      } else if (mesh_tag == (MeshRef)MESH_ENTITY_ROUNDED_BOX) {
+      } else if (mesh_tag == (MeshRef)MESH_ROUNDED_BOX) {
         model = tr.models[MD_ROUNDED_BOX];
         shader = &tr.shaders[SHADER_ROUNDEDBOX];
-      } else if (mesh_tag == (MeshRef)MESH_ENTITY_TEAPOT) {
+      } else if (mesh_tag == (MeshRef)MESH_TEAPOT) {
         // Teapot could use a sphere or custom model in the future
         model = tr.models[MD_PLANE]; // placeholder
       }
