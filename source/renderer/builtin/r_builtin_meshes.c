@@ -441,14 +441,19 @@ Model_CreateRoundedBox(float width, float height, float depth, float radius, str
   if (radius > maxRadius) radius = maxRadius;
 
   #define SEGS 8
-  #define STRIDE (SEGS + 1)
   
   float boxWidth = width - 2.0f * radius;
   float boxHeight = height - 2.0f * radius;
   float boxDepth = depth - 2.0f * radius;
   
-  // Only corner vertices - edges and faces will index into these
-  uint32_t maxVertices = 8 * STRIDE * STRIDE;
+  // Calculate vertex and index counts
+  // 8 corners * (SEGS+1)^2 vertices per corner
+  // 12 edges * (SEGS+1) * 2 vertices per edge
+  // 6 faces * 4 vertices per face
+  uint32_t cornerVerts = 8 * (SEGS + 1) * (SEGS + 1);
+  uint32_t edgeVerts = 12 * (SEGS + 1) * 2;
+  uint32_t faceVerts = 6 * 4;
+  uint32_t maxVertices = cornerVerts + edgeVerts + faceVerts;
   
   uint32_t cornerIndices = 8 * SEGS * SEGS * 6;
   uint32_t edgeIndices = 12 * SEGS * 6;
@@ -458,9 +463,6 @@ Model_CreateRoundedBox(float width, float height, float depth, float radius, str
   DRAWVERT verts[maxVertices];
   DRAWINDEX tris[maxIndices];
   uint32_t vidx = 0, iidx = 0;
-  
-  // Store base indices for each corner
-  uint32_t cornerBase[8];
   
   // Define 8 corner positions (centers of the corner spheres)
   vec3_t corners[8] = {
@@ -482,7 +484,7 @@ Model_CreateRoundedBox(float width, float height, float depth, float radius, str
   
   // Generate vertices for each corner
   for (uint32_t corner = 0; corner < 8; corner++) {
-    cornerBase[corner] = vidx;
+    uint32_t cornerStart = vidx;
     
     for (uint32_t i = 0; i <= SEGS; i++) {
       float phi = (float)i / (float)SEGS * M_PI_2;
@@ -516,7 +518,7 @@ Model_CreateRoundedBox(float width, float height, float depth, float radius, str
     // Generate indices for this corner
     for (uint32_t i = 0; i < SEGS; i++) {
       for (uint32_t j = 0; j < SEGS; j++) {
-        uint32_t base = cornerBase[corner] + i * STRIDE + j;
+        uint32_t base = cornerStart + i * (SEGS + 1) + j;
         
         tris[iidx++] = base;
         tris[iidx++] = base + 1;
@@ -529,161 +531,111 @@ Model_CreateRoundedBox(float width, float height, float depth, float radius, str
     }
   }
   
-  // Macro to get vertex index for a corner's (phi, theta) position
-  #define VIDX(c, phi, theta) (cornerBase[c] + (phi) * STRIDE + (theta))
+  // Generate 12 edges (cylinders connecting corners)
+  // Edge definition: [corner1, corner2, axis (0=X, 1=Y, 2=Z)]
+  int edges[12][3] = {
+    // Front face (Z+) edges
+    {0, 1, 0}, {1, 2, 1}, {2, 3, 0}, {3, 0, 1},
+    // Back face (Z-) edges
+    {4, 5, 0}, {5, 6, 1}, {6, 7, 0}, {7, 4, 1},
+    // Connecting edges
+    {0, 4, 2}, {1, 5, 2}, {2, 6, 2}, {3, 7, 2}
+  };
   
-  // Generate 12 edges by indexing corner vertices
-  // Each edge connects boundary vertices from two adjacent corners
-  
-  // Edges along X axis (theta varies, phi constant)
-  // Edge 0-1: top front (Y+, Z+)
-  for (uint32_t s = 0; s < SEGS; s++) {
-    uint32_t v0 = VIDX(0, 0, s);
-    uint32_t v1 = VIDX(0, 0, s+1);
-    uint32_t v2 = VIDX(1, 0, SEGS-s);
-    uint32_t v3 = VIDX(1, 0, SEGS-s-1);
-    ADD_TRIANGLE(v0, v1, v2);
-    ADD_TRIANGLE(v1, v3, v2);
+  for (uint32_t e = 0; e < 12; e++) {
+    int c1 = edges[e][0];
+    int c2 = edges[e][1];
+    int axis = edges[e][2];
+    uint32_t edgeStart = vidx;
+    
+    // Determine the plane perpendicular to the edge
+    for (uint32_t seg = 0; seg <= SEGS; seg++) {
+      float t = (float)seg / (float)SEGS;
+      
+      // Interpolate along edge
+      vec3_t edgePos = {
+        corners[c1].x + t * (corners[c2].x - corners[c1].x),
+        corners[c1].y + t * (corners[c2].y - corners[c1].y),
+        corners[c1].z + t * (corners[c2].z - corners[c1].z)
+      };
+      
+      // Create two vertices for the edge cylinder
+      vec3_t offset1 = {0, 0, 0};
+      vec3_t offset2 = {0, 0, 0};
+      
+      if (axis == 0) { // Edge along X
+        offset1.y = octants[c1][1];
+        offset1.z = octants[c1][2];
+        offset2.y = octants[c1][1];
+        offset2.z = 0;
+      } else if (axis == 1) { // Edge along Y
+        offset1.x = octants[c1][0];
+        offset1.z = octants[c1][2];
+        offset2.x = 0;
+        offset2.z = octants[c1][2];
+      } else { // Edge along Z
+        offset1.x = octants[c1][0];
+        offset1.y = octants[c1][1];
+        offset2.x = octants[c1][0];
+        offset2.y = 0;
+      }
+      
+      verts[vidx++] = R_MakeVertexWithWeight(edgePos.x, edgePos.y, edgePos.z, 
+                                              t, 0, offset1.x, offset1.y, offset1.z,
+                                              offset1.x, offset1.y, offset1.z);
+      verts[vidx++] = R_MakeVertexWithWeight(edgePos.x, edgePos.y, edgePos.z,
+                                              t, 1, offset2.x, offset2.y, offset2.z,
+                                              offset2.x, offset2.y, offset2.z);
+    }
+    
+    // Generate indices for edge
+    for (uint32_t seg = 0; seg < SEGS; seg++) {
+      uint32_t base = edgeStart + seg * 2;
+      
+      tris[iidx++] = base;
+      tris[iidx++] = base + 2;
+      tris[iidx++] = base + 1;
+      
+      tris[iidx++] = base + 1;
+      tris[iidx++] = base + 2;
+      tris[iidx++] = base + 3;
+    }
   }
   
-  // Edge 2-3: bottom front (Y-, Z+)
-  for (uint32_t s = 0; s < SEGS; s++) {
-    uint32_t v0 = VIDX(2, SEGS, s);
-    uint32_t v1 = VIDX(2, SEGS, s+1);
-    uint32_t v2 = VIDX(3, SEGS, SEGS-s);
-    uint32_t v3 = VIDX(3, SEGS, SEGS-s-1);
-    ADD_TRIANGLE(v0, v2, v1);
-    ADD_TRIANGLE(v1, v2, v3);
+  // Generate 6 flat faces
+  // Face definition: [corner indices (4), normal axis]
+  struct { int corners[4]; vec3_t normal; vec3_t weight; } faces[6] = {
+    {{0, 3, 2, 1}, {0, 0, 1}, {0, 0, 0}},   // Front (+Z)
+    {{4, 5, 6, 7}, {0, 0, -1}, {0, 0, 0}},  // Back (-Z)
+    {{0, 1, 5, 4}, {0, 1, 0}, {0, 0, 0}},   // Top (+Y)
+    {{3, 7, 6, 2}, {0, -1, 0}, {0, 0, 0}},  // Bottom (-Y)
+    {{0, 4, 7, 3}, {1, 0, 0}, {0, 0, 0}},   // Right (+X)
+    {{1, 2, 6, 5}, {-1, 0, 0}, {0, 0, 0}}   // Left (-X)
+  };
+  
+  for (uint32_t f = 0; f < 6; f++) {
+    uint32_t faceStart = vidx;
+    
+    for (uint32_t v = 0; v < 4; v++) {
+      int ci = faces[f].corners[v];
+      vec3_t pos = corners[ci];
+      float u = (v == 1 || v == 2) ? 1.0f : 0.0f;
+      float fv = (v == 2 || v == 3) ? 1.0f : 0.0f;
+      
+      verts[vidx++] = R_MakeVertexWithWeight(pos.x, pos.y, pos.z, u, fv,
+                                              faces[f].normal.x, faces[f].normal.y, faces[f].normal.z,
+                                              0, 0, 0); // No weight offset for flat faces
+    }
+    
+    // Two triangles for the face
+    tris[iidx++] = faceStart + 0;
+    tris[iidx++] = faceStart + 1;
+    tris[iidx++] = faceStart + 2;
+    
+    tris[iidx++] = faceStart + 0;
+    tris[iidx++] = faceStart + 2;
+    tris[iidx++] = faceStart + 3;
   }
-  
-  // Edge 4-5: top back (Y+, Z-)
-  for (uint32_t s = 0; s < SEGS; s++) {
-    uint32_t v0 = VIDX(4, 0, SEGS-s);
-    uint32_t v1 = VIDX(4, 0, SEGS-s-1);
-    uint32_t v2 = VIDX(5, 0, s);
-    uint32_t v3 = VIDX(5, 0, s+1);
-    ADD_TRIANGLE(v0, v1, v2);
-    ADD_TRIANGLE(v1, v3, v2);
-  }
-  
-  // Edge 6-7: bottom back (Y-, Z-)
-  for (uint32_t s = 0; s < SEGS; s++) {
-    uint32_t v0 = VIDX(6, SEGS, SEGS-s);
-    uint32_t v1 = VIDX(6, SEGS, SEGS-s-1);
-    uint32_t v2 = VIDX(7, SEGS, s);
-    uint32_t v3 = VIDX(7, SEGS, s+1);
-    ADD_TRIANGLE(v0, v2, v1);
-    ADD_TRIANGLE(v1, v2, v3);
-  }
-  
-  // Edges along Y axis (phi varies, theta constant)
-  // Edge 0-3: right front (X+, Z+)
-  for (uint32_t s = 0; s < SEGS; s++) {
-    uint32_t v0 = VIDX(0, s, SEGS);
-    uint32_t v1 = VIDX(0, s+1, SEGS);
-    uint32_t v2 = VIDX(3, SEGS-s, SEGS);
-    uint32_t v3 = VIDX(3, SEGS-s-1, SEGS);
-    ADD_TRIANGLE(v0, v1, v2);
-    ADD_TRIANGLE(v1, v3, v2);
-  }
-  
-  // Edge 1-2: left front (X-, Z+)
-  for (uint32_t s = 0; s < SEGS; s++) {
-    uint32_t v0 = VIDX(1, s, SEGS);
-    uint32_t v1 = VIDX(1, s+1, SEGS);
-    uint32_t v2 = VIDX(2, SEGS-s, SEGS);
-    uint32_t v3 = VIDX(2, SEGS-s-1, SEGS);
-    ADD_TRIANGLE(v0, v2, v1);
-    ADD_TRIANGLE(v1, v2, v3);
-  }
-  
-  // Edge 4-7: right back (X+, Z-)
-  for (uint32_t s = 0; s < SEGS; s++) {
-    uint32_t v0 = VIDX(4, s, 0);
-    uint32_t v1 = VIDX(4, s+1, 0);
-    uint32_t v2 = VIDX(7, SEGS-s, 0);
-    uint32_t v3 = VIDX(7, SEGS-s-1, 0);
-    ADD_TRIANGLE(v0, v2, v1);
-    ADD_TRIANGLE(v1, v2, v3);
-  }
-  
-  // Edge 5-6: left back (X-, Z-)
-  for (uint32_t s = 0; s < SEGS; s++) {
-    uint32_t v0 = VIDX(5, s, 0);
-    uint32_t v1 = VIDX(5, s+1, 0);
-    uint32_t v2 = VIDX(6, SEGS-s, 0);
-    uint32_t v3 = VIDX(6, SEGS-s-1, 0);
-    ADD_TRIANGLE(v0, v1, v2);
-    ADD_TRIANGLE(v1, v3, v2);
-  }
-  
-  // Edges along Z axis (phi varies, theta constant)
-  // Edge 0-4: top right (X+, Y+)
-  for (uint32_t s = 0; s < SEGS; s++) {
-    uint32_t v0 = VIDX(0, s, 0);
-    uint32_t v1 = VIDX(0, s+1, 0);
-    uint32_t v2 = VIDX(4, s, SEGS);
-    uint32_t v3 = VIDX(4, s+1, SEGS);
-    ADD_TRIANGLE(v0, v1, v2);
-    ADD_TRIANGLE(v1, v3, v2);
-  }
-  
-  // Edge 1-5: top left (X-, Y+)
-  for (uint32_t s = 0; s < SEGS; s++) {
-    uint32_t v0 = VIDX(1, s, 0);
-    uint32_t v1 = VIDX(1, s+1, 0);
-    uint32_t v2 = VIDX(5, s, SEGS);
-    uint32_t v3 = VIDX(5, s+1, SEGS);
-    ADD_TRIANGLE(v0, v2, v1);
-    ADD_TRIANGLE(v1, v2, v3);
-  }
-  
-  // Edge 2-6: bottom left (X-, Y-)
-  for (uint32_t s = 0; s < SEGS; s++) {
-    uint32_t v0 = VIDX(2, SEGS-s, 0);
-    uint32_t v1 = VIDX(2, SEGS-s-1, 0);
-    uint32_t v2 = VIDX(6, s, SEGS);
-    uint32_t v3 = VIDX(6, s+1, SEGS);
-    ADD_TRIANGLE(v0, v1, v2);
-    ADD_TRIANGLE(v1, v3, v2);
-  }
-  
-  // Edge 3-7: bottom right (X+, Y-)
-  for (uint32_t s = 0; s < SEGS; s++) {
-    uint32_t v0 = VIDX(3, SEGS-s, 0);
-    uint32_t v1 = VIDX(3, SEGS-s-1, 0);
-    uint32_t v2 = VIDX(7, s, SEGS);
-    uint32_t v3 = VIDX(7, s+1, SEGS);
-    ADD_TRIANGLE(v0, v2, v1);
-    ADD_TRIANGLE(v1, v2, v3);
-  }
-  
-  // Generate 6 flat faces using corner vertices
-  // Front face (+Z): corners 0,1,2,3 at theta=SEGS, phi varies
-  ADD_TRIANGLE(VIDX(0, SEGS, SEGS), VIDX(3, 0, SEGS), VIDX(2, 0, SEGS));
-  ADD_TRIANGLE(VIDX(0, SEGS, SEGS), VIDX(2, 0, SEGS), VIDX(1, SEGS, SEGS));
-  
-  // Back face (-Z): corners 4,5,6,7 at theta=0, phi varies
-  ADD_TRIANGLE(VIDX(4, SEGS, 0), VIDX(5, SEGS, 0), VIDX(6, 0, 0));
-  ADD_TRIANGLE(VIDX(4, SEGS, 0), VIDX(6, 0, 0), VIDX(7, 0, 0));
-  
-  // Top face (+Y): corners 0,1,5,4 at phi=0
-  ADD_TRIANGLE(VIDX(0, 0, 0), VIDX(1, 0, 0), VIDX(5, 0, 0));
-  ADD_TRIANGLE(VIDX(0, 0, 0), VIDX(5, 0, 0), VIDX(4, 0, 0));
-  
-  // Bottom face (-Y): corners 3,2,6,7 at phi=SEGS
-  ADD_TRIANGLE(VIDX(3, SEGS, 0), VIDX(7, SEGS, 0), VIDX(6, SEGS, 0));
-  ADD_TRIANGLE(VIDX(3, SEGS, 0), VIDX(6, SEGS, 0), VIDX(2, SEGS, 0));
-  
-  // Right face (+X): corners 0,4,7,3 at theta=0
-  ADD_TRIANGLE(VIDX(0, SEGS, 0), VIDX(4, SEGS, SEGS), VIDX(7, SEGS, SEGS));
-  ADD_TRIANGLE(VIDX(0, SEGS, 0), VIDX(7, SEGS, SEGS), VIDX(3, SEGS, 0));
-  
-  // Left face (-X): corners 1,2,6,5 at theta=SEGS (for 1,2) or 0 (for 5,6)
-  ADD_TRIANGLE(VIDX(1, SEGS, SEGS), VIDX(2, SEGS, SEGS), VIDX(6, SEGS, 0));
-  ADD_TRIANGLE(VIDX(1, SEGS, SEGS), VIDX(6, SEGS, 0), VIDX(5, SEGS, 0));
-  
-  #undef VIDX
   
   DRAWSURFATTR attr[] = {
     VERTEX_SEMANTIC_POSITION, VERTEX_ATTR_DATATYPE_FLOAT32,
@@ -705,7 +657,6 @@ Model_CreateRoundedBox(float width, float height, float depth, float radius, str
 
   return Model_Create(attr, &dsurf, ppModel);
 
-  #undef STRIDE
   #undef SEGS
 }
 
