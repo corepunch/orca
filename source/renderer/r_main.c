@@ -606,13 +606,13 @@ R_InitResources(void)
   Texture_CreateCinematic(tr.textures+TX_CINEMATIC);
 
   Model_CreateRectangle(&(struct rect){ 0, 0, 1, 1 }, NULL, VERTEX_ORDER_DEFAULT, tr.models+MD_RECTANGLE);
-  tr.models[MD_TEAPOT] = NULL; // Teapot is a placeholder, uses MD_PLANE model
+  tr.models[MD_TEAPOT] = NULL; // Placeholder; runtime uses tr.models[MD_PLANE]
   Model_CreatePlane(1, 1, tr.models+MD_PLANE);
   Model_CreatePlane(0, 0, tr.models+MD_DOT);
   Model_CreateCapsule(1.0f, 1.0f, 1.0f, tr.models+MD_CAPSULE);
   Model_CreateRoundedBox(1.0f, 1.0f, 1.0f, 0.2f, tr.models+MD_ROUNDED_BOX);
-  tr.models[MD_NINEPATCH] = NULL; // Dynamic mesh, created on demand
-  tr.models[MD_CINEMATIC] = NULL; // Uses MD_RECTANGLE, no separate model needed
+  tr.models[MD_NINEPATCH] = NULL; // Dynamic mesh, created on demand in CreateNinePatchMesh
+  tr.models[MD_CINEMATIC] = NULL; // Runtime uses tr.models[MD_RECTANGLE], no separate model needed
   Model_CreateRoundedRectangle(tr.models+MD_ROUNDED_RECT);
   Model_CreateRoundedBorder(tr.models+MD_ROUNDED_BORDER);
   
