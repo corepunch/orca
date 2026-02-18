@@ -361,7 +361,7 @@ Model_CreateRoundedBorder(struct model** ppModel);
 HRESULT
 Model_CreateRoundedBox(float width, float height, float depth, float radius, struct model** ppModel);
 HRESULT
-Model_CreateCapsule(float width, float height, float depth, float cylindriness, struct model** ppModel);
+Model_CreateCapsule(float width, float height, float depth, struct model** ppModel);
 HRESULT
 Model_Save(struct model* mesh, lpcString_t filename);
 HRESULT
