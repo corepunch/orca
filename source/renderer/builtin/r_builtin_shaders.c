@@ -104,11 +104,10 @@ struct shader_desc shader_ui = {
   "  float rad = mix(mix(r.x, r.y, s.x), mix(r.w, r.z, s.x), s.y);\n"
   "  vec2 brd = vec2(mix(b.x, b.y, s.x), mix(b.z, b.w, s.y));\n"
   "  vec2 rectSize = vec2(length(u_bboxTransform[0].xyz), length(u_bboxTransform[1].xyz));\n"
-  "  vec2 pos = a_position.xy * rectSize + a_texcoord0 * rad + a_texcoord1 * brd;\n"
-  "  vec3 tex = vec3(pos.x / rectSize.x, 1.0 - pos.y / rectSize.y, 1.0);\n"
+  "  vec2 localPos = a_position.xy * rectSize + a_texcoord0 * rad + a_texcoord1 * brd;\n"
+  "  vec3 tex = vec3(localPos.x / rectSize.x, 1.0 - localPos.y / rectSize.y, 1.0);\n"
   "  v_texcoord0 = (u_textureTransform * tex).xy;\n"
-  "  vec4 localPos = vec4(a_position.xy * rectSize + a_texcoord0 * rad + a_texcoord1 * brd, 0, 1);\n"
-  "  gl_Position = u_modelViewProjectionTransform * (u_bboxTransform * localPos);\n"
+  "  gl_Position = u_modelViewProjectionTransform * (u_bboxTransform * vec4(localPos, 0, 1));\n"
   "}\n",
     .FragmentShader =
   "void main() {\n"
