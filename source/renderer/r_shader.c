@@ -437,7 +437,7 @@ Shader_BindConstants(struct shader const* shader,
     struct Texture const* image;
     float value[4] = { 0 };
     int is_set = 0;
-    if (e && _FindUnf(e->uniforms, e->numUniforms, desc->identifier, &unf)) {
+    if (e && _FindUnf(e->material.uniforms, e->material.numUniforms, desc->identifier, &unf)) {
       memcpy(value, unf->Value, sizeof(struct vec4));
 			is_set = 1;
     } else {

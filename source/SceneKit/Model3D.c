@@ -11,15 +11,17 @@ _CollectUniforms(lpObject_t hObject,
                  uint32_t blendMode)
 {
   ent->material.blendMode = (enum blend_mode)kBlendModeAlphaAutomatic;
-  ent->uniforms = u;
-  ent->numUniforms = OBJ_GetUniforms(hObject, u);
+  ent->material.uniforms = u;
+  ent->material.numUniforms = OBJ_GetUniforms(hObject, u);
 
   if (mat) {
     ent->shader = mat->Shader;
     if (mat->BlendMode != -1) {
       ent->material.blendMode = (enum blend_mode)mat->BlendMode;
     }
-    ent->numUniforms += OBJ_GetUniforms(CMP_GetObject(mat), u + ent->numUniforms);
+    ent->material.numUniforms +=
+    OBJ_GetUniforms(CMP_GetObject(mat),
+                    u + ent->material.numUniforms);
   }
   if (blendMode != -1) {
     ent->material.blendMode = (enum blend_mode)blendMode;
