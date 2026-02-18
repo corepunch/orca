@@ -330,187 +330,117 @@ Model_CreateRoundedBorder(struct model** ppModel)
 HRESULT
 Model_CreateRoundedBox(float width, float height, float depth, float radius, struct model** ppModel)
 {
-  if (radius <= 0.0f) return Model_CreateBox(width * 0.5f, height * 0.5f, depth * 0.5f, ppModel);
+  if (radius <= 0.0f) return Model_CreateBox(width*0.5f, height*0.5f, depth*0.5f, ppModel);
   
-  float maxRadius = width < height ? (width < depth ? width : depth) : (height < depth ? height : depth);
-  maxRadius *= 0.5f;
-  if (radius > maxRadius) radius = maxRadius;
-
-  #define SEGS 8
+#define SEGS 8
+#define STRIDE (SEGS + 1)
+#define VIDX(base, row, col)   ((base) + (row) * STRIDE + (col))
+#define ADD_QUAD(a, b, c, d)   { ADD_TRIANGLE(a, b, c); ADD_TRIANGLE(b, d, c); }
+  // fc: fixed col value, or -1 to iterate _s along col
+#define EDGE(c1, r1, dr1, fc1, c2, r2, dr2, fc2) \
+for (uint32_t _s = 0; _s < SEGS; _s++) \
+ADD_QUAD(VIDX(bases[c1], r1 + _s    *dr1, (fc1)>=0 ? (fc1) : _s),   \
+VIDX(bases[c2], r2 + _s    *dr2, (fc2)>=0 ? (fc2) : _s),   \
+VIDX(bases[c1], r1 + (_s+1)*dr1, (fc1)>=0 ? (fc1) : _s+1), \
+VIDX(bases[c2], r2 + (_s+1)*dr2, (fc2)>=0 ? (fc2) : _s+1))
+#define FACE(c0, c1, c2, c3, row, col) \
+ADD_QUAD(VIDX(bases[c0],row,col), VIDX(bases[c1],row,col), \
+VIDX(bases[c3],row,col), VIDX(bases[c2],row,col))
   
-  float boxWidth = width - 2.0f * radius;
-  float boxHeight = height - 2.0f * radius;
-  float boxDepth = depth - 2.0f * radius;
+  float clamp = fminf(radius, 0.5f * fminf(width, fminf(height, depth)));
+  float bw = (width  - 2*clamp) * 0.5f;
+  float bh = (height - 2*clamp) * 0.5f;
+  float bd = (depth  - 2*clamp) * 0.5f;
   
-  // Only generate corner vertices - edges and faces will use indices to reference them
-  uint32_t cornerVerts = 8 * (SEGS + 1) * (SEGS + 1);
-  uint32_t cornerIndices = 8 * SEGS * SEGS * 6;
-  uint32_t edgeIndices = 12 * SEGS * 6;
-  uint32_t faceIndices = 6 * 6;
-  uint32_t maxIndices = cornerIndices + edgeIndices + faceIndices;
-  
-  DRAWVERT verts[cornerVerts];
-  DRAWINDEX tris[maxIndices];
+  DRAWVERT  verts[8 * STRIDE * STRIDE];
+  DRAWINDEX tris [8*SEGS*SEGS*6 + 12*SEGS*6 + 6*6];
   uint32_t vidx = 0, iidx = 0;
-  
-  // Store corner start indices for later reference
   uint32_t bases[8];
   
-  // Define 8 corner positions (centers of the corner spheres)
-  vec3_t corners[8] = {
-    { boxWidth * 0.5f,  boxHeight * 0.5f,  boxDepth * 0.5f},  // 0: +X +Y +Z
-    {-boxWidth * 0.5f,  boxHeight * 0.5f,  boxDepth * 0.5f},  // 1: -X +Y +Z
-    {-boxWidth * 0.5f, -boxHeight * 0.5f,  boxDepth * 0.5f},  // 2: -X -Y +Z
-    { boxWidth * 0.5f, -boxHeight * 0.5f,  boxDepth * 0.5f},  // 3: +X -Y +Z
-    { boxWidth * 0.5f,  boxHeight * 0.5f, -boxDepth * 0.5f},  // 4: +X +Y -Z
-    {-boxWidth * 0.5f,  boxHeight * 0.5f, -boxDepth * 0.5f},  // 5: -X +Y -Z
-    {-boxWidth * 0.5f, -boxHeight * 0.5f, -boxDepth * 0.5f},  // 6: -X -Y -Z
-    { boxWidth * 0.5f, -boxHeight * 0.5f, -boxDepth * 0.5f},  // 7: +X -Y -Z
+  // Octant signs: +X+Y+Z, -X+Y+Z, -X-Y+Z, +X-Y+Z, +X+Y-Z, -X+Y-Z, -X-Y-Z, +X-Y-Z
+  static const int8_t oct[8][3] = {
+    { 1, 1, 1}, {-1, 1, 1}, {-1,-1, 1}, { 1,-1, 1},
+    { 1, 1,-1}, {-1, 1,-1}, {-1,-1,-1}, { 1,-1,-1}
   };
   
-  // Define which octant each corner sphere occupies
-  int octants[8][3] = {
-    {1, 1, 1}, {-1, 1, 1}, {-1, -1, 1}, {1, -1, 1},
-    {1, 1, -1}, {-1, 1, -1}, {-1, -1, -1}, {1, -1, -1}
-  };
-  
-  // Generate vertices for each corner
-  for (uint32_t corner = 0; corner < 8; corner++) {
-    bases[corner] = vidx;
+  for (uint32_t c = 0; c < 8; c++) {
+    bases[c] = vidx;
+    float cx = oct[c][0]*bw, cy = oct[c][1]*bh, cz = oct[c][2]*bd;
     
     for (uint32_t i = 0; i <= SEGS; i++) {
-      float phi = (float)i / (float)SEGS * M_PI_2;
-      
+      float phi = (float)i/SEGS * M_PI_2;
+      float sp = sinf(phi), cp = cosf(phi);
       for (uint32_t j = 0; j <= SEGS; j++) {
-        float theta = (float)j / (float)SEGS * M_PI_2;
-        
-        // Compute sphere point in octant (normalized direction from corner center)
-        float x = sin(phi) * cos(theta);
-        float y = cos(phi);
-        float z = sin(phi) * sin(theta);
-        
-        // Apply octant sign
-        x *= octants[corner][0];
-        y *= octants[corner][1];
-        z *= octants[corner][2];
-        
-        // Position at corner center (to be offset by weight * radius in shader)
-        float px = corners[corner].x;
-        float py = corners[corner].y;
-        float pz = corners[corner].z;
-        
-        float u = (float)j / (float)SEGS;
-        float v = (float)i / (float)SEGS;
-        
-        // Store offset direction in weight field (shader will multiply by radius)
-        verts[vidx++] = R_MakeVertexWithWeight(px, py, pz, u, v, x, y, z, x, y, z);
+        float theta = (float)j/SEGS * M_PI_2;
+        // Remap theta per-axis so boundary at j=0/SEGS lands on the axis-aligned direction
+        float ct = oct[c][0]*oct[c][2] < 0 ? sinf(theta) : cosf(theta);
+        float st = oct[c][0]*oct[c][2] < 0 ? cosf(theta) : sinf(theta);
+        float nx = oct[c][0] * sp * ct;
+        float ny = oct[c][1] * cp;
+        float nz = oct[c][2] * sp * st;
+        verts[vidx++] = R_MakeVertexWithWeight(cx, cy, cz,
+                                               (float)j/SEGS, (float)i/SEGS,
+                                               nx, ny, nz,
+                                               nx, ny, nz); // weight = offset dir, shader multiplies by radius
       }
     }
     
-    // Generate indices for this corner
-    for (uint32_t i = 0; i < SEGS; i++) {
-      for (uint32_t j = 0; j < SEGS; j++) {
-        uint32_t base = bases[corner] + i * (SEGS + 1) + j;
-        ADD_TRIANGLE(base, base + 1, base + SEGS + 1);
-        ADD_TRIANGLE(base + 1, base + SEGS + 2, base + SEGS + 1);
-      }
-    }
+    for (uint32_t i = 0; i < SEGS; i++)
+      for (uint32_t j = 0; j < SEGS; j++)
+        ADD_QUAD(VIDX(bases[c], i,   j  ), VIDX(bases[c], i+1, j  ),
+                 VIDX(bases[c], i,   j+1), VIDX(bases[c], i+1, j+1));
   }
   
-  // Edge strips - connecting corners using existing vertices
-  // Each edge connects two corners along one of the corner sphere's boundaries
-  // Edge definition: [corner1, corner2, phi_or_theta, value]
-  // For edges along X: connect vertices where theta varies, phi is constant
-  // For edges along Y: connect vertices where phi varies, theta is constant  
-  // For edges along Z: connect vertices where both vary in specific pattern
+  // 12 edges -- EDGE(corner1, startRow1, dRow1, fixedCol1,  corner2, ...)
+  // fc >= 0: fixed col; fc == -1: col iterates with _s
   
-  struct { int c1, c2; int fixedDim; int fixedVal; } edges[12] = {
-    // Front face (Z+): corners 0,1,2,3
-    {0, 1, 1, SEGS},  // Top edge: phi=0 (y axis), theta varies
-    {1, 2, 0, 0},     // Left edge: theta=0 (x axis), phi varies
-    {2, 3, 1, SEGS},  // Bottom edge: phi=0, theta varies
-    {3, 0, 0, SEGS},  // Right edge: theta=SEGS, phi varies
-    
-    // Back face (Z-): corners 4,5,6,7
-    {4, 5, 1, SEGS},  // Top edge
-    {5, 6, 0, 0},     // Left edge
-    {6, 7, 1, SEGS},  // Bottom edge
-    {7, 4, 0, SEGS},  // Right edge
-    
-    // Connecting edges (Z direction)
-    {0, 4, 0, 0},     // Top-right
-    {1, 5, 0, SEGS},  // Top-left
-    {2, 6, 0, SEGS},  // Bottom-left
-    {3, 7, 0, 0},     // Bottom-right
-  };
+  // Z edges: walk phi (rows), theta=0 col fixed
+  EDGE(0, 0,1, 0,   4, 0,1, 0);
+  EDGE(1, 0,1, 0,   5, 0,1, 0);
+  EDGE(2, 0,1, 0,   6, 0,1, 0);
+  EDGE(3, 0,1, 0,   7, 0,1, 0);
   
-  for (uint32_t e = 0; e < 12; e++) {
-    int c1 = edges[e].c1;
-    int c2 = edges[e].c2;
-    int fixedDim = edges[e].fixedDim;
-    int fixedVal = edges[e].fixedVal;
-    
-    // Connect the edge using existing corner vertices
-    for (uint32_t seg = 0; seg < SEGS; seg++) {
-      uint32_t v1, v2, v3, v4;
-      
-      if (fixedDim == 0) { // theta is fixed, phi varies
-        v1 = bases[c1] + seg * (SEGS + 1) + fixedVal;
-        v2 = bases[c1] + (seg + 1) * (SEGS + 1) + fixedVal;
-        v3 = bases[c2] + (SEGS - seg - 1) * (SEGS + 1) + (SEGS - fixedVal);
-        v4 = bases[c2] + (SEGS - seg) * (SEGS + 1) + (SEGS - fixedVal);
-      } else { // phi is fixed, theta varies
-        v1 = bases[c1] + fixedVal * (SEGS + 1) + seg;
-        v2 = bases[c1] + fixedVal * (SEGS + 1) + seg + 1;
-        v3 = bases[c2] + (SEGS - fixedVal) * (SEGS + 1) + (SEGS - seg - 1);
-        v4 = bases[c2] + (SEGS - fixedVal) * (SEGS + 1) + (SEGS - seg);
-      }
-      
-      ADD_TRIANGLE(v1, v2, v3);
-      ADD_TRIANGLE(v2, v4, v3);
-    }
-  }
+  // Y edges: phi=SEGS row fixed, walk theta (cols)
+  EDGE(0, SEGS,0,-1,   1, SEGS,0,-1);
+  EDGE(3, SEGS,0,-1,   2, SEGS,0,-1);
+  EDGE(4, SEGS,0,-1,   5, SEGS,0,-1);
+  EDGE(7, SEGS,0,-1,   6, SEGS,0,-1);
   
-  // Face quads - using corner vertices at the boundaries
-  struct { int c[4]; int phiVal; int thetaVal; } faces[6] = {
-    {{0, 3, 2, 1}, SEGS, SEGS},   // Front (+Z): phi=SEGS, theta=SEGS
-    {{4, 5, 6, 7}, SEGS, 0},      // Back (-Z): phi=SEGS, theta=0
-    {{0, 1, 5, 4}, 0, SEGS},      // Top (+Y): phi=0, theta=SEGS
-    {{3, 7, 6, 2}, SEGS, SEGS},   // Bottom (-Y): phi=SEGS, theta=SEGS
-    {{0, 4, 7, 3}, SEGS, 0},      // Right (+X): phi=SEGS, theta=0
-    {{1, 2, 6, 5}, SEGS, SEGS}    // Left (-X): phi=SEGS, theta=SEGS
-  };
+  // X edges: walk phi (rows), theta=SEGS col fixed
+  EDGE(0, 0,1,SEGS,   3, 0,1,SEGS);
+  EDGE(1, 0,1,SEGS,   2, 0,1,SEGS);
+  EDGE(4, 0,1,SEGS,   7, 0,1,SEGS);
+  EDGE(5, 0,1,SEGS,   6, 0,1,SEGS);
   
-  for (uint32_t f = 0; f < 6; f++) {
-    // Get the corner indices for this face
-    uint32_t v0 = bases[faces[f].c[0]] + faces[f].phiVal * (SEGS + 1) + faces[f].thetaVal;
-    uint32_t v1 = bases[faces[f].c[1]] + faces[f].phiVal * (SEGS + 1) + (SEGS - faces[f].thetaVal);
-    uint32_t v2 = bases[faces[f].c[2]] + faces[f].phiVal * (SEGS + 1) + (SEGS - faces[f].thetaVal);
-    uint32_t v3 = bases[faces[f].c[3]] + faces[f].phiVal * (SEGS + 1) + faces[f].thetaVal;
-    
-    ADD_TRIANGLE(v0, v1, v2);
-    ADD_TRIANGLE(v0, v2, v3);
-  }
+  // 6 faces -- one quad per face using the outermost corner boundary vertices
+  FACE(0,1,2,3,  SEGS,SEGS);  // +Z
+  FACE(4,5,6,7,  SEGS,   0);  // -Z
+  FACE(0,1,5,4,     0,   0);  // +Y
+  FACE(3,2,6,7,  SEGS,   0);  // -Y
+  FACE(0,3,7,4,  SEGS,   0);  // +X
+  FACE(1,2,6,5,  SEGS,SEGS);  // -X
   
   DRAWSURFATTR attr[] = {
-    VERTEX_SEMANTIC_POSITION, VERTEX_ATTR_DATATYPE_FLOAT32,
+    VERTEX_SEMANTIC_POSITION,  VERTEX_ATTR_DATATYPE_FLOAT32,
     VERTEX_SEMANTIC_TEXCOORD0, VERTEX_ATTR_DATATYPE_FLOAT32,
-    VERTEX_SEMANTIC_NORMAL, VERTEX_ATTR_DATATYPE_FLOAT32,
-    VERTEX_SEMANTIC_WEIGHT, VERTEX_ATTR_DATATYPE_FLOAT32,
-    VERTEX_SEMANTIC_COLOR, VERTEX_ATTR_DATATYPE_UINT8 | VERTEX_ATTR_DATATYPE_NORMALIZED,
+    VERTEX_SEMANTIC_NORMAL,    VERTEX_ATTR_DATATYPE_FLOAT32,
+    VERTEX_SEMANTIC_WEIGHT,    VERTEX_ATTR_DATATYPE_FLOAT32,
+    VERTEX_SEMANTIC_COLOR,     VERTEX_ATTR_DATATYPE_UINT8 | VERTEX_ATTR_DATATYPE_NORMALIZED,
     VERTEX_SEMANTIC_COUNT
   };
-
-  return Model_Create(attr, &(DRAWSURF) {
-    .vertices = verts,
-    .indices = tris,
-    .numVertices = vidx,
-    .numIndices = iidx,
+  
+  return Model_Create(attr, &(DRAWSURF){
+    .vertices=verts, .indices=tris,
+    .numVertices=vidx, .numIndices=iidx
   }, ppModel);
-
-  #undef SEGS
+  
+#undef FACE
+#undef EDGE
+#undef ADD_QUAD
+#undef VIDX
+#undef STRIDE
+#undef SEGS
 }
-
 HRESULT
 Model_CreateCapsule(float width, float height, float depth, struct model** ppModel)
 {
