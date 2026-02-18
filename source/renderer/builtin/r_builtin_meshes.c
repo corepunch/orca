@@ -354,7 +354,7 @@ Model_CreateRoundedBox(float width, float height, float depth, float radius, str
   uint32_t vidx = 0, iidx = 0;
   
   // Store corner start indices for later reference
-  uint32_t cornerStarts[8];
+  uint32_t bases[8];
   
   // Define 8 corner positions (centers of the corner spheres)
   vec3_t corners[8] = {
@@ -376,7 +376,7 @@ Model_CreateRoundedBox(float width, float height, float depth, float radius, str
   
   // Generate vertices for each corner
   for (uint32_t corner = 0; corner < 8; corner++) {
-    cornerStarts[corner] = vidx;
+    bases[corner] = vidx;
     
     for (uint32_t i = 0; i <= SEGS; i++) {
       float phi = (float)i / (float)SEGS * M_PI_2;
@@ -410,15 +410,9 @@ Model_CreateRoundedBox(float width, float height, float depth, float radius, str
     // Generate indices for this corner
     for (uint32_t i = 0; i < SEGS; i++) {
       for (uint32_t j = 0; j < SEGS; j++) {
-        uint32_t base = cornerStarts[corner] + i * (SEGS + 1) + j;
-        
-        tris[iidx++] = base;
-        tris[iidx++] = base + 1;
-        tris[iidx++] = base + SEGS + 1;
-        
-        tris[iidx++] = base + 1;
-        tris[iidx++] = base + SEGS + 2;
-        tris[iidx++] = base + SEGS + 1;
+        uint32_t base = bases[corner] + i * (SEGS + 1) + j;
+        ADD_TRIANGLE(base, base + 1, base + SEGS + 1);
+        ADD_TRIANGLE(base + 1, base + SEGS + 2, base + SEGS + 1);
       }
     }
   }
@@ -430,7 +424,7 @@ Model_CreateRoundedBox(float width, float height, float depth, float radius, str
   // For edges along Y: connect vertices where phi varies, theta is constant  
   // For edges along Z: connect vertices where both vary in specific pattern
   
-  struct { int c1, c2; int fixedDim; int fixedVal; } edgeDefs[12] = {
+  struct { int c1, c2; int fixedDim; int fixedVal; } edges[12] = {
     // Front face (Z+): corners 0,1,2,3
     {0, 1, 1, SEGS},  // Top edge: phi=0 (y axis), theta varies
     {1, 2, 0, 0},     // Left edge: theta=0 (x axis), phi varies
@@ -451,39 +445,34 @@ Model_CreateRoundedBox(float width, float height, float depth, float radius, str
   };
   
   for (uint32_t e = 0; e < 12; e++) {
-    int c1 = edgeDefs[e].c1;
-    int c2 = edgeDefs[e].c2;
-    int fixedDim = edgeDefs[e].fixedDim;
-    int fixedVal = edgeDefs[e].fixedVal;
+    int c1 = edges[e].c1;
+    int c2 = edges[e].c2;
+    int fixedDim = edges[e].fixedDim;
+    int fixedVal = edges[e].fixedVal;
     
     // Connect the edge using existing corner vertices
     for (uint32_t seg = 0; seg < SEGS; seg++) {
       uint32_t v1, v2, v3, v4;
       
       if (fixedDim == 0) { // theta is fixed, phi varies
-        v1 = cornerStarts[c1] + seg * (SEGS + 1) + fixedVal;
-        v2 = cornerStarts[c1] + (seg + 1) * (SEGS + 1) + fixedVal;
-        v3 = cornerStarts[c2] + (SEGS - seg - 1) * (SEGS + 1) + (SEGS - fixedVal);
-        v4 = cornerStarts[c2] + (SEGS - seg) * (SEGS + 1) + (SEGS - fixedVal);
+        v1 = bases[c1] + seg * (SEGS + 1) + fixedVal;
+        v2 = bases[c1] + (seg + 1) * (SEGS + 1) + fixedVal;
+        v3 = bases[c2] + (SEGS - seg - 1) * (SEGS + 1) + (SEGS - fixedVal);
+        v4 = bases[c2] + (SEGS - seg) * (SEGS + 1) + (SEGS - fixedVal);
       } else { // phi is fixed, theta varies
-        v1 = cornerStarts[c1] + fixedVal * (SEGS + 1) + seg;
-        v2 = cornerStarts[c1] + fixedVal * (SEGS + 1) + seg + 1;
-        v3 = cornerStarts[c2] + (SEGS - fixedVal) * (SEGS + 1) + (SEGS - seg - 1);
-        v4 = cornerStarts[c2] + (SEGS - fixedVal) * (SEGS + 1) + (SEGS - seg);
+        v1 = bases[c1] + fixedVal * (SEGS + 1) + seg;
+        v2 = bases[c1] + fixedVal * (SEGS + 1) + seg + 1;
+        v3 = bases[c2] + (SEGS - fixedVal) * (SEGS + 1) + (SEGS - seg - 1);
+        v4 = bases[c2] + (SEGS - fixedVal) * (SEGS + 1) + (SEGS - seg);
       }
       
-      tris[iidx++] = v1;
-      tris[iidx++] = v2;
-      tris[iidx++] = v3;
-      
-      tris[iidx++] = v2;
-      tris[iidx++] = v4;
-      tris[iidx++] = v3;
+      ADD_TRIANGLE(v1, v2, v3);
+      ADD_TRIANGLE(v2, v4, v3);
     }
   }
   
   // Face quads - using corner vertices at the boundaries
-  struct { int c[4]; int phiVal; int thetaVal; } faceDefs[6] = {
+  struct { int c[4]; int phiVal; int thetaVal; } faces[6] = {
     {{0, 3, 2, 1}, SEGS, SEGS},   // Front (+Z): phi=SEGS, theta=SEGS
     {{4, 5, 6, 7}, SEGS, 0},      // Back (-Z): phi=SEGS, theta=0
     {{0, 1, 5, 4}, 0, SEGS},      // Top (+Y): phi=0, theta=SEGS
@@ -494,18 +483,13 @@ Model_CreateRoundedBox(float width, float height, float depth, float radius, str
   
   for (uint32_t f = 0; f < 6; f++) {
     // Get the corner indices for this face
-    uint32_t v0 = cornerStarts[faceDefs[f].c[0]] + faceDefs[f].phiVal * (SEGS + 1) + faceDefs[f].thetaVal;
-    uint32_t v1 = cornerStarts[faceDefs[f].c[1]] + faceDefs[f].phiVal * (SEGS + 1) + (SEGS - faceDefs[f].thetaVal);
-    uint32_t v2 = cornerStarts[faceDefs[f].c[2]] + faceDefs[f].phiVal * (SEGS + 1) + (SEGS - faceDefs[f].thetaVal);
-    uint32_t v3 = cornerStarts[faceDefs[f].c[3]] + faceDefs[f].phiVal * (SEGS + 1) + faceDefs[f].thetaVal;
+    uint32_t v0 = bases[faces[f].c[0]] + faces[f].phiVal * (SEGS + 1) + faces[f].thetaVal;
+    uint32_t v1 = bases[faces[f].c[1]] + faces[f].phiVal * (SEGS + 1) + (SEGS - faces[f].thetaVal);
+    uint32_t v2 = bases[faces[f].c[2]] + faces[f].phiVal * (SEGS + 1) + (SEGS - faces[f].thetaVal);
+    uint32_t v3 = bases[faces[f].c[3]] + faces[f].phiVal * (SEGS + 1) + faces[f].thetaVal;
     
-    tris[iidx++] = v0;
-    tris[iidx++] = v1;
-    tris[iidx++] = v2;
-    
-    tris[iidx++] = v0;
-    tris[iidx++] = v2;
-    tris[iidx++] = v3;
+    ADD_TRIANGLE(v0, v1, v2);
+    ADD_TRIANGLE(v0, v2, v3);
   }
   
   DRAWSURFATTR attr[] = {
@@ -517,16 +501,12 @@ Model_CreateRoundedBox(float width, float height, float depth, float radius, str
     VERTEX_SEMANTIC_COUNT
   };
 
-  DRAWSURF dsurf;
-  dsurf.vertices = verts;
-  dsurf.indices = tris;
-  dsurf.submeshes = NULL;
-  dsurf.neighbors = NULL;
-  dsurf.numVertices = vidx;
-  dsurf.numIndices = iidx;
-  dsurf.numSubmeshes = 0;
-
-  return Model_Create(attr, &dsurf, ppModel);
+  return Model_Create(attr, &(DRAWSURF) {
+    .vertices = verts,
+    .indices = tris,
+    .numVertices = vidx,
+    .numIndices = iidx,
+  }, ppModel);
 
   #undef SEGS
 }
