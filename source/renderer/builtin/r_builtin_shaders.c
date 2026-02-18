@@ -103,7 +103,7 @@ struct shader_desc shader_ui = {
   "  vec2 s = step(vec2(0.5), a_position.xy);\n"
   "  float rad = mix(mix(r.x, r.y, s.x), mix(r.w, r.z, s.x), s.y);\n"
   "  vec2 brd = vec2(mix(b.x, b.y, s.x), mix(b.z, b.w, s.y));\n"
-  "  vec2 rectSize = vec2(length(u_bboxTransform[0].xyz), length(u_bboxTransform[1].xyz));\n"
+  "  vec2 rectSize = vec2(u_bboxTransform[0].x, u_bboxTransform[1].y);\n"
   "  vec2 localPos = a_position.xy + (a_texcoord0 * rad + a_texcoord1 * brd) / rectSize;\n"
   "  vec3 tex = vec3(localPos.x, 1.0 - localPos.y, 1.0);\n"
   "  v_texcoord0 = (u_textureTransform * tex).xy;\n"
@@ -323,7 +323,7 @@ struct shader_desc shader_button = {
   .VertexShader =
   "void main() {\n"
   "  vec3 pos = a_position.xyz;\n"
-  "  vec3 rectSize = vec3(length(u_bboxTransform[0].xyz), length(u_bboxTransform[1].xyz), length(u_bboxTransform[2].xyz));\n"
+  "  vec3 rectSize = vec3(u_bboxTransform[0].x, u_bboxTransform[1].y, u_bboxTransform[2].z);\n"
   "  vec3 rectMin = u_bboxTransform[3].xyz;\n"
   "  vec3 rectCenter = rectMin + rectSize * 0.5;\n"
   "  float koeff = rectSize.y / rectSize.x;\n"
@@ -393,7 +393,7 @@ struct shader_desc shader_roundedbox = {
   },
   .VertexShader =
   "void main() {\n"
-  "  vec3 rectSize = vec3(length(u_bboxTransform[0].xyz), length(u_bboxTransform[1].xyz), length(u_bboxTransform[2].xyz));\n"
+  "  vec3 rectSize = vec3(u_bboxTransform[0].x, u_bboxTransform[1].y, u_bboxTransform[2].z);\n"
   "  vec3 rectMin = u_bboxTransform[3].xyz;\n"
   "  vec3 rectCenter = rectMin + rectSize * 0.5;\n"
   "  vec3 pos = a_position.xyz * rectSize + a_weight.xyz * u_radius.x;\n"
