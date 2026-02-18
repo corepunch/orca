@@ -48,7 +48,7 @@ HANDLER(TextBlock3D, Render)
 		.type        = ET_PLANE,
 		.opacity     = GetNode3D(hObject)->_opacity,
 		.matrix      = GetNode3D(hObject)->Matrix,
-		.rect        = mesh_rect(hObject, pTextBlock3D),
+		.bbox        = BOX3_FromRect(mesh_rect(hObject, pTextBlock3D)),
 		.text 		 = &text,
 	};
 	
@@ -69,7 +69,7 @@ HANDLER(TextBlock3D, Render)
   struct ViewEntity entity = {
     .debugName = OBJ_GetName(hObject),
     .radius = (struct vec4){0},
-    .rect = (struct rect){-w/2,-h/2,w,h},
+    .bbox = BOX3_FromRect(((struct rect){-w/2,-h/2,w,h})),
     .text = pTextBlock->_text,
     .material = (struct ViewMaterial) {
       .opacity = GetNode3D(hObject)->_opacity,

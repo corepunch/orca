@@ -517,13 +517,13 @@ Shader_BindMaterial(struct shader const* shader,
     struct Texture const* label = Text_GetImage(ent->text);
     if (label) {
       texture = label;
-      ((struct ViewEntity *)ent)->rect.width = label->Width;
-      ((struct ViewEntity *)ent)->rect.height = label->Height;
+      ((struct ViewEntity *)ent)->bbox.max.x = ((struct ViewEntity *)ent)->bbox.min.x + label->Width;
+      ((struct ViewEntity *)ent)->bbox.max.y = ((struct ViewEntity *)ent)->bbox.min.y + label->Height;
     }
   }
 
-  float w = MAX(1, ent->rect.width + ent->borderOffset);
-  float h = MAX(1, ent->rect.height + ent->borderOffset);
+  float w = MAX(1, (ent->bbox.max.x - ent->bbox.min.x) + ent->borderOffset);
+  float h = MAX(1, (ent->bbox.max.y - ent->bbox.min.y) + ent->borderOffset);
 
 	if (!memcmp(&color, &(struct color){0}, sizeof(struct color))) {
 		color = (struct color){1, 1, 1, 1};
@@ -630,7 +630,16 @@ Shader_BindMaterial(struct shader const* shader,
                ent->borderWidth.w);
         break;
       case kShaderUniform_Rectangle:
-        R_Call(glUniform4fv, location, 1, (GLfloat const*)&ent->rect);
+        {
+          // Convert box3 to vec4 (x, y, width, height) for shader
+          float rect_vec4[4] = {
+            ent->bbox.min.x,
+            ent->bbox.min.y,
+            ent->bbox.max.x - ent->bbox.min.x,
+            ent->bbox.max.y - ent->bbox.min.y
+          };
+          R_Call(glUniform4fv, location, 1, rect_vec4);
+        }
         break;
       case kShaderUniform_Lights:
         R_Call(glUniformMatrix4fv, location, view->num_lights, FALSE, (float*)&view->lights);

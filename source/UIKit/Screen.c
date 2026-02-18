@@ -132,10 +132,12 @@ HANDLER(Node2D, DrawBrush)
   Node2D_GetViewEntity(hObject,&entity,pDrawBrush->image,pDrawBrush->brush);
 
   if (!pDrawBrush->foreground) {
-		entity.rect = Node2D_GetBackgroundRect(pNode2D);
+		entity.bbox = BOX3_FromRect(Node2D_GetBackgroundRect(pNode2D));
 		if (pNode2D->ClipChildren) {
-			entity.rect.width = MAX(pNode2D->_node->Size.Axis[0].Scroll, entity.rect.width);
-			entity.rect.height = MAX(pNode2D->_node->Size.Axis[1].Scroll, entity.rect.height);
+			float new_width = MAX(pNode2D->_node->Size.Axis[0].Scroll, entity.bbox.max.x - entity.bbox.min.x);
+			float new_height = MAX(pNode2D->_node->Size.Axis[1].Scroll, entity.bbox.max.y - entity.bbox.min.y);
+			entity.bbox.max.x = entity.bbox.min.x + new_width;
+			entity.bbox.max.y = entity.bbox.min.y + new_height;
 		}
   }
 
@@ -318,7 +320,7 @@ Node2D_GetViewEntity(lpObject_t hObject,
   entity->material.opacity = node2d->_opacity;
   entity->material.texture = image;
   entity->material.textureMatrix = MAT3_Identity();
-  entity->rect = node2d->_rect;
+  entity->bbox = BOX3_FromRect(node2d->_rect);
   entity->matrix = node2d->Matrix;
   entity->radius = *(struct vec4*)&node2d->_node->Border.Radius;
 	

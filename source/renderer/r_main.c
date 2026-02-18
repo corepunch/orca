@@ -172,8 +172,10 @@ CreateNinePatchMesh(struct ViewEntity* ent)
 
   for (int y = 0, i = 0; y < 4; y++) {
     for (int x = 0; x < 4; x++, i++) {
+      float bbox_width = ent->bbox.max.x - ent->bbox.min.x;
+      float bbox_height = ent->bbox.max.y - ent->bbox.min.y;
       vertices[i] = vertex_new2(
-        _x[x] / ent->rect.width, _y[y] / ent->rect.height, _u[x], 1 - _v[y]);
+        _x[x] / bbox_width, _y[y] / bbox_height, _u[x], 1 - _v[y]);
     }
   }
 
@@ -212,8 +214,8 @@ CreateNinePatchMesh(struct ViewEntity* ent)
 static void
 _DrawDebug(struct ViewEntity* ent, struct ViewDef const* view)
 {
-  float const w = ent->rect.width;
-  float const h = ent->rect.height;
+  float const w = ent->bbox.max.x - ent->bbox.min.x;
+  float const h = ent->bbox.max.y - ent->bbox.min.y;
   struct vec3 const points[] = {
     { 0, 0, 0 }, { w, 0, 0 }, { w, h, 0 }, { 0, h, 0 }, { 0, 0, 0 },
   };
@@ -235,10 +237,16 @@ _UpdateCinematicEntity(struct ViewEntity* ent)
   ent->material.texture = tr.textures[TX_CINEMATIC];
   ent->material.textureMatrix.v[4] = -1;
   ent->material.textureMatrix.v[7] = 1;
-  ent->rect.x += (ent->rect.width - tr.textures[TX_CINEMATIC]->Width) / 2;
-  ent->rect.y += (ent->rect.height - tr.textures[TX_CINEMATIC]->Height) / 2;
-  ent->rect.width = tr.textures[TX_CINEMATIC]->Width;
-  ent->rect.height = tr.textures[TX_CINEMATIC]->Height;
+
+  float bbox_width = ent->bbox.max.x - ent->bbox.min.x;
+  float bbox_height = ent->bbox.max.y - ent->bbox.min.y;
+  float offset_x = (bbox_width - tr.textures[TX_CINEMATIC]->Width) / 2;
+  float offset_y = (bbox_height - tr.textures[TX_CINEMATIC]->Height) / 2;
+  
+  ent->bbox.min.x += offset_x;
+  ent->bbox.min.y += offset_y;
+  ent->bbox.max.x = ent->bbox.min.x + tr.textures[TX_CINEMATIC]->Width;
+  ent->bbox.max.y = ent->bbox.min.y + tr.textures[TX_CINEMATIC]->Height;
 }
 
 HRESULT
@@ -362,7 +370,7 @@ R_DrawImage(PDRAWIMAGESTRUCT parm)
   struct WI_Size screen = _GetRenderTargetSize();
   struct ViewDef view = { 0 };
   struct ViewEntity ent = {
-    .rect = parm->rect,
+    .bbox = BOX3_FromRect(parm->rect),
     .material = (struct ViewMaterial) {
       .texture = parm->img,
       .opacity = 1,
@@ -613,12 +621,7 @@ R_DrawConsole(PDRAWCONSOLESTRUCT parm)
   R_SetPointFiltering();
 
   struct ViewEntity ent = {
-    .rect = {
-      (int)(parm->Rect.x),
-      (int)(parm->Rect.y),
-      (int)(parm->Rect.width),
-      (int)(parm->Rect.height)
-    },
+    .bbox = BOX3_FromRect(parm->Rect),
     .material = (struct ViewMaterial) {
       .opacity = 1.0,
       .texture = tr.textures[TX_DEBUG],
@@ -637,8 +640,10 @@ R_DrawConsole(PDRAWCONSOLESTRUCT parm)
   if (parm->DrawShadow) {
     struct ViewEntity outline = ent;
     outline.shader = NULL;
-    outline.rect.x += 8;
-    outline.rect.y += 8;
+    outline.bbox.min.x += 8;
+    outline.bbox.min.y += 8;
+    outline.bbox.max.x += 8;
+    outline.bbox.max.y += 8;
     outline.material.blendMode = BLEND_MODE_PREMULTIPLIED_ALPHA;
     outline.material.opacity = 0.75;
     outline.material.texture = tr.textures[TX_BLACK];
@@ -702,12 +707,16 @@ R_DrawConsole(PDRAWCONSOLESTRUCT parm)
 
 //  if (parm->StickHeader) {
   int width = 4;
-  float size = ent.rect.height / ((parm->Height-1) * CONSOLE_CHAR_HEIGHT);
+  float bbox_height = ent.bbox.max.y - ent.bbox.min.y;
+  float bbox_width = ent.bbox.max.x - ent.bbox.min.x;
+  float size = bbox_height / ((parm->Height-1) * CONSOLE_CHAR_HEIGHT);
   ent.shader = NULL;
-  ent.rect.x = ent.rect.x + ent.rect.width - width;
-  ent.rect.width = width;
-  ent.rect.y -= ent.rect.height * parm->Scroll.y / (parm->Height * CONSOLE_CHAR_HEIGHT);
-  ent.rect.height = ent.rect.height * size;
+  float new_x = ent.bbox.min.x + bbox_width - width;
+  ent.bbox.max.x = new_x + width;
+  ent.bbox.min.x = new_x;
+  float scroll_offset = bbox_height * parm->Scroll.y / (parm->Height * CONSOLE_CHAR_HEIGHT);
+  ent.bbox.min.y -= scroll_offset;
+  ent.bbox.max.y = ent.bbox.min.y + bbox_height * size;
   ent.material.texture = NULL;
   ent.material.opacity = 0.5;
   if (size < 1) {
@@ -724,7 +733,7 @@ R_DrawToolbarIcon(PDRAWTOOLBARICONSTRUCT parm)
   R_SetPointFiltering();
   
   struct ViewEntity ent = {
-    .rect = {parm->x, parm->y, 24, 24},
+    .bbox = BOX3_FromRect(((struct rect){parm->x, parm->y, 24, 24})),
     .material = (struct ViewMaterial) {
       .opacity = 1.0,
       .texture = tr.textures[TX_TOOLBAR],
