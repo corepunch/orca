@@ -26,7 +26,8 @@ static lpcString_t uniforms[kShaderUniform_Count] = {
   "u_cursorPosition",               // kShaderUniform_CursorPosition
   "u_radius",                       // kShaderUniform_Radius
   "u_borderWidth",                  // kShaderUniform_BorderWidth
-  "u_rect",                         // kShaderUniform_Rectangle
+  "u_bboxMin",                      // kShaderUniform_BBoxMin
+  "u_bboxMax",                      // kShaderUniform_BBoxMax
   "u_lights",                       // kShaderUniform_Lights
 };
 
@@ -629,17 +630,17 @@ Shader_BindMaterial(struct shader const* shader,
                ent->borderWidth.z,
                ent->borderWidth.w);
         break;
-      case kShaderUniform_Rectangle:
-        {
-          // Convert box3 to vec4 (x, y, width, height) for shader
-          float rect_vec4[4] = {
-            ent->bbox.min.x,
-            ent->bbox.min.y,
-            ent->bbox.max.x - ent->bbox.min.x,
-            ent->bbox.max.y - ent->bbox.min.y
-          };
-          R_Call(glUniform4fv, location, 1, rect_vec4);
-        }
+      case kShaderUniform_BBoxMin:
+        R_Call(glUniform3f, location,
+               ent->bbox.min.x,
+               ent->bbox.min.y,
+               ent->bbox.min.z);
+        break;
+      case kShaderUniform_BBoxMax:
+        R_Call(glUniform3f, location,
+               ent->bbox.max.x,
+               ent->bbox.max.y,
+               ent->bbox.max.z);
         break;
       case kShaderUniform_Lights:
         R_Call(glUniformMatrix4fv, location, view->num_lights, FALSE, (float*)&view->lights);
