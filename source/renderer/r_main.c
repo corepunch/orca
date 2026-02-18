@@ -733,7 +733,7 @@ R_DrawToolbarIcon(PDRAWTOOLBARICONSTRUCT parm)
   R_SetPointFiltering();
   
   struct ViewEntity ent = {
-    .bbox = BOX3_FromRect((struct rect){parm->x, parm->y, 24, 24}),
+    .bbox = BOX3_FromRect(((struct rect){parm->x, parm->y, 24, 24})),
     .material = (struct ViewMaterial) {
       .opacity = 1.0,
       .texture = tr.textures[TX_TOOLBAR],

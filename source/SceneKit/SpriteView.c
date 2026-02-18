@@ -35,10 +35,10 @@ HANDLER(SpriteView, Render)
   struct ViewEntity entity = {
     .debugName = OBJ_GetName(hObject),
     .radius = (struct vec4){0},
-    .bbox = BOX3_FromRect((struct rect){
+    .bbox = BOX3_FromRect(((struct rect){
       -0.005f*viewbox.width, -0.005f*viewbox.height,
       0.01f*viewbox.width, 0.01f*viewbox.height
-    }),
+    })),
     .matrix = GetNode3D(hObject)->Matrix,
     .material = (struct ViewMaterial){
       .opacity = GetNode3D(hObject)->_opacity,
