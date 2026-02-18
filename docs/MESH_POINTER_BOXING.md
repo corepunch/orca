@@ -8,7 +8,7 @@ The mesh pointer boxing system allows encoding entity type information directly 
 
 The system uses tagged pointers to distinguish between:
 1. **Real mesh pointers** - Actual `Mesh*` objects (tag bits are 0)
-2. **Entity type constants** - Special values like `MESH_CAPSULE` (tag bits are non-zero)
+2. **Entity type constants** - Special enum values cast to pointers like `MESH_CAPSULE`
 
 Since pointers are typically aligned to 8 bytes, the lower 3 bits are always zero for real pointers. We use these bits to encode type information.
 
@@ -26,17 +26,18 @@ Since pointers are typically aligned to 8 bytes, the lower 3 bits are always zer
 ```c
 typedef uintptr_t MeshRef;
 
-// Tag values
-#define MESH_TAG_PTR    0x0
-#define MESH_TAG_RECT   0x1
-#define MESH_TAG_TEAPOT 0x2
-#define MESH_TAG_PLANE  0x3
-#define MESH_TAG_DOT    0x4
-#define MESH_TAG_CAPSULE 0x5
-#define MESH_TAG_ROUNDED_BOX 0x6
+// Boxed mesh type enum
+enum boxed_mesh_type {
+  BOXED_MESH_RECTANGLE = 1,
+  BOXED_MESH_TEAPOT = 2,
+  BOXED_MESH_PLANE = 3,
+  BOXED_MESH_DOT = 4,
+  BOXED_MESH_CAPSULE = 5,
+  BOXED_MESH_ROUNDED_BOX = 6,
+};
 
 // Helper macros
-#define mesh_is_ptr(m) (((m) & MESH_TAG_MASK) == MESH_TAG_PTR)
+#define mesh_is_ptr(m) (((m) & MESH_TAG_MASK) == 0)
 #define mesh_get_ptr(m) ((void*)((m) & MESH_PTR_MASK))
 #define mesh_from_ptr(p) ((MeshRef)(p))
 ```
@@ -44,12 +45,13 @@ typedef uintptr_t MeshRef;
 ### Entity Type Constants (in `renderer.h`)
 
 ```c
-#define MESH_RECTANGLE   ((struct Mesh const*)MESH_TAG_RECT)
-#define MESH_TEAPOT      ((struct Mesh const*)MESH_TAG_TEAPOT)
-#define MESH_PLANE       ((struct Mesh const*)MESH_TAG_PLANE)
-#define MESH_DOT         ((struct Mesh const*)MESH_TAG_DOT)
-#define MESH_CAPSULE     ((struct Mesh const*)MESH_TAG_CAPSULE)
-#define MESH_ROUNDED_BOX ((struct Mesh const*)MESH_TAG_ROUNDED_BOX)
+// Enum values cast to Mesh pointers - safe because we always check with mesh_is_ptr()
+#define MESH_RECTANGLE   ((struct Mesh const*)BOXED_MESH_RECTANGLE)
+#define MESH_TEAPOT      ((struct Mesh const*)BOXED_MESH_TEAPOT)
+#define MESH_PLANE       ((struct Mesh const*)BOXED_MESH_PLANE)
+#define MESH_DOT         ((struct Mesh const*)BOXED_MESH_DOT)
+#define MESH_CAPSULE     ((struct Mesh const*)BOXED_MESH_CAPSULE)
+#define MESH_ROUNDED_BOX ((struct Mesh const*)BOXED_MESH_ROUNDED_BOX)
 ```
 
 ## Usage Examples
@@ -87,6 +89,10 @@ if (ent.mesh) {
     }
 }
 ```
+
+## Safety
+
+The boxed pointers (MESH_RECTANGLE, MESH_CAPSULE, etc.) are enum values cast to pointers. These are **never dereferenced** - the code always checks `mesh_is_ptr()` first to distinguish real pointers from boxed enum values. This makes the system safe even though the underlying values are small integers.
 
 ## Benefits
 
