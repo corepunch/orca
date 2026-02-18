@@ -15,6 +15,10 @@
 #define FPS_BUFFER_SIZE 64
 #define PACKET_HEADER 10 // two ints and a short
 #define LERP(a, b, t) (a) * (1 - (t)) + (b) * (t)
+
+// Mesh pointer boxing - tagged pointer system for mesh references
+#define MESH_TAG_MASK   0x7ULL
+#define MESH_PTR_MASK  (~MESH_TAG_MASK)
 #define LOWORD(l) ((uint16_t)(l & 0xFFFF))
 #define HIWORD(l) ((uint16_t)((l >> 16) & 0xFFFF))
 #define MAKEDWORD(low, high)                                                   \
@@ -167,6 +171,33 @@ enum
   type_uint64,
   type_service,
 };
+
+// Mesh pointer boxing - tagged pointer type and helper functions
+typedef uintptr_t MeshRef;
+
+#define MESH_TAG_PTR    0x0
+#define MESH_TAG_RECT   0x1
+#define MESH_TAG_TEAPOT 0x2
+
+static inline int mesh_is_ptr(MeshRef m) {
+    return (m & MESH_TAG_MASK) == MESH_TAG_PTR;
+}
+
+static inline void* mesh_get_ptr(MeshRef m) {
+    return (void*)(m & MESH_PTR_MASK);
+}
+
+static inline MeshRef mesh_from_ptr(void* p) {
+    return (MeshRef)p; // lower bits assumed zero
+}
+
+static inline MeshRef mesh_rect(void) {
+    return MESH_TAG_RECT;
+}
+
+static inline MeshRef mesh_teapot(void) {
+    return MESH_TAG_TEAPOT;
+}
 
 INLINE void
 _keep(void const* ptr)
