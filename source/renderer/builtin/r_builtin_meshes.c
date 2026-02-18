@@ -434,41 +434,23 @@ Model_CreateRoundedBorder(struct model** ppModel)
 HRESULT
 Model_CreateRoundedBox(float width, float height, float depth, float radius, struct model** ppModel)
 {
-  if (radius <= 0.0f)
-    return Model_CreateBox(width * 0.5f, height * 0.5f, depth * 0.5f, ppModel);
+  if (radius <= 0.0f) return Model_CreateBox(width * 0.5f, height * 0.5f, depth * 0.5f, ppModel);
   
   float maxRadius = fminf(fminf(width, height), depth) * 0.5f;
   if (radius > maxRadius) radius = maxRadius;
   
-  // Half-extents of the inner box (corner sphere centers live here)
   float hx = (width  - 2.0f * radius) * 0.5f;
   float hy = (height - 2.0f * radius) * 0.5f;
   float hz = (depth  - 2.0f * radius) * 0.5f;
   
-  // Latitude/longitude subdivision. More lats needed to represent
-  // the flat face regions cleanly; we duplicate seams at ±face boundaries.
-  //
-  // We sample a full sphere in [0, PI] x [0, 2*PI] but inject extra
-  // rings/columns at the 6 "crease" angles so edges stay sharp.
-  //
-  //   phi   breaks at: asin(hy/R)  and  PI - asin(hy/R)   (top/bottom caps)
-  //   theta breaks at: atan2(hz,hx), PI-..., PI+..., 2PI-...  (4 vertical creases)
-  //
-  // Each break duplicates a ring/column (two verts at same angle, different
-  // "which box face" membership) so UVs and normals can be face-local.
+#define LAT_SEGS 16
+#define LON_SEGS 16
+#define RINGS (4 * LAT_SEGS + 3)
+#define COLS  (4 * (LON_SEGS + 1) + 3)
+#define CLAMP(v, h) fmaxf(-h, fminf(h, (v < 0 ? -1e9f : 1e9f)))
   
-#define LAT_SEGS   16   // per-quadrant latitude  segments
-#define LON_SEGS   16   // per-quadrant longitude segments
-  
-  // Total rings  = 4 quadrants * LAT_SEGS + 1, plus 2 duplicate crease rings
-  // Total cols   = 4 quadrants * LON_SEGS + 1, plus 4 duplicate crease cols
-  // We keep it simple: just use a flat grid and remap each (i,j) sample.
-  
-#define RINGS (4 * LAT_SEGS + 1 + 2)   // +2 for top/bottom crease dupes
-#define COLS  (4 * (LON_SEGS + 1) + 3)   // +4 for 4 side crease dupes
-  
-  uint32_t maxVertices = (uint32_t)(RINGS * COLS);
-  uint32_t maxIndices  = (uint32_t)((RINGS - 1) * (COLS - 1) * 6);
+  uint32_t maxVertices = RINGS * COLS;
+  uint32_t maxIndices  = (RINGS - 1) * (COLS - 1) * 6;
   
   DRAWVERT  *verts = malloc(sizeof(DRAWVERT)  * maxVertices);
   DRAWINDEX *tris  = malloc(sizeof(DRAWINDEX) * maxIndices);
@@ -476,124 +458,46 @@ Model_CreateRoundedBox(float width, float height, float depth, float radius, str
   
   uint32_t vidx = 0, iidx = 0;
   
-  // Actually, the crease angle measured from the equator is asin(hy/radius),
-  // so from the north pole it is PI/2 - asin(hy/radius).
-  float phi_top    = (float)M_PI_2 - asinf(fminf(hy / radius, 1.0f));
-  float phi_bot    = (float)M_PI   - phi_top;
+  float phi_top = (float)M_PI_2 - asinf(fminf(hy / radius, 1.0f));
+  float phi_bot = (float)M_PI - phi_top;
   
-  // Collect phi samples: evenly spaced in [0,phi_top], duplicate at phi_top,
-  // evenly spaced across the middle band, duplicate at phi_bot, then to PI.
-  // For simplicity we generate them into a small array.
   float phi_samples[RINGS];
-  int   nrings = 0;
-  {
-    // Top cap: LAT_SEGS+1 values in [0, phi_top]
-    for (int i = 0; i <= LAT_SEGS; i++)
-      phi_samples[nrings++] = phi_top * ((float)i / LAT_SEGS);
-    
-    // Duplicate phi_top (crease: same angle, different face ownership)
-    phi_samples[nrings++] = phi_top;
-    
-    // Middle band: LAT_SEGS-1 interior values strictly between phi_top and phi_bot
-    // (2*LAT_SEGS samples spanning the middle, excluding endpoints already added)
-    for (int i = 1; i < 2 * LAT_SEGS; i++)
-      phi_samples[nrings++] = phi_top + (phi_bot - phi_top) * ((float)i / (2 * LAT_SEGS));
-    
-    // Duplicate phi_bot
-    phi_samples[nrings++] = phi_bot;
-    
-    // Bottom cap: LAT_SEGS+1 values in [phi_bot, PI]
-    for (int i = 0; i <= LAT_SEGS; i++)
-      phi_samples[nrings++] = phi_bot + ((float)M_PI - phi_bot) * ((float)i / LAT_SEGS);
-  }
+  int nrings = 0;
+  for (int i = 0; i <= LAT_SEGS; i++) phi_samples[nrings++] = phi_top * ((float)i / LAT_SEGS);
+  phi_samples[nrings++] = phi_top;
+  for (int i = 1; i < 2 * LAT_SEGS; i++)
+    phi_samples[nrings++] = phi_top + (phi_bot - phi_top) * ((float)i / (2 * LAT_SEGS));
+  phi_samples[nrings++] = phi_bot;
+  for (int i = 0; i <= LAT_SEGS; i++)
+    phi_samples[nrings++] = phi_bot + ((float)M_PI - phi_bot) * ((float)i / LAT_SEGS);
   assert(nrings == RINGS);
   
-  // Collect theta samples: evenly spaced per quadrant, duplicate at each crease.
-  // Crease angles (measured from +X in XZ plane):
-  float th[4];
-  th[0] = atan2f(hz, hx);           // first quadrant crease (+X/+Z boundary)
-  th[1] = (float)M_PI - th[0];      // second quadrant
-  th[2] = (float)M_PI + th[0];      // third quadrant
-  th[3] = 2.0f * (float)M_PI - th[0]; // fourth quadrant
-  
   float theta_samples[COLS];
-  int   ncols = 0;
-  {
-    float quad_start[4] = { 0.0f, (float)M_PI_2, (float)M_PI, 1.5f * (float)M_PI };
-    float quad_end[4]   = { (float)M_PI_2, (float)M_PI, 1.5f * (float)M_PI, 2.0f * (float)M_PI };
-    
-    for (int q = 0; q < 4; q++) {
-      // LON_SEGS+1 values per quadrant
-      for (int j = 0; j <= LON_SEGS; j++)
-        theta_samples[ncols++] = quad_start[q] + (quad_end[q] - quad_start[q]) * ((float)j / LON_SEGS);
-      // Duplicate at quadrant boundary (except the very last one closes the loop)
-      if (q < 3)
-        theta_samples[ncols++] = quad_end[q];
-    }
+  int ncols = 0;
+  float quad_start[4] = { 0.0f, (float)M_PI_2, (float)M_PI, 1.5f * (float)M_PI };
+  float quad_end[4]   = { (float)M_PI_2, (float)M_PI, 1.5f * (float)M_PI, 2.0f * (float)M_PI };
+  for (int q = 0; q < 4; q++) {
+    for (int j = 0; j <= LON_SEGS; j++)
+      theta_samples[ncols++] = quad_start[q] + (quad_end[q] - quad_start[q]) * ((float)j / LON_SEGS);
+    if (q < 3) theta_samples[ncols++] = quad_end[q];
   }
   assert(ncols == COLS);
   
-  // ---------------------------------------------------------------------------
-  // Core mapping: sphere direction -> rounded-box surface point + normal
-  // ---------------------------------------------------------------------------
-  // Given unit sphere dir (nx, ny, nz):
-  //   center = (clamp(nx, -hx, hx), clamp(ny, -hy, hy), clamp(nz, -hz, hz))
-  //   position = center + radius * (nx, ny, nz)
-  //   normal   = (nx, ny, nz)   [already unit length from sphere]
-  //
-  // This is the SDF-derived formula for a rounded box. It works because:
-  //   - Inside a corner octant: all three clamps are at their max -> corner sphere
-  //   - Inside an edge band:    one clamp is interior     -> cylinder cap
-  //   - On a flat face:         two clamps are interior   -> flat region
-  // ---------------------------------------------------------------------------
-  
   for (int ri = 0; ri < nrings; ri++) {
-    float phi   = phi_samples[ri];
-    float sin_p = sinf(phi);
-    float cos_p = cosf(phi);
-    
+    float phi = phi_samples[ri], sin_p = sinf(phi), cos_p = cosf(phi);
     for (int ci = 0; ci < ncols; ci++) {
       float theta = theta_samples[ci];
-      
-      // Unit sphere point (Y-up convention, theta in XZ)
-      float nx = sin_p * cosf(theta);
-      float ny = cos_p;
-      float nz = sin_p * sinf(theta);
-      
-      // Clamp to inner box extents -> nearest point on inner box surface
-      float cx = fmaxf(-hx, fminf(hx, nx * 1e9f)); // large scale to get sign
-      float cy = fmaxf(-hy, fminf(hy, ny * 1e9f));
-      float cz = fmaxf(-hz, fminf(hz, nz * 1e9f));
-      // (we just want sign/clamp, not actual scale; see cleaner version below)
-      
-      // Cleaner: the inner-box center is just sign(n) * h, clamped
-      cx = fmaxf(-hx, fminf(hx, (nx < 0 ? -1e9f : 1e9f)));
-      cy = fmaxf(-hy, fminf(hy, (ny < 0 ? -1e9f : 1e9f)));
-      cz = fmaxf(-hz, fminf(hz, (nz < 0 ? -1e9f : 1e9f)));
-      
-      // Surface position
-      float px = cx + radius * nx;
-      float py = cy + radius * ny;
-      float pz = cz + radius * nz;
-      
-      // UV: spherical, normalized to [0,1]
-      float u = theta / (2.0f * (float)M_PI);
-      float v = phi   / (float)M_PI;
-      
-      verts[vidx++] = R_MakeVertexWithWeight(px, py, pz, u, v,
-                                             nx, ny, nz,   // normal
-                                             nx, ny, nz);  // weight (sphere dir)
+      float nx = sin_p * cosf(theta), ny = cos_p, nz = sin_p * sinf(theta);
+      float cx = CLAMP(nx, hx), cy = CLAMP(ny, hy), cz = CLAMP(nz, hz);
+      float px = cx + radius * nx, py = cy + radius * ny, pz = cz + radius * nz;
+      float u = theta / (2.0f * (float)M_PI), v = phi / (float)M_PI;
+      verts[vidx++] = R_MakeVertexWithWeight(px, py, pz, u, v, nx, ny, nz, nx, ny, nz);
     }
   }
   
-  // Generate indices as a simple grid (skip degenerate quads at seam)
   for (int ri = 0; ri < nrings - 1; ri++) {
     for (int ci = 0; ci < ncols - 1; ci++) {
-      uint32_t a = (uint32_t)( ri      * ncols + ci    );
-      uint32_t b = (uint32_t)( ri      * ncols + ci + 1);
-      uint32_t c = (uint32_t)((ri + 1) * ncols + ci    );
-      uint32_t d = (uint32_t)((ri + 1) * ncols + ci + 1);
-      
+      uint32_t a = ri * ncols + ci, b = a + 1, c = (ri + 1) * ncols + ci, d = c + 1;
       tris[iidx++] = a; tris[iidx++] = b; tris[iidx++] = c;
       tris[iidx++] = b; tris[iidx++] = d; tris[iidx++] = c;
     }
@@ -609,22 +513,19 @@ Model_CreateRoundedBox(float width, float height, float depth, float radius, str
   };
   
   DRAWSURF dsurf = {
-    .vertices    = verts,
-    .indices     = tris,
-    .submeshes   = NULL,
-    .neighbors   = NULL,
-    .numVertices = vidx,
-    .numIndices  = iidx,
-    .numSubmeshes = 0,
+    .vertices = verts, .indices = tris, .submeshes = NULL, .neighbors = NULL,
+    .numVertices = vidx, .numIndices = iidx, .numSubmeshes = 0,
   };
   
   HRESULT hr = Model_Create(attr, &dsurf, ppModel);
-  free(verts);
-  free(tris);
+  free(verts); free(tris);
   return hr;
   
-#undef LAT_SEGS
+#undef CLAMP
+#undef COLS
+#undef RINGS
 #undef LON_SEGS
+#undef LAT_SEGS
 }
 
 HRESULT
