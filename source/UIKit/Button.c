@@ -5,7 +5,7 @@
 lpObject_t
 _NextTabStop(lpObject_t hObject);
 
-#define USE_STANDARD_BUTTON
+//#define USE_STANDARD_BUTTON
 
 HANDLER(Button, DrawBrush) {
 #ifdef USE_STANDARD_BUTTON
