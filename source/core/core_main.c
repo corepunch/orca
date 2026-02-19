@@ -171,7 +171,7 @@ CORE_Update(lua_State* L,
   OBJ_Awake(L, root);
   OBJ_Animate(L, root);
   OBJ_LoadPrefabs(L, root);
-  OBJ_ProcesEvents(L, root);
+  OBJ_EmitPropertyChangedEvents(L, root);
   OBJ_UpdateProperties(root);
   
   OBJ_SendMessageW(root, kEventUpdateLayout, 0, &(UPDATELAYOUTSTRUCT){

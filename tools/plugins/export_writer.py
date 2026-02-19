@@ -1,8 +1,26 @@
 """Lua export C file writer plugin."""
 
 import os
+import string
 
 from . import Plugin, utils, Workspace
+
+_TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), 'templates')
+
+def _load_template(name):
+	with open(os.path.join(_TEMPLATES_DIR, name)) as f:
+		return string.Template(f.read())
+
+_T = {
+	'shutdown':       _load_template('shutdown.c'),
+	'enums':          _load_template('enums.c'),
+	'resource':       _load_template('resource.c'),
+	'struct_push':    _load_template('struct_push.c'),
+	'struct_check':   _load_template('struct_check.c'),
+	'struct_new':     _load_template('struct_new.c'),
+	'component_lua':  _load_template('component_lua.c'),
+	'class_desc':     _load_template('class_desc.c'),
+}
 
 
 class ExportWriter(Plugin):
@@ -57,33 +75,35 @@ class ExportWriter(Plugin):
 		self.file.write(text)
 		self.file.write("\n")
 
+	def wt(self, text):
+		"""Write a pre-rendered template block (already contains newlines)."""
+		self.file.write(text)
+		if not text.endswith('\n'):
+			self.file.write('\n')
+
 	def on_shutdown(self, _, shutdown):
 		fn = shutdown.get('name')
-		self.w(
-			f"static int f_{self.name}_gc(lua_State *L) {{\n"
-			f"\tvoid {fn}(void);\n\t{fn}();\n\treturn 0;\n}}"
-		)
+		self.wt(_T['shutdown'].substitute(module_name=self.name, fn=fn))
 
 	def on_enums(self, _, enums):
 		ename = enums.get('name')
 		values = ['"%s"' % e.get('name').lower() for e in enums.findall('enum')] + ["NULL"]
-		self.w(f"static const char *_{ename}[] = {{{','.join(values)}}};")
-		self.w(f"{utils._e(ename)} luaX_check{ename}(lua_State *L, int idx) {{")
-		self.w(f"\treturn luaL_checkoption(L, idx, NULL, _{ename});")
-		self.w(f"}}")
-		self.w(f"void luaX_push{ename}(lua_State *L, {utils._e(ename)} value) {{")
-		self.w(f"\tassert(value >= 0 && value < {len(enums.findall('enum'))});")
-		self.w(f"\tlua_pushstring(L, _{ename}[value]);")
-		self.w(f"}}")
+		self.wt(_T['enums'].substitute(
+			ename=ename,
+			ename_t=utils._e(ename),
+			values=','.join(values),
+			count=len(enums.findall('enum')),
+		))
 
 	def on_resource(self, _, resource):
 		if resource.get('no-lua'):
 			return
 		name = resource.get('type')
-		self.w(f"void luaX_push{name}(lua_State *L, {utils.lpc(name)} {name}) {{")
-		self.w(f"\tlua_pushlightuserdata(L, ({utils.lp(name)}){name});\n}}")
-		self.w(f"{utils.lp(name)} luaX_check{name}(lua_State *L, int idx) {{")
-		self.w(f"\treturn lua_touserdata(L, idx);\n}}")
+		self.wt(_T['resource'].substitute(
+			name=name,
+			lpcname=utils.lpc(name),
+			lpname=utils.lp(name),
+		))
 
 	def on_function(self, node, method):
 		args = []
@@ -118,38 +138,24 @@ class ExportWriter(Plugin):
 	def on_struct(self, root, struct):
 		is_struct = struct.tag == 'struct'
 		name = struct.get('name')
+		lpname, lpcname = utils.lp(name), utils.lpc(name)
 		if is_struct:
-			self.w(f"void luaX_push{name}(lua_State *L, {utils.lpc(name)} data) {{")
-			self.w(f"\t{utils.lp(name)} self = lua_newuserdata(L, sizeof(struct {name}));")
-			self.w(f"\tluaL_setmetatable(L, \"{name}\");")
-			self.w(f"\tmemcpy(self, data, sizeof(struct {name}));")
-			self.w(f"}}")
+			self.wt(_T['struct_push'].substitute(name=name, lpname=lpname, lpcname=lpcname))
 		if not struct.get("no-check"):
-			self.w(f"{utils.lp(name)} luaX_check{name}(lua_State *L, int idx) {{")
-			self.w(f"\treturn luaL_checkudata(L, idx, \"{name}\");")
-			self.w(f"}}")
+			self.wt(_T['struct_check'].substitute(name=name, lpname=lpname))
 		else:
-			self.w(f"{utils.lp(name)} luaX_check{name}(lua_State *L, int idx);")
+			self.w(f"{lpname} luaX_check{name}(lua_State *L, int idx);")
 		if is_struct:
-			self.w(f"static int f_new_{name}(lua_State *L) {{")
-			self.w(f"\t{utils.lp(name)} self = lua_newuserdata(L, sizeof(struct {name}));")
-			self.w(f"\tluaL_setmetatable(L, \"{name}\");")
-			self.w(f"\tmemset(self, 0, sizeof(struct {name}));")
-			for i, arg in enumerate(struct.findall('field')):
-				arg_type = arg.get('type')
-				if arg.get('array'):
-					continue
-				if arg_type not in utils.atomic_types:
-					continue
-				a = f"self->{arg.get('name')}"
-				self.w(f"\t{utils.export_check_var(a, arg_type, i + 1)};")
-			self.w(f"\t// if (lua_istable(L, 1)) {{")
-			self.w(f"\t// }}")
-			self.w(f"\treturn 1;\n}}")
-			self.w(f"static int f_{name}___call(lua_State *L) {{")
-			self.w(f"\tlua_remove(L, 1); // remove {name} from stack")
-			self.w(f"\treturn f_new_{name}(L);")
-			self.w(f"}}")
+			# Each line in field_inits is "\t<code>;\n". The trailing "\n"
+			# when non-empty places "${field_inits}" and "\t// if" on
+			# separate lines in struct_new.c; when empty, the tab in the
+			# template line provides the indentation for "// if" directly.
+			field_inits = ''.join(
+				"\t" + utils.export_check_var(f"self->{arg.get('name')}", arg.get('type'), i + 1) + ";\n"
+				for i, arg in enumerate(struct.findall('field'))
+				if not arg.get('array') and arg.get('type') in utils.atomic_types
+			)
+			self.wt(_T['struct_new'].substitute(name=name, lpname=lpname, field_inits=field_inits))
 		elif struct.find('init') is not None:
 			self.w(f"int f_new_{name}(lua_State *L);")
 		# write methods
@@ -306,10 +312,11 @@ class ExportWriter(Plugin):
 			self.w(f"\t\t\treturn {cname}_{hname}(object, cmp, wparm, lparm);")
 		self.w(f"}}\n\treturn FALSE;\n}}")
 
-		self.w(f"void luaX_push{cname}(lua_State *L, {utils.lpc(cname)} {cname}) {{")
-		self.w(f"\tluaX_pushObject(L, CMP_GetObject({cname}));\n}}")
-		self.w(f"{utils.lp(cname)} luaX_check{cname}(lua_State *L, int idx) {{")
-		self.w(f"\treturn Get{cname}(luaX_checkObject(L, idx));\n}}")
+		self.wt(_T['component_lua'].substitute(
+			cname=cname,
+			lpcname=utils.lpc(cname),
+			lpname=utils.lp(cname),
+		))
 
 		parents = utils.component_get_parents(component)
 		for p in parents:
@@ -318,15 +325,10 @@ class ExportWriter(Plugin):
 		content = component.get('parent', cname)
 		if component.get('name').endswith('Library'):
 			content = component.get('name').replace('Library', '')
-		self.w(f"ORCA_API struct ClassDesc _{cname} = {{")
-		self.w(f"\t.ClassName = \"{cname}\",")
-		self.w(f"\t.DefaultName = \"{component.get('default', cname)}\",")
-		self.w(f"\t.ContentType = \"{component.get('content', content)}\",")
-		self.w(f"\t.Xmlns = \"{component.findtext('xmlns')}\",")
-		self.w(f"\t.ParentClasses = {{{parents_str}}},")
-		self.w(f"\t.ClassID = ID_{cname},")
-		self.w(f"\t.ClassSize = sizeof(struct {cname}),")
-		self.w(f"\t.Properties = {cname}Properties,")
-		self.w(f"\t.ObjProc = {cname}Proc,")
-		self.w(f"\t.Defaults = &{cname}Defaults,")
-		self.w(f"\t.NumProperties = k{cname}NumProperties,\n}};")
+		self.wt(_T['class_desc'].substitute(
+			cname=cname,
+			default_name=component.get('default', cname),
+			content_type=component.get('content', content),
+			xmlns=component.findtext('xmlns'),
+			parents_str=parents_str,
+		))
