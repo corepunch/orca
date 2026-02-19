@@ -30,7 +30,7 @@ HANDLER(Cinematic, DrawBrush)
   Node2D_GetViewEntity(hObject, &entity, 0, pDrawBrush->brush);
 
   entity.bbox = BOX3_FromRect(GetNode2D(hObject)->_rect);
-  entity.mesh = BOX_PTR(Mesh, BOXED_MESH_CINEMATIC);
+  entity.mesh = BOX_PTR(Mesh, MD_CINEMATIC);
 
   if (realtime > endtime) {
     entity.frame = pCinematic->NumFrames - 1;

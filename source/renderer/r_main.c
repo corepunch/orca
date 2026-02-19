@@ -253,9 +253,9 @@ _UpdateCinematicEntity(struct ViewEntity* ent)
 //
 // Supports mesh pointer boxing: ent.mesh can be either:
 //   - A real Mesh pointer (when BOX_IS_PTR() returns true)
-//   - A boxed entity type constant like BOX_PTR(Mesh, BOXED_MESH_CAPSULE), etc.
+//   - A boxed entity type constant like BOX_PTR(Mesh, MD_CAPSULE), etc.
 //
-// Usage example: ent.mesh = BOX_PTR(Mesh, BOXED_MESH_CAPSULE);
+// Usage example: ent.mesh = BOX_PTR(Mesh, MD_CAPSULE);
 // This eliminates the need to set a separate type field for common entity types.
 HRESULT
 R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
@@ -379,7 +379,7 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
 
   //    tr.mesh_render++;
 
-  if (ent->mesh == BOX_PTR(Mesh, BOXED_MESH_NINEPATCH)) {
+  if (ent->mesh == BOX_PTR(Mesh, MD_NINEPATCH)) {
     Model_Release(model);
   }
 
