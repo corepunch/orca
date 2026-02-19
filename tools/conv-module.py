@@ -34,7 +34,7 @@ import plugins.export_writer     # ExportWriter
 # ---------------------------------------------------------------------------
 # Shared mutable state (populated while parsing, visible to all plugins)
 # ---------------------------------------------------------------------------
-from plugins.state import Workspace
+from plugins import Workspace
 
 
 # ---------------------------------------------------------------------------

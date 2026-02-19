@@ -1,7 +1,6 @@
 """DTD schema writer plugin."""
 
-from . import Plugin, utils
-from .state import Workspace
+from . import Plugin, utils, Workspace
 
 
 class DTDWriter(Plugin):

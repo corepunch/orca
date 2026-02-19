@@ -2,8 +2,7 @@
 
 import os
 
-from . import Plugin, utils
-from .state import Workspace
+from . import Plugin, utils, Workspace
 
 
 class ExportWriter(Plugin):
