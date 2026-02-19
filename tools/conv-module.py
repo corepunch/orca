@@ -36,18 +36,9 @@ import plugins.export_writer     # ExportWriter
 # ---------------------------------------------------------------------------
 from plugins import Workspace
 
-
 # ---------------------------------------------------------------------------
 # Core parsing logic
 # ---------------------------------------------------------------------------
-
-def call_plugin_hook(hook, *args):
-    """Call *hook* on every registered plugin that implements it."""
-    for plugin in plugins.get_plugins():
-        method = getattr(plugin, hook, None)
-        if method:
-            method(*args)
-
 
 def read_xml(filename):
     if not os.path.exists(filename):
@@ -61,7 +52,7 @@ def read_xml(filename):
         print("Expected 'module' tag")
         return
 
-    call_plugin_hook('open', filename, root)
+    plugins.call_plugin_hook('open', filename, root)
 
     Workspace.structs.update({s.get('name'): s for s in root.findall(".//struct[@name]")})
     Workspace.enums.update({e.get('name'): e for e in root.findall(".//enums[@name]")})
@@ -72,17 +63,17 @@ def read_xml(filename):
         root.findall('struct') + root.findall('interface') + root.findall('component')
     ):
         struct_name = struct.get('name')
-        call_plugin_hook("struct_fwd_def", struct_name)
-        call_plugin_hook("lua_accessors", struct_name)
+        plugins.call_plugin_hook("struct_fwd_def", struct_name)
+        plugins.call_plugin_hook("lua_accessors", struct_name)
 
     for node in root:
-        call_plugin_hook(f"on_{node.tag}", root, node)
+        plugins.call_plugin_hook(f"on_{node.tag}", root, node)
 
-    call_plugin_hook('close')
+    plugins.call_plugin_hook('close')
 
 
 if __name__ == "__main__":
     for i in range(len(sys.argv) - 1):
         read_xml(sys.argv[i + 1])
 
-    call_plugin_hook('finalize')
+    plugins.call_plugin_hook('finalize')

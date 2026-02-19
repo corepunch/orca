@@ -61,6 +61,13 @@ def get_plugins() -> list:
     return list(_registry)
 
 
+def call_plugin_hook(hook, *args):
+    """Call *hook* on every registered plugin that implements it."""
+    for plugin in _registry:
+        method = getattr(plugin, hook, None)
+        if method:
+            method(*args)
+
 # ---------------------------------------------------------------------------
 # Shared parse-time state
 # ---------------------------------------------------------------------------
