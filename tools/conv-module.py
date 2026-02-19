@@ -5,7 +5,6 @@ g_structs = {}
 g_enums = {}
 g_components = {}
 g_resources = {}
-g_attribs = []
 g_article = None
 g_html = ET.Element('html', attrib={'xmlns':'http://www.w3.org/2001/XMLSchema' })
 g_head = ET.SubElement(g_html, 'head')
@@ -16,8 +15,127 @@ g_body = ET.SubElement(g_html, 'body')
 g_wrapper = ET.SubElement(g_body, 'div', {'class': 'adjustable-sidebar-width full-width-container topic-wrapper'})
 g_sidebar = ET.SubElement(g_wrapper, 'div', {'class': 'sidebar'})
 g_content = ET.SubElement(g_wrapper, 'main', {'class': 'content'})
-g_dtd = open("schemas/orca.dtd", "w")
 g_output = "../docs/index.html"
+
+class DTDWriter:
+	def __init__(self, filename):
+		self.file = open(filename, "w")
+
+	def write(self, text):
+		self.file.write(text)
+
+	def handle(self, root, node, parser):
+		method = getattr(self, f"on_{node.tag}", None)
+		if method:
+			method(root, node, parser)
+
+	def finalize(self, append_path="schemas/append.dtd"):
+		with open(append_path) as f:
+			self.file.write(f.read())
+		self.file.close()
+
+	def on_enums(self, _, enums, __):
+		values = [e.get('name') for e in enums.findall('enum')]
+		self.write(f"<!ENTITY % {enums.get('name')} \"{'|'.join(values)}\">\n")
+
+	def _collect_struct_fields(self, struct, prefix, attribs):
+		if struct.get('sealed'):
+			return
+		for field in struct.findall('field'):
+			fname = field.get('name')
+			if field.get('array'):
+				for idx in range(int(field.get('array'))):
+					self._collect_property(field, f"{prefix}{fname}[{idx}]", attribs)
+			else:
+				self._collect_property(field, f"{prefix}{fname}", attribs)
+
+	def _collect_property(self, prop, path, attribs):
+		prop_type = prop.get('type')
+		struct = g_structs.get(prop_type)
+		if not prop.get('exclude-self'):
+			sname = property_name(path)
+			enum = g_enums.get(prop_type) or (g_enums.get(sname) if struct is None else None)
+			ptype = enum.get('name') if enum is not None else prop_type
+			attribs.append((sname, ptype))
+		if struct:
+			self._collect_struct_fields(struct, f"{path}.", attribs)
+
+	def _iter_component_attribs(self, component):
+		attribs = []
+		for prop in component.findall("property"):
+			pname = prop.get('name')
+			if prop.get('array'):
+				for idx in range(int(prop.get('array'))):
+					self._collect_property(prop, f"{pname}[{idx}]", attribs)
+			else:
+				self._collect_property(prop, pname, attribs)
+		return attribs
+
+	def _is_component(self, comp, suffix):
+		if comp.get('name') == "Viewport3D":
+			return False
+		if comp and suffix in comp.get('name'):
+			return True
+		if comp.get('parent') is None:
+			return False
+		return self._is_component(g_components.get(comp.get('parent')), suffix)
+
+	def on_component(self, _, component, __):
+		cname = component.get('name')
+
+		self.write(f"<!ENTITY % {cname}Attribs \"\n")
+		if component.get('parent'):
+			self.write(f"\t%{component.get('parent')}Attribs;\n")
+			if component.get('concept'):
+				self.write(f"\t%{component.get('concept')}Attribs;\n")
+		else:
+			self.write("\tName CDATA #REQUIRED\n")
+			self.write("\tStyle CDATA #IMPLIED\n")
+			self.write("\tIsDisabled (true|false) #IMPLIED\n")
+			self.write("\tStateManager CDATA #IMPLIED\n")
+
+		attribs = self._iter_component_attribs(component)
+		for sname, ptype in attribs:
+			if ptype in g_enums:
+				self.write(f"\t{sname} (%{ptype};) #IMPLIED\n")
+			elif ptype == 'bool':
+				self.write(f"\t{sname} (true|false) #IMPLIED\n")
+			else:
+				self.write(f"\t{sname} CDATA #IMPLIED\n")
+		self.write("\">\n")
+
+		for sname, _ptype in attribs:
+			self.write(f"<!ELEMENT {cname}.{sname} (#PCDATA | Binding)*>\n")
+			self.write("<!ATTLIST "
+					f"{cname}.{sname} Mode (expression|oneway) #IMPLIED "
+					"Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>\n")
+
+		element_attribs = [f"{cname}.{sname}" for sname, _ in attribs]
+		if component.get("parent"):
+			element_attribs.append(f"%{component.get('parent')}Elements;")
+		if component.get("concept"):
+			element_attribs.append(f"%{component.get('concept')}Elements;")
+		self.write(f"<!ENTITY % {cname}Elements \"{'|'.join(element_attribs)}\">\n")
+
+		self.write(f"<!ELEMENT {cname} ")
+		elm = f"%{cname}Elements;"
+		if self._is_component(component, '2D'):
+			arr = [key for key, value in g_components.items() if self._is_component(value, "2D")]
+			arr += ["Viewport3D", "Resource", "StyleSheet", "LayerPrefabPlaceholder", elm]
+			self.write(f"({'|'.join(arr)})*>\n")
+		elif self._is_component(component, '3D'):
+			arr = [key for key, value in g_components.items() if self._is_component(value, "3D")]
+			arr += ["Resource", "StyleSheet", "ObjectPrefabPlaceholder", elm]
+			self.write(f"({'|'.join(arr)})*>\n")
+		elif component.get('name') == "Viewport3D":
+			arr = [key for key, value in g_components.items()]
+			arr += ["Resource", "StyleSheet", "ObjectPrefabPlaceholder", elm]
+			self.write(f"({'|'.join(arr)})*>\n")
+		else:
+			self.write("EMPTY>\n")
+		self.write(f"<!ATTLIST {cname} %{cname}Attribs;>\n")
+
+g_dtd_writer = DTDWriter("schemas/orca.dtd")
 
 def tokenize(code):
 	token_re = re.compile(
@@ -573,7 +691,6 @@ def enums_parse(_, enums, parser):
 
 	w(h, f"}} {_e(enums.get('name'))};\n")
 
-	g_dtd.write(f"<!ENTITY % {enums.get('name')} \"{'|'.join([e.get('name') for e in enums.findall('enum')])}\">\n")
 
 def property_name(name):
 	def conv_name(name):
@@ -635,13 +752,6 @@ def component_property(root, cmp, path, property, parser, indent):
 		if parser:
 			w(parser.export, f"{indent}/* {cname}.{sname} */ DECL({hash(sname)}, {hash(cname+'.'+sname)},\n{indent}{cname}, \"{sname}\", {path}, {typedata}),")
 			w(parser.props, f"\tk{cname}{sname},")
-			g_attribs.append(sname)
-			if ptype in g_enums:
-				g_dtd.write(f"\t{sname} (%{ptype};) #IMPLIED\n")
-			elif ptype == 'bool':
-				g_dtd.write(f"\t{sname} (true|false) #IMPLIED\n")
-			else:
-				g_dtd.write(f"\t{sname} CDATA #IMPLIED\n")
 
 			topic = ET.SubElement(g_article, 'div', {'class':'topic'})
 			topic.tail = "\n"
@@ -670,18 +780,6 @@ def component_parse(root, component, parser):
 	e, h, s = parser.export, parser.header, parser.props
 	cname = component.get('name')
 
-	g_dtd.write(f"<!ENTITY % {component.get('name')}Attribs \"\n")
-	g_attribs.clear()
-
-	if component.get('parent'):
-		g_dtd.write(f"\t%{component.get('parent')}Attribs;\n");
-		if component.get('concept'):
-			g_dtd.write(f"\t%{component.get('concept')}Attribs;\n");
-	else:
-		g_dtd.write(f"\tName CDATA #REQUIRED\n");
-		g_dtd.write(f"\tStyle CDATA #IMPLIED\n");
-		g_dtd.write(f"\tIsDisabled (true|false) #IMPLIED\n");
-		g_dtd.write(f"\tStateManager CDATA #IMPLIED\n");
 
 	w(h, f"typedef struct {cname} {cname}, *{cname}Ptr;")
 	w(h, f"typedef struct {cname} const *{cname}CPtr;")
@@ -776,45 +874,6 @@ def component_parse(root, component, parser):
 	w(e, f"\t.Defaults = &{cname}Defaults,")
 	w(e, f"\t.NumProperties = k{cname}NumProperties,\n}};");
 
-	g_dtd.write("\">\n")
-
-	def is_(comp, _2d):
-		if comp.get('name')=="Viewport3D":
-			return False
-		if comp and _2d in comp.get('name'):
-			return True
-		if comp.get('parent') is None:
-			return False
-		return is_(g_components.get(comp.get('parent')), _2d)
-
-	for att in g_attribs:
-		g_dtd.write(f"<!ELEMENT {cname}.{att} (#PCDATA | Binding)*>\n")
-		g_dtd.write(f"<!ATTLIST {cname}.{att} Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>\n")
-
-	attribs = [f"{cname}.{att}" for att in g_attribs]
-
-	if component.get("parent"):
-		attribs.append(f"%{component.get('parent')}Elements;")
-
-	if component.get("concept"):
-		attribs.append(f"%{component.get('concept')}Elements;")
-
-	g_dtd.write(f"<!ENTITY % {cname}Elements \"{'|'.join(attribs)}\">\n")
-
-	g_dtd.write(f"<!ELEMENT {cname} ")
-	elm = f"%{cname}Elements;"
-	if is_(component, '2D'):
-		arr = [key for key, value in g_components.items() if is_(value, "2D")]+["Viewport3D","Resource","StyleSheet","LayerPrefabPlaceholder",elm]
-		g_dtd.write(f"({'|'.join(arr)})*>\n")
-	elif is_(component, '3D'):
-		arr = [key for key, value in g_components.items() if is_(value, "3D")]+["Resource","StyleSheet","ObjectPrefabPlaceholder",elm]
-		g_dtd.write(f"({'|'.join(arr)})*>\n")
-	elif component.get('name')=="Viewport3D":
-		arr = [key for key, value in g_components.items()]+["Resource","StyleSheet","ObjectPrefabPlaceholder",elm]
-		g_dtd.write(f"({'|'.join(arr)})*>\n")
-	else:
-		g_dtd.write("EMPTY>\n")
-	g_dtd.write(f"<!ATTLIST {cname} %{cname}Attribs;>\n")
 
 def include_parse(_, include, parser):
 	w(parser.header, f"#include <{include.get('file')}>")
@@ -915,6 +974,7 @@ def read_xml(filename):
 
 	for node in root:
 		global_parsers.get(node.tag, throw_no_parser)(root, node, parser)
+		g_dtd_writer.handle(root, node, parser)
 
 	for shutdown in root.findall('shutdown'):
 		fn = shutdown.get('name')
@@ -954,8 +1014,7 @@ if __name__ == "__main__":
 	# ET.indent(tree, space="\t", level=0)
 	tree.write(g_output, encoding="utf-8", method="html")
 
-	with open("schemas/append.dtd") as f:
-		g_dtd.write(f.read())
+	g_dtd_writer.finalize()
 
 	# _b = ET.SubElement(g_xsd, "xs:simpleType", {"name":"Attribute"})
 	# _b = ET.SubElement(_b, "xs:restriction", {"base":"xs:string"})
