@@ -177,9 +177,9 @@ OBJ_Animate(lua_State *L, lpObject_t self);
 ORCA_API void
 OBJ_LoadPrefabs(lua_State *L, lpObject_t self);
 
-/// @brief Processes pending events.
+/// @brief Emits onPropertyChanged events by comparing to previous values.
 ORCA_API void
-OBJ_ProcesEvents(lua_State *L, lpObject_t self);
+OBJ_EmitPropertyChangedEvents(lua_State *L, lpObject_t self);
 
 /// @brief Updates object properties.
 ORCA_API void

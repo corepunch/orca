@@ -87,9 +87,9 @@
       <details>Resolves and loads prefab resources for this object tree.</details>
     </method>
 
-    <method name="ProcesEvents" lua="true">
-      <summary>Processes pending events.</summary>
-      <details>Dispatches queued events through the object hierarchy.</details>
+    <method name="EmitPropertyChangedEvents" lua="true">
+      <summary>Emits onPropertyChanged events by comparing to previous values.</summary>
+      <details>Ensures attached state manager (if any) is initialized and goes through properties seeking for changes to fire on-changed events. Recursively goes through children.</details>
     </method>
 
     <method name="UpdateProperties">

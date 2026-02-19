@@ -54,9 +54,9 @@ static int f_Object_loadPrefabs(lua_State *L) {
 	OBJ_LoadPrefabs(L, self);
 	return 0;
 }
-static int f_Object_procesEvents(lua_State *L) {
+static int f_Object_emitPropertyChangedEvents(lua_State *L) {
 	lpObject_t self = luaX_checkObject(L, 1);
-	OBJ_ProcesEvents(L, self);
+	OBJ_EmitPropertyChangedEvents(L, self);
 	return 0;
 }
 static int f_Object_updateProperties(lua_State *L) {
@@ -418,8 +418,8 @@ int f_Object___index(lua_State *L) {
 	case 0xd43670bc: // loadPrefabs
 		lua_pushcfunction(L, f_Object_loadPrefabs);
 		return 1;
-	case 0x7297c03c: // procesEvents
-		lua_pushcfunction(L, f_Object_procesEvents);
+	case 0xaac1a1fc: // emitPropertyChangedEvents
+		lua_pushcfunction(L, f_Object_emitPropertyChangedEvents);
 		return 1;
 	case 0x8aef52d9: // updateProperties
 		lua_pushcfunction(L, f_Object_updateProperties);
