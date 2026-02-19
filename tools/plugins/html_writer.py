@@ -3,7 +3,7 @@
 import xml.etree.ElementTree as ET
 
 from . import Plugin
-from .state import g_structs, g_enums, g_components, g_resources
+from .state import Workspace
 from .utils import (
 	camel_case,
 	enum_component_properties,
@@ -105,7 +105,7 @@ class doc:
 		nm.text = name
 		if type:
 			nm.tail = ': '
-			if type in g_enums or type in g_structs or type in g_components:
+			if type in Workspace.enums or type in Workspace.structs or type in Workspace.components:
 				ET.SubElement(code, 'a', {'class': 'type-identifier-link', 'href': '#' + type}).text = type
 			else:
 				ET.SubElement(code, 'span').text = type
@@ -206,9 +206,9 @@ class HtmlWriter(Plugin):
 			fname, ftype = field.get('name'), header_get_arg_type(field)
 			decor = 'var'
 			ftype = field.get('type')
-			if ftype in g_enums:      decor = 'enum'
-			if ftype in g_components: decor = 'object'
-			if ftype in g_resources:  decor = 'resource'
+			if ftype in Workspace.enums:      decor = 'enum'
+			if ftype in Workspace.components: decor = 'object'
+			if ftype in Workspace.resources:  decor = 'resource'
 			if field.tag == 'field':
 				topic = ET.SubElement(self.article, 'div', {'class': 'topic'})
 				topic.tail = "\n"
@@ -229,17 +229,17 @@ class HtmlWriter(Plugin):
 		readable_name = (
 			property.get('name') if property.tag == 'shorthand' else property_name(path)
 		)
-		struct = g_structs.get(property_type)
+		struct = Workspace.structs.get(property_type)
 		decor = 'var'
 		if property_type == 'Edges':
 			return
 		if struct is not None:
 			decor = 'struct'
-		elif property_type in g_enums or readable_name in g_enums:
-			enum = g_enums.get(property_type) or g_enums.get(readable_name)
+		elif property_type in Workspace.enums or readable_name in Workspace.enums:
+			enum = Workspace.enums.get(property_type) or Workspace.enums.get(readable_name)
 			property_type = enum.get('name')
 			decor = 'enum'
-		elif property_type in g_components:
+		elif property_type in Workspace.components:
 			decor = 'object'
 
 		topic = ET.SubElement(self.article, 'div', {'class': 'topic'})

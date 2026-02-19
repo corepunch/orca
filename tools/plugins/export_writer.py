@@ -3,7 +3,7 @@
 import os
 
 from . import Plugin
-from .state import g_enums, g_structs, g_components, g_resources
+from .state import Workspace
 from .utils import (
 	lp, lpc, _e,
 	atomic_types,
@@ -209,9 +209,9 @@ class ExportWriter(Plugin):
 				field_name, field_type = field.get('name'), field.get('type')
 				access = "*"
 				if field_type in atomic_types: access = ""
-				if field_type in g_enums:      access = ""
-				if field_type in g_resources:  access = ""
-				if field_type in g_components: access = ""
+				if field_type in Workspace.enums:      access = ""
+				if field_type in Workspace.resources:  access = ""
+				if field_type in Workspace.components: access = ""
 				self.w(f"\tcase {hash(field_name)}: // {field_name}")
 				self.w(f"\t\t{export_check_var(f'luaX_check{name}(L, 1)->{field_name}', field_type, 3, access)};")
 				self.w(f"\t\treturn 0;")
@@ -251,7 +251,7 @@ class ExportWriter(Plugin):
 			name = property_name(path)
 			sname = property_name(path)
 			ptype = property.get('type')
-			struct = g_structs.get(ptype)
+			struct = Workspace.structs.get(ptype)
 			typedata = f"kDataType{ptype[:1].upper() + ptype[1:]}"
 			if struct is not None:
 				export_as = struct.get('export')
@@ -262,12 +262,12 @@ class ExportWriter(Plugin):
 					f"kDataType{export_as}" if export_as
 					else f"kDataTypeGroup, .TypeString=\"{ptype}\", .NumComponents={nfields}"
 				)
-			elif ptype in g_enums or sname in g_enums:
-				enum = g_enums.get(ptype) or g_enums.get(sname)
+			elif ptype in Workspace.enums or sname in Workspace.enums:
+				enum = Workspace.enums.get(ptype) or Workspace.enums.get(sname)
 				values = [e.get('name') for e in enum.findall('enum')]
 				ptype = enum.get('name')
 				typedata = f"kDataTypeEnum, .TypeString=\"{','.join(values)}\""
-			elif ptype in g_components:
+			elif ptype in Workspace.components:
 				typedata = f"kDataTypeObject, .TypeString=\"{ptype}\""
 			self.w(
 				f"\t/* {cname}.{sname} */ DECL({hash(sname)}, {hash(cname + '.' + sname)},\n"
@@ -299,9 +299,9 @@ class ExportWriter(Plugin):
 				pname, ptype, pdefault = (
 					property.get('name'), property.get('type'), property.get('default')
 				)
-				if ptype in g_enums and not pdefault.lstrip('-').isdigit():
+				if ptype in Workspace.enums and not pdefault.lstrip('-').isdigit():
 					self.w(f"\t.{pname} = k{ptype}{pdefault},")
-				elif ptype in g_structs:
+				elif ptype in Workspace.structs:
 					self.w(f"\t.{pname} = (struct {ptype}) {{ {', '.join(pdefault.split())} }},")
 				elif ptype == 'bool':
 					self.w(f"\t.{pname} = {pdefault.upper()},")

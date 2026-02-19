@@ -90,7 +90,7 @@ static struct PropertyDesc const ProjectProperties[kProjectNumProperties] = {
 	/* Project.ShowChildrenInLayerThumbnails */ DECL(0x76bfa6c4, 0xeff04efb,
 	Project, "ShowChildrenInLayerThumbnails", ShowChildrenInLayerThumbnails, kDataTypeBool),
 	/* Project.CompositionDesignSize */ DECL(0x5488c4f2, 0x36df81ed,
-	Project, "CompositionDesignSize", CompositionDesignSize, kDataTypeVector2D),
+	Project, "CompositionDesignSize", CompositionDesignSize, kDataTypeVec2),
 	/* Project.ProjectUsePremultipliedAlpha */ DECL(0x5734b5cd, 0xc9d6b678,
 	Project, "ProjectUsePremultipliedAlpha", ProjectUsePremultipliedAlpha, kDataTypeBool),
 	/* Project.ProjectRemoveICCProfilesOfPngs */ DECL(0xb617d580, 0xded57e15,

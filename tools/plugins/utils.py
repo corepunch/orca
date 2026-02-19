@@ -3,7 +3,7 @@
 import re
 import xml.etree.ElementTree as ET
 
-from .state import g_structs, g_enums, g_components, g_resources
+from .state import Workspace
 
 # ---------------------------------------------------------------------------
 # Type helpers
@@ -107,7 +107,7 @@ def header_get_arg_type(arg):
 	t = arg.get('type')
 	if t in typedefs:
 		return f"{typedefs[t]}*" if arg.get('pointer') else typedefs[t]
-	if t in g_enums:
+	if t in Workspace.enums:
 		return _e(t)
 	if arg.get('pointer'):
 		return lpc(t) if arg.get('const') else lp(t)
@@ -144,7 +144,7 @@ def export_push_var(ret, var):
 	if rtype in atomic_types:
 		_, push = atomic_types[rtype]
 		return f"{push}(L, {var})"
-	elif ret.get('pointer') or rtype in g_enums:
+	elif ret.get('pointer') or rtype in Workspace.enums:
 		return f"luaX_push{rtype}(L, {var})"
 	else:
 		return f"luaX_push{rtype}(L, &{var})"
@@ -175,7 +175,7 @@ def struct_property_cb(cmp, struct, prefix, func, *args):
 def component_property_cb(cmp, path, property, func, *args):
 	if not property.get('exclude-self'):
 		func(property, cmp, path, *args)
-	struct = g_structs.get(property.get('type'))
+	struct = Workspace.structs.get(property.get('type'))
 	if struct is not None:
 		struct_property_cb(cmp, struct, f"{path}.", func, *args)
 

@@ -34,7 +34,7 @@ import plugins.export_writer     # ExportWriter
 # ---------------------------------------------------------------------------
 # Shared mutable state (populated while parsing, visible to all plugins)
 # ---------------------------------------------------------------------------
-from plugins.state import g_structs, g_enums, g_components, g_resources
+from plugins.state import Workspace
 
 
 # ---------------------------------------------------------------------------
@@ -63,10 +63,10 @@ def read_xml(filename):
 
     call_plugin_hook('open', filename, root)
 
-    g_structs.update({s.get('name'): s for s in root.findall(".//struct[@name]")})
-    g_enums.update({e.get('name'): e for e in root.findall(".//enums[@name]")})
-    g_components.update({c.get('name'): c for c in root.findall(".//component[@name]")})
-    g_resources.update({c.get('type'): c for c in root.findall(".//resource[@type]")})
+    Workspace.structs.update({s.get('name'): s for s in root.findall(".//struct[@name]")})
+    Workspace.enums.update({e.get('name'): e for e in root.findall(".//enums[@name]")})
+    Workspace.components.update({c.get('name'): c for c in root.findall(".//component[@name]")})
+    Workspace.resources.update({c.get('type'): c for c in root.findall(".//resource[@type]")})
 
     for struct in (
         root.findall('struct') + root.findall('interface') + root.findall('component')

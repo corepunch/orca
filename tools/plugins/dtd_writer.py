@@ -1,7 +1,7 @@
 """DTD schema writer plugin."""
 
 from . import Plugin
-from .state import g_enums, g_components
+from .state import Workspace
 from .utils import enum_component_properties, property_name, hash
 
 
@@ -24,7 +24,6 @@ class DTDWriter(Plugin):
 		self.write(f"<!ENTITY % {enums.get('name')} \"{'|'.join(values)}\">\n")
 
 	def _collect_struct_fields(self, struct, prefix, attribs):
-		from .state import g_structs
 		if struct.get('sealed'):
 			return
 		for field in struct.findall('field'):
@@ -36,12 +35,13 @@ class DTDWriter(Plugin):
 				self._collect_property(field, f"{prefix}{fname}", attribs)
 
 	def _collect_property(self, prop, path, attribs):
-		from .state import g_structs
 		prop_type = prop.get('type')
-		struct = g_structs.get(prop_type)
+		struct = Workspace.structs.get(prop_type)
 		if not prop.get('exclude-self'):
 			sname = property_name(path)
-			enum = g_enums.get(prop_type) or (g_enums.get(sname) if struct is None else None)
+			enum = Workspace.enums.get(prop_type) or (
+				Workspace.enums.get(sname) if struct is None else None
+			)
 			ptype = enum.get('name') if enum is not None else prop_type
 			attribs.append((sname, ptype))
 		if struct is not None:
@@ -65,7 +65,7 @@ class DTDWriter(Plugin):
 			return True
 		if comp.get('parent') is None:
 			return False
-		return self._is_component(g_components.get(comp.get('parent')), suffix)
+		return self._is_component(Workspace.components.get(comp.get('parent')), suffix)
 
 	def on_component(self, _, component):
 		cname = component.get('name')
@@ -82,7 +82,7 @@ class DTDWriter(Plugin):
 
 		attribs = self._iter_component_attribs(component)
 		for sname, ptype in attribs:
-			if ptype in g_enums:
+			if ptype in Workspace.enums:
 				self.write(f"\t{sname} (%{ptype};) #IMPLIED\n")
 			elif ptype == 'bool':
 				self.write(f"\t{sname} (true|false) #IMPLIED\n")
@@ -108,15 +108,15 @@ class DTDWriter(Plugin):
 		self.write(f"<!ELEMENT {cname} ")
 		elm = f"%{cname}Elements;"
 		if self._is_component(component, '2D'):
-			arr = [key for key, value in g_components.items() if self._is_component(value, "2D")]
+			arr = [key for key, value in Workspace.components.items() if self._is_component(value, "2D")]
 			arr += ["Viewport3D", "Resource", "StyleSheet", "LayerPrefabPlaceholder", elm]
 			self.write(f"({'|'.join(arr)})*>\n")
 		elif self._is_component(component, '3D'):
-			arr = [key for key, value in g_components.items() if self._is_component(value, "3D")]
+			arr = [key for key, value in Workspace.components.items() if self._is_component(value, "3D")]
 			arr += ["Resource", "StyleSheet", "ObjectPrefabPlaceholder", elm]
 			self.write(f"({'|'.join(arr)})*>\n")
 		elif component.get('name') == "Viewport3D":
-			arr = [key for key, _ in g_components.items()]
+			arr = [key for key, _ in Workspace.components.items()]
 			arr += ["Resource", "StyleSheet", "ObjectPrefabPlaceholder", elm]
 			self.write(f"({'|'.join(arr)})*>\n")
 		else:

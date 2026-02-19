@@ -3,7 +3,6 @@
 import os
 
 from . import Plugin
-from .state import g_enums
 from .utils import (
 	lp, lpc, _t, _c, _e,
 	hash,

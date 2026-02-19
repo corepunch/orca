@@ -1,14 +1,24 @@
 """Shared mutable state used by all plugins.
 
-The dictionaries are populated by conv-module.py as XML files are parsed
-and are then available to every plugin via import.
+``Workspace`` is a simple namespace class whose *class attributes* are the
+live dicts populated by conv-module.py as XML files are parsed.  Because the
+attributes are mutable dict objects, any plugin that imports ``Workspace``
+always sees the up-to-date contents – no re-import or passing-around required.
 
-Because these are *dict objects* (mutable), importing a name from this
-module gives plugins a live reference – any .update() call made by the
-main script is immediately visible to all plugins.
+Example usage inside a plugin::
+
+    from .state import Workspace
+
+    struct = Workspace.structs.get(type_name)
+    if type_name in Workspace.enums:
+        ...
 """
 
-g_structs: dict = {}
-g_enums: dict = {}
-g_components: dict = {}
-g_resources: dict = {}
+
+class Workspace:
+    """Central namespace for all shared parse-time state."""
+
+    structs:    dict = {}   #: All ``<struct>`` elements, keyed by name
+    enums:      dict = {}   #: All ``<enums>`` elements, keyed by name
+    components: dict = {}   #: All ``<component>`` elements, keyed by name
+    resources:  dict = {}   #: All ``<resource>`` elements, keyed by type
