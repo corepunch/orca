@@ -682,9 +682,11 @@ enum PageProperties {
 #define GetPageHost(_P)((struct PageHost*)((_P)?OBJ_GetComponent(_P,ID_PageHost):NULL))
 #define PageHost_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_PageHost,sizeof(struct PageHost),_N)
 enum PageHostProperties {
+	kPageHostActivePage,
 	kPageHostNumProperties
 };
 
+#define ID_PageHost_ActivePage 0xb276c4f7
 #define ID_Style 0x5467ec76
 #define GetStyle(_P)((struct Style*)((_P)?OBJ_GetComponent(_P,ID_Style):NULL))
 #define Style_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_Style,sizeof(struct Style),_N)

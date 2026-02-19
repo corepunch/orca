@@ -12,7 +12,7 @@ class DTDWriter(Plugin):
 	def write(self, text):
 		self.file.write(text)
 
-	def finalize(self, append_path="schemas/append.dtd"):
+	def finalize(self, append_path="../docs/schemas/append.dtd"):
 		with open(append_path) as f:
 			self.file.write(f.read())
 		self.file.close()

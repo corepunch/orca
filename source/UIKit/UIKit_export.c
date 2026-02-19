@@ -2735,8 +2735,10 @@ ORCA_API struct ClassDesc _Page = {
 };
 LRESULT PageHost_NavigateToPage(lpObject_t, lpPageHost_t, wParam_t, NavigateToPageEventPtr);
 static struct PropertyDesc const PageHostProperties[kPageHostNumProperties] = {
+	/* PageHost.ActivePage */ DECL(0x2e149db4, 0xb276c4f7,
+	PageHost, "ActivePage", ActivePage, kDataTypeObject, .TypeString="Page"),
 };
-static struct PageHost PageHostDefaults = {};
+static struct PageHost PageHostDefaults = {0};
 LRESULT PageHostProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
 		case 0x6475c790: // NavigateToPage

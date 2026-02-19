@@ -1354,8 +1354,11 @@
 <!ATTLIST Page %PageAttribs;>
 <!ENTITY % PageHostAttribs "
 	%PageAttribs;
+	ActivePage CDATA #IMPLIED
 ">
-<!ENTITY % PageHostElements "%PageElements;">
+<!ELEMENT PageHost.ActivePage (#PCDATA | Binding)*>
+<!ATTLIST PageHost.ActivePage Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % PageHostElements "PageHost.ActivePage|%PageElements;">
 <!ELEMENT PageHost (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%PageHostElements;)*>
 <!ATTLIST PageHost %PageHostAttribs;>
 <!ENTITY % StyleType "Generic|Named">

@@ -1106,6 +1106,7 @@ typedef struct PageHost PageHost, *PageHostPtr;
 typedef struct PageHost const *PageHostCPtr;
 /// @brief Container that manages multiple pages and navigation between them.
 struct PageHost {
+	lpPage_t ActivePage; /// The currently active page.
 };
 
 typedef enum StyleType {
