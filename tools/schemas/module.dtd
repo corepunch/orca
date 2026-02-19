@@ -79,7 +79,7 @@
 >
 
 <!-- Component Definition -->
-<!ELEMENT component (summary?, details?, property*, method*, handles*)>
+<!ELEMENT component (summary?, details?, xmlns?, property*, method*, handles*)>
 <!ATTLIST component
   name CDATA #REQUIRED
   parent CDATA #IMPLIED
@@ -112,6 +112,7 @@
   export CDATA #IMPLIED
   const (true|false) #IMPLIED
   lua (true|false) #IMPLIED
+  private (true|false) #IMPLIED
 >
 
 <!-- Property Definition (for components) -->
@@ -151,6 +152,8 @@
 <!ELEMENT summary (#PCDATA)>
 
 <!ELEMENT details (#PCDATA | p | snippet)*>
+
+<!ELEMENT xmlns (#PCDATA)>
 
 <!ELEMENT p (#PCDATA)>
 
