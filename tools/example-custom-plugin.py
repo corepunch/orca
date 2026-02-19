@@ -13,21 +13,11 @@ import sys
 import os
 import json
 
-# Add the tools directory to the path so we can import from conv-module
+# Add the tools directory to the path so we can import from plugins
 sys.path.insert(0, os.path.dirname(__file__))
 
-# Import necessary components from conv-module
-# We need to import it properly to access the classes
-import importlib.util
-spec = importlib.util.spec_from_file_location("conv_module", "conv-module.py")
-conv_module = importlib.util.module_from_spec(spec)
-sys.modules["conv_module"] = conv_module
-spec.loader.exec_module(conv_module)
-
-# Now we can access the classes
-BasePlugin = conv_module.BasePlugin
-OutputPlugin = conv_module.OutputPlugin
-PluginRegistry = conv_module.PluginRegistry
+# Import the plugin system
+from plugins import OutputPlugin, PluginRegistry
 
 class JsonPlugin(OutputPlugin):
     """Plugin for generating JSON metadata files (.json)"""

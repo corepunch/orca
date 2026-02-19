@@ -6,12 +6,13 @@ and HTML documentation.
 
 Plugin Architecture:
 -------------------
-The tool uses a plugin-based architecture for different output formats:
+The tool uses a plugin-based architecture for different output formats.
+Plugins are located in the plugins/ directory:
 
-1. HeaderPlugin (.h) - Generates C header files
-2. ExportPlugin (_export.c) - Generates Lua binding code
-3. PropsPlugin (_properties.h) - Generates component property metadata
-4. HtmlPlugin - Generates HTML documentation
+1. HeaderPlugin (plugins/header_plugin.py) - Generates C header files (.h)
+2. ExportPlugin (plugins/export_plugin.py) - Generates Lua binding code (_export.c)
+3. PropsPlugin (plugins/props_plugin.py) - Generates component property metadata (_properties.h)
+4. HtmlPlugin (plugins/html_plugin.py) - Generates HTML documentation
 
 Usage:
 ------
@@ -20,24 +21,41 @@ Basic usage:
 
 Custom Plugin Example:
 ----------------------
-To create a custom output plugin:
+To create a custom output plugin, create a new file in plugins/:
 
+    # plugins/my_plugin.py
+    from . import OutputPlugin
+    
     class MyCustomPlugin(OutputPlugin):
         def __init__(self, filename):
             super().__init__(filename, ".mycustom")
     
-    # Register the plugin
+Then in conv-module.py:
+    from plugins.my_plugin import MyCustomPlugin
     PluginRegistry.register('mycustom', MyCustomPlugin)
     
     # Enable/disable plugins
     PluginRegistry.disable_plugin('html')  # Disable HTML generation
     PluginRegistry.enable_plugin('mycustom')  # Enable custom plugin
 
-The registered plugin will automatically be created and used during module processing.
+See PLUGIN_ARCHITECTURE.md for complete documentation.
 """
 
 import sys, re, io, os
 import xml.etree.ElementTree as ET
+
+# Import plugin system
+from plugins import BasePlugin, OutputPlugin, PluginRegistry
+from plugins.header_plugin import HeaderPlugin
+from plugins.export_plugin import ExportPlugin
+from plugins.props_plugin import PropsPlugin
+from plugins.html_plugin import HtmlPlugin
+
+# Register built-in plugins
+PluginRegistry.register('header', HeaderPlugin)
+PluginRegistry.register('export', ExportPlugin)
+PluginRegistry.register('props', PropsPlugin)
+PluginRegistry.register('html', HtmlPlugin)
 
 g_structs = {}
 g_enums = {}
@@ -276,116 +294,6 @@ Axis = [
 	(re.compile(r"(.+)\.Axis\[2\]"), r"Depth\1"),
 	(re.compile(r"Border\.Radius\.(.+)Radius"), r"Border\1Radius"),
 ]
-
-class BasePlugin:
-	"""Base class for all plugins"""
-	def close(self):
-		"""Optional close method for cleanup"""
-		pass
-
-class OutputPlugin(BasePlugin):
-	"""Base class for file-based output plugins"""
-	def __init__(self, filename, extension):
-		self.filename = filename
-		self.extension = extension
-		self.file_handle = None
-	
-	def open(self):
-		"""Open the output file"""
-		output_filename = self.filename.replace(".xml", self.extension)
-		self.file_handle = open(output_filename, "w")
-		return self.file_handle
-	
-	def close(self):
-		"""Close the output file"""
-		if self.file_handle:
-			self.file_handle.close()
-	
-	def write(self, text):
-		"""Write a line to the output file"""
-		w(self.file_handle, text)
-	
-	def get_handle(self):
-		"""Get the file handle for direct writing"""
-		return self.file_handle
-
-class HeaderPlugin(OutputPlugin):
-	"""Plugin for generating C header files (.h)"""
-	def __init__(self, filename):
-		super().__init__(filename, ".h")
-
-class ExportPlugin(OutputPlugin):
-	"""Plugin for generating C export/Lua binding files (_export.c)"""
-	def __init__(self, filename):
-		super().__init__(filename, "_export.c")
-
-class PropsPlugin(OutputPlugin):
-	"""Plugin for generating C property files (_properties.h)"""
-	def __init__(self, filename):
-		super().__init__(filename, "_properties.h")
-
-class HtmlPlugin(BasePlugin):
-	"""Plugin for generating HTML documentation"""
-	def __init__(self):
-		# HTML generation uses global state (g_html, g_sidebar, g_content)
-		# This plugin doesn't need a file handle as it's managed separately
-		pass
-	
-	def write_to_global(self, element_type, *args, **kwargs):
-		"""Write to the global HTML structure"""
-		# This would be used for adding elements to g_sidebar, g_content, etc.
-		pass
-
-class PluginRegistry:
-	"""Registry for managing output plugins"""
-	_plugins = {
-		'header': HeaderPlugin,
-		'export': ExportPlugin,
-		'props': PropsPlugin,
-		'html': HtmlPlugin,
-	}
-	_enabled_plugins = {'header', 'export', 'props', 'html'}
-	
-	@classmethod
-	def register(cls, name, plugin_class):
-		"""Register a new plugin type"""
-		cls._plugins[name] = plugin_class
-		cls._enabled_plugins.add(name)
-	
-	@classmethod
-	def unregister(cls, name):
-		"""Unregister a plugin type"""
-		if name in cls._plugins:
-			del cls._plugins[name]
-			cls._enabled_plugins.discard(name)
-	
-	@classmethod
-	def enable_plugin(cls, name):
-		"""Enable a registered plugin"""
-		if name in cls._plugins:
-			cls._enabled_plugins.add(name)
-	
-	@classmethod
-	def disable_plugin(cls, name):
-		"""Disable a registered plugin"""
-		cls._enabled_plugins.discard(name)
-	
-	@classmethod
-	def get_enabled_plugins(cls):
-		"""Get list of enabled plugin names"""
-		return cls._enabled_plugins.copy()
-	
-	@classmethod
-	def create_plugin(cls, name, *args, **kwargs):
-		"""Create an instance of a plugin"""
-		if name in cls._plugins and name in cls._enabled_plugins:
-			return cls._plugins[name](*args, **kwargs)
-		return None
-	
-	@classmethod
-	def get_plugin_class(cls, name):
-		"""Get the plugin class by name"""
-		return cls._plugins.get(name)
 
 class ParserState:
 	def __init__(self, filename):

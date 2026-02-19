@@ -10,14 +10,30 @@ The plugin architecture allows you to:
 - Enable/disable specific output formats as needed
 - Create custom plugins for project-specific needs
 
+## Plugin Structure
+
+All plugins are located in the `plugins/` directory:
+
+```
+tools/
+├── plugins/
+│   ├── __init__.py          # Base classes (BasePlugin, OutputPlugin, PluginRegistry)
+│   ├── header_plugin.py     # HeaderPlugin - generates .h files
+│   ├── export_plugin.py     # ExportPlugin - generates _export.c files
+│   ├── props_plugin.py      # PropsPlugin - generates _properties.h files
+│   └── html_plugin.py       # HtmlPlugin - generates HTML documentation
+├── conv-module.py           # Main converter script
+└── example-custom-plugin.py # Example custom plugin
+```
+
 ## Built-in Plugins
 
-| Plugin | Extension | Description |
-|--------|-----------|-------------|
-| `HeaderPlugin` | `.h` | Generates C header files with type definitions and function declarations |
-| `ExportPlugin` | `_export.c` | Generates C source files with Lua bindings |
-| `PropsPlugin` | `_properties.h` | Generates component property metadata |
-| `HtmlPlugin` | N/A | Generates HTML documentation (writes to `../docs/index.html`) |
+| Plugin | File | Extension | Description |
+|--------|------|-----------|-------------|
+| `HeaderPlugin` | `header_plugin.py` | `.h` | Generates C header files with type definitions and function declarations |
+| `ExportPlugin` | `export_plugin.py` | `_export.c` | Generates C source files with Lua bindings |
+| `PropsPlugin` | `props_plugin.py` | `_properties.h` | Generates component property metadata |
+| `HtmlPlugin` | `html_plugin.py` | N/A | Generates HTML documentation (writes to `../docs/index.html`) |
 
 ## Usage
 
@@ -32,7 +48,7 @@ This will generate all enabled outputs for each XML module file.
 ### Programmatic Usage
 
 ```python
-from conv_module import PluginRegistry
+from plugins import PluginRegistry
 
 # Disable HTML generation
 PluginRegistry.disable_plugin('html')
@@ -47,10 +63,11 @@ PluginRegistry.disable_plugin('props')
 
 ### File-Based Output Plugin
 
-For plugins that generate files (like C, JSON, etc.):
+For plugins that generate files (like C, JSON, etc.), create a new file in the `plugins/` directory:
 
+**plugins/my_plugin.py:**
 ```python
-from conv_module import OutputPlugin, PluginRegistry
+from . import OutputPlugin
 
 class MyCustomPlugin(OutputPlugin):
     """Plugin for generating custom format files"""
@@ -60,6 +77,11 @@ class MyCustomPlugin(OutputPlugin):
     def write_header(self, text):
         """Custom method for your plugin"""
         self.write(f"# {text}")
+```
+
+Then register it in `conv-module.py`:
+```python
+from plugins.my_plugin import MyCustomPlugin
 
 # Register the plugin
 PluginRegistry.register('mycustom', MyCustomPlugin)
@@ -67,10 +89,13 @@ PluginRegistry.register('mycustom', MyCustomPlugin)
 
 ### Non-File Output Plugin
 
-For plugins that don't write to individual files:
+For plugins that don't write to individual files, create a file in `plugins/`:
 
+**plugins/custom_plugin.py:**
 ```python
-class CustomPlugin:
+from . import BasePlugin
+
+class CustomPlugin(BasePlugin):
     """Plugin for custom processing"""
     def __init__(self):
         self.data = []
@@ -83,6 +108,11 @@ class CustomPlugin:
         """Called when processing is complete"""
         # Do something with collected data
         pass
+```
+
+Then register it in `conv-module.py`:
+```python
+from plugins.custom_plugin import CustomPlugin
 
 # Register the plugin
 PluginRegistry.register('custom', CustomPlugin)
