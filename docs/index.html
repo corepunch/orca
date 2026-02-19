@@ -1,200 +1,297 @@
-<html xmlns="http://www.w3.org/2001/XMLSchema"><head><link rel="stylesheet" href="doc.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"><meta charset="UTF-8"></head><body><div class="adjustable-sidebar-width full-width-container topic-wrapper"><div class="sidebar"><div class="technology-title"><span class="fa-solid fa-folder-open icon"></span>orca.filesystem
-</div><a class="leaf-link" href="#Workspace"><i class="fa-solid fa-layer-group icon"></i><span>Workspace
-</span></a><a class="leaf-link" href="#Project"><i class="fa-solid fa-layer-group icon"></i><span>Project
-</span></a><a class="leaf-link" href="#Library"><i class="fa-solid fa-layer-group icon"></i><span>Library
-</span></a><a class="leaf-link" href="#AnimationClipLibrary"><i class="fa-solid fa-layer-group icon"></i><span>AnimationClipLibrary
-</span></a><a class="leaf-link" href="#ScreenLibrary"><i class="fa-solid fa-layer-group icon"></i><span>ScreenLibrary
-</span></a><a class="leaf-link" href="#MaterialTypeLibrary"><i class="fa-solid fa-layer-group icon"></i><span>MaterialTypeLibrary
-</span></a><a class="leaf-link" href="#MaterialLibrary"><i class="fa-solid fa-layer-group icon"></i><span>MaterialLibrary
-</span></a><a class="leaf-link" href="#BrushLibrary"><i class="fa-solid fa-layer-group icon"></i><span>BrushLibrary
-</span></a><a class="leaf-link" href="#MeshLibrary"><i class="fa-solid fa-layer-group icon"></i><span>MeshLibrary
-</span></a><a class="leaf-link" href="#TimelineSequenceLibrary"><i class="fa-solid fa-layer-group icon"></i><span>TimelineSequenceLibrary
-</span></a><a class="leaf-link" href="#SceneObjectLibrary"><i class="fa-solid fa-layer-group icon"></i><span>SceneObjectLibrary
-</span></a><a class="leaf-link" href="#ComposerLibrary"><i class="fa-solid fa-layer-group icon"></i><span>ComposerLibrary
-</span></a><a class="leaf-link" href="#PipelineItemLibrary"><i class="fa-solid fa-layer-group icon"></i><span>PipelineItemLibrary
-</span></a><a class="leaf-link" href="#SceneLibrary"><i class="fa-solid fa-layer-group icon"></i><span>SceneLibrary
-</span></a><a class="leaf-link" href="#TrajectoryLibrary"><i class="fa-solid fa-layer-group icon"></i><span>TrajectoryLibrary
-</span></a><a class="leaf-link" href="#TransitionLibrary"><i class="fa-solid fa-layer-group icon"></i><span>TransitionLibrary
-</span></a><a class="leaf-link" href="#SplineLibrary"><i class="fa-solid fa-layer-group icon"></i><span>SplineLibrary
-</span></a><a class="leaf-link" href="#PrefabLibrary"><i class="fa-solid fa-layer-group icon"></i><span>PrefabLibrary
-</span></a><a class="leaf-link" href="#ProjectReferenceLibrary"><i class="fa-solid fa-layer-group icon"></i><span>ProjectReferenceLibrary
-</span></a><a class="leaf-link" href="#ProfileLibrary"><i class="fa-solid fa-layer-group icon"></i><span>ProfileLibrary
-</span></a><a class="leaf-link" href="#EnginePluginLibrary"><i class="fa-solid fa-layer-group icon"></i><span>EnginePluginLibrary
-</span></a><a class="leaf-link" href="#ShortcutLibrary"><i class="fa-solid fa-layer-group icon"></i><span>ShortcutLibrary
-</span></a><a class="leaf-link" href="#LayerLibrary"><i class="fa-solid fa-layer-group icon"></i><span>LayerLibrary
-</span></a><a class="leaf-link" href="#AnimationLibrary"><i class="fa-solid fa-layer-group icon"></i><span>AnimationLibrary
-</span></a><a class="leaf-link" href="#TagLibrary"><i class="fa-solid fa-layer-group icon"></i><span>TagLibrary
-</span></a><a class="leaf-link" href="#ThemeLibrary"><i class="fa-solid fa-layer-group icon"></i><span>ThemeLibrary
-</span></a><a class="leaf-link" href="#ResourceExportTagLibrary"><i class="fa-solid fa-layer-group icon"></i><span>ResourceExportTagLibrary
-</span></a><a class="leaf-link" href="#LocaleLibrary"><i class="fa-solid fa-layer-group icon"></i><span>LocaleLibrary
-</span></a><a class="leaf-link" href="#DataSourceLibrary"><i class="fa-solid fa-layer-group icon"></i><span>DataSourceLibrary
-</span></a><a class="leaf-link" href="#PageTransitionCollectionLibrary"><i class="fa-solid fa-layer-group icon"></i><span>PageTransitionCollectionLibrary
-</span></a><a class="leaf-link" href="#TextureLibrary"><i class="fa-solid fa-layer-group icon"></i><span>TextureLibrary
-</span></a><a class="leaf-link" href="#StyleLibrary"><i class="fa-solid fa-layer-group icon"></i><span>StyleLibrary
-</span></a><a class="leaf-link" href="#StateManagerLibrary"><i class="fa-solid fa-layer-group icon"></i><span>StateManagerLibrary
-</span></a><a class="leaf-link" href="#ConnectServiceLibrary"><i class="fa-solid fa-layer-group icon"></i><span>ConnectServiceLibrary
-</span></a><a class="leaf-link" href="#ConnectUserServiceLibrary"><i class="fa-solid fa-layer-group icon"></i><span>ConnectUserServiceLibrary
-</span></a><a class="leaf-link" href="#PropertyTypeLibrary"><i class="fa-solid fa-layer-group icon"></i><span>PropertyTypeLibrary
-</span></a><a class="leaf-link" href="#MessageLibrary"><i class="fa-solid fa-layer-group icon"></i><span>MessageLibrary
-</span></a><a class="leaf-link" href="#SystemMessage"><i class="fa-solid fa-layer-group icon"></i><span>SystemMessage
-</span></a><a class="leaf-link" href="#ImageLibrary"><i class="fa-solid fa-layer-group icon"></i><span>ImageLibrary
-</span></a><a class="leaf-link" href="#FontLibrary"><i class="fa-solid fa-layer-group icon"></i><span>FontLibrary
-</span></a><a class="leaf-link" href="#ProjectReferenceItem"><i class="fa-solid fa-layer-group icon"></i><span>ProjectReferenceItem
-</span></a><a class="leaf-link" href="#LocaleReferenceItem"><i class="fa-solid fa-layer-group icon"></i><span>LocaleReferenceItem
-</span></a><a class="leaf-link" href="#Tag"><i class="fa-solid fa-layer-group icon"></i><span>Tag
-</span></a><a class="leaf-link" href="#EnginePlugin"><i class="fa-solid fa-layer-group icon"></i><span>EnginePlugin
-</span></a><a class="leaf-link" href="#EngineMetaclass"><i class="fa-solid fa-layer-group icon"></i><span>EngineMetaclass
-</span></a><a class="leaf-link" href="#ThemeGroup"><i class="fa-solid fa-layer-group icon"></i><span>ThemeGroup
-</span></a><a class="leaf-link" href="#Theme"><i class="fa-solid fa-layer-group icon"></i><span>Theme
-</span></a><a class="leaf-link" href="#Entry"><i class="fa-solid fa-layer-group icon"></i><span>Entry
-</span></a><a class="leaf-link" href="#ThemeDefaultValuesDictionary"><i class="fa-solid fa-layer-group icon"></i><span>ThemeDefaultValuesDictionary
-</span></a></div><main class="content"><div id="Workspace" class="class" data-name="Workspace" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">Workspace
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.Workspace</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code></div><div id="Project" class="class" data-name="Project" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">Project
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.Project</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">isPackage</span>: <span>bool</span></code></div>
-<div class="topic"><code class="decorator"><span>resource </span><span class="identifier">package</span>: <span>Package</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">HalfFloatTextureFormat</span>: <span>bool</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">HalfFloatTextureFormatLinear</span>: <span>bool</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">HalfFloatColorAttachment</span>: <span>bool</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">RenderToMipmapLevels</span>: <span>bool</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">ExternalTexture</span>: <span>bool</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">StartupScreen</span>: <span>fixed</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">PreviewWindowBackgroundColor</span>: <span>color</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">MessageLimitPerFrame</span>: <span>int</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">GlobalTimelineStartTime</span>: <span>int</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">GlobalTimelineEndTime</span>: <span>int</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">BinaryExportDirectory</span>: <span>fixed</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">ApplicationExportDirectory</span>: <span>fixed</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">IsMasterProject</span>: <span>bool</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">OptimizeMeshes</span>: <span>bool</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">TargetPlatformVertexCacheSize</span>: <span>int</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">PlotAnimations</span>: <span>bool</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">RoundImagesToNearestPowerOf2</span>: <span>bool</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">ProjectExportShaderSourceCode</span>: <span>bool</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">ProjectExportMainKzbWithBakedThemes</span>: <span>bool</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">ProjectGroupByThemeNameInBakedThemeExport</span>: <span>bool</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">IsLocalizationEnabled</span>: <span>bool</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">FullScreenPreviewLayer</span>: <span>bool</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">ShowChildrenInLayerThumbnails</span>: <span>bool</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">CompositionDesignSize</span>: <span>vec2</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">ProjectUsePremultipliedAlpha</span>: <span>bool</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">ProjectRemoveICCProfilesOfPngs</span>: <span>bool</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">BinaryFileName</span>: <span>fixed</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">IsAssetPackage</span>: <span>bool</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">KanziConnectEnabled</span>: <span>bool</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">DefaultMaterial</span>: <span>fixed</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">Width</span>: <span>int</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">Height</span>: <span>int</span></code></div>
-</div><div id="Library" class="class" data-name="Library" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">Library
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.Library</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">IsExternal</span>: <span>bool</span></code></div>
-</div><div id="AnimationClipLibrary" class="class" data-name="AnimationClipLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">AnimationClipLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.AnimationClipLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ScreenLibrary" class="class" data-name="ScreenLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">ScreenLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ScreenLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="MaterialTypeLibrary" class="class" data-name="MaterialTypeLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">MaterialTypeLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.MaterialTypeLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="MaterialLibrary" class="class" data-name="MaterialLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">MaterialLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.MaterialLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="BrushLibrary" class="class" data-name="BrushLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">BrushLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.BrushLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="MeshLibrary" class="class" data-name="MeshLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">MeshLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.MeshLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="TimelineSequenceLibrary" class="class" data-name="TimelineSequenceLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">TimelineSequenceLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.TimelineSequenceLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="SceneObjectLibrary" class="class" data-name="SceneObjectLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">SceneObjectLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.SceneObjectLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ComposerLibrary" class="class" data-name="ComposerLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">ComposerLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ComposerLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="PipelineItemLibrary" class="class" data-name="PipelineItemLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">PipelineItemLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.PipelineItemLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="SceneLibrary" class="class" data-name="SceneLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">SceneLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.SceneLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="TrajectoryLibrary" class="class" data-name="TrajectoryLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">TrajectoryLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.TrajectoryLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="TransitionLibrary" class="class" data-name="TransitionLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">TransitionLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.TransitionLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="SplineLibrary" class="class" data-name="SplineLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">SplineLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.SplineLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="PrefabLibrary" class="class" data-name="PrefabLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">PrefabLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.PrefabLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ProjectReferenceLibrary" class="class" data-name="ProjectReferenceLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">ProjectReferenceLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ProjectReferenceLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ProfileLibrary" class="class" data-name="ProfileLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">ProfileLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ProfileLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="EnginePluginLibrary" class="class" data-name="EnginePluginLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">EnginePluginLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.EnginePluginLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ShortcutLibrary" class="class" data-name="ShortcutLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">ShortcutLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ShortcutLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="LayerLibrary" class="class" data-name="LayerLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">LayerLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.LayerLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="AnimationLibrary" class="class" data-name="AnimationLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">AnimationLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.AnimationLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="TagLibrary" class="class" data-name="TagLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">TagLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.TagLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ThemeLibrary" class="class" data-name="ThemeLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">ThemeLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ThemeLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ResourceExportTagLibrary" class="class" data-name="ResourceExportTagLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">ResourceExportTagLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ResourceExportTagLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="LocaleLibrary" class="class" data-name="LocaleLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">LocaleLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.LocaleLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="DataSourceLibrary" class="class" data-name="DataSourceLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">DataSourceLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.DataSourceLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="PageTransitionCollectionLibrary" class="class" data-name="PageTransitionCollectionLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">PageTransitionCollectionLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.PageTransitionCollectionLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="TextureLibrary" class="class" data-name="TextureLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">TextureLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.TextureLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="StyleLibrary" class="class" data-name="StyleLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">StyleLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.StyleLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="StateManagerLibrary" class="class" data-name="StateManagerLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">StateManagerLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.StateManagerLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ConnectServiceLibrary" class="class" data-name="ConnectServiceLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">ConnectServiceLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ConnectServiceLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ConnectUserServiceLibrary" class="class" data-name="ConnectUserServiceLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">ConnectUserServiceLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ConnectUserServiceLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="PropertyTypeLibrary" class="class" data-name="PropertyTypeLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">PropertyTypeLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.PropertyTypeLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="MessageLibrary" class="class" data-name="MessageLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">MessageLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.MessageLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="SystemMessage" class="class" data-name="SystemMessage" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">SystemMessage
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.SystemMessage</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Message</span>: <span>fixed</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">Key</span>: <span>fixed</span></code></div>
-</div><div id="ImageLibrary" class="class" data-name="ImageLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">ImageLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ImageLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="FontLibrary" class="class" data-name="FontLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">FontLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.FontLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ProjectReferenceItem" class="class" data-name="ProjectReferenceItem" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">ProjectReferenceItem
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ProjectReferenceItem</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code></div><div id="LocaleReferenceItem" class="class" data-name="LocaleReferenceItem" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">LocaleReferenceItem
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.LocaleReferenceItem</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code></div><div id="Tag" class="class" data-name="Tag" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">Tag
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.Tag</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">TagIsInherited</span>: <span>bool</span></code></div>
-</div><div id="EnginePlugin" class="class" data-name="EnginePlugin" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">EnginePlugin
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.EnginePlugin</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code></div><div id="EngineMetaclass" class="class" data-name="EngineMetaclass" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">EngineMetaclass
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.EngineMetaclass</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BaseClassName</span>: <span>fixed</span></code></div>
-</div><div id="ThemeGroup" class="class" data-name="ThemeGroup" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">ThemeGroup
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ThemeGroup</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">SelectedDictionary</span>: <span>fixed</span></code></div>
-</div><div id="Theme" class="class" data-name="Theme" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">Theme
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.Theme</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">IsThemeVisible</span>: <span>bool</span></code></div>
-</div><div id="Entry" class="class" data-name="Entry" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">Entry
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.Entry</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code></div><div id="ThemeDefaultValuesDictionary" class="class" data-name="ThemeDefaultValuesDictionary" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">ThemeDefaultValuesDictionary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ThemeDefaultValuesDictionary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getWorkspace</span>()<span class="decorator"> -&gt;</span><span> Object</span></code><div class="small-abstract"><span>Retrieves main workspace object.
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getBaseName</span>(<span class="identifier">path</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> string</span></code><div class="small-abstract"><span>Gets the base filename from a path
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getPathName</span>(<span class="identifier">path</span>:<span class="decorator">string</span>, <span class="identifier">out</span>:<span class="decorator">string</span>, <span class="identifier">maxlen</span>:<span class="decorator">int</span>)<span class="decorator"> -&gt;</span><span> string</span></code><div class="small-abstract"><span>Extracts the path without query parameters
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getDirName</span>(<span class="identifier">path</span>:<span class="decorator">string</span>, <span class="identifier">out</span>:<span class="decorator">string</span>, <span class="identifier">maxlen</span>:<span class="decorator">int</span>)<span class="decorator"> -&gt;</span><span> string</span></code><div class="small-abstract"><span>Extracts the directory path from a full file path
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">joinPaths</span>(<span class="identifier">path1</span>:<span class="decorator">string</span>, <span class="identifier">path2</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> string</span></code><div class="small-abstract"><span>Joins two path segments into a complete path
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">pathFromModule</span>(<span class="identifier">module</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> string</span></code><div class="small-abstract"><span>Converts a module name to a file path
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">hasChangedFiles</span>()<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Checks if any tracked files have been modified
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">makeDirectory</span>(<span class="identifier">path</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Creates a directory at the specified path
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">fileExists</span>(<span class="identifier">path</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Checks if a file exists at the specified path
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">addSearchPath</span>(<span class="identifier">path</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> Package</span></code><div class="small-abstract"><span>Adds a package to the resource search path
+<html xmlns="http://www.w3.org/2001/XMLSchema"><head><link rel="stylesheet" href="doc.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"><meta charset="UTF-8"></head><body><div class="adjustable-sidebar-width full-width-container topic-wrapper"><div class="sidebar"><div class="technology-title"><span class="fa-solid fa-folder-open icon"></span>orca.geometry
+</div><a class="leaf-link" href="#RotationOrder"><i class="fa-solid fa-bars icon"></i><span>RotationOrder
+</span></a><a class="leaf-link" href="#vec2"><i class="fa-solid fa-gear icon"></i><span>vec2
+</span></a><a class="leaf-link" href="#vec3"><i class="fa-solid fa-gear icon"></i><span>vec3
+</span></a><a class="leaf-link" href="#vec4"><i class="fa-solid fa-gear icon"></i><span>vec4
+</span></a><a class="leaf-link" href="#box2"><i class="fa-solid fa-gear icon"></i><span>box2
+</span></a><a class="leaf-link" href="#box3"><i class="fa-solid fa-gear icon"></i><span>box3
+</span></a><a class="leaf-link" href="#rect"><i class="fa-solid fa-gear icon"></i><span>rect
+</span></a><a class="leaf-link" href="#quat"><i class="fa-solid fa-gear icon"></i><span>quat
+</span></a><a class="leaf-link" href="#mat3"><i class="fa-solid fa-gear icon"></i><span>mat3
+</span></a><a class="leaf-link" href="#mat4"><i class="fa-solid fa-gear icon"></i><span>mat4
+</span></a><a class="leaf-link" href="#bounds"><i class="fa-solid fa-gear icon"></i><span>bounds
+</span></a><a class="leaf-link" href="#plane3"><i class="fa-solid fa-gear icon"></i><span>plane3
+</span></a><a class="leaf-link" href="#sphere3"><i class="fa-solid fa-gear icon"></i><span>sphere3
+</span></a><a class="leaf-link" href="#frustum3"><i class="fa-solid fa-gear icon"></i><span>frustum3
+</span></a><a class="leaf-link" href="#transform2"><i class="fa-solid fa-gear icon"></i><span>transform2
+</span></a><a class="leaf-link" href="#transform3"><i class="fa-solid fa-gear icon"></i><span>transform3
+</span></a><a class="leaf-link" href="#triangle3"><i class="fa-solid fa-gear icon"></i><span>triangle3
+</span></a><a class="leaf-link" href="#line3"><i class="fa-solid fa-gear icon"></i><span>line3
+</span></a><a class="leaf-link" href="#edges"><i class="fa-solid fa-gear icon"></i><span>edges
+</span></a><a class="leaf-link" href="#color"><i class="fa-solid fa-gear icon"></i><span>color
+</span></a></div><main class="content"><div id="RotationOrder" class="class" data-name="RotationOrder" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
+</div><h1 class="header">RotationOrder
+</h1><div class="abstract">Euler angle rotation order enumeration
+</div><h2 class="title">Overview</h2><div class="abstract">Specifies the order in which rotations are applied around the X, Y, and Z axes. Different orders produce different final orientations for the same euler angles.</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">XYZ</span></code><div class="small-abstract"><span>Rotate around X axis first, then Y, then Z
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">XZY</span></code><div class="small-abstract"><span>Rotate around X axis first, then Z, then Y
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">YZX</span></code><div class="small-abstract"><span>Rotate around Y axis first, then Z, then X
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">YXZ</span></code><div class="small-abstract"><span>Rotate around Y axis first, then X, then Z
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">ZXY</span></code><div class="small-abstract"><span>Rotate around Z axis first, then X, then Y
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">ZYX</span></code><div class="small-abstract"><span>Rotate around Z axis first, then Y, then X
+</span></div></div>
+</div><div id="vec2" class="class" data-name="vec2" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">vec2
+</h1><div class="abstract">2D vector structure
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.vec2</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a point or direction in 2D space with x and y components. Supports common vector operations like addition, scaling, and distance calculations.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">x</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>X coordinate component
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">y</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Y coordinate component
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">set</span>(<span class="identifier">x</span>:<span class="decorator">float</span>, <span class="identifier">y</span>:<span class="decorator">float</span>)</code><div class="small-abstract"><span>Sets the vector components
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">scale</span>(<span class="identifier">s</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> vec2</span></code><div class="small-abstract"><span>Returns a scaled copy of the vector
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">add</span>(<span class="identifier">other</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> vec2</span></code><div class="small-abstract"><span>Adds two vectors component-wise
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">mul</span>(<span class="identifier">other</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> vec2</span></code><div class="small-abstract"><span>Multiplies two vectors component-wise
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">div</span>(<span class="identifier">other</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> vec2</span></code><div class="small-abstract"><span>Divides two vectors component-wise
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">sub</span>(<span class="identifier">other</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> vec2</span></code><div class="small-abstract"><span>Subtracts one vector from another
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">unm</span>()<span class="decorator"> -&gt;</span><span> vec2</span></code><div class="small-abstract"><span>Returns the negated vector
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">dot</span>(<span class="identifier">other</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Calculates dot product with another vector
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">lengthsq</span>()<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Returns the squared length of the vector
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">len</span>()<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Returns the length (magnitude) of the vector
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">distance</span>(<span class="identifier">other</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Calculates distance to another vector
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">normalize</span>()</code><div class="small-abstract"><span>Normalizes the vector in place to unit length
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">lerp</span>(<span class="identifier">other</span>:<span class="decorator">vec2</span>, <span class="identifier">t</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> vec2</span></code><div class="small-abstract"><span>Linear interpolation between this vector and another
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">mad</span>(<span class="identifier">s</span>:<span class="decorator">float</span>, <span class="identifier">other</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> vec2</span></code><div class="small-abstract"><span>Multiply-add operation: returns this + (s * other)
+</span></div></div></div><div id="vec3" class="class" data-name="vec3" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">vec3
+</h1><div class="abstract">3D vector structure
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.vec3</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a point or direction in 3D space with x, y, and z components. Supports vector math operations, interpolation, and curve calculations.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">x</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>X coordinate component
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">y</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Y coordinate component
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">z</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Z coordinate component
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">dot</span>(<span class="identifier">other</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Calculates dot product with another vector
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">lengthsq</span>()<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Returns the squared length of the vector
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">len</span>()<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Returns the length (magnitude) of the vector
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">bezier</span>(<span class="identifier">b</span>:<span class="decorator">vec3</span>, <span class="identifier">c</span>:<span class="decorator">vec3</span>, <span class="identifier">d</span>:<span class="decorator">vec3</span>, <span class="identifier">t</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Cubic Bezier curve interpolation
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">hermite</span>(<span class="identifier">b</span>:<span class="decorator">vec3</span>, <span class="identifier">c</span>:<span class="decorator">vec3</span>, <span class="identifier">d</span>:<span class="decorator">vec3</span>, <span class="identifier">t</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Hermite spline interpolation
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">lerp</span>(<span class="identifier">other</span>:<span class="decorator">vec3</span>, <span class="identifier">t</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Linear interpolation between this vector and another
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">cross</span>(<span class="identifier">other</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Calculates cross product with another vector
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">sub</span>(<span class="identifier">other</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Subtracts one vector from another
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">add</span>(<span class="identifier">other</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Adds two vectors component-wise
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">mad</span>(<span class="identifier">s</span>:<span class="decorator">float</span>, <span class="identifier">other</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Multiply-add operation: returns this + (s * other)
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">mul</span>(<span class="identifier">other</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Multiplies two vectors component-wise
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">scale</span>(<span class="identifier">s</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Returns a scaled copy of the vector
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">normalize</span>()</code><div class="small-abstract"><span>Normalizes the vector in place to unit length
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">set</span>(<span class="identifier">x</span>:<span class="decorator">float</span>, <span class="identifier">y</span>:<span class="decorator">float</span>, <span class="identifier">z</span>:<span class="decorator">float</span>)</code><div class="small-abstract"><span>Sets the vector components
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">clear</span>()</code><div class="small-abstract"><span>Sets all components to zero
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">unm</span>()<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Returns the negated vector
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">distance</span>(<span class="identifier">other</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Calculates distance to another vector
+</span></div></div></div><div id="vec4" class="class" data-name="vec4" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">vec4
+</h1><div class="abstract">4D vector structure
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.vec4</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a 4-component vector with x, y, z, and w components. Commonly used for homogeneous coordinates, quaternions, or RGBA colors.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">x</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>X coordinate component
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">y</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Y coordinate component
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">z</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Z coordinate component
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">w</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>W coordinate component
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">set</span>(<span class="identifier">x</span>:<span class="decorator">float</span>, <span class="identifier">y</span>:<span class="decorator">float</span>, <span class="identifier">z</span>:<span class="decorator">float</span>, <span class="identifier">w</span>:<span class="decorator">float</span>)</code><div class="small-abstract"><span>Sets all vector components
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">scale</span>(<span class="identifier">s</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> vec4</span></code><div class="small-abstract"><span>Returns a scaled copy of the vector
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">add</span>(<span class="identifier">other</span>:<span class="decorator">vec4</span>)<span class="decorator"> -&gt;</span><span> vec4</span></code><div class="small-abstract"><span>Adds two vectors component-wise
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">unm</span>()<span class="decorator"> -&gt;</span><span> vec4</span></code><div class="small-abstract"><span>Returns the negated vector
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">lerp</span>(<span class="identifier">other</span>:<span class="decorator">vec4</span>, <span class="identifier">t</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> vec4</span></code><div class="small-abstract"><span>Linear interpolation between this vector and another
+</span></div></div></div><div id="box2" class="class" data-name="box2" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">box2
+</h1><div class="abstract">2D axis-aligned bounding box
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.box2</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a rectangular region in 2D space defined by minimum and maximum corner points. Used for collision detection and spatial queries.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">min</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
+<div class="small-abstract"><span>Minimum corner point (bottom-left)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">max</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
+<div class="small-abstract"><span>Maximum corner point (top-right)
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">center</span>()<span class="decorator"> -&gt;</span><span> vec2</span></code><div class="small-abstract"><span>Calculates the center point of the box
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">moveTo</span>(<span class="identifier">location</span>:<span class="decorator">vec2</span>)</code><div class="small-abstract"><span>Moves the box so its center is at the specified location
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">containsPoint</span>(<span class="identifier">point</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Tests if a point is inside the box
+</span></div></div></div><div id="box3" class="class" data-name="box3" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">box3
+</h1><div class="abstract">3D axis-aligned bounding box
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.box3</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a rectangular volume in 3D space defined by minimum and maximum corner points. Used for 3D collision detection and spatial culling.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">min</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
+<div class="small-abstract"><span>Minimum corner point
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">max</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
+<div class="small-abstract"><span>Maximum corner point
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">center</span>()<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Calculates the center point of the box
+</span></div></div></div><div id="rect" class="class" data-name="rect" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">rect
+</h1><div class="abstract">2D rectangle structure
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.rect</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a rectangle using position (x, y) and dimensions (width, height). Provides utility methods for containment tests and transformations.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">x</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Left edge X coordinate
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">y</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Top edge Y coordinate
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">width</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Rectangle width
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">height</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Rectangle height
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">contains</span>(<span class="identifier">point</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Tests if a point is inside the rectangle
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">scale</span>(<span class="identifier">scale</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> rect</span></code><div class="small-abstract"><span>Returns a scaled copy of the rectangle
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">expand</span>(<span class="identifier">padding</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> rect</span></code><div class="small-abstract"><span>Returns a expanded copy of the rectangle
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">center</span>()<span class="decorator"> -&gt;</span><span> vec2</span></code><div class="small-abstract"><span>Calculates the center point of the rectangle
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">fit</span>(<span class="identifier">big</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> rect</span></code><div class="small-abstract"><span>Scales rectangle to fit within given dimensions while preserving aspect ratio
+</span></div></div></div><div id="quat" class="class" data-name="quat" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">quat
+</h1><div class="abstract">Quaternion for 3D rotations
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.quat</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a rotation in 3D space using quaternion mathematics. Provides smooth interpolation and avoids gimbal lock issues common with Euler angles.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">x</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>X component of quaternion
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">y</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Y component of quaternion
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">z</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Z component of quaternion
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">w</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>W component (scalar part) of quaternion
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">fromEuler</span>(<span class="identifier">euler</span>:<span class="decorator">vec3</span>, <span class="identifier">order</span>:<span class="decorator">RotationOrder</span>)<span class="decorator"> -&gt;</span><span> quat</span></code><div class="small-abstract"><span>Creates quaternion from Euler angles
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">fromMatrix</span>(<span class="identifier">matrix</span>:<span class="decorator">mat4</span>)<span class="decorator"> -&gt;</span><span> quat</span></code><div class="small-abstract"><span>Extracts quaternion from rotation matrix
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">dotProduct</span>(<span class="identifier">other</span>:<span class="decorator">quat</span>)<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Calculates dot product with another quaternion
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">length</span>()<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Returns the magnitude of the quaternion
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">unm</span>()<span class="decorator"> -&gt;</span><span> quat</span></code><div class="small-abstract"><span>Returns the conjugate of the quaternion
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">normalized</span>()<span class="decorator"> -&gt;</span><span> quat</span></code><div class="small-abstract"><span>Returns a normalized copy of the quaternion
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">slerp</span>(<span class="identifier">q</span>:<span class="decorator">quat</span>, <span class="identifier">t</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> quat</span></code><div class="small-abstract"><span>Spherical linear interpolation between quaternions
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">sqlerp</span>(<span class="identifier">b</span>:<span class="decorator">quat</span>, <span class="identifier">c</span>:<span class="decorator">quat</span>, <span class="identifier">d</span>:<span class="decorator">quat</span>, <span class="identifier">t</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> quat</span></code><div class="small-abstract"><span>Squad (spherical cubic) interpolation between quaternions
+</span></div></div></div><div id="mat3" class="class" data-name="mat3" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">mat3
+</h1><div class="abstract">3x3 transformation matrix
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.mat3</span></code><h2 class="title">Overview</h2><div class="abstract">Represents 2D transformations and 3D normal transformations. Stored in column-major order as a 9-element float array.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">v</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Matrix elements in column-major order
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">identity</span>()<span class="decorator"> -&gt;</span><span> mat3</span></code><div class="small-abstract"><span>Creates an identity matrix
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">normal</span>(<span class="identifier">matrix</span>:<span class="decorator">mat4</span>)<span class="decorator"> -&gt;</span><span> mat3</span></code><div class="small-abstract"><span>Creates normal transformation matrix from 4x4 matrix
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">translate</span>(<span class="identifier">offset</span>:<span class="decorator">vec2</span>)</code><div class="small-abstract"><span>Applies translation to the matrix
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">scale</span>(<span class="identifier">scale</span>:<span class="decorator">vec2</span>)</code><div class="small-abstract"><span>Applies scaling to the matrix
+</span></div></div></div><div id="mat4" class="class" data-name="mat4" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">mat4
+</h1><div class="abstract">4x4 transformation matrix
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.mat4</span></code><h2 class="title">Overview</h2><div class="abstract">Represents 3D transformations including translation, rotation, and scaling. Stored in column-major order as a 16-element float array. Used for camera projections and object transformations.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">v</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Matrix elements in column-major order
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">identity</span>()<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Creates an identity matrix
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">translate</span>(<span class="identifier">offset</span>:<span class="decorator">vec3</span>)</code><div class="small-abstract"><span>Applies translation to the matrix
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">rotate</span>(<span class="identifier">euler</span>:<span class="decorator">vec3</span>, <span class="identifier">order</span>:<span class="decorator">RotationOrder</span>)</code><div class="small-abstract"><span>Applies rotation using Euler angles
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">scale</span>(<span class="identifier">scale</span>:<span class="decorator">vec3</span>)</code><div class="small-abstract"><span>Applies scaling to the matrix
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">multiply</span>(<span class="identifier">other</span>:<span class="decorator">mat4</span>)<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Multiplies this matrix with another
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">ortho</span>(<span class="identifier">left</span>:<span class="decorator">float</span>, <span class="identifier">right</span>:<span class="decorator">float</span>, <span class="identifier">bottom</span>:<span class="decorator">float</span>, <span class="identifier">top</span>:<span class="decorator">float</span>, <span class="identifier">znear</span>:<span class="decorator">float</span>, <span class="identifier">zfar</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Creates orthographic projection matrix
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">perspective</span>(<span class="identifier">radians</span>:<span class="decorator">float</span>, <span class="identifier">aspect</span>:<span class="decorator">float</span>, <span class="identifier">znear</span>:<span class="decorator">float</span>, <span class="identifier">zfar</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Creates perspective projection matrix
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">lookAt</span>(<span class="identifier">eye</span>:<span class="decorator">vec3</span>, <span class="identifier">direction</span>:<span class="decorator">vec3</span>, <span class="identifier">up</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Creates view matrix for camera positioning
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">inverse</span>()<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Calculates the inverse matrix
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">transpose</span>()<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Returns the transposed matrix
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">rotate4</span>(<span class="identifier">quat</span>:<span class="decorator">vec4</span>)</code><div class="small-abstract"><span>Applies quaternion rotation to the matrix
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">multiplyVector3D</span>(<span class="identifier">point</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Transforms a 3D point by this matrix
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">fromRotationOrigin</span>(<span class="identifier">rotation</span>:<span class="decorator">quat</span>, <span class="identifier">origin</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Creates matrix from rotation around a specific origin point
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">fromRotationTranslationScaleOrigin</span>(<span class="identifier">rotation</span>:<span class="decorator">quat</span>, <span class="identifier">translation</span>:<span class="decorator">vec3</span>, <span class="identifier">scale</span>:<span class="decorator">vec3</span>, <span class="identifier">origin</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Creates full transformation matrix with custom origin
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">fromTranslation</span>(<span class="identifier">translation</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Creates translation-only matrix
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">rotateQuat</span>(<span class="identifier">rotation</span>:<span class="decorator">quat</span>)</code><div class="small-abstract"><span>Applies quaternion rotation to the matrix
+</span></div></div></div><div id="bounds" class="class" data-name="bounds" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">bounds
+</h1><div class="abstract">1D range bounds
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.bounds</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a range with minimum and maximum values. Used for clamping values or defining valid ranges.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">min</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Minimum value of the range
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">max</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Maximum value of the range
+</span></div></div><div id="plane3" class="class" data-name="plane3" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">plane3
+</h1><div class="abstract">3D plane representation
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.plane3</span></code><h2 class="title">Overview</h2><div class="abstract">Represents an infinite plane in 3D space using the equation ax + by + cz + d = 0. Used for clipping, collision detection, and spatial partitioning.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">a</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>X component of plane normal
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">b</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Y component of plane normal
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">c</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Z component of plane normal
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">d</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Distance from origin along normal
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">normalize</span>()</code><div class="small-abstract"><span>Normalizes the plane equation
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">multiplyVector3D</span>(<span class="identifier">point</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Calculates signed distance from point to plane
+</span></div></div></div><div id="sphere3" class="class" data-name="sphere3" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">sphere3
+</h1><div class="abstract">3D sphere representation
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.sphere3</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a sphere in 3D space defined by center point and radius. Used for collision detection, bounding volumes, and spatial queries.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">center</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
+<div class="small-abstract"><span>Center point of the sphere
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">radius</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Radius of the sphere
+</span></div></div><div id="frustum3" class="class" data-name="frustum3" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">frustum3
+</h1><div class="abstract">3D viewing frustum
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.frustum3</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a truncated pyramid used for camera view volumes and culling. Defined by six planes that bound the visible region.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">left</span>: <a class="type-identifier-link" href="#plane3">plane3</a></code></div>
+<div class="small-abstract"><span>Left clipping plane
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">right</span>: <a class="type-identifier-link" href="#plane3">plane3</a></code></div>
+<div class="small-abstract"><span>Right clipping plane
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">bottom</span>: <a class="type-identifier-link" href="#plane3">plane3</a></code></div>
+<div class="small-abstract"><span>Bottom clipping plane
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">top</span>: <a class="type-identifier-link" href="#plane3">plane3</a></code></div>
+<div class="small-abstract"><span>Top clipping plane
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">front</span>: <a class="type-identifier-link" href="#plane3">plane3</a></code></div>
+<div class="small-abstract"><span>Near clipping plane
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">back</span>: <a class="type-identifier-link" href="#plane3">plane3</a></code></div>
+<div class="small-abstract"><span>Far clipping plane
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">calculate</span>(<span class="identifier">matrix</span>:<span class="decorator">mat4</span>)<span class="decorator"> -&gt;</span><span> frustum3</span></code><div class="small-abstract"><span>Extracts frustum planes from projection matrix
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">containsPoint</span>(<span class="identifier">point</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Tests if a point is inside the frustum
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">containsSphere</span>(<span class="identifier">sphere</span>:<span class="decorator">sphere3</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Tests if a sphere intersects the frustum
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">containsBox</span>(<span class="identifier">box</span>:<span class="decorator">box3</span>, <span class="identifier">matrix</span>:<span class="decorator">mat4</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Tests if a transformed bounding box intersects the frustum
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">containsAABox</span>(<span class="identifier">box</span>:<span class="decorator">box3</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Tests if an axis-aligned box intersects the frustum
+</span></div></div></div><div id="transform2" class="class" data-name="transform2" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">transform2
+</h1><div class="abstract">2D transformation structure
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.transform2</span></code><h2 class="title">Overview</h2><div class="abstract">Encapsulates 2D translation, rotation, and scaling. Provides convenient interface for common 2D transformations and matrix conversion.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">translation</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
+<div class="small-abstract"><span>Translation offset
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">rotation</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Rotation angle in radians
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">scale</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
+<div class="small-abstract"><span>Scale factors for X and Y axes
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">identity</span>()<span class="decorator"> -&gt;</span><span> transform2</span></code><div class="small-abstract"><span>Creates identity transformation
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">toMatrix3D</span>(<span class="identifier">pivot</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Converts to 4x4 transformation matrix
+</span></div></div></div><div id="transform3" class="class" data-name="transform3" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">transform3
+</h1><div class="abstract">3D transformation structure
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.transform3</span></code><h2 class="title">Overview</h2><div class="abstract">Encapsulates 3D translation, rotation (as Euler angles), and scaling. Provides convenient interface for common 3D transformations.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">translation</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
+<div class="small-abstract"><span>Translation offset
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">rotation</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
+<div class="small-abstract"><span>Euler angles in radians (x=pitch, y=yaw, z=roll)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">scale</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
+<div class="small-abstract"><span>Scale factors for X, Y, and Z axes
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">identity</span>()<span class="decorator"> -&gt;</span><span> transform3</span></code><div class="small-abstract"><span>Creates identity transformation
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">toMatrix3D</span>(<span class="identifier">pivot</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Converts to 4x4 transformation matrix
+</span></div></div></div><div id="triangle3" class="class" data-name="triangle3" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">triangle3
+</h1><div class="abstract">3D triangle primitive
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.triangle3</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a triangle in 3D space defined by three vertices. Used for mesh geometry, collision detection, and ray casting.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">a</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
+<div class="small-abstract"><span>First vertex of the triangle
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">b</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
+<div class="small-abstract"><span>Second vertex of the triangle
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">c</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
+<div class="small-abstract"><span>Third vertex of the triangle
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">normal</span>()<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Calculates the triangle's surface normal
+</span></div></div></div><div id="line3" class="class" data-name="line3" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">line3
+</h1><div class="abstract">3D line segment
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.line3</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a line segment in 3D space defined by two endpoints. Provides intersection testing with various geometric primitives.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">a</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
+<div class="small-abstract"><span>Start point of the line segment
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">b</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
+<div class="small-abstract"><span>End point of the line segment
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">intersect_sphere3</span>(<span class="identifier">sphere</span>:<span class="decorator">sphere3</span>, <span class="identifier">out</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Tests intersection with a sphere
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">intersect_plane3</span>(<span class="identifier">plane</span>:<span class="decorator">plane3</span>, <span class="identifier">out</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Tests intersection with a plane
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">intersect_triangle</span>(<span class="identifier">triangle</span>:<span class="decorator">triangle3</span>, <span class="identifier">out</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Tests intersection with a triangle
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">intersect_box3</span>(<span class="identifier">box</span>:<span class="decorator">box3</span>, <span class="identifier">out</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Tests intersection with a 3D bounding box
+</span></div></div></div><div id="edges" class="class" data-name="edges" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">edges
+</h1><div class="abstract">Edge insets structure
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.edges</span></code><h2 class="title">Overview</h2><div class="abstract">Represents spacing or padding values for all four edges of a rectangular region. Commonly used for UI layout and margin calculations.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">left</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Left edge spacing
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">top</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Top edge spacing
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">right</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Right edge spacing
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">bottom</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Bottom edge spacing
+</span></div></div><div id="color" class="class" data-name="color" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">color
+</h1><div class="abstract">RGBA color representation
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.color</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a color with red, green, blue, and alpha (transparency) components. Values typically range from 0.0 to 1.0.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">r</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Red component (0.0 to 1.0)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">g</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Green component (0.0 to 1.0)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">b</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Blue component (0.0 to 1.0)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">a</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Alpha (transparency) component (0.0 = transparent, 1.0 = opaque)
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">lerp</span>(<span class="identifier">other</span>:<span class="decorator">color</span>, <span class="identifier">t</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> color</span></code><div class="small-abstract"><span>Linear interpolation between colors
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">parse</span>(<span class="identifier">code</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> color</span></code><div class="small-abstract"><span>Parses color from string representation
 </span></div></div></div></main></div></body></html>

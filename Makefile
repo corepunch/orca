@@ -136,7 +136,7 @@ move_pz2:
 modules:
 #	python3 tools/conv-lua.py presentation
 	cd tools && \
-	python3 conv-module.py \
+	python3 -B conv-module.py \
 	../source/geometry/geom.xml \
 	../source/core/core.xml \
 	../source/renderer/api/renderer.xml \
