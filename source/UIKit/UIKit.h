@@ -150,6 +150,15 @@ luaX_pushSizeShorthand(lua_State *L, lpcSizeShorthand_t SizeShorthand);
 ORCA_API lpSizeShorthand_t
 luaX_checkSizeShorthand(lua_State *L, int idx);
 
+typedef struct NavigateToPageEvent NavigateToPageEvent_t, *lpNavigateToPageEvent_t;
+typedef struct NavigateToPageEvent const cNavigateToPageEvent_t, *lpcNavigateToPageEvent_t;
+/// @brief Push NavigateToPageEvent onto Lua stack.
+ORCA_API void
+luaX_pushNavigateToPageEvent(lua_State *L, lpcNavigateToPageEvent_t NavigateToPageEvent);
+/// @brief Check NavigateToPageEvent form Lua stack at index.
+ORCA_API lpNavigateToPageEvent_t
+luaX_checkNavigateToPageEvent(lua_State *L, int idx);
+
 typedef struct DataObject DataObject_t, *lpDataObject_t;
 typedef struct DataObject const cDataObject_t, *lpcDataObject_t;
 /// @brief Push DataObject onto Lua stack.
@@ -410,6 +419,24 @@ luaX_pushTerminalView(lua_State *L, lpcTerminalView_t TerminalView);
 /// @brief Check TerminalView form Lua stack at index.
 ORCA_API lpTerminalView_t
 luaX_checkTerminalView(lua_State *L, int idx);
+
+typedef struct Page Page_t, *lpPage_t;
+typedef struct Page const cPage_t, *lpcPage_t;
+/// @brief Push Page onto Lua stack.
+ORCA_API void
+luaX_pushPage(lua_State *L, lpcPage_t Page);
+/// @brief Check Page form Lua stack at index.
+ORCA_API lpPage_t
+luaX_checkPage(lua_State *L, int idx);
+
+typedef struct PageHost PageHost_t, *lpPageHost_t;
+typedef struct PageHost const cPageHost_t, *lpcPageHost_t;
+/// @brief Push PageHost onto Lua stack.
+ORCA_API void
+luaX_pushPageHost(lua_State *L, lpcPageHost_t PageHost);
+/// @brief Check PageHost form Lua stack at index.
+ORCA_API lpPageHost_t
+luaX_checkPageHost(lua_State *L, int idx);
 
 typedef struct Style Style_t, *lpStyle_t;
 typedef struct Style const cStyle_t, *lpcStyle_t;
@@ -1049,6 +1076,36 @@ struct TerminalView {
 	int32_t* _buffer; /// Buffer used for characters
 	vec2_t _scroll; /// Scroll position
 	int32_t _contentHeight; /// Current page length
+};
+
+typedef enum TransitionType {
+	kTransitionTypeNone, /// No transition
+	kTransitionTypeSlide, /// Sliding transition
+	kTransitionTypeFade, /// Fading transition
+} eTransitionType_t;
+
+/// @brief Event triggered to navigate to a different page within a PageHost.
+struct NavigateToPageEvent {
+	lpPage_t TargetPage; /// The page to navigate to.
+	eTransitionType_t TransitionType; /// The type of transition animation to use during navigation.
+};
+
+#define kEventNavigateToPage 0x6475c790
+typedef struct NavigateToPageEvent* NavigateToPageEventPtr;
+
+typedef struct Page Page, *PagePtr;
+typedef struct Page const *PageCPtr;
+/// @brief Represents a single page within a document or UI container.
+struct Page {
+	fixedString_t Title; /// The title of the page.
+	bool_t IsActive; /// Indicates whether the page is currently active.
+	float Transition; /// The transition progress of the page.
+};
+
+typedef struct PageHost PageHost, *PageHostPtr;
+typedef struct PageHost const *PageHostCPtr;
+/// @brief Container that manages multiple pages and navigation between them.
+struct PageHost {
 };
 
 typedef enum StyleType {

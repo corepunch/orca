@@ -1064,7 +1064,7 @@
 <!ELEMENT Node2D.ForegroundHint (#PCDATA | Binding)*>
 <!ATTLIST Node2D.ForegroundHint Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % Node2DElements "Node2D.LayoutTransform|Node2D.LayoutTransformTranslation|Node2D.LayoutTransformRotation|Node2D.LayoutTransformScale|Node2D.RenderTransform|Node2D.RenderTransformTranslation|Node2D.RenderTransformRotation|Node2D.RenderTransformScale|Node2D.RenderTransformOrigin|Node2D.ContentOffset|Node2D.Matrix|Node2D.RenderTarget|Node2D.Background|Node2D.BackgroundColor|Node2D.BackgroundImage|Node2D.BackgroundMaterial|Node2D.Foreground|Node2D.ForegroundColor|Node2D.ForegroundImage|Node2D.ForegroundMaterial|Node2D.BoxShadow|Node2D.BoxShadowOffset|Node2D.BoxShadowBlurRadius|Node2D.BoxShadowSpreadRadius|Node2D.BoxShadowColor|Node2D.Overflow|Node2D.OverflowX|Node2D.OverflowY|Node2D.Ring|Node2D.RingOffset|Node2D.RingWidth|Node2D.RingColor|Node2D.CompositionBrush|Node2D.CompositionDesignSize|Node2D.SizeToContent|Node2D.OffscreenRendering|Node2D.ForceComposition|Node2D.CacheResult|Node2D.SnapToPixel|Node2D.ClipChildren|Node2D.ContentStretch|Node2D.Hovered|Node2D.IgnoreHitTest|Node2D.ForegroundHint|%NodeElements;">
-<!ELEMENT Node2D (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%Node2DElements;)*>
+<!ELEMENT Node2D (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%Node2DElements;)*>
 <!ATTLIST Node2D %Node2DAttribs;>
 <!ENTITY % PrefabView2DAttribs "
 	%Node2DAttribs;
@@ -1076,14 +1076,14 @@
 <!ELEMENT PrefabView2D.Prefab (#PCDATA | Binding)*>
 <!ATTLIST PrefabView2D.Prefab Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % PrefabView2DElements "PrefabView2D.SCA|PrefabView2D.Prefab|%Node2DElements;">
-<!ELEMENT PrefabView2D (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%PrefabView2DElements;)*>
+<!ELEMENT PrefabView2D (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%PrefabView2DElements;)*>
 <!ATTLIST PrefabView2D %PrefabView2DAttribs;>
 <!ENTITY % TextBlockAttribs "
 	%Node2DAttribs;
 	%TextBlockConceptAttribs;
 ">
 <!ENTITY % TextBlockElements "%Node2DElements;|%TextBlockConceptElements;">
-<!ELEMENT TextBlock (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%TextBlockElements;)*>
+<!ELEMENT TextBlock (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%TextBlockElements;)*>
 <!ATTLIST TextBlock %TextBlockAttribs;>
 <!ENTITY % InputAttribs "
 	%TextBlockAttribs;
@@ -1104,7 +1104,7 @@
 <!ELEMENT Input.Checked (#PCDATA | Binding)*>
 <!ATTLIST Input.Checked Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % InputElements "Input.Name|Input.Type|Input.Cursor|Input.Multiline|Input.Checked|%TextBlockElements;">
-<!ELEMENT Input (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%InputElements;)*>
+<!ELEMENT Input (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%InputElements;)*>
 <!ATTLIST Input %InputAttribs;>
 <!ENTITY % ButtonAttribs "
 	%TextBlockAttribs;
@@ -1113,7 +1113,7 @@
 <!ELEMENT Button.Type (#PCDATA | Binding)*>
 <!ATTLIST Button.Type Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % ButtonElements "Button.Type|%TextBlockElements;">
-<!ELEMENT Button (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ButtonElements;)*>
+<!ELEMENT Button (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ButtonElements;)*>
 <!ATTLIST Button %ButtonAttribs;>
 <!ENTITY % LabelAttribs "
 	%TextBlockAttribs;
@@ -1122,7 +1122,7 @@
 <!ELEMENT Label.For (#PCDATA | Binding)*>
 <!ATTLIST Label.For Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % LabelElements "Label.For|%TextBlockElements;">
-<!ELEMENT Label (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%LabelElements;)*>
+<!ELEMENT Label (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%LabelElements;)*>
 <!ATTLIST Label %LabelAttribs;>
 <!ENTITY % StackViewAttribs "
 	%Node2DAttribs;
@@ -1143,13 +1143,13 @@
 <!ELEMENT StackView.Spacing (#PCDATA | Binding)*>
 <!ATTLIST StackView.Spacing Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % StackViewElements "StackView.Reversed|StackView.Direction|StackView.AlignItems|StackView.JustifyContent|StackView.Spacing|%Node2DElements;">
-<!ELEMENT StackView (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%StackViewElements;)*>
+<!ELEMENT StackView (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%StackViewElements;)*>
 <!ATTLIST StackView %StackViewAttribs;>
 <!ENTITY % FormAttribs "
 	%StackViewAttribs;
 ">
 <!ENTITY % FormElements "%StackViewElements;">
-<!ELEMENT Form (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%FormElements;)*>
+<!ELEMENT Form (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%FormElements;)*>
 <!ATTLIST Form %FormAttribs;>
 <!ENTITY % CollectionViewAttribs "
 	%Node2DAttribs;
@@ -1161,7 +1161,7 @@
 <!ELEMENT CollectionView.Spacing (#PCDATA | Binding)*>
 <!ATTLIST CollectionView.Spacing Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % CollectionViewElements "CollectionView.Direction|CollectionView.Spacing|%Node2DElements;">
-<!ELEMENT CollectionView (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%CollectionViewElements;)*>
+<!ELEMENT CollectionView (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%CollectionViewElements;)*>
 <!ATTLIST CollectionView %CollectionViewAttribs;>
 <!ENTITY % ControlAttribs "
 	%Node2DAttribs;
@@ -1185,7 +1185,7 @@
 <!ELEMENT Control.Scale (#PCDATA | Binding)*>
 <!ATTLIST Control.Scale Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % ControlElements "Control.Pressed|Control.Disabled|Control.Hovered|Control.Focused|Control.Value|Control.Scale|%Node2DElements;">
-<!ELEMENT Control (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ControlElements;)*>
+<!ELEMENT Control (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ControlElements;)*>
 <!ATTLIST Control %ControlAttribs;>
 <!ENTITY % ResizeMode "NoResize|CanMinimize|CanResize|CanResizeWithGrip">
 <!ENTITY % ScreenAttribs "
@@ -1198,7 +1198,7 @@
 <!ELEMENT Screen.ResizeMode (#PCDATA | Binding)*>
 <!ATTLIST Screen.ResizeMode Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % ScreenElements "Screen.ClearColor|Screen.ResizeMode|%Node2DElements;">
-<!ELEMENT Screen (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ScreenElements;)*>
+<!ELEMENT Screen (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ScreenElements;)*>
 <!ATTLIST Screen %ScreenAttribs;>
 <!ENTITY % CinematicAttribs "
 	%Node2DAttribs;
@@ -1216,7 +1216,7 @@
 <!ELEMENT Cinematic.FadeOut (#PCDATA | Binding)*>
 <!ATTLIST Cinematic.FadeOut Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % CinematicElements "Cinematic.FileName|Cinematic.FrameRate|Cinematic.NumFrames|Cinematic.FadeOut|%Node2DElements;">
-<!ELEMENT Cinematic (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%CinematicElements;)*>
+<!ELEMENT Cinematic (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%CinematicElements;)*>
 <!ATTLIST Cinematic %CinematicAttribs;>
 <!ENTITY % GridAttribs "
 	%Node2DAttribs;
@@ -1240,7 +1240,7 @@
 <!ELEMENT Grid.CellHeight (#PCDATA | Binding)*>
 <!ATTLIST Grid.CellHeight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % GridElements "Grid.Columns|Grid.Rows|Grid.Direction|Grid.Spacing|Grid.CellWidth|Grid.CellHeight|%Node2DElements;">
-<!ELEMENT Grid (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%GridElements;)*>
+<!ELEMENT Grid (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%GridElements;)*>
 <!ATTLIST Grid %GridAttribs;>
 <!ENTITY % Stretch "None|Fill|Uniform|UniformToFill">
 <!ENTITY % ImageViewAttribs "
@@ -1265,7 +1265,7 @@
 <!ELEMENT ImageView.Stretch (#PCDATA | Binding)*>
 <!ATTLIST ImageView.Stretch Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % ImageViewElements "ImageView.Src|ImageView.Image|ImageView.Edges|ImageView.Insets|ImageView.Viewbox|ImageView.Stretch|%Node2DElements;">
-<!ELEMENT ImageView (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ImageViewElements;)*>
+<!ELEMENT ImageView (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ImageViewElements;)*>
 <!ATTLIST ImageView %ImageViewAttribs;>
 <!ENTITY % NinePatchImageAttribs "
 	%Node2DAttribs;
@@ -1313,7 +1313,7 @@
 <!ELEMENT NinePatchImage.ImageBottomRight (#PCDATA | Binding)*>
 <!ATTLIST NinePatchImage.ImageBottomRight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % NinePatchImageElements "NinePatchImage.StretchTypeTop|NinePatchImage.StretchTypeBottom|NinePatchImage.StretchTypeLeft|NinePatchImage.StretchTypeRight|NinePatchImage.StretchTypeCenter|NinePatchImage.ImageTopLeft|NinePatchImage.ImageTop|NinePatchImage.ImageTopRight|NinePatchImage.ImageLeft|NinePatchImage.ImageCenter|NinePatchImage.ImageRight|NinePatchImage.ImageBottomLeft|NinePatchImage.ImageBottom|NinePatchImage.ImageBottomRight|%Node2DElements;">
-<!ELEMENT NinePatchImage (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%NinePatchImageElements;)*>
+<!ELEMENT NinePatchImage (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%NinePatchImageElements;)*>
 <!ATTLIST NinePatchImage %NinePatchImageAttribs;>
 <!ENTITY % TerminalViewAttribs "
 	%Node2DAttribs;
@@ -1334,8 +1334,30 @@
 <!ELEMENT TerminalView.DropShadow (#PCDATA | Binding)*>
 <!ATTLIST TerminalView.DropShadow Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % TerminalViewElements "TerminalView.BufferWidth|TerminalView.BufferHeight|TerminalView.Cursor|TerminalView.SelectedIndex|TerminalView.DropShadow|%Node2DElements;">
-<!ELEMENT TerminalView (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%TerminalViewElements;)*>
+<!ELEMENT TerminalView (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%TerminalViewElements;)*>
 <!ATTLIST TerminalView %TerminalViewAttribs;>
+<!ENTITY % TransitionType "None|Slide|Fade">
+<!ENTITY % PageAttribs "
+	%Node2DAttribs;
+	Title CDATA #IMPLIED
+	IsActive (true|false) #IMPLIED
+	Transition CDATA #IMPLIED
+">
+<!ELEMENT Page.Title (#PCDATA | Binding)*>
+<!ATTLIST Page.Title Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Page.IsActive (#PCDATA | Binding)*>
+<!ATTLIST Page.IsActive Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Page.Transition (#PCDATA | Binding)*>
+<!ATTLIST Page.Transition Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % PageElements "Page.Title|Page.IsActive|Page.Transition|%Node2DElements;">
+<!ELEMENT Page (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%PageElements;)*>
+<!ATTLIST Page %PageAttribs;>
+<!ENTITY % PageHostAttribs "
+	%PageAttribs;
+">
+<!ENTITY % PageHostElements "%PageElements;">
+<!ELEMENT PageHost (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%PageHostElements;)*>
+<!ATTLIST PageHost %PageHostAttribs;>
 <!ENTITY % StyleType "Generic|Named">
 <!ENTITY % StyleAttribs "
 	Name CDATA #REQUIRED
@@ -1543,7 +1565,7 @@
 <!ELEMENT Viewport3D.Scene (#PCDATA | Binding)*>
 <!ATTLIST Viewport3D.Scene Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % Viewport3DElements "Viewport3D.Camera|Viewport3D.PreviewCamera|Viewport3D.HitTestCamera|Viewport3D.RenderPass|Viewport3D.Scene|%Node2DElements;">
-<!ELEMENT Viewport3D (PropertyType|PropertyEnumValue|Texture|Image|RenderTargetTexture|CubeMapTexture|IOSurfaceTexture|VertexShader|FragmentShader|Shader|Material|Mesh|FontFamily|Trajectory|Timeline|DataObject|AnimationPlayer|Trigger|OnPropertyChangedTrigger|OnAttachedTrigger|EventTrigger|Setter|Handler|Brush|ColorBrush|Node|TextRun|TextBlockConcept|Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Style|Node3D|Scene|Model3D|PlaneMeshNode|Camera|TrajectoryList3D|Viewport3D|PrefabView3D|RenderPass|CompositionTargetRenderPass|BlitRenderPass|ClearRenderPass|DrawObjectsRenderPass|PipelineStateRenderPass|TextBlock3D|Light3D|SpriteView|Resource|StyleSheet|ObjectPrefabPlaceholder|%Viewport3DElements;)*>
+<!ELEMENT Viewport3D (PropertyType|PropertyEnumValue|Texture|Image|RenderTargetTexture|CubeMapTexture|IOSurfaceTexture|VertexShader|FragmentShader|Shader|Material|Mesh|FontFamily|Trajectory|Timeline|DataObject|AnimationPlayer|Trigger|OnPropertyChangedTrigger|OnAttachedTrigger|EventTrigger|Setter|Handler|Brush|ColorBrush|Node|TextRun|TextBlockConcept|Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|Style|Node3D|Scene|Model3D|PlaneMeshNode|Camera|TrajectoryList3D|Viewport3D|PrefabView3D|RenderPass|CompositionTargetRenderPass|BlitRenderPass|ClearRenderPass|DrawObjectsRenderPass|PipelineStateRenderPass|TextBlock3D|Light3D|SpriteView|Resource|StyleSheet|ObjectPrefabPlaceholder|%Viewport3DElements;)*>
 <!ATTLIST Viewport3D %Viewport3DAttribs;>
 <!ENTITY % PrefabView3DAttribs "
 	%Node3DAttribs;

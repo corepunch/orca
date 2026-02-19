@@ -7,7 +7,7 @@ class DTDWriter(Plugin):
 	"""Generates a DTD schema file from module XML."""
 
 	def __init__(self):
-		self.file = open("schemas/orca.dtd", "w")
+		self.file = open("../docs/schemas/orca.dtd", "w")
 
 	def write(self, text):
 		self.file.write(text)

@@ -2633,6 +2633,137 @@ ORCA_API struct ClassDesc _TerminalView = {
 	.Defaults = &TerminalViewDefaults,
 	.NumProperties = kTerminalViewNumProperties,
 };
+static const char *_TransitionType[] = {"none","slide","fade",NULL};
+eTransitionType_t luaX_checkTransitionType(lua_State *L, int idx) {
+	return luaL_checkoption(L, idx, NULL, _TransitionType);
+}
+void luaX_pushTransitionType(lua_State *L, eTransitionType_t value) {
+	assert(value >= 0 && value < 3);
+	lua_pushstring(L, _TransitionType[value]);
+}
+void luaX_pushNavigateToPageEvent(lua_State *L, lpcNavigateToPageEvent_t data) {
+	lpNavigateToPageEvent_t self = lua_newuserdata(L, sizeof(struct NavigateToPageEvent));
+	luaL_setmetatable(L, "NavigateToPageEvent");
+	memcpy(self, data, sizeof(struct NavigateToPageEvent));
+}
+lpNavigateToPageEvent_t luaX_checkNavigateToPageEvent(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "NavigateToPageEvent");
+}
+static int f_new_NavigateToPageEvent(lua_State *L) {
+	lpNavigateToPageEvent_t self = lua_newuserdata(L, sizeof(struct NavigateToPageEvent));
+	luaL_setmetatable(L, "NavigateToPageEvent");
+	memset(self, 0, sizeof(struct NavigateToPageEvent));
+	// if (lua_istable(L, 1)) {
+	// }
+	return 1;
+}
+static int f_NavigateToPageEvent___call(lua_State *L) {
+	lua_remove(L, 1); // remove NavigateToPageEvent from stack
+	return f_new_NavigateToPageEvent(L);
+}
+int f_NavigateToPageEvent___index(lua_State *L) {
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x69b4e093: // TargetPage
+		luaX_pushPage(L, luaX_checkNavigateToPageEvent(L, 1)->TargetPage);
+		return 1;
+	case 0x84ff7372: // TransitionType
+		luaX_pushTransitionType(L, luaX_checkNavigateToPageEvent(L, 1)->TransitionType);
+		return 1;
+	}
+	return luaL_error(L, "Unknown field in NavigateToPageEvent: %s", luaL_checkstring(L, 2));
+}
+int f_NavigateToPageEvent___newindex(lua_State *L) {
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x69b4e093: // TargetPage
+		luaX_checkNavigateToPageEvent(L, 1)->TargetPage = luaX_checkPage(L, 3);
+		return 0;
+	case 0x84ff7372: // TransitionType
+		luaX_checkNavigateToPageEvent(L, 1)->TransitionType = luaX_checkTransitionType(L, 3);
+		return 0;
+	}
+	return luaL_error(L, "Unknown field in NavigateToPageEvent: %s", luaL_checkstring(L, 2));
+}
+int luaopen_orca_NavigateToPageEvent(lua_State *L) {
+	luaL_newmetatable(L, "NavigateToPageEvent");
+	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ "new", f_new_NavigateToPageEvent },
+		{ "__newindex", f_NavigateToPageEvent___newindex },
+		{ "__index", f_NavigateToPageEvent___index },
+		{ NULL, NULL },
+	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_NavigateToPageEvent___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
+	return 1;
+}
+static struct PropertyDesc const PageProperties[kPageNumProperties] = {
+	/* Page.Title */ DECL(0x24d471a9, 0x31e209ce,
+	Page, "Title", Title, kDataTypeFixed),
+	/* Page.IsActive */ DECL(0x7f00473f, 0x94c0246a,
+	Page, "IsActive", IsActive, kDataTypeBool),
+	/* Page.Transition */ DECL(0xe69ce202, 0xb60425fb,
+	Page, "Transition", Transition, kDataTypeFloat),
+};
+static struct Page PageDefaults = {0};
+LRESULT PageProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+}
+	return FALSE;
+}
+void luaX_pushPage(lua_State *L, lpcPage_t Page) {
+	luaX_pushObject(L, CMP_GetObject(Page));
+}
+lpPage_t luaX_checkPage(lua_State *L, int idx) {
+	return GetPage(luaX_checkObject(L, idx));
+}
+extern struct ClassDesc _Node2D;
+ORCA_API struct ClassDesc _Page = {
+	.ClassName = "Page",
+	.DefaultName = "Page",
+	.ContentType = "Node2D",
+	.Xmlns = "None",
+	.ParentClasses = {&_Node2D, NULL},
+	.ClassID = ID_Page,
+	.ClassSize = sizeof(struct Page),
+	.Properties = PageProperties,
+	.ObjProc = PageProc,
+	.Defaults = &PageDefaults,
+	.NumProperties = kPageNumProperties,
+};
+LRESULT PageHost_NavigateToPage(lpObject_t, lpPageHost_t, wParam_t, NavigateToPageEventPtr);
+static struct PropertyDesc const PageHostProperties[kPageHostNumProperties] = {
+};
+static struct PageHost PageHostDefaults = {};
+LRESULT PageHostProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+		case 0x6475c790: // NavigateToPage
+			return PageHost_NavigateToPage(object, cmp, wparm, lparm);
+}
+	return FALSE;
+}
+void luaX_pushPageHost(lua_State *L, lpcPageHost_t PageHost) {
+	luaX_pushObject(L, CMP_GetObject(PageHost));
+}
+lpPageHost_t luaX_checkPageHost(lua_State *L, int idx) {
+	return GetPageHost(luaX_checkObject(L, idx));
+}
+extern struct ClassDesc _Page;
+ORCA_API struct ClassDesc _PageHost = {
+	.ClassName = "PageHost",
+	.DefaultName = "PageHost",
+	.ContentType = "Page",
+	.Xmlns = "None",
+	.ParentClasses = {&_Page, NULL},
+	.ClassID = ID_PageHost,
+	.ClassSize = sizeof(struct PageHost),
+	.Properties = PageHostProperties,
+	.ObjProc = PageHostProc,
+	.Defaults = &PageHostDefaults,
+	.NumProperties = kPageHostNumProperties,
+};
 static const char *_StyleType[] = {"generic","named",NULL};
 eStyleType_t luaX_checkStyleType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _StyleType);
@@ -2726,6 +2857,9 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	// SizeShorthand
 	luaopen_orca_SizeShorthand(L);
 	lua_setfield(L, -2, "SizeShorthand");
+	// NavigateToPageEvent
+	luaopen_orca_NavigateToPageEvent(L);
+	lua_setfield(L, -2, "NavigateToPageEvent");
 	// DataObject
 	lua_pushclass(L, &_DataObject);
 	lua_setfield(L, -2, "DataObject");
@@ -2813,6 +2947,12 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	// TerminalView
 	lua_pushclass(L, &_TerminalView);
 	lua_setfield(L, -2, "TerminalView");
+	// Page
+	lua_pushclass(L, &_Page);
+	lua_setfield(L, -2, "Page");
+	// PageHost
+	lua_pushclass(L, &_PageHost);
+	lua_setfield(L, -2, "PageHost");
 	// Style
 	lua_pushclass(L, &_Style);
 	lua_setfield(L, -2, "Style");

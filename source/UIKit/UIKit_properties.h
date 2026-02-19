@@ -665,6 +665,26 @@ enum TerminalViewProperties {
 #define ID_TerminalView_Cursor 0x550c9034
 #define ID_TerminalView_SelectedIndex 0xc6c048a5
 #define ID_TerminalView_DropShadow 0x8c72c3cb
+#define ID_Page 0xe83d9196
+#define GetPage(_P)((struct Page*)((_P)?OBJ_GetComponent(_P,ID_Page):NULL))
+#define Page_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_Page,sizeof(struct Page),_N)
+enum PageProperties {
+	kPageTitle,
+	kPageIsActive,
+	kPageTransition,
+	kPageNumProperties
+};
+
+#define ID_Page_Title 0x31e209ce
+#define ID_Page_IsActive 0x94c0246a
+#define ID_Page_Transition 0xb60425fb
+#define ID_PageHost 0x6f2dc6c0
+#define GetPageHost(_P)((struct PageHost*)((_P)?OBJ_GetComponent(_P,ID_PageHost):NULL))
+#define PageHost_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_PageHost,sizeof(struct PageHost),_N)
+enum PageHostProperties {
+	kPageHostNumProperties
+};
+
 #define ID_Style 0x5467ec76
 #define GetStyle(_P)((struct Style*)((_P)?OBJ_GetComponent(_P,ID_Style):NULL))
 #define Style_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_Style,sizeof(struct Style),_N)

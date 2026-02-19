@@ -174,6 +174,7 @@
 		782E9EEC2E984174009C3946 /* liborca.filesystem.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA6E12E15241200FFCFD9 /* liborca.filesystem.so */; };
 		782E9EEE2E98E94C009C3946 /* p_project.c in Sources */ = {isa = PBXBuildFile; fileRef = 782E9EED2E98E946009C3946 /* p_project.c */; };
 		7831E4602F34DD0000236E4E /* r_tangents.h in Headers */ = {isa = PBXBuildFile; fileRef = 7831E45F2F34DCF700236E4E /* r_tangents.h */; };
+		7834B8D72F479D980071F07F /* PageHost.c in Sources */ = {isa = PBXBuildFile; fileRef = 7834B8D62F479D940071F07F /* PageHost.c */; };
 		783976FF2E54B25B00DCFC0F /* core.h in Headers */ = {isa = PBXBuildFile; fileRef = 783976FE2E54B25900DCFC0F /* core.h */; };
 		783977032E54CA5E00DCFC0F /* renderer.h in Headers */ = {isa = PBXBuildFile; fileRef = 783977022E54CA5A00DCFC0F /* renderer.h */; };
 		783977072E604D5A00DCFC0F /* renderer_export.c in Sources */ = {isa = PBXBuildFile; fileRef = 783977062E604D5A00DCFC0F /* renderer_export.c */; };
@@ -364,6 +365,7 @@
 		78346DE92C96F06100E0CFD1 /* PrefabView3D.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = PrefabView3D.c; sourceTree = "<group>"; };
 		78346EBC2C99558F00E0CFD1 /* p_xml.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = p_xml.c; sourceTree = "<group>"; };
 		78346EBE2C9AC8EC00E0CFD1 /* RenderPass.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = RenderPass.c; sourceTree = "<group>"; };
+		7834B8D62F479D940071F07F /* PageHost.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = PageHost.c; sourceTree = "<group>"; };
 		783976FE2E54B25900DCFC0F /* core.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = core.h; sourceTree = "<group>"; };
 		783977022E54CA5A00DCFC0F /* renderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = renderer.h; sourceTree = "<group>"; };
 		783977062E604D5A00DCFC0F /* renderer_export.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = renderer_export.c; sourceTree = "<group>"; };
@@ -1057,6 +1059,7 @@
 				78C737542B8F60C600FD598E /* NinePatchImage.c */,
 				781769442D649AF9003CBEA9 /* Node2D_Layout.c */,
 				78C737562B8F60C600FD598E /* Node2D.c */,
+				7834B8D62F479D940071F07F /* PageHost.c */,
 				78F2231B2C635B0C008D5CA3 /* PrefabView2D.c */,
 				78688D1B2D6F28AE008DE67B /* Screen.c */,
 				78C737582B8F60C600FD598E /* StackView.c */,
@@ -1815,6 +1818,7 @@
 				781CA75D2E15571400FFCFD9 /* Node2D.c in Sources */,
 				781CA75E2E15571400FFCFD9 /* PrefabView2D.c in Sources */,
 				781CA75F2E15571400FFCFD9 /* StackView.c in Sources */,
+				7834B8D72F479D980071F07F /* PageHost.c in Sources */,
 				781CA7602E15571400FFCFD9 /* TextBlock.c in Sources */,
 				786A4BD12E86B06500C40C9F /* TerminalView.c in Sources */,
 				781CA7612E15571400FFCFD9 /* Trigger.c in Sources */,
