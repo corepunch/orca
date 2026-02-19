@@ -31,6 +31,7 @@ HANDLER(Cinematic, DrawBrush)
 
   entity.bbox = BOX3_FromRect(GetNode2D(hObject)->_rect);
   entity.mesh = BOX_PTR(Mesh, MD_CINEMATIC);
+  entity.shader = BOX_PTR(Shader, SHADER_CINEMATIC);
 
   if (realtime > endtime) {
     entity.frame = pCinematic->NumFrames - 1;
