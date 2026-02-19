@@ -258,9 +258,8 @@ enum model_type {
   MD_CAPSULE = 5,
   MD_ROUNDED_BOX = 6,
   MD_NINEPATCH = 7,      // Dynamic, no static model
-  MD_CINEMATIC = 8,      // Uses MD_RECTANGLE model
-  MD_ROUNDED_RECT = 9,   // Rectangle with rounded corners
-  MD_ROUNDED_BORDER = 10, // Rectangle with rounded border
+  MD_ROUNDED_RECT = 8,   // Rectangle with rounded corners
+  MD_ROUNDED_BORDER = 9, // Rectangle with rounded border
   MD_COUNT
 };
 

@@ -288,6 +288,10 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
     shader = &tr.shaders[shader_index];
   }
   
+  if (((uintptr_t)ent->shader & MESH_TAG_MASK) == SHADER_CINEMATIC) {
+    _UpdateCinematicEntity(ent);
+  }
+  
   // Handle mesh pointer boxing: mesh can be either a real pointer or a boxed tag value
   struct model /*const*/* model = NULL;
   struct vec4 zero = {0};
@@ -307,10 +311,6 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
     
     // Handle special cases that need additional processing
     switch (mesh_type) {
-      case MD_CINEMATIC:
-        _UpdateCinematicEntity(ent);
-        model = tr.models[MD_RECTANGLE];
-        break;
       case MD_NINEPATCH:
         model = CreateNinePatchMesh(ent);
         break;
@@ -615,7 +615,6 @@ R_InitResources(void)
   Model_CreateCapsule(1.0f, 1.0f, 1.0f, tr.models+MD_CAPSULE);
   Model_CreateRoundedBox(1.0f, 1.0f, 1.0f, 0.2f, tr.models+MD_ROUNDED_BOX);
   tr.models[MD_NINEPATCH] = NULL; // Dynamic mesh, created on demand in CreateNinePatchMesh
-  tr.models[MD_CINEMATIC] = NULL; // Runtime uses tr.models[MD_RECTANGLE], no separate model needed
   Model_CreateRoundedRectangle(tr.models+MD_ROUNDED_RECT);
   Model_CreateRoundedBorder(tr.models+MD_ROUNDED_BORDER);
   
