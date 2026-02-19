@@ -50,6 +50,11 @@ from plugins.header_plugin import HeaderPlugin
 from plugins.export_plugin import ExportPlugin
 from plugins.props_plugin import PropsPlugin
 from plugins.html_plugin import HtmlPlugin
+from plugins.common import (
+	w, wf, lpc, lp, _c, _t, _e, lpobject_t,
+	camel_case, fnv1a32, hash,
+	atomic_types, typedefs, Axis
+)
 
 # Register built-in plugins
 PluginRegistry.register('header', HeaderPlugin)
@@ -91,14 +96,6 @@ def tokenize(code):
 rules = {
 	"lua": "require|and|break|do|else|elseif|end|false|for|function|goto|if|in|local|nil|not|or|repeat|return|then|true|until|while"
 }
-
-def lpc(name): return f'lpc{name}_t'
-def lp(name): return f'lp{name}_t'
-def _c(name): return f'c{name}_t'
-def _t(name): return f'{name}_t'
-def _e(name): return f'e{name}_t'
-
-lpobject_t = "lpObject_t"
 
 def wrap_backticks(elem):
     xml_str = ET.tostring(elem, encoding="unicode")
@@ -239,62 +236,6 @@ class doc:
 			ET.SubElement(code, 'span', {'class':'decorator'}).text = ' ->'
 			ET.SubElement(code, 'span').text = " " + returns.get('type')
 
-def fnv1a32(str):
-	hval = 0x811C9DC5
-	prime = 0x01000193
-	uint32_max = 2 ** 32
-	for s in str:
-		hval = hval ^ ord(s)
-		hval = (hval * prime) % uint32_max
-	return hval
-
-def hash(field_name): 
-	return '0x%08x' % fnv1a32(field_name)
-
-def w(f, text):
-	if f:
-		f.write(text)
-		f.write("\n")
-
-def wf(f, text, args, **kwargs):
-	if args is None:
-		args = {}
-	else:
-		args = dict(args.attrib)
-	args.update(kwargs)
-	f.write(text.format_map(args))
-	f.write("\n")
-
-atomic_types = { 
-	"float": ("luaL_checknumber", "lua_pushnumber"),
-	"int": ("luaL_checknumber", "lua_pushnumber"),
-	"uint": ("luaL_checknumber", "lua_pushnumber"),
-	"long": ("luaL_checkinteger", "lua_pushinteger"),
-	"bool": ("lua_toboolean", "lua_pushboolean"),
-	"string": ("luaL_checkstring", "lua_pushstring"),
-	"fixed": ("luaL_checkstring", "lua_pushstring"),
-	"handle": ("lua_touserdata", "lua_pushlightuserdata")
-}
-
-Axis = [
-	(re.compile(r"(.+)\.Axis\[0\]\.Left(.*)"), r"\1Left\2"),
-	(re.compile(r"(.+)\.Axis\[0\]\.Right(.*)"), r"\1Right\2"),
-	(re.compile(r"(.+)\.Axis\[1\]\.Left(.*)"), r"\1Top\2"),
-	(re.compile(r"(.+)\.Axis\[1\]\.Right(.*)"), r"\1Bottom\2"),
-	(re.compile(r"(.+)\.Axis\[2\]\.Left(.*)"), r"\1Front\2"),
-	(re.compile(r"(.+)\.Axis\[2\]\.Right(.*)"), r"\1Back\2"),
-	(re.compile(r"Size.Axis\[0\]\.(?:Requested)?(.*)"), r"\1Width"),
-	(re.compile(r"Size.Axis\[1\]\.(?:Requested)?(.*)"), r"\1Height"),
-	(re.compile(r"Size.Axis\[2\]\.(?:Requested)?(.*)"), r"\1Depth"),
-	# (re.compile(r"Size.Axis\[0\]\.(.*)"), r"\1Width"),
-	# (re.compile(r"Size.Axis\[1\]\.(.*)"), r"\1Height"),
-	# (re.compile(r"Size.Axis\[2\]\.(.*)"), r"\1Depth"),
-	(re.compile(r"(.+)\.Axis\[0\]"), r"Horizontal\1"),
-	(re.compile(r"(.+)\.Axis\[1\]"), r"Vertical\1"),
-	(re.compile(r"(.+)\.Axis\[2\]"), r"Depth\1"),
-	(re.compile(r"Border\.Radius\.(.+)Radius"), r"Border\1Radius"),
-]
-
 class ParserState:
 	def __init__(self, filename):
 		# Initialize plugins using the registry
@@ -307,6 +248,17 @@ class ParserState:
 		
 		# Initialize html plugin (no file needed)
 		self._initialize_plugin('html')
+		
+		# Set up cross-plugin references
+		if self.export_plugin and self.header_plugin:
+			self.export_plugin.header_plugin = self.header_plugin
+	
+	def set_globals(self, structs, enums, components, resources):
+		"""Set global state on all plugins"""
+		if self.header_plugin:
+			self.header_plugin.set_globals(structs, enums)
+		if self.export_plugin:
+			self.export_plugin.set_globals(structs, enums, self.header_plugin)
 	
 	def _initialize_file_plugin(self, name, filename):
 		"""Helper method to initialize file-based plugins"""
@@ -351,18 +303,6 @@ def header_get_method_this(node, method):
 
 def header_get_method_name(node, method):
 	return f"{node.get('prefix', node.get('name') + '_')}{method.get('name')}"
-
-typedefs = {
-	"nresults": "int32_t",
-	"string": "const char*",
-	"handle": "void*",
-	"bool": "bool_t",
-	"uint": "uint32_t",
-	"long": "long",
-	"int": "int32_t",
-	"float": "float",
-	"fixed": "fixedString_t",
-}
 
 def header_get_arg_type(arg):
 	t = arg.get('type')
@@ -514,9 +454,6 @@ def write_struct_fwd_def(sname, typedef, parser):
 	w(parser, f"typedef struct {sname} {_t(typedef)}, *{lp(typedef)};")
 	w(parser, f"typedef struct {sname} const {_c(typedef)}, *{lpc(typedef)};")
 	# w(parser, f"FWD_STRUCT({sname});")
-
-def camel_case(variable):
-	return variable[0].lower() + variable[1:]
 
 def struct_parse(root, struct, parser):
 	e = parser.export
@@ -999,6 +936,9 @@ def read_xml(filename):
 	g_enums.update({enum.get('name'): enum for enum in root.findall(f".//enums[@name]")})
 	g_components.update({cmp.get('name'): cmp for cmp in root.findall(f".//component[@name]")})
 	g_resources.update({cmp.get('type'): cmp for cmp in root.findall(f".//resource[@type]")})
+	
+	# Set globals on plugins
+	parser.set_globals(g_structs, g_enums, g_components, g_resources)
 
 	for struct in root.findall('struct')+root.findall('interface')+root.findall('component'):
 		struct_name = struct.get('name')
