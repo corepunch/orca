@@ -2,27 +2,8 @@
 
 import os
 
-from . import Plugin
+from . import Plugin, utils
 from .state import Workspace
-from .utils import (
-	lp, lpc, _e,
-	atomic_types,
-	camel_case,
-	component_get_parents,
-	enum_component_properties,
-	export_check_var,
-	export_get_name,
-	export_index_name,
-	export_newindex_name,
-	export_push_var,
-	hash,
-	header_get_arg_type,
-	header_get_method_arg,
-	header_get_method_name,
-	header_get_method_this,
-	lpobject_t,
-	property_name,
-)
 
 
 class ExportWriter(Plugin):
@@ -53,7 +34,7 @@ class ExportWriter(Plugin):
 		self.w(f"ORCA_API int luaopen_{self.namespace}_{self.name}(lua_State *L) {{")
 		self.w(f"\tluaL_newlib(L, ((luaL_Reg[]) {{")
 		for fn in self.root.findall('function'):
-			self.w(f"\t\t{{ \"{camel_case(fn.get('name'))}\", {export_get_name(self.root, fn)} }},")
+			self.w(f"\t\t{{ \"{utils.camel_case(fn.get('name'))}\", {utils.export_get_name(self.root, fn)} }},")
 		self.w(f"\t\t{{ NULL, NULL }}")
 		self.w(f"\t}}));")
 		if self.root.get('on-luaopen'):
@@ -88,10 +69,10 @@ class ExportWriter(Plugin):
 		ename = enums.get('name')
 		values = ['"%s"' % e.get('name').lower() for e in enums.findall('enum')] + ["NULL"]
 		self.w(f"static const char *_{ename}[] = {{{','.join(values)}}};")
-		self.w(f"{_e(ename)} luaX_check{ename}(lua_State *L, int idx) {{")
+		self.w(f"{utils._e(ename)} luaX_check{ename}(lua_State *L, int idx) {{")
 		self.w(f"\treturn luaL_checkoption(L, idx, NULL, _{ename});")
 		self.w(f"}}")
-		self.w(f"void luaX_push{ename}(lua_State *L, {_e(ename)} value) {{")
+		self.w(f"void luaX_push{ename}(lua_State *L, {utils._e(ename)} value) {{")
 		self.w(f"\tassert(value >= 0 && value < {len(enums.findall('enum'))});")
 		self.w(f"\tlua_pushstring(L, _{ename}[value]);")
 		self.w(f"}}")
@@ -100,9 +81,9 @@ class ExportWriter(Plugin):
 		if resource.get('no-lua'):
 			return
 		name = resource.get('type')
-		self.w(f"void luaX_push{name}(lua_State *L, {lpc(name)} {name}) {{")
-		self.w(f"\tlua_pushlightuserdata(L, ({lp(name)}){name});\n}}")
-		self.w(f"{lp(name)} luaX_check{name}(lua_State *L, int idx) {{")
+		self.w(f"void luaX_push{name}(lua_State *L, {utils.lpc(name)} {name}) {{")
+		self.w(f"\tlua_pushlightuserdata(L, ({utils.lp(name)}){name});\n}}")
+		self.w(f"{utils.lp(name)} luaX_check{name}(lua_State *L, int idx) {{")
 		self.w(f"\treturn lua_touserdata(L, idx);\n}}")
 
 	def on_function(self, node, method):
@@ -112,24 +93,24 @@ class ExportWriter(Plugin):
 			return
 		if method.get("lua"):
 			args.append("L")
-		self.w(f"static int {export_get_name(node, method)}(lua_State *L) {{")
+		self.w(f"static int {utils.export_get_name(node, method)}(lua_State *L) {{")
 		if method.tag == "method" and method.get('static') is None:
-			self.w(f"\t{header_get_method_this(node, method)} = luaX_check{node.get('name')}(L, 1);")
+			self.w(f"\t{utils.header_get_method_this(node, method)} = luaX_check{node.get('name')}(L, 1);")
 			args.append("self")
 			idx = 2
 		for i, arg in enumerate(method.findall('arg')):
 			arg_type = arg.get('type')
-			self.w(f"\t{export_check_var(header_get_method_arg(arg), arg_type, i + idx)};")
+			self.w(f"\t{utils.export_check_var(utils.header_get_method_arg(arg), arg_type, i + idx)};")
 			args.append(arg.get('name'))
-		call = f"{header_get_method_name(node, method)}({', '.join(args)})"
+		call = f"{utils.header_get_method_name(node, method)}({', '.join(args)})"
 		returns = method.find('returns')
 		if returns is None:
 			self.w(f"\t{call};\n\treturn 0;")
 		elif returns.get('type') == 'nresults':
 			self.w(f"\treturn {call};")
 		else:
-			ret = header_get_arg_type(returns)
-			self.w(f"\t{ret} output = {call};\n\t{export_push_var(returns, 'output')};\n\treturn 1;")
+			ret = utils.header_get_arg_type(returns)
+			self.w(f"\t{ret} output = {call};\n\t{utils.export_push_var(returns, 'output')};\n\treturn 1;")
 		self.w(f"}}")
 
 	def on_interface(self, root, interface):
@@ -139,30 +120,30 @@ class ExportWriter(Plugin):
 		is_struct = struct.tag == 'struct'
 		name = struct.get('name')
 		if is_struct:
-			self.w(f"void luaX_push{name}(lua_State *L, {lpc(name)} data) {{")
-			self.w(f"\t{lp(name)} self = lua_newuserdata(L, sizeof(struct {name}));")
+			self.w(f"void luaX_push{name}(lua_State *L, {utils.lpc(name)} data) {{")
+			self.w(f"\t{utils.lp(name)} self = lua_newuserdata(L, sizeof(struct {name}));")
 			self.w(f"\tluaL_setmetatable(L, \"{name}\");")
 			self.w(f"\tmemcpy(self, data, sizeof(struct {name}));")
 			self.w(f"}}")
 		if not struct.get("no-check"):
-			self.w(f"{lp(name)} luaX_check{name}(lua_State *L, int idx) {{")
+			self.w(f"{utils.lp(name)} luaX_check{name}(lua_State *L, int idx) {{")
 			self.w(f"\treturn luaL_checkudata(L, idx, \"{name}\");")
 			self.w(f"}}")
 		else:
-			self.w(f"{lp(name)} luaX_check{name}(lua_State *L, int idx);")
+			self.w(f"{utils.lp(name)} luaX_check{name}(lua_State *L, int idx);")
 		if is_struct:
 			self.w(f"static int f_new_{name}(lua_State *L) {{")
-			self.w(f"\t{lp(name)} self = lua_newuserdata(L, sizeof(struct {name}));")
+			self.w(f"\t{utils.lp(name)} self = lua_newuserdata(L, sizeof(struct {name}));")
 			self.w(f"\tluaL_setmetatable(L, \"{name}\");")
 			self.w(f"\tmemset(self, 0, sizeof(struct {name}));")
 			for i, arg in enumerate(struct.findall('field')):
 				arg_type = arg.get('type')
 				if arg.get('array'):
 					continue
-				if arg_type not in atomic_types:
+				if arg_type not in utils.atomic_types:
 					continue
 				a = f"self->{arg.get('name')}"
-				self.w(f"\t{export_check_var(a, arg_type, i + 1)};")
+				self.w(f"\t{utils.export_check_var(a, arg_type, i + 1)};")
 			self.w(f"\t// if (lua_istable(L, 1)) {{")
 			self.w(f"\t// }}")
 			self.w(f"\treturn 1;\n}}")
@@ -176,15 +157,15 @@ class ExportWriter(Plugin):
 		for method in struct.findall('method'):
 			self.on_function(struct, method)
 		# write __index function
-		self.w(f"int {export_index_name(struct)}(lua_State *L) {{")
+		self.w(f"int {utils.export_index_name(struct)}(lua_State *L) {{")
 		if is_struct:
 			self.w(f"\tswitch(fnv1a32(luaL_checkstring(L, 2))) {{")
 			for field in struct.findall('field'):
 				if field.get('array') or field.get('private'):
 					continue
 				field_name = field.get('name')
-				self.w(f"\tcase {hash(field_name)}: // {field_name}")
-				self.w(f"\t\t{export_push_var(field, f'luaX_check{name}(L, 1)->{field_name}')};")
+				self.w(f"\tcase {utils.hash(field_name)}: // {field_name}")
+				self.w(f"\t\t{utils.export_push_var(field, f'luaX_check{name}(L, 1)->{field_name}')};")
 				self.w(f"\t\treturn 1;")
 		else:
 			self.w(f"\tswitch(fnv1a32(luaL_checkstring(L, 2))) {{")
@@ -192,8 +173,8 @@ class ExportWriter(Plugin):
 			method_name = method.get('export') or method.get('name')
 			if method_name.startswith("__") or method.get('static') or method.get('private'):
 				continue
-			self.w(f"\tcase {hash(camel_case(method_name))}: // {camel_case(method_name)}")
-			self.w(f"\t\tlua_pushcfunction(L, {export_get_name(struct, method)});")
+			self.w(f"\tcase {utils.hash(utils.camel_case(method_name))}: // {utils.camel_case(method_name)}")
+			self.w(f"\t\tlua_pushcfunction(L, {utils.export_get_name(struct, method)});")
 			self.w(f"\t\treturn 1;")
 		if is_struct:
 			self.w(f"\t}}\n\treturn luaL_error(L, \"Unknown field in {name}: %s\", luaL_checkstring(L, 2));\n}}")
@@ -201,19 +182,19 @@ class ExportWriter(Plugin):
 			self.w(f"\t}}\n\treturn 0;\n}}")
 		if is_struct:
 			# write __newindex function
-			self.w(f"int {export_newindex_name(struct)}(lua_State *L) {{")
+			self.w(f"int {utils.export_newindex_name(struct)}(lua_State *L) {{")
 			self.w(f"\tswitch(fnv1a32(luaL_checkstring(L, 2))) {{")
 			for field in struct.findall('field'):
 				if field.get('array'):
 					continue
 				field_name, field_type = field.get('name'), field.get('type')
 				access = "*"
-				if field_type in atomic_types: access = ""
+				if field_type in utils.atomic_types:   access = ""
 				if field_type in Workspace.enums:      access = ""
 				if field_type in Workspace.resources:  access = ""
 				if field_type in Workspace.components: access = ""
-				self.w(f"\tcase {hash(field_name)}: // {field_name}")
-				self.w(f"\t\t{export_check_var(f'luaX_check{name}(L, 1)->{field_name}', field_type, 3, access)};")
+				self.w(f"\tcase {utils.hash(field_name)}: // {field_name}")
+				self.w(f"\t\t{utils.export_check_var(f'luaX_check{name}(L, 1)->{field_name}', field_type, 3, access)};")
 				self.w(f"\t\treturn 0;")
 			self.w(f"\t}}\n\treturn luaL_error(L, \"Unknown field in {name}: %s\", luaL_checkstring(L, 2));\n}}")
 		# write lua_open
@@ -223,13 +204,13 @@ class ExportWriter(Plugin):
 		if is_struct or struct.find('init') is not None:
 			self.w(f"\t\t{{ \"new\", f_new_{name} }},")
 		if is_struct:
-			self.w(f"\t\t{{ \"__newindex\", {export_newindex_name(struct)} }},")
-		self.w(f"\t\t{{ \"__index\", {export_index_name(struct)} }},")
+			self.w(f"\t\t{{ \"__newindex\", {utils.export_newindex_name(struct)} }},")
+		self.w(f"\t\t{{ \"__index\", {utils.export_index_name(struct)} }},")
 		for method in struct.findall('method'):
 			method_name = method.get('export', method.get('name'))
 			if not method_name.startswith("__") and not method.get('static'):
 				continue
-			self.w(f"\t\t{{ \"{camel_case(method_name)}\", {export_get_name(struct, method)} }},")
+			self.w(f"\t\t{{ \"{utils.camel_case(method_name)}\", {utils.export_get_name(struct, method)} }},")
 		self.w(f"\t\t{{ NULL, NULL }},")
 		self.w(f"\t}}), 0);\n")
 		if is_struct:
@@ -244,12 +225,12 @@ class ExportWriter(Plugin):
 		if property.tag == 'shorthand':
 			pname, userdata = property.get('name'), property.get('userdata')
 			self.w(
-				f"\t/* {cname}.{pname} */ DECL({hash(pname)}, {hash(cname + '.' + pname)},\n"
+				f"\t/* {cname}.{pname} */ DECL({utils.hash(pname)}, {utils.hash(cname + '.' + pname)},\n"
 				f"\t{cname}, \"{pname}\", {path}, kDataTypeEdges, .TypeString=\"{userdata}\"),"
 			)
 		else:
-			name = property_name(path)
-			sname = property_name(path)
+			name = utils.property_name(path)
+			sname = utils.property_name(path)
 			ptype = property.get('type')
 			struct = Workspace.structs.get(ptype)
 			typedata = f"kDataType{ptype[:1].upper() + ptype[1:]}"
@@ -257,7 +238,7 @@ class ExportWriter(Plugin):
 				export_as = struct.get('export')
 				nfields = 0
 				def count(p, _, c): nonlocal nfields; nfields += 1
-				enum_component_properties(struct, count)
+				utils.enum_component_properties(struct, count)
 				typedata = (
 					f"kDataType{export_as}" if export_as
 					else f"kDataTypeGroup, .TypeString=\"{ptype}\", .NumComponents={nfields}"
@@ -270,7 +251,7 @@ class ExportWriter(Plugin):
 			elif ptype in Workspace.components:
 				typedata = f"kDataTypeObject, .TypeString=\"{ptype}\""
 			self.w(
-				f"\t/* {cname}.{sname} */ DECL({hash(sname)}, {hash(cname + '.' + sname)},\n"
+				f"\t/* {cname}.{sname} */ DECL({utils.hash(sname)}, {utils.hash(cname + '.' + sname)},\n"
 				f"\t{cname}, \"{sname}\", {path}, {typedata}),"
 			)
 
@@ -278,7 +259,7 @@ class ExportWriter(Plugin):
 		cname = component.get('name')
 		for handles in component.findall('handles'):
 			event = handles.get('event')
-			self.w(f"LRESULT {cname}_{event}({lpobject_t}, {lp(cname)}, wParam_t, {event}EventPtr);")
+			self.w(f"LRESULT {cname}_{event}({utils.lpobject_t}, {utils.lp(cname)}, wParam_t, {event}EventPtr);")
 		self.w(f"static struct PropertyDesc const {cname}Properties[k{cname}NumProperties] = {{")
 
 		for shorthand in component.findall("shorthand"):
@@ -286,11 +267,11 @@ class ExportWriter(Plugin):
 				shorthand.get('name'), shorthand.get('physical'), shorthand.get('userdata')
 			)
 			self.w(
-				f"\t/* {cname}.{cname} */ DECL({hash(pname)}, {hash(cname + '.' + pname)},\n"
+				f"\t/* {cname}.{cname} */ DECL({utils.hash(pname)}, {utils.hash(cname + '.' + pname)},\n"
 				f"\t{cname}, \"{pname}\", {physical}, T_EDGES, .TypeString=\"{userdata}\"),"
 			)
 
-		enum_component_properties(component, self.write_property)
+		utils.enum_component_properties(component, self.write_property)
 		self.w(f"}};")
 
 		if bool(component.findall("property[@default]")):
@@ -316,22 +297,22 @@ class ExportWriter(Plugin):
 			self.w(f"static struct {cname} {cname}Defaults = {{}};")
 
 		self.w(
-			f"LRESULT {cname}Proc({lpobject_t} object, void* cmp, "
+			f"LRESULT {cname}Proc({utils.lpobject_t} object, void* cmp, "
 			f"uint32_t message, wParam_t wparm, lParam_t lparm) {{"
 		)
 		self.w(f"\tswitch (message) {{")
 		for handles in component.findall('handles'):
 			hname = handles.get('event')
-			self.w(f"\t\tcase {hash(hname)}: // {hname}")
+			self.w(f"\t\tcase {utils.hash(hname)}: // {hname}")
 			self.w(f"\t\t\treturn {cname}_{hname}(object, cmp, wparm, lparm);")
 		self.w(f"}}\n\treturn FALSE;\n}}")
 
-		self.w(f"void luaX_push{cname}(lua_State *L, {lpc(cname)} {cname}) {{")
+		self.w(f"void luaX_push{cname}(lua_State *L, {utils.lpc(cname)} {cname}) {{")
 		self.w(f"\tluaX_pushObject(L, CMP_GetObject({cname}));\n}}")
-		self.w(f"{lp(cname)} luaX_check{cname}(lua_State *L, int idx) {{")
+		self.w(f"{utils.lp(cname)} luaX_check{cname}(lua_State *L, int idx) {{")
 		self.w(f"\treturn Get{cname}(luaX_checkObject(L, idx));\n}}")
 
-		parents = component_get_parents(component)
+		parents = utils.component_get_parents(component)
 		for p in parents:
 			self.w(f"extern struct ClassDesc _{p};")
 		parents_str = ", ".join([f"&_{p}" for p in parents] + ["NULL"])

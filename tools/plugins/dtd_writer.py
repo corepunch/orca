@@ -1,8 +1,7 @@
 """DTD schema writer plugin."""
 
-from . import Plugin
+from . import Plugin, utils
 from .state import Workspace
-from .utils import enum_component_properties, property_name, hash
 
 
 class DTDWriter(Plugin):
@@ -38,7 +37,7 @@ class DTDWriter(Plugin):
 		prop_type = prop.get('type')
 		struct = Workspace.structs.get(prop_type)
 		if not prop.get('exclude-self'):
-			sname = property_name(path)
+			sname = utils.property_name(path)
 			enum = Workspace.enums.get(prop_type) or (
 				Workspace.enums.get(sname) if struct is None else None
 			)

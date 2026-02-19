@@ -2,8 +2,7 @@
 
 import os
 
-from . import Plugin
-from .utils import enum_component_properties, hash, property_name
+from . import Plugin, utils
 
 
 class PropertiesWriter(Plugin):
@@ -21,17 +20,17 @@ class PropertiesWriter(Plugin):
 		self.file.write("\n")
 
 	def write_property_enum(self, property, component, path):
-		name = property.get('name') if property.tag == 'shorthand' else property_name(path)
+		name = property.get('name') if property.tag == 'shorthand' else utils.property_name(path)
 		self.w(f"\tk{component.get('name')}{name},")
 
 	def write_property_id(self, property, component, path):
-		name = property.get('name') if property.tag == 'shorthand' else property_name(path)
+		name = property.get('name') if property.tag == 'shorthand' else utils.property_name(path)
 		cname = component.get('name')
-		self.w(f"#define ID_{cname}_{name} {hash(cname + '.' + name)}")
+		self.w(f"#define ID_{cname}_{name} {utils.hash(cname + '.' + name)}")
 
 	def on_component(self, root, component):
 		cname = component.get('name')
-		self.w(f"#define ID_{cname} " + hash(cname))
+		self.w(f"#define ID_{cname} " + utils.hash(cname))
 		self.w(
 			f"#define Get{cname}(_P)"
 			f"((struct {cname}*)((_P)?OBJ_GetComponent(_P,ID_{cname}):NULL))"
@@ -41,6 +40,6 @@ class PropertiesWriter(Plugin):
 			f"OBJ_GetPropertyAtIndex(_P,ID_{cname},sizeof(struct {cname}),_N)"
 		)
 		self.w(f"enum {cname}Properties {{")
-		enum_component_properties(component, self.write_property_enum)
+		utils.enum_component_properties(component, self.write_property_enum)
 		self.w(f"\tk{cname}NumProperties\n}};\n")
-		enum_component_properties(component, self.write_property_id)
+		utils.enum_component_properties(component, self.write_property_id)

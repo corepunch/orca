@@ -1,297 +1,1042 @@
-<html xmlns="http://www.w3.org/2001/XMLSchema"><head><link rel="stylesheet" href="doc.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"><meta charset="UTF-8"></head><body><div class="adjustable-sidebar-width full-width-container topic-wrapper"><div class="sidebar"><div class="technology-title"><span class="fa-solid fa-folder-open icon"></span>orca.geometry
-</div><a class="leaf-link" href="#RotationOrder"><i class="fa-solid fa-bars icon"></i><span>RotationOrder
-</span></a><a class="leaf-link" href="#vec2"><i class="fa-solid fa-gear icon"></i><span>vec2
-</span></a><a class="leaf-link" href="#vec3"><i class="fa-solid fa-gear icon"></i><span>vec3
-</span></a><a class="leaf-link" href="#vec4"><i class="fa-solid fa-gear icon"></i><span>vec4
-</span></a><a class="leaf-link" href="#box2"><i class="fa-solid fa-gear icon"></i><span>box2
-</span></a><a class="leaf-link" href="#box3"><i class="fa-solid fa-gear icon"></i><span>box3
-</span></a><a class="leaf-link" href="#rect"><i class="fa-solid fa-gear icon"></i><span>rect
-</span></a><a class="leaf-link" href="#quat"><i class="fa-solid fa-gear icon"></i><span>quat
-</span></a><a class="leaf-link" href="#mat3"><i class="fa-solid fa-gear icon"></i><span>mat3
-</span></a><a class="leaf-link" href="#mat4"><i class="fa-solid fa-gear icon"></i><span>mat4
-</span></a><a class="leaf-link" href="#bounds"><i class="fa-solid fa-gear icon"></i><span>bounds
-</span></a><a class="leaf-link" href="#plane3"><i class="fa-solid fa-gear icon"></i><span>plane3
-</span></a><a class="leaf-link" href="#sphere3"><i class="fa-solid fa-gear icon"></i><span>sphere3
-</span></a><a class="leaf-link" href="#frustum3"><i class="fa-solid fa-gear icon"></i><span>frustum3
-</span></a><a class="leaf-link" href="#transform2"><i class="fa-solid fa-gear icon"></i><span>transform2
-</span></a><a class="leaf-link" href="#transform3"><i class="fa-solid fa-gear icon"></i><span>transform3
-</span></a><a class="leaf-link" href="#triangle3"><i class="fa-solid fa-gear icon"></i><span>triangle3
-</span></a><a class="leaf-link" href="#line3"><i class="fa-solid fa-gear icon"></i><span>line3
-</span></a><a class="leaf-link" href="#edges"><i class="fa-solid fa-gear icon"></i><span>edges
-</span></a><a class="leaf-link" href="#color"><i class="fa-solid fa-gear icon"></i><span>color
-</span></a></div><main class="content"><div id="RotationOrder" class="class" data-name="RotationOrder" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
-</div><h1 class="header">RotationOrder
-</h1><div class="abstract">Euler angle rotation order enumeration
-</div><h2 class="title">Overview</h2><div class="abstract">Specifies the order in which rotations are applied around the X, Y, and Z axes. Different orders produce different final orientations for the same euler angles.</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">XYZ</span></code><div class="small-abstract"><span>Rotate around X axis first, then Y, then Z
+<html xmlns="http://www.w3.org/2001/XMLSchema"><head><link rel="stylesheet" href="doc.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"><meta charset="UTF-8"></head><body><div class="adjustable-sidebar-width full-width-container topic-wrapper"><div class="sidebar"><div class="technology-title"><span class="fa-solid fa-folder-open icon"></span>orca.UIKit
+</div><a class="leaf-link" href="#Direction"><i class="fa-solid fa-bars icon"></i><span>Direction
+</span></a><a class="leaf-link" href="#Box3Field"><i class="fa-solid fa-bars icon"></i><span>Box3Field
+</span></a><a class="leaf-link" href="#TextHorizontalAlignment"><i class="fa-solid fa-bars icon"></i><span>TextHorizontalAlignment
+</span></a><a class="leaf-link" href="#TextVerticalAlignment"><i class="fa-solid fa-bars icon"></i><span>TextVerticalAlignment
+</span></a><a class="leaf-link" href="#HorizontalAlignment"><i class="fa-solid fa-bars icon"></i><span>HorizontalAlignment
+</span></a><a class="leaf-link" href="#VerticalAlignment"><i class="fa-solid fa-bars icon"></i><span>VerticalAlignment
+</span></a><a class="leaf-link" href="#AlignItems"><i class="fa-solid fa-bars icon"></i><span>AlignItems
+</span></a><a class="leaf-link" href="#DepthAlignment"><i class="fa-solid fa-bars icon"></i><span>DepthAlignment
+</span></a><a class="leaf-link" href="#Overflow"><i class="fa-solid fa-bars icon"></i><span>Overflow
+</span></a><a class="leaf-link" href="#ForegroundHint"><i class="fa-solid fa-bars icon"></i><span>ForegroundHint
+</span></a><a class="leaf-link" href="#JustifyContent"><i class="fa-solid fa-bars icon"></i><span>JustifyContent
+</span></a><a class="leaf-link" href="#FontWeight"><i class="fa-solid fa-bars icon"></i><span>FontWeight
+</span></a><a class="leaf-link" href="#FontStyle"><i class="fa-solid fa-bars icon"></i><span>FontStyle
+</span></a><a class="leaf-link" href="#BorderStyle"><i class="fa-solid fa-bars icon"></i><span>BorderStyle
+</span></a><a class="leaf-link" href="#PlaybackMode"><i class="fa-solid fa-bars icon"></i><span>PlaybackMode
+</span></a><a class="leaf-link" href="#ButtonType"><i class="fa-solid fa-bars icon"></i><span>ButtonType
+</span></a><a class="leaf-link" href="#InputType"><i class="fa-solid fa-bars icon"></i><span>InputType
+</span></a><a class="leaf-link" href="#Sizing"><i class="fa-solid fa-bars icon"></i><span>Sizing
+</span></a><a class="leaf-link" href="#BorderRadiusShorthand"><i class="fa-solid fa-gear icon"></i><span>BorderRadiusShorthand
+</span></a><a class="leaf-link" href="#BorderEdgeShorthand"><i class="fa-solid fa-gear icon"></i><span>BorderEdgeShorthand
+</span></a><a class="leaf-link" href="#BorderSideShorthand"><i class="fa-solid fa-gear icon"></i><span>BorderSideShorthand
+</span></a><a class="leaf-link" href="#BorderShorthand"><i class="fa-solid fa-gear icon"></i><span>BorderShorthand
+</span></a><a class="leaf-link" href="#EdgeShorthand"><i class="fa-solid fa-gear icon"></i><span>EdgeShorthand
+</span></a><a class="leaf-link" href="#AlignmentShorthand"><i class="fa-solid fa-gear icon"></i><span>AlignmentShorthand
+</span></a><a class="leaf-link" href="#FontShorthand"><i class="fa-solid fa-gear icon"></i><span>FontShorthand
+</span></a><a class="leaf-link" href="#BrushShorthand"><i class="fa-solid fa-gear icon"></i><span>BrushShorthand
+</span></a><a class="leaf-link" href="#ShadowShorthand"><i class="fa-solid fa-gear icon"></i><span>ShadowShorthand
+</span></a><a class="leaf-link" href="#RingShorthand"><i class="fa-solid fa-gear icon"></i><span>RingShorthand
+</span></a><a class="leaf-link" href="#OverflowShorthand"><i class="fa-solid fa-gear icon"></i><span>OverflowShorthand
+</span></a><a class="leaf-link" href="#UnderlineShorthand"><i class="fa-solid fa-gear icon"></i><span>UnderlineShorthand
+</span></a><a class="leaf-link" href="#Thickness"><i class="fa-solid fa-gear icon"></i><span>Thickness
+</span></a><a class="leaf-link" href="#MarginShorthand"><i class="fa-solid fa-gear icon"></i><span>MarginShorthand
+</span></a><a class="leaf-link" href="#SizeAxisShorthand"><i class="fa-solid fa-gear icon"></i><span>SizeAxisShorthand
+</span></a><a class="leaf-link" href="#SizeShorthand"><i class="fa-solid fa-gear icon"></i><span>SizeShorthand
+</span></a><a class="leaf-link" href="#DataObject"><i class="fa-solid fa-layer-group icon"></i><span>DataObject
+</span></a><a class="leaf-link" href="#AnimationPlayer"><i class="fa-solid fa-layer-group icon"></i><span>AnimationPlayer
+</span></a><a class="leaf-link" href="#Trigger"><i class="fa-solid fa-layer-group icon"></i><span>Trigger
+</span></a><a class="leaf-link" href="#OnPropertyChangedTrigger"><i class="fa-solid fa-layer-group icon"></i><span>OnPropertyChangedTrigger
+</span></a><a class="leaf-link" href="#OnAttachedTrigger"><i class="fa-solid fa-layer-group icon"></i><span>OnAttachedTrigger
+</span></a><a class="leaf-link" href="#EventTrigger"><i class="fa-solid fa-layer-group icon"></i><span>EventTrigger
+</span></a><a class="leaf-link" href="#Setter"><i class="fa-solid fa-layer-group icon"></i><span>Setter
+</span></a><a class="leaf-link" href="#Handler"><i class="fa-solid fa-layer-group icon"></i><span>Handler
+</span></a><a class="leaf-link" href="#Brush"><i class="fa-solid fa-layer-group icon"></i><span>Brush
+</span></a><a class="leaf-link" href="#ColorBrush"><i class="fa-solid fa-layer-group icon"></i><span>ColorBrush
+</span></a><a class="leaf-link" href="#Node"><i class="fa-solid fa-layer-group icon"></i><span>Node
+</span></a><a class="leaf-link" href="#TextRun"><i class="fa-solid fa-layer-group icon"></i><span>TextRun
+</span></a><a class="leaf-link" href="#TextBlockConcept"><i class="fa-solid fa-layer-group icon"></i><span>TextBlockConcept
+</span></a><a class="leaf-link" href="#Node2D"><i class="fa-solid fa-layer-group icon"></i><span>Node2D
+</span></a><a class="leaf-link" href="#PrefabView2D"><i class="fa-solid fa-layer-group icon"></i><span>PrefabView2D
+</span></a><a class="leaf-link" href="#TextBlock"><i class="fa-solid fa-layer-group icon"></i><span>TextBlock
+</span></a><a class="leaf-link" href="#Input"><i class="fa-solid fa-layer-group icon"></i><span>Input
+</span></a><a class="leaf-link" href="#Button"><i class="fa-solid fa-layer-group icon"></i><span>Button
+</span></a><a class="leaf-link" href="#Label"><i class="fa-solid fa-layer-group icon"></i><span>Label
+</span></a><a class="leaf-link" href="#StackView"><i class="fa-solid fa-layer-group icon"></i><span>StackView
+</span></a><a class="leaf-link" href="#Form"><i class="fa-solid fa-layer-group icon"></i><span>Form
+</span></a><a class="leaf-link" href="#CollectionView"><i class="fa-solid fa-layer-group icon"></i><span>CollectionView
+</span></a><a class="leaf-link" href="#Control"><i class="fa-solid fa-layer-group icon"></i><span>Control
+</span></a><a class="leaf-link" href="#ResizeMode"><i class="fa-solid fa-bars icon"></i><span>ResizeMode
+</span></a><a class="leaf-link" href="#Screen"><i class="fa-solid fa-layer-group icon"></i><span>Screen
+</span></a><a class="leaf-link" href="#Cinematic"><i class="fa-solid fa-layer-group icon"></i><span>Cinematic
+</span></a><a class="leaf-link" href="#Grid"><i class="fa-solid fa-layer-group icon"></i><span>Grid
+</span></a><a class="leaf-link" href="#Stretch"><i class="fa-solid fa-bars icon"></i><span>Stretch
+</span></a><a class="leaf-link" href="#ImageView"><i class="fa-solid fa-layer-group icon"></i><span>ImageView
+</span></a><a class="leaf-link" href="#NinePatchImage"><i class="fa-solid fa-layer-group icon"></i><span>NinePatchImage
+</span></a><a class="leaf-link" href="#TerminalView"><i class="fa-solid fa-layer-group icon"></i><span>TerminalView
+</span></a><a class="leaf-link" href="#StyleType"><i class="fa-solid fa-bars icon"></i><span>StyleType
+</span></a><a class="leaf-link" href="#Style"><i class="fa-solid fa-layer-group icon"></i><span>Style
+</span></a></div><main class="content"><div id="Direction" class="class" data-name="Direction" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
+</div><h1 class="header">Direction
+</h1><div class="abstract">Defines the primary axis for layout operations
+</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">Horizontal</span></code><div class="small-abstract"><span>Left-to-right horizontal layout
 </span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">XZY</span></code><div class="small-abstract"><span>Rotate around X axis first, then Z, then Y
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Vertical</span></code><div class="small-abstract"><span>Top-to-bottom vertical layout
 </span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">YZX</span></code><div class="small-abstract"><span>Rotate around Y axis first, then Z, then X
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Depth</span></code><div class="small-abstract"><span>Front-to-back depth layout (3D)
 </span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">YXZ</span></code><div class="small-abstract"><span>Rotate around Y axis first, then X, then Z
+</div><div id="Box3Field" class="class" data-name="Box3Field" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
+</div><h1 class="header">Box3Field
+</h1><div class="abstract">Fields of a 3D box, used to describe position and size components
+</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">X</span></code><div class="small-abstract"><span>X-coordinate of the box origin
 </span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">ZXY</span></code><div class="small-abstract"><span>Rotate around Z axis first, then X, then Y
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Y</span></code><div class="small-abstract"><span>Y-coordinate of the box origin
 </span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">ZYX</span></code><div class="small-abstract"><span>Rotate around Z axis first, then Y, then X
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Z</span></code><div class="small-abstract"><span>Z-coordinate of the box origin
 </span></div></div>
-</div><div id="vec2" class="class" data-name="vec2" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
-</div><h1 class="header">vec2
-</h1><div class="abstract">2D vector structure
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.vec2</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a point or direction in 2D space with x and y components. Supports common vector operations like addition, scaling, and distance calculations.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">x</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>X coordinate component
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">y</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Y coordinate component
-</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">set</span>(<span class="identifier">x</span>:<span class="decorator">float</span>, <span class="identifier">y</span>:<span class="decorator">float</span>)</code><div class="small-abstract"><span>Sets the vector components
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">scale</span>(<span class="identifier">s</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> vec2</span></code><div class="small-abstract"><span>Returns a scaled copy of the vector
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">add</span>(<span class="identifier">other</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> vec2</span></code><div class="small-abstract"><span>Adds two vectors component-wise
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">mul</span>(<span class="identifier">other</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> vec2</span></code><div class="small-abstract"><span>Multiplies two vectors component-wise
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">div</span>(<span class="identifier">other</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> vec2</span></code><div class="small-abstract"><span>Divides two vectors component-wise
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">sub</span>(<span class="identifier">other</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> vec2</span></code><div class="small-abstract"><span>Subtracts one vector from another
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">unm</span>()<span class="decorator"> -&gt;</span><span> vec2</span></code><div class="small-abstract"><span>Returns the negated vector
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">dot</span>(<span class="identifier">other</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Calculates dot product with another vector
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">lengthsq</span>()<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Returns the squared length of the vector
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">len</span>()<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Returns the length (magnitude) of the vector
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">distance</span>(<span class="identifier">other</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Calculates distance to another vector
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">normalize</span>()</code><div class="small-abstract"><span>Normalizes the vector in place to unit length
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">lerp</span>(<span class="identifier">other</span>:<span class="decorator">vec2</span>, <span class="identifier">t</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> vec2</span></code><div class="small-abstract"><span>Linear interpolation between this vector and another
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">mad</span>(<span class="identifier">s</span>:<span class="decorator">float</span>, <span class="identifier">other</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> vec2</span></code><div class="small-abstract"><span>Multiply-add operation: returns this + (s * other)
-</span></div></div></div><div id="vec3" class="class" data-name="vec3" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
-</div><h1 class="header">vec3
-</h1><div class="abstract">3D vector structure
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.vec3</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a point or direction in 3D space with x, y, and z components. Supports vector math operations, interpolation, and curve calculations.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">x</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>X coordinate component
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">y</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Y coordinate component
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">z</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Z coordinate component
-</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">dot</span>(<span class="identifier">other</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Calculates dot product with another vector
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">lengthsq</span>()<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Returns the squared length of the vector
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">len</span>()<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Returns the length (magnitude) of the vector
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">bezier</span>(<span class="identifier">b</span>:<span class="decorator">vec3</span>, <span class="identifier">c</span>:<span class="decorator">vec3</span>, <span class="identifier">d</span>:<span class="decorator">vec3</span>, <span class="identifier">t</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Cubic Bezier curve interpolation
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">hermite</span>(<span class="identifier">b</span>:<span class="decorator">vec3</span>, <span class="identifier">c</span>:<span class="decorator">vec3</span>, <span class="identifier">d</span>:<span class="decorator">vec3</span>, <span class="identifier">t</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Hermite spline interpolation
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">lerp</span>(<span class="identifier">other</span>:<span class="decorator">vec3</span>, <span class="identifier">t</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Linear interpolation between this vector and another
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">cross</span>(<span class="identifier">other</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Calculates cross product with another vector
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">sub</span>(<span class="identifier">other</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Subtracts one vector from another
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">add</span>(<span class="identifier">other</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Adds two vectors component-wise
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">mad</span>(<span class="identifier">s</span>:<span class="decorator">float</span>, <span class="identifier">other</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Multiply-add operation: returns this + (s * other)
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">mul</span>(<span class="identifier">other</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Multiplies two vectors component-wise
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">scale</span>(<span class="identifier">s</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Returns a scaled copy of the vector
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">normalize</span>()</code><div class="small-abstract"><span>Normalizes the vector in place to unit length
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">set</span>(<span class="identifier">x</span>:<span class="decorator">float</span>, <span class="identifier">y</span>:<span class="decorator">float</span>, <span class="identifier">z</span>:<span class="decorator">float</span>)</code><div class="small-abstract"><span>Sets the vector components
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">clear</span>()</code><div class="small-abstract"><span>Sets all components to zero
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">unm</span>()<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Returns the negated vector
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">distance</span>(<span class="identifier">other</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Calculates distance to another vector
-</span></div></div></div><div id="vec4" class="class" data-name="vec4" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
-</div><h1 class="header">vec4
-</h1><div class="abstract">4D vector structure
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.vec4</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a 4-component vector with x, y, z, and w components. Commonly used for homogeneous coordinates, quaternions, or RGBA colors.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">x</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>X coordinate component
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">y</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Y coordinate component
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">z</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Z coordinate component
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">w</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>W coordinate component
-</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">set</span>(<span class="identifier">x</span>:<span class="decorator">float</span>, <span class="identifier">y</span>:<span class="decorator">float</span>, <span class="identifier">z</span>:<span class="decorator">float</span>, <span class="identifier">w</span>:<span class="decorator">float</span>)</code><div class="small-abstract"><span>Sets all vector components
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">scale</span>(<span class="identifier">s</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> vec4</span></code><div class="small-abstract"><span>Returns a scaled copy of the vector
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">add</span>(<span class="identifier">other</span>:<span class="decorator">vec4</span>)<span class="decorator"> -&gt;</span><span> vec4</span></code><div class="small-abstract"><span>Adds two vectors component-wise
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">unm</span>()<span class="decorator"> -&gt;</span><span> vec4</span></code><div class="small-abstract"><span>Returns the negated vector
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">lerp</span>(<span class="identifier">other</span>:<span class="decorator">vec4</span>, <span class="identifier">t</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> vec4</span></code><div class="small-abstract"><span>Linear interpolation between this vector and another
-</span></div></div></div><div id="box2" class="class" data-name="box2" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
-</div><h1 class="header">box2
-</h1><div class="abstract">2D axis-aligned bounding box
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.box2</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a rectangular region in 2D space defined by minimum and maximum corner points. Used for collision detection and spatial queries.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">min</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
-<div class="small-abstract"><span>Minimum corner point (bottom-left)
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">max</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
-<div class="small-abstract"><span>Maximum corner point (top-right)
-</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">center</span>()<span class="decorator"> -&gt;</span><span> vec2</span></code><div class="small-abstract"><span>Calculates the center point of the box
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">moveTo</span>(<span class="identifier">location</span>:<span class="decorator">vec2</span>)</code><div class="small-abstract"><span>Moves the box so its center is at the specified location
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">containsPoint</span>(<span class="identifier">point</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Tests if a point is inside the box
-</span></div></div></div><div id="box3" class="class" data-name="box3" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
-</div><h1 class="header">box3
-</h1><div class="abstract">3D axis-aligned bounding box
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.box3</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a rectangular volume in 3D space defined by minimum and maximum corner points. Used for 3D collision detection and spatial culling.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">min</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
-<div class="small-abstract"><span>Minimum corner point
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">max</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
-<div class="small-abstract"><span>Maximum corner point
-</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">center</span>()<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Calculates the center point of the box
-</span></div></div></div><div id="rect" class="class" data-name="rect" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
-</div><h1 class="header">rect
-</h1><div class="abstract">2D rectangle structure
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.rect</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a rectangle using position (x, y) and dimensions (width, height). Provides utility methods for containment tests and transformations.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">x</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Left edge X coordinate
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">y</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Top edge Y coordinate
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">width</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Rectangle width
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">height</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Rectangle height
-</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">contains</span>(<span class="identifier">point</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Tests if a point is inside the rectangle
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">scale</span>(<span class="identifier">scale</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> rect</span></code><div class="small-abstract"><span>Returns a scaled copy of the rectangle
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">expand</span>(<span class="identifier">padding</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> rect</span></code><div class="small-abstract"><span>Returns a expanded copy of the rectangle
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">center</span>()<span class="decorator"> -&gt;</span><span> vec2</span></code><div class="small-abstract"><span>Calculates the center point of the rectangle
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">fit</span>(<span class="identifier">big</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> rect</span></code><div class="small-abstract"><span>Scales rectangle to fit within given dimensions while preserving aspect ratio
-</span></div></div></div><div id="quat" class="class" data-name="quat" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
-</div><h1 class="header">quat
-</h1><div class="abstract">Quaternion for 3D rotations
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.quat</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a rotation in 3D space using quaternion mathematics. Provides smooth interpolation and avoids gimbal lock issues common with Euler angles.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">x</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>X component of quaternion
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">y</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Y component of quaternion
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">z</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Z component of quaternion
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">w</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>W component (scalar part) of quaternion
-</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">fromEuler</span>(<span class="identifier">euler</span>:<span class="decorator">vec3</span>, <span class="identifier">order</span>:<span class="decorator">RotationOrder</span>)<span class="decorator"> -&gt;</span><span> quat</span></code><div class="small-abstract"><span>Creates quaternion from Euler angles
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">fromMatrix</span>(<span class="identifier">matrix</span>:<span class="decorator">mat4</span>)<span class="decorator"> -&gt;</span><span> quat</span></code><div class="small-abstract"><span>Extracts quaternion from rotation matrix
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">dotProduct</span>(<span class="identifier">other</span>:<span class="decorator">quat</span>)<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Calculates dot product with another quaternion
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">length</span>()<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Returns the magnitude of the quaternion
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">unm</span>()<span class="decorator"> -&gt;</span><span> quat</span></code><div class="small-abstract"><span>Returns the conjugate of the quaternion
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">normalized</span>()<span class="decorator"> -&gt;</span><span> quat</span></code><div class="small-abstract"><span>Returns a normalized copy of the quaternion
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">slerp</span>(<span class="identifier">q</span>:<span class="decorator">quat</span>, <span class="identifier">t</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> quat</span></code><div class="small-abstract"><span>Spherical linear interpolation between quaternions
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">sqlerp</span>(<span class="identifier">b</span>:<span class="decorator">quat</span>, <span class="identifier">c</span>:<span class="decorator">quat</span>, <span class="identifier">d</span>:<span class="decorator">quat</span>, <span class="identifier">t</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> quat</span></code><div class="small-abstract"><span>Squad (spherical cubic) interpolation between quaternions
-</span></div></div></div><div id="mat3" class="class" data-name="mat3" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
-</div><h1 class="header">mat3
-</h1><div class="abstract">3x3 transformation matrix
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.mat3</span></code><h2 class="title">Overview</h2><div class="abstract">Represents 2D transformations and 3D normal transformations. Stored in column-major order as a 9-element float array.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">v</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Matrix elements in column-major order
-</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">identity</span>()<span class="decorator"> -&gt;</span><span> mat3</span></code><div class="small-abstract"><span>Creates an identity matrix
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">normal</span>(<span class="identifier">matrix</span>:<span class="decorator">mat4</span>)<span class="decorator"> -&gt;</span><span> mat3</span></code><div class="small-abstract"><span>Creates normal transformation matrix from 4x4 matrix
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">translate</span>(<span class="identifier">offset</span>:<span class="decorator">vec2</span>)</code><div class="small-abstract"><span>Applies translation to the matrix
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">scale</span>(<span class="identifier">scale</span>:<span class="decorator">vec2</span>)</code><div class="small-abstract"><span>Applies scaling to the matrix
-</span></div></div></div><div id="mat4" class="class" data-name="mat4" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
-</div><h1 class="header">mat4
-</h1><div class="abstract">4x4 transformation matrix
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.mat4</span></code><h2 class="title">Overview</h2><div class="abstract">Represents 3D transformations including translation, rotation, and scaling. Stored in column-major order as a 16-element float array. Used for camera projections and object transformations.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">v</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Matrix elements in column-major order
-</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">identity</span>()<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Creates an identity matrix
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">translate</span>(<span class="identifier">offset</span>:<span class="decorator">vec3</span>)</code><div class="small-abstract"><span>Applies translation to the matrix
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">rotate</span>(<span class="identifier">euler</span>:<span class="decorator">vec3</span>, <span class="identifier">order</span>:<span class="decorator">RotationOrder</span>)</code><div class="small-abstract"><span>Applies rotation using Euler angles
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">scale</span>(<span class="identifier">scale</span>:<span class="decorator">vec3</span>)</code><div class="small-abstract"><span>Applies scaling to the matrix
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">multiply</span>(<span class="identifier">other</span>:<span class="decorator">mat4</span>)<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Multiplies this matrix with another
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">ortho</span>(<span class="identifier">left</span>:<span class="decorator">float</span>, <span class="identifier">right</span>:<span class="decorator">float</span>, <span class="identifier">bottom</span>:<span class="decorator">float</span>, <span class="identifier">top</span>:<span class="decorator">float</span>, <span class="identifier">znear</span>:<span class="decorator">float</span>, <span class="identifier">zfar</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Creates orthographic projection matrix
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">perspective</span>(<span class="identifier">radians</span>:<span class="decorator">float</span>, <span class="identifier">aspect</span>:<span class="decorator">float</span>, <span class="identifier">znear</span>:<span class="decorator">float</span>, <span class="identifier">zfar</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Creates perspective projection matrix
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">lookAt</span>(<span class="identifier">eye</span>:<span class="decorator">vec3</span>, <span class="identifier">direction</span>:<span class="decorator">vec3</span>, <span class="identifier">up</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Creates view matrix for camera positioning
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">inverse</span>()<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Calculates the inverse matrix
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">transpose</span>()<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Returns the transposed matrix
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">rotate4</span>(<span class="identifier">quat</span>:<span class="decorator">vec4</span>)</code><div class="small-abstract"><span>Applies quaternion rotation to the matrix
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">multiplyVector3D</span>(<span class="identifier">point</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Transforms a 3D point by this matrix
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">fromRotationOrigin</span>(<span class="identifier">rotation</span>:<span class="decorator">quat</span>, <span class="identifier">origin</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Creates matrix from rotation around a specific origin point
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">fromRotationTranslationScaleOrigin</span>(<span class="identifier">rotation</span>:<span class="decorator">quat</span>, <span class="identifier">translation</span>:<span class="decorator">vec3</span>, <span class="identifier">scale</span>:<span class="decorator">vec3</span>, <span class="identifier">origin</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Creates full transformation matrix with custom origin
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">fromTranslation</span>(<span class="identifier">translation</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Creates translation-only matrix
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">rotateQuat</span>(<span class="identifier">rotation</span>:<span class="decorator">quat</span>)</code><div class="small-abstract"><span>Applies quaternion rotation to the matrix
-</span></div></div></div><div id="bounds" class="class" data-name="bounds" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
-</div><h1 class="header">bounds
-</h1><div class="abstract">1D range bounds
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.bounds</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a range with minimum and maximum values. Used for clamping values or defining valid ranges.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">min</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Minimum value of the range
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">max</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Maximum value of the range
-</span></div></div><div id="plane3" class="class" data-name="plane3" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
-</div><h1 class="header">plane3
-</h1><div class="abstract">3D plane representation
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.plane3</span></code><h2 class="title">Overview</h2><div class="abstract">Represents an infinite plane in 3D space using the equation ax + by + cz + d = 0. Used for clipping, collision detection, and spatial partitioning.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">a</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>X component of plane normal
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">b</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Y component of plane normal
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">c</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Z component of plane normal
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">d</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Distance from origin along normal
-</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">normalize</span>()</code><div class="small-abstract"><span>Normalizes the plane equation
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">multiplyVector3D</span>(<span class="identifier">point</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Calculates signed distance from point to plane
-</span></div></div></div><div id="sphere3" class="class" data-name="sphere3" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
-</div><h1 class="header">sphere3
-</h1><div class="abstract">3D sphere representation
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.sphere3</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a sphere in 3D space defined by center point and radius. Used for collision detection, bounding volumes, and spatial queries.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">center</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
-<div class="small-abstract"><span>Center point of the sphere
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">radius</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Radius of the sphere
-</span></div></div><div id="frustum3" class="class" data-name="frustum3" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
-</div><h1 class="header">frustum3
-</h1><div class="abstract">3D viewing frustum
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.frustum3</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a truncated pyramid used for camera view volumes and culling. Defined by six planes that bound the visible region.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">left</span>: <a class="type-identifier-link" href="#plane3">plane3</a></code></div>
-<div class="small-abstract"><span>Left clipping plane
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">right</span>: <a class="type-identifier-link" href="#plane3">plane3</a></code></div>
-<div class="small-abstract"><span>Right clipping plane
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">bottom</span>: <a class="type-identifier-link" href="#plane3">plane3</a></code></div>
-<div class="small-abstract"><span>Bottom clipping plane
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">top</span>: <a class="type-identifier-link" href="#plane3">plane3</a></code></div>
-<div class="small-abstract"><span>Top clipping plane
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">front</span>: <a class="type-identifier-link" href="#plane3">plane3</a></code></div>
-<div class="small-abstract"><span>Near clipping plane
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">back</span>: <a class="type-identifier-link" href="#plane3">plane3</a></code></div>
-<div class="small-abstract"><span>Far clipping plane
-</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">calculate</span>(<span class="identifier">matrix</span>:<span class="decorator">mat4</span>)<span class="decorator"> -&gt;</span><span> frustum3</span></code><div class="small-abstract"><span>Extracts frustum planes from projection matrix
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">containsPoint</span>(<span class="identifier">point</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Tests if a point is inside the frustum
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">containsSphere</span>(<span class="identifier">sphere</span>:<span class="decorator">sphere3</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Tests if a sphere intersects the frustum
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">containsBox</span>(<span class="identifier">box</span>:<span class="decorator">box3</span>, <span class="identifier">matrix</span>:<span class="decorator">mat4</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Tests if a transformed bounding box intersects the frustum
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">containsAABox</span>(<span class="identifier">box</span>:<span class="decorator">box3</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Tests if an axis-aligned box intersects the frustum
-</span></div></div></div><div id="transform2" class="class" data-name="transform2" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
-</div><h1 class="header">transform2
-</h1><div class="abstract">2D transformation structure
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.transform2</span></code><h2 class="title">Overview</h2><div class="abstract">Encapsulates 2D translation, rotation, and scaling. Provides convenient interface for common 2D transformations and matrix conversion.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">translation</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
-<div class="small-abstract"><span>Translation offset
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">rotation</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Rotation angle in radians
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">scale</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
-<div class="small-abstract"><span>Scale factors for X and Y axes
-</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">identity</span>()<span class="decorator"> -&gt;</span><span> transform2</span></code><div class="small-abstract"><span>Creates identity transformation
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">toMatrix3D</span>(<span class="identifier">pivot</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Converts to 4x4 transformation matrix
-</span></div></div></div><div id="transform3" class="class" data-name="transform3" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
-</div><h1 class="header">transform3
-</h1><div class="abstract">3D transformation structure
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.transform3</span></code><h2 class="title">Overview</h2><div class="abstract">Encapsulates 3D translation, rotation (as Euler angles), and scaling. Provides convenient interface for common 3D transformations.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">translation</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
-<div class="small-abstract"><span>Translation offset
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">rotation</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
-<div class="small-abstract"><span>Euler angles in radians (x=pitch, y=yaw, z=roll)
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">scale</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
-<div class="small-abstract"><span>Scale factors for X, Y, and Z axes
-</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">identity</span>()<span class="decorator"> -&gt;</span><span> transform3</span></code><div class="small-abstract"><span>Creates identity transformation
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">toMatrix3D</span>(<span class="identifier">pivot</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Converts to 4x4 transformation matrix
-</span></div></div></div><div id="triangle3" class="class" data-name="triangle3" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
-</div><h1 class="header">triangle3
-</h1><div class="abstract">3D triangle primitive
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.triangle3</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a triangle in 3D space defined by three vertices. Used for mesh geometry, collision detection, and ray casting.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">a</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
-<div class="small-abstract"><span>First vertex of the triangle
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">b</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
-<div class="small-abstract"><span>Second vertex of the triangle
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">c</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
-<div class="small-abstract"><span>Third vertex of the triangle
-</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">normal</span>()<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Calculates the triangle's surface normal
-</span></div></div></div><div id="line3" class="class" data-name="line3" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
-</div><h1 class="header">line3
-</h1><div class="abstract">3D line segment
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.line3</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a line segment in 3D space defined by two endpoints. Provides intersection testing with various geometric primitives.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">a</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
-<div class="small-abstract"><span>Start point of the line segment
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">b</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
-<div class="small-abstract"><span>End point of the line segment
-</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">intersect_sphere3</span>(<span class="identifier">sphere</span>:<span class="decorator">sphere3</span>, <span class="identifier">out</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Tests intersection with a sphere
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">intersect_plane3</span>(<span class="identifier">plane</span>:<span class="decorator">plane3</span>, <span class="identifier">out</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Tests intersection with a plane
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">intersect_triangle</span>(<span class="identifier">triangle</span>:<span class="decorator">triangle3</span>, <span class="identifier">out</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Tests intersection with a triangle
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">intersect_box3</span>(<span class="identifier">box</span>:<span class="decorator">box3</span>, <span class="identifier">out</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Tests intersection with a 3D bounding box
-</span></div></div></div><div id="edges" class="class" data-name="edges" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
-</div><h1 class="header">edges
-</h1><div class="abstract">Edge insets structure
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.edges</span></code><h2 class="title">Overview</h2><div class="abstract">Represents spacing or padding values for all four edges of a rectangular region. Commonly used for UI layout and margin calculations.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">left</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Left edge spacing
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">top</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Top edge spacing
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">right</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Right edge spacing
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">bottom</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Bottom edge spacing
-</span></div></div><div id="color" class="class" data-name="color" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
-</div><h1 class="header">color
-</h1><div class="abstract">RGBA color representation
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.color</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a color with red, green, blue, and alpha (transparency) components. Values typically range from 0.0 to 1.0.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">r</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Red component (0.0 to 1.0)
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">g</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Green component (0.0 to 1.0)
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">b</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Blue component (0.0 to 1.0)
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">a</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Alpha (transparency) component (0.0 = transparent, 1.0 = opaque)
-</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">lerp</span>(<span class="identifier">other</span>:<span class="decorator">color</span>, <span class="identifier">t</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> color</span></code><div class="small-abstract"><span>Linear interpolation between colors
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">parse</span>(<span class="identifier">code</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> color</span></code><div class="small-abstract"><span>Parses color from string representation
-</span></div></div></div></main></div></body></html>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Width</span></code><div class="small-abstract"><span>Width of the box along the X axis
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Height</span></code><div class="small-abstract"><span>Height of the box along the Y axis
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Depth</span></code><div class="small-abstract"><span>Depth of the box along the Z axis
+</span></div></div>
+</div><div id="TextHorizontalAlignment" class="class" data-name="TextHorizontalAlignment" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
+</div><h1 class="header">TextHorizontalAlignment
+</h1><div class="abstract">Horizontal text alignment options within text bounds
+</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">Left</span></code><div class="small-abstract"><span>Align text to the left edge
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Center</span></code><div class="small-abstract"><span>Center text horizontally
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Right</span></code><div class="small-abstract"><span>Align text to the right edge
+</span></div></div>
+</div><div id="TextVerticalAlignment" class="class" data-name="TextVerticalAlignment" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
+</div><h1 class="header">TextVerticalAlignment
+</h1><div class="abstract">Vertical text alignment options within text bounds
+</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">Top</span></code><div class="small-abstract"><span>Align text to the top
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Center</span></code><div class="small-abstract"><span>Center text vertically
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Bottom</span></code><div class="small-abstract"><span>Align text to the bottom
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Baseline</span></code><div class="small-abstract"><span>Align to text baseline
+</span></div></div>
+</div><div id="HorizontalAlignment" class="class" data-name="HorizontalAlignment" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
+</div><h1 class="header">HorizontalAlignment
+</h1><div class="abstract">Horizontal alignment of elements within their parent container
+</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">Left</span></code><div class="small-abstract"><span>Align to left edge of container
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Center</span></code><div class="small-abstract"><span>Center within container
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Right</span></code><div class="small-abstract"><span>Align to right edge of container
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Stretch</span></code><div class="small-abstract"><span>Stretch to fill container width
+</span></div></div>
+</div><div id="VerticalAlignment" class="class" data-name="VerticalAlignment" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
+</div><h1 class="header">VerticalAlignment
+</h1><div class="abstract">Vertical alignment of elements within their parent container
+</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">Top</span></code><div class="small-abstract"><span>Align to top edge of container
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Center</span></code><div class="small-abstract"><span>Center within container
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Bottom</span></code><div class="small-abstract"><span>Align to bottom edge of container
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Stretch</span></code><div class="small-abstract"><span>Stretch to fill container height
+</span></div></div>
+</div><div id="AlignItems" class="class" data-name="AlignItems" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
+</div><h1 class="header">AlignItems
+</h1><div class="abstract">Cross-axis alignment in flexbox-style layout containers
+</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">Start</span></code><div class="small-abstract"><span>Align to start of cross axis
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Center</span></code><div class="small-abstract"><span>Center on cross axis
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">End</span></code><div class="small-abstract"><span>Align to end of cross axis
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Stretch</span></code><div class="small-abstract"><span>Stretch across cross axis
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Baseline</span></code><div class="small-abstract"><span>Align to text baseline
+</span></div></div>
+</div><div id="DepthAlignment" class="class" data-name="DepthAlignment" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
+</div><h1 class="header">DepthAlignment
+</h1><div class="abstract">3D depth alignment options for positioning along Z-axis
+</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">Near</span></code><div class="small-abstract"><span>Align to near clipping plane
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Center</span></code><div class="small-abstract"><span>Center in depth
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Far</span></code><div class="small-abstract"><span>Align to far clipping plane
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Stretch</span></code><div class="small-abstract"><span>Stretch across depth
+</span></div></div>
+</div><div id="Overflow" class="class" data-name="Overflow" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
+</div><h1 class="header">Overflow
+</h1><div class="abstract">Content overflow handling strategies
+</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">Visible</span></code><div class="small-abstract"><span>Content overflows container bounds
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Hidden</span></code><div class="small-abstract"><span>Clip overflowing content
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Clip</span></code><div class="small-abstract"><span>Hard clipping without scrollbars
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Scroll</span></code><div class="small-abstract"><span>Show scrollbars for overflow
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Auto</span></code><div class="small-abstract"><span>Automatic scrollbar behavior
+</span></div></div>
+</div><div id="ForegroundHint" class="class" data-name="ForegroundHint" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
+</div><h1 class="header">ForegroundHint
+</h1><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">None</span></code><div class="small-abstract"><span>No special foreground treatment
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Translucent</span></code><div class="small-abstract"><span>Hint for translucent foreground
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Opaque</span></code><div class="small-abstract"><span>Hint for opaque foreground optimization
+</span></div></div>
+</div><div id="JustifyContent" class="class" data-name="JustifyContent" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
+</div><h1 class="header">JustifyContent
+</h1><div class="abstract">Main-axis content distribution in flexbox-style layouts
+</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">Start</span></code><div class="small-abstract"><span>Pack items to start
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">End</span></code><div class="small-abstract"><span>Pack items to end
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Center</span></code><div class="small-abstract"><span>Center items
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">SpaceBetween</span></code><div class="small-abstract"><span>Distribute with space between
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">SpaceAround</span></code><div class="small-abstract"><span>Distribute with space around
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">SpaceEvenly</span></code><div class="small-abstract"><span>Distribute with even spacing
+</span></div></div>
+</div><div id="FontWeight" class="class" data-name="FontWeight" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
+</div><h1 class="header">FontWeight
+</h1><div class="abstract">Font weight options for typography
+</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">Normal</span></code><div class="small-abstract"><span>Standard font weight
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Bold</span></code><div class="small-abstract"><span>Bold font weight
+</span></div></div>
+</div><div id="FontStyle" class="class" data-name="FontStyle" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
+</div><h1 class="header">FontStyle
+</h1><div class="abstract">Font style options for typography
+</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">Normal</span></code><div class="small-abstract"><span>Regular font style
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Italic</span></code><div class="small-abstract"><span>Italic font style
+</span></div></div>
+</div><div id="BorderStyle" class="class" data-name="BorderStyle" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
+</div><h1 class="header">BorderStyle
+</h1><div class="abstract">Visual styles for element borders
+</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">None</span></code><div class="small-abstract"><span>No border
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Hidden</span></code><div class="small-abstract"><span>Hidden border (takes space but invisible)
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Dotted</span></code><div class="small-abstract"><span>Dotted border pattern
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Dashed</span></code><div class="small-abstract"><span>Dashed border pattern
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Solid</span></code><div class="small-abstract"><span>Solid continuous border
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Double</span></code><div class="small-abstract"><span>Double line border
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Groove</span></code><div class="small-abstract"><span>3D grooved border effect
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Ridge</span></code><div class="small-abstract"><span>3D ridged border effect
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Inset</span></code><div class="small-abstract"><span>3D inset border effect
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Outset</span></code><div class="small-abstract"><span>3D outset border effect
+</span></div></div>
+</div><div id="PlaybackMode" class="class" data-name="PlaybackMode" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
+</div><h1 class="header">PlaybackMode
+</h1><div class="abstract">Animation playback behavior modes
+</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">Normal</span></code><div class="small-abstract"><span>Standard forward playback
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Reverse</span></code><div class="small-abstract"><span>Reverse playback from end to start
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Pingpong</span></code><div class="small-abstract"><span>Alternating forward/reverse playback
+</span></div></div>
+</div><div id="ButtonType" class="class" data-name="ButtonType" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
+</div><h1 class="header">ButtonType
+</h1><div class="abstract">Button behavior types for different interaction patterns
+</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">Normal</span></code><div class="small-abstract"><span>Standard interactive button
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Submit</span></code><div class="small-abstract"><span>Form submission button with special handling
+</span></div></div>
+</div><div id="InputType" class="class" data-name="InputType" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
+</div><h1 class="header">InputType
+</h1><div class="abstract">Input control behavior types for different data entry needs
+</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">Text</span></code><div class="small-abstract"><span>Single or multi-line text input 
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Password</span></code><div class="small-abstract"><span>Masked password input for security 
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Number</span></code><div class="small-abstract"><span>Numeric input with validation 
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Checkbox</span></code><div class="small-abstract"><span>Boolean checkbox control 
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Radio</span></code><div class="small-abstract"><span>Radio button for exclusive selection 
+</span></div></div>
+</div><div id="Sizing" class="class" data-name="Sizing" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
+</div><h1 class="header">Sizing
+</h1><div class="abstract">Size calculation modes for layout operations
+</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">PlusMargin</span></code><div class="small-abstract"><span>Include margins in size calculation
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">SizeOnly</span></code><div class="small-abstract"><span>Return only the base size
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">MinusPadding</span></code><div class="small-abstract"><span>Subtract padding from size
+</span></div></div>
+</div><div id="BorderRadiusShorthand" class="class" data-name="BorderRadiusShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">BorderRadiusShorthand
+</h1><div class="abstract">Corner rounding configuration for rectangular elements
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.BorderRadiusShorthand</span></code><h2 class="title">Overview</h2><div class="abstract">Similar to CSS border-radius, allows independent control of each corner's rounding radius.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">TopLeftRadius</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Top-left corner radius
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">TopRightRadius</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Top-right corner radius
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BottomRightRadius</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Bottom-right corner radius
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BottomLeftRadius</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Bottom-left corner radius
+</span></div></div><div id="BorderEdgeShorthand" class="class" data-name="BorderEdgeShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">BorderEdgeShorthand
+</h1><div class="abstract">Complete border definition for one edge
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.BorderEdgeShorthand</span></code><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Width</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>{0} border thickness in pixels
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">Style</span>: <a class="type-identifier-link" href="#BorderStyle">BorderStyle</a></code></div>
+<div class="small-abstract"><span>Visual style of the {0} border
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Color</span>: <span>color</span></code></div>
+<div class="small-abstract"><span>{0} border color
+</span></div></div><div id="BorderSideShorthand" class="class" data-name="BorderSideShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">BorderSideShorthand
+</h1><div class="abstract">Border definitions for both sides of an axis
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.BorderSideShorthand</span></code><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Left</span>: <a class="type-identifier-link" href="#BorderEdgeShorthand">BorderEdgeShorthand</a></code></div>
+<div class="small-abstract"><span>Leading edge border (left/top/near)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Right</span>: <a class="type-identifier-link" href="#BorderEdgeShorthand">BorderEdgeShorthand</a></code></div>
+<div class="small-abstract"><span>Trailing edge border (right/bottom/far)
+</span></div></div><div id="BorderShorthand" class="class" data-name="BorderShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">BorderShorthand
+</h1><div class="abstract">Complete border definition for rectangular element
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.BorderShorthand</span></code><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Radius</span>: <a class="type-identifier-link" href="#BorderRadiusShorthand">BorderRadiusShorthand</a></code></div>
+<div class="small-abstract"><span>Border radius definition per corner
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Axis</span>: <a class="type-identifier-link" href="#BorderSideShorthand">BorderSideShorthand</a></code></div>
+<div class="small-abstract"><span>Border definition per axis
+</span></div></div><div id="EdgeShorthand" class="class" data-name="EdgeShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">EdgeShorthand
+</h1><div class="abstract">Spacing values for opposite edges of an axis
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.EdgeShorthand</span></code><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Left</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Leading edge value (left for horizontal, top for vertical, near for depth)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Right</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Trailing edge value (right for horizontal, bottom for vertical, far for depth)
+</span></div></div><div id="AlignmentShorthand" class="class" data-name="AlignmentShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">AlignmentShorthand
+</h1><div class="abstract">Axis-specific alignment parameters.
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.AlignmentShorthand</span></code><h2 class="title">Overview</h2><div class="abstract">Stores per-axis alignment information (e.g., Horizontal, Vertical, Depth). Used by Node and its derived classes to control alignment.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Axis</span>: <span>int</span></code></div>
+<div class="small-abstract"><span>Alignment of the element within its parent (similar to HorizontalAlignment/VerticalAlignment in XAML).
+</span></div></div><div id="FontShorthand" class="class" data-name="FontShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">FontShorthand
+</h1><div class="abstract">Complete font specification including weight, style, size, and family
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.FontShorthand</span></code><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">Weight</span>: <a class="type-identifier-link" href="#FontWeight">FontWeight</a></code></div>
+<div class="small-abstract"><span>Font weight (normal or bold)
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">Style</span>: <a class="type-identifier-link" href="#FontStyle">FontStyle</a></code></div>
+<div class="small-abstract"><span>Font style (normal or italic)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Size</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Font size in points
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Family</span>: <span>FontFamily</span></code></div>
+<div class="small-abstract"><span>Font family reference
+</span></div></div><div id="BrushShorthand" class="class" data-name="BrushShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">BrushShorthand
+</h1><div class="abstract">Represents a generic brush used for filling UI elements.
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.BrushShorthand</span></code><h2 class="title">Overview</h2><div class="abstract">A brush can be used as a background, foreground, or any paintable property. It supports multiple types of fills; each field corresponds to one type of fill.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Color</span>: <span>color</span></code></div>
+<div class="small-abstract"><span>Solid color fill. Conceptually similar to a CSS </span><code class="token-keyword">color</code><span> or </span><code class="token-keyword">background-color</code><span>.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Image</span>: <span>Texture</span></code></div>
+<div class="small-abstract"><span>Texture/image fill. Conceptually similar to a CSS </span><code class="token-keyword">background-image</code><span>.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Material</span>: <span>Material</span></code></div>
+<div class="small-abstract"><span>Custom material or shader fill. Advanced fill using shader/material settings for effects beyond simple color or image.
+</span></div></div><div id="ShadowShorthand" class="class" data-name="ShadowShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">ShadowShorthand
+</h1><div class="abstract">Drop shadow effect configuration
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.ShadowShorthand</span></code><h2 class="title">Overview</h2><div class="abstract">Defines a drop shadow with offset, blur, spread, and color. Similar to CSS box-shadow property.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Offset</span>: <span>vec2</span></code></div>
+<div class="small-abstract"><span>Shadow offset from element (x, y)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BlurRadius</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Blur amount for shadow softness
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">SpreadRadius</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Shadow expansion beyond element bounds
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Color</span>: <span>color</span></code></div>
+<div class="small-abstract"><span>Shadow color and opacity
+</span></div></div><div id="RingShorthand" class="class" data-name="RingShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">RingShorthand
+</h1><div class="abstract">Decorative ring/outline effect around elements
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.RingShorthand</span></code><h2 class="title">Overview</h2><div class="abstract">Creates an outline ring around elements, similar to CSS outline or focus ring indicators. Useful for accessibility and visual feedback.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Offset</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Distance from element edge to ring
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Width</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Ring thickness in pixels
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Color</span>: <span>color</span></code></div>
+<div class="small-abstract"><span>Ring color and opacity
+</span></div></div><div id="OverflowShorthand" class="class" data-name="OverflowShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">OverflowShorthand
+</h1><div class="abstract">Per-axis overflow behavior configuration
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.OverflowShorthand</span></code><h2 class="title">Overview</h2><div class="abstract">Controls how content that exceeds container bounds is handled for each axis independently.</div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">x</span>: <a class="type-identifier-link" href="#Overflow">Overflow</a></code></div>
+<div class="small-abstract"><span>Horizontal overflow handling
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">y</span>: <a class="type-identifier-link" href="#Overflow">Overflow</a></code></div>
+<div class="small-abstract"><span>Vertical overflow handling
+</span></div></div><div id="UnderlineShorthand" class="class" data-name="UnderlineShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">UnderlineShorthand
+</h1><div class="abstract">Defines shorthand underline properties (offset, width, and color).
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.UnderlineShorthand</span></code><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Offset</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Vertical offset of the underline from the baseline.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Width</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Line thickness of the underline.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Color</span>: <span>color</span></code></div>
+<div class="small-abstract"><span>Color of the underline.
+</span></div></div><div id="Thickness" class="class" data-name="Thickness" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">Thickness
+</h1><div class="abstract">Uniform thickness specification for all four edges
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Thickness</span></code><h2 class="title">Overview</h2><div class="abstract">Used for properties that need different values for each edge, such as padding, margin, or border thickness.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Top</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Top edge thickness
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Right</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Right edge thickness
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Bottom</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Bottom edge thickness
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Left</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Left edge thickness
+</span></div></div><div id="MarginShorthand" class="class" data-name="MarginShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">MarginShorthand
+</h1><div class="abstract">External spacing configuration for rectangular elements
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.MarginShorthand</span></code><h2 class="title">Overview</h2><div class="abstract">Similar to CSS margin, allows independent control of each edge external spacing.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Axis</span>: <a class="type-identifier-link" href="#EdgeShorthand">EdgeShorthand</a></code></div>
+<div class="small-abstract"><span>External spacing per axis
+</span></div></div><div id="SizeAxisShorthand" class="class" data-name="SizeAxisShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">SizeAxisShorthand
+</h1><div class="abstract">Complete sizing definition for one axis
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.SizeAxisShorthand</span></code><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Requested</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Requested {0} size in pixels
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Min</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Minimum allowable {0} size along
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Actual</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Actual (calculated) {0} size after layout resolution
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Scroll</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Total {0} size required for scrolling content
+</span></div></div><div id="SizeShorthand" class="class" data-name="SizeShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">SizeShorthand
+</h1><div class="abstract">Sizing configuration of elements (e.g., Width, Height, Depth)
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.SizeShorthand</span></code><h2 class="title">Overview</h2><div class="abstract">You can set values and the engine will try it's best to preserve those.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Axis</span>: <a class="type-identifier-link" href="#SizeAxisShorthand">SizeAxisShorthand</a></code></div>
+<div class="small-abstract"><span>A number value per axis
+</span></div></div><div id="DataObject" class="class" data-name="DataObject" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
+</div><h1 class="header">DataObject
+</h1><div class="abstract">Base class for data-holding objects within the framework
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.DataObject</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Provides fundamental data management capabilities and serves as the base for objects that participate in data binding operations.</div></div><div id="AnimationPlayer" class="class" data-name="AnimationPlayer" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><h1 class="header">AnimationPlayer
+</h1><div class="abstract">Controls playback of animations within the UI engine.
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.AnimationPlayer</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Provides functionality for starting, stopping, and repeating animations on scene objects. Supports different playback modes, timing adjustments, and restoration of original property values.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">AutoplayEnabled</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Enables or disables automatic playback on initialization.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">DurationScale</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Scales the playback speed of the animation. A value greater than 1.0 speeds up playback, while values between 0.0 and 1.0 slow it down.
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">PlaybackMode</span>: <a class="type-identifier-link" href="#PlaybackMode">PlaybackMode</a></code></div>
+<div class="small-abstract"><span>Defines how the animation should be played.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RelativePlayback</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>When true, playback is relative to the current state rather than starting from an absolute base state.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RepeatCount</span>: <span>int</span></code></div>
+<div class="small-abstract"><span> Number of times the animation should repeat. Use -1 (or another sentinel value, depending on implementation) to indicate infinite looping.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RestoreOriginalValuesAfterPlayback</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Restores the original property values after the animation ends.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Timeline</span>: <span>Timeline</span></code></div>
+<div class="small-abstract"><span>Reference to the animation timeline that defines keyframes and transitions.
+</span></div></div><div id="Trigger" class="class" data-name="Trigger" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><h1 class="header">Trigger
+</h1><div class="abstract">Base class for event-driven actions within the UI system
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Trigger</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Triggers respond to various conditions and can execute actions like property changes or method calls. Part of the reactive UI behavior system.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Property</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Target property name to monitor or modify 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Value</span>: <span>int</span></code></div>
+<div class="small-abstract"><span>Associated value for the trigger condition 
+</span></div></div><div id="OnPropertyChangedTrigger" class="class" data-name="OnPropertyChangedTrigger" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><h1 class="header">OnPropertyChangedTrigger
+</h1><div class="abstract">Responds to property value changes on specified nodes
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.OnPropertyChangedTrigger</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Monitors a named property on a source node and triggers actions when the property value changes. Useful for reactive UI updates.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">SourceNode</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Name or identifier of the node to monitor 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Property</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Property name to watch for changes 
+</span></div></div><div id="OnAttachedTrigger" class="class" data-name="OnAttachedTrigger" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><h1 class="header">OnAttachedTrigger
+</h1><div class="abstract">Triggers when an element is attached to the visual tree
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.OnAttachedTrigger</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Useful for initialization actions that should occur when an element becomes part of the active UI hierarchy.</div></div><div id="EventTrigger" class="class" data-name="EventTrigger" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><h1 class="header">EventTrigger
+</h1><div class="abstract">Responds to routed UI events (mouse, keyboard, etc.)
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.EventTrigger</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Listens for specific routed events and can execute actions in response. Supports the standard UI event bubbling system.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RoutedEvent</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Name of the routed event to handle (e.g., "MouseDown", "KeyPress") 
+</span></div></div><div id="Setter" class="class" data-name="Setter" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><h1 class="header">Setter
+</h1><div class="abstract">Applies property values when triggered by specified conditions
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Setter</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Part of the trigger system - sets target properties to specific values when the associated trigger condition is met.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>object </span><span class="identifier">Trigger</span>: <a class="type-identifier-link" href="#Trigger">Trigger</a></code></div>
+<div class="small-abstract"><span>Triggering condition or state image 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Property</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Target property name to set 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Value</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Value to apply to the property 
+</span></div></div><div id="Handler" class="class" data-name="Handler" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><h1 class="header">Handler
+</h1><div class="abstract">Executes custom functions when triggered by specified conditions
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Handler</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">More flexible than Setter - can call arbitrary functions on target objects rather than just setting properties.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>object </span><span class="identifier">Trigger</span>: <a class="type-identifier-link" href="#Trigger">Trigger</a></code></div>
+<div class="small-abstract"><span>Triggering condition or state image 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Target</span>: <span>Object</span></code></div>
+<div class="small-abstract"><span>Target object to call function on 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Function</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Function name to execute on target 
+</span></div></div><div id="Brush" class="class" data-name="Brush" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
+</div><h1 class="header">Brush
+</h1><div class="abstract">Base class for all brush types used in rendering.
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Brush</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Brush defines the general interface for drawing surfaces or filling shapes with visual content. It serves as the root for more specific brushes like ColorBrush, TextureBrush, and MaterialBrush, which define concrete rendering behaviors.</div></div><div id="ColorBrush" class="class" data-name="ColorBrush" data-inherits="Brush" data-xmlns="None"><div class="eyebrow">Component
+</div><h1 class="header">ColorBrush
+</h1><div class="abstract">Brush that fills an area with a solid color.
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.ColorBrush</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Brush" class="name base">Brush</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">ColorBrush applies a uniform color to a drawable surface. It is typically used for flat-colored elements such as backgrounds, highlights, or overlays where no texture or material is required.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Color</span>: <span>color</span></code></div>
+<div class="small-abstract"><span>The color value used to fill the target area.
+</span></div></div><div id="Node" class="class" data-name="Node" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><h1 class="header">Node
+</h1><div class="abstract">Base class for all UI engine nodes.
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Node</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Node is the fundamental class for all engine objects (e.g., Node2D, Node3D, RenderPass). It manages shared functionality such as size, layout, visibility, opacity, tags, and data context. You normally work with derived classes rather than creating instances of Node directly.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Size</span>: <a class="type-identifier-link" href="#SizeShorthand">SizeShorthand</a></code></div>
+<div class="small-abstract"><span>Sizing configuration of this element
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">HorizontalSize</span>: <a class="type-identifier-link" href="#SizeAxisShorthand">SizeAxisShorthand</a></code></div>
+<div class="small-abstract"><span>A number value per axis
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Width</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Requested Axis[0] size in pixels
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">MinWidth</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Minimum allowable Axis[0] size along
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ActualWidth</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Actual (calculated) Axis[0] size after layout resolution
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ScrollWidth</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Total Axis[0] size required for scrolling content
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">VerticalSize</span>: <a class="type-identifier-link" href="#SizeAxisShorthand">SizeAxisShorthand</a></code></div>
+<div class="small-abstract"><span>A number value per axis
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Height</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Requested Axis[1] size in pixels
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">MinHeight</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Minimum allowable Axis[1] size along
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ActualHeight</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Actual (calculated) Axis[1] size after layout resolution
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ScrollHeight</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Total Axis[1] size required for scrolling content
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">DepthSize</span>: <a class="type-identifier-link" href="#SizeAxisShorthand">SizeAxisShorthand</a></code></div>
+<div class="small-abstract"><span>A number value per axis
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Depth</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Requested Axis[2] size in pixels
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">MinDepth</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Minimum allowable Axis[2] size along
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ActualDepth</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Actual (calculated) Axis[2] size after layout resolution
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ScrollDepth</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Total Axis[2] size required for scrolling content
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Margin</span>: <a class="type-identifier-link" href="#MarginShorthand">MarginShorthand</a></code></div>
+<div class="small-abstract"><span>External spacing around the element
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">HorizontalMargin</span>: <a class="type-identifier-link" href="#EdgeShorthand">EdgeShorthand</a></code></div>
+<div class="small-abstract"><span>External spacing per axis
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">MarginLeft</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Leading edge value (left for horizontal, top for vertical, near for depth)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">MarginRight</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Trailing edge value (right for horizontal, bottom for vertical, far for depth)
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">VerticalMargin</span>: <a class="type-identifier-link" href="#EdgeShorthand">EdgeShorthand</a></code></div>
+<div class="small-abstract"><span>External spacing per axis
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">MarginTop</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Leading edge value (left for horizontal, top for vertical, near for depth)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">MarginBottom</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Trailing edge value (right for horizontal, bottom for vertical, far for depth)
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">DepthMargin</span>: <a class="type-identifier-link" href="#EdgeShorthand">EdgeShorthand</a></code></div>
+<div class="small-abstract"><span>External spacing per axis
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">MarginFront</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Leading edge value (left for horizontal, top for vertical, near for depth)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">MarginBack</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Trailing edge value (right for horizontal, bottom for vertical, far for depth)
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Padding</span>: <a class="type-identifier-link" href="#MarginShorthand">MarginShorthand</a></code></div>
+<div class="small-abstract"><span>Internal spacing between element border and content
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">HorizontalPadding</span>: <a class="type-identifier-link" href="#EdgeShorthand">EdgeShorthand</a></code></div>
+<div class="small-abstract"><span>External spacing per axis
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">PaddingLeft</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Leading edge value (left for horizontal, top for vertical, near for depth)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">PaddingRight</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Trailing edge value (right for horizontal, bottom for vertical, far for depth)
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">VerticalPadding</span>: <a class="type-identifier-link" href="#EdgeShorthand">EdgeShorthand</a></code></div>
+<div class="small-abstract"><span>External spacing per axis
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">PaddingTop</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Leading edge value (left for horizontal, top for vertical, near for depth)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">PaddingBottom</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Trailing edge value (right for horizontal, bottom for vertical, far for depth)
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">DepthPadding</span>: <a class="type-identifier-link" href="#EdgeShorthand">EdgeShorthand</a></code></div>
+<div class="small-abstract"><span>External spacing per axis
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">PaddingFront</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Leading edge value (left for horizontal, top for vertical, near for depth)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">PaddingBack</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Trailing edge value (right for horizontal, bottom for vertical, far for depth)
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Border</span>: <a class="type-identifier-link" href="#BorderShorthand">BorderShorthand</a></code></div>
+<div class="small-abstract"><span>Border definition along each axis
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderWidth</span></code></div>
+<div class="small-abstract"><span>Shorthand for setting spacing inside a node along its edges. Represents the inner spacing (padding) between the node's content and its border for all edges. Similar to the CSS </span><code class="token-keyword">padding</code><span> shorthand property.
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">BorderStyle</span>: <a class="type-identifier-link" href="#BorderStyle">BorderStyle</a></code></div>
+<div class="small-abstract"><span>Shorthand for defining the line style of borders along each edge. Specifies the border style (solid, dashed, etc.) per edge, similar to CSS </span><code class="token-keyword">border-style</code><span>.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderColor</span></code></div>
+<div class="small-abstract"><span>Shorthand for defining the color of borders along each edge. Specifies the border color for each edge individually, similar to CSS </span><code class="token-keyword">border-color</code><span>.
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">BorderRadius</span>: <a class="type-identifier-link" href="#BorderRadiusShorthand">BorderRadiusShorthand</a></code></div>
+<div class="small-abstract"><span>Border radius definition per corner
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderTopLeftRadius</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Top-left corner radius
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderTopRightRadius</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Top-right corner radius
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderBottomRightRadius</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Bottom-right corner radius
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderBottomLeftRadius</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Bottom-left corner radius
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">HorizontalBorder</span>: <a class="type-identifier-link" href="#BorderSideShorthand">BorderSideShorthand</a></code></div>
+<div class="small-abstract"><span>Border definition per axis
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">BorderLeft</span>: <a class="type-identifier-link" href="#BorderEdgeShorthand">BorderEdgeShorthand</a></code></div>
+<div class="small-abstract"><span>Leading edge border (left/top/near)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderLeftWidth</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Left border thickness in pixels
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">BorderLeftStyle</span>: <a class="type-identifier-link" href="#BorderStyle">BorderStyle</a></code></div>
+<div class="small-abstract"><span>Visual style of the Left border
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderLeftColor</span>: <span>color</span></code></div>
+<div class="small-abstract"><span>Left border color
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">BorderRight</span>: <a class="type-identifier-link" href="#BorderEdgeShorthand">BorderEdgeShorthand</a></code></div>
+<div class="small-abstract"><span>Trailing edge border (right/bottom/far)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderRightWidth</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Right border thickness in pixels
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">BorderRightStyle</span>: <a class="type-identifier-link" href="#BorderStyle">BorderStyle</a></code></div>
+<div class="small-abstract"><span>Visual style of the Right border
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderRightColor</span>: <span>color</span></code></div>
+<div class="small-abstract"><span>Right border color
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">VerticalBorder</span>: <a class="type-identifier-link" href="#BorderSideShorthand">BorderSideShorthand</a></code></div>
+<div class="small-abstract"><span>Border definition per axis
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">BorderTop</span>: <a class="type-identifier-link" href="#BorderEdgeShorthand">BorderEdgeShorthand</a></code></div>
+<div class="small-abstract"><span>Leading edge border (left/top/near)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderTopWidth</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Left border thickness in pixels
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">BorderTopStyle</span>: <a class="type-identifier-link" href="#BorderStyle">BorderStyle</a></code></div>
+<div class="small-abstract"><span>Visual style of the Left border
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderTopColor</span>: <span>color</span></code></div>
+<div class="small-abstract"><span>Left border color
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">BorderBottom</span>: <a class="type-identifier-link" href="#BorderEdgeShorthand">BorderEdgeShorthand</a></code></div>
+<div class="small-abstract"><span>Trailing edge border (right/bottom/far)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderBottomWidth</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Right border thickness in pixels
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">BorderBottomStyle</span>: <a class="type-identifier-link" href="#BorderStyle">BorderStyle</a></code></div>
+<div class="small-abstract"><span>Visual style of the Right border
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderBottomColor</span>: <span>color</span></code></div>
+<div class="small-abstract"><span>Right border color
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">DepthBorder</span>: <a class="type-identifier-link" href="#BorderSideShorthand">BorderSideShorthand</a></code></div>
+<div class="small-abstract"><span>Border definition per axis
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">BorderFront</span>: <a class="type-identifier-link" href="#BorderEdgeShorthand">BorderEdgeShorthand</a></code></div>
+<div class="small-abstract"><span>Leading edge border (left/top/near)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderFrontWidth</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Left border thickness in pixels
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">BorderFrontStyle</span>: <a class="type-identifier-link" href="#BorderStyle">BorderStyle</a></code></div>
+<div class="small-abstract"><span>Visual style of the Left border
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderFrontColor</span>: <span>color</span></code></div>
+<div class="small-abstract"><span>Left border color
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">BorderBack</span>: <a class="type-identifier-link" href="#BorderEdgeShorthand">BorderEdgeShorthand</a></code></div>
+<div class="small-abstract"><span>Trailing edge border (right/bottom/far)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderBackWidth</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Right border thickness in pixels
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">BorderBackStyle</span>: <a class="type-identifier-link" href="#BorderStyle">BorderStyle</a></code></div>
+<div class="small-abstract"><span>Visual style of the Right border
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderBackColor</span>: <span>color</span></code></div>
+<div class="small-abstract"><span>Right border color
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Alignment</span>: <a class="type-identifier-link" href="#AlignmentShorthand">AlignmentShorthand</a></code></div>
+<div class="small-abstract"><span>Alignment definition for each axis.
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">HorizontalAlignment</span>: <a class="type-identifier-link" href="#HorizontalAlignment">HorizontalAlignment</a></code></div>
+<div class="small-abstract"><span>Alignment of the element within its parent (similar to HorizontalAlignment/VerticalAlignment in XAML).
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">VerticalAlignment</span>: <a class="type-identifier-link" href="#VerticalAlignment">VerticalAlignment</a></code></div>
+<div class="small-abstract"><span>Alignment of the element within its parent (similar to HorizontalAlignment/VerticalAlignment in XAML).
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">DepthAlignment</span>: <a class="type-identifier-link" href="#DepthAlignment">DepthAlignment</a></code></div>
+<div class="small-abstract"><span>Alignment of the element within its parent (similar to HorizontalAlignment/VerticalAlignment in XAML).
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Visible</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Whether this node is visible in the scene.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">QuickHide</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>If true, node is quickly hidden without triggering full visibility transitions.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">VisibleAmountInParent</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Specifies how much of the node is visible within its parent container. Value in range [0.0, 1.0].
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Opacity</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Opacity of the node, range [0.0 = transparent, 1.0 = fully opaque].
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Tags</span>: <span>objectTags</span></code></div>
+<div class="small-abstract"><span>Tag collection for categorizing or querying nodes.
+</span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">DataContext</span>: <a class="type-identifier-link" href="#DataObject">DataObject</a></code></div>
+<div class="small-abstract"><span>Data context (used for data binding, similar to XAML's DataContext).
+</span></div></div><div id="TextRun" class="class" data-name="TextRun" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><h1 class="header">TextRun
+</h1><div class="abstract">Shared concept for text rendering in 2D and 3D nodes.
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.TextRun</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">This class is not instantiated directly. Instead, it provides the common properties and functionality for text rendering, used internally by higher-level components such as 2D and 3D text nodes. The concept encapsulates text content, resources, formatting options, alignment, and font configuration.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_size</span>: <span>uiLabelSize</span></code></div>
+<div class="small-abstract"><span>Internal text size metrics.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_textinfo</span>: <span>text_info</span></code></div>
+<div class="small-abstract"><span>Internal text information structure.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_font</span>: <a class="type-identifier-link" href="#FontShorthand">FontShorthand</a></code></div>
+<div class="small-abstract"><span>Reference to the font shorthand configuration.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Text</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>The short text string displayed in the block, limited to 64 bytes. If you need more space consider using </span><code class="token-keyword">TextResourceID</code><span>.
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Font</span>: <a class="type-identifier-link" href="#FontShorthand">FontShorthand</a></code></div>
+<div class="small-abstract"><span>Font definition used for text rendering. Contains typeface, size, and style information.
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">FontWeight</span>: <a class="type-identifier-link" href="#FontWeight">FontWeight</a></code></div>
+<div class="small-abstract"><span>Font weight (normal or bold)
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">FontStyle</span>: <a class="type-identifier-link" href="#FontStyle">FontStyle</a></code></div>
+<div class="small-abstract"><span>Font style (normal or italic)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">FontSize</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Font size in points
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">FontFamily</span>: <span>FontFamily</span></code></div>
+<div class="small-abstract"><span>Font family reference
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Underline</span>: <a class="type-identifier-link" href="#UnderlineShorthand">UnderlineShorthand</a></code></div>
+<div class="small-abstract"><span>Underline style applied to the text.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">UnderlineOffset</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Vertical offset of the underline from the baseline.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">UnderlineWidth</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Line thickness of the underline.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">UnderlineColor</span>: <span>color</span></code></div>
+<div class="small-abstract"><span>Color of the underline.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">LetterSpacing</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Additional spacing applied between letters.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">LineHeight</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Line height multiplier for multi-line text layout.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">CharacterSpacing</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Extra spacing between characters, beyond kerning.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">FixedCharacterWidth</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Forces a fixed width per character (monospace effect).
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RemoveSideBearingsProperty</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Removes side bearings (spacing) defined by the font.
+</span></div></div><div id="TextBlockConcept" class="class" data-name="TextBlockConcept" data-inherits="TextRun" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><h1 class="header">TextBlockConcept
+</h1><div class="abstract">Shared concept for text rendering in 2D and 3D nodes.
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.TextBlockConcept</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#TextRun" class="name base">TextRun</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">This class is not instantiated directly. Instead, it provides the common properties and functionality for text rendering, used internally by higher-level components such as 2D and 3D text nodes. The concept encapsulates text content, resources, formatting options, alignment, and font configuration.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_steps</span>: <span>uiLabelSteps</span></code></div>
+<div class="small-abstract"><span>Internal step-based rendering parameters.
+</span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">_node</span>: <a class="type-identifier-link" href="#Node">Node</a></code></div>
+<div class="small-abstract"><span>Reference to the owning node using this concept.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_text</span>: <span>ViewText</span></code></div>
+<div class="small-abstract"><span>Internal view representation of the text.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">TextResourceID</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Resource identifier for localized text lookup.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">TextResourceConfiguration</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Configuration key used when resolving text resources.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">PlaceholderText</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Placeholder text displayed when no main text is set.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">TextOverflow</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Defines how overflowing text should be handled (clip, ellipsis, etc.).
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Placeholder</span>: <a class="type-identifier-link" href="#BrushShorthand">BrushShorthand</a></code></div>
+<div class="small-abstract"><span>Brush definition for rendering placeholder text.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">PlaceholderColor</span>: <span>color</span></code></div>
+<div class="small-abstract"><span>Solid color fill. Conceptually similar to a CSS </span><code class="token-keyword">color</code><span> or </span><code class="token-keyword">background-color</code><span>.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">PlaceholderImage</span>: <span>Texture</span></code></div>
+<div class="small-abstract"><span>Texture/image fill. Conceptually similar to a CSS </span><code class="token-keyword">background-image</code><span>.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">PlaceholderMaterial</span>: <span>Material</span></code></div>
+<div class="small-abstract"><span>Custom material or shader fill. Advanced fill using shader/material settings for effects beyond simple color or image.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">UseFullFontHeight</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>When true, uses the font's full height for layout calculations.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ConstrainContentHeight</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Constrains the content height to the text's bounding box.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">WordWrap</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Enables automatic word wrapping of the text.
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">TextHorizontalAlignment</span>: <a class="type-identifier-link" href="#TextHorizontalAlignment">TextHorizontalAlignment</a></code></div>
+<div class="small-abstract"><span>Horizontal alignment of the text within its bounds.
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">TextVerticalAlignment</span>: <a class="type-identifier-link" href="#TextVerticalAlignment">TextVerticalAlignment</a></code></div>
+<div class="small-abstract"><span>Vertical alignment of the text within its bounds.
+</span></div></div><div id="Node2D" class="class" data-name="Node2D" data-inherits="Node" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><h1 class="header">Node2D
+</h1><div class="abstract">Primary class for 2D UI elements with comprehensive rendering capabilities
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Node2D</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node" class="name base">Node</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Extends Node with 2D-specific functionality including transforms, visual effects, composition, and event handling. This is the base class for most visible UI elements. \snippet docs/creating_node2d.lua</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>object </span><span class="identifier">_node</span>: <a class="type-identifier-link" href="#Node">Node</a></code></div>
+<div class="small-abstract"><span>Internal node reference 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_object</span>: <span>Object</span></code></div>
+<div class="small-abstract"><span>Internal object reference 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_userdata</span>: <span>int</span></code></div>
+<div class="small-abstract"><span>User-defined data storage 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_rect</span>: <span>rect</span></code></div>
+<div class="small-abstract"><span>Internal rectangle bounds 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_actual_pos</span>: <span>actualPos</span></code></div>
+<div class="small-abstract"><span>Internal computed position 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_opacity</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Internal opacity value 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_bbox_flags</span>: <span>int</span></code></div>
+<div class="small-abstract"><span>Internal bounding box flags 
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">isFrameSet</span>(<span class="identifier">field</span>:<span class="decorator">Box3Field</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Check if a specific frame property is set on a Node2D
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">setFrame</span>(<span class="identifier">field</span>:<span class="decorator">Box3Field</span>, <span class="identifier">value</span>:<span class="decorator">float</span>)</code><div class="small-abstract"><span>Set a frame property value on a Node2D
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getFrame</span>(<span class="identifier">field</span>:<span class="decorator">Box3Field</span>)<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Get a frame property value from a Node2D
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">measure</span>(<span class="identifier">direction</span>:<span class="decorator">Direction</span>, <span class="identifier">availableSize</span>:<span class="decorator">float</span>, <span class="identifier">forceRemeasure</span>:<span class="decorator">bool</span>)</code><div class="small-abstract"><span>Perform the measure phase of layout for a Node2D
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">arrange</span>(<span class="identifier">bounds</span>:<span class="decorator">bounds</span>, <span class="identifier">direction</span>:<span class="decorator">Direction</span>)</code><div class="small-abstract"><span>Perform the arrange phase of layout for a Node2D
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getBounds</span>(<span class="identifier">axis</span>:<span class="decorator">Direction</span>)<span class="decorator"> -&gt;</span><span> bounds</span></code><div class="small-abstract"><span>Get the layout bounds of a Node2D along a specific axis
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getRect</span>()<span class="decorator"> -&gt;</span><span> rect</span></code><div class="small-abstract"><span>Get the 2D rectangle bounds of a Node2D
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getBackgroundRect</span>()<span class="decorator"> -&gt;</span><span> rect</span></code><div class="small-abstract"><span>Get the background rendering rectangle for a Node2D
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getSize</span>(<span class="identifier">axis</span>:<span class="decorator">Direction</span>, <span class="identifier">sizing</span>:<span class="decorator">Sizing</span>)<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Utility function for calculating node dimensions with different sizing modes
+</span></div></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">LayoutTransform</span>: <span>transform2</span></code></div>
+<div class="small-abstract"><span>Transformation applied during layout calculations. Similar to WPF </span><code class="token-keyword">LayoutTransform</code><span>. Affects size and positioning but does not influence local rendering.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RenderTransform</span>: <span>transform2</span></code></div>
+<div class="small-abstract"><span>Transformation applied at render time. Similar to WPF </span><code class="token-keyword">RenderTransform</code><span>. Affects how the element is drawn (rotation, scale, skew, etc.) without altering layout.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RenderTransformOrigin</span>: <span>vec2</span></code></div>
+<div class="small-abstract"><span>The origin point for applying RenderTransform. Equivalent to WPF </span><code class="token-keyword">RenderTransformOrigin</code><span>. Defines pivot relative to the element.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ContentOffset</span>: <span>vec2</span></code></div>
+<div class="small-abstract"><span>Pixel offset applied to the element's content. Can be used for subpixel positioning or scrolling adjustments.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Matrix</span>: <span>mat4</span></code></div>
+<div class="small-abstract"><span>Final transformation matrix applied to the node. Computed result of layout, render, and parent transforms.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RenderTarget</span>: <span>Texture</span></code></div>
+<div class="small-abstract"><span>Optional render target for offscreen drawing. When set, the node is rendered into this texture/image instead of directly on screen.
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Background</span>: <a class="type-identifier-link" href="#BrushShorthand">BrushShorthand</a></code></div>
+<div class="small-abstract"><span>Background brush for the element. Equivalent to WPF </span><code class="token-keyword">Background</code><span>. Supports solid color, image, or material.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BackgroundColor</span>: <span>color</span></code></div>
+<div class="small-abstract"><span>Solid color fill. Conceptually similar to a CSS </span><code class="token-keyword">color</code><span> or </span><code class="token-keyword">background-color</code><span>.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BackgroundImage</span>: <span>Texture</span></code></div>
+<div class="small-abstract"><span>Texture/image fill. Conceptually similar to a CSS </span><code class="token-keyword">background-image</code><span>.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BackgroundMaterial</span>: <span>Material</span></code></div>
+<div class="small-abstract"><span>Custom material or shader fill. Advanced fill using shader/material settings for effects beyond simple color or image.
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Foreground</span>: <a class="type-identifier-link" href="#BrushShorthand">BrushShorthand</a></code></div>
+<div class="small-abstract"><span>Foreground brush for the element. Equivalent to WPF </span><code class="token-keyword">Foreground</code><span>. Typically used for text or shape fills.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ForegroundColor</span>: <span>color</span></code></div>
+<div class="small-abstract"><span>Solid color fill. Conceptually similar to a CSS </span><code class="token-keyword">color</code><span> or </span><code class="token-keyword">background-color</code><span>.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ForegroundImage</span>: <span>Texture</span></code></div>
+<div class="small-abstract"><span>Texture/image fill. Conceptually similar to a CSS </span><code class="token-keyword">background-image</code><span>.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ForegroundMaterial</span>: <span>Material</span></code></div>
+<div class="small-abstract"><span>Custom material or shader fill. Advanced fill using shader/material settings for effects beyond simple color or image.
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">BoxShadow</span>: <a class="type-identifier-link" href="#ShadowShorthand">ShadowShorthand</a></code></div>
+<div class="small-abstract"><span>Shadow applied to the element's box. Equivalent to CSS </span><code class="token-keyword">box-shadow</code><span> or WPF </span><code class="token-keyword">DropShadowEffect</code><span>.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BoxShadowOffset</span>: <span>vec2</span></code></div>
+<div class="small-abstract"><span>Shadow offset from element (x, y)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BoxShadowBlurRadius</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Blur amount for shadow softness
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BoxShadowSpreadRadius</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Shadow expansion beyond element bounds
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BoxShadowColor</span>: <span>color</span></code></div>
+<div class="small-abstract"><span>Shadow color and opacity
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Overflow</span>: <a class="type-identifier-link" href="#OverflowShorthand">OverflowShorthand</a></code></div>
+<div class="small-abstract"><span>Defines overflow behavior for child content. Equivalent to CSS </span><code class="token-keyword">overflow</code><span>. Controls clipping and scroll behavior.
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">OverflowX</span>: <a class="type-identifier-link" href="#Overflow">Overflow</a></code></div>
+<div class="small-abstract"><span>Horizontal overflow handling
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">OverflowY</span>: <a class="type-identifier-link" href="#Overflow">Overflow</a></code></div>
+<div class="small-abstract"><span>Vertical overflow handling
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Ring</span>: <a class="type-identifier-link" href="#RingShorthand">RingShorthand</a></code></div>
+<div class="small-abstract"><span>Decorative ring effect applied around the element. Similar in purpose to CSS </span><code class="token-keyword">outline</code><span> or focus ring indicators.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RingOffset</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Distance from element edge to ring
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RingWidth</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Ring thickness in pixels
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RingColor</span>: <span>color</span></code></div>
+<div class="small-abstract"><span>Ring color and opacity
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">CompositionBrush</span>: <span>Material</span></code></div>
+<div class="small-abstract"><span>Custom composition brush for advanced rendering. Equivalent to UWP </span><code class="token-keyword">CompositionBrush</code><span>. Can be used for effects or visuals beyond standard brushes.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">CompositionDesignSize</span>: <span>vec2</span></code></div>
+<div class="small-abstract"><span>Virtual design size when using composition rendering. Defines the expected size for the composition surface.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">SizeToContent</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Whether the element resizes itself to fit its content. Equivalent to WPF </span><code class="token-keyword">SizeToContent</code><span>.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">OffscreenRendering</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Enables rendering to an offscreen surface before compositing. Useful for caching effects or complex visuals.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ForceComposition</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Forces use of the composition system even when not required. Equivalent to enabling composition layers for debugging or effects.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">CacheResult</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Enables caching of rendering results. Similar to WPF </span><code class="token-keyword">CacheMode</code><span>. Reduces redraw cost at the expense of memory.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">SnapToPixel</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Snaps rendering to device pixels. Equivalent to WPF </span><code class="token-keyword">SnapsToDevicePixels</code><span>. Improves text sharpness.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ClipChildren</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Controls whether children are clipped to the bounds of the element. Equivalent to WPF </span><code class="token-keyword">ClipToBounds</code><span>.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ContentStretch</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Determines if content stretches to fill available space. Equivalent to WPF </span><code class="token-keyword">Stretch</code><span> when applied to child content.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Hovered</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Indicates if the element is currently hovered by pointer/mouse. Equivalent to WPF </span><code class="token-keyword">IsMouseOver</code><span>.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">IgnoreHitTest</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Marks object as ignored during hit testing (mouse interaction).
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">ForegroundHint</span>: <a class="type-identifier-link" href="#ForegroundHint">ForegroundHint</a></code></div>
+<div class="small-abstract"><span>Hint for how foreground should be rendered. May be used for accessibility, high-contrast, or text rendering optimizations.
+</span></div></div><div id="PrefabView2D" class="class" data-name="PrefabView2D" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><h1 class="header">PrefabView2D
+</h1><div class="abstract">Container for loading and displaying prefabricated UI components
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.PrefabView2D</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node2D" class="name base">Node2D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Allows loading of pre-designed UI layouts from external resources. Useful for reusable UI components and modular design patterns.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_loadedSCA</span>: <span>int</span></code></div>
+<div class="small-abstract"><span>Hashed value of currently loaded SCA
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_loadedPrefab</span>: <span>int</span></code></div>
+<div class="small-abstract"><span>Hashed value of loaded prefab instance 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">SCA</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Scene archive identifier or path 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Prefab</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Prefab resource name within the archive 
+</span></div></div><div id="TextBlock" class="class" data-name="TextBlock" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><h1 class="header">TextBlock
+</h1><div class="abstract">Concrete implementation of text display combining Node2D and TextBlockConcept
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.TextBlock</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node2D" class="name base">Node2D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Primary class for displaying static text with full typography control. Combines 2D rendering capabilities with comprehensive text formatting options.</div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">_node2D</span>: <a class="type-identifier-link" href="#Node2D">Node2D</a></code></div>
+<div class="small-abstract"><span>Internal reference to the underlying Node2D instance 
+</span></div></div><div id="Input" class="class" data-name="Input" data-inherits="TextBlock" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><h1 class="header">Input
+</h1><div class="abstract">Interactive text input control with multiple input modes
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Input</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#TextBlock" class="name base">TextBlock</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Extends TextBlock to provide editable text capabilities. Supports various input types including text, password, numeric, checkbox, and radio button modes.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_checkmark</span>: <span>Texture</span></code></div>
+<div class="small-abstract"><span>Internal checkmark image for checkbox rendering
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Name</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Input identifier for forms and data binding 
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">Type</span>: <a class="type-identifier-link" href="#InputType">InputType</a></code></div>
+<div class="small-abstract"><span>Input behavior type (text, password, etc.) 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Cursor</span>: <span>int</span></code></div>
+<div class="small-abstract"><span>Current text cursor position 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Multiline</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Allow multiple lines of text input 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Checked</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Checked state for checkbox/radio types 
+</span></div></div><div id="Button" class="class" data-name="Button" data-inherits="TextBlock" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><h1 class="header">Button
+</h1><div class="abstract">Interactive button control for user actions
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Button</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#TextBlock" class="name base">TextBlock</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Extends TextBlock to provide clickable button functionality. Handles mouse and keyboard activation with customizable button types.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">Type</span>: <a class="type-identifier-link" href="#ButtonType">ButtonType</a></code></div>
+<div class="small-abstract"><span>Button behavior type (normal or submit) 
+</span></div></div><div id="Label" class="class" data-name="Label" data-inherits="TextBlock" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><h1 class="header">Label
+</h1><div class="abstract">Text label with optional association to form controls
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Label</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#TextBlock" class="name base">TextBlock</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Displays static text that can be associated with input controls for accessibility. Clicking the label can transfer focus to associated control.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">For</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Identifier of associated form control 
+</span></div></div><div id="StackView" class="class" data-name="StackView" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><h1 class="header">StackView
+</h1><div class="abstract">Linear layout container arranging children in a single direction
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.StackView</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node2D" class="name base">Node2D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Provides flexbox-style linear layout with configurable direction, alignment, spacing, and content justification. Children are arranged sequentially along the specified axis.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Reversed</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Reverse the order of child elements 
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">Direction</span>: <a class="type-identifier-link" href="#Direction">Direction</a></code></div>
+<div class="small-abstract"><span>Layout direction (horizontal or vertical) 
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">AlignItems</span>: <a class="type-identifier-link" href="#AlignItems">AlignItems</a></code></div>
+<div class="small-abstract"><span>Cross-axis alignment of children 
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">JustifyContent</span>: <a class="type-identifier-link" href="#JustifyContent">JustifyContent</a></code></div>
+<div class="small-abstract"><span>Main-axis distribution of children 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Spacing</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Space between adjacent children 
+</span></div></div><div id="Form" class="class" data-name="Form" data-inherits="StackView" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><h1 class="header">Form
+</h1><div class="abstract">Specialized stack view for form input collection and submission
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Form</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#StackView" class="name base">StackView</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Extends StackView with form-specific functionality including automatic input collection and submission handling.</div></div><div id="CollectionView" class="class" data-name="CollectionView" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><h1 class="header">CollectionView
+</h1><div class="abstract">Container for dynamic collections of data-driven items
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.CollectionView</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node2D" class="name base">Node2D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Manages collections of UI elements, typically data-bound to dynamic data sources. Provides efficient rendering of large item sets.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">Direction</span>: <a class="type-identifier-link" href="#Direction">Direction</a></code></div>
+<div class="small-abstract"><span>Primary layout direction for items 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Spacing</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Space between collection items 
+</span></div></div><div id="Control" class="class" data-name="Control" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><h1 class="header">Control
+</h1><div class="abstract">Base class for interactive UI controls with state management
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Control</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node2D" class="name base">Node2D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Provides common state properties for interactive elements including press, hover, focus, and disabled states.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Pressed</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Currently being pressed by user input 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Disabled</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Interaction disabled, typically grayed out 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Hovered</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Mouse pointer is over the control 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Focused</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Control has keyboard focus 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Value</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Generic boolean value for toggle controls 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Scale</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Visual scale factor for size adjustments 
+</span></div></div><div id="ResizeMode" class="class" data-name="ResizeMode" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
+</div><h1 class="header">ResizeMode
+</h1><div class="abstract">Defines how the window can be resized by the user or system.
+</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">NoResize</span></code><div class="small-abstract"><span>The window size is fixed. The user cannot resize or maximize the window.
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">CanMinimize</span></code><div class="small-abstract"><span>The user can minimize the window, but resizing and maximizing are disabled.
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">CanResize</span></code><div class="small-abstract"><span>The user can freely resize the window and maximize it.
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">CanResizeWithGrip</span></code><div class="small-abstract"><span>The user can resize and maximize the window. A resize grip is displayed in the lower-right corner if the platform supports it.
+</span></div></div>
+</div><div id="Screen" class="class" data-name="Screen" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><h1 class="header">Screen
+</h1><div class="abstract">Top-level container representing a display surface or window
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Screen</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node2D" class="name base">Node2D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Provides the root rendering context for UI hierarchies. Manages screen-level operations like clearing and render target management.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_rt</span>: <span>Texture</span></code></div>
+<div class="small-abstract"><span>Internal render target for the screen
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_size</span>: <span>uint</span></code></div>
+<div class="small-abstract"><span>Currently set size (to resize window when changed).
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_initialized</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Used to set initial window size
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ClearColor</span>: <span>color</span></code></div>
+<div class="small-abstract"><span>Background clear color for the screen 
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">ResizeMode</span>: <a class="type-identifier-link" href="#ResizeMode">ResizeMode</a></code></div>
+<div class="small-abstract"><span>Specifies how the window can be resized or displayed
+</span></div></div><div id="Cinematic" class="class" data-name="Cinematic" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><h1 class="header">Cinematic
+</h1><div class="abstract">Video or animation playback view for media content
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Cinematic</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node2D" class="name base">Node2D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Handles playback of video files or frame-based animations with timing control and fade effects.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_playing</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Internal playback state flag 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_starttime</span>: <span>longTime</span></code></div>
+<div class="small-abstract"><span>Internal playback start timestamp 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">FileName</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Path to media file for playback 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">FrameRate</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Playback frame rate (frames per second) 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">NumFrames</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Total number of frames in the media 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">FadeOut</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Fade-out duration in seconds 
+</span></div></div><div id="Grid" class="class" data-name="Grid" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><h1 class="header">Grid
+</h1><div class="abstract">Grid-based layout container with configurable rows and columns
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Grid</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node2D" class="name base">Node2D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Arranges children in a 2D grid pattern with flexible sizing. Supports both fixed and dynamic grid definitions.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_buffer</span>: <span>uiGridViewBuffer</span></code></div>
+<div class="small-abstract"><span>Internal buffer for grid calculations 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Columns</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Column definition string (e.g., "1fr 2fr 100px") 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Rows</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Row definition string (e.g., "auto 1fr auto") 
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">Direction</span>: <a class="type-identifier-link" href="#Direction">Direction</a></code></div>
+<div class="small-abstract"><span>Primary fill direction for auto-placement 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Spacing</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Space between grid cells 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">CellWidth</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Default width for auto-sized cells 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">CellHeight</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Default height for auto-sized cells 
+</span></div></div><div id="Stretch" class="class" data-name="Stretch" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
+</div><h1 class="header">Stretch
+</h1><div class="abstract">Specifies how the content of an element is resized to fill its layout area
+</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">None</span></code><div class="small-abstract"><span>Do not scale the content; display at its native size
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Fill</span></code><div class="small-abstract"><span>Scale content to fill both width and height, ignoring aspect ratio
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Uniform</span></code><div class="small-abstract"><span>Scale content uniformly to fit within the area, preserving aspect ratio
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">UniformToFill</span></code><div class="small-abstract"><span>Scale content uniformly to fill the area, preserving aspect ratio but cropping if necessary
+</span></div></div>
+</div><div id="ImageView" class="class" data-name="ImageView" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><h1 class="header">ImageView
+</h1><div class="abstract">Displays image content with advanced rendering and scaling options
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.ImageView</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node2D" class="name base">Node2D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Renders static images with support for nine-patch scaling, blend modes, and viewport control. Handles both loaded images and images loaded from file paths.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_loadedImage</span>: <span>int</span></code></div>
+<div class="small-abstract"><span>Hashed value of loaded image resource 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Src</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Image source path or resource identifier 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Image</span>: <span>Texture</span></code></div>
+<div class="small-abstract"><span>Direct reference to loaded image 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Edges</span>: <span>vec4</span></code></div>
+<div class="small-abstract"><span>Edge inset values for nine-patch rendering 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Insets</span>: <span>vec4</span></code></div>
+<div class="small-abstract"><span>Content inset values for image positioning 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Viewbox</span>: <span>vec4</span></code></div>
+<div class="small-abstract"><span>Viewport rectangle for image cropping/scaling 
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">Stretch</span>: <a class="type-identifier-link" href="#Stretch">Stretch</a></code></div>
+<div class="small-abstract"><span>Determines how the image is scaled to fill its allocated layout space
+</span></div></div><div id="NinePatchImage" class="class" data-name="NinePatchImage" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><h1 class="header">NinePatchImage
+</h1><div class="abstract">Specialized image view for nine-patch (stretchable) images
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.NinePatchImage</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node2D" class="name base">Node2D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Renders images that can be stretched while preserving corner and edge regions. Commonly used for UI panels, buttons, and borders that need to scale to different sizes.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">StretchTypeTop</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Top edge stretch behavior factor 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">StretchTypeBottom</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Bottom edge stretch behavior factor 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">StretchTypeLeft</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Left edge stretch behavior factor 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">StretchTypeRight</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Right edge stretch behavior factor 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">StretchTypeCenter</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Center region stretch behavior factor 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ImageTopLeft</span>: <span>Texture</span></code></div>
+<div class="small-abstract"><span>Top-left corner image (non-stretchable) 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ImageTop</span>: <span>Texture</span></code></div>
+<div class="small-abstract"><span>Top edge image (horizontally stretchable) 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ImageTopRight</span>: <span>Texture</span></code></div>
+<div class="small-abstract"><span>Top-right corner image (non-stretchable) 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ImageLeft</span>: <span>Texture</span></code></div>
+<div class="small-abstract"><span>Left edge image (vertically stretchable) 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ImageCenter</span>: <span>Texture</span></code></div>
+<div class="small-abstract"><span>Center region image (stretchable in both directions) 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ImageRight</span>: <span>Texture</span></code></div>
+<div class="small-abstract"><span>Right edge image (vertically stretchable) 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ImageBottomLeft</span>: <span>Texture</span></code></div>
+<div class="small-abstract"><span>Bottom-left corner image (non-stretchable) 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ImageBottom</span>: <span>Texture</span></code></div>
+<div class="small-abstract"><span>Bottom edge image (horizontally stretchable) 
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ImageBottomRight</span>: <span>Texture</span></code></div>
+<div class="small-abstract"><span>Bottom-right corner image (non-stretchable) 
+</span></div></div><div id="TerminalView" class="class" data-name="TerminalView" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><h1 class="header">TerminalView
+</h1><div class="abstract">Displays a fixed-size text grid using a monospace layout
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.TerminalView</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node2D" class="name base">Node2D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Renders a character matrix (e.g., 80×24) where each cell represents a single glyph. Functions like a monospace canvas for text-mode visualization, ideal for console-style output, terminal emulation, or retro graphics where characters act as pixels.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_buffer</span>: <span>int</span></code></div>
+<div class="small-abstract"><span>Buffer used for characters
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_scroll</span>: <span>vec2</span></code></div>
+<div class="small-abstract"><span>Scroll position
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_contentHeight</span>: <span>int</span></code></div>
+<div class="small-abstract"><span>Current page length
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BufferWidth</span>: <span>int</span></code></div>
+<div class="small-abstract"><span>Buffer width
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BufferHeight</span>: <span>int</span></code></div>
+<div class="small-abstract"><span>Buffer height
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Cursor</span>: <span>int</span></code></div>
+<div class="small-abstract"><span>Cursor position
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">SelectedIndex</span>: <span>int</span></code></div>
+<div class="small-abstract"><span>Selected item index
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">DropShadow</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Draw shadow underneath this view
+</span></div></div><div id="StyleType" class="class" data-name="StyleType" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
+</div><h1 class="header">StyleType
+</h1><div class="abstract">Specifies the classification of a style and how it is applied to components.
+</div><h2 class="title">Overview</h2><div class="abstract">StyleType determines the purpose and scope of a style definition. Generic styles apply globally to all matching targets, while specialized types define overrides or theme-specific variants for more controlled styling behavior.</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">Generic</span></code><div class="small-abstract"><span>Base style applied to all components of the specified target type. Serves as a default visual definition.
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Named</span></code><div class="small-abstract"><span>Style associated with a specific theme or visual skin. Used to switch appearance dynamically based on active theme.
+</span></div></div>
+</div><div id="Style" class="class" data-name="Style" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
+</div><h1 class="header">Style
+</h1><div class="abstract">Defines a reusable set of property values and visual configurations for a target component type.
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Style</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Style enables consistent appearance and behavior across multiple components by grouping property definitions under a named style. Each style specifies its target type and classification, such as Generic, Theme, or Override. Styles can be applied globally, by theme, or locally to individual instances, allowing flexible and maintainable UI customization.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">TargetType</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Specifies the component type this style targets. Only components of the given type or its derived types will use the style.
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">Type</span>: <a class="type-identifier-link" href="#StyleType">StyleType</a></code></div>
+<div class="small-abstract"><span>Defines the classification of this style, such as Generic, Theme, Override, Local, or Template, determining its scope and application behavior.
+</span></div></div></main></div></body></html>

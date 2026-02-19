@@ -2,15 +2,7 @@
 
 import os
 
-from . import Plugin
-from .utils import (
-	lp, lpc, _t, _c, _e,
-	hash,
-	header_get_arg_type,
-	header_get_method_arg,
-	header_get_method_name,
-	header_get_method_this,
-)
+from . import Plugin, utils
 
 
 class HeaderWriter(Plugin):
@@ -41,14 +33,14 @@ class HeaderWriter(Plugin):
 		self.file.close()
 
 	def struct_fwd_def(self, sname):
-		self.w(f"typedef struct {sname} {_t(sname)}, *{lp(sname)};")
-		self.w(f"typedef struct {sname} const {_c(sname)}, *{lpc(sname)};")
+		self.w(f"typedef struct {sname} {utils._t(sname)}, *{utils.lp(sname)};")
+		self.w(f"typedef struct {sname} const {utils._c(sname)}, *{utils.lpc(sname)};")
 
 	def lua_accessors(self, name):
 		self.w(f"/// @brief Push {name} onto Lua stack.")
-		self.w(f"ORCA_API void\nluaX_push{name}(lua_State *L, {lpc(name)} {name});")
+		self.w(f"ORCA_API void\nluaX_push{name}(lua_State *L, {utils.lpc(name)} {name});")
 		self.w(f"/// @brief Check {name} form Lua stack at index.")
-		self.w(f"ORCA_API {lp(name)}\nluaX_check{name}(lua_State *L, int idx);\n")
+		self.w(f"ORCA_API {utils.lp(name)}\nluaX_check{name}(lua_State *L, int idx);\n")
 
 	def on_external(self, _, external):
 		sname = external.get('struct')
@@ -66,7 +58,7 @@ class HeaderWriter(Plugin):
 
 	def on_event(self, _, event):
 		ename, etype = event.get('name'), event.get('type')
-		self.w(f"#define kEvent{ename} " + hash(ename))
+		self.w(f"#define kEvent{ename} " + utils.hash(ename))
 		if etype == "void":
 			self.w(f"typedef void* {ename}EventPtr;\n")
 		elif etype:
@@ -77,15 +69,15 @@ class HeaderWriter(Plugin):
 		if function.get("lua"):
 			args.append("lua_State *L")
 		if function.tag == "method" and function.get('static') is None:
-			args.append(header_get_method_this(node, function))
+			args.append(utils.header_get_method_this(node, function))
 		if function.findtext("summary"):
 			self.w(f"/// @brief {function.findtext('summary')}")
 		for arg in function.findall('arg'):
-			args.append(header_get_method_arg(arg))
+			args.append(utils.header_get_method_arg(arg))
 		args = ', '.join(args)
 		returns = function.find('returns')
-		ret = 'void' if returns is None else header_get_arg_type(returns)
-		self.w(f"ORCA_API {ret}\n{header_get_method_name(node, function)}({args or 'void'});\n")
+		ret = 'void' if returns is None else utils.header_get_arg_type(returns)
+		self.w(f"ORCA_API {ret}\n{utils.header_get_method_name(node, function)}({args or 'void'});\n")
 
 	def on_struct(self, _, struct):
 		sname, sbrief = struct.get('name'), struct.findtext('summary')
@@ -93,7 +85,7 @@ class HeaderWriter(Plugin):
 			self.w(f"/// @brief {sbrief}")
 		self.w(f"struct {sname} {{")
 		for field in struct.findall('property') + struct.findall('field'):
-			fname, ftype = field.get('name'), header_get_arg_type(field)
+			fname, ftype = field.get('name'), utils.header_get_arg_type(field)
 			fcomment = f" /// {field.text}" if field.text else str()
 			if field.get('array'):
 				self.w(f"\t{ftype} {fname}[{field.get('array')}];{fcomment}")
@@ -121,4 +113,4 @@ class HeaderWriter(Plugin):
 				self.w(f"\t{enum_name}, /// {enum.text}")
 			else:
 				self.w(f"\t{enum_name},")
-		self.w(f"}} {_e(enums.get('name'))};\n")
+		self.w(f"}} {utils._e(enums.get('name'))};\n")

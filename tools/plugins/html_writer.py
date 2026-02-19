@@ -2,17 +2,8 @@
 
 import xml.etree.ElementTree as ET
 
-from . import Plugin
+from . import Plugin, utils
 from .state import Workspace
-from .utils import (
-	camel_case,
-	enum_component_properties,
-	header_get_arg_type,
-	property_name,
-	tokenize,
-	wrap_backticks,
-	_token_rules,
-)
 
 
 class doc:
@@ -43,7 +34,7 @@ class doc:
 	def add_overview(div, overview):
 		if overview is None:
 			return
-		overview = wrap_backticks(overview)
+		overview = utils.wrap_backticks(overview)
 		ET.SubElement(div, 'h2', {'class': 'title'}).text = 'Overview'
 		overview.tag = "div"
 		overview.attrib['class'] = 'abstract'
@@ -62,8 +53,8 @@ class doc:
 
 	def highlight(code, lang="lua"):
 		root = ET.Element("code", {"class": "source code-listing"})
-		kws = _token_rules.get(lang, set()).split('|')
-		for tok in tokenize(code):
+		kws = utils._token_rules.get(lang, set()).split('|')
+		for tok in utils.tokenize(code):
 			if tok in kws:
 				ET.SubElement(root, "span", {"class": "syntax-keyword"}).text = tok
 			elif '--' in tok:
@@ -120,7 +111,7 @@ class doc:
 		})
 
 	def add_function(topic, function, returns):
-		name = camel_case(function.get('name'))
+		name = utils.camel_case(function.get('name'))
 		code = ET.SubElement(topic, 'code', {'class': 'decorator'})
 		ET.SubElement(code, 'span').text = 'func '
 		nm = ET.SubElement(code, 'span', {'class': 'identifier'})
@@ -203,7 +194,7 @@ class HtmlWriter(Plugin):
 			ET.SubElement(self.article, 'h2', {'class': 'title'}).text = 'Properties'
 
 		for field in struct.findall('property') + struct.findall('field'):
-			fname, ftype = field.get('name'), header_get_arg_type(field)
+			fname, ftype = field.get('name'), utils.header_get_arg_type(field)
 			decor = 'var'
 			ftype = field.get('type')
 			if ftype in Workspace.enums:      decor = 'enum'
@@ -227,7 +218,7 @@ class HtmlWriter(Plugin):
 	def on_property(self, property, _, path):
 		property_type = property.get('type')
 		readable_name = (
-			property.get('name') if property.tag == 'shorthand' else property_name(path)
+			property.get('name') if property.tag == 'shorthand' else utils.property_name(path)
 		)
 		struct = Workspace.structs.get(property_type)
 		decor = 'var'
@@ -252,7 +243,7 @@ class HtmlWriter(Plugin):
 
 	def on_component(self, root, component):
 		self.on_struct(root, component)
-		enum_component_properties(component, self.on_property)
+		utils.enum_component_properties(component, self.on_property)
 
 	def on_enums(self, root, enums):
 		ename = enums.get('name')

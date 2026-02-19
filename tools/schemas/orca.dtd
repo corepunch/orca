@@ -1,4 +1,916 @@
-<!ENTITY % RotationOrder "XYZ|XZY|YZX|YXZ|ZXY|ZYX">
+<!ENTITY % Direction "Horizontal|Vertical|Depth">
+<!ENTITY % Box3Field "X|Y|Z|Width|Height|Depth">
+<!ENTITY % TextHorizontalAlignment "Left|Center|Right">
+<!ENTITY % TextVerticalAlignment "Top|Center|Bottom|Baseline">
+<!ENTITY % HorizontalAlignment "Left|Center|Right|Stretch">
+<!ENTITY % VerticalAlignment "Top|Center|Bottom|Stretch">
+<!ENTITY % AlignItems "Start|Center|End|Stretch|Baseline">
+<!ENTITY % DepthAlignment "Near|Center|Far|Stretch">
+<!ENTITY % Overflow "Visible|Hidden|Clip|Scroll|Auto">
+<!ENTITY % ForegroundHint "None|Translucent|Opaque">
+<!ENTITY % JustifyContent "Start|End|Center|SpaceBetween|SpaceAround|SpaceEvenly">
+<!ENTITY % FontWeight "Normal|Bold">
+<!ENTITY % FontStyle "Normal|Italic">
+<!ENTITY % BorderStyle "None|Hidden|Dotted|Dashed|Solid|Double|Groove|Ridge|Inset|Outset">
+<!ENTITY % PlaybackMode "Normal|Reverse|Pingpong">
+<!ENTITY % ButtonType "Normal|Submit">
+<!ENTITY % InputType "Text|Password|Number|Checkbox|Radio">
+<!ENTITY % Sizing "PlusMargin|SizeOnly|MinusPadding">
+<!ENTITY % DataObjectAttribs "
+	Name CDATA #REQUIRED
+	Style CDATA #IMPLIED
+	IsDisabled (true|false) #IMPLIED
+	StateManager CDATA #IMPLIED
+">
+<!ENTITY % DataObjectElements "">
+<!ELEMENT DataObject EMPTY>
+<!ATTLIST DataObject %DataObjectAttribs;>
+<!ENTITY % AnimationPlayerAttribs "
+	Name CDATA #REQUIRED
+	Style CDATA #IMPLIED
+	IsDisabled (true|false) #IMPLIED
+	StateManager CDATA #IMPLIED
+	AutoplayEnabled (true|false) #IMPLIED
+	DurationScale CDATA #IMPLIED
+	PlaybackMode (%PlaybackMode;) #IMPLIED
+	RelativePlayback (true|false) #IMPLIED
+	RepeatCount CDATA #IMPLIED
+	RestoreOriginalValuesAfterPlayback (true|false) #IMPLIED
+	Timeline CDATA #IMPLIED
+">
+<!ELEMENT AnimationPlayer.AutoplayEnabled (#PCDATA | Binding)*>
+<!ATTLIST AnimationPlayer.AutoplayEnabled Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT AnimationPlayer.DurationScale (#PCDATA | Binding)*>
+<!ATTLIST AnimationPlayer.DurationScale Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT AnimationPlayer.PlaybackMode (#PCDATA | Binding)*>
+<!ATTLIST AnimationPlayer.PlaybackMode Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT AnimationPlayer.RelativePlayback (#PCDATA | Binding)*>
+<!ATTLIST AnimationPlayer.RelativePlayback Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT AnimationPlayer.RepeatCount (#PCDATA | Binding)*>
+<!ATTLIST AnimationPlayer.RepeatCount Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT AnimationPlayer.RestoreOriginalValuesAfterPlayback (#PCDATA | Binding)*>
+<!ATTLIST AnimationPlayer.RestoreOriginalValuesAfterPlayback Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT AnimationPlayer.Timeline (#PCDATA | Binding)*>
+<!ATTLIST AnimationPlayer.Timeline Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % AnimationPlayerElements "AnimationPlayer.AutoplayEnabled|AnimationPlayer.DurationScale|AnimationPlayer.PlaybackMode|AnimationPlayer.RelativePlayback|AnimationPlayer.RepeatCount|AnimationPlayer.RestoreOriginalValuesAfterPlayback|AnimationPlayer.Timeline">
+<!ELEMENT AnimationPlayer EMPTY>
+<!ATTLIST AnimationPlayer %AnimationPlayerAttribs;>
+<!ENTITY % TriggerAttribs "
+	Name CDATA #REQUIRED
+	Style CDATA #IMPLIED
+	IsDisabled (true|false) #IMPLIED
+	StateManager CDATA #IMPLIED
+	Property CDATA #IMPLIED
+	Value CDATA #IMPLIED
+">
+<!ELEMENT Trigger.Property (#PCDATA | Binding)*>
+<!ATTLIST Trigger.Property Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Trigger.Value (#PCDATA | Binding)*>
+<!ATTLIST Trigger.Value Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % TriggerElements "Trigger.Property|Trigger.Value">
+<!ELEMENT Trigger EMPTY>
+<!ATTLIST Trigger %TriggerAttribs;>
+<!ENTITY % OnPropertyChangedTriggerAttribs "
+	Name CDATA #REQUIRED
+	Style CDATA #IMPLIED
+	IsDisabled (true|false) #IMPLIED
+	StateManager CDATA #IMPLIED
+	SourceNode CDATA #IMPLIED
+	Property CDATA #IMPLIED
+">
+<!ELEMENT OnPropertyChangedTrigger.SourceNode (#PCDATA | Binding)*>
+<!ATTLIST OnPropertyChangedTrigger.SourceNode Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT OnPropertyChangedTrigger.Property (#PCDATA | Binding)*>
+<!ATTLIST OnPropertyChangedTrigger.Property Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % OnPropertyChangedTriggerElements "OnPropertyChangedTrigger.SourceNode|OnPropertyChangedTrigger.Property">
+<!ELEMENT OnPropertyChangedTrigger EMPTY>
+<!ATTLIST OnPropertyChangedTrigger %OnPropertyChangedTriggerAttribs;>
+<!ENTITY % OnAttachedTriggerAttribs "
+	Name CDATA #REQUIRED
+	Style CDATA #IMPLIED
+	IsDisabled (true|false) #IMPLIED
+	StateManager CDATA #IMPLIED
+">
+<!ENTITY % OnAttachedTriggerElements "">
+<!ELEMENT OnAttachedTrigger EMPTY>
+<!ATTLIST OnAttachedTrigger %OnAttachedTriggerAttribs;>
+<!ENTITY % EventTriggerAttribs "
+	Name CDATA #REQUIRED
+	Style CDATA #IMPLIED
+	IsDisabled (true|false) #IMPLIED
+	StateManager CDATA #IMPLIED
+	RoutedEvent CDATA #IMPLIED
+">
+<!ELEMENT EventTrigger.RoutedEvent (#PCDATA | Binding)*>
+<!ATTLIST EventTrigger.RoutedEvent Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % EventTriggerElements "EventTrigger.RoutedEvent">
+<!ELEMENT EventTrigger EMPTY>
+<!ATTLIST EventTrigger %EventTriggerAttribs;>
+<!ENTITY % SetterAttribs "
+	Name CDATA #REQUIRED
+	Style CDATA #IMPLIED
+	IsDisabled (true|false) #IMPLIED
+	StateManager CDATA #IMPLIED
+	Trigger CDATA #IMPLIED
+	Property CDATA #IMPLIED
+	Value CDATA #IMPLIED
+">
+<!ELEMENT Setter.Trigger (#PCDATA | Binding)*>
+<!ATTLIST Setter.Trigger Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Setter.Property (#PCDATA | Binding)*>
+<!ATTLIST Setter.Property Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Setter.Value (#PCDATA | Binding)*>
+<!ATTLIST Setter.Value Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % SetterElements "Setter.Trigger|Setter.Property|Setter.Value">
+<!ELEMENT Setter EMPTY>
+<!ATTLIST Setter %SetterAttribs;>
+<!ENTITY % HandlerAttribs "
+	Name CDATA #REQUIRED
+	Style CDATA #IMPLIED
+	IsDisabled (true|false) #IMPLIED
+	StateManager CDATA #IMPLIED
+	Trigger CDATA #IMPLIED
+	Target CDATA #IMPLIED
+	Function CDATA #IMPLIED
+">
+<!ELEMENT Handler.Trigger (#PCDATA | Binding)*>
+<!ATTLIST Handler.Trigger Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Handler.Target (#PCDATA | Binding)*>
+<!ATTLIST Handler.Target Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Handler.Function (#PCDATA | Binding)*>
+<!ATTLIST Handler.Function Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % HandlerElements "Handler.Trigger|Handler.Target|Handler.Function">
+<!ELEMENT Handler EMPTY>
+<!ATTLIST Handler %HandlerAttribs;>
+<!ENTITY % BrushAttribs "
+	Name CDATA #REQUIRED
+	Style CDATA #IMPLIED
+	IsDisabled (true|false) #IMPLIED
+	StateManager CDATA #IMPLIED
+">
+<!ENTITY % BrushElements "">
+<!ELEMENT Brush EMPTY>
+<!ATTLIST Brush %BrushAttribs;>
+<!ENTITY % ColorBrushAttribs "
+	%BrushAttribs;
+	Color CDATA #IMPLIED
+">
+<!ELEMENT ColorBrush.Color (#PCDATA | Binding)*>
+<!ATTLIST ColorBrush.Color Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % ColorBrushElements "ColorBrush.Color|%BrushElements;">
+<!ELEMENT ColorBrush EMPTY>
+<!ATTLIST ColorBrush %ColorBrushAttribs;>
+<!ENTITY % NodeAttribs "
+	Name CDATA #REQUIRED
+	Style CDATA #IMPLIED
+	IsDisabled (true|false) #IMPLIED
+	StateManager CDATA #IMPLIED
+	Size CDATA #IMPLIED
+	HorizontalSize CDATA #IMPLIED
+	Width CDATA #IMPLIED
+	MinWidth CDATA #IMPLIED
+	ActualWidth CDATA #IMPLIED
+	ScrollWidth CDATA #IMPLIED
+	VerticalSize CDATA #IMPLIED
+	Height CDATA #IMPLIED
+	MinHeight CDATA #IMPLIED
+	ActualHeight CDATA #IMPLIED
+	ScrollHeight CDATA #IMPLIED
+	DepthSize CDATA #IMPLIED
+	Depth CDATA #IMPLIED
+	MinDepth CDATA #IMPLIED
+	ActualDepth CDATA #IMPLIED
+	ScrollDepth CDATA #IMPLIED
+	Margin CDATA #IMPLIED
+	HorizontalMargin CDATA #IMPLIED
+	MarginLeft CDATA #IMPLIED
+	MarginRight CDATA #IMPLIED
+	VerticalMargin CDATA #IMPLIED
+	MarginTop CDATA #IMPLIED
+	MarginBottom CDATA #IMPLIED
+	DepthMargin CDATA #IMPLIED
+	MarginFront CDATA #IMPLIED
+	MarginBack CDATA #IMPLIED
+	Padding CDATA #IMPLIED
+	HorizontalPadding CDATA #IMPLIED
+	PaddingLeft CDATA #IMPLIED
+	PaddingRight CDATA #IMPLIED
+	VerticalPadding CDATA #IMPLIED
+	PaddingTop CDATA #IMPLIED
+	PaddingBottom CDATA #IMPLIED
+	DepthPadding CDATA #IMPLIED
+	PaddingFront CDATA #IMPLIED
+	PaddingBack CDATA #IMPLIED
+	Border CDATA #IMPLIED
+	BorderRadius CDATA #IMPLIED
+	BorderTopLeftRadius CDATA #IMPLIED
+	BorderTopRightRadius CDATA #IMPLIED
+	BorderBottomRightRadius CDATA #IMPLIED
+	BorderBottomLeftRadius CDATA #IMPLIED
+	HorizontalBorder CDATA #IMPLIED
+	BorderLeft CDATA #IMPLIED
+	BorderLeftWidth CDATA #IMPLIED
+	BorderLeftStyle (%BorderStyle;) #IMPLIED
+	BorderLeftColor CDATA #IMPLIED
+	BorderRight CDATA #IMPLIED
+	BorderRightWidth CDATA #IMPLIED
+	BorderRightStyle (%BorderStyle;) #IMPLIED
+	BorderRightColor CDATA #IMPLIED
+	VerticalBorder CDATA #IMPLIED
+	BorderTop CDATA #IMPLIED
+	BorderTopWidth CDATA #IMPLIED
+	BorderTopStyle (%BorderStyle;) #IMPLIED
+	BorderTopColor CDATA #IMPLIED
+	BorderBottom CDATA #IMPLIED
+	BorderBottomWidth CDATA #IMPLIED
+	BorderBottomStyle (%BorderStyle;) #IMPLIED
+	BorderBottomColor CDATA #IMPLIED
+	DepthBorder CDATA #IMPLIED
+	BorderFront CDATA #IMPLIED
+	BorderFrontWidth CDATA #IMPLIED
+	BorderFrontStyle (%BorderStyle;) #IMPLIED
+	BorderFrontColor CDATA #IMPLIED
+	BorderBack CDATA #IMPLIED
+	BorderBackWidth CDATA #IMPLIED
+	BorderBackStyle (%BorderStyle;) #IMPLIED
+	BorderBackColor CDATA #IMPLIED
+	Alignment CDATA #IMPLIED
+	HorizontalAlignment (%HorizontalAlignment;) #IMPLIED
+	VerticalAlignment (%VerticalAlignment;) #IMPLIED
+	DepthAlignment (%DepthAlignment;) #IMPLIED
+	Visible (true|false) #IMPLIED
+	QuickHide (true|false) #IMPLIED
+	VisibleAmountInParent CDATA #IMPLIED
+	Opacity CDATA #IMPLIED
+	Tags CDATA #IMPLIED
+	DataContext CDATA #IMPLIED
+">
+<!ELEMENT Node.Size (#PCDATA | Binding)*>
+<!ATTLIST Node.Size Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.HorizontalSize (#PCDATA | Binding)*>
+<!ATTLIST Node.HorizontalSize Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.Width (#PCDATA | Binding)*>
+<!ATTLIST Node.Width Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.MinWidth (#PCDATA | Binding)*>
+<!ATTLIST Node.MinWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.ActualWidth (#PCDATA | Binding)*>
+<!ATTLIST Node.ActualWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.ScrollWidth (#PCDATA | Binding)*>
+<!ATTLIST Node.ScrollWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.VerticalSize (#PCDATA | Binding)*>
+<!ATTLIST Node.VerticalSize Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.Height (#PCDATA | Binding)*>
+<!ATTLIST Node.Height Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.MinHeight (#PCDATA | Binding)*>
+<!ATTLIST Node.MinHeight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.ActualHeight (#PCDATA | Binding)*>
+<!ATTLIST Node.ActualHeight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.ScrollHeight (#PCDATA | Binding)*>
+<!ATTLIST Node.ScrollHeight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.DepthSize (#PCDATA | Binding)*>
+<!ATTLIST Node.DepthSize Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.Depth (#PCDATA | Binding)*>
+<!ATTLIST Node.Depth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.MinDepth (#PCDATA | Binding)*>
+<!ATTLIST Node.MinDepth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.ActualDepth (#PCDATA | Binding)*>
+<!ATTLIST Node.ActualDepth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.ScrollDepth (#PCDATA | Binding)*>
+<!ATTLIST Node.ScrollDepth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.Margin (#PCDATA | Binding)*>
+<!ATTLIST Node.Margin Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.HorizontalMargin (#PCDATA | Binding)*>
+<!ATTLIST Node.HorizontalMargin Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.MarginLeft (#PCDATA | Binding)*>
+<!ATTLIST Node.MarginLeft Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.MarginRight (#PCDATA | Binding)*>
+<!ATTLIST Node.MarginRight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.VerticalMargin (#PCDATA | Binding)*>
+<!ATTLIST Node.VerticalMargin Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.MarginTop (#PCDATA | Binding)*>
+<!ATTLIST Node.MarginTop Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.MarginBottom (#PCDATA | Binding)*>
+<!ATTLIST Node.MarginBottom Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.DepthMargin (#PCDATA | Binding)*>
+<!ATTLIST Node.DepthMargin Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.MarginFront (#PCDATA | Binding)*>
+<!ATTLIST Node.MarginFront Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.MarginBack (#PCDATA | Binding)*>
+<!ATTLIST Node.MarginBack Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.Padding (#PCDATA | Binding)*>
+<!ATTLIST Node.Padding Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.HorizontalPadding (#PCDATA | Binding)*>
+<!ATTLIST Node.HorizontalPadding Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.PaddingLeft (#PCDATA | Binding)*>
+<!ATTLIST Node.PaddingLeft Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.PaddingRight (#PCDATA | Binding)*>
+<!ATTLIST Node.PaddingRight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.VerticalPadding (#PCDATA | Binding)*>
+<!ATTLIST Node.VerticalPadding Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.PaddingTop (#PCDATA | Binding)*>
+<!ATTLIST Node.PaddingTop Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.PaddingBottom (#PCDATA | Binding)*>
+<!ATTLIST Node.PaddingBottom Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.DepthPadding (#PCDATA | Binding)*>
+<!ATTLIST Node.DepthPadding Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.PaddingFront (#PCDATA | Binding)*>
+<!ATTLIST Node.PaddingFront Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.PaddingBack (#PCDATA | Binding)*>
+<!ATTLIST Node.PaddingBack Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.Border (#PCDATA | Binding)*>
+<!ATTLIST Node.Border Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderRadius (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderRadius Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderTopLeftRadius (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderTopLeftRadius Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderTopRightRadius (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderTopRightRadius Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderBottomRightRadius (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderBottomRightRadius Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderBottomLeftRadius (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderBottomLeftRadius Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.HorizontalBorder (#PCDATA | Binding)*>
+<!ATTLIST Node.HorizontalBorder Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderLeft (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderLeft Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderLeftWidth (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderLeftWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderLeftStyle (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderLeftStyle Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderLeftColor (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderLeftColor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderRight (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderRight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderRightWidth (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderRightWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderRightStyle (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderRightStyle Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderRightColor (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderRightColor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.VerticalBorder (#PCDATA | Binding)*>
+<!ATTLIST Node.VerticalBorder Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderTop (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderTop Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderTopWidth (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderTopWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderTopStyle (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderTopStyle Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderTopColor (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderTopColor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderBottom (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderBottom Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderBottomWidth (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderBottomWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderBottomStyle (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderBottomStyle Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderBottomColor (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderBottomColor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.DepthBorder (#PCDATA | Binding)*>
+<!ATTLIST Node.DepthBorder Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderFront (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderFront Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderFrontWidth (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderFrontWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderFrontStyle (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderFrontStyle Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderFrontColor (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderFrontColor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderBack (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderBack Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderBackWidth (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderBackWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderBackStyle (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderBackStyle Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderBackColor (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderBackColor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.Alignment (#PCDATA | Binding)*>
+<!ATTLIST Node.Alignment Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.HorizontalAlignment (#PCDATA | Binding)*>
+<!ATTLIST Node.HorizontalAlignment Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.VerticalAlignment (#PCDATA | Binding)*>
+<!ATTLIST Node.VerticalAlignment Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.DepthAlignment (#PCDATA | Binding)*>
+<!ATTLIST Node.DepthAlignment Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.Visible (#PCDATA | Binding)*>
+<!ATTLIST Node.Visible Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.QuickHide (#PCDATA | Binding)*>
+<!ATTLIST Node.QuickHide Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.VisibleAmountInParent (#PCDATA | Binding)*>
+<!ATTLIST Node.VisibleAmountInParent Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.Opacity (#PCDATA | Binding)*>
+<!ATTLIST Node.Opacity Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.Tags (#PCDATA | Binding)*>
+<!ATTLIST Node.Tags Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.DataContext (#PCDATA | Binding)*>
+<!ATTLIST Node.DataContext Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % NodeElements "Node.Size|Node.HorizontalSize|Node.Width|Node.MinWidth|Node.ActualWidth|Node.ScrollWidth|Node.VerticalSize|Node.Height|Node.MinHeight|Node.ActualHeight|Node.ScrollHeight|Node.DepthSize|Node.Depth|Node.MinDepth|Node.ActualDepth|Node.ScrollDepth|Node.Margin|Node.HorizontalMargin|Node.MarginLeft|Node.MarginRight|Node.VerticalMargin|Node.MarginTop|Node.MarginBottom|Node.DepthMargin|Node.MarginFront|Node.MarginBack|Node.Padding|Node.HorizontalPadding|Node.PaddingLeft|Node.PaddingRight|Node.VerticalPadding|Node.PaddingTop|Node.PaddingBottom|Node.DepthPadding|Node.PaddingFront|Node.PaddingBack|Node.Border|Node.BorderRadius|Node.BorderTopLeftRadius|Node.BorderTopRightRadius|Node.BorderBottomRightRadius|Node.BorderBottomLeftRadius|Node.HorizontalBorder|Node.BorderLeft|Node.BorderLeftWidth|Node.BorderLeftStyle|Node.BorderLeftColor|Node.BorderRight|Node.BorderRightWidth|Node.BorderRightStyle|Node.BorderRightColor|Node.VerticalBorder|Node.BorderTop|Node.BorderTopWidth|Node.BorderTopStyle|Node.BorderTopColor|Node.BorderBottom|Node.BorderBottomWidth|Node.BorderBottomStyle|Node.BorderBottomColor|Node.DepthBorder|Node.BorderFront|Node.BorderFrontWidth|Node.BorderFrontStyle|Node.BorderFrontColor|Node.BorderBack|Node.BorderBackWidth|Node.BorderBackStyle|Node.BorderBackColor|Node.Alignment|Node.HorizontalAlignment|Node.VerticalAlignment|Node.DepthAlignment|Node.Visible|Node.QuickHide|Node.VisibleAmountInParent|Node.Opacity|Node.Tags|Node.DataContext">
+<!ELEMENT Node EMPTY>
+<!ATTLIST Node %NodeAttribs;>
+<!ENTITY % TextRunAttribs "
+	Name CDATA #REQUIRED
+	Style CDATA #IMPLIED
+	IsDisabled (true|false) #IMPLIED
+	StateManager CDATA #IMPLIED
+	Text CDATA #IMPLIED
+	Font CDATA #IMPLIED
+	FontWeight (%FontWeight;) #IMPLIED
+	FontStyle (%FontStyle;) #IMPLIED
+	FontSize CDATA #IMPLIED
+	FontFamily CDATA #IMPLIED
+	Underline CDATA #IMPLIED
+	UnderlineOffset CDATA #IMPLIED
+	UnderlineWidth CDATA #IMPLIED
+	UnderlineColor CDATA #IMPLIED
+	LetterSpacing CDATA #IMPLIED
+	LineHeight CDATA #IMPLIED
+	CharacterSpacing CDATA #IMPLIED
+	FixedCharacterWidth CDATA #IMPLIED
+	RemoveSideBearingsProperty (true|false) #IMPLIED
+">
+<!ELEMENT TextRun.Text (#PCDATA | Binding)*>
+<!ATTLIST TextRun.Text Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextRun.Font (#PCDATA | Binding)*>
+<!ATTLIST TextRun.Font Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextRun.FontWeight (#PCDATA | Binding)*>
+<!ATTLIST TextRun.FontWeight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextRun.FontStyle (#PCDATA | Binding)*>
+<!ATTLIST TextRun.FontStyle Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextRun.FontSize (#PCDATA | Binding)*>
+<!ATTLIST TextRun.FontSize Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextRun.FontFamily (#PCDATA | Binding)*>
+<!ATTLIST TextRun.FontFamily Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextRun.Underline (#PCDATA | Binding)*>
+<!ATTLIST TextRun.Underline Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextRun.UnderlineOffset (#PCDATA | Binding)*>
+<!ATTLIST TextRun.UnderlineOffset Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextRun.UnderlineWidth (#PCDATA | Binding)*>
+<!ATTLIST TextRun.UnderlineWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextRun.UnderlineColor (#PCDATA | Binding)*>
+<!ATTLIST TextRun.UnderlineColor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextRun.LetterSpacing (#PCDATA | Binding)*>
+<!ATTLIST TextRun.LetterSpacing Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextRun.LineHeight (#PCDATA | Binding)*>
+<!ATTLIST TextRun.LineHeight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextRun.CharacterSpacing (#PCDATA | Binding)*>
+<!ATTLIST TextRun.CharacterSpacing Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextRun.FixedCharacterWidth (#PCDATA | Binding)*>
+<!ATTLIST TextRun.FixedCharacterWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextRun.RemoveSideBearingsProperty (#PCDATA | Binding)*>
+<!ATTLIST TextRun.RemoveSideBearingsProperty Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % TextRunElements "TextRun.Text|TextRun.Font|TextRun.FontWeight|TextRun.FontStyle|TextRun.FontSize|TextRun.FontFamily|TextRun.Underline|TextRun.UnderlineOffset|TextRun.UnderlineWidth|TextRun.UnderlineColor|TextRun.LetterSpacing|TextRun.LineHeight|TextRun.CharacterSpacing|TextRun.FixedCharacterWidth|TextRun.RemoveSideBearingsProperty">
+<!ELEMENT TextRun EMPTY>
+<!ATTLIST TextRun %TextRunAttribs;>
+<!ENTITY % TextBlockConceptAttribs "
+	%TextRunAttribs;
+	TextResourceID CDATA #IMPLIED
+	TextResourceConfiguration CDATA #IMPLIED
+	PlaceholderText CDATA #IMPLIED
+	TextOverflow CDATA #IMPLIED
+	Placeholder CDATA #IMPLIED
+	PlaceholderColor CDATA #IMPLIED
+	PlaceholderImage CDATA #IMPLIED
+	PlaceholderMaterial CDATA #IMPLIED
+	UseFullFontHeight (true|false) #IMPLIED
+	ConstrainContentHeight (true|false) #IMPLIED
+	WordWrap (true|false) #IMPLIED
+	TextHorizontalAlignment (%TextHorizontalAlignment;) #IMPLIED
+	TextVerticalAlignment (%TextVerticalAlignment;) #IMPLIED
+">
+<!ELEMENT TextBlockConcept.TextResourceID (#PCDATA | Binding)*>
+<!ATTLIST TextBlockConcept.TextResourceID Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextBlockConcept.TextResourceConfiguration (#PCDATA | Binding)*>
+<!ATTLIST TextBlockConcept.TextResourceConfiguration Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextBlockConcept.PlaceholderText (#PCDATA | Binding)*>
+<!ATTLIST TextBlockConcept.PlaceholderText Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextBlockConcept.TextOverflow (#PCDATA | Binding)*>
+<!ATTLIST TextBlockConcept.TextOverflow Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextBlockConcept.Placeholder (#PCDATA | Binding)*>
+<!ATTLIST TextBlockConcept.Placeholder Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextBlockConcept.PlaceholderColor (#PCDATA | Binding)*>
+<!ATTLIST TextBlockConcept.PlaceholderColor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextBlockConcept.PlaceholderImage (#PCDATA | Binding)*>
+<!ATTLIST TextBlockConcept.PlaceholderImage Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextBlockConcept.PlaceholderMaterial (#PCDATA | Binding)*>
+<!ATTLIST TextBlockConcept.PlaceholderMaterial Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextBlockConcept.UseFullFontHeight (#PCDATA | Binding)*>
+<!ATTLIST TextBlockConcept.UseFullFontHeight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextBlockConcept.ConstrainContentHeight (#PCDATA | Binding)*>
+<!ATTLIST TextBlockConcept.ConstrainContentHeight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextBlockConcept.WordWrap (#PCDATA | Binding)*>
+<!ATTLIST TextBlockConcept.WordWrap Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextBlockConcept.TextHorizontalAlignment (#PCDATA | Binding)*>
+<!ATTLIST TextBlockConcept.TextHorizontalAlignment Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextBlockConcept.TextVerticalAlignment (#PCDATA | Binding)*>
+<!ATTLIST TextBlockConcept.TextVerticalAlignment Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % TextBlockConceptElements "TextBlockConcept.TextResourceID|TextBlockConcept.TextResourceConfiguration|TextBlockConcept.PlaceholderText|TextBlockConcept.TextOverflow|TextBlockConcept.Placeholder|TextBlockConcept.PlaceholderColor|TextBlockConcept.PlaceholderImage|TextBlockConcept.PlaceholderMaterial|TextBlockConcept.UseFullFontHeight|TextBlockConcept.ConstrainContentHeight|TextBlockConcept.WordWrap|TextBlockConcept.TextHorizontalAlignment|TextBlockConcept.TextVerticalAlignment|%TextRunElements;">
+<!ELEMENT TextBlockConcept EMPTY>
+<!ATTLIST TextBlockConcept %TextBlockConceptAttribs;>
+<!ENTITY % Node2DAttribs "
+	%NodeAttribs;
+	LayoutTransform CDATA #IMPLIED
+	RenderTransform CDATA #IMPLIED
+	RenderTransformOrigin CDATA #IMPLIED
+	ContentOffset CDATA #IMPLIED
+	Matrix CDATA #IMPLIED
+	RenderTarget CDATA #IMPLIED
+	Background CDATA #IMPLIED
+	BackgroundColor CDATA #IMPLIED
+	BackgroundImage CDATA #IMPLIED
+	BackgroundMaterial CDATA #IMPLIED
+	Foreground CDATA #IMPLIED
+	ForegroundColor CDATA #IMPLIED
+	ForegroundImage CDATA #IMPLIED
+	ForegroundMaterial CDATA #IMPLIED
+	BoxShadow CDATA #IMPLIED
+	BoxShadowOffset CDATA #IMPLIED
+	BoxShadowBlurRadius CDATA #IMPLIED
+	BoxShadowSpreadRadius CDATA #IMPLIED
+	BoxShadowColor CDATA #IMPLIED
+	Overflow CDATA #IMPLIED
+	OverflowX (%Overflow;) #IMPLIED
+	OverflowY (%Overflow;) #IMPLIED
+	Ring CDATA #IMPLIED
+	RingOffset CDATA #IMPLIED
+	RingWidth CDATA #IMPLIED
+	RingColor CDATA #IMPLIED
+	CompositionBrush CDATA #IMPLIED
+	CompositionDesignSize CDATA #IMPLIED
+	SizeToContent (true|false) #IMPLIED
+	OffscreenRendering (true|false) #IMPLIED
+	ForceComposition (true|false) #IMPLIED
+	CacheResult (true|false) #IMPLIED
+	SnapToPixel (true|false) #IMPLIED
+	ClipChildren (true|false) #IMPLIED
+	ContentStretch (true|false) #IMPLIED
+	Hovered (true|false) #IMPLIED
+	IgnoreHitTest (true|false) #IMPLIED
+	ForegroundHint (%ForegroundHint;) #IMPLIED
+">
+<!ELEMENT Node2D.LayoutTransform (#PCDATA | Binding)*>
+<!ATTLIST Node2D.LayoutTransform Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.RenderTransform (#PCDATA | Binding)*>
+<!ATTLIST Node2D.RenderTransform Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.RenderTransformOrigin (#PCDATA | Binding)*>
+<!ATTLIST Node2D.RenderTransformOrigin Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.ContentOffset (#PCDATA | Binding)*>
+<!ATTLIST Node2D.ContentOffset Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.Matrix (#PCDATA | Binding)*>
+<!ATTLIST Node2D.Matrix Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.RenderTarget (#PCDATA | Binding)*>
+<!ATTLIST Node2D.RenderTarget Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.Background (#PCDATA | Binding)*>
+<!ATTLIST Node2D.Background Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.BackgroundColor (#PCDATA | Binding)*>
+<!ATTLIST Node2D.BackgroundColor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.BackgroundImage (#PCDATA | Binding)*>
+<!ATTLIST Node2D.BackgroundImage Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.BackgroundMaterial (#PCDATA | Binding)*>
+<!ATTLIST Node2D.BackgroundMaterial Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.Foreground (#PCDATA | Binding)*>
+<!ATTLIST Node2D.Foreground Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.ForegroundColor (#PCDATA | Binding)*>
+<!ATTLIST Node2D.ForegroundColor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.ForegroundImage (#PCDATA | Binding)*>
+<!ATTLIST Node2D.ForegroundImage Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.ForegroundMaterial (#PCDATA | Binding)*>
+<!ATTLIST Node2D.ForegroundMaterial Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.BoxShadow (#PCDATA | Binding)*>
+<!ATTLIST Node2D.BoxShadow Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.BoxShadowOffset (#PCDATA | Binding)*>
+<!ATTLIST Node2D.BoxShadowOffset Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.BoxShadowBlurRadius (#PCDATA | Binding)*>
+<!ATTLIST Node2D.BoxShadowBlurRadius Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.BoxShadowSpreadRadius (#PCDATA | Binding)*>
+<!ATTLIST Node2D.BoxShadowSpreadRadius Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.BoxShadowColor (#PCDATA | Binding)*>
+<!ATTLIST Node2D.BoxShadowColor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.Overflow (#PCDATA | Binding)*>
+<!ATTLIST Node2D.Overflow Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.OverflowX (#PCDATA | Binding)*>
+<!ATTLIST Node2D.OverflowX Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.OverflowY (#PCDATA | Binding)*>
+<!ATTLIST Node2D.OverflowY Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.Ring (#PCDATA | Binding)*>
+<!ATTLIST Node2D.Ring Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.RingOffset (#PCDATA | Binding)*>
+<!ATTLIST Node2D.RingOffset Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.RingWidth (#PCDATA | Binding)*>
+<!ATTLIST Node2D.RingWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.RingColor (#PCDATA | Binding)*>
+<!ATTLIST Node2D.RingColor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.CompositionBrush (#PCDATA | Binding)*>
+<!ATTLIST Node2D.CompositionBrush Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.CompositionDesignSize (#PCDATA | Binding)*>
+<!ATTLIST Node2D.CompositionDesignSize Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.SizeToContent (#PCDATA | Binding)*>
+<!ATTLIST Node2D.SizeToContent Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.OffscreenRendering (#PCDATA | Binding)*>
+<!ATTLIST Node2D.OffscreenRendering Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.ForceComposition (#PCDATA | Binding)*>
+<!ATTLIST Node2D.ForceComposition Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.CacheResult (#PCDATA | Binding)*>
+<!ATTLIST Node2D.CacheResult Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.SnapToPixel (#PCDATA | Binding)*>
+<!ATTLIST Node2D.SnapToPixel Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.ClipChildren (#PCDATA | Binding)*>
+<!ATTLIST Node2D.ClipChildren Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.ContentStretch (#PCDATA | Binding)*>
+<!ATTLIST Node2D.ContentStretch Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.Hovered (#PCDATA | Binding)*>
+<!ATTLIST Node2D.Hovered Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.IgnoreHitTest (#PCDATA | Binding)*>
+<!ATTLIST Node2D.IgnoreHitTest Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node2D.ForegroundHint (#PCDATA | Binding)*>
+<!ATTLIST Node2D.ForegroundHint Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % Node2DElements "Node2D.LayoutTransform|Node2D.RenderTransform|Node2D.RenderTransformOrigin|Node2D.ContentOffset|Node2D.Matrix|Node2D.RenderTarget|Node2D.Background|Node2D.BackgroundColor|Node2D.BackgroundImage|Node2D.BackgroundMaterial|Node2D.Foreground|Node2D.ForegroundColor|Node2D.ForegroundImage|Node2D.ForegroundMaterial|Node2D.BoxShadow|Node2D.BoxShadowOffset|Node2D.BoxShadowBlurRadius|Node2D.BoxShadowSpreadRadius|Node2D.BoxShadowColor|Node2D.Overflow|Node2D.OverflowX|Node2D.OverflowY|Node2D.Ring|Node2D.RingOffset|Node2D.RingWidth|Node2D.RingColor|Node2D.CompositionBrush|Node2D.CompositionDesignSize|Node2D.SizeToContent|Node2D.OffscreenRendering|Node2D.ForceComposition|Node2D.CacheResult|Node2D.SnapToPixel|Node2D.ClipChildren|Node2D.ContentStretch|Node2D.Hovered|Node2D.IgnoreHitTest|Node2D.ForegroundHint|%NodeElements;">
+<!ELEMENT Node2D (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%Node2DElements;)*>
+<!ATTLIST Node2D %Node2DAttribs;>
+<!ENTITY % PrefabView2DAttribs "
+	%Node2DAttribs;
+	SCA CDATA #IMPLIED
+	Prefab CDATA #IMPLIED
+">
+<!ELEMENT PrefabView2D.SCA (#PCDATA | Binding)*>
+<!ATTLIST PrefabView2D.SCA Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT PrefabView2D.Prefab (#PCDATA | Binding)*>
+<!ATTLIST PrefabView2D.Prefab Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % PrefabView2DElements "PrefabView2D.SCA|PrefabView2D.Prefab|%Node2DElements;">
+<!ELEMENT PrefabView2D (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%PrefabView2DElements;)*>
+<!ATTLIST PrefabView2D %PrefabView2DAttribs;>
+<!ENTITY % TextBlockAttribs "
+	%Node2DAttribs;
+	%TextBlockConceptAttribs;
+">
+<!ENTITY % TextBlockElements "%Node2DElements;|%TextBlockConceptElements;">
+<!ELEMENT TextBlock (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%TextBlockElements;)*>
+<!ATTLIST TextBlock %TextBlockAttribs;>
+<!ENTITY % InputAttribs "
+	%TextBlockAttribs;
+	Name CDATA #IMPLIED
+	Type (%InputType;) #IMPLIED
+	Cursor CDATA #IMPLIED
+	Multiline (true|false) #IMPLIED
+	Checked (true|false) #IMPLIED
+">
+<!ELEMENT Input.Name (#PCDATA | Binding)*>
+<!ATTLIST Input.Name Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Input.Type (#PCDATA | Binding)*>
+<!ATTLIST Input.Type Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Input.Cursor (#PCDATA | Binding)*>
+<!ATTLIST Input.Cursor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Input.Multiline (#PCDATA | Binding)*>
+<!ATTLIST Input.Multiline Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Input.Checked (#PCDATA | Binding)*>
+<!ATTLIST Input.Checked Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % InputElements "Input.Name|Input.Type|Input.Cursor|Input.Multiline|Input.Checked|%TextBlockElements;">
+<!ELEMENT Input (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%InputElements;)*>
+<!ATTLIST Input %InputAttribs;>
+<!ENTITY % ButtonAttribs "
+	%TextBlockAttribs;
+	Type (%ButtonType;) #IMPLIED
+">
+<!ELEMENT Button.Type (#PCDATA | Binding)*>
+<!ATTLIST Button.Type Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % ButtonElements "Button.Type|%TextBlockElements;">
+<!ELEMENT Button (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ButtonElements;)*>
+<!ATTLIST Button %ButtonAttribs;>
+<!ENTITY % LabelAttribs "
+	%TextBlockAttribs;
+	For CDATA #IMPLIED
+">
+<!ELEMENT Label.For (#PCDATA | Binding)*>
+<!ATTLIST Label.For Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % LabelElements "Label.For|%TextBlockElements;">
+<!ELEMENT Label (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%LabelElements;)*>
+<!ATTLIST Label %LabelAttribs;>
+<!ENTITY % StackViewAttribs "
+	%Node2DAttribs;
+	Reversed (true|false) #IMPLIED
+	Direction (%Direction;) #IMPLIED
+	AlignItems (%AlignItems;) #IMPLIED
+	JustifyContent (%JustifyContent;) #IMPLIED
+	Spacing CDATA #IMPLIED
+">
+<!ELEMENT StackView.Reversed (#PCDATA | Binding)*>
+<!ATTLIST StackView.Reversed Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT StackView.Direction (#PCDATA | Binding)*>
+<!ATTLIST StackView.Direction Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT StackView.AlignItems (#PCDATA | Binding)*>
+<!ATTLIST StackView.AlignItems Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT StackView.JustifyContent (#PCDATA | Binding)*>
+<!ATTLIST StackView.JustifyContent Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT StackView.Spacing (#PCDATA | Binding)*>
+<!ATTLIST StackView.Spacing Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % StackViewElements "StackView.Reversed|StackView.Direction|StackView.AlignItems|StackView.JustifyContent|StackView.Spacing|%Node2DElements;">
+<!ELEMENT StackView (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%StackViewElements;)*>
+<!ATTLIST StackView %StackViewAttribs;>
+<!ENTITY % FormAttribs "
+	%StackViewAttribs;
+">
+<!ENTITY % FormElements "%StackViewElements;">
+<!ELEMENT Form (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%FormElements;)*>
+<!ATTLIST Form %FormAttribs;>
+<!ENTITY % CollectionViewAttribs "
+	%Node2DAttribs;
+	Direction (%Direction;) #IMPLIED
+	Spacing CDATA #IMPLIED
+">
+<!ELEMENT CollectionView.Direction (#PCDATA | Binding)*>
+<!ATTLIST CollectionView.Direction Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT CollectionView.Spacing (#PCDATA | Binding)*>
+<!ATTLIST CollectionView.Spacing Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % CollectionViewElements "CollectionView.Direction|CollectionView.Spacing|%Node2DElements;">
+<!ELEMENT CollectionView (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%CollectionViewElements;)*>
+<!ATTLIST CollectionView %CollectionViewAttribs;>
+<!ENTITY % ControlAttribs "
+	%Node2DAttribs;
+	Pressed (true|false) #IMPLIED
+	Disabled (true|false) #IMPLIED
+	Hovered (true|false) #IMPLIED
+	Focused (true|false) #IMPLIED
+	Value (true|false) #IMPLIED
+	Scale CDATA #IMPLIED
+">
+<!ELEMENT Control.Pressed (#PCDATA | Binding)*>
+<!ATTLIST Control.Pressed Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Control.Disabled (#PCDATA | Binding)*>
+<!ATTLIST Control.Disabled Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Control.Hovered (#PCDATA | Binding)*>
+<!ATTLIST Control.Hovered Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Control.Focused (#PCDATA | Binding)*>
+<!ATTLIST Control.Focused Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Control.Value (#PCDATA | Binding)*>
+<!ATTLIST Control.Value Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Control.Scale (#PCDATA | Binding)*>
+<!ATTLIST Control.Scale Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % ControlElements "Control.Pressed|Control.Disabled|Control.Hovered|Control.Focused|Control.Value|Control.Scale|%Node2DElements;">
+<!ELEMENT Control (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ControlElements;)*>
+<!ATTLIST Control %ControlAttribs;>
+<!ENTITY % ResizeMode "NoResize|CanMinimize|CanResize|CanResizeWithGrip">
+<!ENTITY % ScreenAttribs "
+	%Node2DAttribs;
+	ClearColor CDATA #IMPLIED
+	ResizeMode (%ResizeMode;) #IMPLIED
+">
+<!ELEMENT Screen.ClearColor (#PCDATA | Binding)*>
+<!ATTLIST Screen.ClearColor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Screen.ResizeMode (#PCDATA | Binding)*>
+<!ATTLIST Screen.ResizeMode Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % ScreenElements "Screen.ClearColor|Screen.ResizeMode|%Node2DElements;">
+<!ELEMENT Screen (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ScreenElements;)*>
+<!ATTLIST Screen %ScreenAttribs;>
+<!ENTITY % CinematicAttribs "
+	%Node2DAttribs;
+	FileName CDATA #IMPLIED
+	FrameRate CDATA #IMPLIED
+	NumFrames CDATA #IMPLIED
+	FadeOut CDATA #IMPLIED
+">
+<!ELEMENT Cinematic.FileName (#PCDATA | Binding)*>
+<!ATTLIST Cinematic.FileName Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Cinematic.FrameRate (#PCDATA | Binding)*>
+<!ATTLIST Cinematic.FrameRate Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Cinematic.NumFrames (#PCDATA | Binding)*>
+<!ATTLIST Cinematic.NumFrames Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Cinematic.FadeOut (#PCDATA | Binding)*>
+<!ATTLIST Cinematic.FadeOut Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % CinematicElements "Cinematic.FileName|Cinematic.FrameRate|Cinematic.NumFrames|Cinematic.FadeOut|%Node2DElements;">
+<!ELEMENT Cinematic (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%CinematicElements;)*>
+<!ATTLIST Cinematic %CinematicAttribs;>
+<!ENTITY % GridAttribs "
+	%Node2DAttribs;
+	Columns CDATA #IMPLIED
+	Rows CDATA #IMPLIED
+	Direction (%Direction;) #IMPLIED
+	Spacing CDATA #IMPLIED
+	CellWidth CDATA #IMPLIED
+	CellHeight CDATA #IMPLIED
+">
+<!ELEMENT Grid.Columns (#PCDATA | Binding)*>
+<!ATTLIST Grid.Columns Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Grid.Rows (#PCDATA | Binding)*>
+<!ATTLIST Grid.Rows Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Grid.Direction (#PCDATA | Binding)*>
+<!ATTLIST Grid.Direction Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Grid.Spacing (#PCDATA | Binding)*>
+<!ATTLIST Grid.Spacing Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Grid.CellWidth (#PCDATA | Binding)*>
+<!ATTLIST Grid.CellWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Grid.CellHeight (#PCDATA | Binding)*>
+<!ATTLIST Grid.CellHeight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % GridElements "Grid.Columns|Grid.Rows|Grid.Direction|Grid.Spacing|Grid.CellWidth|Grid.CellHeight|%Node2DElements;">
+<!ELEMENT Grid (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%GridElements;)*>
+<!ATTLIST Grid %GridAttribs;>
+<!ENTITY % Stretch "None|Fill|Uniform|UniformToFill">
+<!ENTITY % ImageViewAttribs "
+	%Node2DAttribs;
+	Src CDATA #IMPLIED
+	Image CDATA #IMPLIED
+	Edges CDATA #IMPLIED
+	Insets CDATA #IMPLIED
+	Viewbox CDATA #IMPLIED
+	Stretch (%Stretch;) #IMPLIED
+">
+<!ELEMENT ImageView.Src (#PCDATA | Binding)*>
+<!ATTLIST ImageView.Src Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT ImageView.Image (#PCDATA | Binding)*>
+<!ATTLIST ImageView.Image Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT ImageView.Edges (#PCDATA | Binding)*>
+<!ATTLIST ImageView.Edges Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT ImageView.Insets (#PCDATA | Binding)*>
+<!ATTLIST ImageView.Insets Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT ImageView.Viewbox (#PCDATA | Binding)*>
+<!ATTLIST ImageView.Viewbox Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT ImageView.Stretch (#PCDATA | Binding)*>
+<!ATTLIST ImageView.Stretch Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % ImageViewElements "ImageView.Src|ImageView.Image|ImageView.Edges|ImageView.Insets|ImageView.Viewbox|ImageView.Stretch|%Node2DElements;">
+<!ELEMENT ImageView (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ImageViewElements;)*>
+<!ATTLIST ImageView %ImageViewAttribs;>
+<!ENTITY % NinePatchImageAttribs "
+	%Node2DAttribs;
+	StretchTypeTop CDATA #IMPLIED
+	StretchTypeBottom CDATA #IMPLIED
+	StretchTypeLeft CDATA #IMPLIED
+	StretchTypeRight CDATA #IMPLIED
+	StretchTypeCenter CDATA #IMPLIED
+	ImageTopLeft CDATA #IMPLIED
+	ImageTop CDATA #IMPLIED
+	ImageTopRight CDATA #IMPLIED
+	ImageLeft CDATA #IMPLIED
+	ImageCenter CDATA #IMPLIED
+	ImageRight CDATA #IMPLIED
+	ImageBottomLeft CDATA #IMPLIED
+	ImageBottom CDATA #IMPLIED
+	ImageBottomRight CDATA #IMPLIED
+">
+<!ELEMENT NinePatchImage.StretchTypeTop (#PCDATA | Binding)*>
+<!ATTLIST NinePatchImage.StretchTypeTop Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT NinePatchImage.StretchTypeBottom (#PCDATA | Binding)*>
+<!ATTLIST NinePatchImage.StretchTypeBottom Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT NinePatchImage.StretchTypeLeft (#PCDATA | Binding)*>
+<!ATTLIST NinePatchImage.StretchTypeLeft Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT NinePatchImage.StretchTypeRight (#PCDATA | Binding)*>
+<!ATTLIST NinePatchImage.StretchTypeRight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT NinePatchImage.StretchTypeCenter (#PCDATA | Binding)*>
+<!ATTLIST NinePatchImage.StretchTypeCenter Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT NinePatchImage.ImageTopLeft (#PCDATA | Binding)*>
+<!ATTLIST NinePatchImage.ImageTopLeft Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT NinePatchImage.ImageTop (#PCDATA | Binding)*>
+<!ATTLIST NinePatchImage.ImageTop Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT NinePatchImage.ImageTopRight (#PCDATA | Binding)*>
+<!ATTLIST NinePatchImage.ImageTopRight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT NinePatchImage.ImageLeft (#PCDATA | Binding)*>
+<!ATTLIST NinePatchImage.ImageLeft Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT NinePatchImage.ImageCenter (#PCDATA | Binding)*>
+<!ATTLIST NinePatchImage.ImageCenter Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT NinePatchImage.ImageRight (#PCDATA | Binding)*>
+<!ATTLIST NinePatchImage.ImageRight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT NinePatchImage.ImageBottomLeft (#PCDATA | Binding)*>
+<!ATTLIST NinePatchImage.ImageBottomLeft Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT NinePatchImage.ImageBottom (#PCDATA | Binding)*>
+<!ATTLIST NinePatchImage.ImageBottom Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT NinePatchImage.ImageBottomRight (#PCDATA | Binding)*>
+<!ATTLIST NinePatchImage.ImageBottomRight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % NinePatchImageElements "NinePatchImage.StretchTypeTop|NinePatchImage.StretchTypeBottom|NinePatchImage.StretchTypeLeft|NinePatchImage.StretchTypeRight|NinePatchImage.StretchTypeCenter|NinePatchImage.ImageTopLeft|NinePatchImage.ImageTop|NinePatchImage.ImageTopRight|NinePatchImage.ImageLeft|NinePatchImage.ImageCenter|NinePatchImage.ImageRight|NinePatchImage.ImageBottomLeft|NinePatchImage.ImageBottom|NinePatchImage.ImageBottomRight|%Node2DElements;">
+<!ELEMENT NinePatchImage (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%NinePatchImageElements;)*>
+<!ATTLIST NinePatchImage %NinePatchImageAttribs;>
+<!ENTITY % TerminalViewAttribs "
+	%Node2DAttribs;
+	BufferWidth CDATA #IMPLIED
+	BufferHeight CDATA #IMPLIED
+	Cursor CDATA #IMPLIED
+	SelectedIndex CDATA #IMPLIED
+	DropShadow (true|false) #IMPLIED
+">
+<!ELEMENT TerminalView.BufferWidth (#PCDATA | Binding)*>
+<!ATTLIST TerminalView.BufferWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TerminalView.BufferHeight (#PCDATA | Binding)*>
+<!ATTLIST TerminalView.BufferHeight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TerminalView.Cursor (#PCDATA | Binding)*>
+<!ATTLIST TerminalView.Cursor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TerminalView.SelectedIndex (#PCDATA | Binding)*>
+<!ATTLIST TerminalView.SelectedIndex Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TerminalView.DropShadow (#PCDATA | Binding)*>
+<!ATTLIST TerminalView.DropShadow Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % TerminalViewElements "TerminalView.BufferWidth|TerminalView.BufferHeight|TerminalView.Cursor|TerminalView.SelectedIndex|TerminalView.DropShadow|%Node2DElements;">
+<!ELEMENT TerminalView (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%TerminalViewElements;)*>
+<!ATTLIST TerminalView %TerminalViewAttribs;>
+<!ENTITY % StyleType "Generic|Named">
+<!ENTITY % StyleAttribs "
+	Name CDATA #REQUIRED
+	Style CDATA #IMPLIED
+	IsDisabled (true|false) #IMPLIED
+	StateManager CDATA #IMPLIED
+	TargetType CDATA #IMPLIED
+	Type (%StyleType;) #IMPLIED
+">
+<!ELEMENT Style.TargetType (#PCDATA | Binding)*>
+<!ATTLIST Style.TargetType Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Style.Type (#PCDATA | Binding)*>
+<!ATTLIST Style.Type Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % StyleElements "Style.TargetType|Style.Type">
+<!ELEMENT Style EMPTY>
+<!ATTLIST Style %StyleAttribs;>
 <!ELEMENT Resource (#PCDATA)>
 <!ATTLIST Resource Key CDATA #REQUIRED>
 
