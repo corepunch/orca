@@ -59,7 +59,7 @@
 >
 
 <!-- Structure Definition -->
-<!ELEMENT struct (summary?, details?, field*, method*, shorthand*)>
+<!ELEMENT struct (summary?, details?, shorthand*, field*, method*)>
 <!ATTLIST struct
   name CDATA #REQUIRED
   prefix CDATA #IMPLIED
@@ -69,7 +69,7 @@
 >
 
 <!-- Interface Definition (similar to struct but for abstract types) -->
-<!ELEMENT interface (summary?, details?, init?, field*, method*, shorthand*)>
+<!ELEMENT interface (summary?, details?, init?, method*)>
 <!ATTLIST interface
   name CDATA #REQUIRED
   prefix CDATA #IMPLIED
@@ -79,7 +79,7 @@
 >
 
 <!-- Component Definition -->
-<!ELEMENT component (summary?, details?, xmlns?, property*, method*, handles*, shorthand*)>
+<!ELEMENT component (summary?, details?, xmlns?, property*, method*, handles*)>
 <!ATTLIST component
   name CDATA #REQUIRED
   parent CDATA #IMPLIED
