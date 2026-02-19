@@ -49,7 +49,7 @@ from plugins import BasePlugin, OutputPlugin, PluginRegistry
 from plugins.header_plugin import HeaderPlugin
 from plugins.export_plugin import ExportPlugin
 from plugins.props_plugin import PropsPlugin
-from plugins.html_plugin import HtmlPlugin
+from plugins.html_plugin import HtmlPlugin, DocumentationGenerator, tokenize, rules, wrap_backticks
 from plugins.common import (
 	w, wf, lpc, lp, _c, _t, _e, lpobject_t,
 	camel_case, fnv1a32, hash,
@@ -61,6 +61,9 @@ PluginRegistry.register('header', HeaderPlugin)
 PluginRegistry.register('export', ExportPlugin)
 PluginRegistry.register('props', PropsPlugin)
 PluginRegistry.register('html', HtmlPlugin)
+
+# Create global documentation generator instance
+doc = DocumentationGenerator()
 
 g_structs = {}
 g_enums = {}
@@ -79,162 +82,6 @@ g_sidebar = ET.SubElement(g_wrapper, 'div', {'class': 'sidebar'})
 g_content = ET.SubElement(g_wrapper, 'main', {'class': 'content'})
 g_dtd = open("schemas/orca.dtd", "w")
 g_output = "../docs/index.html"
-
-def tokenize(code):
-	token_re = re.compile(
-		r'\s*"[^"\n]*"'   # double-quoted strings (no newlines inside)
-		r'|--[^\n]*'      # single-line comments
-		r"|\n"            # newline
-		r"|\t"            # tab
-		r"|\w+"           # identifiers/keywords
-		r"|\d+"           # numbers
-		r"|[^\w\d\n\t]"   # everything else (punctuation, operators)
-	)
-	for match in token_re.finditer(code):
-		yield match.group(0)
-
-rules = {
-	"lua": "require|and|break|do|else|elseif|end|false|for|function|goto|if|in|local|nil|not|or|repeat|return|then|true|until|while"
-}
-
-def wrap_backticks(elem):
-    xml_str = ET.tostring(elem, encoding="unicode")
-    parts = xml_str.split("`")
-    rebuilt = []
-    for i, part in enumerate(parts):
-        if i % 2 == 0:
-            rebuilt.append(part)
-        else:
-            rebuilt.append(f"<code class=\"token-keyword\">{part}</code>")
-    xml_str = "".join(rebuilt)
-    return ET.fromstring(xml_str)
-
-class doc:
-	def add_header(div, type, name, brief):
-		ET.SubElement(div, 'div', {'class':'eyebrow'}).text = type+"\n"
-		ET.SubElement(div, 'h1', {'class':'header'}).text = name+"\n"
-		if brief:
-			ET.SubElement(div, 'div', {'class':'abstract'}).text = brief+"\n"
-
-	def add_code(div, headers, type, name, parents):
-		code = ET.SubElement(div, 'code', {'class':'source'})
-
-		for key, value in headers:
-			top = ET.SubElement(code, "div", {'class':'token-keyword'})
-			ET.SubElement(top, 'span', {'class':'token-keyword'}).text = key
-			ET.SubElement(top, 'span', {'class':'token-string'}).text = value
-
-		ET.SubElement(code, "span", {'class':'token-keyword'}).text = type
-		ET.SubElement(code, "span", {'class':'token-identifier'}).text = name
-
-		if not parents:
-			return
-
-		ET.SubElement(code, 'span', {'class':'token-keyword'}).text = " inherits "
-		cont = ET.SubElement(code, 'ui', {'class':'comma-list'})
-		for n in parents.split(","):
-			li = ET.SubElement(cont, 'li')
-			ET.SubElement(li, 'a', {'href':'#'+n.strip(), 'class':'name base'}).text = n
-
-	def add_overview(div, overview):
-		if overview is None:
-			return
-		overview = wrap_backticks(overview)
-		ET.SubElement(div, 'h2', {'class':'title'}).text = 'Overview'
-		
-		overview.tag = "div"
-		overview.attrib['class'] = 'abstract'
-		div.append(overview)
-
-		for node in overview.findall('.//snippet[@src]'):
-			with open(node.get('src')) as f:
-				node.append(doc.highlight(f.read(), "lua"))
-			node.tag = 'div'
-
-	def print_abstract(div, doc):
-		for i, n in enumerate(doc.split('`')):
-			if i % 2:
-				ET.SubElement(div, 'code', {'class':'token-keyword'}).text = n
-			else:
-				ET.SubElement(div, 'span').text = n
-
-	def highlight(code, lang="lua"):
-		root = ET.Element("code", {"class": "source code-listing"})
-		kws = rules.get(lang, set()).split('|')
-		for tok in tokenize(code):
-			if tok in kws:
-				ET.SubElement(root, "span", {"class": "syntax-keyword"}).text = tok
-			elif '--' in tok:
-				ET.SubElement(root, "span", {"class": "syntax-comment"}).text = tok
-			elif '"' in tok:
-				if root[-1].attrib['class'] == "syntax-variable":
-					root[-1].attrib['class'] = "syntax-function"
-				ET.SubElement(root, "span", {"class": "syntax-string"}).text = tok
-			elif tok.isdigit():
-				ET.SubElement(root, "span", {"class": "syntax-number"}).text = tok
-			elif tok.isalnum():
-				if tok[0].isupper():  # PascalCase
-					ET.SubElement(root, "span", {"class": "syntax-type"}).text = tok
-				else:
-					ET.SubElement(root, "span", {"class": "syntax-variable"}).text = tok
-			elif tok == '\n':
-				ET.SubElement(root, "br")
-			elif tok == '\t':
-				ET.SubElement(root, "span").text = "\u00A0"*4
-			elif root:
-				if ('{' in tok or '(' in tok) and root[-1].attrib['class'] in ["syntax-variable", "syntax-identifier"]:
-					root[-1].attrib['class'] = "syntax-function"
-				ET.SubElement(root, "span", {"class": "syntax-identifier"}).text = tok
-		return root
-	
-	def add_small_abstract(topic, abstract):
-		if not abstract:
-			return
-		doc.print_abstract(ET.SubElement(topic, 'div', {'class':'small-abstract'}), abstract+'\n')
-
-	def add_property(topic, decor, name, type):
-		code = ET.SubElement(topic, 'code', {'class':'decorator'})
-		ET.SubElement(code, 'span').text = decor + " "
-		nm = ET.SubElement(code, 'span', {'class':'identifier'})
-		nm.text = name
-		if type:
-			nm.tail = ': '
-			if type in g_enums or type in g_structs or type in g_components:
-				ET.SubElement(code, 'a', {'class': 'type-identifier-link', 'href': '#'+type}).text = type
-			else:
-				ET.SubElement(code, 'span').text = type
-
-	def add_article(body, name, parent, namespace):
-		return ET.SubElement(body, 'div', {
-			"id":name,
-			'class':'class', 
-			'data-name':name, 
-			'data-inherits':parent, 
-			'data-xmlns':namespace
-		})
-
-	def add_function(topic, function, returns):
-		name = camel_case(function.get('name'))
-		code = ET.SubElement(topic, 'code', {'class':'decorator'})
-		ET.SubElement(code, 'span').text = 'func '
-		nm = ET.SubElement(code, 'span', {'class':'identifier'})
-		nm.text = name
-		params = function.findall('arg')
-		if params:
-			nm.tail = '('
-			while params:
-				arg = params.pop(0)
-				aname = ET.SubElement(code, 'span', {'class':'identifier'})
-				aname.text = arg.get('name')
-				aname.tail = ':'
-				atype = ET.SubElement(code, 'span', {'class':'decorator'})
-				atype.text = arg.get('type')
-				atype.tail = params and ', ' or ')'
-		else:
-			nm.tail = '()'
-		if returns is not None:
-			ET.SubElement(code, 'span', {'class':'decorator'}).text = ' ->'
-			ET.SubElement(code, 'span').text = " " + returns.get('type')
 
 class ParserState:
 	def __init__(self, filename):
@@ -259,6 +106,8 @@ class ParserState:
 			self.header_plugin.set_globals(structs, enums)
 		if self.export_plugin:
 			self.export_plugin.set_globals(structs, enums, self.header_plugin)
+		# Set globals on the doc generator
+		doc.set_globals(structs, enums, components)
 	
 	def _initialize_file_plugin(self, name, filename):
 		"""Helper method to initialize file-based plugins"""
