@@ -1,158 +1,297 @@
-<html xmlns="http://www.w3.org/2001/XMLSchema"><head><link rel="stylesheet" href="doc.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"><meta charset="UTF-8"></head><body><div class="adjustable-sidebar-width full-width-container topic-wrapper"><div class="sidebar"><div class="technology-title"><span class="fa-solid fa-folder-open icon"></span>orca.core
-</div><a class="leaf-link" href="#Object"><i class="fa-solid fa-atom icon"></i><span>Object
-</span></a><a class="leaf-link" href="#DataType"><i class="fa-solid fa-bars icon"></i><span>DataType
-</span></a><a class="leaf-link" href="#PropertyType"><i class="fa-solid fa-layer-group icon"></i><span>PropertyType
-</span></a><a class="leaf-link" href="#PropertyEnumValue"><i class="fa-solid fa-layer-group icon"></i><span>PropertyEnumValue
-</span></a></div><main class="content"><div id="Object" class="class" data-name="Object" data-inherits="None" data-xmlns="None"><div class="eyebrow">Interface
-</div><h1 class="header">Object
-</h1><div class="abstract">Core engine host object.
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">core.Object</span></code><h2 class="title">Overview</h2><div class="abstract">
-      <p>The <code class="token-keyword">Object</code> type is the root of the runtime type system. Every element that can appear in a scene, be manipulated through scripts, or participate in rendering and logic derives its basic functionality from Object. It establishes the fundamental contract that all other types extend, providing common lifecycle methods, hierarchy management, and component composition.</p>
-      <p>An <code class="token-keyword">Object</code> is not tied to a specific visual or logical role by itself. Instead, it serves as a container for components, and these components define the actual capabilities of the instance. Higher-level types such as <code class="token-keyword">Node</code>, <code class="token-keyword">Node2D</code>, or <code class="token-keyword">ImageView</code> are constructed by layering specialized components on top of the base <code class="token-keyword">Object</code>.</p>
-    </div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">clear</span>()</code><div class="small-abstract"><span>Clear all children of the object.
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">release</span>()</code><div class="small-abstract"><span>Garbage-collect an object (clear and release).
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">equals</span>(<span class="identifier">other</span>:<span class="decorator">Object</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Compare two objects for equality.
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">awake</span>()</code><div class="small-abstract"><span>Initializes the core component when it is loaded, an essential lifecycle method.
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">animate</span>()</code><div class="small-abstract"><span>Runs object animations.
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">loadPrefabs</span>()</code><div class="small-abstract"><span>Loads and instantiates prefabs.
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">procesEvents</span>()</code><div class="small-abstract"><span>Processes pending events.
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">updateProperties</span>()</code><div class="small-abstract"><span>Updates object properties.
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">updateLayout</span>(<span class="identifier">width</span>:<span class="decorator">int</span>, <span class="identifier">height</span>:<span class="decorator">int</span>)</code><div class="small-abstract"><span>Updates object layout.
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">addChild</span>(<span class="identifier">child</span>:<span class="decorator">Object</span>, <span class="identifier">is_template</span>:<span class="decorator">bool</span>)</code><div class="small-abstract"><span>Add a child object.
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">removeFromParent</span>(<span class="identifier">dropModal</span>:<span class="decorator">bool</span>)</code><div class="small-abstract"><span>Destroys an object.
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">setProperty</span>(<span class="identifier">Property</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Set a property on the object.
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getProperty</span>(<span class="identifier">Property</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> nresults</span></code><div class="small-abstract"><span>Get a property value from an object.
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">findChild</span>(<span class="identifier">name</span>:<span class="decorator">string</span>, <span class="identifier">recursive</span>:<span class="decorator">bool</span>)<span class="decorator"> -&gt;</span><span> Object</span></code><div class="small-abstract"><span>Find a child object by name.
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">dispatchEvent</span>(<span class="identifier">event</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> Object</span></code><div class="small-abstract"><span>Dispatch an event starting from this object and bubbling up parents.
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">play</span>(<span class="identifier">animation</span>:<span class="decorator">string</span>)</code><div class="small-abstract"><span>Play an animation or resource on the object.
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">bind</span>(<span class="identifier">Property</span>:<span class="decorator">string</span>, <span class="identifier">expression</span>:<span class="decorator">string</span>)</code><div class="small-abstract"><span>Bind a property of an object to an expression or data source.
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">setFocus</span>()</code><div class="small-abstract"><span>Set focus on the object.
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">doTween</span>()</code><div class="small-abstract"><span>Tween an object property over time.
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">addStyleSheet</span>(<span class="identifier">source</span>:<span class="decorator">string</span>)</code><div class="small-abstract"><span>Add a stylesheet to the object.
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">setTimer</span>()<span class="decorator"> -&gt;</span><span> nresults</span></code><div class="small-abstract"><span>Set a timer on the object.
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">setContext</span>()</code><div class="small-abstract"><span>Set the current context object where newly created objects will be parented.
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getName</span>()<span class="decorator"> -&gt;</span><span> string</span></code><div class="small-abstract"><span>Retrieves the object's name identifier
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">setName</span>(<span class="identifier">name</span>:<span class="decorator">string</span>)</code><div class="small-abstract"><span>Sets the object's name identifier
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getClassName</span>()<span class="decorator"> -&gt;</span><span> string</span></code><div class="small-abstract"><span>Returns the object's class type name
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">checkName</span>(<span class="identifier">name</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Checks if object has a specific name
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">findByPath</span>(<span class="identifier">name</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> Object</span></code><div class="small-abstract"><span>Finds child object by hierarchical path
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getStyle</span>()<span class="decorator"> -&gt;</span><span> uint</span></code><div class="small-abstract"><span>Retrieves object style flags
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">setStyle</span>(<span class="identifier">style</span>:<span class="decorator">uint</span>)</code><div class="small-abstract"><span>Sets object style flags
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">findCallbackForID</span>(<span class="identifier">event</span>:<span class="decorator">uint</span>)<span class="decorator"> -&gt;</span><span> string</span></code><div class="small-abstract"><span>Retrieves callback function name for event ID
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">applyStyles</span>(<span class="identifier">recursive</span>:<span class="decorator">bool</span>)</code><div class="small-abstract"><span>Applies style changes to object hierarchy
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">setDirty</span>()</code><div class="small-abstract"><span>Sets object dirty and queues it for recalculation
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getParent</span>()<span class="decorator"> -&gt;</span><span> Object</span></code><div class="small-abstract"><span>Gets the parent object in the hierarchy
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getFirstChild</span>()<span class="decorator"> -&gt;</span><span> Object</span></code><div class="small-abstract"><span>Gets the first child object
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getNext</span>()<span class="decorator"> -&gt;</span><span> Object</span></code><div class="small-abstract"><span>Gets the next sibling object
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getRoot</span>()<span class="decorator"> -&gt;</span><span> Object</span></code><div class="small-abstract"><span>Gets the root object of the hierarchy
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">findChildByID</span>(<span class="identifier">id</span>:<span class="decorator">uint</span>)<span class="decorator"> -&gt;</span><span> Object</span></code><div class="small-abstract"><span>Finds a child object by its unique identifier
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">findChildByAlias</span>(<span class="identifier">id</span>:<span class="decorator">uint</span>)<span class="decorator"> -&gt;</span><span> Object</span></code><div class="small-abstract"><span>Finds a child object by its alias identifier
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getSourceFile</span>()<span class="decorator"> -&gt;</span><span> string</span></code><div class="small-abstract"><span>Gets the source file path
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getTextContent</span>()<span class="decorator"> -&gt;</span><span> string</span></code><div class="small-abstract"><span>Gets the text content of the object
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getTimestamp</span>()<span class="decorator"> -&gt;</span><span> long</span></code><div class="small-abstract"><span>Gets the last modified timestamp
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getLuaObject</span>()<span class="decorator"> -&gt;</span><span> uint</span></code><div class="small-abstract"><span>Gets the Lua object reference
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getAlias</span>()<span class="decorator"> -&gt;</span><span> uint</span></code><div class="small-abstract"><span>Gets the alias identifier
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getFlags</span>()<span class="decorator"> -&gt;</span><span> uint</span></code><div class="small-abstract"><span>Gets the object flags
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">setFlags</span>(<span class="identifier">flags</span>:<span class="decorator">uint</span>)</code><div class="small-abstract"><span>Sets the object flags
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getIdentifier</span>()<span class="decorator"> -&gt;</span><span> uint</span></code><div class="small-abstract"><span>Gets the identifier of the object
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getModal</span>()<span class="decorator"> -&gt;</span><span> Object</span></code><div class="small-abstract"><span>Gets the modal child object
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">setModal</span>(<span class="identifier">modal</span>:<span class="decorator">Object</span>)</code><div class="small-abstract"><span>Sets or clears the modal child object
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">isFocused</span>()<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Checks if this object currently has focus
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">setHover</span>()</code><div class="small-abstract"><span>Sets the hover state for an object
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">setTextContent</span>(<span class="identifier">text</span>:<span class="decorator">string</span>)</code><div class="small-abstract"><span>Sets the text content of the object
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">setSourceFile</span>(<span class="identifier">path</span>:<span class="decorator">string</span>)</code><div class="small-abstract"><span>Sets the source file path of the object
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">setClassName</span>(<span class="identifier">classID</span>:<span class="decorator">string</span>)</code><div class="small-abstract"><span>Sets the CSS-style class name of the object
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">findParentOfClass</span>(<span class="identifier">classID</span>:<span class="decorator">uint</span>)<span class="decorator"> -&gt;</span><span> Object</span></code><div class="small-abstract"><span>Finds the nearest parent object of a specific class
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">findChildOfClass</span>(<span class="identifier">classID</span>:<span class="decorator">uint</span>)<span class="decorator"> -&gt;</span><span> Object</span></code><div class="small-abstract"><span>Finds a child object of a specific class
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">isPrefabView</span>()<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Checks if this object is a prefab view container
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">addAlias</span>(<span class="identifier">name</span>:<span class="decorator">string</span>, <span class="identifier">path</span>:<span class="decorator">string</span>)</code><div class="small-abstract"><span>Registers an alias for a child object path
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">assignAliases</span>(<span class="identifier">pathToObject</span>:<span class="decorator">string</span>)</code><div class="small-abstract"><span>Resolves and assigns all registered aliases for an object
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">parseClassAttribute</span>(<span class="identifier">classString</span>:<span class="decorator">string</span>)</code><div class="small-abstract"><span>Parses and applies multiple class names from a class attribute string
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">setAnimation</span>(<span class="identifier">name</span>:<span class="decorator">string</span>)</code><div class="small-abstract"><span>Sets the active animation by name
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getAnimation</span>()<span class="decorator"> -&gt;</span><span> KeyframeAnim</span></code><div class="small-abstract"><span>Gets the currently active animation
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">addAnimation</span>(<span class="identifier">animation</span>:<span class="decorator">KeyframeAnim</span>)</code><div class="small-abstract"><span>Adds a keyframe animation to the object's animation library
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getInteger</span>(<span class="identifier">ident</span>:<span class="decorator">uint</span>, <span class="identifier">fallback</span>:<span class="decorator">int</span>)<span class="decorator"> -&gt;</span><span> int</span></code><div class="small-abstract"><span>Gets an integer property value by identifier
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getProperties</span>()<span class="decorator"> -&gt;</span><span> Property</span></code><div class="small-abstract"><span>Gets the properties collection
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">findPropertyByPath</span>(<span class="identifier">path</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> Property</span></code><div class="small-abstract"><span>Finds a property by navigating a hierarchical path
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getFocus</span>()<span class="decorator"> -&gt;</span><span> Object</span></code><div class="small-abstract"><span>Retrieves currently active object.
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getHover</span>()<span class="decorator"> -&gt;</span><span> Object</span></code><div class="small-abstract"><span>Gets the currently hovered object
-</span></div></div></div><div id="DataType" class="class" data-name="DataType" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
-</div><h1 class="header">DataType
-</h1><div class="abstract">Specifies the underlying data type of a property.
-</div><h2 class="title">Overview</h2><div class="abstract">DataType defines the fundamental type of value a property can hold, ranging from basic primitives like Bool and Float to complex structures such as Transform3D or custom Objects. It helps the engine interpret, validate, and serialize property values appropriately.</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">None</span></code><div class="small-abstract"><span>No data type specified.
+<html xmlns="http://www.w3.org/2001/XMLSchema"><head><link rel="stylesheet" href="doc.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"><meta charset="UTF-8"></head><body><div class="adjustable-sidebar-width full-width-container topic-wrapper"><div class="sidebar"><div class="technology-title"><span class="fa-solid fa-folder-open icon"></span>orca.geometry
+</div><a class="leaf-link" href="#RotationOrder"><i class="fa-solid fa-bars icon"></i><span>RotationOrder
+</span></a><a class="leaf-link" href="#vec2"><i class="fa-solid fa-gear icon"></i><span>vec2
+</span></a><a class="leaf-link" href="#vec3"><i class="fa-solid fa-gear icon"></i><span>vec3
+</span></a><a class="leaf-link" href="#vec4"><i class="fa-solid fa-gear icon"></i><span>vec4
+</span></a><a class="leaf-link" href="#box2"><i class="fa-solid fa-gear icon"></i><span>box2
+</span></a><a class="leaf-link" href="#box3"><i class="fa-solid fa-gear icon"></i><span>box3
+</span></a><a class="leaf-link" href="#rect"><i class="fa-solid fa-gear icon"></i><span>rect
+</span></a><a class="leaf-link" href="#quat"><i class="fa-solid fa-gear icon"></i><span>quat
+</span></a><a class="leaf-link" href="#mat3"><i class="fa-solid fa-gear icon"></i><span>mat3
+</span></a><a class="leaf-link" href="#mat4"><i class="fa-solid fa-gear icon"></i><span>mat4
+</span></a><a class="leaf-link" href="#bounds"><i class="fa-solid fa-gear icon"></i><span>bounds
+</span></a><a class="leaf-link" href="#plane3"><i class="fa-solid fa-gear icon"></i><span>plane3
+</span></a><a class="leaf-link" href="#sphere3"><i class="fa-solid fa-gear icon"></i><span>sphere3
+</span></a><a class="leaf-link" href="#frustum3"><i class="fa-solid fa-gear icon"></i><span>frustum3
+</span></a><a class="leaf-link" href="#transform2"><i class="fa-solid fa-gear icon"></i><span>transform2
+</span></a><a class="leaf-link" href="#transform3"><i class="fa-solid fa-gear icon"></i><span>transform3
+</span></a><a class="leaf-link" href="#triangle3"><i class="fa-solid fa-gear icon"></i><span>triangle3
+</span></a><a class="leaf-link" href="#line3"><i class="fa-solid fa-gear icon"></i><span>line3
+</span></a><a class="leaf-link" href="#edges"><i class="fa-solid fa-gear icon"></i><span>edges
+</span></a><a class="leaf-link" href="#color"><i class="fa-solid fa-gear icon"></i><span>color
+</span></a></div><main class="content"><div id="RotationOrder" class="class" data-name="RotationOrder" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
+</div><h1 class="header">RotationOrder
+</h1><div class="abstract">Euler angle rotation order enumeration
+</div><h2 class="title">Overview</h2><div class="abstract">Specifies the order in which rotations are applied around the X, Y, and Z axes. Different orders produce different final orientations for the same euler angles.</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">XYZ</span></code><div class="small-abstract"><span>Rotate around X axis first, then Y, then Z
 </span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Bool</span></code><div class="small-abstract"><span>Boolean value representing true or false.
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">XZY</span></code><div class="small-abstract"><span>Rotate around X axis first, then Z, then Y
 </span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Int</span></code><div class="small-abstract"><span>Signed integer value.
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">YZX</span></code><div class="small-abstract"><span>Rotate around Y axis first, then Z, then X
 </span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Enum</span></code><div class="small-abstract"><span>Enumeration type represented by integer values mapped to named constants.
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">YXZ</span></code><div class="small-abstract"><span>Rotate around Y axis first, then X, then Z
 </span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Float</span></code><div class="small-abstract"><span>Floating-point numeric value.
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">ZXY</span></code><div class="small-abstract"><span>Rotate around Z axis first, then X, then Y
 </span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Vector2D</span></code><div class="small-abstract"><span>Two-dimensional vector, typically used for coordinates or sizes.
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">ZYX</span></code><div class="small-abstract"><span>Rotate around Z axis first, then Y, then X
 </span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Vector3D</span></code><div class="small-abstract"><span>Three-dimensional vector, used for spatial coordinates, directions, or RGB values.
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Vector4D</span></code><div class="small-abstract"><span>Four-dimensional vector, commonly used for extended color or transformation data.
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Matrix2D</span></code><div class="small-abstract"><span>2x2 matrix, typically used for simple affine transformations in 2D space.
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Matrix3D</span></code><div class="small-abstract"><span>3x3 matrix, used for 3D affine transformations or rotation data.
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Transform2D</span></code><div class="small-abstract"><span>2D transformation structure combining position, scale, and rotation.
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Transform3D</span></code><div class="small-abstract"><span>3D transformation structure combining translation, rotation, and scaling.
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Fixed</span></code><div class="small-abstract"><span>Fixed-length string or symbolic value.
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">LongString</span></code><div class="small-abstract"><span>Extended string data, intended for larger text content.
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Color</span></code><div class="small-abstract"><span>Color value defined by RGBA components.
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Edges</span></code><div class="small-abstract"><span>Set of edge-specific values (e.g., margin, padding, or border widths).
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">ObjectTags</span></code><div class="small-abstract"><span>List of tag identifiers associated with an object.
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Event</span></code><div class="small-abstract"><span>Event reference used to bind triggers or callbacks.
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Object</span></code><div class="small-abstract"><span>Reference to a complex object instance.
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Group</span></code><div class="small-abstract"><span>Logical grouping of related properties or child elements.
-</span></div></div>
-</div><div id="PropertyType" class="class" data-name="PropertyType" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">PropertyType
-</h1><div class="abstract">Defines a custom property type that can be attached to engine objects.
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">core.PropertyType</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">PropertyType allows defining additional data fields beyond built-in engine properties. Each PropertyType specifies its data category, default value, and behavioral attributes such as layout and render impact. It serves as a flexible mechanism for extending object metadata in projects.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_desc</span>: <span>PropertyDesc</span></code></div>
-<div class="small-abstract"><span>Internal descriptor structure providing extended property metadata.
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Category</span>: <span>fixed</span></code></div>
-<div class="small-abstract"><span>Organizational category for this property, used for grouping in editors and UIs.
-</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">DataType</span>: <a class="type-identifier-link" href="#DataType">DataType</a></code></div>
-<div class="small-abstract"><span>Underlying data type that determines how the property value is interpreted and stored.
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">DefaultValue</span>: <span>fixed</span></code></div>
-<div class="small-abstract"><span>Default value assigned when the property is not explicitly set.
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">TargetType</span>: <span>fixed</span></code></div>
-<div class="small-abstract"><span>Type of object or component this property applies to.
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">AffectLayout</span>: <span>bool</span></code></div>
-<div class="small-abstract"><span>Indicates whether this property affects element layout (e.g., size or alignment).
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">AffectRender</span>: <span>bool</span></code></div>
-<div class="small-abstract"><span>Indicates whether this property influences the rendering output.
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">IsReadOnly</span>: <span>bool</span></code></div>
-<div class="small-abstract"><span>If true, the property value cannot be modified at runtime or through the editor.
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">IsHidden</span>: <span>bool</span></code></div>
-<div class="small-abstract"><span>If true, the property is excluded from the UI or inspector views.
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">IsInherited</span>: <span>bool</span></code></div>
-<div class="small-abstract"><span>Specifies whether the property value can be inherited from parent components.
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Key</span>: <span>fixed</span></code></div>
-<div class="small-abstract"><span>Internal key name used for property identification and lookup.
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Value</span>: <span>fixed</span></code></div>
-<div class="small-abstract"><span>Runtime value stored in this property instance.
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Step</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Increment step used for numeric adjustments in UI controls.
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">UpperBound</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Maximum allowed value for numeric properties.
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">LowerBound</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Minimum allowed value for numeric properties.
-</span></div></div><div id="PropertyEnumValue" class="class" data-name="PropertyEnumValue" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
-</div><h1 class="header">PropertyEnumValue
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">core.PropertyEnumValue</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Value</span>: <span>int</span></code></div>
-</div></main></div></body></html>
+</div><div id="vec2" class="class" data-name="vec2" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">vec2
+</h1><div class="abstract">2D vector structure
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.vec2</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a point or direction in 2D space with x and y components. Supports common vector operations like addition, scaling, and distance calculations.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">x</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>X coordinate component
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">y</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Y coordinate component
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">set</span>(<span class="identifier">x</span>:<span class="decorator">float</span>, <span class="identifier">y</span>:<span class="decorator">float</span>)</code><div class="small-abstract"><span>Sets the vector components
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">scale</span>(<span class="identifier">s</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> vec2</span></code><div class="small-abstract"><span>Returns a scaled copy of the vector
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">add</span>(<span class="identifier">other</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> vec2</span></code><div class="small-abstract"><span>Adds two vectors component-wise
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">mul</span>(<span class="identifier">other</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> vec2</span></code><div class="small-abstract"><span>Multiplies two vectors component-wise
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">div</span>(<span class="identifier">other</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> vec2</span></code><div class="small-abstract"><span>Divides two vectors component-wise
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">sub</span>(<span class="identifier">other</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> vec2</span></code><div class="small-abstract"><span>Subtracts one vector from another
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">unm</span>()<span class="decorator"> -&gt;</span><span> vec2</span></code><div class="small-abstract"><span>Returns the negated vector
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">dot</span>(<span class="identifier">other</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Calculates dot product with another vector
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">lengthsq</span>()<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Returns the squared length of the vector
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">len</span>()<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Returns the length (magnitude) of the vector
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">distance</span>(<span class="identifier">other</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Calculates distance to another vector
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">normalize</span>()</code><div class="small-abstract"><span>Normalizes the vector in place to unit length
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">lerp</span>(<span class="identifier">other</span>:<span class="decorator">vec2</span>, <span class="identifier">t</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> vec2</span></code><div class="small-abstract"><span>Linear interpolation between this vector and another
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">mad</span>(<span class="identifier">s</span>:<span class="decorator">float</span>, <span class="identifier">other</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> vec2</span></code><div class="small-abstract"><span>Multiply-add operation: returns this + (s * other)
+</span></div></div></div><div id="vec3" class="class" data-name="vec3" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">vec3
+</h1><div class="abstract">3D vector structure
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.vec3</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a point or direction in 3D space with x, y, and z components. Supports vector math operations, interpolation, and curve calculations.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">x</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>X coordinate component
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">y</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Y coordinate component
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">z</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Z coordinate component
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">dot</span>(<span class="identifier">other</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Calculates dot product with another vector
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">lengthsq</span>()<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Returns the squared length of the vector
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">len</span>()<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Returns the length (magnitude) of the vector
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">bezier</span>(<span class="identifier">b</span>:<span class="decorator">vec3</span>, <span class="identifier">c</span>:<span class="decorator">vec3</span>, <span class="identifier">d</span>:<span class="decorator">vec3</span>, <span class="identifier">t</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Cubic Bezier curve interpolation
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">hermite</span>(<span class="identifier">b</span>:<span class="decorator">vec3</span>, <span class="identifier">c</span>:<span class="decorator">vec3</span>, <span class="identifier">d</span>:<span class="decorator">vec3</span>, <span class="identifier">t</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Hermite spline interpolation
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">lerp</span>(<span class="identifier">other</span>:<span class="decorator">vec3</span>, <span class="identifier">t</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Linear interpolation between this vector and another
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">cross</span>(<span class="identifier">other</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Calculates cross product with another vector
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">sub</span>(<span class="identifier">other</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Subtracts one vector from another
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">add</span>(<span class="identifier">other</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Adds two vectors component-wise
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">mad</span>(<span class="identifier">s</span>:<span class="decorator">float</span>, <span class="identifier">other</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Multiply-add operation: returns this + (s * other)
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">mul</span>(<span class="identifier">other</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Multiplies two vectors component-wise
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">scale</span>(<span class="identifier">s</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Returns a scaled copy of the vector
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">normalize</span>()</code><div class="small-abstract"><span>Normalizes the vector in place to unit length
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">set</span>(<span class="identifier">x</span>:<span class="decorator">float</span>, <span class="identifier">y</span>:<span class="decorator">float</span>, <span class="identifier">z</span>:<span class="decorator">float</span>)</code><div class="small-abstract"><span>Sets the vector components
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">clear</span>()</code><div class="small-abstract"><span>Sets all components to zero
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">unm</span>()<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Returns the negated vector
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">distance</span>(<span class="identifier">other</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Calculates distance to another vector
+</span></div></div></div><div id="vec4" class="class" data-name="vec4" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">vec4
+</h1><div class="abstract">4D vector structure
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.vec4</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a 4-component vector with x, y, z, and w components. Commonly used for homogeneous coordinates, quaternions, or RGBA colors.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">x</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>X coordinate component
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">y</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Y coordinate component
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">z</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Z coordinate component
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">w</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>W coordinate component
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">set</span>(<span class="identifier">x</span>:<span class="decorator">float</span>, <span class="identifier">y</span>:<span class="decorator">float</span>, <span class="identifier">z</span>:<span class="decorator">float</span>, <span class="identifier">w</span>:<span class="decorator">float</span>)</code><div class="small-abstract"><span>Sets all vector components
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">scale</span>(<span class="identifier">s</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> vec4</span></code><div class="small-abstract"><span>Returns a scaled copy of the vector
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">add</span>(<span class="identifier">other</span>:<span class="decorator">vec4</span>)<span class="decorator"> -&gt;</span><span> vec4</span></code><div class="small-abstract"><span>Adds two vectors component-wise
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">unm</span>()<span class="decorator"> -&gt;</span><span> vec4</span></code><div class="small-abstract"><span>Returns the negated vector
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">lerp</span>(<span class="identifier">other</span>:<span class="decorator">vec4</span>, <span class="identifier">t</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> vec4</span></code><div class="small-abstract"><span>Linear interpolation between this vector and another
+</span></div></div></div><div id="box2" class="class" data-name="box2" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">box2
+</h1><div class="abstract">2D axis-aligned bounding box
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.box2</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a rectangular region in 2D space defined by minimum and maximum corner points. Used for collision detection and spatial queries.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">min</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
+<div class="small-abstract"><span>Minimum corner point (bottom-left)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">max</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
+<div class="small-abstract"><span>Maximum corner point (top-right)
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">center</span>()<span class="decorator"> -&gt;</span><span> vec2</span></code><div class="small-abstract"><span>Calculates the center point of the box
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">moveTo</span>(<span class="identifier">location</span>:<span class="decorator">vec2</span>)</code><div class="small-abstract"><span>Moves the box so its center is at the specified location
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">containsPoint</span>(<span class="identifier">point</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Tests if a point is inside the box
+</span></div></div></div><div id="box3" class="class" data-name="box3" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">box3
+</h1><div class="abstract">3D axis-aligned bounding box
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.box3</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a rectangular volume in 3D space defined by minimum and maximum corner points. Used for 3D collision detection and spatial culling.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">min</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
+<div class="small-abstract"><span>Minimum corner point
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">max</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
+<div class="small-abstract"><span>Maximum corner point
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">center</span>()<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Calculates the center point of the box
+</span></div></div></div><div id="rect" class="class" data-name="rect" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">rect
+</h1><div class="abstract">2D rectangle structure
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.rect</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a rectangle using position (x, y) and dimensions (width, height). Provides utility methods for containment tests and transformations.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">x</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Left edge X coordinate
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">y</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Top edge Y coordinate
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">width</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Rectangle width
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">height</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Rectangle height
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">contains</span>(<span class="identifier">point</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Tests if a point is inside the rectangle
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">scale</span>(<span class="identifier">scale</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> rect</span></code><div class="small-abstract"><span>Returns a scaled copy of the rectangle
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">expand</span>(<span class="identifier">padding</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> rect</span></code><div class="small-abstract"><span>Returns a expanded copy of the rectangle
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">center</span>()<span class="decorator"> -&gt;</span><span> vec2</span></code><div class="small-abstract"><span>Calculates the center point of the rectangle
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">fit</span>(<span class="identifier">big</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> rect</span></code><div class="small-abstract"><span>Scales rectangle to fit within given dimensions while preserving aspect ratio
+</span></div></div></div><div id="quat" class="class" data-name="quat" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">quat
+</h1><div class="abstract">Quaternion for 3D rotations
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.quat</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a rotation in 3D space using quaternion mathematics. Provides smooth interpolation and avoids gimbal lock issues common with Euler angles.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">x</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>X component of quaternion
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">y</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Y component of quaternion
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">z</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Z component of quaternion
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">w</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>W component (scalar part) of quaternion
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">fromEuler</span>(<span class="identifier">euler</span>:<span class="decorator">vec3</span>, <span class="identifier">order</span>:<span class="decorator">RotationOrder</span>)<span class="decorator"> -&gt;</span><span> quat</span></code><div class="small-abstract"><span>Creates quaternion from Euler angles
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">fromMatrix</span>(<span class="identifier">matrix</span>:<span class="decorator">mat4</span>)<span class="decorator"> -&gt;</span><span> quat</span></code><div class="small-abstract"><span>Extracts quaternion from rotation matrix
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">dotProduct</span>(<span class="identifier">other</span>:<span class="decorator">quat</span>)<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Calculates dot product with another quaternion
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">length</span>()<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Returns the magnitude of the quaternion
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">unm</span>()<span class="decorator"> -&gt;</span><span> quat</span></code><div class="small-abstract"><span>Returns the conjugate of the quaternion
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">normalized</span>()<span class="decorator"> -&gt;</span><span> quat</span></code><div class="small-abstract"><span>Returns a normalized copy of the quaternion
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">slerp</span>(<span class="identifier">q</span>:<span class="decorator">quat</span>, <span class="identifier">t</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> quat</span></code><div class="small-abstract"><span>Spherical linear interpolation between quaternions
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">sqlerp</span>(<span class="identifier">b</span>:<span class="decorator">quat</span>, <span class="identifier">c</span>:<span class="decorator">quat</span>, <span class="identifier">d</span>:<span class="decorator">quat</span>, <span class="identifier">t</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> quat</span></code><div class="small-abstract"><span>Squad (spherical cubic) interpolation between quaternions
+</span></div></div></div><div id="mat3" class="class" data-name="mat3" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">mat3
+</h1><div class="abstract">3x3 transformation matrix
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.mat3</span></code><h2 class="title">Overview</h2><div class="abstract">Represents 2D transformations and 3D normal transformations. Stored in column-major order as a 9-element float array.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">v</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Matrix elements in column-major order
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">identity</span>()<span class="decorator"> -&gt;</span><span> mat3</span></code><div class="small-abstract"><span>Creates an identity matrix
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">normal</span>(<span class="identifier">matrix</span>:<span class="decorator">mat4</span>)<span class="decorator"> -&gt;</span><span> mat3</span></code><div class="small-abstract"><span>Creates normal transformation matrix from 4x4 matrix
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">translate</span>(<span class="identifier">offset</span>:<span class="decorator">vec2</span>)</code><div class="small-abstract"><span>Applies translation to the matrix
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">scale</span>(<span class="identifier">scale</span>:<span class="decorator">vec2</span>)</code><div class="small-abstract"><span>Applies scaling to the matrix
+</span></div></div></div><div id="mat4" class="class" data-name="mat4" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">mat4
+</h1><div class="abstract">4x4 transformation matrix
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.mat4</span></code><h2 class="title">Overview</h2><div class="abstract">Represents 3D transformations including translation, rotation, and scaling. Stored in column-major order as a 16-element float array. Used for camera projections and object transformations.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">v</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Matrix elements in column-major order
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">identity</span>()<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Creates an identity matrix
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">translate</span>(<span class="identifier">offset</span>:<span class="decorator">vec3</span>)</code><div class="small-abstract"><span>Applies translation to the matrix
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">rotate</span>(<span class="identifier">euler</span>:<span class="decorator">vec3</span>, <span class="identifier">order</span>:<span class="decorator">RotationOrder</span>)</code><div class="small-abstract"><span>Applies rotation using Euler angles
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">scale</span>(<span class="identifier">scale</span>:<span class="decorator">vec3</span>)</code><div class="small-abstract"><span>Applies scaling to the matrix
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">multiply</span>(<span class="identifier">other</span>:<span class="decorator">mat4</span>)<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Multiplies this matrix with another
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">ortho</span>(<span class="identifier">left</span>:<span class="decorator">float</span>, <span class="identifier">right</span>:<span class="decorator">float</span>, <span class="identifier">bottom</span>:<span class="decorator">float</span>, <span class="identifier">top</span>:<span class="decorator">float</span>, <span class="identifier">znear</span>:<span class="decorator">float</span>, <span class="identifier">zfar</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Creates orthographic projection matrix
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">perspective</span>(<span class="identifier">radians</span>:<span class="decorator">float</span>, <span class="identifier">aspect</span>:<span class="decorator">float</span>, <span class="identifier">znear</span>:<span class="decorator">float</span>, <span class="identifier">zfar</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Creates perspective projection matrix
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">lookAt</span>(<span class="identifier">eye</span>:<span class="decorator">vec3</span>, <span class="identifier">direction</span>:<span class="decorator">vec3</span>, <span class="identifier">up</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Creates view matrix for camera positioning
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">inverse</span>()<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Calculates the inverse matrix
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">transpose</span>()<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Returns the transposed matrix
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">rotate4</span>(<span class="identifier">quat</span>:<span class="decorator">vec4</span>)</code><div class="small-abstract"><span>Applies quaternion rotation to the matrix
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">multiplyVector3D</span>(<span class="identifier">point</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Transforms a 3D point by this matrix
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">fromRotationOrigin</span>(<span class="identifier">rotation</span>:<span class="decorator">quat</span>, <span class="identifier">origin</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Creates matrix from rotation around a specific origin point
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">fromRotationTranslationScaleOrigin</span>(<span class="identifier">rotation</span>:<span class="decorator">quat</span>, <span class="identifier">translation</span>:<span class="decorator">vec3</span>, <span class="identifier">scale</span>:<span class="decorator">vec3</span>, <span class="identifier">origin</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Creates full transformation matrix with custom origin
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">fromTranslation</span>(<span class="identifier">translation</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Creates translation-only matrix
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">rotateQuat</span>(<span class="identifier">rotation</span>:<span class="decorator">quat</span>)</code><div class="small-abstract"><span>Applies quaternion rotation to the matrix
+</span></div></div></div><div id="bounds" class="class" data-name="bounds" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">bounds
+</h1><div class="abstract">1D range bounds
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.bounds</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a range with minimum and maximum values. Used for clamping values or defining valid ranges.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">min</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Minimum value of the range
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">max</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Maximum value of the range
+</span></div></div><div id="plane3" class="class" data-name="plane3" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">plane3
+</h1><div class="abstract">3D plane representation
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.plane3</span></code><h2 class="title">Overview</h2><div class="abstract">Represents an infinite plane in 3D space using the equation ax + by + cz + d = 0. Used for clipping, collision detection, and spatial partitioning.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">a</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>X component of plane normal
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">b</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Y component of plane normal
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">c</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Z component of plane normal
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">d</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Distance from origin along normal
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">normalize</span>()</code><div class="small-abstract"><span>Normalizes the plane equation
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">multiplyVector3D</span>(<span class="identifier">point</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Calculates signed distance from point to plane
+</span></div></div></div><div id="sphere3" class="class" data-name="sphere3" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">sphere3
+</h1><div class="abstract">3D sphere representation
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.sphere3</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a sphere in 3D space defined by center point and radius. Used for collision detection, bounding volumes, and spatial queries.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">center</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
+<div class="small-abstract"><span>Center point of the sphere
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">radius</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Radius of the sphere
+</span></div></div><div id="frustum3" class="class" data-name="frustum3" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">frustum3
+</h1><div class="abstract">3D viewing frustum
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.frustum3</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a truncated pyramid used for camera view volumes and culling. Defined by six planes that bound the visible region.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">left</span>: <a class="type-identifier-link" href="#plane3">plane3</a></code></div>
+<div class="small-abstract"><span>Left clipping plane
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">right</span>: <a class="type-identifier-link" href="#plane3">plane3</a></code></div>
+<div class="small-abstract"><span>Right clipping plane
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">bottom</span>: <a class="type-identifier-link" href="#plane3">plane3</a></code></div>
+<div class="small-abstract"><span>Bottom clipping plane
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">top</span>: <a class="type-identifier-link" href="#plane3">plane3</a></code></div>
+<div class="small-abstract"><span>Top clipping plane
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">front</span>: <a class="type-identifier-link" href="#plane3">plane3</a></code></div>
+<div class="small-abstract"><span>Near clipping plane
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">back</span>: <a class="type-identifier-link" href="#plane3">plane3</a></code></div>
+<div class="small-abstract"><span>Far clipping plane
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">calculate</span>(<span class="identifier">matrix</span>:<span class="decorator">mat4</span>)<span class="decorator"> -&gt;</span><span> frustum3</span></code><div class="small-abstract"><span>Extracts frustum planes from projection matrix
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">containsPoint</span>(<span class="identifier">point</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Tests if a point is inside the frustum
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">containsSphere</span>(<span class="identifier">sphere</span>:<span class="decorator">sphere3</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Tests if a sphere intersects the frustum
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">containsBox</span>(<span class="identifier">box</span>:<span class="decorator">box3</span>, <span class="identifier">matrix</span>:<span class="decorator">mat4</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Tests if a transformed bounding box intersects the frustum
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">containsAABox</span>(<span class="identifier">box</span>:<span class="decorator">box3</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Tests if an axis-aligned box intersects the frustum
+</span></div></div></div><div id="transform2" class="class" data-name="transform2" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">transform2
+</h1><div class="abstract">2D transformation structure
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.transform2</span></code><h2 class="title">Overview</h2><div class="abstract">Encapsulates 2D translation, rotation, and scaling. Provides convenient interface for common 2D transformations and matrix conversion.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">translation</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
+<div class="small-abstract"><span>Translation offset
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">rotation</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Rotation angle in radians
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">scale</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
+<div class="small-abstract"><span>Scale factors for X and Y axes
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">identity</span>()<span class="decorator"> -&gt;</span><span> transform2</span></code><div class="small-abstract"><span>Creates identity transformation
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">toMatrix3D</span>(<span class="identifier">pivot</span>:<span class="decorator">vec2</span>)<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Converts to 4x4 transformation matrix
+</span></div></div></div><div id="transform3" class="class" data-name="transform3" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">transform3
+</h1><div class="abstract">3D transformation structure
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.transform3</span></code><h2 class="title">Overview</h2><div class="abstract">Encapsulates 3D translation, rotation (as Euler angles), and scaling. Provides convenient interface for common 3D transformations.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">translation</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
+<div class="small-abstract"><span>Translation offset
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">rotation</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
+<div class="small-abstract"><span>Euler angles in radians (x=pitch, y=yaw, z=roll)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">scale</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
+<div class="small-abstract"><span>Scale factors for X, Y, and Z axes
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">identity</span>()<span class="decorator"> -&gt;</span><span> transform3</span></code><div class="small-abstract"><span>Creates identity transformation
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">toMatrix3D</span>(<span class="identifier">pivot</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> mat4</span></code><div class="small-abstract"><span>Converts to 4x4 transformation matrix
+</span></div></div></div><div id="triangle3" class="class" data-name="triangle3" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">triangle3
+</h1><div class="abstract">3D triangle primitive
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.triangle3</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a triangle in 3D space defined by three vertices. Used for mesh geometry, collision detection, and ray casting.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">a</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
+<div class="small-abstract"><span>First vertex of the triangle
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">b</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
+<div class="small-abstract"><span>Second vertex of the triangle
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">c</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
+<div class="small-abstract"><span>Third vertex of the triangle
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">normal</span>()<span class="decorator"> -&gt;</span><span> vec3</span></code><div class="small-abstract"><span>Calculates the triangle's surface normal
+</span></div></div></div><div id="line3" class="class" data-name="line3" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">line3
+</h1><div class="abstract">3D line segment
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.line3</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a line segment in 3D space defined by two endpoints. Provides intersection testing with various geometric primitives.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">a</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
+<div class="small-abstract"><span>Start point of the line segment
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">b</span>: <a class="type-identifier-link" href="#vec3">vec3</a></code></div>
+<div class="small-abstract"><span>End point of the line segment
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">intersect_sphere3</span>(<span class="identifier">sphere</span>:<span class="decorator">sphere3</span>, <span class="identifier">out</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Tests intersection with a sphere
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">intersect_plane3</span>(<span class="identifier">plane</span>:<span class="decorator">plane3</span>, <span class="identifier">out</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Tests intersection with a plane
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">intersect_triangle</span>(<span class="identifier">triangle</span>:<span class="decorator">triangle3</span>, <span class="identifier">out</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Tests intersection with a triangle
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">intersect_box3</span>(<span class="identifier">box</span>:<span class="decorator">box3</span>, <span class="identifier">out</span>:<span class="decorator">vec3</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Tests intersection with a 3D bounding box
+</span></div></div></div><div id="edges" class="class" data-name="edges" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">edges
+</h1><div class="abstract">Edge insets structure
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.edges</span></code><h2 class="title">Overview</h2><div class="abstract">Represents spacing or padding values for all four edges of a rectangular region. Commonly used for UI layout and margin calculations.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">left</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Left edge spacing
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">top</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Top edge spacing
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">right</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Right edge spacing
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">bottom</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Bottom edge spacing
+</span></div></div><div id="color" class="class" data-name="color" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">color
+</h1><div class="abstract">RGBA color representation
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">geometry.color</span></code><h2 class="title">Overview</h2><div class="abstract">Represents a color with red, green, blue, and alpha (transparency) components. Values typically range from 0.0 to 1.0.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">r</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Red component (0.0 to 1.0)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">g</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Green component (0.0 to 1.0)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">b</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Blue component (0.0 to 1.0)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">a</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Alpha (transparency) component (0.0 = transparent, 1.0 = opaque)
+</span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">lerp</span>(<span class="identifier">other</span>:<span class="decorator">color</span>, <span class="identifier">t</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> color</span></code><div class="small-abstract"><span>Linear interpolation between colors
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">parse</span>(<span class="identifier">code</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> color</span></code><div class="small-abstract"><span>Parses color from string representation
+</span></div></div></div></main></div></body></html>
