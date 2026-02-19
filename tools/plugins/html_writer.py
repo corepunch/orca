@@ -132,7 +132,6 @@ class doc:
 			ET.SubElement(code, 'span', {'class': 'decorator'}).text = ' ->'
 			ET.SubElement(code, 'span').text = " " + returns.get('type')
 
-
 class HtmlWriter(Plugin):
 	"""Generates an HTML documentation page from module XML."""
 

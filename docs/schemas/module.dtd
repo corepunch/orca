@@ -59,7 +59,7 @@
 >
 
 <!-- Structure Definition -->
-<!ELEMENT struct (summary?, details?, field*, method*)>
+<!ELEMENT struct (summary?, details?, field*, method*, shorthand*)>
 <!ATTLIST struct
   name CDATA #REQUIRED
   prefix CDATA #IMPLIED
@@ -69,7 +69,7 @@
 >
 
 <!-- Interface Definition (similar to struct but for abstract types) -->
-<!ELEMENT interface (summary?, details?, init?, field*, method*)>
+<!ELEMENT interface (summary?, details?, init?, field*, method*, shorthand*)>
 <!ATTLIST interface
   name CDATA #REQUIRED
   prefix CDATA #IMPLIED
@@ -79,7 +79,7 @@
 >
 
 <!-- Component Definition -->
-<!ELEMENT component (summary?, details?, xmlns?, property*, method*, handles*)>
+<!ELEMENT component (summary?, details?, xmlns?, property*, method*, handles*, shorthand*)>
 <!ATTLIST component
   name CDATA #REQUIRED
   parent CDATA #IMPLIED
@@ -103,6 +103,14 @@
   array CDATA #IMPLIED
   pointer (true|false) #IMPLIED
   const (true|false) #IMPLIED
+>
+
+<!-- Shorthand Definition (for struct/interface members) -->
+<!ELEMENT shorthand (#PCDATA)>
+<!ATTLIST shorthand
+  name CDATA #REQUIRED
+  physical CDATA #REQUIRED
+  userdata CDATA #IMPLIED
 >
 
 <!-- Method Definition -->
