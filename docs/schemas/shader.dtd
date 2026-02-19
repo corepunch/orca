@@ -1,0 +1,56 @@
+<!-- Enums -->
+<!ENTITY % GpuResourceMemoryType "GpuOnly | CpuGpuShared | CpuOnly">
+<!ENTITY % PrecisionType "Low | Medium | High">
+<!ENTITY % SourceType "FixedUniform | PropertyType | Manual">
+
+<!-- Common attributes -->
+<!ENTITY % CommonAttribs '
+    Name CDATA #REQUIRED
+    Precision (%PrecisionType;) #IMPLIED
+    SourceType (%SourceType;) #IMPLIED
+'>
+
+<!-- Basic data elements -->
+<!ELEMENT Matrix3D EMPTY>
+<!ATTLIST Matrix3D %CommonAttribs;>
+
+<!ELEMENT Image EMPTY>
+<!ATTLIST Image %CommonAttribs;>
+
+<!ELEMENT Float EMPTY>
+<!ATTLIST Float %CommonAttribs;>
+
+<!ELEMENT Vector2D EMPTY>
+<!ATTLIST Vector2D %CommonAttribs;>
+
+<!ELEMENT Vector3D EMPTY>
+<!ATTLIST Vector3D %CommonAttribs;>
+
+<!-- Collections -->
+<!ELEMENT Uniforms (Matrix3D | Image | Float | Vector2D | Vector3D)*>
+<!ELEMENT Attributes (Vector2D | Vector3D)*>
+<!ELEMENT Shared (Vector2D | Vector3D | Float)*>
+
+<!-- Shader code -->
+<!ELEMENT VertexShader (#PCDATA)>
+<!ATTLIST VertexShader
+    Name CDATA #REQUIRED
+    version CDATA #REQUIRED
+    out CDATA #IMPLIED
+    FloatPrecision (%PrecisionType;) #IMPLIED
+>
+
+<!ELEMENT FragmentShader (#PCDATA)>
+<!ATTLIST FragmentShader
+    Name CDATA #REQUIRED
+    version CDATA #REQUIRED
+    out CDATA #IMPLIED
+    FloatPrecision (%PrecisionType;) #IMPLIED
+>
+
+<!-- Root Shader element -->
+<!ELEMENT Shader (Uniforms?, Attributes?, Shared?, VertexShader, FragmentShader)>
+<!ATTLIST Shader
+    Name CDATA #REQUIRED
+    GpuResourceMemoryType (%GpuResourceMemoryType;) "GpuOnly"
+>

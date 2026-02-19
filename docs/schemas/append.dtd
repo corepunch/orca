@@ -1,0 +1,18 @@
+<!ELEMENT Resource (#PCDATA)>
+<!ATTLIST Resource Key CDATA #REQUIRED>
+
+<!ELEMENT StyleSheet (#PCDATA)>
+
+<!ELEMENT Binding (#PCDATA)>
+<!ATTLIST Binding 
+	Property CDATA #REQUIRED
+	Mode (expression|oneway) #IMPLIED
+	Enabled (true|false)  #IMPLIED
+	Attribute (VECTOR_X|VECTOR_Y|VECTOR_Z|VECTOR_W|COLOR_R|COLOR_G|COLOR_B|COLOR_A|WHOLE_PROPERTY) #IMPLIED
+>
+
+<!ELEMENT LayerPrefabPlaceholder (%Node2DElements;)*>
+<!ATTLIST LayerPrefabPlaceholder %Node2DAttribs; PlaceholderTemplate CDATA #REQUIRED>
+
+<!ELEMENT ObjectPrefabPlaceholder (%Node3DElements;)*>
+<!ATTLIST ObjectPrefabPlaceholder %Node3DAttribs; PlaceholderTemplate CDATA #REQUIRED>
