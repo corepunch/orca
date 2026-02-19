@@ -277,8 +277,14 @@ Axis = [
 	(re.compile(r"Border\.Radius\.(.+)Radius"), r"Border\1Radius"),
 ]
 
-class OutputPlugin:
-	"""Base class for output plugins"""
+class BasePlugin:
+	"""Base class for all plugins"""
+	def close(self):
+		"""Optional close method for cleanup"""
+		pass
+
+class OutputPlugin(BasePlugin):
+	"""Base class for file-based output plugins"""
 	def __init__(self, filename, extension):
 		self.filename = filename
 		self.extension = extension
@@ -318,7 +324,7 @@ class PropsPlugin(OutputPlugin):
 	def __init__(self, filename):
 		super().__init__(filename, "_properties.h")
 
-class HtmlPlugin:
+class HtmlPlugin(BasePlugin):
 	"""Plugin for generating HTML documentation"""
 	def __init__(self):
 		# HTML generation uses global state (g_html, g_sidebar, g_content)
@@ -382,49 +388,38 @@ class PluginRegistry:
 		return cls._plugins.get(name)
 
 class ParserState:
-	def __new__(self, filename):
+	def __init__(self, filename):
 		# Initialize plugins using the registry
 		self.plugins = {}
+		self.filename = filename
 		
-		# Create header plugin
-		header_plugin = PluginRegistry.create_plugin('header', filename)
-		if header_plugin:
-			self.header = header_plugin.open()
-			self.plugins['header'] = header_plugin
-			self.header_plugin = header_plugin  # Keep for backward compatibility
+		# Initialize file-based plugins (header, export, props)
+		for plugin_name in ['header', 'export', 'props']:
+			self._initialize_file_plugin(plugin_name, filename)
+		
+		# Initialize html plugin (no file needed)
+		self._initialize_plugin('html')
+	
+	def _initialize_file_plugin(self, name, filename):
+		"""Helper method to initialize file-based plugins"""
+		plugin = PluginRegistry.create_plugin(name, filename)
+		if plugin:
+			file_handle = plugin.open()
+			setattr(self, name, file_handle)
+			self.plugins[name] = plugin
+			setattr(self, f'{name}_plugin', plugin)  # Keep for backward compatibility
 		else:
-			self.header = None
-			self.header_plugin = None
-		
-		# Create export plugin
-		export_plugin = PluginRegistry.create_plugin('export', filename)
-		if export_plugin:
-			self.export = export_plugin.open()
-			self.plugins['export'] = export_plugin
-			self.export_plugin = export_plugin  # Keep for backward compatibility
+			setattr(self, name, None)
+			setattr(self, f'{name}_plugin', None)
+	
+	def _initialize_plugin(self, name):
+		"""Helper method to initialize non-file plugins"""
+		plugin = PluginRegistry.create_plugin(name)
+		if plugin:
+			self.plugins[name] = plugin
+			setattr(self, f'{name}_plugin', plugin)  # Keep for backward compatibility
 		else:
-			self.export = None
-			self.export_plugin = None
-		
-		# Create props plugin
-		props_plugin = PluginRegistry.create_plugin('props', filename)
-		if props_plugin:
-			self.props = props_plugin.open()
-			self.plugins['props'] = props_plugin
-			self.props_plugin = props_plugin  # Keep for backward compatibility
-		else:
-			self.props = None
-			self.props_plugin = None
-		
-		# Create html plugin
-		html_plugin = PluginRegistry.create_plugin('html')
-		if html_plugin:
-			self.plugins['html'] = html_plugin
-			self.html_plugin = html_plugin  # Keep for backward compatibility
-		else:
-			self.html_plugin = None
-		
-		return self
+			setattr(self, f'{name}_plugin', None)
 	
 	def close_all(self):
 		"""Close all plugin files"""

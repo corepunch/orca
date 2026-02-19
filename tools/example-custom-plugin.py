@@ -25,6 +25,7 @@ sys.modules["conv_module"] = conv_module
 spec.loader.exec_module(conv_module)
 
 # Now we can access the classes
+BasePlugin = conv_module.BasePlugin
 OutputPlugin = conv_module.OutputPlugin
 PluginRegistry = conv_module.PluginRegistry
 
@@ -76,9 +77,9 @@ class JsonPlugin(OutputPlugin):
         })
     
     def open(self):
-        """Override open to prepare for JSON writing"""
-        # We'll write JSON at close time, so just return a dummy handle
-        return self
+        """Override open - we don't write until close, so return None"""
+        # We'll write JSON at close time, so no file handle needed during open
+        return None
     
     def close(self):
         """Write the JSON metadata to file"""
