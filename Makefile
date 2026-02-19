@@ -144,6 +144,17 @@ modules:
 	../source/SceneKit/SceneKit.xml \
 	../source/filesystem/filesystem.xml && cd ..
 
+# Alternative XSLT-based code generation (requires xsltproc)
+modules-xsl:
+	cd tools && \
+	./conv-module-xsl.sh \
+	../source/geometry/geom.xml \
+	../source/core/core.xml \
+	../source/renderer/api/renderer.xml \
+	../source/UIKit/UIKit.xml \
+	../source/SceneKit/SceneKit.xml \
+	../source/filesystem/filesystem.xml && cd ..
+
 fonts:
 	python3 cd tools && \
 	../images/vga8x12_extra_chars.png \
