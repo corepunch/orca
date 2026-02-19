@@ -352,7 +352,13 @@ enum TextBlockConceptProperties {
 #define Node2D_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_Node2D,sizeof(struct Node2D),_N)
 enum Node2DProperties {
 	kNode2DLayoutTransform,
+	kNode2DLayoutTransformTranslation,
+	kNode2DLayoutTransformRotation,
+	kNode2DLayoutTransformScale,
 	kNode2DRenderTransform,
+	kNode2DRenderTransformTranslation,
+	kNode2DRenderTransformRotation,
+	kNode2DRenderTransformScale,
 	kNode2DRenderTransformOrigin,
 	kNode2DContentOffset,
 	kNode2DMatrix,
@@ -393,7 +399,13 @@ enum Node2DProperties {
 };
 
 #define ID_Node2D_LayoutTransform 0x7c78c87b
+#define ID_Node2D_LayoutTransformTranslation 0x2407475a
+#define ID_Node2D_LayoutTransformRotation 0x40a04c55
+#define ID_Node2D_LayoutTransformScale 0xae9265d3
 #define ID_Node2D_RenderTransform 0xa5faec05
+#define ID_Node2D_RenderTransformTranslation 0xa5d5540c
+#define ID_Node2D_RenderTransformRotation 0x5387d0bf
+#define ID_Node2D_RenderTransformScale 0xa0bbe951
 #define ID_Node2D_RenderTransformOrigin 0x43a9dbaf
 #define ID_Node2D_ContentOffset 0xb5cb609b
 #define ID_Node2D_Matrix 0x09a64b02
