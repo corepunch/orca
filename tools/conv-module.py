@@ -239,13 +239,91 @@ Axis = [
 	(re.compile(r"Border\.Radius\.(.+)Radius"), r"Border\1Radius"),
 ]
 
+class OutputPlugin:
+	"""Base class for output plugins"""
+	def __init__(self, filename, extension):
+		self.filename = filename
+		self.extension = extension
+		self.file_handle = None
+	
+	def open(self):
+		"""Open the output file"""
+		output_filename = self.filename.replace(".xml", self.extension)
+		self.file_handle = open(output_filename, "w")
+		return self.file_handle
+	
+	def close(self):
+		"""Close the output file"""
+		if self.file_handle:
+			self.file_handle.close()
+	
+	def write(self, text):
+		"""Write a line to the output file"""
+		w(self.file_handle, text)
+	
+	def get_handle(self):
+		"""Get the file handle for direct writing"""
+		return self.file_handle
+
+class HeaderPlugin(OutputPlugin):
+	"""Plugin for generating C header files (.h)"""
+	def __init__(self, filename):
+		super().__init__(filename, ".h")
+
+class ExportPlugin(OutputPlugin):
+	"""Plugin for generating C export/Lua binding files (_export.c)"""
+	def __init__(self, filename):
+		super().__init__(filename, "_export.c")
+
+class PropsPlugin(OutputPlugin):
+	"""Plugin for generating C property files (_properties.h)"""
+	def __init__(self, filename):
+		super().__init__(filename, "_properties.h")
+
+class HtmlPlugin:
+	"""Plugin for generating HTML documentation"""
+	def __init__(self):
+		# HTML generation uses global state (g_html, g_sidebar, g_content)
+		# This plugin doesn't need a file handle as it's managed separately
+		pass
+	
+	def write_to_global(self, element_type, *args, **kwargs):
+		"""Write to the global HTML structure"""
+		# This would be used for adding elements to g_sidebar, g_content, etc.
+		pass
+
 class ParserState:
 	def __new__(self, filename):
-		self.header = open(filename.replace(".xml", ".h"), "w")
-		self.export = open(filename.replace(".xml", "_export.c"), "w")
-		self.props = open(filename.replace(".xml", "_properties.h"), "w")
+		# Initialize plugins
+		self.header_plugin = HeaderPlugin(filename)
+		self.export_plugin = ExportPlugin(filename)
+		self.props_plugin = PropsPlugin(filename)
+		self.html_plugin = HtmlPlugin()
+		
+		# Open plugin files
+		self.header = self.header_plugin.open()
+		self.export = self.export_plugin.open()
+		self.props = self.props_plugin.open()
+		
+		# Store plugins for later access
+		self.plugins = {
+			'header': self.header_plugin,
+			'export': self.export_plugin,
+			'props': self.props_plugin,
+			'html': self.html_plugin
+		}
 		
 		return self
+	
+	def close_all(self):
+		"""Close all plugin files"""
+		self.header_plugin.close()
+		self.export_plugin.close()
+		self.props_plugin.close()
+	
+	def get_plugin(self, name):
+		"""Get a specific plugin by name"""
+		return self.plugins.get(name)
 	
 def throw_no_parser(root, node, _):
 	print("no such parser: ", node.tag)
