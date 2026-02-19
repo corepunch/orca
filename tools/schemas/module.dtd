@@ -1,0 +1,160 @@
+<!-- DTD Schema for ORCA Module XML Files
+     
+     This schema defines the structure for module XML files that describe
+     C API interfaces for the ORCA framework. These files are processed by
+     tools/conv-module.py to generate C headers, Lua bindings, and HTML documentation.
+     
+     Usage in XML files:
+     <?xml version="1.0"?>
+     <!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
+     <module name="modulename" namespace="orca">
+       ...
+     </module>
+-->
+
+<!-- Root Element -->
+<!ELEMENT module (include | external | event | resource | enums | struct | interface | component | function)*>
+<!ATTLIST module
+  name CDATA #REQUIRED
+  namespace CDATA #REQUIRED
+  on-luaopen CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+>
+
+<!-- Include Directive - specifies C header files to include -->
+<!ELEMENT include EMPTY>
+<!ATTLIST include
+  file CDATA #REQUIRED
+>
+
+<!-- External Type Reference - declares types defined elsewhere -->
+<!ELEMENT external EMPTY>
+<!ATTLIST external
+  struct CDATA #REQUIRED
+>
+
+<!-- Event Declaration - defines an event that can be handled -->
+<!ELEMENT event EMPTY>
+<!ATTLIST event
+  name CDATA #REQUIRED
+  type CDATA #IMPLIED
+>
+
+<!-- Resource Type Declaration -->
+<!ELEMENT resource EMPTY>
+<!ATTLIST resource
+  type CDATA #REQUIRED
+  no-lua (true|false) #IMPLIED
+>
+
+<!-- Enumeration Definition -->
+<!ELEMENT enums (summary?, details?, enum+)>
+<!ATTLIST enums
+  name CDATA #REQUIRED
+>
+
+<!ELEMENT enum (#PCDATA)>
+<!ATTLIST enum
+  name CDATA #REQUIRED
+>
+
+<!-- Structure Definition -->
+<!ELEMENT struct (summary?, details?, field*, method*)>
+<!ATTLIST struct
+  name CDATA #REQUIRED
+  prefix CDATA #IMPLIED
+  export CDATA #IMPLIED
+  sealed (true|false) #IMPLIED
+  parent CDATA #IMPLIED
+>
+
+<!-- Interface Definition (similar to struct but for abstract types) -->
+<!ELEMENT interface (summary?, details?, init?, field*, method*)>
+<!ATTLIST interface
+  name CDATA #REQUIRED
+  prefix CDATA #IMPLIED
+  export CDATA #IMPLIED
+  no-check (true|false) #IMPLIED
+  parent CDATA #IMPLIED
+>
+
+<!-- Component Definition -->
+<!ELEMENT component (summary?, details?, property*, method*, handles*)>
+<!ATTLIST component
+  name CDATA #REQUIRED
+  parent CDATA #IMPLIED
+  concept CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  export CDATA #IMPLIED
+>
+
+<!-- Function Definition (global functions) -->
+<!ELEMENT function (summary?, details?, arg*, returns?)>
+<!ATTLIST function
+  name CDATA #REQUIRED
+  export CDATA #IMPLIED
+>
+
+<!-- Field Definition (for struct/interface members) -->
+<!ELEMENT field (#PCDATA)>
+<!ATTLIST field
+  name CDATA #REQUIRED
+  type CDATA #REQUIRED
+  array CDATA #IMPLIED
+  pointer (true|false) #IMPLIED
+  const (true|false) #IMPLIED
+>
+
+<!-- Method Definition -->
+<!ELEMENT method (summary?, details?, arg*, returns?)>
+<!ATTLIST method
+  name CDATA #REQUIRED
+  export CDATA #IMPLIED
+  const (true|false) #IMPLIED
+  lua (true|false) #IMPLIED
+>
+
+<!-- Property Definition (for components) -->
+<!ELEMENT property (#PCDATA)>
+<!ATTLIST property
+  name CDATA #REQUIRED
+  type CDATA #REQUIRED
+>
+
+<!-- Handles Declaration (events handled by a component) -->
+<!ELEMENT handles EMPTY>
+<!ATTLIST handles
+  event CDATA #REQUIRED
+>
+
+<!-- Initialization Marker -->
+<!ELEMENT init EMPTY>
+
+<!-- Function/Method Argument -->
+<!ELEMENT arg (#PCDATA)>
+<!ATTLIST arg
+  name CDATA #REQUIRED
+  type CDATA #REQUIRED
+  pointer (true|false) #IMPLIED
+  const (true|false) #IMPLIED
+>
+
+<!-- Return Value Description -->
+<!ELEMENT returns (#PCDATA)>
+<!ATTLIST returns
+  type CDATA #REQUIRED
+  pointer (true|false) #IMPLIED
+  const (true|false) #IMPLIED
+>
+
+<!-- Documentation Elements -->
+<!ELEMENT summary (#PCDATA)>
+
+<!ELEMENT details (#PCDATA | p | snippet)*>
+
+<!ELEMENT p (#PCDATA)>
+
+<!ELEMENT snippet EMPTY>
+<!ATTLIST snippet
+  src CDATA #REQUIRED
+>

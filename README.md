@@ -316,6 +316,16 @@ Check that MoonScript is installed correctly:
 moonc -v
 ```
 
+## Module XML Files
+
+ORCA uses XML files to define the API interface between C modules and Lua. See the [Module XML Guide](docs/MODULE_XML_GUIDE.md) for comprehensive documentation on creating and maintaining module XML files.
+
+To regenerate C bindings and documentation from module XML files:
+
+```sh
+make modules
+```
+
 ## Setting Up VSCode XML Autocomplete
 
 For better XML editing experience in VSCode with autocomplete and validation:
