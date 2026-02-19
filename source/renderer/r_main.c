@@ -264,7 +264,7 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
   lpcTexture_t texture = ent->material.texture;
   uint32_t fallback = SHADER_UI;
   if (texture && texture->IOSurface) {
-    fallback = SHADER_RECTANGLE;
+    fallback = SHADER_2D_RECT;
     ent->material.textureMatrix.v[0] *= texture->Width;
     ent->material.textureMatrix.v[4] *= texture->Height;
     ent->material.textureMatrix.v[6] *= texture->Width;
@@ -418,7 +418,7 @@ R_DrawImage(PDRAWIMAGESTRUCT parm)
       .blendMode = BLEND_MODE_OPAQUE,
     },
 #ifdef GL_SAMPLER_2D_RECT
-    .shader = image->IOSurface ? &tr.shaders[SHADER_RECTANGLE] : NULL,
+    .shader = image->IOSurface ? &tr.shaders[SHADER_2D_RECT] : NULL,
 #endif
   };
 
@@ -595,7 +595,7 @@ R_InitResources(void)
   Shader_LoadFromDef(&shader_button, &tr.shaders[SHADER_BUTTON].shader);
   Shader_LoadFromDef(&shader_roundedbox, &tr.shaders[SHADER_ROUNDEDBOX].shader);
 #ifdef GL_SAMPLER_2D_RECT
-  Shader_LoadFromDef(&shader_rect, &tr.shaders[SHADER_RECTANGLE].shader);
+  Shader_LoadFromDef(&shader_rect, &tr.shaders[SHADER_2D_RECT].shader);
 #endif
 
   Texture_CreateWhite(tr.textures+TX_WHITE);
