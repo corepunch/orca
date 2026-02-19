@@ -83,6 +83,7 @@
 <!ATTLIST component
   name CDATA #REQUIRED
   parent CDATA #IMPLIED
+  children CDATA #IMPLIED
   concept CDATA #IMPLIED
   prefix CDATA #IMPLIED
   export CDATA #IMPLIED
@@ -130,6 +131,9 @@
   name CDATA #REQUIRED
   type CDATA #REQUIRED
   private (true|false) #IMPLIED
+  pointer (true|false) #IMPLIED
+  const (true|false) #IMPLIED
+  readonly (true|false) #IMPLIED
   default CDATA #IMPLIED
 >
 
