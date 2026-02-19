@@ -40,40 +40,38 @@ from plugins import Workspace
 # Core parsing logic
 # ---------------------------------------------------------------------------
 
-def read_xml(filename):
-    if not os.path.exists(filename):
-        print(f"File not found: {filename}")
-        return
-
-    tree = ET.parse(filename)
-    root = tree.getroot()
-
-    if root.tag != "module":
-        print("Expected 'module' tag")
-        return
-
-    plugins.call_plugin_hook('open', filename, root)
-
-    Workspace.structs.update({s.get('name'): s for s in root.findall(".//struct[@name]")})
-    Workspace.enums.update({e.get('name'): e for e in root.findall(".//enums[@name]")})
-    Workspace.components.update({c.get('name'): c for c in root.findall(".//component[@name]")})
-    Workspace.resources.update({c.get('type'): c for c in root.findall(".//resource[@type]")})
-
-    for struct in (
-        root.findall('struct') + root.findall('interface') + root.findall('component')
-    ):
-        struct_name = struct.get('name')
-        plugins.call_plugin_hook("struct_fwd_def", struct_name)
-        plugins.call_plugin_hook("lua_accessors", struct_name)
-
-    for node in root:
-        plugins.call_plugin_hook(f"on_{node.tag}", root, node)
-
-    plugins.call_plugin_hook('close')
-
-
 if __name__ == "__main__":
-    for i in range(len(sys.argv) - 1):
-        read_xml(sys.argv[i + 1])
+	for i in range(len(sys.argv) - 1):
+		filename = sys.argv[i + 1]
 
-    plugins.call_plugin_hook('finalize')
+		if not os.path.exists(filename):
+			print(f"File not found: {filename}")
+			continue
+
+		tree = ET.parse(filename)
+		root = tree.getroot()
+
+		if root.tag != "module":
+			print("Expected 'module' tag")
+			continue
+
+		plugins.call_plugin_hook('open', filename, root)
+
+		Workspace.structs.update({s.get('name'): s for s in root.findall(".//struct[@name]")})
+		Workspace.enums.update({e.get('name'): e for e in root.findall(".//enums[@name]")})
+		Workspace.components.update({c.get('name'): c for c in root.findall(".//component[@name]")})
+		Workspace.resources.update({c.get('type'): c for c in root.findall(".//resource[@type]")})
+
+		for struct in (
+			root.findall('struct') + root.findall('interface') + root.findall('component')
+		):
+			struct_name = struct.get('name')
+			plugins.call_plugin_hook("struct_fwd_def", struct_name)
+			plugins.call_plugin_hook("lua_accessors", struct_name)
+
+		for node in root:
+			plugins.call_plugin_hook(f"on_{node.tag}", root, node)
+
+		plugins.call_plugin_hook('close')
+
+	plugins.call_plugin_hook('finalize')

@@ -557,7 +557,7 @@ int f_FontShorthand___newindex(lua_State *L) {
 		luaX_checkFontShorthand(L, 1)->Size = luaL_checknumber(L, 3);
 		return 0;
 	case 0xc46f8f49: // Family
-		luaX_checkFontShorthand(L, 1)->Family = *luaX_checkFontFamily(L, 3);
+		luaX_checkFontShorthand(L, 1)->Family = luaX_checkFontFamily(L, 3);
 		return 0;
 	}
 	return luaL_error(L, "Unknown field in FontShorthand: %s", luaL_checkstring(L, 2));
@@ -618,10 +618,10 @@ int f_BrushShorthand___newindex(lua_State *L) {
 		luaX_checkBrushShorthand(L, 1)->Color = *luaX_checkcolor(L, 3);
 		return 0;
 	case 0x590ca79a: // Image
-		luaX_checkBrushShorthand(L, 1)->Image = *luaX_checkTexture(L, 3);
+		luaX_checkBrushShorthand(L, 1)->Image = luaX_checkTexture(L, 3);
 		return 0;
 	case 0xcbd54f80: // Material
-		luaX_checkBrushShorthand(L, 1)->Material = *luaX_checkMaterial(L, 3);
+		luaX_checkBrushShorthand(L, 1)->Material = luaX_checkMaterial(L, 3);
 		return 0;
 	}
 	return luaL_error(L, "Unknown field in BrushShorthand: %s", luaL_checkstring(L, 2));
@@ -1185,7 +1185,7 @@ static struct PropertyDesc const AnimationPlayerProperties[kAnimationPlayerNumPr
 	/* AnimationPlayer.RestoreOriginalValuesAfterPlayback */ DECL(0x280cbcbb, 0xb982b350,
 	AnimationPlayer, "RestoreOriginalValuesAfterPlayback", RestoreOriginalValuesAfterPlayback, kDataTypeBool),
 	/* AnimationPlayer.Timeline */ DECL(0x30d783f6, 0x17c5cb89,
-	AnimationPlayer, "Timeline", Timeline, kDataTypeTimeline),
+	AnimationPlayer, "Timeline", Timeline, kDataTypeObject, .TypeString="Timeline"),
 };
 static struct AnimationPlayer AnimationPlayerDefaults = {0};
 LRESULT AnimationPlayerProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1690,7 +1690,7 @@ static struct PropertyDesc const TextRunProperties[kTextRunNumProperties] = {
 	/* TextRun.FontSize */ DECL(0xa26a44e1, 0x307249cb,
 	TextRun, "FontSize", Font.Size, kDataTypeFloat),
 	/* TextRun.FontFamily */ DECL(0xf6319880, 0x2991bcb6,
-	TextRun, "FontFamily", Font.Family, kDataTypeFontFamily),
+	TextRun, "FontFamily", Font.Family, kDataTypeObject, .TypeString="FontFamily"),
 	/* TextRun.Underline */ DECL(0x9a85011f, 0x0b0d856d,
 	TextRun, "Underline", Underline, kDataTypeGroup, .TypeString="UnderlineShorthand", .NumComponents=3),
 	/* TextRun.UnderlineOffset */ DECL(0x34ec6004, 0x0a823d42,
@@ -1755,9 +1755,9 @@ static struct PropertyDesc const TextBlockConceptProperties[kTextBlockConceptNum
 	/* TextBlockConcept.PlaceholderColor */ DECL(0xb272976d, 0x8f53db89,
 	TextBlockConcept, "PlaceholderColor", Placeholder.Color, kDataTypeColor),
 	/* TextBlockConcept.PlaceholderImage */ DECL(0x6b519bcf, 0x2275c70b,
-	TextBlockConcept, "PlaceholderImage", Placeholder.Image, kDataTypeTexture),
+	TextBlockConcept, "PlaceholderImage", Placeholder.Image, kDataTypeObject, .TypeString="Texture"),
 	/* TextBlockConcept.PlaceholderMaterial */ DECL(0x6d974ebf, 0x16a577db,
-	TextBlockConcept, "PlaceholderMaterial", Placeholder.Material, kDataTypeMaterial),
+	TextBlockConcept, "PlaceholderMaterial", Placeholder.Material, kDataTypeObject, .TypeString="Material"),
 	/* TextBlockConcept.UseFullFontHeight */ DECL(0x27e35097, 0x95fcf16b,
 	TextBlockConcept, "UseFullFontHeight", UseFullFontHeight, kDataTypeBool),
 	/* TextBlockConcept.ConstrainContentHeight */ DECL(0xda466bac, 0x8468e688,
@@ -1816,37 +1816,49 @@ LRESULT Node2D_MouseMoved(lpObject_t, lpNode2D_t, wParam_t, MouseMovedEventPtr);
 LRESULT Node2D_HitTest(lpObject_t, lpNode2D_t, wParam_t, HitTestEventPtr);
 static struct PropertyDesc const Node2DProperties[kNode2DNumProperties] = {
 	/* Node2D.LayoutTransform */ DECL(0x3f19bf01, 0x7c78c87b,
-	Node2D, "LayoutTransform", LayoutTransform, kDataTypeTransform2),
+	Node2D, "LayoutTransform", LayoutTransform, kDataTypeTransform2D),
+	/* Node2D.LayoutTransformTranslation */ DECL(0xfc7e27e0, 0x2407475a,
+	Node2D, "LayoutTransformTranslation", LayoutTransform.translation, kDataTypeVector2D),
+	/* Node2D.LayoutTransformRotation */ DECL(0x9560ef43, 0x40a04c55,
+	Node2D, "LayoutTransformRotation", LayoutTransform.rotation, kDataTypeFloat),
+	/* Node2D.LayoutTransformScale */ DECL(0x5a2c3595, 0xae9265d3,
+	Node2D, "LayoutTransformScale", LayoutTransform.scale, kDataTypeVector2D),
 	/* Node2D.RenderTransform */ DECL(0xe9e55063, 0xa5faec05,
-	Node2D, "RenderTransform", RenderTransform, kDataTypeTransform2),
+	Node2D, "RenderTransform", RenderTransform, kDataTypeTransform2D),
+	/* Node2D.RenderTransformTranslation */ DECL(0xb8e70ec2, 0xa5d5540c,
+	Node2D, "RenderTransformTranslation", RenderTransform.translation, kDataTypeVector2D),
+	/* Node2D.RenderTransformRotation */ DECL(0x3c611efd, 0x5387d0bf,
+	Node2D, "RenderTransformRotation", RenderTransform.rotation, kDataTypeFloat),
+	/* Node2D.RenderTransformScale */ DECL(0xd037e21b, 0xa0bbe951,
+	Node2D, "RenderTransformScale", RenderTransform.scale, kDataTypeVector2D),
 	/* Node2D.RenderTransformOrigin */ DECL(0xdc65ec6d, 0x43a9dbaf,
-	Node2D, "RenderTransformOrigin", RenderTransformOrigin, kDataTypeVec2),
+	Node2D, "RenderTransformOrigin", RenderTransformOrigin, kDataTypeVector2D),
 	/* Node2D.ContentOffset */ DECL(0x35a57c45, 0xb5cb609b,
-	Node2D, "ContentOffset", ContentOffset, kDataTypeVec2),
+	Node2D, "ContentOffset", ContentOffset, kDataTypeVector2D),
 	/* Node2D.Matrix */ DECL(0xe9d1810c, 0x09a64b02,
-	Node2D, "Matrix", Matrix, kDataTypeMat4),
+	Node2D, "Matrix", Matrix, kDataTypeMatrix3D),
 	/* Node2D.RenderTarget */ DECL(0x64abadd0, 0x441af9f6,
-	Node2D, "RenderTarget", RenderTarget, kDataTypeTexture),
+	Node2D, "RenderTarget", RenderTarget, kDataTypeObject, .TypeString="Texture"),
 	/* Node2D.Background */ DECL(0xbafc0abd, 0x59353973,
 	Node2D, "Background", Background, kDataTypeGroup, .TypeString="BrushShorthand", .NumComponents=3),
 	/* Node2D.BackgroundColor */ DECL(0xd1496d30, 0x0796e5b2,
 	Node2D, "BackgroundColor", Background.Color, kDataTypeColor),
 	/* Node2D.BackgroundImage */ DECL(0xe0bbc082, 0xeb919ee8,
-	Node2D, "BackgroundImage", Background.Image, kDataTypeTexture),
+	Node2D, "BackgroundImage", Background.Image, kDataTypeObject, .TypeString="Texture"),
 	/* Node2D.BackgroundMaterial */ DECL(0x843e6b88, 0x973fabea,
-	Node2D, "BackgroundMaterial", Background.Material, kDataTypeMaterial),
+	Node2D, "BackgroundMaterial", Background.Material, kDataTypeObject, .TypeString="Material"),
 	/* Node2D.Foreground */ DECL(0xd96b36e0, 0xaeaca316,
 	Node2D, "Foreground", Foreground, kDataTypeGroup, .TypeString="BrushShorthand", .NumComponents=3),
 	/* Node2D.ForegroundColor */ DECL(0x94392057, 0xf890bd19,
 	Node2D, "ForegroundColor", Foreground.Color, kDataTypeColor),
 	/* Node2D.ForegroundImage */ DECL(0xb03161dd, 0xd8914fbb,
-	Node2D, "ForegroundImage", Foreground.Image, kDataTypeTexture),
+	Node2D, "ForegroundImage", Foreground.Image, kDataTypeObject, .TypeString="Texture"),
 	/* Node2D.ForegroundMaterial */ DECL(0xa654aab9, 0x4f98b2ab,
-	Node2D, "ForegroundMaterial", Foreground.Material, kDataTypeMaterial),
+	Node2D, "ForegroundMaterial", Foreground.Material, kDataTypeObject, .TypeString="Material"),
 	/* Node2D.BoxShadow */ DECL(0xce1f078a, 0x47152f84,
 	Node2D, "BoxShadow", BoxShadow, kDataTypeGroup, .TypeString="ShadowShorthand", .NumComponents=4),
 	/* Node2D.BoxShadowOffset */ DECL(0x047c9a3d, 0xfa0a729f,
-	Node2D, "BoxShadowOffset", BoxShadow.Offset, kDataTypeVec2),
+	Node2D, "BoxShadowOffset", BoxShadow.Offset, kDataTypeVector2D),
 	/* Node2D.BoxShadowBlurRadius */ DECL(0x623ff5f9, 0x16c10efb,
 	Node2D, "BoxShadowBlurRadius", BoxShadow.BlurRadius, kDataTypeFloat),
 	/* Node2D.BoxShadowSpreadRadius */ DECL(0xe284b26f, 0x8804c4f1,
@@ -1868,9 +1880,9 @@ static struct PropertyDesc const Node2DProperties[kNode2DNumProperties] = {
 	/* Node2D.RingColor */ DECL(0x97d6200a, 0xecbe3144,
 	Node2D, "RingColor", Ring.Color, kDataTypeColor),
 	/* Node2D.CompositionBrush */ DECL(0x74622217, 0x04f99755,
-	Node2D, "CompositionBrush", CompositionBrush, kDataTypeMaterial),
+	Node2D, "CompositionBrush", CompositionBrush, kDataTypeObject, .TypeString="Material"),
 	/* Node2D.CompositionDesignSize */ DECL(0x5488c4f2, 0x8a2688dc,
-	Node2D, "CompositionDesignSize", CompositionDesignSize, kDataTypeVec2),
+	Node2D, "CompositionDesignSize", CompositionDesignSize, kDataTypeVector2D),
 	/* Node2D.SizeToContent */ DECL(0x45513b32, 0xe55ab2cc,
 	Node2D, "SizeToContent", SizeToContent, kDataTypeBool),
 	/* Node2D.OffscreenRendering */ DECL(0x6a1cb2a6, 0x893fea40,
@@ -1893,8 +1905,8 @@ static struct PropertyDesc const Node2DProperties[kNode2DNumProperties] = {
 	Node2D, "ForegroundHint", ForegroundHint, kDataTypeEnum, .TypeString="None,Translucent,Opaque"),
 };
 static struct Node2D Node2DDefaults = {
-	.LayoutTransform = .scale={1,1},
-	.RenderTransform = .scale={1,1},
+	.LayoutTransform = (struct transform2) { .scale={1,1} },
+	.RenderTransform = (struct transform2) { .scale={1,1} },
 };
 LRESULT Node2DProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
@@ -2457,18 +2469,18 @@ static struct PropertyDesc const ImageViewProperties[kImageViewNumProperties] = 
 	/* ImageView.Src */ DECL(0x35c77969, 0xe2534f6b,
 	ImageView, "Src", Src, kDataTypeFixed),
 	/* ImageView.Image */ DECL(0x590ca79a, 0x0b666f9c,
-	ImageView, "Image", Image, kDataTypeTexture),
+	ImageView, "Image", Image, kDataTypeObject, .TypeString="Texture"),
 	/* ImageView.Edges */ DECL(0x079106fd, 0xbc1ab5c3,
-	ImageView, "Edges", Edges, kDataTypeVec4),
+	ImageView, "Edges", Edges, kDataTypeVector4D),
 	/* ImageView.Insets */ DECL(0x062cedef, 0xddc76755,
-	ImageView, "Insets", Insets, kDataTypeVec4),
+	ImageView, "Insets", Insets, kDataTypeVector4D),
 	/* ImageView.Viewbox */ DECL(0xa8c81591, 0x4fff923f,
-	ImageView, "Viewbox", Viewbox, kDataTypeVec4),
+	ImageView, "Viewbox", Viewbox, kDataTypeVector4D),
 	/* ImageView.Stretch */ DECL(0x03d3b9ca, 0x13aa1da4,
 	ImageView, "Stretch", Stretch, kDataTypeEnum, .TypeString="None,Fill,Uniform,UniformToFill"),
 };
 static struct ImageView ImageViewDefaults = {
-	.Viewbox = 0 0 1 1,
+	.Viewbox = (struct vec4) { 0, 0, 1, 1 },
 };
 LRESULT ImageViewProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
@@ -2518,23 +2530,23 @@ static struct PropertyDesc const NinePatchImageProperties[kNinePatchImageNumProp
 	/* NinePatchImage.StretchTypeCenter */ DECL(0xa81f8dff, 0xcab1ae64,
 	NinePatchImage, "StretchTypeCenter", StretchTypeCenter, kDataTypeFloat),
 	/* NinePatchImage.ImageTopLeft */ DECL(0xc7948178, 0x4b2c37e5,
-	NinePatchImage, "ImageTopLeft", ImageTopLeft, kDataTypeTexture),
+	NinePatchImage, "ImageTopLeft", ImageTopLeft, kDataTypeObject, .TypeString="Texture"),
 	/* NinePatchImage.ImageTop */ DECL(0x28c29b5d, 0x5e5bf7e4,
-	NinePatchImage, "ImageTop", ImageTop, kDataTypeTexture),
+	NinePatchImage, "ImageTop", ImageTop, kDataTypeObject, .TypeString="Texture"),
 	/* NinePatchImage.ImageTopRight */ DECL(0x810ee5cd, 0xc001b5be,
-	NinePatchImage, "ImageTopRight", ImageTopRight, kDataTypeTexture),
+	NinePatchImage, "ImageTopRight", ImageTopRight, kDataTypeObject, .TypeString="Texture"),
 	/* NinePatchImage.ImageLeft */ DECL(0x2cd3c0d7, 0x6b2a74a8,
-	NinePatchImage, "ImageLeft", ImageLeft, kDataTypeTexture),
+	NinePatchImage, "ImageLeft", ImageLeft, kDataTypeObject, .TypeString="Texture"),
 	/* NinePatchImage.ImageCenter */ DECL(0x7ab05ecf, 0x1811e0dc,
-	NinePatchImage, "ImageCenter", ImageCenter, kDataTypeTexture),
+	NinePatchImage, "ImageCenter", ImageCenter, kDataTypeObject, .TypeString="Texture"),
 	/* NinePatchImage.ImageRight */ DECL(0x1c7d5648, 0x04cb7dbd,
-	NinePatchImage, "ImageRight", ImageRight, kDataTypeTexture),
+	NinePatchImage, "ImageRight", ImageRight, kDataTypeObject, .TypeString="Texture"),
 	/* NinePatchImage.ImageBottomLeft */ DECL(0x35657294, 0xe446356f,
-	NinePatchImage, "ImageBottomLeft", ImageBottomLeft, kDataTypeTexture),
+	NinePatchImage, "ImageBottomLeft", ImageBottomLeft, kDataTypeObject, .TypeString="Texture"),
 	/* NinePatchImage.ImageBottom */ DECL(0x80ed3299, 0xc398b8c2,
-	NinePatchImage, "ImageBottom", ImageBottom, kDataTypeTexture),
+	NinePatchImage, "ImageBottom", ImageBottom, kDataTypeObject, .TypeString="Texture"),
 	/* NinePatchImage.ImageBottomRight */ DECL(0x42a461c1, 0x87575d60,
-	NinePatchImage, "ImageBottomRight", ImageBottomRight, kDataTypeTexture),
+	NinePatchImage, "ImageBottomRight", ImageBottomRight, kDataTypeObject, .TypeString="Texture"),
 };
 static struct NinePatchImage NinePatchImageDefaults = {0};
 LRESULT NinePatchImageProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
