@@ -11,7 +11,7 @@ Module XML files describe the public API of C modules in a declarative format. T
 1. **C Header Files** (`.h`) - Type definitions and function declarations
 2. **C Implementation Files** (`.c`) - Lua bindings and registration code
 3. **HTML Documentation** - Formatted API reference at `docs/index.html`
-4. **DTD Schema** - XML validation schema at `tools/schemas/orca.dtd` (for UI components)
+4. **DTD Schema** - XML validation schema at `tools/schemas/orca.dtd` (for UI components, generated from module files)
 
 ## Location and Usage
 
