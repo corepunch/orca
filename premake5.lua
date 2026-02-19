@@ -399,7 +399,7 @@ newaction {
     trigger = "modules",
     description = "Generate module bindings",
     execute = function()
-        os.execute([[python3 tools/conv-module.py \
+        os.execute([[python3 tools/main.py \
             source/geometry/geom.xml \
             source/core/core.xml \
             source/renderer/api/renderer.xml \
