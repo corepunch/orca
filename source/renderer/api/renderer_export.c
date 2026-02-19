@@ -752,25 +752,25 @@ ORCA_API struct ClassDesc _Timeline = {
 	.Defaults = &TimelineDefaults,
 	.NumProperties = kTimelineNumProperties,
 };
-static int f_renderer_createShader(lua_State *L) {
+static int f_renderer_CreateShader(lua_State *L) {
 	const char* vertex = luaL_checkstring(L, 1);
 	const char* fragment = luaL_checkstring(L, 2);
 	lpShader_t output = renderer_CreateShader(L, vertex, fragment);
 	luaX_pushShader(L, output);
 	return 1;
 }
-static int f_renderer_getSize(lua_State *L) {
+static int f_renderer_GetSize(lua_State *L) {
 	return renderer_GetSize(L);
 }
-static int f_renderer_drawImage(lua_State *L) {
+static int f_renderer_DrawImage(lua_State *L) {
 	renderer_DrawImage(L);
 	return 0;
 }
 ORCA_API int luaopen_orca_renderer(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) {
-		{ "createShader", f_renderer_createShader },
-		{ "getSize", f_renderer_getSize },
-		{ "drawImage", f_renderer_drawImage },
+		{ "CreateShader", f_renderer_CreateShader },
+		{ "GetSize", f_renderer_GetSize },
+		{ "DrawImage", f_renderer_DrawImage },
 		{ NULL, NULL }
 	}));
 	// window

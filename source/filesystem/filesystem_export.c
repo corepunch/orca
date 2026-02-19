@@ -1477,18 +1477,18 @@ ORCA_API struct ClassDesc _ThemeDefaultValuesDictionary = {
 	.Defaults = &ThemeDefaultValuesDictionaryDefaults,
 	.NumProperties = kThemeDefaultValuesDictionaryNumProperties,
 };
-static int f_filesystem_getWorkspace(lua_State *L) {
+static int f_filesystem_GetWorkspace(lua_State *L) {
 	lpObject_t output = FS_GetWorkspace();
 	luaX_pushObject(L, output);
 	return 1;
 }
-static int f_filesystem_getBaseName(lua_State *L) {
+static int f_filesystem_GetBaseName(lua_State *L) {
 	const char* path = luaL_checkstring(L, 1);
 	const char* output = FS_GetBaseName(path);
 	lua_pushstring(L, output);
 	return 1;
 }
-static int f_filesystem_getPathName(lua_State *L) {
+static int f_filesystem_GetPathName(lua_State *L) {
 	const char* path = luaL_checkstring(L, 1);
 	const char* out = luaL_checkstring(L, 2);
 	int32_t maxlen = luaL_checknumber(L, 3);
@@ -1496,7 +1496,7 @@ static int f_filesystem_getPathName(lua_State *L) {
 	lua_pushstring(L, output);
 	return 1;
 }
-static int f_filesystem_getDirName(lua_State *L) {
+static int f_filesystem_GetDirName(lua_State *L) {
 	const char* path = luaL_checkstring(L, 1);
 	const char* out = luaL_checkstring(L, 2);
 	int32_t maxlen = luaL_checknumber(L, 3);
@@ -1504,37 +1504,37 @@ static int f_filesystem_getDirName(lua_State *L) {
 	lua_pushstring(L, output);
 	return 1;
 }
-static int f_filesystem_joinPaths(lua_State *L) {
+static int f_filesystem_JoinPaths(lua_State *L) {
 	const char* path1 = luaL_checkstring(L, 1);
 	const char* path2 = luaL_checkstring(L, 2);
 	const char* output = FS_JoinPaths(path1, path2);
 	lua_pushstring(L, output);
 	return 1;
 }
-static int f_filesystem_pathFromModule(lua_State *L) {
+static int f_filesystem_PathFromModule(lua_State *L) {
 	const char* module = luaL_checkstring(L, 1);
 	const char* output = FS_PathFromModule(module);
 	lua_pushstring(L, output);
 	return 1;
 }
-static int f_filesystem_hasChangedFiles(lua_State *L) {
+static int f_filesystem_HasChangedFiles(lua_State *L) {
 	bool_t output = FS_HasChangedFiles();
 	lua_pushboolean(L, output);
 	return 1;
 }
-static int f_filesystem_makeDirectory(lua_State *L) {
+static int f_filesystem_MakeDirectory(lua_State *L) {
 	const char* path = luaL_checkstring(L, 1);
 	bool_t output = FS_MakeDirectory(path);
 	lua_pushboolean(L, output);
 	return 1;
 }
-static int f_filesystem_fileExists(lua_State *L) {
+static int f_filesystem_FileExists(lua_State *L) {
 	const char* path = luaL_checkstring(L, 1);
 	bool_t output = FS_FileExists(path);
 	lua_pushboolean(L, output);
 	return 1;
 }
-static int f_filesystem_addSearchPath(lua_State *L) {
+static int f_filesystem_AddSearchPath(lua_State *L) {
 	const char* path = luaL_checkstring(L, 1);
 	lpPackage_t output = FS_AddSearchPath(L, path);
 	luaX_pushPackage(L, output);
@@ -1542,16 +1542,16 @@ static int f_filesystem_addSearchPath(lua_State *L) {
 }
 ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) {
-		{ "getWorkspace", f_filesystem_getWorkspace },
-		{ "getBaseName", f_filesystem_getBaseName },
-		{ "getPathName", f_filesystem_getPathName },
-		{ "getDirName", f_filesystem_getDirName },
-		{ "joinPaths", f_filesystem_joinPaths },
-		{ "pathFromModule", f_filesystem_pathFromModule },
-		{ "hasChangedFiles", f_filesystem_hasChangedFiles },
-		{ "makeDirectory", f_filesystem_makeDirectory },
-		{ "fileExists", f_filesystem_fileExists },
-		{ "addSearchPath", f_filesystem_addSearchPath },
+		{ "GetWorkspace", f_filesystem_GetWorkspace },
+		{ "GetBaseName", f_filesystem_GetBaseName },
+		{ "GetPathName", f_filesystem_GetPathName },
+		{ "GetDirName", f_filesystem_GetDirName },
+		{ "JoinPaths", f_filesystem_JoinPaths },
+		{ "PathFromModule", f_filesystem_PathFromModule },
+		{ "HasChangedFiles", f_filesystem_HasChangedFiles },
+		{ "MakeDirectory", f_filesystem_MakeDirectory },
+		{ "FileExists", f_filesystem_FileExists },
+		{ "AddSearchPath", f_filesystem_AddSearchPath },
 		{ NULL, NULL }
 	}));
 	void on_filesystem_module_registered(lua_State *L);
