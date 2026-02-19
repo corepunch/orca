@@ -1,14 +1,14 @@
-# Mesh Pointer Boxing
+# Mesh and Shader Pointer Boxing
 
 ## Overview
 
-The mesh pointer boxing system allows encoding entity type information directly in the `mesh` field of `ViewEntity`, eliminating the need for a separate `type` field in many cases.
+The pointer boxing system allows encoding type information directly in the `mesh` and `shader` fields of `ViewEntity`, using tagged pointers to distinguish between real pointers and special enum values.
 
 ## How It Works
 
 The system uses tagged pointers to distinguish between:
-1. **Real mesh pointers** - Actual `Mesh*` objects (tag bits are 0)
-2. **Entity type constants** - Special enum values cast to pointers like `MESH_CAPSULE`
+1. **Real pointers** - Actual `Mesh*` or `Shader*` objects (tag bits are 0)
+2. **Type constants** - Enum values cast to pointers like `MD_CAPSULE` or `SHADER_BUTTON`
 
 Since pointers are typically aligned to 8 bytes, the lower 3 bits are always zero for real pointers. We use these bits to encode type information.
 
@@ -21,19 +21,37 @@ Since pointers are typically aligned to 8 bytes, the lower 3 bits are always zer
 #define MESH_PTR_MASK  (~MESH_TAG_MASK)
 ```
 
-### Mesh Pointer Boxing (in `renderer.h`)
+### Mesh and Shader Types (in `renderer.h`)
 
 ```c
 typedef uintptr_t MeshRef;
 
-// Boxed mesh type enum
-enum boxed_mesh_type {
-  BOXED_MESH_RECTANGLE = 1,
-  BOXED_MESH_TEAPOT = 2,
-  BOXED_MESH_PLANE = 3,
-  BOXED_MESH_DOT = 4,
-  BOXED_MESH_CAPSULE = 5,
-  BOXED_MESH_ROUNDED_BOX = 6,
+// Model enum - mesh models
+enum model_type {
+  MD_RECTANGLE = 1,
+  MD_TEAPOT = 2,
+  MD_PLANE = 3,
+  MD_DOT = 4,
+  MD_CAPSULE = 5,
+  MD_ROUNDED_BOX = 6,
+  MD_NINEPATCH = 7,
+  MD_CINEMATIC = 8,
+  MD_ROUNDED_RECT = 9,
+  MD_ROUNDED_BORDER = 10,
+  MD_COUNT
+};
+
+// Shader type enum
+enum shader_type {
+  SHADER_DEFAULT,
+  SHADER_UI,
+  SHADER_VERTEXCOLOR,
+  SHADER_ERROR,
+  SHADER_CHARSET,
+  SHADER_CINEMATIC,
+  SHADER_BUTTON,
+  SHADER_ROUNDEDBOX,
+  SHADER_COUNT,
 };
 
 // Helper macros
@@ -43,16 +61,20 @@ enum boxed_mesh_type {
 #define BOX_PTR(TYPE, ID) ((struct TYPE const*)ID)
 ```
 
-### Entity Type Constants (in `renderer.h`)
+### Usage Examples
 
-Use the `BOX_PTR` macro to create boxed entity type constants inline:
+Use the `BOX_PTR` macro to create boxed type constants inline:
 
 ```c
-// Use BOX_PTR inline to box enum values as Mesh pointers
-ent.mesh = BOX_PTR(Mesh, BOXED_MESH_RECTANGLE);
-ent.mesh = BOX_PTR(Mesh, BOXED_MESH_CAPSULE);
-ent.mesh = BOX_PTR(Mesh, BOXED_MESH_TEAPOT);
-// etc.
+// Box mesh types
+ent.mesh = BOX_PTR(Mesh, MD_RECTANGLE);
+ent.mesh = BOX_PTR(Mesh, MD_CAPSULE);
+ent.mesh = BOX_PTR(Mesh, MD_TEAPOT);
+
+// Box shader types (caller-driven shader selection)
+ent.shader = BOX_PTR(Shader, SHADER_BUTTON);
+ent.shader = BOX_PTR(Shader, SHADER_ROUNDEDBOX);
+ent.shader = BOX_PTR(Shader, SHADER_CINEMATIC);
 ```
 
 ## Usage Examples
@@ -68,7 +90,8 @@ ent.mesh = NULL;  // Old way with separate type field
 You can now write:
 ```c
 ViewEntity ent = {0};
-ent.mesh = BOX_PTR(Mesh, BOXED_MESH_CAPSULE);
+ent.mesh = BOX_PTR(Mesh, MD_CAPSULE);
+ent.shader = BOX_PTR(Shader, SHADER_BUTTON);
 ```
 
 ### Checking mesh type in code
@@ -80,25 +103,24 @@ if (ent.mesh) {
         struct Mesh const* mesh = (struct Mesh const*)mesh_get_ptr((MeshRef)ent.mesh);
         model = mesh->model;
     } else {
-        // It's a boxed entity type constant - use switch on masked value
-        enum boxed_mesh_type mesh_tag = (enum boxed_mesh_type)((MeshRef)ent.mesh & MESH_TAG_MASK);
-        switch (mesh_tag) {
-            case BOXED_MESH_CAPSULE:
-                model = tr.models[MD_CAPSULE];
-                break;
-            // ... etc
-        }
+        // It's a boxed type - use directly as index into tr.models
+        enum model_type mesh_type = (enum model_type)((MeshRef)ent.mesh & MESH_TAG_MASK);
+        
+        // For most cases, can use directly:
+        model = tr.models[mesh_type]; // Works for MD_PLANE, MD_DOT, MD_CAPSULE, etc.
+        
+        // Some types need special handling (MD_RECTANGLE with borders, MD_CINEMATIC, MD_NINEPATCH)
     }
 }
 ```
 
 ## Safety
 
-The boxed pointers (created with `BOX_PTR(Mesh, BOXED_MESH_*)`) are enum values cast to pointers. These are **never dereferenced** - the code always checks `mesh_is_ptr()` first to distinguish real pointers from boxed enum values. This makes the system safe even though the underlying values are small integers.
+The boxed pointers (created with `BOX_PTR(Mesh, MD_*)`) are enum values cast to pointers. These are **never dereferenced** - the code always checks `mesh_is_ptr()` first to distinguish real pointers from boxed enum values. This makes the system safe even though the underlying values are small integers.
 
 ## Benefits
 
-1. **Cleaner API**: `ent.mesh = MESH_CAPSULE` is simpler than managing separate type/mesh fields
+1. **Cleaner API**: `ent.mesh = BOX_PTR(Mesh, MD_CAPSULE)` is simpler than managing separate type/mesh fields
 2. **No ABI break**: The `mesh` field remains `struct Mesh const*`, ensuring backward compatibility
 3. **Type safety**: Compiler warnings if you accidentally use wrong pointer types
 4. **Memory efficient**: No extra field needed for simple entity types

@@ -174,33 +174,7 @@ typedef struct _TEXTCACHE
   uint32_t frame;
 } TEXTCACHE, *PTEXTCACHE;
 
-enum
-{
-  SHADER_DEFAULT,
-  SHADER_UI,
-  SHADER_VERTEXCOLOR,
-  SHADER_ERROR,
-  SHADER_CHARSET,
-  SHADER_CINEMATIC,
-  SHADER_BUTTON,
-  SHADER_ROUNDEDBOX,
-#ifdef GL_SAMPLER_2D_RECT
-  SHADER_RECTANGLE,
-#endif
-  SHADER_COUNT,
-};
-
-enum
-{
-  MD_RECTANGLE,
-  MD_PLANE,
-  MD_DOT,
-  MD_ROUNDED_RECT,
-  MD_ROUNDED_BORDER,
-  MD_CAPSULE,
-  MD_ROUNDED_BOX,
-  MD_COUNT
-};
+// Shader and model enums are now in public renderer.h header
 
 enum
 {

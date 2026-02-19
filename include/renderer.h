@@ -247,16 +247,35 @@ struct uniform
   float Value[4];
 };
 
-// Boxed mesh type enum - cast to struct Mesh const* for use in ViewEntity.mesh
-enum boxed_mesh_type {
-  BOXED_MESH_RECTANGLE = 1,
-  BOXED_MESH_TEAPOT = 2,
-  BOXED_MESH_PLANE = 3,
-  BOXED_MESH_DOT = 4,
-  BOXED_MESH_CAPSULE = 5,
-  BOXED_MESH_ROUNDED_BOX = 6,
-  BOXED_MESH_NINEPATCH = 7,
-  BOXED_MESH_CINEMATIC = 8,
+// Model enum - mesh models accessible via tr.models[]
+// Index 0 is unused to allow boxed values to work as direct indices
+// Use with BOX_PTR for mesh boxing: ent.mesh = BOX_PTR(Mesh, MD_CAPSULE)
+enum model_type {
+  MD_RECTANGLE = 1,
+  MD_TEAPOT = 2,         // Placeholder, uses MD_PLANE model
+  MD_PLANE = 3,
+  MD_DOT = 4,
+  MD_CAPSULE = 5,
+  MD_ROUNDED_BOX = 6,
+  MD_NINEPATCH = 7,      // Dynamic, no static model
+  MD_ROUNDED_RECT = 8,   // Rectangle with rounded corners
+  MD_ROUNDED_BORDER = 9, // Rectangle with rounded border
+  MD_COUNT
+};
+
+// Shader type enum for builtin shaders
+// Use with BOX_PTR for shader boxing: ent.shader = BOX_PTR(Shader, SHADER_BUTTON)
+enum shader_type {
+  SHADER_DEFAULT,
+  SHADER_UI,
+  SHADER_VERTEXCOLOR,
+  SHADER_ERROR,
+  SHADER_CHARSET,
+  SHADER_CINEMATIC,
+  SHADER_BUTTON,
+  SHADER_ROUNDEDBOX,
+  SHADER_2D_RECT,
+  SHADER_COUNT,
 };
 
 // Visual appearance properties for rendering.

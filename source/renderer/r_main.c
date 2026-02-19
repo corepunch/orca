@@ -253,9 +253,9 @@ _UpdateCinematicEntity(struct ViewEntity* ent)
 //
 // Supports mesh pointer boxing: ent.mesh can be either:
 //   - A real Mesh pointer (when BOX_IS_PTR() returns true)
-//   - A boxed entity type constant like BOX_PTR(Mesh, BOXED_MESH_CAPSULE), etc.
+//   - A boxed entity type constant like BOX_PTR(Mesh, MD_CAPSULE), etc.
 //
-// Usage example: ent.mesh = BOX_PTR(Mesh, BOXED_MESH_CAPSULE);
+// Usage example: ent.mesh = BOX_PTR(Mesh, MD_CAPSULE);
 // This eliminates the need to set a separate type field for common entity types.
 HRESULT
 R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
@@ -264,16 +264,33 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
   lpcTexture_t texture = ent->material.texture;
   uint32_t fallback = SHADER_UI;
   if (texture && texture->IOSurface) {
-    fallback = SHADER_RECTANGLE;
+    fallback = SHADER_2D_RECT;
     ent->material.textureMatrix.v[0] *= texture->Width;
     ent->material.textureMatrix.v[4] *= texture->Height;
     ent->material.textureMatrix.v[6] *= texture->Width;
     ent->material.textureMatrix.v[7] *= texture->Height;
   }
-  lpcShader_t shader = ent->shader ? ent->shader : &tr.shaders[fallback];
 #else
-  lpcShader_t shader = ent->shader ? ent->shader : &tr.shaders[SHADER_UI];
+  uint32_t fallback = SHADER_UI;
 #endif
+  
+  // Handle shader pointer boxing: shader can be either a real pointer or a boxed tag value
+  lpcShader_t shader = NULL;
+  if (!ent->shader) {
+    // Default shader when not specified
+    shader = &tr.shaders[fallback];
+  } else if (BOX_IS_PTR((uintptr_t)ent->shader)) {
+    // Real shader pointer
+    shader = (lpcShader_t)BOX_GET_PTR((uintptr_t)ent->shader);
+  } else {
+    // Boxed shader type - use directly as index into tr.shaders
+    enum shader_type shader_index = (enum shader_type)((uintptr_t)ent->shader & MESH_TAG_MASK);
+    shader = &tr.shaders[shader_index];
+  }
+  
+  if (((uintptr_t)ent->shader & MESH_TAG_MASK) == SHADER_CINEMATIC) {
+    _UpdateCinematicEntity(ent);
+  }
   
   // Handle mesh pointer boxing: mesh can be either a real pointer or a boxed tag value
   struct model /*const*/* model = NULL;
@@ -288,40 +305,30 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
   } else if (BOX_IS_PTR((uintptr_t)ent->mesh)) {
     // Real mesh pointer - extract the model
     model = ((struct Mesh const*)BOX_GET_PTR((uintptr_t)ent->mesh))->model;
-  } else switch (((uintptr_t)ent->mesh & MESH_TAG_MASK)) {
-    case BOXED_MESH_CINEMATIC:
-      _UpdateCinematicEntity(ent);
-      shader = &tr.shaders[SHADER_CINEMATIC];
-      model = tr.models[MD_RECTANGLE];
-      break;
-    case BOXED_MESH_NINEPATCH:
-      model = CreateNinePatchMesh(ent);
-      break;
-    case BOXED_MESH_RECTANGLE:
-      if (memcmp(&ent->borderWidth, &zero, sizeof(struct vec4))) {
-        model = tr.models[MD_ROUNDED_BORDER];
-      } else {
-        model = tr.models[MD_ROUNDED_RECT];
-      }
-      break;
-    case BOXED_MESH_PLANE:
-      model = tr.models[MD_PLANE];
-      break;
-    case BOXED_MESH_DOT:
-      model = tr.models[MD_DOT];
-      break;
-    case BOXED_MESH_CAPSULE:
-      model = tr.models[MD_CAPSULE];
-      shader = &tr.shaders[SHADER_BUTTON];
-      break;
-    case BOXED_MESH_ROUNDED_BOX:
-      model = tr.models[MD_ROUNDED_BOX];
-      shader = &tr.shaders[SHADER_ROUNDEDBOX];
-      break;
-    case BOXED_MESH_TEAPOT:
-      // Teapot could use a sphere or custom model in the future
-      model = tr.models[MD_PLANE]; // placeholder
-      break;
+  } else {
+    // Boxed mesh type - enum value can be used directly as index into tr.models
+    enum model_type mesh_type = (enum model_type)((uintptr_t)ent->mesh & MESH_TAG_MASK);
+    
+    // Handle special cases that need additional processing
+    switch (mesh_type) {
+      case MD_NINEPATCH:
+        model = CreateNinePatchMesh(ent);
+        break;
+      case MD_RECTANGLE:
+        if (memcmp(&ent->borderWidth, &zero, sizeof(struct vec4))) {
+          model = tr.models[MD_ROUNDED_BORDER];
+        } else {
+          model = tr.models[MD_ROUNDED_RECT];
+        }
+        break;
+      case MD_TEAPOT:
+        model = tr.models[MD_PLANE]; // Teapot uses plane as placeholder
+        break;
+      default:
+        // For simple cases, use enum value directly as index into tr.models
+        model = tr.models[mesh_type];
+        break;
+    }
   }
   
   if (ent->flags & RF_DRAW_DEBUG) {
@@ -372,7 +379,7 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
 
   //    tr.mesh_render++;
 
-  if (ent->mesh == BOX_PTR(Mesh, BOXED_MESH_NINEPATCH)) {
+  if (ent->mesh == BOX_PTR(Mesh, MD_NINEPATCH)) {
     Model_Release(model);
   }
 
@@ -411,7 +418,7 @@ R_DrawImage(PDRAWIMAGESTRUCT parm)
       .blendMode = BLEND_MODE_OPAQUE,
     },
 #ifdef GL_SAMPLER_2D_RECT
-    .shader = image->IOSurface ? &tr.shaders[SHADER_RECTANGLE] : NULL,
+    .shader = image->IOSurface ? &tr.shaders[SHADER_2D_RECT] : NULL,
 #endif
   };
 
@@ -588,7 +595,7 @@ R_InitResources(void)
   Shader_LoadFromDef(&shader_button, &tr.shaders[SHADER_BUTTON].shader);
   Shader_LoadFromDef(&shader_roundedbox, &tr.shaders[SHADER_ROUNDEDBOX].shader);
 #ifdef GL_SAMPLER_2D_RECT
-  Shader_LoadFromDef(&shader_rect, &tr.shaders[SHADER_RECTANGLE].shader);
+  Shader_LoadFromDef(&shader_rect, &tr.shaders[SHADER_2D_RECT].shader);
 #endif
 
   Texture_CreateWhite(tr.textures+TX_WHITE);
@@ -601,14 +608,15 @@ R_InitResources(void)
   Texture_CreateDebug(tr.textures+TX_DEBUG);
   Texture_CreateCinematic(tr.textures+TX_CINEMATIC);
 
-  Model_CreateRectangle(&(struct rect){ 0, 0, 1, 1 }, NULL, VERTEX_ORDER_DEFAULT, tr.models+MD_RECTANGLE);  
-  Model_CreateRoundedRectangle(tr.models+MD_ROUNDED_RECT);
-  Model_CreateRoundedBorder(tr.models+MD_ROUNDED_BORDER);
-  Model_CreateCapsule(1.0f, 1.0f, 1.0f, tr.models+MD_CAPSULE);
-  Model_CreateRoundedBox(1.0f, 1.0f, 1.0f, 0.2f, tr.models+MD_ROUNDED_BOX);
-
+  Model_CreateRectangle(&(struct rect){ 0, 0, 1, 1 }, NULL, VERTEX_ORDER_DEFAULT, tr.models+MD_RECTANGLE);
+  tr.models[MD_TEAPOT] = NULL; // Placeholder; runtime uses tr.models[MD_PLANE]
   Model_CreatePlane(1, 1, tr.models+MD_PLANE);
   Model_CreatePlane(0, 0, tr.models+MD_DOT);
+  Model_CreateCapsule(1.0f, 1.0f, 1.0f, tr.models+MD_CAPSULE);
+  Model_CreateRoundedBox(1.0f, 1.0f, 1.0f, 0.2f, tr.models+MD_ROUNDED_BOX);
+  tr.models[MD_NINEPATCH] = NULL; // Dynamic mesh, created on demand in CreateNinePatchMesh
+  Model_CreateRoundedRectangle(tr.models+MD_ROUNDED_RECT);
+  Model_CreateRoundedBorder(tr.models+MD_ROUNDED_BORDER);
   
   glEnable(GL_FRAMEBUFFER_SRGB);
 }
