@@ -1,3 +1,41 @@
+"""
+ORCA Module Converter - Plugin Architecture
+
+This tool converts XML module definitions into generated code for C, Lua bindings,
+and HTML documentation.
+
+Plugin Architecture:
+-------------------
+The tool uses a plugin-based architecture for different output formats:
+
+1. HeaderPlugin (.h) - Generates C header files
+2. ExportPlugin (_export.c) - Generates Lua binding code
+3. PropsPlugin (_properties.h) - Generates component property metadata
+4. HtmlPlugin - Generates HTML documentation
+
+Usage:
+------
+Basic usage:
+    python3 conv-module.py <module.xml> [module2.xml ...]
+
+Custom Plugin Example:
+----------------------
+To create a custom output plugin:
+
+    class MyCustomPlugin(OutputPlugin):
+        def __init__(self, filename):
+            super().__init__(filename, ".mycustom")
+    
+    # Register the plugin
+    PluginRegistry.register('mycustom', MyCustomPlugin)
+    
+    # Enable/disable plugins
+    PluginRegistry.disable_plugin('html')  # Disable HTML generation
+    PluginRegistry.enable_plugin('mycustom')  # Enable custom plugin
+
+The registered plugin will automatically be created and used during module processing.
+"""
+
 import sys, re, io, os
 import xml.etree.ElementTree as ET
 
@@ -292,34 +330,107 @@ class HtmlPlugin:
 		# This would be used for adding elements to g_sidebar, g_content, etc.
 		pass
 
+class PluginRegistry:
+	"""Registry for managing output plugins"""
+	_plugins = {
+		'header': HeaderPlugin,
+		'export': ExportPlugin,
+		'props': PropsPlugin,
+		'html': HtmlPlugin,
+	}
+	_enabled_plugins = {'header', 'export', 'props', 'html'}
+	
+	@classmethod
+	def register(cls, name, plugin_class):
+		"""Register a new plugin type"""
+		cls._plugins[name] = plugin_class
+		cls._enabled_plugins.add(name)
+	
+	@classmethod
+	def unregister(cls, name):
+		"""Unregister a plugin type"""
+		if name in cls._plugins:
+			del cls._plugins[name]
+			cls._enabled_plugins.discard(name)
+	
+	@classmethod
+	def enable_plugin(cls, name):
+		"""Enable a registered plugin"""
+		if name in cls._plugins:
+			cls._enabled_plugins.add(name)
+	
+	@classmethod
+	def disable_plugin(cls, name):
+		"""Disable a registered plugin"""
+		cls._enabled_plugins.discard(name)
+	
+	@classmethod
+	def get_enabled_plugins(cls):
+		"""Get list of enabled plugin names"""
+		return cls._enabled_plugins.copy()
+	
+	@classmethod
+	def create_plugin(cls, name, *args, **kwargs):
+		"""Create an instance of a plugin"""
+		if name in cls._plugins and name in cls._enabled_plugins:
+			return cls._plugins[name](*args, **kwargs)
+		return None
+	
+	@classmethod
+	def get_plugin_class(cls, name):
+		"""Get the plugin class by name"""
+		return cls._plugins.get(name)
+
 class ParserState:
 	def __new__(self, filename):
-		# Initialize plugins
-		self.header_plugin = HeaderPlugin(filename)
-		self.export_plugin = ExportPlugin(filename)
-		self.props_plugin = PropsPlugin(filename)
-		self.html_plugin = HtmlPlugin()
+		# Initialize plugins using the registry
+		self.plugins = {}
 		
-		# Open plugin files
-		self.header = self.header_plugin.open()
-		self.export = self.export_plugin.open()
-		self.props = self.props_plugin.open()
+		# Create header plugin
+		header_plugin = PluginRegistry.create_plugin('header', filename)
+		if header_plugin:
+			self.header = header_plugin.open()
+			self.plugins['header'] = header_plugin
+			self.header_plugin = header_plugin  # Keep for backward compatibility
+		else:
+			self.header = None
+			self.header_plugin = None
 		
-		# Store plugins for later access
-		self.plugins = {
-			'header': self.header_plugin,
-			'export': self.export_plugin,
-			'props': self.props_plugin,
-			'html': self.html_plugin
-		}
+		# Create export plugin
+		export_plugin = PluginRegistry.create_plugin('export', filename)
+		if export_plugin:
+			self.export = export_plugin.open()
+			self.plugins['export'] = export_plugin
+			self.export_plugin = export_plugin  # Keep for backward compatibility
+		else:
+			self.export = None
+			self.export_plugin = None
+		
+		# Create props plugin
+		props_plugin = PluginRegistry.create_plugin('props', filename)
+		if props_plugin:
+			self.props = props_plugin.open()
+			self.plugins['props'] = props_plugin
+			self.props_plugin = props_plugin  # Keep for backward compatibility
+		else:
+			self.props = None
+			self.props_plugin = None
+		
+		# Create html plugin
+		html_plugin = PluginRegistry.create_plugin('html')
+		if html_plugin:
+			self.plugins['html'] = html_plugin
+			self.html_plugin = html_plugin  # Keep for backward compatibility
+		else:
+			self.html_plugin = None
 		
 		return self
 	
 	def close_all(self):
 		"""Close all plugin files"""
-		self.header_plugin.close()
-		self.export_plugin.close()
-		self.props_plugin.close()
+		for plugin in self.plugins.values():
+			if hasattr(plugin, 'close'):
+				plugin.close()
 	
 	def get_plugin(self, name):
 		"""Get a specific plugin by name"""
