@@ -6,7 +6,7 @@
      
      Usage in XML files:
      <?xml version="1.0"?>
-     <!DOCTYPE module SYSTEM "../../tools/schemas/module.dtd">
+     <!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
      <module name="modulename" namespace="orca">
        ...
      </module>

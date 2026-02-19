@@ -38,7 +38,7 @@ Every module XML file must have this basic structure:
 
 ```xml
 <?xml version="1.0"?>
-<!DOCTYPE module SYSTEM "../../tools/schemas/module.dtd">
+<!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
 <module name="modulename" namespace="orca">
   <!-- Module content goes here -->
 </module>
@@ -394,7 +394,7 @@ Here's a minimal complete example:
 
 ```xml
 <?xml version="1.0"?>
-<!DOCTYPE module SYSTEM "../../tools/schemas/module.dtd">
+<!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
 <module name="example" namespace="orca">
   <enums name="Direction">
     <summary>Cardinal directions</summary>
@@ -430,10 +430,10 @@ Module XML files should reference the DTD schema for validation:
 
 ```xml
 <?xml version="1.0"?>
-<!DOCTYPE module SYSTEM "../../tools/schemas/module.dtd">
+<!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
 ```
 
-The path is relative to the XML file location. For files in `source/geometry/`, use `../../tools/schemas/module.dtd`.
+The DTD schema is published at `https://corepunch.github.io/orca/schemas/module.dtd` via GitHub Pages, ensuring it's always accessible for validation.
 
 ## Best Practices
 

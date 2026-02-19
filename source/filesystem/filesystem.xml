@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!DOCTYPE module SYSTEM "../../tools/schemas/module.dtd">
+<!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
 <module name="filesystem" namespace="orca" on-luaopen="on_filesystem_module_registered" prefix="FS_">
   <event name="ReadCommands" type="void"/>
   <resource type="Package"/>

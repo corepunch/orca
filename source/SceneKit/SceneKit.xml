@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!DOCTYPE module SYSTEM "../../tools/schemas/module.dtd">
+<!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
 <module name="SceneKit" namespace="orca">
   <include file="source/renderer/api/renderer.h"/>
   <include file="include/renderer.h"/>
