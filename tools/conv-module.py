@@ -5,17 +5,128 @@ g_structs = {}
 g_enums = {}
 g_components = {}
 g_resources = {}
-g_article = None
-g_html = ET.Element('html', attrib={'xmlns':'http://www.w3.org/2001/XMLSchema' })
-g_head = ET.SubElement(g_html, 'head')
-ET.SubElement(g_head, 'link', { "rel":"stylesheet", "href":"doc.css" })
-ET.SubElement(g_head, 'link', { "rel":"stylesheet", "href":"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" })
-ET.SubElement(g_head, 'meta', {'charset':"UTF-8"})
-g_body = ET.SubElement(g_html, 'body')
-g_wrapper = ET.SubElement(g_body, 'div', {'class': 'adjustable-sidebar-width full-width-container topic-wrapper'})
-g_sidebar = ET.SubElement(g_wrapper, 'div', {'class': 'sidebar'})
-g_content = ET.SubElement(g_wrapper, 'main', {'class': 'content'})
-g_output = "../docs/index.html"
+
+class HtmlWriter:
+	def __init__(self):
+		self.article = None
+		self.html = ET.Element('html', attrib={'xmlns':'http://www.w3.org/2001/XMLSchema' })
+		self.head = ET.SubElement(self.html, 'head')
+		ET.SubElement(self.head, 'link', { "rel":"stylesheet", "href":"doc.css" })
+		ET.SubElement(self.head, 'link', { "rel":"stylesheet", "href":"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" })
+		ET.SubElement(self.head, 'meta', {'charset':"UTF-8"})
+		self.body = ET.SubElement(self.html, 'body')
+		self.wrapper = ET.SubElement(self.body, 'div', {'class': 'adjustable-sidebar-width full-width-container topic-wrapper'})
+		self.sidebar = ET.SubElement(self.wrapper, 'div', {'class': 'sidebar'})
+		self.content = ET.SubElement(self.wrapper, 'main', {'class': 'content'})
+		self.output = "../docs/index.html"
+
+	def open(self, _, root):		
+		tech = ET.SubElement(self.sidebar, 'div', {'class':'technology-title'})
+		i = ET.SubElement(tech, 'span', {'class':'fa-solid fa-folder-open icon'})
+		i.tail = f"{root.get('namespace')}.{root.get('name')}\n"
+
+	def finalize(self):
+		tree = ET.ElementTree(self.html)
+		# ET.indent(tree, space="\t", level=0)
+		tree.write(self.output, encoding="utf-8", method="html")
+
+	def on_struct(self, root, struct):
+		sname, sbrief = struct.get('name'), struct.findtext('summary')
+
+		self.article = doc.add_article(self.content, sname, struct.get('parent') or 'None', struct.findtext('xmlns') or 'None')
+		atts = []
+		# if struct.findtext('xmlns'): atts.append(("@xmlns ", struct.findtext('xmlns')))
+		doc.add_header(self.article, struct.tag.capitalize(), sname, sbrief)
+		doc.add_code(self.article, atts, "struct ", "%s.%s"%(root.get('name'),sname), struct.get('parent') or (struct.tag == 'component' and 'object'))
+		doc.add_overview(self.article, struct.find('details'))
+
+		icons = {
+			'struct': 'gear',
+			'component': 'layer-group',
+			'interface': 'atom',
+		}
+
+		link = ET.SubElement(self.sidebar, 'a', {'class':'leaf-link', 'href':f'#{sname}'})
+		ET.SubElement(link, 'i', {'class':f'fa-solid fa-{icons.get(struct.tag)} icon'})
+		ET.SubElement(link, 'span').text = sname+'\n'
+
+		if struct.findall('property') or struct.findall('methods'):
+			ET.SubElement(self.article, 'h2', {'class':'title'}).text = 'Properties'
+
+		for field in struct.findall('property')+struct.findall('field'):
+			fname, ftype = field.get('name'), header_get_arg_type(field)
+			decor = 'var'
+			ftype = field.get('type')
+			if ftype in g_enums: decor = 'enum'
+			if ftype in g_components: decor = 'object'
+			if ftype in g_resources: decor = 'resource'
+			if field.tag == 'field':# or struct.tag == 'struct':
+				topic = ET.SubElement(self.article, 'div', {'class':'topic'})
+				topic.tail = "\n"
+				doc.add_property(topic, decor, fname, ftype)
+				doc.add_small_abstract(self.article, field.text)
+
+		for method in struct.findall('method'):
+			self.on_function(struct, method)
+
+	def on_function(self, _, method):
+		returns = method.find('returns')
+		topic = ET.SubElement(self.article, 'div', {'class':'topic'})
+		doc.add_function(topic, method, returns and returns.get('type'))
+		doc.add_small_abstract(topic, method.findtext('summary'))
+
+	def on_property(self, property, _, path):
+		property_type = property.get('type')
+		readable_name = property_name(path)
+		struct = g_structs.get(property_type)
+		decor = 'var'
+		if property_type == 'Edges': return
+
+		if struct is not None:
+			decor = 'struct'
+		elif property_type in g_enums or readable_name in g_enums:
+			enum = g_enums.get(property_type) or g_enums.get(readable_name)
+			property_type = enum.get('name')
+			decor = 'enum'
+		elif property_type in g_components:
+			decor = 'object'
+
+		topic = ET.SubElement(self.article, 'div', {'class':'topic'})
+		topic.tail = "\n"
+		args = path.split('.')
+		args.reverse()
+		args.pop(0)
+
+		doc.add_property(topic, decor, readable_name, property_type)
+		doc.add_small_abstract(self.article, property.text and property.text.format(*args))
+
+		# if enum: doc.add_small_abstract(g_article, ', '.join(values))
+
+	def on_component(self, root, component):
+		self.on_struct(root, component)
+
+		enum_component_properties(root, component, self.on_property)
+
+	def on_enums(self, root, enums):
+		ename = enums.get('name')
+		article = doc.add_article(self.content, ename, 'None', 'None')
+		doc.add_header(article, "Enum", ename, enums.findtext('summary'))
+		# doc.add_code(article, atts, "struct ", "%s.%s"%(root.get('name'),sname), struct.get('parent'))
+		doc.add_overview(article, enums.find('details'))
+
+		link = ET.SubElement(self.sidebar, 'a', {'class':'leaf-link', 'href':f'#{ename}'})
+		ET.SubElement(article, 'h2', {'class':'title'}).text = 'Constants'
+		ET.SubElement(link, 'i', {'class':f'fa-solid fa-bars icon'})
+		ET.SubElement(link, 'span').text = ename+'\n'
+
+		for enum in enums.findall('enum'):
+			topic = ET.SubElement(article, 'div', {'class':'topic'})
+			topic.tail = "\n"
+			doc.add_property(topic, 'case', enum.get('name'), '')
+			doc.add_small_abstract(topic, enum.text)
+
+	def on_interface(self, *args):
+		return self.on_struct(*args)
 
 class DTDWriter:
 	def __init__(self):
@@ -52,7 +163,7 @@ class DTDWriter:
 			enum = g_enums.get(prop_type) or (g_enums.get(sname) if struct is None else None)
 			ptype = enum.get('name') if enum is not None else prop_type
 			attribs.append((sname, ptype))
-		if struct:
+		if struct is not None:
 			self._collect_struct_fields(struct, f"{path}.", attribs)
 
 	def _iter_component_attribs(self, component):
@@ -511,12 +622,6 @@ def header_get_arg_type(arg):
 def header_get_method_arg(arg):
 	return f"{header_get_arg_type(arg)} {arg.get('name')}"
 
-def header_write_method(node, method):
-	returns = method.find('returns')
-	topic = ET.SubElement(g_article, 'div', {'class':'topic'})
-	doc.add_function(topic, method, returns and returns.get('type'))
-	doc.add_small_abstract(topic, method.findtext('summary'))
-
 def export_get_name(node, method):
 	return f"f_{node.get('name')}_{camel_case(method.get('export') or method.get('name'))}"
 
@@ -573,51 +678,7 @@ def export_write_method(node, method, file):
 	w(file, f"}}")
 
 def function_parse(root, function, parser):
-	header_write_method(root, function)
 	export_write_method(root, function, parser.export)
-
-def write_struct_def(root, struct):
-	sname, sbrief = struct.get('name'), struct.findtext('summary')
-
-	global g_article
-	g_article = doc.add_article(g_content, sname, struct.get('parent') or 'None', struct.findtext('xmlns') or 'None')
-	atts = []
-	# if struct.findtext('xmlns'): atts.append(("@xmlns ", struct.findtext('xmlns')))
-	doc.add_header(g_article, struct.tag.capitalize(), sname, sbrief)
-	doc.add_code(g_article, atts, "struct ", "%s.%s"%(root.get('name'),sname), struct.get('parent') or (struct.tag == 'component' and 'object'))
-	doc.add_overview(g_article, struct.find('details'))
-
-	icons = {
-		'struct': 'gear',
-		'component': 'layer-group',
-		'interface': 'atom',
-	}
-
-	link = ET.SubElement(g_sidebar, 'a', {'class':'leaf-link', 'href':f'#{sname}'})
-	ET.SubElement(link, 'i', {'class':f'fa-solid fa-{icons.get(struct.tag)} icon'})
-	ET.SubElement(link, 'span').text = sname+'\n'
-
-	if struct.findall('property') or struct.findall('methods'):
-		ET.SubElement(g_article, 'h2', {'class':'title'}).text = 'Properties'
-
-	if struct.tag == "interface":
-		return
-
-	for field in struct.findall('property')+struct.findall('field'):
-		fname, ftype = field.get('name'), header_get_arg_type(field)
-		decor = 'var'
-		ftype = field.get('type')
-		if ftype in g_enums:
-			decor = 'enum'
-		if ftype in g_components:
-			decor = 'object'
-		if ftype in g_resources:
-			decor = 'resource'
-		if field.tag == 'field':# or struct.tag == 'struct':
-			topic = ET.SubElement(g_article, 'div', {'class':'topic'})
-			topic.tail = "\n"
-			doc.add_property(topic, decor, fname, ftype)
-			doc.add_small_abstract(g_article, field.text)
 
 def camel_case(variable):
 	return variable[0].lower() + variable[1:]
@@ -626,7 +687,6 @@ def struct_parse(root, struct, parser):
 	e = parser.export
 	is_struct = struct.tag == 'struct'
 	name = struct.get('name')
-	write_struct_def(root, struct)
 	if is_struct:
 		# write lua push
 		w(e, f"void luaX_push{name}(lua_State *L, {lpc(name)} data) {{")
@@ -734,16 +794,6 @@ def enums_parse(_, enums, parser):
 	e = parser.export
 	ename = enums.get('name')
 
-	article = doc.add_article(g_content, ename, 'None', 'None')
-	doc.add_header(article, "Enum", ename, enums.findtext('summary'))
-	# doc.add_code(article, atts, "struct ", "%s.%s"%(root.get('name'),sname), struct.get('parent'))
-	doc.add_overview(article, enums.find('details'))
-
-	link = ET.SubElement(g_sidebar, 'a', {'class':'leaf-link', 'href':f'#{ename}'})
-	ET.SubElement(article, 'h2', {'class':'title'}).text = 'Constants'
-	ET.SubElement(link, 'i', {'class':f'fa-solid fa-bars icon'})
-	ET.SubElement(link, 'span').text = ename+'\n'
-
 	values = ['"%s"'%e.get('name').lower() for e in enums.findall('enum')]+["NULL"]
 	w(e, f"static const char *_{ename}[] = {{{','.join(values)}}};")
 	w(e, f"{_e(ename)} luaX_check{ename}(lua_State *L, int idx) {{")
@@ -753,12 +803,6 @@ def enums_parse(_, enums, parser):
 	w(e, f"\tassert(value >= 0 && value < {len(enums.findall('enum'))});")
 	w(e, f"\tlua_pushstring(L, _{ename}[value]);")
 	w(e, f"}}")
-
-	for enum in enums.findall('enum'):
-		topic = ET.SubElement(article, 'div', {'class':'topic'})
-		topic.tail = "\n"
-		doc.add_property(topic, 'case', enum.get('name'), '')
-		doc.add_small_abstract(topic, enum.text)
 
 def property_name(name):
 	def conv_name(name):
@@ -793,48 +837,32 @@ def component_property(root, cmp, path, property, parser, indent):
 	ptype, cname = property.get('type'), cmp.get('name')
 	struct = g_structs.get(ptype)
 	enum = None
-	decor = 'var'
 	n = 0
 	if not property.get('exclude-self'):
 		# if ptype.endswith("_t"):
 		# 	typedata = f"T_{ptype[:-2].upper()}"
 		# else:
 		typedata = f"kDataType{ptype[:1].upper()+ptype[1:]}"
-		if struct:
+		if struct is not None:
 			export_as = struct.get('export')
 			nfields = struct_property(root, cmp, struct, None, str(), indent)
 			typedata = f"kDataType{export_as}" if export_as else f"kDataTypeGroup, .TypeString=\"{ptype}\", .NumComponents={nfields}"
-			decor = 'struct'
 		elif ptype in g_enums or sname in g_enums:
 			enum = g_enums.get(ptype) or g_enums.get(sname)
 			values = [e.get('name') for e in enum.findall('enum')]
 			ptype = enum.get('name')
 			typedata = f"kDataTypeEnum, .TypeString=\"{','.join(values)}\""
-			decor = 'enum'
 		# elif ptype in g_resources:
 		# 	typedata = f"T_HANDLE, .TypeString=\"{ptype.capitalize()}\""
 		# 	decor = 'resource'
 		elif ptype in g_components:
 			typedata = f"kDataTypeObject, .TypeString=\"{ptype}\""
-			decor = 'object'
 		if parser:
 			w(parser.export, f"{indent}/* {cname}.{sname} */ DECL({hash(sname)}, {hash(cname+'.'+sname)},\n{indent}{cname}, \"{sname}\", {path}, {typedata}),")
 			w(parser.props, f"\tk{cname}{sname},")
 
-			topic = ET.SubElement(g_article, 'div', {'class':'topic'})
-			topic.tail = "\n"
-			args = path.split('.')
-			args.reverse()
-			args.pop(0)
-
-			doc.add_property(topic, decor, sname, ptype)
-			doc.add_small_abstract(g_article, property.text and property.text.format(*args))
-
-			# if enum:
-			# 	doc.add_small_abstract(g_article, ', '.join(values))
-
 		n = 1
-	return (struct_property(root, cmp, struct, parser, path+'.', indent) + n) if struct else n
+	return (struct_property(root, cmp, struct, parser, path+'.', indent) + n) if struct is not None else n
 
 def component_get_parents(component):
 	parents = []
@@ -844,14 +872,38 @@ def component_get_parents(component):
 		parents.append(component.get('concept'))
 	return parents
 
+def struct_property_cb(root, cmp, struct, prefix, func, *args):
+	for shorthand in struct.findall("shorthand"):
+		pname, physical, userdata = shorthand.get('name'), shorthand.get('physical'), shorthand.get('userdata')
+		func(ET.Element("property", {"name": pname, "type": "Edges", "userdata": userdata}), cmp, physical, *args)
+	for field in struct.findall('field') if not struct.get('sealed') else []:
+		if field.get('array'):
+			for m in range(int(field.get('array'))):
+				name = '%s[%d]'%(field.get('name'), m)
+				component_property_cb(root, cmp, prefix+name, field, func, *args)
+		else:
+			component_property_cb(root, cmp, prefix+field.get('name'), field, func, *args)
+	
+def component_property_cb(root, cmp, path, property, func, *args):
+	if not property.get('exclude-self'):
+		func(property, cmp, path, *args)
+	struct = g_structs.get(property.get('type'))
+	if struct is not None:
+		struct_property_cb(root, cmp, struct, f"{path}.", func, *args)
+
+def enum_component_properties(root, component, func, *args):
+	for property in component.findall("property"):
+		pname = property.get('name')
+		if property.get('array'):
+			for n in range(int(property.get('array'))):
+				component_property_cb(root, component, '%s[%d]'%(pname,n), property, func, *args)
+		else:
+			component_property_cb(root, component, pname, property, func, *args)
+
 def component_parse(root, component, parser):
 	e, s = parser.export, parser.props
 	cname = component.get('name')
 
-	write_struct_def(root, component)
-	for method in component.findall('method'):
-		header_write_method(component, method)
-		# write methods
 	for handles in component.findall('handles'):
 		event = handles.get('event')
 		w(e, f"LRESULT {cname}_{event}({lpobject_t}, {lp(cname)}, wParam_t, {event}EventPtr);")
@@ -868,6 +920,7 @@ def component_parse(root, component, parser):
 		pname, physical, userdata = shorthand.get('name'), shorthand.get('physical'), shorthand.get('userdata')
 		w(e, f"\t/* {cname}.{cname} */ DECL({hash(pname)}, {hash(cname+'.'+pname)},\n\t{cname}, \"{pname}\", {physical}, T_EDGES, .TypeString=\"{userdata}\"),")
 		w(parser.props, f"\tk{cname}{pname},")
+	
 	for property in component.findall("property"):
 		pname = property.get('name')
 		if property.get('array'):
@@ -960,6 +1013,7 @@ global_parsers={
 writers = [
 	DTDWriter(),
 	HeaderWriter(),
+	HtmlWriter(),
 ]
 
 def call_plugin_hook(hook, *args):
@@ -978,15 +1032,12 @@ def read_xml(filename):
 	parser = ParserState(filename)
 	subpath = filename[filename.index("source/"):]
 
-	call_plugin_hook('open', filename, root)
 
 	if root.tag != "module":
 		print("Expected 'module' tag")
 		return
 
-	tech = ET.SubElement(g_sidebar, 'div', {'class':'technology-title'})
-	i = ET.SubElement(tech, 'span', {'class':'fa-solid fa-folder-open icon'})
-	i.tail = f"{root.get('namespace')}.{root.get('name')}\n"
+	call_plugin_hook('open', filename, root)
 
 	e = parser.export
 
@@ -1055,10 +1106,6 @@ def read_xml(filename):
 if __name__ == "__main__":
 	for i in range(len(sys.argv)-1):
 		read_xml(sys.argv[i+1])
-
-	tree = ET.ElementTree(g_html)
-	# ET.indent(tree, space="\t", level=0)
-	tree.write(g_output, encoding="utf-8", method="html")
 
 	# _b = ET.SubElement(g_xsd, "xs:simpleType", {"name":"Attribute"})
 	# _b = ET.SubElement(_b, "xs:restriction", {"base":"xs:string"})
