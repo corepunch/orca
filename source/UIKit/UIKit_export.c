@@ -2719,7 +2719,7 @@ static int f_new_NavigateToPageArguments(lua_State *L) {
 		strncpy(self->URL, luaL_optstring(L, -1, ""), sizeof(self->URL));
 		lua_pop(L, 1);
 	} else {
-		self->URL = luaL_checkstring(L, 1);
+		strncpy(self->URL, luaL_checkstring(L, 1), sizeof(self->URL));
 	}
 	return 1;
 }
@@ -2741,7 +2741,7 @@ int f_NavigateToPageArguments___index(lua_State *L) {
 int f_NavigateToPageArguments___newindex(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x7569633e: // URL
-		luaX_checkNavigateToPageArguments(L, 1)->URL = luaL_checkstring(L, 3);
+		strncpy(luaX_checkNavigateToPageArguments(L, 1)->URL, luaL_checkstring(L, 3), sizeof(luaX_checkNavigateToPageArguments(L, 1)->URL));
 		return 0;
 	case 0x84ff7372: // TransitionType
 		luaX_checkNavigateToPageArguments(L, 1)->TransitionType = luaX_checkTransitionType(L, 3);
