@@ -798,6 +798,8 @@
     <summary>Container that manages multiple pages and navigation between them.</summary>
     <details>Provides functionality for navigating between different Page instances, including maintaining a navigation stack, handling back/forward navigation, and managing page transitions.</details>
     <handles event="NavigateToPage" />
+    <handles event="UpdateLayout" />
+    <handles event="HitTest" />
     <property name="ActivePage" type="Page" pointer="true">The currently active page.</property>
   </component>
 
