@@ -628,7 +628,8 @@
     <details>Extends StackView with form-specific functionality including automatic input collection and submission handling.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <handles event="Create"/>
-    <handles event="Submit"/>{</component>
+    <handles event="Submit"/>
+  </component>
 
   <component name="CollectionView" parent="Node2D">
     <summary>Container for dynamic collections of data-driven items</summary>
