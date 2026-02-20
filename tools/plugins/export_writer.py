@@ -215,10 +215,13 @@ class ExportWriter(Plugin):
 				for i, arg in atomic_fields:
 					field_name = arg.get('name')
 					arg_type = arg.get('type')
-					check_fn = utils.atomic_types[arg_type][0]
-					to_fn = check_fn.replace('luaL_check', 'lua_to')
 					table_inits += f'\t\tlua_getfield(L, 1, "{field_name}");\n'
-					table_inits += f'\t\tself->{field_name} = {to_fn}(L, -1);\n'
+					if arg_type == 'fixed':
+						table_inits += f'\t\tstrncpy(self->{field_name}, luaL_optstring(L, -1, ""), sizeof(self->{field_name}));\n'
+					else:
+						check_fn = utils.atomic_types[arg_type][0]
+						to_fn = check_fn.replace('luaL_check', 'lua_to')
+						table_inits += f'\t\tself->{field_name} = {to_fn}(L, -1);\n'
 					table_inits += f'\t\tlua_pop(L, 1);\n'
 					field_inits += '\t\t' + utils.export_check_var(f"self->{field_name}", arg_type, i + 1) + ';\n'
 				init_block = f"\tif (lua_istable(L, 1)) {{\n{table_inits}\t}} else {{\n{field_inits}\t}}\n"
