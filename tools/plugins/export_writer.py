@@ -5,21 +5,80 @@ import string
 
 from . import Plugin, utils, Workspace
 
-_TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), 'templates')
-
-def _load_template(name):
-	with open(os.path.join(_TEMPLATES_DIR, name)) as f:
-		return string.Template(f.read())
-
 _T = {
-	'shutdown':       _load_template('shutdown.c'),
-	'enums':          _load_template('enums.c'),
-	'resource':       _load_template('resource.c'),
-	'struct_push':    _load_template('struct_push.c'),
-	'struct_check':   _load_template('struct_check.c'),
-	'struct_new':     _load_template('struct_new.c'),
-	'component_lua':  _load_template('component_lua.c'),
-	'class_desc':     _load_template('class_desc.c'),
+	'shutdown': string.Template(
+		"static int f_${module_name}_gc(lua_State *L) {\n"
+		"\tvoid ${fn}(void);\n"
+		"\t${fn}();\n"
+		"\treturn 0;\n"
+		"}\n"
+	),
+	'enums': string.Template(
+		"static const char *_${ename}[] = {${values}};\n"
+		"${ename_t} luaX_check${ename}(lua_State *L, int idx) {\n"
+		"\treturn luaL_checkoption(L, idx, NULL, _${ename});\n"
+		"}\n"
+		"void luaX_push${ename}(lua_State *L, ${ename_t} value) {\n"
+		"\tassert(value >= 0 && value < ${count});\n"
+		"\tlua_pushstring(L, _${ename}[value]);\n"
+		"}\n"
+	),
+	'resource': string.Template(
+		"void luaX_push${name}(lua_State *L, ${lpcname} ${name}) {\n"
+		"\tlua_pushlightuserdata(L, (${lpname})${name});\n"
+		"}\n"
+		"${lpname} luaX_check${name}(lua_State *L, int idx) {\n"
+		"\treturn lua_touserdata(L, idx);\n"
+		"}\n"
+	),
+	'struct_push': string.Template(
+		"void luaX_push${name}(lua_State *L, ${lpcname} data) {\n"
+		"\t${lpname} self = lua_newuserdata(L, sizeof(struct ${name}));\n"
+		"\tluaL_setmetatable(L, \"${name}\");\n"
+		"\tmemcpy(self, data, sizeof(struct ${name}));\n"
+		"}\n"
+	),
+	'struct_check': string.Template(
+		"${lpname} luaX_check${name}(lua_State *L, int idx) {\n"
+		"\treturn luaL_checkudata(L, idx, \"${name}\");\n"
+		"}\n"
+	),
+	'struct_new': string.Template(
+		"static int f_new_${name}(lua_State *L) {\n"
+		"\t${lpname} self = lua_newuserdata(L, sizeof(struct ${name}));\n"
+		"\tluaL_setmetatable(L, \"${name}\");\n"
+		"\tmemset(self, 0, sizeof(struct ${name}));\n"
+		"${init_block}"
+		"\treturn 1;\n"
+		"}\n"
+		"static int f_${name}___call(lua_State *L) {\n"
+		"\tlua_remove(L, 1); // remove ${name} from stack\n"
+		"\treturn f_new_${name}(L);\n"
+		"}\n"
+	),
+	'component_lua': string.Template(
+		"void luaX_push${cname}(lua_State *L, ${lpcname} ${cname}) {\n"
+		"\tluaX_pushObject(L, CMP_GetObject(${cname}));\n"
+		"}\n"
+		"${lpname} luaX_check${cname}(lua_State *L, int idx) {\n"
+		"\treturn Get${cname}(luaX_checkObject(L, idx));\n"
+		"}\n"
+	),
+	'class_desc': string.Template(
+		"ORCA_API struct ClassDesc _${cname} = {\n"
+		"\t.ClassName = \"${cname}\",\n"
+		"\t.DefaultName = \"${default_name}\",\n"
+		"\t.ContentType = \"${content_type}\",\n"
+		"\t.Xmlns = \"${xmlns}\",\n"
+		"\t.ParentClasses = {${parents_str}},\n"
+		"\t.ClassID = ID_${cname},\n"
+		"\t.ClassSize = sizeof(struct ${cname}),\n"
+		"\t.Properties = ${cname}Properties,\n"
+		"\t.ObjProc = ${cname}Proc,\n"
+		"\t.Defaults = &${cname}Defaults,\n"
+		"\t.NumProperties = k${cname}NumProperties,\n"
+		"};\n"
+	),
 }
 
 
@@ -146,16 +205,26 @@ class ExportWriter(Plugin):
 		else:
 			self.w(f"{lpname} luaX_check{name}(lua_State *L, int idx);")
 		if is_struct:
-			# Each line in field_inits is "\t<code>;\n". The trailing "\n"
-			# when non-empty places "${field_inits}" and "\t// if" on
-			# separate lines in struct_new.c; when empty, the tab in the
-			# template line provides the indentation for "// if" directly.
-			field_inits = ''.join(
-				"\t" + utils.export_check_var(f"self->{arg.get('name')}", arg.get('type'), i + 1) + ";\n"
-				for i, arg in enumerate(struct.findall('field'))
-				if not arg.get('array') and arg.get('type') in utils.atomic_types
-			)
-			self.wt(_T['struct_new'].substitute(name=name, lpname=lpname, field_inits=field_inits))
+			atomic_fields = [
+				(i, f) for i, f in enumerate(struct.findall('field'))
+				if not f.get('array') and f.get('type') in utils.atomic_types
+			]
+			if atomic_fields:
+				table_inits = ''
+				field_inits = ''
+				for i, arg in atomic_fields:
+					field_name = arg.get('name')
+					arg_type = arg.get('type')
+					check_fn = utils.atomic_types[arg_type][0]
+					to_fn = check_fn.replace('luaL_check', 'lua_to')
+					table_inits += f'\t\tlua_getfield(L, 1, "{field_name}");\n'
+					table_inits += f'\t\tself->{field_name} = {to_fn}(L, -1);\n'
+					table_inits += f'\t\tlua_pop(L, 1);\n'
+					field_inits += '\t\t' + utils.export_check_var(f"self->{field_name}", arg_type, i + 1) + ';\n'
+				init_block = f"\tif (lua_istable(L, 1)) {{\n{table_inits}\t}} else {{\n{field_inits}\t}}\n"
+			else:
+				init_block = ""
+			self.wt(_T['struct_new'].substitute(name=name, lpname=lpname, init_block=init_block))
 		elif struct.find('init') is not None:
 			self.w(f"int f_new_{name}(lua_State *L);")
 		# write methods

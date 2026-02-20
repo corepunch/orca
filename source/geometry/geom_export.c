@@ -22,10 +22,17 @@ static int f_new_vec2(lua_State *L) {
 	lpvec2_t self = lua_newuserdata(L, sizeof(struct vec2));
 	luaL_setmetatable(L, "vec2");
 	memset(self, 0, sizeof(struct vec2));
-	self->x = luaL_checknumber(L, 1);
-	self->y = luaL_checknumber(L, 2);
-	// if (lua_istable(L, 1)) {
-	// }
+	if (lua_istable(L, 1)) {
+		lua_getfield(L, 1, "x");
+		self->x = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "y");
+		self->y = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+	} else {
+		self->x = luaL_checknumber(L, 1);
+		self->y = luaL_checknumber(L, 2);
+	}
 	return 1;
 }
 static int f_vec2___call(lua_State *L) {
@@ -209,11 +216,21 @@ static int f_new_vec3(lua_State *L) {
 	lpvec3_t self = lua_newuserdata(L, sizeof(struct vec3));
 	luaL_setmetatable(L, "vec3");
 	memset(self, 0, sizeof(struct vec3));
-	self->x = luaL_checknumber(L, 1);
-	self->y = luaL_checknumber(L, 2);
-	self->z = luaL_checknumber(L, 3);
-	// if (lua_istable(L, 1)) {
-	// }
+	if (lua_istable(L, 1)) {
+		lua_getfield(L, 1, "x");
+		self->x = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "y");
+		self->y = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "z");
+		self->z = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+	} else {
+		self->x = luaL_checknumber(L, 1);
+		self->y = luaL_checknumber(L, 2);
+		self->z = luaL_checknumber(L, 3);
+	}
 	return 1;
 }
 static int f_vec3___call(lua_State *L) {
@@ -440,12 +457,25 @@ static int f_new_vec4(lua_State *L) {
 	lpvec4_t self = lua_newuserdata(L, sizeof(struct vec4));
 	luaL_setmetatable(L, "vec4");
 	memset(self, 0, sizeof(struct vec4));
-	self->x = luaL_checknumber(L, 1);
-	self->y = luaL_checknumber(L, 2);
-	self->z = luaL_checknumber(L, 3);
-	self->w = luaL_checknumber(L, 4);
-	// if (lua_istable(L, 1)) {
-	// }
+	if (lua_istable(L, 1)) {
+		lua_getfield(L, 1, "x");
+		self->x = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "y");
+		self->y = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "z");
+		self->z = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "w");
+		self->w = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+	} else {
+		self->x = luaL_checknumber(L, 1);
+		self->y = luaL_checknumber(L, 2);
+		self->z = luaL_checknumber(L, 3);
+		self->w = luaL_checknumber(L, 4);
+	}
 	return 1;
 }
 static int f_vec4___call(lua_State *L) {
@@ -562,8 +592,6 @@ static int f_new_box2(lua_State *L) {
 	lpbox2_t self = lua_newuserdata(L, sizeof(struct box2));
 	luaL_setmetatable(L, "box2");
 	memset(self, 0, sizeof(struct box2));
-	// if (lua_istable(L, 1)) {
-	// }
 	return 1;
 }
 static int f_box2___call(lua_State *L) {
@@ -648,8 +676,6 @@ static int f_new_box3(lua_State *L) {
 	lpbox3_t self = lua_newuserdata(L, sizeof(struct box3));
 	luaL_setmetatable(L, "box3");
 	memset(self, 0, sizeof(struct box3));
-	// if (lua_istable(L, 1)) {
-	// }
 	return 1;
 }
 static int f_box3___call(lua_State *L) {
@@ -715,12 +741,25 @@ static int f_new_rect(lua_State *L) {
 	lprect_t self = lua_newuserdata(L, sizeof(struct rect));
 	luaL_setmetatable(L, "rect");
 	memset(self, 0, sizeof(struct rect));
-	self->x = luaL_checknumber(L, 1);
-	self->y = luaL_checknumber(L, 2);
-	self->width = luaL_checknumber(L, 3);
-	self->height = luaL_checknumber(L, 4);
-	// if (lua_istable(L, 1)) {
-	// }
+	if (lua_istable(L, 1)) {
+		lua_getfield(L, 1, "x");
+		self->x = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "y");
+		self->y = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "width");
+		self->width = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "height");
+		self->height = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+	} else {
+		self->x = luaL_checknumber(L, 1);
+		self->y = luaL_checknumber(L, 2);
+		self->width = luaL_checknumber(L, 3);
+		self->height = luaL_checknumber(L, 4);
+	}
 	return 1;
 }
 static int f_rect___call(lua_State *L) {
@@ -838,12 +877,25 @@ static int f_new_quat(lua_State *L) {
 	lpquat_t self = lua_newuserdata(L, sizeof(struct quat));
 	luaL_setmetatable(L, "quat");
 	memset(self, 0, sizeof(struct quat));
-	self->x = luaL_checknumber(L, 1);
-	self->y = luaL_checknumber(L, 2);
-	self->z = luaL_checknumber(L, 3);
-	self->w = luaL_checknumber(L, 4);
-	// if (lua_istable(L, 1)) {
-	// }
+	if (lua_istable(L, 1)) {
+		lua_getfield(L, 1, "x");
+		self->x = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "y");
+		self->y = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "z");
+		self->z = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "w");
+		self->w = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+	} else {
+		self->x = luaL_checknumber(L, 1);
+		self->y = luaL_checknumber(L, 2);
+		self->z = luaL_checknumber(L, 3);
+		self->w = luaL_checknumber(L, 4);
+	}
 	return 1;
 }
 static int f_quat___call(lua_State *L) {
@@ -988,8 +1040,6 @@ static int f_new_mat3(lua_State *L) {
 	lpmat3_t self = lua_newuserdata(L, sizeof(struct mat3));
 	luaL_setmetatable(L, "mat3");
 	memset(self, 0, sizeof(struct mat3));
-	// if (lua_istable(L, 1)) {
-	// }
 	return 1;
 }
 static int f_mat3___call(lua_State *L) {
@@ -1065,8 +1115,6 @@ static int f_new_mat4(lua_State *L) {
 	lpmat4_t self = lua_newuserdata(L, sizeof(struct mat4));
 	luaL_setmetatable(L, "mat4");
 	memset(self, 0, sizeof(struct mat4));
-	// if (lua_istable(L, 1)) {
-	// }
 	return 1;
 }
 static int f_mat4___call(lua_State *L) {
@@ -1255,10 +1303,17 @@ static int f_new_bounds(lua_State *L) {
 	lpbounds_t self = lua_newuserdata(L, sizeof(struct bounds));
 	luaL_setmetatable(L, "bounds");
 	memset(self, 0, sizeof(struct bounds));
-	self->min = luaL_checknumber(L, 1);
-	self->max = luaL_checknumber(L, 2);
-	// if (lua_istable(L, 1)) {
-	// }
+	if (lua_istable(L, 1)) {
+		lua_getfield(L, 1, "min");
+		self->min = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "max");
+		self->max = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+	} else {
+		self->min = luaL_checknumber(L, 1);
+		self->max = luaL_checknumber(L, 2);
+	}
 	return 1;
 }
 static int f_bounds___call(lua_State *L) {
@@ -1315,12 +1370,25 @@ static int f_new_plane3(lua_State *L) {
 	lpplane3_t self = lua_newuserdata(L, sizeof(struct plane3));
 	luaL_setmetatable(L, "plane3");
 	memset(self, 0, sizeof(struct plane3));
-	self->a = luaL_checknumber(L, 1);
-	self->b = luaL_checknumber(L, 2);
-	self->c = luaL_checknumber(L, 3);
-	self->d = luaL_checknumber(L, 4);
-	// if (lua_istable(L, 1)) {
-	// }
+	if (lua_istable(L, 1)) {
+		lua_getfield(L, 1, "a");
+		self->a = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "b");
+		self->b = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "c");
+		self->c = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "d");
+		self->d = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+	} else {
+		self->a = luaL_checknumber(L, 1);
+		self->b = luaL_checknumber(L, 2);
+		self->c = luaL_checknumber(L, 3);
+		self->d = luaL_checknumber(L, 4);
+	}
 	return 1;
 }
 static int f_plane3___call(lua_State *L) {
@@ -1407,9 +1475,13 @@ static int f_new_sphere3(lua_State *L) {
 	lpsphere3_t self = lua_newuserdata(L, sizeof(struct sphere3));
 	luaL_setmetatable(L, "sphere3");
 	memset(self, 0, sizeof(struct sphere3));
-	self->radius = luaL_checknumber(L, 2);
-	// if (lua_istable(L, 1)) {
-	// }
+	if (lua_istable(L, 1)) {
+		lua_getfield(L, 1, "radius");
+		self->radius = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+	} else {
+		self->radius = luaL_checknumber(L, 2);
+	}
 	return 1;
 }
 static int f_sphere3___call(lua_State *L) {
@@ -1466,8 +1538,6 @@ static int f_new_frustum3(lua_State *L) {
 	lpfrustum3_t self = lua_newuserdata(L, sizeof(struct frustum3));
 	luaL_setmetatable(L, "frustum3");
 	memset(self, 0, sizeof(struct frustum3));
-	// if (lua_istable(L, 1)) {
-	// }
 	return 1;
 }
 static int f_frustum3___call(lua_State *L) {
@@ -1596,9 +1666,13 @@ static int f_new_transform2(lua_State *L) {
 	lptransform2_t self = lua_newuserdata(L, sizeof(struct transform2));
 	luaL_setmetatable(L, "transform2");
 	memset(self, 0, sizeof(struct transform2));
-	self->rotation = luaL_checknumber(L, 2);
-	// if (lua_istable(L, 1)) {
-	// }
+	if (lua_istable(L, 1)) {
+		lua_getfield(L, 1, "rotation");
+		self->rotation = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+	} else {
+		self->rotation = luaL_checknumber(L, 2);
+	}
 	return 1;
 }
 static int f_transform2___call(lua_State *L) {
@@ -1677,8 +1751,6 @@ static int f_new_transform3(lua_State *L) {
 	lptransform3_t self = lua_newuserdata(L, sizeof(struct transform3));
 	luaL_setmetatable(L, "transform3");
 	memset(self, 0, sizeof(struct transform3));
-	// if (lua_istable(L, 1)) {
-	// }
 	return 1;
 }
 static int f_transform3___call(lua_State *L) {
@@ -1757,8 +1829,6 @@ static int f_new_triangle3(lua_State *L) {
 	lptriangle3_t self = lua_newuserdata(L, sizeof(struct triangle3));
 	luaL_setmetatable(L, "triangle3");
 	memset(self, 0, sizeof(struct triangle3));
-	// if (lua_istable(L, 1)) {
-	// }
 	return 1;
 }
 static int f_triangle3___call(lua_State *L) {
@@ -1830,8 +1900,6 @@ static int f_new_line3(lua_State *L) {
 	lpline3_t self = lua_newuserdata(L, sizeof(struct line3));
 	luaL_setmetatable(L, "line3");
 	memset(self, 0, sizeof(struct line3));
-	// if (lua_istable(L, 1)) {
-	// }
 	return 1;
 }
 static int f_line3___call(lua_State *L) {
@@ -1932,12 +2000,25 @@ static int f_new_edges(lua_State *L) {
 	lpedges_t self = lua_newuserdata(L, sizeof(struct edges));
 	luaL_setmetatable(L, "edges");
 	memset(self, 0, sizeof(struct edges));
-	self->left = luaL_checknumber(L, 1);
-	self->top = luaL_checknumber(L, 2);
-	self->right = luaL_checknumber(L, 3);
-	self->bottom = luaL_checknumber(L, 4);
-	// if (lua_istable(L, 1)) {
-	// }
+	if (lua_istable(L, 1)) {
+		lua_getfield(L, 1, "left");
+		self->left = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "top");
+		self->top = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "right");
+		self->right = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "bottom");
+		self->bottom = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+	} else {
+		self->left = luaL_checknumber(L, 1);
+		self->top = luaL_checknumber(L, 2);
+		self->right = luaL_checknumber(L, 3);
+		self->bottom = luaL_checknumber(L, 4);
+	}
 	return 1;
 }
 static int f_edges___call(lua_State *L) {
@@ -2006,12 +2087,25 @@ static int f_new_color(lua_State *L) {
 	lpcolor_t self = lua_newuserdata(L, sizeof(struct color));
 	luaL_setmetatable(L, "color");
 	memset(self, 0, sizeof(struct color));
-	self->r = luaL_checknumber(L, 1);
-	self->g = luaL_checknumber(L, 2);
-	self->b = luaL_checknumber(L, 3);
-	self->a = luaL_checknumber(L, 4);
-	// if (lua_istable(L, 1)) {
-	// }
+	if (lua_istable(L, 1)) {
+		lua_getfield(L, 1, "r");
+		self->r = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "g");
+		self->g = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "b");
+		self->b = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "a");
+		self->a = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+	} else {
+		self->r = luaL_checknumber(L, 1);
+		self->g = luaL_checknumber(L, 2);
+		self->b = luaL_checknumber(L, 3);
+		self->a = luaL_checknumber(L, 4);
+	}
 	return 1;
 }
 static int f_color___call(lua_State *L) {

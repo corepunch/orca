@@ -164,12 +164,25 @@ static int f_new_BorderRadiusShorthand(lua_State *L) {
 	lpBorderRadiusShorthand_t self = lua_newuserdata(L, sizeof(struct BorderRadiusShorthand));
 	luaL_setmetatable(L, "BorderRadiusShorthand");
 	memset(self, 0, sizeof(struct BorderRadiusShorthand));
-	self->TopLeftRadius = luaL_checknumber(L, 1);
-	self->TopRightRadius = luaL_checknumber(L, 2);
-	self->BottomRightRadius = luaL_checknumber(L, 3);
-	self->BottomLeftRadius = luaL_checknumber(L, 4);
-	// if (lua_istable(L, 1)) {
-	// }
+	if (lua_istable(L, 1)) {
+		lua_getfield(L, 1, "TopLeftRadius");
+		self->TopLeftRadius = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "TopRightRadius");
+		self->TopRightRadius = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "BottomRightRadius");
+		self->BottomRightRadius = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "BottomLeftRadius");
+		self->BottomLeftRadius = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+	} else {
+		self->TopLeftRadius = luaL_checknumber(L, 1);
+		self->TopRightRadius = luaL_checknumber(L, 2);
+		self->BottomRightRadius = luaL_checknumber(L, 3);
+		self->BottomLeftRadius = luaL_checknumber(L, 4);
+	}
 	return 1;
 }
 static int f_BorderRadiusShorthand___call(lua_State *L) {
@@ -238,9 +251,13 @@ static int f_new_BorderEdgeShorthand(lua_State *L) {
 	lpBorderEdgeShorthand_t self = lua_newuserdata(L, sizeof(struct BorderEdgeShorthand));
 	luaL_setmetatable(L, "BorderEdgeShorthand");
 	memset(self, 0, sizeof(struct BorderEdgeShorthand));
-	self->Width = luaL_checknumber(L, 1);
-	// if (lua_istable(L, 1)) {
-	// }
+	if (lua_istable(L, 1)) {
+		lua_getfield(L, 1, "Width");
+		self->Width = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+	} else {
+		self->Width = luaL_checknumber(L, 1);
+	}
 	return 1;
 }
 static int f_BorderEdgeShorthand___call(lua_State *L) {
@@ -303,8 +320,6 @@ static int f_new_BorderSideShorthand(lua_State *L) {
 	lpBorderSideShorthand_t self = lua_newuserdata(L, sizeof(struct BorderSideShorthand));
 	luaL_setmetatable(L, "BorderSideShorthand");
 	memset(self, 0, sizeof(struct BorderSideShorthand));
-	// if (lua_istable(L, 1)) {
-	// }
 	return 1;
 }
 static int f_BorderSideShorthand___call(lua_State *L) {
@@ -361,8 +376,6 @@ static int f_new_BorderShorthand(lua_State *L) {
 	lpBorderShorthand_t self = lua_newuserdata(L, sizeof(struct BorderShorthand));
 	luaL_setmetatable(L, "BorderShorthand");
 	memset(self, 0, sizeof(struct BorderShorthand));
-	// if (lua_istable(L, 1)) {
-	// }
 	return 1;
 }
 static int f_BorderShorthand___call(lua_State *L) {
@@ -413,10 +426,17 @@ static int f_new_EdgeShorthand(lua_State *L) {
 	lpEdgeShorthand_t self = lua_newuserdata(L, sizeof(struct EdgeShorthand));
 	luaL_setmetatable(L, "EdgeShorthand");
 	memset(self, 0, sizeof(struct EdgeShorthand));
-	self->Left = luaL_checknumber(L, 1);
-	self->Right = luaL_checknumber(L, 2);
-	// if (lua_istable(L, 1)) {
-	// }
+	if (lua_istable(L, 1)) {
+		lua_getfield(L, 1, "Left");
+		self->Left = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "Right");
+		self->Right = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+	} else {
+		self->Left = luaL_checknumber(L, 1);
+		self->Right = luaL_checknumber(L, 2);
+	}
 	return 1;
 }
 static int f_EdgeShorthand___call(lua_State *L) {
@@ -473,8 +493,6 @@ static int f_new_AlignmentShorthand(lua_State *L) {
 	lpAlignmentShorthand_t self = lua_newuserdata(L, sizeof(struct AlignmentShorthand));
 	luaL_setmetatable(L, "AlignmentShorthand");
 	memset(self, 0, sizeof(struct AlignmentShorthand));
-	// if (lua_istable(L, 1)) {
-	// }
 	return 1;
 }
 static int f_AlignmentShorthand___call(lua_State *L) {
@@ -519,9 +537,13 @@ static int f_new_FontShorthand(lua_State *L) {
 	lpFontShorthand_t self = lua_newuserdata(L, sizeof(struct FontShorthand));
 	luaL_setmetatable(L, "FontShorthand");
 	memset(self, 0, sizeof(struct FontShorthand));
-	self->Size = luaL_checknumber(L, 3);
-	// if (lua_istable(L, 1)) {
-	// }
+	if (lua_istable(L, 1)) {
+		lua_getfield(L, 1, "Size");
+		self->Size = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+	} else {
+		self->Size = luaL_checknumber(L, 3);
+	}
 	return 1;
 }
 static int f_FontShorthand___call(lua_State *L) {
@@ -590,8 +612,6 @@ static int f_new_BrushShorthand(lua_State *L) {
 	lpBrushShorthand_t self = lua_newuserdata(L, sizeof(struct BrushShorthand));
 	luaL_setmetatable(L, "BrushShorthand");
 	memset(self, 0, sizeof(struct BrushShorthand));
-	// if (lua_istable(L, 1)) {
-	// }
 	return 1;
 }
 static int f_BrushShorthand___call(lua_State *L) {
@@ -654,10 +674,17 @@ static int f_new_ShadowShorthand(lua_State *L) {
 	lpShadowShorthand_t self = lua_newuserdata(L, sizeof(struct ShadowShorthand));
 	luaL_setmetatable(L, "ShadowShorthand");
 	memset(self, 0, sizeof(struct ShadowShorthand));
-	self->BlurRadius = luaL_checknumber(L, 2);
-	self->SpreadRadius = luaL_checknumber(L, 3);
-	// if (lua_istable(L, 1)) {
-	// }
+	if (lua_istable(L, 1)) {
+		lua_getfield(L, 1, "BlurRadius");
+		self->BlurRadius = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "SpreadRadius");
+		self->SpreadRadius = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+	} else {
+		self->BlurRadius = luaL_checknumber(L, 2);
+		self->SpreadRadius = luaL_checknumber(L, 3);
+	}
 	return 1;
 }
 static int f_ShadowShorthand___call(lua_State *L) {
@@ -726,10 +753,17 @@ static int f_new_RingShorthand(lua_State *L) {
 	lpRingShorthand_t self = lua_newuserdata(L, sizeof(struct RingShorthand));
 	luaL_setmetatable(L, "RingShorthand");
 	memset(self, 0, sizeof(struct RingShorthand));
-	self->Offset = luaL_checknumber(L, 1);
-	self->Width = luaL_checknumber(L, 2);
-	// if (lua_istable(L, 1)) {
-	// }
+	if (lua_istable(L, 1)) {
+		lua_getfield(L, 1, "Offset");
+		self->Offset = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "Width");
+		self->Width = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+	} else {
+		self->Offset = luaL_checknumber(L, 1);
+		self->Width = luaL_checknumber(L, 2);
+	}
 	return 1;
 }
 static int f_RingShorthand___call(lua_State *L) {
@@ -792,8 +826,6 @@ static int f_new_OverflowShorthand(lua_State *L) {
 	lpOverflowShorthand_t self = lua_newuserdata(L, sizeof(struct OverflowShorthand));
 	luaL_setmetatable(L, "OverflowShorthand");
 	memset(self, 0, sizeof(struct OverflowShorthand));
-	// if (lua_istable(L, 1)) {
-	// }
 	return 1;
 }
 static int f_OverflowShorthand___call(lua_State *L) {
@@ -850,10 +882,17 @@ static int f_new_UnderlineShorthand(lua_State *L) {
 	lpUnderlineShorthand_t self = lua_newuserdata(L, sizeof(struct UnderlineShorthand));
 	luaL_setmetatable(L, "UnderlineShorthand");
 	memset(self, 0, sizeof(struct UnderlineShorthand));
-	self->Offset = luaL_checknumber(L, 1);
-	self->Width = luaL_checknumber(L, 2);
-	// if (lua_istable(L, 1)) {
-	// }
+	if (lua_istable(L, 1)) {
+		lua_getfield(L, 1, "Offset");
+		self->Offset = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "Width");
+		self->Width = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+	} else {
+		self->Offset = luaL_checknumber(L, 1);
+		self->Width = luaL_checknumber(L, 2);
+	}
 	return 1;
 }
 static int f_UnderlineShorthand___call(lua_State *L) {
@@ -916,12 +955,25 @@ static int f_new_Thickness(lua_State *L) {
 	lpThickness_t self = lua_newuserdata(L, sizeof(struct Thickness));
 	luaL_setmetatable(L, "Thickness");
 	memset(self, 0, sizeof(struct Thickness));
-	self->Top = luaL_checknumber(L, 1);
-	self->Right = luaL_checknumber(L, 2);
-	self->Bottom = luaL_checknumber(L, 3);
-	self->Left = luaL_checknumber(L, 4);
-	// if (lua_istable(L, 1)) {
-	// }
+	if (lua_istable(L, 1)) {
+		lua_getfield(L, 1, "Top");
+		self->Top = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "Right");
+		self->Right = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "Bottom");
+		self->Bottom = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "Left");
+		self->Left = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+	} else {
+		self->Top = luaL_checknumber(L, 1);
+		self->Right = luaL_checknumber(L, 2);
+		self->Bottom = luaL_checknumber(L, 3);
+		self->Left = luaL_checknumber(L, 4);
+	}
 	return 1;
 }
 static int f_Thickness___call(lua_State *L) {
@@ -990,8 +1042,6 @@ static int f_new_MarginShorthand(lua_State *L) {
 	lpMarginShorthand_t self = lua_newuserdata(L, sizeof(struct MarginShorthand));
 	luaL_setmetatable(L, "MarginShorthand");
 	memset(self, 0, sizeof(struct MarginShorthand));
-	// if (lua_istable(L, 1)) {
-	// }
 	return 1;
 }
 static int f_MarginShorthand___call(lua_State *L) {
@@ -1036,12 +1086,25 @@ static int f_new_SizeAxisShorthand(lua_State *L) {
 	lpSizeAxisShorthand_t self = lua_newuserdata(L, sizeof(struct SizeAxisShorthand));
 	luaL_setmetatable(L, "SizeAxisShorthand");
 	memset(self, 0, sizeof(struct SizeAxisShorthand));
-	self->Requested = luaL_checknumber(L, 1);
-	self->Min = luaL_checknumber(L, 2);
-	self->Actual = luaL_checknumber(L, 3);
-	self->Scroll = luaL_checknumber(L, 4);
-	// if (lua_istable(L, 1)) {
-	// }
+	if (lua_istable(L, 1)) {
+		lua_getfield(L, 1, "Requested");
+		self->Requested = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "Min");
+		self->Min = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "Actual");
+		self->Actual = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "Scroll");
+		self->Scroll = lua_tonumber(L, -1);
+		lua_pop(L, 1);
+	} else {
+		self->Requested = luaL_checknumber(L, 1);
+		self->Min = luaL_checknumber(L, 2);
+		self->Actual = luaL_checknumber(L, 3);
+		self->Scroll = luaL_checknumber(L, 4);
+	}
 	return 1;
 }
 static int f_SizeAxisShorthand___call(lua_State *L) {
@@ -1110,8 +1173,6 @@ static int f_new_SizeShorthand(lua_State *L) {
 	lpSizeShorthand_t self = lua_newuserdata(L, sizeof(struct SizeShorthand));
 	luaL_setmetatable(L, "SizeShorthand");
 	memset(self, 0, sizeof(struct SizeShorthand));
-	// if (lua_istable(L, 1)) {
-	// }
 	return 1;
 }
 static int f_SizeShorthand___call(lua_State *L) {
@@ -2653,8 +2714,6 @@ static int f_new_NavigateToPageEvent(lua_State *L) {
 	lpNavigateToPageEvent_t self = lua_newuserdata(L, sizeof(struct NavigateToPageEvent));
 	luaL_setmetatable(L, "NavigateToPageEvent");
 	memset(self, 0, sizeof(struct NavigateToPageEvent));
-	// if (lua_istable(L, 1)) {
-	// }
 	return 1;
 }
 static int f_NavigateToPageEvent___call(lua_State *L) {
