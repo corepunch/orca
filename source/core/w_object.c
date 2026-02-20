@@ -298,8 +298,7 @@ bool_t OBJ_API(SetProperty, lpcString_t name) {
 
 void OBJ_API(PostMessage, lpcString_t message)
 {
-  lParam_t udata = lua_type(L, 3) == LUA_TUSERDATA ? lua_touserdata(L, 3) : NULL;
-  SV_PostMessage(self, message, 0, udata ? udata : self);
+  SV_PostMessage(self, message, 0, lua_touserdata(L, 3));
 }
 
 lpObject_t OBJ_API(DispatchEvent, lpcString_t event)

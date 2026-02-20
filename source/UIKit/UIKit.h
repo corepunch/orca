@@ -1095,7 +1095,7 @@ typedef enum TransitionType {
 
 /// @brief Event triggered to navigate to a different page within a PageHost.
 struct NavigateToPageArguments {
-	lpPage_t TargetPage; /// The page to navigate to.
+	fixedString_t URL; /// The URL of the page to navigate to.
 	eTransitionType_t TransitionType; /// The type of transition animation to use during navigation.
 };
 
@@ -1115,6 +1115,7 @@ typedef struct Page const *PageCPtr;
 /// @brief Represents a single page within a document or UI container.
 struct Page {
 	fixedString_t Title; /// The title of the page.
+	fixedString_t Path; /// The URL path of the page, like "/about".
 	float Transition; /// The transition progress of the page.
 	lpNode_t _node; /// Pointer to Node for quick referencing
 };

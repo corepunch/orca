@@ -135,6 +135,10 @@ CORE_HandleObjectMessage(lua_State *L, struct WI_Message* msg)
     }
     if (OBJ_SendMessageW(hobj, msg->message, 0, msg->lParam))
       return TRUE;
+    switch (msg->message) {
+      case kEventViewDidLoad:
+        return TRUE;
+    }
   }
   return FALSE;
 }

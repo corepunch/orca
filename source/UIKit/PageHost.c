@@ -50,9 +50,6 @@ HANDLER(PageHost, NavigateBack) {
 }
 
 HANDLER(PageHost, ViewDidLoad) {
-  if (hObject != pViewDidLoad) {
-    return FALSE;
-  }
   FOR_EACH_OBJECT(hChild, hObject) {
     if (pPageHost->ActivePage == NULL) {
       pPageHost->ActivePage = GetPage(hChild);

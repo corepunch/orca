@@ -2117,8 +2117,8 @@
 </div><div id="NavigateToPageArguments" class="class" data-name="NavigateToPageArguments" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
 </div><h1 class="header">NavigateToPageArguments
 </h1><div class="abstract">Event triggered to navigate to a different page within a PageHost.
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.NavigateToPageArguments</span></code><div class="topic"><code class="decorator"><span>object </span><span class="identifier">TargetPage</span>: <a class="type-identifier-link" href="#Page">Page</a></code></div>
-<div class="small-abstract"><span>The page to navigate to.
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.NavigateToPageArguments</span></code><div class="topic"><code class="decorator"><span>var </span><span class="identifier">URL</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>The URL of the page to navigate to.
 </span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">TransitionType</span>: <a class="type-identifier-link" href="#TransitionType">TransitionType</a></code></div>
 <div class="small-abstract"><span>The type of transition animation to use during navigation.
 </span></div></div><div id="NavigateBackArguments" class="class" data-name="NavigateBackArguments" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
@@ -2133,6 +2133,8 @@
 <div class="small-abstract"><span>Pointer to Node for quick referencing
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Title</span>: <span>fixed</span></code></div>
 <div class="small-abstract"><span>The title of the page.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Path</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>The URL path of the page, like "/about".
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Transition</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>The transition progress of the page.
 </span></div></div><div id="PageHost" class="class" data-name="PageHost" data-inherits="Page" data-xmlns="None"><div class="eyebrow">Component

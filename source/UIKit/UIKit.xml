@@ -780,7 +780,8 @@
 
   <struct name="NavigateToPageArguments">
     <summary>Event triggered to navigate to a different page within a PageHost.</summary>
-    <field name="TargetPage" type="Page" pointer="true">The page to navigate to.</field>
+    <!-- <field name="TargetPage" type="Page" pointer="true">The page to navigate to.</field> -->
+    <field name="URL" type="fixed">The URL of the page to navigate to.</field>
     <field name="TransitionType" type="TransitionType">The type of transition animation to use during navigation.</field>
   </struct>
 
@@ -797,6 +798,7 @@
     <details>Used to store navigation related data while all the functionality comes from PageHost</details>
     <handles event="Create"/>
     <property name="Title" type="fixed">The title of the page.</property>
+    <property name="Path" type="fixed">The URL path of the page, like "/about".</property>
     <property name="Transition" type="float">The transition progress of the page.</property>
     <field name="_node" type="Node" pointer="true">Pointer to Node for quick referencing</field>
   </component>
