@@ -16,7 +16,7 @@ local function test_text_block_layout()
 	local text = screen + orca.ui.TextBlock {
 		Name = "Text", 
 		Text = config.text,
-		HorizontalMargin = orca.ui.EdgeShorthand(config.margin.left, config.margin.right),
+		HorizontalMargin = orca.ui.EdgeShorthand { Left = config.margin.left, Right = config.margin.right },
 		BorderRadius = config.radius, -- this should apply the same radius to all corners
 	}
 
