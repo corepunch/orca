@@ -255,8 +255,12 @@ static int f_new_BorderEdgeShorthand(lua_State *L) {
 		lua_getfield(L, 1, "Width");
 		self->Width = lua_tonumber(L, -1);
 		lua_pop(L, 1);
+		lua_getfield(L, 1, "Style");
+		if (!lua_isnil(L, -1)) self->Style = luaX_checkBorderStyle(L, -1);
+		lua_pop(L, 1);
 	} else {
 		self->Width = luaL_checknumber(L, 1);
+		self->Style = luaX_checkBorderStyle(L, 2);
 	}
 	return 1;
 }
@@ -538,10 +542,18 @@ static int f_new_FontShorthand(lua_State *L) {
 	luaL_setmetatable(L, "FontShorthand");
 	memset(self, 0, sizeof(struct FontShorthand));
 	if (lua_istable(L, 1)) {
+		lua_getfield(L, 1, "Weight");
+		if (!lua_isnil(L, -1)) self->Weight = luaX_checkFontWeight(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "Style");
+		if (!lua_isnil(L, -1)) self->Style = luaX_checkFontStyle(L, -1);
+		lua_pop(L, 1);
 		lua_getfield(L, 1, "Size");
 		self->Size = lua_tonumber(L, -1);
 		lua_pop(L, 1);
 	} else {
+		self->Weight = luaX_checkFontWeight(L, 1);
+		self->Style = luaX_checkFontStyle(L, 2);
 		self->Size = luaL_checknumber(L, 3);
 	}
 	return 1;
@@ -682,8 +694,8 @@ static int f_new_ShadowShorthand(lua_State *L) {
 		self->SpreadRadius = lua_tonumber(L, -1);
 		lua_pop(L, 1);
 	} else {
-		self->BlurRadius = luaL_checknumber(L, 2);
-		self->SpreadRadius = luaL_checknumber(L, 3);
+		self->BlurRadius = luaL_checknumber(L, 1);
+		self->SpreadRadius = luaL_checknumber(L, 2);
 	}
 	return 1;
 }
@@ -826,6 +838,17 @@ static int f_new_OverflowShorthand(lua_State *L) {
 	lpOverflowShorthand_t self = lua_newuserdata(L, sizeof(struct OverflowShorthand));
 	luaL_setmetatable(L, "OverflowShorthand");
 	memset(self, 0, sizeof(struct OverflowShorthand));
+	if (lua_istable(L, 1)) {
+		lua_getfield(L, 1, "x");
+		if (!lua_isnil(L, -1)) self->x = luaX_checkOverflow(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "y");
+		if (!lua_isnil(L, -1)) self->y = luaX_checkOverflow(L, -1);
+		lua_pop(L, 1);
+	} else {
+		self->x = luaX_checkOverflow(L, 1);
+		self->y = luaX_checkOverflow(L, 2);
+	}
 	return 1;
 }
 static int f_OverflowShorthand___call(lua_State *L) {
@@ -2718,8 +2741,12 @@ static int f_new_NavigateToPageArguments(lua_State *L) {
 		lua_getfield(L, 1, "URL");
 		strncpy(self->URL, luaL_optstring(L, -1, ""), sizeof(self->URL));
 		lua_pop(L, 1);
+		lua_getfield(L, 1, "TransitionType");
+		if (!lua_isnil(L, -1)) self->TransitionType = luaX_checkTransitionType(L, -1);
+		lua_pop(L, 1);
 	} else {
 		strncpy(self->URL, luaL_checkstring(L, 1), sizeof(self->URL));
+		self->TransitionType = luaX_checkTransitionType(L, 2);
 	}
 	return 1;
 }
@@ -2777,6 +2804,13 @@ static int f_new_NavigateBackArguments(lua_State *L) {
 	lpNavigateBackArguments_t self = lua_newuserdata(L, sizeof(struct NavigateBackArguments));
 	luaL_setmetatable(L, "NavigateBackArguments");
 	memset(self, 0, sizeof(struct NavigateBackArguments));
+	if (lua_istable(L, 1)) {
+		lua_getfield(L, 1, "TransitionType");
+		if (!lua_isnil(L, -1)) self->TransitionType = luaX_checkTransitionType(L, -1);
+		lua_pop(L, 1);
+	} else {
+		self->TransitionType = luaX_checkTransitionType(L, 1);
+	}
 	return 1;
 }
 static int f_NavigateBackArguments___call(lua_State *L) {

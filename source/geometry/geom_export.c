@@ -1480,7 +1480,7 @@ static int f_new_sphere3(lua_State *L) {
 		self->radius = lua_tonumber(L, -1);
 		lua_pop(L, 1);
 	} else {
-		self->radius = luaL_checknumber(L, 2);
+		self->radius = luaL_checknumber(L, 1);
 	}
 	return 1;
 }
@@ -1671,7 +1671,7 @@ static int f_new_transform2(lua_State *L) {
 		self->rotation = lua_tonumber(L, -1);
 		lua_pop(L, 1);
 	} else {
-		self->rotation = luaL_checknumber(L, 2);
+		self->rotation = luaL_checknumber(L, 1);
 	}
 	return 1;
 }
