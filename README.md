@@ -112,6 +112,8 @@ ORCA supports multiple approaches for building applications, each with their own
 
 **XML approach** (UI screen definition):
 ```xml
+<?xml version="1.0"?>
+<!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
 <Screen Name="Application" Height="768" Width="1024">
   <TextBlock Name="TextBlock" FontSize="40" LayoutTransform="400 20 0 1 1" Text="Hello World"/>
   <ImageView Name="Image" Image="Example/Images/peacock"/>
