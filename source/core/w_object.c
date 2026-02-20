@@ -296,9 +296,29 @@ bool_t OBJ_API(SetProperty, lpcString_t name) {
   }
 }
 
+static struct {
+  char data[0x10000];
+  uint16_t writer;
+} g_mem;
+
 void OBJ_API(PostMessage, lpcString_t message)
 {
-  SV_PostMessage(self, message, 0, lua_touserdata(L, 3));
+  if (lua_type(L, 3) == LUA_TUSERDATA) {
+    size_t size = lua_rawlen(L, 3);
+    if (size > sizeof(g_mem.data)) {
+      Con_Error("Message data too large: %zu bytes", size);
+      return;
+    }    
+    if (g_mem.writer + size > sizeof(g_mem.data)) {
+      g_mem.writer = 0;
+    }
+    handle_t data = g_mem.data + g_mem.writer;
+    memcpy(data, lua_touserdata(L, 3), size);
+    g_mem.writer += size;
+    SV_PostMessage(self, message, 0, data);
+  } else {
+    SV_PostMessage(self, message, 0, NULL);
+  }
 }
 
 lpObject_t OBJ_API(DispatchEvent, lpcString_t event)
