@@ -222,6 +222,8 @@ def export_newindex_name(node):
 def export_check_var(target, arg_type, idx, access=''):
 	if arg_type == 'STRING':
 		return f"strncpy({target}, luaL_checkstring(L, {idx}), sizeof(STRING));"
+	elif arg_type == 'fixed':
+		return f"strncpy({target}, luaL_checkstring(L, {idx}), sizeof({target}))"
 	elif arg_type in atomic_types:
 		check, _ = atomic_types[arg_type]
 		return f"{target} = {access}{check}(L, {idx})"

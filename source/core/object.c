@@ -351,7 +351,7 @@ OBJ_Awake(lua_State* L, lpObject_t object)
   if (!(object->flags & OF_UPDATED_ONCE)) {
     lpcString_t cb = OBJ_FindCallbackForID(object, kEventAwake);
     if (cb) {
-//      WI_PostMessageW(object, kEventAwake, 0, object);
+      //      WI_PostMessageW(object, kEventAwake, 0, object);
       luaX_pushObject(L, object);
       lua_getfield(L, -1, cb);
       lua_insert(L, -2); // Move callback before obj
@@ -360,6 +360,7 @@ OBJ_Awake(lua_State* L, lpObject_t object)
         lua_pop(L, 1);
       }
     }
+    OBJ_SendMessageW(object, kEventAwake, 0, NULL);
     OBJ_ApplyStyles(object, FALSE);
     object->flags |= OF_UPDATED_ONCE;
   }

@@ -125,7 +125,8 @@
 </span></a><a class="leaf-link" href="#NinePatchImage"><i class="fa-solid fa-layer-group icon"></i><span>NinePatchImage
 </span></a><a class="leaf-link" href="#TerminalView"><i class="fa-solid fa-layer-group icon"></i><span>TerminalView
 </span></a><a class="leaf-link" href="#TransitionType"><i class="fa-solid fa-bars icon"></i><span>TransitionType
-</span></a><a class="leaf-link" href="#NavigateToPageEvent"><i class="fa-solid fa-gear icon"></i><span>NavigateToPageEvent
+</span></a><a class="leaf-link" href="#NavigateToPageArguments"><i class="fa-solid fa-gear icon"></i><span>NavigateToPageArguments
+</span></a><a class="leaf-link" href="#NavigateBackArguments"><i class="fa-solid fa-gear icon"></i><span>NavigateBackArguments
 </span></a><a class="leaf-link" href="#Page"><i class="fa-solid fa-layer-group icon"></i><span>Page
 </span></a><a class="leaf-link" href="#PageHost"><i class="fa-solid fa-layer-group icon"></i><span>PageHost
 </span></a><a class="leaf-link" href="#StyleType"><i class="fa-solid fa-bars icon"></i><span>StyleType
@@ -501,6 +502,7 @@
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getProperty</span>(<span class="identifier">Property</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> nresults</span></code><div class="small-abstract"><span>Get a property value from an object.
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">findChild</span>(<span class="identifier">name</span>:<span class="decorator">string</span>, <span class="identifier">recursive</span>:<span class="decorator">bool</span>)<span class="decorator"> -&gt;</span><span> Object</span></code><div class="small-abstract"><span>Find a child object by name.
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">dispatchEvent</span>(<span class="identifier">event</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> Object</span></code><div class="small-abstract"><span>Dispatch an event starting from this object and bubbling up parents.
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">postMessage</span>(<span class="identifier">message</span>:<span class="decorator">string</span>)</code><div class="small-abstract"><span>Posts a message to the global message queue.
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">play</span>(<span class="identifier">animation</span>:<span class="decorator">string</span>)</code><div class="small-abstract"><span>Play an animation or resource on the object.
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">bind</span>(<span class="identifier">Property</span>:<span class="decorator">string</span>, <span class="identifier">expression</span>:<span class="decorator">string</span>)</code><div class="small-abstract"><span>Bind a property of an object to an expression or data source.
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">setFocus</span>()</code><div class="small-abstract"><span>Set focus on the object.
@@ -2112,26 +2114,37 @@
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Fade</span></code><div class="small-abstract"><span>Fading transition
 </span></div></div>
-</div><div id="NavigateToPageEvent" class="class" data-name="NavigateToPageEvent" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
-</div><h1 class="header">NavigateToPageEvent
+</div><div id="NavigateToPageArguments" class="class" data-name="NavigateToPageArguments" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">NavigateToPageArguments
 </h1><div class="abstract">Event triggered to navigate to a different page within a PageHost.
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.NavigateToPageEvent</span></code><div class="topic"><code class="decorator"><span>object </span><span class="identifier">TargetPage</span>: <a class="type-identifier-link" href="#Page">Page</a></code></div>
-<div class="small-abstract"><span>The page to navigate to.
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.NavigateToPageArguments</span></code><div class="topic"><code class="decorator"><span>var </span><span class="identifier">URL</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>The URL of the page to navigate to.
 </span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">TransitionType</span>: <a class="type-identifier-link" href="#TransitionType">TransitionType</a></code></div>
+<div class="small-abstract"><span>The type of transition animation to use during navigation.
+</span></div></div><div id="NavigateBackArguments" class="class" data-name="NavigateBackArguments" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">NavigateBackArguments
+</h1><div class="abstract">Event triggered to navigate back to the previous page in the navigation history.
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.NavigateBackArguments</span></code><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">TransitionType</span>: <a class="type-identifier-link" href="#TransitionType">TransitionType</a></code></div>
 <div class="small-abstract"><span>The type of transition animation to use during navigation.
 </span></div></div><div id="Page" class="class" data-name="Page" data-inherits="Node2D" data-xmlns="None"><div class="eyebrow">Component
 </div><h1 class="header">Page
 </h1><div class="abstract">Represents a single page within a document or UI container.
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Page</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node2D" class="name base">Node2D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Used to store navigation related data while all the functionality comes from PageHost</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Title</span>: <span>fixed</span></code></div>
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Page</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node2D" class="name base">Node2D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Used to store navigation related data while all the functionality comes from PageHost</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>object </span><span class="identifier">_node</span>: <a class="type-identifier-link" href="#Node">Node</a></code></div>
+<div class="small-abstract"><span>Pointer to Node for quick referencing
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Title</span>: <span>fixed</span></code></div>
 <div class="small-abstract"><span>The title of the page.
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">IsActive</span>: <span>bool</span></code></div>
-<div class="small-abstract"><span>Indicates whether the page is currently active.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Path</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>The URL path of the page, like "/about".
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Transition</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>The transition progress of the page.
 </span></div></div><div id="PageHost" class="class" data-name="PageHost" data-inherits="Page" data-xmlns="None"><div class="eyebrow">Component
 </div><h1 class="header">PageHost
 </h1><div class="abstract">Container that manages multiple pages and navigation between them.
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.PageHost</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Page" class="name base">Page</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Provides functionality for navigating between different Page instances, including maintaining a navigation stack, handling back/forward navigation, and managing page transitions.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>object </span><span class="identifier">ActivePage</span>: <a class="type-identifier-link" href="#Page">Page</a></code></div>
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.PageHost</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Page" class="name base">Page</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Provides functionality for navigating between different Page instances, including maintaining a navigation stack, handling back/forward navigation, and managing page transitions.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>object </span><span class="identifier">_historyStack</span>: <a class="type-identifier-link" href="#Page">Page</a></code></div>
+<div class="small-abstract"><span>Navigation history stack.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_historySize</span>: <span>int</span></code></div>
+<div class="small-abstract"><span>Number of entries in the navigation history stack.
+</span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">ActivePage</span>: <a class="type-identifier-link" href="#Page">Page</a></code></div>
 <div class="small-abstract"><span>The currently active page.
 </span></div></div><div id="StyleType" class="class" data-name="StyleType" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
 </div><h1 class="header">StyleType

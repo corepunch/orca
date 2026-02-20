@@ -205,25 +205,28 @@ class ExportWriter(Plugin):
 		else:
 			self.w(f"{lpname} luaX_check{name}(lua_State *L, int idx);")
 		if is_struct:
-			atomic_fields = [
+			serializable_fields = [
 				(i, f) for i, f in enumerate(struct.findall('field'))
-				if not f.get('array') and f.get('type') in utils.atomic_types
+				if not f.get('array')
+				and (f.get('type') in utils.atomic_types or f.get('type') in Workspace.enums)
 			]
-			if atomic_fields:
+			if serializable_fields:
 				table_inits = ''
 				field_inits = ''
-				for i, arg in atomic_fields:
+				for pos, (i, arg) in enumerate(serializable_fields):
 					field_name = arg.get('name')
 					arg_type = arg.get('type')
 					table_inits += f'\t\tlua_getfield(L, 1, "{field_name}");\n'
 					if arg_type == 'fixed':
 						table_inits += f'\t\tstrncpy(self->{field_name}, luaL_optstring(L, -1, ""), sizeof(self->{field_name}));\n'
+					elif arg_type in Workspace.enums:
+						table_inits += f'\t\tif (!lua_isnil(L, -1)) self->{field_name} = luaX_check{arg_type}(L, -1);\n'
 					else:
 						check_fn = utils.atomic_types[arg_type][0]
 						to_fn = check_fn.replace('luaL_check', 'lua_to')
 						table_inits += f'\t\tself->{field_name} = {to_fn}(L, -1);\n'
 					table_inits += f'\t\tlua_pop(L, 1);\n'
-					field_inits += '\t\t' + utils.export_check_var(f"self->{field_name}", arg_type, i + 1) + ';\n'
+					field_inits += '\t\t' + utils.export_check_var(f"self->{field_name}", arg_type, pos + 1) + ';\n'
 				init_block = f"\tif (lua_istable(L, 1)) {{\n{table_inits}\t}} else {{\n{field_inits}\t}}\n"
 			else:
 				init_block = ""

@@ -670,13 +670,13 @@ enum TerminalViewProperties {
 #define Page_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_Page,sizeof(struct Page),_N)
 enum PageProperties {
 	kPageTitle,
-	kPageIsActive,
+	kPagePath,
 	kPageTransition,
 	kPageNumProperties
 };
 
 #define ID_Page_Title 0x31e209ce
-#define ID_Page_IsActive 0x94c0246a
+#define ID_Page_Path 0x20109b7f
 #define ID_Page_Transition 0xb60425fb
 #define ID_PageHost 0x6f2dc6c0
 #define GetPageHost(_P)((struct PageHost*)((_P)?OBJ_GetComponent(_P,ID_PageHost):NULL))

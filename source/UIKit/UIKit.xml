@@ -778,27 +778,40 @@
     <enum name="Fade">Fading transition</enum>
   </enums>
 
-  <struct name="NavigateToPageEvent">
+  <struct name="NavigateToPageArguments">
     <summary>Event triggered to navigate to a different page within a PageHost.</summary>
-    <field name="TargetPage" type="Page" pointer="true">The page to navigate to.</field>
+    <!-- <field name="TargetPage" type="Page" pointer="true">The page to navigate to.</field> -->
+    <field name="URL" type="fixed">The URL of the page to navigate to.</field>
     <field name="TransitionType" type="TransitionType">The type of transition animation to use during navigation.</field>
   </struct>
 
-  <event name="NavigateToPage" type="NavigateToPageEvent"/>
+  <struct name="NavigateBackArguments">
+    <summary>Event triggered to navigate back to the previous page in the navigation history.</summary>
+    <field name="TransitionType" type="TransitionType">The type of transition animation to use during navigation.</field>
+  </struct>
+
+  <event name="NavigateToPage" type="NavigateToPageArguments"/>
+  <event name="NavigateBack" type="NavigateBackArguments"/>
 
   <component name="Page" parent="Node2D">
     <summary>Represents a single page within a document or UI container.</summary>
     <details>Used to store navigation related data while all the functionality comes from PageHost</details>
+    <handles event="Create"/>
     <property name="Title" type="fixed">The title of the page.</property>
-    <property name="IsActive" type="bool">Indicates whether the page is currently active.</property>
+    <property name="Path" type="fixed">The URL path of the page, like "/about".</property>
     <property name="Transition" type="float">The transition progress of the page.</property>
+    <field name="_node" type="Node" pointer="true">Pointer to Node for quick referencing</field>
   </component>
 
   <component name="PageHost" parent="Page">
     <summary>Container that manages multiple pages and navigation between them.</summary>
     <details>Provides functionality for navigating between different Page instances, including maintaining a navigation stack, handling back/forward navigation, and managing page transitions.</details>
+    <handles event="ViewDidLoad"/>
     <handles event="NavigateToPage" />
+    <handles event="NavigateBack" />
     <property name="ActivePage" type="Page" pointer="true">The currently active page.</property>
+    <field name="_historyStack" type="Page" pointer="true" array="32">Navigation history stack.</field>
+    <field name="_historySize" type="int">Number of entries in the navigation history stack.</field>
   </component>
 
   <!-- Style components -->

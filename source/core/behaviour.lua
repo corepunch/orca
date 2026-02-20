@@ -11,6 +11,7 @@
 "  elseif type(self.body) == 'string' then\n"
 "    self:addChild(self.body)\n"
 "  end\n"
+"  self:postMessage 'ViewDidLoad'\n"
 "  return self\n"
 "end\n"
 

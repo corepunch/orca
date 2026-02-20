@@ -213,7 +213,7 @@ static lpcString_t PascalCase(lpcString_t pname) {
 }
 
 #include <source/UIKit/UIKit.h>
-bool_t OBJAPI(SetProperty, lpcString_t name) {
+bool_t OBJ_API(SetProperty, lpcString_t name) {
   switch (fnv1a32(name)) {
     case p_id:
 		case p_Name:
@@ -296,7 +296,12 @@ bool_t OBJAPI(SetProperty, lpcString_t name) {
   }
 }
 
-lpObject_t OBJAPI(DispatchEvent, lpcString_t event)
+void OBJ_API(PostMessage, lpcString_t message)
+{
+  SV_PostMessage(self, message, 0, lua_touserdata(L, 3));
+}
+
+lpObject_t OBJ_API(DispatchEvent, lpcString_t event)
 {
   uint32_t dwNumArgs = MAX(0, lua_gettop(L) - 2);
   shortStr_t pszEventName;
@@ -326,7 +331,7 @@ static int __paint(lua_State *L) {
   return 0;
 }
 
-int OBJAPI(GetProperty, lpcString_t name)
+int OBJ_API(GetProperty, lpcString_t name)
 {
   uint32_t ident = fnv1a32(name);
   if (!strcmp(name, "paint")) {
@@ -437,7 +442,7 @@ int OBJAPI(GetProperty, lpcString_t name)
 //  return 1;
 //}
 
-void OBJAPI(SetContext)
+void OBJ_API(SetContext)
 {
   lpObject_t* ctx = lua_getextraspace(L);
   *ctx = self;
@@ -448,7 +453,7 @@ void OBJ_Play(lpObject_t self, lpcString_t animation)
 //  OBJ_SetAnimation(self, string_2);
 }
 
-void OBJAPI(Bind, lpcString_t property, lpcString_t expression) {
+void OBJ_API(Bind, lpcString_t property, lpcString_t expression) {
   lpProperty_t hProperty = NULL;
   if (FAILED(OBJ_FindShortProperty(self, property, &hProperty))) {
     hProperty = PROP_Create(L, self, property, kDataTypeNone, NULL);

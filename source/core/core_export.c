@@ -111,6 +111,12 @@ static int f_Object_dispatchEvent(lua_State *L) {
 	luaX_pushObject(L, output);
 	return 1;
 }
+static int f_Object_postMessage(lua_State *L) {
+	lpObject_t self = luaX_checkObject(L, 1);
+	const char* message = luaL_checkstring(L, 2);
+	OBJ_PostMessage(L, self, message);
+	return 0;
+}
 static int f_Object_play(lua_State *L) {
 	lpObject_t self = luaX_checkObject(L, 1);
 	const char* animation = luaL_checkstring(L, 2);
@@ -438,6 +444,9 @@ int f_Object___index(lua_State *L) {
 		return 1;
 	case 0x46310439: // dispatchEvent
 		lua_pushcfunction(L, f_Object_dispatchEvent);
+		return 1;
+	case 0x2a7c8ec6: // postMessage
+		lua_pushcfunction(L, f_Object_postMessage);
 		return 1;
 	case 0xc2cbd863: // play
 		lua_pushcfunction(L, f_Object_play);

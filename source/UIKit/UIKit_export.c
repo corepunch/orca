@@ -255,8 +255,12 @@ static int f_new_BorderEdgeShorthand(lua_State *L) {
 		lua_getfield(L, 1, "Width");
 		self->Width = lua_tonumber(L, -1);
 		lua_pop(L, 1);
+		lua_getfield(L, 1, "Style");
+		if (!lua_isnil(L, -1)) self->Style = luaX_checkBorderStyle(L, -1);
+		lua_pop(L, 1);
 	} else {
 		self->Width = luaL_checknumber(L, 1);
+		self->Style = luaX_checkBorderStyle(L, 2);
 	}
 	return 1;
 }
@@ -538,10 +542,18 @@ static int f_new_FontShorthand(lua_State *L) {
 	luaL_setmetatable(L, "FontShorthand");
 	memset(self, 0, sizeof(struct FontShorthand));
 	if (lua_istable(L, 1)) {
+		lua_getfield(L, 1, "Weight");
+		if (!lua_isnil(L, -1)) self->Weight = luaX_checkFontWeight(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "Style");
+		if (!lua_isnil(L, -1)) self->Style = luaX_checkFontStyle(L, -1);
+		lua_pop(L, 1);
 		lua_getfield(L, 1, "Size");
 		self->Size = lua_tonumber(L, -1);
 		lua_pop(L, 1);
 	} else {
+		self->Weight = luaX_checkFontWeight(L, 1);
+		self->Style = luaX_checkFontStyle(L, 2);
 		self->Size = luaL_checknumber(L, 3);
 	}
 	return 1;
@@ -682,8 +694,8 @@ static int f_new_ShadowShorthand(lua_State *L) {
 		self->SpreadRadius = lua_tonumber(L, -1);
 		lua_pop(L, 1);
 	} else {
-		self->BlurRadius = luaL_checknumber(L, 2);
-		self->SpreadRadius = luaL_checknumber(L, 3);
+		self->BlurRadius = luaL_checknumber(L, 1);
+		self->SpreadRadius = luaL_checknumber(L, 2);
 	}
 	return 1;
 }
@@ -826,6 +838,17 @@ static int f_new_OverflowShorthand(lua_State *L) {
 	lpOverflowShorthand_t self = lua_newuserdata(L, sizeof(struct OverflowShorthand));
 	luaL_setmetatable(L, "OverflowShorthand");
 	memset(self, 0, sizeof(struct OverflowShorthand));
+	if (lua_istable(L, 1)) {
+		lua_getfield(L, 1, "x");
+		if (!lua_isnil(L, -1)) self->x = luaX_checkOverflow(L, -1);
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "y");
+		if (!lua_isnil(L, -1)) self->y = luaX_checkOverflow(L, -1);
+		lua_pop(L, 1);
+	} else {
+		self->x = luaX_checkOverflow(L, 1);
+		self->y = luaX_checkOverflow(L, 2);
+	}
 	return 1;
 }
 static int f_OverflowShorthand___call(lua_State *L) {
@@ -2702,73 +2725,144 @@ void luaX_pushTransitionType(lua_State *L, eTransitionType_t value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _TransitionType[value]);
 }
-void luaX_pushNavigateToPageEvent(lua_State *L, lpcNavigateToPageEvent_t data) {
-	lpNavigateToPageEvent_t self = lua_newuserdata(L, sizeof(struct NavigateToPageEvent));
-	luaL_setmetatable(L, "NavigateToPageEvent");
-	memcpy(self, data, sizeof(struct NavigateToPageEvent));
+void luaX_pushNavigateToPageArguments(lua_State *L, lpcNavigateToPageArguments_t data) {
+	lpNavigateToPageArguments_t self = lua_newuserdata(L, sizeof(struct NavigateToPageArguments));
+	luaL_setmetatable(L, "NavigateToPageArguments");
+	memcpy(self, data, sizeof(struct NavigateToPageArguments));
 }
-lpNavigateToPageEvent_t luaX_checkNavigateToPageEvent(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "NavigateToPageEvent");
+lpNavigateToPageArguments_t luaX_checkNavigateToPageArguments(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "NavigateToPageArguments");
 }
-static int f_new_NavigateToPageEvent(lua_State *L) {
-	lpNavigateToPageEvent_t self = lua_newuserdata(L, sizeof(struct NavigateToPageEvent));
-	luaL_setmetatable(L, "NavigateToPageEvent");
-	memset(self, 0, sizeof(struct NavigateToPageEvent));
+static int f_new_NavigateToPageArguments(lua_State *L) {
+	lpNavigateToPageArguments_t self = lua_newuserdata(L, sizeof(struct NavigateToPageArguments));
+	luaL_setmetatable(L, "NavigateToPageArguments");
+	memset(self, 0, sizeof(struct NavigateToPageArguments));
+	if (lua_istable(L, 1)) {
+		lua_getfield(L, 1, "URL");
+		strncpy(self->URL, luaL_optstring(L, -1, ""), sizeof(self->URL));
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "TransitionType");
+		if (!lua_isnil(L, -1)) self->TransitionType = luaX_checkTransitionType(L, -1);
+		lua_pop(L, 1);
+	} else {
+		strncpy(self->URL, luaL_checkstring(L, 1), sizeof(self->URL));
+		self->TransitionType = luaX_checkTransitionType(L, 2);
+	}
 	return 1;
 }
-static int f_NavigateToPageEvent___call(lua_State *L) {
-	lua_remove(L, 1); // remove NavigateToPageEvent from stack
-	return f_new_NavigateToPageEvent(L);
+static int f_NavigateToPageArguments___call(lua_State *L) {
+	lua_remove(L, 1); // remove NavigateToPageArguments from stack
+	return f_new_NavigateToPageArguments(L);
 }
-int f_NavigateToPageEvent___index(lua_State *L) {
+int f_NavigateToPageArguments___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x69b4e093: // TargetPage
-		luaX_pushPage(L, luaX_checkNavigateToPageEvent(L, 1)->TargetPage);
+	case 0x7569633e: // URL
+		lua_pushstring(L, luaX_checkNavigateToPageArguments(L, 1)->URL);
 		return 1;
 	case 0x84ff7372: // TransitionType
-		luaX_pushTransitionType(L, luaX_checkNavigateToPageEvent(L, 1)->TransitionType);
+		luaX_pushTransitionType(L, luaX_checkNavigateToPageArguments(L, 1)->TransitionType);
 		return 1;
 	}
-	return luaL_error(L, "Unknown field in NavigateToPageEvent: %s", luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in NavigateToPageArguments: %s", luaL_checkstring(L, 2));
 }
-int f_NavigateToPageEvent___newindex(lua_State *L) {
+int f_NavigateToPageArguments___newindex(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x69b4e093: // TargetPage
-		luaX_checkNavigateToPageEvent(L, 1)->TargetPage = luaX_checkPage(L, 3);
+	case 0x7569633e: // URL
+		strncpy(luaX_checkNavigateToPageArguments(L, 1)->URL, luaL_checkstring(L, 3), sizeof(luaX_checkNavigateToPageArguments(L, 1)->URL));
 		return 0;
 	case 0x84ff7372: // TransitionType
-		luaX_checkNavigateToPageEvent(L, 1)->TransitionType = luaX_checkTransitionType(L, 3);
+		luaX_checkNavigateToPageArguments(L, 1)->TransitionType = luaX_checkTransitionType(L, 3);
 		return 0;
 	}
-	return luaL_error(L, "Unknown field in NavigateToPageEvent: %s", luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in NavigateToPageArguments: %s", luaL_checkstring(L, 2));
 }
-int luaopen_orca_NavigateToPageEvent(lua_State *L) {
-	luaL_newmetatable(L, "NavigateToPageEvent");
+int luaopen_orca_NavigateToPageArguments(lua_State *L) {
+	luaL_newmetatable(L, "NavigateToPageArguments");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_NavigateToPageEvent },
-		{ "__newindex", f_NavigateToPageEvent___newindex },
-		{ "__index", f_NavigateToPageEvent___index },
+		{ "new", f_new_NavigateToPageArguments },
+		{ "__newindex", f_NavigateToPageArguments___newindex },
+		{ "__index", f_NavigateToPageArguments___index },
 		{ NULL, NULL },
 	}), 0);
 
 	lua_newtable(L);
-	lua_pushcfunction(L, f_NavigateToPageEvent___call);
+	lua_pushcfunction(L, f_NavigateToPageArguments___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 
 	return 1;
 }
+void luaX_pushNavigateBackArguments(lua_State *L, lpcNavigateBackArguments_t data) {
+	lpNavigateBackArguments_t self = lua_newuserdata(L, sizeof(struct NavigateBackArguments));
+	luaL_setmetatable(L, "NavigateBackArguments");
+	memcpy(self, data, sizeof(struct NavigateBackArguments));
+}
+lpNavigateBackArguments_t luaX_checkNavigateBackArguments(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "NavigateBackArguments");
+}
+static int f_new_NavigateBackArguments(lua_State *L) {
+	lpNavigateBackArguments_t self = lua_newuserdata(L, sizeof(struct NavigateBackArguments));
+	luaL_setmetatable(L, "NavigateBackArguments");
+	memset(self, 0, sizeof(struct NavigateBackArguments));
+	if (lua_istable(L, 1)) {
+		lua_getfield(L, 1, "TransitionType");
+		if (!lua_isnil(L, -1)) self->TransitionType = luaX_checkTransitionType(L, -1);
+		lua_pop(L, 1);
+	} else {
+		self->TransitionType = luaX_checkTransitionType(L, 1);
+	}
+	return 1;
+}
+static int f_NavigateBackArguments___call(lua_State *L) {
+	lua_remove(L, 1); // remove NavigateBackArguments from stack
+	return f_new_NavigateBackArguments(L);
+}
+int f_NavigateBackArguments___index(lua_State *L) {
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x84ff7372: // TransitionType
+		luaX_pushTransitionType(L, luaX_checkNavigateBackArguments(L, 1)->TransitionType);
+		return 1;
+	}
+	return luaL_error(L, "Unknown field in NavigateBackArguments: %s", luaL_checkstring(L, 2));
+}
+int f_NavigateBackArguments___newindex(lua_State *L) {
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x84ff7372: // TransitionType
+		luaX_checkNavigateBackArguments(L, 1)->TransitionType = luaX_checkTransitionType(L, 3);
+		return 0;
+	}
+	return luaL_error(L, "Unknown field in NavigateBackArguments: %s", luaL_checkstring(L, 2));
+}
+int luaopen_orca_NavigateBackArguments(lua_State *L) {
+	luaL_newmetatable(L, "NavigateBackArguments");
+	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ "new", f_new_NavigateBackArguments },
+		{ "__newindex", f_NavigateBackArguments___newindex },
+		{ "__index", f_NavigateBackArguments___index },
+		{ NULL, NULL },
+	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_NavigateBackArguments___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
+	return 1;
+}
+LRESULT Page_Create(lpObject_t, lpPage_t, wParam_t, CreateEventPtr);
 static struct PropertyDesc const PageProperties[kPageNumProperties] = {
 	/* Page.Title */ DECL(0x24d471a9, 0x31e209ce,
 	Page, "Title", Title, kDataTypeFixed),
-	/* Page.IsActive */ DECL(0x7f00473f, 0x94c0246a,
-	Page, "IsActive", IsActive, kDataTypeBool),
+	/* Page.Path */ DECL(0xeb66e456, 0x20109b7f,
+	Page, "Path", Path, kDataTypeFixed),
 	/* Page.Transition */ DECL(0xe69ce202, 0xb60425fb,
 	Page, "Transition", Transition, kDataTypeFloat),
 };
 static struct Page PageDefaults = {0};
 LRESULT PageProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
+		case 0x990de47d: // Create
+			return Page_Create(object, cmp, wparm, lparm);
 }
 	return FALSE;
 }
@@ -2792,7 +2886,9 @@ ORCA_API struct ClassDesc _Page = {
 	.Defaults = &PageDefaults,
 	.NumProperties = kPageNumProperties,
 };
+LRESULT PageHost_ViewDidLoad(lpObject_t, lpPageHost_t, wParam_t, ViewDidLoadEventPtr);
 LRESULT PageHost_NavigateToPage(lpObject_t, lpPageHost_t, wParam_t, NavigateToPageEventPtr);
+LRESULT PageHost_NavigateBack(lpObject_t, lpPageHost_t, wParam_t, NavigateBackEventPtr);
 static struct PropertyDesc const PageHostProperties[kPageHostNumProperties] = {
 	/* PageHost.ActivePage */ DECL(0x2e149db4, 0xb276c4f7,
 	PageHost, "ActivePage", ActivePage, kDataTypeObject, .TypeString="Page"),
@@ -2800,8 +2896,12 @@ static struct PropertyDesc const PageHostProperties[kPageHostNumProperties] = {
 static struct PageHost PageHostDefaults = {0};
 LRESULT PageHostProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
+		case 0x03e93095: // ViewDidLoad
+			return PageHost_ViewDidLoad(object, cmp, wparm, lparm);
 		case 0x6475c790: // NavigateToPage
 			return PageHost_NavigateToPage(object, cmp, wparm, lparm);
+		case 0x36bc88b5: // NavigateBack
+			return PageHost_NavigateBack(object, cmp, wparm, lparm);
 }
 	return FALSE;
 }
@@ -2918,9 +3018,12 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	// SizeShorthand
 	luaopen_orca_SizeShorthand(L);
 	lua_setfield(L, -2, "SizeShorthand");
-	// NavigateToPageEvent
-	luaopen_orca_NavigateToPageEvent(L);
-	lua_setfield(L, -2, "NavigateToPageEvent");
+	// NavigateToPageArguments
+	luaopen_orca_NavigateToPageArguments(L);
+	lua_setfield(L, -2, "NavigateToPageArguments");
+	// NavigateBackArguments
+	luaopen_orca_NavigateBackArguments(L);
+	lua_setfield(L, -2, "NavigateBackArguments");
 	// DataObject
 	lua_pushclass(L, &_DataObject);
 	lua_setfield(L, -2, "DataObject");
