@@ -79,7 +79,7 @@
 >
 
 <!-- Component Definition -->
-<!ELEMENT component (summary?, details?, xmlns?, handles*, property*, method*)>
+<!ELEMENT component (summary?, details?, xmlns?, handles*, property*, field*, method*)>
 <!ATTLIST component
   name CDATA #REQUIRED
   parent CDATA #IMPLIED
