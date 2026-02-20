@@ -126,6 +126,7 @@
 </span></a><a class="leaf-link" href="#TerminalView"><i class="fa-solid fa-layer-group icon"></i><span>TerminalView
 </span></a><a class="leaf-link" href="#TransitionType"><i class="fa-solid fa-bars icon"></i><span>TransitionType
 </span></a><a class="leaf-link" href="#NavigateToPageEvent"><i class="fa-solid fa-gear icon"></i><span>NavigateToPageEvent
+</span></a><a class="leaf-link" href="#NavigateBackEvent"><i class="fa-solid fa-gear icon"></i><span>NavigateBackEvent
 </span></a><a class="leaf-link" href="#Page"><i class="fa-solid fa-layer-group icon"></i><span>Page
 </span></a><a class="leaf-link" href="#PageHost"><i class="fa-solid fa-layer-group icon"></i><span>PageHost
 </span></a><a class="leaf-link" href="#StyleType"><i class="fa-solid fa-bars icon"></i><span>StyleType
@@ -2119,6 +2120,11 @@
 <div class="small-abstract"><span>The page to navigate to.
 </span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">TransitionType</span>: <a class="type-identifier-link" href="#TransitionType">TransitionType</a></code></div>
 <div class="small-abstract"><span>The type of transition animation to use during navigation.
+</span></div></div><div id="NavigateBackEvent" class="class" data-name="NavigateBackEvent" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">NavigateBackEvent
+</h1><div class="abstract">Event triggered to navigate back to the previous page in the navigation history.
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.NavigateBackEvent</span></code><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">TransitionType</span>: <a class="type-identifier-link" href="#TransitionType">TransitionType</a></code></div>
+<div class="small-abstract"><span>The type of transition animation to use during navigation.
 </span></div></div><div id="Page" class="class" data-name="Page" data-inherits="Node2D" data-xmlns="None"><div class="eyebrow">Component
 </div><h1 class="header">Page
 </h1><div class="abstract">Represents a single page within a document or UI container.
@@ -2131,7 +2137,11 @@
 </span></div></div><div id="PageHost" class="class" data-name="PageHost" data-inherits="Page" data-xmlns="None"><div class="eyebrow">Component
 </div><h1 class="header">PageHost
 </h1><div class="abstract">Container that manages multiple pages and navigation between them.
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.PageHost</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Page" class="name base">Page</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Provides functionality for navigating between different Page instances, including maintaining a navigation stack, handling back/forward navigation, and managing page transitions.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>object </span><span class="identifier">ActivePage</span>: <a class="type-identifier-link" href="#Page">Page</a></code></div>
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.PageHost</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Page" class="name base">Page</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Provides functionality for navigating between different Page instances, including maintaining a navigation stack, handling back/forward navigation, and managing page transitions.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>object </span><span class="identifier">_historyStack</span>: <a class="type-identifier-link" href="#Page">Page</a></code></div>
+<div class="small-abstract"><span>Navigation history stack.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_historySize</span>: <span>int</span></code></div>
+<div class="small-abstract"><span>Number of entries in the navigation history stack.
+</span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">ActivePage</span>: <a class="type-identifier-link" href="#Page">Page</a></code></div>
 <div class="small-abstract"><span>The currently active page.
 </span></div></div><div id="StyleType" class="class" data-name="StyleType" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
 </div><h1 class="header">StyleType

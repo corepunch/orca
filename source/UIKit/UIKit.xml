@@ -784,7 +784,13 @@
     <field name="TransitionType" type="TransitionType">The type of transition animation to use during navigation.</field>
   </struct>
 
+  <struct name="NavigateBackEvent">
+    <summary>Event triggered to navigate back to the previous page in the navigation history.</summary>
+    <field name="TransitionType" type="TransitionType">The type of transition animation to use during navigation.</field>
+  </struct>
+
   <event name="NavigateToPage" type="NavigateToPageEvent"/>
+  <event name="NavigateBack" type="NavigateBackEvent"/>
 
   <component name="Page" parent="Node2D">
     <summary>Represents a single page within a document or UI container.</summary>
@@ -798,9 +804,12 @@
     <summary>Container that manages multiple pages and navigation between them.</summary>
     <details>Provides functionality for navigating between different Page instances, including maintaining a navigation stack, handling back/forward navigation, and managing page transitions.</details>
     <handles event="NavigateToPage" />
+    <handles event="NavigateBack" />
     <handles event="UpdateLayout" />
     <handles event="HitTest" />
     <property name="ActivePage" type="Page" pointer="true">The currently active page.</property>
+    <field name="_historyStack" type="Page" pointer="true" array="32">Navigation history stack.</field>
+    <field name="_historySize" type="int">Number of entries in the navigation history stack.</field>
   </component>
 
   <!-- Style components -->
