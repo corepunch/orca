@@ -1340,16 +1340,13 @@
 <!ENTITY % PageAttribs "
 	%Node2DAttribs;
 	Title CDATA #IMPLIED
-	IsActive (true|false) #IMPLIED
 	Transition CDATA #IMPLIED
 ">
 <!ELEMENT Page.Title (#PCDATA | Binding)*>
 <!ATTLIST Page.Title Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Page.IsActive (#PCDATA | Binding)*>
-<!ATTLIST Page.IsActive Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Page.Transition (#PCDATA | Binding)*>
 <!ATTLIST Page.Transition Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % PageElements "Page.Title|Page.IsActive|Page.Transition|%Node2DElements;">
+<!ENTITY % PageElements "Page.Title|Page.Transition|%Node2DElements;">
 <!ELEMENT Page (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%PageElements;)*>
 <!ATTLIST Page %PageAttribs;>
 <!ENTITY % PageHostAttribs "

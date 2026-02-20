@@ -150,23 +150,23 @@ luaX_pushSizeShorthand(lua_State *L, lpcSizeShorthand_t SizeShorthand);
 ORCA_API lpSizeShorthand_t
 luaX_checkSizeShorthand(lua_State *L, int idx);
 
-typedef struct NavigateToPageEvent NavigateToPageEvent_t, *lpNavigateToPageEvent_t;
-typedef struct NavigateToPageEvent const cNavigateToPageEvent_t, *lpcNavigateToPageEvent_t;
-/// @brief Push NavigateToPageEvent onto Lua stack.
+typedef struct NavigateToPageArguments NavigateToPageArguments_t, *lpNavigateToPageArguments_t;
+typedef struct NavigateToPageArguments const cNavigateToPageArguments_t, *lpcNavigateToPageArguments_t;
+/// @brief Push NavigateToPageArguments onto Lua stack.
 ORCA_API void
-luaX_pushNavigateToPageEvent(lua_State *L, lpcNavigateToPageEvent_t NavigateToPageEvent);
-/// @brief Check NavigateToPageEvent form Lua stack at index.
-ORCA_API lpNavigateToPageEvent_t
-luaX_checkNavigateToPageEvent(lua_State *L, int idx);
+luaX_pushNavigateToPageArguments(lua_State *L, lpcNavigateToPageArguments_t NavigateToPageArguments);
+/// @brief Check NavigateToPageArguments form Lua stack at index.
+ORCA_API lpNavigateToPageArguments_t
+luaX_checkNavigateToPageArguments(lua_State *L, int idx);
 
-typedef struct NavigateBackEvent NavigateBackEvent_t, *lpNavigateBackEvent_t;
-typedef struct NavigateBackEvent const cNavigateBackEvent_t, *lpcNavigateBackEvent_t;
-/// @brief Push NavigateBackEvent onto Lua stack.
+typedef struct NavigateBackArguments NavigateBackArguments_t, *lpNavigateBackArguments_t;
+typedef struct NavigateBackArguments const cNavigateBackArguments_t, *lpcNavigateBackArguments_t;
+/// @brief Push NavigateBackArguments onto Lua stack.
 ORCA_API void
-luaX_pushNavigateBackEvent(lua_State *L, lpcNavigateBackEvent_t NavigateBackEvent);
-/// @brief Check NavigateBackEvent form Lua stack at index.
-ORCA_API lpNavigateBackEvent_t
-luaX_checkNavigateBackEvent(lua_State *L, int idx);
+luaX_pushNavigateBackArguments(lua_State *L, lpcNavigateBackArguments_t NavigateBackArguments);
+/// @brief Check NavigateBackArguments form Lua stack at index.
+ORCA_API lpNavigateBackArguments_t
+luaX_checkNavigateBackArguments(lua_State *L, int idx);
 
 typedef struct DataObject DataObject_t, *lpDataObject_t;
 typedef struct DataObject const cDataObject_t, *lpcDataObject_t;
@@ -1094,29 +1094,29 @@ typedef enum TransitionType {
 } eTransitionType_t;
 
 /// @brief Event triggered to navigate to a different page within a PageHost.
-struct NavigateToPageEvent {
+struct NavigateToPageArguments {
 	lpPage_t TargetPage; /// The page to navigate to.
 	eTransitionType_t TransitionType; /// The type of transition animation to use during navigation.
 };
 
 /// @brief Event triggered to navigate back to the previous page in the navigation history.
-struct NavigateBackEvent {
+struct NavigateBackArguments {
 	eTransitionType_t TransitionType; /// The type of transition animation to use during navigation.
 };
 
 #define kEventNavigateToPage 0x6475c790
-typedef struct NavigateToPageEvent* NavigateToPageEventPtr;
+typedef struct NavigateToPageArguments* NavigateToPageEventPtr;
 
 #define kEventNavigateBack 0x36bc88b5
-typedef struct NavigateBackEvent* NavigateBackEventPtr;
+typedef struct NavigateBackArguments* NavigateBackEventPtr;
 
 typedef struct Page Page, *PagePtr;
 typedef struct Page const *PageCPtr;
 /// @brief Represents a single page within a document or UI container.
 struct Page {
 	fixedString_t Title; /// The title of the page.
-	bool_t IsActive; /// Indicates whether the page is currently active.
 	float Transition; /// The transition progress of the page.
+	lpNode_t _node; /// Pointer to Node for quick referencing
 };
 
 typedef struct PageHost PageHost, *PageHostPtr;

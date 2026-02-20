@@ -2,29 +2,28 @@
 
 #define PAGE_HISTORY_MAX 32
 
-static lpObject_t
-_GetActivePage(lpObject_t hObject, PageHostPtr pPageHost)
-{
-  if (pPageHost->ActivePage) {
-    return CMP_GetObject(pPageHost->ActivePage);
-  }
-  FOR_EACH_OBJECT(hChild, hObject) {
-    if (GetPage(hChild)) {
-      return hChild;
-    }
-  }
-  return NULL;
-}
+//static lpObject_t
+//_GetActivePage(lpObject_t hObject, PageHostPtr pPageHost)
+//{
+//  if (pPageHost->ActivePage) {
+//    return CMP_GetObject(pPageHost->ActivePage);
+//  }
+//  FOR_EACH_OBJECT(hChild, hObject) {
+//    if (GetPage(hChild)) {
+//      return hChild;
+//    }
+//  }
+//  return NULL;
+//}
 
 static void
 _SetActivePage(PageHostPtr pPageHost, lpPage_t pPage)
 {
   if (pPageHost->ActivePage) {
-    pPageHost->ActivePage->IsActive = FALSE;
+    pPageHost->ActivePage->_node->Visible = FALSE;
   }
-  pPageHost->ActivePage = pPage;
-  if (pPage) {
-    pPage->IsActive = TRUE;
+  if ((pPageHost->ActivePage = pPage)) {
+    pPage->_node->Visible = TRUE;
   }
 }
 
@@ -50,61 +49,24 @@ HANDLER(PageHost, NavigateBack) {
   return TRUE;
 }
 
-HANDLER(PageHost, UpdateLayout) {
-  Node2DPtr pNode2D = GetNode2D(hObject);
-  if (!pNode2D) return FALSE;
-
-  FOR_LOOP(i, 2) {
-    Node2D_Measure(pNode2D, i, pUpdateLayout->Size[i], TRUE);
+HANDLER(PageHost, ViewDidLoad) {
+  if (hObject != pViewDidLoad) {
+    return FALSE;
   }
-
-  lpObject_t hActivePage = _GetActivePage(hObject, pPageHost);
-  if (hActivePage && GetNode2D(hActivePage)) {
-    OBJ_SendMessageW(hActivePage, kEventUpdateLayout, 0,
-      &(UPDATELAYOUTSTRUCT){
-        .Width = Node2D_GetSize(pNode2D, kDirectionHorizontal, kSizingMinusPadding) - TOTAL_MARGIN(GetNode2D(hActivePage), 0),
-        .Height = Node2D_GetSize(pNode2D, kDirectionVertical, kSizingMinusPadding) - TOTAL_MARGIN(GetNode2D(hActivePage), 1),
-        .Force = pUpdateLayout->Force,
-      });
-    FOR_LOOP(i, 2) {
-      Node2D_Arrange(GetNode2D(hActivePage), Node2D_GetBounds(pNode2D, i), i);
+  FOR_EACH_OBJECT(hChild, hObject) {
+    if (pPageHost->ActivePage == NULL) {
+      pPageHost->ActivePage = GetPage(hChild);
+      GetNode(hChild)->Visible = TRUE;
+    } else if (pPageHost->ActivePage == GetPage(hChild)) {
+      GetNode(hChild)->Visible = TRUE;
+    } else {
+      GetNode(hChild)->Visible = FALSE;
     }
   }
-
   return TRUE;
 }
 
-HANDLER(PageHost, HitTest) {
-  Node2DPtr pNode2D = GetNode2D(hObject);
-  if (!pNode2D) return FALSE;
-
-  if (OBJ_IsHidden(hObject) || pNode2D->IgnoreHitTest) {
-    return FALSE;
-  }
-
-  int16_t x = LOWORD(wParam);
-  int16_t y = HIWORD(wParam);
-  int16_t lx = x - pNode2D->ContentOffset.x;
-  int16_t ly = y - pNode2D->ContentOffset.y;
-
-  lpObject_t hActivePage = _GetActivePage(hObject, pPageHost);
-  if (hActivePage) {
-    lpObject_t hittest = NULL;
-    if (OBJ_SendMessageW(hActivePage, kEventHitTest, MAKEDWORD(lx, ly), &hittest)) {
-      *pHitTest = hittest;
-      return TRUE;
-    }
-  }
-
-  struct mat4 inv = MAT4_Inverse(&pNode2D->Matrix);
-  struct vec3 point = { x, y, 0 };
-  float w = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
-  float h = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
-  struct vec3 out = MAT4_MultiplyVector3D(&inv, &point);
-  if (RECT_Contains(&(struct rect){ 0, 0, w, h }, (struct vec2 const*)&out)) {
-    *pHitTest = hObject;
-    return TRUE;
-  }
-
+HANDLER(Page, Create) {
+  pPage->_node = GetNode(hObject);
   return FALSE;
 }

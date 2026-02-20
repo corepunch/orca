@@ -114,7 +114,7 @@ OBJ_AddClass(lpObject_t hobj, lpcString_t cls)
   _AddClass(hobj, _ParseClass(cls));
 }
 
-void OBJAPI(AddStyleSheet, lpcString_t name)
+void OBJ_API(AddStyleSheet, lpcString_t name)
 {
   uint32_t classID = *name == '.' ? fnv1a32(name + 1) : 0;
   if (lua_type(L, 3) != LUA_TTABLE) {

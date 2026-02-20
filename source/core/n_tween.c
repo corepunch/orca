@@ -79,7 +79,7 @@ LERP_DEF(color)
 static lpcString_t ipo_text[] = {"linear","const","back","bounce","circ","cubic","elastic","expo","quad","quart","quint","sine",NULL};
 static lpcString_t easing_text[] = {"in_out","in","out",NULL};
 
-void OBJAPI(DoTween) {
+void OBJ_API(DoTween) {
   luaX_parsefield(int, duration, 2, luaL_checknumber);
   luaX_parsefield(enum ipo_type, ipo, 2, luaL_checkoption, "linear", ipo_text);
   luaX_parsefield(enum easing, easing, 2, luaL_checkoption, "in_out", easing_text);

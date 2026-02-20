@@ -117,6 +117,9 @@ typedef void* CreateEventPtr;
 #define kEventStart 0x0ae8097f
 typedef void* StartEventPtr;
 
+#define kEventAwake 0x7f460f7c
+typedef void* AwakeEventPtr;
+
 #define kEventThemeChanged 0x064087a6
 typedef void* ThemeChangedEventPtr;
 
@@ -131,6 +134,9 @@ typedef void* DestroyEventPtr;
 
 #define kEventResumeCoroutine 0x3cc3febc
 #define kEventStopCoroutine 0xf13ac065
+#define kEventViewDidLoad 0x03e93095
+typedef void* ViewDidLoadEventPtr;
+
 typedef struct localization localization_t, *lplocalization_t;
 typedef struct localization const clocalization_t, *lpclocalization_t;
 /// @brief Push localization onto Lua stack.
@@ -212,6 +218,10 @@ OBJ_FindChild(lpObject_t self, const char* name, bool_t recursive);
 /// @brief Dispatch an event starting from this object and bubbling up parents.
 ORCA_API lpObject_t
 OBJ_DispatchEvent(lua_State *L, lpObject_t self, const char* event);
+
+/// @brief Posts a message to the global message queue.
+ORCA_API void
+OBJ_PostMessage(lua_State *L, lpObject_t self, const char* message);
 
 /// @brief Play an animation or resource on the object.
 ORCA_API void
