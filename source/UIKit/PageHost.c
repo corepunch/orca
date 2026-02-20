@@ -27,16 +27,34 @@ _SetActivePage(PageHostPtr pPageHost, lpPage_t pPage)
   }
 }
 
-HANDLER(PageHost, NavigateToPage) {
-  lpPage_t pTarget = pNavigateToPage->TargetPage;
-  if (!pTarget || !CMP_GetObject(pTarget)) return FALSE;
+static lpPage_t
+PageHost_FindPageByPath(lpObject_t hObject, const char* path)
+{
+  FOR_EACH_OBJECT(hChild, hObject) {
+    lpPage_t pPage = GetPage(hChild);
+    if (pPage && strcmp(pPage->Path, path) == 0) {
+      return pPage;
+    }
+    lpPage_t pFound = PageHost_FindPageByPath(hChild, path);
+    if (pFound) return pFound;
+  }
+  return NULL;
+}
 
+HANDLER(PageHost, NavigateToPage) {
+  lpPage_t pTarget = PageHost_FindPageByPath(hObject, pNavigateToPage->URL);
+  if (!pTarget) {
+    Con_Error("Page not found: %s", pNavigateToPage->URL);
+    return FALSE;
+  }
+  if (!CMP_GetObject(pTarget)) {
+    Con_Error("Page object not found for path: %s", pNavigateToPage->URL);
+    return FALSE;
+  }
   if (pPageHost->ActivePage && pPageHost->_historySize < PAGE_HISTORY_MAX) {
     pPageHost->_historyStack[pPageHost->_historySize++] = pPageHost->ActivePage;
   }
-
   _SetActivePage(pPageHost, pTarget);
-
   return TRUE;
 }
 
