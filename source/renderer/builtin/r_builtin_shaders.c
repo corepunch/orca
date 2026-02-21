@@ -181,7 +181,7 @@ struct shader_desc shader_charset= {
   "void main() {\n"
   "  vec3 xyz = mix(u_bboxMin, u_bboxMax, a_position.xyz);\n"
   "  gl_Position = u_modelViewProjectionTransform * vec4(xyz, a_position.w);\n"
-  "  v_texcoord0 = (u_textureTransform * vec3(a_texcoord0.xy, 1.0)).xy;\n"
+  "  v_texcoord0 = (u_textureTransform * vec3(a_position.xy, 1.0)).xy;\n"
   "}\n",
     .FragmentShader =
   "#define CHARSET_WIDTH " TO_STRING(CHARSER_WIDTH) ".0\n"
