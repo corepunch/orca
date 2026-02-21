@@ -341,6 +341,7 @@ lpObject_t OBJ_API(DispatchEvent, lpcString_t event)
   return NULL;
 }
 
+// TODO: replace this with dispatchMessage()
 static int __paint(lua_State *L) {
   lpObject_t o=luaX_checkObject(L, 1);
   int width = luaL_checknumber(L, 2);
