@@ -296,6 +296,8 @@ enum TextRunProperties {
 	kTextRunCharacterSpacing,
 	kTextRunFixedCharacterWidth,
 	kTextRunRemoveSideBearingsProperty,
+	kTextRunTextureWidth,
+	kTextRunTextureHeight,
 	kTextRunNumProperties
 };
 
@@ -314,6 +316,8 @@ enum TextRunProperties {
 #define ID_TextRun_CharacterSpacing 0xda8217e7
 #define ID_TextRun_FixedCharacterWidth 0xb71765fa
 #define ID_TextRun_RemoveSideBearingsProperty 0xc20f6de6
+#define ID_TextRun_TextureWidth 0x04eb15b6
+#define ID_TextRun_TextureHeight 0xcbbd4cc9
 #define ID_TextBlockConcept 0x4903089d
 #define GetTextBlockConcept(_P)((struct TextBlockConcept*)((_P)?OBJ_GetComponent(_P,ID_TextBlockConcept):NULL))
 #define TextBlockConcept_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_TextBlockConcept,sizeof(struct TextBlockConcept),_N)
@@ -352,7 +356,13 @@ enum TextBlockConceptProperties {
 #define Node2D_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_Node2D,sizeof(struct Node2D),_N)
 enum Node2DProperties {
 	kNode2DLayoutTransform,
+	kNode2DLayoutTransformTranslation,
+	kNode2DLayoutTransformRotation,
+	kNode2DLayoutTransformScale,
 	kNode2DRenderTransform,
+	kNode2DRenderTransformTranslation,
+	kNode2DRenderTransformRotation,
+	kNode2DRenderTransformScale,
 	kNode2DRenderTransformOrigin,
 	kNode2DContentOffset,
 	kNode2DMatrix,
@@ -393,7 +403,13 @@ enum Node2DProperties {
 };
 
 #define ID_Node2D_LayoutTransform 0x7c78c87b
+#define ID_Node2D_LayoutTransformTranslation 0x2407475a
+#define ID_Node2D_LayoutTransformRotation 0x40a04c55
+#define ID_Node2D_LayoutTransformScale 0xae9265d3
 #define ID_Node2D_RenderTransform 0xa5faec05
+#define ID_Node2D_RenderTransformTranslation 0xa5d5540c
+#define ID_Node2D_RenderTransformRotation 0x5387d0bf
+#define ID_Node2D_RenderTransformScale 0xa0bbe951
 #define ID_Node2D_RenderTransformOrigin 0x43a9dbaf
 #define ID_Node2D_ContentOffset 0xb5cb609b
 #define ID_Node2D_Matrix 0x09a64b02

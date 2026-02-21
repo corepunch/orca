@@ -411,6 +411,8 @@
     <property name="CharacterSpacing" type="float">Extra spacing between characters, beyond kerning.</property>
     <property name="FixedCharacterWidth" type="float">Forces a fixed width per character (monospace effect).</property>
     <property name="RemoveSideBearingsProperty" type="bool">Removes side bearings (spacing) defined by the font.</property>
+    <property name="TextureWidth" type="float">The width of the rendered text texture. Unlike ActualWidth, this does not include padding.</property>
+    <property name="TextureHeight" type="float">The height of the rendered text texture. Unlike ActualHeight, this does not include padding.</property>
     <field name="_size" type="uiLabelSize">Internal text size metrics.</field>
     <field name="_textinfo" type="text_info">Internal text information structure.</field>
     <field name="_font" type="FontShorthand" pointer="true">Reference to the font shorthand configuration.</field>

@@ -814,6 +814,8 @@ struct TextRun {
 	float CharacterSpacing; /// Extra spacing between characters, beyond kerning.
 	float FixedCharacterWidth; /// Forces a fixed width per character (monospace effect).
 	bool_t RemoveSideBearingsProperty; /// Removes side bearings (spacing) defined by the font.
+	float TextureWidth; /// The width of the rendered text texture. Unlike ActualWidth, this does not include padding.
+	float TextureHeight; /// The height of the rendered text texture. Unlike ActualHeight, this does not include padding.
 	uiLabelSize_t _size; /// Internal text size metrics.
 	text_info_t _textinfo; /// Internal text information structure.
 	lpFontShorthand_t _font; /// Reference to the font shorthand configuration.

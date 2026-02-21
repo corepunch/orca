@@ -172,8 +172,10 @@ HANDLER(TextBlock, UpdateLayout)
                    });
   Text_GetInfo(textblock->_text, &output->_textinfo);
 
-  output->_size[0] = output->_textinfo.txWidth + TOTAL_PADDING(pTextBlock->_node2D, 0);
-  output->_size[1] = output->_textinfo.txHeight + TOTAL_PADDING(pTextBlock->_node2D, 1);
+  output->TextureWidth = (float)output->_textinfo.txWidth;
+  output->TextureHeight = (float)output->_textinfo.txHeight;
+  output->_size[0] = output->TextureWidth + TOTAL_PADDING(pTextBlock->_node2D, 0);
+  output->_size[1] = output->TextureHeight + TOTAL_PADDING(pTextBlock->_node2D, 1);
 
   FOR_LOOP(i, 2)
   {

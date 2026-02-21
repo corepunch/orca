@@ -197,6 +197,38 @@ local function test_text_single_line_layout()
 	two_words:removeFromParent()
 end
 
+local function test_text_rendering_texture_size()
+	-- Test that TextureWidth/TextureHeight reflect the allocated texture size,
+	-- which is independent of padding (unlike ActualWidth/ActualHeight).
+	local text = screen + orca.ui.TextBlock { Text = "Hello World" }
+	screen:updateLayout(screen.Width, screen.Height)
+
+	-- Verify texture dimensions are positive after layout
+	assert(text.TextureWidth > 0, "TextureWidth should be positive after layout")
+	assert(text.TextureHeight > 0, "TextureHeight should be positive after layout")
+
+	-- Without padding, ActualWidth/ActualHeight should equal the texture dimensions
+	assert(text.ActualWidth == text.TextureWidth, "ActualWidth should equal TextureWidth when there is no padding")
+	assert(text.ActualHeight == text.TextureHeight, "ActualHeight should equal TextureHeight when there is no padding")
+
+	-- Record texture dimensions before adding padding
+	local texture_width = text.TextureWidth
+	local texture_height = text.TextureHeight
+	local padding = 10
+	text.Padding = padding
+	screen:updateLayout(screen.Width, screen.Height)
+
+	-- Texture dimensions must not change when padding is added
+	assert(text.TextureWidth == texture_width, "TextureWidth should not change when padding is added")
+	assert(text.TextureHeight == texture_height, "TextureHeight should not change when padding is added")
+
+	-- ActualWidth/ActualHeight must grow by 2*padding (left + right / top + bottom)
+	assert(text.ActualWidth == texture_width + padding * 2, "ActualWidth should be TextureWidth plus horizontal padding")
+	assert(text.ActualHeight == texture_height + padding * 2, "ActualHeight should be TextureHeight plus vertical padding")
+
+	text:removeFromParent()
+end
+
 assert(type(orca.async) == 'function', "orca.async should be a function")
 
 test_text_block_layout()
@@ -205,3 +237,4 @@ test_button_interaction()
 test_input_interaction()
 test_grid_view_layout()
 test_text_single_line_layout()
+test_text_rendering_texture_size()
