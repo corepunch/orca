@@ -252,6 +252,7 @@ int CORE_ProcessMessage(lua_State *L, struct WI_Message* msg) {
   int tmp=0;
   switch (msg->message) {
     case kEventWindowPaint:
+    case kEventWindowResized:
       CORE_Update(L, msg->target, msg->wParam, WI_GetMilliseconds());
 //      WI_PostMessageW(msg->target, kEventWindowPaint, msg->wParam, NULL);
       break;

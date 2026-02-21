@@ -122,9 +122,9 @@ R_DrawLines(struct ViewDef const* view, PDRAWLINESSTRUCT def)
 uint32_t
 R_GetTextHash(struct ViewText* text)
 {
-  uint32_t size = sizeof(struct ViewText) - sizeof(lpcString_t);
+  uint32_t size = sizeof(struct ViewTextRun) - sizeof(lpcString_t);
   uint32_t text_hash = 0;
-  uint32_t format_hash = 0;
+  uint32_t format_hash = fnv1a32_range((char*)text, (char*)text + sizeof(struct ViewText));
   for (struct ViewTextRun *run = text->run; run - text->run < text->numTextRuns; run++) {
     text_hash ^= fnv1a32(run->string);
     format_hash ^= fnv1a32_range((char*)&run->fontFamily, ((char*)&run->fontFamily) + size);

@@ -543,11 +543,9 @@ HIWORD(wparam) - wnd->Rect.y < CONSOLE_CHAR_HEIGHT)
 HIWORD(wparam) - wnd->Rect.y < ED_GetToolBarRect(wnd).y + ED_GetToolBarRect(wnd).height)
 
 LRESULT ED_DispatchMessage(DWORD msg, wParam_t wparam, lParam_t lparam) {
-  uint32_t windowsize = WI_GetSize(NULL);
   if (msg == kEventKeyDown && (wparam&0xff) == '`') {
     if (bEditorVisible) {
       bEditorVisible = FALSE;
-      WI_PostMessageW(editor.screen, kEventWindowPaint, windowsize, NULL);
     } else {
       bEditorVisible = TRUE;
     }
@@ -568,7 +566,6 @@ LRESULT ED_DispatchMessage(DWORD msg, wParam_t wparam, lParam_t lparam) {
         dragging->Rect.y += (int16_t)HIWORD((intptr_t)lparam);
         dragged += abs((int16_t)LOWORD((intptr_t)lparam)) + abs((int16_t)HIWORD((intptr_t)lparam));
         ED_SendMessage(dragging, EVT_MOVE, MAKEDWORD((int16_t)dragging->Rect.x, (int16_t)dragging->Rect.y), NULL);
-        WI_PostMessageW(editor.screen, kEventWindowPaint, windowsize, NULL);
         return TRUE;
       case kEventLeftMouseUp:
         dragging = NULL;
@@ -597,7 +594,6 @@ LRESULT ED_DispatchMessage(DWORD msg, wParam_t wparam, lParam_t lparam) {
             FOR_EACH_LIST(EDWND, hChild, wnd->children) {
               if (ch.item == 1) {
                 ED_SetFocusedPanel(hChild);
-                WI_PostMessageW(editor.screen, kEventWindowPaint, windowsize, NULL);
                 void TabView_SetActive(HEDWND wnd, HEDWND active);
                 TabView_SetActive(wnd, hChild);
                 return 1;
@@ -619,7 +615,6 @@ LRESULT ED_DispatchMessage(DWORD msg, wParam_t wparam, lParam_t lparam) {
         case kEventLeftMouseUp:
           ED_SetFocusedPanel(wnd);
           ED_SendMessage(wnd, EVT_HOTKEY, MAKEDWORD(wnd->toolbar.buttons[but].idCommand, 0), NULL);
-          WI_PostMessageW(editor.screen, kEventWindowPaint, windowsize, NULL);
           return 1;
       }
     }
@@ -641,6 +636,7 @@ LRESULT ED_DispatchMessage(DWORD msg, wParam_t wparam, lParam_t lparam) {
   }
   switch (msg) {
     case kEventWindowPaint:
+      ED_SetWindowRect(editor.root, &(RECT){0,0,LOWORD(wparam),HIWORD(wparam)});
       ED_Draw();
       return TRUE;
     case kEventLeftDoubleClick:
@@ -656,17 +652,14 @@ LRESULT ED_DispatchMessage(DWORD msg, wParam_t wparam, lParam_t lparam) {
         ED_SendMessage(wnd, EVT_CCLICK, curindex, &data);
       }
       ED_CancelDragOperation();
-      WI_PostMessageW(editor.screen, kEventWindowPaint, windowsize, NULL);
       return TRUE;
     case kEventRightMouseUp:
       ED_SendMessage(wnd, kEventRightMouseUp, _LocalCoord(wnd, wparam), lparam);
       ED_SendMessage(wnd, EVT_CONTEXTMENU, _LocalCoord(wnd, wparam), &data);
-      WI_PostMessageW(editor.screen, kEventWindowPaint, windowsize, NULL);
       return TRUE;
     case kEventScrollWheel:
       if (ED_SendMessage(wnd, kEventScrollWheel, _LocalCoord(wnd, wparam), lparam) ||
           ED_ScrollConsole(wnd, _LocalCoord(wnd, wparam), lparam)) {
-        WI_PostMessageW(editor.screen, kEventWindowPaint, windowsize, NULL);
         return TRUE;
       } else {
         return FALSE;
@@ -682,7 +675,6 @@ LRESULT ED_DispatchMessage(DWORD msg, wParam_t wparam, lParam_t lparam) {
         editor.dragItem.offset = ED_GetDragOffset(ED_GetClient(wnd), ptr);
         editor.dragItem.startdrag = *(LPVECTOR2)&mouse;
         editor.dragItem.window = wnd;
-        WI_PostMessageW(editor.screen, kEventWindowPaint, windowsize, NULL);
         return TRUE;
       } else {
         return FALSE;
@@ -701,10 +693,8 @@ LRESULT ED_DispatchMessage(DWORD msg, wParam_t wparam, lParam_t lparam) {
         ED_SendMessage(wnd, EVT_CDRAG, data.item, &editor.dragItem);
         ED_SendMessage(wnd, EVT_MOUSEDRAG, wparam, &data);
       }
-      WI_PostMessageW(editor.screen, kEventWindowPaint, windowsize, NULL);
       return ED_SendMessage(wnd, kEventLeftMouseDragged, _LocalCoord(wnd, wparam), lparam);
     case kEventKeyDown:
-      WI_PostMessageW(editor.screen, kEventWindowPaint, windowsize, NULL);
       if (editor.textEdit.active) {
         ED_HandleTextInput(wparam);
         return TRUE;
@@ -719,6 +709,7 @@ LRESULT ED_DispatchMessage(DWORD msg, wParam_t wparam, lParam_t lparam) {
       }
     case kEventWindowResized:
       ED_SetWindowRect(editor.root, &(RECT){0,0,LOWORD(wparam),HIWORD(wparam)});
+      ED_Draw();
       return TRUE;
     default:
       //            lpSystem->HACK_HandleEvent(L, evt);
