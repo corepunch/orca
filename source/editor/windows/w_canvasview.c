@@ -231,22 +231,27 @@ void ED_DrawCanvasView(HEDWND wnd, struct _CANVASVIEW* sv) {
     MATRIX4 proj;
     float scale = 1;
     WI_GetSize(&window);
-    if (FixedScaling(sv->object)) {
-      float w = GetNode(sv->object)->Size.Axis[0].Requested;
-      float h = GetNode(sv->object)->Size.Axis[1].Requested;
+    if (FixedScaling(scene)) {
+      float w = GetNode(scene)->Size.Axis[0].Requested;
+      float h = GetNode(scene)->Size.Axis[1].Requested;
       view = RECT_Fit(&view, &(struct vec2){ w, h });
-      scale = view.width / GetNode(sv->object)->Size.Axis[0].Requested;
-      proj = MAT4_Ortho(0, w, h, 0, -1, 1);
+      scale = view.width / GetNode(scene)->Size.Axis[0].Requested;
+      proj = MAT4_Ortho(
+        -w * view.x / view.width,
+        w * (window.width - view.x) / view.width,
+        h * (window.height - view.y) / view.height,
+        -h * view.y / view.height,
+        -1, 1);
     } else {
-      proj = MAT4_Ortho(0, view.width, view.height, 0, -1, 1);
+      proj = MAT4_Ortho(
+        -view.x,
+        window.width - view.x,
+        window.height - view.y,
+        -view.y,
+        -1, 1);
     }
-    R_SetViewportRect(&(RECT){
-      view.x, window.height - view.height - view.y,
-      view.width, view.height
-    });
     R_DrawNodeSelection(&proj, sv, GetNode2D(sv->selected));
     R_DrawWireRect(&proj, &sv->selection);
-    R_SetViewportRect(&(struct rect){0,0,window.width,window.height});
   }
 }
 
@@ -306,8 +311,8 @@ LRESULT ED_CanvasView(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm) {
     case kEventLeftMouseDragged:
       if (data->selected && OBJ_GetParent(data->selected)) {
         Node2DPtr node = GetNode2D(data->selected);
-        float x = (int16_t)LOWORD((intptr_t)lparm) * LocalScaling(wnd, data->object).x;
-        float y = (int16_t)HIWORD((intptr_t)lparm) * LocalScaling(wnd, data->object).y;
+        float x = (int16_t)LOWORD((intptr_t)lparm) * LocalScaling(wnd, CanvasView_GetScene(wnd)).x;
+        float y = (int16_t)HIWORD((intptr_t)lparm) * LocalScaling(wnd, CanvasView_GetScene(wnd)).y;
         EDWINPROC(Inspector);
         if (node) {
           switch (data->mode) {
@@ -348,7 +353,7 @@ LRESULT ED_CanvasView(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm) {
       ED_SetFocusedPanel(wnd);
       if (OBJ_SendMessageW(CanvasView_GetScene(wnd),
                            kEventHitTest,
-                           LocalCoords(wnd, data->object, wparm),
+                           LocalCoords(wnd, CanvasView_GetScene(wnd), wparm),
                            &tmp))
       {
         ED_SendMessage(editor.inspector, EVT_OBJECT_SELECTED, 0, tmp);
