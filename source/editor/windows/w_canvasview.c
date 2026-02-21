@@ -236,17 +236,22 @@ void ED_DrawCanvasView(HEDWND wnd, struct _CANVASVIEW* sv) {
       float h = GetNode(scene)->Size.Axis[1].Requested;
       view = RECT_Fit(&view, &(struct vec2){ w, h });
       scale = view.width / GetNode(scene)->Size.Axis[0].Requested;
-      proj = MAT4_Ortho(0, w, h, 0, -1, 1);
+      proj = MAT4_Ortho(
+        -w * view.x / view.width,
+        w * (window.width - view.x) / view.width,
+        h * (window.height - view.y) / view.height,
+        -h * view.y / view.height,
+        -1, 1);
     } else {
-      proj = MAT4_Ortho(0, view.width, view.height, 0, -1, 1);
+      proj = MAT4_Ortho(
+        -view.x,
+        window.width - view.x,
+        window.height - view.y,
+        -view.y,
+        -1, 1);
     }
-    R_SetViewportRect(&(RECT){
-      view.x, window.height - view.height - view.y,
-      view.width, view.height
-    });
     R_DrawNodeSelection(&proj, sv, GetNode2D(sv->selected));
     R_DrawWireRect(&proj, &sv->selection);
-    R_SetViewportRect(&(struct rect){0,0,window.width,window.height});
   }
 }
 
