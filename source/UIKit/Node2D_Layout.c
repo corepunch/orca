@@ -67,18 +67,15 @@ Node2D_Align(Node2DPtr, struct bounds const*, enum Direction, uint32_t);
 // }
 
 void
-Node2D_Measure(Node2DPtr node,
-							 enum Direction axis,
-							 float space,
-							 bool_t force)
+Node2D_Measure(Node2DPtr node, enum Direction axis, float space, bool_t force)
 {
   //	float const padding = TOTAL_PADDING(pNode2D, axis);
   //	float size = Node2D_GetFrame(pNode2D, kBox3FieldWidth + axis) - padding;
   static enum NodeProperties _props[] = { kNodeWidth, kNodeHeight, kNodeDepth };
-  float* size = &NODE2D_FRAME(node, Size, axis).Requested;
+  float const requested = NODE2D_FRAME(node, Size, axis).Requested;
   //	float  padding = TOTAL_PADDING(pNode2D, axis);
-  bool_t stretch = NODE2D_FRAME(node, Alignment, axis) == kUIAlignStretch;
-  bool_t isRoot = OBJ_GetParent(node->_object) == NULL;
+  bool_t const stretch = NODE2D_FRAME(node, Alignment, axis) == kUIAlignStretch;
+  bool_t const isRoot = OBJ_GetParent(node->_object) == NULL;
   lpProperty_t sizeProperty = Node_GetProperty(node->_object, _props[axis]);
   /* Process normally */
   if (stretch || isRoot) {
@@ -90,7 +87,7 @@ Node2D_Measure(Node2DPtr node,
       float const* sizevalue = PROP_GetValue(sizeProperty);
       Node2D_SetFrame(node, kBox3FieldWidth + axis, *sizevalue);
     } else {
-      Node2D_SetFrame(node, kBox3FieldWidth + axis, *size);
+      Node2D_SetFrame(node, kBox3FieldWidth + axis, requested ? requested : space);
     }
   } else if (node->RenderTarget) {
     struct image_info image;
