@@ -316,6 +316,10 @@ void OBJ_API(PostMessage, lpcString_t message)
     memcpy(data, lua_touserdata(L, 3), size);
     g_mem.writer += size;
     SV_PostMessage(self, message, 0, data);
+  } else if (!strcmp(message, "WindowPaint")) {
+    struct WI_Size size;
+    WI_GetSize(&size);
+    SV_PostMessage(self, message, MAKEDWORD(size.width, size.height), NULL);
   } else {
     SV_PostMessage(self, message, 0, NULL);
   }
@@ -341,24 +345,9 @@ lpObject_t OBJ_API(DispatchEvent, lpcString_t event)
   return NULL;
 }
 
-// TODO: replace this with dispatchMessage()
-static int __paint(lua_State *L) {
-  lpObject_t o=luaX_checkObject(L, 1);
-  int width = luaL_checknumber(L, 2);
-  int height = luaL_checknumber(L, 3);
-  API_CallRequire(L, "orca.renderer", 1);
-  lua_getfield(L, -1, "getSize");
-  WI_PostMessageW(o, kEventWindowPaint, MAKEDWORD(width, height), NULL);
-  return 0;
-}
-
 int OBJ_API(GetProperty, lpcString_t name)
 {
   uint32_t ident = fnv1a32(name);
-  if (!strcmp(name, "paint")) {
-    lua_pushcfunction(L, __paint);
-    return 1;
-  }
   switch (ident) {
     case p_id:
     case p_Name:
