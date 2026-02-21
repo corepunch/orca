@@ -225,7 +225,7 @@ T_GetSize(struct ViewText const* text,
         if (textwidth == 0) {
             textwidth += spaceWidth;
           // first word print anyway
-        } else if (textwidth + wordwidth + spaceWidth > text->availableWidth * text->scale) {
+        } else if (text->availableWidth > 0 && textwidth + wordwidth + spaceWidth > text->availableWidth * text->scale) {
           textSize.height += /*text->lineSpacing **/ FT_SCALE(lineheight);
           textSize.width = MAX(textSize.width, textwidth);
           textwidth = 0;
@@ -363,7 +363,7 @@ Text_Print(struct ViewText const* pViewText,
         if (textwidth == 0) { // first word print anyway
           x += spaceWidth;
           textwidth += spaceWidth;
-        } else if (textwidth + wordwidth + spaceWidth > pViewText->availableWidth * pViewText->scale) {
+        } else if (pViewText->availableWidth > 0 && textwidth + wordwidth + spaceWidth > pViewText->availableWidth * pViewText->scale) {
           textwidth = 0;
           y += FT_SCALE(lineheight);
           x = 0;

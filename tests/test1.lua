@@ -181,6 +181,22 @@ local function test_grid_view_layout()
 	assert(footer.ActualHeight == config.footer - config.margin * 2, "Footer row should have the specified height minus vertical margins")
 end
 
+local function test_text_single_line_layout()
+	-- "Hello World" should render on one line, not two
+	local single_word = screen + orca.ui.TextBlock { Text = "Hello" }
+	local two_words = screen + orca.ui.TextBlock { Text = "Hello World" }
+
+	screen:updateLayout(screen.Width, screen.Height)
+
+	-- "Hello World" should be wider than "Hello"
+	assert(two_words.ActualWidth > single_word.ActualWidth, "Two-word text should be wider than single-word text")
+	-- "Hello World" should have the same height as "Hello" (single line)
+	assert(two_words.ActualHeight == single_word.ActualHeight, "Two-word text should have same height as single-word (one line, not two)")
+
+	single_word:removeFromParent()
+	two_words:removeFromParent()
+end
+
 assert(type(orca.async) == 'function', "orca.async should be a function")
 
 test_text_block_layout()
@@ -188,3 +204,4 @@ test_stack_view_layout()
 test_button_interaction()
 test_input_interaction()
 test_grid_view_layout()
+test_text_single_line_layout()
