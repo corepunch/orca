@@ -53,9 +53,11 @@ static int f_get_theme(lua_State* L)
   return 1;
 }
 
+const char *themes[] = { "light", "dark", NULL };
+
 static int f_set_theme(lua_State* L)
 {
-  dark_theme = lua_toboolean(L, 1);
+  dark_theme = luaL_checkoption(L, 1, NULL, themes);
   return 1;
 }
 
