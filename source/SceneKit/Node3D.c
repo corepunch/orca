@@ -21,7 +21,7 @@ HANDLER(Node3D, UpdateMatrix)
     pNode3D->Matrix = matrix;
   }
 
-  pNode3D->_opacity = GetNode(hObject)->Opacity * pUpdateMatrix->opacity;
+  pNode3D->_opacity = GetNode(hObject) ? GetNode(hObject)->Opacity * pUpdateMatrix->opacity : pUpdateMatrix->opacity;
   matrix = pNode3D->Matrix;
 
   MAT4_Translate(&matrix, &contentOffset);

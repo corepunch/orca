@@ -182,7 +182,8 @@ HANDLER(Node2D, UpdateMatrix)
       pNode2D->Matrix = Matrix;
     }
 
-    pNode2D->_opacity = GetNode(hObject)->Opacity * pUpdateMatrix->opacity;
+    NodePtr _node = GetNode(hObject);
+    pNode2D->_opacity = _node ? _node->Opacity * pUpdateMatrix->opacity : pUpdateMatrix->opacity;
   }
 
   Matrix = pNode2D->Matrix;
@@ -234,7 +235,7 @@ HANDLER(Node, GetSize)
 HANDLER(Node, IsVisible)
 {
   PROP_Update(Node_GetProperty(hObject, kNodeVisible));
-  return pNode->Visible && !GetNode(hObject)->QuickHide;
+  return pNode->Visible && !pNode->QuickHide;
 }
 HANDLER(Node2D, Destroy)
 {

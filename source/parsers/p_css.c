@@ -38,7 +38,7 @@ push_css_properties(lua_State* L, lpcString_t classname, lpcString_t* s)
   if (!eat_char(s, '{'))
     return;
 
-  while (**s && **s != '}') {
+  while (*s && **s && **s != '}') {
     skip_whitespace(s);
     while (**s == '-')
       (*s)++;

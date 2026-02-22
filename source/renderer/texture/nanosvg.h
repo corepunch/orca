@@ -2639,7 +2639,7 @@ static void nsvg__parseSVG(NSVGparser* p, const char** attr)
         p->viewWidth = nsvg__atof(buf);
         while (*s && (nsvg__isspace(*s) || *s == '%' || *s == ',')) s++;
         if (!*s) return;
-        s = nsvg__parseNumber(s, buf, 64);
+        nsvg__parseNumber(s, buf, 64);
         p->viewHeight = nsvg__atof(buf);
       } else if (strcmp(attr[i], "preserveAspectRatio") == 0) {
         if (strstr(attr[i + 1], "none") != 0) {

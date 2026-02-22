@@ -94,7 +94,6 @@ navigatenode(xmlNodePtr data, xmlChar const* sep)
     if (!(data = findnode(data, name)))
       return NULL;
     sep = next;
-    next = next ? xmlStrchr(++next, '/') : NULL;
   }
   return data;
 }

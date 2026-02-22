@@ -363,14 +363,14 @@ LPVOID TreeView_GetItem(HEDWND wnd, WORD item) {
 
 static void _NextItem(HEDWND wnd, LPTREEVIEW treeview,  BYTE index) {
   if (index < treeview->numitems - 1) {
-    LPEDPROJITEM item = item = &treeview->items[++index];
+    LPEDPROJITEM item = &treeview->items[++index];
     TreeView_RefreshSelectedItem(wnd, treeview, item);
   }
 }
 
 static void _PrevItem(HEDWND wnd, LPTREEVIEW treeview, BYTE index) {
   if (index > 1) {
-    LPEDPROJITEM item = item = &treeview->items[--index];
+    LPEDPROJITEM item = &treeview->items[--index];
     TreeView_RefreshSelectedItem(wnd, treeview, item);
   }
 }
@@ -481,7 +481,7 @@ TreeView_OnCommand(HEDWND wnd, LPTREEVIEW treeview, wParam_t cmd)
       ED_InvalidateWindow(wnd);
       return TRUE;
     case ID_EDIT_TOGGLE: {
-      LPEDPROJITEM item = item = &treeview->items[index];
+      LPEDPROJITEM item = &treeview->items[index];
       struct _PROPDEF visible;
       if (treeview->dataSource->GetObjectProperty(item->object,"QuickHide", &visible)) {
         BOOL toggled = !*(BOOL *)visible.lpEditorValue;

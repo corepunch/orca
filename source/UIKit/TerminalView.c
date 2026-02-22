@@ -93,9 +93,8 @@ static int f_println(lua_State *L) {
   state.item = len;
   for (int arg = 3; arg <= n; arg++) {
     size_t slen;
-    uint8_t prev = 0;
     const char *str = luaL_tolstring(L, arg, &slen);
-    for (lpcString_t s = str; s - str < slen; prev = *s, s++) {
+    for (lpcString_t s = str; s - str < slen; s++) {
       if (*s == '\x21' && *(s+1) == '[') {
         s = _cmd(t, ++s, &state);
       } else if (*s == '\n') {
@@ -210,7 +209,10 @@ HANDLER(TerminalView, PushProperty) {
       return 1;
     case 0x5a29274b: // selectedItem
       lua_getfield(L, 1, ITEMS_LIST);
-      lua_geti(L, -1, GetTerminalView(luaX_checkObject(L, 1))->SelectedIndex);
+      {
+        TerminalViewPtr tv = GetTerminalView(luaX_checkObject(L, 1));
+        lua_geti(L, -1, tv ? tv->SelectedIndex : 0);
+      }
       return 1;
     case 0xc3eb86a5: // numItems
       lua_getfield(L, 1, ITEMS_LIST);
@@ -222,6 +224,8 @@ HANDLER(TerminalView, PushProperty) {
 
 HANDLER(TerminalView, DrawBrush) {
   bool_t bFocused = OBJ_IsFocused(hObject)||OBJ_GetFlags(hObject)&OF_NOACTIVATE;
+  Node2DPtr node2D = GetNode2D(hObject);
+  NodePtr node = GetNode(hObject);
   R_DrawConsole(&(DRAWCONSOLESTRUCT){
     .Buffer = pTerminalView->_buffer,
     .Width = pTerminalView->BufferWidth,
@@ -232,10 +236,10 @@ HANDLER(TerminalView, DrawBrush) {
     .SoftSelection = !bFocused,
     .DrawShadow = pTerminalView->DropShadow,
     .Rect = (struct rect) {
-      GetNode2D(hObject)->Matrix.v[12],
-      GetNode2D(hObject)->Matrix.v[13],
-      GetNode(hObject)->Size.Axis[0].Actual,
-      GetNode(hObject)->Size.Axis[1].Actual
+      node2D ? node2D->Matrix.v[12] : 0,
+      node2D ? node2D->Matrix.v[13] : 0,
+      node ? node->Size.Axis[0].Actual : 0,
+      node ? node->Size.Axis[1].Actual : 0
     },
   });
   return TRUE;
@@ -243,7 +247,8 @@ HANDLER(TerminalView, DrawBrush) {
 
 HANDLER(TerminalView, ScrollWheel) {
   int const h = (pTerminalView->_contentHeight) * CONSOLE_CHAR_HEIGHT;
-  float const space = GetNode(hObject)->Size.Axis[1].Actual - h;
+  NodePtr node = GetNode(hObject);
+  float const space = (node ? node->Size.Axis[1].Actual : 0) - h;
   pTerminalView->_scroll.y += pScrollWheel->dy / SCROLL_SENSIVITY;
   pTerminalView->_scroll.y = MAX(space, pTerminalView->_scroll.y);
   pTerminalView->_scroll.y = MIN(0, pTerminalView->_scroll.y);

@@ -165,7 +165,8 @@ HANDLER(TextBlock, UpdateLayout)
   // pContentSize->axis, *target); 		return *target;
   //	}
 
-  float padding = TOTAL_PADDING(GetNode2D(hObject), kDirectionHorizontal);
+  Node2DPtr node2D = GetNode2D(hObject);
+  float padding = node2D ? TOTAL_PADDING(node2D, kDirectionHorizontal) : 0;
   OBJ_SendMessageW(hObject, kEventMakeText, 0, &(MAKETEXTSTRUCT){
                      .text = textblock->_text,
                      .availableSpace = pUpdateLayout->Width - padding

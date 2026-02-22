@@ -326,6 +326,8 @@ _Read(void* buffer, int len, FILE* f)
   for (int remaining = len; remaining;) {
     int block = MIN(remaining, MAX_READ);
     int read = (int)fread(buf, 1, block, f);
+    if (read == 0)
+      break;
     remaining -= read;
     buf += read;
   }

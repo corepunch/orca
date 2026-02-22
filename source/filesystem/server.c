@@ -427,13 +427,11 @@ struct {
 
 LPSTR UI_ReadClientCommands(void) {
   static char buf[256]={0};
-  size_t total = 0;
-  ssize_t n = read(STDIN_FILENO, buf + total, sizeof(buf));
+  ssize_t n = read(STDIN_FILENO, buf, sizeof(buf));
   if (n == 0)
     return NULL;
-  total += n;
   buf[n] = '\0';
-  //  Con_Error("echo: %.*s", (int)total-1, buf);
+  //  Con_Error("echo: %.*s", (int)n-1, buf);
   return strtok(buf, "\n");
 }
 

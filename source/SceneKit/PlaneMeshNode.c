@@ -21,10 +21,11 @@ HANDLER(PlaneMeshNode, Render)
   
   static struct uniform uniforms[MAX_UNIFORMS];
 
+  struct Node3D* node3D = GetNode3D(hObject);
   struct ViewEntity entity = {
     .mesh = BOX_PTR(Mesh, MD_PLANE),
-    .material.opacity = GetNode3D(hObject)->_opacity,
-    .matrix = GetNode3D(hObject)->Matrix,
+    .material.opacity = node3D ? node3D->_opacity : 1.0f,
+    .matrix = node3D ? node3D->Matrix : MAT4_Identity(),
     .bbox = BOX3_FromRect(((struct rect){0, 0,
       pPlaneMeshNode->PlaneWidth, pPlaneMeshNode->PlaneHeight})),
   };

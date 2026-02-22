@@ -8,7 +8,8 @@
 HANDLER(Form, Create)
 {
   StackViewPtr stackview = GetStackView(hObject);
-  stackview->Direction = kDirectionVertical;
+  if (stackview)
+    stackview->Direction = kDirectionVertical;
   return FALSE;
 }
 

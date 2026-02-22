@@ -229,13 +229,11 @@ void ED_DrawCanvasView(HEDWND wnd, struct _CANVASVIEW* sv) {
   {
     SIZE2 window;
     MATRIX4 proj;
-    float scale = 1;
     WI_GetSize(&window);
     if (FixedScaling(scene)) {
       float w = GetNode(scene)->Size.Axis[0].Requested;
       float h = GetNode(scene)->Size.Axis[1].Requested;
       view = RECT_Fit(&view, &(struct vec2){ w, h });
-      scale = view.width / GetNode(scene)->Size.Axis[0].Requested;
       proj = MAT4_Ortho(
         -w * view.x / view.width,
         w * (window.width - view.x) / view.width,

@@ -443,8 +443,8 @@ Shader_BindConstants(struct shader const* shader,
     } else {
       memcpy(value, shader->constants[index].defaults, sizeof(value));
     }
-    if (desc->identifier == hash_BlendIntensity ||
-        desc->identifier == hash__BlendIntensity) {
+    if (e && (desc->identifier == hash_BlendIntensity ||
+        desc->identifier == hash__BlendIntensity)) {
       *value = e->material.opacity;
     }
     struct Texture *ptr = *(struct Texture **)value;

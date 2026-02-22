@@ -460,6 +460,7 @@ IOSurface_CreateTextureFrom(uint32_t surfaceID, struct Texture* img)
     R_Call(glBindTexture, GL_TEXTURE_RECTANGLE, name);
     // At the moment, CGLTexImageIOSurface2D requires the GL_TEXTURE_RECTANGLE target
     CGLError cglError = CGLTexImageIOSurface2D(cglContext, GL_TEXTURE_RECTANGLE, GL_RGBA, surface_w, surface_h, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, sharedSurface, 0);
+    CFRelease(sharedSurface);
     if (cglError == kCGLNoError) {
       // Render with this texture in the second app
       fprintf(stderr, "Successfully accessed and used the shared IOSurface.\n");

@@ -364,7 +364,7 @@ HANDLER(Node2D, Draw2DContent)
   if (_IsOutOfBounds(pNode2D, pDraw2DContent))
     return FALSE;
   
-  if (pNode2D->ClipChildren && !pNode2D->RenderTarget) {
+  if (pNode2D && pNode2D->ClipChildren && !pNode2D->RenderTarget) {
     uint32_t dwWidth = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
     uint32_t dwHeight = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
     RenderTexture_Create(
@@ -504,8 +504,11 @@ HANDLER(Screen, Create) {
 //  uint16_t height = MAX(480, GetNode(hObject)->Size.Axis[1].Requested);
   uint16_t width = MAX(256, ScreenWidth);
   uint16_t height = MAX(256, ScreenHeight);
-  GetNode(hObject)->Size.Axis[0].Requested = width;
-  GetNode(hObject)->Size.Axis[1].Requested = height;
+  NodePtr node = GetNode(hObject);
+  if (node) {
+    node->Size.Axis[0].Requested = width;
+    node->Size.Axis[1].Requested = height;
+  }
   pScreen->_size = MAKEDWORD(width, height);
   R_Init(width, height, is_server);
   
@@ -519,7 +522,10 @@ HANDLER(Screen, Destroy) {
 }
 
 HANDLER(Screen, WindowResized) {
-  GetNode(hObject)->Size.Axis[0].Requested = LOWORD(wParam);
-  GetNode(hObject)->Size.Axis[1].Requested = HIWORD(wParam);
+  NodePtr node = GetNode(hObject);
+  if (node) {
+    node->Size.Axis[0].Requested = LOWORD(wParam);
+    node->Size.Axis[1].Requested = HIWORD(wParam);
+  }
   return FALSE;
 }

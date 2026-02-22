@@ -337,11 +337,8 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
   }
   
   // If no model yet, check for boxed mesh tags
-  if (model) {
-    // all good, skip
-  } else if (ent->mesh && !BOX_IS_PTR((uintptr_t)ent->mesh)) {
-
-  } else if (!ent->mesh) {
+  if (!model) {
+    return NOERROR;
   }
   
   struct shader_universal_target const *target = &shader->shader->target;

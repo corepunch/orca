@@ -140,8 +140,8 @@ OBJ_Animate(lua_State* L, lpObject_t object)
       PROP_SetValue(tween->target, &value);
     }
     if (core.realtime - tween->start >= tween->duration) {
-      free(tween);
       REMOVE_FROM_LIST(OBJANIM, tween, _GetAnimations(object));
+      free(tween);
     }
   }
   

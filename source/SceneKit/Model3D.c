@@ -47,10 +47,11 @@ HANDLER(Model3D, Render)
   if (!pModel3D->Mesh)
     return FALSE;
 
+  struct Node3D* node3D = GetNode3D(hObject);
   struct ViewEntity ent = {
     .mesh = pModel3D->Mesh,
-    .material.opacity = GetNode3D(hObject)->_opacity,
-    .matrix = GetNode3D(hObject)->Matrix,
+    .material.opacity = node3D ? node3D->_opacity : 1.0f,
+    .matrix = node3D ? node3D->Matrix : MAT4_Identity(),
   };
 
   const int blend = OBJ_GetInteger(hObject, ID_Material_BlendMode, -1);

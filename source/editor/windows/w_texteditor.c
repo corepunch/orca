@@ -515,7 +515,6 @@ LRESULT ED_TextEditor(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm) {
                "Our team is committed to providing you with the best experience.\n"
                "Feel free to reach out if you need any assistance or have questions.\n"
                "Thank you for choosing us-let's embark on this journey together!\n");
-      te = ED_GetUserData(wnd);
       return 1;
     case EVT_DESTROY:
       ED_ReleaseUserData(wnd);

@@ -103,7 +103,7 @@ HANDLER(ImageView, DrawBrush)
                       &entity.ninepatch);
 
   entity.mesh = BOX_PTR(Mesh, MD_NINEPATCH);
-  entity.bbox = BOX3_FromRect(GetNode2D(hObject)->_rect);
+  entity.bbox = BOX3_FromRect(GetNode2D(hObject) ? GetNode2D(hObject)->_rect : (struct rect){0});
   entity.material.blendMode = OBJ_GetInteger(hObject, ID_Material_BlendMode, kBlendModeAlpha);
 
   if (pImageView->Stretch == kStretchUniform) {

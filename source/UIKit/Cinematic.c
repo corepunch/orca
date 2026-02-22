@@ -29,7 +29,7 @@ HANDLER(Cinematic, DrawBrush)
 
   Node2D_GetViewEntity(hObject, &entity, 0, pDrawBrush->brush);
 
-  entity.bbox = BOX3_FromRect(GetNode2D(hObject)->_rect);
+  entity.bbox = BOX3_FromRect(GetNode2D(hObject) ? GetNode2D(hObject)->_rect : (struct rect){0});
   entity.mesh = BOX_PTR(Mesh, MD_RECTANGLE);
   entity.shader = BOX_PTR(Shader, SHADER_CINEMATIC);
 

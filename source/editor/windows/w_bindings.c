@@ -57,7 +57,7 @@ ED_Bindings(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm)
   switch (msg)
   {
     case EVT_CREATE:
-      inspector = ED_AllocUserData(wnd, sizeof(struct _BINDINGSSTRUCT));
+      ED_AllocUserData(wnd, sizeof(struct _BINDINGSSTRUCT));
       return 1;
     case EVT_PRINT:
       ED_PrintBindings(wnd, inspector);

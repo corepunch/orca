@@ -400,6 +400,7 @@ void ED_CancelDragOperation(void) {
 }
 
 LPTERMINAL ED_GetClient(HEDWND wnd) {
+  if (!wnd) return NULL;
   return wnd->client;
 }
 

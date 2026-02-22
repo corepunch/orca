@@ -245,6 +245,7 @@ parse_expression(lpcString_t* str, struct lexer_state* lex)
   if (isoperator(*s)) {
     if (*s == '=' && left->type != tok_identifier) {
       Con_Error("Expected identifier on left of = sign");
+      Token_Release(left);
       return NULL;
     }
     s++;
@@ -252,6 +253,7 @@ parse_expression(lpcString_t* str, struct lexer_state* lex)
     struct token* right = parse_expression(&s, lex);
     if (!right) {
       Token_Release(left);
+      Token_Release(expr);
       return NULL;
     }
     expr->args[0] = left;

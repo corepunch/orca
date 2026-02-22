@@ -51,7 +51,6 @@ XML_ParsePropertyNode(lua_State* L, xmlNodePtr it, lpObject_t object)
 {
   bool_t bEnabled = TRUE;
   enum property_attribute eAttr = ATTR_WHOLE_PROPERTY;
-  BINDING_MODE eMode = BIND_EXPRESSION;
   lpProperty_t property = NULL;
 
   xmlWith(xmlChar, Value, xmlGetProp(it, XMLSTR("Value")), xmlFree) {
@@ -76,9 +75,6 @@ XML_ParsePropertyNode(lua_State* L, xmlNodePtr it, lpObject_t object)
   }
   xmlWith(xmlChar, Attribute, xmlGetProp(it, XMLSTR("Attribute")), xmlFree) {
     eAttr = xmlParsePropertyAttr(Attribute);
-  }
-  xmlWith(xmlChar, Mode, xmlGetProp(it, XMLSTR("Mode")), xmlFree) {
-    eMode = xmlParseBindingMode(Mode);
   }
   xmlWith(xmlChar, Content, xmlNodeGetContent(it), xmlFree) {
     lpcString_t source = (lpcString_t)Content;
