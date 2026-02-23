@@ -423,6 +423,10 @@ OBJ_GetProperties(lpcObject_t self);
 ORCA_API lpProperty_t
 OBJ_FindPropertyByPath(lpObject_t self, const char* path);
 
+/// @brief Rebuilds the object's body content asynchronously
+ORCA_API void
+OBJ_Rebuild(lua_State *L, lpObject_t self);
+
 /// @brief Retrieves currently active object.
 ORCA_API lpObject_t
 core_GetFocus(void);

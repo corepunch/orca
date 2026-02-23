@@ -447,6 +447,15 @@ luaX_pushPageHost(lua_State *L, lpcPageHost_t PageHost);
 ORCA_API lpPageHost_t
 luaX_checkPageHost(lua_State *L, int idx);
 
+typedef struct PageViewport PageViewport_t, *lpPageViewport_t;
+typedef struct PageViewport const cPageViewport_t, *lpcPageViewport_t;
+/// @brief Push PageViewport onto Lua stack.
+ORCA_API void
+luaX_pushPageViewport(lua_State *L, lpcPageViewport_t PageViewport);
+/// @brief Check PageViewport form Lua stack at index.
+ORCA_API lpPageViewport_t
+luaX_checkPageViewport(lua_State *L, int idx);
+
 typedef struct Style Style_t, *lpStyle_t;
 typedef struct Style const cStyle_t, *lpcStyle_t;
 /// @brief Push Style onto Lua stack.
@@ -1129,6 +1138,12 @@ struct PageHost {
 	lpPage_t ActivePage; /// The currently active page.
 	lpPage_t _historyStack[32]; /// Navigation history stack.
 	int32_t _historySize; /// Number of entries in the navigation history stack.
+};
+
+typedef struct PageViewport PageViewport, *PageViewportPtr;
+typedef struct PageViewport const *PageViewportCPtr;
+/// @brief Viewport for rendering the active page within a PageHost.
+struct PageViewport {
 };
 
 typedef enum StyleType {

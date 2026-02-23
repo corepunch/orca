@@ -410,6 +410,11 @@ static int f_Object_findPropertyByPath(lua_State *L) {
 	luaX_pushProperty(L, output);
 	return 1;
 }
+static int f_Object_rebuild(lua_State *L) {
+	lpObject_t self = luaX_checkObject(L, 1);
+	OBJ_Rebuild(L, self);
+	return 0;
+}
 int f_Object___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x5c6e1222: // clear
@@ -588,6 +593,9 @@ int f_Object___index(lua_State *L) {
 		return 1;
 	case 0xfc8bdeb9: // findPropertyByPath
 		lua_pushcfunction(L, f_Object_findPropertyByPath);
+		return 1;
+	case 0x7e809e90: // rebuild
+		lua_pushcfunction(L, f_Object_rebuild);
 		return 1;
 	}
 	return 0;

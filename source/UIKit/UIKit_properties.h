@@ -691,6 +691,13 @@ enum PageHostProperties {
 };
 
 #define ID_PageHost_ActivePage 0xb276c4f7
+#define ID_PageViewport 0x61a2c1e0
+#define GetPageViewport(_P)((struct PageViewport*)((_P)?OBJ_GetComponent(_P,ID_PageViewport):NULL))
+#define PageViewport_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_PageViewport,sizeof(struct PageViewport),_N)
+enum PageViewportProperties {
+	kPageViewportNumProperties
+};
+
 #define ID_Style 0x5467ec76
 #define GetStyle(_P)((struct Style*)((_P)?OBJ_GetComponent(_P,ID_Style):NULL))
 #define Style_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_Style,sizeof(struct Style),_N)

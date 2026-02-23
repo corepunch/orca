@@ -2929,6 +2929,34 @@ ORCA_API struct ClassDesc _PageHost = {
 	.Defaults = &PageHostDefaults,
 	.NumProperties = kPageHostNumProperties,
 };
+static struct PropertyDesc const PageViewportProperties[kPageViewportNumProperties] = {
+};
+static struct PageViewport PageViewportDefaults = {};
+LRESULT PageViewportProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+}
+	return FALSE;
+}
+void luaX_pushPageViewport(lua_State *L, lpcPageViewport_t PageViewport) {
+	luaX_pushObject(L, CMP_GetObject(PageViewport));
+}
+lpPageViewport_t luaX_checkPageViewport(lua_State *L, int idx) {
+	return GetPageViewport(luaX_checkObject(L, idx));
+}
+extern struct ClassDesc _Node2D;
+ORCA_API struct ClassDesc _PageViewport = {
+	.ClassName = "PageViewport",
+	.DefaultName = "PageViewport",
+	.ContentType = "Node2D",
+	.Xmlns = "None",
+	.ParentClasses = {&_Node2D, NULL},
+	.ClassID = ID_PageViewport,
+	.ClassSize = sizeof(struct PageViewport),
+	.Properties = PageViewportProperties,
+	.ObjProc = PageViewportProc,
+	.Defaults = &PageViewportDefaults,
+	.NumProperties = kPageViewportNumProperties,
+};
 static const char *_StyleType[] = {"generic","named",NULL};
 eStyleType_t luaX_checkStyleType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _StyleType);
@@ -3121,6 +3149,9 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	// PageHost
 	lua_pushclass(L, &_PageHost);
 	lua_setfield(L, -2, "PageHost");
+	// PageViewport
+	lua_pushclass(L, &_PageViewport);
+	lua_setfield(L, -2, "PageViewport");
 	// Style
 	lua_pushclass(L, &_Style);
 	lua_setfield(L, -2, "Style");

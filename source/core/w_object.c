@@ -87,8 +87,7 @@ _parse_args(lua_State* L, lpObject_t hobj)
     lua_remove(L, 2);
 
     // TODO: a cleaner way? this clears "body" after populating once
-    lua_pushboolean(L, 1);
-    lua_setfield(L, 1, "__erasebody");
+    OBJ_SetFlags(hobj, OBJ_GetFlags(hobj) | OF_CLEARBODY);
   }
   if (lua_type(L, 2) == LUA_TSTRING) {
     OBJ_SetTextContent(hobj, luaL_checkstring(L, 2));
@@ -471,4 +470,47 @@ void OBJ_API(Bind, lpcString_t property, lpcString_t expression) {
 //  PROP_AttachProgram(hProperty, 0, expression, TRUE);
   // TODO: implement binding in scripts
   Con_Error("Binding not implemented");
+}
+
+static int f_rebuild_finalize(lua_State *L, int status, lua_KContext ctx) {
+  lpObject_t self = (lpObject_t)ctx;
+  if (status != LUA_OK) {
+    return luaL_error(L, luaL_tolstring(L, -1, NULL));
+  }
+  if (OBJ_GetFlags(self) & OF_CLEARBODY) {
+    lua_pushnil(L);
+    lua_setfield(L, 1, "body");
+    OBJ_SetFlags(self, OBJ_GetFlags(self) & ~OF_CLEARBODY);
+  }
+  WI_PostMessageW(self, kEventViewDidLoad, 0, NULL);
+  return 0;
+}
+
+static int f_rebuild(lua_State *L) {
+  lpObject_t self = luaX_checkObject(L, 1);
+  if (!lua_isnoneornil(L, 2)) { // set body
+    lua_pushvalue(L, 2);
+    lua_setfield(L, 1, "body");
+  }
+  lua_getfield(L, 1, "body");
+  if (lua_type(L, -1) == LUA_TFUNCTION) {
+    OBJ_Clear(L, self);
+    lua_pushvalue(L, 1);
+    return lua_pcallk(L, 1, 0, 0, (lua_KContext)self, f_rebuild_finalize);
+  } else if (lua_type(L, -1) == LUA_TSTRING) {
+    OBJ_SetTextContent(self, luaL_checkstring(L, -1));
+  }
+  lua_pop(L, 1);
+  WI_PostMessageW(self, kEventViewDidLoad, 0, NULL); // TODO: replace with direct call to avoid unnecessary message dispatch
+  return 0;
+}
+
+void OBJ_API(Rebuild) {
+  const int nargs = lua_gettop(L);
+  lua_State* co = lua_newthread(L);
+  *((lpObject_t *)lua_getextraspace(co)) = luaX_checkObject(L, 1);
+  int ref = luaL_ref(L, LUA_REGISTRYINDEX);
+  lua_pushcfunction(co, f_rebuild);
+  lua_xmove(L, co, nargs);
+  WI_PostMessageW(co, kEventResumeCoroutine, nargs, (void*)(intptr_t)ref);
 }

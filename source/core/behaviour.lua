@@ -1,24 +1,6 @@
 "local orca = require 'orca'\n"
 "local Behaviour = {}\n"
 
-"function Behaviour:__rebuild(body)\n"
-"  self.body = body or self.body\n"
-"  if type(self.body) == 'function' then\n"
-"    OBJECT.__setcontext(self.__userdata)\n"
-"    self:clear()\n"
-"    self:body()\n"
-"    if self.__erasebody then self.body = nil end\n"
-"  elseif type(self.body) == 'string' then\n"
-"    self:addChild(self.body)\n"
-"  end\n"
-"  self:postMessage 'ViewDidLoad'\n"
-"  return self\n"
-"end\n"
-
-"function Behaviour:rebuild(body)\n"
-"  orca.async(self.__rebuild, self, body)\n"
-"end\n"
-
 "function Behaviour:loadImageAsync(url)\n"
 "  orca.async(function (url)\n"
 "    local network = require 'orca.network'\n"
@@ -152,7 +134,6 @@
 
 "    OBJECT.new(self, ...)\n"
 "    self.print = print\n"
-
 "    self:rebuild()\n"
 "  end,\n"
 "  __base = _base_0,\n"

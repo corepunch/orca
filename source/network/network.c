@@ -181,8 +181,7 @@ int resume_fetch_http(lua_State* L, int status, lua_KContext ctx)
     curl_multi_cleanup(req->multi_handle);
     curl_easy_cleanup(req->easy_handle);
     free_request(req);
-    return luaL_error(
-                      L, "curl_multi_perform error: %s", curl_multi_strerror(res));
+    return luaL_error(L, "curl_multi_perform error: %s", curl_multi_strerror(res));
   }
   // If the transfer is not complete, yield again
   if (running_handles > 0) {

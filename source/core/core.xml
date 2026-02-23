@@ -461,6 +461,11 @@
       <arg name="path" type="string">Slash-separated path to the property (e.g., "Child1/Child2/PropertyName")</arg>
       <returns type="Property" pointer="true">Pointer to the property if found, or null if the path is invalid</returns>
     </method>
+    
+    <method name="Rebuild" lua="true">
+      <summary>Rebuilds the object's body content asynchronously</summary>
+      <details>This method triggers a rebuild of the behavior by either executing a function body, adding a child from a string, and then posting a 'ViewDidLoad' message.</details>
+    </method>    
   </interface>
   
   <function name="GetFocus">

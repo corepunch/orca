@@ -816,6 +816,13 @@
     <field name="_historySize" type="int">Number of entries in the navigation history stack.</field>
   </component>
 
+  <component name="PageViewport" parent="Node2D">
+    <summary>Viewport for rendering the active page within a PageHost.</summary>
+    <details>Responsible for displaying the content of the active page managed by a PageHost. Handles rendering and transition effects when switching between pages.</details>
+    <!-- <handles event="DrawBrush"/>
+    <property name="PageHost" type="PageHost" pointer="true">Reference to the PageHost that manages the pages being rendered.</property> -->
+  </component>
+
   <!-- Style components -->
 
   <enums name="StyleType">
