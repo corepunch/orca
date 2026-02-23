@@ -29,6 +29,13 @@
     <enum name="Depth">Depth of the box along the Z axis</enum>
   </enums>
 
+  <enums name="TextWrapping">
+    <summary>Controls text wrapping behavior, equivalent to WPF TextWrapping</summary>
+    <enum name="WrapWithOverflow">Wrap at word boundaries; a word that exceeds the available width is allowed to overflow rather than being broken</enum>
+    <enum name="NoWrap">No automatic line wrapping; text extends on a single line and may overflow the container</enum>
+    <enum name="Wrap">Wrap at word boundaries; a word that exceeds the available width is broken at the character level to prevent overflow</enum>
+  </enums>
+
   <enums name="TextHorizontalAlignment">
     <summary>Horizontal text alignment options within text bounds</summary>
     <enum name="Left">Align text to the left edge</enum>
@@ -434,6 +441,7 @@
     <property name="UseFullFontHeight" type="bool" default="TRUE">When true, uses the font's full height for layout calculations.</property>
     <property name="ConstrainContentHeight" type="bool" default="TRUE">Constrains the content height to the text's bounding box.</property>
     <property name="WordWrap" type="bool">Enables automatic word wrapping of the text.</property>
+    <property name="TextWrapping" type="TextWrapping">Controls text wrapping behavior. Equivalent to WPF TextWrapping.</property>
     <property name="TextHorizontalAlignment" type="TextHorizontalAlignment">Horizontal alignment of the text within its bounds.</property>
     <property name="TextVerticalAlignment" type="TextVerticalAlignment">Vertical alignment of the text within its bounds.</property>
     <field name="_steps" type="uiLabelSteps">Internal step-based rendering parameters.</field>

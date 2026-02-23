@@ -495,6 +495,12 @@ typedef enum Box3Field {
 	kBox3FieldDepth, /// Depth of the box along the Z axis
 } eBox3Field_t;
 
+typedef enum TextWrapping {
+	kTextWrappingWrapWithOverflow, /// Wrap at word boundaries; a word that exceeds the available width is allowed to overflow rather than being broken
+	kTextWrappingNoWrap, /// No automatic line wrapping; text extends on a single line and may overflow the container
+	kTextWrappingWrap, /// Wrap at word boundaries; a word that exceeds the available width is broken at the character level to prevent overflow
+} eTextWrapping_t;
+
 typedef enum TextHorizontalAlignment {
 	kTextHorizontalAlignmentLeft, /// Align text to the left edge
 	kTextHorizontalAlignmentCenter, /// Center text horizontally
@@ -842,6 +848,7 @@ struct TextBlockConcept {
 	bool_t UseFullFontHeight; /// When true, uses the font's full height for layout calculations.
 	bool_t ConstrainContentHeight; /// Constrains the content height to the text's bounding box.
 	bool_t WordWrap; /// Enables automatic word wrapping of the text.
+	eTextWrapping_t TextWrapping; /// Controls text wrapping behavior. Equivalent to WPF TextWrapping.
 	eTextHorizontalAlignment_t TextHorizontalAlignment; /// Horizontal alignment of the text within its bounds.
 	eTextVerticalAlignment_t TextVerticalAlignment; /// Vertical alignment of the text within its bounds.
 	uiLabelSteps_t _steps; /// Internal step-based rendering parameters.

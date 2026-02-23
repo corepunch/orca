@@ -61,6 +61,7 @@
 </span></a><div class="technology-title"><span class="fa-solid fa-folder-open icon"></span>orca.UIKit
 </div><a class="leaf-link" href="#Direction"><i class="fa-solid fa-bars icon"></i><span>Direction
 </span></a><a class="leaf-link" href="#Box3Field"><i class="fa-solid fa-bars icon"></i><span>Box3Field
+</span></a><a class="leaf-link" href="#TextWrapping"><i class="fa-solid fa-bars icon"></i><span>TextWrapping
 </span></a><a class="leaf-link" href="#TextHorizontalAlignment"><i class="fa-solid fa-bars icon"></i><span>TextHorizontalAlignment
 </span></a><a class="leaf-link" href="#TextVerticalAlignment"><i class="fa-solid fa-bars icon"></i><span>TextVerticalAlignment
 </span></a><a class="leaf-link" href="#HorizontalAlignment"><i class="fa-solid fa-bars icon"></i><span>HorizontalAlignment
@@ -1160,6 +1161,15 @@
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Depth</span></code><div class="small-abstract"><span>Depth of the box along the Z axis
 </span></div></div>
+</div><div id="TextWrapping" class="class" data-name="TextWrapping" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
+</div><h1 class="header">TextWrapping
+</h1><div class="abstract">Controls text wrapping behavior, equivalent to WPF TextWrapping
+</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">WrapWithOverflow</span></code><div class="small-abstract"><span>Wrap at word boundaries; a word that exceeds the available width is allowed to overflow rather than being broken
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">NoWrap</span></code><div class="small-abstract"><span>No automatic line wrapping; text extends on a single line and may overflow the container
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Wrap</span></code><div class="small-abstract"><span>Wrap at word boundaries; a word that exceeds the available width is broken at the character level to prevent overflow
+</span></div></div>
 </div><div id="TextHorizontalAlignment" class="class" data-name="TextHorizontalAlignment" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
 </div><h1 class="header">TextHorizontalAlignment
 </h1><div class="abstract">Horizontal text alignment options within text bounds
@@ -1780,6 +1790,8 @@
 <div class="small-abstract"><span>Constrains the content height to the text's bounding box.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">WordWrap</span>: <span>bool</span></code></div>
 <div class="small-abstract"><span>Enables automatic word wrapping of the text.
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">TextWrapping</span>: <a class="type-identifier-link" href="#TextWrapping">TextWrapping</a></code></div>
+<div class="small-abstract"><span>Controls text wrapping behavior. Equivalent to WPF TextWrapping.
 </span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">TextHorizontalAlignment</span>: <a class="type-identifier-link" href="#TextHorizontalAlignment">TextHorizontalAlignment</a></code></div>
 <div class="small-abstract"><span>Horizontal alignment of the text within its bounds.
 </span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">TextVerticalAlignment</span>: <a class="type-identifier-link" href="#TextVerticalAlignment">TextVerticalAlignment</a></code></div>

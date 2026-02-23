@@ -24,6 +24,14 @@ void luaX_pushBox3Field(lua_State *L, eBox3Field_t value) {
 	assert(value >= 0 && value < 6);
 	lua_pushstring(L, _Box3Field[value]);
 }
+static const char *_TextWrapping[] = {"wrapwithoverflow","nowrap","wrap",NULL};
+eTextWrapping_t luaX_checkTextWrapping(lua_State *L, int idx) {
+	return luaL_checkoption(L, idx, NULL, _TextWrapping);
+}
+void luaX_pushTextWrapping(lua_State *L, eTextWrapping_t value) {
+	assert(value >= 0 && value < 3);
+	lua_pushstring(L, _TextWrapping[value]);
+}
 static const char *_TextHorizontalAlignment[] = {"left","center","right",NULL};
 eTextHorizontalAlignment_t luaX_checkTextHorizontalAlignment(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _TextHorizontalAlignment);
@@ -1852,6 +1860,8 @@ static struct PropertyDesc const TextBlockConceptProperties[kTextBlockConceptNum
 	TextBlockConcept, "ConstrainContentHeight", ConstrainContentHeight, kDataTypeBool),
 	/* TextBlockConcept.WordWrap */ DECL(0x468540fd, 0x34b71f41,
 	TextBlockConcept, "WordWrap", WordWrap, kDataTypeBool),
+	/* TextBlockConcept.TextWrapping */ DECL(0x65cdc8f2, 0x709f2f06,
+	TextBlockConcept, "TextWrapping", TextWrapping, kDataTypeEnum, .TypeString="WrapWithOverflow,NoWrap,Wrap"),
 	/* TextBlockConcept.TextHorizontalAlignment */ DECL(0xf46faf37, 0xe480096b,
 	TextBlockConcept, "TextHorizontalAlignment", TextHorizontalAlignment, kDataTypeEnum, .TypeString="Left,Center,Right"),
 	/* TextBlockConcept.TextVerticalAlignment */ DECL(0xbc8a8a99, 0xbf0260e5,
