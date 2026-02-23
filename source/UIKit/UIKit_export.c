@@ -24,6 +24,14 @@ void luaX_pushBox3Field(lua_State *L, eBox3Field_t value) {
 	assert(value >= 0 && value < 6);
 	lua_pushstring(L, _Box3Field[value]);
 }
+static const char *_TextOverflow[] = {"clip","ellipsis",NULL};
+eTextOverflow_t luaX_checkTextOverflow(lua_State *L, int idx) {
+	return luaL_checkoption(L, idx, NULL, _TextOverflow);
+}
+void luaX_pushTextOverflow(lua_State *L, eTextOverflow_t value) {
+	assert(value >= 0 && value < 2);
+	lua_pushstring(L, _TextOverflow[value]);
+}
 static const char *_TextWrapping[] = {"wrapwithoverflow","nowrap","wrap",NULL};
 eTextWrapping_t luaX_checkTextWrapping(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _TextWrapping);
@@ -1845,7 +1853,7 @@ static struct PropertyDesc const TextBlockConceptProperties[kTextBlockConceptNum
 	/* TextBlockConcept.PlaceholderText */ DECL(0xdccaa011, 0xadd54a35,
 	TextBlockConcept, "PlaceholderText", PlaceholderText, kDataTypeFixed),
 	/* TextBlockConcept.TextOverflow */ DECL(0x3dcadc9c, 0x9717f5b0,
-	TextBlockConcept, "TextOverflow", TextOverflow, kDataTypeFixed),
+	TextBlockConcept, "TextOverflow", TextOverflow, kDataTypeEnum, .TypeString="Clip,Ellipsis"),
 	/* TextBlockConcept.Placeholder */ DECL(0x8987413a, 0x78889986,
 	TextBlockConcept, "Placeholder", Placeholder, kDataTypeGroup, .TypeString="BrushShorthand", .NumComponents=3),
 	/* TextBlockConcept.PlaceholderColor */ DECL(0xb272976d, 0x8f53db89,

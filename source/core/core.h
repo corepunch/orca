@@ -371,7 +371,7 @@ OBJ_SetTextContent(lpObject_t self, const char* text);
 ORCA_API void
 OBJ_SetSourceFile(lpObject_t self, const char* path);
 
-/// @brief Sets the CSS-style class name of the object
+/// @brief Sets the class name of the object
 ORCA_API void
 OBJ_SetClassName(lpObject_t self, const char* classID);
 

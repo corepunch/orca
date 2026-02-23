@@ -61,6 +61,7 @@
 </span></a><div class="technology-title"><span class="fa-solid fa-folder-open icon"></span>orca.UIKit
 </div><a class="leaf-link" href="#Direction"><i class="fa-solid fa-bars icon"></i><span>Direction
 </span></a><a class="leaf-link" href="#Box3Field"><i class="fa-solid fa-bars icon"></i><span>Box3Field
+</span></a><a class="leaf-link" href="#TextOverflow"><i class="fa-solid fa-bars icon"></i><span>TextOverflow
 </span></a><a class="leaf-link" href="#TextWrapping"><i class="fa-solid fa-bars icon"></i><span>TextWrapping
 </span></a><a class="leaf-link" href="#TextHorizontalAlignment"><i class="fa-solid fa-bars icon"></i><span>TextHorizontalAlignment
 </span></a><a class="leaf-link" href="#TextVerticalAlignment"><i class="fa-solid fa-bars icon"></i><span>TextVerticalAlignment
@@ -542,7 +543,7 @@
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">setHover</span>()</code><div class="small-abstract"><span>Sets the hover state for an object
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">setTextContent</span>(<span class="identifier">text</span>:<span class="decorator">string</span>)</code><div class="small-abstract"><span>Sets the text content of the object
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">setSourceFile</span>(<span class="identifier">path</span>:<span class="decorator">string</span>)</code><div class="small-abstract"><span>Sets the source file path of the object
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">setClassName</span>(<span class="identifier">classID</span>:<span class="decorator">string</span>)</code><div class="small-abstract"><span>Sets the CSS-style class name of the object
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">setClassName</span>(<span class="identifier">classID</span>:<span class="decorator">string</span>)</code><div class="small-abstract"><span>Sets the class name of the object
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">findParentOfClass</span>(<span class="identifier">classID</span>:<span class="decorator">uint</span>)<span class="decorator"> -&gt;</span><span> Object</span></code><div class="small-abstract"><span>Finds the nearest parent object of a specific class
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">findChildOfClass</span>(<span class="identifier">classID</span>:<span class="decorator">uint</span>)<span class="decorator"> -&gt;</span><span> Object</span></code><div class="small-abstract"><span>Finds a child object of a specific class
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">isPrefabView</span>()<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Checks if this object is a prefab view container
@@ -1114,7 +1115,7 @@
 </span></div></div><div id="FontFamily" class="class" data-name="FontFamily" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
 </div><h1 class="header">FontFamily
 </h1><div class="abstract">TrueType font resource for text rendering
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">renderer.FontFamily</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Loads and manages a TrueType font file for rendering text in the scene. Provides glyph data and metrics for text layout and rendering. May be extended in the future to support font families with variants (regular, bold, italic) similar to CSS font-family specifications.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>resource </span><span class="identifier">regular</span>: <span>fontface</span></code></div>
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">renderer.FontFamily</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Loads and manages a TrueType font file for rendering text in the scene. Provides glyph data and metrics for text layout and rendering. May be extended in the future to support font families with variants (regular, bold, italic).</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>resource </span><span class="identifier">regular</span>: <span>fontface</span></code></div>
 <div class="small-abstract"><span>Internal pointer to the loaded font data.
 </span></div><div class="topic"><code class="decorator"><span>resource </span><span class="identifier">bold</span>: <span>fontface</span></code></div>
 <div class="small-abstract"><span>Internal pointer to the loaded font data.
@@ -1161,9 +1162,16 @@
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Depth</span></code><div class="small-abstract"><span>Depth of the box along the Z axis
 </span></div></div>
+</div><div id="TextOverflow" class="class" data-name="TextOverflow" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
+</div><h1 class="header">TextOverflow
+</h1><div class="abstract">Controls how overflowing text is displayed, similar to the CSS text-overflow property
+</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">Clip</span></code><div class="small-abstract"><span>Clip overflowing text at the container boundary
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Ellipsis</span></code><div class="small-abstract"><span>Truncate overflowing text and append an ellipsis (…)
+</span></div></div>
 </div><div id="TextWrapping" class="class" data-name="TextWrapping" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
 </div><h1 class="header">TextWrapping
-</h1><div class="abstract">Controls text wrapping behavior, equivalent to WPF TextWrapping
+</h1><div class="abstract">Controls text wrapping behavior
 </div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">WrapWithOverflow</span></code><div class="small-abstract"><span>Wrap at word boundaries; a word that exceeds the available width is allowed to overflow rather than being broken
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">NoWrap</span></code><div class="small-abstract"><span>No automatic line wrapping; text extends on a single line and may overflow the container
@@ -1350,7 +1358,7 @@
 </div><div id="BorderRadiusShorthand" class="class" data-name="BorderRadiusShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
 </div><h1 class="header">BorderRadiusShorthand
 </h1><div class="abstract">Corner rounding configuration for rectangular elements
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.BorderRadiusShorthand</span></code><h2 class="title">Overview</h2><div class="abstract">Similar to CSS border-radius, allows independent control of each corner's rounding radius.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">TopLeftRadius</span>: <span>float</span></code></div>
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.BorderRadiusShorthand</span></code><h2 class="title">Overview</h2><div class="abstract">Allows independent control of each corner's rounding radius.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">TopLeftRadius</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Top-left corner radius
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">TopRightRadius</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Top-right corner radius
@@ -1408,15 +1416,15 @@
 </div><h1 class="header">BrushShorthand
 </h1><div class="abstract">Represents a generic brush used for filling UI elements.
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.BrushShorthand</span></code><h2 class="title">Overview</h2><div class="abstract">A brush can be used as a background, foreground, or any paintable property. It supports multiple types of fills; each field corresponds to one type of fill.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Color</span>: <a class="type-identifier-link" href="#color">color</a></code></div>
-<div class="small-abstract"><span>Solid color fill. Conceptually similar to a CSS </span><code class="token-keyword">color</code><span> or </span><code class="token-keyword">background-color</code><span>.
+<div class="small-abstract"><span>Solid color fill.
 </span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">Image</span>: <a class="type-identifier-link" href="#Texture">Texture</a></code></div>
-<div class="small-abstract"><span>Texture/image fill. Conceptually similar to a CSS </span><code class="token-keyword">background-image</code><span>.
+<div class="small-abstract"><span>Texture/image fill.
 </span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">Material</span>: <a class="type-identifier-link" href="#Material">Material</a></code></div>
 <div class="small-abstract"><span>Custom material or shader fill. Advanced fill using shader/material settings for effects beyond simple color or image.
 </span></div></div><div id="ShadowShorthand" class="class" data-name="ShadowShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
 </div><h1 class="header">ShadowShorthand
 </h1><div class="abstract">Drop shadow effect configuration
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.ShadowShorthand</span></code><h2 class="title">Overview</h2><div class="abstract">Defines a drop shadow with offset, blur, spread, and color. Similar to CSS box-shadow property.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Offset</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.ShadowShorthand</span></code><h2 class="title">Overview</h2><div class="abstract">Defines a drop shadow with offset, blur, spread, and color.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Offset</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
 <div class="small-abstract"><span>Shadow offset from element (x, y)
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BlurRadius</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Blur amount for shadow softness
@@ -1427,7 +1435,7 @@
 </span></div></div><div id="RingShorthand" class="class" data-name="RingShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
 </div><h1 class="header">RingShorthand
 </h1><div class="abstract">Decorative ring/outline effect around elements
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.RingShorthand</span></code><h2 class="title">Overview</h2><div class="abstract">Creates an outline ring around elements, similar to CSS outline or focus ring indicators. Useful for accessibility and visual feedback.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Offset</span>: <span>float</span></code></div>
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.RingShorthand</span></code><h2 class="title">Overview</h2><div class="abstract">Creates an outline ring drawn around an element's outer edge. Useful for accessibility and visual feedback such as focus indicators.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Offset</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Distance from element edge to ring
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Width</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Ring thickness in pixels
@@ -1463,7 +1471,7 @@
 </span></div></div><div id="MarginShorthand" class="class" data-name="MarginShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
 </div><h1 class="header">MarginShorthand
 </h1><div class="abstract">External spacing configuration for rectangular elements
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.MarginShorthand</span></code><h2 class="title">Overview</h2><div class="abstract">Similar to CSS margin, allows independent control of each edge external spacing.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Axis</span>: <a class="type-identifier-link" href="#EdgeShorthand">EdgeShorthand</a></code></div>
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.MarginShorthand</span></code><h2 class="title">Overview</h2><div class="abstract">Allows independent control of the external spacing applied to each edge of an element.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Axis</span>: <a class="type-identifier-link" href="#EdgeShorthand">EdgeShorthand</a></code></div>
 <div class="small-abstract"><span>External spacing per axis
 </span></div></div><div id="SizeAxisShorthand" class="class" data-name="SizeAxisShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
 </div><h1 class="header">SizeAxisShorthand
@@ -1627,11 +1635,11 @@
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Border</span>: <a class="type-identifier-link" href="#BorderShorthand">BorderShorthand</a></code></div>
 <div class="small-abstract"><span>Border definition along each axis
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderWidth</span></code></div>
-<div class="small-abstract"><span>Shorthand for setting spacing inside a node along its edges. Represents the inner spacing (padding) between the node's content and its border for all edges. Similar to the CSS </span><code class="token-keyword">padding</code><span> shorthand property.
+<div class="small-abstract"><span>Shorthand for setting the width of borders along each edge.
 </span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">BorderStyle</span>: <a class="type-identifier-link" href="#BorderStyle">BorderStyle</a></code></div>
-<div class="small-abstract"><span>Shorthand for defining the line style of borders along each edge. Specifies the border style (solid, dashed, etc.) per edge, similar to CSS </span><code class="token-keyword">border-style</code><span>.
+<div class="small-abstract"><span>Shorthand for defining the line style of borders along each edge. Specifies the border style (solid, dashed, etc.) per edge.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderColor</span></code></div>
-<div class="small-abstract"><span>Shorthand for defining the color of borders along each edge. Specifies the border color for each edge individually, similar to CSS </span><code class="token-keyword">border-color</code><span>.
+<div class="small-abstract"><span>Shorthand for defining the color of borders along each edge. Specifies the border color for each edge individually.
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">BorderRadius</span>: <a class="type-identifier-link" href="#BorderRadiusShorthand">BorderRadiusShorthand</a></code></div>
 <div class="small-abstract"><span>Border radius definition per corner
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderTopLeftRadius</span>: <span>float</span></code></div>
@@ -1774,14 +1782,14 @@
 <div class="small-abstract"><span>Configuration key used when resolving text resources.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">PlaceholderText</span>: <span>fixed</span></code></div>
 <div class="small-abstract"><span>Placeholder text displayed when no main text is set.
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">TextOverflow</span>: <span>fixed</span></code></div>
-<div class="small-abstract"><span>Defines how overflowing text should be handled (clip, ellipsis, etc.).
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">TextOverflow</span>: <a class="type-identifier-link" href="#TextOverflow">TextOverflow</a></code></div>
+<div class="small-abstract"><span>Defines how overflowing text should be handled.
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Placeholder</span>: <a class="type-identifier-link" href="#BrushShorthand">BrushShorthand</a></code></div>
 <div class="small-abstract"><span>Brush definition for rendering placeholder text.
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">PlaceholderColor</span>: <a class="type-identifier-link" href="#color">color</a></code></div>
-<div class="small-abstract"><span>Solid color fill. Conceptually similar to a CSS </span><code class="token-keyword">color</code><span> or </span><code class="token-keyword">background-color</code><span>.
+<div class="small-abstract"><span>Solid color fill.
 </span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">PlaceholderImage</span>: <a class="type-identifier-link" href="#Texture">Texture</a></code></div>
-<div class="small-abstract"><span>Texture/image fill. Conceptually similar to a CSS </span><code class="token-keyword">background-image</code><span>.
+<div class="small-abstract"><span>Texture/image fill.
 </span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">PlaceholderMaterial</span>: <a class="type-identifier-link" href="#Material">Material</a></code></div>
 <div class="small-abstract"><span>Custom material or shader fill. Advanced fill using shader/material settings for effects beyond simple color or image.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">UseFullFontHeight</span>: <span>bool</span></code></div>
@@ -1791,7 +1799,7 @@
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">WordWrap</span>: <span>bool</span></code></div>
 <div class="small-abstract"><span>Enables automatic word wrapping of the text.
 </span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">TextWrapping</span>: <a class="type-identifier-link" href="#TextWrapping">TextWrapping</a></code></div>
-<div class="small-abstract"><span>Controls text wrapping behavior. Equivalent to WPF TextWrapping.
+<div class="small-abstract"><span>Controls text wrapping behavior.
 </span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">TextHorizontalAlignment</span>: <a class="type-identifier-link" href="#TextHorizontalAlignment">TextHorizontalAlignment</a></code></div>
 <div class="small-abstract"><span>Horizontal alignment of the text within its bounds.
 </span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">TextVerticalAlignment</span>: <a class="type-identifier-link" href="#TextVerticalAlignment">TextVerticalAlignment</a></code></div>
@@ -1823,7 +1831,7 @@
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getBackgroundRect</span>()<span class="decorator"> -&gt;</span><span> rect</span></code><div class="small-abstract"><span>Get the background rendering rectangle for a Node2D
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getSize</span>(<span class="identifier">axis</span>:<span class="decorator">Direction</span>, <span class="identifier">sizing</span>:<span class="decorator">Sizing</span>)<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Utility function for calculating node dimensions with different sizing modes
 </span></div></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">LayoutTransform</span>: <a class="type-identifier-link" href="#transform2">transform2</a></code></div>
-<div class="small-abstract"><span>Transformation applied during layout calculations. Similar to WPF </span><code class="token-keyword">LayoutTransform</code><span>. Affects size and positioning but does not influence local rendering.
+<div class="small-abstract"><span>Transformation applied during layout calculations. Affects size and positioning but does not influence local rendering.
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">LayoutTransformTranslation</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
 <div class="small-abstract"><span>Translation offset
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">LayoutTransformRotation</span>: <span>float</span></code></div>
@@ -1831,7 +1839,7 @@
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">LayoutTransformScale</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
 <div class="small-abstract"><span>Scale factors for X and Y axes
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">RenderTransform</span>: <a class="type-identifier-link" href="#transform2">transform2</a></code></div>
-<div class="small-abstract"><span>Transformation applied at render time. Similar to WPF </span><code class="token-keyword">RenderTransform</code><span>. Affects how the element is drawn (rotation, scale, skew, etc.) without altering layout.
+<div class="small-abstract"><span>Transformation applied at render time. Affects how the element is drawn (rotation, scale, skew, etc.) without altering layout.
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">RenderTransformTranslation</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
 <div class="small-abstract"><span>Translation offset
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RenderTransformRotation</span>: <span>float</span></code></div>
@@ -1839,7 +1847,7 @@
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">RenderTransformScale</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
 <div class="small-abstract"><span>Scale factors for X and Y axes
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">RenderTransformOrigin</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
-<div class="small-abstract"><span>The origin point for applying RenderTransform. Equivalent to WPF </span><code class="token-keyword">RenderTransformOrigin</code><span>. Defines pivot relative to the element.
+<div class="small-abstract"><span>The origin point for applying RenderTransform. Defines the pivot point relative to the element.
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">ContentOffset</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
 <div class="small-abstract"><span>Pixel offset applied to the element's content. Can be used for subpixel positioning or scrolling adjustments.
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Matrix</span>: <a class="type-identifier-link" href="#mat4">mat4</a></code></div>
@@ -1847,23 +1855,23 @@
 </span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">RenderTarget</span>: <a class="type-identifier-link" href="#Texture">Texture</a></code></div>
 <div class="small-abstract"><span>Optional render target for offscreen drawing. When set, the node is rendered into this texture/image instead of directly on screen.
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Background</span>: <a class="type-identifier-link" href="#BrushShorthand">BrushShorthand</a></code></div>
-<div class="small-abstract"><span>Background brush for the element. Equivalent to WPF </span><code class="token-keyword">Background</code><span>. Supports solid color, image, or material.
+<div class="small-abstract"><span>Background brush for the element. Supports solid color, image, or material.
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">BackgroundColor</span>: <a class="type-identifier-link" href="#color">color</a></code></div>
-<div class="small-abstract"><span>Solid color fill. Conceptually similar to a CSS </span><code class="token-keyword">color</code><span> or </span><code class="token-keyword">background-color</code><span>.
+<div class="small-abstract"><span>Solid color fill.
 </span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">BackgroundImage</span>: <a class="type-identifier-link" href="#Texture">Texture</a></code></div>
-<div class="small-abstract"><span>Texture/image fill. Conceptually similar to a CSS </span><code class="token-keyword">background-image</code><span>.
+<div class="small-abstract"><span>Texture/image fill.
 </span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">BackgroundMaterial</span>: <a class="type-identifier-link" href="#Material">Material</a></code></div>
 <div class="small-abstract"><span>Custom material or shader fill. Advanced fill using shader/material settings for effects beyond simple color or image.
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Foreground</span>: <a class="type-identifier-link" href="#BrushShorthand">BrushShorthand</a></code></div>
-<div class="small-abstract"><span>Foreground brush for the element. Equivalent to WPF </span><code class="token-keyword">Foreground</code><span>. Typically used for text or shape fills.
+<div class="small-abstract"><span>Foreground brush for the element. Typically used for text or shape fills.
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">ForegroundColor</span>: <a class="type-identifier-link" href="#color">color</a></code></div>
-<div class="small-abstract"><span>Solid color fill. Conceptually similar to a CSS </span><code class="token-keyword">color</code><span> or </span><code class="token-keyword">background-color</code><span>.
+<div class="small-abstract"><span>Solid color fill.
 </span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">ForegroundImage</span>: <a class="type-identifier-link" href="#Texture">Texture</a></code></div>
-<div class="small-abstract"><span>Texture/image fill. Conceptually similar to a CSS </span><code class="token-keyword">background-image</code><span>.
+<div class="small-abstract"><span>Texture/image fill.
 </span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">ForegroundMaterial</span>: <a class="type-identifier-link" href="#Material">Material</a></code></div>
 <div class="small-abstract"><span>Custom material or shader fill. Advanced fill using shader/material settings for effects beyond simple color or image.
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">BoxShadow</span>: <a class="type-identifier-link" href="#ShadowShorthand">ShadowShorthand</a></code></div>
-<div class="small-abstract"><span>Shadow applied to the element's box. Equivalent to CSS </span><code class="token-keyword">box-shadow</code><span> or WPF </span><code class="token-keyword">DropShadowEffect</code><span>.
+<div class="small-abstract"><span>Shadow applied to the element's box.
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">BoxShadowOffset</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
 <div class="small-abstract"><span>Shadow offset from element (x, y)
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BoxShadowBlurRadius</span>: <span>float</span></code></div>
@@ -1873,13 +1881,13 @@
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">BoxShadowColor</span>: <a class="type-identifier-link" href="#color">color</a></code></div>
 <div class="small-abstract"><span>Shadow color and opacity
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Overflow</span>: <a class="type-identifier-link" href="#OverflowShorthand">OverflowShorthand</a></code></div>
-<div class="small-abstract"><span>Defines overflow behavior for child content. Equivalent to CSS </span><code class="token-keyword">overflow</code><span>. Controls clipping and scroll behavior.
+<div class="small-abstract"><span>Defines overflow behavior for child content. Controls clipping and scroll behavior.
 </span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">OverflowX</span>: <a class="type-identifier-link" href="#Overflow">Overflow</a></code></div>
 <div class="small-abstract"><span>Horizontal overflow handling
 </span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">OverflowY</span>: <a class="type-identifier-link" href="#Overflow">Overflow</a></code></div>
 <div class="small-abstract"><span>Vertical overflow handling
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Ring</span>: <a class="type-identifier-link" href="#RingShorthand">RingShorthand</a></code></div>
-<div class="small-abstract"><span>Decorative ring effect applied around the element. Similar in purpose to CSS </span><code class="token-keyword">outline</code><span> or focus ring indicators.
+<div class="small-abstract"><span>Decorative ring effect applied around the element.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RingOffset</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Distance from element edge to ring
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RingWidth</span>: <span>float</span></code></div>
@@ -1891,21 +1899,21 @@
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">CompositionDesignSize</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
 <div class="small-abstract"><span>Virtual design size when using composition rendering. Defines the expected size for the composition surface.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">SizeToContent</span>: <span>bool</span></code></div>
-<div class="small-abstract"><span>Whether the element resizes itself to fit its content. Equivalent to WPF </span><code class="token-keyword">SizeToContent</code><span>.
+<div class="small-abstract"><span>Whether the element resizes itself to fit its content.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">OffscreenRendering</span>: <span>bool</span></code></div>
 <div class="small-abstract"><span>Enables rendering to an offscreen surface before compositing. Useful for caching effects or complex visuals.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ForceComposition</span>: <span>bool</span></code></div>
 <div class="small-abstract"><span>Forces use of the composition system even when not required. Equivalent to enabling composition layers for debugging or effects.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">CacheResult</span>: <span>bool</span></code></div>
-<div class="small-abstract"><span>Enables caching of rendering results. Similar to WPF </span><code class="token-keyword">CacheMode</code><span>. Reduces redraw cost at the expense of memory.
+<div class="small-abstract"><span>Enables caching of rendering results. Reduces redraw cost at the expense of memory.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">SnapToPixel</span>: <span>bool</span></code></div>
-<div class="small-abstract"><span>Snaps rendering to device pixels. Equivalent to WPF </span><code class="token-keyword">SnapsToDevicePixels</code><span>. Improves text sharpness.
+<div class="small-abstract"><span>Snaps rendering to device pixels. Improves text sharpness.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ClipChildren</span>: <span>bool</span></code></div>
-<div class="small-abstract"><span>Controls whether children are clipped to the bounds of the element. Equivalent to WPF </span><code class="token-keyword">ClipToBounds</code><span>.
+<div class="small-abstract"><span>Controls whether children are clipped to the bounds of the element.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ContentStretch</span>: <span>bool</span></code></div>
-<div class="small-abstract"><span>Determines if content stretches to fill available space. Equivalent to WPF </span><code class="token-keyword">Stretch</code><span> when applied to child content.
+<div class="small-abstract"><span>Determines if content stretches to fill available space.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Hovered</span>: <span>bool</span></code></div>
-<div class="small-abstract"><span>Indicates if the element is currently hovered by pointer/mouse. Equivalent to WPF </span><code class="token-keyword">IsMouseOver</code><span>.
+<div class="small-abstract"><span>Indicates if the element is currently hovered by pointer/mouse.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">IgnoreHitTest</span>: <span>bool</span></code></div>
 <div class="small-abstract"><span>Marks object as ignored during hit testing (mouse interaction).
 </span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">ForegroundHint</span>: <a class="type-identifier-link" href="#ForegroundHint">ForegroundHint</a></code></div>

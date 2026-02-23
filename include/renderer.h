@@ -60,6 +60,12 @@ enum text_wrap
   TEXT_WRAP_WRAP,
 };
 
+enum text_overflow
+{
+  TEXT_OVERFLOW_CLIP,
+  TEXT_OVERFLOW_ELLIPSIS,
+};
+
 /// List of color write modes.
 enum color_write_mode
 {
@@ -513,6 +519,7 @@ struct ViewText
   uint32_t numTextRuns;
   float scale;
   enum text_wrap textWrapping;
+  enum text_overflow textOverflow;
   struct ViewTextRun run[];
 };
 

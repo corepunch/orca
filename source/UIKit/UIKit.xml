@@ -29,6 +29,12 @@
     <enum name="Depth">Depth of the box along the Z axis</enum>
   </enums>
 
+  <enums name="TextOverflow">
+    <summary>Controls how overflowing text is displayed, similar to the CSS text-overflow property</summary>
+    <enum name="Clip">Clip overflowing text at the container boundary</enum>
+    <enum name="Ellipsis">Truncate overflowing text and append an ellipsis (…)</enum>
+  </enums>
+
   <enums name="TextWrapping">
     <summary>Controls text wrapping behavior</summary>
     <enum name="WrapWithOverflow">Wrap at word boundaries; a word that exceeds the available width is allowed to overflow rather than being broken</enum>
@@ -435,7 +441,7 @@
     <property name="TextResourceID" type="fixed">Resource identifier for localized text lookup.</property>
     <property name="TextResourceConfiguration" type="fixed">Configuration key used when resolving text resources.</property>
     <property name="PlaceholderText" type="fixed">Placeholder text displayed when no main text is set.</property>
-    <property name="TextOverflow" type="fixed">Defines how overflowing text should be handled (clip, ellipsis, etc.).</property>
+    <property name="TextOverflow" type="TextOverflow">Defines how overflowing text should be handled.</property>
 <!--    <property name="HighlightColor" type="color">Color used for highlighting portions of the text.</property>-->
     <property name="Placeholder" type="BrushShorthand">Brush definition for rendering placeholder text.</property>
     <property name="UseFullFontHeight" type="bool" default="TRUE">When true, uses the font's full height for layout calculations.</property>

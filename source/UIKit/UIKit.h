@@ -495,6 +495,11 @@ typedef enum Box3Field {
 	kBox3FieldDepth, /// Depth of the box along the Z axis
 } eBox3Field_t;
 
+typedef enum TextOverflow {
+	kTextOverflowClip, /// Clip overflowing text at the container boundary
+	kTextOverflowEllipsis, /// Truncate overflowing text and append an ellipsis (…)
+} eTextOverflow_t;
+
 typedef enum TextWrapping {
 	kTextWrappingWrapWithOverflow, /// Wrap at word boundaries; a word that exceeds the available width is allowed to overflow rather than being broken
 	kTextWrappingNoWrap, /// No automatic line wrapping; text extends on a single line and may overflow the container
@@ -662,8 +667,8 @@ struct FontShorthand {
 
 /// @brief Represents a generic brush used for filling UI elements.
 struct BrushShorthand {
-	color_t Color; /// Solid color fill. Conceptually similar to a CSS `color` or `background-color`.
-	lpTexture_t Image; /// Texture/image fill. Conceptually similar to a CSS `background-image`.
+	color_t Color; /// Solid color fill.
+	lpTexture_t Image; /// Texture/image fill.
 	lpMaterial_t Material; /// Custom material or shader fill. Advanced fill using shader/material settings for effects beyond simple color or image.
 };
 
@@ -843,12 +848,12 @@ struct TextBlockConcept {
 	fixedString_t TextResourceID; /// Resource identifier for localized text lookup.
 	fixedString_t TextResourceConfiguration; /// Configuration key used when resolving text resources.
 	fixedString_t PlaceholderText; /// Placeholder text displayed when no main text is set.
-	fixedString_t TextOverflow; /// Defines how overflowing text should be handled (clip, ellipsis, etc.).
+	eTextOverflow_t TextOverflow; /// Defines how overflowing text should be handled.
 	BrushShorthand_t Placeholder; /// Brush definition for rendering placeholder text.
 	bool_t UseFullFontHeight; /// When true, uses the font's full height for layout calculations.
 	bool_t ConstrainContentHeight; /// Constrains the content height to the text's bounding box.
 	bool_t WordWrap; /// Enables automatic word wrapping of the text.
-	eTextWrapping_t TextWrapping; /// Controls text wrapping behavior. Equivalent to WPF TextWrapping.
+	eTextWrapping_t TextWrapping; /// Controls text wrapping behavior.
 	eTextHorizontalAlignment_t TextHorizontalAlignment; /// Horizontal alignment of the text within its bounds.
 	eTextVerticalAlignment_t TextVerticalAlignment; /// Vertical alignment of the text within its bounds.
 	uiLabelSteps_t _steps; /// Internal step-based rendering parameters.
@@ -860,27 +865,27 @@ typedef struct Node2D Node2D, *Node2DPtr;
 typedef struct Node2D const *Node2DCPtr;
 /// @brief Primary class for 2D UI elements with comprehensive rendering capabilities
 struct Node2D {
-	transform2_t LayoutTransform; /// Transformation applied during layout calculations. Similar to WPF `LayoutTransform`. Affects size and positioning but does not influence local rendering.
-	transform2_t RenderTransform; /// Transformation applied at render time. Similar to WPF `RenderTransform`. Affects how the element is drawn (rotation, scale, skew, etc.) without altering layout.
-	vec2_t RenderTransformOrigin; /// The origin point for applying RenderTransform. Equivalent to WPF `RenderTransformOrigin`. Defines pivot relative to the element.
+	transform2_t LayoutTransform; /// Transformation applied during layout calculations. Affects size and positioning but does not influence local rendering.
+	transform2_t RenderTransform; /// Transformation applied at render time. Affects how the element is drawn (rotation, scale, skew, etc.) without altering layout.
+	vec2_t RenderTransformOrigin; /// The origin point for applying RenderTransform. Defines the pivot point relative to the element.
 	vec2_t ContentOffset; /// Pixel offset applied to the element's content. Can be used for subpixel positioning or scrolling adjustments.
 	mat4_t Matrix; /// Final transformation matrix applied to the node. Computed result of layout, render, and parent transforms.
 	lpTexture_t RenderTarget; /// Optional render target for offscreen drawing. When set, the node is rendered into this texture/image instead of directly on screen.
-	BrushShorthand_t Background; /// Background brush for the element. Equivalent to WPF `Background`. Supports solid color, image, or material.
-	BrushShorthand_t Foreground; /// Foreground brush for the element. Equivalent to WPF `Foreground`. Typically used for text or shape fills.
-	ShadowShorthand_t BoxShadow; /// Shadow applied to the element's box. Equivalent to CSS `box-shadow` or WPF `DropShadowEffect`.
-	OverflowShorthand_t Overflow; /// Defines overflow behavior for child content. Equivalent to CSS `overflow`. Controls clipping and scroll behavior.
-	RingShorthand_t Ring; /// Decorative ring effect applied around the element. Similar in purpose to CSS `outline` or focus ring indicators.
+	BrushShorthand_t Background; /// Background brush for the element. Supports solid color, image, or material.
+	BrushShorthand_t Foreground; /// Foreground brush for the element. Typically used for text or shape fills.
+	ShadowShorthand_t BoxShadow; /// Shadow applied to the element's box.
+	OverflowShorthand_t Overflow; /// Defines overflow behavior for child content. Controls clipping and scroll behavior.
+	RingShorthand_t Ring; /// Decorative ring effect applied around the element.
 	lpMaterial_t CompositionBrush; /// Custom composition brush for advanced rendering. Equivalent to UWP `CompositionBrush`. Can be used for effects or visuals beyond standard brushes.
 	vec2_t CompositionDesignSize; /// Virtual design size when using composition rendering. Defines the expected size for the composition surface.
-	bool_t SizeToContent; /// Whether the element resizes itself to fit its content. Equivalent to WPF `SizeToContent`.
+	bool_t SizeToContent; /// Whether the element resizes itself to fit its content.
 	bool_t OffscreenRendering; /// Enables rendering to an offscreen surface before compositing. Useful for caching effects or complex visuals.
 	bool_t ForceComposition; /// Forces use of the composition system even when not required. Equivalent to enabling composition layers for debugging or effects.
-	bool_t CacheResult; /// Enables caching of rendering results. Similar to WPF `CacheMode`. Reduces redraw cost at the expense of memory.
-	bool_t SnapToPixel; /// Snaps rendering to device pixels. Equivalent to WPF `SnapsToDevicePixels`. Improves text sharpness.
-	bool_t ClipChildren; /// Controls whether children are clipped to the bounds of the element. Equivalent to WPF `ClipToBounds`.
-	bool_t ContentStretch; /// Determines if content stretches to fill available space. Equivalent to WPF `Stretch` when applied to child content.
-	bool_t Hovered; /// Indicates if the element is currently hovered by pointer/mouse. Equivalent to WPF `IsMouseOver`.
+	bool_t CacheResult; /// Enables caching of rendering results. Reduces redraw cost at the expense of memory.
+	bool_t SnapToPixel; /// Snaps rendering to device pixels. Improves text sharpness.
+	bool_t ClipChildren; /// Controls whether children are clipped to the bounds of the element.
+	bool_t ContentStretch; /// Determines if content stretches to fill available space.
+	bool_t Hovered; /// Indicates if the element is currently hovered by pointer/mouse.
 	bool_t IgnoreHitTest; /// Marks object as ignored during hit testing (mouse interaction).
 	eForegroundHint_t ForegroundHint; /// Hint for how foreground should be rendered. May be used for accessibility, high-contrast, or text rendering optimizations.
 	lpNode_t _node; /// Internal node reference 
