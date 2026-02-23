@@ -30,7 +30,7 @@
   </enums>
 
   <enums name="TextWrapping">
-    <summary>Controls text wrapping behavior, equivalent to WPF TextWrapping</summary>
+    <summary>Controls text wrapping behavior</summary>
     <enum name="WrapWithOverflow">Wrap at word boundaries; a word that exceeds the available width is allowed to overflow rather than being broken</enum>
     <enum name="NoWrap">No automatic line wrapping; text extends on a single line and may overflow the container</enum>
     <enum name="Wrap">Wrap at word boundaries; a word that exceeds the available width is broken at the character level to prevent overflow</enum>
@@ -166,7 +166,7 @@
 
   <struct name="BorderRadiusShorthand">
     <summary>Corner rounding configuration for rectangular elements</summary>
-    <details>Similar to CSS border-radius, allows independent control of each corner's rounding radius.</details>
+    <details>Allows independent control of each corner's rounding radius.</details>
     <field name="TopLeftRadius" type="float">Top-left corner radius</field>
     <field name="TopRightRadius" type="float">Top-right corner radius</field>
     <field name="BottomRightRadius" type="float">Bottom-right corner radius</field>
@@ -188,9 +188,9 @@
 
   <struct name="BorderShorthand">
     <summary>Complete border definition for rectangular element</summary>
-    <shorthand name="BorderWidth" physical="Border.Axis[0]" userdata="Node.Border%sWidth">Shorthand for setting spacing inside a node along its edges. Represents the inner spacing (padding) between the node's content and its border for all edges. Similar to the CSS `padding` shorthand property.</shorthand>
-    <shorthand name="BorderStyle" physical="Border.Axis[0]" userdata="Node.Border%sStyle">Shorthand for defining the line style of borders along each edge. Specifies the border style (solid, dashed, etc.) per edge, similar to CSS `border-style`.</shorthand>
-    <shorthand name="BorderColor" physical="Border.Axis[0]" userdata="Node.Border%sColor">Shorthand for defining the color of borders along each edge. Specifies the border color for each edge individually, similar to CSS `border-color`.</shorthand>
+    <shorthand name="BorderWidth" physical="Border.Axis[0]" userdata="Node.Border%sWidth">Shorthand for setting the width of borders along each edge.</shorthand>
+    <shorthand name="BorderStyle" physical="Border.Axis[0]" userdata="Node.Border%sStyle">Shorthand for defining the line style of borders along each edge. Specifies the border style (solid, dashed, etc.) per edge.</shorthand>
+    <shorthand name="BorderColor" physical="Border.Axis[0]" userdata="Node.Border%sColor">Shorthand for defining the color of borders along each edge. Specifies the border color for each edge individually.</shorthand>
     <field name="Radius" type="BorderRadiusShorthand">Border radius definition per corner</field>
     <field name="Axis" type="BorderSideShorthand" array="3">Border definition per axis</field>
   </struct>
@@ -218,14 +218,14 @@
   <struct name="BrushShorthand">
     <summary>Represents a generic brush used for filling UI elements.</summary>
     <details>A brush can be used as a background, foreground, or any paintable property. It supports multiple types of fills; each field corresponds to one type of fill.</details>
-    <field name="Color" type="color">Solid color fill. Conceptually similar to a CSS `color` or `background-color`.</field>
-    <field name="Image" type="Texture" pointer="true">Texture/image fill. Conceptually similar to a CSS `background-image`.</field>
+    <field name="Color" type="color">Solid color fill.</field>
+    <field name="Image" type="Texture" pointer="true">Texture/image fill.</field>
     <field name="Material" type="Material" pointer="true">Custom material or shader fill. Advanced fill using shader/material settings for effects beyond simple color or image.</field>
   </struct>
 
   <struct name="ShadowShorthand">
     <summary>Drop shadow effect configuration</summary>
-    <details>Defines a drop shadow with offset, blur, spread, and color. Similar to CSS box-shadow property.</details>
+    <details>Defines a drop shadow with offset, blur, spread, and color.</details>
     <field name="Offset" type="vec2">Shadow offset from element (x, y)</field>
     <field name="BlurRadius" type="float">Blur amount for shadow softness</field>
     <field name="SpreadRadius" type="float">Shadow expansion beyond element bounds</field>
@@ -234,7 +234,7 @@
 
   <struct name="RingShorthand">
     <summary>Decorative ring/outline effect around elements</summary>
-    <details>Creates an outline ring around elements, similar to CSS outline or focus ring indicators. Useful for accessibility and visual feedback.</details>
+    <details>Creates an outline ring drawn around an element's outer edge. Useful for accessibility and visual feedback such as focus indicators.</details>
     <field name="Offset" type="float">Distance from element edge to ring</field>
     <field name="Width" type="float">Ring thickness in pixels</field>
     <field name="Color" type="color">Ring color and opacity</field>
@@ -265,7 +265,7 @@
 
   <struct name="MarginShorthand">
     <summary>External spacing configuration for rectangular elements</summary>
-    <details>Similar to CSS margin, allows independent control of each edge external spacing.</details>
+    <details>Allows independent control of the external spacing applied to each edge of an element.</details>
     <field name="Axis" type="EdgeShorthand" array="3">External spacing per axis</field>
   </struct>
 
@@ -441,7 +441,7 @@
     <property name="UseFullFontHeight" type="bool" default="TRUE">When true, uses the font's full height for layout calculations.</property>
     <property name="ConstrainContentHeight" type="bool" default="TRUE">Constrains the content height to the text's bounding box.</property>
     <property name="WordWrap" type="bool">Enables automatic word wrapping of the text.</property>
-    <property name="TextWrapping" type="TextWrapping">Controls text wrapping behavior. Equivalent to WPF TextWrapping.</property>
+    <property name="TextWrapping" type="TextWrapping">Controls text wrapping behavior.</property>
     <property name="TextHorizontalAlignment" type="TextHorizontalAlignment">Horizontal alignment of the text within its bounds.</property>
     <property name="TextVerticalAlignment" type="TextVerticalAlignment">Vertical alignment of the text within its bounds.</property>
     <field name="_steps" type="uiLabelSteps">Internal step-based rendering parameters.</field>
@@ -463,28 +463,28 @@
     <handles event="ScrollWheel"/>
     <handles event="MouseMoved"/>
     <handles event="HitTest"/>
-    <property name="LayoutTransform" type="transform2" default=".scale={1,1}">Transformation applied during layout calculations. Similar to WPF `LayoutTransform`. Affects size and positioning but does not influence local rendering.</property>
-    <property name="RenderTransform" type="transform2" default=".scale={1,1}">Transformation applied at render time. Similar to WPF `RenderTransform`. Affects how the element is drawn (rotation, scale, skew, etc.) without altering layout.</property>
-    <property name="RenderTransformOrigin" type="vec2">The origin point for applying RenderTransform. Equivalent to WPF `RenderTransformOrigin`. Defines pivot relative to the element.</property>
+    <property name="LayoutTransform" type="transform2" default=".scale={1,1}">Transformation applied during layout calculations. Affects size and positioning but does not influence local rendering.</property>
+    <property name="RenderTransform" type="transform2" default=".scale={1,1}">Transformation applied at render time. Affects how the element is drawn (rotation, scale, skew, etc.) without altering layout.</property>
+    <property name="RenderTransformOrigin" type="vec2">The origin point for applying RenderTransform. Defines the pivot point relative to the element.</property>
     <property name="ContentOffset" type="vec2">Pixel offset applied to the element's content. Can be used for subpixel positioning or scrolling adjustments.</property>
     <property name="Matrix" type="mat4" private="true">Final transformation matrix applied to the node. Computed result of layout, render, and parent transforms.</property>
     <property name="RenderTarget" type="Texture" pointer="true">Optional render target for offscreen drawing. When set, the node is rendered into this texture/image instead of directly on screen.</property>
-    <property name="Background" type="BrushShorthand">Background brush for the element. Equivalent to WPF `Background`. Supports solid color, image, or material.</property>
-    <property name="Foreground" type="BrushShorthand">Foreground brush for the element. Equivalent to WPF `Foreground`. Typically used for text or shape fills.</property>
-    <property name="BoxShadow" type="ShadowShorthand">Shadow applied to the element's box. Equivalent to CSS `box-shadow` or WPF `DropShadowEffect`.</property>
-    <property name="Overflow" type="OverflowShorthand">Defines overflow behavior for child content. Equivalent to CSS `overflow`. Controls clipping and scroll behavior.</property>
-    <property name="Ring" type="RingShorthand">Decorative ring effect applied around the element. Similar in purpose to CSS `outline` or focus ring indicators.</property>
-    <!-- <property name="BorderRadius" type="BorderRadiusShorthand">Border radius for rounding corners. Equivalent to CSS `border-radius`.</property> -->
+    <property name="Background" type="BrushShorthand">Background brush for the element. Supports solid color, image, or material.</property>
+    <property name="Foreground" type="BrushShorthand">Foreground brush for the element. Typically used for text or shape fills.</property>
+    <property name="BoxShadow" type="ShadowShorthand">Shadow applied to the element's box.</property>
+    <property name="Overflow" type="OverflowShorthand">Defines overflow behavior for child content. Controls clipping and scroll behavior.</property>
+    <property name="Ring" type="RingShorthand">Decorative ring effect applied around the element.</property>
+    <!-- <property name="BorderRadius" type="BorderRadiusShorthand">Border radius for rounding corners.</property> -->
     <property name="CompositionBrush" type="Material" pointer="true">Custom composition brush for advanced rendering. Equivalent to UWP `CompositionBrush`. Can be used for effects or visuals beyond standard brushes.</property>
     <property name="CompositionDesignSize" type="vec2">Virtual design size when using composition rendering. Defines the expected size for the composition surface.</property>
-    <property name="SizeToContent" type="bool">Whether the element resizes itself to fit its content. Equivalent to WPF `SizeToContent`.</property>
+    <property name="SizeToContent" type="bool">Whether the element resizes itself to fit its content.</property>
     <property name="OffscreenRendering" type="bool">Enables rendering to an offscreen surface before compositing. Useful for caching effects or complex visuals.</property>
     <property name="ForceComposition" type="bool">Forces use of the composition system even when not required. Equivalent to enabling composition layers for debugging or effects.</property>
-    <property name="CacheResult" type="bool">Enables caching of rendering results. Similar to WPF `CacheMode`. Reduces redraw cost at the expense of memory.</property>
-    <property name="SnapToPixel" type="bool">Snaps rendering to device pixels. Equivalent to WPF `SnapsToDevicePixels`. Improves text sharpness.</property>
-    <property name="ClipChildren" type="bool">Controls whether children are clipped to the bounds of the element. Equivalent to WPF `ClipToBounds`.</property>
-    <property name="ContentStretch" type="bool">Determines if content stretches to fill available space. Equivalent to WPF `Stretch` when applied to child content.</property>
-    <property name="Hovered" type="bool" private="true">Indicates if the element is currently hovered by pointer/mouse. Equivalent to WPF `IsMouseOver`.</property>
+    <property name="CacheResult" type="bool">Enables caching of rendering results. Reduces redraw cost at the expense of memory.</property>
+    <property name="SnapToPixel" type="bool">Snaps rendering to device pixels. Improves text sharpness.</property>
+    <property name="ClipChildren" type="bool">Controls whether children are clipped to the bounds of the element.</property>
+    <property name="ContentStretch" type="bool">Determines if content stretches to fill available space.</property>
+    <property name="Hovered" type="bool" private="true">Indicates if the element is currently hovered by pointer/mouse.</property>
     <property name="IgnoreHitTest" type="bool">Marks object as ignored during hit testing (mouse interaction).</property>
     <property name="ForegroundHint" type="ForegroundHint">Hint for how foreground should be rendered. May be used for accessibility, high-contrast, or text rendering optimizations.</property>
     <!-- <property name="MouseDown" type="event">Event fired when mouse button is pressed over element </property>

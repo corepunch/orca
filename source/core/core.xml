@@ -179,7 +179,7 @@
     
     <method name="AddStyleSheet" lua="true">
       <summary>Add a stylesheet to the object.</summary>
-      <details>Attaches a stylesheet resource to this object, enabling CSS-like styling capabilities. The stylesheet contains rules that can modify the appearance and behavior of this object and potentially its children. Stylesheets support selectors, property assignments, and cascading rules. Multiple stylesheets can be applied to the same object, with later sheets taking precedence for conflicting rules.</details>
+      <details>Attaches a stylesheet resource to this object, enabling rule-based styling capabilities. The stylesheet contains rules that can modify the appearance and behavior of this object and potentially its children. Stylesheets support selectors, property assignments, and cascading rules. Multiple stylesheets can be applied to the same object, with later sheets taking precedence for conflicting rules.</details>
       <arg name="source" type="string">Name or path of the stylesheet resource to load and apply to this object</arg>
     </method>
     
@@ -379,8 +379,8 @@
     </method>
     
     <method name="SetClassName">
-      <summary>Sets the CSS-style class name of the object</summary>
-      <details>Assigns a class name to this object, similar to CSS classes in web development. The class name can be used for styling, identification, or querying objects with similar characteristics. This enables flexible categorization and styling of UI elements without relying solely on object types.</details>
+      <summary>Sets the class name of the object</summary>
+      <details>Assigns a class name to this object. The class name can be used for styling, identification, or querying objects with similar characteristics. This enables flexible categorization and styling of UI elements without relying solely on object types.</details>
       <arg name="classID" type="string">The class name to assign to the object</arg>
     </method>
     
@@ -419,7 +419,7 @@
     
     <method name="ParseClassAttribute">
       <summary>Parses and applies multiple class names from a class attribute string</summary>
-      <details>Parses a space-separated class attribute string, identical to HTML's class attribute (e.g., class="button primary large"). The function splits the string by spaces and adds each class name to the object.  This is typically called during XML/markup parsing when processing class="..." attributes, allowing UI elements to be assigned multiple CSS-style classes for styling and identification purposes.  Empty strings are ignored.</details>
+      <details>Parses a space-separated class attribute string (e.g., class="button primary large"). The function splits the string by spaces and adds each class name to the object.  This is typically called during XML/markup parsing when processing class="..." attributes, allowing UI elements to be assigned multiple class names for styling and identification purposes.  Empty strings are ignored.</details>
       <arg name="classString" type="string">Space-separated class names, as from a class="..." attribute</arg>
     </method>
     
@@ -443,7 +443,7 @@
     
     <method name="GetInteger" const="true">
       <summary>Gets an integer property value by identifier</summary>
-      <details>Searches the object's properties for a property matching the specified long identifier and returns its value as an integer. The long identifier is a fully qualified property identifier in the form ObjectClass.PropertyName, similar to WPF's dependency property system (e.g., Button.Content, TextBlock.Text). The property must be of type Int, Enum, or Bool to be successfully retrieved.   If no matching property is found, or if the property type is incompatible, the fallback value is returned instead. </details>
+      <details>Searches the object's properties for a property matching the specified long identifier and returns its value as an integer. The long identifier is a fully qualified property identifier in the form ObjectClass.PropertyName (e.g., Button.Content, TextBlock.Text). The property must be of type Int, Enum, or Bool to be successfully retrieved.   If no matching property is found, or if the property type is incompatible, the fallback value is returned instead. </details>
       <arg name="ident" type="uint">The hashed long identifier "ObjectClass.PropertyName" of the property to retrieve</arg>
       <arg name="fallback" type="int">The value to return if the property is not found or incompatible</arg>
       <returns type="int">The property value if found and compatible, otherwise the fallback value</returns>

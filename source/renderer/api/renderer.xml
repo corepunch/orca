@@ -416,7 +416,7 @@
   
   <component name="FontFamily">
     <summary>TrueType font resource for text rendering</summary>
-    <details>Loads and manages a TrueType font file for rendering text in the scene. Provides glyph data and metrics for text layout and rendering. May be extended in the future to support font families with variants (regular, bold, italic) similar to CSS font-family specifications.</details>
+    <details>Loads and manages a TrueType font file for rendering text in the scene. Provides glyph data and metrics for text layout and rendering. May be extended in the future to support font families with variants (regular, bold, italic).</details>
     <handles event="Start">Called when the mesh component is initialized. Used to load the mesh geometry from the specified source and set up rendering resources.</handles>
     <handles event="Destroy">Called when the mesh component is being destroyed. Used to clean up mesh data, release GPU buffers, and free associated resources.</handles>
     <property name="Regular" type="fixed">Path of the TrueType font file to be used as the regular font variant.</property>
