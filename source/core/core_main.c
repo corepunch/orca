@@ -140,8 +140,6 @@ void UI_Shutdown(void) {
 
 // bool_t UI_GetProperty(uint32_t, PPROPDEF);
 
-int API_HandleEvent(struct lua_State* L, struct WI_Message* e);
-
 #define MAX_FPS_CACHE 64
 static int _fps[MAX_FPS_CACHE]={0};
 static int _counter=0;

@@ -88,7 +88,6 @@ int f_event_new(lua_State* L) {
         } else if (strcmp(key, "y") == 0) { msg->y = luaL_checknumber(L, -1);
         } else if (strcmp(key, "key") == 0) { msg->keyCode = luaL_checknumber(L, -1);
         } else if (strcmp(key, "modflags") == 0) { msg->modflags = luaL_checknumber(L, -1);
-        } else if (strcmp(key, "async") == 0) { msg->syncronous = !lua_toboolean(L, -1);
         } else if (strcmp(key, "text") == 0) { strncpy((char*)&msg->lParam, luaL_checkstring(L, -1), sizeof(msg->lParam));
         }
       }
