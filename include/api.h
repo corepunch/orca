@@ -122,6 +122,25 @@ luaX_executecallback(lua_State* L,
   return ret;
 }
 
+/// @brief Push orca.async, the object, and its named callback onto the Lua
+/// stack, rearranged as [async, callback, obj] ready for a pcall.
+/// Returns FALSE (and leaves the stack unchanged) if the object has no
+/// associated Lua table. If the callback field does not exist on the object,
+/// it will be pushed as nil and the subsequent pcall will fail.
+INLINE bool_t
+luaX_pushAsyncCallback(lua_State* L, lpObject_t object, lpcString_t callback)
+{
+  luaX_import(L, "orca", "async");
+  luaX_pushObject(L, object);
+  if (lua_isnil(L, -1)) {
+    lua_pop(L, 2);
+    return FALSE;
+  }
+  lua_getfield(L, -1, callback);
+  lua_insert(L, -2); // Move callback before obj
+  return TRUE;
+}
+
 // INLINE int luaX_callfunction(lua_State *L, lpcString_t  mod, lpcString_t 
 // func, uint32_t num_args, uint32_t num_returns) {
 //     // Load the module using require

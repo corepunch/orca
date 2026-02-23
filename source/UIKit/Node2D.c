@@ -414,17 +414,17 @@ handle:
   for (lpObject_t obj = sender; !success && obj; obj = OBJ_GetParent(obj)) {
     if (OBJ_FindCallbackForID(obj, e->message)) {
       lpcString_t szCallback = OBJ_FindCallbackForID(obj, e->message);
-      uint32_t numargs = 2;
+      uint32_t numargs;
       if (!(e->syncronous)) {
-        luaX_import(L, "orca", "async");
-        numargs++;
+        if (!luaX_pushAsyncCallback(L, obj, szCallback)) continue;
+        numargs = 3;
+      } else {
+        luaX_pushObject(L, obj);
+        if (lua_isnil(L, -1)) { lua_pop(L, 1); continue; }
+        lua_getfield(L, -1, szCallback);
+        lua_insert(L, -2); // Move callback before obj
+        numargs = 2;
       }
-      if (luaX_pushObject(L, obj), lua_isnil(L, -1)) {
-        lua_pop(L, 2);
-        continue;
-      }
-      lua_getfield(L, -1, szCallback);
-      lua_insert(L, -2); // Move callback before obj
       luaX_pushObject(L, sender);
       if (lua_pcall(L, lua_pushmousevent(L, obj, e) + numargs, 0, 0) != LUA_OK) {
         Con_Error("%s(): %s", szCallback, lua_tostring(L, -1));

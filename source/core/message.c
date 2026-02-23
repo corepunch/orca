@@ -54,11 +54,7 @@ CORE_HandleKeyEvent(lua_State *L, struct WI_Message* e)
   for (lpObject_t obj = core_GetFocus(); obj; obj = OBJ_GetParent(obj)) {
     lpcString_t szCallback = OBJ_FindCallbackForID(obj, e->message);
     if (szCallback) {
-      luaX_import(L, "orca", "async");
-      luaX_pushObject(L, obj);
-//      lua_getfield(L, -1, OBJ_FindCallbackForID(obj, e->message));
-			lua_getfield(L, -1, "handleEvent");
-      lua_insert(L, -2); // Move callback before obj
+      if (!luaX_pushAsyncCallback(L, obj, "handleEvent")) continue;
 			lua_pushstring(L, szCallback);
       luaX_pushObject(L, core_GetFocus());
       if (e->message == kEventChar) {
@@ -116,11 +112,7 @@ CORE_HandleObjectMessage(lua_State *L, struct WI_Message* msg)
 //        break;
 //      }
       lpcString_t szCallback = OBJ_FindCallbackForID(hobj, msg->message);
-      luaX_import(L, "orca", "async");
-      luaX_pushObject(L, hobj);
-      assert(!lua_isnil(L, -1));
-      lua_getfield(L, -1, szCallback);
-      lua_insert(L, -2); // Move callback before obj
+      if (!luaX_pushAsyncCallback(L, hobj, szCallback)) continue;
       luaX_pushObject(L, hobj);
       uint32_t numargs = 3;
       if (msg->message == kEventTimer && msg->lParam) {
