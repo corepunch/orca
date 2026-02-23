@@ -423,6 +423,7 @@
 <!ATTLIST Timeline %TimelineAttribs;>
 <!ENTITY % Direction "Horizontal|Vertical|Depth">
 <!ENTITY % Box3Field "X|Y|Z|Width|Height|Depth">
+<!ENTITY % TextWrapping "WrapWithOverflow|NoWrap|Wrap">
 <!ENTITY % TextHorizontalAlignment "Left|Center|Right">
 <!ENTITY % TextVerticalAlignment "Top|Center|Bottom|Baseline">
 <!ENTITY % HorizontalAlignment "Left|Center|Right|Stretch">
@@ -902,6 +903,7 @@
 	UseFullFontHeight (true|false) #IMPLIED
 	ConstrainContentHeight (true|false) #IMPLIED
 	WordWrap (true|false) #IMPLIED
+	TextWrapping (%TextWrapping;) #IMPLIED
 	TextHorizontalAlignment (%TextHorizontalAlignment;) #IMPLIED
 	TextVerticalAlignment (%TextVerticalAlignment;) #IMPLIED
 ">
@@ -927,11 +929,13 @@
 <!ATTLIST TextBlockConcept.ConstrainContentHeight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT TextBlockConcept.WordWrap (#PCDATA | Binding)*>
 <!ATTLIST TextBlockConcept.WordWrap Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT TextBlockConcept.TextWrapping (#PCDATA | Binding)*>
+<!ATTLIST TextBlockConcept.TextWrapping Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT TextBlockConcept.TextHorizontalAlignment (#PCDATA | Binding)*>
 <!ATTLIST TextBlockConcept.TextHorizontalAlignment Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT TextBlockConcept.TextVerticalAlignment (#PCDATA | Binding)*>
 <!ATTLIST TextBlockConcept.TextVerticalAlignment Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % TextBlockConceptElements "TextBlockConcept.TextResourceID|TextBlockConcept.TextResourceConfiguration|TextBlockConcept.PlaceholderText|TextBlockConcept.TextOverflow|TextBlockConcept.Placeholder|TextBlockConcept.PlaceholderColor|TextBlockConcept.PlaceholderImage|TextBlockConcept.PlaceholderMaterial|TextBlockConcept.UseFullFontHeight|TextBlockConcept.ConstrainContentHeight|TextBlockConcept.WordWrap|TextBlockConcept.TextHorizontalAlignment|TextBlockConcept.TextVerticalAlignment|%TextRunElements;">
+<!ENTITY % TextBlockConceptElements "TextBlockConcept.TextResourceID|TextBlockConcept.TextResourceConfiguration|TextBlockConcept.PlaceholderText|TextBlockConcept.TextOverflow|TextBlockConcept.Placeholder|TextBlockConcept.PlaceholderColor|TextBlockConcept.PlaceholderImage|TextBlockConcept.PlaceholderMaterial|TextBlockConcept.UseFullFontHeight|TextBlockConcept.ConstrainContentHeight|TextBlockConcept.WordWrap|TextBlockConcept.TextWrapping|TextBlockConcept.TextHorizontalAlignment|TextBlockConcept.TextVerticalAlignment|%TextRunElements;">
 <!ELEMENT TextBlockConcept EMPTY>
 <!ATTLIST TextBlockConcept %TextBlockConceptAttribs;>
 <!ENTITY % Node2DAttribs "

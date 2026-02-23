@@ -150,6 +150,7 @@ HANDLER(TextBlockConcept, MakeText)
   pViewText->flags = pTextBlockConcept->UseFullFontHeight ? RF_USE_FONT_HEIGHT : 0;
 //  pViewText->lineSpacing = pTextRun->LineHeight;
   pViewText->availableWidth = pMakeText->availableSpace;
+  pViewText->textWrapping = (enum text_wrap)pTextBlockConcept->TextWrapping;
   pViewText->scale = WI_GetScaling();
   return TRUE;
 }

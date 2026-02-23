@@ -53,6 +53,13 @@ enum blend_mode
   BLEND_MODE_MIXED_ALPHA,
 };
 
+enum text_wrap
+{
+  TEXT_WRAP_WITH_OVERFLOW,
+  TEXT_WRAP_NO_WRAP,
+  TEXT_WRAP_WRAP,
+};
+
 /// List of color write modes.
 enum color_write_mode
 {
@@ -505,6 +512,7 @@ struct ViewText
   uint32_t cursor;
   uint32_t numTextRuns;
   float scale;
+  enum text_wrap textWrapping;
   struct ViewTextRun run[];
 };
 

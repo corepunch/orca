@@ -333,6 +333,7 @@ enum TextBlockConceptProperties {
 	kTextBlockConceptUseFullFontHeight,
 	kTextBlockConceptConstrainContentHeight,
 	kTextBlockConceptWordWrap,
+	kTextBlockConceptTextWrapping,
 	kTextBlockConceptTextHorizontalAlignment,
 	kTextBlockConceptTextVerticalAlignment,
 	kTextBlockConceptNumProperties
@@ -349,6 +350,7 @@ enum TextBlockConceptProperties {
 #define ID_TextBlockConcept_UseFullFontHeight 0x95fcf16b
 #define ID_TextBlockConcept_ConstrainContentHeight 0x8468e688
 #define ID_TextBlockConcept_WordWrap 0x34b71f41
+#define ID_TextBlockConcept_TextWrapping 0x709f2f06
 #define ID_TextBlockConcept_TextHorizontalAlignment 0xe480096b
 #define ID_TextBlockConcept_TextVerticalAlignment 0xbf0260e5
 #define ID_Node2D 0x6c63a2ab
