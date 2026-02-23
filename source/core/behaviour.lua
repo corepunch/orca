@@ -8,12 +8,6 @@
 "  end, url)\n"
 "end\n"
 
-"function Behaviour:handleEvent(name, ...)\n"
-"  if (not self[name] or not self[name](self, ...)) and self.parent then\n"
-"    self.parent:handleEvent(name, ...)\n"
-"  end\n"
-"end\n"
-
 "function Behaviour:loadView(filename, no_clear)\n"
 "  if self.viewWillLoad then self:viewWillLoad(filename) end\n"
 "  local ok, doc = pcall(require, filename)\n"

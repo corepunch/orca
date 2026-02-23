@@ -122,6 +122,42 @@ luaX_executecallback(lua_State* L,
   return ret;
 }
 
+typedef int (*luaX_pushargs_fn)(lua_State* L, lpObject_t obj, void* data);
+
+INLINE bool_t
+luaX_dispatchevent(lua_State* L,
+                   lpObject_t start,
+                   uint32_t message,
+                   void* event_ptr,
+                   luaX_pushargs_fn push_args,
+                   void* args_data)
+{
+  for (lpObject_t obj = start; obj; obj = OBJ_GetParent(obj)) {
+    lpcString_t szCallback = OBJ_FindCallbackForID(obj, message);
+    if (szCallback) {
+      luaX_pushObject(L, obj);
+      if (lua_isnil(L, -1)) {
+        lua_pop(L, 1);
+        continue;
+      }
+      lua_getfield(L, -1, szCallback);
+      lua_insert(L, -2); // move callback before obj
+      int nargs = push_args(L, obj, args_data);
+      if (lua_pcall(L, nargs + 1, 1, 0) != LUA_OK) {
+        Con_Error("%s(): %s", szCallback, lua_tostring(L, -1));
+        lua_pop(L, 1);
+        continue;
+      }
+      bool_t handled = lua_toboolean(L, -1);
+      lua_pop(L, 1);
+      if (handled) return TRUE;
+    } else if (OBJ_SendMessageW(obj, message, 0, event_ptr)) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
 // INLINE int luaX_callfunction(lua_State *L, lpcString_t  mod, lpcString_t 
 // func, uint32_t num_args, uint32_t num_returns) {
 //     // Load the module using require

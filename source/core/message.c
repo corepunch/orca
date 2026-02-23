@@ -6,6 +6,41 @@ static bool_t is_printable(int ch) {
   return ch >= 0x20 && ch <= 0x7E;
 }
 
+struct key_event_data {
+  struct WI_Message* e;
+  lpObject_t focus;
+  lpcString_t comp;
+};
+
+static int push_key_event_args(lua_State* L, lpObject_t obj, void* data) {
+  struct key_event_data* d = data;
+  struct WI_Message* e = d->e;
+  luaX_pushObject(L, d->focus);
+  if (e->message == kEventChar) {
+    char ch = e->wParam&0xff;
+    if (e->wParam & WI_MOD_SHIFT) {
+      if (ch >= '0' && ch <= '9') {
+        lpcString_t sym = ")!@#$%^&*(";
+        ch = sym[ch-'0'];
+      } else {
+        ch = toupper(ch);
+      }
+    }
+    lua_pushlstring(L, &ch, 1);
+  } else {
+#if __linux__
+    uint32_t len = 0;
+    while (len < sizeof(e->lParam) && ((lpcString_t)&e->lParam)[len])
+      len++;
+    lua_pushlstring(L, (lpcString_t)&e->lParam, len);
+#else
+    lua_pushstring(L, WI_KeynumToString(e->wParam));
+#endif
+  }
+  lua_pushstring(L, d->comp);
+  return 3;
+}
+
 bool_t
 CORE_HandleKeyEvent(lua_State *L, struct WI_Message* e)
 {
@@ -51,54 +86,9 @@ CORE_HandleKeyEvent(lua_State *L, struct WI_Message* e)
     tmp.message = kEventChar;
     CORE_HandleKeyEvent(L, &tmp);
   }
-  for (lpObject_t obj = core_GetFocus(); obj; obj = OBJ_GetParent(obj)) {
-    lpcString_t szCallback = OBJ_FindCallbackForID(obj, e->message);
-    if (szCallback) {
-      luaX_import(L, "orca", "async");
-      luaX_pushObject(L, obj);
-//      lua_getfield(L, -1, OBJ_FindCallbackForID(obj, e->message));
-			lua_getfield(L, -1, "handleEvent");
-      lua_insert(L, -2); // Move callback before obj
-			lua_pushstring(L, szCallback);
-      luaX_pushObject(L, core_GetFocus());
-      if (e->message == kEventChar) {
-        char ch = e->wParam&0xff;
-        if (e->wParam & WI_MOD_SHIFT) {
-          if (ch >= '0' && ch <= '9') {
-            lpcString_t sym = ")!@#$%^&*(";
-            ch = sym[ch-'0'];
-          } else {
-            ch = toupper(ch);
-          }
-        }
-        lua_pushlstring(L, &ch, 1);
-//        uint32_t len = 0;
-//        while (len < sizeof(e->lParam) && ((lpcString_t)&e->lParam)[len])
-//          len++;
-//        lua_pushlstring(L, (lpcString_t)&e->lParam, len);
-      } else {
-#if __linux__
-        uint32_t len = 0;
-        while (len < sizeof(e->lParam) && ((lpcString_t)&e->lParam)[len])
-          len++;
-        lua_pushlstring(L, (lpcString_t)&e->lParam, len);
-#else
-        lua_pushstring(L, WI_KeynumToString(e->wParam));
-#endif
-      }
-      lua_pushstring(L, comp);
-//			lua_pcall(L, 4, 1, 0);
-			if (lua_pcall(L, 6, 1, 0) != LUA_OK) {
-				Con_Error("%s(): %s", szCallback, luaL_checkstring(L, -1));
-				lua_pop(L, 1);
-			}
-			return TRUE;
-    }
-    if (OBJ_SendMessageW(obj, e->message, 0, e)) {
-      return TRUE;
-    }
-  }
-  return FALSE;
+  struct key_event_data kdata = { e, core_GetFocus(), comp };
+  return luaX_dispatchevent(L, core_GetFocus(), e->message, e,
+                            push_key_event_args, &kdata);
 }
 
 bool_t

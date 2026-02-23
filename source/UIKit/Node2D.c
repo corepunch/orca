@@ -338,12 +338,22 @@ lua_State *g_L=0;
 
 //static bool_t ignore_upcoming_click = FALSE;
 
+struct mouse_event_data {
+  struct WI_Message* e;
+  lpObject_t sender;
+};
+
+static int push_mouse_event_args(lua_State* L, lpObject_t obj, void* data) {
+  struct mouse_event_data* d = data;
+  luaX_pushObject(L, d->sender);
+  return lua_pushmousevent(L, obj, d->e) + 1;
+}
+
 bool_t
 UI_HandleMouseEvent(lua_State* L, lpObject_t root, struct WI_Message* e)
 {
   lpObject_t focused = core_GetFocus();
   lpObject_t sender = NULL;
-  bool_t success = FALSE;
   if (focused && OBJ_GetFlags(focused)&OF_NOACTIVATE) {
     if (OBJ_SendMessageW(focused, kEventHitTest, e->wParam, &sender))
       goto handle;
@@ -410,31 +420,10 @@ handle:
       lua_pop(L, 1);
       break;
   }
-  
-  for (lpObject_t obj = sender; !success && obj; obj = OBJ_GetParent(obj)) {
-    if (OBJ_FindCallbackForID(obj, e->message)) {
-      lpcString_t szCallback = OBJ_FindCallbackForID(obj, e->message);
-      uint32_t numargs = 2;
-      if (!(e->syncronous)) {
-        luaX_import(L, "orca", "async");
-        numargs++;
-      }
-      if (luaX_pushObject(L, obj), lua_isnil(L, -1)) {
-        lua_pop(L, 2);
-        continue;
-      }
-      lua_getfield(L, -1, szCallback);
-      lua_insert(L, -2); // Move callback before obj
-      luaX_pushObject(L, sender);
-      if (lua_pcall(L, lua_pushmousevent(L, obj, e) + numargs, 0, 0) != LUA_OK) {
-        Con_Error("%s(): %s", szCallback, lua_tostring(L, -1));
-        lua_pop(L, 1);
-      }
-      success = TRUE;
-    } else if (OBJ_SendMessageW(obj, e->message, 0, e)) {
-      success = TRUE;
-    }
-  }
+
+  struct mouse_event_data mdata = { e, sender };
+  bool_t success = luaX_dispatchevent(L, sender, e->message, e,
+                                      push_mouse_event_args, &mdata);
 
   void CORE_UpdateHover(void);
   switch (e->message) {
