@@ -262,10 +262,26 @@ T_GetSize(struct ViewText const* text,
       }
     }
   }
-  return (struct WI_Size){MAX(0,(int)textSize.width), textSize.height + (int)FT_SCALE(lineheight)};
+  struct WI_Size result = {MAX(0,(int)textSize.width), textSize.height + (int)FT_SCALE(lineheight)};
+  if (text->textOverflow == TEXT_OVERFLOW_ELLIPSIS && text->availableWidth > 0) {
+    result.width = MIN(result.width, (int)(text->availableWidth * text->scale));
+  }
+  return result;
 }
 
 #define FT_Pixel uint8_t
+
+static FT_Pos
+T_GetEllipsisWidth(FT_Face face)
+{
+  FT_Pos width = 0;
+  for (int i = 0; i < 3; i++) {
+    if (FT_Load_CharGlyph(face, '.', FT_LOAD_DEFAULT)) {
+      width += FT_SCALE(face->glyph->metrics.horiAdvance);
+    }
+  }
+  return width;
+}
 
 static void write_char(FT_Bitmap *bitmap, uint8_t *image_data,
                        const struct WI_Size *textSize, FT_Pos x, FT_Pos y) {
@@ -305,6 +321,12 @@ Text_Print(struct ViewText const* pViewText,
   FT_Pos lineheight = 0;
   FT_Pos baseline = 0;
   FT_Int ul = 0;
+
+  /* Ellipsis state: captures where and how to render "..." */
+  bool_t bDone = FALSE;
+  FT_Int ellipsis_x = 0, ellipsis_y = 0;
+  FT_Pos ellipsis_baseline = 0;
+  FT_Face ellipsis_face = NULL;
   
   FT_Pixel* image_data = ZeroAlloc(textSize.width * textSize.height * sizeof(FT_Pixel));
   
@@ -312,7 +334,7 @@ Text_Print(struct ViewText const* pViewText,
     return E_OUTOFMEMORY;
 
   for (struct ViewTextRun const *run = pViewText->run;
-       run - pViewText->run < pViewText->numTextRuns;
+       run - pViewText->run < pViewText->numTextRuns && !bDone;
        run++)
   {
     FT_Face const face = T_GetFontFace(run);
@@ -330,6 +352,14 @@ Text_Print(struct ViewText const* pViewText,
     if (FT_Load_CharGlyph(face, ' ', FT_LOAD_DEFAULT)) {
       spaceWidth = (FT_Int)FT_SCALE(face->glyph->metrics.horiAdvance);
     }
+
+    /* Per-run ellipsis cut position: textSize.width - "..." width.
+     * Only non-zero when text actually overflows the available width. */
+    FT_Pos const ellipsisWidth = (pViewText->textOverflow == TEXT_OVERFLOW_ELLIPSIS
+                                  && pViewText->availableWidth > 0
+                                  && textSize.width >= (FT_Int)(pViewText->availableWidth * pViewText->scale))
+                                 ? T_GetEllipsisWidth(face) : 0;
+    FT_Pos const cutX = textSize.width - ellipsisWidth;
     
     // Reset glyph index when starting a new run to prevent incorrect kerning
     // between glyphs from different fonts
@@ -395,6 +425,16 @@ Text_Print(struct ViewText const* pViewText,
             }
           }
           prev_glyph_index = glyph_index;
+
+          /* Ellipsis: stop rendering if next char would exceed cut position */
+          if (ellipsisWidth > 0 && x + advance > cutX) {
+            ellipsis_x = x;
+            ellipsis_y = y;
+            ellipsis_baseline = baseline;
+            ellipsis_face = face;
+            bDone = TRUE;
+            break;
+          }
           
           write_char(bitmap, image_data, &textSize, x + x_off, y + y_off);
 
@@ -408,7 +448,9 @@ Text_Print(struct ViewText const* pViewText,
           prevchar = (int)(x + x_off + bitmap->width);
           x += advance;
         }
-        if (eos) {
+        if (bDone) {
+          break;
+        } else if (eos) {
           break;
         } else if (charcode == '\n') {
           textwidth = 0;
@@ -426,6 +468,18 @@ Text_Print(struct ViewText const* pViewText,
         FT_UInt glyph_index = FT_Get_Char_Index(face, charcode);
         FT_Pos advance = FT_SCALE(face->glyph->metrics.horiAdvance);
         
+        /* Ellipsis: if the upcoming word already exceeds the cut position, stop here */
+        if (ellipsisWidth > 0 && x + wordwidth + advance > cutX) {
+          ellipsis_x = x + (FT_Int)wordwidth;
+          /* If word overflows at first char (x==0), render at least from x */
+          if (ellipsis_x > cutX) ellipsis_x = x;
+          ellipsis_y = y;
+          ellipsis_baseline = baseline;
+          ellipsis_face = face;
+          bDone = TRUE;
+          break;
+        }
+
         // Apply kerning adjustment
         if (prev_glyph_index && glyph_index) {
           FT_Vector kerning;
@@ -437,6 +491,21 @@ Text_Print(struct ViewText const* pViewText,
         
         wordwidth += advance;
         prev_glyph_index = glyph_index;
+      }
+    }
+  }
+
+  /* Render the ellipsis "..." if text was truncated */
+  if (ellipsis_face) {
+    FT_Int ex = ellipsis_x;
+    for (int i = 0; i < 3; i++) {
+      if (FT_Load_CharGlyph(ellipsis_face, '.', FT_LOAD_DEFAULT)) {
+        FT_Render_Glyph(ellipsis_face->glyph, FT_RENDER_MODE_NORMAL);
+        FT_Glyph_Metrics* m = &ellipsis_face->glyph->metrics;
+        write_char(&ellipsis_face->glyph->bitmap, image_data, &textSize,
+                   ex + FT_SCALE(m->horiBearingX),
+                   ellipsis_y + ellipsis_baseline - FT_SCALE(m->horiBearingY));
+        ex += (FT_Int)FT_SCALE(m->horiAdvance);
       }
     }
   }

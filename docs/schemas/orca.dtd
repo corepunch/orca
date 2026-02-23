@@ -423,6 +423,7 @@
 <!ATTLIST Timeline %TimelineAttribs;>
 <!ENTITY % Direction "Horizontal|Vertical|Depth">
 <!ENTITY % Box3Field "X|Y|Z|Width|Height|Depth">
+<!ENTITY % TextOverflow "Clip|Ellipsis">
 <!ENTITY % TextWrapping "WrapWithOverflow|NoWrap|Wrap">
 <!ENTITY % TextHorizontalAlignment "Left|Center|Right">
 <!ENTITY % TextVerticalAlignment "Top|Center|Bottom|Baseline">
@@ -895,7 +896,7 @@
 	TextResourceID CDATA #IMPLIED
 	TextResourceConfiguration CDATA #IMPLIED
 	PlaceholderText CDATA #IMPLIED
-	TextOverflow CDATA #IMPLIED
+	TextOverflow (%TextOverflow;) #IMPLIED
 	Placeholder CDATA #IMPLIED
 	PlaceholderColor CDATA #IMPLIED
 	PlaceholderImage CDATA #IMPLIED
