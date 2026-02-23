@@ -468,11 +468,35 @@ Text_Print(struct ViewText const* pViewText,
         FT_UInt glyph_index = FT_Get_Char_Index(face, charcode);
         FT_Pos advance = FT_SCALE(face->glyph->metrics.horiAdvance);
         
-        /* Ellipsis: if the upcoming word already exceeds the cut position, stop here */
+        /* Ellipsis: if this char would exceed the cut position, render partial word */
         if (ellipsisWidth > 0 && x + wordwidth + advance > cutX) {
-          ellipsis_x = x + (FT_Int)wordwidth;
-          /* If word overflows at first char (x==0), render at least from x */
-          if (ellipsis_x > cutX) ellipsis_x = x;
+          /* Render accumulated word chars (print to last) that fit within cutX */
+          lpcString_t p = print;
+          FT_UInt kern_prev = prev_glyph_index;
+          while (p < last) {
+            if (!strncmp(p, "<u>", 3)) { p += 3; continue; }
+            if (!strncmp(p, "</u>", 4)) { p += 4; continue; }
+            int ch = u8_readchar(&p);
+            if (!FT_Load_CharGlyph(face, ch, FT_LOAD_DEFAULT))
+              continue;
+            FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
+            FT_Glyph_Metrics* wmetrics = &face->glyph->metrics;
+            FT_Bitmap* wbitmap = &face->glyph->bitmap;
+            FT_Pos wadv = FT_SCALE(wmetrics->horiAdvance);
+            FT_Pos wx_off = FT_SCALE(wmetrics->horiBearingX);
+            FT_Pos wy_off = baseline - FT_SCALE(wmetrics->horiBearingY);
+            FT_UInt wgi = FT_Get_Char_Index(face, ch);
+            if (kern_prev && wgi) {
+              FT_Vector kerning;
+              if (FT_Get_Kerning(face, kern_prev, wgi, FT_KERNING_DEFAULT, &kerning) == 0)
+                x += FT_SCALE(kerning.x);
+            }
+            kern_prev = wgi;
+            if (x + wadv > cutX) break;
+            write_char(wbitmap, image_data, &textSize, x + wx_off, y + wy_off);
+            x += wadv;
+          }
+          ellipsis_x = x;
           ellipsis_y = y;
           ellipsis_baseline = baseline;
           ellipsis_face = face;
