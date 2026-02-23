@@ -270,15 +270,15 @@ int CORE_ProcessMessage(lua_State *L, struct WI_Message* msg) {
     case kEventKeyUp:
       return CORE_HandleKeyEvent(L, msg);
     case kEventResumeCoroutine:
-      switch (lua_resume(msg->target, L, msg->wParam, &tmp)) {
+      switch (lua_resume(msg->target, L, LOWORD(msg->wParam), &tmp)) {
         case LUA_OK:
-          WI_PostMessageW(msg->target, kEventStopCoroutine, msg->wParam, msg->lParam);
+          WI_PostMessageW(msg->target, kEventStopCoroutine, msg->wParam, NULL);
           break;
         case LUA_YIELD:
-          WI_PostMessageW(msg->target, kEventResumeCoroutine, 0, msg->lParam);
+          WI_PostMessageW(msg->target, kEventResumeCoroutine, MAKEDWORD(0, HIWORD(msg->wParam)), NULL);
           break;
         default:
-          WI_PostMessageW(msg->target, kEventStopCoroutine, msg->wParam, msg->lParam);
+          WI_PostMessageW(msg->target, kEventStopCoroutine, msg->wParam, NULL);
           if (!lua_isnil(msg->target, -1)) {
             lpcString_t err = lua_tostring(msg->target, -1);
             if (err) fprintf(stderr, "co.resume(): %s\n", err);
@@ -288,7 +288,7 @@ int CORE_ProcessMessage(lua_State *L, struct WI_Message* msg) {
       lua_pop(L, 1);
       return FALSE;
     case kEventStopCoroutine:
-      luaL_unref(L, LUA_REGISTRYINDEX, (int)(intptr_t)msg->lParam);
+      luaL_unref(L, LUA_REGISTRYINDEX, HIWORD(msg->wParam));
       WI_RemoveFromQueue(msg->target);
       WI_PostMessageW(NULL, kEventWindowPaint, WI_GetSize(NULL), 0);
       return FALSE;

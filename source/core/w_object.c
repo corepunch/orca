@@ -512,5 +512,5 @@ void OBJ_API(Rebuild) {
   int ref = luaL_ref(L, LUA_REGISTRYINDEX);
   lua_pushcfunction(co, f_rebuild);
   lua_xmove(L, co, nargs);
-  WI_PostMessageW(co, kEventResumeCoroutine, nargs, (void*)(intptr_t)ref);
+  WI_PostMessageW(co, kEventResumeCoroutine, MAKEDWORD(nargs, ref), NULL);
 }

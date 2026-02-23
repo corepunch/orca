@@ -73,7 +73,7 @@ static int f_async(lua_State* L) {
   lua_State* co = lua_newthread(L);
   int ref = luaL_ref(L, LUA_REGISTRYINDEX);
   lua_xmove(L, co, nargs);
-  WI_PostMessageW(co, kEventResumeCoroutine, nargs-1, (void*)(intptr_t)ref);
+  WI_PostMessageW(co, kEventResumeCoroutine, MAKEDWORD(nargs-1, ref), NULL);
   return 0;
 }
 
