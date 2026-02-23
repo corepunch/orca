@@ -338,15 +338,51 @@ lua_State *g_L=0;
 
 //static bool_t ignore_upcoming_click = FALSE;
 
-struct mouse_event_data {
-  struct WI_Message* e;
-  lpObject_t sender;
-};
+// Coroutine stack layout for mouse event dispatch:
+//   [1]   = userdata: struct WI_Message copy
+//   [2]   = lightuserdata: start lpObject_t (first obj with Lua callback)
+//   [3]   = Lua object: sender (original hit-test result)
+//   [4..] = pre-computed mouse event args (from lua_pushmousevent on main state,
+//           captured before DRAG_SESSION cleanup so drag callbacks get the table)
 
-static int push_mouse_event_args(lua_State* L, lpObject_t obj, void* data) {
-  struct mouse_event_data* d = data;
-  luaX_pushObject(L, d->sender);
-  return lua_pushmousevent(L, obj, d->e) + 1;
+static int f_mouse_dispatch_cont(lua_State* L, int status, lua_KContext ctx);
+
+static int f_mouse_dispatch_from(lua_State* L, lpObject_t obj) {
+  struct WI_Message* e = lua_touserdata(L, 1);
+  int base = lua_gettop(L);    // 3 + mouse_args, preserved across pcallk
+  int nargs = base - 3;        // number of pre-computed mouse event args
+  for (; obj; obj = OBJ_GetParent(obj)) {
+    lpcString_t szCallback = OBJ_FindCallbackForID(obj, e->message);
+    if (szCallback) {
+      luaX_pushObject(L, obj);
+      if (lua_isnil(L, -1)) { lua_pop(L, 1); continue; }
+      lua_getfield(L, -1, szCallback);
+      lua_insert(L, -2);   // [1..base] [callback] [obj]
+      lua_pushvalue(L, 3); // sender
+      for (int i = 4; i <= base; i++) lua_pushvalue(L, i); // pre-computed args
+      return lua_pcallk(L, 2 + nargs, 1, 0, (lua_KContext)obj, f_mouse_dispatch_cont);
+    }
+    if (OBJ_SendMessageW(obj, e->message, 0, e)) return 0;
+  }
+  return 0;
+}
+
+static int f_mouse_dispatch_cont(lua_State* L, int status, lua_KContext ctx) {
+  lpObject_t obj = (lpObject_t)ctx;
+  bool_t handled = FALSE;
+  if (status == LUA_OK) {
+    handled = lua_toboolean(L, -1);
+    lua_pop(L, 1);
+  } else {
+    Con_Error("mouse dispatch: %s", lua_tostring(L, -1));
+    lua_pop(L, 1);
+  }
+  if (handled) return 0;
+  return f_mouse_dispatch_from(L, OBJ_GetParent(obj));
+}
+
+static int f_mouse_dispatch(lua_State* L) {
+  return f_mouse_dispatch_from(L, luaX_checkObject(L, 2));
 }
 
 bool_t
@@ -421,9 +457,37 @@ handle:
       break;
   }
 
-  struct mouse_event_data mdata = { e, sender };
-  bool_t success = luaX_dispatchevent(L, sender, e->message, e,
-                                      push_mouse_event_args, &mdata);
+  // Walk sender..root: C handlers are called synchronously; the first Lua
+  // callback found is dispatched in a new coroutine with lua_pcallk so
+  // callbacks can yield.  If a callback returns false the continuation
+  // tries the next ancestor.  Mouse event args are pre-computed here on the
+  // main state so DRAG_SESSION is captured before the post-dispatch cleanup.
+  bool_t success = FALSE;
+  for (lpObject_t obj = sender; !success && obj; obj = OBJ_GetParent(obj)) {
+    if (OBJ_FindCallbackForID(obj, e->message)) {
+      // Pre-compute args while DRAG_SESSION is still valid in the registry.
+      int mouse_args = lua_pushmousevent(L, obj, e);
+      lua_State* co = lua_newthread(L);
+      int ref = luaL_ref(L, LUA_REGISTRYINDEX);
+      lua_pushcfunction(co, f_mouse_dispatch);
+      // [1] copy of event (safe for coroutine lifetime)
+      struct WI_Message* ev = lua_newuserdata(co, sizeof(struct WI_Message));
+      *ev = *e;
+      // [2] start object as Lua ref (keeps GC alive while coroutine is queued)
+      luaX_pushObject(L, obj);
+      lua_xmove(L, co, 1);
+      // [3] sender as Lua object
+      luaX_pushObject(L, sender);
+      lua_xmove(L, co, 1);
+      // [4..3+mouse_args] pre-computed mouse event args
+      lua_xmove(L, co, mouse_args);
+      WI_PostMessageW(co, kEventResumeCoroutine, 3 + mouse_args,
+                      (void*)(intptr_t)ref);
+      success = TRUE;
+    } else if (OBJ_SendMessageW(obj, e->message, 0, e)) {
+      success = TRUE;
+    }
+  }
 
   void CORE_UpdateHover(void);
   switch (e->message) {
