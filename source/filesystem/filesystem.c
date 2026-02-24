@@ -472,7 +472,7 @@ FS_DecompressLZ4(FILE* inputfile, PPACKFILE pf, struct file** ppFile)
 }
 #endif
 
-static struct file *_ReadOnDisk(FILE *fp) {
+struct file *_ReadOnDisk(FILE *fp) {
   uint32_t dwFileSize = FS_FileLength(fp);
   // add 1 to size to be able to add '/0' to the end
   struct file *pFile = ZeroAlloc(sizeof(struct file) + dwFileSize + 1);

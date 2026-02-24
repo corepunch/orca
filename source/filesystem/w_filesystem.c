@@ -468,15 +468,23 @@ static int f_file_gc(lua_State* L) {
   return 0;
 }
 
+struct file *_ReadOnDisk(FILE *fp);
 static int f_io_open_override(lua_State* L) {
   lpcString_t filename = luaL_checkstring(L, 1);
   lpcString_t mode = luaL_optstring(L, 2, "r");
   if (mode[0] == 'r' && (mode[1] == '\0' || mode[1] == 'b')) {
     struct file* fp = FS_LoadFile(filename);
     if (!fp) {
-      lua_pushnil(L);
-      lua_pushfstring(L, "cannot open %s: No such file or directory", filename);
-      return 2;
+      FILE *f = fopen(filename, mode);
+      if (f && !strstr(filename, ".moon")) {
+        fp = _ReadOnDisk(f);
+        SafeDelete(f, fclose);
+      } else {
+        SafeDelete(f, fclose);
+        lua_pushnil(L);
+        lua_pushfstring(L, "cannot open %s: No such file or directory", filename);
+        return 2;
+      }
     }
     FileHandle* fh = lua_newuserdata(L, sizeof(FileHandle));
     fh->fp = fp;
@@ -485,7 +493,6 @@ static int f_io_open_override(lua_State* L) {
     lua_setmetatable(L, -2);
     return 1;
   }
-  
   int top_before = lua_gettop(L);
   lua_getfield(L, LUA_REGISTRYINDEX, "original_io_open");
   lua_pushvalue(L, 1);

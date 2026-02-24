@@ -183,6 +183,7 @@ ORCA_API int luaopen_orca_parsers_json(lua_State* L)
 {
   luaL_newlib(L, ((luaL_Reg[]){
     { "parse", lua_json_parse },
+    { "decode", lua_json_parse },
     { NULL, NULL }
   }));
   

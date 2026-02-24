@@ -83,7 +83,7 @@ static void R_DrawNumber(LPMATRIX4 matrix, int number, float x, float y) {
   VECTOR3 buffer[64]={0};
   data.matrix = MAT4_Identity();
   vd.viewMatrix = MAT4_Identity();
-  MAT4_Scale(&data.matrix, &(struct vec3){25,-30});
+  MAT4_Scale(&data.matrix, &(struct vec3){12.5f,-15});
   MAT4_Translate(&data.matrix, &(struct vec3){x,-y,0});
   memcpy(&vd.projectionMatrix, matrix, sizeof(struct mat4));
   data.color = (struct color){1,1,0,1};

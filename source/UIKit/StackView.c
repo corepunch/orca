@@ -202,9 +202,8 @@ _GetChildSize(Node2DPtr pSubView,
     .Height = data->Height - TOTAL_MARGIN(pSubView, 1),
     .Force = data->Force,
   });
-  FOR_LOOP(i, 2) {
-    output[i] = Node2D_GetSize(pSubView, i, kSizingPlusMargin);
-  }
+  output[0] = Node2D_GetSize(pSubView, 0, kSizingPlusMargin);
+  output[1] = Node2D_GetSize(pSubView, 1, kSizingPlusMargin);
 }
 
 HANDLER(StackView, UpdateLayout)
@@ -218,7 +217,8 @@ HANDLER(StackView, UpdateLayout)
 
   size[dir] = -gap;
 
-  FOR_LOOP(i, 2) data.Size[i] -= TOTAL_PADDING(pNode2D, i);
+  data.Size[0] -= TOTAL_PADDING(pNode2D, 0);
+  data.Size[1] -= TOTAL_PADDING(pNode2D, 1);
 
   FOR_EACH_LAYOUTABLE(hChild, pNode2D->_object)
   {
@@ -248,7 +248,7 @@ HANDLER(StackView, UpdateLayout)
       _GetChildSize(GetNode2D(hChild), &data, dir, fsize);
       size[!dir] = MAX(fsize[!dir], size[!dir]);
     }
-    size[dir] = pUpdateLayout->Size[dir];
+    size[dir] = pUpdateLayout->Size[dir] - TOTAL_PADDING(pNode2D, dir);
   }
 
   FOR_LOOP(i, 2)
