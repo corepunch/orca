@@ -469,10 +469,11 @@ Text_Print(struct ViewText const* pViewText,
         FT_Pos advance = FT_SCALE(face->glyph->metrics.horiAdvance);
         
         /* Ellipsis: if this char would exceed the cut position, render partial word */
-        if (ellipsisWidth > 0 && x + wordwidth + advance > cutX) {
+        if (ellipsisWidth > 0 && x + spaceWidth + wordwidth + advance > cutX) {
           /* Render accumulated word chars (print to last) that fit within cutX */
           lpcString_t p = print;
           FT_UInt kern_prev = prev_glyph_index;
+          x += spaceWidth;
           while (p < last) {
             if (!strncmp(p, "<u>", 3)) { p += 3; continue; }
             if (!strncmp(p, "</u>", 4)) { p += 4; continue; }
