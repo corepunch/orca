@@ -255,7 +255,7 @@
     </method>
   </struct>
   
-  <struct name="dim" prefix="DIM_" export="Dim">
+  <struct name="Size" prefix="SIZE_">
     <summary>2D size structure</summary>
     <details>Represents the dimensions of a 2D object using width and height. Provides utility methods for scaling and aspect ratio calculations.</details>
     <field name="width" type="float">Width of the object</field>

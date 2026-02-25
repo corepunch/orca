@@ -729,18 +729,18 @@ int luaopen_orca_box3(lua_State *L) {
 
 	return 1;
 }
-void luaX_pushdim(lua_State *L, lpcdim_t data) {
-	lpdim_t self = lua_newuserdata(L, sizeof(struct dim));
-	luaL_setmetatable(L, "dim");
-	memcpy(self, data, sizeof(struct dim));
+void luaX_pushSize(lua_State *L, lpcSize_t data) {
+	lpSize_t self = lua_newuserdata(L, sizeof(struct Size));
+	luaL_setmetatable(L, "Size");
+	memcpy(self, data, sizeof(struct Size));
 }
-lpdim_t luaX_checkdim(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "dim");
+lpSize_t luaX_checkSize(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "Size");
 }
-static int f_new_dim(lua_State *L) {
-	lpdim_t self = lua_newuserdata(L, sizeof(struct dim));
-	luaL_setmetatable(L, "dim");
-	memset(self, 0, sizeof(struct dim));
+static int f_new_Size(lua_State *L) {
+	lpSize_t self = lua_newuserdata(L, sizeof(struct Size));
+	luaL_setmetatable(L, "Size");
+	memset(self, 0, sizeof(struct Size));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "width");
 		self->width = lua_tonumber(L, -1);
@@ -754,43 +754,43 @@ static int f_new_dim(lua_State *L) {
 	}
 	return 1;
 }
-static int f_dim___call(lua_State *L) {
-	lua_remove(L, 1); // remove dim from stack
-	return f_new_dim(L);
+static int f_Size___call(lua_State *L) {
+	lua_remove(L, 1); // remove Size from stack
+	return f_new_Size(L);
 }
-int f_dim___index(lua_State *L) {
+int f_Size___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x95876e1f: // width
-		lua_pushnumber(L, luaX_checkdim(L, 1)->width);
+		lua_pushnumber(L, luaX_checkSize(L, 1)->width);
 		return 1;
 	case 0xd5bdbb42: // height
-		lua_pushnumber(L, luaX_checkdim(L, 1)->height);
+		lua_pushnumber(L, luaX_checkSize(L, 1)->height);
 		return 1;
 	}
-	return luaL_error(L, "Unknown field in dim: %s", luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in Size: %s", luaL_checkstring(L, 2));
 }
-int f_dim___newindex(lua_State *L) {
+int f_Size___newindex(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x95876e1f: // width
-		luaX_checkdim(L, 1)->width = luaL_checknumber(L, 3);
+		luaX_checkSize(L, 1)->width = luaL_checknumber(L, 3);
 		return 0;
 	case 0xd5bdbb42: // height
-		luaX_checkdim(L, 1)->height = luaL_checknumber(L, 3);
+		luaX_checkSize(L, 1)->height = luaL_checknumber(L, 3);
 		return 0;
 	}
-	return luaL_error(L, "Unknown field in dim: %s", luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in Size: %s", luaL_checkstring(L, 2));
 }
-int luaopen_orca_dim(lua_State *L) {
-	luaL_newmetatable(L, "dim");
+int luaopen_orca_Size(lua_State *L) {
+	luaL_newmetatable(L, "Size");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_dim },
-		{ "__newindex", f_dim___newindex },
-		{ "__index", f_dim___index },
+		{ "new", f_new_Size },
+		{ "__newindex", f_Size___newindex },
+		{ "__index", f_Size___index },
 		{ NULL, NULL },
 	}), 0);
 
 	lua_newtable(L);
-	lua_pushcfunction(L, f_dim___call);
+	lua_pushcfunction(L, f_Size___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 
@@ -2266,9 +2266,9 @@ ORCA_API int luaopen_orca_geometry(lua_State *L) {
 	// box3
 	luaopen_orca_box3(L);
 	lua_setfield(L, -2, "Box3D");
-	// dim
-	luaopen_orca_dim(L);
-	lua_setfield(L, -2, "Dim");
+	// Size
+	luaopen_orca_Size(L);
+	lua_setfield(L, -2, "Size");
 	// rect
 	luaopen_orca_rect(L);
 	lua_setfield(L, -2, "Rect");
