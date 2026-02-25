@@ -254,6 +254,13 @@
       <returns type="vec3">Center point of the bounding box</returns>
     </method>
   </struct>
+  
+  <struct name="dim" prefix="DIM_" export="Dim">
+    <summary>2D size structure</summary>
+    <details>Represents the dimensions of a 2D object using width and height. Provides utility methods for scaling and aspect ratio calculations.</details>
+    <field name="width" type="float">Width of the object</field>
+    <field name="height" type="float">Height of the object</field>
+  </struct>
 
   <struct name="rect" prefix="RECT_" export="Rect">
     <summary>2D rectangle structure</summary>

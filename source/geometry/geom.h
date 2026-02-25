@@ -49,6 +49,15 @@ luaX_pushbox3(lua_State *L, lpcbox3_t box3);
 ORCA_API lpbox3_t
 luaX_checkbox3(lua_State *L, int idx);
 
+typedef struct dim dim_t, *lpdim_t;
+typedef struct dim const cdim_t, *lpcdim_t;
+/// @brief Push dim onto Lua stack.
+ORCA_API void
+luaX_pushdim(lua_State *L, lpcdim_t dim);
+/// @brief Check dim form Lua stack at index.
+ORCA_API lpdim_t
+luaX_checkdim(lua_State *L, int idx);
+
 typedef struct rect rect_t, *lprect_t;
 typedef struct rect const crect_t, *lpcrect_t;
 /// @brief Push rect onto Lua stack.
@@ -376,6 +385,12 @@ struct box3 {
 /// @brief Calculates the center point of the box
 ORCA_API vec3_t
 BOX3_Center(lpcbox3_t self);
+
+/// @brief 2D size structure
+struct dim {
+	float width; /// Width of the object
+	float height; /// Height of the object
+};
 
 /// @brief 2D rectangle structure
 struct rect {
