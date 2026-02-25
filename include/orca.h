@@ -460,6 +460,7 @@ typedef struct
     float Size[2];
   };
   bool_t Force;
+  bool_t ContentSized[2];
 } UPDATELAYOUTSTRUCT, *EVENT_PTR(UpdateLayout);
 
 typedef struct

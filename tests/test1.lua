@@ -177,6 +177,29 @@ local function test_grid_view_layout()
 	assert(header.ActualHeight == config.header - config.margin * 2, "Header row should have the specified height minus vertical margins")
 	assert(content.ActualHeight == screen.Height - config.footer - config.header - config.margin * 2, "Content row should take up remaining space between header and footer, accounting for margins")
 	assert(footer.ActualHeight == config.footer - config.margin * 2, "Footer row should have the specified height minus vertical margins")
+	grid:removeFromParent()
+end
+
+local function test_grid_in_stack_view()
+	local config = {
+		row1 = 64,
+		row2 = 48,
+		spacing = 5,
+	}
+	local stack = screen + orca.ui.StackView {
+		Direction = "Vertical",
+		HorizontalAlignment = "Stretch",
+	}
+	local grid = stack + orca.ui.Grid {
+		Rows = string.format("%dpx %dpx", config.row1, config.row2),
+		Spacing = config.spacing,
+		HorizontalAlignment = "Stretch",
+	}
+	screen:updateLayout(screen.Width, screen.Height)
+	local expected_height = config.row1 + config.row2 + config.spacing
+	assert(grid.ActualHeight == expected_height,
+		string.format("Grid inside vertical StackView should have content height=%d, got %d", expected_height, grid.ActualHeight))
+	stack:removeFromParent()
 end
 
 local function test_text_single_line_layout()
@@ -236,5 +259,6 @@ test_stack_view_layout()
 test_button_interaction()
 test_input_interaction()
 test_grid_view_layout()
+test_grid_in_stack_view()
 test_text_single_line_layout()
 test_text_rendering_texture_size()

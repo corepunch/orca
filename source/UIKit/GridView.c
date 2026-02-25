@@ -120,16 +120,38 @@ _CalculateAutos(float spacing, float avl, PCOLUMNS columns)
   }
 }
 
+static float
+_CalculateContentSize(float spacing, float cell_size, PCOLUMNS columns)
+{
+  float cursor = 0;
+  FOR_LOOP(i, columns->count)
+  {
+    float w = columns->columns[i].type == column_type_auto ? cell_size : columns->columns[i].width;
+    columns->columns[i].width = w;
+    columns->columns[i].position = cursor;
+    cursor += w + spacing;
+  }
+  return columns->count > 0 ? cursor - spacing : 0;
+}
+
 HANDLER(Grid, UpdateLayout)
 {
   Node2DPtr pNode2D = GetNode2D(hObject);
   uint32_t cellindex = 0;
+  float cell_sizes[2] = { pGrid->CellWidth, pGrid->CellHeight };
 
   FOR_LOOP(i, 2)
   {
-    float size = pUpdateLayout->Size[i] - TOTAL_PADDING(pNode2D, i);
-    _CalculateAutos(pGrid->Spacing, size, columns_at_axis(pGrid, i, TRUE));
-    Node2D_Measure(pNode2D, i, pUpdateLayout->Size[i], TRUE);
+    PCOLUMNS cols = columns_at_axis(pGrid, i, TRUE);
+    if (pUpdateLayout->ContentSized[i] && cols->count > 0) {
+      float content_size = _CalculateContentSize(pGrid->Spacing, cell_sizes[i], cols);
+      Node2D_SetFrame(pNode2D, kBox3FieldWidth + i, content_size + TOTAL_PADDING(pNode2D, i));
+      Node2D_Measure(pNode2D, i, pUpdateLayout->Size[i], FALSE);
+    } else {
+      float size = pUpdateLayout->Size[i] - TOTAL_PADDING(pNode2D, i);
+      _CalculateAutos(pGrid->Spacing, size, cols);
+      Node2D_Measure(pNode2D, i, pUpdateLayout->Size[i], TRUE);
+    }
   }
 	
 	// clang-format off

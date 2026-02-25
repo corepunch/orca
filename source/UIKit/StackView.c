@@ -201,6 +201,7 @@ _GetChildSize(Node2DPtr pSubView,
     .Width = data->Width - TOTAL_MARGIN(pSubView, 0),
     .Height = data->Height - TOTAL_MARGIN(pSubView, 1),
     .Force = data->Force,
+    .ContentSized = { dir == 0, dir == 1 },
   });
   output[0] = Node2D_GetSize(pSubView, 0, kSizingPlusMargin);
   output[1] = Node2D_GetSize(pSubView, 1, kSizingPlusMargin);
