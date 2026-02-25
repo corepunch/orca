@@ -156,21 +156,13 @@ HANDLER(TextBlockConcept, MakeText)
   return TRUE;
 }
 
-HANDLER(TextBlock, UpdateLayout)
+HANDLER(TextBlock, MeasureOverride)
 {
   TextRunPtr output = GetTextRun(hObject);
   TextBlockConceptPtr textblock = GetTextBlockConcept(hObject);
-
-  //	if (!is_updated(hObject, STEP_AXIS_X + pContentSize->axis) && *target
-  //!=
-  // 0) { 		Node2D_SetFrame(pTextBlock->_node2D, kBox3FieldWidth +
-  // pContentSize->axis, *target); 		return *target;
-  //	}
-
-  float padding = TOTAL_PADDING(GetNode2D(hObject), kDirectionHorizontal);
   OBJ_SendMessageW(hObject, kEventMakeText, 0, &(MAKETEXTSTRUCT){
                      .text = textblock->_text,
-                     .availableSpace = pUpdateLayout->Width - padding
+                     .availableSpace = pMeasureOverride->width - TOTAL_PADDING(GetNode2D(hObject), kDirectionHorizontal)
                    });
   Text_GetInfo(textblock->_text, &output->_textinfo);
 
@@ -179,13 +171,7 @@ HANDLER(TextBlock, UpdateLayout)
   output->_size[0] = output->TextureWidth + TOTAL_PADDING(pTextBlock->_node2D, 0);
   output->_size[1] = output->TextureHeight + TOTAL_PADDING(pTextBlock->_node2D, 1);
 
-  FOR_LOOP(i, 2)
-  {
-    Node2D_SetFrame(pTextBlock->_node2D, kBox3FieldWidth + i, output->_size[i]);
-    Node2D_Measure(pTextBlock->_node2D, i, pUpdateLayout->Size[i], FALSE);
-  }
-
-  return TRUE;
+  return MAKEDWORD(output->_size[0], output->_size[1]);
 }
 
 HANDLER(TextBlock, ForegroundContent)

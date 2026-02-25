@@ -11,6 +11,10 @@
 
   <event name="GetSize" type="void"/>
   <event name="Submit" type="void"/>
+  <event name="Measure" type="Size"/>
+  <event name="Arrange" type="rect"/>
+  <event name="MeasureOverride" type="Size"/>
+  <event name="ArrangeOverride" type="rect"/>
 
   <enums name="Direction">
     <summary>Defines the primary axis for layout operations</summary>
@@ -464,11 +468,12 @@
     <handles event="Destroy"/>
     <handles event="UpdateGeometry"/>
     <handles event="DrawBrush"/>
-    <handles event="UpdateLayout"/>
     <handles event="HandleMessage"/>
     <handles event="ScrollWheel"/>
     <handles event="MouseMoved"/>
     <handles event="HitTest"/>
+    <handles event="Measure"/>
+    <handles event="Arrange"/>
     <property name="LayoutTransform" type="transform2" default=".scale={1,1}">Transformation applied during layout calculations. Affects size and positioning but does not influence local rendering.</property>
     <property name="RenderTransform" type="transform2" default=".scale={1,1}">Transformation applied at render time. Affects how the element is drawn (rotation, scale, skew, etc.) without altering layout.</property>
     <property name="RenderTransformOrigin" type="vec2">The origin point for applying RenderTransform. Defines the pivot point relative to the element.</property>
@@ -522,19 +527,6 @@
       <arg name="field" type="Box3Field"/>
       <returns type="float"/>
     </method>
-    <method name="Measure">
-      <summary>Perform the measure phase of layout for a Node2D</summary>
-      <details>Calculates the desired size of the node and its children based on content and layout constraints.</details>
-      <arg name="direction" type="Direction"/>
-      <arg name="availableSize" type="float"/>
-      <arg name="forceRemeasure" type="bool"/>
-    </method>
-    <method name="Arrange">
-      <summary>Perform the arrange phase of layout for a Node2D</summary>
-      <details>Positions the node and its children within the specified bounds after the measure phase has determined desired sizes.</details>
-      <arg name="bounds" type="bounds"/>
-      <arg name="direction" type="Direction"/>
-    </method>
     <!-- <method name="GetViewEntity">
       <summary>Create a view entity for rendering operations</summary>
       <details>Prepares a view entity that can be used in the rendering pipeline with the specified image and brush configuration.</details>
@@ -549,7 +541,11 @@
       <returns type="bounds"/>
     </method>
     <method name="GetRect">
-      <summary>Get the 2D rectangle bounds of a Node2D</summary>
+      <summary>Get the rectangle bounds of a Node2D including padding and margin</summary>
+      <returns type="rect"/>
+    </method>
+    <method name="GetContentRect">
+      <summary>Get the content rectangle bounds of a Node2D in local coords</summary>
       <returns type="rect"/>
     </method>
     <method name="GetBackgroundRect">
@@ -581,7 +577,7 @@
     <summary>Concrete implementation of text display combining Node2D and TextBlockConcept</summary>
     <details>Primary class for displaying static text with full typography control. Combines 2D rendering capabilities with comprehensive text formatting options.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="UpdateLayout"/>
+    <handles event="MeasureOverride"/>
     <handles event="ForegroundContent"/>
     <handles event="UpdateGeometry"/>
     <handles event="Create"/>
@@ -599,7 +595,7 @@
     <handles event="KeyDown"/>
     <handles event="KillFocus"/>
     <handles event="LeftMouseUp"/>
-    <handles event="UpdateLayout"/>
+    <handles event="MeasureOverride"/>
     <property name="Name" type="fixed">Input identifier for forms and data binding </property>
     <property name="Type" type="InputType">Input behavior type (text, password, etc.) </property>
     <property name="Cursor" type="int">Current text cursor position </property>
@@ -631,7 +627,8 @@
     <summary>Linear layout container arranging children in a single direction</summary>
     <details>Provides flexbox-style linear layout with configurable direction, alignment, spacing, and content justification. Children are arranged sequentially along the specified axis.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="UpdateLayout"/>
+    <handles event="MeasureOverride"/>
+    <handles event="ArrangeOverride"/>
     <property name="Reversed" type="bool">Reverse the order of child elements </property>
     <property name="Direction" type="Direction">Layout direction (horizontal or vertical) </property>
     <property name="AlignItems" type="AlignItems">Cross-axis alignment of children </property>
@@ -645,15 +642,6 @@
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <handles event="Create"/>
     <handles event="Submit"/>
-  </component>
-
-  <component name="CollectionView" parent="Node2D">
-    <summary>Container for dynamic collections of data-driven items</summary>
-    <details>Manages collections of UI elements, typically data-bound to dynamic data sources. Provides efficient rendering of large item sets.</details>
-    <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="UpdateLayout"/>
-    <property name="Direction" type="Direction">Primary layout direction for items </property>
-    <property name="Spacing" type="float">Space between collection items </property>
   </component>
 
   <component name="Control" parent="Node2D">
@@ -681,7 +669,7 @@
     <details>Provides the root rendering context for UI hierarchies. Manages screen-level operations like clearing and render target management.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <handles event="RenderScreen"/>
-    <handles event="UpdateLayout"/>
+    <handles event="MeasureOverride"/>
     <handles event="Create"/>
     <handles event="Destroy"/>
     <handles event="WindowResized"/>
@@ -709,7 +697,8 @@
     <summary>Grid-based layout container with configurable rows and columns</summary>
     <details>Arranges children in a 2D grid pattern with flexible sizing. Supports both fixed and dynamic grid definitions.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="UpdateLayout"/>
+    <handles event="MeasureOverride"/>
+    <handles event="ArrangeOverride"/>
     <property name="Columns" type="fixed">Column definition string (e.g., "1fr 2fr 100px") </property>
     <property name="Rows" type="fixed">Row definition string (e.g., "auto 1fr auto") </property>
     <property name="Direction" type="Direction">Primary fill direction for auto-placement </property>
@@ -731,7 +720,7 @@
     <summary>Displays image content with advanced rendering and scaling options</summary>
     <details>Renders static images with support for nine-patch scaling, blend modes, and viewport control. Handles both loaded images and images loaded from file paths.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="UpdateLayout"/>
+    <handles event="MeasureOverride"/>
     <handles event="ForegroundContent"/>
     <handles event="DrawBrush"/>
     <handles event="LoadView"/>
@@ -748,7 +737,7 @@
     <summary>Specialized image view for nine-patch (stretchable) images</summary>
     <details>Renders images that can be stretched while preserving corner and edge regions. Commonly used for UI panels, buttons, and borders that need to scale to different sizes.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="UpdateLayout"/>
+    <handles event="MeasureOverride"/>
     <handles event="ForegroundContent"/>
     <handles event="DrawBrush"/>
     <property name="StretchTypeTop" type="float">Top edge stretch behavior factor </property>

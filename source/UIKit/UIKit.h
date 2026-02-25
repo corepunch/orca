@@ -357,15 +357,6 @@ luaX_pushForm(lua_State *L, lpcForm_t Form);
 ORCA_API lpForm_t
 luaX_checkForm(lua_State *L, int idx);
 
-typedef struct CollectionView CollectionView_t, *lpCollectionView_t;
-typedef struct CollectionView const cCollectionView_t, *lpcCollectionView_t;
-/// @brief Push CollectionView onto Lua stack.
-ORCA_API void
-luaX_pushCollectionView(lua_State *L, lpcCollectionView_t CollectionView);
-/// @brief Check CollectionView form Lua stack at index.
-ORCA_API lpCollectionView_t
-luaX_checkCollectionView(lua_State *L, int idx);
-
 typedef struct Control Control_t, *lpControl_t;
 typedef struct Control const cControl_t, *lpcControl_t;
 /// @brief Push Control onto Lua stack.
@@ -479,6 +470,18 @@ typedef void* GetSizeEventPtr;
 
 #define kEventSubmit 0x4078e545
 typedef void* SubmitEventPtr;
+
+#define kEventMeasure 0x97619c7f
+typedef struct Size* MeasureEventPtr;
+
+#define kEventArrange 0xc4cf2187
+typedef struct rect* ArrangeEventPtr;
+
+#define kEventMeasureOverride 0xff95a02f
+typedef struct Size* MeasureOverrideEventPtr;
+
+#define kEventArrangeOverride 0x66d9e437
+typedef struct rect* ArrangeOverrideEventPtr;
 
 typedef enum Direction {
 	kDirectionHorizontal, /// Left-to-right horizontal layout
@@ -909,21 +912,17 @@ Node2D_SetFrame(lpNode2D_t self, eBox3Field_t field, float value);
 ORCA_API float
 Node2D_GetFrame(lpNode2D_t self, eBox3Field_t field);
 
-/// @brief Perform the measure phase of layout for a Node2D
-ORCA_API void
-Node2D_Measure(lpNode2D_t self, eDirection_t direction, float availableSize, bool_t forceRemeasure);
-
-/// @brief Perform the arrange phase of layout for a Node2D
-ORCA_API void
-Node2D_Arrange(lpNode2D_t self, bounds_t bounds, eDirection_t direction);
-
 /// @brief Get the layout bounds of a Node2D along a specific axis
 ORCA_API bounds_t
 Node2D_GetBounds(lpNode2D_t self, eDirection_t axis);
 
-/// @brief Get the 2D rectangle bounds of a Node2D
+/// @brief Get the rectangle bounds of a Node2D including padding and margin
 ORCA_API rect_t
 Node2D_GetRect(lpNode2D_t self);
+
+/// @brief Get the content rectangle bounds of a Node2D in local coords
+ORCA_API rect_t
+Node2D_GetContentRect(lpNode2D_t self);
 
 /// @brief Get the background rendering rectangle for a Node2D
 ORCA_API rect_t
@@ -991,14 +990,6 @@ typedef struct Form Form, *FormPtr;
 typedef struct Form const *FormCPtr;
 /// @brief Specialized stack view for form input collection and submission
 struct Form {
-};
-
-typedef struct CollectionView CollectionView, *CollectionViewPtr;
-typedef struct CollectionView const *CollectionViewCPtr;
-/// @brief Container for dynamic collections of data-driven items
-struct CollectionView {
-	eDirection_t Direction; /// Primary layout direction for items 
-	float Spacing; /// Space between collection items 
 };
 
 typedef struct Control Control, *ControlPtr;

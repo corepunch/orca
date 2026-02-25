@@ -147,10 +147,13 @@ static int _counter=0;
 int _numbindings=0;
 
 void OBJ_UpdateLayout(lpObject_t obj, int width, int height) {
-  OBJ_SendMessageW(obj, kEventUpdateLayout, 0, &(UPDATELAYOUTSTRUCT){
-    .Width = width,
-    .Height = height,
-    .Force = FALSE,
+  OBJ_SendMessage(obj, "Measure", 0, &(struct Size){
+    .width = width,
+    .height = height,
+  });
+  OBJ_SendMessage(obj, "Arrange", 0, &(struct rect){
+    .width = width,
+    .height = height,
   });
 }
 
@@ -171,12 +174,7 @@ CORE_Update(lua_State* L,
   OBJ_LoadPrefabs(L, root);
   OBJ_EmitPropertyChangedEvents(L, root);
   OBJ_UpdateProperties(root);
-  
-  OBJ_SendMessageW(root, kEventUpdateLayout, 0, &(UPDATELAYOUTSTRUCT){
-    .Width = LOWORD(winsize),
-    .Height = HIWORD(winsize),
-    .Force = FALSE,
-  });
+  OBJ_UpdateLayout(root, LOWORD(winsize), HIWORD(winsize));
   
   OBJ_SendMessageW(root, kEventUpdateMatrix, 0, &(UPDATEMATRIXSTRUCT){
     .parent = NULL,

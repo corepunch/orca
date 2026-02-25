@@ -4,7 +4,6 @@
 
 #include <source/UIKit/UIKit.h>
 
-
 typedef struct _ARRANGESTRUCT
 {
   /*enum Direction*/ uint32_t axis;
@@ -191,34 +190,20 @@ _WillStretch(Node2DPtr node, StackViewCPtr pStackView)
   return NODE2D_FRAME(node, Alignment, pStackView->Direction) == kHorizontalAlignmentStretch;
 }
 
-static void
-_GetChildSize(Node2DPtr pSubView,
-              UpdateLayoutEventPtr data,
-              int dir,
-              float* output)
+HANDLER(StackView, MeasureOverride)
 {
-  OBJ_SendMessageW(pSubView->_object, kEventUpdateLayout, 0, &(UPDATELAYOUTSTRUCT) {
-    .Width = data->Width - TOTAL_MARGIN(pSubView, 0),
-    .Height = data->Height - TOTAL_MARGIN(pSubView, 1),
-    .Force = data->Force,
-  });
-  output[0] = Node2D_GetSize(pSubView, 0, kSizingPlusMargin);
-  output[1] = Node2D_GetSize(pSubView, 1, kSizingPlusMargin);
-}
-
-HANDLER(StackView, UpdateLayout)
-{
-  UPDATELAYOUTSTRUCT data = *pUpdateLayout;
+  Size_t data = *pMeasureOverride;
+  float *datasize = (float*)&data;
   Node2DPtr pNode2D = GetNode2D(hObject);
   float size[2] = { 0, 0 }, fsize[2];
   uint32_t dwNumAutos = 0;
-  uint32_t const dir = pStackView->Direction;
+  uint32_t const primary = pStackView->Direction;
   float const gap = pStackView->Spacing;
 
-  size[dir] = -gap;
+  size[primary] = -gap;
 
-  data.Size[0] -= TOTAL_PADDING(pNode2D, 0);
-  data.Size[1] -= TOTAL_PADDING(pNode2D, 1);
+  data.width -= TOTAL_PADDING(pNode2D, 0);
+  data.height -= TOTAL_PADDING(pNode2D, 1);
 
   FOR_EACH_LAYOUTABLE(hChild, pNode2D->_object)
   {
@@ -226,54 +211,59 @@ HANDLER(StackView, UpdateLayout)
       dwNumAutos++;
       continue;
     }
-    _GetChildSize(GetNode2D(hChild), &data, dir, fsize);
-    data.Size[dir] -= fsize[dir] + gap;
-    size[dir] += fsize[dir] + gap;
+    uint32_t s = OBJ_SendMessageW(hChild, kEventMeasure, 0, &data);
+    fsize[0] = LOWORD(s);
+    fsize[1] = HIWORD(s);
+    datasize[primary] -= fsize[primary] + gap;
+    size[primary] += fsize[primary] + gap;
     // workaround for Kanzi stacks
 #ifdef KANZI_SUPPORT
-    if (dir == 1 || fsize[!dir] != data.Size[!dir] ||
+    if (primary == 1 || fsize[!primary] != data.Size[!primary] ||
         OBJ_GetFirstChild(hChild))
 #endif
-      size[!dir] = MAX(fsize[!dir], size[!dir]);
+      size[!primary] = MAX(fsize[!primary], size[!primary]);
   }
 
   if (dwNumAutos > 0)
   {
     float spacing = gap * (dwNumAutos - 1);
-    data.Size[dir] = (data.Size[dir] - spacing) / dwNumAutos;
+    datasize[primary] = (datasize[primary] - spacing) / dwNumAutos;
     FOR_EACH_LAYOUTABLE(hChild, pNode2D->_object)
     {
       if (!_WillStretch(GetNode2D(hChild), pStackView))
         continue;
-      _GetChildSize(GetNode2D(hChild), &data, dir, fsize);
-      size[!dir] = MAX(fsize[!dir], size[!dir]);
+      uint32_t s = OBJ_SendMessageW(hChild, kEventMeasure, 0, &data);
+      fsize[0] = LOWORD(s);
+      fsize[1] = HIWORD(s);
+      size[!primary] = MAX(fsize[!primary], size[!primary]);
     }
-    size[dir] = pUpdateLayout->Size[dir] - TOTAL_PADDING(pNode2D, dir);
+    size[primary] = (&pMeasureOverride->width)[primary] - TOTAL_PADDING(pNode2D, primary);
   }
+  
+  return MAKEDWORD((MAX(0, size[0]) ? MAX(0, size[0]) : datasize[0]) + TOTAL_PADDING(pNode2D, 0),
+                   (MAX(0, size[1]) ? MAX(0, size[1]) : datasize[1]) + TOTAL_PADDING(pNode2D, 1));
+}
 
-  FOR_LOOP(i, 2)
-  {
-    float const fsize = MAX(0, size[i]) ? MAX(0, size[i]) : data.Size[i];
-    Node2D_SetFrame(pNode2D, kBox3FieldWidth + i, fsize + TOTAL_PADDING(pNode2D, i));
-    Node2D_Measure(pNode2D, i, pUpdateLayout->Size[i], FALSE);
-  }
-
+HANDLER(StackView, ArrangeOverride)
+{
+  Node2DPtr pNode2D = GetNode2D(hObject);
+  uint32_t const primary = pStackView->Direction;
   _ArrangeInAxis(hObject,
                  pStackView,
                  &(ARRANGESTRUCT){
-                   .axis = dir,
-                   .bounds = Node2D_GetBounds(pNode2D, dir),
-                 });
-
+    .axis = primary,
+    .bounds = Node2D_GetBounds(pNode2D, primary),
+  });
+  
   _ArrangeOppositeAxis(hObject,
                        pStackView,
                        &(ARRANGESTRUCT){
-                         .axis = !dir,
-                         .bounds = Node2D_GetBounds(pNode2D, !dir),
-                       });
-
+    .axis = !primary,
+    .bounds = Node2D_GetBounds(pNode2D, !primary),
+  });
+  
   float scrollSize[2] = { 0, 0 };
-
+  
   FOR_LOOP(i, 2)
   {
     FOR_EACH_LAYOUTABLE(hChild, pNode2D->_object)
@@ -285,5 +275,5 @@ HANDLER(StackView, UpdateLayout)
     }
     NODE2D_FRAME(pNode2D, Size, i).Scroll = scrollSize[i];
   }
-  return TRUE;
+  return MAKEDWORD(pArrangeOverride->width, pArrangeOverride->height);
 }

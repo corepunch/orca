@@ -204,16 +204,15 @@ static void
 _DrawModal(lpObject_t object, Draw2DContentEventPtr params)
 {
   for (lpObject_t mod = OBJ_GetModal(object); mod; mod = OBJ_GetModal(mod)) {
-    OBJ_SendMessageW(mod, kEventUpdateLayout, 0, &(UPDATELAYOUTSTRUCT){
-      .Width = GetNode(mod)->Size.Axis[0].Requested,
-      .Height = GetNode(mod)->Size.Axis[1].Requested,
-      .Force = FALSE,
+    OBJ_SendMessageW(mod, kEventMeasure, 0, &(struct Size){
+      .width = GetNode(mod)->Size.Axis[0].Requested,
+      .height = GetNode(mod)->Size.Axis[1].Requested,
     });
-    Node2D_Arrange(GetNode2D(mod), Node2D_GetBounds(GetNode2D(object), 0), 0);
-    Node2D_Arrange(GetNode2D(mod), Node2D_GetBounds(GetNode2D(object), 1), 1);
+    struct rect content = Node2D_GetContentRect(GetNode2D(object));
+    OBJ_SendMessageW(mod, kEventArrange, 0, &content);
     OBJ_SendMessageW(mod, kEventUpdateMatrix, 0, &(UPDATEMATRIXSTRUCT) {
       .parent = &GetNode2D(OBJ_GetParent(mod))->Matrix,
-      .opacity = 1
+      .opacity = 1,
     });
     Node2D_Draw2DContent(mod, GetNode2D(mod), 0, params);
     FOR_EACH_CHILD(mod, _DrawModal, params);
@@ -474,18 +473,18 @@ HANDLER(Node2D, Draw2DContent)
   return TRUE;
 }
 
-HANDLER(Screen, UpdateLayout) {
+HANDLER(Screen, MeasureOverride) {
   NodeCPtr n = GetNode(hObject);
   if (n->Size.Axis[0].Requested && n->Size.Axis[1].Requested) {
-    pUpdateLayout->Width = n->Size.Axis[0].Requested;
-    pUpdateLayout->Height = n->Size.Axis[1].Requested;
+    pMeasureOverride->width = n->Size.Axis[0].Requested;
+    pMeasureOverride->height = n->Size.Axis[1].Requested;
   }
-  uint32_t newsize = MAKEDWORD(pUpdateLayout->Width, pUpdateLayout->Height);
+  uint32_t newsize = MAKEDWORD(pMeasureOverride->width, pMeasureOverride->height);
   if (pScreen->_size != newsize) {
 //    WI_SetSize(pUpdateLayout->Width, pUpdateLayout->Height, TRUE);
     pScreen->_size = newsize;
   }
-  return FALSE;
+  return MAKEDWORD(pMeasureOverride->width, pMeasureOverride->height);
 }
 
 //HANDLER(Screen, Create) {

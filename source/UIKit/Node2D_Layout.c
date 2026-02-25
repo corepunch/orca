@@ -66,39 +66,6 @@ Node2D_Align(Node2DPtr, struct bounds const*, enum Direction, uint32_t);
 //	}
 // }
 
-void
-Node2D_Measure(Node2DPtr node, enum Direction axis, float space, bool_t force)
-{
-  //	float const padding = TOTAL_PADDING(pNode2D, axis);
-  //	float size = Node2D_GetFrame(pNode2D, kBox3FieldWidth + axis) - padding;
-  static enum NodeProperties _props[] = { kNodeWidth, kNodeHeight, kNodeDepth };
-  float const requested = NODE2D_FRAME(node, Size, axis).Requested;
-  //	float  padding = TOTAL_PADDING(pNode2D, axis);
-  bool_t const stretch = NODE2D_FRAME(node, Alignment, axis) == kUIAlignStretch;
-  bool_t const isRoot = OBJ_GetParent(node->_object) == NULL;
-  lpProperty_t sizeProperty = Node_GetProperty(node->_object, _props[axis]);
-  /* Process normally */
-  if (stretch || isRoot) {
-    Node2D_SetFrame(node, kBox3FieldWidth + axis, space);
-  } else if (!PROP_IsNull(sizeProperty)) {
-    if (PROP_HasProgram(sizeProperty)) {
-      // recalculate size
-      PROP_Update(sizeProperty);
-      float const* sizevalue = PROP_GetValue(sizeProperty);
-      Node2D_SetFrame(node, kBox3FieldWidth + axis, *sizevalue);
-    } else {
-      Node2D_SetFrame(node, kBox3FieldWidth + axis, requested ? requested : space);
-    }
-  } else if (node->RenderTarget) {
-    struct image_info image;
-    Image_GetInfo(node->RenderTarget, &image);
-    int const size[] = { image.bmWidth, image.bmHeight, 0 };
-    Node2D_SetFrame(node, kBox3FieldWidth + axis, size[axis]);
-  } else if (force) {
-    Node2D_SetFrame(node, kBox3FieldWidth + axis, space);
-  }
-}
-
 float
 Node2D_Align(Node2DPtr pNode2D,
              struct bounds const* bounds,
@@ -126,39 +93,6 @@ Node2D_Align(Node2DPtr pNode2D,
   }
 }
 
-HANDLER(Node2D, UpdateLayout)
-{
-  FOR_LOOP(i, 2)
-  {
-    Node2D_Measure(pNode2D, i, pUpdateLayout->Size[i], TRUE);
-  }
-
-//  FOR_EACH_LAYOUTABLE(hChild, hObject)
-  FOR_EACH_OBJECT(hChild, hObject) if (GetNode2D(hChild))
-  {
-    OBJ_SendMessageW(hChild, kEventUpdateLayout, 0,
-      &(UPDATELAYOUTSTRUCT){
-        .Width = Node2D_GetSize(pNode2D, kDirectionHorizontal, kSizingMinusPadding) - TOTAL_MARGIN(GetNode2D(hChild), 0),
-        .Height = Node2D_GetSize(pNode2D, kDirectionVertical, kSizingMinusPadding) - TOTAL_MARGIN(GetNode2D(hChild), 1),
-        .Force = pUpdateLayout->Force,
-      });
-    FOR_LOOP(i, 2)
-    {
-      Node2D_Arrange(GetNode2D(hChild), Node2D_GetBounds(pNode2D, i), i);
-    }
-  }
-
-  return FALSE;
-}
-
-void
-Node2D_Arrange(Node2DPtr subview, struct bounds bounds, enum Direction axis)
-{
-  uint32_t align = NODE2D_FRAME(subview, Alignment, axis);
-  float pos = Node2D_Align(subview, &bounds, axis, align);
-  Node2D_SetFrame(subview, kBox3FieldX + axis, pos);
-}
-
 struct bounds
 Node2D_GetBounds(Node2DPtr pNode2D, enum Direction axis)
 {
@@ -174,4 +108,61 @@ Node2D_GetBounds(Node2DPtr pNode2D, enum Direction axis)
   //		.bounds = &nodebounds,
   //	});
   return nodebounds;
+}
+
+struct rect
+Node2D_GetContentRect(Node2DPtr pNode2D)
+{
+  return (struct rect)  {
+    PADDING_TOP(pNode2D, 0),
+    PADDING_TOP(pNode2D, 1),
+    Node2D_GetFrame(pNode2D, kBox3FieldWidth) - TOTAL_PADDING(pNode2D, 0),
+    Node2D_GetFrame(pNode2D, kBox3FieldHeight) - TOTAL_PADDING(pNode2D, 1),
+  };
+}
+
+HANDLER(Node2D, Measure)
+{
+  int desired[2] = {0,0};
+  FOR_LOOP(axis, 2) {
+    //  float const padding = TOTAL_PADDING(pNode2D, axis);
+    //  float size = Node2D_GetFrame(pNode2D, kBox3FieldWidth + axis) - padding;
+    static enum NodeProperties _props[] = { kNodeWidth, kNodeHeight, kNodeDepth };
+    float const requested = NODE2D_FRAME(pNode2D, Size, axis).Requested;
+    //  float  padding = TOTAL_PADDING(pNode2D, axis);
+    bool_t const stretch = NODE2D_FRAME(pNode2D, Alignment, axis) == kUIAlignStretch;
+    bool_t const isRoot = OBJ_GetParent(pNode2D->_object) == NULL;
+    lpProperty_t sizeProperty = Node_GetProperty(pNode2D->_object, _props[axis]);
+    /* Process normally */
+    if (stretch || isRoot) {
+      desired[axis] = (&pMeasure->width)[axis];
+    } else if (!PROP_IsNull(sizeProperty)) {
+      if (PROP_HasProgram(sizeProperty)) {
+        // recalculate size
+        PROP_Update(sizeProperty);
+        float const* sizevalue = PROP_GetValue(sizeProperty);
+        desired[axis] = *sizevalue;
+      } else {
+        desired[axis] = requested ? requested : (&pMeasure->width)[axis];
+      }
+    } else if (pNode2D->RenderTarget) {
+      struct image_info image;
+      Image_GetInfo(pNode2D->RenderTarget, &image);
+      int const size[] = { image.bmWidth, image.bmHeight, 0 };
+      desired[axis] = size[axis];
+    } else {
+      desired[axis] = (&pMeasure->width)[axis];
+    }
+  }
+  Node2D_SetFrame(pNode2D, kBox3FieldWidth, desired[0]);
+  Node2D_SetFrame(pNode2D, kBox3FieldHeight, desired[1]);
+  return MAKEDWORD(desired[0], desired[1]);
+}
+
+HANDLER(Node2D, Arrange)
+{
+  //  uint32_t align = NODE2D_FRAME(subview, Alignment, axis);
+  //  float pos = Node2D_Align(subview, &bounds, axis, align);
+  //  Node2D_SetFrame(subview, kBox3FieldX + axis, pos);
+  return MAKEDWORD(pArrange->width, pArrange->height);
 }

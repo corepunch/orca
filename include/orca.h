@@ -451,19 +451,6 @@ typedef struct
 
 typedef struct
 {
-  union
-  {
-    struct
-    {
-      float Width, Height;
-    };
-    float Size[2];
-  };
-  bool_t Force;
-} UPDATELAYOUTSTRUCT, *EVENT_PTR(UpdateLayout);
-
-typedef struct
-{
   lua_State* L;
   lpcString_t EventName;
   uint32_t FirstArg;

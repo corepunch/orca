@@ -27,7 +27,6 @@
   <event name="KillFocus" type="void"/>
   <event name="SetFocus" type="void"/>
   <event name="Timer"/>
-  <event name="UpdateLayout"/>
   <event name="UpdateMatrix"/>
   <event name="RenderScreen"/>
   <event name="Render"/>

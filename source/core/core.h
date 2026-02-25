@@ -103,7 +103,6 @@ typedef void* KillFocusEventPtr;
 typedef void* SetFocusEventPtr;
 
 #define kEventTimer 0xeb53a5c2
-#define kEventUpdateLayout 0x928c657a
 #define kEventUpdateMatrix 0x5dbe404d
 #define kEventRenderScreen 0xd15bdf29
 #define kEventRender 0x350cf42d

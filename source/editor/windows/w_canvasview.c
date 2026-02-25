@@ -198,11 +198,7 @@ void ED_DrawCanvasView(HEDWND wnd, struct _CANVASVIEW* sv) {
   
   UI_StepTime(scene);
   
-  OBJ_SendMessageW(scene, kEventUpdateLayout, 0, &(UPDATELAYOUTSTRUCT){
-    .Width = view.width,
-    .Height = view.height,
-    .Force = FALSE,
-  });
+  OBJ_UpdateLayout(scene, view.width, view.height);
   
   OBJ_SendMessageW(scene, kEventUpdateMatrix, 0, &(UPDATEMATRIXSTRUCT){
     .parent = NULL,

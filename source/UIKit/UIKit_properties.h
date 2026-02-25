@@ -525,17 +525,6 @@ enum FormProperties {
 	kFormNumProperties
 };
 
-#define ID_CollectionView 0xda7bf4ac
-#define GetCollectionView(_P)((struct CollectionView*)((_P)?OBJ_GetComponent(_P,ID_CollectionView):NULL))
-#define CollectionView_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_CollectionView,sizeof(struct CollectionView),_N)
-enum CollectionViewProperties {
-	kCollectionViewDirection,
-	kCollectionViewSpacing,
-	kCollectionViewNumProperties
-};
-
-#define ID_CollectionView_Direction 0x63122e5b
-#define ID_CollectionView_Spacing 0x8d21d4db
 #define ID_Control 0x8347bf3e
 #define GetControl(_P)((struct Control*)((_P)?OBJ_GetComponent(_P,ID_Control):NULL))
 #define Control_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_Control,sizeof(struct Control),_N)

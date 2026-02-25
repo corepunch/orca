@@ -1915,11 +1915,12 @@ LRESULT Node2D_Create(lpObject_t, lpNode2D_t, wParam_t, CreateEventPtr);
 LRESULT Node2D_Destroy(lpObject_t, lpNode2D_t, wParam_t, DestroyEventPtr);
 LRESULT Node2D_UpdateGeometry(lpObject_t, lpNode2D_t, wParam_t, UpdateGeometryEventPtr);
 LRESULT Node2D_DrawBrush(lpObject_t, lpNode2D_t, wParam_t, DrawBrushEventPtr);
-LRESULT Node2D_UpdateLayout(lpObject_t, lpNode2D_t, wParam_t, UpdateLayoutEventPtr);
 LRESULT Node2D_HandleMessage(lpObject_t, lpNode2D_t, wParam_t, HandleMessageEventPtr);
 LRESULT Node2D_ScrollWheel(lpObject_t, lpNode2D_t, wParam_t, ScrollWheelEventPtr);
 LRESULT Node2D_MouseMoved(lpObject_t, lpNode2D_t, wParam_t, MouseMovedEventPtr);
 LRESULT Node2D_HitTest(lpObject_t, lpNode2D_t, wParam_t, HitTestEventPtr);
+LRESULT Node2D_Measure(lpObject_t, lpNode2D_t, wParam_t, MeasureEventPtr);
+LRESULT Node2D_Arrange(lpObject_t, lpNode2D_t, wParam_t, ArrangeEventPtr);
 static struct PropertyDesc const Node2DProperties[kNode2DNumProperties] = {
 	/* Node2D.LayoutTransform */ DECL(0x3f19bf01, 0x7c78c87b,
 	Node2D, "LayoutTransform", LayoutTransform, kDataTypeTransform2D),
@@ -2026,8 +2027,6 @@ LRESULT Node2DProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wpar
 			return Node2D_UpdateGeometry(object, cmp, wparm, lparm);
 		case 0x0875c1d1: // DrawBrush
 			return Node2D_DrawBrush(object, cmp, wparm, lparm);
-		case 0x928c657a: // UpdateLayout
-			return Node2D_UpdateLayout(object, cmp, wparm, lparm);
 		case 0xfc48a0da: // HandleMessage
 			return Node2D_HandleMessage(object, cmp, wparm, lparm);
 		case 0x626f90e3: // ScrollWheel
@@ -2036,6 +2035,10 @@ LRESULT Node2DProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wpar
 			return Node2D_MouseMoved(object, cmp, wparm, lparm);
 		case 0x898160ea: // HitTest
 			return Node2D_HitTest(object, cmp, wparm, lparm);
+		case 0x97619c7f: // Measure
+			return Node2D_Measure(object, cmp, wparm, lparm);
+		case 0xc4cf2187: // Arrange
+			return Node2D_Arrange(object, cmp, wparm, lparm);
 }
 	return FALSE;
 }
@@ -2094,7 +2097,7 @@ ORCA_API struct ClassDesc _PrefabView2D = {
 	.Defaults = &PrefabView2DDefaults,
 	.NumProperties = kPrefabView2DNumProperties,
 };
-LRESULT TextBlock_UpdateLayout(lpObject_t, lpTextBlock_t, wParam_t, UpdateLayoutEventPtr);
+LRESULT TextBlock_MeasureOverride(lpObject_t, lpTextBlock_t, wParam_t, MeasureOverrideEventPtr);
 LRESULT TextBlock_ForegroundContent(lpObject_t, lpTextBlock_t, wParam_t, ForegroundContentEventPtr);
 LRESULT TextBlock_UpdateGeometry(lpObject_t, lpTextBlock_t, wParam_t, UpdateGeometryEventPtr);
 LRESULT TextBlock_Create(lpObject_t, lpTextBlock_t, wParam_t, CreateEventPtr);
@@ -2104,8 +2107,8 @@ static struct PropertyDesc const TextBlockProperties[kTextBlockNumProperties] = 
 static struct TextBlock TextBlockDefaults = {};
 LRESULT TextBlockProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x928c657a: // UpdateLayout
-			return TextBlock_UpdateLayout(object, cmp, wparm, lparm);
+		case 0xff95a02f: // MeasureOverride
+			return TextBlock_MeasureOverride(object, cmp, wparm, lparm);
 		case 0x9a7735e5: // ForegroundContent
 			return TextBlock_ForegroundContent(object, cmp, wparm, lparm);
 		case 0x12c1a314: // UpdateGeometry
@@ -2144,7 +2147,7 @@ LRESULT Input_MakeText(lpObject_t, lpInput_t, wParam_t, MakeTextEventPtr);
 LRESULT Input_KeyDown(lpObject_t, lpInput_t, wParam_t, KeyDownEventPtr);
 LRESULT Input_KillFocus(lpObject_t, lpInput_t, wParam_t, KillFocusEventPtr);
 LRESULT Input_LeftMouseUp(lpObject_t, lpInput_t, wParam_t, LeftMouseUpEventPtr);
-LRESULT Input_UpdateLayout(lpObject_t, lpInput_t, wParam_t, UpdateLayoutEventPtr);
+LRESULT Input_MeasureOverride(lpObject_t, lpInput_t, wParam_t, MeasureOverrideEventPtr);
 static struct PropertyDesc const InputProperties[kInputNumProperties] = {
 	/* Input.Name */ DECL(0x0fe07306, 0x56849c4c,
 	Input, "Name", Name, kDataTypeFixed),
@@ -2172,8 +2175,8 @@ LRESULT InputProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm
 			return Input_KillFocus(object, cmp, wparm, lparm);
 		case 0xf73e019e: // LeftMouseUp
 			return Input_LeftMouseUp(object, cmp, wparm, lparm);
-		case 0x928c657a: // UpdateLayout
-			return Input_UpdateLayout(object, cmp, wparm, lparm);
+		case 0xff95a02f: // MeasureOverride
+			return Input_MeasureOverride(object, cmp, wparm, lparm);
 }
 	return FALSE;
 }
@@ -2272,7 +2275,8 @@ ORCA_API struct ClassDesc _Label = {
 	.Defaults = &LabelDefaults,
 	.NumProperties = kLabelNumProperties,
 };
-LRESULT StackView_UpdateLayout(lpObject_t, lpStackView_t, wParam_t, UpdateLayoutEventPtr);
+LRESULT StackView_MeasureOverride(lpObject_t, lpStackView_t, wParam_t, MeasureOverrideEventPtr);
+LRESULT StackView_ArrangeOverride(lpObject_t, lpStackView_t, wParam_t, ArrangeOverrideEventPtr);
 static struct PropertyDesc const StackViewProperties[kStackViewNumProperties] = {
 	/* StackView.Reversed */ DECL(0xcee65dd3, 0x4f7ea66a,
 	StackView, "Reversed", Reversed, kDataTypeBool),
@@ -2288,8 +2292,10 @@ static struct PropertyDesc const StackViewProperties[kStackViewNumProperties] = 
 static struct StackView StackViewDefaults = {0};
 LRESULT StackViewProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x928c657a: // UpdateLayout
-			return StackView_UpdateLayout(object, cmp, wparm, lparm);
+		case 0xff95a02f: // MeasureOverride
+			return StackView_MeasureOverride(object, cmp, wparm, lparm);
+		case 0x66d9e437: // ArrangeOverride
+			return StackView_ArrangeOverride(object, cmp, wparm, lparm);
 }
 	return FALSE;
 }
@@ -2347,41 +2353,6 @@ ORCA_API struct ClassDesc _Form = {
 	.Defaults = &FormDefaults,
 	.NumProperties = kFormNumProperties,
 };
-LRESULT CollectionView_UpdateLayout(lpObject_t, lpCollectionView_t, wParam_t, UpdateLayoutEventPtr);
-static struct PropertyDesc const CollectionViewProperties[kCollectionViewNumProperties] = {
-	/* CollectionView.Direction */ DECL(0x61fefc0a, 0x63122e5b,
-	CollectionView, "Direction", Direction, kDataTypeEnum, .TypeString="Horizontal,Vertical,Depth"),
-	/* CollectionView.Spacing */ DECL(0x8777939e, 0x8d21d4db,
-	CollectionView, "Spacing", Spacing, kDataTypeFloat),
-};
-static struct CollectionView CollectionViewDefaults = {0};
-LRESULT CollectionViewProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case 0x928c657a: // UpdateLayout
-			return CollectionView_UpdateLayout(object, cmp, wparm, lparm);
-}
-	return FALSE;
-}
-void luaX_pushCollectionView(lua_State *L, lpcCollectionView_t CollectionView) {
-	luaX_pushObject(L, CMP_GetObject(CollectionView));
-}
-lpCollectionView_t luaX_checkCollectionView(lua_State *L, int idx) {
-	return GetCollectionView(luaX_checkObject(L, idx));
-}
-extern struct ClassDesc _Node2D;
-ORCA_API struct ClassDesc _CollectionView = {
-	.ClassName = "CollectionView",
-	.DefaultName = "CollectionView",
-	.ContentType = "Node2D",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {&_Node2D, NULL},
-	.ClassID = ID_CollectionView,
-	.ClassSize = sizeof(struct CollectionView),
-	.Properties = CollectionViewProperties,
-	.ObjProc = CollectionViewProc,
-	.Defaults = &CollectionViewDefaults,
-	.NumProperties = kCollectionViewNumProperties,
-};
 static struct PropertyDesc const ControlProperties[kControlNumProperties] = {
 	/* Control.Pressed */ DECL(0x705293c5, 0x0bfbf446,
 	Control, "Pressed", Pressed, kDataTypeBool),
@@ -2431,7 +2402,7 @@ void luaX_pushResizeMode(lua_State *L, eResizeMode_t value) {
 	lua_pushstring(L, _ResizeMode[value]);
 }
 LRESULT Screen_RenderScreen(lpObject_t, lpScreen_t, wParam_t, RenderScreenEventPtr);
-LRESULT Screen_UpdateLayout(lpObject_t, lpScreen_t, wParam_t, UpdateLayoutEventPtr);
+LRESULT Screen_MeasureOverride(lpObject_t, lpScreen_t, wParam_t, MeasureOverrideEventPtr);
 LRESULT Screen_Create(lpObject_t, lpScreen_t, wParam_t, CreateEventPtr);
 LRESULT Screen_Destroy(lpObject_t, lpScreen_t, wParam_t, DestroyEventPtr);
 LRESULT Screen_WindowResized(lpObject_t, lpScreen_t, wParam_t, WindowResizedEventPtr);
@@ -2446,8 +2417,8 @@ LRESULT ScreenProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wpar
 	switch (message) {
 		case 0xd15bdf29: // RenderScreen
 			return Screen_RenderScreen(object, cmp, wparm, lparm);
-		case 0x928c657a: // UpdateLayout
-			return Screen_UpdateLayout(object, cmp, wparm, lparm);
+		case 0xff95a02f: // MeasureOverride
+			return Screen_MeasureOverride(object, cmp, wparm, lparm);
 		case 0x990de47d: // Create
 			return Screen_Create(object, cmp, wparm, lparm);
 		case 0x4d76a4e5: // Destroy
@@ -2516,7 +2487,8 @@ ORCA_API struct ClassDesc _Cinematic = {
 	.Defaults = &CinematicDefaults,
 	.NumProperties = kCinematicNumProperties,
 };
-LRESULT Grid_UpdateLayout(lpObject_t, lpGrid_t, wParam_t, UpdateLayoutEventPtr);
+LRESULT Grid_MeasureOverride(lpObject_t, lpGrid_t, wParam_t, MeasureOverrideEventPtr);
+LRESULT Grid_ArrangeOverride(lpObject_t, lpGrid_t, wParam_t, ArrangeOverrideEventPtr);
 static struct PropertyDesc const GridProperties[kGridNumProperties] = {
 	/* Grid.Columns */ DECL(0xea156fdc, 0x5d28e334,
 	Grid, "Columns", Columns, kDataTypeFixed),
@@ -2534,8 +2506,10 @@ static struct PropertyDesc const GridProperties[kGridNumProperties] = {
 static struct Grid GridDefaults = {0};
 LRESULT GridProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x928c657a: // UpdateLayout
-			return Grid_UpdateLayout(object, cmp, wparm, lparm);
+		case 0xff95a02f: // MeasureOverride
+			return Grid_MeasureOverride(object, cmp, wparm, lparm);
+		case 0x66d9e437: // ArrangeOverride
+			return Grid_ArrangeOverride(object, cmp, wparm, lparm);
 }
 	return FALSE;
 }
@@ -2567,7 +2541,7 @@ void luaX_pushStretch(lua_State *L, eStretch_t value) {
 	assert(value >= 0 && value < 4);
 	lua_pushstring(L, _Stretch[value]);
 }
-LRESULT ImageView_UpdateLayout(lpObject_t, lpImageView_t, wParam_t, UpdateLayoutEventPtr);
+LRESULT ImageView_MeasureOverride(lpObject_t, lpImageView_t, wParam_t, MeasureOverrideEventPtr);
 LRESULT ImageView_ForegroundContent(lpObject_t, lpImageView_t, wParam_t, ForegroundContentEventPtr);
 LRESULT ImageView_DrawBrush(lpObject_t, lpImageView_t, wParam_t, DrawBrushEventPtr);
 LRESULT ImageView_LoadView(lpObject_t, lpImageView_t, wParam_t, LoadViewEventPtr);
@@ -2590,8 +2564,8 @@ static struct ImageView ImageViewDefaults = {
 };
 LRESULT ImageViewProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x928c657a: // UpdateLayout
-			return ImageView_UpdateLayout(object, cmp, wparm, lparm);
+		case 0xff95a02f: // MeasureOverride
+			return ImageView_MeasureOverride(object, cmp, wparm, lparm);
 		case 0x9a7735e5: // ForegroundContent
 			return ImageView_ForegroundContent(object, cmp, wparm, lparm);
 		case 0x0875c1d1: // DrawBrush
@@ -2621,7 +2595,7 @@ ORCA_API struct ClassDesc _ImageView = {
 	.Defaults = &ImageViewDefaults,
 	.NumProperties = kImageViewNumProperties,
 };
-LRESULT NinePatchImage_UpdateLayout(lpObject_t, lpNinePatchImage_t, wParam_t, UpdateLayoutEventPtr);
+LRESULT NinePatchImage_MeasureOverride(lpObject_t, lpNinePatchImage_t, wParam_t, MeasureOverrideEventPtr);
 LRESULT NinePatchImage_ForegroundContent(lpObject_t, lpNinePatchImage_t, wParam_t, ForegroundContentEventPtr);
 LRESULT NinePatchImage_DrawBrush(lpObject_t, lpNinePatchImage_t, wParam_t, DrawBrushEventPtr);
 static struct PropertyDesc const NinePatchImageProperties[kNinePatchImageNumProperties] = {
@@ -2657,8 +2631,8 @@ static struct PropertyDesc const NinePatchImageProperties[kNinePatchImageNumProp
 static struct NinePatchImage NinePatchImageDefaults = {0};
 LRESULT NinePatchImageProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x928c657a: // UpdateLayout
-			return NinePatchImage_UpdateLayout(object, cmp, wparm, lparm);
+		case 0xff95a02f: // MeasureOverride
+			return NinePatchImage_MeasureOverride(object, cmp, wparm, lparm);
 		case 0x9a7735e5: // ForegroundContent
 			return NinePatchImage_ForegroundContent(object, cmp, wparm, lparm);
 		case 0x0875c1d1: // DrawBrush
@@ -3137,9 +3111,6 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	// Form
 	lua_pushclass(L, &_Form);
 	lua_setfield(L, -2, "Form");
-	// CollectionView
-	lua_pushclass(L, &_CollectionView);
-	lua_setfield(L, -2, "CollectionView");
 	// Control
 	lua_pushclass(L, &_Control);
 	lua_setfield(L, -2, "Control");

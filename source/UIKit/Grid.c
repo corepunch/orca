@@ -120,16 +120,15 @@ _CalculateAutos(float spacing, float avl, PCOLUMNS columns)
   }
 }
 
-HANDLER(Grid, UpdateLayout)
+HANDLER(Grid, MeasureOverride)
 {
   Node2DPtr pNode2D = GetNode2D(hObject);
   uint32_t cellindex = 0;
 
   FOR_LOOP(i, 2)
   {
-    float size = pUpdateLayout->Size[i] - TOTAL_PADDING(pNode2D, i);
+    float size = (&pMeasureOverride->width)[i] - TOTAL_PADDING(pNode2D, i);
     _CalculateAutos(pGrid->Spacing, size, columns_at_axis(pGrid, i, TRUE));
-    Node2D_Measure(pNode2D, i, pUpdateLayout->Size[i], TRUE);
   }
 	
 	// clang-format off
@@ -190,23 +189,33 @@ HANDLER(Grid, UpdateLayout)
       column_at_cellindex(pGrid, kDirectionHorizontal, cellindex),
       column_at_cellindex(pGrid, kDirectionVertical, cellindex)
     };
-    OBJ_SendMessageW(hChild, kEventUpdateLayout, 0,
-      &(UPDATELAYOUTSTRUCT){
-        .Width  = (cell[0] ? cell[0]->width : pUpdateLayout->Width) - TOTAL_MARGIN(subview, 0),
-        .Height = (cell[1] ? cell[1]->width : pUpdateLayout->Height) - TOTAL_MARGIN(subview, 1),
-      });
-    FOR_LOOP(i, 2)
-    {
-      float p = PADDING_TOP(pNode2D, i);
-      struct bounds bounds = {
-				p + (cell[i] ? cell[i]->position : 0),
-				p + (cell[i] ? (cell[i]->position + cell[i]->width) : pUpdateLayout->Size[i]) };
-      Node2D_Arrange(subview, bounds, i);
-    }
+    OBJ_SendMessageW(hChild, kEventMeasure, 0, &(struct Size) {
+      .width  = (cell[0] ? cell[0]->width : pMeasureOverride->width) - TOTAL_MARGIN(subview, 0),
+      .height = (cell[1] ? cell[1]->width : pMeasureOverride->height) - TOTAL_MARGIN(subview, 1),
+    });
     cellindex++;
   }
 #endif
 
 	// clang-format on
   return TRUE;
+}
+
+HANDLER(Grid, ArrangeOverride)
+{
+  uint32_t cellindex = 0;
+  Node2DPtr pNode2D = GetNode2D(hObject);
+  FOR_EACH_LAYOUTABLE(hChild, hObject)
+  {
+    struct column* x = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
+    struct column* y = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
+    OBJ_SendMessageW(hChild, kEventArrange, 0, &(struct rect) {
+      .x = PADDING_TOP(pNode2D, 0) + (x ? x->position : 0),
+      .y = PADDING_TOP(pNode2D, 1) + (y ? y->position : 0),
+      .width = pArrangeOverride->width,
+      .height = pArrangeOverride->height
+    });
+    cellindex++;
+  }
+  return MAKEDWORD(pArrangeOverride->width, pArrangeOverride->height);
 }

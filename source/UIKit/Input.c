@@ -164,15 +164,12 @@ HANDLER(Input, KeyDown)
   return TRUE;
 }
 
-HANDLER(Input, UpdateLayout)
+HANDLER(Input, MeasureOverride)
 {
   if (pInput->Type == kInputTypeCheckbox) {
-    Node2DPtr pNode2D = GetNode2D(hObject);
-    Node2D_SetFrame(pNode2D, kBox3FieldWidth, 16);
-    Node2D_SetFrame(pNode2D, kBox3FieldHeight, 16);
-    return TRUE;
+    return MAKEDWORD(16, 16);
   } else {
-    return FALSE;
+    return MAKEDWORD(pMeasureOverride->width, pMeasureOverride->height);
   }
 }
 

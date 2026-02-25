@@ -20,7 +20,7 @@ enum
   kImageCount,
 };
 
-HANDLER(NinePatchImage, UpdateLayout)
+HANDLER(NinePatchImage, MeasureOverride)
 {
   //    struct image_format format;
   //    if (ImageView_compile(object->subclass->data, &format)) {
@@ -40,7 +40,7 @@ HANDLER(NinePatchImage, UpdateLayout)
   //        }
   //        return TRUE;
   //    } else {
-  return TRUE;
+  return MAKEDWORD(pMeasureOverride->width, pMeasureOverride->height);
   //    }
 }
 

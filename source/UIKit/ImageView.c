@@ -19,21 +19,14 @@ _GetImageSize(lpObject_t hObject, ImageViewPtr imageView)
   return size;
 }
 
-HANDLER(ImageView, UpdateLayout)
+HANDLER(ImageView, MeasureOverride)
 {
   if (pImageView->Image) {
-    Node2DPtr pNode2D = GetNode2D(hObject);
     struct vec2 size = _GetImageSize(hObject, pImageView);
     struct edges const* e = (struct edges const*)&pImageView->Insets;
-    Node2D_SetFrame(pNode2D, kBox3FieldWidth, size.x - e->left - e->right);
-    Node2D_SetFrame(pNode2D, kBox3FieldHeight, size.y - e->top - e->bottom);
-    FOR_LOOP(i, 2)
-    {
-      Node2D_Measure(pNode2D, i, pUpdateLayout->Size[i], FALSE);
-    }
-    return TRUE;
+    return MAKEDWORD(size.x - e->left - e->right, size.y - e->top - e->bottom);
   } else {
-    return FALSE;
+    return MAKEDWORD(pMeasureOverride->width, pMeasureOverride->height);
   }
 }
 
