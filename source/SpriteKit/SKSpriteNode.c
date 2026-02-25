@@ -1,178 +1,115 @@
-#include <code/api/api.h>
-#include <code/sprite/SKPublic.h>
-#include <code/ui/UIPublic.h>
-#include <code/common/common.h>
-#include <code/renderer/r_public.h>
+#include "SpriteKit_private.h"
 
-enum {
-    kSKSpriteNode_animation,
-    kSKSpriteNode_animation2,
-    kSKSpriteNode_image,
-    kSKSpriteNode_freezeFrame,
-    kSKSpriteNode_blendMode,
-    kSKSpriteNode_rect,
-    kSKSpriteNode_uvRect,
-    kSKSpriteNode_numCvars,
-};
+extern unsigned long WI_GetMilliseconds(void);
 
-void BlendMode(lua_State *L, int index, struct property *property);
-
-static struct property_desc const
-SKSpriteNodeFields[kSKSpriteNode_numCvars] =
+static uint32_t
+get_frame_index(uint32_t num_frames, float framerate, int32_t freeze_frame)
 {
-    { 0xe145ee5d, "animation", PROPERTY_SPRITEANIMATION, NULL },
-    { 0x101658bd, "animation2", PROPERTY_SPRITEANIMATION, NULL },
-    { 0xb35135fa, "image", PROPERTY_IMAGE, NULL },
-    { 0x4594e273, "freezeFrame", PROPERTY_NUMBER, NULL },
-    { 0x615978cb, "blendMode", PROPERTY_STRING, property_desc_make_enum, BlendMode },
-    { 0xeae44d07, "rect", PROPERTY_RECTANGLE, NULL },
-    { 0x688243e0, "uvRect", PROPERTY_RECTANGLE, NULL },
-};
-
-struct SKSpriteNodeData {
-    struct property *properties[kSKSpriteNode_numCvars];
-};
-
-struct SKSpriteNodeFormat {
-    struct sprite_animation const *animation;
-    struct sprite_animation const *animation2;
-    struct sprite sprite;
-    struct image *image;
-    enum blend_mode blendMode;
-};
-
-static struct sprite const *
-animation_sprite(struct sprite_animation const *animation,
-                 int freezeFrame)
-{
-    int const frame = (int)(frame_start_time * animation->framerate / 1000);
-    int const index = (freezeFrame >= 0 ? freezeFrame : frame) % animation->num_frames;
-    return &animation->frames[index];
+  if (freeze_frame >= 0) {
+    return (uint32_t)freeze_frame % num_frames;
+  }
+  unsigned long ms = WI_GetMilliseconds();
+  return (uint32_t)((double)ms * framerate / 1000.0) % num_frames;
 }
 
-void
-SKNode_anchor(struct node const *node,
-              struct rect *rect)
+HANDLER(SKSpriteNode, Render)
 {
-    int const anchor = propertyL_int(SKNODE_PARAM(node, anchor), 0);
-    if (anchor & kSKNodeAnchorRight) {
-        rect->x += SKNode_referencesize(node).x;
+  SKNodePtr node = GetSKNode(hObject);
+  if (!node) return FALSE;
+
+  lpTexture_t image = pSKSpriteNode->Image;
+  struct SpriteAnimation const *anim = pSKSpriteNode->Animation;
+  struct mat3 texmat = MAT3_Identity();
+  struct rect bbox = {0};
+
+  if (anim && anim->NumFrames > 0) {
+    uint32_t idx = get_frame_index(anim->NumFrames, anim->Framerate,
+                                   pSKSpriteNode->FreezeFrame);
+    struct SpriteFrame const *frame = &anim->Frames[idx];
+    image = anim->Image;
+
+    bbox = frame->Rect;
+    bbox.x = -bbox.x;
+    bbox.y = -bbox.y;
+
+    MAT3_Translate(&texmat, &(struct vec2){
+      frame->UvRect.x,
+      frame->UvRect.y + frame->UvRect.height,
+    });
+    MAT3_Scale(&texmat, &(struct vec2){
+      frame->UvRect.width,
+      -frame->UvRect.height,
+    });
+  } else if (image) {
+    struct image_info img;
+    Image_GetInfo(image, &img);
+
+    bbox = pSKSpriteNode->Rect;
+    if (bbox.width == 0 && bbox.height == 0) {
+      bbox.width = (float)img.bmWidth;
+      bbox.height = (float)img.bmHeight;
     }
-    if (anchor & kSKNodeAnchorTop) {
-        rect->y += SKNode_referencesize(node).y;
+    bbox.x = -bbox.x;
+    bbox.y = -bbox.y;
+
+    struct rect uv = pSKSpriteNode->UvRect;
+    if (uv.width == 0 && uv.height == 0) {
+      uv = (struct rect){0, 0, 1, 1};
     }
-}
+    MAT3_Translate(&texmat, &(struct vec2){uv.x, uv.y + uv.height});
+    MAT3_Scale(&texmat, &(struct vec2){uv.width, -uv.height});
+  } else {
+    bbox.width = 16;
+    bbox.height = 16;
+  }
 
-static struct rect
-sprite_rect(struct node const *node,
-            struct sprite const *sprite)
-{
-    struct rect rect = sprite->rect;
-    rect.x = -rect.x;
-    rect.y = -rect.y;
-    SKNode_anchor(node, &rect);
-    return rect;
-}
+  enum blend_mode blendMode = (int)pSKSpriteNode->BlendMode >= 0
+    ? (enum blend_mode)pSKSpriteNode->BlendMode
+    : BLEND_MODE_ALPHA;
 
-static struct SKSpriteNodeFormat
-SKSpriteNode_compile(struct SKSpriteNodeData const *sprite)
-{
-    struct SKSpriteNodeFormat fmt;
-    memset(&fmt, 0, sizeof(struct SKSpriteNodeFormat));
-    property_value(sprite->properties[kSKSpriteNode_image], PROPERTY_IMAGE, &fmt.image);
-    property_value(sprite->properties[kSKSpriteNode_animation], PROPERTY_SPRITEANIMATION, &fmt.animation);
-    property_value(sprite->properties[kSKSpriteNode_animation2], PROPERTY_SPRITEANIMATION, &fmt.animation2);
-    fmt.blendMode = propertyL_int(sprite->properties[kSKSpriteNode_blendMode], BLEND_MODE_INHERIT);
-    if (fmt.animation && fmt.animation->num_frames > 0) {
-        int const freeze_frame = propertyL_int(sprite->properties[kSKSpriteNode_freezeFrame], -1);
-        fmt.sprite = *animation_sprite(fmt.animation, freeze_frame);
-        fmt.image = fmt.animation->image;
-    } else if (fmt.image) {
-        fmt.sprite.uv = (struct rect) { 0, 0, 1, 1 };
-        property_value(sprite->properties[kSKSpriteNode_uvRect], PROPERTY_RECTANGLE, &fmt.sprite.uv);
-        
-        fmt.sprite.rect = (struct rect) { 0, 0, fmt.image->size.width * fmt.sprite.uv.width, fmt.image->size.height * fmt.sprite.uv.height };
-        property_value(sprite->properties[kSKSpriteNode_rect], PROPERTY_RECTANGLE, &fmt.sprite.rect);
-        
-        fmt.sprite.rect.x = -fmt.sprite.rect.x;
-        fmt.sprite.rect.y = -fmt.sprite.rect.y;
-    }
-    return fmt;
-}
+  struct ViewEntity entity = {
+    .bbox = BOX3_FromRect(bbox),
+    .matrix = node->Matrix,
+    .material = {
+      .opacity = node->_opacity,
+      .color = {1, 1, 1, 1},
+      .texture = image,
+      .textureMatrix = texmat,
+      .blendMode = blendMode,
+    },
+  };
 
-static struct model *
-sprite_model(struct node const *node,
-             struct sprite const *sprite)
-{
-    struct rect const frame = sprite_rect(node, sprite);
-    struct rect const uv = {
-        .x = sprite->uv.x,
-        .y = sprite->uv.y + sprite->uv.height,
-        .width = sprite->uv.width,
-        .height = -sprite->uv.height
+  R_DrawEntity(pRender, &entity);
+
+  struct SpriteAnimation const *anim2 = pSKSpriteNode->Animation2;
+  if (anim2 && anim2->NumFrames > 0) {
+    uint32_t idx2 = get_frame_index(anim2->NumFrames, anim2->Framerate, -1);
+    struct SpriteFrame const *frame2 = &anim2->Frames[idx2];
+    struct mat3 texmat2 = MAT3_Identity();
+    struct rect bbox2 = frame2->Rect;
+    bbox2.x = -bbox2.x;
+    bbox2.y = -bbox2.y;
+    MAT3_Translate(&texmat2, &(struct vec2){
+      frame2->UvRect.x,
+      frame2->UvRect.y + frame2->UvRect.height,
+    });
+    MAT3_Scale(&texmat2, &(struct vec2){
+      frame2->UvRect.width,
+      -frame2->UvRect.height,
+    });
+    struct ViewEntity entity2 = {
+      .bbox = BOX3_FromRect(bbox2),
+      .matrix = node->Matrix,
+      .material = {
+        .opacity = node->_opacity,
+        .color = {1, 1, 1, 1},
+        .texture = anim2->Image,
+        .textureMatrix = texmat2,
+        .blendMode = blendMode,
+      },
     };
-    return re.model_rectangle(&frame, &uv, VERTEX_ORDER_CCW);
-}
+    R_DrawEntity(pRender, &entity2);
+  }
 
-static struct model *empty_model() {
-    return re.model_rectangle(&(struct rect) {0,0,5,5}, NULL, VERTEX_ORDER_DEFAULT);
-}
-
-static void
-SKSpriteNode_updategeometry(struct node *node,
-                            struct SKSpriteNodeFormat const *spritenode)
-{
-    struct SKNodeData *nodedata = node->class_data.data;
-    if (node->geometry) {
-        re.model_release(node->geometry);
-        node->geometry = NULL;
-    }
-    if (nodedata->geometry2) {
-        re.model_release(nodedata->geometry2);
-        nodedata->geometry2 = NULL;
-    }
-    node->geometry = spritenode->image ? sprite_model(node, &spritenode->sprite) : empty_model();
-    if (spritenode->animation2) {
-        struct sprite const *sprite = animation_sprite(spritenode->animation2, -1);
-        ((struct SKNodeData *)node->class_data.data)->geometry2 = sprite_model(node, sprite);
-    }
-}
-
-static void
-SKSpriteNode_draw(struct node *node,
-                  struct viewdef *viewdef)
-{
-    struct viewentity viewentity;
-    struct SKSpriteNodeFormat fmt = SKSpriteNode_compile(node->subclass.data);
-    struct image const *image = fmt.animation ? fmt.animation->image : fmt.image;
-    SKSpriteNode_updategeometry(node, &fmt);
-    if (SKNodeData(node)->geometry2) {
-        UIView_viewentity(node, &viewentity, fmt.animation2->image, SKNodeData(node)->geometry2);
-        re.entity_draw(viewdef, &viewentity);
-    }
-    UIView_viewentity(node, &viewentity, image, node->geometry);
-    re.entity_draw(viewdef, &viewentity);
-}
-
-static struct rect
-SKSpriteNode_spriterect(struct node const *node)
-{
-    struct SKSpriteNodeFormat fmt = SKSpriteNode_compile(node->subclass.data);
-    if (fmt.image) {
-        return sprite_rect(node, &fmt.sprite);
-    } else {
-        return (struct rect) { 0, 0, 0, 0 };
-    }
-}
-
-void
-SKSpriteNode_init(struct node *node,
-                  struct SKNodeData *data)
-{
-    node->subclass.data = mem_alloc(sizeof(struct SKSpriteNodeData), MEM_NODE);
-    node->subclass.desc = SKSpriteNodeFields;
-    node->subclass.num_properties = kSKSpriteNode_numCvars;
-    
-    data->sprite_rect = SKSpriteNode_spriterect;
-    data->draw = SKSpriteNode_draw;
+  return TRUE;
 }
