@@ -194,6 +194,35 @@ local function test_text_single_line_layout()
 	two_words:removeFromParent()
 end
 
+local function test_grid_view_in_stack_layout()
+	local config = {
+		stack_spacing = 10,
+		grid_margin = 8,
+		grid_header = 64,
+		grid_footer = 48,
+	}
+	local stack = screen + orca.ui.StackView { Direction = "Vertical", Spacing = config.stack_spacing }
+	local row1 = stack + orca.ui.Grid { Columns = "auto auto" }
+	local row2 = stack + orca.ui.Grid { Columns = "auto auto" }
+	local text11 = row1 + orca.ui.TextBlock { Text = "Text", Margin = config.grid_margin, FontSize = 16 }
+	local text12 = row1 + orca.ui.TextBlock { Text = "Text", Margin = config.grid_margin, FontSize = 24 }
+	local text21 = row2 + orca.ui.TextBlock { Text = "Text", Margin = config.grid_margin, FontSize = 18, VerticalAlignment= "Top" }
+	local text22 = row2 + orca.ui.TextBlock { Text = "Text", Margin = config.grid_margin, FontSize = 32, VerticalAlignment= "Top" }
+	
+	assert(row1.ActualHeight == 0, "Row 1 should have zero height before layout update")
+
+	screen:updateLayout(screen.Width, screen.Height)
+
+	-- Each row should have height equal to the tallest cell in that row (since columns are auto-sized)
+	
+	assert(text11.ActualHeight == text12.ActualHeight, "Text blocks in the same row should have the same height when vertical alignment is 'Stretch'")
+	assert(text21.ActualHeight ~= text22.ActualHeight, "Text blocks in the same row can have different heights if vertical alignment is not 'Stretch'")
+	assert(row1.ActualHeight == text11.ActualHeight + 2*config.grid_margin, "Row 1 height should match tallest cell plus margin")
+	assert(row2.ActualHeight == math.max(text21.ActualHeight,text22.ActualHeight) + 2*config.grid_margin, "Row 2 height should match tallest cell plus margin")
+
+	stack:removeFromParent()
+end
+
 -- Simulate asynchronous execution by using a timer or a delayed call
 -- For testing purposes, we can just call the callback immediately
 orca.async = function (callback) callback() end
@@ -203,4 +232,5 @@ test_stack_view_layout()
 test_button_interaction()
 test_input_interaction()
 test_grid_view_layout()
+test_grid_view_in_stack_layout()
 test_text_single_line_layout()
