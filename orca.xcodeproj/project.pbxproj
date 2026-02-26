@@ -206,10 +206,12 @@
 		786865622F50A9BD00DC87FC /* SpriteKit_export.c in Sources */ = {isa = PBXBuildFile; fileRef = 786865592F50A9BD00DC87FC /* SpriteKit_export.c */; };
 		786865632F50A9BD00DC87FC /* SKView.c in Sources */ = {isa = PBXBuildFile; fileRef = 786865562F50A9BD00DC87FC /* SKView.c */; };
 		786865642F50A9BD00DC87FC /* SpriteKit_properties.h in Headers */ = {isa = PBXBuildFile; fileRef = 7868655C2F50A9BD00DC87FC /* SpriteKit_properties.h */; };
-		786865652F50A9BD00DC87FC /* SpriteKit_private.h in Headers */ = {isa = PBXBuildFile; fileRef = 7868655B2F50A9BD00DC87FC /* SpriteKit_private.h */; };
 		786865662F50A9BD00DC87FC /* SpriteKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 786865572F50A9BD00DC87FC /* SpriteKit.h */; };
 		786865672F50AA6400DC87FC /* liborca.SpriteKit.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 7868653E2F50A96100DC87FC /* liborca.SpriteKit.so */; };
 		786865682F50AA6400DC87FC /* liborca.SpriteKit.so in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 7868653E2F50A96100DC87FC /* liborca.SpriteKit.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		7868656C2F50B4E100DC87FC /* SKLabelNode.c in Sources */ = {isa = PBXBuildFile; fileRef = 7868656B2F50B4DE00DC87FC /* SKLabelNode.c */; };
+		7868656D2F50B55100DC87FC /* liborca.UIKit.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA74D2E1556FF00FFCFD9 /* liborca.UIKit.so */; };
+		7868656E2F50B55100DC87FC /* liborca.UIKit.so in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 781CA74D2E1556FF00FFCFD9 /* liborca.UIKit.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		786A4BD12E86B06500C40C9F /* TerminalView.c in Sources */ = {isa = PBXBuildFile; fileRef = 786A4BD02E86B05E00C40C9F /* TerminalView.c */; };
 		786F2B332E12EE7F00B519AB /* ed_local.h in Headers */ = {isa = PBXBuildFile; fileRef = 786F2B152E12EE7F00B519AB /* ed_local.h */; };
 		788483222E867CA000DB9C1F /* w_plugins.c in Sources */ = {isa = PBXBuildFile; fileRef = 788483212E867C9C00DB9C1F /* w_plugins.c */; };
@@ -267,6 +269,13 @@
 			remoteGlobalIDString = 7868651B2F50A96100DC87FC;
 			remoteInfo = orca.SpriteKit;
 		};
+		7868656F2F50B55100DC87FC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 78B136992AF3CA3A00AAAE53 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 781CA74C2E1556FF00FFCFD9;
+			remoteInfo = orca.UIKit;
+		};
 		78932BF82F38D6D5007C59CC /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 78B136992AF3CA3A00AAAE53 /* Project object */;
@@ -309,6 +318,17 @@
 			files = (
 				7814FD572DF86F3F00625D2F /* libfbxsdk.dylib in CopyFiles */,
 			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		786865712F50B55100DC87FC /* Embed Libraries */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				7868656E2F50B55100DC87FC /* liborca.UIKit.so in Embed Libraries */,
+			);
+			name = "Embed Libraries";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		78932BFA2F38D6D5007C59CC /* Embed Libraries */ = {
@@ -420,8 +440,8 @@
 		786865582F50A9BD00DC87FC /* SpriteKit.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = SpriteKit.xml; sourceTree = "<group>"; };
 		786865592F50A9BD00DC87FC /* SpriteKit_export.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SpriteKit_export.c; sourceTree = "<group>"; };
 		7868655A2F50A9BD00DC87FC /* SpriteKit_main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SpriteKit_main.c; sourceTree = "<group>"; };
-		7868655B2F50A9BD00DC87FC /* SpriteKit_private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SpriteKit_private.h; sourceTree = "<group>"; };
 		7868655C2F50A9BD00DC87FC /* SpriteKit_properties.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SpriteKit_properties.h; sourceTree = "<group>"; };
+		7868656B2F50B4DE00DC87FC /* SKLabelNode.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SKLabelNode.c; sourceTree = "<group>"; };
 		78688D1B2D6F28AE008DE67B /* Screen.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Screen.c; sourceTree = "<group>"; };
 		78688D202D7DE88D008DE67B /* Input.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Input.c; sourceTree = "<group>"; };
 		78688D222D7E1F2D008DE67B /* Button.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Button.c; sourceTree = "<group>"; };
@@ -752,6 +772,7 @@
 				786865382F50A96100DC87FC /* liborca.renderer.so in Frameworks */,
 				786865392F50A96100DC87FC /* liborca.core.so in Frameworks */,
 				7868653A2F50A96100DC87FC /* liborca.geometry.so in Frameworks */,
+				7868656D2F50B55100DC87FC /* liborca.UIKit.so in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -879,13 +900,13 @@
 		7868655D2F50A9BD00DC87FC /* SpriteKit */ = {
 			isa = PBXGroup;
 			children = (
+				7868656B2F50B4DE00DC87FC /* SKLabelNode.c */,
 				786865532F50A9BD00DC87FC /* SKNode.c */,
 				786865542F50A9BD00DC87FC /* SKScene.c */,
 				786865552F50A9BD00DC87FC /* SKSpriteNode.c */,
 				786865562F50A9BD00DC87FC /* SKView.c */,
 				786865592F50A9BD00DC87FC /* SpriteKit_export.c */,
 				7868655A2F50A9BD00DC87FC /* SpriteKit_main.c */,
-				7868655B2F50A9BD00DC87FC /* SpriteKit_private.h */,
 				7868655C2F50A9BD00DC87FC /* SpriteKit_properties.h */,
 				786865572F50A9BD00DC87FC /* SpriteKit.h */,
 				786865582F50A9BD00DC87FC /* SpriteKit.xml */,
@@ -1341,7 +1362,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				786865642F50A9BD00DC87FC /* SpriteKit_properties.h in Headers */,
-				786865652F50A9BD00DC87FC /* SpriteKit_private.h in Headers */,
 				786865662F50A9BD00DC87FC /* SpriteKit.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1651,10 +1671,12 @@
 				7868651C2F50A96100DC87FC /* Headers */,
 				786865202F50A96100DC87FC /* Sources */,
 				786865342F50A96100DC87FC /* Frameworks */,
+				786865712F50B55100DC87FC /* Embed Libraries */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				786865702F50B55100DC87FC /* PBXTargetDependency */,
 			);
 			name = orca.SpriteKit;
 			packageProductDependencies = (
@@ -2053,6 +2075,7 @@
 				7868655E2F50A9BD00DC87FC /* SpriteKit_main.c in Sources */,
 				7868655F2F50A9BD00DC87FC /* SKScene.c in Sources */,
 				786865602F50A9BD00DC87FC /* SKSpriteNode.c in Sources */,
+				7868656C2F50B4E100DC87FC /* SKLabelNode.c in Sources */,
 				786865612F50A9BD00DC87FC /* SKNode.c in Sources */,
 				786865622F50A9BD00DC87FC /* SpriteKit_export.c in Sources */,
 				786865632F50A9BD00DC87FC /* SKView.c in Sources */,
@@ -2095,6 +2118,11 @@
 			isa = PBXTargetDependency;
 			target = 7868651B2F50A96100DC87FC /* orca.SpriteKit */;
 			targetProxy = 786865692F50AA6400DC87FC /* PBXContainerItemProxy */;
+		};
+		786865702F50B55100DC87FC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 781CA74C2E1556FF00FFCFD9 /* orca.UIKit */;
+			targetProxy = 7868656F2F50B55100DC87FC /* PBXContainerItemProxy */;
 		};
 		78932BF92F38D6D5007C59CC /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;

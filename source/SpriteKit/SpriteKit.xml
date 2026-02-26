@@ -5,8 +5,18 @@
   <include file="source/renderer/api/renderer.h"/>
   <include file="include/renderer.h"/>
 
-  <resource type="SpriteAnimation"/>
-
+  <struct name="SpriteFrame">
+    <field name="Rect" type="rect"/>
+    <field name="UvRect" type="rect"/>
+  </struct>
+  
+  <component name="SpriteAnimation">
+    <property name="Image" type="Texture" pointer="true">Spritesheet texture</property>
+    <property name="Framerate" type="float">Frames per second</property>
+    <property name="NumFrames" type="int">Number of frames</property>
+    <field name="Frames" type="SpriteFrame" pointer="true">Variable-length frame data array</field>
+  </component>
+  
   <component name="SKNode" parent="Node" children="SKNode">
     <summary>Base 2D sprite node with transform and matrix</summary>
     <details>Provides fundamental 2D transformation properties for sprite scene graph nodes. All sprite objects in the scene inherit from this component.</details>

@@ -1,5 +1,5 @@
 #include <include/api.h>
-#include "SpriteKit_private.h"
+#include "SpriteKit.h"
 
 static int
 f_createAnimation(lua_State *L)

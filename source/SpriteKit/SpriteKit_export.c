@@ -8,12 +8,95 @@
 	.DataSize=sizeof(((struct CLASS *)NULL)->FIELD), \
 	.DataType=TYPE, ##__VA_ARGS__ }
 
+void luaX_pushSpriteFrame(lua_State *L, lpcSpriteFrame_t data) {
+	lpSpriteFrame_t self = lua_newuserdata(L, sizeof(struct SpriteFrame));
+	luaL_setmetatable(L, "SpriteFrame");
+	memcpy(self, data, sizeof(struct SpriteFrame));
+}
+lpSpriteFrame_t luaX_checkSpriteFrame(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "SpriteFrame");
+}
+static int f_new_SpriteFrame(lua_State *L) {
+	lpSpriteFrame_t self = lua_newuserdata(L, sizeof(struct SpriteFrame));
+	luaL_setmetatable(L, "SpriteFrame");
+	memset(self, 0, sizeof(struct SpriteFrame));
+	return 1;
+}
+static int f_SpriteFrame___call(lua_State *L) {
+	lua_remove(L, 1); // remove SpriteFrame from stack
+	return f_new_SpriteFrame(L);
+}
+int f_SpriteFrame___index(lua_State *L) {
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x6b109927: // Rect
+		luaX_pushrect(L, &luaX_checkSpriteFrame(L, 1)->Rect);
+		return 1;
+	case 0xae3d25c0: // UvRect
+		luaX_pushrect(L, &luaX_checkSpriteFrame(L, 1)->UvRect);
+		return 1;
+	}
+	return luaL_error(L, "Unknown field in SpriteFrame: %s", luaL_checkstring(L, 2));
+}
+int f_SpriteFrame___newindex(lua_State *L) {
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x6b109927: // Rect
+		luaX_checkSpriteFrame(L, 1)->Rect = *luaX_checkrect(L, 3);
+		return 0;
+	case 0xae3d25c0: // UvRect
+		luaX_checkSpriteFrame(L, 1)->UvRect = *luaX_checkrect(L, 3);
+		return 0;
+	}
+	return luaL_error(L, "Unknown field in SpriteFrame: %s", luaL_checkstring(L, 2));
+}
+int luaopen_orca_SpriteFrame(lua_State *L) {
+	luaL_newmetatable(L, "SpriteFrame");
+	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ "new", f_new_SpriteFrame },
+		{ "__newindex", f_SpriteFrame___newindex },
+		{ "__index", f_SpriteFrame___index },
+		{ NULL, NULL },
+	}), 0);
+
+	lua_newtable(L);
+	lua_pushcfunction(L, f_SpriteFrame___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+
+	return 1;
+}
+static struct PropertyDesc const SpriteAnimationProperties[kSpriteAnimationNumProperties] = {
+	/* SpriteAnimation.Image */ DECL(0x590ca79a, 0xb710ed59,
+	SpriteAnimation, "Image", Image, kDataTypeObject, .TypeString="Texture"),
+	/* SpriteAnimation.Framerate */ DECL(0xbebf2a84, 0xc51f93cb,
+	SpriteAnimation, "Framerate", Framerate, kDataTypeFloat),
+	/* SpriteAnimation.NumFrames */ DECL(0x32caacb1, 0x37cc69de,
+	SpriteAnimation, "NumFrames", NumFrames, kDataTypeInt),
+};
+static struct SpriteAnimation SpriteAnimationDefaults = {0};
+LRESULT SpriteAnimationProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+}
+	return FALSE;
+}
 void luaX_pushSpriteAnimation(lua_State *L, lpcSpriteAnimation_t SpriteAnimation) {
-	lua_pushlightuserdata(L, (lpSpriteAnimation_t)SpriteAnimation);
+	luaX_pushObject(L, CMP_GetObject(SpriteAnimation));
 }
 lpSpriteAnimation_t luaX_checkSpriteAnimation(lua_State *L, int idx) {
-	return lua_touserdata(L, idx);
+	return GetSpriteAnimation(luaX_checkObject(L, idx));
 }
+ORCA_API struct ClassDesc _SpriteAnimation = {
+	.ClassName = "SpriteAnimation",
+	.DefaultName = "SpriteAnimation",
+	.ContentType = "SpriteAnimation",
+	.Xmlns = "None",
+	.ParentClasses = {NULL},
+	.ClassID = ID_SpriteAnimation,
+	.ClassSize = sizeof(struct SpriteAnimation),
+	.Properties = SpriteAnimationProperties,
+	.ObjProc = SpriteAnimationProc,
+	.Defaults = &SpriteAnimationDefaults,
+	.NumProperties = kSpriteAnimationNumProperties,
+};
 LRESULT SKNode_UpdateMatrix(lpObject_t, lpSKNode_t, wParam_t, UpdateMatrixEventPtr);
 static struct PropertyDesc const SKNodeProperties[kSKNodeNumProperties] = {
 	/* SKNode.LayoutTransform */ DECL(0x3f19bf01, 0x94dea86b,
@@ -104,9 +187,9 @@ ORCA_API struct ClassDesc _SKScene = {
 LRESULT SKSpriteNode_Render(lpObject_t, lpSKSpriteNode_t, wParam_t, RenderEventPtr);
 static struct PropertyDesc const SKSpriteNodeProperties[kSKSpriteNodeNumProperties] = {
 	/* SKSpriteNode.Animation */ DECL(0x41e389fd, 0xdfc01dce,
-	SKSpriteNode, "Animation", Animation, kDataTypeSpriteAnimation),
+	SKSpriteNode, "Animation", Animation, kDataTypeObject, .TypeString="SpriteAnimation"),
 	/* SKSpriteNode.Animation2 */ DECL(0x8831f0dd, 0x376f33b4,
-	SKSpriteNode, "Animation2", Animation2, kDataTypeSpriteAnimation),
+	SKSpriteNode, "Animation2", Animation2, kDataTypeObject, .TypeString="SpriteAnimation"),
 	/* SKSpriteNode.Image */ DECL(0x590ca79a, 0x7d43a6bd,
 	SKSpriteNode, "Image", Image, kDataTypeObject, .TypeString="Texture"),
 	/* SKSpriteNode.FreezeFrame */ DECL(0xa9f98a53, 0x371f13e0,
@@ -114,7 +197,7 @@ static struct PropertyDesc const SKSpriteNodeProperties[kSKSpriteNodeNumProperti
 	/* SKSpriteNode.BlendMode */ DECL(0x0038792b, 0x240fc724,
 	SKSpriteNode, "BlendMode", BlendMode, kDataTypeEnum, .TypeString="AlphaAutomatic,Opaque,Alpha,Additive,PremultipliedAlpha,MixedAlpha"),
 	/* SKSpriteNode.Rect */ DECL(0x6b109927, 0xb1aa4a9e,
-	SKSpriteNode, "Rect", Rect, kDataTypeRect),
+	SKSpriteNode, "Rect", Rect, kDataTypeRectangle),
 	/* SKSpriteNode.RectX */ DECL(0x0a21a2ed, 0x7513b5b2,
 	SKSpriteNode, "RectX", Rect.x, kDataTypeFloat),
 	/* SKSpriteNode.RectY */ DECL(0x0921a15a, 0x7613b745,
@@ -124,7 +207,7 @@ static struct PropertyDesc const SKSpriteNodeProperties[kSKSpriteNodeNumProperti
 	/* SKSpriteNode.RectHeight */ DECL(0x68097dd8, 0x5d75dbf5,
 	SKSpriteNode, "RectHeight", Rect.height, kDataTypeFloat),
 	/* SKSpriteNode.UvRect */ DECL(0xae3d25c0, 0xc27a0d8d,
-	SKSpriteNode, "UvRect", UvRect, kDataTypeRect),
+	SKSpriteNode, "UvRect", UvRect, kDataTypeRectangle),
 	/* SKSpriteNode.UvRectX */ DECL(0xe2422e48, 0xfb23c64f,
 	SKSpriteNode, "UvRectX", UvRect.x, kDataTypeFloat),
 	/* SKSpriteNode.UvRectY */ DECL(0xe3422fdb, 0xfa23c4bc,
@@ -241,6 +324,12 @@ ORCA_API int luaopen_orca_SpriteKit(lua_State *L) {
 	}));
 	void on_spritekit_module_registered(lua_State *L);
 	on_spritekit_module_registered(L);
+	// SpriteFrame
+	luaopen_orca_SpriteFrame(L);
+	lua_setfield(L, -2, "SpriteFrame");
+	// SpriteAnimation
+	lua_pushclass(L, &_SpriteAnimation);
+	lua_setfield(L, -2, "SpriteAnimation");
 	// SKNode
 	lua_pushclass(L, &_SKNode);
 	lua_setfield(L, -2, "SKNode");

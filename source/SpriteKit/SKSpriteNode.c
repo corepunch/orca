@@ -1,4 +1,4 @@
-#include "SpriteKit_private.h"
+#include "SpriteKit.h"
 
 extern unsigned long WI_GetMilliseconds(void);
 

@@ -255,7 +255,7 @@
     </method>
   </struct>
 
-  <struct name="rect" prefix="RECT_" export="Rect">
+  <struct name="rect" prefix="RECT_" export="Rectangle">
     <summary>2D rectangle structure</summary>
     <details>Represents a rectangle using position (x, y) and dimensions (width, height). Provides utility methods for containment tests and transformations.</details>
     <field name="x" type="float">Left edge X coordinate</field>

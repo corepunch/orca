@@ -6,6 +6,24 @@
 
 #include <source/SpriteKit/SpriteKit_properties.h>
 
+typedef struct SpriteFrame SpriteFrame_t, *lpSpriteFrame_t;
+typedef struct SpriteFrame const cSpriteFrame_t, *lpcSpriteFrame_t;
+/// @brief Push SpriteFrame onto Lua stack.
+ORCA_API void
+luaX_pushSpriteFrame(lua_State *L, lpcSpriteFrame_t SpriteFrame);
+/// @brief Check SpriteFrame form Lua stack at index.
+ORCA_API lpSpriteFrame_t
+luaX_checkSpriteFrame(lua_State *L, int idx);
+
+typedef struct SpriteAnimation SpriteAnimation_t, *lpSpriteAnimation_t;
+typedef struct SpriteAnimation const cSpriteAnimation_t, *lpcSpriteAnimation_t;
+/// @brief Push SpriteAnimation onto Lua stack.
+ORCA_API void
+luaX_pushSpriteAnimation(lua_State *L, lpcSpriteAnimation_t SpriteAnimation);
+/// @brief Check SpriteAnimation form Lua stack at index.
+ORCA_API lpSpriteAnimation_t
+luaX_checkSpriteAnimation(lua_State *L, int idx);
+
 typedef struct SKNode SKNode_t, *lpSKNode_t;
 typedef struct SKNode const cSKNode_t, *lpcSKNode_t;
 /// @brief Push SKNode onto Lua stack.
@@ -54,14 +72,19 @@ luaX_checkSKView(lua_State *L, int idx);
 #include <source/UIKit/UIKit.h>
 #include <source/renderer/api/renderer.h>
 #include <include/renderer.h>
-typedef struct SpriteAnimation SpriteAnimation_t, *lpSpriteAnimation_t;
-typedef struct SpriteAnimation const cSpriteAnimation_t, *lpcSpriteAnimation_t;
-/// @brief Push SpriteAnimation onto Lua stack.
-ORCA_API void
-luaX_pushSpriteAnimation(lua_State *L, lpcSpriteAnimation_t SpriteAnimation);
-/// @brief Check SpriteAnimation form Lua stack at index.
-ORCA_API lpSpriteAnimation_t
-luaX_checkSpriteAnimation(lua_State *L, int idx);
+struct SpriteFrame {
+	rect_t Rect;
+	rect_t UvRect;
+};
+
+typedef struct SpriteAnimation SpriteAnimation, *SpriteAnimationPtr;
+typedef struct SpriteAnimation const *SpriteAnimationCPtr;
+struct SpriteAnimation {
+	lpTexture_t Image; /// Spritesheet texture
+	float Framerate; /// Frames per second
+	int32_t NumFrames; /// Number of frames
+	lpSpriteFrame_t Frames; /// Variable-length frame data array
+};
 
 typedef struct SKNode SKNode, *SKNodePtr;
 typedef struct SKNode const *SKNodeCPtr;

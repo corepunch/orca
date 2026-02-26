@@ -160,7 +160,9 @@
 </span></a><a class="leaf-link" href="#Light3D"><i class="fa-solid fa-layer-group icon"></i><span>Light3D
 </span></a><a class="leaf-link" href="#SpriteView"><i class="fa-solid fa-layer-group icon"></i><span>SpriteView
 </span></a><div class="technology-title"><span class="fa-solid fa-folder-open icon"></span>orca.SpriteKit
-</div><a class="leaf-link" href="#SKNode"><i class="fa-solid fa-layer-group icon"></i><span>SKNode
+</div><a class="leaf-link" href="#SpriteFrame"><i class="fa-solid fa-gear icon"></i><span>SpriteFrame
+</span></a><a class="leaf-link" href="#SpriteAnimation"><i class="fa-solid fa-layer-group icon"></i><span>SpriteAnimation
+</span></a><a class="leaf-link" href="#SKNode"><i class="fa-solid fa-layer-group icon"></i><span>SKNode
 </span></a><a class="leaf-link" href="#SKScene"><i class="fa-solid fa-layer-group icon"></i><span>SKScene
 </span></a><a class="leaf-link" href="#SKSpriteNode"><i class="fa-solid fa-layer-group icon"></i><span>SKSpriteNode
 </span></a><a class="leaf-link" href="#SKLabelNode"><i class="fa-solid fa-layer-group icon"></i><span>SKLabelNode
@@ -583,6 +585,8 @@
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Vector3D</span></code><div class="small-abstract"><span>Three-dimensional vector, used for spatial coordinates, directions, or RGB values.
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Vector4D</span></code><div class="small-abstract"><span>Four-dimensional vector, commonly used for extended color or transformation data.
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Rectangle</span></code><div class="small-abstract"><span>Rectangle structure, typically used for defining rectangular areas or bounding boxes.
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Matrix2D</span></code><div class="small-abstract"><span>2x2 matrix, typically used for simple affine transformations in 2D space.
 </span></div></div>
@@ -2483,6 +2487,20 @@
 <div class="small-abstract"><span>2D image texture to display on the billboard sprite
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Bounds</span>: <a class="type-identifier-link" href="#vec4">vec4</a></code></div>
 <div class="small-abstract"><span>Texture coordinates and sizing (X=U, Y=V, Z=width, W=height)
+</span></div></div><div id="SpriteFrame" class="class" data-name="SpriteFrame" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">SpriteFrame
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SpriteKit.SpriteFrame</span></code><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Rect</span>: <a class="type-identifier-link" href="#rect">rect</a></code></div>
+<div class="topic"><code class="decorator"><span>var </span><span class="identifier">UvRect</span>: <a class="type-identifier-link" href="#rect">rect</a></code></div>
+</div><div id="SpriteAnimation" class="class" data-name="SpriteAnimation" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
+</div><h1 class="header">SpriteAnimation
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SpriteKit.SpriteAnimation</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Frames</span>: <a class="type-identifier-link" href="#SpriteFrame">SpriteFrame</a></code></div>
+<div class="small-abstract"><span>Variable-length frame data array
+</span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">Image</span>: <a class="type-identifier-link" href="#Texture">Texture</a></code></div>
+<div class="small-abstract"><span>Spritesheet texture
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Framerate</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Frames per second
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">NumFrames</span>: <span>int</span></code></div>
+<div class="small-abstract"><span>Number of frames
 </span></div></div><div id="SKNode" class="class" data-name="SKNode" data-inherits="Node" data-xmlns="None"><div class="eyebrow">Component
 </div><h1 class="header">SKNode
 </h1><div class="abstract">Base 2D sprite node with transform and matrix
@@ -2515,9 +2533,9 @@
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SpriteKit.SKScene</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#SKNode" class="name base">SKNode</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Represents a complete 2D sprite scene that can be rendered to an SKView. Acts as the root node of the sprite scene hierarchy.</div></div><div id="SKSpriteNode" class="class" data-name="SKSpriteNode" data-inherits="SKNode" data-xmlns="None"><div class="eyebrow">Component
 </div><h1 class="header">SKSpriteNode
 </h1><div class="abstract">2D sprite node that renders an image or animation
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SpriteKit.SKSpriteNode</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#SKNode" class="name base">SKNode</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Renders 2D sprite content using either a static image or an animated sprite animation. Supports UV coordinates for sprite atlas sheets and various blend modes.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Animation</span>: <span>SpriteAnimation</span></code></div>
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SpriteKit.SKSpriteNode</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#SKNode" class="name base">SKNode</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Renders 2D sprite content using either a static image or an animated sprite animation. Supports UV coordinates for sprite atlas sheets and various blend modes.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>object </span><span class="identifier">Animation</span>: <a class="type-identifier-link" href="#SpriteAnimation">SpriteAnimation</a></code></div>
 <div class="small-abstract"><span>Primary sprite animation from a sprite atlas
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Animation2</span>: <span>SpriteAnimation</span></code></div>
+</span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">Animation2</span>: <a class="type-identifier-link" href="#SpriteAnimation">SpriteAnimation</a></code></div>
 <div class="small-abstract"><span>Secondary sprite animation (e.g., shadow layer)
 </span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">Image</span>: <a class="type-identifier-link" href="#Texture">Texture</a></code></div>
 <div class="small-abstract"><span>Static image texture to display

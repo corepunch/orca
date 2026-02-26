@@ -1,3 +1,16 @@
+#define ID_SpriteAnimation 0x261d60ba
+#define GetSpriteAnimation(_P)((struct SpriteAnimation*)((_P)?OBJ_GetComponent(_P,ID_SpriteAnimation):NULL))
+#define SpriteAnimation_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_SpriteAnimation,sizeof(struct SpriteAnimation),_N)
+enum SpriteAnimationProperties {
+	kSpriteAnimationImage,
+	kSpriteAnimationFramerate,
+	kSpriteAnimationNumFrames,
+	kSpriteAnimationNumProperties
+};
+
+#define ID_SpriteAnimation_Image 0xb710ed59
+#define ID_SpriteAnimation_Framerate 0xc51f93cb
+#define ID_SpriteAnimation_NumFrames 0x37cc69de
 #define ID_SKNode 0x819821fb
 #define GetSKNode(_P)((struct SKNode*)((_P)?OBJ_GetComponent(_P,ID_SKNode):NULL))
 #define SKNode_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_SKNode,sizeof(struct SKNode),_N)

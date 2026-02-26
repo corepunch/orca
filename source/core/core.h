@@ -444,6 +444,7 @@ typedef enum DataType {
 	kDataTypeVector2D, /// Two-dimensional vector, typically used for coordinates or sizes.
 	kDataTypeVector3D, /// Three-dimensional vector, used for spatial coordinates, directions, or RGB values.
 	kDataTypeVector4D, /// Four-dimensional vector, commonly used for extended color or transformation data.
+	kDataTypeRectangle, /// Rectangle structure, typically used for defining rectangular areas or bounding boxes.
 	kDataTypeMatrix2D, /// 2x2 matrix, typically used for simple affine transformations in 2D space.
 	kDataTypeMatrix3D, /// 3x3 matrix, used for 3D affine transformations or rotation data.
 	kDataTypeTransform2D, /// 2D transformation structure combining position, scale, and rotation.
