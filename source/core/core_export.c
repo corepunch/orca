@@ -625,12 +625,12 @@ static int f_core_getHover(lua_State *L) {
 	luaX_pushObject(L, output);
 	return 1;
 }
-static const char *_DataType[] = {"none","bool","int","enum","float","vector2d","vector3d","vector4d","matrix2d","matrix3d","transform2d","transform3d","fixed","longstring","color","edges","objecttags","event","object","group",NULL};
+static const char *_DataType[] = {"none","bool","int","enum","float","vector2d","vector3d","vector4d","rectangle","matrix2d","matrix3d","transform2d","transform3d","fixed","longstring","color","edges","objecttags","event","object","group",NULL};
 eDataType_t luaX_checkDataType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _DataType);
 }
 void luaX_pushDataType(lua_State *L, eDataType_t value) {
-	assert(value >= 0 && value < 20);
+	assert(value >= 0 && value < 21);
 	lua_pushstring(L, _DataType[value]);
 }
 LRESULT PropertyType_Attached(lpObject_t, lpPropertyType_t, wParam_t, AttachedEventPtr);
@@ -638,7 +638,7 @@ static struct PropertyDesc const PropertyTypeProperties[kPropertyTypeNumProperti
 	/* PropertyType.Category */ DECL(0xafb3e591, 0x9c5f73a2,
 	PropertyType, "Category", Category, kDataTypeFixed),
 	/* PropertyType.DataType */ DECL(0x840d6c6d, 0xb7998b3a,
-	PropertyType, "DataType", DataType, kDataTypeEnum, .TypeString="None,Bool,Int,Enum,Float,Vector2D,Vector3D,Vector4D,Matrix2D,Matrix3D,Transform2D,Transform3D,Fixed,LongString,Color,Edges,ObjectTags,Event,Object,Group"),
+	PropertyType, "DataType", DataType, kDataTypeEnum, .TypeString="None,Bool,Int,Enum,Float,Vector2D,Vector3D,Vector4D,Rectangle,Matrix2D,Matrix3D,Transform2D,Transform3D,Fixed,LongString,Color,Edges,ObjectTags,Event,Object,Group"),
 	/* PropertyType.DefaultValue */ DECL(0xcd093f9f, 0x29fd6eac,
 	PropertyType, "DefaultValue", DefaultValue, kDataTypeFixed),
 	/* PropertyType.TargetType */ DECL(0x77ada720, 0x95c12bb3,

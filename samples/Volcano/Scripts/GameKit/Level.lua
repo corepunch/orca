@@ -1,7 +1,8 @@
+local sk = require "orca.SpriteKit"
 local LevelLoader = require "GameKit.LevelLoader"
 local sprites = require "Sprites"
 
-local Level = SKScene:extend()
+local Level = sk.SKScene:extend()
 
 function Level:new()
   Level.super.new(self)
@@ -28,7 +29,7 @@ function Level:run_worker_to(object)
   if worker then
     worker:run_to(object)
   end
-  object.marker = sk.SpriteNode { animation = sprites.target }
+  object.marker = sk.SKSpriteNode { Animation = sprites.target }
   object:addChild(object.marker)
   return true
 end
@@ -37,8 +38,4 @@ function Level:awake()
   LevelLoader.load(self, "Levels/level000.lua")
 end
 
-function make_level(args)
-  return system.Object.new_with_class(Level, "SKScene", args)
-end
-
-return make_level
+return Level

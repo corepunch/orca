@@ -1,4 +1,6 @@
-local app = require "AppKit"
+local sk = require "orca.SpriteKit"
+local fs = require "orca.filesystem"
+local cg = require "orca.geometry"
 local sprites = require "Sprites"
 local Worker = require "GameKit.Worker"
 local Barrier = require "GameKit.Barrier"
@@ -23,29 +25,29 @@ local factory = {
     else
       animation = sprites[type]
     end
-    local barrier = Barrier { x = x, y = y, animation = animation, time = time, type = type }
+    local barrier = Barrier { x = x, y = y, Animation = animation, time = time, type = type }
     table.insert(level.barriers, barrier)
     return barrier
   end,
   base = function(level, x, y)
-    local base = sk.SpriteNode {
-      animation = sprites.base0,
+    local base = sk.SKSpriteNode {
+      Animation = sprites.base0,
       x = x,
       y = y,
       do_work = function(self, worker)
-        worker.visible = false
+        worker.Visible = false
       end
     }
     level.base = base
     return base
   end,
   delivery_place = function(level, x, y)
-    return sk.SpriteNode { animation = sprites.delivery_place0, x = x, y = y }
+    return sk.SKSpriteNode { Animation = sprites.delivery_place0, x = x, y = y }
   end,
   empty = function(level, x, y, objtype)
 
     if objtype == 113 then
-      local worker = Worker { x = x, y = y, is_boat = true, animation = sprites.boat0 }
+      local worker = Worker { x = x, y = y, is_boat = true, Animation = sprites.boat0 }
       table.insert(level.workers, worker)
       return worker
     end
@@ -64,33 +66,33 @@ local factory = {
 
     local type = map[objtype]
     if type then
-      local gameobj = sk.SpriteNode {
-        animation = sprites[type],
+      local gameobj = sk.SKSpriteNode {
+        Animation = sprites[type],
         x = x,
         y = y,
-        mouseReleased = function(self)
+        onLeftMouseUp = function(self)
           level:run_worker_to(self)
         end
       }
       return gameobj
     end
-    return sk.Node { x = x, y = y }
+    return sk.SKNode { x = x, y = y }
   end,
   decor = function(level, x, y, anim, type)
     if type == 112 then
-      return Decor { animation = sprites[anim.."_br"], x = x, y = y }
+      return Decor { Animation = sprites[anim.."_br"], x = x, y = y }
     end
     if anim == "burger" or anim == "sawmill" then
-      return sk.SpriteNode { animation = sprites[anim.."0"], x = x, y = y }
+      return sk.SKSpriteNode { Animation = sprites[anim.."0"], x = x, y = y }
     end
     if sprites[anim] then
-      return sk.SpriteNode { animation = sprites[anim], x = x, y = y }
+      return sk.SKSpriteNode { Animation = sprites[anim], x = x, y = y }
     else
-      return sk.Node { x = x, y = y }
+      return sk.SKNode { x = x, y = y }
     end
   end,
   background = function(level, name)
-    return sk.SpriteNode { image = FS:Image("Images/"..name..".jpg") }
+    return sk.SKSpriteNode { Image = fs:Image("Images/"..name..".jpg") }
   end,
   resource = function(level, x, y, anim)
   end,
@@ -100,9 +102,9 @@ local factory = {
     while index <= #points do
       local x = points[index]
       local y = points[index + 1]
-      traffic[#traffic + 1] = cg.Vector2.new(x, y)
+      traffic[#traffic + 1] = cg.Vector2D(x, y)
       index = index + 2
-      level:addChild(sk.SpriteNode { x = x, y = y, opacity = 0.5 })
+      level:addChild(sk.SKSpriteNode { x = x, y = y, Opacity = 0.5 })
     end
     level.traffic = traffic
   end
@@ -111,8 +113,7 @@ local factory = {
 local level_loader = {}
 
 function level_loader.load(level, file)
-  -- level:addChild(sk.SpriteNode {x = 100, y = 100, animation = sprites.worker_run0})
-  local objects = FS:Script(file)
+  local objects = fs:Script(file)
   for _, object in ipairs(objects) do
     local construct = factory[object[1]]
     object[1] = level

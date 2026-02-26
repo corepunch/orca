@@ -2201,7 +2201,7 @@ ORCA_API int luaopen_orca_geometry(lua_State *L) {
 	lua_setfield(L, -2, "Box3D");
 	// rect
 	luaopen_orca_rect(L);
-	lua_setfield(L, -2, "Rect");
+	lua_setfield(L, -2, "Rectangle");
 	// quat
 	luaopen_orca_quat(L);
 	lua_setfield(L, -2, "Quaternion");

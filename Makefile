@@ -18,7 +18,7 @@ CFLAGS ?= -O2 -g
 # Always add these flags, even if CFLAGS is passed from outside
 CFLAGS += -fpic -I. -I$(CURDIR)
 LDFLAGS = -L$(LIBDIR)
-MODULES = geometry orca platform sysutil console localization parsers UIKit debug network renderer filesystem core SceneKit vsomeip server editor backend
+MODULES = geometry orca platform sysutil console localization parsers UIKit debug network renderer filesystem core SceneKit SpriteKit vsomeip server editor backend
 SOURCEMODULES = $(addprefix ${SOURCEDIR}/, $(MODULES))
 OBJECTS = $(patsubst %.c, %.o, $(foreach dir,$(SOURCEMODULES),$(wildcard $(dir)/*.c)))
 HEADERS = $(wildcard *.h)
@@ -142,6 +142,7 @@ modules:
 	../source/renderer/api/renderer.xml \
 	../source/UIKit/UIKit.xml \
 	../source/SceneKit/SceneKit.xml \
+	../source/SpriteKit/SpriteKit.xml \
 	../source/filesystem/filesystem.xml && cd ..
 
 fonts:
