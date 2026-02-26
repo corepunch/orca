@@ -69,8 +69,8 @@ HANDLER(SKSpriteNode, Render)
     bbox.height = 16;
   }
 
-  if (node->Anchor & kSKNodeAnchorRight) bbox.x += refW;
-  if (node->Anchor & kSKNodeAnchorTop)   bbox.y += refH;
+  bbox.x += refW * node->Anchor.x;
+  bbox.y += refH * node->Anchor.y;
 
   enum blend_mode blendMode = (int)pSKSpriteNode->BlendMode >= 0
     ? (enum blend_mode)pSKSpriteNode->BlendMode
@@ -100,8 +100,8 @@ HANDLER(SKSpriteNode, Render)
     struct rect bbox2 = frame2->Rect;
     bbox2.x = -bbox2.x;
     bbox2.y = -bbox2.y;
-    if (node->Anchor & kSKNodeAnchorRight) bbox2.x += refW;
-    if (node->Anchor & kSKNodeAnchorTop)   bbox2.y += refH;
+    bbox2.x += refW * node->Anchor.x;
+    bbox2.y += refH * node->Anchor.y;
     MAT3_Translate(&texmat2, &(struct vec2){
       frame2->UvRect.x,
       frame2->UvRect.y + frame2->UvRect.height,

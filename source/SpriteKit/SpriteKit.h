@@ -91,7 +91,7 @@ typedef struct SKNode const *SKNodeCPtr;
 /// @brief Base 2D sprite node with transform and matrix
 struct SKNode {
 	rect_t Rect; /// Source rectangle for sprite size and offset
-	int32_t Anchor; /// Anchor point bitmask for positioning
+	vec2_t Anchor; /// Anchor point for positioning
 	mat4_t Matrix; /// Final combined transformation matrix (computed automatically)
 	float _opacity;
 };

@@ -25,7 +25,7 @@
 <!--    <property name="RenderTransform" type="transform2" default=".scale={1,1}">Render transform for animation effects</property>-->
 <!--    <property name="RenderTransformOrigin" type="vec2">Origin point for render transform operations (rotation, scaling center)</property>-->
     <property name="Rect" type="rect">Source rectangle for sprite size and offset</property>
-    <property name="Anchor" type="int">Anchor point bitmask for positioning</property>
+    <property name="Anchor" type="vec2">Anchor point for positioning</property>
     <field name="Matrix" type="mat4">Final combined transformation matrix (computed automatically)</field>
     <field name="_opacity" type="float"/>
   </component>

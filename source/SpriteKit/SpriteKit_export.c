@@ -110,7 +110,7 @@ static struct PropertyDesc const SKNodeProperties[kSKNodeNumProperties] = {
 	/* SKNode.RectHeight */ DECL(0x68097dd8, 0x52859af6,
 	SKNode, "RectHeight", Rect.height, kDataTypeFloat),
 	/* SKNode.Anchor */ DECL(0xb54055d4, 0xf86abfb6,
-	SKNode, "Anchor", Anchor, kDataTypeInt),
+	SKNode, "Anchor", Anchor, kDataTypeVector2D),
 };
 static struct SKNode SKNodeDefaults = {0};
 LRESULT SKNodeProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
