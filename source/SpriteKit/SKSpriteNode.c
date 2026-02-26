@@ -2,6 +2,11 @@
 
 extern unsigned long WI_GetMilliseconds(void);
 
+enum {
+  kSKNodeAnchorRight = 2,
+  kSKNodeAnchorTop   = 4,
+};
+
 static uint32_t
 get_frame_index(uint32_t num_frames, float framerate, int32_t freeze_frame)
 {
@@ -17,6 +22,8 @@ HANDLER(SKSpriteNode, Render)
   SKNodePtr node = GetSKNode(hObject);
   if (!node) return FALSE;
 
+  float const refW = Node2D_GetFrame(GetNode2D(pRender->viewport), kBox3FieldWidth);
+  float const refH = Node2D_GetFrame(GetNode2D(pRender->viewport), kBox3FieldHeight);
   lpTexture_t image = pSKSpriteNode->Image;
   struct SpriteAnimation const *anim = pSKSpriteNode->Animation;
   struct mat3 texmat = MAT3_Identity();
@@ -62,6 +69,9 @@ HANDLER(SKSpriteNode, Render)
     bbox.height = 16;
   }
 
+  if (node->Anchor & kSKNodeAnchorRight) bbox.x += refW;
+  if (node->Anchor & kSKNodeAnchorTop)   bbox.y += refH;
+
   enum blend_mode blendMode = (int)pSKSpriteNode->BlendMode >= 0
     ? (enum blend_mode)pSKSpriteNode->BlendMode
     : BLEND_MODE_ALPHA;
@@ -90,6 +100,8 @@ HANDLER(SKSpriteNode, Render)
     struct rect bbox2 = frame2->Rect;
     bbox2.x = -bbox2.x;
     bbox2.y = -bbox2.y;
+    if (node->Anchor & kSKNodeAnchorRight) bbox2.x += refW;
+    if (node->Anchor & kSKNodeAnchorTop)   bbox2.y += refH;
     MAT3_Translate(&texmat2, &(struct vec2){
       frame2->UvRect.x,
       frame2->UvRect.y + frame2->UvRect.height,
