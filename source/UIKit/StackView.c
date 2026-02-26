@@ -12,12 +12,9 @@ _GetContentSize(lpObject_t hObject,
   float value = 0;
   FOR_EACH_LAYOUTABLE(child, hObject)
   {
-    Node2DPtr subview = GetNode2D(child);
-    if (Node2D_IsFrameSet(subview, kBox3FieldWidth + axis)) {
-      value += Node2D_GetFrame(subview, kBox3FieldWidth + axis) + pStackView->Spacing;
-    }
+    value += NODE2D_FRAME(GetNode2D(child), Size, axis).Desired + pStackView->Spacing;
   }
-  return value > 0 ? value - pStackView->Spacing : value;
+  return fmax(value - pStackView->Spacing, 0);
 }
 
 static uint32_t
