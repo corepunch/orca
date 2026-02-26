@@ -395,6 +395,32 @@ local function test_node_visibility()
 	node:removeFromParent()
 end
 
+local function test_property_change_notification()
+	-- WPF's INotifyPropertyChanged equivalent: assigning an onXxxChanged function
+	-- on an object enables automatic change tracking for that property.
+	-- emitPropertyChangedEvents() fires all pending callbacks (runs each frame).
+	local last_text = nil
+	local node = screen + orca.ui.TextBlock {
+		HorizontalAlignment = "Left",
+		Text = "Initial",
+	}
+
+	-- Registering onTextChanged enables change notifications for the Text property
+	node.onTextChanged = function(self, value)
+		last_text = value
+	end
+
+	-- Change the property value
+	node.Text = "Updated"
+
+	-- Fire pending property change callbacks (equivalent to WPF's binding update cycle)
+	node:emitPropertyChangedEvents()
+
+	assert(last_text == "Updated", "onTextChanged should be called with the new Text value")
+
+	node:removeFromParent()
+end
+
 -- Simulate asynchronous execution by using a timer or a delayed call
 -- For testing purposes, we can just call the callback immediately
 orca.async = function (callback) callback() end
@@ -411,3 +437,4 @@ test_node_alignment()
 test_input_checkbox()
 test_form_populate_inputs()
 test_node_visibility()
+test_property_change_notification()
