@@ -2,14 +2,14 @@
 <!DOCTYPE Screen SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
 <Screen Width="1024" Height="768" Name="mainWindow">
 
-  <SKView Name="GameView" Width="1366" Height="768" Anchor="0.5 0.5" Scene="Level">
-    <!-- <Level Name="Level" /> -->
+  <SKView Name="GameView" Width="1366" Height="768" HorizontalAlignment="Center" Scene="Level">
+    <Level Name="Level" />
   </SKView>
 
   <SKView Name="InterfaceView"
           Width="1024" Height="768"
           ReferenceWidth="1366" ReferenceHeight="768"
-          Anchor="0.5 0.5"
+          HorizontalAlignment="Center"
           Scene="Root">
 
     <SKScene Name="Root">

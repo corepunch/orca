@@ -1,11 +1,29 @@
 #include "SpriteKit.h"
 
 extern unsigned long WI_GetMilliseconds(void);
+struct vec2 SKNode_GetReferenceSize(lpObject_t node);
 
 enum {
   kSKNodeAnchorRight = 2,
   kSKNodeAnchorTop   = 4,
 };
+
+void
+SKNode_anchor(lpObject_t obj, lprect_t rect)
+{
+  rect->x += GetSKNode(obj)->Anchor.x * SKNode_GetReferenceSize(obj).x;
+  rect->y += GetSKNode(obj)->Anchor.y * SKNode_GetReferenceSize(obj).y;
+}
+
+static struct rect
+sprite_rect(lpObject_t node, lpcSpriteFrame_t sprite)
+{
+  struct rect rect = sprite->Rect;
+  rect.x = -rect.x;
+  rect.y = -rect.y;
+  SKNode_anchor(node, &rect);
+  return rect;
+}
 
 static uint32_t
 get_frame_index(uint32_t num_frames, float framerate, int32_t freeze_frame)
@@ -35,8 +53,8 @@ HANDLER(SKSpriteNode, Render)
     image = anim->Image;
 
     bbox = frame->Rect;
-    bbox.x = -bbox.x;
-    bbox.y = -bbox.y;
+//    bbox.x = -bbox.x;
+//    bbox.y = -bbox.y;
 
     MAT3_Translate(&texmat, &(struct vec2){
       frame->UvRect.x,
@@ -55,8 +73,6 @@ HANDLER(SKSpriteNode, Render)
       bbox.width = (float)img.bmWidth;
       bbox.height = (float)img.bmHeight;
     }
-    bbox.x = -bbox.x;
-    bbox.y = -bbox.y;
 
     struct rect uv = pSKSpriteNode->UvRect;
     if (uv.width == 0 && uv.height == 0) {
@@ -68,28 +84,26 @@ HANDLER(SKSpriteNode, Render)
     bbox.width = 16;
     bbox.height = 16;
   }
-
-  bbox.x += refW * node->Anchor.x;
-  bbox.y += refH * node->Anchor.y;
+  
+  SKNode_anchor(hObject, &bbox);
 
   enum blend_mode blendMode = (int)pSKSpriteNode->BlendMode >= 0
     ? (enum blend_mode)pSKSpriteNode->BlendMode
     : BLEND_MODE_ALPHA;
-
+  
   struct ViewEntity entity = {
     .bbox = BOX3_FromRect(bbox),
-    .matrix = node->Matrix,
+    .matrix = MAT4_Identity(), //node->Matrix,
+    .mesh = BOX_PTR(Mesh, MD_RECTANGLE),
     .material = {
       .opacity = node->_opacity,
       .color = {1, 1, 1, 1},
       .texture = image,
       .textureMatrix = texmat,
-      .blendMode = blendMode,
+      .blendMode = BLEND_MODE_ALPHA,//blendMode,
     },
   };
 
-//  printf("%f %f %f %f\n", pSKNode->Rect.x, pSKNode->Rect.y, pSKNode->Rect.width, pSKNode->Rect.height);
-  
   R_DrawEntity(pRender, &entity);
 
   struct SpriteAnimation const *anim2 = pSKSpriteNode->Animation2;
