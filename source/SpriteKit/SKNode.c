@@ -1,0 +1,33 @@
+#include "SpriteKit.h"
+
+HANDLER(SKNode, UpdateMatrix)
+{
+  struct mat4 renderMatrix;
+  struct mat4 layoutMatrix;
+  struct mat4 matrix;
+  struct transform2 const *renderTransform = &pSKNode->RenderTransform;
+  struct transform2 const *layoutTransform = &pSKNode->LayoutTransform;
+  struct vec2 pivot = pSKNode->RenderTransformOrigin;
+  struct vec2 center = {0};
+
+  layoutMatrix = transform2_ToMatrix3D(layoutTransform, &center);
+  renderMatrix = transform2_ToMatrix3D(renderTransform, &pivot);
+
+  matrix = MAT4_Multiply(&layoutMatrix, &renderMatrix);
+
+  if (pUpdateMatrix->parent) {
+    pSKNode->Matrix = MAT4_Multiply(pUpdateMatrix->parent, &matrix);
+  } else {
+    pSKNode->Matrix = matrix;
+  }
+
+  pSKNode->_opacity = GetNode(hObject)->Opacity * pUpdateMatrix->opacity;
+
+  FOR_EACH_CHILD(hObject, OBJ_SendMessageW, kEventUpdateMatrix, 0,
+                 &(UPDATEMATRIXSTRUCT){
+                   .parent = &pSKNode->Matrix,
+                   .opacity = pSKNode->_opacity,
+                 });
+
+  return TRUE;
+}

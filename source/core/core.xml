@@ -494,6 +494,7 @@
     <enum name="Vector2D">Two-dimensional vector, typically used for coordinates or sizes.</enum>
     <enum name="Vector3D">Three-dimensional vector, used for spatial coordinates, directions, or RGB values.</enum>
     <enum name="Vector4D">Four-dimensional vector, commonly used for extended color or transformation data.</enum>
+    <enum name="Rectangle">Rectangle structure, typically used for defining rectangular areas or bounding boxes.</enum>
     <enum name="Matrix2D">2x2 matrix, typically used for simple affine transformations in 2D space.</enum>
     <enum name="Matrix3D">3x3 matrix, used for 3D affine transformations or rotation data.</enum>
     <enum name="Transform2D">2D transformation structure combining position, scale, and rotation.</enum>

@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
+<module name="SpriteKit" namespace="orca" on-luaopen="on_spritekit_module_registered">
+  <include file="source/UIKit/UIKit.h"/>
+  <include file="source/renderer/api/renderer.h"/>
+  <include file="include/renderer.h"/>
+
+  <struct name="SpriteFrame">
+    <field name="Rect" type="rect"/>
+    <field name="UvRect" type="rect"/>
+  </struct>
+  
+  <component name="SpriteAnimation">
+    <property name="Image" type="Texture" pointer="true">Spritesheet texture</property>
+    <property name="Framerate" type="float">Frames per second</property>
+    <property name="NumFrames" type="int">Number of frames</property>
+    <field name="Frames" type="SpriteFrame" pointer="true">Variable-length frame data array</field>
+  </component>
+  
+  <component name="SKNode" parent="Node" children="SKNode">
+    <summary>Base 2D sprite node with transform and matrix</summary>
+    <details>Provides fundamental 2D transformation properties for sprite scene graph nodes. All sprite objects in the scene inherit from this component.</details>
+    <handles event="UpdateMatrix"/>
+    <property name="LayoutTransform" type="transform2" default=".scale={1,1}">Layout transform for 2D positioning</property>
+    <property name="RenderTransform" type="transform2" default=".scale={1,1}">Render transform for animation effects</property>
+    <property name="RenderTransformOrigin" type="vec2">Origin point for render transform operations (rotation, scaling center)</property>
+    <property name="Matrix" type="mat4">Final combined transformation matrix (computed automatically)</property>
+    <property name="Anchor" type="int">Anchor point bitmask for positioning</property>
+    <field name="_opacity" type="float"/>
+  </component>
+
+  <component name="SKScene" parent="SKNode">
+    <summary>Root container for a 2D sprite scene</summary>
+    <details>Represents a complete 2D sprite scene that can be rendered to an SKView. Acts as the root node of the sprite scene hierarchy.</details>
+    <handles event="UpdateMatrix"/>
+  </component>
+
+  <component name="SKSpriteNode" parent="SKNode">
+    <summary>2D sprite node that renders an image or animation</summary>
+    <details>Renders 2D sprite content using either a static image or an animated sprite animation. Supports UV coordinates for sprite atlas sheets and various blend modes.</details>
+    <handles event="Render"/>
+    <property name="Animation" type="SpriteAnimation" pointer="true">Primary sprite animation from a sprite atlas</property>
+    <property name="Animation2" type="SpriteAnimation" pointer="true">Secondary sprite animation (e.g., shadow layer)</property>
+    <property name="Image" type="Texture" pointer="true">Static image texture to display</property>
+    <property name="FreezeFrame" type="int" default="-1">Freeze animation at a specific frame index (-1 for normal playback)</property>
+    <property name="BlendMode" type="BlendMode" default="AlphaAutomatic">Blend mode for rendering</property>
+    <property name="Rect" type="rect">Source rectangle for sprite size and offset</property>
+    <property name="UvRect" type="rect">UV texture coordinates for sprite atlas sampling</property>
+  </component>
+
+  <component name="SKLabelNode" parent="SKNode" concept="TextBlockConcept">
+    <summary>2D text label node for displaying text in sprite space</summary>
+    <details>Renders text as a 2D sprite node that participates in the sprite scene hierarchy. Inherits text styling and layout from the TextBlockConcept.</details>
+    <handles event="Render"/>
+    <handles event="Create"/>
+    <field name="_node" type="SKNode" pointer="true"/>
+  </component>
+
+  <component name="SKView" parent="Node2D" children="SKNode">
+    <summary>2D viewport that renders an SKScene into the UI hierarchy</summary>
+    <details>Acts as the bridge between the 2D UI system and the sprite scene hierarchy. Renders the attached SKScene using a 2D orthographic projection into its Node2D bounds.</details>
+    <handles event="ForegroundContent"/>
+    <property name="ReferenceWidth" type="float">Reference width for the sprite coordinate system</property>
+    <property name="ReferenceHeight" type="float">Reference height for the sprite coordinate system</property>
+  </component>
+
+</module>

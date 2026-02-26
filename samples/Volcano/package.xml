@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<Project Name="Volcano" StartupScreen="Volcano/Screens/MainScreen">
+  <ScreenLibrary Name="Screens" IsExternal="true"/>
+  <ImageLibrary Name="Images" IsExternal="true"/>
+  <MessageLibrary Name="Messages">
+    <SystemMessage Message="WindowClosed">return</SystemMessage>
+    <SystemMessage Message="RequestReload">window:refresh()</SystemMessage>
+  </MessageLibrary>
+</Project>
