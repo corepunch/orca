@@ -1,0 +1,47 @@
+<?xml version="1.0" ?>
+<Sprite Name="helicopter" Image="Volcano/Sprites/helicopter">
+  <SpriteAnimation Name="helicopter_shadow">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="20.0 8.0 40.0 15.0" UvRect="0 0.0546875 0.078125 0.02929688"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="helicopter_base">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="65.0 22.0 107.0 57.0" UvRect="0 0.3574219 0.2089844 0.1113281"/>
+      <SpriteRect Rect="65.0 22.0 105.0 57.0" UvRect="0.2421875 0.4960938 0.2050781 0.1113281"/>
+      <SpriteRect Rect="58.0 26.0 93.0 61.0" UvRect="0.2050781 0.1523438 0.1816406 0.1191406"/>
+      <SpriteRect Rect="42.0 35.0 72.0 70.0" UvRect="0.4472656 0.4394531 0.140625 0.1367188"/>
+      <SpriteRect Rect="19.0 39.0 41.0 74.0" UvRect="0.9160156 0.8554688 0.08007813 0.1445313"/>
+      <SpriteRect Rect="21.0 39.0 41.0 74.0" UvRect="0.9160156 0.7109375 0.08007813 0.1445313"/>
+      <SpriteRect Rect="29.0 34.0 71.0 69.0" UvRect="0.4199219 0.3046875 0.1386719 0.1347656"/>
+      <SpriteRect Rect="34.0 24.0 92.0 59.0" UvRect="0.1601563 0.03710938 0.1796875 0.1152344"/>
+      <SpriteRect Rect="39.0 23.0 104.0 58.0" UvRect="0.2167969 0.3828125 0.203125 0.1132813"/>
+      <SpriteRect Rect="41.0 24.0 105.0 59.0" UvRect="0 0.2421875 0.2050781 0.1152344"/>
+      <SpriteRect Rect="41.0 29.0 98.0 69.0" UvRect="0.4824219 0.7304688 0.1914063 0.1347656"/>
+      <SpriteRect Rect="37.0 33.0 82.0 81.0" UvRect="0 0.08398438 0.1601563 0.1582031"/>
+      <SpriteRect Rect="27.0 34.0 46.0 88.0" UvRect="0.5878906 0.4042969 0.08984375 0.171875"/>
+      <SpriteRect Rect="20.0 35.0 44.0 90.0" UvRect="0.3867188 0.09570313 0.0859375 0.1757813"/>
+      <SpriteRect Rect="29.0 36.0 61.0 89.0" UvRect="0.5585938 0.2304688 0.1191406 0.1738281"/>
+      <SpriteRect Rect="45.0 32.0 84.0 79.0" UvRect="0.4824219 0.5761719 0.1640625 0.1542969"/>
+      <SpriteRect Rect="57.0 28.0 99.0 67.0" UvRect="0.7226563 0.8691406 0.1933594 0.1308594"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="helicopter_screw0" Framerate="10">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="54.0 8.0 101.0 57.0" UvRect="0.2089844 0.2714844 0.1972656 0.1113281"/>
+      <SpriteRect Rect="56.0 12.0 111.0 63.0" UvRect="0 0.46875 0.2167969 0.1230469"/>
+      <SpriteRect Rect="53.0 11.0 111.0 62.0" UvRect="0.2421875 0.6074219 0.2167969 0.1210938"/>
+      <SpriteRect Rect="44.0 6.0 99.0 54.0" UvRect="0.7226563 0.7636719 0.1933594 0.1054688"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="helicopter_screw1" Framerate="10">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="62.0 15.0 123.0 69.0" UvRect="0.2421875 0.7285156 0.2402344 0.1347656"/>
+      <SpriteRect Rect="62.0 16.0 124.0 70.0" UvRect="0 0.8632813 0.2421875 0.1367188"/>
+      <SpriteRect Rect="63.0 16.0 124.0 70.0" UvRect="0 0.7265625 0.2421875 0.1367188"/>
+      <SpriteRect Rect="62.0 15.0 123.0 69.0" UvRect="0.4824219 0.8652344 0.2402344 0.1347656"/>
+      <SpriteRect Rect="62.0 16.0 123.0 70.0" UvRect="0.2421875 0.8632813 0.2402344 0.1367188"/>
+      <SpriteRect Rect="62.0 15.0 124.0 69.0" UvRect="0 0.5917969 0.2421875 0.1347656"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+</Sprite>

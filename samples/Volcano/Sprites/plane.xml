@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<Sprite Name="plane" Image="Volcano/Sprites/plane">
+  <SpriteAnimation Name="plane">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="69.0 18.0 107.0 90.0" UvRect="0.5 0.6484375 0.4179688 0.3515625"/>
+      <SpriteRect Rect="40.0 21.0 108.0 63.0" UvRect="0.5 0.4023438 0.421875 0.2460938"/>
+      <SpriteRect Rect="70.0 44.0 128.0 105.0" UvRect="0 0.5898438 0.5 0.4101563"/>
+      <SpriteRect Rect="61.0 35.0 129.0 54.0" UvRect="0 0.01171875 0.5039063 0.2109375"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="plane_shadow">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="81.0 14.0 111.0 94.0" UvRect="0 0.2226563 0.4335938 0.3671875"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+</Sprite>

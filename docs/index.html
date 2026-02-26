@@ -2504,27 +2504,19 @@
 </span></div></div><div id="SKNode" class="class" data-name="SKNode" data-inherits="Node" data-xmlns="None"><div class="eyebrow">Component
 </div><h1 class="header">SKNode
 </h1><div class="abstract">Base 2D sprite node with transform and matrix
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SpriteKit.SKNode</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node" class="name base">Node</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Provides fundamental 2D transformation properties for sprite scene graph nodes. All sprite objects in the scene inherit from this component.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_opacity</span>: <span>float</span></code></div>
-<div class="topic"><code class="decorator"><span>struct </span><span class="identifier">LayoutTransform</span>: <a class="type-identifier-link" href="#transform2">transform2</a></code></div>
-<div class="small-abstract"><span>Layout transform for 2D positioning
-</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">LayoutTransformTranslation</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
-<div class="small-abstract"><span>Translation offset
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">LayoutTransformRotation</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Rotation angle in radians
-</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">LayoutTransformScale</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
-<div class="small-abstract"><span>Scale factors for X and Y axes
-</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">RenderTransform</span>: <a class="type-identifier-link" href="#transform2">transform2</a></code></div>
-<div class="small-abstract"><span>Render transform for animation effects
-</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">RenderTransformTranslation</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
-<div class="small-abstract"><span>Translation offset
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RenderTransformRotation</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Rotation angle in radians
-</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">RenderTransformScale</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
-<div class="small-abstract"><span>Scale factors for X and Y axes
-</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">RenderTransformOrigin</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
-<div class="small-abstract"><span>Origin point for render transform operations (rotation, scaling center)
-</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Matrix</span>: <a class="type-identifier-link" href="#mat4">mat4</a></code></div>
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SpriteKit.SKNode</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node" class="name base">Node</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Provides fundamental 2D transformation properties for sprite scene graph nodes. All sprite objects in the scene inherit from this component.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Matrix</span>: <a class="type-identifier-link" href="#mat4">mat4</a></code></div>
 <div class="small-abstract"><span>Final combined transformation matrix (computed automatically)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_opacity</span>: <span>float</span></code></div>
+<div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Rect</span>: <a class="type-identifier-link" href="#rect">rect</a></code></div>
+<div class="small-abstract"><span>Source rectangle for sprite size and offset
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RectX</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Left edge X coordinate
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RectY</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Top edge Y coordinate
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RectWidth</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Rectangle width
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RectHeight</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Rectangle height
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Anchor</span>: <span>int</span></code></div>
 <div class="small-abstract"><span>Anchor point bitmask for positioning
 </span></div></div><div id="SKScene" class="class" data-name="SKScene" data-inherits="SKNode" data-xmlns="None"><div class="eyebrow">Component
@@ -2543,16 +2535,6 @@
 <div class="small-abstract"><span>Freeze animation at a specific frame index (-1 for normal playback)
 </span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">BlendMode</span>: <a class="type-identifier-link" href="#BlendMode">BlendMode</a></code></div>
 <div class="small-abstract"><span>Blend mode for rendering
-</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Rect</span>: <a class="type-identifier-link" href="#rect">rect</a></code></div>
-<div class="small-abstract"><span>Source rectangle for sprite size and offset
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RectX</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Left edge X coordinate
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RectY</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Top edge Y coordinate
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RectWidth</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Rectangle width
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RectHeight</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Rectangle height
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">UvRect</span>: <a class="type-identifier-link" href="#rect">rect</a></code></div>
 <div class="small-abstract"><span>UV texture coordinates for sprite atlas sampling
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">UvRectX</span>: <span>float</span></code></div>
@@ -2566,14 +2548,18 @@
 </span></div></div><div id="SKLabelNode" class="class" data-name="SKLabelNode" data-inherits="SKNode" data-xmlns="None"><div class="eyebrow">Component
 </div><h1 class="header">SKLabelNode
 </h1><div class="abstract">2D text label node for displaying text in sprite space
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SpriteKit.SKLabelNode</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#SKNode" class="name base">SKNode</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Renders text as a 2D sprite node that participates in the sprite scene hierarchy. Inherits text styling and layout from the TextBlockConcept.</div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">_node</span>: <a class="type-identifier-link" href="#SKNode">SKNode</a></code></div>
-</div><div id="SKView" class="class" data-name="SKView" data-inherits="Node2D" data-xmlns="None"><div class="eyebrow">Component
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SpriteKit.SKLabelNode</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#SKNode" class="name base">SKNode</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Renders text as a 2D sprite node that participates in the sprite scene hierarchy. Inherits text styling and layout from the TextBlockConcept.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>object </span><span class="identifier">_node</span>: <a class="type-identifier-link" href="#SKNode">SKNode</a></code></div>
+<div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Color</span>: <a class="type-identifier-link" href="#color">color</a></code></div>
+<div class="small-abstract"><span>Color of the text
+</span></div></div><div id="SKView" class="class" data-name="SKView" data-inherits="Node2D" data-xmlns="None"><div class="eyebrow">Component
 </div><h1 class="header">SKView
 </h1><div class="abstract">2D viewport that renders an SKScene into the UI hierarchy
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SpriteKit.SKView</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node2D" class="name base">Node2D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Acts as the bridge between the 2D UI system and the sprite scene hierarchy. Renders the attached SKScene using a 2D orthographic projection into its Node2D bounds.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ReferenceWidth</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Reference width for the sprite coordinate system
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ReferenceHeight</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Reference height for the sprite coordinate system
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Scene</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Name of SKScene to render
 </span></div></div><div id="Workspace" class="class" data-name="Workspace" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
 </div><h1 class="header">Workspace
 </h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.Workspace</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code></div><div id="Project" class="class" data-name="Project" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component

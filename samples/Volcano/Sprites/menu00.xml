@@ -1,0 +1,43 @@
+<?xml version="1.0" ?>
+<Sprite Name="menu00" Image="Volcano/Sprites/menu00">
+  <SpriteAnimation Name="menu_layer0">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="1024.0 228.0 2048.0 457.0" UvRect="0 0.4179688 1 0.2231445"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="menu_layer1">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="1024.0 366.0 2048.0 732.0" UvRect="0 0.6416016 1 0.3574219"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="menu_layer2">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="258.0 133.0 517.0 267.0" UvRect="0.5263672 0.02490234 0.2524414 0.1303711"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="menu_layer3">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="1024.0 121.0 2048.0 243.0" UvRect="0 0.2988281 1 0.1186523"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="menu_layer4">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="539.0 207.0 1078.0 414.0" UvRect="0 0.09667969 0.5263672 0.2021484"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="menu_layer5">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="337.0 146.0 675.0 293.0" UvRect="0.5263672 0.1557617 0.3295898 0.1430664"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="menu_layer6">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="305.0 95.0 611.0 197.0" UvRect="0 0.0004882813 0.2983398 0.09619141"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="menu_layer8">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="53.0 22.0 106.0 44.0" UvRect="0.300293 0.07226563 0.05175781 0.02148438"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+</Sprite>

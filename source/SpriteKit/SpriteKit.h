@@ -90,11 +90,9 @@ typedef struct SKNode SKNode, *SKNodePtr;
 typedef struct SKNode const *SKNodeCPtr;
 /// @brief Base 2D sprite node with transform and matrix
 struct SKNode {
-	transform2_t LayoutTransform; /// Layout transform for 2D positioning
-	transform2_t RenderTransform; /// Render transform for animation effects
-	vec2_t RenderTransformOrigin; /// Origin point for render transform operations (rotation, scaling center)
-	mat4_t Matrix; /// Final combined transformation matrix (computed automatically)
+	rect_t Rect; /// Source rectangle for sprite size and offset
 	int32_t Anchor; /// Anchor point bitmask for positioning
+	mat4_t Matrix; /// Final combined transformation matrix (computed automatically)
 	float _opacity;
 };
 
@@ -113,7 +111,6 @@ struct SKSpriteNode {
 	lpTexture_t Image; /// Static image texture to display
 	int32_t FreezeFrame; /// Freeze animation at a specific frame index (-1 for normal playback)
 	eBlendMode_t BlendMode; /// Blend mode for rendering
-	rect_t Rect; /// Source rectangle for sprite size and offset
 	rect_t UvRect; /// UV texture coordinates for sprite atlas sampling
 };
 
@@ -121,6 +118,7 @@ typedef struct SKLabelNode SKLabelNode, *SKLabelNodePtr;
 typedef struct SKLabelNode const *SKLabelNodeCPtr;
 /// @brief 2D text label node for displaying text in sprite space
 struct SKLabelNode {
+	color_t Color; /// Color of the text
 	lpSKNode_t _node;
 };
 
@@ -130,6 +128,7 @@ typedef struct SKView const *SKViewCPtr;
 struct SKView {
 	float ReferenceWidth; /// Reference width for the sprite coordinate system
 	float ReferenceHeight; /// Reference height for the sprite coordinate system
+	fixedString_t Scene; /// Name of SKScene to render
 };
 
 #endif

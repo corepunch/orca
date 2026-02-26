@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Screen SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
+<Screen Width="1024" Height="768" Name="mainWindow">
+
+  <SKView Name="GameView" Width="1366" Height="768" HorizontalAlignment="Center" Scene="Level">
+    <!-- <Level Name="Level" /> -->
+  </SKView>
+
+  <SKView Name="InterfaceView"
+          Width="1024" Height="768"
+          ReferenceWidth="1366" ReferenceHeight="768"
+          HorizontalAlignment="Center"
+          Scene="Root">
+
+    <SKScene Name="Root">
+
+      <!-- Top-left background banner -->
+      <SKSpriteNode Name="noname"
+                    Rect="-47 668 488 115"
+                    UvRect="0.0020 0.5332 0.4766 0.1123"
+                    Image="Volcano/texture/gui/gui00.png"
+                    HorizontalAlignment="Left" VerticalAlignment="Top" />
+
+      <!-- Menu button -->
+      <SKSpriteNode Name="menu"
+                    Rect="1 681 82 82"
+                    Image="Volcano/texture/gui/gui00.png"
+                    UvRect="0.7441 0.9189 0.0801 0.0801"
+                    HorizontalAlignment="Left" VerticalAlignment="Top" />
+
+      <!-- Top-right background banner -->
+      <SKSpriteNode Name="noname"
+                    Rect="1010 671 454 153"
+                    UvRect="0.4805 0.5176 0.4434 0.1494"
+                    Image="Volcano/texture/gui/gui00.png"
+                    HorizontalAlignment="Right" VerticalAlignment="Top" />
+
+      <!-- Task 0 -->
+      <SKSpriteNode Name="task0_more"
+                    Rect="1035 741 20 21"
+                    UvRect="0.8330 0.7373 0.0195 0.0205"
+                    Image="Volcano/texture/gui/gui00.png"
+                    HorizontalAlignment="Right" VerticalAlignment="Top" />
+      <SKSpriteNode Name="task0_done"
+                    Rect="1036 741 21 22"
+                    UvRect="0.8535 0.7373 0.0205 0.0215"
+                    Image="Volcano/texture/gui/gui00.png"
+                    HorizontalAlignment="Right" VerticalAlignment="Top" />
+      <SKLabelNode Name="task0_label"
+                    Rect="1059 738 320 25"
+                    Color="1 1 1 1"
+                    Text="Rebuild 2 gasoline stations"
+                    HorizontalAlignment="Right" VerticalAlignment="Top" />
+
+      <!-- Task 1 -->
+      <SKSpriteNode Name="task1_more"
+                    Rect="1035 720 20 21"
+                    UvRect="0.8330 0.7373 0.0195 0.0205"
+                    Image="Volcano/texture/gui/gui00.png"
+                    HorizontalAlignment="Right" VerticalAlignment="Top" />
+      <SKSpriteNode Name="task1_done"
+                    Rect="1036 720 21 22"
+                    UvRect="0.8535 0.7373 0.0205 0.0215"
+                    Image="Volcano/texture/gui/gui00.png"
+                    HorizontalAlignment="Right" VerticalAlignment="Top" />
+      <SKLabelNode Name="task1_label"
+                    Rect="1059 717 320 25"
+                    Color="1 1 1 1"
+                    Text="Rebuild 2 gasoline stations"
+                    HorizontalAlignment="Right" VerticalAlignment="Top" />
+
+      <!-- Task 2 -->
+      <SKSpriteNode Name="task2_more"
+                    Rect="1035 699 20 21"
+                    UvRect="0.8330 0.7373 0.0195 0.0205"
+                    Image="Volcano/texture/gui/gui00.png"
+                    HorizontalAlignment="Right" VerticalAlignment="Top" />
+      <SKSpriteNode Name="task2_done"
+                    Rect="1036 699 21 22"
+                    UvRect="0.8535 0.7373 0.0205 0.0215"
+                    Image="Volcano/texture/gui/gui00.png"
+                    HorizontalAlignment="Right" VerticalAlignment="Top" />
+      <SKLabelNode Name="task2_label"
+                    Rect="1059 696 320 25"
+                    Color="1 1 1 1"
+                    Text="Rebuild 2 gasoline stations"
+                    HorizontalAlignment="Right" VerticalAlignment="Top" />
+
+      <!-- Timer row -->
+      <SKSpriteNode Name="noname"
+                    Rect="24 704 36 37"
+                    UvRect="0.6201 0.7031 0.0352 0.2891"
+                    HorizontalAlignment="Left" VerticalAlignment="Top" />
+      <SKSpriteNode Name="time_back"
+                    Rect="87 707 359 28"
+                    UvRect="0.0020 0.6504 0.3506 0.0273"
+                    Image="Volcano/texture/gui/gui00.png"
+                    HorizontalAlignment="Left" VerticalAlignment="Top" />
+      <SKSpriteNode Name="time"
+                    Rect="89 715 352 12"
+                    Image="Volcano/texture/gui/gui00.png"
+                    UvRect="0.3662 0.6719 0.3438 0.0117"
+                    HorizontalAlignment="Left" VerticalAlignment="Top" />
+      <SKSpriteNode Name="time_spin"
+                    Rect="200 708 10 26"
+                    UvRect="0.3545 0.6514 0.0098 0.0254"
+                    Image="Volcano/texture/gui/gui00.png"
+                    HorizontalAlignment="Left" VerticalAlignment="Top" />
+
+      <!-- Resource labels -->
+      <SKLabelNode Name="food"  Rect="123 739 49 20" Color="1 1 1 1" Text="0000" HorizontalAlignment="Left" VerticalAlignment="Top" />
+      <SKLabelNode Name="wood"  Rect="211 739 49 20" Color="1 1 1 1" Text="0000" HorizontalAlignment="Left" VerticalAlignment="Top" />
+      <SKLabelNode Name="money" Rect="303 739 49 20" Color="1 1 1 1" Text="0000" HorizontalAlignment="Left" VerticalAlignment="Top" />
+      <SKLabelNode Name="gas"   Rect="383 739 49 20" Color="1 1 1 1" Text="0000" HorizontalAlignment="Left" VerticalAlignment="Top" />
+
+      <!-- Resource icons -->
+      <SKSpriteNode Name="icon_food"
+                    Rect="87 732 37 36"
+                    UvRect="0.9590 0.6221 0.0361 0.0352"
+                    Image="Volcano/texture/gui/gui00.png"
+                    HorizontalAlignment="Left" VerticalAlignment="Top" />
+      <SKSpriteNode Name="icon_wood"
+                    Rect="173 733 41 35"
+                    UvRect="0.9590 0.5869 0.0400 0.0342"
+                    Image="Volcano/texture/gui/gui00.png"
+                    HorizontalAlignment="Left" VerticalAlignment="Top" />
+      <SKSpriteNode Name="icon_money"
+                    Rect="262 733 44 35"
+                    UvRect="0.9551 0.5508 0.0430 0.0342"
+                    Image="Volcano/texture/gui/gui00.png"
+                    HorizontalAlignment="Left" VerticalAlignment="Top" />
+      <SKSpriteNode Name="icon_gas"
+                    Rect="358 733 23 35"
+                    UvRect="0.9336 0.6221 0.0225 0.0342"
+                    Image="Volcano/texture/gui/gui00.png"
+                    HorizontalAlignment="Left" VerticalAlignment="Top" />
+
+    </SKScene>
+  </SKView>
+
+</Screen>

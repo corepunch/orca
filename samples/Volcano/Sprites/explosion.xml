@@ -1,0 +1,39 @@
+<?xml version="1.0" ?>
+<Sprite Name="explosion" Image="Volcano/Sprites/explosion">
+  <SpriteAnimation Name="effect_explosion" Framerate="30">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0 0.75 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0 0.5 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0 0.25 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0 0 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0.125 0.75 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0.125 0.5 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0.125 0.25 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0.125 0 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0.25 0.75 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0.25 0.5 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0.25 0.25 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0.25 0 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0.375 0.75 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0.375 0.5 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0.375 0.25 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0.375 0 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0.5 0.75 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0.5 0.5 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0.5 0.25 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0.5 0 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0.625 0.75 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0.75 0.75 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0.875 0.75 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0.625 0.5 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0.625 0.25 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0.625 0 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0.75 0.5 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0.875 0.5 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0.75 0.25 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0.75 0 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0.875 0.25 0.125 0.25"/>
+      <SpriteRect Rect="32.0 32.0 64.0 64.0" UvRect="0.875 0 0.125 0.25"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+</Sprite>

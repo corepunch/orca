@@ -1,0 +1,116 @@
+<?xml version="1.0" ?>
+<Sprite Name="barrier" Image="Volcano/Sprites/barrier">
+  <SpriteAnimation Name="bar_stone00">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="31.0 23.0 62.0 51.0" UvRect="0.3203125 0.3359375 0.1210938 0.09960938"/>
+      <SpriteRect Rect="31.0 23.0 62.0 47.0" UvRect="0.375 0.0625 0.1210938 0.09179688"/>
+      <SpriteRect Rect="27.0 23.0 53.0 42.0" UvRect="0.6054688 0.1972656 0.1035156 0.08203125"/>
+      <SpriteRect Rect="27.0 18.0 51.0 34.0" UvRect="0.6757813 0.8046875 0.09960938 0.06640625"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="bar_stone_big00">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="45.0 35.0 89.0 77.0" UvRect="0 0.6582031 0.1738281 0.1503906"/>
+      <SpriteRect Rect="40.0 29.0 86.0 67.0" UvRect="0.1289063 0.2578125 0.1679688 0.1308594"/>
+      <SpriteRect Rect="36.0 32.0 79.0 66.0" UvRect="0.7753906 0.7460938 0.1542969 0.1289063"/>
+      <SpriteRect Rect="24.0 28.0 63.0 53.0" UvRect="0.4960938 0.05078125 0.1230469 0.1035156"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="stone_dynamite">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="56.0 47.0 98.0 98.0" UvRect="0 0.8085938 0.1914063 0.1914063"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="bridge_auto00">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="49.0 38.0 100.0 66.0" UvRect="0.1914063 0.8710938 0.1953125 0.1289063"/>
+      <SpriteRect Rect="49.0 38.0 100.0 65.0" UvRect="0.3867188 0.8730469 0.1953125 0.1269531"/>
+      <SpriteRect Rect="49.0 39.0 99.0 66.0" UvRect="0.5820313 0.8710938 0.1933594 0.1289063"/>
+      <SpriteRect Rect="49.0 38.0 99.0 64.0" UvRect="0.7753906 0.875 0.1933594 0.125"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="bridge_wood00">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="48.0 36.0 97.0 65.0" UvRect="0.1914063 0.7441406 0.1894531 0.1269531"/>
+      <SpriteRect Rect="48.0 33.0 97.0 62.0" UvRect="0.1738281 0.6230469 0.1894531 0.1210938"/>
+      <SpriteRect Rect="48.0 33.0 97.0 60.0" UvRect="0.1308594 0.5058594 0.1894531 0.1171875"/>
+      <SpriteRect Rect="48.0 33.0 97.0 60.0" UvRect="0.1308594 0.3886719 0.1894531 0.1171875"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="bridge_auto01">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="28.0 48.0 67.0 96.0" UvRect="0 0.4707031 0.1308594 0.1875"/>
+      <SpriteRect Rect="30.0 48.0 66.0 96.0" UvRect="0 0.2832031 0.1289063 0.1875"/>
+      <SpriteRect Rect="29.0 48.0 61.0 96.0" UvRect="0 0.09570313 0.1191406 0.1875"/>
+      <SpriteRect Rect="28.0 48.0 58.0 96.0" UvRect="0.3203125 0.4355469 0.1132813 0.1875"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="bridge_wood01">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="26.0 46.0 56.0 92.0" UvRect="0.265625 0.078125 0.109375 0.1796875"/>
+      <SpriteRect Rect="29.0 46.0 60.0 93.0" UvRect="0.375 0.1542969 0.1171875 0.1816406"/>
+      <SpriteRect Rect="27.0 46.0 56.0 93.0" UvRect="0.4335938 0.4785156 0.109375 0.1816406"/>
+      <SpriteRect Rect="26.0 46.0 52.0 92.0" UvRect="0.5429688 0.4902344 0.1015625 0.1796875"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="bar_tree00">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="38.0 23.0 68.0 51.0" UvRect="0.7753906 0.6464844 0.1328125 0.09960938"/>
+      <SpriteRect Rect="35.0 23.0 62.0 42.0" UvRect="0.6191406 0.01171875 0.1210938 0.08203125"/>
+      <SpriteRect Rect="34.0 20.0 61.0 37.0" UvRect="0 0.0234375 0.1191406 0.07226563"/>
+      <SpriteRect Rect="30.0 18.0 53.0 33.0" UvRect="0.4921875 0.1542969 0.1035156 0.06445313"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="meteor0">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="26.0 28.0 52.0 54.0" UvRect="0.578125 0.3847656 0.1015625 0.1054688"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="meteor1">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="26.0 27.0 52.0 54.0" UvRect="0.6054688 0.2792969 0.1015625 0.1054688"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="swarm0">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="28.0 28.0 58.0 74.0" UvRect="0.4921875 0.21875 0.1132813 0.1445313"/>
+      <SpriteRect Rect="27.0 25.0 56.0 52.0" UvRect="0.6445313 0.6015625 0.109375 0.1015625"/>
+      <SpriteRect Rect="27.0 24.0 56.0 50.0" UvRect="0.6445313 0.5039063 0.109375 0.09765625"/>
+      <SpriteRect Rect="17.0 18.0 40.0 39.0" UvRect="0.296875 0.2597656 0.078125 0.07617188"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="oil_slick">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="37.0 35.0 75.0 71.0" UvRect="0.1191406 0.1191406 0.1464844 0.1386719"/>
+      <SpriteRect Rect="31.0 28.0 70.0 59.0" UvRect="0.5390625 0.7558594 0.1367188 0.1152344"/>
+      <SpriteRect Rect="31.0 28.0 70.0 59.0" UvRect="0.4414063 0.3632813 0.1367188 0.1152344"/>
+      <SpriteRect Rect="17.0 31.0 52.0 53.0" UvRect="0.6191406 0.09375 0.1015625 0.1035156"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="broken_road0">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="24.0 26.0 49.0 52.0" UvRect="0.6796875 0.703125 0.09570313 0.1015625"/>
+      <SpriteRect Rect="19.0 21.0 37.0 41.0" UvRect="0.6796875 0.4238281 0.07226563 0.08007813"/>
+      <SpriteRect Rect="14.0 16.0 25.0 31.0" UvRect="0.7539063 0.5 0.04882813 0.06054688"/>
+      <SpriteRect Rect="11.0 12.0 18.0 23.0" UvRect="0.2304688 0.07421875 0.03515625 0.04492188"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="broken_road1">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="38.0 28.0 78.0 57.0" UvRect="0.3867188 0.7617188 0.1523438 0.1113281"/>
+      <SpriteRect Rect="34.0 26.0 71.0 52.0" UvRect="0.3808594 0.6601563 0.1386719 0.1015625"/>
+      <SpriteRect Rect="30.0 21.0 62.0 44.0" UvRect="0.5195313 0.6699219 0.1210938 0.0859375"/>
+      <SpriteRect Rect="21.0 15.0 44.0 32.0" UvRect="0.2304688 0 0.0859375 0.0625"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="broken_road2">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="30.0 32.0 57.0 61.0" UvRect="0.1191406 0 0.1113281 0.1191406"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="bonfire">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="29.0 23.0 57.0 44.0" UvRect="0.7539063 0.5605469 0.1113281 0.0859375"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+</Sprite>

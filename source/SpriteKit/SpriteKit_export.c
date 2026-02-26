@@ -99,33 +99,20 @@ ORCA_API struct ClassDesc _SpriteAnimation = {
 };
 LRESULT SKNode_UpdateMatrix(lpObject_t, lpSKNode_t, wParam_t, UpdateMatrixEventPtr);
 static struct PropertyDesc const SKNodeProperties[kSKNodeNumProperties] = {
-	/* SKNode.LayoutTransform */ DECL(0x3f19bf01, 0x94dea86b,
-	SKNode, "LayoutTransform", LayoutTransform, kDataTypeTransform2D),
-	/* SKNode.LayoutTransformTranslation */ DECL(0xfc7e27e0, 0x6f073a6a,
-	SKNode, "LayoutTransformTranslation", LayoutTransform.translation, kDataTypeVector2D),
-	/* SKNode.LayoutTransformRotation */ DECL(0x9560ef43, 0x9df23fe5,
-	SKNode, "LayoutTransformRotation", LayoutTransform.rotation, kDataTypeFloat),
-	/* SKNode.LayoutTransformScale */ DECL(0x5a2c3595, 0x2540a6c3,
-	SKNode, "LayoutTransformScale", LayoutTransform.scale, kDataTypeVector2D),
-	/* SKNode.RenderTransform */ DECL(0xe9e55063, 0x8a755195,
-	SKNode, "RenderTransform", RenderTransform, kDataTypeTransform2D),
-	/* SKNode.RenderTransformTranslation */ DECL(0xb8e70ec2, 0x4102167c,
-	SKNode, "RenderTransformTranslation", RenderTransform.translation, kDataTypeVector2D),
-	/* SKNode.RenderTransformRotation */ DECL(0x3c611efd, 0xb33d93ef,
-	SKNode, "RenderTransformRotation", RenderTransform.rotation, kDataTypeFloat),
-	/* SKNode.RenderTransformScale */ DECL(0xd037e21b, 0xbee88ea1,
-	SKNode, "RenderTransformScale", RenderTransform.scale, kDataTypeVector2D),
-	/* SKNode.RenderTransformOrigin */ DECL(0xdc65ec6d, 0xb0267cdf,
-	SKNode, "RenderTransformOrigin", RenderTransformOrigin, kDataTypeVector2D),
-	/* SKNode.Matrix */ DECL(0xe9d1810c, 0x8ebd9452,
-	SKNode, "Matrix", Matrix, kDataTypeMatrix3D),
+	/* SKNode.Rect */ DECL(0x6b109927, 0x96f6bc31,
+	SKNode, "Rect", Rect, kDataTypeRectangle),
+	/* SKNode.RectX */ DECL(0x0a21a2ed, 0x0f6a994b,
+	SKNode, "RectX", Rect.x, kDataTypeFloat),
+	/* SKNode.RectY */ DECL(0x0921a15a, 0x0e6a97b8,
+	SKNode, "RectY", Rect.y, kDataTypeFloat),
+	/* SKNode.RectWidth */ DECL(0x25c57ce9, 0xe20eacdb,
+	SKNode, "RectWidth", Rect.width, kDataTypeFloat),
+	/* SKNode.RectHeight */ DECL(0x68097dd8, 0x52859af6,
+	SKNode, "RectHeight", Rect.height, kDataTypeFloat),
 	/* SKNode.Anchor */ DECL(0xb54055d4, 0xf86abfb6,
 	SKNode, "Anchor", Anchor, kDataTypeInt),
 };
-static struct SKNode SKNodeDefaults = {
-	.LayoutTransform = (struct transform2) { .scale={1,1} },
-	.RenderTransform = (struct transform2) { .scale={1,1} },
-};
+static struct SKNode SKNodeDefaults = {0};
 LRESULT SKNodeProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
 		case 0x5dbe404d: // UpdateMatrix
@@ -196,16 +183,6 @@ static struct PropertyDesc const SKSpriteNodeProperties[kSKSpriteNodeNumProperti
 	SKSpriteNode, "FreezeFrame", FreezeFrame, kDataTypeInt),
 	/* SKSpriteNode.BlendMode */ DECL(0x0038792b, 0x240fc724,
 	SKSpriteNode, "BlendMode", BlendMode, kDataTypeEnum, .TypeString="AlphaAutomatic,Opaque,Alpha,Additive,PremultipliedAlpha,MixedAlpha"),
-	/* SKSpriteNode.Rect */ DECL(0x6b109927, 0xb1aa4a9e,
-	SKSpriteNode, "Rect", Rect, kDataTypeRectangle),
-	/* SKSpriteNode.RectX */ DECL(0x0a21a2ed, 0x7513b5b2,
-	SKSpriteNode, "RectX", Rect.x, kDataTypeFloat),
-	/* SKSpriteNode.RectY */ DECL(0x0921a15a, 0x7613b745,
-	SKSpriteNode, "RectY", Rect.y, kDataTypeFloat),
-	/* SKSpriteNode.RectWidth */ DECL(0x25c57ce9, 0xbcd9241a,
-	SKSpriteNode, "RectWidth", Rect.width, kDataTypeFloat),
-	/* SKSpriteNode.RectHeight */ DECL(0x68097dd8, 0x5d75dbf5,
-	SKSpriteNode, "RectHeight", Rect.height, kDataTypeFloat),
 	/* SKSpriteNode.UvRect */ DECL(0xae3d25c0, 0xc27a0d8d,
 	SKSpriteNode, "UvRect", UvRect, kDataTypeRectangle),
 	/* SKSpriteNode.UvRectX */ DECL(0xe2422e48, 0xfb23c64f,
@@ -251,8 +228,10 @@ ORCA_API struct ClassDesc _SKSpriteNode = {
 LRESULT SKLabelNode_Render(lpObject_t, lpSKLabelNode_t, wParam_t, RenderEventPtr);
 LRESULT SKLabelNode_Create(lpObject_t, lpSKLabelNode_t, wParam_t, CreateEventPtr);
 static struct PropertyDesc const SKLabelNodeProperties[kSKLabelNodeNumProperties] = {
+	/* SKLabelNode.Color */ DECL(0xe5b43cf8, 0x84bf37d6,
+	SKLabelNode, "Color", Color, kDataTypeColor),
 };
-static struct SKLabelNode SKLabelNodeDefaults = {};
+static struct SKLabelNode SKLabelNodeDefaults = {0};
 LRESULT SKLabelNodeProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
 		case 0x350cf42d: // Render
@@ -289,6 +268,8 @@ static struct PropertyDesc const SKViewProperties[kSKViewNumProperties] = {
 	SKView, "ReferenceWidth", ReferenceWidth, kDataTypeFloat),
 	/* SKView.ReferenceHeight */ DECL(0xf011cff9, 0x4b5832ba,
 	SKView, "ReferenceHeight", ReferenceHeight, kDataTypeFloat),
+	/* SKView.Scene */ DECL(0xc89b38b3, 0x71075038,
+	SKView, "Scene", Scene, kDataTypeFixed),
 };
 static struct SKView SKViewDefaults = {0};
 LRESULT SKViewProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {

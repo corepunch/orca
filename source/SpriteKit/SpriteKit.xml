@@ -21,11 +21,12 @@
     <summary>Base 2D sprite node with transform and matrix</summary>
     <details>Provides fundamental 2D transformation properties for sprite scene graph nodes. All sprite objects in the scene inherit from this component.</details>
     <handles event="UpdateMatrix"/>
-    <property name="LayoutTransform" type="transform2" default=".scale={1,1}">Layout transform for 2D positioning</property>
-    <property name="RenderTransform" type="transform2" default=".scale={1,1}">Render transform for animation effects</property>
-    <property name="RenderTransformOrigin" type="vec2">Origin point for render transform operations (rotation, scaling center)</property>
-    <property name="Matrix" type="mat4">Final combined transformation matrix (computed automatically)</property>
+<!--    <property name="LayoutTransform" type="transform2" default=".scale={1,1}">Layout transform for 2D positioning</property>-->
+<!--    <property name="RenderTransform" type="transform2" default=".scale={1,1}">Render transform for animation effects</property>-->
+<!--    <property name="RenderTransformOrigin" type="vec2">Origin point for render transform operations (rotation, scaling center)</property>-->
+    <property name="Rect" type="rect">Source rectangle for sprite size and offset</property>
     <property name="Anchor" type="int">Anchor point bitmask for positioning</property>
+    <field name="Matrix" type="mat4">Final combined transformation matrix (computed automatically)</field>
     <field name="_opacity" type="float"/>
   </component>
 
@@ -44,7 +45,6 @@
     <property name="Image" type="Texture" pointer="true">Static image texture to display</property>
     <property name="FreezeFrame" type="int" default="-1">Freeze animation at a specific frame index (-1 for normal playback)</property>
     <property name="BlendMode" type="BlendMode" default="AlphaAutomatic">Blend mode for rendering</property>
-    <property name="Rect" type="rect">Source rectangle for sprite size and offset</property>
     <property name="UvRect" type="rect">UV texture coordinates for sprite atlas sampling</property>
   </component>
 
@@ -53,6 +53,7 @@
     <details>Renders text as a 2D sprite node that participates in the sprite scene hierarchy. Inherits text styling and layout from the TextBlockConcept.</details>
     <handles event="Render"/>
     <handles event="Create"/>
+    <property name="Color" type="color">Color of the text</property>
     <field name="_node" type="SKNode" pointer="true"/>
   </component>
 
@@ -62,6 +63,7 @@
     <handles event="ForegroundContent"/>
     <property name="ReferenceWidth" type="float">Reference width for the sprite coordinate system</property>
     <property name="ReferenceHeight" type="float">Reference height for the sprite coordinate system</property>
+    <property name="Scene" type="fixed">Name of SKScene to render</property>
   </component>
 
 </module>

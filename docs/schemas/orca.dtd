@@ -1752,41 +1752,26 @@
 <!ATTLIST SpriteAnimation %SpriteAnimationAttribs;>
 <!ENTITY % SKNodeAttribs "
 	%NodeAttribs;
-	LayoutTransform CDATA #IMPLIED
-	LayoutTransformTranslation CDATA #IMPLIED
-	LayoutTransformRotation CDATA #IMPLIED
-	LayoutTransformScale CDATA #IMPLIED
-	RenderTransform CDATA #IMPLIED
-	RenderTransformTranslation CDATA #IMPLIED
-	RenderTransformRotation CDATA #IMPLIED
-	RenderTransformScale CDATA #IMPLIED
-	RenderTransformOrigin CDATA #IMPLIED
-	Matrix CDATA #IMPLIED
+	Rect CDATA #IMPLIED
+	RectX CDATA #IMPLIED
+	RectY CDATA #IMPLIED
+	RectWidth CDATA #IMPLIED
+	RectHeight CDATA #IMPLIED
 	Anchor CDATA #IMPLIED
 ">
-<!ELEMENT SKNode.LayoutTransform (#PCDATA | Binding)*>
-<!ATTLIST SKNode.LayoutTransform Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT SKNode.LayoutTransformTranslation (#PCDATA | Binding)*>
-<!ATTLIST SKNode.LayoutTransformTranslation Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT SKNode.LayoutTransformRotation (#PCDATA | Binding)*>
-<!ATTLIST SKNode.LayoutTransformRotation Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT SKNode.LayoutTransformScale (#PCDATA | Binding)*>
-<!ATTLIST SKNode.LayoutTransformScale Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT SKNode.RenderTransform (#PCDATA | Binding)*>
-<!ATTLIST SKNode.RenderTransform Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT SKNode.RenderTransformTranslation (#PCDATA | Binding)*>
-<!ATTLIST SKNode.RenderTransformTranslation Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT SKNode.RenderTransformRotation (#PCDATA | Binding)*>
-<!ATTLIST SKNode.RenderTransformRotation Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT SKNode.RenderTransformScale (#PCDATA | Binding)*>
-<!ATTLIST SKNode.RenderTransformScale Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT SKNode.RenderTransformOrigin (#PCDATA | Binding)*>
-<!ATTLIST SKNode.RenderTransformOrigin Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT SKNode.Matrix (#PCDATA | Binding)*>
-<!ATTLIST SKNode.Matrix Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT SKNode.Rect (#PCDATA | Binding)*>
+<!ATTLIST SKNode.Rect Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT SKNode.RectX (#PCDATA | Binding)*>
+<!ATTLIST SKNode.RectX Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT SKNode.RectY (#PCDATA | Binding)*>
+<!ATTLIST SKNode.RectY Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT SKNode.RectWidth (#PCDATA | Binding)*>
+<!ATTLIST SKNode.RectWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT SKNode.RectHeight (#PCDATA | Binding)*>
+<!ATTLIST SKNode.RectHeight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT SKNode.Anchor (#PCDATA | Binding)*>
 <!ATTLIST SKNode.Anchor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % SKNodeElements "SKNode.LayoutTransform|SKNode.LayoutTransformTranslation|SKNode.LayoutTransformRotation|SKNode.LayoutTransformScale|SKNode.RenderTransform|SKNode.RenderTransformTranslation|SKNode.RenderTransformRotation|SKNode.RenderTransformScale|SKNode.RenderTransformOrigin|SKNode.Matrix|SKNode.Anchor|%NodeElements;">
+<!ENTITY % SKNodeElements "SKNode.Rect|SKNode.RectX|SKNode.RectY|SKNode.RectWidth|SKNode.RectHeight|SKNode.Anchor|%NodeElements;">
 <!ELEMENT SKNode EMPTY>
 <!ATTLIST SKNode %SKNodeAttribs;>
 <!ENTITY % SKSceneAttribs "
@@ -1802,11 +1787,6 @@
 	Image CDATA #IMPLIED
 	FreezeFrame CDATA #IMPLIED
 	BlendMode (%BlendMode;) #IMPLIED
-	Rect CDATA #IMPLIED
-	RectX CDATA #IMPLIED
-	RectY CDATA #IMPLIED
-	RectWidth CDATA #IMPLIED
-	RectHeight CDATA #IMPLIED
 	UvRect CDATA #IMPLIED
 	UvRectX CDATA #IMPLIED
 	UvRectY CDATA #IMPLIED
@@ -1823,16 +1803,6 @@
 <!ATTLIST SKSpriteNode.FreezeFrame Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT SKSpriteNode.BlendMode (#PCDATA | Binding)*>
 <!ATTLIST SKSpriteNode.BlendMode Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT SKSpriteNode.Rect (#PCDATA | Binding)*>
-<!ATTLIST SKSpriteNode.Rect Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT SKSpriteNode.RectX (#PCDATA | Binding)*>
-<!ATTLIST SKSpriteNode.RectX Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT SKSpriteNode.RectY (#PCDATA | Binding)*>
-<!ATTLIST SKSpriteNode.RectY Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT SKSpriteNode.RectWidth (#PCDATA | Binding)*>
-<!ATTLIST SKSpriteNode.RectWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT SKSpriteNode.RectHeight (#PCDATA | Binding)*>
-<!ATTLIST SKSpriteNode.RectHeight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT SKSpriteNode.UvRect (#PCDATA | Binding)*>
 <!ATTLIST SKSpriteNode.UvRect Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT SKSpriteNode.UvRectX (#PCDATA | Binding)*>
@@ -1843,27 +1813,33 @@
 <!ATTLIST SKSpriteNode.UvRectWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT SKSpriteNode.UvRectHeight (#PCDATA | Binding)*>
 <!ATTLIST SKSpriteNode.UvRectHeight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % SKSpriteNodeElements "SKSpriteNode.Animation|SKSpriteNode.Animation2|SKSpriteNode.Image|SKSpriteNode.FreezeFrame|SKSpriteNode.BlendMode|SKSpriteNode.Rect|SKSpriteNode.RectX|SKSpriteNode.RectY|SKSpriteNode.RectWidth|SKSpriteNode.RectHeight|SKSpriteNode.UvRect|SKSpriteNode.UvRectX|SKSpriteNode.UvRectY|SKSpriteNode.UvRectWidth|SKSpriteNode.UvRectHeight|%SKNodeElements;">
+<!ENTITY % SKSpriteNodeElements "SKSpriteNode.Animation|SKSpriteNode.Animation2|SKSpriteNode.Image|SKSpriteNode.FreezeFrame|SKSpriteNode.BlendMode|SKSpriteNode.UvRect|SKSpriteNode.UvRectX|SKSpriteNode.UvRectY|SKSpriteNode.UvRectWidth|SKSpriteNode.UvRectHeight|%SKNodeElements;">
 <!ELEMENT SKSpriteNode EMPTY>
 <!ATTLIST SKSpriteNode %SKSpriteNodeAttribs;>
 <!ENTITY % SKLabelNodeAttribs "
 	%SKNodeAttribs;
 	%TextBlockConceptAttribs;
+	Color CDATA #IMPLIED
 ">
-<!ENTITY % SKLabelNodeElements "%SKNodeElements;|%TextBlockConceptElements;">
+<!ELEMENT SKLabelNode.Color (#PCDATA | Binding)*>
+<!ATTLIST SKLabelNode.Color Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % SKLabelNodeElements "SKLabelNode.Color|%SKNodeElements;|%TextBlockConceptElements;">
 <!ELEMENT SKLabelNode EMPTY>
 <!ATTLIST SKLabelNode %SKLabelNodeAttribs;>
 <!ENTITY % SKViewAttribs "
 	%Node2DAttribs;
 	ReferenceWidth CDATA #IMPLIED
 	ReferenceHeight CDATA #IMPLIED
+	Scene CDATA #IMPLIED
 ">
 <!ELEMENT SKView.ReferenceWidth (#PCDATA | Binding)*>
 <!ATTLIST SKView.ReferenceWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT SKView.ReferenceHeight (#PCDATA | Binding)*>
 <!ATTLIST SKView.ReferenceHeight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % SKViewElements "SKView.ReferenceWidth|SKView.ReferenceHeight|%Node2DElements;">
-<!ELEMENT SKView (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|CollectionView|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%SKViewElements;)*>
+<!ELEMENT SKView.Scene (#PCDATA | Binding)*>
+<!ATTLIST SKView.Scene Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % SKViewElements "SKView.ReferenceWidth|SKView.ReferenceHeight|SKView.Scene|%Node2DElements;">
+<!ELEMENT SKView (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%SKViewElements;)*>
 <!ATTLIST SKView %SKViewAttribs;>
 <!ENTITY % WorkspaceAttribs "
 	Name CDATA #REQUIRED

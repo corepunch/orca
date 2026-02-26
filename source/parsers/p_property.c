@@ -401,6 +401,7 @@ PDESC_Parse(lpObject_t hobj,
     case kDataTypeVector4D:
     case kDataTypeVector3D:
     case kDataTypeVector2D:
+    case kDataTypeRectangle:
     case kDataTypeTransform2D:
     case kDataTypeTransform3D:
     case kDataTypeMatrix3D:

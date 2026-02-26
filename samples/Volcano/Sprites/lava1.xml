@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<Sprite Name="lava1" Image="Volcano/Sprites/lava1">
+  <SpriteAnimation Name="effect_lava_add">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="128.0 128.0 256.0 256.0" UvRect="0 0 1 1"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+</Sprite>

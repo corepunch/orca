@@ -23,8 +23,7 @@ HANDLER(SKSpriteNode, Render)
   struct rect bbox = {0};
 
   if (anim && anim->NumFrames > 0) {
-    uint32_t idx = get_frame_index(anim->NumFrames, anim->Framerate,
-                                   pSKSpriteNode->FreezeFrame);
+    uint32_t idx = get_frame_index(anim->NumFrames, anim->Framerate, pSKSpriteNode->FreezeFrame);
     struct SpriteFrame const *frame = &anim->Frames[idx];
     image = anim->Image;
 
@@ -44,7 +43,7 @@ HANDLER(SKSpriteNode, Render)
     struct image_info img;
     Image_GetInfo(image, &img);
 
-    bbox = pSKSpriteNode->Rect;
+    bbox = node->Rect;
     if (bbox.width == 0 && bbox.height == 0) {
       bbox.width = (float)img.bmWidth;
       bbox.height = (float)img.bmHeight;
@@ -79,6 +78,8 @@ HANDLER(SKSpriteNode, Render)
     },
   };
 
+//  printf("%f %f %f %f\n", pSKNode->Rect.x, pSKNode->Rect.y, pSKNode->Rect.width, pSKNode->Rect.height);
+  
   R_DrawEntity(pRender, &entity);
 
   struct SpriteAnimation const *anim2 = pSKSpriteNode->Animation2;

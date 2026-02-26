@@ -63,6 +63,7 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirname) {
     "orca.parsers.xml",
     "orca.ui",
     "orca.SceneKit",
+    "orca.SpriteKit",
   };
   size_t size = 0;
   LPSTR buf = NULL;

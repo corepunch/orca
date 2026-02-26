@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<Sprite Name="back_ex1" Image="Volcano/Sprites/back_ex1">
+  <SpriteAnimation Name="407_tunnel">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="348.0 245.0 696.0 491.0" UvRect="0 0.1132813 0.6796875 0.4794922"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="209_tunnel">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="399.0 208.0 797.0 417.0" UvRect="0 0.5927734 0.7783203 0.4072266"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+</Sprite>

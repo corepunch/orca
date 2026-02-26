@@ -1,0 +1,51 @@
+<?xml version="1.0" ?>
+<Sprite Name="map_destr0" Image="Volcano/Sprites/map_destr0">
+  <SpriteAnimation Name="map_bridge1">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="37.0 83.0 74.0 166.0" UvRect="0.8457031 0.3808594 0.07226563 0.3242188"/>
+      <SpriteRect Rect="38.0 83.0 75.0 166.0" UvRect="0.7724609 0.3808594 0.07324219 0.3242188"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="map_bridge2">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="82.0 30.0 165.0 56.0" UvRect="0 0.009765625 0.1611328 0.109375"/>
+      <SpriteRect Rect="82.0 25.0 165.0 51.0" UvRect="0.5742188 0.09765625 0.1611328 0.09960938"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="map_bridge3">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="89.0 104.0 178.0 209.0" UvRect="0.2265625 0.1464844 0.1738281 0.4082031"/>
+      <SpriteRect Rect="89.0 104.0 178.0 209.0" UvRect="0.4003906 0.15625 0.1738281 0.4082031"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="map_bridge4">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="176.0 37.0 353.0 76.0" UvRect="0.5742188 0.8515625 0.3447266 0.1484375"/>
+      <SpriteRect Rect="176.0 37.0 353.0 75.0" UvRect="0.5742188 0.7050781 0.3447266 0.1464844"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="map_bridge5">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="178.0 57.0 356.0 114.0" UvRect="0 0.7773438 0.3476563 0.2226563"/>
+      <SpriteRect Rect="178.0 57.0 356.0 114.0" UvRect="0 0.5546875 0.3476563 0.2226563"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="map_bridge6">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="116.0 111.0 232.0 223.0" UvRect="0.3476563 0.5644531 0.2265625 0.4355469"/>
+      <SpriteRect Rect="116.0 111.0 232.0 223.0" UvRect="0 0.1191406 0.2265625 0.4355469"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="map_bridge7">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="70.0 39.0 140.0 73.0" UvRect="0.7724609 0.2382813 0.1367188 0.1425781"/>
+      <SpriteRect Rect="70.0 34.0 140.0 68.0" UvRect="0.7724609 0.1054688 0.1367188 0.1328125"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="map_bridge8">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="51.0 130.0 102.0 260.0" UvRect="0.5742188 0.1972656 0.09960938 0.5078125"/>
+      <SpriteRect Rect="50.0 130.0 101.0 260.0" UvRect="0.6738281 0.1972656 0.09863281 0.5078125"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+</Sprite>

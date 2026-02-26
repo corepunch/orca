@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<Sprite Name="highlight" Image="Volcano/Sprites/highlight">
+  <SpriteAnimation Name="highlight">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="79.0 54.0 158.0 108.0" UvRect="0.0078125 0.5703125 0.6171875 0.421875"/>
+      <SpriteRect Rect="79.0 54.0 158.0 108.0" UvRect="0.0078125 0.140625 0.6171875 0.421875"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="highlight2">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="79.0 54.0 158.0 108.0" UvRect="0.0078125 0.140625 0.6171875 0.421875"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+</Sprite>

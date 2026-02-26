@@ -1,0 +1,254 @@
+<?xml version="1.0" ?>
+<Sprite Name="build0" Image="Volcano/Sprites/build0">
+  <SpriteAnimation Name="gas0_br">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="62.0 35.0 124.0 93.0" UvRect="0.8388672 0.6660156 0.1210938 0.09082031"/>
+      <SpriteRect Rect="62.0 33.0 122.0 91.0" UvRect="0.8388672 0.5771484 0.1191406 0.08886719"/>
+      <SpriteRect Rect="62.0 40.0 122.0 98.0" UvRect="0.6884766 0.5556641 0.1191406 0.09570313"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="gas0">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="62.0 33.0 122.0 91.0" UvRect="0.6884766 0.4667969 0.1191406 0.08886719"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="gas1_br">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="67.0 43.0 143.0 101.0" UvRect="0.1503906 0.1630859 0.1396484 0.09863281"/>
+      <SpriteRect Rect="71.0 45.0 144.0 114.0" UvRect="0.1591797 0.4960938 0.140625 0.1113281"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="gas1">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="62.0 33.0 122.0 91.0" UvRect="0.8076172 0.3974609 0.1191406 0.08886719"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="gas2_br">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="71.0 45.0 144.0 114.0" UvRect="0.7666016 0.7568359 0.140625 0.1113281"/>
+      <SpriteRect Rect="67.0 45.0 140.0 104.0" UvRect="0.2998047 0.3212891 0.1367188 0.1015625"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="gas2">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="62.0 34.0 122.0 93.0" UvRect="0.8076172 0.4863281 0.1191406 0.09082031"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="police_br">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="69.0 38.0 145.0 115.0" UvRect="0.1582031 0.3837891 0.1416016 0.1123047"/>
+      <SpriteRect Rect="68.0 38.0 144.0 118.0" UvRect="0.2998047 0.5449219 0.140625 0.1152344"/>
+      <SpriteRect Rect="68.0 38.0 144.0 120.0" UvRect="0 0.06738281 0.140625 0.1171875"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="police">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="68.0 38.0 144.0 120.0" UvRect="0.1591797 0.6074219 0.140625 0.1171875"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="firestation_br">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="82.0 38.0 164.0 147.0" UvRect="0.3144531 0.8564453 0.1601563 0.1435547"/>
+      <SpriteRect Rect="82.0 38.0 161.0 152.0" UvRect="0 0.8515625 0.1572266 0.1484375"/>
+      <SpriteRect Rect="82.0 38.0 161.0 152.0" UvRect="0 0.703125 0.1572266 0.1484375"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="firestation">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="82.0 38.0 161.0 152.0" UvRect="0.1572266 0.8515625 0.1572266 0.1484375"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="hospital_br">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="75.0 32.0 150.0 103.0" UvRect="0.140625 0.0625 0.1464844 0.1005859"/>
+      <SpriteRect Rect="75.0 32.0 150.0 103.0" UvRect="0.4746094 0.7675781 0.1464844 0.1005859"/>
+      <SpriteRect Rect="75.0 32.0 147.0 103.0" UvRect="0.2900391 0.1181641 0.1435547 0.1005859"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="hospital">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="75.0 32.0 147.0 103.0" UvRect="0.2871094 0.01757813 0.1435547 0.1005859"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="heliport_br">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="58.0 42.0 122.0 74.0" UvRect="0.5556641 0.4775391 0.1191406 0.07226563"/>
+      <SpriteRect Rect="58.0 42.0 122.0 70.0" UvRect="0.6640625 0.3984375 0.1191406 0.06835938"/>
+      <SpriteRect Rect="58.0 41.0 122.0 69.0" UvRect="0 0 0.1191406 0.06738281"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="heliport">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="58.0 39.0 114.0 67.0" UvRect="0.5664063 0.0625 0.1113281 0.06542969"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="base0">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="67.0 43.0 123.0 106.0" UvRect="0.4306641 0 0.1201172 0.1035156"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="base1">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="68.0 42.0 124.0 105.0" UvRect="0.4521484 0.6601563 0.1210938 0.1025391"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="base_flag" Framerate="5">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="-21.0 -41.0 44.0 19.0" UvRect="0.9511719 0.7714844 0.04296875 0.01855469"/>
+      <SpriteRect Rect="-21.0 -41.0 39.0 19.0" UvRect="0.7763672 0.04003906 0.03808594 0.01855469"/>
+      <SpriteRect Rect="-21.0 -41.0 44.0 19.0" UvRect="0.7763672 0.05859375 0.04296875 0.01855469"/>
+      <SpriteRect Rect="-21.0 -41.0 45.0 19.0" UvRect="0.9072266 0.7714844 0.04394531 0.01855469"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="tap" Framerate="15">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="12.0 5.0 25.0 20.0" UvRect="0.7832031 0.4472656 0.02441406 0.01953125"/>
+      <SpriteRect Rect="12.0 5.0 25.0 20.0" UvRect="0.7832031 0.4277344 0.02441406 0.01953125"/>
+      <SpriteRect Rect="12.0 5.0 25.0 20.0" UvRect="0.7832031 0.4082031 0.02441406 0.01953125"/>
+      <SpriteRect Rect="12.0 5.0 25.0 20.0" UvRect="0.9707031 0.9804688 0.02441406 0.01953125"/>
+      <SpriteRect Rect="12.0 5.0 25.0 20.0" UvRect="0.8076172 0.6318359 0.02441406 0.01953125"/>
+      <SpriteRect Rect="12.0 5.0 25.0 20.0" UvRect="0.9267578 0.5576172 0.02441406 0.01953125"/>
+      <SpriteRect Rect="12.0 5.0 25.0 20.0" UvRect="0.7763672 0.02050781 0.02441406 0.01953125"/>
+      <SpriteRect Rect="12.0 5.0 25.0 20.0" UvRect="0.9707031 0.9609375 0.02441406 0.01953125"/>
+      <SpriteRect Rect="12.0 5.0 25.0 20.0" UvRect="0.8076172 0.6123047 0.02441406 0.01953125"/>
+      <SpriteRect Rect="12.0 5.0 25.0 20.0" UvRect="0.9267578 0.5380859 0.02441406 0.01953125"/>
+      <SpriteRect Rect="12.0 5.0 25.0 20.0" UvRect="0.9707031 0.9414063 0.02441406 0.01953125"/>
+      <SpriteRect Rect="12.0 5.0 25.0 20.0" UvRect="0.8076172 0.5927734 0.02441406 0.01953125"/>
+      <SpriteRect Rect="12.0 5.0 25.0 20.0" UvRect="0.9267578 0.5185547 0.02441406 0.01953125"/>
+      <SpriteRect Rect="12.0 5.0 25.0 20.0" UvRect="0.9707031 0.921875 0.02441406 0.01953125"/>
+      <SpriteRect Rect="12.0 5.0 25.0 20.0" UvRect="0.9267578 0.4990234 0.02441406 0.01953125"/>
+      <SpriteRect Rect="12.0 5.0 25.0 20.0" UvRect="0.9707031 0.9023438 0.02441406 0.01953125"/>
+      <SpriteRect Rect="12.0 5.0 25.0 20.0" UvRect="0.9267578 0.4794922 0.02441406 0.01953125"/>
+      <SpriteRect Rect="12.0 5.0 25.0 20.0" UvRect="0.9707031 0.8828125 0.02441406 0.01953125"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="seaport_br">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="88.0 81.0 164.0 130.0" UvRect="0.8105469 0.8730469 0.1601563 0.1269531"/>
+      <SpriteRect Rect="88.0 81.0 154.0 130.0" UvRect="0.1572266 0.7246094 0.1503906 0.1269531"/>
+      <SpriteRect Rect="88.0 81.0 154.0 130.0" UvRect="0 0.3115234 0.1503906 0.1269531"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="seaport">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="88.0 81.0 154.0 130.0" UvRect="0 0.1845703 0.1503906 0.1269531"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="base2">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="63.0 33.0 97.0 72.0" UvRect="0.6777344 0.07617188 0.09472656 0.0703125"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="base3">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="57.0 31.0 97.0 72.0" UvRect="0.7724609 0.07714844 0.09472656 0.0703125"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="house0_br">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="61.0 36.0 126.0 110.0" UvRect="0.4345703 0.2089844 0.1230469 0.1074219"/>
+      <SpriteRect Rect="59.0 36.0 125.0 117.0" UvRect="0.4257813 0.4306641 0.1220703 0.1142578"/>
+      <SpriteRect Rect="59.0 36.0 124.0 117.0" UvRect="0.4365234 0.3164063 0.1210938 0.1142578"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="house0">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="59.0 36.0 118.0 117.0" UvRect="0.4404297 0.5458984 0.1152344 0.1142578"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="house1_br">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="75.0 50.0 162.0 131.0" UvRect="0 0.4384766 0.1582031 0.1279297"/>
+      <SpriteRect Rect="78.0 50.0 173.0 135.0" UvRect="0.4746094 0.8681641 0.1689453 0.1318359"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="house1">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="64.0 40.0 129.0 125.0" UvRect="0.2998047 0.4228516 0.1259766 0.1220703"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="house2_br">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="78.0 50.0 171.0 135.0" UvRect="0.6435547 0.8681641 0.1669922 0.1318359"/>
+      <SpriteRect Rect="81.0 51.0 163.0 140.0" UvRect="0 0.5664063 0.1591797 0.1367188"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="house2">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="70.0 44.0 138.0 125.0" UvRect="0.1503906 0.2617188 0.1347656 0.1220703"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="burger0_br">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="45.0 31.0 94.0 85.0" UvRect="0.9072266 0.7900391 0.09179688 0.08300781"/>
+      <SpriteRect Rect="45.0 31.0 94.0 85.0" UvRect="0.765625 0.2285156 0.09179688 0.08300781"/>
+      <SpriteRect Rect="45.0 31.0 94.0 85.0" UvRect="0.6640625 0.1464844 0.09179688 0.08300781"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="burger0">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="45.0 29.0 92.0 83.0" UvRect="0.7558594 0.1474609 0.08984375 0.08105469"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="burger1_br">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="59.0 42.0 148.0 96.0" UvRect="0.3144531 0.7626953 0.1445313 0.09375"/>
+      <SpriteRect Rect="59.0 42.0 148.0 105.0" UvRect="0.3076172 0.6601563 0.1445313 0.1025391"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="burger1">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="49.0 33.0 100.0 89.0" UvRect="0.5664063 0.1279297 0.09765625 0.08691406"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="burger2_br">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="59.0 42.0 148.0 105.0" UvRect="0.2900391 0.21875 0.1445313 0.1025391"/>
+      <SpriteRect Rect="66.0 46.0 149.0 110.0" UvRect="0.6210938 0.7607422 0.1455078 0.1074219"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="burger2">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="62.0 37.0 109.0 92.0" UvRect="0.5576172 0.3876953 0.1064453 0.08984375"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="sawmill0_br">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="58.0 28.0 105.0 88.0" UvRect="0.5576172 0.2148438 0.1025391 0.0859375"/>
+      <SpriteRect Rect="58.0 28.0 103.0 88.0" UvRect="0.6650391 0.3125 0.1005859 0.0859375"/>
+      <SpriteRect Rect="58.0 28.0 103.0 88.0" UvRect="0.765625 0.3115234 0.1005859 0.0859375"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="sawmill0">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="58.0 25.0 103.0 85.0" UvRect="0.6650391 0.2294922 0.1005859 0.08300781"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="sawmill1_br">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="71.0 45.0 136.0 108.0" UvRect="0.4335938 0.1035156 0.1328125 0.1054688"/>
+      <SpriteRect Rect="71.0 45.0 136.0 108.0" UvRect="0.5732422 0.6552734 0.1328125 0.1054688"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="sawmill1">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="56.0 23.0 102.0 87.0" UvRect="0.8662109 0.3125 0.09960938 0.08496094"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="sawmill2_br">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="71.0 45.0 136.0 108.0" UvRect="0.5556641 0.5498047 0.1328125 0.1054688"/>
+      <SpriteRect Rect="71.0 45.0 136.0 108.0" UvRect="0.7060547 0.6513672 0.1328125 0.1054688"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="sawmill2">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="65.0 29.0 110.0 89.0" UvRect="0.5576172 0.3007813 0.1074219 0.08691406"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="build_place">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="52.0 32.0 101.0 68.0" UvRect="0.6777344 0.009765625 0.09863281 0.06640625"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+</Sprite>

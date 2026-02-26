@@ -1,0 +1,54 @@
+<?xml version="1.0" ?>
+<Sprite Name="raven" Image="Volcano/Sprites/raven">
+  <SpriteAnimation Name="bird01_idle" Framerate="10">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="25.0 18.0 43.0 50.0" UvRect="0.328125 0.9023438 0.1679688 0.09765625"/>
+      <SpriteRect Rect="24.0 18.0 42.0 51.0" UvRect="0 0.5507813 0.1640625 0.09960938"/>
+      <SpriteRect Rect="24.0 19.0 42.0 53.0" UvRect="0 0.6503906 0.1640625 0.1035156"/>
+      <SpriteRect Rect="24.0 20.0 42.0 55.0" UvRect="0.1640625 0.8925781 0.1640625 0.1074219"/>
+      <SpriteRect Rect="24.0 18.0 42.0 52.0" UvRect="0.1640625 0.7910156 0.1640625 0.1015625"/>
+      <SpriteRect Rect="24.0 16.0 42.0 50.0" UvRect="0.1640625 0.6933594 0.1640625 0.09765625"/>
+      <SpriteRect Rect="24.0 14.0 42.0 47.0" UvRect="0 0.4589844 0.1640625 0.09179688"/>
+      <SpriteRect Rect="24.0 12.0 42.0 44.0" UvRect="0.1640625 0.6074219 0.1640625 0.0859375"/>
+      <SpriteRect Rect="24.0 10.0 42.0 41.0" UvRect="0.328125 0.640625 0.1640625 0.08007813"/>
+      <SpriteRect Rect="25.0 9.0 43.0 39.0" UvRect="0 0.2167969 0.1679688 0.07617188"/>
+      <SpriteRect Rect="24.0 8.0 42.0 37.0" UvRect="0 0.0703125 0.1640625 0.07226563"/>
+      <SpriteRect Rect="24.0 8.0 42.0 36.0" UvRect="0 0 0.1640625 0.0703125"/>
+      <SpriteRect Rect="24.0 9.0 42.0 36.0" UvRect="0.1640625 0.2988281 0.1640625 0.0703125"/>
+      <SpriteRect Rect="24.0 9.0 42.0 35.0" UvRect="0.1679688 0.2304688 0.1640625 0.06835938"/>
+      <SpriteRect Rect="24.0 9.0 42.0 35.0" UvRect="0.3320313 0.2714844 0.1640625 0.06835938"/>
+      <SpriteRect Rect="24.0 9.0 42.0 35.0" UvRect="0.3320313 0.203125 0.1640625 0.06835938"/>
+      <SpriteRect Rect="24.0 10.0 42.0 35.0" UvRect="0.1679688 0.1621094 0.1640625 0.06835938"/>
+      <SpriteRect Rect="24.0 11.0 42.0 36.0" UvRect="0.328125 0.3398438 0.1640625 0.0703125"/>
+      <SpriteRect Rect="24.0 12.0 42.0 38.0" UvRect="0 0.1425781 0.1640625 0.07421875"/>
+      <SpriteRect Rect="24.0 13.0 42.0 39.0" UvRect="0.328125 0.484375 0.1640625 0.07617188"/>
+      <SpriteRect Rect="24.0 13.0 42.0 41.0" UvRect="0 0.2929688 0.1640625 0.08007813"/>
+      <SpriteRect Rect="24.0 14.0 42.0 43.0" UvRect="0.828125 0.9160156 0.1640625 0.08398438"/>
+      <SpriteRect Rect="25.0 15.0 43.0 46.0" UvRect="0.6601563 0.9101563 0.1679688 0.08984375"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="bird01_action" Framerate="10">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="24.0 9.0 42.0 44.0" UvRect="0.328125 0.7207031 0.1640625 0.0859375"/>
+      <SpriteRect Rect="24.0 29.0 42.0 63.0" UvRect="0 0.8769531 0.1640625 0.1230469"/>
+      <SpriteRect Rect="24.0 40.0 42.0 63.0" UvRect="0 0.7539063 0.1640625 0.1230469"/>
+      <SpriteRect Rect="24.0 34.0 42.0 43.0" UvRect="0.1640625 0.5234375 0.1640625 0.08398438"/>
+      <SpriteRect Rect="25.0 25.0 43.0 32.0" UvRect="0.1640625 0.03125 0.1679688 0.0625"/>
+      <SpriteRect Rect="25.0 23.0 43.0 30.0" UvRect="0.3320313 0.1445313 0.1679688 0.05859375"/>
+      <SpriteRect Rect="25.0 24.0 43.0 31.0" UvRect="0.3320313 0.02148438 0.1679688 0.06054688"/>
+      <SpriteRect Rect="24.0 25.0 42.0 35.0" UvRect="0.1640625 0.09375 0.1640625 0.06835938"/>
+      <SpriteRect Rect="24.0 25.0 42.0 41.0" UvRect="0.1640625 0.4433594 0.1640625 0.08007813"/>
+      <SpriteRect Rect="24.0 23.0 42.0 44.0" UvRect="0 0.3730469 0.1640625 0.0859375"/>
+      <SpriteRect Rect="24.0 22.0 42.0 48.0" UvRect="0.4960938 0.90625 0.1640625 0.09375"/>
+      <SpriteRect Rect="24.0 17.0 42.0 49.0" UvRect="0.328125 0.8066406 0.1640625 0.09570313"/>
+      <SpriteRect Rect="24.0 8.0 42.0 41.0" UvRect="0.328125 0.5605469 0.1640625 0.08007813"/>
+      <SpriteRect Rect="24.0 8.0 42.0 38.0" UvRect="0.1640625 0.3691406 0.1640625 0.07421875"/>
+      <SpriteRect Rect="24.0 8.0 42.0 38.0" UvRect="0.328125 0.4101563 0.1640625 0.07421875"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="bird01_sh">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="26.0 12.0 46.0 32.0" UvRect="0.3320313 0.08203125 0.1796875 0.0625"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+</Sprite>

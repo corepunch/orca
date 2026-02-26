@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<Sprite Name="map21" Image="Volcano/Sprites/map21">
+  <SpriteAnimation Name="map21">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="512.0 384.0 1024.0 768.0" UvRect="0 0 1 1"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+</Sprite>

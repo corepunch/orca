@@ -1,0 +1,45 @@
+<?xml version="1.0" ?>
+<Sprite Name="build1" Image="Volcano/Sprites/build1">
+  <SpriteAnimation Name="railstation0_br">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="103.0 46.0 190.0 121.0" UvRect="0 0.7636719 0.3710938 0.2363281"/>
+      <SpriteRect Rect="103.0 46.0 190.0 119.0" UvRect="0.3710938 0.7675781 0.3710938 0.2324219"/>
+      <SpriteRect Rect="103.0 47.0 190.0 120.0" UvRect="0 0.5292969 0.3710938 0.234375"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="railstation0">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="103.0 47.0 184.0 120.0" UvRect="0 0.2949219 0.359375 0.234375"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="finish_base0">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="34.0 9.0 59.0 57.0" UvRect="0.2636719 0.1835938 0.1152344 0.1113281"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="delivery_place0">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="55.0 51.0 111.0 74.0" UvRect="0.3710938 0.4238281 0.2167969 0.1445313"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="delivery_place_hl" Framerate="1">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="39.0 20.0 76.0 45.0" UvRect="0.359375 0.3359375 0.1484375 0.08789063"/>
+      <SpriteRect Rect="33.0 25.0 75.0 46.0" UvRect="0.2636719 0.09375 0.1464844 0.08984375"/>
+      <SpriteRect Rect="39.0 19.0 81.0 40.0" UvRect="0 0.0078125 0.1582031 0.078125"/>
+      <SpriteRect Rect="14.0 23.0 31.0 48.0" UvRect="0.6347656 0.6738281 0.06054688 0.09375"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="garage0">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="67.0 51.0 135.0 102.0" UvRect="0.3710938 0.5683594 0.2636719 0.1992188"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="garage0_br">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="67.0 56.0 135.0 107.0" UvRect="0 0.0859375 0.2636719 0.2089844"/>
+      <SpriteRect Rect="67.0 56.0 132.0 107.0" UvRect="0.7421875 0.7910156 0.2578125 0.2089844"/>
+      <SpriteRect Rect="67.0 55.0 132.0 106.0" UvRect="0.7421875 0.5839844 0.2578125 0.2070313"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+</Sprite>

@@ -1,0 +1,58 @@
+<?xml version="1.0" ?>
+<Sprite Name="achieves" Image="Volcano/Sprites/achieves">
+  <SpriteAnimation Name="achieve_bad">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="0.0 1.0 58.0 58.0" UvRect="0 0.734375 0.2265625 0.2265625"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="achieve_boat">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="0.0 1.0 58.0 58.0" UvRect="0 0.5078125 0.2265625 0.2265625"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="achieve_fire">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="0.0 1.0 58.0 58.0" UvRect="0.2265625 0.734375 0.2265625 0.2265625"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="achieve_lock1">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="0.0 1.0 58.0 58.0" UvRect="0 0.28125 0.2265625 0.2265625"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="achieve_medic">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="0.0 1.0 58.0 58.0" UvRect="0.2265625 0.5078125 0.2265625 0.2265625"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="achieve_normal">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="0.0 1.0 58.0 58.0" UvRect="0.453125 0.734375 0.2265625 0.2265625"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="achieve_pilot">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="0.0 1.0 58.0 58.0" UvRect="0 0.0546875 0.2265625 0.2265625"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="achieve_cop">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="0.0 1.0 58.0 58.0" UvRect="0.2265625 0.28125 0.2265625 0.2265625"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="achieve_delim">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="126.0 3.0 252.0 10.0" UvRect="0 0.9609375 0.984375 0.0390625"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="achieve_epic">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="0.0 1.0 58.0 58.0" UvRect="0.453125 0.5078125 0.2265625 0.2265625"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+  <SpriteAnimation Name="achieve_lock">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="0.0 1.0 58.0 58.0" UvRect="0.6796875 0.734375 0.2265625 0.2265625"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+</Sprite>

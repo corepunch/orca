@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<Sprite Name="train" Image="Volcano/Sprites/train">
+  <SpriteAnimation Name="train">
+    <SpriteAnimation.Frames>
+      <SpriteRect Rect="113.0 11.0 121.0 94.0" UvRect="0.4882813 0.6328125 0.2363281 0.3671875"/>
+      <SpriteRect Rect="109.0 10.0 118.0 100.0" UvRect="0.2578125 0.609375 0.2304688 0.390625"/>
+      <SpriteRect Rect="113.0 10.0 122.0 101.0" UvRect="0 0.1953125 0.2382813 0.3945313"/>
+      <SpriteRect Rect="108.0 10.0 117.0 88.0" UvRect="0.7246094 0.65625 0.2285156 0.34375"/>
+      <SpriteRect Rect="117.0 11.0 132.0 105.0" UvRect="0 0.5898438 0.2578125 0.4101563"/>
+    </SpriteAnimation.Frames>
+  </SpriteAnimation>
+</Sprite>
