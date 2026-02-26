@@ -1,0 +1,30 @@
+#include "types.h"
+
+static const color_t DOOR_COLOR = {0x00, 0x00, 0x00, 0xFF};
+static const color_t SELECTED_COLOR = {0xC0, 0x00, 0x00, 0xFF};
+
+static const color_t colors[kBlockTypeCount] = {
+	{0xFF, 0xFF, 0xFF, 0xFF}, // kBlockTypeNone
+	{0x03, 0xBD, 0xD0, 0xFF}, // kBlockTypeFloor
+	{0x00, 0x92, 0x01, 0xFF}, // kBlockTypeWall
+	{0xA3, 0xA2, 0xA3, 0xFF}, // kBlockTypeBox
+	// {0x00, 0x00, 0x00, 0xFF}, // kBlockTypeDoor
+	// {0x09, 0xD0, 0x03, 0xFF}, // kBlockTypeDeath
+	// {0xFF, 0x7A, 0x6C, 0xFF}, // kBlockTypeMonkey
+	// {0xDA, 0x23, 0xD1, 0xFF}, // kBlockTypeTrigger
+};
+
+color_t GetBlockTypeColor(blockType_t type)
+{
+	return colors[type];
+}
+
+color_t GetSelectedBlockColor()
+{
+	return SELECTED_COLOR;
+}
+
+color_t GetPortalBlockColor()
+{
+	return DOOR_COLOR;
+}
