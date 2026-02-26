@@ -1,3 +1,4 @@
+#include <include/api.h>
 #include "SpriteKit_private.h"
 
 static int
