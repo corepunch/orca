@@ -76,7 +76,6 @@
 		781CA7582E15571400FFCFD9 /* Label.c in Sources */ = {isa = PBXBuildFile; fileRef = 78688D262D81E9E2008DE67B /* Label.c */; };
 		781CA75A2E15571400FFCFD9 /* NinePatchImage.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C737542B8F60C600FD598E /* NinePatchImage.c */; };
 		781CA75B2E15571400FFCFD9 /* Screen.c in Sources */ = {isa = PBXBuildFile; fileRef = 78688D1B2D6F28AE008DE67B /* Screen.c */; };
-		781CA75C2E15571400FFCFD9 /* Node2D_Layout.c in Sources */ = {isa = PBXBuildFile; fileRef = 781769442D649AF9003CBEA9 /* Node2D_Layout.c */; };
 		781CA75D2E15571400FFCFD9 /* Node2D.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C737562B8F60C600FD598E /* Node2D.c */; };
 		781CA75E2E15571400FFCFD9 /* PrefabView2D.c in Sources */ = {isa = PBXBuildFile; fileRef = 78F2231B2C635B0C008D5CA3 /* PrefabView2D.c */; };
 		781CA75F2E15571400FFCFD9 /* StackView.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C737582B8F60C600FD598E /* StackView.c */; };
@@ -332,7 +331,6 @@
 		7814FD512DF86E9F00625D2F /* libfbxsdk.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfbxsdk.a; path = "../../../../Applications/Autodesk/FBX SDK/2020.2/lib/clang/release/libfbxsdk.a"; sourceTree = "<group>"; };
 		7814FD532DF86EE600625D2F /* libfbxsdk.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfbxsdk.dylib; path = "../../../../Applications/Autodesk/FBX SDK/2020.2/lib/clang/release/libfbxsdk.dylib"; sourceTree = "<group>"; };
 		781769422D61CEC9003CBEA9 /* p_css.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = p_css.c; sourceTree = "<group>"; };
-		781769442D649AF9003CBEA9 /* Node2D_Layout.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Node2D_Layout.c; sourceTree = "<group>"; };
 		781CA6AD2E13CA7E00FFCFD9 /* ed_stab_object.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ed_stab_object.h; sourceTree = "<group>"; };
 		781CA6AF2E13E04700FFCFD9 /* ed_stab_property.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ed_stab_property.h; sourceTree = "<group>"; };
 		781CA6B12E13E08400FFCFD9 /* ed_stab_component.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ed_stab_component.h; sourceTree = "<group>"; };
@@ -1054,7 +1052,6 @@
 				78688D202D7DE88D008DE67B /* Input.c */,
 				78688D262D81E9E2008DE67B /* Label.c */,
 				78C737542B8F60C600FD598E /* NinePatchImage.c */,
-				781769442D649AF9003CBEA9 /* Node2D_Layout.c */,
 				78C737562B8F60C600FD598E /* Node2D.c */,
 				7834B8D62F479D940071F07F /* PageHost.c */,
 				78F2231B2C635B0C008D5CA3 /* PrefabView2D.c */,
@@ -1810,7 +1807,6 @@
 				781CA7582E15571400FFCFD9 /* Label.c in Sources */,
 				781CA75A2E15571400FFCFD9 /* NinePatchImage.c in Sources */,
 				781CA75B2E15571400FFCFD9 /* Screen.c in Sources */,
-				781CA75C2E15571400FFCFD9 /* Node2D_Layout.c in Sources */,
 				781CA75D2E15571400FFCFD9 /* Node2D.c in Sources */,
 				781CA75E2E15571400FFCFD9 /* PrefabView2D.c in Sources */,
 				781CA75F2E15571400FFCFD9 /* StackView.c in Sources */,

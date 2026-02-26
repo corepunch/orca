@@ -1208,24 +1208,24 @@
 </div><div id="HorizontalAlignment" class="class" data-name="HorizontalAlignment" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
 </div><h1 class="header">HorizontalAlignment
 </h1><div class="abstract">Horizontal alignment of elements within their parent container
-</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">Left</span></code><div class="small-abstract"><span>Align to left edge of container
+</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">Stretch</span></code><div class="small-abstract"><span>Stretch to fill container width
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Left</span></code><div class="small-abstract"><span>Align to left edge of container
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Center</span></code><div class="small-abstract"><span>Center within container
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Right</span></code><div class="small-abstract"><span>Align to right edge of container
 </span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Stretch</span></code><div class="small-abstract"><span>Stretch to fill container width
-</span></div></div>
 </div><div id="VerticalAlignment" class="class" data-name="VerticalAlignment" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
 </div><h1 class="header">VerticalAlignment
 </h1><div class="abstract">Vertical alignment of elements within their parent container
-</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">Top</span></code><div class="small-abstract"><span>Align to top edge of container
+</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">Stretch</span></code><div class="small-abstract"><span>Stretch to fill container height
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Top</span></code><div class="small-abstract"><span>Align to top edge of container
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Center</span></code><div class="small-abstract"><span>Center within container
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Bottom</span></code><div class="small-abstract"><span>Align to bottom edge of container
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Stretch</span></code><div class="small-abstract"><span>Stretch to fill container height
 </span></div></div>
 </div><div id="AlignItems" class="class" data-name="AlignItems" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
 </div><h1 class="header">AlignItems
@@ -1485,6 +1485,8 @@
 </h1><div class="abstract">Complete sizing definition for one axis
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.SizeAxisShorthand</span></code><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Requested</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Requested {0} size in pixels
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Desired</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Desired {0} size in pixels
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Min</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Minimum allowable {0} size along
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Actual</span>: <span>float</span></code></div>
@@ -1573,6 +1575,8 @@
 <div class="small-abstract"><span>A number value per axis
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Width</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Requested Axis[0] size in pixels
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">DesiredWidth</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Desired Axis[0] size in pixels
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">MinWidth</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Minimum allowable Axis[0] size along
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ActualWidth</span>: <span>float</span></code></div>
@@ -1583,6 +1587,8 @@
 <div class="small-abstract"><span>A number value per axis
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Height</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Requested Axis[1] size in pixels
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">DesiredHeight</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Desired Axis[1] size in pixels
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">MinHeight</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Minimum allowable Axis[1] size along
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ActualHeight</span>: <span>float</span></code></div>
@@ -1593,6 +1599,8 @@
 <div class="small-abstract"><span>A number value per axis
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Depth</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Requested Axis[2] size in pixels
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">DesiredDepth</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Desired Axis[2] size in pixels
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">MinDepth</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Minimum allowable Axis[2] size along
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ActualDepth</span>: <span>float</span></code></div>

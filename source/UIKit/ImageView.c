@@ -24,7 +24,8 @@ HANDLER(ImageView, MeasureOverride)
   if (pImageView->Image) {
     struct vec2 size = _GetImageSize(hObject, pImageView);
     struct edges const* e = (struct edges const*)&pImageView->Insets;
-    return MAKEDWORD(size.x - e->left - e->right, size.y - e->top - e->bottom);
+    return MAKEDWORD(fmin(size.x - e->left - e->right, pMeasureOverride->width),
+                     fmin(size.y - e->top - e->bottom, pMeasureOverride->height));
   } else {
     return MAKEDWORD(pMeasureOverride->width, pMeasureOverride->height);
   }

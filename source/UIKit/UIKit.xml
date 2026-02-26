@@ -63,18 +63,18 @@
 
   <enums name="HorizontalAlignment">
     <summary>Horizontal alignment of elements within their parent container</summary>
+    <enum name="Stretch">Stretch to fill container width</enum>
     <enum name="Left">Align to left edge of container</enum>
     <enum name="Center">Center within container</enum>
     <enum name="Right">Align to right edge of container</enum>
-    <enum name="Stretch">Stretch to fill container width</enum>
   </enums>
 
   <enums name="VerticalAlignment">
     <summary>Vertical alignment of elements within their parent container</summary>
+    <enum name="Stretch">Stretch to fill container height</enum>
     <enum name="Top">Align to top edge of container</enum>
     <enum name="Center">Center within container</enum>
     <enum name="Bottom">Align to bottom edge of container</enum>
-    <enum name="Stretch">Stretch to fill container height</enum>
   </enums>
 
   <enums name="AlignItems">
@@ -282,6 +282,7 @@
   <struct name="SizeAxisShorthand">
     <summary>Complete sizing definition for one axis</summary>
     <field name="Requested" type="float">Requested {0} size in pixels</field>
+    <field name="Desired" type="float">Desired {0} size in pixels</field>
     <field name="Min" type="float">Minimum allowable {0} size along</field>
     <field name="Actual" type="float">Actual (calculated) {0} size after layout resolution</field>
     <field name="Scroll" type="float">Total {0} size required for scrolling content</field>
@@ -430,7 +431,6 @@
     <property name="RemoveSideBearingsProperty" type="bool">Removes side bearings (spacing) defined by the font.</property>
     <property name="TextureWidth" type="float">The width of the rendered text texture. Unlike ActualWidth, this does not include padding.</property>
     <property name="TextureHeight" type="float">The height of the rendered text texture. Unlike ActualHeight, this does not include padding.</property>
-    <field name="_size" type="uiLabelSize">Internal text size metrics.</field>
     <field name="_textinfo" type="text_info">Internal text information structure.</field>
     <field name="_font" type="FontShorthand" pointer="true">Reference to the font shorthand configuration.</field>
   </component>
@@ -474,6 +474,8 @@
     <handles event="HitTest"/>
     <handles event="Measure"/>
     <handles event="Arrange"/>
+    <handles event="MeasureOverride"/>
+    <handles event="ArrangeOverride"/>
     <property name="LayoutTransform" type="transform2" default=".scale={1,1}">Transformation applied during layout calculations. Affects size and positioning but does not influence local rendering.</property>
     <property name="RenderTransform" type="transform2" default=".scale={1,1}">Transformation applied at render time. Affects how the element is drawn (rotation, scale, skew, etc.) without altering layout.</property>
     <property name="RenderTransformOrigin" type="vec2">The origin point for applying RenderTransform. Defines the pivot point relative to the element.</property>
@@ -542,10 +544,6 @@
     </method>
     <method name="GetRect">
       <summary>Get the rectangle bounds of a Node2D including padding and margin</summary>
-      <returns type="rect"/>
-    </method>
-    <method name="GetContentRect">
-      <summary>Get the content rectangle bounds of a Node2D in local coords</summary>
       <returns type="rect"/>
     </method>
     <method name="GetBackgroundRect">

@@ -132,10 +132,17 @@ _assign_callbacks(lua_State* L, lpObject_t pobj, int idx)
 
 int f_new_Object(lua_State *L) {
   luaX_parsefield(lpcClassDesc_t, __nativeclass, 1, lua_touserdata);
-
   lpObject_t pobj = OBJ_Create(L, __nativeclass);
+  if (lua_getfield(L, 1, "__class") == LUA_TTABLE) {
+    luaX_parsefield(lpcString_t, __name, -1, luaL_optstring, NULL);
+    if (__name && strcmp(__name, "LuaBehaviour")) {
+      OBJ_SetName(pobj, __name);
+    }
+  }
+  lua_pop(L, 1);
+  
   lua_setfield(L, 1, "__userdata");
-
+  
   // register object in registry
   lua_pushvalue(L, 1);
   OBJ_SetLuaObject(pobj, luaL_ref(L, LUA_REGISTRYINDEX));

@@ -124,97 +124,50 @@ HANDLER(Grid, MeasureOverride)
 {
   Node2DPtr pNode2D = GetNode2D(hObject);
   uint32_t cellindex = 0;
+  Size_t size = *pMeasureOverride;
 
-  FOR_LOOP(i, 2)
-  {
-    float size = (&pMeasureOverride->width)[i] - TOTAL_PADDING(pNode2D, i);
-    _CalculateAutos(pGrid->Spacing, size, columns_at_axis(pGrid, i, TRUE));
-  }
+  _CalculateAutos(pGrid->Spacing, size.width, columns_at_axis(pGrid, 0, TRUE));
+  _CalculateAutos(pGrid->Spacing, size.height, columns_at_axis(pGrid, 1, TRUE));
 	
-	// clang-format off
-
-#ifdef CALCULATE_ROWS
-  PCOLUMNS axis_columns = columns_at_axis(pGrid, kDirectionVertical, FALSE);
-  PCOLUMNS dir_columns = columns_at_axis(pGrid, pGrid->Direction, FALSE);
-  float max_pos_size[2] = { 0, 0 };  // Track maximum pos+size per axis
-  int prev_row_index = -1;
-
   FOR_EACH_LAYOUTABLE(hChild, hObject)
   {
-    Node2DPtr subview = GetNode2D(hChild);
-    struct column* cell[2] = {
-      column_at_cellindex(pGrid, kDirectionHorizontal, cellindex),
-      column_at_cellindex(pGrid, kDirectionVertical, cellindex)
-    };
-    float child_width = cell[0] ? cell[0]->width : pUpdateLayout->Width;
-    float child_height = cell[1] ? cell[1]->width : pUpdateLayout->Height;
-    OBJ_SendMessageW(hChild, kEventUpdateLayout, 0,
-      &(UPDATELAYOUTSTRUCT){
-        .Width  = child_width,
-        .Height = child_height,
-      });
-    
-    // When Rows is not defined, use max pos+size from previous row
-    float position_offset = 0;
-    if (axis_columns->count == 0) {
-      int cols_per_row = dir_columns->count > 0 ? dir_columns->count : 1;
-      int row_index = cellindex / cols_per_row;
-      if (row_index != prev_row_index && prev_row_index >= 0) {
-        position_offset = max_pos_size[kDirectionVertical] + pGrid->Spacing;
-      }
-      prev_row_index = row_index;
-    }
-    
-    FOR_LOOP(i, 2)
-    {
-      float p = PADDING_TOP(pNode2D, i);
-      float position = cell[i] ? cell[i]->position : (i == kDirectionVertical && axis_columns->count == 0 ? position_offset : 0);
-      float size = cell[i] ? cell[i]->width : (i == kDirectionHorizontal ? child_width : child_height);
-      float end = position + size;
-      struct bounds bounds = { p + position, p + end };
-      Node2D_Arrange(subview, bounds, i);
-      
-      // Track maximum position + size for each axis
-      if (!cell[i]) {
-        max_pos_size[i] = MAX(max_pos_size[i], end);
-      }
-    }
-    cellindex++;
-  }
-#else
-  FOR_EACH_LAYOUTABLE(hChild, hObject)
-  {
-    Node2DPtr subview = GetNode2D(hChild);
-    struct column* cell[2] = {
-      column_at_cellindex(pGrid, kDirectionHorizontal, cellindex),
-      column_at_cellindex(pGrid, kDirectionVertical, cellindex)
-    };
+    struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
+    struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
+
     OBJ_SendMessageW(hChild, kEventMeasure, 0, &(struct Size) {
-      .width  = (cell[0] ? cell[0]->width : pMeasureOverride->width) - TOTAL_MARGIN(subview, 0),
-      .height = (cell[1] ? cell[1]->width : pMeasureOverride->height) - TOTAL_MARGIN(subview, 1),
+      .width  = (w ? w->width : size.width),
+      .height = (h ? h->width : size.height),
     });
     cellindex++;
   }
-#endif
-
-	// clang-format on
-  return TRUE;
+  
+  return MAKEDWORD(size.width, size.height);
 }
 
 HANDLER(Grid, ArrangeOverride)
 {
-  uint32_t cellindex = 0;
   Node2DPtr pNode2D = GetNode2D(hObject);
+  uint32_t cellindex = 0;
+
+  struct rect rect = {
+    pArrangeOverride->x - PADDING_TOP(pNode2D, 0),
+    pArrangeOverride->y - PADDING_TOP(pNode2D, 1),
+    pArrangeOverride->width - TOTAL_PADDING(pNode2D, 0),
+    pArrangeOverride->height - TOTAL_PADDING(pNode2D, 1)
+  };
+  
   FOR_EACH_LAYOUTABLE(hChild, hObject)
   {
-    struct column* x = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
-    struct column* y = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
+    struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
+    struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
     OBJ_SendMessageW(hChild, kEventArrange, 0, &(struct rect) {
-      .x = PADDING_TOP(pNode2D, 0) + (x ? x->position : 0),
-      .y = PADDING_TOP(pNode2D, 1) + (y ? y->position : 0),
-      .width = pArrangeOverride->width,
-      .height = pArrangeOverride->height
-    });
+      .x = rect.x + (w ? w->position : 0),
+      .y = rect.y + (h ? h->position : 0),
+      .width = (w ? w->width : rect.width),
+      .height = (h ? h->width : rect.height),
+//      .width = NODE2D_FRAME(GetNode2D(hChild), Size, 0).Desired,
+//      .height = NODE2D_FRAME(GetNode2D(hChild), Size, 1).Desired,
+  });
     cellindex++;
   }
   return MAKEDWORD(pArrangeOverride->width, pArrangeOverride->height);

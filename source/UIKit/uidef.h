@@ -1,14 +1,6 @@
 #ifndef __UIDEF_H__
 #define __UIDEF_H__
 
-/// @typedef fixedString_t
-/// @brief Fixed-length string type for UI properties
-//typedef char fixedString_t[MAX_PROPERTY_STRING];
-
-/// @typedef uiLabelSize_t
-/// @brief 2D size array for UI label dimensions [width, height]
-typedef int uiLabelSize_t[2];
-
 /// @typedef uiLabelSteps_t
 /// @brief Internal step-based rendering parameters for text labels
 typedef longTime_t uiLabelSteps_t[4];

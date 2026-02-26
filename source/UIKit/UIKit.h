@@ -523,17 +523,17 @@ typedef enum TextVerticalAlignment {
 } eTextVerticalAlignment_t;
 
 typedef enum HorizontalAlignment {
+	kHorizontalAlignmentStretch, /// Stretch to fill container width
 	kHorizontalAlignmentLeft, /// Align to left edge of container
 	kHorizontalAlignmentCenter, /// Center within container
 	kHorizontalAlignmentRight, /// Align to right edge of container
-	kHorizontalAlignmentStretch, /// Stretch to fill container width
 } eHorizontalAlignment_t;
 
 typedef enum VerticalAlignment {
+	kVerticalAlignmentStretch, /// Stretch to fill container height
 	kVerticalAlignmentTop, /// Align to top edge of container
 	kVerticalAlignmentCenter, /// Center within container
 	kVerticalAlignmentBottom, /// Align to bottom edge of container
-	kVerticalAlignmentStretch, /// Stretch to fill container height
 } eVerticalAlignment_t;
 
 typedef enum AlignItems {
@@ -719,6 +719,7 @@ struct MarginShorthand {
 /// @brief Complete sizing definition for one axis
 struct SizeAxisShorthand {
 	float Requested; /// Requested {0} size in pixels
+	float Desired; /// Desired {0} size in pixels
 	float Min; /// Minimum allowable {0} size along
 	float Actual; /// Actual (calculated) {0} size after layout resolution
 	float Scroll; /// Total {0} size required for scrolling content
@@ -839,7 +840,6 @@ struct TextRun {
 	bool_t RemoveSideBearingsProperty; /// Removes side bearings (spacing) defined by the font.
 	float TextureWidth; /// The width of the rendered text texture. Unlike ActualWidth, this does not include padding.
 	float TextureHeight; /// The height of the rendered text texture. Unlike ActualHeight, this does not include padding.
-	uiLabelSize_t _size; /// Internal text size metrics.
 	text_info_t _textinfo; /// Internal text information structure.
 	lpFontShorthand_t _font; /// Reference to the font shorthand configuration.
 };

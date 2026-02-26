@@ -56,7 +56,7 @@ void luaX_pushTextVerticalAlignment(lua_State *L, eTextVerticalAlignment_t value
 	assert(value >= 0 && value < 4);
 	lua_pushstring(L, _TextVerticalAlignment[value]);
 }
-static const char *_HorizontalAlignment[] = {"left","center","right","stretch",NULL};
+static const char *_HorizontalAlignment[] = {"stretch","left","center","right",NULL};
 eHorizontalAlignment_t luaX_checkHorizontalAlignment(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _HorizontalAlignment);
 }
@@ -64,7 +64,7 @@ void luaX_pushHorizontalAlignment(lua_State *L, eHorizontalAlignment_t value) {
 	assert(value >= 0 && value < 4);
 	lua_pushstring(L, _HorizontalAlignment[value]);
 }
-static const char *_VerticalAlignment[] = {"top","center","bottom","stretch",NULL};
+static const char *_VerticalAlignment[] = {"stretch","top","center","bottom",NULL};
 eVerticalAlignment_t luaX_checkVerticalAlignment(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _VerticalAlignment);
 }
@@ -1129,6 +1129,9 @@ static int f_new_SizeAxisShorthand(lua_State *L) {
 		lua_getfield(L, 1, "Requested");
 		self->Requested = lua_tonumber(L, -1);
 		lua_pop(L, 1);
+		lua_getfield(L, 1, "Desired");
+		self->Desired = lua_tonumber(L, -1);
+		lua_pop(L, 1);
 		lua_getfield(L, 1, "Min");
 		self->Min = lua_tonumber(L, -1);
 		lua_pop(L, 1);
@@ -1140,9 +1143,10 @@ static int f_new_SizeAxisShorthand(lua_State *L) {
 		lua_pop(L, 1);
 	} else {
 		self->Requested = luaL_checknumber(L, 1);
-		self->Min = luaL_checknumber(L, 2);
-		self->Actual = luaL_checknumber(L, 3);
-		self->Scroll = luaL_checknumber(L, 4);
+		self->Desired = luaL_checknumber(L, 2);
+		self->Min = luaL_checknumber(L, 3);
+		self->Actual = luaL_checknumber(L, 4);
+		self->Scroll = luaL_checknumber(L, 5);
 	}
 	return 1;
 }
@@ -1154,6 +1158,9 @@ int f_SizeAxisShorthand___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x77ea8663: // Requested
 		lua_pushnumber(L, luaX_checkSizeAxisShorthand(L, 1)->Requested);
+		return 1;
+	case 0x28adf5d5: // Desired
+		lua_pushnumber(L, luaX_checkSizeAxisShorthand(L, 1)->Desired);
 		return 1;
 	case 0x2e9445f7: // Min
 		lua_pushnumber(L, luaX_checkSizeAxisShorthand(L, 1)->Min);
@@ -1171,6 +1178,9 @@ int f_SizeAxisShorthand___newindex(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x77ea8663: // Requested
 		luaX_checkSizeAxisShorthand(L, 1)->Requested = luaL_checknumber(L, 3);
+		return 0;
+	case 0x28adf5d5: // Desired
+		luaX_checkSizeAxisShorthand(L, 1)->Desired = luaL_checknumber(L, 3);
 		return 0;
 	case 0x2e9445f7: // Min
 		luaX_checkSizeAxisShorthand(L, 1)->Min = luaL_checknumber(L, 3);
@@ -1579,11 +1589,13 @@ LRESULT Node_GetSize(lpObject_t, lpNode_t, wParam_t, GetSizeEventPtr);
 LRESULT Node_IsVisible(lpObject_t, lpNode_t, wParam_t, IsVisibleEventPtr);
 static struct PropertyDesc const NodeProperties[kNodeNumProperties] = {
 	/* Node.Size */ DECL(0xa6478e7c, 0xc8371588,
-	Node, "Size", Size, kDataTypeGroup, .TypeString="SizeShorthand", .NumComponents=15),
+	Node, "Size", Size, kDataTypeGroup, .TypeString="SizeShorthand", .NumComponents=18),
 	/* Node.HorizontalSize */ DECL(0x2dbf56d8, 0x8dd5feec,
-	Node, "HorizontalSize", Size.Axis[0], kDataTypeGroup, .TypeString="SizeAxisShorthand", .NumComponents=4),
+	Node, "HorizontalSize", Size.Axis[0], kDataTypeGroup, .TypeString="SizeAxisShorthand", .NumComponents=5),
 	/* Node.Width */ DECL(0x3b42dfbf, 0xc28a97d3,
 	Node, "Width", Size.Axis[0].Requested, kDataTypeFloat),
+	/* Node.DesiredWidth */ DECL(0xbe3d446f, 0x3aae910b,
+	Node, "DesiredWidth", Size.Axis[0].Desired, kDataTypeFloat),
 	/* Node.MinWidth */ DECL(0xfe87ddd9, 0x1ebf4605,
 	Node, "MinWidth", Size.Axis[0].Min, kDataTypeFloat),
 	/* Node.ActualWidth */ DECL(0xa6d77d39, 0xf66f0265,
@@ -1591,9 +1603,11 @@ static struct PropertyDesc const NodeProperties[kNodeNumProperties] = {
 	/* Node.ScrollWidth */ DECL(0x29366f18, 0x7ccec714,
 	Node, "ScrollWidth", Size.Axis[0].Scroll, kDataTypeFloat),
 	/* Node.VerticalSize */ DECL(0x629fba9a, 0x41e70316,
-	Node, "VerticalSize", Size.Axis[1], kDataTypeGroup, .TypeString="SizeAxisShorthand", .NumComponents=4),
+	Node, "VerticalSize", Size.Axis[1], kDataTypeGroup, .TypeString="SizeAxisShorthand", .NumComponents=5),
 	/* Node.Height */ DECL(0x1bd13562, 0x5615e70e,
 	Node, "Height", Size.Axis[1].Requested, kDataTypeFloat),
+	/* Node.DesiredHeight */ DECL(0xf5943e12, 0x18b527e6,
+	Node, "DesiredHeight", Size.Axis[1].Desired, kDataTypeFloat),
 	/* Node.MinHeight */ DECL(0x9f6bc248, 0x7a45235c,
 	Node, "MinHeight", Size.Axis[1].Min, kDataTypeFloat),
 	/* Node.ActualHeight */ DECL(0x34c40b28, 0xfca3503c,
@@ -1601,9 +1615,11 @@ static struct PropertyDesc const NodeProperties[kNodeNumProperties] = {
 	/* Node.ScrollHeight */ DECL(0x5320b4af, 0x4288c2c3,
 	Node, "ScrollHeight", Size.Axis[1].Scroll, kDataTypeFloat),
 	/* Node.DepthSize */ DECL(0x51724993, 0x86dbf73f,
-	Node, "DepthSize", Size.Axis[2], kDataTypeGroup, .TypeString="SizeAxisShorthand", .NumComponents=4),
+	Node, "DepthSize", Size.Axis[2], kDataTypeGroup, .TypeString="SizeAxisShorthand", .NumComponents=5),
 	/* Node.Depth */ DECL(0xd070218a, 0x9aed1cde,
 	Node, "Depth", Size.Axis[2].Requested, kDataTypeFloat),
+	/* Node.DesiredDepth */ DECL(0xe3fa9b3a, 0xbbf1c3e6,
+	Node, "DesiredDepth", Size.Axis[2].Desired, kDataTypeFloat),
 	/* Node.MinDepth */ DECL(0xe01ae1b0, 0x63a6319c,
 	Node, "MinDepth", Size.Axis[2].Min, kDataTypeFloat),
 	/* Node.ActualDepth */ DECL(0x886c1410, 0x38d9f1fc,
@@ -1725,9 +1741,9 @@ static struct PropertyDesc const NodeProperties[kNodeNumProperties] = {
 	/* Node.Alignment */ DECL(0xd66abafe, 0x6ae48d82,
 	Node, "Alignment", Alignment, kDataTypeGroup, .TypeString="AlignmentShorthand", .NumComponents=3),
 	/* Node.HorizontalAlignment */ DECL(0x1b8d5152, 0xe230b1ee,
-	Node, "HorizontalAlignment", Alignment.Axis[0], kDataTypeEnum, .TypeString="Left,Center,Right,Stretch"),
+	Node, "HorizontalAlignment", Alignment.Axis[0], kDataTypeEnum, .TypeString="Stretch,Left,Center,Right"),
 	/* Node.VerticalAlignment */ DECL(0x94b01054, 0x1c45d168,
-	Node, "VerticalAlignment", Alignment.Axis[1], kDataTypeEnum, .TypeString="Top,Center,Bottom,Stretch"),
+	Node, "VerticalAlignment", Alignment.Axis[1], kDataTypeEnum, .TypeString="Stretch,Top,Center,Bottom"),
 	/* Node.DepthAlignment */ DECL(0x7ef540ff, 0x5b191ce3,
 	Node, "DepthAlignment", Alignment.Axis[2], kDataTypeEnum, .TypeString="Near,Center,Far,Stretch"),
 	/* Node.Visible */ DECL(0x592a4941, 0xe1936ee5,
@@ -1921,6 +1937,8 @@ LRESULT Node2D_MouseMoved(lpObject_t, lpNode2D_t, wParam_t, MouseMovedEventPtr);
 LRESULT Node2D_HitTest(lpObject_t, lpNode2D_t, wParam_t, HitTestEventPtr);
 LRESULT Node2D_Measure(lpObject_t, lpNode2D_t, wParam_t, MeasureEventPtr);
 LRESULT Node2D_Arrange(lpObject_t, lpNode2D_t, wParam_t, ArrangeEventPtr);
+LRESULT Node2D_MeasureOverride(lpObject_t, lpNode2D_t, wParam_t, MeasureOverrideEventPtr);
+LRESULT Node2D_ArrangeOverride(lpObject_t, lpNode2D_t, wParam_t, ArrangeOverrideEventPtr);
 static struct PropertyDesc const Node2DProperties[kNode2DNumProperties] = {
 	/* Node2D.LayoutTransform */ DECL(0x3f19bf01, 0x7c78c87b,
 	Node2D, "LayoutTransform", LayoutTransform, kDataTypeTransform2D),
@@ -2039,6 +2057,10 @@ LRESULT Node2DProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wpar
 			return Node2D_Measure(object, cmp, wparm, lparm);
 		case 0xc4cf2187: // Arrange
 			return Node2D_Arrange(object, cmp, wparm, lparm);
+		case 0xff95a02f: // MeasureOverride
+			return Node2D_MeasureOverride(object, cmp, wparm, lparm);
+		case 0x66d9e437: // ArrangeOverride
+			return Node2D_ArrangeOverride(object, cmp, wparm, lparm);
 }
 	return FALSE;
 }

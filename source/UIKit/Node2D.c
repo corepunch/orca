@@ -55,6 +55,9 @@ HANDLER(Node2D, HitTest) {
 HANDLER(Node2D, Create) {
   pNode2D->_object = hObject;
   pNode2D->_node = GetNode(hObject);
+  pNode2D->_node->Size.Axis[0].Requested = NAN;
+  pNode2D->_node->Size.Axis[1].Requested = NAN;
+  pNode2D->_node->Size.Axis[2].Requested = NAN;
   return FALSE;
 }
 
@@ -507,3 +510,204 @@ float Node2D_GetSize(Node2DPtr pNode2D, eDirection_t axis, eSizing_t sizing) {
   return 0;
 }
 
+// static void init_size(enum Direction axis, Node2DPtr pNode2D) {
+//  if (Node2D_IsFrameSet(pNode2D, kBox3FieldWidth + axis))
+//    return;
+//  Node2D_SetFrame(pNode2D, kBox3FieldWidth + axis, 0);
+// }
+//
+// static void init_pos(enum Direction axis, struct bounds const* bounds, Node2DPtr
+// pNode2D) {   if (Node2D_IsFrameSet(pNode2D, kBox3FieldX + axis))
+// return; if
+//(OBJ_GetObject(pNode2D->_object, kGetObjectPartParent)) {     uint32_t align =
+// NODE2D_FRAME(pNode2D, Alignment, axis);     float coord =
+// Node2D_Align(pNode2D, bounds, axis, align);     Node2D_SetFrame(pNode2D,
+// kBox3FieldX + axis, coord);   } else {     Node2D_SetFrame(pNode2D,
+// kBox3FieldX + axis, 0);
+//  }
+// }
+//
+// static void
+// Node2D_SetRootFrame(Node2DPtr pNode2D, enum Direction axis, float space)
+//{
+//  float margin = MARGIN_TOP(pNode2D, axis) + MARGIN_BOTTOM(pNode2D, axis);
+//  Node2D_SetFrame(pNode2D, kBox3FieldX + axis, MARGIN_TOP(pNode2D, axis));
+//  Node2D_SetFrame(pNode2D, kBox3FieldWidth + axis, space - margin);
+// }
+//
+// static void
+// Node2D_SizeToContent(Node2DPtr pNode2D, enum Direction axis, float
+// avl_space)
+//{
+//  int component = kBox3FieldWidth + axis, value = 0;
+//  if (pNode2D->SizeToContent || GetPrefabView2D(pNode2D->_object))
+//  {
+//    FOR_EACH_LAYOUTABLE(child, pNode2D->_object)
+//    {
+//      Node2DPtr subview = GetNode2D(child);
+//      if (!Node2D_IsFrameSet(subview, component))
+//        return;
+//      value = MAX(value, Node2D_GetFrame(subview, component) +
+// TOTAL_MARGIN(subview, axis));
+//    }
+//    Node2D_SetFrame(pNode2D, component, value +
+// TOTAL_PADDING(pNode2D, axis));
+//  }
+//  else if (OBJ_GetObject(pNode2D->_object, kGetObjectPartParent))
+//  {
+//    Node2D_SetFrame(pNode2D, component, avl_space);
+//  }
+//  else
+//  {
+//    Node2D_SetFrame(pNode2D, component, 1);
+//  }
+// }
+
+enum ui_align
+{
+  kUIAlignStretch,
+  kUIAlignLeft,
+  kUIAlignCenter,
+  kUIAlignRight,
+  kUIAlignTop = kUIAlignLeft,
+  kUIAlignBottom = kUIAlignRight,
+};
+
+float
+Node2D_Align(Node2DPtr pNode2D, float bmin, float bmax, enum Direction axis, int align)
+{
+  struct transform2 const* transform = &(pNode2D->LayoutTransform);
+  float const value = ((float const*)&transform->translation)[axis];
+  float const length = NODE2D_FRAME(pNode2D, Size, axis).Desired;
+
+  switch (align) {
+    case kUIAlignLeft:
+      return bmin + value + MARGIN_TOP(pNode2D, axis);
+    case kUIAlignRight:
+      return bmax - length + value - MARGIN_BOTTOM(pNode2D, axis);
+    case kUIAlignCenter:
+      return (bmax - MARGIN_BOTTOM(pNode2D, axis) +
+              bmin + MARGIN_TOP(pNode2D, axis) - length) * 0.5f + value;
+    case kUIAlignStretch:
+      return bmin + MARGIN_TOP(pNode2D, axis);
+    default:
+      return 0;
+  }
+}
+
+static float _MeasureAxis(Node2DPtr pNode2D, float width, int axis) {
+  //  float const padding = TOTAL_PADDING(pNode2D, axis);
+  //  float size = Node2D_GetFrame(pNode2D, kBox3FieldWidth + axis) - padding;
+//  static enum NodeProperties _props[] = { kNodeWidth, kNodeHeight, kNodeDepth };
+  float const requested = NODE2D_FRAME(pNode2D, Size, axis).Requested;
+  //  float  padding = TOTAL_PADDING(pNode2D, axis);
+//  bool_t const stretch = NODE2D_FRAME(pNode2D, Alignment, axis) == kUIAlignStretch;
+//  lpProperty_t sizeProperty = Node_GetProperty(pNode2D->_object, _props[axis]);
+  /* Process normally */
+//  if (!PROP_IsNull(sizeProperty)) {
+//    if (PROP_HasProgram(sizeProperty)) {
+//      // recalculate size
+//      PROP_Update(sizeProperty);
+//      float const* sizevalue = PROP_GetValue(sizeProperty);
+//      return *sizevalue;
+//    } else {
+//      return requested ? requested : width;
+//    }
+  if (!isnan(requested)) {
+    return requested;
+  } else if (pNode2D->RenderTarget) {
+    struct image_info image;
+    Image_GetInfo(pNode2D->RenderTarget, &image);
+    int const size[] = { image.bmWidth, image.bmHeight, 0 };
+    return size[axis];
+  } else {
+    return width;
+  }
+}
+
+//HANDLER(Node2D, Measure)
+//{
+//  struct Node2D *n = pNode2D;
+//  int size = OBJ_SendMessageW(hObject, kEventMeasureOverride, 0, &(struct Size) {
+//    .width = _MeasureAxis(n, pMeasure->width - TOTAL_MARGIN(n, 0), 0),
+//    .height = _MeasureAxis(n, pMeasure->height - TOTAL_MARGIN(n, 1), 1),
+//  });
+//  NODE2D_FRAME(n, Size, 0).Desired = LOWORD(size);
+//  NODE2D_FRAME(n, Size, 1).Desired = HIWORD(size);
+//  return MAKEDWORD(LOWORD(size) + TOTAL_MARGIN(n, 0), HIWORD(size) + TOTAL_MARGIN(n, 1));
+//}
+
+HANDLER(Node2D, Measure)
+{
+  struct Node2D *n = pNode2D;
+  int size = OBJ_SendMessageW(hObject, kEventMeasureOverride, 0, &(struct Size) {
+    .width  = _MeasureAxis(n, pMeasure->width  - TOTAL_MARGIN(n, 0) - TOTAL_PADDING(n, 0), 0),
+    .height = _MeasureAxis(n, pMeasure->height - TOTAL_MARGIN(n, 1) - TOTAL_PADDING(n, 1), 1),
+  });
+  uint32_t desiredW = LOWORD(size) + TOTAL_PADDING(n, 0);
+  uint32_t desiredH = HIWORD(size) + TOTAL_PADDING(n, 1);
+  NODE2D_FRAME(n, Size, 0).Desired = desiredW;
+  NODE2D_FRAME(n, Size, 1).Desired = desiredH;
+  return MAKEDWORD(desiredW + TOTAL_MARGIN(n, 0),
+                   desiredH + TOTAL_MARGIN(n, 1));
+}
+
+//HANDLER(Node2D, Arrange)
+//{
+//  struct Node2D *n = pNode2D;
+//  struct rect r = *pArrange;
+//  struct rect rect = {
+//    .x = Node2D_Align(n, r.x, r.x + r.width, 0, NODE2D_FRAME(n, Alignment, 0)) + MARGIN_TOP(n, 0),
+//    .y = Node2D_Align(n, r.y, r.y + r.height, 1, NODE2D_FRAME(n, Alignment, 1)) + MARGIN_TOP(n, 1),
+//    .width = NODE2D_FRAME(n, Alignment, 0) ? NODE2D_FRAME(n, Size, 0).Desired : pArrange->width - TOTAL_MARGIN(n, 0),
+//    .height = NODE2D_FRAME(n, Alignment, 1) ? NODE2D_FRAME(n, Size, 1).Desired : pArrange->height - TOTAL_MARGIN(n, 1),
+//  };
+//  int size = OBJ_SendMessageW(hObject, kEventArrangeOverride, 0, &rect);
+//  Node2D_SetFrame(n, kBox3FieldX, rect.x);
+//  Node2D_SetFrame(n, kBox3FieldY, rect.y);
+//  Node2D_SetFrame(n, kBox3FieldWidth, LOWORD(size));
+//  Node2D_SetFrame(n, kBox3FieldHeight, HIWORD(size));
+//  return MAKEDWORD(LOWORD(size) + TOTAL_MARGIN(n, 0), HIWORD(size) + TOTAL_MARGIN(n, 1));
+//}
+
+HANDLER(Node2D, Arrange)
+{
+//  if (OBJ_GetTextContent(hObject)&&!strcmp(OBJ_GetTextContent(hObject), "New Adventure")) {
+//    int a=0;
+//  }
+  struct Node2D *n = pNode2D;
+  struct rect rect = {
+    .x      = Node2D_Align(n, pArrange->x, pArrange->x + pArrange->width,  0, NODE2D_FRAME(n, Alignment, 0)) + MARGIN_TOP(n, 0),
+    .y      = Node2D_Align(n, pArrange->y, pArrange->y + pArrange->height, 1, NODE2D_FRAME(n, Alignment, 1)) + MARGIN_TOP(n, 1),
+    .width  = NODE2D_FRAME(n, Alignment, 0) ? NODE2D_FRAME(n, Size, 0).Desired : pArrange->width  - TOTAL_MARGIN(n, 0),
+    .height = NODE2D_FRAME(n, Alignment, 1) ? NODE2D_FRAME(n, Size, 1).Desired : pArrange->height - TOTAL_MARGIN(n, 1),
+  };
+  
+  OBJ_SendMessageW(hObject, kEventArrangeOverride, 0, &(struct rect) {
+    .x      = PADDING_TOP(n, 0),
+    .y      = PADDING_TOP(n, 1),
+    .width  = rect.width  - TOTAL_PADDING(n, 0),
+    .height = rect.height - TOTAL_PADDING(n, 1),
+  });
+  
+  // Final frame is the outer rect (including padding, excluding margin)
+  Node2D_SetFrame(n, kBox3FieldX,      rect.x);
+  Node2D_SetFrame(n, kBox3FieldY,      rect.y);
+  Node2D_SetFrame(n, kBox3FieldWidth,  rect.width);
+  Node2D_SetFrame(n, kBox3FieldHeight, rect.height);
+  
+  return MAKEDWORD(rect.width + TOTAL_MARGIN(n, 0), rect.height + TOTAL_MARGIN(n, 1));
+}
+
+HANDLER(Node2D, MeasureOverride)
+{
+  FOR_EACH_CHILD(hObject, OBJ_SendMessageW, kEventMeasure, 0, pMeasureOverride);
+  return MAKEDWORD(pMeasureOverride->width, pMeasureOverride->height);
+}
+
+HANDLER(Node2D, ArrangeOverride)
+{
+  struct rect local = { 0, 0, pArrangeOverride->width, pArrangeOverride->height };
+  FOR_EACH_CHILD(hObject, OBJ_SendMessageW, kEventArrange, 0, &local);
+  return MAKEDWORD(pArrangeOverride->width, pArrangeOverride->height);
+}

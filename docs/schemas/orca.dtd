@@ -427,8 +427,8 @@
 <!ENTITY % TextWrapping "WrapWithOverflow|NoWrap|Wrap">
 <!ENTITY % TextHorizontalAlignment "Left|Center|Right">
 <!ENTITY % TextVerticalAlignment "Top|Center|Bottom|Baseline">
-<!ENTITY % HorizontalAlignment "Left|Center|Right|Stretch">
-<!ENTITY % VerticalAlignment "Top|Center|Bottom|Stretch">
+<!ENTITY % HorizontalAlignment "Stretch|Left|Center|Right">
+<!ENTITY % VerticalAlignment "Stretch|Top|Center|Bottom">
 <!ENTITY % AlignItems "Start|Center|End|Stretch|Baseline">
 <!ENTITY % DepthAlignment "Near|Center|Far|Stretch">
 <!ENTITY % Overflow "Visible|Hidden|Clip|Scroll|Auto">
@@ -593,16 +593,19 @@
 	Size CDATA #IMPLIED
 	HorizontalSize CDATA #IMPLIED
 	Width CDATA #IMPLIED
+	DesiredWidth CDATA #IMPLIED
 	MinWidth CDATA #IMPLIED
 	ActualWidth CDATA #IMPLIED
 	ScrollWidth CDATA #IMPLIED
 	VerticalSize CDATA #IMPLIED
 	Height CDATA #IMPLIED
+	DesiredHeight CDATA #IMPLIED
 	MinHeight CDATA #IMPLIED
 	ActualHeight CDATA #IMPLIED
 	ScrollHeight CDATA #IMPLIED
 	DepthSize CDATA #IMPLIED
 	Depth CDATA #IMPLIED
+	DesiredDepth CDATA #IMPLIED
 	MinDepth CDATA #IMPLIED
 	ActualDepth CDATA #IMPLIED
 	ScrollDepth CDATA #IMPLIED
@@ -676,6 +679,8 @@
 <!ATTLIST Node.HorizontalSize Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Node.Width (#PCDATA | Binding)*>
 <!ATTLIST Node.Width Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.DesiredWidth (#PCDATA | Binding)*>
+<!ATTLIST Node.DesiredWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Node.MinWidth (#PCDATA | Binding)*>
 <!ATTLIST Node.MinWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Node.ActualWidth (#PCDATA | Binding)*>
@@ -686,6 +691,8 @@
 <!ATTLIST Node.VerticalSize Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Node.Height (#PCDATA | Binding)*>
 <!ATTLIST Node.Height Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.DesiredHeight (#PCDATA | Binding)*>
+<!ATTLIST Node.DesiredHeight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Node.MinHeight (#PCDATA | Binding)*>
 <!ATTLIST Node.MinHeight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Node.ActualHeight (#PCDATA | Binding)*>
@@ -696,6 +703,8 @@
 <!ATTLIST Node.DepthSize Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Node.Depth (#PCDATA | Binding)*>
 <!ATTLIST Node.Depth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.DesiredDepth (#PCDATA | Binding)*>
+<!ATTLIST Node.DesiredDepth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Node.MinDepth (#PCDATA | Binding)*>
 <!ATTLIST Node.MinDepth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Node.ActualDepth (#PCDATA | Binding)*>
@@ -828,7 +837,7 @@
 <!ATTLIST Node.Tags Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Node.DataContext (#PCDATA | Binding)*>
 <!ATTLIST Node.DataContext Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % NodeElements "Node.Size|Node.HorizontalSize|Node.Width|Node.MinWidth|Node.ActualWidth|Node.ScrollWidth|Node.VerticalSize|Node.Height|Node.MinHeight|Node.ActualHeight|Node.ScrollHeight|Node.DepthSize|Node.Depth|Node.MinDepth|Node.ActualDepth|Node.ScrollDepth|Node.Margin|Node.HorizontalMargin|Node.MarginLeft|Node.MarginRight|Node.VerticalMargin|Node.MarginTop|Node.MarginBottom|Node.DepthMargin|Node.MarginFront|Node.MarginBack|Node.Padding|Node.HorizontalPadding|Node.PaddingLeft|Node.PaddingRight|Node.VerticalPadding|Node.PaddingTop|Node.PaddingBottom|Node.DepthPadding|Node.PaddingFront|Node.PaddingBack|Node.Border|Node.BorderRadius|Node.BorderTopLeftRadius|Node.BorderTopRightRadius|Node.BorderBottomRightRadius|Node.BorderBottomLeftRadius|Node.HorizontalBorder|Node.BorderLeft|Node.BorderLeftWidth|Node.BorderLeftStyle|Node.BorderLeftColor|Node.BorderRight|Node.BorderRightWidth|Node.BorderRightStyle|Node.BorderRightColor|Node.VerticalBorder|Node.BorderTop|Node.BorderTopWidth|Node.BorderTopStyle|Node.BorderTopColor|Node.BorderBottom|Node.BorderBottomWidth|Node.BorderBottomStyle|Node.BorderBottomColor|Node.DepthBorder|Node.BorderFront|Node.BorderFrontWidth|Node.BorderFrontStyle|Node.BorderFrontColor|Node.BorderBack|Node.BorderBackWidth|Node.BorderBackStyle|Node.BorderBackColor|Node.Alignment|Node.HorizontalAlignment|Node.VerticalAlignment|Node.DepthAlignment|Node.Visible|Node.QuickHide|Node.VisibleAmountInParent|Node.Opacity|Node.Tags|Node.DataContext">
+<!ENTITY % NodeElements "Node.Size|Node.HorizontalSize|Node.Width|Node.DesiredWidth|Node.MinWidth|Node.ActualWidth|Node.ScrollWidth|Node.VerticalSize|Node.Height|Node.DesiredHeight|Node.MinHeight|Node.ActualHeight|Node.ScrollHeight|Node.DepthSize|Node.Depth|Node.DesiredDepth|Node.MinDepth|Node.ActualDepth|Node.ScrollDepth|Node.Margin|Node.HorizontalMargin|Node.MarginLeft|Node.MarginRight|Node.VerticalMargin|Node.MarginTop|Node.MarginBottom|Node.DepthMargin|Node.MarginFront|Node.MarginBack|Node.Padding|Node.HorizontalPadding|Node.PaddingLeft|Node.PaddingRight|Node.VerticalPadding|Node.PaddingTop|Node.PaddingBottom|Node.DepthPadding|Node.PaddingFront|Node.PaddingBack|Node.Border|Node.BorderRadius|Node.BorderTopLeftRadius|Node.BorderTopRightRadius|Node.BorderBottomRightRadius|Node.BorderBottomLeftRadius|Node.HorizontalBorder|Node.BorderLeft|Node.BorderLeftWidth|Node.BorderLeftStyle|Node.BorderLeftColor|Node.BorderRight|Node.BorderRightWidth|Node.BorderRightStyle|Node.BorderRightColor|Node.VerticalBorder|Node.BorderTop|Node.BorderTopWidth|Node.BorderTopStyle|Node.BorderTopColor|Node.BorderBottom|Node.BorderBottomWidth|Node.BorderBottomStyle|Node.BorderBottomColor|Node.DepthBorder|Node.BorderFront|Node.BorderFrontWidth|Node.BorderFrontStyle|Node.BorderFrontColor|Node.BorderBack|Node.BorderBackWidth|Node.BorderBackStyle|Node.BorderBackColor|Node.Alignment|Node.HorizontalAlignment|Node.VerticalAlignment|Node.DepthAlignment|Node.Visible|Node.QuickHide|Node.VisibleAmountInParent|Node.Opacity|Node.Tags|Node.DataContext">
 <!ELEMENT Node EMPTY>
 <!ATTLIST Node %NodeAttribs;>
 <!ENTITY % TextRunAttribs "

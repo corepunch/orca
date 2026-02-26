@@ -88,7 +88,7 @@
 "      return _parent_0.__init(self_1, ...)\n"
 "    end,\n"
 "    __base = _base_0,\n"
-"    __name = 'SizedPlayer',\n"
+"    __name = 'LuaBehaviour',\n"
 "    __parent = _parent_0\n"
 "  }, {\n"
 "    __index = function(_, name)\n"

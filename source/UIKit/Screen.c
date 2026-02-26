@@ -208,7 +208,13 @@ _DrawModal(lpObject_t object, Draw2DContentEventPtr params)
       .width = GetNode(mod)->Size.Axis[0].Requested,
       .height = GetNode(mod)->Size.Axis[1].Requested,
     });
-    struct rect content = Node2D_GetContentRect(GetNode2D(object));
+    Node2DPtr pNode2D = GetNode2D(object);
+    rect_t content = {
+      PADDING_TOP(pNode2D, 0),
+      PADDING_TOP(pNode2D, 1),
+      NODE2D_FRAME(pNode2D, Size, kBox3FieldWidth).Actual - TOTAL_PADDING(pNode2D, 0),
+      NODE2D_FRAME(pNode2D, Size, kBox3FieldHeight).Actual - TOTAL_PADDING(pNode2D, 1),
+    };
     OBJ_SendMessageW(mod, kEventArrange, 0, &content);
     OBJ_SendMessageW(mod, kEventUpdateMatrix, 0, &(UPDATEMATRIXSTRUCT) {
       .parent = &GetNode2D(OBJ_GetParent(mod))->Matrix,
@@ -475,8 +481,10 @@ HANDLER(Node2D, Draw2DContent)
 
 HANDLER(Screen, MeasureOverride) {
   NodeCPtr n = GetNode(hObject);
-  if (n->Size.Axis[0].Requested && n->Size.Axis[1].Requested) {
+  if (!isnan(n->Size.Axis[0].Requested)) {
     pMeasureOverride->width = n->Size.Axis[0].Requested;
+  }
+  if (!isnan(n->Size.Axis[1].Requested)) {
     pMeasureOverride->height = n->Size.Axis[1].Requested;
   }
   uint32_t newsize = MAKEDWORD(pMeasureOverride->width, pMeasureOverride->height);
@@ -484,6 +492,7 @@ HANDLER(Screen, MeasureOverride) {
 //    WI_SetSize(pUpdateLayout->Width, pUpdateLayout->Height, TRUE);
     pScreen->_size = newsize;
   }
+  FOR_EACH_CHILD(hObject, OBJ_SendMessageW, kEventMeasure, 0, pMeasureOverride);
   return MAKEDWORD(pMeasureOverride->width, pMeasureOverride->height);
 }
 

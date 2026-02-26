@@ -162,16 +162,14 @@ HANDLER(TextBlock, MeasureOverride)
   TextBlockConceptPtr textblock = GetTextBlockConcept(hObject);
   OBJ_SendMessageW(hObject, kEventMakeText, 0, &(MAKETEXTSTRUCT){
                      .text = textblock->_text,
-                     .availableSpace = pMeasureOverride->width - TOTAL_PADDING(GetNode2D(hObject), kDirectionHorizontal)
+                     .availableSpace = pMeasureOverride->width
                    });
   Text_GetInfo(textblock->_text, &output->_textinfo);
 
   output->TextureWidth = (float)output->_textinfo.txWidth;
   output->TextureHeight = (float)output->_textinfo.txHeight;
-  output->_size[0] = output->TextureWidth + TOTAL_PADDING(pTextBlock->_node2D, 0);
-  output->_size[1] = output->TextureHeight + TOTAL_PADDING(pTextBlock->_node2D, 1);
 
-  return MAKEDWORD(output->_size[0], output->_size[1]);
+  return MAKEDWORD(output->TextureWidth, output->TextureHeight);
 }
 
 HANDLER(TextBlock, ForegroundContent)

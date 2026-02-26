@@ -113,16 +113,19 @@ enum NodeProperties {
 	kNodeSize,
 	kNodeHorizontalSize,
 	kNodeWidth,
+	kNodeDesiredWidth,
 	kNodeMinWidth,
 	kNodeActualWidth,
 	kNodeScrollWidth,
 	kNodeVerticalSize,
 	kNodeHeight,
+	kNodeDesiredHeight,
 	kNodeMinHeight,
 	kNodeActualHeight,
 	kNodeScrollHeight,
 	kNodeDepthSize,
 	kNodeDepth,
+	kNodeDesiredDepth,
 	kNodeMinDepth,
 	kNodeActualDepth,
 	kNodeScrollDepth,
@@ -198,16 +201,19 @@ enum NodeProperties {
 #define ID_Node_Size 0xc8371588
 #define ID_Node_HorizontalSize 0x8dd5feec
 #define ID_Node_Width 0xc28a97d3
+#define ID_Node_DesiredWidth 0x3aae910b
 #define ID_Node_MinWidth 0x1ebf4605
 #define ID_Node_ActualWidth 0xf66f0265
 #define ID_Node_ScrollWidth 0x7ccec714
 #define ID_Node_VerticalSize 0x41e70316
 #define ID_Node_Height 0x5615e70e
+#define ID_Node_DesiredHeight 0x18b527e6
 #define ID_Node_MinHeight 0x7a45235c
 #define ID_Node_ActualHeight 0xfca3503c
 #define ID_Node_ScrollHeight 0x4288c2c3
 #define ID_Node_DepthSize 0x86dbf73f
 #define ID_Node_Depth 0x9aed1cde
+#define ID_Node_DesiredDepth 0xbbf1c3e6
 #define ID_Node_MinDepth 0x63a6319c
 #define ID_Node_ActualDepth 0x38d9f1fc
 #define ID_Node_ScrollDepth 0x580ae93d
