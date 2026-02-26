@@ -302,8 +302,6 @@ enum TextRunProperties {
 	kTextRunCharacterSpacing,
 	kTextRunFixedCharacterWidth,
 	kTextRunRemoveSideBearingsProperty,
-	kTextRunTextureWidth,
-	kTextRunTextureHeight,
 	kTextRunNumProperties
 };
 
@@ -322,8 +320,6 @@ enum TextRunProperties {
 #define ID_TextRun_CharacterSpacing 0xda8217e7
 #define ID_TextRun_FixedCharacterWidth 0xb71765fa
 #define ID_TextRun_RemoveSideBearingsProperty 0xc20f6de6
-#define ID_TextRun_TextureWidth 0x04eb15b6
-#define ID_TextRun_TextureHeight 0xcbbd4cc9
 #define ID_TextBlockConcept 0x4903089d
 #define GetTextBlockConcept(_P)((struct TextBlockConcept*)((_P)?OBJ_GetComponent(_P,ID_TextBlockConcept):NULL))
 #define TextBlockConcept_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_TextBlockConcept,sizeof(struct TextBlockConcept),_N)

@@ -165,11 +165,7 @@ HANDLER(TextBlock, MeasureOverride)
                      .availableSpace = pMeasureOverride->width
                    });
   Text_GetInfo(textblock->_text, &output->_textinfo);
-
-  output->TextureWidth = (float)output->_textinfo.txWidth;
-  output->TextureHeight = (float)output->_textinfo.txHeight;
-
-  return MAKEDWORD(output->TextureWidth, output->TextureHeight);
+  return MAKEDWORD(output->_textinfo.txWidth, output->_textinfo.txHeight);
 }
 
 HANDLER(TextBlock, ForegroundContent)

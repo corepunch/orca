@@ -1825,10 +1825,6 @@ static struct PropertyDesc const TextRunProperties[kTextRunNumProperties] = {
 	TextRun, "FixedCharacterWidth", FixedCharacterWidth, kDataTypeFloat),
 	/* TextRun.RemoveSideBearingsProperty */ DECL(0xbd23c708, 0xc20f6de6,
 	TextRun, "RemoveSideBearingsProperty", RemoveSideBearingsProperty, kDataTypeBool),
-	/* TextRun.TextureWidth */ DECL(0xcb8c3f10, 0x04eb15b6,
-	TextRun, "TextureWidth", TextureWidth, kDataTypeFloat),
-	/* TextRun.TextureHeight */ DECL(0x9499a307, 0xcbbd4cc9,
-	TextRun, "TextureHeight", TextureHeight, kDataTypeFloat),
 };
 static struct TextRun TextRunDefaults = {
 	.Font = (struct FontShorthand) { .Size=DEFAULT_FONT_SIZE },

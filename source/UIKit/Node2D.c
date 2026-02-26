@@ -503,11 +503,12 @@ enum ui_align
 };
 
 float
-Node2D_Align(Node2DPtr pNode2D, float bmin, float bmax, enum Direction axis, int align)
+Node2D_Align(Node2DPtr pNode2D, rect_t const *rect, enum Direction axis, int align, float length)
 {
   struct transform2 const* transform = &(pNode2D->LayoutTransform);
   float const value = ((float const*)&transform->translation)[axis];
-  float const length = NODE2D_FRAME(pNode2D, Size, axis).Desired;
+  float const *r = &rect->x;
+  float bmin = r[axis], bmax = r[axis] + r[axis + 2];
   switch (align) {
     case kUIAlignLeft: return bmin + value;
     case kUIAlignRight: return bmax - length + value;
@@ -517,16 +518,16 @@ Node2D_Align(Node2DPtr pNode2D, float bmin, float bmax, enum Direction axis, int
   }
 }
 
-static float _MeasureAxis(Node2DPtr pNode2D, float width, int axis) {
-  if (!isnan(NODE2D_FRAME(pNode2D, Size, axis).Requested)) {
-    return NODE2D_FRAME(pNode2D, Size, axis).Requested;
-  } else if (pNode2D->RenderTarget) {
+static float _MeasureAxis(Node2DPtr n, float space, int axis) {
+  if (!isnan(NODE2D_FRAME(n, Size, axis).Requested)) {
+    return NODE2D_FRAME(n, Size, axis).Requested;
+  } else if (n->RenderTarget) {
     struct image_info image;
-    Image_GetInfo(pNode2D->RenderTarget, &image);
+    Image_GetInfo(n->RenderTarget, &image);
     int const size[] = { image.bmWidth, image.bmHeight, 0 };
-    return size[axis];
+    return size[axis] + TOTAL_PADDING(n, axis);
   } else {
-    return width;
+    return space;
   }
 }
 
@@ -534,24 +535,50 @@ HANDLER(Node2D, Measure)
 {
   struct Node2D *n = pNode2D;
   int size = OBJ_SendMessageW(hObject, kEventMeasureOverride, 0, &(struct Size) {
-    .width  = _MeasureAxis(n, pMeasure->width  - TOTAL_MARGIN(n, 0) - TOTAL_PADDING(n, 0), 0),
-    .height = _MeasureAxis(n, pMeasure->height - TOTAL_MARGIN(n, 1) - TOTAL_PADDING(n, 1), 1),
+    .width  = _MeasureAxis(n, pMeasure->width  - TOTAL_MARGIN(n, 0), 0) - TOTAL_PADDING(n, 0),
+    .height = _MeasureAxis(n, pMeasure->height - TOTAL_MARGIN(n, 1), 1) - TOTAL_PADDING(n, 1),
   });
-  uint32_t desiredW = LOWORD(size) + TOTAL_PADDING(n, 0);
-  uint32_t desiredH = HIWORD(size) + TOTAL_PADDING(n, 1);
-  NODE2D_FRAME(n, Size, 0).Desired = desiredW;
-  NODE2D_FRAME(n, Size, 1).Desired = desiredH;
-  return MAKEDWORD(desiredW + TOTAL_MARGIN(n, 0), desiredH + TOTAL_MARGIN(n, 1));
+  if (isnan(NODE2D_FRAME(n, Size, 0).Requested)) {
+    NODE2D_FRAME(n, Size, 0).Desired = LOWORD(size) + TOTAL_PADDING(n, 0);
+  } else {
+    NODE2D_FRAME(n, Size, 0).Desired = NODE2D_FRAME(n, Size, 0).Requested;
+  }
+  if (isnan(NODE2D_FRAME(n, Size, 1).Requested)) {
+    NODE2D_FRAME(n, Size, 1).Desired = HIWORD(size) + TOTAL_PADDING(n, 1);
+  } else {
+    NODE2D_FRAME(n, Size, 1).Desired = NODE2D_FRAME(n, Size, 1).Requested;
+  }
+  return MAKEDWORD(NODE2D_FRAME(n, Size, 0).Desired + TOTAL_MARGIN(n, 0),
+                   NODE2D_FRAME(n, Size, 1).Desired + TOTAL_MARGIN(n, 1));
 }
 
 HANDLER(Node2D, Arrange)
 {
   struct Node2D *n = pNode2D;
+  struct rect const *a = pArrange;
+  struct Size s = {0};
+
+  if (!isnan(NODE2D_FRAME(n, Size, 0).Requested)) {
+    s.width = NODE2D_FRAME(n, Size, 0).Requested;
+  } else if (NODE2D_FRAME(n, Alignment, 0) || isinf(a->width)) {
+    s.width = NODE2D_FRAME(n, Size, 0).Desired;
+  } else {
+    s.width = a->width - TOTAL_MARGIN(n, 0);
+  }
+
+  if (!isnan(NODE2D_FRAME(n, Size, 1).Requested)) {
+    s.height = NODE2D_FRAME(n, Size, 1).Requested;
+  } else if (NODE2D_FRAME(n, Alignment, 1) || isinf(a->height)) {
+    s.height = NODE2D_FRAME(n, Size, 1).Desired;
+  } else {
+    s.height = a->height - TOTAL_MARGIN(n, 1);
+  }
+
   struct rect rect = {
-    .x      = Node2D_Align(n, pArrange->x, pArrange->x + pArrange->width,  0, NODE2D_FRAME(n, Alignment, 0)) + MARGIN_TOP(n, 0),
-    .y      = Node2D_Align(n, pArrange->y, pArrange->y + pArrange->height, 1, NODE2D_FRAME(n, Alignment, 1)) + MARGIN_TOP(n, 1),
-    .width  = NODE2D_FRAME(n, Alignment, 0) || isinf(pArrange->width) ? NODE2D_FRAME(n, Size, 0).Desired : pArrange->width  - TOTAL_MARGIN(n, 0),
-    .height = NODE2D_FRAME(n, Alignment, 1) || isinf(pArrange->height) ? NODE2D_FRAME(n, Size, 1).Desired : pArrange->height - TOTAL_MARGIN(n, 1),
+    .x = Node2D_Align(n, a, 0, NODE2D_FRAME(n, Alignment, 0), s.width) + MARGIN_TOP(n, 0),
+    .y = Node2D_Align(n, a, 1, NODE2D_FRAME(n, Alignment, 1), s.height) + MARGIN_TOP(n, 1),
+    .width  = s.width,
+    .height = s.height,
   };
   
   int size = OBJ_SendMessageW(hObject, kEventArrangeOverride, 0, &(struct rect) {

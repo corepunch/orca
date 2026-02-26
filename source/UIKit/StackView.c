@@ -20,28 +20,22 @@ _GetContentSize(lpObject_t hObject,
   return value > 0 ? value - pStackView->Spacing : value;
 }
 
-static enum NodeProperties alignment[] = {
-  kNodeHorizontalAlignment,
-  kNodeVerticalAlignment,
-  kNodeDepthAlignment,
-};
-
-static void
+static uint32_t
 _Arrange(lpObject_t hObject,
          StackViewPtr pStackView,
          struct bounds primaryBounds,
          struct bounds oppositeBounds)
 {
-  uint32_t primary = pStackView->Direction;
-  float content_size = _GetContentSize(hObject, pStackView, primary);
+  float content_size = _GetContentSize(hObject, pStackView, pStackView->Direction);
   float span = primaryBounds.max - primaryBounds.min;
   float counter, distributed = 0;
+  float maxsize = 0;
   
   // Count children and leftover space (needed for space-* modes)
   uint32_t n = 0;
   float leftover = span;
   FOR_EACH_LAYOUTABLE(child, hObject) {
-    leftover -= NODE2D_FRAME(GetNode2D(child), Size, primary).Desired;
+    leftover -= NODE2D_FRAME(GetNode2D(child), Size, pStackView->Direction).Desired;
     n++;
   }
   
@@ -56,17 +50,17 @@ _Arrange(lpObject_t hObject,
       counter = primaryBounds.min;
       break;
     case kJustifyContentSpaceEvenly:
-      if (!n) return;
+      if (!n) return 0;
       distributed = leftover / (n + 1);
       counter = primaryBounds.min + distributed;
       break;
     case kJustifyContentSpaceAround:
-      if (!n) return;
+      if (!n) return 0;
       distributed = leftover / n;
       counter = primaryBounds.min + distributed * 0.5f;
       break;
     case kJustifyContentSpaceBetween:
-      if (!n) return;
+      if (!n) return 0;
       distributed = n > 1 ? leftover / (n - 1) : 0;
       counter = primaryBounds.min;
       break;
@@ -76,7 +70,8 @@ _Arrange(lpObject_t hObject,
   {
     Node2DPtr subview = GetNode2D(child);
     lpProperty_t p = StackView_GetProperty(hObject, kStackViewAlignItems);
-    int *alignment = &subview->_node->Alignment.Axis[!primary];
+    int *alignment = &subview->_node->Alignment.Axis[!pStackView->Direction];
+    uint32_t s;
     switch (p ? pStackView->AlignItems : -1) {
       case kAlignItemsStart: *alignment = kHorizontalAlignmentLeft; break;
       case kAlignItemsBaseline: *alignment = kHorizontalAlignmentLeft; break;
@@ -84,25 +79,42 @@ _Arrange(lpObject_t hObject,
       case kAlignItemsCenter: *alignment = kHorizontalAlignmentCenter; break;
       case kAlignItemsStretch: *alignment = kHorizontalAlignmentStretch; break;
     }
-    if (primary) {
-      struct rect rect = {
-        oppositeBounds.min,
-        counter,
-        oppositeBounds.max - oppositeBounds.min,
-        NODE2D_FRAME(subview, Size, 1).Desired + TOTAL_MARGIN(subview, 1),
-      };
-      counter += rect.height + pStackView->Spacing + distributed;
-      OBJ_SendMessageW(child, kEventArrange, 0, &rect);
-    } else {
-      struct rect rect = {
-        counter,
-        oppositeBounds.min,
-        NODE2D_FRAME(subview, Size, 0).Desired + TOTAL_MARGIN(subview, 0),
-        oppositeBounds.max - oppositeBounds.min,
-      };
-      counter += rect.width + pStackView->Spacing + distributed;
-      OBJ_SendMessageW(child, kEventArrange, 0, &rect);
+    switch (pStackView->Direction) {
+      case kDirectionHorizontal:
+        s = OBJ_SendMessageW(child, kEventArrange, 0, &(struct rect) {
+          counter,
+          oppositeBounds.min,
+          NODE2D_FRAME(subview, Size, 0).Desired + TOTAL_MARGIN(subview, 0),
+          oppositeBounds.max - oppositeBounds.min,
+        });
+        counter += LOWORD(s) + pStackView->Spacing + distributed;
+        maxsize = fmax(maxsize, HIWORD(s));
+        break;
+      case kDirectionVertical:
+        s = OBJ_SendMessageW(child, kEventArrange, 0, &(struct rect) {
+          oppositeBounds.min,
+          counter,
+          oppositeBounds.max - oppositeBounds.min,
+          NODE2D_FRAME(subview, Size, 1).Desired + TOTAL_MARGIN(subview, 1),
+        });
+        counter += HIWORD(s) + pStackView->Spacing + distributed;
+        maxsize = fmax(maxsize, LOWORD(s));
+        break;
+      case kDirectionDepth:
+        // not implemented
+        break;
     }
+  }
+  
+  switch (pStackView->Direction) {
+    case kDirectionHorizontal:
+      return MAKEDWORD(counter, maxsize);
+    case kDirectionVertical:
+      return MAKEDWORD(maxsize, counter);
+    case kDirectionDepth:
+    default:
+      // not implemented
+      return 0;
   }
 }
 
@@ -145,10 +157,14 @@ HANDLER(StackView, ArrangeOverride)
 
   switch (pStackView->Direction) {
     case kDirectionHorizontal:
-      _Arrange(hObject, pStackView, (struct bounds) { r.x, r.x + r.width }, (struct bounds) { r.y, r.y + r.height });
+      _Arrange(hObject, pStackView,
+               (struct bounds) { r.x, r.x + r.width },
+               (struct bounds) { r.y, r.y + r.height });
       break;
     case kDirectionVertical:
-      _Arrange(hObject, pStackView, (struct bounds) { r.y, r.y + r.height }, (struct bounds) { r.x, r.x + r.width });
+      _Arrange(hObject, pStackView,
+               (struct bounds) { r.y, r.y + r.height },
+               (struct bounds) { r.x, r.x + r.width });
       break;
     case kDirectionDepth:
       // Not supported

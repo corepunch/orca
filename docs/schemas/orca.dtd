@@ -860,8 +860,6 @@
 	CharacterSpacing CDATA #IMPLIED
 	FixedCharacterWidth CDATA #IMPLIED
 	RemoveSideBearingsProperty (true|false) #IMPLIED
-	TextureWidth CDATA #IMPLIED
-	TextureHeight CDATA #IMPLIED
 ">
 <!ELEMENT TextRun.Text (#PCDATA | Binding)*>
 <!ATTLIST TextRun.Text Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
@@ -893,11 +891,7 @@
 <!ATTLIST TextRun.FixedCharacterWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT TextRun.RemoveSideBearingsProperty (#PCDATA | Binding)*>
 <!ATTLIST TextRun.RemoveSideBearingsProperty Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT TextRun.TextureWidth (#PCDATA | Binding)*>
-<!ATTLIST TextRun.TextureWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT TextRun.TextureHeight (#PCDATA | Binding)*>
-<!ATTLIST TextRun.TextureHeight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % TextRunElements "TextRun.Text|TextRun.Font|TextRun.FontWeight|TextRun.FontStyle|TextRun.FontSize|TextRun.FontFamily|TextRun.Underline|TextRun.UnderlineOffset|TextRun.UnderlineWidth|TextRun.UnderlineColor|TextRun.LetterSpacing|TextRun.LineHeight|TextRun.CharacterSpacing|TextRun.FixedCharacterWidth|TextRun.RemoveSideBearingsProperty|TextRun.TextureWidth|TextRun.TextureHeight">
+<!ENTITY % TextRunElements "TextRun.Text|TextRun.Font|TextRun.FontWeight|TextRun.FontStyle|TextRun.FontSize|TextRun.FontFamily|TextRun.Underline|TextRun.UnderlineOffset|TextRun.UnderlineWidth|TextRun.UnderlineColor|TextRun.LetterSpacing|TextRun.LineHeight|TextRun.CharacterSpacing|TextRun.FixedCharacterWidth|TextRun.RemoveSideBearingsProperty">
 <!ELEMENT TextRun EMPTY>
 <!ATTLIST TextRun %TextRunAttribs;>
 <!ENTITY % TextBlockConceptAttribs "

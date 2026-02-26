@@ -16,6 +16,7 @@ local function test_text_block_layout()
 	local text = screen + orca.ui.TextBlock {
 		Name = "Text", 
 		Text = config.text,
+		HorizontalAlignment = "Left",
 		HorizontalMargin = orca.ui.EdgeShorthand { Left = config.margin.left, Right = config.margin.right },
 		BorderRadius = config.radius, -- this should apply the same radius to all corners
 	}
@@ -91,20 +92,18 @@ local function test_stack_view_layout()
 		node_margin = 5,
 	}
 	local stack = screen + orca.ui.StackView {
-		Name = "Stack",
+		Name = "test_stack_view_layout",
 		Direction = "Vertical",
-		HorizontalAlignment = "Stretch",
+		VerticalAlignment = "Top",
 		Margin = config.stack_margin,
 		Spacing = config.stack_spacing
 	}
 	local node1 = stack + orca.ui.TextBlock {
 		Text = "Node without margin",
-		HorizontalAlignment = "Stretch",
 		Height = config.node_height,
 	}
 	local node2 = stack + orca.ui.TextBlock {
 		Text = "Node with margin",
-		HorizontalAlignment = "Stretch",
 		Height = config.node_height,
 		Margin = config.node_margin
 	}
@@ -181,8 +180,8 @@ end
 
 local function test_text_single_line_layout()
 	-- "Hello World" should render on one line, not two
-	local single_word = screen + orca.ui.TextBlock { Text = "Hello" }
-	local two_words = screen + orca.ui.TextBlock { Text = "Hello World" }
+	local single_word = screen + orca.ui.TextBlock { HorizontalAlignment = "Left", Text = "Hello" }
+	local two_words = screen + orca.ui.TextBlock { HorizontalAlignment = "Left", Text = "Hello World" }
 
 	screen:updateLayout(screen.Width, screen.Height)
 
@@ -195,38 +194,6 @@ local function test_text_single_line_layout()
 	two_words:removeFromParent()
 end
 
-local function test_text_rendering_texture_size()
-	-- Test that TextureWidth/TextureHeight reflect the allocated texture size,
-	-- which is independent of padding (unlike ActualWidth/ActualHeight).
-	local text = screen + orca.ui.TextBlock { Text = "Hello World" }
-	screen:updateLayout(screen.Width, screen.Height)
-
-	-- Verify texture dimensions are positive after layout
-	assert(text.TextureWidth > 0, "TextureWidth should be positive after layout")
-	assert(text.TextureHeight > 0, "TextureHeight should be positive after layout")
-
-	-- Without padding, ActualWidth/ActualHeight should equal the texture dimensions
-	assert(text.ActualWidth == text.TextureWidth, "ActualWidth should equal TextureWidth when there is no padding")
-	assert(text.ActualHeight == text.TextureHeight, "ActualHeight should equal TextureHeight when there is no padding")
-
-	-- Record texture dimensions before adding padding
-	local texture_width = text.TextureWidth
-	local texture_height = text.TextureHeight
-	local padding = 10
-	text.Padding = padding
-	screen:updateLayout(screen.Width, screen.Height)
-
-	-- Texture dimensions must not change when padding is added
-	assert(text.TextureWidth == texture_width, "TextureWidth should not change when padding is added")
-	assert(text.TextureHeight == texture_height, "TextureHeight should not change when padding is added")
-
-	-- ActualWidth/ActualHeight must grow by 2*padding (left + right / top + bottom)
-	assert(text.ActualWidth == texture_width + padding * 2, "ActualWidth should be TextureWidth plus horizontal padding")
-	assert(text.ActualHeight == texture_height + padding * 2, "ActualHeight should be TextureHeight plus vertical padding")
-
-	text:removeFromParent()
-end
-
 -- Simulate asynchronous execution by using a timer or a delayed call
 -- For testing purposes, we can just call the callback immediately
 orca.async = function (callback) callback() end
@@ -237,4 +204,3 @@ test_button_interaction()
 test_input_interaction()
 test_grid_view_layout()
 test_text_single_line_layout()
-test_text_rendering_texture_size()
