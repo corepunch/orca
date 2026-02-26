@@ -579,19 +579,12 @@ Node2D_Align(Node2DPtr pNode2D, float bmin, float bmax, enum Direction axis, int
   struct transform2 const* transform = &(pNode2D->LayoutTransform);
   float const value = ((float const*)&transform->translation)[axis];
   float const length = NODE2D_FRAME(pNode2D, Size, axis).Desired;
-
   switch (align) {
-    case kUIAlignLeft:
-      return bmin + value + MARGIN_TOP(pNode2D, axis);
-    case kUIAlignRight:
-      return bmax - length + value - MARGIN_BOTTOM(pNode2D, axis);
-    case kUIAlignCenter:
-      return (bmax - MARGIN_BOTTOM(pNode2D, axis) +
-              bmin + MARGIN_TOP(pNode2D, axis) - length) * 0.5f + value;
-    case kUIAlignStretch:
-      return bmin + MARGIN_TOP(pNode2D, axis);
-    default:
-      return 0;
+    case kUIAlignLeft: return bmin + value;
+    case kUIAlignRight: return bmax - length + value;
+    case kUIAlignCenter: return (bmax + bmin - length) * 0.5f + value;
+    case kUIAlignStretch: return bmin;
+    default: return 0;
   }
 }
 
