@@ -122,9 +122,9 @@ _CalculateAutos(float spacing, float avl, PCOLUMNS columns)
 
 HANDLER(Grid, MeasureOverride)
 {
-  Node2DPtr pNode2D = GetNode2D(hObject);
   uint32_t cellindex = 0;
   Size_t size = *pMeasureOverride;
+  Size_t desired = {0};
 
   _CalculateAutos(pGrid->Spacing, size.width, columns_at_axis(pGrid, 0, TRUE));
   _CalculateAutos(pGrid->Spacing, size.height, columns_at_axis(pGrid, 1, TRUE));
@@ -134,37 +134,31 @@ HANDLER(Grid, MeasureOverride)
     struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
     struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
 
-    OBJ_SendMessageW(hChild, kEventMeasure, 0, &(struct Size) {
+    uint32_t s = OBJ_SendMessageW(hChild, kEventMeasure, 0, &(struct Size) {
       .width  = (w ? w->width : size.width),
       .height = (h ? h->width : size.height),
     });
+    
+    desired.width = fmax((w?w->position:0) + LOWORD(s), desired.width);
+    desired.height = fmax((h?h->position:0) + HIWORD(s), desired.height);
     cellindex++;
   }
   
-  return MAKEDWORD(size.width, size.height);
+  return MAKEDWORD(desired.width, desired.height);
 }
 
 HANDLER(Grid, ArrangeOverride)
 {
-  Node2DPtr pNode2D = GetNode2D(hObject);
   uint32_t cellindex = 0;
-
-  struct rect rect = {
-    pArrangeOverride->x - PADDING_TOP(pNode2D, 0),
-    pArrangeOverride->y - PADDING_TOP(pNode2D, 1),
-    pArrangeOverride->width - TOTAL_PADDING(pNode2D, 0),
-    pArrangeOverride->height - TOTAL_PADDING(pNode2D, 1)
-  };
-  
   FOR_EACH_LAYOUTABLE(hChild, hObject)
   {
     struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
     struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
     OBJ_SendMessageW(hChild, kEventArrange, 0, &(struct rect) {
-      .x = rect.x + (w ? w->position : 0),
-      .y = rect.y + (h ? h->position : 0),
-      .width = (w ? w->width : rect.width),
-      .height = (h ? h->width : rect.height),
+      .x = pArrangeOverride->x + (w ? w->position : 0),
+      .y = pArrangeOverride->y + (h ? h->position : 0),
+      .width = (w ? w->width : pArrangeOverride->width),
+      .height = (h ? h->width : pArrangeOverride->height),
 //      .width = NODE2D_FRAME(GetNode2D(hChild), Size, 0).Desired,
 //      .height = NODE2D_FRAME(GetNode2D(hChild), Size, 1).Desired,
   });

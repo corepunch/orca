@@ -708,9 +708,9 @@
 
   <enums name="Stretch">
     <summary>Specifies how the content of an element is resized to fill its layout area</summary>
+    <enum name="Uniform">Scale content uniformly to fit within the area, preserving aspect ratio</enum>
     <enum name="None">Do not scale the content; display at its native size</enum>
     <enum name="Fill">Scale content to fill both width and height, ignoring aspect ratio</enum>
-    <enum name="Uniform">Scale content uniformly to fit within the area, preserving aspect ratio</enum>
     <enum name="UniformToFill">Scale content uniformly to fill the area, preserving aspect ratio but cropping if necessary</enum>
   </enums>
 
@@ -719,6 +719,7 @@
     <details>Renders static images with support for nine-patch scaling, blend modes, and viewport control. Handles both loaded images and images loaded from file paths.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <handles event="MeasureOverride"/>
+    <handles event="ArrangeOverride"/>
     <handles event="ForegroundContent"/>
     <handles event="DrawBrush"/>
     <handles event="LoadView"/>

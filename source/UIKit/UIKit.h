@@ -920,10 +920,6 @@ Node2D_GetBounds(lpNode2D_t self, eDirection_t axis);
 ORCA_API rect_t
 Node2D_GetRect(lpNode2D_t self);
 
-/// @brief Get the content rectangle bounds of a Node2D in local coords
-ORCA_API rect_t
-Node2D_GetContentRect(lpNode2D_t self);
-
 /// @brief Get the background rendering rectangle for a Node2D
 ORCA_API rect_t
 Node2D_GetBackgroundRect(lpNode2D_t self);
@@ -1048,9 +1044,9 @@ struct Grid {
 };
 
 typedef enum Stretch {
+	kStretchUniform, /// Scale content uniformly to fit within the area, preserving aspect ratio
 	kStretchNone, /// Do not scale the content; display at its native size
 	kStretchFill, /// Scale content to fill both width and height, ignoring aspect ratio
-	kStretchUniform, /// Scale content uniformly to fit within the area, preserving aspect ratio
 	kStretchUniformToFill, /// Scale content uniformly to fill the area, preserving aspect ratio but cropping if necessary
 } eStretch_t;
 

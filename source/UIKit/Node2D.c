@@ -652,38 +652,17 @@ HANDLER(Node2D, Measure)
                    desiredH + TOTAL_MARGIN(n, 1));
 }
 
-//HANDLER(Node2D, Arrange)
-//{
-//  struct Node2D *n = pNode2D;
-//  struct rect r = *pArrange;
-//  struct rect rect = {
-//    .x = Node2D_Align(n, r.x, r.x + r.width, 0, NODE2D_FRAME(n, Alignment, 0)) + MARGIN_TOP(n, 0),
-//    .y = Node2D_Align(n, r.y, r.y + r.height, 1, NODE2D_FRAME(n, Alignment, 1)) + MARGIN_TOP(n, 1),
-//    .width = NODE2D_FRAME(n, Alignment, 0) ? NODE2D_FRAME(n, Size, 0).Desired : pArrange->width - TOTAL_MARGIN(n, 0),
-//    .height = NODE2D_FRAME(n, Alignment, 1) ? NODE2D_FRAME(n, Size, 1).Desired : pArrange->height - TOTAL_MARGIN(n, 1),
-//  };
-//  int size = OBJ_SendMessageW(hObject, kEventArrangeOverride, 0, &rect);
-//  Node2D_SetFrame(n, kBox3FieldX, rect.x);
-//  Node2D_SetFrame(n, kBox3FieldY, rect.y);
-//  Node2D_SetFrame(n, kBox3FieldWidth, LOWORD(size));
-//  Node2D_SetFrame(n, kBox3FieldHeight, HIWORD(size));
-//  return MAKEDWORD(LOWORD(size) + TOTAL_MARGIN(n, 0), HIWORD(size) + TOTAL_MARGIN(n, 1));
-//}
-
 HANDLER(Node2D, Arrange)
 {
-//  if (OBJ_GetTextContent(hObject)&&!strcmp(OBJ_GetTextContent(hObject), "New Adventure")) {
-//    int a=0;
-//  }
   struct Node2D *n = pNode2D;
   struct rect rect = {
     .x      = Node2D_Align(n, pArrange->x, pArrange->x + pArrange->width,  0, NODE2D_FRAME(n, Alignment, 0)) + MARGIN_TOP(n, 0),
     .y      = Node2D_Align(n, pArrange->y, pArrange->y + pArrange->height, 1, NODE2D_FRAME(n, Alignment, 1)) + MARGIN_TOP(n, 1),
-    .width  = NODE2D_FRAME(n, Alignment, 0) ? NODE2D_FRAME(n, Size, 0).Desired : pArrange->width  - TOTAL_MARGIN(n, 0),
-    .height = NODE2D_FRAME(n, Alignment, 1) ? NODE2D_FRAME(n, Size, 1).Desired : pArrange->height - TOTAL_MARGIN(n, 1),
+    .width  = NODE2D_FRAME(n, Alignment, 0) || isinf(pArrange->width) ? NODE2D_FRAME(n, Size, 0).Desired : pArrange->width  - TOTAL_MARGIN(n, 0),
+    .height = NODE2D_FRAME(n, Alignment, 1) || isinf(pArrange->height) ? NODE2D_FRAME(n, Size, 1).Desired : pArrange->height - TOTAL_MARGIN(n, 1),
   };
   
-  OBJ_SendMessageW(hObject, kEventArrangeOverride, 0, &(struct rect) {
+  int size = OBJ_SendMessageW(hObject, kEventArrangeOverride, 0, &(struct rect) {
     .x      = PADDING_TOP(n, 0),
     .y      = PADDING_TOP(n, 1),
     .width  = rect.width  - TOTAL_PADDING(n, 0),
@@ -693,8 +672,8 @@ HANDLER(Node2D, Arrange)
   // Final frame is the outer rect (including padding, excluding margin)
   Node2D_SetFrame(n, kBox3FieldX,      rect.x);
   Node2D_SetFrame(n, kBox3FieldY,      rect.y);
-  Node2D_SetFrame(n, kBox3FieldWidth,  rect.width);
-  Node2D_SetFrame(n, kBox3FieldHeight, rect.height);
+  Node2D_SetFrame(n, kBox3FieldWidth,  LOWORD(size) + TOTAL_PADDING(n, 0));
+  Node2D_SetFrame(n, kBox3FieldHeight, HIWORD(size) + TOTAL_PADDING(n, 1));
   
   return MAKEDWORD(rect.width + TOTAL_MARGIN(n, 0), rect.height + TOTAL_MARGIN(n, 1));
 }
@@ -702,7 +681,7 @@ HANDLER(Node2D, Arrange)
 HANDLER(Node2D, MeasureOverride)
 {
   FOR_EACH_CHILD(hObject, OBJ_SendMessageW, kEventMeasure, 0, pMeasureOverride);
-  return MAKEDWORD(pMeasureOverride->width, pMeasureOverride->height);
+  return MAKEDWORD(0,0);//pMeasureOverride->width, pMeasureOverride->height);
 }
 
 HANDLER(Node2D, ArrangeOverride)

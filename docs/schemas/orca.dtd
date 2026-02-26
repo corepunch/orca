@@ -1250,7 +1250,7 @@
 <!ENTITY % GridElements "Grid.Columns|Grid.Rows|Grid.Direction|Grid.Spacing|Grid.CellWidth|Grid.CellHeight|%Node2DElements;">
 <!ELEMENT Grid (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%GridElements;)*>
 <!ATTLIST Grid %GridAttribs;>
-<!ENTITY % Stretch "None|Fill|Uniform|UniformToFill">
+<!ENTITY % Stretch "Uniform|None|Fill|UniformToFill">
 <!ENTITY % ImageViewAttribs "
 	%Node2DAttribs;
 	Src CDATA #IMPLIED

@@ -245,13 +245,19 @@ HANDLER(StackView, MeasureOverride)
     pStackView->Direction == kDirectionVertical ? -pStackView->Spacing : 0,
   };
   FOR_EACH_LAYOUTABLE(hChild, pNode2D->_object) {
-    uint32_t s = OBJ_SendMessageW(hChild, kEventMeasure, 0, pMeasureOverride);
+    uint32_t s;;
     switch (pStackView->Direction) {
       case kDirectionHorizontal:
+        s = OBJ_SendMessageW(hChild, kEventMeasure, 0, &(struct Size) {
+          INFINITY, pMeasureOverride->height
+        });
         size.width += LOWORD(s) + pStackView->Spacing;
         size.height = MAX(size.height, HIWORD(s));
         break;
       case kDirectionVertical:
+        s = OBJ_SendMessageW(hChild, kEventMeasure, 0, &(struct Size) {
+          pMeasureOverride->width, INFINITY
+        });
         size.width = MAX(size.width, LOWORD(s));
         size.height += HIWORD(s) + pStackView->Spacing;
         break;

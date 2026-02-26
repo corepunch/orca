@@ -1742,9 +1742,7 @@
 </span></div></div><div id="TextRun" class="class" data-name="TextRun" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
 </div><h1 class="header">TextRun
 </h1><div class="abstract">Shared concept for text rendering in 2D and 3D nodes.
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.TextRun</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">This class is not instantiated directly. Instead, it provides the common properties and functionality for text rendering, used internally by higher-level components such as 2D and 3D text nodes. The concept encapsulates text content, resources, formatting options, alignment, and font configuration.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_size</span>: <span>uiLabelSize</span></code></div>
-<div class="small-abstract"><span>Internal text size metrics.
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_textinfo</span>: <span>text_info</span></code></div>
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.TextRun</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">This class is not instantiated directly. Instead, it provides the common properties and functionality for text rendering, used internally by higher-level components such as 2D and 3D text nodes. The concept encapsulates text content, resources, formatting options, alignment, and font configuration.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_textinfo</span>: <span>text_info</span></code></div>
 <div class="small-abstract"><span>Internal text information structure.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_font</span>: <a class="type-identifier-link" href="#FontShorthand">FontShorthand</a></code></div>
 <div class="small-abstract"><span>Reference to the font shorthand configuration.
@@ -1841,7 +1839,6 @@
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getFrame</span>(<span class="identifier">field</span>:<span class="decorator">Box3Field</span>)<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Get a frame property value from a Node2D
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getBounds</span>(<span class="identifier">axis</span>:<span class="decorator">Direction</span>)<span class="decorator"> -&gt;</span><span> bounds</span></code><div class="small-abstract"><span>Get the layout bounds of a Node2D along a specific axis
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getRect</span>()<span class="decorator"> -&gt;</span><span> rect</span></code><div class="small-abstract"><span>Get the rectangle bounds of a Node2D including padding and margin
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getContentRect</span>()<span class="decorator"> -&gt;</span><span> rect</span></code><div class="small-abstract"><span>Get the content rectangle bounds of a Node2D in local coords
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getBackgroundRect</span>()<span class="decorator"> -&gt;</span><span> rect</span></code><div class="small-abstract"><span>Get the background rendering rectangle for a Node2D
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getSize</span>(<span class="identifier">axis</span>:<span class="decorator">Direction</span>, <span class="identifier">sizing</span>:<span class="decorator">Sizing</span>)<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Utility function for calculating node dimensions with different sizing modes
 </span></div></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">LayoutTransform</span>: <a class="type-identifier-link" href="#transform2">transform2</a></code></div>
@@ -2063,11 +2060,11 @@
 </span></div></div><div id="Stretch" class="class" data-name="Stretch" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
 </div><h1 class="header">Stretch
 </h1><div class="abstract">Specifies how the content of an element is resized to fill its layout area
-</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">None</span></code><div class="small-abstract"><span>Do not scale the content; display at its native size
+</div><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">Uniform</span></code><div class="small-abstract"><span>Scale content uniformly to fit within the area, preserving aspect ratio
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">None</span></code><div class="small-abstract"><span>Do not scale the content; display at its native size
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Fill</span></code><div class="small-abstract"><span>Scale content to fill both width and height, ignoring aspect ratio
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Uniform</span></code><div class="small-abstract"><span>Scale content uniformly to fit within the area, preserving aspect ratio
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">UniformToFill</span></code><div class="small-abstract"><span>Scale content uniformly to fill the area, preserving aspect ratio but cropping if necessary
 </span></div></div>

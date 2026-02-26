@@ -2555,7 +2555,7 @@ ORCA_API struct ClassDesc _Grid = {
 	.Defaults = &GridDefaults,
 	.NumProperties = kGridNumProperties,
 };
-static const char *_Stretch[] = {"none","fill","uniform","uniformtofill",NULL};
+static const char *_Stretch[] = {"uniform","none","fill","uniformtofill",NULL};
 eStretch_t luaX_checkStretch(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _Stretch);
 }
@@ -2564,6 +2564,7 @@ void luaX_pushStretch(lua_State *L, eStretch_t value) {
 	lua_pushstring(L, _Stretch[value]);
 }
 LRESULT ImageView_MeasureOverride(lpObject_t, lpImageView_t, wParam_t, MeasureOverrideEventPtr);
+LRESULT ImageView_ArrangeOverride(lpObject_t, lpImageView_t, wParam_t, ArrangeOverrideEventPtr);
 LRESULT ImageView_ForegroundContent(lpObject_t, lpImageView_t, wParam_t, ForegroundContentEventPtr);
 LRESULT ImageView_DrawBrush(lpObject_t, lpImageView_t, wParam_t, DrawBrushEventPtr);
 LRESULT ImageView_LoadView(lpObject_t, lpImageView_t, wParam_t, LoadViewEventPtr);
@@ -2579,7 +2580,7 @@ static struct PropertyDesc const ImageViewProperties[kImageViewNumProperties] = 
 	/* ImageView.Viewbox */ DECL(0xa8c81591, 0x4fff923f,
 	ImageView, "Viewbox", Viewbox, kDataTypeVector4D),
 	/* ImageView.Stretch */ DECL(0x03d3b9ca, 0x13aa1da4,
-	ImageView, "Stretch", Stretch, kDataTypeEnum, .TypeString="None,Fill,Uniform,UniformToFill"),
+	ImageView, "Stretch", Stretch, kDataTypeEnum, .TypeString="Uniform,None,Fill,UniformToFill"),
 };
 static struct ImageView ImageViewDefaults = {
 	.Viewbox = (struct vec4) { 0, 0, 1, 1 },
@@ -2588,6 +2589,8 @@ LRESULT ImageViewProc(lpObject_t object, void* cmp, uint32_t message, wParam_t w
 	switch (message) {
 		case 0xff95a02f: // MeasureOverride
 			return ImageView_MeasureOverride(object, cmp, wparm, lparm);
+		case 0x66d9e437: // ArrangeOverride
+			return ImageView_ArrangeOverride(object, cmp, wparm, lparm);
 		case 0x9a7735e5: // ForegroundContent
 			return ImageView_ForegroundContent(object, cmp, wparm, lparm);
 		case 0x0875c1d1: // DrawBrush
