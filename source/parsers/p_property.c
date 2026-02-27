@@ -135,7 +135,6 @@ PROP_Parse2(lua_State* L,
     float pNumbers[MAX_COMPONETNS] = { strtof(szValue, &szEnd) };
     uint32_t i = 1;
     if (szEnd != szValue) {
-      eDataType_t datatype = -1;
       switch (*szEnd) {
         case 'd':
           InitProperty(pobj, szKey, kDataTypeInt, &(int){ *pNumbers });
@@ -147,19 +146,19 @@ PROP_Parse2(lua_State* L,
         case ' ':
           for (; i < MAX_COMPONETNS && isspace(*szEnd); pNumbers[i++] = strtof(szEnd, &szEnd));
           switch (i) {
-            case 1: datatype = kDataTypeFloat; break;
-            case 2: datatype = kDataTypeVector2D; break;
-            case 3: datatype = kDataTypeVector3D; break;
-            case 4: datatype = kDataTypeVector4D; break;
-//            case 9: datatype = kDataTypeMatrix2D; break;
-            case 16: datatype = kDataTypeMatrix3D; break;
-            case 5: datatype = kDataTypeTransform2D; break;
-            case 9: datatype = kDataTypeTransform3D; break;
+            case 1: PROP_SetValue(PROP_Create(L, pobj, szKey, kDataTypeFloat, NULL), pNumbers); break;
+            case 2: PROP_SetValue(PROP_Create(L, pobj, szKey, kDataTypeStruct, "Vector2D"), pNumbers); break;
+            case 3: PROP_SetValue(PROP_Create(L, pobj, szKey, kDataTypeStruct, "Vector3D"), pNumbers); break;
+            case 4: PROP_SetValue(PROP_Create(L, pobj, szKey, kDataTypeStruct, "Vector4D"), pNumbers); break;
+//            case 9: PROP_SetValue(PROP_Create(L, pobj, szKey, kDataTypeStruct, "Matrix2D"), pNumbers); break;
+            case 16: PROP_SetValue(PROP_Create(L, pobj, szKey, kDataTypeStruct, "Matrix3D"), pNumbers); break;
+            case 5: PROP_SetValue(PROP_Create(L, pobj, szKey, kDataTypeStruct, "Transform2D"), pNumbers); break;
+            case 9: PROP_SetValue(PROP_Create(L, pobj, szKey, kDataTypeStruct, "Transform3D"), pNumbers); break;
             default:
               assert(!"Incorrect amount of float components");
               return 0;
           }
-          PROP_SetValue(PROP_Create(L, pobj, szKey, datatype, NULL), pNumbers);
+          
           break;
         case '\0':
         case 'f':
@@ -285,12 +284,12 @@ struct propshort {
   { "Float", kDataTypeFloat },
   { "Boolean", kDataTypeBool },
   { "Bool", kDataTypeBool },
-  { "Color", kDataTypeColor },
-  { "Vector2D", kDataTypeVector2D },
-  { "Vector3D", kDataTypeVector3D },
-  { "Vector4D", kDataTypeVector4D },
-  { "Matrix2D", kDataTypeMatrix3D },
-  { "Matrix3D", kDataTypeMatrix3D },
+  { "Color", kDataTypeStruct, "Color" },
+  { "Vector2D", kDataTypeStruct, "Vector2D" },
+  { "Vector3D", kDataTypeStruct, "Vector3D" },
+  { "Vector4D", kDataTypeStruct, "Vector4D" },
+  { "Matrix2D", kDataTypeStruct, "Matrix3D" },
+  { "Matrix3D", kDataTypeStruct, "Matrix3D" },
   { "String", kDataTypeFixed },
   { "Image", kDataTypeObject, "Texture" },
   { "Texture", kDataTypeObject, "Texture" },
@@ -398,13 +397,12 @@ PDESC_Parse(lpObject_t hobj,
     case kDataTypeInt:
       ((int*)v)[0] = strtod(string, (LPSTR*)&string);
       break;
-    case kDataTypeVector4D:
-    case kDataTypeVector3D:
-    case kDataTypeVector2D:
-    case kDataTypeRectangle:
-    case kDataTypeTransform2D:
-    case kDataTypeTransform3D:
-    case kDataTypeMatrix3D:
+    case kDataTypeStruct:
+      if (strcmp(pdesc->TypeString, "Color") && *string == '#') {
+        struct color color = COLOR_Parse(string);
+        memcpy(v, &color, sizeof(struct color));
+        break;
+      }
     case kDataTypeFloat:
       FOR_LOOP(i, (int)pdesc->DataSize/sizeof(float)) {
         v[i] = *string ? strtof(string, (LPSTR*)&string) : v[0];
@@ -424,14 +422,6 @@ PDESC_Parse(lpObject_t hobj,
       break;
     case kDataTypeEvent:
       strncpy(dest, string, MAX_PROPERTY_STRING);
-      break;
-    case kDataTypeColor:
-      if (*string == '#') {
-        struct color color = COLOR_Parse(string);
-        memcpy(v, &color, sizeof(struct color));
-      } else {
-        sscanf(string, "%f%f%f%f", v + 0, v + 1, v + 2, v + 3);
-      }
       break;
     case kDataTypeEdges:
       _ParseEdges(hobj, pdesc, property, string, dest);

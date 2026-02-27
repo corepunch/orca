@@ -81,12 +81,10 @@ enum ProjectProperties {
 #define Library_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_Library,sizeof(struct Library),_N)
 enum LibraryProperties {
 	kLibraryIsExternal,
-	kLibrarySource,
 	kLibraryNumProperties
 };
 
 #define ID_Library_IsExternal 0x9363c61d
-#define ID_Library_Source 0xd0863267
 #define ID_AnimationClipLibrary 0xb18f0186
 #define GetAnimationClipLibrary(_P)((struct AnimationClipLibrary*)((_P)?OBJ_GetComponent(_P,ID_AnimationClipLibrary):NULL))
 #define AnimationClipLibrary_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_AnimationClipLibrary,sizeof(struct AnimationClipLibrary),_N)

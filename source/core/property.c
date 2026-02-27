@@ -447,14 +447,8 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
           if ((udata = luaL_testudata(L, idx, p->userdata))) PROP_SetValue(p, udata);
           else return luaL_error(L, "Incorrect userdata for %s %s property\n", p->userdata, p->name);
           break;
-        case kDataTypeVector2D:
-          PROP_SetValue(p, luaX_checkvec2(L, idx));
-          break;
-        case kDataTypeVector3D:
-          PROP_SetValue(p, luaX_checkvec3(L, idx));
-          break;
-        case kDataTypeVector4D:
-          PROP_SetValue(p, luaX_checkvec4(L, idx));
+        case kDataTypeStruct:
+          PROP_SetValue(p, luaL_checkudata(L, idx, PROP_GetUserData(p)));
           break;
         default:
           return luaL_error(L, "Incorrect input (lua_type=%d) for (type=%d) %s property\n", lua_type(L, idx), p->type, p->name);
@@ -487,21 +481,9 @@ void _pushproperty(lua_State* L,
     case kDataTypeFloat:
       lua_pushnumber(L, *((float*)value));
       break;
-    case kDataTypeVector2D:
-      memcpy(lua_newuserdata(L, sizeof(vec2_t)), value, sizeof(vec2_t));
-      luaL_setmetatable(L, "vec2");
-      break;
-    case kDataTypeVector3D:
-      memcpy(lua_newuserdata(L, sizeof(vec3_t)), value, sizeof(vec3_t));
-      luaL_setmetatable(L, "vec3");
-      break;
-    case kDataTypeVector4D:
-      memcpy(lua_newuserdata(L, sizeof(vec4_t)), value, sizeof(vec4_t));
-      luaL_setmetatable(L, "vec4");
-      break;
-    case kDataTypeMatrix3D:
-      memcpy(lua_newuserdata(L, sizeof(mat4_t)), value, sizeof(mat4_t));
-      luaL_setmetatable(L, "mat4");
+    case kDataTypeStruct:
+      memcpy(lua_newuserdata(L, datasize), value, datasize);
+      luaL_setmetatable(L, typestring);
       break;
     case kDataTypeLongString:
       lua_pushstring(L, *(lpcString_t*)value);

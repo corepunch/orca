@@ -170,15 +170,15 @@ void luaX_pushSizing(lua_State *L, eSizing_t value) {
 }
 void luaX_pushBorderRadiusShorthand(lua_State *L, lpcBorderRadiusShorthand_t data) {
 	lpBorderRadiusShorthand_t self = lua_newuserdata(L, sizeof(struct BorderRadiusShorthand));
-	luaL_setmetatable(L, "BorderRadiusShorthand");
+	luaL_setmetatable(L, "None");
 	memcpy(self, data, sizeof(struct BorderRadiusShorthand));
 }
 lpBorderRadiusShorthand_t luaX_checkBorderRadiusShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "BorderRadiusShorthand");
+	return luaL_checkudata(L, idx, "None");
 }
 static int f_new_BorderRadiusShorthand(lua_State *L) {
 	lpBorderRadiusShorthand_t self = lua_newuserdata(L, sizeof(struct BorderRadiusShorthand));
-	luaL_setmetatable(L, "BorderRadiusShorthand");
+	luaL_setmetatable(L, "None");
 	memset(self, 0, sizeof(struct BorderRadiusShorthand));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "TopLeftRadius");
@@ -240,7 +240,7 @@ int f_BorderRadiusShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in BorderRadiusShorthand: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_BorderRadiusShorthand(lua_State *L) {
-	luaL_newmetatable(L, "BorderRadiusShorthand");
+	luaL_newmetatable(L, "None");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_BorderRadiusShorthand },
 		{ "__newindex", f_BorderRadiusShorthand___newindex },
@@ -257,15 +257,15 @@ int luaopen_orca_BorderRadiusShorthand(lua_State *L) {
 }
 void luaX_pushBorderEdgeShorthand(lua_State *L, lpcBorderEdgeShorthand_t data) {
 	lpBorderEdgeShorthand_t self = lua_newuserdata(L, sizeof(struct BorderEdgeShorthand));
-	luaL_setmetatable(L, "BorderEdgeShorthand");
+	luaL_setmetatable(L, "None");
 	memcpy(self, data, sizeof(struct BorderEdgeShorthand));
 }
 lpBorderEdgeShorthand_t luaX_checkBorderEdgeShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "BorderEdgeShorthand");
+	return luaL_checkudata(L, idx, "None");
 }
 static int f_new_BorderEdgeShorthand(lua_State *L) {
 	lpBorderEdgeShorthand_t self = lua_newuserdata(L, sizeof(struct BorderEdgeShorthand));
-	luaL_setmetatable(L, "BorderEdgeShorthand");
+	luaL_setmetatable(L, "None");
 	memset(self, 0, sizeof(struct BorderEdgeShorthand));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "Width");
@@ -313,7 +313,7 @@ int f_BorderEdgeShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in BorderEdgeShorthand: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_BorderEdgeShorthand(lua_State *L) {
-	luaL_newmetatable(L, "BorderEdgeShorthand");
+	luaL_newmetatable(L, "None");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_BorderEdgeShorthand },
 		{ "__newindex", f_BorderEdgeShorthand___newindex },
@@ -330,15 +330,15 @@ int luaopen_orca_BorderEdgeShorthand(lua_State *L) {
 }
 void luaX_pushBorderSideShorthand(lua_State *L, lpcBorderSideShorthand_t data) {
 	lpBorderSideShorthand_t self = lua_newuserdata(L, sizeof(struct BorderSideShorthand));
-	luaL_setmetatable(L, "BorderSideShorthand");
+	luaL_setmetatable(L, "None");
 	memcpy(self, data, sizeof(struct BorderSideShorthand));
 }
 lpBorderSideShorthand_t luaX_checkBorderSideShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "BorderSideShorthand");
+	return luaL_checkudata(L, idx, "None");
 }
 static int f_new_BorderSideShorthand(lua_State *L) {
 	lpBorderSideShorthand_t self = lua_newuserdata(L, sizeof(struct BorderSideShorthand));
-	luaL_setmetatable(L, "BorderSideShorthand");
+	luaL_setmetatable(L, "None");
 	memset(self, 0, sizeof(struct BorderSideShorthand));
 	return 1;
 }
@@ -369,7 +369,7 @@ int f_BorderSideShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in BorderSideShorthand: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_BorderSideShorthand(lua_State *L) {
-	luaL_newmetatable(L, "BorderSideShorthand");
+	luaL_newmetatable(L, "None");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_BorderSideShorthand },
 		{ "__newindex", f_BorderSideShorthand___newindex },
@@ -386,15 +386,15 @@ int luaopen_orca_BorderSideShorthand(lua_State *L) {
 }
 void luaX_pushBorderShorthand(lua_State *L, lpcBorderShorthand_t data) {
 	lpBorderShorthand_t self = lua_newuserdata(L, sizeof(struct BorderShorthand));
-	luaL_setmetatable(L, "BorderShorthand");
+	luaL_setmetatable(L, "None");
 	memcpy(self, data, sizeof(struct BorderShorthand));
 }
 lpBorderShorthand_t luaX_checkBorderShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "BorderShorthand");
+	return luaL_checkudata(L, idx, "None");
 }
 static int f_new_BorderShorthand(lua_State *L) {
 	lpBorderShorthand_t self = lua_newuserdata(L, sizeof(struct BorderShorthand));
-	luaL_setmetatable(L, "BorderShorthand");
+	luaL_setmetatable(L, "None");
 	memset(self, 0, sizeof(struct BorderShorthand));
 	return 1;
 }
@@ -419,7 +419,7 @@ int f_BorderShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in BorderShorthand: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_BorderShorthand(lua_State *L) {
-	luaL_newmetatable(L, "BorderShorthand");
+	luaL_newmetatable(L, "None");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_BorderShorthand },
 		{ "__newindex", f_BorderShorthand___newindex },
@@ -436,15 +436,15 @@ int luaopen_orca_BorderShorthand(lua_State *L) {
 }
 void luaX_pushEdgeShorthand(lua_State *L, lpcEdgeShorthand_t data) {
 	lpEdgeShorthand_t self = lua_newuserdata(L, sizeof(struct EdgeShorthand));
-	luaL_setmetatable(L, "EdgeShorthand");
+	luaL_setmetatable(L, "None");
 	memcpy(self, data, sizeof(struct EdgeShorthand));
 }
 lpEdgeShorthand_t luaX_checkEdgeShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "EdgeShorthand");
+	return luaL_checkudata(L, idx, "None");
 }
 static int f_new_EdgeShorthand(lua_State *L) {
 	lpEdgeShorthand_t self = lua_newuserdata(L, sizeof(struct EdgeShorthand));
-	luaL_setmetatable(L, "EdgeShorthand");
+	luaL_setmetatable(L, "None");
 	memset(self, 0, sizeof(struct EdgeShorthand));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "Left");
@@ -486,7 +486,7 @@ int f_EdgeShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in EdgeShorthand: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_EdgeShorthand(lua_State *L) {
-	luaL_newmetatable(L, "EdgeShorthand");
+	luaL_newmetatable(L, "None");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_EdgeShorthand },
 		{ "__newindex", f_EdgeShorthand___newindex },
@@ -503,15 +503,15 @@ int luaopen_orca_EdgeShorthand(lua_State *L) {
 }
 void luaX_pushAlignmentShorthand(lua_State *L, lpcAlignmentShorthand_t data) {
 	lpAlignmentShorthand_t self = lua_newuserdata(L, sizeof(struct AlignmentShorthand));
-	luaL_setmetatable(L, "AlignmentShorthand");
+	luaL_setmetatable(L, "None");
 	memcpy(self, data, sizeof(struct AlignmentShorthand));
 }
 lpAlignmentShorthand_t luaX_checkAlignmentShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "AlignmentShorthand");
+	return luaL_checkudata(L, idx, "None");
 }
 static int f_new_AlignmentShorthand(lua_State *L) {
 	lpAlignmentShorthand_t self = lua_newuserdata(L, sizeof(struct AlignmentShorthand));
-	luaL_setmetatable(L, "AlignmentShorthand");
+	luaL_setmetatable(L, "None");
 	memset(self, 0, sizeof(struct AlignmentShorthand));
 	return 1;
 }
@@ -530,7 +530,7 @@ int f_AlignmentShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in AlignmentShorthand: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_AlignmentShorthand(lua_State *L) {
-	luaL_newmetatable(L, "AlignmentShorthand");
+	luaL_newmetatable(L, "None");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_AlignmentShorthand },
 		{ "__newindex", f_AlignmentShorthand___newindex },
@@ -547,15 +547,15 @@ int luaopen_orca_AlignmentShorthand(lua_State *L) {
 }
 void luaX_pushFontShorthand(lua_State *L, lpcFontShorthand_t data) {
 	lpFontShorthand_t self = lua_newuserdata(L, sizeof(struct FontShorthand));
-	luaL_setmetatable(L, "FontShorthand");
+	luaL_setmetatable(L, "None");
 	memcpy(self, data, sizeof(struct FontShorthand));
 }
 lpFontShorthand_t luaX_checkFontShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "FontShorthand");
+	return luaL_checkudata(L, idx, "None");
 }
 static int f_new_FontShorthand(lua_State *L) {
 	lpFontShorthand_t self = lua_newuserdata(L, sizeof(struct FontShorthand));
-	luaL_setmetatable(L, "FontShorthand");
+	luaL_setmetatable(L, "None");
 	memset(self, 0, sizeof(struct FontShorthand));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "Weight");
@@ -613,7 +613,7 @@ int f_FontShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in FontShorthand: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_FontShorthand(lua_State *L) {
-	luaL_newmetatable(L, "FontShorthand");
+	luaL_newmetatable(L, "None");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_FontShorthand },
 		{ "__newindex", f_FontShorthand___newindex },
@@ -630,15 +630,15 @@ int luaopen_orca_FontShorthand(lua_State *L) {
 }
 void luaX_pushBrushShorthand(lua_State *L, lpcBrushShorthand_t data) {
 	lpBrushShorthand_t self = lua_newuserdata(L, sizeof(struct BrushShorthand));
-	luaL_setmetatable(L, "BrushShorthand");
+	luaL_setmetatable(L, "None");
 	memcpy(self, data, sizeof(struct BrushShorthand));
 }
 lpBrushShorthand_t luaX_checkBrushShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "BrushShorthand");
+	return luaL_checkudata(L, idx, "None");
 }
 static int f_new_BrushShorthand(lua_State *L) {
 	lpBrushShorthand_t self = lua_newuserdata(L, sizeof(struct BrushShorthand));
-	luaL_setmetatable(L, "BrushShorthand");
+	luaL_setmetatable(L, "None");
 	memset(self, 0, sizeof(struct BrushShorthand));
 	return 1;
 }
@@ -675,7 +675,7 @@ int f_BrushShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in BrushShorthand: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_BrushShorthand(lua_State *L) {
-	luaL_newmetatable(L, "BrushShorthand");
+	luaL_newmetatable(L, "None");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_BrushShorthand },
 		{ "__newindex", f_BrushShorthand___newindex },
@@ -692,15 +692,15 @@ int luaopen_orca_BrushShorthand(lua_State *L) {
 }
 void luaX_pushShadowShorthand(lua_State *L, lpcShadowShorthand_t data) {
 	lpShadowShorthand_t self = lua_newuserdata(L, sizeof(struct ShadowShorthand));
-	luaL_setmetatable(L, "ShadowShorthand");
+	luaL_setmetatable(L, "None");
 	memcpy(self, data, sizeof(struct ShadowShorthand));
 }
 lpShadowShorthand_t luaX_checkShadowShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "ShadowShorthand");
+	return luaL_checkudata(L, idx, "None");
 }
 static int f_new_ShadowShorthand(lua_State *L) {
 	lpShadowShorthand_t self = lua_newuserdata(L, sizeof(struct ShadowShorthand));
-	luaL_setmetatable(L, "ShadowShorthand");
+	luaL_setmetatable(L, "None");
 	memset(self, 0, sizeof(struct ShadowShorthand));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "BlurRadius");
@@ -754,7 +754,7 @@ int f_ShadowShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in ShadowShorthand: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_ShadowShorthand(lua_State *L) {
-	luaL_newmetatable(L, "ShadowShorthand");
+	luaL_newmetatable(L, "None");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_ShadowShorthand },
 		{ "__newindex", f_ShadowShorthand___newindex },
@@ -771,15 +771,15 @@ int luaopen_orca_ShadowShorthand(lua_State *L) {
 }
 void luaX_pushRingShorthand(lua_State *L, lpcRingShorthand_t data) {
 	lpRingShorthand_t self = lua_newuserdata(L, sizeof(struct RingShorthand));
-	luaL_setmetatable(L, "RingShorthand");
+	luaL_setmetatable(L, "None");
 	memcpy(self, data, sizeof(struct RingShorthand));
 }
 lpRingShorthand_t luaX_checkRingShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "RingShorthand");
+	return luaL_checkudata(L, idx, "None");
 }
 static int f_new_RingShorthand(lua_State *L) {
 	lpRingShorthand_t self = lua_newuserdata(L, sizeof(struct RingShorthand));
-	luaL_setmetatable(L, "RingShorthand");
+	luaL_setmetatable(L, "None");
 	memset(self, 0, sizeof(struct RingShorthand));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "Offset");
@@ -827,7 +827,7 @@ int f_RingShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in RingShorthand: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_RingShorthand(lua_State *L) {
-	luaL_newmetatable(L, "RingShorthand");
+	luaL_newmetatable(L, "None");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_RingShorthand },
 		{ "__newindex", f_RingShorthand___newindex },
@@ -844,15 +844,15 @@ int luaopen_orca_RingShorthand(lua_State *L) {
 }
 void luaX_pushOverflowShorthand(lua_State *L, lpcOverflowShorthand_t data) {
 	lpOverflowShorthand_t self = lua_newuserdata(L, sizeof(struct OverflowShorthand));
-	luaL_setmetatable(L, "OverflowShorthand");
+	luaL_setmetatable(L, "None");
 	memcpy(self, data, sizeof(struct OverflowShorthand));
 }
 lpOverflowShorthand_t luaX_checkOverflowShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "OverflowShorthand");
+	return luaL_checkudata(L, idx, "None");
 }
 static int f_new_OverflowShorthand(lua_State *L) {
 	lpOverflowShorthand_t self = lua_newuserdata(L, sizeof(struct OverflowShorthand));
-	luaL_setmetatable(L, "OverflowShorthand");
+	luaL_setmetatable(L, "None");
 	memset(self, 0, sizeof(struct OverflowShorthand));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "x");
@@ -894,7 +894,7 @@ int f_OverflowShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in OverflowShorthand: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_OverflowShorthand(lua_State *L) {
-	luaL_newmetatable(L, "OverflowShorthand");
+	luaL_newmetatable(L, "None");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_OverflowShorthand },
 		{ "__newindex", f_OverflowShorthand___newindex },
@@ -911,15 +911,15 @@ int luaopen_orca_OverflowShorthand(lua_State *L) {
 }
 void luaX_pushUnderlineShorthand(lua_State *L, lpcUnderlineShorthand_t data) {
 	lpUnderlineShorthand_t self = lua_newuserdata(L, sizeof(struct UnderlineShorthand));
-	luaL_setmetatable(L, "UnderlineShorthand");
+	luaL_setmetatable(L, "None");
 	memcpy(self, data, sizeof(struct UnderlineShorthand));
 }
 lpUnderlineShorthand_t luaX_checkUnderlineShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "UnderlineShorthand");
+	return luaL_checkudata(L, idx, "None");
 }
 static int f_new_UnderlineShorthand(lua_State *L) {
 	lpUnderlineShorthand_t self = lua_newuserdata(L, sizeof(struct UnderlineShorthand));
-	luaL_setmetatable(L, "UnderlineShorthand");
+	luaL_setmetatable(L, "None");
 	memset(self, 0, sizeof(struct UnderlineShorthand));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "Offset");
@@ -967,7 +967,7 @@ int f_UnderlineShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in UnderlineShorthand: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_UnderlineShorthand(lua_State *L) {
-	luaL_newmetatable(L, "UnderlineShorthand");
+	luaL_newmetatable(L, "None");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_UnderlineShorthand },
 		{ "__newindex", f_UnderlineShorthand___newindex },
@@ -984,15 +984,15 @@ int luaopen_orca_UnderlineShorthand(lua_State *L) {
 }
 void luaX_pushThickness(lua_State *L, lpcThickness_t data) {
 	lpThickness_t self = lua_newuserdata(L, sizeof(struct Thickness));
-	luaL_setmetatable(L, "Thickness");
+	luaL_setmetatable(L, "None");
 	memcpy(self, data, sizeof(struct Thickness));
 }
 lpThickness_t luaX_checkThickness(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "Thickness");
+	return luaL_checkudata(L, idx, "None");
 }
 static int f_new_Thickness(lua_State *L) {
 	lpThickness_t self = lua_newuserdata(L, sizeof(struct Thickness));
-	luaL_setmetatable(L, "Thickness");
+	luaL_setmetatable(L, "None");
 	memset(self, 0, sizeof(struct Thickness));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "Top");
@@ -1054,7 +1054,7 @@ int f_Thickness___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in Thickness: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_Thickness(lua_State *L) {
-	luaL_newmetatable(L, "Thickness");
+	luaL_newmetatable(L, "None");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_Thickness },
 		{ "__newindex", f_Thickness___newindex },
@@ -1071,15 +1071,15 @@ int luaopen_orca_Thickness(lua_State *L) {
 }
 void luaX_pushMarginShorthand(lua_State *L, lpcMarginShorthand_t data) {
 	lpMarginShorthand_t self = lua_newuserdata(L, sizeof(struct MarginShorthand));
-	luaL_setmetatable(L, "MarginShorthand");
+	luaL_setmetatable(L, "None");
 	memcpy(self, data, sizeof(struct MarginShorthand));
 }
 lpMarginShorthand_t luaX_checkMarginShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "MarginShorthand");
+	return luaL_checkudata(L, idx, "None");
 }
 static int f_new_MarginShorthand(lua_State *L) {
 	lpMarginShorthand_t self = lua_newuserdata(L, sizeof(struct MarginShorthand));
-	luaL_setmetatable(L, "MarginShorthand");
+	luaL_setmetatable(L, "None");
 	memset(self, 0, sizeof(struct MarginShorthand));
 	return 1;
 }
@@ -1098,7 +1098,7 @@ int f_MarginShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in MarginShorthand: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_MarginShorthand(lua_State *L) {
-	luaL_newmetatable(L, "MarginShorthand");
+	luaL_newmetatable(L, "None");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_MarginShorthand },
 		{ "__newindex", f_MarginShorthand___newindex },
@@ -1115,15 +1115,15 @@ int luaopen_orca_MarginShorthand(lua_State *L) {
 }
 void luaX_pushSizeAxisShorthand(lua_State *L, lpcSizeAxisShorthand_t data) {
 	lpSizeAxisShorthand_t self = lua_newuserdata(L, sizeof(struct SizeAxisShorthand));
-	luaL_setmetatable(L, "SizeAxisShorthand");
+	luaL_setmetatable(L, "None");
 	memcpy(self, data, sizeof(struct SizeAxisShorthand));
 }
 lpSizeAxisShorthand_t luaX_checkSizeAxisShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "SizeAxisShorthand");
+	return luaL_checkudata(L, idx, "None");
 }
 static int f_new_SizeAxisShorthand(lua_State *L) {
 	lpSizeAxisShorthand_t self = lua_newuserdata(L, sizeof(struct SizeAxisShorthand));
-	luaL_setmetatable(L, "SizeAxisShorthand");
+	luaL_setmetatable(L, "None");
 	memset(self, 0, sizeof(struct SizeAxisShorthand));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "Requested");
@@ -1195,7 +1195,7 @@ int f_SizeAxisShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in SizeAxisShorthand: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_SizeAxisShorthand(lua_State *L) {
-	luaL_newmetatable(L, "SizeAxisShorthand");
+	luaL_newmetatable(L, "None");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_SizeAxisShorthand },
 		{ "__newindex", f_SizeAxisShorthand___newindex },
@@ -1212,15 +1212,15 @@ int luaopen_orca_SizeAxisShorthand(lua_State *L) {
 }
 void luaX_pushSizeShorthand(lua_State *L, lpcSizeShorthand_t data) {
 	lpSizeShorthand_t self = lua_newuserdata(L, sizeof(struct SizeShorthand));
-	luaL_setmetatable(L, "SizeShorthand");
+	luaL_setmetatable(L, "None");
 	memcpy(self, data, sizeof(struct SizeShorthand));
 }
 lpSizeShorthand_t luaX_checkSizeShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "SizeShorthand");
+	return luaL_checkudata(L, idx, "None");
 }
 static int f_new_SizeShorthand(lua_State *L) {
 	lpSizeShorthand_t self = lua_newuserdata(L, sizeof(struct SizeShorthand));
-	luaL_setmetatable(L, "SizeShorthand");
+	luaL_setmetatable(L, "None");
 	memset(self, 0, sizeof(struct SizeShorthand));
 	return 1;
 }
@@ -1239,7 +1239,7 @@ int f_SizeShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in SizeShorthand: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_SizeShorthand(lua_State *L) {
-	luaL_newmetatable(L, "SizeShorthand");
+	luaL_newmetatable(L, "None");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_SizeShorthand },
 		{ "__newindex", f_SizeShorthand___newindex },
@@ -1556,7 +1556,7 @@ ORCA_API struct ClassDesc _Brush = {
 };
 static struct PropertyDesc const ColorBrushProperties[kColorBrushNumProperties] = {
 	/* ColorBrush.Color */ DECL(0xe5b43cf8, 0xb7f26275,
-	ColorBrush, "Color", Color, kDataTypeColor),
+	ColorBrush, "Color", Color, kDataTypeStruct, .TypeString="Color"),
 };
 static struct ColorBrush ColorBrushDefaults = {0};
 LRESULT ColorBrushProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1693,7 +1693,7 @@ static struct PropertyDesc const NodeProperties[kNodeNumProperties] = {
 	/* Node.BorderLeftStyle */ DECL(0x320cf553, 0x418d537f,
 	Node, "BorderLeftStyle", Border.Axis[0].Left.Style, kDataTypeEnum, .TypeString="None,Hidden,Dotted,Dashed,Solid,Double,Groove,Ridge,Inset,Outset"),
 	/* Node.BorderLeftColor */ DECL(0xac4e1f41, 0x9af0561d,
-	Node, "BorderLeftColor", Border.Axis[0].Left.Color, kDataTypeColor),
+	Node, "BorderLeftColor", Border.Axis[0].Left.Color, kDataTypeStruct, .TypeString="Color"),
 	/* Node.BorderRight */ DECL(0xa3488853, 0xf30cc2f7,
 	Node, "BorderRight", Border.Axis[0].Right, kDataTypeGroup, .TypeString="BorderEdgeShorthand", .NumComponents=3),
 	/* Node.BorderRightWidth */ DECL(0xcaf45705, 0x9bfa14d9,
@@ -1701,7 +1701,7 @@ static struct PropertyDesc const NodeProperties[kNodeNumProperties] = {
 	/* Node.BorderRightStyle */ DECL(0x13c11564, 0xf41a8468,
 	Node, "BorderRightStyle", Border.Axis[0].Right.Style, kDataTypeEnum, .TypeString="None,Hidden,Dotted,Dashed,Solid,Double,Groove,Ridge,Inset,Outset"),
 	/* Node.BorderRightColor */ DECL(0xe4a3cf52, 0x50c65ea6,
-	Node, "BorderRightColor", Border.Axis[0].Right.Color, kDataTypeColor),
+	Node, "BorderRightColor", Border.Axis[0].Right.Color, kDataTypeStruct, .TypeString="Color"),
 	/* Node.VerticalBorder */ DECL(0xacc1b15d, 0xd17e2079,
 	Node, "VerticalBorder", Border.Axis[1], kDataTypeGroup, .TypeString="BorderSideShorthand", .NumComponents=8),
 	/* Node.BorderTop */ DECL(0x7067fed6, 0xe260ceca,
@@ -1711,7 +1711,7 @@ static struct PropertyDesc const NodeProperties[kNodeNumProperties] = {
 	/* Node.BorderTopStyle */ DECL(0xbff4a0bb, 0x7ec59edf,
 	Node, "BorderTopStyle", Border.Axis[1].Left.Style, kDataTypeEnum, .TypeString="None,Hidden,Dotted,Dashed,Solid,Double,Groove,Ridge,Inset,Outset"),
 	/* Node.BorderTopColor */ DECL(0x920d2ad9, 0xbedd7f7d,
-	Node, "BorderTopColor", Border.Axis[1].Left.Color, kDataTypeColor),
+	Node, "BorderTopColor", Border.Axis[1].Left.Color, kDataTypeStruct, .TypeString="Color"),
 	/* Node.BorderBottom */ DECL(0x4c410e68, 0x822aba1c,
 	Node, "BorderBottom", Border.Axis[1].Right, kDataTypeGroup, .TypeString="BorderEdgeShorthand", .NumComponents=3),
 	/* Node.BorderBottomWidth */ DECL(0x94ae3ba4, 0x5f38b988,
@@ -1719,7 +1719,7 @@ static struct PropertyDesc const NodeProperties[kNodeNumProperties] = {
 	/* Node.BorderBottomStyle */ DECL(0xb97a7e9d, 0x1db18d51,
 	Node, "BorderBottomStyle", Border.Axis[1].Right.Style, kDataTypeEnum, .TypeString="None,Hidden,Dotted,Dashed,Solid,Double,Groove,Ridge,Inset,Outset"),
 	/* Node.BorderBottomColor */ DECL(0x169c6a1f, 0x4c77d2c3,
-	Node, "BorderBottomColor", Border.Axis[1].Right.Color, kDataTypeColor),
+	Node, "BorderBottomColor", Border.Axis[1].Right.Color, kDataTypeStruct, .TypeString="Color"),
 	/* Node.DepthBorder */ DECL(0x98a13250, 0xc5ae22ec,
 	Node, "DepthBorder", Border.Axis[2], kDataTypeGroup, .TypeString="BorderSideShorthand", .NumComponents=8),
 	/* Node.BorderFront */ DECL(0x7c340dbe, 0xd98795c2,
@@ -1729,7 +1729,7 @@ static struct PropertyDesc const NodeProperties[kNodeNumProperties] = {
 	/* Node.BorderFrontStyle */ DECL(0xdf125d93, 0x20a52967,
 	Node, "BorderFrontStyle", Border.Axis[2].Left.Style, kDataTypeEnum, .TypeString="None,Hidden,Dotted,Dashed,Solid,Double,Groove,Ridge,Inset,Outset"),
 	/* Node.BorderFrontColor */ DECL(0x2d147681, 0x21677875,
-	Node, "BorderFrontColor", Border.Axis[2].Left.Color, kDataTypeColor),
+	Node, "BorderFrontColor", Border.Axis[2].Left.Color, kDataTypeStruct, .TypeString="Color"),
 	/* Node.BorderBack */ DECL(0xb45f3e80, 0x51f9245c,
 	Node, "BorderBack", Border.Axis[2].Right, kDataTypeGroup, .TypeString="BorderEdgeShorthand", .NumComponents=3),
 	/* Node.BorderBackWidth */ DECL(0xe2551c8c, 0x437e0ec8,
@@ -1737,7 +1737,7 @@ static struct PropertyDesc const NodeProperties[kNodeNumProperties] = {
 	/* Node.BorderBackStyle */ DECL(0xa316e305, 0x47843b91,
 	Node, "BorderBackStyle", Border.Axis[2].Right.Style, kDataTypeEnum, .TypeString="None,Hidden,Dotted,Dashed,Solid,Double,Groove,Ridge,Inset,Outset"),
 	/* Node.BorderBackColor */ DECL(0x7058b5b7, 0x2e445203,
-	Node, "BorderBackColor", Border.Axis[2].Right.Color, kDataTypeColor),
+	Node, "BorderBackColor", Border.Axis[2].Right.Color, kDataTypeStruct, .TypeString="Color"),
 	/* Node.Alignment */ DECL(0xd66abafe, 0x6ae48d82,
 	Node, "Alignment", Alignment, kDataTypeGroup, .TypeString="AlignmentShorthand", .NumComponents=3),
 	/* Node.HorizontalAlignment */ DECL(0x1b8d5152, 0xe230b1ee,
@@ -1814,7 +1814,7 @@ static struct PropertyDesc const TextRunProperties[kTextRunNumProperties] = {
 	/* TextRun.UnderlineWidth */ DECL(0xee253b91, 0xc80a55b7,
 	TextRun, "UnderlineWidth", Underline.Width, kDataTypeFloat),
 	/* TextRun.UnderlineColor */ DECL(0x00c40cce, 0xcacb7660,
-	TextRun, "UnderlineColor", Underline.Color, kDataTypeColor),
+	TextRun, "UnderlineColor", Underline.Color, kDataTypeStruct, .TypeString="Color"),
 	/* TextRun.LetterSpacing */ DECL(0x44b2c826, 0x83b2ad0c,
 	TextRun, "LetterSpacing", LetterSpacing, kDataTypeFloat),
 	/* TextRun.LineHeight */ DECL(0xb5107238, 0x45c78196,
@@ -1869,7 +1869,7 @@ static struct PropertyDesc const TextBlockConceptProperties[kTextBlockConceptNum
 	/* TextBlockConcept.Placeholder */ DECL(0x8987413a, 0x78889986,
 	TextBlockConcept, "Placeholder", Placeholder, kDataTypeGroup, .TypeString="BrushShorthand", .NumComponents=3),
 	/* TextBlockConcept.PlaceholderColor */ DECL(0xb272976d, 0x8f53db89,
-	TextBlockConcept, "PlaceholderColor", Placeholder.Color, kDataTypeColor),
+	TextBlockConcept, "PlaceholderColor", Placeholder.Color, kDataTypeStruct, .TypeString="Color"),
 	/* TextBlockConcept.PlaceholderImage */ DECL(0x6b519bcf, 0x2275c70b,
 	TextBlockConcept, "PlaceholderImage", Placeholder.Image, kDataTypeObject, .TypeString="Texture"),
 	/* TextBlockConcept.PlaceholderMaterial */ DECL(0x6d974ebf, 0x16a577db,
@@ -1937,33 +1937,33 @@ LRESULT Node2D_MeasureOverride(lpObject_t, lpNode2D_t, wParam_t, MeasureOverride
 LRESULT Node2D_ArrangeOverride(lpObject_t, lpNode2D_t, wParam_t, ArrangeOverrideEventPtr);
 static struct PropertyDesc const Node2DProperties[kNode2DNumProperties] = {
 	/* Node2D.LayoutTransform */ DECL(0x3f19bf01, 0x7c78c87b,
-	Node2D, "LayoutTransform", LayoutTransform, kDataTypeTransform2D),
+	Node2D, "LayoutTransform", LayoutTransform, kDataTypeStruct, .TypeString="Transform2D"),
 	/* Node2D.LayoutTransformTranslation */ DECL(0xfc7e27e0, 0x2407475a,
-	Node2D, "LayoutTransformTranslation", LayoutTransform.translation, kDataTypeVector2D),
+	Node2D, "LayoutTransformTranslation", LayoutTransform.translation, kDataTypeStruct, .TypeString="Vector2D"),
 	/* Node2D.LayoutTransformRotation */ DECL(0x9560ef43, 0x40a04c55,
 	Node2D, "LayoutTransformRotation", LayoutTransform.rotation, kDataTypeFloat),
 	/* Node2D.LayoutTransformScale */ DECL(0x5a2c3595, 0xae9265d3,
-	Node2D, "LayoutTransformScale", LayoutTransform.scale, kDataTypeVector2D),
+	Node2D, "LayoutTransformScale", LayoutTransform.scale, kDataTypeStruct, .TypeString="Vector2D"),
 	/* Node2D.RenderTransform */ DECL(0xe9e55063, 0xa5faec05,
-	Node2D, "RenderTransform", RenderTransform, kDataTypeTransform2D),
+	Node2D, "RenderTransform", RenderTransform, kDataTypeStruct, .TypeString="Transform2D"),
 	/* Node2D.RenderTransformTranslation */ DECL(0xb8e70ec2, 0xa5d5540c,
-	Node2D, "RenderTransformTranslation", RenderTransform.translation, kDataTypeVector2D),
+	Node2D, "RenderTransformTranslation", RenderTransform.translation, kDataTypeStruct, .TypeString="Vector2D"),
 	/* Node2D.RenderTransformRotation */ DECL(0x3c611efd, 0x5387d0bf,
 	Node2D, "RenderTransformRotation", RenderTransform.rotation, kDataTypeFloat),
 	/* Node2D.RenderTransformScale */ DECL(0xd037e21b, 0xa0bbe951,
-	Node2D, "RenderTransformScale", RenderTransform.scale, kDataTypeVector2D),
+	Node2D, "RenderTransformScale", RenderTransform.scale, kDataTypeStruct, .TypeString="Vector2D"),
 	/* Node2D.RenderTransformOrigin */ DECL(0xdc65ec6d, 0x43a9dbaf,
-	Node2D, "RenderTransformOrigin", RenderTransformOrigin, kDataTypeVector2D),
+	Node2D, "RenderTransformOrigin", RenderTransformOrigin, kDataTypeStruct, .TypeString="Vector2D"),
 	/* Node2D.ContentOffset */ DECL(0x35a57c45, 0xb5cb609b,
-	Node2D, "ContentOffset", ContentOffset, kDataTypeVector2D),
+	Node2D, "ContentOffset", ContentOffset, kDataTypeStruct, .TypeString="Vector2D"),
 	/* Node2D.Matrix */ DECL(0xe9d1810c, 0x09a64b02,
-	Node2D, "Matrix", Matrix, kDataTypeMatrix3D),
+	Node2D, "Matrix", Matrix, kDataTypeStruct, .TypeString="Matrix3D"),
 	/* Node2D.RenderTarget */ DECL(0x64abadd0, 0x441af9f6,
 	Node2D, "RenderTarget", RenderTarget, kDataTypeObject, .TypeString="Texture"),
 	/* Node2D.Background */ DECL(0xbafc0abd, 0x59353973,
 	Node2D, "Background", Background, kDataTypeGroup, .TypeString="BrushShorthand", .NumComponents=3),
 	/* Node2D.BackgroundColor */ DECL(0xd1496d30, 0x0796e5b2,
-	Node2D, "BackgroundColor", Background.Color, kDataTypeColor),
+	Node2D, "BackgroundColor", Background.Color, kDataTypeStruct, .TypeString="Color"),
 	/* Node2D.BackgroundImage */ DECL(0xe0bbc082, 0xeb919ee8,
 	Node2D, "BackgroundImage", Background.Image, kDataTypeObject, .TypeString="Texture"),
 	/* Node2D.BackgroundMaterial */ DECL(0x843e6b88, 0x973fabea,
@@ -1971,7 +1971,7 @@ static struct PropertyDesc const Node2DProperties[kNode2DNumProperties] = {
 	/* Node2D.Foreground */ DECL(0xd96b36e0, 0xaeaca316,
 	Node2D, "Foreground", Foreground, kDataTypeGroup, .TypeString="BrushShorthand", .NumComponents=3),
 	/* Node2D.ForegroundColor */ DECL(0x94392057, 0xf890bd19,
-	Node2D, "ForegroundColor", Foreground.Color, kDataTypeColor),
+	Node2D, "ForegroundColor", Foreground.Color, kDataTypeStruct, .TypeString="Color"),
 	/* Node2D.ForegroundImage */ DECL(0xb03161dd, 0xd8914fbb,
 	Node2D, "ForegroundImage", Foreground.Image, kDataTypeObject, .TypeString="Texture"),
 	/* Node2D.ForegroundMaterial */ DECL(0xa654aab9, 0x4f98b2ab,
@@ -1979,13 +1979,13 @@ static struct PropertyDesc const Node2DProperties[kNode2DNumProperties] = {
 	/* Node2D.BoxShadow */ DECL(0xce1f078a, 0x47152f84,
 	Node2D, "BoxShadow", BoxShadow, kDataTypeGroup, .TypeString="ShadowShorthand", .NumComponents=4),
 	/* Node2D.BoxShadowOffset */ DECL(0x047c9a3d, 0xfa0a729f,
-	Node2D, "BoxShadowOffset", BoxShadow.Offset, kDataTypeVector2D),
+	Node2D, "BoxShadowOffset", BoxShadow.Offset, kDataTypeStruct, .TypeString="Vector2D"),
 	/* Node2D.BoxShadowBlurRadius */ DECL(0x623ff5f9, 0x16c10efb,
 	Node2D, "BoxShadowBlurRadius", BoxShadow.BlurRadius, kDataTypeFloat),
 	/* Node2D.BoxShadowSpreadRadius */ DECL(0xe284b26f, 0x8804c4f1,
 	Node2D, "BoxShadowSpreadRadius", BoxShadow.SpreadRadius, kDataTypeFloat),
 	/* Node2D.BoxShadowColor */ DECL(0xe0ae423d, 0xc855fc8b,
-	Node2D, "BoxShadowColor", BoxShadow.Color, kDataTypeColor),
+	Node2D, "BoxShadowColor", BoxShadow.Color, kDataTypeStruct, .TypeString="Color"),
 	/* Node2D.Overflow */ DECL(0x3cf02b8b, 0xd5704155,
 	Node2D, "Overflow", Overflow, kDataTypeGroup, .TypeString="OverflowShorthand", .NumComponents=2),
 	/* Node2D.OverflowX */ DECL(0xc114fd29, 0x0cb66777,
@@ -1999,11 +1999,11 @@ static struct PropertyDesc const Node2DProperties[kNode2DNumProperties] = {
 	/* Node2D.RingWidth */ DECL(0x5fff552d, 0x1a88410b,
 	Node2D, "RingWidth", Ring.Width, kDataTypeFloat),
 	/* Node2D.RingColor */ DECL(0x97d6200a, 0xecbe3144,
-	Node2D, "RingColor", Ring.Color, kDataTypeColor),
+	Node2D, "RingColor", Ring.Color, kDataTypeStruct, .TypeString="Color"),
 	/* Node2D.CompositionBrush */ DECL(0x74622217, 0x04f99755,
 	Node2D, "CompositionBrush", CompositionBrush, kDataTypeObject, .TypeString="Material"),
 	/* Node2D.CompositionDesignSize */ DECL(0x5488c4f2, 0x8a2688dc,
-	Node2D, "CompositionDesignSize", CompositionDesignSize, kDataTypeVector2D),
+	Node2D, "CompositionDesignSize", CompositionDesignSize, kDataTypeStruct, .TypeString="Vector2D"),
 	/* Node2D.SizeToContent */ DECL(0x45513b32, 0xe55ab2cc,
 	Node2D, "SizeToContent", SizeToContent, kDataTypeBool),
 	/* Node2D.OffscreenRendering */ DECL(0x6a1cb2a6, 0x893fea40,
@@ -2426,7 +2426,7 @@ LRESULT Screen_Destroy(lpObject_t, lpScreen_t, wParam_t, DestroyEventPtr);
 LRESULT Screen_WindowResized(lpObject_t, lpScreen_t, wParam_t, WindowResizedEventPtr);
 static struct PropertyDesc const ScreenProperties[kScreenNumProperties] = {
 	/* Screen.ClearColor */ DECL(0xeb16b675, 0x1bfc36dd,
-	Screen, "ClearColor", ClearColor, kDataTypeColor),
+	Screen, "ClearColor", ClearColor, kDataTypeStruct, .TypeString="Color"),
 	/* Screen.ResizeMode */ DECL(0x3dd888be, 0xc3203446,
 	Screen, "ResizeMode", ResizeMode, kDataTypeEnum, .TypeString="NoResize,CanMinimize,CanResize,CanResizeWithGrip"),
 };
@@ -2570,11 +2570,11 @@ static struct PropertyDesc const ImageViewProperties[kImageViewNumProperties] = 
 	/* ImageView.Image */ DECL(0x590ca79a, 0x0b666f9c,
 	ImageView, "Image", Image, kDataTypeObject, .TypeString="Texture"),
 	/* ImageView.Edges */ DECL(0x079106fd, 0xbc1ab5c3,
-	ImageView, "Edges", Edges, kDataTypeVector4D),
+	ImageView, "Edges", Edges, kDataTypeStruct, .TypeString="Vector4D"),
 	/* ImageView.Insets */ DECL(0x062cedef, 0xddc76755,
-	ImageView, "Insets", Insets, kDataTypeVector4D),
+	ImageView, "Insets", Insets, kDataTypeStruct, .TypeString="Vector4D"),
 	/* ImageView.Viewbox */ DECL(0xa8c81591, 0x4fff923f,
-	ImageView, "Viewbox", Viewbox, kDataTypeVector4D),
+	ImageView, "Viewbox", Viewbox, kDataTypeStruct, .TypeString="Vector4D"),
 	/* ImageView.Stretch */ DECL(0x03d3b9ca, 0x13aa1da4,
 	ImageView, "Stretch", Stretch, kDataTypeEnum, .TypeString="Uniform,None,Fill,UniformToFill"),
 };
@@ -2744,15 +2744,15 @@ void luaX_pushTransitionType(lua_State *L, eTransitionType_t value) {
 }
 void luaX_pushNavigateToPageArguments(lua_State *L, lpcNavigateToPageArguments_t data) {
 	lpNavigateToPageArguments_t self = lua_newuserdata(L, sizeof(struct NavigateToPageArguments));
-	luaL_setmetatable(L, "NavigateToPageArguments");
+	luaL_setmetatable(L, "None");
 	memcpy(self, data, sizeof(struct NavigateToPageArguments));
 }
 lpNavigateToPageArguments_t luaX_checkNavigateToPageArguments(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "NavigateToPageArguments");
+	return luaL_checkudata(L, idx, "None");
 }
 static int f_new_NavigateToPageArguments(lua_State *L) {
 	lpNavigateToPageArguments_t self = lua_newuserdata(L, sizeof(struct NavigateToPageArguments));
-	luaL_setmetatable(L, "NavigateToPageArguments");
+	luaL_setmetatable(L, "None");
 	memset(self, 0, sizeof(struct NavigateToPageArguments));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "URL");
@@ -2794,7 +2794,7 @@ int f_NavigateToPageArguments___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in NavigateToPageArguments: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_NavigateToPageArguments(lua_State *L) {
-	luaL_newmetatable(L, "NavigateToPageArguments");
+	luaL_newmetatable(L, "None");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_NavigateToPageArguments },
 		{ "__newindex", f_NavigateToPageArguments___newindex },
@@ -2811,15 +2811,15 @@ int luaopen_orca_NavigateToPageArguments(lua_State *L) {
 }
 void luaX_pushNavigateBackArguments(lua_State *L, lpcNavigateBackArguments_t data) {
 	lpNavigateBackArguments_t self = lua_newuserdata(L, sizeof(struct NavigateBackArguments));
-	luaL_setmetatable(L, "NavigateBackArguments");
+	luaL_setmetatable(L, "None");
 	memcpy(self, data, sizeof(struct NavigateBackArguments));
 }
 lpNavigateBackArguments_t luaX_checkNavigateBackArguments(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "NavigateBackArguments");
+	return luaL_checkudata(L, idx, "None");
 }
 static int f_new_NavigateBackArguments(lua_State *L) {
 	lpNavigateBackArguments_t self = lua_newuserdata(L, sizeof(struct NavigateBackArguments));
-	luaL_setmetatable(L, "NavigateBackArguments");
+	luaL_setmetatable(L, "None");
 	memset(self, 0, sizeof(struct NavigateBackArguments));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "TransitionType");
@@ -2851,7 +2851,7 @@ int f_NavigateBackArguments___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in NavigateBackArguments: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_NavigateBackArguments(lua_State *L) {
-	luaL_newmetatable(L, "NavigateBackArguments");
+	luaL_newmetatable(L, "None");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_NavigateBackArguments },
 		{ "__newindex", f_NavigateBackArguments___newindex },

@@ -181,14 +181,12 @@ ED_PrintProperty(LPPROPDEF pdef, LPVOID parm)
     case kDataTypeFloat:
       PrintNumberProperty(wnd, pdef);
       break;
-    case kDataTypeVector2D:
-      PrintVectorProperty(wnd, pdef, 2, 0);
-      break;
-    case kDataTypeVector3D:
-      PrintVectorProperty(wnd, pdef, 3, 0);
-      break;
-    case kDataTypeVector4D:
-      PrintVectorProperty(wnd, pdef, 4, 0);
+    case kDataTypeStruct:
+      if (!strcmp(pdef->lpEnumValues, "Color")) {
+        PrintColorProperty(wnd, pdef);
+      } else {
+        PrintVectorProperty(wnd, pdef, pdef->dwSize/sizeof(float), 0);
+      }
       break;
     case kDataTypeGroup:
       if (!strcmp(pdef->szName, "LayoutTransform") ||
@@ -209,9 +207,6 @@ ED_PrintProperty(LPPROPDEF pdef, LPVOID parm)
       break;
     case kDataTypeObject:
       PrintObjectProperty(wnd, pdef);
-      break;
-    case kDataTypeColor:
-      PrintColorProperty(wnd, pdef);
       break;
     case T_ADD_PROPERTY: {
       DWORD item = ED_AddInspectorItem(wnd, pdef, NULL, -1);

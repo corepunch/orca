@@ -12,15 +12,15 @@ void luaX_pushRotationOrder(lua_State *L, eRotationOrder_t value) {
 }
 void luaX_pushvec2(lua_State *L, lpcvec2_t data) {
 	lpvec2_t self = lua_newuserdata(L, sizeof(struct vec2));
-	luaL_setmetatable(L, "vec2");
+	luaL_setmetatable(L, "Vector2D");
 	memcpy(self, data, sizeof(struct vec2));
 }
 lpvec2_t luaX_checkvec2(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "vec2");
+	return luaL_checkudata(L, idx, "Vector2D");
 }
 static int f_new_vec2(lua_State *L) {
 	lpvec2_t self = lua_newuserdata(L, sizeof(struct vec2));
-	luaL_setmetatable(L, "vec2");
+	luaL_setmetatable(L, "Vector2D");
 	memset(self, 0, sizeof(struct vec2));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "x");
@@ -184,7 +184,7 @@ int f_vec2___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in vec2: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_vec2(lua_State *L) {
-	luaL_newmetatable(L, "vec2");
+	luaL_newmetatable(L, "Vector2D");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_vec2 },
 		{ "__newindex", f_vec2___newindex },
@@ -206,15 +206,15 @@ int luaopen_orca_vec2(lua_State *L) {
 }
 void luaX_pushvec3(lua_State *L, lpcvec3_t data) {
 	lpvec3_t self = lua_newuserdata(L, sizeof(struct vec3));
-	luaL_setmetatable(L, "vec3");
+	luaL_setmetatable(L, "Vector3D");
 	memcpy(self, data, sizeof(struct vec3));
 }
 lpvec3_t luaX_checkvec3(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "vec3");
+	return luaL_checkudata(L, idx, "Vector3D");
 }
 static int f_new_vec3(lua_State *L) {
 	lpvec3_t self = lua_newuserdata(L, sizeof(struct vec3));
-	luaL_setmetatable(L, "vec3");
+	luaL_setmetatable(L, "Vector3D");
 	memset(self, 0, sizeof(struct vec3));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "x");
@@ -426,7 +426,7 @@ int f_vec3___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in vec3: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_vec3(lua_State *L) {
-	luaL_newmetatable(L, "vec3");
+	luaL_newmetatable(L, "Vector3D");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_vec3 },
 		{ "__newindex", f_vec3___newindex },
@@ -447,15 +447,15 @@ int luaopen_orca_vec3(lua_State *L) {
 }
 void luaX_pushvec4(lua_State *L, lpcvec4_t data) {
 	lpvec4_t self = lua_newuserdata(L, sizeof(struct vec4));
-	luaL_setmetatable(L, "vec4");
+	luaL_setmetatable(L, "Vector4D");
 	memcpy(self, data, sizeof(struct vec4));
 }
 lpvec4_t luaX_checkvec4(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "vec4");
+	return luaL_checkudata(L, idx, "Vector4D");
 }
 static int f_new_vec4(lua_State *L) {
 	lpvec4_t self = lua_newuserdata(L, sizeof(struct vec4));
-	luaL_setmetatable(L, "vec4");
+	luaL_setmetatable(L, "Vector4D");
 	memset(self, 0, sizeof(struct vec4));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "x");
@@ -563,7 +563,7 @@ int f_vec4___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in vec4: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_vec4(lua_State *L) {
-	luaL_newmetatable(L, "vec4");
+	luaL_newmetatable(L, "Vector4D");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_vec4 },
 		{ "__newindex", f_vec4___newindex },
@@ -582,15 +582,15 @@ int luaopen_orca_vec4(lua_State *L) {
 }
 void luaX_pushbox2(lua_State *L, lpcbox2_t data) {
 	lpbox2_t self = lua_newuserdata(L, sizeof(struct box2));
-	luaL_setmetatable(L, "box2");
+	luaL_setmetatable(L, "Box2D");
 	memcpy(self, data, sizeof(struct box2));
 }
 lpbox2_t luaX_checkbox2(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "box2");
+	return luaL_checkudata(L, idx, "Box2D");
 }
 static int f_new_box2(lua_State *L) {
 	lpbox2_t self = lua_newuserdata(L, sizeof(struct box2));
-	luaL_setmetatable(L, "box2");
+	luaL_setmetatable(L, "Box2D");
 	memset(self, 0, sizeof(struct box2));
 	return 1;
 }
@@ -649,7 +649,7 @@ int f_box2___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in box2: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_box2(lua_State *L) {
-	luaL_newmetatable(L, "box2");
+	luaL_newmetatable(L, "Box2D");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_box2 },
 		{ "__newindex", f_box2___newindex },
@@ -666,15 +666,15 @@ int luaopen_orca_box2(lua_State *L) {
 }
 void luaX_pushbox3(lua_State *L, lpcbox3_t data) {
 	lpbox3_t self = lua_newuserdata(L, sizeof(struct box3));
-	luaL_setmetatable(L, "box3");
+	luaL_setmetatable(L, "Box3D");
 	memcpy(self, data, sizeof(struct box3));
 }
 lpbox3_t luaX_checkbox3(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "box3");
+	return luaL_checkudata(L, idx, "Box3D");
 }
 static int f_new_box3(lua_State *L) {
 	lpbox3_t self = lua_newuserdata(L, sizeof(struct box3));
-	luaL_setmetatable(L, "box3");
+	luaL_setmetatable(L, "Box3D");
 	memset(self, 0, sizeof(struct box3));
 	return 1;
 }
@@ -714,7 +714,7 @@ int f_box3___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in box3: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_box3(lua_State *L) {
-	luaL_newmetatable(L, "box3");
+	luaL_newmetatable(L, "Box3D");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_box3 },
 		{ "__newindex", f_box3___newindex },
@@ -731,15 +731,15 @@ int luaopen_orca_box3(lua_State *L) {
 }
 void luaX_pushSize(lua_State *L, lpcSize_t data) {
 	lpSize_t self = lua_newuserdata(L, sizeof(struct Size));
-	luaL_setmetatable(L, "Size");
+	luaL_setmetatable(L, "None");
 	memcpy(self, data, sizeof(struct Size));
 }
 lpSize_t luaX_checkSize(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "Size");
+	return luaL_checkudata(L, idx, "None");
 }
 static int f_new_Size(lua_State *L) {
 	lpSize_t self = lua_newuserdata(L, sizeof(struct Size));
-	luaL_setmetatable(L, "Size");
+	luaL_setmetatable(L, "None");
 	memset(self, 0, sizeof(struct Size));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "width");
@@ -781,7 +781,7 @@ int f_Size___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in Size: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_Size(lua_State *L) {
-	luaL_newmetatable(L, "Size");
+	luaL_newmetatable(L, "None");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_Size },
 		{ "__newindex", f_Size___newindex },
@@ -798,15 +798,15 @@ int luaopen_orca_Size(lua_State *L) {
 }
 void luaX_pushrect(lua_State *L, lpcrect_t data) {
 	lprect_t self = lua_newuserdata(L, sizeof(struct rect));
-	luaL_setmetatable(L, "rect");
+	luaL_setmetatable(L, "Rectangle");
 	memcpy(self, data, sizeof(struct rect));
 }
 lprect_t luaX_checkrect(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "rect");
+	return luaL_checkudata(L, idx, "Rectangle");
 }
 static int f_new_rect(lua_State *L) {
 	lprect_t self = lua_newuserdata(L, sizeof(struct rect));
-	luaL_setmetatable(L, "rect");
+	luaL_setmetatable(L, "Rectangle");
 	memset(self, 0, sizeof(struct rect));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "x");
@@ -917,7 +917,7 @@ int f_rect___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in rect: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_rect(lua_State *L) {
-	luaL_newmetatable(L, "rect");
+	luaL_newmetatable(L, "Rectangle");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_rect },
 		{ "__newindex", f_rect___newindex },
@@ -934,15 +934,15 @@ int luaopen_orca_rect(lua_State *L) {
 }
 void luaX_pushquat(lua_State *L, lpcquat_t data) {
 	lpquat_t self = lua_newuserdata(L, sizeof(struct quat));
-	luaL_setmetatable(L, "quat");
+	luaL_setmetatable(L, "Quaternion");
 	memcpy(self, data, sizeof(struct quat));
 }
 lpquat_t luaX_checkquat(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "quat");
+	return luaL_checkudata(L, idx, "Quaternion");
 }
 static int f_new_quat(lua_State *L) {
 	lpquat_t self = lua_newuserdata(L, sizeof(struct quat));
-	luaL_setmetatable(L, "quat");
+	luaL_setmetatable(L, "Quaternion");
 	memset(self, 0, sizeof(struct quat));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "x");
@@ -1078,7 +1078,7 @@ int f_quat___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in quat: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_quat(lua_State *L) {
-	luaL_newmetatable(L, "quat");
+	luaL_newmetatable(L, "Quaternion");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_quat },
 		{ "__newindex", f_quat___newindex },
@@ -1097,15 +1097,15 @@ int luaopen_orca_quat(lua_State *L) {
 }
 void luaX_pushmat3(lua_State *L, lpcmat3_t data) {
 	lpmat3_t self = lua_newuserdata(L, sizeof(struct mat3));
-	luaL_setmetatable(L, "mat3");
+	luaL_setmetatable(L, "Matrix2D");
 	memcpy(self, data, sizeof(struct mat3));
 }
 lpmat3_t luaX_checkmat3(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "mat3");
+	return luaL_checkudata(L, idx, "Matrix2D");
 }
 static int f_new_mat3(lua_State *L) {
 	lpmat3_t self = lua_newuserdata(L, sizeof(struct mat3));
-	luaL_setmetatable(L, "mat3");
+	luaL_setmetatable(L, "Matrix2D");
 	memset(self, 0, sizeof(struct mat3));
 	return 1;
 }
@@ -1153,7 +1153,7 @@ int f_mat3___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in mat3: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_mat3(lua_State *L) {
-	luaL_newmetatable(L, "mat3");
+	luaL_newmetatable(L, "Matrix2D");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_mat3 },
 		{ "__newindex", f_mat3___newindex },
@@ -1172,15 +1172,15 @@ int luaopen_orca_mat3(lua_State *L) {
 }
 void luaX_pushmat4(lua_State *L, lpcmat4_t data) {
 	lpmat4_t self = lua_newuserdata(L, sizeof(struct mat4));
-	luaL_setmetatable(L, "mat4");
+	luaL_setmetatable(L, "Matrix3D");
 	memcpy(self, data, sizeof(struct mat4));
 }
 lpmat4_t luaX_checkmat4(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "mat4");
+	return luaL_checkudata(L, idx, "Matrix3D");
 }
 static int f_new_mat4(lua_State *L) {
 	lpmat4_t self = lua_newuserdata(L, sizeof(struct mat4));
-	luaL_setmetatable(L, "mat4");
+	luaL_setmetatable(L, "Matrix3D");
 	memset(self, 0, sizeof(struct mat4));
 	return 1;
 }
@@ -1335,7 +1335,7 @@ int f_mat4___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in mat4: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_mat4(lua_State *L) {
-	luaL_newmetatable(L, "mat4");
+	luaL_newmetatable(L, "Matrix3D");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_mat4 },
 		{ "__newindex", f_mat4___newindex },
@@ -1360,15 +1360,15 @@ int luaopen_orca_mat4(lua_State *L) {
 }
 void luaX_pushbounds(lua_State *L, lpcbounds_t data) {
 	lpbounds_t self = lua_newuserdata(L, sizeof(struct bounds));
-	luaL_setmetatable(L, "bounds");
+	luaL_setmetatable(L, "Bounds");
 	memcpy(self, data, sizeof(struct bounds));
 }
 lpbounds_t luaX_checkbounds(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "bounds");
+	return luaL_checkudata(L, idx, "Bounds");
 }
 static int f_new_bounds(lua_State *L) {
 	lpbounds_t self = lua_newuserdata(L, sizeof(struct bounds));
-	luaL_setmetatable(L, "bounds");
+	luaL_setmetatable(L, "Bounds");
 	memset(self, 0, sizeof(struct bounds));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "min");
@@ -1410,7 +1410,7 @@ int f_bounds___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in bounds: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_bounds(lua_State *L) {
-	luaL_newmetatable(L, "bounds");
+	luaL_newmetatable(L, "Bounds");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_bounds },
 		{ "__newindex", f_bounds___newindex },
@@ -1427,15 +1427,15 @@ int luaopen_orca_bounds(lua_State *L) {
 }
 void luaX_pushplane3(lua_State *L, lpcplane3_t data) {
 	lpplane3_t self = lua_newuserdata(L, sizeof(struct plane3));
-	luaL_setmetatable(L, "plane3");
+	luaL_setmetatable(L, "Plane");
 	memcpy(self, data, sizeof(struct plane3));
 }
 lpplane3_t luaX_checkplane3(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "plane3");
+	return luaL_checkudata(L, idx, "Plane");
 }
 static int f_new_plane3(lua_State *L) {
 	lpplane3_t self = lua_newuserdata(L, sizeof(struct plane3));
-	luaL_setmetatable(L, "plane3");
+	luaL_setmetatable(L, "Plane");
 	memset(self, 0, sizeof(struct plane3));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "a");
@@ -1515,7 +1515,7 @@ int f_plane3___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in plane3: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_plane3(lua_State *L) {
-	luaL_newmetatable(L, "plane3");
+	luaL_newmetatable(L, "Plane");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_plane3 },
 		{ "__newindex", f_plane3___newindex },
@@ -1532,15 +1532,15 @@ int luaopen_orca_plane3(lua_State *L) {
 }
 void luaX_pushsphere3(lua_State *L, lpcsphere3_t data) {
 	lpsphere3_t self = lua_newuserdata(L, sizeof(struct sphere3));
-	luaL_setmetatable(L, "sphere3");
+	luaL_setmetatable(L, "Sphere");
 	memcpy(self, data, sizeof(struct sphere3));
 }
 lpsphere3_t luaX_checksphere3(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "sphere3");
+	return luaL_checkudata(L, idx, "Sphere");
 }
 static int f_new_sphere3(lua_State *L) {
 	lpsphere3_t self = lua_newuserdata(L, sizeof(struct sphere3));
-	luaL_setmetatable(L, "sphere3");
+	luaL_setmetatable(L, "Sphere");
 	memset(self, 0, sizeof(struct sphere3));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "radius");
@@ -1578,7 +1578,7 @@ int f_sphere3___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in sphere3: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_sphere3(lua_State *L) {
-	luaL_newmetatable(L, "sphere3");
+	luaL_newmetatable(L, "Sphere");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_sphere3 },
 		{ "__newindex", f_sphere3___newindex },
@@ -1595,15 +1595,15 @@ int luaopen_orca_sphere3(lua_State *L) {
 }
 void luaX_pushfrustum3(lua_State *L, lpcfrustum3_t data) {
 	lpfrustum3_t self = lua_newuserdata(L, sizeof(struct frustum3));
-	luaL_setmetatable(L, "frustum3");
+	luaL_setmetatable(L, "Frustum");
 	memcpy(self, data, sizeof(struct frustum3));
 }
 lpfrustum3_t luaX_checkfrustum3(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "frustum3");
+	return luaL_checkudata(L, idx, "Frustum");
 }
 static int f_new_frustum3(lua_State *L) {
 	lpfrustum3_t self = lua_newuserdata(L, sizeof(struct frustum3));
-	luaL_setmetatable(L, "frustum3");
+	luaL_setmetatable(L, "Frustum");
 	memset(self, 0, sizeof(struct frustum3));
 	return 1;
 }
@@ -1705,7 +1705,7 @@ int f_frustum3___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in frustum3: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_frustum3(lua_State *L) {
-	luaL_newmetatable(L, "frustum3");
+	luaL_newmetatable(L, "Frustum");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_frustum3 },
 		{ "__newindex", f_frustum3___newindex },
@@ -1723,15 +1723,15 @@ int luaopen_orca_frustum3(lua_State *L) {
 }
 void luaX_pushtransform2(lua_State *L, lpctransform2_t data) {
 	lptransform2_t self = lua_newuserdata(L, sizeof(struct transform2));
-	luaL_setmetatable(L, "transform2");
+	luaL_setmetatable(L, "Transform2D");
 	memcpy(self, data, sizeof(struct transform2));
 }
 lptransform2_t luaX_checktransform2(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "transform2");
+	return luaL_checkudata(L, idx, "Transform2D");
 }
 static int f_new_transform2(lua_State *L) {
 	lptransform2_t self = lua_newuserdata(L, sizeof(struct transform2));
-	luaL_setmetatable(L, "transform2");
+	luaL_setmetatable(L, "Transform2D");
 	memset(self, 0, sizeof(struct transform2));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "rotation");
@@ -1790,7 +1790,7 @@ int f_transform2___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in transform2: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_transform2(lua_State *L) {
-	luaL_newmetatable(L, "transform2");
+	luaL_newmetatable(L, "Transform2D");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_transform2 },
 		{ "__newindex", f_transform2___newindex },
@@ -1808,15 +1808,15 @@ int luaopen_orca_transform2(lua_State *L) {
 }
 void luaX_pushtransform3(lua_State *L, lpctransform3_t data) {
 	lptransform3_t self = lua_newuserdata(L, sizeof(struct transform3));
-	luaL_setmetatable(L, "transform3");
+	luaL_setmetatable(L, "Transform3D");
 	memcpy(self, data, sizeof(struct transform3));
 }
 lptransform3_t luaX_checktransform3(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "transform3");
+	return luaL_checkudata(L, idx, "Transform3D");
 }
 static int f_new_transform3(lua_State *L) {
 	lptransform3_t self = lua_newuserdata(L, sizeof(struct transform3));
-	luaL_setmetatable(L, "transform3");
+	luaL_setmetatable(L, "Transform3D");
 	memset(self, 0, sizeof(struct transform3));
 	return 1;
 }
@@ -1868,7 +1868,7 @@ int f_transform3___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in transform3: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_transform3(lua_State *L) {
-	luaL_newmetatable(L, "transform3");
+	luaL_newmetatable(L, "Transform3D");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_transform3 },
 		{ "__newindex", f_transform3___newindex },
@@ -1886,15 +1886,15 @@ int luaopen_orca_transform3(lua_State *L) {
 }
 void luaX_pushtriangle3(lua_State *L, lpctriangle3_t data) {
 	lptriangle3_t self = lua_newuserdata(L, sizeof(struct triangle3));
-	luaL_setmetatable(L, "triangle3");
+	luaL_setmetatable(L, "Triangle3D");
 	memcpy(self, data, sizeof(struct triangle3));
 }
 lptriangle3_t luaX_checktriangle3(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "triangle3");
+	return luaL_checkudata(L, idx, "Triangle3D");
 }
 static int f_new_triangle3(lua_State *L) {
 	lptriangle3_t self = lua_newuserdata(L, sizeof(struct triangle3));
-	luaL_setmetatable(L, "triangle3");
+	luaL_setmetatable(L, "Triangle3D");
 	memset(self, 0, sizeof(struct triangle3));
 	return 1;
 }
@@ -1940,7 +1940,7 @@ int f_triangle3___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in triangle3: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_triangle3(lua_State *L) {
-	luaL_newmetatable(L, "triangle3");
+	luaL_newmetatable(L, "Triangle3D");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_triangle3 },
 		{ "__newindex", f_triangle3___newindex },
@@ -1957,15 +1957,15 @@ int luaopen_orca_triangle3(lua_State *L) {
 }
 void luaX_pushline3(lua_State *L, lpcline3_t data) {
 	lpline3_t self = lua_newuserdata(L, sizeof(struct line3));
-	luaL_setmetatable(L, "line3");
+	luaL_setmetatable(L, "Line3D");
 	memcpy(self, data, sizeof(struct line3));
 }
 lpline3_t luaX_checkline3(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "line3");
+	return luaL_checkudata(L, idx, "Line3D");
 }
 static int f_new_line3(lua_State *L) {
 	lpline3_t self = lua_newuserdata(L, sizeof(struct line3));
-	luaL_setmetatable(L, "line3");
+	luaL_setmetatable(L, "Line3D");
 	memset(self, 0, sizeof(struct line3));
 	return 1;
 }
@@ -2040,7 +2040,7 @@ int f_line3___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in line3: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_line3(lua_State *L) {
-	luaL_newmetatable(L, "line3");
+	luaL_newmetatable(L, "Line3D");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_line3 },
 		{ "__newindex", f_line3___newindex },
@@ -2057,15 +2057,15 @@ int luaopen_orca_line3(lua_State *L) {
 }
 void luaX_pushedges(lua_State *L, lpcedges_t data) {
 	lpedges_t self = lua_newuserdata(L, sizeof(struct edges));
-	luaL_setmetatable(L, "edges");
+	luaL_setmetatable(L, "Edges");
 	memcpy(self, data, sizeof(struct edges));
 }
 lpedges_t luaX_checkedges(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "edges");
+	return luaL_checkudata(L, idx, "Edges");
 }
 static int f_new_edges(lua_State *L) {
 	lpedges_t self = lua_newuserdata(L, sizeof(struct edges));
-	luaL_setmetatable(L, "edges");
+	luaL_setmetatable(L, "Edges");
 	memset(self, 0, sizeof(struct edges));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "left");
@@ -2127,7 +2127,7 @@ int f_edges___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in edges: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_edges(lua_State *L) {
-	luaL_newmetatable(L, "edges");
+	luaL_newmetatable(L, "Edges");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_edges },
 		{ "__newindex", f_edges___newindex },
@@ -2144,15 +2144,15 @@ int luaopen_orca_edges(lua_State *L) {
 }
 void luaX_pushcolor(lua_State *L, lpccolor_t data) {
 	lpcolor_t self = lua_newuserdata(L, sizeof(struct color));
-	luaL_setmetatable(L, "color");
+	luaL_setmetatable(L, "Color");
 	memcpy(self, data, sizeof(struct color));
 }
 lpcolor_t luaX_checkcolor(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "color");
+	return luaL_checkudata(L, idx, "Color");
 }
 static int f_new_color(lua_State *L) {
 	lpcolor_t self = lua_newuserdata(L, sizeof(struct color));
-	luaL_setmetatable(L, "color");
+	luaL_setmetatable(L, "Color");
 	memset(self, 0, sizeof(struct color));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "r");
@@ -2231,7 +2231,7 @@ int f_color___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in color: %s", luaL_checkstring(L, 2));
 }
 int luaopen_orca_color(lua_State *L) {
-	luaL_newmetatable(L, "color");
+	luaL_newmetatable(L, "Color");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_color },
 		{ "__newindex", f_color___newindex },

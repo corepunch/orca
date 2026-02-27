@@ -516,7 +516,6 @@ typedef struct Library Library, *LibraryPtr;
 typedef struct Library const *LibraryCPtr;
 struct Library {
 	bool_t IsExternal;
-	fixedString_t Source;
 };
 
 typedef struct AnimationClipLibrary AnimationClipLibrary, *AnimationClipLibraryPtr;

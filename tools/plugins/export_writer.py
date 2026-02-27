@@ -34,19 +34,19 @@ _T = {
 	'struct_push': string.Template(
 		"void luaX_push${name}(lua_State *L, ${lpcname} data) {\n"
 		"\t${lpname} self = lua_newuserdata(L, sizeof(struct ${name}));\n"
-		"\tluaL_setmetatable(L, \"${name}\");\n"
+		"\tluaL_setmetatable(L, \"${export}\");\n"
 		"\tmemcpy(self, data, sizeof(struct ${name}));\n"
 		"}\n"
 	),
 	'struct_check': string.Template(
 		"${lpname} luaX_check${name}(lua_State *L, int idx) {\n"
-		"\treturn luaL_checkudata(L, idx, \"${name}\");\n"
+		"\treturn luaL_checkudata(L, idx, \"${export}\");\n"
 		"}\n"
 	),
 	'struct_new': string.Template(
 		"static int f_new_${name}(lua_State *L) {\n"
 		"\t${lpname} self = lua_newuserdata(L, sizeof(struct ${name}));\n"
-		"\tluaL_setmetatable(L, \"${name}\");\n"
+		"\tluaL_setmetatable(L, \"${export}\");\n"
 		"\tmemset(self, 0, sizeof(struct ${name}));\n"
 		"${init_block}"
 		"\treturn 1;\n"
@@ -199,9 +199,9 @@ class ExportWriter(Plugin):
 		name = struct.get('name')
 		lpname, lpcname = utils.lp(name), utils.lpc(name)
 		if is_struct:
-			self.wt(_T['struct_push'].substitute(name=name, lpname=lpname, lpcname=lpcname))
+			self.wt(_T['struct_push'].substitute(name=name, export=struct.get('export'), lpname=lpname, lpcname=lpcname))
 		if not struct.get("no-check"):
-			self.wt(_T['struct_check'].substitute(name=name, lpname=lpname))
+			self.wt(_T['struct_check'].substitute(name=name, export=struct.get('export'), lpname=lpname))
 		else:
 			self.w(f"{lpname} luaX_check{name}(lua_State *L, int idx);")
 		if is_struct:
@@ -230,7 +230,7 @@ class ExportWriter(Plugin):
 				init_block = f"\tif (lua_istable(L, 1)) {{\n{table_inits}\t}} else {{\n{field_inits}\t}}\n"
 			else:
 				init_block = ""
-			self.wt(_T['struct_new'].substitute(name=name, lpname=lpname, init_block=init_block))
+			self.wt(_T['struct_new'].substitute(name=name, export=struct.get('export'), lpname=lpname,  init_block=init_block))
 		elif struct.find('init') is not None:
 			self.w(f"int f_new_{name}(lua_State *L);")
 		# write methods
@@ -279,7 +279,7 @@ class ExportWriter(Plugin):
 			self.w(f"\t}}\n\treturn luaL_error(L, \"Unknown field in {name}: %s\", luaL_checkstring(L, 2));\n}}")
 		# write lua_open
 		self.w(f"int luaopen_{root.get('namespace')}_{name}(lua_State *L) {{")
-		self.w(f"\tluaL_newmetatable(L, \"{name}\");")
+		self.w(f"\tluaL_newmetatable(L, \"{struct.get('export')}\");")
 		self.w(f"\tluaL_setfuncs(L, ((luaL_Reg[]) {{")
 		if is_struct or struct.find('init') is not None:
 			self.w(f"\t\t{{ \"new\", f_new_{name} }},")
@@ -309,18 +309,16 @@ class ExportWriter(Plugin):
 				f"\t{cname}, \"{pname}\", {path}, kDataTypeEdges, .TypeString=\"{userdata}\"),"
 			)
 		else:
-			name = utils.property_name(path)
 			sname = utils.property_name(path)
 			ptype = property.get('type')
 			struct = Workspace.structs.get(ptype)
 			typedata = f"kDataType{ptype[:1].upper() + ptype[1:]}"
 			if struct is not None:
-				export_as = struct.get('export')
 				nfields = 0
 				def count(p, _, c): nonlocal nfields; nfields += 1
 				utils.enum_component_properties(struct, count)
 				typedata = (
-					f"kDataType{export_as}" if export_as
+					f"kDataTypeStruct, .TypeString=\"{struct.get('export')}\"" if struct.get('export')
 					else f"kDataTypeGroup, .TypeString=\"{ptype}\", .NumComponents={nfields}"
 				)
 			elif ptype in Workspace.enums or sname in Workspace.enums:

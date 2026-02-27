@@ -588,33 +588,17 @@
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Float</span></code><div class="small-abstract"><span>Floating-point numeric value.
 </span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Vector2D</span></code><div class="small-abstract"><span>Two-dimensional vector, typically used for coordinates or sizes.
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Vector3D</span></code><div class="small-abstract"><span>Three-dimensional vector, used for spatial coordinates, directions, or RGB values.
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Vector4D</span></code><div class="small-abstract"><span>Four-dimensional vector, commonly used for extended color or transformation data.
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Rectangle</span></code><div class="small-abstract"><span>Rectangle structure, typically used for defining rectangular areas or bounding boxes.
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Matrix2D</span></code><div class="small-abstract"><span>2x2 matrix, typically used for simple affine transformations in 2D space.
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Matrix3D</span></code><div class="small-abstract"><span>3x3 matrix, used for 3D affine transformations or rotation data.
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Transform2D</span></code><div class="small-abstract"><span>2D transformation structure combining position, scale, and rotation.
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Transform3D</span></code><div class="small-abstract"><span>3D transformation structure combining translation, rotation, and scaling.
-</span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Fixed</span></code><div class="small-abstract"><span>Fixed-length string or symbolic value.
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">LongString</span></code><div class="small-abstract"><span>Extended string data, intended for larger text content.
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Color</span></code><div class="small-abstract"><span>Color value defined by RGBA components.
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Edges</span></code><div class="small-abstract"><span>Set of edge-specific values (e.g., margin, padding, or border widths).
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">ObjectTags</span></code><div class="small-abstract"><span>List of tag identifiers associated with an object.
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Event</span></code><div class="small-abstract"><span>Event reference used to bind triggers or callbacks.
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Struct</span></code><div class="small-abstract"><span>There are multiple predefined structures, such as Vector2D, Vector3D, and Transform3D, used for various geometric and transformation purposes.
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Object</span></code><div class="small-abstract"><span>Reference to a complex object instance.
 </span></div></div>
@@ -2494,14 +2478,14 @@
 <div class="topic"><code class="decorator"><span>var </span><span class="identifier">UvRect</span>: <a class="type-identifier-link" href="#rect">rect</a></code></div>
 </div><div id="SpriteAnimation" class="class" data-name="SpriteAnimation" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
 </div><h1 class="header">SpriteAnimation
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SpriteKit.SpriteAnimation</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Frames</span>: <a class="type-identifier-link" href="#SpriteFrame">SpriteFrame</a></code></div>
-<div class="small-abstract"><span>Variable-length frame data array
-</span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">Image</span>: <a class="type-identifier-link" href="#Texture">Texture</a></code></div>
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SpriteKit.SpriteAnimation</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>object </span><span class="identifier">Image</span>: <a class="type-identifier-link" href="#Texture">Texture</a></code></div>
 <div class="small-abstract"><span>Spritesheet texture
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Framerate</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Frames per second
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">NumFrames</span>: <span>int</span></code></div>
 <div class="small-abstract"><span>Number of frames
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Frames</span>: <a class="type-identifier-link" href="#SpriteFrame">SpriteFrame</a></code></div>
+<div class="small-abstract"><span>Variable-length frame data array
 </span></div></div><div id="SKNode" class="class" data-name="SKNode" data-inherits="Node" data-xmlns="None"><div class="eyebrow">Component
 </div><h1 class="header">SKNode
 </h1><div class="abstract">Base 2D sprite node with transform and matrix
@@ -2596,7 +2580,6 @@
 </div><div id="Library" class="class" data-name="Library" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
 </div><h1 class="header">Library
 </h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.Library</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">IsExternal</span>: <span>bool</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">Source</span>: <span>fixed</span></code></div>
 </div><div id="AnimationClipLibrary" class="class" data-name="AnimationClipLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
 </div><h1 class="header">AnimationClipLibrary
 </h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.AnimationClipLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ScreenLibrary" class="class" data-name="ScreenLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component

@@ -1,5 +1,5 @@
 <!ENTITY % RotationOrder "XYZ|XZY|YZX|YXZ|ZXY|ZYX">
-<!ENTITY % DataType "None|Bool|Int|Enum|Float|Vector2D|Vector3D|Vector4D|Rectangle|Matrix2D|Matrix3D|Transform2D|Transform3D|Fixed|LongString|Color|Edges|ObjectTags|Event|Object|Group">
+<!ENTITY % DataType "None|Bool|Int|Enum|Float|Fixed|LongString|Edges|ObjectTags|Event|Struct|Object|Group">
 <!ENTITY % PropertyTypeAttribs "
 	Name CDATA #REQUIRED
 	Style CDATA #IMPLIED
@@ -1740,6 +1740,7 @@
 	Image CDATA #IMPLIED
 	Framerate CDATA #IMPLIED
 	NumFrames CDATA #IMPLIED
+	Frames CDATA #IMPLIED
 ">
 <!ELEMENT SpriteAnimation.Image (#PCDATA | Binding)*>
 <!ATTLIST SpriteAnimation.Image Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
@@ -1747,7 +1748,9 @@
 <!ATTLIST SpriteAnimation.Framerate Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT SpriteAnimation.NumFrames (#PCDATA | Binding)*>
 <!ATTLIST SpriteAnimation.NumFrames Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % SpriteAnimationElements "SpriteAnimation.Image|SpriteAnimation.Framerate|SpriteAnimation.NumFrames">
+<!ELEMENT SpriteAnimation.Frames (#PCDATA | Binding)*>
+<!ATTLIST SpriteAnimation.Frames Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % SpriteAnimationElements "SpriteAnimation.Image|SpriteAnimation.Framerate|SpriteAnimation.NumFrames|SpriteAnimation.Frames">
 <!ELEMENT SpriteAnimation EMPTY>
 <!ATTLIST SpriteAnimation %SpriteAnimationAttribs;>
 <!ENTITY % SKNodeAttribs "
@@ -1952,13 +1955,10 @@
 	IsDisabled (true|false) #IMPLIED
 	StateManager CDATA #IMPLIED
 	IsExternal (true|false) #IMPLIED
-	Source CDATA #IMPLIED
 ">
 <!ELEMENT Library.IsExternal (#PCDATA | Binding)*>
 <!ATTLIST Library.IsExternal Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Library.Source (#PCDATA | Binding)*>
-<!ATTLIST Library.Source Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % LibraryElements "Library.IsExternal|Library.Source">
+<!ENTITY % LibraryElements "Library.IsExternal">
 <!ELEMENT Library EMPTY>
 <!ATTLIST Library %LibraryAttribs;>
 <!ENTITY % AnimationClipLibraryAttribs "

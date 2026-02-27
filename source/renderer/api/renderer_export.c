@@ -39,7 +39,7 @@ lpshape_t luaX_checkshape(lua_State *L, int idx) {
 	return lua_touserdata(L, idx);
 }
 lpwindow_t luaX_checkwindow(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "window");
+	return luaL_checkudata(L, idx, "Window");
 }
 int f_window___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -47,7 +47,7 @@ int f_window___index(lua_State *L) {
 	return 0;
 }
 int luaopen_orca_window(lua_State *L) {
-	luaL_newmetatable(L, "window");
+	luaL_newmetatable(L, "Window");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "__index", f_window___index },
 		{ NULL, NULL },
@@ -563,15 +563,15 @@ static struct PropertyDesc const MaterialProperties[kMaterialNumProperties] = {
 	/* Material.Shader */ DECL(0x7deb3888, 0xb1f27f23,
 	Material, "Shader", Shader, kDataTypeObject, .TypeString="Shader"),
 	/* Material.GlobalAmbient */ DECL(0x63792322, 0x4c3b3e9b,
-	Material, "GlobalAmbient", GlobalAmbient, kDataTypeColor),
+	Material, "GlobalAmbient", GlobalAmbient, kDataTypeStruct, .TypeString="Color"),
 	/* Material.Ambient */ DECL(0x33f2678b, 0x2722ee06,
-	Material, "Ambient", Ambient, kDataTypeColor),
+	Material, "Ambient", Ambient, kDataTypeStruct, .TypeString="Color"),
 	/* Material.Diffuse */ DECL(0x84d12add, 0x5d1fb2d8,
-	Material, "Diffuse", Diffuse, kDataTypeColor),
+	Material, "Diffuse", Diffuse, kDataTypeStruct, .TypeString="Color"),
 	/* Material.Emissive */ DECL(0x555cbaee, 0x94dc948d,
-	Material, "Emissive", Emissive, kDataTypeColor),
+	Material, "Emissive", Emissive, kDataTypeStruct, .TypeString="Color"),
 	/* Material.SpecularColor */ DECL(0xd5e66b37, 0x88c8734e,
-	Material, "SpecularColor", SpecularColor, kDataTypeColor),
+	Material, "SpecularColor", SpecularColor, kDataTypeStruct, .TypeString="Color"),
 	/* Material.SpecularExponent */ DECL(0x841db767, 0xdf2c70ac,
 	Material, "SpecularExponent", SpecularExponent, kDataTypeFloat),
 	/* Material.Texture */ DECL(0x994c5594, 0x0789ca7d,
@@ -579,15 +579,15 @@ static struct PropertyDesc const MaterialProperties[kMaterialNumProperties] = {
 	/* Material.Texture2 */ DECL(0xf92ad452, 0x2ce97a5d,
 	Material, "Texture2", Texture2, kDataTypeObject, .TypeString="Texture"),
 	/* Material.TextureOffset */ DECL(0xe83ca8af, 0x3275cc12,
-	Material, "TextureOffset", TextureOffset, kDataTypeVector2D),
+	Material, "TextureOffset", TextureOffset, kDataTypeStruct, .TypeString="Vector2D"),
 	/* Material.TextureTiling */ DECL(0x861dbc5b, 0xa7a60572,
-	Material, "TextureTiling", TextureTiling, kDataTypeVector2D),
+	Material, "TextureTiling", TextureTiling, kDataTypeStruct, .TypeString="Vector2D"),
 	/* Material.BlendIntensity */ DECL(0x5df90df9, 0x7f786186,
 	Material, "BlendIntensity", BlendIntensity, kDataTypeFloat),
 	/* Material.BlendMode */ DECL(0x0038792b, 0x4a26ef0e,
 	Material, "BlendMode", BlendMode, kDataTypeEnum, .TypeString="AlphaAutomatic,Opaque,Alpha,Additive,PremultipliedAlpha,MixedAlpha"),
 	/* Material.U_color */ DECL(0xe31e6650, 0x9379cad9,
-	Material, "U_color", u_color, kDataTypeColor),
+	Material, "U_color", u_color, kDataTypeStruct, .TypeString="Color"),
 	/* Material.U_texture */ DECL(0x668311ac, 0x36ecb8f9,
 	Material, "U_texture", u_texture, kDataTypeObject, .TypeString="Texture"),
 };

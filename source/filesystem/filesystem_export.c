@@ -56,7 +56,7 @@ static struct PropertyDesc const ProjectProperties[kProjectNumProperties] = {
 	/* Project.StartupScreen */ DECL(0xb3cce876, 0x7987d405,
 	Project, "StartupScreen", StartupScreen, kDataTypeFixed),
 	/* Project.PreviewWindowBackgroundColor */ DECL(0xe1bb158a, 0xdd25ae63,
-	Project, "PreviewWindowBackgroundColor", PreviewWindowBackgroundColor, kDataTypeColor),
+	Project, "PreviewWindowBackgroundColor", PreviewWindowBackgroundColor, kDataTypeStruct, .TypeString="Color"),
 	/* Project.MessageLimitPerFrame */ DECL(0xb92de767, 0xfc6c2af2,
 	Project, "MessageLimitPerFrame", MessageLimitPerFrame, kDataTypeInt),
 	/* Project.GlobalTimelineStartTime */ DECL(0xe310dade, 0x5f34f579,
@@ -90,7 +90,7 @@ static struct PropertyDesc const ProjectProperties[kProjectNumProperties] = {
 	/* Project.ShowChildrenInLayerThumbnails */ DECL(0x76bfa6c4, 0xeff04efb,
 	Project, "ShowChildrenInLayerThumbnails", ShowChildrenInLayerThumbnails, kDataTypeBool),
 	/* Project.CompositionDesignSize */ DECL(0x5488c4f2, 0x36df81ed,
-	Project, "CompositionDesignSize", CompositionDesignSize, kDataTypeVector2D),
+	Project, "CompositionDesignSize", CompositionDesignSize, kDataTypeStruct, .TypeString="Vector2D"),
 	/* Project.ProjectUsePremultipliedAlpha */ DECL(0x5734b5cd, 0xc9d6b678,
 	Project, "ProjectUsePremultipliedAlpha", ProjectUsePremultipliedAlpha, kDataTypeBool),
 	/* Project.ProjectRemoveICCProfilesOfPngs */ DECL(0xb617d580, 0xded57e15,
@@ -155,8 +155,6 @@ ORCA_API struct ClassDesc _Project = {
 static struct PropertyDesc const LibraryProperties[kLibraryNumProperties] = {
 	/* Library.IsExternal */ DECL(0x1cb8f23a, 0x9363c61d,
 	Library, "IsExternal", IsExternal, kDataTypeBool),
-	/* Library.Source */ DECL(0x61e2a3f8, 0xd0863267,
-	Library, "Source", Source, kDataTypeFixed),
 };
 static struct Library LibraryDefaults = {0};
 LRESULT LibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {

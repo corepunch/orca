@@ -129,28 +129,27 @@ OBJ_GetUniforms(lpObject_t object, struct uniform* pUniforms)
         pUniforms->Type = UT_FLOAT;
         PROP_CopyValue(property, pUniforms->Value);
         break;
-      case kDataTypeVector2D:
-        hasTextureTiling |= pUniforms->Identifier == ID_TextureTiling;
-        pUniforms->Type = UT_FLOAT_VEC2;
-        PROP_CopyValue(property, pUniforms->Value);
-        break;
-      case kDataTypeVector3D:
-        pUniforms->Type = UT_FLOAT_VEC3;
-        PROP_CopyValue(property, pUniforms->Value);
-        break;
-      case kDataTypeVector4D:
-        pUniforms->Type = UT_FLOAT_VEC4;
-        PROP_CopyValue(property, pUniforms->Value);
-        break;
+      case kDataTypeStruct:
+        switch (PROP_GetSize(property)) {
+          case sizeof(vec2_t):
+            hasTextureTiling |= pUniforms->Identifier == ID_TextureTiling;
+            pUniforms->Type = UT_FLOAT_VEC2;
+            PROP_CopyValue(property, pUniforms->Value);
+            break;
+          case sizeof(vec3_t):
+            pUniforms->Type = UT_FLOAT_VEC3;
+            PROP_CopyValue(property, pUniforms->Value);
+            break;
+          case sizeof(vec4_t):
+            pUniforms->Type = UT_FLOAT_VEC4;
+            PROP_CopyValue(property, pUniforms->Value);
+            break;
+        }
       case kDataTypeInt:
       case kDataTypeBool:
       case kDataTypeEnum:
         pUniforms->Type = UT_FLOAT;
         *pUniforms->Value = *(int*)PROP_GetValue(property);
-        break;
-      case kDataTypeColor:
-        pUniforms->Type = UT_FLOAT_VEC4;
-        PROP_CopyValue(property, pUniforms->Value);
         break;
       case kDataTypeGroup:
       default:

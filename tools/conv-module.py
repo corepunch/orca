@@ -48,6 +48,7 @@ if __name__ == "__main__":
 			print(f"File not found: {filename}")
 			continue
 
+		print(filename)
 		tree = ET.parse(filename)
 		root = tree.getroot()
 

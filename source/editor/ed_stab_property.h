@@ -29,7 +29,7 @@ void UI_FillOutPropDef(HOBJ object, HPROP p, LPPROPDEF lpPropDef) {
   lpPropDef->lpEditorValue  = (void*)PROP_GetValue(p);
   lpPropDef->lpRuntimeValue = (void*)PROP_GetValue(p);
   lpPropDef->bHasBinding    = PROP_HasProgram(p);
-  lpPropDef->lpEnumValues   = p->type == kDataTypeEnum ? p->userdata : NULL;
+  lpPropDef->lpEnumValues   = p->userdata;
   lpPropDef->dwFlags        = PROP_GetFlags(p);
   memcpy(lpPropDef->pPrograms, p->programSources, sizeof(p->programSources));
   lpPropDef->bIsUsedInBinding = FALSE;
@@ -48,13 +48,17 @@ PDESC_Print(lpcPropertyDesc_t pdesc, LPSTR buffer, DWORD len, float const* pf)
     case kDataTypeEnum:
       strncpy(buffer, strlistget(*(int*)pf, pdesc->TypeString), len);
       break;
+    case kDataTypeStruct:
+      if (!strcmp(pdesc->TypeString, "Color")) {
+        byte_t r = pf[0] * 255, g = pf[1] * 255, b = pf[2] * 255, a = pf[2] * 255;
+        if (pf[3] < 1) {
+          snprintf(buffer, len, "#%02x%02x%02x%02x", a, r, g, b);
+        } else {
+          snprintf(buffer, len, "#%02x%02x%02x", r, g, b);
+        }
+        break;
+      }
     case kDataTypeFloat:
-    case kDataTypeVector2D:
-    case kDataTypeVector3D:
-    case kDataTypeVector4D:
-    case kDataTypeMatrix3D:
-    case kDataTypeTransform2D:
-    case kDataTypeTransform3D:
     case kDataTypeEdges:
       snprintf(buffer, len, "%g", pf[0]);
       FOR_LOOP(i, (int)pdesc->DataSize/sizeof(float)-1) {
@@ -112,15 +116,6 @@ PDESC_Print(lpcPropertyDesc_t pdesc, LPSTR buffer, DWORD len, float const* pf)
 //        }
 //      }
 //      break;
-    case kDataTypeColor: {
-      byte_t r = pf[0] * 255, g = pf[1] * 255, b = pf[2] * 255, a = pf[2] * 255;
-      if (pf[3] < 1) {
-        snprintf(buffer, len, "#%02x%02x%02x%02x", a, r, g, b);
-      } else {
-        snprintf(buffer, len, "#%02x%02x%02x", r, g, b);
-      }
-      break;
-    }
     default:
       Con_Error("Unknown type %d in property %s\n", pdesc->DataType, pdesc->id->Name);
       break;
