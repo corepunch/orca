@@ -56,19 +56,21 @@ int f_SpriteFrame___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in SpriteFrame: %s", luaL_checkstring(L, 2));
 }
 #include <libxml/parser.h>
-ORCA_API int xmltoSpriteFrame(xmlNodePtr xml, lpSpriteFrame_t output) {
-	if (xml == NULL) return FALSE;
-	int xmltorect(xmlNodePtr, struct rect*);
-	switch (xml->type) {
-	case XML_ELEMENT_NODE:
-		xmltorect((xmlNodePtr)xmlHasProp(xml, XMLSTR("Rect")), &output->Rect);
-		xmltorect((xmlNodePtr)xmlHasProp(xml, XMLSTR("UvRect")), &output->UvRect);
-		return TRUE;
-	case XML_ATTRIBUTE_NODE:
-		return TRUE;
-	default:
-		return FALSE;
+ORCA_API lpcString_t __strtoSpriteFrame(lpcString_t str, lpSpriteFrame_t output) {
+	lpcString_t __strtorect(lpcString_t, struct rect*);
+	str = __strtorect(str, &output->Rect);
+	str = __strtorect(str, &output->UvRect);
+	return str;
+}
+static int xml_SpriteFrame(xmlNodePtr xml, lpSpriteFrame_t output) {
+	lpcString_t __strtorect(lpcString_t, struct rect*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Rect")), xmlFree) {
+		attr = (xmlChar*)__strtorect((lpcString_t)attr, &output->Rect);
 	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("UvRect")), xmlFree) {
+		attr = (xmlChar*)__strtorect((lpcString_t)attr, &output->UvRect);
+	}
+	return TRUE;
 }
 
 int luaopen_orca_SpriteFrame(lua_State *L) {
@@ -83,7 +85,7 @@ int luaopen_orca_SpriteFrame(lua_State *L) {
 	lua_pushcfunction(L, f_SpriteFrame___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xmltoSpriteFrame);
+	lua_pushlightuserdata(L, xml_SpriteFrame);
 	lua_setfield(L, LUA_REGISTRYINDEX, "SpriteFrameParser");
 	return 1;
 }

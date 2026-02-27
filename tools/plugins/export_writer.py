@@ -165,22 +165,20 @@ class ExportWriter(Plugin):
 		if export_xml_parsers:
 			originals = ['"%s"' % e.get('name') for e in enums.findall('enum')] + ["NULL"]
 			self.w(f"#include <libxml/parser.h>")
-			self.w(f"ORCA_API int xmlto{ename}(xmlNodePtr xml, enum {ename}* output) {{")
-			self.w(f"\tif (xml == NULL) return FALSE;")
-			self.w(f"\tassert(xml->type == XML_ATTRIBUTE_NODE);")
+			self.w(f"ORCA_API lpcString_t __strto{ename}(lpcString_t string, enum {ename}* output) {{")
+			self.w(f"\tif (string == NULL) return FALSE;")
 			self.w(f"\tconst char* _{ename}[] = {{ {', '.join(originals)} }};")
-			self.w(f"\tconst char* string = (const char*)xml->content;")
 			self.w(f"\tif (isdigit(*string)) {{")
-			self.w(f"\t\t*output = strtod(string, NULL);")
-			self.w(f"\t\treturn TRUE;")
+			self.w(f"\t\t*output = strtod(string, (char**)&string);")
+			self.w(f"\t\treturn string;")
 			self.w(f"\t}} else for (const char **s = _{ename}; *s; s++) {{")
 			self.w(f"\t\tif (!strcmp(string, *s)) {{")
 			self.w(f"\t\t\t*output = (enum {ename})(s - _{ename});")
-			self.w(f"\t\t\treturn TRUE;")
+			self.w(f"\t\t\treturn string + strlen(*s);")
 			self.w(f"\t\t}}")
 			self.w(f"\t}}")
 			self.w(f"\tCon_Error(\"Could not parse '%s' value of property {ename}\", string);")
-			self.w(f"\treturn FALSE;")
+			self.w(f"\treturn string + strlen(string);")
 			self.w(f"}}")
 
 	def on_resource(self, _, resource):
@@ -308,32 +306,45 @@ class ExportWriter(Plugin):
 			self.w(f"\t}}\n\treturn luaL_error(L, \"Unknown field in {name}: %s\", luaL_checkstring(L, 2));\n}}")
 
 		if export_xml_parsers:
+			def declare_parsers(struct):
+				types = set()
+				for field in struct.findall('field'):
+					if field.get('fixed-array') or field.get('private') or field.get('pointer'):
+						continue
+					types.add(field.get('type'))
+				for t in sorted(types):
+					# if t in Workspace.structs: self.w(f"\tint xmlto{t}(xmlNodePtr, struct {t}*);")
+					# elif t in Workspace.enums: self.w(f"\tint xmlto{t}(xmlNodePtr, enum {t}*);")
+					# elif t == "fixed": self.w(f"\tint xmlto{t}(xmlNodePtr, fixedString_t*);")
+					# else: self.w(f"\tint xmlto{t}(xmlNodePtr, {t}*);")	
+					if t in Workspace.structs: self.w(f"\tlpcString_t __strto{t}(lpcString_t, struct {t}*);")
+					elif t in Workspace.enums: self.w(f"\tlpcString_t __strto{t}(lpcString_t, enum {t}*);")
+					elif t == "fixed": self.w(f"\tlpcString_t __strto{t}(lpcString_t, fixedString_t*);")
+					else: self.w(f"\tlpcString_t __strto{t}(lpcString_t, {t}*);")	
+
 			self.w(f"#include <libxml/parser.h>")
-			self.w(f"ORCA_API int xmlto{name}(xmlNodePtr xml, {lpname} output) {{")
-			self.w(f"\tif (xml == NULL) return FALSE;")
-			types = set()
-			for field in struct.findall('field'):
-				if field.get('fixed-array') or field.get('private') or field.get('pointer'):
-					continue
-				types.add(field.get('type'))
-			for t in sorted(types):
-				if t in Workspace.structs: self.w(f"\tint xmlto{t}(xmlNodePtr, struct {t}*);")
-				elif t in Workspace.enums: self.w(f"\tint xmlto{t}(xmlNodePtr, enum {t}*);")
-				elif t == "fixed": self.w(f"\tint xmlto{t}(xmlNodePtr, fixedString_t*);")
-				else: self.w(f"\tint xmlto{t}(xmlNodePtr, {t}*);")	
-			self.w(f"\tswitch (xml->type) {{")
-			self.w(f"\tcase XML_ELEMENT_NODE:")
+			self.w(f"ORCA_API lpcString_t __strto{name}(lpcString_t str, {lpname} output) {{")
+			declare_parsers(struct)
 			for field in struct.findall('field'):
 				if field.get('fixed-array') or field.get('private') or field.get('pointer'):
 					continue
 				field_name, field_type = field.get('name'), field.get('type')
-				self.w(f"\t\txmlto{field_type}((xmlNodePtr)xmlHasProp(xml, XMLSTR(\"{field_name}\")), &output->{field_name});")
-			self.w(f"\t\treturn TRUE;")
-			self.w(f"\tcase XML_ATTRIBUTE_NODE:")
-			self.w(f"\t\treturn TRUE;")
-			self.w(f"\tdefault:")
-			self.w(f"\t\treturn FALSE;")
-			self.w(f"\t}}")
+				self.w(f"\tstr = __strto{field_type}(str, &output->{field_name});")
+			self.w(f"\treturn str;")
+			self.w(f"}}")
+
+			self.w(f"static int xml_{name}(xmlNodePtr xml, {lpname} output) {{")
+			declare_parsers(struct)
+			for field in struct.findall('field'):
+				if field.get('fixed-array') or field.get('private') or field.get('pointer'):
+					continue
+				field_name, field_type = field.get('name'), field.get('type')
+				self.w(f"\txmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR(\"{field_name}\")), xmlFree) {{")
+				self.w(f"\t\tattr = (xmlChar*)__strto{field_type}((lpcString_t)attr, &output->{field_name});")
+				self.w(f"\t}}")
+				# self.w(f"\txmlto{field_type}((xmlNodePtr)xmlHasProp(xml, XMLSTR(\"{field_name}\")), &output->{field_name});")
+
+			self.w(f"\treturn TRUE;")
 			self.w(f"}}\n")
 
 		# write lua_open
@@ -358,7 +369,7 @@ class ExportWriter(Plugin):
 			self.w(f"\tlua_setfield(L, -2, \"__call\");")
 			self.w(f"\tlua_setmetatable(L, -2);")
 			if export_xml_parsers:
-				self.w(f"\tlua_pushlightuserdata(L, xmlto{name});")
+				self.w(f"\tlua_pushlightuserdata(L, xml_{name});")
 				self.w(f"\tlua_setfield(L, LUA_REGISTRYINDEX, \"{struct.get('export')}Parser\");")
 		self.w(f"\treturn 1;\n}}")
 

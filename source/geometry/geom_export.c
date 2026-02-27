@@ -11,22 +11,20 @@ void luaX_pushRotationOrder(lua_State *L, eRotationOrder_t value) {
 	lua_pushstring(L, _RotationOrder[value]);
 }
 #include <libxml/parser.h>
-ORCA_API int xmltoRotationOrder(xmlNodePtr xml, enum RotationOrder* output) {
-	if (xml == NULL) return FALSE;
-	assert(xml->type == XML_ATTRIBUTE_NODE);
+ORCA_API lpcString_t __strtoRotationOrder(lpcString_t string, enum RotationOrder* output) {
+	if (string == NULL) return FALSE;
 	const char* _RotationOrder[] = { "XYZ", "XZY", "YZX", "YXZ", "ZXY", "ZYX", NULL };
-	const char* string = (const char*)xml->content;
 	if (isdigit(*string)) {
-		*output = strtod(string, NULL);
-		return TRUE;
+		*output = strtod(string, (char**)&string);
+		return string;
 	} else for (const char **s = _RotationOrder; *s; s++) {
 		if (!strcmp(string, *s)) {
 			*output = (enum RotationOrder)(s - _RotationOrder);
-			return TRUE;
+			return string + strlen(*s);
 		}
 	}
 	Con_Error("Could not parse '%s' value of property RotationOrder", string);
-	return FALSE;
+	return string + strlen(string);
 }
 void luaX_pushvec2(lua_State *L, lpcvec2_t data) {
 	lpvec2_t self = lua_newuserdata(L, sizeof(struct vec2));
@@ -202,19 +200,21 @@ int f_vec2___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in vec2: %s", luaL_checkstring(L, 2));
 }
 #include <libxml/parser.h>
-ORCA_API int xmltovec2(xmlNodePtr xml, lpvec2_t output) {
-	if (xml == NULL) return FALSE;
-	int xmltofloat(xmlNodePtr, float*);
-	switch (xml->type) {
-	case XML_ELEMENT_NODE:
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("x")), &output->x);
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("y")), &output->y);
-		return TRUE;
-	case XML_ATTRIBUTE_NODE:
-		return TRUE;
-	default:
-		return FALSE;
+ORCA_API lpcString_t __strtovec2(lpcString_t str, lpvec2_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	str = __strtofloat(str, &output->x);
+	str = __strtofloat(str, &output->y);
+	return str;
+}
+static int xml_vec2(xmlNodePtr xml, lpvec2_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("x")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->x);
 	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("y")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->y);
+	}
+	return TRUE;
 }
 
 int luaopen_orca_vec2(lua_State *L) {
@@ -234,7 +234,7 @@ int luaopen_orca_vec2(lua_State *L) {
 	lua_pushcfunction(L, f_vec2___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xmltovec2);
+	lua_pushlightuserdata(L, xml_vec2);
 	lua_setfield(L, LUA_REGISTRYINDEX, "Vector2DParser");
 	return 1;
 }
@@ -460,20 +460,25 @@ int f_vec3___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in vec3: %s", luaL_checkstring(L, 2));
 }
 #include <libxml/parser.h>
-ORCA_API int xmltovec3(xmlNodePtr xml, lpvec3_t output) {
-	if (xml == NULL) return FALSE;
-	int xmltofloat(xmlNodePtr, float*);
-	switch (xml->type) {
-	case XML_ELEMENT_NODE:
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("x")), &output->x);
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("y")), &output->y);
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("z")), &output->z);
-		return TRUE;
-	case XML_ATTRIBUTE_NODE:
-		return TRUE;
-	default:
-		return FALSE;
+ORCA_API lpcString_t __strtovec3(lpcString_t str, lpvec3_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	str = __strtofloat(str, &output->x);
+	str = __strtofloat(str, &output->y);
+	str = __strtofloat(str, &output->z);
+	return str;
+}
+static int xml_vec3(xmlNodePtr xml, lpvec3_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("x")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->x);
 	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("y")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->y);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("z")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->z);
+	}
+	return TRUE;
 }
 
 int luaopen_orca_vec3(lua_State *L) {
@@ -492,7 +497,7 @@ int luaopen_orca_vec3(lua_State *L) {
 	lua_pushcfunction(L, f_vec3___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xmltovec3);
+	lua_pushlightuserdata(L, xml_vec3);
 	lua_setfield(L, LUA_REGISTRYINDEX, "Vector3DParser");
 	return 1;
 }
@@ -614,21 +619,29 @@ int f_vec4___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in vec4: %s", luaL_checkstring(L, 2));
 }
 #include <libxml/parser.h>
-ORCA_API int xmltovec4(xmlNodePtr xml, lpvec4_t output) {
-	if (xml == NULL) return FALSE;
-	int xmltofloat(xmlNodePtr, float*);
-	switch (xml->type) {
-	case XML_ELEMENT_NODE:
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("x")), &output->x);
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("y")), &output->y);
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("z")), &output->z);
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("w")), &output->w);
-		return TRUE;
-	case XML_ATTRIBUTE_NODE:
-		return TRUE;
-	default:
-		return FALSE;
+ORCA_API lpcString_t __strtovec4(lpcString_t str, lpvec4_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	str = __strtofloat(str, &output->x);
+	str = __strtofloat(str, &output->y);
+	str = __strtofloat(str, &output->z);
+	str = __strtofloat(str, &output->w);
+	return str;
+}
+static int xml_vec4(xmlNodePtr xml, lpvec4_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("x")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->x);
 	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("y")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->y);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("z")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->z);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("w")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->w);
+	}
+	return TRUE;
 }
 
 int luaopen_orca_vec4(lua_State *L) {
@@ -645,7 +658,7 @@ int luaopen_orca_vec4(lua_State *L) {
 	lua_pushcfunction(L, f_vec4___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xmltovec4);
+	lua_pushlightuserdata(L, xml_vec4);
 	lua_setfield(L, LUA_REGISTRYINDEX, "Vector4DParser");
 	return 1;
 }
@@ -718,19 +731,21 @@ int f_box2___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in box2: %s", luaL_checkstring(L, 2));
 }
 #include <libxml/parser.h>
-ORCA_API int xmltobox2(xmlNodePtr xml, lpbox2_t output) {
-	if (xml == NULL) return FALSE;
-	int xmltovec2(xmlNodePtr, struct vec2*);
-	switch (xml->type) {
-	case XML_ELEMENT_NODE:
-		xmltovec2((xmlNodePtr)xmlHasProp(xml, XMLSTR("min")), &output->min);
-		xmltovec2((xmlNodePtr)xmlHasProp(xml, XMLSTR("max")), &output->max);
-		return TRUE;
-	case XML_ATTRIBUTE_NODE:
-		return TRUE;
-	default:
-		return FALSE;
+ORCA_API lpcString_t __strtobox2(lpcString_t str, lpbox2_t output) {
+	lpcString_t __strtovec2(lpcString_t, struct vec2*);
+	str = __strtovec2(str, &output->min);
+	str = __strtovec2(str, &output->max);
+	return str;
+}
+static int xml_box2(xmlNodePtr xml, lpbox2_t output) {
+	lpcString_t __strtovec2(lpcString_t, struct vec2*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("min")), xmlFree) {
+		attr = (xmlChar*)__strtovec2((lpcString_t)attr, &output->min);
 	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("max")), xmlFree) {
+		attr = (xmlChar*)__strtovec2((lpcString_t)attr, &output->max);
+	}
+	return TRUE;
 }
 
 int luaopen_orca_box2(lua_State *L) {
@@ -745,7 +760,7 @@ int luaopen_orca_box2(lua_State *L) {
 	lua_pushcfunction(L, f_box2___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xmltobox2);
+	lua_pushlightuserdata(L, xml_box2);
 	lua_setfield(L, LUA_REGISTRYINDEX, "Box2DParser");
 	return 1;
 }
@@ -799,19 +814,21 @@ int f_box3___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in box3: %s", luaL_checkstring(L, 2));
 }
 #include <libxml/parser.h>
-ORCA_API int xmltobox3(xmlNodePtr xml, lpbox3_t output) {
-	if (xml == NULL) return FALSE;
-	int xmltovec3(xmlNodePtr, struct vec3*);
-	switch (xml->type) {
-	case XML_ELEMENT_NODE:
-		xmltovec3((xmlNodePtr)xmlHasProp(xml, XMLSTR("min")), &output->min);
-		xmltovec3((xmlNodePtr)xmlHasProp(xml, XMLSTR("max")), &output->max);
-		return TRUE;
-	case XML_ATTRIBUTE_NODE:
-		return TRUE;
-	default:
-		return FALSE;
+ORCA_API lpcString_t __strtobox3(lpcString_t str, lpbox3_t output) {
+	lpcString_t __strtovec3(lpcString_t, struct vec3*);
+	str = __strtovec3(str, &output->min);
+	str = __strtovec3(str, &output->max);
+	return str;
+}
+static int xml_box3(xmlNodePtr xml, lpbox3_t output) {
+	lpcString_t __strtovec3(lpcString_t, struct vec3*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("min")), xmlFree) {
+		attr = (xmlChar*)__strtovec3((lpcString_t)attr, &output->min);
 	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("max")), xmlFree) {
+		attr = (xmlChar*)__strtovec3((lpcString_t)attr, &output->max);
+	}
+	return TRUE;
 }
 
 int luaopen_orca_box3(lua_State *L) {
@@ -826,7 +843,7 @@ int luaopen_orca_box3(lua_State *L) {
 	lua_pushcfunction(L, f_box3___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xmltobox3);
+	lua_pushlightuserdata(L, xml_box3);
 	lua_setfield(L, LUA_REGISTRYINDEX, "Box3DParser");
 	return 1;
 }
@@ -882,19 +899,21 @@ int f_Size___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in Size: %s", luaL_checkstring(L, 2));
 }
 #include <libxml/parser.h>
-ORCA_API int xmltoSize(xmlNodePtr xml, lpSize_t output) {
-	if (xml == NULL) return FALSE;
-	int xmltofloat(xmlNodePtr, float*);
-	switch (xml->type) {
-	case XML_ELEMENT_NODE:
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("width")), &output->width);
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("height")), &output->height);
-		return TRUE;
-	case XML_ATTRIBUTE_NODE:
-		return TRUE;
-	default:
-		return FALSE;
+ORCA_API lpcString_t __strtoSize(lpcString_t str, lpSize_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	str = __strtofloat(str, &output->width);
+	str = __strtofloat(str, &output->height);
+	return str;
+}
+static int xml_Size(xmlNodePtr xml, lpSize_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("width")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->width);
 	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("height")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->height);
+	}
+	return TRUE;
 }
 
 int luaopen_orca_Size(lua_State *L) {
@@ -909,7 +928,7 @@ int luaopen_orca_Size(lua_State *L) {
 	lua_pushcfunction(L, f_Size___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xmltoSize);
+	lua_pushlightuserdata(L, xml_Size);
 	lua_setfield(L, LUA_REGISTRYINDEX, "NoneParser");
 	return 1;
 }
@@ -1034,21 +1053,29 @@ int f_rect___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in rect: %s", luaL_checkstring(L, 2));
 }
 #include <libxml/parser.h>
-ORCA_API int xmltorect(xmlNodePtr xml, lprect_t output) {
-	if (xml == NULL) return FALSE;
-	int xmltofloat(xmlNodePtr, float*);
-	switch (xml->type) {
-	case XML_ELEMENT_NODE:
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("x")), &output->x);
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("y")), &output->y);
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("width")), &output->width);
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("height")), &output->height);
-		return TRUE;
-	case XML_ATTRIBUTE_NODE:
-		return TRUE;
-	default:
-		return FALSE;
+ORCA_API lpcString_t __strtorect(lpcString_t str, lprect_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	str = __strtofloat(str, &output->x);
+	str = __strtofloat(str, &output->y);
+	str = __strtofloat(str, &output->width);
+	str = __strtofloat(str, &output->height);
+	return str;
+}
+static int xml_rect(xmlNodePtr xml, lprect_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("x")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->x);
 	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("y")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->y);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("width")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->width);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("height")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->height);
+	}
+	return TRUE;
 }
 
 int luaopen_orca_rect(lua_State *L) {
@@ -1063,7 +1090,7 @@ int luaopen_orca_rect(lua_State *L) {
 	lua_pushcfunction(L, f_rect___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xmltorect);
+	lua_pushlightuserdata(L, xml_rect);
 	lua_setfield(L, LUA_REGISTRYINDEX, "RectangleParser");
 	return 1;
 }
@@ -1213,21 +1240,29 @@ int f_quat___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in quat: %s", luaL_checkstring(L, 2));
 }
 #include <libxml/parser.h>
-ORCA_API int xmltoquat(xmlNodePtr xml, lpquat_t output) {
-	if (xml == NULL) return FALSE;
-	int xmltofloat(xmlNodePtr, float*);
-	switch (xml->type) {
-	case XML_ELEMENT_NODE:
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("x")), &output->x);
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("y")), &output->y);
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("z")), &output->z);
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("w")), &output->w);
-		return TRUE;
-	case XML_ATTRIBUTE_NODE:
-		return TRUE;
-	default:
-		return FALSE;
+ORCA_API lpcString_t __strtoquat(lpcString_t str, lpquat_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	str = __strtofloat(str, &output->x);
+	str = __strtofloat(str, &output->y);
+	str = __strtofloat(str, &output->z);
+	str = __strtofloat(str, &output->w);
+	return str;
+}
+static int xml_quat(xmlNodePtr xml, lpquat_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("x")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->x);
 	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("y")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->y);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("z")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->z);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("w")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->w);
+	}
+	return TRUE;
 }
 
 int luaopen_orca_quat(lua_State *L) {
@@ -1244,7 +1279,7 @@ int luaopen_orca_quat(lua_State *L) {
 	lua_pushcfunction(L, f_quat___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xmltoquat);
+	lua_pushlightuserdata(L, xml_quat);
 	lua_setfield(L, LUA_REGISTRYINDEX, "QuaternionParser");
 	return 1;
 }
@@ -1306,16 +1341,11 @@ int f_mat3___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in mat3: %s", luaL_checkstring(L, 2));
 }
 #include <libxml/parser.h>
-ORCA_API int xmltomat3(xmlNodePtr xml, lpmat3_t output) {
-	if (xml == NULL) return FALSE;
-	switch (xml->type) {
-	case XML_ELEMENT_NODE:
-		return TRUE;
-	case XML_ATTRIBUTE_NODE:
-		return TRUE;
-	default:
-		return FALSE;
-	}
+ORCA_API lpcString_t __strtomat3(lpcString_t str, lpmat3_t output) {
+	return str;
+}
+static int xml_mat3(xmlNodePtr xml, lpmat3_t output) {
+	return TRUE;
 }
 
 int luaopen_orca_mat3(lua_State *L) {
@@ -1332,7 +1362,7 @@ int luaopen_orca_mat3(lua_State *L) {
 	lua_pushcfunction(L, f_mat3___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xmltomat3);
+	lua_pushlightuserdata(L, xml_mat3);
 	lua_setfield(L, LUA_REGISTRYINDEX, "Matrix2DParser");
 	return 1;
 }
@@ -1501,16 +1531,11 @@ int f_mat4___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in mat4: %s", luaL_checkstring(L, 2));
 }
 #include <libxml/parser.h>
-ORCA_API int xmltomat4(xmlNodePtr xml, lpmat4_t output) {
-	if (xml == NULL) return FALSE;
-	switch (xml->type) {
-	case XML_ELEMENT_NODE:
-		return TRUE;
-	case XML_ATTRIBUTE_NODE:
-		return TRUE;
-	default:
-		return FALSE;
-	}
+ORCA_API lpcString_t __strtomat4(lpcString_t str, lpmat4_t output) {
+	return str;
+}
+static int xml_mat4(xmlNodePtr xml, lpmat4_t output) {
+	return TRUE;
 }
 
 int luaopen_orca_mat4(lua_State *L) {
@@ -1533,7 +1558,7 @@ int luaopen_orca_mat4(lua_State *L) {
 	lua_pushcfunction(L, f_mat4___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xmltomat4);
+	lua_pushlightuserdata(L, xml_mat4);
 	lua_setfield(L, LUA_REGISTRYINDEX, "Matrix3DParser");
 	return 1;
 }
@@ -1589,19 +1614,21 @@ int f_bounds___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in bounds: %s", luaL_checkstring(L, 2));
 }
 #include <libxml/parser.h>
-ORCA_API int xmltobounds(xmlNodePtr xml, lpbounds_t output) {
-	if (xml == NULL) return FALSE;
-	int xmltofloat(xmlNodePtr, float*);
-	switch (xml->type) {
-	case XML_ELEMENT_NODE:
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("min")), &output->min);
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("max")), &output->max);
-		return TRUE;
-	case XML_ATTRIBUTE_NODE:
-		return TRUE;
-	default:
-		return FALSE;
+ORCA_API lpcString_t __strtobounds(lpcString_t str, lpbounds_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	str = __strtofloat(str, &output->min);
+	str = __strtofloat(str, &output->max);
+	return str;
+}
+static int xml_bounds(xmlNodePtr xml, lpbounds_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("min")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->min);
 	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("max")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->max);
+	}
+	return TRUE;
 }
 
 int luaopen_orca_bounds(lua_State *L) {
@@ -1616,7 +1643,7 @@ int luaopen_orca_bounds(lua_State *L) {
 	lua_pushcfunction(L, f_bounds___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xmltobounds);
+	lua_pushlightuserdata(L, xml_bounds);
 	lua_setfield(L, LUA_REGISTRYINDEX, "BoundsParser");
 	return 1;
 }
@@ -1710,21 +1737,29 @@ int f_plane3___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in plane3: %s", luaL_checkstring(L, 2));
 }
 #include <libxml/parser.h>
-ORCA_API int xmltoplane3(xmlNodePtr xml, lpplane3_t output) {
-	if (xml == NULL) return FALSE;
-	int xmltofloat(xmlNodePtr, float*);
-	switch (xml->type) {
-	case XML_ELEMENT_NODE:
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("a")), &output->a);
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("b")), &output->b);
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("c")), &output->c);
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("d")), &output->d);
-		return TRUE;
-	case XML_ATTRIBUTE_NODE:
-		return TRUE;
-	default:
-		return FALSE;
+ORCA_API lpcString_t __strtoplane3(lpcString_t str, lpplane3_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	str = __strtofloat(str, &output->a);
+	str = __strtofloat(str, &output->b);
+	str = __strtofloat(str, &output->c);
+	str = __strtofloat(str, &output->d);
+	return str;
+}
+static int xml_plane3(xmlNodePtr xml, lpplane3_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("a")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->a);
 	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("b")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->b);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("c")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->c);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("d")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->d);
+	}
+	return TRUE;
 }
 
 int luaopen_orca_plane3(lua_State *L) {
@@ -1739,7 +1774,7 @@ int luaopen_orca_plane3(lua_State *L) {
 	lua_pushcfunction(L, f_plane3___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xmltoplane3);
+	lua_pushlightuserdata(L, xml_plane3);
 	lua_setfield(L, LUA_REGISTRYINDEX, "PlaneParser");
 	return 1;
 }
@@ -1791,20 +1826,23 @@ int f_sphere3___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in sphere3: %s", luaL_checkstring(L, 2));
 }
 #include <libxml/parser.h>
-ORCA_API int xmltosphere3(xmlNodePtr xml, lpsphere3_t output) {
-	if (xml == NULL) return FALSE;
-	int xmltofloat(xmlNodePtr, float*);
-	int xmltovec3(xmlNodePtr, struct vec3*);
-	switch (xml->type) {
-	case XML_ELEMENT_NODE:
-		xmltovec3((xmlNodePtr)xmlHasProp(xml, XMLSTR("center")), &output->center);
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("radius")), &output->radius);
-		return TRUE;
-	case XML_ATTRIBUTE_NODE:
-		return TRUE;
-	default:
-		return FALSE;
+ORCA_API lpcString_t __strtosphere3(lpcString_t str, lpsphere3_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	lpcString_t __strtovec3(lpcString_t, struct vec3*);
+	str = __strtovec3(str, &output->center);
+	str = __strtofloat(str, &output->radius);
+	return str;
+}
+static int xml_sphere3(xmlNodePtr xml, lpsphere3_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	lpcString_t __strtovec3(lpcString_t, struct vec3*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("center")), xmlFree) {
+		attr = (xmlChar*)__strtovec3((lpcString_t)attr, &output->center);
 	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("radius")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->radius);
+	}
+	return TRUE;
 }
 
 int luaopen_orca_sphere3(lua_State *L) {
@@ -1819,7 +1857,7 @@ int luaopen_orca_sphere3(lua_State *L) {
 	lua_pushcfunction(L, f_sphere3___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xmltosphere3);
+	lua_pushlightuserdata(L, xml_sphere3);
 	lua_setfield(L, LUA_REGISTRYINDEX, "SphereParser");
 	return 1;
 }
@@ -1935,23 +1973,37 @@ int f_frustum3___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in frustum3: %s", luaL_checkstring(L, 2));
 }
 #include <libxml/parser.h>
-ORCA_API int xmltofrustum3(xmlNodePtr xml, lpfrustum3_t output) {
-	if (xml == NULL) return FALSE;
-	int xmltoplane3(xmlNodePtr, struct plane3*);
-	switch (xml->type) {
-	case XML_ELEMENT_NODE:
-		xmltoplane3((xmlNodePtr)xmlHasProp(xml, XMLSTR("left")), &output->left);
-		xmltoplane3((xmlNodePtr)xmlHasProp(xml, XMLSTR("right")), &output->right);
-		xmltoplane3((xmlNodePtr)xmlHasProp(xml, XMLSTR("bottom")), &output->bottom);
-		xmltoplane3((xmlNodePtr)xmlHasProp(xml, XMLSTR("top")), &output->top);
-		xmltoplane3((xmlNodePtr)xmlHasProp(xml, XMLSTR("front")), &output->front);
-		xmltoplane3((xmlNodePtr)xmlHasProp(xml, XMLSTR("back")), &output->back);
-		return TRUE;
-	case XML_ATTRIBUTE_NODE:
-		return TRUE;
-	default:
-		return FALSE;
+ORCA_API lpcString_t __strtofrustum3(lpcString_t str, lpfrustum3_t output) {
+	lpcString_t __strtoplane3(lpcString_t, struct plane3*);
+	str = __strtoplane3(str, &output->left);
+	str = __strtoplane3(str, &output->right);
+	str = __strtoplane3(str, &output->bottom);
+	str = __strtoplane3(str, &output->top);
+	str = __strtoplane3(str, &output->front);
+	str = __strtoplane3(str, &output->back);
+	return str;
+}
+static int xml_frustum3(xmlNodePtr xml, lpfrustum3_t output) {
+	lpcString_t __strtoplane3(lpcString_t, struct plane3*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("left")), xmlFree) {
+		attr = (xmlChar*)__strtoplane3((lpcString_t)attr, &output->left);
 	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("right")), xmlFree) {
+		attr = (xmlChar*)__strtoplane3((lpcString_t)attr, &output->right);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("bottom")), xmlFree) {
+		attr = (xmlChar*)__strtoplane3((lpcString_t)attr, &output->bottom);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("top")), xmlFree) {
+		attr = (xmlChar*)__strtoplane3((lpcString_t)attr, &output->top);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("front")), xmlFree) {
+		attr = (xmlChar*)__strtoplane3((lpcString_t)attr, &output->front);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("back")), xmlFree) {
+		attr = (xmlChar*)__strtoplane3((lpcString_t)attr, &output->back);
+	}
+	return TRUE;
 }
 
 int luaopen_orca_frustum3(lua_State *L) {
@@ -1967,7 +2019,7 @@ int luaopen_orca_frustum3(lua_State *L) {
 	lua_pushcfunction(L, f_frustum3___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xmltofrustum3);
+	lua_pushlightuserdata(L, xml_frustum3);
 	lua_setfield(L, LUA_REGISTRYINDEX, "FrustumParser");
 	return 1;
 }
@@ -2040,21 +2092,27 @@ int f_transform2___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in transform2: %s", luaL_checkstring(L, 2));
 }
 #include <libxml/parser.h>
-ORCA_API int xmltotransform2(xmlNodePtr xml, lptransform2_t output) {
-	if (xml == NULL) return FALSE;
-	int xmltofloat(xmlNodePtr, float*);
-	int xmltovec2(xmlNodePtr, struct vec2*);
-	switch (xml->type) {
-	case XML_ELEMENT_NODE:
-		xmltovec2((xmlNodePtr)xmlHasProp(xml, XMLSTR("translation")), &output->translation);
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("rotation")), &output->rotation);
-		xmltovec2((xmlNodePtr)xmlHasProp(xml, XMLSTR("scale")), &output->scale);
-		return TRUE;
-	case XML_ATTRIBUTE_NODE:
-		return TRUE;
-	default:
-		return FALSE;
+ORCA_API lpcString_t __strtotransform2(lpcString_t str, lptransform2_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	lpcString_t __strtovec2(lpcString_t, struct vec2*);
+	str = __strtovec2(str, &output->translation);
+	str = __strtofloat(str, &output->rotation);
+	str = __strtovec2(str, &output->scale);
+	return str;
+}
+static int xml_transform2(xmlNodePtr xml, lptransform2_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	lpcString_t __strtovec2(lpcString_t, struct vec2*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("translation")), xmlFree) {
+		attr = (xmlChar*)__strtovec2((lpcString_t)attr, &output->translation);
 	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("rotation")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->rotation);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("scale")), xmlFree) {
+		attr = (xmlChar*)__strtovec2((lpcString_t)attr, &output->scale);
+	}
+	return TRUE;
 }
 
 int luaopen_orca_transform2(lua_State *L) {
@@ -2070,7 +2128,7 @@ int luaopen_orca_transform2(lua_State *L) {
 	lua_pushcfunction(L, f_transform2___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xmltotransform2);
+	lua_pushlightuserdata(L, xml_transform2);
 	lua_setfield(L, LUA_REGISTRYINDEX, "Transform2DParser");
 	return 1;
 }
@@ -2136,20 +2194,25 @@ int f_transform3___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in transform3: %s", luaL_checkstring(L, 2));
 }
 #include <libxml/parser.h>
-ORCA_API int xmltotransform3(xmlNodePtr xml, lptransform3_t output) {
-	if (xml == NULL) return FALSE;
-	int xmltovec3(xmlNodePtr, struct vec3*);
-	switch (xml->type) {
-	case XML_ELEMENT_NODE:
-		xmltovec3((xmlNodePtr)xmlHasProp(xml, XMLSTR("translation")), &output->translation);
-		xmltovec3((xmlNodePtr)xmlHasProp(xml, XMLSTR("rotation")), &output->rotation);
-		xmltovec3((xmlNodePtr)xmlHasProp(xml, XMLSTR("scale")), &output->scale);
-		return TRUE;
-	case XML_ATTRIBUTE_NODE:
-		return TRUE;
-	default:
-		return FALSE;
+ORCA_API lpcString_t __strtotransform3(lpcString_t str, lptransform3_t output) {
+	lpcString_t __strtovec3(lpcString_t, struct vec3*);
+	str = __strtovec3(str, &output->translation);
+	str = __strtovec3(str, &output->rotation);
+	str = __strtovec3(str, &output->scale);
+	return str;
+}
+static int xml_transform3(xmlNodePtr xml, lptransform3_t output) {
+	lpcString_t __strtovec3(lpcString_t, struct vec3*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("translation")), xmlFree) {
+		attr = (xmlChar*)__strtovec3((lpcString_t)attr, &output->translation);
 	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("rotation")), xmlFree) {
+		attr = (xmlChar*)__strtovec3((lpcString_t)attr, &output->rotation);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("scale")), xmlFree) {
+		attr = (xmlChar*)__strtovec3((lpcString_t)attr, &output->scale);
+	}
+	return TRUE;
 }
 
 int luaopen_orca_transform3(lua_State *L) {
@@ -2165,7 +2228,7 @@ int luaopen_orca_transform3(lua_State *L) {
 	lua_pushcfunction(L, f_transform3___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xmltotransform3);
+	lua_pushlightuserdata(L, xml_transform3);
 	lua_setfield(L, LUA_REGISTRYINDEX, "Transform3DParser");
 	return 1;
 }
@@ -2225,20 +2288,25 @@ int f_triangle3___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in triangle3: %s", luaL_checkstring(L, 2));
 }
 #include <libxml/parser.h>
-ORCA_API int xmltotriangle3(xmlNodePtr xml, lptriangle3_t output) {
-	if (xml == NULL) return FALSE;
-	int xmltovec3(xmlNodePtr, struct vec3*);
-	switch (xml->type) {
-	case XML_ELEMENT_NODE:
-		xmltovec3((xmlNodePtr)xmlHasProp(xml, XMLSTR("a")), &output->a);
-		xmltovec3((xmlNodePtr)xmlHasProp(xml, XMLSTR("b")), &output->b);
-		xmltovec3((xmlNodePtr)xmlHasProp(xml, XMLSTR("c")), &output->c);
-		return TRUE;
-	case XML_ATTRIBUTE_NODE:
-		return TRUE;
-	default:
-		return FALSE;
+ORCA_API lpcString_t __strtotriangle3(lpcString_t str, lptriangle3_t output) {
+	lpcString_t __strtovec3(lpcString_t, struct vec3*);
+	str = __strtovec3(str, &output->a);
+	str = __strtovec3(str, &output->b);
+	str = __strtovec3(str, &output->c);
+	return str;
+}
+static int xml_triangle3(xmlNodePtr xml, lptriangle3_t output) {
+	lpcString_t __strtovec3(lpcString_t, struct vec3*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("a")), xmlFree) {
+		attr = (xmlChar*)__strtovec3((lpcString_t)attr, &output->a);
 	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("b")), xmlFree) {
+		attr = (xmlChar*)__strtovec3((lpcString_t)attr, &output->b);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("c")), xmlFree) {
+		attr = (xmlChar*)__strtovec3((lpcString_t)attr, &output->c);
+	}
+	return TRUE;
 }
 
 int luaopen_orca_triangle3(lua_State *L) {
@@ -2253,7 +2321,7 @@ int luaopen_orca_triangle3(lua_State *L) {
 	lua_pushcfunction(L, f_triangle3___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xmltotriangle3);
+	lua_pushlightuserdata(L, xml_triangle3);
 	lua_setfield(L, LUA_REGISTRYINDEX, "Triangle3DParser");
 	return 1;
 }
@@ -2342,19 +2410,21 @@ int f_line3___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in line3: %s", luaL_checkstring(L, 2));
 }
 #include <libxml/parser.h>
-ORCA_API int xmltoline3(xmlNodePtr xml, lpline3_t output) {
-	if (xml == NULL) return FALSE;
-	int xmltovec3(xmlNodePtr, struct vec3*);
-	switch (xml->type) {
-	case XML_ELEMENT_NODE:
-		xmltovec3((xmlNodePtr)xmlHasProp(xml, XMLSTR("a")), &output->a);
-		xmltovec3((xmlNodePtr)xmlHasProp(xml, XMLSTR("b")), &output->b);
-		return TRUE;
-	case XML_ATTRIBUTE_NODE:
-		return TRUE;
-	default:
-		return FALSE;
+ORCA_API lpcString_t __strtoline3(lpcString_t str, lpline3_t output) {
+	lpcString_t __strtovec3(lpcString_t, struct vec3*);
+	str = __strtovec3(str, &output->a);
+	str = __strtovec3(str, &output->b);
+	return str;
+}
+static int xml_line3(xmlNodePtr xml, lpline3_t output) {
+	lpcString_t __strtovec3(lpcString_t, struct vec3*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("a")), xmlFree) {
+		attr = (xmlChar*)__strtovec3((lpcString_t)attr, &output->a);
 	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("b")), xmlFree) {
+		attr = (xmlChar*)__strtovec3((lpcString_t)attr, &output->b);
+	}
+	return TRUE;
 }
 
 int luaopen_orca_line3(lua_State *L) {
@@ -2369,7 +2439,7 @@ int luaopen_orca_line3(lua_State *L) {
 	lua_pushcfunction(L, f_line3___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xmltoline3);
+	lua_pushlightuserdata(L, xml_line3);
 	lua_setfield(L, LUA_REGISTRYINDEX, "Line3DParser");
 	return 1;
 }
@@ -2445,21 +2515,29 @@ int f_edges___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in edges: %s", luaL_checkstring(L, 2));
 }
 #include <libxml/parser.h>
-ORCA_API int xmltoedges(xmlNodePtr xml, lpedges_t output) {
-	if (xml == NULL) return FALSE;
-	int xmltofloat(xmlNodePtr, float*);
-	switch (xml->type) {
-	case XML_ELEMENT_NODE:
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("left")), &output->left);
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("top")), &output->top);
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("right")), &output->right);
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("bottom")), &output->bottom);
-		return TRUE;
-	case XML_ATTRIBUTE_NODE:
-		return TRUE;
-	default:
-		return FALSE;
+ORCA_API lpcString_t __strtoedges(lpcString_t str, lpedges_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	str = __strtofloat(str, &output->left);
+	str = __strtofloat(str, &output->top);
+	str = __strtofloat(str, &output->right);
+	str = __strtofloat(str, &output->bottom);
+	return str;
+}
+static int xml_edges(xmlNodePtr xml, lpedges_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("left")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->left);
 	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("top")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->top);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("right")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->right);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("bottom")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->bottom);
+	}
+	return TRUE;
 }
 
 int luaopen_orca_edges(lua_State *L) {
@@ -2474,7 +2552,7 @@ int luaopen_orca_edges(lua_State *L) {
 	lua_pushcfunction(L, f_edges___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xmltoedges);
+	lua_pushlightuserdata(L, xml_edges);
 	lua_setfield(L, LUA_REGISTRYINDEX, "EdgesParser");
 	return 1;
 }
@@ -2567,21 +2645,29 @@ int f_color___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in color: %s", luaL_checkstring(L, 2));
 }
 #include <libxml/parser.h>
-ORCA_API int xmltocolor(xmlNodePtr xml, lpcolor_t output) {
-	if (xml == NULL) return FALSE;
-	int xmltofloat(xmlNodePtr, float*);
-	switch (xml->type) {
-	case XML_ELEMENT_NODE:
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("r")), &output->r);
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("g")), &output->g);
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("b")), &output->b);
-		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("a")), &output->a);
-		return TRUE;
-	case XML_ATTRIBUTE_NODE:
-		return TRUE;
-	default:
-		return FALSE;
+ORCA_API lpcString_t __strtocolor(lpcString_t str, lpcolor_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	str = __strtofloat(str, &output->r);
+	str = __strtofloat(str, &output->g);
+	str = __strtofloat(str, &output->b);
+	str = __strtofloat(str, &output->a);
+	return str;
+}
+static int xml_color(xmlNodePtr xml, lpcolor_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("r")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->r);
 	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("g")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->g);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("b")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->b);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("a")), xmlFree) {
+		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->a);
+	}
+	return TRUE;
 }
 
 int luaopen_orca_color(lua_State *L) {
@@ -2597,7 +2683,7 @@ int luaopen_orca_color(lua_State *L) {
 	lua_pushcfunction(L, f_color___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xmltocolor);
+	lua_pushlightuserdata(L, xml_color);
 	lua_setfield(L, LUA_REGISTRYINDEX, "ColorParser");
 	return 1;
 }

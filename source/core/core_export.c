@@ -608,16 +608,11 @@ int f_Object___index(lua_State *L) {
 	return 0;
 }
 #include <libxml/parser.h>
-ORCA_API int xmltoObject(xmlNodePtr xml, lpObject_t output) {
-	if (xml == NULL) return FALSE;
-	switch (xml->type) {
-	case XML_ELEMENT_NODE:
-		return TRUE;
-	case XML_ATTRIBUTE_NODE:
-		return TRUE;
-	default:
-		return FALSE;
-	}
+ORCA_API lpcString_t __strtoObject(lpcString_t str, lpObject_t output) {
+	return str;
+}
+static int xml_Object(xmlNodePtr xml, lpObject_t output) {
+	return TRUE;
 }
 
 int luaopen_orca_Object(lua_State *L) {
@@ -653,22 +648,20 @@ void luaX_pushDataType(lua_State *L, eDataType_t value) {
 	lua_pushstring(L, _DataType[value]);
 }
 #include <libxml/parser.h>
-ORCA_API int xmltoDataType(xmlNodePtr xml, enum DataType* output) {
-	if (xml == NULL) return FALSE;
-	assert(xml->type == XML_ATTRIBUTE_NODE);
+ORCA_API lpcString_t __strtoDataType(lpcString_t string, enum DataType* output) {
+	if (string == NULL) return FALSE;
 	const char* _DataType[] = { "None", "Bool", "Int", "Enum", "Float", "Fixed", "LongString", "Edges", "ObjectTags", "Event", "Struct", "Object", "Group", NULL };
-	const char* string = (const char*)xml->content;
 	if (isdigit(*string)) {
-		*output = strtod(string, NULL);
-		return TRUE;
+		*output = strtod(string, (char**)&string);
+		return string;
 	} else for (const char **s = _DataType; *s; s++) {
 		if (!strcmp(string, *s)) {
 			*output = (enum DataType)(s - _DataType);
-			return TRUE;
+			return string + strlen(*s);
 		}
 	}
 	Con_Error("Could not parse '%s' value of property DataType", string);
-	return FALSE;
+	return string + strlen(string);
 }
 LRESULT PropertyType_Attached(lpObject_t, lpPropertyType_t, wParam_t, AttachedEventPtr);
 static struct PropertyDesc const PropertyTypeProperties[kPropertyTypeNumProperties] = {
