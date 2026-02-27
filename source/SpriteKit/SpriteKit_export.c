@@ -122,6 +122,23 @@ ORCA_API struct ClassDesc _SpriteAnimation = {
 	.Defaults = &SpriteAnimationDefaults,
 	.NumProperties = kSpriteAnimationNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoSpriteAnimation(xmlNodePtr xml, lpSpriteAnimation_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltofloat(xmlNodePtr, float*);
+	int xmltoint(xmlNodePtr, int32_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("Framerate")), &output->Framerate);
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("NumFrames")), &output->NumFrames);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT SKNode_UpdateMatrix(lpObject_t, lpSKNode_t, wParam_t, UpdateMatrixEventPtr);
 static struct PropertyDesc const SKNodeProperties[kSKNodeNumProperties] = {
 	/* SKNode.Position */ DECL(0xe27f342a, 0xa99d4e4c,
@@ -159,6 +176,23 @@ ORCA_API struct ClassDesc _SKNode = {
 	.Defaults = &SKNodeDefaults,
 	.NumProperties = kSKNodeNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoSKNode(xmlNodePtr xml, lpSKNode_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltovec2(xmlNodePtr, struct vec2*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltovec2((xmlNodePtr)xmlHasProp(xml, XMLSTR("Position")), &output->Position);
+		xmltovec2((xmlNodePtr)xmlHasProp(xml, XMLSTR("Size")), &output->Size);
+		xmltovec2((xmlNodePtr)xmlHasProp(xml, XMLSTR("Anchor")), &output->Anchor);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT SKScene_UpdateMatrix(lpObject_t, lpSKScene_t, wParam_t, UpdateMatrixEventPtr);
 static struct PropertyDesc const SKSceneProperties[kSKSceneNumProperties] = {
 };
@@ -190,6 +224,19 @@ ORCA_API struct ClassDesc _SKScene = {
 	.Defaults = &SKSceneDefaults,
 	.NumProperties = kSKSceneNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoSKScene(xmlNodePtr xml, lpSKScene_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT SKSpriteNode_Render(lpObject_t, lpSKSpriteNode_t, wParam_t, RenderEventPtr);
 static struct PropertyDesc const SKSpriteNodeProperties[kSKSpriteNodeNumProperties] = {
 	/* SKSpriteNode.Animation */ DECL(0x41e389fd, 0xdfc01dce,
@@ -244,6 +291,25 @@ ORCA_API struct ClassDesc _SKSpriteNode = {
 	.Defaults = &SKSpriteNodeDefaults,
 	.NumProperties = kSKSpriteNodeNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoSKSpriteNode(xmlNodePtr xml, lpSKSpriteNode_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltoBlendMode(xmlNodePtr, enum BlendMode*);
+	int xmltoint(xmlNodePtr, int32_t*);
+	int xmltorect(xmlNodePtr, struct rect*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("FreezeFrame")), &output->FreezeFrame);
+		xmltoBlendMode((xmlNodePtr)xmlHasProp(xml, XMLSTR("BlendMode")), &output->BlendMode);
+		xmltorect((xmlNodePtr)xmlHasProp(xml, XMLSTR("UvRect")), &output->UvRect);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT SKLabelNode_Render(lpObject_t, lpSKLabelNode_t, wParam_t, RenderEventPtr);
 LRESULT SKLabelNode_Create(lpObject_t, lpSKLabelNode_t, wParam_t, CreateEventPtr);
 static struct PropertyDesc const SKLabelNodeProperties[kSKLabelNodeNumProperties] = {
@@ -281,6 +347,21 @@ ORCA_API struct ClassDesc _SKLabelNode = {
 	.Defaults = &SKLabelNodeDefaults,
 	.NumProperties = kSKLabelNodeNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoSKLabelNode(xmlNodePtr xml, lpSKLabelNode_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltocolor(xmlNodePtr, struct color*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltocolor((xmlNodePtr)xmlHasProp(xml, XMLSTR("Color")), &output->Color);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT SKView_ForegroundContent(lpObject_t, lpSKView_t, wParam_t, ForegroundContentEventPtr);
 static struct PropertyDesc const SKViewProperties[kSKViewNumProperties] = {
 	/* SKView.ReferenceWidth */ DECL(0x499d2ae6, 0x5c81a8f7,
@@ -318,6 +399,24 @@ ORCA_API struct ClassDesc _SKView = {
 	.Defaults = &SKViewDefaults,
 	.NumProperties = kSKViewNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoSKView(xmlNodePtr xml, lpSKView_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltofixed(xmlNodePtr, fixedString_t*);
+	int xmltofloat(xmlNodePtr, float*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("ReferenceWidth")), &output->ReferenceWidth);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("ReferenceHeight")), &output->ReferenceHeight);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Scene")), &output->Scene);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 ORCA_API int luaopen_orca_SpriteKit(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) {
 		{ NULL, NULL }
@@ -330,20 +429,32 @@ ORCA_API int luaopen_orca_SpriteKit(lua_State *L) {
 	// SpriteAnimation
 	lua_pushclass(L, &_SpriteAnimation);
 	lua_setfield(L, -2, "SpriteAnimation");
+	lua_pushlightuserdata(L, xmltoSpriteAnimation);
+	lua_setfield(L, LUA_REGISTRYINDEX, "SpriteAnimationParser");
 	// SKNode
 	lua_pushclass(L, &_SKNode);
 	lua_setfield(L, -2, "SKNode");
+	lua_pushlightuserdata(L, xmltoSKNode);
+	lua_setfield(L, LUA_REGISTRYINDEX, "SKNodeParser");
 	// SKScene
 	lua_pushclass(L, &_SKScene);
 	lua_setfield(L, -2, "SKScene");
+	lua_pushlightuserdata(L, xmltoSKScene);
+	lua_setfield(L, LUA_REGISTRYINDEX, "SKSceneParser");
 	// SKSpriteNode
 	lua_pushclass(L, &_SKSpriteNode);
 	lua_setfield(L, -2, "SKSpriteNode");
+	lua_pushlightuserdata(L, xmltoSKSpriteNode);
+	lua_setfield(L, LUA_REGISTRYINDEX, "SKSpriteNodeParser");
 	// SKLabelNode
 	lua_pushclass(L, &_SKLabelNode);
 	lua_setfield(L, -2, "SKLabelNode");
+	lua_pushlightuserdata(L, xmltoSKLabelNode);
+	lua_setfield(L, LUA_REGISTRYINDEX, "SKLabelNodeParser");
 	// SKView
 	lua_pushclass(L, &_SKView);
 	lua_setfield(L, -2, "SKView");
+	lua_pushlightuserdata(L, xmltoSKView);
+	lua_setfield(L, LUA_REGISTRYINDEX, "SKViewParser");
 	return 1;
 }

@@ -107,15 +107,16 @@ def _e(name):  return f'e{name}_t'
 lpobject_t = "lpObject_t"
 
 typedefs = {
-	"nresults": "int32_t",
-	"string":   "const char*",
-	"handle":   "void*",
-	"bool":     "bool_t",
-	"uint":     "uint32_t",
-	"long":     "long",
-	"int":      "int32_t",
-	"float":    "float",
-	"fixed":    "fixedString_t",
+	"nresults":   "int32_t",
+	"string":     "const char*",
+	"handle":     "void*",
+	"bool":       "bool_t",
+	"uint":       "uint32_t",
+	"long":       "long",
+	"int":        "int32_t",
+	"float":      "float",
+	"fixed":      "fixedString_t",
+	"objectTags": "objectTags_t",
 }
 
 atomic_types = {

@@ -1612,3 +1612,31 @@ ORCA_API int xmltofixed(xmlNodePtr xml, fixedString_t* str) {
   strncpy(*str, (const char*)xml->content, sizeof(*str));
   return TRUE;
 }
+
+ORCA_API int xmltobool(xmlNodePtr xml, bool_t* output) {
+  assert(xml->type == XML_ATTRIBUTE_NODE);
+  if (!xml->content) return FALSE;
+  *output = !strcmp((char*)xml->content, "true") || !strcmp((char*)xml->content, "1");
+  return TRUE;
+}
+
+ORCA_API int xmltoint(xmlNodePtr xml, int32_t* output) {
+  assert(xml->type == XML_ATTRIBUTE_NODE);
+  if (!xml->content) return FALSE;
+  *output = (int32_t)strtol((char*)xml->content, NULL, 10);
+  return TRUE;
+}
+
+ORCA_API int xmltouint(xmlNodePtr xml, uint32_t* output) {
+  assert(xml->type == XML_ATTRIBUTE_NODE);
+  if (!xml->content) return FALSE;
+  *output = (uint32_t)strtoul((char*)xml->content, NULL, 10);
+  return TRUE;
+}
+
+ORCA_API int xmltolong(xmlNodePtr xml, long* output) {
+  assert(xml->type == XML_ATTRIBUTE_NODE);
+  if (!xml->content) return FALSE;
+  *output = strtol((char*)xml->content, NULL, 10);
+  return TRUE;
+}

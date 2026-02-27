@@ -135,6 +135,9 @@ class ExportWriter(Plugin):
 			self.w(f"\t// {cmp_name}")
 			self.w(f"\tlua_pushclass(L, &_{cmp_name});")
 			self.w(f"\tlua_setfield(L, -2, \"{cmp_name}\");")
+			if export_xml_parsers:
+				self.w(f"\tlua_pushlightuserdata(L, xmlto{cmp_name});")
+				self.w(f"\tlua_setfield(L, LUA_REGISTRYINDEX, \"{cmp_name}Parser\");")
 		for _ in self.root.findall('shutdown'):
 			self.w(f"\tAPI_MODULE_SHUTDOWN(L, f_{self.name}_gc);")
 		self.w(f"\treturn 1;\n}}")
@@ -468,3 +471,34 @@ class ExportWriter(Plugin):
 			xmlns=component.findtext('xmlns'),
 			parents_str=parents_str,
 		))
+
+		if export_xml_parsers:
+			lpname = utils.lp(cname)
+			self.w(f"#include <libxml/parser.h>")
+			self.w(f"ORCA_API int xmlto{cname}(xmlNodePtr xml, {lpname} output) {{")
+			self.w(f"\tif (xml == NULL) return FALSE;")
+			types = set()
+			for prop in component.findall('property'):
+				if prop.get('pointer') or prop.get('private') or prop.get('array'):
+					continue
+				types.add(prop.get('type'))
+			for t in sorted(types):
+				if t in Workspace.structs: self.w(f"\tint xmlto{t}(xmlNodePtr, struct {t}*);")
+				elif t in Workspace.enums: self.w(f"\tint xmlto{t}(xmlNodePtr, enum {t}*);")
+				elif t == "fixed": self.w(f"\tint xmlto{t}(xmlNodePtr, fixedString_t*);")
+				elif t in utils.typedefs: self.w(f"\tint xmlto{t}(xmlNodePtr, {utils.typedefs[t]}*);")
+				else: self.w(f"\tint xmlto{t}(xmlNodePtr, {t}*);")
+			self.w(f"\tswitch (xml->type) {{")
+			self.w(f"\tcase XML_ELEMENT_NODE:")
+			for prop in component.findall('property'):
+				if prop.get('pointer') or prop.get('private') or prop.get('array'):
+					continue
+				pname, ptype = prop.get('name'), prop.get('type')
+				self.w(f"\t\txmlto{ptype}((xmlNodePtr)xmlHasProp(xml, XMLSTR(\"{pname}\")), &output->{pname});")
+			self.w(f"\t\treturn TRUE;")
+			self.w(f"\tcase XML_ATTRIBUTE_NODE:")
+			self.w(f"\t\treturn TRUE;")
+			self.w(f"\tdefault:")
+			self.w(f"\t\treturn FALSE;")
+			self.w(f"\t}}")
+			self.w(f"}}\n")

@@ -301,6 +301,34 @@ ORCA_API struct ClassDesc _Texture = {
 	.Defaults = &TextureDefaults,
 	.NumProperties = kTextureNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoTexture(xmlNodePtr xml, lpTexture_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltoAnisotropyType(xmlNodePtr, enum AnisotropyType*);
+	int xmltoMipmapMode(xmlNodePtr, enum MipmapMode*);
+	int xmltoTextureFilter(xmlNodePtr, enum TextureFilter*);
+	int xmltoTextureFormat(xmlNodePtr, enum TextureFormat*);
+	int xmltoTextureWrap(xmlNodePtr, enum TextureWrap*);
+	int xmltoint(xmlNodePtr, int32_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltoTextureFilter((xmlNodePtr)xmlHasProp(xml, XMLSTR("MinificationFilter")), &output->MinificationFilter);
+		xmltoTextureFilter((xmlNodePtr)xmlHasProp(xml, XMLSTR("MagnificationFilter")), &output->MagnificationFilter);
+		xmltoTextureWrap((xmlNodePtr)xmlHasProp(xml, XMLSTR("WrapMode")), &output->WrapMode);
+		xmltoTextureFormat((xmlNodePtr)xmlHasProp(xml, XMLSTR("Format")), &output->Format);
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("Scale")), &output->Scale);
+		xmltoMipmapMode((xmlNodePtr)xmlHasProp(xml, XMLSTR("MipmapMode")), &output->MipmapMode);
+		xmltoAnisotropyType((xmlNodePtr)xmlHasProp(xml, XMLSTR("AnisotropyType")), &output->AnisotropyType);
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("Width")), &output->Width);
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("Height")), &output->Height);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static const char *_ImageFormat[] = {"png","jpeg","svg","astc","pvrtc",NULL};
 eImageFormat_t luaX_checkImageFormat(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _ImageFormat);
@@ -588,6 +616,54 @@ ORCA_API struct ClassDesc _Image = {
 	.Defaults = &ImageDefaults,
 	.NumProperties = kImageNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoImage(xmlNodePtr xml, lpImage_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltoAstcCompressionSpeed(xmlNodePtr, enum AstcCompressionSpeed*);
+	int xmltoAstcFormat(xmlNodePtr, enum AstcFormat*);
+	int xmltoAtcCompressionScheme(xmlNodePtr, enum AtcCompressionScheme*);
+	int xmltoFilePngCompressionLevel(xmlNodePtr, enum FilePngCompressionLevel*);
+	int xmltoImageFormat(xmlNodePtr, enum ImageFormat*);
+	int xmltoImageType(xmlNodePtr, enum ImageType*);
+	int xmltoRawColorByteFormat(xmlNodePtr, enum RawColorByteFormat*);
+	int xmltoSpansionCompressionScheme(xmlNodePtr, enum SpansionCompressionScheme*);
+	int xmltobool(xmlNodePtr, bool_t*);
+	int xmltofixed(xmlNodePtr, fixedString_t*);
+	int xmltoint(xmlNodePtr, int32_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Source")), &output->Source);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("PremultiplyAlpha")), &output->PremultiplyAlpha);
+		xmltoImageType((xmlNodePtr)xmlHasProp(xml, XMLSTR("Type")), &output->Type);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("HasMipmaps")), &output->HasMipmaps);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Size")), &output->Size);
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("BitDepth")), &output->BitDepth);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("FileHasTransparency")), &output->FileHasTransparency);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("FileHasICCProfile")), &output->FileHasICCProfile);
+		xmltoImageFormat((xmlNodePtr)xmlHasProp(xml, XMLSTR("TargetFormat")), &output->TargetFormat);
+		xmltoAtcCompressionScheme((xmlNodePtr)xmlHasProp(xml, XMLSTR("AtcCompressionScheme")), &output->AtcCompressionScheme);
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("PvrtcBitDepth")), &output->PvrtcBitDepth);
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("PvrtcQuality")), &output->PvrtcQuality);
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("PvrtcCompressionScheme")), &output->PvrtcCompressionScheme);
+		xmltoAstcFormat((xmlNodePtr)xmlHasProp(xml, XMLSTR("AstcBlockSize")), &output->AstcBlockSize);
+		xmltoAstcCompressionSpeed((xmlNodePtr)xmlHasProp(xml, XMLSTR("AstcCompressionSpeed")), &output->AstcCompressionSpeed);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("AstcIsSRGB")), &output->AstcIsSRGB);
+		xmltoRawColorByteFormat((xmlNodePtr)xmlHasProp(xml, XMLSTR("RawColorByteFormat")), &output->RawColorByteFormat);
+		xmltoSpansionCompressionScheme((xmlNodePtr)xmlHasProp(xml, XMLSTR("SpansionCompressionScheme")), &output->SpansionCompressionScheme);
+		xmltoFilePngCompressionLevel((xmlNodePtr)xmlHasProp(xml, XMLSTR("FilePngCompressionLevel")), &output->FilePngCompressionLevel);
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("Etc2Effort")), &output->Etc2Effort);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("FileExportSourceTexture")), &output->FileExportSourceTexture);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("FileExportAlways")), &output->FileExportAlways);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("FileExportEmptyWhenFileIsMissing")), &output->FileExportEmptyWhenFileIsMissing);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("FileExportSourceImage")), &output->FileExportSourceImage);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static const char *_RenderTargetType[] = {"color","depth","stencil","depthstencil","normal","specular","emission",NULL};
 eRenderTargetType_t luaX_checkRenderTargetType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _RenderTargetType);
@@ -685,6 +761,30 @@ ORCA_API struct ClassDesc _RenderTargetTexture = {
 	.Defaults = &RenderTargetTextureDefaults,
 	.NumProperties = kRenderTargetTextureNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoRenderTargetTexture(xmlNodePtr xml, lpRenderTargetTexture_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltoRenderTargetTextureAttachment(xmlNodePtr, enum RenderTargetTextureAttachment*);
+	int xmltoRenderTargetType(xmlNodePtr, enum RenderTargetType*);
+	int xmltobool(xmlNodePtr, bool_t*);
+	int xmltoint(xmlNodePtr, int32_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("Width")), &output->Width);
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("Height")), &output->Height);
+		xmltoRenderTargetType((xmlNodePtr)xmlHasProp(xml, XMLSTR("TargetType")), &output->TargetType);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("SupportSimpleRenderTarget")), &output->SupportSimpleRenderTarget);
+		xmltoRenderTargetTextureAttachment((xmlNodePtr)xmlHasProp(xml, XMLSTR("Attachment")), &output->Attachment);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("AllowDepthFallback")), &output->AllowDepthFallback);
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("SampleCount")), &output->SampleCount);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT CubeMapTexture_Start(lpObject_t, lpCubeMapTexture_t, wParam_t, StartEventPtr);
 static struct PropertyDesc const CubeMapTextureProperties[kCubeMapTextureNumProperties] = {
 	/* CubeMapTexture.BackImage */ DECL(0x59f82b67, 0xd189d077,
@@ -728,6 +828,26 @@ ORCA_API struct ClassDesc _CubeMapTexture = {
 	.Defaults = &CubeMapTextureDefaults,
 	.NumProperties = kCubeMapTextureNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoCubeMapTexture(xmlNodePtr xml, lpCubeMapTexture_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltofixed(xmlNodePtr, fixedString_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("BackImage")), &output->BackImage);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("FrontImage")), &output->FrontImage);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("LeftImage")), &output->LeftImage);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("RightImage")), &output->RightImage);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("BottomImage")), &output->BottomImage);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("TopImage")), &output->TopImage);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT IOSurfaceTexture_Start(lpObject_t, lpIOSurfaceTexture_t, wParam_t, StartEventPtr);
 static struct PropertyDesc const IOSurfaceTextureProperties[kIOSurfaceTextureNumProperties] = {
 	/* IOSurfaceTexture.IOSurface */ DECL(0xb5fc4968, 0xc182dd0a,
@@ -761,6 +881,21 @@ ORCA_API struct ClassDesc _IOSurfaceTexture = {
 	.Defaults = &IOSurfaceTextureDefaults,
 	.NumProperties = kIOSurfaceTextureNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoIOSurfaceTexture(xmlNodePtr xml, lpIOSurfaceTexture_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltoint(xmlNodePtr, int32_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("IOSurface")), &output->IOSurface);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static const char *_FloatPrecision[] = {"unset","low","medium","high",NULL};
 eFloatPrecision_t luaX_checkFloatPrecision(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _FloatPrecision);
@@ -846,6 +981,25 @@ ORCA_API struct ClassDesc _VertexShader = {
 	.Defaults = &VertexShaderDefaults,
 	.NumProperties = kVertexShaderNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoVertexShader(xmlNodePtr xml, lpVertexShader_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltoFloatPrecision(xmlNodePtr, enum FloatPrecision*);
+	int xmltoShading(xmlNodePtr, enum Shading*);
+	int xmltoint(xmlNodePtr, int32_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("Version")), &output->Version);
+		xmltoFloatPrecision((xmlNodePtr)xmlHasProp(xml, XMLSTR("FloatPrecision")), &output->FloatPrecision);
+		xmltoShading((xmlNodePtr)xmlHasProp(xml, XMLSTR("Shading")), &output->Shading);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const FragmentShaderProperties[kFragmentShaderNumProperties] = {
 	/* FragmentShader.Version */ DECL(0x5dcdd537, 0xd376e806,
 	FragmentShader, "Version", Version, kDataTypeInt),
@@ -879,6 +1033,25 @@ ORCA_API struct ClassDesc _FragmentShader = {
 	.Defaults = &FragmentShaderDefaults,
 	.NumProperties = kFragmentShaderNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoFragmentShader(xmlNodePtr xml, lpFragmentShader_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltoFloatPrecision(xmlNodePtr, enum FloatPrecision*);
+	int xmltofixed(xmlNodePtr, fixedString_t*);
+	int xmltoint(xmlNodePtr, int32_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("Version")), &output->Version);
+		xmltoFloatPrecision((xmlNodePtr)xmlHasProp(xml, XMLSTR("FloatPrecision")), &output->FloatPrecision);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Out")), &output->Out);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT Shader_Start(lpObject_t, lpShader_t, wParam_t, StartEventPtr);
 LRESULT Shader_Destroy(lpObject_t, lpShader_t, wParam_t, DestroyEventPtr);
 static struct PropertyDesc const ShaderProperties[kShaderNumProperties] = {
@@ -920,6 +1093,25 @@ ORCA_API struct ClassDesc _Shader = {
 	.Defaults = &ShaderDefaults,
 	.NumProperties = kShaderNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoShader(xmlNodePtr xml, lpShader_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltoBlendMode(xmlNodePtr, enum BlendMode*);
+	int xmltoCompareFunc(xmlNodePtr, enum CompareFunc*);
+	int xmltobool(xmlNodePtr, bool_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltoBlendMode((xmlNodePtr)xmlHasProp(xml, XMLSTR("BlendMode")), &output->BlendMode);
+		xmltoCompareFunc((xmlNodePtr)xmlHasProp(xml, XMLSTR("DepthTestFunction")), &output->DepthTestFunction);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("DepthWriteEnabled")), &output->DepthWriteEnabled);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const MaterialProperties[kMaterialNumProperties] = {
 	/* Material.Shader */ DECL(0x7deb3888, 0xb1f27f23,
 	Material, "Shader", Shader, kDataTypeObject, .TypeString="Shader"),
@@ -979,6 +1171,37 @@ ORCA_API struct ClassDesc _Material = {
 	.Defaults = &MaterialDefaults,
 	.NumProperties = kMaterialNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoMaterial(xmlNodePtr xml, lpMaterial_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltoBlendMode(xmlNodePtr, enum BlendMode*);
+	int xmltoTexture(xmlNodePtr, Texture*);
+	int xmltocolor(xmlNodePtr, struct color*);
+	int xmltofloat(xmlNodePtr, float*);
+	int xmltovec2(xmlNodePtr, struct vec2*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltocolor((xmlNodePtr)xmlHasProp(xml, XMLSTR("GlobalAmbient")), &output->GlobalAmbient);
+		xmltocolor((xmlNodePtr)xmlHasProp(xml, XMLSTR("Ambient")), &output->Ambient);
+		xmltocolor((xmlNodePtr)xmlHasProp(xml, XMLSTR("Diffuse")), &output->Diffuse);
+		xmltocolor((xmlNodePtr)xmlHasProp(xml, XMLSTR("Emissive")), &output->Emissive);
+		xmltocolor((xmlNodePtr)xmlHasProp(xml, XMLSTR("SpecularColor")), &output->SpecularColor);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("SpecularExponent")), &output->SpecularExponent);
+		xmltoTexture((xmlNodePtr)xmlHasProp(xml, XMLSTR("Texture")), &output->Texture);
+		xmltoTexture((xmlNodePtr)xmlHasProp(xml, XMLSTR("Texture2")), &output->Texture2);
+		xmltovec2((xmlNodePtr)xmlHasProp(xml, XMLSTR("TextureOffset")), &output->TextureOffset);
+		xmltovec2((xmlNodePtr)xmlHasProp(xml, XMLSTR("TextureTiling")), &output->TextureTiling);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("BlendIntensity")), &output->BlendIntensity);
+		xmltoBlendMode((xmlNodePtr)xmlHasProp(xml, XMLSTR("BlendMode")), &output->BlendMode);
+		xmltocolor((xmlNodePtr)xmlHasProp(xml, XMLSTR("u_color")), &output->u_color);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT Mesh_Start(lpObject_t, lpMesh_t, wParam_t, StartEventPtr);
 LRESULT Mesh_Destroy(lpObject_t, lpMesh_t, wParam_t, DestroyEventPtr);
 static struct PropertyDesc const MeshProperties[kMeshNumProperties] = {
@@ -1018,6 +1241,22 @@ ORCA_API struct ClassDesc _Mesh = {
 	.Defaults = &MeshDefaults,
 	.NumProperties = kMeshNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoMesh(xmlNodePtr xml, lpMesh_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltofixed(xmlNodePtr, fixedString_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Source")), &output->Source);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("MeshMorphTargets")), &output->MeshMorphTargets);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT FontFamily_Start(lpObject_t, lpFontFamily_t, wParam_t, StartEventPtr);
 LRESULT FontFamily_Destroy(lpObject_t, lpFontFamily_t, wParam_t, DestroyEventPtr);
 static struct PropertyDesc const FontFamilyProperties[kFontFamilyNumProperties] = {
@@ -1059,6 +1298,24 @@ ORCA_API struct ClassDesc _FontFamily = {
 	.Defaults = &FontFamilyDefaults,
 	.NumProperties = kFontFamilyNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoFontFamily(xmlNodePtr xml, lpFontFamily_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltofixed(xmlNodePtr, fixedString_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Regular")), &output->Regular);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Bold")), &output->Bold);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Italic")), &output->Italic);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("BoldItalic")), &output->BoldItalic);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const TrajectoryProperties[kTrajectoryNumProperties] = {
 };
 static struct Trajectory TrajectoryDefaults = {};
@@ -1086,6 +1343,19 @@ ORCA_API struct ClassDesc _Trajectory = {
 	.Defaults = &TrajectoryDefaults,
 	.NumProperties = kTrajectoryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoTrajectory(xmlNodePtr xml, lpTrajectory_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const TimelineProperties[kTimelineNumProperties] = {
 };
 static struct Timeline TimelineDefaults = {};
@@ -1113,6 +1383,19 @@ ORCA_API struct ClassDesc _Timeline = {
 	.Defaults = &TimelineDefaults,
 	.NumProperties = kTimelineNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoTimeline(xmlNodePtr xml, lpTimeline_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static int f_renderer_createShader(lua_State *L) {
 	const char* vertex = luaL_checkstring(L, 1);
 	const char* fragment = luaL_checkstring(L, 2);
@@ -1140,41 +1423,67 @@ ORCA_API int luaopen_orca_renderer(lua_State *L) {
 	// Texture
 	lua_pushclass(L, &_Texture);
 	lua_setfield(L, -2, "Texture");
+	lua_pushlightuserdata(L, xmltoTexture);
+	lua_setfield(L, LUA_REGISTRYINDEX, "TextureParser");
 	// Image
 	lua_pushclass(L, &_Image);
 	lua_setfield(L, -2, "Image");
+	lua_pushlightuserdata(L, xmltoImage);
+	lua_setfield(L, LUA_REGISTRYINDEX, "ImageParser");
 	// RenderTargetTexture
 	lua_pushclass(L, &_RenderTargetTexture);
 	lua_setfield(L, -2, "RenderTargetTexture");
+	lua_pushlightuserdata(L, xmltoRenderTargetTexture);
+	lua_setfield(L, LUA_REGISTRYINDEX, "RenderTargetTextureParser");
 	// CubeMapTexture
 	lua_pushclass(L, &_CubeMapTexture);
 	lua_setfield(L, -2, "CubeMapTexture");
+	lua_pushlightuserdata(L, xmltoCubeMapTexture);
+	lua_setfield(L, LUA_REGISTRYINDEX, "CubeMapTextureParser");
 	// IOSurfaceTexture
 	lua_pushclass(L, &_IOSurfaceTexture);
 	lua_setfield(L, -2, "IOSurfaceTexture");
+	lua_pushlightuserdata(L, xmltoIOSurfaceTexture);
+	lua_setfield(L, LUA_REGISTRYINDEX, "IOSurfaceTextureParser");
 	// VertexShader
 	lua_pushclass(L, &_VertexShader);
 	lua_setfield(L, -2, "VertexShader");
+	lua_pushlightuserdata(L, xmltoVertexShader);
+	lua_setfield(L, LUA_REGISTRYINDEX, "VertexShaderParser");
 	// FragmentShader
 	lua_pushclass(L, &_FragmentShader);
 	lua_setfield(L, -2, "FragmentShader");
+	lua_pushlightuserdata(L, xmltoFragmentShader);
+	lua_setfield(L, LUA_REGISTRYINDEX, "FragmentShaderParser");
 	// Shader
 	lua_pushclass(L, &_Shader);
 	lua_setfield(L, -2, "Shader");
+	lua_pushlightuserdata(L, xmltoShader);
+	lua_setfield(L, LUA_REGISTRYINDEX, "ShaderParser");
 	// Material
 	lua_pushclass(L, &_Material);
 	lua_setfield(L, -2, "Material");
+	lua_pushlightuserdata(L, xmltoMaterial);
+	lua_setfield(L, LUA_REGISTRYINDEX, "MaterialParser");
 	// Mesh
 	lua_pushclass(L, &_Mesh);
 	lua_setfield(L, -2, "Mesh");
+	lua_pushlightuserdata(L, xmltoMesh);
+	lua_setfield(L, LUA_REGISTRYINDEX, "MeshParser");
 	// FontFamily
 	lua_pushclass(L, &_FontFamily);
 	lua_setfield(L, -2, "FontFamily");
+	lua_pushlightuserdata(L, xmltoFontFamily);
+	lua_setfield(L, LUA_REGISTRYINDEX, "FontFamilyParser");
 	// Trajectory
 	lua_pushclass(L, &_Trajectory);
 	lua_setfield(L, -2, "Trajectory");
+	lua_pushlightuserdata(L, xmltoTrajectory);
+	lua_setfield(L, LUA_REGISTRYINDEX, "TrajectoryParser");
 	// Timeline
 	lua_pushclass(L, &_Timeline);
 	lua_setfield(L, -2, "Timeline");
+	lua_pushlightuserdata(L, xmltoTimeline);
+	lua_setfield(L, LUA_REGISTRYINDEX, "TimelineParser");
 	return 1;
 }

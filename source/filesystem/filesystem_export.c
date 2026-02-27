@@ -48,6 +48,19 @@ ORCA_API struct ClassDesc _Workspace = {
 	.Defaults = &WorkspaceDefaults,
 	.NumProperties = kWorkspaceNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoWorkspace(xmlNodePtr xml, lpWorkspace_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT Project_Start(lpObject_t, lpProject_t, wParam_t, StartEventPtr);
 static struct PropertyDesc const ProjectProperties[kProjectNumProperties] = {
 	/* Project.HalfFloatTextureFormat */ DECL(0xbcd19216, 0xf064c913,
@@ -159,6 +172,56 @@ ORCA_API struct ClassDesc _Project = {
 	.Defaults = &ProjectDefaults,
 	.NumProperties = kProjectNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoProject(xmlNodePtr xml, lpProject_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltobool(xmlNodePtr, bool_t*);
+	int xmltocolor(xmlNodePtr, struct color*);
+	int xmltofixed(xmlNodePtr, fixedString_t*);
+	int xmltoint(xmlNodePtr, int32_t*);
+	int xmltovec2(xmlNodePtr, struct vec2*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("HalfFloatTextureFormat")), &output->HalfFloatTextureFormat);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("HalfFloatTextureFormatLinear")), &output->HalfFloatTextureFormatLinear);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("HalfFloatColorAttachment")), &output->HalfFloatColorAttachment);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("RenderToMipmapLevels")), &output->RenderToMipmapLevels);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("ExternalTexture")), &output->ExternalTexture);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("StartupScreen")), &output->StartupScreen);
+		xmltocolor((xmlNodePtr)xmlHasProp(xml, XMLSTR("PreviewWindowBackgroundColor")), &output->PreviewWindowBackgroundColor);
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("MessageLimitPerFrame")), &output->MessageLimitPerFrame);
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("GlobalTimelineStartTime")), &output->GlobalTimelineStartTime);
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("GlobalTimelineEndTime")), &output->GlobalTimelineEndTime);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("BinaryExportDirectory")), &output->BinaryExportDirectory);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("ApplicationExportDirectory")), &output->ApplicationExportDirectory);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("IsMasterProject")), &output->IsMasterProject);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("OptimizeMeshes")), &output->OptimizeMeshes);
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("TargetPlatformVertexCacheSize")), &output->TargetPlatformVertexCacheSize);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("PlotAnimations")), &output->PlotAnimations);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("RoundImagesToNearestPowerOf2")), &output->RoundImagesToNearestPowerOf2);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("ProjectExportShaderSourceCode")), &output->ProjectExportShaderSourceCode);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("ProjectExportMainKzbWithBakedThemes")), &output->ProjectExportMainKzbWithBakedThemes);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("ProjectGroupByThemeNameInBakedThemeExport")), &output->ProjectGroupByThemeNameInBakedThemeExport);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("IsLocalizationEnabled")), &output->IsLocalizationEnabled);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("FullScreenPreviewLayer")), &output->FullScreenPreviewLayer);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("ShowChildrenInLayerThumbnails")), &output->ShowChildrenInLayerThumbnails);
+		xmltovec2((xmlNodePtr)xmlHasProp(xml, XMLSTR("CompositionDesignSize")), &output->CompositionDesignSize);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("ProjectUsePremultipliedAlpha")), &output->ProjectUsePremultipliedAlpha);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("ProjectRemoveICCProfilesOfPngs")), &output->ProjectRemoveICCProfilesOfPngs);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("BinaryFileName")), &output->BinaryFileName);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("IsAssetPackage")), &output->IsAssetPackage);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("KanziConnectEnabled")), &output->KanziConnectEnabled);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("DefaultMaterial")), &output->DefaultMaterial);
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("Width")), &output->Width);
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("Height")), &output->Height);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const LibraryProperties[kLibraryNumProperties] = {
 	/* Library.IsExternal */ DECL(0x1cb8f23a, 0x9363c61d,
 	Library, "IsExternal", IsExternal, kDataTypeBool),
@@ -188,6 +251,21 @@ ORCA_API struct ClassDesc _Library = {
 	.Defaults = &LibraryDefaults,
 	.NumProperties = kLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoLibrary(xmlNodePtr xml, lpLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltobool(xmlNodePtr, bool_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("IsExternal")), &output->IsExternal);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const AnimationClipLibraryProperties[kAnimationClipLibraryNumProperties] = {
 };
 static struct AnimationClipLibrary AnimationClipLibraryDefaults = {};
@@ -216,6 +294,19 @@ ORCA_API struct ClassDesc _AnimationClipLibrary = {
 	.Defaults = &AnimationClipLibraryDefaults,
 	.NumProperties = kAnimationClipLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoAnimationClipLibrary(xmlNodePtr xml, lpAnimationClipLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const ScreenLibraryProperties[kScreenLibraryNumProperties] = {
 };
 static struct ScreenLibrary ScreenLibraryDefaults = {};
@@ -244,6 +335,19 @@ ORCA_API struct ClassDesc _ScreenLibrary = {
 	.Defaults = &ScreenLibraryDefaults,
 	.NumProperties = kScreenLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoScreenLibrary(xmlNodePtr xml, lpScreenLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const MaterialTypeLibraryProperties[kMaterialTypeLibraryNumProperties] = {
 };
 static struct MaterialTypeLibrary MaterialTypeLibraryDefaults = {};
@@ -272,6 +376,19 @@ ORCA_API struct ClassDesc _MaterialTypeLibrary = {
 	.Defaults = &MaterialTypeLibraryDefaults,
 	.NumProperties = kMaterialTypeLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoMaterialTypeLibrary(xmlNodePtr xml, lpMaterialTypeLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const MaterialLibraryProperties[kMaterialLibraryNumProperties] = {
 };
 static struct MaterialLibrary MaterialLibraryDefaults = {};
@@ -300,6 +417,19 @@ ORCA_API struct ClassDesc _MaterialLibrary = {
 	.Defaults = &MaterialLibraryDefaults,
 	.NumProperties = kMaterialLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoMaterialLibrary(xmlNodePtr xml, lpMaterialLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const BrushLibraryProperties[kBrushLibraryNumProperties] = {
 };
 static struct BrushLibrary BrushLibraryDefaults = {};
@@ -328,6 +458,19 @@ ORCA_API struct ClassDesc _BrushLibrary = {
 	.Defaults = &BrushLibraryDefaults,
 	.NumProperties = kBrushLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoBrushLibrary(xmlNodePtr xml, lpBrushLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const MeshLibraryProperties[kMeshLibraryNumProperties] = {
 };
 static struct MeshLibrary MeshLibraryDefaults = {};
@@ -356,6 +499,19 @@ ORCA_API struct ClassDesc _MeshLibrary = {
 	.Defaults = &MeshLibraryDefaults,
 	.NumProperties = kMeshLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoMeshLibrary(xmlNodePtr xml, lpMeshLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const TimelineSequenceLibraryProperties[kTimelineSequenceLibraryNumProperties] = {
 };
 static struct TimelineSequenceLibrary TimelineSequenceLibraryDefaults = {};
@@ -384,6 +540,19 @@ ORCA_API struct ClassDesc _TimelineSequenceLibrary = {
 	.Defaults = &TimelineSequenceLibraryDefaults,
 	.NumProperties = kTimelineSequenceLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoTimelineSequenceLibrary(xmlNodePtr xml, lpTimelineSequenceLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const SceneObjectLibraryProperties[kSceneObjectLibraryNumProperties] = {
 };
 static struct SceneObjectLibrary SceneObjectLibraryDefaults = {};
@@ -412,6 +581,19 @@ ORCA_API struct ClassDesc _SceneObjectLibrary = {
 	.Defaults = &SceneObjectLibraryDefaults,
 	.NumProperties = kSceneObjectLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoSceneObjectLibrary(xmlNodePtr xml, lpSceneObjectLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const ComposerLibraryProperties[kComposerLibraryNumProperties] = {
 };
 static struct ComposerLibrary ComposerLibraryDefaults = {};
@@ -440,6 +622,19 @@ ORCA_API struct ClassDesc _ComposerLibrary = {
 	.Defaults = &ComposerLibraryDefaults,
 	.NumProperties = kComposerLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoComposerLibrary(xmlNodePtr xml, lpComposerLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const PipelineItemLibraryProperties[kPipelineItemLibraryNumProperties] = {
 };
 static struct PipelineItemLibrary PipelineItemLibraryDefaults = {};
@@ -468,6 +663,19 @@ ORCA_API struct ClassDesc _PipelineItemLibrary = {
 	.Defaults = &PipelineItemLibraryDefaults,
 	.NumProperties = kPipelineItemLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoPipelineItemLibrary(xmlNodePtr xml, lpPipelineItemLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const SceneLibraryProperties[kSceneLibraryNumProperties] = {
 };
 static struct SceneLibrary SceneLibraryDefaults = {};
@@ -496,6 +704,19 @@ ORCA_API struct ClassDesc _SceneLibrary = {
 	.Defaults = &SceneLibraryDefaults,
 	.NumProperties = kSceneLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoSceneLibrary(xmlNodePtr xml, lpSceneLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const TrajectoryLibraryProperties[kTrajectoryLibraryNumProperties] = {
 };
 static struct TrajectoryLibrary TrajectoryLibraryDefaults = {};
@@ -524,6 +745,19 @@ ORCA_API struct ClassDesc _TrajectoryLibrary = {
 	.Defaults = &TrajectoryLibraryDefaults,
 	.NumProperties = kTrajectoryLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoTrajectoryLibrary(xmlNodePtr xml, lpTrajectoryLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const TransitionLibraryProperties[kTransitionLibraryNumProperties] = {
 };
 static struct TransitionLibrary TransitionLibraryDefaults = {};
@@ -552,6 +786,19 @@ ORCA_API struct ClassDesc _TransitionLibrary = {
 	.Defaults = &TransitionLibraryDefaults,
 	.NumProperties = kTransitionLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoTransitionLibrary(xmlNodePtr xml, lpTransitionLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const SplineLibraryProperties[kSplineLibraryNumProperties] = {
 };
 static struct SplineLibrary SplineLibraryDefaults = {};
@@ -580,6 +827,19 @@ ORCA_API struct ClassDesc _SplineLibrary = {
 	.Defaults = &SplineLibraryDefaults,
 	.NumProperties = kSplineLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoSplineLibrary(xmlNodePtr xml, lpSplineLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const PrefabLibraryProperties[kPrefabLibraryNumProperties] = {
 };
 static struct PrefabLibrary PrefabLibraryDefaults = {};
@@ -608,6 +868,19 @@ ORCA_API struct ClassDesc _PrefabLibrary = {
 	.Defaults = &PrefabLibraryDefaults,
 	.NumProperties = kPrefabLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoPrefabLibrary(xmlNodePtr xml, lpPrefabLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT ProjectReferenceLibrary_Attached(lpObject_t, lpProjectReferenceLibrary_t, wParam_t, AttachedEventPtr);
 static struct PropertyDesc const ProjectReferenceLibraryProperties[kProjectReferenceLibraryNumProperties] = {
 };
@@ -639,6 +912,19 @@ ORCA_API struct ClassDesc _ProjectReferenceLibrary = {
 	.Defaults = &ProjectReferenceLibraryDefaults,
 	.NumProperties = kProjectReferenceLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoProjectReferenceLibrary(xmlNodePtr xml, lpProjectReferenceLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const ProfileLibraryProperties[kProfileLibraryNumProperties] = {
 };
 static struct ProfileLibrary ProfileLibraryDefaults = {};
@@ -667,6 +953,19 @@ ORCA_API struct ClassDesc _ProfileLibrary = {
 	.Defaults = &ProfileLibraryDefaults,
 	.NumProperties = kProfileLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoProfileLibrary(xmlNodePtr xml, lpProfileLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT EnginePluginLibrary_Attached(lpObject_t, lpEnginePluginLibrary_t, wParam_t, AttachedEventPtr);
 static struct PropertyDesc const EnginePluginLibraryProperties[kEnginePluginLibraryNumProperties] = {
 };
@@ -698,6 +997,19 @@ ORCA_API struct ClassDesc _EnginePluginLibrary = {
 	.Defaults = &EnginePluginLibraryDefaults,
 	.NumProperties = kEnginePluginLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoEnginePluginLibrary(xmlNodePtr xml, lpEnginePluginLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const ShortcutLibraryProperties[kShortcutLibraryNumProperties] = {
 };
 static struct ShortcutLibrary ShortcutLibraryDefaults = {};
@@ -726,6 +1038,19 @@ ORCA_API struct ClassDesc _ShortcutLibrary = {
 	.Defaults = &ShortcutLibraryDefaults,
 	.NumProperties = kShortcutLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoShortcutLibrary(xmlNodePtr xml, lpShortcutLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const LayerLibraryProperties[kLayerLibraryNumProperties] = {
 };
 static struct LayerLibrary LayerLibraryDefaults = {};
@@ -754,6 +1079,19 @@ ORCA_API struct ClassDesc _LayerLibrary = {
 	.Defaults = &LayerLibraryDefaults,
 	.NumProperties = kLayerLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoLayerLibrary(xmlNodePtr xml, lpLayerLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const AnimationLibraryProperties[kAnimationLibraryNumProperties] = {
 };
 static struct AnimationLibrary AnimationLibraryDefaults = {};
@@ -782,6 +1120,19 @@ ORCA_API struct ClassDesc _AnimationLibrary = {
 	.Defaults = &AnimationLibraryDefaults,
 	.NumProperties = kAnimationLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoAnimationLibrary(xmlNodePtr xml, lpAnimationLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const TagLibraryProperties[kTagLibraryNumProperties] = {
 };
 static struct TagLibrary TagLibraryDefaults = {};
@@ -810,6 +1161,19 @@ ORCA_API struct ClassDesc _TagLibrary = {
 	.Defaults = &TagLibraryDefaults,
 	.NumProperties = kTagLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoTagLibrary(xmlNodePtr xml, lpTagLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const ThemeLibraryProperties[kThemeLibraryNumProperties] = {
 };
 static struct ThemeLibrary ThemeLibraryDefaults = {};
@@ -838,6 +1202,19 @@ ORCA_API struct ClassDesc _ThemeLibrary = {
 	.Defaults = &ThemeLibraryDefaults,
 	.NumProperties = kThemeLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoThemeLibrary(xmlNodePtr xml, lpThemeLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const ResourceExportTagLibraryProperties[kResourceExportTagLibraryNumProperties] = {
 };
 static struct ResourceExportTagLibrary ResourceExportTagLibraryDefaults = {};
@@ -866,6 +1243,19 @@ ORCA_API struct ClassDesc _ResourceExportTagLibrary = {
 	.Defaults = &ResourceExportTagLibraryDefaults,
 	.NumProperties = kResourceExportTagLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoResourceExportTagLibrary(xmlNodePtr xml, lpResourceExportTagLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const LocaleLibraryProperties[kLocaleLibraryNumProperties] = {
 };
 static struct LocaleLibrary LocaleLibraryDefaults = {};
@@ -894,6 +1284,19 @@ ORCA_API struct ClassDesc _LocaleLibrary = {
 	.Defaults = &LocaleLibraryDefaults,
 	.NumProperties = kLocaleLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoLocaleLibrary(xmlNodePtr xml, lpLocaleLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const DataSourceLibraryProperties[kDataSourceLibraryNumProperties] = {
 };
 static struct DataSourceLibrary DataSourceLibraryDefaults = {};
@@ -922,6 +1325,19 @@ ORCA_API struct ClassDesc _DataSourceLibrary = {
 	.Defaults = &DataSourceLibraryDefaults,
 	.NumProperties = kDataSourceLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoDataSourceLibrary(xmlNodePtr xml, lpDataSourceLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const PageTransitionCollectionLibraryProperties[kPageTransitionCollectionLibraryNumProperties] = {
 };
 static struct PageTransitionCollectionLibrary PageTransitionCollectionLibraryDefaults = {};
@@ -950,6 +1366,19 @@ ORCA_API struct ClassDesc _PageTransitionCollectionLibrary = {
 	.Defaults = &PageTransitionCollectionLibraryDefaults,
 	.NumProperties = kPageTransitionCollectionLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoPageTransitionCollectionLibrary(xmlNodePtr xml, lpPageTransitionCollectionLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const TextureLibraryProperties[kTextureLibraryNumProperties] = {
 };
 static struct TextureLibrary TextureLibraryDefaults = {};
@@ -978,6 +1407,19 @@ ORCA_API struct ClassDesc _TextureLibrary = {
 	.Defaults = &TextureLibraryDefaults,
 	.NumProperties = kTextureLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoTextureLibrary(xmlNodePtr xml, lpTextureLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const StyleLibraryProperties[kStyleLibraryNumProperties] = {
 };
 static struct StyleLibrary StyleLibraryDefaults = {};
@@ -1006,6 +1448,19 @@ ORCA_API struct ClassDesc _StyleLibrary = {
 	.Defaults = &StyleLibraryDefaults,
 	.NumProperties = kStyleLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoStyleLibrary(xmlNodePtr xml, lpStyleLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const StateManagerLibraryProperties[kStateManagerLibraryNumProperties] = {
 };
 static struct StateManagerLibrary StateManagerLibraryDefaults = {};
@@ -1034,6 +1489,19 @@ ORCA_API struct ClassDesc _StateManagerLibrary = {
 	.Defaults = &StateManagerLibraryDefaults,
 	.NumProperties = kStateManagerLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoStateManagerLibrary(xmlNodePtr xml, lpStateManagerLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const ConnectServiceLibraryProperties[kConnectServiceLibraryNumProperties] = {
 };
 static struct ConnectServiceLibrary ConnectServiceLibraryDefaults = {};
@@ -1062,6 +1530,19 @@ ORCA_API struct ClassDesc _ConnectServiceLibrary = {
 	.Defaults = &ConnectServiceLibraryDefaults,
 	.NumProperties = kConnectServiceLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoConnectServiceLibrary(xmlNodePtr xml, lpConnectServiceLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const ConnectUserServiceLibraryProperties[kConnectUserServiceLibraryNumProperties] = {
 };
 static struct ConnectUserServiceLibrary ConnectUserServiceLibraryDefaults = {};
@@ -1090,6 +1571,19 @@ ORCA_API struct ClassDesc _ConnectUserServiceLibrary = {
 	.Defaults = &ConnectUserServiceLibraryDefaults,
 	.NumProperties = kConnectUserServiceLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoConnectUserServiceLibrary(xmlNodePtr xml, lpConnectUserServiceLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const PropertyTypeLibraryProperties[kPropertyTypeLibraryNumProperties] = {
 };
 static struct PropertyTypeLibrary PropertyTypeLibraryDefaults = {};
@@ -1118,6 +1612,19 @@ ORCA_API struct ClassDesc _PropertyTypeLibrary = {
 	.Defaults = &PropertyTypeLibraryDefaults,
 	.NumProperties = kPropertyTypeLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoPropertyTypeLibrary(xmlNodePtr xml, lpPropertyTypeLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const SpriteAnimationLibraryProperties[kSpriteAnimationLibraryNumProperties] = {
 };
 static struct SpriteAnimationLibrary SpriteAnimationLibraryDefaults = {};
@@ -1146,6 +1653,19 @@ ORCA_API struct ClassDesc _SpriteAnimationLibrary = {
 	.Defaults = &SpriteAnimationLibraryDefaults,
 	.NumProperties = kSpriteAnimationLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoSpriteAnimationLibrary(xmlNodePtr xml, lpSpriteAnimationLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const MessageLibraryProperties[kMessageLibraryNumProperties] = {
 };
 static struct MessageLibrary MessageLibraryDefaults = {};
@@ -1174,6 +1694,19 @@ ORCA_API struct ClassDesc _MessageLibrary = {
 	.Defaults = &MessageLibraryDefaults,
 	.NumProperties = kMessageLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoMessageLibrary(xmlNodePtr xml, lpMessageLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const SystemMessageProperties[kSystemMessageNumProperties] = {
 	/* SystemMessage.Message */ DECL(0xae0ed984, 0x6e02048e,
 	SystemMessage, "Message", Message, kDataTypeFixed),
@@ -1205,6 +1738,22 @@ ORCA_API struct ClassDesc _SystemMessage = {
 	.Defaults = &SystemMessageDefaults,
 	.NumProperties = kSystemMessageNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoSystemMessage(xmlNodePtr xml, lpSystemMessage_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltofixed(xmlNodePtr, fixedString_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Message")), &output->Message);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Key")), &output->Key);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const ImageLibraryProperties[kImageLibraryNumProperties] = {
 };
 static struct ImageLibrary ImageLibraryDefaults = {};
@@ -1233,6 +1782,19 @@ ORCA_API struct ClassDesc _ImageLibrary = {
 	.Defaults = &ImageLibraryDefaults,
 	.NumProperties = kImageLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoImageLibrary(xmlNodePtr xml, lpImageLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const FontLibraryProperties[kFontLibraryNumProperties] = {
 };
 static struct FontLibrary FontLibraryDefaults = {};
@@ -1261,6 +1823,19 @@ ORCA_API struct ClassDesc _FontLibrary = {
 	.Defaults = &FontLibraryDefaults,
 	.NumProperties = kFontLibraryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoFontLibrary(xmlNodePtr xml, lpFontLibrary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const ProjectReferenceItemProperties[kProjectReferenceItemNumProperties] = {
 };
 static struct ProjectReferenceItem ProjectReferenceItemDefaults = {};
@@ -1288,6 +1863,19 @@ ORCA_API struct ClassDesc _ProjectReferenceItem = {
 	.Defaults = &ProjectReferenceItemDefaults,
 	.NumProperties = kProjectReferenceItemNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoProjectReferenceItem(xmlNodePtr xml, lpProjectReferenceItem_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const LocaleReferenceItemProperties[kLocaleReferenceItemNumProperties] = {
 };
 static struct LocaleReferenceItem LocaleReferenceItemDefaults = {};
@@ -1315,6 +1903,19 @@ ORCA_API struct ClassDesc _LocaleReferenceItem = {
 	.Defaults = &LocaleReferenceItemDefaults,
 	.NumProperties = kLocaleReferenceItemNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoLocaleReferenceItem(xmlNodePtr xml, lpLocaleReferenceItem_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const TagProperties[kTagNumProperties] = {
 	/* Tag.TagIsInherited */ DECL(0xc35a8c07, 0x66bab379,
 	Tag, "TagIsInherited", TagIsInherited, kDataTypeBool),
@@ -1344,6 +1945,21 @@ ORCA_API struct ClassDesc _Tag = {
 	.Defaults = &TagDefaults,
 	.NumProperties = kTagNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoTag(xmlNodePtr xml, lpTag_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltobool(xmlNodePtr, bool_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("TagIsInherited")), &output->TagIsInherited);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const EnginePluginProperties[kEnginePluginNumProperties] = {
 };
 static struct EnginePlugin EnginePluginDefaults = {};
@@ -1371,6 +1987,19 @@ ORCA_API struct ClassDesc _EnginePlugin = {
 	.Defaults = &EnginePluginDefaults,
 	.NumProperties = kEnginePluginNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoEnginePlugin(xmlNodePtr xml, lpEnginePlugin_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const EngineMetaclassProperties[kEngineMetaclassNumProperties] = {
 	/* EngineMetaclass.BaseClassName */ DECL(0x099ceef3, 0x03191574,
 	EngineMetaclass, "BaseClassName", BaseClassName, kDataTypeFixed),
@@ -1400,6 +2029,21 @@ ORCA_API struct ClassDesc _EngineMetaclass = {
 	.Defaults = &EngineMetaclassDefaults,
 	.NumProperties = kEngineMetaclassNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoEngineMetaclass(xmlNodePtr xml, lpEngineMetaclass_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltofixed(xmlNodePtr, fixedString_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("BaseClassName")), &output->BaseClassName);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const ThemeGroupProperties[kThemeGroupNumProperties] = {
 	/* ThemeGroup.SelectedDictionary */ DECL(0x1cf2c938, 0x6de33964,
 	ThemeGroup, "SelectedDictionary", SelectedDictionary, kDataTypeFixed),
@@ -1429,6 +2073,21 @@ ORCA_API struct ClassDesc _ThemeGroup = {
 	.Defaults = &ThemeGroupDefaults,
 	.NumProperties = kThemeGroupNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoThemeGroup(xmlNodePtr xml, lpThemeGroup_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltofixed(xmlNodePtr, fixedString_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("SelectedDictionary")), &output->SelectedDictionary);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const ThemeProperties[kThemeNumProperties] = {
 	/* Theme.IsThemeVisible */ DECL(0x1ed11084, 0x17736be5,
 	Theme, "IsThemeVisible", IsThemeVisible, kDataTypeBool),
@@ -1458,6 +2117,21 @@ ORCA_API struct ClassDesc _Theme = {
 	.Defaults = &ThemeDefaults,
 	.NumProperties = kThemeNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoTheme(xmlNodePtr xml, lpTheme_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltobool(xmlNodePtr, bool_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("IsThemeVisible")), &output->IsThemeVisible);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const EntryProperties[kEntryNumProperties] = {
 };
 static struct Entry EntryDefaults = {};
@@ -1485,6 +2159,19 @@ ORCA_API struct ClassDesc _Entry = {
 	.Defaults = &EntryDefaults,
 	.NumProperties = kEntryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoEntry(xmlNodePtr xml, lpEntry_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const ThemeDefaultValuesDictionaryProperties[kThemeDefaultValuesDictionaryNumProperties] = {
 };
 static struct ThemeDefaultValuesDictionary ThemeDefaultValuesDictionaryDefaults = {};
@@ -1512,6 +2199,19 @@ ORCA_API struct ClassDesc _ThemeDefaultValuesDictionary = {
 	.Defaults = &ThemeDefaultValuesDictionaryDefaults,
 	.NumProperties = kThemeDefaultValuesDictionaryNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoThemeDefaultValuesDictionary(xmlNodePtr xml, lpThemeDefaultValuesDictionary_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static int f_filesystem_getWorkspace(lua_State *L) {
 	lpObject_t output = FS_GetWorkspace();
 	luaX_pushObject(L, output);
@@ -1594,152 +2294,252 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	// Workspace
 	lua_pushclass(L, &_Workspace);
 	lua_setfield(L, -2, "Workspace");
+	lua_pushlightuserdata(L, xmltoWorkspace);
+	lua_setfield(L, LUA_REGISTRYINDEX, "WorkspaceParser");
 	// Project
 	lua_pushclass(L, &_Project);
 	lua_setfield(L, -2, "Project");
+	lua_pushlightuserdata(L, xmltoProject);
+	lua_setfield(L, LUA_REGISTRYINDEX, "ProjectParser");
 	// Library
 	lua_pushclass(L, &_Library);
 	lua_setfield(L, -2, "Library");
+	lua_pushlightuserdata(L, xmltoLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "LibraryParser");
 	// AnimationClipLibrary
 	lua_pushclass(L, &_AnimationClipLibrary);
 	lua_setfield(L, -2, "AnimationClipLibrary");
+	lua_pushlightuserdata(L, xmltoAnimationClipLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "AnimationClipLibraryParser");
 	// ScreenLibrary
 	lua_pushclass(L, &_ScreenLibrary);
 	lua_setfield(L, -2, "ScreenLibrary");
+	lua_pushlightuserdata(L, xmltoScreenLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "ScreenLibraryParser");
 	// MaterialTypeLibrary
 	lua_pushclass(L, &_MaterialTypeLibrary);
 	lua_setfield(L, -2, "MaterialTypeLibrary");
+	lua_pushlightuserdata(L, xmltoMaterialTypeLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "MaterialTypeLibraryParser");
 	// MaterialLibrary
 	lua_pushclass(L, &_MaterialLibrary);
 	lua_setfield(L, -2, "MaterialLibrary");
+	lua_pushlightuserdata(L, xmltoMaterialLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "MaterialLibraryParser");
 	// BrushLibrary
 	lua_pushclass(L, &_BrushLibrary);
 	lua_setfield(L, -2, "BrushLibrary");
+	lua_pushlightuserdata(L, xmltoBrushLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "BrushLibraryParser");
 	// MeshLibrary
 	lua_pushclass(L, &_MeshLibrary);
 	lua_setfield(L, -2, "MeshLibrary");
+	lua_pushlightuserdata(L, xmltoMeshLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "MeshLibraryParser");
 	// TimelineSequenceLibrary
 	lua_pushclass(L, &_TimelineSequenceLibrary);
 	lua_setfield(L, -2, "TimelineSequenceLibrary");
+	lua_pushlightuserdata(L, xmltoTimelineSequenceLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "TimelineSequenceLibraryParser");
 	// SceneObjectLibrary
 	lua_pushclass(L, &_SceneObjectLibrary);
 	lua_setfield(L, -2, "SceneObjectLibrary");
+	lua_pushlightuserdata(L, xmltoSceneObjectLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "SceneObjectLibraryParser");
 	// ComposerLibrary
 	lua_pushclass(L, &_ComposerLibrary);
 	lua_setfield(L, -2, "ComposerLibrary");
+	lua_pushlightuserdata(L, xmltoComposerLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "ComposerLibraryParser");
 	// PipelineItemLibrary
 	lua_pushclass(L, &_PipelineItemLibrary);
 	lua_setfield(L, -2, "PipelineItemLibrary");
+	lua_pushlightuserdata(L, xmltoPipelineItemLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "PipelineItemLibraryParser");
 	// SceneLibrary
 	lua_pushclass(L, &_SceneLibrary);
 	lua_setfield(L, -2, "SceneLibrary");
+	lua_pushlightuserdata(L, xmltoSceneLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "SceneLibraryParser");
 	// TrajectoryLibrary
 	lua_pushclass(L, &_TrajectoryLibrary);
 	lua_setfield(L, -2, "TrajectoryLibrary");
+	lua_pushlightuserdata(L, xmltoTrajectoryLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "TrajectoryLibraryParser");
 	// TransitionLibrary
 	lua_pushclass(L, &_TransitionLibrary);
 	lua_setfield(L, -2, "TransitionLibrary");
+	lua_pushlightuserdata(L, xmltoTransitionLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "TransitionLibraryParser");
 	// SplineLibrary
 	lua_pushclass(L, &_SplineLibrary);
 	lua_setfield(L, -2, "SplineLibrary");
+	lua_pushlightuserdata(L, xmltoSplineLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "SplineLibraryParser");
 	// PrefabLibrary
 	lua_pushclass(L, &_PrefabLibrary);
 	lua_setfield(L, -2, "PrefabLibrary");
+	lua_pushlightuserdata(L, xmltoPrefabLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "PrefabLibraryParser");
 	// ProjectReferenceLibrary
 	lua_pushclass(L, &_ProjectReferenceLibrary);
 	lua_setfield(L, -2, "ProjectReferenceLibrary");
+	lua_pushlightuserdata(L, xmltoProjectReferenceLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "ProjectReferenceLibraryParser");
 	// ProfileLibrary
 	lua_pushclass(L, &_ProfileLibrary);
 	lua_setfield(L, -2, "ProfileLibrary");
+	lua_pushlightuserdata(L, xmltoProfileLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "ProfileLibraryParser");
 	// EnginePluginLibrary
 	lua_pushclass(L, &_EnginePluginLibrary);
 	lua_setfield(L, -2, "EnginePluginLibrary");
+	lua_pushlightuserdata(L, xmltoEnginePluginLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "EnginePluginLibraryParser");
 	// ShortcutLibrary
 	lua_pushclass(L, &_ShortcutLibrary);
 	lua_setfield(L, -2, "ShortcutLibrary");
+	lua_pushlightuserdata(L, xmltoShortcutLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "ShortcutLibraryParser");
 	// LayerLibrary
 	lua_pushclass(L, &_LayerLibrary);
 	lua_setfield(L, -2, "LayerLibrary");
+	lua_pushlightuserdata(L, xmltoLayerLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "LayerLibraryParser");
 	// AnimationLibrary
 	lua_pushclass(L, &_AnimationLibrary);
 	lua_setfield(L, -2, "AnimationLibrary");
+	lua_pushlightuserdata(L, xmltoAnimationLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "AnimationLibraryParser");
 	// TagLibrary
 	lua_pushclass(L, &_TagLibrary);
 	lua_setfield(L, -2, "TagLibrary");
+	lua_pushlightuserdata(L, xmltoTagLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "TagLibraryParser");
 	// ThemeLibrary
 	lua_pushclass(L, &_ThemeLibrary);
 	lua_setfield(L, -2, "ThemeLibrary");
+	lua_pushlightuserdata(L, xmltoThemeLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "ThemeLibraryParser");
 	// ResourceExportTagLibrary
 	lua_pushclass(L, &_ResourceExportTagLibrary);
 	lua_setfield(L, -2, "ResourceExportTagLibrary");
+	lua_pushlightuserdata(L, xmltoResourceExportTagLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "ResourceExportTagLibraryParser");
 	// LocaleLibrary
 	lua_pushclass(L, &_LocaleLibrary);
 	lua_setfield(L, -2, "LocaleLibrary");
+	lua_pushlightuserdata(L, xmltoLocaleLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "LocaleLibraryParser");
 	// DataSourceLibrary
 	lua_pushclass(L, &_DataSourceLibrary);
 	lua_setfield(L, -2, "DataSourceLibrary");
+	lua_pushlightuserdata(L, xmltoDataSourceLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "DataSourceLibraryParser");
 	// PageTransitionCollectionLibrary
 	lua_pushclass(L, &_PageTransitionCollectionLibrary);
 	lua_setfield(L, -2, "PageTransitionCollectionLibrary");
+	lua_pushlightuserdata(L, xmltoPageTransitionCollectionLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "PageTransitionCollectionLibraryParser");
 	// TextureLibrary
 	lua_pushclass(L, &_TextureLibrary);
 	lua_setfield(L, -2, "TextureLibrary");
+	lua_pushlightuserdata(L, xmltoTextureLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "TextureLibraryParser");
 	// StyleLibrary
 	lua_pushclass(L, &_StyleLibrary);
 	lua_setfield(L, -2, "StyleLibrary");
+	lua_pushlightuserdata(L, xmltoStyleLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "StyleLibraryParser");
 	// StateManagerLibrary
 	lua_pushclass(L, &_StateManagerLibrary);
 	lua_setfield(L, -2, "StateManagerLibrary");
+	lua_pushlightuserdata(L, xmltoStateManagerLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "StateManagerLibraryParser");
 	// ConnectServiceLibrary
 	lua_pushclass(L, &_ConnectServiceLibrary);
 	lua_setfield(L, -2, "ConnectServiceLibrary");
+	lua_pushlightuserdata(L, xmltoConnectServiceLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "ConnectServiceLibraryParser");
 	// ConnectUserServiceLibrary
 	lua_pushclass(L, &_ConnectUserServiceLibrary);
 	lua_setfield(L, -2, "ConnectUserServiceLibrary");
+	lua_pushlightuserdata(L, xmltoConnectUserServiceLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "ConnectUserServiceLibraryParser");
 	// PropertyTypeLibrary
 	lua_pushclass(L, &_PropertyTypeLibrary);
 	lua_setfield(L, -2, "PropertyTypeLibrary");
+	lua_pushlightuserdata(L, xmltoPropertyTypeLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "PropertyTypeLibraryParser");
 	// SpriteAnimationLibrary
 	lua_pushclass(L, &_SpriteAnimationLibrary);
 	lua_setfield(L, -2, "SpriteAnimationLibrary");
+	lua_pushlightuserdata(L, xmltoSpriteAnimationLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "SpriteAnimationLibraryParser");
 	// MessageLibrary
 	lua_pushclass(L, &_MessageLibrary);
 	lua_setfield(L, -2, "MessageLibrary");
+	lua_pushlightuserdata(L, xmltoMessageLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "MessageLibraryParser");
 	// SystemMessage
 	lua_pushclass(L, &_SystemMessage);
 	lua_setfield(L, -2, "SystemMessage");
+	lua_pushlightuserdata(L, xmltoSystemMessage);
+	lua_setfield(L, LUA_REGISTRYINDEX, "SystemMessageParser");
 	// ImageLibrary
 	lua_pushclass(L, &_ImageLibrary);
 	lua_setfield(L, -2, "ImageLibrary");
+	lua_pushlightuserdata(L, xmltoImageLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "ImageLibraryParser");
 	// FontLibrary
 	lua_pushclass(L, &_FontLibrary);
 	lua_setfield(L, -2, "FontLibrary");
+	lua_pushlightuserdata(L, xmltoFontLibrary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "FontLibraryParser");
 	// ProjectReferenceItem
 	lua_pushclass(L, &_ProjectReferenceItem);
 	lua_setfield(L, -2, "ProjectReferenceItem");
+	lua_pushlightuserdata(L, xmltoProjectReferenceItem);
+	lua_setfield(L, LUA_REGISTRYINDEX, "ProjectReferenceItemParser");
 	// LocaleReferenceItem
 	lua_pushclass(L, &_LocaleReferenceItem);
 	lua_setfield(L, -2, "LocaleReferenceItem");
+	lua_pushlightuserdata(L, xmltoLocaleReferenceItem);
+	lua_setfield(L, LUA_REGISTRYINDEX, "LocaleReferenceItemParser");
 	// Tag
 	lua_pushclass(L, &_Tag);
 	lua_setfield(L, -2, "Tag");
+	lua_pushlightuserdata(L, xmltoTag);
+	lua_setfield(L, LUA_REGISTRYINDEX, "TagParser");
 	// EnginePlugin
 	lua_pushclass(L, &_EnginePlugin);
 	lua_setfield(L, -2, "EnginePlugin");
+	lua_pushlightuserdata(L, xmltoEnginePlugin);
+	lua_setfield(L, LUA_REGISTRYINDEX, "EnginePluginParser");
 	// EngineMetaclass
 	lua_pushclass(L, &_EngineMetaclass);
 	lua_setfield(L, -2, "EngineMetaclass");
+	lua_pushlightuserdata(L, xmltoEngineMetaclass);
+	lua_setfield(L, LUA_REGISTRYINDEX, "EngineMetaclassParser");
 	// ThemeGroup
 	lua_pushclass(L, &_ThemeGroup);
 	lua_setfield(L, -2, "ThemeGroup");
+	lua_pushlightuserdata(L, xmltoThemeGroup);
+	lua_setfield(L, LUA_REGISTRYINDEX, "ThemeGroupParser");
 	// Theme
 	lua_pushclass(L, &_Theme);
 	lua_setfield(L, -2, "Theme");
+	lua_pushlightuserdata(L, xmltoTheme);
+	lua_setfield(L, LUA_REGISTRYINDEX, "ThemeParser");
 	// Entry
 	lua_pushclass(L, &_Entry);
 	lua_setfield(L, -2, "Entry");
+	lua_pushlightuserdata(L, xmltoEntry);
+	lua_setfield(L, LUA_REGISTRYINDEX, "EntryParser");
 	// ThemeDefaultValuesDictionary
 	lua_pushclass(L, &_ThemeDefaultValuesDictionary);
 	lua_setfield(L, -2, "ThemeDefaultValuesDictionary");
+	lua_pushlightuserdata(L, xmltoThemeDefaultValuesDictionary);
+	lua_setfield(L, LUA_REGISTRYINDEX, "ThemeDefaultValuesDictionaryParser");
 	return 1;
 }

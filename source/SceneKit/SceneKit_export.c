@@ -255,6 +255,29 @@ ORCA_API struct ClassDesc _Node3D = {
 	.Defaults = &Node3DDefaults,
 	.NumProperties = kNode3DNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoNode3D(xmlNodePtr xml, lpNode3D_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltofloat(xmlNodePtr, float*);
+	int xmltomat4(xmlNodePtr, struct mat4*);
+	int xmltotransform3(xmlNodePtr, struct transform3*);
+	int xmltovec3(xmlNodePtr, struct vec3*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltotransform3((xmlNodePtr)xmlHasProp(xml, XMLSTR("LayoutTransform")), &output->LayoutTransform);
+		xmltotransform3((xmlNodePtr)xmlHasProp(xml, XMLSTR("RenderTransform")), &output->RenderTransform);
+		xmltovec3((xmlNodePtr)xmlHasProp(xml, XMLSTR("RenderTransformOrigin")), &output->RenderTransformOrigin);
+		xmltovec3((xmlNodePtr)xmlHasProp(xml, XMLSTR("ContentOffset")), &output->ContentOffset);
+		xmltomat4((xmlNodePtr)xmlHasProp(xml, XMLSTR("Matrix")), &output->Matrix);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("CalculatedOffset")), &output->CalculatedOffset);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT Scene_UpdateMatrix(lpObject_t, lpScene_t, wParam_t, UpdateMatrixEventPtr);
 static struct PropertyDesc const SceneProperties[kSceneNumProperties] = {
 	/* Scene.Camera */ DECL(0xe74c7b6e, 0x2856ba68,
@@ -300,6 +323,24 @@ ORCA_API struct ClassDesc _Scene = {
 	.Defaults = &SceneDefaults,
 	.NumProperties = kSceneNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoScene(xmlNodePtr xml, lpScene_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltofixed(xmlNodePtr, fixedString_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Camera")), &output->Camera);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("PreviewCamera")), &output->PreviewCamera);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("HitTestCamera")), &output->HitTestCamera);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("BackgroundTimelineSequence")), &output->BackgroundTimelineSequence);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT Model3D_Render(lpObject_t, lpModel3D_t, wParam_t, RenderEventPtr);
 static struct PropertyDesc const Model3DProperties[kModel3DNumProperties] = {
 	/* Model3D.Mesh */ DECL(0x07e055dc, 0xa983d6a0,
@@ -335,6 +376,19 @@ ORCA_API struct ClassDesc _Model3D = {
 	.Defaults = &Model3DDefaults,
 	.NumProperties = kModel3DNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoModel3D(xmlNodePtr xml, lpModel3D_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT PlaneMeshNode_Render(lpObject_t, lpPlaneMeshNode_t, wParam_t, RenderEventPtr);
 static struct PropertyDesc const PlaneMeshNodeProperties[kPlaneMeshNodeNumProperties] = {
 	/* PlaneMeshNode.PlaneWidth */ DECL(0x8f8d39cf, 0xccbf00b0,
@@ -380,6 +434,27 @@ ORCA_API struct ClassDesc _PlaneMeshNode = {
 	.Defaults = &PlaneMeshNodeDefaults,
 	.NumProperties = kPlaneMeshNodeNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoPlaneMeshNode(xmlNodePtr xml, lpPlaneMeshNode_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltobool(xmlNodePtr, bool_t*);
+	int xmltofloat(xmlNodePtr, float*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("PlaneWidth")), &output->PlaneWidth);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("PlaneHeight")), &output->PlaneHeight);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("PlaneInvertU")), &output->PlaneInvertU);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("PlaneInvertV")), &output->PlaneInvertV);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("GenerateTangents")), &output->GenerateTangents);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("GenerateNormals")), &output->GenerateNormals);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const CameraProperties[kCameraNumProperties] = {
 	/* Camera.Fov */ DECL(0x137e217c, 0xa851ed83,
 	Camera, "Fov", Fov, kDataTypeFloat),
@@ -426,6 +501,32 @@ ORCA_API struct ClassDesc _Camera = {
 	.Defaults = &CameraDefaults,
 	.NumProperties = kCameraNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoCamera(xmlNodePtr xml, lpCamera_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltoFovType(xmlNodePtr, enum FovType*);
+	int xmltoProjectionType(xmlNodePtr, enum ProjectionType*);
+	int xmltobool(xmlNodePtr, bool_t*);
+	int xmltofloat(xmlNodePtr, float*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("Fov")), &output->Fov);
+		xmltoFovType((xmlNodePtr)xmlHasProp(xml, XMLSTR("FovType")), &output->FovType);
+		xmltoProjectionType((xmlNodePtr)xmlHasProp(xml, XMLSTR("ProjectionType")), &output->ProjectionType);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("ZNear")), &output->ZNear);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("ZFar")), &output->ZFar);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("EyeSeparation")), &output->EyeSeparation);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("FocalDistance")), &output->FocalDistance);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("OrthogonalPlaneHeight")), &output->OrthogonalPlaneHeight);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("ZPositive")), &output->ZPositive);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT TrajectoryList3D_UpdateMatrix(lpObject_t, lpTrajectoryList3D_t, wParam_t, UpdateMatrixEventPtr);
 static struct PropertyDesc const TrajectoryList3DProperties[kTrajectoryList3DNumProperties] = {
 	/* TrajectoryList3D.Trajectory */ DECL(0x4cf7cbf8, 0x566c23da,
@@ -469,6 +570,27 @@ ORCA_API struct ClassDesc _TrajectoryList3D = {
 	.Defaults = &TrajectoryList3DDefaults,
 	.NumProperties = kTrajectoryList3DNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoTrajectoryList3D(xmlNodePtr xml, lpTrajectoryList3D_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltobool(xmlNodePtr, bool_t*);
+	int xmltofloat(xmlNodePtr, float*);
+	int xmltovec2(xmlNodePtr, struct vec2*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltovec2((xmlNodePtr)xmlHasProp(xml, XMLSTR("ScrollAxis")), &output->ScrollAxis);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("Looping")), &output->Looping);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("Spacing")), &output->Spacing);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("SelectionBehavior")), &output->SelectionBehavior);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("SelectedItemIndex")), &output->SelectedItemIndex);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT Viewport3D_ForegroundContent(lpObject_t, lpViewport3D_t, wParam_t, ForegroundContentEventPtr);
 static struct PropertyDesc const Viewport3DProperties[kViewport3DNumProperties] = {
 	/* Viewport3D.Camera */ DECL(0xe74c7b6e, 0xe764c175,
@@ -510,6 +632,24 @@ ORCA_API struct ClassDesc _Viewport3D = {
 	.Defaults = &Viewport3DDefaults,
 	.NumProperties = kViewport3DNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoViewport3D(xmlNodePtr xml, lpViewport3D_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltofixed(xmlNodePtr, fixedString_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Camera")), &output->Camera);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("PreviewCamera")), &output->PreviewCamera);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("HitTestCamera")), &output->HitTestCamera);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Scene")), &output->Scene);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT PrefabView3D_LoadView(lpObject_t, lpPrefabView3D_t, wParam_t, LoadViewEventPtr);
 static struct PropertyDesc const PrefabView3DProperties[kPrefabView3DNumProperties] = {
 	/* PrefabView3D.SCA */ DECL(0x57f28ff6, 0x10804bee,
@@ -545,6 +685,22 @@ ORCA_API struct ClassDesc _PrefabView3D = {
 	.Defaults = &PrefabView3DDefaults,
 	.NumProperties = kPrefabView3DNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoPrefabView3D(xmlNodePtr xml, lpPrefabView3D_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltofixed(xmlNodePtr, fixedString_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("SCA")), &output->SCA);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Prefab")), &output->Prefab);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const RenderPassProperties[kRenderPassNumProperties] = {
 };
 static struct RenderPass RenderPassDefaults = {};
@@ -573,6 +729,19 @@ ORCA_API struct ClassDesc _RenderPass = {
 	.Defaults = &RenderPassDefaults,
 	.NumProperties = kRenderPassNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoRenderPass(xmlNodePtr xml, lpRenderPass_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const CompositionTargetRenderPassProperties[kCompositionTargetRenderPassNumProperties] = {
 };
 static struct CompositionTargetRenderPass CompositionTargetRenderPassDefaults = {};
@@ -601,6 +770,19 @@ ORCA_API struct ClassDesc _CompositionTargetRenderPass = {
 	.Defaults = &CompositionTargetRenderPassDefaults,
 	.NumProperties = kCompositionTargetRenderPassNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoCompositionTargetRenderPass(xmlNodePtr xml, lpCompositionTargetRenderPass_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const BlitRenderPassProperties[kBlitRenderPassNumProperties] = {
 };
 static struct BlitRenderPass BlitRenderPassDefaults = {};
@@ -629,6 +811,19 @@ ORCA_API struct ClassDesc _BlitRenderPass = {
 	.Defaults = &BlitRenderPassDefaults,
 	.NumProperties = kBlitRenderPassNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoBlitRenderPass(xmlNodePtr xml, lpBlitRenderPass_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const ClearRenderPassProperties[kClearRenderPassNumProperties] = {
 	/* ClearRenderPass.ClearColor */ DECL(0xeb16b675, 0x5ab85c8b,
 	ClearRenderPass, "ClearColor", ClearColor, kDataTypeStruct, .TypeString="Color"),
@@ -663,6 +858,25 @@ ORCA_API struct ClassDesc _ClearRenderPass = {
 	.Defaults = &ClearRenderPassDefaults,
 	.NumProperties = kClearRenderPassNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoClearRenderPass(xmlNodePtr xml, lpClearRenderPass_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltocolor(xmlNodePtr, struct color*);
+	int xmltofloat(xmlNodePtr, float*);
+	int xmltoint(xmlNodePtr, int32_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltocolor((xmlNodePtr)xmlHasProp(xml, XMLSTR("ClearColor")), &output->ClearColor);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("ClearDepth")), &output->ClearDepth);
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("ClearStencil")), &output->ClearStencil);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const DrawObjectsRenderPassProperties[kDrawObjectsRenderPassNumProperties] = {
 	/* DrawObjectsRenderPass.Camera */ DECL(0xe74c7b6e, 0x83af3705,
 	DrawObjectsRenderPass, "Camera", Camera, kDataTypeFixed),
@@ -697,6 +911,24 @@ ORCA_API struct ClassDesc _DrawObjectsRenderPass = {
 	.Defaults = &DrawObjectsRenderPassDefaults,
 	.NumProperties = kDrawObjectsRenderPassNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoDrawObjectsRenderPass(xmlNodePtr xml, lpDrawObjectsRenderPass_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltofixed(xmlNodePtr, fixedString_t*);
+	int xmltoobjectTags(xmlNodePtr, objectTags_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Camera")), &output->Camera);
+		xmltoobjectTags((xmlNodePtr)xmlHasProp(xml, XMLSTR("IncludeTags")), &output->IncludeTags);
+		xmltoobjectTags((xmlNodePtr)xmlHasProp(xml, XMLSTR("ExcludeTags")), &output->ExcludeTags);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const PipelineStateRenderPassProperties[kPipelineStateRenderPassNumProperties] = {
 	/* PipelineStateRenderPass.BlendMode */ DECL(0x0038792b, 0x27f55ce7,
 	PipelineStateRenderPass, "BlendMode", BlendMode, kDataTypeEnum, .TypeString="AlphaAutomatic,Opaque,Alpha,Additive,PremultipliedAlpha,MixedAlpha"),
@@ -760,6 +992,44 @@ ORCA_API struct ClassDesc _PipelineStateRenderPass = {
 	.Defaults = &PipelineStateRenderPassDefaults,
 	.NumProperties = kPipelineStateRenderPassNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoPipelineStateRenderPass(xmlNodePtr xml, lpPipelineStateRenderPass_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltoBlendMode(xmlNodePtr, enum BlendMode*);
+	int xmltoColorWriteMode(xmlNodePtr, enum ColorWriteMode*);
+	int xmltoCompareFunc(xmlNodePtr, enum CompareFunc*);
+	int xmltoCullMode(xmlNodePtr, enum CullMode*);
+	int xmltoStencilOp(xmlNodePtr, enum StencilOp*);
+	int xmltoViewportMode(xmlNodePtr, enum ViewportMode*);
+	int xmltobool(xmlNodePtr, bool_t*);
+	int xmltoint(xmlNodePtr, int32_t*);
+	int xmltovec4(xmlNodePtr, struct vec4*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltoBlendMode((xmlNodePtr)xmlHasProp(xml, XMLSTR("BlendMode")), &output->BlendMode);
+		xmltoColorWriteMode((xmlNodePtr)xmlHasProp(xml, XMLSTR("ColorWriteMode")), &output->ColorWriteMode);
+		xmltoCullMode((xmlNodePtr)xmlHasProp(xml, XMLSTR("CullMode")), &output->CullMode);
+		xmltoCompareFunc((xmlNodePtr)xmlHasProp(xml, XMLSTR("DepthTestFunction")), &output->DepthTestFunction);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("DepthWriteEnabled")), &output->DepthWriteEnabled);
+		xmltoViewportMode((xmlNodePtr)xmlHasProp(xml, XMLSTR("ViewportMode")), &output->ViewportMode);
+		xmltoViewportMode((xmlNodePtr)xmlHasProp(xml, XMLSTR("ScissorMode")), &output->ScissorMode);
+		xmltovec4((xmlNodePtr)xmlHasProp(xml, XMLSTR("Viewport")), &output->Viewport);
+		xmltovec4((xmlNodePtr)xmlHasProp(xml, XMLSTR("Scissor")), &output->Scissor);
+		xmltoCompareFunc((xmlNodePtr)xmlHasProp(xml, XMLSTR("StencilTestFunction")), &output->StencilTestFunction);
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("StencilReferenceValue")), &output->StencilReferenceValue);
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("StencilMask")), &output->StencilMask);
+		xmltoStencilOp((xmlNodePtr)xmlHasProp(xml, XMLSTR("StencilFailOperation")), &output->StencilFailOperation);
+		xmltoStencilOp((xmlNodePtr)xmlHasProp(xml, XMLSTR("StencilPassDepthFailOperation")), &output->StencilPassDepthFailOperation);
+		xmltoStencilOp((xmlNodePtr)xmlHasProp(xml, XMLSTR("StencilPassDepthPassOperation")), &output->StencilPassDepthPassOperation);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("StencilWriteEnabled")), &output->StencilWriteEnabled);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT TextBlock3D_Render(lpObject_t, lpTextBlock3D_t, wParam_t, RenderEventPtr);
 LRESULT TextBlock3D_Create(lpObject_t, lpTextBlock3D_t, wParam_t, CreateEventPtr);
 static struct PropertyDesc const TextBlock3DProperties[kTextBlock3DNumProperties] = {
@@ -795,6 +1065,19 @@ ORCA_API struct ClassDesc _TextBlock3D = {
 	.Defaults = &TextBlock3DDefaults,
 	.NumProperties = kTextBlock3DNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoTextBlock3D(xmlNodePtr xml, lpTextBlock3D_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT Light3D_Render(lpObject_t, lpLight3D_t, wParam_t, RenderEventPtr);
 static struct PropertyDesc const Light3DProperties[kLight3DNumProperties] = {
 	/* Light3D.Color */ DECL(0xe5b43cf8, 0xe4bce9cd,
@@ -839,6 +1122,28 @@ ORCA_API struct ClassDesc _Light3D = {
 	.Defaults = &Light3DDefaults,
 	.NumProperties = kLight3DNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoLight3D(xmlNodePtr xml, lpLight3D_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltoLightType(xmlNodePtr, enum LightType*);
+	int xmltocolor(xmlNodePtr, struct color*);
+	int xmltofloat(xmlNodePtr, float*);
+	int xmltovec2(xmlNodePtr, struct vec2*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltocolor((xmlNodePtr)xmlHasProp(xml, XMLSTR("Color")), &output->Color);
+		xmltovec2((xmlNodePtr)xmlHasProp(xml, XMLSTR("SpotAngle")), &output->SpotAngle);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("Intensity")), &output->Intensity);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("Range")), &output->Range);
+		xmltoLightType((xmlNodePtr)xmlHasProp(xml, XMLSTR("Type")), &output->Type);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT SpriteView_Render(lpObject_t, lpSpriteView_t, wParam_t, RenderEventPtr);
 static struct PropertyDesc const SpriteViewProperties[kSpriteViewNumProperties] = {
 	/* SpriteView.Image */ DECL(0x590ca79a, 0x1b80b626,
@@ -874,6 +1179,21 @@ ORCA_API struct ClassDesc _SpriteView = {
 	.Defaults = &SpriteViewDefaults,
 	.NumProperties = kSpriteViewNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoSpriteView(xmlNodePtr xml, lpSpriteView_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltovec4(xmlNodePtr, struct vec4*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltovec4((xmlNodePtr)xmlHasProp(xml, XMLSTR("Bounds")), &output->Bounds);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 ORCA_API int luaopen_orca_SceneKit(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) {
 		{ NULL, NULL }
@@ -881,53 +1201,87 @@ ORCA_API int luaopen_orca_SceneKit(lua_State *L) {
 	// Node3D
 	lua_pushclass(L, &_Node3D);
 	lua_setfield(L, -2, "Node3D");
+	lua_pushlightuserdata(L, xmltoNode3D);
+	lua_setfield(L, LUA_REGISTRYINDEX, "Node3DParser");
 	// Scene
 	lua_pushclass(L, &_Scene);
 	lua_setfield(L, -2, "Scene");
+	lua_pushlightuserdata(L, xmltoScene);
+	lua_setfield(L, LUA_REGISTRYINDEX, "SceneParser");
 	// Model3D
 	lua_pushclass(L, &_Model3D);
 	lua_setfield(L, -2, "Model3D");
+	lua_pushlightuserdata(L, xmltoModel3D);
+	lua_setfield(L, LUA_REGISTRYINDEX, "Model3DParser");
 	// PlaneMeshNode
 	lua_pushclass(L, &_PlaneMeshNode);
 	lua_setfield(L, -2, "PlaneMeshNode");
+	lua_pushlightuserdata(L, xmltoPlaneMeshNode);
+	lua_setfield(L, LUA_REGISTRYINDEX, "PlaneMeshNodeParser");
 	// Camera
 	lua_pushclass(L, &_Camera);
 	lua_setfield(L, -2, "Camera");
+	lua_pushlightuserdata(L, xmltoCamera);
+	lua_setfield(L, LUA_REGISTRYINDEX, "CameraParser");
 	// TrajectoryList3D
 	lua_pushclass(L, &_TrajectoryList3D);
 	lua_setfield(L, -2, "TrajectoryList3D");
+	lua_pushlightuserdata(L, xmltoTrajectoryList3D);
+	lua_setfield(L, LUA_REGISTRYINDEX, "TrajectoryList3DParser");
 	// Viewport3D
 	lua_pushclass(L, &_Viewport3D);
 	lua_setfield(L, -2, "Viewport3D");
+	lua_pushlightuserdata(L, xmltoViewport3D);
+	lua_setfield(L, LUA_REGISTRYINDEX, "Viewport3DParser");
 	// PrefabView3D
 	lua_pushclass(L, &_PrefabView3D);
 	lua_setfield(L, -2, "PrefabView3D");
+	lua_pushlightuserdata(L, xmltoPrefabView3D);
+	lua_setfield(L, LUA_REGISTRYINDEX, "PrefabView3DParser");
 	// RenderPass
 	lua_pushclass(L, &_RenderPass);
 	lua_setfield(L, -2, "RenderPass");
+	lua_pushlightuserdata(L, xmltoRenderPass);
+	lua_setfield(L, LUA_REGISTRYINDEX, "RenderPassParser");
 	// CompositionTargetRenderPass
 	lua_pushclass(L, &_CompositionTargetRenderPass);
 	lua_setfield(L, -2, "CompositionTargetRenderPass");
+	lua_pushlightuserdata(L, xmltoCompositionTargetRenderPass);
+	lua_setfield(L, LUA_REGISTRYINDEX, "CompositionTargetRenderPassParser");
 	// BlitRenderPass
 	lua_pushclass(L, &_BlitRenderPass);
 	lua_setfield(L, -2, "BlitRenderPass");
+	lua_pushlightuserdata(L, xmltoBlitRenderPass);
+	lua_setfield(L, LUA_REGISTRYINDEX, "BlitRenderPassParser");
 	// ClearRenderPass
 	lua_pushclass(L, &_ClearRenderPass);
 	lua_setfield(L, -2, "ClearRenderPass");
+	lua_pushlightuserdata(L, xmltoClearRenderPass);
+	lua_setfield(L, LUA_REGISTRYINDEX, "ClearRenderPassParser");
 	// DrawObjectsRenderPass
 	lua_pushclass(L, &_DrawObjectsRenderPass);
 	lua_setfield(L, -2, "DrawObjectsRenderPass");
+	lua_pushlightuserdata(L, xmltoDrawObjectsRenderPass);
+	lua_setfield(L, LUA_REGISTRYINDEX, "DrawObjectsRenderPassParser");
 	// PipelineStateRenderPass
 	lua_pushclass(L, &_PipelineStateRenderPass);
 	lua_setfield(L, -2, "PipelineStateRenderPass");
+	lua_pushlightuserdata(L, xmltoPipelineStateRenderPass);
+	lua_setfield(L, LUA_REGISTRYINDEX, "PipelineStateRenderPassParser");
 	// TextBlock3D
 	lua_pushclass(L, &_TextBlock3D);
 	lua_setfield(L, -2, "TextBlock3D");
+	lua_pushlightuserdata(L, xmltoTextBlock3D);
+	lua_setfield(L, LUA_REGISTRYINDEX, "TextBlock3DParser");
 	// Light3D
 	lua_pushclass(L, &_Light3D);
 	lua_setfield(L, -2, "Light3D");
+	lua_pushlightuserdata(L, xmltoLight3D);
+	lua_setfield(L, LUA_REGISTRYINDEX, "Light3DParser");
 	// SpriteView
 	lua_pushclass(L, &_SpriteView);
 	lua_setfield(L, -2, "SpriteView");
+	lua_pushlightuserdata(L, xmltoSpriteView);
+	lua_setfield(L, LUA_REGISTRYINDEX, "SpriteViewParser");
 	return 1;
 }

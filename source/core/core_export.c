@@ -728,6 +728,37 @@ ORCA_API struct ClassDesc _PropertyType = {
 	.Defaults = &PropertyTypeDefaults,
 	.NumProperties = kPropertyTypeNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoPropertyType(xmlNodePtr xml, lpPropertyType_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltoDataType(xmlNodePtr, enum DataType*);
+	int xmltobool(xmlNodePtr, bool_t*);
+	int xmltofixed(xmlNodePtr, fixedString_t*);
+	int xmltofloat(xmlNodePtr, float*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Category")), &output->Category);
+		xmltoDataType((xmlNodePtr)xmlHasProp(xml, XMLSTR("DataType")), &output->DataType);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("DefaultValue")), &output->DefaultValue);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("TargetType")), &output->TargetType);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("AffectLayout")), &output->AffectLayout);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("AffectRender")), &output->AffectRender);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("IsReadOnly")), &output->IsReadOnly);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("IsHidden")), &output->IsHidden);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("IsInherited")), &output->IsInherited);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Key")), &output->Key);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Value")), &output->Value);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("Step")), &output->Step);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("UpperBound")), &output->UpperBound);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("LowerBound")), &output->LowerBound);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const PropertyEnumValueProperties[kPropertyEnumValueNumProperties] = {
 	/* PropertyEnumValue.Value */ DECL(0xd147f96a, 0xe5df7e25,
 	PropertyEnumValue, "Value", Value, kDataTypeInt),
@@ -757,6 +788,21 @@ ORCA_API struct ClassDesc _PropertyEnumValue = {
 	.Defaults = &PropertyEnumValueDefaults,
 	.NumProperties = kPropertyEnumValueNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoPropertyEnumValue(xmlNodePtr xml, lpPropertyEnumValue_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltoint(xmlNodePtr, int32_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("Value")), &output->Value);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 ORCA_API int luaopen_orca_core(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) {
 		{ "getFocus", f_core_getFocus },
@@ -771,8 +817,12 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	// PropertyType
 	lua_pushclass(L, &_PropertyType);
 	lua_setfield(L, -2, "PropertyType");
+	lua_pushlightuserdata(L, xmltoPropertyType);
+	lua_setfield(L, LUA_REGISTRYINDEX, "PropertyTypeParser");
 	// PropertyEnumValue
 	lua_pushclass(L, &_PropertyEnumValue);
 	lua_setfield(L, -2, "PropertyEnumValue");
+	lua_pushlightuserdata(L, xmltoPropertyEnumValue);
+	lua_setfield(L, LUA_REGISTRYINDEX, "PropertyEnumValueParser");
 	return 1;
 }

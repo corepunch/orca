@@ -1914,6 +1914,19 @@ ORCA_API struct ClassDesc _DataObject = {
 	.Defaults = &DataObjectDefaults,
 	.NumProperties = kDataObjectNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoDataObject(xmlNodePtr xml, lpDataObject_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const AnimationPlayerProperties[kAnimationPlayerNumProperties] = {
 	/* AnimationPlayer.AutoplayEnabled */ DECL(0x706b62d9, 0xbb4b7f90,
 	AnimationPlayer, "AutoplayEnabled", AutoplayEnabled, kDataTypeBool),
@@ -1955,6 +1968,29 @@ ORCA_API struct ClassDesc _AnimationPlayer = {
 	.Defaults = &AnimationPlayerDefaults,
 	.NumProperties = kAnimationPlayerNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoAnimationPlayer(xmlNodePtr xml, lpAnimationPlayer_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltoPlaybackMode(xmlNodePtr, enum PlaybackMode*);
+	int xmltobool(xmlNodePtr, bool_t*);
+	int xmltofloat(xmlNodePtr, float*);
+	int xmltoint(xmlNodePtr, int32_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("AutoplayEnabled")), &output->AutoplayEnabled);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("DurationScale")), &output->DurationScale);
+		xmltoPlaybackMode((xmlNodePtr)xmlHasProp(xml, XMLSTR("PlaybackMode")), &output->PlaybackMode);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("RelativePlayback")), &output->RelativePlayback);
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("RepeatCount")), &output->RepeatCount);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("RestoreOriginalValuesAfterPlayback")), &output->RestoreOriginalValuesAfterPlayback);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT Trigger_PropertyChanged(lpObject_t, lpTrigger_t, wParam_t, PropertyChangedEventPtr);
 LRESULT Trigger_Attached(lpObject_t, lpTrigger_t, wParam_t, AttachedEventPtr);
 static struct PropertyDesc const TriggerProperties[kTriggerNumProperties] = {
@@ -1992,6 +2028,23 @@ ORCA_API struct ClassDesc _Trigger = {
 	.Defaults = &TriggerDefaults,
 	.NumProperties = kTriggerNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoTrigger(xmlNodePtr xml, lpTrigger_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltofixed(xmlNodePtr, fixedString_t*);
+	int xmltoint(xmlNodePtr, int32_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Property")), &output->Property);
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("Value")), &output->Value);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT OnPropertyChangedTrigger_PropertyChanged(lpObject_t, lpOnPropertyChangedTrigger_t, wParam_t, PropertyChangedEventPtr);
 static struct PropertyDesc const OnPropertyChangedTriggerProperties[kOnPropertyChangedTriggerNumProperties] = {
 	/* OnPropertyChangedTrigger.SourceNode */ DECL(0x9ff03304, 0x5d55b664,
@@ -2026,6 +2079,22 @@ ORCA_API struct ClassDesc _OnPropertyChangedTrigger = {
 	.Defaults = &OnPropertyChangedTriggerDefaults,
 	.NumProperties = kOnPropertyChangedTriggerNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoOnPropertyChangedTrigger(xmlNodePtr xml, lpOnPropertyChangedTrigger_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltofixed(xmlNodePtr, fixedString_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("SourceNode")), &output->SourceNode);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Property")), &output->Property);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT OnAttachedTrigger_Attached(lpObject_t, lpOnAttachedTrigger_t, wParam_t, AttachedEventPtr);
 static struct PropertyDesc const OnAttachedTriggerProperties[kOnAttachedTriggerNumProperties] = {
 };
@@ -2056,6 +2125,19 @@ ORCA_API struct ClassDesc _OnAttachedTrigger = {
 	.Defaults = &OnAttachedTriggerDefaults,
 	.NumProperties = kOnAttachedTriggerNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoOnAttachedTrigger(xmlNodePtr xml, lpOnAttachedTrigger_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT EventTrigger_HandleMessage(lpObject_t, lpEventTrigger_t, wParam_t, HandleMessageEventPtr);
 static struct PropertyDesc const EventTriggerProperties[kEventTriggerNumProperties] = {
 	/* EventTrigger.RoutedEvent */ DECL(0x30d77e1a, 0x0c5f2982,
@@ -2088,6 +2170,21 @@ ORCA_API struct ClassDesc _EventTrigger = {
 	.Defaults = &EventTriggerDefaults,
 	.NumProperties = kEventTriggerNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoEventTrigger(xmlNodePtr xml, lpEventTrigger_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltofixed(xmlNodePtr, fixedString_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("RoutedEvent")), &output->RoutedEvent);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT Setter_Triggered(lpObject_t, lpSetter_t, wParam_t, TriggeredEventPtr);
 static struct PropertyDesc const SetterProperties[kSetterNumProperties] = {
 	/* Setter.Trigger */ DECL(0xa5ea0da3, 0xd1fad954,
@@ -2124,6 +2221,22 @@ ORCA_API struct ClassDesc _Setter = {
 	.Defaults = &SetterDefaults,
 	.NumProperties = kSetterNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoSetter(xmlNodePtr xml, lpSetter_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltofixed(xmlNodePtr, fixedString_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Property")), &output->Property);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Value")), &output->Value);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT Handler_Triggered(lpObject_t, lpHandler_t, wParam_t, TriggeredEventPtr);
 static struct PropertyDesc const HandlerProperties[kHandlerNumProperties] = {
 	/* Handler.Trigger */ DECL(0xa5ea0da3, 0x0ef3b2a9,
@@ -2160,6 +2273,21 @@ ORCA_API struct ClassDesc _Handler = {
 	.Defaults = &HandlerDefaults,
 	.NumProperties = kHandlerNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoHandler(xmlNodePtr xml, lpHandler_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltofixed(xmlNodePtr, fixedString_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Function")), &output->Function);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const BrushProperties[kBrushNumProperties] = {
 };
 static struct Brush BrushDefaults = {};
@@ -2187,6 +2315,19 @@ ORCA_API struct ClassDesc _Brush = {
 	.Defaults = &BrushDefaults,
 	.NumProperties = kBrushNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoBrush(xmlNodePtr xml, lpBrush_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const ColorBrushProperties[kColorBrushNumProperties] = {
 	/* ColorBrush.Color */ DECL(0xe5b43cf8, 0xb7f26275,
 	ColorBrush, "Color", Color, kDataTypeStruct, .TypeString="Color"),
@@ -2217,6 +2358,21 @@ ORCA_API struct ClassDesc _ColorBrush = {
 	.Defaults = &ColorBrushDefaults,
 	.NumProperties = kColorBrushNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoColorBrush(xmlNodePtr xml, lpColorBrush_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltocolor(xmlNodePtr, struct color*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltocolor((xmlNodePtr)xmlHasProp(xml, XMLSTR("Color")), &output->Color);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT Node_ThemeChanged(lpObject_t, lpNode_t, wParam_t, ThemeChangedEventPtr);
 LRESULT Node_GetSize(lpObject_t, lpNode_t, wParam_t, GetSizeEventPtr);
 LRESULT Node_IsVisible(lpObject_t, lpNode_t, wParam_t, IsVisibleEventPtr);
@@ -2427,6 +2583,36 @@ ORCA_API struct ClassDesc _Node = {
 	.Defaults = &NodeDefaults,
 	.NumProperties = kNodeNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoNode(xmlNodePtr xml, lpNode_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltoAlignmentShorthand(xmlNodePtr, struct AlignmentShorthand*);
+	int xmltoBorderShorthand(xmlNodePtr, struct BorderShorthand*);
+	int xmltoMarginShorthand(xmlNodePtr, struct MarginShorthand*);
+	int xmltoSizeShorthand(xmlNodePtr, struct SizeShorthand*);
+	int xmltobool(xmlNodePtr, bool_t*);
+	int xmltofloat(xmlNodePtr, float*);
+	int xmltoobjectTags(xmlNodePtr, objectTags_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltoSizeShorthand((xmlNodePtr)xmlHasProp(xml, XMLSTR("Size")), &output->Size);
+		xmltoMarginShorthand((xmlNodePtr)xmlHasProp(xml, XMLSTR("Margin")), &output->Margin);
+		xmltoMarginShorthand((xmlNodePtr)xmlHasProp(xml, XMLSTR("Padding")), &output->Padding);
+		xmltoBorderShorthand((xmlNodePtr)xmlHasProp(xml, XMLSTR("Border")), &output->Border);
+		xmltoAlignmentShorthand((xmlNodePtr)xmlHasProp(xml, XMLSTR("Alignment")), &output->Alignment);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("Visible")), &output->Visible);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("QuickHide")), &output->QuickHide);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("VisibleAmountInParent")), &output->VisibleAmountInParent);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("Opacity")), &output->Opacity);
+		xmltoobjectTags((xmlNodePtr)xmlHasProp(xml, XMLSTR("Tags")), &output->Tags);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const TextRunProperties[kTextRunNumProperties] = {
 	/* TextRun.Text */ DECL(0x3e142d5e, 0xcba1ea6c,
 	TextRun, "Text", Text, kDataTypeFixed),
@@ -2487,6 +2673,32 @@ ORCA_API struct ClassDesc _TextRun = {
 	.Defaults = &TextRunDefaults,
 	.NumProperties = kTextRunNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoTextRun(xmlNodePtr xml, lpTextRun_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltoFontShorthand(xmlNodePtr, struct FontShorthand*);
+	int xmltoUnderlineShorthand(xmlNodePtr, struct UnderlineShorthand*);
+	int xmltobool(xmlNodePtr, bool_t*);
+	int xmltofixed(xmlNodePtr, fixedString_t*);
+	int xmltofloat(xmlNodePtr, float*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Text")), &output->Text);
+		xmltoFontShorthand((xmlNodePtr)xmlHasProp(xml, XMLSTR("Font")), &output->Font);
+		xmltoUnderlineShorthand((xmlNodePtr)xmlHasProp(xml, XMLSTR("Underline")), &output->Underline);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("LetterSpacing")), &output->LetterSpacing);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("LineHeight")), &output->LineHeight);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("CharacterSpacing")), &output->CharacterSpacing);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("FixedCharacterWidth")), &output->FixedCharacterWidth);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("RemoveSideBearingsProperty")), &output->RemoveSideBearingsProperty);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT TextBlockConcept_Create(lpObject_t, lpTextBlockConcept_t, wParam_t, CreateEventPtr);
 LRESULT TextBlockConcept_Destroy(lpObject_t, lpTextBlockConcept_t, wParam_t, DestroyEventPtr);
 LRESULT TextBlockConcept_MakeText(lpObject_t, lpTextBlockConcept_t, wParam_t, MakeTextEventPtr);
@@ -2555,6 +2767,37 @@ ORCA_API struct ClassDesc _TextBlockConcept = {
 	.Defaults = &TextBlockConceptDefaults,
 	.NumProperties = kTextBlockConceptNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoTextBlockConcept(xmlNodePtr xml, lpTextBlockConcept_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltoBrushShorthand(xmlNodePtr, struct BrushShorthand*);
+	int xmltoTextHorizontalAlignment(xmlNodePtr, enum TextHorizontalAlignment*);
+	int xmltoTextOverflow(xmlNodePtr, enum TextOverflow*);
+	int xmltoTextVerticalAlignment(xmlNodePtr, enum TextVerticalAlignment*);
+	int xmltoTextWrapping(xmlNodePtr, enum TextWrapping*);
+	int xmltobool(xmlNodePtr, bool_t*);
+	int xmltofixed(xmlNodePtr, fixedString_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("TextResourceID")), &output->TextResourceID);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("TextResourceConfiguration")), &output->TextResourceConfiguration);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("PlaceholderText")), &output->PlaceholderText);
+		xmltoTextOverflow((xmlNodePtr)xmlHasProp(xml, XMLSTR("TextOverflow")), &output->TextOverflow);
+		xmltoBrushShorthand((xmlNodePtr)xmlHasProp(xml, XMLSTR("Placeholder")), &output->Placeholder);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("UseFullFontHeight")), &output->UseFullFontHeight);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("ConstrainContentHeight")), &output->ConstrainContentHeight);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("WordWrap")), &output->WordWrap);
+		xmltoTextWrapping((xmlNodePtr)xmlHasProp(xml, XMLSTR("TextWrapping")), &output->TextWrapping);
+		xmltoTextHorizontalAlignment((xmlNodePtr)xmlHasProp(xml, XMLSTR("TextHorizontalAlignment")), &output->TextHorizontalAlignment);
+		xmltoTextVerticalAlignment((xmlNodePtr)xmlHasProp(xml, XMLSTR("TextVerticalAlignment")), &output->TextVerticalAlignment);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT Node2D_UpdateMatrix(lpObject_t, lpNode2D_t, wParam_t, UpdateMatrixEventPtr);
 LRESULT Node2D_Create(lpObject_t, lpNode2D_t, wParam_t, CreateEventPtr);
 LRESULT Node2D_Destroy(lpObject_t, lpNode2D_t, wParam_t, DestroyEventPtr);
@@ -2713,6 +2956,46 @@ ORCA_API struct ClassDesc _Node2D = {
 	.Defaults = &Node2DDefaults,
 	.NumProperties = kNode2DNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoNode2D(xmlNodePtr xml, lpNode2D_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltoBrushShorthand(xmlNodePtr, struct BrushShorthand*);
+	int xmltoForegroundHint(xmlNodePtr, enum ForegroundHint*);
+	int xmltoOverflowShorthand(xmlNodePtr, struct OverflowShorthand*);
+	int xmltoRingShorthand(xmlNodePtr, struct RingShorthand*);
+	int xmltoShadowShorthand(xmlNodePtr, struct ShadowShorthand*);
+	int xmltobool(xmlNodePtr, bool_t*);
+	int xmltotransform2(xmlNodePtr, struct transform2*);
+	int xmltovec2(xmlNodePtr, struct vec2*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltotransform2((xmlNodePtr)xmlHasProp(xml, XMLSTR("LayoutTransform")), &output->LayoutTransform);
+		xmltotransform2((xmlNodePtr)xmlHasProp(xml, XMLSTR("RenderTransform")), &output->RenderTransform);
+		xmltovec2((xmlNodePtr)xmlHasProp(xml, XMLSTR("RenderTransformOrigin")), &output->RenderTransformOrigin);
+		xmltovec2((xmlNodePtr)xmlHasProp(xml, XMLSTR("ContentOffset")), &output->ContentOffset);
+		xmltoBrushShorthand((xmlNodePtr)xmlHasProp(xml, XMLSTR("Background")), &output->Background);
+		xmltoBrushShorthand((xmlNodePtr)xmlHasProp(xml, XMLSTR("Foreground")), &output->Foreground);
+		xmltoShadowShorthand((xmlNodePtr)xmlHasProp(xml, XMLSTR("BoxShadow")), &output->BoxShadow);
+		xmltoOverflowShorthand((xmlNodePtr)xmlHasProp(xml, XMLSTR("Overflow")), &output->Overflow);
+		xmltoRingShorthand((xmlNodePtr)xmlHasProp(xml, XMLSTR("Ring")), &output->Ring);
+		xmltovec2((xmlNodePtr)xmlHasProp(xml, XMLSTR("CompositionDesignSize")), &output->CompositionDesignSize);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("SizeToContent")), &output->SizeToContent);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("OffscreenRendering")), &output->OffscreenRendering);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("ForceComposition")), &output->ForceComposition);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("CacheResult")), &output->CacheResult);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("SnapToPixel")), &output->SnapToPixel);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("ClipChildren")), &output->ClipChildren);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("ContentStretch")), &output->ContentStretch);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("IgnoreHitTest")), &output->IgnoreHitTest);
+		xmltoForegroundHint((xmlNodePtr)xmlHasProp(xml, XMLSTR("ForegroundHint")), &output->ForegroundHint);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT PrefabView2D_LoadView(lpObject_t, lpPrefabView2D_t, wParam_t, LoadViewEventPtr);
 static struct PropertyDesc const PrefabView2DProperties[kPrefabView2DNumProperties] = {
 	/* PrefabView2D.SCA */ DECL(0x57f28ff6, 0x1ab11f83,
@@ -2748,6 +3031,22 @@ ORCA_API struct ClassDesc _PrefabView2D = {
 	.Defaults = &PrefabView2DDefaults,
 	.NumProperties = kPrefabView2DNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoPrefabView2D(xmlNodePtr xml, lpPrefabView2D_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltofixed(xmlNodePtr, fixedString_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("SCA")), &output->SCA);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Prefab")), &output->Prefab);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT TextBlock_MeasureOverride(lpObject_t, lpTextBlock_t, wParam_t, MeasureOverrideEventPtr);
 LRESULT TextBlock_ForegroundContent(lpObject_t, lpTextBlock_t, wParam_t, ForegroundContentEventPtr);
 LRESULT TextBlock_UpdateGeometry(lpObject_t, lpTextBlock_t, wParam_t, UpdateGeometryEventPtr);
@@ -2792,6 +3091,19 @@ ORCA_API struct ClassDesc _TextBlock = {
 	.Defaults = &TextBlockDefaults,
 	.NumProperties = kTextBlockNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoTextBlock(xmlNodePtr xml, lpTextBlock_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT Input_Create(lpObject_t, lpInput_t, wParam_t, CreateEventPtr);
 LRESULT Input_DrawBrush(lpObject_t, lpInput_t, wParam_t, DrawBrushEventPtr);
 LRESULT Input_MakeText(lpObject_t, lpInput_t, wParam_t, MakeTextEventPtr);
@@ -2851,6 +3163,28 @@ ORCA_API struct ClassDesc _Input = {
 	.Defaults = &InputDefaults,
 	.NumProperties = kInputNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoInput(xmlNodePtr xml, lpInput_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltoInputType(xmlNodePtr, enum InputType*);
+	int xmltobool(xmlNodePtr, bool_t*);
+	int xmltofixed(xmlNodePtr, fixedString_t*);
+	int xmltoint(xmlNodePtr, int32_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Name")), &output->Name);
+		xmltoInputType((xmlNodePtr)xmlHasProp(xml, XMLSTR("Type")), &output->Type);
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("Cursor")), &output->Cursor);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("Multiline")), &output->Multiline);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("Checked")), &output->Checked);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT Button_Create(lpObject_t, lpButton_t, wParam_t, CreateEventPtr);
 LRESULT Button_LeftMouseUp(lpObject_t, lpButton_t, wParam_t, LeftMouseUpEventPtr);
 LRESULT Button_KeyDown(lpObject_t, lpButton_t, wParam_t, KeyDownEventPtr);
@@ -2893,6 +3227,21 @@ ORCA_API struct ClassDesc _Button = {
 	.Defaults = &ButtonDefaults,
 	.NumProperties = kButtonNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoButton(xmlNodePtr xml, lpButton_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltoButtonType(xmlNodePtr, enum ButtonType*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltoButtonType((xmlNodePtr)xmlHasProp(xml, XMLSTR("Type")), &output->Type);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT Label_LeftMouseUp(lpObject_t, lpLabel_t, wParam_t, LeftMouseUpEventPtr);
 static struct PropertyDesc const LabelProperties[kLabelNumProperties] = {
 	/* Label.For */ DECL(0x0f7e1b30, 0x8ea77d4c,
@@ -2926,6 +3275,21 @@ ORCA_API struct ClassDesc _Label = {
 	.Defaults = &LabelDefaults,
 	.NumProperties = kLabelNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoLabel(xmlNodePtr xml, lpLabel_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltofixed(xmlNodePtr, fixedString_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("For")), &output->For);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT StackView_MeasureOverride(lpObject_t, lpStackView_t, wParam_t, MeasureOverrideEventPtr);
 LRESULT StackView_ArrangeOverride(lpObject_t, lpStackView_t, wParam_t, ArrangeOverrideEventPtr);
 static struct PropertyDesc const StackViewProperties[kStackViewNumProperties] = {
@@ -2970,6 +3334,29 @@ ORCA_API struct ClassDesc _StackView = {
 	.Defaults = &StackViewDefaults,
 	.NumProperties = kStackViewNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoStackView(xmlNodePtr xml, lpStackView_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltoAlignItems(xmlNodePtr, enum AlignItems*);
+	int xmltoDirection(xmlNodePtr, enum Direction*);
+	int xmltoJustifyContent(xmlNodePtr, enum JustifyContent*);
+	int xmltobool(xmlNodePtr, bool_t*);
+	int xmltofloat(xmlNodePtr, float*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("Reversed")), &output->Reversed);
+		xmltoDirection((xmlNodePtr)xmlHasProp(xml, XMLSTR("Direction")), &output->Direction);
+		xmltoAlignItems((xmlNodePtr)xmlHasProp(xml, XMLSTR("AlignItems")), &output->AlignItems);
+		xmltoJustifyContent((xmlNodePtr)xmlHasProp(xml, XMLSTR("JustifyContent")), &output->JustifyContent);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("Spacing")), &output->Spacing);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT Form_Create(lpObject_t, lpForm_t, wParam_t, CreateEventPtr);
 LRESULT Form_Submit(lpObject_t, lpForm_t, wParam_t, SubmitEventPtr);
 static struct PropertyDesc const FormProperties[kFormNumProperties] = {
@@ -3004,6 +3391,19 @@ ORCA_API struct ClassDesc _Form = {
 	.Defaults = &FormDefaults,
 	.NumProperties = kFormNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoForm(xmlNodePtr xml, lpForm_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const ControlProperties[kControlNumProperties] = {
 	/* Control.Pressed */ DECL(0x705293c5, 0x0bfbf446,
 	Control, "Pressed", Pressed, kDataTypeBool),
@@ -3044,6 +3444,27 @@ ORCA_API struct ClassDesc _Control = {
 	.Defaults = &ControlDefaults,
 	.NumProperties = kControlNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoControl(xmlNodePtr xml, lpControl_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltobool(xmlNodePtr, bool_t*);
+	int xmltofloat(xmlNodePtr, float*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("Pressed")), &output->Pressed);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("Disabled")), &output->Disabled);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("Hovered")), &output->Hovered);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("Focused")), &output->Focused);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("Value")), &output->Value);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("Scale")), &output->Scale);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static const char *_ResizeMode[] = {"noresize","canminimize","canresize","canresizewithgrip",NULL};
 eResizeMode_t luaX_checkResizeMode(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _ResizeMode);
@@ -3117,6 +3538,23 @@ ORCA_API struct ClassDesc _Screen = {
 	.Defaults = &ScreenDefaults,
 	.NumProperties = kScreenNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoScreen(xmlNodePtr xml, lpScreen_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltoResizeMode(xmlNodePtr, enum ResizeMode*);
+	int xmltocolor(xmlNodePtr, struct color*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltocolor((xmlNodePtr)xmlHasProp(xml, XMLSTR("ClearColor")), &output->ClearColor);
+		xmltoResizeMode((xmlNodePtr)xmlHasProp(xml, XMLSTR("ResizeMode")), &output->ResizeMode);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT Cinematic_DrawBrush(lpObject_t, lpCinematic_t, wParam_t, DrawBrushEventPtr);
 static struct PropertyDesc const CinematicProperties[kCinematicNumProperties] = {
 	/* Cinematic.FileName */ DECL(0x5ffdd888, 0xabe998d5,
@@ -3156,6 +3594,25 @@ ORCA_API struct ClassDesc _Cinematic = {
 	.Defaults = &CinematicDefaults,
 	.NumProperties = kCinematicNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoCinematic(xmlNodePtr xml, lpCinematic_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltofixed(xmlNodePtr, fixedString_t*);
+	int xmltofloat(xmlNodePtr, float*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("FileName")), &output->FileName);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("FrameRate")), &output->FrameRate);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("NumFrames")), &output->NumFrames);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("FadeOut")), &output->FadeOut);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT Grid_MeasureOverride(lpObject_t, lpGrid_t, wParam_t, MeasureOverrideEventPtr);
 LRESULT Grid_ArrangeOverride(lpObject_t, lpGrid_t, wParam_t, ArrangeOverrideEventPtr);
 static struct PropertyDesc const GridProperties[kGridNumProperties] = {
@@ -3202,6 +3659,28 @@ ORCA_API struct ClassDesc _Grid = {
 	.Defaults = &GridDefaults,
 	.NumProperties = kGridNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoGrid(xmlNodePtr xml, lpGrid_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltoDirection(xmlNodePtr, enum Direction*);
+	int xmltofixed(xmlNodePtr, fixedString_t*);
+	int xmltofloat(xmlNodePtr, float*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Columns")), &output->Columns);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Rows")), &output->Rows);
+		xmltoDirection((xmlNodePtr)xmlHasProp(xml, XMLSTR("Direction")), &output->Direction);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("Spacing")), &output->Spacing);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("CellWidth")), &output->CellWidth);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("CellHeight")), &output->CellHeight);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static const char *_Stretch[] = {"uniform","none","fill","uniformtofill",NULL};
 eStretch_t luaX_checkStretch(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _Stretch);
@@ -3285,6 +3764,27 @@ ORCA_API struct ClassDesc _ImageView = {
 	.Defaults = &ImageViewDefaults,
 	.NumProperties = kImageViewNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoImageView(xmlNodePtr xml, lpImageView_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltoStretch(xmlNodePtr, enum Stretch*);
+	int xmltofixed(xmlNodePtr, fixedString_t*);
+	int xmltovec4(xmlNodePtr, struct vec4*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Src")), &output->Src);
+		xmltovec4((xmlNodePtr)xmlHasProp(xml, XMLSTR("Edges")), &output->Edges);
+		xmltovec4((xmlNodePtr)xmlHasProp(xml, XMLSTR("Insets")), &output->Insets);
+		xmltovec4((xmlNodePtr)xmlHasProp(xml, XMLSTR("Viewbox")), &output->Viewbox);
+		xmltoStretch((xmlNodePtr)xmlHasProp(xml, XMLSTR("Stretch")), &output->Stretch);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT NinePatchImage_MeasureOverride(lpObject_t, lpNinePatchImage_t, wParam_t, MeasureOverrideEventPtr);
 LRESULT NinePatchImage_ForegroundContent(lpObject_t, lpNinePatchImage_t, wParam_t, ForegroundContentEventPtr);
 LRESULT NinePatchImage_DrawBrush(lpObject_t, lpNinePatchImage_t, wParam_t, DrawBrushEventPtr);
@@ -3350,6 +3850,25 @@ ORCA_API struct ClassDesc _NinePatchImage = {
 	.Defaults = &NinePatchImageDefaults,
 	.NumProperties = kNinePatchImageNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoNinePatchImage(xmlNodePtr xml, lpNinePatchImage_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltofloat(xmlNodePtr, float*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("StretchTypeTop")), &output->StretchTypeTop);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("StretchTypeBottom")), &output->StretchTypeBottom);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("StretchTypeLeft")), &output->StretchTypeLeft);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("StretchTypeRight")), &output->StretchTypeRight);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("StretchTypeCenter")), &output->StretchTypeCenter);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT TerminalView_Create(lpObject_t, lpTerminalView_t, wParam_t, CreateEventPtr);
 LRESULT TerminalView_DrawBrush(lpObject_t, lpTerminalView_t, wParam_t, DrawBrushEventPtr);
 LRESULT TerminalView_PushProperty(lpObject_t, lpTerminalView_t, wParam_t, PushPropertyEventPtr);
@@ -3403,6 +3922,26 @@ ORCA_API struct ClassDesc _TerminalView = {
 	.Defaults = &TerminalViewDefaults,
 	.NumProperties = kTerminalViewNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoTerminalView(xmlNodePtr xml, lpTerminalView_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltobool(xmlNodePtr, bool_t*);
+	int xmltoint(xmlNodePtr, int32_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("BufferWidth")), &output->BufferWidth);
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("BufferHeight")), &output->BufferHeight);
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("Cursor")), &output->Cursor);
+		xmltoint((xmlNodePtr)xmlHasProp(xml, XMLSTR("SelectedIndex")), &output->SelectedIndex);
+		xmltobool((xmlNodePtr)xmlHasProp(xml, XMLSTR("DropShadow")), &output->DropShadow);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static const char *_TransitionType[] = {"none","slide","fade",NULL};
 eTransitionType_t luaX_checkTransitionType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _TransitionType);
@@ -3622,6 +4161,24 @@ ORCA_API struct ClassDesc _Page = {
 	.Defaults = &PageDefaults,
 	.NumProperties = kPageNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoPage(xmlNodePtr xml, lpPage_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltofixed(xmlNodePtr, fixedString_t*);
+	int xmltofloat(xmlNodePtr, float*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Title")), &output->Title);
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("Path")), &output->Path);
+		xmltofloat((xmlNodePtr)xmlHasProp(xml, XMLSTR("Transition")), &output->Transition);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 LRESULT PageHost_ViewDidLoad(lpObject_t, lpPageHost_t, wParam_t, ViewDidLoadEventPtr);
 LRESULT PageHost_NavigateToPage(lpObject_t, lpPageHost_t, wParam_t, NavigateToPageEventPtr);
 LRESULT PageHost_NavigateBack(lpObject_t, lpPageHost_t, wParam_t, NavigateBackEventPtr);
@@ -3661,6 +4218,19 @@ ORCA_API struct ClassDesc _PageHost = {
 	.Defaults = &PageHostDefaults,
 	.NumProperties = kPageHostNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoPageHost(xmlNodePtr xml, lpPageHost_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static struct PropertyDesc const PageViewportProperties[kPageViewportNumProperties] = {
 };
 static struct PageViewport PageViewportDefaults = {};
@@ -3689,6 +4259,19 @@ ORCA_API struct ClassDesc _PageViewport = {
 	.Defaults = &PageViewportDefaults,
 	.NumProperties = kPageViewportNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoPageViewport(xmlNodePtr xml, lpPageViewport_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static const char *_StyleType[] = {"generic","named",NULL};
 eStyleType_t luaX_checkStyleType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _StyleType);
@@ -3746,6 +4329,23 @@ ORCA_API struct ClassDesc _Style = {
 	.Defaults = &StyleDefaults,
 	.NumProperties = kStyleNumProperties,
 };
+#include <libxml/parser.h>
+ORCA_API int xmltoStyle(xmlNodePtr xml, lpStyle_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltoStyleType(xmlNodePtr, enum StyleType*);
+	int xmltofixed(xmlNodePtr, fixedString_t*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltofixed((xmlNodePtr)xmlHasProp(xml, XMLSTR("TargetType")), &output->TargetType);
+		xmltoStyleType((xmlNodePtr)xmlHasProp(xml, XMLSTR("Type")), &output->Type);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) {
 		{ NULL, NULL }
@@ -3809,98 +4409,162 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	// DataObject
 	lua_pushclass(L, &_DataObject);
 	lua_setfield(L, -2, "DataObject");
+	lua_pushlightuserdata(L, xmltoDataObject);
+	lua_setfield(L, LUA_REGISTRYINDEX, "DataObjectParser");
 	// AnimationPlayer
 	lua_pushclass(L, &_AnimationPlayer);
 	lua_setfield(L, -2, "AnimationPlayer");
+	lua_pushlightuserdata(L, xmltoAnimationPlayer);
+	lua_setfield(L, LUA_REGISTRYINDEX, "AnimationPlayerParser");
 	// Trigger
 	lua_pushclass(L, &_Trigger);
 	lua_setfield(L, -2, "Trigger");
+	lua_pushlightuserdata(L, xmltoTrigger);
+	lua_setfield(L, LUA_REGISTRYINDEX, "TriggerParser");
 	// OnPropertyChangedTrigger
 	lua_pushclass(L, &_OnPropertyChangedTrigger);
 	lua_setfield(L, -2, "OnPropertyChangedTrigger");
+	lua_pushlightuserdata(L, xmltoOnPropertyChangedTrigger);
+	lua_setfield(L, LUA_REGISTRYINDEX, "OnPropertyChangedTriggerParser");
 	// OnAttachedTrigger
 	lua_pushclass(L, &_OnAttachedTrigger);
 	lua_setfield(L, -2, "OnAttachedTrigger");
+	lua_pushlightuserdata(L, xmltoOnAttachedTrigger);
+	lua_setfield(L, LUA_REGISTRYINDEX, "OnAttachedTriggerParser");
 	// EventTrigger
 	lua_pushclass(L, &_EventTrigger);
 	lua_setfield(L, -2, "EventTrigger");
+	lua_pushlightuserdata(L, xmltoEventTrigger);
+	lua_setfield(L, LUA_REGISTRYINDEX, "EventTriggerParser");
 	// Setter
 	lua_pushclass(L, &_Setter);
 	lua_setfield(L, -2, "Setter");
+	lua_pushlightuserdata(L, xmltoSetter);
+	lua_setfield(L, LUA_REGISTRYINDEX, "SetterParser");
 	// Handler
 	lua_pushclass(L, &_Handler);
 	lua_setfield(L, -2, "Handler");
+	lua_pushlightuserdata(L, xmltoHandler);
+	lua_setfield(L, LUA_REGISTRYINDEX, "HandlerParser");
 	// Brush
 	lua_pushclass(L, &_Brush);
 	lua_setfield(L, -2, "Brush");
+	lua_pushlightuserdata(L, xmltoBrush);
+	lua_setfield(L, LUA_REGISTRYINDEX, "BrushParser");
 	// ColorBrush
 	lua_pushclass(L, &_ColorBrush);
 	lua_setfield(L, -2, "ColorBrush");
+	lua_pushlightuserdata(L, xmltoColorBrush);
+	lua_setfield(L, LUA_REGISTRYINDEX, "ColorBrushParser");
 	// Node
 	lua_pushclass(L, &_Node);
 	lua_setfield(L, -2, "Node");
+	lua_pushlightuserdata(L, xmltoNode);
+	lua_setfield(L, LUA_REGISTRYINDEX, "NodeParser");
 	// TextRun
 	lua_pushclass(L, &_TextRun);
 	lua_setfield(L, -2, "TextRun");
+	lua_pushlightuserdata(L, xmltoTextRun);
+	lua_setfield(L, LUA_REGISTRYINDEX, "TextRunParser");
 	// TextBlockConcept
 	lua_pushclass(L, &_TextBlockConcept);
 	lua_setfield(L, -2, "TextBlockConcept");
+	lua_pushlightuserdata(L, xmltoTextBlockConcept);
+	lua_setfield(L, LUA_REGISTRYINDEX, "TextBlockConceptParser");
 	// Node2D
 	lua_pushclass(L, &_Node2D);
 	lua_setfield(L, -2, "Node2D");
+	lua_pushlightuserdata(L, xmltoNode2D);
+	lua_setfield(L, LUA_REGISTRYINDEX, "Node2DParser");
 	// PrefabView2D
 	lua_pushclass(L, &_PrefabView2D);
 	lua_setfield(L, -2, "PrefabView2D");
+	lua_pushlightuserdata(L, xmltoPrefabView2D);
+	lua_setfield(L, LUA_REGISTRYINDEX, "PrefabView2DParser");
 	// TextBlock
 	lua_pushclass(L, &_TextBlock);
 	lua_setfield(L, -2, "TextBlock");
+	lua_pushlightuserdata(L, xmltoTextBlock);
+	lua_setfield(L, LUA_REGISTRYINDEX, "TextBlockParser");
 	// Input
 	lua_pushclass(L, &_Input);
 	lua_setfield(L, -2, "Input");
+	lua_pushlightuserdata(L, xmltoInput);
+	lua_setfield(L, LUA_REGISTRYINDEX, "InputParser");
 	// Button
 	lua_pushclass(L, &_Button);
 	lua_setfield(L, -2, "Button");
+	lua_pushlightuserdata(L, xmltoButton);
+	lua_setfield(L, LUA_REGISTRYINDEX, "ButtonParser");
 	// Label
 	lua_pushclass(L, &_Label);
 	lua_setfield(L, -2, "Label");
+	lua_pushlightuserdata(L, xmltoLabel);
+	lua_setfield(L, LUA_REGISTRYINDEX, "LabelParser");
 	// StackView
 	lua_pushclass(L, &_StackView);
 	lua_setfield(L, -2, "StackView");
+	lua_pushlightuserdata(L, xmltoStackView);
+	lua_setfield(L, LUA_REGISTRYINDEX, "StackViewParser");
 	// Form
 	lua_pushclass(L, &_Form);
 	lua_setfield(L, -2, "Form");
+	lua_pushlightuserdata(L, xmltoForm);
+	lua_setfield(L, LUA_REGISTRYINDEX, "FormParser");
 	// Control
 	lua_pushclass(L, &_Control);
 	lua_setfield(L, -2, "Control");
+	lua_pushlightuserdata(L, xmltoControl);
+	lua_setfield(L, LUA_REGISTRYINDEX, "ControlParser");
 	// Screen
 	lua_pushclass(L, &_Screen);
 	lua_setfield(L, -2, "Screen");
+	lua_pushlightuserdata(L, xmltoScreen);
+	lua_setfield(L, LUA_REGISTRYINDEX, "ScreenParser");
 	// Cinematic
 	lua_pushclass(L, &_Cinematic);
 	lua_setfield(L, -2, "Cinematic");
+	lua_pushlightuserdata(L, xmltoCinematic);
+	lua_setfield(L, LUA_REGISTRYINDEX, "CinematicParser");
 	// Grid
 	lua_pushclass(L, &_Grid);
 	lua_setfield(L, -2, "Grid");
+	lua_pushlightuserdata(L, xmltoGrid);
+	lua_setfield(L, LUA_REGISTRYINDEX, "GridParser");
 	// ImageView
 	lua_pushclass(L, &_ImageView);
 	lua_setfield(L, -2, "ImageView");
+	lua_pushlightuserdata(L, xmltoImageView);
+	lua_setfield(L, LUA_REGISTRYINDEX, "ImageViewParser");
 	// NinePatchImage
 	lua_pushclass(L, &_NinePatchImage);
 	lua_setfield(L, -2, "NinePatchImage");
+	lua_pushlightuserdata(L, xmltoNinePatchImage);
+	lua_setfield(L, LUA_REGISTRYINDEX, "NinePatchImageParser");
 	// TerminalView
 	lua_pushclass(L, &_TerminalView);
 	lua_setfield(L, -2, "TerminalView");
+	lua_pushlightuserdata(L, xmltoTerminalView);
+	lua_setfield(L, LUA_REGISTRYINDEX, "TerminalViewParser");
 	// Page
 	lua_pushclass(L, &_Page);
 	lua_setfield(L, -2, "Page");
+	lua_pushlightuserdata(L, xmltoPage);
+	lua_setfield(L, LUA_REGISTRYINDEX, "PageParser");
 	// PageHost
 	lua_pushclass(L, &_PageHost);
 	lua_setfield(L, -2, "PageHost");
+	lua_pushlightuserdata(L, xmltoPageHost);
+	lua_setfield(L, LUA_REGISTRYINDEX, "PageHostParser");
 	// PageViewport
 	lua_pushclass(L, &_PageViewport);
 	lua_setfield(L, -2, "PageViewport");
+	lua_pushlightuserdata(L, xmltoPageViewport);
+	lua_setfield(L, LUA_REGISTRYINDEX, "PageViewportParser");
 	// Style
 	lua_pushclass(L, &_Style);
 	lua_setfield(L, -2, "Style");
+	lua_pushlightuserdata(L, xmltoStyle);
+	lua_setfield(L, LUA_REGISTRYINDEX, "StyleParser");
 	return 1;
 }
