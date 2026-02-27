@@ -1599,3 +1599,16 @@ lpcString_t stristr(lpcString_t haystack, lpcString_t needle) {
   }
   return NULL; // No match
 }
+
+#include <libxml/parser.h>
+ORCA_API int xmltofloat(xmlNodePtr xml, float* output) {
+  assert(xml->type == XML_ATTRIBUTE_NODE);
+  *output = strtof((char*)xml->content, NULL);
+  return TRUE;
+}
+
+ORCA_API int xmltofixed(xmlNodePtr xml, fixedString_t* str) {
+  assert(xml->type == XML_ATTRIBUTE_NODE);
+  strncpy(*str, (const char*)xml->content, sizeof(*str));
+  return TRUE;
+}

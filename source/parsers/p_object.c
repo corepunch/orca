@@ -46,6 +46,41 @@ xmlParsePropertyAttr(xmlChar const* s)
   return ATTR_WHOLE_PROPERTY;
 }
 
+static void* _GetParser(lua_State* L, lpcString_t type) {
+  char tmp[256];
+  snprintf(tmp, sizeof(tmp), "%sParser", type);
+  lua_getfield(L, LUA_REGISTRYINDEX, tmp);
+  if (lua_isnil(L, -1)) { lua_pop(L, 1); return NULL; }
+  handle_t ptr = lua_touserdata(L, -1);
+  lua_pop(L, 1);
+  return ptr;
+}
+
+
+static int XML_CountNodes(xmlNode *it, xmlChar const* name) {
+  int count = 0;
+  xmlForEach(elm, it) {
+    if (!xmlStrcmp(elm->name, XMLSTR(name))) {
+      count++;
+    }
+  }
+  return count;
+}
+
+static void
+XML_ParseValues(xmlNode *it,
+                lpcPropertyDesc_t pdesc,
+                int (*parser)(xmlNodePtr, void*),
+                char *output)
+{
+  xmlForEach(elm, it) {
+    if (parser && !xmlStrcmp(elm->name, XMLSTR(pdesc->TypeString))) {
+      parser(elm, output);
+      output += pdesc->DataSize;
+    }
+  }
+}
+
 static void
 XML_ParsePropertyNode(lua_State* L, xmlNodePtr it, lpObject_t object)
 {
@@ -70,6 +105,13 @@ XML_ParsePropertyNode(lua_State* L, xmlNodePtr it, lpObject_t object)
     Con_Error("Can not instantiate child node `%s` in %s(%s)", it->name, OBJ_GetName(object), OBJ_GetClassName(object));
     return;
 #endif
+  }
+  lpcPropertyDesc_t pdesc = PROP_GetDesc(property);
+  if (pdesc->IsArray) {
+    void *mem = malloc(pdesc->DataSize * XML_CountNodes(it, XMLSTR(pdesc->TypeString)));
+    XML_ParseValues(it, pdesc, _GetParser(L, pdesc->TypeString), mem);
+    PROP_SetValue(property, &mem);
+    return;
   }
   xmlWith(xmlChar, Enabled, xmlGetProp(it, XMLSTR("Enabled")), xmlFree) {
     bEnabled = xmlStrcmp(Enabled, XMLSTR("true")) == 0;
@@ -266,14 +308,16 @@ XML_ParseObjectNode(lua_State* L, xmlNodePtr xml, lpObject_t root, xmlDocPtr doc
       OBJ_SetFlags(hobj, OBJ_GetFlags(hobj)|OF_LOADED_FROM_PREFAB);
     }
   } else {
-    lpProperty_t p;
-    if (strchr(szClass, '.') && !OBJ_FindLongProperty(root, szClass, &p)) {
-      lua_getglobal(L, "require");
-      lua_pushstring(L, szClass);
-      if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
-        fprintf(stderr, "%s", lua_tostring(L, -1));
-        lua_pop(L, 1);
-        return NULL;
+    if (!strcmp(szClass, "CustomNode") && xmlHasProp(xml, XMLSTR("ClassName"))) {
+      xmlWith(xmlChar, classname, xmlGetProp(xml, XMLSTR("ClassName")), xmlFree) {
+        lua_getglobal(L, "require");
+        lua_pushstring(L, (const char*)classname);
+        if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
+          xmlFree(classname);
+          fprintf(stderr, "%s", lua_tostring(L, -1));
+          lua_pop(L, 1);
+          return NULL;
+        }
       }
     } else {
       lua_getfield(L, LUA_REGISTRYINDEX, szClass);

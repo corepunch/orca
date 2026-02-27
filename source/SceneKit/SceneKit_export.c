@@ -7,6 +7,13 @@
 	.Offset=offsetof(struct CLASS, FIELD), \
 	.DataSize=sizeof(((struct CLASS *)NULL)->FIELD), \
 	.DataType=TYPE, ##__VA_ARGS__ }
+#define ARRAY_DECL(SHORT, LONG, CLASS, NAME, FIELD, TYPE,...) { \
+	.id=&(struct ID){.Name=#CLASS"."NAME,.Identifier=SHORT}, \
+	.FullIdentifier=LONG, \
+	.Offset=offsetof(struct CLASS, FIELD), \
+	.DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), \
+	.DataType=TYPE, \
+	.IsArray=TRUE, ##__VA_ARGS__ }
 
 static const char *_StencilOp[] = {"keep","zero","replace","increment","incrementwrap","decrement","decrementwrap","invert",NULL};
 eStencilOp_t luaX_checkStencilOp(lua_State *L, int idx) {
@@ -16,6 +23,24 @@ void luaX_pushStencilOp(lua_State *L, eStencilOp_t value) {
 	assert(value >= 0 && value < 8);
 	lua_pushstring(L, _StencilOp[value]);
 }
+#include <libxml/parser.h>
+ORCA_API int xmltoStencilOp(xmlNodePtr xml, enum StencilOp* output) {
+	if (xml == NULL) return FALSE;
+	assert(xml->type == XML_ATTRIBUTE_NODE);
+	const char* _StencilOp[] = { "Keep", "Zero", "Replace", "Increment", "IncrementWrap", "Decrement", "DecrementWrap", "Invert", NULL };
+	const char* string = (const char*)xml->content;
+	if (isdigit(*string)) {
+		*output = strtod(string, NULL);
+		return TRUE;
+	} else for (const char **s = _StencilOp; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum StencilOp)(s - _StencilOp);
+			return TRUE;
+		}
+	}
+	Con_Error("Could not parse '%s' value of property StencilOp", string);
+	return FALSE;
+}
 static const char *_ViewportMode[] = {"relative","absolute",NULL};
 eViewportMode_t luaX_checkViewportMode(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _ViewportMode);
@@ -23,6 +48,24 @@ eViewportMode_t luaX_checkViewportMode(lua_State *L, int idx) {
 void luaX_pushViewportMode(lua_State *L, eViewportMode_t value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _ViewportMode[value]);
+}
+#include <libxml/parser.h>
+ORCA_API int xmltoViewportMode(xmlNodePtr xml, enum ViewportMode* output) {
+	if (xml == NULL) return FALSE;
+	assert(xml->type == XML_ATTRIBUTE_NODE);
+	const char* _ViewportMode[] = { "Relative", "Absolute", NULL };
+	const char* string = (const char*)xml->content;
+	if (isdigit(*string)) {
+		*output = strtod(string, NULL);
+		return TRUE;
+	} else for (const char **s = _ViewportMode; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum ViewportMode)(s - _ViewportMode);
+			return TRUE;
+		}
+	}
+	Con_Error("Could not parse '%s' value of property ViewportMode", string);
+	return FALSE;
 }
 static const char *_CullMode[] = {"none","back","front",NULL};
 eCullMode_t luaX_checkCullMode(lua_State *L, int idx) {
@@ -32,6 +75,24 @@ void luaX_pushCullMode(lua_State *L, eCullMode_t value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _CullMode[value]);
 }
+#include <libxml/parser.h>
+ORCA_API int xmltoCullMode(xmlNodePtr xml, enum CullMode* output) {
+	if (xml == NULL) return FALSE;
+	assert(xml->type == XML_ATTRIBUTE_NODE);
+	const char* _CullMode[] = { "None", "Back", "Front", NULL };
+	const char* string = (const char*)xml->content;
+	if (isdigit(*string)) {
+		*output = strtod(string, NULL);
+		return TRUE;
+	} else for (const char **s = _CullMode; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum CullMode)(s - _CullMode);
+			return TRUE;
+		}
+	}
+	Con_Error("Could not parse '%s' value of property CullMode", string);
+	return FALSE;
+}
 static const char *_ColorWriteMode[] = {"none","rgb","rgba","r","g","b","gb","a",NULL};
 eColorWriteMode_t luaX_checkColorWriteMode(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _ColorWriteMode);
@@ -39,6 +100,24 @@ eColorWriteMode_t luaX_checkColorWriteMode(lua_State *L, int idx) {
 void luaX_pushColorWriteMode(lua_State *L, eColorWriteMode_t value) {
 	assert(value >= 0 && value < 8);
 	lua_pushstring(L, _ColorWriteMode[value]);
+}
+#include <libxml/parser.h>
+ORCA_API int xmltoColorWriteMode(xmlNodePtr xml, enum ColorWriteMode* output) {
+	if (xml == NULL) return FALSE;
+	assert(xml->type == XML_ATTRIBUTE_NODE);
+	const char* _ColorWriteMode[] = { "None", "RGB", "RGBA", "R", "G", "B", "GB", "A", NULL };
+	const char* string = (const char*)xml->content;
+	if (isdigit(*string)) {
+		*output = strtod(string, NULL);
+		return TRUE;
+	} else for (const char **s = _ColorWriteMode; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum ColorWriteMode)(s - _ColorWriteMode);
+			return TRUE;
+		}
+	}
+	Con_Error("Could not parse '%s' value of property ColorWriteMode", string);
+	return FALSE;
 }
 static const char *_FovType[] = {"xfov","yfov",NULL};
 eFovType_t luaX_checkFovType(lua_State *L, int idx) {
@@ -48,6 +127,24 @@ void luaX_pushFovType(lua_State *L, eFovType_t value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _FovType[value]);
 }
+#include <libxml/parser.h>
+ORCA_API int xmltoFovType(xmlNodePtr xml, enum FovType* output) {
+	if (xml == NULL) return FALSE;
+	assert(xml->type == XML_ATTRIBUTE_NODE);
+	const char* _FovType[] = { "Xfov", "Yfov", NULL };
+	const char* string = (const char*)xml->content;
+	if (isdigit(*string)) {
+		*output = strtod(string, NULL);
+		return TRUE;
+	} else for (const char **s = _FovType; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum FovType)(s - _FovType);
+			return TRUE;
+		}
+	}
+	Con_Error("Could not parse '%s' value of property FovType", string);
+	return FALSE;
+}
 static const char *_ProjectionType[] = {"perspective","orthographic",NULL};
 eProjectionType_t luaX_checkProjectionType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _ProjectionType);
@@ -56,6 +153,24 @@ void luaX_pushProjectionType(lua_State *L, eProjectionType_t value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _ProjectionType[value]);
 }
+#include <libxml/parser.h>
+ORCA_API int xmltoProjectionType(xmlNodePtr xml, enum ProjectionType* output) {
+	if (xml == NULL) return FALSE;
+	assert(xml->type == XML_ATTRIBUTE_NODE);
+	const char* _ProjectionType[] = { "Perspective", "Orthographic", NULL };
+	const char* string = (const char*)xml->content;
+	if (isdigit(*string)) {
+		*output = strtod(string, NULL);
+		return TRUE;
+	} else for (const char **s = _ProjectionType; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum ProjectionType)(s - _ProjectionType);
+			return TRUE;
+		}
+	}
+	Con_Error("Could not parse '%s' value of property ProjectionType", string);
+	return FALSE;
+}
 static const char *_LightType[] = {"point","spot",NULL};
 eLightType_t luaX_checkLightType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _LightType);
@@ -63,6 +178,24 @@ eLightType_t luaX_checkLightType(lua_State *L, int idx) {
 void luaX_pushLightType(lua_State *L, eLightType_t value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _LightType[value]);
+}
+#include <libxml/parser.h>
+ORCA_API int xmltoLightType(xmlNodePtr xml, enum LightType* output) {
+	if (xml == NULL) return FALSE;
+	assert(xml->type == XML_ATTRIBUTE_NODE);
+	const char* _LightType[] = { "Point", "Spot", NULL };
+	const char* string = (const char*)xml->content;
+	if (isdigit(*string)) {
+		*output = strtod(string, NULL);
+		return TRUE;
+	} else for (const char **s = _LightType; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum LightType)(s - _LightType);
+			return TRUE;
+		}
+	}
+	Con_Error("Could not parse '%s' value of property LightType", string);
+	return FALSE;
 }
 LRESULT Node3D_UpdateMatrix(lpObject_t, lpNode3D_t, wParam_t, UpdateMatrixEventPtr);
 static struct PropertyDesc const Node3DProperties[kNode3DNumProperties] = {

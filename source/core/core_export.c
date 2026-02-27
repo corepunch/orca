@@ -7,6 +7,13 @@
 	.Offset=offsetof(struct CLASS, FIELD), \
 	.DataSize=sizeof(((struct CLASS *)NULL)->FIELD), \
 	.DataType=TYPE, ##__VA_ARGS__ }
+#define ARRAY_DECL(SHORT, LONG, CLASS, NAME, FIELD, TYPE,...) { \
+	.id=&(struct ID){.Name=#CLASS"."NAME,.Identifier=SHORT}, \
+	.FullIdentifier=LONG, \
+	.Offset=offsetof(struct CLASS, FIELD), \
+	.DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), \
+	.DataType=TYPE, \
+	.IsArray=TRUE, ##__VA_ARGS__ }
 
 void luaX_pushlocalization(lua_State *L, lpclocalization_t localization) {
 	lua_pushlightuserdata(L, (lplocalization_t)localization);
@@ -600,6 +607,19 @@ int f_Object___index(lua_State *L) {
 	}
 	return 0;
 }
+#include <libxml/parser.h>
+ORCA_API int xmltoObject(xmlNodePtr xml, lpObject_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 int luaopen_orca_Object(lua_State *L) {
 	luaL_newmetatable(L, "Object");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -612,7 +632,6 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "__setcontext", f_Object___setcontext },
 		{ NULL, NULL },
 	}), 0);
-
 	return 1;
 }
 static int f_core_getFocus(lua_State *L) {
@@ -632,6 +651,24 @@ eDataType_t luaX_checkDataType(lua_State *L, int idx) {
 void luaX_pushDataType(lua_State *L, eDataType_t value) {
 	assert(value >= 0 && value < 13);
 	lua_pushstring(L, _DataType[value]);
+}
+#include <libxml/parser.h>
+ORCA_API int xmltoDataType(xmlNodePtr xml, enum DataType* output) {
+	if (xml == NULL) return FALSE;
+	assert(xml->type == XML_ATTRIBUTE_NODE);
+	const char* _DataType[] = { "None", "Bool", "Int", "Enum", "Float", "Fixed", "LongString", "Edges", "ObjectTags", "Event", "Struct", "Object", "Group", NULL };
+	const char* string = (const char*)xml->content;
+	if (isdigit(*string)) {
+		*output = strtod(string, NULL);
+		return TRUE;
+	} else for (const char **s = _DataType; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum DataType)(s - _DataType);
+			return TRUE;
+		}
+	}
+	Con_Error("Could not parse '%s' value of property DataType", string);
+	return FALSE;
 }
 LRESULT PropertyType_Attached(lpObject_t, lpPropertyType_t, wParam_t, AttachedEventPtr);
 static struct PropertyDesc const PropertyTypeProperties[kPropertyTypeNumProperties] = {

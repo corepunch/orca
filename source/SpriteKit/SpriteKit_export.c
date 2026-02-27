@@ -7,6 +7,13 @@
 	.Offset=offsetof(struct CLASS, FIELD), \
 	.DataSize=sizeof(((struct CLASS *)NULL)->FIELD), \
 	.DataType=TYPE, ##__VA_ARGS__ }
+#define ARRAY_DECL(SHORT, LONG, CLASS, NAME, FIELD, TYPE,...) { \
+	.id=&(struct ID){.Name=#CLASS"."NAME,.Identifier=SHORT}, \
+	.FullIdentifier=LONG, \
+	.Offset=offsetof(struct CLASS, FIELD), \
+	.DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), \
+	.DataType=TYPE, \
+	.IsArray=TRUE, ##__VA_ARGS__ }
 
 void luaX_pushSpriteFrame(lua_State *L, lpcSpriteFrame_t data) {
 	lpSpriteFrame_t self = lua_newuserdata(L, sizeof(struct SpriteFrame));
@@ -48,6 +55,22 @@ int f_SpriteFrame___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in SpriteFrame: %s", luaL_checkstring(L, 2));
 }
+#include <libxml/parser.h>
+ORCA_API int xmltoSpriteFrame(xmlNodePtr xml, lpSpriteFrame_t output) {
+	if (xml == NULL) return FALSE;
+	int xmltorect(xmlNodePtr, struct rect*);
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		xmltorect((xmlNodePtr)xmlHasProp(xml, XMLSTR("Rect")), &output->Rect);
+		xmltorect((xmlNodePtr)xmlHasProp(xml, XMLSTR("UvRect")), &output->UvRect);
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 int luaopen_orca_SpriteFrame(lua_State *L) {
 	luaL_newmetatable(L, "SpriteFrame");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -56,12 +79,12 @@ int luaopen_orca_SpriteFrame(lua_State *L) {
 		{ "__index", f_SpriteFrame___index },
 		{ NULL, NULL },
 	}), 0);
-
 	lua_newtable(L);
 	lua_pushcfunction(L, f_SpriteFrame___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-
+	lua_pushlightuserdata(L, xmltoSpriteFrame);
+	lua_setfield(L, LUA_REGISTRYINDEX, "SpriteFrameParser");
 	return 1;
 }
 static struct PropertyDesc const SpriteAnimationProperties[kSpriteAnimationNumProperties] = {
@@ -71,7 +94,7 @@ static struct PropertyDesc const SpriteAnimationProperties[kSpriteAnimationNumPr
 	SpriteAnimation, "Framerate", Framerate, kDataTypeFloat),
 	/* SpriteAnimation.NumFrames */ DECL(0x32caacb1, 0x37cc69de,
 	SpriteAnimation, "NumFrames", NumFrames, kDataTypeInt),
-	/* SpriteAnimation.Frames */ DECL(0xf03e266f, 0xcbc4645e,
+	/* SpriteAnimation.Frames */ ARRAY_DECL(0xf03e266f, 0xcbc4645e,
 	SpriteAnimation, "Frames", Frames, kDataTypeStruct, .TypeString="SpriteFrame"),
 };
 static struct SpriteAnimation SpriteAnimationDefaults = {0};

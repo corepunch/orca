@@ -90,7 +90,7 @@ class Workspace:
 
     structs:    dict = {}   #: All ``<struct>`` elements, keyed by name
     enums:      dict = {}   #: All ``<enums>`` elements, keyed by name
-    components: dict = {}   #: All ``<component>`` elements, keyed by name
+    components: dict = {}   #: All ``<class>`` elements, keyed by name
     resources:  dict = {}   #: All ``<resource>`` elements, keyed by type
 
 
@@ -195,10 +195,10 @@ def header_get_method_name(node, method):
 def header_get_arg_type(arg):
 	t = arg.get('type')
 	if t in typedefs:
-		return f"{typedefs[t]}*" if arg.get('pointer') else typedefs[t]
+		return f"{typedefs[t]}*" if arg.get('pointer') or arg.get('array') else typedefs[t]
 	if t in Workspace.enums:
 		return _e(t)
-	if arg.get('pointer'):
+	if arg.get('pointer') or arg.get('array'):
 		return lpc(t) if arg.get('const') else lp(t)
 	else:
 		return _c(t) if arg.get('const') else _t(t)
@@ -235,7 +235,7 @@ def export_push_var(ret, var):
 	if rtype in atomic_types:
 		_, push = atomic_types[rtype]
 		return f"{push}(L, {var})"
-	elif ret.get('pointer') or rtype in Workspace.enums:
+	elif ret.get('pointer') or ret.get('array') or rtype in Workspace.enums:
 		return f"luaX_push{rtype}(L, {var})"
 	else:
 		return f"luaX_push{rtype}(L, &{var})"
@@ -256,8 +256,8 @@ def struct_property_cb(cmp, struct, prefix, func, *args):
 	for shorthand in struct.findall("shorthand"):
 		func(shorthand, cmp, shorthand.get('physical'), *args)
 	for field in struct.findall('field') if not struct.get('sealed') else []:
-		if field.get('array'):
-			for m in range(int(field.get('array'))):
+		if field.get('fixed-array'):
+			for m in range(int(field.get('fixed-array'))):
 				name = '%s[%d]' % (field.get('name'), m)
 				component_property_cb(cmp, prefix + name, field, func, *args)
 		else:
@@ -276,11 +276,11 @@ def enum_component_properties(component, func, *args):
 	for shorthand in component.findall("shorthand"):
 		func(shorthand, component, shorthand.get('physical'), *args)
 	for property in component.findall(
-		"property" if component.tag == 'component' else "field"
+		"property" if component.tag == 'class' else "field"
 	):
 		pname = property.get('name')
-		if property.get('array'):
-			for n in range(int(property.get('array'))):
+		if property.get('fixed-array'):
+			for n in range(int(property.get('fixed-array'))):
 				component_property_cb(component, '%s[%d]' % (pname, n), property, func, *args)
 		else:
 			component_property_cb(component, pname, property, func, *args)

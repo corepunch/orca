@@ -7,6 +7,13 @@
 	.Offset=offsetof(struct CLASS, FIELD), \
 	.DataSize=sizeof(((struct CLASS *)NULL)->FIELD), \
 	.DataType=TYPE, ##__VA_ARGS__ }
+#define ARRAY_DECL(SHORT, LONG, CLASS, NAME, FIELD, TYPE,...) { \
+	.id=&(struct ID){.Name=#CLASS"."NAME,.Identifier=SHORT}, \
+	.FullIdentifier=LONG, \
+	.Offset=offsetof(struct CLASS, FIELD), \
+	.DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), \
+	.DataType=TYPE, \
+	.IsArray=TRUE, ##__VA_ARGS__ }
 
 void luaX_pushfontface(lua_State *L, lpcfontface_t fontface) {
 	lua_pushlightuserdata(L, (lpfontface_t)fontface);
@@ -46,13 +53,25 @@ int f_window___index(lua_State *L) {
 	}
 	return 0;
 }
+#include <libxml/parser.h>
+ORCA_API int xmltowindow(xmlNodePtr xml, lpwindow_t output) {
+	if (xml == NULL) return FALSE;
+	switch (xml->type) {
+	case XML_ELEMENT_NODE:
+		return TRUE;
+	case XML_ATTRIBUTE_NODE:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 int luaopen_orca_window(lua_State *L) {
 	luaL_newmetatable(L, "Window");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "__index", f_window___index },
 		{ NULL, NULL },
 	}), 0);
-
 	return 1;
 }
 static const char *_BlendMode[] = {"alphaautomatic","opaque","alpha","additive","premultipliedalpha","mixedalpha",NULL};
@@ -63,6 +82,24 @@ void luaX_pushBlendMode(lua_State *L, eBlendMode_t value) {
 	assert(value >= 0 && value < 6);
 	lua_pushstring(L, _BlendMode[value]);
 }
+#include <libxml/parser.h>
+ORCA_API int xmltoBlendMode(xmlNodePtr xml, enum BlendMode* output) {
+	if (xml == NULL) return FALSE;
+	assert(xml->type == XML_ATTRIBUTE_NODE);
+	const char* _BlendMode[] = { "AlphaAutomatic", "Opaque", "Alpha", "Additive", "PremultipliedAlpha", "MixedAlpha", NULL };
+	const char* string = (const char*)xml->content;
+	if (isdigit(*string)) {
+		*output = strtod(string, NULL);
+		return TRUE;
+	} else for (const char **s = _BlendMode; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum BlendMode)(s - _BlendMode);
+			return TRUE;
+		}
+	}
+	Con_Error("Could not parse '%s' value of property BlendMode", string);
+	return FALSE;
+}
 static const char *_CompareFunc[] = {"never","always","less","lessorequal","greater","greaterorequal","equal","notequal","disabled",NULL};
 eCompareFunc_t luaX_checkCompareFunc(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _CompareFunc);
@@ -70,6 +107,24 @@ eCompareFunc_t luaX_checkCompareFunc(lua_State *L, int idx) {
 void luaX_pushCompareFunc(lua_State *L, eCompareFunc_t value) {
 	assert(value >= 0 && value < 9);
 	lua_pushstring(L, _CompareFunc[value]);
+}
+#include <libxml/parser.h>
+ORCA_API int xmltoCompareFunc(xmlNodePtr xml, enum CompareFunc* output) {
+	if (xml == NULL) return FALSE;
+	assert(xml->type == XML_ATTRIBUTE_NODE);
+	const char* _CompareFunc[] = { "Never", "Always", "Less", "LessOrEqual", "Greater", "GreaterOrEqual", "Equal", "NotEqual", "Disabled", NULL };
+	const char* string = (const char*)xml->content;
+	if (isdigit(*string)) {
+		*output = strtod(string, NULL);
+		return TRUE;
+	} else for (const char **s = _CompareFunc; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum CompareFunc)(s - _CompareFunc);
+			return TRUE;
+		}
+	}
+	Con_Error("Could not parse '%s' value of property CompareFunc", string);
+	return FALSE;
 }
 static const char *_TextureFilter[] = {"nearest","linear","trilinear",NULL};
 eTextureFilter_t luaX_checkTextureFilter(lua_State *L, int idx) {
@@ -79,6 +134,24 @@ void luaX_pushTextureFilter(lua_State *L, eTextureFilter_t value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _TextureFilter[value]);
 }
+#include <libxml/parser.h>
+ORCA_API int xmltoTextureFilter(xmlNodePtr xml, enum TextureFilter* output) {
+	if (xml == NULL) return FALSE;
+	assert(xml->type == XML_ATTRIBUTE_NODE);
+	const char* _TextureFilter[] = { "Nearest", "Linear", "Trilinear", NULL };
+	const char* string = (const char*)xml->content;
+	if (isdigit(*string)) {
+		*output = strtod(string, NULL);
+		return TRUE;
+	} else for (const char **s = _TextureFilter; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum TextureFilter)(s - _TextureFilter);
+			return TRUE;
+		}
+	}
+	Con_Error("Could not parse '%s' value of property TextureFilter", string);
+	return FALSE;
+}
 static const char *_TextureWrap[] = {"clamp","repeat","base",NULL};
 eTextureWrap_t luaX_checkTextureWrap(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _TextureWrap);
@@ -86,6 +159,24 @@ eTextureWrap_t luaX_checkTextureWrap(lua_State *L, int idx) {
 void luaX_pushTextureWrap(lua_State *L, eTextureWrap_t value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _TextureWrap[value]);
+}
+#include <libxml/parser.h>
+ORCA_API int xmltoTextureWrap(xmlNodePtr xml, enum TextureWrap* output) {
+	if (xml == NULL) return FALSE;
+	assert(xml->type == XML_ATTRIBUTE_NODE);
+	const char* _TextureWrap[] = { "Clamp", "Repeat", "Base", NULL };
+	const char* string = (const char*)xml->content;
+	if (isdigit(*string)) {
+		*output = strtod(string, NULL);
+		return TRUE;
+	} else for (const char **s = _TextureWrap; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum TextureWrap)(s - _TextureWrap);
+			return TRUE;
+		}
+	}
+	Con_Error("Could not parse '%s' value of property TextureWrap", string);
+	return FALSE;
 }
 static const char *_TextureFormat[] = {"automatic","rgba8","rgb8","alpha8","depthcomponent","depthstencil",NULL};
 eTextureFormat_t luaX_checkTextureFormat(lua_State *L, int idx) {
@@ -95,6 +186,24 @@ void luaX_pushTextureFormat(lua_State *L, eTextureFormat_t value) {
 	assert(value >= 0 && value < 6);
 	lua_pushstring(L, _TextureFormat[value]);
 }
+#include <libxml/parser.h>
+ORCA_API int xmltoTextureFormat(xmlNodePtr xml, enum TextureFormat* output) {
+	if (xml == NULL) return FALSE;
+	assert(xml->type == XML_ATTRIBUTE_NODE);
+	const char* _TextureFormat[] = { "Automatic", "Rgba8", "Rgb8", "Alpha8", "DepthComponent", "DepthStencil", NULL };
+	const char* string = (const char*)xml->content;
+	if (isdigit(*string)) {
+		*output = strtod(string, NULL);
+		return TRUE;
+	} else for (const char **s = _TextureFormat; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum TextureFormat)(s - _TextureFormat);
+			return TRUE;
+		}
+	}
+	Con_Error("Could not parse '%s' value of property TextureFormat", string);
+	return FALSE;
+}
 static const char *_MipmapMode[] = {"base","nearest","linear","trilinear",NULL};
 eMipmapMode_t luaX_checkMipmapMode(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _MipmapMode);
@@ -103,6 +212,24 @@ void luaX_pushMipmapMode(lua_State *L, eMipmapMode_t value) {
 	assert(value >= 0 && value < 4);
 	lua_pushstring(L, _MipmapMode[value]);
 }
+#include <libxml/parser.h>
+ORCA_API int xmltoMipmapMode(xmlNodePtr xml, enum MipmapMode* output) {
+	if (xml == NULL) return FALSE;
+	assert(xml->type == XML_ATTRIBUTE_NODE);
+	const char* _MipmapMode[] = { "Base", "Nearest", "Linear", "Trilinear", NULL };
+	const char* string = (const char*)xml->content;
+	if (isdigit(*string)) {
+		*output = strtod(string, NULL);
+		return TRUE;
+	} else for (const char **s = _MipmapMode; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum MipmapMode)(s - _MipmapMode);
+			return TRUE;
+		}
+	}
+	Con_Error("Could not parse '%s' value of property MipmapMode", string);
+	return FALSE;
+}
 static const char *_AnisotropyType[] = {"none","x2","x4","x8","x16",NULL};
 eAnisotropyType_t luaX_checkAnisotropyType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _AnisotropyType);
@@ -110,6 +237,24 @@ eAnisotropyType_t luaX_checkAnisotropyType(lua_State *L, int idx) {
 void luaX_pushAnisotropyType(lua_State *L, eAnisotropyType_t value) {
 	assert(value >= 0 && value < 5);
 	lua_pushstring(L, _AnisotropyType[value]);
+}
+#include <libxml/parser.h>
+ORCA_API int xmltoAnisotropyType(xmlNodePtr xml, enum AnisotropyType* output) {
+	if (xml == NULL) return FALSE;
+	assert(xml->type == XML_ATTRIBUTE_NODE);
+	const char* _AnisotropyType[] = { "None", "X2", "X4", "X8", "X16", NULL };
+	const char* string = (const char*)xml->content;
+	if (isdigit(*string)) {
+		*output = strtod(string, NULL);
+		return TRUE;
+	} else for (const char **s = _AnisotropyType; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum AnisotropyType)(s - _AnisotropyType);
+			return TRUE;
+		}
+	}
+	Con_Error("Could not parse '%s' value of property AnisotropyType", string);
+	return FALSE;
 }
 static struct PropertyDesc const TextureProperties[kTextureNumProperties] = {
 	/* Texture.MinificationFilter */ DECL(0x47bdcfab, 0x7754ff10,
@@ -164,6 +309,24 @@ void luaX_pushImageFormat(lua_State *L, eImageFormat_t value) {
 	assert(value >= 0 && value < 5);
 	lua_pushstring(L, _ImageFormat[value]);
 }
+#include <libxml/parser.h>
+ORCA_API int xmltoImageFormat(xmlNodePtr xml, enum ImageFormat* output) {
+	if (xml == NULL) return FALSE;
+	assert(xml->type == XML_ATTRIBUTE_NODE);
+	const char* _ImageFormat[] = { "Png", "Jpeg", "Svg", "Astc", "Pvrtc", NULL };
+	const char* string = (const char*)xml->content;
+	if (isdigit(*string)) {
+		*output = strtod(string, NULL);
+		return TRUE;
+	} else for (const char **s = _ImageFormat; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum ImageFormat)(s - _ImageFormat);
+			return TRUE;
+		}
+	}
+	Con_Error("Could not parse '%s' value of property ImageFormat", string);
+	return FALSE;
+}
 static const char *_AstcFormat[] = {"unormblock4x4","unormblock5x4","unormblock5x5","unormblock6x5","unormblock6x6","unormblock8x5","unormblock8x6","unormblock8x8","unormblock10x5","unormblock10x6","unormblock10x8","unormblock10x10","unormblock12x10","unormblock12x12","srgbblock4x4","srgbblock5x4","srgbblock5x5","srgbblock6x5","srgbblock6x6","srgbblock8x5","srgbblock8x6","srgbblock8x8","srgbblock10x5","srgbblock10x6","srgbblock10x8","srgbblock10x10","srgbblock12x10","srgbblock12x12",NULL};
 eAstcFormat_t luaX_checkAstcFormat(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _AstcFormat);
@@ -171,6 +334,24 @@ eAstcFormat_t luaX_checkAstcFormat(lua_State *L, int idx) {
 void luaX_pushAstcFormat(lua_State *L, eAstcFormat_t value) {
 	assert(value >= 0 && value < 28);
 	lua_pushstring(L, _AstcFormat[value]);
+}
+#include <libxml/parser.h>
+ORCA_API int xmltoAstcFormat(xmlNodePtr xml, enum AstcFormat* output) {
+	if (xml == NULL) return FALSE;
+	assert(xml->type == XML_ATTRIBUTE_NODE);
+	const char* _AstcFormat[] = { "UnormBlock4x4", "UnormBlock5x4", "UnormBlock5x5", "UnormBlock6x5", "UnormBlock6x6", "UnormBlock8x5", "UnormBlock8x6", "UnormBlock8x8", "UnormBlock10x5", "UnormBlock10x6", "UnormBlock10x8", "UnormBlock10x10", "UnormBlock12x10", "UnormBlock12x12", "SrgbBlock4x4", "SrgbBlock5x4", "SrgbBlock5x5", "SrgbBlock6x5", "SrgbBlock6x6", "SrgbBlock8x5", "SrgbBlock8x6", "SrgbBlock8x8", "SrgbBlock10x5", "SrgbBlock10x6", "SrgbBlock10x8", "SrgbBlock10x10", "SrgbBlock12x10", "SrgbBlock12x12", NULL };
+	const char* string = (const char*)xml->content;
+	if (isdigit(*string)) {
+		*output = strtod(string, NULL);
+		return TRUE;
+	} else for (const char **s = _AstcFormat; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum AstcFormat)(s - _AstcFormat);
+			return TRUE;
+		}
+	}
+	Con_Error("Could not parse '%s' value of property AstcFormat", string);
+	return FALSE;
 }
 static const char *_AtcCompressionScheme[] = {"explicitalpha","interpolatedalpha","rgb",NULL};
 eAtcCompressionScheme_t luaX_checkAtcCompressionScheme(lua_State *L, int idx) {
@@ -180,6 +361,24 @@ void luaX_pushAtcCompressionScheme(lua_State *L, eAtcCompressionScheme_t value) 
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _AtcCompressionScheme[value]);
 }
+#include <libxml/parser.h>
+ORCA_API int xmltoAtcCompressionScheme(xmlNodePtr xml, enum AtcCompressionScheme* output) {
+	if (xml == NULL) return FALSE;
+	assert(xml->type == XML_ATTRIBUTE_NODE);
+	const char* _AtcCompressionScheme[] = { "ExplicitAlpha", "InterpolatedAlpha", "Rgb", NULL };
+	const char* string = (const char*)xml->content;
+	if (isdigit(*string)) {
+		*output = strtod(string, NULL);
+		return TRUE;
+	} else for (const char **s = _AtcCompressionScheme; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum AtcCompressionScheme)(s - _AtcCompressionScheme);
+			return TRUE;
+		}
+	}
+	Con_Error("Could not parse '%s' value of property AtcCompressionScheme", string);
+	return FALSE;
+}
 static const char *_AstcCompressionSpeed[] = {"veryfast","fast","medium","thorough","exhaustive",NULL};
 eAstcCompressionSpeed_t luaX_checkAstcCompressionSpeed(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _AstcCompressionSpeed);
@@ -187,6 +386,24 @@ eAstcCompressionSpeed_t luaX_checkAstcCompressionSpeed(lua_State *L, int idx) {
 void luaX_pushAstcCompressionSpeed(lua_State *L, eAstcCompressionSpeed_t value) {
 	assert(value >= 0 && value < 5);
 	lua_pushstring(L, _AstcCompressionSpeed[value]);
+}
+#include <libxml/parser.h>
+ORCA_API int xmltoAstcCompressionSpeed(xmlNodePtr xml, enum AstcCompressionSpeed* output) {
+	if (xml == NULL) return FALSE;
+	assert(xml->type == XML_ATTRIBUTE_NODE);
+	const char* _AstcCompressionSpeed[] = { "VeryFast", "Fast", "Medium", "Thorough", "Exhaustive", NULL };
+	const char* string = (const char*)xml->content;
+	if (isdigit(*string)) {
+		*output = strtod(string, NULL);
+		return TRUE;
+	} else for (const char **s = _AstcCompressionSpeed; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum AstcCompressionSpeed)(s - _AstcCompressionSpeed);
+			return TRUE;
+		}
+	}
+	Con_Error("Could not parse '%s' value of property AstcCompressionSpeed", string);
+	return FALSE;
 }
 static const char *_RawColorByteFormat[] = {"rgba8","rgb8","bgra8","rgba16f","rgb10a2","r11g11b10f","rgba32f",NULL};
 eRawColorByteFormat_t luaX_checkRawColorByteFormat(lua_State *L, int idx) {
@@ -196,6 +413,24 @@ void luaX_pushRawColorByteFormat(lua_State *L, eRawColorByteFormat_t value) {
 	assert(value >= 0 && value < 7);
 	lua_pushstring(L, _RawColorByteFormat[value]);
 }
+#include <libxml/parser.h>
+ORCA_API int xmltoRawColorByteFormat(xmlNodePtr xml, enum RawColorByteFormat* output) {
+	if (xml == NULL) return FALSE;
+	assert(xml->type == XML_ATTRIBUTE_NODE);
+	const char* _RawColorByteFormat[] = { "Rgba8", "Rgb8", "Bgra8", "Rgba16f", "Rgb10a2", "R11g11b10f", "Rgba32f", NULL };
+	const char* string = (const char*)xml->content;
+	if (isdigit(*string)) {
+		*output = strtod(string, NULL);
+		return TRUE;
+	} else for (const char **s = _RawColorByteFormat; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum RawColorByteFormat)(s - _RawColorByteFormat);
+			return TRUE;
+		}
+	}
+	Con_Error("Could not parse '%s' value of property RawColorByteFormat", string);
+	return FALSE;
+}
 static const char *_FilePngCompressionLevel[] = {"none","fast","normal","maximum","projectdefault",NULL};
 eFilePngCompressionLevel_t luaX_checkFilePngCompressionLevel(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _FilePngCompressionLevel);
@@ -203,6 +438,24 @@ eFilePngCompressionLevel_t luaX_checkFilePngCompressionLevel(lua_State *L, int i
 void luaX_pushFilePngCompressionLevel(lua_State *L, eFilePngCompressionLevel_t value) {
 	assert(value >= 0 && value < 5);
 	lua_pushstring(L, _FilePngCompressionLevel[value]);
+}
+#include <libxml/parser.h>
+ORCA_API int xmltoFilePngCompressionLevel(xmlNodePtr xml, enum FilePngCompressionLevel* output) {
+	if (xml == NULL) return FALSE;
+	assert(xml->type == XML_ATTRIBUTE_NODE);
+	const char* _FilePngCompressionLevel[] = { "None", "Fast", "Normal", "Maximum", "ProjectDefault", NULL };
+	const char* string = (const char*)xml->content;
+	if (isdigit(*string)) {
+		*output = strtod(string, NULL);
+		return TRUE;
+	} else for (const char **s = _FilePngCompressionLevel; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum FilePngCompressionLevel)(s - _FilePngCompressionLevel);
+			return TRUE;
+		}
+	}
+	Con_Error("Could not parse '%s' value of property FilePngCompressionLevel", string);
+	return FALSE;
 }
 static const char *_SpansionCompressionScheme[] = {"none","standard","enhanced",NULL};
 eSpansionCompressionScheme_t luaX_checkSpansionCompressionScheme(lua_State *L, int idx) {
@@ -212,6 +465,24 @@ void luaX_pushSpansionCompressionScheme(lua_State *L, eSpansionCompressionScheme
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _SpansionCompressionScheme[value]);
 }
+#include <libxml/parser.h>
+ORCA_API int xmltoSpansionCompressionScheme(xmlNodePtr xml, enum SpansionCompressionScheme* output) {
+	if (xml == NULL) return FALSE;
+	assert(xml->type == XML_ATTRIBUTE_NODE);
+	const char* _SpansionCompressionScheme[] = { "None", "Standard", "Enhanced", NULL };
+	const char* string = (const char*)xml->content;
+	if (isdigit(*string)) {
+		*output = strtod(string, NULL);
+		return TRUE;
+	} else for (const char **s = _SpansionCompressionScheme; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum SpansionCompressionScheme)(s - _SpansionCompressionScheme);
+			return TRUE;
+		}
+	}
+	Con_Error("Could not parse '%s' value of property SpansionCompressionScheme", string);
+	return FALSE;
+}
 static const char *_ImageType[] = {"normal","mask",NULL};
 eImageType_t luaX_checkImageType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _ImageType);
@@ -219,6 +490,24 @@ eImageType_t luaX_checkImageType(lua_State *L, int idx) {
 void luaX_pushImageType(lua_State *L, eImageType_t value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _ImageType[value]);
+}
+#include <libxml/parser.h>
+ORCA_API int xmltoImageType(xmlNodePtr xml, enum ImageType* output) {
+	if (xml == NULL) return FALSE;
+	assert(xml->type == XML_ATTRIBUTE_NODE);
+	const char* _ImageType[] = { "Normal", "Mask", NULL };
+	const char* string = (const char*)xml->content;
+	if (isdigit(*string)) {
+		*output = strtod(string, NULL);
+		return TRUE;
+	} else for (const char **s = _ImageType; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum ImageType)(s - _ImageType);
+			return TRUE;
+		}
+	}
+	Con_Error("Could not parse '%s' value of property ImageType", string);
+	return FALSE;
 }
 LRESULT Image_Start(lpObject_t, lpImage_t, wParam_t, StartEventPtr);
 static struct PropertyDesc const ImageProperties[kImageNumProperties] = {
@@ -307,6 +596,24 @@ void luaX_pushRenderTargetType(lua_State *L, eRenderTargetType_t value) {
 	assert(value >= 0 && value < 7);
 	lua_pushstring(L, _RenderTargetType[value]);
 }
+#include <libxml/parser.h>
+ORCA_API int xmltoRenderTargetType(xmlNodePtr xml, enum RenderTargetType* output) {
+	if (xml == NULL) return FALSE;
+	assert(xml->type == XML_ATTRIBUTE_NODE);
+	const char* _RenderTargetType[] = { "Color", "Depth", "Stencil", "DepthStencil", "Normal", "Specular", "Emission", NULL };
+	const char* string = (const char*)xml->content;
+	if (isdigit(*string)) {
+		*output = strtod(string, NULL);
+		return TRUE;
+	} else for (const char **s = _RenderTargetType; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum RenderTargetType)(s - _RenderTargetType);
+			return TRUE;
+		}
+	}
+	Con_Error("Could not parse '%s' value of property RenderTargetType", string);
+	return FALSE;
+}
 static const char *_RenderTargetTextureAttachment[] = {"none","color0","color1","color2","color3","depth","stencil","depthstencil",NULL};
 eRenderTargetTextureAttachment_t luaX_checkRenderTargetTextureAttachment(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _RenderTargetTextureAttachment);
@@ -314,6 +621,24 @@ eRenderTargetTextureAttachment_t luaX_checkRenderTargetTextureAttachment(lua_Sta
 void luaX_pushRenderTargetTextureAttachment(lua_State *L, eRenderTargetTextureAttachment_t value) {
 	assert(value >= 0 && value < 8);
 	lua_pushstring(L, _RenderTargetTextureAttachment[value]);
+}
+#include <libxml/parser.h>
+ORCA_API int xmltoRenderTargetTextureAttachment(xmlNodePtr xml, enum RenderTargetTextureAttachment* output) {
+	if (xml == NULL) return FALSE;
+	assert(xml->type == XML_ATTRIBUTE_NODE);
+	const char* _RenderTargetTextureAttachment[] = { "None", "Color0", "Color1", "Color2", "Color3", "Depth", "Stencil", "DepthStencil", NULL };
+	const char* string = (const char*)xml->content;
+	if (isdigit(*string)) {
+		*output = strtod(string, NULL);
+		return TRUE;
+	} else for (const char **s = _RenderTargetTextureAttachment; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum RenderTargetTextureAttachment)(s - _RenderTargetTextureAttachment);
+			return TRUE;
+		}
+	}
+	Con_Error("Could not parse '%s' value of property RenderTargetTextureAttachment", string);
+	return FALSE;
 }
 LRESULT RenderTargetTexture_Start(lpObject_t, lpRenderTargetTexture_t, wParam_t, StartEventPtr);
 static struct PropertyDesc const RenderTargetTextureProperties[kRenderTargetTextureNumProperties] = {
@@ -444,6 +769,24 @@ void luaX_pushFloatPrecision(lua_State *L, eFloatPrecision_t value) {
 	assert(value >= 0 && value < 4);
 	lua_pushstring(L, _FloatPrecision[value]);
 }
+#include <libxml/parser.h>
+ORCA_API int xmltoFloatPrecision(xmlNodePtr xml, enum FloatPrecision* output) {
+	if (xml == NULL) return FALSE;
+	assert(xml->type == XML_ATTRIBUTE_NODE);
+	const char* _FloatPrecision[] = { "Unset", "Low", "Medium", "High", NULL };
+	const char* string = (const char*)xml->content;
+	if (isdigit(*string)) {
+		*output = strtod(string, NULL);
+		return TRUE;
+	} else for (const char **s = _FloatPrecision; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum FloatPrecision)(s - _FloatPrecision);
+			return TRUE;
+		}
+	}
+	Con_Error("Could not parse '%s' value of property FloatPrecision", string);
+	return FALSE;
+}
 static const char *_Shading[] = {"unlit","phong","standard",NULL};
 eShading_t luaX_checkShading(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _Shading);
@@ -451,6 +794,24 @@ eShading_t luaX_checkShading(lua_State *L, int idx) {
 void luaX_pushShading(lua_State *L, eShading_t value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _Shading[value]);
+}
+#include <libxml/parser.h>
+ORCA_API int xmltoShading(xmlNodePtr xml, enum Shading* output) {
+	if (xml == NULL) return FALSE;
+	assert(xml->type == XML_ATTRIBUTE_NODE);
+	const char* _Shading[] = { "Unlit", "Phong", "Standard", NULL };
+	const char* string = (const char*)xml->content;
+	if (isdigit(*string)) {
+		*output = strtod(string, NULL);
+		return TRUE;
+	} else for (const char **s = _Shading; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum Shading)(s - _Shading);
+			return TRUE;
+		}
+	}
+	Con_Error("Could not parse '%s' value of property Shading", string);
+	return FALSE;
 }
 static struct PropertyDesc const VertexShaderProperties[kVertexShaderNumProperties] = {
 	/* VertexShader.Version */ DECL(0x5dcdd537, 0x82819cc8,

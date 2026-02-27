@@ -312,6 +312,7 @@ struct PropertyDesc
   size_t DataSize;
   lpcString_t TypeString;
   uint32_t NumComponents;
+  bool_t IsArray;
   struct ID *id;
 };
 

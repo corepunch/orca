@@ -60,11 +60,11 @@ if __name__ == "__main__":
 
 		Workspace.structs.update({s.get('name'): s for s in root.findall(".//struct[@name]")})
 		Workspace.enums.update({e.get('name'): e for e in root.findall(".//enums[@name]")})
-		Workspace.components.update({c.get('name'): c for c in root.findall(".//component[@name]")})
+		Workspace.components.update({c.get('name'): c for c in root.findall(".//class[@name]")})
 		Workspace.resources.update({c.get('type'): c for c in root.findall(".//resource[@type]")})
 
 		for struct in (
-			root.findall('struct') + root.findall('interface') + root.findall('component')
+			root.findall('struct') + root.findall('interface') + root.findall('class')
 		):
 			struct_name = struct.get('name')
 			plugins.call_plugin_hook("struct_fwd_def", struct_name)

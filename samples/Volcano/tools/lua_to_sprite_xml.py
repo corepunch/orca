@@ -113,7 +113,7 @@ def add_animation_xml(parent: ET.Element, anim: dict):
     for f in anim["frames"]:
         ET.SubElement(
             frames_node,
-            "SpriteRect",
+            "SpriteFrame",
             {
                 "Rect": f"{f['dx']} {f['dy']} {f['w']} {f['h']}",
                 "UvRect": f"{f['u']} {f['v']} {f['cu']} {f['cv']}",

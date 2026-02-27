@@ -3,7 +3,7 @@
 <Screen Width="1024" Height="768" Name="mainWindow">
 
   <SKView Name="GameView" Width="1366" Height="768" HorizontalAlignment="Center" Scene="Level">
-    <GameKit.Level Name="Level" />
+    <CustomNode ClassName="GameKit.Level" Name="Level" />
   </SKView>
 
   <SKView Name="InterfaceView"

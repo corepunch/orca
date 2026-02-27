@@ -501,7 +501,7 @@
     <enum name="Group">Logical grouping of related properties or child elements.</enum>
   </enums>
 
-  <component name="PropertyType">
+  <class name="PropertyType">
     <summary>Defines a custom property type that can be attached to engine objects.</summary>
     <details>PropertyType allows defining additional data fields beyond built-in engine properties. Each PropertyType specifies its data category, default value, and behavioral attributes such as layout and render impact. It serves as a flexible mechanism for extending object metadata in projects.</details>
     <handles event="Attached"/>
@@ -520,10 +520,10 @@
     <property name="UpperBound" type="float">Maximum allowed value for numeric properties.</property>
     <property name="LowerBound" type="float">Minimum allowed value for numeric properties.</property>
     <field name="_desc" type="PropertyDesc">Internal descriptor structure providing extended property metadata.</field>
-  </component>
+  </class>
   
-  <component name="PropertyEnumValue">
+  <class name="PropertyEnumValue">
     <property name="Value" type="int"/>
-  </component>
+  </class>
 
 </module>

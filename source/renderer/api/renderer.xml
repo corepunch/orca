@@ -113,7 +113,7 @@
     <enum name="X16">Applies 16x anisotropic filtering for the sharpest textures at glancing angles, at higher GPU cost.</enum>
   </enums>
   
-  <component name="Texture">
+  <class name="Texture">
     <summary>Base class for managing texture resources and their sampling parameters for rendering.</summary>
     <details>Controls texture image loading, filtering modes, and coordinate wrapping behavior. Supports texture preprocessing options like premultiplication and scaling for optimized rendering performance. Serves as the foundation for specialized texture types such as SingleTexture and RenderTargetTexture.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -131,7 +131,7 @@
     <property name="Width" type="int">Actual width of the texture in pixels.</property>
     <property name="Height" type="int">Actual height of the texture in pixels.</property>
     <field name="loaded" type="bool">Used for on-demand texture loading.</field>
-  </component>
+  </class>
   
   <enums name="ImageFormat">
     <enum name="Png">Portable Network Graphics — lossless compression, supports alpha channel, widely used for UI textures and screenshots</enum>
@@ -216,7 +216,7 @@
     <enum name="Mask"></enum>
   </enums>
 
-  <component name="Image" parent="Texture">
+  <class name="Image" parent="Texture">
     <handles event="Start"/>
     <summary>Represents a single, pre-loaded texture image for use in rendering operations.</summary>
     <details>Extends the base Texture class to load a specific image file, providing a straightforward way to incorporate static textures into scenes without dynamic generation or rendering targets.</details>
@@ -244,7 +244,7 @@
     <property name="FileExportAlways" type="bool">When `true`, ensures the texture is exported regardless of other conditions.</property>
     <property name="FileExportEmptyWhenFileIsMissing" type="bool">When `true`, exports an empty placeholder if the source file is missing.</property>
     <property name="FileExportSourceImage" type="fixed"/>
-  </component>
+  </class>
 
   <enums name="RenderTargetType">
     <enum name="Color">Standard color attachment used for rendering the final image or intermediate color buffers</enum>
@@ -267,7 +267,7 @@
     <enum name="DepthStencil">Combined depth-stencil attachment</enum>
   </enums>
 
-  <component name="RenderTargetTexture" parent="Texture">
+  <class name="RenderTargetTexture" parent="Texture">
     <summary>Texture configured as a render target for off-screen rendering and post-processing effects.</summary>
     <details>Extends the base Texture class to create a dynamic texture that can be bound as a framebuffer for rendering operations. Supports custom dimensions for targeted resolutions, enabling techniques like bloom, depth-of-field, or shadow mapping without affecting the main display output.</details>
     <handles event="Start"/>
@@ -278,9 +278,9 @@
     <property name="Attachment" type="RenderTargetTextureAttachment">Defines the framebuffer slot or channel this texture is attached to.</property>
     <property name="AllowDepthFallback" type="bool">Allows using a depth-only buffer as a fallback when a full depth-stencil attachment is unavailable, ensuring rendering can proceed with reduced functionality.</property>
     <property name="SampleCount" type="int">Specifies the number of multisample samples used when rendering to this texture, controlling the level of anti-aliasing applied.</property>
-  </component>
+  </class>
   
-  <component name="CubeMapTexture" parent="Texture">
+  <class name="CubeMapTexture" parent="Texture">
     <summary>Cubemap texture assembled from six individual images, one for each face of a cube, used for environment mapping, reflections, and sky rendering.</summary>
     <details>Extends the base Texture class to support loading separate images for positive and negative axes of a 3D cube. This configuration allows for realistic spherical mapping in shaders, where texture coordinates are projected onto the cube faces for seamless omnidirectional sampling without seams or distortion at cube edges.</details>
     <handles event="Start"/>
@@ -290,14 +290,14 @@
     <property name="RightImage" type="fixed">Path to the image file for the right face (positive X-axis) of the cubemap.</property>
     <property name="BottomImage" type="fixed">Path to the image file for the bottom face (negative Y-axis) of the cubemap.</property>
     <property name="TopImage" type="fixed">Path to the image file for the top face (positive Y-axis) of the cubemap.</property>
-  </component>
+  </class>
 
-  <component name="IOSurfaceTexture" parent="Texture">
+  <class name="IOSurfaceTexture" parent="Texture">
     <summary>Texture created from a shared macOS IOSurface for zero-copy GPU data sharing.</summary>
     <details>Extends the base Texture class to bind an existing IOSurface as an OpenGL texture using GL_TEXTURE_RECTANGLE. Enables efficient inter-process or inter-context sharing of rendered images without CPU copying, suitable for compositing, video, or off-screen rendering pipelines.</details>
     <handles event="Start"/>
     <property name="IOSurface" type="int">The IOSurface identifier used to look up and bind the shared surface as a texture.</property>
-  </component>
+  </class>
 
 <!--  <enums name="SourceType">-->
 <!--    <summary> Specifies how a shader uniform value is determined — whether it comes from a predefined uniform, a linked property, or is manually assigned.</summary>-->
@@ -350,25 +350,25 @@
     <enum name="Standard">Physically-based rendering (PBR) model. Provides realistic material appearance based on physical light interaction principles, supporting metallic and roughness workflows.</enum>
   </enums>
   
-  <component name="VertexShader">
+  <class name="VertexShader">
     <summary>Vertex processing stage of the shader pipeline</summary>
     <details>Processes each vertex of the geometry, transforming positions from model space to screen space. Handles per-vertex attributes and passes interpolated values to the fragment shader through shared variables.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <property name="Version" type="int">GLSL shader language version number (e.g., 150 for GLSL 1.50, 330 for GLSL 3.30)</property>
     <property name="FloatPrecision" type="FloatPrecision">Default floating-point precision for vertex shader calculations</property>
     <property name="Shading" type="Shading">The lighting/shading model to use for vertex processing. Determines which lighting calculations are performed and how surface appearance is computed.</property>
-  </component>
+  </class>
 
-  <component name="FragmentShader">
+  <class name="FragmentShader">
     <summary>Fragment (pixel) processing stage of the shader pipeline</summary>
     <details>Executes for each pixel fragment, determining final color output. Samples textures, performs lighting calculations, and writes to the specified output variable. Receives interpolated values from the vertex shader.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <property name="Version" type="int">GLSL shader language version number (e.g., 150 for GLSL 1.50, 330 for GLSL 3.30)</property>
     <property name="FloatPrecision" type="FloatPrecision">Default floating-point precision for fragment shader calculations</property>
     <property name="Out" type="fixed">Name of the output variable for fragment color (e.g., "FragColor", "gl_FragColor")</property>
-  </component>
+  </class>
 
-  <component name="Shader">
+  <class name="Shader">
     <summary>Complete shader program definition combining vertex and fragment stages</summary>
     <details>Encapsulates the entire shader pipeline with configurable uniforms, attributes, and shared variables. Uniforms provide per-draw parameters (textures, colors, transforms), attributes supply per-vertex data (positions, UVs, colors), and shared variables pass interpolated data between shader stages.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -379,9 +379,9 @@
     <property name="DepthWriteEnabled" type="bool">Whether depth buffer writing is enabled by default. When true, rendered fragments update the depth buffer; when false, depth values are not written.</property>
     BlendMode
     <field name="shader" type="shader" pointer="true">Compiled shader for runtime use</field>
-  </component>
+  </class>
   
-  <component name="Material">
+  <class name="Material">
     <summary>Shader-based rendering material for advanced visual effects</summary>
     <details>Encapsulates shader programs and their parameters for custom rendering effects. Supports standard uniforms for color and texture.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -400,9 +400,9 @@
     <property name="BlendMode" type="BlendMode" default="AlphaAutomatic">Blending mode for material rendering </property>
     <property name="u_color" type="color">Uniform color parameter for shader </property>
     <property name="u_texture" type="Texture" pointer="true">Uniform texture parameter for shader </property>
-  </component>
+  </class>
   
-  <component name="Mesh">
+  <class name="Mesh">
     <summary>Renderable 3D geometry component with material and model data</summary>
     <details>Represents a 3D mesh object in the scene. Manages the geometry data (vertices, indices, normals, UVs) and associated material for rendering. Responds to lifecycle events for loading and cleanup of mesh resources.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -412,9 +412,9 @@
     <property name="Material" type="Material" pointer="true">Reference to the material that defines the mesh's visual appearance. Controls shaders, textures, colors, and rendering properties applied to the geometry.</property>
     <property name="MeshMorphTargets" type="fixed">Name of the morph targets in the mesh</property>
     <field name="model" type="model" pointer="true">Internal pointer to the loaded model data structure containing the mesh geometry.</field>
-  </component>
+  </class>
   
-  <component name="FontFamily">
+  <class name="FontFamily">
     <summary>TrueType font resource for text rendering</summary>
     <details>Loads and manages a TrueType font file for rendering text in the scene. Provides glyph data and metrics for text layout and rendering. May be extended in the future to support font families with variants (regular, bold, italic).</details>
     <handles event="Start">Called when the mesh component is initialized. Used to load the mesh geometry from the specified source and set up rendering resources.</handles>
@@ -427,13 +427,13 @@
     <field name="bold" type="fontface" pointer="true">Internal pointer to the loaded font data.</field>
     <field name="italic" type="fontface" pointer="true">Internal pointer to the loaded font data.</field>
     <field name="bolditalic" type="fontface" pointer="true">Internal pointer to the loaded font data.</field>
-  </component>
+  </class>
 
-  <component name="Trajectory">
-  </component>
+  <class name="Trajectory">
+  </class>
 
-  <component name="Timeline">
-  </component>
+  <class name="Timeline">
+  </class>
 
 <!--  <function name="CreateRenderTarget" lua="true">-->
 <!--    <summary>Creates a GPU render target.</summary>-->

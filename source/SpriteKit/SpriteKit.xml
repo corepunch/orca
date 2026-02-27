@@ -10,14 +10,14 @@
     <field name="UvRect" type="rect"/>
   </struct>
   
-  <component name="SpriteAnimation">
+  <class name="SpriteAnimation">
     <property name="Image" type="Texture" pointer="true">Spritesheet texture</property>
     <property name="Framerate" type="float">Frames per second</property>
     <property name="NumFrames" type="int">Number of frames</property>
-    <property name="Frames" type="SpriteFrame" pointer="true">Variable-length frame data array</property>
-  </component>
+    <property name="Frames" type="SpriteFrame" array="true">Variable-length frame data array</property>
+  </class>
   
-  <component name="SKNode" parent="Node" children="SKNode">
+  <class name="SKNode" parent="Node" children="SKNode">
     <summary>Base 2D sprite node with transform and matrix</summary>
     <details>Provides fundamental 2D transformation properties for sprite scene graph nodes. All sprite objects in the scene inherit from this component.</details>
     <handles event="UpdateMatrix"/>
@@ -30,15 +30,15 @@
     <property name="Anchor" type="vec2">Anchor point for positioning</property>
     <field name="Matrix" type="mat4">Final combined transformation matrix (computed automatically)</field>
     <field name="_opacity" type="float"/>
-  </component>
+  </class>
 
-  <component name="SKScene" parent="SKNode">
+  <class name="SKScene" parent="SKNode">
     <summary>Root container for a 2D sprite scene</summary>
     <details>Represents a complete 2D sprite scene that can be rendered to an SKView. Acts as the root node of the sprite scene hierarchy.</details>
     <handles event="UpdateMatrix"/>
-  </component>
+  </class>
 
-  <component name="SKSpriteNode" parent="SKNode">
+  <class name="SKSpriteNode" parent="SKNode">
     <summary>2D sprite node that renders an image or animation</summary>
     <details>Renders 2D sprite content using either a static image or an animated sprite animation. Supports UV coordinates for sprite atlas sheets and various blend modes.</details>
     <handles event="Render"/>
@@ -48,24 +48,24 @@
     <property name="FreezeFrame" type="int" default="-1">Freeze animation at a specific frame index (-1 for normal playback)</property>
     <property name="BlendMode" type="BlendMode" default="AlphaAutomatic">Blend mode for rendering</property>
     <property name="UvRect" type="rect">UV texture coordinates for sprite atlas sampling</property>
-  </component>
+  </class>
 
-  <component name="SKLabelNode" parent="SKNode" concept="TextBlockConcept">
+  <class name="SKLabelNode" parent="SKNode" concept="TextBlockConcept">
     <summary>2D text label node for displaying text in sprite space</summary>
     <details>Renders text as a 2D sprite node that participates in the sprite scene hierarchy. Inherits text styling and layout from the TextBlockConcept.</details>
     <handles event="Render"/>
     <handles event="Create"/>
     <property name="Color" type="color">Color of the text</property>
     <field name="_node" type="SKNode" pointer="true"/>
-  </component>
+  </class>
 
-  <component name="SKView" parent="Node2D" children="SKNode">
+  <class name="SKView" parent="Node2D" children="SKNode">
     <summary>2D viewport that renders an SKScene into the UI hierarchy</summary>
     <details>Acts as the bridge between the 2D UI system and the sprite scene hierarchy. Renders the attached SKScene using a 2D orthographic projection into its Node2D bounds.</details>
     <handles event="ForegroundContent"/>
     <property name="ReferenceWidth" type="float">Reference width for the sprite coordinate system</property>
     <property name="ReferenceHeight" type="float">Reference height for the sprite coordinate system</property>
     <property name="Scene" type="fixed">Name of SKScene to render</property>
-  </component>
+  </class>
 
 </module>

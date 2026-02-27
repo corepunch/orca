@@ -202,7 +202,7 @@
     <shorthand name="BorderStyle" physical="Border.Axis[0]" userdata="Node.Border%sStyle">Shorthand for defining the line style of borders along each edge. Specifies the border style (solid, dashed, etc.) per edge.</shorthand>
     <shorthand name="BorderColor" physical="Border.Axis[0]" userdata="Node.Border%sColor">Shorthand for defining the color of borders along each edge. Specifies the border color for each edge individually.</shorthand>
     <field name="Radius" type="BorderRadiusShorthand">Border radius definition per corner</field>
-    <field name="Axis" type="BorderSideShorthand" array="3">Border definition per axis</field>
+    <field name="Axis" type="BorderSideShorthand" fixed-array="3">Border definition per axis</field>
   </struct>
 
   <struct name="EdgeShorthand">
@@ -214,7 +214,7 @@
   <struct name="AlignmentShorthand">
     <summary>Axis-specific alignment parameters.</summary>
     <details>Stores per-axis alignment information (e.g., Horizontal, Vertical, Depth). Used by Node and its derived classes to control alignment.</details>
-    <field name="Axis" type="int" array="3">Alignment of the element within its parent (similar to HorizontalAlignment/VerticalAlignment in XAML).</field>
+    <field name="Axis" type="int" fixed-array="3">Alignment of the element within its parent (similar to HorizontalAlignment/VerticalAlignment in XAML).</field>
   </struct>
 
   <struct name="FontShorthand">
@@ -276,7 +276,7 @@
   <struct name="MarginShorthand">
     <summary>External spacing configuration for rectangular elements</summary>
     <details>Allows independent control of the external spacing applied to each edge of an element.</details>
-    <field name="Axis" type="EdgeShorthand" array="3">External spacing per axis</field>
+    <field name="Axis" type="EdgeShorthand" fixed-array="3">External spacing per axis</field>
   </struct>
 
   <struct name="SizeAxisShorthand">
@@ -291,15 +291,15 @@
   <struct name="SizeShorthand">
     <summary>Sizing configuration of elements (e.g., Width, Height, Depth)</summary>
     <details>You can set values and the engine will try it's best to preserve those.</details>
-    <field name="Axis" type="SizeAxisShorthand" array="3">A number value per axis</field>
+    <field name="Axis" type="SizeAxisShorthand" fixed-array="3">A number value per axis</field>
   </struct>
 
-  <component name="DataObject">
+  <class name="DataObject">
     <summary>Base class for data-holding objects within the framework</summary>
     <details>Provides fundamental data management capabilities and serves as the base for objects that participate in data binding operations.</details>
-  </component>
+  </class>
 
-  <component name="AnimationPlayer">
+  <class name="AnimationPlayer">
     <summary>Controls playback of animations within the UI engine.</summary>
     <details>Provides functionality for starting, stopping, and repeating animations on scene objects. Supports different playback modes, timing adjustments, and restoration of original property values.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -310,9 +310,9 @@
     <property name="RepeatCount" type="int"> Number of times the animation should repeat. Use -1 (or another sentinel value, depending on implementation) to indicate infinite looping.</property>
     <property name="RestoreOriginalValuesAfterPlayback" type="bool">Restores the original property values after the animation ends.</property>
     <property name="Timeline" type="Timeline" pointer="true">Reference to the animation timeline that defines keyframes and transitions.</property>
-  </component>
+  </class>
 
-  <component name="Trigger">
+  <class name="Trigger">
     <summary>Base class for event-driven actions within the UI system</summary>
     <details>Triggers respond to various conditions and can execute actions like property changes or method calls. Part of the reactive UI behavior system.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -320,33 +320,33 @@
     <handles event="Attached"/>
     <property name="Property" type="fixed">Target property name to monitor or modify </property>
     <property name="Value" type="int">Associated value for the trigger condition </property>
-  </component>
+  </class>
 
-  <component name="OnPropertyChangedTrigger">
+  <class name="OnPropertyChangedTrigger">
     <summary>Responds to property value changes on specified nodes</summary>
     <details>Monitors a named property on a source node and triggers actions when the property value changes. Useful for reactive UI updates.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <handles event="PropertyChanged"/>
     <property name="SourceNode" type="fixed">Name or identifier of the node to monitor </property>
     <property name="Property" type="fixed">Property name to watch for changes </property>
-  </component>
+  </class>
 
-  <component name="OnAttachedTrigger">
+  <class name="OnAttachedTrigger">
     <summary>Triggers when an element is attached to the visual tree</summary>
     <details>Useful for initialization actions that should occur when an element becomes part of the active UI hierarchy.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <handles event="Attached"/>
-  </component>
+  </class>
 
-  <component name="EventTrigger">
+  <class name="EventTrigger">
     <summary>Responds to routed UI events (mouse, keyboard, etc.)</summary>
     <details>Listens for specific routed events and can execute actions in response. Supports the standard UI event bubbling system.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <handles event="HandleMessage"/>
     <property name="RoutedEvent" type="fixed">Name of the routed event to handle (e.g., "MouseDown", "KeyPress") </property>
-  </component>
+  </class>
 
-  <component name="Setter">
+  <class name="Setter">
     <summary>Applies property values when triggered by specified conditions</summary>
     <details>Part of the trigger system - sets target properties to specific values when the associated trigger condition is met.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -354,17 +354,17 @@
     <property name="Trigger" type="Trigger" pointer="true">Triggering condition or state image </property>
     <property name="Property" type="fixed">Target property name to set </property>
     <property name="Value" type="fixed">Value to apply to the property </property>
-  </component>
+  </class>
 
-<!--  <component name="Project">-->
+<!--  <class name="Project">-->
 <!--    <summary>Top-level project configuration and settings</summary>-->
 <!--    <details>Defines global project parameters including screen dimensions and project identification. Typically one per application.</details>-->
 <!--    <property name="Name" type="fixed">Project identifier or display name </property>-->
 <!--    <property name="ScreenWidth" type="int">Target screen width in pixels </property>-->
 <!--    <property name="ScreenHeight" type="int">Target screen height in pixels </property>-->
-<!--  </component>-->
+<!--  </class>-->
 
-  <component name="Handler">
+  <class name="Handler">
     <summary>Executes custom functions when triggered by specified conditions</summary>
     <details>More flexible than Setter - can call arbitrary functions on target objects rather than just setting properties.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -372,32 +372,32 @@
     <property name="Trigger" type="Trigger" pointer="true">Triggering condition or state image </property>
     <property name="Target" type="Object" pointer="true">Target object to call function on </property>
     <property name="Function" type="fixed">Function name to execute on target </property>
-  </component>
+  </class>
   
-  <component name="Brush">
+  <class name="Brush">
     <summary>Base class for all brush types used in rendering.</summary>
     <details>Brush defines the general interface for drawing surfaces or filling shapes with visual content. It serves as the root for more specific brushes like ColorBrush, TextureBrush, and MaterialBrush, which define concrete rendering behaviors.</details>
-  </component>
+  </class>
   
-  <component name="ColorBrush" parent="Brush">
+  <class name="ColorBrush" parent="Brush">
     <summary>Brush that fills an area with a solid color.</summary>
     <details>ColorBrush applies a uniform color to a drawable surface. It is typically used for flat-colored elements such as backgrounds, highlights, or overlays where no texture or material is required.</details>
     <property name="Color" type="color">The color value used to fill the target area.</property>
-  </component>
+  </class>
   
-<!--  <component name="TextureBrush" parent="Brush">-->
+<!--  <class name="TextureBrush" parent="Brush">-->
 <!--    <summary>Brush that fills an area with a texture.</summary>-->
 <!--    <details>TextureBrush maps an image texture onto a surface. It supports using repeating or stretched textures to define patterns, backgrounds, or image-based fills.</details>-->
 <!--    <property name="Texture" type="Texture">The texture resource used for drawing.</property>-->
-<!--  </component>-->
+<!--  </class>-->
 <!--  -->
-<!--  <component name="MaterialBrush" parent="Brush">-->
+<!--  <class name="MaterialBrush" parent="Brush">-->
 <!--    <summary>Brush that fills an area using a material definition.</summary>-->
 <!--    <details>MaterialBrush renders its target using a Material resource, which may include shader parameters, normal maps, and other advanced rendering attributes. This allows for dynamic visual effects and physically based rendering techniques.</details>-->
 <!--    <property name="Material" type="Material">The material resource used for rendering.</property>-->
-<!--  </component>-->
+<!--  </class>-->
 
-  <component name="Node">
+  <class name="Node">
     <summary>Base class for all UI engine nodes.</summary>
     <details>Node is the fundamental class for all engine objects (e.g., Node2D, Node3D, RenderPass). It manages shared functionality such as size, layout, visibility, opacity, tags, and data context. You normally work with derived classes rather than creating instances of Node directly.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -415,9 +415,9 @@
     <property name="Opacity" type="float" default="1">Opacity of the node, range [0.0 = transparent, 1.0 = fully opaque].</property>
     <property name="Tags" type="objectTags">Tag collection for categorizing or querying nodes.</property>
     <property name="DataContext" type="DataObject" pointer="true">Data context (used for data binding, similar to XAML's DataContext).</property>
-  </component>
+  </class>
 
-  <component name="TextRun">
+  <class name="TextRun">
     <summary>Shared concept for text rendering in 2D and 3D nodes.</summary>
     <details>This class is not instantiated directly. Instead, it provides the common properties and functionality for text rendering, used internally by higher-level components such as 2D and 3D text nodes. The concept encapsulates text content, resources, formatting options, alignment, and font configuration.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -431,9 +431,9 @@
     <property name="RemoveSideBearingsProperty" type="bool">Removes side bearings (spacing) defined by the font.</property>
     <field name="_textinfo" type="text_info">Internal text information structure.</field>
     <field name="_font" type="FontShorthand" pointer="true">Reference to the font shorthand configuration.</field>
-  </component>
+  </class>
   
-  <component name="TextBlockConcept" parent="TextRun">
+  <class name="TextBlockConcept" parent="TextRun">
     <summary>Shared concept for text rendering in 2D and 3D nodes.</summary>
     <details>This class is not instantiated directly. Instead, it provides the common properties and functionality for text rendering, used internally by higher-level components such as 2D and 3D text nodes. The concept encapsulates text content, resources, formatting options, alignment, and font configuration.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -455,9 +455,9 @@
     <field name="_steps" type="uiLabelSteps">Internal step-based rendering parameters.</field>
     <field name="_node" type="Node" pointer="true">Reference to the owning node using this concept.</field>
     <field name="_text" type="ViewText" pointer="true">Internal view representation of the text.</field>
-  </component>
+  </class>
 
-  <component name="Node2D" parent="Node" children="Node2D">
+  <class name="Node2D" parent="Node" children="Node2D">
     <summary>Primary class for 2D UI elements with comprehensive rendering capabilities</summary>
     <details>Extends Node with 2D-specific functionality including transforms, visual effects, composition, and event handling. This is the base class for most visible UI elements. \snippet docs/creating_node2d.lua</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -556,9 +556,9 @@
       <arg name="sizing" type="Sizing"/>
       <returns type="float"/>
     </method>
-  </component>
+  </class>
 
-  <component name="PrefabView2D" parent="Node2D">
+  <class name="PrefabView2D" parent="Node2D">
     <summary>Container for loading and displaying prefabricated UI components</summary>
     <details>Allows loading of pre-designed UI layouts from external resources. Useful for reusable UI components and modular design patterns.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -567,9 +567,9 @@
     <property name="Prefab" type="fixed">Prefab resource name within the archive </property>
     <field name="_loadedSCA" type="int">Hashed value of currently loaded SCA</field>
     <field name="_loadedPrefab" type="int">Hashed value of loaded prefab instance </field>
-  </component>
+  </class>
 
-  <component name="TextBlock" parent="Node2D" concept="TextBlockConcept">
+  <class name="TextBlock" parent="Node2D" concept="TextBlockConcept">
     <summary>Concrete implementation of text display combining Node2D and TextBlockConcept</summary>
     <details>Primary class for displaying static text with full typography control. Combines 2D rendering capabilities with comprehensive text formatting options.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -579,9 +579,9 @@
     <handles event="Create"/>
     <handles event="DrawBrush"/>
     <field name="_node2D" type="Node2D" pointer="true">Internal reference to the underlying Node2D instance </field>
-  </component>
+  </class>
 
-  <component name="Input" parent="TextBlock">
+  <class name="Input" parent="TextBlock">
     <summary>Interactive text input control with multiple input modes</summary>
     <details>Extends TextBlock to provide editable text capabilities. Supports various input types including text, password, numeric, checkbox, and radio button modes.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -598,9 +598,9 @@
     <property name="Multiline" type="bool">Allow multiple lines of text input </property>
     <property name="Checked" type="bool">Checked state for checkbox/radio types </property>
     <field name="_checkmark" type="Texture" pointer="true">Internal checkmark image for checkbox rendering</field>
-  </component>
+  </class>
 
-  <component name="Button" parent="TextBlock">
+  <class name="Button" parent="TextBlock">
     <summary>Interactive button control for user actions</summary>
     <details>Extends TextBlock to provide clickable button functionality. Handles mouse and keyboard activation with customizable button types.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -609,17 +609,17 @@
     <handles event="KeyDown"/>
     <handles event="DrawBrush"/>
     <property name="Type" type="ButtonType">Button behavior type (normal or submit) </property>
-  </component>
+  </class>
 
-  <component name="Label" parent="TextBlock">
+  <class name="Label" parent="TextBlock">
     <summary>Text label with optional association to form controls</summary>
     <details>Displays static text that can be associated with input controls for accessibility. Clicking the label can transfer focus to associated control.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <handles event="LeftMouseUp"/>
     <property name="For" type="fixed">Identifier of associated form control </property>
-  </component>
+  </class>
 
-  <component name="StackView" parent="Node2D">
+  <class name="StackView" parent="Node2D">
     <summary>Linear layout container arranging children in a single direction</summary>
     <details>Provides flexbox-style linear layout with configurable direction, alignment, spacing, and content justification. Children are arranged sequentially along the specified axis.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -630,17 +630,17 @@
     <property name="AlignItems" type="AlignItems">Cross-axis alignment of children </property>
     <property name="JustifyContent" type="JustifyContent">Main-axis distribution of children </property>
     <property name="Spacing" type="float">Space between adjacent children </property>
-  </component>
+  </class>
 
-  <component name="Form" parent="StackView">
+  <class name="Form" parent="StackView">
     <summary>Specialized stack view for form input collection and submission</summary>
     <details>Extends StackView with form-specific functionality including automatic input collection and submission handling.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <handles event="Create"/>
     <handles event="Submit"/>
-  </component>
+  </class>
 
-  <component name="Control" parent="Node2D">
+  <class name="Control" parent="Node2D">
     <summary>Base class for interactive UI controls with state management</summary>
     <details>Provides common state properties for interactive elements including press, hover, focus, and disabled states.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -650,7 +650,7 @@
     <property name="Focused" type="bool">Control has keyboard focus </property>
     <property name="Value" type="bool">Generic boolean value for toggle controls </property>
     <property name="Scale" type="float">Visual scale factor for size adjustments </property>
-  </component>
+  </class>
 
   <enums name="ResizeMode">
     <summary>Defines how the window can be resized by the user or system.</summary>
@@ -660,7 +660,7 @@
     <enum name="CanResizeWithGrip">The user can resize and maximize the window. A resize grip is displayed in the lower-right corner if the platform supports it.</enum>
   </enums>
 
-  <component name="Screen" parent="Node2D">
+  <class name="Screen" parent="Node2D">
     <summary>Top-level container representing a display surface or window</summary>
     <details>Provides the root rendering context for UI hierarchies. Manages screen-level operations like clearing and render target management.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -674,9 +674,9 @@
     <field name="_rt" type="Texture" pointer="true">Internal render target for the screen</field>
     <field name="_size" type="uint">Currently set size (to resize window when changed).</field>
     <field name="_initialized" type="bool">Used to set initial window size</field>
-  </component>
+  </class>
 
-  <component name="Cinematic" parent="Node2D">
+  <class name="Cinematic" parent="Node2D">
     <summary>Video or animation playback view for media content</summary>
     <details>Handles playback of video files or frame-based animations with timing control and fade effects.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -687,9 +687,9 @@
     <property name="FadeOut" type="float">Fade-out duration in seconds </property>
     <field name="_playing" type="bool">Internal playback state flag </field>
     <field name="_starttime" type="longTime">Internal playback start timestamp </field>
-  </component>
+  </class>
 
-  <component name="Grid" parent="Node2D">
+  <class name="Grid" parent="Node2D">
     <summary>Grid-based layout container with configurable rows and columns</summary>
     <details>Arranges children in a 2D grid pattern with flexible sizing. Supports both fixed and dynamic grid definitions.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -702,7 +702,7 @@
     <property name="CellWidth" type="float">Default width for auto-sized cells </property>
     <property name="CellHeight" type="float">Default height for auto-sized cells </property>
     <field name="_buffer" type="uiGridViewBuffer">Internal buffer for grid calculations </field>
-  </component>
+  </class>
 
   <enums name="Stretch">
     <summary>Specifies how the content of an element is resized to fill its layout area</summary>
@@ -712,7 +712,7 @@
     <enum name="UniformToFill">Scale content uniformly to fill the area, preserving aspect ratio but cropping if necessary</enum>
   </enums>
 
-  <component name="ImageView" parent="Node2D">
+  <class name="ImageView" parent="Node2D">
     <summary>Displays image content with advanced rendering and scaling options</summary>
     <details>Renders static images with support for nine-patch scaling, blend modes, and viewport control. Handles both loaded images and images loaded from file paths.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -728,9 +728,9 @@
     <property name="Viewbox" type="vec4" default="0 0 1 1">Viewport rectangle for image cropping/scaling </property>
     <property name="Stretch" type="Stretch">Determines how the image is scaled to fill its allocated layout space</property>
     <field name="_loadedImage" type="int">Hashed value of loaded image resource </field>
-  </component>
+  </class>
 
-  <component name="NinePatchImage" parent="Node2D">
+  <class name="NinePatchImage" parent="Node2D">
     <summary>Specialized image view for nine-patch (stretchable) images</summary>
     <details>Renders images that can be stretched while preserving corner and edge regions. Commonly used for UI panels, buttons, and borders that need to scale to different sizes.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -751,9 +751,9 @@
     <property name="ImageBottomLeft" type="Texture" pointer="true">Bottom-left corner image (non-stretchable) </property>
     <property name="ImageBottom" type="Texture" pointer="true">Bottom edge image (horizontally stretchable) </property>
     <property name="ImageBottomRight" type="Texture" pointer="true">Bottom-right corner image (non-stretchable) </property>
-  </component>
+  </class>
 
-  <component name="TerminalView" parent="Node2D">
+  <class name="TerminalView" parent="Node2D">
     <summary>Displays a fixed-size text grid using a monospace layout</summary>
     <details>Renders a character matrix (e.g., 80×24) where each cell represents a single glyph. Functions like a monospace canvas for text-mode visualization, ideal for console-style output, terminal emulation, or retro graphics where characters act as pixels.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -769,7 +769,7 @@
     <field name="_buffer" type="int" pointer="true">Buffer used for characters</field>
     <field name="_scroll" type="vec2">Scroll position</field>
     <field name="_contentHeight" type="int">Current page length</field>
-  </component>
+  </class>
 
   <!-- Page navigation components -->
 
@@ -795,7 +795,7 @@
   <event name="NavigateToPage" type="NavigateToPageArguments"/>
   <event name="NavigateBack" type="NavigateBackArguments"/>
 
-  <component name="Page" parent="Node2D">
+  <class name="Page" parent="Node2D">
     <summary>Represents a single page within a document or UI container.</summary>
     <details>Used to store navigation related data while all the functionality comes from PageHost</details>
     <handles event="Create"/>
@@ -803,25 +803,25 @@
     <property name="Path" type="fixed">The URL path of the page, like "/about".</property>
     <property name="Transition" type="float">The transition progress of the page.</property>
     <field name="_node" type="Node" pointer="true">Pointer to Node for quick referencing</field>
-  </component>
+  </class>
 
-  <component name="PageHost" parent="Page">
+  <class name="PageHost" parent="Page">
     <summary>Container that manages multiple pages and navigation between them.</summary>
     <details>Provides functionality for navigating between different Page instances, including maintaining a navigation stack, handling back/forward navigation, and managing page transitions.</details>
     <handles event="ViewDidLoad"/>
     <handles event="NavigateToPage" />
     <handles event="NavigateBack" />
     <property name="ActivePage" type="Page" pointer="true">The currently active page.</property>
-    <field name="_historyStack" type="Page" pointer="true" array="32">Navigation history stack.</field>
+    <field name="_historyStack" type="Page" pointer="true" fixed-array="32">Navigation history stack.</field>
     <field name="_historySize" type="int">Number of entries in the navigation history stack.</field>
-  </component>
+  </class>
 
-  <component name="PageViewport" parent="Node2D">
+  <class name="PageViewport" parent="Node2D">
     <summary>Viewport for rendering the active page within a PageHost.</summary>
     <details>Responsible for displaying the content of the active page managed by a PageHost. Handles rendering and transition effects when switching between pages.</details>
     <!-- <handles event="DrawBrush"/>
     <property name="PageHost" type="PageHost" pointer="true">Reference to the PageHost that manages the pages being rendered.</property> -->
-  </component>
+  </class>
 
   <!-- Style components -->
 
@@ -832,10 +832,10 @@
     <enum name="Named">Style associated with a specific theme or visual skin. Used to switch appearance dynamically based on active theme.</enum>
   </enums>
   
-  <component name="Style">
+  <class name="Style">
     <summary>Defines a reusable set of property values and visual configurations for a target component type.</summary>
     <details>Style enables consistent appearance and behavior across multiple components by grouping property definitions under a named style. Each style specifies its target type and classification, such as Generic, Theme, or Override. Styles can be applied globally, by theme, or locally to individual instances, allowing flexible and maintainable UI customization.</details>
     <property name="TargetType" type="fixed">Specifies the component type this style targets. Only components of the given type or its derived types will use the style.</property>
     <property name="Type" type="StyleType">Defines the classification of this style, such as Generic, Theme, Override, Local, or Template, determining its scope and application behavior.</property>
-  </component>
+  </class>
 </module>
