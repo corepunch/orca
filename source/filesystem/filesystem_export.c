@@ -155,6 +155,8 @@ ORCA_API struct ClassDesc _Project = {
 static struct PropertyDesc const LibraryProperties[kLibraryNumProperties] = {
 	/* Library.IsExternal */ DECL(0x1cb8f23a, 0x9363c61d,
 	Library, "IsExternal", IsExternal, kDataTypeBool),
+	/* Library.Source */ DECL(0x61e2a3f8, 0xd0863267,
+	Library, "Source", Source, kDataTypeFixed),
 };
 static struct Library LibraryDefaults = {0};
 LRESULT LibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1111,6 +1113,34 @@ ORCA_API struct ClassDesc _PropertyTypeLibrary = {
 	.Defaults = &PropertyTypeLibraryDefaults,
 	.NumProperties = kPropertyTypeLibraryNumProperties,
 };
+static struct PropertyDesc const SpriteAnimationLibraryProperties[kSpriteAnimationLibraryNumProperties] = {
+};
+static struct SpriteAnimationLibrary SpriteAnimationLibraryDefaults = {};
+LRESULT SpriteAnimationLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+}
+	return FALSE;
+}
+void luaX_pushSpriteAnimationLibrary(lua_State *L, lpcSpriteAnimationLibrary_t SpriteAnimationLibrary) {
+	luaX_pushObject(L, CMP_GetObject(SpriteAnimationLibrary));
+}
+lpSpriteAnimationLibrary_t luaX_checkSpriteAnimationLibrary(lua_State *L, int idx) {
+	return GetSpriteAnimationLibrary(luaX_checkObject(L, idx));
+}
+extern struct ClassDesc _Library;
+ORCA_API struct ClassDesc _SpriteAnimationLibrary = {
+	.ClassName = "SpriteAnimationLibrary",
+	.DefaultName = "Sprite Animations",
+	.ContentType = "SpriteAnimation",
+	.Xmlns = "None",
+	.ParentClasses = {&_Library, NULL},
+	.ClassID = ID_SpriteAnimationLibrary,
+	.ClassSize = sizeof(struct SpriteAnimationLibrary),
+	.Properties = SpriteAnimationLibraryProperties,
+	.ObjProc = SpriteAnimationLibraryProc,
+	.Defaults = &SpriteAnimationLibraryDefaults,
+	.NumProperties = kSpriteAnimationLibraryNumProperties,
+};
 static struct PropertyDesc const MessageLibraryProperties[kMessageLibraryNumProperties] = {
 };
 static struct MessageLibrary MessageLibraryDefaults = {};
@@ -1664,6 +1694,9 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	// PropertyTypeLibrary
 	lua_pushclass(L, &_PropertyTypeLibrary);
 	lua_setfield(L, -2, "PropertyTypeLibrary");
+	// SpriteAnimationLibrary
+	lua_pushclass(L, &_SpriteAnimationLibrary);
+	lua_setfield(L, -2, "SpriteAnimationLibrary");
 	// MessageLibrary
 	lua_pushclass(L, &_MessageLibrary);
 	lua_setfield(L, -2, "MessageLibrary");

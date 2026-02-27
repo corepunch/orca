@@ -111,6 +111,8 @@
   <!--  { LIBRARY(MessageTypeLibrary), "MessageTypes", "MessageType", FALSE },-->
   <!--  { LIBRARY(BrushTypeLibrary), "BrushTypes", "BrushType", FALSE },-->
   
+  <component name="SpriteAnimationLibrary" parent="Library" default="Sprite Animations"/>
+
   <component name="MessageLibrary" parent="Library" default="Messages"/>
   <component name="SystemMessage">
     <property name="Message" type="fixed"/>

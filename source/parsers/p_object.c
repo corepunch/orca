@@ -240,7 +240,8 @@ XML_ParseObjectNode(lua_State* L, xmlNodePtr xml, lpObject_t root, xmlDocPtr doc
     ScreenHeight = atoi((lpcString_t)Height);
   }
 
-  if (!strcmp(szClass, "LayerPrefabPlaceholder") ||
+  if (!strcmp(szClass, "LibraryPlaceholder") ||
+      !strcmp(szClass, "LayerPrefabPlaceholder") ||
       !strcmp(szClass, "ObjectPrefabPlaceholder"))
   {
     xmlWith(xmlChar,tmp,xmlGetProp(xml, XMLSTR("PlaceholderTemplate")),xmlFree) {
@@ -265,7 +266,8 @@ XML_ParseObjectNode(lua_State* L, xmlNodePtr xml, lpObject_t root, xmlDocPtr doc
       OBJ_SetFlags(hobj, OBJ_GetFlags(hobj)|OF_LOADED_FROM_PREFAB);
     }
   } else {
-    if (strchr(szClass, '.')) {
+    lpProperty_t p;
+    if (strchr(szClass, '.') && !OBJ_FindLongProperty(root, szClass, &p)) {
       lua_getglobal(L, "require");
       lua_pushstring(L, szClass);
       if (lua_pcall(L, 1, 1, 0) != LUA_OK) {

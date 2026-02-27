@@ -81,10 +81,12 @@ enum ProjectProperties {
 #define Library_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_Library,sizeof(struct Library),_N)
 enum LibraryProperties {
 	kLibraryIsExternal,
+	kLibrarySource,
 	kLibraryNumProperties
 };
 
 #define ID_Library_IsExternal 0x9363c61d
+#define ID_Library_Source 0xd0863267
 #define ID_AnimationClipLibrary 0xb18f0186
 #define GetAnimationClipLibrary(_P)((struct AnimationClipLibrary*)((_P)?OBJ_GetComponent(_P,ID_AnimationClipLibrary):NULL))
 #define AnimationClipLibrary_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_AnimationClipLibrary,sizeof(struct AnimationClipLibrary),_N)
@@ -314,6 +316,13 @@ enum ConnectUserServiceLibraryProperties {
 #define PropertyTypeLibrary_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_PropertyTypeLibrary,sizeof(struct PropertyTypeLibrary),_N)
 enum PropertyTypeLibraryProperties {
 	kPropertyTypeLibraryNumProperties
+};
+
+#define ID_SpriteAnimationLibrary 0x9ef864fd
+#define GetSpriteAnimationLibrary(_P)((struct SpriteAnimationLibrary*)((_P)?OBJ_GetComponent(_P,ID_SpriteAnimationLibrary):NULL))
+#define SpriteAnimationLibrary_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_SpriteAnimationLibrary,sizeof(struct SpriteAnimationLibrary),_N)
+enum SpriteAnimationLibraryProperties {
+	kSpriteAnimationLibraryNumProperties
 };
 
 #define ID_MessageLibrary 0x0333204f

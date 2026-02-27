@@ -14,7 +14,7 @@
     <property name="Image" type="Texture" pointer="true">Spritesheet texture</property>
     <property name="Framerate" type="float">Frames per second</property>
     <property name="NumFrames" type="int">Number of frames</property>
-    <field name="Frames" type="SpriteFrame" pointer="true">Variable-length frame data array</field>
+    <property name="Frames" type="SpriteFrame" pointer="true">Variable-length frame data array</field>
   </component>
   
   <component name="SKNode" parent="Node" children="SKNode">

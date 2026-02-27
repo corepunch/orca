@@ -1952,10 +1952,13 @@
 	IsDisabled (true|false) #IMPLIED
 	StateManager CDATA #IMPLIED
 	IsExternal (true|false) #IMPLIED
+	Source CDATA #IMPLIED
 ">
 <!ELEMENT Library.IsExternal (#PCDATA | Binding)*>
 <!ATTLIST Library.IsExternal Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % LibraryElements "Library.IsExternal">
+<!ELEMENT Library.Source (#PCDATA | Binding)*>
+<!ATTLIST Library.Source Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % LibraryElements "Library.IsExternal|Library.Source">
 <!ELEMENT Library EMPTY>
 <!ATTLIST Library %LibraryAttribs;>
 <!ENTITY % AnimationClipLibraryAttribs "
@@ -2156,6 +2159,12 @@
 <!ENTITY % PropertyTypeLibraryElements "%LibraryElements;">
 <!ELEMENT PropertyTypeLibrary EMPTY>
 <!ATTLIST PropertyTypeLibrary %PropertyTypeLibraryAttribs;>
+<!ENTITY % SpriteAnimationLibraryAttribs "
+	%LibraryAttribs;
+">
+<!ENTITY % SpriteAnimationLibraryElements "%LibraryElements;">
+<!ELEMENT SpriteAnimationLibrary EMPTY>
+<!ATTLIST SpriteAnimationLibrary %SpriteAnimationLibraryAttribs;>
 <!ENTITY % MessageLibraryAttribs "
 	%LibraryAttribs;
 ">

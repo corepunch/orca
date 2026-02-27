@@ -1,8 +1,0 @@
-<?xml version="1.0" ?>
-<Sprite Name="menu01" Image="Volcano/Sprites/menu01">
-  <SpriteAnimation Name="menu_layer7">
-    <SpriteAnimation.Frames>
-      <SpriteRect Rect="1024.0 436.0 2048.0 872.0" UvRect="0 0.1484375 1 0.8515625"/>
-    </SpriteAnimation.Frames>
-  </SpriteAnimation>
-</Sprite>
