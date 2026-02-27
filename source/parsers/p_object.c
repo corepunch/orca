@@ -230,6 +230,7 @@ XML_ParseObjectNode(lua_State* L, xmlNodePtr xml, lpObject_t root, xmlDocPtr doc
   lpObject_t hobj = NULL;
   lpObject_t childobj = NULL;
 
+  // HACK: This is a hack to set screen size before it's created
   xmlWith(xmlChar, Width, xmlGetProp(xml, XMLSTR("Width")), xmlFree) {
     extern int ScreenWidth;
     ScreenWidth = atoi((lpcString_t)Width);
@@ -264,7 +265,17 @@ XML_ParseObjectNode(lua_State* L, xmlNodePtr xml, lpObject_t root, xmlDocPtr doc
       OBJ_SetFlags(hobj, OBJ_GetFlags(hobj)|OF_LOADED_FROM_PREFAB);
     }
   } else {
-    lua_getfield(L, LUA_REGISTRYINDEX, szClass);
+    if (strchr(szClass, '.')) {
+      lua_getglobal(L, "require");
+      lua_pushstring(L, szClass);
+      if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
+        fprintf(stderr, "%s", lua_tostring(L, -1));
+        lua_pop(L, 1);
+        return NULL;
+      }
+    } else {
+      lua_getfield(L, LUA_REGISTRYINDEX, szClass);
+    }
     if (lua_isnil(L, -1)) {
       lua_pop(L, 1);
 //      luaL_error(L, "Class %s not found", szClass);

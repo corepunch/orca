@@ -68,7 +68,7 @@ HANDLER(SKSpriteNode, Render)
     struct image_info img;
     Image_GetInfo(image, &img);
 
-    bbox = node->Rect;
+    bbox = (struct rect) { node->Position.x, node->Position.y, node->Size.x, node->Size.y };
     if (bbox.width == 0 && bbox.height == 0) {
       bbox.width = (float)img.bmWidth;
       bbox.height = (float)img.bmHeight;

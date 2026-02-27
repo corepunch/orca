@@ -1,6 +1,6 @@
 local sk = require "orca.SpriteKit"
 local cg = require "orca.geometry"
-local sprites = require "Sprites"
+local sprites = require "Scripts.Sprites"
 local find_path = require "GameKit.pathfinding"
 local Worker = sk.SKSpriteNode:extend()
 

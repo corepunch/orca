@@ -1,5 +1,8 @@
 #include "core_local.h"
 
+#define SUFFIX "Changed"
+#define SUFFIX_LEN 7
+
 struct script_callback
 {
   uint32_t value;
@@ -8,15 +11,31 @@ struct script_callback
 };
 
 void
-OBJ_ProcessFunctions2(lpObject_t object, lpcString_t name)
+OBJ_ProcessFunctions(lpObject_t object, lpcString_t name)
 {
-  if (name[0] != 'o' || name[1] != 'n')
+  if (strncmp(name, "on", 2))
     return;
+  // Add regular callback
   struct script_callback* cb = ZeroAlloc(sizeof(struct script_callback));
   cb->value = fnv1a32(name + 2);
   strncpy(cb->name, name, sizeof(cb->name));
   ADD_TO_LIST(cb, _GetCallbacks(object));
+  // Mark property as has-callback
+  size_t str_len = strlen(name);
+  if (str_len >= SUFFIX_LEN && strcmp(name + str_len - SUFFIX_LEN, SUFFIX) == 0) {
+    size_t property_len = str_len - SUFFIX_LEN;
+    shortStr_t pname = { 0 };
+    lpProperty_t pProp = NULL;
+    strncpy(pname, name + 2, property_len - 2);
+    if (SUCCEEDED(OBJ_FindShortProperty(object, pname, &pProp))) {
+      PROP_SetFlag(pProp, PF_HASCHANGECALLBACK);
+      //      } else {
+      //        Con_Error("Could not find property for
+      //%s", name);
+    }
+  }
 }
+
 
 lpcString_t
 OBJ_FindCallbackForID(lpObject_t object, uint32_t id)

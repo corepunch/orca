@@ -1,6 +1,6 @@
 local sk = require "orca.SpriteKit"
 local cg = require "orca.geometry"
-local sprites = require "Sprites"
+local sprites = require "Scripts.Sprites"
 local Barrier = sk.SKSpriteNode:extend()
 
 function Barrier:new()

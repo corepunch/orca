@@ -24,7 +24,9 @@
 <!--    <property name="LayoutTransform" type="transform2" default=".scale={1,1}">Layout transform for 2D positioning</property>-->
 <!--    <property name="RenderTransform" type="transform2" default=".scale={1,1}">Render transform for animation effects</property>-->
 <!--    <property name="RenderTransformOrigin" type="vec2">Origin point for render transform operations (rotation, scaling center)</property>-->
-    <property name="Rect" type="rect">Source rectangle for sprite size and offset</property>
+<!--    <property name="Rect" type="rect">Source rectangle for sprite size and offset</property>-->
+    <property name="Position" type="vec2">Position of SKNode in space of SKScene</property>
+    <property name="Size" type="vec2">Size of SKNode. If not specified, defaults to the size of the associated sprite or animation frame</property>
     <property name="Anchor" type="vec2">Anchor point for positioning</property>
     <field name="Matrix" type="mat4">Final combined transformation matrix (computed automatically)</field>
     <field name="_opacity" type="float"/>

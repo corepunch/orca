@@ -14,7 +14,7 @@ HANDLER(SKNode, UpdateMatrix)
 //  renderMatrix = transform2_ToMatrix3D(renderTransform, &pivot);
 
 //  matrix = MAT4_Multiply(&layoutMatrix, &renderMatrix);
-  matrix = MAT4_FromTranslation(&(vec3_t){pSKNode->Rect.x, pSKNode->Rect.y});
+  matrix = MAT4_FromTranslation(&(vec3_t){pSKNode->Position.x, pSKNode->Position.y});
   if (pUpdateMatrix->parent) {
     pSKNode->Matrix = MAT4_Multiply(pUpdateMatrix->parent, &matrix);
   } else {

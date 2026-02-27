@@ -85,7 +85,7 @@
 "  setmetatable(_base_0, _parent_0.__base)\n"
 "  local _class_0 = setmetatable({\n"
 "    __init = function(self_1, ...)\n"
-"      return _parent_0.__init(self_1, ...)\n"
+"      return (rawget(_base_0, '__init') or _parent_0.__init)(self_1, ...)\n"
 "    end,\n"
 "    __base = _base_0,\n"
 "    __name = 'LuaBehaviour',\n"

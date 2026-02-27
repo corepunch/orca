@@ -382,30 +382,30 @@ OBJ_MoveToFront(lpObject_t object)
   }
 }
 
-void
-OBJ_ProcessFunctions(lpObject_t object, lpcString_t name)
-{
-  void OBJ_ProcessFunctions2(lpObject_t, lpcString_t);
-  OBJ_ProcessFunctions2(object, name);
-  if (name[0] == 'o' && name[1] == 'n') {
-    lpcString_t suffix = "Changed";
-    size_t str_len = strlen(name);
-    size_t suffix_len = 7; // strlen(suffix);
-    if (str_len >= suffix_len &&
-        strcmp(name + str_len - suffix_len, suffix) == 0) {
-      size_t property_len = str_len - suffix_len;
-      shortStr_t pname = { 0 };
-      lpProperty_t pProp = NULL;
-      strncpy(pname, name + 2, property_len - 2);
-      if (SUCCEEDED(OBJ_FindShortProperty(object, pname, &pProp))) {
-        PROP_SetFlag(pProp, PF_HASCHANGECALLBACK);
-        //			} else {
-        //				Con_Error("Could not find property for
-        //%s", name);
-      }
-    }
-  }
-}
+//void
+//OBJ_ProcessFunctions(lpObject_t object, lpcString_t name);
+//{
+//  void OBJ_ProcessFunctions2(lpObject_t, lpcString_t);
+//  OBJ_ProcessFunctions2(object, name);
+//  if (!strncmp(name, "on", 2)) {
+//    lpcString_t suffix = "Changed";
+//    size_t str_len = strlen(name);
+//    size_t suffix_len = 7; // strlen(suffix);
+//    if (str_len >= suffix_len &&
+//        strcmp(name + str_len - suffix_len, suffix) == 0) {
+//      size_t property_len = str_len - suffix_len;
+//      shortStr_t pname = { 0 };
+//      lpProperty_t pProp = NULL;
+//      strncpy(pname, name + 2, property_len - 2);
+//      if (SUCCEEDED(OBJ_FindShortProperty(object, pname, &pProp))) {
+//        PROP_SetFlag(pProp, PF_HASCHANGECALLBACK);
+//        //			} else {
+//        //				Con_Error("Could not find property for
+//        //%s", name);
+//      }
+//    }
+//  }
+//}
 
 //#include <source/filesystem/filesystem.h>
 

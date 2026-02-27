@@ -90,7 +90,8 @@ typedef struct SKNode SKNode, *SKNodePtr;
 typedef struct SKNode const *SKNodeCPtr;
 /// @brief Base 2D sprite node with transform and matrix
 struct SKNode {
-	rect_t Rect; /// Source rectangle for sprite size and offset
+	vec2_t Position; /// Position of SKNode in space of SKScene
+	vec2_t Size; /// Size of SKNode. If not specified, defaults to the size of the associated sprite or animation frame
 	vec2_t Anchor; /// Anchor point for positioning
 	mat4_t Matrix; /// Final combined transformation matrix (computed automatically)
 	float _opacity;

@@ -99,16 +99,10 @@ ORCA_API struct ClassDesc _SpriteAnimation = {
 };
 LRESULT SKNode_UpdateMatrix(lpObject_t, lpSKNode_t, wParam_t, UpdateMatrixEventPtr);
 static struct PropertyDesc const SKNodeProperties[kSKNodeNumProperties] = {
-	/* SKNode.Rect */ DECL(0x6b109927, 0x96f6bc31,
-	SKNode, "Rect", Rect, kDataTypeRectangle),
-	/* SKNode.RectX */ DECL(0x0a21a2ed, 0x0f6a994b,
-	SKNode, "RectX", Rect.x, kDataTypeFloat),
-	/* SKNode.RectY */ DECL(0x0921a15a, 0x0e6a97b8,
-	SKNode, "RectY", Rect.y, kDataTypeFloat),
-	/* SKNode.RectWidth */ DECL(0x25c57ce9, 0xe20eacdb,
-	SKNode, "RectWidth", Rect.width, kDataTypeFloat),
-	/* SKNode.RectHeight */ DECL(0x68097dd8, 0x52859af6,
-	SKNode, "RectHeight", Rect.height, kDataTypeFloat),
+	/* SKNode.Position */ DECL(0xe27f342a, 0xa99d4e4c,
+	SKNode, "Position", Position, kDataTypeVector2D),
+	/* SKNode.Size */ DECL(0xa6478e7c, 0xeaed98c6,
+	SKNode, "Size", Size, kDataTypeVector2D),
 	/* SKNode.Anchor */ DECL(0xb54055d4, 0xf86abfb6,
 	SKNode, "Anchor", Anchor, kDataTypeVector2D),
 };

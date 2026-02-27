@@ -2507,16 +2507,10 @@
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SpriteKit.SKNode</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node" class="name base">Node</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Provides fundamental 2D transformation properties for sprite scene graph nodes. All sprite objects in the scene inherit from this component.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Matrix</span>: <a class="type-identifier-link" href="#mat4">mat4</a></code></div>
 <div class="small-abstract"><span>Final combined transformation matrix (computed automatically)
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_opacity</span>: <span>float</span></code></div>
-<div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Rect</span>: <a class="type-identifier-link" href="#rect">rect</a></code></div>
-<div class="small-abstract"><span>Source rectangle for sprite size and offset
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RectX</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Left edge X coordinate
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RectY</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Top edge Y coordinate
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RectWidth</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Rectangle width
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RectHeight</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Rectangle height
+<div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Position</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
+<div class="small-abstract"><span>Position of SKNode in space of SKScene
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Size</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
+<div class="small-abstract"><span>Size of SKNode. If not specified, defaults to the size of the associated sprite or animation frame
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Anchor</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
 <div class="small-abstract"><span>Anchor point for positioning
 </span></div></div><div id="SKScene" class="class" data-name="SKScene" data-inherits="SKNode" data-xmlns="None"><div class="eyebrow">Component
