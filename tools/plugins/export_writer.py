@@ -226,9 +226,9 @@ class ExportWriter(Plugin):
 		name = struct.get('name')
 		lpname, lpcname = utils.lp(name), utils.lpc(name)
 		if is_struct:
-			self.wt(_T['struct_push'].substitute(name=name, export=struct.get('export'), lpname=lpname, lpcname=lpcname))
+			self.wt(_T['struct_push'].substitute(name=name, export=struct.get('export') or name, lpname=lpname, lpcname=lpcname))
 		if not struct.get("no-check"):
-			self.wt(_T['struct_check'].substitute(name=name, export=struct.get('export'), lpname=lpname))
+			self.wt(_T['struct_check'].substitute(name=name, export=struct.get('export') or name, lpname=lpname))
 		else:
 			self.w(f"{lpname} luaX_check{name}(lua_State *L, int idx);")
 		if is_struct:
@@ -257,7 +257,7 @@ class ExportWriter(Plugin):
 				init_block = f"\tif (lua_istable(L, 1)) {{\n{table_inits}\t}} else {{\n{field_inits}\t}}\n"
 			else:
 				init_block = ""
-			self.wt(_T['struct_new'].substitute(name=name, export=struct.get('export'), lpname=lpname,  init_block=init_block))
+			self.wt(_T['struct_new'].substitute(name=name, export=struct.get('export') or name, lpname=lpname,  init_block=init_block))
 		elif struct.find('init') is not None:
 			self.w(f"int f_new_{name}(lua_State *L);")
 		# write methods
@@ -349,7 +349,7 @@ class ExportWriter(Plugin):
 
 		# write lua_open
 		self.w(f"int luaopen_{root.get('namespace')}_{name}(lua_State *L) {{")
-		self.w(f"\tluaL_newmetatable(L, \"{struct.get('export')}\");")
+		self.w(f"\tluaL_newmetatable(L, \"{struct.get('export') or name}\");")
 		self.w(f"\tluaL_setfuncs(L, ((luaL_Reg[]) {{")
 		if is_struct or struct.find('init') is not None:
 			self.w(f"\t\t{{ \"new\", f_new_{name} }},")
@@ -370,7 +370,7 @@ class ExportWriter(Plugin):
 			self.w(f"\tlua_setmetatable(L, -2);")
 			if export_xml_parsers:
 				self.w(f"\tlua_pushlightuserdata(L, xml_{name});")
-				self.w(f"\tlua_setfield(L, LUA_REGISTRYINDEX, \"{struct.get('export')}Parser\");")
+				self.w(f"\tlua_setfield(L, LUA_REGISTRYINDEX, \"{struct.get('export') or name}Parser\");")
 		self.w(f"\treturn 1;\n}}")
 
 	def write_property(self, property, component, path):

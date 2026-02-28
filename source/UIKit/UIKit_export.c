@@ -497,15 +497,15 @@ ORCA_API lpcString_t __strtoSizing(lpcString_t string, enum Sizing* output) {
 }
 void luaX_pushBorderRadiusShorthand(lua_State *L, lpcBorderRadiusShorthand_t data) {
 	lpBorderRadiusShorthand_t self = lua_newuserdata(L, sizeof(struct BorderRadiusShorthand));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "BorderRadiusShorthand");
 	memcpy(self, data, sizeof(struct BorderRadiusShorthand));
 }
 lpBorderRadiusShorthand_t luaX_checkBorderRadiusShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "None");
+	return luaL_checkudata(L, idx, "BorderRadiusShorthand");
 }
 static int f_new_BorderRadiusShorthand(lua_State *L) {
 	lpBorderRadiusShorthand_t self = lua_newuserdata(L, sizeof(struct BorderRadiusShorthand));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "BorderRadiusShorthand");
 	memset(self, 0, sizeof(struct BorderRadiusShorthand));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "TopLeftRadius");
@@ -593,7 +593,7 @@ static int xml_BorderRadiusShorthand(xmlNodePtr xml, lpBorderRadiusShorthand_t o
 }
 
 int luaopen_orca_BorderRadiusShorthand(lua_State *L) {
-	luaL_newmetatable(L, "None");
+	luaL_newmetatable(L, "BorderRadiusShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_BorderRadiusShorthand },
 		{ "__newindex", f_BorderRadiusShorthand___newindex },
@@ -605,20 +605,20 @@ int luaopen_orca_BorderRadiusShorthand(lua_State *L) {
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	lua_pushlightuserdata(L, xml_BorderRadiusShorthand);
-	lua_setfield(L, LUA_REGISTRYINDEX, "NoneParser");
+	lua_setfield(L, LUA_REGISTRYINDEX, "BorderRadiusShorthandParser");
 	return 1;
 }
 void luaX_pushBorderEdgeShorthand(lua_State *L, lpcBorderEdgeShorthand_t data) {
 	lpBorderEdgeShorthand_t self = lua_newuserdata(L, sizeof(struct BorderEdgeShorthand));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "BorderEdgeShorthand");
 	memcpy(self, data, sizeof(struct BorderEdgeShorthand));
 }
 lpBorderEdgeShorthand_t luaX_checkBorderEdgeShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "None");
+	return luaL_checkudata(L, idx, "BorderEdgeShorthand");
 }
 static int f_new_BorderEdgeShorthand(lua_State *L) {
 	lpBorderEdgeShorthand_t self = lua_newuserdata(L, sizeof(struct BorderEdgeShorthand));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "BorderEdgeShorthand");
 	memset(self, 0, sizeof(struct BorderEdgeShorthand));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "Width");
@@ -692,7 +692,7 @@ static int xml_BorderEdgeShorthand(xmlNodePtr xml, lpBorderEdgeShorthand_t outpu
 }
 
 int luaopen_orca_BorderEdgeShorthand(lua_State *L) {
-	luaL_newmetatable(L, "None");
+	luaL_newmetatable(L, "BorderEdgeShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_BorderEdgeShorthand },
 		{ "__newindex", f_BorderEdgeShorthand___newindex },
@@ -704,20 +704,20 @@ int luaopen_orca_BorderEdgeShorthand(lua_State *L) {
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	lua_pushlightuserdata(L, xml_BorderEdgeShorthand);
-	lua_setfield(L, LUA_REGISTRYINDEX, "NoneParser");
+	lua_setfield(L, LUA_REGISTRYINDEX, "BorderEdgeShorthandParser");
 	return 1;
 }
 void luaX_pushBorderSideShorthand(lua_State *L, lpcBorderSideShorthand_t data) {
 	lpBorderSideShorthand_t self = lua_newuserdata(L, sizeof(struct BorderSideShorthand));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "BorderSideShorthand");
 	memcpy(self, data, sizeof(struct BorderSideShorthand));
 }
 lpBorderSideShorthand_t luaX_checkBorderSideShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "None");
+	return luaL_checkudata(L, idx, "BorderSideShorthand");
 }
 static int f_new_BorderSideShorthand(lua_State *L) {
 	lpBorderSideShorthand_t self = lua_newuserdata(L, sizeof(struct BorderSideShorthand));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "BorderSideShorthand");
 	memset(self, 0, sizeof(struct BorderSideShorthand));
 	return 1;
 }
@@ -766,7 +766,7 @@ static int xml_BorderSideShorthand(xmlNodePtr xml, lpBorderSideShorthand_t outpu
 }
 
 int luaopen_orca_BorderSideShorthand(lua_State *L) {
-	luaL_newmetatable(L, "None");
+	luaL_newmetatable(L, "BorderSideShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_BorderSideShorthand },
 		{ "__newindex", f_BorderSideShorthand___newindex },
@@ -778,20 +778,20 @@ int luaopen_orca_BorderSideShorthand(lua_State *L) {
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	lua_pushlightuserdata(L, xml_BorderSideShorthand);
-	lua_setfield(L, LUA_REGISTRYINDEX, "NoneParser");
+	lua_setfield(L, LUA_REGISTRYINDEX, "BorderSideShorthandParser");
 	return 1;
 }
 void luaX_pushBorderShorthand(lua_State *L, lpcBorderShorthand_t data) {
 	lpBorderShorthand_t self = lua_newuserdata(L, sizeof(struct BorderShorthand));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "BorderShorthand");
 	memcpy(self, data, sizeof(struct BorderShorthand));
 }
 lpBorderShorthand_t luaX_checkBorderShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "None");
+	return luaL_checkudata(L, idx, "BorderShorthand");
 }
 static int f_new_BorderShorthand(lua_State *L) {
 	lpBorderShorthand_t self = lua_newuserdata(L, sizeof(struct BorderShorthand));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "BorderShorthand");
 	memset(self, 0, sizeof(struct BorderShorthand));
 	return 1;
 }
@@ -830,7 +830,7 @@ static int xml_BorderShorthand(xmlNodePtr xml, lpBorderShorthand_t output) {
 }
 
 int luaopen_orca_BorderShorthand(lua_State *L) {
-	luaL_newmetatable(L, "None");
+	luaL_newmetatable(L, "BorderShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_BorderShorthand },
 		{ "__newindex", f_BorderShorthand___newindex },
@@ -842,20 +842,20 @@ int luaopen_orca_BorderShorthand(lua_State *L) {
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	lua_pushlightuserdata(L, xml_BorderShorthand);
-	lua_setfield(L, LUA_REGISTRYINDEX, "NoneParser");
+	lua_setfield(L, LUA_REGISTRYINDEX, "BorderShorthandParser");
 	return 1;
 }
 void luaX_pushEdgeShorthand(lua_State *L, lpcEdgeShorthand_t data) {
 	lpEdgeShorthand_t self = lua_newuserdata(L, sizeof(struct EdgeShorthand));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "EdgeShorthand");
 	memcpy(self, data, sizeof(struct EdgeShorthand));
 }
 lpEdgeShorthand_t luaX_checkEdgeShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "None");
+	return luaL_checkudata(L, idx, "EdgeShorthand");
 }
 static int f_new_EdgeShorthand(lua_State *L) {
 	lpEdgeShorthand_t self = lua_newuserdata(L, sizeof(struct EdgeShorthand));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "EdgeShorthand");
 	memset(self, 0, sizeof(struct EdgeShorthand));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "Left");
@@ -915,7 +915,7 @@ static int xml_EdgeShorthand(xmlNodePtr xml, lpEdgeShorthand_t output) {
 }
 
 int luaopen_orca_EdgeShorthand(lua_State *L) {
-	luaL_newmetatable(L, "None");
+	luaL_newmetatable(L, "EdgeShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_EdgeShorthand },
 		{ "__newindex", f_EdgeShorthand___newindex },
@@ -927,20 +927,20 @@ int luaopen_orca_EdgeShorthand(lua_State *L) {
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	lua_pushlightuserdata(L, xml_EdgeShorthand);
-	lua_setfield(L, LUA_REGISTRYINDEX, "NoneParser");
+	lua_setfield(L, LUA_REGISTRYINDEX, "EdgeShorthandParser");
 	return 1;
 }
 void luaX_pushAlignmentShorthand(lua_State *L, lpcAlignmentShorthand_t data) {
 	lpAlignmentShorthand_t self = lua_newuserdata(L, sizeof(struct AlignmentShorthand));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "AlignmentShorthand");
 	memcpy(self, data, sizeof(struct AlignmentShorthand));
 }
 lpAlignmentShorthand_t luaX_checkAlignmentShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "None");
+	return luaL_checkudata(L, idx, "AlignmentShorthand");
 }
 static int f_new_AlignmentShorthand(lua_State *L) {
 	lpAlignmentShorthand_t self = lua_newuserdata(L, sizeof(struct AlignmentShorthand));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "AlignmentShorthand");
 	memset(self, 0, sizeof(struct AlignmentShorthand));
 	return 1;
 }
@@ -967,7 +967,7 @@ static int xml_AlignmentShorthand(xmlNodePtr xml, lpAlignmentShorthand_t output)
 }
 
 int luaopen_orca_AlignmentShorthand(lua_State *L) {
-	luaL_newmetatable(L, "None");
+	luaL_newmetatable(L, "AlignmentShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_AlignmentShorthand },
 		{ "__newindex", f_AlignmentShorthand___newindex },
@@ -979,20 +979,20 @@ int luaopen_orca_AlignmentShorthand(lua_State *L) {
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	lua_pushlightuserdata(L, xml_AlignmentShorthand);
-	lua_setfield(L, LUA_REGISTRYINDEX, "NoneParser");
+	lua_setfield(L, LUA_REGISTRYINDEX, "AlignmentShorthandParser");
 	return 1;
 }
 void luaX_pushFontShorthand(lua_State *L, lpcFontShorthand_t data) {
 	lpFontShorthand_t self = lua_newuserdata(L, sizeof(struct FontShorthand));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "FontShorthand");
 	memcpy(self, data, sizeof(struct FontShorthand));
 }
 lpFontShorthand_t luaX_checkFontShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "None");
+	return luaL_checkudata(L, idx, "FontShorthand");
 }
 static int f_new_FontShorthand(lua_State *L) {
 	lpFontShorthand_t self = lua_newuserdata(L, sizeof(struct FontShorthand));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "FontShorthand");
 	memset(self, 0, sizeof(struct FontShorthand));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "Weight");
@@ -1076,7 +1076,7 @@ static int xml_FontShorthand(xmlNodePtr xml, lpFontShorthand_t output) {
 }
 
 int luaopen_orca_FontShorthand(lua_State *L) {
-	luaL_newmetatable(L, "None");
+	luaL_newmetatable(L, "FontShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_FontShorthand },
 		{ "__newindex", f_FontShorthand___newindex },
@@ -1088,20 +1088,20 @@ int luaopen_orca_FontShorthand(lua_State *L) {
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	lua_pushlightuserdata(L, xml_FontShorthand);
-	lua_setfield(L, LUA_REGISTRYINDEX, "NoneParser");
+	lua_setfield(L, LUA_REGISTRYINDEX, "FontShorthandParser");
 	return 1;
 }
 void luaX_pushBrushShorthand(lua_State *L, lpcBrushShorthand_t data) {
 	lpBrushShorthand_t self = lua_newuserdata(L, sizeof(struct BrushShorthand));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "BrushShorthand");
 	memcpy(self, data, sizeof(struct BrushShorthand));
 }
 lpBrushShorthand_t luaX_checkBrushShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "None");
+	return luaL_checkudata(L, idx, "BrushShorthand");
 }
 static int f_new_BrushShorthand(lua_State *L) {
 	lpBrushShorthand_t self = lua_newuserdata(L, sizeof(struct BrushShorthand));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "BrushShorthand");
 	memset(self, 0, sizeof(struct BrushShorthand));
 	return 1;
 }
@@ -1152,7 +1152,7 @@ static int xml_BrushShorthand(xmlNodePtr xml, lpBrushShorthand_t output) {
 }
 
 int luaopen_orca_BrushShorthand(lua_State *L) {
-	luaL_newmetatable(L, "None");
+	luaL_newmetatable(L, "BrushShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_BrushShorthand },
 		{ "__newindex", f_BrushShorthand___newindex },
@@ -1164,20 +1164,20 @@ int luaopen_orca_BrushShorthand(lua_State *L) {
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	lua_pushlightuserdata(L, xml_BrushShorthand);
-	lua_setfield(L, LUA_REGISTRYINDEX, "NoneParser");
+	lua_setfield(L, LUA_REGISTRYINDEX, "BrushShorthandParser");
 	return 1;
 }
 void luaX_pushShadowShorthand(lua_State *L, lpcShadowShorthand_t data) {
 	lpShadowShorthand_t self = lua_newuserdata(L, sizeof(struct ShadowShorthand));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "ShadowShorthand");
 	memcpy(self, data, sizeof(struct ShadowShorthand));
 }
 lpShadowShorthand_t luaX_checkShadowShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "None");
+	return luaL_checkudata(L, idx, "ShadowShorthand");
 }
 static int f_new_ShadowShorthand(lua_State *L) {
 	lpShadowShorthand_t self = lua_newuserdata(L, sizeof(struct ShadowShorthand));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "ShadowShorthand");
 	memset(self, 0, sizeof(struct ShadowShorthand));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "BlurRadius");
@@ -1261,7 +1261,7 @@ static int xml_ShadowShorthand(xmlNodePtr xml, lpShadowShorthand_t output) {
 }
 
 int luaopen_orca_ShadowShorthand(lua_State *L) {
-	luaL_newmetatable(L, "None");
+	luaL_newmetatable(L, "ShadowShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_ShadowShorthand },
 		{ "__newindex", f_ShadowShorthand___newindex },
@@ -1273,20 +1273,20 @@ int luaopen_orca_ShadowShorthand(lua_State *L) {
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	lua_pushlightuserdata(L, xml_ShadowShorthand);
-	lua_setfield(L, LUA_REGISTRYINDEX, "NoneParser");
+	lua_setfield(L, LUA_REGISTRYINDEX, "ShadowShorthandParser");
 	return 1;
 }
 void luaX_pushRingShorthand(lua_State *L, lpcRingShorthand_t data) {
 	lpRingShorthand_t self = lua_newuserdata(L, sizeof(struct RingShorthand));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "RingShorthand");
 	memcpy(self, data, sizeof(struct RingShorthand));
 }
 lpRingShorthand_t luaX_checkRingShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "None");
+	return luaL_checkudata(L, idx, "RingShorthand");
 }
 static int f_new_RingShorthand(lua_State *L) {
 	lpRingShorthand_t self = lua_newuserdata(L, sizeof(struct RingShorthand));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "RingShorthand");
 	memset(self, 0, sizeof(struct RingShorthand));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "Offset");
@@ -1358,7 +1358,7 @@ static int xml_RingShorthand(xmlNodePtr xml, lpRingShorthand_t output) {
 }
 
 int luaopen_orca_RingShorthand(lua_State *L) {
-	luaL_newmetatable(L, "None");
+	luaL_newmetatable(L, "RingShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_RingShorthand },
 		{ "__newindex", f_RingShorthand___newindex },
@@ -1370,20 +1370,20 @@ int luaopen_orca_RingShorthand(lua_State *L) {
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	lua_pushlightuserdata(L, xml_RingShorthand);
-	lua_setfield(L, LUA_REGISTRYINDEX, "NoneParser");
+	lua_setfield(L, LUA_REGISTRYINDEX, "RingShorthandParser");
 	return 1;
 }
 void luaX_pushOverflowShorthand(lua_State *L, lpcOverflowShorthand_t data) {
 	lpOverflowShorthand_t self = lua_newuserdata(L, sizeof(struct OverflowShorthand));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "OverflowShorthand");
 	memcpy(self, data, sizeof(struct OverflowShorthand));
 }
 lpOverflowShorthand_t luaX_checkOverflowShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "None");
+	return luaL_checkudata(L, idx, "OverflowShorthand");
 }
 static int f_new_OverflowShorthand(lua_State *L) {
 	lpOverflowShorthand_t self = lua_newuserdata(L, sizeof(struct OverflowShorthand));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "OverflowShorthand");
 	memset(self, 0, sizeof(struct OverflowShorthand));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "x");
@@ -1443,7 +1443,7 @@ static int xml_OverflowShorthand(xmlNodePtr xml, lpOverflowShorthand_t output) {
 }
 
 int luaopen_orca_OverflowShorthand(lua_State *L) {
-	luaL_newmetatable(L, "None");
+	luaL_newmetatable(L, "OverflowShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_OverflowShorthand },
 		{ "__newindex", f_OverflowShorthand___newindex },
@@ -1455,20 +1455,20 @@ int luaopen_orca_OverflowShorthand(lua_State *L) {
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	lua_pushlightuserdata(L, xml_OverflowShorthand);
-	lua_setfield(L, LUA_REGISTRYINDEX, "NoneParser");
+	lua_setfield(L, LUA_REGISTRYINDEX, "OverflowShorthandParser");
 	return 1;
 }
 void luaX_pushUnderlineShorthand(lua_State *L, lpcUnderlineShorthand_t data) {
 	lpUnderlineShorthand_t self = lua_newuserdata(L, sizeof(struct UnderlineShorthand));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "UnderlineShorthand");
 	memcpy(self, data, sizeof(struct UnderlineShorthand));
 }
 lpUnderlineShorthand_t luaX_checkUnderlineShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "None");
+	return luaL_checkudata(L, idx, "UnderlineShorthand");
 }
 static int f_new_UnderlineShorthand(lua_State *L) {
 	lpUnderlineShorthand_t self = lua_newuserdata(L, sizeof(struct UnderlineShorthand));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "UnderlineShorthand");
 	memset(self, 0, sizeof(struct UnderlineShorthand));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "Offset");
@@ -1540,7 +1540,7 @@ static int xml_UnderlineShorthand(xmlNodePtr xml, lpUnderlineShorthand_t output)
 }
 
 int luaopen_orca_UnderlineShorthand(lua_State *L) {
-	luaL_newmetatable(L, "None");
+	luaL_newmetatable(L, "UnderlineShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_UnderlineShorthand },
 		{ "__newindex", f_UnderlineShorthand___newindex },
@@ -1552,20 +1552,20 @@ int luaopen_orca_UnderlineShorthand(lua_State *L) {
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	lua_pushlightuserdata(L, xml_UnderlineShorthand);
-	lua_setfield(L, LUA_REGISTRYINDEX, "NoneParser");
+	lua_setfield(L, LUA_REGISTRYINDEX, "UnderlineShorthandParser");
 	return 1;
 }
 void luaX_pushThickness(lua_State *L, lpcThickness_t data) {
 	lpThickness_t self = lua_newuserdata(L, sizeof(struct Thickness));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "Thickness");
 	memcpy(self, data, sizeof(struct Thickness));
 }
 lpThickness_t luaX_checkThickness(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "None");
+	return luaL_checkudata(L, idx, "Thickness");
 }
 static int f_new_Thickness(lua_State *L) {
 	lpThickness_t self = lua_newuserdata(L, sizeof(struct Thickness));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "Thickness");
 	memset(self, 0, sizeof(struct Thickness));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "Top");
@@ -1653,7 +1653,7 @@ static int xml_Thickness(xmlNodePtr xml, lpThickness_t output) {
 }
 
 int luaopen_orca_Thickness(lua_State *L) {
-	luaL_newmetatable(L, "None");
+	luaL_newmetatable(L, "Thickness");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_Thickness },
 		{ "__newindex", f_Thickness___newindex },
@@ -1665,20 +1665,20 @@ int luaopen_orca_Thickness(lua_State *L) {
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	lua_pushlightuserdata(L, xml_Thickness);
-	lua_setfield(L, LUA_REGISTRYINDEX, "NoneParser");
+	lua_setfield(L, LUA_REGISTRYINDEX, "ThicknessParser");
 	return 1;
 }
 void luaX_pushMarginShorthand(lua_State *L, lpcMarginShorthand_t data) {
 	lpMarginShorthand_t self = lua_newuserdata(L, sizeof(struct MarginShorthand));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "MarginShorthand");
 	memcpy(self, data, sizeof(struct MarginShorthand));
 }
 lpMarginShorthand_t luaX_checkMarginShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "None");
+	return luaL_checkudata(L, idx, "MarginShorthand");
 }
 static int f_new_MarginShorthand(lua_State *L) {
 	lpMarginShorthand_t self = lua_newuserdata(L, sizeof(struct MarginShorthand));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "MarginShorthand");
 	memset(self, 0, sizeof(struct MarginShorthand));
 	return 1;
 }
@@ -1705,7 +1705,7 @@ static int xml_MarginShorthand(xmlNodePtr xml, lpMarginShorthand_t output) {
 }
 
 int luaopen_orca_MarginShorthand(lua_State *L) {
-	luaL_newmetatable(L, "None");
+	luaL_newmetatable(L, "MarginShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_MarginShorthand },
 		{ "__newindex", f_MarginShorthand___newindex },
@@ -1717,20 +1717,20 @@ int luaopen_orca_MarginShorthand(lua_State *L) {
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	lua_pushlightuserdata(L, xml_MarginShorthand);
-	lua_setfield(L, LUA_REGISTRYINDEX, "NoneParser");
+	lua_setfield(L, LUA_REGISTRYINDEX, "MarginShorthandParser");
 	return 1;
 }
 void luaX_pushSizeAxisShorthand(lua_State *L, lpcSizeAxisShorthand_t data) {
 	lpSizeAxisShorthand_t self = lua_newuserdata(L, sizeof(struct SizeAxisShorthand));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "SizeAxisShorthand");
 	memcpy(self, data, sizeof(struct SizeAxisShorthand));
 }
 lpSizeAxisShorthand_t luaX_checkSizeAxisShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "None");
+	return luaL_checkudata(L, idx, "SizeAxisShorthand");
 }
 static int f_new_SizeAxisShorthand(lua_State *L) {
 	lpSizeAxisShorthand_t self = lua_newuserdata(L, sizeof(struct SizeAxisShorthand));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "SizeAxisShorthand");
 	memset(self, 0, sizeof(struct SizeAxisShorthand));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "Requested");
@@ -1832,7 +1832,7 @@ static int xml_SizeAxisShorthand(xmlNodePtr xml, lpSizeAxisShorthand_t output) {
 }
 
 int luaopen_orca_SizeAxisShorthand(lua_State *L) {
-	luaL_newmetatable(L, "None");
+	luaL_newmetatable(L, "SizeAxisShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_SizeAxisShorthand },
 		{ "__newindex", f_SizeAxisShorthand___newindex },
@@ -1844,20 +1844,20 @@ int luaopen_orca_SizeAxisShorthand(lua_State *L) {
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	lua_pushlightuserdata(L, xml_SizeAxisShorthand);
-	lua_setfield(L, LUA_REGISTRYINDEX, "NoneParser");
+	lua_setfield(L, LUA_REGISTRYINDEX, "SizeAxisShorthandParser");
 	return 1;
 }
 void luaX_pushSizeShorthand(lua_State *L, lpcSizeShorthand_t data) {
 	lpSizeShorthand_t self = lua_newuserdata(L, sizeof(struct SizeShorthand));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "SizeShorthand");
 	memcpy(self, data, sizeof(struct SizeShorthand));
 }
 lpSizeShorthand_t luaX_checkSizeShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "None");
+	return luaL_checkudata(L, idx, "SizeShorthand");
 }
 static int f_new_SizeShorthand(lua_State *L) {
 	lpSizeShorthand_t self = lua_newuserdata(L, sizeof(struct SizeShorthand));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "SizeShorthand");
 	memset(self, 0, sizeof(struct SizeShorthand));
 	return 1;
 }
@@ -1884,7 +1884,7 @@ static int xml_SizeShorthand(xmlNodePtr xml, lpSizeShorthand_t output) {
 }
 
 int luaopen_orca_SizeShorthand(lua_State *L) {
-	luaL_newmetatable(L, "None");
+	luaL_newmetatable(L, "SizeShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_SizeShorthand },
 		{ "__newindex", f_SizeShorthand___newindex },
@@ -1896,7 +1896,7 @@ int luaopen_orca_SizeShorthand(lua_State *L) {
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	lua_pushlightuserdata(L, xml_SizeShorthand);
-	lua_setfield(L, LUA_REGISTRYINDEX, "NoneParser");
+	lua_setfield(L, LUA_REGISTRYINDEX, "SizeShorthandParser");
 	return 1;
 }
 static struct PropertyDesc const DataObjectProperties[kDataObjectNumProperties] = {
@@ -3437,15 +3437,15 @@ ORCA_API lpcString_t __strtoTransitionType(lpcString_t string, enum TransitionTy
 }
 void luaX_pushNavigateToPageArguments(lua_State *L, lpcNavigateToPageArguments_t data) {
 	lpNavigateToPageArguments_t self = lua_newuserdata(L, sizeof(struct NavigateToPageArguments));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "NavigateToPageArguments");
 	memcpy(self, data, sizeof(struct NavigateToPageArguments));
 }
 lpNavigateToPageArguments_t luaX_checkNavigateToPageArguments(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "None");
+	return luaL_checkudata(L, idx, "NavigateToPageArguments");
 }
 static int f_new_NavigateToPageArguments(lua_State *L) {
 	lpNavigateToPageArguments_t self = lua_newuserdata(L, sizeof(struct NavigateToPageArguments));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "NavigateToPageArguments");
 	memset(self, 0, sizeof(struct NavigateToPageArguments));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "URL");
@@ -3507,7 +3507,7 @@ static int xml_NavigateToPageArguments(xmlNodePtr xml, lpNavigateToPageArguments
 }
 
 int luaopen_orca_NavigateToPageArguments(lua_State *L) {
-	luaL_newmetatable(L, "None");
+	luaL_newmetatable(L, "NavigateToPageArguments");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_NavigateToPageArguments },
 		{ "__newindex", f_NavigateToPageArguments___newindex },
@@ -3519,20 +3519,20 @@ int luaopen_orca_NavigateToPageArguments(lua_State *L) {
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	lua_pushlightuserdata(L, xml_NavigateToPageArguments);
-	lua_setfield(L, LUA_REGISTRYINDEX, "NoneParser");
+	lua_setfield(L, LUA_REGISTRYINDEX, "NavigateToPageArgumentsParser");
 	return 1;
 }
 void luaX_pushNavigateBackArguments(lua_State *L, lpcNavigateBackArguments_t data) {
 	lpNavigateBackArguments_t self = lua_newuserdata(L, sizeof(struct NavigateBackArguments));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "NavigateBackArguments");
 	memcpy(self, data, sizeof(struct NavigateBackArguments));
 }
 lpNavigateBackArguments_t luaX_checkNavigateBackArguments(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "None");
+	return luaL_checkudata(L, idx, "NavigateBackArguments");
 }
 static int f_new_NavigateBackArguments(lua_State *L) {
 	lpNavigateBackArguments_t self = lua_newuserdata(L, sizeof(struct NavigateBackArguments));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "NavigateBackArguments");
 	memset(self, 0, sizeof(struct NavigateBackArguments));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "TransitionType");
@@ -3578,7 +3578,7 @@ static int xml_NavigateBackArguments(xmlNodePtr xml, lpNavigateBackArguments_t o
 }
 
 int luaopen_orca_NavigateBackArguments(lua_State *L) {
-	luaL_newmetatable(L, "None");
+	luaL_newmetatable(L, "NavigateBackArguments");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_NavigateBackArguments },
 		{ "__newindex", f_NavigateBackArguments___newindex },
@@ -3590,7 +3590,7 @@ int luaopen_orca_NavigateBackArguments(lua_State *L) {
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	lua_pushlightuserdata(L, xml_NavigateBackArguments);
-	lua_setfield(L, LUA_REGISTRYINDEX, "NoneParser");
+	lua_setfield(L, LUA_REGISTRYINDEX, "NavigateBackArgumentsParser");
 	return 1;
 }
 LRESULT Page_Create(lpObject_t, lpPage_t, wParam_t, CreateEventPtr);

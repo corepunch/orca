@@ -441,11 +441,11 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
       switch (p->type) {
         case kDataTypeObject:
           if ((udata = luaL_testudata(L, idx, API_TYPE_OBJECT))) PROP_SetValue(p, &udata);
-          else return luaL_error(L, "Incorrect userdata for %s %s property\n", API_TYPE_OBJECT, p->name);
+          else return luaL_error(L, "Incorrect userdata for %s(%s) property\n", p->name, API_TYPE_OBJECT);
           break;
         case kDataTypeGroup:
           if ((udata = luaL_testudata(L, idx, p->userdata))) PROP_SetValue(p, udata);
-          else return luaL_error(L, "Incorrect userdata for %s %s property\n", p->userdata, p->name);
+          else return luaL_error(L, "Incorrect userdata for %s(%s) property\n", p->name, p->userdata);
           break;
         case kDataTypeStruct:
           PROP_SetValue(p, luaL_checkudata(L, idx, PROP_GetUserData(p)));

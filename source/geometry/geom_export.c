@@ -849,15 +849,15 @@ int luaopen_orca_box3(lua_State *L) {
 }
 void luaX_pushSize(lua_State *L, lpcSize_t data) {
 	lpSize_t self = lua_newuserdata(L, sizeof(struct Size));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "Size");
 	memcpy(self, data, sizeof(struct Size));
 }
 lpSize_t luaX_checkSize(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "None");
+	return luaL_checkudata(L, idx, "Size");
 }
 static int f_new_Size(lua_State *L) {
 	lpSize_t self = lua_newuserdata(L, sizeof(struct Size));
-	luaL_setmetatable(L, "None");
+	luaL_setmetatable(L, "Size");
 	memset(self, 0, sizeof(struct Size));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "width");
@@ -917,7 +917,7 @@ static int xml_Size(xmlNodePtr xml, lpSize_t output) {
 }
 
 int luaopen_orca_Size(lua_State *L) {
-	luaL_newmetatable(L, "None");
+	luaL_newmetatable(L, "Size");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_Size },
 		{ "__newindex", f_Size___newindex },
@@ -929,7 +929,7 @@ int luaopen_orca_Size(lua_State *L) {
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	lua_pushlightuserdata(L, xml_Size);
-	lua_setfield(L, LUA_REGISTRYINDEX, "NoneParser");
+	lua_setfield(L, LUA_REGISTRYINDEX, "SizeParser");
 	return 1;
 }
 void luaX_pushrect(lua_State *L, lpcrect_t data) {
