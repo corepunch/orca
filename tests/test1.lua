@@ -312,11 +312,11 @@ local function test_input_checkbox()
 
 	-- Set and verify checked state
 	checkbox.Checked = true
-	assert(checkbox.Checked == true, "Checkbox should be checked after setting Checked = true")
+	assert(checkbox.Checked, "Checkbox should be checked after setting Checked = true")
 
 	-- Unset and verify checked state
 	checkbox.Checked = false
-	assert(checkbox.Checked == false, "Checkbox should be unchecked after setting Checked = false")
+	assert(not checkbox.Checked, "Checkbox should be unchecked after setting Checked = false")
 
 	checkbox:removeFromParent()
 end
@@ -383,15 +383,15 @@ local function test_node_visibility()
 	screen:updateLayout(screen.Width, screen.Height)
 
 	-- Default visibility should be true
-	assert(node.Visible == true, "Node should be visible by default")
+	assert(node.Visible, "Node should be visible by default")
 
 	-- Hide the node
 	node.Visible = false
-	assert(node.Visible == false, "Node should be hidden when Visible = false")
+	assert(not node.Visible, "Node should be hidden when Visible = false")
 
 	-- Show the node again
 	node.Visible = true
-	assert(node.Visible == true, "Node should be visible again when Visible = true")
+	assert(node.Visible, "Node should be visible again when Visible = true")
 
 	node:removeFromParent()
 end

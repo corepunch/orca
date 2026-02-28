@@ -64,12 +64,24 @@ static int lua_xml_child_iterator(lua_State* L)
 static int lua_xml_read_document(lua_State* L)
 {
   lpcString_t filename = luaL_checkstring(L, 1);
-  xmlDocPtr* doc = lua_newuserdata(L, sizeof(*doc));
-  luaL_setmetatable(L, API_TYPE_XML_DOC);
-  *doc = xmlReadFile(filename, NULL, 0);
-  if (!*doc) {
-    return luaL_error(L, "Failed to parse XML document: %s", filename);
+  xmlDocPtr doc = NULL;
+  xmlWith(struct file, file, FS_LoadFile(filename), FS_FreeFile) {
+    doc = xmlReadMemory((char*)file->data, file->size, filename, NULL, XML_FLAGS);
   }
+  if (doc) {
+    xmlDocPtr* self = lua_newuserdata(L, sizeof(*doc));
+    luaL_setmetatable(L, API_TYPE_XML_DOC);
+    *self = doc;
+    return 1;
+  } else {
+    return 0;
+  }
+//  xmlDocPtr* doc = lua_newuserdata(L, sizeof(*doc));
+//  luaL_setmetatable(L, API_TYPE_XML_DOC);
+//  *doc = xmlReadFile(filename, NULL, 0);
+//  if (!*doc) {
+//    return luaL_error(L, "Failed to parse XML document: %s", filename);
+//  }
   return 1;
 }
 
@@ -778,7 +790,7 @@ ORCA_API int luaopen_orca_parsers_xml(lua_State* L)
   lua_setfield(L, -2, "XmlDoc");
 
   lua_register(L, "fs_findxml", f_find_xml);
-  luaL_dostring(L, "table.insert(package.searchers, fs_findxml)");
+//  luaL_dostring(L, "table.insert(package.searchers, fs_findxml)");
   
   extern lpcString_t
   (*_PDESC_Parse)(lpObject_t hobj,

@@ -101,6 +101,18 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirname) {
       windowsize[1] = atoi((char*)WindowHeight);
     }
 
+    // load plugins
+    fprintf(mem, "local function load_plugins()\n");
+    fprintf(mem, "\tlocal no_errors = true\n");
+    fprintf(mem, "\tfor f in sys.list_dir(SHAREDIR..'/plugins') do\n");
+    fprintf(mem, "\t\tlocal ok, err = pcall(require, 'plugins.'..f:gsub('.lua$', ''))\n");
+    fprintf(mem, "\t\tif ok then print(string.format('Loaded plugin %%q', f)) else print(err) no_errors = false end\n");
+    fprintf(mem, "\tend\n");
+    fprintf(mem, "\treturn no_errors\n");
+    fprintf(mem, "end\n");
+    fprintf(mem, "load_plugins()\n");
+
+    // initialize
     fprintf(mem, "ref.init(%d, %d, %s)\n", windowsize[0], windowsize[1], args.server ? args.server : "false");
     fprintf(mem, "fs.init('%s')\n", szDirname);
 
@@ -280,7 +292,7 @@ int main (int argc, LPSTR *argv)
       lua_setglobal(L, "SERVER");
     }
     
-    luaL_dostring(L, "package.path = PLUGDIR..'/?.lua;'..package.path\n");
+    luaL_dostring(L, "package.path = PLUGDIR..'/?.lua;'..SHAREDIR..'/?.lua;'..package.path\n");
     luaL_dostring(L, "package.cpath = LIBDIR..'/lib?.so;'..package.cpath\n");
 
     lua_pushstring(L, szProject);

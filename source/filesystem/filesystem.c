@@ -715,10 +715,6 @@ FS_LoadXML(lpcString_t szObjectName)
   strcat(pszFileName, ".xml");
   struct _xmlDoc* doc = NULL;
   
-  FS_FindPackage(search, szObjectName) {
-    
-  }
-  
   xmlWith(struct file, file, FS_LoadFile(pszFileName), FS_FreeFile) {
     doc = xmlReadMemory((char*)file->data, file->size, szObjectName, NULL, XML_FLAGS);
   }

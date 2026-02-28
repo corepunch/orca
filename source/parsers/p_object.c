@@ -281,16 +281,6 @@ XML_ParseObjectNode(lua_State* L, xmlNodePtr xml, lpObject_t root, xmlDocPtr doc
   lpObject_t hobj = NULL;
   lpObject_t childobj = NULL;
 
-  // HACK: This is a hack to set screen size before it's created
-  xmlWith(xmlChar, Width, xmlGetProp(xml, XMLSTR("Width")), xmlFree) {
-    extern int ScreenWidth;
-    ScreenWidth = atoi((lpcString_t)Width);
-  }
-  xmlWith(xmlChar, Height, xmlGetProp(xml, XMLSTR("Height")), xmlFree) {
-    extern int ScreenHeight;
-    ScreenHeight = atoi((lpcString_t)Height);
-  }
-
   if (!strcmp(szClass, "LibraryPlaceholder") ||
       !strcmp(szClass, "LayerPrefabPlaceholder") ||
       !strcmp(szClass, "ObjectPrefabPlaceholder"))

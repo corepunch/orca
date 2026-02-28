@@ -2,8 +2,6 @@
 
 #define MAX_OBJECT_DATA (MAX_PROPERTY_STRING*32) // 1024
 
-ORCA_API int ScreenWidth = 0, ScreenHeight = 0;
-
 struct Object
 {
   LPSTR Name;
@@ -27,7 +25,7 @@ struct Object
     {
       struct component* components;
       struct property_animation* animations;
-      lpProperty_t properties;
+      struct property* properties;
       struct state_manager* stateManager;
       struct style_class* classes;
       struct style_sheet* stylesheet;

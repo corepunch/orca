@@ -128,6 +128,16 @@ static int f_orca_index(lua_State* L) {
 }
 #endif
 
+int f_register_loader(lua_State *L) {
+  assert(lua_type(L, 2) == LUA_TFUNCTION);
+
+  lua_getfield(L, LUA_REGISTRYINDEX, "LOADERS");
+  lua_pushvalue(L, 2);
+  lua_setfield(L, -2, luaL_checkstring(L, 1));
+
+  return 0;
+}
+
 ORCA_API int luaopen_orca(lua_State* L)
 {
   for (luaL_Reg const* fn = orca_modules; fn->name; fn++) {
@@ -136,9 +146,13 @@ ORCA_API int luaopen_orca(lua_State* L)
 
   luaL_newlib(L, ((luaL_Reg[]){
     { "registerEngineClass", f_registerEngineClass },
+    { "register_loader", f_register_loader },
     { NULL, NULL }
   }));
 
+  lua_newtable(L);
+  lua_setfield(L, LUA_REGISTRYINDEX, "LOADERS");
+  
   lua_pushstring(L, ORCA_VERSION);
   lua_setfield(L, -2, "version");
 
