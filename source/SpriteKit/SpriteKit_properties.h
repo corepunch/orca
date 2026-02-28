@@ -4,31 +4,27 @@
 enum SpriteAnimationProperties {
 	kSpriteAnimationImage,
 	kSpriteAnimationFramerate,
+	kSpriteAnimationFrames,
 	kSpriteAnimationNumFrames,
 	kSpriteAnimationNumProperties
 };
 
 #define ID_SpriteAnimation_Image 0xb710ed59
 #define ID_SpriteAnimation_Framerate 0xc51f93cb
+#define ID_SpriteAnimation_Frames 0xcbc4645e
 #define ID_SpriteAnimation_NumFrames 0x37cc69de
 #define ID_SKNode 0x819821fb
 #define GetSKNode(_P)((struct SKNode*)((_P)?OBJ_GetComponent(_P,ID_SKNode):NULL))
 #define SKNode_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_SKNode,sizeof(struct SKNode),_N)
 enum SKNodeProperties {
-	kSKNodeRect,
-	kSKNodeRectX,
-	kSKNodeRectY,
-	kSKNodeRectWidth,
-	kSKNodeRectHeight,
+	kSKNodePosition,
+	kSKNodeSize,
 	kSKNodeAnchor,
 	kSKNodeNumProperties
 };
 
-#define ID_SKNode_Rect 0x96f6bc31
-#define ID_SKNode_RectX 0x0f6a994b
-#define ID_SKNode_RectY 0x0e6a97b8
-#define ID_SKNode_RectWidth 0xe20eacdb
-#define ID_SKNode_RectHeight 0x52859af6
+#define ID_SKNode_Position 0xa99d4e4c
+#define ID_SKNode_Size 0xeaed98c6
 #define ID_SKNode_Anchor 0xf86abfb6
 #define ID_SKScene 0xb8c15a09
 #define GetSKScene(_P)((struct SKScene*)((_P)?OBJ_GetComponent(_P,ID_SKScene):NULL))

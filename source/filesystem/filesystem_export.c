@@ -7,6 +7,13 @@
 	.Offset=offsetof(struct CLASS, FIELD), \
 	.DataSize=sizeof(((struct CLASS *)NULL)->FIELD), \
 	.DataType=TYPE, ##__VA_ARGS__ }
+#define ARRAY_DECL(SHORT, LONG, CLASS, NAME, FIELD, TYPE,...) { \
+	.id=&(struct ID){.Name=#CLASS"."NAME,.Identifier=SHORT}, \
+	.FullIdentifier=LONG, \
+	.Offset=offsetof(struct CLASS, FIELD), \
+	.DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), \
+	.DataType=TYPE, \
+	.IsArray=TRUE, ##__VA_ARGS__ }
 
 void luaX_pushPackage(lua_State *L, lpcPackage_t Package) {
 	lua_pushlightuserdata(L, (lpPackage_t)Package);
@@ -56,7 +63,7 @@ static struct PropertyDesc const ProjectProperties[kProjectNumProperties] = {
 	/* Project.StartupScreen */ DECL(0xb3cce876, 0x7987d405,
 	Project, "StartupScreen", StartupScreen, kDataTypeFixed),
 	/* Project.PreviewWindowBackgroundColor */ DECL(0xe1bb158a, 0xdd25ae63,
-	Project, "PreviewWindowBackgroundColor", PreviewWindowBackgroundColor, kDataTypeColor),
+	Project, "PreviewWindowBackgroundColor", PreviewWindowBackgroundColor, kDataTypeStruct, .TypeString="Color"),
 	/* Project.MessageLimitPerFrame */ DECL(0xb92de767, 0xfc6c2af2,
 	Project, "MessageLimitPerFrame", MessageLimitPerFrame, kDataTypeInt),
 	/* Project.GlobalTimelineStartTime */ DECL(0xe310dade, 0x5f34f579,
@@ -90,7 +97,7 @@ static struct PropertyDesc const ProjectProperties[kProjectNumProperties] = {
 	/* Project.ShowChildrenInLayerThumbnails */ DECL(0x76bfa6c4, 0xeff04efb,
 	Project, "ShowChildrenInLayerThumbnails", ShowChildrenInLayerThumbnails, kDataTypeBool),
 	/* Project.CompositionDesignSize */ DECL(0x5488c4f2, 0x36df81ed,
-	Project, "CompositionDesignSize", CompositionDesignSize, kDataTypeVector2D),
+	Project, "CompositionDesignSize", CompositionDesignSize, kDataTypeStruct, .TypeString="Vector2D"),
 	/* Project.ProjectUsePremultipliedAlpha */ DECL(0x5734b5cd, 0xc9d6b678,
 	Project, "ProjectUsePremultipliedAlpha", ProjectUsePremultipliedAlpha, kDataTypeBool),
 	/* Project.ProjectRemoveICCProfilesOfPngs */ DECL(0xb617d580, 0xded57e15,
@@ -1111,6 +1118,62 @@ ORCA_API struct ClassDesc _PropertyTypeLibrary = {
 	.Defaults = &PropertyTypeLibraryDefaults,
 	.NumProperties = kPropertyTypeLibraryNumProperties,
 };
+static struct PropertyDesc const SpriteLibraryProperties[kSpriteLibraryNumProperties] = {
+};
+static struct SpriteLibrary SpriteLibraryDefaults = {};
+LRESULT SpriteLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+}
+	return FALSE;
+}
+void luaX_pushSpriteLibrary(lua_State *L, lpcSpriteLibrary_t SpriteLibrary) {
+	luaX_pushObject(L, CMP_GetObject(SpriteLibrary));
+}
+lpSpriteLibrary_t luaX_checkSpriteLibrary(lua_State *L, int idx) {
+	return GetSpriteLibrary(luaX_checkObject(L, idx));
+}
+extern struct ClassDesc _Library;
+ORCA_API struct ClassDesc _SpriteLibrary = {
+	.ClassName = "SpriteLibrary",
+	.DefaultName = "Sprites",
+	.ContentType = "Sprite",
+	.Xmlns = "None",
+	.ParentClasses = {&_Library, NULL},
+	.ClassID = ID_SpriteLibrary,
+	.ClassSize = sizeof(struct SpriteLibrary),
+	.Properties = SpriteLibraryProperties,
+	.ObjProc = SpriteLibraryProc,
+	.Defaults = &SpriteLibraryDefaults,
+	.NumProperties = kSpriteLibraryNumProperties,
+};
+static struct PropertyDesc const SpriteAnimationLibraryProperties[kSpriteAnimationLibraryNumProperties] = {
+};
+static struct SpriteAnimationLibrary SpriteAnimationLibraryDefaults = {};
+LRESULT SpriteAnimationLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+}
+	return FALSE;
+}
+void luaX_pushSpriteAnimationLibrary(lua_State *L, lpcSpriteAnimationLibrary_t SpriteAnimationLibrary) {
+	luaX_pushObject(L, CMP_GetObject(SpriteAnimationLibrary));
+}
+lpSpriteAnimationLibrary_t luaX_checkSpriteAnimationLibrary(lua_State *L, int idx) {
+	return GetSpriteAnimationLibrary(luaX_checkObject(L, idx));
+}
+extern struct ClassDesc _Library;
+ORCA_API struct ClassDesc _SpriteAnimationLibrary = {
+	.ClassName = "SpriteAnimationLibrary",
+	.DefaultName = "Sprite Animations",
+	.ContentType = "SpriteAnimation",
+	.Xmlns = "None",
+	.ParentClasses = {&_Library, NULL},
+	.ClassID = ID_SpriteAnimationLibrary,
+	.ClassSize = sizeof(struct SpriteAnimationLibrary),
+	.Properties = SpriteAnimationLibraryProperties,
+	.ObjProc = SpriteAnimationLibraryProc,
+	.Defaults = &SpriteAnimationLibraryDefaults,
+	.NumProperties = kSpriteAnimationLibraryNumProperties,
+};
 static struct PropertyDesc const MessageLibraryProperties[kMessageLibraryNumProperties] = {
 };
 static struct MessageLibrary MessageLibraryDefaults = {};
@@ -1664,6 +1727,12 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	// PropertyTypeLibrary
 	lua_pushclass(L, &_PropertyTypeLibrary);
 	lua_setfield(L, -2, "PropertyTypeLibrary");
+	// SpriteLibrary
+	lua_pushclass(L, &_SpriteLibrary);
+	lua_setfield(L, -2, "SpriteLibrary");
+	// SpriteAnimationLibrary
+	lua_pushclass(L, &_SpriteAnimationLibrary);
+	lua_setfield(L, -2, "SpriteAnimationLibrary");
 	// MessageLibrary
 	lua_pushclass(L, &_MessageLibrary);
 	lua_setfield(L, -2, "MessageLibrary");

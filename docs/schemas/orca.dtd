@@ -1,5 +1,5 @@
 <!ENTITY % RotationOrder "XYZ|XZY|YZX|YXZ|ZXY|ZYX">
-<!ENTITY % DataType "None|Bool|Int|Enum|Float|Vector2D|Vector3D|Vector4D|Rectangle|Matrix2D|Matrix3D|Transform2D|Transform3D|Fixed|LongString|Color|Edges|ObjectTags|Event|Object|Group">
+<!ENTITY % DataType "None|Bool|Int|Enum|Float|Fixed|LongString|Edges|ObjectTags|Event|Struct|Object|Group">
 <!ENTITY % PropertyTypeAttribs "
 	Name CDATA #REQUIRED
 	Style CDATA #IMPLIED
@@ -1739,39 +1739,33 @@
 	StateManager CDATA #IMPLIED
 	Image CDATA #IMPLIED
 	Framerate CDATA #IMPLIED
+	Frames CDATA #IMPLIED
 	NumFrames CDATA #IMPLIED
 ">
 <!ELEMENT SpriteAnimation.Image (#PCDATA | Binding)*>
 <!ATTLIST SpriteAnimation.Image Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT SpriteAnimation.Framerate (#PCDATA | Binding)*>
 <!ATTLIST SpriteAnimation.Framerate Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT SpriteAnimation.Frames (#PCDATA | Binding)*>
+<!ATTLIST SpriteAnimation.Frames Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT SpriteAnimation.NumFrames (#PCDATA | Binding)*>
 <!ATTLIST SpriteAnimation.NumFrames Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % SpriteAnimationElements "SpriteAnimation.Image|SpriteAnimation.Framerate|SpriteAnimation.NumFrames">
+<!ENTITY % SpriteAnimationElements "SpriteAnimation.Image|SpriteAnimation.Framerate|SpriteAnimation.Frames|SpriteAnimation.NumFrames">
 <!ELEMENT SpriteAnimation EMPTY>
 <!ATTLIST SpriteAnimation %SpriteAnimationAttribs;>
 <!ENTITY % SKNodeAttribs "
 	%NodeAttribs;
-	Rect CDATA #IMPLIED
-	RectX CDATA #IMPLIED
-	RectY CDATA #IMPLIED
-	RectWidth CDATA #IMPLIED
-	RectHeight CDATA #IMPLIED
+	Position CDATA #IMPLIED
+	Size CDATA #IMPLIED
 	Anchor CDATA #IMPLIED
 ">
-<!ELEMENT SKNode.Rect (#PCDATA | Binding)*>
-<!ATTLIST SKNode.Rect Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT SKNode.RectX (#PCDATA | Binding)*>
-<!ATTLIST SKNode.RectX Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT SKNode.RectY (#PCDATA | Binding)*>
-<!ATTLIST SKNode.RectY Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT SKNode.RectWidth (#PCDATA | Binding)*>
-<!ATTLIST SKNode.RectWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT SKNode.RectHeight (#PCDATA | Binding)*>
-<!ATTLIST SKNode.RectHeight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT SKNode.Position (#PCDATA | Binding)*>
+<!ATTLIST SKNode.Position Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT SKNode.Size (#PCDATA | Binding)*>
+<!ATTLIST SKNode.Size Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT SKNode.Anchor (#PCDATA | Binding)*>
 <!ATTLIST SKNode.Anchor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % SKNodeElements "SKNode.Rect|SKNode.RectX|SKNode.RectY|SKNode.RectWidth|SKNode.RectHeight|SKNode.Anchor|%NodeElements;">
+<!ENTITY % SKNodeElements "SKNode.Position|SKNode.Size|SKNode.Anchor|%NodeElements;">
 <!ELEMENT SKNode EMPTY>
 <!ATTLIST SKNode %SKNodeAttribs;>
 <!ENTITY % SKSceneAttribs "
@@ -2165,6 +2159,18 @@
 <!ENTITY % PropertyTypeLibraryElements "%LibraryElements;">
 <!ELEMENT PropertyTypeLibrary EMPTY>
 <!ATTLIST PropertyTypeLibrary %PropertyTypeLibraryAttribs;>
+<!ENTITY % SpriteLibraryAttribs "
+	%LibraryAttribs;
+">
+<!ENTITY % SpriteLibraryElements "%LibraryElements;">
+<!ELEMENT SpriteLibrary EMPTY>
+<!ATTLIST SpriteLibrary %SpriteLibraryAttribs;>
+<!ENTITY % SpriteAnimationLibraryAttribs "
+	%LibraryAttribs;
+">
+<!ENTITY % SpriteAnimationLibraryElements "%LibraryElements;">
+<!ELEMENT SpriteAnimationLibrary EMPTY>
+<!ATTLIST SpriteAnimationLibrary %SpriteAnimationLibraryAttribs;>
 <!ENTITY % MessageLibraryAttribs "
 	%LibraryAttribs;
 ">

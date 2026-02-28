@@ -48,6 +48,7 @@ if __name__ == "__main__":
 			print(f"File not found: {filename}")
 			continue
 
+		print(filename)
 		tree = ET.parse(filename)
 		root = tree.getroot()
 
@@ -59,15 +60,27 @@ if __name__ == "__main__":
 
 		Workspace.structs.update({s.get('name'): s for s in root.findall(".//struct[@name]")})
 		Workspace.enums.update({e.get('name'): e for e in root.findall(".//enums[@name]")})
-		Workspace.components.update({c.get('name'): c for c in root.findall(".//component[@name]")})
+		Workspace.components.update({c.get('name'): c for c in root.findall(".//class[@name]")})
 		Workspace.resources.update({c.get('type'): c for c in root.findall(".//resource[@type]")})
 
 		for struct in (
-			root.findall('struct') + root.findall('interface') + root.findall('component')
+			root.findall('struct') + root.findall('interface') + root.findall('class')
 		):
 			struct_name = struct.get('name')
 			plugins.call_plugin_hook("struct_fwd_def", struct_name)
 			plugins.call_plugin_hook("lua_accessors", struct_name)
+
+
+		for c in Workspace.components.values():
+			children = list(c)
+			for i, p in enumerate(children):
+				if p.tag == "property" and p.get("array"):
+					new_elem = ET.Element('property', {
+						'name': f"Num{p.get('name')}",
+						'type': 'int',
+					})
+					new_elem.text = f"Number of {p.get('name').lower()}"
+					c.insert(i + 1, new_elem)			
 
 		for node in root:
 			plugins.call_plugin_hook(f"on_{node.tag}", root, node)

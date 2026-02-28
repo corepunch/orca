@@ -129,28 +129,27 @@ OBJ_GetUniforms(lpObject_t object, struct uniform* pUniforms)
         pUniforms->Type = UT_FLOAT;
         PROP_CopyValue(property, pUniforms->Value);
         break;
-      case kDataTypeVector2D:
-        hasTextureTiling |= pUniforms->Identifier == ID_TextureTiling;
-        pUniforms->Type = UT_FLOAT_VEC2;
-        PROP_CopyValue(property, pUniforms->Value);
-        break;
-      case kDataTypeVector3D:
-        pUniforms->Type = UT_FLOAT_VEC3;
-        PROP_CopyValue(property, pUniforms->Value);
-        break;
-      case kDataTypeVector4D:
-        pUniforms->Type = UT_FLOAT_VEC4;
-        PROP_CopyValue(property, pUniforms->Value);
-        break;
+      case kDataTypeStruct:
+        switch (PROP_GetSize(property)) {
+          case sizeof(vec2_t):
+            hasTextureTiling |= pUniforms->Identifier == ID_TextureTiling;
+            pUniforms->Type = UT_FLOAT_VEC2;
+            PROP_CopyValue(property, pUniforms->Value);
+            break;
+          case sizeof(vec3_t):
+            pUniforms->Type = UT_FLOAT_VEC3;
+            PROP_CopyValue(property, pUniforms->Value);
+            break;
+          case sizeof(vec4_t):
+            pUniforms->Type = UT_FLOAT_VEC4;
+            PROP_CopyValue(property, pUniforms->Value);
+            break;
+        }
       case kDataTypeInt:
       case kDataTypeBool:
       case kDataTypeEnum:
         pUniforms->Type = UT_FLOAT;
         *pUniforms->Value = *(int*)PROP_GetValue(property);
-        break;
-      case kDataTypeColor:
-        pUniforms->Type = UT_FLOAT_VEC4;
-        PROP_CopyValue(property, pUniforms->Value);
         break;
       case kDataTypeGroup:
       default:
@@ -382,30 +381,30 @@ OBJ_MoveToFront(lpObject_t object)
   }
 }
 
-void
-OBJ_ProcessFunctions(lpObject_t object, lpcString_t name)
-{
-  void OBJ_ProcessFunctions2(lpObject_t, lpcString_t);
-  OBJ_ProcessFunctions2(object, name);
-  if (name[0] == 'o' && name[1] == 'n') {
-    lpcString_t suffix = "Changed";
-    size_t str_len = strlen(name);
-    size_t suffix_len = 7; // strlen(suffix);
-    if (str_len >= suffix_len &&
-        strcmp(name + str_len - suffix_len, suffix) == 0) {
-      size_t property_len = str_len - suffix_len;
-      shortStr_t pname = { 0 };
-      lpProperty_t pProp = NULL;
-      strncpy(pname, name + 2, property_len - 2);
-      if (SUCCEEDED(OBJ_FindShortProperty(object, pname, &pProp))) {
-        PROP_SetFlag(pProp, PF_HASCHANGECALLBACK);
-        //			} else {
-        //				Con_Error("Could not find property for
-        //%s", name);
-      }
-    }
-  }
-}
+//void
+//OBJ_ProcessFunctions(lpObject_t object, lpcString_t name);
+//{
+//  void OBJ_ProcessFunctions2(lpObject_t, lpcString_t);
+//  OBJ_ProcessFunctions2(object, name);
+//  if (!strncmp(name, "on", 2)) {
+//    lpcString_t suffix = "Changed";
+//    size_t str_len = strlen(name);
+//    size_t suffix_len = 7; // strlen(suffix);
+//    if (str_len >= suffix_len &&
+//        strcmp(name + str_len - suffix_len, suffix) == 0) {
+//      size_t property_len = str_len - suffix_len;
+//      shortStr_t pname = { 0 };
+//      lpProperty_t pProp = NULL;
+//      strncpy(pname, name + 2, property_len - 2);
+//      if (SUCCEEDED(OBJ_FindShortProperty(object, pname, &pProp))) {
+//        PROP_SetFlag(pProp, PF_HASCHANGECALLBACK);
+//        //			} else {
+//        //				Con_Error("Could not find property for
+//        //%s", name);
+//      }
+//    }
+//  }
+//}
 
 //#include <source/filesystem/filesystem.h>
 
@@ -421,10 +420,9 @@ _CreateProjectProperty(lpObject_t object, uint32_t ident)
 
 HRESULT
 OBJ_FindLongProperty(lpObject_t object,
-                     lpcString_t long_name,
+                     uint32_t identifier,
                      lpProperty_t* ppProp)
 {
-  uint32_t identifier = fnv1a32(long_name);
   if ((*ppProp = PROP_FindByLongID(object->properties, identifier))) {
     return NOERROR;
   } else if ((*ppProp = _CreateClassProperty(object, identifier))) {
@@ -445,7 +443,7 @@ OBJ_FindShortProperty(lpObject_t object,
   if ((*ppProp = PROP_FindByShortID(object->properties, identifier))) {
     return NOERROR;
   } else {
-    return OBJ_FindLongProperty(object, short_name, ppProp);
+    return OBJ_FindLongProperty(object, identifier, ppProp);
   }
 }
 

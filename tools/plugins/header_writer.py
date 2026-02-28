@@ -18,7 +18,7 @@ class HeaderWriter(Plugin):
 		self.w(f"#ifndef __{root.get('name').upper()}_H__")
 		self.w(f"#define __{root.get('name').upper()}_H__\n")
 		self.w(f"#include <include/orca.h>\n")
-		if root.find('component') is not None:
+		if root.find('class') is not None:
 			self.w(f"#include <{base[base.index('source/'):] + '_properties.h'}>\n")
 
 	def w(self, text):
@@ -87,15 +87,15 @@ class HeaderWriter(Plugin):
 		for field in struct.findall('property') + struct.findall('field'):
 			fname, ftype = field.get('name'), utils.header_get_arg_type(field)
 			fcomment = f" /// {field.text}" if field.text else str()
-			if field.get('array'):
-				self.w(f"\t{ftype} {fname}[{field.get('array')}];{fcomment}")
+			if field.get('fixed-array'):
+				self.w(f"\t{ftype} {fname}[{field.get('fixed-array')}];{fcomment}")
 			else:
 				self.w(f"\t{ftype} {fname};{fcomment}")
 		self.w(f"}};\n")
 		for method in struct.findall('method'):
 			self.on_function(struct, method)
 
-	def on_component(self, root, component):
+	def on_class(self, root, component):
 		cname = component.get('name')
 		self.w(f"typedef struct {cname} {cname}, *{cname}Ptr;")
 		self.w(f"typedef struct {cname} const *{cname}CPtr;")

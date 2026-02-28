@@ -5,6 +5,8 @@ import string
 
 from . import Plugin, utils, Workspace
 
+export_xml_parsers = True
+
 _T = {
 	'shutdown': string.Template(
 		"static int f_${module_name}_gc(lua_State *L) {\n"
@@ -34,19 +36,19 @@ _T = {
 	'struct_push': string.Template(
 		"void luaX_push${name}(lua_State *L, ${lpcname} data) {\n"
 		"\t${lpname} self = lua_newuserdata(L, sizeof(struct ${name}));\n"
-		"\tluaL_setmetatable(L, \"${name}\");\n"
+		"\tluaL_setmetatable(L, \"${export}\");\n"
 		"\tmemcpy(self, data, sizeof(struct ${name}));\n"
 		"}\n"
 	),
 	'struct_check': string.Template(
 		"${lpname} luaX_check${name}(lua_State *L, int idx) {\n"
-		"\treturn luaL_checkudata(L, idx, \"${name}\");\n"
+		"\treturn luaL_checkudata(L, idx, \"${export}\");\n"
 		"}\n"
 	),
 	'struct_new': string.Template(
 		"static int f_new_${name}(lua_State *L) {\n"
 		"\t${lpname} self = lua_newuserdata(L, sizeof(struct ${name}));\n"
-		"\tluaL_setmetatable(L, \"${name}\");\n"
+		"\tluaL_setmetatable(L, \"${export}\");\n"
 		"\tmemset(self, 0, sizeof(struct ${name}));\n"
 		"${init_block}"
 		"\treturn 1;\n"
@@ -81,7 +83,6 @@ _T = {
 	),
 }
 
-
 class ExportWriter(Plugin):
 	"""Generates a Lua-binding C export file (_export.c) from module XML."""
 
@@ -96,13 +97,21 @@ class ExportWriter(Plugin):
 		self.w(f"#include <include/api.h>")
 		self.w(f"#include <{base[base.index('source/'):] + '.h'}>")
 
-		if root.find('component') is not None:
+		if root.find('class') is not None:
 			self.w(f"#define DECL(SHORT, LONG, CLASS, NAME, FIELD, TYPE,...) {{ \\")
 			self.w(f"\t.id=&(struct ID){{.Name=#CLASS\".\"NAME,.Identifier=SHORT}}, \\")
 			self.w(f"\t.FullIdentifier=LONG, \\")
 			self.w(f"\t.Offset=offsetof(struct CLASS, FIELD), \\")
 			self.w(f"\t.DataSize=sizeof(((struct CLASS *)NULL)->FIELD), \\")
 			self.w(f"\t.DataType=TYPE, ##__VA_ARGS__ }}")
+
+			self.w(f"#define ARRAY_DECL(SHORT, LONG, CLASS, NAME, FIELD, TYPE,...) {{ \\")
+			self.w(f"\t.id=&(struct ID){{.Name=#CLASS\".\"NAME,.Identifier=SHORT}}, \\")
+			self.w(f"\t.FullIdentifier=LONG, \\")
+			self.w(f"\t.Offset=offsetof(struct CLASS, FIELD), \\")
+			self.w(f"\t.DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), \\")
+			self.w(f"\t.DataType=TYPE, \\")
+			self.w(f"\t.IsArray=TRUE, ##__VA_ARGS__ }}")
 
 		self.w(f"")
 
@@ -121,7 +130,7 @@ class ExportWriter(Plugin):
 			self.w(f"\t// {str_name}")
 			self.w(f"\tluaopen_{self.namespace}_{str_name}(L);")
 			self.w(f"\tlua_setfield(L, -2, \"{struct.get('export', str_name)}\");")
-		for component in self.root.findall('component'):
+		for component in self.root.findall('class'):
 			cmp_name = component.get('name')
 			self.w(f"\t// {cmp_name}")
 			self.w(f"\tlua_pushclass(L, &_{cmp_name});")
@@ -153,6 +162,24 @@ class ExportWriter(Plugin):
 			values=','.join(values),
 			count=len(enums.findall('enum')),
 		))
+		if export_xml_parsers:
+			originals = ['"%s"' % e.get('name') for e in enums.findall('enum')] + ["NULL"]
+			self.w(f"#include <libxml/parser.h>")
+			self.w(f"ORCA_API lpcString_t __strto{ename}(lpcString_t string, enum {ename}* output) {{")
+			self.w(f"\tif (string == NULL) return FALSE;")
+			self.w(f"\tconst char* _{ename}[] = {{ {', '.join(originals)} }};")
+			self.w(f"\tif (isdigit(*string)) {{")
+			self.w(f"\t\t*output = strtod(string, (char**)&string);")
+			self.w(f"\t\treturn string;")
+			self.w(f"\t}} else for (const char **s = _{ename}; *s; s++) {{")
+			self.w(f"\t\tif (!strcmp(string, *s)) {{")
+			self.w(f"\t\t\t*output = (enum {ename})(s - _{ename});")
+			self.w(f"\t\t\treturn string + strlen(*s);")
+			self.w(f"\t\t}}")
+			self.w(f"\t}}")
+			self.w(f"\tCon_Error(\"Could not parse '%s' value of property {ename}\", string);")
+			self.w(f"\treturn string + strlen(string);")
+			self.w(f"}}")
 
 	def on_resource(self, _, resource):
 		if resource.get('no-lua'):
@@ -199,15 +226,15 @@ class ExportWriter(Plugin):
 		name = struct.get('name')
 		lpname, lpcname = utils.lp(name), utils.lpc(name)
 		if is_struct:
-			self.wt(_T['struct_push'].substitute(name=name, lpname=lpname, lpcname=lpcname))
+			self.wt(_T['struct_push'].substitute(name=name, export=struct.get('export') or name, lpname=lpname, lpcname=lpcname))
 		if not struct.get("no-check"):
-			self.wt(_T['struct_check'].substitute(name=name, lpname=lpname))
+			self.wt(_T['struct_check'].substitute(name=name, export=struct.get('export') or name, lpname=lpname))
 		else:
 			self.w(f"{lpname} luaX_check{name}(lua_State *L, int idx);")
 		if is_struct:
 			serializable_fields = [
 				(i, f) for i, f in enumerate(struct.findall('field'))
-				if not f.get('array')
+				if not f.get('fixed-array')
 				and (f.get('type') in utils.atomic_types or f.get('type') in Workspace.enums)
 			]
 			if serializable_fields:
@@ -230,7 +257,7 @@ class ExportWriter(Plugin):
 				init_block = f"\tif (lua_istable(L, 1)) {{\n{table_inits}\t}} else {{\n{field_inits}\t}}\n"
 			else:
 				init_block = ""
-			self.wt(_T['struct_new'].substitute(name=name, lpname=lpname, init_block=init_block))
+			self.wt(_T['struct_new'].substitute(name=name, export=struct.get('export') or name, lpname=lpname,  init_block=init_block))
 		elif struct.find('init') is not None:
 			self.w(f"int f_new_{name}(lua_State *L);")
 		# write methods
@@ -241,7 +268,7 @@ class ExportWriter(Plugin):
 		if is_struct:
 			self.w(f"\tswitch(fnv1a32(luaL_checkstring(L, 2))) {{")
 			for field in struct.findall('field'):
-				if field.get('array') or field.get('private'):
+				if field.get('fixed-array') or field.get('private'):
 					continue
 				field_name = field.get('name')
 				self.w(f"\tcase {utils.hash(field_name)}: // {field_name}")
@@ -265,7 +292,7 @@ class ExportWriter(Plugin):
 			self.w(f"int {utils.export_newindex_name(struct)}(lua_State *L) {{")
 			self.w(f"\tswitch(fnv1a32(luaL_checkstring(L, 2))) {{")
 			for field in struct.findall('field'):
-				if field.get('array'):
+				if field.get('fixed-array'):
 					continue
 				field_name, field_type = field.get('name'), field.get('type')
 				access = "*"
@@ -277,9 +304,52 @@ class ExportWriter(Plugin):
 				self.w(f"\t\t{utils.export_check_var(f'luaX_check{name}(L, 1)->{field_name}', field_type, 3, access)};")
 				self.w(f"\t\treturn 0;")
 			self.w(f"\t}}\n\treturn luaL_error(L, \"Unknown field in {name}: %s\", luaL_checkstring(L, 2));\n}}")
+
+		if export_xml_parsers and is_struct:
+			def declare_parsers(struct):
+				types = set()
+				for field in struct.findall('field'):
+					if field.get('fixed-array') or field.get('private') or field.get('pointer'):
+						continue
+					types.add(field.get('type'))
+				for t in sorted(types):
+					# if t in Workspace.structs: self.w(f"\tint xmlto{t}(xmlNodePtr, struct {t}*);")
+					# elif t in Workspace.enums: self.w(f"\tint xmlto{t}(xmlNodePtr, enum {t}*);")
+					# elif t == "fixed": self.w(f"\tint xmlto{t}(xmlNodePtr, fixedString_t*);")
+					# else: self.w(f"\tint xmlto{t}(xmlNodePtr, {t}*);")	
+					if t in Workspace.structs: self.w(f"\tlpcString_t __strto{t}(lpcString_t, struct {t}*);")
+					elif t in Workspace.enums: self.w(f"\tlpcString_t __strto{t}(lpcString_t, enum {t}*);")
+					elif t == "fixed": self.w(f"\tlpcString_t __strto{t}(lpcString_t, fixedString_t*);")
+					else: self.w(f"\tlpcString_t __strto{t}(lpcString_t, {t}*);")	
+
+			self.w(f"#include <libxml/parser.h>")
+			self.w(f"ORCA_API lpcString_t __strto{name}(lpcString_t str, {lpname} output) {{")
+			declare_parsers(struct)
+			for field in struct.findall('field'):
+				if field.get('fixed-array') or field.get('private') or field.get('pointer'):
+					continue
+				field_name, field_type = field.get('name'), field.get('type')
+				self.w(f"\tstr = __strto{field_type}(str, &output->{field_name});")
+			self.w(f"\treturn str;")
+			self.w(f"}}")
+
+			self.w(f"static int xml_{name}(xmlNodePtr xml, {lpname} output) {{")
+			declare_parsers(struct)
+			for field in struct.findall('field'):
+				if field.get('fixed-array') or field.get('private') or field.get('pointer'):
+					continue
+				field_name, field_type = field.get('name'), field.get('type')
+				self.w(f"\txmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR(\"{field_name}\")), xmlFree) {{")
+				self.w(f"\t\t__strto{field_type}((lpcString_t)attr, &output->{field_name});")
+				self.w(f"\t}}")
+				# self.w(f"\txmlto{field_type}((xmlNodePtr)xmlHasProp(xml, XMLSTR(\"{field_name}\")), &output->{field_name});")
+
+			self.w(f"\treturn TRUE;")
+			self.w(f"}}\n")
+
 		# write lua_open
 		self.w(f"int luaopen_{root.get('namespace')}_{name}(lua_State *L) {{")
-		self.w(f"\tluaL_newmetatable(L, \"{name}\");")
+		self.w(f"\tluaL_newmetatable(L, \"{struct.get('export') or name}\");")
 		self.w(f"\tluaL_setfuncs(L, ((luaL_Reg[]) {{")
 		if is_struct or struct.find('init') is not None:
 			self.w(f"\t\t{{ \"new\", f_new_{name} }},")
@@ -292,12 +362,15 @@ class ExportWriter(Plugin):
 				continue
 			self.w(f"\t\t{{ \"{utils.camel_case(method_name)}\", {utils.export_get_name(struct, method)} }},")
 		self.w(f"\t\t{{ NULL, NULL }},")
-		self.w(f"\t}}), 0);\n")
+		self.w(f"\t}}), 0);")
 		if is_struct:
 			self.w(f"\tlua_newtable(L);")
 			self.w(f"\tlua_pushcfunction(L, f_{name}___call);")
 			self.w(f"\tlua_setfield(L, -2, \"__call\");")
-			self.w(f"\tlua_setmetatable(L, -2);\n")
+			self.w(f"\tlua_setmetatable(L, -2);")
+			if export_xml_parsers:
+				self.w(f"\tlua_pushlightuserdata(L, xml_{name});")
+				self.w(f"\tlua_setfield(L, LUA_REGISTRYINDEX, \"{struct.get('export') or name}Parser\");")
 		self.w(f"\treturn 1;\n}}")
 
 	def write_property(self, property, component, path):
@@ -309,18 +382,16 @@ class ExportWriter(Plugin):
 				f"\t{cname}, \"{pname}\", {path}, kDataTypeEdges, .TypeString=\"{userdata}\"),"
 			)
 		else:
-			name = utils.property_name(path)
 			sname = utils.property_name(path)
 			ptype = property.get('type')
 			struct = Workspace.structs.get(ptype)
 			typedata = f"kDataType{ptype[:1].upper() + ptype[1:]}"
 			if struct is not None:
-				export_as = struct.get('export')
 				nfields = 0
 				def count(p, _, c): nonlocal nfields; nfields += 1
 				utils.enum_component_properties(struct, count)
 				typedata = (
-					f"kDataType{export_as}" if export_as
+					f"kDataTypeStruct, .TypeString=\"{struct.get('export')}\"" if struct.get('export')
 					else f"kDataTypeGroup, .TypeString=\"{ptype}\", .NumComponents={nfields}"
 				)
 			elif ptype in Workspace.enums or sname in Workspace.enums:
@@ -330,12 +401,13 @@ class ExportWriter(Plugin):
 				typedata = f"kDataTypeEnum, .TypeString=\"{','.join(values)}\""
 			elif ptype in Workspace.components:
 				typedata = f"kDataTypeObject, .TypeString=\"{ptype}\""
+			decl = "ARRAY_DECL" if property.get('array') else "DECL"
 			self.w(
-				f"\t/* {cname}.{sname} */ DECL({utils.hash(sname)}, {utils.hash(cname + '.' + sname)},\n"
+				f"\t/* {cname}.{sname} */ {decl}({utils.hash(sname)}, {utils.hash(cname + '.' + sname)},\n"
 				f"\t{cname}, \"{sname}\", {path}, {typedata}),"
 			)
 
-	def on_component(self, root, component):
+	def on_class(self, root, component):
 		cname = component.get('name')
 		for handles in component.findall('handles'):
 			event = handles.get('event')

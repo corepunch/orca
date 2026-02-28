@@ -1,6 +1,6 @@
 local sk = require "orca.SpriteKit"
 local fs = require "orca.filesystem"
-local sprites = require "Sprites"
+local sprites = require "Scripts.Sprites"
 
 function createTextureInfoEx(name)
   return name

@@ -776,21 +776,30 @@ HANDLER(Shader, Start) {
           continue;
         }
       case kDataTypeFloat: ud.Type = UT_FLOAT; break;
-      case kDataTypeVector2D: ud.Type = UT_FLOAT_VEC2; break;
-      case kDataTypeVector3D: ud.Type = UT_FLOAT_VEC3; break;
-      case kDataTypeVector4D: ud.Type = UT_FLOAT_VEC4; break;
-        //      case kDataTypeMatrix3: ud.Type = UT_FLOAT_MAT3; break;
-      case kDataTypeMatrix3D: ud.Type = UT_FLOAT_MAT4; break;
+      case kDataTypeStruct:
+        switch (PROP_GetSize(p)) {
+          case sizeof(vec2_t): ud.Type = UT_FLOAT_VEC2; break;
+          case sizeof(vec3_t): ud.Type = UT_FLOAT_VEC3; break;
+          case sizeof(vec4_t):
+            if (!strcmp(PROP_GetUserData(p), "Color")) {
+              ud.Type = UT_COLOR;
+              ud.Default[0] = 1;
+              ud.Default[1] = 1;
+              ud.Default[2] = 1;
+              ud.Default[3] = 1;
+            } else {
+              ud.Type = UT_FLOAT_VEC4;
+            }
+            break;
+          case sizeof(mat3_t): ud.Type = UT_FLOAT_MAT3; break;
+          case sizeof(mat4_t): ud.Type = UT_FLOAT_MAT4; break;
+          default:
+            break;
+        }
+        break;
       case kDataTypeInt: ud.Type = UT_INT; break;
       case kDataTypeBool: ud.Type = UT_BOOL; break;
       case kDataTypeEnum: ud.Type = UT_INT; break;
-      case kDataTypeColor:
-        ud.Type = UT_COLOR;
-        ud.Default[0] = 1;
-        ud.Default[1] = 1;
-        ud.Default[2] = 1;
-        ud.Default[3] = 1;
-        break;
       default:
         continue;
     }

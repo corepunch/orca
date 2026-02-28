@@ -7,6 +7,13 @@
 	.Offset=offsetof(struct CLASS, FIELD), \
 	.DataSize=sizeof(((struct CLASS *)NULL)->FIELD), \
 	.DataType=TYPE, ##__VA_ARGS__ }
+#define ARRAY_DECL(SHORT, LONG, CLASS, NAME, FIELD, TYPE,...) { \
+	.id=&(struct ID){.Name=#CLASS"."NAME,.Identifier=SHORT}, \
+	.FullIdentifier=LONG, \
+	.Offset=offsetof(struct CLASS, FIELD), \
+	.DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), \
+	.DataType=TYPE, \
+	.IsArray=TRUE, ##__VA_ARGS__ }
 
 void luaX_pushSpriteFrame(lua_State *L, lpcSpriteFrame_t data) {
 	lpSpriteFrame_t self = lua_newuserdata(L, sizeof(struct SpriteFrame));
@@ -48,6 +55,24 @@ int f_SpriteFrame___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in SpriteFrame: %s", luaL_checkstring(L, 2));
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoSpriteFrame(lpcString_t str, lpSpriteFrame_t output) {
+	lpcString_t __strtorect(lpcString_t, struct rect*);
+	str = __strtorect(str, &output->Rect);
+	str = __strtorect(str, &output->UvRect);
+	return str;
+}
+static int xml_SpriteFrame(xmlNodePtr xml, lpSpriteFrame_t output) {
+	lpcString_t __strtorect(lpcString_t, struct rect*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Rect")), xmlFree) {
+		__strtorect((lpcString_t)attr, &output->Rect);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("UvRect")), xmlFree) {
+		__strtorect((lpcString_t)attr, &output->UvRect);
+	}
+	return TRUE;
+}
+
 int luaopen_orca_SpriteFrame(lua_State *L) {
 	luaL_newmetatable(L, "SpriteFrame");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -56,12 +81,12 @@ int luaopen_orca_SpriteFrame(lua_State *L) {
 		{ "__index", f_SpriteFrame___index },
 		{ NULL, NULL },
 	}), 0);
-
 	lua_newtable(L);
 	lua_pushcfunction(L, f_SpriteFrame___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-
+	lua_pushlightuserdata(L, xml_SpriteFrame);
+	lua_setfield(L, LUA_REGISTRYINDEX, "SpriteFrameParser");
 	return 1;
 }
 static struct PropertyDesc const SpriteAnimationProperties[kSpriteAnimationNumProperties] = {
@@ -69,6 +94,8 @@ static struct PropertyDesc const SpriteAnimationProperties[kSpriteAnimationNumPr
 	SpriteAnimation, "Image", Image, kDataTypeObject, .TypeString="Texture"),
 	/* SpriteAnimation.Framerate */ DECL(0xbebf2a84, 0xc51f93cb,
 	SpriteAnimation, "Framerate", Framerate, kDataTypeFloat),
+	/* SpriteAnimation.Frames */ ARRAY_DECL(0xf03e266f, 0xcbc4645e,
+	SpriteAnimation, "Frames", Frames, kDataTypeStruct, .TypeString="SpriteFrame"),
 	/* SpriteAnimation.NumFrames */ DECL(0x32caacb1, 0x37cc69de,
 	SpriteAnimation, "NumFrames", NumFrames, kDataTypeInt),
 };
@@ -99,18 +126,12 @@ ORCA_API struct ClassDesc _SpriteAnimation = {
 };
 LRESULT SKNode_UpdateMatrix(lpObject_t, lpSKNode_t, wParam_t, UpdateMatrixEventPtr);
 static struct PropertyDesc const SKNodeProperties[kSKNodeNumProperties] = {
-	/* SKNode.Rect */ DECL(0x6b109927, 0x96f6bc31,
-	SKNode, "Rect", Rect, kDataTypeRectangle),
-	/* SKNode.RectX */ DECL(0x0a21a2ed, 0x0f6a994b,
-	SKNode, "RectX", Rect.x, kDataTypeFloat),
-	/* SKNode.RectY */ DECL(0x0921a15a, 0x0e6a97b8,
-	SKNode, "RectY", Rect.y, kDataTypeFloat),
-	/* SKNode.RectWidth */ DECL(0x25c57ce9, 0xe20eacdb,
-	SKNode, "RectWidth", Rect.width, kDataTypeFloat),
-	/* SKNode.RectHeight */ DECL(0x68097dd8, 0x52859af6,
-	SKNode, "RectHeight", Rect.height, kDataTypeFloat),
+	/* SKNode.Position */ DECL(0xe27f342a, 0xa99d4e4c,
+	SKNode, "Position", Position, kDataTypeStruct, .TypeString="Vector2D"),
+	/* SKNode.Size */ DECL(0xa6478e7c, 0xeaed98c6,
+	SKNode, "Size", Size, kDataTypeStruct, .TypeString="Vector2D"),
 	/* SKNode.Anchor */ DECL(0xb54055d4, 0xf86abfb6,
-	SKNode, "Anchor", Anchor, kDataTypeInt),
+	SKNode, "Anchor", Anchor, kDataTypeStruct, .TypeString="Vector2D"),
 };
 static struct SKNode SKNodeDefaults = {0};
 LRESULT SKNodeProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -184,7 +205,7 @@ static struct PropertyDesc const SKSpriteNodeProperties[kSKSpriteNodeNumProperti
 	/* SKSpriteNode.BlendMode */ DECL(0x0038792b, 0x240fc724,
 	SKSpriteNode, "BlendMode", BlendMode, kDataTypeEnum, .TypeString="AlphaAutomatic,Opaque,Alpha,Additive,PremultipliedAlpha,MixedAlpha"),
 	/* SKSpriteNode.UvRect */ DECL(0xae3d25c0, 0xc27a0d8d,
-	SKSpriteNode, "UvRect", UvRect, kDataTypeRectangle),
+	SKSpriteNode, "UvRect", UvRect, kDataTypeStruct, .TypeString="Rectangle"),
 	/* SKSpriteNode.UvRectX */ DECL(0xe2422e48, 0xfb23c64f,
 	SKSpriteNode, "UvRectX", UvRect.x, kDataTypeFloat),
 	/* SKSpriteNode.UvRectY */ DECL(0xe3422fdb, 0xfa23c4bc,
@@ -229,7 +250,7 @@ LRESULT SKLabelNode_Render(lpObject_t, lpSKLabelNode_t, wParam_t, RenderEventPtr
 LRESULT SKLabelNode_Create(lpObject_t, lpSKLabelNode_t, wParam_t, CreateEventPtr);
 static struct PropertyDesc const SKLabelNodeProperties[kSKLabelNodeNumProperties] = {
 	/* SKLabelNode.Color */ DECL(0xe5b43cf8, 0x84bf37d6,
-	SKLabelNode, "Color", Color, kDataTypeColor),
+	SKLabelNode, "Color", Color, kDataTypeStruct, .TypeString="Color"),
 };
 static struct SKLabelNode SKLabelNodeDefaults = {0};
 LRESULT SKLabelNodeProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {

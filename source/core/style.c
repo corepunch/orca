@@ -215,7 +215,10 @@ OBJ_ApplyClass(lpObject_t pobj, struct style_sheet* ss, void* parm)
       return;
     }
     PROP_Parse(hProperty, ss->value);
-    if (PROP_GetType(hProperty) == kDataTypeColor && parm) {
+    if (PROP_GetType(hProperty) == kDataTypeStruct &&
+        !strcmp(PROP_GetUserData(hProperty), "Color") &&
+        parm)
+    {
       struct color clr;
       PROP_CopyValue(hProperty, &clr);
       clr.a = ((struct style_class*)parm)->opacity / 100.f;

@@ -1,5 +1,29 @@
 #include "SpriteKit.h"
 
+static lpObject_t
+find_viewport(lpObject_t node) {
+  if (!node || OBJ_GetComponent(node, ID_SKView))
+    return node;
+  return find_viewport(OBJ_GetParent(node));
+}
+
+struct vec2
+SKNode_GetReferenceSize(lpObject_t node)
+{
+  lpObject_t viewport = find_viewport(node);
+  struct vec2 value = { 0, 0 };
+  if (viewport) {
+    struct SKView const *view = GetSKView(viewport);
+    float const w = view->ReferenceWidth;
+    float const h = view->ReferenceHeight;
+    value.x = Node2D_GetFrame(GetNode2D(viewport), kBox3FieldWidth) - w;
+    value.y = Node2D_GetFrame(GetNode2D(viewport), kBox3FieldHeight) - h;
+    return value;
+  } else {
+    return value;
+  }
+}
+
 static void
 SKNode_RenderTree(lpObject_t hObject, struct ViewDef *viewdef)
 {
@@ -31,7 +55,7 @@ HANDLER(SKView, ForegroundContent)
                    &(UPDATEMATRIXSTRUCT){ .opacity = 1.0f });
 
   struct ViewDef viewdef = {0};
-  viewdef.projectionMatrix = MAT4_Ortho(0, w, h, 0, -1, 1);
+  viewdef.projectionMatrix = MAT4_Ortho(0, w, 0, h, -1, 1);
   viewdef.viewMatrix = MAT4_Identity();
   viewdef.viewport = hObject;
 

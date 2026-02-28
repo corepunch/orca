@@ -1,8 +1,0 @@
-<?xml version="1.0" ?>
-<Sprite Name="back_ex2" Image="Volcano/Sprites/back_ex2">
-  <SpriteAnimation Name="408_tunnel">
-    <SpriteAnimation.Frames>
-      <SpriteRect Rect="255.0 297.0 510.0 594.0" UvRect="0 0.4199219 0.4980469 0.5800781"/>
-    </SpriteAnimation.Frames>
-  </SpriteAnimation>
-</Sprite>

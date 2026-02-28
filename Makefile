@@ -29,6 +29,7 @@ CFLAGS += $(shell pkg-config --cflags zlib liblz4 lua5.4 libjpeg freetype2 libxm
 LDFLAGS += $(shell pkg-config --libs zlib liblz4 lua5.4 freetype2 libjpeg libpng libxml-2.0 2>/dev/null)
 
 ifeq ($(shell uname -s),Darwin)
+	CFLAGS += -DGL_SILENCE_DEPRECATION
 	LIBS += -framework OpenGL -framework IOSurface
 	LDFLAGS += -Wl,-rpath,@executable_path/../../$(LIBDIR)
 else

@@ -26,8 +26,8 @@ class DTDWriter(Plugin):
 			return
 		for field in struct.findall('field'):
 			fname = field.get('name')
-			if field.get('array'):
-				for idx in range(int(field.get('array'))):
+			if field.get('fixed-array'):
+				for idx in range(int(field.get('fixed-array'))):
 					self._collect_property(field, f"{prefix}{fname}[{idx}]", attribs)
 			else:
 				self._collect_property(field, f"{prefix}{fname}", attribs)
@@ -49,8 +49,8 @@ class DTDWriter(Plugin):
 		attribs = []
 		for prop in component.findall("property"):
 			pname = prop.get('name')
-			if prop.get('array'):
-				for idx in range(int(prop.get('array'))):
+			if prop.get('fixed-array'):
+				for idx in range(int(prop.get('fixed-array'))):
 					self._collect_property(prop, f"{pname}[{idx}]", attribs)
 			else:
 				self._collect_property(prop, pname, attribs)
@@ -65,7 +65,7 @@ class DTDWriter(Plugin):
 			return False
 		return self._is_component(Workspace.components.get(comp.get('parent')), suffix)
 
-	def on_component(self, _, component):
+	def on_class(self, _, component):
 		cname = component.get('name')
 		self.write(f"<!ENTITY % {cname}Attribs \"\n")
 		if component.get('parent'):

@@ -514,15 +514,12 @@ HANDLER(Screen, Create) {
   uint16_t height = MAX(256, ScreenHeight);
   GetNode(hObject)->Size.Axis[0].Requested = width;
   GetNode(hObject)->Size.Axis[1].Requested = height;
-  pScreen->_size = MAKEDWORD(width, height);
-  R_Init(width, height, is_server);
-  
+  pScreen->_size = MAKEDWORD(width, height);  
   return FALSE;
 }
 
 HANDLER(Screen, Destroy) {
   SafeDelete(pScreen->_rt, Texture_Release);
-  R_Shutdown();
   return FALSE;
 }
 

@@ -204,6 +204,8 @@
 </span></a><a class="leaf-link" href="#ConnectServiceLibrary"><i class="fa-solid fa-layer-group icon"></i><span>ConnectServiceLibrary
 </span></a><a class="leaf-link" href="#ConnectUserServiceLibrary"><i class="fa-solid fa-layer-group icon"></i><span>ConnectUserServiceLibrary
 </span></a><a class="leaf-link" href="#PropertyTypeLibrary"><i class="fa-solid fa-layer-group icon"></i><span>PropertyTypeLibrary
+</span></a><a class="leaf-link" href="#SpriteLibrary"><i class="fa-solid fa-layer-group icon"></i><span>SpriteLibrary
+</span></a><a class="leaf-link" href="#SpriteAnimationLibrary"><i class="fa-solid fa-layer-group icon"></i><span>SpriteAnimationLibrary
 </span></a><a class="leaf-link" href="#MessageLibrary"><i class="fa-solid fa-layer-group icon"></i><span>MessageLibrary
 </span></a><a class="leaf-link" href="#SystemMessage"><i class="fa-solid fa-layer-group icon"></i><span>SystemMessage
 </span></a><a class="leaf-link" href="#ImageLibrary"><i class="fa-solid fa-layer-group icon"></i><span>ImageLibrary
@@ -587,27 +589,9 @@
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Float</span></code><div class="small-abstract"><span>Floating-point numeric value.
 </span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Vector2D</span></code><div class="small-abstract"><span>Two-dimensional vector, typically used for coordinates or sizes.
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Vector3D</span></code><div class="small-abstract"><span>Three-dimensional vector, used for spatial coordinates, directions, or RGB values.
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Vector4D</span></code><div class="small-abstract"><span>Four-dimensional vector, commonly used for extended color or transformation data.
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Rectangle</span></code><div class="small-abstract"><span>Rectangle structure, typically used for defining rectangular areas or bounding boxes.
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Matrix2D</span></code><div class="small-abstract"><span>2x2 matrix, typically used for simple affine transformations in 2D space.
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Matrix3D</span></code><div class="small-abstract"><span>3x3 matrix, used for 3D affine transformations or rotation data.
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Transform2D</span></code><div class="small-abstract"><span>2D transformation structure combining position, scale, and rotation.
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Transform3D</span></code><div class="small-abstract"><span>3D transformation structure combining translation, rotation, and scaling.
-</span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Fixed</span></code><div class="small-abstract"><span>Fixed-length string or symbolic value.
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">LongString</span></code><div class="small-abstract"><span>Extended string data, intended for larger text content.
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Color</span></code><div class="small-abstract"><span>Color value defined by RGBA components.
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Edges</span></code><div class="small-abstract"><span>Set of edge-specific values (e.g., margin, padding, or border widths).
 </span></div></div>
@@ -615,11 +599,13 @@
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Event</span></code><div class="small-abstract"><span>Event reference used to bind triggers or callbacks.
 </span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Struct</span></code><div class="small-abstract"><span>There are multiple predefined structures, such as Vector2D, Vector3D, and Transform3D, used for various geometric and transformation purposes.
+</span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Object</span></code><div class="small-abstract"><span>Reference to a complex object instance.
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Group</span></code><div class="small-abstract"><span>Logical grouping of related properties or child elements.
 </span></div></div>
-</div><div id="PropertyType" class="class" data-name="PropertyType" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
+</div><div id="PropertyType" class="class" data-name="PropertyType" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">PropertyType
 </h1><div class="abstract">Defines a custom property type that can be attached to engine objects.
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">core.PropertyType</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">PropertyType allows defining additional data fields beyond built-in engine properties. Each PropertyType specifies its data category, default value, and behavioral attributes such as layout and render impact. It serves as a flexible mechanism for extending object metadata in projects.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_desc</span>: <span>PropertyDesc</span></code></div>
@@ -652,7 +638,7 @@
 <div class="small-abstract"><span>Maximum allowed value for numeric properties.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">LowerBound</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Minimum allowed value for numeric properties.
-</span></div></div><div id="PropertyEnumValue" class="class" data-name="PropertyEnumValue" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
+</span></div></div><div id="PropertyEnumValue" class="class" data-name="PropertyEnumValue" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">PropertyEnumValue
 </h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">core.PropertyEnumValue</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Value</span>: <span>int</span></code></div>
 </div><div id="window" class="class" data-name="window" data-inherits="None" data-xmlns="None"><div class="eyebrow">Interface
@@ -754,7 +740,7 @@
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">X16</span></code><div class="small-abstract"><span>Applies 16x anisotropic filtering for the sharpest textures at glancing angles, at higher GPU cost.
 </span></div></div>
-</div><div id="Texture" class="class" data-name="Texture" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><div id="Texture" class="class" data-name="Texture" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">Texture
 </h1><div class="abstract">Base class for managing texture resources and their sampling parameters for rendering.
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">renderer.Texture</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Controls texture image loading, filtering modes, and coordinate wrapping behavior. Supports texture preprocessing options like premultiplication and scaling for optimized rendering performance. Serves as the foundation for specialized texture types such as SingleTexture and RenderTargetTexture.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">IOSurface</span>: <span>uint</span></code></div>
@@ -915,7 +901,7 @@
 </div><h1 class="header">ImageType
 </h1><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">Normal</span></code></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Mask</span></code></div>
-</div><div id="Image" class="class" data-name="Image" data-inherits="Texture" data-xmlns="None"><div class="eyebrow">Component
+</div><div id="Image" class="class" data-name="Image" data-inherits="Texture" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">Image
 </h1><div class="abstract">Represents a single, pre-loaded texture image for use in rendering operations.
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">renderer.Image</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Texture" class="name base">Texture</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Extends the base Texture class to load a specific image file, providing a straightforward way to incorporate static textures into scenes without dynamic generation or rendering targets.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Source</span>: <span>fixed</span></code></div>
@@ -999,7 +985,7 @@
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">DepthStencil</span></code><div class="small-abstract"><span>Combined depth-stencil attachment
 </span></div></div>
-</div><div id="RenderTargetTexture" class="class" data-name="RenderTargetTexture" data-inherits="Texture" data-xmlns="None"><div class="eyebrow">Component
+</div><div id="RenderTargetTexture" class="class" data-name="RenderTargetTexture" data-inherits="Texture" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">RenderTargetTexture
 </h1><div class="abstract">Texture configured as a render target for off-screen rendering and post-processing effects.
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">renderer.RenderTargetTexture</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Texture" class="name base">Texture</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Extends the base Texture class to create a dynamic texture that can be bound as a framebuffer for rendering operations. Supports custom dimensions for targeted resolutions, enabling techniques like bloom, depth-of-field, or shadow mapping without affecting the main display output.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Width</span>: <span>int</span></code></div>
@@ -1016,7 +1002,7 @@
 <div class="small-abstract"><span>Allows using a depth-only buffer as a fallback when a full depth-stencil attachment is unavailable, ensuring rendering can proceed with reduced functionality.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">SampleCount</span>: <span>int</span></code></div>
 <div class="small-abstract"><span>Specifies the number of multisample samples used when rendering to this texture, controlling the level of anti-aliasing applied.
-</span></div></div><div id="CubeMapTexture" class="class" data-name="CubeMapTexture" data-inherits="Texture" data-xmlns="None"><div class="eyebrow">Component
+</span></div></div><div id="CubeMapTexture" class="class" data-name="CubeMapTexture" data-inherits="Texture" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">CubeMapTexture
 </h1><div class="abstract">Cubemap texture assembled from six individual images, one for each face of a cube, used for environment mapping, reflections, and sky rendering.
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">renderer.CubeMapTexture</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Texture" class="name base">Texture</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Extends the base Texture class to support loading separate images for positive and negative axes of a 3D cube. This configuration allows for realistic spherical mapping in shaders, where texture coordinates are projected onto the cube faces for seamless omnidirectional sampling without seams or distortion at cube edges.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BackImage</span>: <span>fixed</span></code></div>
@@ -1031,7 +1017,7 @@
 <div class="small-abstract"><span>Path to the image file for the bottom face (negative Y-axis) of the cubemap.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">TopImage</span>: <span>fixed</span></code></div>
 <div class="small-abstract"><span>Path to the image file for the top face (positive Y-axis) of the cubemap.
-</span></div></div><div id="IOSurfaceTexture" class="class" data-name="IOSurfaceTexture" data-inherits="Texture" data-xmlns="None"><div class="eyebrow">Component
+</span></div></div><div id="IOSurfaceTexture" class="class" data-name="IOSurfaceTexture" data-inherits="Texture" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">IOSurfaceTexture
 </h1><div class="abstract">Texture created from a shared macOS IOSurface for zero-copy GPU data sharing.
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">renderer.IOSurfaceTexture</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Texture" class="name base">Texture</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Extends the base Texture class to bind an existing IOSurface as an OpenGL texture using GL_TEXTURE_RECTANGLE. Enables efficient inter-process or inter-context sharing of rendered images without CPU copying, suitable for compositing, video, or off-screen rendering pipelines.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">IOSurface</span>: <span>int</span></code></div>
@@ -1056,7 +1042,7 @@
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Standard</span></code><div class="small-abstract"><span>Physically-based rendering (PBR) model. Provides realistic material appearance based on physical light interaction principles, supporting metallic and roughness workflows.
 </span></div></div>
-</div><div id="VertexShader" class="class" data-name="VertexShader" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><div id="VertexShader" class="class" data-name="VertexShader" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">VertexShader
 </h1><div class="abstract">Vertex processing stage of the shader pipeline
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">renderer.VertexShader</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Processes each vertex of the geometry, transforming positions from model space to screen space. Handles per-vertex attributes and passes interpolated values to the fragment shader through shared variables.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Version</span>: <span>int</span></code></div>
@@ -1065,7 +1051,7 @@
 <div class="small-abstract"><span>Default floating-point precision for vertex shader calculations
 </span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">Shading</span>: <a class="type-identifier-link" href="#Shading">Shading</a></code></div>
 <div class="small-abstract"><span>The lighting/shading model to use for vertex processing. Determines which lighting calculations are performed and how surface appearance is computed.
-</span></div></div><div id="FragmentShader" class="class" data-name="FragmentShader" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</span></div></div><div id="FragmentShader" class="class" data-name="FragmentShader" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">FragmentShader
 </h1><div class="abstract">Fragment (pixel) processing stage of the shader pipeline
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">renderer.FragmentShader</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Executes for each pixel fragment, determining final color output. Samples textures, performs lighting calculations, and writes to the specified output variable. Receives interpolated values from the vertex shader.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Version</span>: <span>int</span></code></div>
@@ -1074,7 +1060,7 @@
 <div class="small-abstract"><span>Default floating-point precision for fragment shader calculations
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Out</span>: <span>fixed</span></code></div>
 <div class="small-abstract"><span>Name of the output variable for fragment color (e.g., "FragColor", "gl_FragColor")
-</span></div></div><div id="Shader" class="class" data-name="Shader" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</span></div></div><div id="Shader" class="class" data-name="Shader" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">Shader
 </h1><div class="abstract">Complete shader program definition combining vertex and fragment stages
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">renderer.Shader</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Encapsulates the entire shader pipeline with configurable uniforms, attributes, and shared variables. Uniforms provide per-draw parameters (textures, colors, transforms), attributes supply per-vertex data (positions, UVs, colors), and shared variables pass interpolated data between shader stages.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>resource </span><span class="identifier">shader</span>: <span>shader</span></code></div>
@@ -1085,7 +1071,7 @@
 <div class="small-abstract"><span>The default depth comparison function used for depth testing, determining which fragments are visible based on their depth values.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">DepthWriteEnabled</span>: <span>bool</span></code></div>
 <div class="small-abstract"><span>Whether depth buffer writing is enabled by default. When true, rendered fragments update the depth buffer; when false, depth values are not written.
-</span></div></div><div id="Material" class="class" data-name="Material" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</span></div></div><div id="Material" class="class" data-name="Material" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">Material
 </h1><div class="abstract">Shader-based rendering material for advanced visual effects
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">renderer.Material</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Encapsulates shader programs and their parameters for custom rendering effects. Supports standard uniforms for color and texture.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>object </span><span class="identifier">Shader</span>: <a class="type-identifier-link" href="#Shader">Shader</a></code></div>
@@ -1118,7 +1104,7 @@
 <div class="small-abstract"><span>Uniform color parameter for shader 
 </span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">U_texture</span>: <a class="type-identifier-link" href="#Texture">Texture</a></code></div>
 <div class="small-abstract"><span>Uniform texture parameter for shader 
-</span></div></div><div id="Mesh" class="class" data-name="Mesh" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</span></div></div><div id="Mesh" class="class" data-name="Mesh" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">Mesh
 </h1><div class="abstract">Renderable 3D geometry component with material and model data
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">renderer.Mesh</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Represents a 3D mesh object in the scene. Manages the geometry data (vertices, indices, normals, UVs) and associated material for rendering. Responds to lifecycle events for loading and cleanup of mesh resources.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>resource </span><span class="identifier">model</span>: <span>model</span></code></div>
@@ -1129,7 +1115,7 @@
 <div class="small-abstract"><span>Reference to the material that defines the mesh's visual appearance. Controls shaders, textures, colors, and rendering properties applied to the geometry.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">MeshMorphTargets</span>: <span>fixed</span></code></div>
 <div class="small-abstract"><span>Name of the morph targets in the mesh
-</span></div></div><div id="FontFamily" class="class" data-name="FontFamily" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
+</span></div></div><div id="FontFamily" class="class" data-name="FontFamily" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">FontFamily
 </h1><div class="abstract">TrueType font resource for text rendering
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">renderer.FontFamily</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Loads and manages a TrueType font file for rendering text in the scene. Provides glyph data and metrics for text layout and rendering. May be extended in the future to support font families with variants (regular, bold, italic).</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>resource </span><span class="identifier">regular</span>: <span>fontface</span></code></div>
@@ -1148,11 +1134,13 @@
 <div class="small-abstract"><span>Path of the TrueType font file to be used as the italic font variant.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BoldItalic</span>: <span>fixed</span></code></div>
 <div class="small-abstract"><span>Path of the TrueType font file to be used as the bold italic font variant.
-</span></div></div><div id="Trajectory" class="class" data-name="Trajectory" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
+</span></div></div><div id="Trajectory" class="class" data-name="Trajectory" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">Trajectory
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">renderer.Trajectory</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code></div><div id="Timeline" class="class" data-name="Timeline" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">renderer.Trajectory</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code></div><div id="Timeline" class="class" data-name="Timeline" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">Timeline
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">renderer.Timeline</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><div class="topic"><code class="decorator"><span>func </span><span class="identifier">createShader</span>(<span class="identifier">vertex</span>:<span class="decorator">string</span>, <span class="identifier">fragment</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> Shader</span></code><div class="small-abstract"><span>Creates a shader program from source code.
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">renderer.Timeline</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><div class="topic"><code class="decorator"><span>func </span><span class="identifier">init</span>(<span class="identifier">Width</span>:<span class="decorator">uint</span>, <span class="identifier">Height</span>:<span class="decorator">uint</span>, <span class="identifier">Offscreen</span>:<span class="decorator">bool</span>)<span class="decorator"> -&gt;</span><span> int</span></code><div class="small-abstract"><span>Initializes the rendering system and prepares it for drawing operations.
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">shutdown</span>()</code><div class="small-abstract"><span>Shuts down the rendering system and releases all associated resources.
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">createShader</span>(<span class="identifier">vertex</span>:<span class="decorator">string</span>, <span class="identifier">fragment</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> Shader</span></code><div class="small-abstract"><span>Creates a shader program from source code.
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getSize</span>()<span class="decorator"> -&gt;</span><span> nresults</span></code><div class="small-abstract"><span>Retrieves the size of the current window.
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">drawImage</span>()</code><div class="small-abstract"><span>Draws the current image to the active render target.
 </span></div></div></div><div id="Direction" class="class" data-name="Direction" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
@@ -1508,10 +1496,10 @@
 </h1><div class="abstract">Sizing configuration of elements (e.g., Width, Height, Depth)
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.SizeShorthand</span></code><h2 class="title">Overview</h2><div class="abstract">You can set values and the engine will try it's best to preserve those.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Axis</span>: <a class="type-identifier-link" href="#SizeAxisShorthand">SizeAxisShorthand</a></code></div>
 <div class="small-abstract"><span>A number value per axis
-</span></div></div><div id="DataObject" class="class" data-name="DataObject" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
+</span></div></div><div id="DataObject" class="class" data-name="DataObject" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">DataObject
 </h1><div class="abstract">Base class for data-holding objects within the framework
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.DataObject</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Provides fundamental data management capabilities and serves as the base for objects that participate in data binding operations.</div></div><div id="AnimationPlayer" class="class" data-name="AnimationPlayer" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.DataObject</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Provides fundamental data management capabilities and serves as the base for objects that participate in data binding operations.</div></div><div id="AnimationPlayer" class="class" data-name="AnimationPlayer" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">AnimationPlayer
 </h1><div class="abstract">Controls playback of animations within the UI engine.
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.AnimationPlayer</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Provides functionality for starting, stopping, and repeating animations on scene objects. Supports different playback modes, timing adjustments, and restoration of original property values.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">AutoplayEnabled</span>: <span>bool</span></code></div>
@@ -1528,29 +1516,29 @@
 <div class="small-abstract"><span>Restores the original property values after the animation ends.
 </span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">Timeline</span>: <a class="type-identifier-link" href="#Timeline">Timeline</a></code></div>
 <div class="small-abstract"><span>Reference to the animation timeline that defines keyframes and transitions.
-</span></div></div><div id="Trigger" class="class" data-name="Trigger" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</span></div></div><div id="Trigger" class="class" data-name="Trigger" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">Trigger
 </h1><div class="abstract">Base class for event-driven actions within the UI system
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Trigger</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Triggers respond to various conditions and can execute actions like property changes or method calls. Part of the reactive UI behavior system.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Property</span>: <span>fixed</span></code></div>
 <div class="small-abstract"><span>Target property name to monitor or modify 
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Value</span>: <span>int</span></code></div>
 <div class="small-abstract"><span>Associated value for the trigger condition 
-</span></div></div><div id="OnPropertyChangedTrigger" class="class" data-name="OnPropertyChangedTrigger" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</span></div></div><div id="OnPropertyChangedTrigger" class="class" data-name="OnPropertyChangedTrigger" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">OnPropertyChangedTrigger
 </h1><div class="abstract">Responds to property value changes on specified nodes
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.OnPropertyChangedTrigger</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Monitors a named property on a source node and triggers actions when the property value changes. Useful for reactive UI updates.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">SourceNode</span>: <span>fixed</span></code></div>
 <div class="small-abstract"><span>Name or identifier of the node to monitor 
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Property</span>: <span>fixed</span></code></div>
 <div class="small-abstract"><span>Property name to watch for changes 
-</span></div></div><div id="OnAttachedTrigger" class="class" data-name="OnAttachedTrigger" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</span></div></div><div id="OnAttachedTrigger" class="class" data-name="OnAttachedTrigger" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">OnAttachedTrigger
 </h1><div class="abstract">Triggers when an element is attached to the visual tree
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.OnAttachedTrigger</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Useful for initialization actions that should occur when an element becomes part of the active UI hierarchy.</div></div><div id="EventTrigger" class="class" data-name="EventTrigger" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.OnAttachedTrigger</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Useful for initialization actions that should occur when an element becomes part of the active UI hierarchy.</div></div><div id="EventTrigger" class="class" data-name="EventTrigger" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">EventTrigger
 </h1><div class="abstract">Responds to routed UI events (mouse, keyboard, etc.)
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.EventTrigger</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Listens for specific routed events and can execute actions in response. Supports the standard UI event bubbling system.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RoutedEvent</span>: <span>fixed</span></code></div>
 <div class="small-abstract"><span>Name of the routed event to handle (e.g., "MouseDown", "KeyPress") 
-</span></div></div><div id="Setter" class="class" data-name="Setter" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</span></div></div><div id="Setter" class="class" data-name="Setter" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">Setter
 </h1><div class="abstract">Applies property values when triggered by specified conditions
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Setter</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Part of the trigger system - sets target properties to specific values when the associated trigger condition is met.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>object </span><span class="identifier">Trigger</span>: <a class="type-identifier-link" href="#Trigger">Trigger</a></code></div>
@@ -1559,7 +1547,7 @@
 <div class="small-abstract"><span>Target property name to set 
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Value</span>: <span>fixed</span></code></div>
 <div class="small-abstract"><span>Value to apply to the property 
-</span></div></div><div id="Handler" class="class" data-name="Handler" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</span></div></div><div id="Handler" class="class" data-name="Handler" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">Handler
 </h1><div class="abstract">Executes custom functions when triggered by specified conditions
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Handler</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">More flexible than Setter - can call arbitrary functions on target objects rather than just setting properties.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>object </span><span class="identifier">Trigger</span>: <a class="type-identifier-link" href="#Trigger">Trigger</a></code></div>
@@ -1568,15 +1556,15 @@
 <div class="small-abstract"><span>Target object to call function on 
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Function</span>: <span>fixed</span></code></div>
 <div class="small-abstract"><span>Function name to execute on target 
-</span></div></div><div id="Brush" class="class" data-name="Brush" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
+</span></div></div><div id="Brush" class="class" data-name="Brush" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">Brush
 </h1><div class="abstract">Base class for all brush types used in rendering.
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Brush</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Brush defines the general interface for drawing surfaces or filling shapes with visual content. It serves as the root for more specific brushes like ColorBrush, TextureBrush, and MaterialBrush, which define concrete rendering behaviors.</div></div><div id="ColorBrush" class="class" data-name="ColorBrush" data-inherits="Brush" data-xmlns="None"><div class="eyebrow">Component
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Brush</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Brush defines the general interface for drawing surfaces or filling shapes with visual content. It serves as the root for more specific brushes like ColorBrush, TextureBrush, and MaterialBrush, which define concrete rendering behaviors.</div></div><div id="ColorBrush" class="class" data-name="ColorBrush" data-inherits="Brush" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">ColorBrush
 </h1><div class="abstract">Brush that fills an area with a solid color.
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.ColorBrush</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Brush" class="name base">Brush</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">ColorBrush applies a uniform color to a drawable surface. It is typically used for flat-colored elements such as backgrounds, highlights, or overlays where no texture or material is required.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Color</span>: <a class="type-identifier-link" href="#color">color</a></code></div>
 <div class="small-abstract"><span>The color value used to fill the target area.
-</span></div></div><div id="Node" class="class" data-name="Node" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</span></div></div><div id="Node" class="class" data-name="Node" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">Node
 </h1><div class="abstract">Base class for all UI engine nodes.
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Node</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Node is the fundamental class for all engine objects (e.g., Node2D, Node3D, RenderPass). It manages shared functionality such as size, layout, visibility, opacity, tags, and data context. You normally work with derived classes rather than creating instances of Node directly.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Size</span>: <a class="type-identifier-link" href="#SizeShorthand">SizeShorthand</a></code></div>
@@ -1749,7 +1737,7 @@
 <div class="small-abstract"><span>Tag collection for categorizing or querying nodes.
 </span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">DataContext</span>: <a class="type-identifier-link" href="#DataObject">DataObject</a></code></div>
 <div class="small-abstract"><span>Data context (used for data binding, similar to XAML's DataContext).
-</span></div></div><div id="TextRun" class="class" data-name="TextRun" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</span></div></div><div id="TextRun" class="class" data-name="TextRun" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">TextRun
 </h1><div class="abstract">Shared concept for text rendering in 2D and 3D nodes.
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.TextRun</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">This class is not instantiated directly. Instead, it provides the common properties and functionality for text rendering, used internally by higher-level components such as 2D and 3D text nodes. The concept encapsulates text content, resources, formatting options, alignment, and font configuration.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_textinfo</span>: <span>text_info</span></code></div>
@@ -1786,7 +1774,7 @@
 <div class="small-abstract"><span>Forces a fixed width per character (monospace effect).
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RemoveSideBearingsProperty</span>: <span>bool</span></code></div>
 <div class="small-abstract"><span>Removes side bearings (spacing) defined by the font.
-</span></div></div><div id="TextBlockConcept" class="class" data-name="TextBlockConcept" data-inherits="TextRun" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</span></div></div><div id="TextBlockConcept" class="class" data-name="TextBlockConcept" data-inherits="TextRun" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">TextBlockConcept
 </h1><div class="abstract">Shared concept for text rendering in 2D and 3D nodes.
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.TextBlockConcept</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#TextRun" class="name base">TextRun</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">This class is not instantiated directly. Instead, it provides the common properties and functionality for text rendering, used internally by higher-level components such as 2D and 3D text nodes. The concept encapsulates text content, resources, formatting options, alignment, and font configuration.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_steps</span>: <span>uiLabelSteps</span></code></div>
@@ -1823,7 +1811,7 @@
 <div class="small-abstract"><span>Horizontal alignment of the text within its bounds.
 </span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">TextVerticalAlignment</span>: <a class="type-identifier-link" href="#TextVerticalAlignment">TextVerticalAlignment</a></code></div>
 <div class="small-abstract"><span>Vertical alignment of the text within its bounds.
-</span></div></div><div id="Node2D" class="class" data-name="Node2D" data-inherits="Node" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</span></div></div><div id="Node2D" class="class" data-name="Node2D" data-inherits="Node" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">Node2D
 </h1><div class="abstract">Primary class for 2D UI elements with comprehensive rendering capabilities
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Node2D</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node" class="name base">Node</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Extends Node with 2D-specific functionality including transforms, visual effects, composition, and event handling. This is the base class for most visible UI elements. \snippet docs/creating_node2d.lua</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>object </span><span class="identifier">_node</span>: <a class="type-identifier-link" href="#Node">Node</a></code></div>
@@ -1935,7 +1923,7 @@
 <div class="small-abstract"><span>Marks object as ignored during hit testing (mouse interaction).
 </span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">ForegroundHint</span>: <a class="type-identifier-link" href="#ForegroundHint">ForegroundHint</a></code></div>
 <div class="small-abstract"><span>Hint for how foreground should be rendered. May be used for accessibility, high-contrast, or text rendering optimizations.
-</span></div></div><div id="PrefabView2D" class="class" data-name="PrefabView2D" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</span></div></div><div id="PrefabView2D" class="class" data-name="PrefabView2D" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">PrefabView2D
 </h1><div class="abstract">Container for loading and displaying prefabricated UI components
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.PrefabView2D</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node2D" class="name base">Node2D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Allows loading of pre-designed UI layouts from external resources. Useful for reusable UI components and modular design patterns.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_loadedSCA</span>: <span>int</span></code></div>
@@ -1946,12 +1934,12 @@
 <div class="small-abstract"><span>Scene archive identifier or path 
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Prefab</span>: <span>fixed</span></code></div>
 <div class="small-abstract"><span>Prefab resource name within the archive 
-</span></div></div><div id="TextBlock" class="class" data-name="TextBlock" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</span></div></div><div id="TextBlock" class="class" data-name="TextBlock" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">TextBlock
 </h1><div class="abstract">Concrete implementation of text display combining Node2D and TextBlockConcept
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.TextBlock</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node2D" class="name base">Node2D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Primary class for displaying static text with full typography control. Combines 2D rendering capabilities with comprehensive text formatting options.</div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">_node2D</span>: <a class="type-identifier-link" href="#Node2D">Node2D</a></code></div>
 <div class="small-abstract"><span>Internal reference to the underlying Node2D instance 
-</span></div></div><div id="Input" class="class" data-name="Input" data-inherits="TextBlock" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</span></div></div><div id="Input" class="class" data-name="Input" data-inherits="TextBlock" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">Input
 </h1><div class="abstract">Interactive text input control with multiple input modes
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Input</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#TextBlock" class="name base">TextBlock</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Extends TextBlock to provide editable text capabilities. Supports various input types including text, password, numeric, checkbox, and radio button modes.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>object </span><span class="identifier">_checkmark</span>: <a class="type-identifier-link" href="#Texture">Texture</a></code></div>
@@ -1966,17 +1954,17 @@
 <div class="small-abstract"><span>Allow multiple lines of text input 
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Checked</span>: <span>bool</span></code></div>
 <div class="small-abstract"><span>Checked state for checkbox/radio types 
-</span></div></div><div id="Button" class="class" data-name="Button" data-inherits="TextBlock" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</span></div></div><div id="Button" class="class" data-name="Button" data-inherits="TextBlock" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">Button
 </h1><div class="abstract">Interactive button control for user actions
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Button</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#TextBlock" class="name base">TextBlock</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Extends TextBlock to provide clickable button functionality. Handles mouse and keyboard activation with customizable button types.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">Type</span>: <a class="type-identifier-link" href="#ButtonType">ButtonType</a></code></div>
 <div class="small-abstract"><span>Button behavior type (normal or submit) 
-</span></div></div><div id="Label" class="class" data-name="Label" data-inherits="TextBlock" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</span></div></div><div id="Label" class="class" data-name="Label" data-inherits="TextBlock" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">Label
 </h1><div class="abstract">Text label with optional association to form controls
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Label</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#TextBlock" class="name base">TextBlock</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Displays static text that can be associated with input controls for accessibility. Clicking the label can transfer focus to associated control.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">For</span>: <span>fixed</span></code></div>
 <div class="small-abstract"><span>Identifier of associated form control 
-</span></div></div><div id="StackView" class="class" data-name="StackView" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</span></div></div><div id="StackView" class="class" data-name="StackView" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">StackView
 </h1><div class="abstract">Linear layout container arranging children in a single direction
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.StackView</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node2D" class="name base">Node2D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Provides flexbox-style linear layout with configurable direction, alignment, spacing, and content justification. Children are arranged sequentially along the specified axis.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Reversed</span>: <span>bool</span></code></div>
@@ -1989,10 +1977,10 @@
 <div class="small-abstract"><span>Main-axis distribution of children 
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Spacing</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Space between adjacent children 
-</span></div></div><div id="Form" class="class" data-name="Form" data-inherits="StackView" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</span></div></div><div id="Form" class="class" data-name="Form" data-inherits="StackView" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">Form
 </h1><div class="abstract">Specialized stack view for form input collection and submission
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Form</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#StackView" class="name base">StackView</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Extends StackView with form-specific functionality including automatic input collection and submission handling.</div></div><div id="Control" class="class" data-name="Control" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Form</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#StackView" class="name base">StackView</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Extends StackView with form-specific functionality including automatic input collection and submission handling.</div></div><div id="Control" class="class" data-name="Control" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">Control
 </h1><div class="abstract">Base class for interactive UI controls with state management
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Control</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node2D" class="name base">Node2D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Provides common state properties for interactive elements including press, hover, focus, and disabled states.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Pressed</span>: <span>bool</span></code></div>
@@ -2018,7 +2006,7 @@
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">CanResizeWithGrip</span></code><div class="small-abstract"><span>The user can resize and maximize the window. A resize grip is displayed in the lower-right corner if the platform supports it.
 </span></div></div>
-</div><div id="Screen" class="class" data-name="Screen" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><div id="Screen" class="class" data-name="Screen" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">Screen
 </h1><div class="abstract">Top-level container representing a display surface or window
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Screen</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node2D" class="name base">Node2D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Provides the root rendering context for UI hierarchies. Manages screen-level operations like clearing and render target management.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>object </span><span class="identifier">_rt</span>: <a class="type-identifier-link" href="#Texture">Texture</a></code></div>
@@ -2031,7 +2019,7 @@
 <div class="small-abstract"><span>Background clear color for the screen 
 </span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">ResizeMode</span>: <a class="type-identifier-link" href="#ResizeMode">ResizeMode</a></code></div>
 <div class="small-abstract"><span>Specifies how the window can be resized or displayed
-</span></div></div><div id="Cinematic" class="class" data-name="Cinematic" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</span></div></div><div id="Cinematic" class="class" data-name="Cinematic" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">Cinematic
 </h1><div class="abstract">Video or animation playback view for media content
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Cinematic</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node2D" class="name base">Node2D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Handles playback of video files or frame-based animations with timing control and fade effects.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_playing</span>: <span>bool</span></code></div>
@@ -2046,7 +2034,7 @@
 <div class="small-abstract"><span>Total number of frames in the media 
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">FadeOut</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Fade-out duration in seconds 
-</span></div></div><div id="Grid" class="class" data-name="Grid" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</span></div></div><div id="Grid" class="class" data-name="Grid" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">Grid
 </h1><div class="abstract">Grid-based layout container with configurable rows and columns
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Grid</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node2D" class="name base">Node2D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Arranges children in a 2D grid pattern with flexible sizing. Supports both fixed and dynamic grid definitions.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_buffer</span>: <span>uiGridViewBuffer</span></code></div>
@@ -2074,7 +2062,7 @@
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">UniformToFill</span></code><div class="small-abstract"><span>Scale content uniformly to fill the area, preserving aspect ratio but cropping if necessary
 </span></div></div>
-</div><div id="ImageView" class="class" data-name="ImageView" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</div><div id="ImageView" class="class" data-name="ImageView" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">ImageView
 </h1><div class="abstract">Displays image content with advanced rendering and scaling options
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.ImageView</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node2D" class="name base">Node2D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Renders static images with support for nine-patch scaling, blend modes, and viewport control. Handles both loaded images and images loaded from file paths.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_loadedImage</span>: <span>int</span></code></div>
@@ -2091,7 +2079,7 @@
 <div class="small-abstract"><span>Viewport rectangle for image cropping/scaling 
 </span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">Stretch</span>: <a class="type-identifier-link" href="#Stretch">Stretch</a></code></div>
 <div class="small-abstract"><span>Determines how the image is scaled to fill its allocated layout space
-</span></div></div><div id="NinePatchImage" class="class" data-name="NinePatchImage" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</span></div></div><div id="NinePatchImage" class="class" data-name="NinePatchImage" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">NinePatchImage
 </h1><div class="abstract">Specialized image view for nine-patch (stretchable) images
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.NinePatchImage</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node2D" class="name base">Node2D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Renders images that can be stretched while preserving corner and edge regions. Commonly used for UI panels, buttons, and borders that need to scale to different sizes.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">StretchTypeTop</span>: <span>float</span></code></div>
@@ -2122,7 +2110,7 @@
 <div class="small-abstract"><span>Bottom edge image (horizontally stretchable) 
 </span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">ImageBottomRight</span>: <a class="type-identifier-link" href="#Texture">Texture</a></code></div>
 <div class="small-abstract"><span>Bottom-right corner image (non-stretchable) 
-</span></div></div><div id="TerminalView" class="class" data-name="TerminalView" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Component
+</span></div></div><div id="TerminalView" class="class" data-name="TerminalView" data-inherits="Node2D" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">TerminalView
 </h1><div class="abstract">Displays a fixed-size text grid using a monospace layout
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.TerminalView</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node2D" class="name base">Node2D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Renders a character matrix (e.g., 80×24) where each cell represents a single glyph. Functions like a monospace canvas for text-mode visualization, ideal for console-style output, terminal emulation, or retro graphics where characters act as pixels.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_buffer</span>: <span>int</span></code></div>
@@ -2162,7 +2150,7 @@
 </h1><div class="abstract">Event triggered to navigate back to the previous page in the navigation history.
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.NavigateBackArguments</span></code><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">TransitionType</span>: <a class="type-identifier-link" href="#TransitionType">TransitionType</a></code></div>
 <div class="small-abstract"><span>The type of transition animation to use during navigation.
-</span></div></div><div id="Page" class="class" data-name="Page" data-inherits="Node2D" data-xmlns="None"><div class="eyebrow">Component
+</span></div></div><div id="Page" class="class" data-name="Page" data-inherits="Node2D" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">Page
 </h1><div class="abstract">Represents a single page within a document or UI container.
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Page</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node2D" class="name base">Node2D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Used to store navigation related data while all the functionality comes from PageHost</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>object </span><span class="identifier">_node</span>: <a class="type-identifier-link" href="#Node">Node</a></code></div>
@@ -2173,7 +2161,7 @@
 <div class="small-abstract"><span>The URL path of the page, like "/about".
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Transition</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>The transition progress of the page.
-</span></div></div><div id="PageHost" class="class" data-name="PageHost" data-inherits="Page" data-xmlns="None"><div class="eyebrow">Component
+</span></div></div><div id="PageHost" class="class" data-name="PageHost" data-inherits="Page" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">PageHost
 </h1><div class="abstract">Container that manages multiple pages and navigation between them.
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.PageHost</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Page" class="name base">Page</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Provides functionality for navigating between different Page instances, including maintaining a navigation stack, handling back/forward navigation, and managing page transitions.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>object </span><span class="identifier">_historyStack</span>: <a class="type-identifier-link" href="#Page">Page</a></code></div>
@@ -2182,7 +2170,7 @@
 <div class="small-abstract"><span>Number of entries in the navigation history stack.
 </span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">ActivePage</span>: <a class="type-identifier-link" href="#Page">Page</a></code></div>
 <div class="small-abstract"><span>The currently active page.
-</span></div></div><div id="PageViewport" class="class" data-name="PageViewport" data-inherits="Node2D" data-xmlns="None"><div class="eyebrow">Component
+</span></div></div><div id="PageViewport" class="class" data-name="PageViewport" data-inherits="Node2D" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">PageViewport
 </h1><div class="abstract">Viewport for rendering the active page within a PageHost.
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.PageViewport</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node2D" class="name base">Node2D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Responsible for displaying the content of the active page managed by a PageHost. Handles rendering and transition effects when switching between pages.</div></div><div id="StyleType" class="class" data-name="StyleType" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
@@ -2192,7 +2180,7 @@
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Named</span></code><div class="small-abstract"><span>Style associated with a specific theme or visual skin. Used to switch appearance dynamically based on active theme.
 </span></div></div>
-</div><div id="Style" class="class" data-name="Style" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
+</div><div id="Style" class="class" data-name="Style" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">Style
 </h1><div class="abstract">Defines a reusable set of property values and visual configurations for a target component type.
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Style</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Style enables consistent appearance and behavior across multiple components by grouping property definitions under a named style. Each style specifies its target type and classification, such as Generic, Theme, or Override. Styles can be applied globally, by theme, or locally to individual instances, allowing flexible and maintainable UI customization.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">TargetType</span>: <span>fixed</span></code></div>
@@ -2274,7 +2262,7 @@
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Spot</span></code><div class="small-abstract"><span>Directional spot light with cone-shaped illumination area
 </span></div></div>
-</div><div id="Node3D" class="class" data-name="Node3D" data-inherits="Node" data-xmlns="None"><div class="eyebrow">Component
+</div><div id="Node3D" class="class" data-name="Node3D" data-inherits="Node" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">Node3D
 </h1><div class="abstract">Base class for all 3D scene graph nodes with transform and positioning capabilities
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SceneKit.Node3D</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node" class="name base">Node</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Provides fundamental 3D transformation properties including layout transforms, render transforms, and matrix calculations. All 3D objects in the scene inherit from this component.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_opacity</span>: <span>float</span></code></div>
@@ -2302,7 +2290,7 @@
 <div class="small-abstract"><span>Final combined transformation matrix (computed automatically)
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">CalculatedOffset</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Computed offset value used for trajectory list positioning
-</span></div></div><div id="Scene" class="class" data-name="Scene" data-inherits="Node3D" data-xmlns="None"><div class="eyebrow">Component
+</span></div></div><div id="Scene" class="class" data-name="Scene" data-inherits="Node3D" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">Scene
 </h1><div class="abstract">Root container for 3D scene content with camera and rendering configuration
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SceneKit.Scene</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node3D" class="name base">Node3D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Represents a complete 3D scene that can be rendered to a viewport. Manages cameras, render passes, and global scene properties like environment lighting.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Camera</span>: <span>fixed</span></code></div>
@@ -2319,14 +2307,14 @@
 <div class="small-abstract"><span>Override render pass for post-processing composition effects
 </span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">EnvironmentTexture</span>: <a class="type-identifier-link" href="#Texture">Texture</a></code></div>
 <div class="small-abstract"><span>Environment map texture for reflections and ambient lighting
-</span></div></div><div id="Model3D" class="class" data-name="Model3D" data-inherits="Node3D" data-xmlns="None"><div class="eyebrow">Component
+</span></div></div><div id="Model3D" class="class" data-name="Model3D" data-inherits="Node3D" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">Model3D
 </h1><div class="abstract">3D model renderer that displays mesh geometry with materials
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SceneKit.Model3D</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node3D" class="name base">Node3D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Core component for rendering 3D models. Combines a mesh (geometry) with a material (shading) to create visible 3D objects in the scene.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>object </span><span class="identifier">Mesh</span>: <a class="type-identifier-link" href="#Mesh">Mesh</a></code></div>
 <div class="small-abstract"><span>3D mesh geometry defining the shape of the model
 </span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">Material</span>: <a class="type-identifier-link" href="#Material">Material</a></code></div>
 <div class="small-abstract"><span>Material defining surface appearance, textures, and shading properties
-</span></div></div><div id="PlaneMeshNode" class="class" data-name="PlaneMeshNode" data-inherits="Model3D" data-xmlns="None"><div class="eyebrow">Component
+</span></div></div><div id="PlaneMeshNode" class="class" data-name="PlaneMeshNode" data-inherits="Model3D" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">PlaneMeshNode
 </h1><div class="abstract">Procedural plane mesh generator for creating rectangular surfaces
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SceneKit.PlaneMeshNode</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Model3D" class="name base">Model3D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Automatically generates plane geometry with configurable dimensions and texture coordinates. Useful for ground planes, UI surfaces, and simple rectangular objects.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">PlaneWidth</span>: <span>float</span></code></div>
@@ -2343,7 +2331,7 @@
 <div class="small-abstract"><span>Generate vertex normals for proper lighting (usually true for lit surfaces)
 </span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">MeshMaterial</span>: <a class="type-identifier-link" href="#Material">Material</a></code></div>
 <div class="small-abstract"><span>Override material specifically for the generated mesh geometry
-</span></div></div><div id="Camera" class="class" data-name="Camera" data-inherits="Node3D" data-xmlns="None"><div class="eyebrow">Component
+</span></div></div><div id="Camera" class="class" data-name="Camera" data-inherits="Node3D" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">Camera
 </h1><div class="abstract">3D camera for scene viewing and projection configuration
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SceneKit.Camera</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node3D" class="name base">Node3D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Defines the viewpoint and projection parameters for rendering 3D scenes. Supports both perspective and orthographic projections with configurable field of view, clipping planes, and stereo rendering.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Fov</span>: <span>float</span></code></div>
@@ -2364,7 +2352,7 @@
 <div class="small-abstract"><span>Height of viewing volume for orthographic projection
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ZPositive</span>: <span>bool</span></code></div>
 <div class="small-abstract"><span>Whether positive Z axis points toward or away from viewer
-</span></div></div><div id="TrajectoryList3D" class="class" data-name="TrajectoryList3D" data-inherits="Node3D" data-xmlns="None"><div class="eyebrow">Component
+</span></div></div><div id="TrajectoryList3D" class="class" data-name="TrajectoryList3D" data-inherits="Node3D" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">TrajectoryList3D
 </h1><div class="abstract">Layout container that arranges child nodes along a 3D trajectory path
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SceneKit.TrajectoryList3D</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node3D" class="name base">Node3D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Positions child elements along a curved or linear trajectory in 3D space. Supports scrolling, looping, and selection behaviors for creating carousels, paths, and animated sequences.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>object </span><span class="identifier">Trajectory</span>: <a class="type-identifier-link" href="#Trajectory">Trajectory</a></code></div>
@@ -2379,7 +2367,7 @@
 <div class="small-abstract"><span>Controls how selection affects item positioning and scaling
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">SelectedItemIndex</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Index of currently selected item (supports fractional values for smooth transitions)
-</span></div></div><div id="Viewport3D" class="class" data-name="Viewport3D" data-inherits="Node2D" data-xmlns="None"><div class="eyebrow">Component
+</span></div></div><div id="Viewport3D" class="class" data-name="Viewport3D" data-inherits="Node2D" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">Viewport3D
 </h1><div class="abstract">2D viewport component that renders 3D scene content
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SceneKit.Viewport3D</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node2D" class="name base">Node2D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Bridge between 2D UI layout and 3D scene rendering. Allows embedding 3D scenes within 2D user interfaces with independent camera and rendering configuration.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Camera</span>: <span>fixed</span></code></div>
@@ -2392,7 +2380,7 @@
 <div class="small-abstract"><span>Custom render pass chain for viewport-specific effects
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Scene</span>: <span>fixed</span></code></div>
 <div class="small-abstract"><span>TODO: add support?
-</span></div></div><div id="PrefabView3D" class="class" data-name="PrefabView3D" data-inherits="Node3D" data-xmlns="None"><div class="eyebrow">Component
+</span></div></div><div id="PrefabView3D" class="class" data-name="PrefabView3D" data-inherits="Node3D" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">PrefabView3D
 </h1><div class="abstract">Dynamic loader for 3D prefab assets and scene files
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SceneKit.PrefabView3D</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node3D" class="name base">Node3D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Loads and instantiates 3D content from external files. Supports both SCA (Scene Archive) and prefab formats for modular scene composition and asset reuse.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_loadedSCA</span>: <span>int</span></code></div>
@@ -2401,16 +2389,16 @@
 <div class="small-abstract"><span>Adds "hmi_plugins/{SCA}" to search paths and loads from "prefabs/{SCA}"
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Prefab</span>: <span>fixed</span></code></div>
 <div class="small-abstract"><span>Path to prefab asset file to instantiate
-</span></div></div><div id="RenderPass" class="class" data-name="RenderPass" data-inherits="Node" data-xmlns="None"><div class="eyebrow">Component
+</span></div></div><div id="RenderPass" class="class" data-name="RenderPass" data-inherits="Node" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">RenderPass
 </h1><div class="abstract">Base class for render pass components in the rendering pipeline
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SceneKit.RenderPass</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node" class="name base">Node</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Abstract base for all render pass types. Render passes define stages in the rendering pipeline, allowing complex effects through multi-pass rendering, post-processing, and custom rendering operations.</div></div><div id="CompositionTargetRenderPass" class="class" data-name="CompositionTargetRenderPass" data-inherits="RenderPass" data-xmlns="None"><div class="eyebrow">Component
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SceneKit.RenderPass</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node" class="name base">Node</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Abstract base for all render pass types. Render passes define stages in the rendering pipeline, allowing complex effects through multi-pass rendering, post-processing, and custom rendering operations.</div></div><div id="CompositionTargetRenderPass" class="class" data-name="CompositionTargetRenderPass" data-inherits="RenderPass" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">CompositionTargetRenderPass
 </h1><div class="abstract">Render pass that outputs to the final composition target
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SceneKit.CompositionTargetRenderPass</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#RenderPass" class="name base">RenderPass</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Terminal render pass in the pipeline that writes to the final framebuffer or render target. Used as the last step in multi-pass rendering chains.</div></div><div id="BlitRenderPass" class="class" data-name="BlitRenderPass" data-inherits="RenderPass" data-xmlns="None"><div class="eyebrow">Component
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SceneKit.CompositionTargetRenderPass</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#RenderPass" class="name base">RenderPass</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Terminal render pass in the pipeline that writes to the final framebuffer or render target. Used as the last step in multi-pass rendering chains.</div></div><div id="BlitRenderPass" class="class" data-name="BlitRenderPass" data-inherits="RenderPass" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">BlitRenderPass
 </h1><div class="abstract">Render pass for copying (blitting) between render targets
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SceneKit.BlitRenderPass</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#RenderPass" class="name base">RenderPass</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Efficiently copies pixel data from one render target to another. Commonly used for post-processing effects, texture copying, and multi-target rendering workflows.</div></div><div id="ClearRenderPass" class="class" data-name="ClearRenderPass" data-inherits="RenderPass" data-xmlns="None"><div class="eyebrow">Component
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SceneKit.BlitRenderPass</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#RenderPass" class="name base">RenderPass</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Efficiently copies pixel data from one render target to another. Commonly used for post-processing effects, texture copying, and multi-target rendering workflows.</div></div><div id="ClearRenderPass" class="class" data-name="ClearRenderPass" data-inherits="RenderPass" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">ClearRenderPass
 </h1><div class="abstract">Render pass for clearing framebuffer contents
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SceneKit.ClearRenderPass</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#RenderPass" class="name base">RenderPass</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Clears color, depth, and stencil buffers to specified values. Essential for proper multi-pass rendering and avoiding artifacts from previous frame data.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">ClearColor</span>: <a class="type-identifier-link" href="#color">color</a></code></div>
@@ -2419,7 +2407,7 @@
 <div class="small-abstract"><span>Depth value to clear the depth buffer (typically 1.0 for far plane)
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ClearStencil</span>: <span>int</span></code></div>
 <div class="small-abstract"><span>Integer value to clear the stencil buffer (typically 0)
-</span></div></div><div id="DrawObjectsRenderPass" class="class" data-name="DrawObjectsRenderPass" data-inherits="RenderPass" data-xmlns="None"><div class="eyebrow">Component
+</span></div></div><div id="DrawObjectsRenderPass" class="class" data-name="DrawObjectsRenderPass" data-inherits="RenderPass" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">DrawObjectsRenderPass
 </h1><div class="abstract">Render pass for drawing scene objects with tag-based filtering
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SceneKit.DrawObjectsRenderPass</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#RenderPass" class="name base">RenderPass</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Renders scene geometry based on object tags and camera configuration. Allows selective rendering of object groups for advanced multi-pass effects and optimization.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Camera</span>: <span>fixed</span></code></div>
@@ -2428,7 +2416,7 @@
 <div class="small-abstract"><span>Object tags that must be present for objects to be rendered
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ExcludeTags</span>: <span>objectTags</span></code></div>
 <div class="small-abstract"><span>Object tags that prevent objects from being rendered
-</span></div></div><div id="PipelineStateRenderPass" class="class" data-name="PipelineStateRenderPass" data-inherits="RenderPass" data-xmlns="None"><div class="eyebrow">Component
+</span></div></div><div id="PipelineStateRenderPass" class="class" data-name="PipelineStateRenderPass" data-inherits="RenderPass" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">PipelineStateRenderPass
 </h1><div class="abstract">Render pass for configuring graphics pipeline state
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SceneKit.PipelineStateRenderPass</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#RenderPass" class="name base">RenderPass</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Sets up the complete graphics pipeline state including blending, culling, depth testing, stencil operations, and viewport configuration. Essential for controlling how geometry is rasterized and composited.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">BlendMode</span>: <a class="type-identifier-link" href="#BlendMode">BlendMode</a></code></div>
@@ -2463,11 +2451,11 @@
 <div class="small-abstract"><span>Operation when both stencil and depth tests pass
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">StencilWriteEnabled</span>: <span>bool</span></code></div>
 <div class="small-abstract"><span>Whether to write computed stencil values to the stencil buffer
-</span></div></div><div id="TextBlock3D" class="class" data-name="TextBlock3D" data-inherits="Node3D" data-xmlns="None"><div class="eyebrow">Component
+</span></div></div><div id="TextBlock3D" class="class" data-name="TextBlock3D" data-inherits="Node3D" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">TextBlock3D
 </h1><div class="abstract">3D text renderer for displaying typography in 3D space
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SceneKit.TextBlock3D</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node3D" class="name base">Node3D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Renders text as 3D geometry that can be positioned, rotated, and scaled in 3D space. Supports font styling and integrates with the 3D lighting and material system.</div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">_node3D</span>: <a class="type-identifier-link" href="#Node3D">Node3D</a></code></div>
-</div><div id="Light3D" class="class" data-name="Light3D" data-inherits="Node3D" data-xmlns="None"><div class="eyebrow">Component
+</div><div id="Light3D" class="class" data-name="Light3D" data-inherits="Node3D" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">Light3D
 </h1><div class="abstract">3D light source for scene illumination and shadow casting
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SceneKit.Light3D</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node3D" class="name base">Node3D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Provides dynamic lighting for 3D scenes with support for point and spot light types. Affects material shading, shadow casting, and overall scene atmosphere.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Color</span>: <a class="type-identifier-link" href="#color">color</a></code></div>
@@ -2480,7 +2468,7 @@
 <div class="small-abstract"><span>Maximum distance at which light affects surfaces (for performance optimization)
 </span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">Type</span>: <a class="type-identifier-link" href="#LightType">LightType</a></code></div>
 <div class="small-abstract"><span>Type of light source (point or spot)
-</span></div></div><div id="SpriteView" class="class" data-name="SpriteView" data-inherits="Node3D" data-xmlns="None"><div class="eyebrow">Component
+</span></div></div><div id="SpriteView" class="class" data-name="SpriteView" data-inherits="Node3D" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">SpriteView
 </h1><div class="abstract">Billboard sprite renderer for 2D images in 3D space
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SceneKit.SpriteView</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node3D" class="name base">Node3D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Displays 2D images as billboards that automatically face the camera. Useful for particle effects, UI elements in 3D, icons, and other 2D content that needs 3D positioning.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>object </span><span class="identifier">Image</span>: <a class="type-identifier-link" href="#Texture">Texture</a></code></div>
@@ -2491,38 +2479,32 @@
 </div><h1 class="header">SpriteFrame
 </h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SpriteKit.SpriteFrame</span></code><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Rect</span>: <a class="type-identifier-link" href="#rect">rect</a></code></div>
 <div class="topic"><code class="decorator"><span>var </span><span class="identifier">UvRect</span>: <a class="type-identifier-link" href="#rect">rect</a></code></div>
-</div><div id="SpriteAnimation" class="class" data-name="SpriteAnimation" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
+</div><div id="SpriteAnimation" class="class" data-name="SpriteAnimation" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">SpriteAnimation
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SpriteKit.SpriteAnimation</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Frames</span>: <a class="type-identifier-link" href="#SpriteFrame">SpriteFrame</a></code></div>
-<div class="small-abstract"><span>Variable-length frame data array
-</span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">Image</span>: <a class="type-identifier-link" href="#Texture">Texture</a></code></div>
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SpriteKit.SpriteAnimation</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>object </span><span class="identifier">Image</span>: <a class="type-identifier-link" href="#Texture">Texture</a></code></div>
 <div class="small-abstract"><span>Spritesheet texture
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Framerate</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Frames per second
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Frames</span>: <a class="type-identifier-link" href="#SpriteFrame">SpriteFrame</a></code></div>
+<div class="small-abstract"><span>Variable-length frame data array
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">NumFrames</span>: <span>int</span></code></div>
 <div class="small-abstract"><span>Number of frames
-</span></div></div><div id="SKNode" class="class" data-name="SKNode" data-inherits="Node" data-xmlns="None"><div class="eyebrow">Component
+</span></div></div><div id="SKNode" class="class" data-name="SKNode" data-inherits="Node" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">SKNode
 </h1><div class="abstract">Base 2D sprite node with transform and matrix
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SpriteKit.SKNode</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node" class="name base">Node</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Provides fundamental 2D transformation properties for sprite scene graph nodes. All sprite objects in the scene inherit from this component.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Matrix</span>: <a class="type-identifier-link" href="#mat4">mat4</a></code></div>
 <div class="small-abstract"><span>Final combined transformation matrix (computed automatically)
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_opacity</span>: <span>float</span></code></div>
-<div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Rect</span>: <a class="type-identifier-link" href="#rect">rect</a></code></div>
-<div class="small-abstract"><span>Source rectangle for sprite size and offset
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RectX</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Left edge X coordinate
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RectY</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Top edge Y coordinate
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RectWidth</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Rectangle width
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RectHeight</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Rectangle height
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Anchor</span>: <span>int</span></code></div>
-<div class="small-abstract"><span>Anchor point bitmask for positioning
-</span></div></div><div id="SKScene" class="class" data-name="SKScene" data-inherits="SKNode" data-xmlns="None"><div class="eyebrow">Component
+<div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Position</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
+<div class="small-abstract"><span>Position of SKNode in space of SKScene
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Size</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
+<div class="small-abstract"><span>Size of SKNode. If not specified, defaults to the size of the associated sprite or animation frame
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Anchor</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>
+<div class="small-abstract"><span>Anchor point for positioning
+</span></div></div><div id="SKScene" class="class" data-name="SKScene" data-inherits="SKNode" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">SKScene
 </h1><div class="abstract">Root container for a 2D sprite scene
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SpriteKit.SKScene</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#SKNode" class="name base">SKNode</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Represents a complete 2D sprite scene that can be rendered to an SKView. Acts as the root node of the sprite scene hierarchy.</div></div><div id="SKSpriteNode" class="class" data-name="SKSpriteNode" data-inherits="SKNode" data-xmlns="None"><div class="eyebrow">Component
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SpriteKit.SKScene</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#SKNode" class="name base">SKNode</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Represents a complete 2D sprite scene that can be rendered to an SKView. Acts as the root node of the sprite scene hierarchy.</div></div><div id="SKSpriteNode" class="class" data-name="SKSpriteNode" data-inherits="SKNode" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">SKSpriteNode
 </h1><div class="abstract">2D sprite node that renders an image or animation
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SpriteKit.SKSpriteNode</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#SKNode" class="name base">SKNode</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Renders 2D sprite content using either a static image or an animated sprite animation. Supports UV coordinates for sprite atlas sheets and various blend modes.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>object </span><span class="identifier">Animation</span>: <a class="type-identifier-link" href="#SpriteAnimation">SpriteAnimation</a></code></div>
@@ -2545,13 +2527,13 @@
 <div class="small-abstract"><span>Rectangle width
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">UvRectHeight</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Rectangle height
-</span></div></div><div id="SKLabelNode" class="class" data-name="SKLabelNode" data-inherits="SKNode" data-xmlns="None"><div class="eyebrow">Component
+</span></div></div><div id="SKLabelNode" class="class" data-name="SKLabelNode" data-inherits="SKNode" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">SKLabelNode
 </h1><div class="abstract">2D text label node for displaying text in sprite space
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SpriteKit.SKLabelNode</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#SKNode" class="name base">SKNode</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Renders text as a 2D sprite node that participates in the sprite scene hierarchy. Inherits text styling and layout from the TextBlockConcept.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>object </span><span class="identifier">_node</span>: <a class="type-identifier-link" href="#SKNode">SKNode</a></code></div>
 <div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Color</span>: <a class="type-identifier-link" href="#color">color</a></code></div>
 <div class="small-abstract"><span>Color of the text
-</span></div></div><div id="SKView" class="class" data-name="SKView" data-inherits="Node2D" data-xmlns="None"><div class="eyebrow">Component
+</span></div></div><div id="SKView" class="class" data-name="SKView" data-inherits="Node2D" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">SKView
 </h1><div class="abstract">2D viewport that renders an SKScene into the UI hierarchy
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">SpriteKit.SKView</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Node2D" class="name base">Node2D</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Acts as the bridge between the 2D UI system and the sprite scene hierarchy. Renders the attached SKScene using a 2D orthographic projection into its Node2D bounds.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ReferenceWidth</span>: <span>float</span></code></div>
@@ -2560,9 +2542,9 @@
 <div class="small-abstract"><span>Reference height for the sprite coordinate system
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Scene</span>: <span>fixed</span></code></div>
 <div class="small-abstract"><span>Name of SKScene to render
-</span></div></div><div id="Workspace" class="class" data-name="Workspace" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
+</span></div></div><div id="Workspace" class="class" data-name="Workspace" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">Workspace
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.Workspace</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code></div><div id="Project" class="class" data-name="Project" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.Workspace</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code></div><div id="Project" class="class" data-name="Project" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">Project
 </h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.Project</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">isPackage</span>: <span>bool</span></code></div>
 <div class="topic"><code class="decorator"><span>resource </span><span class="identifier">package</span>: <span>Package</span></code></div>
@@ -2598,106 +2580,110 @@
 <div class="topic"><code class="decorator"><span>var </span><span class="identifier">DefaultMaterial</span>: <span>fixed</span></code></div>
 <div class="topic"><code class="decorator"><span>var </span><span class="identifier">Width</span>: <span>int</span></code></div>
 <div class="topic"><code class="decorator"><span>var </span><span class="identifier">Height</span>: <span>int</span></code></div>
-</div><div id="Library" class="class" data-name="Library" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
+</div><div id="Library" class="class" data-name="Library" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">Library
 </h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.Library</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">IsExternal</span>: <span>bool</span></code></div>
-</div><div id="AnimationClipLibrary" class="class" data-name="AnimationClipLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</div><div id="AnimationClipLibrary" class="class" data-name="AnimationClipLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">AnimationClipLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.AnimationClipLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ScreenLibrary" class="class" data-name="ScreenLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.AnimationClipLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ScreenLibrary" class="class" data-name="ScreenLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">ScreenLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ScreenLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="MaterialTypeLibrary" class="class" data-name="MaterialTypeLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ScreenLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="MaterialTypeLibrary" class="class" data-name="MaterialTypeLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">MaterialTypeLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.MaterialTypeLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="MaterialLibrary" class="class" data-name="MaterialLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.MaterialTypeLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="MaterialLibrary" class="class" data-name="MaterialLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">MaterialLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.MaterialLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="BrushLibrary" class="class" data-name="BrushLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.MaterialLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="BrushLibrary" class="class" data-name="BrushLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">BrushLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.BrushLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="MeshLibrary" class="class" data-name="MeshLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.BrushLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="MeshLibrary" class="class" data-name="MeshLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">MeshLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.MeshLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="TimelineSequenceLibrary" class="class" data-name="TimelineSequenceLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.MeshLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="TimelineSequenceLibrary" class="class" data-name="TimelineSequenceLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">TimelineSequenceLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.TimelineSequenceLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="SceneObjectLibrary" class="class" data-name="SceneObjectLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.TimelineSequenceLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="SceneObjectLibrary" class="class" data-name="SceneObjectLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">SceneObjectLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.SceneObjectLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ComposerLibrary" class="class" data-name="ComposerLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.SceneObjectLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ComposerLibrary" class="class" data-name="ComposerLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">ComposerLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ComposerLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="PipelineItemLibrary" class="class" data-name="PipelineItemLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ComposerLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="PipelineItemLibrary" class="class" data-name="PipelineItemLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">PipelineItemLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.PipelineItemLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="SceneLibrary" class="class" data-name="SceneLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.PipelineItemLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="SceneLibrary" class="class" data-name="SceneLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">SceneLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.SceneLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="TrajectoryLibrary" class="class" data-name="TrajectoryLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.SceneLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="TrajectoryLibrary" class="class" data-name="TrajectoryLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">TrajectoryLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.TrajectoryLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="TransitionLibrary" class="class" data-name="TransitionLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.TrajectoryLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="TransitionLibrary" class="class" data-name="TransitionLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">TransitionLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.TransitionLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="SplineLibrary" class="class" data-name="SplineLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.TransitionLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="SplineLibrary" class="class" data-name="SplineLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">SplineLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.SplineLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="PrefabLibrary" class="class" data-name="PrefabLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.SplineLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="PrefabLibrary" class="class" data-name="PrefabLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">PrefabLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.PrefabLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ProjectReferenceLibrary" class="class" data-name="ProjectReferenceLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.PrefabLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ProjectReferenceLibrary" class="class" data-name="ProjectReferenceLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">ProjectReferenceLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ProjectReferenceLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ProfileLibrary" class="class" data-name="ProfileLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ProjectReferenceLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ProfileLibrary" class="class" data-name="ProfileLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">ProfileLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ProfileLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="EnginePluginLibrary" class="class" data-name="EnginePluginLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ProfileLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="EnginePluginLibrary" class="class" data-name="EnginePluginLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">EnginePluginLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.EnginePluginLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ShortcutLibrary" class="class" data-name="ShortcutLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.EnginePluginLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ShortcutLibrary" class="class" data-name="ShortcutLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">ShortcutLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ShortcutLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="LayerLibrary" class="class" data-name="LayerLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ShortcutLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="LayerLibrary" class="class" data-name="LayerLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">LayerLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.LayerLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="AnimationLibrary" class="class" data-name="AnimationLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.LayerLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="AnimationLibrary" class="class" data-name="AnimationLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">AnimationLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.AnimationLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="TagLibrary" class="class" data-name="TagLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.AnimationLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="TagLibrary" class="class" data-name="TagLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">TagLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.TagLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ThemeLibrary" class="class" data-name="ThemeLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.TagLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ThemeLibrary" class="class" data-name="ThemeLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">ThemeLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ThemeLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ResourceExportTagLibrary" class="class" data-name="ResourceExportTagLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ThemeLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ResourceExportTagLibrary" class="class" data-name="ResourceExportTagLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">ResourceExportTagLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ResourceExportTagLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="LocaleLibrary" class="class" data-name="LocaleLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ResourceExportTagLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="LocaleLibrary" class="class" data-name="LocaleLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">LocaleLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.LocaleLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="DataSourceLibrary" class="class" data-name="DataSourceLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.LocaleLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="DataSourceLibrary" class="class" data-name="DataSourceLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">DataSourceLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.DataSourceLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="PageTransitionCollectionLibrary" class="class" data-name="PageTransitionCollectionLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.DataSourceLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="PageTransitionCollectionLibrary" class="class" data-name="PageTransitionCollectionLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">PageTransitionCollectionLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.PageTransitionCollectionLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="TextureLibrary" class="class" data-name="TextureLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.PageTransitionCollectionLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="TextureLibrary" class="class" data-name="TextureLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">TextureLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.TextureLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="StyleLibrary" class="class" data-name="StyleLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.TextureLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="StyleLibrary" class="class" data-name="StyleLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">StyleLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.StyleLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="StateManagerLibrary" class="class" data-name="StateManagerLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.StyleLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="StateManagerLibrary" class="class" data-name="StateManagerLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">StateManagerLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.StateManagerLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ConnectServiceLibrary" class="class" data-name="ConnectServiceLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.StateManagerLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ConnectServiceLibrary" class="class" data-name="ConnectServiceLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">ConnectServiceLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ConnectServiceLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ConnectUserServiceLibrary" class="class" data-name="ConnectUserServiceLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ConnectServiceLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ConnectUserServiceLibrary" class="class" data-name="ConnectUserServiceLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">ConnectUserServiceLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ConnectUserServiceLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="PropertyTypeLibrary" class="class" data-name="PropertyTypeLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ConnectUserServiceLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="PropertyTypeLibrary" class="class" data-name="PropertyTypeLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">PropertyTypeLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.PropertyTypeLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="MessageLibrary" class="class" data-name="MessageLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.PropertyTypeLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="SpriteLibrary" class="class" data-name="SpriteLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
+</div><h1 class="header">SpriteLibrary
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.SpriteLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="SpriteAnimationLibrary" class="class" data-name="SpriteAnimationLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
+</div><h1 class="header">SpriteAnimationLibrary
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.SpriteAnimationLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="MessageLibrary" class="class" data-name="MessageLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">MessageLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.MessageLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="SystemMessage" class="class" data-name="SystemMessage" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.MessageLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="SystemMessage" class="class" data-name="SystemMessage" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">SystemMessage
 </h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.SystemMessage</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Message</span>: <span>fixed</span></code></div>
 <div class="topic"><code class="decorator"><span>var </span><span class="identifier">Key</span>: <span>fixed</span></code></div>
-</div><div id="ImageLibrary" class="class" data-name="ImageLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</div><div id="ImageLibrary" class="class" data-name="ImageLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">ImageLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ImageLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="FontLibrary" class="class" data-name="FontLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ImageLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="FontLibrary" class="class" data-name="FontLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">FontLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.FontLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ProjectReferenceItem" class="class" data-name="ProjectReferenceItem" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.FontLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ProjectReferenceItem" class="class" data-name="ProjectReferenceItem" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">ProjectReferenceItem
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ProjectReferenceItem</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code></div><div id="LocaleReferenceItem" class="class" data-name="LocaleReferenceItem" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ProjectReferenceItem</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code></div><div id="LocaleReferenceItem" class="class" data-name="LocaleReferenceItem" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">LocaleReferenceItem
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.LocaleReferenceItem</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code></div><div id="Tag" class="class" data-name="Tag" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.LocaleReferenceItem</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code></div><div id="Tag" class="class" data-name="Tag" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">Tag
 </h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.Tag</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">TagIsInherited</span>: <span>bool</span></code></div>
-</div><div id="EnginePlugin" class="class" data-name="EnginePlugin" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
+</div><div id="EnginePlugin" class="class" data-name="EnginePlugin" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">EnginePlugin
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.EnginePlugin</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code></div><div id="EngineMetaclass" class="class" data-name="EngineMetaclass" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.EnginePlugin</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code></div><div id="EngineMetaclass" class="class" data-name="EngineMetaclass" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">EngineMetaclass
 </h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.EngineMetaclass</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BaseClassName</span>: <span>fixed</span></code></div>
-</div><div id="ThemeGroup" class="class" data-name="ThemeGroup" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
+</div><div id="ThemeGroup" class="class" data-name="ThemeGroup" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">ThemeGroup
 </h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ThemeGroup</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">SelectedDictionary</span>: <span>fixed</span></code></div>
-</div><div id="Theme" class="class" data-name="Theme" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
+</div><div id="Theme" class="class" data-name="Theme" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">Theme
 </h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.Theme</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">IsThemeVisible</span>: <span>bool</span></code></div>
-</div><div id="Entry" class="class" data-name="Entry" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
+</div><div id="Entry" class="class" data-name="Entry" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">Entry
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.Entry</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code></div><div id="ThemeDefaultValuesDictionary" class="class" data-name="ThemeDefaultValuesDictionary" data-inherits="None" data-xmlns="None"><div class="eyebrow">Component
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.Entry</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code></div><div id="ThemeDefaultValuesDictionary" class="class" data-name="ThemeDefaultValuesDictionary" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">ThemeDefaultValuesDictionary
 </h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ThemeDefaultValuesDictionary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getWorkspace</span>()<span class="decorator"> -&gt;</span><span> Object</span></code><div class="small-abstract"><span>Retrieves main workspace object.
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getBaseName</span>(<span class="identifier">path</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> string</span></code><div class="small-abstract"><span>Gets the base filename from a path

@@ -46,6 +46,41 @@ xmlParsePropertyAttr(xmlChar const* s)
   return ATTR_WHOLE_PROPERTY;
 }
 
+static void* _GetParser(lua_State* L, lpcString_t type) {
+  char tmp[256];
+  snprintf(tmp, sizeof(tmp), "%sParser", type);
+  lua_getfield(L, LUA_REGISTRYINDEX, tmp);
+  if (lua_isnil(L, -1)) { lua_pop(L, 1); return NULL; }
+  handle_t ptr = lua_touserdata(L, -1);
+  lua_pop(L, 1);
+  return ptr;
+}
+
+
+static int XML_CountNodes(xmlNode *it, xmlChar const* name) {
+  int count = 0;
+  xmlForEach(elm, it) {
+    if (!xmlStrcmp(elm->name, XMLSTR(name))) {
+      count++;
+    }
+  }
+  return count;
+}
+
+static void
+XML_ParseValues(xmlNode *it,
+                lpcPropertyDesc_t pdesc,
+                int (*parser)(xmlNodePtr, void*),
+                char *output)
+{
+  xmlForEach(elm, it) {
+    if (parser && !xmlStrcmp(elm->name, XMLSTR(pdesc->TypeString))) {
+      parser(elm, output);
+      output += pdesc->DataSize;
+    }
+  }
+}
+
 static void
 XML_ParsePropertyNode(lua_State* L, xmlNodePtr it, lpObject_t object)
 {
@@ -59,7 +94,7 @@ XML_ParsePropertyNode(lua_State* L, xmlNodePtr it, lpObject_t object)
     xmlFree(Value);
     return;
   }
-  if (FAILED(OBJ_FindLongProperty(object, (LPSTR)it->name, &property))) {
+  if (FAILED(OBJ_FindLongProperty(object, fnv1a32((LPSTR)it->name), &property))) {
 #ifdef SUPPORT_DYNAMIC_PROPERTIES
     if (!xmlHasProp(it, XMLSTR("Type"))) {
       property = PROP_Create(L, object, (LPSTR)it->name, kDataTypeNone, NULL);
@@ -70,6 +105,22 @@ XML_ParsePropertyNode(lua_State* L, xmlNodePtr it, lpObject_t object)
     Con_Error("Can not instantiate child node `%s` in %s(%s)", it->name, OBJ_GetName(object), OBJ_GetClassName(object));
     return;
 #endif
+  }
+  lpcPropertyDesc_t pdesc = PROP_GetDesc(property);
+  if (pdesc->IsArray) {
+    uint32_t num = XML_CountNodes(it, XMLSTR(pdesc->TypeString));
+    void *mem = malloc(pdesc->DataSize * num);
+    XML_ParseValues(it, pdesc, _GetParser(L, pdesc->TypeString), mem);
+    PROP_SetValue(property, &mem);
+    lpProperty_t nump;
+    if ((pdesc+1)->DataType == kDataTypeInt &&
+        SUCCEEDED(OBJ_FindLongProperty(object, (pdesc+1)->FullIdentifier, &nump)))
+    {
+      PROP_SetValue(nump, &num);
+    } else {
+      Con_Error("Expected a Num%s property to follow %s", pdesc->id->Name, pdesc->id->Name);
+    }
+    return;
   }
   xmlWith(xmlChar, Enabled, xmlGetProp(it, XMLSTR("Enabled")), xmlFree) {
     bEnabled = xmlStrcmp(Enabled, XMLSTR("true")) == 0;
@@ -230,6 +281,7 @@ XML_ParseObjectNode(lua_State* L, xmlNodePtr xml, lpObject_t root, xmlDocPtr doc
   lpObject_t hobj = NULL;
   lpObject_t childobj = NULL;
 
+  // HACK: This is a hack to set screen size before it's created
   xmlWith(xmlChar, Width, xmlGetProp(xml, XMLSTR("Width")), xmlFree) {
     extern int ScreenWidth;
     ScreenWidth = atoi((lpcString_t)Width);
@@ -239,7 +291,8 @@ XML_ParseObjectNode(lua_State* L, xmlNodePtr xml, lpObject_t root, xmlDocPtr doc
     ScreenHeight = atoi((lpcString_t)Height);
   }
 
-  if (!strcmp(szClass, "LayerPrefabPlaceholder") ||
+  if (!strcmp(szClass, "LibraryPlaceholder") ||
+      !strcmp(szClass, "LayerPrefabPlaceholder") ||
       !strcmp(szClass, "ObjectPrefabPlaceholder"))
   {
     xmlWith(xmlChar,tmp,xmlGetProp(xml, XMLSTR("PlaceholderTemplate")),xmlFree) {
@@ -264,7 +317,20 @@ XML_ParseObjectNode(lua_State* L, xmlNodePtr xml, lpObject_t root, xmlDocPtr doc
       OBJ_SetFlags(hobj, OBJ_GetFlags(hobj)|OF_LOADED_FROM_PREFAB);
     }
   } else {
-    lua_getfield(L, LUA_REGISTRYINDEX, szClass);
+    if (!strcmp(szClass, "CustomNode") && xmlHasProp(xml, XMLSTR("ClassName"))) {
+      xmlWith(xmlChar, classname, xmlGetProp(xml, XMLSTR("ClassName")), xmlFree) {
+        lua_getglobal(L, "require");
+        lua_pushstring(L, (const char*)classname);
+        if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
+          xmlFree(classname);
+          fprintf(stderr, "%s", lua_tostring(L, -1));
+          lua_pop(L, 1);
+          return NULL;
+        }
+      }
+    } else {
+      lua_getfield(L, LUA_REGISTRYINDEX, szClass);
+    }
     if (lua_isnil(L, -1)) {
       lua_pop(L, 1);
 //      luaL_error(L, "Class %s not found", szClass);
@@ -283,11 +349,32 @@ XML_ParseObjectNode(lua_State* L, xmlNodePtr xml, lpObject_t root, xmlDocPtr doc
   
   OBJ_SetName(hobj, szClass);
   OBJ_SetClassName(hobj, (lpcString_t )xml->name);
-
+  
   if (doc && doc->URL) {
     xmlWith(char, decoded, xmlURIUnescapeString((char*)doc->URL, -1, NULL), xmlFree) {
-      OBJ_RegisterPrefab(hobj, decoded);
-      FS_RegisterObject(hobj, decoded);
+      ospathfmt_t fmt={0};
+//      strncpy(fmt, decoded, sizeof(fmt));
+      for (xmlNodePtr node = xml; node->parent; node = node->parent) {
+        fixedString_t name;
+        if (node->parent->parent) {
+          strncpy(name, (char*)node->name, sizeof(name));
+          xmlWith(xmlChar, Name, xmlGetProp(node, XMLSTR("Name")), xmlFree) {
+            strncpy(name, (char*)Name, sizeof(name));
+          }
+        } else {
+          strncpy(name, decoded, sizeof(name));
+        }
+        if (*fmt) {
+          ospathfmt_t tmp;
+          strncpy(tmp, fmt, sizeof(tmp));
+          snprintf(fmt, sizeof(fmt), "%s/%s", name, tmp);
+        } else {
+          strncpy(fmt, name, sizeof(fmt));
+        }
+      }
+      
+      OBJ_RegisterPrefab(hobj, fmt);
+      FS_RegisterObject(hobj, fmt);
     }
   }
   
@@ -300,6 +387,8 @@ XML_ParseObjectNode(lua_State* L, xmlNodePtr xml, lpObject_t root, xmlDocPtr doc
   FOR_EACH_LIST(xmlAttr, attr, xml->properties)
   {
     if (!xmlStrcmp(attr->name, XMLSTR("PlaceholderTemplate")))
+      continue;
+    if (!xmlStrcmp(attr->name, XMLSTR("ClassName")))
       continue;
     xmlWith(xmlChar, value, xmlNodeGetContent((xmlNode*)attr), xmlFree)
     {
@@ -373,7 +462,7 @@ XML_ParseObjectNode(lua_State* L, xmlNodePtr xml, lpObject_t root, xmlDocPtr doc
         }
       } else if (_ShallSkipNode(it)) {
         // skip
-      } else if ((childobj = XML_ParseObjectNode(L, it, root ? root : hobj, NULL))) {
+      } else if ((childobj = XML_ParseObjectNode(L, it, root ? root : hobj, xmlStrstr(xml->name, XMLSTR("Library")) ? doc : NULL))) {
         OBJ_AddChild(hobj, childobj, FALSE);
         lua_pop(L, 1);
       } else {

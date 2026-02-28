@@ -13,7 +13,7 @@
 -->
 
 <!-- Root Element -->
-<!ELEMENT module (include | external | event | resource | enums | struct | interface | component | function)*>
+<!ELEMENT module (include | external | event | resource | enums | struct | interface | class | function)*>
 <!ATTLIST module
   name CDATA #REQUIRED
   namespace CDATA #REQUIRED
@@ -79,8 +79,8 @@
 >
 
 <!-- Component Definition -->
-<!ELEMENT component (summary?, details?, xmlns?, handles*, property*, field*, method*)>
-<!ATTLIST component
+<!ELEMENT class (summary?, details?, xmlns?, handles*, property*, field*, method*)>
+<!ATTLIST class
   name CDATA #REQUIRED
   parent CDATA #IMPLIED
   children CDATA #IMPLIED
@@ -101,7 +101,7 @@
 <!ATTLIST field
   name CDATA #REQUIRED
   type CDATA #REQUIRED
-  array CDATA #IMPLIED
+  fixed-array CDATA #IMPLIED
   pointer (true|false) #IMPLIED
   const (true|false) #IMPLIED
 >
@@ -125,7 +125,7 @@
   static (true|false) #IMPLIED
 >
 
-<!-- Property Definition (for components) -->
+<!-- Property Definition (for classes) -->
 <!ELEMENT property (#PCDATA)>
 <!ATTLIST property
   name CDATA #REQUIRED
@@ -137,7 +137,7 @@
   default CDATA #IMPLIED
 >
 
-<!-- Handles Declaration (events handled by a component) -->
+<!-- Handles Declaration (events handled by a class) -->
 <!ELEMENT handles EMPTY>
 <!ATTLIST handles
   event CDATA #REQUIRED

@@ -7,6 +7,13 @@
 	.Offset=offsetof(struct CLASS, FIELD), \
 	.DataSize=sizeof(((struct CLASS *)NULL)->FIELD), \
 	.DataType=TYPE, ##__VA_ARGS__ }
+#define ARRAY_DECL(SHORT, LONG, CLASS, NAME, FIELD, TYPE,...) { \
+	.id=&(struct ID){.Name=#CLASS"."NAME,.Identifier=SHORT}, \
+	.FullIdentifier=LONG, \
+	.Offset=offsetof(struct CLASS, FIELD), \
+	.DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), \
+	.DataType=TYPE, \
+	.IsArray=TRUE, ##__VA_ARGS__ }
 
 static const char *_Direction[] = {"horizontal","vertical","depth",NULL};
 eDirection_t luaX_checkDirection(lua_State *L, int idx) {
@@ -16,6 +23,22 @@ void luaX_pushDirection(lua_State *L, eDirection_t value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _Direction[value]);
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoDirection(lpcString_t string, enum Direction* output) {
+	if (string == NULL) return FALSE;
+	const char* _Direction[] = { "Horizontal", "Vertical", "Depth", NULL };
+	if (isdigit(*string)) {
+		*output = strtod(string, (char**)&string);
+		return string;
+	} else for (const char **s = _Direction; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum Direction)(s - _Direction);
+			return string + strlen(*s);
+		}
+	}
+	Con_Error("Could not parse '%s' value of property Direction", string);
+	return string + strlen(string);
+}
 static const char *_Box3Field[] = {"x","y","z","width","height","depth",NULL};
 eBox3Field_t luaX_checkBox3Field(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _Box3Field);
@@ -23,6 +46,22 @@ eBox3Field_t luaX_checkBox3Field(lua_State *L, int idx) {
 void luaX_pushBox3Field(lua_State *L, eBox3Field_t value) {
 	assert(value >= 0 && value < 6);
 	lua_pushstring(L, _Box3Field[value]);
+}
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoBox3Field(lpcString_t string, enum Box3Field* output) {
+	if (string == NULL) return FALSE;
+	const char* _Box3Field[] = { "X", "Y", "Z", "Width", "Height", "Depth", NULL };
+	if (isdigit(*string)) {
+		*output = strtod(string, (char**)&string);
+		return string;
+	} else for (const char **s = _Box3Field; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum Box3Field)(s - _Box3Field);
+			return string + strlen(*s);
+		}
+	}
+	Con_Error("Could not parse '%s' value of property Box3Field", string);
+	return string + strlen(string);
 }
 static const char *_TextOverflow[] = {"clip","ellipsis",NULL};
 eTextOverflow_t luaX_checkTextOverflow(lua_State *L, int idx) {
@@ -32,6 +71,22 @@ void luaX_pushTextOverflow(lua_State *L, eTextOverflow_t value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _TextOverflow[value]);
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoTextOverflow(lpcString_t string, enum TextOverflow* output) {
+	if (string == NULL) return FALSE;
+	const char* _TextOverflow[] = { "Clip", "Ellipsis", NULL };
+	if (isdigit(*string)) {
+		*output = strtod(string, (char**)&string);
+		return string;
+	} else for (const char **s = _TextOverflow; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum TextOverflow)(s - _TextOverflow);
+			return string + strlen(*s);
+		}
+	}
+	Con_Error("Could not parse '%s' value of property TextOverflow", string);
+	return string + strlen(string);
+}
 static const char *_TextWrapping[] = {"wrapwithoverflow","nowrap","wrap",NULL};
 eTextWrapping_t luaX_checkTextWrapping(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _TextWrapping);
@@ -39,6 +94,22 @@ eTextWrapping_t luaX_checkTextWrapping(lua_State *L, int idx) {
 void luaX_pushTextWrapping(lua_State *L, eTextWrapping_t value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _TextWrapping[value]);
+}
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoTextWrapping(lpcString_t string, enum TextWrapping* output) {
+	if (string == NULL) return FALSE;
+	const char* _TextWrapping[] = { "WrapWithOverflow", "NoWrap", "Wrap", NULL };
+	if (isdigit(*string)) {
+		*output = strtod(string, (char**)&string);
+		return string;
+	} else for (const char **s = _TextWrapping; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum TextWrapping)(s - _TextWrapping);
+			return string + strlen(*s);
+		}
+	}
+	Con_Error("Could not parse '%s' value of property TextWrapping", string);
+	return string + strlen(string);
 }
 static const char *_TextHorizontalAlignment[] = {"left","center","right",NULL};
 eTextHorizontalAlignment_t luaX_checkTextHorizontalAlignment(lua_State *L, int idx) {
@@ -48,6 +119,22 @@ void luaX_pushTextHorizontalAlignment(lua_State *L, eTextHorizontalAlignment_t v
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _TextHorizontalAlignment[value]);
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoTextHorizontalAlignment(lpcString_t string, enum TextHorizontalAlignment* output) {
+	if (string == NULL) return FALSE;
+	const char* _TextHorizontalAlignment[] = { "Left", "Center", "Right", NULL };
+	if (isdigit(*string)) {
+		*output = strtod(string, (char**)&string);
+		return string;
+	} else for (const char **s = _TextHorizontalAlignment; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum TextHorizontalAlignment)(s - _TextHorizontalAlignment);
+			return string + strlen(*s);
+		}
+	}
+	Con_Error("Could not parse '%s' value of property TextHorizontalAlignment", string);
+	return string + strlen(string);
+}
 static const char *_TextVerticalAlignment[] = {"top","center","bottom","baseline",NULL};
 eTextVerticalAlignment_t luaX_checkTextVerticalAlignment(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _TextVerticalAlignment);
@@ -55,6 +142,22 @@ eTextVerticalAlignment_t luaX_checkTextVerticalAlignment(lua_State *L, int idx) 
 void luaX_pushTextVerticalAlignment(lua_State *L, eTextVerticalAlignment_t value) {
 	assert(value >= 0 && value < 4);
 	lua_pushstring(L, _TextVerticalAlignment[value]);
+}
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoTextVerticalAlignment(lpcString_t string, enum TextVerticalAlignment* output) {
+	if (string == NULL) return FALSE;
+	const char* _TextVerticalAlignment[] = { "Top", "Center", "Bottom", "Baseline", NULL };
+	if (isdigit(*string)) {
+		*output = strtod(string, (char**)&string);
+		return string;
+	} else for (const char **s = _TextVerticalAlignment; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum TextVerticalAlignment)(s - _TextVerticalAlignment);
+			return string + strlen(*s);
+		}
+	}
+	Con_Error("Could not parse '%s' value of property TextVerticalAlignment", string);
+	return string + strlen(string);
 }
 static const char *_HorizontalAlignment[] = {"stretch","left","center","right",NULL};
 eHorizontalAlignment_t luaX_checkHorizontalAlignment(lua_State *L, int idx) {
@@ -64,6 +167,22 @@ void luaX_pushHorizontalAlignment(lua_State *L, eHorizontalAlignment_t value) {
 	assert(value >= 0 && value < 4);
 	lua_pushstring(L, _HorizontalAlignment[value]);
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoHorizontalAlignment(lpcString_t string, enum HorizontalAlignment* output) {
+	if (string == NULL) return FALSE;
+	const char* _HorizontalAlignment[] = { "Stretch", "Left", "Center", "Right", NULL };
+	if (isdigit(*string)) {
+		*output = strtod(string, (char**)&string);
+		return string;
+	} else for (const char **s = _HorizontalAlignment; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum HorizontalAlignment)(s - _HorizontalAlignment);
+			return string + strlen(*s);
+		}
+	}
+	Con_Error("Could not parse '%s' value of property HorizontalAlignment", string);
+	return string + strlen(string);
+}
 static const char *_VerticalAlignment[] = {"stretch","top","center","bottom",NULL};
 eVerticalAlignment_t luaX_checkVerticalAlignment(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _VerticalAlignment);
@@ -71,6 +190,22 @@ eVerticalAlignment_t luaX_checkVerticalAlignment(lua_State *L, int idx) {
 void luaX_pushVerticalAlignment(lua_State *L, eVerticalAlignment_t value) {
 	assert(value >= 0 && value < 4);
 	lua_pushstring(L, _VerticalAlignment[value]);
+}
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoVerticalAlignment(lpcString_t string, enum VerticalAlignment* output) {
+	if (string == NULL) return FALSE;
+	const char* _VerticalAlignment[] = { "Stretch", "Top", "Center", "Bottom", NULL };
+	if (isdigit(*string)) {
+		*output = strtod(string, (char**)&string);
+		return string;
+	} else for (const char **s = _VerticalAlignment; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum VerticalAlignment)(s - _VerticalAlignment);
+			return string + strlen(*s);
+		}
+	}
+	Con_Error("Could not parse '%s' value of property VerticalAlignment", string);
+	return string + strlen(string);
 }
 static const char *_AlignItems[] = {"start","center","end","stretch","baseline",NULL};
 eAlignItems_t luaX_checkAlignItems(lua_State *L, int idx) {
@@ -80,6 +215,22 @@ void luaX_pushAlignItems(lua_State *L, eAlignItems_t value) {
 	assert(value >= 0 && value < 5);
 	lua_pushstring(L, _AlignItems[value]);
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoAlignItems(lpcString_t string, enum AlignItems* output) {
+	if (string == NULL) return FALSE;
+	const char* _AlignItems[] = { "Start", "Center", "End", "Stretch", "Baseline", NULL };
+	if (isdigit(*string)) {
+		*output = strtod(string, (char**)&string);
+		return string;
+	} else for (const char **s = _AlignItems; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum AlignItems)(s - _AlignItems);
+			return string + strlen(*s);
+		}
+	}
+	Con_Error("Could not parse '%s' value of property AlignItems", string);
+	return string + strlen(string);
+}
 static const char *_DepthAlignment[] = {"near","center","far","stretch",NULL};
 eDepthAlignment_t luaX_checkDepthAlignment(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _DepthAlignment);
@@ -87,6 +238,22 @@ eDepthAlignment_t luaX_checkDepthAlignment(lua_State *L, int idx) {
 void luaX_pushDepthAlignment(lua_State *L, eDepthAlignment_t value) {
 	assert(value >= 0 && value < 4);
 	lua_pushstring(L, _DepthAlignment[value]);
+}
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoDepthAlignment(lpcString_t string, enum DepthAlignment* output) {
+	if (string == NULL) return FALSE;
+	const char* _DepthAlignment[] = { "Near", "Center", "Far", "Stretch", NULL };
+	if (isdigit(*string)) {
+		*output = strtod(string, (char**)&string);
+		return string;
+	} else for (const char **s = _DepthAlignment; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum DepthAlignment)(s - _DepthAlignment);
+			return string + strlen(*s);
+		}
+	}
+	Con_Error("Could not parse '%s' value of property DepthAlignment", string);
+	return string + strlen(string);
 }
 static const char *_Overflow[] = {"visible","hidden","clip","scroll","auto",NULL};
 eOverflow_t luaX_checkOverflow(lua_State *L, int idx) {
@@ -96,6 +263,22 @@ void luaX_pushOverflow(lua_State *L, eOverflow_t value) {
 	assert(value >= 0 && value < 5);
 	lua_pushstring(L, _Overflow[value]);
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoOverflow(lpcString_t string, enum Overflow* output) {
+	if (string == NULL) return FALSE;
+	const char* _Overflow[] = { "Visible", "Hidden", "Clip", "Scroll", "Auto", NULL };
+	if (isdigit(*string)) {
+		*output = strtod(string, (char**)&string);
+		return string;
+	} else for (const char **s = _Overflow; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum Overflow)(s - _Overflow);
+			return string + strlen(*s);
+		}
+	}
+	Con_Error("Could not parse '%s' value of property Overflow", string);
+	return string + strlen(string);
+}
 static const char *_ForegroundHint[] = {"none","translucent","opaque",NULL};
 eForegroundHint_t luaX_checkForegroundHint(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _ForegroundHint);
@@ -103,6 +286,22 @@ eForegroundHint_t luaX_checkForegroundHint(lua_State *L, int idx) {
 void luaX_pushForegroundHint(lua_State *L, eForegroundHint_t value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _ForegroundHint[value]);
+}
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoForegroundHint(lpcString_t string, enum ForegroundHint* output) {
+	if (string == NULL) return FALSE;
+	const char* _ForegroundHint[] = { "None", "Translucent", "Opaque", NULL };
+	if (isdigit(*string)) {
+		*output = strtod(string, (char**)&string);
+		return string;
+	} else for (const char **s = _ForegroundHint; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum ForegroundHint)(s - _ForegroundHint);
+			return string + strlen(*s);
+		}
+	}
+	Con_Error("Could not parse '%s' value of property ForegroundHint", string);
+	return string + strlen(string);
 }
 static const char *_JustifyContent[] = {"start","end","center","spacebetween","spacearound","spaceevenly",NULL};
 eJustifyContent_t luaX_checkJustifyContent(lua_State *L, int idx) {
@@ -112,6 +311,22 @@ void luaX_pushJustifyContent(lua_State *L, eJustifyContent_t value) {
 	assert(value >= 0 && value < 6);
 	lua_pushstring(L, _JustifyContent[value]);
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoJustifyContent(lpcString_t string, enum JustifyContent* output) {
+	if (string == NULL) return FALSE;
+	const char* _JustifyContent[] = { "Start", "End", "Center", "SpaceBetween", "SpaceAround", "SpaceEvenly", NULL };
+	if (isdigit(*string)) {
+		*output = strtod(string, (char**)&string);
+		return string;
+	} else for (const char **s = _JustifyContent; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum JustifyContent)(s - _JustifyContent);
+			return string + strlen(*s);
+		}
+	}
+	Con_Error("Could not parse '%s' value of property JustifyContent", string);
+	return string + strlen(string);
+}
 static const char *_FontWeight[] = {"normal","bold",NULL};
 eFontWeight_t luaX_checkFontWeight(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _FontWeight);
@@ -119,6 +334,22 @@ eFontWeight_t luaX_checkFontWeight(lua_State *L, int idx) {
 void luaX_pushFontWeight(lua_State *L, eFontWeight_t value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _FontWeight[value]);
+}
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoFontWeight(lpcString_t string, enum FontWeight* output) {
+	if (string == NULL) return FALSE;
+	const char* _FontWeight[] = { "Normal", "Bold", NULL };
+	if (isdigit(*string)) {
+		*output = strtod(string, (char**)&string);
+		return string;
+	} else for (const char **s = _FontWeight; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum FontWeight)(s - _FontWeight);
+			return string + strlen(*s);
+		}
+	}
+	Con_Error("Could not parse '%s' value of property FontWeight", string);
+	return string + strlen(string);
 }
 static const char *_FontStyle[] = {"normal","italic",NULL};
 eFontStyle_t luaX_checkFontStyle(lua_State *L, int idx) {
@@ -128,6 +359,22 @@ void luaX_pushFontStyle(lua_State *L, eFontStyle_t value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _FontStyle[value]);
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoFontStyle(lpcString_t string, enum FontStyle* output) {
+	if (string == NULL) return FALSE;
+	const char* _FontStyle[] = { "Normal", "Italic", NULL };
+	if (isdigit(*string)) {
+		*output = strtod(string, (char**)&string);
+		return string;
+	} else for (const char **s = _FontStyle; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum FontStyle)(s - _FontStyle);
+			return string + strlen(*s);
+		}
+	}
+	Con_Error("Could not parse '%s' value of property FontStyle", string);
+	return string + strlen(string);
+}
 static const char *_BorderStyle[] = {"none","hidden","dotted","dashed","solid","double","groove","ridge","inset","outset",NULL};
 eBorderStyle_t luaX_checkBorderStyle(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _BorderStyle);
@@ -135,6 +382,22 @@ eBorderStyle_t luaX_checkBorderStyle(lua_State *L, int idx) {
 void luaX_pushBorderStyle(lua_State *L, eBorderStyle_t value) {
 	assert(value >= 0 && value < 10);
 	lua_pushstring(L, _BorderStyle[value]);
+}
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoBorderStyle(lpcString_t string, enum BorderStyle* output) {
+	if (string == NULL) return FALSE;
+	const char* _BorderStyle[] = { "None", "Hidden", "Dotted", "Dashed", "Solid", "Double", "Groove", "Ridge", "Inset", "Outset", NULL };
+	if (isdigit(*string)) {
+		*output = strtod(string, (char**)&string);
+		return string;
+	} else for (const char **s = _BorderStyle; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum BorderStyle)(s - _BorderStyle);
+			return string + strlen(*s);
+		}
+	}
+	Con_Error("Could not parse '%s' value of property BorderStyle", string);
+	return string + strlen(string);
 }
 static const char *_PlaybackMode[] = {"normal","reverse","pingpong",NULL};
 ePlaybackMode_t luaX_checkPlaybackMode(lua_State *L, int idx) {
@@ -144,6 +407,22 @@ void luaX_pushPlaybackMode(lua_State *L, ePlaybackMode_t value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _PlaybackMode[value]);
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoPlaybackMode(lpcString_t string, enum PlaybackMode* output) {
+	if (string == NULL) return FALSE;
+	const char* _PlaybackMode[] = { "Normal", "Reverse", "Pingpong", NULL };
+	if (isdigit(*string)) {
+		*output = strtod(string, (char**)&string);
+		return string;
+	} else for (const char **s = _PlaybackMode; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum PlaybackMode)(s - _PlaybackMode);
+			return string + strlen(*s);
+		}
+	}
+	Con_Error("Could not parse '%s' value of property PlaybackMode", string);
+	return string + strlen(string);
+}
 static const char *_ButtonType[] = {"normal","submit",NULL};
 eButtonType_t luaX_checkButtonType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _ButtonType);
@@ -151,6 +430,22 @@ eButtonType_t luaX_checkButtonType(lua_State *L, int idx) {
 void luaX_pushButtonType(lua_State *L, eButtonType_t value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _ButtonType[value]);
+}
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoButtonType(lpcString_t string, enum ButtonType* output) {
+	if (string == NULL) return FALSE;
+	const char* _ButtonType[] = { "Normal", "Submit", NULL };
+	if (isdigit(*string)) {
+		*output = strtod(string, (char**)&string);
+		return string;
+	} else for (const char **s = _ButtonType; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum ButtonType)(s - _ButtonType);
+			return string + strlen(*s);
+		}
+	}
+	Con_Error("Could not parse '%s' value of property ButtonType", string);
+	return string + strlen(string);
 }
 static const char *_InputType[] = {"text","password","number","checkbox","radio",NULL};
 eInputType_t luaX_checkInputType(lua_State *L, int idx) {
@@ -160,6 +455,22 @@ void luaX_pushInputType(lua_State *L, eInputType_t value) {
 	assert(value >= 0 && value < 5);
 	lua_pushstring(L, _InputType[value]);
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoInputType(lpcString_t string, enum InputType* output) {
+	if (string == NULL) return FALSE;
+	const char* _InputType[] = { "Text", "Password", "Number", "Checkbox", "Radio", NULL };
+	if (isdigit(*string)) {
+		*output = strtod(string, (char**)&string);
+		return string;
+	} else for (const char **s = _InputType; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum InputType)(s - _InputType);
+			return string + strlen(*s);
+		}
+	}
+	Con_Error("Could not parse '%s' value of property InputType", string);
+	return string + strlen(string);
+}
 static const char *_Sizing[] = {"plusmargin","sizeonly","minuspadding",NULL};
 eSizing_t luaX_checkSizing(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _Sizing);
@@ -167,6 +478,22 @@ eSizing_t luaX_checkSizing(lua_State *L, int idx) {
 void luaX_pushSizing(lua_State *L, eSizing_t value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _Sizing[value]);
+}
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoSizing(lpcString_t string, enum Sizing* output) {
+	if (string == NULL) return FALSE;
+	const char* _Sizing[] = { "PlusMargin", "SizeOnly", "MinusPadding", NULL };
+	if (isdigit(*string)) {
+		*output = strtod(string, (char**)&string);
+		return string;
+	} else for (const char **s = _Sizing; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum Sizing)(s - _Sizing);
+			return string + strlen(*s);
+		}
+	}
+	Con_Error("Could not parse '%s' value of property Sizing", string);
+	return string + strlen(string);
 }
 void luaX_pushBorderRadiusShorthand(lua_State *L, lpcBorderRadiusShorthand_t data) {
 	lpBorderRadiusShorthand_t self = lua_newuserdata(L, sizeof(struct BorderRadiusShorthand));
@@ -239,6 +566,32 @@ int f_BorderRadiusShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in BorderRadiusShorthand: %s", luaL_checkstring(L, 2));
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoBorderRadiusShorthand(lpcString_t str, lpBorderRadiusShorthand_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	str = __strtofloat(str, &output->TopLeftRadius);
+	str = __strtofloat(str, &output->TopRightRadius);
+	str = __strtofloat(str, &output->BottomRightRadius);
+	str = __strtofloat(str, &output->BottomLeftRadius);
+	return str;
+}
+static int xml_BorderRadiusShorthand(xmlNodePtr xml, lpBorderRadiusShorthand_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("TopLeftRadius")), xmlFree) {
+		__strtofloat((lpcString_t)attr, &output->TopLeftRadius);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("TopRightRadius")), xmlFree) {
+		__strtofloat((lpcString_t)attr, &output->TopRightRadius);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("BottomRightRadius")), xmlFree) {
+		__strtofloat((lpcString_t)attr, &output->BottomRightRadius);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("BottomLeftRadius")), xmlFree) {
+		__strtofloat((lpcString_t)attr, &output->BottomLeftRadius);
+	}
+	return TRUE;
+}
+
 int luaopen_orca_BorderRadiusShorthand(lua_State *L) {
 	luaL_newmetatable(L, "BorderRadiusShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -247,12 +600,12 @@ int luaopen_orca_BorderRadiusShorthand(lua_State *L) {
 		{ "__index", f_BorderRadiusShorthand___index },
 		{ NULL, NULL },
 	}), 0);
-
 	lua_newtable(L);
 	lua_pushcfunction(L, f_BorderRadiusShorthand___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-
+	lua_pushlightuserdata(L, xml_BorderRadiusShorthand);
+	lua_setfield(L, LUA_REGISTRYINDEX, "BorderRadiusShorthandParser");
 	return 1;
 }
 void luaX_pushBorderEdgeShorthand(lua_State *L, lpcBorderEdgeShorthand_t data) {
@@ -312,6 +665,32 @@ int f_BorderEdgeShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in BorderEdgeShorthand: %s", luaL_checkstring(L, 2));
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoBorderEdgeShorthand(lpcString_t str, lpBorderEdgeShorthand_t output) {
+	lpcString_t __strtoBorderStyle(lpcString_t, enum BorderStyle*);
+	lpcString_t __strtocolor(lpcString_t, struct color*);
+	lpcString_t __strtofloat(lpcString_t, float*);
+	str = __strtofloat(str, &output->Width);
+	str = __strtoBorderStyle(str, &output->Style);
+	str = __strtocolor(str, &output->Color);
+	return str;
+}
+static int xml_BorderEdgeShorthand(xmlNodePtr xml, lpBorderEdgeShorthand_t output) {
+	lpcString_t __strtoBorderStyle(lpcString_t, enum BorderStyle*);
+	lpcString_t __strtocolor(lpcString_t, struct color*);
+	lpcString_t __strtofloat(lpcString_t, float*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Width")), xmlFree) {
+		__strtofloat((lpcString_t)attr, &output->Width);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Style")), xmlFree) {
+		__strtoBorderStyle((lpcString_t)attr, &output->Style);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Color")), xmlFree) {
+		__strtocolor((lpcString_t)attr, &output->Color);
+	}
+	return TRUE;
+}
+
 int luaopen_orca_BorderEdgeShorthand(lua_State *L) {
 	luaL_newmetatable(L, "BorderEdgeShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -320,12 +699,12 @@ int luaopen_orca_BorderEdgeShorthand(lua_State *L) {
 		{ "__index", f_BorderEdgeShorthand___index },
 		{ NULL, NULL },
 	}), 0);
-
 	lua_newtable(L);
 	lua_pushcfunction(L, f_BorderEdgeShorthand___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-
+	lua_pushlightuserdata(L, xml_BorderEdgeShorthand);
+	lua_setfield(L, LUA_REGISTRYINDEX, "BorderEdgeShorthandParser");
 	return 1;
 }
 void luaX_pushBorderSideShorthand(lua_State *L, lpcBorderSideShorthand_t data) {
@@ -368,6 +747,24 @@ int f_BorderSideShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in BorderSideShorthand: %s", luaL_checkstring(L, 2));
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoBorderSideShorthand(lpcString_t str, lpBorderSideShorthand_t output) {
+	lpcString_t __strtoBorderEdgeShorthand(lpcString_t, struct BorderEdgeShorthand*);
+	str = __strtoBorderEdgeShorthand(str, &output->Left);
+	str = __strtoBorderEdgeShorthand(str, &output->Right);
+	return str;
+}
+static int xml_BorderSideShorthand(xmlNodePtr xml, lpBorderSideShorthand_t output) {
+	lpcString_t __strtoBorderEdgeShorthand(lpcString_t, struct BorderEdgeShorthand*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Left")), xmlFree) {
+		__strtoBorderEdgeShorthand((lpcString_t)attr, &output->Left);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Right")), xmlFree) {
+		__strtoBorderEdgeShorthand((lpcString_t)attr, &output->Right);
+	}
+	return TRUE;
+}
+
 int luaopen_orca_BorderSideShorthand(lua_State *L) {
 	luaL_newmetatable(L, "BorderSideShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -376,12 +773,12 @@ int luaopen_orca_BorderSideShorthand(lua_State *L) {
 		{ "__index", f_BorderSideShorthand___index },
 		{ NULL, NULL },
 	}), 0);
-
 	lua_newtable(L);
 	lua_pushcfunction(L, f_BorderSideShorthand___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-
+	lua_pushlightuserdata(L, xml_BorderSideShorthand);
+	lua_setfield(L, LUA_REGISTRYINDEX, "BorderSideShorthandParser");
 	return 1;
 }
 void luaX_pushBorderShorthand(lua_State *L, lpcBorderShorthand_t data) {
@@ -418,6 +815,20 @@ int f_BorderShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in BorderShorthand: %s", luaL_checkstring(L, 2));
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoBorderShorthand(lpcString_t str, lpBorderShorthand_t output) {
+	lpcString_t __strtoBorderRadiusShorthand(lpcString_t, struct BorderRadiusShorthand*);
+	str = __strtoBorderRadiusShorthand(str, &output->Radius);
+	return str;
+}
+static int xml_BorderShorthand(xmlNodePtr xml, lpBorderShorthand_t output) {
+	lpcString_t __strtoBorderRadiusShorthand(lpcString_t, struct BorderRadiusShorthand*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Radius")), xmlFree) {
+		__strtoBorderRadiusShorthand((lpcString_t)attr, &output->Radius);
+	}
+	return TRUE;
+}
+
 int luaopen_orca_BorderShorthand(lua_State *L) {
 	luaL_newmetatable(L, "BorderShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -426,12 +837,12 @@ int luaopen_orca_BorderShorthand(lua_State *L) {
 		{ "__index", f_BorderShorthand___index },
 		{ NULL, NULL },
 	}), 0);
-
 	lua_newtable(L);
 	lua_pushcfunction(L, f_BorderShorthand___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-
+	lua_pushlightuserdata(L, xml_BorderShorthand);
+	lua_setfield(L, LUA_REGISTRYINDEX, "BorderShorthandParser");
 	return 1;
 }
 void luaX_pushEdgeShorthand(lua_State *L, lpcEdgeShorthand_t data) {
@@ -485,6 +896,24 @@ int f_EdgeShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in EdgeShorthand: %s", luaL_checkstring(L, 2));
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoEdgeShorthand(lpcString_t str, lpEdgeShorthand_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	str = __strtofloat(str, &output->Left);
+	str = __strtofloat(str, &output->Right);
+	return str;
+}
+static int xml_EdgeShorthand(xmlNodePtr xml, lpEdgeShorthand_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Left")), xmlFree) {
+		__strtofloat((lpcString_t)attr, &output->Left);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Right")), xmlFree) {
+		__strtofloat((lpcString_t)attr, &output->Right);
+	}
+	return TRUE;
+}
+
 int luaopen_orca_EdgeShorthand(lua_State *L) {
 	luaL_newmetatable(L, "EdgeShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -493,12 +922,12 @@ int luaopen_orca_EdgeShorthand(lua_State *L) {
 		{ "__index", f_EdgeShorthand___index },
 		{ NULL, NULL },
 	}), 0);
-
 	lua_newtable(L);
 	lua_pushcfunction(L, f_EdgeShorthand___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-
+	lua_pushlightuserdata(L, xml_EdgeShorthand);
+	lua_setfield(L, LUA_REGISTRYINDEX, "EdgeShorthandParser");
 	return 1;
 }
 void luaX_pushAlignmentShorthand(lua_State *L, lpcAlignmentShorthand_t data) {
@@ -529,6 +958,14 @@ int f_AlignmentShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in AlignmentShorthand: %s", luaL_checkstring(L, 2));
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoAlignmentShorthand(lpcString_t str, lpAlignmentShorthand_t output) {
+	return str;
+}
+static int xml_AlignmentShorthand(xmlNodePtr xml, lpAlignmentShorthand_t output) {
+	return TRUE;
+}
+
 int luaopen_orca_AlignmentShorthand(lua_State *L) {
 	luaL_newmetatable(L, "AlignmentShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -537,12 +974,12 @@ int luaopen_orca_AlignmentShorthand(lua_State *L) {
 		{ "__index", f_AlignmentShorthand___index },
 		{ NULL, NULL },
 	}), 0);
-
 	lua_newtable(L);
 	lua_pushcfunction(L, f_AlignmentShorthand___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-
+	lua_pushlightuserdata(L, xml_AlignmentShorthand);
+	lua_setfield(L, LUA_REGISTRYINDEX, "AlignmentShorthandParser");
 	return 1;
 }
 void luaX_pushFontShorthand(lua_State *L, lpcFontShorthand_t data) {
@@ -612,6 +1049,32 @@ int f_FontShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in FontShorthand: %s", luaL_checkstring(L, 2));
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoFontShorthand(lpcString_t str, lpFontShorthand_t output) {
+	lpcString_t __strtoFontStyle(lpcString_t, enum FontStyle*);
+	lpcString_t __strtoFontWeight(lpcString_t, enum FontWeight*);
+	lpcString_t __strtofloat(lpcString_t, float*);
+	str = __strtoFontWeight(str, &output->Weight);
+	str = __strtoFontStyle(str, &output->Style);
+	str = __strtofloat(str, &output->Size);
+	return str;
+}
+static int xml_FontShorthand(xmlNodePtr xml, lpFontShorthand_t output) {
+	lpcString_t __strtoFontStyle(lpcString_t, enum FontStyle*);
+	lpcString_t __strtoFontWeight(lpcString_t, enum FontWeight*);
+	lpcString_t __strtofloat(lpcString_t, float*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Weight")), xmlFree) {
+		__strtoFontWeight((lpcString_t)attr, &output->Weight);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Style")), xmlFree) {
+		__strtoFontStyle((lpcString_t)attr, &output->Style);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Size")), xmlFree) {
+		__strtofloat((lpcString_t)attr, &output->Size);
+	}
+	return TRUE;
+}
+
 int luaopen_orca_FontShorthand(lua_State *L) {
 	luaL_newmetatable(L, "FontShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -620,12 +1083,12 @@ int luaopen_orca_FontShorthand(lua_State *L) {
 		{ "__index", f_FontShorthand___index },
 		{ NULL, NULL },
 	}), 0);
-
 	lua_newtable(L);
 	lua_pushcfunction(L, f_FontShorthand___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-
+	lua_pushlightuserdata(L, xml_FontShorthand);
+	lua_setfield(L, LUA_REGISTRYINDEX, "FontShorthandParser");
 	return 1;
 }
 void luaX_pushBrushShorthand(lua_State *L, lpcBrushShorthand_t data) {
@@ -674,6 +1137,20 @@ int f_BrushShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in BrushShorthand: %s", luaL_checkstring(L, 2));
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoBrushShorthand(lpcString_t str, lpBrushShorthand_t output) {
+	lpcString_t __strtocolor(lpcString_t, struct color*);
+	str = __strtocolor(str, &output->Color);
+	return str;
+}
+static int xml_BrushShorthand(xmlNodePtr xml, lpBrushShorthand_t output) {
+	lpcString_t __strtocolor(lpcString_t, struct color*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Color")), xmlFree) {
+		__strtocolor((lpcString_t)attr, &output->Color);
+	}
+	return TRUE;
+}
+
 int luaopen_orca_BrushShorthand(lua_State *L) {
 	luaL_newmetatable(L, "BrushShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -682,12 +1159,12 @@ int luaopen_orca_BrushShorthand(lua_State *L) {
 		{ "__index", f_BrushShorthand___index },
 		{ NULL, NULL },
 	}), 0);
-
 	lua_newtable(L);
 	lua_pushcfunction(L, f_BrushShorthand___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-
+	lua_pushlightuserdata(L, xml_BrushShorthand);
+	lua_setfield(L, LUA_REGISTRYINDEX, "BrushShorthandParser");
 	return 1;
 }
 void luaX_pushShadowShorthand(lua_State *L, lpcShadowShorthand_t data) {
@@ -753,6 +1230,36 @@ int f_ShadowShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in ShadowShorthand: %s", luaL_checkstring(L, 2));
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoShadowShorthand(lpcString_t str, lpShadowShorthand_t output) {
+	lpcString_t __strtocolor(lpcString_t, struct color*);
+	lpcString_t __strtofloat(lpcString_t, float*);
+	lpcString_t __strtovec2(lpcString_t, struct vec2*);
+	str = __strtovec2(str, &output->Offset);
+	str = __strtofloat(str, &output->BlurRadius);
+	str = __strtofloat(str, &output->SpreadRadius);
+	str = __strtocolor(str, &output->Color);
+	return str;
+}
+static int xml_ShadowShorthand(xmlNodePtr xml, lpShadowShorthand_t output) {
+	lpcString_t __strtocolor(lpcString_t, struct color*);
+	lpcString_t __strtofloat(lpcString_t, float*);
+	lpcString_t __strtovec2(lpcString_t, struct vec2*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Offset")), xmlFree) {
+		__strtovec2((lpcString_t)attr, &output->Offset);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("BlurRadius")), xmlFree) {
+		__strtofloat((lpcString_t)attr, &output->BlurRadius);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("SpreadRadius")), xmlFree) {
+		__strtofloat((lpcString_t)attr, &output->SpreadRadius);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Color")), xmlFree) {
+		__strtocolor((lpcString_t)attr, &output->Color);
+	}
+	return TRUE;
+}
+
 int luaopen_orca_ShadowShorthand(lua_State *L) {
 	luaL_newmetatable(L, "ShadowShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -761,12 +1268,12 @@ int luaopen_orca_ShadowShorthand(lua_State *L) {
 		{ "__index", f_ShadowShorthand___index },
 		{ NULL, NULL },
 	}), 0);
-
 	lua_newtable(L);
 	lua_pushcfunction(L, f_ShadowShorthand___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-
+	lua_pushlightuserdata(L, xml_ShadowShorthand);
+	lua_setfield(L, LUA_REGISTRYINDEX, "ShadowShorthandParser");
 	return 1;
 }
 void luaX_pushRingShorthand(lua_State *L, lpcRingShorthand_t data) {
@@ -826,6 +1333,30 @@ int f_RingShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in RingShorthand: %s", luaL_checkstring(L, 2));
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoRingShorthand(lpcString_t str, lpRingShorthand_t output) {
+	lpcString_t __strtocolor(lpcString_t, struct color*);
+	lpcString_t __strtofloat(lpcString_t, float*);
+	str = __strtofloat(str, &output->Offset);
+	str = __strtofloat(str, &output->Width);
+	str = __strtocolor(str, &output->Color);
+	return str;
+}
+static int xml_RingShorthand(xmlNodePtr xml, lpRingShorthand_t output) {
+	lpcString_t __strtocolor(lpcString_t, struct color*);
+	lpcString_t __strtofloat(lpcString_t, float*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Offset")), xmlFree) {
+		__strtofloat((lpcString_t)attr, &output->Offset);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Width")), xmlFree) {
+		__strtofloat((lpcString_t)attr, &output->Width);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Color")), xmlFree) {
+		__strtocolor((lpcString_t)attr, &output->Color);
+	}
+	return TRUE;
+}
+
 int luaopen_orca_RingShorthand(lua_State *L) {
 	luaL_newmetatable(L, "RingShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -834,12 +1365,12 @@ int luaopen_orca_RingShorthand(lua_State *L) {
 		{ "__index", f_RingShorthand___index },
 		{ NULL, NULL },
 	}), 0);
-
 	lua_newtable(L);
 	lua_pushcfunction(L, f_RingShorthand___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-
+	lua_pushlightuserdata(L, xml_RingShorthand);
+	lua_setfield(L, LUA_REGISTRYINDEX, "RingShorthandParser");
 	return 1;
 }
 void luaX_pushOverflowShorthand(lua_State *L, lpcOverflowShorthand_t data) {
@@ -893,6 +1424,24 @@ int f_OverflowShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in OverflowShorthand: %s", luaL_checkstring(L, 2));
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoOverflowShorthand(lpcString_t str, lpOverflowShorthand_t output) {
+	lpcString_t __strtoOverflow(lpcString_t, enum Overflow*);
+	str = __strtoOverflow(str, &output->x);
+	str = __strtoOverflow(str, &output->y);
+	return str;
+}
+static int xml_OverflowShorthand(xmlNodePtr xml, lpOverflowShorthand_t output) {
+	lpcString_t __strtoOverflow(lpcString_t, enum Overflow*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("x")), xmlFree) {
+		__strtoOverflow((lpcString_t)attr, &output->x);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("y")), xmlFree) {
+		__strtoOverflow((lpcString_t)attr, &output->y);
+	}
+	return TRUE;
+}
+
 int luaopen_orca_OverflowShorthand(lua_State *L) {
 	luaL_newmetatable(L, "OverflowShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -901,12 +1450,12 @@ int luaopen_orca_OverflowShorthand(lua_State *L) {
 		{ "__index", f_OverflowShorthand___index },
 		{ NULL, NULL },
 	}), 0);
-
 	lua_newtable(L);
 	lua_pushcfunction(L, f_OverflowShorthand___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-
+	lua_pushlightuserdata(L, xml_OverflowShorthand);
+	lua_setfield(L, LUA_REGISTRYINDEX, "OverflowShorthandParser");
 	return 1;
 }
 void luaX_pushUnderlineShorthand(lua_State *L, lpcUnderlineShorthand_t data) {
@@ -966,6 +1515,30 @@ int f_UnderlineShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in UnderlineShorthand: %s", luaL_checkstring(L, 2));
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoUnderlineShorthand(lpcString_t str, lpUnderlineShorthand_t output) {
+	lpcString_t __strtocolor(lpcString_t, struct color*);
+	lpcString_t __strtofloat(lpcString_t, float*);
+	str = __strtofloat(str, &output->Offset);
+	str = __strtofloat(str, &output->Width);
+	str = __strtocolor(str, &output->Color);
+	return str;
+}
+static int xml_UnderlineShorthand(xmlNodePtr xml, lpUnderlineShorthand_t output) {
+	lpcString_t __strtocolor(lpcString_t, struct color*);
+	lpcString_t __strtofloat(lpcString_t, float*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Offset")), xmlFree) {
+		__strtofloat((lpcString_t)attr, &output->Offset);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Width")), xmlFree) {
+		__strtofloat((lpcString_t)attr, &output->Width);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Color")), xmlFree) {
+		__strtocolor((lpcString_t)attr, &output->Color);
+	}
+	return TRUE;
+}
+
 int luaopen_orca_UnderlineShorthand(lua_State *L) {
 	luaL_newmetatable(L, "UnderlineShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -974,12 +1547,12 @@ int luaopen_orca_UnderlineShorthand(lua_State *L) {
 		{ "__index", f_UnderlineShorthand___index },
 		{ NULL, NULL },
 	}), 0);
-
 	lua_newtable(L);
 	lua_pushcfunction(L, f_UnderlineShorthand___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-
+	lua_pushlightuserdata(L, xml_UnderlineShorthand);
+	lua_setfield(L, LUA_REGISTRYINDEX, "UnderlineShorthandParser");
 	return 1;
 }
 void luaX_pushThickness(lua_State *L, lpcThickness_t data) {
@@ -1053,6 +1626,32 @@ int f_Thickness___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in Thickness: %s", luaL_checkstring(L, 2));
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoThickness(lpcString_t str, lpThickness_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	str = __strtofloat(str, &output->Top);
+	str = __strtofloat(str, &output->Right);
+	str = __strtofloat(str, &output->Bottom);
+	str = __strtofloat(str, &output->Left);
+	return str;
+}
+static int xml_Thickness(xmlNodePtr xml, lpThickness_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Top")), xmlFree) {
+		__strtofloat((lpcString_t)attr, &output->Top);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Right")), xmlFree) {
+		__strtofloat((lpcString_t)attr, &output->Right);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Bottom")), xmlFree) {
+		__strtofloat((lpcString_t)attr, &output->Bottom);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Left")), xmlFree) {
+		__strtofloat((lpcString_t)attr, &output->Left);
+	}
+	return TRUE;
+}
+
 int luaopen_orca_Thickness(lua_State *L) {
 	luaL_newmetatable(L, "Thickness");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -1061,12 +1660,12 @@ int luaopen_orca_Thickness(lua_State *L) {
 		{ "__index", f_Thickness___index },
 		{ NULL, NULL },
 	}), 0);
-
 	lua_newtable(L);
 	lua_pushcfunction(L, f_Thickness___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-
+	lua_pushlightuserdata(L, xml_Thickness);
+	lua_setfield(L, LUA_REGISTRYINDEX, "ThicknessParser");
 	return 1;
 }
 void luaX_pushMarginShorthand(lua_State *L, lpcMarginShorthand_t data) {
@@ -1097,6 +1696,14 @@ int f_MarginShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in MarginShorthand: %s", luaL_checkstring(L, 2));
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoMarginShorthand(lpcString_t str, lpMarginShorthand_t output) {
+	return str;
+}
+static int xml_MarginShorthand(xmlNodePtr xml, lpMarginShorthand_t output) {
+	return TRUE;
+}
+
 int luaopen_orca_MarginShorthand(lua_State *L) {
 	luaL_newmetatable(L, "MarginShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -1105,12 +1712,12 @@ int luaopen_orca_MarginShorthand(lua_State *L) {
 		{ "__index", f_MarginShorthand___index },
 		{ NULL, NULL },
 	}), 0);
-
 	lua_newtable(L);
 	lua_pushcfunction(L, f_MarginShorthand___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-
+	lua_pushlightuserdata(L, xml_MarginShorthand);
+	lua_setfield(L, LUA_REGISTRYINDEX, "MarginShorthandParser");
 	return 1;
 }
 void luaX_pushSizeAxisShorthand(lua_State *L, lpcSizeAxisShorthand_t data) {
@@ -1194,6 +1801,36 @@ int f_SizeAxisShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in SizeAxisShorthand: %s", luaL_checkstring(L, 2));
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoSizeAxisShorthand(lpcString_t str, lpSizeAxisShorthand_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	str = __strtofloat(str, &output->Requested);
+	str = __strtofloat(str, &output->Desired);
+	str = __strtofloat(str, &output->Min);
+	str = __strtofloat(str, &output->Actual);
+	str = __strtofloat(str, &output->Scroll);
+	return str;
+}
+static int xml_SizeAxisShorthand(xmlNodePtr xml, lpSizeAxisShorthand_t output) {
+	lpcString_t __strtofloat(lpcString_t, float*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Requested")), xmlFree) {
+		__strtofloat((lpcString_t)attr, &output->Requested);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Desired")), xmlFree) {
+		__strtofloat((lpcString_t)attr, &output->Desired);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Min")), xmlFree) {
+		__strtofloat((lpcString_t)attr, &output->Min);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Actual")), xmlFree) {
+		__strtofloat((lpcString_t)attr, &output->Actual);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Scroll")), xmlFree) {
+		__strtofloat((lpcString_t)attr, &output->Scroll);
+	}
+	return TRUE;
+}
+
 int luaopen_orca_SizeAxisShorthand(lua_State *L) {
 	luaL_newmetatable(L, "SizeAxisShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -1202,12 +1839,12 @@ int luaopen_orca_SizeAxisShorthand(lua_State *L) {
 		{ "__index", f_SizeAxisShorthand___index },
 		{ NULL, NULL },
 	}), 0);
-
 	lua_newtable(L);
 	lua_pushcfunction(L, f_SizeAxisShorthand___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-
+	lua_pushlightuserdata(L, xml_SizeAxisShorthand);
+	lua_setfield(L, LUA_REGISTRYINDEX, "SizeAxisShorthandParser");
 	return 1;
 }
 void luaX_pushSizeShorthand(lua_State *L, lpcSizeShorthand_t data) {
@@ -1238,6 +1875,14 @@ int f_SizeShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in SizeShorthand: %s", luaL_checkstring(L, 2));
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoSizeShorthand(lpcString_t str, lpSizeShorthand_t output) {
+	return str;
+}
+static int xml_SizeShorthand(xmlNodePtr xml, lpSizeShorthand_t output) {
+	return TRUE;
+}
+
 int luaopen_orca_SizeShorthand(lua_State *L) {
 	luaL_newmetatable(L, "SizeShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -1246,12 +1891,12 @@ int luaopen_orca_SizeShorthand(lua_State *L) {
 		{ "__index", f_SizeShorthand___index },
 		{ NULL, NULL },
 	}), 0);
-
 	lua_newtable(L);
 	lua_pushcfunction(L, f_SizeShorthand___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-
+	lua_pushlightuserdata(L, xml_SizeShorthand);
+	lua_setfield(L, LUA_REGISTRYINDEX, "SizeShorthandParser");
 	return 1;
 }
 static struct PropertyDesc const DataObjectProperties[kDataObjectNumProperties] = {
@@ -1556,7 +2201,7 @@ ORCA_API struct ClassDesc _Brush = {
 };
 static struct PropertyDesc const ColorBrushProperties[kColorBrushNumProperties] = {
 	/* ColorBrush.Color */ DECL(0xe5b43cf8, 0xb7f26275,
-	ColorBrush, "Color", Color, kDataTypeColor),
+	ColorBrush, "Color", Color, kDataTypeStruct, .TypeString="Color"),
 };
 static struct ColorBrush ColorBrushDefaults = {0};
 LRESULT ColorBrushProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1693,7 +2338,7 @@ static struct PropertyDesc const NodeProperties[kNodeNumProperties] = {
 	/* Node.BorderLeftStyle */ DECL(0x320cf553, 0x418d537f,
 	Node, "BorderLeftStyle", Border.Axis[0].Left.Style, kDataTypeEnum, .TypeString="None,Hidden,Dotted,Dashed,Solid,Double,Groove,Ridge,Inset,Outset"),
 	/* Node.BorderLeftColor */ DECL(0xac4e1f41, 0x9af0561d,
-	Node, "BorderLeftColor", Border.Axis[0].Left.Color, kDataTypeColor),
+	Node, "BorderLeftColor", Border.Axis[0].Left.Color, kDataTypeStruct, .TypeString="Color"),
 	/* Node.BorderRight */ DECL(0xa3488853, 0xf30cc2f7,
 	Node, "BorderRight", Border.Axis[0].Right, kDataTypeGroup, .TypeString="BorderEdgeShorthand", .NumComponents=3),
 	/* Node.BorderRightWidth */ DECL(0xcaf45705, 0x9bfa14d9,
@@ -1701,7 +2346,7 @@ static struct PropertyDesc const NodeProperties[kNodeNumProperties] = {
 	/* Node.BorderRightStyle */ DECL(0x13c11564, 0xf41a8468,
 	Node, "BorderRightStyle", Border.Axis[0].Right.Style, kDataTypeEnum, .TypeString="None,Hidden,Dotted,Dashed,Solid,Double,Groove,Ridge,Inset,Outset"),
 	/* Node.BorderRightColor */ DECL(0xe4a3cf52, 0x50c65ea6,
-	Node, "BorderRightColor", Border.Axis[0].Right.Color, kDataTypeColor),
+	Node, "BorderRightColor", Border.Axis[0].Right.Color, kDataTypeStruct, .TypeString="Color"),
 	/* Node.VerticalBorder */ DECL(0xacc1b15d, 0xd17e2079,
 	Node, "VerticalBorder", Border.Axis[1], kDataTypeGroup, .TypeString="BorderSideShorthand", .NumComponents=8),
 	/* Node.BorderTop */ DECL(0x7067fed6, 0xe260ceca,
@@ -1711,7 +2356,7 @@ static struct PropertyDesc const NodeProperties[kNodeNumProperties] = {
 	/* Node.BorderTopStyle */ DECL(0xbff4a0bb, 0x7ec59edf,
 	Node, "BorderTopStyle", Border.Axis[1].Left.Style, kDataTypeEnum, .TypeString="None,Hidden,Dotted,Dashed,Solid,Double,Groove,Ridge,Inset,Outset"),
 	/* Node.BorderTopColor */ DECL(0x920d2ad9, 0xbedd7f7d,
-	Node, "BorderTopColor", Border.Axis[1].Left.Color, kDataTypeColor),
+	Node, "BorderTopColor", Border.Axis[1].Left.Color, kDataTypeStruct, .TypeString="Color"),
 	/* Node.BorderBottom */ DECL(0x4c410e68, 0x822aba1c,
 	Node, "BorderBottom", Border.Axis[1].Right, kDataTypeGroup, .TypeString="BorderEdgeShorthand", .NumComponents=3),
 	/* Node.BorderBottomWidth */ DECL(0x94ae3ba4, 0x5f38b988,
@@ -1719,7 +2364,7 @@ static struct PropertyDesc const NodeProperties[kNodeNumProperties] = {
 	/* Node.BorderBottomStyle */ DECL(0xb97a7e9d, 0x1db18d51,
 	Node, "BorderBottomStyle", Border.Axis[1].Right.Style, kDataTypeEnum, .TypeString="None,Hidden,Dotted,Dashed,Solid,Double,Groove,Ridge,Inset,Outset"),
 	/* Node.BorderBottomColor */ DECL(0x169c6a1f, 0x4c77d2c3,
-	Node, "BorderBottomColor", Border.Axis[1].Right.Color, kDataTypeColor),
+	Node, "BorderBottomColor", Border.Axis[1].Right.Color, kDataTypeStruct, .TypeString="Color"),
 	/* Node.DepthBorder */ DECL(0x98a13250, 0xc5ae22ec,
 	Node, "DepthBorder", Border.Axis[2], kDataTypeGroup, .TypeString="BorderSideShorthand", .NumComponents=8),
 	/* Node.BorderFront */ DECL(0x7c340dbe, 0xd98795c2,
@@ -1729,7 +2374,7 @@ static struct PropertyDesc const NodeProperties[kNodeNumProperties] = {
 	/* Node.BorderFrontStyle */ DECL(0xdf125d93, 0x20a52967,
 	Node, "BorderFrontStyle", Border.Axis[2].Left.Style, kDataTypeEnum, .TypeString="None,Hidden,Dotted,Dashed,Solid,Double,Groove,Ridge,Inset,Outset"),
 	/* Node.BorderFrontColor */ DECL(0x2d147681, 0x21677875,
-	Node, "BorderFrontColor", Border.Axis[2].Left.Color, kDataTypeColor),
+	Node, "BorderFrontColor", Border.Axis[2].Left.Color, kDataTypeStruct, .TypeString="Color"),
 	/* Node.BorderBack */ DECL(0xb45f3e80, 0x51f9245c,
 	Node, "BorderBack", Border.Axis[2].Right, kDataTypeGroup, .TypeString="BorderEdgeShorthand", .NumComponents=3),
 	/* Node.BorderBackWidth */ DECL(0xe2551c8c, 0x437e0ec8,
@@ -1737,7 +2382,7 @@ static struct PropertyDesc const NodeProperties[kNodeNumProperties] = {
 	/* Node.BorderBackStyle */ DECL(0xa316e305, 0x47843b91,
 	Node, "BorderBackStyle", Border.Axis[2].Right.Style, kDataTypeEnum, .TypeString="None,Hidden,Dotted,Dashed,Solid,Double,Groove,Ridge,Inset,Outset"),
 	/* Node.BorderBackColor */ DECL(0x7058b5b7, 0x2e445203,
-	Node, "BorderBackColor", Border.Axis[2].Right.Color, kDataTypeColor),
+	Node, "BorderBackColor", Border.Axis[2].Right.Color, kDataTypeStruct, .TypeString="Color"),
 	/* Node.Alignment */ DECL(0xd66abafe, 0x6ae48d82,
 	Node, "Alignment", Alignment, kDataTypeGroup, .TypeString="AlignmentShorthand", .NumComponents=3),
 	/* Node.HorizontalAlignment */ DECL(0x1b8d5152, 0xe230b1ee,
@@ -1814,7 +2459,7 @@ static struct PropertyDesc const TextRunProperties[kTextRunNumProperties] = {
 	/* TextRun.UnderlineWidth */ DECL(0xee253b91, 0xc80a55b7,
 	TextRun, "UnderlineWidth", Underline.Width, kDataTypeFloat),
 	/* TextRun.UnderlineColor */ DECL(0x00c40cce, 0xcacb7660,
-	TextRun, "UnderlineColor", Underline.Color, kDataTypeColor),
+	TextRun, "UnderlineColor", Underline.Color, kDataTypeStruct, .TypeString="Color"),
 	/* TextRun.LetterSpacing */ DECL(0x44b2c826, 0x83b2ad0c,
 	TextRun, "LetterSpacing", LetterSpacing, kDataTypeFloat),
 	/* TextRun.LineHeight */ DECL(0xb5107238, 0x45c78196,
@@ -1869,7 +2514,7 @@ static struct PropertyDesc const TextBlockConceptProperties[kTextBlockConceptNum
 	/* TextBlockConcept.Placeholder */ DECL(0x8987413a, 0x78889986,
 	TextBlockConcept, "Placeholder", Placeholder, kDataTypeGroup, .TypeString="BrushShorthand", .NumComponents=3),
 	/* TextBlockConcept.PlaceholderColor */ DECL(0xb272976d, 0x8f53db89,
-	TextBlockConcept, "PlaceholderColor", Placeholder.Color, kDataTypeColor),
+	TextBlockConcept, "PlaceholderColor", Placeholder.Color, kDataTypeStruct, .TypeString="Color"),
 	/* TextBlockConcept.PlaceholderImage */ DECL(0x6b519bcf, 0x2275c70b,
 	TextBlockConcept, "PlaceholderImage", Placeholder.Image, kDataTypeObject, .TypeString="Texture"),
 	/* TextBlockConcept.PlaceholderMaterial */ DECL(0x6d974ebf, 0x16a577db,
@@ -1937,33 +2582,33 @@ LRESULT Node2D_MeasureOverride(lpObject_t, lpNode2D_t, wParam_t, MeasureOverride
 LRESULT Node2D_ArrangeOverride(lpObject_t, lpNode2D_t, wParam_t, ArrangeOverrideEventPtr);
 static struct PropertyDesc const Node2DProperties[kNode2DNumProperties] = {
 	/* Node2D.LayoutTransform */ DECL(0x3f19bf01, 0x7c78c87b,
-	Node2D, "LayoutTransform", LayoutTransform, kDataTypeTransform2D),
+	Node2D, "LayoutTransform", LayoutTransform, kDataTypeStruct, .TypeString="Transform2D"),
 	/* Node2D.LayoutTransformTranslation */ DECL(0xfc7e27e0, 0x2407475a,
-	Node2D, "LayoutTransformTranslation", LayoutTransform.translation, kDataTypeVector2D),
+	Node2D, "LayoutTransformTranslation", LayoutTransform.translation, kDataTypeStruct, .TypeString="Vector2D"),
 	/* Node2D.LayoutTransformRotation */ DECL(0x9560ef43, 0x40a04c55,
 	Node2D, "LayoutTransformRotation", LayoutTransform.rotation, kDataTypeFloat),
 	/* Node2D.LayoutTransformScale */ DECL(0x5a2c3595, 0xae9265d3,
-	Node2D, "LayoutTransformScale", LayoutTransform.scale, kDataTypeVector2D),
+	Node2D, "LayoutTransformScale", LayoutTransform.scale, kDataTypeStruct, .TypeString="Vector2D"),
 	/* Node2D.RenderTransform */ DECL(0xe9e55063, 0xa5faec05,
-	Node2D, "RenderTransform", RenderTransform, kDataTypeTransform2D),
+	Node2D, "RenderTransform", RenderTransform, kDataTypeStruct, .TypeString="Transform2D"),
 	/* Node2D.RenderTransformTranslation */ DECL(0xb8e70ec2, 0xa5d5540c,
-	Node2D, "RenderTransformTranslation", RenderTransform.translation, kDataTypeVector2D),
+	Node2D, "RenderTransformTranslation", RenderTransform.translation, kDataTypeStruct, .TypeString="Vector2D"),
 	/* Node2D.RenderTransformRotation */ DECL(0x3c611efd, 0x5387d0bf,
 	Node2D, "RenderTransformRotation", RenderTransform.rotation, kDataTypeFloat),
 	/* Node2D.RenderTransformScale */ DECL(0xd037e21b, 0xa0bbe951,
-	Node2D, "RenderTransformScale", RenderTransform.scale, kDataTypeVector2D),
+	Node2D, "RenderTransformScale", RenderTransform.scale, kDataTypeStruct, .TypeString="Vector2D"),
 	/* Node2D.RenderTransformOrigin */ DECL(0xdc65ec6d, 0x43a9dbaf,
-	Node2D, "RenderTransformOrigin", RenderTransformOrigin, kDataTypeVector2D),
+	Node2D, "RenderTransformOrigin", RenderTransformOrigin, kDataTypeStruct, .TypeString="Vector2D"),
 	/* Node2D.ContentOffset */ DECL(0x35a57c45, 0xb5cb609b,
-	Node2D, "ContentOffset", ContentOffset, kDataTypeVector2D),
+	Node2D, "ContentOffset", ContentOffset, kDataTypeStruct, .TypeString="Vector2D"),
 	/* Node2D.Matrix */ DECL(0xe9d1810c, 0x09a64b02,
-	Node2D, "Matrix", Matrix, kDataTypeMatrix3D),
+	Node2D, "Matrix", Matrix, kDataTypeStruct, .TypeString="Matrix3D"),
 	/* Node2D.RenderTarget */ DECL(0x64abadd0, 0x441af9f6,
 	Node2D, "RenderTarget", RenderTarget, kDataTypeObject, .TypeString="Texture"),
 	/* Node2D.Background */ DECL(0xbafc0abd, 0x59353973,
 	Node2D, "Background", Background, kDataTypeGroup, .TypeString="BrushShorthand", .NumComponents=3),
 	/* Node2D.BackgroundColor */ DECL(0xd1496d30, 0x0796e5b2,
-	Node2D, "BackgroundColor", Background.Color, kDataTypeColor),
+	Node2D, "BackgroundColor", Background.Color, kDataTypeStruct, .TypeString="Color"),
 	/* Node2D.BackgroundImage */ DECL(0xe0bbc082, 0xeb919ee8,
 	Node2D, "BackgroundImage", Background.Image, kDataTypeObject, .TypeString="Texture"),
 	/* Node2D.BackgroundMaterial */ DECL(0x843e6b88, 0x973fabea,
@@ -1971,7 +2616,7 @@ static struct PropertyDesc const Node2DProperties[kNode2DNumProperties] = {
 	/* Node2D.Foreground */ DECL(0xd96b36e0, 0xaeaca316,
 	Node2D, "Foreground", Foreground, kDataTypeGroup, .TypeString="BrushShorthand", .NumComponents=3),
 	/* Node2D.ForegroundColor */ DECL(0x94392057, 0xf890bd19,
-	Node2D, "ForegroundColor", Foreground.Color, kDataTypeColor),
+	Node2D, "ForegroundColor", Foreground.Color, kDataTypeStruct, .TypeString="Color"),
 	/* Node2D.ForegroundImage */ DECL(0xb03161dd, 0xd8914fbb,
 	Node2D, "ForegroundImage", Foreground.Image, kDataTypeObject, .TypeString="Texture"),
 	/* Node2D.ForegroundMaterial */ DECL(0xa654aab9, 0x4f98b2ab,
@@ -1979,13 +2624,13 @@ static struct PropertyDesc const Node2DProperties[kNode2DNumProperties] = {
 	/* Node2D.BoxShadow */ DECL(0xce1f078a, 0x47152f84,
 	Node2D, "BoxShadow", BoxShadow, kDataTypeGroup, .TypeString="ShadowShorthand", .NumComponents=4),
 	/* Node2D.BoxShadowOffset */ DECL(0x047c9a3d, 0xfa0a729f,
-	Node2D, "BoxShadowOffset", BoxShadow.Offset, kDataTypeVector2D),
+	Node2D, "BoxShadowOffset", BoxShadow.Offset, kDataTypeStruct, .TypeString="Vector2D"),
 	/* Node2D.BoxShadowBlurRadius */ DECL(0x623ff5f9, 0x16c10efb,
 	Node2D, "BoxShadowBlurRadius", BoxShadow.BlurRadius, kDataTypeFloat),
 	/* Node2D.BoxShadowSpreadRadius */ DECL(0xe284b26f, 0x8804c4f1,
 	Node2D, "BoxShadowSpreadRadius", BoxShadow.SpreadRadius, kDataTypeFloat),
 	/* Node2D.BoxShadowColor */ DECL(0xe0ae423d, 0xc855fc8b,
-	Node2D, "BoxShadowColor", BoxShadow.Color, kDataTypeColor),
+	Node2D, "BoxShadowColor", BoxShadow.Color, kDataTypeStruct, .TypeString="Color"),
 	/* Node2D.Overflow */ DECL(0x3cf02b8b, 0xd5704155,
 	Node2D, "Overflow", Overflow, kDataTypeGroup, .TypeString="OverflowShorthand", .NumComponents=2),
 	/* Node2D.OverflowX */ DECL(0xc114fd29, 0x0cb66777,
@@ -1999,11 +2644,11 @@ static struct PropertyDesc const Node2DProperties[kNode2DNumProperties] = {
 	/* Node2D.RingWidth */ DECL(0x5fff552d, 0x1a88410b,
 	Node2D, "RingWidth", Ring.Width, kDataTypeFloat),
 	/* Node2D.RingColor */ DECL(0x97d6200a, 0xecbe3144,
-	Node2D, "RingColor", Ring.Color, kDataTypeColor),
+	Node2D, "RingColor", Ring.Color, kDataTypeStruct, .TypeString="Color"),
 	/* Node2D.CompositionBrush */ DECL(0x74622217, 0x04f99755,
 	Node2D, "CompositionBrush", CompositionBrush, kDataTypeObject, .TypeString="Material"),
 	/* Node2D.CompositionDesignSize */ DECL(0x5488c4f2, 0x8a2688dc,
-	Node2D, "CompositionDesignSize", CompositionDesignSize, kDataTypeVector2D),
+	Node2D, "CompositionDesignSize", CompositionDesignSize, kDataTypeStruct, .TypeString="Vector2D"),
 	/* Node2D.SizeToContent */ DECL(0x45513b32, 0xe55ab2cc,
 	Node2D, "SizeToContent", SizeToContent, kDataTypeBool),
 	/* Node2D.OffscreenRendering */ DECL(0x6a1cb2a6, 0x893fea40,
@@ -2419,6 +3064,22 @@ void luaX_pushResizeMode(lua_State *L, eResizeMode_t value) {
 	assert(value >= 0 && value < 4);
 	lua_pushstring(L, _ResizeMode[value]);
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoResizeMode(lpcString_t string, enum ResizeMode* output) {
+	if (string == NULL) return FALSE;
+	const char* _ResizeMode[] = { "NoResize", "CanMinimize", "CanResize", "CanResizeWithGrip", NULL };
+	if (isdigit(*string)) {
+		*output = strtod(string, (char**)&string);
+		return string;
+	} else for (const char **s = _ResizeMode; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum ResizeMode)(s - _ResizeMode);
+			return string + strlen(*s);
+		}
+	}
+	Con_Error("Could not parse '%s' value of property ResizeMode", string);
+	return string + strlen(string);
+}
 LRESULT Screen_RenderScreen(lpObject_t, lpScreen_t, wParam_t, RenderScreenEventPtr);
 LRESULT Screen_MeasureOverride(lpObject_t, lpScreen_t, wParam_t, MeasureOverrideEventPtr);
 LRESULT Screen_Create(lpObject_t, lpScreen_t, wParam_t, CreateEventPtr);
@@ -2426,7 +3087,7 @@ LRESULT Screen_Destroy(lpObject_t, lpScreen_t, wParam_t, DestroyEventPtr);
 LRESULT Screen_WindowResized(lpObject_t, lpScreen_t, wParam_t, WindowResizedEventPtr);
 static struct PropertyDesc const ScreenProperties[kScreenNumProperties] = {
 	/* Screen.ClearColor */ DECL(0xeb16b675, 0x1bfc36dd,
-	Screen, "ClearColor", ClearColor, kDataTypeColor),
+	Screen, "ClearColor", ClearColor, kDataTypeStruct, .TypeString="Color"),
 	/* Screen.ResizeMode */ DECL(0x3dd888be, 0xc3203446,
 	Screen, "ResizeMode", ResizeMode, kDataTypeEnum, .TypeString="NoResize,CanMinimize,CanResize,CanResizeWithGrip"),
 };
@@ -2559,6 +3220,22 @@ void luaX_pushStretch(lua_State *L, eStretch_t value) {
 	assert(value >= 0 && value < 4);
 	lua_pushstring(L, _Stretch[value]);
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoStretch(lpcString_t string, enum Stretch* output) {
+	if (string == NULL) return FALSE;
+	const char* _Stretch[] = { "Uniform", "None", "Fill", "UniformToFill", NULL };
+	if (isdigit(*string)) {
+		*output = strtod(string, (char**)&string);
+		return string;
+	} else for (const char **s = _Stretch; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum Stretch)(s - _Stretch);
+			return string + strlen(*s);
+		}
+	}
+	Con_Error("Could not parse '%s' value of property Stretch", string);
+	return string + strlen(string);
+}
 LRESULT ImageView_MeasureOverride(lpObject_t, lpImageView_t, wParam_t, MeasureOverrideEventPtr);
 LRESULT ImageView_ArrangeOverride(lpObject_t, lpImageView_t, wParam_t, ArrangeOverrideEventPtr);
 LRESULT ImageView_ForegroundContent(lpObject_t, lpImageView_t, wParam_t, ForegroundContentEventPtr);
@@ -2570,11 +3247,11 @@ static struct PropertyDesc const ImageViewProperties[kImageViewNumProperties] = 
 	/* ImageView.Image */ DECL(0x590ca79a, 0x0b666f9c,
 	ImageView, "Image", Image, kDataTypeObject, .TypeString="Texture"),
 	/* ImageView.Edges */ DECL(0x079106fd, 0xbc1ab5c3,
-	ImageView, "Edges", Edges, kDataTypeVector4D),
+	ImageView, "Edges", Edges, kDataTypeStruct, .TypeString="Vector4D"),
 	/* ImageView.Insets */ DECL(0x062cedef, 0xddc76755,
-	ImageView, "Insets", Insets, kDataTypeVector4D),
+	ImageView, "Insets", Insets, kDataTypeStruct, .TypeString="Vector4D"),
 	/* ImageView.Viewbox */ DECL(0xa8c81591, 0x4fff923f,
-	ImageView, "Viewbox", Viewbox, kDataTypeVector4D),
+	ImageView, "Viewbox", Viewbox, kDataTypeStruct, .TypeString="Vector4D"),
 	/* ImageView.Stretch */ DECL(0x03d3b9ca, 0x13aa1da4,
 	ImageView, "Stretch", Stretch, kDataTypeEnum, .TypeString="Uniform,None,Fill,UniformToFill"),
 };
@@ -2742,6 +3419,22 @@ void luaX_pushTransitionType(lua_State *L, eTransitionType_t value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _TransitionType[value]);
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoTransitionType(lpcString_t string, enum TransitionType* output) {
+	if (string == NULL) return FALSE;
+	const char* _TransitionType[] = { "None", "Slide", "Fade", NULL };
+	if (isdigit(*string)) {
+		*output = strtod(string, (char**)&string);
+		return string;
+	} else for (const char **s = _TransitionType; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum TransitionType)(s - _TransitionType);
+			return string + strlen(*s);
+		}
+	}
+	Con_Error("Could not parse '%s' value of property TransitionType", string);
+	return string + strlen(string);
+}
 void luaX_pushNavigateToPageArguments(lua_State *L, lpcNavigateToPageArguments_t data) {
 	lpNavigateToPageArguments_t self = lua_newuserdata(L, sizeof(struct NavigateToPageArguments));
 	luaL_setmetatable(L, "NavigateToPageArguments");
@@ -2793,6 +3486,26 @@ int f_NavigateToPageArguments___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in NavigateToPageArguments: %s", luaL_checkstring(L, 2));
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoNavigateToPageArguments(lpcString_t str, lpNavigateToPageArguments_t output) {
+	lpcString_t __strtoTransitionType(lpcString_t, enum TransitionType*);
+	lpcString_t __strtofixed(lpcString_t, fixedString_t*);
+	str = __strtofixed(str, &output->URL);
+	str = __strtoTransitionType(str, &output->TransitionType);
+	return str;
+}
+static int xml_NavigateToPageArguments(xmlNodePtr xml, lpNavigateToPageArguments_t output) {
+	lpcString_t __strtoTransitionType(lpcString_t, enum TransitionType*);
+	lpcString_t __strtofixed(lpcString_t, fixedString_t*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("URL")), xmlFree) {
+		__strtofixed((lpcString_t)attr, &output->URL);
+	}
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("TransitionType")), xmlFree) {
+		__strtoTransitionType((lpcString_t)attr, &output->TransitionType);
+	}
+	return TRUE;
+}
+
 int luaopen_orca_NavigateToPageArguments(lua_State *L) {
 	luaL_newmetatable(L, "NavigateToPageArguments");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -2801,12 +3514,12 @@ int luaopen_orca_NavigateToPageArguments(lua_State *L) {
 		{ "__index", f_NavigateToPageArguments___index },
 		{ NULL, NULL },
 	}), 0);
-
 	lua_newtable(L);
 	lua_pushcfunction(L, f_NavigateToPageArguments___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-
+	lua_pushlightuserdata(L, xml_NavigateToPageArguments);
+	lua_setfield(L, LUA_REGISTRYINDEX, "NavigateToPageArgumentsParser");
 	return 1;
 }
 void luaX_pushNavigateBackArguments(lua_State *L, lpcNavigateBackArguments_t data) {
@@ -2850,6 +3563,20 @@ int f_NavigateBackArguments___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in NavigateBackArguments: %s", luaL_checkstring(L, 2));
 }
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoNavigateBackArguments(lpcString_t str, lpNavigateBackArguments_t output) {
+	lpcString_t __strtoTransitionType(lpcString_t, enum TransitionType*);
+	str = __strtoTransitionType(str, &output->TransitionType);
+	return str;
+}
+static int xml_NavigateBackArguments(xmlNodePtr xml, lpNavigateBackArguments_t output) {
+	lpcString_t __strtoTransitionType(lpcString_t, enum TransitionType*);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("TransitionType")), xmlFree) {
+		__strtoTransitionType((lpcString_t)attr, &output->TransitionType);
+	}
+	return TRUE;
+}
+
 int luaopen_orca_NavigateBackArguments(lua_State *L) {
 	luaL_newmetatable(L, "NavigateBackArguments");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -2858,12 +3585,12 @@ int luaopen_orca_NavigateBackArguments(lua_State *L) {
 		{ "__index", f_NavigateBackArguments___index },
 		{ NULL, NULL },
 	}), 0);
-
 	lua_newtable(L);
 	lua_pushcfunction(L, f_NavigateBackArguments___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-
+	lua_pushlightuserdata(L, xml_NavigateBackArguments);
+	lua_setfield(L, LUA_REGISTRYINDEX, "NavigateBackArgumentsParser");
 	return 1;
 }
 LRESULT Page_Create(lpObject_t, lpPage_t, wParam_t, CreateEventPtr);
@@ -2977,6 +3704,22 @@ eStyleType_t luaX_checkStyleType(lua_State *L, int idx) {
 void luaX_pushStyleType(lua_State *L, eStyleType_t value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _StyleType[value]);
+}
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoStyleType(lpcString_t string, enum StyleType* output) {
+	if (string == NULL) return FALSE;
+	const char* _StyleType[] = { "Generic", "Named", NULL };
+	if (isdigit(*string)) {
+		*output = strtod(string, (char**)&string);
+		return string;
+	} else for (const char **s = _StyleType; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum StyleType)(s - _StyleType);
+			return string + strlen(*s);
+		}
+	}
+	Con_Error("Could not parse '%s' value of property StyleType", string);
+	return string + strlen(string);
 }
 static struct PropertyDesc const StyleProperties[kStyleNumProperties] = {
 	/* Style.TargetType */ DECL(0x77ada720, 0x26cf4319,

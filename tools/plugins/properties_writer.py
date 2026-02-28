@@ -28,7 +28,7 @@ class PropertiesWriter(Plugin):
 		cname = component.get('name')
 		self.w(f"#define ID_{cname}_{name} {utils.hash(cname + '.' + name)}")
 
-	def on_component(self, root, component):
+	def on_class(self, root, component):
 		cname = component.get('name')
 		self.w(f"#define ID_{cname} " + utils.hash(cname))
 		self.w(

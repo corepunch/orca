@@ -25,13 +25,7 @@ static eDataType_t
 InitOutput(struct vm_register* output, eDataType_t type, uint32_t size)
 {
   switch (type) {
-    case kDataTypeVector2D:
-    case kDataTypeVector3D:
-    case kDataTypeVector4D:
-    case kDataTypeMatrix2D:
-    case kDataTypeMatrix3D:
-    case kDataTypeTransform2D:
-    case kDataTypeTransform3D:
+    case kDataTypeStruct:
       output->type = kDataTypeFloat;
       break;
     default:
@@ -245,7 +239,7 @@ tok_op(COLOR4) {
       regs[2].type < kDataTypeFixed &&
       regs[3].type < kDataTypeFixed)
   {
-    InitOutput(output, kDataTypeColor, sizeof(struct color));
+    InitOutput(output, kDataTypeFloat, sizeof(struct color));
     output->value[0] = regs[0].value[0];
     output->value[1] = regs[1].value[0];
     output->value[2] = regs[2].value[0];
@@ -433,19 +427,7 @@ PrintToProperty(lpProperty_t prop, struct vm_register* r)
 }
 
 static inline bool_t DATA_IsVector(eDataType_t type) {
-  switch (type) {
-    case kDataTypeFloat:
-    case kDataTypeVector2D:
-    case kDataTypeVector3D:
-    case kDataTypeVector4D:
-    case kDataTypeMatrix2D:
-    case kDataTypeMatrix3D:
-    case kDataTypeTransform2D:
-    case kDataTypeTransform3D:
-      return TRUE;
-    default:
-      return FALSE;
-  }
+  return type == kDataTypeFloat || type == kDataTypeStruct;
 }
 
 bool_t
@@ -510,34 +492,35 @@ PROP_Import(lpProperty_t prop,
           return TRUE;
       }
     }
-  } else if (type == kDataTypeColor) {
-    struct color color = *(struct color const*)PROP_GetValue(prop);
-    switch ((uint32_t)attr) {
-      case ATTR_COLOR_R:
-        assert(r->type < kDataTypeFixed);
-        color.r = r->value[0];
-        PROP_SetValue(prop, &color);
-        return TRUE;
-      case ATTR_COLOR_G:
-        assert(r->type < kDataTypeFixed);
-        color.g = r->value[0];
-        PROP_SetValue(prop, &color);
-        return TRUE;
-      case ATTR_COLOR_B:
-        assert(r->type < kDataTypeFixed);
-        color.b = r->value[0];
-        PROP_SetValue(prop, &color);
-        return TRUE;
-      case ATTR_COLOR_A:
-        assert(r->type < kDataTypeFixed);
-        color.a = r->value[0];
-        PROP_SetValue(prop, &color);
-        return TRUE;
-      default:
-        Con_Error("Unsupported attribute %d for struct color", attr);
-        return show_error();
+  } else if (type == kDataTypeFloat || type == kDataTypeStruct) {
+    if (type == kDataTypeStruct && !strcmp(PROP_GetUserData(prop), "Color")) {
+      struct color color = *(struct color const*)PROP_GetValue(prop);
+      switch ((uint32_t)attr) {
+        case ATTR_COLOR_R:
+          assert(r->type < kDataTypeFixed);
+          color.r = r->value[0];
+          PROP_SetValue(prop, &color);
+          return TRUE;
+        case ATTR_COLOR_G:
+          assert(r->type < kDataTypeFixed);
+          color.g = r->value[0];
+          PROP_SetValue(prop, &color);
+          return TRUE;
+        case ATTR_COLOR_B:
+          assert(r->type < kDataTypeFixed);
+          color.b = r->value[0];
+          PROP_SetValue(prop, &color);
+          return TRUE;
+        case ATTR_COLOR_A:
+          assert(r->type < kDataTypeFixed);
+          color.a = r->value[0];
+          PROP_SetValue(prop, &color);
+          return TRUE;
+        default:
+          Con_Error("Unsupported attribute %d for struct color", attr);
+          return show_error();
+      }
     }
-  } else if (type >= kDataTypeFloat && type <= kDataTypeVector4D) {
     struct vec4 vector = *(struct vec4 const*)PROP_GetValue(prop);
     switch ((uint32_t)attr) {
       case ATTR_VECTOR_X:
@@ -602,9 +585,8 @@ jwPropertyExport(lpProperty_t prop,
         return TRUE;
     }
   }
-  eDataType_t type = PROP_GetType(prop);
-  switch (type) {
-    case kDataTypeColor:
+  if (PROP_GetType(prop) == kDataTypeStruct) {
+    if (!strcmp(PROP_GetUserData(prop), "Color")) {
       switch ((uint32_t)attr) {
         case ATTR_COLOR_R:
         case ATTR_COLOR_G:
@@ -617,10 +599,7 @@ jwPropertyExport(lpProperty_t prop,
           Con_Error("Unsupported attribute %d for struct color", attr);
           return show_error();
       }
-      break;
-    case kDataTypeVector2D:
-    case kDataTypeVector3D:
-    case kDataTypeVector4D:
+    } else if (strstr(PROP_GetUserData(prop), "Vector")) {
       switch ((uint32_t)attr) {
         case ATTR_VECTOR_X:
         case ATTR_VECTOR_Y:
@@ -633,10 +612,12 @@ jwPropertyExport(lpProperty_t prop,
           Con_Error("Unsupported attribute %d for VECTOR", attr);
           return show_error();
       }
-      break;
-    default:
+    } else {
       Con_Error("Unsupported attribute %d for property %s", attr, PROP_GetName(prop));
       return show_error();
+    }
+  } else {
+    return TRUE;
   }
 }
 

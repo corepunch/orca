@@ -353,7 +353,7 @@
   <struct name="mat3" prefix="MAT3_" export="Matrix2D">
     <summary>3x3 transformation matrix</summary>
     <details>Represents 2D transformations and 3D normal transformations. Stored in column-major order as a 9-element float array.</details>
-    <field name="v" type="float" array="9">Matrix elements in column-major order</field>
+    <field name="v" type="float" fixed-array="9">Matrix elements in column-major order</field>
     <method name="Identity" static="true">
       <summary>Creates an identity matrix</summary>
       <returns type="mat3">3x3 identity matrix</returns>
@@ -377,7 +377,7 @@
   <struct name="mat4" prefix="MAT4_" export="Matrix3D" sealed="true">
     <summary>4x4 transformation matrix</summary>
     <details>Represents 3D transformations including translation, rotation, and scaling. Stored in column-major order as a 16-element float array. Used for camera projections and object transformations.</details>
-    <field name="v" type="float" array="16">Matrix elements in column-major order</field>
+    <field name="v" type="float" fixed-array="16">Matrix elements in column-major order</field>
     <method name="Identity" static="true">
       <summary>Creates an identity matrix</summary>
       <returns type="mat4">4x4 identity matrix</returns>

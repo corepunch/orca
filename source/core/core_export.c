@@ -7,6 +7,13 @@
 	.Offset=offsetof(struct CLASS, FIELD), \
 	.DataSize=sizeof(((struct CLASS *)NULL)->FIELD), \
 	.DataType=TYPE, ##__VA_ARGS__ }
+#define ARRAY_DECL(SHORT, LONG, CLASS, NAME, FIELD, TYPE,...) { \
+	.id=&(struct ID){.Name=#CLASS"."NAME,.Identifier=SHORT}, \
+	.FullIdentifier=LONG, \
+	.Offset=offsetof(struct CLASS, FIELD), \
+	.DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), \
+	.DataType=TYPE, \
+	.IsArray=TRUE, ##__VA_ARGS__ }
 
 void luaX_pushlocalization(lua_State *L, lpclocalization_t localization) {
 	lua_pushlightuserdata(L, (lplocalization_t)localization);
@@ -612,7 +619,6 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "__setcontext", f_Object___setcontext },
 		{ NULL, NULL },
 	}), 0);
-
 	return 1;
 }
 static int f_core_getFocus(lua_State *L) {
@@ -625,20 +631,36 @@ static int f_core_getHover(lua_State *L) {
 	luaX_pushObject(L, output);
 	return 1;
 }
-static const char *_DataType[] = {"none","bool","int","enum","float","vector2d","vector3d","vector4d","rectangle","matrix2d","matrix3d","transform2d","transform3d","fixed","longstring","color","edges","objecttags","event","object","group",NULL};
+static const char *_DataType[] = {"none","bool","int","enum","float","fixed","longstring","edges","objecttags","event","struct","object","group",NULL};
 eDataType_t luaX_checkDataType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _DataType);
 }
 void luaX_pushDataType(lua_State *L, eDataType_t value) {
-	assert(value >= 0 && value < 21);
+	assert(value >= 0 && value < 13);
 	lua_pushstring(L, _DataType[value]);
+}
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtoDataType(lpcString_t string, enum DataType* output) {
+	if (string == NULL) return FALSE;
+	const char* _DataType[] = { "None", "Bool", "Int", "Enum", "Float", "Fixed", "LongString", "Edges", "ObjectTags", "Event", "Struct", "Object", "Group", NULL };
+	if (isdigit(*string)) {
+		*output = strtod(string, (char**)&string);
+		return string;
+	} else for (const char **s = _DataType; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum DataType)(s - _DataType);
+			return string + strlen(*s);
+		}
+	}
+	Con_Error("Could not parse '%s' value of property DataType", string);
+	return string + strlen(string);
 }
 LRESULT PropertyType_Attached(lpObject_t, lpPropertyType_t, wParam_t, AttachedEventPtr);
 static struct PropertyDesc const PropertyTypeProperties[kPropertyTypeNumProperties] = {
 	/* PropertyType.Category */ DECL(0xafb3e591, 0x9c5f73a2,
 	PropertyType, "Category", Category, kDataTypeFixed),
 	/* PropertyType.DataType */ DECL(0x840d6c6d, 0xb7998b3a,
-	PropertyType, "DataType", DataType, kDataTypeEnum, .TypeString="None,Bool,Int,Enum,Float,Vector2D,Vector3D,Vector4D,Rectangle,Matrix2D,Matrix3D,Transform2D,Transform3D,Fixed,LongString,Color,Edges,ObjectTags,Event,Object,Group"),
+	PropertyType, "DataType", DataType, kDataTypeEnum, .TypeString="None,Bool,Int,Enum,Float,Fixed,LongString,Edges,ObjectTags,Event,Struct,Object,Group"),
 	/* PropertyType.DefaultValue */ DECL(0xcd093f9f, 0x29fd6eac,
 	PropertyType, "DefaultValue", DefaultValue, kDataTypeFixed),
 	/* PropertyType.TargetType */ DECL(0x77ada720, 0x95c12bb3,

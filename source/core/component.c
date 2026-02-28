@@ -73,7 +73,7 @@ OBJ_EnumClassProperties(lpObject_t object,
     FOR_LOOP(i, cmp->pcls->NumProperties)
     {
       lpcPropertyDesc_t pdesc = &cmp->pcls->Properties[i];
-      if (pdesc->DataType == kDataTypeMatrix3D)
+      if (pdesc->DataType == kDataTypeStruct && !strcmp(pdesc->TypeString, "Matrix3D"))
         continue;
       fnProc(object, pdesc, cmp->pcls, cmp->pUserData+pdesc->Offset, parm);
       if (pdesc->DataType == kDataTypeGroup) {

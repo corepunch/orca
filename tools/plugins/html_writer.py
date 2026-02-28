@@ -175,13 +175,13 @@ class HtmlWriter(Plugin):
 		doc.add_code(
 			self.article, atts, "struct ",
 			"%s.%s" % (root.get('name'), sname),
-			struct.get('parent') or (struct.tag == 'component' and 'object'),
+			struct.get('parent') or (struct.tag == 'class' and 'object'),
 		)
 		doc.add_overview(self.article, struct.find('details'))
 
 		icons = {
 			'struct':    'gear',
-			'component': 'layer-group',
+			'class':     'layer-group',
 			'interface': 'atom',
 		}
 		link = ET.SubElement(self.sidebar, 'a', {'class': 'leaf-link', 'href': f'#{sname}'})
@@ -239,7 +239,7 @@ class HtmlWriter(Plugin):
 		doc.add_property(topic, decor, readable_name, property_type)
 		doc.add_small_abstract(self.article, property.text and property.text.format(*args))
 
-	def on_component(self, root, component):
+	def on_class(self, root, component):
 		self.on_struct(root, component)
 		utils.enum_component_properties(component, self.on_property)
 

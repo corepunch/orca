@@ -1599,3 +1599,14 @@ lpcString_t stristr(lpcString_t haystack, lpcString_t needle) {
   }
   return NULL; // No match
 }
+
+#include <libxml/parser.h>
+ORCA_API lpcString_t __strtofloat(lpcString_t str, float* output) {
+  *output = strtof(str, (char**)&str);
+  return str;
+}
+
+ORCA_API lpcString_t __strtofixed(lpcString_t str, fixedString_t* fixed) {
+  strncpy(*fixed, str, sizeof(*str));
+  return str + strlen(str);
+}

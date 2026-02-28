@@ -1,8 +1,0 @@
-<?xml version="1.0" ?>
-<Sprite Name="cloud" Image="Volcano/Sprites/cloud">
-  <SpriteAnimation Name="magic_cloud">
-    <SpriteAnimation.Frames>
-      <SpriteRect Rect="128.0 128.0 256.0 256.0" UvRect="0 0 1 1"/>
-    </SpriteAnimation.Frames>
-  </SpriteAnimation>
-</Sprite>

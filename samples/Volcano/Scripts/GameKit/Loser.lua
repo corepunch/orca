@@ -1,5 +1,5 @@
 local sk = require "orca.SpriteKit"
-local sprites = require "Sprites"
+local sprites = require "Scripts.Sprites"
 local Loser = sk.SKSpriteNode:extend()
 
 function Loser:new()

@@ -1,5 +1,6 @@
 local orca = require "orca"
-
+require "orca.core"
+require "orca.renderer"
 local screen = orca.ui.Screen { Width = 1000, Height = 1000 }
 
 screen.refresh = function (self)

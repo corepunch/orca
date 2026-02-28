@@ -491,25 +491,17 @@
     <enum name="Int">Signed integer value.</enum>
     <enum name="Enum">Enumeration type represented by integer values mapped to named constants.</enum>
     <enum name="Float">Floating-point numeric value.</enum>
-    <enum name="Vector2D">Two-dimensional vector, typically used for coordinates or sizes.</enum>
-    <enum name="Vector3D">Three-dimensional vector, used for spatial coordinates, directions, or RGB values.</enum>
-    <enum name="Vector4D">Four-dimensional vector, commonly used for extended color or transformation data.</enum>
-    <enum name="Rectangle">Rectangle structure, typically used for defining rectangular areas or bounding boxes.</enum>
-    <enum name="Matrix2D">2x2 matrix, typically used for simple affine transformations in 2D space.</enum>
-    <enum name="Matrix3D">3x3 matrix, used for 3D affine transformations or rotation data.</enum>
-    <enum name="Transform2D">2D transformation structure combining position, scale, and rotation.</enum>
-    <enum name="Transform3D">3D transformation structure combining translation, rotation, and scaling.</enum>
     <enum name="Fixed">Fixed-length string or symbolic value.</enum>
     <enum name="LongString">Extended string data, intended for larger text content.</enum>
-    <enum name="Color">Color value defined by RGBA components.</enum>
     <enum name="Edges">Set of edge-specific values (e.g., margin, padding, or border widths).</enum>
     <enum name="ObjectTags">List of tag identifiers associated with an object.</enum>
     <enum name="Event">Event reference used to bind triggers or callbacks.</enum>
+    <enum name="Struct">There are multiple predefined structures, such as Vector2D, Vector3D, and Transform3D, used for various geometric and transformation purposes.</enum>
     <enum name="Object">Reference to a complex object instance.</enum>
     <enum name="Group">Logical grouping of related properties or child elements.</enum>
   </enums>
 
-  <component name="PropertyType">
+  <class name="PropertyType">
     <summary>Defines a custom property type that can be attached to engine objects.</summary>
     <details>PropertyType allows defining additional data fields beyond built-in engine properties. Each PropertyType specifies its data category, default value, and behavioral attributes such as layout and render impact. It serves as a flexible mechanism for extending object metadata in projects.</details>
     <handles event="Attached"/>
@@ -528,10 +520,10 @@
     <property name="UpperBound" type="float">Maximum allowed value for numeric properties.</property>
     <property name="LowerBound" type="float">Minimum allowed value for numeric properties.</property>
     <field name="_desc" type="PropertyDesc">Internal descriptor structure providing extended property metadata.</field>
-  </component>
+  </class>
   
-  <component name="PropertyEnumValue">
+  <class name="PropertyEnumValue">
     <property name="Value" type="int"/>
-  </component>
+  </class>
 
 </module>
