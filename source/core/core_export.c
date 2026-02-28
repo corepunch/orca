@@ -607,14 +607,6 @@ int f_Object___index(lua_State *L) {
 	}
 	return 0;
 }
-#include <libxml/parser.h>
-ORCA_API lpcString_t __strtoObject(lpcString_t str, lpObject_t output) {
-	return str;
-}
-static int xml_Object(xmlNodePtr xml, lpObject_t output) {
-	return TRUE;
-}
-
 int luaopen_orca_Object(lua_State *L) {
 	luaL_newmetatable(L, "Object");
 	luaL_setfuncs(L, ((luaL_Reg[]) {

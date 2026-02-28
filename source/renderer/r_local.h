@@ -8,7 +8,7 @@
 #include <source/renderer/api/renderer.h>
 
 #if __APPLE__
-#define GL_SILENCE_DEPRECATION
+//#define GL_SILENCE_DEPRECATION
 #include <TargetConditionals.h>
 #if !TARGET_OS_IPHONE && !TARGET_IPHONE_SIMULATOR
 #include <OpenGL/gl3.h>

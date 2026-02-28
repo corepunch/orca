@@ -4,15 +4,15 @@
 enum SpriteAnimationProperties {
 	kSpriteAnimationImage,
 	kSpriteAnimationFramerate,
-	kSpriteAnimationNumFrames,
 	kSpriteAnimationFrames,
+	kSpriteAnimationNumFrames,
 	kSpriteAnimationNumProperties
 };
 
 #define ID_SpriteAnimation_Image 0xb710ed59
 #define ID_SpriteAnimation_Framerate 0xc51f93cb
-#define ID_SpriteAnimation_NumFrames 0x37cc69de
 #define ID_SpriteAnimation_Frames 0xcbc4645e
+#define ID_SpriteAnimation_NumFrames 0x37cc69de
 #define ID_SKNode 0x819821fb
 #define GetSKNode(_P)((struct SKNode*)((_P)?OBJ_GetComponent(_P,ID_SKNode):NULL))
 #define SKNode_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_SKNode,sizeof(struct SKNode),_N)

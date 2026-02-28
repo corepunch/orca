@@ -15,15 +15,15 @@ SKNode_anchor(lpObject_t obj, lprect_t rect)
   rect->y += GetSKNode(obj)->Anchor.y * SKNode_GetReferenceSize(obj).y;
 }
 
-static struct rect
-sprite_rect(lpObject_t node, lpcSpriteFrame_t sprite)
-{
-  struct rect rect = sprite->Rect;
-  rect.x = -rect.x;
-  rect.y = -rect.y;
-  SKNode_anchor(node, &rect);
-  return rect;
-}
+//static struct rect
+//sprite_rect(lpObject_t node, lpcSpriteFrame_t sprite)
+//{
+//  struct rect rect = sprite->Rect;
+//  rect.x = -rect.x;
+//  rect.y = -rect.y;
+//  SKNode_anchor(node, &rect);
+//  return rect;
+//}
 
 static uint32_t
 get_frame_index(uint32_t num_frames, float framerate, int32_t freeze_frame)

@@ -82,8 +82,8 @@ typedef struct SpriteAnimation const *SpriteAnimationCPtr;
 struct SpriteAnimation {
 	lpTexture_t Image; /// Spritesheet texture
 	float Framerate; /// Frames per second
-	int32_t NumFrames; /// Number of frames
 	lpSpriteFrame_t Frames; /// Variable-length frame data array
+	int32_t NumFrames; /// Number of frames
 };
 
 typedef struct SKNode SKNode, *SKNodePtr;

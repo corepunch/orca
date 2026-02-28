@@ -1739,18 +1739,18 @@
 	StateManager CDATA #IMPLIED
 	Image CDATA #IMPLIED
 	Framerate CDATA #IMPLIED
-	NumFrames CDATA #IMPLIED
 	Frames CDATA #IMPLIED
+	NumFrames CDATA #IMPLIED
 ">
 <!ELEMENT SpriteAnimation.Image (#PCDATA | Binding)*>
 <!ATTLIST SpriteAnimation.Image Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT SpriteAnimation.Framerate (#PCDATA | Binding)*>
 <!ATTLIST SpriteAnimation.Framerate Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT SpriteAnimation.NumFrames (#PCDATA | Binding)*>
-<!ATTLIST SpriteAnimation.NumFrames Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT SpriteAnimation.Frames (#PCDATA | Binding)*>
 <!ATTLIST SpriteAnimation.Frames Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % SpriteAnimationElements "SpriteAnimation.Image|SpriteAnimation.Framerate|SpriteAnimation.NumFrames|SpriteAnimation.Frames">
+<!ELEMENT SpriteAnimation.NumFrames (#PCDATA | Binding)*>
+<!ATTLIST SpriteAnimation.NumFrames Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % SpriteAnimationElements "SpriteAnimation.Image|SpriteAnimation.Framerate|SpriteAnimation.Frames|SpriteAnimation.NumFrames">
 <!ELEMENT SpriteAnimation EMPTY>
 <!ATTLIST SpriteAnimation %SpriteAnimationAttribs;>
 <!ENTITY % SKNodeAttribs "

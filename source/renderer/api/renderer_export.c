@@ -53,14 +53,6 @@ int f_window___index(lua_State *L) {
 	}
 	return 0;
 }
-#include <libxml/parser.h>
-ORCA_API lpcString_t __strtowindow(lpcString_t str, lpwindow_t output) {
-	return str;
-}
-static int xml_window(xmlNodePtr xml, lpwindow_t output) {
-	return TRUE;
-}
-
 int luaopen_orca_window(lua_State *L) {
 	luaL_newmetatable(L, "Window");
 	luaL_setfuncs(L, ((luaL_Reg[]) {

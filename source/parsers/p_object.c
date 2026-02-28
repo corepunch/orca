@@ -94,7 +94,7 @@ XML_ParsePropertyNode(lua_State* L, xmlNodePtr it, lpObject_t object)
     xmlFree(Value);
     return;
   }
-  if (FAILED(OBJ_FindLongProperty(object, (LPSTR)it->name, &property))) {
+  if (FAILED(OBJ_FindLongProperty(object, fnv1a32((LPSTR)it->name), &property))) {
 #ifdef SUPPORT_DYNAMIC_PROPERTIES
     if (!xmlHasProp(it, XMLSTR("Type"))) {
       property = PROP_Create(L, object, (LPSTR)it->name, kDataTypeNone, NULL);
@@ -111,6 +111,10 @@ XML_ParsePropertyNode(lua_State* L, xmlNodePtr it, lpObject_t object)
     void *mem = malloc(pdesc->DataSize * XML_CountNodes(it, XMLSTR(pdesc->TypeString)));
     XML_ParseValues(it, pdesc, _GetParser(L, pdesc->TypeString), mem);
     PROP_SetValue(property, &mem);
+    
+    if (FAILED(OBJ_FindLongProperty(object, fnv1a32((LPSTR)it->name), &property))) {
+      
+    }
     return;
   }
   xmlWith(xmlChar, Enabled, xmlGetProp(it, XMLSTR("Enabled")), xmlFree) {

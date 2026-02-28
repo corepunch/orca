@@ -305,7 +305,7 @@ class ExportWriter(Plugin):
 				self.w(f"\t\treturn 0;")
 			self.w(f"\t}}\n\treturn luaL_error(L, \"Unknown field in {name}: %s\", luaL_checkstring(L, 2));\n}}")
 
-		if export_xml_parsers:
+		if export_xml_parsers and is_struct:
 			def declare_parsers(struct):
 				types = set()
 				for field in struct.findall('field'):

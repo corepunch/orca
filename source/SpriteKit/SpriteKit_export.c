@@ -94,10 +94,10 @@ static struct PropertyDesc const SpriteAnimationProperties[kSpriteAnimationNumPr
 	SpriteAnimation, "Image", Image, kDataTypeObject, .TypeString="Texture"),
 	/* SpriteAnimation.Framerate */ DECL(0xbebf2a84, 0xc51f93cb,
 	SpriteAnimation, "Framerate", Framerate, kDataTypeFloat),
-	/* SpriteAnimation.NumFrames */ DECL(0x32caacb1, 0x37cc69de,
-	SpriteAnimation, "NumFrames", NumFrames, kDataTypeInt),
 	/* SpriteAnimation.Frames */ ARRAY_DECL(0xf03e266f, 0xcbc4645e,
 	SpriteAnimation, "Frames", Frames, kDataTypeStruct, .TypeString="SpriteFrame"),
+	/* SpriteAnimation.NumFrames */ DECL(0x32caacb1, 0x37cc69de,
+	SpriteAnimation, "NumFrames", NumFrames, kDataTypeInt),
 };
 static struct SpriteAnimation SpriteAnimationDefaults = {0};
 LRESULT SpriteAnimationProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {

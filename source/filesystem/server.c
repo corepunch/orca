@@ -383,7 +383,7 @@ SV_CMD(POST, property_types) {
   REQUIRE(lpcString_t, classname, SV_ARG("name"), "Missing `name` argument");
   REQUIRE(lpObject_t, object, OBJ_FindByPath(FS_GetWorkspace(), endpoint), ERROR_CANT_FIND_OBJECT);
   lpProperty_t property;
-  if (FAILED(OBJ_FindLongProperty(object, classname, &property))) {
+  if (FAILED(OBJ_FindLongProperty(object, fnv1a32(classname), &property))) {
     return "Can't create property";
   }
   return NULL;

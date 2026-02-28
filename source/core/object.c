@@ -420,10 +420,9 @@ _CreateProjectProperty(lpObject_t object, uint32_t ident)
 
 HRESULT
 OBJ_FindLongProperty(lpObject_t object,
-                     lpcString_t long_name,
+                     uint32_t identifier,
                      lpProperty_t* ppProp)
 {
-  uint32_t identifier = fnv1a32(long_name);
   if ((*ppProp = PROP_FindByLongID(object->properties, identifier))) {
     return NOERROR;
   } else if ((*ppProp = _CreateClassProperty(object, identifier))) {
@@ -444,7 +443,7 @@ OBJ_FindShortProperty(lpObject_t object,
   if ((*ppProp = PROP_FindByShortID(object->properties, identifier))) {
     return NOERROR;
   } else {
-    return OBJ_FindLongProperty(object, short_name, ppProp);
+    return OBJ_FindLongProperty(object, identifier, ppProp);
   }
 }
 

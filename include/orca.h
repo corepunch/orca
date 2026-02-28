@@ -537,7 +537,7 @@ ORCA_API HRESULT
 OBJ_FindShortProperty(lpObject_t object, lpcString_t short_name, lpProperty_t* output);
 
 ORCA_API HRESULT
-OBJ_FindLongProperty(lpObject_t object, lpcString_t long_name, lpProperty_t* output);
+OBJ_FindLongProperty(lpObject_t object, uint32_t long_id, lpProperty_t* output);
 
 ORCA_API HRESULT
 OBJ_SetPropertyValue(lpObject_t object, lpcString_t name, void const* value);

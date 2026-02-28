@@ -13,7 +13,6 @@
   <class name="SpriteAnimation">
     <property name="Image" type="Texture" pointer="true">Spritesheet texture</property>
     <property name="Framerate" type="float">Frames per second</property>
-    <property name="NumFrames" type="int">Number of frames</property>
     <property name="Frames" type="SpriteFrame" array="true">Variable-length frame data array</property>
   </class>
   
