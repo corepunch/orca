@@ -1,15 +1,17 @@
 local orca = require "orca"
-local xml = require "orca.parsers.xml"
 
-local shortcuts = {}
-
-for k, v in pairs(orca.ui) do shortcuts[k] = v end
-for k, v in pairs(orca.SceneKit) do shortcuts[k] = v end
-for k, v in pairs(orca.SpriteKit) do shortcuts[k] = v end
+local function safe_require(module, name)
+	local ok, res = pcall(require, module)
+	return ok and res[name] or nil
+end
 
 local function instantiate(node)
-	if shortcuts[node.name] then
-		local class = shortcuts[node.name]
+	local class =
+		safe_require("orca.ui", node.name) or
+		safe_require("orca.SceneKit", node.name) or
+		safe_require("orca.SpriteKit", node.name)
+	if class then
+		print("Instantiating class "..node.name)
 		-- return (node.attributes)
 	else
 		return error("Unknown node type: "..node.name)
@@ -22,6 +24,7 @@ end
 
 -- orca.register_loader("xml", load_xml)
 table.insert(package.searchers, function(path)
+	local xml = require "orca.parsers.xml"
 	local ok, res = pcall(xml.load, path..'.xml')
-	return ok and function() return instantiate(res.node) end or nil;
+	return ok and res and function() return instantiate(res.root) end or nil;
 end)

@@ -91,7 +91,6 @@
 		781CA7732E1557A900FFCFD9 /* object.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C737642B8F60C600FD598E /* object.c */; };
 		781CA7752E1557A900FFCFD9 /* p_runtime.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A8213E2C873EF400ACD0A9 /* p_runtime.c */; };
 		781CA7762E1557A900FFCFD9 /* property.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C737662B8F60C600FD598E /* property.c */; };
-		781CA7772E1557A900FFCFD9 /* scripts.c in Sources */ = {isa = PBXBuildFile; fileRef = 78DE4E942D9AA9CE00C0488C /* scripts.c */; };
 		781CA7782E1557A900FFCFD9 /* state_manager.c in Sources */ = {isa = PBXBuildFile; fileRef = 78FD53262D90344E00122823 /* state_manager.c */; };
 		781CA7792E1557A900FFCFD9 /* style.c in Sources */ = {isa = PBXBuildFile; fileRef = 78688D2A2D89DD69008DE67B /* style.c */; };
 		781CA77A2E1557A900FFCFD9 /* timer.c in Sources */ = {isa = PBXBuildFile; fileRef = 78FD53292D90719800122823 /* timer.c */; };
@@ -366,7 +365,6 @@
 		7808CD8F2D9ECB2400D484F9 /* queue.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = queue.c; sourceTree = "<group>"; };
 		7808CD912D9ECE9A00D484F9 /* message.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = message.c; sourceTree = "<group>"; };
 		7808CD932DA1B42D00D484F9 /* callbacks.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = callbacks.c; sourceTree = "<group>"; };
-		7808CD952DA1B43D00D484F9 /* behaviour.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = behaviour.lua; sourceTree = "<group>"; };
 		780C82682E01EE7100228DEC /* Light3D.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Light3D.c; sourceTree = "<group>"; };
 		7810D25E2D58A81100DB632F /* liborca.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		7810D30F2D58F7FA00DB632F /* fs_local.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = fs_local.h; sourceTree = "<group>"; };
@@ -551,7 +549,6 @@
 		78D75A542E3E5286004EA6DA /* MainToolbar.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = MainToolbar.c; sourceTree = "<group>"; };
 		78DE4E792D987F4C00C0488C /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		78DE4E912D994A3E00C0488C /* pz2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = pz2; sourceTree = BUILT_PRODUCTS_DIR; };
-		78DE4E942D9AA9CE00C0488C /* scripts.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = scripts.c; sourceTree = "<group>"; };
 		78E4A99B2E93D6AF00E3A503 /* p_property.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = p_property.c; sourceTree = "<group>"; };
 		78E4A99E2E93D71300E3A503 /* xml_local.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = xml_local.h; sourceTree = "<group>"; };
 		78E4A9A12E93DD4200E3A503 /* known_prefabs.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = known_prefabs.c; sourceTree = "<group>"; };
@@ -600,11 +597,19 @@
 				icons.png,
 			);
 		};
+		78623C232F53724A003BFDA3 /* PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = 78623C182F535566003BFDA3 /* CopyFiles */;
+			membershipExceptions = (
+				plugins/behaviour.lua,
+				plugins/xmlsupport.lua,
+			);
+		};
 /* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		783C96DF2F263D9C00612323 /* libs */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (783C973B2F26638500612323 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = libs; sourceTree = "<group>"; };
-		78623BE92F535149003BFDA3 /* share */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (78623C172F535562003BFDA3 /* PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = share; sourceTree = "<group>"; };
+		78623BE92F535149003BFDA3 /* share */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (78623C172F535562003BFDA3 /* PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet */, 78623C232F53724A003BFDA3 /* PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = share; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1128,7 +1133,6 @@
 				78C737642B8F60C600FD598E /* object.c */,
 				78A8213E2C873EF400ACD0A9 /* p_runtime.c */,
 				78C737662B8F60C600FD598E /* property.c */,
-				78DE4E942D9AA9CE00C0488C /* scripts.c */,
 				78FD53262D90344E00122823 /* state_manager.c */,
 				78688D2A2D89DD69008DE67B /* style.c */,
 				78FD53292D90719800122823 /* timer.c */,
@@ -1136,7 +1140,6 @@
 				78C7375C2B8F60C600FD598E /* animation.h */,
 				78C737652B8F60C600FD598E /* core_local.h */,
 				783976FE2E54B25900DCFC0F /* core.h */,
-				7808CD952DA1B43D00D484F9 /* behaviour.lua */,
 				7839770A2E60758500DCFC0F /* core.xml */,
 			);
 			path = core;
@@ -1968,7 +1971,6 @@
 				781CA7732E1557A900FFCFD9 /* object.c in Sources */,
 				781CA7752E1557A900FFCFD9 /* p_runtime.c in Sources */,
 				781CA7762E1557A900FFCFD9 /* property.c in Sources */,
-				781CA7772E1557A900FFCFD9 /* scripts.c in Sources */,
 				781CA7782E1557A900FFCFD9 /* state_manager.c in Sources */,
 				781CA7792E1557A900FFCFD9 /* style.c in Sources */,
 				781CA77A2E1557A900FFCFD9 /* timer.c in Sources */,

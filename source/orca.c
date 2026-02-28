@@ -73,11 +73,16 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirname) {
   snprintf(path, sizeof(path), "%s/%s", szDirname, ORCA_PACKAGE_NAME);
   xmlWith(xmlDoc, doc, xmlReadFile(path, NULL, 0), xmlFreeDoc) {
     FILE *mem = open_memstream(&buf, &size);
+
+    fprintf(mem, "local orca = require 'orca'\n");
+    
+    // load plugins
+    fprintf(mem, "orca.loadPlugins()\n");
+
     FOR_LOOP(i, sizeof(requires)/sizeof(*requires)) {
       fprintf(mem, "require '%s'\n", requires[i]);
     }
-    fprintf(mem, "local orca = require 'orca'\n");
-    fprintf(mem, "local sys = require 'orca.system'\n");
+    fprintf(mem, "local core = require 'orca.core'\n");
     fprintf(mem, "local fs = require 'orca.filesystem'\n");
     fprintf(mem, "local loc = require 'orca.localization'\n");
     fprintf(mem, "local ref = require 'orca.renderer'\n");
@@ -101,20 +106,12 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirname) {
       windowsize[1] = atoi((char*)WindowHeight);
     }
 
-    // load plugins
-    fprintf(mem, "local function load_plugins()\n");
-    fprintf(mem, "\tlocal no_errors = true\n");
-    fprintf(mem, "\tfor f in sys.list_dir(SHAREDIR..'/plugins') do\n");
-    fprintf(mem, "\t\tlocal ok, err = pcall(require, 'plugins.'..f:gsub('.lua$', ''))\n");
-    fprintf(mem, "\t\tif ok then print(string.format('Loaded plugin %%q', f)) else print(err) no_errors = false end\n");
-    fprintf(mem, "\tend\n");
-    fprintf(mem, "\treturn no_errors\n");
-    fprintf(mem, "end\n");
-    fprintf(mem, "load_plugins()\n");
-
     // initialize
+    fprintf(mem, "print(ref, orca, fs)\n");
     fprintf(mem, "ref.init(%d, %d, %s)\n", windowsize[0], windowsize[1], args.server ? args.server : "false");
+    fprintf(mem, "print('fs.init')\n");
     fprintf(mem, "fs.init('%s')\n", szDirname);
+    fprintf(mem, "print('done')\n");
 
     xmlFindAll(loc, root, XMLSTR("LocaleLibrary"))
     xmlFindAllText(path, content, loc, XMLSTR("LocaleReferenceItem")) {

@@ -217,8 +217,10 @@ int f_poll(lua_State* L);
 
 int lua_pushclass(lua_State* L, struct ClassDesc* cl)
 {
-//  luaX_import(L, "orca.core", "Behaviour");
-  lua_getglobal(L, "BEHAVIOUR");
+  lua_getglobal(L, "require");
+  lua_pushstring(L, "orca");
+  lua_call(L, 1, 1);
+  lua_getfield(L, -1, "Behaviour");
   lua_getfield(L, -1, "extend");
   lua_pushvalue(L, -2);
   // Create the args table
@@ -484,16 +486,6 @@ on_core_module_registered(lua_State* L)
   SV_Init();
   SV_RegisterMessageProc(CORE_ProcessMessage);
   
-  int luaopen_orca_Object(lua_State*);
-  luaopen_orca_Object(L);
-  lua_setglobal(L, "OBJECT");
-  
-  int luaopen_orca_behaviour(lua_State*);
-  luaopen_orca_behaviour(L);
-  lua_pushvalue(L, -1);
-  lua_setglobal(L, "BEHAVIOUR");
-  lua_setfield(L, -2, "Behaviour");
-
   // Create commands table
   lua_newtable(L);
   lua_setfield(L, LUA_REGISTRYINDEX, CORE_COMMANDS);

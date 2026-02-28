@@ -122,7 +122,8 @@ static int f_orca_index(lua_State* L) {
     // Use the error message immediately before popping
     fprintf(stderr, "Failed to load module '%s': %s\n", module_name, err_msg);
     lua_pop(L, 2);  // Pop the converted string and the original error
-    lua_pushnil(L);
+    lua_rawget(L, -2);
+//    lua_pushnil(L);
     return 1;
   }
 }
@@ -161,6 +162,20 @@ ORCA_API int luaopen_orca(lua_State* L)
 
   lua_pushcfunction(L, f_async);
   lua_setfield(L, -2, "async");
+
+  luaL_dostring(L,
+                "return function()\n"
+                "\tlocal sys = require 'orca.system'\n"
+                "\tlocal no_errors = true\n"
+                "\tfor f in sys.list_dir(SHAREDIR..'/plugins') do\n"
+                "\t\tlocal ok, err = pcall(require, 'plugins.'..f:gsub('.lua$', ''))\n"
+                "\t\tif ok then print(string.format('Loaded plugin %q', f:gsub('.lua$', '')))\n"
+                "\t\telse print(err) no_errors = false end\n"
+                "\tend\n"
+                "\treturn no_errors\n"
+                "end\n");
+  assert(lua_type(L, -1) == LUA_TFUNCTION);
+  lua_setfield(L, -2, "loadPlugins");
   
 #ifdef EASY_MODULE_ACCESS
   // Create a metatable for the orca module

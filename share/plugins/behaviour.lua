@@ -155,6 +155,7 @@ local _class_0 = setmetatable({
   end
 })
 _base_0.__class = _class_0
-orca.core.Behaviour = _class_0
+print("Defining class Behaviour")
+orca.Behaviour = _class_0
 return _class_0
 
