@@ -21,6 +21,7 @@
 #endif
 
 #define ORCA_FEATURE_DEBUG
+#define DEFAULT_WINDOW_SIZE 1024, 768
 
 struct args {
   lpcString_t plugins;
@@ -68,6 +69,7 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirname) {
   size_t size = 0;
   LPSTR buf = NULL;
   path_t path={0};
+  int windowsize[] = { DEFAULT_WINDOW_SIZE };
   snprintf(path, sizeof(path), "%s/%s", szDirname, ORCA_PACKAGE_NAME);
   xmlWith(xmlDoc, doc, xmlReadFile(path, NULL, 0), xmlFreeDoc) {
     FILE *mem = open_memstream(&buf, &size);
@@ -91,7 +93,16 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirname) {
       lua_setglobal(L, "PROJECTNAME");
     }
 
-    fprintf(mem, "fs.init '%s'\n", szDirname);
+    xmlWith(xmlChar, WindowWidth, xmlGetProp(root, XMLSTR("WindowWidth")), xmlFree) {
+      windowsize[0] = atoi((char*)WindowWidth);
+    }
+
+    xmlWith(xmlChar, WindowHeight, xmlGetProp(root, XMLSTR("WindowHeight")), xmlFree) {
+      windowsize[1] = atoi((char*)WindowHeight);
+    }
+
+    fprintf(mem, "ref.init(%d, %d, %s)\n", windowsize[0], windowsize[1], args.server ? args.server : "false");
+    fprintf(mem, "fs.init('%s')\n", szDirname);
 
     xmlFindAll(loc, root, XMLSTR("LocaleLibrary"))
     xmlFindAllText(path, content, loc, XMLSTR("LocaleReferenceItem")) {
@@ -166,6 +177,7 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirname) {
       fprintf(mem, "end\n");
     }
     fprintf(mem, "end end\n");
+    fprintf(mem, "ref.shutdown()\n");
     fclose(mem);
   }
   if (luaL_loadbuffer(L, buf, size, "@main") || lua_pcall(L, 0, 1, 0)) {
@@ -202,6 +214,7 @@ int main (int argc, LPSTR *argv)
     Con_Error("Usage: orca [options] <project_dir>\n");
     Con_Error("Options:");
     Con_Error("\t-test=true/false         Open in Test mode");
+    Con_Error("\t-server=true/false       Open in Server mode (no window)");
     Con_Error("\t-editor=true/false       Open in Editor mode");
     Con_Error("\t-plugins=<plugins_dir>   Set the plugins directory");
     return 1;

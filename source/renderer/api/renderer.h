@@ -515,6 +515,14 @@ typedef struct Timeline const *TimelineCPtr;
 struct Timeline {
 };
 
+/// @brief Initializes the rendering system and prepares it for drawing operations.
+ORCA_API int32_t
+renderer_Init(uint32_t Width, uint32_t Height, bool_t Offscreen);
+
+/// @brief Shuts down the rendering system and releases all associated resources.
+ORCA_API void
+renderer_Shutdown(void);
+
 /// @brief Creates a shader program from source code.
 ORCA_API lpShader_t
 renderer_CreateShader(lua_State *L, const char* vertex, const char* fragment);

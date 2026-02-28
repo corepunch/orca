@@ -920,7 +920,7 @@ R_EndFrame(void)
 }
 
 HRESULT
-R_Init(uint32_t dwWidth, uint32_t dwHeight, bool_t bOffscreen)
+renderer_Init(uint32_t dwWidth, uint32_t dwHeight, bool_t bOffscreen)
 {
   Con_Error("Initializing renderer");
 
@@ -953,8 +953,8 @@ R_Init(uint32_t dwWidth, uint32_t dwHeight, bool_t bOffscreen)
   return NOERROR;
 }
 
-HRESULT
-R_Shutdown(void)
+void
+renderer_Shutdown(void)
 {
   Con_Error("Shutting down renderer");
 
@@ -968,25 +968,21 @@ R_Shutdown(void)
     R_Call(glDeleteBuffers, 1, &tr.cinbuf.pbo);
   }
 
-  WI_Shutdown();
-  
-  WI_Shutdown();
-
   memset(&tr, 0, sizeof(struct renderer));
-  
-  return NOERROR;
 }
 
-__attribute__((constructor)) void
-onLibraryLoad(void)
+static int renderer_gc(lua_State* L)
 {
-  WI_Init();
-  FT_Init();
-}
-
-__attribute__((destructor)) void
-onLibraryUnload(void)
-{
+  void renderer_Shutdown(void);
+  void FT_Shutdown(void);
+  renderer_Shutdown();
   FT_Shutdown();
   WI_Shutdown();
+  return 0;
+}
+
+void on_renderer_module_registered(lua_State* L) {
+  API_MODULE_SHUTDOWN(L, renderer_gc);
+  WI_Init();
+  FT_Init();
 }

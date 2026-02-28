@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
-<module name="renderer" namespace="orca">
+<module name="renderer" namespace="orca" on-luaopen="on_renderer_module_registered" test-prefix="R_">
   <resource type="fontface"/>
   <resource type="timeline"/>
   <resource type="shader"/>
@@ -441,20 +441,28 @@
 <!--    <arg name="height" type="int"/>-->
 <!--    <returns type="Texture" pointer="true"/>-->
 <!--  </function>-->
-
-<function name="CreateShader" lua="true">
-    <summary>Creates a shader program from source code.</summary>
-    <arg name="vertex" type="string"/>
-    <arg name="fragment" type="string"/>
-    <returns type="Shader" pointer="true"/>
-  </function>
-
 <!--  <function name="LoadImage" lua="true">-->
 <!--    <summary>Loads an image into GPU memory.</summary>-->
 <!--    <arg name="path" type="string"/>-->
 <!--    <returns type="Texture" pointer="true"/>-->
 <!--  </function>-->
 
+  <function name="Init">
+    <summary>Initializes the rendering system and prepares it for drawing operations.</summary>
+    <arg name="Width" type="uint">The width of the rendering viewport.</arg>
+    <arg name="Height" type="uint">The height of the rendering viewport.</arg>
+    <arg name="Offscreen" type="bool">Whether to initialize an off-screen rendering context or a windowed context.</arg>
+    <returns type="int">Returns 0 on success, or a negative error code on failure.</returns>
+  </function>
+  <function name="Shutdown">
+    <summary>Shuts down the rendering system and releases all associated resources.</summary>
+  </function>
+  <function name="CreateShader" lua="true">
+    <summary>Creates a shader program from source code.</summary>
+    <arg name="vertex" type="string"/>
+    <arg name="fragment" type="string"/>
+    <returns type="Shader" pointer="true"/>
+  </function>
   <function name="GetSize" lua="true">
     <summary>Retrieves the size of the current window.</summary>
     <returns type="nresults"/>

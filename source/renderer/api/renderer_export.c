@@ -1070,6 +1070,18 @@ ORCA_API struct ClassDesc _Timeline = {
 	.Defaults = &TimelineDefaults,
 	.NumProperties = kTimelineNumProperties,
 };
+static int f_renderer_init(lua_State *L) {
+	uint32_t Width = luaL_checknumber(L, 1);
+	uint32_t Height = luaL_checknumber(L, 2);
+	bool_t Offscreen = lua_toboolean(L, 3);
+	int32_t output = renderer_Init(Width, Height, Offscreen);
+	lua_pushnumber(L, output);
+	return 1;
+}
+static int f_renderer_shutdown(lua_State *L) {
+	renderer_Shutdown();
+	return 0;
+}
 static int f_renderer_createShader(lua_State *L) {
 	const char* vertex = luaL_checkstring(L, 1);
 	const char* fragment = luaL_checkstring(L, 2);
@@ -1086,11 +1098,15 @@ static int f_renderer_drawImage(lua_State *L) {
 }
 ORCA_API int luaopen_orca_renderer(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) {
+		{ "init", f_renderer_init },
+		{ "shutdown", f_renderer_shutdown },
 		{ "createShader", f_renderer_createShader },
 		{ "getSize", f_renderer_getSize },
 		{ "drawImage", f_renderer_drawImage },
 		{ NULL, NULL }
 	}));
+	void on_renderer_module_registered(lua_State *L);
+	on_renderer_module_registered(L);
 	// window
 	luaopen_orca_window(L);
 	lua_setfield(L, -2, "Window");
