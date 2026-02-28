@@ -474,6 +474,7 @@ void on_ui_module_registered(lua_State* L) {
   lua_getglobal(L, "SERVER");
   is_server = lua_toboolean(L, -1);
   lua_pop(L, 1);
+  R_InitContext(is_server);
   SV_RegisterMessageProc(ui_handle_event);
   lua_pushcfunction(L, f_beginDraggingSession);
   lua_setfield(L, -2, "beginDraggingSession");

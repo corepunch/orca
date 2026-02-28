@@ -5,6 +5,8 @@
 
 struct renderer tr={0};
 
+extern bool_t is_server;
+
 #if 1
 lpcString_t  ega_palette[16] = {
 	"#303239", //  0: Black
@@ -916,6 +918,55 @@ R_EndFrame(void)
 
   WI_EndPaint();
 
+  return NOERROR;
+}
+
+/* Maximum IOSurface dimensions covering most displays including 4K Retina.
+ * Using a fixed size avoids the need to recreate the IOSurface on resize,
+ * which would require notifying all clients of the new surface ID. */
+#define IOSURFACE_MAX_WIDTH  2560
+#define IOSURFACE_MAX_HEIGHT 1440
+
+HRESULT
+R_InitContext(bool_t bOffscreen)
+{
+  Con_Error("Initializing renderer context");
+
+  memset(&tr, 0, sizeof(tr));
+  memcpy(&tr.state, &DEFAULTSTATE, sizeof(PIPELINESTATE));
+
+  tr.frame = -1;
+
+  if (bOffscreen) {
+    WI_CreateSurface(IOSURFACE_MAX_WIDTH, IOSURFACE_MAX_HEIGHT);
+  } else {
+    WI_CreateWindow("Window", IOSURFACE_MAX_WIDTH, IOSURFACE_MAX_HEIGHT, 0);
+  }
+
+  R_InitResources();
+
+  _InitBuffers();
+
+#ifdef __QNX__
+  const GLubyte* version = R_Call(glGetString, GL_VERSION);
+  Con_Error("OpenGL Version: %s", version);
+  GLint n = 0;
+  R_Call(glGetIntegerv, GL_NUM_EXTENSIONS, &n);
+  for (GLint i = 0; i < n; i++) {
+    lpcString_t extension = (lpcString_t)R_Call(glGetStringi, GL_EXTENSIONS, i);
+    Con_Error("%s", extension);
+  }
+#endif
+
+  return NOERROR;
+}
+
+HRESULT
+R_ShowWindow(uint16_t width, uint16_t height)
+{
+  if (!is_server) {
+    WI_SetSize(width, height, TRUE);
+  }
   return NOERROR;
 }
 

@@ -556,6 +556,8 @@ typedef struct _DRAWSTRETCHRAWSTRUCT
 
 typedef void (*SHADERENUMPROC)(struct _SHADERCONST *, void*);
 
+ORCA_API HRESULT R_InitContext(bool_t is_server);
+ORCA_API HRESULT R_ShowWindow(uint16_t width, uint16_t height);
 ORCA_API HRESULT R_Init(uint32_t width, uint32_t height, bool_t offscreen);
 ORCA_API HRESULT R_Shutdown(void);
 ORCA_API HRESULT R_DrawLines(struct ViewDef const*, PDRAWLINESSTRUCT);

@@ -248,8 +248,11 @@ HANDLER(Screen, RenderScreen) {
     node->Size.Axis[0].Requested = width;
     node->Size.Axis[1].Requested = height;
   }
-  
-  pScreen->_initialized = TRUE;
+
+  if (!pScreen->_initialized) {
+    R_ShowWindow(LOWORD(pScreen->_size), HIWORD(pScreen->_size));
+    pScreen->_initialized = TRUE;
+  }
   
   // setup pipeline
   PIPELINESTATE ps = _Pipeline2D(width, height);
@@ -506,17 +509,14 @@ HANDLER(Screen, MeasureOverride) {
 
 
 HANDLER(Screen, Create) {
-  extern bool_t is_server;
   extern int ScreenWidth, ScreenHeight;
-//  uint16_t width = MAX(640, GetNode(hObject)->Size.Axis[0].Requested);
-//  uint16_t height = MAX(480, GetNode(hObject)->Size.Axis[1].Requested);
   uint16_t width = MAX(256, ScreenWidth);
   uint16_t height = MAX(256, ScreenHeight);
   GetNode(hObject)->Size.Axis[0].Requested = width;
   GetNode(hObject)->Size.Axis[1].Requested = height;
   pScreen->_size = MAKEDWORD(width, height);
-  R_Init(width, height, is_server);
-  
+  pScreen->_initialized = FALSE;
+
   return FALSE;
 }
 
