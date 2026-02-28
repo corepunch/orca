@@ -223,6 +223,204 @@ local function test_grid_view_in_stack_layout()
 	stack:removeFromParent()
 end
 
+local function test_horizontal_stack_view_layout()
+	local config = {
+		stack_spacing = 5,
+		node_width = 60,
+		node_margin = 5,
+	}
+	local stack = screen + orca.ui.StackView {
+		Direction = "Horizontal",
+		HorizontalAlignment = "Left",
+		Spacing = config.stack_spacing,
+	}
+	local node1 = stack + orca.ui.TextBlock {
+		Text = "Item 1",
+		Width = config.node_width,
+	}
+	local node2 = stack + orca.ui.TextBlock {
+		Text = "Item 2",
+		Width = config.node_width,
+		Margin = config.node_margin,
+	}
+
+	screen:updateLayout(screen.Width, screen.Height)
+
+	-- Verify stack direction and default vertical alignment (cross-axis should stretch)
+	assert(stack.Direction == "Horizontal", "StackView direction should be 'Horizontal'")
+	assert(stack.VerticalAlignment == "Stretch", "Horizontal StackView VerticalAlignment should default to 'Stretch'")
+
+	-- Vertical (cross-axis) should fill the screen height
+	assert(stack.ActualHeight == screen.Height, "Horizontal StackView should stretch to fill screen height")
+
+	-- Width (main axis) = node1 width + spacing + node2 width + node2 left/right margins
+	-- (node1 has no margin; node2's Margin=5 applies to all sides, so left+right = 2 * node_margin)
+	assert(stack.ActualWidth == 2 * config.node_width + 2 * config.node_margin + config.stack_spacing,
+		"Horizontal StackView ActualWidth should account for child widths, margins, and spacing")
+
+	-- In a horizontal stack's cross-axis (vertical), children stretch to fill the stack height
+	assert(node1.ActualHeight == stack.ActualHeight,
+		"Child node ActualHeight should match stack height when vertical alignment is 'Stretch'")
+	-- node2's Margin=5 applies to all sides, so top+bottom = 2 * node_margin reduces its cross-axis size
+	assert(node2.ActualHeight == stack.ActualHeight - 2 * config.node_margin,
+		"Child node ActualHeight should be reduced by its top and bottom margins")
+
+	screen:clear()
+end
+
+local function test_node_alignment()
+	-- A node with default HorizontalAlignment (Stretch) fills parent width
+	local stretch_node = screen + orca.ui.Node2D {}
+
+	-- A node with HorizontalAlignment = "Left" and explicit Width uses that width
+	local fixed_width = 200
+	local left_node = screen + orca.ui.Node2D {
+		HorizontalAlignment = "Left",
+		Width = fixed_width,
+	}
+
+	screen:updateLayout(screen.Width, screen.Height)
+
+	-- Stretch node should fill the screen width
+	assert(stretch_node.ActualWidth == screen.Width,
+		"Node with default HorizontalAlignment should stretch to fill screen width")
+
+	-- Left-aligned node with explicit width should use that width
+	assert(left_node.ActualWidth == fixed_width,
+		"Left-aligned node should have the explicitly set width")
+
+	-- The left-aligned node is narrower than the screen
+	assert(left_node.ActualWidth < screen.Width,
+		"Left-aligned node should be narrower than the screen")
+
+	stretch_node:removeFromParent()
+	left_node:removeFromParent()
+end
+
+local function test_input_checkbox()
+	local checkbox = screen + orca.ui.Input {
+		Type = "Checkbox",
+		Width = 24,
+		Height = 24,
+	}
+
+	screen:updateLayout(screen.Width, screen.Height)
+
+	-- The input type should be "Checkbox"
+	assert(checkbox.Type == "Checkbox", "Input type should be 'Checkbox'")
+
+	-- Set and verify checked state
+	checkbox.Checked = true
+	assert(checkbox.Checked == true, "Checkbox should be checked after setting Checked = true")
+
+	-- Unset and verify checked state
+	checkbox.Checked = false
+	assert(checkbox.Checked == false, "Checkbox should be unchecked after setting Checked = false")
+
+	checkbox:removeFromParent()
+end
+
+local function test_form_populate_inputs()
+	local config = { username = "alice", password = "test_password_123" }
+	local form = screen + orca.ui.Form {
+		Direction = "Vertical",
+	}
+	local username_input = form + orca.ui.Input {
+		Name = "username",
+		Width = 200,
+		Height = 30,
+	}
+	local password_input = form + orca.ui.Input {
+		Name = "password",
+		Width = 200,
+		Height = 30,
+	}
+
+	screen:updateLayout(screen.Width, screen.Height)
+
+	-- Type text into the username input
+	username_input:setFocus()
+	for i = 1, #config.username do
+		orca.backend.dispatchMessage {
+			target = screen,
+			message = "KeyDown",
+			key = string.byte(config.username:sub(i, i)),
+			text = config.username:sub(i, i),
+		}
+	end
+
+	-- Type text into the password input
+	password_input:setFocus()
+	for i = 1, #config.password do
+		orca.backend.dispatchMessage {
+			target = screen,
+			message = "KeyDown",
+			key = string.byte(config.password:sub(i, i)),
+			text = config.password:sub(i, i),
+		}
+	end
+
+	-- Verify individual input texts
+	assert(username_input.Text == config.username, "Username input text should match typed keys")
+	assert(password_input.Text == config.password, "Password input text should match typed keys")
+
+	-- Verify that populateInputs collects all named inputs as a table
+	local data = form:populateInputs()
+	assert(type(data) == "table", "populateInputs should return a table")
+	assert(data.username == config.username, "populateInputs should collect the username input value")
+	assert(data.password == config.password, "populateInputs should collect the password input value")
+
+	form:removeFromParent()
+end
+
+local function test_node_visibility()
+	local node = screen + orca.ui.Node2D {
+		Width = 100,
+		Height = 50,
+	}
+
+	screen:updateLayout(screen.Width, screen.Height)
+
+	-- Default visibility should be true
+	assert(node.Visible == true, "Node should be visible by default")
+
+	-- Hide the node
+	node.Visible = false
+	assert(node.Visible == false, "Node should be hidden when Visible = false")
+
+	-- Show the node again
+	node.Visible = true
+	assert(node.Visible == true, "Node should be visible again when Visible = true")
+
+	node:removeFromParent()
+end
+
+local function test_property_change_notification()
+	-- WPF's INotifyPropertyChanged equivalent: assigning an onXxxChanged function
+	-- on an object enables automatic change tracking for that property.
+	-- emitPropertyChangedEvents() fires all pending callbacks (runs each frame).
+	local last_text = nil
+	local node = screen + orca.ui.TextBlock {
+		HorizontalAlignment = "Left",
+		Text = "Initial",
+	}
+
+	-- Registering onTextChanged enables change notifications for the Text property
+	node.onTextChanged = function(self, value)
+		last_text = value
+	end
+
+	-- Change the property value
+	node.Text = "Updated"
+
+	-- Fire pending property change callbacks (equivalent to WPF's binding update cycle)
+	node:emitPropertyChangedEvents()
+
+	assert(last_text == "Updated", "onTextChanged should be called with the new Text value")
+
+	node:removeFromParent()
+end
+
 -- Simulate asynchronous execution by using a timer or a delayed call
 -- For testing purposes, we can just call the callback immediately
 orca.async = function (callback) callback() end
@@ -234,3 +432,9 @@ test_input_interaction()
 test_grid_view_layout()
 test_grid_view_in_stack_layout()
 test_text_single_line_layout()
+test_horizontal_stack_view_layout()
+test_node_alignment()
+test_input_checkbox()
+test_form_populate_inputs()
+test_node_visibility()
+test_property_change_notification()
