@@ -53,8 +53,8 @@ HANDLER(SKSpriteNode, Render)
     image = anim->Image;
 
     bbox = frame->Rect;
-//    bbox.x = -bbox.x;
-//    bbox.y = -bbox.y;
+    bbox.x = -bbox.x;
+    bbox.y = -bbox.y;
 
     MAT3_Translate(&texmat, &(struct vec2){
       frame->UvRect.x,
@@ -68,11 +68,8 @@ HANDLER(SKSpriteNode, Render)
     struct image_info img;
     Image_GetInfo(image, &img);
 
-    bbox = (struct rect) { node->Position.x, node->Position.y, node->Size.x, node->Size.y };
-    if (bbox.width == 0 && bbox.height == 0) {
-      bbox.width = (float)img.bmWidth;
-      bbox.height = (float)img.bmHeight;
-    }
+    bbox.width = node->Size.x ? node->Size.x : img.bmWidth;
+    bbox.height = node->Size.y ? node->Size.y : img.bmHeight;
 
     struct rect uv = pSKSpriteNode->UvRect;
     if (uv.width == 0 && uv.height == 0) {
@@ -93,7 +90,7 @@ HANDLER(SKSpriteNode, Render)
   
   struct ViewEntity entity = {
     .bbox = BOX3_FromRect(bbox),
-    .matrix = MAT4_Identity(), //node->Matrix,
+    .matrix = node->Matrix,
     .mesh = BOX_PTR(Mesh, MD_RECTANGLE),
     .material = {
       .opacity = node->_opacity,

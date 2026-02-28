@@ -2,7 +2,7 @@ local sk = require "orca.SpriteKit"
 local fs = require "orca.filesystem"
 local cg = require "orca.geometry"
 local rn = require "orca.renderer"
-local sprites = require "Scripts.Sprites"
+-- local sprites = require "Scripts.Sprites"
 local Worker = require "GameKit.Worker"
 local Barrier = require "GameKit.Barrier"
 local Decor = require "GameKit.Decor"
@@ -13,6 +13,10 @@ local map = {
   [104] = "worker_wait0",
 }
 
+local function sprite(path)
+  return "Volcano/Sprite Animations/"..path
+end
+
 local factory = {
   worker = function(level, x, y)
     local worker = Worker { Position = cg.Vector2D(x, y) }
@@ -22,9 +26,9 @@ local factory = {
   barrier = function(level, x, y, type, time)
     local animation
     if type == "tree00" or type == "stone00" then
-      animation = sprites["bar_"..type]
+      animation = sprite("bar_"..type)
     else
-      animation = sprites[type]
+      animation = sprite(type)
     end
     local barrier = Barrier { Position = cg.Vector2D(x, y), Animation = animation, time = time, type = type }
     table.insert(level.barriers, barrier)
@@ -32,7 +36,7 @@ local factory = {
   end,
   base = function(level, x, y)
     local base = sk.SKSpriteNode {
-      Animation = sprites.base0,
+      Animation = sprite("base0"),
       Position = cg.Vector2D(x, y),
       do_work = function(self, worker)
         worker.Visible = false
@@ -42,12 +46,12 @@ local factory = {
     return base
   end,
   delivery_place = function(level, x, y)
-    return sk.SKSpriteNode { Animation = sprites.delivery_place0, Position = cg.Vector2D(x, y) }
+    return sk.SKSpriteNode { Animation = sprite("delivery_place0"), Position = cg.Vector2D(x, y) }
   end,
   empty = function(level, x, y, objtype)
 
     if objtype == 113 then
-      local worker = Worker { Position = cg.Vector2D(x, y), is_boat = true, Animation = sprites.boat0 }
+      local worker = Worker { Position = cg.Vector2D(x, y), is_boat = true, Animation = sprite("boat0") }
       table.insert(level.workers, worker)
       return worker
     end
@@ -67,7 +71,7 @@ local factory = {
     local type = map[objtype]
     if type then
       local gameobj = sk.SKSpriteNode {
-        Animation = sprites[type],
+        Animation = sprite(type),
         Position = cg.Vector2D(x, y),
         onLeftMouseUp = function(self)
           level:run_worker_to(self)
@@ -79,13 +83,13 @@ local factory = {
   end,
   decor = function(level, x, y, anim, type)
     if type == 112 then
-      return Decor { Animation = sprites[anim.."_br"], Position = cg.Vector2D(x, y) }
+      return Decor { Animation = sprite(anim.."_br"), Position = cg.Vector2D(x, y) }
     end
     if anim == "burger" or anim == "sawmill" then
-      return sk.SKSpriteNode { Animation = sprites[anim.."0"], Position = cg.Vector2D(x, y) }
+      return sk.SKSpriteNode { Animation = sprite(anim.."0"), Position = cg.Vector2D(x, y) }
     end
-    if sprites[anim] then
-      return sk.SKSpriteNode { Animation = sprites[anim], Position = cg.Vector2D(x, y) }
+    if sprite(anim) then
+      return sk.SKSpriteNode { Animation = sprite(anim), Position = cg.Vector2D(x, y) }
     else
       return sk.SKNode { Position = cg.Vector2D(x, y) }
     end
