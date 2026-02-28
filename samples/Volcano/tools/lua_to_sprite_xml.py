@@ -99,15 +99,17 @@ def parse_lua(text: str):
     return animations
 
 
-def add_animation_xml(parent: ET.Element, anim: dict):
+def add_animation_xml(anim: dict):
     attrs = {
         "Name": anim["anim_name"],
+        # "Image": f"Volcano/Sprites/{anim['sprite']}",
+        # "Image": f"#{anim['sprite']}",
         "Image": f"Volcano/Sprites/{anim['sprite']}",
     }
     if anim["framerate"] != 0:
         attrs["Framerate"] = str(anim["framerate"])
 
-    anim_node = ET.SubElement(parent, "SpriteAnimation", attrs)
+    anim_node = ET.Element("SpriteAnimation", attrs)
     frames_node = ET.SubElement(anim_node, "SpriteAnimation.Frames")
 
     for f in anim["frames"]:
@@ -120,25 +122,35 @@ def add_animation_xml(parent: ET.Element, anim: dict):
             },
         )
 
+    return anim_node
+
 
 def main():
     if len(sys.argv) != 3:
-        print("Usage: lua_to_sprite_xml.py <input_folder> <output_xml>")
+        print("Usage: lua_to_sprite_xml.py <input_folder> <output_folder>")
         sys.exit(1)
 
     in_dir = Path(sys.argv[1])
-    out_xml = Path(sys.argv[2])
 
-    root = ET.Element("SpriteAnimationLibrary")
+    root1 = ET.Element("SpriteAnimationLibrary", {"Name": "Sprite Animations"})
+    root2 = ET.Element("SpriteLibrary", {"Name": "Sprites"})
+    images = set()
+    animations = []
 
     for lua_file in in_dir.rglob("*.lua"):
         text = lua_file.read_text(encoding="utf-8", errors="ignore")
-        animations = parse_lua(text)
-        for anim in animations:
-            add_animation_xml(root, anim)
+        for anim in parse_lua(text):
+            animations.append(add_animation_xml(anim))
+            images.add(anim["sprite"])
 
-    xml_str = pretty_xml(root)
-    out_xml.write_text(xml_str, encoding="utf-8")
+    for img in sorted(images):
+        ET.SubElement(root2, "Image", {"Name": img, "Source": f"Volcano/Sprites/{img}.png"})
+
+    for anim in animations:
+        root1.append(anim)
+
+    (Path(sys.argv[2]) / "Sprite Animations.xml").write_text(pretty_xml(root1), encoding="utf-8")
+    (Path(sys.argv[2]) / "Sprites.xml").write_text(pretty_xml(root2), encoding="utf-8")
 
 
 if __name__ == "__main__":

@@ -316,6 +316,13 @@ enum PropertyTypeLibraryProperties {
 	kPropertyTypeLibraryNumProperties
 };
 
+#define ID_SpriteLibrary 0xb1288547
+#define GetSpriteLibrary(_P)((struct SpriteLibrary*)((_P)?OBJ_GetComponent(_P,ID_SpriteLibrary):NULL))
+#define SpriteLibrary_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_SpriteLibrary,sizeof(struct SpriteLibrary),_N)
+enum SpriteLibraryProperties {
+	kSpriteLibraryNumProperties
+};
+
 #define ID_SpriteAnimationLibrary 0x9ef864fd
 #define GetSpriteAnimationLibrary(_P)((struct SpriteAnimationLibrary*)((_P)?OBJ_GetComponent(_P,ID_SpriteAnimationLibrary):NULL))
 #define SpriteAnimationLibrary_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_SpriteAnimationLibrary,sizeof(struct SpriteAnimationLibrary),_N)

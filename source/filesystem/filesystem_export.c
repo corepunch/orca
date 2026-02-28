@@ -1118,6 +1118,34 @@ ORCA_API struct ClassDesc _PropertyTypeLibrary = {
 	.Defaults = &PropertyTypeLibraryDefaults,
 	.NumProperties = kPropertyTypeLibraryNumProperties,
 };
+static struct PropertyDesc const SpriteLibraryProperties[kSpriteLibraryNumProperties] = {
+};
+static struct SpriteLibrary SpriteLibraryDefaults = {};
+LRESULT SpriteLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+}
+	return FALSE;
+}
+void luaX_pushSpriteLibrary(lua_State *L, lpcSpriteLibrary_t SpriteLibrary) {
+	luaX_pushObject(L, CMP_GetObject(SpriteLibrary));
+}
+lpSpriteLibrary_t luaX_checkSpriteLibrary(lua_State *L, int idx) {
+	return GetSpriteLibrary(luaX_checkObject(L, idx));
+}
+extern struct ClassDesc _Library;
+ORCA_API struct ClassDesc _SpriteLibrary = {
+	.ClassName = "SpriteLibrary",
+	.DefaultName = "Sprites",
+	.ContentType = "Sprite",
+	.Xmlns = "None",
+	.ParentClasses = {&_Library, NULL},
+	.ClassID = ID_SpriteLibrary,
+	.ClassSize = sizeof(struct SpriteLibrary),
+	.Properties = SpriteLibraryProperties,
+	.ObjProc = SpriteLibraryProc,
+	.Defaults = &SpriteLibraryDefaults,
+	.NumProperties = kSpriteLibraryNumProperties,
+};
 static struct PropertyDesc const SpriteAnimationLibraryProperties[kSpriteAnimationLibraryNumProperties] = {
 };
 static struct SpriteAnimationLibrary SpriteAnimationLibraryDefaults = {};
@@ -1699,6 +1727,9 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	// PropertyTypeLibrary
 	lua_pushclass(L, &_PropertyTypeLibrary);
 	lua_setfield(L, -2, "PropertyTypeLibrary");
+	// SpriteLibrary
+	lua_pushclass(L, &_SpriteLibrary);
+	lua_setfield(L, -2, "SpriteLibrary");
 	// SpriteAnimationLibrary
 	lua_pushclass(L, &_SpriteAnimationLibrary);
 	lua_setfield(L, -2, "SpriteAnimationLibrary");

@@ -111,6 +111,7 @@
   <!--  { LIBRARY(MessageTypeLibrary), "MessageTypes", "MessageType", FALSE },-->
   <!--  { LIBRARY(BrushTypeLibrary), "BrushTypes", "BrushType", FALSE },-->
   
+  <class name="SpriteLibrary" parent="Library" default="Sprites"/>
   <class name="SpriteAnimationLibrary" parent="Library" default="Sprite Animations"/>
 
   <class name="MessageLibrary" parent="Library" default="Messages"/>

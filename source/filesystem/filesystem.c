@@ -87,6 +87,8 @@ static struct {
   { LIBRARY(ConnectServiceLibrary), "Connect Services", "ConnectService", FALSE },
   { LIBRARY(ConnectUserServiceLibrary), "Connect User Library", "ConnectUser", FALSE },
   { LIBRARY(PropertyTypeLibrary), "Property Types", "PropertyType", FALSE },
+  { LIBRARY(SpriteLibrary), "Sprites", "Image", FALSE },
+  { LIBRARY(SpriteAnimationLibrary), "Sprite Animations", "SpriteAnimation", FALSE },
 };
 
 void FS_SetWorkspace(lpObject_t object) {
@@ -539,8 +541,7 @@ FS_LoadFile(lpcString_t szFileName)
   //    static int counter = 0;
   //    Con_Error("%d %s\n", counter++, path);
   path_t path;
-  FS_GetPathName(szFileName, path, sizeof(path));
-  FS_FindPackage(search, path) {
+  FS_FindPackage(search, FS_GetPathName(szFileName, path, sizeof(path))) {
     struct file *pFile = FS_ReadPackageFile(path+search->namelen, search);
     if (pFile) {
       return pFile;
@@ -646,6 +647,15 @@ FS_AddSearchPath(lua_State* L, lpcString_t szDirname)
       _SetPackageName(search, (lpcString_t)Name);
     }
     xmlForEach(library, xmlDocGetRootElement(search->doc)) {
+      if (!xmlStrcmp(library->name, XMLSTR("LibraryPlaceholder"))) {
+        xmlWith(xmlChar, Path, xmlGetProp(library, XMLSTR("PlaceholderTemplate")), xmlFree) {
+          xmlWith(xmlDoc, included, FS_LoadXML((lpcString_t)Path), xmlFreeDoc) {
+            xmlNodePtr imported = xmlDocCopyNode(xmlDocGetRootElement(included), search->doc, 1);
+            xmlReplaceNode(library, imported);
+            library = imported;
+          }
+        }
+      }
       FOR_LOOP(i, kNumLibraries) {
         if (!xmlStrcmp(library->name, BAD_CAST libraries[i].id)) {
           search->libraries[i] = library;
@@ -704,6 +714,11 @@ FS_LoadXML(lpcString_t szObjectName)
   strcpy(pszFileName, szObjectName);
   strcat(pszFileName, ".xml");
   struct _xmlDoc* doc = NULL;
+  
+  FS_FindPackage(search, szObjectName) {
+    
+  }
+  
   xmlWith(struct file, file, FS_LoadFile(pszFileName), FS_FreeFile) {
     doc = xmlReadMemory((char*)file->data, file->size, szObjectName, NULL, XML_FLAGS);
   }

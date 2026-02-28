@@ -340,11 +340,32 @@ XML_ParseObjectNode(lua_State* L, xmlNodePtr xml, lpObject_t root, xmlDocPtr doc
   
   OBJ_SetName(hobj, szClass);
   OBJ_SetClassName(hobj, (lpcString_t )xml->name);
-
+  
   if (doc && doc->URL) {
     xmlWith(char, decoded, xmlURIUnescapeString((char*)doc->URL, -1, NULL), xmlFree) {
-      OBJ_RegisterPrefab(hobj, decoded);
-      FS_RegisterObject(hobj, decoded);
+      ospathfmt_t fmt={0};
+//      strncpy(fmt, decoded, sizeof(fmt));
+      for (xmlNodePtr node = xml; node->parent; node = node->parent) {
+        fixedString_t name;
+        if (node->parent->parent) {
+          strncpy(name, (char*)node->name, sizeof(name));
+          xmlWith(xmlChar, Name, xmlGetProp(node, XMLSTR("Name")), xmlFree) {
+            strncpy(name, (char*)Name, sizeof(name));
+          }
+        } else {
+          strncpy(name, decoded, sizeof(name));
+        }
+        if (*fmt) {
+          ospathfmt_t tmp;
+          strncpy(tmp, fmt, sizeof(tmp));
+          snprintf(fmt, sizeof(fmt), "%s/%s", name, tmp);
+        } else {
+          strncpy(fmt, name, sizeof(fmt));
+        }
+      }
+      
+      OBJ_RegisterPrefab(hobj, fmt);
+      FS_RegisterObject(hobj, fmt);
     }
   }
   
@@ -357,6 +378,8 @@ XML_ParseObjectNode(lua_State* L, xmlNodePtr xml, lpObject_t root, xmlDocPtr doc
   FOR_EACH_LIST(xmlAttr, attr, xml->properties)
   {
     if (!xmlStrcmp(attr->name, XMLSTR("PlaceholderTemplate")))
+      continue;
+    if (!xmlStrcmp(attr->name, XMLSTR("ClassName")))
       continue;
     xmlWith(xmlChar, value, xmlNodeGetContent((xmlNode*)attr), xmlFree)
     {
@@ -430,7 +453,7 @@ XML_ParseObjectNode(lua_State* L, xmlNodePtr xml, lpObject_t root, xmlDocPtr doc
         }
       } else if (_ShallSkipNode(it)) {
         // skip
-      } else if ((childobj = XML_ParseObjectNode(L, it, root ? root : hobj, NULL))) {
+      } else if ((childobj = XML_ParseObjectNode(L, it, root ? root : hobj, xmlStrstr(xml->name, XMLSTR("Library")) ? doc : NULL))) {
         OBJ_AddChild(hobj, childobj, FALSE);
         lua_pop(L, 1);
       } else {

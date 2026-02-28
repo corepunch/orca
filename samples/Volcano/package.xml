@@ -10,5 +10,6 @@
     <ProjectReferenceItem Name="GameKit">Scripts/GameKit</ProjectReferenceItem>
     <ProjectReferenceItem Name="Scripts">Scripts</ProjectReferenceItem>
   </ProjectReferenceLibrary>
-  <LibraryPlaceholder PlaceholderTemplate="Volcano/SpriteAnimationLibrary"/>
+  <LibraryPlaceholder PlaceholderTemplate="Volcano/Sprites"/>
+  <LibraryPlaceholder PlaceholderTemplate="Volcano/Sprite Animations"/>
 </Project>

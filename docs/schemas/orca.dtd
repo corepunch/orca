@@ -2159,6 +2159,12 @@
 <!ENTITY % PropertyTypeLibraryElements "%LibraryElements;">
 <!ELEMENT PropertyTypeLibrary EMPTY>
 <!ATTLIST PropertyTypeLibrary %PropertyTypeLibraryAttribs;>
+<!ENTITY % SpriteLibraryAttribs "
+	%LibraryAttribs;
+">
+<!ENTITY % SpriteLibraryElements "%LibraryElements;">
+<!ELEMENT SpriteLibrary EMPTY>
+<!ATTLIST SpriteLibrary %SpriteLibraryAttribs;>
 <!ENTITY % SpriteAnimationLibraryAttribs "
 	%LibraryAttribs;
 ">

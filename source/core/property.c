@@ -243,7 +243,7 @@ PROP_SetValue(lpProperty_t property, void const* source)
     if (!udata) {
       memset(property->value, 0, PROP_GetSize(property));
       property->flags |= PF_NIL;
-      Con_Error("No %s in object %s", property->userdata, OBJ_GetName(object));
+      Con_Error("No %s component in object %s(%s)", property->userdata, OBJ_GetName(object), OBJ_GetClassName(object));
       return;
     }
     memcpy(property->value, &udata, PROP_GetSize(property));

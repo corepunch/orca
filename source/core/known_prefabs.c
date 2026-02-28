@@ -17,16 +17,20 @@ void Init_KnownPrefabs(void) {
 ORCA_API lpObject_t
 OBJ_FindKnownPrefab(lpcString_t szFileName, lpcString_t* ppRemaining)
 {
+  lpObject_t best_match = NULL;
+  size_t match_len = 0;
   for (uint32_t i = 1; i < MAX_PREFABS && *known_prefabs[i].path; i++) {
     size_t size = strlen(known_prefabs[i].path);
-    
+    if (match_len > size) continue;
     if (!strncmp(known_prefabs[i].path, szFileName, size)) {
-      if (ppRemaining)
+      if (ppRemaining) {
         *ppRemaining = szFileName + size;
-      return known_prefabs[i].object;
+      }
+      best_match = known_prefabs[i].object;
+      match_len = size;
     }
   }
-  return NULL;
+  return best_match;
 }
 
 ORCA_API void

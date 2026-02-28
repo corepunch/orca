@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<SpriteAnimationLibrary>
+<SpriteAnimationLibrary Name="Sprite Animations">
   <SpriteAnimation Name="bar_stone00" Image="Volcano/Sprites/barrier">
     <SpriteAnimation.Frames>
       <SpriteFrame Rect="31.0 23.0 62.0 51.0" UvRect="0.3203125 0.3359375 0.1210938 0.09960938"/>

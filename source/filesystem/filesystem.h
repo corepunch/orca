@@ -330,6 +330,15 @@ luaX_pushPropertyTypeLibrary(lua_State *L, lpcPropertyTypeLibrary_t PropertyType
 ORCA_API lpPropertyTypeLibrary_t
 luaX_checkPropertyTypeLibrary(lua_State *L, int idx);
 
+typedef struct SpriteLibrary SpriteLibrary_t, *lpSpriteLibrary_t;
+typedef struct SpriteLibrary const cSpriteLibrary_t, *lpcSpriteLibrary_t;
+/// @brief Push SpriteLibrary onto Lua stack.
+ORCA_API void
+luaX_pushSpriteLibrary(lua_State *L, lpcSpriteLibrary_t SpriteLibrary);
+/// @brief Check SpriteLibrary form Lua stack at index.
+ORCA_API lpSpriteLibrary_t
+luaX_checkSpriteLibrary(lua_State *L, int idx);
+
 typedef struct SpriteAnimationLibrary SpriteAnimationLibrary_t, *lpSpriteAnimationLibrary_t;
 typedef struct SpriteAnimationLibrary const cSpriteAnimationLibrary_t, *lpcSpriteAnimationLibrary_t;
 /// @brief Push SpriteAnimationLibrary onto Lua stack.
@@ -681,6 +690,11 @@ struct ConnectUserServiceLibrary {
 typedef struct PropertyTypeLibrary PropertyTypeLibrary, *PropertyTypeLibraryPtr;
 typedef struct PropertyTypeLibrary const *PropertyTypeLibraryCPtr;
 struct PropertyTypeLibrary {
+};
+
+typedef struct SpriteLibrary SpriteLibrary, *SpriteLibraryPtr;
+typedef struct SpriteLibrary const *SpriteLibraryCPtr;
+struct SpriteLibrary {
 };
 
 typedef struct SpriteAnimationLibrary SpriteAnimationLibrary, *SpriteAnimationLibraryPtr;
