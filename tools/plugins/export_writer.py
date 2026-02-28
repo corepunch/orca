@@ -340,7 +340,7 @@ class ExportWriter(Plugin):
 					continue
 				field_name, field_type = field.get('name'), field.get('type')
 				self.w(f"\txmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR(\"{field_name}\")), xmlFree) {{")
-				self.w(f"\t\tattr = (xmlChar*)__strto{field_type}((lpcString_t)attr, &output->{field_name});")
+				self.w(f"\t\t__strto{field_type}((lpcString_t)attr, &output->{field_name});")
 				self.w(f"\t}}")
 				# self.w(f"\txmlto{field_type}((xmlNodePtr)xmlHasProp(xml, XMLSTR(\"{field_name}\")), &output->{field_name});")
 

@@ -628,7 +628,7 @@ uint32_t
 PROP_GetSize(lpcProperty_t property)
 {
   if (property->pdesc) {
-    return (uint32_t)property->pdesc->DataSize;
+    return property->pdesc->IsArray ? sizeof(void*) : (uint32_t)property->pdesc->DataSize;
   } else {
     return (uint32_t)psize[property->type];
   }

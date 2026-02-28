@@ -578,16 +578,16 @@ ORCA_API lpcString_t __strtoBorderRadiusShorthand(lpcString_t str, lpBorderRadiu
 static int xml_BorderRadiusShorthand(xmlNodePtr xml, lpBorderRadiusShorthand_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("TopLeftRadius")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->TopLeftRadius);
+		__strtofloat((lpcString_t)attr, &output->TopLeftRadius);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("TopRightRadius")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->TopRightRadius);
+		__strtofloat((lpcString_t)attr, &output->TopRightRadius);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("BottomRightRadius")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->BottomRightRadius);
+		__strtofloat((lpcString_t)attr, &output->BottomRightRadius);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("BottomLeftRadius")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->BottomLeftRadius);
+		__strtofloat((lpcString_t)attr, &output->BottomLeftRadius);
 	}
 	return TRUE;
 }
@@ -680,13 +680,13 @@ static int xml_BorderEdgeShorthand(xmlNodePtr xml, lpBorderEdgeShorthand_t outpu
 	lpcString_t __strtocolor(lpcString_t, struct color*);
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Width")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->Width);
+		__strtofloat((lpcString_t)attr, &output->Width);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Style")), xmlFree) {
-		attr = (xmlChar*)__strtoBorderStyle((lpcString_t)attr, &output->Style);
+		__strtoBorderStyle((lpcString_t)attr, &output->Style);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Color")), xmlFree) {
-		attr = (xmlChar*)__strtocolor((lpcString_t)attr, &output->Color);
+		__strtocolor((lpcString_t)attr, &output->Color);
 	}
 	return TRUE;
 }
@@ -757,10 +757,10 @@ ORCA_API lpcString_t __strtoBorderSideShorthand(lpcString_t str, lpBorderSideSho
 static int xml_BorderSideShorthand(xmlNodePtr xml, lpBorderSideShorthand_t output) {
 	lpcString_t __strtoBorderEdgeShorthand(lpcString_t, struct BorderEdgeShorthand*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Left")), xmlFree) {
-		attr = (xmlChar*)__strtoBorderEdgeShorthand((lpcString_t)attr, &output->Left);
+		__strtoBorderEdgeShorthand((lpcString_t)attr, &output->Left);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Right")), xmlFree) {
-		attr = (xmlChar*)__strtoBorderEdgeShorthand((lpcString_t)attr, &output->Right);
+		__strtoBorderEdgeShorthand((lpcString_t)attr, &output->Right);
 	}
 	return TRUE;
 }
@@ -824,7 +824,7 @@ ORCA_API lpcString_t __strtoBorderShorthand(lpcString_t str, lpBorderShorthand_t
 static int xml_BorderShorthand(xmlNodePtr xml, lpBorderShorthand_t output) {
 	lpcString_t __strtoBorderRadiusShorthand(lpcString_t, struct BorderRadiusShorthand*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Radius")), xmlFree) {
-		attr = (xmlChar*)__strtoBorderRadiusShorthand((lpcString_t)attr, &output->Radius);
+		__strtoBorderRadiusShorthand((lpcString_t)attr, &output->Radius);
 	}
 	return TRUE;
 }
@@ -906,10 +906,10 @@ ORCA_API lpcString_t __strtoEdgeShorthand(lpcString_t str, lpEdgeShorthand_t out
 static int xml_EdgeShorthand(xmlNodePtr xml, lpEdgeShorthand_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Left")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->Left);
+		__strtofloat((lpcString_t)attr, &output->Left);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Right")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->Right);
+		__strtofloat((lpcString_t)attr, &output->Right);
 	}
 	return TRUE;
 }
@@ -1064,13 +1064,13 @@ static int xml_FontShorthand(xmlNodePtr xml, lpFontShorthand_t output) {
 	lpcString_t __strtoFontWeight(lpcString_t, enum FontWeight*);
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Weight")), xmlFree) {
-		attr = (xmlChar*)__strtoFontWeight((lpcString_t)attr, &output->Weight);
+		__strtoFontWeight((lpcString_t)attr, &output->Weight);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Style")), xmlFree) {
-		attr = (xmlChar*)__strtoFontStyle((lpcString_t)attr, &output->Style);
+		__strtoFontStyle((lpcString_t)attr, &output->Style);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Size")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->Size);
+		__strtofloat((lpcString_t)attr, &output->Size);
 	}
 	return TRUE;
 }
@@ -1146,7 +1146,7 @@ ORCA_API lpcString_t __strtoBrushShorthand(lpcString_t str, lpBrushShorthand_t o
 static int xml_BrushShorthand(xmlNodePtr xml, lpBrushShorthand_t output) {
 	lpcString_t __strtocolor(lpcString_t, struct color*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Color")), xmlFree) {
-		attr = (xmlChar*)__strtocolor((lpcString_t)attr, &output->Color);
+		__strtocolor((lpcString_t)attr, &output->Color);
 	}
 	return TRUE;
 }
@@ -1246,16 +1246,16 @@ static int xml_ShadowShorthand(xmlNodePtr xml, lpShadowShorthand_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	lpcString_t __strtovec2(lpcString_t, struct vec2*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Offset")), xmlFree) {
-		attr = (xmlChar*)__strtovec2((lpcString_t)attr, &output->Offset);
+		__strtovec2((lpcString_t)attr, &output->Offset);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("BlurRadius")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->BlurRadius);
+		__strtofloat((lpcString_t)attr, &output->BlurRadius);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("SpreadRadius")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->SpreadRadius);
+		__strtofloat((lpcString_t)attr, &output->SpreadRadius);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Color")), xmlFree) {
-		attr = (xmlChar*)__strtocolor((lpcString_t)attr, &output->Color);
+		__strtocolor((lpcString_t)attr, &output->Color);
 	}
 	return TRUE;
 }
@@ -1346,13 +1346,13 @@ static int xml_RingShorthand(xmlNodePtr xml, lpRingShorthand_t output) {
 	lpcString_t __strtocolor(lpcString_t, struct color*);
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Offset")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->Offset);
+		__strtofloat((lpcString_t)attr, &output->Offset);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Width")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->Width);
+		__strtofloat((lpcString_t)attr, &output->Width);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Color")), xmlFree) {
-		attr = (xmlChar*)__strtocolor((lpcString_t)attr, &output->Color);
+		__strtocolor((lpcString_t)attr, &output->Color);
 	}
 	return TRUE;
 }
@@ -1434,10 +1434,10 @@ ORCA_API lpcString_t __strtoOverflowShorthand(lpcString_t str, lpOverflowShortha
 static int xml_OverflowShorthand(xmlNodePtr xml, lpOverflowShorthand_t output) {
 	lpcString_t __strtoOverflow(lpcString_t, enum Overflow*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("x")), xmlFree) {
-		attr = (xmlChar*)__strtoOverflow((lpcString_t)attr, &output->x);
+		__strtoOverflow((lpcString_t)attr, &output->x);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("y")), xmlFree) {
-		attr = (xmlChar*)__strtoOverflow((lpcString_t)attr, &output->y);
+		__strtoOverflow((lpcString_t)attr, &output->y);
 	}
 	return TRUE;
 }
@@ -1528,13 +1528,13 @@ static int xml_UnderlineShorthand(xmlNodePtr xml, lpUnderlineShorthand_t output)
 	lpcString_t __strtocolor(lpcString_t, struct color*);
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Offset")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->Offset);
+		__strtofloat((lpcString_t)attr, &output->Offset);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Width")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->Width);
+		__strtofloat((lpcString_t)attr, &output->Width);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Color")), xmlFree) {
-		attr = (xmlChar*)__strtocolor((lpcString_t)attr, &output->Color);
+		__strtocolor((lpcString_t)attr, &output->Color);
 	}
 	return TRUE;
 }
@@ -1638,16 +1638,16 @@ ORCA_API lpcString_t __strtoThickness(lpcString_t str, lpThickness_t output) {
 static int xml_Thickness(xmlNodePtr xml, lpThickness_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Top")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->Top);
+		__strtofloat((lpcString_t)attr, &output->Top);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Right")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->Right);
+		__strtofloat((lpcString_t)attr, &output->Right);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Bottom")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->Bottom);
+		__strtofloat((lpcString_t)attr, &output->Bottom);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Left")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->Left);
+		__strtofloat((lpcString_t)attr, &output->Left);
 	}
 	return TRUE;
 }
@@ -1814,19 +1814,19 @@ ORCA_API lpcString_t __strtoSizeAxisShorthand(lpcString_t str, lpSizeAxisShortha
 static int xml_SizeAxisShorthand(xmlNodePtr xml, lpSizeAxisShorthand_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Requested")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->Requested);
+		__strtofloat((lpcString_t)attr, &output->Requested);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Desired")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->Desired);
+		__strtofloat((lpcString_t)attr, &output->Desired);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Min")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->Min);
+		__strtofloat((lpcString_t)attr, &output->Min);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Actual")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->Actual);
+		__strtofloat((lpcString_t)attr, &output->Actual);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Scroll")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->Scroll);
+		__strtofloat((lpcString_t)attr, &output->Scroll);
 	}
 	return TRUE;
 }
@@ -3498,10 +3498,10 @@ static int xml_NavigateToPageArguments(xmlNodePtr xml, lpNavigateToPageArguments
 	lpcString_t __strtoTransitionType(lpcString_t, enum TransitionType*);
 	lpcString_t __strtofixed(lpcString_t, fixedString_t*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("URL")), xmlFree) {
-		attr = (xmlChar*)__strtofixed((lpcString_t)attr, &output->URL);
+		__strtofixed((lpcString_t)attr, &output->URL);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("TransitionType")), xmlFree) {
-		attr = (xmlChar*)__strtoTransitionType((lpcString_t)attr, &output->TransitionType);
+		__strtoTransitionType((lpcString_t)attr, &output->TransitionType);
 	}
 	return TRUE;
 }
@@ -3572,7 +3572,7 @@ ORCA_API lpcString_t __strtoNavigateBackArguments(lpcString_t str, lpNavigateBac
 static int xml_NavigateBackArguments(xmlNodePtr xml, lpNavigateBackArguments_t output) {
 	lpcString_t __strtoTransitionType(lpcString_t, enum TransitionType*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("TransitionType")), xmlFree) {
-		attr = (xmlChar*)__strtoTransitionType((lpcString_t)attr, &output->TransitionType);
+		__strtoTransitionType((lpcString_t)attr, &output->TransitionType);
 	}
 	return TRUE;
 }

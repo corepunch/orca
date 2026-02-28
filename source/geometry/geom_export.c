@@ -209,10 +209,10 @@ ORCA_API lpcString_t __strtovec2(lpcString_t str, lpvec2_t output) {
 static int xml_vec2(xmlNodePtr xml, lpvec2_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("x")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->x);
+		__strtofloat((lpcString_t)attr, &output->x);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("y")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->y);
+		__strtofloat((lpcString_t)attr, &output->y);
 	}
 	return TRUE;
 }
@@ -470,13 +470,13 @@ ORCA_API lpcString_t __strtovec3(lpcString_t str, lpvec3_t output) {
 static int xml_vec3(xmlNodePtr xml, lpvec3_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("x")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->x);
+		__strtofloat((lpcString_t)attr, &output->x);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("y")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->y);
+		__strtofloat((lpcString_t)attr, &output->y);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("z")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->z);
+		__strtofloat((lpcString_t)attr, &output->z);
 	}
 	return TRUE;
 }
@@ -630,16 +630,16 @@ ORCA_API lpcString_t __strtovec4(lpcString_t str, lpvec4_t output) {
 static int xml_vec4(xmlNodePtr xml, lpvec4_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("x")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->x);
+		__strtofloat((lpcString_t)attr, &output->x);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("y")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->y);
+		__strtofloat((lpcString_t)attr, &output->y);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("z")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->z);
+		__strtofloat((lpcString_t)attr, &output->z);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("w")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->w);
+		__strtofloat((lpcString_t)attr, &output->w);
 	}
 	return TRUE;
 }
@@ -740,10 +740,10 @@ ORCA_API lpcString_t __strtobox2(lpcString_t str, lpbox2_t output) {
 static int xml_box2(xmlNodePtr xml, lpbox2_t output) {
 	lpcString_t __strtovec2(lpcString_t, struct vec2*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("min")), xmlFree) {
-		attr = (xmlChar*)__strtovec2((lpcString_t)attr, &output->min);
+		__strtovec2((lpcString_t)attr, &output->min);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("max")), xmlFree) {
-		attr = (xmlChar*)__strtovec2((lpcString_t)attr, &output->max);
+		__strtovec2((lpcString_t)attr, &output->max);
 	}
 	return TRUE;
 }
@@ -823,10 +823,10 @@ ORCA_API lpcString_t __strtobox3(lpcString_t str, lpbox3_t output) {
 static int xml_box3(xmlNodePtr xml, lpbox3_t output) {
 	lpcString_t __strtovec3(lpcString_t, struct vec3*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("min")), xmlFree) {
-		attr = (xmlChar*)__strtovec3((lpcString_t)attr, &output->min);
+		__strtovec3((lpcString_t)attr, &output->min);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("max")), xmlFree) {
-		attr = (xmlChar*)__strtovec3((lpcString_t)attr, &output->max);
+		__strtovec3((lpcString_t)attr, &output->max);
 	}
 	return TRUE;
 }
@@ -908,10 +908,10 @@ ORCA_API lpcString_t __strtoSize(lpcString_t str, lpSize_t output) {
 static int xml_Size(xmlNodePtr xml, lpSize_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("width")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->width);
+		__strtofloat((lpcString_t)attr, &output->width);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("height")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->height);
+		__strtofloat((lpcString_t)attr, &output->height);
 	}
 	return TRUE;
 }
@@ -1064,16 +1064,16 @@ ORCA_API lpcString_t __strtorect(lpcString_t str, lprect_t output) {
 static int xml_rect(xmlNodePtr xml, lprect_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("x")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->x);
+		__strtofloat((lpcString_t)attr, &output->x);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("y")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->y);
+		__strtofloat((lpcString_t)attr, &output->y);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("width")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->width);
+		__strtofloat((lpcString_t)attr, &output->width);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("height")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->height);
+		__strtofloat((lpcString_t)attr, &output->height);
 	}
 	return TRUE;
 }
@@ -1251,16 +1251,16 @@ ORCA_API lpcString_t __strtoquat(lpcString_t str, lpquat_t output) {
 static int xml_quat(xmlNodePtr xml, lpquat_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("x")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->x);
+		__strtofloat((lpcString_t)attr, &output->x);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("y")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->y);
+		__strtofloat((lpcString_t)attr, &output->y);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("z")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->z);
+		__strtofloat((lpcString_t)attr, &output->z);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("w")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->w);
+		__strtofloat((lpcString_t)attr, &output->w);
 	}
 	return TRUE;
 }
@@ -1623,10 +1623,10 @@ ORCA_API lpcString_t __strtobounds(lpcString_t str, lpbounds_t output) {
 static int xml_bounds(xmlNodePtr xml, lpbounds_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("min")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->min);
+		__strtofloat((lpcString_t)attr, &output->min);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("max")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->max);
+		__strtofloat((lpcString_t)attr, &output->max);
 	}
 	return TRUE;
 }
@@ -1748,16 +1748,16 @@ ORCA_API lpcString_t __strtoplane3(lpcString_t str, lpplane3_t output) {
 static int xml_plane3(xmlNodePtr xml, lpplane3_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("a")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->a);
+		__strtofloat((lpcString_t)attr, &output->a);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("b")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->b);
+		__strtofloat((lpcString_t)attr, &output->b);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("c")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->c);
+		__strtofloat((lpcString_t)attr, &output->c);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("d")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->d);
+		__strtofloat((lpcString_t)attr, &output->d);
 	}
 	return TRUE;
 }
@@ -1837,10 +1837,10 @@ static int xml_sphere3(xmlNodePtr xml, lpsphere3_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	lpcString_t __strtovec3(lpcString_t, struct vec3*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("center")), xmlFree) {
-		attr = (xmlChar*)__strtovec3((lpcString_t)attr, &output->center);
+		__strtovec3((lpcString_t)attr, &output->center);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("radius")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->radius);
+		__strtofloat((lpcString_t)attr, &output->radius);
 	}
 	return TRUE;
 }
@@ -1986,22 +1986,22 @@ ORCA_API lpcString_t __strtofrustum3(lpcString_t str, lpfrustum3_t output) {
 static int xml_frustum3(xmlNodePtr xml, lpfrustum3_t output) {
 	lpcString_t __strtoplane3(lpcString_t, struct plane3*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("left")), xmlFree) {
-		attr = (xmlChar*)__strtoplane3((lpcString_t)attr, &output->left);
+		__strtoplane3((lpcString_t)attr, &output->left);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("right")), xmlFree) {
-		attr = (xmlChar*)__strtoplane3((lpcString_t)attr, &output->right);
+		__strtoplane3((lpcString_t)attr, &output->right);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("bottom")), xmlFree) {
-		attr = (xmlChar*)__strtoplane3((lpcString_t)attr, &output->bottom);
+		__strtoplane3((lpcString_t)attr, &output->bottom);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("top")), xmlFree) {
-		attr = (xmlChar*)__strtoplane3((lpcString_t)attr, &output->top);
+		__strtoplane3((lpcString_t)attr, &output->top);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("front")), xmlFree) {
-		attr = (xmlChar*)__strtoplane3((lpcString_t)attr, &output->front);
+		__strtoplane3((lpcString_t)attr, &output->front);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("back")), xmlFree) {
-		attr = (xmlChar*)__strtoplane3((lpcString_t)attr, &output->back);
+		__strtoplane3((lpcString_t)attr, &output->back);
 	}
 	return TRUE;
 }
@@ -2104,13 +2104,13 @@ static int xml_transform2(xmlNodePtr xml, lptransform2_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	lpcString_t __strtovec2(lpcString_t, struct vec2*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("translation")), xmlFree) {
-		attr = (xmlChar*)__strtovec2((lpcString_t)attr, &output->translation);
+		__strtovec2((lpcString_t)attr, &output->translation);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("rotation")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->rotation);
+		__strtofloat((lpcString_t)attr, &output->rotation);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("scale")), xmlFree) {
-		attr = (xmlChar*)__strtovec2((lpcString_t)attr, &output->scale);
+		__strtovec2((lpcString_t)attr, &output->scale);
 	}
 	return TRUE;
 }
@@ -2204,13 +2204,13 @@ ORCA_API lpcString_t __strtotransform3(lpcString_t str, lptransform3_t output) {
 static int xml_transform3(xmlNodePtr xml, lptransform3_t output) {
 	lpcString_t __strtovec3(lpcString_t, struct vec3*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("translation")), xmlFree) {
-		attr = (xmlChar*)__strtovec3((lpcString_t)attr, &output->translation);
+		__strtovec3((lpcString_t)attr, &output->translation);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("rotation")), xmlFree) {
-		attr = (xmlChar*)__strtovec3((lpcString_t)attr, &output->rotation);
+		__strtovec3((lpcString_t)attr, &output->rotation);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("scale")), xmlFree) {
-		attr = (xmlChar*)__strtovec3((lpcString_t)attr, &output->scale);
+		__strtovec3((lpcString_t)attr, &output->scale);
 	}
 	return TRUE;
 }
@@ -2298,13 +2298,13 @@ ORCA_API lpcString_t __strtotriangle3(lpcString_t str, lptriangle3_t output) {
 static int xml_triangle3(xmlNodePtr xml, lptriangle3_t output) {
 	lpcString_t __strtovec3(lpcString_t, struct vec3*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("a")), xmlFree) {
-		attr = (xmlChar*)__strtovec3((lpcString_t)attr, &output->a);
+		__strtovec3((lpcString_t)attr, &output->a);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("b")), xmlFree) {
-		attr = (xmlChar*)__strtovec3((lpcString_t)attr, &output->b);
+		__strtovec3((lpcString_t)attr, &output->b);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("c")), xmlFree) {
-		attr = (xmlChar*)__strtovec3((lpcString_t)attr, &output->c);
+		__strtovec3((lpcString_t)attr, &output->c);
 	}
 	return TRUE;
 }
@@ -2419,10 +2419,10 @@ ORCA_API lpcString_t __strtoline3(lpcString_t str, lpline3_t output) {
 static int xml_line3(xmlNodePtr xml, lpline3_t output) {
 	lpcString_t __strtovec3(lpcString_t, struct vec3*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("a")), xmlFree) {
-		attr = (xmlChar*)__strtovec3((lpcString_t)attr, &output->a);
+		__strtovec3((lpcString_t)attr, &output->a);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("b")), xmlFree) {
-		attr = (xmlChar*)__strtovec3((lpcString_t)attr, &output->b);
+		__strtovec3((lpcString_t)attr, &output->b);
 	}
 	return TRUE;
 }
@@ -2526,16 +2526,16 @@ ORCA_API lpcString_t __strtoedges(lpcString_t str, lpedges_t output) {
 static int xml_edges(xmlNodePtr xml, lpedges_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("left")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->left);
+		__strtofloat((lpcString_t)attr, &output->left);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("top")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->top);
+		__strtofloat((lpcString_t)attr, &output->top);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("right")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->right);
+		__strtofloat((lpcString_t)attr, &output->right);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("bottom")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->bottom);
+		__strtofloat((lpcString_t)attr, &output->bottom);
 	}
 	return TRUE;
 }
@@ -2656,16 +2656,16 @@ ORCA_API lpcString_t __strtocolor(lpcString_t str, lpcolor_t output) {
 static int xml_color(xmlNodePtr xml, lpcolor_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("r")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->r);
+		__strtofloat((lpcString_t)attr, &output->r);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("g")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->g);
+		__strtofloat((lpcString_t)attr, &output->g);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("b")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->b);
+		__strtofloat((lpcString_t)attr, &output->b);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("a")), xmlFree) {
-		attr = (xmlChar*)__strtofloat((lpcString_t)attr, &output->a);
+		__strtofloat((lpcString_t)attr, &output->a);
 	}
 	return TRUE;
 }

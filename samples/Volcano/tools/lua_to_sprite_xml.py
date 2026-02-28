@@ -102,7 +102,7 @@ def parse_lua(text: str):
 def add_animation_xml(parent: ET.Element, anim: dict):
     attrs = {
         "Name": anim["anim_name"],
-        "Image": f"Volcano/Sprites/{anim['image']}",
+        "Image": f"Volcano/Sprites/{anim['sprite']}",
     }
     if anim["framerate"] != 0:
         attrs["Framerate"] = str(anim["framerate"])

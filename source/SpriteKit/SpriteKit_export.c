@@ -65,10 +65,10 @@ ORCA_API lpcString_t __strtoSpriteFrame(lpcString_t str, lpSpriteFrame_t output)
 static int xml_SpriteFrame(xmlNodePtr xml, lpSpriteFrame_t output) {
 	lpcString_t __strtorect(lpcString_t, struct rect*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Rect")), xmlFree) {
-		attr = (xmlChar*)__strtorect((lpcString_t)attr, &output->Rect);
+		__strtorect((lpcString_t)attr, &output->Rect);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("UvRect")), xmlFree) {
-		attr = (xmlChar*)__strtorect((lpcString_t)attr, &output->UvRect);
+		__strtorect((lpcString_t)attr, &output->UvRect);
 	}
 	return TRUE;
 }
