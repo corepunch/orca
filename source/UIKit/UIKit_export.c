@@ -500,6 +500,7 @@ ORCA_API lpcString_t __strtoSizing(lpcString_t string, enum Sizing* output) {
 	return string + strlen(string);
 }
 void luaX_pushBorderRadiusShorthand(lua_State *L, lpcBorderRadiusShorthand_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpBorderRadiusShorthand_t self = lua_newuserdata(L, sizeof(struct BorderRadiusShorthand));
 	luaL_setmetatable(L, "BorderRadiusShorthand");
 	memcpy(self, data, sizeof(struct BorderRadiusShorthand));
@@ -613,6 +614,7 @@ int luaopen_orca_BorderRadiusShorthand(lua_State *L) {
 	return 1;
 }
 void luaX_pushBorderEdgeShorthand(lua_State *L, lpcBorderEdgeShorthand_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpBorderEdgeShorthand_t self = lua_newuserdata(L, sizeof(struct BorderEdgeShorthand));
 	luaL_setmetatable(L, "BorderEdgeShorthand");
 	memcpy(self, data, sizeof(struct BorderEdgeShorthand));
@@ -712,6 +714,7 @@ int luaopen_orca_BorderEdgeShorthand(lua_State *L) {
 	return 1;
 }
 void luaX_pushBorderSideShorthand(lua_State *L, lpcBorderSideShorthand_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpBorderSideShorthand_t self = lua_newuserdata(L, sizeof(struct BorderSideShorthand));
 	luaL_setmetatable(L, "BorderSideShorthand");
 	memcpy(self, data, sizeof(struct BorderSideShorthand));
@@ -786,6 +789,7 @@ int luaopen_orca_BorderSideShorthand(lua_State *L) {
 	return 1;
 }
 void luaX_pushBorderShorthand(lua_State *L, lpcBorderShorthand_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpBorderShorthand_t self = lua_newuserdata(L, sizeof(struct BorderShorthand));
 	luaL_setmetatable(L, "BorderShorthand");
 	memcpy(self, data, sizeof(struct BorderShorthand));
@@ -850,6 +854,7 @@ int luaopen_orca_BorderShorthand(lua_State *L) {
 	return 1;
 }
 void luaX_pushEdgeShorthand(lua_State *L, lpcEdgeShorthand_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpEdgeShorthand_t self = lua_newuserdata(L, sizeof(struct EdgeShorthand));
 	luaL_setmetatable(L, "EdgeShorthand");
 	memcpy(self, data, sizeof(struct EdgeShorthand));
@@ -935,6 +940,7 @@ int luaopen_orca_EdgeShorthand(lua_State *L) {
 	return 1;
 }
 void luaX_pushAlignmentShorthand(lua_State *L, lpcAlignmentShorthand_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpAlignmentShorthand_t self = lua_newuserdata(L, sizeof(struct AlignmentShorthand));
 	luaL_setmetatable(L, "AlignmentShorthand");
 	memcpy(self, data, sizeof(struct AlignmentShorthand));
@@ -987,6 +993,7 @@ int luaopen_orca_AlignmentShorthand(lua_State *L) {
 	return 1;
 }
 void luaX_pushFontShorthand(lua_State *L, lpcFontShorthand_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpFontShorthand_t self = lua_newuserdata(L, sizeof(struct FontShorthand));
 	luaL_setmetatable(L, "FontShorthand");
 	memcpy(self, data, sizeof(struct FontShorthand));
@@ -1096,6 +1103,7 @@ int luaopen_orca_FontShorthand(lua_State *L) {
 	return 1;
 }
 void luaX_pushBrushShorthand(lua_State *L, lpcBrushShorthand_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpBrushShorthand_t self = lua_newuserdata(L, sizeof(struct BrushShorthand));
 	luaL_setmetatable(L, "BrushShorthand");
 	memcpy(self, data, sizeof(struct BrushShorthand));
@@ -1172,6 +1180,7 @@ int luaopen_orca_BrushShorthand(lua_State *L) {
 	return 1;
 }
 void luaX_pushShadowShorthand(lua_State *L, lpcShadowShorthand_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpShadowShorthand_t self = lua_newuserdata(L, sizeof(struct ShadowShorthand));
 	luaL_setmetatable(L, "ShadowShorthand");
 	memcpy(self, data, sizeof(struct ShadowShorthand));
@@ -1281,6 +1290,7 @@ int luaopen_orca_ShadowShorthand(lua_State *L) {
 	return 1;
 }
 void luaX_pushRingShorthand(lua_State *L, lpcRingShorthand_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpRingShorthand_t self = lua_newuserdata(L, sizeof(struct RingShorthand));
 	luaL_setmetatable(L, "RingShorthand");
 	memcpy(self, data, sizeof(struct RingShorthand));
@@ -1378,6 +1388,7 @@ int luaopen_orca_RingShorthand(lua_State *L) {
 	return 1;
 }
 void luaX_pushOverflowShorthand(lua_State *L, lpcOverflowShorthand_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpOverflowShorthand_t self = lua_newuserdata(L, sizeof(struct OverflowShorthand));
 	luaL_setmetatable(L, "OverflowShorthand");
 	memcpy(self, data, sizeof(struct OverflowShorthand));
@@ -1463,6 +1474,7 @@ int luaopen_orca_OverflowShorthand(lua_State *L) {
 	return 1;
 }
 void luaX_pushUnderlineShorthand(lua_State *L, lpcUnderlineShorthand_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpUnderlineShorthand_t self = lua_newuserdata(L, sizeof(struct UnderlineShorthand));
 	luaL_setmetatable(L, "UnderlineShorthand");
 	memcpy(self, data, sizeof(struct UnderlineShorthand));
@@ -1560,6 +1572,7 @@ int luaopen_orca_UnderlineShorthand(lua_State *L) {
 	return 1;
 }
 void luaX_pushThickness(lua_State *L, lpcThickness_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpThickness_t self = lua_newuserdata(L, sizeof(struct Thickness));
 	luaL_setmetatable(L, "Thickness");
 	memcpy(self, data, sizeof(struct Thickness));
@@ -1673,6 +1686,7 @@ int luaopen_orca_Thickness(lua_State *L) {
 	return 1;
 }
 void luaX_pushMarginShorthand(lua_State *L, lpcMarginShorthand_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpMarginShorthand_t self = lua_newuserdata(L, sizeof(struct MarginShorthand));
 	luaL_setmetatable(L, "MarginShorthand");
 	memcpy(self, data, sizeof(struct MarginShorthand));
@@ -1725,6 +1739,7 @@ int luaopen_orca_MarginShorthand(lua_State *L) {
 	return 1;
 }
 void luaX_pushSizeAxisShorthand(lua_State *L, lpcSizeAxisShorthand_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpSizeAxisShorthand_t self = lua_newuserdata(L, sizeof(struct SizeAxisShorthand));
 	luaL_setmetatable(L, "SizeAxisShorthand");
 	memcpy(self, data, sizeof(struct SizeAxisShorthand));
@@ -1852,6 +1867,7 @@ int luaopen_orca_SizeAxisShorthand(lua_State *L) {
 	return 1;
 }
 void luaX_pushSizeShorthand(lua_State *L, lpcSizeShorthand_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpSizeShorthand_t self = lua_newuserdata(L, sizeof(struct SizeShorthand));
 	luaL_setmetatable(L, "SizeShorthand");
 	memcpy(self, data, sizeof(struct SizeShorthand));
@@ -3440,6 +3456,7 @@ ORCA_API lpcString_t __strtoTransitionType(lpcString_t string, enum TransitionTy
 	return string + strlen(string);
 }
 void luaX_pushNavigateToPageArguments(lua_State *L, lpcNavigateToPageArguments_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpNavigateToPageArguments_t self = lua_newuserdata(L, sizeof(struct NavigateToPageArguments));
 	luaL_setmetatable(L, "NavigateToPageArguments");
 	memcpy(self, data, sizeof(struct NavigateToPageArguments));
@@ -3527,6 +3544,7 @@ int luaopen_orca_NavigateToPageArguments(lua_State *L) {
 	return 1;
 }
 void luaX_pushNavigateBackArguments(lua_State *L, lpcNavigateBackArguments_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpNavigateBackArguments_t self = lua_newuserdata(L, sizeof(struct NavigateBackArguments));
 	luaL_setmetatable(L, "NavigateBackArguments");
 	memcpy(self, data, sizeof(struct NavigateBackArguments));

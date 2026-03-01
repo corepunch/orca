@@ -1,13 +1,23 @@
--- local orca = require "orca"
+local orca = require "orca"
+
+-- local function parse_value(value)
+-- 	if value == "true" then return true end
+-- 	if value == "false" then return false end
+-- 	local num = tonumber(value)
+-- 	if num then return num end
+-- 	return value
+-- end
 
 local function parse_argument(node, name, value)
+	assert(orca.typeconverter, "Type converter plugin is required for XML support plugin")
+	if name == "Name" or name == "id" then node:setName(value) return end
 	node[name] = value
-	-- node:findImplicitProperty(name, value)
-	-- if element:get(name) then
-	-- 	return element:get(name)
-	-- else
-	-- 	return value
-	-- end
+	local type = node:findImplicitProperty(name, value)
+	assert(type, "Unknown property: "..name.." for node of type "..node.class)
+	local converter = orca.typeconverter[type.DataType]
+	assert(converter, "No type converter for data type: "..type.DataType)
+	-- orca.typeconverter[type.DataType](value)	
+	node[name] = converter(value)
 end
 
 local function try_require_memeber(module, name)

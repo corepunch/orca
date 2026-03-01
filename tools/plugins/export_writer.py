@@ -35,6 +35,7 @@ _T = {
 	),
 	'struct_push': string.Template(
 		"void luaX_push${name}(lua_State *L, ${lpcname} data) {\n"
+		"\tif (data == NULL) { lua_pushnil(L); return; }\n"
 		"\t${lpname} self = lua_newuserdata(L, sizeof(struct ${name}));\n"
 		"\tluaL_setmetatable(L, \"${export}\");\n"
 		"\tmemcpy(self, data, sizeof(struct ${name}));\n"

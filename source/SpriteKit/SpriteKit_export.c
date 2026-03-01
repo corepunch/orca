@@ -20,6 +20,7 @@
 	.IsArray=TRUE, ##__VA_ARGS__ }
 
 void luaX_pushSpriteFrame(lua_State *L, lpcSpriteFrame_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpSpriteFrame_t self = lua_newuserdata(L, sizeof(struct SpriteFrame));
 	luaL_setmetatable(L, "SpriteFrame");
 	memcpy(self, data, sizeof(struct SpriteFrame));

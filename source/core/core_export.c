@@ -653,6 +653,7 @@ ORCA_API lpcString_t __strtoDataType(lpcString_t string, enum DataType* output) 
 	return string + strlen(string);
 }
 void luaX_pushPropertyEnumValue(lua_State *L, lpcPropertyEnumValue_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpPropertyEnumValue_t self = lua_newuserdata(L, sizeof(struct PropertyEnumValue));
 	luaL_setmetatable(L, "PropertyEnumValue");
 	memcpy(self, data, sizeof(struct PropertyEnumValue));
@@ -740,6 +741,7 @@ int luaopen_orca_PropertyEnumValue(lua_State *L) {
 	return 1;
 }
 void luaX_pushPropertyType(lua_State *L, lpcPropertyType_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpPropertyType_t self = lua_newuserdata(L, sizeof(struct PropertyType));
 	luaL_setmetatable(L, "PropertyType");
 	memcpy(self, data, sizeof(struct PropertyType));

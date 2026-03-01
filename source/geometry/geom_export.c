@@ -27,6 +27,7 @@ ORCA_API lpcString_t __strtoRotationOrder(lpcString_t string, enum RotationOrder
 	return string + strlen(string);
 }
 void luaX_pushvec2(lua_State *L, lpcvec2_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpvec2_t self = lua_newuserdata(L, sizeof(struct vec2));
 	luaL_setmetatable(L, "Vector2D");
 	memcpy(self, data, sizeof(struct vec2));
@@ -239,6 +240,7 @@ int luaopen_orca_vec2(lua_State *L) {
 	return 1;
 }
 void luaX_pushvec3(lua_State *L, lpcvec3_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpvec3_t self = lua_newuserdata(L, sizeof(struct vec3));
 	luaL_setmetatable(L, "Vector3D");
 	memcpy(self, data, sizeof(struct vec3));
@@ -502,6 +504,7 @@ int luaopen_orca_vec3(lua_State *L) {
 	return 1;
 }
 void luaX_pushvec4(lua_State *L, lpcvec4_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpvec4_t self = lua_newuserdata(L, sizeof(struct vec4));
 	luaL_setmetatable(L, "Vector4D");
 	memcpy(self, data, sizeof(struct vec4));
@@ -663,6 +666,7 @@ int luaopen_orca_vec4(lua_State *L) {
 	return 1;
 }
 void luaX_pushbox2(lua_State *L, lpcbox2_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpbox2_t self = lua_newuserdata(L, sizeof(struct box2));
 	luaL_setmetatable(L, "Box2D");
 	memcpy(self, data, sizeof(struct box2));
@@ -765,6 +769,7 @@ int luaopen_orca_box2(lua_State *L) {
 	return 1;
 }
 void luaX_pushbox3(lua_State *L, lpcbox3_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpbox3_t self = lua_newuserdata(L, sizeof(struct box3));
 	luaL_setmetatable(L, "Box3D");
 	memcpy(self, data, sizeof(struct box3));
@@ -848,6 +853,7 @@ int luaopen_orca_box3(lua_State *L) {
 	return 1;
 }
 void luaX_pushSize(lua_State *L, lpcSize_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpSize_t self = lua_newuserdata(L, sizeof(struct Size));
 	luaL_setmetatable(L, "Size");
 	memcpy(self, data, sizeof(struct Size));
@@ -933,6 +939,7 @@ int luaopen_orca_Size(lua_State *L) {
 	return 1;
 }
 void luaX_pushrect(lua_State *L, lpcrect_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lprect_t self = lua_newuserdata(L, sizeof(struct rect));
 	luaL_setmetatable(L, "Rectangle");
 	memcpy(self, data, sizeof(struct rect));
@@ -1095,6 +1102,7 @@ int luaopen_orca_rect(lua_State *L) {
 	return 1;
 }
 void luaX_pushquat(lua_State *L, lpcquat_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpquat_t self = lua_newuserdata(L, sizeof(struct quat));
 	luaL_setmetatable(L, "Quaternion");
 	memcpy(self, data, sizeof(struct quat));
@@ -1284,6 +1292,7 @@ int luaopen_orca_quat(lua_State *L) {
 	return 1;
 }
 void luaX_pushmat3(lua_State *L, lpcmat3_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpmat3_t self = lua_newuserdata(L, sizeof(struct mat3));
 	luaL_setmetatable(L, "Matrix2D");
 	memcpy(self, data, sizeof(struct mat3));
@@ -1367,6 +1376,7 @@ int luaopen_orca_mat3(lua_State *L) {
 	return 1;
 }
 void luaX_pushmat4(lua_State *L, lpcmat4_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpmat4_t self = lua_newuserdata(L, sizeof(struct mat4));
 	luaL_setmetatable(L, "Matrix3D");
 	memcpy(self, data, sizeof(struct mat4));
@@ -1563,6 +1573,7 @@ int luaopen_orca_mat4(lua_State *L) {
 	return 1;
 }
 void luaX_pushbounds(lua_State *L, lpcbounds_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpbounds_t self = lua_newuserdata(L, sizeof(struct bounds));
 	luaL_setmetatable(L, "Bounds");
 	memcpy(self, data, sizeof(struct bounds));
@@ -1648,6 +1659,7 @@ int luaopen_orca_bounds(lua_State *L) {
 	return 1;
 }
 void luaX_pushplane3(lua_State *L, lpcplane3_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpplane3_t self = lua_newuserdata(L, sizeof(struct plane3));
 	luaL_setmetatable(L, "Plane");
 	memcpy(self, data, sizeof(struct plane3));
@@ -1779,6 +1791,7 @@ int luaopen_orca_plane3(lua_State *L) {
 	return 1;
 }
 void luaX_pushsphere3(lua_State *L, lpcsphere3_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpsphere3_t self = lua_newuserdata(L, sizeof(struct sphere3));
 	luaL_setmetatable(L, "Sphere");
 	memcpy(self, data, sizeof(struct sphere3));
@@ -1862,6 +1875,7 @@ int luaopen_orca_sphere3(lua_State *L) {
 	return 1;
 }
 void luaX_pushfrustum3(lua_State *L, lpcfrustum3_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpfrustum3_t self = lua_newuserdata(L, sizeof(struct frustum3));
 	luaL_setmetatable(L, "Frustum");
 	memcpy(self, data, sizeof(struct frustum3));
@@ -2024,6 +2038,7 @@ int luaopen_orca_frustum3(lua_State *L) {
 	return 1;
 }
 void luaX_pushtransform2(lua_State *L, lpctransform2_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lptransform2_t self = lua_newuserdata(L, sizeof(struct transform2));
 	luaL_setmetatable(L, "Transform2D");
 	memcpy(self, data, sizeof(struct transform2));
@@ -2133,6 +2148,7 @@ int luaopen_orca_transform2(lua_State *L) {
 	return 1;
 }
 void luaX_pushtransform3(lua_State *L, lpctransform3_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lptransform3_t self = lua_newuserdata(L, sizeof(struct transform3));
 	luaL_setmetatable(L, "Transform3D");
 	memcpy(self, data, sizeof(struct transform3));
@@ -2233,6 +2249,7 @@ int luaopen_orca_transform3(lua_State *L) {
 	return 1;
 }
 void luaX_pushtriangle3(lua_State *L, lpctriangle3_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lptriangle3_t self = lua_newuserdata(L, sizeof(struct triangle3));
 	luaL_setmetatable(L, "Triangle3D");
 	memcpy(self, data, sizeof(struct triangle3));
@@ -2326,6 +2343,7 @@ int luaopen_orca_triangle3(lua_State *L) {
 	return 1;
 }
 void luaX_pushline3(lua_State *L, lpcline3_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpline3_t self = lua_newuserdata(L, sizeof(struct line3));
 	luaL_setmetatable(L, "Line3D");
 	memcpy(self, data, sizeof(struct line3));
@@ -2444,6 +2462,7 @@ int luaopen_orca_line3(lua_State *L) {
 	return 1;
 }
 void luaX_pushedges(lua_State *L, lpcedges_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpedges_t self = lua_newuserdata(L, sizeof(struct edges));
 	luaL_setmetatable(L, "Edges");
 	memcpy(self, data, sizeof(struct edges));
@@ -2557,6 +2576,7 @@ int luaopen_orca_edges(lua_State *L) {
 	return 1;
 }
 void luaX_pushcolor(lua_State *L, lpccolor_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpcolor_t self = lua_newuserdata(L, sizeof(struct color));
 	luaL_setmetatable(L, "Color");
 	memcpy(self, data, sizeof(struct color));
