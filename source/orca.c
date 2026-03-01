@@ -107,12 +107,9 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirname) {
     }
 
     // initialize
-    fprintf(mem, "print(ref, orca, fs)\n");
     fprintf(mem, "ref.init(%d, %d, %s)\n", windowsize[0], windowsize[1], args.server ? args.server : "false");
-    fprintf(mem, "print('fs.init')\n");
     fprintf(mem, "fs.init('%s')\n", szDirname);
-    fprintf(mem, "print('done')\n");
-
+    
     xmlFindAll(loc, root, XMLSTR("LocaleLibrary"))
     xmlFindAllText(path, content, loc, XMLSTR("LocaleReferenceItem")) {
       fprintf(mem, "loc.load '%s'\n", content);
@@ -124,7 +121,7 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirname) {
       fprintf(mem, "local ok, screen = pcall(require, '%s')\n", StartupScreen);
       fprintf(mem, "if ok then screen = screen()\n");
       fprintf(mem, "else local err = screen\n");
-      fprintf(mem, "screen = orca.ui.Screen()\n");
+      fprintf(mem, "screen = orca.ui.Screen { Width = %d, Height = %d }\n", windowsize[0], windowsize[1]);
       fprintf(mem, "local term = orca.ui.TerminalView {\n");
       fprintf(mem, "\tBufferWidth=screen.Width/8,\n");
       fprintf(mem, "\tBufferHeight=screen.Height/16}\n");

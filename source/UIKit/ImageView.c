@@ -24,17 +24,18 @@ HANDLER(ImageView, MeasureOverride)
   if (pImageView->Image) {
     vec2_t size = _GetImageSize(hObject, pImageView);
     lpcedges_t e = (struct edges const*)&pImageView->Insets;
-    vec2_t calcsize = {
-      fmin(size.x - e->left - e->right, pMeasureOverride->width),
-      fmin(size.y - e->top - e->bottom, pMeasureOverride->height),
-    };
+//    vec2_t calcsize = {
+//      fmin(size.x - e->left - e->right, pMeasureOverride->width),
+//      fmin(size.y - e->top - e->bottom, pMeasureOverride->height),
+//    };
     if (pImageView->Stretch == kStretchNone) {
       return MAKEDWORD(size.x - e->left - e->right, size.y - e->top - e->bottom);
     } else if (pImageView->Stretch == kStretchUniform) {
-      rect_t final = RECT_Fit(&(rect_t){0, 0, calcsize.x, calcsize.y}, &size);
+      rect_t avail = {0, 0, pMeasureOverride->width, pMeasureOverride->height};
+      rect_t final = RECT_Fit(&avail, &size);
       return MAKEDWORD(final.width, final.height);
     } else {
-      return MAKEDWORD(calcsize.x, calcsize.y);
+      return MAKEDWORD(pMeasureOverride->width, pMeasureOverride->height);
     }
   } else {
     return MAKEDWORD(pMeasureOverride->width, pMeasureOverride->height);

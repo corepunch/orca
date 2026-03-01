@@ -1,30 +1,40 @@
-local orca = require "orca"
+-- local orca = require "orca"
 
-local function safe_require(module, name)
+local function try_require_memeber(module, name)
 	local ok, res = pcall(require, module)
 	return ok and res[name] or nil
 end
 
-local function instantiate(node)
+local function construct(node)
 	local class =
-		safe_require("orca.ui", node.name) or
-		safe_require("orca.SceneKit", node.name) or
-		safe_require("orca.SpriteKit", node.name)
-	if class then
-		print("Instantiating class "..node.name)
-		-- return (node.attributes)
-	else
-		return error("Unknown node type: "..node.name)
+		try_require_memeber("orca.ui", node.tag) or
+		try_require_memeber("orca.SceneKit", node.tag) or
+		try_require_memeber("orca.SpriteKit", node.tag) or
+		try_require_memeber("orca.filesystem", node.tag) or
+		try_require_memeber("orca.renderer", node.tag)
+
+	if not class then
+		return error("Unknown node type: "..node.tag)
 	end
-	-- local instance = obj(node.attributes)
+
+	local instance = class()
+	for k, v in node.attributes do
+		instance[k] = v
+	end
+
 	for sub in node.children do
-		instantiate(sub)
+		instance:addChild(construct(sub))
 	end
+
+	return instance
 end
 
--- orca.register_loader("xml", load_xml)
 table.insert(package.searchers, function(path)
 	local xml = require "orca.parsers.xml"
-	local ok, res = pcall(xml.load, path..'.xml')
-	return ok and res and function() return instantiate(res.root) end or nil;
+	local ok, doc = pcall(xml.load, path..'.xml')
+	return ok and doc and function()
+		return function()
+			return construct(doc.root)
+		end
+	end or nil
 end)

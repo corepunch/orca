@@ -221,6 +221,7 @@ int lua_pushclass(lua_State* L, struct ClassDesc* cl)
   lua_pushstring(L, "orca");
   lua_call(L, 1, 1);
   lua_getfield(L, -1, "Behaviour");
+  lua_remove(L, -2); // remove orca
   lua_getfield(L, -1, "extend");
   lua_pushvalue(L, -2);
   // Create the args table
