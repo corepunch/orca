@@ -1,7 +1,8 @@
 -- local orca = require "orca"
 
 local function parse_argument(node, name, value)
-	node:findImplicitProperty(name, value)
+	node[name] = value
+	-- node:findImplicitProperty(name, value)
 	-- if element:get(name) then
 	-- 	return element:get(name)
 	-- else

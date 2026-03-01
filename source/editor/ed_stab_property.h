@@ -123,11 +123,11 @@ PDESC_Print(lpcPropertyType_t pdesc, LPSTR buffer, DWORD len, float const* pf)
 }
 
 void PROP_Print(HPROP p, LPSTR buffer, DWORD len) {
-  PDESC_Print(p->pdesc ? p->pdesc: &(struct PropertyType){
+  PDESC_Print(p->pdesc/* ? p->pdesc: &(struct PropertyType){
     .DataType = p->type,
     .DataSize = PROP_GetSize(p),
     .TypeString = p->userdata,
-  }, buffer, len, PROP_GetValue(p));
+  }*/, buffer, len, PROP_GetValue(p));
 }
 
 static lpcString_t _attrs[ATTR_COUNT] = {

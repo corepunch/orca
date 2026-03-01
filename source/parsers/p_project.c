@@ -82,6 +82,7 @@ int f_loadProject(lua_State* L) {
       }
       type->ShortIdentifier = fnv1a32(type->Name);
       type->FullIdentifier = fnv1a32(tmp);
+      type->DataSize = 4; // TODO: properly identify size of a property
       OBJ_RegisterPropertyType(type);
     }
   }

@@ -704,11 +704,11 @@ PROP_Parse(lpProperty_t p, lpcString_t string)
   if (!_PDESC_Parse) {
     fprintf(stderr, "PDESC_Parse() is not registered, do 'require \"orca.parsers.xml\"' first\n");
   } else {
-    _PDESC_Parse(p->object, p->pdesc ? p->pdesc: &(struct PropertyType){
+    _PDESC_Parse(p->object, p->pdesc/* ? p->pdesc: &(struct PropertyType){
       .DataType = p->type,
       .DataSize = PROP_GetSize(p),
       .TypeString = p->userdata,
-    }, p, string, p->value);
+    }*/, p, string, p->value);
     p->flags &= ~PF_NIL;
     p->flags |= PF_MODIFIED;
     OBJ_SetDirty(p->object);

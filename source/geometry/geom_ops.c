@@ -1607,7 +1607,7 @@ ORCA_API lpcString_t __strtofloat(lpcString_t str, float* output) {
 }
 
 ORCA_API lpcString_t __strtofixed(lpcString_t str, fixedString_t* fixed) {
-  strncpy(*fixed, str, sizeof(*str));
+  strncpy(*fixed, str, sizeof(fixedString_t));
   return str + strlen(str);
 }
 
