@@ -41,6 +41,8 @@ enum ProjectProperties {
 	kProjectDefaultMaterial,
 	kProjectWidth,
 	kProjectHeight,
+	kProjectPropertyTypes,
+	kProjectNumPropertyTypes,
 	kProjectNumProperties
 };
 
@@ -76,6 +78,8 @@ enum ProjectProperties {
 #define ID_Project_DefaultMaterial 0x3c678158
 #define ID_Project_Width 0x2a30723c
 #define ID_Project_Height 0xdab148ab
+#define ID_Project_PropertyTypes 0x5273d526
+#define ID_Project_NumPropertyTypes 0x13e23766
 #define ID_Library 0xa8532270
 #define GetLibrary(_P)((struct Library*)((_P)?OBJ_GetComponent(_P,ID_Library):NULL))
 #define Library_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_Library,sizeof(struct Library),_N)
@@ -307,13 +311,6 @@ enum ConnectServiceLibraryProperties {
 #define ConnectUserServiceLibrary_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_ConnectUserServiceLibrary,sizeof(struct ConnectUserServiceLibrary),_N)
 enum ConnectUserServiceLibraryProperties {
 	kConnectUserServiceLibraryNumProperties
-};
-
-#define ID_PropertyTypeLibrary 0x8dacd47b
-#define GetPropertyTypeLibrary(_P)((struct PropertyTypeLibrary*)((_P)?OBJ_GetComponent(_P,ID_PropertyTypeLibrary):NULL))
-#define PropertyTypeLibrary_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_PropertyTypeLibrary,sizeof(struct PropertyTypeLibrary),_N)
-enum PropertyTypeLibraryProperties {
-	kPropertyTypeLibraryNumProperties
 };
 
 #define ID_SpriteLibrary 0xb1288547

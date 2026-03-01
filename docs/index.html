@@ -203,7 +203,6 @@
 </span></a><a class="leaf-link" href="#StateManagerLibrary"><i class="fa-solid fa-layer-group icon"></i><span>StateManagerLibrary
 </span></a><a class="leaf-link" href="#ConnectServiceLibrary"><i class="fa-solid fa-layer-group icon"></i><span>ConnectServiceLibrary
 </span></a><a class="leaf-link" href="#ConnectUserServiceLibrary"><i class="fa-solid fa-layer-group icon"></i><span>ConnectUserServiceLibrary
-</span></a><a class="leaf-link" href="#PropertyTypeLibrary"><i class="fa-solid fa-layer-group icon"></i><span>PropertyTypeLibrary
 </span></a><a class="leaf-link" href="#SpriteLibrary"><i class="fa-solid fa-layer-group icon"></i><span>SpriteLibrary
 </span></a><a class="leaf-link" href="#SpriteAnimationLibrary"><i class="fa-solid fa-layer-group icon"></i><span>SpriteAnimationLibrary
 </span></a><a class="leaf-link" href="#MessageLibrary"><i class="fa-solid fa-layer-group icon"></i><span>MessageLibrary
@@ -624,8 +623,8 @@
 <div class="small-abstract"><span>Underlying data type that determines how the property value is interpreted and stored.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">DefaultValue</span>: <span>fixed</span></code></div>
 <div class="small-abstract"><span>Default value assigned when the property is not explicitly set.
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">TargetType</span>: <span>fixed</span></code></div>
-<div class="small-abstract"><span>Type of object or component this property applies to.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">TypeString</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>String representation of the property type, used to store enum values or struct type names.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">AffectLayout</span>: <span>bool</span></code></div>
 <div class="small-abstract"><span>Indicates whether this property affects element layout (e.g., size or alignment).
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">AffectRender</span>: <span>bool</span></code></div>
@@ -654,8 +653,6 @@
 <div class="small-abstract"><span>Byte offset of the property within the structure.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">DataSize</span>: <span>uint</span></code></div>
 <div class="small-abstract"><span>Size of the property data in bytes.
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">TypeString</span>: <span>fixed</span></code></div>
-<div class="small-abstract"><span>String representation of the property type, used to store enum values or struct type names.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">NumComponents</span>: <span>uint</span></code></div>
 <div class="small-abstract"><span>Number of components in the group property (for vector or array types).
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">IsArray</span>: <span>bool</span></code></div>
@@ -2599,7 +2596,10 @@
 <div class="topic"><code class="decorator"><span>var </span><span class="identifier">DefaultMaterial</span>: <span>fixed</span></code></div>
 <div class="topic"><code class="decorator"><span>var </span><span class="identifier">Width</span>: <span>int</span></code></div>
 <div class="topic"><code class="decorator"><span>var </span><span class="identifier">Height</span>: <span>int</span></code></div>
-</div><div id="Library" class="class" data-name="Library" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
+<div class="topic"><code class="decorator"><span>struct </span><span class="identifier">PropertyTypes</span>: <a class="type-identifier-link" href="#PropertyType">PropertyType</a></code></div>
+<div class="topic"><code class="decorator"><span>var </span><span class="identifier">NumPropertyTypes</span>: <span>int</span></code></div>
+<div class="small-abstract"><span>Number of propertytypes
+</span></div></div><div id="Library" class="class" data-name="Library" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">Library
 </h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.Library</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">IsExternal</span>: <span>bool</span></code></div>
 </div><div id="AnimationClipLibrary" class="class" data-name="AnimationClipLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
@@ -2666,9 +2666,7 @@
 </div><h1 class="header">ConnectServiceLibrary
 </h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ConnectServiceLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ConnectUserServiceLibrary" class="class" data-name="ConnectUserServiceLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">ConnectUserServiceLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ConnectUserServiceLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="PropertyTypeLibrary" class="class" data-name="PropertyTypeLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
-</div><h1 class="header">PropertyTypeLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.PropertyTypeLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="SpriteLibrary" class="class" data-name="SpriteLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ConnectUserServiceLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="SpriteLibrary" class="class" data-name="SpriteLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">SpriteLibrary
 </h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.SpriteLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="SpriteAnimationLibrary" class="class" data-name="SpriteAnimationLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">SpriteAnimationLibrary

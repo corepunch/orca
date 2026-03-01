@@ -464,7 +464,7 @@ struct PropertyType {
 	fixedString_t Category; /// Organizational category for this property, used for grouping in editors and UIs.
 	eDataType_t DataType; /// Underlying data type that determines how the property value is interpreted and stored.
 	fixedString_t DefaultValue; /// Default value assigned when the property is not explicitly set.
-	fixedString_t TargetType; /// Type of object or component this property applies to.
+	fixedString_t TypeString; /// String representation of the property type, used to store enum values or struct type names.
 	bool_t AffectLayout; /// Indicates whether this property affects element layout (e.g., size or alignment).
 	bool_t AffectRender; /// Indicates whether this property influences the rendering output.
 	bool_t IsReadOnly; /// If true, the property value cannot be modified at runtime or through the editor.
@@ -479,7 +479,6 @@ struct PropertyType {
 	uint32_t FullIdentifier; /// Unique full identifier for the property type, automatically generated from explicit (ie. Grid.Columns) property name.
 	uint32_t Offset; /// Byte offset of the property within the structure.
 	uint32_t DataSize; /// Size of the property data in bytes.
-	fixedString_t TypeString; /// String representation of the property type, used to store enum values or struct type names.
 	uint32_t NumComponents; /// Number of components in the group property (for vector or array types).
 	bool_t IsArray; /// Indicates whether the property is an array type, will generate Num* property to indicate the number of elements.
 };

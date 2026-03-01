@@ -10,15 +10,6 @@ void SV_Shutdown(void);
 ORCA_API int luaopen_orca_object(lua_State* L);
 ORCA_API int luaopen_orca_network(lua_State* L);
 
-//HANDLER(PropertyType, Attached) {
-//  pPropertyType->_desc.id = (struct ID *)hObject;
-//  pPropertyType->_desc.FullIdentifier = OBJ_GetIdentifier(hObject);
-//  pPropertyType->_desc.DataType = pPropertyType->DataType;
-//  pPropertyType->_desc.TypeString = pPropertyType->TargetType;
-//  OBJ_RegisterPropertyType(&pPropertyType->_desc);
-//  return 0;
-//}
-
 bool_t
 OBJ_RegisterPropertyType(lpcPropertyType_t pt)
 {

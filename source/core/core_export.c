@@ -764,8 +764,8 @@ static int f_new_PropertyType(lua_State *L) {
 		lua_getfield(L, 1, "DefaultValue");
 		strncpy(self->DefaultValue, luaL_optstring(L, -1, ""), sizeof(self->DefaultValue));
 		lua_pop(L, 1);
-		lua_getfield(L, 1, "TargetType");
-		strncpy(self->TargetType, luaL_optstring(L, -1, ""), sizeof(self->TargetType));
+		lua_getfield(L, 1, "TypeString");
+		strncpy(self->TypeString, luaL_optstring(L, -1, ""), sizeof(self->TypeString));
 		lua_pop(L, 1);
 		lua_getfield(L, 1, "AffectLayout");
 		self->AffectLayout = lua_toboolean(L, -1);
@@ -809,9 +809,6 @@ static int f_new_PropertyType(lua_State *L) {
 		lua_getfield(L, 1, "DataSize");
 		self->DataSize = lua_tonumber(L, -1);
 		lua_pop(L, 1);
-		lua_getfield(L, 1, "TypeString");
-		strncpy(self->TypeString, luaL_optstring(L, -1, ""), sizeof(self->TypeString));
-		lua_pop(L, 1);
 		lua_getfield(L, 1, "NumComponents");
 		self->NumComponents = lua_tonumber(L, -1);
 		lua_pop(L, 1);
@@ -823,7 +820,7 @@ static int f_new_PropertyType(lua_State *L) {
 		strncpy(self->Category, luaL_checkstring(L, 2), sizeof(self->Category));
 		self->DataType = luaX_checkDataType(L, 3);
 		strncpy(self->DefaultValue, luaL_checkstring(L, 4), sizeof(self->DefaultValue));
-		strncpy(self->TargetType, luaL_checkstring(L, 5), sizeof(self->TargetType));
+		strncpy(self->TypeString, luaL_checkstring(L, 5), sizeof(self->TypeString));
 		self->AffectLayout = lua_toboolean(L, 6);
 		self->AffectRender = lua_toboolean(L, 7);
 		self->IsReadOnly = lua_toboolean(L, 8);
@@ -838,9 +835,8 @@ static int f_new_PropertyType(lua_State *L) {
 		self->FullIdentifier = luaL_checknumber(L, 17);
 		self->Offset = luaL_checknumber(L, 18);
 		self->DataSize = luaL_checknumber(L, 19);
-		strncpy(self->TypeString, luaL_checkstring(L, 20), sizeof(self->TypeString));
-		self->NumComponents = luaL_checknumber(L, 21);
-		self->IsArray = lua_toboolean(L, 22);
+		self->NumComponents = luaL_checknumber(L, 20);
+		self->IsArray = lua_toboolean(L, 21);
 	}
 	return 1;
 }
@@ -862,8 +858,8 @@ int f_PropertyType___index(lua_State *L) {
 	case 0xcd093f9f: // DefaultValue
 		lua_pushstring(L, luaX_checkPropertyType(L, 1)->DefaultValue);
 		return 1;
-	case 0x77ada720: // TargetType
-		lua_pushstring(L, luaX_checkPropertyType(L, 1)->TargetType);
+	case 0xdf6c0780: // TypeString
+		lua_pushstring(L, luaX_checkPropertyType(L, 1)->TypeString);
 		return 1;
 	case 0xd2d3694e: // AffectLayout
 		lua_pushboolean(L, luaX_checkPropertyType(L, 1)->AffectLayout);
@@ -907,9 +903,6 @@ int f_PropertyType___index(lua_State *L) {
 	case 0x58ff2a7c: // DataSize
 		lua_pushnumber(L, luaX_checkPropertyType(L, 1)->DataSize);
 		return 1;
-	case 0xdf6c0780: // TypeString
-		lua_pushstring(L, luaX_checkPropertyType(L, 1)->TypeString);
-		return 1;
 	case 0xc3c2d1e7: // NumComponents
 		lua_pushnumber(L, luaX_checkPropertyType(L, 1)->NumComponents);
 		return 1;
@@ -933,8 +926,8 @@ int f_PropertyType___newindex(lua_State *L) {
 	case 0xcd093f9f: // DefaultValue
 		strncpy(luaX_checkPropertyType(L, 1)->DefaultValue, luaL_checkstring(L, 3), sizeof(luaX_checkPropertyType(L, 1)->DefaultValue));
 		return 0;
-	case 0x77ada720: // TargetType
-		strncpy(luaX_checkPropertyType(L, 1)->TargetType, luaL_checkstring(L, 3), sizeof(luaX_checkPropertyType(L, 1)->TargetType));
+	case 0xdf6c0780: // TypeString
+		strncpy(luaX_checkPropertyType(L, 1)->TypeString, luaL_checkstring(L, 3), sizeof(luaX_checkPropertyType(L, 1)->TypeString));
 		return 0;
 	case 0xd2d3694e: // AffectLayout
 		luaX_checkPropertyType(L, 1)->AffectLayout = lua_toboolean(L, 3);
@@ -978,9 +971,6 @@ int f_PropertyType___newindex(lua_State *L) {
 	case 0x58ff2a7c: // DataSize
 		luaX_checkPropertyType(L, 1)->DataSize = luaL_checknumber(L, 3);
 		return 0;
-	case 0xdf6c0780: // TypeString
-		strncpy(luaX_checkPropertyType(L, 1)->TypeString, luaL_checkstring(L, 3), sizeof(luaX_checkPropertyType(L, 1)->TypeString));
-		return 0;
 	case 0xc3c2d1e7: // NumComponents
 		luaX_checkPropertyType(L, 1)->NumComponents = luaL_checknumber(L, 3);
 		return 0;
@@ -1001,7 +991,7 @@ ORCA_API lpcString_t __strtoPropertyType(lpcString_t str, lpPropertyType_t outpu
 	str = __strtofixed(str, &output->Category);
 	str = __strtoDataType(str, &output->DataType);
 	str = __strtofixed(str, &output->DefaultValue);
-	str = __strtofixed(str, &output->TargetType);
+	str = __strtofixed(str, &output->TypeString);
 	str = __strtobool(str, &output->AffectLayout);
 	str = __strtobool(str, &output->AffectRender);
 	str = __strtobool(str, &output->IsReadOnly);
@@ -1016,7 +1006,6 @@ ORCA_API lpcString_t __strtoPropertyType(lpcString_t str, lpPropertyType_t outpu
 	str = __strtouint(str, &output->FullIdentifier);
 	str = __strtouint(str, &output->Offset);
 	str = __strtouint(str, &output->DataSize);
-	str = __strtofixed(str, &output->TypeString);
 	str = __strtouint(str, &output->NumComponents);
 	str = __strtobool(str, &output->IsArray);
 	return str;
@@ -1039,8 +1028,8 @@ static int xml_PropertyType(xmlNodePtr xml, lpPropertyType_t output) {
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("DefaultValue")), xmlFree) {
 		__strtofixed((lpcString_t)attr, &output->DefaultValue);
 	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("TargetType")), xmlFree) {
-		__strtofixed((lpcString_t)attr, &output->TargetType);
+	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("TypeString")), xmlFree) {
+		__strtofixed((lpcString_t)attr, &output->TypeString);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("AffectLayout")), xmlFree) {
 		__strtobool((lpcString_t)attr, &output->AffectLayout);
@@ -1083,9 +1072,6 @@ static int xml_PropertyType(xmlNodePtr xml, lpPropertyType_t output) {
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("DataSize")), xmlFree) {
 		__strtouint((lpcString_t)attr, &output->DataSize);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("TypeString")), xmlFree) {
-		__strtofixed((lpcString_t)attr, &output->TypeString);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("NumComponents")), xmlFree) {
 		__strtouint((lpcString_t)attr, &output->NumComponents);

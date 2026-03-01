@@ -86,7 +86,6 @@ static struct {
 //  { LIBRARY(BrushTypeLibrary), "BrushTypes", "BrushType", FALSE },
   { LIBRARY(ConnectServiceLibrary), "Connect Services", "ConnectService", FALSE },
   { LIBRARY(ConnectUserServiceLibrary), "Connect User Library", "ConnectUser", FALSE },
-  { LIBRARY(PropertyTypeLibrary), "Property Types", "PropertyType", FALSE },
   { LIBRARY(SpriteLibrary), "Sprites", "Image", FALSE },
   { LIBRARY(SpriteAnimationLibrary), "Sprite Animations", "SpriteAnimation", FALSE },
 };

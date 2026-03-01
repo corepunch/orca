@@ -71,6 +71,20 @@ int f_loadProject(lua_State* L) {
       project = OBJ_LoadDocument(L, doc);
     }
   }
+  if (project) {
+    FOR_LOOP(i, GetProject(project)->NumPropertyTypes) {
+      lpPropertyType_t type = &GetProject(project)->PropertyTypes[i];
+      fixedString_t tmp={0};
+      if (*type->Category) {
+        snprintf(tmp, sizeof(tmp), "%s.%s", type->Category, type->Name);
+      } else {
+        strncpy(tmp, type->Name, sizeof(tmp));
+      }
+      type->ShortIdentifier = fnv1a32(type->Name);
+      type->FullIdentifier = fnv1a32(tmp);
+      OBJ_RegisterPropertyType(type);
+    }
+  }
   lua_pushboolean(L, project?TRUE:FALSE);
   return 1;
 }

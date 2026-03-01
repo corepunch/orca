@@ -58,7 +58,6 @@ enum Libraries {
 //  kBrushTypeLibrary,
   kConnectServiceLibrary,
   kConnectUserServiceLibrary,
-  kPropertyTypeLibrary,
   kSpriteLibrary,
   kSpriteAnimationLibrary,
   kNumLibraries,

@@ -55,6 +55,8 @@
     <!-- These probably don't belong in Project? -->
     <property name="Width" type="int"/>
     <property name="Height" type="int"/>
+    
+    <property name="PropertyTypes" type="PropertyType" array="true" />
 
     <field name="isPackage" type="bool"/>
     <field name="package" type="Package" pointer="true"/>
@@ -101,7 +103,6 @@
   <class name="StateManagerLibrary" parent="Library" default="State Managers"/>
   <class name="ConnectServiceLibrary" parent="Library" default="Connect Services"/>
   <class name="ConnectUserServiceLibrary" parent="Library" default="Connect User Services"/>
-  <class name="PropertyTypeLibrary" parent="Library" default="Property Types"/>
   
   <!--  { LIBRARY(ComponentTypeLibrary), "Components", "Component", FALSE },-->
   <!--  { LIBRARY(DataSourceTypeLibrary), "DataSourceTypes", "DataSourceType", FALSE },-->

@@ -321,15 +321,6 @@ luaX_pushConnectUserServiceLibrary(lua_State *L, lpcConnectUserServiceLibrary_t 
 ORCA_API lpConnectUserServiceLibrary_t
 luaX_checkConnectUserServiceLibrary(lua_State *L, int idx);
 
-typedef struct PropertyTypeLibrary PropertyTypeLibrary_t, *lpPropertyTypeLibrary_t;
-typedef struct PropertyTypeLibrary const cPropertyTypeLibrary_t, *lpcPropertyTypeLibrary_t;
-/// @brief Push PropertyTypeLibrary onto Lua stack.
-ORCA_API void
-luaX_pushPropertyTypeLibrary(lua_State *L, lpcPropertyTypeLibrary_t PropertyTypeLibrary);
-/// @brief Check PropertyTypeLibrary form Lua stack at index.
-ORCA_API lpPropertyTypeLibrary_t
-luaX_checkPropertyTypeLibrary(lua_State *L, int idx);
-
 typedef struct SpriteLibrary SpriteLibrary_t, *lpSpriteLibrary_t;
 typedef struct SpriteLibrary const cSpriteLibrary_t, *lpcSpriteLibrary_t;
 /// @brief Push SpriteLibrary onto Lua stack.
@@ -517,6 +508,8 @@ struct Project {
 	fixedString_t DefaultMaterial;
 	int32_t Width;
 	int32_t Height;
+	lpPropertyType_t PropertyTypes;
+	int32_t NumPropertyTypes; /// Number of propertytypes
 	bool_t isPackage;
 	lpPackage_t package;
 };
@@ -685,11 +678,6 @@ struct ConnectServiceLibrary {
 typedef struct ConnectUserServiceLibrary ConnectUserServiceLibrary, *ConnectUserServiceLibraryPtr;
 typedef struct ConnectUserServiceLibrary const *ConnectUserServiceLibraryCPtr;
 struct ConnectUserServiceLibrary {
-};
-
-typedef struct PropertyTypeLibrary PropertyTypeLibrary, *PropertyTypeLibraryPtr;
-typedef struct PropertyTypeLibrary const *PropertyTypeLibraryCPtr;
-struct PropertyTypeLibrary {
 };
 
 typedef struct SpriteLibrary SpriteLibrary, *SpriteLibraryPtr;

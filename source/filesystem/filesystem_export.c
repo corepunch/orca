@@ -118,6 +118,10 @@ static struct PropertyType const ProjectProperties[kProjectNumProperties] = {
 	Project, "Width", Width, kDataTypeInt),
 	/* Project.Height */ DECL(0x1bd13562, 0xdab148ab,
 	Project, "Height", Height, kDataTypeInt),
+	/* Project.PropertyTypes */ ARRAY_DECL(0x3cee6129, 0x5273d526,
+	Project, "PropertyTypes", PropertyTypes, kDataTypeStruct, .TypeString="PropertyType"),
+	/* Project.NumPropertyTypes */ DECL(0x5d64948b, 0x13e23766,
+	Project, "NumPropertyTypes", NumPropertyTypes, kDataTypeInt),
 };
 static struct Project ProjectDefaults = {
 	.IsMasterProject = FALSE,
@@ -1094,34 +1098,6 @@ ORCA_API struct ClassDesc _ConnectUserServiceLibrary = {
 	.Defaults = &ConnectUserServiceLibraryDefaults,
 	.NumProperties = kConnectUserServiceLibraryNumProperties,
 };
-static struct PropertyType const PropertyTypeLibraryProperties[kPropertyTypeLibraryNumProperties] = {
-};
-static struct PropertyTypeLibrary PropertyTypeLibraryDefaults = {};
-LRESULT PropertyTypeLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-}
-	return FALSE;
-}
-void luaX_pushPropertyTypeLibrary(lua_State *L, lpcPropertyTypeLibrary_t PropertyTypeLibrary) {
-	luaX_pushObject(L, CMP_GetObject(PropertyTypeLibrary));
-}
-lpPropertyTypeLibrary_t luaX_checkPropertyTypeLibrary(lua_State *L, int idx) {
-	return GetPropertyTypeLibrary(luaX_checkObject(L, idx));
-}
-extern struct ClassDesc _Library;
-ORCA_API struct ClassDesc _PropertyTypeLibrary = {
-	.ClassName = "PropertyTypeLibrary",
-	.DefaultName = "Property Types",
-	.ContentType = "PropertyType",
-	.Xmlns = "None",
-	.ParentClasses = {&_Library, NULL},
-	.ClassID = ID_PropertyTypeLibrary,
-	.ClassSize = sizeof(struct PropertyTypeLibrary),
-	.Properties = PropertyTypeLibraryProperties,
-	.ObjProc = PropertyTypeLibraryProc,
-	.Defaults = &PropertyTypeLibraryDefaults,
-	.NumProperties = kPropertyTypeLibraryNumProperties,
-};
 static struct PropertyType const SpriteLibraryProperties[kSpriteLibraryNumProperties] = {
 };
 static struct SpriteLibrary SpriteLibraryDefaults = {};
@@ -1728,9 +1704,6 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	// ConnectUserServiceLibrary
 	lua_pushclass(L, &_ConnectUserServiceLibrary);
 	lua_setfield(L, -2, "ConnectUserServiceLibrary");
-	// PropertyTypeLibrary
-	lua_pushclass(L, &_PropertyTypeLibrary);
-	lua_setfield(L, -2, "PropertyTypeLibrary");
 	// SpriteLibrary
 	lua_pushclass(L, &_SpriteLibrary);
 	lua_setfield(L, -2, "SpriteLibrary");
