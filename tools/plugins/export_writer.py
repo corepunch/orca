@@ -59,6 +59,15 @@ _T = {
 		"\treturn f_new_${name}(L);\n"
 		"}\n"
 	),
+	'struct_fromstring': string.Template(
+		"static int f_fromstring_${name}(lua_State *L) {\n"
+		"\t${lpname} self = lua_newuserdata(L, sizeof(struct ${name}));\n"
+		"\tluaL_setmetatable(L, \"${export}\");\n"
+		"\tmemset(self, 0, sizeof(struct ${name}));\n"
+		"\t__strto${name}(luaL_checkstring(L, 1), self);\n"
+		"\treturn 1;\n"
+		"}\n"
+	),
 	'component_lua': string.Template(
 		"void luaX_push${cname}(lua_State *L, ${lpcname} ${cname}) {\n"
 		"\tluaX_pushObject(L, CMP_GetObject(${cname}));\n"
@@ -335,9 +344,8 @@ class ExportWriter(Plugin):
 					continue
 				field_name, field_type = field.get('name'), field.get('type')
 				self.w(f"\tstr = __strto{field_type}(str, &output->{field_name});")
-			self.w(f"\treturn str;")
-			self.w(f"}}")
-
+			self.w(f"\treturn str;\n}}")
+			self.wt(_T['struct_fromstring'].substitute(name=name, export=struct.get('export') or name, lpname=lpname))
 			self.w(f"static int xml_{name}(xmlNodePtr xml, {lpname} output) {{")
 			declare_parsers(struct)
 			for field in struct.findall('field'):
@@ -359,6 +367,7 @@ class ExportWriter(Plugin):
 		if is_struct or struct.find('init') is not None:
 			self.w(f"\t\t{{ \"new\", f_new_{name} }},")
 		if is_struct:
+			if export_xml_parsers: self.w(f"\t\t{{ \"fromstring\", f_fromstring_{name} }},")
 			self.w(f"\t\t{{ \"__newindex\", {utils.export_newindex_name(struct)} }},")
 		self.w(f"\t\t{{ \"__index\", {utils.export_index_name(struct)} }},")
 		for method in struct.findall('method'):

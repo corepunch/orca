@@ -207,6 +207,13 @@ ORCA_API lpcString_t __strtovec2(lpcString_t str, lpvec2_t output) {
 	str = __strtofloat(str, &output->y);
 	return str;
 }
+static int f_fromstring_vec2(lua_State *L) {
+	lpvec2_t self = lua_newuserdata(L, sizeof(struct vec2));
+	luaL_setmetatable(L, "Vector2D");
+	memset(self, 0, sizeof(struct vec2));
+	__strtovec2(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_vec2(xmlNodePtr xml, lpvec2_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("x")), xmlFree) {
@@ -222,6 +229,7 @@ int luaopen_orca_vec2(lua_State *L) {
 	luaL_newmetatable(L, "Vector2D");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_vec2 },
+		{ "fromstring", f_fromstring_vec2 },
 		{ "__newindex", f_vec2___newindex },
 		{ "__index", f_vec2___index },
 		{ "__add", f_vec2___add },
@@ -469,6 +477,13 @@ ORCA_API lpcString_t __strtovec3(lpcString_t str, lpvec3_t output) {
 	str = __strtofloat(str, &output->z);
 	return str;
 }
+static int f_fromstring_vec3(lua_State *L) {
+	lpvec3_t self = lua_newuserdata(L, sizeof(struct vec3));
+	luaL_setmetatable(L, "Vector3D");
+	memset(self, 0, sizeof(struct vec3));
+	__strtovec3(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_vec3(xmlNodePtr xml, lpvec3_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("x")), xmlFree) {
@@ -487,6 +502,7 @@ int luaopen_orca_vec3(lua_State *L) {
 	luaL_newmetatable(L, "Vector3D");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_vec3 },
+		{ "fromstring", f_fromstring_vec3 },
 		{ "__newindex", f_vec3___newindex },
 		{ "__index", f_vec3___index },
 		{ "__sub", f_vec3___sub },
@@ -630,6 +646,13 @@ ORCA_API lpcString_t __strtovec4(lpcString_t str, lpvec4_t output) {
 	str = __strtofloat(str, &output->w);
 	return str;
 }
+static int f_fromstring_vec4(lua_State *L) {
+	lpvec4_t self = lua_newuserdata(L, sizeof(struct vec4));
+	luaL_setmetatable(L, "Vector4D");
+	memset(self, 0, sizeof(struct vec4));
+	__strtovec4(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_vec4(xmlNodePtr xml, lpvec4_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("x")), xmlFree) {
@@ -651,6 +674,7 @@ int luaopen_orca_vec4(lua_State *L) {
 	luaL_newmetatable(L, "Vector4D");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_vec4 },
+		{ "fromstring", f_fromstring_vec4 },
 		{ "__newindex", f_vec4___newindex },
 		{ "__index", f_vec4___index },
 		{ "__add", f_vec4___add },
@@ -741,6 +765,13 @@ ORCA_API lpcString_t __strtobox2(lpcString_t str, lpbox2_t output) {
 	str = __strtovec2(str, &output->max);
 	return str;
 }
+static int f_fromstring_box2(lua_State *L) {
+	lpbox2_t self = lua_newuserdata(L, sizeof(struct box2));
+	luaL_setmetatable(L, "Box2D");
+	memset(self, 0, sizeof(struct box2));
+	__strtobox2(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_box2(xmlNodePtr xml, lpbox2_t output) {
 	lpcString_t __strtovec2(lpcString_t, struct vec2*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("min")), xmlFree) {
@@ -756,6 +787,7 @@ int luaopen_orca_box2(lua_State *L) {
 	luaL_newmetatable(L, "Box2D");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_box2 },
+		{ "fromstring", f_fromstring_box2 },
 		{ "__newindex", f_box2___newindex },
 		{ "__index", f_box2___index },
 		{ NULL, NULL },
@@ -825,6 +857,13 @@ ORCA_API lpcString_t __strtobox3(lpcString_t str, lpbox3_t output) {
 	str = __strtovec3(str, &output->max);
 	return str;
 }
+static int f_fromstring_box3(lua_State *L) {
+	lpbox3_t self = lua_newuserdata(L, sizeof(struct box3));
+	luaL_setmetatable(L, "Box3D");
+	memset(self, 0, sizeof(struct box3));
+	__strtobox3(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_box3(xmlNodePtr xml, lpbox3_t output) {
 	lpcString_t __strtovec3(lpcString_t, struct vec3*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("min")), xmlFree) {
@@ -840,6 +879,7 @@ int luaopen_orca_box3(lua_State *L) {
 	luaL_newmetatable(L, "Box3D");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_box3 },
+		{ "fromstring", f_fromstring_box3 },
 		{ "__newindex", f_box3___newindex },
 		{ "__index", f_box3___index },
 		{ NULL, NULL },
@@ -911,6 +951,13 @@ ORCA_API lpcString_t __strtoSize(lpcString_t str, lpSize_t output) {
 	str = __strtofloat(str, &output->height);
 	return str;
 }
+static int f_fromstring_Size(lua_State *L) {
+	lpSize_t self = lua_newuserdata(L, sizeof(struct Size));
+	luaL_setmetatable(L, "Size");
+	memset(self, 0, sizeof(struct Size));
+	__strtoSize(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_Size(xmlNodePtr xml, lpSize_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("width")), xmlFree) {
@@ -926,6 +973,7 @@ int luaopen_orca_Size(lua_State *L) {
 	luaL_newmetatable(L, "Size");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_Size },
+		{ "fromstring", f_fromstring_Size },
 		{ "__newindex", f_Size___newindex },
 		{ "__index", f_Size___index },
 		{ NULL, NULL },
@@ -1068,6 +1116,13 @@ ORCA_API lpcString_t __strtorect(lpcString_t str, lprect_t output) {
 	str = __strtofloat(str, &output->height);
 	return str;
 }
+static int f_fromstring_rect(lua_State *L) {
+	lprect_t self = lua_newuserdata(L, sizeof(struct rect));
+	luaL_setmetatable(L, "Rectangle");
+	memset(self, 0, sizeof(struct rect));
+	__strtorect(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_rect(xmlNodePtr xml, lprect_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("x")), xmlFree) {
@@ -1089,6 +1144,7 @@ int luaopen_orca_rect(lua_State *L) {
 	luaL_newmetatable(L, "Rectangle");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_rect },
+		{ "fromstring", f_fromstring_rect },
 		{ "__newindex", f_rect___newindex },
 		{ "__index", f_rect___index },
 		{ NULL, NULL },
@@ -1256,6 +1312,13 @@ ORCA_API lpcString_t __strtoquat(lpcString_t str, lpquat_t output) {
 	str = __strtofloat(str, &output->w);
 	return str;
 }
+static int f_fromstring_quat(lua_State *L) {
+	lpquat_t self = lua_newuserdata(L, sizeof(struct quat));
+	luaL_setmetatable(L, "Quaternion");
+	memset(self, 0, sizeof(struct quat));
+	__strtoquat(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_quat(xmlNodePtr xml, lpquat_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("x")), xmlFree) {
@@ -1277,6 +1340,7 @@ int luaopen_orca_quat(lua_State *L) {
 	luaL_newmetatable(L, "Quaternion");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_quat },
+		{ "fromstring", f_fromstring_quat },
 		{ "__newindex", f_quat___newindex },
 		{ "__index", f_quat___index },
 		{ "fromEuler", f_quat_fromEuler },
@@ -1353,6 +1417,13 @@ int f_mat3___newindex(lua_State *L) {
 ORCA_API lpcString_t __strtomat3(lpcString_t str, lpmat3_t output) {
 	return str;
 }
+static int f_fromstring_mat3(lua_State *L) {
+	lpmat3_t self = lua_newuserdata(L, sizeof(struct mat3));
+	luaL_setmetatable(L, "Matrix2D");
+	memset(self, 0, sizeof(struct mat3));
+	__strtomat3(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_mat3(xmlNodePtr xml, lpmat3_t output) {
 	return TRUE;
 }
@@ -1361,6 +1432,7 @@ int luaopen_orca_mat3(lua_State *L) {
 	luaL_newmetatable(L, "Matrix2D");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_mat3 },
+		{ "fromstring", f_fromstring_mat3 },
 		{ "__newindex", f_mat3___newindex },
 		{ "__index", f_mat3___index },
 		{ "identity", f_mat3_identity },
@@ -1544,6 +1616,13 @@ int f_mat4___newindex(lua_State *L) {
 ORCA_API lpcString_t __strtomat4(lpcString_t str, lpmat4_t output) {
 	return str;
 }
+static int f_fromstring_mat4(lua_State *L) {
+	lpmat4_t self = lua_newuserdata(L, sizeof(struct mat4));
+	luaL_setmetatable(L, "Matrix3D");
+	memset(self, 0, sizeof(struct mat4));
+	__strtomat4(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_mat4(xmlNodePtr xml, lpmat4_t output) {
 	return TRUE;
 }
@@ -1552,6 +1631,7 @@ int luaopen_orca_mat4(lua_State *L) {
 	luaL_newmetatable(L, "Matrix3D");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_mat4 },
+		{ "fromstring", f_fromstring_mat4 },
 		{ "__newindex", f_mat4___newindex },
 		{ "__index", f_mat4___index },
 		{ "identity", f_mat4_identity },
@@ -1631,6 +1711,13 @@ ORCA_API lpcString_t __strtobounds(lpcString_t str, lpbounds_t output) {
 	str = __strtofloat(str, &output->max);
 	return str;
 }
+static int f_fromstring_bounds(lua_State *L) {
+	lpbounds_t self = lua_newuserdata(L, sizeof(struct bounds));
+	luaL_setmetatable(L, "Bounds");
+	memset(self, 0, sizeof(struct bounds));
+	__strtobounds(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_bounds(xmlNodePtr xml, lpbounds_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("min")), xmlFree) {
@@ -1646,6 +1733,7 @@ int luaopen_orca_bounds(lua_State *L) {
 	luaL_newmetatable(L, "Bounds");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_bounds },
+		{ "fromstring", f_fromstring_bounds },
 		{ "__newindex", f_bounds___newindex },
 		{ "__index", f_bounds___index },
 		{ NULL, NULL },
@@ -1757,6 +1845,13 @@ ORCA_API lpcString_t __strtoplane3(lpcString_t str, lpplane3_t output) {
 	str = __strtofloat(str, &output->d);
 	return str;
 }
+static int f_fromstring_plane3(lua_State *L) {
+	lpplane3_t self = lua_newuserdata(L, sizeof(struct plane3));
+	luaL_setmetatable(L, "Plane");
+	memset(self, 0, sizeof(struct plane3));
+	__strtoplane3(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_plane3(xmlNodePtr xml, lpplane3_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("a")), xmlFree) {
@@ -1778,6 +1873,7 @@ int luaopen_orca_plane3(lua_State *L) {
 	luaL_newmetatable(L, "Plane");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_plane3 },
+		{ "fromstring", f_fromstring_plane3 },
 		{ "__newindex", f_plane3___newindex },
 		{ "__index", f_plane3___index },
 		{ NULL, NULL },
@@ -1846,6 +1942,13 @@ ORCA_API lpcString_t __strtosphere3(lpcString_t str, lpsphere3_t output) {
 	str = __strtofloat(str, &output->radius);
 	return str;
 }
+static int f_fromstring_sphere3(lua_State *L) {
+	lpsphere3_t self = lua_newuserdata(L, sizeof(struct sphere3));
+	luaL_setmetatable(L, "Sphere");
+	memset(self, 0, sizeof(struct sphere3));
+	__strtosphere3(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_sphere3(xmlNodePtr xml, lpsphere3_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	lpcString_t __strtovec3(lpcString_t, struct vec3*);
@@ -1862,6 +1965,7 @@ int luaopen_orca_sphere3(lua_State *L) {
 	luaL_newmetatable(L, "Sphere");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_sphere3 },
+		{ "fromstring", f_fromstring_sphere3 },
 		{ "__newindex", f_sphere3___newindex },
 		{ "__index", f_sphere3___index },
 		{ NULL, NULL },
@@ -1997,6 +2101,13 @@ ORCA_API lpcString_t __strtofrustum3(lpcString_t str, lpfrustum3_t output) {
 	str = __strtoplane3(str, &output->back);
 	return str;
 }
+static int f_fromstring_frustum3(lua_State *L) {
+	lpfrustum3_t self = lua_newuserdata(L, sizeof(struct frustum3));
+	luaL_setmetatable(L, "Frustum");
+	memset(self, 0, sizeof(struct frustum3));
+	__strtofrustum3(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_frustum3(xmlNodePtr xml, lpfrustum3_t output) {
 	lpcString_t __strtoplane3(lpcString_t, struct plane3*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("left")), xmlFree) {
@@ -2024,6 +2135,7 @@ int luaopen_orca_frustum3(lua_State *L) {
 	luaL_newmetatable(L, "Frustum");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_frustum3 },
+		{ "fromstring", f_fromstring_frustum3 },
 		{ "__newindex", f_frustum3___newindex },
 		{ "__index", f_frustum3___index },
 		{ "calculate", f_frustum3_calculate },
@@ -2115,6 +2227,13 @@ ORCA_API lpcString_t __strtotransform2(lpcString_t str, lptransform2_t output) {
 	str = __strtovec2(str, &output->scale);
 	return str;
 }
+static int f_fromstring_transform2(lua_State *L) {
+	lptransform2_t self = lua_newuserdata(L, sizeof(struct transform2));
+	luaL_setmetatable(L, "Transform2D");
+	memset(self, 0, sizeof(struct transform2));
+	__strtotransform2(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_transform2(xmlNodePtr xml, lptransform2_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	lpcString_t __strtovec2(lpcString_t, struct vec2*);
@@ -2134,6 +2253,7 @@ int luaopen_orca_transform2(lua_State *L) {
 	luaL_newmetatable(L, "Transform2D");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_transform2 },
+		{ "fromstring", f_fromstring_transform2 },
 		{ "__newindex", f_transform2___newindex },
 		{ "__index", f_transform2___index },
 		{ "identity", f_transform2_identity },
@@ -2217,6 +2337,13 @@ ORCA_API lpcString_t __strtotransform3(lpcString_t str, lptransform3_t output) {
 	str = __strtovec3(str, &output->scale);
 	return str;
 }
+static int f_fromstring_transform3(lua_State *L) {
+	lptransform3_t self = lua_newuserdata(L, sizeof(struct transform3));
+	luaL_setmetatable(L, "Transform3D");
+	memset(self, 0, sizeof(struct transform3));
+	__strtotransform3(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_transform3(xmlNodePtr xml, lptransform3_t output) {
 	lpcString_t __strtovec3(lpcString_t, struct vec3*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("translation")), xmlFree) {
@@ -2235,6 +2362,7 @@ int luaopen_orca_transform3(lua_State *L) {
 	luaL_newmetatable(L, "Transform3D");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_transform3 },
+		{ "fromstring", f_fromstring_transform3 },
 		{ "__newindex", f_transform3___newindex },
 		{ "__index", f_transform3___index },
 		{ "identity", f_transform3_identity },
@@ -2312,6 +2440,13 @@ ORCA_API lpcString_t __strtotriangle3(lpcString_t str, lptriangle3_t output) {
 	str = __strtovec3(str, &output->c);
 	return str;
 }
+static int f_fromstring_triangle3(lua_State *L) {
+	lptriangle3_t self = lua_newuserdata(L, sizeof(struct triangle3));
+	luaL_setmetatable(L, "Triangle3D");
+	memset(self, 0, sizeof(struct triangle3));
+	__strtotriangle3(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_triangle3(xmlNodePtr xml, lptriangle3_t output) {
 	lpcString_t __strtovec3(lpcString_t, struct vec3*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("a")), xmlFree) {
@@ -2330,6 +2465,7 @@ int luaopen_orca_triangle3(lua_State *L) {
 	luaL_newmetatable(L, "Triangle3D");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_triangle3 },
+		{ "fromstring", f_fromstring_triangle3 },
 		{ "__newindex", f_triangle3___newindex },
 		{ "__index", f_triangle3___index },
 		{ NULL, NULL },
@@ -2434,6 +2570,13 @@ ORCA_API lpcString_t __strtoline3(lpcString_t str, lpline3_t output) {
 	str = __strtovec3(str, &output->b);
 	return str;
 }
+static int f_fromstring_line3(lua_State *L) {
+	lpline3_t self = lua_newuserdata(L, sizeof(struct line3));
+	luaL_setmetatable(L, "Line3D");
+	memset(self, 0, sizeof(struct line3));
+	__strtoline3(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_line3(xmlNodePtr xml, lpline3_t output) {
 	lpcString_t __strtovec3(lpcString_t, struct vec3*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("a")), xmlFree) {
@@ -2449,6 +2592,7 @@ int luaopen_orca_line3(lua_State *L) {
 	luaL_newmetatable(L, "Line3D");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_line3 },
+		{ "fromstring", f_fromstring_line3 },
 		{ "__newindex", f_line3___newindex },
 		{ "__index", f_line3___index },
 		{ NULL, NULL },
@@ -2542,6 +2686,13 @@ ORCA_API lpcString_t __strtoedges(lpcString_t str, lpedges_t output) {
 	str = __strtofloat(str, &output->bottom);
 	return str;
 }
+static int f_fromstring_edges(lua_State *L) {
+	lpedges_t self = lua_newuserdata(L, sizeof(struct edges));
+	luaL_setmetatable(L, "Edges");
+	memset(self, 0, sizeof(struct edges));
+	__strtoedges(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_edges(xmlNodePtr xml, lpedges_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("left")), xmlFree) {
@@ -2563,6 +2714,7 @@ int luaopen_orca_edges(lua_State *L) {
 	luaL_newmetatable(L, "Edges");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_edges },
+		{ "fromstring", f_fromstring_edges },
 		{ "__newindex", f_edges___newindex },
 		{ "__index", f_edges___index },
 		{ NULL, NULL },
@@ -2673,6 +2825,13 @@ ORCA_API lpcString_t __strtocolor(lpcString_t str, lpcolor_t output) {
 	str = __strtofloat(str, &output->a);
 	return str;
 }
+static int f_fromstring_color(lua_State *L) {
+	lpcolor_t self = lua_newuserdata(L, sizeof(struct color));
+	luaL_setmetatable(L, "Color");
+	memset(self, 0, sizeof(struct color));
+	__strtocolor(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_color(xmlNodePtr xml, lpcolor_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("r")), xmlFree) {
@@ -2694,6 +2853,7 @@ int luaopen_orca_color(lua_State *L) {
 	luaL_newmetatable(L, "Color");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_color },
+		{ "fromstring", f_fromstring_color },
 		{ "__newindex", f_color___newindex },
 		{ "__index", f_color___index },
 		{ "parse", f_color_parse },

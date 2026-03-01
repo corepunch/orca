@@ -404,6 +404,13 @@ static int f_Object_findImplicitProperty(lua_State *L) {
 	luaX_pushPropertyType(L, output);
 	return 1;
 }
+static int f_Object_findExplicitProperty(lua_State *L) {
+	lpObject_t self = luaX_checkObject(L, 1);
+	const char* name = luaL_checkstring(L, 2);
+	lpPropertyType_t output = OBJ_FindExplicitProperty(self, name);
+	luaX_pushPropertyType(L, output);
+	return 1;
+}
 static int f_Object_findPropertyByPath(lua_State *L) {
 	lpObject_t self = luaX_checkObject(L, 1);
 	const char* path = luaL_checkstring(L, 2);
@@ -595,6 +602,9 @@ int f_Object___index(lua_State *L) {
 	case 0xf2167b80: // findImplicitProperty
 		lua_pushcfunction(L, f_Object_findImplicitProperty);
 		return 1;
+	case 0x0c3ece1f: // findExplicitProperty
+		lua_pushcfunction(L, f_Object_findExplicitProperty);
+		return 1;
 	case 0xfc8bdeb9: // findPropertyByPath
 		lua_pushcfunction(L, f_Object_findPropertyByPath);
 		return 1;
@@ -712,6 +722,13 @@ ORCA_API lpcString_t __strtoPropertyEnumValue(lpcString_t str, lpPropertyEnumVal
 	str = __strtoint(str, &output->Value);
 	return str;
 }
+static int f_fromstring_PropertyEnumValue(lua_State *L) {
+	lpPropertyEnumValue_t self = lua_newuserdata(L, sizeof(struct PropertyEnumValue));
+	luaL_setmetatable(L, "PropertyEnumValue");
+	memset(self, 0, sizeof(struct PropertyEnumValue));
+	__strtoPropertyEnumValue(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_PropertyEnumValue(xmlNodePtr xml, lpPropertyEnumValue_t output) {
 	lpcString_t __strtofixed(lpcString_t, fixedString_t*);
 	lpcString_t __strtoint(lpcString_t, int32_t*);
@@ -728,6 +745,7 @@ int luaopen_orca_PropertyEnumValue(lua_State *L) {
 	luaL_newmetatable(L, "PropertyEnumValue");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_PropertyEnumValue },
+		{ "fromstring", f_fromstring_PropertyEnumValue },
 		{ "__newindex", f_PropertyEnumValue___newindex },
 		{ "__index", f_PropertyEnumValue___index },
 		{ NULL, NULL },
@@ -1012,6 +1030,13 @@ ORCA_API lpcString_t __strtoPropertyType(lpcString_t str, lpPropertyType_t outpu
 	str = __strtobool(str, &output->IsArray);
 	return str;
 }
+static int f_fromstring_PropertyType(lua_State *L) {
+	lpPropertyType_t self = lua_newuserdata(L, sizeof(struct PropertyType));
+	luaL_setmetatable(L, "PropertyType");
+	memset(self, 0, sizeof(struct PropertyType));
+	__strtoPropertyType(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_PropertyType(xmlNodePtr xml, lpPropertyType_t output) {
 	lpcString_t __strtoDataType(lpcString_t, enum DataType*);
 	lpcString_t __strtobool(lpcString_t, bool_t*);
@@ -1088,6 +1113,7 @@ int luaopen_orca_PropertyType(lua_State *L) {
 	luaL_newmetatable(L, "PropertyType");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_PropertyType },
+		{ "fromstring", f_fromstring_PropertyType },
 		{ "__newindex", f_PropertyType___newindex },
 		{ "__index", f_PropertyType___index },
 		{ NULL, NULL },

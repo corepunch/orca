@@ -8,8 +8,6 @@ PROP_SetValue(PROP_Create(L, pobj, szKey, type, NULL), value)
 
 #define MAX_COMPONETNS MAX_PROPERTY_STRING / sizeof(float)
 
-static lpcString_t _edges[4] = { "Top", "Right", "Bottom", "Left" };
-
 shortStr_t tags[MAX_TAGS] = {0};
 
 extern bool_t FS_FileExists(lpcString_t);
@@ -351,6 +349,7 @@ _ParseEdges(lpObject_t hobj,
             lpcString_t string,
             void *dest)
 {
+  static lpcString_t _edges[4] = { "Top", "Right", "Bottom", "Left" };
   lpcString_t tmp[(sizeof(_edges) / sizeof(*_edges)) + 1] = { string };
   FOR_LOOP(i, sizeof(_edges) / sizeof(*_edges)) {
     shortStr_t buf = {0};

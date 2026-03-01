@@ -580,6 +580,13 @@ ORCA_API lpcString_t __strtoBorderRadiusShorthand(lpcString_t str, lpBorderRadiu
 	str = __strtofloat(str, &output->BottomLeftRadius);
 	return str;
 }
+static int f_fromstring_BorderRadiusShorthand(lua_State *L) {
+	lpBorderRadiusShorthand_t self = lua_newuserdata(L, sizeof(struct BorderRadiusShorthand));
+	luaL_setmetatable(L, "BorderRadiusShorthand");
+	memset(self, 0, sizeof(struct BorderRadiusShorthand));
+	__strtoBorderRadiusShorthand(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_BorderRadiusShorthand(xmlNodePtr xml, lpBorderRadiusShorthand_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("TopLeftRadius")), xmlFree) {
@@ -601,6 +608,7 @@ int luaopen_orca_BorderRadiusShorthand(lua_State *L) {
 	luaL_newmetatable(L, "BorderRadiusShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_BorderRadiusShorthand },
+		{ "fromstring", f_fromstring_BorderRadiusShorthand },
 		{ "__newindex", f_BorderRadiusShorthand___newindex },
 		{ "__index", f_BorderRadiusShorthand___index },
 		{ NULL, NULL },
@@ -681,6 +689,13 @@ ORCA_API lpcString_t __strtoBorderEdgeShorthand(lpcString_t str, lpBorderEdgeSho
 	str = __strtocolor(str, &output->Color);
 	return str;
 }
+static int f_fromstring_BorderEdgeShorthand(lua_State *L) {
+	lpBorderEdgeShorthand_t self = lua_newuserdata(L, sizeof(struct BorderEdgeShorthand));
+	luaL_setmetatable(L, "BorderEdgeShorthand");
+	memset(self, 0, sizeof(struct BorderEdgeShorthand));
+	__strtoBorderEdgeShorthand(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_BorderEdgeShorthand(xmlNodePtr xml, lpBorderEdgeShorthand_t output) {
 	lpcString_t __strtoBorderStyle(lpcString_t, enum BorderStyle*);
 	lpcString_t __strtocolor(lpcString_t, struct color*);
@@ -701,6 +716,7 @@ int luaopen_orca_BorderEdgeShorthand(lua_State *L) {
 	luaL_newmetatable(L, "BorderEdgeShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_BorderEdgeShorthand },
+		{ "fromstring", f_fromstring_BorderEdgeShorthand },
 		{ "__newindex", f_BorderEdgeShorthand___newindex },
 		{ "__index", f_BorderEdgeShorthand___index },
 		{ NULL, NULL },
@@ -761,6 +777,13 @@ ORCA_API lpcString_t __strtoBorderSideShorthand(lpcString_t str, lpBorderSideSho
 	str = __strtoBorderEdgeShorthand(str, &output->Right);
 	return str;
 }
+static int f_fromstring_BorderSideShorthand(lua_State *L) {
+	lpBorderSideShorthand_t self = lua_newuserdata(L, sizeof(struct BorderSideShorthand));
+	luaL_setmetatable(L, "BorderSideShorthand");
+	memset(self, 0, sizeof(struct BorderSideShorthand));
+	__strtoBorderSideShorthand(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_BorderSideShorthand(xmlNodePtr xml, lpBorderSideShorthand_t output) {
 	lpcString_t __strtoBorderEdgeShorthand(lpcString_t, struct BorderEdgeShorthand*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Left")), xmlFree) {
@@ -776,6 +799,7 @@ int luaopen_orca_BorderSideShorthand(lua_State *L) {
 	luaL_newmetatable(L, "BorderSideShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_BorderSideShorthand },
+		{ "fromstring", f_fromstring_BorderSideShorthand },
 		{ "__newindex", f_BorderSideShorthand___newindex },
 		{ "__index", f_BorderSideShorthand___index },
 		{ NULL, NULL },
@@ -829,6 +853,13 @@ ORCA_API lpcString_t __strtoBorderShorthand(lpcString_t str, lpBorderShorthand_t
 	str = __strtoBorderRadiusShorthand(str, &output->Radius);
 	return str;
 }
+static int f_fromstring_BorderShorthand(lua_State *L) {
+	lpBorderShorthand_t self = lua_newuserdata(L, sizeof(struct BorderShorthand));
+	luaL_setmetatable(L, "BorderShorthand");
+	memset(self, 0, sizeof(struct BorderShorthand));
+	__strtoBorderShorthand(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_BorderShorthand(xmlNodePtr xml, lpBorderShorthand_t output) {
 	lpcString_t __strtoBorderRadiusShorthand(lpcString_t, struct BorderRadiusShorthand*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Radius")), xmlFree) {
@@ -841,6 +872,7 @@ int luaopen_orca_BorderShorthand(lua_State *L) {
 	luaL_newmetatable(L, "BorderShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_BorderShorthand },
+		{ "fromstring", f_fromstring_BorderShorthand },
 		{ "__newindex", f_BorderShorthand___newindex },
 		{ "__index", f_BorderShorthand___index },
 		{ NULL, NULL },
@@ -912,6 +944,13 @@ ORCA_API lpcString_t __strtoEdgeShorthand(lpcString_t str, lpEdgeShorthand_t out
 	str = __strtofloat(str, &output->Right);
 	return str;
 }
+static int f_fromstring_EdgeShorthand(lua_State *L) {
+	lpEdgeShorthand_t self = lua_newuserdata(L, sizeof(struct EdgeShorthand));
+	luaL_setmetatable(L, "EdgeShorthand");
+	memset(self, 0, sizeof(struct EdgeShorthand));
+	__strtoEdgeShorthand(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_EdgeShorthand(xmlNodePtr xml, lpEdgeShorthand_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Left")), xmlFree) {
@@ -927,6 +966,7 @@ int luaopen_orca_EdgeShorthand(lua_State *L) {
 	luaL_newmetatable(L, "EdgeShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_EdgeShorthand },
+		{ "fromstring", f_fromstring_EdgeShorthand },
 		{ "__newindex", f_EdgeShorthand___newindex },
 		{ "__index", f_EdgeShorthand___index },
 		{ NULL, NULL },
@@ -972,6 +1012,13 @@ int f_AlignmentShorthand___newindex(lua_State *L) {
 ORCA_API lpcString_t __strtoAlignmentShorthand(lpcString_t str, lpAlignmentShorthand_t output) {
 	return str;
 }
+static int f_fromstring_AlignmentShorthand(lua_State *L) {
+	lpAlignmentShorthand_t self = lua_newuserdata(L, sizeof(struct AlignmentShorthand));
+	luaL_setmetatable(L, "AlignmentShorthand");
+	memset(self, 0, sizeof(struct AlignmentShorthand));
+	__strtoAlignmentShorthand(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_AlignmentShorthand(xmlNodePtr xml, lpAlignmentShorthand_t output) {
 	return TRUE;
 }
@@ -980,6 +1027,7 @@ int luaopen_orca_AlignmentShorthand(lua_State *L) {
 	luaL_newmetatable(L, "AlignmentShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_AlignmentShorthand },
+		{ "fromstring", f_fromstring_AlignmentShorthand },
 		{ "__newindex", f_AlignmentShorthand___newindex },
 		{ "__index", f_AlignmentShorthand___index },
 		{ NULL, NULL },
@@ -1070,6 +1118,13 @@ ORCA_API lpcString_t __strtoFontShorthand(lpcString_t str, lpFontShorthand_t out
 	str = __strtofloat(str, &output->Size);
 	return str;
 }
+static int f_fromstring_FontShorthand(lua_State *L) {
+	lpFontShorthand_t self = lua_newuserdata(L, sizeof(struct FontShorthand));
+	luaL_setmetatable(L, "FontShorthand");
+	memset(self, 0, sizeof(struct FontShorthand));
+	__strtoFontShorthand(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_FontShorthand(xmlNodePtr xml, lpFontShorthand_t output) {
 	lpcString_t __strtoFontStyle(lpcString_t, enum FontStyle*);
 	lpcString_t __strtoFontWeight(lpcString_t, enum FontWeight*);
@@ -1090,6 +1145,7 @@ int luaopen_orca_FontShorthand(lua_State *L) {
 	luaL_newmetatable(L, "FontShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_FontShorthand },
+		{ "fromstring", f_fromstring_FontShorthand },
 		{ "__newindex", f_FontShorthand___newindex },
 		{ "__index", f_FontShorthand___index },
 		{ NULL, NULL },
@@ -1155,6 +1211,13 @@ ORCA_API lpcString_t __strtoBrushShorthand(lpcString_t str, lpBrushShorthand_t o
 	str = __strtocolor(str, &output->Color);
 	return str;
 }
+static int f_fromstring_BrushShorthand(lua_State *L) {
+	lpBrushShorthand_t self = lua_newuserdata(L, sizeof(struct BrushShorthand));
+	luaL_setmetatable(L, "BrushShorthand");
+	memset(self, 0, sizeof(struct BrushShorthand));
+	__strtoBrushShorthand(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_BrushShorthand(xmlNodePtr xml, lpBrushShorthand_t output) {
 	lpcString_t __strtocolor(lpcString_t, struct color*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Color")), xmlFree) {
@@ -1167,6 +1230,7 @@ int luaopen_orca_BrushShorthand(lua_State *L) {
 	luaL_newmetatable(L, "BrushShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_BrushShorthand },
+		{ "fromstring", f_fromstring_BrushShorthand },
 		{ "__newindex", f_BrushShorthand___newindex },
 		{ "__index", f_BrushShorthand___index },
 		{ NULL, NULL },
@@ -1254,6 +1318,13 @@ ORCA_API lpcString_t __strtoShadowShorthand(lpcString_t str, lpShadowShorthand_t
 	str = __strtocolor(str, &output->Color);
 	return str;
 }
+static int f_fromstring_ShadowShorthand(lua_State *L) {
+	lpShadowShorthand_t self = lua_newuserdata(L, sizeof(struct ShadowShorthand));
+	luaL_setmetatable(L, "ShadowShorthand");
+	memset(self, 0, sizeof(struct ShadowShorthand));
+	__strtoShadowShorthand(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_ShadowShorthand(xmlNodePtr xml, lpShadowShorthand_t output) {
 	lpcString_t __strtocolor(lpcString_t, struct color*);
 	lpcString_t __strtofloat(lpcString_t, float*);
@@ -1277,6 +1348,7 @@ int luaopen_orca_ShadowShorthand(lua_State *L) {
 	luaL_newmetatable(L, "ShadowShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_ShadowShorthand },
+		{ "fromstring", f_fromstring_ShadowShorthand },
 		{ "__newindex", f_ShadowShorthand___newindex },
 		{ "__index", f_ShadowShorthand___index },
 		{ NULL, NULL },
@@ -1356,6 +1428,13 @@ ORCA_API lpcString_t __strtoRingShorthand(lpcString_t str, lpRingShorthand_t out
 	str = __strtocolor(str, &output->Color);
 	return str;
 }
+static int f_fromstring_RingShorthand(lua_State *L) {
+	lpRingShorthand_t self = lua_newuserdata(L, sizeof(struct RingShorthand));
+	luaL_setmetatable(L, "RingShorthand");
+	memset(self, 0, sizeof(struct RingShorthand));
+	__strtoRingShorthand(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_RingShorthand(xmlNodePtr xml, lpRingShorthand_t output) {
 	lpcString_t __strtocolor(lpcString_t, struct color*);
 	lpcString_t __strtofloat(lpcString_t, float*);
@@ -1375,6 +1454,7 @@ int luaopen_orca_RingShorthand(lua_State *L) {
 	luaL_newmetatable(L, "RingShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_RingShorthand },
+		{ "fromstring", f_fromstring_RingShorthand },
 		{ "__newindex", f_RingShorthand___newindex },
 		{ "__index", f_RingShorthand___index },
 		{ NULL, NULL },
@@ -1446,6 +1526,13 @@ ORCA_API lpcString_t __strtoOverflowShorthand(lpcString_t str, lpOverflowShortha
 	str = __strtoOverflow(str, &output->y);
 	return str;
 }
+static int f_fromstring_OverflowShorthand(lua_State *L) {
+	lpOverflowShorthand_t self = lua_newuserdata(L, sizeof(struct OverflowShorthand));
+	luaL_setmetatable(L, "OverflowShorthand");
+	memset(self, 0, sizeof(struct OverflowShorthand));
+	__strtoOverflowShorthand(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_OverflowShorthand(xmlNodePtr xml, lpOverflowShorthand_t output) {
 	lpcString_t __strtoOverflow(lpcString_t, enum Overflow*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("x")), xmlFree) {
@@ -1461,6 +1548,7 @@ int luaopen_orca_OverflowShorthand(lua_State *L) {
 	luaL_newmetatable(L, "OverflowShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_OverflowShorthand },
+		{ "fromstring", f_fromstring_OverflowShorthand },
 		{ "__newindex", f_OverflowShorthand___newindex },
 		{ "__index", f_OverflowShorthand___index },
 		{ NULL, NULL },
@@ -1540,6 +1628,13 @@ ORCA_API lpcString_t __strtoUnderlineShorthand(lpcString_t str, lpUnderlineShort
 	str = __strtocolor(str, &output->Color);
 	return str;
 }
+static int f_fromstring_UnderlineShorthand(lua_State *L) {
+	lpUnderlineShorthand_t self = lua_newuserdata(L, sizeof(struct UnderlineShorthand));
+	luaL_setmetatable(L, "UnderlineShorthand");
+	memset(self, 0, sizeof(struct UnderlineShorthand));
+	__strtoUnderlineShorthand(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_UnderlineShorthand(xmlNodePtr xml, lpUnderlineShorthand_t output) {
 	lpcString_t __strtocolor(lpcString_t, struct color*);
 	lpcString_t __strtofloat(lpcString_t, float*);
@@ -1559,6 +1654,7 @@ int luaopen_orca_UnderlineShorthand(lua_State *L) {
 	luaL_newmetatable(L, "UnderlineShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_UnderlineShorthand },
+		{ "fromstring", f_fromstring_UnderlineShorthand },
 		{ "__newindex", f_UnderlineShorthand___newindex },
 		{ "__index", f_UnderlineShorthand___index },
 		{ NULL, NULL },
@@ -1652,6 +1748,13 @@ ORCA_API lpcString_t __strtoThickness(lpcString_t str, lpThickness_t output) {
 	str = __strtofloat(str, &output->Left);
 	return str;
 }
+static int f_fromstring_Thickness(lua_State *L) {
+	lpThickness_t self = lua_newuserdata(L, sizeof(struct Thickness));
+	luaL_setmetatable(L, "Thickness");
+	memset(self, 0, sizeof(struct Thickness));
+	__strtoThickness(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_Thickness(xmlNodePtr xml, lpThickness_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Top")), xmlFree) {
@@ -1673,6 +1776,7 @@ int luaopen_orca_Thickness(lua_State *L) {
 	luaL_newmetatable(L, "Thickness");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_Thickness },
+		{ "fromstring", f_fromstring_Thickness },
 		{ "__newindex", f_Thickness___newindex },
 		{ "__index", f_Thickness___index },
 		{ NULL, NULL },
@@ -1718,6 +1822,13 @@ int f_MarginShorthand___newindex(lua_State *L) {
 ORCA_API lpcString_t __strtoMarginShorthand(lpcString_t str, lpMarginShorthand_t output) {
 	return str;
 }
+static int f_fromstring_MarginShorthand(lua_State *L) {
+	lpMarginShorthand_t self = lua_newuserdata(L, sizeof(struct MarginShorthand));
+	luaL_setmetatable(L, "MarginShorthand");
+	memset(self, 0, sizeof(struct MarginShorthand));
+	__strtoMarginShorthand(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_MarginShorthand(xmlNodePtr xml, lpMarginShorthand_t output) {
 	return TRUE;
 }
@@ -1726,6 +1837,7 @@ int luaopen_orca_MarginShorthand(lua_State *L) {
 	luaL_newmetatable(L, "MarginShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_MarginShorthand },
+		{ "fromstring", f_fromstring_MarginShorthand },
 		{ "__newindex", f_MarginShorthand___newindex },
 		{ "__index", f_MarginShorthand___index },
 		{ NULL, NULL },
@@ -1830,6 +1942,13 @@ ORCA_API lpcString_t __strtoSizeAxisShorthand(lpcString_t str, lpSizeAxisShortha
 	str = __strtofloat(str, &output->Scroll);
 	return str;
 }
+static int f_fromstring_SizeAxisShorthand(lua_State *L) {
+	lpSizeAxisShorthand_t self = lua_newuserdata(L, sizeof(struct SizeAxisShorthand));
+	luaL_setmetatable(L, "SizeAxisShorthand");
+	memset(self, 0, sizeof(struct SizeAxisShorthand));
+	__strtoSizeAxisShorthand(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_SizeAxisShorthand(xmlNodePtr xml, lpSizeAxisShorthand_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Requested")), xmlFree) {
@@ -1854,6 +1973,7 @@ int luaopen_orca_SizeAxisShorthand(lua_State *L) {
 	luaL_newmetatable(L, "SizeAxisShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_SizeAxisShorthand },
+		{ "fromstring", f_fromstring_SizeAxisShorthand },
 		{ "__newindex", f_SizeAxisShorthand___newindex },
 		{ "__index", f_SizeAxisShorthand___index },
 		{ NULL, NULL },
@@ -1899,6 +2019,13 @@ int f_SizeShorthand___newindex(lua_State *L) {
 ORCA_API lpcString_t __strtoSizeShorthand(lpcString_t str, lpSizeShorthand_t output) {
 	return str;
 }
+static int f_fromstring_SizeShorthand(lua_State *L) {
+	lpSizeShorthand_t self = lua_newuserdata(L, sizeof(struct SizeShorthand));
+	luaL_setmetatable(L, "SizeShorthand");
+	memset(self, 0, sizeof(struct SizeShorthand));
+	__strtoSizeShorthand(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_SizeShorthand(xmlNodePtr xml, lpSizeShorthand_t output) {
 	return TRUE;
 }
@@ -1907,6 +2034,7 @@ int luaopen_orca_SizeShorthand(lua_State *L) {
 	luaL_newmetatable(L, "SizeShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_SizeShorthand },
+		{ "fromstring", f_fromstring_SizeShorthand },
 		{ "__newindex", f_SizeShorthand___newindex },
 		{ "__index", f_SizeShorthand___index },
 		{ NULL, NULL },
@@ -3515,6 +3643,13 @@ ORCA_API lpcString_t __strtoNavigateToPageArguments(lpcString_t str, lpNavigateT
 	str = __strtoTransitionType(str, &output->TransitionType);
 	return str;
 }
+static int f_fromstring_NavigateToPageArguments(lua_State *L) {
+	lpNavigateToPageArguments_t self = lua_newuserdata(L, sizeof(struct NavigateToPageArguments));
+	luaL_setmetatable(L, "NavigateToPageArguments");
+	memset(self, 0, sizeof(struct NavigateToPageArguments));
+	__strtoNavigateToPageArguments(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_NavigateToPageArguments(xmlNodePtr xml, lpNavigateToPageArguments_t output) {
 	lpcString_t __strtoTransitionType(lpcString_t, enum TransitionType*);
 	lpcString_t __strtofixed(lpcString_t, fixedString_t*);
@@ -3531,6 +3666,7 @@ int luaopen_orca_NavigateToPageArguments(lua_State *L) {
 	luaL_newmetatable(L, "NavigateToPageArguments");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_NavigateToPageArguments },
+		{ "fromstring", f_fromstring_NavigateToPageArguments },
 		{ "__newindex", f_NavigateToPageArguments___newindex },
 		{ "__index", f_NavigateToPageArguments___index },
 		{ NULL, NULL },
@@ -3591,6 +3727,13 @@ ORCA_API lpcString_t __strtoNavigateBackArguments(lpcString_t str, lpNavigateBac
 	str = __strtoTransitionType(str, &output->TransitionType);
 	return str;
 }
+static int f_fromstring_NavigateBackArguments(lua_State *L) {
+	lpNavigateBackArguments_t self = lua_newuserdata(L, sizeof(struct NavigateBackArguments));
+	luaL_setmetatable(L, "NavigateBackArguments");
+	memset(self, 0, sizeof(struct NavigateBackArguments));
+	__strtoNavigateBackArguments(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_NavigateBackArguments(xmlNodePtr xml, lpNavigateBackArguments_t output) {
 	lpcString_t __strtoTransitionType(lpcString_t, enum TransitionType*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("TransitionType")), xmlFree) {
@@ -3603,6 +3746,7 @@ int luaopen_orca_NavigateBackArguments(lua_State *L) {
 	luaL_newmetatable(L, "NavigateBackArguments");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_NavigateBackArguments },
+		{ "fromstring", f_fromstring_NavigateBackArguments },
 		{ "__newindex", f_NavigateBackArguments___newindex },
 		{ "__index", f_NavigateBackArguments___index },
 		{ NULL, NULL },

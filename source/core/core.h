@@ -420,6 +420,10 @@ OBJ_GetProperties(lpcObject_t self);
 ORCA_API lpPropertyType_t
 OBJ_FindImplicitProperty(lpObject_t self, const char* name);
 
+/// @brief Looks up a property by full syntax, like "Grid.Column" instead of "Column"
+ORCA_API lpPropertyType_t
+OBJ_FindExplicitProperty(lpObject_t self, const char* name);
+
 /// @brief Finds a property by navigating a hierarchical path
 ORCA_API lpProperty_t
 OBJ_FindPropertyByPath(lpObject_t self, const char* path);

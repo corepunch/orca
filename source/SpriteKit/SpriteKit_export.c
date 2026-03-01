@@ -67,6 +67,13 @@ ORCA_API lpcString_t __strtoSpriteFrame(lpcString_t str, lpSpriteFrame_t output)
 	str = __strtorect(str, &output->UvRect);
 	return str;
 }
+static int f_fromstring_SpriteFrame(lua_State *L) {
+	lpSpriteFrame_t self = lua_newuserdata(L, sizeof(struct SpriteFrame));
+	luaL_setmetatable(L, "SpriteFrame");
+	memset(self, 0, sizeof(struct SpriteFrame));
+	__strtoSpriteFrame(luaL_checkstring(L, 1), self);
+	return 1;
+}
 static int xml_SpriteFrame(xmlNodePtr xml, lpSpriteFrame_t output) {
 	lpcString_t __strtorect(lpcString_t, struct rect*);
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Rect")), xmlFree) {
@@ -82,6 +89,7 @@ int luaopen_orca_SpriteFrame(lua_State *L) {
 	luaL_newmetatable(L, "SpriteFrame");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_SpriteFrame },
+		{ "fromstring", f_fromstring_SpriteFrame },
 		{ "__newindex", f_SpriteFrame___newindex },
 		{ "__index", f_SpriteFrame___index },
 		{ NULL, NULL },

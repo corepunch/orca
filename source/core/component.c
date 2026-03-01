@@ -60,8 +60,7 @@ _CreateClassProperty(lpObject_t object, uint32_t ident)
 }
 
 lpPropertyType_t
-OBJ_FindImplicitProperty(lpObject_t object,
-                         lpcString_t name)
+OBJ_FindImplicitProperty(lpObject_t object, lpcString_t name)
 {
   uint32_t identifier = fnv1a32(name);
 //  return PROP_FindByShortID(object->properties, identifier);
@@ -69,6 +68,22 @@ OBJ_FindImplicitProperty(lpObject_t object,
     FOR_LOOP(i, cmp->pcls->NumProperties) {
       lpcPropertyType_t pdesc = &cmp->pcls->Properties[i];
       if (pdesc->ShortIdentifier == identifier) {
+        return (lpPropertyType_t)pdesc;
+      }
+    }
+  }
+  return NULL;
+}
+
+lpPropertyType_t
+OBJ_FindExplicitProperty(lpObject_t object, lpcString_t name)
+{
+  uint32_t identifier = fnv1a32(name);
+  //  return PROP_FindByShortID(object->properties, identifier);
+  FOR_EACH_LIST(struct component, cmp, _GetComponents(object)) {
+    FOR_LOOP(i, cmp->pcls->NumProperties) {
+      lpcPropertyType_t pdesc = &cmp->pcls->Properties[i];
+      if (pdesc->FullIdentifier == identifier) {
         return (lpPropertyType_t)pdesc;
       }
     }

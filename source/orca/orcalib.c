@@ -139,6 +139,15 @@ int f_register_loader(lua_State *L) {
   return 0;
 }
 
+static int f_find_metatable(lua_State* L) {
+  lpcString_t tname = luaL_checkstring(L, 1);
+  if (luaL_getmetatable(L, tname) == 0) {  // returns 0 if metatable not found
+    return luaL_error(L, "metatable '%s' not found", tname);
+  }
+  assert(lua_type(L, -1) == LUA_TTABLE);
+  return 1;  // metatable is already on top of stack
+}
+
 ORCA_API int luaopen_orca(lua_State* L)
 {
   for (luaL_Reg const* fn = orca_modules; fn->name; fn++) {
@@ -159,6 +168,9 @@ ORCA_API int luaopen_orca(lua_State* L)
 
   lua_pushstring(L, __DATE__);
   lua_setfield(L, -2, "build");
+  
+  lua_pushcfunction(L, f_find_metatable);
+  lua_setfield(L, -2, "find_metatable");
 
   lua_pushcfunction(L, f_async);
   lua_setfield(L, -2, "async");

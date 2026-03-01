@@ -17,17 +17,26 @@ local fallbacks = {
 	end,
 }
 
+orca.tags = {
+	parse = function(self, tag)
+		for i = 1, #self do if self[i] == tag then return i end end
+		table.insert(self, tag)
+		return #self
+	end
+}
+
 orca.typeconverter = {
+	none = function() error("Cannot convert to none type") end,
 	bool = function(value, type)
 		if value == "true" then return true end
 		if value == "false" then return false end
-		return tonumber(value) or error(string.format("Cannot convert to %s(bool): %s", type.TypeString, value))
+		return tonumber(value) or error(string.format("Cannot convert '%s' to %s(bool)", value, type.TypeString))
 	end,
 	int = function(value, type)
-		return tonumber(value) or error(string.format("Cannot convert to %s(int): %s", type.TypeString, value))
+		return tonumber(value) or error(string.format("Cannot convert '%s' to %s(int)", value, type.TypeString))
 	end,
 	float = function(value, type)
-		return tonumber(value) or error(string.format("Cannot convert to %s(float): %s", type.TypeString, value))
+		return tonumber(value) or error(string.format("Cannot convert '%s' to %s(float)", value, type.TypeString))
 	end,
 	enum = function(value, type)
 		local i = 0
@@ -35,11 +44,10 @@ orca.typeconverter = {
 			i = i + 1
 			if w == value then return i - 1 end
 		end
-		error(string.format("Cannot convert to %s(enum): %s", type.TypeString, value))
+		error(string.format("Cannot convert '%s' to %s(enum)", value, type.TypeString))
 	end,
-	fixed = function(value)
-		return value
-	end,
+  longstring= function(value) return value end,
+	fixed = function(value) return value end,
 	object = function(path, type)
 		local ok, resource = pcall(require, path)
 		if ok then
@@ -49,7 +57,29 @@ orca.typeconverter = {
 		if fallback then
 			return fallback(path)
 		else
-			error(string.format("Cannot load resource %s of type %s", path, type.TypeString))
+			error(string.format("Cannot convert '%s' to %s(object)", path, type.TypeString))
 		end
+	end,
+  edges = function() error("Cannot convert to edges type") end,
+  objecttags = function(path)
+		local tags = 0
+		for tag in path:gmatch("[^,]+") do tags = tags | (1 << orca.tags:parse(tag)) end
+		return tags
+	end,
+  event = function(value, type)
+		error(string.format("Cannot convert '%s' to %s(event)", value, type.TypeString))
+	end,
+  struct = function(value, pt)
+		if pt.TypeString == "Color" then
+			local geom = require "orca.geometry"
+			return geom.Color.parse(value)
+		end
+		local mt = orca.find_metatable(pt.TypeString) -- assert type exists
+		assert(mt, string.format("No metatable found for %s(struct)", pt.TypeString))
+		assert(mt.fromstring, string.format("Type %s does not support fromstring() method", pt.TypeString))
+		return mt.fromstring(value)
+	end,
+  group = function(value, type)
+		error(string.format("Cannot convert '%s' to %s(group)", value, type.TypeString))
 	end,
 }
