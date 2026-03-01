@@ -91,23 +91,23 @@ PDESC_Print(lpcPropertyType_t pdesc, LPSTR buffer, DWORD len, float const* pf)
         strncpy(buffer, "nil", len);
       }
       break;
-    case kDataTypeGroup: {
-      bool_t add_space = FALSE;
-      FOR_LOOP(i, pdesc->NumComponents) {
-        lpcPropertyType_t p = pdesc+i+1;
-        if ((p->DataType) == kDataTypeGroup) continue;
-        void* d =(char*)pf + p->Offset - pdesc->Offset;
-        if (add_space) {strcat(buffer, " "); buffer++; len--;};
-        PDESC_Print(p, buffer, len, d);
-        if (strlen(buffer) >= len) {
-          buffer[len-1] = 0;
-          return;;
-        }
-        len -= strlen(buffer);
-        buffer += strlen(buffer);
-        add_space = TRUE;
-      }}
-      return;
+//    case kDataTypeGroup: {
+//      bool_t add_space = FALSE;
+//      FOR_LOOP(i, pdesc->NumComponents) {
+//        lpcPropertyType_t p = pdesc+i+1;
+//        if ((p->DataType) == kDataTypeStruct) continue;
+//        void* d =(char*)pf + p->Offset - pdesc->Offset;
+//        if (add_space) {strcat(buffer, " "); buffer++; len--;};
+//        PDESC_Print(p, buffer, len, d);
+//        if (strlen(buffer) >= len) {
+//          buffer[len-1] = 0;
+//          return;;
+//        }
+//        len -= strlen(buffer);
+//        buffer += strlen(buffer);
+//        add_space = TRUE;
+//      }}
+//      return;
 //      if (!strstr(pdesc->typestring, "transform")) {
 //        snprintf(buffer, len, "%g", pf[0]);
 //        for (int i = 1; i < pdesc->size / sizeof(float); i++) {

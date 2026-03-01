@@ -451,9 +451,8 @@ typedef enum DataType {
 	kDataTypeEdges, /// Set of edge-specific values (e.g., margin, padding, or border widths).
 	kDataTypeObjectTags, /// List of tag identifiers associated with an object.
 	kDataTypeEvent, /// Event reference used to bind triggers or callbacks.
-	kDataTypeStruct, /// There are multiple predefined structures, such as Vector2D, Vector3D, and Transform3D, used for various geometric and transformation purposes.
+	kDataTypeStruct, /// Composite data structure containing multiple fields used for packaging related geometric, visual, and layout properties together.
 	kDataTypeObject, /// Reference to a complex object instance.
-	kDataTypeGroup, /// Logical grouping of related properties or child elements.
 } eDataType_t;
 
 /// @brief Enum value descriptor for a property.
@@ -483,7 +482,6 @@ struct PropertyType {
 	uint32_t FullIdentifier; /// Unique full identifier for the property type, automatically generated from explicit (ie. Grid.Columns) property name.
 	uint32_t Offset; /// Byte offset of the property within the structure.
 	uint32_t DataSize; /// Size of the property data in bytes.
-	uint32_t NumComponents; /// Number of components in the group property (for vector or array types).
 	bool_t IsArray; /// Indicates whether the property is an array type, will generate Num* property to indicate the number of elements.
 };
 

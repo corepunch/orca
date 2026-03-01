@@ -104,9 +104,6 @@ OBJ_EnumClassProperties(lpObject_t object,
     FOR_LOOP(i, cmp->pcls->NumProperties) {
       lpcPropertyType_t pdesc = &cmp->pcls->Properties[i];
       fnProc(object, pdesc, cmp->pcls, cmp->pUserData+pdesc->Offset, parm);
-      if (pdesc->DataType == kDataTypeGroup) {
-        i += pdesc->NumComponents;
-      }
     }
   }
 }

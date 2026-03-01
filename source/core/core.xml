@@ -510,9 +510,8 @@
     <enum name="Edges">Set of edge-specific values (e.g., margin, padding, or border widths).</enum>
     <enum name="ObjectTags">List of tag identifiers associated with an object.</enum>
     <enum name="Event">Event reference used to bind triggers or callbacks.</enum>
-    <enum name="Struct">There are multiple predefined structures, such as Vector2D, Vector3D, and Transform3D, used for various geometric and transformation purposes.</enum>
+    <enum name="Struct">Composite data structure containing multiple fields used for packaging related geometric, visual, and layout properties together.</enum>
     <enum name="Object">Reference to a complex object instance.</enum>
-    <enum name="Group">Logical grouping of related properties or child elements.</enum>
   </enums>
 
   <struct name="PropertyEnumValue" sealed="true" export="PropertyEnumValue">
@@ -544,7 +543,6 @@
     <field name="FullIdentifier" type="uint">Unique full identifier for the property type, automatically generated from explicit (ie. Grid.Columns) property name.</field>
     <field name="Offset" type="uint">Byte offset of the property within the structure.</field>
     <field name="DataSize" type="uint">Size of the property data in bytes.</field>
-    <field name="NumComponents" type="uint">Number of components in the group property (for vector or array types).</field>
     <field name="IsArray" type="bool">Indicates whether the property is an array type, will generate Num* property to indicate the number of elements.</field>
   </struct>
   

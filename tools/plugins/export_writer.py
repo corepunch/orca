@@ -401,12 +401,9 @@ class ExportWriter(Plugin):
 			struct = Workspace.structs.get(ptype)
 			typedata = f"kDataType{ptype[:1].upper() + ptype[1:]}"
 			if struct is not None:
-				nfields = 0
-				def count(p, _, c): nonlocal nfields; nfields += 1
-				utils.enum_component_properties(struct, count)
 				typedata = (
 					f"kDataTypeStruct, .TypeString=\"{struct.get('export')}\"" if struct.get('export')
-					else f"kDataTypeGroup, .TypeString=\"{ptype}\", .NumComponents={nfields}"
+					else f"kDataTypeStruct, .TypeString=\"{ptype}\""
 				)
 			elif ptype in Workspace.enums or sname in Workspace.enums:
 				enum = Workspace.enums.get(ptype) or Workspace.enums.get(sname)

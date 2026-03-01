@@ -1,5 +1,5 @@
 <!ENTITY % RotationOrder "XYZ|XZY|YZX|YXZ|ZXY|ZYX">
-<!ENTITY % DataType "None|Bool|Int|Enum|Float|Fixed|LongString|Edges|ObjectTags|Event|Struct|Object|Group">
+<!ENTITY % DataType "None|Bool|Int|Enum|Float|Fixed|LongString|Edges|ObjectTags|Event|Struct|Object">
 <!ENTITY % BlendMode "AlphaAutomatic|Opaque|Alpha|Additive|PremultipliedAlpha|MixedAlpha">
 <!ENTITY % CompareFunc "Never|Always|Less|LessOrEqual|Greater|GreaterOrEqual|Equal|NotEqual|Disabled">
 <!ENTITY % TextureFilter "Nearest|Linear|Trilinear">

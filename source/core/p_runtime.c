@@ -465,19 +465,20 @@ PROP_Import(lpProperty_t prop,
 //      handle_t handle = HACK_LoadResource(type, (lpcString_t)r->value);
 //      PROP_SetValue(prop, &handle);
 //      return TRUE;
-    } else if (PROP_GetType(prop) == kDataTypeGroup && PROP_GetSize(prop) == r->size) {
+    } else if (PROP_GetType(prop) == kDataTypeStruct && PROP_GetSize(prop) == r->size) {
       PROP_SetValue(prop, r->value);
       return TRUE;
     } else if (r->type == kDataTypeFloat && DATA_IsVector(PROP_GetType(prop))) {
       PROP_SetValue(prop, r->value);
       return TRUE;
-    } else if (PROP_GetType(prop) == kDataTypeGroup) {
+    } else if (PROP_GetType(prop) == kDataTypeStruct) {
       lpcPropertyType_t pd = PROP_GetDesc(prop);
-      FOR_LOOP(i, pd->NumComponents) {
-        eDataType_t type = (pd+1+i)->DataType;
-        if (!DATA_IsVector(type) && type != kDataTypeGroup)
-          return FALSE;
-      }
+      assert(!"Not implemented yet!");
+//      FOR_LOOP(i, pd->NumComponents) {
+//        eDataType_t type = (pd+1+i)->DataType;
+//        if (!DATA_IsVector(type) && type != kDataTypeStruct)
+//          return FALSE;
+//      }
       PROP_SetValue(prop, r->value);
       return TRUE;
     } else {

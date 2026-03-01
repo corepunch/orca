@@ -149,7 +149,6 @@ OBJ_GetUniforms(lpObject_t object, struct uniform* pUniforms)
         pUniforms->Type = UT_FLOAT;
         *pUniforms->Value = *(int*)PROP_GetValue(property);
         break;
-      case kDataTypeGroup:
       default:
         continue;
     }

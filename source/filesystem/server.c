@@ -108,7 +108,6 @@ static lpcString_t _types[] = {
   "event", // kDataTypeEvent,
   "struct", // kDataTypeStruct,
   "project-item", // kDataTypeObject,
-  "group", // kDataTypeGroup,
 };
 
 static void add_group(lpcClassDesc_t dec, void* parm) {
@@ -146,14 +145,16 @@ add_subproperty(xmlNodePtr xml,
         }
       }
       break;
-    case kDataTypeGroup:
+    case kDataTypeStruct:
       _xmlSetProp(n, "data-compound", "true");
-      FOR_LOOP(i, pdesc->NumComponents) {
-        lpcPropertyType_t inner = &pdesc[i + 1];
-        void* dest2 = ((byte_t*)dest) + inner->Offset - pdesc->Offset;
-        i += add_subproperty(n, obj, inner, dest2);
+      for (int i = pdesc->Offset, j = 1,
+           end = pdesc->Offset + pdesc->DataSize; i < end; j++)
+      {
+        if (i < pdesc[j].Offset) continue;
+        void* dest_ = ((byte_t*)dest) + pdesc[j].Offset - pdesc->Offset;
+        i = add_subproperty(n, obj, &pdesc[j], dest_);
       }
-      return pdesc->NumComponents;
+      return pdesc->Offset + pdesc->DataSize;
     default:
       break;
   }

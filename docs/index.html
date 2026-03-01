@@ -600,11 +600,9 @@
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Event</span></code><div class="small-abstract"><span>Event reference used to bind triggers or callbacks.
 </span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Struct</span></code><div class="small-abstract"><span>There are multiple predefined structures, such as Vector2D, Vector3D, and Transform3D, used for various geometric and transformation purposes.
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Struct</span></code><div class="small-abstract"><span>Composite data structure containing multiple fields used for packaging related geometric, visual, and layout properties together.
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Object</span></code><div class="small-abstract"><span>Reference to a complex object instance.
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Group</span></code><div class="small-abstract"><span>Logical grouping of related properties or child elements.
 </span></div></div>
 </div><div id="PropertyEnumValue" class="class" data-name="PropertyEnumValue" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
 </div><h1 class="header">PropertyEnumValue
@@ -654,8 +652,6 @@
 <div class="small-abstract"><span>Byte offset of the property within the structure.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">DataSize</span>: <span>uint</span></code></div>
 <div class="small-abstract"><span>Size of the property data in bytes.
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">NumComponents</span>: <span>uint</span></code></div>
-<div class="small-abstract"><span>Number of components in the group property (for vector or array types).
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">IsArray</span>: <span>bool</span></code></div>
 <div class="small-abstract"><span>Indicates whether the property is an array type, will generate Num* property to indicate the number of elements.
 </span></div></div><div id="window" class="class" data-name="window" data-inherits="None" data-xmlns="None"><div class="eyebrow">Interface

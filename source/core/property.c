@@ -407,27 +407,41 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
       PROP_SetValue(p, &number);
       break;
     case LUA_TNUMBER:
-      if (p->type == kDataTypeGroup) {
-        uint32_t k = 0;
-        FOR_LOOP(j, p->pdesc->NumComponents) {
-          switch (p->pdesc[j+1].DataType) {
-            case kDataTypeFloat:
-              ((float*)p->value)[k++] = luaL_checknumber(L, idx);
-              break;
-            case kDataTypeInt:
-              ((int*)p->value)[k++] = luaL_checknumber(L, idx);
-              break;
-            case kDataTypeGroup:
-              // skip
-              break;
-            default:
-              return luaL_error(L, "incorrect type %d in group property %s for number input", p->pdesc[j+1].DataType, p->name);
+      switch (p->type) {
+        case kDataTypeStruct:
+          // TODO: do we want to support such syntax?
+          for (size_t s = 0; s < p->pdesc->DataSize/sizeof(float); s++) {
+            ((float*)p->value)[s] = luaL_checknumber(L, idx);
           }
-        }
-      } else{
-        assert(p->type == kDataTypeInt || p->type == kDataTypeFloat);
-        number = luaL_checknumber(L, idx);
-        PROP_SetValue(p, &number);
+          // uint32_t k = 0;
+          // FOR_LOOP(j, p->pdesc->NumComponents) {
+          //   switch (p->pdesc[j+1].DataType) {
+          //     case kDataTypeFloat:
+          //       ((float*)p->value)[k++] = luaL_checknumber(L, idx);
+          //       break;
+          //     case kDataTypeInt:
+          //       ((int*)p->value)[k++] = luaL_checknumber(L, idx);
+          //       break;
+          //     case kDataTypeGroup:
+          //       // skip
+          //       break;
+          //     default:
+          //       return luaL_error(L, "incorrect type %d in group property %s for number input", p->pdesc[j+1].DataType, p->name);
+          //   }
+          // }
+          break;
+        case kDataTypeFloat:
+          PROP_SetValue(p, &(float){luaL_checknumber(L, idx)});
+          break;
+        case kDataTypeBool:
+        case kDataTypeInt:
+        case kDataTypeEnum:
+          number = luaL_checknumber(L, idx);
+          PROP_SetValue(p, &(int){luaL_checknumber(L, idx)});
+          break;
+        default:
+          assert(!"Unsupported type for property assigning from number");
+          break;
       }
       break;
     case LUA_TTABLE:
@@ -442,10 +456,6 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
         case kDataTypeObject:
           if ((udata = luaL_testudata(L, idx, API_TYPE_OBJECT))) PROP_SetValue(p, &udata);
           else return luaL_error(L, "Incorrect userdata for %s(%s) property\n", p->name, API_TYPE_OBJECT);
-          break;
-        case kDataTypeGroup:
-          if ((udata = luaL_testudata(L, idx, p->userdata))) PROP_SetValue(p, udata);
-          else return luaL_error(L, "Incorrect userdata for %s(%s) property\n", p->name, p->userdata);
           break;
         case kDataTypeStruct:
           PROP_SetValue(p, luaL_checkudata(L, idx, PROP_GetUserData(p)));
@@ -507,10 +517,6 @@ void _pushproperty(lua_State* L,
       }
       break;
     }
-    case kDataTypeGroup:
-      memcpy(lua_newuserdata(L, datasize), value, datasize);
-      luaL_setmetatable(L, typestring);
-      break;
     default:
       fprintf(stderr, "push(): Unsupported property type %d\n", type);
       break;

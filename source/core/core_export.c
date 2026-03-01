@@ -638,18 +638,18 @@ static int f_core_getHover(lua_State *L) {
 	luaX_pushObject(L, output);
 	return 1;
 }
-static const char *_DataType[] = {"none","bool","int","enum","float","fixed","longstring","edges","objecttags","event","struct","object","group",NULL};
+static const char *_DataType[] = {"none","bool","int","enum","float","fixed","longstring","edges","objecttags","event","struct","object",NULL};
 eDataType_t luaX_checkDataType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _DataType);
 }
 void luaX_pushDataType(lua_State *L, eDataType_t value) {
-	assert(value >= 0 && value < 13);
+	assert(value >= 0 && value < 12);
 	lua_pushstring(L, _DataType[value]);
 }
 #include <libxml/parser.h>
 ORCA_API lpcString_t __strtoDataType(lpcString_t string, enum DataType* output) {
 	if (string == NULL) return FALSE;
-	const char* _DataType[] = { "None", "Bool", "Int", "Enum", "Float", "Fixed", "LongString", "Edges", "ObjectTags", "Event", "Struct", "Object", "Group", NULL };
+	const char* _DataType[] = { "None", "Bool", "Int", "Enum", "Float", "Fixed", "LongString", "Edges", "ObjectTags", "Event", "Struct", "Object", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -829,9 +829,6 @@ static int f_new_PropertyType(lua_State *L) {
 		lua_getfield(L, 1, "DataSize");
 		self->DataSize = lua_tonumber(L, -1);
 		lua_pop(L, 1);
-		lua_getfield(L, 1, "NumComponents");
-		self->NumComponents = lua_tonumber(L, -1);
-		lua_pop(L, 1);
 		lua_getfield(L, 1, "IsArray");
 		self->IsArray = lua_toboolean(L, -1);
 		lua_pop(L, 1);
@@ -855,8 +852,7 @@ static int f_new_PropertyType(lua_State *L) {
 		self->FullIdentifier = luaL_checknumber(L, 17);
 		self->Offset = luaL_checknumber(L, 18);
 		self->DataSize = luaL_checknumber(L, 19);
-		self->NumComponents = luaL_checknumber(L, 20);
-		self->IsArray = lua_toboolean(L, 21);
+		self->IsArray = lua_toboolean(L, 20);
 	}
 	return 1;
 }
@@ -923,9 +919,6 @@ int f_PropertyType___index(lua_State *L) {
 	case 0x58ff2a7c: // DataSize
 		lua_pushnumber(L, luaX_checkPropertyType(L, 1)->DataSize);
 		return 1;
-	case 0xc3c2d1e7: // NumComponents
-		lua_pushnumber(L, luaX_checkPropertyType(L, 1)->NumComponents);
-		return 1;
 	case 0x660880b6: // IsArray
 		lua_pushboolean(L, luaX_checkPropertyType(L, 1)->IsArray);
 		return 1;
@@ -991,9 +984,6 @@ int f_PropertyType___newindex(lua_State *L) {
 	case 0x58ff2a7c: // DataSize
 		luaX_checkPropertyType(L, 1)->DataSize = luaL_checknumber(L, 3);
 		return 0;
-	case 0xc3c2d1e7: // NumComponents
-		luaX_checkPropertyType(L, 1)->NumComponents = luaL_checknumber(L, 3);
-		return 0;
 	case 0x660880b6: // IsArray
 		luaX_checkPropertyType(L, 1)->IsArray = lua_toboolean(L, 3);
 		return 0;
@@ -1026,7 +1016,6 @@ ORCA_API lpcString_t __strtoPropertyType(lpcString_t str, lpPropertyType_t outpu
 	str = __strtouint(str, &output->FullIdentifier);
 	str = __strtouint(str, &output->Offset);
 	str = __strtouint(str, &output->DataSize);
-	str = __strtouint(str, &output->NumComponents);
 	str = __strtobool(str, &output->IsArray);
 	return str;
 }
@@ -1099,9 +1088,6 @@ static int xml_PropertyType(xmlNodePtr xml, lpPropertyType_t output) {
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("DataSize")), xmlFree) {
 		__strtouint((lpcString_t)attr, &output->DataSize);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("NumComponents")), xmlFree) {
-		__strtouint((lpcString_t)attr, &output->NumComponents);
 	}
 	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("IsArray")), xmlFree) {
 		__strtobool((lpcString_t)attr, &output->IsArray);
