@@ -15,15 +15,6 @@ luaX_pushObject(lua_State *L, lpcObject_t Object);
 ORCA_API lpObject_t
 luaX_checkObject(lua_State *L, int idx);
 
-typedef struct PropertyType PropertyType_t, *lpPropertyType_t;
-typedef struct PropertyType const cPropertyType_t, *lpcPropertyType_t;
-/// @brief Push PropertyType onto Lua stack.
-ORCA_API void
-luaX_pushPropertyType(lua_State *L, lpcPropertyType_t PropertyType);
-/// @brief Check PropertyType form Lua stack at index.
-ORCA_API lpPropertyType_t
-luaX_checkPropertyType(lua_State *L, int idx);
-
 typedef struct PropertyEnumValue PropertyEnumValue_t, *lpPropertyEnumValue_t;
 typedef struct PropertyEnumValue const cPropertyEnumValue_t, *lpcPropertyEnumValue_t;
 /// @brief Push PropertyEnumValue onto Lua stack.
@@ -32,6 +23,15 @@ luaX_pushPropertyEnumValue(lua_State *L, lpcPropertyEnumValue_t PropertyEnumValu
 /// @brief Check PropertyEnumValue form Lua stack at index.
 ORCA_API lpPropertyEnumValue_t
 luaX_checkPropertyEnumValue(lua_State *L, int idx);
+
+typedef struct PropertyType PropertyType_t, *lpPropertyType_t;
+typedef struct PropertyType const cPropertyType_t, *lpcPropertyType_t;
+/// @brief Push PropertyType onto Lua stack.
+ORCA_API void
+luaX_pushPropertyType(lua_State *L, lpcPropertyType_t PropertyType);
+/// @brief Check PropertyType form Lua stack at index.
+ORCA_API lpPropertyType_t
+luaX_checkPropertyType(lua_State *L, int idx);
 
 #define kEventLeftMouseDown 0xfac0b5e7
 typedef struct WI_Message* LeftMouseDownEventPtr;
@@ -418,6 +418,10 @@ OBJ_GetInteger(lpcObject_t self, uint32_t ident, int32_t fallback);
 ORCA_API lpProperty_t
 OBJ_GetProperties(lpcObject_t self);
 
+/// @brief Looks up a property by context-driven syntax, like "Column" instead of "Grid.Column"
+ORCA_API lpPropertyType_t
+OBJ_FindImplicitProperty(lpObject_t self, const char* name);
+
 /// @brief Finds a property by navigating a hierarchical path
 ORCA_API lpProperty_t
 OBJ_FindPropertyByPath(lpObject_t self, const char* path);
@@ -450,6 +454,12 @@ typedef enum DataType {
 	kDataTypeGroup, /// Logical grouping of related properties or child elements.
 } eDataType_t;
 
+typedef struct PropertyEnumValue PropertyEnumValue, *PropertyEnumValuePtr;
+typedef struct PropertyEnumValue const *PropertyEnumValueCPtr;
+struct PropertyEnumValue {
+	int32_t Value;
+};
+
 typedef struct PropertyType PropertyType, *PropertyTypePtr;
 typedef struct PropertyType const *PropertyTypeCPtr;
 /// @brief Defines a custom property type that can be attached to engine objects.
@@ -469,12 +479,6 @@ struct PropertyType {
 	float UpperBound; /// Maximum allowed value for numeric properties.
 	float LowerBound; /// Minimum allowed value for numeric properties.
 	PropertyDesc_t _desc; /// Internal descriptor structure providing extended property metadata.
-};
-
-typedef struct PropertyEnumValue PropertyEnumValue, *PropertyEnumValuePtr;
-typedef struct PropertyEnumValue const *PropertyEnumValueCPtr;
-struct PropertyEnumValue {
-	int32_t Value;
 };
 
 #endif

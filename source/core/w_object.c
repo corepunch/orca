@@ -137,6 +137,7 @@ int f_new_Object(lua_State *L) {
     luaX_parsefield(lpcString_t, __name, -1, luaL_optstring, NULL);
     if (__name && strcmp(__name, "LuaBehaviour")) {
       OBJ_SetName(pobj, __name);
+      OBJ_SetClassName(pobj, __name);
     }
   }
   lua_pop(L, 1);

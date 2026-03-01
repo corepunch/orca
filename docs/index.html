@@ -23,8 +23,8 @@
 </span></a><div class="technology-title"><span class="fa-solid fa-folder-open icon"></span>orca.core
 </div><a class="leaf-link" href="#Object"><i class="fa-solid fa-atom icon"></i><span>Object
 </span></a><a class="leaf-link" href="#DataType"><i class="fa-solid fa-bars icon"></i><span>DataType
-</span></a><a class="leaf-link" href="#PropertyType"><i class="fa-solid fa-layer-group icon"></i><span>PropertyType
 </span></a><a class="leaf-link" href="#PropertyEnumValue"><i class="fa-solid fa-layer-group icon"></i><span>PropertyEnumValue
+</span></a><a class="leaf-link" href="#PropertyType"><i class="fa-solid fa-layer-group icon"></i><span>PropertyType
 </span></a><div class="technology-title"><span class="fa-solid fa-folder-open icon"></span>orca.renderer
 </div><a class="leaf-link" href="#window"><i class="fa-solid fa-atom icon"></i><span>window
 </span></a><a class="leaf-link" href="#BlendMode"><i class="fa-solid fa-bars icon"></i><span>BlendMode
@@ -572,6 +572,7 @@
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">addAnimation</span>(<span class="identifier">animation</span>:<span class="decorator">KeyframeAnim</span>)</code><div class="small-abstract"><span>Adds a keyframe animation to the object's animation library
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getInteger</span>(<span class="identifier">ident</span>:<span class="decorator">uint</span>, <span class="identifier">fallback</span>:<span class="decorator">int</span>)<span class="decorator"> -&gt;</span><span> int</span></code><div class="small-abstract"><span>Gets an integer property value by identifier
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getProperties</span>()<span class="decorator"> -&gt;</span><span> Property</span></code><div class="small-abstract"><span>Gets the properties collection
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">findImplicitProperty</span>(<span class="identifier">name</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> PropertyType</span></code><div class="small-abstract"><span>Looks up a property by context-driven syntax, like "Column" instead of "Grid.Column"
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">findPropertyByPath</span>(<span class="identifier">path</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> Property</span></code><div class="small-abstract"><span>Finds a property by navigating a hierarchical path
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">rebuild</span>()</code><div class="small-abstract"><span>Rebuilds the object's body content asynchronously
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getFocus</span>()<span class="decorator"> -&gt;</span><span> Object</span></code><div class="small-abstract"><span>Retrieves currently active object.
@@ -605,6 +606,9 @@
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Group</span></code><div class="small-abstract"><span>Logical grouping of related properties or child elements.
 </span></div></div>
+</div><div id="PropertyEnumValue" class="class" data-name="PropertyEnumValue" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
+</div><h1 class="header">PropertyEnumValue
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">core.PropertyEnumValue</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Value</span>: <span>int</span></code></div>
 </div><div id="PropertyType" class="class" data-name="PropertyType" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">PropertyType
 </h1><div class="abstract">Defines a custom property type that can be attached to engine objects.
@@ -638,10 +642,7 @@
 <div class="small-abstract"><span>Maximum allowed value for numeric properties.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">LowerBound</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Minimum allowed value for numeric properties.
-</span></div></div><div id="PropertyEnumValue" class="class" data-name="PropertyEnumValue" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
-</div><h1 class="header">PropertyEnumValue
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">core.PropertyEnumValue</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Value</span>: <span>int</span></code></div>
-</div><div id="window" class="class" data-name="window" data-inherits="None" data-xmlns="None"><div class="eyebrow">Interface
+</span></div></div><div id="window" class="class" data-name="window" data-inherits="None" data-xmlns="None"><div class="eyebrow">Interface
 </div><h1 class="header">window
 </h1><div class="abstract">Window interface abstraction.
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">renderer.window</span></code><h2 class="title">Overview</h2><div class="abstract">

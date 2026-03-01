@@ -1,5 +1,17 @@
 <!ENTITY % RotationOrder "XYZ|XZY|YZX|YXZ|ZXY|ZYX">
 <!ENTITY % DataType "None|Bool|Int|Enum|Float|Fixed|LongString|Edges|ObjectTags|Event|Struct|Object|Group">
+<!ENTITY % PropertyEnumValueAttribs "
+	Name CDATA #REQUIRED
+	Style CDATA #IMPLIED
+	IsDisabled (true|false) #IMPLIED
+	StateManager CDATA #IMPLIED
+	Value CDATA #IMPLIED
+">
+<!ELEMENT PropertyEnumValue.Value (#PCDATA | Binding)*>
+<!ATTLIST PropertyEnumValue.Value Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % PropertyEnumValueElements "PropertyEnumValue.Value">
+<!ELEMENT PropertyEnumValue EMPTY>
+<!ATTLIST PropertyEnumValue %PropertyEnumValueAttribs;>
 <!ENTITY % PropertyTypeAttribs "
 	Name CDATA #REQUIRED
 	Style CDATA #IMPLIED
@@ -51,18 +63,6 @@
 <!ENTITY % PropertyTypeElements "PropertyType.Category|PropertyType.DataType|PropertyType.DefaultValue|PropertyType.TargetType|PropertyType.AffectLayout|PropertyType.AffectRender|PropertyType.IsReadOnly|PropertyType.IsHidden|PropertyType.IsInherited|PropertyType.Key|PropertyType.Value|PropertyType.Step|PropertyType.UpperBound|PropertyType.LowerBound">
 <!ELEMENT PropertyType EMPTY>
 <!ATTLIST PropertyType %PropertyTypeAttribs;>
-<!ENTITY % PropertyEnumValueAttribs "
-	Name CDATA #REQUIRED
-	Style CDATA #IMPLIED
-	IsDisabled (true|false) #IMPLIED
-	StateManager CDATA #IMPLIED
-	Value CDATA #IMPLIED
-">
-<!ELEMENT PropertyEnumValue.Value (#PCDATA | Binding)*>
-<!ATTLIST PropertyEnumValue.Value Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % PropertyEnumValueElements "PropertyEnumValue.Value">
-<!ELEMENT PropertyEnumValue EMPTY>
-<!ATTLIST PropertyEnumValue %PropertyEnumValueAttribs;>
 <!ENTITY % BlendMode "AlphaAutomatic|Opaque|Alpha|Additive|PremultipliedAlpha|MixedAlpha">
 <!ENTITY % CompareFunc "Never|Always|Less|LessOrEqual|Greater|GreaterOrEqual|Equal|NotEqual|Disabled">
 <!ENTITY % TextureFilter "Nearest|Linear|Trilinear">
@@ -1576,7 +1576,7 @@
 <!ELEMENT Viewport3D.Scene (#PCDATA | Binding)*>
 <!ATTLIST Viewport3D.Scene Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % Viewport3DElements "Viewport3D.Camera|Viewport3D.PreviewCamera|Viewport3D.HitTestCamera|Viewport3D.RenderPass|Viewport3D.Scene|%Node2DElements;">
-<!ELEMENT Viewport3D (PropertyType|PropertyEnumValue|Texture|Image|RenderTargetTexture|CubeMapTexture|IOSurfaceTexture|VertexShader|FragmentShader|Shader|Material|Mesh|FontFamily|Trajectory|Timeline|DataObject|AnimationPlayer|Trigger|OnPropertyChangedTrigger|OnAttachedTrigger|EventTrigger|Setter|Handler|Brush|ColorBrush|Node|TextRun|TextBlockConcept|Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|Style|Node3D|Scene|Model3D|PlaneMeshNode|Camera|TrajectoryList3D|Viewport3D|PrefabView3D|RenderPass|CompositionTargetRenderPass|BlitRenderPass|ClearRenderPass|DrawObjectsRenderPass|PipelineStateRenderPass|TextBlock3D|Light3D|SpriteView|Resource|StyleSheet|ObjectPrefabPlaceholder|%Viewport3DElements;)*>
+<!ELEMENT Viewport3D (PropertyEnumValue|PropertyType|Texture|Image|RenderTargetTexture|CubeMapTexture|IOSurfaceTexture|VertexShader|FragmentShader|Shader|Material|Mesh|FontFamily|Trajectory|Timeline|DataObject|AnimationPlayer|Trigger|OnPropertyChangedTrigger|OnAttachedTrigger|EventTrigger|Setter|Handler|Brush|ColorBrush|Node|TextRun|TextBlockConcept|Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|Style|Node3D|Scene|Model3D|PlaneMeshNode|Camera|TrajectoryList3D|Viewport3D|PrefabView3D|RenderPass|CompositionTargetRenderPass|BlitRenderPass|ClearRenderPass|DrawObjectsRenderPass|PipelineStateRenderPass|TextBlock3D|Light3D|SpriteView|Resource|StyleSheet|ObjectPrefabPlaceholder|%Viewport3DElements;)*>
 <!ATTLIST Viewport3D %Viewport3DAttribs;>
 <!ENTITY % PrefabView3DAttribs "
 	%Node3DAttribs;

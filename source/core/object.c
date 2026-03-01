@@ -25,7 +25,7 @@ struct Object
     {
       struct component* components;
       struct property_animation* animations;
-      struct property* properties;
+      struct Property* properties;
       struct state_manager* stateManager;
       struct style_class* classes;
       struct style_sheet* stylesheet;

@@ -410,6 +410,13 @@ static int f_Object_getInteger(lua_State *L) {
 	lua_pushnumber(L, output);
 	return 1;
 }
+static int f_Object_findImplicitProperty(lua_State *L) {
+	lpObject_t self = luaX_checkObject(L, 1);
+	const char* name = luaL_checkstring(L, 2);
+	lpPropertyType_t output = OBJ_FindImplicitProperty(self, name);
+	luaX_pushPropertyType(L, output);
+	return 1;
+}
 static int f_Object_findPropertyByPath(lua_State *L) {
 	lpObject_t self = luaX_checkObject(L, 1);
 	const char* path = luaL_checkstring(L, 2);
@@ -598,6 +605,9 @@ int f_Object___index(lua_State *L) {
 	case 0xafe50917: // getInteger
 		lua_pushcfunction(L, f_Object_getInteger);
 		return 1;
+	case 0xf2167b80: // findImplicitProperty
+		lua_pushcfunction(L, f_Object_findImplicitProperty);
+		return 1;
 	case 0xfc8bdeb9: // findPropertyByPath
 		lua_pushcfunction(L, f_Object_findPropertyByPath);
 		return 1;
@@ -655,6 +665,35 @@ ORCA_API lpcString_t __strtoDataType(lpcString_t string, enum DataType* output) 
 	Con_Error("Could not parse '%s' value of property DataType", string);
 	return string + strlen(string);
 }
+static struct PropertyDesc const PropertyEnumValueProperties[kPropertyEnumValueNumProperties] = {
+	/* PropertyEnumValue.Value */ DECL(0xd147f96a, 0xe5df7e25,
+	PropertyEnumValue, "Value", Value, kDataTypeInt),
+};
+static struct PropertyEnumValue PropertyEnumValueDefaults = {0};
+LRESULT PropertyEnumValueProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+}
+	return FALSE;
+}
+void luaX_pushPropertyEnumValue(lua_State *L, lpcPropertyEnumValue_t PropertyEnumValue) {
+	luaX_pushObject(L, CMP_GetObject(PropertyEnumValue));
+}
+lpPropertyEnumValue_t luaX_checkPropertyEnumValue(lua_State *L, int idx) {
+	return GetPropertyEnumValue(luaX_checkObject(L, idx));
+}
+ORCA_API struct ClassDesc _PropertyEnumValue = {
+	.ClassName = "PropertyEnumValue",
+	.DefaultName = "PropertyEnumValue",
+	.ContentType = "PropertyEnumValue",
+	.Xmlns = "None",
+	.ParentClasses = {NULL},
+	.ClassID = ID_PropertyEnumValue,
+	.ClassSize = sizeof(struct PropertyEnumValue),
+	.Properties = PropertyEnumValueProperties,
+	.ObjProc = PropertyEnumValueProc,
+	.Defaults = &PropertyEnumValueDefaults,
+	.NumProperties = kPropertyEnumValueNumProperties,
+};
 LRESULT PropertyType_Attached(lpObject_t, lpPropertyType_t, wParam_t, AttachedEventPtr);
 static struct PropertyDesc const PropertyTypeProperties[kPropertyTypeNumProperties] = {
 	/* PropertyType.Category */ DECL(0xafb3e591, 0x9c5f73a2,
@@ -713,35 +752,6 @@ ORCA_API struct ClassDesc _PropertyType = {
 	.Defaults = &PropertyTypeDefaults,
 	.NumProperties = kPropertyTypeNumProperties,
 };
-static struct PropertyDesc const PropertyEnumValueProperties[kPropertyEnumValueNumProperties] = {
-	/* PropertyEnumValue.Value */ DECL(0xd147f96a, 0xe5df7e25,
-	PropertyEnumValue, "Value", Value, kDataTypeInt),
-};
-static struct PropertyEnumValue PropertyEnumValueDefaults = {0};
-LRESULT PropertyEnumValueProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-}
-	return FALSE;
-}
-void luaX_pushPropertyEnumValue(lua_State *L, lpcPropertyEnumValue_t PropertyEnumValue) {
-	luaX_pushObject(L, CMP_GetObject(PropertyEnumValue));
-}
-lpPropertyEnumValue_t luaX_checkPropertyEnumValue(lua_State *L, int idx) {
-	return GetPropertyEnumValue(luaX_checkObject(L, idx));
-}
-ORCA_API struct ClassDesc _PropertyEnumValue = {
-	.ClassName = "PropertyEnumValue",
-	.DefaultName = "PropertyEnumValue",
-	.ContentType = "PropertyEnumValue",
-	.Xmlns = "None",
-	.ParentClasses = {NULL},
-	.ClassID = ID_PropertyEnumValue,
-	.ClassSize = sizeof(struct PropertyEnumValue),
-	.Properties = PropertyEnumValueProperties,
-	.ObjProc = PropertyEnumValueProc,
-	.Defaults = &PropertyEnumValueDefaults,
-	.NumProperties = kPropertyEnumValueNumProperties,
-};
 ORCA_API int luaopen_orca_core(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) {
 		{ "getFocus", f_core_getFocus },
@@ -753,11 +763,11 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	// Object
 	luaopen_orca_Object(L);
 	lua_setfield(L, -2, "Object");
-	// PropertyType
-	lua_pushclass(L, &_PropertyType);
-	lua_setfield(L, -2, "PropertyType");
 	// PropertyEnumValue
 	lua_pushclass(L, &_PropertyEnumValue);
 	lua_setfield(L, -2, "PropertyEnumValue");
+	// PropertyType
+	lua_pushclass(L, &_PropertyType);
+	lua_setfield(L, -2, "PropertyType");
 	return 1;
 }

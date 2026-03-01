@@ -59,6 +59,26 @@ _CreateClassProperty(lpObject_t object, uint32_t ident)
   return NULL;
 }
 
+lpPropertyType_t
+OBJ_FindImplicitProperty(lpObject_t object,
+                         lpcString_t name)
+{
+//  uint32_t identifier = fnv1a32(name);
+////  return PROP_FindByShortID(object->properties, identifier);
+//  FOR_EACH_LIST(struct component, cmp, _GetComponents(object)) {
+//    FOR_LOOP(i, cmp->pcls->NumProperties) {
+//      lpcPropertyDesc_t pdesc = &cmp->pcls->Properties[i];
+//      if (pdesc->id->Identifier == identifier) {
+//        static struct PropertyDescriptor tmp;
+//        tmp.Name = pdesc->id->Name;
+//        tmp.Type = pdesc->TypeString;
+//        return &tmp;
+//      }
+//    }
+//  }
+  return NULL;
+}
+
 void
 OBJ_EnumClassProperties(lpObject_t object,
                         void (*fnProc)(lpcObject_t,
@@ -68,13 +88,9 @@ OBJ_EnumClassProperties(lpObject_t object,
                                        void*),
                         void* parm)
 {
-  FOR_EACH_LIST(struct component, cmp, _GetComponents(object))
-  {
-    FOR_LOOP(i, cmp->pcls->NumProperties)
-    {
+  FOR_EACH_LIST(struct component, cmp, _GetComponents(object)) {
+    FOR_LOOP(i, cmp->pcls->NumProperties) {
       lpcPropertyDesc_t pdesc = &cmp->pcls->Properties[i];
-      if (pdesc->DataType == kDataTypeStruct && !strcmp(pdesc->TypeString, "Matrix3D"))
-        continue;
       fnProc(object, pdesc, cmp->pcls, cmp->pUserData+pdesc->Offset, parm);
       if (pdesc->DataType == kDataTypeGroup) {
         i += pdesc->NumComponents;

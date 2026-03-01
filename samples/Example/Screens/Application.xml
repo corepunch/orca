@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 <!DOCTYPE Screen SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
 <Screen Name="Application" Height="768" Width="1024">
-  <ImageView Name="Image" Image="Example/Images/peacock" Stretch="None" />
-  <TextBlock Name="TextBlock" FontSize="40" HorizontalAlignment="Left" VerticalAlignment="Top" LayoutTransform="400 20 0 1 1" Text="Hello World"/>
+  <Grid Name="Layout" Columns="auto auto">
+    <ImageView Name="Image" Image="Example/Images/peacock" Stretch="None" />
+    <TextBlock Name="TextBlock" FontSize="40" Text="Hello World"/>
+  </Grid>
 </Screen>

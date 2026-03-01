@@ -47,7 +47,7 @@
   <resource type="game"/>
   <resource type="Property" no-lua="true"/>
   <resource type="KeyframeAnim" no-lua="true"/>
-  
+
   <interface name="Object" prefix="OBJ_" export="Object" no-check="true">
     <summary>Core engine host object.</summary>
     <details>
@@ -454,6 +454,13 @@
       <returns type="Property" pointer="true">Pointer to properties collection</returns>
     </method>
     
+    <method name="FindImplicitProperty">
+      <summary>Looks up a property by context-driven syntax, like "Column" instead of "Grid.Column"</summary>
+      <details>Searches for a property using a context-driven approach, allowing shorthand notation for commonly used properties. This method simplifies property access by inferring the full property path based on the current context.</details>
+      <arg name="name" type="string">The name of the property to find</arg>
+      <returns type="PropertyType" pointer="true">Pointer to a property, null if not found</returns>
+    </method>
+    
     <method name="FindPropertyByPath">
       <summary>Finds a property by navigating a hierarchical path</summary>
       <details>Traverses the object hierarchy following the specified path and returns the property at the end.  The path uses forward slashes to navigate through child objects, ending with a property name (e.g., "Child1/Child2/PropertyName"). This allows accessing properties on descendant objects without manually traversing each level.  Returns null if any part of the path is not found or if the final element is not a valid property. </details>
@@ -501,6 +508,10 @@
     <enum name="Group">Logical grouping of related properties or child elements.</enum>
   </enums>
 
+  <class name="PropertyEnumValue">
+    <property name="Value" type="int"/>
+  </class>
+
   <class name="PropertyType">
     <summary>Defines a custom property type that can be attached to engine objects.</summary>
     <details>PropertyType allows defining additional data fields beyond built-in engine properties. Each PropertyType specifies its data category, default value, and behavioral attributes such as layout and render impact. It serves as a flexible mechanism for extending object metadata in projects.</details>
@@ -522,8 +533,4 @@
     <field name="_desc" type="PropertyDesc">Internal descriptor structure providing extended property metadata.</field>
   </class>
   
-  <class name="PropertyEnumValue">
-    <property name="Value" type="int"/>
-  </class>
-
 </module>

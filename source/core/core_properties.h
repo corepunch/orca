@@ -1,3 +1,12 @@
+#define ID_PropertyEnumValue 0xc3baa44a
+#define GetPropertyEnumValue(_P)((struct PropertyEnumValue*)((_P)?OBJ_GetComponent(_P,ID_PropertyEnumValue):NULL))
+#define PropertyEnumValue_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_PropertyEnumValue,sizeof(struct PropertyEnumValue),_N)
+enum PropertyEnumValueProperties {
+	kPropertyEnumValueValue,
+	kPropertyEnumValueNumProperties
+};
+
+#define ID_PropertyEnumValue_Value 0xe5df7e25
 #define ID_PropertyType 0xe81fb7a0
 #define GetPropertyType(_P)((struct PropertyType*)((_P)?OBJ_GetComponent(_P,ID_PropertyType):NULL))
 #define PropertyType_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_PropertyType,sizeof(struct PropertyType),_N)
@@ -33,12 +42,3 @@ enum PropertyTypeProperties {
 #define ID_PropertyType_Step 0x01511768
 #define ID_PropertyType_UpperBound 0xdd11f20e
 #define ID_PropertyType_LowerBound 0x15c97825
-#define ID_PropertyEnumValue 0xc3baa44a
-#define GetPropertyEnumValue(_P)((struct PropertyEnumValue*)((_P)?OBJ_GetComponent(_P,ID_PropertyEnumValue):NULL))
-#define PropertyEnumValue_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_PropertyEnumValue,sizeof(struct PropertyEnumValue),_N)
-enum PropertyEnumValueProperties {
-	kPropertyEnumValueValue,
-	kPropertyEnumValueNumProperties
-};
-
-#define ID_PropertyEnumValue_Value 0xe5df7e25
