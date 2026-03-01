@@ -32,7 +32,7 @@ static size_t psize[] = {
 
 ORCA_API lpcString_t
 (*_PDESC_Parse)(lpObject_t hobj,
-               lpcPropertyDesc_t pdesc,
+               lpcPropertyType_t pdesc,
                lpProperty_t property,
                lpcString_t string,
                void* dest);
@@ -56,7 +56,7 @@ struct Property
   lpcString_t userdata;
   lpObject_t object;
   char oldvalue[MAX_PROPERTY_STRING];
-  lpcPropertyDesc_t pdesc;
+  lpcPropertyType_t pdesc;
   uint32_t updateFrame;
   lpProperty_t callbackEvent;
   lpProperty_t next;
@@ -326,11 +326,11 @@ PROP_Create(lua_State* L,
 lpProperty_t
 CMP_CreateProperty(lua_State* L,
                    struct component* comp,
-                   lpcPropertyDesc_t desc)
+                   lpcPropertyType_t desc)
 {
   lpProperty_t property = ZeroAlloc(sizeof(struct Property));
   assert(property);
-  property->longIdentifier = desc->id->Identifier;
+  property->longIdentifier = desc->ShortIdentifier;
 //  lpcString_t dot = strrchr(desc->name, '.');
 //  if (dot) {
 //    property->shortIdentifier = fnv1a32(dot + 1);
@@ -338,7 +338,7 @@ CMP_CreateProperty(lua_State* L,
 //    property->shortIdentifier = property->longIdentifier;
 //  }
   property->longIdentifier = desc->FullIdentifier;
-  property->shortIdentifier = desc->id->Identifier;
+  property->shortIdentifier = desc->ShortIdentifier;
   property->next = NULL;
   property->type = desc->DataType;
   property->object = CMP_GetOwner(comp);
@@ -353,7 +353,7 @@ CMP_CreateProperty(lua_State* L,
 
   //    PROP_SetValue(property, pdesc->value);
   memset(property->oldvalue, 0xff, PROP_GetSize(property));
-  strncpy(property->name, desc->id->Name, sizeof(property->name));
+  strncpy(property->name, desc->Name, sizeof(property->name));
   return property;
 }
 
@@ -693,7 +693,7 @@ PROP_ClearSpecialized(lpProperty_t pprop) {
   }
 }
 
-lpcPropertyDesc_t 
+lpcPropertyType_t 
 PROP_GetDesc(lpcProperty_t prop) {
   return prop->pdesc;
 }
@@ -704,7 +704,7 @@ PROP_Parse(lpProperty_t p, lpcString_t string)
   if (!_PDESC_Parse) {
     fprintf(stderr, "PDESC_Parse() is not registered, do 'require \"orca.parsers.xml\"' first\n");
   } else {
-    _PDESC_Parse(p->object, p->pdesc ? p->pdesc: &(struct PropertyDesc){
+    _PDESC_Parse(p->object, p->pdesc ? p->pdesc: &(struct PropertyType){
       .DataType = p->type,
       .DataSize = PROP_GetSize(p),
       .TypeString = p->userdata,

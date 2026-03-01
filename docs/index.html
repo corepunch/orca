@@ -23,8 +23,8 @@
 </span></a><div class="technology-title"><span class="fa-solid fa-folder-open icon"></span>orca.core
 </div><a class="leaf-link" href="#Object"><i class="fa-solid fa-atom icon"></i><span>Object
 </span></a><a class="leaf-link" href="#DataType"><i class="fa-solid fa-bars icon"></i><span>DataType
-</span></a><a class="leaf-link" href="#PropertyEnumValue"><i class="fa-solid fa-layer-group icon"></i><span>PropertyEnumValue
-</span></a><a class="leaf-link" href="#PropertyType"><i class="fa-solid fa-layer-group icon"></i><span>PropertyType
+</span></a><a class="leaf-link" href="#PropertyEnumValue"><i class="fa-solid fa-gear icon"></i><span>PropertyEnumValue
+</span></a><a class="leaf-link" href="#PropertyType"><i class="fa-solid fa-gear icon"></i><span>PropertyType
 </span></a><div class="technology-title"><span class="fa-solid fa-folder-open icon"></span>orca.renderer
 </div><a class="leaf-link" href="#window"><i class="fa-solid fa-atom icon"></i><span>window
 </span></a><a class="leaf-link" href="#BlendMode"><i class="fa-solid fa-bars icon"></i><span>BlendMode
@@ -606,14 +606,18 @@
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Group</span></code><div class="small-abstract"><span>Logical grouping of related properties or child elements.
 </span></div></div>
-</div><div id="PropertyEnumValue" class="class" data-name="PropertyEnumValue" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
+</div><div id="PropertyEnumValue" class="class" data-name="PropertyEnumValue" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
 </div><h1 class="header">PropertyEnumValue
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">core.PropertyEnumValue</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Value</span>: <span>int</span></code></div>
-</div><div id="PropertyType" class="class" data-name="PropertyType" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
+</h1><div class="abstract">Enum value descriptor for a property.
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">core.PropertyEnumValue</span></code><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Name</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Unique name identifier for the value.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Value</span>: <span>int</span></code></div>
+<div class="small-abstract"><span>Integer value representing the enum.
+</span></div></div><div id="PropertyType" class="class" data-name="PropertyType" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
 </div><h1 class="header">PropertyType
 </h1><div class="abstract">Defines a custom property type that can be attached to engine objects.
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">core.PropertyType</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">PropertyType allows defining additional data fields beyond built-in engine properties. Each PropertyType specifies its data category, default value, and behavioral attributes such as layout and render impact. It serves as a flexible mechanism for extending object metadata in projects.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">_desc</span>: <span>PropertyDesc</span></code></div>
-<div class="small-abstract"><span>Internal descriptor structure providing extended property metadata.
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">core.PropertyType</span></code><h2 class="title">Overview</h2><div class="abstract">PropertyType allows defining additional data fields beyond built-in engine properties. Each PropertyType specifies its data category, default value, and behavioral attributes such as layout and render impact. It serves as a flexible mechanism for extending object metadata in projects.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Name</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Unique name identifier for the property type.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Category</span>: <span>fixed</span></code></div>
 <div class="small-abstract"><span>Organizational category for this property, used for grouping in editors and UIs.
 </span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">DataType</span>: <a class="type-identifier-link" href="#DataType">DataType</a></code></div>
@@ -642,6 +646,20 @@
 <div class="small-abstract"><span>Maximum allowed value for numeric properties.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">LowerBound</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Minimum allowed value for numeric properties.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ShortIdentifier</span>: <span>uint</span></code></div>
+<div class="small-abstract"><span>Unique short identifier for the property type, automatically generated from implicit property name.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">FullIdentifier</span>: <span>uint</span></code></div>
+<div class="small-abstract"><span>Unique full identifier for the property type, automatically generated from explicit (ie. Grid.Columns) property name.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Offset</span>: <span>uint</span></code></div>
+<div class="small-abstract"><span>Byte offset of the property within the structure.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">DataSize</span>: <span>uint</span></code></div>
+<div class="small-abstract"><span>Size of the property data in bytes.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">TypeString</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>String representation of the property type, used to store enum values or struct type names.
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">NumComponents</span>: <span>uint</span></code></div>
+<div class="small-abstract"><span>Number of components in the group property (for vector or array types).
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">IsArray</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Indicates whether the property is an array type, will generate Num* property to indicate the number of elements.
 </span></div></div><div id="window" class="class" data-name="window" data-inherits="None" data-xmlns="None"><div class="eyebrow">Interface
 </div><h1 class="header">window
 </h1><div class="abstract">Window interface abstraction.

@@ -36,7 +36,7 @@ void UI_FillOutPropDef(HOBJ object, HPROP p, LPPROPDEF lpPropDef) {
 }
 
 ORCA_API void
-PDESC_Print(lpcPropertyDesc_t pdesc, LPSTR buffer, DWORD len, float const* pf)
+PDESC_Print(lpcPropertyType_t pdesc, LPSTR buffer, DWORD len, float const* pf)
 {
   switch (pdesc->DataType) {
     case kDataTypeBool:
@@ -94,7 +94,7 @@ PDESC_Print(lpcPropertyDesc_t pdesc, LPSTR buffer, DWORD len, float const* pf)
     case kDataTypeGroup: {
       bool_t add_space = FALSE;
       FOR_LOOP(i, pdesc->NumComponents) {
-        lpcPropertyDesc_t p = pdesc+i+1;
+        lpcPropertyType_t p = pdesc+i+1;
         if ((p->DataType) == kDataTypeGroup) continue;
         void* d =(char*)pf + p->Offset - pdesc->Offset;
         if (add_space) {strcat(buffer, " "); buffer++; len--;};
@@ -117,13 +117,13 @@ PDESC_Print(lpcPropertyDesc_t pdesc, LPSTR buffer, DWORD len, float const* pf)
 //      }
 //      break;
     default:
-      Con_Error("Unknown type %d in property %s\n", pdesc->DataType, pdesc->id->Name);
+      Con_Error("Unknown type %d in property %s\n", pdesc->DataType, pdesc->Name);
       break;
   }
 }
 
 void PROP_Print(HPROP p, LPSTR buffer, DWORD len) {
-  PDESC_Print(p->pdesc ? p->pdesc: &(struct PropertyDesc){
+  PDESC_Print(p->pdesc ? p->pdesc: &(struct PropertyType){
     .DataType = p->type,
     .DataSize = PROP_GetSize(p),
     .TypeString = p->userdata,

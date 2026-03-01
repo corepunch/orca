@@ -794,7 +794,7 @@ ORCA_API int luaopen_orca_parsers_xml(lua_State* L)
   
   extern lpcString_t
   (*_PDESC_Parse)(lpObject_t hobj,
-                  lpcPropertyDesc_t pdesc,
+                  lpcPropertyType_t pdesc,
                   lpProperty_t property,
                   lpcString_t string,
                   void* dest);

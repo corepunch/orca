@@ -346,7 +346,7 @@ parse_tags(shortStr_t* _tags, lpcString_t value)
 
 static void
 _ParseEdges(lpObject_t hobj,
-            const struct PropertyDesc *pdesc,
+            const struct PropertyType *pdesc,
             lpProperty_t p,
             lpcString_t string,
             void *dest)
@@ -355,9 +355,9 @@ _ParseEdges(lpObject_t hobj,
   FOR_LOOP(i, sizeof(_edges) / sizeof(*_edges)) {
     shortStr_t buf = {0};
     snprintf(buf, sizeof(buf), pdesc->TypeString, _edges[i]);
-    lpcPropertyDesc_t d = pdesc;
-    for (; d->id && strcmp(d->id->Name, buf); d++);
-    if (!d->id)
+    lpcPropertyType_t d = pdesc;
+    for (; *d->Name && strcmp(d->Name, buf); d++);
+    if (!*d->Name)
       break;
     lpcString_t s = PDESC_Parse(hobj, d, p, tmp[i], dest + (d->Offset - pdesc->Offset));
     SkipSpace(s);
@@ -370,7 +370,7 @@ FS_GetBaseName(const char* path);
 
 lpcString_t
 PDESC_Parse(lpObject_t hobj,
-            lpcPropertyDesc_t pdesc,
+            lpcPropertyType_t pdesc,
             lpProperty_t property,
             lpcString_t string,
             void* dest)
@@ -388,7 +388,7 @@ PDESC_Parse(lpObject_t hobj,
       } else {
         uint32_t index = strlistidx(string, pdesc->TypeString, &string);
         if (index == -1) {
-          Con_Error("Could not parse '%s' value of property '%s'", string, pdesc->id->Name);
+          Con_Error("Could not parse '%s' value of property '%s'", string, pdesc->Name);
         } else {
           *(uint32_t*)v = index;
         }
@@ -437,7 +437,7 @@ PDESC_Parse(lpObject_t hobj,
     case kDataTypeGroup: {
       lpcString_t s = string;
       FOR_LOOP(i, pdesc->NumComponents) {
-        lpcPropertyDesc_t inner = &pdesc[i + 1];
+        lpcPropertyType_t inner = &pdesc[i + 1];
         uint32_t offset = inner->Offset - pdesc->Offset;
         SkipSpace(s);
         if (!*s) s = string; // loop over

@@ -508,29 +508,38 @@
     <enum name="Group">Logical grouping of related properties or child elements.</enum>
   </enums>
 
-  <class name="PropertyEnumValue">
-    <property name="Value" type="int"/>
-  </class>
+  <struct name="PropertyEnumValue">
+    <summary>Enum value descriptor for a property.</summary>
+    <field name="Name" type="fixed">Unique name identifier for the value.</field>
+    <field name="Value" type="int">Integer value representing the enum.</field>
+  </struct>
 
-  <class name="PropertyType">
+  <struct name="PropertyType">
     <summary>Defines a custom property type that can be attached to engine objects.</summary>
     <details>PropertyType allows defining additional data fields beyond built-in engine properties. Each PropertyType specifies its data category, default value, and behavioral attributes such as layout and render impact. It serves as a flexible mechanism for extending object metadata in projects.</details>
-    <handles event="Attached"/>
-    <property name="Category" type="fixed">Organizational category for this property, used for grouping in editors and UIs.</property>
-    <property name="DataType" type="DataType">Underlying data type that determines how the property value is interpreted and stored.</property>
-    <property name="DefaultValue" type="fixed">Default value assigned when the property is not explicitly set.</property>
-    <property name="TargetType" type="fixed">Type of object or component this property applies to.</property>
-    <property name="AffectLayout" type="bool">Indicates whether this property affects element layout (e.g., size or alignment).</property>
-    <property name="AffectRender" type="bool">Indicates whether this property influences the rendering output.</property>
-    <property name="IsReadOnly" type="bool">If true, the property value cannot be modified at runtime or through the editor.</property>
-    <property name="IsHidden" type="bool">If true, the property is excluded from the UI or inspector views.</property>
-    <property name="IsInherited" type="bool">Specifies whether the property value can be inherited from parent components.</property>
-    <property name="Key" type="fixed">Internal key name used for property identification and lookup.</property>
-    <property name="Value" type="fixed">Runtime value stored in this property instance.</property>
-    <property name="Step" type="float">Increment step used for numeric adjustments in UI controls.</property>
-    <property name="UpperBound" type="float">Maximum allowed value for numeric properties.</property>
-    <property name="LowerBound" type="float">Minimum allowed value for numeric properties.</property>
-    <field name="_desc" type="PropertyDesc">Internal descriptor structure providing extended property metadata.</field>
-  </class>
+    <field name="Name" type="fixed">Unique name identifier for the property type.</field>
+    <field name="Category" type="fixed">Organizational category for this property, used for grouping in editors and UIs.</field>
+    <field name="DataType" type="DataType">Underlying data type that determines how the property value is interpreted and stored.</field>
+    <field name="DefaultValue" type="fixed">Default value assigned when the property is not explicitly set.</field>
+    <field name="TargetType" type="fixed">Type of object or component this property applies to.</field>
+    <field name="AffectLayout" type="bool">Indicates whether this property affects element layout (e.g., size or alignment).</field>
+    <field name="AffectRender" type="bool">Indicates whether this property influences the rendering output.</field>
+    <field name="IsReadOnly" type="bool">If true, the property value cannot be modified at runtime or through the editor.</field>
+    <field name="IsHidden" type="bool">If true, the property is excluded from the UI or inspector views.</field>
+    <field name="IsInherited" type="bool">Specifies whether the property value can be inherited from parent components.</field>
+    <field name="Key" type="fixed">Internal key name used for property identification and lookup.</field>
+    <field name="Value" type="fixed">Runtime value stored in this property instance.</field>
+    <field name="Step" type="float">Increment step used for numeric adjustments in UI controls.</field>
+    <field name="UpperBound" type="float">Maximum allowed value for numeric properties.</field>
+    <field name="LowerBound" type="float">Minimum allowed value for numeric properties.</field>
+    <!-- Additional internal fields for property metadata -->
+    <field name="ShortIdentifier" type="uint">Unique short identifier for the property type, automatically generated from implicit property name.</field>
+    <field name="FullIdentifier" type="uint">Unique full identifier for the property type, automatically generated from explicit (ie. Grid.Columns) property name.</field>
+    <field name="Offset" type="uint">Byte offset of the property within the structure.</field>
+    <field name="DataSize" type="uint">Size of the property data in bytes.</field>
+    <field name="TypeString" type="fixed">String representation of the property type, used to store enum values or struct type names.</field>
+    <field name="NumComponents" type="uint">Number of components in the group property (for vector or array types).</field>
+    <field name="IsArray" type="bool">Indicates whether the property is an array type, will generate Num* property to indicate the number of elements.</field>
+  </struct>
   
 </module>

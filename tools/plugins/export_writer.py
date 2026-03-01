@@ -3,7 +3,7 @@
 import os
 import string
 
-from . import Plugin, utils, Workspace
+from . import Plugin, utils, Workspace, typedefs
 
 export_xml_parsers = True
 
@@ -99,14 +99,18 @@ class ExportWriter(Plugin):
 
 		if root.find('class') is not None:
 			self.w(f"#define DECL(SHORT, LONG, CLASS, NAME, FIELD, TYPE,...) {{ \\")
-			self.w(f"\t.id=&(struct ID){{.Name=#CLASS\".\"NAME,.Identifier=SHORT}}, \\")
+			self.w(f"\t.Name=#CLASS\".\"NAME, \\")
+			self.w(f"\t.Category=#CLASS, \\")
+			self.w(f"\t.ShortIdentifier=SHORT, \\")
 			self.w(f"\t.FullIdentifier=LONG, \\")
 			self.w(f"\t.Offset=offsetof(struct CLASS, FIELD), \\")
 			self.w(f"\t.DataSize=sizeof(((struct CLASS *)NULL)->FIELD), \\")
 			self.w(f"\t.DataType=TYPE, ##__VA_ARGS__ }}")
 
 			self.w(f"#define ARRAY_DECL(SHORT, LONG, CLASS, NAME, FIELD, TYPE,...) {{ \\")
-			self.w(f"\t.id=&(struct ID){{.Name=#CLASS\".\"NAME,.Identifier=SHORT}}, \\")
+			self.w(f"\t.Name=#CLASS\".\"NAME, \\")
+			self.w(f"\t.Category=#CLASS, \\")
+			self.w(f"\t.ShortIdentifier=SHORT, \\")
 			self.w(f"\t.FullIdentifier=LONG, \\")
 			self.w(f"\t.Offset=offsetof(struct CLASS, FIELD), \\")
 			self.w(f"\t.DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), \\")
@@ -320,7 +324,7 @@ class ExportWriter(Plugin):
 					if t in Workspace.structs: self.w(f"\tlpcString_t __strto{t}(lpcString_t, struct {t}*);")
 					elif t in Workspace.enums: self.w(f"\tlpcString_t __strto{t}(lpcString_t, enum {t}*);")
 					elif t == "fixed": self.w(f"\tlpcString_t __strto{t}(lpcString_t, fixedString_t*);")
-					else: self.w(f"\tlpcString_t __strto{t}(lpcString_t, {t}*);")	
+					else: self.w(f"\tlpcString_t __strto{t}(lpcString_t, {typedefs.get(t,t)}*);")	
 
 			self.w(f"#include <libxml/parser.h>")
 			self.w(f"ORCA_API lpcString_t __strto{name}(lpcString_t str, {lpname} output) {{")
@@ -412,7 +416,7 @@ class ExportWriter(Plugin):
 		for handles in component.findall('handles'):
 			event = handles.get('event')
 			self.w(f"LRESULT {cname}_{event}({utils.lpobject_t}, {utils.lp(cname)}, wParam_t, {event}EventPtr);")
-		self.w(f"static struct PropertyDesc const {cname}Properties[k{cname}NumProperties] = {{")
+		self.w(f"static struct PropertyType const {cname}Properties[k{cname}NumProperties] = {{")
 
 		for shorthand in component.findall("shorthand"):
 			pname, physical, userdata = (

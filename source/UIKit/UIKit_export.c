@@ -2,13 +2,17 @@
 #include <include/api.h>
 #include <source/UIKit/UIKit.h>
 #define DECL(SHORT, LONG, CLASS, NAME, FIELD, TYPE,...) { \
-	.id=&(struct ID){.Name=#CLASS"."NAME,.Identifier=SHORT}, \
+	.Name=#CLASS"."NAME, \
+	.Category=#CLASS, \
+	.ShortIdentifier=SHORT, \
 	.FullIdentifier=LONG, \
 	.Offset=offsetof(struct CLASS, FIELD), \
 	.DataSize=sizeof(((struct CLASS *)NULL)->FIELD), \
 	.DataType=TYPE, ##__VA_ARGS__ }
 #define ARRAY_DECL(SHORT, LONG, CLASS, NAME, FIELD, TYPE,...) { \
-	.id=&(struct ID){.Name=#CLASS"."NAME,.Identifier=SHORT}, \
+	.Name=#CLASS"."NAME, \
+	.Category=#CLASS, \
+	.ShortIdentifier=SHORT, \
 	.FullIdentifier=LONG, \
 	.Offset=offsetof(struct CLASS, FIELD), \
 	.DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), \
@@ -1899,7 +1903,7 @@ int luaopen_orca_SizeShorthand(lua_State *L) {
 	lua_setfield(L, LUA_REGISTRYINDEX, "SizeShorthandParser");
 	return 1;
 }
-static struct PropertyDesc const DataObjectProperties[kDataObjectNumProperties] = {
+static struct PropertyType const DataObjectProperties[kDataObjectNumProperties] = {
 };
 static struct DataObject DataObjectDefaults = {};
 LRESULT DataObjectProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1926,7 +1930,7 @@ ORCA_API struct ClassDesc _DataObject = {
 	.Defaults = &DataObjectDefaults,
 	.NumProperties = kDataObjectNumProperties,
 };
-static struct PropertyDesc const AnimationPlayerProperties[kAnimationPlayerNumProperties] = {
+static struct PropertyType const AnimationPlayerProperties[kAnimationPlayerNumProperties] = {
 	/* AnimationPlayer.AutoplayEnabled */ DECL(0x706b62d9, 0xbb4b7f90,
 	AnimationPlayer, "AutoplayEnabled", AutoplayEnabled, kDataTypeBool),
 	/* AnimationPlayer.DurationScale */ DECL(0x9bcd7639, 0x742d0c5c,
@@ -1969,7 +1973,7 @@ ORCA_API struct ClassDesc _AnimationPlayer = {
 };
 LRESULT Trigger_PropertyChanged(lpObject_t, lpTrigger_t, wParam_t, PropertyChangedEventPtr);
 LRESULT Trigger_Attached(lpObject_t, lpTrigger_t, wParam_t, AttachedEventPtr);
-static struct PropertyDesc const TriggerProperties[kTriggerNumProperties] = {
+static struct PropertyType const TriggerProperties[kTriggerNumProperties] = {
 	/* Trigger.Property */ DECL(0x5221f9e8, 0x7a6c1a46,
 	Trigger, "Property", Property, kDataTypeFixed),
 	/* Trigger.Value */ DECL(0xd147f96a, 0x5229f3cc,
@@ -2005,7 +2009,7 @@ ORCA_API struct ClassDesc _Trigger = {
 	.NumProperties = kTriggerNumProperties,
 };
 LRESULT OnPropertyChangedTrigger_PropertyChanged(lpObject_t, lpOnPropertyChangedTrigger_t, wParam_t, PropertyChangedEventPtr);
-static struct PropertyDesc const OnPropertyChangedTriggerProperties[kOnPropertyChangedTriggerNumProperties] = {
+static struct PropertyType const OnPropertyChangedTriggerProperties[kOnPropertyChangedTriggerNumProperties] = {
 	/* OnPropertyChangedTrigger.SourceNode */ DECL(0x9ff03304, 0x5d55b664,
 	OnPropertyChangedTrigger, "SourceNode", SourceNode, kDataTypeFixed),
 	/* OnPropertyChangedTrigger.Property */ DECL(0x5221f9e8, 0x8664fe08,
@@ -2039,7 +2043,7 @@ ORCA_API struct ClassDesc _OnPropertyChangedTrigger = {
 	.NumProperties = kOnPropertyChangedTriggerNumProperties,
 };
 LRESULT OnAttachedTrigger_Attached(lpObject_t, lpOnAttachedTrigger_t, wParam_t, AttachedEventPtr);
-static struct PropertyDesc const OnAttachedTriggerProperties[kOnAttachedTriggerNumProperties] = {
+static struct PropertyType const OnAttachedTriggerProperties[kOnAttachedTriggerNumProperties] = {
 };
 static struct OnAttachedTrigger OnAttachedTriggerDefaults = {};
 LRESULT OnAttachedTriggerProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -2069,7 +2073,7 @@ ORCA_API struct ClassDesc _OnAttachedTrigger = {
 	.NumProperties = kOnAttachedTriggerNumProperties,
 };
 LRESULT EventTrigger_HandleMessage(lpObject_t, lpEventTrigger_t, wParam_t, HandleMessageEventPtr);
-static struct PropertyDesc const EventTriggerProperties[kEventTriggerNumProperties] = {
+static struct PropertyType const EventTriggerProperties[kEventTriggerNumProperties] = {
 	/* EventTrigger.RoutedEvent */ DECL(0x30d77e1a, 0x0c5f2982,
 	EventTrigger, "RoutedEvent", RoutedEvent, kDataTypeFixed),
 };
@@ -2101,7 +2105,7 @@ ORCA_API struct ClassDesc _EventTrigger = {
 	.NumProperties = kEventTriggerNumProperties,
 };
 LRESULT Setter_Triggered(lpObject_t, lpSetter_t, wParam_t, TriggeredEventPtr);
-static struct PropertyDesc const SetterProperties[kSetterNumProperties] = {
+static struct PropertyType const SetterProperties[kSetterNumProperties] = {
 	/* Setter.Trigger */ DECL(0xa5ea0da3, 0xd1fad954,
 	Setter, "Trigger", Trigger, kDataTypeObject, .TypeString="Trigger"),
 	/* Setter.Property */ DECL(0x5221f9e8, 0x89d17a41,
@@ -2137,7 +2141,7 @@ ORCA_API struct ClassDesc _Setter = {
 	.NumProperties = kSetterNumProperties,
 };
 LRESULT Handler_Triggered(lpObject_t, lpHandler_t, wParam_t, TriggeredEventPtr);
-static struct PropertyDesc const HandlerProperties[kHandlerNumProperties] = {
+static struct PropertyType const HandlerProperties[kHandlerNumProperties] = {
 	/* Handler.Trigger */ DECL(0xa5ea0da3, 0x0ef3b2a9,
 	Handler, "Trigger", Trigger, kDataTypeObject, .TypeString="Trigger"),
 	/* Handler.Target */ DECL(0x8b67f168, 0x2798724a,
@@ -2172,7 +2176,7 @@ ORCA_API struct ClassDesc _Handler = {
 	.Defaults = &HandlerDefaults,
 	.NumProperties = kHandlerNumProperties,
 };
-static struct PropertyDesc const BrushProperties[kBrushNumProperties] = {
+static struct PropertyType const BrushProperties[kBrushNumProperties] = {
 };
 static struct Brush BrushDefaults = {};
 LRESULT BrushProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -2199,7 +2203,7 @@ ORCA_API struct ClassDesc _Brush = {
 	.Defaults = &BrushDefaults,
 	.NumProperties = kBrushNumProperties,
 };
-static struct PropertyDesc const ColorBrushProperties[kColorBrushNumProperties] = {
+static struct PropertyType const ColorBrushProperties[kColorBrushNumProperties] = {
 	/* ColorBrush.Color */ DECL(0xe5b43cf8, 0xb7f26275,
 	ColorBrush, "Color", Color, kDataTypeStruct, .TypeString="Color"),
 };
@@ -2232,7 +2236,7 @@ ORCA_API struct ClassDesc _ColorBrush = {
 LRESULT Node_ThemeChanged(lpObject_t, lpNode_t, wParam_t, ThemeChangedEventPtr);
 LRESULT Node_GetSize(lpObject_t, lpNode_t, wParam_t, GetSizeEventPtr);
 LRESULT Node_IsVisible(lpObject_t, lpNode_t, wParam_t, IsVisibleEventPtr);
-static struct PropertyDesc const NodeProperties[kNodeNumProperties] = {
+static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	/* Node.Size */ DECL(0xa6478e7c, 0xc8371588,
 	Node, "Size", Size, kDataTypeGroup, .TypeString="SizeShorthand", .NumComponents=18),
 	/* Node.HorizontalSize */ DECL(0x2dbf56d8, 0x8dd5feec,
@@ -2439,7 +2443,7 @@ ORCA_API struct ClassDesc _Node = {
 	.Defaults = &NodeDefaults,
 	.NumProperties = kNodeNumProperties,
 };
-static struct PropertyDesc const TextRunProperties[kTextRunNumProperties] = {
+static struct PropertyType const TextRunProperties[kTextRunNumProperties] = {
 	/* TextRun.Text */ DECL(0x3e142d5e, 0xcba1ea6c,
 	TextRun, "Text", Text, kDataTypeFixed),
 	/* TextRun.Font */ DECL(0xa77a5eb0, 0x3900dfa2,
@@ -2502,7 +2506,7 @@ ORCA_API struct ClassDesc _TextRun = {
 LRESULT TextBlockConcept_Create(lpObject_t, lpTextBlockConcept_t, wParam_t, CreateEventPtr);
 LRESULT TextBlockConcept_Destroy(lpObject_t, lpTextBlockConcept_t, wParam_t, DestroyEventPtr);
 LRESULT TextBlockConcept_MakeText(lpObject_t, lpTextBlockConcept_t, wParam_t, MakeTextEventPtr);
-static struct PropertyDesc const TextBlockConceptProperties[kTextBlockConceptNumProperties] = {
+static struct PropertyType const TextBlockConceptProperties[kTextBlockConceptNumProperties] = {
 	/* TextBlockConcept.TextResourceID */ DECL(0x43c114fb, 0x7617ef4f,
 	TextBlockConcept, "TextResourceID", TextResourceID, kDataTypeFixed),
 	/* TextBlockConcept.TextResourceConfiguration */ DECL(0x73dd50ec, 0x445231c0,
@@ -2580,7 +2584,7 @@ LRESULT Node2D_Measure(lpObject_t, lpNode2D_t, wParam_t, MeasureEventPtr);
 LRESULT Node2D_Arrange(lpObject_t, lpNode2D_t, wParam_t, ArrangeEventPtr);
 LRESULT Node2D_MeasureOverride(lpObject_t, lpNode2D_t, wParam_t, MeasureOverrideEventPtr);
 LRESULT Node2D_ArrangeOverride(lpObject_t, lpNode2D_t, wParam_t, ArrangeOverrideEventPtr);
-static struct PropertyDesc const Node2DProperties[kNode2DNumProperties] = {
+static struct PropertyType const Node2DProperties[kNode2DNumProperties] = {
 	/* Node2D.LayoutTransform */ DECL(0x3f19bf01, 0x7c78c87b,
 	Node2D, "LayoutTransform", LayoutTransform, kDataTypeStruct, .TypeString="Transform2D"),
 	/* Node2D.LayoutTransformTranslation */ DECL(0xfc7e27e0, 0x2407475a,
@@ -2726,7 +2730,7 @@ ORCA_API struct ClassDesc _Node2D = {
 	.NumProperties = kNode2DNumProperties,
 };
 LRESULT PrefabView2D_LoadView(lpObject_t, lpPrefabView2D_t, wParam_t, LoadViewEventPtr);
-static struct PropertyDesc const PrefabView2DProperties[kPrefabView2DNumProperties] = {
+static struct PropertyType const PrefabView2DProperties[kPrefabView2DNumProperties] = {
 	/* PrefabView2D.SCA */ DECL(0x57f28ff6, 0x1ab11f83,
 	PrefabView2D, "SCA", SCA, kDataTypeFixed),
 	/* PrefabView2D.Prefab */ DECL(0xd6415ba3, 0xef0b7c70,
@@ -2765,7 +2769,7 @@ LRESULT TextBlock_ForegroundContent(lpObject_t, lpTextBlock_t, wParam_t, Foregro
 LRESULT TextBlock_UpdateGeometry(lpObject_t, lpTextBlock_t, wParam_t, UpdateGeometryEventPtr);
 LRESULT TextBlock_Create(lpObject_t, lpTextBlock_t, wParam_t, CreateEventPtr);
 LRESULT TextBlock_DrawBrush(lpObject_t, lpTextBlock_t, wParam_t, DrawBrushEventPtr);
-static struct PropertyDesc const TextBlockProperties[kTextBlockNumProperties] = {
+static struct PropertyType const TextBlockProperties[kTextBlockNumProperties] = {
 };
 static struct TextBlock TextBlockDefaults = {};
 LRESULT TextBlockProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -2811,7 +2815,7 @@ LRESULT Input_KeyDown(lpObject_t, lpInput_t, wParam_t, KeyDownEventPtr);
 LRESULT Input_KillFocus(lpObject_t, lpInput_t, wParam_t, KillFocusEventPtr);
 LRESULT Input_LeftMouseUp(lpObject_t, lpInput_t, wParam_t, LeftMouseUpEventPtr);
 LRESULT Input_MeasureOverride(lpObject_t, lpInput_t, wParam_t, MeasureOverrideEventPtr);
-static struct PropertyDesc const InputProperties[kInputNumProperties] = {
+static struct PropertyType const InputProperties[kInputNumProperties] = {
 	/* Input.Name */ DECL(0x0fe07306, 0x56849c4c,
 	Input, "Name", Name, kDataTypeFixed),
 	/* Input.Type */ DECL(0xd155d06d, 0x84bfe237,
@@ -2867,7 +2871,7 @@ LRESULT Button_Create(lpObject_t, lpButton_t, wParam_t, CreateEventPtr);
 LRESULT Button_LeftMouseUp(lpObject_t, lpButton_t, wParam_t, LeftMouseUpEventPtr);
 LRESULT Button_KeyDown(lpObject_t, lpButton_t, wParam_t, KeyDownEventPtr);
 LRESULT Button_DrawBrush(lpObject_t, lpButton_t, wParam_t, DrawBrushEventPtr);
-static struct PropertyDesc const ButtonProperties[kButtonNumProperties] = {
+static struct PropertyType const ButtonProperties[kButtonNumProperties] = {
 	/* Button.Type */ DECL(0xd155d06d, 0x843eb785,
 	Button, "Type", Type, kDataTypeEnum, .TypeString="Normal,Submit"),
 };
@@ -2906,7 +2910,7 @@ ORCA_API struct ClassDesc _Button = {
 	.NumProperties = kButtonNumProperties,
 };
 LRESULT Label_LeftMouseUp(lpObject_t, lpLabel_t, wParam_t, LeftMouseUpEventPtr);
-static struct PropertyDesc const LabelProperties[kLabelNumProperties] = {
+static struct PropertyType const LabelProperties[kLabelNumProperties] = {
 	/* Label.For */ DECL(0x0f7e1b30, 0x8ea77d4c,
 	Label, "For", For, kDataTypeFixed),
 };
@@ -2940,7 +2944,7 @@ ORCA_API struct ClassDesc _Label = {
 };
 LRESULT StackView_MeasureOverride(lpObject_t, lpStackView_t, wParam_t, MeasureOverrideEventPtr);
 LRESULT StackView_ArrangeOverride(lpObject_t, lpStackView_t, wParam_t, ArrangeOverrideEventPtr);
-static struct PropertyDesc const StackViewProperties[kStackViewNumProperties] = {
+static struct PropertyType const StackViewProperties[kStackViewNumProperties] = {
 	/* StackView.Reversed */ DECL(0xcee65dd3, 0x4f7ea66a,
 	StackView, "Reversed", Reversed, kDataTypeBool),
 	/* StackView.Direction */ DECL(0x61fefc0a, 0x4f1430fd,
@@ -2984,7 +2988,7 @@ ORCA_API struct ClassDesc _StackView = {
 };
 LRESULT Form_Create(lpObject_t, lpForm_t, wParam_t, CreateEventPtr);
 LRESULT Form_Submit(lpObject_t, lpForm_t, wParam_t, SubmitEventPtr);
-static struct PropertyDesc const FormProperties[kFormNumProperties] = {
+static struct PropertyType const FormProperties[kFormNumProperties] = {
 };
 static struct Form FormDefaults = {};
 LRESULT FormProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -3016,7 +3020,7 @@ ORCA_API struct ClassDesc _Form = {
 	.Defaults = &FormDefaults,
 	.NumProperties = kFormNumProperties,
 };
-static struct PropertyDesc const ControlProperties[kControlNumProperties] = {
+static struct PropertyType const ControlProperties[kControlNumProperties] = {
 	/* Control.Pressed */ DECL(0x705293c5, 0x0bfbf446,
 	Control, "Pressed", Pressed, kDataTypeBool),
 	/* Control.Disabled */ DECL(0xbfce9925, 0x08680018,
@@ -3085,7 +3089,7 @@ LRESULT Screen_MeasureOverride(lpObject_t, lpScreen_t, wParam_t, MeasureOverride
 LRESULT Screen_Create(lpObject_t, lpScreen_t, wParam_t, CreateEventPtr);
 LRESULT Screen_Destroy(lpObject_t, lpScreen_t, wParam_t, DestroyEventPtr);
 LRESULT Screen_WindowResized(lpObject_t, lpScreen_t, wParam_t, WindowResizedEventPtr);
-static struct PropertyDesc const ScreenProperties[kScreenNumProperties] = {
+static struct PropertyType const ScreenProperties[kScreenNumProperties] = {
 	/* Screen.ClearColor */ DECL(0xeb16b675, 0x1bfc36dd,
 	Screen, "ClearColor", ClearColor, kDataTypeStruct, .TypeString="Color"),
 	/* Screen.ResizeMode */ DECL(0x3dd888be, 0xc3203446,
@@ -3128,7 +3132,7 @@ ORCA_API struct ClassDesc _Screen = {
 	.NumProperties = kScreenNumProperties,
 };
 LRESULT Cinematic_DrawBrush(lpObject_t, lpCinematic_t, wParam_t, DrawBrushEventPtr);
-static struct PropertyDesc const CinematicProperties[kCinematicNumProperties] = {
+static struct PropertyType const CinematicProperties[kCinematicNumProperties] = {
 	/* Cinematic.FileName */ DECL(0x5ffdd888, 0xabe998d5,
 	Cinematic, "FileName", FileName, kDataTypeFixed),
 	/* Cinematic.FrameRate */ DECL(0x3eeb76a4, 0xead5c9cf,
@@ -3168,7 +3172,7 @@ ORCA_API struct ClassDesc _Cinematic = {
 };
 LRESULT Grid_MeasureOverride(lpObject_t, lpGrid_t, wParam_t, MeasureOverrideEventPtr);
 LRESULT Grid_ArrangeOverride(lpObject_t, lpGrid_t, wParam_t, ArrangeOverrideEventPtr);
-static struct PropertyDesc const GridProperties[kGridNumProperties] = {
+static struct PropertyType const GridProperties[kGridNumProperties] = {
 	/* Grid.Columns */ DECL(0xea156fdc, 0x5d28e334,
 	Grid, "Columns", Columns, kDataTypeFixed),
 	/* Grid.Rows */ DECL(0xaa6592b8, 0x1a2b78b0,
@@ -3241,7 +3245,7 @@ LRESULT ImageView_ArrangeOverride(lpObject_t, lpImageView_t, wParam_t, ArrangeOv
 LRESULT ImageView_ForegroundContent(lpObject_t, lpImageView_t, wParam_t, ForegroundContentEventPtr);
 LRESULT ImageView_DrawBrush(lpObject_t, lpImageView_t, wParam_t, DrawBrushEventPtr);
 LRESULT ImageView_LoadView(lpObject_t, lpImageView_t, wParam_t, LoadViewEventPtr);
-static struct PropertyDesc const ImageViewProperties[kImageViewNumProperties] = {
+static struct PropertyType const ImageViewProperties[kImageViewNumProperties] = {
 	/* ImageView.Src */ DECL(0x35c77969, 0xe2534f6b,
 	ImageView, "Src", Src, kDataTypeFixed),
 	/* ImageView.Image */ DECL(0x590ca79a, 0x0b666f9c,
@@ -3296,7 +3300,7 @@ ORCA_API struct ClassDesc _ImageView = {
 LRESULT NinePatchImage_MeasureOverride(lpObject_t, lpNinePatchImage_t, wParam_t, MeasureOverrideEventPtr);
 LRESULT NinePatchImage_ForegroundContent(lpObject_t, lpNinePatchImage_t, wParam_t, ForegroundContentEventPtr);
 LRESULT NinePatchImage_DrawBrush(lpObject_t, lpNinePatchImage_t, wParam_t, DrawBrushEventPtr);
-static struct PropertyDesc const NinePatchImageProperties[kNinePatchImageNumProperties] = {
+static struct PropertyType const NinePatchImageProperties[kNinePatchImageNumProperties] = {
 	/* NinePatchImage.StretchTypeTop */ DECL(0x9f40b6ad, 0x9375dc9c,
 	NinePatchImage, "StretchTypeTop", StretchTypeTop, kDataTypeFloat),
 	/* NinePatchImage.StretchTypeBottom */ DECL(0x0697c1c9, 0x400be60a,
@@ -3362,7 +3366,7 @@ LRESULT TerminalView_Create(lpObject_t, lpTerminalView_t, wParam_t, CreateEventP
 LRESULT TerminalView_DrawBrush(lpObject_t, lpTerminalView_t, wParam_t, DrawBrushEventPtr);
 LRESULT TerminalView_PushProperty(lpObject_t, lpTerminalView_t, wParam_t, PushPropertyEventPtr);
 LRESULT TerminalView_ScrollWheel(lpObject_t, lpTerminalView_t, wParam_t, ScrollWheelEventPtr);
-static struct PropertyDesc const TerminalViewProperties[kTerminalViewNumProperties] = {
+static struct PropertyType const TerminalViewProperties[kTerminalViewNumProperties] = {
 	/* TerminalView.BufferWidth */ DECL(0xdd1f241d, 0xdf51183c,
 	TerminalView, "BufferWidth", BufferWidth, kDataTypeInt),
 	/* TerminalView.BufferHeight */ DECL(0xd75e2af4, 0xfd169aab,
@@ -3594,7 +3598,7 @@ int luaopen_orca_NavigateBackArguments(lua_State *L) {
 	return 1;
 }
 LRESULT Page_Create(lpObject_t, lpPage_t, wParam_t, CreateEventPtr);
-static struct PropertyDesc const PageProperties[kPageNumProperties] = {
+static struct PropertyType const PageProperties[kPageNumProperties] = {
 	/* Page.Title */ DECL(0x24d471a9, 0x31e209ce,
 	Page, "Title", Title, kDataTypeFixed),
 	/* Page.Path */ DECL(0xeb66e456, 0x20109b7f,
@@ -3633,7 +3637,7 @@ ORCA_API struct ClassDesc _Page = {
 LRESULT PageHost_ViewDidLoad(lpObject_t, lpPageHost_t, wParam_t, ViewDidLoadEventPtr);
 LRESULT PageHost_NavigateToPage(lpObject_t, lpPageHost_t, wParam_t, NavigateToPageEventPtr);
 LRESULT PageHost_NavigateBack(lpObject_t, lpPageHost_t, wParam_t, NavigateBackEventPtr);
-static struct PropertyDesc const PageHostProperties[kPageHostNumProperties] = {
+static struct PropertyType const PageHostProperties[kPageHostNumProperties] = {
 	/* PageHost.ActivePage */ DECL(0x2e149db4, 0xb276c4f7,
 	PageHost, "ActivePage", ActivePage, kDataTypeObject, .TypeString="Page"),
 };
@@ -3669,7 +3673,7 @@ ORCA_API struct ClassDesc _PageHost = {
 	.Defaults = &PageHostDefaults,
 	.NumProperties = kPageHostNumProperties,
 };
-static struct PropertyDesc const PageViewportProperties[kPageViewportNumProperties] = {
+static struct PropertyType const PageViewportProperties[kPageViewportNumProperties] = {
 };
 static struct PageViewport PageViewportDefaults = {};
 LRESULT PageViewportProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -3721,7 +3725,7 @@ ORCA_API lpcString_t __strtoStyleType(lpcString_t string, enum StyleType* output
 	Con_Error("Could not parse '%s' value of property StyleType", string);
 	return string + strlen(string);
 }
-static struct PropertyDesc const StyleProperties[kStyleNumProperties] = {
+static struct PropertyType const StyleProperties[kStyleNumProperties] = {
 	/* Style.TargetType */ DECL(0x77ada720, 0x26cf4319,
 	Style, "TargetType", TargetType, kDataTypeFixed),
 	/* Style.Type */ DECL(0xd155d06d, 0x8f053d80,

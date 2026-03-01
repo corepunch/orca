@@ -15,7 +15,7 @@ lpObject_t
 OBJ_LoadDocument(lua_State* L, xmlDocPtr);
 
 lpcString_t
-PDESC_Parse(lpObject_t hobj, lpcPropertyDesc_t pdesc, lpProperty_t prop, lpcString_t string, void* dest);
+PDESC_Parse(lpObject_t hobj, lpcPropertyType_t pdesc, lpProperty_t prop, lpcString_t string, void* dest);
 
 int
 PROP_Parse2(lua_State* L, lpObject_t, lpcString_t szKey, lpcString_t szValue);

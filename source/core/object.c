@@ -409,9 +409,9 @@ OBJ_MoveToFront(lpObject_t object)
 static lpProperty_t
 _CreateProjectProperty(lpObject_t object, uint32_t ident)
 {
-  lpcPropertyDesc_t pt = OBJ_FindPropertyType(ident);
+  lpcPropertyType_t pt = OBJ_FindPropertyType(ident);
   if (pt) {
-    return PROP_Create(NULL,object,pt->id->Name,pt->DataType,pt->TypeString);
+    return PROP_Create(NULL,object,pt->Name,pt->DataType,pt->TypeString);
   }
   return NULL;
 }

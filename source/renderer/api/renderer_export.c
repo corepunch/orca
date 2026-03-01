@@ -2,13 +2,17 @@
 #include <include/api.h>
 #include <source/renderer/api/renderer.h>
 #define DECL(SHORT, LONG, CLASS, NAME, FIELD, TYPE,...) { \
-	.id=&(struct ID){.Name=#CLASS"."NAME,.Identifier=SHORT}, \
+	.Name=#CLASS"."NAME, \
+	.Category=#CLASS, \
+	.ShortIdentifier=SHORT, \
 	.FullIdentifier=LONG, \
 	.Offset=offsetof(struct CLASS, FIELD), \
 	.DataSize=sizeof(((struct CLASS *)NULL)->FIELD), \
 	.DataType=TYPE, ##__VA_ARGS__ }
 #define ARRAY_DECL(SHORT, LONG, CLASS, NAME, FIELD, TYPE,...) { \
-	.id=&(struct ID){.Name=#CLASS"."NAME,.Identifier=SHORT}, \
+	.Name=#CLASS"."NAME, \
+	.Category=#CLASS, \
+	.ShortIdentifier=SHORT, \
 	.FullIdentifier=LONG, \
 	.Offset=offsetof(struct CLASS, FIELD), \
 	.DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), \
@@ -229,7 +233,7 @@ ORCA_API lpcString_t __strtoAnisotropyType(lpcString_t string, enum AnisotropyTy
 	Con_Error("Could not parse '%s' value of property AnisotropyType", string);
 	return string + strlen(string);
 }
-static struct PropertyDesc const TextureProperties[kTextureNumProperties] = {
+static struct PropertyType const TextureProperties[kTextureNumProperties] = {
 	/* Texture.MinificationFilter */ DECL(0x47bdcfab, 0x7754ff10,
 	Texture, "MinificationFilter", MinificationFilter, kDataTypeEnum, .TypeString="Nearest,Linear,Trilinear"),
 	/* Texture.MagnificationFilter */ DECL(0xf5ff802c, 0xa67f8f51,
@@ -467,7 +471,7 @@ ORCA_API lpcString_t __strtoImageType(lpcString_t string, enum ImageType* output
 	return string + strlen(string);
 }
 LRESULT Image_Start(lpObject_t, lpImage_t, wParam_t, StartEventPtr);
-static struct PropertyDesc const ImageProperties[kImageNumProperties] = {
+static struct PropertyType const ImageProperties[kImageNumProperties] = {
 	/* Image.Source */ DECL(0x61e2a3f8, 0x166867e9,
 	Image, "Source", Source, kDataTypeFixed),
 	/* Image.PremultiplyAlpha */ DECL(0xa3c8af46, 0x31148dcb,
@@ -594,7 +598,7 @@ ORCA_API lpcString_t __strtoRenderTargetTextureAttachment(lpcString_t string, en
 	return string + strlen(string);
 }
 LRESULT RenderTargetTexture_Start(lpObject_t, lpRenderTargetTexture_t, wParam_t, StartEventPtr);
-static struct PropertyDesc const RenderTargetTextureProperties[kRenderTargetTextureNumProperties] = {
+static struct PropertyType const RenderTargetTextureProperties[kRenderTargetTextureNumProperties] = {
 	/* RenderTargetTexture.Width */ DECL(0x3b42dfbf, 0x2dca80b1,
 	RenderTargetTexture, "Width", Width, kDataTypeInt),
 	/* RenderTargetTexture.Height */ DECL(0x1bd13562, 0xf6e2f600,
@@ -639,7 +643,7 @@ ORCA_API struct ClassDesc _RenderTargetTexture = {
 	.NumProperties = kRenderTargetTextureNumProperties,
 };
 LRESULT CubeMapTexture_Start(lpObject_t, lpCubeMapTexture_t, wParam_t, StartEventPtr);
-static struct PropertyDesc const CubeMapTextureProperties[kCubeMapTextureNumProperties] = {
+static struct PropertyType const CubeMapTextureProperties[kCubeMapTextureNumProperties] = {
 	/* CubeMapTexture.BackImage */ DECL(0x59f82b67, 0xd189d077,
 	CubeMapTexture, "BackImage", BackImage, kDataTypeFixed),
 	/* CubeMapTexture.FrontImage */ DECL(0xe5328805, 0xa6452b75,
@@ -682,7 +686,7 @@ ORCA_API struct ClassDesc _CubeMapTexture = {
 	.NumProperties = kCubeMapTextureNumProperties,
 };
 LRESULT IOSurfaceTexture_Start(lpObject_t, lpIOSurfaceTexture_t, wParam_t, StartEventPtr);
-static struct PropertyDesc const IOSurfaceTextureProperties[kIOSurfaceTextureNumProperties] = {
+static struct PropertyType const IOSurfaceTextureProperties[kIOSurfaceTextureNumProperties] = {
 	/* IOSurfaceTexture.IOSurface */ DECL(0xb5fc4968, 0xc182dd0a,
 	IOSurfaceTexture, "IOSurface", IOSurface, kDataTypeInt),
 };
@@ -762,7 +766,7 @@ ORCA_API lpcString_t __strtoShading(lpcString_t string, enum Shading* output) {
 	Con_Error("Could not parse '%s' value of property Shading", string);
 	return string + strlen(string);
 }
-static struct PropertyDesc const VertexShaderProperties[kVertexShaderNumProperties] = {
+static struct PropertyType const VertexShaderProperties[kVertexShaderNumProperties] = {
 	/* VertexShader.Version */ DECL(0x5dcdd537, 0x82819cc8,
 	VertexShader, "Version", Version, kDataTypeInt),
 	/* VertexShader.FloatPrecision */ DECL(0x1ecae757, 0xfce1e8ba,
@@ -795,7 +799,7 @@ ORCA_API struct ClassDesc _VertexShader = {
 	.Defaults = &VertexShaderDefaults,
 	.NumProperties = kVertexShaderNumProperties,
 };
-static struct PropertyDesc const FragmentShaderProperties[kFragmentShaderNumProperties] = {
+static struct PropertyType const FragmentShaderProperties[kFragmentShaderNumProperties] = {
 	/* FragmentShader.Version */ DECL(0x5dcdd537, 0xd376e806,
 	FragmentShader, "Version", Version, kDataTypeInt),
 	/* FragmentShader.FloatPrecision */ DECL(0x1ecae757, 0x56221774,
@@ -830,7 +834,7 @@ ORCA_API struct ClassDesc _FragmentShader = {
 };
 LRESULT Shader_Start(lpObject_t, lpShader_t, wParam_t, StartEventPtr);
 LRESULT Shader_Destroy(lpObject_t, lpShader_t, wParam_t, DestroyEventPtr);
-static struct PropertyDesc const ShaderProperties[kShaderNumProperties] = {
+static struct PropertyType const ShaderProperties[kShaderNumProperties] = {
 	/* Shader.BlendMode */ DECL(0x0038792b, 0xf81788a6,
 	Shader, "BlendMode", BlendMode, kDataTypeEnum, .TypeString="AlphaAutomatic,Opaque,Alpha,Additive,PremultipliedAlpha,MixedAlpha"),
 	/* Shader.DepthTestFunction */ DECL(0xb7e582be, 0xca9708bf,
@@ -869,7 +873,7 @@ ORCA_API struct ClassDesc _Shader = {
 	.Defaults = &ShaderDefaults,
 	.NumProperties = kShaderNumProperties,
 };
-static struct PropertyDesc const MaterialProperties[kMaterialNumProperties] = {
+static struct PropertyType const MaterialProperties[kMaterialNumProperties] = {
 	/* Material.Shader */ DECL(0x7deb3888, 0xb1f27f23,
 	Material, "Shader", Shader, kDataTypeObject, .TypeString="Shader"),
 	/* Material.GlobalAmbient */ DECL(0x63792322, 0x4c3b3e9b,
@@ -930,7 +934,7 @@ ORCA_API struct ClassDesc _Material = {
 };
 LRESULT Mesh_Start(lpObject_t, lpMesh_t, wParam_t, StartEventPtr);
 LRESULT Mesh_Destroy(lpObject_t, lpMesh_t, wParam_t, DestroyEventPtr);
-static struct PropertyDesc const MeshProperties[kMeshNumProperties] = {
+static struct PropertyType const MeshProperties[kMeshNumProperties] = {
 	/* Mesh.Source */ DECL(0x61e2a3f8, 0xc235363b,
 	Mesh, "Source", Source, kDataTypeFixed),
 	/* Mesh.Material */ DECL(0xcbd54f80, 0xfc82924b,
@@ -969,7 +973,7 @@ ORCA_API struct ClassDesc _Mesh = {
 };
 LRESULT FontFamily_Start(lpObject_t, lpFontFamily_t, wParam_t, StartEventPtr);
 LRESULT FontFamily_Destroy(lpObject_t, lpFontFamily_t, wParam_t, DestroyEventPtr);
-static struct PropertyDesc const FontFamilyProperties[kFontFamilyNumProperties] = {
+static struct PropertyType const FontFamilyProperties[kFontFamilyNumProperties] = {
 	/* FontFamily.Regular */ DECL(0xe750f2b7, 0xb39a4ebe,
 	FontFamily, "Regular", Regular, kDataTypeFixed),
 	/* FontFamily.Bold */ DECL(0x45768d96, 0xb22930ed,
@@ -1008,7 +1012,7 @@ ORCA_API struct ClassDesc _FontFamily = {
 	.Defaults = &FontFamilyDefaults,
 	.NumProperties = kFontFamilyNumProperties,
 };
-static struct PropertyDesc const TrajectoryProperties[kTrajectoryNumProperties] = {
+static struct PropertyType const TrajectoryProperties[kTrajectoryNumProperties] = {
 };
 static struct Trajectory TrajectoryDefaults = {};
 LRESULT TrajectoryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1035,7 +1039,7 @@ ORCA_API struct ClassDesc _Trajectory = {
 	.Defaults = &TrajectoryDefaults,
 	.NumProperties = kTrajectoryNumProperties,
 };
-static struct PropertyDesc const TimelineProperties[kTimelineNumProperties] = {
+static struct PropertyType const TimelineProperties[kTimelineNumProperties] = {
 };
 static struct Timeline TimelineDefaults = {};
 LRESULT TimelineProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {

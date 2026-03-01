@@ -36,10 +36,10 @@ UI_EnumObjectPropertyTypes(HOBJ object,
   FOR_EACH_LIST(struct component, cmp, _GetComponents(object)) {
     FOR_LOOP(i, cmp->pcls->NumProperties) {
       LPCPDESC pdesc = cmp->pcls->Properties+i;
-      if (PROP_FindByLongID(OBJ_GetProperties(object), pdesc->id->Identifier))
+      if (PROP_FindByLongID(OBJ_GetProperties(object), pdesc->ShortIdentifier))
         continue;
 //      Con_Error("%s.%s", cmp->pcls->ClassName, pdesc->name);
-      fnProc(pdesc->id->Name, lpParam);
+      fnProc(pdesc->Name, lpParam);
     }
   }
 }

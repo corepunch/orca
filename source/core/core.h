@@ -4,17 +4,6 @@
 
 #include <include/orca.h>
 
-#include <source/core/core_properties.h>
-
-typedef struct Object Object_t, *lpObject_t;
-typedef struct Object const cObject_t, *lpcObject_t;
-/// @brief Push Object onto Lua stack.
-ORCA_API void
-luaX_pushObject(lua_State *L, lpcObject_t Object);
-/// @brief Check Object form Lua stack at index.
-ORCA_API lpObject_t
-luaX_checkObject(lua_State *L, int idx);
-
 typedef struct PropertyEnumValue PropertyEnumValue_t, *lpPropertyEnumValue_t;
 typedef struct PropertyEnumValue const cPropertyEnumValue_t, *lpcPropertyEnumValue_t;
 /// @brief Push PropertyEnumValue onto Lua stack.
@@ -32,6 +21,15 @@ luaX_pushPropertyType(lua_State *L, lpcPropertyType_t PropertyType);
 /// @brief Check PropertyType form Lua stack at index.
 ORCA_API lpPropertyType_t
 luaX_checkPropertyType(lua_State *L, int idx);
+
+typedef struct Object Object_t, *lpObject_t;
+typedef struct Object const cObject_t, *lpcObject_t;
+/// @brief Push Object onto Lua stack.
+ORCA_API void
+luaX_pushObject(lua_State *L, lpcObject_t Object);
+/// @brief Check Object form Lua stack at index.
+ORCA_API lpObject_t
+luaX_checkObject(lua_State *L, int idx);
 
 #define kEventLeftMouseDown 0xfac0b5e7
 typedef struct WI_Message* LeftMouseDownEventPtr;
@@ -454,16 +452,15 @@ typedef enum DataType {
 	kDataTypeGroup, /// Logical grouping of related properties or child elements.
 } eDataType_t;
 
-typedef struct PropertyEnumValue PropertyEnumValue, *PropertyEnumValuePtr;
-typedef struct PropertyEnumValue const *PropertyEnumValueCPtr;
+/// @brief Enum value descriptor for a property.
 struct PropertyEnumValue {
-	int32_t Value;
+	fixedString_t Name; /// Unique name identifier for the value.
+	int32_t Value; /// Integer value representing the enum.
 };
 
-typedef struct PropertyType PropertyType, *PropertyTypePtr;
-typedef struct PropertyType const *PropertyTypeCPtr;
 /// @brief Defines a custom property type that can be attached to engine objects.
 struct PropertyType {
+	fixedString_t Name; /// Unique name identifier for the property type.
 	fixedString_t Category; /// Organizational category for this property, used for grouping in editors and UIs.
 	eDataType_t DataType; /// Underlying data type that determines how the property value is interpreted and stored.
 	fixedString_t DefaultValue; /// Default value assigned when the property is not explicitly set.
@@ -478,7 +475,13 @@ struct PropertyType {
 	float Step; /// Increment step used for numeric adjustments in UI controls.
 	float UpperBound; /// Maximum allowed value for numeric properties.
 	float LowerBound; /// Minimum allowed value for numeric properties.
-	PropertyDesc_t _desc; /// Internal descriptor structure providing extended property metadata.
+	uint32_t ShortIdentifier; /// Unique short identifier for the property type, automatically generated from implicit property name.
+	uint32_t FullIdentifier; /// Unique full identifier for the property type, automatically generated from explicit (ie. Grid.Columns) property name.
+	uint32_t Offset; /// Byte offset of the property within the structure.
+	uint32_t DataSize; /// Size of the property data in bytes.
+	fixedString_t TypeString; /// String representation of the property type, used to store enum values or struct type names.
+	uint32_t NumComponents; /// Number of components in the group property (for vector or array types).
+	bool_t IsArray; /// Indicates whether the property is an array type, will generate Num* property to indicate the number of elements.
 };
 
 #endif

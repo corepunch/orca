@@ -117,7 +117,7 @@ static void add_group(lpcClassDesc_t dec, void* parm) {
 }
 
 ORCA_API lpcString_t
-PDESC_Print(lpcPropertyDesc_t pdesc, LPSTR buffer, uint32_t len, float const* pf);
+PDESC_Print(lpcPropertyType_t pdesc, LPSTR buffer, uint32_t len, float const* pf);
 
 #define _xmlAddProp(parent, name, value, type)\
 _xmlNewChild(parent, _types[type], "name", name, "value", value, "data-type", _types[type])
@@ -125,12 +125,12 @@ _xmlNewChild(parent, _types[type], "name", name, "value", value, "data-type", _t
 static int
 add_subproperty(xmlNodePtr xml,
                 lpcObject_t obj,
-                lpcPropertyDesc_t pdesc,
+                lpcPropertyType_t pdesc,
                 void const* dest)
 {
   path_t buf;
   PDESC_Print(pdesc, buf, sizeof(buf), dest);
-  xmlNodePtr n = _xmlAddProp(xml, pdesc->id->Name, buf, pdesc->DataType);
+  xmlNodePtr n = _xmlAddProp(xml, pdesc->Name, buf, pdesc->DataType);
   if (PROP_FindByLongID(OBJ_GetProperties(obj), pdesc->FullIdentifier)) {
     _xmlSetProp(n, "data-set", "true");
   }
@@ -149,7 +149,7 @@ add_subproperty(xmlNodePtr xml,
     case kDataTypeGroup:
       _xmlSetProp(n, "data-compound", "true");
       FOR_LOOP(i, pdesc->NumComponents) {
-        lpcPropertyDesc_t inner = &pdesc[i + 1];
+        lpcPropertyType_t inner = &pdesc[i + 1];
         void* dest2 = ((byte_t*)dest) + inner->Offset - pdesc->Offset;
         i += add_subproperty(n, obj, inner, dest2);
       }
@@ -177,7 +177,7 @@ xmlFindNode(xmlNodePtr node, xmlChar const *name) {
 
 static void
 add_property(lpcObject_t obj,
-             lpcPropertyDesc_t pdesc,
+             lpcPropertyType_t pdesc,
              lpcClassDesc_t cdesc,
              void const* dest,
              void* parm)
@@ -215,8 +215,8 @@ SV_CMD(GET, node)
     if (!group) {
       group = _xmlNewChild(response, "group", "name", CUSTOM_GROUP, "data-compound", "true");
     }
-    add_subproperty(group, object, &(struct PropertyDesc) {
-      .id=&(struct ID){.Name = PROP_GetName(p)},
+    add_subproperty(group, object, &(struct PropertyType) {
+      .Name = PROP_GetName(p),
       .DataType = PROP_GetType(p),
       .DataSize = PROP_GetSize(p),
       .TypeString = PROP_GetUserData(p),
@@ -368,8 +368,8 @@ static void output_property(lpcClassDesc_t desc, void *param) {
   xmlNodePtr n = _xmlNewChild(param, "menu-item", "header", desc->ClassName);
   FOR_LOOP(i, desc->NumProperties) {
     char buf[256];
-    snprintf(buf, sizeof(buf), "%s.%s", desc->ClassName, desc->Properties[i].id->Name);
-    _xmlNewChild(n, "menu-item", "header", desc->Properties[i].id->Name, "name", buf);
+    snprintf(buf, sizeof(buf), "%s.%s", desc->ClassName, desc->Properties[i].Name);
+    _xmlNewChild(n, "menu-item", "header", desc->Properties[i].Name, "name", buf);
   }
 }
 

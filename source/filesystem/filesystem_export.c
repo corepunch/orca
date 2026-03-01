@@ -2,13 +2,17 @@
 #include <include/api.h>
 #include <source/filesystem/filesystem.h>
 #define DECL(SHORT, LONG, CLASS, NAME, FIELD, TYPE,...) { \
-	.id=&(struct ID){.Name=#CLASS"."NAME,.Identifier=SHORT}, \
+	.Name=#CLASS"."NAME, \
+	.Category=#CLASS, \
+	.ShortIdentifier=SHORT, \
 	.FullIdentifier=LONG, \
 	.Offset=offsetof(struct CLASS, FIELD), \
 	.DataSize=sizeof(((struct CLASS *)NULL)->FIELD), \
 	.DataType=TYPE, ##__VA_ARGS__ }
 #define ARRAY_DECL(SHORT, LONG, CLASS, NAME, FIELD, TYPE,...) { \
-	.id=&(struct ID){.Name=#CLASS"."NAME,.Identifier=SHORT}, \
+	.Name=#CLASS"."NAME, \
+	.Category=#CLASS, \
+	.ShortIdentifier=SHORT, \
 	.FullIdentifier=LONG, \
 	.Offset=offsetof(struct CLASS, FIELD), \
 	.DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), \
@@ -21,7 +25,7 @@ void luaX_pushPackage(lua_State *L, lpcPackage_t Package) {
 lpPackage_t luaX_checkPackage(lua_State *L, int idx) {
 	return lua_touserdata(L, idx);
 }
-static struct PropertyDesc const WorkspaceProperties[kWorkspaceNumProperties] = {
+static struct PropertyType const WorkspaceProperties[kWorkspaceNumProperties] = {
 };
 static struct Workspace WorkspaceDefaults = {};
 LRESULT WorkspaceProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -49,7 +53,7 @@ ORCA_API struct ClassDesc _Workspace = {
 	.NumProperties = kWorkspaceNumProperties,
 };
 LRESULT Project_Start(lpObject_t, lpProject_t, wParam_t, StartEventPtr);
-static struct PropertyDesc const ProjectProperties[kProjectNumProperties] = {
+static struct PropertyType const ProjectProperties[kProjectNumProperties] = {
 	/* Project.HalfFloatTextureFormat */ DECL(0xbcd19216, 0xf064c913,
 	Project, "HalfFloatTextureFormat", HalfFloatTextureFormat, kDataTypeBool),
 	/* Project.HalfFloatTextureFormatLinear */ DECL(0xfba1938f, 0xec96a44e,
@@ -159,7 +163,7 @@ ORCA_API struct ClassDesc _Project = {
 	.Defaults = &ProjectDefaults,
 	.NumProperties = kProjectNumProperties,
 };
-static struct PropertyDesc const LibraryProperties[kLibraryNumProperties] = {
+static struct PropertyType const LibraryProperties[kLibraryNumProperties] = {
 	/* Library.IsExternal */ DECL(0x1cb8f23a, 0x9363c61d,
 	Library, "IsExternal", IsExternal, kDataTypeBool),
 };
@@ -188,7 +192,7 @@ ORCA_API struct ClassDesc _Library = {
 	.Defaults = &LibraryDefaults,
 	.NumProperties = kLibraryNumProperties,
 };
-static struct PropertyDesc const AnimationClipLibraryProperties[kAnimationClipLibraryNumProperties] = {
+static struct PropertyType const AnimationClipLibraryProperties[kAnimationClipLibraryNumProperties] = {
 };
 static struct AnimationClipLibrary AnimationClipLibraryDefaults = {};
 LRESULT AnimationClipLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -216,7 +220,7 @@ ORCA_API struct ClassDesc _AnimationClipLibrary = {
 	.Defaults = &AnimationClipLibraryDefaults,
 	.NumProperties = kAnimationClipLibraryNumProperties,
 };
-static struct PropertyDesc const ScreenLibraryProperties[kScreenLibraryNumProperties] = {
+static struct PropertyType const ScreenLibraryProperties[kScreenLibraryNumProperties] = {
 };
 static struct ScreenLibrary ScreenLibraryDefaults = {};
 LRESULT ScreenLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -244,7 +248,7 @@ ORCA_API struct ClassDesc _ScreenLibrary = {
 	.Defaults = &ScreenLibraryDefaults,
 	.NumProperties = kScreenLibraryNumProperties,
 };
-static struct PropertyDesc const MaterialTypeLibraryProperties[kMaterialTypeLibraryNumProperties] = {
+static struct PropertyType const MaterialTypeLibraryProperties[kMaterialTypeLibraryNumProperties] = {
 };
 static struct MaterialTypeLibrary MaterialTypeLibraryDefaults = {};
 LRESULT MaterialTypeLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -272,7 +276,7 @@ ORCA_API struct ClassDesc _MaterialTypeLibrary = {
 	.Defaults = &MaterialTypeLibraryDefaults,
 	.NumProperties = kMaterialTypeLibraryNumProperties,
 };
-static struct PropertyDesc const MaterialLibraryProperties[kMaterialLibraryNumProperties] = {
+static struct PropertyType const MaterialLibraryProperties[kMaterialLibraryNumProperties] = {
 };
 static struct MaterialLibrary MaterialLibraryDefaults = {};
 LRESULT MaterialLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -300,7 +304,7 @@ ORCA_API struct ClassDesc _MaterialLibrary = {
 	.Defaults = &MaterialLibraryDefaults,
 	.NumProperties = kMaterialLibraryNumProperties,
 };
-static struct PropertyDesc const BrushLibraryProperties[kBrushLibraryNumProperties] = {
+static struct PropertyType const BrushLibraryProperties[kBrushLibraryNumProperties] = {
 };
 static struct BrushLibrary BrushLibraryDefaults = {};
 LRESULT BrushLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -328,7 +332,7 @@ ORCA_API struct ClassDesc _BrushLibrary = {
 	.Defaults = &BrushLibraryDefaults,
 	.NumProperties = kBrushLibraryNumProperties,
 };
-static struct PropertyDesc const MeshLibraryProperties[kMeshLibraryNumProperties] = {
+static struct PropertyType const MeshLibraryProperties[kMeshLibraryNumProperties] = {
 };
 static struct MeshLibrary MeshLibraryDefaults = {};
 LRESULT MeshLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -356,7 +360,7 @@ ORCA_API struct ClassDesc _MeshLibrary = {
 	.Defaults = &MeshLibraryDefaults,
 	.NumProperties = kMeshLibraryNumProperties,
 };
-static struct PropertyDesc const TimelineSequenceLibraryProperties[kTimelineSequenceLibraryNumProperties] = {
+static struct PropertyType const TimelineSequenceLibraryProperties[kTimelineSequenceLibraryNumProperties] = {
 };
 static struct TimelineSequenceLibrary TimelineSequenceLibraryDefaults = {};
 LRESULT TimelineSequenceLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -384,7 +388,7 @@ ORCA_API struct ClassDesc _TimelineSequenceLibrary = {
 	.Defaults = &TimelineSequenceLibraryDefaults,
 	.NumProperties = kTimelineSequenceLibraryNumProperties,
 };
-static struct PropertyDesc const SceneObjectLibraryProperties[kSceneObjectLibraryNumProperties] = {
+static struct PropertyType const SceneObjectLibraryProperties[kSceneObjectLibraryNumProperties] = {
 };
 static struct SceneObjectLibrary SceneObjectLibraryDefaults = {};
 LRESULT SceneObjectLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -412,7 +416,7 @@ ORCA_API struct ClassDesc _SceneObjectLibrary = {
 	.Defaults = &SceneObjectLibraryDefaults,
 	.NumProperties = kSceneObjectLibraryNumProperties,
 };
-static struct PropertyDesc const ComposerLibraryProperties[kComposerLibraryNumProperties] = {
+static struct PropertyType const ComposerLibraryProperties[kComposerLibraryNumProperties] = {
 };
 static struct ComposerLibrary ComposerLibraryDefaults = {};
 LRESULT ComposerLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -440,7 +444,7 @@ ORCA_API struct ClassDesc _ComposerLibrary = {
 	.Defaults = &ComposerLibraryDefaults,
 	.NumProperties = kComposerLibraryNumProperties,
 };
-static struct PropertyDesc const PipelineItemLibraryProperties[kPipelineItemLibraryNumProperties] = {
+static struct PropertyType const PipelineItemLibraryProperties[kPipelineItemLibraryNumProperties] = {
 };
 static struct PipelineItemLibrary PipelineItemLibraryDefaults = {};
 LRESULT PipelineItemLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -468,7 +472,7 @@ ORCA_API struct ClassDesc _PipelineItemLibrary = {
 	.Defaults = &PipelineItemLibraryDefaults,
 	.NumProperties = kPipelineItemLibraryNumProperties,
 };
-static struct PropertyDesc const SceneLibraryProperties[kSceneLibraryNumProperties] = {
+static struct PropertyType const SceneLibraryProperties[kSceneLibraryNumProperties] = {
 };
 static struct SceneLibrary SceneLibraryDefaults = {};
 LRESULT SceneLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -496,7 +500,7 @@ ORCA_API struct ClassDesc _SceneLibrary = {
 	.Defaults = &SceneLibraryDefaults,
 	.NumProperties = kSceneLibraryNumProperties,
 };
-static struct PropertyDesc const TrajectoryLibraryProperties[kTrajectoryLibraryNumProperties] = {
+static struct PropertyType const TrajectoryLibraryProperties[kTrajectoryLibraryNumProperties] = {
 };
 static struct TrajectoryLibrary TrajectoryLibraryDefaults = {};
 LRESULT TrajectoryLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -524,7 +528,7 @@ ORCA_API struct ClassDesc _TrajectoryLibrary = {
 	.Defaults = &TrajectoryLibraryDefaults,
 	.NumProperties = kTrajectoryLibraryNumProperties,
 };
-static struct PropertyDesc const TransitionLibraryProperties[kTransitionLibraryNumProperties] = {
+static struct PropertyType const TransitionLibraryProperties[kTransitionLibraryNumProperties] = {
 };
 static struct TransitionLibrary TransitionLibraryDefaults = {};
 LRESULT TransitionLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -552,7 +556,7 @@ ORCA_API struct ClassDesc _TransitionLibrary = {
 	.Defaults = &TransitionLibraryDefaults,
 	.NumProperties = kTransitionLibraryNumProperties,
 };
-static struct PropertyDesc const SplineLibraryProperties[kSplineLibraryNumProperties] = {
+static struct PropertyType const SplineLibraryProperties[kSplineLibraryNumProperties] = {
 };
 static struct SplineLibrary SplineLibraryDefaults = {};
 LRESULT SplineLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -580,7 +584,7 @@ ORCA_API struct ClassDesc _SplineLibrary = {
 	.Defaults = &SplineLibraryDefaults,
 	.NumProperties = kSplineLibraryNumProperties,
 };
-static struct PropertyDesc const PrefabLibraryProperties[kPrefabLibraryNumProperties] = {
+static struct PropertyType const PrefabLibraryProperties[kPrefabLibraryNumProperties] = {
 };
 static struct PrefabLibrary PrefabLibraryDefaults = {};
 LRESULT PrefabLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -609,7 +613,7 @@ ORCA_API struct ClassDesc _PrefabLibrary = {
 	.NumProperties = kPrefabLibraryNumProperties,
 };
 LRESULT ProjectReferenceLibrary_Attached(lpObject_t, lpProjectReferenceLibrary_t, wParam_t, AttachedEventPtr);
-static struct PropertyDesc const ProjectReferenceLibraryProperties[kProjectReferenceLibraryNumProperties] = {
+static struct PropertyType const ProjectReferenceLibraryProperties[kProjectReferenceLibraryNumProperties] = {
 };
 static struct ProjectReferenceLibrary ProjectReferenceLibraryDefaults = {};
 LRESULT ProjectReferenceLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -639,7 +643,7 @@ ORCA_API struct ClassDesc _ProjectReferenceLibrary = {
 	.Defaults = &ProjectReferenceLibraryDefaults,
 	.NumProperties = kProjectReferenceLibraryNumProperties,
 };
-static struct PropertyDesc const ProfileLibraryProperties[kProfileLibraryNumProperties] = {
+static struct PropertyType const ProfileLibraryProperties[kProfileLibraryNumProperties] = {
 };
 static struct ProfileLibrary ProfileLibraryDefaults = {};
 LRESULT ProfileLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -668,7 +672,7 @@ ORCA_API struct ClassDesc _ProfileLibrary = {
 	.NumProperties = kProfileLibraryNumProperties,
 };
 LRESULT EnginePluginLibrary_Attached(lpObject_t, lpEnginePluginLibrary_t, wParam_t, AttachedEventPtr);
-static struct PropertyDesc const EnginePluginLibraryProperties[kEnginePluginLibraryNumProperties] = {
+static struct PropertyType const EnginePluginLibraryProperties[kEnginePluginLibraryNumProperties] = {
 };
 static struct EnginePluginLibrary EnginePluginLibraryDefaults = {};
 LRESULT EnginePluginLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -698,7 +702,7 @@ ORCA_API struct ClassDesc _EnginePluginLibrary = {
 	.Defaults = &EnginePluginLibraryDefaults,
 	.NumProperties = kEnginePluginLibraryNumProperties,
 };
-static struct PropertyDesc const ShortcutLibraryProperties[kShortcutLibraryNumProperties] = {
+static struct PropertyType const ShortcutLibraryProperties[kShortcutLibraryNumProperties] = {
 };
 static struct ShortcutLibrary ShortcutLibraryDefaults = {};
 LRESULT ShortcutLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -726,7 +730,7 @@ ORCA_API struct ClassDesc _ShortcutLibrary = {
 	.Defaults = &ShortcutLibraryDefaults,
 	.NumProperties = kShortcutLibraryNumProperties,
 };
-static struct PropertyDesc const LayerLibraryProperties[kLayerLibraryNumProperties] = {
+static struct PropertyType const LayerLibraryProperties[kLayerLibraryNumProperties] = {
 };
 static struct LayerLibrary LayerLibraryDefaults = {};
 LRESULT LayerLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -754,7 +758,7 @@ ORCA_API struct ClassDesc _LayerLibrary = {
 	.Defaults = &LayerLibraryDefaults,
 	.NumProperties = kLayerLibraryNumProperties,
 };
-static struct PropertyDesc const AnimationLibraryProperties[kAnimationLibraryNumProperties] = {
+static struct PropertyType const AnimationLibraryProperties[kAnimationLibraryNumProperties] = {
 };
 static struct AnimationLibrary AnimationLibraryDefaults = {};
 LRESULT AnimationLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -782,7 +786,7 @@ ORCA_API struct ClassDesc _AnimationLibrary = {
 	.Defaults = &AnimationLibraryDefaults,
 	.NumProperties = kAnimationLibraryNumProperties,
 };
-static struct PropertyDesc const TagLibraryProperties[kTagLibraryNumProperties] = {
+static struct PropertyType const TagLibraryProperties[kTagLibraryNumProperties] = {
 };
 static struct TagLibrary TagLibraryDefaults = {};
 LRESULT TagLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -810,7 +814,7 @@ ORCA_API struct ClassDesc _TagLibrary = {
 	.Defaults = &TagLibraryDefaults,
 	.NumProperties = kTagLibraryNumProperties,
 };
-static struct PropertyDesc const ThemeLibraryProperties[kThemeLibraryNumProperties] = {
+static struct PropertyType const ThemeLibraryProperties[kThemeLibraryNumProperties] = {
 };
 static struct ThemeLibrary ThemeLibraryDefaults = {};
 LRESULT ThemeLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -838,7 +842,7 @@ ORCA_API struct ClassDesc _ThemeLibrary = {
 	.Defaults = &ThemeLibraryDefaults,
 	.NumProperties = kThemeLibraryNumProperties,
 };
-static struct PropertyDesc const ResourceExportTagLibraryProperties[kResourceExportTagLibraryNumProperties] = {
+static struct PropertyType const ResourceExportTagLibraryProperties[kResourceExportTagLibraryNumProperties] = {
 };
 static struct ResourceExportTagLibrary ResourceExportTagLibraryDefaults = {};
 LRESULT ResourceExportTagLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -866,7 +870,7 @@ ORCA_API struct ClassDesc _ResourceExportTagLibrary = {
 	.Defaults = &ResourceExportTagLibraryDefaults,
 	.NumProperties = kResourceExportTagLibraryNumProperties,
 };
-static struct PropertyDesc const LocaleLibraryProperties[kLocaleLibraryNumProperties] = {
+static struct PropertyType const LocaleLibraryProperties[kLocaleLibraryNumProperties] = {
 };
 static struct LocaleLibrary LocaleLibraryDefaults = {};
 LRESULT LocaleLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -894,7 +898,7 @@ ORCA_API struct ClassDesc _LocaleLibrary = {
 	.Defaults = &LocaleLibraryDefaults,
 	.NumProperties = kLocaleLibraryNumProperties,
 };
-static struct PropertyDesc const DataSourceLibraryProperties[kDataSourceLibraryNumProperties] = {
+static struct PropertyType const DataSourceLibraryProperties[kDataSourceLibraryNumProperties] = {
 };
 static struct DataSourceLibrary DataSourceLibraryDefaults = {};
 LRESULT DataSourceLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -922,7 +926,7 @@ ORCA_API struct ClassDesc _DataSourceLibrary = {
 	.Defaults = &DataSourceLibraryDefaults,
 	.NumProperties = kDataSourceLibraryNumProperties,
 };
-static struct PropertyDesc const PageTransitionCollectionLibraryProperties[kPageTransitionCollectionLibraryNumProperties] = {
+static struct PropertyType const PageTransitionCollectionLibraryProperties[kPageTransitionCollectionLibraryNumProperties] = {
 };
 static struct PageTransitionCollectionLibrary PageTransitionCollectionLibraryDefaults = {};
 LRESULT PageTransitionCollectionLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -950,7 +954,7 @@ ORCA_API struct ClassDesc _PageTransitionCollectionLibrary = {
 	.Defaults = &PageTransitionCollectionLibraryDefaults,
 	.NumProperties = kPageTransitionCollectionLibraryNumProperties,
 };
-static struct PropertyDesc const TextureLibraryProperties[kTextureLibraryNumProperties] = {
+static struct PropertyType const TextureLibraryProperties[kTextureLibraryNumProperties] = {
 };
 static struct TextureLibrary TextureLibraryDefaults = {};
 LRESULT TextureLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -978,7 +982,7 @@ ORCA_API struct ClassDesc _TextureLibrary = {
 	.Defaults = &TextureLibraryDefaults,
 	.NumProperties = kTextureLibraryNumProperties,
 };
-static struct PropertyDesc const StyleLibraryProperties[kStyleLibraryNumProperties] = {
+static struct PropertyType const StyleLibraryProperties[kStyleLibraryNumProperties] = {
 };
 static struct StyleLibrary StyleLibraryDefaults = {};
 LRESULT StyleLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1006,7 +1010,7 @@ ORCA_API struct ClassDesc _StyleLibrary = {
 	.Defaults = &StyleLibraryDefaults,
 	.NumProperties = kStyleLibraryNumProperties,
 };
-static struct PropertyDesc const StateManagerLibraryProperties[kStateManagerLibraryNumProperties] = {
+static struct PropertyType const StateManagerLibraryProperties[kStateManagerLibraryNumProperties] = {
 };
 static struct StateManagerLibrary StateManagerLibraryDefaults = {};
 LRESULT StateManagerLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1034,7 +1038,7 @@ ORCA_API struct ClassDesc _StateManagerLibrary = {
 	.Defaults = &StateManagerLibraryDefaults,
 	.NumProperties = kStateManagerLibraryNumProperties,
 };
-static struct PropertyDesc const ConnectServiceLibraryProperties[kConnectServiceLibraryNumProperties] = {
+static struct PropertyType const ConnectServiceLibraryProperties[kConnectServiceLibraryNumProperties] = {
 };
 static struct ConnectServiceLibrary ConnectServiceLibraryDefaults = {};
 LRESULT ConnectServiceLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1062,7 +1066,7 @@ ORCA_API struct ClassDesc _ConnectServiceLibrary = {
 	.Defaults = &ConnectServiceLibraryDefaults,
 	.NumProperties = kConnectServiceLibraryNumProperties,
 };
-static struct PropertyDesc const ConnectUserServiceLibraryProperties[kConnectUserServiceLibraryNumProperties] = {
+static struct PropertyType const ConnectUserServiceLibraryProperties[kConnectUserServiceLibraryNumProperties] = {
 };
 static struct ConnectUserServiceLibrary ConnectUserServiceLibraryDefaults = {};
 LRESULT ConnectUserServiceLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1090,7 +1094,7 @@ ORCA_API struct ClassDesc _ConnectUserServiceLibrary = {
 	.Defaults = &ConnectUserServiceLibraryDefaults,
 	.NumProperties = kConnectUserServiceLibraryNumProperties,
 };
-static struct PropertyDesc const PropertyTypeLibraryProperties[kPropertyTypeLibraryNumProperties] = {
+static struct PropertyType const PropertyTypeLibraryProperties[kPropertyTypeLibraryNumProperties] = {
 };
 static struct PropertyTypeLibrary PropertyTypeLibraryDefaults = {};
 LRESULT PropertyTypeLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1118,7 +1122,7 @@ ORCA_API struct ClassDesc _PropertyTypeLibrary = {
 	.Defaults = &PropertyTypeLibraryDefaults,
 	.NumProperties = kPropertyTypeLibraryNumProperties,
 };
-static struct PropertyDesc const SpriteLibraryProperties[kSpriteLibraryNumProperties] = {
+static struct PropertyType const SpriteLibraryProperties[kSpriteLibraryNumProperties] = {
 };
 static struct SpriteLibrary SpriteLibraryDefaults = {};
 LRESULT SpriteLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1146,7 +1150,7 @@ ORCA_API struct ClassDesc _SpriteLibrary = {
 	.Defaults = &SpriteLibraryDefaults,
 	.NumProperties = kSpriteLibraryNumProperties,
 };
-static struct PropertyDesc const SpriteAnimationLibraryProperties[kSpriteAnimationLibraryNumProperties] = {
+static struct PropertyType const SpriteAnimationLibraryProperties[kSpriteAnimationLibraryNumProperties] = {
 };
 static struct SpriteAnimationLibrary SpriteAnimationLibraryDefaults = {};
 LRESULT SpriteAnimationLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1174,7 +1178,7 @@ ORCA_API struct ClassDesc _SpriteAnimationLibrary = {
 	.Defaults = &SpriteAnimationLibraryDefaults,
 	.NumProperties = kSpriteAnimationLibraryNumProperties,
 };
-static struct PropertyDesc const MessageLibraryProperties[kMessageLibraryNumProperties] = {
+static struct PropertyType const MessageLibraryProperties[kMessageLibraryNumProperties] = {
 };
 static struct MessageLibrary MessageLibraryDefaults = {};
 LRESULT MessageLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1202,7 +1206,7 @@ ORCA_API struct ClassDesc _MessageLibrary = {
 	.Defaults = &MessageLibraryDefaults,
 	.NumProperties = kMessageLibraryNumProperties,
 };
-static struct PropertyDesc const SystemMessageProperties[kSystemMessageNumProperties] = {
+static struct PropertyType const SystemMessageProperties[kSystemMessageNumProperties] = {
 	/* SystemMessage.Message */ DECL(0xae0ed984, 0x6e02048e,
 	SystemMessage, "Message", Message, kDataTypeFixed),
 	/* SystemMessage.Key */ DECL(0xcd1ac90c, 0xc8982036,
@@ -1233,7 +1237,7 @@ ORCA_API struct ClassDesc _SystemMessage = {
 	.Defaults = &SystemMessageDefaults,
 	.NumProperties = kSystemMessageNumProperties,
 };
-static struct PropertyDesc const ImageLibraryProperties[kImageLibraryNumProperties] = {
+static struct PropertyType const ImageLibraryProperties[kImageLibraryNumProperties] = {
 };
 static struct ImageLibrary ImageLibraryDefaults = {};
 LRESULT ImageLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1261,7 +1265,7 @@ ORCA_API struct ClassDesc _ImageLibrary = {
 	.Defaults = &ImageLibraryDefaults,
 	.NumProperties = kImageLibraryNumProperties,
 };
-static struct PropertyDesc const FontLibraryProperties[kFontLibraryNumProperties] = {
+static struct PropertyType const FontLibraryProperties[kFontLibraryNumProperties] = {
 };
 static struct FontLibrary FontLibraryDefaults = {};
 LRESULT FontLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1289,7 +1293,7 @@ ORCA_API struct ClassDesc _FontLibrary = {
 	.Defaults = &FontLibraryDefaults,
 	.NumProperties = kFontLibraryNumProperties,
 };
-static struct PropertyDesc const ProjectReferenceItemProperties[kProjectReferenceItemNumProperties] = {
+static struct PropertyType const ProjectReferenceItemProperties[kProjectReferenceItemNumProperties] = {
 };
 static struct ProjectReferenceItem ProjectReferenceItemDefaults = {};
 LRESULT ProjectReferenceItemProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1316,7 +1320,7 @@ ORCA_API struct ClassDesc _ProjectReferenceItem = {
 	.Defaults = &ProjectReferenceItemDefaults,
 	.NumProperties = kProjectReferenceItemNumProperties,
 };
-static struct PropertyDesc const LocaleReferenceItemProperties[kLocaleReferenceItemNumProperties] = {
+static struct PropertyType const LocaleReferenceItemProperties[kLocaleReferenceItemNumProperties] = {
 };
 static struct LocaleReferenceItem LocaleReferenceItemDefaults = {};
 LRESULT LocaleReferenceItemProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1343,7 +1347,7 @@ ORCA_API struct ClassDesc _LocaleReferenceItem = {
 	.Defaults = &LocaleReferenceItemDefaults,
 	.NumProperties = kLocaleReferenceItemNumProperties,
 };
-static struct PropertyDesc const TagProperties[kTagNumProperties] = {
+static struct PropertyType const TagProperties[kTagNumProperties] = {
 	/* Tag.TagIsInherited */ DECL(0xc35a8c07, 0x66bab379,
 	Tag, "TagIsInherited", TagIsInherited, kDataTypeBool),
 };
@@ -1372,7 +1376,7 @@ ORCA_API struct ClassDesc _Tag = {
 	.Defaults = &TagDefaults,
 	.NumProperties = kTagNumProperties,
 };
-static struct PropertyDesc const EnginePluginProperties[kEnginePluginNumProperties] = {
+static struct PropertyType const EnginePluginProperties[kEnginePluginNumProperties] = {
 };
 static struct EnginePlugin EnginePluginDefaults = {};
 LRESULT EnginePluginProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1399,7 +1403,7 @@ ORCA_API struct ClassDesc _EnginePlugin = {
 	.Defaults = &EnginePluginDefaults,
 	.NumProperties = kEnginePluginNumProperties,
 };
-static struct PropertyDesc const EngineMetaclassProperties[kEngineMetaclassNumProperties] = {
+static struct PropertyType const EngineMetaclassProperties[kEngineMetaclassNumProperties] = {
 	/* EngineMetaclass.BaseClassName */ DECL(0x099ceef3, 0x03191574,
 	EngineMetaclass, "BaseClassName", BaseClassName, kDataTypeFixed),
 };
@@ -1428,7 +1432,7 @@ ORCA_API struct ClassDesc _EngineMetaclass = {
 	.Defaults = &EngineMetaclassDefaults,
 	.NumProperties = kEngineMetaclassNumProperties,
 };
-static struct PropertyDesc const ThemeGroupProperties[kThemeGroupNumProperties] = {
+static struct PropertyType const ThemeGroupProperties[kThemeGroupNumProperties] = {
 	/* ThemeGroup.SelectedDictionary */ DECL(0x1cf2c938, 0x6de33964,
 	ThemeGroup, "SelectedDictionary", SelectedDictionary, kDataTypeFixed),
 };
@@ -1457,7 +1461,7 @@ ORCA_API struct ClassDesc _ThemeGroup = {
 	.Defaults = &ThemeGroupDefaults,
 	.NumProperties = kThemeGroupNumProperties,
 };
-static struct PropertyDesc const ThemeProperties[kThemeNumProperties] = {
+static struct PropertyType const ThemeProperties[kThemeNumProperties] = {
 	/* Theme.IsThemeVisible */ DECL(0x1ed11084, 0x17736be5,
 	Theme, "IsThemeVisible", IsThemeVisible, kDataTypeBool),
 };
@@ -1486,7 +1490,7 @@ ORCA_API struct ClassDesc _Theme = {
 	.Defaults = &ThemeDefaults,
 	.NumProperties = kThemeNumProperties,
 };
-static struct PropertyDesc const EntryProperties[kEntryNumProperties] = {
+static struct PropertyType const EntryProperties[kEntryNumProperties] = {
 };
 static struct Entry EntryDefaults = {};
 LRESULT EntryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1513,7 +1517,7 @@ ORCA_API struct ClassDesc _Entry = {
 	.Defaults = &EntryDefaults,
 	.NumProperties = kEntryNumProperties,
 };
-static struct PropertyDesc const ThemeDefaultValuesDictionaryProperties[kThemeDefaultValuesDictionaryNumProperties] = {
+static struct PropertyType const ThemeDefaultValuesDictionaryProperties[kThemeDefaultValuesDictionaryNumProperties] = {
 };
 static struct ThemeDefaultValuesDictionary ThemeDefaultValuesDictionaryDefaults = {};
 LRESULT ThemeDefaultValuesDictionaryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {

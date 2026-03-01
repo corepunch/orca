@@ -41,7 +41,7 @@ struct _xmlNode;
 FWD_STRUCT(Property);
 FWD_STRUCT(Object);
 FWD_STRUCT(ClassDesc);
-FWD_STRUCT(PropertyDesc);
+FWD_STRUCT(PropertyType);
 
 #include <assert.h>
 #include <ctype.h>
@@ -190,12 +190,6 @@ struct KeyframeAnim
   lpKeyframeAnim_t next;
 };
 
-struct ID
-{
-  lpcString_t Name;
-  uint32_t Identifier;
-};
-
 ORCA_API lpKeyframeAnim_t
 ANIM_Load(struct _xmlDoc*);
 
@@ -304,18 +298,6 @@ typedef enum
   BING_ONEWAY,
 } BINDING_MODE;
 
-struct PropertyDesc
-{
-  uint32_t FullIdentifier;
-  uint32_t Offset;
-  uint32_t DataType;
-  size_t DataSize;
-  lpcString_t TypeString;
-  uint32_t NumComponents;
-  bool_t IsArray;
-  struct ID *id;
-};
-
 #include <source/core/core.h>
 
 ORCA_API bool_t
@@ -375,7 +357,7 @@ PROP_Parse(lpProperty_t, lpcString_t);
 ORCA_API void
 PROP_ClearSpecialized(lpProperty_t list);
 
-ORCA_API lpcPropertyDesc_t 
+ORCA_API lpcPropertyType_t 
 PROP_GetDesc(lpcProperty_t prop);
 
 ORCA_API void
@@ -518,7 +500,7 @@ typedef struct _ARRANGECHILDRENSTRUCT
 struct ClassDesc
 {
   objectProc_t ObjProc;
-  lpcPropertyDesc_t Properties;
+  lpcPropertyType_t Properties;
   void const *Defaults;
   lpcString_t ClassName;
   lpcString_t DefaultName;
@@ -595,11 +577,11 @@ OBJ_RegisterClass(lpcClassDesc_t);
 ORCA_API lpcClassDesc_t
 OBJ_FindClass(lpcString_t);
 
-ORCA_API lpcPropertyDesc_t
+ORCA_API lpcPropertyType_t
 OBJ_FindPropertyType(uint32_t);
 
 ORCA_API bool_t
-OBJ_RegisterPropertyType(lpcPropertyDesc_t pt);
+OBJ_RegisterPropertyType(lpcPropertyType_t pt);
 
 ORCA_API void
 OBJ_EnumClasses(lpcClassDesc_t, void (*fnProc)(lpcClassDesc_t, void*), void*);
@@ -612,7 +594,7 @@ OBJ_EnumObjectClasses(lpObject_t pobj,
 ORCA_API void
 OBJ_EnumClassProperties(lpObject_t object,
                         void (*fnProc)(lpcObject_t,
-                                       lpcPropertyDesc_t,
+                                       lpcPropertyType_t,
                                        lpcClassDesc_t,
                                        void const*,
                                        void*),

@@ -69,7 +69,7 @@ static int XML_CountNodes(xmlNode *it, xmlChar const* name) {
 
 static void
 XML_ParseValues(xmlNode *it,
-                lpcPropertyDesc_t pdesc,
+                lpcPropertyType_t pdesc,
                 int (*parser)(xmlNodePtr, void*),
                 char *output)
 {
@@ -106,7 +106,7 @@ XML_ParsePropertyNode(lua_State* L, xmlNodePtr it, lpObject_t object)
     return;
 #endif
   }
-  lpcPropertyDesc_t pdesc = PROP_GetDesc(property);
+  lpcPropertyType_t pdesc = PROP_GetDesc(property);
   if (pdesc->IsArray) {
     uint32_t num = XML_CountNodes(it, XMLSTR(pdesc->TypeString));
     void *mem = malloc(pdesc->DataSize * num);
@@ -118,7 +118,7 @@ XML_ParsePropertyNode(lua_State* L, xmlNodePtr it, lpObject_t object)
     {
       PROP_SetValue(nump, &num);
     } else {
-      Con_Error("Expected a Num%s property to follow %s", pdesc->id->Name, pdesc->id->Name);
+      Con_Error("Expected a Num%s property to follow %s", pdesc->Name, pdesc->Name);
     }
     return;
   }

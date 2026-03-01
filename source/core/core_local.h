@@ -105,7 +105,7 @@ struct game
   lpObject_t hover;
   lpObject_t hover2;
   lpcClassDesc_t classes[MAX_CLASSES];
-  lpcPropertyDesc_t ptypes[MAX_PROPERTY_TYPES];
+  lpcPropertyType_t ptypes[MAX_PROPERTY_TYPES];
 };
 
 // stateman.c
@@ -182,7 +182,7 @@ OBJ_NameEquals(lpObject_t object, lpcString_t name)
 struct component*
 CMP_Create(lpObject_t, lpcClassDesc_t);
 lpProperty_t
-CMP_CreateProperty(lua_State*, struct component*, lpcPropertyDesc_t);
+CMP_CreateProperty(lua_State*, struct component*, lpcPropertyType_t);
 //lpProperty_t
 //CMP_CreateProperty2(lua_State*, struct component*, lpcString_t);
 lpcString_t
