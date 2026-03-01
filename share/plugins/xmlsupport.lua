@@ -1,26 +1,36 @@
 local orca = require "orca"
 
+local special_attrs = {
+	Name       = function(node, name, value) node:setName(value) end,
+	id         = function(node, name, value) node:setName(value) end,
+	class      = function(node, name, value) node:parseClassAttribute(value) end,
+	Style      = function(node, name, value) node:parseClassAttribute(value:match("[^/]+$") or value) end,
+	IsDisabled = function(node, name, value) end, -- intentionally ignored
+}
+special_attrs["Node.Style"] = special_attrs.Style
+
 local function parse_argument(node, name, value)
 	assert(orca.typeconverter, "Type converter plugin is required for XML support plugin")
-	if name == "Name" or name == "id" then node:setName(value) return end
-	local type = node:findImplicitProperty(name, value)
-	assert(type, string.format("Unknown property: %s for node of type %s", name, node.className))
-	local converter = orca.typeconverter[type.DataType]
-	assert(converter, string.format("No type converter for data type: %s (property %s)", type.DataType, name))
-	print(name, converter(value, type))
-	node[name] = converter(value, type)
+	local special = special_attrs[name]
+	if special then return special(node, name, value) end
+	if value:sub(1, 1) == '{' then return node:bind(name, value) end
+	local prop_type = node:findImplicitProperty(name)
+	assert(prop_type, string.format("Unknown property: %s for node of type %s", name, node:getClassName()))
+	local converter = orca.typeconverter[prop_type.DataType]
+	assert(converter, string.format("No type converter for data type: %s (property %s)", prop_type.DataType, name))
+	node[name] = converter(value, prop_type)
 end
 
-local function try_require_memeber(module, name)
+local function try_require_member(module, name)
 	local ok, res = pcall(require, module)
 	return ok and res[name] or nil
 end
 
 local function try_prefab_placeholder(element)
 	local placeholders = {
-		CustomNode = require,
-		LibraryPlaceholder = require,
-		LayerPrefabPlaceholder = require,
+		CustomNode              = require,
+		LibraryPlaceholder      = require,
+		LayerPrefabPlaceholder  = require,
 		ObjectPrefabPlaceholder = require,
 	}
 	local placeholder = placeholders[element.tag]
@@ -31,14 +41,19 @@ local function try_prefab_placeholder(element)
 	end
 end
 
+local modules = {
+	"orca.ui",
+	"orca.SceneKit",
+	"orca.SpriteKit",
+	"orca.filesystem",
+	"orca.renderer",
+}
+
 local function construct(element)
-	local class =
-		try_prefab_placeholder(element) or
-		try_require_memeber("orca.ui", element.tag) or
-		try_require_memeber("orca.SceneKit", element.tag) or
-		try_require_memeber("orca.SpriteKit", element.tag) or
-		try_require_memeber("orca.filesystem", element.tag) or
-		try_require_memeber("orca.renderer", element.tag)
+	local class = try_prefab_placeholder(element)
+	for _, module in ipairs(modules) do
+		class = class or try_require_member(module, element.tag)
+	end
 
 	if not class then
 		error("Unknown element type: "..element.tag)

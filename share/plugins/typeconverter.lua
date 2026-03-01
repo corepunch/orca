@@ -17,11 +17,19 @@ local fallbacks = {
 	end,
 }
 
+local function passthrough(value)
+	return value
+end
+
+local bool_map = { ["true"] = true, ["false"] = false }
+
 orca.typeconverter = {
+	none = passthrough,
 	bool = function(value, type)
-		if value == "true" then return true end
-		if value == "false" then return false end
-		return tonumber(value) or error(string.format("Cannot convert to %s(bool): %s", type.TypeString, value))
+		if bool_map[value] ~= nil then return bool_map[value] end
+		local n = tonumber(value)
+		if n then return n ~= 0 end
+		error(string.format("Cannot convert to %s(bool): %s", type.TypeString, value))
 	end,
 	int = function(value, type)
 		return tonumber(value) or error(string.format("Cannot convert to %s(int): %s", type.TypeString, value))
@@ -37,9 +45,13 @@ orca.typeconverter = {
 		end
 		error(string.format("Cannot convert to %s(enum): %s", type.TypeString, value))
 	end,
-	fixed = function(value)
-		return value
-	end,
+	fixed      = passthrough,
+	longstring = passthrough,
+	event      = passthrough,
+	struct     = passthrough,
+	group      = passthrough,
+	edges      = passthrough,
+	objecttags = passthrough,
 	object = function(path, type)
 		local ok, resource = pcall(require, path)
 		if ok then
