@@ -6,13 +6,6 @@
 lpcString_t const package_paths[] = { "%s.lua", "%s/init.lua", NULL };
 lpcString_t const moonpackage_paths[] = { "%s.moon", "%s/init.moon", NULL };
 
-static int API_FileExists(lua_State* L)
-{
-  lpcString_t path = luaL_checkstring(L, 1);
-  lua_pushboolean(L, FS_FileExists(path));
-  return 1;
-}
-
 lpcString_t
 FS_PathFromModule(lpcString_t module)
 {
@@ -549,6 +542,7 @@ void on_filesystem_module_registered(lua_State* L)
   luaL_newmetatable(L, "DirectoryIterator");
   lua_pushcfunction(L, l_directory_gc);
   lua_setfield(L, -2, "__gc");
+  lua_pop(L, 1);
   
   luaL_newmetatable(L, "FileHandle");
   luaL_setfuncs(L, ((luaL_Reg[]){
@@ -584,9 +578,6 @@ void on_filesystem_module_registered(lua_State* L)
   
   lua_pushcfunction(L, f_init);
   lua_setfield(L, -2, "init");
-  
-  lua_pushcfunction(L, API_FileExists);
-  lua_setfield(L, -2, "file_exists");
   
   lua_pushcfunction(L, f_loadTextFile);
   lua_setfield(L, -2, "read_file");

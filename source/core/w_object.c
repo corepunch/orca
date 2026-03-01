@@ -270,8 +270,12 @@ bool_t OBJ_API(SetProperty, lpcString_t name) {
     GetNode2D(self)->LayoutTransform.translation.y = luaL_checknumber(L, 3);
     return TRUE;
   }
-  // convert to PascalCase
   lpProperty_t property = NULL;
+  if (lua_type(L, 3) == LUA_TTABLE) { // store table for safekeeping
+    lua_pushfstring(L, "__hook_%s", name);
+    lua_pushvalue(L, 3);
+    lua_rawset(L, 1);
+  }
   if (SUCCEEDED(OBJ_FindShortProperty(self, PascalCase(name), &property))) {
     luaX_readProperty(L, 3, property);
     return TRUE;

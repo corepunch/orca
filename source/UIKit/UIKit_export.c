@@ -631,7 +631,7 @@ static int f_new_BorderEdgeShorthand(lua_State *L) {
 		self->Width = lua_tonumber(L, -1);
 		lua_pop(L, 1);
 		lua_getfield(L, 1, "Style");
-		if (!lua_isnil(L, -1)) self->Style = luaX_checkBorderStyle(L, -1);
+		self->Style = lua_isnil(L, -1) ? 0 : luaX_checkBorderStyle(L, -1);
 		lua_pop(L, 1);
 	} else {
 		self->Width = luaL_checknumber(L, 1);
@@ -1007,10 +1007,10 @@ static int f_new_FontShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct FontShorthand));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "Weight");
-		if (!lua_isnil(L, -1)) self->Weight = luaX_checkFontWeight(L, -1);
+		self->Weight = lua_isnil(L, -1) ? 0 : luaX_checkFontWeight(L, -1);
 		lua_pop(L, 1);
 		lua_getfield(L, 1, "Style");
-		if (!lua_isnil(L, -1)) self->Style = luaX_checkFontStyle(L, -1);
+		self->Style = lua_isnil(L, -1) ? 0 : luaX_checkFontStyle(L, -1);
 		lua_pop(L, 1);
 		lua_getfield(L, 1, "Size");
 		self->Size = lua_tonumber(L, -1);
@@ -1402,10 +1402,10 @@ static int f_new_OverflowShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct OverflowShorthand));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "x");
-		if (!lua_isnil(L, -1)) self->x = luaX_checkOverflow(L, -1);
+		self->x = lua_isnil(L, -1) ? 0 : luaX_checkOverflow(L, -1);
 		lua_pop(L, 1);
 		lua_getfield(L, 1, "y");
-		if (!lua_isnil(L, -1)) self->y = luaX_checkOverflow(L, -1);
+		self->y = lua_isnil(L, -1) ? 0 : luaX_checkOverflow(L, -1);
 		lua_pop(L, 1);
 	} else {
 		self->x = luaX_checkOverflow(L, 1);
@@ -3473,7 +3473,7 @@ static int f_new_NavigateToPageArguments(lua_State *L) {
 		strncpy(self->URL, luaL_optstring(L, -1, ""), sizeof(self->URL));
 		lua_pop(L, 1);
 		lua_getfield(L, 1, "TransitionType");
-		if (!lua_isnil(L, -1)) self->TransitionType = luaX_checkTransitionType(L, -1);
+		self->TransitionType = lua_isnil(L, -1) ? 0 : luaX_checkTransitionType(L, -1);
 		lua_pop(L, 1);
 	} else {
 		strncpy(self->URL, luaL_checkstring(L, 1), sizeof(self->URL));
@@ -3558,7 +3558,7 @@ static int f_new_NavigateBackArguments(lua_State *L) {
 	memset(self, 0, sizeof(struct NavigateBackArguments));
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "TransitionType");
-		if (!lua_isnil(L, -1)) self->TransitionType = luaX_checkTransitionType(L, -1);
+		self->TransitionType = lua_isnil(L, -1) ? 0 : luaX_checkTransitionType(L, -1);
 		lua_pop(L, 1);
 	} else {
 		self->TransitionType = luaX_checkTransitionType(L, 1);

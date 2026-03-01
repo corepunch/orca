@@ -761,7 +761,7 @@ static int f_new_PropertyType(lua_State *L) {
 		strncpy(self->Category, luaL_optstring(L, -1, ""), sizeof(self->Category));
 		lua_pop(L, 1);
 		lua_getfield(L, 1, "DataType");
-		if (!lua_isnil(L, -1)) self->DataType = luaX_checkDataType(L, -1);
+		self->DataType = lua_isnil(L, -1) ? 0 : luaX_checkDataType(L, -1);
 		lua_pop(L, 1);
 		lua_getfield(L, 1, "DefaultValue");
 		strncpy(self->DefaultValue, luaL_optstring(L, -1, ""), sizeof(self->DefaultValue));

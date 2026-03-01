@@ -187,7 +187,7 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirname) {
     fclose(mem);
   }
   if (luaL_loadbuffer(L, buf, size, "@main") || lua_pcall(L, 0, 1, 0)) {
-    Con_Error("Uncaught exception: %s", lua_tostring(L, -1));
+    fprintf(stderr, "Uncaught exception: %s\n", lua_tostring(L, -1));
     lua_pop(L, 1);
     free(buf);
     return NULL;

@@ -252,7 +252,7 @@ class ExportWriter(Plugin):
 					if arg_type == 'fixed':
 						table_inits += f'\t\tstrncpy(self->{field_name}, luaL_optstring(L, -1, ""), sizeof(self->{field_name}));\n'
 					elif arg_type in Workspace.enums:
-						table_inits += f'\t\tif (!lua_isnil(L, -1)) self->{field_name} = luaX_check{arg_type}(L, -1);\n'
+						table_inits += f'\t\tself->{field_name} = lua_isnil(L, -1) ? 0 : luaX_check{arg_type}(L, -1);\n'
 					else:
 						check_fn = utils.atomic_types[arg_type][0]
 						to_fn = check_fn.replace('luaL_check', 'lua_to')
