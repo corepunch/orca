@@ -472,7 +472,7 @@ PROP_Import(lpProperty_t prop,
       PROP_SetValue(prop, r->value);
       return TRUE;
     } else if (PROP_GetType(prop) == kDataTypeStruct) {
-      lpcPropertyType_t pd = PROP_GetDesc(prop);
+//      lpcPropertyType_t pd = PROP_GetDesc(prop);
       assert(!"Not implemented yet!");
 //      FOR_LOOP(i, pd->NumComponents) {
 //        eDataType_t type = (pd+1+i)->DataType;

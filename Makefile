@@ -68,7 +68,7 @@ endif
 app: platform
 	$(CC) $(CFLAGS) $(SOURCEDIR)/orca.c -Wall $(LIBS) -o $(TARGET) $(LDFLAGS)
 
-unite: directories copyshare buildunite buildlib app
+unite: directories buildunite buildlib app copyshare
 
 %.o: %.c $(HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $(addprefix $(OBJECTDIR)/,$(notdir $@))
@@ -174,4 +174,5 @@ install: all
 	install -m 0644 main.lua $(INST_LUADIR)/orca/main.lua
 
 test:
-	$(TARGET) tests/test1.lua
+	$(TARGET) -test=tests/test.xml
+# 	$(TARGET) -test=tests/test1.lua

@@ -187,7 +187,7 @@ ORCA_API int luaopen_orca(lua_State* L)
                 "\treturn no_errors\n"
                 "end\n");
   assert(lua_type(L, -1) == LUA_TFUNCTION);
-  lua_setfield(L, -2, "loadPlugins");
+  lua_setfield(L, -2, "init");
   
 #ifdef EASY_MODULE_ACCESS
   // Create a metatable for the orca module

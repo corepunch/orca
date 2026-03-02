@@ -216,12 +216,15 @@ SV_CMD(GET, node)
     if (!group) {
       group = _xmlNewChild(response, "group", "name", CUSTOM_GROUP, "data-compound", "true");
     }
-    add_subproperty(group, object, &(struct PropertyType) {
-      .Name = PROP_GetName(p),
+    struct PropertyType ptype = {
+//      .Name = PROP_GetName(p),
       .DataType = PROP_GetType(p),
       .DataSize = PROP_GetSize(p),
-      .TypeString = PROP_GetUserData(p),
-    }, PROP_GetValue(p));
+//      .TypeString = PROP_GetUserData(p),
+    };
+    strncpy(ptype.Name, PROP_GetName(p), sizeof(fixedString_t));
+    strncpy(ptype.TypeString, PROP_GetName(p), sizeof(fixedString_t));
+    add_subproperty(group, object, &ptype, PROP_GetValue(p));
   }
 
   return NULL;

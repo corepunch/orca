@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Screen SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
+<Screen Name="test-screen" Width="1000" Height="1000">
+	<TextBlock Name="test-text" FontSize="20" Text="This is a test screen." />
+	<script>
+		updateLayout(_ENV, Width, Height)
+		assert(Name == "test-screen", "Expected screen name to be test-screen")
+		assert(Width == 1000, "Expected width to be 1000")
+		assert(Height == 1000, "Expected height to be 1000")
+	</script>
+</Screen>

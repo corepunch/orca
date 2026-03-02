@@ -54,30 +54,51 @@ get_exe_filename(LPSTR buf, uint32_t sz)
 #endif
 }
 
-lpcString_t RunProject(lua_State *L, lpcString_t szDirname) {
-  lpcString_t requires[] = {
-    "orca",
-    "orca.core",
-    "orca.geometry",
-    "orca.filesystem",
-    "orca.renderer",
-    "orca.parsers.xml",
-    "orca.ui",
-    "orca.SceneKit",
-    "orca.SpriteKit",
-  };
+lpcString_t requires[] = {
+  "orca",
+  "orca.core",
+  "orca.geometry",
+  "orca.filesystem",
+  "orca.renderer",
+  "orca.parsers.xml",
+  "orca.ui",
+  "orca.SceneKit",
+  "orca.SpriteKit",
+};
+lpcString_t RunTest(lua_State *L, lpcString_t szFileName) {
   size_t size = 0;
-  LPSTR buf = NULL;
+  char *buf = NULL;
+  FILE *mem = open_memstream(&buf, &size);
+  fprintf(mem, "local orca = require 'orca'\n");
+  fprintf(mem, "orca.init()\n");
+  FOR_LOOP(i, sizeof(requires)/sizeof(*requires)) {
+    fprintf(mem, "require '%s'\n", requires[i]);
+  }
+  fprintf(mem, "doxmlfile('%s')\n", szFileName);
+  fclose(mem);
+  if (luaL_loadbuffer(L, buf, size, "@main") || lua_pcall(L, 0, 1, 0)) {
+    fprintf(stderr, "Uncaught exception: %s\n", lua_tostring(L, -1));
+    lua_pop(L, 1);
+    free(buf);
+    return NULL;
+  }
+  free(buf);
+  return NULL;
+}
+
+lpcString_t RunProject(lua_State *L, lpcString_t szDirName) {
+  size_t size = 0;
+  char *buf = NULL;
   path_t path={0};
   int windowsize[] = { DEFAULT_WINDOW_SIZE };
-  snprintf(path, sizeof(path), "%s/%s", szDirname, ORCA_PACKAGE_NAME);
+  snprintf(path, sizeof(path), "%s/%s", szDirName, ORCA_PACKAGE_NAME);
   xmlWith(xmlDoc, doc, xmlReadFile(path, NULL, 0), xmlFreeDoc) {
     FILE *mem = open_memstream(&buf, &size);
 
     fprintf(mem, "local orca = require 'orca'\n");
     
     // load plugins
-    fprintf(mem, "orca.loadPlugins()\n");
+    fprintf(mem, "orca.init()\n");
 
     FOR_LOOP(i, sizeof(requires)/sizeof(*requires)) {
       fprintf(mem, "require '%s'\n", requires[i]);
@@ -108,7 +129,7 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirname) {
 
     // initialize
     fprintf(mem, "ref.init(%d, %d, %s)\n", windowsize[0], windowsize[1], args.server ? args.server : "false");
-    fprintf(mem, "fs.init('%s')\n", szDirname);
+    fprintf(mem, "fs.init('%s')\n", szDirName);
     
     xmlFindAll(loc, root, XMLSTR("LocaleLibrary"))
     xmlFindAllText(path, content, loc, XMLSTR("LocaleReferenceItem")) {
@@ -216,7 +237,7 @@ int main (int argc, LPSTR *argv)
     next_arg:;
   }
   
-  if (!szProject) {
+  if (!szProject && !args.test) {
     Con_Error("Usage: orca [options] <project_dir>\n");
     Con_Error("Options:");
     Con_Error("\t-test=true/false         Open in Test mode");
@@ -278,8 +299,10 @@ int main (int argc, LPSTR *argv)
     }
     lua_setglobal(L, "PLUGDIR");
     
-    lua_pushstring(L, szProject);
+    if (szProject) {
+      lua_pushstring(L, szProject);
     lua_setglobal(L, "PROJECTDIR");
+    }
     
     if (args.server) {
       lua_pushboolean(L, TRUE);
@@ -292,13 +315,15 @@ int main (int argc, LPSTR *argv)
     lua_pushstring(L, szProject);
     lua_setglobal(L, "DATADIR");
     
-    if (strstr(szProject, ".lua")) {
-      if (luaL_dofile(L, szProject) != LUA_OK) {
-        fprintf(stderr, "%s\n", lua_tostring(L, -1));
-      }
+    if (!args.test) {
+      szProject = RunProject(L, szProject);
+    } else if (strstr(args.test, ".xml")) {
+      RunTest(L, args.test);
+    } else if (luaL_dofile(L, args.test) != LUA_OK) {
+      fprintf(stderr, "%s\n", lua_tostring(L, -1));
       szProject = NULL;
     } else {
-      szProject = RunProject(L, szProject);
+      szProject = NULL;
     }
 
     lua_getglobal(L, "SERVER");

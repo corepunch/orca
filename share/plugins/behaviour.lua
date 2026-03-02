@@ -139,6 +139,7 @@ local _class_0 = setmetatable({
 
     orca.core.Object.new(self, ...)
     self.print = print
+    self.assert = assert
     self:rebuild()
   end,
   __base = _base_0,
