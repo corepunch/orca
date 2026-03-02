@@ -61,7 +61,6 @@ static struct {
   { LIBRARY(TransitionLibrary), "Transitions", "Transition", FALSE },
   { LIBRARY(SplineLibrary), "Splines", "Spline", FALSE },
   { LIBRARY(PrefabLibrary), "Prefabs", "Prefab", TRUE },
-  { LIBRARY(ProjectReferenceLibrary), "Project References", "ProjectReference", FALSE },
 //  { LIBRARY(ComponentTypeLibrary), "Components", "Component", FALSE },
 //  { LIBRARY(DataSourceTypeLibrary), "DataSourceTypes", "DataSourceType", FALSE },
 //  { LIBRARY(RenderPassTypeLibrary), "RenderPassTypes", "RenderPassType", FALSE },

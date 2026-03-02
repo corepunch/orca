@@ -168,7 +168,8 @@
 </span></a><a class="leaf-link" href="#SKLabelNode"><i class="fa-solid fa-layer-group icon"></i><span>SKLabelNode
 </span></a><a class="leaf-link" href="#SKView"><i class="fa-solid fa-layer-group icon"></i><span>SKView
 </span></a><div class="technology-title"><span class="fa-solid fa-folder-open icon"></span>orca.filesystem
-</div><a class="leaf-link" href="#Workspace"><i class="fa-solid fa-layer-group icon"></i><span>Workspace
+</div><a class="leaf-link" href="#ProjectReference"><i class="fa-solid fa-gear icon"></i><span>ProjectReference
+</span></a><a class="leaf-link" href="#Workspace"><i class="fa-solid fa-layer-group icon"></i><span>Workspace
 </span></a><a class="leaf-link" href="#Project"><i class="fa-solid fa-layer-group icon"></i><span>Project
 </span></a><a class="leaf-link" href="#Library"><i class="fa-solid fa-layer-group icon"></i><span>Library
 </span></a><a class="leaf-link" href="#AnimationClipLibrary"><i class="fa-solid fa-layer-group icon"></i><span>AnimationClipLibrary
@@ -186,7 +187,6 @@
 </span></a><a class="leaf-link" href="#TransitionLibrary"><i class="fa-solid fa-layer-group icon"></i><span>TransitionLibrary
 </span></a><a class="leaf-link" href="#SplineLibrary"><i class="fa-solid fa-layer-group icon"></i><span>SplineLibrary
 </span></a><a class="leaf-link" href="#PrefabLibrary"><i class="fa-solid fa-layer-group icon"></i><span>PrefabLibrary
-</span></a><a class="leaf-link" href="#ProjectReferenceLibrary"><i class="fa-solid fa-layer-group icon"></i><span>ProjectReferenceLibrary
 </span></a><a class="leaf-link" href="#ProfileLibrary"><i class="fa-solid fa-layer-group icon"></i><span>ProfileLibrary
 </span></a><a class="leaf-link" href="#EnginePluginLibrary"><i class="fa-solid fa-layer-group icon"></i><span>EnginePluginLibrary
 </span></a><a class="leaf-link" href="#ShortcutLibrary"><i class="fa-solid fa-layer-group icon"></i><span>ShortcutLibrary
@@ -209,7 +209,6 @@
 </span></a><a class="leaf-link" href="#SystemMessage"><i class="fa-solid fa-layer-group icon"></i><span>SystemMessage
 </span></a><a class="leaf-link" href="#ImageLibrary"><i class="fa-solid fa-layer-group icon"></i><span>ImageLibrary
 </span></a><a class="leaf-link" href="#FontLibrary"><i class="fa-solid fa-layer-group icon"></i><span>FontLibrary
-</span></a><a class="leaf-link" href="#ProjectReferenceItem"><i class="fa-solid fa-layer-group icon"></i><span>ProjectReferenceItem
 </span></a><a class="leaf-link" href="#LocaleReferenceItem"><i class="fa-solid fa-layer-group icon"></i><span>LocaleReferenceItem
 </span></a><a class="leaf-link" href="#Tag"><i class="fa-solid fa-layer-group icon"></i><span>Tag
 </span></a><a class="leaf-link" href="#EnginePlugin"><i class="fa-solid fa-layer-group icon"></i><span>EnginePlugin
@@ -2501,7 +2500,7 @@
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Frames</span>: <a class="type-identifier-link" href="#SpriteFrame">SpriteFrame</a></code></div>
 <div class="small-abstract"><span>Variable-length frame data array
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">NumFrames</span>: <span>int</span></code></div>
-<div class="small-abstract"><span>Number of frames
+<div class="small-abstract"><span>Number of Frames
 </span></div></div><div id="SKNode" class="class" data-name="SKNode" data-inherits="Node" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">SKNode
 </h1><div class="abstract">Base 2D sprite node with transform and matrix
@@ -2555,6 +2554,13 @@
 <div class="small-abstract"><span>Reference height for the sprite coordinate system
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Scene</span>: <span>fixed</span></code></div>
 <div class="small-abstract"><span>Name of SKScene to render
+</span></div></div><div id="ProjectReference" class="class" data-name="ProjectReference" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">ProjectReference
+</h1><div class="abstract">External project reference
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ProjectReference</span></code><h2 class="title">Overview</h2><div class="abstract">Consists of a name and a relative path to the project</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Name</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Name of the project, will be used as Project/Library/Resource when referencing it's resources
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Path</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Path to the project relative to the workspace
 </span></div></div><div id="Workspace" class="class" data-name="Workspace" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">Workspace
 </h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.Workspace</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code></div><div id="Project" class="class" data-name="Project" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
@@ -2595,7 +2601,10 @@
 <div class="topic"><code class="decorator"><span>var </span><span class="identifier">Height</span>: <span>int</span></code></div>
 <div class="topic"><code class="decorator"><span>struct </span><span class="identifier">PropertyTypes</span>: <a class="type-identifier-link" href="#PropertyType">PropertyType</a></code></div>
 <div class="topic"><code class="decorator"><span>var </span><span class="identifier">NumPropertyTypes</span>: <span>int</span></code></div>
-<div class="small-abstract"><span>Number of propertytypes
+<div class="small-abstract"><span>Number of PropertyTypes
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">ProjectReferences</span>: <a class="type-identifier-link" href="#ProjectReference">ProjectReference</a></code></div>
+<div class="topic"><code class="decorator"><span>var </span><span class="identifier">NumProjectReferences</span>: <span>int</span></code></div>
+<div class="small-abstract"><span>Number of ProjectReferences
 </span></div></div><div id="Library" class="class" data-name="Library" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">Library
 </h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.Library</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">IsExternal</span>: <span>bool</span></code></div>
@@ -2629,9 +2638,7 @@
 </div><h1 class="header">SplineLibrary
 </h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.SplineLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="PrefabLibrary" class="class" data-name="PrefabLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">PrefabLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.PrefabLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ProjectReferenceLibrary" class="class" data-name="ProjectReferenceLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
-</div><h1 class="header">ProjectReferenceLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ProjectReferenceLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ProfileLibrary" class="class" data-name="ProfileLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.PrefabLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ProfileLibrary" class="class" data-name="ProfileLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">ProfileLibrary
 </h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ProfileLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="EnginePluginLibrary" class="class" data-name="EnginePluginLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">EnginePluginLibrary
@@ -2677,9 +2684,7 @@
 </div><h1 class="header">ImageLibrary
 </h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ImageLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="FontLibrary" class="class" data-name="FontLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">FontLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.FontLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ProjectReferenceItem" class="class" data-name="ProjectReferenceItem" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
-</div><h1 class="header">ProjectReferenceItem
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ProjectReferenceItem</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code></div><div id="LocaleReferenceItem" class="class" data-name="LocaleReferenceItem" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.FontLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="LocaleReferenceItem" class="class" data-name="LocaleReferenceItem" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">LocaleReferenceItem
 </h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.LocaleReferenceItem</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code></div><div id="Tag" class="class" data-name="Tag" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">Tag

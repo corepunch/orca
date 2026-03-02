@@ -51,6 +51,7 @@ _T = {
 		"\t${lpname} self = lua_newuserdata(L, sizeof(struct ${name}));\n"
 		"\tluaL_setmetatable(L, \"${export}\");\n"
 		"\tmemset(self, 0, sizeof(struct ${name}));\n"
+		"\tif (lua_gettop(L) == 1) return 1;\n"
 		"${init_block}"
 		"\treturn 1;\n"
 		"}\n"

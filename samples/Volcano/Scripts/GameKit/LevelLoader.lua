@@ -14,7 +14,8 @@ local map = {
 }
 
 local function sprite(path)
-  return "Volcano/Sprite Animations/"..path
+  return fs.getWorkspace():findByPath("Volcano/Sprite Animations/"..path)
+  -- return "Volcano/Sprite Animations/"..path
 end
 
 local factory = {
@@ -96,7 +97,7 @@ local factory = {
   end,
   background = function(level, name)
     -- return sk.SKSpriteNode { Image = rn.Image { Source = "Images/"..name..".jpg" } }
-    return sk.SKSpriteNode { Image = "Volcano/Images/"..name..".jpg" }
+    return sk.SKSpriteNode { Image = rn.Image { Source = "Volcano/Images/"..name..".jpg" } }
   end,
   resource = function(level, x, y, anim)
   end,

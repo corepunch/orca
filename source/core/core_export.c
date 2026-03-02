@@ -674,6 +674,7 @@ static int f_new_PropertyEnumValue(lua_State *L) {
 	lpPropertyEnumValue_t self = lua_newuserdata(L, sizeof(struct PropertyEnumValue));
 	luaL_setmetatable(L, "PropertyEnumValue");
 	memset(self, 0, sizeof(struct PropertyEnumValue));
+	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "Name");
 		strncpy(self->Name, luaL_optstring(L, -1, ""), sizeof(self->Name));
@@ -755,6 +756,7 @@ static int f_new_PropertyType(lua_State *L) {
 	lpPropertyType_t self = lua_newuserdata(L, sizeof(struct PropertyType));
 	luaL_setmetatable(L, "PropertyType");
 	memset(self, 0, sizeof(struct PropertyType));
+	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "Name");
 		strncpy(self->Name, luaL_optstring(L, -1, ""), sizeof(self->Name));

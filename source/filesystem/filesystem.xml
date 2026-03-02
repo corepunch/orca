@@ -2,9 +2,18 @@
 <!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
 <module name="filesystem" namespace="orca" on-luaopen="on_filesystem_module_registered" prefix="FS_">
   <event name="ReadCommands" type="void"/>
+  
   <resource type="Package"/>
-  <class name="Workspace">
-  </class>
+  
+  <struct name="ProjectReference" sealed="true">
+    <summary>External project reference</summary>
+    <details>Consists of a name and a relative path to the project</details>
+    <field name="Name" type="fixed">Name of the project, will be used as Project/Library/Resource when referencing it's resources</field>
+    <field name="Path" type="fixed">Path to the project relative to the workspace</field>
+  </struct>
+
+  <class name="Workspace" />
+  
   <class name="Project">
     <handles event="Start"/>
     <property name="HalfFloatTextureFormat" type="bool"/>
@@ -57,6 +66,7 @@
     <property name="Height" type="int"/>
     
     <property name="PropertyTypes" type="PropertyType" array="true" />
+    <property name="ProjectReferences" type="ProjectReference" array="true" />
 
     <field name="isPackage" type="bool"/>
     <field name="package" type="Package" pointer="true"/>
@@ -81,9 +91,6 @@
   <class name="TransitionLibrary" parent="Library" default="Transitions"/>
   <class name="SplineLibrary" parent="Library" default="Splines"/>
   <class name="PrefabLibrary" parent="Library" default="Prefabs" content="Node"/>
-  <class name="ProjectReferenceLibrary" parent="Library" default="Project References">
-    <handles event="Attached"/>
-  </class>
   <class name="ProfileLibrary" parent="Library" default="Profiles"/>
   <class name="EnginePluginLibrary" parent="Library" default="Engine Plugins">
     <handles event="Attached"/>
@@ -124,7 +131,6 @@
   <class name="ImageLibrary" parent="Library" default="Images"/>
   <class name="FontLibrary" parent="Library" default="Fonts"/>
   
-  <class name="ProjectReferenceItem"/>
   <class name="LocaleReferenceItem"/>
   <class name="Tag">
     <property name="TagIsInherited" type="bool"/>

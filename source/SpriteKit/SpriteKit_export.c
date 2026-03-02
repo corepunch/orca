@@ -32,6 +32,7 @@ static int f_new_SpriteFrame(lua_State *L) {
 	lpSpriteFrame_t self = lua_newuserdata(L, sizeof(struct SpriteFrame));
 	luaL_setmetatable(L, "SpriteFrame");
 	memset(self, 0, sizeof(struct SpriteFrame));
+	if (lua_gettop(L) == 1) return 1;
 	return 1;
 }
 static int f_SpriteFrame___call(lua_State *L) {

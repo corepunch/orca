@@ -33,7 +33,6 @@ enum Libraries {
   kTransitionLibrary,
   kSplineLibrary,
   kPrefabLibrary,
-  kProjectReferenceLibrary,
 //  kComponentTypeLibrary,
 //  kDataSourceTypeLibrary,
 //  kRenderPassTypeLibrary,

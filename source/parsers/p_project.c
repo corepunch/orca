@@ -37,7 +37,6 @@ static void add_library(lpcClassDesc_t cd, void* param) {
     if (OBJ_GetComponent(lib, cd->ClassID))
       return;
   }
-  puts(cd->ClassName);
   lua_getfield(L, LUA_REGISTRYINDEX, cd->ClassName);
   lua_call(L, 0, 1);
   OBJ_AddChild(((void**)param)[1], luaX_checkObject(L, -1), FALSE);
@@ -58,44 +57,44 @@ int f_loadProject(lua_State* L) {
  
   lua_getglobal(L, "require");
   lua_pushfstring(L, "%spackage", PACK_GetName(search));
-  if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
-//    Con_Error("%s\n", lua_tostring(L, -1));
-//    xmlWith(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFreeDoc) {
-//      xmlNodePtr root = xmlNewNode(NULL, XMLSTR("Project"));
-//      xmlSetProp(root, XMLSTR("Name"), XMLSTR(FS_GetBaseName(szDirname)));
-//      xmlDocSetRootElement(doc, root);
-//      doc->URL = xmlStrdup(XMLSTR(szDirname));
-//      project = OBJ_LoadDocument(L, doc);
-//    }
-    lua_pop(L, 1);
-    lua_pushboolean(L, TRUE);
-    return 1;
-  }
-  if (lua_pcall(L, 0, 1, 0) != LUA_OK) {
-    Con_Error("%s\n", lua_tostring(L, -1));
-    lua_pushboolean(L, TRUE);
-    return 1;
+  if (lua_pcall(L, 1, 1, 0) || lua_pcall(L, 0, 1, 0)) {
+    API_CallRequire(L, "orca.filesystem", 1);
+    lua_getfield(L, -1, "Project");
+    if (lua_pcall(L, 0, 1, 0)) {
+      Con_Error("%s\n", lua_tostring(L, -1));
+      lua_pop(L, 1);
+      return 0;
+    } else {
+      OBJ_SetName(CMP_GetObject(luaX_checkProject(L, -1)), FS_GetBaseName(szDirname));
+    }
   }
   lpProject_t project = luaX_checkProject(L, -1);
   
   OBJ_EnumClasses(OBJ_FindClass("Library"), add_library,
                   ((void*[]){ L, CMP_GetObject(project) }));
   
-  if (project) {
-    FOR_LOOP(i, project->NumPropertyTypes) {
-      lpPropertyType_t type = &project->PropertyTypes[i];
-      fixedString_t tmp={0};
-      if (*type->Category) {
-        snprintf(tmp, sizeof(tmp), "%s.%s", type->Category, type->Name);
-      } else {
-        strncpy(tmp, type->Name, sizeof(tmp));
-      }
-      type->ShortIdentifier = fnv1a32(type->Name);
-      type->FullIdentifier = fnv1a32(tmp);
-      type->DataSize = 4; // TODO: properly identify size of a property
-      OBJ_RegisterPropertyType(type);
+  FOR_LOOP(i, project->NumPropertyTypes) {
+    lpPropertyType_t type = &project->PropertyTypes[i];
+    fixedString_t tmp={0};
+    if (*type->Category) {
+      snprintf(tmp, sizeof(tmp), "%s.%s", type->Category, type->Name);
+    } else {
+      strncpy(tmp, type->Name, sizeof(tmp));
     }
+    type->ShortIdentifier = fnv1a32(type->Name);
+    type->FullIdentifier = fnv1a32(tmp);
+    type->DataSize = 4; // TODO: properly identify size of a property
+    OBJ_RegisterPropertyType(type);
   }
-  lua_pushboolean(L, project?TRUE:FALSE);
+
+  FOR_LOOP(i, project->NumProjectReferences) {
+    lua_pushcfunction(L, f_loadProject);
+    lua_pushstring(L, FS_JoinPaths(szDirname, project->ProjectReferences[i].Path));
+    lua_pcall(L, 1, 0, 0);
+  }
+  
+  OBJ_AddChild(FS_GetWorkspace(), CMP_GetObject(project), FALSE);
+
+  lua_pushboolean(L, TRUE);
   return 1;
 }

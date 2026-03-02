@@ -492,6 +492,7 @@ static int f_new_BorderRadiusShorthand(lua_State *L) {
 	lpBorderRadiusShorthand_t self = lua_newuserdata(L, sizeof(struct BorderRadiusShorthand));
 	luaL_setmetatable(L, "BorderRadiusShorthand");
 	memset(self, 0, sizeof(struct BorderRadiusShorthand));
+	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "TopLeftRadius");
 		self->TopLeftRadius = lua_tonumber(L, -1);
@@ -594,6 +595,7 @@ static int f_new_BorderEdgeShorthand(lua_State *L) {
 	lpBorderEdgeShorthand_t self = lua_newuserdata(L, sizeof(struct BorderEdgeShorthand));
 	luaL_setmetatable(L, "BorderEdgeShorthand");
 	memset(self, 0, sizeof(struct BorderEdgeShorthand));
+	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "Width");
 		self->Width = lua_tonumber(L, -1);
@@ -683,6 +685,7 @@ static int f_new_BorderSideShorthand(lua_State *L) {
 	lpBorderSideShorthand_t self = lua_newuserdata(L, sizeof(struct BorderSideShorthand));
 	luaL_setmetatable(L, "BorderSideShorthand");
 	memset(self, 0, sizeof(struct BorderSideShorthand));
+	if (lua_gettop(L) == 1) return 1;
 	return 1;
 }
 static int f_BorderSideShorthand___call(lua_State *L) {
@@ -752,6 +755,7 @@ static int f_new_BorderShorthand(lua_State *L) {
 	lpBorderShorthand_t self = lua_newuserdata(L, sizeof(struct BorderShorthand));
 	luaL_setmetatable(L, "BorderShorthand");
 	memset(self, 0, sizeof(struct BorderShorthand));
+	if (lua_gettop(L) == 1) return 1;
 	return 1;
 }
 static int f_BorderShorthand___call(lua_State *L) {
@@ -814,6 +818,7 @@ static int f_new_EdgeShorthand(lua_State *L) {
 	lpEdgeShorthand_t self = lua_newuserdata(L, sizeof(struct EdgeShorthand));
 	luaL_setmetatable(L, "EdgeShorthand");
 	memset(self, 0, sizeof(struct EdgeShorthand));
+	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "Left");
 		self->Left = lua_tonumber(L, -1);
@@ -894,6 +899,7 @@ static int f_new_AlignmentShorthand(lua_State *L) {
 	lpAlignmentShorthand_t self = lua_newuserdata(L, sizeof(struct AlignmentShorthand));
 	luaL_setmetatable(L, "AlignmentShorthand");
 	memset(self, 0, sizeof(struct AlignmentShorthand));
+	if (lua_gettop(L) == 1) return 1;
 	return 1;
 }
 static int f_AlignmentShorthand___call(lua_State *L) {
@@ -948,6 +954,7 @@ static int f_new_FontShorthand(lua_State *L) {
 	lpFontShorthand_t self = lua_newuserdata(L, sizeof(struct FontShorthand));
 	luaL_setmetatable(L, "FontShorthand");
 	memset(self, 0, sizeof(struct FontShorthand));
+	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "Weight");
 		self->Weight = lua_isnil(L, -1) ? 0 : luaX_checkFontWeight(L, -1);
@@ -1047,6 +1054,7 @@ static int f_new_BrushShorthand(lua_State *L) {
 	lpBrushShorthand_t self = lua_newuserdata(L, sizeof(struct BrushShorthand));
 	luaL_setmetatable(L, "BrushShorthand");
 	memset(self, 0, sizeof(struct BrushShorthand));
+	if (lua_gettop(L) == 1) return 1;
 	return 1;
 }
 static int f_BrushShorthand___call(lua_State *L) {
@@ -1121,6 +1129,7 @@ static int f_new_ShadowShorthand(lua_State *L) {
 	lpShadowShorthand_t self = lua_newuserdata(L, sizeof(struct ShadowShorthand));
 	luaL_setmetatable(L, "ShadowShorthand");
 	memset(self, 0, sizeof(struct ShadowShorthand));
+	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "BlurRadius");
 		self->BlurRadius = lua_tonumber(L, -1);
@@ -1217,6 +1226,7 @@ static int f_new_RingShorthand(lua_State *L) {
 	lpRingShorthand_t self = lua_newuserdata(L, sizeof(struct RingShorthand));
 	luaL_setmetatable(L, "RingShorthand");
 	memset(self, 0, sizeof(struct RingShorthand));
+	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "Offset");
 		self->Offset = lua_tonumber(L, -1);
@@ -1305,6 +1315,7 @@ static int f_new_OverflowShorthand(lua_State *L) {
 	lpOverflowShorthand_t self = lua_newuserdata(L, sizeof(struct OverflowShorthand));
 	luaL_setmetatable(L, "OverflowShorthand");
 	memset(self, 0, sizeof(struct OverflowShorthand));
+	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "x");
 		self->x = lua_isnil(L, -1) ? 0 : luaX_checkOverflow(L, -1);
@@ -1385,6 +1396,7 @@ static int f_new_UnderlineShorthand(lua_State *L) {
 	lpUnderlineShorthand_t self = lua_newuserdata(L, sizeof(struct UnderlineShorthand));
 	luaL_setmetatable(L, "UnderlineShorthand");
 	memset(self, 0, sizeof(struct UnderlineShorthand));
+	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "Offset");
 		self->Offset = lua_tonumber(L, -1);
@@ -1473,6 +1485,7 @@ static int f_new_Thickness(lua_State *L) {
 	lpThickness_t self = lua_newuserdata(L, sizeof(struct Thickness));
 	luaL_setmetatable(L, "Thickness");
 	memset(self, 0, sizeof(struct Thickness));
+	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "Top");
 		self->Top = lua_tonumber(L, -1);
@@ -1575,6 +1588,7 @@ static int f_new_MarginShorthand(lua_State *L) {
 	lpMarginShorthand_t self = lua_newuserdata(L, sizeof(struct MarginShorthand));
 	luaL_setmetatable(L, "MarginShorthand");
 	memset(self, 0, sizeof(struct MarginShorthand));
+	if (lua_gettop(L) == 1) return 1;
 	return 1;
 }
 static int f_MarginShorthand___call(lua_State *L) {
@@ -1629,6 +1643,7 @@ static int f_new_SizeAxisShorthand(lua_State *L) {
 	lpSizeAxisShorthand_t self = lua_newuserdata(L, sizeof(struct SizeAxisShorthand));
 	luaL_setmetatable(L, "SizeAxisShorthand");
 	memset(self, 0, sizeof(struct SizeAxisShorthand));
+	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "Requested");
 		self->Requested = lua_tonumber(L, -1);
@@ -1742,6 +1757,7 @@ static int f_new_SizeShorthand(lua_State *L) {
 	lpSizeShorthand_t self = lua_newuserdata(L, sizeof(struct SizeShorthand));
 	luaL_setmetatable(L, "SizeShorthand");
 	memset(self, 0, sizeof(struct SizeShorthand));
+	if (lua_gettop(L) == 1) return 1;
 	return 1;
 }
 static int f_SizeShorthand___call(lua_State *L) {
@@ -3329,6 +3345,7 @@ static int f_new_NavigateToPageArguments(lua_State *L) {
 	lpNavigateToPageArguments_t self = lua_newuserdata(L, sizeof(struct NavigateToPageArguments));
 	luaL_setmetatable(L, "NavigateToPageArguments");
 	memset(self, 0, sizeof(struct NavigateToPageArguments));
+	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "URL");
 		strncpy(self->URL, luaL_optstring(L, -1, ""), sizeof(self->URL));
@@ -3410,6 +3427,7 @@ static int f_new_NavigateBackArguments(lua_State *L) {
 	lpNavigateBackArguments_t self = lua_newuserdata(L, sizeof(struct NavigateBackArguments));
 	luaL_setmetatable(L, "NavigateBackArguments");
 	memset(self, 0, sizeof(struct NavigateBackArguments));
+	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_getfield(L, 1, "TransitionType");
 		self->TransitionType = lua_isnil(L, -1) ? 0 : luaX_checkTransitionType(L, -1);

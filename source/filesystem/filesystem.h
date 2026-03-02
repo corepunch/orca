@@ -6,6 +6,15 @@
 
 #include <source/filesystem/filesystem_properties.h>
 
+typedef struct ProjectReference ProjectReference_t, *lpProjectReference_t;
+typedef struct ProjectReference const cProjectReference_t, *lpcProjectReference_t;
+/// @brief Push ProjectReference onto Lua stack.
+ORCA_API void
+luaX_pushProjectReference(lua_State *L, lpcProjectReference_t ProjectReference);
+/// @brief Check ProjectReference form Lua stack at index.
+ORCA_API lpProjectReference_t
+luaX_checkProjectReference(lua_State *L, int idx);
+
 typedef struct Workspace Workspace_t, *lpWorkspace_t;
 typedef struct Workspace const cWorkspace_t, *lpcWorkspace_t;
 /// @brief Push Workspace onto Lua stack.
@@ -167,15 +176,6 @@ luaX_pushPrefabLibrary(lua_State *L, lpcPrefabLibrary_t PrefabLibrary);
 /// @brief Check PrefabLibrary form Lua stack at index.
 ORCA_API lpPrefabLibrary_t
 luaX_checkPrefabLibrary(lua_State *L, int idx);
-
-typedef struct ProjectReferenceLibrary ProjectReferenceLibrary_t, *lpProjectReferenceLibrary_t;
-typedef struct ProjectReferenceLibrary const cProjectReferenceLibrary_t, *lpcProjectReferenceLibrary_t;
-/// @brief Push ProjectReferenceLibrary onto Lua stack.
-ORCA_API void
-luaX_pushProjectReferenceLibrary(lua_State *L, lpcProjectReferenceLibrary_t ProjectReferenceLibrary);
-/// @brief Check ProjectReferenceLibrary form Lua stack at index.
-ORCA_API lpProjectReferenceLibrary_t
-luaX_checkProjectReferenceLibrary(lua_State *L, int idx);
 
 typedef struct ProfileLibrary ProfileLibrary_t, *lpProfileLibrary_t;
 typedef struct ProfileLibrary const cProfileLibrary_t, *lpcProfileLibrary_t;
@@ -375,15 +375,6 @@ luaX_pushFontLibrary(lua_State *L, lpcFontLibrary_t FontLibrary);
 ORCA_API lpFontLibrary_t
 luaX_checkFontLibrary(lua_State *L, int idx);
 
-typedef struct ProjectReferenceItem ProjectReferenceItem_t, *lpProjectReferenceItem_t;
-typedef struct ProjectReferenceItem const cProjectReferenceItem_t, *lpcProjectReferenceItem_t;
-/// @brief Push ProjectReferenceItem onto Lua stack.
-ORCA_API void
-luaX_pushProjectReferenceItem(lua_State *L, lpcProjectReferenceItem_t ProjectReferenceItem);
-/// @brief Check ProjectReferenceItem form Lua stack at index.
-ORCA_API lpProjectReferenceItem_t
-luaX_checkProjectReferenceItem(lua_State *L, int idx);
-
 typedef struct LocaleReferenceItem LocaleReferenceItem_t, *lpLocaleReferenceItem_t;
 typedef struct LocaleReferenceItem const cLocaleReferenceItem_t, *lpcLocaleReferenceItem_t;
 /// @brief Push LocaleReferenceItem onto Lua stack.
@@ -468,6 +459,12 @@ luaX_pushPackage(lua_State *L, lpcPackage_t Package);
 ORCA_API lpPackage_t
 luaX_checkPackage(lua_State *L, int idx);
 
+/// @brief External project reference
+struct ProjectReference {
+	fixedString_t Name; /// Name of the project, will be used as Project/Library/Resource when referencing it's resources
+	fixedString_t Path; /// Path to the project relative to the workspace
+};
+
 typedef struct Workspace Workspace, *WorkspacePtr;
 typedef struct Workspace const *WorkspaceCPtr;
 struct Workspace {
@@ -509,7 +506,9 @@ struct Project {
 	int32_t Width;
 	int32_t Height;
 	lpPropertyType_t PropertyTypes;
-	int32_t NumPropertyTypes; /// Number of propertytypes
+	int32_t NumPropertyTypes; /// Number of PropertyTypes
+	lpProjectReference_t ProjectReferences;
+	int32_t NumProjectReferences; /// Number of ProjectReferences
 	bool_t isPackage;
 	lpPackage_t package;
 };
@@ -593,11 +592,6 @@ struct SplineLibrary {
 typedef struct PrefabLibrary PrefabLibrary, *PrefabLibraryPtr;
 typedef struct PrefabLibrary const *PrefabLibraryCPtr;
 struct PrefabLibrary {
-};
-
-typedef struct ProjectReferenceLibrary ProjectReferenceLibrary, *ProjectReferenceLibraryPtr;
-typedef struct ProjectReferenceLibrary const *ProjectReferenceLibraryCPtr;
-struct ProjectReferenceLibrary {
 };
 
 typedef struct ProfileLibrary ProfileLibrary, *ProfileLibraryPtr;
@@ -710,11 +704,6 @@ struct ImageLibrary {
 typedef struct FontLibrary FontLibrary, *FontLibraryPtr;
 typedef struct FontLibrary const *FontLibraryCPtr;
 struct FontLibrary {
-};
-
-typedef struct ProjectReferenceItem ProjectReferenceItem, *ProjectReferenceItemPtr;
-typedef struct ProjectReferenceItem const *ProjectReferenceItemCPtr;
-struct ProjectReferenceItem {
 };
 
 typedef struct LocaleReferenceItem LocaleReferenceItem, *LocaleReferenceItemPtr;

@@ -25,6 +25,87 @@ void luaX_pushPackage(lua_State *L, lpcPackage_t Package) {
 lpPackage_t luaX_checkPackage(lua_State *L, int idx) {
 	return lua_touserdata(L, idx);
 }
+void luaX_pushProjectReference(lua_State *L, lpcProjectReference_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
+	lpProjectReference_t self = lua_newuserdata(L, sizeof(struct ProjectReference));
+	luaL_setmetatable(L, "ProjectReference");
+	memcpy(self, data, sizeof(struct ProjectReference));
+}
+lpProjectReference_t luaX_checkProjectReference(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "ProjectReference");
+}
+static int f_new_ProjectReference(lua_State *L) {
+	lpProjectReference_t self = lua_newuserdata(L, sizeof(struct ProjectReference));
+	luaL_setmetatable(L, "ProjectReference");
+	memset(self, 0, sizeof(struct ProjectReference));
+	if (lua_gettop(L) == 1) return 1;
+	if (lua_istable(L, 1)) {
+		lua_getfield(L, 1, "Name");
+		strncpy(self->Name, luaL_optstring(L, -1, ""), sizeof(self->Name));
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "Path");
+		strncpy(self->Path, luaL_optstring(L, -1, ""), sizeof(self->Path));
+		lua_pop(L, 1);
+	} else {
+		strncpy(self->Name, luaL_checkstring(L, 1), sizeof(self->Name));
+		strncpy(self->Path, luaL_checkstring(L, 2), sizeof(self->Path));
+	}
+	return 1;
+}
+static int f_ProjectReference___call(lua_State *L) {
+	lua_remove(L, 1); // remove ProjectReference from stack
+	return f_new_ProjectReference(L);
+}
+int f_ProjectReference___index(lua_State *L) {
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x0fe07306: // Name
+		lua_pushstring(L, luaX_checkProjectReference(L, 1)->Name);
+		return 1;
+	case 0xeb66e456: // Path
+		lua_pushstring(L, luaX_checkProjectReference(L, 1)->Path);
+		return 1;
+	}
+	return luaL_error(L, "Unknown field in ProjectReference: %s", luaL_checkstring(L, 2));
+}
+int f_ProjectReference___newindex(lua_State *L) {
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x0fe07306: // Name
+		strncpy(luaX_checkProjectReference(L, 1)->Name, luaL_checkstring(L, 3), sizeof(luaX_checkProjectReference(L, 1)->Name));
+		return 0;
+	case 0xeb66e456: // Path
+		strncpy(luaX_checkProjectReference(L, 1)->Path, luaL_checkstring(L, 3), sizeof(luaX_checkProjectReference(L, 1)->Path));
+		return 0;
+	}
+	return luaL_error(L, "Unknown field in ProjectReference: %s", luaL_checkstring(L, 2));
+}
+ORCA_API lpcString_t __strtoProjectReference(lpcString_t str, lpProjectReference_t output) {
+	lpcString_t __strtofixed(lpcString_t, fixedString_t*);
+	str = __strtofixed(str, &output->Name);
+	str = __strtofixed(str, &output->Path);
+	return str;
+}
+static int f_fromstring_ProjectReference(lua_State *L) {
+	lpProjectReference_t self = lua_newuserdata(L, sizeof(struct ProjectReference));
+	luaL_setmetatable(L, "ProjectReference");
+	memset(self, 0, sizeof(struct ProjectReference));
+	__strtoProjectReference(luaL_checkstring(L, 1), self);
+	return 1;
+}
+int luaopen_orca_ProjectReference(lua_State *L) {
+	luaL_newmetatable(L, "ProjectReference");
+	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ "new", f_new_ProjectReference },
+		{ "fromstring", f_fromstring_ProjectReference },
+		{ "__newindex", f_ProjectReference___newindex },
+		{ "__index", f_ProjectReference___index },
+		{ NULL, NULL },
+	}), 0);
+	lua_newtable(L);
+	lua_pushcfunction(L, f_ProjectReference___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+	return 1;
+}
 static struct PropertyType const WorkspaceProperties[kWorkspaceNumProperties] = {
 };
 static struct Workspace WorkspaceDefaults = {};
@@ -122,6 +203,10 @@ static struct PropertyType const ProjectProperties[kProjectNumProperties] = {
 	Project, "PropertyTypes", PropertyTypes, kDataTypeStruct, .TypeString="PropertyType"),
 	/* Project.NumPropertyTypes */ DECL(0x5d64948b, 0x13e23766,
 	Project, "NumPropertyTypes", NumPropertyTypes, kDataTypeInt),
+	/* Project.ProjectReferences */ ARRAY_DECL(0x0a978b48, 0xcfc1761b,
+	Project, "ProjectReferences", ProjectReferences, kDataTypeStruct, .TypeString="ProjectReference"),
+	/* Project.NumProjectReferences */ DECL(0xc405deba, 0x6c9cdb5b,
+	Project, "NumProjectReferences", NumProjectReferences, kDataTypeInt),
 };
 static struct Project ProjectDefaults = {
 	.IsMasterProject = FALSE,
@@ -615,37 +700,6 @@ ORCA_API struct ClassDesc _PrefabLibrary = {
 	.ObjProc = PrefabLibraryProc,
 	.Defaults = &PrefabLibraryDefaults,
 	.NumProperties = kPrefabLibraryNumProperties,
-};
-LRESULT ProjectReferenceLibrary_Attached(lpObject_t, lpProjectReferenceLibrary_t, wParam_t, AttachedEventPtr);
-static struct PropertyType const ProjectReferenceLibraryProperties[kProjectReferenceLibraryNumProperties] = {
-};
-static struct ProjectReferenceLibrary ProjectReferenceLibraryDefaults = {};
-LRESULT ProjectReferenceLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case 0x9352f5d5: // Attached
-			return ProjectReferenceLibrary_Attached(object, cmp, wparm, lparm);
-}
-	return FALSE;
-}
-void luaX_pushProjectReferenceLibrary(lua_State *L, lpcProjectReferenceLibrary_t ProjectReferenceLibrary) {
-	luaX_pushObject(L, CMP_GetObject(ProjectReferenceLibrary));
-}
-lpProjectReferenceLibrary_t luaX_checkProjectReferenceLibrary(lua_State *L, int idx) {
-	return GetProjectReferenceLibrary(luaX_checkObject(L, idx));
-}
-extern struct ClassDesc _Library;
-ORCA_API struct ClassDesc _ProjectReferenceLibrary = {
-	.ClassName = "ProjectReferenceLibrary",
-	.DefaultName = "Project References",
-	.ContentType = "ProjectReference",
-	.Xmlns = "None",
-	.ParentClasses = {&_Library, NULL},
-	.ClassID = ID_ProjectReferenceLibrary,
-	.ClassSize = sizeof(struct ProjectReferenceLibrary),
-	.Properties = ProjectReferenceLibraryProperties,
-	.ObjProc = ProjectReferenceLibraryProc,
-	.Defaults = &ProjectReferenceLibraryDefaults,
-	.NumProperties = kProjectReferenceLibraryNumProperties,
 };
 static struct PropertyType const ProfileLibraryProperties[kProfileLibraryNumProperties] = {
 };
@@ -1269,33 +1323,6 @@ ORCA_API struct ClassDesc _FontLibrary = {
 	.Defaults = &FontLibraryDefaults,
 	.NumProperties = kFontLibraryNumProperties,
 };
-static struct PropertyType const ProjectReferenceItemProperties[kProjectReferenceItemNumProperties] = {
-};
-static struct ProjectReferenceItem ProjectReferenceItemDefaults = {};
-LRESULT ProjectReferenceItemProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-}
-	return FALSE;
-}
-void luaX_pushProjectReferenceItem(lua_State *L, lpcProjectReferenceItem_t ProjectReferenceItem) {
-	luaX_pushObject(L, CMP_GetObject(ProjectReferenceItem));
-}
-lpProjectReferenceItem_t luaX_checkProjectReferenceItem(lua_State *L, int idx) {
-	return GetProjectReferenceItem(luaX_checkObject(L, idx));
-}
-ORCA_API struct ClassDesc _ProjectReferenceItem = {
-	.ClassName = "ProjectReferenceItem",
-	.DefaultName = "ProjectReferenceItem",
-	.ContentType = "ProjectReferenceItem",
-	.Xmlns = "None",
-	.ParentClasses = {NULL},
-	.ClassID = ID_ProjectReferenceItem,
-	.ClassSize = sizeof(struct ProjectReferenceItem),
-	.Properties = ProjectReferenceItemProperties,
-	.ObjProc = ProjectReferenceItemProc,
-	.Defaults = &ProjectReferenceItemDefaults,
-	.NumProperties = kProjectReferenceItemNumProperties,
-};
 static struct PropertyType const LocaleReferenceItemProperties[kLocaleReferenceItemNumProperties] = {
 };
 static struct LocaleReferenceItem LocaleReferenceItemDefaults = {};
@@ -1605,6 +1632,9 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	}));
 	void on_filesystem_module_registered(lua_State *L);
 	on_filesystem_module_registered(L);
+	// ProjectReference
+	luaopen_orca_ProjectReference(L);
+	lua_setfield(L, -2, "ProjectReference");
 	// Workspace
 	lua_pushclass(L, &_Workspace);
 	lua_setfield(L, -2, "Workspace");
@@ -1659,9 +1689,6 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	// PrefabLibrary
 	lua_pushclass(L, &_PrefabLibrary);
 	lua_setfield(L, -2, "PrefabLibrary");
-	// ProjectReferenceLibrary
-	lua_pushclass(L, &_ProjectReferenceLibrary);
-	lua_setfield(L, -2, "ProjectReferenceLibrary");
 	// ProfileLibrary
 	lua_pushclass(L, &_ProfileLibrary);
 	lua_setfield(L, -2, "ProfileLibrary");
@@ -1728,9 +1755,6 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	// FontLibrary
 	lua_pushclass(L, &_FontLibrary);
 	lua_setfield(L, -2, "FontLibrary");
-	// ProjectReferenceItem
-	lua_pushclass(L, &_ProjectReferenceItem);
-	lua_setfield(L, -2, "ProjectReferenceItem");
 	// LocaleReferenceItem
 	lua_pushclass(L, &_LocaleReferenceItem);
 	lua_setfield(L, -2, "LocaleReferenceItem");

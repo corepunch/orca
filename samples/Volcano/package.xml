@@ -6,10 +6,10 @@
     <SystemMessage Message="WindowClosed">return</SystemMessage>
     <SystemMessage Message="RequestReload">window:refresh()</SystemMessage>
   </MessageLibrary>
-  <ProjectReferenceLibrary>
-    <ProjectReferenceItem Name="GameKit">Scripts/GameKit</ProjectReferenceItem>
-    <ProjectReferenceItem Name="Scripts">Scripts</ProjectReferenceItem>
-  </ProjectReferenceLibrary>
+  <Project.ProjectReferences>
+    <ProjectReference Name="GameKit" Path="Scripts/GameKit"/>
+    <ProjectReference Name="Scripts" Path="Scripts"/>
+  </Project.ProjectReferences>
   <LibraryPlaceholder PlaceholderTemplate="Volcano/Sprites"/>
   <LibraryPlaceholder PlaceholderTemplate="Volcano/Sprite Animations"/>
 </Project>

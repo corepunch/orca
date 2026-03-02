@@ -409,6 +409,7 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
           return 0;
       }
     }
+    PROP_SetValue(p, &mem);
     return 0;
   }
 

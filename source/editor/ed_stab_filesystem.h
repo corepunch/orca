@@ -370,10 +370,11 @@ FS_NewFile(HANDLE hHandle, lpcString_t szName, DWORD dwType)
         if (strrchr(tmp, '/')) {
           *strrchr(tmp, '/') = 0;
         }
-        xmlChar const name[] = "ProjectItemReference";
-        xmlNodePtr lib = MainBundle->libraries[kProjectReferenceLibrary];
-        xmlNodePtr itm = xmlNewChild(lib, NULL, name, XMLSTR(tmp));//szName));
-        xmlSetProp(itm, XMLSTR("Name"), Name);
+//        xmlChar const name[] = "ProjectItemReference";
+//        xmlNodePtr lib = MainBundle->libraries[kProjectReferenceLibrary];
+//        xmlNodePtr itm = xmlNewChild(lib, NULL, name, XMLSTR(tmp));//szName));
+//        xmlSetProp(itm, XMLSTR("Name"), Name);
+        assert(!"Restore this functionality");
       }
     }
     return TRUE;
@@ -435,20 +436,22 @@ void FS_ShutdownHash(void) {
 ORCA_API BOOL
 FS_GetProjectReference(lpcString_t szName, LPSTR pOut, DWORD nMaxLen)
 {
-  if (!MainBundle->libraries[kProjectReferenceLibrary])
-    return FALSE;
-  BOOL bWritten = TRUE;
-  xmlForEach(item, MainBundle->libraries[kProjectReferenceLibrary]) {
-    xmlWith(xmlChar, Name, xmlGetProp(item, XMLSTR("Name")), xmlFree) {
-      if (!xmlStrcmp(Name, XMLSTR(szName))) {
-        xmlWith(xmlChar, Content, xmlNodeGetContent(item), xmlFree) {
-          lpcString_t path = FS_JoinPaths(MainBundle->path, (const char *)Content);
-          strncpy(pOut, path, nMaxLen);
-        }
-      }
-    }
-  }
-  return bWritten;
+  assert(!"Not implemented");
+  return FALSE;
+//  if (!MainBundle->libraries[kProjectReferenceLibrary])
+//    return FALSE;
+//  BOOL bWritten = TRUE;
+//  xmlForEach(item, MainBundle->libraries[kProjectReferenceLibrary]) {
+//    xmlWith(xmlChar, Name, xmlGetProp(item, XMLSTR("Name")), xmlFree) {
+//      if (!xmlStrcmp(Name, XMLSTR(szName))) {
+//        xmlWith(xmlChar, Content, xmlNodeGetContent(item), xmlFree) {
+//          lpcString_t path = FS_JoinPaths(MainBundle->path, (const char *)Content);
+//          strncpy(pOut, path, nMaxLen);
+//        }
+//      }
+//    }
+//  }
+//  return bWritten;
 }
 
 //static int cmp(const void *a, const void *b) {

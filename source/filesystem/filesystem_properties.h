@@ -43,6 +43,8 @@ enum ProjectProperties {
 	kProjectHeight,
 	kProjectPropertyTypes,
 	kProjectNumPropertyTypes,
+	kProjectProjectReferences,
+	kProjectNumProjectReferences,
 	kProjectNumProperties
 };
 
@@ -80,6 +82,8 @@ enum ProjectProperties {
 #define ID_Project_Height 0xdab148ab
 #define ID_Project_PropertyTypes 0x5273d526
 #define ID_Project_NumPropertyTypes 0x13e23766
+#define ID_Project_ProjectReferences 0xcfc1761b
+#define ID_Project_NumProjectReferences 0x6c9cdb5b
 #define ID_Library 0xa8532270
 #define GetLibrary(_P)((struct Library*)((_P)?OBJ_GetComponent(_P,ID_Library):NULL))
 #define Library_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_Library,sizeof(struct Library),_N)
@@ -192,13 +196,6 @@ enum SplineLibraryProperties {
 #define PrefabLibrary_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_PrefabLibrary,sizeof(struct PrefabLibrary),_N)
 enum PrefabLibraryProperties {
 	kPrefabLibraryNumProperties
-};
-
-#define ID_ProjectReferenceLibrary 0x163a1f9e
-#define GetProjectReferenceLibrary(_P)((struct ProjectReferenceLibrary*)((_P)?OBJ_GetComponent(_P,ID_ProjectReferenceLibrary):NULL))
-#define ProjectReferenceLibrary_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_ProjectReferenceLibrary,sizeof(struct ProjectReferenceLibrary),_N)
-enum ProjectReferenceLibraryProperties {
-	kProjectReferenceLibraryNumProperties
 };
 
 #define ID_ProfileLibrary 0xd4de6821
@@ -357,13 +354,6 @@ enum ImageLibraryProperties {
 #define FontLibrary_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_FontLibrary,sizeof(struct FontLibrary),_N)
 enum FontLibraryProperties {
 	kFontLibraryNumProperties
-};
-
-#define ID_ProjectReferenceItem 0x36914acc
-#define GetProjectReferenceItem(_P)((struct ProjectReferenceItem*)((_P)?OBJ_GetComponent(_P,ID_ProjectReferenceItem):NULL))
-#define ProjectReferenceItem_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_ProjectReferenceItem,sizeof(struct ProjectReferenceItem),_N)
-enum ProjectReferenceItemProperties {
-	kProjectReferenceItemNumProperties
 };
 
 #define ID_LocaleReferenceItem 0xe30b821b

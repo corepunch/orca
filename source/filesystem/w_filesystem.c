@@ -492,17 +492,6 @@ HANDLER(Project, Start) {
   return TRUE;
 }
 
-HANDLER(ProjectReferenceLibrary, Attached) {
-  lpcString_t dir = OBJ_GetSourceFile(OBJ_GetParent(hObject));
-  FOR_EACH_OBJECT(node, hObject) if (OBJ_GetTextContent(node)) {
-    API_CallRequire(global_L, "orca.filesystem", 1);
-    lua_getfield(global_L, -1, "loadBundle");
-    lua_pushstring(global_L, FS_JoinPaths(dir, OBJ_GetTextContent(node)));
-    lua_pcall(global_L, 1, 0, 0);
-  }
-  return TRUE;
-}
-
 HANDLER(EnginePluginLibrary, Attached) {
   lua_State* L = global_L;
   FOR_EACH_OBJECT(node, hObject) {

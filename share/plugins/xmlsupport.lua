@@ -70,11 +70,12 @@ end
 
 function Property.construct(node, property, element)
 	if property.IsArray then
-		local array, mt = {}, orca.find_metatable(property.TypeString)
+		local typename = property.TypeString
+		local array, mt = {}, orca.find_metatable(typename)
 		assert(mt, string.format("No metatable found for array item type: %s", property.TypeString))
 		assert(mt.new, string.format("Array item type %s does not support new() method", property.TypeString))
 		for sub in element:findall(property.TypeString) do
-			table.insert(array, Property.parse_item(sub, mt.new(), property.TypeString))
+			table.insert(array, Property.parse_item(sub, mt.new(), typename))
 		end
 		node[property.Name] = array
 	elseif element.text then
@@ -188,7 +189,9 @@ table.insert(package.searchers, function(path)
 	local ok, doc = pcall(xml.load, path..'.xml')
 	return ok and doc and function()
 		return function()
-			return construct_node(doc.root)
+			local node = construct_node(doc.root)
+			node:setSourceFile(path)
+			return node
 		end
 	end or nil
 end)
