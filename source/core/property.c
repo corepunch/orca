@@ -367,19 +367,62 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
     PROP_SetFlag(p, PF_NIL);
     return 0;
   }
+  
+  // handle array properties
+  if (p->pdesc && p->pdesc->IsArray) {
+    if (lua_type(L, idx) != LUA_TTABLE) {
+      Con_Error("Expected a table for array property %s", p->name);
+      return 0;
+    }
+    size_t numitems = lua_rawlen(L, idx);
+    void *mem = malloc(p->pdesc->DataSize * numitems);
+    ((int*)p->value)[sizeof(void*)/sizeof(int)] = (int)numitems;
+    lua_pushnil(L);
+    for (uint32_t i = 0; lua_next(L, idx) != 0; i++, lua_pop(L, 1)) {
+      if (lua_type(L, -2) != LUA_TNUMBER) {
+        Con_Error("Expected numeric keys in array table for property %s", p->name);
+        free(mem);
+        return 0; 
+      }
+      switch (lua_type(L, -1)) {
+        case LUA_TUSERDATA:
+          memcpy((char*)mem + i * p->pdesc->DataSize, luaL_checkudata(L, -1, p->pdesc->TypeString), p->pdesc->DataSize);
+          break;
+        case LUA_TNUMBER:
+          switch (p->pdesc->DataType) {
+            case kDataTypeFloat:
+              ((float*)mem)[i] = luaL_checknumber(L, -1);
+              break;
+            case kDataTypeInt:
+            case kDataTypeEnum:
+              ((int*)mem)[i] = (int)luaL_checkinteger(L, -1);
+              break;
+            default:
+              Con_Error("Unsupported data type in array table for property %s", p->name);
+              free(mem);
+              return 0;
+          }
+          break;
+        default:
+          Con_Error("Unsupported value type in array table for property %s", p->name);
+          free(mem);
+          return 0;
+      }
+    }
+    return 0;
+  }
 
-  // read enum value
+  // handle enum properties with string input
   if (p->type == kDataTypeEnum && lua_type(L, idx) == LUA_TSTRING) {
     int value = strlistidx(luaL_checkstring(L, idx), p->userdata, NULL);
     if (value == -1) {
-      Con_Error("Can't set value %s on %s",
-             luaL_checkstring(L, idx),
-             p->name);
+      Con_Error("Can't set value %s on %s", luaL_checkstring(L, idx), p->name);
     }
     PROP_SetValue(p, &value);
     return 0;
   }
 
+  // handle int properties with enum string input
   switch (p->type) {
     case kDataTypeEnum:
     case kDataTypeInt:

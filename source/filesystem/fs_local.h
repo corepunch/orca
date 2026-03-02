@@ -127,7 +127,4 @@ snprintf(buf_##__LINE__, sizeof(buf_##__LINE__), FMT, ##__VA_ARGS__); \
 xmlSetProp(NODE, XMLSTR(PROP), XMLSTR(buf_##__LINE__)); \
 } while (0)
 
-void FS_SetWorkspace(lpObject_t object);
-ORCA_API lpObject_t FS_GetWorkspace(void);
-
 #endif

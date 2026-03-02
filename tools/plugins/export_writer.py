@@ -178,7 +178,6 @@ class ExportWriter(Plugin):
 		))
 		if export_xml_parsers:
 			originals = ['"%s"' % e.get('name') for e in enums.findall('enum')] + ["NULL"]
-			self.w(f"#include <libxml/parser.h>")
 			self.w(f"ORCA_API lpcString_t __strto{ename}(lpcString_t string, enum {ename}* output) {{")
 			self.w(f"\tif (string == NULL) return FALSE;")
 			self.w(f"\tconst char* _{ename}[] = {{ {', '.join(originals)} }};")
@@ -336,7 +335,6 @@ class ExportWriter(Plugin):
 					elif t == "fixed": self.w(f"\tlpcString_t __strto{t}(lpcString_t, fixedString_t*);")
 					else: self.w(f"\tlpcString_t __strto{t}(lpcString_t, {typedefs.get(t,t)}*);")	
 
-			self.w(f"#include <libxml/parser.h>")
 			self.w(f"ORCA_API lpcString_t __strto{name}(lpcString_t str, {lpname} output) {{")
 			declare_parsers(struct)
 			for field in struct.findall('field'):
@@ -346,19 +344,6 @@ class ExportWriter(Plugin):
 				self.w(f"\tstr = __strto{field_type}(str, &output->{field_name});")
 			self.w(f"\treturn str;\n}}")
 			self.wt(_T['struct_fromstring'].substitute(name=name, export=struct.get('export') or name, lpname=lpname))
-			self.w(f"static int xml_{name}(xmlNodePtr xml, {lpname} output) {{")
-			declare_parsers(struct)
-			for field in struct.findall('field'):
-				if field.get('fixed-array') or field.get('private') or field.get('pointer'):
-					continue
-				field_name, field_type = field.get('name'), field.get('type')
-				self.w(f"\txmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR(\"{field_name}\")), xmlFree) {{")
-				self.w(f"\t\t__strto{field_type}((lpcString_t)attr, &output->{field_name});")
-				self.w(f"\t}}")
-				# self.w(f"\txmlto{field_type}((xmlNodePtr)xmlHasProp(xml, XMLSTR(\"{field_name}\")), &output->{field_name});")
-
-			self.w(f"\treturn TRUE;")
-			self.w(f"}}\n")
 
 		# write lua_open
 		self.w(f"int luaopen_{root.get('namespace')}_{name}(lua_State *L) {{")
@@ -382,9 +367,6 @@ class ExportWriter(Plugin):
 			self.w(f"\tlua_pushcfunction(L, f_{name}___call);")
 			self.w(f"\tlua_setfield(L, -2, \"__call\");")
 			self.w(f"\tlua_setmetatable(L, -2);")
-			if export_xml_parsers:
-				self.w(f"\tlua_pushlightuserdata(L, xml_{name});")
-				self.w(f"\tlua_setfield(L, LUA_REGISTRYINDEX, \"{struct.get('export') or name}Parser\");")
 		self.w(f"\treturn 1;\n}}")
 
 	def write_property(self, property, component, path):

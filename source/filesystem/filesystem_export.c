@@ -1520,11 +1520,6 @@ ORCA_API struct ClassDesc _ThemeDefaultValuesDictionary = {
 	.Defaults = &ThemeDefaultValuesDictionaryDefaults,
 	.NumProperties = kThemeDefaultValuesDictionaryNumProperties,
 };
-static int f_filesystem_getWorkspace(lua_State *L) {
-	lpObject_t output = FS_GetWorkspace();
-	luaX_pushObject(L, output);
-	return 1;
-}
 static int f_filesystem_getBaseName(lua_State *L) {
 	const char* path = luaL_checkstring(L, 1);
 	const char* output = FS_GetBaseName(path);
@@ -1583,9 +1578,18 @@ static int f_filesystem_addSearchPath(lua_State *L) {
 	luaX_pushPackage(L, output);
 	return 1;
 }
+static int f_filesystem_setWorkspace(lua_State *L) {
+	lpObject_t workspace = luaX_checkObject(L, 1);
+	FS_SetWorkspace(workspace);
+	return 0;
+}
+static int f_filesystem_getWorkspace(lua_State *L) {
+	lpObject_t output = FS_GetWorkspace();
+	luaX_pushObject(L, output);
+	return 1;
+}
 ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) {
-		{ "getWorkspace", f_filesystem_getWorkspace },
 		{ "getBaseName", f_filesystem_getBaseName },
 		{ "getPathName", f_filesystem_getPathName },
 		{ "getDirName", f_filesystem_getDirName },
@@ -1595,6 +1599,8 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 		{ "makeDirectory", f_filesystem_makeDirectory },
 		{ "fileExists", f_filesystem_fileExists },
 		{ "addSearchPath", f_filesystem_addSearchPath },
+		{ "setWorkspace", f_filesystem_setWorkspace },
+		{ "getWorkspace", f_filesystem_getWorkspace },
 		{ NULL, NULL }
 	}));
 	void on_filesystem_module_registered(lua_State *L);

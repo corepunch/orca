@@ -272,29 +272,32 @@ bool_t OBJ_API(SetProperty, lpcString_t name) {
   }
   lpProperty_t property = NULL;
   if (lua_type(L, 3) == LUA_TTABLE) { // store table for safekeeping
-    lua_pushfstring(L, "__hook_%s", name);
-    lua_pushvalue(L, 3);
-    lua_rawset(L, 1);
+    luaX_parsefield(lpObject_t, __userdata, 3, luaL_testudata, API_TYPE_OBJECT);
+    if (__userdata) {
+      lua_pushfstring(L, "__hook_%s", name);
+      lua_pushvalue(L, 3);
+      lua_rawset(L, 1);
+    }
   }
   if (SUCCEEDED(OBJ_FindShortProperty(self, PascalCase(name), &property))) {
     luaX_readProperty(L, 3, property);
     return TRUE;
-  } else if (lua_type(L, 3) == LUA_TSTRING) {
-    property = PROP_Create(L, self, name, kDataTypeLongString, NULL);
-    luaX_readProperty(L, 3, property);
-    return TRUE;
-  } else if (lua_type(L, 3) == LUA_TNUMBER) {
-    property = PROP_Create(L, self, name, kDataTypeFloat, NULL);
-    luaX_readProperty(L, 3, property);
-    return TRUE;
-  } else if (lua_type(L, 3) == LUA_TBOOLEAN) {
-    property = PROP_Create(L, self, name, kDataTypeBool, NULL);
-    luaX_readProperty(L, 3, property);
-    return TRUE;
-  } else if (luaL_testudata(L, 3, API_TYPE_OBJECT)) {
-    property = PROP_Create(L, self, name, kDataTypeObject, "Object");
-    luaX_readProperty(L, 3, property);
-    return TRUE;
+//  } else if (lua_type(L, 3) == LUA_TSTRING) {
+//    property = PROP_Create(L, self, name, kDataTypeLongString, NULL);
+//    luaX_readProperty(L, 3, property);
+//    return TRUE;
+//  } else if (lua_type(L, 3) == LUA_TNUMBER) {
+//    property = PROP_Create(L, self, name, kDataTypeFloat, NULL);
+//    luaX_readProperty(L, 3, property);
+//    return TRUE;
+//  } else if (lua_type(L, 3) == LUA_TBOOLEAN) {
+//    property = PROP_Create(L, self, name, kDataTypeBool, NULL);
+//    luaX_readProperty(L, 3, property);
+//    return TRUE;
+//  } else if (luaL_testudata(L, 3, API_TYPE_OBJECT)) {
+//    property = PROP_Create(L, self, name, kDataTypeObject, "Object");
+//    luaX_readProperty(L, 3, property);
+//    return TRUE;
   } else if (!strcmp(name, "Material.Texture")) {
     property = PROP_Create(L, self, name, kDataTypeObject, "Texture");
     luaX_readProperty(L, 3, property);

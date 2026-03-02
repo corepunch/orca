@@ -66,7 +66,7 @@ static int lua_xml_read_document(lua_State* L)
   lpcString_t filename = luaL_checkstring(L, 1);
   xmlDocPtr doc = NULL;
   xmlWith(struct file, file, FS_LoadFile(filename), FS_FreeFile) {
-    doc = xmlReadMemory((char*)file->data, file->size, filename, NULL, XML_FLAGS);
+    doc = xmlReadMemory((char*)file->data, file->size, filename, NULL, XML_PARSE_NOBLANKS | XML_PARSE_COMPACT);
   }
   if (doc) {
     xmlDocPtr* self = lua_newuserdata(L, sizeof(*doc));
@@ -479,16 +479,6 @@ static int lua_xml_node_equal(lua_State* L)
   return 1;
 }
 
-static void
-push_trimmed_string(lua_State* L, lpcString_t str)
-{
-  SkipSpace(str);
-  size_t len = strlen(str);
-  while (len > 0 && isspace((unsigned char)str[len - 1]))
-    len--; // Trim trailing whitespace
-  lua_pushlstring(L, str, len);
-}
-
 int lua_xml_node_len(lua_State* L)
 {
   xmlNodePtr* node = luaL_checkudata(L, 1, API_TYPE_XML_NODE);
@@ -526,24 +516,24 @@ int lua_xml_node_index(lua_State* L)
       lua_pushstring(L, (lpcString_t)(*node)->content);
       return 1;
     } else if ((*node)->type == XML_TEXT_NODE) {
-      //			lua_pushstring(L, (const
-      // LPSTR)(*node)->content);
-      push_trimmed_string(L, (lpcString_t)(*node)->content);
+      if (xmlStrlen((*node)->content) > 0) {
+        lua_pushstring(L, (char const *)(*node)->content);
+      } else {
+        lua_pushnil(L);
+      }
       return 1;
     } else {
-      xmlNode* textBlockNode = *node; // Assume this is the <TextBlock> node
-      FOR_EACH_LIST(xmlNode, child , textBlockNode->children) {
+      FOR_EACH_LIST(xmlNode, child , (*node)->children) {
         if (child->type == XML_TEXT_NODE) {
-          // Get the text content of the text node
-          xmlChar* value = child->content;
-          lpcString_t str = (lpcString_t)value;
-          while (*str && isspace(*str))
-            str++;
-          lua_pushstring(L, *str ? (lpcString_t)value : "");
+          if (xmlStrlen(child->content) > 0) {
+            lua_pushstring(L, (char const *)child->content);
+          } else {
+            lua_pushnil(L);
+          }
           return 1;
         }
       }
-      lua_pushstring(L, "");
+      lua_pushnil(L);
       return 1;
     }
   }

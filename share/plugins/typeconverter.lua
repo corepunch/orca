@@ -74,7 +74,7 @@ orca.typeconverter = {
 			local geom = require "orca.geometry"
 			return geom.Color.parse(value)
 		end
-		local mt = orca.find_metatable(pt.TypeString) -- assert type exists
+		local mt = orca.find_metatable(pt.TypeString)
 		assert(mt, string.format("No metatable found for %s(struct)", pt.TypeString))
 		assert(mt.fromstring, string.format("Type %s does not support fromstring() method", pt.TypeString))
 		return mt.fromstring(value)

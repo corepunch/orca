@@ -27,7 +27,6 @@ void luaX_pushStencilOp(lua_State *L, eStencilOp_t value) {
 	assert(value >= 0 && value < 8);
 	lua_pushstring(L, _StencilOp[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoStencilOp(lpcString_t string, enum StencilOp* output) {
 	if (string == NULL) return FALSE;
 	const char* _StencilOp[] = { "Keep", "Zero", "Replace", "Increment", "IncrementWrap", "Decrement", "DecrementWrap", "Invert", NULL };
@@ -51,7 +50,6 @@ void luaX_pushViewportMode(lua_State *L, eViewportMode_t value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _ViewportMode[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoViewportMode(lpcString_t string, enum ViewportMode* output) {
 	if (string == NULL) return FALSE;
 	const char* _ViewportMode[] = { "Relative", "Absolute", NULL };
@@ -75,7 +73,6 @@ void luaX_pushCullMode(lua_State *L, eCullMode_t value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _CullMode[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoCullMode(lpcString_t string, enum CullMode* output) {
 	if (string == NULL) return FALSE;
 	const char* _CullMode[] = { "None", "Back", "Front", NULL };
@@ -99,7 +96,6 @@ void luaX_pushColorWriteMode(lua_State *L, eColorWriteMode_t value) {
 	assert(value >= 0 && value < 8);
 	lua_pushstring(L, _ColorWriteMode[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoColorWriteMode(lpcString_t string, enum ColorWriteMode* output) {
 	if (string == NULL) return FALSE;
 	const char* _ColorWriteMode[] = { "None", "RGB", "RGBA", "R", "G", "B", "GB", "A", NULL };
@@ -123,7 +119,6 @@ void luaX_pushFovType(lua_State *L, eFovType_t value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _FovType[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoFovType(lpcString_t string, enum FovType* output) {
 	if (string == NULL) return FALSE;
 	const char* _FovType[] = { "Xfov", "Yfov", NULL };
@@ -147,7 +142,6 @@ void luaX_pushProjectionType(lua_State *L, eProjectionType_t value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _ProjectionType[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoProjectionType(lpcString_t string, enum ProjectionType* output) {
 	if (string == NULL) return FALSE;
 	const char* _ProjectionType[] = { "Perspective", "Orthographic", NULL };
@@ -171,7 +165,6 @@ void luaX_pushLightType(lua_State *L, eLightType_t value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _LightType[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoLightType(lpcString_t string, enum LightType* output) {
 	if (string == NULL) return FALSE;
 	const char* _LightType[] = { "Point", "Spot", NULL };

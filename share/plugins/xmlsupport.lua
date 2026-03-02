@@ -1,8 +1,27 @@
 local orca = require "orca"
 
 local print = function(...)
-	io.stderr:write(table.concat({...}, "\t").."\n")
+	for i = 1, select("#", ...) do io.stderr:write(tostring(select(i, ...)).." ") end
+	io.stderr:write("\n")
 end
+
+local simple_convertes = {
+	number = tonumber,
+	string = tostring,
+	boolean = function(value)
+		if value == "true" then return true end
+		if value == "false" then return false end
+		return tonumber(value) or error(string.format("Cannot convert '%s' to boolean", value))
+	end,
+	userdata = function(value, original)
+	  local mt_name = tostring(original):match("^([^:]+):")
+		assert(mt_name, string.format("Cannot determine userdata type from value: %s", tostring(original)))
+		local mt = orca.find_metatable(mt_name)
+		assert(mt, string.format("No metatable found for userdata type: %s", mt_name))
+		if mt.fromstring then return mt.fromstring(value) end
+		error(string.format("Cannot convert '%s' to userdata of type %s", value, mt_name))
+	end,
+}
 
 local function split_string(values)
 	local vals = {}
@@ -10,7 +29,9 @@ local function split_string(values)
 	return vals
 end
 
-local function set_property_value(node, explicit, value)
+local Property = {}
+
+function Property.set_value(node, explicit, value)
 	local type = node:findImplicitProperty(explicit) or node:findExplicitProperty(explicit)
 	assert(type, string.format("Unknown property: %s for node of type %s", explicit, node.className))
 	local converter = orca.typeconverter[type.DataType]
@@ -18,25 +39,47 @@ local function set_property_value(node, explicit, value)
 	node[explicit] = converter(value, type)
 end
 
-local function parse_edges(node, edges, values)
+function Property.parse_edges(node, edges, values)
 	-- set_edge_property_value(node, edges.TypeString, "Top", values:match("Top=([^%s]+)"))
-	set_property_value(node, string.format(edges.TypeString, "Top"), values[1])
-	set_property_value(node, string.format(edges.TypeString, "Right"), values[2] or values[1])
-	set_property_value(node, string.format(edges.TypeString, "Bottom"), values[3] or values[1])
-	set_property_value(node, string.format(edges.TypeString, "Left"), values[4] or values[2] or values[1])
+	Property.set_value(node, string.format(edges.TypeString, "Top"), values[1])
+	Property.set_value(node, string.format(edges.TypeString, "Right"), values[2] or values[1])
+	Property.set_value(node, string.format(edges.TypeString, "Bottom"), values[3] or values[1])
+	Property.set_value(node, string.format(edges.TypeString, "Left"), values[4] or values[2] or values[1])
 end
 
-local function parse_argument(node, name, value)
+function Property.parse(node, name, value)
 	assert(orca.typeconverter, "Type converter plugin is required for XML support plugin")
+	if name == "ClassName" or name == "PlaceholderTemplate" then return end -- handled separately when constructing the node
 	if name == "Name" or name == "id" then node:setName(value) return end
 	local type = node:findImplicitProperty(name) or node:findExplicitProperty(name)
 	assert(type, string.format("Unknown property: %s for node of type %s", name, node.className))
-	if type.DataType == "edges" then
-		return parse_edges(node, type, split_string(value))
-	end
+	if type.DataType == "edges" then return Property.parse_edges(node, type, split_string(value)) end
 	local converter = orca.typeconverter[type.DataType]
 	assert(converter, string.format("No type converter for data type: %s (property %s)", type.DataType, name))
 	node[name] = converter(value, type)
+end
+
+function Property.parse_item(element, item, typename)
+	for k, v in element.attributes do
+		local converter = simple_convertes[type(item[k])]
+		assert(converter, string.format("No simple converter for array item %s property %s", typename, k))
+		item[k] = converter(v, item[k])
+	end
+	return item
+end
+
+function Property.construct(node, property, element)
+	if property.IsArray then
+		local array, mt = {}, orca.find_metatable(property.TypeString)
+		assert(mt, string.format("No metatable found for array item type: %s", property.TypeString))
+		assert(mt.new, string.format("Array item type %s does not support new() method", property.TypeString))
+		for sub in element:findall(property.TypeString) do
+			table.insert(array, Property.parse_item(sub, mt.new(), property.TypeString))
+		end
+		node[property.Name] = array
+	elseif element.text then
+		xpcall(Property.parse, print, node, property.Name, element.text)
+	end
 end
 
 local function try_require_memeber(module, name)
@@ -56,14 +99,6 @@ local function try_prefab_placeholder(element)
 		return placeholder(element:get "PlaceholderTemplate" or element:get "ClassName")
 	else
 		return nil
-	end
-end
-
-local function construct_property(node, property, element)
-	if property.IsArray then
-
-	elseif element.text then
-		xpcall(parse_argument, print, node, property.Name, element.text)
 	end
 end
 
@@ -120,13 +155,16 @@ local function construct_node(element)
 		try_require_memeber("orca.renderer", element.tag)
 	if not class then error("Unknown element type: "..element.tag) end
 	local node = class()
-	for k, v in element.attributes do xpcall(parse_argument, print, node, k, v) end
+	for k, v in element.attributes do xpcall(Property.parse, print, node, k, v) end
+	if element.text then
+		node:setTextContent(element.text)
+		return node
+	end
 	for sub in element.children do
-		local property = node:findExplicitProperty(sub.tag)
 		if sub:get "IsDisabled" == "true" then
 			-- skip disabled elements, but still check if they are valid properties to catch typos
-		elseif property then
-			xpcall(construct_property, print, node, property, sub)
+		elseif node:findExplicitProperty(sub.tag) then
+			xpcall(Property.construct, print, node, node:findExplicitProperty(sub.tag), sub)
 		elseif specials[sub.tag] then
 			xpcall(specials[sub.tag], print, node, sub)
 		else

@@ -143,11 +143,6 @@
   <class name="Entry"/>
   <class name="ThemeDefaultValuesDictionary"/>
   
-  <function name="GetWorkspace">
-    <summary>Retrieves main workspace object.</summary>
-    <returns type="Object" pointer="true"/>
-  </function>
-  
   <function name="GetBaseName">
     <summary>Gets the base filename from a path</summary>
     <details>Extracts the filename component from a file path, including the extension. For example, given "/path/to/file. txt", returns "file.txt".  This is useful for displaying filenames or logging without the full directory path.</details>
@@ -213,5 +208,17 @@
     <details>Creates a package from the specified directory path and adds it to the global resource search path. When loading resources (such as UI files, scripts, textures, or other assets), the system will search through all added packages in order to locate the requested file. The Lua state is used to maintain the list of active packages for script integration.  The function returns the created package for further reference or manipulation.</details>
     <arg name="path" type="string">The directory of the package to add to the search path</arg>
     <returns type="Package" pointer="true">Pointer to the created and registered package</returns>
+  </function>
+
+  <function name="SetWorkspace">
+    <summary>Sets the current workspace</summary>
+    <details>Assigns the provided workspace object as the active workspace for the application. The workspace contains project settings, libraries, and other global configurations. Setting the workspace may trigger events or updates in the application to reflect the new context.</details>
+    <arg name="workspace" type="Object" pointer="true">Pointer to the workspace object to set as active</arg>
+  </function>
+
+  <function name="GetWorkspace">
+    <summary>Gets the current workspace</summary>
+    <details>Returns the currently active workspace object for the application. The workspace contains project settings, libraries, and other global configurations. This function allows querying the current workspace context without modifying it.</details>
+    <returns type="Object" pointer="true">Pointer to the currently active workspace object</returns>
   </function>
 </module>

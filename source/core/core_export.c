@@ -646,7 +646,6 @@ void luaX_pushDataType(lua_State *L, eDataType_t value) {
 	assert(value >= 0 && value < 12);
 	lua_pushstring(L, _DataType[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoDataType(lpcString_t string, enum DataType* output) {
 	if (string == NULL) return FALSE;
 	const char* _DataType[] = { "None", "Bool", "Int", "Enum", "Float", "Fixed", "LongString", "Edges", "ObjectTags", "Event", "Struct", "Object", NULL };
@@ -714,7 +713,6 @@ int f_PropertyEnumValue___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in PropertyEnumValue: %s", luaL_checkstring(L, 2));
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoPropertyEnumValue(lpcString_t str, lpPropertyEnumValue_t output) {
 	lpcString_t __strtofixed(lpcString_t, fixedString_t*);
 	lpcString_t __strtoint(lpcString_t, int32_t*);
@@ -729,18 +727,6 @@ static int f_fromstring_PropertyEnumValue(lua_State *L) {
 	__strtoPropertyEnumValue(luaL_checkstring(L, 1), self);
 	return 1;
 }
-static int xml_PropertyEnumValue(xmlNodePtr xml, lpPropertyEnumValue_t output) {
-	lpcString_t __strtofixed(lpcString_t, fixedString_t*);
-	lpcString_t __strtoint(lpcString_t, int32_t*);
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Name")), xmlFree) {
-		__strtofixed((lpcString_t)attr, &output->Name);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Value")), xmlFree) {
-		__strtoint((lpcString_t)attr, &output->Value);
-	}
-	return TRUE;
-}
-
 int luaopen_orca_PropertyEnumValue(lua_State *L) {
 	luaL_newmetatable(L, "PropertyEnumValue");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -754,8 +740,6 @@ int luaopen_orca_PropertyEnumValue(lua_State *L) {
 	lua_pushcfunction(L, f_PropertyEnumValue___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xml_PropertyEnumValue);
-	lua_setfield(L, LUA_REGISTRYINDEX, "PropertyEnumValueParser");
 	return 1;
 }
 void luaX_pushPropertyType(lua_State *L, lpcPropertyType_t data) {
@@ -990,7 +974,6 @@ int f_PropertyType___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in PropertyType: %s", luaL_checkstring(L, 2));
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoPropertyType(lpcString_t str, lpPropertyType_t output) {
 	lpcString_t __strtoDataType(lpcString_t, enum DataType*);
 	lpcString_t __strtobool(lpcString_t, bool_t*);
@@ -1026,75 +1009,6 @@ static int f_fromstring_PropertyType(lua_State *L) {
 	__strtoPropertyType(luaL_checkstring(L, 1), self);
 	return 1;
 }
-static int xml_PropertyType(xmlNodePtr xml, lpPropertyType_t output) {
-	lpcString_t __strtoDataType(lpcString_t, enum DataType*);
-	lpcString_t __strtobool(lpcString_t, bool_t*);
-	lpcString_t __strtofixed(lpcString_t, fixedString_t*);
-	lpcString_t __strtofloat(lpcString_t, float*);
-	lpcString_t __strtouint(lpcString_t, uint32_t*);
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Name")), xmlFree) {
-		__strtofixed((lpcString_t)attr, &output->Name);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Category")), xmlFree) {
-		__strtofixed((lpcString_t)attr, &output->Category);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("DataType")), xmlFree) {
-		__strtoDataType((lpcString_t)attr, &output->DataType);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("DefaultValue")), xmlFree) {
-		__strtofixed((lpcString_t)attr, &output->DefaultValue);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("TypeString")), xmlFree) {
-		__strtofixed((lpcString_t)attr, &output->TypeString);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("AffectLayout")), xmlFree) {
-		__strtobool((lpcString_t)attr, &output->AffectLayout);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("AffectRender")), xmlFree) {
-		__strtobool((lpcString_t)attr, &output->AffectRender);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("IsReadOnly")), xmlFree) {
-		__strtobool((lpcString_t)attr, &output->IsReadOnly);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("IsHidden")), xmlFree) {
-		__strtobool((lpcString_t)attr, &output->IsHidden);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("IsInherited")), xmlFree) {
-		__strtobool((lpcString_t)attr, &output->IsInherited);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Key")), xmlFree) {
-		__strtofixed((lpcString_t)attr, &output->Key);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Value")), xmlFree) {
-		__strtofixed((lpcString_t)attr, &output->Value);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Step")), xmlFree) {
-		__strtofloat((lpcString_t)attr, &output->Step);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("UpperBound")), xmlFree) {
-		__strtofloat((lpcString_t)attr, &output->UpperBound);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("LowerBound")), xmlFree) {
-		__strtofloat((lpcString_t)attr, &output->LowerBound);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("ShortIdentifier")), xmlFree) {
-		__strtouint((lpcString_t)attr, &output->ShortIdentifier);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("FullIdentifier")), xmlFree) {
-		__strtouint((lpcString_t)attr, &output->FullIdentifier);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Offset")), xmlFree) {
-		__strtouint((lpcString_t)attr, &output->Offset);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("DataSize")), xmlFree) {
-		__strtouint((lpcString_t)attr, &output->DataSize);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("IsArray")), xmlFree) {
-		__strtobool((lpcString_t)attr, &output->IsArray);
-	}
-	return TRUE;
-}
-
 int luaopen_orca_PropertyType(lua_State *L) {
 	luaL_newmetatable(L, "PropertyType");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -1108,8 +1022,6 @@ int luaopen_orca_PropertyType(lua_State *L) {
 	lua_pushcfunction(L, f_PropertyType___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xml_PropertyType);
-	lua_setfield(L, LUA_REGISTRYINDEX, "PropertyTypeParser");
 	return 1;
 }
 ORCA_API int luaopen_orca_core(lua_State *L) {

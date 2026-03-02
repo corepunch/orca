@@ -45,41 +45,41 @@ xmlParsePropertyAttr(xmlChar const* s)
   assert(0);
   return ATTR_WHOLE_PROPERTY;
 }
-
-static void* _GetParser(lua_State* L, lpcString_t type) {
-  char tmp[256];
-  snprintf(tmp, sizeof(tmp), "%sParser", type);
-  lua_getfield(L, LUA_REGISTRYINDEX, tmp);
-  if (lua_isnil(L, -1)) { lua_pop(L, 1); return NULL; }
-  handle_t ptr = lua_touserdata(L, -1);
-  lua_pop(L, 1);
-  return ptr;
-}
-
-
-static int XML_CountNodes(xmlNode *it, xmlChar const* name) {
-  int count = 0;
-  xmlForEach(elm, it) {
-    if (!xmlStrcmp(elm->name, XMLSTR(name))) {
-      count++;
-    }
-  }
-  return count;
-}
-
-static void
-XML_ParseValues(xmlNode *it,
-                lpcPropertyType_t pdesc,
-                int (*parser)(xmlNodePtr, void*),
-                char *output)
-{
-  xmlForEach(elm, it) {
-    if (parser && !xmlStrcmp(elm->name, XMLSTR(pdesc->TypeString))) {
-      parser(elm, output);
-      output += pdesc->DataSize;
-    }
-  }
-}
+//
+//static void* _GetParser(lua_State* L, lpcString_t type) {
+//  char tmp[256];
+//  snprintf(tmp, sizeof(tmp), "%sParser", type);
+//  lua_getfield(L, LUA_REGISTRYINDEX, tmp);
+//  if (lua_isnil(L, -1)) { lua_pop(L, 1); return NULL; }
+//  handle_t ptr = lua_touserdata(L, -1);
+//  lua_pop(L, 1);
+//  return ptr;
+//}
+//
+//
+//static int XML_CountNodes(xmlNode *it, xmlChar const* name) {
+//  int count = 0;
+//  xmlForEach(elm, it) {
+//    if (!xmlStrcmp(elm->name, XMLSTR(name))) {
+//      count++;
+//    }
+//  }
+//  return count;
+//}
+//
+//static void
+//XML_ParseValues(xmlNode *it,
+//                lpcPropertyType_t pdesc,
+//                int (*parser)(xmlNodePtr, void*),
+//                char *output)
+//{
+//  xmlForEach(elm, it) {
+//    if (parser && !xmlStrcmp(elm->name, XMLSTR(pdesc->TypeString))) {
+//      parser(elm, output);
+//      output += pdesc->DataSize;
+//    }
+//  }
+//}
 
 static void
 XML_ParsePropertyNode(lua_State* L, xmlNodePtr it, lpObject_t object)
@@ -108,18 +108,18 @@ XML_ParsePropertyNode(lua_State* L, xmlNodePtr it, lpObject_t object)
   }
   lpcPropertyType_t pdesc = PROP_GetDesc(property);
   if (pdesc->IsArray) {
-    uint32_t num = XML_CountNodes(it, XMLSTR(pdesc->TypeString));
-    void *mem = malloc(pdesc->DataSize * num);
-    XML_ParseValues(it, pdesc, _GetParser(L, pdesc->TypeString), mem);
-    PROP_SetValue(property, &mem);
-    lpProperty_t nump;
-    if ((pdesc+1)->DataType == kDataTypeInt &&
-        SUCCEEDED(OBJ_FindLongProperty(object, (pdesc+1)->FullIdentifier, &nump)))
-    {
-      PROP_SetValue(nump, &num);
-    } else {
-      Con_Error("Expected a Num%s property to follow %s", pdesc->Name, pdesc->Name);
-    }
+//    uint32_t num = XML_CountNodes(it, XMLSTR(pdesc->TypeString));
+//    void *mem = malloc(pdesc->DataSize * num);
+//    XML_ParseValues(it, pdesc, _GetParser(L, pdesc->TypeString), mem);
+//    PROP_SetValue(property, &mem);
+//    lpProperty_t nump;
+//    if ((pdesc+1)->DataType == kDataTypeInt &&
+//        SUCCEEDED(OBJ_FindLongProperty(object, (pdesc+1)->FullIdentifier, &nump)))
+//    {
+//      PROP_SetValue(nump, &num);
+//    } else {
+//      Con_Error("Expected a Num%s property to follow %s", pdesc->Name, pdesc->Name);
+//    }
     return;
   }
   xmlWith(xmlChar, Enabled, xmlGetProp(it, XMLSTR("Enabled")), xmlFree) {

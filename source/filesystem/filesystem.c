@@ -746,5 +746,9 @@ void FS_Shutdown(void) {
   MainBundle = NULL;
 }
 
+ORCA_API lpcString_t PACK_GetName(struct Package *package) {
+  return package->name;
+}
+
 #include <source/editor/ed_stab_filesystem.h>
 

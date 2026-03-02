@@ -37,6 +37,7 @@ static void add_library(lpcClassDesc_t cd, void* param) {
     if (OBJ_GetComponent(lib, cd->ClassID))
       return;
   }
+  puts(cd->ClassName);
   lua_getfield(L, LUA_REGISTRYINDEX, cd->ClassName);
   lua_call(L, 0, 1);
   OBJ_AddChild(((void**)param)[1], luaX_checkObject(L, -1), FALSE);
@@ -45,35 +46,44 @@ static void add_library(lpcClassDesc_t cd, void* param) {
 
 #include <source/filesystem/filesystem.h>
 
+extern lpcString_t PACK_GetName(struct Package *package);
+extern lpProject_t luaX_checkProject(lua_State *L, int idx);
+
 int f_loadProject(lua_State* L) {
   lpcString_t szDirname = luaL_checkstring(L, 1);
   struct Package* search = FS_AddSearchPath(L, szDirname);
   if (!search) {
     return 0;
   }
-  
-  lpObject_t project = NULL;
-  xmlWith(struct file, file, FS_ReadPackageFile(ORCA_PACKAGE_NAME, search), FS_FreeFile) {
-    xmlWith(xmlDoc, doc,
-            xmlReadMemory((char*)file->data, file->size, szDirname, NULL, XML_FLAGS),
-            xmlFreeDoc) {
-      project = OBJ_LoadDocument(L, doc);
-      OBJ_EnumClasses(OBJ_FindClass("Library"), add_library, ((void*[]){L,project}));
-    }
+ 
+  lua_getglobal(L, "require");
+  lua_pushfstring(L, "%spackage", PACK_GetName(search));
+  if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
+//    Con_Error("%s\n", lua_tostring(L, -1));
+//    xmlWith(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFreeDoc) {
+//      xmlNodePtr root = xmlNewNode(NULL, XMLSTR("Project"));
+//      xmlSetProp(root, XMLSTR("Name"), XMLSTR(FS_GetBaseName(szDirname)));
+//      xmlDocSetRootElement(doc, root);
+//      doc->URL = xmlStrdup(XMLSTR(szDirname));
+//      project = OBJ_LoadDocument(L, doc);
+//    }
+    lua_pop(L, 1);
+    lua_pushboolean(L, TRUE);
+    return 1;
   }
-  
-  if (!project) {
-    xmlWith(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFreeDoc) {
-      xmlNodePtr root = xmlNewNode(NULL, XMLSTR("Project"));
-      xmlSetProp(root, XMLSTR("Name"), XMLSTR(FS_GetBaseName(szDirname)));
-      xmlDocSetRootElement(doc, root);
-      doc->URL = xmlStrdup(XMLSTR(szDirname));
-      project = OBJ_LoadDocument(L, doc);
-    }
+  if (lua_pcall(L, 0, 1, 0) != LUA_OK) {
+    Con_Error("%s\n", lua_tostring(L, -1));
+    lua_pushboolean(L, TRUE);
+    return 1;
   }
+  lpProject_t project = luaX_checkProject(L, -1);
+  
+  OBJ_EnumClasses(OBJ_FindClass("Library"), add_library,
+                  ((void*[]){ L, CMP_GetObject(project) }));
+  
   if (project) {
-    FOR_LOOP(i, GetProject(project)->NumPropertyTypes) {
-      lpPropertyType_t type = &GetProject(project)->PropertyTypes[i];
+    FOR_LOOP(i, project->NumPropertyTypes) {
+      lpPropertyType_t type = &project->PropertyTypes[i];
       fixedString_t tmp={0};
       if (*type->Category) {
         snprintf(tmp, sizeof(tmp), "%s.%s", type->Category, type->Name);

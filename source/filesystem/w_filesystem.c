@@ -342,7 +342,6 @@ int f_init(lua_State* L)
   if (lua_pcall(L, 0, 1, 0) != LUA_OK) {
     return luaL_error(L, lua_tostring(L, -1));
   }
-  OBJ_SetName(luaX_checkObject(L, -1), "Workspace");
   FS_SetWorkspace(luaX_checkObject(L, -1));
   lua_pop(L, 1);
   lua_getfield(L, -1, "loadBundle");
@@ -370,12 +369,6 @@ static lua_State *global_L;
 //lpObject_t FS_FindProject(lpcString_t szName) {
 //  return OBJ_FindChild(FS_GetWorkspace(), szName, FALSE);
 //}
-
-static int f_filesystem_getWorkspace2(lua_State *L) {
-  lpObject_t output = FS_GetWorkspace();
-  luaX_pushObject(L, output);
-  return 1;
-}
 
 // Custom file handle structure
 typedef struct {
@@ -581,9 +574,6 @@ void on_filesystem_module_registered(lua_State* L)
   
   lua_pushcfunction(L, f_loadTextFile);
   lua_setfield(L, -2, "read_file");
-  
-  lua_pushcfunction(L, f_filesystem_getWorkspace2);
-  lua_setfield(L, -2, "getWorkspace");
   
   lua_pushcfunction(L, f_trackChangedFiles);
   lua_setfield(L, -2, "trackChangedFiles");

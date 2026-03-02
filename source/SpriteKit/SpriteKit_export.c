@@ -60,7 +60,6 @@ int f_SpriteFrame___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in SpriteFrame: %s", luaL_checkstring(L, 2));
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoSpriteFrame(lpcString_t str, lpSpriteFrame_t output) {
 	lpcString_t __strtorect(lpcString_t, struct rect*);
 	str = __strtorect(str, &output->Rect);
@@ -74,17 +73,6 @@ static int f_fromstring_SpriteFrame(lua_State *L) {
 	__strtoSpriteFrame(luaL_checkstring(L, 1), self);
 	return 1;
 }
-static int xml_SpriteFrame(xmlNodePtr xml, lpSpriteFrame_t output) {
-	lpcString_t __strtorect(lpcString_t, struct rect*);
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Rect")), xmlFree) {
-		__strtorect((lpcString_t)attr, &output->Rect);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("UvRect")), xmlFree) {
-		__strtorect((lpcString_t)attr, &output->UvRect);
-	}
-	return TRUE;
-}
-
 int luaopen_orca_SpriteFrame(lua_State *L) {
 	luaL_newmetatable(L, "SpriteFrame");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -98,8 +86,6 @@ int luaopen_orca_SpriteFrame(lua_State *L) {
 	lua_pushcfunction(L, f_SpriteFrame___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xml_SpriteFrame);
-	lua_setfield(L, LUA_REGISTRYINDEX, "SpriteFrameParser");
 	return 1;
 }
 static struct PropertyType const SpriteAnimationProperties[kSpriteAnimationNumProperties] = {

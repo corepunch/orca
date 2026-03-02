@@ -761,10 +761,6 @@ typedef struct ThemeDefaultValuesDictionary const *ThemeDefaultValuesDictionaryC
 struct ThemeDefaultValuesDictionary {
 };
 
-/// @brief Retrieves main workspace object.
-ORCA_API lpObject_t
-FS_GetWorkspace(void);
-
 /// @brief Gets the base filename from a path
 ORCA_API const char*
 FS_GetBaseName(const char* path);
@@ -800,5 +796,13 @@ FS_FileExists(const char* path);
 /// @brief Adds a package to the resource search path
 ORCA_API lpPackage_t
 FS_AddSearchPath(lua_State *L, const char* path);
+
+/// @brief Sets the current workspace
+ORCA_API void
+FS_SetWorkspace(lpObject_t workspace);
+
+/// @brief Gets the current workspace
+ORCA_API lpObject_t
+FS_GetWorkspace(void);
 
 #endif

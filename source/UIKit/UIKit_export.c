@@ -27,7 +27,6 @@ void luaX_pushDirection(lua_State *L, eDirection_t value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _Direction[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoDirection(lpcString_t string, enum Direction* output) {
 	if (string == NULL) return FALSE;
 	const char* _Direction[] = { "Horizontal", "Vertical", "Depth", NULL };
@@ -51,7 +50,6 @@ void luaX_pushBox3Field(lua_State *L, eBox3Field_t value) {
 	assert(value >= 0 && value < 6);
 	lua_pushstring(L, _Box3Field[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoBox3Field(lpcString_t string, enum Box3Field* output) {
 	if (string == NULL) return FALSE;
 	const char* _Box3Field[] = { "X", "Y", "Z", "Width", "Height", "Depth", NULL };
@@ -75,7 +73,6 @@ void luaX_pushTextOverflow(lua_State *L, eTextOverflow_t value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _TextOverflow[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoTextOverflow(lpcString_t string, enum TextOverflow* output) {
 	if (string == NULL) return FALSE;
 	const char* _TextOverflow[] = { "Clip", "Ellipsis", NULL };
@@ -99,7 +96,6 @@ void luaX_pushTextWrapping(lua_State *L, eTextWrapping_t value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _TextWrapping[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoTextWrapping(lpcString_t string, enum TextWrapping* output) {
 	if (string == NULL) return FALSE;
 	const char* _TextWrapping[] = { "WrapWithOverflow", "NoWrap", "Wrap", NULL };
@@ -123,7 +119,6 @@ void luaX_pushTextHorizontalAlignment(lua_State *L, eTextHorizontalAlignment_t v
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _TextHorizontalAlignment[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoTextHorizontalAlignment(lpcString_t string, enum TextHorizontalAlignment* output) {
 	if (string == NULL) return FALSE;
 	const char* _TextHorizontalAlignment[] = { "Left", "Center", "Right", NULL };
@@ -147,7 +142,6 @@ void luaX_pushTextVerticalAlignment(lua_State *L, eTextVerticalAlignment_t value
 	assert(value >= 0 && value < 4);
 	lua_pushstring(L, _TextVerticalAlignment[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoTextVerticalAlignment(lpcString_t string, enum TextVerticalAlignment* output) {
 	if (string == NULL) return FALSE;
 	const char* _TextVerticalAlignment[] = { "Top", "Center", "Bottom", "Baseline", NULL };
@@ -171,7 +165,6 @@ void luaX_pushHorizontalAlignment(lua_State *L, eHorizontalAlignment_t value) {
 	assert(value >= 0 && value < 4);
 	lua_pushstring(L, _HorizontalAlignment[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoHorizontalAlignment(lpcString_t string, enum HorizontalAlignment* output) {
 	if (string == NULL) return FALSE;
 	const char* _HorizontalAlignment[] = { "Stretch", "Left", "Center", "Right", NULL };
@@ -195,7 +188,6 @@ void luaX_pushVerticalAlignment(lua_State *L, eVerticalAlignment_t value) {
 	assert(value >= 0 && value < 4);
 	lua_pushstring(L, _VerticalAlignment[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoVerticalAlignment(lpcString_t string, enum VerticalAlignment* output) {
 	if (string == NULL) return FALSE;
 	const char* _VerticalAlignment[] = { "Stretch", "Top", "Center", "Bottom", NULL };
@@ -219,7 +211,6 @@ void luaX_pushAlignItems(lua_State *L, eAlignItems_t value) {
 	assert(value >= 0 && value < 5);
 	lua_pushstring(L, _AlignItems[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoAlignItems(lpcString_t string, enum AlignItems* output) {
 	if (string == NULL) return FALSE;
 	const char* _AlignItems[] = { "Start", "Center", "End", "Stretch", "Baseline", NULL };
@@ -243,7 +234,6 @@ void luaX_pushDepthAlignment(lua_State *L, eDepthAlignment_t value) {
 	assert(value >= 0 && value < 4);
 	lua_pushstring(L, _DepthAlignment[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoDepthAlignment(lpcString_t string, enum DepthAlignment* output) {
 	if (string == NULL) return FALSE;
 	const char* _DepthAlignment[] = { "Near", "Center", "Far", "Stretch", NULL };
@@ -267,7 +257,6 @@ void luaX_pushOverflow(lua_State *L, eOverflow_t value) {
 	assert(value >= 0 && value < 5);
 	lua_pushstring(L, _Overflow[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoOverflow(lpcString_t string, enum Overflow* output) {
 	if (string == NULL) return FALSE;
 	const char* _Overflow[] = { "Visible", "Hidden", "Clip", "Scroll", "Auto", NULL };
@@ -291,7 +280,6 @@ void luaX_pushForegroundHint(lua_State *L, eForegroundHint_t value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _ForegroundHint[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoForegroundHint(lpcString_t string, enum ForegroundHint* output) {
 	if (string == NULL) return FALSE;
 	const char* _ForegroundHint[] = { "None", "Translucent", "Opaque", NULL };
@@ -315,7 +303,6 @@ void luaX_pushJustifyContent(lua_State *L, eJustifyContent_t value) {
 	assert(value >= 0 && value < 6);
 	lua_pushstring(L, _JustifyContent[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoJustifyContent(lpcString_t string, enum JustifyContent* output) {
 	if (string == NULL) return FALSE;
 	const char* _JustifyContent[] = { "Start", "End", "Center", "SpaceBetween", "SpaceAround", "SpaceEvenly", NULL };
@@ -339,7 +326,6 @@ void luaX_pushFontWeight(lua_State *L, eFontWeight_t value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _FontWeight[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoFontWeight(lpcString_t string, enum FontWeight* output) {
 	if (string == NULL) return FALSE;
 	const char* _FontWeight[] = { "Normal", "Bold", NULL };
@@ -363,7 +349,6 @@ void luaX_pushFontStyle(lua_State *L, eFontStyle_t value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _FontStyle[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoFontStyle(lpcString_t string, enum FontStyle* output) {
 	if (string == NULL) return FALSE;
 	const char* _FontStyle[] = { "Normal", "Italic", NULL };
@@ -387,7 +372,6 @@ void luaX_pushBorderStyle(lua_State *L, eBorderStyle_t value) {
 	assert(value >= 0 && value < 10);
 	lua_pushstring(L, _BorderStyle[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoBorderStyle(lpcString_t string, enum BorderStyle* output) {
 	if (string == NULL) return FALSE;
 	const char* _BorderStyle[] = { "None", "Hidden", "Dotted", "Dashed", "Solid", "Double", "Groove", "Ridge", "Inset", "Outset", NULL };
@@ -411,7 +395,6 @@ void luaX_pushPlaybackMode(lua_State *L, ePlaybackMode_t value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _PlaybackMode[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoPlaybackMode(lpcString_t string, enum PlaybackMode* output) {
 	if (string == NULL) return FALSE;
 	const char* _PlaybackMode[] = { "Normal", "Reverse", "Pingpong", NULL };
@@ -435,7 +418,6 @@ void luaX_pushButtonType(lua_State *L, eButtonType_t value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _ButtonType[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoButtonType(lpcString_t string, enum ButtonType* output) {
 	if (string == NULL) return FALSE;
 	const char* _ButtonType[] = { "Normal", "Submit", NULL };
@@ -459,7 +441,6 @@ void luaX_pushInputType(lua_State *L, eInputType_t value) {
 	assert(value >= 0 && value < 5);
 	lua_pushstring(L, _InputType[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoInputType(lpcString_t string, enum InputType* output) {
 	if (string == NULL) return FALSE;
 	const char* _InputType[] = { "Text", "Password", "Number", "Checkbox", "Radio", NULL };
@@ -483,7 +464,6 @@ void luaX_pushSizing(lua_State *L, eSizing_t value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _Sizing[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoSizing(lpcString_t string, enum Sizing* output) {
 	if (string == NULL) return FALSE;
 	const char* _Sizing[] = { "PlusMargin", "SizeOnly", "MinusPadding", NULL };
@@ -571,7 +551,6 @@ int f_BorderRadiusShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in BorderRadiusShorthand: %s", luaL_checkstring(L, 2));
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoBorderRadiusShorthand(lpcString_t str, lpBorderRadiusShorthand_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	str = __strtofloat(str, &output->TopLeftRadius);
@@ -587,23 +566,6 @@ static int f_fromstring_BorderRadiusShorthand(lua_State *L) {
 	__strtoBorderRadiusShorthand(luaL_checkstring(L, 1), self);
 	return 1;
 }
-static int xml_BorderRadiusShorthand(xmlNodePtr xml, lpBorderRadiusShorthand_t output) {
-	lpcString_t __strtofloat(lpcString_t, float*);
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("TopLeftRadius")), xmlFree) {
-		__strtofloat((lpcString_t)attr, &output->TopLeftRadius);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("TopRightRadius")), xmlFree) {
-		__strtofloat((lpcString_t)attr, &output->TopRightRadius);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("BottomRightRadius")), xmlFree) {
-		__strtofloat((lpcString_t)attr, &output->BottomRightRadius);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("BottomLeftRadius")), xmlFree) {
-		__strtofloat((lpcString_t)attr, &output->BottomLeftRadius);
-	}
-	return TRUE;
-}
-
 int luaopen_orca_BorderRadiusShorthand(lua_State *L) {
 	luaL_newmetatable(L, "BorderRadiusShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -617,8 +579,6 @@ int luaopen_orca_BorderRadiusShorthand(lua_State *L) {
 	lua_pushcfunction(L, f_BorderRadiusShorthand___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xml_BorderRadiusShorthand);
-	lua_setfield(L, LUA_REGISTRYINDEX, "BorderRadiusShorthandParser");
 	return 1;
 }
 void luaX_pushBorderEdgeShorthand(lua_State *L, lpcBorderEdgeShorthand_t data) {
@@ -679,7 +639,6 @@ int f_BorderEdgeShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in BorderEdgeShorthand: %s", luaL_checkstring(L, 2));
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoBorderEdgeShorthand(lpcString_t str, lpBorderEdgeShorthand_t output) {
 	lpcString_t __strtoBorderStyle(lpcString_t, enum BorderStyle*);
 	lpcString_t __strtocolor(lpcString_t, struct color*);
@@ -696,22 +655,6 @@ static int f_fromstring_BorderEdgeShorthand(lua_State *L) {
 	__strtoBorderEdgeShorthand(luaL_checkstring(L, 1), self);
 	return 1;
 }
-static int xml_BorderEdgeShorthand(xmlNodePtr xml, lpBorderEdgeShorthand_t output) {
-	lpcString_t __strtoBorderStyle(lpcString_t, enum BorderStyle*);
-	lpcString_t __strtocolor(lpcString_t, struct color*);
-	lpcString_t __strtofloat(lpcString_t, float*);
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Width")), xmlFree) {
-		__strtofloat((lpcString_t)attr, &output->Width);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Style")), xmlFree) {
-		__strtoBorderStyle((lpcString_t)attr, &output->Style);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Color")), xmlFree) {
-		__strtocolor((lpcString_t)attr, &output->Color);
-	}
-	return TRUE;
-}
-
 int luaopen_orca_BorderEdgeShorthand(lua_State *L) {
 	luaL_newmetatable(L, "BorderEdgeShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -725,8 +668,6 @@ int luaopen_orca_BorderEdgeShorthand(lua_State *L) {
 	lua_pushcfunction(L, f_BorderEdgeShorthand___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xml_BorderEdgeShorthand);
-	lua_setfield(L, LUA_REGISTRYINDEX, "BorderEdgeShorthandParser");
 	return 1;
 }
 void luaX_pushBorderSideShorthand(lua_State *L, lpcBorderSideShorthand_t data) {
@@ -770,7 +711,6 @@ int f_BorderSideShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in BorderSideShorthand: %s", luaL_checkstring(L, 2));
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoBorderSideShorthand(lpcString_t str, lpBorderSideShorthand_t output) {
 	lpcString_t __strtoBorderEdgeShorthand(lpcString_t, struct BorderEdgeShorthand*);
 	str = __strtoBorderEdgeShorthand(str, &output->Left);
@@ -784,17 +724,6 @@ static int f_fromstring_BorderSideShorthand(lua_State *L) {
 	__strtoBorderSideShorthand(luaL_checkstring(L, 1), self);
 	return 1;
 }
-static int xml_BorderSideShorthand(xmlNodePtr xml, lpBorderSideShorthand_t output) {
-	lpcString_t __strtoBorderEdgeShorthand(lpcString_t, struct BorderEdgeShorthand*);
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Left")), xmlFree) {
-		__strtoBorderEdgeShorthand((lpcString_t)attr, &output->Left);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Right")), xmlFree) {
-		__strtoBorderEdgeShorthand((lpcString_t)attr, &output->Right);
-	}
-	return TRUE;
-}
-
 int luaopen_orca_BorderSideShorthand(lua_State *L) {
 	luaL_newmetatable(L, "BorderSideShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -808,8 +737,6 @@ int luaopen_orca_BorderSideShorthand(lua_State *L) {
 	lua_pushcfunction(L, f_BorderSideShorthand___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xml_BorderSideShorthand);
-	lua_setfield(L, LUA_REGISTRYINDEX, "BorderSideShorthandParser");
 	return 1;
 }
 void luaX_pushBorderShorthand(lua_State *L, lpcBorderShorthand_t data) {
@@ -847,7 +774,6 @@ int f_BorderShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in BorderShorthand: %s", luaL_checkstring(L, 2));
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoBorderShorthand(lpcString_t str, lpBorderShorthand_t output) {
 	lpcString_t __strtoBorderRadiusShorthand(lpcString_t, struct BorderRadiusShorthand*);
 	str = __strtoBorderRadiusShorthand(str, &output->Radius);
@@ -860,14 +786,6 @@ static int f_fromstring_BorderShorthand(lua_State *L) {
 	__strtoBorderShorthand(luaL_checkstring(L, 1), self);
 	return 1;
 }
-static int xml_BorderShorthand(xmlNodePtr xml, lpBorderShorthand_t output) {
-	lpcString_t __strtoBorderRadiusShorthand(lpcString_t, struct BorderRadiusShorthand*);
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Radius")), xmlFree) {
-		__strtoBorderRadiusShorthand((lpcString_t)attr, &output->Radius);
-	}
-	return TRUE;
-}
-
 int luaopen_orca_BorderShorthand(lua_State *L) {
 	luaL_newmetatable(L, "BorderShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -881,8 +799,6 @@ int luaopen_orca_BorderShorthand(lua_State *L) {
 	lua_pushcfunction(L, f_BorderShorthand___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xml_BorderShorthand);
-	lua_setfield(L, LUA_REGISTRYINDEX, "BorderShorthandParser");
 	return 1;
 }
 void luaX_pushEdgeShorthand(lua_State *L, lpcEdgeShorthand_t data) {
@@ -937,7 +853,6 @@ int f_EdgeShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in EdgeShorthand: %s", luaL_checkstring(L, 2));
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoEdgeShorthand(lpcString_t str, lpEdgeShorthand_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	str = __strtofloat(str, &output->Left);
@@ -951,17 +866,6 @@ static int f_fromstring_EdgeShorthand(lua_State *L) {
 	__strtoEdgeShorthand(luaL_checkstring(L, 1), self);
 	return 1;
 }
-static int xml_EdgeShorthand(xmlNodePtr xml, lpEdgeShorthand_t output) {
-	lpcString_t __strtofloat(lpcString_t, float*);
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Left")), xmlFree) {
-		__strtofloat((lpcString_t)attr, &output->Left);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Right")), xmlFree) {
-		__strtofloat((lpcString_t)attr, &output->Right);
-	}
-	return TRUE;
-}
-
 int luaopen_orca_EdgeShorthand(lua_State *L) {
 	luaL_newmetatable(L, "EdgeShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -975,8 +879,6 @@ int luaopen_orca_EdgeShorthand(lua_State *L) {
 	lua_pushcfunction(L, f_EdgeShorthand___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xml_EdgeShorthand);
-	lua_setfield(L, LUA_REGISTRYINDEX, "EdgeShorthandParser");
 	return 1;
 }
 void luaX_pushAlignmentShorthand(lua_State *L, lpcAlignmentShorthand_t data) {
@@ -1008,7 +910,6 @@ int f_AlignmentShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in AlignmentShorthand: %s", luaL_checkstring(L, 2));
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoAlignmentShorthand(lpcString_t str, lpAlignmentShorthand_t output) {
 	return str;
 }
@@ -1019,10 +920,6 @@ static int f_fromstring_AlignmentShorthand(lua_State *L) {
 	__strtoAlignmentShorthand(luaL_checkstring(L, 1), self);
 	return 1;
 }
-static int xml_AlignmentShorthand(xmlNodePtr xml, lpAlignmentShorthand_t output) {
-	return TRUE;
-}
-
 int luaopen_orca_AlignmentShorthand(lua_State *L) {
 	luaL_newmetatable(L, "AlignmentShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -1036,8 +933,6 @@ int luaopen_orca_AlignmentShorthand(lua_State *L) {
 	lua_pushcfunction(L, f_AlignmentShorthand___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xml_AlignmentShorthand);
-	lua_setfield(L, LUA_REGISTRYINDEX, "AlignmentShorthandParser");
 	return 1;
 }
 void luaX_pushFontShorthand(lua_State *L, lpcFontShorthand_t data) {
@@ -1108,7 +1003,6 @@ int f_FontShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in FontShorthand: %s", luaL_checkstring(L, 2));
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoFontShorthand(lpcString_t str, lpFontShorthand_t output) {
 	lpcString_t __strtoFontStyle(lpcString_t, enum FontStyle*);
 	lpcString_t __strtoFontWeight(lpcString_t, enum FontWeight*);
@@ -1125,22 +1019,6 @@ static int f_fromstring_FontShorthand(lua_State *L) {
 	__strtoFontShorthand(luaL_checkstring(L, 1), self);
 	return 1;
 }
-static int xml_FontShorthand(xmlNodePtr xml, lpFontShorthand_t output) {
-	lpcString_t __strtoFontStyle(lpcString_t, enum FontStyle*);
-	lpcString_t __strtoFontWeight(lpcString_t, enum FontWeight*);
-	lpcString_t __strtofloat(lpcString_t, float*);
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Weight")), xmlFree) {
-		__strtoFontWeight((lpcString_t)attr, &output->Weight);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Style")), xmlFree) {
-		__strtoFontStyle((lpcString_t)attr, &output->Style);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Size")), xmlFree) {
-		__strtofloat((lpcString_t)attr, &output->Size);
-	}
-	return TRUE;
-}
-
 int luaopen_orca_FontShorthand(lua_State *L) {
 	luaL_newmetatable(L, "FontShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -1154,8 +1032,6 @@ int luaopen_orca_FontShorthand(lua_State *L) {
 	lua_pushcfunction(L, f_FontShorthand___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xml_FontShorthand);
-	lua_setfield(L, LUA_REGISTRYINDEX, "FontShorthandParser");
 	return 1;
 }
 void luaX_pushBrushShorthand(lua_State *L, lpcBrushShorthand_t data) {
@@ -1205,7 +1081,6 @@ int f_BrushShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in BrushShorthand: %s", luaL_checkstring(L, 2));
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoBrushShorthand(lpcString_t str, lpBrushShorthand_t output) {
 	lpcString_t __strtocolor(lpcString_t, struct color*);
 	str = __strtocolor(str, &output->Color);
@@ -1218,14 +1093,6 @@ static int f_fromstring_BrushShorthand(lua_State *L) {
 	__strtoBrushShorthand(luaL_checkstring(L, 1), self);
 	return 1;
 }
-static int xml_BrushShorthand(xmlNodePtr xml, lpBrushShorthand_t output) {
-	lpcString_t __strtocolor(lpcString_t, struct color*);
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Color")), xmlFree) {
-		__strtocolor((lpcString_t)attr, &output->Color);
-	}
-	return TRUE;
-}
-
 int luaopen_orca_BrushShorthand(lua_State *L) {
 	luaL_newmetatable(L, "BrushShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -1239,8 +1106,6 @@ int luaopen_orca_BrushShorthand(lua_State *L) {
 	lua_pushcfunction(L, f_BrushShorthand___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xml_BrushShorthand);
-	lua_setfield(L, LUA_REGISTRYINDEX, "BrushShorthandParser");
 	return 1;
 }
 void luaX_pushShadowShorthand(lua_State *L, lpcShadowShorthand_t data) {
@@ -1307,7 +1172,6 @@ int f_ShadowShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in ShadowShorthand: %s", luaL_checkstring(L, 2));
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoShadowShorthand(lpcString_t str, lpShadowShorthand_t output) {
 	lpcString_t __strtocolor(lpcString_t, struct color*);
 	lpcString_t __strtofloat(lpcString_t, float*);
@@ -1325,25 +1189,6 @@ static int f_fromstring_ShadowShorthand(lua_State *L) {
 	__strtoShadowShorthand(luaL_checkstring(L, 1), self);
 	return 1;
 }
-static int xml_ShadowShorthand(xmlNodePtr xml, lpShadowShorthand_t output) {
-	lpcString_t __strtocolor(lpcString_t, struct color*);
-	lpcString_t __strtofloat(lpcString_t, float*);
-	lpcString_t __strtovec2(lpcString_t, struct vec2*);
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Offset")), xmlFree) {
-		__strtovec2((lpcString_t)attr, &output->Offset);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("BlurRadius")), xmlFree) {
-		__strtofloat((lpcString_t)attr, &output->BlurRadius);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("SpreadRadius")), xmlFree) {
-		__strtofloat((lpcString_t)attr, &output->SpreadRadius);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Color")), xmlFree) {
-		__strtocolor((lpcString_t)attr, &output->Color);
-	}
-	return TRUE;
-}
-
 int luaopen_orca_ShadowShorthand(lua_State *L) {
 	luaL_newmetatable(L, "ShadowShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -1357,8 +1202,6 @@ int luaopen_orca_ShadowShorthand(lua_State *L) {
 	lua_pushcfunction(L, f_ShadowShorthand___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xml_ShadowShorthand);
-	lua_setfield(L, LUA_REGISTRYINDEX, "ShadowShorthandParser");
 	return 1;
 }
 void luaX_pushRingShorthand(lua_State *L, lpcRingShorthand_t data) {
@@ -1419,7 +1262,6 @@ int f_RingShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in RingShorthand: %s", luaL_checkstring(L, 2));
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoRingShorthand(lpcString_t str, lpRingShorthand_t output) {
 	lpcString_t __strtocolor(lpcString_t, struct color*);
 	lpcString_t __strtofloat(lpcString_t, float*);
@@ -1435,21 +1277,6 @@ static int f_fromstring_RingShorthand(lua_State *L) {
 	__strtoRingShorthand(luaL_checkstring(L, 1), self);
 	return 1;
 }
-static int xml_RingShorthand(xmlNodePtr xml, lpRingShorthand_t output) {
-	lpcString_t __strtocolor(lpcString_t, struct color*);
-	lpcString_t __strtofloat(lpcString_t, float*);
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Offset")), xmlFree) {
-		__strtofloat((lpcString_t)attr, &output->Offset);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Width")), xmlFree) {
-		__strtofloat((lpcString_t)attr, &output->Width);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Color")), xmlFree) {
-		__strtocolor((lpcString_t)attr, &output->Color);
-	}
-	return TRUE;
-}
-
 int luaopen_orca_RingShorthand(lua_State *L) {
 	luaL_newmetatable(L, "RingShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -1463,8 +1290,6 @@ int luaopen_orca_RingShorthand(lua_State *L) {
 	lua_pushcfunction(L, f_RingShorthand___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xml_RingShorthand);
-	lua_setfield(L, LUA_REGISTRYINDEX, "RingShorthandParser");
 	return 1;
 }
 void luaX_pushOverflowShorthand(lua_State *L, lpcOverflowShorthand_t data) {
@@ -1519,7 +1344,6 @@ int f_OverflowShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in OverflowShorthand: %s", luaL_checkstring(L, 2));
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoOverflowShorthand(lpcString_t str, lpOverflowShorthand_t output) {
 	lpcString_t __strtoOverflow(lpcString_t, enum Overflow*);
 	str = __strtoOverflow(str, &output->x);
@@ -1533,17 +1357,6 @@ static int f_fromstring_OverflowShorthand(lua_State *L) {
 	__strtoOverflowShorthand(luaL_checkstring(L, 1), self);
 	return 1;
 }
-static int xml_OverflowShorthand(xmlNodePtr xml, lpOverflowShorthand_t output) {
-	lpcString_t __strtoOverflow(lpcString_t, enum Overflow*);
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("x")), xmlFree) {
-		__strtoOverflow((lpcString_t)attr, &output->x);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("y")), xmlFree) {
-		__strtoOverflow((lpcString_t)attr, &output->y);
-	}
-	return TRUE;
-}
-
 int luaopen_orca_OverflowShorthand(lua_State *L) {
 	luaL_newmetatable(L, "OverflowShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -1557,8 +1370,6 @@ int luaopen_orca_OverflowShorthand(lua_State *L) {
 	lua_pushcfunction(L, f_OverflowShorthand___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xml_OverflowShorthand);
-	lua_setfield(L, LUA_REGISTRYINDEX, "OverflowShorthandParser");
 	return 1;
 }
 void luaX_pushUnderlineShorthand(lua_State *L, lpcUnderlineShorthand_t data) {
@@ -1619,7 +1430,6 @@ int f_UnderlineShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in UnderlineShorthand: %s", luaL_checkstring(L, 2));
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoUnderlineShorthand(lpcString_t str, lpUnderlineShorthand_t output) {
 	lpcString_t __strtocolor(lpcString_t, struct color*);
 	lpcString_t __strtofloat(lpcString_t, float*);
@@ -1635,21 +1445,6 @@ static int f_fromstring_UnderlineShorthand(lua_State *L) {
 	__strtoUnderlineShorthand(luaL_checkstring(L, 1), self);
 	return 1;
 }
-static int xml_UnderlineShorthand(xmlNodePtr xml, lpUnderlineShorthand_t output) {
-	lpcString_t __strtocolor(lpcString_t, struct color*);
-	lpcString_t __strtofloat(lpcString_t, float*);
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Offset")), xmlFree) {
-		__strtofloat((lpcString_t)attr, &output->Offset);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Width")), xmlFree) {
-		__strtofloat((lpcString_t)attr, &output->Width);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Color")), xmlFree) {
-		__strtocolor((lpcString_t)attr, &output->Color);
-	}
-	return TRUE;
-}
-
 int luaopen_orca_UnderlineShorthand(lua_State *L) {
 	luaL_newmetatable(L, "UnderlineShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -1663,8 +1458,6 @@ int luaopen_orca_UnderlineShorthand(lua_State *L) {
 	lua_pushcfunction(L, f_UnderlineShorthand___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xml_UnderlineShorthand);
-	lua_setfield(L, LUA_REGISTRYINDEX, "UnderlineShorthandParser");
 	return 1;
 }
 void luaX_pushThickness(lua_State *L, lpcThickness_t data) {
@@ -1739,7 +1532,6 @@ int f_Thickness___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in Thickness: %s", luaL_checkstring(L, 2));
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoThickness(lpcString_t str, lpThickness_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	str = __strtofloat(str, &output->Top);
@@ -1755,23 +1547,6 @@ static int f_fromstring_Thickness(lua_State *L) {
 	__strtoThickness(luaL_checkstring(L, 1), self);
 	return 1;
 }
-static int xml_Thickness(xmlNodePtr xml, lpThickness_t output) {
-	lpcString_t __strtofloat(lpcString_t, float*);
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Top")), xmlFree) {
-		__strtofloat((lpcString_t)attr, &output->Top);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Right")), xmlFree) {
-		__strtofloat((lpcString_t)attr, &output->Right);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Bottom")), xmlFree) {
-		__strtofloat((lpcString_t)attr, &output->Bottom);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Left")), xmlFree) {
-		__strtofloat((lpcString_t)attr, &output->Left);
-	}
-	return TRUE;
-}
-
 int luaopen_orca_Thickness(lua_State *L) {
 	luaL_newmetatable(L, "Thickness");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -1785,8 +1560,6 @@ int luaopen_orca_Thickness(lua_State *L) {
 	lua_pushcfunction(L, f_Thickness___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xml_Thickness);
-	lua_setfield(L, LUA_REGISTRYINDEX, "ThicknessParser");
 	return 1;
 }
 void luaX_pushMarginShorthand(lua_State *L, lpcMarginShorthand_t data) {
@@ -1818,7 +1591,6 @@ int f_MarginShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in MarginShorthand: %s", luaL_checkstring(L, 2));
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoMarginShorthand(lpcString_t str, lpMarginShorthand_t output) {
 	return str;
 }
@@ -1829,10 +1601,6 @@ static int f_fromstring_MarginShorthand(lua_State *L) {
 	__strtoMarginShorthand(luaL_checkstring(L, 1), self);
 	return 1;
 }
-static int xml_MarginShorthand(xmlNodePtr xml, lpMarginShorthand_t output) {
-	return TRUE;
-}
-
 int luaopen_orca_MarginShorthand(lua_State *L) {
 	luaL_newmetatable(L, "MarginShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -1846,8 +1614,6 @@ int luaopen_orca_MarginShorthand(lua_State *L) {
 	lua_pushcfunction(L, f_MarginShorthand___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xml_MarginShorthand);
-	lua_setfield(L, LUA_REGISTRYINDEX, "MarginShorthandParser");
 	return 1;
 }
 void luaX_pushSizeAxisShorthand(lua_State *L, lpcSizeAxisShorthand_t data) {
@@ -1932,7 +1698,6 @@ int f_SizeAxisShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in SizeAxisShorthand: %s", luaL_checkstring(L, 2));
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoSizeAxisShorthand(lpcString_t str, lpSizeAxisShorthand_t output) {
 	lpcString_t __strtofloat(lpcString_t, float*);
 	str = __strtofloat(str, &output->Requested);
@@ -1949,26 +1714,6 @@ static int f_fromstring_SizeAxisShorthand(lua_State *L) {
 	__strtoSizeAxisShorthand(luaL_checkstring(L, 1), self);
 	return 1;
 }
-static int xml_SizeAxisShorthand(xmlNodePtr xml, lpSizeAxisShorthand_t output) {
-	lpcString_t __strtofloat(lpcString_t, float*);
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Requested")), xmlFree) {
-		__strtofloat((lpcString_t)attr, &output->Requested);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Desired")), xmlFree) {
-		__strtofloat((lpcString_t)attr, &output->Desired);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Min")), xmlFree) {
-		__strtofloat((lpcString_t)attr, &output->Min);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Actual")), xmlFree) {
-		__strtofloat((lpcString_t)attr, &output->Actual);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Scroll")), xmlFree) {
-		__strtofloat((lpcString_t)attr, &output->Scroll);
-	}
-	return TRUE;
-}
-
 int luaopen_orca_SizeAxisShorthand(lua_State *L) {
 	luaL_newmetatable(L, "SizeAxisShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -1982,8 +1727,6 @@ int luaopen_orca_SizeAxisShorthand(lua_State *L) {
 	lua_pushcfunction(L, f_SizeAxisShorthand___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xml_SizeAxisShorthand);
-	lua_setfield(L, LUA_REGISTRYINDEX, "SizeAxisShorthandParser");
 	return 1;
 }
 void luaX_pushSizeShorthand(lua_State *L, lpcSizeShorthand_t data) {
@@ -2015,7 +1758,6 @@ int f_SizeShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in SizeShorthand: %s", luaL_checkstring(L, 2));
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoSizeShorthand(lpcString_t str, lpSizeShorthand_t output) {
 	return str;
 }
@@ -2026,10 +1768,6 @@ static int f_fromstring_SizeShorthand(lua_State *L) {
 	__strtoSizeShorthand(luaL_checkstring(L, 1), self);
 	return 1;
 }
-static int xml_SizeShorthand(xmlNodePtr xml, lpSizeShorthand_t output) {
-	return TRUE;
-}
-
 int luaopen_orca_SizeShorthand(lua_State *L) {
 	luaL_newmetatable(L, "SizeShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -2043,8 +1781,6 @@ int luaopen_orca_SizeShorthand(lua_State *L) {
 	lua_pushcfunction(L, f_SizeShorthand___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xml_SizeShorthand);
-	lua_setfield(L, LUA_REGISTRYINDEX, "SizeShorthandParser");
 	return 1;
 }
 static struct PropertyType const DataObjectProperties[kDataObjectNumProperties] = {
@@ -3212,7 +2948,6 @@ void luaX_pushResizeMode(lua_State *L, eResizeMode_t value) {
 	assert(value >= 0 && value < 4);
 	lua_pushstring(L, _ResizeMode[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoResizeMode(lpcString_t string, enum ResizeMode* output) {
 	if (string == NULL) return FALSE;
 	const char* _ResizeMode[] = { "NoResize", "CanMinimize", "CanResize", "CanResizeWithGrip", NULL };
@@ -3368,7 +3103,6 @@ void luaX_pushStretch(lua_State *L, eStretch_t value) {
 	assert(value >= 0 && value < 4);
 	lua_pushstring(L, _Stretch[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoStretch(lpcString_t string, enum Stretch* output) {
 	if (string == NULL) return FALSE;
 	const char* _Stretch[] = { "Uniform", "None", "Fill", "UniformToFill", NULL };
@@ -3567,7 +3301,6 @@ void luaX_pushTransitionType(lua_State *L, eTransitionType_t value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _TransitionType[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoTransitionType(lpcString_t string, enum TransitionType* output) {
 	if (string == NULL) return FALSE;
 	const char* _TransitionType[] = { "None", "Slide", "Fade", NULL };
@@ -3635,7 +3368,6 @@ int f_NavigateToPageArguments___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in NavigateToPageArguments: %s", luaL_checkstring(L, 2));
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoNavigateToPageArguments(lpcString_t str, lpNavigateToPageArguments_t output) {
 	lpcString_t __strtoTransitionType(lpcString_t, enum TransitionType*);
 	lpcString_t __strtofixed(lpcString_t, fixedString_t*);
@@ -3650,18 +3382,6 @@ static int f_fromstring_NavigateToPageArguments(lua_State *L) {
 	__strtoNavigateToPageArguments(luaL_checkstring(L, 1), self);
 	return 1;
 }
-static int xml_NavigateToPageArguments(xmlNodePtr xml, lpNavigateToPageArguments_t output) {
-	lpcString_t __strtoTransitionType(lpcString_t, enum TransitionType*);
-	lpcString_t __strtofixed(lpcString_t, fixedString_t*);
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("URL")), xmlFree) {
-		__strtofixed((lpcString_t)attr, &output->URL);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("TransitionType")), xmlFree) {
-		__strtoTransitionType((lpcString_t)attr, &output->TransitionType);
-	}
-	return TRUE;
-}
-
 int luaopen_orca_NavigateToPageArguments(lua_State *L) {
 	luaL_newmetatable(L, "NavigateToPageArguments");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -3675,8 +3395,6 @@ int luaopen_orca_NavigateToPageArguments(lua_State *L) {
 	lua_pushcfunction(L, f_NavigateToPageArguments___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xml_NavigateToPageArguments);
-	lua_setfield(L, LUA_REGISTRYINDEX, "NavigateToPageArgumentsParser");
 	return 1;
 }
 void luaX_pushNavigateBackArguments(lua_State *L, lpcNavigateBackArguments_t data) {
@@ -3721,7 +3439,6 @@ int f_NavigateBackArguments___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in NavigateBackArguments: %s", luaL_checkstring(L, 2));
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoNavigateBackArguments(lpcString_t str, lpNavigateBackArguments_t output) {
 	lpcString_t __strtoTransitionType(lpcString_t, enum TransitionType*);
 	str = __strtoTransitionType(str, &output->TransitionType);
@@ -3734,14 +3451,6 @@ static int f_fromstring_NavigateBackArguments(lua_State *L) {
 	__strtoNavigateBackArguments(luaL_checkstring(L, 1), self);
 	return 1;
 }
-static int xml_NavigateBackArguments(xmlNodePtr xml, lpNavigateBackArguments_t output) {
-	lpcString_t __strtoTransitionType(lpcString_t, enum TransitionType*);
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("TransitionType")), xmlFree) {
-		__strtoTransitionType((lpcString_t)attr, &output->TransitionType);
-	}
-	return TRUE;
-}
-
 int luaopen_orca_NavigateBackArguments(lua_State *L) {
 	luaL_newmetatable(L, "NavigateBackArguments");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -3755,8 +3464,6 @@ int luaopen_orca_NavigateBackArguments(lua_State *L) {
 	lua_pushcfunction(L, f_NavigateBackArguments___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xml_NavigateBackArguments);
-	lua_setfield(L, LUA_REGISTRYINDEX, "NavigateBackArgumentsParser");
 	return 1;
 }
 LRESULT Page_Create(lpObject_t, lpPage_t, wParam_t, CreateEventPtr);
@@ -3871,7 +3578,6 @@ void luaX_pushStyleType(lua_State *L, eStyleType_t value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _StyleType[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoStyleType(lpcString_t string, enum StyleType* output) {
 	if (string == NULL) return FALSE;
 	const char* _StyleType[] = { "Generic", "Named", NULL };
