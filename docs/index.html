@@ -21,7 +21,9 @@
 </span></a><a class="leaf-link" href="#edges"><i class="fa-solid fa-gear icon"></i><span>edges
 </span></a><a class="leaf-link" href="#color"><i class="fa-solid fa-gear icon"></i><span>color
 </span></a><div class="technology-title"><span class="fa-solid fa-folder-open icon"></span>orca.core
-</div><a class="leaf-link" href="#Object"><i class="fa-solid fa-atom icon"></i><span>Object
+</div><a class="leaf-link" href="#BindingMode"><i class="fa-solid fa-bars icon"></i><span>BindingMode
+</span></a><a class="leaf-link" href="#PropertyAttribute"><i class="fa-solid fa-bars icon"></i><span>PropertyAttribute
+</span></a><a class="leaf-link" href="#Object"><i class="fa-solid fa-atom icon"></i><span>Object
 </span></a><a class="leaf-link" href="#DataType"><i class="fa-solid fa-bars icon"></i><span>DataType
 </span></a><a class="leaf-link" href="#PropertyEnumValue"><i class="fa-solid fa-gear icon"></i><span>PropertyEnumValue
 </span></a><a class="leaf-link" href="#PropertyType"><i class="fa-solid fa-gear icon"></i><span>PropertyType
@@ -499,7 +501,37 @@
 <div class="small-abstract"><span>Alpha (transparency) component (0.0 = transparent, 1.0 = opaque)
 </span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">lerp</span>(<span class="identifier">other</span>:<span class="decorator">color</span>, <span class="identifier">t</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> color</span></code><div class="small-abstract"><span>Linear interpolation between colors
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">parse</span>(<span class="identifier">code</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> color</span></code><div class="small-abstract"><span>Parses color from string representation
-</span></div></div></div><div id="Object" class="class" data-name="Object" data-inherits="None" data-xmlns="None"><div class="eyebrow">Interface
+</span></div></div></div><div id="BindingMode" class="class" data-name="BindingMode" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
+</div><h1 class="header">BindingMode
+</h1><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">OneWay</span></code><div class="small-abstract"><span>Default mode, updates target property when source changes
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">TwoWay</span></code><div class="small-abstract"><span>Updates target property when source changes and updates source when target changes
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">OneWayToSource</span></code><div class="small-abstract"><span>Updates source property when target changes, but not the other way around
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Expression</span></code><div class="small-abstract"><span>Allows binding to a custom expression
+</span></div></div>
+</div><div id="PropertyAttribute" class="class" data-name="PropertyAttribute" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
+</div><h1 class="header">PropertyAttribute
+</h1><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">WholeProperty</span></code><div class="small-abstract"><span>Default binding to the whole property
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">ColorR</span></code><div class="small-abstract"><span>Bind to the red channel of a color property
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">ColorG</span></code><div class="small-abstract"><span>Bind to the green channel of a color property
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">ColorB</span></code><div class="small-abstract"><span>Bind to the blue channel of a color property
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">ColorA</span></code><div class="small-abstract"><span>Bind to the alpha channel of a color property
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">VectorX</span></code><div class="small-abstract"><span>Bind to the X component of a vector property
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">VectorY</span></code><div class="small-abstract"><span>Bind to the Y component of a vector property
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">VectorZ</span></code><div class="small-abstract"><span>Bind to the Z component of a vector property
+</span></div></div>
+<div class="topic"><code class="decorator"><span>case </span><span class="identifier">VectorW</span></code><div class="small-abstract"><span>Bind to the W component of a vector property
+</span></div></div>
+</div><div id="Object" class="class" data-name="Object" data-inherits="None" data-xmlns="None"><div class="eyebrow">Interface
 </div><h1 class="header">Object
 </h1><div class="abstract">Core engine host object.
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">core.Object</span></code><h2 class="title">Overview</h2><div class="abstract">
@@ -572,6 +604,7 @@
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getProperties</span>()<span class="decorator"> -&gt;</span><span> Property</span></code><div class="small-abstract"><span>Gets the properties collection
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">findImplicitProperty</span>(<span class="identifier">name</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> PropertyType</span></code><div class="small-abstract"><span>Looks up a property by context-driven syntax, like "Column" instead of "Grid.Column"
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">findExplicitProperty</span>(<span class="identifier">name</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> PropertyType</span></code><div class="small-abstract"><span>Looks up a property by full syntax, like "Grid.Column" instead of "Column"
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">attachPropertyProgram</span>(<span class="identifier">name</span>:<span class="decorator">string</span>, <span class="identifier">program</span>:<span class="decorator">string</span>, <span class="identifier">attribute</span>:<span class="decorator">PropertyAttribute</span>, <span class="identifier">mode</span>:<span class="decorator">BindingMode</span>, <span class="identifier">enabled</span>:<span class="decorator">bool</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Attaches a property program to the specified property
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">findPropertyByPath</span>(<span class="identifier">path</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> Property</span></code><div class="small-abstract"><span>Finds a property by navigating a hierarchical path
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">rebuild</span>()</code><div class="small-abstract"><span>Rebuilds the object's body content asynchronously
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getFocus</span>()<span class="decorator"> -&gt;</span><span> Object</span></code><div class="small-abstract"><span>Retrieves currently active object.

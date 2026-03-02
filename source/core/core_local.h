@@ -202,7 +202,7 @@ PROP_GetCallbackEvent(lpcProperty_t);
 lpcString_t
 PROP_GetShortName(lpcProperty_t);
 bool_t
-PROP_Import(lpProperty_t, enum property_attribute, struct vm_register*);
+PROP_Import(lpProperty_t, enum PropertyAttribute, struct vm_register*);
 void
 PROP_SetTypeSize(lpProperty_t, eDataType_t, uint32_t);
 lpProperty_t
@@ -242,6 +242,12 @@ OBJ_AddClass(lpObject_t, lpcString_t);
 
 void
 UI_ProcessCommands(struct lua_State* L, lpObject_t root);
+
+ORCA_API void
+PROP_AttachProgram(lpProperty_t,
+                   enum PropertyAttribute,
+                   struct token* program,
+                   lpcString_t source);
 
 extern struct game core;
 

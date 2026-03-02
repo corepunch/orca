@@ -14,6 +14,52 @@ void luaX_pushgame(lua_State *L, lpcgame_t game) {
 lpgame_t luaX_checkgame(lua_State *L, int idx) {
 	return lua_touserdata(L, idx);
 }
+static const char *_BindingMode[] = {"oneway","twoway","onewaytosource","expression",NULL};
+eBindingMode_t luaX_checkBindingMode(lua_State *L, int idx) {
+	return luaL_checkoption(L, idx, NULL, _BindingMode);
+}
+void luaX_pushBindingMode(lua_State *L, eBindingMode_t value) {
+	assert(value >= 0 && value < 4);
+	lua_pushstring(L, _BindingMode[value]);
+}
+ORCA_API lpcString_t __strtoBindingMode(lpcString_t string, enum BindingMode* output) {
+	if (string == NULL) return FALSE;
+	const char* _BindingMode[] = { "OneWay", "TwoWay", "OneWayToSource", "Expression", NULL };
+	if (isdigit(*string)) {
+		*output = strtod(string, (char**)&string);
+		return string;
+	} else for (const char **s = _BindingMode; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum BindingMode)(s - _BindingMode);
+			return string + strlen(*s);
+		}
+	}
+	Con_Error("Could not parse '%s' value of property BindingMode", string);
+	return string + strlen(string);
+}
+static const char *_PropertyAttribute[] = {"wholeproperty","colorr","colorg","colorb","colora","vectorx","vectory","vectorz","vectorw",NULL};
+ePropertyAttribute_t luaX_checkPropertyAttribute(lua_State *L, int idx) {
+	return luaL_checkoption(L, idx, NULL, _PropertyAttribute);
+}
+void luaX_pushPropertyAttribute(lua_State *L, ePropertyAttribute_t value) {
+	assert(value >= 0 && value < 9);
+	lua_pushstring(L, _PropertyAttribute[value]);
+}
+ORCA_API lpcString_t __strtoPropertyAttribute(lpcString_t string, enum PropertyAttribute* output) {
+	if (string == NULL) return FALSE;
+	const char* _PropertyAttribute[] = { "WholeProperty", "ColorR", "ColorG", "ColorB", "ColorA", "VectorX", "VectorY", "VectorZ", "VectorW", NULL };
+	if (isdigit(*string)) {
+		*output = strtod(string, (char**)&string);
+		return string;
+	} else for (const char **s = _PropertyAttribute; *s; s++) {
+		if (!strcmp(string, *s)) {
+			*output = (enum PropertyAttribute)(s - _PropertyAttribute);
+			return string + strlen(*s);
+		}
+	}
+	Con_Error("Could not parse '%s' value of property PropertyAttribute", string);
+	return string + strlen(string);
+}
 lpObject_t luaX_checkObject(lua_State *L, int idx);
 int f_new_Object(lua_State *L);
 static int f_Object_clear(lua_State *L) {
@@ -411,6 +457,17 @@ static int f_Object_findExplicitProperty(lua_State *L) {
 	luaX_pushPropertyType(L, output);
 	return 1;
 }
+static int f_Object_attachPropertyProgram(lua_State *L) {
+	lpObject_t self = luaX_checkObject(L, 1);
+	const char* name = luaL_checkstring(L, 2);
+	const char* program = luaL_checkstring(L, 3);
+	ePropertyAttribute_t attribute = luaX_checkPropertyAttribute(L, 4);
+	eBindingMode_t mode = luaX_checkBindingMode(L, 5);
+	bool_t enabled = lua_toboolean(L, 6);
+	bool_t output = OBJ_AttachPropertyProgram(self, name, program, attribute, mode, enabled);
+	lua_pushboolean(L, output);
+	return 1;
+}
 static int f_Object_findPropertyByPath(lua_State *L) {
 	lpObject_t self = luaX_checkObject(L, 1);
 	const char* path = luaL_checkstring(L, 2);
@@ -604,6 +661,9 @@ int f_Object___index(lua_State *L) {
 		return 1;
 	case 0x0c3ece1f: // findExplicitProperty
 		lua_pushcfunction(L, f_Object_findExplicitProperty);
+		return 1;
+	case 0x22b2f99b: // attachPropertyProgram
+		lua_pushcfunction(L, f_Object_attachPropertyProgram);
 		return 1;
 	case 0xfc8bdeb9: // findPropertyByPath
 		lua_pushcfunction(L, f_Object_findPropertyByPath);

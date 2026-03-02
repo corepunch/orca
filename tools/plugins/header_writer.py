@@ -106,6 +106,7 @@ class HeaderWriter(Plugin):
 			self.on_function(interface, method)
 
 	def on_enums(self, _, enums):
+		self.w(f"#define {enums.get('name')}_Count " + str(len(enums.findall('enum'))))
 		self.w(f"typedef enum {enums.get('name')} {{")
 		for enum in enums.findall('enum'):
 			enum_name = f"k{enums.get('name') + enum.get('name')}"

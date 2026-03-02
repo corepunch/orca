@@ -130,7 +130,7 @@ void PROP_Print(HPROP p, LPSTR buffer, DWORD len) {
   }*/, buffer, len, PROP_GetValue(p));
 }
 
-static lpcString_t _attrs[ATTR_COUNT] = {
+static lpcString_t _attrs[PropertyAttribute_Count] = {
   "WHOLE_PROPERTY",
   "COLOR_R", // = ATTR_VECTOR_X,
   "COLOR_G", // = ATTR_VECTOR_Y,
@@ -146,14 +146,14 @@ static lpcString_t _attrs[ATTR_COUNT] = {
 xmlNsPtr xmlFindNs(xmlNodePtr node, xmlChar const *url);
 
 void ED_WriteBindings(HPROP prop, xmlNodePtr node) {
-  FOR_LOOP(i, ATTR_COUNT) {
+  FOR_LOOP(i, PropertyAttribute_Count) {
     if (prop->programs[i]) {
       xmlChar const *name =  BAD_CAST prop->programSources[i];
       xmlNsPtr ns = xmlFindNs(node, BAD_CAST default_url);
       xmlNodePtr bnd = xmlNewChild(node, ns, XMLSTR("Binding"), name);
       xmlSetProp(bnd, XMLSTR("Property"), BAD_CAST prop->name);
       xmlSetProp(bnd, XMLSTR("Enabled"), BAD_CAST (prop->programs[i]?"true":"false"));
-      if (i != ATTR_WHOLE_PROPERTY) {
+      if (i != kPropertyAttributeWholeProperty) {
         xmlSetProp(bnd, XMLSTR("Attribute"), BAD_CAST _attrs[i]);
       }
     }

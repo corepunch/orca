@@ -9,41 +9,29 @@
 
 extern lpObject_t root_node;
 
-BINDING_MODE
+enum BindingMode
 xmlParseBindingMode(xmlChar const* s)
 {
-  if (!xmlStrcmp(s, XMLSTR("expression")))
-    return BIND_EXPRESSION;
-  if (!xmlStrcmp(s, XMLSTR("oneway")))
-    return BING_ONEWAY;
-  return BIND_EXPRESSION;
+  if (!xmlStrcmp(s, XMLSTR("expression"))) return kBindingModeExpression;
+  if (!xmlStrcmp(s, XMLSTR("oneway"))) return kBindingModeOneWay;
+  return kBindingModeExpression;
 }
 
-enum property_attribute
+enum PropertyAttribute
 xmlParsePropertyAttr(xmlChar const* s)
 {
-  if (s == NULL)
-    return ATTR_WHOLE_PROPERTY;
-  if (!xmlStrcmp(s, XMLSTR("WHOLE_PROPERTY")))
-    return ATTR_WHOLE_PROPERTY;
-  if (!xmlStrcmp(s, XMLSTR("COLOR_R")))
-    return ATTR_COLOR_R;
-  if (!xmlStrcmp(s, XMLSTR("COLOR_G")))
-    return ATTR_COLOR_G;
-  if (!xmlStrcmp(s, XMLSTR("COLOR_B")))
-    return ATTR_COLOR_B;
-  if (!xmlStrcmp(s, XMLSTR("COLOR_A")))
-    return ATTR_COLOR_A;
-  if (!xmlStrcmp(s, XMLSTR("VECTOR_X")))
-    return ATTR_VECTOR_X;
-  if (!xmlStrcmp(s, XMLSTR("VECTOR_Y")))
-    return ATTR_VECTOR_Y;
-  if (!xmlStrcmp(s, XMLSTR("VECTOR_Z")))
-    return ATTR_VECTOR_Z;
-  if (!xmlStrcmp(s, XMLSTR("VECTOR_W")))
-    return ATTR_VECTOR_W;
+  if (s == NULL) return kPropertyAttributeWholeProperty;
+  if (!xmlStrcmp(s, XMLSTR("WHOLE_PROPERTY"))) return kPropertyAttributeWholeProperty;
+  if (!xmlStrcmp(s, XMLSTR("COLOR_R"))) return kPropertyAttributeColorR;
+  if (!xmlStrcmp(s, XMLSTR("COLOR_G"))) return kPropertyAttributeColorG;
+  if (!xmlStrcmp(s, XMLSTR("COLOR_B"))) return kPropertyAttributeColorB;
+  if (!xmlStrcmp(s, XMLSTR("COLOR_A"))) return kPropertyAttributeColorA;
+  if (!xmlStrcmp(s, XMLSTR("VECTOR_X"))) return kPropertyAttributeVectorX;
+  if (!xmlStrcmp(s, XMLSTR("VECTOR_Y"))) return kPropertyAttributeVectorY;
+  if (!xmlStrcmp(s, XMLSTR("VECTOR_Z"))) return kPropertyAttributeVectorZ;
+  if (!xmlStrcmp(s, XMLSTR("VECTOR_W"))) return kPropertyAttributeVectorW;
   assert(0);
-  return ATTR_WHOLE_PROPERTY;
+  return kPropertyAttributeWholeProperty;
 }
 //
 //static void* _GetParser(lua_State* L, lpcString_t type) {
@@ -85,8 +73,8 @@ static void
 XML_ParsePropertyNode(lua_State* L, xmlNodePtr it, lpObject_t object)
 {
   bool_t bEnabled = TRUE;
-  enum property_attribute eAttr = ATTR_WHOLE_PROPERTY;
-  BINDING_MODE eMode = BIND_EXPRESSION;
+  enum PropertyAttribute eAttr = kPropertyAttributeWholeProperty;
+  enum BindingMode eMode = kBindingModeTwoWay;
   lpProperty_t property = NULL;
 
   xmlWith(xmlChar, Value, xmlGetProp(it, XMLSTR("Value")), xmlFree) {

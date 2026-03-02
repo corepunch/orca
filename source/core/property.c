@@ -45,8 +45,8 @@ struct Property
   shortStr_t name;
   eDataType_t type;
   enum uniform_precision precision;
-  struct token* programs[ATTR_COUNT];
-  LPSTR programSources[ATTR_COUNT];
+  struct token* programs[PropertyAttribute_Count];
+  LPSTR programSources[PropertyAttribute_Count];
   uint32_t longIdentifier;
   uint32_t shortIdentifier;
   uint32_t flags;
@@ -108,7 +108,7 @@ PROP_Update(lpProperty_t property)
       property->updateFrame == core.frame)
     return FALSE;
   property->updateFrame = core.frame;
-  FOR_LOOP(i, ATTR_COUNT)
+  FOR_LOOP(i, PropertyAttribute_Count)
   {
     if (property->programs[i]) {
       struct vm_register r = { 0 };
@@ -622,7 +622,7 @@ PROP_ProcessEvents(lua_State* L,
 
 void
 PROP_AttachProgram(lpProperty_t p,
-                   enum property_attribute a,
+                   enum PropertyAttribute a,
                    struct token* program,
                    lpcString_t code)
 {
@@ -633,7 +633,7 @@ PROP_AttachProgram(lpProperty_t p,
 bool_t
 PROP_HasProgram(lpProperty_t p)
 {
-  FOR_LOOP(i, ATTR_COUNT)
+  FOR_LOOP(i, PropertyAttribute_Count)
   {
     if (p->programs[i]) {
       return TRUE;
@@ -717,7 +717,7 @@ OBJ_ReleaseProperties(lpObject_t hobj)
 {
   FOR_EACH_LIST(struct Property, p, OBJ_GetProperties(hobj))
   {
-    FOR_LOOP(i, ATTR_COUNT)
+    FOR_LOOP(i, PropertyAttribute_Count)
     {
       if (p->programs[i]) {
         Token_Release(p->programs[i]);

@@ -835,4 +835,23 @@ OBJ_SetModal(lpObject_t self, lpObject_t modal)
   }
 }
 
+bool_t
+OBJ_AttachPropertyProgram(lpObject_t self,
+                          lpcString_t name,
+                          lpcString_t program,
+                          ePropertyAttribute_t attribute,
+                          eBindingMode_t mode,
+                          bool_t enabled)
+{
+  struct token *compiled = enabled ? Token_Create(program) : NULL;
+  struct Property *property = NULL;
+  if (SUCCEEDED(OBJ_FindLongProperty(self, fnv1a32(name), &property))) {
+    PROP_AttachProgram(property, attribute, compiled, program);
+    return TRUE;
+  } else {
+    return FALSE;
+  }
+}
+
+
 #include <source/editor/ed_stab_object.h>

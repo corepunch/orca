@@ -156,6 +156,27 @@ typedef struct Property Property_t, *lpProperty_t;
 typedef struct Property const cProperty_t, *lpcProperty_t;
 typedef struct KeyframeAnim KeyframeAnim_t, *lpKeyframeAnim_t;
 typedef struct KeyframeAnim const cKeyframeAnim_t, *lpcKeyframeAnim_t;
+#define BindingMode_Count 4
+typedef enum BindingMode {
+	kBindingModeOneWay, /// Default mode, updates target property when source changes
+	kBindingModeTwoWay, /// Updates target property when source changes and updates source when target changes
+	kBindingModeOneWayToSource, /// Updates source property when target changes, but not the other way around
+	kBindingModeExpression, /// Allows binding to a custom expression
+} eBindingMode_t;
+
+#define PropertyAttribute_Count 9
+typedef enum PropertyAttribute {
+	kPropertyAttributeWholeProperty, /// Default binding to the whole property
+	kPropertyAttributeColorR, /// Bind to the red channel of a color property
+	kPropertyAttributeColorG, /// Bind to the green channel of a color property
+	kPropertyAttributeColorB, /// Bind to the blue channel of a color property
+	kPropertyAttributeColorA, /// Bind to the alpha channel of a color property
+	kPropertyAttributeVectorX, /// Bind to the X component of a vector property
+	kPropertyAttributeVectorY, /// Bind to the Y component of a vector property
+	kPropertyAttributeVectorZ, /// Bind to the Z component of a vector property
+	kPropertyAttributeVectorW, /// Bind to the W component of a vector property
+} ePropertyAttribute_t;
+
 /// @brief Clear all children of the object.
 ORCA_API void
 OBJ_Clear(lua_State *L, lpObject_t self);
@@ -424,6 +445,10 @@ OBJ_FindImplicitProperty(lpObject_t self, const char* name);
 ORCA_API lpPropertyType_t
 OBJ_FindExplicitProperty(lpObject_t self, const char* name);
 
+/// @brief Attaches a property program to the specified property
+ORCA_API bool_t
+OBJ_AttachPropertyProgram(lpObject_t self, const char* name, const char* program, ePropertyAttribute_t attribute, eBindingMode_t mode, bool_t enabled);
+
 /// @brief Finds a property by navigating a hierarchical path
 ORCA_API lpProperty_t
 OBJ_FindPropertyByPath(lpObject_t self, const char* path);
@@ -440,6 +465,7 @@ core_GetFocus(void);
 ORCA_API lpObject_t
 core_GetHover(void);
 
+#define DataType_Count 12
 typedef enum DataType {
 	kDataTypeNone, /// No data type specified.
 	kDataTypeBool, /// Boolean value representing true or false.

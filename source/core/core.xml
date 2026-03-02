@@ -47,6 +47,25 @@
   <resource type="game"/>
   <resource type="Property" no-lua="true"/>
   <resource type="KeyframeAnim" no-lua="true"/>
+  
+  <enums name="BindingMode">
+    <enum name="OneWay">Default mode, updates target property when source changes</enum>
+    <enum name="TwoWay">Updates target property when source changes and updates source when target changes</enum>
+    <enum name="OneWayToSource">Updates source property when target changes, but not the other way around</enum>
+    <enum name="Expression">Allows binding to a custom expression</enum>
+  </enums>
+
+  <enums name="PropertyAttribute">
+    <enum name="WholeProperty">Default binding to the whole property</enum>
+    <enum name="ColorR">Bind to the red channel of a color property</enum>
+    <enum name="ColorG">Bind to the green channel of a color property</enum>
+    <enum name="ColorB">Bind to the blue channel of a color property</enum>
+    <enum name="ColorA">Bind to the alpha channel of a color property</enum>
+    <enum name="VectorX">Bind to the X component of a vector property</enum>
+    <enum name="VectorY">Bind to the Y component of a vector property</enum>
+    <enum name="VectorZ">Bind to the Z component of a vector property</enum>
+    <enum name="VectorW">Bind to the W component of a vector property</enum>
+  </enums>
 
   <interface name="Object" prefix="OBJ_" export="Object" no-check="true">
     <summary>Core engine host object.</summary>
@@ -466,6 +485,17 @@
       <details>Searches for a property using the full property path, requiring the complete syntax for accurate identification. This method ensures precise property access by using the explicit path provided.</details>
       <arg name="name" type="string">The full name of the property to find</arg>
       <returns type="PropertyType" pointer="true">Pointer to a property type, null if not found</returns>
+    </method>
+
+    <method name="AttachPropertyProgram"> 
+      <summary>Attaches a property program to the specified property</summary>
+      <details>Enables attaching custom programs to bindings to perform calculations and transformations on bound data. For example, multiplying a DataSource value: DataSource.Speed * 20. The attached program is evaluated whenever the source data changes, allowing for dynamic property updates based on complex expressions. This allows for complex binding expressions and dynamic property computation without requiring explicit code-behind logic.</details>
+      <arg name="name" type="string">The full name of the property to attach the program to</arg>
+      <arg name="program" type="string">The program or expression to attach to the property</arg>
+      <arg name="attribute" type="PropertyAttribute">The attribute of the property to attach the program to (e.g., Value, Color, etc.)</arg>  
+      <arg name="mode" type="BindingMode">The binding mode for the property program (e.g., OneWay, TwoWay, OneWayToSource)</arg>  
+      <arg name="enabled" type="bool">Whether the property program is enabled</arg>
+      <returns type="bool">True if the property program was successfully attached, false otherwise</returns>
     </method>
     
     <method name="FindPropertyByPath">

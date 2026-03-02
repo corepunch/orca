@@ -162,6 +162,7 @@ luaX_checkSpriteView(lua_State *L, int idx);
 #include <source/renderer/api/renderer.h>
 #include <include/renderer.h>
 #include <source/UIKit/UIKit.h>
+#define StencilOp_Count 8
 typedef enum StencilOp {
 	kStencilOpKeep, /// Keep the current stencil buffer value unchanged
 	kStencilOpZero, /// Set the stencil buffer value to zero
@@ -173,17 +174,20 @@ typedef enum StencilOp {
 	kStencilOpInvert, /// Bitwise invert the stencil buffer value
 } eStencilOp_t;
 
+#define ViewportMode_Count 2
 typedef enum ViewportMode {
 	kViewportModeRelative, /// Coordinates specified as normalized values (0.0 to 1.0) relative to render target size
 	kViewportModeAbsolute, /// Coordinates specified in absolute pixels
 } eViewportMode_t;
 
+#define CullMode_Count 3
 typedef enum CullMode {
 	kCullModeNone, /// No face culling - render both front and back faces
 	kCullModeBack, /// Cull back-facing triangles (standard for solid objects)
 	kCullModeFront, /// Cull front-facing triangles (useful for interior views or special effects)
 } eCullMode_t;
 
+#define ColorWriteMode_Count 8
 typedef enum ColorWriteMode {
 	kColorWriteModeNone, /// Disable all color channel writes (useful for depth-only or stencil-only passes)
 	kColorWriteModeRGB, /// Write to red, green, and blue channels only
@@ -195,16 +199,19 @@ typedef enum ColorWriteMode {
 	kColorWriteModeA, /// Write to alpha channel only
 } eColorWriteMode_t;
 
+#define FovType_Count 2
 typedef enum FovType {
 	kFovTypeXfov, /// Field of view specified as horizontal angle in degrees
 	kFovTypeYfov, /// Field of view specified as vertical angle in degrees (most common)
 } eFovType_t;
 
+#define ProjectionType_Count 2
 typedef enum ProjectionType {
 	kProjectionTypePerspective, /// Perspective projection with realistic depth foreshortening
 	kProjectionTypeOrthographic, /// Orthographic projection with parallel lines (no perspective distortion)
 } eProjectionType_t;
 
+#define LightType_Count 2
 typedef enum LightType {
 	kLightTypePoint, /// Omnidirectional point light source (like a light bulb)
 	kLightTypeSpot, /// Directional spot light with cone-shaped illumination area

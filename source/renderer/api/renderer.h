@@ -177,6 +177,7 @@ luaX_pushshape(lua_State *L, lpcshape_t shape);
 ORCA_API lpshape_t
 luaX_checkshape(lua_State *L, int idx);
 
+#define BlendMode_Count 6
 typedef enum BlendMode {
 	kBlendModeAlphaAutomatic, /// Automatic alpha mode selection
 	kBlendModeOpaque, /// Fully opaque rendering, no transparency
@@ -186,6 +187,7 @@ typedef enum BlendMode {
 	kBlendModeMixedAlpha, /// Mixed alpha composition
 } eBlendMode_t;
 
+#define CompareFunc_Count 9
 typedef enum CompareFunc {
 	kCompareFuncNever, /// Test never passes - all fragments are rejected
 	kCompareFuncAlways, /// Test always passes - all fragments are accepted
@@ -198,18 +200,21 @@ typedef enum CompareFunc {
 	kCompareFuncDisabled, /// Testing is disabled - equivalent to Always but may have performance benefits
 } eCompareFunc_t;
 
+#define TextureFilter_Count 3
 typedef enum TextureFilter {
 	kTextureFilterNearest, /// Uses nearest-neighbor sampling for sharp, pixelated appearance.
 	kTextureFilterLinear, /// Uses bilinear interpolation for smooth texture sampling.
 	kTextureFilterTrilinear, /// Uses trilinear interpolation with mipmap blending for high-quality filtered textures.
 } eTextureFilter_t;
 
+#define TextureWrap_Count 3
 typedef enum TextureWrap {
 	kTextureWrapClamp, /// Clamps texture coordinates to [0, 1] range, repeating edge pixels beyond boundaries.
 	kTextureWrapRepeat, /// Repeats the texture pattern when coordinates exceed [0, 1] range.
 	kTextureWrapBase, /// Uses base texture addressing mode (platform-specific default behavior).
 } eTextureWrap_t;
 
+#define TextureFormat_Count 6
 typedef enum TextureFormat {
 	kTextureFormatAutomatic, /// Uses default format from project settings, typically Rgba8 for standard color textures.
 	kTextureFormatRgba8, /// Four-channel 8-bit format with red, green, blue, and alpha components (32 bits per pixel).
@@ -219,6 +224,7 @@ typedef enum TextureFormat {
 	kTextureFormatDepthStencil, /// Combined depth and stencil format for advanced rendering techniques requiring both depth testing and stencil operations.
 } eTextureFormat_t;
 
+#define MipmapMode_Count 4
 typedef enum MipmapMode {
 	kMipmapModeBase, /// Only the base (highest-resolution) mip level is used. Fastest, but can cause aliasing when textures are minified.
 	kMipmapModeNearest, /// Selects the nearest mip level based on the distance, without blending between levels. Produces sharper but less smooth transitions.
@@ -226,6 +232,7 @@ typedef enum MipmapMode {
 	kMipmapModeTrilinear, /// Performs linear filtering across both texel and mip levels, providing the smoothest possible texture transitions (slightly slower).
 } eMipmapMode_t;
 
+#define AnisotropyType_Count 5
 typedef enum AnisotropyType {
 	kAnisotropyTypeNone, /// Disables anisotropic filtering. Texture detail will degrade at oblique viewing angles.
 	kAnisotropyTypeX2, /// Applies 2x anisotropic filtering, modestly improving texture clarity at shallow angles.
@@ -254,6 +261,7 @@ struct Texture {
 	bool_t loaded; /// Used for on-demand texture loading.
 };
 
+#define ImageFormat_Count 5
 typedef enum ImageFormat {
 	kImageFormatPng, /// Portable Network Graphics — lossless compression, supports alpha channel, widely used for UI textures and screenshots
 	kImageFormatJpeg, /// Joint Photographic Experts Group — lossy compression, smaller file sizes, no full alpha support, suitable for photos
@@ -262,6 +270,7 @@ typedef enum ImageFormat {
 	kImageFormatPvrtc, /// PowerVR Texture Compression — hardware texture compression format optimized for PowerVR GPUs (common in iOS devices). Provides efficient storage with optional alpha support, suitable for mobile real-time graphics.
 } eImageFormat_t;
 
+#define AstcFormat_Count 28
 typedef enum AstcFormat {
 	kAstcFormatUnormBlock4x4, /// 4×4 block, unsigned normalized RGBA — highest quality, 8 bits per channel
 	kAstcFormatUnormBlock5x4, /// 5×4 block, unsigned normalized RGBA — slightly higher compression, good quality
@@ -293,12 +302,14 @@ typedef enum AstcFormat {
 	kAstcFormatSrgbBlock12x12, /// 12×12 block, sRGB color space — maximum compression, lowest quality
 } eAstcFormat_t;
 
+#define AtcCompressionScheme_Count 3
 typedef enum AtcCompressionScheme {
 	kAtcCompressionSchemeExplicitAlpha, /// RGB + separate alpha block (8 bits) — better alpha quality, slightly larger size
 	kAtcCompressionSchemeInterpolatedAlpha, /// RGB + interpolated alpha values — smaller size, lower alpha precision
 	kAtcCompressionSchemeRgb, /// RGB only, no alpha channel — smallest size and fastest decoding
 } eAtcCompressionScheme_t;
 
+#define AstcCompressionSpeed_Count 5
 typedef enum AstcCompressionSpeed {
 	kAstcCompressionSpeedVeryFast, /// lowest quality, fastest encode — for real-time or previews
 	kAstcCompressionSpeedFast, /// slightly better quality, still quite fast
@@ -307,6 +318,7 @@ typedef enum AstcCompressionSpeed {
 	kAstcCompressionSpeedExhaustive, /// best possible quality, extremely slow — for final offline baking
 } eAstcCompressionSpeed_t;
 
+#define RawColorByteFormat_Count 7
 typedef enum RawColorByteFormat {
 	kRawColorByteFormatRgba8, /// 8 bits per channel, unsigned normalized RGBA — the standard format for general use
 	kRawColorByteFormatRgb8, /// 8 bits per channel, unsigned normalized RGB — no alpha channel
@@ -317,6 +329,7 @@ typedef enum RawColorByteFormat {
 	kRawColorByteFormatRgba32f, /// 32-bit floating point per channel RGBA — maximum precision, used in offline or scientific rendering
 } eRawColorByteFormat_t;
 
+#define FilePngCompressionLevel_Count 5
 typedef enum FilePngCompressionLevel {
 	kFilePngCompressionLevelNone, /// no compression — largest files, fastest save
 	kFilePngCompressionLevelFast, /// light compression — minimal size reduction, quick encode
@@ -325,12 +338,14 @@ typedef enum FilePngCompressionLevel {
 	kFilePngCompressionLevelProjectDefault, /// use compression level defined by project settings
 } eFilePngCompressionLevel_t;
 
+#define SpansionCompressionScheme_Count 3
 typedef enum SpansionCompressionScheme {
 	kSpansionCompressionSchemeNone, /// No compression applied to the data — used when maximum speed is required or when compression is handled elsewhere in the system
 	kSpansionCompressionSchemeStandard, /// Standard compression applied — balances between compression ratio and speed
 	kSpansionCompressionSchemeEnhanced, /// Enhanced compression applied — achieves higher compression ratios at the cost of increased processing time
 } eSpansionCompressionScheme_t;
 
+#define ImageType_Count 2
 typedef enum ImageType {
 	kImageTypeNormal,
 	kImageTypeMask,
@@ -366,6 +381,7 @@ struct Image {
 	fixedString_t FileExportSourceImage;
 };
 
+#define RenderTargetType_Count 7
 typedef enum RenderTargetType {
 	kRenderTargetTypeColor, /// Standard color attachment used for rendering the final image or intermediate color buffers
 	kRenderTargetTypeDepth, /// Depth buffer attachment — stores depth information used for depth testing during rendering
@@ -376,6 +392,7 @@ typedef enum RenderTargetType {
 	kRenderTargetTypeEmission, /// Optional attachment storing emissive light information for glow or lighting accumulation passes
 } eRenderTargetType_t;
 
+#define RenderTargetTextureAttachment_Count 8
 typedef enum RenderTargetTextureAttachment {
 	kRenderTargetTextureAttachmentNone, /// No attachment — the texture is not bound to any framebuffer slot
 	kRenderTargetTextureAttachmentColor0, /// First color attachment (default target for most rendering)
@@ -419,6 +436,7 @@ struct IOSurfaceTexture {
 	int32_t IOSurface; /// The IOSurface identifier used to look up and bind the shared surface as a texture.
 };
 
+#define FloatPrecision_Count 4
 typedef enum FloatPrecision {
 	kFloatPrecisionUnset, /// No precision specified, may cause issues.
 	kFloatPrecisionLow, /// Lowest precision, typically 8-16 bits. Suitable for color values and non-critical calculations.
@@ -426,6 +444,7 @@ typedef enum FloatPrecision {
 	kFloatPrecisionHigh, /// Highest precision, typically 32 bits. Required for vertex positions, matrices, and critical transformations.
 } eFloatPrecision_t;
 
+#define Shading_Count 3
 typedef enum Shading {
 	kShadingUnlit, /// No lighting calculations applied. Renders surfaces with their base color and texture without any light interaction. Suitable for UI elements, emissive materials, or pre-baked lighting.
 	kShadingPhong, /// Classic Phong lighting model with ambient, diffuse, and specular components. Provides good performance with convincing highlights and shading for general-purpose 3D rendering.

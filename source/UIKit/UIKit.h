@@ -483,12 +483,14 @@ typedef struct Size* MeasureOverrideEventPtr;
 #define kEventArrangeOverride 0x66d9e437
 typedef struct rect* ArrangeOverrideEventPtr;
 
+#define Direction_Count 3
 typedef enum Direction {
 	kDirectionHorizontal, /// Left-to-right horizontal layout
 	kDirectionVertical, /// Top-to-bottom vertical layout
 	kDirectionDepth, /// Front-to-back depth layout (3D)
 } eDirection_t;
 
+#define Box3Field_Count 6
 typedef enum Box3Field {
 	kBox3FieldX, /// X-coordinate of the box origin
 	kBox3FieldY, /// Y-coordinate of the box origin
@@ -498,23 +500,27 @@ typedef enum Box3Field {
 	kBox3FieldDepth, /// Depth of the box along the Z axis
 } eBox3Field_t;
 
+#define TextOverflow_Count 2
 typedef enum TextOverflow {
 	kTextOverflowClip, /// Clip overflowing text at the container boundary
 	kTextOverflowEllipsis, /// Truncate overflowing text and append an ellipsis (…)
 } eTextOverflow_t;
 
+#define TextWrapping_Count 3
 typedef enum TextWrapping {
 	kTextWrappingWrapWithOverflow, /// Wrap at word boundaries; a word that exceeds the available width is allowed to overflow rather than being broken
 	kTextWrappingNoWrap, /// No automatic line wrapping; text extends on a single line and may overflow the container
 	kTextWrappingWrap, /// Wrap at word boundaries; a word that exceeds the available width is broken at the character level to prevent overflow
 } eTextWrapping_t;
 
+#define TextHorizontalAlignment_Count 3
 typedef enum TextHorizontalAlignment {
 	kTextHorizontalAlignmentLeft, /// Align text to the left edge
 	kTextHorizontalAlignmentCenter, /// Center text horizontally
 	kTextHorizontalAlignmentRight, /// Align text to the right edge
 } eTextHorizontalAlignment_t;
 
+#define TextVerticalAlignment_Count 4
 typedef enum TextVerticalAlignment {
 	kTextVerticalAlignmentTop, /// Align text to the top
 	kTextVerticalAlignmentCenter, /// Center text vertically
@@ -522,6 +528,7 @@ typedef enum TextVerticalAlignment {
 	kTextVerticalAlignmentBaseline, /// Align to text baseline
 } eTextVerticalAlignment_t;
 
+#define HorizontalAlignment_Count 4
 typedef enum HorizontalAlignment {
 	kHorizontalAlignmentStretch, /// Stretch to fill container width
 	kHorizontalAlignmentLeft, /// Align to left edge of container
@@ -529,6 +536,7 @@ typedef enum HorizontalAlignment {
 	kHorizontalAlignmentRight, /// Align to right edge of container
 } eHorizontalAlignment_t;
 
+#define VerticalAlignment_Count 4
 typedef enum VerticalAlignment {
 	kVerticalAlignmentStretch, /// Stretch to fill container height
 	kVerticalAlignmentTop, /// Align to top edge of container
@@ -536,6 +544,7 @@ typedef enum VerticalAlignment {
 	kVerticalAlignmentBottom, /// Align to bottom edge of container
 } eVerticalAlignment_t;
 
+#define AlignItems_Count 5
 typedef enum AlignItems {
 	kAlignItemsStart, /// Align to start of cross axis
 	kAlignItemsCenter, /// Center on cross axis
@@ -544,6 +553,7 @@ typedef enum AlignItems {
 	kAlignItemsBaseline, /// Align to text baseline
 } eAlignItems_t;
 
+#define DepthAlignment_Count 4
 typedef enum DepthAlignment {
 	kDepthAlignmentNear, /// Align to near clipping plane
 	kDepthAlignmentCenter, /// Center in depth
@@ -551,6 +561,7 @@ typedef enum DepthAlignment {
 	kDepthAlignmentStretch, /// Stretch across depth
 } eDepthAlignment_t;
 
+#define Overflow_Count 5
 typedef enum Overflow {
 	kOverflowVisible, /// Content overflows container bounds
 	kOverflowHidden, /// Clip overflowing content
@@ -559,12 +570,14 @@ typedef enum Overflow {
 	kOverflowAuto, /// Automatic scrollbar behavior
 } eOverflow_t;
 
+#define ForegroundHint_Count 3
 typedef enum ForegroundHint {
 	kForegroundHintNone, /// No special foreground treatment
 	kForegroundHintTranslucent, /// Hint for translucent foreground
 	kForegroundHintOpaque, /// Hint for opaque foreground optimization
 } eForegroundHint_t;
 
+#define JustifyContent_Count 6
 typedef enum JustifyContent {
 	kJustifyContentStart, /// Pack items to start
 	kJustifyContentEnd, /// Pack items to end
@@ -574,16 +587,19 @@ typedef enum JustifyContent {
 	kJustifyContentSpaceEvenly, /// Distribute with even spacing
 } eJustifyContent_t;
 
+#define FontWeight_Count 2
 typedef enum FontWeight {
 	kFontWeightNormal, /// Standard font weight
 	kFontWeightBold, /// Bold font weight
 } eFontWeight_t;
 
+#define FontStyle_Count 2
 typedef enum FontStyle {
 	kFontStyleNormal, /// Regular font style
 	kFontStyleItalic, /// Italic font style
 } eFontStyle_t;
 
+#define BorderStyle_Count 10
 typedef enum BorderStyle {
 	kBorderStyleNone, /// No border
 	kBorderStyleHidden, /// Hidden border (takes space but invisible)
@@ -597,17 +613,20 @@ typedef enum BorderStyle {
 	kBorderStyleOutset, /// 3D outset border effect
 } eBorderStyle_t;
 
+#define PlaybackMode_Count 3
 typedef enum PlaybackMode {
 	kPlaybackModeNormal, /// Standard forward playback
 	kPlaybackModeReverse, /// Reverse playback from end to start
 	kPlaybackModePingpong, /// Alternating forward/reverse playback
 } ePlaybackMode_t;
 
+#define ButtonType_Count 2
 typedef enum ButtonType {
 	kButtonTypeNormal, /// Standard interactive button
 	kButtonTypeSubmit, /// Form submission button with special handling
 } eButtonType_t;
 
+#define InputType_Count 5
 typedef enum InputType {
 	kInputTypeText, /// Single or multi-line text input 
 	kInputTypePassword, /// Masked password input for security 
@@ -616,6 +635,7 @@ typedef enum InputType {
 	kInputTypeRadio, /// Radio button for exclusive selection 
 } eInputType_t;
 
+#define Sizing_Count 3
 typedef enum Sizing {
 	kSizingPlusMargin, /// Include margins in size calculation
 	kSizingSizeOnly, /// Return only the base size
@@ -998,6 +1018,7 @@ struct Control {
 	float Scale; /// Visual scale factor for size adjustments 
 };
 
+#define ResizeMode_Count 4
 typedef enum ResizeMode {
 	kResizeModeNoResize, /// The window size is fixed. The user cannot resize or maximize the window.
 	kResizeModeCanMinimize, /// The user can minimize the window, but resizing and maximizing are disabled.
@@ -1041,6 +1062,7 @@ struct Grid {
 	uiGridViewBuffer_t _buffer; /// Internal buffer for grid calculations 
 };
 
+#define Stretch_Count 4
 typedef enum Stretch {
 	kStretchUniform, /// Scale content uniformly to fit within the area, preserving aspect ratio
 	kStretchNone, /// Do not scale the content; display at its native size
@@ -1095,6 +1117,7 @@ struct TerminalView {
 	int32_t _contentHeight; /// Current page length
 };
 
+#define TransitionType_Count 3
 typedef enum TransitionType {
 	kTransitionTypeNone, /// No transition
 	kTransitionTypeSlide, /// Sliding transition
@@ -1143,6 +1166,7 @@ typedef struct PageViewport const *PageViewportCPtr;
 struct PageViewport {
 };
 
+#define StyleType_Count 2
 typedef enum StyleType {
 	kStyleTypeGeneric, /// Base style applied to all components of the specified target type. Serves as a default visual definition.
 	kStyleTypeNamed, /// Style associated with a specific theme or visual skin. Used to switch appearance dynamically based on active theme.

@@ -68,6 +68,14 @@ function Property.parse_item(element, item, typename)
 	return item
 end
 
+function Property.parse_binding(node, name, element)
+	assert(element.text, string.format("Binding element for property %s must have binding expression as text content", name))
+	local Enabled = element:get "Enabled" or "true"
+	local Attribute = element:get "Attribute" or "WholeProperty"
+	local Mode = element:get "Mode" or "Expression"
+	node:attachPropertyProgram(name, Attribute, element.text or "", Mode, Enabled ~= "false")
+end
+
 function Property.construct(node, property, element)
 	if property.IsArray then
 		local typename = property.TypeString
@@ -78,8 +86,11 @@ function Property.construct(node, property, element)
 			table.insert(array, Property.parse_item(sub, mt.new(), typename))
 		end
 		node[property.Name] = array
+	elseif element:get "Value" then
+		xpcall(Property.parse, print, node, property.Name, element:get "Value")
 	elseif element.text then
-		xpcall(Property.parse, print, node, property.Name, element.text)
+		xpcall(Property.parse_binding, print, node, property.Name, element)
+		-- xpcall(Property.parse, print, node, property.Name, element.text)
 	end
 end
 

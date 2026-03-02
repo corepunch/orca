@@ -14,14 +14,10 @@ extern bool_t FS_FileExists(lpcString_t);
 extern lpObject_t OBJ_LoadDocument(lua_State *L, xmlDocPtr);
 extern lpObject_t OBJ_FindKnownPrefab(lpcString_t, lpcString_t*);
 
-struct token*
-Token_Create(lpcString_t code)
-{
-  struct token* _compile(lpcString_t code, lpcString_t filename);
-  return _compile(code, "binding");
-}
-
 static lpcString_t image_ext[] = { "", ".png", ".jpeg", ".jpg", ".svg", NULL };
+
+extern struct token*
+Token_Create(lpcString_t code);
 
 static void
 PROP_ParseObjectValue(lua_State *L, lpProperty_t prop, lpcString_t path)

@@ -1,4 +1,6 @@
 <!ENTITY % RotationOrder "XYZ|XZY|YZX|YXZ|ZXY|ZYX">
+<!ENTITY % BindingMode "OneWay|TwoWay|OneWayToSource|Expression">
+<!ENTITY % PropertyAttribute "WholeProperty|ColorR|ColorG|ColorB|ColorA|VectorX|VectorY|VectorZ|VectorW">
 <!ENTITY % DataType "None|Bool|Int|Enum|Float|Fixed|LongString|Edges|ObjectTags|Event|Struct|Object">
 <!ENTITY % BlendMode "AlphaAutomatic|Opaque|Alpha|Additive|PremultipliedAlpha|MixedAlpha">
 <!ENTITY % CompareFunc "Never|Always|Less|LessOrEqual|Greater|GreaterOrEqual|Equal|NotEqual|Disabled">

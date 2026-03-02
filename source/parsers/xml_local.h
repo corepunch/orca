@@ -23,4 +23,7 @@ PROP_Parse2(lua_State* L, lpObject_t, lpcString_t szKey, lpcString_t szValue);
 lpProperty_t
 PROP_CreateFromString(lua_State* L, lpObject_t object, lpcString_t name, lpcString_t typestring);
 
+extern void
+PROP_AttachProgram(lpProperty_t p, enum PropertyAttribute a, struct token* program, lpcString_t code);
+
 int f_loadProject(lua_State* L);
