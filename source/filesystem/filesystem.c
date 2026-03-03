@@ -564,8 +564,8 @@ FS_AddSearchPath(lua_State* L, lpcString_t szDirname)
   // Append to the global search list
   ADD_TO_LIST_END(struct Package, search, MainBundle);
   // Load embedded project file
-  if ((search->doc = FS_LoadXML(FS_JoinPaths(szName, "package")))) {
-    xmlNodePtr root = xmlDocGetRootElement(search->doc);
+  xmlWith(xmlDoc, doc, FS_LoadXML(FS_JoinPaths(szName, "package")), xmlFreeDoc) {
+    xmlNodePtr root = xmlDocGetRootElement(doc);
     xmlWith(xmlChar,Name,root?xmlGetProp(root,XMLSTR("Name")):NULL,xmlFree) {
       _SetPackageName(search, (lpcString_t)Name);
     }
@@ -612,7 +612,6 @@ static void FS_Release(struct Package *search) {
   FOR_EACH_LIST(struct _MONITOREDFILE, mf, search->monitoredFiles) free(mf);
 #endif
   SafeDelete(search->next, FS_Release);
-  SafeDelete(search->doc, xmlFreeDoc);
   SafeDelete(search->pack, FS_FreePack);
   free(search);
 }

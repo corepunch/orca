@@ -48,7 +48,6 @@ struct Package
   uint8_t namelen;
   path_t path;
   PPACK pack;
-  struct _xmlDoc* doc;
   struct Package* next;
 #ifdef MONITOR_FILES
   PMONITOREDFILE monitoredFiles;
