@@ -183,28 +183,6 @@
     <field name="BottomLeftRadius" type="float">Bottom-left corner radius</field>
   </struct>
 
-  <struct name="BorderEdgeShorthand">
-    <summary>Complete border definition for one edge</summary>
-    <field name="Width" type="float">{0} border thickness in pixels</field>
-    <field name="Style" type="BorderStyle">Visual style of the {0} border</field>
-    <field name="Color" type="color">{0} border color</field>
-  </struct>
-
-  <struct name="BorderSideShorthand">
-    <summary>Border definitions for both sides of an axis</summary>
-    <field name="Left" type="BorderEdgeShorthand">Leading edge border (left/top/near)</field>
-    <field name="Right" type="BorderEdgeShorthand">Trailing edge border (right/bottom/far)</field>
-  </struct>
-
-  <struct name="BorderShorthand">
-    <summary>Complete border definition for rectangular element</summary>
-    <shorthand name="BorderWidth" physical="Border.Axis[0]" userdata="Node.Border%sWidth">Shorthand for setting the width of borders along each edge.</shorthand>
-    <shorthand name="BorderStyle" physical="Border.Axis[0]" userdata="Node.Border%sStyle">Shorthand for defining the line style of borders along each edge. Specifies the border style (solid, dashed, etc.) per edge.</shorthand>
-    <shorthand name="BorderColor" physical="Border.Axis[0]" userdata="Node.Border%sColor">Shorthand for defining the color of borders along each edge. Specifies the border color for each edge individually.</shorthand>
-    <field name="Radius" type="BorderRadiusShorthand">Border radius definition per corner</field>
-    <field name="Axis" type="BorderSideShorthand" fixed-array="3">Border definition per axis</field>
-  </struct>
-
   <struct name="EdgeShorthand">
     <summary>Spacing values for opposite edges of an axis</summary>
     <field name="Left" type="float">Leading edge value (left for horizontal, top for vertical, near for depth)</field>
@@ -264,6 +242,20 @@
     <field name="Color" type="color">Color of the underline.</field>
   </struct>
 
+  <struct name="BorderWidthShorthand">
+    <summary>Border width configuration for rectangular elements</summary>
+    <details>Allows independent control of the border width for each edge.</details>
+    <field name="Axis" type="EdgeShorthand" fixed-array="3">Border width per axis</field>
+  </struct>
+  
+  <struct name="BorderShorthand">
+    <summary>Complete border definition for rectangular element</summary>
+    <field name="Width" type="BorderWidthShorthand">Border thickness in pixels, specified for each edge</field>
+    <field name="Color" type="color">Border color</field>
+    <field name="Style" type="BorderStyle">Visual style of the border</field>
+    <field name="Radius" type="BorderRadiusShorthand">Border radius definition per corner</field>
+  </struct>
+  
   <struct name="Thickness">
     <summary>Uniform thickness specification for all four edges</summary>
     <details>Used for properties that need different values for each edge, such as padding, margin, or border thickness.</details>

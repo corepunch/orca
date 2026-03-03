@@ -66,14 +66,10 @@ _ParseClass(lpcString_t str)
 {
   struct style_class* cls = ZeroAlloc(sizeof(struct style_class));
   for (lpcString_t s = strchr(str, ':'); s; s = strchr((str = s + 1), ':')) {
-    if (!strncmp(str, "hover", s - str))
-      cls->flags |= STYLE_HOVER;
-    else if (!strncmp(str, "focus", s - str))
-      cls->flags |= STYLE_FOCUS;
-		else if (!strncmp(str, "active", s - str))
-			cls->flags |= STYLE_SELECT;
-    else if (!strncmp(str, "dark", s - str))
-      cls->flags |= STYLE_DARK;
+    if (!strncmp(str, "hover", s - str)) cls->flags |= STYLE_HOVER;
+    else if (!strncmp(str, "focus", s - str)) cls->flags |= STYLE_FOCUS;
+		else if (!strncmp(str, "active", s - str)) cls->flags |= STYLE_SELECT;
+    else if (!strncmp(str, "dark", s - str)) cls->flags |= STYLE_DARK;
   }
   lpcString_t szOpacity = strchr(str, '/');
   if (szOpacity) {
@@ -114,6 +110,8 @@ OBJ_AddClass(lpObject_t hobj, lpcString_t cls)
   _AddClass(hobj, _ParseClass(cls));
 }
 
+static lua_State* g_L = NULL;
+
 void OBJ_API(AddStyleSheet, lpcString_t name)
 {
   uint32_t classID = *name == '.' ? fnv1a32(name + 1) : 0;
@@ -121,6 +119,7 @@ void OBJ_API(AddStyleSheet, lpcString_t name)
     lua_error(L);
     return;
   }
+  g_L = L;
   lua_pushvalue(L, 3);
   lua_pushnil(L);
   while (lua_next(L, -2)) {
@@ -150,14 +149,10 @@ void OBJ_API(AddStyleSheet, lpcString_t name)
     strncpy(ss->name, prop, sizeof(shortStr_t));
     strtok(ss->classname, ":");
     for (lpcString_t s = strtok(NULL, ":"); s; s = strtok(NULL, ":")) {
-      if (!strcmp(s, "hover"))
-        ss->flags |= STYLE_HOVER;
-      else if (!strcmp(s, "focus"))
-        ss->flags |= STYLE_FOCUS;
-      else if (!strcmp(s, "active"))
-        ss->flags |= STYLE_SELECT;
-      else if (!strcmp(s, "dark"))
-        ss->flags |= STYLE_DARK;
+      if (!strcmp(s, "hover")) ss->flags |= STYLE_HOVER;
+      else if (!strcmp(s, "focus")) ss->flags |= STYLE_FOCUS;
+      else if (!strcmp(s, "active")) ss->flags |= STYLE_SELECT;
+      else if (!strcmp(s, "dark")) ss->flags |= STYLE_DARK;
     }
     switch (lua_type(L, -1)) {
       case LUA_TSTRING:
@@ -203,7 +198,25 @@ OBJ_EnumStyleClasses(lpObject_t pobj,
   }
 }
 
-void
+void f_parse_property(lua_State* L, lpProperty_t hProperty, lpcString_t value) {
+  lua_getglobal(g_L, "require");
+  lua_pushstring(g_L, "orca");
+  lua_call(g_L, 1, 1);
+  lua_getfield(g_L, -1, "typeconverter");
+  assert(lua_type(g_L, -1) == LUA_TTABLE);
+  lua_remove(g_L, -2); // remove orca table
+  lua_getfield(g_L, -1, DataTypeToString(PROP_GetType(hProperty)));
+  assert(lua_type(g_L, -1) == LUA_TFUNCTION);
+  lua_remove(g_L, -2); // remove typeconverter table
+  lua_pushstring(g_L, value);
+  luaX_pushPropertyType(g_L, PROP_GetDesc(hProperty));
+  lua_call(g_L, 2, 1);
+  assert(lua_type(g_L, -1) != LUA_TNIL);
+  luaX_readProperty(g_L, -1, hProperty);
+  lua_pop(g_L, 1); // pop converted value
+}
+
+static void
 OBJ_ApplyClass(lpObject_t pobj, struct style_sheet* ss, void* parm)
 {
   lpProperty_t hProperty;
@@ -214,8 +227,10 @@ OBJ_ApplyClass(lpObject_t pobj, struct style_sheet* ss, void* parm)
       // if :hover or :focus was set, ignore default value
       return;
     }
-//    PROP_Parse(hProperty, ss->value);
-    assert(!"Not implemented");
+
+    assert(g_L);
+    f_parse_property(g_L, hProperty,ss->value);
+
     if (PROP_GetType(hProperty) == kDataTypeStruct &&
         !strcmp(PROP_GetUserData(hProperty), "Color") &&
         parm)

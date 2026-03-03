@@ -5,13 +5,17 @@ local fallbacks = {
 		local extensions = { "", ".png", ".jpg", ".jpeg", ".svg"}
 		local filesystem = require "orca.filesystem"
 		local renderer = require "orca.renderer"
+		local cleanpath, query = path:match("^([^?]+)%??(.*)")
+		local attrs = { Name = filesystem.getBaseName(cleanpath) }
+		for pair in query:gmatch("[^&]+") do
+			local k, v = pair:match("([^=]+)=?(.*)")
+			if k and #k > 0 then attrs[k:gsub("^%l", string.upper)] = v end
+		end
 		for _, ext in ipairs(extensions) do
-			local fullpath = path..ext
+			local fullpath = cleanpath .. ext
 			if filesystem.fileExists(fullpath) then
-				return renderer.Image {
-					Name = filesystem.getBaseName(path),
-					Source = fullpath,
-				}
+				attrs.Source = fullpath
+				return renderer.Image(attrs)
 			end
 		end
 	end,
@@ -49,9 +53,6 @@ orca.typeconverter = {
   LongString = function(value) return value end,
 	Fixed = function(value) return value end,
 	Object = function(path, type)
-		-- local filesystem = require "orca.filesystem"
-		-- local existing = filesystem.getWorkspace():findByPath(path)
-		-- if existing then return existing end
 		local ok, resource = pcall(require, path)
 		if ok then return resource end
 		local fallback = fallbacks[type.TypeString]
@@ -61,9 +62,6 @@ orca.typeconverter = {
 			if result then return result end
 		end
 		error(string.format("Cannot convert '%s' to %s(Object)", path, type.TypeString))
-	end,
-  Edges = function(value, type) 
-		error(string.format("Cannot convert '%s' to %s(Edges)", value, type.TypeString)) 
 	end,
   ObjectTags = function(path)
 		local tags = 0

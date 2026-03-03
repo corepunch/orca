@@ -142,9 +142,6 @@ OBJ_EnumStyleClasses(lpObject_t, lpcString_t, STYLEPROC, void*);
 uint32_t
 OBJ_GetStyleFlags(lpObject_t);
 
-void
-OBJ_ApplyClass(lpObject_t, struct style_sheet*, void*);
-
 bool_t
 OBJ_RunProgram(lpObject_t, struct token*, struct vm_register*);
 

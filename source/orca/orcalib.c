@@ -50,7 +50,6 @@ static luaL_Reg const orca_modules[] = {
   { "orca.geometry", luaopen_orca_geometry },
   { "orca.localization", luaopen_orca_localization },
   { "orca.network", luaopen_orca_network },
-  { "orca.parsers.css", luaopen_orca_parsers_css },
   { "orca.parsers.json", luaopen_orca_parsers_json },
   { "orca.parsers.xml", luaopen_orca_parsers_xml },
   { "orca.renderer", luaopen_orca_renderer },

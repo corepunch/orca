@@ -429,8 +429,13 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
         strncpy(p->value, luaL_checkstring(L, idx), MAX_PROPERTY_STRING);
         p->flags &= ~PF_NIL;
         p->flags |= PF_MODIFIED;
+      } else if (p->type == kDataTypeObject) {
+        // We support loading of objects by passing a string to property
+        void f_parse_property(lua_State*, lpProperty_t, lpcString_t);
+        f_parse_property(L, p, luaL_checkstring(L, idx));
       } else {
 //        PROP_Parse(p, luaL_checkstring(L, idx));
+        puts(luaL_checkstring(L, idx));
         assert(!"Parsing of properties not supported out of the box");
       }
       break;
@@ -448,22 +453,6 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
           for (size_t s = 0; s < p->pdesc->DataSize/sizeof(float); s++) {
             ((float*)p->value)[s] = luaL_checknumber(L, idx);
           }
-          // uint32_t k = 0;
-          // FOR_LOOP(j, p->pdesc->NumComponents) {
-          //   switch (p->pdesc[j+1].DataType) {
-          //     case kDataTypeFloat:
-          //       ((float*)p->value)[k++] = luaL_checknumber(L, idx);
-          //       break;
-          //     case kDataTypeInt:
-          //       ((int*)p->value)[k++] = luaL_checknumber(L, idx);
-          //       break;
-          //     case kDataTypeGroup:
-          //       // skip
-          //       break;
-          //     default:
-          //       return luaL_error(L, "incorrect type %d in group property %s for number input", p->pdesc[j+1].DataType, p->name);
-          //   }
-          // }
           break;
         case kDataTypeFloat:
           PROP_SetValue(p, &(float){luaL_checknumber(L, idx)});

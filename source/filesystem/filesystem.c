@@ -256,15 +256,11 @@ _Read(void* buffer, int len, FILE* f)
   }
 }
 
-lpcString_t
+static lpcString_t
 FS_GetPathName(lpcString_t path, lpcString_t name, int32_t maxlen)
 {
   memset((char*)name, 0, maxlen);
-  if (strchr(path, '?')) {
-    strncpy((char*)name, path, MIN(maxlen, strchr(path, '?') - path));
-  } else {
-    strncpy((char*)name, path, maxlen);
-  }
+  strncpy((char*)name, path, maxlen);
   return name;
 }
 
@@ -556,6 +552,11 @@ FS_AddSearchPath(lua_State* L, lpcString_t szDirname)
   // Prevent duplicates
   FOR_EACH_LIST(struct Package, pack, MainBundle) {
     if (!strcasecmp(pack->path, szDirname)) {
+      return NULL;
+    }
+    if (!strcasecmp(pack->name, szName)) {
+      Con_Error("Cannot load package %s: name conflicts with already loaded package %s",
+                szDirname, pack->path);
       return NULL;
     }
   }

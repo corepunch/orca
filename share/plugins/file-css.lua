@@ -62,5 +62,3 @@ table.insert(package.searchers, function(path)
 	local contents = filesystem.read_file(path..'.css')
 	return contents and function() return css_parse(contents) end or nil
 end)
-
-return { parse = css_parse }

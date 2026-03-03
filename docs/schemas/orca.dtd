@@ -1,7 +1,7 @@
 <!ENTITY % RotationOrder "XYZ|XZY|YZX|YXZ|ZXY|ZYX">
 <!ENTITY % BindingMode "OneWay|TwoWay|OneWayToSource|Expression">
 <!ENTITY % PropertyAttribute "WholeProperty|ColorR|ColorG|ColorB|ColorA|VectorX|VectorY|VectorZ|VectorW">
-<!ENTITY % DataType "None|Bool|Int|Enum|Float|Fixed|LongString|Edges|ObjectTags|Event|Struct|Object">
+<!ENTITY % DataType "None|Bool|Int|Enum|Float|Fixed|LongString|ObjectTags|Event|Struct|Object">
 <!ENTITY % BlendMode "AlphaAutomatic|Opaque|Alpha|Additive|PremultipliedAlpha|MixedAlpha">
 <!ENTITY % CompareFunc "Never|Always|Less|LessOrEqual|Greater|GreaterOrEqual|Equal|NotEqual|Disabled">
 <!ENTITY % TextureFilter "Nearest|Linear|Trilinear">
@@ -569,38 +569,23 @@
 	PaddingFront CDATA #IMPLIED
 	PaddingBack CDATA #IMPLIED
 	Border CDATA #IMPLIED
+	BorderWidth CDATA #IMPLIED
+	HorizontalBorderWidth CDATA #IMPLIED
+	BorderWidthLeft CDATA #IMPLIED
+	BorderWidthRight CDATA #IMPLIED
+	VerticalBorderWidth CDATA #IMPLIED
+	BorderWidthTop CDATA #IMPLIED
+	BorderWidthBottom CDATA #IMPLIED
+	DepthBorderWidth CDATA #IMPLIED
+	BorderWidthFront CDATA #IMPLIED
+	BorderWidthBack CDATA #IMPLIED
+	BorderColor CDATA #IMPLIED
+	BorderStyle (%BorderStyle;) #IMPLIED
 	BorderRadius CDATA #IMPLIED
 	BorderTopLeftRadius CDATA #IMPLIED
 	BorderTopRightRadius CDATA #IMPLIED
 	BorderBottomRightRadius CDATA #IMPLIED
 	BorderBottomLeftRadius CDATA #IMPLIED
-	HorizontalBorder CDATA #IMPLIED
-	BorderLeft CDATA #IMPLIED
-	BorderLeftWidth CDATA #IMPLIED
-	BorderLeftStyle (%BorderStyle;) #IMPLIED
-	BorderLeftColor CDATA #IMPLIED
-	BorderRight CDATA #IMPLIED
-	BorderRightWidth CDATA #IMPLIED
-	BorderRightStyle (%BorderStyle;) #IMPLIED
-	BorderRightColor CDATA #IMPLIED
-	VerticalBorder CDATA #IMPLIED
-	BorderTop CDATA #IMPLIED
-	BorderTopWidth CDATA #IMPLIED
-	BorderTopStyle (%BorderStyle;) #IMPLIED
-	BorderTopColor CDATA #IMPLIED
-	BorderBottom CDATA #IMPLIED
-	BorderBottomWidth CDATA #IMPLIED
-	BorderBottomStyle (%BorderStyle;) #IMPLIED
-	BorderBottomColor CDATA #IMPLIED
-	DepthBorder CDATA #IMPLIED
-	BorderFront CDATA #IMPLIED
-	BorderFrontWidth CDATA #IMPLIED
-	BorderFrontStyle (%BorderStyle;) #IMPLIED
-	BorderFrontColor CDATA #IMPLIED
-	BorderBack CDATA #IMPLIED
-	BorderBackWidth CDATA #IMPLIED
-	BorderBackStyle (%BorderStyle;) #IMPLIED
-	BorderBackColor CDATA #IMPLIED
 	Alignment CDATA #IMPLIED
 	HorizontalAlignment (%HorizontalAlignment;) #IMPLIED
 	VerticalAlignment (%VerticalAlignment;) #IMPLIED
@@ -692,6 +677,30 @@
 <!ATTLIST Node.PaddingBack Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Node.Border (#PCDATA | Binding)*>
 <!ATTLIST Node.Border Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderWidth (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.HorizontalBorderWidth (#PCDATA | Binding)*>
+<!ATTLIST Node.HorizontalBorderWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderWidthLeft (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderWidthLeft Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderWidthRight (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderWidthRight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.VerticalBorderWidth (#PCDATA | Binding)*>
+<!ATTLIST Node.VerticalBorderWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderWidthTop (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderWidthTop Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderWidthBottom (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderWidthBottom Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.DepthBorderWidth (#PCDATA | Binding)*>
+<!ATTLIST Node.DepthBorderWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderWidthFront (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderWidthFront Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderWidthBack (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderWidthBack Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderColor (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderColor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Node.BorderStyle (#PCDATA | Binding)*>
+<!ATTLIST Node.BorderStyle Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Node.BorderRadius (#PCDATA | Binding)*>
 <!ATTLIST Node.BorderRadius Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Node.BorderTopLeftRadius (#PCDATA | Binding)*>
@@ -702,60 +711,6 @@
 <!ATTLIST Node.BorderBottomRightRadius Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Node.BorderBottomLeftRadius (#PCDATA | Binding)*>
 <!ATTLIST Node.BorderBottomLeftRadius Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.HorizontalBorder (#PCDATA | Binding)*>
-<!ATTLIST Node.HorizontalBorder Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.BorderLeft (#PCDATA | Binding)*>
-<!ATTLIST Node.BorderLeft Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.BorderLeftWidth (#PCDATA | Binding)*>
-<!ATTLIST Node.BorderLeftWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.BorderLeftStyle (#PCDATA | Binding)*>
-<!ATTLIST Node.BorderLeftStyle Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.BorderLeftColor (#PCDATA | Binding)*>
-<!ATTLIST Node.BorderLeftColor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.BorderRight (#PCDATA | Binding)*>
-<!ATTLIST Node.BorderRight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.BorderRightWidth (#PCDATA | Binding)*>
-<!ATTLIST Node.BorderRightWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.BorderRightStyle (#PCDATA | Binding)*>
-<!ATTLIST Node.BorderRightStyle Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.BorderRightColor (#PCDATA | Binding)*>
-<!ATTLIST Node.BorderRightColor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.VerticalBorder (#PCDATA | Binding)*>
-<!ATTLIST Node.VerticalBorder Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.BorderTop (#PCDATA | Binding)*>
-<!ATTLIST Node.BorderTop Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.BorderTopWidth (#PCDATA | Binding)*>
-<!ATTLIST Node.BorderTopWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.BorderTopStyle (#PCDATA | Binding)*>
-<!ATTLIST Node.BorderTopStyle Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.BorderTopColor (#PCDATA | Binding)*>
-<!ATTLIST Node.BorderTopColor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.BorderBottom (#PCDATA | Binding)*>
-<!ATTLIST Node.BorderBottom Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.BorderBottomWidth (#PCDATA | Binding)*>
-<!ATTLIST Node.BorderBottomWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.BorderBottomStyle (#PCDATA | Binding)*>
-<!ATTLIST Node.BorderBottomStyle Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.BorderBottomColor (#PCDATA | Binding)*>
-<!ATTLIST Node.BorderBottomColor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.DepthBorder (#PCDATA | Binding)*>
-<!ATTLIST Node.DepthBorder Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.BorderFront (#PCDATA | Binding)*>
-<!ATTLIST Node.BorderFront Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.BorderFrontWidth (#PCDATA | Binding)*>
-<!ATTLIST Node.BorderFrontWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.BorderFrontStyle (#PCDATA | Binding)*>
-<!ATTLIST Node.BorderFrontStyle Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.BorderFrontColor (#PCDATA | Binding)*>
-<!ATTLIST Node.BorderFrontColor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.BorderBack (#PCDATA | Binding)*>
-<!ATTLIST Node.BorderBack Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.BorderBackWidth (#PCDATA | Binding)*>
-<!ATTLIST Node.BorderBackWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.BorderBackStyle (#PCDATA | Binding)*>
-<!ATTLIST Node.BorderBackStyle Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Node.BorderBackColor (#PCDATA | Binding)*>
-<!ATTLIST Node.BorderBackColor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Node.Alignment (#PCDATA | Binding)*>
 <!ATTLIST Node.Alignment Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Node.HorizontalAlignment (#PCDATA | Binding)*>
@@ -776,7 +731,7 @@
 <!ATTLIST Node.Tags Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Node.DataContext (#PCDATA | Binding)*>
 <!ATTLIST Node.DataContext Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % NodeElements "Node.Size|Node.HorizontalSize|Node.Width|Node.DesiredWidth|Node.MinWidth|Node.ActualWidth|Node.ScrollWidth|Node.VerticalSize|Node.Height|Node.DesiredHeight|Node.MinHeight|Node.ActualHeight|Node.ScrollHeight|Node.DepthSize|Node.Depth|Node.DesiredDepth|Node.MinDepth|Node.ActualDepth|Node.ScrollDepth|Node.Margin|Node.HorizontalMargin|Node.MarginLeft|Node.MarginRight|Node.VerticalMargin|Node.MarginTop|Node.MarginBottom|Node.DepthMargin|Node.MarginFront|Node.MarginBack|Node.Padding|Node.HorizontalPadding|Node.PaddingLeft|Node.PaddingRight|Node.VerticalPadding|Node.PaddingTop|Node.PaddingBottom|Node.DepthPadding|Node.PaddingFront|Node.PaddingBack|Node.Border|Node.BorderRadius|Node.BorderTopLeftRadius|Node.BorderTopRightRadius|Node.BorderBottomRightRadius|Node.BorderBottomLeftRadius|Node.HorizontalBorder|Node.BorderLeft|Node.BorderLeftWidth|Node.BorderLeftStyle|Node.BorderLeftColor|Node.BorderRight|Node.BorderRightWidth|Node.BorderRightStyle|Node.BorderRightColor|Node.VerticalBorder|Node.BorderTop|Node.BorderTopWidth|Node.BorderTopStyle|Node.BorderTopColor|Node.BorderBottom|Node.BorderBottomWidth|Node.BorderBottomStyle|Node.BorderBottomColor|Node.DepthBorder|Node.BorderFront|Node.BorderFrontWidth|Node.BorderFrontStyle|Node.BorderFrontColor|Node.BorderBack|Node.BorderBackWidth|Node.BorderBackStyle|Node.BorderBackColor|Node.Alignment|Node.HorizontalAlignment|Node.VerticalAlignment|Node.DepthAlignment|Node.Visible|Node.QuickHide|Node.VisibleAmountInParent|Node.Opacity|Node.Tags|Node.DataContext">
+<!ENTITY % NodeElements "Node.Size|Node.HorizontalSize|Node.Width|Node.DesiredWidth|Node.MinWidth|Node.ActualWidth|Node.ScrollWidth|Node.VerticalSize|Node.Height|Node.DesiredHeight|Node.MinHeight|Node.ActualHeight|Node.ScrollHeight|Node.DepthSize|Node.Depth|Node.DesiredDepth|Node.MinDepth|Node.ActualDepth|Node.ScrollDepth|Node.Margin|Node.HorizontalMargin|Node.MarginLeft|Node.MarginRight|Node.VerticalMargin|Node.MarginTop|Node.MarginBottom|Node.DepthMargin|Node.MarginFront|Node.MarginBack|Node.Padding|Node.HorizontalPadding|Node.PaddingLeft|Node.PaddingRight|Node.VerticalPadding|Node.PaddingTop|Node.PaddingBottom|Node.DepthPadding|Node.PaddingFront|Node.PaddingBack|Node.Border|Node.BorderWidth|Node.HorizontalBorderWidth|Node.BorderWidthLeft|Node.BorderWidthRight|Node.VerticalBorderWidth|Node.BorderWidthTop|Node.BorderWidthBottom|Node.DepthBorderWidth|Node.BorderWidthFront|Node.BorderWidthBack|Node.BorderColor|Node.BorderStyle|Node.BorderRadius|Node.BorderTopLeftRadius|Node.BorderTopRightRadius|Node.BorderBottomRightRadius|Node.BorderBottomLeftRadius|Node.Alignment|Node.HorizontalAlignment|Node.VerticalAlignment|Node.DepthAlignment|Node.Visible|Node.QuickHide|Node.VisibleAmountInParent|Node.Opacity|Node.Tags|Node.DataContext">
 <!ELEMENT Node EMPTY>
 <!ATTLIST Node %NodeAttribs;>
 <!ENTITY % TextRunAttribs "

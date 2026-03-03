@@ -54,7 +54,6 @@ int f_loadProject(lua_State* L) {
   if (!search) {
     return 0;
   }
- 
   lua_getglobal(L, "require");
   lua_pushfstring(L, "%spackage", PACK_GetName(search));
   if (lua_pcall(L, 1, 1, 0) || lua_pcall(L, 0, 1, 0)) {
@@ -89,7 +88,8 @@ int f_loadProject(lua_State* L) {
 
   FOR_LOOP(i, project->NumProjectReferences) {
     lua_pushcfunction(L, f_loadProject);
-    lua_pushstring(L, FS_JoinPaths(szDirname, project->ProjectReferences[i].Path));
+    lpcString_t joined = FS_JoinPaths(szDirname, project->ProjectReferences[i].Path);
+    lua_pushstring(L, joined);
     lua_pcall(L, 1, 0, 0);
   }
   

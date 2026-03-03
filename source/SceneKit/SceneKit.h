@@ -173,12 +173,14 @@ typedef enum StencilOp {
 	kStencilOpDecrementWrap, /// Decrement stencil buffer value, wrapping to maximum at zero
 	kStencilOpInvert, /// Bitwise invert the stencil buffer value
 } eStencilOp_t;
+ORCA_API const char *StencilOpToString(enum StencilOp);
 
 #define ViewportMode_Count 2
 typedef enum ViewportMode {
 	kViewportModeRelative, /// Coordinates specified as normalized values (0.0 to 1.0) relative to render target size
 	kViewportModeAbsolute, /// Coordinates specified in absolute pixels
 } eViewportMode_t;
+ORCA_API const char *ViewportModeToString(enum ViewportMode);
 
 #define CullMode_Count 3
 typedef enum CullMode {
@@ -186,6 +188,7 @@ typedef enum CullMode {
 	kCullModeBack, /// Cull back-facing triangles (standard for solid objects)
 	kCullModeFront, /// Cull front-facing triangles (useful for interior views or special effects)
 } eCullMode_t;
+ORCA_API const char *CullModeToString(enum CullMode);
 
 #define ColorWriteMode_Count 8
 typedef enum ColorWriteMode {
@@ -198,24 +201,28 @@ typedef enum ColorWriteMode {
 	kColorWriteModeGB, /// Write to green and blue channels only
 	kColorWriteModeA, /// Write to alpha channel only
 } eColorWriteMode_t;
+ORCA_API const char *ColorWriteModeToString(enum ColorWriteMode);
 
 #define FovType_Count 2
 typedef enum FovType {
 	kFovTypeXfov, /// Field of view specified as horizontal angle in degrees
 	kFovTypeYfov, /// Field of view specified as vertical angle in degrees (most common)
 } eFovType_t;
+ORCA_API const char *FovTypeToString(enum FovType);
 
 #define ProjectionType_Count 2
 typedef enum ProjectionType {
 	kProjectionTypePerspective, /// Perspective projection with realistic depth foreshortening
 	kProjectionTypeOrthographic, /// Orthographic projection with parallel lines (no perspective distortion)
 } eProjectionType_t;
+ORCA_API const char *ProjectionTypeToString(enum ProjectionType);
 
 #define LightType_Count 2
 typedef enum LightType {
 	kLightTypePoint, /// Omnidirectional point light source (like a light bulb)
 	kLightTypeSpot, /// Directional spot light with cone-shaped illumination area
 } eLightType_t;
+ORCA_API const char *LightTypeToString(enum LightType);
 
 typedef struct Node3D Node3D, *Node3DPtr;
 typedef struct Node3D const *Node3DCPtr;

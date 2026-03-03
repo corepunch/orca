@@ -163,6 +163,7 @@ typedef enum BindingMode {
 	kBindingModeOneWayToSource, /// Updates source property when target changes, but not the other way around
 	kBindingModeExpression, /// Allows binding to a custom expression
 } eBindingMode_t;
+ORCA_API const char *BindingModeToString(enum BindingMode);
 
 #define PropertyAttribute_Count 9
 typedef enum PropertyAttribute {
@@ -176,6 +177,7 @@ typedef enum PropertyAttribute {
 	kPropertyAttributeVectorZ, /// Bind to the Z component of a vector property
 	kPropertyAttributeVectorW, /// Bind to the W component of a vector property
 } ePropertyAttribute_t;
+ORCA_API const char *PropertyAttributeToString(enum PropertyAttribute);
 
 /// @brief Clear all children of the object.
 ORCA_API void
@@ -465,7 +467,7 @@ core_GetFocus(void);
 ORCA_API lpObject_t
 core_GetHover(void);
 
-#define DataType_Count 12
+#define DataType_Count 11
 typedef enum DataType {
 	kDataTypeNone, /// No data type specified.
 	kDataTypeBool, /// Boolean value representing true or false.
@@ -474,12 +476,12 @@ typedef enum DataType {
 	kDataTypeFloat, /// Floating-point numeric value.
 	kDataTypeFixed, /// Fixed-length string or symbolic value.
 	kDataTypeLongString, /// Extended string data, intended for larger text content.
-	kDataTypeEdges, /// Set of edge-specific values (e.g., margin, padding, or border widths).
 	kDataTypeObjectTags, /// List of tag identifiers associated with an object.
 	kDataTypeEvent, /// Event reference used to bind triggers or callbacks.
 	kDataTypeStruct, /// Composite data structure containing multiple fields used for packaging related geometric, visual, and layout properties together.
 	kDataTypeObject, /// Reference to a complex object instance.
 } eDataType_t;
+ORCA_API const char *DataTypeToString(enum DataType);
 
 /// @brief Enum value descriptor for a property.
 struct PropertyEnumValue {

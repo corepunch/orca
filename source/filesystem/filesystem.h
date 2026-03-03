@@ -742,10 +742,6 @@ struct ThemeDefaultValuesDictionary {
 ORCA_API const char*
 FS_GetBaseName(const char* path);
 
-/// @brief Extracts the path without query parameters
-ORCA_API const char*
-FS_GetPathName(const char* path, const char* out, int32_t maxlen);
-
 /// @brief Extracts the directory path from a full file path
 ORCA_API const char*
 FS_GetDirName(const char* path, const char* out, int32_t maxlen);

@@ -83,9 +83,6 @@
 </span></a><a class="leaf-link" href="#InputType"><i class="fa-solid fa-bars icon"></i><span>InputType
 </span></a><a class="leaf-link" href="#Sizing"><i class="fa-solid fa-bars icon"></i><span>Sizing
 </span></a><a class="leaf-link" href="#BorderRadiusShorthand"><i class="fa-solid fa-gear icon"></i><span>BorderRadiusShorthand
-</span></a><a class="leaf-link" href="#BorderEdgeShorthand"><i class="fa-solid fa-gear icon"></i><span>BorderEdgeShorthand
-</span></a><a class="leaf-link" href="#BorderSideShorthand"><i class="fa-solid fa-gear icon"></i><span>BorderSideShorthand
-</span></a><a class="leaf-link" href="#BorderShorthand"><i class="fa-solid fa-gear icon"></i><span>BorderShorthand
 </span></a><a class="leaf-link" href="#EdgeShorthand"><i class="fa-solid fa-gear icon"></i><span>EdgeShorthand
 </span></a><a class="leaf-link" href="#AlignmentShorthand"><i class="fa-solid fa-gear icon"></i><span>AlignmentShorthand
 </span></a><a class="leaf-link" href="#FontShorthand"><i class="fa-solid fa-gear icon"></i><span>FontShorthand
@@ -94,6 +91,8 @@
 </span></a><a class="leaf-link" href="#RingShorthand"><i class="fa-solid fa-gear icon"></i><span>RingShorthand
 </span></a><a class="leaf-link" href="#OverflowShorthand"><i class="fa-solid fa-gear icon"></i><span>OverflowShorthand
 </span></a><a class="leaf-link" href="#UnderlineShorthand"><i class="fa-solid fa-gear icon"></i><span>UnderlineShorthand
+</span></a><a class="leaf-link" href="#BorderWidthShorthand"><i class="fa-solid fa-gear icon"></i><span>BorderWidthShorthand
+</span></a><a class="leaf-link" href="#BorderShorthand"><i class="fa-solid fa-gear icon"></i><span>BorderShorthand
 </span></a><a class="leaf-link" href="#Thickness"><i class="fa-solid fa-gear icon"></i><span>Thickness
 </span></a><a class="leaf-link" href="#MarginShorthand"><i class="fa-solid fa-gear icon"></i><span>MarginShorthand
 </span></a><a class="leaf-link" href="#SizeAxisShorthand"><i class="fa-solid fa-gear icon"></i><span>SizeAxisShorthand
@@ -624,8 +623,6 @@
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">Fixed</span></code><div class="small-abstract"><span>Fixed-length string or symbolic value.
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">LongString</span></code><div class="small-abstract"><span>Extended string data, intended for larger text content.
-</span></div></div>
-<div class="topic"><code class="decorator"><span>case </span><span class="identifier">Edges</span></code><div class="small-abstract"><span>Set of edge-specific values (e.g., margin, padding, or border widths).
 </span></div></div>
 <div class="topic"><code class="decorator"><span>case </span><span class="identifier">ObjectTags</span></code><div class="small-abstract"><span>List of tag identifiers associated with an object.
 </span></div></div>
@@ -1415,29 +1412,6 @@
 <div class="small-abstract"><span>Bottom-right corner radius
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BottomLeftRadius</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Bottom-left corner radius
-</span></div></div><div id="BorderEdgeShorthand" class="class" data-name="BorderEdgeShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
-</div><h1 class="header">BorderEdgeShorthand
-</h1><div class="abstract">Complete border definition for one edge
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.BorderEdgeShorthand</span></code><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Width</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>{0} border thickness in pixels
-</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">Style</span>: <a class="type-identifier-link" href="#BorderStyle">BorderStyle</a></code></div>
-<div class="small-abstract"><span>Visual style of the {0} border
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Color</span>: <a class="type-identifier-link" href="#color">color</a></code></div>
-<div class="small-abstract"><span>{0} border color
-</span></div></div><div id="BorderSideShorthand" class="class" data-name="BorderSideShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
-</div><h1 class="header">BorderSideShorthand
-</h1><div class="abstract">Border definitions for both sides of an axis
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.BorderSideShorthand</span></code><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Left</span>: <a class="type-identifier-link" href="#BorderEdgeShorthand">BorderEdgeShorthand</a></code></div>
-<div class="small-abstract"><span>Leading edge border (left/top/near)
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Right</span>: <a class="type-identifier-link" href="#BorderEdgeShorthand">BorderEdgeShorthand</a></code></div>
-<div class="small-abstract"><span>Trailing edge border (right/bottom/far)
-</span></div></div><div id="BorderShorthand" class="class" data-name="BorderShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
-</div><h1 class="header">BorderShorthand
-</h1><div class="abstract">Complete border definition for rectangular element
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.BorderShorthand</span></code><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Radius</span>: <a class="type-identifier-link" href="#BorderRadiusShorthand">BorderRadiusShorthand</a></code></div>
-<div class="small-abstract"><span>Border radius definition per corner
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Axis</span>: <a class="type-identifier-link" href="#BorderSideShorthand">BorderSideShorthand</a></code></div>
-<div class="small-abstract"><span>Border definition per axis
 </span></div></div><div id="EdgeShorthand" class="class" data-name="EdgeShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
 </div><h1 class="header">EdgeShorthand
 </h1><div class="abstract">Spacing values for opposite edges of an axis
@@ -1506,6 +1480,22 @@
 <div class="small-abstract"><span>Line thickness of the underline.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Color</span>: <a class="type-identifier-link" href="#color">color</a></code></div>
 <div class="small-abstract"><span>Color of the underline.
+</span></div></div><div id="BorderWidthShorthand" class="class" data-name="BorderWidthShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">BorderWidthShorthand
+</h1><div class="abstract">Border width configuration for rectangular elements
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.BorderWidthShorthand</span></code><h2 class="title">Overview</h2><div class="abstract">Allows independent control of the border width for each edge.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Axis</span>: <a class="type-identifier-link" href="#EdgeShorthand">EdgeShorthand</a></code></div>
+<div class="small-abstract"><span>Border width per axis
+</span></div></div><div id="BorderShorthand" class="class" data-name="BorderShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">BorderShorthand
+</h1><div class="abstract">Complete border definition for rectangular element
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.BorderShorthand</span></code><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Width</span>: <a class="type-identifier-link" href="#BorderWidthShorthand">BorderWidthShorthand</a></code></div>
+<div class="small-abstract"><span>Border thickness in pixels, specified for each edge
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Color</span>: <a class="type-identifier-link" href="#color">color</a></code></div>
+<div class="small-abstract"><span>Border color
+</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">Style</span>: <a class="type-identifier-link" href="#BorderStyle">BorderStyle</a></code></div>
+<div class="small-abstract"><span>Visual style of the border
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Radius</span>: <a class="type-identifier-link" href="#BorderRadiusShorthand">BorderRadiusShorthand</a></code></div>
+<div class="small-abstract"><span>Border radius definition per corner
 </span></div></div><div id="Thickness" class="class" data-name="Thickness" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
 </div><h1 class="header">Thickness
 </h1><div class="abstract">Uniform thickness specification for all four edges
@@ -1691,12 +1681,30 @@
 <div class="small-abstract"><span>Trailing edge value (right for horizontal, bottom for vertical, far for depth)
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Border</span>: <a class="type-identifier-link" href="#BorderShorthand">BorderShorthand</a></code></div>
 <div class="small-abstract"><span>Border definition along each axis
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderWidth</span></code></div>
-<div class="small-abstract"><span>Shorthand for setting the width of borders along each edge.
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">BorderWidth</span>: <a class="type-identifier-link" href="#BorderWidthShorthand">BorderWidthShorthand</a></code></div>
+<div class="small-abstract"><span>Border thickness in pixels, specified for each edge
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">HorizontalBorderWidth</span>: <a class="type-identifier-link" href="#EdgeShorthand">EdgeShorthand</a></code></div>
+<div class="small-abstract"><span>Border width per axis
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderWidthLeft</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Leading edge value (left for horizontal, top for vertical, near for depth)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderWidthRight</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Trailing edge value (right for horizontal, bottom for vertical, far for depth)
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">VerticalBorderWidth</span>: <a class="type-identifier-link" href="#EdgeShorthand">EdgeShorthand</a></code></div>
+<div class="small-abstract"><span>Border width per axis
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderWidthTop</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Leading edge value (left for horizontal, top for vertical, near for depth)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderWidthBottom</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Trailing edge value (right for horizontal, bottom for vertical, far for depth)
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">DepthBorderWidth</span>: <a class="type-identifier-link" href="#EdgeShorthand">EdgeShorthand</a></code></div>
+<div class="small-abstract"><span>Border width per axis
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderWidthFront</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Leading edge value (left for horizontal, top for vertical, near for depth)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderWidthBack</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Trailing edge value (right for horizontal, bottom for vertical, far for depth)
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">BorderColor</span>: <a class="type-identifier-link" href="#color">color</a></code></div>
+<div class="small-abstract"><span>Border color
 </span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">BorderStyle</span>: <a class="type-identifier-link" href="#BorderStyle">BorderStyle</a></code></div>
-<div class="small-abstract"><span>Shorthand for defining the line style of borders along each edge. Specifies the border style (solid, dashed, etc.) per edge.
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderColor</span></code></div>
-<div class="small-abstract"><span>Shorthand for defining the color of borders along each edge. Specifies the border color for each edge individually.
+<div class="small-abstract"><span>Visual style of the border
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">BorderRadius</span>: <a class="type-identifier-link" href="#BorderRadiusShorthand">BorderRadiusShorthand</a></code></div>
 <div class="small-abstract"><span>Border radius definition per corner
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderTopLeftRadius</span>: <span>float</span></code></div>
@@ -1707,60 +1715,6 @@
 <div class="small-abstract"><span>Bottom-right corner radius
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderBottomLeftRadius</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Bottom-left corner radius
-</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">HorizontalBorder</span>: <a class="type-identifier-link" href="#BorderSideShorthand">BorderSideShorthand</a></code></div>
-<div class="small-abstract"><span>Border definition per axis
-</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">BorderLeft</span>: <a class="type-identifier-link" href="#BorderEdgeShorthand">BorderEdgeShorthand</a></code></div>
-<div class="small-abstract"><span>Leading edge border (left/top/near)
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderLeftWidth</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Left border thickness in pixels
-</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">BorderLeftStyle</span>: <a class="type-identifier-link" href="#BorderStyle">BorderStyle</a></code></div>
-<div class="small-abstract"><span>Visual style of the Left border
-</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">BorderLeftColor</span>: <a class="type-identifier-link" href="#color">color</a></code></div>
-<div class="small-abstract"><span>Left border color
-</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">BorderRight</span>: <a class="type-identifier-link" href="#BorderEdgeShorthand">BorderEdgeShorthand</a></code></div>
-<div class="small-abstract"><span>Trailing edge border (right/bottom/far)
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderRightWidth</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Right border thickness in pixels
-</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">BorderRightStyle</span>: <a class="type-identifier-link" href="#BorderStyle">BorderStyle</a></code></div>
-<div class="small-abstract"><span>Visual style of the Right border
-</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">BorderRightColor</span>: <a class="type-identifier-link" href="#color">color</a></code></div>
-<div class="small-abstract"><span>Right border color
-</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">VerticalBorder</span>: <a class="type-identifier-link" href="#BorderSideShorthand">BorderSideShorthand</a></code></div>
-<div class="small-abstract"><span>Border definition per axis
-</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">BorderTop</span>: <a class="type-identifier-link" href="#BorderEdgeShorthand">BorderEdgeShorthand</a></code></div>
-<div class="small-abstract"><span>Leading edge border (left/top/near)
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderTopWidth</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Left border thickness in pixels
-</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">BorderTopStyle</span>: <a class="type-identifier-link" href="#BorderStyle">BorderStyle</a></code></div>
-<div class="small-abstract"><span>Visual style of the Left border
-</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">BorderTopColor</span>: <a class="type-identifier-link" href="#color">color</a></code></div>
-<div class="small-abstract"><span>Left border color
-</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">BorderBottom</span>: <a class="type-identifier-link" href="#BorderEdgeShorthand">BorderEdgeShorthand</a></code></div>
-<div class="small-abstract"><span>Trailing edge border (right/bottom/far)
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderBottomWidth</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Right border thickness in pixels
-</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">BorderBottomStyle</span>: <a class="type-identifier-link" href="#BorderStyle">BorderStyle</a></code></div>
-<div class="small-abstract"><span>Visual style of the Right border
-</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">BorderBottomColor</span>: <a class="type-identifier-link" href="#color">color</a></code></div>
-<div class="small-abstract"><span>Right border color
-</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">DepthBorder</span>: <a class="type-identifier-link" href="#BorderSideShorthand">BorderSideShorthand</a></code></div>
-<div class="small-abstract"><span>Border definition per axis
-</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">BorderFront</span>: <a class="type-identifier-link" href="#BorderEdgeShorthand">BorderEdgeShorthand</a></code></div>
-<div class="small-abstract"><span>Leading edge border (left/top/near)
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderFrontWidth</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Left border thickness in pixels
-</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">BorderFrontStyle</span>: <a class="type-identifier-link" href="#BorderStyle">BorderStyle</a></code></div>
-<div class="small-abstract"><span>Visual style of the Left border
-</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">BorderFrontColor</span>: <a class="type-identifier-link" href="#color">color</a></code></div>
-<div class="small-abstract"><span>Left border color
-</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">BorderBack</span>: <a class="type-identifier-link" href="#BorderEdgeShorthand">BorderEdgeShorthand</a></code></div>
-<div class="small-abstract"><span>Trailing edge border (right/bottom/far)
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderBackWidth</span>: <span>float</span></code></div>
-<div class="small-abstract"><span>Right border thickness in pixels
-</span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">BorderBackStyle</span>: <a class="type-identifier-link" href="#BorderStyle">BorderStyle</a></code></div>
-<div class="small-abstract"><span>Visual style of the Right border
-</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">BorderBackColor</span>: <a class="type-identifier-link" href="#color">color</a></code></div>
-<div class="small-abstract"><span>Right border color
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Alignment</span>: <a class="type-identifier-link" href="#AlignmentShorthand">AlignmentShorthand</a></code></div>
 <div class="small-abstract"><span>Alignment definition for each axis.
 </span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">HorizontalAlignment</span>: <a class="type-identifier-link" href="#HorizontalAlignment">HorizontalAlignment</a></code></div>
@@ -2743,7 +2697,6 @@
 </h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.Entry</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code></div><div id="ThemeDefaultValuesDictionary" class="class" data-name="ThemeDefaultValuesDictionary" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">ThemeDefaultValuesDictionary
 </h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ThemeDefaultValuesDictionary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getBaseName</span>(<span class="identifier">path</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> string</span></code><div class="small-abstract"><span>Gets the base filename from a path
-</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getPathName</span>(<span class="identifier">path</span>:<span class="decorator">string</span>, <span class="identifier">out</span>:<span class="decorator">string</span>, <span class="identifier">maxlen</span>:<span class="decorator">int</span>)<span class="decorator"> -&gt;</span><span> string</span></code><div class="small-abstract"><span>Extracts the path without query parameters
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getDirName</span>(<span class="identifier">path</span>:<span class="decorator">string</span>, <span class="identifier">out</span>:<span class="decorator">string</span>, <span class="identifier">maxlen</span>:<span class="decorator">int</span>)<span class="decorator"> -&gt;</span><span> string</span></code><div class="small-abstract"><span>Extracts the directory path from a full file path
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">joinPaths</span>(<span class="identifier">path1</span>:<span class="decorator">string</span>, <span class="identifier">path2</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> string</span></code><div class="small-abstract"><span>Joins two path segments into a complete path
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">pathFromModule</span>(<span class="identifier">module</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> string</span></code><div class="small-abstract"><span>Converts a module name to a file path

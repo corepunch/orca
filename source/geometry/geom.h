@@ -193,6 +193,7 @@ typedef enum RotationOrder {
 	kRotationOrderZXY, /// Rotate around Z axis first, then X, then Y
 	kRotationOrderZYX, /// Rotate around Z axis first, then Y, then X
 } eRotationOrder_t;
+ORCA_API const char *RotationOrderToString(enum RotationOrder);
 
 /// @brief 2D vector structure
 struct vec2 {

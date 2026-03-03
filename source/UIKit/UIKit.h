@@ -15,33 +15,6 @@ luaX_pushBorderRadiusShorthand(lua_State *L, lpcBorderRadiusShorthand_t BorderRa
 ORCA_API lpBorderRadiusShorthand_t
 luaX_checkBorderRadiusShorthand(lua_State *L, int idx);
 
-typedef struct BorderEdgeShorthand BorderEdgeShorthand_t, *lpBorderEdgeShorthand_t;
-typedef struct BorderEdgeShorthand const cBorderEdgeShorthand_t, *lpcBorderEdgeShorthand_t;
-/// @brief Push BorderEdgeShorthand onto Lua stack.
-ORCA_API void
-luaX_pushBorderEdgeShorthand(lua_State *L, lpcBorderEdgeShorthand_t BorderEdgeShorthand);
-/// @brief Check BorderEdgeShorthand form Lua stack at index.
-ORCA_API lpBorderEdgeShorthand_t
-luaX_checkBorderEdgeShorthand(lua_State *L, int idx);
-
-typedef struct BorderSideShorthand BorderSideShorthand_t, *lpBorderSideShorthand_t;
-typedef struct BorderSideShorthand const cBorderSideShorthand_t, *lpcBorderSideShorthand_t;
-/// @brief Push BorderSideShorthand onto Lua stack.
-ORCA_API void
-luaX_pushBorderSideShorthand(lua_State *L, lpcBorderSideShorthand_t BorderSideShorthand);
-/// @brief Check BorderSideShorthand form Lua stack at index.
-ORCA_API lpBorderSideShorthand_t
-luaX_checkBorderSideShorthand(lua_State *L, int idx);
-
-typedef struct BorderShorthand BorderShorthand_t, *lpBorderShorthand_t;
-typedef struct BorderShorthand const cBorderShorthand_t, *lpcBorderShorthand_t;
-/// @brief Push BorderShorthand onto Lua stack.
-ORCA_API void
-luaX_pushBorderShorthand(lua_State *L, lpcBorderShorthand_t BorderShorthand);
-/// @brief Check BorderShorthand form Lua stack at index.
-ORCA_API lpBorderShorthand_t
-luaX_checkBorderShorthand(lua_State *L, int idx);
-
 typedef struct EdgeShorthand EdgeShorthand_t, *lpEdgeShorthand_t;
 typedef struct EdgeShorthand const cEdgeShorthand_t, *lpcEdgeShorthand_t;
 /// @brief Push EdgeShorthand onto Lua stack.
@@ -113,6 +86,24 @@ luaX_pushUnderlineShorthand(lua_State *L, lpcUnderlineShorthand_t UnderlineShort
 /// @brief Check UnderlineShorthand form Lua stack at index.
 ORCA_API lpUnderlineShorthand_t
 luaX_checkUnderlineShorthand(lua_State *L, int idx);
+
+typedef struct BorderWidthShorthand BorderWidthShorthand_t, *lpBorderWidthShorthand_t;
+typedef struct BorderWidthShorthand const cBorderWidthShorthand_t, *lpcBorderWidthShorthand_t;
+/// @brief Push BorderWidthShorthand onto Lua stack.
+ORCA_API void
+luaX_pushBorderWidthShorthand(lua_State *L, lpcBorderWidthShorthand_t BorderWidthShorthand);
+/// @brief Check BorderWidthShorthand form Lua stack at index.
+ORCA_API lpBorderWidthShorthand_t
+luaX_checkBorderWidthShorthand(lua_State *L, int idx);
+
+typedef struct BorderShorthand BorderShorthand_t, *lpBorderShorthand_t;
+typedef struct BorderShorthand const cBorderShorthand_t, *lpcBorderShorthand_t;
+/// @brief Push BorderShorthand onto Lua stack.
+ORCA_API void
+luaX_pushBorderShorthand(lua_State *L, lpcBorderShorthand_t BorderShorthand);
+/// @brief Check BorderShorthand form Lua stack at index.
+ORCA_API lpBorderShorthand_t
+luaX_checkBorderShorthand(lua_State *L, int idx);
 
 typedef struct Thickness Thickness_t, *lpThickness_t;
 typedef struct Thickness const cThickness_t, *lpcThickness_t;
@@ -489,6 +480,7 @@ typedef enum Direction {
 	kDirectionVertical, /// Top-to-bottom vertical layout
 	kDirectionDepth, /// Front-to-back depth layout (3D)
 } eDirection_t;
+ORCA_API const char *DirectionToString(enum Direction);
 
 #define Box3Field_Count 6
 typedef enum Box3Field {
@@ -499,12 +491,14 @@ typedef enum Box3Field {
 	kBox3FieldHeight, /// Height of the box along the Y axis
 	kBox3FieldDepth, /// Depth of the box along the Z axis
 } eBox3Field_t;
+ORCA_API const char *Box3FieldToString(enum Box3Field);
 
 #define TextOverflow_Count 2
 typedef enum TextOverflow {
 	kTextOverflowClip, /// Clip overflowing text at the container boundary
 	kTextOverflowEllipsis, /// Truncate overflowing text and append an ellipsis (…)
 } eTextOverflow_t;
+ORCA_API const char *TextOverflowToString(enum TextOverflow);
 
 #define TextWrapping_Count 3
 typedef enum TextWrapping {
@@ -512,6 +506,7 @@ typedef enum TextWrapping {
 	kTextWrappingNoWrap, /// No automatic line wrapping; text extends on a single line and may overflow the container
 	kTextWrappingWrap, /// Wrap at word boundaries; a word that exceeds the available width is broken at the character level to prevent overflow
 } eTextWrapping_t;
+ORCA_API const char *TextWrappingToString(enum TextWrapping);
 
 #define TextHorizontalAlignment_Count 3
 typedef enum TextHorizontalAlignment {
@@ -519,6 +514,7 @@ typedef enum TextHorizontalAlignment {
 	kTextHorizontalAlignmentCenter, /// Center text horizontally
 	kTextHorizontalAlignmentRight, /// Align text to the right edge
 } eTextHorizontalAlignment_t;
+ORCA_API const char *TextHorizontalAlignmentToString(enum TextHorizontalAlignment);
 
 #define TextVerticalAlignment_Count 4
 typedef enum TextVerticalAlignment {
@@ -527,6 +523,7 @@ typedef enum TextVerticalAlignment {
 	kTextVerticalAlignmentBottom, /// Align text to the bottom
 	kTextVerticalAlignmentBaseline, /// Align to text baseline
 } eTextVerticalAlignment_t;
+ORCA_API const char *TextVerticalAlignmentToString(enum TextVerticalAlignment);
 
 #define HorizontalAlignment_Count 4
 typedef enum HorizontalAlignment {
@@ -535,6 +532,7 @@ typedef enum HorizontalAlignment {
 	kHorizontalAlignmentCenter, /// Center within container
 	kHorizontalAlignmentRight, /// Align to right edge of container
 } eHorizontalAlignment_t;
+ORCA_API const char *HorizontalAlignmentToString(enum HorizontalAlignment);
 
 #define VerticalAlignment_Count 4
 typedef enum VerticalAlignment {
@@ -543,6 +541,7 @@ typedef enum VerticalAlignment {
 	kVerticalAlignmentCenter, /// Center within container
 	kVerticalAlignmentBottom, /// Align to bottom edge of container
 } eVerticalAlignment_t;
+ORCA_API const char *VerticalAlignmentToString(enum VerticalAlignment);
 
 #define AlignItems_Count 5
 typedef enum AlignItems {
@@ -552,6 +551,7 @@ typedef enum AlignItems {
 	kAlignItemsStretch, /// Stretch across cross axis
 	kAlignItemsBaseline, /// Align to text baseline
 } eAlignItems_t;
+ORCA_API const char *AlignItemsToString(enum AlignItems);
 
 #define DepthAlignment_Count 4
 typedef enum DepthAlignment {
@@ -560,6 +560,7 @@ typedef enum DepthAlignment {
 	kDepthAlignmentFar, /// Align to far clipping plane
 	kDepthAlignmentStretch, /// Stretch across depth
 } eDepthAlignment_t;
+ORCA_API const char *DepthAlignmentToString(enum DepthAlignment);
 
 #define Overflow_Count 5
 typedef enum Overflow {
@@ -569,6 +570,7 @@ typedef enum Overflow {
 	kOverflowScroll, /// Show scrollbars for overflow
 	kOverflowAuto, /// Automatic scrollbar behavior
 } eOverflow_t;
+ORCA_API const char *OverflowToString(enum Overflow);
 
 #define ForegroundHint_Count 3
 typedef enum ForegroundHint {
@@ -576,6 +578,7 @@ typedef enum ForegroundHint {
 	kForegroundHintTranslucent, /// Hint for translucent foreground
 	kForegroundHintOpaque, /// Hint for opaque foreground optimization
 } eForegroundHint_t;
+ORCA_API const char *ForegroundHintToString(enum ForegroundHint);
 
 #define JustifyContent_Count 6
 typedef enum JustifyContent {
@@ -586,18 +589,21 @@ typedef enum JustifyContent {
 	kJustifyContentSpaceAround, /// Distribute with space around
 	kJustifyContentSpaceEvenly, /// Distribute with even spacing
 } eJustifyContent_t;
+ORCA_API const char *JustifyContentToString(enum JustifyContent);
 
 #define FontWeight_Count 2
 typedef enum FontWeight {
 	kFontWeightNormal, /// Standard font weight
 	kFontWeightBold, /// Bold font weight
 } eFontWeight_t;
+ORCA_API const char *FontWeightToString(enum FontWeight);
 
 #define FontStyle_Count 2
 typedef enum FontStyle {
 	kFontStyleNormal, /// Regular font style
 	kFontStyleItalic, /// Italic font style
 } eFontStyle_t;
+ORCA_API const char *FontStyleToString(enum FontStyle);
 
 #define BorderStyle_Count 10
 typedef enum BorderStyle {
@@ -612,6 +618,7 @@ typedef enum BorderStyle {
 	kBorderStyleInset, /// 3D inset border effect
 	kBorderStyleOutset, /// 3D outset border effect
 } eBorderStyle_t;
+ORCA_API const char *BorderStyleToString(enum BorderStyle);
 
 #define PlaybackMode_Count 3
 typedef enum PlaybackMode {
@@ -619,12 +626,14 @@ typedef enum PlaybackMode {
 	kPlaybackModeReverse, /// Reverse playback from end to start
 	kPlaybackModePingpong, /// Alternating forward/reverse playback
 } ePlaybackMode_t;
+ORCA_API const char *PlaybackModeToString(enum PlaybackMode);
 
 #define ButtonType_Count 2
 typedef enum ButtonType {
 	kButtonTypeNormal, /// Standard interactive button
 	kButtonTypeSubmit, /// Form submission button with special handling
 } eButtonType_t;
+ORCA_API const char *ButtonTypeToString(enum ButtonType);
 
 #define InputType_Count 5
 typedef enum InputType {
@@ -634,6 +643,7 @@ typedef enum InputType {
 	kInputTypeCheckbox, /// Boolean checkbox control 
 	kInputTypeRadio, /// Radio button for exclusive selection 
 } eInputType_t;
+ORCA_API const char *InputTypeToString(enum InputType);
 
 #define Sizing_Count 3
 typedef enum Sizing {
@@ -641,6 +651,7 @@ typedef enum Sizing {
 	kSizingSizeOnly, /// Return only the base size
 	kSizingMinusPadding, /// Subtract padding from size
 } eSizing_t;
+ORCA_API const char *SizingToString(enum Sizing);
 
 /// @brief Corner rounding configuration for rectangular elements
 struct BorderRadiusShorthand {
@@ -648,25 +659,6 @@ struct BorderRadiusShorthand {
 	float TopRightRadius; /// Top-right corner radius
 	float BottomRightRadius; /// Bottom-right corner radius
 	float BottomLeftRadius; /// Bottom-left corner radius
-};
-
-/// @brief Complete border definition for one edge
-struct BorderEdgeShorthand {
-	float Width; /// {0} border thickness in pixels
-	eBorderStyle_t Style; /// Visual style of the {0} border
-	color_t Color; /// {0} border color
-};
-
-/// @brief Border definitions for both sides of an axis
-struct BorderSideShorthand {
-	BorderEdgeShorthand_t Left; /// Leading edge border (left/top/near)
-	BorderEdgeShorthand_t Right; /// Trailing edge border (right/bottom/far)
-};
-
-/// @brief Complete border definition for rectangular element
-struct BorderShorthand {
-	BorderRadiusShorthand_t Radius; /// Border radius definition per corner
-	BorderSideShorthand_t Axis[3]; /// Border definition per axis
 };
 
 /// @brief Spacing values for opposite edges of an axis
@@ -721,6 +713,19 @@ struct UnderlineShorthand {
 	float Offset; /// Vertical offset of the underline from the baseline.
 	float Width; /// Line thickness of the underline.
 	color_t Color; /// Color of the underline.
+};
+
+/// @brief Border width configuration for rectangular elements
+struct BorderWidthShorthand {
+	EdgeShorthand_t Axis[3]; /// Border width per axis
+};
+
+/// @brief Complete border definition for rectangular element
+struct BorderShorthand {
+	BorderWidthShorthand_t Width; /// Border thickness in pixels, specified for each edge
+	color_t Color; /// Border color
+	eBorderStyle_t Style; /// Visual style of the border
+	BorderRadiusShorthand_t Radius; /// Border radius definition per corner
 };
 
 /// @brief Uniform thickness specification for all four edges
@@ -1025,6 +1030,7 @@ typedef enum ResizeMode {
 	kResizeModeCanResize, /// The user can freely resize the window and maximize it.
 	kResizeModeCanResizeWithGrip, /// The user can resize and maximize the window. A resize grip is displayed in the lower-right corner if the platform supports it.
 } eResizeMode_t;
+ORCA_API const char *ResizeModeToString(enum ResizeMode);
 
 typedef struct Screen Screen, *ScreenPtr;
 typedef struct Screen const *ScreenCPtr;
@@ -1069,6 +1075,7 @@ typedef enum Stretch {
 	kStretchFill, /// Scale content to fill both width and height, ignoring aspect ratio
 	kStretchUniformToFill, /// Scale content uniformly to fill the area, preserving aspect ratio but cropping if necessary
 } eStretch_t;
+ORCA_API const char *StretchToString(enum Stretch);
 
 typedef struct ImageView ImageView, *ImageViewPtr;
 typedef struct ImageView const *ImageViewCPtr;
@@ -1123,6 +1130,7 @@ typedef enum TransitionType {
 	kTransitionTypeSlide, /// Sliding transition
 	kTransitionTypeFade, /// Fading transition
 } eTransitionType_t;
+ORCA_API const char *TransitionTypeToString(enum TransitionType);
 
 /// @brief Event triggered to navigate to a different page within a PageHost.
 struct NavigateToPageArguments {
@@ -1171,6 +1179,7 @@ typedef enum StyleType {
 	kStyleTypeGeneric, /// Base style applied to all components of the specified target type. Serves as a default visual definition.
 	kStyleTypeNamed, /// Style associated with a specific theme or visual skin. Used to switch appearance dynamically based on active theme.
 } eStyleType_t;
+ORCA_API const char *StyleTypeToString(enum StyleType);
 
 typedef struct Style Style, *StylePtr;
 typedef struct Style const *StyleCPtr;

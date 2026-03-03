@@ -1590,14 +1590,6 @@ static int f_filesystem_getBaseName(lua_State *L) {
 	lua_pushstring(L, output);
 	return 1;
 }
-static int f_filesystem_getPathName(lua_State *L) {
-	const char* path = luaL_checkstring(L, 1);
-	const char* out = luaL_checkstring(L, 2);
-	int32_t maxlen = luaL_checknumber(L, 3);
-	const char* output = FS_GetPathName(path, out, maxlen);
-	lua_pushstring(L, output);
-	return 1;
-}
 static int f_filesystem_getDirName(lua_State *L) {
 	const char* path = luaL_checkstring(L, 1);
 	const char* out = luaL_checkstring(L, 2);
@@ -1655,7 +1647,6 @@ static int f_filesystem_getWorkspace(lua_State *L) {
 ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) {
 		{ "getBaseName", f_filesystem_getBaseName },
-		{ "getPathName", f_filesystem_getPathName },
 		{ "getDirName", f_filesystem_getDirName },
 		{ "joinPaths", f_filesystem_joinPaths },
 		{ "pathFromModule", f_filesystem_pathFromModule },

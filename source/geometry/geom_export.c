@@ -3,6 +3,10 @@
 #include <source/geometry/geom.h>
 
 static const char *_RotationOrder[] = {"XYZ","XZY","YZX","YXZ","ZXY","ZYX",NULL};
+const char *RotationOrderToString(enum RotationOrder value) {
+	assert(value >= 0 && value < 6);
+	return _RotationOrder[value];
+}
 eRotationOrder_t luaX_checkRotationOrder(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _RotationOrder);
 }

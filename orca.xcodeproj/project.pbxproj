@@ -145,7 +145,6 @@
 		781CA7CD2E1566FC00FFCFD9 /* liborca.backend.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7862E155C9C00FFCFD9 /* liborca.backend.so */; };
 		781CA7CE2E1566FC00FFCFD9 /* liborca.UIKit.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA74D2E1556FF00FFCFD9 /* liborca.UIKit.so */; };
 		781CA7D22E15783F00FFCFD9 /* debug.c in Sources */ = {isa = PBXBuildFile; fileRef = 78FD532F2D929AFE00122823 /* debug.c */; };
-		781CA7DB2E15B24400FFCFD9 /* p_css.c in Sources */ = {isa = PBXBuildFile; fileRef = 781769422D61CEC9003CBEA9 /* p_css.c */; };
 		781CA7DC2E15B24400FFCFD9 /* p_json.c in Sources */ = {isa = PBXBuildFile; fileRef = 78BC7E1E2D4BE7D800907913 /* p_json.c */; };
 		781CA7DD2E15B24400FFCFD9 /* p_xml.c in Sources */ = {isa = PBXBuildFile; fileRef = 78346EBC2C99558F00E0CFD1 /* p_xml.c */; };
 		781CA7DE2E15B26900FFCFD9 /* liborca.parsers.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7D72E15B22500FFCFD9 /* liborca.parsers.so */; };
@@ -382,7 +381,6 @@
 		7814FD4F2DF861A500625D2F /* orca-fbx */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "orca-fbx"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7814FD512DF86E9F00625D2F /* libfbxsdk.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfbxsdk.a; path = "../../../../Applications/Autodesk/FBX SDK/2020.2/lib/clang/release/libfbxsdk.a"; sourceTree = "<group>"; };
 		7814FD532DF86EE600625D2F /* libfbxsdk.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfbxsdk.dylib; path = "../../../../Applications/Autodesk/FBX SDK/2020.2/lib/clang/release/libfbxsdk.dylib"; sourceTree = "<group>"; };
-		781769422D61CEC9003CBEA9 /* p_css.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = p_css.c; sourceTree = "<group>"; };
 		781CA6AD2E13CA7E00FFCFD9 /* ed_stab_object.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ed_stab_object.h; sourceTree = "<group>"; };
 		781CA6AF2E13E04700FFCFD9 /* ed_stab_property.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ed_stab_property.h; sourceTree = "<group>"; };
 		781CA6B12E13E08400FFCFD9 /* ed_stab_component.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ed_stab_component.h; sourceTree = "<group>"; };
@@ -855,7 +853,6 @@
 		7817693F2D61CD4E003CBEA9 /* parsers */ = {
 			isa = PBXGroup;
 			children = (
-				781769422D61CEC9003CBEA9 /* p_css.c */,
 				78BC7E1E2D4BE7D800907913 /* p_json.c */,
 				782E9EED2E98E946009C3946 /* p_project.c */,
 				78346EBC2C99558F00E0CFD1 /* p_xml.c */,
@@ -2031,7 +2028,6 @@
 			files = (
 				78E4A9A32E93E0A200E3A503 /* xml_local.h in Sources */,
 				782E9EEE2E98E94C009C3946 /* p_project.c in Sources */,
-				781CA7DB2E15B24400FFCFD9 /* p_css.c in Sources */,
 				781CA7DC2E15B24400FFCFD9 /* p_json.c in Sources */,
 				781CA7DD2E15B24400FFCFD9 /* p_xml.c in Sources */,
 			);

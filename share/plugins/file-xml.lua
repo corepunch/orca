@@ -23,29 +23,7 @@ local simple_convertes = {
 	end,
 }
 
-local function split_string(values)
-	local vals = {}
-	for v in values:gmatch("%S+") do table.insert(vals, v) end
-	return vals
-end
-
 local Property = {}
-
-function Property.set_value(node, explicit, value)
-	local type = node:findImplicitProperty(explicit) or node:findExplicitProperty(explicit)
-	assert(type, string.format("Unknown property: %s for node of type %s", explicit, node.className))
-	local converter = orca.typeconverter[type.DataType]
-	assert(converter, string.format("No type converter for data type: %s (property %s)", type.DataType, explicit))
-	node[explicit] = converter(value, type)
-end
-
-function Property.parse_edges(node, edges, values)
-	-- set_edge_property_value(node, edges.TypeString, "Top", values:match("Top=([^%s]+)"))
-	Property.set_value(node, string.format(edges.TypeString, "Top"), values[1])
-	Property.set_value(node, string.format(edges.TypeString, "Right"), values[2] or values[1])
-	Property.set_value(node, string.format(edges.TypeString, "Bottom"), values[3] or values[1])
-	Property.set_value(node, string.format(edges.TypeString, "Left"), values[4] or values[2] or values[1])
-end
 
 function Property.parse(node, name, value)
 	assert(orca.typeconverter, "Type converter plugin is required for XML support plugin")
@@ -53,7 +31,6 @@ function Property.parse(node, name, value)
 	if name == "Name" or name == "id" then node:setName(value) return end
 	local type = node:findImplicitProperty(name) or node:findExplicitProperty(name)
 	assert(type, string.format("Unknown property: %s for node of type %s", name, node.className))
-	if type.DataType == "Edges" then return Property.parse_edges(node, type, split_string(value)) end
 	local converter = orca.typeconverter[type.DataType]
 	assert(converter, string.format("No type converter for data type: %s (property %s)", type.DataType, name))
 	node[name] = converter(value, type)

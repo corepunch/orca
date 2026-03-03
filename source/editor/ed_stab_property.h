@@ -59,7 +59,6 @@ PDESC_Print(lpcPropertyType_t pdesc, LPSTR buffer, DWORD len, float const* pf)
         break;
       }
     case kDataTypeFloat:
-    case kDataTypeEdges:
       snprintf(buffer, len, "%g", pf[0]);
       FOR_LOOP(i, (int)pdesc->DataSize/sizeof(float)-1) {
         size_t buflen = strlen(buffer);

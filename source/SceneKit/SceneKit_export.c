@@ -20,6 +20,10 @@
 	.IsArray=TRUE, ##__VA_ARGS__ }
 
 static const char *_StencilOp[] = {"Keep","Zero","Replace","Increment","IncrementWrap","Decrement","DecrementWrap","Invert",NULL};
+const char *StencilOpToString(enum StencilOp value) {
+	assert(value >= 0 && value < 8);
+	return _StencilOp[value];
+}
 eStencilOp_t luaX_checkStencilOp(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _StencilOp);
 }
@@ -42,6 +46,10 @@ ORCA_API lpcString_t __strtoStencilOp(lpcString_t string, enum StencilOp* output
 	return string + strlen(string);
 }
 static const char *_ViewportMode[] = {"Relative","Absolute",NULL};
+const char *ViewportModeToString(enum ViewportMode value) {
+	assert(value >= 0 && value < 2);
+	return _ViewportMode[value];
+}
 eViewportMode_t luaX_checkViewportMode(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _ViewportMode);
 }
@@ -64,6 +72,10 @@ ORCA_API lpcString_t __strtoViewportMode(lpcString_t string, enum ViewportMode* 
 	return string + strlen(string);
 }
 static const char *_CullMode[] = {"None","Back","Front",NULL};
+const char *CullModeToString(enum CullMode value) {
+	assert(value >= 0 && value < 3);
+	return _CullMode[value];
+}
 eCullMode_t luaX_checkCullMode(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _CullMode);
 }
@@ -86,6 +98,10 @@ ORCA_API lpcString_t __strtoCullMode(lpcString_t string, enum CullMode* output) 
 	return string + strlen(string);
 }
 static const char *_ColorWriteMode[] = {"None","RGB","RGBA","R","G","B","GB","A",NULL};
+const char *ColorWriteModeToString(enum ColorWriteMode value) {
+	assert(value >= 0 && value < 8);
+	return _ColorWriteMode[value];
+}
 eColorWriteMode_t luaX_checkColorWriteMode(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _ColorWriteMode);
 }
@@ -108,6 +124,10 @@ ORCA_API lpcString_t __strtoColorWriteMode(lpcString_t string, enum ColorWriteMo
 	return string + strlen(string);
 }
 static const char *_FovType[] = {"Xfov","Yfov",NULL};
+const char *FovTypeToString(enum FovType value) {
+	assert(value >= 0 && value < 2);
+	return _FovType[value];
+}
 eFovType_t luaX_checkFovType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _FovType);
 }
@@ -130,6 +150,10 @@ ORCA_API lpcString_t __strtoFovType(lpcString_t string, enum FovType* output) {
 	return string + strlen(string);
 }
 static const char *_ProjectionType[] = {"Perspective","Orthographic",NULL};
+const char *ProjectionTypeToString(enum ProjectionType value) {
+	assert(value >= 0 && value < 2);
+	return _ProjectionType[value];
+}
 eProjectionType_t luaX_checkProjectionType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _ProjectionType);
 }
@@ -152,6 +176,10 @@ ORCA_API lpcString_t __strtoProjectionType(lpcString_t string, enum ProjectionTy
 	return string + strlen(string);
 }
 static const char *_LightType[] = {"Point","Spot",NULL};
+const char *LightTypeToString(enum LightType value) {
+	assert(value >= 0 && value < 2);
+	return _LightType[value];
+}
 eLightType_t luaX_checkLightType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _LightType);
 }

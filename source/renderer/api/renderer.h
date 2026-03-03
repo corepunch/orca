@@ -186,6 +186,7 @@ typedef enum BlendMode {
 	kBlendModePremultipliedAlpha, /// Alpha-premultiplied blending
 	kBlendModeMixedAlpha, /// Mixed alpha composition
 } eBlendMode_t;
+ORCA_API const char *BlendModeToString(enum BlendMode);
 
 #define CompareFunc_Count 9
 typedef enum CompareFunc {
@@ -199,6 +200,7 @@ typedef enum CompareFunc {
 	kCompareFuncNotEqual, /// Test passes if new value does not equal stored value
 	kCompareFuncDisabled, /// Testing is disabled - equivalent to Always but may have performance benefits
 } eCompareFunc_t;
+ORCA_API const char *CompareFuncToString(enum CompareFunc);
 
 #define TextureFilter_Count 3
 typedef enum TextureFilter {
@@ -206,6 +208,7 @@ typedef enum TextureFilter {
 	kTextureFilterLinear, /// Uses bilinear interpolation for smooth texture sampling.
 	kTextureFilterTrilinear, /// Uses trilinear interpolation with mipmap blending for high-quality filtered textures.
 } eTextureFilter_t;
+ORCA_API const char *TextureFilterToString(enum TextureFilter);
 
 #define TextureWrap_Count 3
 typedef enum TextureWrap {
@@ -213,6 +216,7 @@ typedef enum TextureWrap {
 	kTextureWrapRepeat, /// Repeats the texture pattern when coordinates exceed [0, 1] range.
 	kTextureWrapBase, /// Uses base texture addressing mode (platform-specific default behavior).
 } eTextureWrap_t;
+ORCA_API const char *TextureWrapToString(enum TextureWrap);
 
 #define TextureFormat_Count 6
 typedef enum TextureFormat {
@@ -223,6 +227,7 @@ typedef enum TextureFormat {
 	kTextureFormatDepthComponent, /// Single-channel depth format for depth buffer rendering and shadow mapping.
 	kTextureFormatDepthStencil, /// Combined depth and stencil format for advanced rendering techniques requiring both depth testing and stencil operations.
 } eTextureFormat_t;
+ORCA_API const char *TextureFormatToString(enum TextureFormat);
 
 #define MipmapMode_Count 4
 typedef enum MipmapMode {
@@ -231,6 +236,7 @@ typedef enum MipmapMode {
 	kMipmapModeLinear, /// Interpolates between two nearest mip levels for smoother transitions. Common default for high-quality rendering.
 	kMipmapModeTrilinear, /// Performs linear filtering across both texel and mip levels, providing the smoothest possible texture transitions (slightly slower).
 } eMipmapMode_t;
+ORCA_API const char *MipmapModeToString(enum MipmapMode);
 
 #define AnisotropyType_Count 5
 typedef enum AnisotropyType {
@@ -240,6 +246,7 @@ typedef enum AnisotropyType {
 	kAnisotropyTypeX8, /// Applies 8x anisotropic filtering for high-quality rendering with moderate cost.
 	kAnisotropyTypeX16, /// Applies 16x anisotropic filtering for the sharpest textures at glancing angles, at higher GPU cost.
 } eAnisotropyType_t;
+ORCA_API const char *AnisotropyTypeToString(enum AnisotropyType);
 
 typedef struct Texture Texture, *TexturePtr;
 typedef struct Texture const *TextureCPtr;
@@ -269,6 +276,7 @@ typedef enum ImageFormat {
 	kImageFormatAstc, /// Adaptive Scalable Texture Compression — block-based GPU texture compression format supporting lossy and near-lossless modes, with alpha channel support. Optimized for real-time rendering and mobile/embedded GPUs.
 	kImageFormatPvrtc, /// PowerVR Texture Compression — hardware texture compression format optimized for PowerVR GPUs (common in iOS devices). Provides efficient storage with optional alpha support, suitable for mobile real-time graphics.
 } eImageFormat_t;
+ORCA_API const char *ImageFormatToString(enum ImageFormat);
 
 #define AstcFormat_Count 28
 typedef enum AstcFormat {
@@ -301,6 +309,7 @@ typedef enum AstcFormat {
 	kAstcFormatSrgbBlock12x10, /// 12×10 block, sRGB color space — extreme compression, low visual fidelity
 	kAstcFormatSrgbBlock12x12, /// 12×12 block, sRGB color space — maximum compression, lowest quality
 } eAstcFormat_t;
+ORCA_API const char *AstcFormatToString(enum AstcFormat);
 
 #define AtcCompressionScheme_Count 3
 typedef enum AtcCompressionScheme {
@@ -308,6 +317,7 @@ typedef enum AtcCompressionScheme {
 	kAtcCompressionSchemeInterpolatedAlpha, /// RGB + interpolated alpha values — smaller size, lower alpha precision
 	kAtcCompressionSchemeRgb, /// RGB only, no alpha channel — smallest size and fastest decoding
 } eAtcCompressionScheme_t;
+ORCA_API const char *AtcCompressionSchemeToString(enum AtcCompressionScheme);
 
 #define AstcCompressionSpeed_Count 5
 typedef enum AstcCompressionSpeed {
@@ -317,6 +327,7 @@ typedef enum AstcCompressionSpeed {
 	kAstcCompressionSpeedThorough, /// slower, higher quality (offline textures)
 	kAstcCompressionSpeedExhaustive, /// best possible quality, extremely slow — for final offline baking
 } eAstcCompressionSpeed_t;
+ORCA_API const char *AstcCompressionSpeedToString(enum AstcCompressionSpeed);
 
 #define RawColorByteFormat_Count 7
 typedef enum RawColorByteFormat {
@@ -328,6 +339,7 @@ typedef enum RawColorByteFormat {
 	kRawColorByteFormatR11g11b10f, /// 11/11/10-bit floating point RGB, no alpha — optimized for HDR rendering
 	kRawColorByteFormatRgba32f, /// 32-bit floating point per channel RGBA — maximum precision, used in offline or scientific rendering
 } eRawColorByteFormat_t;
+ORCA_API const char *RawColorByteFormatToString(enum RawColorByteFormat);
 
 #define FilePngCompressionLevel_Count 5
 typedef enum FilePngCompressionLevel {
@@ -337,6 +349,7 @@ typedef enum FilePngCompressionLevel {
 	kFilePngCompressionLevelMaximum, /// highest compression — smallest files, slower encode
 	kFilePngCompressionLevelProjectDefault, /// use compression level defined by project settings
 } eFilePngCompressionLevel_t;
+ORCA_API const char *FilePngCompressionLevelToString(enum FilePngCompressionLevel);
 
 #define SpansionCompressionScheme_Count 3
 typedef enum SpansionCompressionScheme {
@@ -344,12 +357,14 @@ typedef enum SpansionCompressionScheme {
 	kSpansionCompressionSchemeStandard, /// Standard compression applied — balances between compression ratio and speed
 	kSpansionCompressionSchemeEnhanced, /// Enhanced compression applied — achieves higher compression ratios at the cost of increased processing time
 } eSpansionCompressionScheme_t;
+ORCA_API const char *SpansionCompressionSchemeToString(enum SpansionCompressionScheme);
 
 #define ImageType_Count 2
 typedef enum ImageType {
 	kImageTypeNormal,
 	kImageTypeMask,
 } eImageType_t;
+ORCA_API const char *ImageTypeToString(enum ImageType);
 
 typedef struct Image Image, *ImagePtr;
 typedef struct Image const *ImageCPtr;
@@ -391,6 +406,7 @@ typedef enum RenderTargetType {
 	kRenderTargetTypeSpecular, /// Optional attachment for storing specular intensity or color in deferred shading pipelines
 	kRenderTargetTypeEmission, /// Optional attachment storing emissive light information for glow or lighting accumulation passes
 } eRenderTargetType_t;
+ORCA_API const char *RenderTargetTypeToString(enum RenderTargetType);
 
 #define RenderTargetTextureAttachment_Count 8
 typedef enum RenderTargetTextureAttachment {
@@ -403,6 +419,7 @@ typedef enum RenderTargetTextureAttachment {
 	kRenderTargetTextureAttachmentStencil, /// Stencil attachment — used for stencil operations
 	kRenderTargetTextureAttachmentDepthStencil, /// Combined depth-stencil attachment
 } eRenderTargetTextureAttachment_t;
+ORCA_API const char *RenderTargetTextureAttachmentToString(enum RenderTargetTextureAttachment);
 
 typedef struct RenderTargetTexture RenderTargetTexture, *RenderTargetTexturePtr;
 typedef struct RenderTargetTexture const *RenderTargetTextureCPtr;
@@ -443,6 +460,7 @@ typedef enum FloatPrecision {
 	kFloatPrecisionMedium, /// Medium precision, typically 16-24 bits. Ideal for texture coordinates and general-purpose calculations.
 	kFloatPrecisionHigh, /// Highest precision, typically 32 bits. Required for vertex positions, matrices, and critical transformations.
 } eFloatPrecision_t;
+ORCA_API const char *FloatPrecisionToString(enum FloatPrecision);
 
 #define Shading_Count 3
 typedef enum Shading {
@@ -450,6 +468,7 @@ typedef enum Shading {
 	kShadingPhong, /// Classic Phong lighting model with ambient, diffuse, and specular components. Provides good performance with convincing highlights and shading for general-purpose 3D rendering.
 	kShadingStandard, /// Physically-based rendering (PBR) model. Provides realistic material appearance based on physical light interaction principles, supporting metallic and roughness workflows.
 } eShading_t;
+ORCA_API const char *ShadingToString(enum Shading);
 
 typedef struct VertexShader VertexShader, *VertexShaderPtr;
 typedef struct VertexShader const *VertexShaderCPtr;

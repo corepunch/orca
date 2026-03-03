@@ -17,6 +17,10 @@ _T = {
 	),
 	'enums': string.Template(
 		"static const char *_${ename}[] = {${values}};\n"
+		"const char *${ename}ToString(enum ${ename} value) {\n"
+		"\tassert(value >= 0 && value < ${count});\n"
+		"\treturn _${ename}[value];\n"
+		"}\n"
 		"${ename_t} luaX_check${ename}(lua_State *L, int idx) {\n"
 		"\treturn luaL_checkoption(L, idx, NULL, _${ename});\n"
 		"}\n"

@@ -3,6 +3,7 @@
 #include "fs_local.h"
 #include "../core/core_local.h"
 
+#include <source/core/core.h>
 #include <source/UIKit/UIKit.h>
 
 #define REQUIRE(type, name, expr, error) type name = expr; if (!name) return error;
@@ -95,21 +96,6 @@ SV_CMD(GET, project_overview);
 lpObject_t 
 UI_FindObjectByUniqueID(uint32_t uid, lpObject_t object);
 
-static lpcString_t _types[] = {
-  "none", // kDataTypeNone,
-  "bool", // kDataTypeBool,
-  "int", // kDataTypeInt,
-  "enum", // kDataTypeEnum,
-  "float", // kDataTypeFloat,
-  "string", // kDataTypeFixed,
-  "longstring", // kDataTypeLongString,
-  "edges", // kDataTypeEdges,
-  "objecttags", // kDataTypeObjectTags,
-  "event", // kDataTypeEvent,
-  "struct", // kDataTypeStruct,
-  "project-item", // kDataTypeObject,
-};
-
 static void add_group(lpcClassDesc_t dec, void* parm) {
   xmlNodePtr p = _xmlNewChild(parm, "group", "name", dec->ClassName);
   _xmlSetProp(p, "data-compound", "true");
@@ -119,7 +105,7 @@ ORCA_API lpcString_t
 PDESC_Print(lpcPropertyType_t pdesc, LPSTR buffer, uint32_t len, float const* pf);
 
 #define _xmlAddProp(parent, name, value, type)\
-_xmlNewChild(parent, _types[type], "name", name, "value", value, "data-type", _types[type])
+_xmlNewChild(parent, DataTypeToString(type), "name", name, "value", value, "data-type", DataTypeToString(type))
 
 static int
 add_subproperty(xmlNodePtr xml,

@@ -15,6 +15,10 @@ lpgame_t luaX_checkgame(lua_State *L, int idx) {
 	return lua_touserdata(L, idx);
 }
 static const char *_BindingMode[] = {"OneWay","TwoWay","OneWayToSource","Expression",NULL};
+const char *BindingModeToString(enum BindingMode value) {
+	assert(value >= 0 && value < 4);
+	return _BindingMode[value];
+}
 eBindingMode_t luaX_checkBindingMode(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _BindingMode);
 }
@@ -37,6 +41,10 @@ ORCA_API lpcString_t __strtoBindingMode(lpcString_t string, enum BindingMode* ou
 	return string + strlen(string);
 }
 static const char *_PropertyAttribute[] = {"WholeProperty","ColorR","ColorG","ColorB","ColorA","VectorX","VectorY","VectorZ","VectorW",NULL};
+const char *PropertyAttributeToString(enum PropertyAttribute value) {
+	assert(value >= 0 && value < 9);
+	return _PropertyAttribute[value];
+}
 ePropertyAttribute_t luaX_checkPropertyAttribute(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _PropertyAttribute);
 }
@@ -696,12 +704,16 @@ static int f_core_getHover(lua_State *L) {
 	luaX_pushObject(L, output);
 	return 1;
 }
-static const char *_DataType[] = {"None","Bool","Int","Enum","Float","Fixed","LongString","Edges","ObjectTags","Event","Struct","Object",NULL};
+static const char *_DataType[] = {"None","Bool","Int","Enum","Float","Fixed","LongString","ObjectTags","Event","Struct","Object",NULL};
+const char *DataTypeToString(enum DataType value) {
+	assert(value >= 0 && value < 11);
+	return _DataType[value];
+}
 eDataType_t luaX_checkDataType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _DataType);
 }
 void luaX_pushDataType(lua_State *L, eDataType_t value) {
-	assert(value >= 0 && value < 12);
+	assert(value >= 0 && value < 11);
 	lua_pushstring(L, _DataType[value]);
 }
 ORCA_API lpcString_t __strtoDataType(lpcString_t string, enum DataType* output) {

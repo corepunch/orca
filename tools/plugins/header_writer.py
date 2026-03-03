@@ -114,4 +114,5 @@ class HeaderWriter(Plugin):
 				self.w(f"\t{enum_name}, /// {enum.text}")
 			else:
 				self.w(f"\t{enum_name},")
-		self.w(f"}} {utils._e(enums.get('name'))};\n")
+		self.w(f"}} {utils._e(enums.get('name'))};")
+		self.w(f"ORCA_API const char *{enums.get('name')}ToString(enum {enums.get('name')});\n")

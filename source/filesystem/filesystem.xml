@@ -158,15 +158,6 @@
     <returns type="string">Pointer to the base filename within the original path string</returns>
   </function>
   
-  <function name="GetPathName">
-    <summary>Extracts the path without query parameters</summary>
-    <details>Copies the path into the provided buffer, truncating at the first '?' character if present. This is useful for removing query string parameters from paths (e.g., "file.txt?param=value" becomes "file.txt"). The output buffer is zeroed before copying, and the copy is limited to the maximum buffer length.</details>
-    <arg name="path" type="string">The file path to process</arg>
-    <arg name="out" type="string">Output buffer to receive the path without query parameters</arg>
-    <arg name="maxlen" type="int">Maximum length of the output buffer</arg>
-    <returns type="string">Pointer to the output buffer containing the cleaned path</returns>
-  </function>
-  
   <function name="GetDirName">
     <summary>Extracts the directory path from a full file path</summary>
     <details>Copies the directory component from a file path into the provided buffer.   For example, given "/path/to/file.txt", writes "/path/to" to the output buffer. The result does not include a trailing slash.  Returns null if the buffer size is insufficient.</details>
