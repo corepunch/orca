@@ -496,23 +496,6 @@ XML_ParseValues(xmlNode *it,
   }
 }
 
-static void parse_xml_array(lua_State *L, xmlNodePtr it, lpProperty_t property, lpObject_t object) {
-  lpcPropertyType_t pdesc = PROP_GetDesc(property);
-  uint32_t num = XML_CountNodes(it, XMLSTR(pdesc->TypeString));
-  void *mem = malloc(pdesc->DataSize * num);
-  XML_ParseValues(it, pdesc, _GetParser(L, pdesc->TypeString), mem);
-  PROP_SetValue(property, &mem);
-  lpProperty_t nump;
-  if ((pdesc+1)->DataType == kDataTypeInt &&
-      SUCCEEDED(OBJ_FindLongProperty(object, (pdesc+1)->FullIdentifier, &nump)))
-  {
-    PROP_SetValue(nump, &num);
-  } else {
-    Con_Error("Expected a Num%s property to follow %s", pdesc->Name, pdesc->Name);
-  }
-  return;
-}
-
 void
 on_core_module_registered(lua_State* L)
 {
