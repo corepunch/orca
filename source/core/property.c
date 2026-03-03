@@ -271,6 +271,7 @@ PROP_Create(lua_State* L,
   property->next = NULL;
   property->type = pt->DataType;
   property->object = object;
+  property->pdesc = pt;
   memset(property->oldvalue, 0xff, PROP_GetSize(property));
 
   _RegisterProperty(object, property);
