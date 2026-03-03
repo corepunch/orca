@@ -298,10 +298,14 @@ bool_t OBJ_API(SetProperty, lpcString_t name) {
 //    property = PROP_Create(L, self, name, kDataTypeObject, "Object");
 //    luaX_readProperty(L, 3, property);
 //    return TRUE;
-  } else if (!strcmp(name, "Material.Texture")) {
-    property = PROP_Create(L, self, name, kDataTypeObject, "Texture");
-    luaX_readProperty(L, 3, property);
-    return TRUE;
+//  } else if (!strcmp(name, "Material.Texture")) {
+//    property = PROP_Create(L, self, &(struct PropertyType) {
+//      .Name = name,
+//      .DataType = kDataTypeObject,
+//      .TypeString = "Texture"
+//    });
+//    luaX_readProperty(L, 3, property);
+//    return TRUE;
   } else if (lua_type(L, 3) == LUA_TFUNCTION) {
     OBJ_ProcessFunctions(self, name);
     return FALSE;
@@ -475,16 +479,6 @@ void OBJ_API(SetContext)
 void OBJ_Play(lpObject_t self, lpcString_t animation)
 {
 //  OBJ_SetAnimation(self, string_2);
-}
-
-void OBJ_API(Bind, lpcString_t property, lpcString_t expression) {
-  lpProperty_t hProperty = NULL;
-  if (FAILED(OBJ_FindShortProperty(self, property, &hProperty))) {
-    hProperty = PROP_Create(L, self, property, kDataTypeNone, NULL);
-  }
-//  PROP_AttachProgram(hProperty, 0, expression, TRUE);
-  // TODO: implement binding in scripts
-  Con_Error("Binding not implemented");
 }
 
 static int f_rebuild_finalize(lua_State *L, int status, lua_KContext ctx) {

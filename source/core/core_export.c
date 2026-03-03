@@ -169,13 +169,6 @@ static int f_Object_play(lua_State *L) {
 	OBJ_Play(self, animation);
 	return 0;
 }
-static int f_Object_bind(lua_State *L) {
-	lpObject_t self = luaX_checkObject(L, 1);
-	const char* Property = luaL_checkstring(L, 2);
-	const char* expression = luaL_checkstring(L, 3);
-	OBJ_Bind(L, self, Property, expression);
-	return 0;
-}
 static int f_Object_setFocus(lua_State *L) {
 	lpObject_t self = luaX_checkObject(L, 1);
 	OBJ_SetFocus(self);
@@ -526,9 +519,6 @@ int f_Object___index(lua_State *L) {
 		return 1;
 	case 0xc2cbd863: // play
 		lua_pushcfunction(L, f_Object_play);
-		return 1;
-	case 0xc7535f2e: // bind
-		lua_pushcfunction(L, f_Object_bind);
 		return 1;
 	case 0x417e6e85: // setFocus
 		lua_pushcfunction(L, f_Object_setFocus);

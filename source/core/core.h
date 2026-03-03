@@ -247,10 +247,6 @@ OBJ_PostMessage(lua_State *L, lpObject_t self, const char* message);
 ORCA_API void
 OBJ_Play(lpObject_t self, const char* animation);
 
-/// @brief Bind a property of an object to an expression or data source.
-ORCA_API void
-OBJ_Bind(lua_State *L, lpObject_t self, const char* Property, const char* expression);
-
 /// @brief Set focus on the object.
 ORCA_API void
 OBJ_SetFocus(lpObject_t self);

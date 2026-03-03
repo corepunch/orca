@@ -209,6 +209,7 @@ void f_parse_property(lua_State* L, lpProperty_t hProperty, lpcString_t value) {
   assert(lua_type(g_L, -1) == LUA_TFUNCTION);
   lua_remove(g_L, -2); // remove typeconverter table
   lua_pushstring(g_L, value);
+  assert(PROP_GetDesc(hProperty));
   luaX_pushPropertyType(g_L, PROP_GetDesc(hProperty));
   lua_call(g_L, 2, 1);
   assert(lua_type(g_L, -1) != LUA_TNIL);
@@ -229,7 +230,8 @@ OBJ_ApplyClass(lpObject_t pobj, struct style_sheet* ss, void* parm)
     }
 
     assert(g_L);
-    f_parse_property(g_L, hProperty,ss->value);
+    assert(PROP_GetDesc(hProperty));
+    f_parse_property(g_L, hProperty, ss->value);
 
     if (PROP_GetType(hProperty) == kDataTypeStruct &&
         !strcmp(PROP_GetUserData(hProperty), "Color") &&

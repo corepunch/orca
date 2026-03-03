@@ -171,9 +171,9 @@ OBJ_Animate(lua_State* L, lpObject_t object)
           *value = prev < *value ? !(*value < 1) : (*value > 0);
         }
         PROP_SetValue(property, value);
-      } else {
-        property = PROP_Create(L, target, curve->property, kDataTypeFloat, NULL);
-        PROP_SetValue(property, value);
+//      } else {
+//        property = PROP_Create(L, target, curve->property, kDataTypeFloat, NULL);
+//        PROP_SetValue(property, value);
       }
     }
     if (time >= ka->stop_time) {

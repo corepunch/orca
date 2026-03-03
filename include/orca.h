@@ -340,7 +340,7 @@ ORCA_API void
 PROP_Print(lpProperty_t p, LPSTR buffer, uint32_t len);
 
 ORCA_API lpProperty_t
-PROP_Create(lua_State*,lpObject_t,lpcString_t,enum DataType,lpcString_t udata);
+PROP_Create(lua_State*,lpObject_t,lpcPropertyType_t);
 
 ORCA_API uint32_t
 GetPropertyHandleType(lpcString_t szType);

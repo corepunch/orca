@@ -410,7 +410,7 @@ _CreateProjectProperty(lpObject_t object, uint32_t ident)
 {
   lpcPropertyType_t pt = OBJ_FindPropertyType(ident);
   if (pt) {
-    return PROP_Create(NULL,object,pt->Name,pt->DataType,pt->TypeString);
+    return PROP_Create(NULL,object,pt);
   }
   return NULL;
 }

@@ -229,7 +229,7 @@ OBJ_EnumObjectClasses(lpObject_t pobj,
   }
 }
 
-void _pushproperty(lua_State*, eDataType_t, void *, lpcString_t, size_t);
+void _pushproperty(lua_State*, void *, lpcPropertyType_t);
 
 bool_t
 OBJ_PushClassProperty(lua_State *L, lpObject_t object, uint32_t id)
@@ -238,7 +238,7 @@ OBJ_PushClassProperty(lua_State *L, lpObject_t object, uint32_t id)
     FOR_LOOP(i, cmp->pcls->NumProperties) {
       lpcPropertyType_t pdesc = &cmp->pcls->Properties[i];
       if (pdesc->ShortIdentifier == id) {
-        _pushproperty(L, pdesc->DataType, cmp->pUserData + pdesc->Offset, pdesc->TypeString, pdesc->DataSize);
+        _pushproperty(L, cmp->pUserData + pdesc->Offset, pdesc);
         return TRUE;
       }
     }

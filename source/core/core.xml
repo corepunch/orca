@@ -178,13 +178,6 @@
       <arg name="animation" type="string">Name or identifier of the animation to play, resolved from the object's animation library</arg>
     </method>
     
-    <method name="Bind" lua="true">
-      <summary>Bind a property of an object to an expression or data source.</summary>
-      <details>Creates a data binding relationship between a property on this object and a data source expression. The binding automatically updates the property value whenever the source data changes. The expression can reference other object properties, global variables, or computed values. This enables reactive programming patterns where UI elements automatically reflect data model changes.</details>
-      <arg name="Property" type="string">The name of the property on this object to bind to the data source</arg>
-      <arg name="expression" type="string">The binding expression or data source path that will provide values for the property</arg>
-    </method>
-    
     <method name="SetFocus">
       <summary>Set focus on the object.</summary>
       <details>Makes this object the currently focused object in the game interface. This triggers focus change events: sends "KillFocus" to the previously focused object (if any) and "SetFocus" to this object. Also posts "ThemeChanged" messages to both objects to update their visual appearance. Updates the game's global focus reference to point to this object.</details>

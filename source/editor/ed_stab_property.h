@@ -29,7 +29,7 @@ void UI_FillOutPropDef(HOBJ object, HPROP p, LPPROPDEF lpPropDef) {
   lpPropDef->lpEditorValue  = (void*)PROP_GetValue(p);
   lpPropDef->lpRuntimeValue = (void*)PROP_GetValue(p);
   lpPropDef->bHasBinding    = PROP_HasProgram(p);
-  lpPropDef->lpEnumValues   = p->userdata;
+  lpPropDef->lpEnumValues   = PROP_GetUserData(p);
   lpPropDef->dwFlags        = PROP_GetFlags(p);
   memcpy(lpPropDef->pPrograms, p->programSources, sizeof(p->programSources));
   lpPropDef->bIsUsedInBinding = FALSE;
@@ -150,7 +150,7 @@ void ED_WriteBindings(HPROP prop, xmlNodePtr node) {
       xmlChar const *name =  BAD_CAST prop->programSources[i];
       xmlNsPtr ns = xmlFindNs(node, BAD_CAST default_url);
       xmlNodePtr bnd = xmlNewChild(node, ns, XMLSTR("Binding"), name);
-      xmlSetProp(bnd, XMLSTR("Property"), BAD_CAST prop->name);
+      xmlSetProp(bnd, XMLSTR("Property"), BAD_CAST prop->pdesc->Name);
       xmlSetProp(bnd, XMLSTR("Enabled"), BAD_CAST (prop->programs[i]?"true":"false"));
       if (i != kPropertyAttributeWholeProperty) {
         xmlSetProp(bnd, XMLSTR("Attribute"), BAD_CAST _attrs[i]);
