@@ -171,6 +171,7 @@
 </span></a><a class="leaf-link" href="#SKView"><i class="fa-solid fa-layer-group icon"></i><span>SKView
 </span></a><div class="technology-title"><span class="fa-solid fa-folder-open icon"></span>orca.filesystem
 </div><a class="leaf-link" href="#ProjectReference"><i class="fa-solid fa-gear icon"></i><span>ProjectReference
+</span></a><a class="leaf-link" href="#SystemMessage"><i class="fa-solid fa-gear icon"></i><span>SystemMessage
 </span></a><a class="leaf-link" href="#Workspace"><i class="fa-solid fa-layer-group icon"></i><span>Workspace
 </span></a><a class="leaf-link" href="#Project"><i class="fa-solid fa-layer-group icon"></i><span>Project
 </span></a><a class="leaf-link" href="#Library"><i class="fa-solid fa-layer-group icon"></i><span>Library
@@ -207,8 +208,6 @@
 </span></a><a class="leaf-link" href="#ConnectUserServiceLibrary"><i class="fa-solid fa-layer-group icon"></i><span>ConnectUserServiceLibrary
 </span></a><a class="leaf-link" href="#SpriteLibrary"><i class="fa-solid fa-layer-group icon"></i><span>SpriteLibrary
 </span></a><a class="leaf-link" href="#SpriteAnimationLibrary"><i class="fa-solid fa-layer-group icon"></i><span>SpriteAnimationLibrary
-</span></a><a class="leaf-link" href="#MessageLibrary"><i class="fa-solid fa-layer-group icon"></i><span>MessageLibrary
-</span></a><a class="leaf-link" href="#SystemMessage"><i class="fa-solid fa-layer-group icon"></i><span>SystemMessage
 </span></a><a class="leaf-link" href="#ImageLibrary"><i class="fa-solid fa-layer-group icon"></i><span>ImageLibrary
 </span></a><a class="leaf-link" href="#FontLibrary"><i class="fa-solid fa-layer-group icon"></i><span>FontLibrary
 </span></a><a class="leaf-link" href="#LocaleReferenceItem"><i class="fa-solid fa-layer-group icon"></i><span>LocaleReferenceItem
@@ -2594,6 +2593,15 @@
 <div class="small-abstract"><span>Name of the project, will be used as Project/Library/Resource when referencing it's resources
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Path</span>: <span>fixed</span></code></div>
 <div class="small-abstract"><span>Path to the project relative to the workspace
+</span></div></div><div id="SystemMessage" class="class" data-name="SystemMessage" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">SystemMessage
+</h1><div class="abstract">Handler of system messages you can add to your project
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.SystemMessage</span></code><h2 class="title">Overview</h2><div class="abstract">Handles system messages sent to the application. Each system message defines a message type, an associated key, and a command to execute when the message is received. This allows the application to respond to system events and user interactions through a configurable message dispatch system.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Message</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Message name, i.e. KeyDown
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Key</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Associated key for the message, if applicable
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Command</span>: <span>fixed</span></code></div>
+<div class="small-abstract"><span>Command to execute when the message is received
 </span></div></div><div id="Workspace" class="class" data-name="Workspace" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">Workspace
 </h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.Workspace</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code></div><div id="Project" class="class" data-name="Project" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
@@ -2638,6 +2646,9 @@
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">ProjectReferences</span>: <a class="type-identifier-link" href="#ProjectReference">ProjectReference</a></code></div>
 <div class="topic"><code class="decorator"><span>var </span><span class="identifier">NumProjectReferences</span>: <span>int</span></code></div>
 <div class="small-abstract"><span>Number of ProjectReferences
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">SystemMessages</span>: <a class="type-identifier-link" href="#SystemMessage">SystemMessage</a></code></div>
+<div class="topic"><code class="decorator"><span>var </span><span class="identifier">NumSystemMessages</span>: <span>int</span></code></div>
+<div class="small-abstract"><span>Number of SystemMessages
 </span></div></div><div id="Library" class="class" data-name="Library" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">Library
 </h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.Library</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">IsExternal</span>: <span>bool</span></code></div>
@@ -2707,13 +2718,7 @@
 </div><h1 class="header">SpriteLibrary
 </h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.SpriteLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="SpriteAnimationLibrary" class="class" data-name="SpriteAnimationLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">SpriteAnimationLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.SpriteAnimationLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="MessageLibrary" class="class" data-name="MessageLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
-</div><h1 class="header">MessageLibrary
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.MessageLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="SystemMessage" class="class" data-name="SystemMessage" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
-</div><h1 class="header">SystemMessage
-</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.SystemMessage</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Message</span>: <span>fixed</span></code></div>
-<div class="topic"><code class="decorator"><span>var </span><span class="identifier">Key</span>: <span>fixed</span></code></div>
-</div><div id="ImageLibrary" class="class" data-name="ImageLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.SpriteAnimationLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="ImageLibrary" class="class" data-name="ImageLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">ImageLibrary
 </h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">filesystem.ImageLibrary</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Library" class="name base">Library</a></li></ui></code></div><div id="FontLibrary" class="class" data-name="FontLibrary" data-inherits="Library" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">FontLibrary

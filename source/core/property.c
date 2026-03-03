@@ -30,16 +30,6 @@ static size_t psize[] = {
   0,  // Group,
 };
 
-ORCA_API lpcString_t
-(*_PDESC_Parse)(lpObject_t hobj,
-               lpcPropertyType_t pdesc,
-               lpProperty_t property,
-               lpcString_t string,
-               void* dest);
-
-ORCA_API lpObject_t
-(*_OBJ_LoadDocument)(lua_State* L, xmlDocPtr doc);
-
 struct Property
 {
   shortStr_t name;
@@ -440,7 +430,8 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
         p->flags &= ~PF_NIL;
         p->flags |= PF_MODIFIED;
       } else {
-        PROP_Parse(p, luaL_checkstring(L, idx));
+//        PROP_Parse(p, luaL_checkstring(L, idx));
+        assert(!"Parsing of properties not supported out of the box");
       }
       break;
     case LUA_TBOOLEAN:
@@ -746,23 +737,6 @@ PROP_ClearSpecialized(lpProperty_t pprop) {
 lpcPropertyType_t 
 PROP_GetDesc(lpcProperty_t prop) {
   return prop->pdesc;
-}
-
-void
-PROP_Parse(lpProperty_t p, lpcString_t string)
-{
-  if (!_PDESC_Parse) {
-    fprintf(stderr, "PDESC_Parse() is not registered, do 'require \"orca.parsers.xml\"' first\n");
-  } else {
-    _PDESC_Parse(p->object, p->pdesc/* ? p->pdesc: &(struct PropertyType){
-      .DataType = p->type,
-      .DataSize = PROP_GetSize(p),
-      .TypeString = p->userdata,
-    }*/, p, string, p->value);
-    p->flags &= ~PF_NIL;
-    p->flags |= PF_MODIFIED;
-    OBJ_SetDirty(p->object);
-  }
 }
 
 #include <source/editor/ed_stab_property.h>

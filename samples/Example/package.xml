@@ -5,9 +5,9 @@
   <Project.PropertyTypes>
     <PropertyType Name="Speed" DataType="Float" Category="Custom"/>
   </Project.PropertyTypes>
-  <MessageLibrary Name="Messages">
-    <SystemMessage Message="KeyDown" Key="q">return</SystemMessage>
-    <SystemMessage Message="WindowClosed">return</SystemMessage>
-    <SystemMessage Message="RequestReload">window:refresh()</SystemMessage>
-  </MessageLibrary>
+  <Project.SystemMessages>
+    <SystemMessage Message="KeyDown" Key="q" Command="return"/>
+    <SystemMessage Message="WindowClosed" Command="return"/>
+    <SystemMessage Message="RequestReload" Command="window:refresh()"/>
+  </Project.SystemMessages>
 </Project>

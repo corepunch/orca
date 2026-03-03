@@ -198,11 +198,15 @@ ED_HierarchyOnCommand(HEDWND wnd, LPVOID udata, DWORD cmd)
     case ID_EDIT_PASTE:
       if (xml) {
         HOBJ root = editor.screen;
-        HOBJ obj = XML_ParseObjectNode(editor.L, xml, root);
-        if (SceneView_GetSelection(wnd) && OBJ_GetParent(SceneView_GetSelection(wnd))) {
-          OBJ_AddChild(OBJ_GetParent(SceneView_GetSelection(wnd)), obj, FALSE);
-        } else {
-          OBJ_AddChild(root, obj, FALSE);
+        xmlWith(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFree) {
+          xmlDocSetRootElement(doc, xml);
+          lpObject_t OBJ_LoadDocument(lua_State* L, xmlDocPtr doc);
+          HOBJ obj = OBJ_LoadDocument(editor.L, doc);
+          if (SceneView_GetSelection(wnd) && OBJ_GetParent(SceneView_GetSelection(wnd))) {
+            OBJ_AddChild(OBJ_GetParent(SceneView_GetSelection(wnd)), obj, FALSE);
+          } else {
+            OBJ_AddChild(root, obj, FALSE);
+          }
         }
         ED_InvalidateWindow(wnd);
         return TRUE;

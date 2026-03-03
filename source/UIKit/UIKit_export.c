@@ -19,7 +19,7 @@
 	.DataType=TYPE, \
 	.IsArray=TRUE, ##__VA_ARGS__ }
 
-static const char *_Direction[] = {"horizontal","vertical","depth",NULL};
+static const char *_Direction[] = {"Horizontal","Vertical","Depth",NULL};
 eDirection_t luaX_checkDirection(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _Direction);
 }
@@ -29,7 +29,6 @@ void luaX_pushDirection(lua_State *L, eDirection_t value) {
 }
 ORCA_API lpcString_t __strtoDirection(lpcString_t string, enum Direction* output) {
 	if (string == NULL) return FALSE;
-	const char* _Direction[] = { "Horizontal", "Vertical", "Depth", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -42,7 +41,7 @@ ORCA_API lpcString_t __strtoDirection(lpcString_t string, enum Direction* output
 	Con_Error("Could not parse '%s' value of property Direction", string);
 	return string + strlen(string);
 }
-static const char *_Box3Field[] = {"x","y","z","width","height","depth",NULL};
+static const char *_Box3Field[] = {"X","Y","Z","Width","Height","Depth",NULL};
 eBox3Field_t luaX_checkBox3Field(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _Box3Field);
 }
@@ -52,7 +51,6 @@ void luaX_pushBox3Field(lua_State *L, eBox3Field_t value) {
 }
 ORCA_API lpcString_t __strtoBox3Field(lpcString_t string, enum Box3Field* output) {
 	if (string == NULL) return FALSE;
-	const char* _Box3Field[] = { "X", "Y", "Z", "Width", "Height", "Depth", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -65,7 +63,7 @@ ORCA_API lpcString_t __strtoBox3Field(lpcString_t string, enum Box3Field* output
 	Con_Error("Could not parse '%s' value of property Box3Field", string);
 	return string + strlen(string);
 }
-static const char *_TextOverflow[] = {"clip","ellipsis",NULL};
+static const char *_TextOverflow[] = {"Clip","Ellipsis",NULL};
 eTextOverflow_t luaX_checkTextOverflow(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _TextOverflow);
 }
@@ -75,7 +73,6 @@ void luaX_pushTextOverflow(lua_State *L, eTextOverflow_t value) {
 }
 ORCA_API lpcString_t __strtoTextOverflow(lpcString_t string, enum TextOverflow* output) {
 	if (string == NULL) return FALSE;
-	const char* _TextOverflow[] = { "Clip", "Ellipsis", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -88,7 +85,7 @@ ORCA_API lpcString_t __strtoTextOverflow(lpcString_t string, enum TextOverflow* 
 	Con_Error("Could not parse '%s' value of property TextOverflow", string);
 	return string + strlen(string);
 }
-static const char *_TextWrapping[] = {"wrapwithoverflow","nowrap","wrap",NULL};
+static const char *_TextWrapping[] = {"WrapWithOverflow","NoWrap","Wrap",NULL};
 eTextWrapping_t luaX_checkTextWrapping(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _TextWrapping);
 }
@@ -98,7 +95,6 @@ void luaX_pushTextWrapping(lua_State *L, eTextWrapping_t value) {
 }
 ORCA_API lpcString_t __strtoTextWrapping(lpcString_t string, enum TextWrapping* output) {
 	if (string == NULL) return FALSE;
-	const char* _TextWrapping[] = { "WrapWithOverflow", "NoWrap", "Wrap", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -111,7 +107,7 @@ ORCA_API lpcString_t __strtoTextWrapping(lpcString_t string, enum TextWrapping* 
 	Con_Error("Could not parse '%s' value of property TextWrapping", string);
 	return string + strlen(string);
 }
-static const char *_TextHorizontalAlignment[] = {"left","center","right",NULL};
+static const char *_TextHorizontalAlignment[] = {"Left","Center","Right",NULL};
 eTextHorizontalAlignment_t luaX_checkTextHorizontalAlignment(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _TextHorizontalAlignment);
 }
@@ -121,7 +117,6 @@ void luaX_pushTextHorizontalAlignment(lua_State *L, eTextHorizontalAlignment_t v
 }
 ORCA_API lpcString_t __strtoTextHorizontalAlignment(lpcString_t string, enum TextHorizontalAlignment* output) {
 	if (string == NULL) return FALSE;
-	const char* _TextHorizontalAlignment[] = { "Left", "Center", "Right", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -134,7 +129,7 @@ ORCA_API lpcString_t __strtoTextHorizontalAlignment(lpcString_t string, enum Tex
 	Con_Error("Could not parse '%s' value of property TextHorizontalAlignment", string);
 	return string + strlen(string);
 }
-static const char *_TextVerticalAlignment[] = {"top","center","bottom","baseline",NULL};
+static const char *_TextVerticalAlignment[] = {"Top","Center","Bottom","Baseline",NULL};
 eTextVerticalAlignment_t luaX_checkTextVerticalAlignment(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _TextVerticalAlignment);
 }
@@ -144,7 +139,6 @@ void luaX_pushTextVerticalAlignment(lua_State *L, eTextVerticalAlignment_t value
 }
 ORCA_API lpcString_t __strtoTextVerticalAlignment(lpcString_t string, enum TextVerticalAlignment* output) {
 	if (string == NULL) return FALSE;
-	const char* _TextVerticalAlignment[] = { "Top", "Center", "Bottom", "Baseline", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -157,7 +151,7 @@ ORCA_API lpcString_t __strtoTextVerticalAlignment(lpcString_t string, enum TextV
 	Con_Error("Could not parse '%s' value of property TextVerticalAlignment", string);
 	return string + strlen(string);
 }
-static const char *_HorizontalAlignment[] = {"stretch","left","center","right",NULL};
+static const char *_HorizontalAlignment[] = {"Stretch","Left","Center","Right",NULL};
 eHorizontalAlignment_t luaX_checkHorizontalAlignment(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _HorizontalAlignment);
 }
@@ -167,7 +161,6 @@ void luaX_pushHorizontalAlignment(lua_State *L, eHorizontalAlignment_t value) {
 }
 ORCA_API lpcString_t __strtoHorizontalAlignment(lpcString_t string, enum HorizontalAlignment* output) {
 	if (string == NULL) return FALSE;
-	const char* _HorizontalAlignment[] = { "Stretch", "Left", "Center", "Right", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -180,7 +173,7 @@ ORCA_API lpcString_t __strtoHorizontalAlignment(lpcString_t string, enum Horizon
 	Con_Error("Could not parse '%s' value of property HorizontalAlignment", string);
 	return string + strlen(string);
 }
-static const char *_VerticalAlignment[] = {"stretch","top","center","bottom",NULL};
+static const char *_VerticalAlignment[] = {"Stretch","Top","Center","Bottom",NULL};
 eVerticalAlignment_t luaX_checkVerticalAlignment(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _VerticalAlignment);
 }
@@ -190,7 +183,6 @@ void luaX_pushVerticalAlignment(lua_State *L, eVerticalAlignment_t value) {
 }
 ORCA_API lpcString_t __strtoVerticalAlignment(lpcString_t string, enum VerticalAlignment* output) {
 	if (string == NULL) return FALSE;
-	const char* _VerticalAlignment[] = { "Stretch", "Top", "Center", "Bottom", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -203,7 +195,7 @@ ORCA_API lpcString_t __strtoVerticalAlignment(lpcString_t string, enum VerticalA
 	Con_Error("Could not parse '%s' value of property VerticalAlignment", string);
 	return string + strlen(string);
 }
-static const char *_AlignItems[] = {"start","center","end","stretch","baseline",NULL};
+static const char *_AlignItems[] = {"Start","Center","End","Stretch","Baseline",NULL};
 eAlignItems_t luaX_checkAlignItems(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _AlignItems);
 }
@@ -213,7 +205,6 @@ void luaX_pushAlignItems(lua_State *L, eAlignItems_t value) {
 }
 ORCA_API lpcString_t __strtoAlignItems(lpcString_t string, enum AlignItems* output) {
 	if (string == NULL) return FALSE;
-	const char* _AlignItems[] = { "Start", "Center", "End", "Stretch", "Baseline", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -226,7 +217,7 @@ ORCA_API lpcString_t __strtoAlignItems(lpcString_t string, enum AlignItems* outp
 	Con_Error("Could not parse '%s' value of property AlignItems", string);
 	return string + strlen(string);
 }
-static const char *_DepthAlignment[] = {"near","center","far","stretch",NULL};
+static const char *_DepthAlignment[] = {"Near","Center","Far","Stretch",NULL};
 eDepthAlignment_t luaX_checkDepthAlignment(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _DepthAlignment);
 }
@@ -236,7 +227,6 @@ void luaX_pushDepthAlignment(lua_State *L, eDepthAlignment_t value) {
 }
 ORCA_API lpcString_t __strtoDepthAlignment(lpcString_t string, enum DepthAlignment* output) {
 	if (string == NULL) return FALSE;
-	const char* _DepthAlignment[] = { "Near", "Center", "Far", "Stretch", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -249,7 +239,7 @@ ORCA_API lpcString_t __strtoDepthAlignment(lpcString_t string, enum DepthAlignme
 	Con_Error("Could not parse '%s' value of property DepthAlignment", string);
 	return string + strlen(string);
 }
-static const char *_Overflow[] = {"visible","hidden","clip","scroll","auto",NULL};
+static const char *_Overflow[] = {"Visible","Hidden","Clip","Scroll","Auto",NULL};
 eOverflow_t luaX_checkOverflow(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _Overflow);
 }
@@ -259,7 +249,6 @@ void luaX_pushOverflow(lua_State *L, eOverflow_t value) {
 }
 ORCA_API lpcString_t __strtoOverflow(lpcString_t string, enum Overflow* output) {
 	if (string == NULL) return FALSE;
-	const char* _Overflow[] = { "Visible", "Hidden", "Clip", "Scroll", "Auto", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -272,7 +261,7 @@ ORCA_API lpcString_t __strtoOverflow(lpcString_t string, enum Overflow* output) 
 	Con_Error("Could not parse '%s' value of property Overflow", string);
 	return string + strlen(string);
 }
-static const char *_ForegroundHint[] = {"none","translucent","opaque",NULL};
+static const char *_ForegroundHint[] = {"None","Translucent","Opaque",NULL};
 eForegroundHint_t luaX_checkForegroundHint(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _ForegroundHint);
 }
@@ -282,7 +271,6 @@ void luaX_pushForegroundHint(lua_State *L, eForegroundHint_t value) {
 }
 ORCA_API lpcString_t __strtoForegroundHint(lpcString_t string, enum ForegroundHint* output) {
 	if (string == NULL) return FALSE;
-	const char* _ForegroundHint[] = { "None", "Translucent", "Opaque", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -295,7 +283,7 @@ ORCA_API lpcString_t __strtoForegroundHint(lpcString_t string, enum ForegroundHi
 	Con_Error("Could not parse '%s' value of property ForegroundHint", string);
 	return string + strlen(string);
 }
-static const char *_JustifyContent[] = {"start","end","center","spacebetween","spacearound","spaceevenly",NULL};
+static const char *_JustifyContent[] = {"Start","End","Center","SpaceBetween","SpaceAround","SpaceEvenly",NULL};
 eJustifyContent_t luaX_checkJustifyContent(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _JustifyContent);
 }
@@ -305,7 +293,6 @@ void luaX_pushJustifyContent(lua_State *L, eJustifyContent_t value) {
 }
 ORCA_API lpcString_t __strtoJustifyContent(lpcString_t string, enum JustifyContent* output) {
 	if (string == NULL) return FALSE;
-	const char* _JustifyContent[] = { "Start", "End", "Center", "SpaceBetween", "SpaceAround", "SpaceEvenly", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -318,7 +305,7 @@ ORCA_API lpcString_t __strtoJustifyContent(lpcString_t string, enum JustifyConte
 	Con_Error("Could not parse '%s' value of property JustifyContent", string);
 	return string + strlen(string);
 }
-static const char *_FontWeight[] = {"normal","bold",NULL};
+static const char *_FontWeight[] = {"Normal","Bold",NULL};
 eFontWeight_t luaX_checkFontWeight(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _FontWeight);
 }
@@ -328,7 +315,6 @@ void luaX_pushFontWeight(lua_State *L, eFontWeight_t value) {
 }
 ORCA_API lpcString_t __strtoFontWeight(lpcString_t string, enum FontWeight* output) {
 	if (string == NULL) return FALSE;
-	const char* _FontWeight[] = { "Normal", "Bold", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -341,7 +327,7 @@ ORCA_API lpcString_t __strtoFontWeight(lpcString_t string, enum FontWeight* outp
 	Con_Error("Could not parse '%s' value of property FontWeight", string);
 	return string + strlen(string);
 }
-static const char *_FontStyle[] = {"normal","italic",NULL};
+static const char *_FontStyle[] = {"Normal","Italic",NULL};
 eFontStyle_t luaX_checkFontStyle(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _FontStyle);
 }
@@ -351,7 +337,6 @@ void luaX_pushFontStyle(lua_State *L, eFontStyle_t value) {
 }
 ORCA_API lpcString_t __strtoFontStyle(lpcString_t string, enum FontStyle* output) {
 	if (string == NULL) return FALSE;
-	const char* _FontStyle[] = { "Normal", "Italic", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -364,7 +349,7 @@ ORCA_API lpcString_t __strtoFontStyle(lpcString_t string, enum FontStyle* output
 	Con_Error("Could not parse '%s' value of property FontStyle", string);
 	return string + strlen(string);
 }
-static const char *_BorderStyle[] = {"none","hidden","dotted","dashed","solid","double","groove","ridge","inset","outset",NULL};
+static const char *_BorderStyle[] = {"None","Hidden","Dotted","Dashed","Solid","Double","Groove","Ridge","Inset","Outset",NULL};
 eBorderStyle_t luaX_checkBorderStyle(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _BorderStyle);
 }
@@ -374,7 +359,6 @@ void luaX_pushBorderStyle(lua_State *L, eBorderStyle_t value) {
 }
 ORCA_API lpcString_t __strtoBorderStyle(lpcString_t string, enum BorderStyle* output) {
 	if (string == NULL) return FALSE;
-	const char* _BorderStyle[] = { "None", "Hidden", "Dotted", "Dashed", "Solid", "Double", "Groove", "Ridge", "Inset", "Outset", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -387,7 +371,7 @@ ORCA_API lpcString_t __strtoBorderStyle(lpcString_t string, enum BorderStyle* ou
 	Con_Error("Could not parse '%s' value of property BorderStyle", string);
 	return string + strlen(string);
 }
-static const char *_PlaybackMode[] = {"normal","reverse","pingpong",NULL};
+static const char *_PlaybackMode[] = {"Normal","Reverse","Pingpong",NULL};
 ePlaybackMode_t luaX_checkPlaybackMode(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _PlaybackMode);
 }
@@ -397,7 +381,6 @@ void luaX_pushPlaybackMode(lua_State *L, ePlaybackMode_t value) {
 }
 ORCA_API lpcString_t __strtoPlaybackMode(lpcString_t string, enum PlaybackMode* output) {
 	if (string == NULL) return FALSE;
-	const char* _PlaybackMode[] = { "Normal", "Reverse", "Pingpong", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -410,7 +393,7 @@ ORCA_API lpcString_t __strtoPlaybackMode(lpcString_t string, enum PlaybackMode* 
 	Con_Error("Could not parse '%s' value of property PlaybackMode", string);
 	return string + strlen(string);
 }
-static const char *_ButtonType[] = {"normal","submit",NULL};
+static const char *_ButtonType[] = {"Normal","Submit",NULL};
 eButtonType_t luaX_checkButtonType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _ButtonType);
 }
@@ -420,7 +403,6 @@ void luaX_pushButtonType(lua_State *L, eButtonType_t value) {
 }
 ORCA_API lpcString_t __strtoButtonType(lpcString_t string, enum ButtonType* output) {
 	if (string == NULL) return FALSE;
-	const char* _ButtonType[] = { "Normal", "Submit", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -433,7 +415,7 @@ ORCA_API lpcString_t __strtoButtonType(lpcString_t string, enum ButtonType* outp
 	Con_Error("Could not parse '%s' value of property ButtonType", string);
 	return string + strlen(string);
 }
-static const char *_InputType[] = {"text","password","number","checkbox","radio",NULL};
+static const char *_InputType[] = {"Text","Password","Number","Checkbox","Radio",NULL};
 eInputType_t luaX_checkInputType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _InputType);
 }
@@ -443,7 +425,6 @@ void luaX_pushInputType(lua_State *L, eInputType_t value) {
 }
 ORCA_API lpcString_t __strtoInputType(lpcString_t string, enum InputType* output) {
 	if (string == NULL) return FALSE;
-	const char* _InputType[] = { "Text", "Password", "Number", "Checkbox", "Radio", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -456,7 +437,7 @@ ORCA_API lpcString_t __strtoInputType(lpcString_t string, enum InputType* output
 	Con_Error("Could not parse '%s' value of property InputType", string);
 	return string + strlen(string);
 }
-static const char *_Sizing[] = {"plusmargin","sizeonly","minuspadding",NULL};
+static const char *_Sizing[] = {"PlusMargin","SizeOnly","MinusPadding",NULL};
 eSizing_t luaX_checkSizing(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _Sizing);
 }
@@ -466,7 +447,6 @@ void luaX_pushSizing(lua_State *L, eSizing_t value) {
 }
 ORCA_API lpcString_t __strtoSizing(lpcString_t string, enum Sizing* output) {
 	if (string == NULL) return FALSE;
-	const char* _Sizing[] = { "PlusMargin", "SizeOnly", "MinusPadding", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -2956,7 +2936,7 @@ ORCA_API struct ClassDesc _Control = {
 	.Defaults = &ControlDefaults,
 	.NumProperties = kControlNumProperties,
 };
-static const char *_ResizeMode[] = {"noresize","canminimize","canresize","canresizewithgrip",NULL};
+static const char *_ResizeMode[] = {"NoResize","CanMinimize","CanResize","CanResizeWithGrip",NULL};
 eResizeMode_t luaX_checkResizeMode(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _ResizeMode);
 }
@@ -2966,7 +2946,6 @@ void luaX_pushResizeMode(lua_State *L, eResizeMode_t value) {
 }
 ORCA_API lpcString_t __strtoResizeMode(lpcString_t string, enum ResizeMode* output) {
 	if (string == NULL) return FALSE;
-	const char* _ResizeMode[] = { "NoResize", "CanMinimize", "CanResize", "CanResizeWithGrip", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -3111,7 +3090,7 @@ ORCA_API struct ClassDesc _Grid = {
 	.Defaults = &GridDefaults,
 	.NumProperties = kGridNumProperties,
 };
-static const char *_Stretch[] = {"uniform","none","fill","uniformtofill",NULL};
+static const char *_Stretch[] = {"Uniform","None","Fill","UniformToFill",NULL};
 eStretch_t luaX_checkStretch(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _Stretch);
 }
@@ -3121,7 +3100,6 @@ void luaX_pushStretch(lua_State *L, eStretch_t value) {
 }
 ORCA_API lpcString_t __strtoStretch(lpcString_t string, enum Stretch* output) {
 	if (string == NULL) return FALSE;
-	const char* _Stretch[] = { "Uniform", "None", "Fill", "UniformToFill", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -3309,7 +3287,7 @@ ORCA_API struct ClassDesc _TerminalView = {
 	.Defaults = &TerminalViewDefaults,
 	.NumProperties = kTerminalViewNumProperties,
 };
-static const char *_TransitionType[] = {"none","slide","fade",NULL};
+static const char *_TransitionType[] = {"None","Slide","Fade",NULL};
 eTransitionType_t luaX_checkTransitionType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _TransitionType);
 }
@@ -3319,7 +3297,6 @@ void luaX_pushTransitionType(lua_State *L, eTransitionType_t value) {
 }
 ORCA_API lpcString_t __strtoTransitionType(lpcString_t string, enum TransitionType* output) {
 	if (string == NULL) return FALSE;
-	const char* _TransitionType[] = { "None", "Slide", "Fade", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -3588,7 +3565,7 @@ ORCA_API struct ClassDesc _PageViewport = {
 	.Defaults = &PageViewportDefaults,
 	.NumProperties = kPageViewportNumProperties,
 };
-static const char *_StyleType[] = {"generic","named",NULL};
+static const char *_StyleType[] = {"Generic","Named",NULL};
 eStyleType_t luaX_checkStyleType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _StyleType);
 }
@@ -3598,7 +3575,6 @@ void luaX_pushStyleType(lua_State *L, eStyleType_t value) {
 }
 ORCA_API lpcString_t __strtoStyleType(lpcString_t string, enum StyleType* output) {
 	if (string == NULL) return FALSE;
-	const char* _StyleType[] = { "Generic", "Named", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;

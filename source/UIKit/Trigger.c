@@ -54,7 +54,8 @@ HANDLER(Setter, Triggered)
       CMP_GetUserData((struct component*)pSetter->Trigger)) {
     lpProperty_t p;
     if (SUCCEEDED(OBJ_FindShortProperty(hObject, pSetter->Property, &p))) {
-      PROP_Parse(p, pSetter->Value);
+//      PROP_Parse(p, pSetter->Value);
+      assert(!"Not implemented");
     }
     Con_Error("setting %s to %s", pSetter->Property, pSetter->Value);
   }

@@ -38,6 +38,7 @@ EDWINPROC(SceneView) {
         strncpy(path, lparm, sizeof(path));
         if (strrchr(path, '.')) *strrchr(path, '.') = 0;
         xmlNodeSetName((xmlNodePtr)doc, BAD_CAST path);
+        
         HOBJ root = OBJ_LoadDocument(editor.L, doc);
         ED_SplitView(wnd, msg, wparm, &(SPLITVIEWDESC) {
           .left = { ED_HierarchyNavigator, 0, root },

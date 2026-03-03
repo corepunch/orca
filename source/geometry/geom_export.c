@@ -2,7 +2,7 @@
 #include <include/api.h>
 #include <source/geometry/geom.h>
 
-static const char *_RotationOrder[] = {"xyz","xzy","yzx","yxz","zxy","zyx",NULL};
+static const char *_RotationOrder[] = {"XYZ","XZY","YZX","YXZ","ZXY","ZYX",NULL};
 eRotationOrder_t luaX_checkRotationOrder(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _RotationOrder);
 }
@@ -12,7 +12,6 @@ void luaX_pushRotationOrder(lua_State *L, eRotationOrder_t value) {
 }
 ORCA_API lpcString_t __strtoRotationOrder(lpcString_t string, enum RotationOrder* output) {
 	if (string == NULL) return FALSE;
-	const char* _RotationOrder[] = { "XYZ", "XZY", "YZX", "YXZ", "ZXY", "ZYX", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;

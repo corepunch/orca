@@ -106,6 +106,98 @@ int luaopen_orca_ProjectReference(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
+void luaX_pushSystemMessage(lua_State *L, lpcSystemMessage_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
+	lpSystemMessage_t self = lua_newuserdata(L, sizeof(struct SystemMessage));
+	luaL_setmetatable(L, "SystemMessage");
+	memcpy(self, data, sizeof(struct SystemMessage));
+}
+lpSystemMessage_t luaX_checkSystemMessage(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "SystemMessage");
+}
+static int f_new_SystemMessage(lua_State *L) {
+	lpSystemMessage_t self = lua_newuserdata(L, sizeof(struct SystemMessage));
+	luaL_setmetatable(L, "SystemMessage");
+	memset(self, 0, sizeof(struct SystemMessage));
+	if (lua_gettop(L) == 1) return 1;
+	if (lua_istable(L, 1)) {
+		lua_getfield(L, 1, "Message");
+		strncpy(self->Message, luaL_optstring(L, -1, ""), sizeof(self->Message));
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "Key");
+		strncpy(self->Key, luaL_optstring(L, -1, ""), sizeof(self->Key));
+		lua_pop(L, 1);
+		lua_getfield(L, 1, "Command");
+		strncpy(self->Command, luaL_optstring(L, -1, ""), sizeof(self->Command));
+		lua_pop(L, 1);
+	} else {
+		strncpy(self->Message, luaL_checkstring(L, 1), sizeof(self->Message));
+		strncpy(self->Key, luaL_checkstring(L, 2), sizeof(self->Key));
+		strncpy(self->Command, luaL_checkstring(L, 3), sizeof(self->Command));
+	}
+	return 1;
+}
+static int f_SystemMessage___call(lua_State *L) {
+	lua_remove(L, 1); // remove SystemMessage from stack
+	return f_new_SystemMessage(L);
+}
+int f_SystemMessage___index(lua_State *L) {
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0xae0ed984: // Message
+		lua_pushstring(L, luaX_checkSystemMessage(L, 1)->Message);
+		return 1;
+	case 0xcd1ac90c: // Key
+		lua_pushstring(L, luaX_checkSystemMessage(L, 1)->Key);
+		return 1;
+	case 0xc67c8f52: // Command
+		lua_pushstring(L, luaX_checkSystemMessage(L, 1)->Command);
+		return 1;
+	}
+	return luaL_error(L, "Unknown field in SystemMessage: %s", luaL_checkstring(L, 2));
+}
+int f_SystemMessage___newindex(lua_State *L) {
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0xae0ed984: // Message
+		strncpy(luaX_checkSystemMessage(L, 1)->Message, luaL_checkstring(L, 3), sizeof(luaX_checkSystemMessage(L, 1)->Message));
+		return 0;
+	case 0xcd1ac90c: // Key
+		strncpy(luaX_checkSystemMessage(L, 1)->Key, luaL_checkstring(L, 3), sizeof(luaX_checkSystemMessage(L, 1)->Key));
+		return 0;
+	case 0xc67c8f52: // Command
+		strncpy(luaX_checkSystemMessage(L, 1)->Command, luaL_checkstring(L, 3), sizeof(luaX_checkSystemMessage(L, 1)->Command));
+		return 0;
+	}
+	return luaL_error(L, "Unknown field in SystemMessage: %s", luaL_checkstring(L, 2));
+}
+ORCA_API lpcString_t __strtoSystemMessage(lpcString_t str, lpSystemMessage_t output) {
+	lpcString_t __strtofixed(lpcString_t, fixedString_t*);
+	str = __strtofixed(str, &output->Message);
+	str = __strtofixed(str, &output->Key);
+	str = __strtofixed(str, &output->Command);
+	return str;
+}
+static int f_fromstring_SystemMessage(lua_State *L) {
+	lpSystemMessage_t self = lua_newuserdata(L, sizeof(struct SystemMessage));
+	luaL_setmetatable(L, "SystemMessage");
+	memset(self, 0, sizeof(struct SystemMessage));
+	__strtoSystemMessage(luaL_checkstring(L, 1), self);
+	return 1;
+}
+int luaopen_orca_SystemMessage(lua_State *L) {
+	luaL_newmetatable(L, "SystemMessage");
+	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ "new", f_new_SystemMessage },
+		{ "fromstring", f_fromstring_SystemMessage },
+		{ "__newindex", f_SystemMessage___newindex },
+		{ "__index", f_SystemMessage___index },
+		{ NULL, NULL },
+	}), 0);
+	lua_newtable(L);
+	lua_pushcfunction(L, f_SystemMessage___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+	return 1;
+}
 static struct PropertyType const WorkspaceProperties[kWorkspaceNumProperties] = {
 };
 static struct Workspace WorkspaceDefaults = {};
@@ -207,6 +299,10 @@ static struct PropertyType const ProjectProperties[kProjectNumProperties] = {
 	Project, "ProjectReferences", ProjectReferences, kDataTypeStruct, .TypeString="ProjectReference"),
 	/* Project.NumProjectReferences */ DECL(0xc405deba, 0x6c9cdb5b,
 	Project, "NumProjectReferences", NumProjectReferences, kDataTypeInt),
+	/* Project.SystemMessages */ ARRAY_DECL(0x2fd1aed8, 0xd3829a01,
+	Project, "SystemMessages", SystemMessages, kDataTypeStruct, .TypeString="SystemMessage"),
+	/* Project.NumSystemMessages */ DECL(0xbf690676, 0x89eac941,
+	Project, "NumSystemMessages", NumSystemMessages, kDataTypeInt),
 };
 static struct Project ProjectDefaults = {
 	.IsMasterProject = FALSE,
@@ -1208,65 +1304,6 @@ ORCA_API struct ClassDesc _SpriteAnimationLibrary = {
 	.Defaults = &SpriteAnimationLibraryDefaults,
 	.NumProperties = kSpriteAnimationLibraryNumProperties,
 };
-static struct PropertyType const MessageLibraryProperties[kMessageLibraryNumProperties] = {
-};
-static struct MessageLibrary MessageLibraryDefaults = {};
-LRESULT MessageLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-}
-	return FALSE;
-}
-void luaX_pushMessageLibrary(lua_State *L, lpcMessageLibrary_t MessageLibrary) {
-	luaX_pushObject(L, CMP_GetObject(MessageLibrary));
-}
-lpMessageLibrary_t luaX_checkMessageLibrary(lua_State *L, int idx) {
-	return GetMessageLibrary(luaX_checkObject(L, idx));
-}
-extern struct ClassDesc _Library;
-ORCA_API struct ClassDesc _MessageLibrary = {
-	.ClassName = "MessageLibrary",
-	.DefaultName = "Messages",
-	.ContentType = "Message",
-	.Xmlns = "None",
-	.ParentClasses = {&_Library, NULL},
-	.ClassID = ID_MessageLibrary,
-	.ClassSize = sizeof(struct MessageLibrary),
-	.Properties = MessageLibraryProperties,
-	.ObjProc = MessageLibraryProc,
-	.Defaults = &MessageLibraryDefaults,
-	.NumProperties = kMessageLibraryNumProperties,
-};
-static struct PropertyType const SystemMessageProperties[kSystemMessageNumProperties] = {
-	/* SystemMessage.Message */ DECL(0xae0ed984, 0x6e02048e,
-	SystemMessage, "Message", Message, kDataTypeFixed),
-	/* SystemMessage.Key */ DECL(0xcd1ac90c, 0xc8982036,
-	SystemMessage, "Key", Key, kDataTypeFixed),
-};
-static struct SystemMessage SystemMessageDefaults = {0};
-LRESULT SystemMessageProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-}
-	return FALSE;
-}
-void luaX_pushSystemMessage(lua_State *L, lpcSystemMessage_t SystemMessage) {
-	luaX_pushObject(L, CMP_GetObject(SystemMessage));
-}
-lpSystemMessage_t luaX_checkSystemMessage(lua_State *L, int idx) {
-	return GetSystemMessage(luaX_checkObject(L, idx));
-}
-ORCA_API struct ClassDesc _SystemMessage = {
-	.ClassName = "SystemMessage",
-	.DefaultName = "SystemMessage",
-	.ContentType = "SystemMessage",
-	.Xmlns = "None",
-	.ParentClasses = {NULL},
-	.ClassID = ID_SystemMessage,
-	.ClassSize = sizeof(struct SystemMessage),
-	.Properties = SystemMessageProperties,
-	.ObjProc = SystemMessageProc,
-	.Defaults = &SystemMessageDefaults,
-	.NumProperties = kSystemMessageNumProperties,
-};
 static struct PropertyType const ImageLibraryProperties[kImageLibraryNumProperties] = {
 };
 static struct ImageLibrary ImageLibraryDefaults = {};
@@ -1635,6 +1672,9 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	// ProjectReference
 	luaopen_orca_ProjectReference(L);
 	lua_setfield(L, -2, "ProjectReference");
+	// SystemMessage
+	luaopen_orca_SystemMessage(L);
+	lua_setfield(L, -2, "SystemMessage");
 	// Workspace
 	lua_pushclass(L, &_Workspace);
 	lua_setfield(L, -2, "Workspace");
@@ -1743,12 +1783,6 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	// SpriteAnimationLibrary
 	lua_pushclass(L, &_SpriteAnimationLibrary);
 	lua_setfield(L, -2, "SpriteAnimationLibrary");
-	// MessageLibrary
-	lua_pushclass(L, &_MessageLibrary);
-	lua_setfield(L, -2, "MessageLibrary");
-	// SystemMessage
-	lua_pushclass(L, &_SystemMessage);
-	lua_setfield(L, -2, "SystemMessage");
 	// ImageLibrary
 	lua_pushclass(L, &_ImageLibrary);
 	lua_setfield(L, -2, "ImageLibrary");

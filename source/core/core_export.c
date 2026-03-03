@@ -14,7 +14,7 @@ void luaX_pushgame(lua_State *L, lpcgame_t game) {
 lpgame_t luaX_checkgame(lua_State *L, int idx) {
 	return lua_touserdata(L, idx);
 }
-static const char *_BindingMode[] = {"oneway","twoway","onewaytosource","expression",NULL};
+static const char *_BindingMode[] = {"OneWay","TwoWay","OneWayToSource","Expression",NULL};
 eBindingMode_t luaX_checkBindingMode(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _BindingMode);
 }
@@ -24,7 +24,6 @@ void luaX_pushBindingMode(lua_State *L, eBindingMode_t value) {
 }
 ORCA_API lpcString_t __strtoBindingMode(lpcString_t string, enum BindingMode* output) {
 	if (string == NULL) return FALSE;
-	const char* _BindingMode[] = { "OneWay", "TwoWay", "OneWayToSource", "Expression", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -37,7 +36,7 @@ ORCA_API lpcString_t __strtoBindingMode(lpcString_t string, enum BindingMode* ou
 	Con_Error("Could not parse '%s' value of property BindingMode", string);
 	return string + strlen(string);
 }
-static const char *_PropertyAttribute[] = {"wholeproperty","colorr","colorg","colorb","colora","vectorx","vectory","vectorz","vectorw",NULL};
+static const char *_PropertyAttribute[] = {"WholeProperty","ColorR","ColorG","ColorB","ColorA","VectorX","VectorY","VectorZ","VectorW",NULL};
 ePropertyAttribute_t luaX_checkPropertyAttribute(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _PropertyAttribute);
 }
@@ -47,7 +46,6 @@ void luaX_pushPropertyAttribute(lua_State *L, ePropertyAttribute_t value) {
 }
 ORCA_API lpcString_t __strtoPropertyAttribute(lpcString_t string, enum PropertyAttribute* output) {
 	if (string == NULL) return FALSE;
-	const char* _PropertyAttribute[] = { "WholeProperty", "ColorR", "ColorG", "ColorB", "ColorA", "VectorX", "VectorY", "VectorZ", "VectorW", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -698,7 +696,7 @@ static int f_core_getHover(lua_State *L) {
 	luaX_pushObject(L, output);
 	return 1;
 }
-static const char *_DataType[] = {"none","bool","int","enum","float","fixed","longstring","edges","objecttags","event","struct","object",NULL};
+static const char *_DataType[] = {"None","Bool","Int","Enum","Float","Fixed","LongString","Edges","ObjectTags","Event","Struct","Object",NULL};
 eDataType_t luaX_checkDataType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _DataType);
 }
@@ -708,7 +706,6 @@ void luaX_pushDataType(lua_State *L, eDataType_t value) {
 }
 ORCA_API lpcString_t __strtoDataType(lpcString_t string, enum DataType* output) {
 	if (string == NULL) return FALSE;
-	const char* _DataType[] = { "None", "Bool", "Int", "Enum", "Float", "Fixed", "LongString", "Edges", "ObjectTags", "Event", "Struct", "Object", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;

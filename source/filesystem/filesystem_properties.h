@@ -45,6 +45,8 @@ enum ProjectProperties {
 	kProjectNumPropertyTypes,
 	kProjectProjectReferences,
 	kProjectNumProjectReferences,
+	kProjectSystemMessages,
+	kProjectNumSystemMessages,
 	kProjectNumProperties
 };
 
@@ -84,6 +86,8 @@ enum ProjectProperties {
 #define ID_Project_NumPropertyTypes 0x13e23766
 #define ID_Project_ProjectReferences 0xcfc1761b
 #define ID_Project_NumProjectReferences 0x6c9cdb5b
+#define ID_Project_SystemMessages 0xd3829a01
+#define ID_Project_NumSystemMessages 0x89eac941
 #define ID_Library 0xa8532270
 #define GetLibrary(_P)((struct Library*)((_P)?OBJ_GetComponent(_P,ID_Library):NULL))
 #define Library_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_Library,sizeof(struct Library),_N)
@@ -324,24 +328,6 @@ enum SpriteAnimationLibraryProperties {
 	kSpriteAnimationLibraryNumProperties
 };
 
-#define ID_MessageLibrary 0x0333204f
-#define GetMessageLibrary(_P)((struct MessageLibrary*)((_P)?OBJ_GetComponent(_P,ID_MessageLibrary):NULL))
-#define MessageLibrary_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_MessageLibrary,sizeof(struct MessageLibrary),_N)
-enum MessageLibraryProperties {
-	kMessageLibraryNumProperties
-};
-
-#define ID_SystemMessage 0xea063cbb
-#define GetSystemMessage(_P)((struct SystemMessage*)((_P)?OBJ_GetComponent(_P,ID_SystemMessage):NULL))
-#define SystemMessage_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_SystemMessage,sizeof(struct SystemMessage),_N)
-enum SystemMessageProperties {
-	kSystemMessageMessage,
-	kSystemMessageKey,
-	kSystemMessageNumProperties
-};
-
-#define ID_SystemMessage_Message 0x6e02048e
-#define ID_SystemMessage_Key 0xc8982036
 #define ID_ImageLibrary 0x533a469d
 #define GetImageLibrary(_P)((struct ImageLibrary*)((_P)?OBJ_GetComponent(_P,ID_ImageLibrary):NULL))
 #define ImageLibrary_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_ImageLibrary,sizeof(struct ImageLibrary),_N)

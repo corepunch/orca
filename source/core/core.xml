@@ -568,6 +568,7 @@
     <field name="Step" type="float">Increment step used for numeric adjustments in UI controls.</field>
     <field name="UpperBound" type="float">Maximum allowed value for numeric properties.</field>
     <field name="LowerBound" type="float">Minimum allowed value for numeric properties.</field>
+    <!--field name="EnumValues" type="fixed" array="true">List of possible enum values for the property.</field-->
     <!-- Additional internal fields for property metadata -->
     <field name="ShortIdentifier" type="uint">Unique short identifier for the property type, automatically generated from implicit property name.</field>
     <field name="FullIdentifier" type="uint">Unique full identifier for the property type, automatically generated from explicit (ie. Grid.Columns) property name.</field>

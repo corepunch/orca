@@ -11,18 +11,6 @@ OBJ_SetSourceFile(lpObject_t, lpcString_t);
 ORCA_API void
 OBJ_SetClassName(lpObject_t, lpcString_t);
 
-lpObject_t
-OBJ_LoadDocument(lua_State* L, xmlDocPtr);
-
-lpcString_t
-PDESC_Parse(lpObject_t hobj, lpcPropertyType_t pdesc, lpProperty_t prop, lpcString_t string, void* dest);
-
-int
-PROP_Parse2(lua_State* L, lpObject_t, lpcString_t szKey, lpcString_t szValue);
-
-lpProperty_t
-PROP_CreateFromString(lua_State* L, lpObject_t object, lpcString_t name, lpcString_t typestring);
-
 extern void
 PROP_AttachProgram(lpProperty_t p, enum PropertyAttribute a, struct token* program, lpcString_t code);
 

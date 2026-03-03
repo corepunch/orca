@@ -232,8 +232,6 @@
 		78E4A99F2E93D71500E3A503 /* xml_local.h in Headers */ = {isa = PBXBuildFile; fileRef = 78E4A99E2E93D71300E3A503 /* xml_local.h */; };
 		78E4A9A22E93DD4C00E3A503 /* known_prefabs.c in Sources */ = {isa = PBXBuildFile; fileRef = 78E4A9A12E93DD4200E3A503 /* known_prefabs.c */; };
 		78E4A9A32E93E0A200E3A503 /* xml_local.h in Sources */ = {isa = PBXBuildFile; fileRef = 78E4A99E2E93D71300E3A503 /* xml_local.h */; };
-		78E4A9A42E93E0A200E3A503 /* p_property.c in Sources */ = {isa = PBXBuildFile; fileRef = 78E4A99B2E93D6AF00E3A503 /* p_property.c */; };
-		78E4A9A52E93E0A200E3A503 /* p_object.c in Sources */ = {isa = PBXBuildFile; fileRef = 786DD76F2C8079A200299271 /* p_object.c */; };
 		78E4A9A72E93E55E00E3A503 /* liborca.geometry.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA6CE2E15024F00FFCFD9 /* liborca.geometry.so */; };
 		78E4A9A82E93E58A00E3A503 /* liborca.renderer.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7052E15369F00FFCFD9 /* liborca.renderer.so */; };
 		78E4A9A92E93E59800E3A503 /* liborca.parsers.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7D72E15B22500FFCFD9 /* liborca.parsers.so */; };
@@ -464,7 +462,6 @@
 		786BFCFC2AFACC4100216782 /* api_userdata.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = api_userdata.c; sourceTree = "<group>"; };
 		786BFD152AFBA16A00216782 /* network.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = network.c; sourceTree = "<group>"; };
 		786BFD192AFBA37A00216782 /* orcadef.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = orcadef.h; sourceTree = "<group>"; };
-		786DD76F2C8079A200299271 /* p_object.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = p_object.c; sourceTree = "<group>"; };
 		786F2A882E0EB75200B519AB /* SpriteView.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SpriteView.c; sourceTree = "<group>"; };
 		786F2B062E12EE7F00B519AB /* w_console.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = w_console.c; sourceTree = "<group>"; };
 		786F2B072E12EE7F00B519AB /* w_hierarchy.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = w_hierarchy.c; sourceTree = "<group>"; };
@@ -563,7 +560,6 @@
 		78D75A542E3E5286004EA6DA /* MainToolbar.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = MainToolbar.c; sourceTree = "<group>"; };
 		78DE4E792D987F4C00C0488C /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		78DE4E912D994A3E00C0488C /* pz2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = pz2; sourceTree = BUILT_PRODUCTS_DIR; };
-		78E4A99B2E93D6AF00E3A503 /* p_property.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = p_property.c; sourceTree = "<group>"; };
 		78E4A99E2E93D71300E3A503 /* xml_local.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = xml_local.h; sourceTree = "<group>"; };
 		78E4A9A12E93DD4200E3A503 /* known_prefabs.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = known_prefabs.c; sourceTree = "<group>"; };
 		78E4A9C62E941ECD00E3A503 /* liborca.system.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca.system.so; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -861,9 +857,7 @@
 			children = (
 				781769422D61CEC9003CBEA9 /* p_css.c */,
 				78BC7E1E2D4BE7D800907913 /* p_json.c */,
-				786DD76F2C8079A200299271 /* p_object.c */,
 				782E9EED2E98E946009C3946 /* p_project.c */,
-				78E4A99B2E93D6AF00E3A503 /* p_property.c */,
 				78346EBC2C99558F00E0CFD1 /* p_xml.c */,
 				78E4A99E2E93D71300E3A503 /* xml_local.h */,
 			);
@@ -2037,8 +2031,6 @@
 			files = (
 				78E4A9A32E93E0A200E3A503 /* xml_local.h in Sources */,
 				782E9EEE2E98E94C009C3946 /* p_project.c in Sources */,
-				78E4A9A42E93E0A200E3A503 /* p_property.c in Sources */,
-				78E4A9A52E93E0A200E3A503 /* p_object.c in Sources */,
 				781CA7DB2E15B24400FFCFD9 /* p_css.c in Sources */,
 				781CA7DC2E15B24400FFCFD9 /* p_json.c in Sources */,
 				781CA7DD2E15B24400FFCFD9 /* p_xml.c in Sources */,

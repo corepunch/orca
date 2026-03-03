@@ -214,7 +214,8 @@ OBJ_ApplyClass(lpObject_t pobj, struct style_sheet* ss, void* parm)
       // if :hover or :focus was set, ignore default value
       return;
     }
-    PROP_Parse(hProperty, ss->value);
+//    PROP_Parse(hProperty, ss->value);
+    assert(!"Not implemented");
     if (PROP_GetType(hProperty) == kDataTypeStruct &&
         !strcmp(PROP_GetUserData(hProperty), "Color") &&
         parm)

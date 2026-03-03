@@ -26,29 +26,29 @@ orca.tags = {
 }
 
 orca.typeconverter = {
-	none = function() error("Cannot convert to none type") end,
-	bool = function(value, type)
+	None = function() error("Cannot convert to none type") end,
+	Bool = function(value, type)
 		if value == "true" then return true end
 		if value == "false" then return false end
-		return tonumber(value) or error(string.format("Cannot convert '%s' to %s(bool)", value, type.TypeString))
+		return tonumber(value) or error(string.format("Cannot convert '%s' to %s(Bool)", value, type.TypeString))
 	end,
-	int = function(value, type)
-		return tonumber(value) or error(string.format("Cannot convert '%s' to %s(int)", value, type.TypeString))
+	Int = function(value, type)
+		return tonumber(value) or error(string.format("Cannot convert '%s' to %s(Int)", value, type.TypeString))
 	end,
-	float = function(value, type)
-		return tonumber(value) or error(string.format("Cannot convert '%s' to %s(float)", value, type.TypeString))
+	Float = function(value, type)
+		return tonumber(value) or error(string.format("Cannot convert '%s' to %s(Float)", value, type.TypeString))
 	end,
-	enum = function(value, type)
+	Enum = function(value, type)
 		local i = 0
 		for w in type.TypeString:gmatch("[^,]+") do
 			i = i + 1
 			if w == value then return i - 1 end
 		end
-		error(string.format("Cannot convert '%s' to %s(enum)", value, type.TypeString))
+		error(string.format("Cannot convert '%s' to %s(Enum)", value, type.TypeString))
 	end,
-  longstring= function(value) return value end,
-	fixed = function(value) return value end,
-	object = function(path, type)
+  LongString = function(value) return value end,
+	Fixed = function(value) return value end,
+	Object = function(path, type)
 		-- local filesystem = require "orca.filesystem"
 		-- local existing = filesystem.getWorkspace():findByPath(path)
 		-- if existing then return existing end
@@ -60,28 +60,30 @@ orca.typeconverter = {
 			package.loaded[path] = result
 			if result then return result end
 		end
-		error(string.format("Cannot convert '%s' to %s(object)", path, type.TypeString))
+		error(string.format("Cannot convert '%s' to %s(Object)", path, type.TypeString))
 	end,
-  edges = function() error("Cannot convert to edges type") end,
-  objecttags = function(path)
+  Edges = function(value, type) 
+		error(string.format("Cannot convert '%s' to %s(Edges)", value, type.TypeString)) 
+	end,
+  ObjectTags = function(path)
 		local tags = 0
 		for tag in path:gmatch("[^,]+") do tags = tags | (1 << orca.tags:parse(tag)) end
 		return tags
 	end,
-  event = function(value, type)
-		error(string.format("Cannot convert '%s' to %s(event)", value, type.TypeString))
+  Event = function(value, type)
+		error(string.format("Cannot convert '%s' to %s(Event)", value, type.TypeString))
 	end,
-  struct = function(value, pt)
+  Struct = function(value, pt)
 		if pt.TypeString == "Color" then
 			local geom = require "orca.geometry"
 			return geom.Color.parse(value)
 		end
 		local mt = orca.find_metatable(pt.TypeString)
-		assert(mt, string.format("No metatable found for %s(struct)", pt.TypeString))
+		assert(mt, string.format("No metatable found for %s(Struct)", pt.TypeString))
 		assert(mt.fromstring, string.format("Type %s does not support fromstring() method", pt.TypeString))
 		return mt.fromstring(value)
 	end,
-  group = function(value, type)
-		error(string.format("Cannot convert '%s' to %s(group)", value, type.TypeString))
+  Group = function(value, type)
+		error(string.format("Cannot convert '%s' to %s(Group)", value, type.TypeString))
 	end,
 }

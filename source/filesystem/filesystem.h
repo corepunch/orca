@@ -15,6 +15,15 @@ luaX_pushProjectReference(lua_State *L, lpcProjectReference_t ProjectReference);
 ORCA_API lpProjectReference_t
 luaX_checkProjectReference(lua_State *L, int idx);
 
+typedef struct SystemMessage SystemMessage_t, *lpSystemMessage_t;
+typedef struct SystemMessage const cSystemMessage_t, *lpcSystemMessage_t;
+/// @brief Push SystemMessage onto Lua stack.
+ORCA_API void
+luaX_pushSystemMessage(lua_State *L, lpcSystemMessage_t SystemMessage);
+/// @brief Check SystemMessage form Lua stack at index.
+ORCA_API lpSystemMessage_t
+luaX_checkSystemMessage(lua_State *L, int idx);
+
 typedef struct Workspace Workspace_t, *lpWorkspace_t;
 typedef struct Workspace const cWorkspace_t, *lpcWorkspace_t;
 /// @brief Push Workspace onto Lua stack.
@@ -339,24 +348,6 @@ luaX_pushSpriteAnimationLibrary(lua_State *L, lpcSpriteAnimationLibrary_t Sprite
 ORCA_API lpSpriteAnimationLibrary_t
 luaX_checkSpriteAnimationLibrary(lua_State *L, int idx);
 
-typedef struct MessageLibrary MessageLibrary_t, *lpMessageLibrary_t;
-typedef struct MessageLibrary const cMessageLibrary_t, *lpcMessageLibrary_t;
-/// @brief Push MessageLibrary onto Lua stack.
-ORCA_API void
-luaX_pushMessageLibrary(lua_State *L, lpcMessageLibrary_t MessageLibrary);
-/// @brief Check MessageLibrary form Lua stack at index.
-ORCA_API lpMessageLibrary_t
-luaX_checkMessageLibrary(lua_State *L, int idx);
-
-typedef struct SystemMessage SystemMessage_t, *lpSystemMessage_t;
-typedef struct SystemMessage const cSystemMessage_t, *lpcSystemMessage_t;
-/// @brief Push SystemMessage onto Lua stack.
-ORCA_API void
-luaX_pushSystemMessage(lua_State *L, lpcSystemMessage_t SystemMessage);
-/// @brief Check SystemMessage form Lua stack at index.
-ORCA_API lpSystemMessage_t
-luaX_checkSystemMessage(lua_State *L, int idx);
-
 typedef struct ImageLibrary ImageLibrary_t, *lpImageLibrary_t;
 typedef struct ImageLibrary const cImageLibrary_t, *lpcImageLibrary_t;
 /// @brief Push ImageLibrary onto Lua stack.
@@ -465,6 +456,13 @@ struct ProjectReference {
 	fixedString_t Path; /// Path to the project relative to the workspace
 };
 
+/// @brief Handler of system messages you can add to your project
+struct SystemMessage {
+	fixedString_t Message; /// Message name, i.e. KeyDown
+	fixedString_t Key; /// Associated key for the message, if applicable
+	fixedString_t Command; /// Command to execute when the message is received
+};
+
 typedef struct Workspace Workspace, *WorkspacePtr;
 typedef struct Workspace const *WorkspaceCPtr;
 struct Workspace {
@@ -509,6 +507,8 @@ struct Project {
 	int32_t NumPropertyTypes; /// Number of PropertyTypes
 	lpProjectReference_t ProjectReferences;
 	int32_t NumProjectReferences; /// Number of ProjectReferences
+	lpSystemMessage_t SystemMessages;
+	int32_t NumSystemMessages; /// Number of SystemMessages
 	bool_t isPackage;
 	lpPackage_t package;
 };
@@ -682,18 +682,6 @@ struct SpriteLibrary {
 typedef struct SpriteAnimationLibrary SpriteAnimationLibrary, *SpriteAnimationLibraryPtr;
 typedef struct SpriteAnimationLibrary const *SpriteAnimationLibraryCPtr;
 struct SpriteAnimationLibrary {
-};
-
-typedef struct MessageLibrary MessageLibrary, *MessageLibraryPtr;
-typedef struct MessageLibrary const *MessageLibraryCPtr;
-struct MessageLibrary {
-};
-
-typedef struct SystemMessage SystemMessage, *SystemMessagePtr;
-typedef struct SystemMessage const *SystemMessageCPtr;
-struct SystemMessage {
-	fixedString_t Message;
-	fixedString_t Key;
 };
 
 typedef struct ImageLibrary ImageLibrary, *ImageLibraryPtr;

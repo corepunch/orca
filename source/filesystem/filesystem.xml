@@ -11,6 +11,14 @@
     <field name="Name" type="fixed">Name of the project, will be used as Project/Library/Resource when referencing it's resources</field>
     <field name="Path" type="fixed">Path to the project relative to the workspace</field>
   </struct>
+  
+  <struct name="SystemMessage" sealed="true">
+    <summary>Handler of system messages you can add to your project</summary>
+    <details>Handles system messages sent to the application. Each system message defines a message type, an associated key, and a command to execute when the message is received. This allows the application to respond to system events and user interactions through a configurable message dispatch system.</details>
+    <field name="Message" type="fixed">Message name, i.e. KeyDown</field>
+    <field name="Key" type="fixed">Associated key for the message, if applicable</field>
+    <field name="Command" type="fixed">Command to execute when the message is received</field>
+  </struct>
 
   <class name="Workspace" />
   
@@ -67,6 +75,7 @@
     
     <property name="PropertyTypes" type="PropertyType" array="true" />
     <property name="ProjectReferences" type="ProjectReference" array="true" />
+    <property name="SystemMessages" type="SystemMessage" array="true"/>
 
     <field name="isPackage" type="bool"/>
     <field name="package" type="Package" pointer="true"/>
@@ -121,13 +130,6 @@
   
   <class name="SpriteLibrary" parent="Library" default="Sprites"/>
   <class name="SpriteAnimationLibrary" parent="Library" default="Sprite Animations"/>
-
-  <class name="MessageLibrary" parent="Library" default="Messages"/>
-  <class name="SystemMessage">
-    <property name="Message" type="fixed"/>
-    <property name="Key" type="fixed"/>
-  </class>
-  
   <class name="ImageLibrary" parent="Library" default="Images"/>
   <class name="FontLibrary" parent="Library" default="Fonts"/>
   

@@ -53,7 +53,7 @@ function Property.parse(node, name, value)
 	if name == "Name" or name == "id" then node:setName(value) return end
 	local type = node:findImplicitProperty(name) or node:findExplicitProperty(name)
 	assert(type, string.format("Unknown property: %s for node of type %s", name, node.className))
-	if type.DataType == "edges" then return Property.parse_edges(node, type, split_string(value)) end
+	if type.DataType == "Edges" then return Property.parse_edges(node, type, split_string(value)) end
 	local converter = orca.typeconverter[type.DataType]
 	assert(converter, string.format("No type converter for data type: %s (property %s)", type.DataType, name))
 	node[name] = converter(value, type)
@@ -186,11 +186,17 @@ local function construct_node(element)
 	return node
 end
 
+_G["doxmlstring"] = function (string)
+	local xml = require "orca.parsers.xml"
+	return construct_node(xml.parse(string).root)
+end
+
 _G["doxmlfile"] = function (path)
 	local xml = require "orca.parsers.xml"
 	local file = io.open(path, "r")
 	assert(file, "Failed to open XML file: "..path)
 	local doc = xml.parse(file:read("*a"))
+	assert(doc, "Failed to parse XML file: "..path)
 	file:close()
 	return construct_node(doc.root)
 end

@@ -170,7 +170,7 @@ class ExportWriter(Plugin):
 
 	def on_enums(self, _, enums):
 		ename = enums.get('name')
-		values = ['"%s"' % e.get('name').lower() for e in enums.findall('enum')] + ["NULL"]
+		values = ['"%s"' % e.get('name') for e in enums.findall('enum')] + ["NULL"]
 		self.wt(_T['enums'].substitute(
 			ename=ename,
 			ename_t=utils._e(ename),
@@ -181,7 +181,6 @@ class ExportWriter(Plugin):
 			originals = ['"%s"' % e.get('name') for e in enums.findall('enum')] + ["NULL"]
 			self.w(f"ORCA_API lpcString_t __strto{ename}(lpcString_t string, enum {ename}* output) {{")
 			self.w(f"\tif (string == NULL) return FALSE;")
-			self.w(f"\tconst char* _{ename}[] = {{ {', '.join(originals)} }};")
 			self.w(f"\tif (isdigit(*string)) {{")
 			self.w(f"\t\t*output = strtod(string, (char**)&string);")
 			self.w(f"\t\treturn string;")

@@ -331,9 +331,6 @@ ORCA_API void
 PROP_GetFullName(lpcProperty_t property, LPSTR buf, int size);
 
 ORCA_API void
-PROP_Parse(lpProperty_t, lpcString_t);
-
-ORCA_API void
 PROP_ClearSpecialized(lpProperty_t list);
 
 ORCA_API lpcPropertyType_t 

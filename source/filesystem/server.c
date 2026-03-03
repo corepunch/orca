@@ -245,7 +245,8 @@ SV_CMD(PUT, node)
       if (FAILED(OBJ_FindShortProperty(obj, arg->name, &property))) continue;
       PROP_Print(property, buf, sizeof(buf));
       _xmlAddProp(response, arg->name, buf, PROP_GetType(property));
-      PROP_Parse(property, arg->value);
+//      PROP_Parse(property, arg->value);
+      assert(!"Not implemented");
     }
   }
   return NULL;;
@@ -306,7 +307,23 @@ SV_CMD(GET, whoami) {
   }
 }
 
-extern lpObject_t (*_OBJ_LoadDocument)(lua_State* L, xmlDocPtr doc);
+ORCA_API lpObject_t OBJ_LoadDocument(lua_State* L, xmlDocPtr doc) {
+  Con_Error("Deprecacted, move code to a Lua plugin");
+  xmlChar *xmlbuff;
+  int buffersize;
+  xmlDocDumpMemory(doc, &xmlbuff, &buffersize);
+  lua_getglobal(L, "doxmlfile");
+  lua_pushlstring(L, (char*)xmlbuff, buffersize);
+  xmlFree(xmlbuff);
+  if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
+    Con_Error("%s", lua_tostring(L, -1));
+    lua_pop(L, 1);
+    return NULL;
+  }
+  lpObject_t obj = luaX_checkObject(L, -1);
+  lua_pop(L, 1);
+  return obj;
+}
 
 ORCA_API bool_t OBJ_SaveDocument(lpObject_t object);
 ORCA_API xmlNodePtr ED_ConvertNode(lpObject_t object, xmlNodePtr parent);
@@ -317,7 +334,7 @@ SV_CMD(POST, node) {
     if (OBJ_GetSourceFile(source)) return "Object is already a prefab";
     xmlWith(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFree) {
       xmlDocSetRootElement(doc, ED_ConvertNode(source, NULL));
-      OBJ_AddChild(root, _OBJ_LoadDocument(L, doc), FALSE);
+      OBJ_AddChild(root, OBJ_LoadDocument(L, doc), FALSE);
     }
     OBJ_SetSourceFile(source, FS_JoinPaths(endpoint, OBJ_GetName(source)));
     return NULL;

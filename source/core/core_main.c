@@ -458,44 +458,6 @@ int f_registerPropertyTypes(lua_State *L) {
   return 0;
 }
 
-// **** Array parsing ****
-// TODO: Move to Lua!
-
-static void* _GetParser(lua_State* L, lpcString_t type) {
-  char tmp[256];
-  snprintf(tmp, sizeof(tmp), "%sParser", type);
-  lua_getfield(L, LUA_REGISTRYINDEX, tmp);
-  if (lua_isnil(L, -1)) { lua_pop(L, 1); return NULL; }
-  handle_t ptr = lua_touserdata(L, -1);
-  lua_pop(L, 1);
-  return ptr;
-}
-
-
-static int XML_CountNodes(xmlNode *it, xmlChar const* name) {
-  int count = 0;
-  xmlForEach(elm, it) {
-    if (!xmlStrcmp(elm->name, XMLSTR(name))) {
-      count++;
-    }
-  }
-  return count;
-}
-
-static void
-XML_ParseValues(xmlNode *it,
-                lpcPropertyType_t pdesc,
-                int (*parser)(xmlNodePtr, void*),
-                char *output)
-{
-  xmlForEach(elm, it) {
-    if (parser && !xmlStrcmp(elm->name, XMLSTR(pdesc->TypeString))) {
-      parser(elm, output);
-      output += pdesc->DataSize;
-    }
-  }
-}
-
 void
 on_core_module_registered(lua_State* L)
 {

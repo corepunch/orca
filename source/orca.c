@@ -164,14 +164,13 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirName) {
     bool_t has_written = FALSE;
     fprintf(mem, "fs.trackChangedFiles()\n");
     fprintf(mem, "if RELOAD then return RELOAD end\n");
-    xmlFindAll(messages, root, XMLSTR("MessageLibrary")) {
+    xmlFindAll(messages, root, XMLSTR("Project.SystemMessages")) {
       xmlFindAll(message, messages, XMLSTR("SystemMessage")) {
         fprintf(mem, "if");
         bool written = FALSE;
         FOR_EACH_LIST(xmlAttr, attr, message->properties) {
-          if (!xmlStrcmp(attr->name, XMLSTR("Name"))) {
-            continue;
-          }
+          if (!xmlStrcmp(attr->name, XMLSTR("Name"))) continue;
+          if (!xmlStrcmp(attr->name, XMLSTR("Command"))) continue;
           xmlWith(xmlChar, value, xmlNodeGetContent((xmlNode*)attr), xmlFree) {
             if (written) {
               fprintf(mem, " and");
@@ -189,7 +188,7 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirName) {
             written = TRUE;
           }
         }
-        xmlWith(xmlChar, content, xmlNodeGetContent(message), xmlFree) {
+        xmlWith(xmlChar, content, xmlGetProp(message, XMLSTR("Command")), xmlFree) {
           fprintf(mem, " then\n%s\nelse", content);
         }
         has_written = TRUE;

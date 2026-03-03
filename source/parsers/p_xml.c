@@ -686,8 +686,6 @@ int lua_xml_node_newindex(lua_State* L)
     L, "Incorrect field name %s for %s", name, API_TYPE_XML_NODE);
 }
 
-int f_call_xml(lua_State* L);
-
 static int f_xml_read_document(lua_State* L)
 {
   lpcString_t module = luaL_checkstring(L, 1);
@@ -774,29 +772,12 @@ ORCA_API int luaopen_orca_parsers_xml(lua_State* L)
                                { "__index", lua_xml_doc_index },
                                { "__newindex", lua_xml_doc_newindex },
                                { "__tostring", lua_xml_doc_str },
-                               { "__call", f_call_xml },
                                { NULL, NULL } }),
                 0);
   lua_setfield(L, -2, "XmlDoc");
 
   lua_register(L, "fs_findxml", f_find_xml);
 //  luaL_dostring(L, "table.insert(package.searchers, fs_findxml)");
-  
-  extern lpcString_t
-  (*_PDESC_Parse)(lpObject_t hobj,
-                  lpcPropertyType_t pdesc,
-                  lpProperty_t property,
-                  lpcString_t string,
-                  void* dest);
-
-  extern lpObject_t
-  (*_OBJ_LoadDocument)(lua_State* L, xmlDocPtr doc);
-
-  _PDESC_Parse = PDESC_Parse;
-  _OBJ_LoadDocument = OBJ_LoadDocument;
-  
-  extern shortStr_t tags[MAX_TAGS];
-  memset(tags, 0, sizeof(tags));
   
   API_CallRequire(L, "orca.filesystem", 1);
   lua_pushcfunction(L, f_loadProject);

@@ -19,7 +19,7 @@
 	.DataType=TYPE, \
 	.IsArray=TRUE, ##__VA_ARGS__ }
 
-static const char *_StencilOp[] = {"keep","zero","replace","increment","incrementwrap","decrement","decrementwrap","invert",NULL};
+static const char *_StencilOp[] = {"Keep","Zero","Replace","Increment","IncrementWrap","Decrement","DecrementWrap","Invert",NULL};
 eStencilOp_t luaX_checkStencilOp(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _StencilOp);
 }
@@ -29,7 +29,6 @@ void luaX_pushStencilOp(lua_State *L, eStencilOp_t value) {
 }
 ORCA_API lpcString_t __strtoStencilOp(lpcString_t string, enum StencilOp* output) {
 	if (string == NULL) return FALSE;
-	const char* _StencilOp[] = { "Keep", "Zero", "Replace", "Increment", "IncrementWrap", "Decrement", "DecrementWrap", "Invert", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -42,7 +41,7 @@ ORCA_API lpcString_t __strtoStencilOp(lpcString_t string, enum StencilOp* output
 	Con_Error("Could not parse '%s' value of property StencilOp", string);
 	return string + strlen(string);
 }
-static const char *_ViewportMode[] = {"relative","absolute",NULL};
+static const char *_ViewportMode[] = {"Relative","Absolute",NULL};
 eViewportMode_t luaX_checkViewportMode(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _ViewportMode);
 }
@@ -52,7 +51,6 @@ void luaX_pushViewportMode(lua_State *L, eViewportMode_t value) {
 }
 ORCA_API lpcString_t __strtoViewportMode(lpcString_t string, enum ViewportMode* output) {
 	if (string == NULL) return FALSE;
-	const char* _ViewportMode[] = { "Relative", "Absolute", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -65,7 +63,7 @@ ORCA_API lpcString_t __strtoViewportMode(lpcString_t string, enum ViewportMode* 
 	Con_Error("Could not parse '%s' value of property ViewportMode", string);
 	return string + strlen(string);
 }
-static const char *_CullMode[] = {"none","back","front",NULL};
+static const char *_CullMode[] = {"None","Back","Front",NULL};
 eCullMode_t luaX_checkCullMode(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _CullMode);
 }
@@ -75,7 +73,6 @@ void luaX_pushCullMode(lua_State *L, eCullMode_t value) {
 }
 ORCA_API lpcString_t __strtoCullMode(lpcString_t string, enum CullMode* output) {
 	if (string == NULL) return FALSE;
-	const char* _CullMode[] = { "None", "Back", "Front", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -88,7 +85,7 @@ ORCA_API lpcString_t __strtoCullMode(lpcString_t string, enum CullMode* output) 
 	Con_Error("Could not parse '%s' value of property CullMode", string);
 	return string + strlen(string);
 }
-static const char *_ColorWriteMode[] = {"none","rgb","rgba","r","g","b","gb","a",NULL};
+static const char *_ColorWriteMode[] = {"None","RGB","RGBA","R","G","B","GB","A",NULL};
 eColorWriteMode_t luaX_checkColorWriteMode(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _ColorWriteMode);
 }
@@ -98,7 +95,6 @@ void luaX_pushColorWriteMode(lua_State *L, eColorWriteMode_t value) {
 }
 ORCA_API lpcString_t __strtoColorWriteMode(lpcString_t string, enum ColorWriteMode* output) {
 	if (string == NULL) return FALSE;
-	const char* _ColorWriteMode[] = { "None", "RGB", "RGBA", "R", "G", "B", "GB", "A", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -111,7 +107,7 @@ ORCA_API lpcString_t __strtoColorWriteMode(lpcString_t string, enum ColorWriteMo
 	Con_Error("Could not parse '%s' value of property ColorWriteMode", string);
 	return string + strlen(string);
 }
-static const char *_FovType[] = {"xfov","yfov",NULL};
+static const char *_FovType[] = {"Xfov","Yfov",NULL};
 eFovType_t luaX_checkFovType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _FovType);
 }
@@ -121,7 +117,6 @@ void luaX_pushFovType(lua_State *L, eFovType_t value) {
 }
 ORCA_API lpcString_t __strtoFovType(lpcString_t string, enum FovType* output) {
 	if (string == NULL) return FALSE;
-	const char* _FovType[] = { "Xfov", "Yfov", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -134,7 +129,7 @@ ORCA_API lpcString_t __strtoFovType(lpcString_t string, enum FovType* output) {
 	Con_Error("Could not parse '%s' value of property FovType", string);
 	return string + strlen(string);
 }
-static const char *_ProjectionType[] = {"perspective","orthographic",NULL};
+static const char *_ProjectionType[] = {"Perspective","Orthographic",NULL};
 eProjectionType_t luaX_checkProjectionType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _ProjectionType);
 }
@@ -144,7 +139,6 @@ void luaX_pushProjectionType(lua_State *L, eProjectionType_t value) {
 }
 ORCA_API lpcString_t __strtoProjectionType(lpcString_t string, enum ProjectionType* output) {
 	if (string == NULL) return FALSE;
-	const char* _ProjectionType[] = { "Perspective", "Orthographic", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -157,7 +151,7 @@ ORCA_API lpcString_t __strtoProjectionType(lpcString_t string, enum ProjectionTy
 	Con_Error("Could not parse '%s' value of property ProjectionType", string);
 	return string + strlen(string);
 }
-static const char *_LightType[] = {"point","spot",NULL};
+static const char *_LightType[] = {"Point","Spot",NULL};
 eLightType_t luaX_checkLightType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _LightType);
 }
@@ -167,7 +161,6 @@ void luaX_pushLightType(lua_State *L, eLightType_t value) {
 }
 ORCA_API lpcString_t __strtoLightType(lpcString_t string, enum LightType* output) {
 	if (string == NULL) return FALSE;
-	const char* _LightType[] = { "Point", "Spot", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;

@@ -65,7 +65,7 @@ int luaopen_orca_window(lua_State *L) {
 	}), 0);
 	return 1;
 }
-static const char *_BlendMode[] = {"alphaautomatic","opaque","alpha","additive","premultipliedalpha","mixedalpha",NULL};
+static const char *_BlendMode[] = {"AlphaAutomatic","Opaque","Alpha","Additive","PremultipliedAlpha","MixedAlpha",NULL};
 eBlendMode_t luaX_checkBlendMode(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _BlendMode);
 }
@@ -75,7 +75,6 @@ void luaX_pushBlendMode(lua_State *L, eBlendMode_t value) {
 }
 ORCA_API lpcString_t __strtoBlendMode(lpcString_t string, enum BlendMode* output) {
 	if (string == NULL) return FALSE;
-	const char* _BlendMode[] = { "AlphaAutomatic", "Opaque", "Alpha", "Additive", "PremultipliedAlpha", "MixedAlpha", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -88,7 +87,7 @@ ORCA_API lpcString_t __strtoBlendMode(lpcString_t string, enum BlendMode* output
 	Con_Error("Could not parse '%s' value of property BlendMode", string);
 	return string + strlen(string);
 }
-static const char *_CompareFunc[] = {"never","always","less","lessorequal","greater","greaterorequal","equal","notequal","disabled",NULL};
+static const char *_CompareFunc[] = {"Never","Always","Less","LessOrEqual","Greater","GreaterOrEqual","Equal","NotEqual","Disabled",NULL};
 eCompareFunc_t luaX_checkCompareFunc(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _CompareFunc);
 }
@@ -98,7 +97,6 @@ void luaX_pushCompareFunc(lua_State *L, eCompareFunc_t value) {
 }
 ORCA_API lpcString_t __strtoCompareFunc(lpcString_t string, enum CompareFunc* output) {
 	if (string == NULL) return FALSE;
-	const char* _CompareFunc[] = { "Never", "Always", "Less", "LessOrEqual", "Greater", "GreaterOrEqual", "Equal", "NotEqual", "Disabled", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -111,7 +109,7 @@ ORCA_API lpcString_t __strtoCompareFunc(lpcString_t string, enum CompareFunc* ou
 	Con_Error("Could not parse '%s' value of property CompareFunc", string);
 	return string + strlen(string);
 }
-static const char *_TextureFilter[] = {"nearest","linear","trilinear",NULL};
+static const char *_TextureFilter[] = {"Nearest","Linear","Trilinear",NULL};
 eTextureFilter_t luaX_checkTextureFilter(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _TextureFilter);
 }
@@ -121,7 +119,6 @@ void luaX_pushTextureFilter(lua_State *L, eTextureFilter_t value) {
 }
 ORCA_API lpcString_t __strtoTextureFilter(lpcString_t string, enum TextureFilter* output) {
 	if (string == NULL) return FALSE;
-	const char* _TextureFilter[] = { "Nearest", "Linear", "Trilinear", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -134,7 +131,7 @@ ORCA_API lpcString_t __strtoTextureFilter(lpcString_t string, enum TextureFilter
 	Con_Error("Could not parse '%s' value of property TextureFilter", string);
 	return string + strlen(string);
 }
-static const char *_TextureWrap[] = {"clamp","repeat","base",NULL};
+static const char *_TextureWrap[] = {"Clamp","Repeat","Base",NULL};
 eTextureWrap_t luaX_checkTextureWrap(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _TextureWrap);
 }
@@ -144,7 +141,6 @@ void luaX_pushTextureWrap(lua_State *L, eTextureWrap_t value) {
 }
 ORCA_API lpcString_t __strtoTextureWrap(lpcString_t string, enum TextureWrap* output) {
 	if (string == NULL) return FALSE;
-	const char* _TextureWrap[] = { "Clamp", "Repeat", "Base", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -157,7 +153,7 @@ ORCA_API lpcString_t __strtoTextureWrap(lpcString_t string, enum TextureWrap* ou
 	Con_Error("Could not parse '%s' value of property TextureWrap", string);
 	return string + strlen(string);
 }
-static const char *_TextureFormat[] = {"automatic","rgba8","rgb8","alpha8","depthcomponent","depthstencil",NULL};
+static const char *_TextureFormat[] = {"Automatic","Rgba8","Rgb8","Alpha8","DepthComponent","DepthStencil",NULL};
 eTextureFormat_t luaX_checkTextureFormat(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _TextureFormat);
 }
@@ -167,7 +163,6 @@ void luaX_pushTextureFormat(lua_State *L, eTextureFormat_t value) {
 }
 ORCA_API lpcString_t __strtoTextureFormat(lpcString_t string, enum TextureFormat* output) {
 	if (string == NULL) return FALSE;
-	const char* _TextureFormat[] = { "Automatic", "Rgba8", "Rgb8", "Alpha8", "DepthComponent", "DepthStencil", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -180,7 +175,7 @@ ORCA_API lpcString_t __strtoTextureFormat(lpcString_t string, enum TextureFormat
 	Con_Error("Could not parse '%s' value of property TextureFormat", string);
 	return string + strlen(string);
 }
-static const char *_MipmapMode[] = {"base","nearest","linear","trilinear",NULL};
+static const char *_MipmapMode[] = {"Base","Nearest","Linear","Trilinear",NULL};
 eMipmapMode_t luaX_checkMipmapMode(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _MipmapMode);
 }
@@ -190,7 +185,6 @@ void luaX_pushMipmapMode(lua_State *L, eMipmapMode_t value) {
 }
 ORCA_API lpcString_t __strtoMipmapMode(lpcString_t string, enum MipmapMode* output) {
 	if (string == NULL) return FALSE;
-	const char* _MipmapMode[] = { "Base", "Nearest", "Linear", "Trilinear", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -203,7 +197,7 @@ ORCA_API lpcString_t __strtoMipmapMode(lpcString_t string, enum MipmapMode* outp
 	Con_Error("Could not parse '%s' value of property MipmapMode", string);
 	return string + strlen(string);
 }
-static const char *_AnisotropyType[] = {"none","x2","x4","x8","x16",NULL};
+static const char *_AnisotropyType[] = {"None","X2","X4","X8","X16",NULL};
 eAnisotropyType_t luaX_checkAnisotropyType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _AnisotropyType);
 }
@@ -213,7 +207,6 @@ void luaX_pushAnisotropyType(lua_State *L, eAnisotropyType_t value) {
 }
 ORCA_API lpcString_t __strtoAnisotropyType(lpcString_t string, enum AnisotropyType* output) {
 	if (string == NULL) return FALSE;
-	const char* _AnisotropyType[] = { "None", "X2", "X4", "X8", "X16", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -271,7 +264,7 @@ ORCA_API struct ClassDesc _Texture = {
 	.Defaults = &TextureDefaults,
 	.NumProperties = kTextureNumProperties,
 };
-static const char *_ImageFormat[] = {"png","jpeg","svg","astc","pvrtc",NULL};
+static const char *_ImageFormat[] = {"Png","Jpeg","Svg","Astc","Pvrtc",NULL};
 eImageFormat_t luaX_checkImageFormat(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _ImageFormat);
 }
@@ -281,7 +274,6 @@ void luaX_pushImageFormat(lua_State *L, eImageFormat_t value) {
 }
 ORCA_API lpcString_t __strtoImageFormat(lpcString_t string, enum ImageFormat* output) {
 	if (string == NULL) return FALSE;
-	const char* _ImageFormat[] = { "Png", "Jpeg", "Svg", "Astc", "Pvrtc", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -294,7 +286,7 @@ ORCA_API lpcString_t __strtoImageFormat(lpcString_t string, enum ImageFormat* ou
 	Con_Error("Could not parse '%s' value of property ImageFormat", string);
 	return string + strlen(string);
 }
-static const char *_AstcFormat[] = {"unormblock4x4","unormblock5x4","unormblock5x5","unormblock6x5","unormblock6x6","unormblock8x5","unormblock8x6","unormblock8x8","unormblock10x5","unormblock10x6","unormblock10x8","unormblock10x10","unormblock12x10","unormblock12x12","srgbblock4x4","srgbblock5x4","srgbblock5x5","srgbblock6x5","srgbblock6x6","srgbblock8x5","srgbblock8x6","srgbblock8x8","srgbblock10x5","srgbblock10x6","srgbblock10x8","srgbblock10x10","srgbblock12x10","srgbblock12x12",NULL};
+static const char *_AstcFormat[] = {"UnormBlock4x4","UnormBlock5x4","UnormBlock5x5","UnormBlock6x5","UnormBlock6x6","UnormBlock8x5","UnormBlock8x6","UnormBlock8x8","UnormBlock10x5","UnormBlock10x6","UnormBlock10x8","UnormBlock10x10","UnormBlock12x10","UnormBlock12x12","SrgbBlock4x4","SrgbBlock5x4","SrgbBlock5x5","SrgbBlock6x5","SrgbBlock6x6","SrgbBlock8x5","SrgbBlock8x6","SrgbBlock8x8","SrgbBlock10x5","SrgbBlock10x6","SrgbBlock10x8","SrgbBlock10x10","SrgbBlock12x10","SrgbBlock12x12",NULL};
 eAstcFormat_t luaX_checkAstcFormat(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _AstcFormat);
 }
@@ -304,7 +296,6 @@ void luaX_pushAstcFormat(lua_State *L, eAstcFormat_t value) {
 }
 ORCA_API lpcString_t __strtoAstcFormat(lpcString_t string, enum AstcFormat* output) {
 	if (string == NULL) return FALSE;
-	const char* _AstcFormat[] = { "UnormBlock4x4", "UnormBlock5x4", "UnormBlock5x5", "UnormBlock6x5", "UnormBlock6x6", "UnormBlock8x5", "UnormBlock8x6", "UnormBlock8x8", "UnormBlock10x5", "UnormBlock10x6", "UnormBlock10x8", "UnormBlock10x10", "UnormBlock12x10", "UnormBlock12x12", "SrgbBlock4x4", "SrgbBlock5x4", "SrgbBlock5x5", "SrgbBlock6x5", "SrgbBlock6x6", "SrgbBlock8x5", "SrgbBlock8x6", "SrgbBlock8x8", "SrgbBlock10x5", "SrgbBlock10x6", "SrgbBlock10x8", "SrgbBlock10x10", "SrgbBlock12x10", "SrgbBlock12x12", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -317,7 +308,7 @@ ORCA_API lpcString_t __strtoAstcFormat(lpcString_t string, enum AstcFormat* outp
 	Con_Error("Could not parse '%s' value of property AstcFormat", string);
 	return string + strlen(string);
 }
-static const char *_AtcCompressionScheme[] = {"explicitalpha","interpolatedalpha","rgb",NULL};
+static const char *_AtcCompressionScheme[] = {"ExplicitAlpha","InterpolatedAlpha","Rgb",NULL};
 eAtcCompressionScheme_t luaX_checkAtcCompressionScheme(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _AtcCompressionScheme);
 }
@@ -327,7 +318,6 @@ void luaX_pushAtcCompressionScheme(lua_State *L, eAtcCompressionScheme_t value) 
 }
 ORCA_API lpcString_t __strtoAtcCompressionScheme(lpcString_t string, enum AtcCompressionScheme* output) {
 	if (string == NULL) return FALSE;
-	const char* _AtcCompressionScheme[] = { "ExplicitAlpha", "InterpolatedAlpha", "Rgb", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -340,7 +330,7 @@ ORCA_API lpcString_t __strtoAtcCompressionScheme(lpcString_t string, enum AtcCom
 	Con_Error("Could not parse '%s' value of property AtcCompressionScheme", string);
 	return string + strlen(string);
 }
-static const char *_AstcCompressionSpeed[] = {"veryfast","fast","medium","thorough","exhaustive",NULL};
+static const char *_AstcCompressionSpeed[] = {"VeryFast","Fast","Medium","Thorough","Exhaustive",NULL};
 eAstcCompressionSpeed_t luaX_checkAstcCompressionSpeed(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _AstcCompressionSpeed);
 }
@@ -350,7 +340,6 @@ void luaX_pushAstcCompressionSpeed(lua_State *L, eAstcCompressionSpeed_t value) 
 }
 ORCA_API lpcString_t __strtoAstcCompressionSpeed(lpcString_t string, enum AstcCompressionSpeed* output) {
 	if (string == NULL) return FALSE;
-	const char* _AstcCompressionSpeed[] = { "VeryFast", "Fast", "Medium", "Thorough", "Exhaustive", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -363,7 +352,7 @@ ORCA_API lpcString_t __strtoAstcCompressionSpeed(lpcString_t string, enum AstcCo
 	Con_Error("Could not parse '%s' value of property AstcCompressionSpeed", string);
 	return string + strlen(string);
 }
-static const char *_RawColorByteFormat[] = {"rgba8","rgb8","bgra8","rgba16f","rgb10a2","r11g11b10f","rgba32f",NULL};
+static const char *_RawColorByteFormat[] = {"Rgba8","Rgb8","Bgra8","Rgba16f","Rgb10a2","R11g11b10f","Rgba32f",NULL};
 eRawColorByteFormat_t luaX_checkRawColorByteFormat(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _RawColorByteFormat);
 }
@@ -373,7 +362,6 @@ void luaX_pushRawColorByteFormat(lua_State *L, eRawColorByteFormat_t value) {
 }
 ORCA_API lpcString_t __strtoRawColorByteFormat(lpcString_t string, enum RawColorByteFormat* output) {
 	if (string == NULL) return FALSE;
-	const char* _RawColorByteFormat[] = { "Rgba8", "Rgb8", "Bgra8", "Rgba16f", "Rgb10a2", "R11g11b10f", "Rgba32f", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -386,7 +374,7 @@ ORCA_API lpcString_t __strtoRawColorByteFormat(lpcString_t string, enum RawColor
 	Con_Error("Could not parse '%s' value of property RawColorByteFormat", string);
 	return string + strlen(string);
 }
-static const char *_FilePngCompressionLevel[] = {"none","fast","normal","maximum","projectdefault",NULL};
+static const char *_FilePngCompressionLevel[] = {"None","Fast","Normal","Maximum","ProjectDefault",NULL};
 eFilePngCompressionLevel_t luaX_checkFilePngCompressionLevel(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _FilePngCompressionLevel);
 }
@@ -396,7 +384,6 @@ void luaX_pushFilePngCompressionLevel(lua_State *L, eFilePngCompressionLevel_t v
 }
 ORCA_API lpcString_t __strtoFilePngCompressionLevel(lpcString_t string, enum FilePngCompressionLevel* output) {
 	if (string == NULL) return FALSE;
-	const char* _FilePngCompressionLevel[] = { "None", "Fast", "Normal", "Maximum", "ProjectDefault", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -409,7 +396,7 @@ ORCA_API lpcString_t __strtoFilePngCompressionLevel(lpcString_t string, enum Fil
 	Con_Error("Could not parse '%s' value of property FilePngCompressionLevel", string);
 	return string + strlen(string);
 }
-static const char *_SpansionCompressionScheme[] = {"none","standard","enhanced",NULL};
+static const char *_SpansionCompressionScheme[] = {"None","Standard","Enhanced",NULL};
 eSpansionCompressionScheme_t luaX_checkSpansionCompressionScheme(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _SpansionCompressionScheme);
 }
@@ -419,7 +406,6 @@ void luaX_pushSpansionCompressionScheme(lua_State *L, eSpansionCompressionScheme
 }
 ORCA_API lpcString_t __strtoSpansionCompressionScheme(lpcString_t string, enum SpansionCompressionScheme* output) {
 	if (string == NULL) return FALSE;
-	const char* _SpansionCompressionScheme[] = { "None", "Standard", "Enhanced", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -432,7 +418,7 @@ ORCA_API lpcString_t __strtoSpansionCompressionScheme(lpcString_t string, enum S
 	Con_Error("Could not parse '%s' value of property SpansionCompressionScheme", string);
 	return string + strlen(string);
 }
-static const char *_ImageType[] = {"normal","mask",NULL};
+static const char *_ImageType[] = {"Normal","Mask",NULL};
 eImageType_t luaX_checkImageType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _ImageType);
 }
@@ -442,7 +428,6 @@ void luaX_pushImageType(lua_State *L, eImageType_t value) {
 }
 ORCA_API lpcString_t __strtoImageType(lpcString_t string, enum ImageType* output) {
 	if (string == NULL) return FALSE;
-	const char* _ImageType[] = { "Normal", "Mask", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -534,7 +519,7 @@ ORCA_API struct ClassDesc _Image = {
 	.Defaults = &ImageDefaults,
 	.NumProperties = kImageNumProperties,
 };
-static const char *_RenderTargetType[] = {"color","depth","stencil","depthstencil","normal","specular","emission",NULL};
+static const char *_RenderTargetType[] = {"Color","Depth","Stencil","DepthStencil","Normal","Specular","Emission",NULL};
 eRenderTargetType_t luaX_checkRenderTargetType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _RenderTargetType);
 }
@@ -544,7 +529,6 @@ void luaX_pushRenderTargetType(lua_State *L, eRenderTargetType_t value) {
 }
 ORCA_API lpcString_t __strtoRenderTargetType(lpcString_t string, enum RenderTargetType* output) {
 	if (string == NULL) return FALSE;
-	const char* _RenderTargetType[] = { "Color", "Depth", "Stencil", "DepthStencil", "Normal", "Specular", "Emission", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -557,7 +541,7 @@ ORCA_API lpcString_t __strtoRenderTargetType(lpcString_t string, enum RenderTarg
 	Con_Error("Could not parse '%s' value of property RenderTargetType", string);
 	return string + strlen(string);
 }
-static const char *_RenderTargetTextureAttachment[] = {"none","color0","color1","color2","color3","depth","stencil","depthstencil",NULL};
+static const char *_RenderTargetTextureAttachment[] = {"None","Color0","Color1","Color2","Color3","Depth","Stencil","DepthStencil",NULL};
 eRenderTargetTextureAttachment_t luaX_checkRenderTargetTextureAttachment(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _RenderTargetTextureAttachment);
 }
@@ -567,7 +551,6 @@ void luaX_pushRenderTargetTextureAttachment(lua_State *L, eRenderTargetTextureAt
 }
 ORCA_API lpcString_t __strtoRenderTargetTextureAttachment(lpcString_t string, enum RenderTargetTextureAttachment* output) {
 	if (string == NULL) return FALSE;
-	const char* _RenderTargetTextureAttachment[] = { "None", "Color0", "Color1", "Color2", "Color3", "Depth", "Stencil", "DepthStencil", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -701,7 +684,7 @@ ORCA_API struct ClassDesc _IOSurfaceTexture = {
 	.Defaults = &IOSurfaceTextureDefaults,
 	.NumProperties = kIOSurfaceTextureNumProperties,
 };
-static const char *_FloatPrecision[] = {"unset","low","medium","high",NULL};
+static const char *_FloatPrecision[] = {"Unset","Low","Medium","High",NULL};
 eFloatPrecision_t luaX_checkFloatPrecision(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _FloatPrecision);
 }
@@ -711,7 +694,6 @@ void luaX_pushFloatPrecision(lua_State *L, eFloatPrecision_t value) {
 }
 ORCA_API lpcString_t __strtoFloatPrecision(lpcString_t string, enum FloatPrecision* output) {
 	if (string == NULL) return FALSE;
-	const char* _FloatPrecision[] = { "Unset", "Low", "Medium", "High", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -724,7 +706,7 @@ ORCA_API lpcString_t __strtoFloatPrecision(lpcString_t string, enum FloatPrecisi
 	Con_Error("Could not parse '%s' value of property FloatPrecision", string);
 	return string + strlen(string);
 }
-static const char *_Shading[] = {"unlit","phong","standard",NULL};
+static const char *_Shading[] = {"Unlit","Phong","Standard",NULL};
 eShading_t luaX_checkShading(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _Shading);
 }
@@ -734,7 +716,6 @@ void luaX_pushShading(lua_State *L, eShading_t value) {
 }
 ORCA_API lpcString_t __strtoShading(lpcString_t string, enum Shading* output) {
 	if (string == NULL) return FALSE;
-	const char* _Shading[] = { "Unlit", "Phong", "Standard", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
