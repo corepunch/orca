@@ -610,7 +610,6 @@ ORCA_API struct file* FS_LoadFile(lpcString_t);
 ORCA_API HRESULT FS_FreeFile(struct file*);
 //ORCA_API HRESULT FS_GetImageSize(lpcString_t, struct WI_Size*);
 ORCA_API struct _xmlDoc* FS_LoadXML(lpcString_t);
-ORCA_API struct _xmlDoc* FS_InitProject(lpcString_t);
 ORCA_API lpcString_t FS_ParseArgs(LPSTR s, reqArg_t *args, size_t maxargs);
 //ORCA_API void FS_RegisterObject(lpObject_t object, lpcString_t path);
 
