@@ -9,7 +9,9 @@ local fallbacks = {
 		local attrs = { Name = filesystem.getBaseName(cleanpath) }
 		for pair in query:gmatch("[^&]+") do
 			local k, v = pair:match("([^=]+)=?(.*)")
-			if k and #k > 0 then attrs[k:gsub("^%l", string.upper)] = v end
+			if k and #k > 0 then
+				attrs[k:gsub("^%l", string.upper)] = v
+			end
 		end
 		for _, ext in ipairs(extensions) do
 			local fullpath = cleanpath .. ext

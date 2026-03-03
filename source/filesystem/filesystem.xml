@@ -70,8 +70,8 @@
     <property name="DefaultMaterial" type="fixed"/>
 
     <!-- These probably don't belong in Project? -->
-    <property name="Width" type="int"/>
-    <property name="Height" type="int"/>
+    <property name="WindowWidth" type="int"/>
+    <property name="WindowHeight" type="int"/>
     
     <property name="PropertyTypes" type="PropertyType" array="true" />
     <property name="ProjectReferences" type="ProjectReference" array="true" />

@@ -39,8 +39,8 @@ enum ProjectProperties {
 	kProjectIsAssetPackage,
 	kProjectKanziConnectEnabled,
 	kProjectDefaultMaterial,
-	kProjectWidth,
-	kProjectHeight,
+	kProjectWindowWidth,
+	kProjectWindowHeight,
 	kProjectPropertyTypes,
 	kProjectNumPropertyTypes,
 	kProjectProjectReferences,
@@ -80,8 +80,8 @@ enum ProjectProperties {
 #define ID_Project_IsAssetPackage 0xfebfd568
 #define ID_Project_KanziConnectEnabled 0xb2dbb3f4
 #define ID_Project_DefaultMaterial 0x3c678158
-#define ID_Project_Width 0x2a30723c
-#define ID_Project_Height 0xdab148ab
+#define ID_Project_WindowWidth 0xf811b418
+#define ID_Project_WindowHeight 0xf64e53af
 #define ID_Project_PropertyTypes 0x5273d526
 #define ID_Project_NumPropertyTypes 0x13e23766
 #define ID_Project_ProjectReferences 0xcfc1761b

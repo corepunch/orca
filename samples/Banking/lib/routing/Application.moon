@@ -31,7 +31,7 @@ class Application extends ui.Screen
 		super!
 		@history = {}
 		@routes = {}
-		@ResizeMode = 'canresize'
+		@ResizeMode = 'CanResize'
 		orca.router = @
 		for k, v in pairs getmetatable(@)
 			if type(k) == 'table'

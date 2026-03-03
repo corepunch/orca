@@ -501,8 +501,8 @@ struct Project {
 	bool_t IsAssetPackage;
 	bool_t KanziConnectEnabled;
 	fixedString_t DefaultMaterial;
-	int32_t Width;
-	int32_t Height;
+	int32_t WindowWidth;
+	int32_t WindowHeight;
 	lpPropertyType_t PropertyTypes;
 	int32_t NumPropertyTypes; /// Number of PropertyTypes
 	lpProjectReference_t ProjectReferences;

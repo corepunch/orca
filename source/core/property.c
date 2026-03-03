@@ -37,7 +37,6 @@ struct Property
   struct token* programs[PropertyAttribute_Count];
   LPSTR programSources[PropertyAttribute_Count];
   uint32_t flags;
-  lpcString_t classname;
   void* value;
   void* intermediate; // used to store object reference while value stores component
   lpObject_t object;
@@ -290,7 +289,6 @@ CMP_CreateProperty(lua_State* L,
   property->type = desc->DataType;
   property->object = CMP_GetOwner(comp);
   property->pdesc = desc;
-  property->classname = CMP_GetClassName(comp);
 
   PROP_AddToList(property, &_GetProperties(CMP_GetOwner(comp)));
   CMP_SetProperty(comp, property);
@@ -358,40 +356,25 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
     return 0;
   }
 
-  // handle enum properties with string input
-  if (p->type == kDataTypeEnum && lua_type(L, idx) == LUA_TSTRING) {
-    int value = strlistidx(luaL_checkstring(L, idx), p->pdesc->TypeString, NULL);
-    if (value == -1) {
-      Con_Error("Can't set value %s on %s", luaL_checkstring(L, idx), p->pdesc->Name);
-    }
-    PROP_SetValue(p, &value);
-    return 0;
-  }
-
-  // handle int properties with enum string input
-  switch (p->type) {
-    case kDataTypeEnum:
-    case kDataTypeInt:
-      PROP_SetValue(p, &(int){ (int)luaL_checkinteger(L, idx) });
-      return 0;
-    default:
-      break;
-  }
+  bool_t f_parse_property(lua_State*, lpProperty_t, lpcString_t);
   switch (luatype) {
     case LUA_TSTRING:
 			p->type = p->type == kDataTypeNone ? kDataTypeFixed : p->type;
-      if (p->type == kDataTypeFixed) {
-        strncpy(p->value, luaL_checkstring(L, idx), MAX_PROPERTY_STRING);
-        p->flags &= ~PF_NIL;
-        p->flags |= PF_MODIFIED;
-      } else if (p->type == kDataTypeObject) {
+      switch (p->type) {
+        case kDataTypeFixed:
+          strncpy(p->value, luaL_checkstring(L, idx), MAX_PROPERTY_STRING);
+          p->flags &= ~PF_NIL;
+          p->flags |= PF_MODIFIED;
+          break;
         // We support loading of objects by passing a string to property
-        void f_parse_property(lua_State*, lpProperty_t, lpcString_t);
-        f_parse_property(L, p, luaL_checkstring(L, idx));
-      } else {
-//        PROP_Parse(p, luaL_checkstring(L, idx));
-        puts(luaL_checkstring(L, idx));
-        assert(!"Parsing of properties not supported out of the box");
+        case kDataTypeInt:
+//          Con_Error("Passing string to int property %s", p->pdesc->Name);
+        case kDataTypeObject:
+        case kDataTypeEnum:
+          f_parse_property(L, p, luaL_checkstring(L, idx));
+          break;
+        default:
+          assert(!"Parsing of properties not supported out of the box");
       }
       break;
     case LUA_TBOOLEAN:
@@ -522,6 +505,16 @@ PROP_HasHandler(lpProperty_t property)
 
 #define kEventPropertyChanged 0x6d47e0cc
 
+static lpcString_t
+PROP_GetShortName(lpcProperty_t property)
+{
+  if (property->pdesc->FullIdentifier != property->pdesc->ShortIdentifier) {
+    return strrchr(property->pdesc->Name, '.') + 1;
+  } else {
+    return property->pdesc->Name;
+  }
+}
+
 void
 PROP_ProcessEvents(lua_State* L,
                    lpProperty_t property,
@@ -584,27 +577,7 @@ PROP_GetName(lpcProperty_t property)
 lpcString_t
 PROP_GetComponentName(lpcProperty_t property)
 {
-  return property->classname;
-}
-
-void
-PROP_GetFullName(lpcProperty_t property, LPSTR buf, int size)
-{
-  if (property->classname) {
-    snprintf(buf, size, "%s.%s", property->classname, property->pdesc->Name);
-  } else {
-    strncpy(buf, property->pdesc->Name, size);
-  }
-}
-
-lpcString_t
-PROP_GetShortName(lpcProperty_t property)
-{
-  if (property->pdesc->FullIdentifier != property->pdesc->ShortIdentifier) {
-    return strrchr(property->pdesc->Name, '.') + 1;
-  } else {
-    return property->pdesc->Name;
-  }
+  return property->pdesc->Category;
 }
 
 uint32_t

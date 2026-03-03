@@ -309,7 +309,7 @@ ED_PrintInspector(HEDWND wnd, LPINSPSTRUCT inspector)
     }
 
     UI_EnumObjectProperties(inspector->selected.object, ED_PrintProperty, wnd);
-    UI_EnumObjectPropertyTypes(inspector->selected.object, ED_PrintPropertyType, wnd);
+//    UI_EnumObjectPropertyTypes(inspector->selected.object, ED_PrintPropertyType, wnd);
 
     ED_PrintProperty(&(struct _PROPDEF) {
       .szName = "",

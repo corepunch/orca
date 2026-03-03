@@ -1773,8 +1773,8 @@
 	IsAssetPackage (true|false) #IMPLIED
 	KanziConnectEnabled (true|false) #IMPLIED
 	DefaultMaterial CDATA #IMPLIED
-	Width CDATA #IMPLIED
-	Height CDATA #IMPLIED
+	WindowWidth CDATA #IMPLIED
+	WindowHeight CDATA #IMPLIED
 	PropertyTypes CDATA #IMPLIED
 	NumPropertyTypes CDATA #IMPLIED
 	ProjectReferences CDATA #IMPLIED
@@ -1842,10 +1842,10 @@
 <!ATTLIST Project.KanziConnectEnabled Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Project.DefaultMaterial (#PCDATA | Binding)*>
 <!ATTLIST Project.DefaultMaterial Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.Width (#PCDATA | Binding)*>
-<!ATTLIST Project.Width Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.Height (#PCDATA | Binding)*>
-<!ATTLIST Project.Height Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Project.WindowWidth (#PCDATA | Binding)*>
+<!ATTLIST Project.WindowWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Project.WindowHeight (#PCDATA | Binding)*>
+<!ATTLIST Project.WindowHeight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Project.PropertyTypes (#PCDATA | Binding)*>
 <!ATTLIST Project.PropertyTypes Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Project.NumPropertyTypes (#PCDATA | Binding)*>
@@ -1858,7 +1858,7 @@
 <!ATTLIST Project.SystemMessages Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Project.NumSystemMessages (#PCDATA | Binding)*>
 <!ATTLIST Project.NumSystemMessages Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % ProjectElements "Project.HalfFloatTextureFormat|Project.HalfFloatTextureFormatLinear|Project.HalfFloatColorAttachment|Project.RenderToMipmapLevels|Project.ExternalTexture|Project.StartupScreen|Project.PreviewWindowBackgroundColor|Project.MessageLimitPerFrame|Project.GlobalTimelineStartTime|Project.GlobalTimelineEndTime|Project.BinaryExportDirectory|Project.ApplicationExportDirectory|Project.IsMasterProject|Project.OptimizeMeshes|Project.TargetPlatformVertexCacheSize|Project.PlotAnimations|Project.RoundImagesToNearestPowerOf2|Project.ProjectExportShaderSourceCode|Project.ProjectExportMainKzbWithBakedThemes|Project.ProjectGroupByThemeNameInBakedThemeExport|Project.IsLocalizationEnabled|Project.FullScreenPreviewLayer|Project.ShowChildrenInLayerThumbnails|Project.CompositionDesignSize|Project.ProjectUsePremultipliedAlpha|Project.ProjectRemoveICCProfilesOfPngs|Project.BinaryFileName|Project.IsAssetPackage|Project.KanziConnectEnabled|Project.DefaultMaterial|Project.Width|Project.Height|Project.PropertyTypes|Project.NumPropertyTypes|Project.ProjectReferences|Project.NumProjectReferences|Project.SystemMessages|Project.NumSystemMessages">
+<!ENTITY % ProjectElements "Project.HalfFloatTextureFormat|Project.HalfFloatTextureFormatLinear|Project.HalfFloatColorAttachment|Project.RenderToMipmapLevels|Project.ExternalTexture|Project.StartupScreen|Project.PreviewWindowBackgroundColor|Project.MessageLimitPerFrame|Project.GlobalTimelineStartTime|Project.GlobalTimelineEndTime|Project.BinaryExportDirectory|Project.ApplicationExportDirectory|Project.IsMasterProject|Project.OptimizeMeshes|Project.TargetPlatformVertexCacheSize|Project.PlotAnimations|Project.RoundImagesToNearestPowerOf2|Project.ProjectExportShaderSourceCode|Project.ProjectExportMainKzbWithBakedThemes|Project.ProjectGroupByThemeNameInBakedThemeExport|Project.IsLocalizationEnabled|Project.FullScreenPreviewLayer|Project.ShowChildrenInLayerThumbnails|Project.CompositionDesignSize|Project.ProjectUsePremultipliedAlpha|Project.ProjectRemoveICCProfilesOfPngs|Project.BinaryFileName|Project.IsAssetPackage|Project.KanziConnectEnabled|Project.DefaultMaterial|Project.WindowWidth|Project.WindowHeight|Project.PropertyTypes|Project.NumPropertyTypes|Project.ProjectReferences|Project.NumProjectReferences|Project.SystemMessages|Project.NumSystemMessages">
 <!ELEMENT Project EMPTY>
 <!ATTLIST Project %ProjectAttribs;>
 <!ENTITY % LibraryAttribs "
