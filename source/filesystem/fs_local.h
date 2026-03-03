@@ -16,54 +16,6 @@ typedef struct _MONITOREDFILE
 }* PMONITOREDFILE;
 #endif
 
-
-enum Libraries {
-  kAnimationClipLibrary,
-  kScreenLibrary,
-  kMaterialTypeLibrary,
-  kMaterialLibrary,
-  kBrushLibrary,
-  kMeshLibrary,
-  kTimelineSequenceLibrary,
-  kSceneObjectLibrary,
-  kComposerLibrary,
-//  kPipelineItemLibrary,
-  kSceneLibrary,
-  kTrajectoryLibrary,
-  kTransitionLibrary,
-  kSplineLibrary,
-  kPrefabLibrary,
-  kProjectReferenceLibrary,
-//  kComponentTypeLibrary,
-//  kDataSourceTypeLibrary,
-//  kRenderPassTypeLibrary,
-//  kNodeComponentTypeLibrary,
-//  kTriggerActionTypeLibrary,
-//  kMessageTypeLibrary,
-  kProfileLibrary,
-  kEnginePluginLibrary,
-  kShortcutLibrary,
-  kLayerLibrary,
-  kAnimationLibrary,
-  kTagLibrary,
-  kThemeLibrary,
-  kResourceExportTagLibrary,
-  kLocaleLibrary,
-  kDataSourceLibrary,
-  kPageTransitionCollectionLibrary,
-  kResourceFilesItem,
-  kTextureLibrary,
-  kStyleLibrary,
-  kStateManagerLibrary,
-//  kBrushTypeLibrary,
-  kConnectServiceLibrary,
-  kConnectUserServiceLibrary,
-  kPropertyTypeLibrary,
-  kSpriteLibrary,
-  kSpriteAnimationLibrary,
-  kNumLibraries,
-};
-
 struct dpackheader
 {
   uint32_t identifier; // == IDPAKHEADER
@@ -96,8 +48,6 @@ struct Package
   uint8_t namelen;
   path_t path;
   PPACK pack;
-  struct _xmlNode* libraries[kNumLibraries];
-  struct _xmlDoc* doc;
   struct Package* next;
 #ifdef MONITOR_FILES
   PMONITOREDFILE monitoredFiles;
@@ -127,8 +77,5 @@ char buf_##__LINE__[256]; \
 snprintf(buf_##__LINE__, sizeof(buf_##__LINE__), FMT, ##__VA_ARGS__); \
 xmlSetProp(NODE, XMLSTR(PROP), XMLSTR(buf_##__LINE__)); \
 } while (0)
-
-void FS_SetWorkspace(lpObject_t object);
-ORCA_API lpObject_t FS_GetWorkspace(void);
 
 #endif

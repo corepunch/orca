@@ -278,9 +278,7 @@ ORCA_API xmlNodePtr ED_ConvertNode(lpObject_t object, xmlNodePtr parent) {
     else if (!OBJ_GetComponent(object, ID_Texture)) {
       xmlSetProp(node, XMLSTR(PROP_GetName(p)), XMLSTR(buffer));
     } else {
-      char buf[256];
-      PROP_GetFullName(p, buf, sizeof(buf));
-      xmlNodePtr n = xmlNewChild(node, NULL, XMLSTR(buf), NULL);//, XMLSTR(buffer));
+      xmlNodePtr n = xmlNewChild(node, NULL, XMLSTR(PROP_GetName(p)), NULL);//, XMLSTR(buffer));
       xmlSetProp(n, XMLSTR("Value"), XMLSTR(buffer));
     }
     ED_WriteBindings(p, node);

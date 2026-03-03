@@ -184,6 +184,7 @@ luaX_pushcolor(lua_State *L, lpccolor_t color);
 ORCA_API lpcolor_t
 luaX_checkcolor(lua_State *L, int idx);
 
+#define RotationOrder_Count 6
 typedef enum RotationOrder {
 	kRotationOrderXYZ, /// Rotate around X axis first, then Y, then Z
 	kRotationOrderXZY, /// Rotate around X axis first, then Z, then Y
@@ -192,6 +193,7 @@ typedef enum RotationOrder {
 	kRotationOrderZXY, /// Rotate around Z axis first, then X, then Y
 	kRotationOrderZYX, /// Rotate around Z axis first, then Y, then X
 } eRotationOrder_t;
+ORCA_API const char *RotationOrderToString(enum RotationOrder);
 
 /// @brief 2D vector structure
 struct vec2 {

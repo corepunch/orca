@@ -3,6 +3,7 @@
 #include "fs_local.h"
 #include "../core/core_local.h"
 
+#include <source/core/core.h>
 #include <source/UIKit/UIKit.h>
 
 #define REQUIRE(type, name, expr, error) type name = expr; if (!name) return error;
@@ -95,42 +96,26 @@ SV_CMD(GET, project_overview);
 lpObject_t 
 UI_FindObjectByUniqueID(uint32_t uid, lpObject_t object);
 
-static lpcString_t _types[] = {
-  "none", // kDataTypeNone,
-  "bool", // kDataTypeBool,
-  "int", // kDataTypeInt,
-  "enum", // kDataTypeEnum,
-  "float", // kDataTypeFloat,
-  "string", // kDataTypeFixed,
-  "longstring", // kDataTypeLongString,
-  "edges", // kDataTypeEdges,
-  "objecttags", // kDataTypeObjectTags,
-  "event", // kDataTypeEvent,
-  "struct", // kDataTypeStruct,
-  "project-item", // kDataTypeObject,
-  "group", // kDataTypeGroup,
-};
-
 static void add_group(lpcClassDesc_t dec, void* parm) {
   xmlNodePtr p = _xmlNewChild(parm, "group", "name", dec->ClassName);
   _xmlSetProp(p, "data-compound", "true");
 }
 
 ORCA_API lpcString_t
-PDESC_Print(lpcPropertyDesc_t pdesc, LPSTR buffer, uint32_t len, float const* pf);
+PDESC_Print(lpcPropertyType_t pdesc, LPSTR buffer, uint32_t len, float const* pf);
 
 #define _xmlAddProp(parent, name, value, type)\
-_xmlNewChild(parent, _types[type], "name", name, "value", value, "data-type", _types[type])
+_xmlNewChild(parent, DataTypeToString(type), "name", name, "value", value, "data-type", DataTypeToString(type))
 
 static int
 add_subproperty(xmlNodePtr xml,
                 lpcObject_t obj,
-                lpcPropertyDesc_t pdesc,
+                lpcPropertyType_t pdesc,
                 void const* dest)
 {
   path_t buf;
   PDESC_Print(pdesc, buf, sizeof(buf), dest);
-  xmlNodePtr n = _xmlAddProp(xml, pdesc->id->Name, buf, pdesc->DataType);
+  xmlNodePtr n = _xmlAddProp(xml, pdesc->Name, buf, pdesc->DataType);
   if (PROP_FindByLongID(OBJ_GetProperties(obj), pdesc->FullIdentifier)) {
     _xmlSetProp(n, "data-set", "true");
   }
@@ -146,14 +131,16 @@ add_subproperty(xmlNodePtr xml,
         }
       }
       break;
-    case kDataTypeGroup:
+    case kDataTypeStruct:
       _xmlSetProp(n, "data-compound", "true");
-      FOR_LOOP(i, pdesc->NumComponents) {
-        lpcPropertyDesc_t inner = &pdesc[i + 1];
-        void* dest2 = ((byte_t*)dest) + inner->Offset - pdesc->Offset;
-        i += add_subproperty(n, obj, inner, dest2);
+      for (int i = pdesc->Offset, j = 1,
+           end = pdesc->Offset + pdesc->DataSize; i < end; j++)
+      {
+        if (i < pdesc[j].Offset) continue;
+        void* dest_ = ((byte_t*)dest) + pdesc[j].Offset - pdesc->Offset;
+        i = add_subproperty(n, obj, &pdesc[j], dest_);
       }
-      return pdesc->NumComponents;
+      return pdesc->Offset + pdesc->DataSize;
     default:
       break;
   }
@@ -177,7 +164,7 @@ xmlFindNode(xmlNodePtr node, xmlChar const *name) {
 
 static void
 add_property(lpcObject_t obj,
-             lpcPropertyDesc_t pdesc,
+             lpcPropertyType_t pdesc,
              lpcClassDesc_t cdesc,
              void const* dest,
              void* parm)
@@ -215,12 +202,15 @@ SV_CMD(GET, node)
     if (!group) {
       group = _xmlNewChild(response, "group", "name", CUSTOM_GROUP, "data-compound", "true");
     }
-    add_subproperty(group, object, &(struct PropertyDesc) {
-      .id=&(struct ID){.Name = PROP_GetName(p)},
+    struct PropertyType ptype = {
+//      .Name = PROP_GetName(p),
       .DataType = PROP_GetType(p),
       .DataSize = PROP_GetSize(p),
-      .TypeString = PROP_GetUserData(p),
-    }, PROP_GetValue(p));
+//      .TypeString = PROP_GetUserData(p),
+    };
+    strncpy(ptype.Name, PROP_GetName(p), sizeof(fixedString_t));
+    strncpy(ptype.TypeString, PROP_GetName(p), sizeof(fixedString_t));
+    add_subproperty(group, object, &ptype, PROP_GetValue(p));
   }
 
   return NULL;
@@ -241,7 +231,8 @@ SV_CMD(PUT, node)
       if (FAILED(OBJ_FindShortProperty(obj, arg->name, &property))) continue;
       PROP_Print(property, buf, sizeof(buf));
       _xmlAddProp(response, arg->name, buf, PROP_GetType(property));
-      PROP_Parse(property, arg->value);
+//      PROP_Parse(property, arg->value);
+      assert(!"Not implemented");
     }
   }
   return NULL;;
@@ -302,7 +293,23 @@ SV_CMD(GET, whoami) {
   }
 }
 
-extern lpObject_t (*_OBJ_LoadDocument)(lua_State* L, xmlDocPtr doc);
+ORCA_API lpObject_t OBJ_LoadDocument(lua_State* L, xmlDocPtr doc) {
+  Con_Error("Deprecacted, move code to a Lua plugin");
+  xmlChar *xmlbuff;
+  int buffersize;
+  xmlDocDumpMemory(doc, &xmlbuff, &buffersize);
+  lua_getglobal(L, "doxmlfile");
+  lua_pushlstring(L, (char*)xmlbuff, buffersize);
+  xmlFree(xmlbuff);
+  if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
+    Con_Error("%s", lua_tostring(L, -1));
+    lua_pop(L, 1);
+    return NULL;
+  }
+  lpObject_t obj = luaX_checkObject(L, -1);
+  lua_pop(L, 1);
+  return obj;
+}
 
 ORCA_API bool_t OBJ_SaveDocument(lpObject_t object);
 ORCA_API xmlNodePtr ED_ConvertNode(lpObject_t object, xmlNodePtr parent);
@@ -313,7 +320,7 @@ SV_CMD(POST, node) {
     if (OBJ_GetSourceFile(source)) return "Object is already a prefab";
     xmlWith(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFree) {
       xmlDocSetRootElement(doc, ED_ConvertNode(source, NULL));
-      OBJ_AddChild(root, _OBJ_LoadDocument(L, doc), FALSE);
+      OBJ_AddChild(root, OBJ_LoadDocument(L, doc), FALSE);
     }
     OBJ_SetSourceFile(source, FS_JoinPaths(endpoint, OBJ_GetName(source)));
     return NULL;
@@ -368,8 +375,8 @@ static void output_property(lpcClassDesc_t desc, void *param) {
   xmlNodePtr n = _xmlNewChild(param, "menu-item", "header", desc->ClassName);
   FOR_LOOP(i, desc->NumProperties) {
     char buf[256];
-    snprintf(buf, sizeof(buf), "%s.%s", desc->ClassName, desc->Properties[i].id->Name);
-    _xmlNewChild(n, "menu-item", "header", desc->Properties[i].id->Name, "name", buf);
+    snprintf(buf, sizeof(buf), "%s.%s", desc->ClassName, desc->Properties[i].Name);
+    _xmlNewChild(n, "menu-item", "header", desc->Properties[i].Name, "name", buf);
   }
 }
 

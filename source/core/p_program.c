@@ -1,14 +1,14 @@
-#include "xml_local.h"
+#include "core_local.h"
 
 #define MAX_REGISTERS 64
 #define MAX_ARGS 16
 
-lpObject_t root_node = NULL;
+ORCA_API lpObject_t root_node = NULL;
 
 typedef struct
 {
   path_t path;
-  enum property_attribute attr;
+  enum PropertyAttribute attr;
 } argument_t;
 
 struct lexer_state
@@ -19,19 +19,19 @@ struct lexer_state
   uint32_t numargs;
 };
 
-enum property_attribute
+enum PropertyAttribute
 parsePropertyAttrInCode(lpcString_t s)
 {
-  if (!strcmp(s, "COLORR")) return ATTR_COLOR_R;
-  if (!strcmp(s, "COLORG")) return ATTR_COLOR_G;
-  if (!strcmp(s, "COLORB")) return ATTR_COLOR_B;
-  if (!strcmp(s, "COLORA")) return ATTR_COLOR_A;
-  if (!strcmp(s, "VECTORX")||!strcmp(s, "VECTOR_X")) return ATTR_VECTOR_X;
-  if (!strcmp(s, "VECTORY")||!strcmp(s, "VECTOR_Y")) return ATTR_VECTOR_Y;
-  if (!strcmp(s, "VECTORZ")||!strcmp(s, "VECTOR_Z")) return ATTR_VECTOR_Z;
-  if (!strcmp(s, "VECTORW")||!strcmp(s, "VECTOR_W")) return ATTR_VECTOR_W;
+  if (!strcmp(s, "COLORR")) return kPropertyAttributeColorR;
+  if (!strcmp(s, "COLORG")) return kPropertyAttributeColorG;
+  if (!strcmp(s, "COLORB")) return kPropertyAttributeColorB;
+  if (!strcmp(s, "COLORA")) return kPropertyAttributeColorA;
+  if (!strcmp(s, "VECTORX")||!strcmp(s, "VECTOR_X")) return kPropertyAttributeVectorX;
+  if (!strcmp(s, "VECTORY")||!strcmp(s, "VECTOR_Y")) return kPropertyAttributeVectorY;
+  if (!strcmp(s, "VECTORZ")||!strcmp(s, "VECTOR_Z")) return kPropertyAttributeVectorZ;
+  if (!strcmp(s, "VECTORW")||!strcmp(s, "VECTOR_W")) return kPropertyAttributeVectorW;
   assert(0);
-  return ATTR_WHOLE_PROPERTY;
+  return kPropertyAttributeWholeProperty;
 }
 
 bool_t
@@ -208,9 +208,6 @@ _TokenParse(lpcString_t* str, struct lexer_state* lex)
         return NULL;
       }
     }
-    if (!strcmp(ident->text, "ANIMATE") && ident->args[1]) {
-      ident->userdata = FS_LoadXML;
-    }
     return ident;
   }
   if (isdigit(**str) || (**str == '.' && isdigit((*str)[1]))) {
@@ -302,4 +299,11 @@ _compile(lpcString_t code, lpcString_t filename)
     }
   }
   return token;
+}
+
+ORCA_API struct token*
+Token_Create(lpcString_t code)
+{
+  struct token* _compile(lpcString_t code, lpcString_t filename);
+  return _compile(code, "binding");
 }

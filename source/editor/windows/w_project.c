@@ -1,5 +1,7 @@
 #include "../ed_local.h"
 
+extern struct _xmlDoc* FS_InitProject(lpcString_t);
+
 static BOOL
 Project_GetObjectProperty(LPVOID lpObject,
                           lpcString_t szName,
@@ -131,7 +133,7 @@ LRESULT ED_ProjectNavigator(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lpar
       if (FS_FindFileByHandle(id, &objdef)) {
         if (strstr(objdef.szFullPath, "Project References/")) {
           path_t path={0};
-          FS_GetProjectReference(objdef.szName, path, sizeof(path));
+//          FS_GetProjectReference(objdef.szName, path, sizeof(path));
           lua_pushstring(editor.L, path);
           lua_setglobal(editor.L, "RELOAD");
         }
@@ -146,13 +148,13 @@ LRESULT ED_ProjectNavigator(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lpar
         if (FS_FindFileByHandle(id, &objdef)) {
           Con_Error("Context for %s", objdef.szFullPath);
           switch (FS_FindLibraryType(objdef.szFullPath)) {
-            case kMaterialLibrary:
-              ED_AppendMenu(menu, ID_ASSET_MATERIAL);
-              break;
-            case kProjectReferenceLibrary:
-              ED_AppendMenu(menu, ID_ASSET_PROJECT_REFERENCE);
-              ED_AppendMenu(menu, ID_ASSET_PROJECT_REFERENCE_EXISTING);
-              break;
+//            case kMaterialLibrary:
+//              ED_AppendMenu(menu, ID_ASSET_MATERIAL);
+//              break;
+//            case kProjectReferenceLibrary:
+//              ED_AppendMenu(menu, ID_ASSET_PROJECT_REFERENCE);
+//              ED_AppendMenu(menu, ID_ASSET_PROJECT_REFERENCE_EXISTING);
+//              break;
             default:
               return FALSE;
           }

@@ -48,6 +48,25 @@
   <resource type="Property" no-lua="true"/>
   <resource type="KeyframeAnim" no-lua="true"/>
   
+  <enums name="BindingMode">
+    <enum name="OneWay">Default mode, updates target property when source changes</enum>
+    <enum name="TwoWay">Updates target property when source changes and updates source when target changes</enum>
+    <enum name="OneWayToSource">Updates source property when target changes, but not the other way around</enum>
+    <enum name="Expression">Allows binding to a custom expression</enum>
+  </enums>
+
+  <enums name="PropertyAttribute">
+    <enum name="WholeProperty">Default binding to the whole property</enum>
+    <enum name="ColorR">Bind to the red channel of a color property</enum>
+    <enum name="ColorG">Bind to the green channel of a color property</enum>
+    <enum name="ColorB">Bind to the blue channel of a color property</enum>
+    <enum name="ColorA">Bind to the alpha channel of a color property</enum>
+    <enum name="VectorX">Bind to the X component of a vector property</enum>
+    <enum name="VectorY">Bind to the Y component of a vector property</enum>
+    <enum name="VectorZ">Bind to the Z component of a vector property</enum>
+    <enum name="VectorW">Bind to the W component of a vector property</enum>
+  </enums>
+
   <interface name="Object" prefix="OBJ_" export="Object" no-check="true">
     <summary>Core engine host object.</summary>
     <details>
@@ -157,13 +176,6 @@
       <summary>Play an animation or resource on the object.</summary>
       <details>Initiates playback of the specified animation or media resource on this object. The animation name is resolved against the object's animation library or external animation resources. This triggers the animation system to begin updating the object's properties over time according to the animation's keyframes and timeline.</details>
       <arg name="animation" type="string">Name or identifier of the animation to play, resolved from the object's animation library</arg>
-    </method>
-    
-    <method name="Bind" lua="true">
-      <summary>Bind a property of an object to an expression or data source.</summary>
-      <details>Creates a data binding relationship between a property on this object and a data source expression. The binding automatically updates the property value whenever the source data changes. The expression can reference other object properties, global variables, or computed values. This enables reactive programming patterns where UI elements automatically reflect data model changes.</details>
-      <arg name="Property" type="string">The name of the property on this object to bind to the data source</arg>
-      <arg name="expression" type="string">The binding expression or data source path that will provide values for the property</arg>
     </method>
     
     <method name="SetFocus">
@@ -454,6 +466,31 @@
       <returns type="Property" pointer="true">Pointer to properties collection</returns>
     </method>
     
+    <method name="FindImplicitProperty">
+      <summary>Looks up a property by context-driven syntax, like "Column" instead of "Grid.Column"</summary>
+      <details>Searches for a property using a context-driven approach, allowing shorthand notation for commonly used properties. This method simplifies property access by inferring the full property path based on the current context.</details>
+      <arg name="name" type="string">The name of the property to find</arg>
+      <returns type="PropertyType" pointer="true">Pointer to a property type, null if not found</returns>
+    </method>
+    
+    <method name="FindExplicitProperty">
+      <summary>Looks up a property by full syntax, like "Grid.Column" instead of "Column"</summary>
+      <details>Searches for a property using the full property path, requiring the complete syntax for accurate identification. This method ensures precise property access by using the explicit path provided.</details>
+      <arg name="name" type="string">The full name of the property to find</arg>
+      <returns type="PropertyType" pointer="true">Pointer to a property type, null if not found</returns>
+    </method>
+
+    <method name="AttachPropertyProgram"> 
+      <summary>Attaches a property program to the specified property</summary>
+      <details>Enables attaching custom programs to bindings to perform calculations and transformations on bound data. For example, multiplying a DataSource value: DataSource.Speed * 20. The attached program is evaluated whenever the source data changes, allowing for dynamic property updates based on complex expressions. This allows for complex binding expressions and dynamic property computation without requiring explicit code-behind logic.</details>
+      <arg name="name" type="string">The full name of the property to attach the program to</arg>
+      <arg name="program" type="string">The program or expression to attach to the property</arg>
+      <arg name="attribute" type="PropertyAttribute">The attribute of the property to attach the program to (e.g., Value, Color, etc.)</arg>  
+      <arg name="mode" type="BindingMode">The binding mode for the property program (e.g., OneWay, TwoWay, OneWayToSource)</arg>  
+      <arg name="enabled" type="bool">Whether the property program is enabled</arg>
+      <returns type="bool">True if the property program was successfully attached, false otherwise</returns>
+    </method>
+    
     <method name="FindPropertyByPath">
       <summary>Finds a property by navigating a hierarchical path</summary>
       <details>Traverses the object hierarchy following the specified path and returns the property at the end.  The path uses forward slashes to navigate through child objects, ending with a property name (e.g., "Child1/Child2/PropertyName"). This allows accessing properties on descendant objects without manually traversing each level.  Returns null if any part of the path is not found or if the final element is not a valid property. </details>
@@ -493,37 +530,43 @@
     <enum name="Float">Floating-point numeric value.</enum>
     <enum name="Fixed">Fixed-length string or symbolic value.</enum>
     <enum name="LongString">Extended string data, intended for larger text content.</enum>
-    <enum name="Edges">Set of edge-specific values (e.g., margin, padding, or border widths).</enum>
     <enum name="ObjectTags">List of tag identifiers associated with an object.</enum>
     <enum name="Event">Event reference used to bind triggers or callbacks.</enum>
-    <enum name="Struct">There are multiple predefined structures, such as Vector2D, Vector3D, and Transform3D, used for various geometric and transformation purposes.</enum>
+    <enum name="Struct">Composite data structure containing multiple fields used for packaging related geometric, visual, and layout properties together.</enum>
     <enum name="Object">Reference to a complex object instance.</enum>
-    <enum name="Group">Logical grouping of related properties or child elements.</enum>
   </enums>
 
-  <class name="PropertyType">
+  <struct name="PropertyEnumValue" sealed="true" export="PropertyEnumValue">
+    <summary>Enum value descriptor for a property.</summary>
+    <field name="Name" type="fixed">Unique name identifier for the value.</field>
+    <field name="Value" type="int">Integer value representing the enum.</field>
+  </struct>
+
+  <struct name="PropertyType" sealed="true" export="PropertyType">
     <summary>Defines a custom property type that can be attached to engine objects.</summary>
     <details>PropertyType allows defining additional data fields beyond built-in engine properties. Each PropertyType specifies its data category, default value, and behavioral attributes such as layout and render impact. It serves as a flexible mechanism for extending object metadata in projects.</details>
-    <handles event="Attached"/>
-    <property name="Category" type="fixed">Organizational category for this property, used for grouping in editors and UIs.</property>
-    <property name="DataType" type="DataType">Underlying data type that determines how the property value is interpreted and stored.</property>
-    <property name="DefaultValue" type="fixed">Default value assigned when the property is not explicitly set.</property>
-    <property name="TargetType" type="fixed">Type of object or component this property applies to.</property>
-    <property name="AffectLayout" type="bool">Indicates whether this property affects element layout (e.g., size or alignment).</property>
-    <property name="AffectRender" type="bool">Indicates whether this property influences the rendering output.</property>
-    <property name="IsReadOnly" type="bool">If true, the property value cannot be modified at runtime or through the editor.</property>
-    <property name="IsHidden" type="bool">If true, the property is excluded from the UI or inspector views.</property>
-    <property name="IsInherited" type="bool">Specifies whether the property value can be inherited from parent components.</property>
-    <property name="Key" type="fixed">Internal key name used for property identification and lookup.</property>
-    <property name="Value" type="fixed">Runtime value stored in this property instance.</property>
-    <property name="Step" type="float">Increment step used for numeric adjustments in UI controls.</property>
-    <property name="UpperBound" type="float">Maximum allowed value for numeric properties.</property>
-    <property name="LowerBound" type="float">Minimum allowed value for numeric properties.</property>
-    <field name="_desc" type="PropertyDesc">Internal descriptor structure providing extended property metadata.</field>
-  </class>
+    <field name="Name" type="fixed">Unique name identifier for the property type.</field>
+    <field name="Category" type="fixed">Organizational category for this property, used for grouping in editors and UIs.</field>
+    <field name="DataType" type="DataType">Underlying data type that determines how the property value is interpreted and stored.</field>
+    <field name="DefaultValue" type="fixed">Default value assigned when the property is not explicitly set.</field>
+    <field name="TypeString" type="fixed">String representation of the property type, used to store enum values or struct type names.</field>
+    <field name="AffectLayout" type="bool">Indicates whether this property affects element layout (e.g., size or alignment).</field>
+    <field name="AffectRender" type="bool">Indicates whether this property influences the rendering output.</field>
+    <field name="IsReadOnly" type="bool">If true, the property value cannot be modified at runtime or through the editor.</field>
+    <field name="IsHidden" type="bool">If true, the property is excluded from the UI or inspector views.</field>
+    <field name="IsInherited" type="bool">Specifies whether the property value can be inherited from parent components.</field>
+    <field name="Key" type="fixed">Internal key name used for property identification and lookup.</field>
+    <field name="Value" type="fixed">Runtime value stored in this property instance.</field>
+    <field name="Step" type="float">Increment step used for numeric adjustments in UI controls.</field>
+    <field name="UpperBound" type="float">Maximum allowed value for numeric properties.</field>
+    <field name="LowerBound" type="float">Minimum allowed value for numeric properties.</field>
+    <!--field name="EnumValues" type="fixed" array="true">List of possible enum values for the property.</field-->
+    <!-- Additional internal fields for property metadata -->
+    <field name="ShortIdentifier" type="uint">Unique short identifier for the property type, automatically generated from implicit property name.</field>
+    <field name="FullIdentifier" type="uint">Unique full identifier for the property type, automatically generated from explicit (ie. Grid.Columns) property name.</field>
+    <field name="Offset" type="uint">Byte offset of the property within the structure.</field>
+    <field name="DataSize" type="uint">Size of the property data in bytes.</field>
+    <field name="IsArray" type="bool">Indicates whether the property is an array type, will generate Num* property to indicate the number of elements.</field>
+  </struct>
   
-  <class name="PropertyEnumValue">
-    <property name="Value" type="int"/>
-  </class>
-
 </module>

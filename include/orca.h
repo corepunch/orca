@@ -41,7 +41,7 @@ struct _xmlNode;
 FWD_STRUCT(Property);
 FWD_STRUCT(Object);
 FWD_STRUCT(ClassDesc);
-FWD_STRUCT(PropertyDesc);
+FWD_STRUCT(PropertyType);
 
 #include <assert.h>
 #include <ctype.h>
@@ -136,7 +136,6 @@ struct token
   uint32_t attr;
   bool_t oneway;
   bool_t inbrackets;
-  void* userdata;
   enum token_type type;
   char text[4];
 };
@@ -188,12 +187,6 @@ struct KeyframeAnim
   LPSTR filename;
   struct curve *curves;
   lpKeyframeAnim_t next;
-};
-
-struct ID
-{
-  lpcString_t Name;
-  uint32_t Identifier;
 };
 
 ORCA_API lpKeyframeAnim_t
@@ -284,38 +277,6 @@ enum
 
 typedef char fixedString_t[MAX_PROPERTY_STRING];
 
-enum property_attribute
-{
-  ATTR_WHOLE_PROPERTY,
-  ATTR_COLOR_R, // = ATTR_VECTOR_X,
-  ATTR_COLOR_G, // = ATTR_VECTOR_Y,
-  ATTR_COLOR_B, // = ATTR_VECTOR_Z,
-  ATTR_COLOR_A, // = ATTR_VECTOR_W,
-  ATTR_VECTOR_X,
-  ATTR_VECTOR_Y,
-  ATTR_VECTOR_Z,
-  ATTR_VECTOR_W,
-  ATTR_COUNT
-};
-
-typedef enum
-{
-  BIND_EXPRESSION,
-  BING_ONEWAY,
-} BINDING_MODE;
-
-struct PropertyDesc
-{
-  uint32_t FullIdentifier;
-  uint32_t Offset;
-  uint32_t DataType;
-  size_t DataSize;
-  lpcString_t TypeString;
-  uint32_t NumComponents;
-  bool_t IsArray;
-  struct ID *id;
-};
-
 #include <source/core/core.h>
 
 ORCA_API bool_t
@@ -367,28 +328,16 @@ ORCA_API lpcString_t
 PROP_GetComponentName(lpcProperty_t property);
 
 ORCA_API void
-PROP_GetFullName(lpcProperty_t property, LPSTR buf, int size);
-
-ORCA_API void
-PROP_Parse(lpProperty_t, lpcString_t);
-
-ORCA_API void
 PROP_ClearSpecialized(lpProperty_t list);
 
-ORCA_API lpcPropertyDesc_t 
+ORCA_API lpcPropertyType_t 
 PROP_GetDesc(lpcProperty_t prop);
 
 ORCA_API void
 PROP_Print(lpProperty_t p, LPSTR buffer, uint32_t len);
 
 ORCA_API lpProperty_t
-PROP_Create(lua_State*,lpObject_t,lpcString_t,enum DataType,lpcString_t udata);
-
-ORCA_API void
-PROP_AttachProgram(lpProperty_t,
-                   enum property_attribute,
-                   struct token* program,
-                   lpcString_t source);
+PROP_Create(lua_State*,lpObject_t,lpcPropertyType_t);
 
 ORCA_API uint32_t
 GetPropertyHandleType(lpcString_t szType);
@@ -518,7 +467,7 @@ typedef struct _ARRANGECHILDRENSTRUCT
 struct ClassDesc
 {
   objectProc_t ObjProc;
-  lpcPropertyDesc_t Properties;
+  lpcPropertyType_t Properties;
   void const *Defaults;
   lpcString_t ClassName;
   lpcString_t DefaultName;
@@ -595,11 +544,11 @@ OBJ_RegisterClass(lpcClassDesc_t);
 ORCA_API lpcClassDesc_t
 OBJ_FindClass(lpcString_t);
 
-ORCA_API lpcPropertyDesc_t
+ORCA_API lpcPropertyType_t
 OBJ_FindPropertyType(uint32_t);
 
 ORCA_API bool_t
-OBJ_RegisterPropertyType(lpcPropertyDesc_t pt);
+OBJ_RegisterPropertyType(lpcPropertyType_t pt);
 
 ORCA_API void
 OBJ_EnumClasses(lpcClassDesc_t, void (*fnProc)(lpcClassDesc_t, void*), void*);
@@ -612,7 +561,7 @@ OBJ_EnumObjectClasses(lpObject_t pobj,
 ORCA_API void
 OBJ_EnumClassProperties(lpObject_t object,
                         void (*fnProc)(lpcObject_t,
-                                       lpcPropertyDesc_t,
+                                       lpcPropertyType_t,
                                        lpcClassDesc_t,
                                        void const*,
                                        void*),
@@ -654,9 +603,7 @@ struct Package;
 ORCA_API struct file* FS_LoadFile(lpcString_t);
 ORCA_API HRESULT FS_FreeFile(struct file*);
 //ORCA_API HRESULT FS_GetImageSize(lpcString_t, struct WI_Size*);
-//ORCA_API struct _xmlDoc* FS_LoadXML(lpcString_t);
 ORCA_API struct _xmlDoc* FS_LoadXML(lpcString_t);
-ORCA_API struct _xmlDoc* FS_InitProject(lpcString_t);
 ORCA_API lpcString_t FS_ParseArgs(LPSTR s, reqArg_t *args, size_t maxargs);
 //ORCA_API void FS_RegisterObject(lpObject_t object, lpcString_t path);
 

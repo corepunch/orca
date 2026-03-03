@@ -27,89 +27,12 @@ if (!strncmp(ITER->name, filename, ITER->namelen))
 static lpObject_t workspace = NULL;
 static struct Package *MainBundle=NULL;
 
-#define LIBRARY(NAME) k##NAME, #NAME
-
-//{ "ColladaLibrariesGroupItem", "COLLADA Libraries", FALSE },
-//{ "AnimationLibraryGroupItem", "Animations", FALSE },
-//{ "SceneNodeDataGroupItem", "Object Data", FALSE },
-//{ "ComposingGroupItem", "Rendering", FALSE },
-//{ "ResourceGroupItem", "Resources objects", FALSE },
-//{ "MaterialGroupItem", "Materials and Textures", FALSE },
-//{ "UserInterfaceGroupItem", "User Interface", FALSE },
-//{ "GuideGroupItem", "Guides", FALSE },
-
-static struct {
-  enum Libraries lib;
-  lpcString_t id;
-  lpcString_t name;
-  lpcString_t type;
-  bool_t ondisk;
-  bool_t visible;
-} libraries[kNumLibraries] = {
-  { LIBRARY(AnimationClipLibrary), "Animation Clips", "AnimationClip", TRUE },
-  { LIBRARY(ScreenLibrary), "Screens", "Screen", TRUE },
-  { LIBRARY(MaterialTypeLibrary), "Shaders", "Shader", TRUE },
-  { LIBRARY(MaterialLibrary), "Materials", "Material", TRUE },
-  { LIBRARY(BrushLibrary), "Brushes", "Brushe", FALSE },
-  { LIBRARY(MeshLibrary), "Mesh Data", "MeshData", TRUE },
-  { LIBRARY(TimelineSequenceLibrary), "Timeline Sequences", "TimelineSequence", FALSE },
-  { LIBRARY(SceneObjectLibrary), "Objects", "Object", FALSE },
-  { LIBRARY(ComposerLibrary), "Render Passes", "RenderPass", TRUE },
-//  { LIBRARY(PipelineItemLibrary), "Object Sources", "Object Source", FALSE },
-  { LIBRARY(SceneLibrary), "Scenes", "Scene", FALSE },
-  { LIBRARY(TrajectoryLibrary), "Trajectories", "Trajectorie", FALSE },
-  { LIBRARY(TransitionLibrary), "Transitions", "Transition", FALSE },
-  { LIBRARY(SplineLibrary), "Splines", "Spline", FALSE },
-  { LIBRARY(PrefabLibrary), "Prefabs", "Prefab", TRUE },
-  { LIBRARY(ProjectReferenceLibrary), "Project References", "ProjectReference", FALSE },
-//  { LIBRARY(ComponentTypeLibrary), "Components", "Component", FALSE },
-//  { LIBRARY(DataSourceTypeLibrary), "DataSourceTypes", "DataSourceType", FALSE },
-//  { LIBRARY(RenderPassTypeLibrary), "RenderPassTypes", "RenderPassType", FALSE },
-//  { LIBRARY(NodeComponentTypeLibrary), "NodeComponentTypes", "NodeComponentType", FALSE },
-//  { LIBRARY(TriggerActionTypeLibrary), "TriggerActionTypes", "TriggerActionType", FALSE },
-//  { LIBRARY(MessageTypeLibrary), "MessageTypes", "MessageType", FALSE },
-  { LIBRARY(ProfileLibrary), "Profiles", "Profile", FALSE },
-  { LIBRARY(EnginePluginLibrary), "Engine Plugins", "EnginePlugin", FALSE },
-  { LIBRARY(ShortcutLibrary), "Bookmarks", "Bookmark", FALSE },
-  { LIBRARY(LayerLibrary), "Layers", "Layer", FALSE },
-  { LIBRARY(AnimationLibrary), "Animation Data", "AnimationData", FALSE },
-  { LIBRARY(TagLibrary), "Tags", "Tag", FALSE },
-  { LIBRARY(ThemeLibrary), "Themes", "Theme", FALSE },
-  { LIBRARY(ResourceExportTagLibrary), "Resource Export Tags", "ResourceExportTag", FALSE },
-  { LIBRARY(LocaleLibrary), "Localization", "Localization", TRUE },
-  { LIBRARY(DataSourceLibrary), "Data Sources", "DataSource", TRUE },
-  { LIBRARY(PageTransitionCollectionLibrary), "Page Transitions", "PageTransition", FALSE },
-  { LIBRARY(ResourceFilesItem), "Resource Files", "ResourceFile", FALSE },
-  { LIBRARY(TextureLibrary), "Textures", "Texture", TRUE },
-  { LIBRARY(StyleLibrary), "Styles", "Style", FALSE },
-  { LIBRARY(StateManagerLibrary), "State Managers", "StateManager", FALSE },
-//  { LIBRARY(BrushTypeLibrary), "BrushTypes", "BrushType", FALSE },
-  { LIBRARY(ConnectServiceLibrary), "Connect Services", "ConnectService", FALSE },
-  { LIBRARY(ConnectUserServiceLibrary), "Connect User Library", "ConnectUser", FALSE },
-  { LIBRARY(PropertyTypeLibrary), "Property Types", "PropertyType", FALSE },
-  { LIBRARY(SpriteLibrary), "Sprites", "Image", FALSE },
-  { LIBRARY(SpriteAnimationLibrary), "Sprite Animations", "SpriteAnimation", FALSE },
-};
-
 void FS_SetWorkspace(lpObject_t object) {
   workspace = object;
 }
 
 lpObject_t FS_GetWorkspace(void) {
   return workspace;
-}
-
-xmlDocPtr
-FS_InitProject(lpcString_t szName)
-{
-  xmlDocPtr doc = xmlNewDoc(XMLSTR("1.0"));
-  xmlNodePtr root = xmlNewNode(NULL, XMLSTR("Project"));
-  xmlNewChild(root, NULL, XMLSTR("Name"), XMLSTR(szName));
-  FOR_LOOP(i, kNumLibraries) {
-    xmlNewChild(root, NULL, XMLSTR(libraries[i].id), XMLSTR(libraries[i].name));
-  }
-  xmlDocSetRootElement(doc, root);
-  return doc;
 }
 
 lpcString_t
@@ -333,15 +256,11 @@ _Read(void* buffer, int len, FILE* f)
   }
 }
 
-lpcString_t
+static lpcString_t
 FS_GetPathName(lpcString_t path, lpcString_t name, int32_t maxlen)
 {
   memset((char*)name, 0, maxlen);
-  if (strchr(path, '?')) {
-    strncpy((char*)name, path, MIN(maxlen, strchr(path, '?') - path));
-  } else {
-    strncpy((char*)name, path, maxlen);
-  }
+  strncpy((char*)name, path, maxlen);
   return name;
 }
 
@@ -635,65 +554,22 @@ FS_AddSearchPath(lua_State* L, lpcString_t szDirname)
     if (!strcasecmp(pack->path, szDirname)) {
       return NULL;
     }
+    if (!strcasecmp(pack->name, szName)) {
+      Con_Error("Cannot load package %s: name conflicts with already loaded package %s",
+                szDirname, pack->path);
+      return NULL;
+    }
   }
 //  Con_Error("Loading project %s", szDirname);
   struct Package* search = FS_MakePackage(szDirname, szName);
   // Append to the global search list
   ADD_TO_LIST_END(struct Package, search, MainBundle);
   // Load embedded project file
-  if ((search->doc = FS_LoadXML(FS_JoinPaths(szName, "package")))) {
-    xmlNodePtr root = xmlDocGetRootElement(search->doc);
+  xmlWith(xmlDoc, doc, FS_LoadXML(FS_JoinPaths(szName, "package")), xmlFreeDoc) {
+    xmlNodePtr root = xmlDocGetRootElement(doc);
     xmlWith(xmlChar,Name,root?xmlGetProp(root,XMLSTR("Name")):NULL,xmlFree) {
       _SetPackageName(search, (lpcString_t)Name);
     }
-    xmlForEach(library, xmlDocGetRootElement(search->doc)) {
-      if (!xmlStrcmp(library->name, XMLSTR("LibraryPlaceholder"))) {
-        xmlWith(xmlChar, Path, xmlGetProp(library, XMLSTR("PlaceholderTemplate")), xmlFree) {
-          xmlWith(xmlDoc, included, FS_LoadXML((lpcString_t)Path), xmlFreeDoc) {
-            xmlNodePtr imported = xmlDocCopyNode(xmlDocGetRootElement(included), search->doc, 1);
-            xmlReplaceNode(library, imported);
-            library = imported;
-          }
-        }
-      }
-      FOR_LOOP(i, kNumLibraries) {
-        if (!xmlStrcmp(library->name, BAD_CAST libraries[i].id)) {
-          search->libraries[i] = library;
-        }
-      }
-    }
-
-//    if (search->libraries[kEnginePluginLibrary]) {
-//      xmlForEach(item, search->libraries[kEnginePluginLibrary])
-//      xmlWith(xmlChar, Name, xmlGetProp(item, XMLSTR("Name")), xmlFree) {
-//        lua_getglobal(L, "require");
-//        lua_pushstring(L, (const char *)Name);
-//        if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
-//          if (strstr(luaL_checkstring(L, -1), "not found:")) {
-//            static uint8_t current=0;
-//            static uint32_t reported[256]={0};
-//            const uint32_t hash = fnv1a32((char*)Name);
-//            FOR_LOOP(i, 256) if (reported[i] == hash) goto skip_reporting;
-//            reported[current++] = hash;
-//            Con_Warning("Missing plugin '%s'", Name);
-//          skip_reporting:
-//            ;
-//          } else {
-//            Con_Error("%s", luaL_checkstring(L, -1));
-//          }
-//          lua_pop(L, 1);
-//        }
-//      }
-//    }
-
-//    if (search->libraries[kProjectReferenceLibrary]) {
-//      // "ProjectReferenceItem"
-//      xmlForEach(item, search->libraries[kProjectReferenceLibrary])
-//      xmlWith(xmlChar, Name, xmlGetProp(item, XMLSTR("Name")), xmlFree)
-//      xmlWith(xmlChar, Content, xmlNodeGetContent(item), xmlFree) {
-//        FS_AddSearchPath(L, FS_JoinPaths(szDirname, (lpcString_t)Content));
-//      }
-//    }
   }
   return search;
 }
@@ -714,10 +590,6 @@ FS_LoadXML(lpcString_t szObjectName)
   strcpy(pszFileName, szObjectName);
   strcat(pszFileName, ".xml");
   struct _xmlDoc* doc = NULL;
-  
-  FS_FindPackage(search, szObjectName) {
-    
-  }
   
   xmlWith(struct file, file, FS_LoadFile(pszFileName), FS_FreeFile) {
     doc = xmlReadMemory((char*)file->data, file->size, szObjectName, NULL, XML_FLAGS);
@@ -741,7 +613,6 @@ static void FS_Release(struct Package *search) {
   FOR_EACH_LIST(struct _MONITOREDFILE, mf, search->monitoredFiles) free(mf);
 #endif
   SafeDelete(search->next, FS_Release);
-  SafeDelete(search->doc, xmlFreeDoc);
   SafeDelete(search->pack, FS_FreePack);
   free(search);
 }
@@ -749,6 +620,10 @@ static void FS_Release(struct Package *search) {
 void FS_Shutdown(void) {
   SafeDelete(MainBundle, FS_Release);
   MainBundle = NULL;
+}
+
+ORCA_API lpcString_t PACK_GetName(struct Package *package) {
+  return package->name;
 }
 
 #include <source/editor/ed_stab_filesystem.h>

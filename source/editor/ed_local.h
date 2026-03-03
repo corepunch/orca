@@ -477,6 +477,5 @@ BOOL FS_GetProjectReference(lpcString_t szName, LPSTR pOut, DWORD nMaxLen);
 bool_t OBJ_SaveDocument(lpObject_t object);
 xmlNodePtr ED_ConvertNode(lpObject_t object, xmlNodePtr parent);
 HOBJ UI_FindObjectByUniqueID(HANDLE hHandle, HOBJ root);
-HOBJ XML_ParseObjectNode(lua_State* L, xmlNodePtr xml, HOBJ root);
 
 #endif

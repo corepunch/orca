@@ -2,8 +2,6 @@
 
 #define MAX_OBJECT_DATA (MAX_PROPERTY_STRING*32) // 1024
 
-ORCA_API int ScreenWidth = 0, ScreenHeight = 0;
-
 struct Object
 {
   LPSTR Name;
@@ -27,7 +25,7 @@ struct Object
     {
       struct component* components;
       struct property_animation* animations;
-      lpProperty_t properties;
+      struct Property* properties;
       struct state_manager* stateManager;
       struct style_class* classes;
       struct style_sheet* stylesheet;
@@ -151,7 +149,6 @@ OBJ_GetUniforms(lpObject_t object, struct uniform* pUniforms)
         pUniforms->Type = UT_FLOAT;
         *pUniforms->Value = *(int*)PROP_GetValue(property);
         break;
-      case kDataTypeGroup:
       default:
         continue;
     }
@@ -411,9 +408,9 @@ OBJ_MoveToFront(lpObject_t object)
 static lpProperty_t
 _CreateProjectProperty(lpObject_t object, uint32_t ident)
 {
-  lpcPropertyDesc_t pt = OBJ_FindPropertyType(ident);
+  lpcPropertyType_t pt = OBJ_FindPropertyType(ident);
   if (pt) {
-    return PROP_Create(NULL,object,pt->id->Name,pt->DataType,pt->TypeString);
+    return PROP_Create(NULL,object,pt);
   }
   return NULL;
 }
@@ -837,5 +834,24 @@ OBJ_SetModal(lpObject_t self, lpObject_t modal)
     modal->flags |= OF_NOACTIVATE;
   }
 }
+
+bool_t
+OBJ_AttachPropertyProgram(lpObject_t self,
+                          lpcString_t name,
+                          lpcString_t program,
+                          ePropertyAttribute_t attribute,
+                          eBindingMode_t mode,
+                          bool_t enabled)
+{
+  struct token *compiled = enabled ? Token_Create(program) : NULL;
+  struct Property *property = NULL;
+  if (SUCCEEDED(OBJ_FindLongProperty(self, fnv1a32(name), &property))) {
+    PROP_AttachProgram(property, attribute, compiled, program);
+    return TRUE;
+  } else {
+    return FALSE;
+  }
+}
+
 
 #include <source/editor/ed_stab_object.h>

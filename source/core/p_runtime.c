@@ -250,7 +250,7 @@ tok_op(COLOR4) {
   }
 }
 tok_op(ANIMATE) {
-  if (regs[1].type == kDataTypeFixed && regs[0].type < kDataTypeFixed) {
+ /* if (regs[1].type == kDataTypeFixed && regs[0].type < kDataTypeFixed) {
     handle_t Animation_Register(xmlDocPtr);
     float animation_evaluate(struct curve*, float, int);
     // handle_t anim = Animation_Register((lpcString_t )regs[1].value);
@@ -274,7 +274,7 @@ tok_op(ANIMATE) {
     InitOutput(output, kDataTypeFloat, sizeof(float));
     output->value[0] = animation_evaluate(token->cache.animation, regs[0].value[0], 0);
     return TRUE;
-  } else {
+  } else*/ {
     return FALSE;
   }
 }
@@ -432,7 +432,7 @@ static inline bool_t DATA_IsVector(eDataType_t type) {
 
 bool_t
 PROP_Import(lpProperty_t prop,
-            enum property_attribute attr,
+            enum PropertyAttribute attr,
             struct vm_register* r)
 {
   eDataType_t type = PROP_GetType(prop);
@@ -465,19 +465,20 @@ PROP_Import(lpProperty_t prop,
 //      handle_t handle = HACK_LoadResource(type, (lpcString_t)r->value);
 //      PROP_SetValue(prop, &handle);
 //      return TRUE;
-    } else if (PROP_GetType(prop) == kDataTypeGroup && PROP_GetSize(prop) == r->size) {
+    } else if (PROP_GetType(prop) == kDataTypeStruct && PROP_GetSize(prop) == r->size) {
       PROP_SetValue(prop, r->value);
       return TRUE;
     } else if (r->type == kDataTypeFloat && DATA_IsVector(PROP_GetType(prop))) {
       PROP_SetValue(prop, r->value);
       return TRUE;
-    } else if (PROP_GetType(prop) == kDataTypeGroup) {
-      lpcPropertyDesc_t pd = PROP_GetDesc(prop);
-      FOR_LOOP(i, pd->NumComponents) {
-        eDataType_t type = (pd+1+i)->DataType;
-        if (!DATA_IsVector(type) && type != kDataTypeGroup)
-          return FALSE;
-      }
+    } else if (PROP_GetType(prop) == kDataTypeStruct) {
+//      lpcPropertyType_t pd = PROP_GetDesc(prop);
+      assert(!"Not implemented yet!");
+//      FOR_LOOP(i, pd->NumComponents) {
+//        eDataType_t type = (pd+1+i)->DataType;
+//        if (!DATA_IsVector(type) && type != kDataTypeStruct)
+//          return FALSE;
+//      }
       PROP_SetValue(prop, r->value);
       return TRUE;
     } else {
@@ -496,22 +497,22 @@ PROP_Import(lpProperty_t prop,
     if (type == kDataTypeStruct && !strcmp(PROP_GetUserData(prop), "Color")) {
       struct color color = *(struct color const*)PROP_GetValue(prop);
       switch ((uint32_t)attr) {
-        case ATTR_COLOR_R:
+        case kPropertyAttributeColorR:
           assert(r->type < kDataTypeFixed);
           color.r = r->value[0];
           PROP_SetValue(prop, &color);
           return TRUE;
-        case ATTR_COLOR_G:
+        case kPropertyAttributeColorG:
           assert(r->type < kDataTypeFixed);
           color.g = r->value[0];
           PROP_SetValue(prop, &color);
           return TRUE;
-        case ATTR_COLOR_B:
+        case kPropertyAttributeColorB:
           assert(r->type < kDataTypeFixed);
           color.b = r->value[0];
           PROP_SetValue(prop, &color);
           return TRUE;
-        case ATTR_COLOR_A:
+        case kPropertyAttributeColorA:
           assert(r->type < kDataTypeFixed);
           color.a = r->value[0];
           PROP_SetValue(prop, &color);
@@ -523,25 +524,25 @@ PROP_Import(lpProperty_t prop,
     }
     struct vec4 vector = *(struct vec4 const*)PROP_GetValue(prop);
     switch ((uint32_t)attr) {
-      case ATTR_VECTOR_X:
+      case kPropertyAttributeVectorX:
         assert(r->type < kDataTypeFixed);
         assert(PROP_GetSize(prop) >= sizeof(struct vec2));
         vector.x = r->value[0];
         PROP_SetValue(prop, &vector);
         return TRUE;
-      case ATTR_VECTOR_Y:
+      case kPropertyAttributeVectorY:
         assert(r->type < kDataTypeFixed);
         assert(PROP_GetSize(prop) >= sizeof(struct vec2));
         vector.y = r->value[0];
         PROP_SetValue(prop, &vector);
         return TRUE;
-      case ATTR_VECTOR_Z:
+      case kPropertyAttributeVectorZ:
         assert(r->type < kDataTypeFixed);
         assert(PROP_GetSize(prop) >= sizeof(struct vec3));
         vector.z = r->value[0];
         PROP_SetValue(prop, &vector);
         return TRUE;
-      case ATTR_VECTOR_W:
+      case kPropertyAttributeVectorW:
         assert(r->type < kDataTypeFixed);
         assert(PROP_GetSize(prop) >= sizeof(struct vec4));
         vector.w = r->value[0];
@@ -564,7 +565,7 @@ PROP_Import(lpProperty_t prop,
 
 static bool_t
 jwPropertyExport(lpProperty_t prop,
-                 enum property_attribute attr,
+                 enum PropertyAttribute attr,
                  struct vm_register* r)
 {
   PROP_Update(prop);
@@ -588,12 +589,12 @@ jwPropertyExport(lpProperty_t prop,
   if (PROP_GetType(prop) == kDataTypeStruct) {
     if (!strcmp(PROP_GetUserData(prop), "Color")) {
       switch ((uint32_t)attr) {
-        case ATTR_COLOR_R:
-        case ATTR_COLOR_G:
-        case ATTR_COLOR_B:
-        case ATTR_COLOR_A:
+        case kPropertyAttributeColorR:
+        case kPropertyAttributeColorG:
+        case kPropertyAttributeColorB:
+        case kPropertyAttributeColorA:
           InitOutput(r, kDataTypeFloat, sizeof(float));
-          r->value[0] = ((float const*)PROP_GetValue(prop))[attr-ATTR_COLOR_R];
+          r->value[0] = ((float const*)PROP_GetValue(prop))[attr-kPropertyAttributeColorR];
           return TRUE;
         default:
           Con_Error("Unsupported attribute %d for struct color", attr);
@@ -601,12 +602,12 @@ jwPropertyExport(lpProperty_t prop,
       }
     } else if (strstr(PROP_GetUserData(prop), "Vector")) {
       switch ((uint32_t)attr) {
-        case ATTR_VECTOR_X:
-        case ATTR_VECTOR_Y:
-        case ATTR_VECTOR_Z:
-        case ATTR_VECTOR_W:
+        case kPropertyAttributeVectorX:
+        case kPropertyAttributeVectorY:
+        case kPropertyAttributeVectorZ:
+        case kPropertyAttributeVectorW:
           InitOutput(r, kDataTypeFloat, sizeof(float));
-          r->value[0] = ((float*)PROP_GetValue(prop))[attr-ATTR_VECTOR_X];
+          r->value[0] = ((float*)PROP_GetValue(prop))[attr-kPropertyAttributeVectorX];
           return TRUE;
         default:
           Con_Error("Unsupported attribute %d for VECTOR", attr);

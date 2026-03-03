@@ -30,7 +30,7 @@ typedef struct mat4 MATRIX4, *LPMATRIX4;
 typedef struct color COLOR, *LPCOLOR;
 typedef lpProperty_t HPROP;
 typedef lpObject_t HOBJ;
-typedef lpcPropertyDesc_t LPCPDESC;
+typedef lpcPropertyType_t LPCPDESC;
 typedef unsigned char *LPXMLSTR;
 typedef unsigned char const *LPCXMLSTR;
 typedef struct _xmlNode *LPXMLNODE;

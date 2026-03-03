@@ -7,6 +7,113 @@
 
 #include "ed_local.h"
 
+enum Libraries {
+  kAnimationClipLibrary,
+  kScreenLibrary,
+  kMaterialTypeLibrary,
+  kMaterialLibrary,
+  kBrushLibrary,
+  kMeshLibrary,
+  kTimelineSequenceLibrary,
+  kSceneObjectLibrary,
+  kComposerLibrary,
+  //  kPipelineItemLibrary,
+  kSceneLibrary,
+  kTrajectoryLibrary,
+  kTransitionLibrary,
+  kSplineLibrary,
+  kPrefabLibrary,
+  //  kComponentTypeLibrary,
+  //  kDataSourceTypeLibrary,
+  //  kRenderPassTypeLibrary,
+  //  kNodeComponentTypeLibrary,
+  //  kTriggerActionTypeLibrary,
+  //  kMessageTypeLibrary,
+  kProfileLibrary,
+  kEnginePluginLibrary,
+  kShortcutLibrary,
+  kLayerLibrary,
+  kAnimationLibrary,
+  kTagLibrary,
+  kThemeLibrary,
+  kResourceExportTagLibrary,
+  kLocaleLibrary,
+  kDataSourceLibrary,
+  kPageTransitionCollectionLibrary,
+  kResourceFilesItem,
+  kTextureLibrary,
+  kStyleLibrary,
+  kStateManagerLibrary,
+  //  kBrushTypeLibrary,
+  kConnectServiceLibrary,
+  kConnectUserServiceLibrary,
+  kSpriteLibrary,
+  kSpriteAnimationLibrary,
+  kNumLibraries,
+};
+
+#define LIBRARY(NAME) k##NAME, #NAME
+
+//{ "ColladaLibrariesGroupItem", "COLLADA Libraries", FALSE },
+//{ "AnimationLibraryGroupItem", "Animations", FALSE },
+//{ "SceneNodeDataGroupItem", "Object Data", FALSE },
+//{ "ComposingGroupItem", "Rendering", FALSE },
+//{ "ResourceGroupItem", "Resources objects", FALSE },
+//{ "MaterialGroupItem", "Materials and Textures", FALSE },
+//{ "UserInterfaceGroupItem", "User Interface", FALSE },
+//{ "GuideGroupItem", "Guides", FALSE },
+
+static struct {
+  enum Libraries lib;
+  lpcString_t id;
+  lpcString_t name;
+  lpcString_t type;
+  bool_t ondisk;
+  bool_t visible;
+} libraries[kNumLibraries] = {
+  { LIBRARY(AnimationClipLibrary), "Animation Clips", "AnimationClip", TRUE },
+  { LIBRARY(ScreenLibrary), "Screens", "Screen", TRUE },
+  { LIBRARY(MaterialTypeLibrary), "Shaders", "Shader", TRUE },
+  { LIBRARY(MaterialLibrary), "Materials", "Material", TRUE },
+  { LIBRARY(BrushLibrary), "Brushes", "Brushe", FALSE },
+  { LIBRARY(MeshLibrary), "Mesh Data", "MeshData", TRUE },
+  { LIBRARY(TimelineSequenceLibrary), "Timeline Sequences", "TimelineSequence", FALSE },
+  { LIBRARY(SceneObjectLibrary), "Objects", "Object", FALSE },
+  { LIBRARY(ComposerLibrary), "Render Passes", "RenderPass", TRUE },
+  //  { LIBRARY(PipelineItemLibrary), "Object Sources", "Object Source", FALSE },
+  { LIBRARY(SceneLibrary), "Scenes", "Scene", FALSE },
+  { LIBRARY(TrajectoryLibrary), "Trajectories", "Trajectorie", FALSE },
+  { LIBRARY(TransitionLibrary), "Transitions", "Transition", FALSE },
+  { LIBRARY(SplineLibrary), "Splines", "Spline", FALSE },
+  { LIBRARY(PrefabLibrary), "Prefabs", "Prefab", TRUE },
+  //  { LIBRARY(ComponentTypeLibrary), "Components", "Component", FALSE },
+  //  { LIBRARY(DataSourceTypeLibrary), "DataSourceTypes", "DataSourceType", FALSE },
+  //  { LIBRARY(RenderPassTypeLibrary), "RenderPassTypes", "RenderPassType", FALSE },
+  //  { LIBRARY(NodeComponentTypeLibrary), "NodeComponentTypes", "NodeComponentType", FALSE },
+  //  { LIBRARY(TriggerActionTypeLibrary), "TriggerActionTypes", "TriggerActionType", FALSE },
+  //  { LIBRARY(MessageTypeLibrary), "MessageTypes", "MessageType", FALSE },
+  { LIBRARY(ProfileLibrary), "Profiles", "Profile", FALSE },
+  { LIBRARY(EnginePluginLibrary), "Engine Plugins", "EnginePlugin", FALSE },
+  { LIBRARY(ShortcutLibrary), "Bookmarks", "Bookmark", FALSE },
+  { LIBRARY(LayerLibrary), "Layers", "Layer", FALSE },
+  { LIBRARY(AnimationLibrary), "Animation Data", "AnimationData", FALSE },
+  { LIBRARY(TagLibrary), "Tags", "Tag", FALSE },
+  { LIBRARY(ThemeLibrary), "Themes", "Theme", FALSE },
+  { LIBRARY(ResourceExportTagLibrary), "Resource Export Tags", "ResourceExportTag", FALSE },
+  { LIBRARY(LocaleLibrary), "Localization", "Localization", TRUE },
+  { LIBRARY(DataSourceLibrary), "Data Sources", "DataSource", TRUE },
+  { LIBRARY(PageTransitionCollectionLibrary), "Page Transitions", "PageTransition", FALSE },
+  { LIBRARY(ResourceFilesItem), "Resource Files", "ResourceFile", FALSE },
+  { LIBRARY(TextureLibrary), "Textures", "Texture", TRUE },
+  { LIBRARY(StyleLibrary), "Styles", "Style", FALSE },
+  { LIBRARY(StateManagerLibrary), "State Managers", "StateManager", FALSE },
+  //  { LIBRARY(BrushTypeLibrary), "BrushTypes", "BrushType", FALSE },
+  { LIBRARY(ConnectServiceLibrary), "Connect Services", "ConnectService", FALSE },
+  { LIBRARY(ConnectUserServiceLibrary), "Connect User Library", "ConnectUser", FALSE },
+  { LIBRARY(SpriteLibrary), "Sprites", "Image", FALSE },
+  { LIBRARY(SpriteAnimationLibrary), "Sprite Animations", "SpriteAnimation", FALSE },
+};
+
 #define MAX_FILE_HASHES (1 << 12)
 #define MAX_FILENAME_BUFFER (MAX_FILE_HASHES*MAX_PROPERTY_STRING)
 
@@ -80,7 +187,8 @@ ORCA_API uint32_t FS_FindLibraryType(lpcString_t libname) {
 
 xmlNodePtr FS_FindLibrary(lpcString_t libname) {
   if (FS_FindLibraryType(libname) < kNumLibraries) {
-    return MainBundle->libraries[FS_FindLibraryType(libname)];
+//    return MainBundle->libraries[FS_FindLibraryType(libname)];
+    return NULL;
   } else {
     return NULL;
   }
@@ -370,10 +478,11 @@ FS_NewFile(HANDLE hHandle, lpcString_t szName, DWORD dwType)
         if (strrchr(tmp, '/')) {
           *strrchr(tmp, '/') = 0;
         }
-        xmlChar const name[] = "ProjectItemReference";
-        xmlNodePtr lib = MainBundle->libraries[kProjectReferenceLibrary];
-        xmlNodePtr itm = xmlNewChild(lib, NULL, name, XMLSTR(tmp));//szName));
-        xmlSetProp(itm, XMLSTR("Name"), Name);
+//        xmlChar const name[] = "ProjectItemReference";
+//        xmlNodePtr lib = MainBundle->libraries[kProjectReferenceLibrary];
+//        xmlNodePtr itm = xmlNewChild(lib, NULL, name, XMLSTR(tmp));//szName));
+//        xmlSetProp(itm, XMLSTR("Name"), Name);
+        assert(!"Restore this functionality");
       }
     }
     return TRUE;
@@ -435,20 +544,22 @@ void FS_ShutdownHash(void) {
 ORCA_API BOOL
 FS_GetProjectReference(lpcString_t szName, LPSTR pOut, DWORD nMaxLen)
 {
-  if (!MainBundle->libraries[kProjectReferenceLibrary])
-    return FALSE;
-  BOOL bWritten = TRUE;
-  xmlForEach(item, MainBundle->libraries[kProjectReferenceLibrary]) {
-    xmlWith(xmlChar, Name, xmlGetProp(item, XMLSTR("Name")), xmlFree) {
-      if (!xmlStrcmp(Name, XMLSTR(szName))) {
-        xmlWith(xmlChar, Content, xmlNodeGetContent(item), xmlFree) {
-          lpcString_t path = FS_JoinPaths(MainBundle->path, (const char *)Content);
-          strncpy(pOut, path, nMaxLen);
-        }
-      }
-    }
-  }
-  return bWritten;
+  assert(!"Not implemented");
+  return FALSE;
+//  if (!MainBundle->libraries[kProjectReferenceLibrary])
+//    return FALSE;
+//  BOOL bWritten = TRUE;
+//  xmlForEach(item, MainBundle->libraries[kProjectReferenceLibrary]) {
+//    xmlWith(xmlChar, Name, xmlGetProp(item, XMLSTR("Name")), xmlFree) {
+//      if (!xmlStrcmp(Name, XMLSTR(szName))) {
+//        xmlWith(xmlChar, Content, xmlNodeGetContent(item), xmlFree) {
+//          lpcString_t path = FS_JoinPaths(MainBundle->path, (const char *)Content);
+//          strncpy(pOut, path, nMaxLen);
+//        }
+//      }
+//    }
+//  }
+//  return bWritten;
 }
 
 //static int cmp(const void *a, const void *b) {
@@ -551,3 +662,17 @@ __xmlNewChild(xmlNodePtr p, lpcString_t name, lpcString_t args[])
 ORCA_API lpcString_t FS_GetMainBundleName(void) {
   return MainBundle->name;
 }
+
+ORCA_API xmlDocPtr
+FS_InitProject(lpcString_t szName)
+{
+  xmlDocPtr doc = xmlNewDoc(XMLSTR("1.0"));
+  xmlNodePtr root = xmlNewNode(NULL, XMLSTR("Project"));
+  xmlNewChild(root, NULL, XMLSTR("Name"), XMLSTR(szName));
+  FOR_LOOP(i, kNumLibraries) {
+    xmlNewChild(root, NULL, XMLSTR(libraries[i].id), XMLSTR(libraries[i].name));
+  }
+  xmlDocSetRootElement(doc, root);
+  return doc;
+}
+

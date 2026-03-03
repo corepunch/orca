@@ -10,18 +10,8 @@ void SV_Shutdown(void);
 ORCA_API int luaopen_orca_object(lua_State* L);
 ORCA_API int luaopen_orca_network(lua_State* L);
 
-HANDLER(PropertyType, Attached) {
-  pPropertyType->_desc.id = (struct ID *)hObject;
-  pPropertyType->_desc.FullIdentifier = OBJ_GetIdentifier(hObject);
-  pPropertyType->_desc.DataType = pPropertyType->DataType;
-  pPropertyType->_desc.TypeString = pPropertyType->TargetType;
-//  if (OBJ_CheckName(hObject, "ActiveContext")) return 0;
-  OBJ_RegisterPropertyType(&pPropertyType->_desc);
-  return 0;
-}
-
 bool_t
-OBJ_RegisterPropertyType(lpcPropertyDesc_t pt)
+OBJ_RegisterPropertyType(lpcPropertyType_t pt)
 {
   FOR_LOOP(i, MAX_PROPERTY_TYPES) {
     if (!core.ptypes[i]) {
@@ -31,15 +21,15 @@ OBJ_RegisterPropertyType(lpcPropertyDesc_t pt)
       return TRUE;
     }
   }
-  Con_Error("No space left to register property type %s", pt->id->Name);
+  Con_Error("No space left to register property type %s", pt->Name);
   return FALSE;
 }
 
-lpcPropertyDesc_t
+lpcPropertyType_t
 OBJ_FindPropertyType(uint32_t ident)
 {
   FOR_LOOP(i, MAX_PROPERTY_TYPES) {
-    lpcPropertyDesc_t pt = core.ptypes[i];
+    lpcPropertyType_t pt = core.ptypes[i];
     if (pt && pt->FullIdentifier == ident) {
       return pt;
     }
@@ -217,8 +207,11 @@ int f_poll(lua_State* L);
 
 int lua_pushclass(lua_State* L, struct ClassDesc* cl)
 {
-//  luaX_import(L, "orca.core", "Behaviour");
-  lua_getglobal(L, "BEHAVIOUR");
+  lua_getglobal(L, "require");
+  lua_pushstring(L, "orca");
+  lua_call(L, 1, 1);
+  lua_getfield(L, -1, "Behaviour");
+  lua_remove(L, -2); // remove orca
   lua_getfield(L, -1, "extend");
   lua_pushvalue(L, -2);
   // Create the args table
@@ -440,15 +433,13 @@ int f_registerPropertyType(lua_State *L) {
   if (!lua_isnil(L, -1)) return 0;
   lua_pop(L, 1);
   luaX_parsefield(eDataType_t, type, 2, luaX_checkDataType);
-  size_t size = sizeof(PropertyDesc_t)+sizeof(struct ID)+MAX_PROPERTY_STRING;
-  lpPropertyDesc_t ds = lua_newuserdata(L, size);
+  size_t size = sizeof(PropertyType_t)+MAX_PROPERTY_STRING;
+  lpPropertyType_t ds = lua_newuserdata(L, size);
   memset(ds, 0, size);
-  ds->id = (void*)(ds+1);
-  ds->id->Name = (void*)(ds->id+1);
-  ds->id->Identifier = fnv1a32(name);
+  strncpy(ds->Name, name, MAX_PROPERTY_STRING);
+  ds->ShortIdentifier = fnv1a32(name);
   ds->FullIdentifier = fnv1a32(name);
   ds->DataType = type;
-  strncpy((char*)ds->id->Name, name, MAX_PROPERTY_STRING);
   lua_setfield(L, LUA_REGISTRYINDEX, n);
   OBJ_RegisterPropertyType(ds);
   return 0;
@@ -484,16 +475,6 @@ on_core_module_registered(lua_State* L)
   SV_Init();
   SV_RegisterMessageProc(CORE_ProcessMessage);
   
-  int luaopen_orca_Object(lua_State*);
-  luaopen_orca_Object(L);
-  lua_setglobal(L, "OBJECT");
-  
-  int luaopen_orca_behaviour(lua_State*);
-  luaopen_orca_behaviour(L);
-  lua_pushvalue(L, -1);
-  lua_setglobal(L, "BEHAVIOUR");
-  lua_setfield(L, -2, "Behaviour");
-
   // Create commands table
   lua_newtable(L);
   lua_setfield(L, LUA_REGISTRYINDEX, CORE_COMMANDS);

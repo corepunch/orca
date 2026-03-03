@@ -48,8 +48,8 @@ _CreateClassProperty(lpObject_t object, uint32_t ident)
   {
     FOR_LOOP(i, cmp->pcls->NumProperties)
     {
-      lpcPropertyDesc_t pdesc = &cmp->pcls->Properties[i];
-      if (pdesc->id->Identifier == ident ||
+      lpcPropertyType_t pdesc = &cmp->pcls->Properties[i];
+      if (pdesc->ShortIdentifier == ident ||
           pdesc->FullIdentifier == ident)
       {
         return CMP_CreateProperty(NULL, cmp, pdesc);
@@ -59,26 +59,51 @@ _CreateClassProperty(lpObject_t object, uint32_t ident)
   return NULL;
 }
 
+lpPropertyType_t
+OBJ_FindImplicitProperty(lpObject_t object, lpcString_t name)
+{
+  uint32_t identifier = fnv1a32(name);
+//  return PROP_FindByShortID(object->properties, identifier);
+  FOR_EACH_LIST(struct component, cmp, _GetComponents(object)) {
+    FOR_LOOP(i, cmp->pcls->NumProperties) {
+      lpcPropertyType_t pdesc = &cmp->pcls->Properties[i];
+      if (pdesc->ShortIdentifier == identifier) {
+        return (lpPropertyType_t)pdesc;
+      }
+    }
+  }
+  return NULL;
+}
+
+lpPropertyType_t
+OBJ_FindExplicitProperty(lpObject_t object, lpcString_t name)
+{
+  uint32_t identifier = fnv1a32(name);
+  //  return PROP_FindByShortID(object->properties, identifier);
+  FOR_EACH_LIST(struct component, cmp, _GetComponents(object)) {
+    FOR_LOOP(i, cmp->pcls->NumProperties) {
+      lpcPropertyType_t pdesc = &cmp->pcls->Properties[i];
+      if (pdesc->FullIdentifier == identifier) {
+        return (lpPropertyType_t)pdesc;
+      }
+    }
+  }
+  return NULL;
+}
+
 void
 OBJ_EnumClassProperties(lpObject_t object,
                         void (*fnProc)(lpcObject_t,
-                                       lpcPropertyDesc_t,
+                                       lpcPropertyType_t,
                                        lpcClassDesc_t cdesc,
                                        void const*,
                                        void*),
                         void* parm)
 {
-  FOR_EACH_LIST(struct component, cmp, _GetComponents(object))
-  {
-    FOR_LOOP(i, cmp->pcls->NumProperties)
-    {
-      lpcPropertyDesc_t pdesc = &cmp->pcls->Properties[i];
-      if (pdesc->DataType == kDataTypeStruct && !strcmp(pdesc->TypeString, "Matrix3D"))
-        continue;
+  FOR_EACH_LIST(struct component, cmp, _GetComponents(object)) {
+    FOR_LOOP(i, cmp->pcls->NumProperties) {
+      lpcPropertyType_t pdesc = &cmp->pcls->Properties[i];
       fnProc(object, pdesc, cmp->pcls, cmp->pUserData+pdesc->Offset, parm);
-      if (pdesc->DataType == kDataTypeGroup) {
-        i += pdesc->NumComponents;
-      }
     }
   }
 }
@@ -88,7 +113,7 @@ CMP_SetProperty(struct component* comp, lpProperty_t property)
 {
   FOR_LOOP(index, comp->pcls->NumProperties)
   {
-    lpcPropertyDesc_t pdesc = comp->pcls->Properties + index;
+    lpcPropertyType_t pdesc = comp->pcls->Properties + index;
     if (PROP_GetLongIdentifier(property) == pdesc->FullIdentifier) {
       lpProperty_t* properties = (void*)(comp->pUserData + comp->pcls->ClassSize);
       properties[index] = property;
@@ -149,7 +174,7 @@ OBJ_AddComponent(lpObject_t pobj, lpcClassDesc_t cls)
 //  uint32_t dwIdentifier = fnv1a32(name);
 //  FOR_LOOP(n, pcmp->pcls->NumProperties)
 //  {
-//    lpcPropertyDesc_t desc = &pcmp->pcls->Properties[n];
+//    lpcPropertyType_t desc = &pcmp->pcls->Properties[n];
 //    if (desc->short_identifier == dwIdentifier) {
 //      return CMP_CreateProperty(L, pcmp, desc);
 //    }
@@ -204,16 +229,16 @@ OBJ_EnumObjectClasses(lpObject_t pobj,
   }
 }
 
-void _pushproperty(lua_State*, eDataType_t, void *, lpcString_t, size_t);
+void _pushproperty(lua_State*, void *, lpcPropertyType_t);
 
 bool_t
 OBJ_PushClassProperty(lua_State *L, lpObject_t object, uint32_t id)
 {
   FOR_EACH_LIST(struct component, cmp, _GetComponents(object)) {
     FOR_LOOP(i, cmp->pcls->NumProperties) {
-      lpcPropertyDesc_t pdesc = &cmp->pcls->Properties[i];
-      if (pdesc->id->Identifier == id) {
-        _pushproperty(L, pdesc->DataType, cmp->pUserData + pdesc->Offset, pdesc->TypeString, pdesc->DataSize);
+      lpcPropertyType_t pdesc = &cmp->pcls->Properties[i];
+      if (pdesc->ShortIdentifier == id) {
+        _pushproperty(L, cmp->pUserData + pdesc->Offset, pdesc);
         return TRUE;
       }
     }

@@ -2,12 +2,12 @@
 <Project Name="Example" StartupScreen="Example/Screens/Application">
   <ScreenLibrary Name="Screens" IsExternal="true"/>
   <ImageLibrary Name="Images" IsExternal="true"/>
-  <PropertyTypeLibrary Name="Property Types">
+  <Project.PropertyTypes>
     <PropertyType Name="Speed" DataType="Float" Category="Custom"/>
-  </PropertyTypeLibrary>
-  <MessageLibrary Name="Messages">
-    <SystemMessage Message="KeyDown" Key="q">return</SystemMessage>
-    <SystemMessage Message="WindowClosed">return</SystemMessage>
-    <SystemMessage Message="RequestReload">window:refresh()</SystemMessage>
-  </MessageLibrary>
+  </Project.PropertyTypes>
+  <Project.SystemMessages>
+    <SystemMessage Message="KeyDown" Key="q" Command="return"/>
+    <SystemMessage Message="WindowClosed" Command="return"/>
+    <SystemMessage Message="RequestReload" Command="window:refresh()"/>
+  </Project.SystemMessages>
 </Project>

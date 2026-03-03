@@ -64,12 +64,24 @@ static int lua_xml_child_iterator(lua_State* L)
 static int lua_xml_read_document(lua_State* L)
 {
   lpcString_t filename = luaL_checkstring(L, 1);
-  xmlDocPtr* doc = lua_newuserdata(L, sizeof(*doc));
-  luaL_setmetatable(L, API_TYPE_XML_DOC);
-  *doc = xmlReadFile(filename, NULL, 0);
-  if (!*doc) {
-    return luaL_error(L, "Failed to parse XML document: %s", filename);
+  xmlDocPtr doc = NULL;
+  xmlWith(struct file, file, FS_LoadFile(filename), FS_FreeFile) {
+    doc = xmlReadMemory((char*)file->data, file->size, filename, NULL, XML_PARSE_NOBLANKS | XML_PARSE_COMPACT);
   }
+  if (doc) {
+    xmlDocPtr* self = lua_newuserdata(L, sizeof(*doc));
+    luaL_setmetatable(L, API_TYPE_XML_DOC);
+    *self = doc;
+    return 1;
+  } else {
+    return 0;
+  }
+//  xmlDocPtr* doc = lua_newuserdata(L, sizeof(*doc));
+//  luaL_setmetatable(L, API_TYPE_XML_DOC);
+//  *doc = xmlReadFile(filename, NULL, 0);
+//  if (!*doc) {
+//    return luaL_error(L, "Failed to parse XML document: %s", filename);
+//  }
   return 1;
 }
 
@@ -467,16 +479,6 @@ static int lua_xml_node_equal(lua_State* L)
   return 1;
 }
 
-static void
-push_trimmed_string(lua_State* L, lpcString_t str)
-{
-  SkipSpace(str);
-  size_t len = strlen(str);
-  while (len > 0 && isspace((unsigned char)str[len - 1]))
-    len--; // Trim trailing whitespace
-  lua_pushlstring(L, str, len);
-}
-
 int lua_xml_node_len(lua_State* L)
 {
   xmlNodePtr* node = luaL_checkudata(L, 1, API_TYPE_XML_NODE);
@@ -514,24 +516,24 @@ int lua_xml_node_index(lua_State* L)
       lua_pushstring(L, (lpcString_t)(*node)->content);
       return 1;
     } else if ((*node)->type == XML_TEXT_NODE) {
-      //			lua_pushstring(L, (const
-      // LPSTR)(*node)->content);
-      push_trimmed_string(L, (lpcString_t)(*node)->content);
+      if (xmlStrlen((*node)->content) > 0) {
+        lua_pushstring(L, (char const *)(*node)->content);
+      } else {
+        lua_pushnil(L);
+      }
       return 1;
     } else {
-      xmlNode* textBlockNode = *node; // Assume this is the <TextBlock> node
-      FOR_EACH_LIST(xmlNode, child , textBlockNode->children) {
+      FOR_EACH_LIST(xmlNode, child , (*node)->children) {
         if (child->type == XML_TEXT_NODE) {
-          // Get the text content of the text node
-          xmlChar* value = child->content;
-          lpcString_t str = (lpcString_t)value;
-          while (*str && isspace(*str))
-            str++;
-          lua_pushstring(L, *str ? (lpcString_t)value : "");
+          if (xmlStrlen(child->content) > 0) {
+            lua_pushstring(L, (char const *)child->content);
+          } else {
+            lua_pushnil(L);
+          }
           return 1;
         }
       }
-      lua_pushstring(L, "");
+      lua_pushnil(L);
       return 1;
     }
   }
@@ -684,8 +686,6 @@ int lua_xml_node_newindex(lua_State* L)
     L, "Incorrect field name %s for %s", name, API_TYPE_XML_NODE);
 }
 
-int f_call_xml(lua_State* L);
-
 static int f_xml_read_document(lua_State* L)
 {
   lpcString_t module = luaL_checkstring(L, 1);
@@ -772,29 +772,12 @@ ORCA_API int luaopen_orca_parsers_xml(lua_State* L)
                                { "__index", lua_xml_doc_index },
                                { "__newindex", lua_xml_doc_newindex },
                                { "__tostring", lua_xml_doc_str },
-                               { "__call", f_call_xml },
                                { NULL, NULL } }),
                 0);
   lua_setfield(L, -2, "XmlDoc");
 
   lua_register(L, "fs_findxml", f_find_xml);
-  luaL_dostring(L, "table.insert(package.searchers, fs_findxml)");
-  
-  extern lpcString_t
-  (*_PDESC_Parse)(lpObject_t hobj,
-                  lpcPropertyDesc_t pdesc,
-                  lpProperty_t property,
-                  lpcString_t string,
-                  void* dest);
-
-  extern lpObject_t
-  (*_OBJ_LoadDocument)(lua_State* L, xmlDocPtr doc);
-
-  _PDESC_Parse = PDESC_Parse;
-  _OBJ_LoadDocument = OBJ_LoadDocument;
-  
-  extern shortStr_t tags[MAX_TAGS];
-  memset(tags, 0, sizeof(tags));
+//  luaL_dostring(L, "table.insert(package.searchers, fs_findxml)");
   
   API_CallRequire(L, "orca.filesystem", 1);
   lua_pushcfunction(L, f_loadProject);

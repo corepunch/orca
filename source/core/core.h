@@ -4,16 +4,14 @@
 
 #include <include/orca.h>
 
-#include <source/core/core_properties.h>
-
-typedef struct Object Object_t, *lpObject_t;
-typedef struct Object const cObject_t, *lpcObject_t;
-/// @brief Push Object onto Lua stack.
+typedef struct PropertyEnumValue PropertyEnumValue_t, *lpPropertyEnumValue_t;
+typedef struct PropertyEnumValue const cPropertyEnumValue_t, *lpcPropertyEnumValue_t;
+/// @brief Push PropertyEnumValue onto Lua stack.
 ORCA_API void
-luaX_pushObject(lua_State *L, lpcObject_t Object);
-/// @brief Check Object form Lua stack at index.
-ORCA_API lpObject_t
-luaX_checkObject(lua_State *L, int idx);
+luaX_pushPropertyEnumValue(lua_State *L, lpcPropertyEnumValue_t PropertyEnumValue);
+/// @brief Check PropertyEnumValue form Lua stack at index.
+ORCA_API lpPropertyEnumValue_t
+luaX_checkPropertyEnumValue(lua_State *L, int idx);
 
 typedef struct PropertyType PropertyType_t, *lpPropertyType_t;
 typedef struct PropertyType const cPropertyType_t, *lpcPropertyType_t;
@@ -24,14 +22,14 @@ luaX_pushPropertyType(lua_State *L, lpcPropertyType_t PropertyType);
 ORCA_API lpPropertyType_t
 luaX_checkPropertyType(lua_State *L, int idx);
 
-typedef struct PropertyEnumValue PropertyEnumValue_t, *lpPropertyEnumValue_t;
-typedef struct PropertyEnumValue const cPropertyEnumValue_t, *lpcPropertyEnumValue_t;
-/// @brief Push PropertyEnumValue onto Lua stack.
+typedef struct Object Object_t, *lpObject_t;
+typedef struct Object const cObject_t, *lpcObject_t;
+/// @brief Push Object onto Lua stack.
 ORCA_API void
-luaX_pushPropertyEnumValue(lua_State *L, lpcPropertyEnumValue_t PropertyEnumValue);
-/// @brief Check PropertyEnumValue form Lua stack at index.
-ORCA_API lpPropertyEnumValue_t
-luaX_checkPropertyEnumValue(lua_State *L, int idx);
+luaX_pushObject(lua_State *L, lpcObject_t Object);
+/// @brief Check Object form Lua stack at index.
+ORCA_API lpObject_t
+luaX_checkObject(lua_State *L, int idx);
 
 #define kEventLeftMouseDown 0xfac0b5e7
 typedef struct WI_Message* LeftMouseDownEventPtr;
@@ -158,6 +156,29 @@ typedef struct Property Property_t, *lpProperty_t;
 typedef struct Property const cProperty_t, *lpcProperty_t;
 typedef struct KeyframeAnim KeyframeAnim_t, *lpKeyframeAnim_t;
 typedef struct KeyframeAnim const cKeyframeAnim_t, *lpcKeyframeAnim_t;
+#define BindingMode_Count 4
+typedef enum BindingMode {
+	kBindingModeOneWay, /// Default mode, updates target property when source changes
+	kBindingModeTwoWay, /// Updates target property when source changes and updates source when target changes
+	kBindingModeOneWayToSource, /// Updates source property when target changes, but not the other way around
+	kBindingModeExpression, /// Allows binding to a custom expression
+} eBindingMode_t;
+ORCA_API const char *BindingModeToString(enum BindingMode);
+
+#define PropertyAttribute_Count 9
+typedef enum PropertyAttribute {
+	kPropertyAttributeWholeProperty, /// Default binding to the whole property
+	kPropertyAttributeColorR, /// Bind to the red channel of a color property
+	kPropertyAttributeColorG, /// Bind to the green channel of a color property
+	kPropertyAttributeColorB, /// Bind to the blue channel of a color property
+	kPropertyAttributeColorA, /// Bind to the alpha channel of a color property
+	kPropertyAttributeVectorX, /// Bind to the X component of a vector property
+	kPropertyAttributeVectorY, /// Bind to the Y component of a vector property
+	kPropertyAttributeVectorZ, /// Bind to the Z component of a vector property
+	kPropertyAttributeVectorW, /// Bind to the W component of a vector property
+} ePropertyAttribute_t;
+ORCA_API const char *PropertyAttributeToString(enum PropertyAttribute);
+
 /// @brief Clear all children of the object.
 ORCA_API void
 OBJ_Clear(lua_State *L, lpObject_t self);
@@ -225,10 +246,6 @@ OBJ_PostMessage(lua_State *L, lpObject_t self, const char* message);
 /// @brief Play an animation or resource on the object.
 ORCA_API void
 OBJ_Play(lpObject_t self, const char* animation);
-
-/// @brief Bind a property of an object to an expression or data source.
-ORCA_API void
-OBJ_Bind(lua_State *L, lpObject_t self, const char* Property, const char* expression);
 
 /// @brief Set focus on the object.
 ORCA_API void
@@ -418,6 +435,18 @@ OBJ_GetInteger(lpcObject_t self, uint32_t ident, int32_t fallback);
 ORCA_API lpProperty_t
 OBJ_GetProperties(lpcObject_t self);
 
+/// @brief Looks up a property by context-driven syntax, like "Column" instead of "Grid.Column"
+ORCA_API lpPropertyType_t
+OBJ_FindImplicitProperty(lpObject_t self, const char* name);
+
+/// @brief Looks up a property by full syntax, like "Grid.Column" instead of "Column"
+ORCA_API lpPropertyType_t
+OBJ_FindExplicitProperty(lpObject_t self, const char* name);
+
+/// @brief Attaches a property program to the specified property
+ORCA_API bool_t
+OBJ_AttachPropertyProgram(lpObject_t self, const char* name, const char* program, ePropertyAttribute_t attribute, eBindingMode_t mode, bool_t enabled);
+
 /// @brief Finds a property by navigating a hierarchical path
 ORCA_API lpProperty_t
 OBJ_FindPropertyByPath(lpObject_t self, const char* path);
@@ -434,6 +463,7 @@ core_GetFocus(void);
 ORCA_API lpObject_t
 core_GetHover(void);
 
+#define DataType_Count 11
 typedef enum DataType {
 	kDataTypeNone, /// No data type specified.
 	kDataTypeBool, /// Boolean value representing true or false.
@@ -442,22 +472,26 @@ typedef enum DataType {
 	kDataTypeFloat, /// Floating-point numeric value.
 	kDataTypeFixed, /// Fixed-length string or symbolic value.
 	kDataTypeLongString, /// Extended string data, intended for larger text content.
-	kDataTypeEdges, /// Set of edge-specific values (e.g., margin, padding, or border widths).
 	kDataTypeObjectTags, /// List of tag identifiers associated with an object.
 	kDataTypeEvent, /// Event reference used to bind triggers or callbacks.
-	kDataTypeStruct, /// There are multiple predefined structures, such as Vector2D, Vector3D, and Transform3D, used for various geometric and transformation purposes.
+	kDataTypeStruct, /// Composite data structure containing multiple fields used for packaging related geometric, visual, and layout properties together.
 	kDataTypeObject, /// Reference to a complex object instance.
-	kDataTypeGroup, /// Logical grouping of related properties or child elements.
 } eDataType_t;
+ORCA_API const char *DataTypeToString(enum DataType);
 
-typedef struct PropertyType PropertyType, *PropertyTypePtr;
-typedef struct PropertyType const *PropertyTypeCPtr;
+/// @brief Enum value descriptor for a property.
+struct PropertyEnumValue {
+	fixedString_t Name; /// Unique name identifier for the value.
+	int32_t Value; /// Integer value representing the enum.
+};
+
 /// @brief Defines a custom property type that can be attached to engine objects.
 struct PropertyType {
+	fixedString_t Name; /// Unique name identifier for the property type.
 	fixedString_t Category; /// Organizational category for this property, used for grouping in editors and UIs.
 	eDataType_t DataType; /// Underlying data type that determines how the property value is interpreted and stored.
 	fixedString_t DefaultValue; /// Default value assigned when the property is not explicitly set.
-	fixedString_t TargetType; /// Type of object or component this property applies to.
+	fixedString_t TypeString; /// String representation of the property type, used to store enum values or struct type names.
 	bool_t AffectLayout; /// Indicates whether this property affects element layout (e.g., size or alignment).
 	bool_t AffectRender; /// Indicates whether this property influences the rendering output.
 	bool_t IsReadOnly; /// If true, the property value cannot be modified at runtime or through the editor.
@@ -468,13 +502,11 @@ struct PropertyType {
 	float Step; /// Increment step used for numeric adjustments in UI controls.
 	float UpperBound; /// Maximum allowed value for numeric properties.
 	float LowerBound; /// Minimum allowed value for numeric properties.
-	PropertyDesc_t _desc; /// Internal descriptor structure providing extended property metadata.
-};
-
-typedef struct PropertyEnumValue PropertyEnumValue, *PropertyEnumValuePtr;
-typedef struct PropertyEnumValue const *PropertyEnumValueCPtr;
-struct PropertyEnumValue {
-	int32_t Value;
+	uint32_t ShortIdentifier; /// Unique short identifier for the property type, automatically generated from implicit property name.
+	uint32_t FullIdentifier; /// Unique full identifier for the property type, automatically generated from explicit (ie. Grid.Columns) property name.
+	uint32_t Offset; /// Byte offset of the property within the structure.
+	uint32_t DataSize; /// Size of the property data in bytes.
+	bool_t IsArray; /// Indicates whether the property is an array type, will generate Num* property to indicate the number of elements.
 };
 
 #endif

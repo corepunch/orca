@@ -50,7 +50,6 @@ static luaL_Reg const orca_modules[] = {
   { "orca.geometry", luaopen_orca_geometry },
   { "orca.localization", luaopen_orca_localization },
   { "orca.network", luaopen_orca_network },
-  { "orca.parsers.css", luaopen_orca_parsers_css },
   { "orca.parsers.json", luaopen_orca_parsers_json },
   { "orca.parsers.xml", luaopen_orca_parsers_xml },
   { "orca.renderer", luaopen_orca_renderer },
@@ -122,11 +121,31 @@ static int f_orca_index(lua_State* L) {
     // Use the error message immediately before popping
     fprintf(stderr, "Failed to load module '%s': %s\n", module_name, err_msg);
     lua_pop(L, 2);  // Pop the converted string and the original error
-    lua_pushnil(L);
+    lua_rawget(L, -2);
+//    lua_pushnil(L);
     return 1;
   }
 }
 #endif
+
+int f_register_loader(lua_State *L) {
+  assert(lua_type(L, 2) == LUA_TFUNCTION);
+
+  lua_getfield(L, LUA_REGISTRYINDEX, "LOADERS");
+  lua_pushvalue(L, 2);
+  lua_setfield(L, -2, luaL_checkstring(L, 1));
+
+  return 0;
+}
+
+static int f_find_metatable(lua_State* L) {
+  lpcString_t tname = luaL_checkstring(L, 1);
+  if (luaL_getmetatable(L, tname) == 0) {  // returns 0 if metatable not found
+    return luaL_error(L, "metatable '%s' not found", tname);
+  }
+  assert(lua_type(L, -1) == LUA_TTABLE);
+  return 1;  // metatable is already on top of stack
+}
 
 ORCA_API int luaopen_orca(lua_State* L)
 {
@@ -136,17 +155,38 @@ ORCA_API int luaopen_orca(lua_State* L)
 
   luaL_newlib(L, ((luaL_Reg[]){
     { "registerEngineClass", f_registerEngineClass },
+    { "register_loader", f_register_loader },
     { NULL, NULL }
   }));
 
+  lua_newtable(L);
+  lua_setfield(L, LUA_REGISTRYINDEX, "LOADERS");
+  
   lua_pushstring(L, ORCA_VERSION);
   lua_setfield(L, -2, "version");
 
   lua_pushstring(L, __DATE__);
   lua_setfield(L, -2, "build");
+  
+  lua_pushcfunction(L, f_find_metatable);
+  lua_setfield(L, -2, "find_metatable");
 
   lua_pushcfunction(L, f_async);
   lua_setfield(L, -2, "async");
+
+  luaL_dostring(L,
+                "return function()\n"
+                "\tlocal sys = require 'orca.system'\n"
+                "\tlocal no_errors = true\n"
+                "\tfor f in sys.list_dir(SHAREDIR..'/plugins') do\n"
+                "\t\tlocal ok, err = pcall(require, 'plugins.'..f:gsub('.lua$', ''))\n"
+                "\t\tif ok then print(string.format('Loaded plugin %q', f:gsub('.lua$', '')))\n"
+                "\t\telse print(err) no_errors = false end\n"
+                "\tend\n"
+                "\treturn no_errors\n"
+                "end\n");
+  assert(lua_type(L, -1) == LUA_TFUNCTION);
+  lua_setfield(L, -2, "init");
   
 #ifdef EASY_MODULE_ACCESS
   // Create a metatable for the orca module

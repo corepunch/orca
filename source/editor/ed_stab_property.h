@@ -29,14 +29,14 @@ void UI_FillOutPropDef(HOBJ object, HPROP p, LPPROPDEF lpPropDef) {
   lpPropDef->lpEditorValue  = (void*)PROP_GetValue(p);
   lpPropDef->lpRuntimeValue = (void*)PROP_GetValue(p);
   lpPropDef->bHasBinding    = PROP_HasProgram(p);
-  lpPropDef->lpEnumValues   = p->userdata;
+  lpPropDef->lpEnumValues   = PROP_GetUserData(p);
   lpPropDef->dwFlags        = PROP_GetFlags(p);
   memcpy(lpPropDef->pPrograms, p->programSources, sizeof(p->programSources));
   lpPropDef->bIsUsedInBinding = FALSE;
 }
 
 ORCA_API void
-PDESC_Print(lpcPropertyDesc_t pdesc, LPSTR buffer, DWORD len, float const* pf)
+PDESC_Print(lpcPropertyType_t pdesc, LPSTR buffer, DWORD len, float const* pf)
 {
   switch (pdesc->DataType) {
     case kDataTypeBool:
@@ -59,7 +59,6 @@ PDESC_Print(lpcPropertyDesc_t pdesc, LPSTR buffer, DWORD len, float const* pf)
         break;
       }
     case kDataTypeFloat:
-    case kDataTypeEdges:
       snprintf(buffer, len, "%g", pf[0]);
       FOR_LOOP(i, (int)pdesc->DataSize/sizeof(float)-1) {
         size_t buflen = strlen(buffer);
@@ -91,23 +90,23 @@ PDESC_Print(lpcPropertyDesc_t pdesc, LPSTR buffer, DWORD len, float const* pf)
         strncpy(buffer, "nil", len);
       }
       break;
-    case kDataTypeGroup: {
-      bool_t add_space = FALSE;
-      FOR_LOOP(i, pdesc->NumComponents) {
-        lpcPropertyDesc_t p = pdesc+i+1;
-        if ((p->DataType) == kDataTypeGroup) continue;
-        void* d =(char*)pf + p->Offset - pdesc->Offset;
-        if (add_space) {strcat(buffer, " "); buffer++; len--;};
-        PDESC_Print(p, buffer, len, d);
-        if (strlen(buffer) >= len) {
-          buffer[len-1] = 0;
-          return;;
-        }
-        len -= strlen(buffer);
-        buffer += strlen(buffer);
-        add_space = TRUE;
-      }}
-      return;
+//    case kDataTypeGroup: {
+//      bool_t add_space = FALSE;
+//      FOR_LOOP(i, pdesc->NumComponents) {
+//        lpcPropertyType_t p = pdesc+i+1;
+//        if ((p->DataType) == kDataTypeStruct) continue;
+//        void* d =(char*)pf + p->Offset - pdesc->Offset;
+//        if (add_space) {strcat(buffer, " "); buffer++; len--;};
+//        PDESC_Print(p, buffer, len, d);
+//        if (strlen(buffer) >= len) {
+//          buffer[len-1] = 0;
+//          return;;
+//        }
+//        len -= strlen(buffer);
+//        buffer += strlen(buffer);
+//        add_space = TRUE;
+//      }}
+//      return;
 //      if (!strstr(pdesc->typestring, "transform")) {
 //        snprintf(buffer, len, "%g", pf[0]);
 //        for (int i = 1; i < pdesc->size / sizeof(float); i++) {
@@ -117,20 +116,20 @@ PDESC_Print(lpcPropertyDesc_t pdesc, LPSTR buffer, DWORD len, float const* pf)
 //      }
 //      break;
     default:
-      Con_Error("Unknown type %d in property %s\n", pdesc->DataType, pdesc->id->Name);
+      Con_Error("Unknown type %d in property %s\n", pdesc->DataType, pdesc->Name);
       break;
   }
 }
 
 void PROP_Print(HPROP p, LPSTR buffer, DWORD len) {
-  PDESC_Print(p->pdesc ? p->pdesc: &(struct PropertyDesc){
+  PDESC_Print(p->pdesc/* ? p->pdesc: &(struct PropertyType){
     .DataType = p->type,
     .DataSize = PROP_GetSize(p),
     .TypeString = p->userdata,
-  }, buffer, len, PROP_GetValue(p));
+  }*/, buffer, len, PROP_GetValue(p));
 }
 
-static lpcString_t _attrs[ATTR_COUNT] = {
+static lpcString_t _attrs[PropertyAttribute_Count] = {
   "WHOLE_PROPERTY",
   "COLOR_R", // = ATTR_VECTOR_X,
   "COLOR_G", // = ATTR_VECTOR_Y,
@@ -146,14 +145,14 @@ static lpcString_t _attrs[ATTR_COUNT] = {
 xmlNsPtr xmlFindNs(xmlNodePtr node, xmlChar const *url);
 
 void ED_WriteBindings(HPROP prop, xmlNodePtr node) {
-  FOR_LOOP(i, ATTR_COUNT) {
+  FOR_LOOP(i, PropertyAttribute_Count) {
     if (prop->programs[i]) {
       xmlChar const *name =  BAD_CAST prop->programSources[i];
       xmlNsPtr ns = xmlFindNs(node, BAD_CAST default_url);
       xmlNodePtr bnd = xmlNewChild(node, ns, XMLSTR("Binding"), name);
-      xmlSetProp(bnd, XMLSTR("Property"), BAD_CAST prop->name);
+      xmlSetProp(bnd, XMLSTR("Property"), BAD_CAST prop->pdesc->Name);
       xmlSetProp(bnd, XMLSTR("Enabled"), BAD_CAST (prop->programs[i]?"true":"false"));
-      if (i != ATTR_WHOLE_PROPERTY) {
+      if (i != kPropertyAttributeWholeProperty) {
         xmlSetProp(bnd, XMLSTR("Attribute"), BAD_CAST _attrs[i]);
       }
     }

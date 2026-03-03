@@ -6,13 +6,6 @@
 lpcString_t const package_paths[] = { "%s.lua", "%s/init.lua", NULL };
 lpcString_t const moonpackage_paths[] = { "%s.moon", "%s/init.moon", NULL };
 
-static int API_FileExists(lua_State* L)
-{
-  lpcString_t path = luaL_checkstring(L, 1);
-  lua_pushboolean(L, FS_FileExists(path));
-  return 1;
-}
-
 lpcString_t
 FS_PathFromModule(lpcString_t module)
 {
@@ -349,7 +342,6 @@ int f_init(lua_State* L)
   if (lua_pcall(L, 0, 1, 0) != LUA_OK) {
     return luaL_error(L, lua_tostring(L, -1));
   }
-  OBJ_SetName(luaX_checkObject(L, -1), "Workspace");
   FS_SetWorkspace(luaX_checkObject(L, -1));
   lua_pop(L, 1);
   lua_getfield(L, -1, "loadBundle");
@@ -377,12 +369,6 @@ static lua_State *global_L;
 //lpObject_t FS_FindProject(lpcString_t szName) {
 //  return OBJ_FindChild(FS_GetWorkspace(), szName, FALSE);
 //}
-
-static int f_filesystem_getWorkspace2(lua_State *L) {
-  lpObject_t output = FS_GetWorkspace();
-  luaX_pushObject(L, output);
-  return 1;
-}
 
 // Custom file handle structure
 typedef struct {
@@ -501,112 +487,8 @@ static int f_io_open_override(lua_State* L) {
   return lua_gettop(L) - top_before;
 }
 
-void on_filesystem_module_registered(lua_State* L)
-{
-  lua_register(L, "fs_findmodule", f_find_module);
-  luaL_dostring(L, "table.insert(package.searchers, fs_findmodule)");
-
-  luaL_newmetatable(L, "DirectoryIterator");
-  lua_pushcfunction(L, l_directory_gc);
-  lua_setfield(L, -2, "__gc");
-
-  luaL_newmetatable(L, "FileHandle");
-  luaL_setfuncs(L, ((luaL_Reg[]){
-    { "read", f_file_read },
-    { "close", f_file_close },
-    { "lines", f_file_lines },
-    { "__gc", f_file_gc },
-    { NULL, NULL }
-  }), 0);
-  lua_pushvalue(L, -1);
-  lua_setfield(L, -2, "__index");
-  lua_pop(L, 1);
-  
-  lua_getglobal(L, "io");
-  if (lua_istable(L, -1)) {
-    lua_getfield(L, -1, "open");
-    lua_setfield(L, LUA_REGISTRYINDEX, "original_io_open");
-    lua_pushcfunction(L, f_io_open_override);
-    lua_setfield(L, -2, "open");
-  } else {
-    Con_Error("orca.filesystem: unable to override io.open");
-  }
-  lua_pop(L, 1);
-  
-//  luaL_newlib(L, ((luaL_Reg[]){
-//    { "loadBundle", f_loadBundle },
-//    { "file_exists", API_FileExists },
-//    { "read_file", f_loadTextFile },
-//    { "trackChangedFiles", f_trackChangedFiles },
-//    { "processClientRequests", f_processClientRequests },
-//    { NULL, NULL }
-//  }));
-
-  lua_pushcfunction(L, f_init);
-  lua_setfield(L, -2, "init");
-  
-  lua_pushcfunction(L, API_FileExists);
-  lua_setfield(L, -2, "file_exists");
-  
-  lua_pushcfunction(L, f_loadTextFile);
-  lua_setfield(L, -2, "read_file");
-
-  lua_pushcfunction(L, f_filesystem_getWorkspace2);
-  lua_setfield(L, -2, "getWorkspace");
-
-  lua_pushcfunction(L, f_trackChangedFiles);
-  lua_setfield(L, -2, "trackChangedFiles");
-  
-  luaopen_orca_pipe(L);
-  lua_setfield(L, -2, "pipe");
-
-  API_MODULE_SHUTDOWN(L, filesystem_gc);
-  
-  lua_getglobal(L, "SERVER");
-  if (lua_toboolean(L, -1)) {
-    SV_RegisterMessageProc(filesystem_handle_event);
-    WI_PostMessageW(NULL, kEventReadCommands, 0, NULL);
-  }
-  lua_pop(L, 1);
-  
-  global_L = L;
-}
-
-ORCA_API int luaopen_orca_filesystem_native(lua_State* L)
-{
-  luaL_newlib(L, ((luaL_Reg[]){
-    { "iterateDirectory", l_iterateDirectory },
-    { "mkdir", f_mkdir },
-    { "direxists", f_direxists },
-    { "fileexists", f_fileexists },
-    { "getfileinfo", f_getfileinfo },
-    { "read_file", f_loadNativeTextFile },
-
-    // path operations
-    { "joinpaths", f_joinpaths },
-    { "dirname", f_dirname },
-    { "basename", f_basename },
-    { "rootname", f_rootname },
-
-    { NULL, NULL }
-  }));
-
-  return 1;
-}
-
 HANDLER(Project, Start) {
   
-  return TRUE;
-}
-
-HANDLER(ProjectReferenceLibrary, Attached) {
-  lpcString_t dir = OBJ_GetSourceFile(OBJ_GetParent(hObject));
-  FOR_EACH_OBJECT(node, hObject) if (OBJ_GetTextContent(node)) {
-    API_CallRequire(global_L, "orca.filesystem", 1);
-    lua_getfield(global_L, -1, "loadBundle");
-    lua_pushstring(global_L, FS_JoinPaths(dir, OBJ_GetTextContent(node)));
-    lua_pcall(global_L, 1, 0, 0);
-  }
   return TRUE;
 }
 
@@ -632,4 +514,92 @@ HANDLER(EnginePluginLibrary, Attached) {
     }
   }
   return TRUE;
+}
+
+void on_filesystem_module_registered(lua_State* L)
+{
+  lua_register(L, "fs_findmodule", f_find_module);
+  luaL_dostring(L, "table.insert(package.searchers, fs_findmodule)");
+  
+  luaL_newmetatable(L, "DirectoryIterator");
+  lua_pushcfunction(L, l_directory_gc);
+  lua_setfield(L, -2, "__gc");
+  lua_pop(L, 1);
+  
+  luaL_newmetatable(L, "FileHandle");
+  luaL_setfuncs(L, ((luaL_Reg[]){
+    { "read", f_file_read },
+    { "close", f_file_close },
+    { "lines", f_file_lines },
+    { "__gc", f_file_gc },
+    { NULL, NULL }
+  }), 0);
+  lua_pushvalue(L, -1);
+  lua_setfield(L, -2, "__index");
+  lua_pop(L, 1);
+  
+  lua_getglobal(L, "io");
+  if (lua_istable(L, -1)) {
+    lua_getfield(L, -1, "open");
+    lua_setfield(L, LUA_REGISTRYINDEX, "original_io_open");
+    lua_pushcfunction(L, f_io_open_override);
+    lua_setfield(L, -2, "open");
+  } else {
+    Con_Error("orca.filesystem: unable to override io.open");
+  }
+  lua_pop(L, 1);
+  
+  //  luaL_newlib(L, ((luaL_Reg[]){
+  //    { "loadBundle", f_loadBundle },
+  //    { "file_exists", API_FileExists },
+  //    { "read_file", f_loadTextFile },
+  //    { "trackChangedFiles", f_trackChangedFiles },
+  //    { "processClientRequests", f_processClientRequests },
+  //    { NULL, NULL }
+  //  }));
+  
+  lua_pushcfunction(L, f_init);
+  lua_setfield(L, -2, "init");
+  
+  lua_pushcfunction(L, f_loadTextFile);
+  lua_setfield(L, -2, "read_file");
+  
+  lua_pushcfunction(L, f_trackChangedFiles);
+  lua_setfield(L, -2, "trackChangedFiles");
+  
+  luaopen_orca_pipe(L);
+  lua_setfield(L, -2, "pipe");
+  
+  API_MODULE_SHUTDOWN(L, filesystem_gc);
+  
+  lua_getglobal(L, "SERVER");
+  if (lua_toboolean(L, -1)) {
+    SV_RegisterMessageProc(filesystem_handle_event);
+    WI_PostMessageW(NULL, kEventReadCommands, 0, NULL);
+  }
+  lua_pop(L, 1);
+  
+  global_L = L;
+}
+
+ORCA_API int luaopen_orca_filesystem_native(lua_State* L)
+{
+  luaL_newlib(L, ((luaL_Reg[]){
+    { "iterateDirectory", l_iterateDirectory },
+    { "mkdir", f_mkdir },
+    { "direxists", f_direxists },
+    { "fileexists", f_fileexists },
+    { "getfileinfo", f_getfileinfo },
+    { "read_file", f_loadNativeTextFile },
+    
+    // path operations
+    { "joinpaths", f_joinpaths },
+    { "dirname", f_dirname },
+    { "basename", f_basename },
+    { "rootname", f_rootname },
+    
+    { NULL, NULL }
+  }));
+  
+  return 1;
 }

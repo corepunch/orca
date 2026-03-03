@@ -151,40 +151,22 @@ enum NodeProperties {
 	kNodePaddingBack,
 	kNodeBorder,
 	kNodeBorderWidth,
-	kNodeBorderStyle,
+	kNodeHorizontalBorderWidth,
+	kNodeBorderWidthLeft,
+	kNodeBorderWidthRight,
+	kNodeVerticalBorderWidth,
+	kNodeBorderWidthTop,
+	kNodeBorderWidthBottom,
+	kNodeDepthBorderWidth,
+	kNodeBorderWidthFront,
+	kNodeBorderWidthBack,
 	kNodeBorderColor,
+	kNodeBorderStyle,
 	kNodeBorderRadius,
 	kNodeBorderTopLeftRadius,
 	kNodeBorderTopRightRadius,
 	kNodeBorderBottomRightRadius,
 	kNodeBorderBottomLeftRadius,
-	kNodeHorizontalBorder,
-	kNodeBorderLeft,
-	kNodeBorderLeftWidth,
-	kNodeBorderLeftStyle,
-	kNodeBorderLeftColor,
-	kNodeBorderRight,
-	kNodeBorderRightWidth,
-	kNodeBorderRightStyle,
-	kNodeBorderRightColor,
-	kNodeVerticalBorder,
-	kNodeBorderTop,
-	kNodeBorderTopWidth,
-	kNodeBorderTopStyle,
-	kNodeBorderTopColor,
-	kNodeBorderBottom,
-	kNodeBorderBottomWidth,
-	kNodeBorderBottomStyle,
-	kNodeBorderBottomColor,
-	kNodeDepthBorder,
-	kNodeBorderFront,
-	kNodeBorderFrontWidth,
-	kNodeBorderFrontStyle,
-	kNodeBorderFrontColor,
-	kNodeBorderBack,
-	kNodeBorderBackWidth,
-	kNodeBorderBackStyle,
-	kNodeBorderBackColor,
 	kNodeAlignment,
 	kNodeHorizontalAlignment,
 	kNodeVerticalAlignment,
@@ -239,40 +221,22 @@ enum NodeProperties {
 #define ID_Node_PaddingBack 0xd22b7a31
 #define ID_Node_Border 0x2a3ce9f3
 #define ID_Node_BorderWidth 0x52e9a9e5
-#define ID_Node_BorderStyle 0x88c40c44
+#define ID_Node_HorizontalBorderWidth 0xae7c2f49
+#define ID_Node_BorderWidthLeft 0x86dcb870
+#define ID_Node_BorderWidthRight 0xfa6751e5
+#define ID_Node_VerticalBorderWidth 0xd5d44d93
+#define ID_Node_BorderWidthTop 0x4587603c
+#define ID_Node_BorderWidthBottom 0x31ac172a
+#define ID_Node_DepthBorderWidth 0x0c1d04f8
+#define ID_Node_BorderWidthFront 0x62fdffd8
+#define ID_Node_BorderWidthBack 0xd045eda2
 #define ID_Node_BorderColor 0x85e5d732
+#define ID_Node_BorderStyle 0x88c40c44
 #define ID_Node_BorderRadius 0x867eed01
 #define ID_Node_BorderTopLeftRadius 0xa13859b5
 #define ID_Node_BorderTopRightRadius 0xbe725f4e
 #define ID_Node_BorderBottomRightRadius 0xe9173b64
 #define ID_Node_BorderBottomLeftRadius 0x9511fd4b
-#define ID_Node_HorizontalBorder 0x011608c7
-#define ID_Node_BorderLeft 0xc27a852a
-#define ID_Node_BorderLeftWidth 0x02c8fa36
-#define ID_Node_BorderLeftStyle 0x418d537f
-#define ID_Node_BorderLeftColor 0x9af0561d
-#define ID_Node_BorderRight 0xf30cc2f7
-#define ID_Node_BorderRightWidth 0x9bfa14d9
-#define ID_Node_BorderRightStyle 0xf41a8468
-#define ID_Node_BorderRightColor 0x50c65ea6
-#define ID_Node_VerticalBorder 0xd17e2079
-#define ID_Node_BorderTop 0xe260ceca
-#define ID_Node_BorderTopWidth 0x243bba96
-#define ID_Node_BorderTopStyle 0x7ec59edf
-#define ID_Node_BorderTopColor 0xbedd7f7d
-#define ID_Node_BorderBottom 0x822aba1c
-#define ID_Node_BorderBottomWidth 0x5f38b988
-#define ID_Node_BorderBottomStyle 0x1db18d51
-#define ID_Node_BorderBottomColor 0x4c77d2c3
-#define ID_Node_DepthBorder 0xc5ae22ec
-#define ID_Node_BorderFront 0xd98795c2
-#define ID_Node_BorderFrontWidth 0x1000a25e
-#define ID_Node_BorderFrontStyle 0x20a52967
-#define ID_Node_BorderFrontColor 0x21677875
-#define ID_Node_BorderBack 0x51f9245c
-#define ID_Node_BorderBackWidth 0x437e0ec8
-#define ID_Node_BorderBackStyle 0x47843b91
-#define ID_Node_BorderBackColor 0x2e445203
 #define ID_Node_Alignment 0x6ae48d82
 #define ID_Node_HorizontalAlignment 0xe230b1ee
 #define ID_Node_VerticalAlignment 0x1c45d168

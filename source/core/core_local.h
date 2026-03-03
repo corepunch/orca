@@ -105,7 +105,7 @@ struct game
   lpObject_t hover;
   lpObject_t hover2;
   lpcClassDesc_t classes[MAX_CLASSES];
-  lpcPropertyDesc_t ptypes[MAX_PROPERTY_TYPES];
+  lpcPropertyType_t ptypes[MAX_PROPERTY_TYPES];
 };
 
 // stateman.c
@@ -141,9 +141,6 @@ OBJ_EnumStyleClasses(lpObject_t, lpcString_t, STYLEPROC, void*);
 
 uint32_t
 OBJ_GetStyleFlags(lpObject_t);
-
-void
-OBJ_ApplyClass(lpObject_t, struct style_sheet*, void*);
 
 bool_t
 OBJ_RunProgram(lpObject_t, struct token*, struct vm_register*);
@@ -182,7 +179,7 @@ OBJ_NameEquals(lpObject_t object, lpcString_t name)
 struct component*
 CMP_Create(lpObject_t, lpcClassDesc_t);
 lpProperty_t
-CMP_CreateProperty(lua_State*, struct component*, lpcPropertyDesc_t);
+CMP_CreateProperty(lua_State*, struct component*, lpcPropertyType_t);
 //lpProperty_t
 //CMP_CreateProperty2(lua_State*, struct component*, lpcString_t);
 lpcString_t
@@ -199,10 +196,8 @@ void
 PROP_ExecuteChangedCallback(lua_State*, lpObject_t, lpProperty_t);
 lpcString_t
 PROP_GetCallbackEvent(lpcProperty_t);
-lpcString_t
-PROP_GetShortName(lpcProperty_t);
 bool_t
-PROP_Import(lpProperty_t, enum property_attribute, struct vm_register*);
+PROP_Import(lpProperty_t, enum PropertyAttribute, struct vm_register*);
 void
 PROP_SetTypeSize(lpProperty_t, eDataType_t, uint32_t);
 lpProperty_t
@@ -242,6 +237,12 @@ OBJ_AddClass(lpObject_t, lpcString_t);
 
 void
 UI_ProcessCommands(struct lua_State* L, lpObject_t root);
+
+ORCA_API void
+PROP_AttachProgram(lpProperty_t,
+                   enum PropertyAttribute,
+                   struct token* program,
+                   lpcString_t source);
 
 extern struct game core;
 

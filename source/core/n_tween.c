@@ -99,10 +99,12 @@ void OBJ_API(DoTween) {
   if (PROP_GetType(hprop) == kDataTypeFloat) {
     luaX_parsefield(float, to, 2, luaL_checknumber);
     memcpy(anim->to, &to, sizeof(to));
-  } else if (PROP_GetType(hprop) == kDataTypeGroup && !strcmp("transform2", PROP_GetUserData(hprop))) {
+  } else if (PROP_GetType(hprop) == kDataTypeStruct &&
+             !strcmp("Transform2D", PROP_GetUserData(hprop))) {
     luaX_parsefield(struct transform2*, to, 2, luaL_checkudata, PROP_GetUserData(hprop));
     memcpy(anim->to, &to, sizeof(to));
-  } else if (PROP_GetType(hprop) == kDataTypeGroup && !strcmp("transform3", PROP_GetUserData(hprop))) {
+  } else if (PROP_GetType(hprop) == kDataTypeStruct &&
+             !strcmp("Transform3D", PROP_GetUserData(hprop))) {
     luaX_parsefield(struct transform3*, to, 2, luaL_checkudata, PROP_GetUserData(hprop));
     memcpy(anim->to, &to, sizeof(to));
   } else {
@@ -130,11 +132,13 @@ OBJ_Animate(lua_State* L, lpObject_t object)
       float value = *(float const*)PROP_GetValue(tween->target);
       float_LERP((void*)tween->from, (void*)tween->to, MIN(1, t), &value);
       PROP_SetValue(tween->target, &value);
-    } else if (PROP_GetType(tween->target) == kDataTypeGroup && !strcmp("transform2", PROP_GetUserData(tween->target))) {
+    } else if (PROP_GetType(tween->target) == kDataTypeStruct &&
+               !strcmp("Transform2D", PROP_GetUserData(tween->target))) {
       struct transform2 value = *(struct transform2 const*)PROP_GetValue(tween->target);
       transform2_LERP((void*)tween->from, (void*)tween->to, MIN(1, t), &value);
       PROP_SetValue(tween->target, &value);
-    } else if (PROP_GetType(tween->target) == kDataTypeGroup && !strcmp("transform3", PROP_GetUserData(tween->target))) {
+    } else if (PROP_GetType(tween->target) == kDataTypeStruct &&
+               !strcmp("Transform3D", PROP_GetUserData(tween->target))) {
       struct transform3 value = *(struct transform3 const*)PROP_GetValue(tween->target);
       transform3_LERP((void*)tween->from, (void*)tween->to, MIN(1, t), &value);
       PROP_SetValue(tween->target, &value);
@@ -167,9 +171,9 @@ OBJ_Animate(lua_State* L, lpObject_t object)
           *value = prev < *value ? !(*value < 1) : (*value > 0);
         }
         PROP_SetValue(property, value);
-      } else {
-        property = PROP_Create(L, target, curve->property, kDataTypeFloat, NULL);
-        PROP_SetValue(property, value);
+//      } else {
+//        property = PROP_Create(L, target, curve->property, kDataTypeFloat, NULL);
+//        PROP_SetValue(property, value);
       }
     }
     if (time >= ka->stop_time) {

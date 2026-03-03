@@ -73,13 +73,13 @@ if __name__ == "__main__":
 
 		for c in Workspace.components.values():
 			children = list(c)
-			for i, p in enumerate(children):
+			for i, p in reversed(list(enumerate(children))):
 				if p.tag == "property" and p.get("array"):
 					new_elem = ET.Element('property', {
 						'name': f"Num{p.get('name')}",
 						'type': 'int',
 					})
-					new_elem.text = f"Number of {p.get('name').lower()}"
+					new_elem.text = f"Number of {p.get('name')}"
 					c.insert(i + 1, new_elem)			
 
 		for node in root:

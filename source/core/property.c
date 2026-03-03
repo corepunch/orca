@@ -30,33 +30,18 @@ static size_t psize[] = {
   0,  // Group,
 };
 
-ORCA_API lpcString_t
-(*_PDESC_Parse)(lpObject_t hobj,
-               lpcPropertyDesc_t pdesc,
-               lpProperty_t property,
-               lpcString_t string,
-               void* dest);
-
-ORCA_API lpObject_t
-(*_OBJ_LoadDocument)(lua_State* L, xmlDocPtr doc);
-
 struct Property
 {
-  shortStr_t name;
   eDataType_t type;
   enum uniform_precision precision;
-  struct token* programs[ATTR_COUNT];
-  LPSTR programSources[ATTR_COUNT];
-  uint32_t longIdentifier;
-  uint32_t shortIdentifier;
+  struct token* programs[PropertyAttribute_Count];
+  LPSTR programSources[PropertyAttribute_Count];
   uint32_t flags;
-  lpcString_t classname;
   void* value;
   void* intermediate; // used to store object reference while value stores component
-  lpcString_t userdata;
   lpObject_t object;
   char oldvalue[MAX_PROPERTY_STRING];
-  lpcPropertyDesc_t pdesc;
+  lpcPropertyType_t pdesc;
   uint32_t updateFrame;
   lpProperty_t callbackEvent;
   lpProperty_t next;
@@ -108,7 +93,7 @@ PROP_Update(lpProperty_t property)
       property->updateFrame == core.frame)
     return FALSE;
   property->updateFrame = core.frame;
-  FOR_LOOP(i, ATTR_COUNT)
+  FOR_LOOP(i, PropertyAttribute_Count)
   {
     if (property->programs[i]) {
       struct vm_register r = { 0 };
@@ -116,7 +101,7 @@ PROP_Update(lpProperty_t property)
           !PROP_Import(property, i, &r)) {
 #ifdef DEBUG_PROGRAM
         print_name(property->object);
-        Con_Error("%s", property->name);
+        Con_Error("%s", property->pdesc->Name);
 #endif
         Token_Release(property->programs[i]);
         property->programs[i] = NULL;
@@ -139,7 +124,7 @@ PROP_IsNull(lpcProperty_t property)
 lpProperty_t
 PROP_FindByLongID(lpProperty_t list, uint32_t identifier) {
   FOR_EACH_LIST(struct Property, property, list) {
-    if (property->longIdentifier == identifier) {
+    if (property->pdesc->FullIdentifier == identifier) {
       return property;
     }
   }
@@ -149,7 +134,7 @@ PROP_FindByLongID(lpProperty_t list, uint32_t identifier) {
 lpProperty_t
 PROP_FindByShortID(lpProperty_t list, uint32_t identifier) {
   FOR_EACH_LIST(struct Property, property, list) {
-    if (property->shortIdentifier == identifier) {
+    if (property->pdesc->ShortIdentifier == identifier) {
       return property;
     }
   }
@@ -195,13 +180,13 @@ PROP_GetPrecision(lpcProperty_t property)
 uint32_t
 PROP_GetShortID(lpcProperty_t property)
 {
-  return property->shortIdentifier;
+  return property->pdesc->ShortIdentifier;
 }
 
 lpcString_t
 PROP_GetUserData(lpcProperty_t property)
 {
-  return property->userdata;
+  return property->pdesc->TypeString;
 }
 
 void const*
@@ -227,11 +212,7 @@ PROP_SetValue(lpProperty_t property, void const* source)
       free(ptr);
     }
   } else if (property->type == kDataTypeObject) {
-    if (property->userdata == NULL) {
-      // TODO: it's a workaround
-      property->userdata = "Texture";
-    }
-    int ident = fnv1a32(property->userdata);
+    int ident = fnv1a32(property->pdesc->TypeString);
     lpObject_t object = *(lpObject_t *)source;
     property->intermediate = object;
     if (!object) {
@@ -243,7 +224,7 @@ PROP_SetValue(lpProperty_t property, void const* source)
     if (!udata) {
       memset(property->value, 0, PROP_GetSize(property));
       property->flags |= PF_NIL;
-      Con_Error("No %s component in object %s(%s)", property->userdata, OBJ_GetName(object), OBJ_GetClassName(object));
+      Con_Error("No %s component in object %s(%s)", property->pdesc->TypeString, OBJ_GetName(object), OBJ_GetClassName(object));
       return;
     }
     memcpy(property->value, &udata, PROP_GetSize(property));
@@ -252,7 +233,7 @@ PROP_SetValue(lpProperty_t property, void const* source)
   }
   property->flags &= ~PF_NIL;
   property->flags |= PF_MODIFIED;
-  if (property->longIdentifier != ID_ContentOffset) {
+  if (property->pdesc->FullIdentifier != ID_ContentOffset) {
     OBJ_SetDirty(property->object);
   } else {
     OBJ_SetFlags(property->object, OBJ_GetFlags(property->object) | OF_SCROLL);
@@ -266,7 +247,7 @@ _AssignCallback(lua_State* L, lpProperty_t property)
     return FALSE;
   lpObject_t object = property->object;
   static path_t str;
-  sprintf(str, ON_CHANGED_CALLBACK, property->name);
+  sprintf(str, ON_CHANGED_CALLBACK, property->pdesc->Name);
   lua_geti(L, LUA_REGISTRYINDEX, OBJ_GetLuaObject(object));
   if (lua_isnil(L, -1)) {
     lua_pop(L, 1);
@@ -280,42 +261,17 @@ _AssignCallback(lua_State* L, lpProperty_t property)
   return TRUE;
 }
 
-// static int create_property(lua_State *L) {
-//	lpObject_t  object = luaX_checkObject(L, 1);
-//	lpcString_t  name = luaL_checkstring(L, 2);
-//	lpcString_t  type = luaL_checkstring(L, 3);
-//	lpProperty_t property = PROP_Create(object, name, type);
-//	static path_t str;
-//	sprintf(str, ON_CHANGED_CALLBACK, PROP_GetShortName(property));
-//	lua_getfield(L, -1, str);
-//	if (lua_type(L, -1) == LUA_TFUNCTION) {
-//		PROP_SetFlag(property, PF_HASCHANGECALLBACK | PF_NIL);
-//	} else {
-//		PROP_SetFlag(property, PF_NIL);
-//	}
-//	lua_pop(L, 2);
-//
-//	lua_pushlightuserdata(L, property);
-//	return 1;
-// }
-
 lpProperty_t
 PROP_Create(lua_State* L,
             lpObject_t object,
-            lpcString_t name,
-            eDataType_t type,
-            lpcString_t udata)
+            lpcPropertyType_t pt)
 {
-  lpcString_t dot = strrchr(name, '.');
   lpProperty_t property = ZeroAlloc(sizeof(struct Property));
-  property->longIdentifier = fnv1a32(name);
-  property->shortIdentifier = dot ? fnv1a32(dot + 1) : property->longIdentifier;
   property->next = NULL;
-  property->type = type;
+  property->type = pt->DataType;
   property->object = object;
-  property->userdata = udata;
+  property->pdesc = pt;
   memset(property->oldvalue, 0xff, PROP_GetSize(property));
-  strncpy(property->name, name, sizeof(property->name));
 
   _RegisterProperty(object, property);
   _AssignCallback(L, property);
@@ -326,25 +282,13 @@ PROP_Create(lua_State* L,
 lpProperty_t
 CMP_CreateProperty(lua_State* L,
                    struct component* comp,
-                   lpcPropertyDesc_t desc)
+                   lpcPropertyType_t desc)
 {
   lpProperty_t property = ZeroAlloc(sizeof(struct Property));
-  assert(property);
-  property->longIdentifier = desc->id->Identifier;
-//  lpcString_t dot = strrchr(desc->name, '.');
-//  if (dot) {
-//    property->shortIdentifier = fnv1a32(dot + 1);
-//  } else {
-//    property->shortIdentifier = property->longIdentifier;
-//  }
-  property->longIdentifier = desc->FullIdentifier;
-  property->shortIdentifier = desc->id->Identifier;
   property->next = NULL;
   property->type = desc->DataType;
   property->object = CMP_GetOwner(comp);
-  property->userdata = desc->TypeString;
   property->pdesc = desc;
-  property->classname = CMP_GetClassName(comp);
 
   PROP_AddToList(property, &_GetProperties(CMP_GetOwner(comp)));
   CMP_SetProperty(comp, property);
@@ -353,7 +297,6 @@ CMP_CreateProperty(lua_State* L,
 
   //    PROP_SetValue(property, pdesc->value);
   memset(property->oldvalue, 0xff, PROP_GetSize(property));
-  strncpy(property->name, desc->id->Name, sizeof(property->name));
   return property;
 }
 
@@ -367,36 +310,71 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
     PROP_SetFlag(p, PF_NIL);
     return 0;
   }
-
-  // read enum value
-  if (p->type == kDataTypeEnum && lua_type(L, idx) == LUA_TSTRING) {
-    int value = strlistidx(luaL_checkstring(L, idx), p->userdata, NULL);
-    if (value == -1) {
-      Con_Error("Can't set value %s on %s",
-             luaL_checkstring(L, idx),
-             p->name);
+  
+  // handle array properties
+  if (p->pdesc && p->pdesc->IsArray) {
+    if (lua_type(L, idx) != LUA_TTABLE) {
+      Con_Error("Expected a table for array property %s", p->pdesc->Name);
+      return 0;
     }
-    PROP_SetValue(p, &value);
+    size_t numitems = lua_rawlen(L, idx);
+    void *mem = malloc(p->pdesc->DataSize * numitems);
+    ((int*)p->value)[sizeof(void*)/sizeof(int)] = (int)numitems;
+    lua_pushnil(L);
+    for (uint32_t i = 0; lua_next(L, idx) != 0; i++, lua_pop(L, 1)) {
+      if (lua_type(L, -2) != LUA_TNUMBER) {
+        Con_Error("Expected numeric keys in array table for property %s", p->pdesc->Name);
+        free(mem);
+        return 0; 
+      }
+      switch (lua_type(L, -1)) {
+        case LUA_TUSERDATA:
+          memcpy((char*)mem + i * p->pdesc->DataSize, luaL_checkudata(L, -1, p->pdesc->TypeString), p->pdesc->DataSize);
+          break;
+        case LUA_TNUMBER:
+          switch (p->pdesc->DataType) {
+            case kDataTypeFloat:
+              ((float*)mem)[i] = luaL_checknumber(L, -1);
+              break;
+            case kDataTypeInt:
+            case kDataTypeEnum:
+              ((int*)mem)[i] = (int)luaL_checkinteger(L, -1);
+              break;
+            default:
+              Con_Error("Unsupported data type in array table for property %s", p->pdesc->Name);
+              free(mem);
+              return 0;
+          }
+          break;
+        default:
+          Con_Error("Unsupported value type in array table for property %s", p->pdesc->Name);
+          free(mem);
+          return 0;
+      }
+    }
+    PROP_SetValue(p, &mem);
     return 0;
   }
 
-  switch (p->type) {
-    case kDataTypeEnum:
-    case kDataTypeInt:
-      PROP_SetValue(p, &(int){ (int)luaL_checkinteger(L, idx) });
-      return 0;
-    default:
-      break;
-  }
+  bool_t f_parse_property(lua_State*, lpProperty_t, lpcString_t);
   switch (luatype) {
     case LUA_TSTRING:
 			p->type = p->type == kDataTypeNone ? kDataTypeFixed : p->type;
-      if (p->type == kDataTypeFixed) {
-        strncpy(p->value, luaL_checkstring(L, idx), MAX_PROPERTY_STRING);
-        p->flags &= ~PF_NIL;
-        p->flags |= PF_MODIFIED;
-      } else {
-        PROP_Parse(p, luaL_checkstring(L, idx));
+      switch (p->type) {
+        case kDataTypeFixed:
+          strncpy(p->value, luaL_checkstring(L, idx), MAX_PROPERTY_STRING);
+          p->flags &= ~PF_NIL;
+          p->flags |= PF_MODIFIED;
+          break;
+        // We support loading of objects by passing a string to property
+        case kDataTypeInt:
+//          Con_Error("Passing string to int property %s", p->pdesc->Name);
+        case kDataTypeObject:
+        case kDataTypeEnum:
+          f_parse_property(L, p, luaL_checkstring(L, idx));
+          break;
+        default:
+          assert(!"Parsing of properties not supported out of the box");
       }
       break;
     case LUA_TBOOLEAN:
@@ -407,27 +385,25 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
       PROP_SetValue(p, &number);
       break;
     case LUA_TNUMBER:
-      if (p->type == kDataTypeGroup) {
-        uint32_t k = 0;
-        FOR_LOOP(j, p->pdesc->NumComponents) {
-          switch (p->pdesc[j+1].DataType) {
-            case kDataTypeFloat:
-              ((float*)p->value)[k++] = luaL_checknumber(L, idx);
-              break;
-            case kDataTypeInt:
-              ((int*)p->value)[k++] = luaL_checknumber(L, idx);
-              break;
-            case kDataTypeGroup:
-              // skip
-              break;
-            default:
-              return luaL_error(L, "incorrect type %d in group property %s for number input", p->pdesc[j+1].DataType, p->name);
+      switch (p->type) {
+        case kDataTypeStruct:
+          // TODO: do we want to support such syntax?
+          for (size_t s = 0; s < p->pdesc->DataSize/sizeof(float); s++) {
+            ((float*)p->value)[s] = luaL_checknumber(L, idx);
           }
-        }
-      } else{
-        assert(p->type == kDataTypeInt || p->type == kDataTypeFloat);
-        number = luaL_checknumber(L, idx);
-        PROP_SetValue(p, &number);
+          break;
+        case kDataTypeFloat:
+          PROP_SetValue(p, &(float){luaL_checknumber(L, idx)});
+          break;
+        case kDataTypeBool:
+        case kDataTypeInt:
+        case kDataTypeEnum:
+          number = luaL_checknumber(L, idx);
+          PROP_SetValue(p, &(int){luaL_checknumber(L, idx)});
+          break;
+        default:
+          assert(!"Unsupported type for property assigning from number");
+          break;
       }
       break;
     case LUA_TTABLE:
@@ -441,17 +417,13 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
       switch (p->type) {
         case kDataTypeObject:
           if ((udata = luaL_testudata(L, idx, API_TYPE_OBJECT))) PROP_SetValue(p, &udata);
-          else return luaL_error(L, "Incorrect userdata for %s(%s) property\n", p->name, API_TYPE_OBJECT);
-          break;
-        case kDataTypeGroup:
-          if ((udata = luaL_testudata(L, idx, p->userdata))) PROP_SetValue(p, udata);
-          else return luaL_error(L, "Incorrect userdata for %s(%s) property\n", p->name, p->userdata);
+          else return luaL_error(L, "Incorrect userdata for %s(%s) property\n", p->pdesc->Name, API_TYPE_OBJECT);
           break;
         case kDataTypeStruct:
           PROP_SetValue(p, luaL_checkudata(L, idx, PROP_GetUserData(p)));
           break;
         default:
-          return luaL_error(L, "Incorrect input (lua_type=%d) for (type=%d) %s property\n", lua_type(L, idx), p->type, p->name);
+          return luaL_error(L, "Incorrect input (lua_type=%d) for (type=%d) %s property\n", lua_type(L, idx), p->type, p->pdesc->Name);
       }
       break;
     case LUA_TLIGHTUSERDATA:
@@ -463,12 +435,10 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
 }
 
 void _pushproperty(lua_State* L,
-                   eDataType_t type,
                    void *value,
-                   lpcString_t typestring,
-                   size_t datasize)
+                   lpcPropertyType_t type)
 {
-  switch (type) {
+  switch (type->DataType) {
     case kDataTypeBool:
       lua_pushboolean(L, *((bool_t*)value) != FALSE);
       break;
@@ -476,14 +446,14 @@ void _pushproperty(lua_State* L,
       lua_pushinteger(L, *((int*)value));
       break;
     case kDataTypeEnum:
-      lua_pushstring(L, strlistget(*((int*)value), typestring));
+      lua_pushstring(L, strlistget(*((int*)value), type->TypeString));
       break;
     case kDataTypeFloat:
       lua_pushnumber(L, *((float*)value));
       break;
     case kDataTypeStruct:
-      memcpy(lua_newuserdata(L, datasize), value, datasize);
-      luaL_setmetatable(L, typestring);
+      memcpy(lua_newuserdata(L, type->DataSize), value, type->DataSize);
+      luaL_setmetatable(L, type->TypeString);
       break;
     case kDataTypeLongString:
       lua_pushstring(L, *(lpcString_t*)value);
@@ -497,7 +467,7 @@ void _pushproperty(lua_State* L,
       break;
     case kDataTypeObject: {
       lpObject_t object = *(lpObject_t*)value;
-      if (typestring && strcmp(typestring, "Object") && *(void**)value) {
+      if (strcmp(type->TypeString, "Object") && *(void**)value) {
         object = CMP_GetObject(*(void**)value);
       }
       if (object) {
@@ -507,12 +477,8 @@ void _pushproperty(lua_State* L,
       }
       break;
     }
-    case kDataTypeGroup:
-      memcpy(lua_newuserdata(L, datasize), value, datasize);
-      luaL_setmetatable(L, typestring);
-      break;
     default:
-      fprintf(stderr, "push(): Unsupported property type %d\n", type);
+      fprintf(stderr, "push(): Unsupported property type %d\n", type->DataType);
       break;
   }
 }
@@ -523,7 +489,7 @@ void luaX_pushProperty(lua_State* L, lpcProperty_t property)
     lua_pushnil(L);
     return;
   }
-  _pushproperty(L, property->type, property->value, property->userdata, property->pdesc?property->pdesc->DataSize:4);
+  _pushproperty(L, property->value, property->pdesc);
 }
 
 INLINE bool_t
@@ -538,6 +504,16 @@ PROP_HasHandler(lpProperty_t property)
 }
 
 #define kEventPropertyChanged 0x6d47e0cc
+
+static lpcString_t
+PROP_GetShortName(lpcProperty_t property)
+{
+  if (property->pdesc->FullIdentifier != property->pdesc->ShortIdentifier) {
+    return strrchr(property->pdesc->Name, '.') + 1;
+  } else {
+    return property->pdesc->Name;
+  }
+}
 
 void
 PROP_ProcessEvents(lua_State* L,
@@ -572,7 +548,7 @@ PROP_ProcessEvents(lua_State* L,
 
 void
 PROP_AttachProgram(lpProperty_t p,
-                   enum property_attribute a,
+                   enum PropertyAttribute a,
                    struct token* program,
                    lpcString_t code)
 {
@@ -583,7 +559,7 @@ PROP_AttachProgram(lpProperty_t p,
 bool_t
 PROP_HasProgram(lpProperty_t p)
 {
-  FOR_LOOP(i, ATTR_COUNT)
+  FOR_LOOP(i, PropertyAttribute_Count)
   {
     if (p->programs[i]) {
       return TRUE;
@@ -595,33 +571,13 @@ PROP_HasProgram(lpProperty_t p)
 lpcString_t
 PROP_GetName(lpcProperty_t property)
 {
-  return property->name;
+  return property->pdesc->Name;
 }
 
 lpcString_t
 PROP_GetComponentName(lpcProperty_t property)
 {
-  return property->classname;
-}
-
-void
-PROP_GetFullName(lpcProperty_t property, LPSTR buf, int size)
-{
-  if (property->classname) {
-    snprintf(buf, size, "%s.%s", property->classname, property->name);
-  } else {
-    strncpy(buf, property->name, size);
-  }
-}
-
-lpcString_t
-PROP_GetShortName(lpcProperty_t property)
-{
-  if (property->longIdentifier != property->shortIdentifier) {
-    return strrchr(property->name, '.') + 1;
-  } else {
-    return property->name;
-  }
+  return property->pdesc->Category;
 }
 
 uint32_t
@@ -645,7 +601,7 @@ PROP_SetTypeSize(lpProperty_t p, eDataType_t t, uint32_t s)
 // 	lpProperty_t property = lua_touserdata(L, 2);
 // 	shortStr_t callbackName = {0};
 // 	snprintf(callbackName, sizeof(callbackName), "%sChanged",
-// property->name); 	lpProperty_t callback = PROP_Create(L, object,
+// property->pdesc->Name); 	lpProperty_t callback = PROP_Create(L, object,
 // callbackName, kDataTypeEvent, MAX_PROPERTY_STRING, NULL); 	property->callbackEvent
 // = callback; 	lua_pushlightuserdata(L, callback); 	return 1;
 // }
@@ -653,7 +609,7 @@ PROP_SetTypeSize(lpProperty_t p, eDataType_t t, uint32_t s)
 uint32_t
 PROP_GetLongIdentifier(lpcProperty_t prop)
 {
-  return prop->longIdentifier;
+  return prop->pdesc->FullIdentifier;
 }
 
 void
@@ -667,7 +623,7 @@ OBJ_ReleaseProperties(lpObject_t hobj)
 {
   FOR_EACH_LIST(struct Property, p, OBJ_GetProperties(hobj))
   {
-    FOR_LOOP(i, ATTR_COUNT)
+    FOR_LOOP(i, PropertyAttribute_Count)
     {
       if (p->programs[i]) {
         Token_Release(p->programs[i]);
@@ -693,26 +649,9 @@ PROP_ClearSpecialized(lpProperty_t pprop) {
   }
 }
 
-lpcPropertyDesc_t 
+lpcPropertyType_t 
 PROP_GetDesc(lpcProperty_t prop) {
   return prop->pdesc;
-}
-
-void
-PROP_Parse(lpProperty_t p, lpcString_t string)
-{
-  if (!_PDESC_Parse) {
-    fprintf(stderr, "PDESC_Parse() is not registered, do 'require \"orca.parsers.xml\"' first\n");
-  } else {
-    _PDESC_Parse(p->object, p->pdesc ? p->pdesc: &(struct PropertyDesc){
-      .DataType = p->type,
-      .DataSize = PROP_GetSize(p),
-      .TypeString = p->userdata,
-    }, p, string, p->value);
-    p->flags &= ~PF_NIL;
-    p->flags |= PF_MODIFIED;
-    OBJ_SetDirty(p->object);
-  }
 }
 
 #include <source/editor/ed_stab_property.h>

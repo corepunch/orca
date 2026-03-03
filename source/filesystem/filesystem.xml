@@ -2,9 +2,26 @@
 <!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
 <module name="filesystem" namespace="orca" on-luaopen="on_filesystem_module_registered" prefix="FS_">
   <event name="ReadCommands" type="void"/>
+  
   <resource type="Package"/>
-  <class name="Workspace">
-  </class>
+  
+  <struct name="ProjectReference" sealed="true">
+    <summary>External project reference</summary>
+    <details>Consists of a name and a relative path to the project</details>
+    <field name="Name" type="fixed">Name of the project, will be used as Project/Library/Resource when referencing it's resources</field>
+    <field name="Path" type="fixed">Path to the project relative to the workspace</field>
+  </struct>
+  
+  <struct name="SystemMessage" sealed="true">
+    <summary>Handler of system messages you can add to your project</summary>
+    <details>Handles system messages sent to the application. Each system message defines a message type, an associated key, and a command to execute when the message is received. This allows the application to respond to system events and user interactions through a configurable message dispatch system.</details>
+    <field name="Message" type="fixed">Message name, i.e. KeyDown</field>
+    <field name="Key" type="fixed">Associated key for the message, if applicable</field>
+    <field name="Command" type="fixed">Command to execute when the message is received</field>
+  </struct>
+
+  <class name="Workspace" />
+  
   <class name="Project">
     <handles event="Start"/>
     <property name="HalfFloatTextureFormat" type="bool"/>
@@ -53,8 +70,12 @@
     <property name="DefaultMaterial" type="fixed"/>
 
     <!-- These probably don't belong in Project? -->
-    <property name="Width" type="int"/>
-    <property name="Height" type="int"/>
+    <property name="WindowWidth" type="int"/>
+    <property name="WindowHeight" type="int"/>
+    
+    <property name="PropertyTypes" type="PropertyType" array="true" />
+    <property name="ProjectReferences" type="ProjectReference" array="true" />
+    <property name="SystemMessages" type="SystemMessage" array="true"/>
 
     <field name="isPackage" type="bool"/>
     <field name="package" type="Package" pointer="true"/>
@@ -79,9 +100,6 @@
   <class name="TransitionLibrary" parent="Library" default="Transitions"/>
   <class name="SplineLibrary" parent="Library" default="Splines"/>
   <class name="PrefabLibrary" parent="Library" default="Prefabs" content="Node"/>
-  <class name="ProjectReferenceLibrary" parent="Library" default="Project References">
-    <handles event="Attached"/>
-  </class>
   <class name="ProfileLibrary" parent="Library" default="Profiles"/>
   <class name="EnginePluginLibrary" parent="Library" default="Engine Plugins">
     <handles event="Attached"/>
@@ -101,7 +119,6 @@
   <class name="StateManagerLibrary" parent="Library" default="State Managers"/>
   <class name="ConnectServiceLibrary" parent="Library" default="Connect Services"/>
   <class name="ConnectUserServiceLibrary" parent="Library" default="Connect User Services"/>
-  <class name="PropertyTypeLibrary" parent="Library" default="Property Types"/>
   
   <!--  { LIBRARY(ComponentTypeLibrary), "Components", "Component", FALSE },-->
   <!--  { LIBRARY(DataSourceTypeLibrary), "DataSourceTypes", "DataSourceType", FALSE },-->
@@ -113,17 +130,9 @@
   
   <class name="SpriteLibrary" parent="Library" default="Sprites"/>
   <class name="SpriteAnimationLibrary" parent="Library" default="Sprite Animations"/>
-
-  <class name="MessageLibrary" parent="Library" default="Messages"/>
-  <class name="SystemMessage">
-    <property name="Message" type="fixed"/>
-    <property name="Key" type="fixed"/>
-  </class>
-  
   <class name="ImageLibrary" parent="Library" default="Images"/>
   <class name="FontLibrary" parent="Library" default="Fonts"/>
   
-  <class name="ProjectReferenceItem"/>
   <class name="LocaleReferenceItem"/>
   <class name="Tag">
     <property name="TagIsInherited" type="bool"/>
@@ -142,25 +151,11 @@
   <class name="Entry"/>
   <class name="ThemeDefaultValuesDictionary"/>
   
-  <function name="GetWorkspace">
-    <summary>Retrieves main workspace object.</summary>
-    <returns type="Object" pointer="true"/>
-  </function>
-  
   <function name="GetBaseName">
     <summary>Gets the base filename from a path</summary>
     <details>Extracts the filename component from a file path, including the extension. For example, given "/path/to/file. txt", returns "file.txt".  This is useful for displaying filenames or logging without the full directory path.</details>
     <arg name="path" type="string">The file path to extract the basename from</arg>
     <returns type="string">Pointer to the base filename within the original path string</returns>
-  </function>
-  
-  <function name="GetPathName">
-    <summary>Extracts the path without query parameters</summary>
-    <details>Copies the path into the provided buffer, truncating at the first '?' character if present. This is useful for removing query string parameters from paths (e.g., "file.txt?param=value" becomes "file.txt"). The output buffer is zeroed before copying, and the copy is limited to the maximum buffer length.</details>
-    <arg name="path" type="string">The file path to process</arg>
-    <arg name="out" type="string">Output buffer to receive the path without query parameters</arg>
-    <arg name="maxlen" type="int">Maximum length of the output buffer</arg>
-    <returns type="string">Pointer to the output buffer containing the cleaned path</returns>
   </function>
   
   <function name="GetDirName">
@@ -212,5 +207,17 @@
     <details>Creates a package from the specified directory path and adds it to the global resource search path. When loading resources (such as UI files, scripts, textures, or other assets), the system will search through all added packages in order to locate the requested file. The Lua state is used to maintain the list of active packages for script integration.  The function returns the created package for further reference or manipulation.</details>
     <arg name="path" type="string">The directory of the package to add to the search path</arg>
     <returns type="Package" pointer="true">Pointer to the created and registered package</returns>
+  </function>
+
+  <function name="SetWorkspace">
+    <summary>Sets the current workspace</summary>
+    <details>Assigns the provided workspace object as the active workspace for the application. The workspace contains project settings, libraries, and other global configurations. Setting the workspace may trigger events or updates in the application to reflect the new context.</details>
+    <arg name="workspace" type="Object" pointer="true">Pointer to the workspace object to set as active</arg>
+  </function>
+
+  <function name="GetWorkspace">
+    <summary>Gets the current workspace</summary>
+    <details>Returns the currently active workspace object for the application. The workspace contains project settings, libraries, and other global configurations. This function allows querying the current workspace context without modifying it.</details>
+    <returns type="Object" pointer="true">Pointer to the currently active workspace object</returns>
   </function>
 </module>

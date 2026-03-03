@@ -177,6 +177,7 @@ luaX_pushshape(lua_State *L, lpcshape_t shape);
 ORCA_API lpshape_t
 luaX_checkshape(lua_State *L, int idx);
 
+#define BlendMode_Count 6
 typedef enum BlendMode {
 	kBlendModeAlphaAutomatic, /// Automatic alpha mode selection
 	kBlendModeOpaque, /// Fully opaque rendering, no transparency
@@ -185,7 +186,9 @@ typedef enum BlendMode {
 	kBlendModePremultipliedAlpha, /// Alpha-premultiplied blending
 	kBlendModeMixedAlpha, /// Mixed alpha composition
 } eBlendMode_t;
+ORCA_API const char *BlendModeToString(enum BlendMode);
 
+#define CompareFunc_Count 9
 typedef enum CompareFunc {
 	kCompareFuncNever, /// Test never passes - all fragments are rejected
 	kCompareFuncAlways, /// Test always passes - all fragments are accepted
@@ -197,19 +200,25 @@ typedef enum CompareFunc {
 	kCompareFuncNotEqual, /// Test passes if new value does not equal stored value
 	kCompareFuncDisabled, /// Testing is disabled - equivalent to Always but may have performance benefits
 } eCompareFunc_t;
+ORCA_API const char *CompareFuncToString(enum CompareFunc);
 
+#define TextureFilter_Count 3
 typedef enum TextureFilter {
 	kTextureFilterNearest, /// Uses nearest-neighbor sampling for sharp, pixelated appearance.
 	kTextureFilterLinear, /// Uses bilinear interpolation for smooth texture sampling.
 	kTextureFilterTrilinear, /// Uses trilinear interpolation with mipmap blending for high-quality filtered textures.
 } eTextureFilter_t;
+ORCA_API const char *TextureFilterToString(enum TextureFilter);
 
+#define TextureWrap_Count 3
 typedef enum TextureWrap {
 	kTextureWrapClamp, /// Clamps texture coordinates to [0, 1] range, repeating edge pixels beyond boundaries.
 	kTextureWrapRepeat, /// Repeats the texture pattern when coordinates exceed [0, 1] range.
 	kTextureWrapBase, /// Uses base texture addressing mode (platform-specific default behavior).
 } eTextureWrap_t;
+ORCA_API const char *TextureWrapToString(enum TextureWrap);
 
+#define TextureFormat_Count 6
 typedef enum TextureFormat {
 	kTextureFormatAutomatic, /// Uses default format from project settings, typically Rgba8 for standard color textures.
 	kTextureFormatRgba8, /// Four-channel 8-bit format with red, green, blue, and alpha components (32 bits per pixel).
@@ -218,14 +227,18 @@ typedef enum TextureFormat {
 	kTextureFormatDepthComponent, /// Single-channel depth format for depth buffer rendering and shadow mapping.
 	kTextureFormatDepthStencil, /// Combined depth and stencil format for advanced rendering techniques requiring both depth testing and stencil operations.
 } eTextureFormat_t;
+ORCA_API const char *TextureFormatToString(enum TextureFormat);
 
+#define MipmapMode_Count 4
 typedef enum MipmapMode {
 	kMipmapModeBase, /// Only the base (highest-resolution) mip level is used. Fastest, but can cause aliasing when textures are minified.
 	kMipmapModeNearest, /// Selects the nearest mip level based on the distance, without blending between levels. Produces sharper but less smooth transitions.
 	kMipmapModeLinear, /// Interpolates between two nearest mip levels for smoother transitions. Common default for high-quality rendering.
 	kMipmapModeTrilinear, /// Performs linear filtering across both texel and mip levels, providing the smoothest possible texture transitions (slightly slower).
 } eMipmapMode_t;
+ORCA_API const char *MipmapModeToString(enum MipmapMode);
 
+#define AnisotropyType_Count 5
 typedef enum AnisotropyType {
 	kAnisotropyTypeNone, /// Disables anisotropic filtering. Texture detail will degrade at oblique viewing angles.
 	kAnisotropyTypeX2, /// Applies 2x anisotropic filtering, modestly improving texture clarity at shallow angles.
@@ -233,6 +246,7 @@ typedef enum AnisotropyType {
 	kAnisotropyTypeX8, /// Applies 8x anisotropic filtering for high-quality rendering with moderate cost.
 	kAnisotropyTypeX16, /// Applies 16x anisotropic filtering for the sharpest textures at glancing angles, at higher GPU cost.
 } eAnisotropyType_t;
+ORCA_API const char *AnisotropyTypeToString(enum AnisotropyType);
 
 typedef struct Texture Texture, *TexturePtr;
 typedef struct Texture const *TextureCPtr;
@@ -254,6 +268,7 @@ struct Texture {
 	bool_t loaded; /// Used for on-demand texture loading.
 };
 
+#define ImageFormat_Count 5
 typedef enum ImageFormat {
 	kImageFormatPng, /// Portable Network Graphics — lossless compression, supports alpha channel, widely used for UI textures and screenshots
 	kImageFormatJpeg, /// Joint Photographic Experts Group — lossy compression, smaller file sizes, no full alpha support, suitable for photos
@@ -261,7 +276,9 @@ typedef enum ImageFormat {
 	kImageFormatAstc, /// Adaptive Scalable Texture Compression — block-based GPU texture compression format supporting lossy and near-lossless modes, with alpha channel support. Optimized for real-time rendering and mobile/embedded GPUs.
 	kImageFormatPvrtc, /// PowerVR Texture Compression — hardware texture compression format optimized for PowerVR GPUs (common in iOS devices). Provides efficient storage with optional alpha support, suitable for mobile real-time graphics.
 } eImageFormat_t;
+ORCA_API const char *ImageFormatToString(enum ImageFormat);
 
+#define AstcFormat_Count 28
 typedef enum AstcFormat {
 	kAstcFormatUnormBlock4x4, /// 4×4 block, unsigned normalized RGBA — highest quality, 8 bits per channel
 	kAstcFormatUnormBlock5x4, /// 5×4 block, unsigned normalized RGBA — slightly higher compression, good quality
@@ -292,13 +309,17 @@ typedef enum AstcFormat {
 	kAstcFormatSrgbBlock12x10, /// 12×10 block, sRGB color space — extreme compression, low visual fidelity
 	kAstcFormatSrgbBlock12x12, /// 12×12 block, sRGB color space — maximum compression, lowest quality
 } eAstcFormat_t;
+ORCA_API const char *AstcFormatToString(enum AstcFormat);
 
+#define AtcCompressionScheme_Count 3
 typedef enum AtcCompressionScheme {
 	kAtcCompressionSchemeExplicitAlpha, /// RGB + separate alpha block (8 bits) — better alpha quality, slightly larger size
 	kAtcCompressionSchemeInterpolatedAlpha, /// RGB + interpolated alpha values — smaller size, lower alpha precision
 	kAtcCompressionSchemeRgb, /// RGB only, no alpha channel — smallest size and fastest decoding
 } eAtcCompressionScheme_t;
+ORCA_API const char *AtcCompressionSchemeToString(enum AtcCompressionScheme);
 
+#define AstcCompressionSpeed_Count 5
 typedef enum AstcCompressionSpeed {
 	kAstcCompressionSpeedVeryFast, /// lowest quality, fastest encode — for real-time or previews
 	kAstcCompressionSpeedFast, /// slightly better quality, still quite fast
@@ -306,7 +327,9 @@ typedef enum AstcCompressionSpeed {
 	kAstcCompressionSpeedThorough, /// slower, higher quality (offline textures)
 	kAstcCompressionSpeedExhaustive, /// best possible quality, extremely slow — for final offline baking
 } eAstcCompressionSpeed_t;
+ORCA_API const char *AstcCompressionSpeedToString(enum AstcCompressionSpeed);
 
+#define RawColorByteFormat_Count 7
 typedef enum RawColorByteFormat {
 	kRawColorByteFormatRgba8, /// 8 bits per channel, unsigned normalized RGBA — the standard format for general use
 	kRawColorByteFormatRgb8, /// 8 bits per channel, unsigned normalized RGB — no alpha channel
@@ -316,7 +339,9 @@ typedef enum RawColorByteFormat {
 	kRawColorByteFormatR11g11b10f, /// 11/11/10-bit floating point RGB, no alpha — optimized for HDR rendering
 	kRawColorByteFormatRgba32f, /// 32-bit floating point per channel RGBA — maximum precision, used in offline or scientific rendering
 } eRawColorByteFormat_t;
+ORCA_API const char *RawColorByteFormatToString(enum RawColorByteFormat);
 
+#define FilePngCompressionLevel_Count 5
 typedef enum FilePngCompressionLevel {
 	kFilePngCompressionLevelNone, /// no compression — largest files, fastest save
 	kFilePngCompressionLevelFast, /// light compression — minimal size reduction, quick encode
@@ -324,17 +349,22 @@ typedef enum FilePngCompressionLevel {
 	kFilePngCompressionLevelMaximum, /// highest compression — smallest files, slower encode
 	kFilePngCompressionLevelProjectDefault, /// use compression level defined by project settings
 } eFilePngCompressionLevel_t;
+ORCA_API const char *FilePngCompressionLevelToString(enum FilePngCompressionLevel);
 
+#define SpansionCompressionScheme_Count 3
 typedef enum SpansionCompressionScheme {
 	kSpansionCompressionSchemeNone, /// No compression applied to the data — used when maximum speed is required or when compression is handled elsewhere in the system
 	kSpansionCompressionSchemeStandard, /// Standard compression applied — balances between compression ratio and speed
 	kSpansionCompressionSchemeEnhanced, /// Enhanced compression applied — achieves higher compression ratios at the cost of increased processing time
 } eSpansionCompressionScheme_t;
+ORCA_API const char *SpansionCompressionSchemeToString(enum SpansionCompressionScheme);
 
+#define ImageType_Count 2
 typedef enum ImageType {
 	kImageTypeNormal,
 	kImageTypeMask,
 } eImageType_t;
+ORCA_API const char *ImageTypeToString(enum ImageType);
 
 typedef struct Image Image, *ImagePtr;
 typedef struct Image const *ImageCPtr;
@@ -366,6 +396,7 @@ struct Image {
 	fixedString_t FileExportSourceImage;
 };
 
+#define RenderTargetType_Count 7
 typedef enum RenderTargetType {
 	kRenderTargetTypeColor, /// Standard color attachment used for rendering the final image or intermediate color buffers
 	kRenderTargetTypeDepth, /// Depth buffer attachment — stores depth information used for depth testing during rendering
@@ -375,7 +406,9 @@ typedef enum RenderTargetType {
 	kRenderTargetTypeSpecular, /// Optional attachment for storing specular intensity or color in deferred shading pipelines
 	kRenderTargetTypeEmission, /// Optional attachment storing emissive light information for glow or lighting accumulation passes
 } eRenderTargetType_t;
+ORCA_API const char *RenderTargetTypeToString(enum RenderTargetType);
 
+#define RenderTargetTextureAttachment_Count 8
 typedef enum RenderTargetTextureAttachment {
 	kRenderTargetTextureAttachmentNone, /// No attachment — the texture is not bound to any framebuffer slot
 	kRenderTargetTextureAttachmentColor0, /// First color attachment (default target for most rendering)
@@ -386,6 +419,7 @@ typedef enum RenderTargetTextureAttachment {
 	kRenderTargetTextureAttachmentStencil, /// Stencil attachment — used for stencil operations
 	kRenderTargetTextureAttachmentDepthStencil, /// Combined depth-stencil attachment
 } eRenderTargetTextureAttachment_t;
+ORCA_API const char *RenderTargetTextureAttachmentToString(enum RenderTargetTextureAttachment);
 
 typedef struct RenderTargetTexture RenderTargetTexture, *RenderTargetTexturePtr;
 typedef struct RenderTargetTexture const *RenderTargetTextureCPtr;
@@ -419,18 +453,22 @@ struct IOSurfaceTexture {
 	int32_t IOSurface; /// The IOSurface identifier used to look up and bind the shared surface as a texture.
 };
 
+#define FloatPrecision_Count 4
 typedef enum FloatPrecision {
 	kFloatPrecisionUnset, /// No precision specified, may cause issues.
 	kFloatPrecisionLow, /// Lowest precision, typically 8-16 bits. Suitable for color values and non-critical calculations.
 	kFloatPrecisionMedium, /// Medium precision, typically 16-24 bits. Ideal for texture coordinates and general-purpose calculations.
 	kFloatPrecisionHigh, /// Highest precision, typically 32 bits. Required for vertex positions, matrices, and critical transformations.
 } eFloatPrecision_t;
+ORCA_API const char *FloatPrecisionToString(enum FloatPrecision);
 
+#define Shading_Count 3
 typedef enum Shading {
 	kShadingUnlit, /// No lighting calculations applied. Renders surfaces with their base color and texture without any light interaction. Suitable for UI elements, emissive materials, or pre-baked lighting.
 	kShadingPhong, /// Classic Phong lighting model with ambient, diffuse, and specular components. Provides good performance with convincing highlights and shading for general-purpose 3D rendering.
 	kShadingStandard, /// Physically-based rendering (PBR) model. Provides realistic material appearance based on physical light interaction principles, supporting metallic and roughness workflows.
 } eShading_t;
+ORCA_API const char *ShadingToString(enum Shading);
 
 typedef struct VertexShader VertexShader, *VertexShaderPtr;
 typedef struct VertexShader const *VertexShaderCPtr;

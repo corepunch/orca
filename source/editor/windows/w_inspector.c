@@ -184,14 +184,8 @@ ED_PrintProperty(LPPROPDEF pdef, LPVOID parm)
     case kDataTypeStruct:
       if (!strcmp(pdef->lpEnumValues, "Color")) {
         PrintColorProperty(wnd, pdef);
-      } else {
-        PrintVectorProperty(wnd, pdef, pdef->dwSize/sizeof(float), 0);
-      }
-      break;
-    case kDataTypeGroup:
-      if (!strcmp(pdef->szName, "LayoutTransform") ||
-          !strcmp(pdef->szName, "RenderTransform"))
-      {
+      } else if (!strcmp(pdef->szName, "LayoutTransform") ||
+                 !strcmp(pdef->szName, "RenderTransform")) {
         switch (pdef->dwSize) {
           case sizeof(struct transform2):
             PrintTransform2Property(wnd, pdef);
@@ -200,6 +194,8 @@ ED_PrintProperty(LPPROPDEF pdef, LPVOID parm)
             PrintTransform3Property(wnd, pdef);
             break;
         }
+      } else {
+        PrintVectorProperty(wnd, pdef, pdef->dwSize/sizeof(float), 0);
       }
       break;
     case kDataTypeBool:
@@ -313,7 +309,7 @@ ED_PrintInspector(HEDWND wnd, LPINSPSTRUCT inspector)
     }
 
     UI_EnumObjectProperties(inspector->selected.object, ED_PrintProperty, wnd);
-    UI_EnumObjectPropertyTypes(inspector->selected.object, ED_PrintPropertyType, wnd);
+//    UI_EnumObjectPropertyTypes(inspector->selected.object, ED_PrintPropertyType, wnd);
 
     ED_PrintProperty(&(struct _PROPDEF) {
       .szName = "",

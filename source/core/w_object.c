@@ -137,6 +137,7 @@ int f_new_Object(lua_State *L) {
     luaX_parsefield(lpcString_t, __name, -1, luaL_optstring, NULL);
     if (__name && strcmp(__name, "LuaBehaviour")) {
       OBJ_SetName(pobj, __name);
+      OBJ_SetClassName(pobj, __name);
     }
   }
   lua_pop(L, 1);
@@ -269,31 +270,42 @@ bool_t OBJ_API(SetProperty, lpcString_t name) {
     GetNode2D(self)->LayoutTransform.translation.y = luaL_checknumber(L, 3);
     return TRUE;
   }
-  // convert to PascalCase
   lpProperty_t property = NULL;
+  if (lua_type(L, 3) == LUA_TTABLE) { // store table for safekeeping
+    luaX_parsefield(lpObject_t, __userdata, 3, luaL_testudata, API_TYPE_OBJECT);
+    if (__userdata) {
+      lua_pushfstring(L, "__hook_%s", name);
+      lua_pushvalue(L, 3);
+      lua_rawset(L, 1);
+    }
+  }
   if (SUCCEEDED(OBJ_FindShortProperty(self, PascalCase(name), &property))) {
     luaX_readProperty(L, 3, property);
     return TRUE;
-  } else if (lua_type(L, 3) == LUA_TSTRING) {
-    property = PROP_Create(L, self, name, kDataTypeLongString, NULL);
-    luaX_readProperty(L, 3, property);
-    return TRUE;
-  } else if (lua_type(L, 3) == LUA_TNUMBER) {
-    property = PROP_Create(L, self, name, kDataTypeFloat, NULL);
-    luaX_readProperty(L, 3, property);
-    return TRUE;
-  } else if (lua_type(L, 3) == LUA_TBOOLEAN) {
-    property = PROP_Create(L, self, name, kDataTypeBool, NULL);
-    luaX_readProperty(L, 3, property);
-    return TRUE;
-  } else if (luaL_testudata(L, 3, API_TYPE_OBJECT)) {
-    property = PROP_Create(L, self, name, kDataTypeObject, "Object");
-    luaX_readProperty(L, 3, property);
-    return TRUE;
-  } else if (!strcmp(name, "Material.Texture")) {
-    property = PROP_Create(L, self, name, kDataTypeObject, "Texture");
-    luaX_readProperty(L, 3, property);
-    return TRUE;
+//  } else if (lua_type(L, 3) == LUA_TSTRING) {
+//    property = PROP_Create(L, self, name, kDataTypeLongString, NULL);
+//    luaX_readProperty(L, 3, property);
+//    return TRUE;
+//  } else if (lua_type(L, 3) == LUA_TNUMBER) {
+//    property = PROP_Create(L, self, name, kDataTypeFloat, NULL);
+//    luaX_readProperty(L, 3, property);
+//    return TRUE;
+//  } else if (lua_type(L, 3) == LUA_TBOOLEAN) {
+//    property = PROP_Create(L, self, name, kDataTypeBool, NULL);
+//    luaX_readProperty(L, 3, property);
+//    return TRUE;
+//  } else if (luaL_testudata(L, 3, API_TYPE_OBJECT)) {
+//    property = PROP_Create(L, self, name, kDataTypeObject, "Object");
+//    luaX_readProperty(L, 3, property);
+//    return TRUE;
+//  } else if (!strcmp(name, "Material.Texture")) {
+//    property = PROP_Create(L, self, &(struct PropertyType) {
+//      .Name = name,
+//      .DataType = kDataTypeObject,
+//      .TypeString = "Texture"
+//    });
+//    luaX_readProperty(L, 3, property);
+//    return TRUE;
   } else if (lua_type(L, 3) == LUA_TFUNCTION) {
     OBJ_ProcessFunctions(self, name);
     return FALSE;
@@ -467,16 +479,6 @@ void OBJ_API(SetContext)
 void OBJ_Play(lpObject_t self, lpcString_t animation)
 {
 //  OBJ_SetAnimation(self, string_2);
-}
-
-void OBJ_API(Bind, lpcString_t property, lpcString_t expression) {
-  lpProperty_t hProperty = NULL;
-  if (FAILED(OBJ_FindShortProperty(self, property, &hProperty))) {
-    hProperty = PROP_Create(L, self, property, kDataTypeNone, NULL);
-  }
-//  PROP_AttachProgram(hProperty, 0, expression, TRUE);
-  // TODO: implement binding in scripts
-  Con_Error("Binding not implemented");
 }
 
 static int f_rebuild_finalize(lua_State *L, int status, lua_KContext ctx) {

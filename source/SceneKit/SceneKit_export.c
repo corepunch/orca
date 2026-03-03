@@ -2,20 +2,28 @@
 #include <include/api.h>
 #include <source/SceneKit/SceneKit.h>
 #define DECL(SHORT, LONG, CLASS, NAME, FIELD, TYPE,...) { \
-	.id=&(struct ID){.Name=#CLASS"."NAME,.Identifier=SHORT}, \
+	.Name=#CLASS"."NAME, \
+	.Category=#CLASS, \
+	.ShortIdentifier=SHORT, \
 	.FullIdentifier=LONG, \
 	.Offset=offsetof(struct CLASS, FIELD), \
 	.DataSize=sizeof(((struct CLASS *)NULL)->FIELD), \
 	.DataType=TYPE, ##__VA_ARGS__ }
 #define ARRAY_DECL(SHORT, LONG, CLASS, NAME, FIELD, TYPE,...) { \
-	.id=&(struct ID){.Name=#CLASS"."NAME,.Identifier=SHORT}, \
+	.Name=#CLASS"."NAME, \
+	.Category=#CLASS, \
+	.ShortIdentifier=SHORT, \
 	.FullIdentifier=LONG, \
 	.Offset=offsetof(struct CLASS, FIELD), \
 	.DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), \
 	.DataType=TYPE, \
 	.IsArray=TRUE, ##__VA_ARGS__ }
 
-static const char *_StencilOp[] = {"keep","zero","replace","increment","incrementwrap","decrement","decrementwrap","invert",NULL};
+static const char *_StencilOp[] = {"Keep","Zero","Replace","Increment","IncrementWrap","Decrement","DecrementWrap","Invert",NULL};
+const char *StencilOpToString(enum StencilOp value) {
+	assert(value >= 0 && value < 8);
+	return _StencilOp[value];
+}
 eStencilOp_t luaX_checkStencilOp(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _StencilOp);
 }
@@ -23,10 +31,8 @@ void luaX_pushStencilOp(lua_State *L, eStencilOp_t value) {
 	assert(value >= 0 && value < 8);
 	lua_pushstring(L, _StencilOp[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoStencilOp(lpcString_t string, enum StencilOp* output) {
 	if (string == NULL) return FALSE;
-	const char* _StencilOp[] = { "Keep", "Zero", "Replace", "Increment", "IncrementWrap", "Decrement", "DecrementWrap", "Invert", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -39,7 +45,11 @@ ORCA_API lpcString_t __strtoStencilOp(lpcString_t string, enum StencilOp* output
 	Con_Error("Could not parse '%s' value of property StencilOp", string);
 	return string + strlen(string);
 }
-static const char *_ViewportMode[] = {"relative","absolute",NULL};
+static const char *_ViewportMode[] = {"Relative","Absolute",NULL};
+const char *ViewportModeToString(enum ViewportMode value) {
+	assert(value >= 0 && value < 2);
+	return _ViewportMode[value];
+}
 eViewportMode_t luaX_checkViewportMode(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _ViewportMode);
 }
@@ -47,10 +57,8 @@ void luaX_pushViewportMode(lua_State *L, eViewportMode_t value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _ViewportMode[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoViewportMode(lpcString_t string, enum ViewportMode* output) {
 	if (string == NULL) return FALSE;
-	const char* _ViewportMode[] = { "Relative", "Absolute", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -63,7 +71,11 @@ ORCA_API lpcString_t __strtoViewportMode(lpcString_t string, enum ViewportMode* 
 	Con_Error("Could not parse '%s' value of property ViewportMode", string);
 	return string + strlen(string);
 }
-static const char *_CullMode[] = {"none","back","front",NULL};
+static const char *_CullMode[] = {"None","Back","Front",NULL};
+const char *CullModeToString(enum CullMode value) {
+	assert(value >= 0 && value < 3);
+	return _CullMode[value];
+}
 eCullMode_t luaX_checkCullMode(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _CullMode);
 }
@@ -71,10 +83,8 @@ void luaX_pushCullMode(lua_State *L, eCullMode_t value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _CullMode[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoCullMode(lpcString_t string, enum CullMode* output) {
 	if (string == NULL) return FALSE;
-	const char* _CullMode[] = { "None", "Back", "Front", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -87,7 +97,11 @@ ORCA_API lpcString_t __strtoCullMode(lpcString_t string, enum CullMode* output) 
 	Con_Error("Could not parse '%s' value of property CullMode", string);
 	return string + strlen(string);
 }
-static const char *_ColorWriteMode[] = {"none","rgb","rgba","r","g","b","gb","a",NULL};
+static const char *_ColorWriteMode[] = {"None","RGB","RGBA","R","G","B","GB","A",NULL};
+const char *ColorWriteModeToString(enum ColorWriteMode value) {
+	assert(value >= 0 && value < 8);
+	return _ColorWriteMode[value];
+}
 eColorWriteMode_t luaX_checkColorWriteMode(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _ColorWriteMode);
 }
@@ -95,10 +109,8 @@ void luaX_pushColorWriteMode(lua_State *L, eColorWriteMode_t value) {
 	assert(value >= 0 && value < 8);
 	lua_pushstring(L, _ColorWriteMode[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoColorWriteMode(lpcString_t string, enum ColorWriteMode* output) {
 	if (string == NULL) return FALSE;
-	const char* _ColorWriteMode[] = { "None", "RGB", "RGBA", "R", "G", "B", "GB", "A", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -111,7 +123,11 @@ ORCA_API lpcString_t __strtoColorWriteMode(lpcString_t string, enum ColorWriteMo
 	Con_Error("Could not parse '%s' value of property ColorWriteMode", string);
 	return string + strlen(string);
 }
-static const char *_FovType[] = {"xfov","yfov",NULL};
+static const char *_FovType[] = {"Xfov","Yfov",NULL};
+const char *FovTypeToString(enum FovType value) {
+	assert(value >= 0 && value < 2);
+	return _FovType[value];
+}
 eFovType_t luaX_checkFovType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _FovType);
 }
@@ -119,10 +135,8 @@ void luaX_pushFovType(lua_State *L, eFovType_t value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _FovType[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoFovType(lpcString_t string, enum FovType* output) {
 	if (string == NULL) return FALSE;
-	const char* _FovType[] = { "Xfov", "Yfov", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -135,7 +149,11 @@ ORCA_API lpcString_t __strtoFovType(lpcString_t string, enum FovType* output) {
 	Con_Error("Could not parse '%s' value of property FovType", string);
 	return string + strlen(string);
 }
-static const char *_ProjectionType[] = {"perspective","orthographic",NULL};
+static const char *_ProjectionType[] = {"Perspective","Orthographic",NULL};
+const char *ProjectionTypeToString(enum ProjectionType value) {
+	assert(value >= 0 && value < 2);
+	return _ProjectionType[value];
+}
 eProjectionType_t luaX_checkProjectionType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _ProjectionType);
 }
@@ -143,10 +161,8 @@ void luaX_pushProjectionType(lua_State *L, eProjectionType_t value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _ProjectionType[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoProjectionType(lpcString_t string, enum ProjectionType* output) {
 	if (string == NULL) return FALSE;
-	const char* _ProjectionType[] = { "Perspective", "Orthographic", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -159,7 +175,11 @@ ORCA_API lpcString_t __strtoProjectionType(lpcString_t string, enum ProjectionTy
 	Con_Error("Could not parse '%s' value of property ProjectionType", string);
 	return string + strlen(string);
 }
-static const char *_LightType[] = {"point","spot",NULL};
+static const char *_LightType[] = {"Point","Spot",NULL};
+const char *LightTypeToString(enum LightType value) {
+	assert(value >= 0 && value < 2);
+	return _LightType[value];
+}
 eLightType_t luaX_checkLightType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _LightType);
 }
@@ -167,10 +187,8 @@ void luaX_pushLightType(lua_State *L, eLightType_t value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _LightType[value]);
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoLightType(lpcString_t string, enum LightType* output) {
 	if (string == NULL) return FALSE;
-	const char* _LightType[] = { "Point", "Spot", NULL };
 	if (isdigit(*string)) {
 		*output = strtod(string, (char**)&string);
 		return string;
@@ -184,7 +202,7 @@ ORCA_API lpcString_t __strtoLightType(lpcString_t string, enum LightType* output
 	return string + strlen(string);
 }
 LRESULT Node3D_UpdateMatrix(lpObject_t, lpNode3D_t, wParam_t, UpdateMatrixEventPtr);
-static struct PropertyDesc const Node3DProperties[kNode3DNumProperties] = {
+static struct PropertyType const Node3DProperties[kNode3DNumProperties] = {
 	/* Node3D.LayoutTransform */ DECL(0x3f19bf01, 0x3cc6155a,
 	Node3D, "LayoutTransform", LayoutTransform, kDataTypeStruct, .TypeString="Transform3D"),
 	/* Node3D.LayoutTransformTranslation */ DECL(0xfc7e27e0, 0x34443d45,
@@ -242,7 +260,7 @@ ORCA_API struct ClassDesc _Node3D = {
 	.NumProperties = kNode3DNumProperties,
 };
 LRESULT Scene_UpdateMatrix(lpObject_t, lpScene_t, wParam_t, UpdateMatrixEventPtr);
-static struct PropertyDesc const SceneProperties[kSceneNumProperties] = {
+static struct PropertyType const SceneProperties[kSceneNumProperties] = {
 	/* Scene.Camera */ DECL(0xe74c7b6e, 0x2856ba68,
 	Scene, "Camera", Camera, kDataTypeFixed),
 	/* Scene.PreviewCamera */ DECL(0x14a89218, 0x9ee5ebda,
@@ -287,7 +305,7 @@ ORCA_API struct ClassDesc _Scene = {
 	.NumProperties = kSceneNumProperties,
 };
 LRESULT Model3D_Render(lpObject_t, lpModel3D_t, wParam_t, RenderEventPtr);
-static struct PropertyDesc const Model3DProperties[kModel3DNumProperties] = {
+static struct PropertyType const Model3DProperties[kModel3DNumProperties] = {
 	/* Model3D.Mesh */ DECL(0x07e055dc, 0xa983d6a0,
 	Model3D, "Mesh", Mesh, kDataTypeObject, .TypeString="Mesh"),
 	/* Model3D.Material */ DECL(0xcbd54f80, 0x0c181d04,
@@ -322,7 +340,7 @@ ORCA_API struct ClassDesc _Model3D = {
 	.NumProperties = kModel3DNumProperties,
 };
 LRESULT PlaneMeshNode_Render(lpObject_t, lpPlaneMeshNode_t, wParam_t, RenderEventPtr);
-static struct PropertyDesc const PlaneMeshNodeProperties[kPlaneMeshNodeNumProperties] = {
+static struct PropertyType const PlaneMeshNodeProperties[kPlaneMeshNodeNumProperties] = {
 	/* PlaneMeshNode.PlaneWidth */ DECL(0x8f8d39cf, 0xccbf00b0,
 	PlaneMeshNode, "PlaneWidth", PlaneWidth, kDataTypeFloat),
 	/* PlaneMeshNode.PlaneHeight */ DECL(0x2d44a1f2, 0x16eb9527,
@@ -366,7 +384,7 @@ ORCA_API struct ClassDesc _PlaneMeshNode = {
 	.Defaults = &PlaneMeshNodeDefaults,
 	.NumProperties = kPlaneMeshNodeNumProperties,
 };
-static struct PropertyDesc const CameraProperties[kCameraNumProperties] = {
+static struct PropertyType const CameraProperties[kCameraNumProperties] = {
 	/* Camera.Fov */ DECL(0x137e217c, 0xa851ed83,
 	Camera, "Fov", Fov, kDataTypeFloat),
 	/* Camera.FovType */ DECL(0x0ef1c6f4, 0x57864ddb,
@@ -413,7 +431,7 @@ ORCA_API struct ClassDesc _Camera = {
 	.NumProperties = kCameraNumProperties,
 };
 LRESULT TrajectoryList3D_UpdateMatrix(lpObject_t, lpTrajectoryList3D_t, wParam_t, UpdateMatrixEventPtr);
-static struct PropertyDesc const TrajectoryList3DProperties[kTrajectoryList3DNumProperties] = {
+static struct PropertyType const TrajectoryList3DProperties[kTrajectoryList3DNumProperties] = {
 	/* TrajectoryList3D.Trajectory */ DECL(0x4cf7cbf8, 0x566c23da,
 	TrajectoryList3D, "Trajectory", Trajectory, kDataTypeObject, .TypeString="Trajectory"),
 	/* TrajectoryList3D.ScrollAxis */ DECL(0xeea06ebd, 0x3a6746c7,
@@ -456,7 +474,7 @@ ORCA_API struct ClassDesc _TrajectoryList3D = {
 	.NumProperties = kTrajectoryList3DNumProperties,
 };
 LRESULT Viewport3D_ForegroundContent(lpObject_t, lpViewport3D_t, wParam_t, ForegroundContentEventPtr);
-static struct PropertyDesc const Viewport3DProperties[kViewport3DNumProperties] = {
+static struct PropertyType const Viewport3DProperties[kViewport3DNumProperties] = {
 	/* Viewport3D.Camera */ DECL(0xe74c7b6e, 0xe764c175,
 	Viewport3D, "Camera", Camera, kDataTypeFixed),
 	/* Viewport3D.PreviewCamera */ DECL(0x14a89218, 0x51643a99,
@@ -497,7 +515,7 @@ ORCA_API struct ClassDesc _Viewport3D = {
 	.NumProperties = kViewport3DNumProperties,
 };
 LRESULT PrefabView3D_LoadView(lpObject_t, lpPrefabView3D_t, wParam_t, LoadViewEventPtr);
-static struct PropertyDesc const PrefabView3DProperties[kPrefabView3DNumProperties] = {
+static struct PropertyType const PrefabView3DProperties[kPrefabView3DNumProperties] = {
 	/* PrefabView3D.SCA */ DECL(0x57f28ff6, 0x10804bee,
 	PrefabView3D, "SCA", SCA, kDataTypeFixed),
 	/* PrefabView3D.Prefab */ DECL(0xd6415ba3, 0xc507610b,
@@ -531,7 +549,7 @@ ORCA_API struct ClassDesc _PrefabView3D = {
 	.Defaults = &PrefabView3DDefaults,
 	.NumProperties = kPrefabView3DNumProperties,
 };
-static struct PropertyDesc const RenderPassProperties[kRenderPassNumProperties] = {
+static struct PropertyType const RenderPassProperties[kRenderPassNumProperties] = {
 };
 static struct RenderPass RenderPassDefaults = {};
 LRESULT RenderPassProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -559,7 +577,7 @@ ORCA_API struct ClassDesc _RenderPass = {
 	.Defaults = &RenderPassDefaults,
 	.NumProperties = kRenderPassNumProperties,
 };
-static struct PropertyDesc const CompositionTargetRenderPassProperties[kCompositionTargetRenderPassNumProperties] = {
+static struct PropertyType const CompositionTargetRenderPassProperties[kCompositionTargetRenderPassNumProperties] = {
 };
 static struct CompositionTargetRenderPass CompositionTargetRenderPassDefaults = {};
 LRESULT CompositionTargetRenderPassProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -587,7 +605,7 @@ ORCA_API struct ClassDesc _CompositionTargetRenderPass = {
 	.Defaults = &CompositionTargetRenderPassDefaults,
 	.NumProperties = kCompositionTargetRenderPassNumProperties,
 };
-static struct PropertyDesc const BlitRenderPassProperties[kBlitRenderPassNumProperties] = {
+static struct PropertyType const BlitRenderPassProperties[kBlitRenderPassNumProperties] = {
 };
 static struct BlitRenderPass BlitRenderPassDefaults = {};
 LRESULT BlitRenderPassProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -615,7 +633,7 @@ ORCA_API struct ClassDesc _BlitRenderPass = {
 	.Defaults = &BlitRenderPassDefaults,
 	.NumProperties = kBlitRenderPassNumProperties,
 };
-static struct PropertyDesc const ClearRenderPassProperties[kClearRenderPassNumProperties] = {
+static struct PropertyType const ClearRenderPassProperties[kClearRenderPassNumProperties] = {
 	/* ClearRenderPass.ClearColor */ DECL(0xeb16b675, 0x5ab85c8b,
 	ClearRenderPass, "ClearColor", ClearColor, kDataTypeStruct, .TypeString="Color"),
 	/* ClearRenderPass.ClearDepth */ DECL(0xa444e35b, 0x57443a59,
@@ -649,7 +667,7 @@ ORCA_API struct ClassDesc _ClearRenderPass = {
 	.Defaults = &ClearRenderPassDefaults,
 	.NumProperties = kClearRenderPassNumProperties,
 };
-static struct PropertyDesc const DrawObjectsRenderPassProperties[kDrawObjectsRenderPassNumProperties] = {
+static struct PropertyType const DrawObjectsRenderPassProperties[kDrawObjectsRenderPassNumProperties] = {
 	/* DrawObjectsRenderPass.Camera */ DECL(0xe74c7b6e, 0x83af3705,
 	DrawObjectsRenderPass, "Camera", Camera, kDataTypeFixed),
 	/* DrawObjectsRenderPass.IncludeTags */ DECL(0x785c377a, 0xadfb2f9f,
@@ -683,7 +701,7 @@ ORCA_API struct ClassDesc _DrawObjectsRenderPass = {
 	.Defaults = &DrawObjectsRenderPassDefaults,
 	.NumProperties = kDrawObjectsRenderPassNumProperties,
 };
-static struct PropertyDesc const PipelineStateRenderPassProperties[kPipelineStateRenderPassNumProperties] = {
+static struct PropertyType const PipelineStateRenderPassProperties[kPipelineStateRenderPassNumProperties] = {
 	/* PipelineStateRenderPass.BlendMode */ DECL(0x0038792b, 0x27f55ce7,
 	PipelineStateRenderPass, "BlendMode", BlendMode, kDataTypeEnum, .TypeString="AlphaAutomatic,Opaque,Alpha,Additive,PremultipliedAlpha,MixedAlpha"),
 	/* PipelineStateRenderPass.ColorWriteMode */ DECL(0x9d0d3c20, 0xd331f8d4,
@@ -748,7 +766,7 @@ ORCA_API struct ClassDesc _PipelineStateRenderPass = {
 };
 LRESULT TextBlock3D_Render(lpObject_t, lpTextBlock3D_t, wParam_t, RenderEventPtr);
 LRESULT TextBlock3D_Create(lpObject_t, lpTextBlock3D_t, wParam_t, CreateEventPtr);
-static struct PropertyDesc const TextBlock3DProperties[kTextBlock3DNumProperties] = {
+static struct PropertyType const TextBlock3DProperties[kTextBlock3DNumProperties] = {
 };
 static struct TextBlock3D TextBlock3DDefaults = {};
 LRESULT TextBlock3DProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -782,7 +800,7 @@ ORCA_API struct ClassDesc _TextBlock3D = {
 	.NumProperties = kTextBlock3DNumProperties,
 };
 LRESULT Light3D_Render(lpObject_t, lpLight3D_t, wParam_t, RenderEventPtr);
-static struct PropertyDesc const Light3DProperties[kLight3DNumProperties] = {
+static struct PropertyType const Light3DProperties[kLight3DNumProperties] = {
 	/* Light3D.Color */ DECL(0xe5b43cf8, 0xe4bce9cd,
 	Light3D, "Color", Color, kDataTypeStruct, .TypeString="Color"),
 	/* Light3D.SpotAngle */ DECL(0xe2c2c340, 0x78d3a059,
@@ -826,7 +844,7 @@ ORCA_API struct ClassDesc _Light3D = {
 	.NumProperties = kLight3DNumProperties,
 };
 LRESULT SpriteView_Render(lpObject_t, lpSpriteView_t, wParam_t, RenderEventPtr);
-static struct PropertyDesc const SpriteViewProperties[kSpriteViewNumProperties] = {
+static struct PropertyType const SpriteViewProperties[kSpriteViewNumProperties] = {
 	/* SpriteView.Image */ DECL(0x590ca79a, 0x1b80b626,
 	SpriteView, "Image", Image, kDataTypeObject, .TypeString="Texture"),
 	/* SpriteView.Bounds */ DECL(0x2d2c5028, 0x15deb274,

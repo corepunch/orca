@@ -3,8 +3,9 @@ LIBNAME = orca
 BUILDDIR = build
 SOURCEDIR = source
 DATADIR = data
+RESOURCEDIR = share
 OBJECTDIR = $(BUILDDIR)/obj
-SHAREDIR = $(BUILDDIR)/share/$(APPNAME)
+SHAREDIR = $(BUILDDIR)/share
 BINDIR = $(BUILDDIR)/bin
 LIBDIR = $(BUILDDIR)/lib
 TARGET = $(BINDIR)/$(APPNAME)
@@ -67,7 +68,7 @@ endif
 app: platform
 	$(CC) $(CFLAGS) $(SOURCEDIR)/orca.c -Wall $(LIBS) -o $(TARGET) $(LDFLAGS)
 
-unite: directories buildunite buildlib app
+unite: directories buildunite buildlib app copyshare
 
 %.o: %.c $(HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $(addprefix $(OBJECTDIR)/,$(notdir $@))
@@ -77,6 +78,10 @@ directories:
 	mkdir -p ${BINDIR}
 	mkdir -p ${LIBDIR}
 	mkdir -p ${SHAREDIR}
+
+copyshare:
+	mkdir -p ${SHAREDIR}
+	cp -r ${RESOURCEDIR}/* ${SHAREDIR}/
 
 .PRECIOUS: $(TARGET) $(OBJECTS)
 
@@ -98,6 +103,7 @@ clean:
 	-rm -f $(BINDIR)/paktool
 	-rm -f $(BINDIR)/$(APPNAME)
 	-rm -f $(TARGET)
+	-rm -rf $(SHAREDIR)/*
 	$(MAKE) -C $(PLATFORM_LIBDIR) clean
 
 andrun: unite
@@ -168,4 +174,5 @@ install: all
 	install -m 0644 main.lua $(INST_LUADIR)/orca/main.lua
 
 test:
-	$(TARGET) tests/test1.lua
+	$(TARGET) -test=tests/test1.lua
+	$(TARGET) -test=tests/test.xml

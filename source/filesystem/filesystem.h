@@ -6,6 +6,24 @@
 
 #include <source/filesystem/filesystem_properties.h>
 
+typedef struct ProjectReference ProjectReference_t, *lpProjectReference_t;
+typedef struct ProjectReference const cProjectReference_t, *lpcProjectReference_t;
+/// @brief Push ProjectReference onto Lua stack.
+ORCA_API void
+luaX_pushProjectReference(lua_State *L, lpcProjectReference_t ProjectReference);
+/// @brief Check ProjectReference form Lua stack at index.
+ORCA_API lpProjectReference_t
+luaX_checkProjectReference(lua_State *L, int idx);
+
+typedef struct SystemMessage SystemMessage_t, *lpSystemMessage_t;
+typedef struct SystemMessage const cSystemMessage_t, *lpcSystemMessage_t;
+/// @brief Push SystemMessage onto Lua stack.
+ORCA_API void
+luaX_pushSystemMessage(lua_State *L, lpcSystemMessage_t SystemMessage);
+/// @brief Check SystemMessage form Lua stack at index.
+ORCA_API lpSystemMessage_t
+luaX_checkSystemMessage(lua_State *L, int idx);
+
 typedef struct Workspace Workspace_t, *lpWorkspace_t;
 typedef struct Workspace const cWorkspace_t, *lpcWorkspace_t;
 /// @brief Push Workspace onto Lua stack.
@@ -168,15 +186,6 @@ luaX_pushPrefabLibrary(lua_State *L, lpcPrefabLibrary_t PrefabLibrary);
 ORCA_API lpPrefabLibrary_t
 luaX_checkPrefabLibrary(lua_State *L, int idx);
 
-typedef struct ProjectReferenceLibrary ProjectReferenceLibrary_t, *lpProjectReferenceLibrary_t;
-typedef struct ProjectReferenceLibrary const cProjectReferenceLibrary_t, *lpcProjectReferenceLibrary_t;
-/// @brief Push ProjectReferenceLibrary onto Lua stack.
-ORCA_API void
-luaX_pushProjectReferenceLibrary(lua_State *L, lpcProjectReferenceLibrary_t ProjectReferenceLibrary);
-/// @brief Check ProjectReferenceLibrary form Lua stack at index.
-ORCA_API lpProjectReferenceLibrary_t
-luaX_checkProjectReferenceLibrary(lua_State *L, int idx);
-
 typedef struct ProfileLibrary ProfileLibrary_t, *lpProfileLibrary_t;
 typedef struct ProfileLibrary const cProfileLibrary_t, *lpcProfileLibrary_t;
 /// @brief Push ProfileLibrary onto Lua stack.
@@ -321,15 +330,6 @@ luaX_pushConnectUserServiceLibrary(lua_State *L, lpcConnectUserServiceLibrary_t 
 ORCA_API lpConnectUserServiceLibrary_t
 luaX_checkConnectUserServiceLibrary(lua_State *L, int idx);
 
-typedef struct PropertyTypeLibrary PropertyTypeLibrary_t, *lpPropertyTypeLibrary_t;
-typedef struct PropertyTypeLibrary const cPropertyTypeLibrary_t, *lpcPropertyTypeLibrary_t;
-/// @brief Push PropertyTypeLibrary onto Lua stack.
-ORCA_API void
-luaX_pushPropertyTypeLibrary(lua_State *L, lpcPropertyTypeLibrary_t PropertyTypeLibrary);
-/// @brief Check PropertyTypeLibrary form Lua stack at index.
-ORCA_API lpPropertyTypeLibrary_t
-luaX_checkPropertyTypeLibrary(lua_State *L, int idx);
-
 typedef struct SpriteLibrary SpriteLibrary_t, *lpSpriteLibrary_t;
 typedef struct SpriteLibrary const cSpriteLibrary_t, *lpcSpriteLibrary_t;
 /// @brief Push SpriteLibrary onto Lua stack.
@@ -348,24 +348,6 @@ luaX_pushSpriteAnimationLibrary(lua_State *L, lpcSpriteAnimationLibrary_t Sprite
 ORCA_API lpSpriteAnimationLibrary_t
 luaX_checkSpriteAnimationLibrary(lua_State *L, int idx);
 
-typedef struct MessageLibrary MessageLibrary_t, *lpMessageLibrary_t;
-typedef struct MessageLibrary const cMessageLibrary_t, *lpcMessageLibrary_t;
-/// @brief Push MessageLibrary onto Lua stack.
-ORCA_API void
-luaX_pushMessageLibrary(lua_State *L, lpcMessageLibrary_t MessageLibrary);
-/// @brief Check MessageLibrary form Lua stack at index.
-ORCA_API lpMessageLibrary_t
-luaX_checkMessageLibrary(lua_State *L, int idx);
-
-typedef struct SystemMessage SystemMessage_t, *lpSystemMessage_t;
-typedef struct SystemMessage const cSystemMessage_t, *lpcSystemMessage_t;
-/// @brief Push SystemMessage onto Lua stack.
-ORCA_API void
-luaX_pushSystemMessage(lua_State *L, lpcSystemMessage_t SystemMessage);
-/// @brief Check SystemMessage form Lua stack at index.
-ORCA_API lpSystemMessage_t
-luaX_checkSystemMessage(lua_State *L, int idx);
-
 typedef struct ImageLibrary ImageLibrary_t, *lpImageLibrary_t;
 typedef struct ImageLibrary const cImageLibrary_t, *lpcImageLibrary_t;
 /// @brief Push ImageLibrary onto Lua stack.
@@ -383,15 +365,6 @@ luaX_pushFontLibrary(lua_State *L, lpcFontLibrary_t FontLibrary);
 /// @brief Check FontLibrary form Lua stack at index.
 ORCA_API lpFontLibrary_t
 luaX_checkFontLibrary(lua_State *L, int idx);
-
-typedef struct ProjectReferenceItem ProjectReferenceItem_t, *lpProjectReferenceItem_t;
-typedef struct ProjectReferenceItem const cProjectReferenceItem_t, *lpcProjectReferenceItem_t;
-/// @brief Push ProjectReferenceItem onto Lua stack.
-ORCA_API void
-luaX_pushProjectReferenceItem(lua_State *L, lpcProjectReferenceItem_t ProjectReferenceItem);
-/// @brief Check ProjectReferenceItem form Lua stack at index.
-ORCA_API lpProjectReferenceItem_t
-luaX_checkProjectReferenceItem(lua_State *L, int idx);
 
 typedef struct LocaleReferenceItem LocaleReferenceItem_t, *lpLocaleReferenceItem_t;
 typedef struct LocaleReferenceItem const cLocaleReferenceItem_t, *lpcLocaleReferenceItem_t;
@@ -477,6 +450,19 @@ luaX_pushPackage(lua_State *L, lpcPackage_t Package);
 ORCA_API lpPackage_t
 luaX_checkPackage(lua_State *L, int idx);
 
+/// @brief External project reference
+struct ProjectReference {
+	fixedString_t Name; /// Name of the project, will be used as Project/Library/Resource when referencing it's resources
+	fixedString_t Path; /// Path to the project relative to the workspace
+};
+
+/// @brief Handler of system messages you can add to your project
+struct SystemMessage {
+	fixedString_t Message; /// Message name, i.e. KeyDown
+	fixedString_t Key; /// Associated key for the message, if applicable
+	fixedString_t Command; /// Command to execute when the message is received
+};
+
 typedef struct Workspace Workspace, *WorkspacePtr;
 typedef struct Workspace const *WorkspaceCPtr;
 struct Workspace {
@@ -515,8 +501,14 @@ struct Project {
 	bool_t IsAssetPackage;
 	bool_t KanziConnectEnabled;
 	fixedString_t DefaultMaterial;
-	int32_t Width;
-	int32_t Height;
+	int32_t WindowWidth;
+	int32_t WindowHeight;
+	lpPropertyType_t PropertyTypes;
+	int32_t NumPropertyTypes; /// Number of PropertyTypes
+	lpProjectReference_t ProjectReferences;
+	int32_t NumProjectReferences; /// Number of ProjectReferences
+	lpSystemMessage_t SystemMessages;
+	int32_t NumSystemMessages; /// Number of SystemMessages
 	bool_t isPackage;
 	lpPackage_t package;
 };
@@ -602,11 +594,6 @@ typedef struct PrefabLibrary const *PrefabLibraryCPtr;
 struct PrefabLibrary {
 };
 
-typedef struct ProjectReferenceLibrary ProjectReferenceLibrary, *ProjectReferenceLibraryPtr;
-typedef struct ProjectReferenceLibrary const *ProjectReferenceLibraryCPtr;
-struct ProjectReferenceLibrary {
-};
-
 typedef struct ProfileLibrary ProfileLibrary, *ProfileLibraryPtr;
 typedef struct ProfileLibrary const *ProfileLibraryCPtr;
 struct ProfileLibrary {
@@ -687,11 +674,6 @@ typedef struct ConnectUserServiceLibrary const *ConnectUserServiceLibraryCPtr;
 struct ConnectUserServiceLibrary {
 };
 
-typedef struct PropertyTypeLibrary PropertyTypeLibrary, *PropertyTypeLibraryPtr;
-typedef struct PropertyTypeLibrary const *PropertyTypeLibraryCPtr;
-struct PropertyTypeLibrary {
-};
-
 typedef struct SpriteLibrary SpriteLibrary, *SpriteLibraryPtr;
 typedef struct SpriteLibrary const *SpriteLibraryCPtr;
 struct SpriteLibrary {
@@ -702,18 +684,6 @@ typedef struct SpriteAnimationLibrary const *SpriteAnimationLibraryCPtr;
 struct SpriteAnimationLibrary {
 };
 
-typedef struct MessageLibrary MessageLibrary, *MessageLibraryPtr;
-typedef struct MessageLibrary const *MessageLibraryCPtr;
-struct MessageLibrary {
-};
-
-typedef struct SystemMessage SystemMessage, *SystemMessagePtr;
-typedef struct SystemMessage const *SystemMessageCPtr;
-struct SystemMessage {
-	fixedString_t Message;
-	fixedString_t Key;
-};
-
 typedef struct ImageLibrary ImageLibrary, *ImageLibraryPtr;
 typedef struct ImageLibrary const *ImageLibraryCPtr;
 struct ImageLibrary {
@@ -722,11 +692,6 @@ struct ImageLibrary {
 typedef struct FontLibrary FontLibrary, *FontLibraryPtr;
 typedef struct FontLibrary const *FontLibraryCPtr;
 struct FontLibrary {
-};
-
-typedef struct ProjectReferenceItem ProjectReferenceItem, *ProjectReferenceItemPtr;
-typedef struct ProjectReferenceItem const *ProjectReferenceItemCPtr;
-struct ProjectReferenceItem {
 };
 
 typedef struct LocaleReferenceItem LocaleReferenceItem, *LocaleReferenceItemPtr;
@@ -773,17 +738,9 @@ typedef struct ThemeDefaultValuesDictionary const *ThemeDefaultValuesDictionaryC
 struct ThemeDefaultValuesDictionary {
 };
 
-/// @brief Retrieves main workspace object.
-ORCA_API lpObject_t
-FS_GetWorkspace(void);
-
 /// @brief Gets the base filename from a path
 ORCA_API const char*
 FS_GetBaseName(const char* path);
-
-/// @brief Extracts the path without query parameters
-ORCA_API const char*
-FS_GetPathName(const char* path, const char* out, int32_t maxlen);
 
 /// @brief Extracts the directory path from a full file path
 ORCA_API const char*
@@ -812,5 +769,13 @@ FS_FileExists(const char* path);
 /// @brief Adds a package to the resource search path
 ORCA_API lpPackage_t
 FS_AddSearchPath(lua_State *L, const char* path);
+
+/// @brief Sets the current workspace
+ORCA_API void
+FS_SetWorkspace(lpObject_t workspace);
+
+/// @brief Gets the current workspace
+ORCA_API lpObject_t
+FS_GetWorkspace(void);
 
 #endif

@@ -2,13 +2,17 @@
 #include <include/api.h>
 #include <source/SpriteKit/SpriteKit.h>
 #define DECL(SHORT, LONG, CLASS, NAME, FIELD, TYPE,...) { \
-	.id=&(struct ID){.Name=#CLASS"."NAME,.Identifier=SHORT}, \
+	.Name=#CLASS"."NAME, \
+	.Category=#CLASS, \
+	.ShortIdentifier=SHORT, \
 	.FullIdentifier=LONG, \
 	.Offset=offsetof(struct CLASS, FIELD), \
 	.DataSize=sizeof(((struct CLASS *)NULL)->FIELD), \
 	.DataType=TYPE, ##__VA_ARGS__ }
 #define ARRAY_DECL(SHORT, LONG, CLASS, NAME, FIELD, TYPE,...) { \
-	.id=&(struct ID){.Name=#CLASS"."NAME,.Identifier=SHORT}, \
+	.Name=#CLASS"."NAME, \
+	.Category=#CLASS, \
+	.ShortIdentifier=SHORT, \
 	.FullIdentifier=LONG, \
 	.Offset=offsetof(struct CLASS, FIELD), \
 	.DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), \
@@ -16,6 +20,7 @@
 	.IsArray=TRUE, ##__VA_ARGS__ }
 
 void luaX_pushSpriteFrame(lua_State *L, lpcSpriteFrame_t data) {
+	if (data == NULL) { lua_pushnil(L); return; }
 	lpSpriteFrame_t self = lua_newuserdata(L, sizeof(struct SpriteFrame));
 	luaL_setmetatable(L, "SpriteFrame");
 	memcpy(self, data, sizeof(struct SpriteFrame));
@@ -27,6 +32,7 @@ static int f_new_SpriteFrame(lua_State *L) {
 	lpSpriteFrame_t self = lua_newuserdata(L, sizeof(struct SpriteFrame));
 	luaL_setmetatable(L, "SpriteFrame");
 	memset(self, 0, sizeof(struct SpriteFrame));
+	if (lua_gettop(L) == 1) return 1;
 	return 1;
 }
 static int f_SpriteFrame___call(lua_State *L) {
@@ -55,28 +61,24 @@ int f_SpriteFrame___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in SpriteFrame: %s", luaL_checkstring(L, 2));
 }
-#include <libxml/parser.h>
 ORCA_API lpcString_t __strtoSpriteFrame(lpcString_t str, lpSpriteFrame_t output) {
 	lpcString_t __strtorect(lpcString_t, struct rect*);
 	str = __strtorect(str, &output->Rect);
 	str = __strtorect(str, &output->UvRect);
 	return str;
 }
-static int xml_SpriteFrame(xmlNodePtr xml, lpSpriteFrame_t output) {
-	lpcString_t __strtorect(lpcString_t, struct rect*);
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("Rect")), xmlFree) {
-		__strtorect((lpcString_t)attr, &output->Rect);
-	}
-	xmlWith(xmlChar, attr, xmlGetProp(xml, XMLSTR("UvRect")), xmlFree) {
-		__strtorect((lpcString_t)attr, &output->UvRect);
-	}
-	return TRUE;
+static int f_fromstring_SpriteFrame(lua_State *L) {
+	lpSpriteFrame_t self = lua_newuserdata(L, sizeof(struct SpriteFrame));
+	luaL_setmetatable(L, "SpriteFrame");
+	memset(self, 0, sizeof(struct SpriteFrame));
+	__strtoSpriteFrame(luaL_checkstring(L, 1), self);
+	return 1;
 }
-
 int luaopen_orca_SpriteFrame(lua_State *L) {
 	luaL_newmetatable(L, "SpriteFrame");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_SpriteFrame },
+		{ "fromstring", f_fromstring_SpriteFrame },
 		{ "__newindex", f_SpriteFrame___newindex },
 		{ "__index", f_SpriteFrame___index },
 		{ NULL, NULL },
@@ -85,11 +87,9 @@ int luaopen_orca_SpriteFrame(lua_State *L) {
 	lua_pushcfunction(L, f_SpriteFrame___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
-	lua_pushlightuserdata(L, xml_SpriteFrame);
-	lua_setfield(L, LUA_REGISTRYINDEX, "SpriteFrameParser");
 	return 1;
 }
-static struct PropertyDesc const SpriteAnimationProperties[kSpriteAnimationNumProperties] = {
+static struct PropertyType const SpriteAnimationProperties[kSpriteAnimationNumProperties] = {
 	/* SpriteAnimation.Image */ DECL(0x590ca79a, 0xb710ed59,
 	SpriteAnimation, "Image", Image, kDataTypeObject, .TypeString="Texture"),
 	/* SpriteAnimation.Framerate */ DECL(0xbebf2a84, 0xc51f93cb,
@@ -125,7 +125,7 @@ ORCA_API struct ClassDesc _SpriteAnimation = {
 	.NumProperties = kSpriteAnimationNumProperties,
 };
 LRESULT SKNode_UpdateMatrix(lpObject_t, lpSKNode_t, wParam_t, UpdateMatrixEventPtr);
-static struct PropertyDesc const SKNodeProperties[kSKNodeNumProperties] = {
+static struct PropertyType const SKNodeProperties[kSKNodeNumProperties] = {
 	/* SKNode.Position */ DECL(0xe27f342a, 0xa99d4e4c,
 	SKNode, "Position", Position, kDataTypeStruct, .TypeString="Vector2D"),
 	/* SKNode.Size */ DECL(0xa6478e7c, 0xeaed98c6,
@@ -162,7 +162,7 @@ ORCA_API struct ClassDesc _SKNode = {
 	.NumProperties = kSKNodeNumProperties,
 };
 LRESULT SKScene_UpdateMatrix(lpObject_t, lpSKScene_t, wParam_t, UpdateMatrixEventPtr);
-static struct PropertyDesc const SKSceneProperties[kSKSceneNumProperties] = {
+static struct PropertyType const SKSceneProperties[kSKSceneNumProperties] = {
 };
 static struct SKScene SKSceneDefaults = {};
 LRESULT SKSceneProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -193,7 +193,7 @@ ORCA_API struct ClassDesc _SKScene = {
 	.NumProperties = kSKSceneNumProperties,
 };
 LRESULT SKSpriteNode_Render(lpObject_t, lpSKSpriteNode_t, wParam_t, RenderEventPtr);
-static struct PropertyDesc const SKSpriteNodeProperties[kSKSpriteNodeNumProperties] = {
+static struct PropertyType const SKSpriteNodeProperties[kSKSpriteNodeNumProperties] = {
 	/* SKSpriteNode.Animation */ DECL(0x41e389fd, 0xdfc01dce,
 	SKSpriteNode, "Animation", Animation, kDataTypeObject, .TypeString="SpriteAnimation"),
 	/* SKSpriteNode.Animation2 */ DECL(0x8831f0dd, 0x376f33b4,
@@ -248,7 +248,7 @@ ORCA_API struct ClassDesc _SKSpriteNode = {
 };
 LRESULT SKLabelNode_Render(lpObject_t, lpSKLabelNode_t, wParam_t, RenderEventPtr);
 LRESULT SKLabelNode_Create(lpObject_t, lpSKLabelNode_t, wParam_t, CreateEventPtr);
-static struct PropertyDesc const SKLabelNodeProperties[kSKLabelNodeNumProperties] = {
+static struct PropertyType const SKLabelNodeProperties[kSKLabelNodeNumProperties] = {
 	/* SKLabelNode.Color */ DECL(0xe5b43cf8, 0x84bf37d6,
 	SKLabelNode, "Color", Color, kDataTypeStruct, .TypeString="Color"),
 };
@@ -284,7 +284,7 @@ ORCA_API struct ClassDesc _SKLabelNode = {
 	.NumProperties = kSKLabelNodeNumProperties,
 };
 LRESULT SKView_ForegroundContent(lpObject_t, lpSKView_t, wParam_t, ForegroundContentEventPtr);
-static struct PropertyDesc const SKViewProperties[kSKViewNumProperties] = {
+static struct PropertyType const SKViewProperties[kSKViewNumProperties] = {
 	/* SKView.ReferenceWidth */ DECL(0x499d2ae6, 0x5c81a8f7,
 	SKView, "ReferenceWidth", ReferenceWidth, kDataTypeFloat),
 	/* SKView.ReferenceHeight */ DECL(0xf011cff9, 0x4b5832ba,
