@@ -2,10 +2,10 @@
 <!DOCTYPE Screen SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
 <Screen Name="Application" Height="768" Width="1024">
   <Grid Name="Layout">
-    <Grid.Columns>auto auto</Grid.Columns>
+    <Grid.Columns Value="auto auto"/>
     <ImageView Name="Image" Image="Example/Images/peacock" Stretch="None" BorderWidth="5 5 5 5" />
     <TextBlock Name="TextBlock" FontSize="40" ForegroundColor="#ff00ff" LayoutTransform="10 10 0 1 1">
-      <TextRun.Text>Hello World</TextRun.Text>
+      <TextRun.Text Value="Hello World"/>
     </TextBlock>
   </Grid>
 </Screen>

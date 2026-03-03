@@ -49,16 +49,18 @@ orca.typeconverter = {
   longstring= function(value) return value end,
 	fixed = function(value) return value end,
 	object = function(path, type)
+		-- local filesystem = require "orca.filesystem"
+		-- local existing = filesystem.getWorkspace():findByPath(path)
+		-- if existing then return existing end
 		local ok, resource = pcall(require, path)
-		if ok then
-			return resource
-		end
+		if ok then return resource end
 		local fallback = fallbacks[type.TypeString]
 		if fallback then
-			return fallback(path)
-		else
-			error(string.format("Cannot convert '%s' to %s(object)", path, type.TypeString))
+			local result = fallback(path)
+			package.loaded[path] = result
+			if result then return result end
 		end
+		error(string.format("Cannot convert '%s' to %s(object)", path, type.TypeString))
 	end,
   edges = function() error("Cannot convert to edges type") end,
   objecttags = function(path)
