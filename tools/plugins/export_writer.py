@@ -308,84 +308,7 @@ class ExportWriter(Plugin):
 				self.w(f"\tcase {utils.hash(field_name)}: {utils.export_check_var(f'self->{field_name}', field_type, 3, access)}; return 0; // {field_name}")
 			self.w(f"\t}}\n\treturn luaL_error(L, \"Unknown field in {name}: %s\", luaL_checkstring(L, 2));\n}}")
 
-		if is_struct:
-			def get_scanf(type):
-				if type in Workspace.enums: return "%s"
-				elif type in Workspace.components: return "%s"
-				else:
-					return {"fixed": "%s", "float": "%f", "int": "%d", "uint": "%d", "bool": "%s"}.get(type, "%s")
-
-			def write_fromstring(struct):
-				# fields = [(field.get('type'), field.get('name')) for field in struct.findall('field')]
-				fields = []
-				repl = {}
-				for field in struct.findall('field'):
-					field_type, field_name = field.get('type'), field.get('name')
-					if field.get('fixed-array'):
-						for i in range(int(field.get('fixed-array'))):
-							myname = f"{struct.get('name')}_{field_name}{i}"
-							fields.append((AxisConfig.get(myname, field_type), myname))
-							repl[myname] = f"{field_name}[{i}]"
-					else:
-						fields.append((field_type, field_name))
-				if len(fields) > MaxFieldsForFromString:
-					print(f"Warning: Skipping fromstring parser for {struct.get('name')} because it has {len(fields)} fields, which is more than the maximum of {MaxFieldsForFromString}.")
-					return False # too many fields to parse from string
-				for type, _ in fields: 
-					if type in Workspace.structs and type != "color":
-						return False # parsing structs from string is not supported due to complexity and ambiguity
-				self.w(f"extern bool_t f_convert_string(lua_State*, lpcPropertyType_t, lpcString_t, bool_t);")
-				for args in [s for s in (struct.get('constructor') or '').split(",") if s]:
-					args_list = ", ".join([type for type, _ in fields[:int(args)]])
-					self.w(f"void {struct.get('name')}_Convert{args}(struct {struct.get('name')}*, {args_list});")
-
-				self.w(f"static int f_fromstring_{struct.get('name')}(lua_State *L) {{")
-				pointers = set()
-				for type, name in fields: 
-					if type in Workspace.enums: self.w(f"\tfixedString_t {name};"); pointers.add(name)
-					elif type in Workspace.structs: self.w(f"\tfixedString_t {name};"); pointers.add(name)
-					elif type in Workspace.components: self.w(f"\tfixedString_t {name};"); pointers.add(name)
-					elif type == "fixed" or type == "bool": self.w(f"\tfixedString_t {name};"); pointers.add(name)
-					else: self.w(f"\t{typedefs.get(type, type)} {name};")
-				self.w(f"\tstruct {struct.get('name')} _out = {{0}};")
-				self.file.write(f"\tswitch (sscanf(luaL_checkstring(L, 1), \"")
-				self.file.write(" ".join([get_scanf(type) for type, _ in fields]))
-				self.file.write(f"\", ")
-				self.file.write(", ".join([f"{'' if name in pointers else '&'}{name}" for _, name in fields]))
-				self.file.write(f")) {{\n")
-				self.file.write(f"\tcase {len(fields)}:\n")
-				for type, name in fields:
-					addr = repl.get(name, name)
-					if type in Workspace.enums:
-						self.w(f"\t\tlua_pop(L, (lua_pushstring(L, {name}), _out.{addr} = luaL_checkoption(L, -1, NULL, _{type}), 1)); // {name}")
-					elif type == "color":
-						self.w(f"\t\t_out.{addr} = COLOR_Parse({name}); // {name}")
-					elif type == "fixed":
-						self.w(f"\t\tstrncpy(_out.{addr}, {name}, sizeof(_out.{addr})); // {name}")
-					elif type == "bool":
-						self.w(f"\t\t_out.{addr} = strcmp({name}, \"true\") == 0; // {name}")
-					elif type in Workspace.components:
-						self.w(f"\t\tlua_pop(L, (f_convert_string(L, &(struct PropertyType) {{")
-						self.w(f"\t\t\t.DataType = kDataTypeObject,")
-						self.w(f"\t\t\t.TypeString = \"{type}\"");
-						self.w(f"\t\t}}, {name}, TRUE), _out.{addr} = luaX_check{type}(L, -1), 1)); // {name}")
-					else:	
-						self.w(f"\t\t_out.{addr} = {name}; // {name}")
-				self.w(f"\t\tluaX_push{struct.get('name')}(L, &_out); // {struct.get('name')}")
-				self.w(f"\t\treturn 1;")
-				for args in [s for s in (struct.get('constructor') or '').split(",") if s]:
-					args_list = ", ".join([name for _, name in fields[:int(args)]])
-					self.file.write(f"\tcase {args}:\n")
-					self.w(f"\t\t{struct.get('name')}_Convert{args}(&_out, {args_list});")
-					self.w(f"\t\tluaX_push{struct.get('name')}(L, &_out); // {struct.get('name')}")
-					self.w(f"\t\treturn 1;")
-				self.w(f"\tdefault:")
-				self.w(f"\t\treturn luaL_error(L, \"Invalid {struct.get('name')} format: %s\", luaL_checkstring(L, 1));")
-				self.w(f"\t}}")
-				self.w(f"}}")
-				return True
-
-			export_xml_parsers = write_fromstring(struct)
+		export_xml_parsers = is_struct and self.write_parser(struct)
 
 		# write lua_open
 		self.w(f"int luaopen_{root.get('namespace')}_{name}(lua_State *L) {{")
@@ -410,6 +333,87 @@ class ExportWriter(Plugin):
 			self.w(f"\tlua_setfield(L, -2, \"__call\");")
 			self.w(f"\tlua_setmetatable(L, -2);")
 		self.w(f"\treturn 1;\n}}")
+
+	def write_parser(self, struct):
+		def get_scanf(type):
+			if type in Workspace.enums: return "%s"
+			elif type in Workspace.components: return "%s"
+			else:
+				return {"fixed": "%s", "float": "%f", "int": "%d", "uint": "%d", "bool": "%s"}.get(type, "%s")
+
+		def write_fromstring(struct):
+			# fields = [(field.get('type'), field.get('name')) for field in struct.findall('field')]
+			fields = []
+			repl = {}
+			for field in struct.findall('field'):
+				field_type, field_name = field.get('type'), field.get('name')
+				if field.get('fixed-array'):
+					for i in range(int(field.get('fixed-array'))):
+						if field_type in Workspace.structs:
+							for subfield in Workspace.structs[field_type].findall('field'):
+								subfield_type, subfield_name = subfield.get('type'), subfield.get('name')
+								myname = f"{struct.get('name')}_{field_name}{i}_{subfield_name}"
+								fields.append((AxisConfig.get(myname, subfield_type), myname))
+								repl[myname] = f"{field_name}[{i}].{subfield_name}"
+						else:
+							myname = f"{struct.get('name')}_{field_name}{i}"
+							fields.append((AxisConfig.get(myname, field_type), myname))
+							repl[myname] = f"{field_name}[{i}]"
+				else:
+					fields.append((field_type, field_name))
+			if len(fields) > MaxFieldsForFromString:
+				print(f"Warning: Skipping fromstring parser for {struct.get('name')} because it has {len(fields)} fields, which is more than the maximum of {MaxFieldsForFromString}.")
+				return False # too many fields to parse from string
+			for type, _ in fields:
+				if type in Workspace.structs and Workspace.structs[type].get('unwrap') != "true":
+					return False # parsing structs from string is not supported due to complexity and ambiguity
+			# forward declare parser dependencies
+			self.w(f"extern bool_t f_convert_string(lua_State*, lpcPropertyType_t, lpcString_t, bool_t);")
+			# forward declare constructors for parsing from string with constructor syntax
+			for args in [s for s in (struct.get('constructor') or '').split(",") if s]:
+				args_list = ", ".join([type for type, _ in fields[:int(args)]])
+				self.w(f"void {struct.get('name')}_Convert{args}(struct {struct.get('name')}*, {args_list});")
+			# write parser function
+			self.w(f"static int f_fromstring_{struct.get('name')}(lua_State *L) {{")
+			pointers = set()
+			for type, name in fields: 
+				if type in Workspace.enums | Workspace.structs | Workspace.components: self.w(f"\tfixedString_t {name};"); pointers.add(name)
+				elif type == "fixed" or type == "bool": self.w(f"\tfixedString_t {name};"); pointers.add(name)
+				else: self.w(f"\t{typedefs.get(type, type)} {name};")
+			scan_format = ' '.join([get_scanf(type) for type, _ in fields])
+			scan_args = ", ".join([f"{'' if name in pointers else '&'}{name}" for _, name in fields])
+			self.w(f"\tstruct {struct.get('name')} _out = {{0}};")
+			self.file.write(f"\tswitch (sscanf(luaL_checkstring(L, 1), \"{scan_format}\", {scan_args})) {{\n")
+			self.file.write(f"\tcase {len(fields)}:\n")
+			for type, name in fields:
+				addr = repl.get(name, name)
+				if type in Workspace.enums:
+					self.w(f"\t\tlua_pop(L, (lua_pushstring(L, {name}), _out.{addr} = luaL_checkoption(L, -1, NULL, _{type}), 1)); // {name}")
+				elif type == "color": self.w(f"\t\t_out.{addr} = COLOR_Parse({name}); // {name}")
+				elif type == "fixed": self.w(f"\t\tstrncpy(_out.{addr}, {name}, sizeof(_out.{addr})); // {name}")
+				elif type == "bool": self.w(f"\t\t_out.{addr} = strcmp({name}, \"true\") == 0; // {name}")
+				elif type in Workspace.components:
+					self.w(f"\t\tlua_pop(L, (f_convert_string(L, &(struct PropertyType) {{")
+					self.w(f"\t\t\t.DataType = kDataTypeObject,")
+					self.w(f"\t\t\t.TypeString = \"{type}\"")
+					self.w(f"\t\t}}, {name}, TRUE), _out.{addr} = luaX_check{type}(L, -1), 1)); // {name}")
+				else:	
+					self.w(f"\t\t_out.{addr} = {name}; // {name}")
+			self.w(f"\t\tluaX_push{struct.get('name')}(L, &_out); // {struct.get('name')}")
+			self.w(f"\t\treturn 1;")
+			for args in [s for s in (struct.get('constructor') or '').split(",") if s]:
+				args_list = ", ".join([name for _, name in fields[:int(args)]])
+				self.file.write(f"\tcase {args}:\n")
+				self.w(f"\t\t{struct.get('name')}_Convert{args}(&_out, {args_list});")
+				self.w(f"\t\tluaX_push{struct.get('name')}(L, &_out); // {struct.get('name')}")
+				self.w(f"\t\treturn 1;")
+			self.w(f"\tdefault:")
+			self.w(f"\t\treturn luaL_error(L, \"Invalid {struct.get('name')} format: %s\", luaL_checkstring(L, 1));")
+			self.w(f"\t}}")
+			self.w(f"}}")
+			return True
+
+		return write_fromstring(struct)
 
 	def write_property(self, property, component, path):
 		cname = component.get('name')

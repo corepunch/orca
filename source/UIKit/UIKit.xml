@@ -191,7 +191,7 @@
     <field name="BottomLeftRadius" type="float">Bottom-left corner radius</field>
   </struct>
 
-  <struct name="EdgeShorthand" constructor="1">
+  <struct name="EdgeShorthand" constructor="1" unwrap="true">
     <summary>Spacing values for opposite edges of an axis</summary>
     <field name="Left" type="float">Leading edge value (left for horizontal, top for vertical, near for depth)</field>
     <field name="Right" type="float">Trailing edge value (right for horizontal, bottom for vertical, far for depth)</field>
@@ -249,34 +249,19 @@
     <field name="Width" type="float">Line thickness of the underline.</field>
     <field name="Color" type="color">Color of the underline.</field>
   </struct>
-
-  <struct name="BorderWidthShorthand">
-    <summary>Border width configuration for rectangular elements</summary>
-    <details>Allows independent control of the border width for each edge.</details>
-    <field name="Axis" type="EdgeShorthand" fixed-array="3">Border width per axis</field>
-  </struct>
   
-  <struct name="BorderShorthand">
-    <summary>Complete border definition for rectangular element</summary>
-    <field name="Width" type="BorderWidthShorthand">Border thickness in pixels, specified for each edge</field>
-    <field name="Color" type="color">Border color</field>
-    <field name="Style" type="BorderStyle">Visual style of the border</field>
-    <field name="Radius" type="BorderRadiusShorthand">Border radius definition per corner</field>
-  </struct>
-  
-  <!-- <struct name="Thickness">
-    <summary>Uniform thickness specification for all four edges</summary>
-    <details>Used for properties that need different values for each edge, such as padding, margin, or border thickness.</details>
-    <field name="Top" type="float">Top edge thickness</field>
-    <field name="Right" type="float">Right edge thickness</field>
-    <field name="Bottom" type="float">Bottom edge thickness</field>
-    <field name="Left" type="float">Left edge thickness</field>
-  </struct> -->
-
-  <struct name="MarginShorthand">
+  <struct name="MarginShorthand" constructor="4,2,1">
     <summary>External spacing configuration for rectangular elements</summary>
     <details>Allows independent control of the external spacing applied to each edge of an element.</details>
     <field name="Axis" type="EdgeShorthand" fixed-array="3">External spacing per axis</field>
+  </struct>
+
+  <struct name="BorderShorthand">
+    <summary>Complete border definition for rectangular element</summary>
+    <field name="Width" type="MarginShorthand">Border thickness in pixels, specified for each edge</field>
+    <field name="Color" type="color">Border color</field>
+    <field name="Style" type="BorderStyle">Visual style of the border</field>
+    <field name="Radius" type="BorderRadiusShorthand">Border radius definition per corner</field>
   </struct>
 
   <struct name="SizeAxisShorthand">

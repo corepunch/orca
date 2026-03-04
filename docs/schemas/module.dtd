@@ -65,7 +65,8 @@
   prefix CDATA #IMPLIED
   export CDATA #IMPLIED
   sealed (true|false) #IMPLIED
-  parent CDATA #IMPLIED
+  unwrap (true|false) #IMPLIED
+  constructor CDATA #IMPLIED
 >
 
 <!-- Interface Definition (similar to struct but for abstract types) -->

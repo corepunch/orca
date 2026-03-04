@@ -6,10 +6,28 @@
 
 //static bool_t ignore_upcoming_click = FALSE;
 
-void EdgeShorthand_Convert1(struct EdgeShorthand* self, float value)
-{
+void EdgeShorthand_Convert1(struct EdgeShorthand* self, float value) {
   self->Left = value;
   self->Right = value;
+}
+
+void MarginShorthand_Convert4(struct MarginShorthand* self, float left, float top, float right, float bottom) {
+  self->Axis[0].Left = left;
+  self->Axis[0].Right = right;
+  self->Axis[1].Left = top;
+  self->Axis[1].Right = bottom;
+}
+void MarginShorthand_Convert2(struct MarginShorthand* self, float horizontal, float vertical) {
+  self->Axis[0].Left = horizontal;
+  self->Axis[0].Right = horizontal;
+  self->Axis[1].Left = vertical;
+  self->Axis[1].Right = vertical;
+}
+void MarginShorthand_Convert1(struct MarginShorthand* self, float uniform) {
+  self->Axis[0].Left = uniform;
+  self->Axis[0].Right = uniform;
+  self->Axis[1].Left = uniform;
+  self->Axis[1].Right = uniform;
 }
 
 static int lua_pushmousevent(lua_State* L,

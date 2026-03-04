@@ -91,9 +91,8 @@
 </span></a><a class="leaf-link" href="#RingShorthand"><i class="fa-solid fa-gear icon"></i><span>RingShorthand
 </span></a><a class="leaf-link" href="#OverflowShorthand"><i class="fa-solid fa-gear icon"></i><span>OverflowShorthand
 </span></a><a class="leaf-link" href="#UnderlineShorthand"><i class="fa-solid fa-gear icon"></i><span>UnderlineShorthand
-</span></a><a class="leaf-link" href="#BorderWidthShorthand"><i class="fa-solid fa-gear icon"></i><span>BorderWidthShorthand
-</span></a><a class="leaf-link" href="#BorderShorthand"><i class="fa-solid fa-gear icon"></i><span>BorderShorthand
 </span></a><a class="leaf-link" href="#MarginShorthand"><i class="fa-solid fa-gear icon"></i><span>MarginShorthand
+</span></a><a class="leaf-link" href="#BorderShorthand"><i class="fa-solid fa-gear icon"></i><span>BorderShorthand
 </span></a><a class="leaf-link" href="#SizeAxisShorthand"><i class="fa-solid fa-gear icon"></i><span>SizeAxisShorthand
 </span></a><a class="leaf-link" href="#SizeShorthand"><i class="fa-solid fa-gear icon"></i><span>SizeShorthand
 </span></a><a class="leaf-link" href="#DataObject"><i class="fa-solid fa-layer-group icon"></i><span>DataObject
@@ -1478,15 +1477,15 @@
 <div class="small-abstract"><span>Line thickness of the underline.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Color</span>: <a class="type-identifier-link" href="#color">color</a></code></div>
 <div class="small-abstract"><span>Color of the underline.
-</span></div></div><div id="BorderWidthShorthand" class="class" data-name="BorderWidthShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
-</div><h1 class="header">BorderWidthShorthand
-</h1><div class="abstract">Border width configuration for rectangular elements
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.BorderWidthShorthand</span></code><h2 class="title">Overview</h2><div class="abstract">Allows independent control of the border width for each edge.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Axis</span>: <a class="type-identifier-link" href="#EdgeShorthand">EdgeShorthand</a></code></div>
-<div class="small-abstract"><span>Border width per axis
+</span></div></div><div id="MarginShorthand" class="class" data-name="MarginShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">MarginShorthand
+</h1><div class="abstract">External spacing configuration for rectangular elements
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.MarginShorthand</span></code><h2 class="title">Overview</h2><div class="abstract">Allows independent control of the external spacing applied to each edge of an element.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Axis</span>: <a class="type-identifier-link" href="#EdgeShorthand">EdgeShorthand</a></code></div>
+<div class="small-abstract"><span>External spacing per axis
 </span></div></div><div id="BorderShorthand" class="class" data-name="BorderShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
 </div><h1 class="header">BorderShorthand
 </h1><div class="abstract">Complete border definition for rectangular element
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.BorderShorthand</span></code><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Width</span>: <a class="type-identifier-link" href="#BorderWidthShorthand">BorderWidthShorthand</a></code></div>
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.BorderShorthand</span></code><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Width</span>: <a class="type-identifier-link" href="#MarginShorthand">MarginShorthand</a></code></div>
 <div class="small-abstract"><span>Border thickness in pixels, specified for each edge
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Color</span>: <a class="type-identifier-link" href="#color">color</a></code></div>
 <div class="small-abstract"><span>Border color
@@ -1494,11 +1493,6 @@
 <div class="small-abstract"><span>Visual style of the border
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Radius</span>: <a class="type-identifier-link" href="#BorderRadiusShorthand">BorderRadiusShorthand</a></code></div>
 <div class="small-abstract"><span>Border radius definition per corner
-</span></div></div><div id="MarginShorthand" class="class" data-name="MarginShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
-</div><h1 class="header">MarginShorthand
-</h1><div class="abstract">External spacing configuration for rectangular elements
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.MarginShorthand</span></code><h2 class="title">Overview</h2><div class="abstract">Allows independent control of the external spacing applied to each edge of an element.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Axis</span>: <a class="type-identifier-link" href="#EdgeShorthand">EdgeShorthand</a></code></div>
-<div class="small-abstract"><span>External spacing per axis
 </span></div></div><div id="SizeAxisShorthand" class="class" data-name="SizeAxisShorthand" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
 </div><h1 class="header">SizeAxisShorthand
 </h1><div class="abstract">Complete sizing definition for one axis
@@ -1668,22 +1662,22 @@
 <div class="small-abstract"><span>Trailing edge value (right for horizontal, bottom for vertical, far for depth)
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">Border</span>: <a class="type-identifier-link" href="#BorderShorthand">BorderShorthand</a></code></div>
 <div class="small-abstract"><span>Border definition along each axis
-</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">BorderWidth</span>: <a class="type-identifier-link" href="#BorderWidthShorthand">BorderWidthShorthand</a></code></div>
+</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">BorderWidth</span>: <a class="type-identifier-link" href="#MarginShorthand">MarginShorthand</a></code></div>
 <div class="small-abstract"><span>Border thickness in pixels, specified for each edge
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">HorizontalBorderWidth</span>: <a class="type-identifier-link" href="#EdgeShorthand">EdgeShorthand</a></code></div>
-<div class="small-abstract"><span>Border width per axis
+<div class="small-abstract"><span>External spacing per axis
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderWidthLeft</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Leading edge value (left for horizontal, top for vertical, near for depth)
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderWidthRight</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Trailing edge value (right for horizontal, bottom for vertical, far for depth)
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">VerticalBorderWidth</span>: <a class="type-identifier-link" href="#EdgeShorthand">EdgeShorthand</a></code></div>
-<div class="small-abstract"><span>Border width per axis
+<div class="small-abstract"><span>External spacing per axis
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderWidthTop</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Leading edge value (left for horizontal, top for vertical, near for depth)
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderWidthBottom</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Trailing edge value (right for horizontal, bottom for vertical, far for depth)
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">DepthBorderWidth</span>: <a class="type-identifier-link" href="#EdgeShorthand">EdgeShorthand</a></code></div>
-<div class="small-abstract"><span>Border width per axis
+<div class="small-abstract"><span>External spacing per axis
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderWidthFront</span>: <span>float</span></code></div>
 <div class="small-abstract"><span>Leading edge value (left for horizontal, top for vertical, near for depth)
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">BorderWidthBack</span>: <span>float</span></code></div>
