@@ -393,11 +393,11 @@ typedef struct lua_State* PushPropertyEventPtr;
 typedef lpObject_t EVENT_PTR(Object);
 typedef struct lua_State* EVENT_PTR(LoadView);
 
-typedef struct
+typedef struct PropertyChangedEvent
 {
   lua_State* L;
   lpProperty_t hProperty;
-} PROPERTYCHANGEDSTRUCT, *EVENT_PTR(PropertyChanged);
+} PropertyChangedEvent, *EVENT_PTR(PropertyChanged);
 
 typedef struct
 {

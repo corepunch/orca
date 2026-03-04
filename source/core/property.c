@@ -535,7 +535,7 @@ PROP_ProcessEvents(lua_State* L,
     }
     if (property->flags & PF_USED_IN_TRIGGER) {
       OBJ_SendMessageW(object, kEventPropertyChanged, 0,
-                       &(PROPERTYCHANGEDSTRUCT){
+                       &(PropertyChangedEvent){
                          .hProperty = property,
                          .L = L,
                        });

@@ -311,7 +311,7 @@ static struct PropertyType const ImageProperties[kImageNumProperties] = {
 static struct Image ImageDefaults = {0};
 LRESULT ImageProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x0ae8097f: return Image_Start(object, cmp, wparm, lparm); // Start
+		case kEventStart: return Image_Start(object, cmp, wparm, lparm); // Start
 }
 	return FALSE;
 }
@@ -372,7 +372,7 @@ static struct PropertyType const RenderTargetTextureProperties[kRenderTargetText
 static struct RenderTargetTexture RenderTargetTextureDefaults = {0};
 LRESULT RenderTargetTextureProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x0ae8097f: return RenderTargetTexture_Start(object, cmp, wparm, lparm); // Start
+		case kEventStart: return RenderTargetTexture_Start(object, cmp, wparm, lparm); // Start
 }
 	return FALSE;
 }
@@ -408,7 +408,7 @@ static struct PropertyType const CubeMapTextureProperties[kCubeMapTextureNumProp
 static struct CubeMapTexture CubeMapTextureDefaults = {0};
 LRESULT CubeMapTextureProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x0ae8097f: return CubeMapTexture_Start(object, cmp, wparm, lparm); // Start
+		case kEventStart: return CubeMapTexture_Start(object, cmp, wparm, lparm); // Start
 }
 	return FALSE;
 }
@@ -439,7 +439,7 @@ static struct PropertyType const IOSurfaceTextureProperties[kIOSurfaceTextureNum
 static struct IOSurfaceTexture IOSurfaceTextureDefaults = {0};
 LRESULT IOSurfaceTextureProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x0ae8097f: return IOSurfaceTexture_Start(object, cmp, wparm, lparm); // Start
+		case kEventStart: return IOSurfaceTexture_Start(object, cmp, wparm, lparm); // Start
 }
 	return FALSE;
 }
@@ -559,8 +559,8 @@ static struct Shader ShaderDefaults = {
 };
 LRESULT ShaderProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x0ae8097f: return Shader_Start(object, cmp, wparm, lparm); // Start
-		case 0x4d76a4e5: return Shader_Destroy(object, cmp, wparm, lparm); // Destroy
+		case kEventStart: return Shader_Start(object, cmp, wparm, lparm); // Start
+		case kEventDestroy: return Shader_Destroy(object, cmp, wparm, lparm); // Destroy
 }
 	return FALSE;
 }
@@ -637,8 +637,8 @@ static struct PropertyType const MeshProperties[kMeshNumProperties] = {
 static struct Mesh MeshDefaults = {0};
 LRESULT MeshProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x0ae8097f: return Mesh_Start(object, cmp, wparm, lparm); // Start
-		case 0x4d76a4e5: return Mesh_Destroy(object, cmp, wparm, lparm); // Destroy
+		case kEventStart: return Mesh_Start(object, cmp, wparm, lparm); // Start
+		case kEventDestroy: return Mesh_Destroy(object, cmp, wparm, lparm); // Destroy
 }
 	return FALSE;
 }
@@ -672,8 +672,8 @@ static struct PropertyType const FontFamilyProperties[kFontFamilyNumProperties] 
 static struct FontFamily FontFamilyDefaults = {0};
 LRESULT FontFamilyProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x0ae8097f: return FontFamily_Start(object, cmp, wparm, lparm); // Start
-		case 0x4d76a4e5: return FontFamily_Destroy(object, cmp, wparm, lparm); // Destroy
+		case kEventStart: return FontFamily_Start(object, cmp, wparm, lparm); // Start
+		case kEventDestroy: return FontFamily_Destroy(object, cmp, wparm, lparm); // Destroy
 }
 	return FALSE;
 }

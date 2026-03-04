@@ -218,6 +218,8 @@
 		78932EF42F3F255F007C59CC /* backend.c in Sources */ = {isa = PBXBuildFile; fileRef = 7808CD8D2D9EC93A00D484F9 /* backend.c */; };
 		7896A18E2E45275B00086970 /* liborca.UIKit.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA74D2E1556FF00FFCFD9 /* liborca.UIKit.so */; };
 		78AF62512F562AEB008D08A3 /* p_program.c in Sources */ = {isa = PBXBuildFile; fileRef = 78FD53222D8F2A8800122823 /* p_program.c */; };
+		78AF62CB2F58BE63008D08A3 /* UIKit.c in Headers */ = {isa = PBXBuildFile; fileRef = 78AF62CA2F58BE5B008D08A3 /* UIKit.c */; };
+		78AF62CC2F58BECF008D08A3 /* UIKit.c in Sources */ = {isa = PBXBuildFile; fileRef = 78AF62CA2F58BE5B008D08A3 /* UIKit.c */; };
 		78B139CE2AF3DF5800AAAE53 /* orca.c in Sources */ = {isa = PBXBuildFile; fileRef = 78B137AD2AF3CC4E00AAAE53 /* orca.c */; };
 		78BCC2102E62FA3A00CA0A41 /* UIKit_export.c in Sources */ = {isa = PBXBuildFile; fileRef = 78BCC20F2E62FA3A00CA0A41 /* UIKit_export.c */; };
 		78BCC2112E62FA3A00CA0A41 /* UIKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 78BCC20D2E62FA3A00CA0A41 /* UIKit.h */; };
@@ -492,6 +494,7 @@
 		789ED2E92C8EE475003A3CDF /* localization.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = localization.c; sourceTree = "<group>"; };
 		78A5AD052B7CFBCB005BF50C /* r_shape.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = r_shape.c; sourceTree = "<group>"; };
 		78A8213E2C873EF400ACD0A9 /* p_runtime.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = p_runtime.c; sourceTree = "<group>"; };
+		78AF62CA2F58BE5B008D08A3 /* UIKit.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = UIKit.c; sourceTree = "<group>"; };
 		78B136CF2AF3CC4E00AAAE53 /* r_shader.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = r_shader.c; sourceTree = "<group>"; };
 		78B136D02AF3CC4E00AAAE53 /* r_builtin_meshes.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = r_builtin_meshes.c; sourceTree = "<group>"; };
 		78B136D12AF3CC4E00AAAE53 /* r_image_dds.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = r_image_dds.c; sourceTree = "<group>"; };
@@ -1151,6 +1154,7 @@
 				78C7375B2B8F60C600FD598E /* TextBlock.c */,
 				78CDFED42CC13EE200D247E4 /* Trigger.c */,
 				78BCC20F2E62FA3A00CA0A41 /* UIKit_export.c */,
+				78AF62CA2F58BE5B008D08A3 /* UIKit.c */,
 				78BCC2122E63172D00CA0A41 /* uidef.h */,
 				78BCC2142E6342D700CA0A41 /* UIKit_properties.h */,
 				78BCC20D2E62FA3A00CA0A41 /* UIKit.h */,
@@ -1282,6 +1286,7 @@
 				78BCC2132E63173000CA0A41 /* uidef.h in Headers */,
 				78BCC2152E6342D700CA0A41 /* UIKit_properties.h in Headers */,
 				78BCC2112E62FA3A00CA0A41 /* UIKit.h in Headers */,
+				78AF62CB2F58BE63008D08A3 /* UIKit.c in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1920,6 +1925,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				78AF62CC2F58BECF008D08A3 /* UIKit.c in Sources */,
 				781CA7512E15571400FFCFD9 /* Button.c in Sources */,
 				781CA7522E15571400FFCFD9 /* Cinematic.c in Sources */,
 				781CA7542E15571400FFCFD9 /* Form.c in Sources */,

@@ -273,12 +273,13 @@ class ExportWriter(Plugin):
 		# write __index function
 		self.w(f"int {utils.export_index_name(struct)}(lua_State *L) {{")
 		if is_struct:
-			self.w(f"\tswitch(fnv1a32(luaL_checkstring(L, 2))) {{")
+			self.w(f'\t{lpname} self = luaX_check{name}(L, 1);')
+			self.w(f"\tswitch(self?fnv1a32(luaL_checkstring(L, 2)):0) {{ // Check is not needed but to silence unused variable warning")
 			for field in struct.findall('field'):
 				if field.get('fixed-array') or field.get('private'):
 					continue
 				field_name = field.get('name')
-				self.w(f"\tcase {utils.hash(field_name)}: {utils.export_push_var(field, f'luaX_check{name}(L, 1)->{field_name}')}; return 1; // {field_name}")
+				self.w(f"\tcase {utils.hash(field_name)}: {utils.export_push_var(field, f'self->{field_name}')}; return 1; // {field_name}")
 		else:
 			self.w(f"\tswitch(fnv1a32(luaL_checkstring(L, 2))) {{")
 		for method in struct.findall('method'):
@@ -293,7 +294,8 @@ class ExportWriter(Plugin):
 		if is_struct:
 			# write __newindex function
 			self.w(f"int {utils.export_newindex_name(struct)}(lua_State *L) {{")
-			self.w(f"\tswitch(fnv1a32(luaL_checkstring(L, 2))) {{")
+			self.w(f'\t{lpname} self = luaX_check{name}(L, 1);')
+			self.w(f"\tswitch(self?fnv1a32(luaL_checkstring(L, 2)):0) {{ // Check is not needed but to silence unused variable warning")
 			for field in struct.findall('field'):
 				if field.get('fixed-array'):
 					continue
@@ -303,7 +305,7 @@ class ExportWriter(Plugin):
 				if field_type in Workspace.enums:      access = ""
 				if field_type in Workspace.resources:  access = ""
 				if field_type in Workspace.components: access = ""
-				self.w(f"\tcase {utils.hash(field_name)}: {utils.export_check_var(f'luaX_check{name}(L, 1)->{field_name}', field_type, 3, access)}; return 0; // {field_name}")
+				self.w(f"\tcase {utils.hash(field_name)}: {utils.export_check_var(f'self->{field_name}', field_type, 3, access)}; return 0; // {field_name}")
 			self.w(f"\t}}\n\treturn luaL_error(L, \"Unknown field in {name}: %s\", luaL_checkstring(L, 2));\n}}")
 
 		if is_struct:
@@ -333,6 +335,10 @@ class ExportWriter(Plugin):
 					if type in Workspace.structs and type != "color":
 						return False # parsing structs from string is not supported due to complexity and ambiguity
 				self.w(f"extern bool_t f_convert_string(lua_State*, lpcPropertyType_t, lpcString_t, bool_t);")
+				for args in [s for s in (struct.get('constructor') or '').split(",") if s]:
+					args_list = ", ".join([type for type, _ in fields[:int(args)]])
+					self.w(f"void {struct.get('name')}_Convert{args}(struct {struct.get('name')}*, {args_list});")
+
 				self.w(f"static int f_fromstring_{struct.get('name')}(lua_State *L) {{")
 				pointers = set()
 				for type, name in fields: 
@@ -341,13 +347,13 @@ class ExportWriter(Plugin):
 					elif type in Workspace.components: self.w(f"\tfixedString_t {name};"); pointers.add(name)
 					elif type == "fixed" or type == "bool": self.w(f"\tfixedString_t {name};"); pointers.add(name)
 					else: self.w(f"\t{typedefs.get(type, type)} {name};")
-				self.file.write(f"\tif (sscanf(luaL_checkstring(L, 1), \"")
+				self.w(f"\tstruct {struct.get('name')} _out = {{0}};")
+				self.file.write(f"\tswitch (sscanf(luaL_checkstring(L, 1), \"")
 				self.file.write(" ".join([get_scanf(type) for type, _ in fields]))
 				self.file.write(f"\", ")
 				self.file.write(", ".join([f"{'' if name in pointers else '&'}{name}" for _, name in fields]))
-				self.file.write(f") == {len(fields)}) {{\n")
-				
-				self.w(f"\t\tstruct {struct.get('name')} _out = {{0}};")
+				self.file.write(f")) {{\n")
+				self.file.write(f"\tcase {len(fields)}:\n")
 				for type, name in fields:
 					addr = repl.get(name, name)
 					if type in Workspace.enums:
@@ -367,7 +373,13 @@ class ExportWriter(Plugin):
 						self.w(f"\t\t_out.{addr} = {name}; // {name}")
 				self.w(f"\t\tluaX_push{struct.get('name')}(L, &_out); // {struct.get('name')}")
 				self.w(f"\t\treturn 1;")
-				self.w(f"\t}} else {{")
+				for args in [s for s in (struct.get('constructor') or '').split(",") if s]:
+					args_list = ", ".join([name for _, name in fields[:int(args)]])
+					self.file.write(f"\tcase {args}:\n")
+					self.w(f"\t\t{struct.get('name')}_Convert{args}(&_out, {args_list});")
+					self.w(f"\t\tluaX_push{struct.get('name')}(L, &_out); // {struct.get('name')}")
+					self.w(f"\t\treturn 1;")
+				self.w(f"\tdefault:")
 				self.w(f"\t\treturn luaL_error(L, \"Invalid {struct.get('name')} format: %s\", luaL_checkstring(L, 1));")
 				self.w(f"\t}}")
 				self.w(f"}}")
@@ -461,7 +473,8 @@ class ExportWriter(Plugin):
 		self.w(f"\tswitch (message) {{")
 		for handles in component.findall('handles'):
 			hname = handles.get('event')
-			self.w(f"\t\tcase {utils.hash(hname)}: return {cname}_{hname}(object, cmp, wparm, lparm); // {hname}")
+			# self.w(f"\t\tcase {utils.hash(hname)}: return {cname}_{hname}(object, cmp, wparm, lparm); // {hname}")
+			self.w(f"\t\tcase kEvent{hname}: return {cname}_{hname}(object, cmp, wparm, lparm); // {hname}")
 		self.w(f"}}\n\treturn FALSE;\n}}")
 
 		self.wt(_T['component_lua'].substitute(

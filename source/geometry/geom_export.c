@@ -136,9 +136,10 @@ static int f_vec2_mad(lua_State *L) {
 	return 1;
 }
 int f_vec2___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: lua_pushnumber(L, luaX_checkvec2(L, 1)->x); return 1; // x
-	case 0xfc0c4ef4: lua_pushnumber(L, luaX_checkvec2(L, 1)->y); return 1; // y
+	lpvec2_t self = luaX_checkvec2(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xfd0c5087: lua_pushnumber(L, self->x); return 1; // x
+	case 0xfc0c4ef4: lua_pushnumber(L, self->y); return 1; // y
 	case 0xc6270703: lua_pushcfunction(L, f_vec2_set); return 1; // set
 	case 0x82971c71: lua_pushcfunction(L, f_vec2_scale); return 1; // scale
 	case 0xd3689f20: lua_pushcfunction(L, f_vec2_dot); return 1; // dot
@@ -152,9 +153,10 @@ int f_vec2___index(lua_State *L) {
 	return luaL_error(L, "Unknown field in vec2: %s", luaL_checkstring(L, 2));
 }
 int f_vec2___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: luaX_checkvec2(L, 1)->x = luaL_checknumber(L, 3); return 0; // x
-	case 0xfc0c4ef4: luaX_checkvec2(L, 1)->y = luaL_checknumber(L, 3); return 0; // y
+	lpvec2_t self = luaX_checkvec2(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xfd0c5087: self->x = luaL_checknumber(L, 3); return 0; // x
+	case 0xfc0c4ef4: self->y = luaL_checknumber(L, 3); return 0; // y
 	}
 	return luaL_error(L, "Unknown field in vec2: %s", luaL_checkstring(L, 2));
 }
@@ -162,13 +164,14 @@ extern bool_t f_convert_string(lua_State*, lpcPropertyType_t, lpcString_t, bool_
 static int f_fromstring_vec2(lua_State *L) {
 	float x;
 	float y;
-	if (sscanf(luaL_checkstring(L, 1), "%f %f", &x, &y) == 2) {
-		struct vec2 _out = {0};
+	struct vec2 _out = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%f %f", &x, &y)) {
+	case 2:
 		_out.x = x; // x
 		_out.y = y; // y
 		luaX_pushvec2(L, &_out); // vec2
 		return 1;
-	} else {
+	default:
 		return luaL_error(L, "Invalid vec2 format: %s", luaL_checkstring(L, 1));
 	}
 }
@@ -341,10 +344,11 @@ static int f_vec3_distance(lua_State *L) {
 	return 1;
 }
 int f_vec3___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: lua_pushnumber(L, luaX_checkvec3(L, 1)->x); return 1; // x
-	case 0xfc0c4ef4: lua_pushnumber(L, luaX_checkvec3(L, 1)->y); return 1; // y
-	case 0xff0c53ad: lua_pushnumber(L, luaX_checkvec3(L, 1)->z); return 1; // z
+	lpvec3_t self = luaX_checkvec3(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xfd0c5087: lua_pushnumber(L, self->x); return 1; // x
+	case 0xfc0c4ef4: lua_pushnumber(L, self->y); return 1; // y
+	case 0xff0c53ad: lua_pushnumber(L, self->z); return 1; // z
 	case 0xd3689f20: lua_pushcfunction(L, f_vec3_dot); return 1; // dot
 	case 0x2c1f6b59: lua_pushcfunction(L, f_vec3_lengthsq); return 1; // lengthsq
 	case 0x366adb0c: lua_pushcfunction(L, f_vec3_len); return 1; // len
@@ -362,10 +366,11 @@ int f_vec3___index(lua_State *L) {
 	return luaL_error(L, "Unknown field in vec3: %s", luaL_checkstring(L, 2));
 }
 int f_vec3___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: luaX_checkvec3(L, 1)->x = luaL_checknumber(L, 3); return 0; // x
-	case 0xfc0c4ef4: luaX_checkvec3(L, 1)->y = luaL_checknumber(L, 3); return 0; // y
-	case 0xff0c53ad: luaX_checkvec3(L, 1)->z = luaL_checknumber(L, 3); return 0; // z
+	lpvec3_t self = luaX_checkvec3(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xfd0c5087: self->x = luaL_checknumber(L, 3); return 0; // x
+	case 0xfc0c4ef4: self->y = luaL_checknumber(L, 3); return 0; // y
+	case 0xff0c53ad: self->z = luaL_checknumber(L, 3); return 0; // z
 	}
 	return luaL_error(L, "Unknown field in vec3: %s", luaL_checkstring(L, 2));
 }
@@ -374,14 +379,15 @@ static int f_fromstring_vec3(lua_State *L) {
 	float x;
 	float y;
 	float z;
-	if (sscanf(luaL_checkstring(L, 1), "%f %f %f", &x, &y, &z) == 3) {
-		struct vec3 _out = {0};
+	struct vec3 _out = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f", &x, &y, &z)) {
+	case 3:
 		_out.x = x; // x
 		_out.y = y; // y
 		_out.z = z; // z
 		luaX_pushvec3(L, &_out); // vec3
 		return 1;
-	} else {
+	default:
 		return luaL_error(L, "Invalid vec3 format: %s", luaL_checkstring(L, 1));
 	}
 }
@@ -470,11 +476,12 @@ static int f_vec4_lerp(lua_State *L) {
 	return 1;
 }
 int f_vec4___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: lua_pushnumber(L, luaX_checkvec4(L, 1)->x); return 1; // x
-	case 0xfc0c4ef4: lua_pushnumber(L, luaX_checkvec4(L, 1)->y); return 1; // y
-	case 0xff0c53ad: lua_pushnumber(L, luaX_checkvec4(L, 1)->z); return 1; // z
-	case 0xf20c3f36: lua_pushnumber(L, luaX_checkvec4(L, 1)->w); return 1; // w
+	lpvec4_t self = luaX_checkvec4(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xfd0c5087: lua_pushnumber(L, self->x); return 1; // x
+	case 0xfc0c4ef4: lua_pushnumber(L, self->y); return 1; // y
+	case 0xff0c53ad: lua_pushnumber(L, self->z); return 1; // z
+	case 0xf20c3f36: lua_pushnumber(L, self->w); return 1; // w
 	case 0xc6270703: lua_pushcfunction(L, f_vec4_set); return 1; // set
 	case 0x82971c71: lua_pushcfunction(L, f_vec4_scale); return 1; // scale
 	case 0x1e691468: lua_pushcfunction(L, f_vec4_lerp); return 1; // lerp
@@ -482,11 +489,12 @@ int f_vec4___index(lua_State *L) {
 	return luaL_error(L, "Unknown field in vec4: %s", luaL_checkstring(L, 2));
 }
 int f_vec4___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: luaX_checkvec4(L, 1)->x = luaL_checknumber(L, 3); return 0; // x
-	case 0xfc0c4ef4: luaX_checkvec4(L, 1)->y = luaL_checknumber(L, 3); return 0; // y
-	case 0xff0c53ad: luaX_checkvec4(L, 1)->z = luaL_checknumber(L, 3); return 0; // z
-	case 0xf20c3f36: luaX_checkvec4(L, 1)->w = luaL_checknumber(L, 3); return 0; // w
+	lpvec4_t self = luaX_checkvec4(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xfd0c5087: self->x = luaL_checknumber(L, 3); return 0; // x
+	case 0xfc0c4ef4: self->y = luaL_checknumber(L, 3); return 0; // y
+	case 0xff0c53ad: self->z = luaL_checknumber(L, 3); return 0; // z
+	case 0xf20c3f36: self->w = luaL_checknumber(L, 3); return 0; // w
 	}
 	return luaL_error(L, "Unknown field in vec4: %s", luaL_checkstring(L, 2));
 }
@@ -496,15 +504,16 @@ static int f_fromstring_vec4(lua_State *L) {
 	float y;
 	float z;
 	float w;
-	if (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &x, &y, &z, &w) == 4) {
-		struct vec4 _out = {0};
+	struct vec4 _out = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &x, &y, &z, &w)) {
+	case 4:
 		_out.x = x; // x
 		_out.y = y; // y
 		_out.z = z; // z
 		_out.w = w; // w
 		luaX_pushvec4(L, &_out); // vec4
 		return 1;
-	} else {
+	default:
 		return luaL_error(L, "Invalid vec4 format: %s", luaL_checkstring(L, 1));
 	}
 }
@@ -565,9 +574,10 @@ static int f_box2_containsPoint(lua_State *L) {
 	return 1;
 }
 int f_box2___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xc98f4557: luaX_pushvec2(L, &luaX_checkbox2(L, 1)->min); return 1; // min
-	case 0xd7a2e319: luaX_pushvec2(L, &luaX_checkbox2(L, 1)->max); return 1; // max
+	lpbox2_t self = luaX_checkbox2(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xc98f4557: luaX_pushvec2(L, &self->min); return 1; // min
+	case 0xd7a2e319: luaX_pushvec2(L, &self->max); return 1; // max
 	case 0x058c4484: lua_pushcfunction(L, f_box2_center); return 1; // center
 	case 0x24617f7d: lua_pushcfunction(L, f_box2_moveTo); return 1; // moveTo
 	case 0x7a86780e: lua_pushcfunction(L, f_box2_containsPoint); return 1; // containsPoint
@@ -575,9 +585,10 @@ int f_box2___index(lua_State *L) {
 	return luaL_error(L, "Unknown field in box2: %s", luaL_checkstring(L, 2));
 }
 int f_box2___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xc98f4557: luaX_checkbox2(L, 1)->min = *luaX_checkvec2(L, 3); return 0; // min
-	case 0xd7a2e319: luaX_checkbox2(L, 1)->max = *luaX_checkvec2(L, 3); return 0; // max
+	lpbox2_t self = luaX_checkbox2(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xc98f4557: self->min = *luaX_checkvec2(L, 3); return 0; // min
+	case 0xd7a2e319: self->max = *luaX_checkvec2(L, 3); return 0; // max
 	}
 	return luaL_error(L, "Unknown field in box2: %s", luaL_checkstring(L, 2));
 }
@@ -622,17 +633,19 @@ static int f_box3_center(lua_State *L) {
 	return 1;
 }
 int f_box3___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xc98f4557: luaX_pushvec3(L, &luaX_checkbox3(L, 1)->min); return 1; // min
-	case 0xd7a2e319: luaX_pushvec3(L, &luaX_checkbox3(L, 1)->max); return 1; // max
+	lpbox3_t self = luaX_checkbox3(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xc98f4557: luaX_pushvec3(L, &self->min); return 1; // min
+	case 0xd7a2e319: luaX_pushvec3(L, &self->max); return 1; // max
 	case 0x058c4484: lua_pushcfunction(L, f_box3_center); return 1; // center
 	}
 	return luaL_error(L, "Unknown field in box3: %s", luaL_checkstring(L, 2));
 }
 int f_box3___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xc98f4557: luaX_checkbox3(L, 1)->min = *luaX_checkvec3(L, 3); return 0; // min
-	case 0xd7a2e319: luaX_checkbox3(L, 1)->max = *luaX_checkvec3(L, 3); return 0; // max
+	lpbox3_t self = luaX_checkbox3(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xc98f4557: self->min = *luaX_checkvec3(L, 3); return 0; // min
+	case 0xd7a2e319: self->max = *luaX_checkvec3(L, 3); return 0; // max
 	}
 	return luaL_error(L, "Unknown field in box3: %s", luaL_checkstring(L, 2));
 }
@@ -677,16 +690,18 @@ static int f_Size___call(lua_State *L) {
 	return f_new_Size(L);
 }
 int f_Size___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x95876e1f: lua_pushnumber(L, luaX_checkSize(L, 1)->width); return 1; // width
-	case 0xd5bdbb42: lua_pushnumber(L, luaX_checkSize(L, 1)->height); return 1; // height
+	lpSize_t self = luaX_checkSize(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x95876e1f: lua_pushnumber(L, self->width); return 1; // width
+	case 0xd5bdbb42: lua_pushnumber(L, self->height); return 1; // height
 	}
 	return luaL_error(L, "Unknown field in Size: %s", luaL_checkstring(L, 2));
 }
 int f_Size___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x95876e1f: luaX_checkSize(L, 1)->width = luaL_checknumber(L, 3); return 0; // width
-	case 0xd5bdbb42: luaX_checkSize(L, 1)->height = luaL_checknumber(L, 3); return 0; // height
+	lpSize_t self = luaX_checkSize(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x95876e1f: self->width = luaL_checknumber(L, 3); return 0; // width
+	case 0xd5bdbb42: self->height = luaL_checknumber(L, 3); return 0; // height
 	}
 	return luaL_error(L, "Unknown field in Size: %s", luaL_checkstring(L, 2));
 }
@@ -694,13 +709,14 @@ extern bool_t f_convert_string(lua_State*, lpcPropertyType_t, lpcString_t, bool_
 static int f_fromstring_Size(lua_State *L) {
 	float width;
 	float height;
-	if (sscanf(luaL_checkstring(L, 1), "%f %f", &width, &height) == 2) {
-		struct Size _out = {0};
+	struct Size _out = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%f %f", &width, &height)) {
+	case 2:
 		_out.width = width; // width
 		_out.height = height; // height
 		luaX_pushSize(L, &_out); // Size
 		return 1;
-	} else {
+	default:
 		return luaL_error(L, "Invalid Size format: %s", luaL_checkstring(L, 1));
 	}
 }
@@ -782,11 +798,12 @@ static int f_rect_fit(lua_State *L) {
 	return 1;
 }
 int f_rect___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: lua_pushnumber(L, luaX_checkrect(L, 1)->x); return 1; // x
-	case 0xfc0c4ef4: lua_pushnumber(L, luaX_checkrect(L, 1)->y); return 1; // y
-	case 0x95876e1f: lua_pushnumber(L, luaX_checkrect(L, 1)->width); return 1; // width
-	case 0xd5bdbb42: lua_pushnumber(L, luaX_checkrect(L, 1)->height); return 1; // height
+	lprect_t self = luaX_checkrect(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xfd0c5087: lua_pushnumber(L, self->x); return 1; // x
+	case 0xfc0c4ef4: lua_pushnumber(L, self->y); return 1; // y
+	case 0x95876e1f: lua_pushnumber(L, self->width); return 1; // width
+	case 0xd5bdbb42: lua_pushnumber(L, self->height); return 1; // height
 	case 0x6ccaf138: lua_pushcfunction(L, f_rect_contains); return 1; // contains
 	case 0x82971c71: lua_pushcfunction(L, f_rect_scale); return 1; // scale
 	case 0xf7faaee1: lua_pushcfunction(L, f_rect_expand); return 1; // expand
@@ -796,11 +813,12 @@ int f_rect___index(lua_State *L) {
 	return luaL_error(L, "Unknown field in rect: %s", luaL_checkstring(L, 2));
 }
 int f_rect___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: luaX_checkrect(L, 1)->x = luaL_checknumber(L, 3); return 0; // x
-	case 0xfc0c4ef4: luaX_checkrect(L, 1)->y = luaL_checknumber(L, 3); return 0; // y
-	case 0x95876e1f: luaX_checkrect(L, 1)->width = luaL_checknumber(L, 3); return 0; // width
-	case 0xd5bdbb42: luaX_checkrect(L, 1)->height = luaL_checknumber(L, 3); return 0; // height
+	lprect_t self = luaX_checkrect(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xfd0c5087: self->x = luaL_checknumber(L, 3); return 0; // x
+	case 0xfc0c4ef4: self->y = luaL_checknumber(L, 3); return 0; // y
+	case 0x95876e1f: self->width = luaL_checknumber(L, 3); return 0; // width
+	case 0xd5bdbb42: self->height = luaL_checknumber(L, 3); return 0; // height
 	}
 	return luaL_error(L, "Unknown field in rect: %s", luaL_checkstring(L, 2));
 }
@@ -810,15 +828,16 @@ static int f_fromstring_rect(lua_State *L) {
 	float y;
 	float width;
 	float height;
-	if (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &x, &y, &width, &height) == 4) {
-		struct rect _out = {0};
+	struct rect _out = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &x, &y, &width, &height)) {
+	case 4:
 		_out.x = x; // x
 		_out.y = y; // y
 		_out.width = width; // width
 		_out.height = height; // height
 		luaX_pushrect(L, &_out); // rect
 		return 1;
-	} else {
+	default:
 		return luaL_error(L, "Invalid rect format: %s", luaL_checkstring(L, 1));
 	}
 }
@@ -922,11 +941,12 @@ static int f_quat_sqlerp(lua_State *L) {
 	return 1;
 }
 int f_quat___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: lua_pushnumber(L, luaX_checkquat(L, 1)->x); return 1; // x
-	case 0xfc0c4ef4: lua_pushnumber(L, luaX_checkquat(L, 1)->y); return 1; // y
-	case 0xff0c53ad: lua_pushnumber(L, luaX_checkquat(L, 1)->z); return 1; // z
-	case 0xf20c3f36: lua_pushnumber(L, luaX_checkquat(L, 1)->w); return 1; // w
+	lpquat_t self = luaX_checkquat(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xfd0c5087: lua_pushnumber(L, self->x); return 1; // x
+	case 0xfc0c4ef4: lua_pushnumber(L, self->y); return 1; // y
+	case 0xff0c53ad: lua_pushnumber(L, self->z); return 1; // z
+	case 0xf20c3f36: lua_pushnumber(L, self->w); return 1; // w
 	case 0xeefd95cf: lua_pushcfunction(L, f_quat_dotProduct); return 1; // dotProduct
 	case 0x83d03615: lua_pushcfunction(L, f_quat_length); return 1; // length
 	case 0x53d4a495: lua_pushcfunction(L, f_quat_unm); return 1; // unm
@@ -937,11 +957,12 @@ int f_quat___index(lua_State *L) {
 	return luaL_error(L, "Unknown field in quat: %s", luaL_checkstring(L, 2));
 }
 int f_quat___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: luaX_checkquat(L, 1)->x = luaL_checknumber(L, 3); return 0; // x
-	case 0xfc0c4ef4: luaX_checkquat(L, 1)->y = luaL_checknumber(L, 3); return 0; // y
-	case 0xff0c53ad: luaX_checkquat(L, 1)->z = luaL_checknumber(L, 3); return 0; // z
-	case 0xf20c3f36: luaX_checkquat(L, 1)->w = luaL_checknumber(L, 3); return 0; // w
+	lpquat_t self = luaX_checkquat(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xfd0c5087: self->x = luaL_checknumber(L, 3); return 0; // x
+	case 0xfc0c4ef4: self->y = luaL_checknumber(L, 3); return 0; // y
+	case 0xff0c53ad: self->z = luaL_checknumber(L, 3); return 0; // z
+	case 0xf20c3f36: self->w = luaL_checknumber(L, 3); return 0; // w
 	}
 	return luaL_error(L, "Unknown field in quat: %s", luaL_checkstring(L, 2));
 }
@@ -951,15 +972,16 @@ static int f_fromstring_quat(lua_State *L) {
 	float y;
 	float z;
 	float w;
-	if (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &x, &y, &z, &w) == 4) {
-		struct quat _out = {0};
+	struct quat _out = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &x, &y, &z, &w)) {
+	case 4:
 		_out.x = x; // x
 		_out.y = y; // y
 		_out.z = z; // z
 		_out.w = w; // w
 		luaX_pushquat(L, &_out); // quat
 		return 1;
-	} else {
+	default:
 		return luaL_error(L, "Invalid quat format: %s", luaL_checkstring(L, 1));
 	}
 }
@@ -1024,14 +1046,16 @@ static int f_mat3_scale(lua_State *L) {
 	return 0;
 }
 int f_mat3___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	lpmat3_t self = luaX_checkmat3(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
 	case 0xad0ecfd5: lua_pushcfunction(L, f_mat3_translate); return 1; // translate
 	case 0x82971c71: lua_pushcfunction(L, f_mat3_scale); return 1; // scale
 	}
 	return luaL_error(L, "Unknown field in mat3: %s", luaL_checkstring(L, 2));
 }
 int f_mat3___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	lpmat3_t self = luaX_checkmat3(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
 	}
 	return luaL_error(L, "Unknown field in mat3: %s", luaL_checkstring(L, 2));
 }
@@ -1184,7 +1208,8 @@ static int f_mat4_rotateQuat(lua_State *L) {
 	return 0;
 }
 int f_mat4___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	lpmat4_t self = luaX_checkmat4(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
 	case 0xad0ecfd5: lua_pushcfunction(L, f_mat4_translate); return 1; // translate
 	case 0xa5f4fd0a: lua_pushcfunction(L, f_mat4_rotate); return 1; // rotate
 	case 0x82971c71: lua_pushcfunction(L, f_mat4_scale); return 1; // scale
@@ -1197,7 +1222,8 @@ int f_mat4___index(lua_State *L) {
 	return luaL_error(L, "Unknown field in mat4: %s", luaL_checkstring(L, 2));
 }
 int f_mat4___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	lpmat4_t self = luaX_checkmat4(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
 	}
 	return luaL_error(L, "Unknown field in mat4: %s", luaL_checkstring(L, 2));
 }
@@ -1250,16 +1276,18 @@ static int f_bounds___call(lua_State *L) {
 	return f_new_bounds(L);
 }
 int f_bounds___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xc98f4557: lua_pushnumber(L, luaX_checkbounds(L, 1)->min); return 1; // min
-	case 0xd7a2e319: lua_pushnumber(L, luaX_checkbounds(L, 1)->max); return 1; // max
+	lpbounds_t self = luaX_checkbounds(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xc98f4557: lua_pushnumber(L, self->min); return 1; // min
+	case 0xd7a2e319: lua_pushnumber(L, self->max); return 1; // max
 	}
 	return luaL_error(L, "Unknown field in bounds: %s", luaL_checkstring(L, 2));
 }
 int f_bounds___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xc98f4557: luaX_checkbounds(L, 1)->min = luaL_checknumber(L, 3); return 0; // min
-	case 0xd7a2e319: luaX_checkbounds(L, 1)->max = luaL_checknumber(L, 3); return 0; // max
+	lpbounds_t self = luaX_checkbounds(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xc98f4557: self->min = luaL_checknumber(L, 3); return 0; // min
+	case 0xd7a2e319: self->max = luaL_checknumber(L, 3); return 0; // max
 	}
 	return luaL_error(L, "Unknown field in bounds: %s", luaL_checkstring(L, 2));
 }
@@ -1267,13 +1295,14 @@ extern bool_t f_convert_string(lua_State*, lpcPropertyType_t, lpcString_t, bool_
 static int f_fromstring_bounds(lua_State *L) {
 	float min;
 	float max;
-	if (sscanf(luaL_checkstring(L, 1), "%f %f", &min, &max) == 2) {
-		struct bounds _out = {0};
+	struct bounds _out = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%f %f", &min, &max)) {
+	case 2:
 		_out.min = min; // min
 		_out.max = max; // max
 		luaX_pushbounds(L, &_out); // bounds
 		return 1;
-	} else {
+	default:
 		return luaL_error(L, "Invalid bounds format: %s", luaL_checkstring(L, 1));
 	}
 }
@@ -1333,22 +1362,24 @@ static int f_plane3_multiplyVector3D(lua_State *L) {
 	return 1;
 }
 int f_plane3___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xe40c292c: lua_pushnumber(L, luaX_checkplane3(L, 1)->a); return 1; // a
-	case 0xe70c2de5: lua_pushnumber(L, luaX_checkplane3(L, 1)->b); return 1; // b
-	case 0xe60c2c52: lua_pushnumber(L, luaX_checkplane3(L, 1)->c); return 1; // c
-	case 0xe10c2473: lua_pushnumber(L, luaX_checkplane3(L, 1)->d); return 1; // d
+	lpplane3_t self = luaX_checkplane3(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xe40c292c: lua_pushnumber(L, self->a); return 1; // a
+	case 0xe70c2de5: lua_pushnumber(L, self->b); return 1; // b
+	case 0xe60c2c52: lua_pushnumber(L, self->c); return 1; // c
+	case 0xe10c2473: lua_pushnumber(L, self->d); return 1; // d
 	case 0xce79296c: lua_pushcfunction(L, f_plane3_normalize); return 1; // normalize
 	case 0x72848e05: lua_pushcfunction(L, f_plane3_multiplyVector3D); return 1; // multiplyVector3D
 	}
 	return luaL_error(L, "Unknown field in plane3: %s", luaL_checkstring(L, 2));
 }
 int f_plane3___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xe40c292c: luaX_checkplane3(L, 1)->a = luaL_checknumber(L, 3); return 0; // a
-	case 0xe70c2de5: luaX_checkplane3(L, 1)->b = luaL_checknumber(L, 3); return 0; // b
-	case 0xe60c2c52: luaX_checkplane3(L, 1)->c = luaL_checknumber(L, 3); return 0; // c
-	case 0xe10c2473: luaX_checkplane3(L, 1)->d = luaL_checknumber(L, 3); return 0; // d
+	lpplane3_t self = luaX_checkplane3(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xe40c292c: self->a = luaL_checknumber(L, 3); return 0; // a
+	case 0xe70c2de5: self->b = luaL_checknumber(L, 3); return 0; // b
+	case 0xe60c2c52: self->c = luaL_checknumber(L, 3); return 0; // c
+	case 0xe10c2473: self->d = luaL_checknumber(L, 3); return 0; // d
 	}
 	return luaL_error(L, "Unknown field in plane3: %s", luaL_checkstring(L, 2));
 }
@@ -1358,15 +1389,16 @@ static int f_fromstring_plane3(lua_State *L) {
 	float b;
 	float c;
 	float d;
-	if (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &a, &b, &c, &d) == 4) {
-		struct plane3 _out = {0};
+	struct plane3 _out = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &a, &b, &c, &d)) {
+	case 4:
 		_out.a = a; // a
 		_out.b = b; // b
 		_out.c = c; // c
 		_out.d = d; // d
 		luaX_pushplane3(L, &_out); // plane3
 		return 1;
-	} else {
+	default:
 		return luaL_error(L, "Invalid plane3 format: %s", luaL_checkstring(L, 1));
 	}
 }
@@ -1411,16 +1443,18 @@ static int f_sphere3___call(lua_State *L) {
 	return f_new_sphere3(L);
 }
 int f_sphere3___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x058c4484: luaX_pushvec3(L, &luaX_checksphere3(L, 1)->center); return 1; // center
-	case 0x0dba4cb3: lua_pushnumber(L, luaX_checksphere3(L, 1)->radius); return 1; // radius
+	lpsphere3_t self = luaX_checksphere3(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x058c4484: luaX_pushvec3(L, &self->center); return 1; // center
+	case 0x0dba4cb3: lua_pushnumber(L, self->radius); return 1; // radius
 	}
 	return luaL_error(L, "Unknown field in sphere3: %s", luaL_checkstring(L, 2));
 }
 int f_sphere3___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x058c4484: luaX_checksphere3(L, 1)->center = *luaX_checkvec3(L, 3); return 0; // center
-	case 0x0dba4cb3: luaX_checksphere3(L, 1)->radius = luaL_checknumber(L, 3); return 0; // radius
+	lpsphere3_t self = luaX_checksphere3(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x058c4484: self->center = *luaX_checkvec3(L, 3); return 0; // center
+	case 0x0dba4cb3: self->radius = luaL_checknumber(L, 3); return 0; // radius
 	}
 	return luaL_error(L, "Unknown field in sphere3: %s", luaL_checkstring(L, 2));
 }
@@ -1494,13 +1528,14 @@ static int f_frustum3_containsAABox(lua_State *L) {
 	return 1;
 }
 int f_frustum3___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x124aec70: luaX_pushplane3(L, &luaX_checkfrustum3(L, 1)->left); return 1; // left
-	case 0x78e32de5: luaX_pushplane3(L, &luaX_checkfrustum3(L, 1)->right); return 1; // right
-	case 0x4ea76b2a: luaX_pushplane3(L, &luaX_checkfrustum3(L, 1)->bottom); return 1; // bottom
-	case 0xa710dc3c: luaX_pushplane3(L, &luaX_checkfrustum3(L, 1)->top); return 1; // top
-	case 0xe179dbd8: luaX_pushplane3(L, &luaX_checkfrustum3(L, 1)->front); return 1; // front
-	case 0x5bb421a2: luaX_pushplane3(L, &luaX_checkfrustum3(L, 1)->back); return 1; // back
+	lpfrustum3_t self = luaX_checkfrustum3(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x124aec70: luaX_pushplane3(L, &self->left); return 1; // left
+	case 0x78e32de5: luaX_pushplane3(L, &self->right); return 1; // right
+	case 0x4ea76b2a: luaX_pushplane3(L, &self->bottom); return 1; // bottom
+	case 0xa710dc3c: luaX_pushplane3(L, &self->top); return 1; // top
+	case 0xe179dbd8: luaX_pushplane3(L, &self->front); return 1; // front
+	case 0x5bb421a2: luaX_pushplane3(L, &self->back); return 1; // back
 	case 0x7a86780e: lua_pushcfunction(L, f_frustum3_containsPoint); return 1; // containsPoint
 	case 0x3149232d: lua_pushcfunction(L, f_frustum3_containsSphere); return 1; // containsSphere
 	case 0xb0b6e291: lua_pushcfunction(L, f_frustum3_containsBox); return 1; // containsBox
@@ -1509,13 +1544,14 @@ int f_frustum3___index(lua_State *L) {
 	return luaL_error(L, "Unknown field in frustum3: %s", luaL_checkstring(L, 2));
 }
 int f_frustum3___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x124aec70: luaX_checkfrustum3(L, 1)->left = *luaX_checkplane3(L, 3); return 0; // left
-	case 0x78e32de5: luaX_checkfrustum3(L, 1)->right = *luaX_checkplane3(L, 3); return 0; // right
-	case 0x4ea76b2a: luaX_checkfrustum3(L, 1)->bottom = *luaX_checkplane3(L, 3); return 0; // bottom
-	case 0xa710dc3c: luaX_checkfrustum3(L, 1)->top = *luaX_checkplane3(L, 3); return 0; // top
-	case 0xe179dbd8: luaX_checkfrustum3(L, 1)->front = *luaX_checkplane3(L, 3); return 0; // front
-	case 0x5bb421a2: luaX_checkfrustum3(L, 1)->back = *luaX_checkplane3(L, 3); return 0; // back
+	lpfrustum3_t self = luaX_checkfrustum3(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x124aec70: self->left = *luaX_checkplane3(L, 3); return 0; // left
+	case 0x78e32de5: self->right = *luaX_checkplane3(L, 3); return 0; // right
+	case 0x4ea76b2a: self->bottom = *luaX_checkplane3(L, 3); return 0; // bottom
+	case 0xa710dc3c: self->top = *luaX_checkplane3(L, 3); return 0; // top
+	case 0xe179dbd8: self->front = *luaX_checkplane3(L, 3); return 0; // front
+	case 0x5bb421a2: self->back = *luaX_checkplane3(L, 3); return 0; // back
 	}
 	return luaL_error(L, "Unknown field in frustum3: %s", luaL_checkstring(L, 2));
 }
@@ -1572,19 +1608,21 @@ static int f_transform2_toMatrix3D(lua_State *L) {
 	return 1;
 }
 int f_transform2___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xcbd2d62c: luaX_pushvec2(L, &luaX_checktransform2(L, 1)->translation); return 1; // translation
-	case 0x21ac415f: lua_pushnumber(L, luaX_checktransform2(L, 1)->rotation); return 1; // rotation
-	case 0x82971c71: luaX_pushvec2(L, &luaX_checktransform2(L, 1)->scale); return 1; // scale
+	lptransform2_t self = luaX_checktransform2(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xcbd2d62c: luaX_pushvec2(L, &self->translation); return 1; // translation
+	case 0x21ac415f: lua_pushnumber(L, self->rotation); return 1; // rotation
+	case 0x82971c71: luaX_pushvec2(L, &self->scale); return 1; // scale
 	case 0xf4f4640a: lua_pushcfunction(L, f_transform2_toMatrix3D); return 1; // toMatrix3D
 	}
 	return luaL_error(L, "Unknown field in transform2: %s", luaL_checkstring(L, 2));
 }
 int f_transform2___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xcbd2d62c: luaX_checktransform2(L, 1)->translation = *luaX_checkvec2(L, 3); return 0; // translation
-	case 0x21ac415f: luaX_checktransform2(L, 1)->rotation = luaL_checknumber(L, 3); return 0; // rotation
-	case 0x82971c71: luaX_checktransform2(L, 1)->scale = *luaX_checkvec2(L, 3); return 0; // scale
+	lptransform2_t self = luaX_checktransform2(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xcbd2d62c: self->translation = *luaX_checkvec2(L, 3); return 0; // translation
+	case 0x21ac415f: self->rotation = luaL_checknumber(L, 3); return 0; // rotation
+	case 0x82971c71: self->scale = *luaX_checkvec2(L, 3); return 0; // scale
 	}
 	return luaL_error(L, "Unknown field in transform2: %s", luaL_checkstring(L, 2));
 }
@@ -1636,19 +1674,21 @@ static int f_transform3_toMatrix3D(lua_State *L) {
 	return 1;
 }
 int f_transform3___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xcbd2d62c: luaX_pushvec3(L, &luaX_checktransform3(L, 1)->translation); return 1; // translation
-	case 0x21ac415f: luaX_pushvec3(L, &luaX_checktransform3(L, 1)->rotation); return 1; // rotation
-	case 0x82971c71: luaX_pushvec3(L, &luaX_checktransform3(L, 1)->scale); return 1; // scale
+	lptransform3_t self = luaX_checktransform3(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xcbd2d62c: luaX_pushvec3(L, &self->translation); return 1; // translation
+	case 0x21ac415f: luaX_pushvec3(L, &self->rotation); return 1; // rotation
+	case 0x82971c71: luaX_pushvec3(L, &self->scale); return 1; // scale
 	case 0xf4f4640a: lua_pushcfunction(L, f_transform3_toMatrix3D); return 1; // toMatrix3D
 	}
 	return luaL_error(L, "Unknown field in transform3: %s", luaL_checkstring(L, 2));
 }
 int f_transform3___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xcbd2d62c: luaX_checktransform3(L, 1)->translation = *luaX_checkvec3(L, 3); return 0; // translation
-	case 0x21ac415f: luaX_checktransform3(L, 1)->rotation = *luaX_checkvec3(L, 3); return 0; // rotation
-	case 0x82971c71: luaX_checktransform3(L, 1)->scale = *luaX_checkvec3(L, 3); return 0; // scale
+	lptransform3_t self = luaX_checktransform3(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xcbd2d62c: self->translation = *luaX_checkvec3(L, 3); return 0; // translation
+	case 0x21ac415f: self->rotation = *luaX_checkvec3(L, 3); return 0; // rotation
+	case 0x82971c71: self->scale = *luaX_checkvec3(L, 3); return 0; // scale
 	}
 	return luaL_error(L, "Unknown field in transform3: %s", luaL_checkstring(L, 2));
 }
@@ -1694,19 +1734,21 @@ static int f_triangle3_normal(lua_State *L) {
 	return 1;
 }
 int f_triangle3___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xe40c292c: luaX_pushvec3(L, &luaX_checktriangle3(L, 1)->a); return 1; // a
-	case 0xe70c2de5: luaX_pushvec3(L, &luaX_checktriangle3(L, 1)->b); return 1; // b
-	case 0xe60c2c52: luaX_pushvec3(L, &luaX_checktriangle3(L, 1)->c); return 1; // c
+	lptriangle3_t self = luaX_checktriangle3(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xe40c292c: luaX_pushvec3(L, &self->a); return 1; // a
+	case 0xe70c2de5: luaX_pushvec3(L, &self->b); return 1; // b
+	case 0xe60c2c52: luaX_pushvec3(L, &self->c); return 1; // c
 	case 0xe68b9c52: lua_pushcfunction(L, f_triangle3_normal); return 1; // normal
 	}
 	return luaL_error(L, "Unknown field in triangle3: %s", luaL_checkstring(L, 2));
 }
 int f_triangle3___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xe40c292c: luaX_checktriangle3(L, 1)->a = *luaX_checkvec3(L, 3); return 0; // a
-	case 0xe70c2de5: luaX_checktriangle3(L, 1)->b = *luaX_checkvec3(L, 3); return 0; // b
-	case 0xe60c2c52: luaX_checktriangle3(L, 1)->c = *luaX_checkvec3(L, 3); return 0; // c
+	lptriangle3_t self = luaX_checktriangle3(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xe40c292c: self->a = *luaX_checkvec3(L, 3); return 0; // a
+	case 0xe70c2de5: self->b = *luaX_checkvec3(L, 3); return 0; // b
+	case 0xe60c2c52: self->c = *luaX_checkvec3(L, 3); return 0; // c
 	}
 	return luaL_error(L, "Unknown field in triangle3: %s", luaL_checkstring(L, 2));
 }
@@ -1777,9 +1819,10 @@ static int f_line3_intersect_box3(lua_State *L) {
 	return 1;
 }
 int f_line3___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xe40c292c: luaX_pushvec3(L, &luaX_checkline3(L, 1)->a); return 1; // a
-	case 0xe70c2de5: luaX_pushvec3(L, &luaX_checkline3(L, 1)->b); return 1; // b
+	lpline3_t self = luaX_checkline3(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xe40c292c: luaX_pushvec3(L, &self->a); return 1; // a
+	case 0xe70c2de5: luaX_pushvec3(L, &self->b); return 1; // b
 	case 0x82c7ab2f: lua_pushcfunction(L, f_line3_intersect_sphere3); return 1; // intersect_sphere3
 	case 0xcf43ebd0: lua_pushcfunction(L, f_line3_intersect_plane3); return 1; // intersect_plane3
 	case 0xf2168947: lua_pushcfunction(L, f_line3_intersect_triangle); return 1; // intersect_triangle
@@ -1788,9 +1831,10 @@ int f_line3___index(lua_State *L) {
 	return luaL_error(L, "Unknown field in line3: %s", luaL_checkstring(L, 2));
 }
 int f_line3___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xe40c292c: luaX_checkline3(L, 1)->a = *luaX_checkvec3(L, 3); return 0; // a
-	case 0xe70c2de5: luaX_checkline3(L, 1)->b = *luaX_checkvec3(L, 3); return 0; // b
+	lpline3_t self = luaX_checkline3(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xe40c292c: self->a = *luaX_checkvec3(L, 3); return 0; // a
+	case 0xe70c2de5: self->b = *luaX_checkvec3(L, 3); return 0; // b
 	}
 	return luaL_error(L, "Unknown field in line3: %s", luaL_checkstring(L, 2));
 }
@@ -1837,20 +1881,22 @@ static int f_edges___call(lua_State *L) {
 	return f_new_edges(L);
 }
 int f_edges___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x124aec70: lua_pushnumber(L, luaX_checkedges(L, 1)->left); return 1; // left
-	case 0xa710dc3c: lua_pushnumber(L, luaX_checkedges(L, 1)->top); return 1; // top
-	case 0x78e32de5: lua_pushnumber(L, luaX_checkedges(L, 1)->right); return 1; // right
-	case 0x4ea76b2a: lua_pushnumber(L, luaX_checkedges(L, 1)->bottom); return 1; // bottom
+	lpedges_t self = luaX_checkedges(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x124aec70: lua_pushnumber(L, self->left); return 1; // left
+	case 0xa710dc3c: lua_pushnumber(L, self->top); return 1; // top
+	case 0x78e32de5: lua_pushnumber(L, self->right); return 1; // right
+	case 0x4ea76b2a: lua_pushnumber(L, self->bottom); return 1; // bottom
 	}
 	return luaL_error(L, "Unknown field in edges: %s", luaL_checkstring(L, 2));
 }
 int f_edges___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x124aec70: luaX_checkedges(L, 1)->left = luaL_checknumber(L, 3); return 0; // left
-	case 0xa710dc3c: luaX_checkedges(L, 1)->top = luaL_checknumber(L, 3); return 0; // top
-	case 0x78e32de5: luaX_checkedges(L, 1)->right = luaL_checknumber(L, 3); return 0; // right
-	case 0x4ea76b2a: luaX_checkedges(L, 1)->bottom = luaL_checknumber(L, 3); return 0; // bottom
+	lpedges_t self = luaX_checkedges(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x124aec70: self->left = luaL_checknumber(L, 3); return 0; // left
+	case 0xa710dc3c: self->top = luaL_checknumber(L, 3); return 0; // top
+	case 0x78e32de5: self->right = luaL_checknumber(L, 3); return 0; // right
+	case 0x4ea76b2a: self->bottom = luaL_checknumber(L, 3); return 0; // bottom
 	}
 	return luaL_error(L, "Unknown field in edges: %s", luaL_checkstring(L, 2));
 }
@@ -1860,15 +1906,16 @@ static int f_fromstring_edges(lua_State *L) {
 	float top;
 	float right;
 	float bottom;
-	if (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &left, &top, &right, &bottom) == 4) {
-		struct edges _out = {0};
+	struct edges _out = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &left, &top, &right, &bottom)) {
+	case 4:
 		_out.left = left; // left
 		_out.top = top; // top
 		_out.right = right; // right
 		_out.bottom = bottom; // bottom
 		luaX_pushedges(L, &_out); // edges
 		return 1;
-	} else {
+	default:
 		return luaL_error(L, "Invalid edges format: %s", luaL_checkstring(L, 1));
 	}
 }
@@ -1930,21 +1977,23 @@ static int f_color_parse(lua_State *L) {
 	return 1;
 }
 int f_color___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xf70c4715: lua_pushnumber(L, luaX_checkcolor(L, 1)->r); return 1; // r
-	case 0xe20c2606: lua_pushnumber(L, luaX_checkcolor(L, 1)->g); return 1; // g
-	case 0xe70c2de5: lua_pushnumber(L, luaX_checkcolor(L, 1)->b); return 1; // b
-	case 0xe40c292c: lua_pushnumber(L, luaX_checkcolor(L, 1)->a); return 1; // a
+	lpcolor_t self = luaX_checkcolor(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xf70c4715: lua_pushnumber(L, self->r); return 1; // r
+	case 0xe20c2606: lua_pushnumber(L, self->g); return 1; // g
+	case 0xe70c2de5: lua_pushnumber(L, self->b); return 1; // b
+	case 0xe40c292c: lua_pushnumber(L, self->a); return 1; // a
 	case 0x1e691468: lua_pushcfunction(L, f_color_lerp); return 1; // lerp
 	}
 	return luaL_error(L, "Unknown field in color: %s", luaL_checkstring(L, 2));
 }
 int f_color___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xf70c4715: luaX_checkcolor(L, 1)->r = luaL_checknumber(L, 3); return 0; // r
-	case 0xe20c2606: luaX_checkcolor(L, 1)->g = luaL_checknumber(L, 3); return 0; // g
-	case 0xe70c2de5: luaX_checkcolor(L, 1)->b = luaL_checknumber(L, 3); return 0; // b
-	case 0xe40c292c: luaX_checkcolor(L, 1)->a = luaL_checknumber(L, 3); return 0; // a
+	lpcolor_t self = luaX_checkcolor(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xf70c4715: self->r = luaL_checknumber(L, 3); return 0; // r
+	case 0xe20c2606: self->g = luaL_checknumber(L, 3); return 0; // g
+	case 0xe70c2de5: self->b = luaL_checknumber(L, 3); return 0; // b
+	case 0xe40c292c: self->a = luaL_checknumber(L, 3); return 0; // a
 	}
 	return luaL_error(L, "Unknown field in color: %s", luaL_checkstring(L, 2));
 }
@@ -1954,15 +2003,16 @@ static int f_fromstring_color(lua_State *L) {
 	float g;
 	float b;
 	float a;
-	if (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &r, &g, &b, &a) == 4) {
-		struct color _out = {0};
+	struct color _out = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &r, &g, &b, &a)) {
+	case 4:
 		_out.r = r; // r
 		_out.g = g; // g
 		_out.b = b; // b
 		_out.a = a; // a
 		luaX_pushcolor(L, &_out); // color
 		return 1;
-	} else {
+	default:
 		return luaL_error(L, "Invalid color format: %s", luaL_checkstring(L, 1));
 	}
 }

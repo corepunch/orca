@@ -52,16 +52,18 @@ static int f_ProjectReference___call(lua_State *L) {
 	return f_new_ProjectReference(L);
 }
 int f_ProjectReference___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x0fe07306: lua_pushstring(L, luaX_checkProjectReference(L, 1)->Name); return 1; // Name
-	case 0xeb66e456: lua_pushstring(L, luaX_checkProjectReference(L, 1)->Path); return 1; // Path
+	lpProjectReference_t self = luaX_checkProjectReference(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x0fe07306: lua_pushstring(L, self->Name); return 1; // Name
+	case 0xeb66e456: lua_pushstring(L, self->Path); return 1; // Path
 	}
 	return luaL_error(L, "Unknown field in ProjectReference: %s", luaL_checkstring(L, 2));
 }
 int f_ProjectReference___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x0fe07306: strncpy(luaX_checkProjectReference(L, 1)->Name, luaL_checkstring(L, 3), sizeof(luaX_checkProjectReference(L, 1)->Name)); return 0; // Name
-	case 0xeb66e456: strncpy(luaX_checkProjectReference(L, 1)->Path, luaL_checkstring(L, 3), sizeof(luaX_checkProjectReference(L, 1)->Path)); return 0; // Path
+	lpProjectReference_t self = luaX_checkProjectReference(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x0fe07306: strncpy(self->Name, luaL_checkstring(L, 3), sizeof(self->Name)); return 0; // Name
+	case 0xeb66e456: strncpy(self->Path, luaL_checkstring(L, 3), sizeof(self->Path)); return 0; // Path
 	}
 	return luaL_error(L, "Unknown field in ProjectReference: %s", luaL_checkstring(L, 2));
 }
@@ -69,13 +71,14 @@ extern bool_t f_convert_string(lua_State*, lpcPropertyType_t, lpcString_t, bool_
 static int f_fromstring_ProjectReference(lua_State *L) {
 	fixedString_t Name;
 	fixedString_t Path;
-	if (sscanf(luaL_checkstring(L, 1), "%s %s", Name, Path) == 2) {
-		struct ProjectReference _out = {0};
+	struct ProjectReference _out = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%s %s", Name, Path)) {
+	case 2:
 		strncpy(_out.Name, Name, sizeof(_out.Name)); // Name
 		strncpy(_out.Path, Path, sizeof(_out.Path)); // Path
 		luaX_pushProjectReference(L, &_out); // ProjectReference
 		return 1;
-	} else {
+	default:
 		return luaL_error(L, "Invalid ProjectReference format: %s", luaL_checkstring(L, 1));
 	}
 }
@@ -122,18 +125,20 @@ static int f_SystemMessage___call(lua_State *L) {
 	return f_new_SystemMessage(L);
 }
 int f_SystemMessage___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xae0ed984: lua_pushstring(L, luaX_checkSystemMessage(L, 1)->Message); return 1; // Message
-	case 0xcd1ac90c: lua_pushstring(L, luaX_checkSystemMessage(L, 1)->Key); return 1; // Key
-	case 0xc67c8f52: lua_pushstring(L, luaX_checkSystemMessage(L, 1)->Command); return 1; // Command
+	lpSystemMessage_t self = luaX_checkSystemMessage(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xae0ed984: lua_pushstring(L, self->Message); return 1; // Message
+	case 0xcd1ac90c: lua_pushstring(L, self->Key); return 1; // Key
+	case 0xc67c8f52: lua_pushstring(L, self->Command); return 1; // Command
 	}
 	return luaL_error(L, "Unknown field in SystemMessage: %s", luaL_checkstring(L, 2));
 }
 int f_SystemMessage___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xae0ed984: strncpy(luaX_checkSystemMessage(L, 1)->Message, luaL_checkstring(L, 3), sizeof(luaX_checkSystemMessage(L, 1)->Message)); return 0; // Message
-	case 0xcd1ac90c: strncpy(luaX_checkSystemMessage(L, 1)->Key, luaL_checkstring(L, 3), sizeof(luaX_checkSystemMessage(L, 1)->Key)); return 0; // Key
-	case 0xc67c8f52: strncpy(luaX_checkSystemMessage(L, 1)->Command, luaL_checkstring(L, 3), sizeof(luaX_checkSystemMessage(L, 1)->Command)); return 0; // Command
+	lpSystemMessage_t self = luaX_checkSystemMessage(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xae0ed984: strncpy(self->Message, luaL_checkstring(L, 3), sizeof(self->Message)); return 0; // Message
+	case 0xcd1ac90c: strncpy(self->Key, luaL_checkstring(L, 3), sizeof(self->Key)); return 0; // Key
+	case 0xc67c8f52: strncpy(self->Command, luaL_checkstring(L, 3), sizeof(self->Command)); return 0; // Command
 	}
 	return luaL_error(L, "Unknown field in SystemMessage: %s", luaL_checkstring(L, 2));
 }
@@ -142,14 +147,15 @@ static int f_fromstring_SystemMessage(lua_State *L) {
 	fixedString_t Message;
 	fixedString_t Key;
 	fixedString_t Command;
-	if (sscanf(luaL_checkstring(L, 1), "%s %s %s", Message, Key, Command) == 3) {
-		struct SystemMessage _out = {0};
+	struct SystemMessage _out = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%s %s %s", Message, Key, Command)) {
+	case 3:
 		strncpy(_out.Message, Message, sizeof(_out.Message)); // Message
 		strncpy(_out.Key, Key, sizeof(_out.Key)); // Key
 		strncpy(_out.Command, Command, sizeof(_out.Command)); // Command
 		luaX_pushSystemMessage(L, &_out); // SystemMessage
 		return 1;
-	} else {
+	default:
 		return luaL_error(L, "Invalid SystemMessage format: %s", luaL_checkstring(L, 1));
 	}
 }
@@ -256,7 +262,7 @@ static struct Project ProjectDefaults = {
 };
 LRESULT ProjectProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x0ae8097f: return Project_Start(object, cmp, wparm, lparm); // Start
+		case kEventStart: return Project_Start(object, cmp, wparm, lparm); // Start
 }
 	return FALSE;
 }
@@ -761,7 +767,7 @@ static struct PropertyType const EnginePluginLibraryProperties[kEnginePluginLibr
 static struct EnginePluginLibrary EnginePluginLibraryDefaults = {};
 LRESULT EnginePluginLibraryProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x9352f5d5: return EnginePluginLibrary_Attached(object, cmp, wparm, lparm); // Attached
+		case kEventAttached: return EnginePluginLibrary_Attached(object, cmp, wparm, lparm); // Attached
 }
 	return FALSE;
 }

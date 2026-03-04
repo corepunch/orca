@@ -124,7 +124,7 @@ static struct Node3D Node3DDefaults = {
 };
 LRESULT Node3DProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x5dbe404d: return Node3D_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
+		case kEventUpdateMatrix: return Node3D_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
 }
 	return FALSE;
 }
@@ -161,7 +161,7 @@ static struct PropertyType const SceneProperties[kSceneNumProperties] = {
 static struct Scene SceneDefaults = {0};
 LRESULT SceneProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x5dbe404d: return Scene_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
+		case kEventUpdateMatrix: return Scene_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
 }
 	return FALSE;
 }
@@ -193,7 +193,7 @@ static struct PropertyType const Model3DProperties[kModel3DNumProperties] = {
 static struct Model3D Model3DDefaults = {0};
 LRESULT Model3DProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x350cf42d: return Model3D_Render(object, cmp, wparm, lparm); // Render
+		case kEventRender: return Model3D_Render(object, cmp, wparm, lparm); // Render
 }
 	return FALSE;
 }
@@ -230,7 +230,7 @@ static struct PropertyType const PlaneMeshNodeProperties[kPlaneMeshNodeNumProper
 static struct PlaneMeshNode PlaneMeshNodeDefaults = {0};
 LRESULT PlaneMeshNodeProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x350cf42d: return PlaneMeshNode_Render(object, cmp, wparm, lparm); // Render
+		case kEventRender: return PlaneMeshNode_Render(object, cmp, wparm, lparm); // Render
 }
 	return FALSE;
 }
@@ -303,7 +303,7 @@ static struct PropertyType const TrajectoryList3DProperties[kTrajectoryList3DNum
 static struct TrajectoryList3D TrajectoryList3DDefaults = {0};
 LRESULT TrajectoryList3DProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x5dbe404d: return TrajectoryList3D_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
+		case kEventUpdateMatrix: return TrajectoryList3D_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
 }
 	return FALSE;
 }
@@ -338,7 +338,7 @@ static struct PropertyType const Viewport3DProperties[kViewport3DNumProperties] 
 static struct Viewport3D Viewport3DDefaults = {0};
 LRESULT Viewport3DProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x9a7735e5: return Viewport3D_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
+		case kEventForegroundContent: return Viewport3D_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
 }
 	return FALSE;
 }
@@ -370,7 +370,7 @@ static struct PropertyType const PrefabView3DProperties[kPrefabView3DNumProperti
 static struct PrefabView3D PrefabView3DDefaults = {0};
 LRESULT PrefabView3DProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0xa3650e54: return PrefabView3D_LoadView(object, cmp, wparm, lparm); // LoadView
+		case kEventLoadView: return PrefabView3D_LoadView(object, cmp, wparm, lparm); // LoadView
 }
 	return FALSE;
 }
@@ -594,8 +594,8 @@ static struct PropertyType const TextBlock3DProperties[kTextBlock3DNumProperties
 static struct TextBlock3D TextBlock3DDefaults = {};
 LRESULT TextBlock3DProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x350cf42d: return TextBlock3D_Render(object, cmp, wparm, lparm); // Render
-		case 0x990de47d: return TextBlock3D_Create(object, cmp, wparm, lparm); // Create
+		case kEventRender: return TextBlock3D_Render(object, cmp, wparm, lparm); // Render
+		case kEventCreate: return TextBlock3D_Create(object, cmp, wparm, lparm); // Create
 }
 	return FALSE;
 }
@@ -634,7 +634,7 @@ static struct Light3D Light3DDefaults = {
 };
 LRESULT Light3DProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x350cf42d: return Light3D_Render(object, cmp, wparm, lparm); // Render
+		case kEventRender: return Light3D_Render(object, cmp, wparm, lparm); // Render
 }
 	return FALSE;
 }
@@ -666,7 +666,7 @@ static struct PropertyType const SpriteViewProperties[kSpriteViewNumProperties] 
 static struct SpriteView SpriteViewDefaults = {0};
 LRESULT SpriteViewProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x350cf42d: return SpriteView_Render(object, cmp, wparm, lparm); // Render
+		case kEventRender: return SpriteView_Render(object, cmp, wparm, lparm); // Render
 }
 	return FALSE;
 }

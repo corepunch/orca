@@ -581,16 +581,18 @@ static int f_PropertyEnumValue___call(lua_State *L) {
 	return f_new_PropertyEnumValue(L);
 }
 int f_PropertyEnumValue___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x0fe07306: lua_pushstring(L, luaX_checkPropertyEnumValue(L, 1)->Name); return 1; // Name
-	case 0xd147f96a: lua_pushnumber(L, luaX_checkPropertyEnumValue(L, 1)->Value); return 1; // Value
+	lpPropertyEnumValue_t self = luaX_checkPropertyEnumValue(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x0fe07306: lua_pushstring(L, self->Name); return 1; // Name
+	case 0xd147f96a: lua_pushnumber(L, self->Value); return 1; // Value
 	}
 	return luaL_error(L, "Unknown field in PropertyEnumValue: %s", luaL_checkstring(L, 2));
 }
 int f_PropertyEnumValue___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x0fe07306: strncpy(luaX_checkPropertyEnumValue(L, 1)->Name, luaL_checkstring(L, 3), sizeof(luaX_checkPropertyEnumValue(L, 1)->Name)); return 0; // Name
-	case 0xd147f96a: luaX_checkPropertyEnumValue(L, 1)->Value = luaL_checknumber(L, 3); return 0; // Value
+	lpPropertyEnumValue_t self = luaX_checkPropertyEnumValue(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x0fe07306: strncpy(self->Name, luaL_checkstring(L, 3), sizeof(self->Name)); return 0; // Name
+	case 0xd147f96a: self->Value = luaL_checknumber(L, 3); return 0; // Value
 	}
 	return luaL_error(L, "Unknown field in PropertyEnumValue: %s", luaL_checkstring(L, 2));
 }
@@ -598,13 +600,14 @@ extern bool_t f_convert_string(lua_State*, lpcPropertyType_t, lpcString_t, bool_
 static int f_fromstring_PropertyEnumValue(lua_State *L) {
 	fixedString_t Name;
 	int32_t Value;
-	if (sscanf(luaL_checkstring(L, 1), "%s %d", Name, &Value) == 2) {
-		struct PropertyEnumValue _out = {0};
+	struct PropertyEnumValue _out = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%s %d", Name, &Value)) {
+	case 2:
 		strncpy(_out.Name, Name, sizeof(_out.Name)); // Name
 		_out.Value = Value; // Value
 		luaX_pushPropertyEnumValue(L, &_out); // PropertyEnumValue
 		return 1;
-	} else {
+	default:
 		return luaL_error(L, "Invalid PropertyEnumValue format: %s", luaL_checkstring(L, 1));
 	}
 }
@@ -668,52 +671,54 @@ static int f_PropertyType___call(lua_State *L) {
 	return f_new_PropertyType(L);
 }
 int f_PropertyType___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x0fe07306: lua_pushstring(L, luaX_checkPropertyType(L, 1)->Name); return 1; // Name
-	case 0xafb3e591: lua_pushstring(L, luaX_checkPropertyType(L, 1)->Category); return 1; // Category
-	case 0x840d6c6d: luaX_pushDataType(L, luaX_checkPropertyType(L, 1)->DataType); return 1; // DataType
-	case 0xcd093f9f: lua_pushstring(L, luaX_checkPropertyType(L, 1)->DefaultValue); return 1; // DefaultValue
-	case 0xdf6c0780: lua_pushstring(L, luaX_checkPropertyType(L, 1)->TypeString); return 1; // TypeString
-	case 0xd2d3694e: lua_pushboolean(L, luaX_checkPropertyType(L, 1)->AffectLayout); return 1; // AffectLayout
-	case 0xcae7b378: lua_pushboolean(L, luaX_checkPropertyType(L, 1)->AffectRender); return 1; // AffectRender
-	case 0xd9ee91e7: lua_pushboolean(L, luaX_checkPropertyType(L, 1)->IsReadOnly); return 1; // IsReadOnly
-	case 0x3bf0d5c9: lua_pushboolean(L, luaX_checkPropertyType(L, 1)->IsHidden); return 1; // IsHidden
-	case 0x26e59151: lua_pushboolean(L, luaX_checkPropertyType(L, 1)->IsInherited); return 1; // IsInherited
-	case 0xcd1ac90c: lua_pushstring(L, luaX_checkPropertyType(L, 1)->Key); return 1; // Key
-	case 0xd147f96a: lua_pushstring(L, luaX_checkPropertyType(L, 1)->Value); return 1; // Value
-	case 0x4771f92f: lua_pushnumber(L, luaX_checkPropertyType(L, 1)->Step); return 1; // Step
-	case 0x48b88645: lua_pushnumber(L, luaX_checkPropertyType(L, 1)->UpperBound); return 1; // UpperBound
-	case 0xccc57b3a: lua_pushnumber(L, luaX_checkPropertyType(L, 1)->LowerBound); return 1; // LowerBound
-	case 0x0f76864e: lua_pushnumber(L, luaX_checkPropertyType(L, 1)->ShortIdentifier); return 1; // ShortIdentifier
-	case 0x429417cf: lua_pushnumber(L, luaX_checkPropertyType(L, 1)->FullIdentifier); return 1; // FullIdentifier
-	case 0x8995c7ea: lua_pushnumber(L, luaX_checkPropertyType(L, 1)->Offset); return 1; // Offset
-	case 0x58ff2a7c: lua_pushnumber(L, luaX_checkPropertyType(L, 1)->DataSize); return 1; // DataSize
-	case 0x660880b6: lua_pushboolean(L, luaX_checkPropertyType(L, 1)->IsArray); return 1; // IsArray
+	lpPropertyType_t self = luaX_checkPropertyType(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x0fe07306: lua_pushstring(L, self->Name); return 1; // Name
+	case 0xafb3e591: lua_pushstring(L, self->Category); return 1; // Category
+	case 0x840d6c6d: luaX_pushDataType(L, self->DataType); return 1; // DataType
+	case 0xcd093f9f: lua_pushstring(L, self->DefaultValue); return 1; // DefaultValue
+	case 0xdf6c0780: lua_pushstring(L, self->TypeString); return 1; // TypeString
+	case 0xd2d3694e: lua_pushboolean(L, self->AffectLayout); return 1; // AffectLayout
+	case 0xcae7b378: lua_pushboolean(L, self->AffectRender); return 1; // AffectRender
+	case 0xd9ee91e7: lua_pushboolean(L, self->IsReadOnly); return 1; // IsReadOnly
+	case 0x3bf0d5c9: lua_pushboolean(L, self->IsHidden); return 1; // IsHidden
+	case 0x26e59151: lua_pushboolean(L, self->IsInherited); return 1; // IsInherited
+	case 0xcd1ac90c: lua_pushstring(L, self->Key); return 1; // Key
+	case 0xd147f96a: lua_pushstring(L, self->Value); return 1; // Value
+	case 0x4771f92f: lua_pushnumber(L, self->Step); return 1; // Step
+	case 0x48b88645: lua_pushnumber(L, self->UpperBound); return 1; // UpperBound
+	case 0xccc57b3a: lua_pushnumber(L, self->LowerBound); return 1; // LowerBound
+	case 0x0f76864e: lua_pushnumber(L, self->ShortIdentifier); return 1; // ShortIdentifier
+	case 0x429417cf: lua_pushnumber(L, self->FullIdentifier); return 1; // FullIdentifier
+	case 0x8995c7ea: lua_pushnumber(L, self->Offset); return 1; // Offset
+	case 0x58ff2a7c: lua_pushnumber(L, self->DataSize); return 1; // DataSize
+	case 0x660880b6: lua_pushboolean(L, self->IsArray); return 1; // IsArray
 	}
 	return luaL_error(L, "Unknown field in PropertyType: %s", luaL_checkstring(L, 2));
 }
 int f_PropertyType___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x0fe07306: strncpy(luaX_checkPropertyType(L, 1)->Name, luaL_checkstring(L, 3), sizeof(luaX_checkPropertyType(L, 1)->Name)); return 0; // Name
-	case 0xafb3e591: strncpy(luaX_checkPropertyType(L, 1)->Category, luaL_checkstring(L, 3), sizeof(luaX_checkPropertyType(L, 1)->Category)); return 0; // Category
-	case 0x840d6c6d: luaX_checkPropertyType(L, 1)->DataType = luaX_checkDataType(L, 3); return 0; // DataType
-	case 0xcd093f9f: strncpy(luaX_checkPropertyType(L, 1)->DefaultValue, luaL_checkstring(L, 3), sizeof(luaX_checkPropertyType(L, 1)->DefaultValue)); return 0; // DefaultValue
-	case 0xdf6c0780: strncpy(luaX_checkPropertyType(L, 1)->TypeString, luaL_checkstring(L, 3), sizeof(luaX_checkPropertyType(L, 1)->TypeString)); return 0; // TypeString
-	case 0xd2d3694e: luaX_checkPropertyType(L, 1)->AffectLayout = lua_toboolean(L, 3); return 0; // AffectLayout
-	case 0xcae7b378: luaX_checkPropertyType(L, 1)->AffectRender = lua_toboolean(L, 3); return 0; // AffectRender
-	case 0xd9ee91e7: luaX_checkPropertyType(L, 1)->IsReadOnly = lua_toboolean(L, 3); return 0; // IsReadOnly
-	case 0x3bf0d5c9: luaX_checkPropertyType(L, 1)->IsHidden = lua_toboolean(L, 3); return 0; // IsHidden
-	case 0x26e59151: luaX_checkPropertyType(L, 1)->IsInherited = lua_toboolean(L, 3); return 0; // IsInherited
-	case 0xcd1ac90c: strncpy(luaX_checkPropertyType(L, 1)->Key, luaL_checkstring(L, 3), sizeof(luaX_checkPropertyType(L, 1)->Key)); return 0; // Key
-	case 0xd147f96a: strncpy(luaX_checkPropertyType(L, 1)->Value, luaL_checkstring(L, 3), sizeof(luaX_checkPropertyType(L, 1)->Value)); return 0; // Value
-	case 0x4771f92f: luaX_checkPropertyType(L, 1)->Step = luaL_checknumber(L, 3); return 0; // Step
-	case 0x48b88645: luaX_checkPropertyType(L, 1)->UpperBound = luaL_checknumber(L, 3); return 0; // UpperBound
-	case 0xccc57b3a: luaX_checkPropertyType(L, 1)->LowerBound = luaL_checknumber(L, 3); return 0; // LowerBound
-	case 0x0f76864e: luaX_checkPropertyType(L, 1)->ShortIdentifier = luaL_checknumber(L, 3); return 0; // ShortIdentifier
-	case 0x429417cf: luaX_checkPropertyType(L, 1)->FullIdentifier = luaL_checknumber(L, 3); return 0; // FullIdentifier
-	case 0x8995c7ea: luaX_checkPropertyType(L, 1)->Offset = luaL_checknumber(L, 3); return 0; // Offset
-	case 0x58ff2a7c: luaX_checkPropertyType(L, 1)->DataSize = luaL_checknumber(L, 3); return 0; // DataSize
-	case 0x660880b6: luaX_checkPropertyType(L, 1)->IsArray = lua_toboolean(L, 3); return 0; // IsArray
+	lpPropertyType_t self = luaX_checkPropertyType(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x0fe07306: strncpy(self->Name, luaL_checkstring(L, 3), sizeof(self->Name)); return 0; // Name
+	case 0xafb3e591: strncpy(self->Category, luaL_checkstring(L, 3), sizeof(self->Category)); return 0; // Category
+	case 0x840d6c6d: self->DataType = luaX_checkDataType(L, 3); return 0; // DataType
+	case 0xcd093f9f: strncpy(self->DefaultValue, luaL_checkstring(L, 3), sizeof(self->DefaultValue)); return 0; // DefaultValue
+	case 0xdf6c0780: strncpy(self->TypeString, luaL_checkstring(L, 3), sizeof(self->TypeString)); return 0; // TypeString
+	case 0xd2d3694e: self->AffectLayout = lua_toboolean(L, 3); return 0; // AffectLayout
+	case 0xcae7b378: self->AffectRender = lua_toboolean(L, 3); return 0; // AffectRender
+	case 0xd9ee91e7: self->IsReadOnly = lua_toboolean(L, 3); return 0; // IsReadOnly
+	case 0x3bf0d5c9: self->IsHidden = lua_toboolean(L, 3); return 0; // IsHidden
+	case 0x26e59151: self->IsInherited = lua_toboolean(L, 3); return 0; // IsInherited
+	case 0xcd1ac90c: strncpy(self->Key, luaL_checkstring(L, 3), sizeof(self->Key)); return 0; // Key
+	case 0xd147f96a: strncpy(self->Value, luaL_checkstring(L, 3), sizeof(self->Value)); return 0; // Value
+	case 0x4771f92f: self->Step = luaL_checknumber(L, 3); return 0; // Step
+	case 0x48b88645: self->UpperBound = luaL_checknumber(L, 3); return 0; // UpperBound
+	case 0xccc57b3a: self->LowerBound = luaL_checknumber(L, 3); return 0; // LowerBound
+	case 0x0f76864e: self->ShortIdentifier = luaL_checknumber(L, 3); return 0; // ShortIdentifier
+	case 0x429417cf: self->FullIdentifier = luaL_checknumber(L, 3); return 0; // FullIdentifier
+	case 0x8995c7ea: self->Offset = luaL_checknumber(L, 3); return 0; // Offset
+	case 0x58ff2a7c: self->DataSize = luaL_checknumber(L, 3); return 0; // DataSize
+	case 0x660880b6: self->IsArray = lua_toboolean(L, 3); return 0; // IsArray
 	}
 	return luaL_error(L, "Unknown field in PropertyType: %s", luaL_checkstring(L, 2));
 }

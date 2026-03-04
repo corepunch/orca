@@ -288,20 +288,22 @@ static int f_BorderRadiusShorthand___call(lua_State *L) {
 	return f_new_BorderRadiusShorthand(L);
 }
 int f_BorderRadiusShorthand___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xd5ac3a0b: lua_pushnumber(L, luaX_checkBorderRadiusShorthand(L, 1)->TopLeftRadius); return 1; // TopLeftRadius
-	case 0xdbe5a724: lua_pushnumber(L, luaX_checkBorderRadiusShorthand(L, 1)->TopRightRadius); return 1; // TopRightRadius
-	case 0xf6ae40ce: lua_pushnumber(L, luaX_checkBorderRadiusShorthand(L, 1)->BottomRightRadius); return 1; // BottomRightRadius
-	case 0x7f5fe235: lua_pushnumber(L, luaX_checkBorderRadiusShorthand(L, 1)->BottomLeftRadius); return 1; // BottomLeftRadius
+	lpBorderRadiusShorthand_t self = luaX_checkBorderRadiusShorthand(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xd5ac3a0b: lua_pushnumber(L, self->TopLeftRadius); return 1; // TopLeftRadius
+	case 0xdbe5a724: lua_pushnumber(L, self->TopRightRadius); return 1; // TopRightRadius
+	case 0xf6ae40ce: lua_pushnumber(L, self->BottomRightRadius); return 1; // BottomRightRadius
+	case 0x7f5fe235: lua_pushnumber(L, self->BottomLeftRadius); return 1; // BottomLeftRadius
 	}
 	return luaL_error(L, "Unknown field in BorderRadiusShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_BorderRadiusShorthand___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xd5ac3a0b: luaX_checkBorderRadiusShorthand(L, 1)->TopLeftRadius = luaL_checknumber(L, 3); return 0; // TopLeftRadius
-	case 0xdbe5a724: luaX_checkBorderRadiusShorthand(L, 1)->TopRightRadius = luaL_checknumber(L, 3); return 0; // TopRightRadius
-	case 0xf6ae40ce: luaX_checkBorderRadiusShorthand(L, 1)->BottomRightRadius = luaL_checknumber(L, 3); return 0; // BottomRightRadius
-	case 0x7f5fe235: luaX_checkBorderRadiusShorthand(L, 1)->BottomLeftRadius = luaL_checknumber(L, 3); return 0; // BottomLeftRadius
+	lpBorderRadiusShorthand_t self = luaX_checkBorderRadiusShorthand(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xd5ac3a0b: self->TopLeftRadius = luaL_checknumber(L, 3); return 0; // TopLeftRadius
+	case 0xdbe5a724: self->TopRightRadius = luaL_checknumber(L, 3); return 0; // TopRightRadius
+	case 0xf6ae40ce: self->BottomRightRadius = luaL_checknumber(L, 3); return 0; // BottomRightRadius
+	case 0x7f5fe235: self->BottomLeftRadius = luaL_checknumber(L, 3); return 0; // BottomLeftRadius
 	}
 	return luaL_error(L, "Unknown field in BorderRadiusShorthand: %s", luaL_checkstring(L, 2));
 }
@@ -311,15 +313,16 @@ static int f_fromstring_BorderRadiusShorthand(lua_State *L) {
 	float TopRightRadius;
 	float BottomRightRadius;
 	float BottomLeftRadius;
-	if (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &TopLeftRadius, &TopRightRadius, &BottomRightRadius, &BottomLeftRadius) == 4) {
-		struct BorderRadiusShorthand _out = {0};
+	struct BorderRadiusShorthand _out = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &TopLeftRadius, &TopRightRadius, &BottomRightRadius, &BottomLeftRadius)) {
+	case 4:
 		_out.TopLeftRadius = TopLeftRadius; // TopLeftRadius
 		_out.TopRightRadius = TopRightRadius; // TopRightRadius
 		_out.BottomRightRadius = BottomRightRadius; // BottomRightRadius
 		_out.BottomLeftRadius = BottomLeftRadius; // BottomLeftRadius
 		luaX_pushBorderRadiusShorthand(L, &_out); // BorderRadiusShorthand
 		return 1;
-	} else {
+	default:
 		return luaL_error(L, "Invalid BorderRadiusShorthand format: %s", luaL_checkstring(L, 1));
 	}
 }
@@ -365,30 +368,38 @@ static int f_EdgeShorthand___call(lua_State *L) {
 	return f_new_EdgeShorthand(L);
 }
 int f_EdgeShorthand___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x92773890: lua_pushnumber(L, luaX_checkEdgeShorthand(L, 1)->Left); return 1; // Left
-	case 0x1e9e9f85: lua_pushnumber(L, luaX_checkEdgeShorthand(L, 1)->Right); return 1; // Right
+	lpEdgeShorthand_t self = luaX_checkEdgeShorthand(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x92773890: lua_pushnumber(L, self->Left); return 1; // Left
+	case 0x1e9e9f85: lua_pushnumber(L, self->Right); return 1; // Right
 	}
 	return luaL_error(L, "Unknown field in EdgeShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_EdgeShorthand___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x92773890: luaX_checkEdgeShorthand(L, 1)->Left = luaL_checknumber(L, 3); return 0; // Left
-	case 0x1e9e9f85: luaX_checkEdgeShorthand(L, 1)->Right = luaL_checknumber(L, 3); return 0; // Right
+	lpEdgeShorthand_t self = luaX_checkEdgeShorthand(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x92773890: self->Left = luaL_checknumber(L, 3); return 0; // Left
+	case 0x1e9e9f85: self->Right = luaL_checknumber(L, 3); return 0; // Right
 	}
 	return luaL_error(L, "Unknown field in EdgeShorthand: %s", luaL_checkstring(L, 2));
 }
 extern bool_t f_convert_string(lua_State*, lpcPropertyType_t, lpcString_t, bool_t);
+void EdgeShorthand_Convert1(struct EdgeShorthand*, float);
 static int f_fromstring_EdgeShorthand(lua_State *L) {
 	float Left;
 	float Right;
-	if (sscanf(luaL_checkstring(L, 1), "%f %f", &Left, &Right) == 2) {
-		struct EdgeShorthand _out = {0};
+	struct EdgeShorthand _out = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%f %f", &Left, &Right)) {
+	case 2:
 		_out.Left = Left; // Left
 		_out.Right = Right; // Right
 		luaX_pushEdgeShorthand(L, &_out); // EdgeShorthand
 		return 1;
-	} else {
+	case 1:
+		EdgeShorthand_Convert1(&_out, Left);
+		luaX_pushEdgeShorthand(L, &_out); // EdgeShorthand
+		return 1;
+	default:
 		return luaL_error(L, "Invalid EdgeShorthand format: %s", luaL_checkstring(L, 1));
 	}
 }
@@ -428,12 +439,14 @@ static int f_AlignmentShorthand___call(lua_State *L) {
 	return f_new_AlignmentShorthand(L);
 }
 int f_AlignmentShorthand___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	lpAlignmentShorthand_t self = luaX_checkAlignmentShorthand(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
 	}
 	return luaL_error(L, "Unknown field in AlignmentShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_AlignmentShorthand___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	lpAlignmentShorthand_t self = luaX_checkAlignmentShorthand(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
 	}
 	return luaL_error(L, "Unknown field in AlignmentShorthand: %s", luaL_checkstring(L, 2));
 }
@@ -442,14 +455,15 @@ static int f_fromstring_AlignmentShorthand(lua_State *L) {
 	fixedString_t AlignmentShorthand_Axis0;
 	fixedString_t AlignmentShorthand_Axis1;
 	fixedString_t AlignmentShorthand_Axis2;
-	if (sscanf(luaL_checkstring(L, 1), "%s %s %s", AlignmentShorthand_Axis0, AlignmentShorthand_Axis1, AlignmentShorthand_Axis2) == 3) {
-		struct AlignmentShorthand _out = {0};
+	struct AlignmentShorthand _out = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%s %s %s", AlignmentShorthand_Axis0, AlignmentShorthand_Axis1, AlignmentShorthand_Axis2)) {
+	case 3:
 		lua_pop(L, (lua_pushstring(L, AlignmentShorthand_Axis0), _out.Axis[0] = luaL_checkoption(L, -1, NULL, _HorizontalAlignment), 1)); // AlignmentShorthand_Axis0
 		lua_pop(L, (lua_pushstring(L, AlignmentShorthand_Axis1), _out.Axis[1] = luaL_checkoption(L, -1, NULL, _VerticalAlignment), 1)); // AlignmentShorthand_Axis1
 		lua_pop(L, (lua_pushstring(L, AlignmentShorthand_Axis2), _out.Axis[2] = luaL_checkoption(L, -1, NULL, _DepthAlignment), 1)); // AlignmentShorthand_Axis2
 		luaX_pushAlignmentShorthand(L, &_out); // AlignmentShorthand
 		return 1;
-	} else {
+	default:
 		return luaL_error(L, "Invalid AlignmentShorthand format: %s", luaL_checkstring(L, 1));
 	}
 }
@@ -496,20 +510,22 @@ static int f_FontShorthand___call(lua_State *L) {
 	return f_new_FontShorthand(L);
 }
 int f_FontShorthand___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x993014d9: luaX_pushFontWeight(L, luaX_checkFontShorthand(L, 1)->Weight); return 1; // Weight
-	case 0x5467ec76: luaX_pushFontStyle(L, luaX_checkFontShorthand(L, 1)->Style); return 1; // Style
-	case 0xa6478e7c: lua_pushnumber(L, luaX_checkFontShorthand(L, 1)->Size); return 1; // Size
-	case 0xc46f8f49: luaX_pushFontFamily(L, luaX_checkFontShorthand(L, 1)->Family); return 1; // Family
+	lpFontShorthand_t self = luaX_checkFontShorthand(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x993014d9: luaX_pushFontWeight(L, self->Weight); return 1; // Weight
+	case 0x5467ec76: luaX_pushFontStyle(L, self->Style); return 1; // Style
+	case 0xa6478e7c: lua_pushnumber(L, self->Size); return 1; // Size
+	case 0xc46f8f49: luaX_pushFontFamily(L, self->Family); return 1; // Family
 	}
 	return luaL_error(L, "Unknown field in FontShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_FontShorthand___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x993014d9: luaX_checkFontShorthand(L, 1)->Weight = luaX_checkFontWeight(L, 3); return 0; // Weight
-	case 0x5467ec76: luaX_checkFontShorthand(L, 1)->Style = luaX_checkFontStyle(L, 3); return 0; // Style
-	case 0xa6478e7c: luaX_checkFontShorthand(L, 1)->Size = luaL_checknumber(L, 3); return 0; // Size
-	case 0xc46f8f49: luaX_checkFontShorthand(L, 1)->Family = luaX_checkFontFamily(L, 3); return 0; // Family
+	lpFontShorthand_t self = luaX_checkFontShorthand(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x993014d9: self->Weight = luaX_checkFontWeight(L, 3); return 0; // Weight
+	case 0x5467ec76: self->Style = luaX_checkFontStyle(L, 3); return 0; // Style
+	case 0xa6478e7c: self->Size = luaL_checknumber(L, 3); return 0; // Size
+	case 0xc46f8f49: self->Family = luaX_checkFontFamily(L, 3); return 0; // Family
 	}
 	return luaL_error(L, "Unknown field in FontShorthand: %s", luaL_checkstring(L, 2));
 }
@@ -519,8 +535,9 @@ static int f_fromstring_FontShorthand(lua_State *L) {
 	fixedString_t Style;
 	float Size;
 	fixedString_t Family;
-	if (sscanf(luaL_checkstring(L, 1), "%s %s %f %s", Weight, Style, &Size, Family) == 4) {
-		struct FontShorthand _out = {0};
+	struct FontShorthand _out = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%s %s %f %s", Weight, Style, &Size, Family)) {
+	case 4:
 		lua_pop(L, (lua_pushstring(L, Weight), _out.Weight = luaL_checkoption(L, -1, NULL, _FontWeight), 1)); // Weight
 		lua_pop(L, (lua_pushstring(L, Style), _out.Style = luaL_checkoption(L, -1, NULL, _FontStyle), 1)); // Style
 		_out.Size = Size; // Size
@@ -530,7 +547,7 @@ static int f_fromstring_FontShorthand(lua_State *L) {
 		}, Family, TRUE), _out.Family = luaX_checkFontFamily(L, -1), 1)); // Family
 		luaX_pushFontShorthand(L, &_out); // FontShorthand
 		return 1;
-	} else {
+	default:
 		return luaL_error(L, "Invalid FontShorthand format: %s", luaL_checkstring(L, 1));
 	}
 }
@@ -570,18 +587,20 @@ static int f_BrushShorthand___call(lua_State *L) {
 	return f_new_BrushShorthand(L);
 }
 int f_BrushShorthand___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xe5b43cf8: luaX_pushcolor(L, &luaX_checkBrushShorthand(L, 1)->Color); return 1; // Color
-	case 0x590ca79a: luaX_pushTexture(L, luaX_checkBrushShorthand(L, 1)->Image); return 1; // Image
-	case 0xcbd54f80: luaX_pushMaterial(L, luaX_checkBrushShorthand(L, 1)->Material); return 1; // Material
+	lpBrushShorthand_t self = luaX_checkBrushShorthand(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xe5b43cf8: luaX_pushcolor(L, &self->Color); return 1; // Color
+	case 0x590ca79a: luaX_pushTexture(L, self->Image); return 1; // Image
+	case 0xcbd54f80: luaX_pushMaterial(L, self->Material); return 1; // Material
 	}
 	return luaL_error(L, "Unknown field in BrushShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_BrushShorthand___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xe5b43cf8: luaX_checkBrushShorthand(L, 1)->Color = *luaX_checkcolor(L, 3); return 0; // Color
-	case 0x590ca79a: luaX_checkBrushShorthand(L, 1)->Image = luaX_checkTexture(L, 3); return 0; // Image
-	case 0xcbd54f80: luaX_checkBrushShorthand(L, 1)->Material = luaX_checkMaterial(L, 3); return 0; // Material
+	lpBrushShorthand_t self = luaX_checkBrushShorthand(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xe5b43cf8: self->Color = *luaX_checkcolor(L, 3); return 0; // Color
+	case 0x590ca79a: self->Image = luaX_checkTexture(L, 3); return 0; // Image
+	case 0xcbd54f80: self->Material = luaX_checkMaterial(L, 3); return 0; // Material
 	}
 	return luaL_error(L, "Unknown field in BrushShorthand: %s", luaL_checkstring(L, 2));
 }
@@ -590,8 +609,9 @@ static int f_fromstring_BrushShorthand(lua_State *L) {
 	fixedString_t Color;
 	fixedString_t Image;
 	fixedString_t Material;
-	if (sscanf(luaL_checkstring(L, 1), "%s %s %s", Color, Image, Material) == 3) {
-		struct BrushShorthand _out = {0};
+	struct BrushShorthand _out = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%s %s %s", Color, Image, Material)) {
+	case 3:
 		_out.Color = COLOR_Parse(Color); // Color
 		lua_pop(L, (f_convert_string(L, &(struct PropertyType) {
 			.DataType = kDataTypeObject,
@@ -603,7 +623,7 @@ static int f_fromstring_BrushShorthand(lua_State *L) {
 		}, Material, TRUE), _out.Material = luaX_checkMaterial(L, -1), 1)); // Material
 		luaX_pushBrushShorthand(L, &_out); // BrushShorthand
 		return 1;
-	} else {
+	default:
 		return luaL_error(L, "Invalid BrushShorthand format: %s", luaL_checkstring(L, 1));
 	}
 }
@@ -649,20 +669,22 @@ static int f_ShadowShorthand___call(lua_State *L) {
 	return f_new_ShadowShorthand(L);
 }
 int f_ShadowShorthand___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x8995c7ea: luaX_pushvec2(L, &luaX_checkShadowShorthand(L, 1)->Offset); return 1; // Offset
-	case 0x961749ae: lua_pushnumber(L, luaX_checkShadowShorthand(L, 1)->BlurRadius); return 1; // BlurRadius
-	case 0x80066a9c: lua_pushnumber(L, luaX_checkShadowShorthand(L, 1)->SpreadRadius); return 1; // SpreadRadius
-	case 0xe5b43cf8: luaX_pushcolor(L, &luaX_checkShadowShorthand(L, 1)->Color); return 1; // Color
+	lpShadowShorthand_t self = luaX_checkShadowShorthand(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x8995c7ea: luaX_pushvec2(L, &self->Offset); return 1; // Offset
+	case 0x961749ae: lua_pushnumber(L, self->BlurRadius); return 1; // BlurRadius
+	case 0x80066a9c: lua_pushnumber(L, self->SpreadRadius); return 1; // SpreadRadius
+	case 0xe5b43cf8: luaX_pushcolor(L, &self->Color); return 1; // Color
 	}
 	return luaL_error(L, "Unknown field in ShadowShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_ShadowShorthand___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x8995c7ea: luaX_checkShadowShorthand(L, 1)->Offset = *luaX_checkvec2(L, 3); return 0; // Offset
-	case 0x961749ae: luaX_checkShadowShorthand(L, 1)->BlurRadius = luaL_checknumber(L, 3); return 0; // BlurRadius
-	case 0x80066a9c: luaX_checkShadowShorthand(L, 1)->SpreadRadius = luaL_checknumber(L, 3); return 0; // SpreadRadius
-	case 0xe5b43cf8: luaX_checkShadowShorthand(L, 1)->Color = *luaX_checkcolor(L, 3); return 0; // Color
+	lpShadowShorthand_t self = luaX_checkShadowShorthand(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x8995c7ea: self->Offset = *luaX_checkvec2(L, 3); return 0; // Offset
+	case 0x961749ae: self->BlurRadius = luaL_checknumber(L, 3); return 0; // BlurRadius
+	case 0x80066a9c: self->SpreadRadius = luaL_checknumber(L, 3); return 0; // SpreadRadius
+	case 0xe5b43cf8: self->Color = *luaX_checkcolor(L, 3); return 0; // Color
 	}
 	return luaL_error(L, "Unknown field in ShadowShorthand: %s", luaL_checkstring(L, 2));
 }
@@ -707,18 +729,20 @@ static int f_RingShorthand___call(lua_State *L) {
 	return f_new_RingShorthand(L);
 }
 int f_RingShorthand___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x8995c7ea: lua_pushnumber(L, luaX_checkRingShorthand(L, 1)->Offset); return 1; // Offset
-	case 0x3b42dfbf: lua_pushnumber(L, luaX_checkRingShorthand(L, 1)->Width); return 1; // Width
-	case 0xe5b43cf8: luaX_pushcolor(L, &luaX_checkRingShorthand(L, 1)->Color); return 1; // Color
+	lpRingShorthand_t self = luaX_checkRingShorthand(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x8995c7ea: lua_pushnumber(L, self->Offset); return 1; // Offset
+	case 0x3b42dfbf: lua_pushnumber(L, self->Width); return 1; // Width
+	case 0xe5b43cf8: luaX_pushcolor(L, &self->Color); return 1; // Color
 	}
 	return luaL_error(L, "Unknown field in RingShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_RingShorthand___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x8995c7ea: luaX_checkRingShorthand(L, 1)->Offset = luaL_checknumber(L, 3); return 0; // Offset
-	case 0x3b42dfbf: luaX_checkRingShorthand(L, 1)->Width = luaL_checknumber(L, 3); return 0; // Width
-	case 0xe5b43cf8: luaX_checkRingShorthand(L, 1)->Color = *luaX_checkcolor(L, 3); return 0; // Color
+	lpRingShorthand_t self = luaX_checkRingShorthand(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x8995c7ea: self->Offset = luaL_checknumber(L, 3); return 0; // Offset
+	case 0x3b42dfbf: self->Width = luaL_checknumber(L, 3); return 0; // Width
+	case 0xe5b43cf8: self->Color = *luaX_checkcolor(L, 3); return 0; // Color
 	}
 	return luaL_error(L, "Unknown field in RingShorthand: %s", luaL_checkstring(L, 2));
 }
@@ -727,14 +751,15 @@ static int f_fromstring_RingShorthand(lua_State *L) {
 	float Offset;
 	float Width;
 	fixedString_t Color;
-	if (sscanf(luaL_checkstring(L, 1), "%f %f %s", &Offset, &Width, Color) == 3) {
-		struct RingShorthand _out = {0};
+	struct RingShorthand _out = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%f %f %s", &Offset, &Width, Color)) {
+	case 3:
 		_out.Offset = Offset; // Offset
 		_out.Width = Width; // Width
 		_out.Color = COLOR_Parse(Color); // Color
 		luaX_pushRingShorthand(L, &_out); // RingShorthand
 		return 1;
-	} else {
+	default:
 		return luaL_error(L, "Invalid RingShorthand format: %s", luaL_checkstring(L, 1));
 	}
 }
@@ -780,16 +805,18 @@ static int f_OverflowShorthand___call(lua_State *L) {
 	return f_new_OverflowShorthand(L);
 }
 int f_OverflowShorthand___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: luaX_pushOverflow(L, luaX_checkOverflowShorthand(L, 1)->x); return 1; // x
-	case 0xfc0c4ef4: luaX_pushOverflow(L, luaX_checkOverflowShorthand(L, 1)->y); return 1; // y
+	lpOverflowShorthand_t self = luaX_checkOverflowShorthand(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xfd0c5087: luaX_pushOverflow(L, self->x); return 1; // x
+	case 0xfc0c4ef4: luaX_pushOverflow(L, self->y); return 1; // y
 	}
 	return luaL_error(L, "Unknown field in OverflowShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_OverflowShorthand___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: luaX_checkOverflowShorthand(L, 1)->x = luaX_checkOverflow(L, 3); return 0; // x
-	case 0xfc0c4ef4: luaX_checkOverflowShorthand(L, 1)->y = luaX_checkOverflow(L, 3); return 0; // y
+	lpOverflowShorthand_t self = luaX_checkOverflowShorthand(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0xfd0c5087: self->x = luaX_checkOverflow(L, 3); return 0; // x
+	case 0xfc0c4ef4: self->y = luaX_checkOverflow(L, 3); return 0; // y
 	}
 	return luaL_error(L, "Unknown field in OverflowShorthand: %s", luaL_checkstring(L, 2));
 }
@@ -797,13 +824,14 @@ extern bool_t f_convert_string(lua_State*, lpcPropertyType_t, lpcString_t, bool_
 static int f_fromstring_OverflowShorthand(lua_State *L) {
 	fixedString_t x;
 	fixedString_t y;
-	if (sscanf(luaL_checkstring(L, 1), "%s %s", x, y) == 2) {
-		struct OverflowShorthand _out = {0};
+	struct OverflowShorthand _out = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%s %s", x, y)) {
+	case 2:
 		lua_pop(L, (lua_pushstring(L, x), _out.x = luaL_checkoption(L, -1, NULL, _Overflow), 1)); // x
 		lua_pop(L, (lua_pushstring(L, y), _out.y = luaL_checkoption(L, -1, NULL, _Overflow), 1)); // y
 		luaX_pushOverflowShorthand(L, &_out); // OverflowShorthand
 		return 1;
-	} else {
+	default:
 		return luaL_error(L, "Invalid OverflowShorthand format: %s", luaL_checkstring(L, 1));
 	}
 }
@@ -849,18 +877,20 @@ static int f_UnderlineShorthand___call(lua_State *L) {
 	return f_new_UnderlineShorthand(L);
 }
 int f_UnderlineShorthand___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x8995c7ea: lua_pushnumber(L, luaX_checkUnderlineShorthand(L, 1)->Offset); return 1; // Offset
-	case 0x3b42dfbf: lua_pushnumber(L, luaX_checkUnderlineShorthand(L, 1)->Width); return 1; // Width
-	case 0xe5b43cf8: luaX_pushcolor(L, &luaX_checkUnderlineShorthand(L, 1)->Color); return 1; // Color
+	lpUnderlineShorthand_t self = luaX_checkUnderlineShorthand(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x8995c7ea: lua_pushnumber(L, self->Offset); return 1; // Offset
+	case 0x3b42dfbf: lua_pushnumber(L, self->Width); return 1; // Width
+	case 0xe5b43cf8: luaX_pushcolor(L, &self->Color); return 1; // Color
 	}
 	return luaL_error(L, "Unknown field in UnderlineShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_UnderlineShorthand___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x8995c7ea: luaX_checkUnderlineShorthand(L, 1)->Offset = luaL_checknumber(L, 3); return 0; // Offset
-	case 0x3b42dfbf: luaX_checkUnderlineShorthand(L, 1)->Width = luaL_checknumber(L, 3); return 0; // Width
-	case 0xe5b43cf8: luaX_checkUnderlineShorthand(L, 1)->Color = *luaX_checkcolor(L, 3); return 0; // Color
+	lpUnderlineShorthand_t self = luaX_checkUnderlineShorthand(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x8995c7ea: self->Offset = luaL_checknumber(L, 3); return 0; // Offset
+	case 0x3b42dfbf: self->Width = luaL_checknumber(L, 3); return 0; // Width
+	case 0xe5b43cf8: self->Color = *luaX_checkcolor(L, 3); return 0; // Color
 	}
 	return luaL_error(L, "Unknown field in UnderlineShorthand: %s", luaL_checkstring(L, 2));
 }
@@ -869,14 +899,15 @@ static int f_fromstring_UnderlineShorthand(lua_State *L) {
 	float Offset;
 	float Width;
 	fixedString_t Color;
-	if (sscanf(luaL_checkstring(L, 1), "%f %f %s", &Offset, &Width, Color) == 3) {
-		struct UnderlineShorthand _out = {0};
+	struct UnderlineShorthand _out = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%f %f %s", &Offset, &Width, Color)) {
+	case 3:
 		_out.Offset = Offset; // Offset
 		_out.Width = Width; // Width
 		_out.Color = COLOR_Parse(Color); // Color
 		luaX_pushUnderlineShorthand(L, &_out); // UnderlineShorthand
 		return 1;
-	} else {
+	default:
 		return luaL_error(L, "Invalid UnderlineShorthand format: %s", luaL_checkstring(L, 1));
 	}
 }
@@ -916,12 +947,14 @@ static int f_BorderWidthShorthand___call(lua_State *L) {
 	return f_new_BorderWidthShorthand(L);
 }
 int f_BorderWidthShorthand___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	lpBorderWidthShorthand_t self = luaX_checkBorderWidthShorthand(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
 	}
 	return luaL_error(L, "Unknown field in BorderWidthShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_BorderWidthShorthand___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	lpBorderWidthShorthand_t self = luaX_checkBorderWidthShorthand(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
 	}
 	return luaL_error(L, "Unknown field in BorderWidthShorthand: %s", luaL_checkstring(L, 2));
 }
@@ -965,20 +998,22 @@ static int f_BorderShorthand___call(lua_State *L) {
 	return f_new_BorderShorthand(L);
 }
 int f_BorderShorthand___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x3b42dfbf: luaX_pushBorderWidthShorthand(L, &luaX_checkBorderShorthand(L, 1)->Width); return 1; // Width
-	case 0xe5b43cf8: luaX_pushcolor(L, &luaX_checkBorderShorthand(L, 1)->Color); return 1; // Color
-	case 0x5467ec76: luaX_pushBorderStyle(L, luaX_checkBorderShorthand(L, 1)->Style); return 1; // Style
-	case 0x3a8111d3: luaX_pushBorderRadiusShorthand(L, &luaX_checkBorderShorthand(L, 1)->Radius); return 1; // Radius
+	lpBorderShorthand_t self = luaX_checkBorderShorthand(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x3b42dfbf: luaX_pushBorderWidthShorthand(L, &self->Width); return 1; // Width
+	case 0xe5b43cf8: luaX_pushcolor(L, &self->Color); return 1; // Color
+	case 0x5467ec76: luaX_pushBorderStyle(L, self->Style); return 1; // Style
+	case 0x3a8111d3: luaX_pushBorderRadiusShorthand(L, &self->Radius); return 1; // Radius
 	}
 	return luaL_error(L, "Unknown field in BorderShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_BorderShorthand___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x3b42dfbf: luaX_checkBorderShorthand(L, 1)->Width = *luaX_checkBorderWidthShorthand(L, 3); return 0; // Width
-	case 0xe5b43cf8: luaX_checkBorderShorthand(L, 1)->Color = *luaX_checkcolor(L, 3); return 0; // Color
-	case 0x5467ec76: luaX_checkBorderShorthand(L, 1)->Style = luaX_checkBorderStyle(L, 3); return 0; // Style
-	case 0x3a8111d3: luaX_checkBorderShorthand(L, 1)->Radius = *luaX_checkBorderRadiusShorthand(L, 3); return 0; // Radius
+	lpBorderShorthand_t self = luaX_checkBorderShorthand(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x3b42dfbf: self->Width = *luaX_checkBorderWidthShorthand(L, 3); return 0; // Width
+	case 0xe5b43cf8: self->Color = *luaX_checkcolor(L, 3); return 0; // Color
+	case 0x5467ec76: self->Style = luaX_checkBorderStyle(L, 3); return 0; // Style
+	case 0x3a8111d3: self->Radius = *luaX_checkBorderRadiusShorthand(L, 3); return 0; // Radius
 	}
 	return luaL_error(L, "Unknown field in BorderShorthand: %s", luaL_checkstring(L, 2));
 }
@@ -992,85 +1027,6 @@ int luaopen_orca_BorderShorthand(lua_State *L) {
 	}), 0);
 	lua_newtable(L);
 	lua_pushcfunction(L, f_BorderShorthand___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushThickness(lua_State *L, lpcThickness_t data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	lpThickness_t self = lua_newuserdata(L, sizeof(struct Thickness));
-	luaL_setmetatable(L, "Thickness");
-	memcpy(self, data, sizeof(struct Thickness));
-}
-lpThickness_t luaX_checkThickness(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "Thickness");
-}
-static int f_new_Thickness(lua_State *L) {
-	lpThickness_t self = lua_newuserdata(L, sizeof(struct Thickness));
-	luaL_setmetatable(L, "Thickness");
-	memset(self, 0, sizeof(struct Thickness));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Top"), self->Top = lua_tonumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Right"), self->Right = lua_tonumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Bottom"), self->Bottom = lua_tonumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Left"), self->Left = lua_tonumber(L, -1), 1));
-	} else {
-		self->Left = luaL_checknumber(L, 4);
-	}
-	return 1;
-}
-static int f_Thickness___call(lua_State *L) {
-	lua_remove(L, 1); // remove Thickness from stack
-	return f_new_Thickness(L);
-}
-int f_Thickness___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x099b73dc: lua_pushnumber(L, luaX_checkThickness(L, 1)->Top); return 1; // Top
-	case 0x1e9e9f85: lua_pushnumber(L, luaX_checkThickness(L, 1)->Right); return 1; // Right
-	case 0x22b5f34a: lua_pushnumber(L, luaX_checkThickness(L, 1)->Bottom); return 1; // Bottom
-	case 0x92773890: lua_pushnumber(L, luaX_checkThickness(L, 1)->Left); return 1; // Left
-	}
-	return luaL_error(L, "Unknown field in Thickness: %s", luaL_checkstring(L, 2));
-}
-int f_Thickness___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x099b73dc: luaX_checkThickness(L, 1)->Top = luaL_checknumber(L, 3); return 0; // Top
-	case 0x1e9e9f85: luaX_checkThickness(L, 1)->Right = luaL_checknumber(L, 3); return 0; // Right
-	case 0x22b5f34a: luaX_checkThickness(L, 1)->Bottom = luaL_checknumber(L, 3); return 0; // Bottom
-	case 0x92773890: luaX_checkThickness(L, 1)->Left = luaL_checknumber(L, 3); return 0; // Left
-	}
-	return luaL_error(L, "Unknown field in Thickness: %s", luaL_checkstring(L, 2));
-}
-extern bool_t f_convert_string(lua_State*, lpcPropertyType_t, lpcString_t, bool_t);
-static int f_fromstring_Thickness(lua_State *L) {
-	float Top;
-	float Right;
-	float Bottom;
-	float Left;
-	if (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &Top, &Right, &Bottom, &Left) == 4) {
-		struct Thickness _out = {0};
-		_out.Top = Top; // Top
-		_out.Right = Right; // Right
-		_out.Bottom = Bottom; // Bottom
-		_out.Left = Left; // Left
-		luaX_pushThickness(L, &_out); // Thickness
-		return 1;
-	} else {
-		return luaL_error(L, "Invalid Thickness format: %s", luaL_checkstring(L, 1));
-	}
-}
-int luaopen_orca_Thickness(lua_State *L) {
-	luaL_newmetatable(L, "Thickness");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_Thickness },
-		{ "fromstring", f_fromstring_Thickness },
-		{ "__newindex", f_Thickness___newindex },
-		{ "__index", f_Thickness___index },
-		{ NULL, NULL },
-	}), 0);
-	lua_newtable(L);
-	lua_pushcfunction(L, f_Thickness___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	return 1;
@@ -1096,12 +1052,14 @@ static int f_MarginShorthand___call(lua_State *L) {
 	return f_new_MarginShorthand(L);
 }
 int f_MarginShorthand___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	lpMarginShorthand_t self = luaX_checkMarginShorthand(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
 	}
 	return luaL_error(L, "Unknown field in MarginShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_MarginShorthand___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	lpMarginShorthand_t self = luaX_checkMarginShorthand(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
 	}
 	return luaL_error(L, "Unknown field in MarginShorthand: %s", luaL_checkstring(L, 2));
 }
@@ -1149,22 +1107,24 @@ static int f_SizeAxisShorthand___call(lua_State *L) {
 	return f_new_SizeAxisShorthand(L);
 }
 int f_SizeAxisShorthand___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x77ea8663: lua_pushnumber(L, luaX_checkSizeAxisShorthand(L, 1)->Requested); return 1; // Requested
-	case 0x28adf5d5: lua_pushnumber(L, luaX_checkSizeAxisShorthand(L, 1)->Desired); return 1; // Desired
-	case 0x2e9445f7: lua_pushnumber(L, luaX_checkSizeAxisShorthand(L, 1)->Min); return 1; // Min
-	case 0xf1aed197: lua_pushnumber(L, luaX_checkSizeAxisShorthand(L, 1)->Actual); return 1; // Actual
-	case 0x25dca54c: lua_pushnumber(L, luaX_checkSizeAxisShorthand(L, 1)->Scroll); return 1; // Scroll
+	lpSizeAxisShorthand_t self = luaX_checkSizeAxisShorthand(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x77ea8663: lua_pushnumber(L, self->Requested); return 1; // Requested
+	case 0x28adf5d5: lua_pushnumber(L, self->Desired); return 1; // Desired
+	case 0x2e9445f7: lua_pushnumber(L, self->Min); return 1; // Min
+	case 0xf1aed197: lua_pushnumber(L, self->Actual); return 1; // Actual
+	case 0x25dca54c: lua_pushnumber(L, self->Scroll); return 1; // Scroll
 	}
 	return luaL_error(L, "Unknown field in SizeAxisShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_SizeAxisShorthand___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x77ea8663: luaX_checkSizeAxisShorthand(L, 1)->Requested = luaL_checknumber(L, 3); return 0; // Requested
-	case 0x28adf5d5: luaX_checkSizeAxisShorthand(L, 1)->Desired = luaL_checknumber(L, 3); return 0; // Desired
-	case 0x2e9445f7: luaX_checkSizeAxisShorthand(L, 1)->Min = luaL_checknumber(L, 3); return 0; // Min
-	case 0xf1aed197: luaX_checkSizeAxisShorthand(L, 1)->Actual = luaL_checknumber(L, 3); return 0; // Actual
-	case 0x25dca54c: luaX_checkSizeAxisShorthand(L, 1)->Scroll = luaL_checknumber(L, 3); return 0; // Scroll
+	lpSizeAxisShorthand_t self = luaX_checkSizeAxisShorthand(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x77ea8663: self->Requested = luaL_checknumber(L, 3); return 0; // Requested
+	case 0x28adf5d5: self->Desired = luaL_checknumber(L, 3); return 0; // Desired
+	case 0x2e9445f7: self->Min = luaL_checknumber(L, 3); return 0; // Min
+	case 0xf1aed197: self->Actual = luaL_checknumber(L, 3); return 0; // Actual
+	case 0x25dca54c: self->Scroll = luaL_checknumber(L, 3); return 0; // Scroll
 	}
 	return luaL_error(L, "Unknown field in SizeAxisShorthand: %s", luaL_checkstring(L, 2));
 }
@@ -1175,8 +1135,9 @@ static int f_fromstring_SizeAxisShorthand(lua_State *L) {
 	float Min;
 	float Actual;
 	float Scroll;
-	if (sscanf(luaL_checkstring(L, 1), "%f %f %f %f %f", &Requested, &Desired, &Min, &Actual, &Scroll) == 5) {
-		struct SizeAxisShorthand _out = {0};
+	struct SizeAxisShorthand _out = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f %f", &Requested, &Desired, &Min, &Actual, &Scroll)) {
+	case 5:
 		_out.Requested = Requested; // Requested
 		_out.Desired = Desired; // Desired
 		_out.Min = Min; // Min
@@ -1184,7 +1145,7 @@ static int f_fromstring_SizeAxisShorthand(lua_State *L) {
 		_out.Scroll = Scroll; // Scroll
 		luaX_pushSizeAxisShorthand(L, &_out); // SizeAxisShorthand
 		return 1;
-	} else {
+	default:
 		return luaL_error(L, "Invalid SizeAxisShorthand format: %s", luaL_checkstring(L, 1));
 	}
 }
@@ -1224,12 +1185,14 @@ static int f_SizeShorthand___call(lua_State *L) {
 	return f_new_SizeShorthand(L);
 }
 int f_SizeShorthand___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	lpSizeShorthand_t self = luaX_checkSizeShorthand(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
 	}
 	return luaL_error(L, "Unknown field in SizeShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_SizeShorthand___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	lpSizeShorthand_t self = luaX_checkSizeShorthand(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
 	}
 	return luaL_error(L, "Unknown field in SizeShorthand: %s", luaL_checkstring(L, 2));
 }
@@ -1317,8 +1280,8 @@ static struct PropertyType const TriggerProperties[kTriggerNumProperties] = {
 static struct Trigger TriggerDefaults = {0};
 LRESULT TriggerProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x6d47e0cc: return Trigger_PropertyChanged(object, cmp, wparm, lparm); // PropertyChanged
-		case 0x9352f5d5: return Trigger_Attached(object, cmp, wparm, lparm); // Attached
+		case kEventPropertyChanged: return Trigger_PropertyChanged(object, cmp, wparm, lparm); // PropertyChanged
+		case kEventAttached: return Trigger_Attached(object, cmp, wparm, lparm); // Attached
 }
 	return FALSE;
 }
@@ -1349,7 +1312,7 @@ static struct PropertyType const OnPropertyChangedTriggerProperties[kOnPropertyC
 static struct OnPropertyChangedTrigger OnPropertyChangedTriggerDefaults = {0};
 LRESULT OnPropertyChangedTriggerProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x6d47e0cc: return OnPropertyChangedTrigger_PropertyChanged(object, cmp, wparm, lparm); // PropertyChanged
+		case kEventPropertyChanged: return OnPropertyChangedTrigger_PropertyChanged(object, cmp, wparm, lparm); // PropertyChanged
 }
 	return FALSE;
 }
@@ -1378,7 +1341,7 @@ static struct PropertyType const OnAttachedTriggerProperties[kOnAttachedTriggerN
 static struct OnAttachedTrigger OnAttachedTriggerDefaults = {};
 LRESULT OnAttachedTriggerProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x9352f5d5: return OnAttachedTrigger_Attached(object, cmp, wparm, lparm); // Attached
+		case kEventAttached: return OnAttachedTrigger_Attached(object, cmp, wparm, lparm); // Attached
 }
 	return FALSE;
 }
@@ -1408,7 +1371,7 @@ static struct PropertyType const EventTriggerProperties[kEventTriggerNumProperti
 static struct EventTrigger EventTriggerDefaults = {0};
 LRESULT EventTriggerProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0xfc48a0da: return EventTrigger_HandleMessage(object, cmp, wparm, lparm); // HandleMessage
+		case kEventHandleMessage: return EventTrigger_HandleMessage(object, cmp, wparm, lparm); // HandleMessage
 }
 	return FALSE;
 }
@@ -1440,7 +1403,7 @@ static struct PropertyType const SetterProperties[kSetterNumProperties] = {
 static struct Setter SetterDefaults = {0};
 LRESULT SetterProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x3b1c3ae2: return Setter_Triggered(object, cmp, wparm, lparm); // Triggered
+		case kEventTriggered: return Setter_Triggered(object, cmp, wparm, lparm); // Triggered
 }
 	return FALSE;
 }
@@ -1472,7 +1435,7 @@ static struct PropertyType const HandlerProperties[kHandlerNumProperties] = {
 static struct Handler HandlerDefaults = {0};
 LRESULT HandlerProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x3b1c3ae2: return Handler_Triggered(object, cmp, wparm, lparm); // Triggered
+		case kEventTriggered: return Handler_Triggered(object, cmp, wparm, lparm); // Triggered
 }
 	return FALSE;
 }
@@ -1630,9 +1593,9 @@ static struct Node NodeDefaults = {
 };
 LRESULT NodeProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x064087a6: return Node_ThemeChanged(object, cmp, wparm, lparm); // ThemeChanged
-		case 0x80d9e0ee: return Node_GetSize(object, cmp, wparm, lparm); // GetSize
-		case 0x608d20d1: return Node_IsVisible(object, cmp, wparm, lparm); // IsVisible
+		case kEventThemeChanged: return Node_ThemeChanged(object, cmp, wparm, lparm); // ThemeChanged
+		case kEventGetSize: return Node_GetSize(object, cmp, wparm, lparm); // GetSize
+		case kEventIsVisible: return Node_IsVisible(object, cmp, wparm, lparm); // IsVisible
 }
 	return FALSE;
 }
@@ -1725,9 +1688,9 @@ static struct TextBlockConcept TextBlockConceptDefaults = {
 };
 LRESULT TextBlockConceptProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x990de47d: return TextBlockConcept_Create(object, cmp, wparm, lparm); // Create
-		case 0x4d76a4e5: return TextBlockConcept_Destroy(object, cmp, wparm, lparm); // Destroy
-		case 0x73a47798: return TextBlockConcept_MakeText(object, cmp, wparm, lparm); // MakeText
+		case kEventCreate: return TextBlockConcept_Create(object, cmp, wparm, lparm); // Create
+		case kEventDestroy: return TextBlockConcept_Destroy(object, cmp, wparm, lparm); // Destroy
+		case kEventMakeText: return TextBlockConcept_MakeText(object, cmp, wparm, lparm); // MakeText
 }
 	return FALSE;
 }
@@ -1816,19 +1779,19 @@ static struct Node2D Node2DDefaults = {
 };
 LRESULT Node2DProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x5dbe404d: return Node2D_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
-		case 0x990de47d: return Node2D_Create(object, cmp, wparm, lparm); // Create
-		case 0x4d76a4e5: return Node2D_Destroy(object, cmp, wparm, lparm); // Destroy
-		case 0x12c1a314: return Node2D_UpdateGeometry(object, cmp, wparm, lparm); // UpdateGeometry
-		case 0x0875c1d1: return Node2D_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
-		case 0xfc48a0da: return Node2D_HandleMessage(object, cmp, wparm, lparm); // HandleMessage
-		case 0x626f90e3: return Node2D_ScrollWheel(object, cmp, wparm, lparm); // ScrollWheel
-		case 0x65db8b6f: return Node2D_MouseMoved(object, cmp, wparm, lparm); // MouseMoved
-		case 0x898160ea: return Node2D_HitTest(object, cmp, wparm, lparm); // HitTest
-		case 0x97619c7f: return Node2D_Measure(object, cmp, wparm, lparm); // Measure
-		case 0xc4cf2187: return Node2D_Arrange(object, cmp, wparm, lparm); // Arrange
-		case 0xff95a02f: return Node2D_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
-		case 0x66d9e437: return Node2D_ArrangeOverride(object, cmp, wparm, lparm); // ArrangeOverride
+		case kEventUpdateMatrix: return Node2D_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
+		case kEventCreate: return Node2D_Create(object, cmp, wparm, lparm); // Create
+		case kEventDestroy: return Node2D_Destroy(object, cmp, wparm, lparm); // Destroy
+		case kEventUpdateGeometry: return Node2D_UpdateGeometry(object, cmp, wparm, lparm); // UpdateGeometry
+		case kEventDrawBrush: return Node2D_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
+		case kEventHandleMessage: return Node2D_HandleMessage(object, cmp, wparm, lparm); // HandleMessage
+		case kEventScrollWheel: return Node2D_ScrollWheel(object, cmp, wparm, lparm); // ScrollWheel
+		case kEventMouseMoved: return Node2D_MouseMoved(object, cmp, wparm, lparm); // MouseMoved
+		case kEventHitTest: return Node2D_HitTest(object, cmp, wparm, lparm); // HitTest
+		case kEventMeasure: return Node2D_Measure(object, cmp, wparm, lparm); // Measure
+		case kEventArrange: return Node2D_Arrange(object, cmp, wparm, lparm); // Arrange
+		case kEventMeasureOverride: return Node2D_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
+		case kEventArrangeOverride: return Node2D_ArrangeOverride(object, cmp, wparm, lparm); // ArrangeOverride
 }
 	return FALSE;
 }
@@ -1860,7 +1823,7 @@ static struct PropertyType const PrefabView2DProperties[kPrefabView2DNumProperti
 static struct PrefabView2D PrefabView2DDefaults = {0};
 LRESULT PrefabView2DProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0xa3650e54: return PrefabView2D_LoadView(object, cmp, wparm, lparm); // LoadView
+		case kEventLoadView: return PrefabView2D_LoadView(object, cmp, wparm, lparm); // LoadView
 }
 	return FALSE;
 }
@@ -1894,11 +1857,11 @@ static struct PropertyType const TextBlockProperties[kTextBlockNumProperties] = 
 static struct TextBlock TextBlockDefaults = {};
 LRESULT TextBlockProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0xff95a02f: return TextBlock_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
-		case 0x9a7735e5: return TextBlock_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
-		case 0x12c1a314: return TextBlock_UpdateGeometry(object, cmp, wparm, lparm); // UpdateGeometry
-		case 0x990de47d: return TextBlock_Create(object, cmp, wparm, lparm); // Create
-		case 0x0875c1d1: return TextBlock_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
+		case kEventMeasureOverride: return TextBlock_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
+		case kEventForegroundContent: return TextBlock_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
+		case kEventUpdateGeometry: return TextBlock_UpdateGeometry(object, cmp, wparm, lparm); // UpdateGeometry
+		case kEventCreate: return TextBlock_Create(object, cmp, wparm, lparm); // Create
+		case kEventDrawBrush: return TextBlock_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
 }
 	return FALSE;
 }
@@ -1940,13 +1903,13 @@ static struct PropertyType const InputProperties[kInputNumProperties] = {
 static struct Input InputDefaults = {0};
 LRESULT InputProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x990de47d: return Input_Create(object, cmp, wparm, lparm); // Create
-		case 0x0875c1d1: return Input_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
-		case 0x73a47798: return Input_MakeText(object, cmp, wparm, lparm); // MakeText
-		case 0x83b19b78: return Input_KeyDown(object, cmp, wparm, lparm); // KeyDown
-		case 0xa7c0f8d7: return Input_KillFocus(object, cmp, wparm, lparm); // KillFocus
-		case 0xf73e019e: return Input_LeftMouseUp(object, cmp, wparm, lparm); // LeftMouseUp
-		case 0xff95a02f: return Input_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
+		case kEventCreate: return Input_Create(object, cmp, wparm, lparm); // Create
+		case kEventDrawBrush: return Input_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
+		case kEventMakeText: return Input_MakeText(object, cmp, wparm, lparm); // MakeText
+		case kEventKeyDown: return Input_KeyDown(object, cmp, wparm, lparm); // KeyDown
+		case kEventKillFocus: return Input_KillFocus(object, cmp, wparm, lparm); // KillFocus
+		case kEventLeftMouseUp: return Input_LeftMouseUp(object, cmp, wparm, lparm); // LeftMouseUp
+		case kEventMeasureOverride: return Input_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
 }
 	return FALSE;
 }
@@ -1980,10 +1943,10 @@ static struct PropertyType const ButtonProperties[kButtonNumProperties] = {
 static struct Button ButtonDefaults = {0};
 LRESULT ButtonProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x990de47d: return Button_Create(object, cmp, wparm, lparm); // Create
-		case 0xf73e019e: return Button_LeftMouseUp(object, cmp, wparm, lparm); // LeftMouseUp
-		case 0x83b19b78: return Button_KeyDown(object, cmp, wparm, lparm); // KeyDown
-		case 0x0875c1d1: return Button_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
+		case kEventCreate: return Button_Create(object, cmp, wparm, lparm); // Create
+		case kEventLeftMouseUp: return Button_LeftMouseUp(object, cmp, wparm, lparm); // LeftMouseUp
+		case kEventKeyDown: return Button_KeyDown(object, cmp, wparm, lparm); // KeyDown
+		case kEventDrawBrush: return Button_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
 }
 	return FALSE;
 }
@@ -2014,7 +1977,7 @@ static struct PropertyType const LabelProperties[kLabelNumProperties] = {
 static struct Label LabelDefaults = {0};
 LRESULT LabelProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0xf73e019e: return Label_LeftMouseUp(object, cmp, wparm, lparm); // LeftMouseUp
+		case kEventLeftMouseUp: return Label_LeftMouseUp(object, cmp, wparm, lparm); // LeftMouseUp
 }
 	return FALSE;
 }
@@ -2050,8 +2013,8 @@ static struct PropertyType const StackViewProperties[kStackViewNumProperties] = 
 static struct StackView StackViewDefaults = {0};
 LRESULT StackViewProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0xff95a02f: return StackView_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
-		case 0x66d9e437: return StackView_ArrangeOverride(object, cmp, wparm, lparm); // ArrangeOverride
+		case kEventMeasureOverride: return StackView_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
+		case kEventArrangeOverride: return StackView_ArrangeOverride(object, cmp, wparm, lparm); // ArrangeOverride
 }
 	return FALSE;
 }
@@ -2082,8 +2045,8 @@ static struct PropertyType const FormProperties[kFormNumProperties] = {
 static struct Form FormDefaults = {};
 LRESULT FormProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x990de47d: return Form_Create(object, cmp, wparm, lparm); // Create
-		case 0x4078e545: return Form_Submit(object, cmp, wparm, lparm); // Submit
+		case kEventCreate: return Form_Create(object, cmp, wparm, lparm); // Create
+		case kEventSubmit: return Form_Submit(object, cmp, wparm, lparm); // Submit
 }
 	return FALSE;
 }
@@ -2165,11 +2128,11 @@ static struct PropertyType const ScreenProperties[kScreenNumProperties] = {
 static struct Screen ScreenDefaults = {0};
 LRESULT ScreenProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0xd15bdf29: return Screen_RenderScreen(object, cmp, wparm, lparm); // RenderScreen
-		case 0xff95a02f: return Screen_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
-		case 0x990de47d: return Screen_Create(object, cmp, wparm, lparm); // Create
-		case 0x4d76a4e5: return Screen_Destroy(object, cmp, wparm, lparm); // Destroy
-		case 0xa216e847: return Screen_WindowResized(object, cmp, wparm, lparm); // WindowResized
+		case kEventRenderScreen: return Screen_RenderScreen(object, cmp, wparm, lparm); // RenderScreen
+		case kEventMeasureOverride: return Screen_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
+		case kEventCreate: return Screen_Create(object, cmp, wparm, lparm); // Create
+		case kEventDestroy: return Screen_Destroy(object, cmp, wparm, lparm); // Destroy
+		case kEventWindowResized: return Screen_WindowResized(object, cmp, wparm, lparm); // WindowResized
 }
 	return FALSE;
 }
@@ -2203,7 +2166,7 @@ static struct PropertyType const CinematicProperties[kCinematicNumProperties] = 
 static struct Cinematic CinematicDefaults = {0};
 LRESULT CinematicProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x0875c1d1: return Cinematic_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
+		case kEventDrawBrush: return Cinematic_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
 }
 	return FALSE;
 }
@@ -2240,8 +2203,8 @@ static struct PropertyType const GridProperties[kGridNumProperties] = {
 static struct Grid GridDefaults = {0};
 LRESULT GridProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0xff95a02f: return Grid_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
-		case 0x66d9e437: return Grid_ArrangeOverride(object, cmp, wparm, lparm); // ArrangeOverride
+		case kEventMeasureOverride: return Grid_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
+		case kEventArrangeOverride: return Grid_ArrangeOverride(object, cmp, wparm, lparm); // ArrangeOverride
 }
 	return FALSE;
 }
@@ -2295,11 +2258,11 @@ static struct ImageView ImageViewDefaults = {
 };
 LRESULT ImageViewProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0xff95a02f: return ImageView_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
-		case 0x66d9e437: return ImageView_ArrangeOverride(object, cmp, wparm, lparm); // ArrangeOverride
-		case 0x9a7735e5: return ImageView_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
-		case 0x0875c1d1: return ImageView_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
-		case 0xa3650e54: return ImageView_LoadView(object, cmp, wparm, lparm); // LoadView
+		case kEventMeasureOverride: return ImageView_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
+		case kEventArrangeOverride: return ImageView_ArrangeOverride(object, cmp, wparm, lparm); // ArrangeOverride
+		case kEventForegroundContent: return ImageView_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
+		case kEventDrawBrush: return ImageView_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
+		case kEventLoadView: return ImageView_LoadView(object, cmp, wparm, lparm); // LoadView
 }
 	return FALSE;
 }
@@ -2345,9 +2308,9 @@ static struct PropertyType const NinePatchImageProperties[kNinePatchImageNumProp
 static struct NinePatchImage NinePatchImageDefaults = {0};
 LRESULT NinePatchImageProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0xff95a02f: return NinePatchImage_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
-		case 0x9a7735e5: return NinePatchImage_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
-		case 0x0875c1d1: return NinePatchImage_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
+		case kEventMeasureOverride: return NinePatchImage_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
+		case kEventForegroundContent: return NinePatchImage_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
+		case kEventDrawBrush: return NinePatchImage_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
 }
 	return FALSE;
 }
@@ -2388,10 +2351,10 @@ static struct TerminalView TerminalViewDefaults = {
 };
 LRESULT TerminalViewProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x990de47d: return TerminalView_Create(object, cmp, wparm, lparm); // Create
-		case 0x0875c1d1: return TerminalView_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
-		case 0xc5ebaf40: return TerminalView_PushProperty(object, cmp, wparm, lparm); // PushProperty
-		case 0x626f90e3: return TerminalView_ScrollWheel(object, cmp, wparm, lparm); // ScrollWheel
+		case kEventCreate: return TerminalView_Create(object, cmp, wparm, lparm); // Create
+		case kEventDrawBrush: return TerminalView_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
+		case kEventPushProperty: return TerminalView_PushProperty(object, cmp, wparm, lparm); // PushProperty
+		case kEventScrollWheel: return TerminalView_ScrollWheel(object, cmp, wparm, lparm); // ScrollWheel
 }
 	return FALSE;
 }
@@ -2454,16 +2417,18 @@ static int f_NavigateToPageArguments___call(lua_State *L) {
 	return f_new_NavigateToPageArguments(L);
 }
 int f_NavigateToPageArguments___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x7569633e: lua_pushstring(L, luaX_checkNavigateToPageArguments(L, 1)->URL); return 1; // URL
-	case 0x84ff7372: luaX_pushTransitionType(L, luaX_checkNavigateToPageArguments(L, 1)->TransitionType); return 1; // TransitionType
+	lpNavigateToPageArguments_t self = luaX_checkNavigateToPageArguments(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x7569633e: lua_pushstring(L, self->URL); return 1; // URL
+	case 0x84ff7372: luaX_pushTransitionType(L, self->TransitionType); return 1; // TransitionType
 	}
 	return luaL_error(L, "Unknown field in NavigateToPageArguments: %s", luaL_checkstring(L, 2));
 }
 int f_NavigateToPageArguments___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x7569633e: strncpy(luaX_checkNavigateToPageArguments(L, 1)->URL, luaL_checkstring(L, 3), sizeof(luaX_checkNavigateToPageArguments(L, 1)->URL)); return 0; // URL
-	case 0x84ff7372: luaX_checkNavigateToPageArguments(L, 1)->TransitionType = luaX_checkTransitionType(L, 3); return 0; // TransitionType
+	lpNavigateToPageArguments_t self = luaX_checkNavigateToPageArguments(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x7569633e: strncpy(self->URL, luaL_checkstring(L, 3), sizeof(self->URL)); return 0; // URL
+	case 0x84ff7372: self->TransitionType = luaX_checkTransitionType(L, 3); return 0; // TransitionType
 	}
 	return luaL_error(L, "Unknown field in NavigateToPageArguments: %s", luaL_checkstring(L, 2));
 }
@@ -2471,13 +2436,14 @@ extern bool_t f_convert_string(lua_State*, lpcPropertyType_t, lpcString_t, bool_
 static int f_fromstring_NavigateToPageArguments(lua_State *L) {
 	fixedString_t URL;
 	fixedString_t TransitionType;
-	if (sscanf(luaL_checkstring(L, 1), "%s %s", URL, TransitionType) == 2) {
-		struct NavigateToPageArguments _out = {0};
+	struct NavigateToPageArguments _out = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%s %s", URL, TransitionType)) {
+	case 2:
 		strncpy(_out.URL, URL, sizeof(_out.URL)); // URL
 		lua_pop(L, (lua_pushstring(L, TransitionType), _out.TransitionType = luaL_checkoption(L, -1, NULL, _TransitionType), 1)); // TransitionType
 		luaX_pushNavigateToPageArguments(L, &_out); // NavigateToPageArguments
 		return 1;
-	} else {
+	default:
 		return luaL_error(L, "Invalid NavigateToPageArguments format: %s", luaL_checkstring(L, 1));
 	}
 }
@@ -2522,26 +2488,29 @@ static int f_NavigateBackArguments___call(lua_State *L) {
 	return f_new_NavigateBackArguments(L);
 }
 int f_NavigateBackArguments___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x84ff7372: luaX_pushTransitionType(L, luaX_checkNavigateBackArguments(L, 1)->TransitionType); return 1; // TransitionType
+	lpNavigateBackArguments_t self = luaX_checkNavigateBackArguments(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x84ff7372: luaX_pushTransitionType(L, self->TransitionType); return 1; // TransitionType
 	}
 	return luaL_error(L, "Unknown field in NavigateBackArguments: %s", luaL_checkstring(L, 2));
 }
 int f_NavigateBackArguments___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x84ff7372: luaX_checkNavigateBackArguments(L, 1)->TransitionType = luaX_checkTransitionType(L, 3); return 0; // TransitionType
+	lpNavigateBackArguments_t self = luaX_checkNavigateBackArguments(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x84ff7372: self->TransitionType = luaX_checkTransitionType(L, 3); return 0; // TransitionType
 	}
 	return luaL_error(L, "Unknown field in NavigateBackArguments: %s", luaL_checkstring(L, 2));
 }
 extern bool_t f_convert_string(lua_State*, lpcPropertyType_t, lpcString_t, bool_t);
 static int f_fromstring_NavigateBackArguments(lua_State *L) {
 	fixedString_t TransitionType;
-	if (sscanf(luaL_checkstring(L, 1), "%s", TransitionType) == 1) {
-		struct NavigateBackArguments _out = {0};
+	struct NavigateBackArguments _out = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%s", TransitionType)) {
+	case 1:
 		lua_pop(L, (lua_pushstring(L, TransitionType), _out.TransitionType = luaL_checkoption(L, -1, NULL, _TransitionType), 1)); // TransitionType
 		luaX_pushNavigateBackArguments(L, &_out); // NavigateBackArguments
 		return 1;
-	} else {
+	default:
 		return luaL_error(L, "Invalid NavigateBackArguments format: %s", luaL_checkstring(L, 1));
 	}
 }
@@ -2569,7 +2538,7 @@ static struct PropertyType const PageProperties[kPageNumProperties] = {
 static struct Page PageDefaults = {0};
 LRESULT PageProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x990de47d: return Page_Create(object, cmp, wparm, lparm); // Create
+		case kEventCreate: return Page_Create(object, cmp, wparm, lparm); // Create
 }
 	return FALSE;
 }
@@ -2602,9 +2571,9 @@ static struct PropertyType const PageHostProperties[kPageHostNumProperties] = {
 static struct PageHost PageHostDefaults = {0};
 LRESULT PageHostProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x03e93095: return PageHost_ViewDidLoad(object, cmp, wparm, lparm); // ViewDidLoad
-		case 0x6475c790: return PageHost_NavigateToPage(object, cmp, wparm, lparm); // NavigateToPage
-		case 0x36bc88b5: return PageHost_NavigateBack(object, cmp, wparm, lparm); // NavigateBack
+		case kEventViewDidLoad: return PageHost_ViewDidLoad(object, cmp, wparm, lparm); // ViewDidLoad
+		case kEventNavigateToPage: return PageHost_NavigateToPage(object, cmp, wparm, lparm); // NavigateToPage
+		case kEventNavigateBack: return PageHost_NavigateBack(object, cmp, wparm, lparm); // NavigateBack
 }
 	return FALSE;
 }
@@ -2736,9 +2705,6 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	// BorderShorthand
 	luaopen_orca_BorderShorthand(L);
 	lua_setfield(L, -2, "BorderShorthand");
-	// Thickness
-	luaopen_orca_Thickness(L);
-	lua_setfield(L, -2, "Thickness");
 	// MarginShorthand
 	luaopen_orca_MarginShorthand(L);
 	lua_setfield(L, -2, "MarginShorthand");

@@ -40,16 +40,18 @@ static int f_SpriteFrame___call(lua_State *L) {
 	return f_new_SpriteFrame(L);
 }
 int f_SpriteFrame___index(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x6b109927: luaX_pushrect(L, &luaX_checkSpriteFrame(L, 1)->Rect); return 1; // Rect
-	case 0xae3d25c0: luaX_pushrect(L, &luaX_checkSpriteFrame(L, 1)->UvRect); return 1; // UvRect
+	lpSpriteFrame_t self = luaX_checkSpriteFrame(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x6b109927: luaX_pushrect(L, &self->Rect); return 1; // Rect
+	case 0xae3d25c0: luaX_pushrect(L, &self->UvRect); return 1; // UvRect
 	}
 	return luaL_error(L, "Unknown field in SpriteFrame: %s", luaL_checkstring(L, 2));
 }
 int f_SpriteFrame___newindex(lua_State *L) {
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x6b109927: luaX_checkSpriteFrame(L, 1)->Rect = *luaX_checkrect(L, 3); return 0; // Rect
-	case 0xae3d25c0: luaX_checkSpriteFrame(L, 1)->UvRect = *luaX_checkrect(L, 3); return 0; // UvRect
+	lpSpriteFrame_t self = luaX_checkSpriteFrame(L, 1);
+	switch(self?fnv1a32(luaL_checkstring(L, 2)):0) { // Check is not needed but to silence unused variable warning
+	case 0x6b109927: self->Rect = *luaX_checkrect(L, 3); return 0; // Rect
+	case 0xae3d25c0: self->UvRect = *luaX_checkrect(L, 3); return 0; // UvRect
 	}
 	return luaL_error(L, "Unknown field in SpriteFrame: %s", luaL_checkstring(L, 2));
 }
@@ -107,7 +109,7 @@ static struct PropertyType const SKNodeProperties[kSKNodeNumProperties] = {
 static struct SKNode SKNodeDefaults = {0};
 LRESULT SKNodeProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x5dbe404d: return SKNode_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
+		case kEventUpdateMatrix: return SKNode_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
 }
 	return FALSE;
 }
@@ -137,7 +139,7 @@ static struct PropertyType const SKSceneProperties[kSKSceneNumProperties] = {
 static struct SKScene SKSceneDefaults = {};
 LRESULT SKSceneProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x5dbe404d: return SKScene_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
+		case kEventUpdateMatrix: return SKScene_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
 }
 	return FALSE;
 }
@@ -180,7 +182,7 @@ static struct SKSpriteNode SKSpriteNodeDefaults = {
 };
 LRESULT SKSpriteNodeProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x350cf42d: return SKSpriteNode_Render(object, cmp, wparm, lparm); // Render
+		case kEventRender: return SKSpriteNode_Render(object, cmp, wparm, lparm); // Render
 }
 	return FALSE;
 }
@@ -212,8 +214,8 @@ static struct PropertyType const SKLabelNodeProperties[kSKLabelNodeNumProperties
 static struct SKLabelNode SKLabelNodeDefaults = {0};
 LRESULT SKLabelNodeProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x350cf42d: return SKLabelNode_Render(object, cmp, wparm, lparm); // Render
-		case 0x990de47d: return SKLabelNode_Create(object, cmp, wparm, lparm); // Create
+		case kEventRender: return SKLabelNode_Render(object, cmp, wparm, lparm); // Render
+		case kEventCreate: return SKLabelNode_Create(object, cmp, wparm, lparm); // Create
 }
 	return FALSE;
 }
@@ -247,7 +249,7 @@ static struct PropertyType const SKViewProperties[kSKViewNumProperties] = {
 static struct SKView SKViewDefaults = {0};
 LRESULT SKViewProc(lpObject_t object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case 0x9a7735e5: return SKView_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
+		case kEventForegroundContent: return SKView_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
 }
 	return FALSE;
 }

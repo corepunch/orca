@@ -15,6 +15,14 @@
   <event name="Arrange" type="rect"/>
   <event name="MeasureOverride" type="Size"/>
   <event name="ArrangeOverride" type="rect"/>
+  <event name="ForegroundContent"/>
+  <!-- <event name="BackgroundContent"/> -->
+  <event name="PushProperty"/>
+  <event name="UpdateGeometry"/>
+  <event name="DrawBrush"/>
+  <event name="HandleMessage"/>
+  <event name="LoadView"/>
+  <event name="Triggered"/>
 
   <enums name="Direction">
     <summary>Defines the primary axis for layout operations</summary>
@@ -183,7 +191,7 @@
     <field name="BottomLeftRadius" type="float">Bottom-left corner radius</field>
   </struct>
 
-  <struct name="EdgeShorthand">
+  <struct name="EdgeShorthand" constructor="1">
     <summary>Spacing values for opposite edges of an axis</summary>
     <field name="Left" type="float">Leading edge value (left for horizontal, top for vertical, near for depth)</field>
     <field name="Right" type="float">Trailing edge value (right for horizontal, bottom for vertical, far for depth)</field>
@@ -256,14 +264,14 @@
     <field name="Radius" type="BorderRadiusShorthand">Border radius definition per corner</field>
   </struct>
   
-  <struct name="Thickness">
+  <!-- <struct name="Thickness">
     <summary>Uniform thickness specification for all four edges</summary>
     <details>Used for properties that need different values for each edge, such as padding, margin, or border thickness.</details>
     <field name="Top" type="float">Top edge thickness</field>
     <field name="Right" type="float">Right edge thickness</field>
     <field name="Bottom" type="float">Bottom edge thickness</field>
     <field name="Left" type="float">Left edge thickness</field>
-  </struct>
+  </struct> -->
 
   <struct name="MarginShorthand">
     <summary>External spacing configuration for rectangular elements</summary>
