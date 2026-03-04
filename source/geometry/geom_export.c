@@ -14,20 +14,6 @@ void luaX_pushRotationOrder(lua_State *L, eRotationOrder_t value) {
 	assert(value >= 0 && value < 6);
 	lua_pushstring(L, _RotationOrder[value]);
 }
-ORCA_API lpcString_t __strtoRotationOrder(lpcString_t string, enum RotationOrder* output) {
-	if (string == NULL) return FALSE;
-	if (isdigit(*string)) {
-		*output = strtod(string, (char**)&string);
-		return string;
-	} else for (const char **s = _RotationOrder; *s; s++) {
-		if (!strcmp(string, *s)) {
-			*output = (enum RotationOrder)(s - _RotationOrder);
-			return string + strlen(*s);
-		}
-	}
-	Con_Error("Could not parse '%s' value of property RotationOrder", string);
-	return string + strlen(string);
-}
 void luaX_pushvec2(lua_State *L, lpcvec2_t data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	lpvec2_t self = lua_newuserdata(L, sizeof(struct vec2));
@@ -43,14 +29,9 @@ static int f_new_vec2(lua_State *L) {
 	memset(self, 0, sizeof(struct vec2));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_getfield(L, 1, "x");
-		self->x = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "y");
-		self->y = lua_tonumber(L, -1);
-		lua_pop(L, 1);
+		lua_pop(L, (lua_getfield(L, 1, "x"), self->x = lua_tonumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "y"), self->y = lua_tonumber(L, -1), 1));
 	} else {
-		self->x = luaL_checknumber(L, 1);
 		self->y = luaL_checknumber(L, 2);
 	}
 	return 1;
@@ -156,65 +137,40 @@ static int f_vec2_mad(lua_State *L) {
 }
 int f_vec2___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: // x
-		lua_pushnumber(L, luaX_checkvec2(L, 1)->x);
-		return 1;
-	case 0xfc0c4ef4: // y
-		lua_pushnumber(L, luaX_checkvec2(L, 1)->y);
-		return 1;
-	case 0xc6270703: // set
-		lua_pushcfunction(L, f_vec2_set);
-		return 1;
-	case 0x82971c71: // scale
-		lua_pushcfunction(L, f_vec2_scale);
-		return 1;
-	case 0xd3689f20: // dot
-		lua_pushcfunction(L, f_vec2_dot);
-		return 1;
-	case 0x2c1f6b59: // lengthsq
-		lua_pushcfunction(L, f_vec2_lengthsq);
-		return 1;
-	case 0x366adb0c: // len
-		lua_pushcfunction(L, f_vec2_len);
-		return 1;
-	case 0x2eb31462: // distance
-		lua_pushcfunction(L, f_vec2_distance);
-		return 1;
-	case 0xce79296c: // normalize
-		lua_pushcfunction(L, f_vec2_normalize);
-		return 1;
-	case 0x1e691468: // lerp
-		lua_pushcfunction(L, f_vec2_lerp);
-		return 1;
-	case 0xf3a30f2d: // mad
-		lua_pushcfunction(L, f_vec2_mad);
-		return 1;
+	case 0xfd0c5087: lua_pushnumber(L, luaX_checkvec2(L, 1)->x); return 1; // x
+	case 0xfc0c4ef4: lua_pushnumber(L, luaX_checkvec2(L, 1)->y); return 1; // y
+	case 0xc6270703: lua_pushcfunction(L, f_vec2_set); return 1; // set
+	case 0x82971c71: lua_pushcfunction(L, f_vec2_scale); return 1; // scale
+	case 0xd3689f20: lua_pushcfunction(L, f_vec2_dot); return 1; // dot
+	case 0x2c1f6b59: lua_pushcfunction(L, f_vec2_lengthsq); return 1; // lengthsq
+	case 0x366adb0c: lua_pushcfunction(L, f_vec2_len); return 1; // len
+	case 0x2eb31462: lua_pushcfunction(L, f_vec2_distance); return 1; // distance
+	case 0xce79296c: lua_pushcfunction(L, f_vec2_normalize); return 1; // normalize
+	case 0x1e691468: lua_pushcfunction(L, f_vec2_lerp); return 1; // lerp
+	case 0xf3a30f2d: lua_pushcfunction(L, f_vec2_mad); return 1; // mad
 	}
 	return luaL_error(L, "Unknown field in vec2: %s", luaL_checkstring(L, 2));
 }
 int f_vec2___newindex(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: // x
-		luaX_checkvec2(L, 1)->x = luaL_checknumber(L, 3);
-		return 0;
-	case 0xfc0c4ef4: // y
-		luaX_checkvec2(L, 1)->y = luaL_checknumber(L, 3);
-		return 0;
+	case 0xfd0c5087: luaX_checkvec2(L, 1)->x = luaL_checknumber(L, 3); return 0; // x
+	case 0xfc0c4ef4: luaX_checkvec2(L, 1)->y = luaL_checknumber(L, 3); return 0; // y
 	}
 	return luaL_error(L, "Unknown field in vec2: %s", luaL_checkstring(L, 2));
 }
-ORCA_API lpcString_t __strtovec2(lpcString_t str, lpvec2_t output) {
-	lpcString_t __strtofloat(lpcString_t, float*);
-	str = __strtofloat(str, &output->x);
-	str = __strtofloat(str, &output->y);
-	return str;
-}
+extern bool_t f_convert_string(lua_State*, lpcPropertyType_t, lpcString_t, bool_t);
 static int f_fromstring_vec2(lua_State *L) {
-	lpvec2_t self = lua_newuserdata(L, sizeof(struct vec2));
-	luaL_setmetatable(L, "Vector2D");
-	memset(self, 0, sizeof(struct vec2));
-	__strtovec2(luaL_checkstring(L, 1), self);
-	return 1;
+	float x;
+	float y;
+	if (sscanf(luaL_checkstring(L, 1), "%f %f", &x, &y) == 2) {
+		struct vec2 _out = {0};
+		_out.x = x; // x
+		_out.y = y; // y
+		luaX_pushvec2(L, &_out); // vec2
+		return 1;
+	} else {
+		return luaL_error(L, "Invalid vec2 format: %s", luaL_checkstring(L, 1));
+	}
 }
 int luaopen_orca_vec2(lua_State *L) {
 	luaL_newmetatable(L, "Vector2D");
@@ -251,18 +207,10 @@ static int f_new_vec3(lua_State *L) {
 	memset(self, 0, sizeof(struct vec3));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_getfield(L, 1, "x");
-		self->x = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "y");
-		self->y = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "z");
-		self->z = lua_tonumber(L, -1);
-		lua_pop(L, 1);
+		lua_pop(L, (lua_getfield(L, 1, "x"), self->x = lua_tonumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "y"), self->y = lua_tonumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "z"), self->z = lua_tonumber(L, -1), 1));
 	} else {
-		self->x = luaL_checknumber(L, 1);
-		self->y = luaL_checknumber(L, 2);
 		self->z = luaL_checknumber(L, 3);
 	}
 	return 1;
@@ -394,84 +342,48 @@ static int f_vec3_distance(lua_State *L) {
 }
 int f_vec3___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: // x
-		lua_pushnumber(L, luaX_checkvec3(L, 1)->x);
-		return 1;
-	case 0xfc0c4ef4: // y
-		lua_pushnumber(L, luaX_checkvec3(L, 1)->y);
-		return 1;
-	case 0xff0c53ad: // z
-		lua_pushnumber(L, luaX_checkvec3(L, 1)->z);
-		return 1;
-	case 0xd3689f20: // dot
-		lua_pushcfunction(L, f_vec3_dot);
-		return 1;
-	case 0x2c1f6b59: // lengthsq
-		lua_pushcfunction(L, f_vec3_lengthsq);
-		return 1;
-	case 0x366adb0c: // len
-		lua_pushcfunction(L, f_vec3_len);
-		return 1;
-	case 0x14f25eb6: // bezier
-		lua_pushcfunction(L, f_vec3_bezier);
-		return 1;
-	case 0x9c265311: // hermite
-		lua_pushcfunction(L, f_vec3_hermite);
-		return 1;
-	case 0x1e691468: // lerp
-		lua_pushcfunction(L, f_vec3_lerp);
-		return 1;
-	case 0x29f5189b: // cross
-		lua_pushcfunction(L, f_vec3_cross);
-		return 1;
-	case 0xf3a30f2d: // mad
-		lua_pushcfunction(L, f_vec3_mad);
-		return 1;
-	case 0x82971c71: // scale
-		lua_pushcfunction(L, f_vec3_scale);
-		return 1;
-	case 0xce79296c: // normalize
-		lua_pushcfunction(L, f_vec3_normalize);
-		return 1;
-	case 0xc6270703: // set
-		lua_pushcfunction(L, f_vec3_set);
-		return 1;
-	case 0x5c6e1222: // clear
-		lua_pushcfunction(L, f_vec3_clear);
-		return 1;
-	case 0x2eb31462: // distance
-		lua_pushcfunction(L, f_vec3_distance);
-		return 1;
+	case 0xfd0c5087: lua_pushnumber(L, luaX_checkvec3(L, 1)->x); return 1; // x
+	case 0xfc0c4ef4: lua_pushnumber(L, luaX_checkvec3(L, 1)->y); return 1; // y
+	case 0xff0c53ad: lua_pushnumber(L, luaX_checkvec3(L, 1)->z); return 1; // z
+	case 0xd3689f20: lua_pushcfunction(L, f_vec3_dot); return 1; // dot
+	case 0x2c1f6b59: lua_pushcfunction(L, f_vec3_lengthsq); return 1; // lengthsq
+	case 0x366adb0c: lua_pushcfunction(L, f_vec3_len); return 1; // len
+	case 0x14f25eb6: lua_pushcfunction(L, f_vec3_bezier); return 1; // bezier
+	case 0x9c265311: lua_pushcfunction(L, f_vec3_hermite); return 1; // hermite
+	case 0x1e691468: lua_pushcfunction(L, f_vec3_lerp); return 1; // lerp
+	case 0x29f5189b: lua_pushcfunction(L, f_vec3_cross); return 1; // cross
+	case 0xf3a30f2d: lua_pushcfunction(L, f_vec3_mad); return 1; // mad
+	case 0x82971c71: lua_pushcfunction(L, f_vec3_scale); return 1; // scale
+	case 0xce79296c: lua_pushcfunction(L, f_vec3_normalize); return 1; // normalize
+	case 0xc6270703: lua_pushcfunction(L, f_vec3_set); return 1; // set
+	case 0x5c6e1222: lua_pushcfunction(L, f_vec3_clear); return 1; // clear
+	case 0x2eb31462: lua_pushcfunction(L, f_vec3_distance); return 1; // distance
 	}
 	return luaL_error(L, "Unknown field in vec3: %s", luaL_checkstring(L, 2));
 }
 int f_vec3___newindex(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: // x
-		luaX_checkvec3(L, 1)->x = luaL_checknumber(L, 3);
-		return 0;
-	case 0xfc0c4ef4: // y
-		luaX_checkvec3(L, 1)->y = luaL_checknumber(L, 3);
-		return 0;
-	case 0xff0c53ad: // z
-		luaX_checkvec3(L, 1)->z = luaL_checknumber(L, 3);
-		return 0;
+	case 0xfd0c5087: luaX_checkvec3(L, 1)->x = luaL_checknumber(L, 3); return 0; // x
+	case 0xfc0c4ef4: luaX_checkvec3(L, 1)->y = luaL_checknumber(L, 3); return 0; // y
+	case 0xff0c53ad: luaX_checkvec3(L, 1)->z = luaL_checknumber(L, 3); return 0; // z
 	}
 	return luaL_error(L, "Unknown field in vec3: %s", luaL_checkstring(L, 2));
 }
-ORCA_API lpcString_t __strtovec3(lpcString_t str, lpvec3_t output) {
-	lpcString_t __strtofloat(lpcString_t, float*);
-	str = __strtofloat(str, &output->x);
-	str = __strtofloat(str, &output->y);
-	str = __strtofloat(str, &output->z);
-	return str;
-}
+extern bool_t f_convert_string(lua_State*, lpcPropertyType_t, lpcString_t, bool_t);
 static int f_fromstring_vec3(lua_State *L) {
-	lpvec3_t self = lua_newuserdata(L, sizeof(struct vec3));
-	luaL_setmetatable(L, "Vector3D");
-	memset(self, 0, sizeof(struct vec3));
-	__strtovec3(luaL_checkstring(L, 1), self);
-	return 1;
+	float x;
+	float y;
+	float z;
+	if (sscanf(luaL_checkstring(L, 1), "%f %f %f", &x, &y, &z) == 3) {
+		struct vec3 _out = {0};
+		_out.x = x; // x
+		_out.y = y; // y
+		_out.z = z; // z
+		luaX_pushvec3(L, &_out); // vec3
+		return 1;
+	} else {
+		return luaL_error(L, "Invalid vec3 format: %s", luaL_checkstring(L, 1));
+	}
 }
 int luaopen_orca_vec3(lua_State *L) {
 	luaL_newmetatable(L, "Vector3D");
@@ -507,22 +419,11 @@ static int f_new_vec4(lua_State *L) {
 	memset(self, 0, sizeof(struct vec4));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_getfield(L, 1, "x");
-		self->x = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "y");
-		self->y = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "z");
-		self->z = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "w");
-		self->w = lua_tonumber(L, -1);
-		lua_pop(L, 1);
+		lua_pop(L, (lua_getfield(L, 1, "x"), self->x = lua_tonumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "y"), self->y = lua_tonumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "z"), self->z = lua_tonumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "w"), self->w = lua_tonumber(L, -1), 1));
 	} else {
-		self->x = luaL_checknumber(L, 1);
-		self->y = luaL_checknumber(L, 2);
-		self->z = luaL_checknumber(L, 3);
 		self->w = luaL_checknumber(L, 4);
 	}
 	return 1;
@@ -570,61 +471,42 @@ static int f_vec4_lerp(lua_State *L) {
 }
 int f_vec4___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: // x
-		lua_pushnumber(L, luaX_checkvec4(L, 1)->x);
-		return 1;
-	case 0xfc0c4ef4: // y
-		lua_pushnumber(L, luaX_checkvec4(L, 1)->y);
-		return 1;
-	case 0xff0c53ad: // z
-		lua_pushnumber(L, luaX_checkvec4(L, 1)->z);
-		return 1;
-	case 0xf20c3f36: // w
-		lua_pushnumber(L, luaX_checkvec4(L, 1)->w);
-		return 1;
-	case 0xc6270703: // set
-		lua_pushcfunction(L, f_vec4_set);
-		return 1;
-	case 0x82971c71: // scale
-		lua_pushcfunction(L, f_vec4_scale);
-		return 1;
-	case 0x1e691468: // lerp
-		lua_pushcfunction(L, f_vec4_lerp);
-		return 1;
+	case 0xfd0c5087: lua_pushnumber(L, luaX_checkvec4(L, 1)->x); return 1; // x
+	case 0xfc0c4ef4: lua_pushnumber(L, luaX_checkvec4(L, 1)->y); return 1; // y
+	case 0xff0c53ad: lua_pushnumber(L, luaX_checkvec4(L, 1)->z); return 1; // z
+	case 0xf20c3f36: lua_pushnumber(L, luaX_checkvec4(L, 1)->w); return 1; // w
+	case 0xc6270703: lua_pushcfunction(L, f_vec4_set); return 1; // set
+	case 0x82971c71: lua_pushcfunction(L, f_vec4_scale); return 1; // scale
+	case 0x1e691468: lua_pushcfunction(L, f_vec4_lerp); return 1; // lerp
 	}
 	return luaL_error(L, "Unknown field in vec4: %s", luaL_checkstring(L, 2));
 }
 int f_vec4___newindex(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: // x
-		luaX_checkvec4(L, 1)->x = luaL_checknumber(L, 3);
-		return 0;
-	case 0xfc0c4ef4: // y
-		luaX_checkvec4(L, 1)->y = luaL_checknumber(L, 3);
-		return 0;
-	case 0xff0c53ad: // z
-		luaX_checkvec4(L, 1)->z = luaL_checknumber(L, 3);
-		return 0;
-	case 0xf20c3f36: // w
-		luaX_checkvec4(L, 1)->w = luaL_checknumber(L, 3);
-		return 0;
+	case 0xfd0c5087: luaX_checkvec4(L, 1)->x = luaL_checknumber(L, 3); return 0; // x
+	case 0xfc0c4ef4: luaX_checkvec4(L, 1)->y = luaL_checknumber(L, 3); return 0; // y
+	case 0xff0c53ad: luaX_checkvec4(L, 1)->z = luaL_checknumber(L, 3); return 0; // z
+	case 0xf20c3f36: luaX_checkvec4(L, 1)->w = luaL_checknumber(L, 3); return 0; // w
 	}
 	return luaL_error(L, "Unknown field in vec4: %s", luaL_checkstring(L, 2));
 }
-ORCA_API lpcString_t __strtovec4(lpcString_t str, lpvec4_t output) {
-	lpcString_t __strtofloat(lpcString_t, float*);
-	str = __strtofloat(str, &output->x);
-	str = __strtofloat(str, &output->y);
-	str = __strtofloat(str, &output->z);
-	str = __strtofloat(str, &output->w);
-	return str;
-}
+extern bool_t f_convert_string(lua_State*, lpcPropertyType_t, lpcString_t, bool_t);
 static int f_fromstring_vec4(lua_State *L) {
-	lpvec4_t self = lua_newuserdata(L, sizeof(struct vec4));
-	luaL_setmetatable(L, "Vector4D");
-	memset(self, 0, sizeof(struct vec4));
-	__strtovec4(luaL_checkstring(L, 1), self);
-	return 1;
+	float x;
+	float y;
+	float z;
+	float w;
+	if (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &x, &y, &z, &w) == 4) {
+		struct vec4 _out = {0};
+		_out.x = x; // x
+		_out.y = y; // y
+		_out.z = z; // z
+		_out.w = w; // w
+		luaX_pushvec4(L, &_out); // vec4
+		return 1;
+	} else {
+		return luaL_error(L, "Invalid vec4 format: %s", luaL_checkstring(L, 1));
+	}
 }
 int luaopen_orca_vec4(lua_State *L) {
 	luaL_newmetatable(L, "Vector4D");
@@ -684,53 +566,25 @@ static int f_box2_containsPoint(lua_State *L) {
 }
 int f_box2___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xc98f4557: // min
-		luaX_pushvec2(L, &luaX_checkbox2(L, 1)->min);
-		return 1;
-	case 0xd7a2e319: // max
-		luaX_pushvec2(L, &luaX_checkbox2(L, 1)->max);
-		return 1;
-	case 0x058c4484: // center
-		lua_pushcfunction(L, f_box2_center);
-		return 1;
-	case 0x24617f7d: // moveTo
-		lua_pushcfunction(L, f_box2_moveTo);
-		return 1;
-	case 0x7a86780e: // containsPoint
-		lua_pushcfunction(L, f_box2_containsPoint);
-		return 1;
+	case 0xc98f4557: luaX_pushvec2(L, &luaX_checkbox2(L, 1)->min); return 1; // min
+	case 0xd7a2e319: luaX_pushvec2(L, &luaX_checkbox2(L, 1)->max); return 1; // max
+	case 0x058c4484: lua_pushcfunction(L, f_box2_center); return 1; // center
+	case 0x24617f7d: lua_pushcfunction(L, f_box2_moveTo); return 1; // moveTo
+	case 0x7a86780e: lua_pushcfunction(L, f_box2_containsPoint); return 1; // containsPoint
 	}
 	return luaL_error(L, "Unknown field in box2: %s", luaL_checkstring(L, 2));
 }
 int f_box2___newindex(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xc98f4557: // min
-		luaX_checkbox2(L, 1)->min = *luaX_checkvec2(L, 3);
-		return 0;
-	case 0xd7a2e319: // max
-		luaX_checkbox2(L, 1)->max = *luaX_checkvec2(L, 3);
-		return 0;
+	case 0xc98f4557: luaX_checkbox2(L, 1)->min = *luaX_checkvec2(L, 3); return 0; // min
+	case 0xd7a2e319: luaX_checkbox2(L, 1)->max = *luaX_checkvec2(L, 3); return 0; // max
 	}
 	return luaL_error(L, "Unknown field in box2: %s", luaL_checkstring(L, 2));
-}
-ORCA_API lpcString_t __strtobox2(lpcString_t str, lpbox2_t output) {
-	lpcString_t __strtovec2(lpcString_t, struct vec2*);
-	str = __strtovec2(str, &output->min);
-	str = __strtovec2(str, &output->max);
-	return str;
-}
-static int f_fromstring_box2(lua_State *L) {
-	lpbox2_t self = lua_newuserdata(L, sizeof(struct box2));
-	luaL_setmetatable(L, "Box2D");
-	memset(self, 0, sizeof(struct box2));
-	__strtobox2(luaL_checkstring(L, 1), self);
-	return 1;
 }
 int luaopen_orca_box2(lua_State *L) {
 	luaL_newmetatable(L, "Box2D");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_box2 },
-		{ "fromstring", f_fromstring_box2 },
 		{ "__newindex", f_box2___newindex },
 		{ "__index", f_box2___index },
 		{ NULL, NULL },
@@ -769,47 +623,23 @@ static int f_box3_center(lua_State *L) {
 }
 int f_box3___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xc98f4557: // min
-		luaX_pushvec3(L, &luaX_checkbox3(L, 1)->min);
-		return 1;
-	case 0xd7a2e319: // max
-		luaX_pushvec3(L, &luaX_checkbox3(L, 1)->max);
-		return 1;
-	case 0x058c4484: // center
-		lua_pushcfunction(L, f_box3_center);
-		return 1;
+	case 0xc98f4557: luaX_pushvec3(L, &luaX_checkbox3(L, 1)->min); return 1; // min
+	case 0xd7a2e319: luaX_pushvec3(L, &luaX_checkbox3(L, 1)->max); return 1; // max
+	case 0x058c4484: lua_pushcfunction(L, f_box3_center); return 1; // center
 	}
 	return luaL_error(L, "Unknown field in box3: %s", luaL_checkstring(L, 2));
 }
 int f_box3___newindex(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xc98f4557: // min
-		luaX_checkbox3(L, 1)->min = *luaX_checkvec3(L, 3);
-		return 0;
-	case 0xd7a2e319: // max
-		luaX_checkbox3(L, 1)->max = *luaX_checkvec3(L, 3);
-		return 0;
+	case 0xc98f4557: luaX_checkbox3(L, 1)->min = *luaX_checkvec3(L, 3); return 0; // min
+	case 0xd7a2e319: luaX_checkbox3(L, 1)->max = *luaX_checkvec3(L, 3); return 0; // max
 	}
 	return luaL_error(L, "Unknown field in box3: %s", luaL_checkstring(L, 2));
-}
-ORCA_API lpcString_t __strtobox3(lpcString_t str, lpbox3_t output) {
-	lpcString_t __strtovec3(lpcString_t, struct vec3*);
-	str = __strtovec3(str, &output->min);
-	str = __strtovec3(str, &output->max);
-	return str;
-}
-static int f_fromstring_box3(lua_State *L) {
-	lpbox3_t self = lua_newuserdata(L, sizeof(struct box3));
-	luaL_setmetatable(L, "Box3D");
-	memset(self, 0, sizeof(struct box3));
-	__strtobox3(luaL_checkstring(L, 1), self);
-	return 1;
 }
 int luaopen_orca_box3(lua_State *L) {
 	luaL_newmetatable(L, "Box3D");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_box3 },
-		{ "fromstring", f_fromstring_box3 },
 		{ "__newindex", f_box3___newindex },
 		{ "__index", f_box3___index },
 		{ NULL, NULL },
@@ -835,14 +665,9 @@ static int f_new_Size(lua_State *L) {
 	memset(self, 0, sizeof(struct Size));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_getfield(L, 1, "width");
-		self->width = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "height");
-		self->height = lua_tonumber(L, -1);
-		lua_pop(L, 1);
+		lua_pop(L, (lua_getfield(L, 1, "width"), self->width = lua_tonumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "height"), self->height = lua_tonumber(L, -1), 1));
 	} else {
-		self->width = luaL_checknumber(L, 1);
 		self->height = luaL_checknumber(L, 2);
 	}
 	return 1;
@@ -853,38 +678,31 @@ static int f_Size___call(lua_State *L) {
 }
 int f_Size___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x95876e1f: // width
-		lua_pushnumber(L, luaX_checkSize(L, 1)->width);
-		return 1;
-	case 0xd5bdbb42: // height
-		lua_pushnumber(L, luaX_checkSize(L, 1)->height);
-		return 1;
+	case 0x95876e1f: lua_pushnumber(L, luaX_checkSize(L, 1)->width); return 1; // width
+	case 0xd5bdbb42: lua_pushnumber(L, luaX_checkSize(L, 1)->height); return 1; // height
 	}
 	return luaL_error(L, "Unknown field in Size: %s", luaL_checkstring(L, 2));
 }
 int f_Size___newindex(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x95876e1f: // width
-		luaX_checkSize(L, 1)->width = luaL_checknumber(L, 3);
-		return 0;
-	case 0xd5bdbb42: // height
-		luaX_checkSize(L, 1)->height = luaL_checknumber(L, 3);
-		return 0;
+	case 0x95876e1f: luaX_checkSize(L, 1)->width = luaL_checknumber(L, 3); return 0; // width
+	case 0xd5bdbb42: luaX_checkSize(L, 1)->height = luaL_checknumber(L, 3); return 0; // height
 	}
 	return luaL_error(L, "Unknown field in Size: %s", luaL_checkstring(L, 2));
 }
-ORCA_API lpcString_t __strtoSize(lpcString_t str, lpSize_t output) {
-	lpcString_t __strtofloat(lpcString_t, float*);
-	str = __strtofloat(str, &output->width);
-	str = __strtofloat(str, &output->height);
-	return str;
-}
+extern bool_t f_convert_string(lua_State*, lpcPropertyType_t, lpcString_t, bool_t);
 static int f_fromstring_Size(lua_State *L) {
-	lpSize_t self = lua_newuserdata(L, sizeof(struct Size));
-	luaL_setmetatable(L, "Size");
-	memset(self, 0, sizeof(struct Size));
-	__strtoSize(luaL_checkstring(L, 1), self);
-	return 1;
+	float width;
+	float height;
+	if (sscanf(luaL_checkstring(L, 1), "%f %f", &width, &height) == 2) {
+		struct Size _out = {0};
+		_out.width = width; // width
+		_out.height = height; // height
+		luaX_pushSize(L, &_out); // Size
+		return 1;
+	} else {
+		return luaL_error(L, "Invalid Size format: %s", luaL_checkstring(L, 1));
+	}
 }
 int luaopen_orca_Size(lua_State *L) {
 	luaL_newmetatable(L, "Size");
@@ -916,22 +734,11 @@ static int f_new_rect(lua_State *L) {
 	memset(self, 0, sizeof(struct rect));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_getfield(L, 1, "x");
-		self->x = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "y");
-		self->y = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "width");
-		self->width = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "height");
-		self->height = lua_tonumber(L, -1);
-		lua_pop(L, 1);
+		lua_pop(L, (lua_getfield(L, 1, "x"), self->x = lua_tonumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "y"), self->y = lua_tonumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "width"), self->width = lua_tonumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "height"), self->height = lua_tonumber(L, -1), 1));
 	} else {
-		self->x = luaL_checknumber(L, 1);
-		self->y = luaL_checknumber(L, 2);
-		self->width = luaL_checknumber(L, 3);
 		self->height = luaL_checknumber(L, 4);
 	}
 	return 1;
@@ -976,67 +783,44 @@ static int f_rect_fit(lua_State *L) {
 }
 int f_rect___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: // x
-		lua_pushnumber(L, luaX_checkrect(L, 1)->x);
-		return 1;
-	case 0xfc0c4ef4: // y
-		lua_pushnumber(L, luaX_checkrect(L, 1)->y);
-		return 1;
-	case 0x95876e1f: // width
-		lua_pushnumber(L, luaX_checkrect(L, 1)->width);
-		return 1;
-	case 0xd5bdbb42: // height
-		lua_pushnumber(L, luaX_checkrect(L, 1)->height);
-		return 1;
-	case 0x6ccaf138: // contains
-		lua_pushcfunction(L, f_rect_contains);
-		return 1;
-	case 0x82971c71: // scale
-		lua_pushcfunction(L, f_rect_scale);
-		return 1;
-	case 0xf7faaee1: // expand
-		lua_pushcfunction(L, f_rect_expand);
-		return 1;
-	case 0x058c4484: // center
-		lua_pushcfunction(L, f_rect_center);
-		return 1;
-	case 0xaee47c2c: // fit
-		lua_pushcfunction(L, f_rect_fit);
-		return 1;
+	case 0xfd0c5087: lua_pushnumber(L, luaX_checkrect(L, 1)->x); return 1; // x
+	case 0xfc0c4ef4: lua_pushnumber(L, luaX_checkrect(L, 1)->y); return 1; // y
+	case 0x95876e1f: lua_pushnumber(L, luaX_checkrect(L, 1)->width); return 1; // width
+	case 0xd5bdbb42: lua_pushnumber(L, luaX_checkrect(L, 1)->height); return 1; // height
+	case 0x6ccaf138: lua_pushcfunction(L, f_rect_contains); return 1; // contains
+	case 0x82971c71: lua_pushcfunction(L, f_rect_scale); return 1; // scale
+	case 0xf7faaee1: lua_pushcfunction(L, f_rect_expand); return 1; // expand
+	case 0x058c4484: lua_pushcfunction(L, f_rect_center); return 1; // center
+	case 0xaee47c2c: lua_pushcfunction(L, f_rect_fit); return 1; // fit
 	}
 	return luaL_error(L, "Unknown field in rect: %s", luaL_checkstring(L, 2));
 }
 int f_rect___newindex(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: // x
-		luaX_checkrect(L, 1)->x = luaL_checknumber(L, 3);
-		return 0;
-	case 0xfc0c4ef4: // y
-		luaX_checkrect(L, 1)->y = luaL_checknumber(L, 3);
-		return 0;
-	case 0x95876e1f: // width
-		luaX_checkrect(L, 1)->width = luaL_checknumber(L, 3);
-		return 0;
-	case 0xd5bdbb42: // height
-		luaX_checkrect(L, 1)->height = luaL_checknumber(L, 3);
-		return 0;
+	case 0xfd0c5087: luaX_checkrect(L, 1)->x = luaL_checknumber(L, 3); return 0; // x
+	case 0xfc0c4ef4: luaX_checkrect(L, 1)->y = luaL_checknumber(L, 3); return 0; // y
+	case 0x95876e1f: luaX_checkrect(L, 1)->width = luaL_checknumber(L, 3); return 0; // width
+	case 0xd5bdbb42: luaX_checkrect(L, 1)->height = luaL_checknumber(L, 3); return 0; // height
 	}
 	return luaL_error(L, "Unknown field in rect: %s", luaL_checkstring(L, 2));
 }
-ORCA_API lpcString_t __strtorect(lpcString_t str, lprect_t output) {
-	lpcString_t __strtofloat(lpcString_t, float*);
-	str = __strtofloat(str, &output->x);
-	str = __strtofloat(str, &output->y);
-	str = __strtofloat(str, &output->width);
-	str = __strtofloat(str, &output->height);
-	return str;
-}
+extern bool_t f_convert_string(lua_State*, lpcPropertyType_t, lpcString_t, bool_t);
 static int f_fromstring_rect(lua_State *L) {
-	lprect_t self = lua_newuserdata(L, sizeof(struct rect));
-	luaL_setmetatable(L, "Rectangle");
-	memset(self, 0, sizeof(struct rect));
-	__strtorect(luaL_checkstring(L, 1), self);
-	return 1;
+	float x;
+	float y;
+	float width;
+	float height;
+	if (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &x, &y, &width, &height) == 4) {
+		struct rect _out = {0};
+		_out.x = x; // x
+		_out.y = y; // y
+		_out.width = width; // width
+		_out.height = height; // height
+		luaX_pushrect(L, &_out); // rect
+		return 1;
+	} else {
+		return luaL_error(L, "Invalid rect format: %s", luaL_checkstring(L, 1));
+	}
 }
 int luaopen_orca_rect(lua_State *L) {
 	luaL_newmetatable(L, "Rectangle");
@@ -1068,22 +852,11 @@ static int f_new_quat(lua_State *L) {
 	memset(self, 0, sizeof(struct quat));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_getfield(L, 1, "x");
-		self->x = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "y");
-		self->y = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "z");
-		self->z = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "w");
-		self->w = lua_tonumber(L, -1);
-		lua_pop(L, 1);
+		lua_pop(L, (lua_getfield(L, 1, "x"), self->x = lua_tonumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "y"), self->y = lua_tonumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "z"), self->z = lua_tonumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "w"), self->w = lua_tonumber(L, -1), 1));
 	} else {
-		self->x = luaL_checknumber(L, 1);
-		self->y = luaL_checknumber(L, 2);
-		self->z = luaL_checknumber(L, 3);
 		self->w = luaL_checknumber(L, 4);
 	}
 	return 1;
@@ -1150,70 +923,45 @@ static int f_quat_sqlerp(lua_State *L) {
 }
 int f_quat___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: // x
-		lua_pushnumber(L, luaX_checkquat(L, 1)->x);
-		return 1;
-	case 0xfc0c4ef4: // y
-		lua_pushnumber(L, luaX_checkquat(L, 1)->y);
-		return 1;
-	case 0xff0c53ad: // z
-		lua_pushnumber(L, luaX_checkquat(L, 1)->z);
-		return 1;
-	case 0xf20c3f36: // w
-		lua_pushnumber(L, luaX_checkquat(L, 1)->w);
-		return 1;
-	case 0xeefd95cf: // dotProduct
-		lua_pushcfunction(L, f_quat_dotProduct);
-		return 1;
-	case 0x83d03615: // length
-		lua_pushcfunction(L, f_quat_length);
-		return 1;
-	case 0x53d4a495: // unm
-		lua_pushcfunction(L, f_quat_unm);
-		return 1;
-	case 0x10bb9798: // normalized
-		lua_pushcfunction(L, f_quat_normalized);
-		return 1;
-	case 0x93d37177: // slerp
-		lua_pushcfunction(L, f_quat_slerp);
-		return 1;
-	case 0x085be2ec: // sqlerp
-		lua_pushcfunction(L, f_quat_sqlerp);
-		return 1;
+	case 0xfd0c5087: lua_pushnumber(L, luaX_checkquat(L, 1)->x); return 1; // x
+	case 0xfc0c4ef4: lua_pushnumber(L, luaX_checkquat(L, 1)->y); return 1; // y
+	case 0xff0c53ad: lua_pushnumber(L, luaX_checkquat(L, 1)->z); return 1; // z
+	case 0xf20c3f36: lua_pushnumber(L, luaX_checkquat(L, 1)->w); return 1; // w
+	case 0xeefd95cf: lua_pushcfunction(L, f_quat_dotProduct); return 1; // dotProduct
+	case 0x83d03615: lua_pushcfunction(L, f_quat_length); return 1; // length
+	case 0x53d4a495: lua_pushcfunction(L, f_quat_unm); return 1; // unm
+	case 0x10bb9798: lua_pushcfunction(L, f_quat_normalized); return 1; // normalized
+	case 0x93d37177: lua_pushcfunction(L, f_quat_slerp); return 1; // slerp
+	case 0x085be2ec: lua_pushcfunction(L, f_quat_sqlerp); return 1; // sqlerp
 	}
 	return luaL_error(L, "Unknown field in quat: %s", luaL_checkstring(L, 2));
 }
 int f_quat___newindex(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: // x
-		luaX_checkquat(L, 1)->x = luaL_checknumber(L, 3);
-		return 0;
-	case 0xfc0c4ef4: // y
-		luaX_checkquat(L, 1)->y = luaL_checknumber(L, 3);
-		return 0;
-	case 0xff0c53ad: // z
-		luaX_checkquat(L, 1)->z = luaL_checknumber(L, 3);
-		return 0;
-	case 0xf20c3f36: // w
-		luaX_checkquat(L, 1)->w = luaL_checknumber(L, 3);
-		return 0;
+	case 0xfd0c5087: luaX_checkquat(L, 1)->x = luaL_checknumber(L, 3); return 0; // x
+	case 0xfc0c4ef4: luaX_checkquat(L, 1)->y = luaL_checknumber(L, 3); return 0; // y
+	case 0xff0c53ad: luaX_checkquat(L, 1)->z = luaL_checknumber(L, 3); return 0; // z
+	case 0xf20c3f36: luaX_checkquat(L, 1)->w = luaL_checknumber(L, 3); return 0; // w
 	}
 	return luaL_error(L, "Unknown field in quat: %s", luaL_checkstring(L, 2));
 }
-ORCA_API lpcString_t __strtoquat(lpcString_t str, lpquat_t output) {
-	lpcString_t __strtofloat(lpcString_t, float*);
-	str = __strtofloat(str, &output->x);
-	str = __strtofloat(str, &output->y);
-	str = __strtofloat(str, &output->z);
-	str = __strtofloat(str, &output->w);
-	return str;
-}
+extern bool_t f_convert_string(lua_State*, lpcPropertyType_t, lpcString_t, bool_t);
 static int f_fromstring_quat(lua_State *L) {
-	lpquat_t self = lua_newuserdata(L, sizeof(struct quat));
-	luaL_setmetatable(L, "Quaternion");
-	memset(self, 0, sizeof(struct quat));
-	__strtoquat(luaL_checkstring(L, 1), self);
-	return 1;
+	float x;
+	float y;
+	float z;
+	float w;
+	if (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &x, &y, &z, &w) == 4) {
+		struct quat _out = {0};
+		_out.x = x; // x
+		_out.y = y; // y
+		_out.z = z; // z
+		_out.w = w; // w
+		luaX_pushquat(L, &_out); // quat
+		return 1;
+	} else {
+		return luaL_error(L, "Invalid quat format: %s", luaL_checkstring(L, 1));
+	}
 }
 int luaopen_orca_quat(lua_State *L) {
 	luaL_newmetatable(L, "Quaternion");
@@ -1277,12 +1025,8 @@ static int f_mat3_scale(lua_State *L) {
 }
 int f_mat3___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xad0ecfd5: // translate
-		lua_pushcfunction(L, f_mat3_translate);
-		return 1;
-	case 0x82971c71: // scale
-		lua_pushcfunction(L, f_mat3_scale);
-		return 1;
+	case 0xad0ecfd5: lua_pushcfunction(L, f_mat3_translate); return 1; // translate
+	case 0x82971c71: lua_pushcfunction(L, f_mat3_scale); return 1; // scale
 	}
 	return luaL_error(L, "Unknown field in mat3: %s", luaL_checkstring(L, 2));
 }
@@ -1291,21 +1035,10 @@ int f_mat3___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in mat3: %s", luaL_checkstring(L, 2));
 }
-ORCA_API lpcString_t __strtomat3(lpcString_t str, lpmat3_t output) {
-	return str;
-}
-static int f_fromstring_mat3(lua_State *L) {
-	lpmat3_t self = lua_newuserdata(L, sizeof(struct mat3));
-	luaL_setmetatable(L, "Matrix2D");
-	memset(self, 0, sizeof(struct mat3));
-	__strtomat3(luaL_checkstring(L, 1), self);
-	return 1;
-}
 int luaopen_orca_mat3(lua_State *L) {
 	luaL_newmetatable(L, "Matrix2D");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_mat3 },
-		{ "fromstring", f_fromstring_mat3 },
 		{ "__newindex", f_mat3___newindex },
 		{ "__index", f_mat3___index },
 		{ "identity", f_mat3_identity },
@@ -1452,30 +1185,14 @@ static int f_mat4_rotateQuat(lua_State *L) {
 }
 int f_mat4___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xad0ecfd5: // translate
-		lua_pushcfunction(L, f_mat4_translate);
-		return 1;
-	case 0xa5f4fd0a: // rotate
-		lua_pushcfunction(L, f_mat4_rotate);
-		return 1;
-	case 0x82971c71: // scale
-		lua_pushcfunction(L, f_mat4_scale);
-		return 1;
-	case 0xb201f283: // inverse
-		lua_pushcfunction(L, f_mat4_inverse);
-		return 1;
-	case 0xc03183c0: // transpose
-		lua_pushcfunction(L, f_mat4_transpose);
-		return 1;
-	case 0x7eaaa89a: // rotate4
-		lua_pushcfunction(L, f_mat4_rotate4);
-		return 1;
-	case 0x72848e05: // multiplyVector3D
-		lua_pushcfunction(L, f_mat4_multiplyVector3D);
-		return 1;
-	case 0xeb3ef489: // rotateQuat
-		lua_pushcfunction(L, f_mat4_rotateQuat);
-		return 1;
+	case 0xad0ecfd5: lua_pushcfunction(L, f_mat4_translate); return 1; // translate
+	case 0xa5f4fd0a: lua_pushcfunction(L, f_mat4_rotate); return 1; // rotate
+	case 0x82971c71: lua_pushcfunction(L, f_mat4_scale); return 1; // scale
+	case 0xb201f283: lua_pushcfunction(L, f_mat4_inverse); return 1; // inverse
+	case 0xc03183c0: lua_pushcfunction(L, f_mat4_transpose); return 1; // transpose
+	case 0x7eaaa89a: lua_pushcfunction(L, f_mat4_rotate4); return 1; // rotate4
+	case 0x72848e05: lua_pushcfunction(L, f_mat4_multiplyVector3D); return 1; // multiplyVector3D
+	case 0xeb3ef489: lua_pushcfunction(L, f_mat4_rotateQuat); return 1; // rotateQuat
 	}
 	return luaL_error(L, "Unknown field in mat4: %s", luaL_checkstring(L, 2));
 }
@@ -1484,21 +1201,10 @@ int f_mat4___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in mat4: %s", luaL_checkstring(L, 2));
 }
-ORCA_API lpcString_t __strtomat4(lpcString_t str, lpmat4_t output) {
-	return str;
-}
-static int f_fromstring_mat4(lua_State *L) {
-	lpmat4_t self = lua_newuserdata(L, sizeof(struct mat4));
-	luaL_setmetatable(L, "Matrix3D");
-	memset(self, 0, sizeof(struct mat4));
-	__strtomat4(luaL_checkstring(L, 1), self);
-	return 1;
-}
 int luaopen_orca_mat4(lua_State *L) {
 	luaL_newmetatable(L, "Matrix3D");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_mat4 },
-		{ "fromstring", f_fromstring_mat4 },
 		{ "__newindex", f_mat4___newindex },
 		{ "__index", f_mat4___index },
 		{ "identity", f_mat4_identity },
@@ -1532,14 +1238,9 @@ static int f_new_bounds(lua_State *L) {
 	memset(self, 0, sizeof(struct bounds));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_getfield(L, 1, "min");
-		self->min = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "max");
-		self->max = lua_tonumber(L, -1);
-		lua_pop(L, 1);
+		lua_pop(L, (lua_getfield(L, 1, "min"), self->min = lua_tonumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "max"), self->max = lua_tonumber(L, -1), 1));
 	} else {
-		self->min = luaL_checknumber(L, 1);
 		self->max = luaL_checknumber(L, 2);
 	}
 	return 1;
@@ -1550,38 +1251,31 @@ static int f_bounds___call(lua_State *L) {
 }
 int f_bounds___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xc98f4557: // min
-		lua_pushnumber(L, luaX_checkbounds(L, 1)->min);
-		return 1;
-	case 0xd7a2e319: // max
-		lua_pushnumber(L, luaX_checkbounds(L, 1)->max);
-		return 1;
+	case 0xc98f4557: lua_pushnumber(L, luaX_checkbounds(L, 1)->min); return 1; // min
+	case 0xd7a2e319: lua_pushnumber(L, luaX_checkbounds(L, 1)->max); return 1; // max
 	}
 	return luaL_error(L, "Unknown field in bounds: %s", luaL_checkstring(L, 2));
 }
 int f_bounds___newindex(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xc98f4557: // min
-		luaX_checkbounds(L, 1)->min = luaL_checknumber(L, 3);
-		return 0;
-	case 0xd7a2e319: // max
-		luaX_checkbounds(L, 1)->max = luaL_checknumber(L, 3);
-		return 0;
+	case 0xc98f4557: luaX_checkbounds(L, 1)->min = luaL_checknumber(L, 3); return 0; // min
+	case 0xd7a2e319: luaX_checkbounds(L, 1)->max = luaL_checknumber(L, 3); return 0; // max
 	}
 	return luaL_error(L, "Unknown field in bounds: %s", luaL_checkstring(L, 2));
 }
-ORCA_API lpcString_t __strtobounds(lpcString_t str, lpbounds_t output) {
-	lpcString_t __strtofloat(lpcString_t, float*);
-	str = __strtofloat(str, &output->min);
-	str = __strtofloat(str, &output->max);
-	return str;
-}
+extern bool_t f_convert_string(lua_State*, lpcPropertyType_t, lpcString_t, bool_t);
 static int f_fromstring_bounds(lua_State *L) {
-	lpbounds_t self = lua_newuserdata(L, sizeof(struct bounds));
-	luaL_setmetatable(L, "Bounds");
-	memset(self, 0, sizeof(struct bounds));
-	__strtobounds(luaL_checkstring(L, 1), self);
-	return 1;
+	float min;
+	float max;
+	if (sscanf(luaL_checkstring(L, 1), "%f %f", &min, &max) == 2) {
+		struct bounds _out = {0};
+		_out.min = min; // min
+		_out.max = max; // max
+		luaX_pushbounds(L, &_out); // bounds
+		return 1;
+	} else {
+		return luaL_error(L, "Invalid bounds format: %s", luaL_checkstring(L, 1));
+	}
 }
 int luaopen_orca_bounds(lua_State *L) {
 	luaL_newmetatable(L, "Bounds");
@@ -1613,22 +1307,11 @@ static int f_new_plane3(lua_State *L) {
 	memset(self, 0, sizeof(struct plane3));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_getfield(L, 1, "a");
-		self->a = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "b");
-		self->b = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "c");
-		self->c = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "d");
-		self->d = lua_tonumber(L, -1);
-		lua_pop(L, 1);
+		lua_pop(L, (lua_getfield(L, 1, "a"), self->a = lua_tonumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "b"), self->b = lua_tonumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "c"), self->c = lua_tonumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "d"), self->d = lua_tonumber(L, -1), 1));
 	} else {
-		self->a = luaL_checknumber(L, 1);
-		self->b = luaL_checknumber(L, 2);
-		self->c = luaL_checknumber(L, 3);
 		self->d = luaL_checknumber(L, 4);
 	}
 	return 1;
@@ -1651,58 +1334,41 @@ static int f_plane3_multiplyVector3D(lua_State *L) {
 }
 int f_plane3___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xe40c292c: // a
-		lua_pushnumber(L, luaX_checkplane3(L, 1)->a);
-		return 1;
-	case 0xe70c2de5: // b
-		lua_pushnumber(L, luaX_checkplane3(L, 1)->b);
-		return 1;
-	case 0xe60c2c52: // c
-		lua_pushnumber(L, luaX_checkplane3(L, 1)->c);
-		return 1;
-	case 0xe10c2473: // d
-		lua_pushnumber(L, luaX_checkplane3(L, 1)->d);
-		return 1;
-	case 0xce79296c: // normalize
-		lua_pushcfunction(L, f_plane3_normalize);
-		return 1;
-	case 0x72848e05: // multiplyVector3D
-		lua_pushcfunction(L, f_plane3_multiplyVector3D);
-		return 1;
+	case 0xe40c292c: lua_pushnumber(L, luaX_checkplane3(L, 1)->a); return 1; // a
+	case 0xe70c2de5: lua_pushnumber(L, luaX_checkplane3(L, 1)->b); return 1; // b
+	case 0xe60c2c52: lua_pushnumber(L, luaX_checkplane3(L, 1)->c); return 1; // c
+	case 0xe10c2473: lua_pushnumber(L, luaX_checkplane3(L, 1)->d); return 1; // d
+	case 0xce79296c: lua_pushcfunction(L, f_plane3_normalize); return 1; // normalize
+	case 0x72848e05: lua_pushcfunction(L, f_plane3_multiplyVector3D); return 1; // multiplyVector3D
 	}
 	return luaL_error(L, "Unknown field in plane3: %s", luaL_checkstring(L, 2));
 }
 int f_plane3___newindex(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xe40c292c: // a
-		luaX_checkplane3(L, 1)->a = luaL_checknumber(L, 3);
-		return 0;
-	case 0xe70c2de5: // b
-		luaX_checkplane3(L, 1)->b = luaL_checknumber(L, 3);
-		return 0;
-	case 0xe60c2c52: // c
-		luaX_checkplane3(L, 1)->c = luaL_checknumber(L, 3);
-		return 0;
-	case 0xe10c2473: // d
-		luaX_checkplane3(L, 1)->d = luaL_checknumber(L, 3);
-		return 0;
+	case 0xe40c292c: luaX_checkplane3(L, 1)->a = luaL_checknumber(L, 3); return 0; // a
+	case 0xe70c2de5: luaX_checkplane3(L, 1)->b = luaL_checknumber(L, 3); return 0; // b
+	case 0xe60c2c52: luaX_checkplane3(L, 1)->c = luaL_checknumber(L, 3); return 0; // c
+	case 0xe10c2473: luaX_checkplane3(L, 1)->d = luaL_checknumber(L, 3); return 0; // d
 	}
 	return luaL_error(L, "Unknown field in plane3: %s", luaL_checkstring(L, 2));
 }
-ORCA_API lpcString_t __strtoplane3(lpcString_t str, lpplane3_t output) {
-	lpcString_t __strtofloat(lpcString_t, float*);
-	str = __strtofloat(str, &output->a);
-	str = __strtofloat(str, &output->b);
-	str = __strtofloat(str, &output->c);
-	str = __strtofloat(str, &output->d);
-	return str;
-}
+extern bool_t f_convert_string(lua_State*, lpcPropertyType_t, lpcString_t, bool_t);
 static int f_fromstring_plane3(lua_State *L) {
-	lpplane3_t self = lua_newuserdata(L, sizeof(struct plane3));
-	luaL_setmetatable(L, "Plane");
-	memset(self, 0, sizeof(struct plane3));
-	__strtoplane3(luaL_checkstring(L, 1), self);
-	return 1;
+	float a;
+	float b;
+	float c;
+	float d;
+	if (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &a, &b, &c, &d) == 4) {
+		struct plane3 _out = {0};
+		_out.a = a; // a
+		_out.b = b; // b
+		_out.c = c; // c
+		_out.d = d; // d
+		luaX_pushplane3(L, &_out); // plane3
+		return 1;
+	} else {
+		return luaL_error(L, "Invalid plane3 format: %s", luaL_checkstring(L, 1));
+	}
 }
 int luaopen_orca_plane3(lua_State *L) {
 	luaL_newmetatable(L, "Plane");
@@ -1734,9 +1400,7 @@ static int f_new_sphere3(lua_State *L) {
 	memset(self, 0, sizeof(struct sphere3));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_getfield(L, 1, "radius");
-		self->radius = lua_tonumber(L, -1);
-		lua_pop(L, 1);
+		lua_pop(L, (lua_getfield(L, 1, "radius"), self->radius = lua_tonumber(L, -1), 1));
 	} else {
 		self->radius = luaL_checknumber(L, 1);
 	}
@@ -1748,45 +1412,22 @@ static int f_sphere3___call(lua_State *L) {
 }
 int f_sphere3___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x058c4484: // center
-		luaX_pushvec3(L, &luaX_checksphere3(L, 1)->center);
-		return 1;
-	case 0x0dba4cb3: // radius
-		lua_pushnumber(L, luaX_checksphere3(L, 1)->radius);
-		return 1;
+	case 0x058c4484: luaX_pushvec3(L, &luaX_checksphere3(L, 1)->center); return 1; // center
+	case 0x0dba4cb3: lua_pushnumber(L, luaX_checksphere3(L, 1)->radius); return 1; // radius
 	}
 	return luaL_error(L, "Unknown field in sphere3: %s", luaL_checkstring(L, 2));
 }
 int f_sphere3___newindex(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x058c4484: // center
-		luaX_checksphere3(L, 1)->center = *luaX_checkvec3(L, 3);
-		return 0;
-	case 0x0dba4cb3: // radius
-		luaX_checksphere3(L, 1)->radius = luaL_checknumber(L, 3);
-		return 0;
+	case 0x058c4484: luaX_checksphere3(L, 1)->center = *luaX_checkvec3(L, 3); return 0; // center
+	case 0x0dba4cb3: luaX_checksphere3(L, 1)->radius = luaL_checknumber(L, 3); return 0; // radius
 	}
 	return luaL_error(L, "Unknown field in sphere3: %s", luaL_checkstring(L, 2));
-}
-ORCA_API lpcString_t __strtosphere3(lpcString_t str, lpsphere3_t output) {
-	lpcString_t __strtofloat(lpcString_t, float*);
-	lpcString_t __strtovec3(lpcString_t, struct vec3*);
-	str = __strtovec3(str, &output->center);
-	str = __strtofloat(str, &output->radius);
-	return str;
-}
-static int f_fromstring_sphere3(lua_State *L) {
-	lpsphere3_t self = lua_newuserdata(L, sizeof(struct sphere3));
-	luaL_setmetatable(L, "Sphere");
-	memset(self, 0, sizeof(struct sphere3));
-	__strtosphere3(luaL_checkstring(L, 1), self);
-	return 1;
 }
 int luaopen_orca_sphere3(lua_State *L) {
 	luaL_newmetatable(L, "Sphere");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_sphere3 },
-		{ "fromstring", f_fromstring_sphere3 },
 		{ "__newindex", f_sphere3___newindex },
 		{ "__index", f_sphere3___index },
 		{ NULL, NULL },
@@ -1854,84 +1495,34 @@ static int f_frustum3_containsAABox(lua_State *L) {
 }
 int f_frustum3___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x124aec70: // left
-		luaX_pushplane3(L, &luaX_checkfrustum3(L, 1)->left);
-		return 1;
-	case 0x78e32de5: // right
-		luaX_pushplane3(L, &luaX_checkfrustum3(L, 1)->right);
-		return 1;
-	case 0x4ea76b2a: // bottom
-		luaX_pushplane3(L, &luaX_checkfrustum3(L, 1)->bottom);
-		return 1;
-	case 0xa710dc3c: // top
-		luaX_pushplane3(L, &luaX_checkfrustum3(L, 1)->top);
-		return 1;
-	case 0xe179dbd8: // front
-		luaX_pushplane3(L, &luaX_checkfrustum3(L, 1)->front);
-		return 1;
-	case 0x5bb421a2: // back
-		luaX_pushplane3(L, &luaX_checkfrustum3(L, 1)->back);
-		return 1;
-	case 0x7a86780e: // containsPoint
-		lua_pushcfunction(L, f_frustum3_containsPoint);
-		return 1;
-	case 0x3149232d: // containsSphere
-		lua_pushcfunction(L, f_frustum3_containsSphere);
-		return 1;
-	case 0xb0b6e291: // containsBox
-		lua_pushcfunction(L, f_frustum3_containsBox);
-		return 1;
-	case 0xd1ea740b: // containsAABox
-		lua_pushcfunction(L, f_frustum3_containsAABox);
-		return 1;
+	case 0x124aec70: luaX_pushplane3(L, &luaX_checkfrustum3(L, 1)->left); return 1; // left
+	case 0x78e32de5: luaX_pushplane3(L, &luaX_checkfrustum3(L, 1)->right); return 1; // right
+	case 0x4ea76b2a: luaX_pushplane3(L, &luaX_checkfrustum3(L, 1)->bottom); return 1; // bottom
+	case 0xa710dc3c: luaX_pushplane3(L, &luaX_checkfrustum3(L, 1)->top); return 1; // top
+	case 0xe179dbd8: luaX_pushplane3(L, &luaX_checkfrustum3(L, 1)->front); return 1; // front
+	case 0x5bb421a2: luaX_pushplane3(L, &luaX_checkfrustum3(L, 1)->back); return 1; // back
+	case 0x7a86780e: lua_pushcfunction(L, f_frustum3_containsPoint); return 1; // containsPoint
+	case 0x3149232d: lua_pushcfunction(L, f_frustum3_containsSphere); return 1; // containsSphere
+	case 0xb0b6e291: lua_pushcfunction(L, f_frustum3_containsBox); return 1; // containsBox
+	case 0xd1ea740b: lua_pushcfunction(L, f_frustum3_containsAABox); return 1; // containsAABox
 	}
 	return luaL_error(L, "Unknown field in frustum3: %s", luaL_checkstring(L, 2));
 }
 int f_frustum3___newindex(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x124aec70: // left
-		luaX_checkfrustum3(L, 1)->left = *luaX_checkplane3(L, 3);
-		return 0;
-	case 0x78e32de5: // right
-		luaX_checkfrustum3(L, 1)->right = *luaX_checkplane3(L, 3);
-		return 0;
-	case 0x4ea76b2a: // bottom
-		luaX_checkfrustum3(L, 1)->bottom = *luaX_checkplane3(L, 3);
-		return 0;
-	case 0xa710dc3c: // top
-		luaX_checkfrustum3(L, 1)->top = *luaX_checkplane3(L, 3);
-		return 0;
-	case 0xe179dbd8: // front
-		luaX_checkfrustum3(L, 1)->front = *luaX_checkplane3(L, 3);
-		return 0;
-	case 0x5bb421a2: // back
-		luaX_checkfrustum3(L, 1)->back = *luaX_checkplane3(L, 3);
-		return 0;
+	case 0x124aec70: luaX_checkfrustum3(L, 1)->left = *luaX_checkplane3(L, 3); return 0; // left
+	case 0x78e32de5: luaX_checkfrustum3(L, 1)->right = *luaX_checkplane3(L, 3); return 0; // right
+	case 0x4ea76b2a: luaX_checkfrustum3(L, 1)->bottom = *luaX_checkplane3(L, 3); return 0; // bottom
+	case 0xa710dc3c: luaX_checkfrustum3(L, 1)->top = *luaX_checkplane3(L, 3); return 0; // top
+	case 0xe179dbd8: luaX_checkfrustum3(L, 1)->front = *luaX_checkplane3(L, 3); return 0; // front
+	case 0x5bb421a2: luaX_checkfrustum3(L, 1)->back = *luaX_checkplane3(L, 3); return 0; // back
 	}
 	return luaL_error(L, "Unknown field in frustum3: %s", luaL_checkstring(L, 2));
-}
-ORCA_API lpcString_t __strtofrustum3(lpcString_t str, lpfrustum3_t output) {
-	lpcString_t __strtoplane3(lpcString_t, struct plane3*);
-	str = __strtoplane3(str, &output->left);
-	str = __strtoplane3(str, &output->right);
-	str = __strtoplane3(str, &output->bottom);
-	str = __strtoplane3(str, &output->top);
-	str = __strtoplane3(str, &output->front);
-	str = __strtoplane3(str, &output->back);
-	return str;
-}
-static int f_fromstring_frustum3(lua_State *L) {
-	lpfrustum3_t self = lua_newuserdata(L, sizeof(struct frustum3));
-	luaL_setmetatable(L, "Frustum");
-	memset(self, 0, sizeof(struct frustum3));
-	__strtofrustum3(luaL_checkstring(L, 1), self);
-	return 1;
 }
 int luaopen_orca_frustum3(lua_State *L) {
 	luaL_newmetatable(L, "Frustum");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_frustum3 },
-		{ "fromstring", f_fromstring_frustum3 },
 		{ "__newindex", f_frustum3___newindex },
 		{ "__index", f_frustum3___index },
 		{ "calculate", f_frustum3_calculate },
@@ -1958,9 +1549,7 @@ static int f_new_transform2(lua_State *L) {
 	memset(self, 0, sizeof(struct transform2));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_getfield(L, 1, "rotation");
-		self->rotation = lua_tonumber(L, -1);
-		lua_pop(L, 1);
+		lua_pop(L, (lua_getfield(L, 1, "rotation"), self->rotation = lua_tonumber(L, -1), 1));
 	} else {
 		self->rotation = luaL_checknumber(L, 1);
 	}
@@ -1984,55 +1573,25 @@ static int f_transform2_toMatrix3D(lua_State *L) {
 }
 int f_transform2___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xcbd2d62c: // translation
-		luaX_pushvec2(L, &luaX_checktransform2(L, 1)->translation);
-		return 1;
-	case 0x21ac415f: // rotation
-		lua_pushnumber(L, luaX_checktransform2(L, 1)->rotation);
-		return 1;
-	case 0x82971c71: // scale
-		luaX_pushvec2(L, &luaX_checktransform2(L, 1)->scale);
-		return 1;
-	case 0xf4f4640a: // toMatrix3D
-		lua_pushcfunction(L, f_transform2_toMatrix3D);
-		return 1;
+	case 0xcbd2d62c: luaX_pushvec2(L, &luaX_checktransform2(L, 1)->translation); return 1; // translation
+	case 0x21ac415f: lua_pushnumber(L, luaX_checktransform2(L, 1)->rotation); return 1; // rotation
+	case 0x82971c71: luaX_pushvec2(L, &luaX_checktransform2(L, 1)->scale); return 1; // scale
+	case 0xf4f4640a: lua_pushcfunction(L, f_transform2_toMatrix3D); return 1; // toMatrix3D
 	}
 	return luaL_error(L, "Unknown field in transform2: %s", luaL_checkstring(L, 2));
 }
 int f_transform2___newindex(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xcbd2d62c: // translation
-		luaX_checktransform2(L, 1)->translation = *luaX_checkvec2(L, 3);
-		return 0;
-	case 0x21ac415f: // rotation
-		luaX_checktransform2(L, 1)->rotation = luaL_checknumber(L, 3);
-		return 0;
-	case 0x82971c71: // scale
-		luaX_checktransform2(L, 1)->scale = *luaX_checkvec2(L, 3);
-		return 0;
+	case 0xcbd2d62c: luaX_checktransform2(L, 1)->translation = *luaX_checkvec2(L, 3); return 0; // translation
+	case 0x21ac415f: luaX_checktransform2(L, 1)->rotation = luaL_checknumber(L, 3); return 0; // rotation
+	case 0x82971c71: luaX_checktransform2(L, 1)->scale = *luaX_checkvec2(L, 3); return 0; // scale
 	}
 	return luaL_error(L, "Unknown field in transform2: %s", luaL_checkstring(L, 2));
-}
-ORCA_API lpcString_t __strtotransform2(lpcString_t str, lptransform2_t output) {
-	lpcString_t __strtofloat(lpcString_t, float*);
-	lpcString_t __strtovec2(lpcString_t, struct vec2*);
-	str = __strtovec2(str, &output->translation);
-	str = __strtofloat(str, &output->rotation);
-	str = __strtovec2(str, &output->scale);
-	return str;
-}
-static int f_fromstring_transform2(lua_State *L) {
-	lptransform2_t self = lua_newuserdata(L, sizeof(struct transform2));
-	luaL_setmetatable(L, "Transform2D");
-	memset(self, 0, sizeof(struct transform2));
-	__strtotransform2(luaL_checkstring(L, 1), self);
-	return 1;
 }
 int luaopen_orca_transform2(lua_State *L) {
 	luaL_newmetatable(L, "Transform2D");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_transform2 },
-		{ "fromstring", f_fromstring_transform2 },
 		{ "__newindex", f_transform2___newindex },
 		{ "__index", f_transform2___index },
 		{ "identity", f_transform2_identity },
@@ -2078,54 +1637,25 @@ static int f_transform3_toMatrix3D(lua_State *L) {
 }
 int f_transform3___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xcbd2d62c: // translation
-		luaX_pushvec3(L, &luaX_checktransform3(L, 1)->translation);
-		return 1;
-	case 0x21ac415f: // rotation
-		luaX_pushvec3(L, &luaX_checktransform3(L, 1)->rotation);
-		return 1;
-	case 0x82971c71: // scale
-		luaX_pushvec3(L, &luaX_checktransform3(L, 1)->scale);
-		return 1;
-	case 0xf4f4640a: // toMatrix3D
-		lua_pushcfunction(L, f_transform3_toMatrix3D);
-		return 1;
+	case 0xcbd2d62c: luaX_pushvec3(L, &luaX_checktransform3(L, 1)->translation); return 1; // translation
+	case 0x21ac415f: luaX_pushvec3(L, &luaX_checktransform3(L, 1)->rotation); return 1; // rotation
+	case 0x82971c71: luaX_pushvec3(L, &luaX_checktransform3(L, 1)->scale); return 1; // scale
+	case 0xf4f4640a: lua_pushcfunction(L, f_transform3_toMatrix3D); return 1; // toMatrix3D
 	}
 	return luaL_error(L, "Unknown field in transform3: %s", luaL_checkstring(L, 2));
 }
 int f_transform3___newindex(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xcbd2d62c: // translation
-		luaX_checktransform3(L, 1)->translation = *luaX_checkvec3(L, 3);
-		return 0;
-	case 0x21ac415f: // rotation
-		luaX_checktransform3(L, 1)->rotation = *luaX_checkvec3(L, 3);
-		return 0;
-	case 0x82971c71: // scale
-		luaX_checktransform3(L, 1)->scale = *luaX_checkvec3(L, 3);
-		return 0;
+	case 0xcbd2d62c: luaX_checktransform3(L, 1)->translation = *luaX_checkvec3(L, 3); return 0; // translation
+	case 0x21ac415f: luaX_checktransform3(L, 1)->rotation = *luaX_checkvec3(L, 3); return 0; // rotation
+	case 0x82971c71: luaX_checktransform3(L, 1)->scale = *luaX_checkvec3(L, 3); return 0; // scale
 	}
 	return luaL_error(L, "Unknown field in transform3: %s", luaL_checkstring(L, 2));
-}
-ORCA_API lpcString_t __strtotransform3(lpcString_t str, lptransform3_t output) {
-	lpcString_t __strtovec3(lpcString_t, struct vec3*);
-	str = __strtovec3(str, &output->translation);
-	str = __strtovec3(str, &output->rotation);
-	str = __strtovec3(str, &output->scale);
-	return str;
-}
-static int f_fromstring_transform3(lua_State *L) {
-	lptransform3_t self = lua_newuserdata(L, sizeof(struct transform3));
-	luaL_setmetatable(L, "Transform3D");
-	memset(self, 0, sizeof(struct transform3));
-	__strtotransform3(luaL_checkstring(L, 1), self);
-	return 1;
 }
 int luaopen_orca_transform3(lua_State *L) {
 	luaL_newmetatable(L, "Transform3D");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_transform3 },
-		{ "fromstring", f_fromstring_transform3 },
 		{ "__newindex", f_transform3___newindex },
 		{ "__index", f_transform3___index },
 		{ "identity", f_transform3_identity },
@@ -2165,54 +1695,25 @@ static int f_triangle3_normal(lua_State *L) {
 }
 int f_triangle3___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xe40c292c: // a
-		luaX_pushvec3(L, &luaX_checktriangle3(L, 1)->a);
-		return 1;
-	case 0xe70c2de5: // b
-		luaX_pushvec3(L, &luaX_checktriangle3(L, 1)->b);
-		return 1;
-	case 0xe60c2c52: // c
-		luaX_pushvec3(L, &luaX_checktriangle3(L, 1)->c);
-		return 1;
-	case 0xe68b9c52: // normal
-		lua_pushcfunction(L, f_triangle3_normal);
-		return 1;
+	case 0xe40c292c: luaX_pushvec3(L, &luaX_checktriangle3(L, 1)->a); return 1; // a
+	case 0xe70c2de5: luaX_pushvec3(L, &luaX_checktriangle3(L, 1)->b); return 1; // b
+	case 0xe60c2c52: luaX_pushvec3(L, &luaX_checktriangle3(L, 1)->c); return 1; // c
+	case 0xe68b9c52: lua_pushcfunction(L, f_triangle3_normal); return 1; // normal
 	}
 	return luaL_error(L, "Unknown field in triangle3: %s", luaL_checkstring(L, 2));
 }
 int f_triangle3___newindex(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xe40c292c: // a
-		luaX_checktriangle3(L, 1)->a = *luaX_checkvec3(L, 3);
-		return 0;
-	case 0xe70c2de5: // b
-		luaX_checktriangle3(L, 1)->b = *luaX_checkvec3(L, 3);
-		return 0;
-	case 0xe60c2c52: // c
-		luaX_checktriangle3(L, 1)->c = *luaX_checkvec3(L, 3);
-		return 0;
+	case 0xe40c292c: luaX_checktriangle3(L, 1)->a = *luaX_checkvec3(L, 3); return 0; // a
+	case 0xe70c2de5: luaX_checktriangle3(L, 1)->b = *luaX_checkvec3(L, 3); return 0; // b
+	case 0xe60c2c52: luaX_checktriangle3(L, 1)->c = *luaX_checkvec3(L, 3); return 0; // c
 	}
 	return luaL_error(L, "Unknown field in triangle3: %s", luaL_checkstring(L, 2));
-}
-ORCA_API lpcString_t __strtotriangle3(lpcString_t str, lptriangle3_t output) {
-	lpcString_t __strtovec3(lpcString_t, struct vec3*);
-	str = __strtovec3(str, &output->a);
-	str = __strtovec3(str, &output->b);
-	str = __strtovec3(str, &output->c);
-	return str;
-}
-static int f_fromstring_triangle3(lua_State *L) {
-	lptriangle3_t self = lua_newuserdata(L, sizeof(struct triangle3));
-	luaL_setmetatable(L, "Triangle3D");
-	memset(self, 0, sizeof(struct triangle3));
-	__strtotriangle3(luaL_checkstring(L, 1), self);
-	return 1;
 }
 int luaopen_orca_triangle3(lua_State *L) {
 	luaL_newmetatable(L, "Triangle3D");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_triangle3 },
-		{ "fromstring", f_fromstring_triangle3 },
 		{ "__newindex", f_triangle3___newindex },
 		{ "__index", f_triangle3___index },
 		{ NULL, NULL },
@@ -2277,56 +1778,26 @@ static int f_line3_intersect_box3(lua_State *L) {
 }
 int f_line3___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xe40c292c: // a
-		luaX_pushvec3(L, &luaX_checkline3(L, 1)->a);
-		return 1;
-	case 0xe70c2de5: // b
-		luaX_pushvec3(L, &luaX_checkline3(L, 1)->b);
-		return 1;
-	case 0x82c7ab2f: // intersect_sphere3
-		lua_pushcfunction(L, f_line3_intersect_sphere3);
-		return 1;
-	case 0xcf43ebd0: // intersect_plane3
-		lua_pushcfunction(L, f_line3_intersect_plane3);
-		return 1;
-	case 0xf2168947: // intersect_triangle
-		lua_pushcfunction(L, f_line3_intersect_triangle);
-		return 1;
-	case 0x5b454c0d: // intersect_box3
-		lua_pushcfunction(L, f_line3_intersect_box3);
-		return 1;
+	case 0xe40c292c: luaX_pushvec3(L, &luaX_checkline3(L, 1)->a); return 1; // a
+	case 0xe70c2de5: luaX_pushvec3(L, &luaX_checkline3(L, 1)->b); return 1; // b
+	case 0x82c7ab2f: lua_pushcfunction(L, f_line3_intersect_sphere3); return 1; // intersect_sphere3
+	case 0xcf43ebd0: lua_pushcfunction(L, f_line3_intersect_plane3); return 1; // intersect_plane3
+	case 0xf2168947: lua_pushcfunction(L, f_line3_intersect_triangle); return 1; // intersect_triangle
+	case 0x5b454c0d: lua_pushcfunction(L, f_line3_intersect_box3); return 1; // intersect_box3
 	}
 	return luaL_error(L, "Unknown field in line3: %s", luaL_checkstring(L, 2));
 }
 int f_line3___newindex(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xe40c292c: // a
-		luaX_checkline3(L, 1)->a = *luaX_checkvec3(L, 3);
-		return 0;
-	case 0xe70c2de5: // b
-		luaX_checkline3(L, 1)->b = *luaX_checkvec3(L, 3);
-		return 0;
+	case 0xe40c292c: luaX_checkline3(L, 1)->a = *luaX_checkvec3(L, 3); return 0; // a
+	case 0xe70c2de5: luaX_checkline3(L, 1)->b = *luaX_checkvec3(L, 3); return 0; // b
 	}
 	return luaL_error(L, "Unknown field in line3: %s", luaL_checkstring(L, 2));
-}
-ORCA_API lpcString_t __strtoline3(lpcString_t str, lpline3_t output) {
-	lpcString_t __strtovec3(lpcString_t, struct vec3*);
-	str = __strtovec3(str, &output->a);
-	str = __strtovec3(str, &output->b);
-	return str;
-}
-static int f_fromstring_line3(lua_State *L) {
-	lpline3_t self = lua_newuserdata(L, sizeof(struct line3));
-	luaL_setmetatable(L, "Line3D");
-	memset(self, 0, sizeof(struct line3));
-	__strtoline3(luaL_checkstring(L, 1), self);
-	return 1;
 }
 int luaopen_orca_line3(lua_State *L) {
 	luaL_newmetatable(L, "Line3D");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_line3 },
-		{ "fromstring", f_fromstring_line3 },
 		{ "__newindex", f_line3___newindex },
 		{ "__index", f_line3___index },
 		{ NULL, NULL },
@@ -2352,22 +1823,11 @@ static int f_new_edges(lua_State *L) {
 	memset(self, 0, sizeof(struct edges));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_getfield(L, 1, "left");
-		self->left = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "top");
-		self->top = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "right");
-		self->right = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "bottom");
-		self->bottom = lua_tonumber(L, -1);
-		lua_pop(L, 1);
+		lua_pop(L, (lua_getfield(L, 1, "left"), self->left = lua_tonumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "top"), self->top = lua_tonumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "right"), self->right = lua_tonumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "bottom"), self->bottom = lua_tonumber(L, -1), 1));
 	} else {
-		self->left = luaL_checknumber(L, 1);
-		self->top = luaL_checknumber(L, 2);
-		self->right = luaL_checknumber(L, 3);
 		self->bottom = luaL_checknumber(L, 4);
 	}
 	return 1;
@@ -2378,52 +1838,39 @@ static int f_edges___call(lua_State *L) {
 }
 int f_edges___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x124aec70: // left
-		lua_pushnumber(L, luaX_checkedges(L, 1)->left);
-		return 1;
-	case 0xa710dc3c: // top
-		lua_pushnumber(L, luaX_checkedges(L, 1)->top);
-		return 1;
-	case 0x78e32de5: // right
-		lua_pushnumber(L, luaX_checkedges(L, 1)->right);
-		return 1;
-	case 0x4ea76b2a: // bottom
-		lua_pushnumber(L, luaX_checkedges(L, 1)->bottom);
-		return 1;
+	case 0x124aec70: lua_pushnumber(L, luaX_checkedges(L, 1)->left); return 1; // left
+	case 0xa710dc3c: lua_pushnumber(L, luaX_checkedges(L, 1)->top); return 1; // top
+	case 0x78e32de5: lua_pushnumber(L, luaX_checkedges(L, 1)->right); return 1; // right
+	case 0x4ea76b2a: lua_pushnumber(L, luaX_checkedges(L, 1)->bottom); return 1; // bottom
 	}
 	return luaL_error(L, "Unknown field in edges: %s", luaL_checkstring(L, 2));
 }
 int f_edges___newindex(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x124aec70: // left
-		luaX_checkedges(L, 1)->left = luaL_checknumber(L, 3);
-		return 0;
-	case 0xa710dc3c: // top
-		luaX_checkedges(L, 1)->top = luaL_checknumber(L, 3);
-		return 0;
-	case 0x78e32de5: // right
-		luaX_checkedges(L, 1)->right = luaL_checknumber(L, 3);
-		return 0;
-	case 0x4ea76b2a: // bottom
-		luaX_checkedges(L, 1)->bottom = luaL_checknumber(L, 3);
-		return 0;
+	case 0x124aec70: luaX_checkedges(L, 1)->left = luaL_checknumber(L, 3); return 0; // left
+	case 0xa710dc3c: luaX_checkedges(L, 1)->top = luaL_checknumber(L, 3); return 0; // top
+	case 0x78e32de5: luaX_checkedges(L, 1)->right = luaL_checknumber(L, 3); return 0; // right
+	case 0x4ea76b2a: luaX_checkedges(L, 1)->bottom = luaL_checknumber(L, 3); return 0; // bottom
 	}
 	return luaL_error(L, "Unknown field in edges: %s", luaL_checkstring(L, 2));
 }
-ORCA_API lpcString_t __strtoedges(lpcString_t str, lpedges_t output) {
-	lpcString_t __strtofloat(lpcString_t, float*);
-	str = __strtofloat(str, &output->left);
-	str = __strtofloat(str, &output->top);
-	str = __strtofloat(str, &output->right);
-	str = __strtofloat(str, &output->bottom);
-	return str;
-}
+extern bool_t f_convert_string(lua_State*, lpcPropertyType_t, lpcString_t, bool_t);
 static int f_fromstring_edges(lua_State *L) {
-	lpedges_t self = lua_newuserdata(L, sizeof(struct edges));
-	luaL_setmetatable(L, "Edges");
-	memset(self, 0, sizeof(struct edges));
-	__strtoedges(luaL_checkstring(L, 1), self);
-	return 1;
+	float left;
+	float top;
+	float right;
+	float bottom;
+	if (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &left, &top, &right, &bottom) == 4) {
+		struct edges _out = {0};
+		_out.left = left; // left
+		_out.top = top; // top
+		_out.right = right; // right
+		_out.bottom = bottom; // bottom
+		luaX_pushedges(L, &_out); // edges
+		return 1;
+	} else {
+		return luaL_error(L, "Invalid edges format: %s", luaL_checkstring(L, 1));
+	}
 }
 int luaopen_orca_edges(lua_State *L) {
 	luaL_newmetatable(L, "Edges");
@@ -2455,22 +1902,11 @@ static int f_new_color(lua_State *L) {
 	memset(self, 0, sizeof(struct color));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_getfield(L, 1, "r");
-		self->r = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "g");
-		self->g = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "b");
-		self->b = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "a");
-		self->a = lua_tonumber(L, -1);
-		lua_pop(L, 1);
+		lua_pop(L, (lua_getfield(L, 1, "r"), self->r = lua_tonumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "g"), self->g = lua_tonumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "b"), self->b = lua_tonumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "a"), self->a = lua_tonumber(L, -1), 1));
 	} else {
-		self->r = luaL_checknumber(L, 1);
-		self->g = luaL_checknumber(L, 2);
-		self->b = luaL_checknumber(L, 3);
 		self->a = luaL_checknumber(L, 4);
 	}
 	return 1;
@@ -2495,55 +1931,40 @@ static int f_color_parse(lua_State *L) {
 }
 int f_color___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xf70c4715: // r
-		lua_pushnumber(L, luaX_checkcolor(L, 1)->r);
-		return 1;
-	case 0xe20c2606: // g
-		lua_pushnumber(L, luaX_checkcolor(L, 1)->g);
-		return 1;
-	case 0xe70c2de5: // b
-		lua_pushnumber(L, luaX_checkcolor(L, 1)->b);
-		return 1;
-	case 0xe40c292c: // a
-		lua_pushnumber(L, luaX_checkcolor(L, 1)->a);
-		return 1;
-	case 0x1e691468: // lerp
-		lua_pushcfunction(L, f_color_lerp);
-		return 1;
+	case 0xf70c4715: lua_pushnumber(L, luaX_checkcolor(L, 1)->r); return 1; // r
+	case 0xe20c2606: lua_pushnumber(L, luaX_checkcolor(L, 1)->g); return 1; // g
+	case 0xe70c2de5: lua_pushnumber(L, luaX_checkcolor(L, 1)->b); return 1; // b
+	case 0xe40c292c: lua_pushnumber(L, luaX_checkcolor(L, 1)->a); return 1; // a
+	case 0x1e691468: lua_pushcfunction(L, f_color_lerp); return 1; // lerp
 	}
 	return luaL_error(L, "Unknown field in color: %s", luaL_checkstring(L, 2));
 }
 int f_color___newindex(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xf70c4715: // r
-		luaX_checkcolor(L, 1)->r = luaL_checknumber(L, 3);
-		return 0;
-	case 0xe20c2606: // g
-		luaX_checkcolor(L, 1)->g = luaL_checknumber(L, 3);
-		return 0;
-	case 0xe70c2de5: // b
-		luaX_checkcolor(L, 1)->b = luaL_checknumber(L, 3);
-		return 0;
-	case 0xe40c292c: // a
-		luaX_checkcolor(L, 1)->a = luaL_checknumber(L, 3);
-		return 0;
+	case 0xf70c4715: luaX_checkcolor(L, 1)->r = luaL_checknumber(L, 3); return 0; // r
+	case 0xe20c2606: luaX_checkcolor(L, 1)->g = luaL_checknumber(L, 3); return 0; // g
+	case 0xe70c2de5: luaX_checkcolor(L, 1)->b = luaL_checknumber(L, 3); return 0; // b
+	case 0xe40c292c: luaX_checkcolor(L, 1)->a = luaL_checknumber(L, 3); return 0; // a
 	}
 	return luaL_error(L, "Unknown field in color: %s", luaL_checkstring(L, 2));
 }
-ORCA_API lpcString_t __strtocolor(lpcString_t str, lpcolor_t output) {
-	lpcString_t __strtofloat(lpcString_t, float*);
-	str = __strtofloat(str, &output->r);
-	str = __strtofloat(str, &output->g);
-	str = __strtofloat(str, &output->b);
-	str = __strtofloat(str, &output->a);
-	return str;
-}
+extern bool_t f_convert_string(lua_State*, lpcPropertyType_t, lpcString_t, bool_t);
 static int f_fromstring_color(lua_State *L) {
-	lpcolor_t self = lua_newuserdata(L, sizeof(struct color));
-	luaL_setmetatable(L, "Color");
-	memset(self, 0, sizeof(struct color));
-	__strtocolor(luaL_checkstring(L, 1), self);
-	return 1;
+	float r;
+	float g;
+	float b;
+	float a;
+	if (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &r, &g, &b, &a) == 4) {
+		struct color _out = {0};
+		_out.r = r; // r
+		_out.g = g; // g
+		_out.b = b; // b
+		_out.a = a; // a
+		luaX_pushcolor(L, &_out); // color
+		return 1;
+	} else {
+		return luaL_error(L, "Invalid color format: %s", luaL_checkstring(L, 1));
+	}
 }
 int luaopen_orca_color(lua_State *L) {
 	luaL_newmetatable(L, "Color");

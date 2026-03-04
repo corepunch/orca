@@ -198,9 +198,11 @@ OBJ_EnumStyleClasses(lpObject_t pobj,
   }
 }
 
-bool_t f_parse_property(lua_State* L,
-                        lpProperty_t hProperty,
-                        lpcString_t value)
+ORCA_API bool_t
+f_convert_string(lua_State* L,
+                 lpcPropertyType_t pt,
+                 lpcString_t value,
+                 bool_t throw_error)
 {
   lua_getglobal(L, "require");
   lua_pushstring(L, "orca");
@@ -208,21 +210,37 @@ bool_t f_parse_property(lua_State* L,
   lua_getfield(L, -1, "typeconverter");
   assert(lua_type(L, -1) == LUA_TTABLE);
   lua_remove(L, -2); // remove orca table
-  lua_getfield(L, -1, DataTypeToString(PROP_GetType(hProperty)));
+  lua_getfield(L, -1, DataTypeToString(pt->DataType));
   assert(lua_type(L, -1) == LUA_TFUNCTION);
   lua_remove(L, -2); // remove typeconverter table
   lua_pushstring(L, value);
-  assert(PROP_GetDesc(hProperty));
-  luaX_pushPropertyType(L, PROP_GetDesc(hProperty));
+  luaX_pushPropertyType(L, pt);
   if (lua_pcall(L, 2, 1, 0) != LUA_OK) { // TODO: Should it be here?
-    Con_Error("%s", luaL_checkstring(L, -1));
-    lua_pop(L, 1);
+    if (throw_error) {
+      return luaL_error(L, luaL_checkstring(L, -1));
+    } else {
+      Con_Error("%s", luaL_checkstring(L, -1));
+      lua_pop(L, 1);
+      return FALSE;
+    }
+  } else {
+    assert(lua_type(L, -1) != LUA_TNIL);
+    return TRUE;
+  }
+}
+
+bool_t f_parse_property(lua_State* L,
+                        lpProperty_t hProperty,
+                        lpcString_t value)
+{
+  assert(PROP_GetDesc(hProperty));
+  if (f_convert_string(L, PROP_GetDesc(hProperty), value, FALSE)) {
+    luaX_readProperty(L, -1, hProperty);
+    lua_pop(L, 1); // pop converted value
+    return TRUE;
+  } else {
     return FALSE;
   }
-  assert(lua_type(L, -1) != LUA_TNIL);
-  luaX_readProperty(L, -1, hProperty);
-  lua_pop(L, 1); // pop converted value
-  return TRUE;
 }
 
 static void

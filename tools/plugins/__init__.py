@@ -169,6 +169,12 @@ Axis = [
 	(re.compile(r"Border\.Radius\.(.+)Radius"),             r"Border\1Radius"),
 ]
 
+AxisConfig = {
+	"AlignmentShorthand_Axis0": "HorizontalAlignment",
+	"AlignmentShorthand_Axis1": "VerticalAlignment",
+	"AlignmentShorthand_Axis2": "DepthAlignment",
+}
+
 def property_name(name):
 	def conv_name(name):
 		for pat, repl in Axis:

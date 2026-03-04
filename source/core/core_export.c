@@ -26,20 +26,6 @@ void luaX_pushBindingMode(lua_State *L, eBindingMode_t value) {
 	assert(value >= 0 && value < 4);
 	lua_pushstring(L, _BindingMode[value]);
 }
-ORCA_API lpcString_t __strtoBindingMode(lpcString_t string, enum BindingMode* output) {
-	if (string == NULL) return FALSE;
-	if (isdigit(*string)) {
-		*output = strtod(string, (char**)&string);
-		return string;
-	} else for (const char **s = _BindingMode; *s; s++) {
-		if (!strcmp(string, *s)) {
-			*output = (enum BindingMode)(s - _BindingMode);
-			return string + strlen(*s);
-		}
-	}
-	Con_Error("Could not parse '%s' value of property BindingMode", string);
-	return string + strlen(string);
-}
 static const char *_PropertyAttribute[] = {"WholeProperty","ColorR","ColorG","ColorB","ColorA","VectorX","VectorY","VectorZ","VectorW",NULL};
 const char *PropertyAttributeToString(enum PropertyAttribute value) {
 	assert(value >= 0 && value < 9);
@@ -51,20 +37,6 @@ ePropertyAttribute_t luaX_checkPropertyAttribute(lua_State *L, int idx) {
 void luaX_pushPropertyAttribute(lua_State *L, ePropertyAttribute_t value) {
 	assert(value >= 0 && value < 9);
 	lua_pushstring(L, _PropertyAttribute[value]);
-}
-ORCA_API lpcString_t __strtoPropertyAttribute(lpcString_t string, enum PropertyAttribute* output) {
-	if (string == NULL) return FALSE;
-	if (isdigit(*string)) {
-		*output = strtod(string, (char**)&string);
-		return string;
-	} else for (const char **s = _PropertyAttribute; *s; s++) {
-		if (!strcmp(string, *s)) {
-			*output = (enum PropertyAttribute)(s - _PropertyAttribute);
-			return string + strlen(*s);
-		}
-	}
-	Con_Error("Could not parse '%s' value of property PropertyAttribute", string);
-	return string + strlen(string);
 }
 lpObject_t luaX_checkObject(lua_State *L, int idx);
 int f_new_Object(lua_State *L);
@@ -481,192 +453,68 @@ static int f_Object_rebuild(lua_State *L) {
 }
 int f_Object___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x5c6e1222: // clear
-		lua_pushcfunction(L, f_Object_clear);
-		return 1;
-	case 0xd71034dc: // awake
-		lua_pushcfunction(L, f_Object_awake);
-		return 1;
-	case 0xe79c66b0: // animate
-		lua_pushcfunction(L, f_Object_animate);
-		return 1;
-	case 0xd43670bc: // loadPrefabs
-		lua_pushcfunction(L, f_Object_loadPrefabs);
-		return 1;
-	case 0xaac1a1fc: // emitPropertyChangedEvents
-		lua_pushcfunction(L, f_Object_emitPropertyChangedEvents);
-		return 1;
-	case 0x8aef52d9: // updateProperties
-		lua_pushcfunction(L, f_Object_updateProperties);
-		return 1;
-	case 0x37fc391a: // updateLayout
-		lua_pushcfunction(L, f_Object_updateLayout);
-		return 1;
-	case 0x14e0dba2: // addChild
-		lua_pushcfunction(L, f_Object_addChild);
-		return 1;
-	case 0x90d2bfd5: // removeFromParent
-		lua_pushcfunction(L, f_Object_removeFromParent);
-		return 1;
-	case 0x95c0f780: // findChild
-		lua_pushcfunction(L, f_Object_findChild);
-		return 1;
-	case 0x46310439: // dispatchEvent
-		lua_pushcfunction(L, f_Object_dispatchEvent);
-		return 1;
-	case 0x2a7c8ec6: // postMessage
-		lua_pushcfunction(L, f_Object_postMessage);
-		return 1;
-	case 0xc2cbd863: // play
-		lua_pushcfunction(L, f_Object_play);
-		return 1;
-	case 0x417e6e85: // setFocus
-		lua_pushcfunction(L, f_Object_setFocus);
-		return 1;
-	case 0x67e26693: // doTween
-		lua_pushcfunction(L, f_Object_doTween);
-		return 1;
-	case 0x913ef93c: // addStyleSheet
-		lua_pushcfunction(L, f_Object_addStyleSheet);
-		return 1;
-	case 0x874125d8: // setTimer
-		lua_pushcfunction(L, f_Object_setTimer);
-		return 1;
-	case 0x1f1b2f34: // getName
-		lua_pushcfunction(L, f_Object_getName);
-		return 1;
-	case 0xbac20468: // setName
-		lua_pushcfunction(L, f_Object_setName);
-		return 1;
-	case 0xcb556952: // getClassName
-		lua_pushcfunction(L, f_Object_getClassName);
-		return 1;
-	case 0xbfdb0d64: // checkName
-		lua_pushcfunction(L, f_Object_checkName);
-		return 1;
-	case 0xccee3724: // findByPath
-		lua_pushcfunction(L, f_Object_findByPath);
-		return 1;
-	case 0x871aec88: // getStyle
-		lua_pushcfunction(L, f_Object_getStyle);
-		return 1;
-	case 0x08819dd4: // setStyle
-		lua_pushcfunction(L, f_Object_setStyle);
-		return 1;
-	case 0xd2bdfc55: // findCallbackForID
-		lua_pushcfunction(L, f_Object_findCallbackForID);
-		return 1;
-	case 0xc431c97d: // applyStyles
-		lua_pushcfunction(L, f_Object_applyStyles);
-		return 1;
-	case 0xd93fb1e1: // setDirty
-		lua_pushcfunction(L, f_Object_setDirty);
-		return 1;
-	case 0xc98e64d7: // getParent
-		lua_pushcfunction(L, f_Object_getParent);
-		return 1;
-	case 0x2f984b2b: // getFirstChild
-		lua_pushcfunction(L, f_Object_getFirstChild);
-		return 1;
-	case 0xb6d23e36: // getNext
-		lua_pushcfunction(L, f_Object_getNext);
-		return 1;
-	case 0x9184f6db: // getRoot
-		lua_pushcfunction(L, f_Object_getRoot);
-		return 1;
-	case 0x17702518: // findChildByID
-		lua_pushcfunction(L, f_Object_findChildByID);
-		return 1;
-	case 0xc2b337cf: // findChildByAlias
-		lua_pushcfunction(L, f_Object_findChildByAlias);
-		return 1;
-	case 0x97139044: // getSourceFile
-		lua_pushcfunction(L, f_Object_getSourceFile);
-		return 1;
-	case 0xc768d4f5: // getTextContent
-		lua_pushcfunction(L, f_Object_getTextContent);
-		return 1;
-	case 0xbdbd90e5: // getTimestamp
-		lua_pushcfunction(L, f_Object_getTimestamp);
-		return 1;
-	case 0x8bb4da01: // getAlias
-		lua_pushcfunction(L, f_Object_getAlias);
-		return 1;
-	case 0x9d1d3b0e: // getFlags
-		lua_pushcfunction(L, f_Object_getFlags);
-		return 1;
-	case 0x40443eda: // setFlags
-		lua_pushcfunction(L, f_Object_setFlags);
-		return 1;
-	case 0xda6c15fc: // getIdentifier
-		lua_pushcfunction(L, f_Object_getIdentifier);
-		return 1;
-	case 0x02e6a110: // getModal
-		lua_pushcfunction(L, f_Object_getModal);
-		return 1;
-	case 0xeb276564: // setModal
-		lua_pushcfunction(L, f_Object_setModal);
-		return 1;
-	case 0xc86983e2: // isFocused
-		lua_pushcfunction(L, f_Object_isFocused);
-		return 1;
-	case 0x37b88e13: // setHover
-		lua_pushcfunction(L, f_Object_setHover);
-		return 1;
-	case 0xfb656971: // setTextContent
-		lua_pushcfunction(L, f_Object_setTextContent);
-		return 1;
-	case 0x337ee4d0: // setSourceFile
-		lua_pushcfunction(L, f_Object_setSourceFile);
-		return 1;
-	case 0x72d988f6: // setClassName
-		lua_pushcfunction(L, f_Object_setClassName);
-		return 1;
-	case 0xfa1508f5: // findParentOfClass
-		lua_pushcfunction(L, f_Object_findParentOfClass);
-		return 1;
-	case 0x23386cab: // findChildOfClass
-		lua_pushcfunction(L, f_Object_findChildOfClass);
-		return 1;
-	case 0x57a31c36: // isPrefabView
-		lua_pushcfunction(L, f_Object_isPrefabView);
-		return 1;
-	case 0xf53c8710: // addAlias
-		lua_pushcfunction(L, f_Object_addAlias);
-		return 1;
-	case 0xcf2ffd7c: // assignAliases
-		lua_pushcfunction(L, f_Object_assignAliases);
-		return 1;
-	case 0xef604934: // parseClassAttribute
-		lua_pushcfunction(L, f_Object_parseClassAttribute);
-		return 1;
-	case 0x2d3d15fb: // setAnimation
-		lua_pushcfunction(L, f_Object_setAnimation);
-		return 1;
-	case 0x8b9c8f7f: // getAnimation
-		lua_pushcfunction(L, f_Object_getAnimation);
-		return 1;
-	case 0xbb6beb62: // addAnimation
-		lua_pushcfunction(L, f_Object_addAnimation);
-		return 1;
-	case 0xafe50917: // getInteger
-		lua_pushcfunction(L, f_Object_getInteger);
-		return 1;
-	case 0xf2167b80: // findImplicitProperty
-		lua_pushcfunction(L, f_Object_findImplicitProperty);
-		return 1;
-	case 0x0c3ece1f: // findExplicitProperty
-		lua_pushcfunction(L, f_Object_findExplicitProperty);
-		return 1;
-	case 0x22b2f99b: // attachPropertyProgram
-		lua_pushcfunction(L, f_Object_attachPropertyProgram);
-		return 1;
-	case 0xfc8bdeb9: // findPropertyByPath
-		lua_pushcfunction(L, f_Object_findPropertyByPath);
-		return 1;
-	case 0x7e809e90: // rebuild
-		lua_pushcfunction(L, f_Object_rebuild);
-		return 1;
+	case 0x5c6e1222: lua_pushcfunction(L, f_Object_clear); return 1; // clear
+	case 0xd71034dc: lua_pushcfunction(L, f_Object_awake); return 1; // awake
+	case 0xe79c66b0: lua_pushcfunction(L, f_Object_animate); return 1; // animate
+	case 0xd43670bc: lua_pushcfunction(L, f_Object_loadPrefabs); return 1; // loadPrefabs
+	case 0xaac1a1fc: lua_pushcfunction(L, f_Object_emitPropertyChangedEvents); return 1; // emitPropertyChangedEvents
+	case 0x8aef52d9: lua_pushcfunction(L, f_Object_updateProperties); return 1; // updateProperties
+	case 0x37fc391a: lua_pushcfunction(L, f_Object_updateLayout); return 1; // updateLayout
+	case 0x14e0dba2: lua_pushcfunction(L, f_Object_addChild); return 1; // addChild
+	case 0x90d2bfd5: lua_pushcfunction(L, f_Object_removeFromParent); return 1; // removeFromParent
+	case 0x95c0f780: lua_pushcfunction(L, f_Object_findChild); return 1; // findChild
+	case 0x46310439: lua_pushcfunction(L, f_Object_dispatchEvent); return 1; // dispatchEvent
+	case 0x2a7c8ec6: lua_pushcfunction(L, f_Object_postMessage); return 1; // postMessage
+	case 0xc2cbd863: lua_pushcfunction(L, f_Object_play); return 1; // play
+	case 0x417e6e85: lua_pushcfunction(L, f_Object_setFocus); return 1; // setFocus
+	case 0x67e26693: lua_pushcfunction(L, f_Object_doTween); return 1; // doTween
+	case 0x913ef93c: lua_pushcfunction(L, f_Object_addStyleSheet); return 1; // addStyleSheet
+	case 0x874125d8: lua_pushcfunction(L, f_Object_setTimer); return 1; // setTimer
+	case 0x1f1b2f34: lua_pushcfunction(L, f_Object_getName); return 1; // getName
+	case 0xbac20468: lua_pushcfunction(L, f_Object_setName); return 1; // setName
+	case 0xcb556952: lua_pushcfunction(L, f_Object_getClassName); return 1; // getClassName
+	case 0xbfdb0d64: lua_pushcfunction(L, f_Object_checkName); return 1; // checkName
+	case 0xccee3724: lua_pushcfunction(L, f_Object_findByPath); return 1; // findByPath
+	case 0x871aec88: lua_pushcfunction(L, f_Object_getStyle); return 1; // getStyle
+	case 0x08819dd4: lua_pushcfunction(L, f_Object_setStyle); return 1; // setStyle
+	case 0xd2bdfc55: lua_pushcfunction(L, f_Object_findCallbackForID); return 1; // findCallbackForID
+	case 0xc431c97d: lua_pushcfunction(L, f_Object_applyStyles); return 1; // applyStyles
+	case 0xd93fb1e1: lua_pushcfunction(L, f_Object_setDirty); return 1; // setDirty
+	case 0xc98e64d7: lua_pushcfunction(L, f_Object_getParent); return 1; // getParent
+	case 0x2f984b2b: lua_pushcfunction(L, f_Object_getFirstChild); return 1; // getFirstChild
+	case 0xb6d23e36: lua_pushcfunction(L, f_Object_getNext); return 1; // getNext
+	case 0x9184f6db: lua_pushcfunction(L, f_Object_getRoot); return 1; // getRoot
+	case 0x17702518: lua_pushcfunction(L, f_Object_findChildByID); return 1; // findChildByID
+	case 0xc2b337cf: lua_pushcfunction(L, f_Object_findChildByAlias); return 1; // findChildByAlias
+	case 0x97139044: lua_pushcfunction(L, f_Object_getSourceFile); return 1; // getSourceFile
+	case 0xc768d4f5: lua_pushcfunction(L, f_Object_getTextContent); return 1; // getTextContent
+	case 0xbdbd90e5: lua_pushcfunction(L, f_Object_getTimestamp); return 1; // getTimestamp
+	case 0x8bb4da01: lua_pushcfunction(L, f_Object_getAlias); return 1; // getAlias
+	case 0x9d1d3b0e: lua_pushcfunction(L, f_Object_getFlags); return 1; // getFlags
+	case 0x40443eda: lua_pushcfunction(L, f_Object_setFlags); return 1; // setFlags
+	case 0xda6c15fc: lua_pushcfunction(L, f_Object_getIdentifier); return 1; // getIdentifier
+	case 0x02e6a110: lua_pushcfunction(L, f_Object_getModal); return 1; // getModal
+	case 0xeb276564: lua_pushcfunction(L, f_Object_setModal); return 1; // setModal
+	case 0xc86983e2: lua_pushcfunction(L, f_Object_isFocused); return 1; // isFocused
+	case 0x37b88e13: lua_pushcfunction(L, f_Object_setHover); return 1; // setHover
+	case 0xfb656971: lua_pushcfunction(L, f_Object_setTextContent); return 1; // setTextContent
+	case 0x337ee4d0: lua_pushcfunction(L, f_Object_setSourceFile); return 1; // setSourceFile
+	case 0x72d988f6: lua_pushcfunction(L, f_Object_setClassName); return 1; // setClassName
+	case 0xfa1508f5: lua_pushcfunction(L, f_Object_findParentOfClass); return 1; // findParentOfClass
+	case 0x23386cab: lua_pushcfunction(L, f_Object_findChildOfClass); return 1; // findChildOfClass
+	case 0x57a31c36: lua_pushcfunction(L, f_Object_isPrefabView); return 1; // isPrefabView
+	case 0xf53c8710: lua_pushcfunction(L, f_Object_addAlias); return 1; // addAlias
+	case 0xcf2ffd7c: lua_pushcfunction(L, f_Object_assignAliases); return 1; // assignAliases
+	case 0xef604934: lua_pushcfunction(L, f_Object_parseClassAttribute); return 1; // parseClassAttribute
+	case 0x2d3d15fb: lua_pushcfunction(L, f_Object_setAnimation); return 1; // setAnimation
+	case 0x8b9c8f7f: lua_pushcfunction(L, f_Object_getAnimation); return 1; // getAnimation
+	case 0xbb6beb62: lua_pushcfunction(L, f_Object_addAnimation); return 1; // addAnimation
+	case 0xafe50917: lua_pushcfunction(L, f_Object_getInteger); return 1; // getInteger
+	case 0xf2167b80: lua_pushcfunction(L, f_Object_findImplicitProperty); return 1; // findImplicitProperty
+	case 0x0c3ece1f: lua_pushcfunction(L, f_Object_findExplicitProperty); return 1; // findExplicitProperty
+	case 0x22b2f99b: lua_pushcfunction(L, f_Object_attachPropertyProgram); return 1; // attachPropertyProgram
+	case 0xfc8bdeb9: lua_pushcfunction(L, f_Object_findPropertyByPath); return 1; // findPropertyByPath
+	case 0x7e809e90: lua_pushcfunction(L, f_Object_rebuild); return 1; // rebuild
 	}
 	return 0;
 }
@@ -706,20 +554,6 @@ void luaX_pushDataType(lua_State *L, eDataType_t value) {
 	assert(value >= 0 && value < 11);
 	lua_pushstring(L, _DataType[value]);
 }
-ORCA_API lpcString_t __strtoDataType(lpcString_t string, enum DataType* output) {
-	if (string == NULL) return FALSE;
-	if (isdigit(*string)) {
-		*output = strtod(string, (char**)&string);
-		return string;
-	} else for (const char **s = _DataType; *s; s++) {
-		if (!strcmp(string, *s)) {
-			*output = (enum DataType)(s - _DataType);
-			return string + strlen(*s);
-		}
-	}
-	Con_Error("Could not parse '%s' value of property DataType", string);
-	return string + strlen(string);
-}
 void luaX_pushPropertyEnumValue(lua_State *L, lpcPropertyEnumValue_t data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	lpPropertyEnumValue_t self = lua_newuserdata(L, sizeof(struct PropertyEnumValue));
@@ -735,14 +569,9 @@ static int f_new_PropertyEnumValue(lua_State *L) {
 	memset(self, 0, sizeof(struct PropertyEnumValue));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_getfield(L, 1, "Name");
-		strncpy(self->Name, luaL_optstring(L, -1, ""), sizeof(self->Name));
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "Value");
-		self->Value = lua_tonumber(L, -1);
-		lua_pop(L, 1);
+		lua_pop(L, (lua_getfield(L, 1, "Name"), strncpy(self->Name, luaL_optstring(L, -1, ""), sizeof(self->Name)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Value"), self->Value = lua_tonumber(L, -1), 1));
 	} else {
-		strncpy(self->Name, luaL_checkstring(L, 1), sizeof(self->Name));
 		self->Value = luaL_checknumber(L, 2);
 	}
 	return 1;
@@ -753,39 +582,31 @@ static int f_PropertyEnumValue___call(lua_State *L) {
 }
 int f_PropertyEnumValue___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x0fe07306: // Name
-		lua_pushstring(L, luaX_checkPropertyEnumValue(L, 1)->Name);
-		return 1;
-	case 0xd147f96a: // Value
-		lua_pushnumber(L, luaX_checkPropertyEnumValue(L, 1)->Value);
-		return 1;
+	case 0x0fe07306: lua_pushstring(L, luaX_checkPropertyEnumValue(L, 1)->Name); return 1; // Name
+	case 0xd147f96a: lua_pushnumber(L, luaX_checkPropertyEnumValue(L, 1)->Value); return 1; // Value
 	}
 	return luaL_error(L, "Unknown field in PropertyEnumValue: %s", luaL_checkstring(L, 2));
 }
 int f_PropertyEnumValue___newindex(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x0fe07306: // Name
-		strncpy(luaX_checkPropertyEnumValue(L, 1)->Name, luaL_checkstring(L, 3), sizeof(luaX_checkPropertyEnumValue(L, 1)->Name));
-		return 0;
-	case 0xd147f96a: // Value
-		luaX_checkPropertyEnumValue(L, 1)->Value = luaL_checknumber(L, 3);
-		return 0;
+	case 0x0fe07306: strncpy(luaX_checkPropertyEnumValue(L, 1)->Name, luaL_checkstring(L, 3), sizeof(luaX_checkPropertyEnumValue(L, 1)->Name)); return 0; // Name
+	case 0xd147f96a: luaX_checkPropertyEnumValue(L, 1)->Value = luaL_checknumber(L, 3); return 0; // Value
 	}
 	return luaL_error(L, "Unknown field in PropertyEnumValue: %s", luaL_checkstring(L, 2));
 }
-ORCA_API lpcString_t __strtoPropertyEnumValue(lpcString_t str, lpPropertyEnumValue_t output) {
-	lpcString_t __strtofixed(lpcString_t, fixedString_t*);
-	lpcString_t __strtoint(lpcString_t, int32_t*);
-	str = __strtofixed(str, &output->Name);
-	str = __strtoint(str, &output->Value);
-	return str;
-}
+extern bool_t f_convert_string(lua_State*, lpcPropertyType_t, lpcString_t, bool_t);
 static int f_fromstring_PropertyEnumValue(lua_State *L) {
-	lpPropertyEnumValue_t self = lua_newuserdata(L, sizeof(struct PropertyEnumValue));
-	luaL_setmetatable(L, "PropertyEnumValue");
-	memset(self, 0, sizeof(struct PropertyEnumValue));
-	__strtoPropertyEnumValue(luaL_checkstring(L, 1), self);
-	return 1;
+	fixedString_t Name;
+	int32_t Value;
+	if (sscanf(luaL_checkstring(L, 1), "%s %d", Name, &Value) == 2) {
+		struct PropertyEnumValue _out = {0};
+		strncpy(_out.Name, Name, sizeof(_out.Name)); // Name
+		_out.Value = Value; // Value
+		luaX_pushPropertyEnumValue(L, &_out); // PropertyEnumValue
+		return 1;
+	} else {
+		return luaL_error(L, "Invalid PropertyEnumValue format: %s", luaL_checkstring(L, 1));
+	}
 }
 int luaopen_orca_PropertyEnumValue(lua_State *L) {
 	luaL_newmetatable(L, "PropertyEnumValue");
@@ -817,86 +638,27 @@ static int f_new_PropertyType(lua_State *L) {
 	memset(self, 0, sizeof(struct PropertyType));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_getfield(L, 1, "Name");
-		strncpy(self->Name, luaL_optstring(L, -1, ""), sizeof(self->Name));
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "Category");
-		strncpy(self->Category, luaL_optstring(L, -1, ""), sizeof(self->Category));
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "DataType");
-		self->DataType = lua_isnil(L, -1) ? 0 : luaX_checkDataType(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "DefaultValue");
-		strncpy(self->DefaultValue, luaL_optstring(L, -1, ""), sizeof(self->DefaultValue));
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "TypeString");
-		strncpy(self->TypeString, luaL_optstring(L, -1, ""), sizeof(self->TypeString));
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "AffectLayout");
-		self->AffectLayout = lua_toboolean(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "AffectRender");
-		self->AffectRender = lua_toboolean(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "IsReadOnly");
-		self->IsReadOnly = lua_toboolean(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "IsHidden");
-		self->IsHidden = lua_toboolean(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "IsInherited");
-		self->IsInherited = lua_toboolean(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "Key");
-		strncpy(self->Key, luaL_optstring(L, -1, ""), sizeof(self->Key));
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "Value");
-		strncpy(self->Value, luaL_optstring(L, -1, ""), sizeof(self->Value));
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "Step");
-		self->Step = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "UpperBound");
-		self->UpperBound = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "LowerBound");
-		self->LowerBound = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "ShortIdentifier");
-		self->ShortIdentifier = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "FullIdentifier");
-		self->FullIdentifier = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "Offset");
-		self->Offset = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "DataSize");
-		self->DataSize = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		lua_getfield(L, 1, "IsArray");
-		self->IsArray = lua_toboolean(L, -1);
-		lua_pop(L, 1);
+		lua_pop(L, (lua_getfield(L, 1, "Name"), strncpy(self->Name, luaL_optstring(L, -1, ""), sizeof(self->Name)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Category"), strncpy(self->Category, luaL_optstring(L, -1, ""), sizeof(self->Category)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "DataType"), self->DataType = lua_isnil(L, -1) ? 0 : luaX_checkDataType(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "DefaultValue"), strncpy(self->DefaultValue, luaL_optstring(L, -1, ""), sizeof(self->DefaultValue)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "TypeString"), strncpy(self->TypeString, luaL_optstring(L, -1, ""), sizeof(self->TypeString)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "AffectLayout"), self->AffectLayout = lua_toboolean(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "AffectRender"), self->AffectRender = lua_toboolean(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "IsReadOnly"), self->IsReadOnly = lua_toboolean(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "IsHidden"), self->IsHidden = lua_toboolean(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "IsInherited"), self->IsInherited = lua_toboolean(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Key"), strncpy(self->Key, luaL_optstring(L, -1, ""), sizeof(self->Key)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Value"), strncpy(self->Value, luaL_optstring(L, -1, ""), sizeof(self->Value)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Step"), self->Step = lua_tonumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "UpperBound"), self->UpperBound = lua_tonumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "LowerBound"), self->LowerBound = lua_tonumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "ShortIdentifier"), self->ShortIdentifier = lua_tonumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "FullIdentifier"), self->FullIdentifier = lua_tonumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Offset"), self->Offset = lua_tonumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "DataSize"), self->DataSize = lua_tonumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "IsArray"), self->IsArray = lua_toboolean(L, -1), 1));
 	} else {
-		strncpy(self->Name, luaL_checkstring(L, 1), sizeof(self->Name));
-		strncpy(self->Category, luaL_checkstring(L, 2), sizeof(self->Category));
-		self->DataType = luaX_checkDataType(L, 3);
-		strncpy(self->DefaultValue, luaL_checkstring(L, 4), sizeof(self->DefaultValue));
-		strncpy(self->TypeString, luaL_checkstring(L, 5), sizeof(self->TypeString));
-		self->AffectLayout = lua_toboolean(L, 6);
-		self->AffectRender = lua_toboolean(L, 7);
-		self->IsReadOnly = lua_toboolean(L, 8);
-		self->IsHidden = lua_toboolean(L, 9);
-		self->IsInherited = lua_toboolean(L, 10);
-		strncpy(self->Key, luaL_checkstring(L, 11), sizeof(self->Key));
-		strncpy(self->Value, luaL_checkstring(L, 12), sizeof(self->Value));
-		self->Step = luaL_checknumber(L, 13);
-		self->UpperBound = luaL_checknumber(L, 14);
-		self->LowerBound = luaL_checknumber(L, 15);
-		self->ShortIdentifier = luaL_checknumber(L, 16);
-		self->FullIdentifier = luaL_checknumber(L, 17);
-		self->Offset = luaL_checknumber(L, 18);
-		self->DataSize = luaL_checknumber(L, 19);
 		self->IsArray = lua_toboolean(L, 20);
 	}
 	return 1;
@@ -907,174 +669,58 @@ static int f_PropertyType___call(lua_State *L) {
 }
 int f_PropertyType___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x0fe07306: // Name
-		lua_pushstring(L, luaX_checkPropertyType(L, 1)->Name);
-		return 1;
-	case 0xafb3e591: // Category
-		lua_pushstring(L, luaX_checkPropertyType(L, 1)->Category);
-		return 1;
-	case 0x840d6c6d: // DataType
-		luaX_pushDataType(L, luaX_checkPropertyType(L, 1)->DataType);
-		return 1;
-	case 0xcd093f9f: // DefaultValue
-		lua_pushstring(L, luaX_checkPropertyType(L, 1)->DefaultValue);
-		return 1;
-	case 0xdf6c0780: // TypeString
-		lua_pushstring(L, luaX_checkPropertyType(L, 1)->TypeString);
-		return 1;
-	case 0xd2d3694e: // AffectLayout
-		lua_pushboolean(L, luaX_checkPropertyType(L, 1)->AffectLayout);
-		return 1;
-	case 0xcae7b378: // AffectRender
-		lua_pushboolean(L, luaX_checkPropertyType(L, 1)->AffectRender);
-		return 1;
-	case 0xd9ee91e7: // IsReadOnly
-		lua_pushboolean(L, luaX_checkPropertyType(L, 1)->IsReadOnly);
-		return 1;
-	case 0x3bf0d5c9: // IsHidden
-		lua_pushboolean(L, luaX_checkPropertyType(L, 1)->IsHidden);
-		return 1;
-	case 0x26e59151: // IsInherited
-		lua_pushboolean(L, luaX_checkPropertyType(L, 1)->IsInherited);
-		return 1;
-	case 0xcd1ac90c: // Key
-		lua_pushstring(L, luaX_checkPropertyType(L, 1)->Key);
-		return 1;
-	case 0xd147f96a: // Value
-		lua_pushstring(L, luaX_checkPropertyType(L, 1)->Value);
-		return 1;
-	case 0x4771f92f: // Step
-		lua_pushnumber(L, luaX_checkPropertyType(L, 1)->Step);
-		return 1;
-	case 0x48b88645: // UpperBound
-		lua_pushnumber(L, luaX_checkPropertyType(L, 1)->UpperBound);
-		return 1;
-	case 0xccc57b3a: // LowerBound
-		lua_pushnumber(L, luaX_checkPropertyType(L, 1)->LowerBound);
-		return 1;
-	case 0x0f76864e: // ShortIdentifier
-		lua_pushnumber(L, luaX_checkPropertyType(L, 1)->ShortIdentifier);
-		return 1;
-	case 0x429417cf: // FullIdentifier
-		lua_pushnumber(L, luaX_checkPropertyType(L, 1)->FullIdentifier);
-		return 1;
-	case 0x8995c7ea: // Offset
-		lua_pushnumber(L, luaX_checkPropertyType(L, 1)->Offset);
-		return 1;
-	case 0x58ff2a7c: // DataSize
-		lua_pushnumber(L, luaX_checkPropertyType(L, 1)->DataSize);
-		return 1;
-	case 0x660880b6: // IsArray
-		lua_pushboolean(L, luaX_checkPropertyType(L, 1)->IsArray);
-		return 1;
+	case 0x0fe07306: lua_pushstring(L, luaX_checkPropertyType(L, 1)->Name); return 1; // Name
+	case 0xafb3e591: lua_pushstring(L, luaX_checkPropertyType(L, 1)->Category); return 1; // Category
+	case 0x840d6c6d: luaX_pushDataType(L, luaX_checkPropertyType(L, 1)->DataType); return 1; // DataType
+	case 0xcd093f9f: lua_pushstring(L, luaX_checkPropertyType(L, 1)->DefaultValue); return 1; // DefaultValue
+	case 0xdf6c0780: lua_pushstring(L, luaX_checkPropertyType(L, 1)->TypeString); return 1; // TypeString
+	case 0xd2d3694e: lua_pushboolean(L, luaX_checkPropertyType(L, 1)->AffectLayout); return 1; // AffectLayout
+	case 0xcae7b378: lua_pushboolean(L, luaX_checkPropertyType(L, 1)->AffectRender); return 1; // AffectRender
+	case 0xd9ee91e7: lua_pushboolean(L, luaX_checkPropertyType(L, 1)->IsReadOnly); return 1; // IsReadOnly
+	case 0x3bf0d5c9: lua_pushboolean(L, luaX_checkPropertyType(L, 1)->IsHidden); return 1; // IsHidden
+	case 0x26e59151: lua_pushboolean(L, luaX_checkPropertyType(L, 1)->IsInherited); return 1; // IsInherited
+	case 0xcd1ac90c: lua_pushstring(L, luaX_checkPropertyType(L, 1)->Key); return 1; // Key
+	case 0xd147f96a: lua_pushstring(L, luaX_checkPropertyType(L, 1)->Value); return 1; // Value
+	case 0x4771f92f: lua_pushnumber(L, luaX_checkPropertyType(L, 1)->Step); return 1; // Step
+	case 0x48b88645: lua_pushnumber(L, luaX_checkPropertyType(L, 1)->UpperBound); return 1; // UpperBound
+	case 0xccc57b3a: lua_pushnumber(L, luaX_checkPropertyType(L, 1)->LowerBound); return 1; // LowerBound
+	case 0x0f76864e: lua_pushnumber(L, luaX_checkPropertyType(L, 1)->ShortIdentifier); return 1; // ShortIdentifier
+	case 0x429417cf: lua_pushnumber(L, luaX_checkPropertyType(L, 1)->FullIdentifier); return 1; // FullIdentifier
+	case 0x8995c7ea: lua_pushnumber(L, luaX_checkPropertyType(L, 1)->Offset); return 1; // Offset
+	case 0x58ff2a7c: lua_pushnumber(L, luaX_checkPropertyType(L, 1)->DataSize); return 1; // DataSize
+	case 0x660880b6: lua_pushboolean(L, luaX_checkPropertyType(L, 1)->IsArray); return 1; // IsArray
 	}
 	return luaL_error(L, "Unknown field in PropertyType: %s", luaL_checkstring(L, 2));
 }
 int f_PropertyType___newindex(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x0fe07306: // Name
-		strncpy(luaX_checkPropertyType(L, 1)->Name, luaL_checkstring(L, 3), sizeof(luaX_checkPropertyType(L, 1)->Name));
-		return 0;
-	case 0xafb3e591: // Category
-		strncpy(luaX_checkPropertyType(L, 1)->Category, luaL_checkstring(L, 3), sizeof(luaX_checkPropertyType(L, 1)->Category));
-		return 0;
-	case 0x840d6c6d: // DataType
-		luaX_checkPropertyType(L, 1)->DataType = luaX_checkDataType(L, 3);
-		return 0;
-	case 0xcd093f9f: // DefaultValue
-		strncpy(luaX_checkPropertyType(L, 1)->DefaultValue, luaL_checkstring(L, 3), sizeof(luaX_checkPropertyType(L, 1)->DefaultValue));
-		return 0;
-	case 0xdf6c0780: // TypeString
-		strncpy(luaX_checkPropertyType(L, 1)->TypeString, luaL_checkstring(L, 3), sizeof(luaX_checkPropertyType(L, 1)->TypeString));
-		return 0;
-	case 0xd2d3694e: // AffectLayout
-		luaX_checkPropertyType(L, 1)->AffectLayout = lua_toboolean(L, 3);
-		return 0;
-	case 0xcae7b378: // AffectRender
-		luaX_checkPropertyType(L, 1)->AffectRender = lua_toboolean(L, 3);
-		return 0;
-	case 0xd9ee91e7: // IsReadOnly
-		luaX_checkPropertyType(L, 1)->IsReadOnly = lua_toboolean(L, 3);
-		return 0;
-	case 0x3bf0d5c9: // IsHidden
-		luaX_checkPropertyType(L, 1)->IsHidden = lua_toboolean(L, 3);
-		return 0;
-	case 0x26e59151: // IsInherited
-		luaX_checkPropertyType(L, 1)->IsInherited = lua_toboolean(L, 3);
-		return 0;
-	case 0xcd1ac90c: // Key
-		strncpy(luaX_checkPropertyType(L, 1)->Key, luaL_checkstring(L, 3), sizeof(luaX_checkPropertyType(L, 1)->Key));
-		return 0;
-	case 0xd147f96a: // Value
-		strncpy(luaX_checkPropertyType(L, 1)->Value, luaL_checkstring(L, 3), sizeof(luaX_checkPropertyType(L, 1)->Value));
-		return 0;
-	case 0x4771f92f: // Step
-		luaX_checkPropertyType(L, 1)->Step = luaL_checknumber(L, 3);
-		return 0;
-	case 0x48b88645: // UpperBound
-		luaX_checkPropertyType(L, 1)->UpperBound = luaL_checknumber(L, 3);
-		return 0;
-	case 0xccc57b3a: // LowerBound
-		luaX_checkPropertyType(L, 1)->LowerBound = luaL_checknumber(L, 3);
-		return 0;
-	case 0x0f76864e: // ShortIdentifier
-		luaX_checkPropertyType(L, 1)->ShortIdentifier = luaL_checknumber(L, 3);
-		return 0;
-	case 0x429417cf: // FullIdentifier
-		luaX_checkPropertyType(L, 1)->FullIdentifier = luaL_checknumber(L, 3);
-		return 0;
-	case 0x8995c7ea: // Offset
-		luaX_checkPropertyType(L, 1)->Offset = luaL_checknumber(L, 3);
-		return 0;
-	case 0x58ff2a7c: // DataSize
-		luaX_checkPropertyType(L, 1)->DataSize = luaL_checknumber(L, 3);
-		return 0;
-	case 0x660880b6: // IsArray
-		luaX_checkPropertyType(L, 1)->IsArray = lua_toboolean(L, 3);
-		return 0;
+	case 0x0fe07306: strncpy(luaX_checkPropertyType(L, 1)->Name, luaL_checkstring(L, 3), sizeof(luaX_checkPropertyType(L, 1)->Name)); return 0; // Name
+	case 0xafb3e591: strncpy(luaX_checkPropertyType(L, 1)->Category, luaL_checkstring(L, 3), sizeof(luaX_checkPropertyType(L, 1)->Category)); return 0; // Category
+	case 0x840d6c6d: luaX_checkPropertyType(L, 1)->DataType = luaX_checkDataType(L, 3); return 0; // DataType
+	case 0xcd093f9f: strncpy(luaX_checkPropertyType(L, 1)->DefaultValue, luaL_checkstring(L, 3), sizeof(luaX_checkPropertyType(L, 1)->DefaultValue)); return 0; // DefaultValue
+	case 0xdf6c0780: strncpy(luaX_checkPropertyType(L, 1)->TypeString, luaL_checkstring(L, 3), sizeof(luaX_checkPropertyType(L, 1)->TypeString)); return 0; // TypeString
+	case 0xd2d3694e: luaX_checkPropertyType(L, 1)->AffectLayout = lua_toboolean(L, 3); return 0; // AffectLayout
+	case 0xcae7b378: luaX_checkPropertyType(L, 1)->AffectRender = lua_toboolean(L, 3); return 0; // AffectRender
+	case 0xd9ee91e7: luaX_checkPropertyType(L, 1)->IsReadOnly = lua_toboolean(L, 3); return 0; // IsReadOnly
+	case 0x3bf0d5c9: luaX_checkPropertyType(L, 1)->IsHidden = lua_toboolean(L, 3); return 0; // IsHidden
+	case 0x26e59151: luaX_checkPropertyType(L, 1)->IsInherited = lua_toboolean(L, 3); return 0; // IsInherited
+	case 0xcd1ac90c: strncpy(luaX_checkPropertyType(L, 1)->Key, luaL_checkstring(L, 3), sizeof(luaX_checkPropertyType(L, 1)->Key)); return 0; // Key
+	case 0xd147f96a: strncpy(luaX_checkPropertyType(L, 1)->Value, luaL_checkstring(L, 3), sizeof(luaX_checkPropertyType(L, 1)->Value)); return 0; // Value
+	case 0x4771f92f: luaX_checkPropertyType(L, 1)->Step = luaL_checknumber(L, 3); return 0; // Step
+	case 0x48b88645: luaX_checkPropertyType(L, 1)->UpperBound = luaL_checknumber(L, 3); return 0; // UpperBound
+	case 0xccc57b3a: luaX_checkPropertyType(L, 1)->LowerBound = luaL_checknumber(L, 3); return 0; // LowerBound
+	case 0x0f76864e: luaX_checkPropertyType(L, 1)->ShortIdentifier = luaL_checknumber(L, 3); return 0; // ShortIdentifier
+	case 0x429417cf: luaX_checkPropertyType(L, 1)->FullIdentifier = luaL_checknumber(L, 3); return 0; // FullIdentifier
+	case 0x8995c7ea: luaX_checkPropertyType(L, 1)->Offset = luaL_checknumber(L, 3); return 0; // Offset
+	case 0x58ff2a7c: luaX_checkPropertyType(L, 1)->DataSize = luaL_checknumber(L, 3); return 0; // DataSize
+	case 0x660880b6: luaX_checkPropertyType(L, 1)->IsArray = lua_toboolean(L, 3); return 0; // IsArray
 	}
 	return luaL_error(L, "Unknown field in PropertyType: %s", luaL_checkstring(L, 2));
-}
-ORCA_API lpcString_t __strtoPropertyType(lpcString_t str, lpPropertyType_t output) {
-	lpcString_t __strtoDataType(lpcString_t, enum DataType*);
-	lpcString_t __strtobool(lpcString_t, bool_t*);
-	lpcString_t __strtofixed(lpcString_t, fixedString_t*);
-	lpcString_t __strtofloat(lpcString_t, float*);
-	lpcString_t __strtouint(lpcString_t, uint32_t*);
-	str = __strtofixed(str, &output->Name);
-	str = __strtofixed(str, &output->Category);
-	str = __strtoDataType(str, &output->DataType);
-	str = __strtofixed(str, &output->DefaultValue);
-	str = __strtofixed(str, &output->TypeString);
-	str = __strtobool(str, &output->AffectLayout);
-	str = __strtobool(str, &output->AffectRender);
-	str = __strtobool(str, &output->IsReadOnly);
-	str = __strtobool(str, &output->IsHidden);
-	str = __strtobool(str, &output->IsInherited);
-	str = __strtofixed(str, &output->Key);
-	str = __strtofixed(str, &output->Value);
-	str = __strtofloat(str, &output->Step);
-	str = __strtofloat(str, &output->UpperBound);
-	str = __strtofloat(str, &output->LowerBound);
-	str = __strtouint(str, &output->ShortIdentifier);
-	str = __strtouint(str, &output->FullIdentifier);
-	str = __strtouint(str, &output->Offset);
-	str = __strtouint(str, &output->DataSize);
-	str = __strtobool(str, &output->IsArray);
-	return str;
-}
-static int f_fromstring_PropertyType(lua_State *L) {
-	lpPropertyType_t self = lua_newuserdata(L, sizeof(struct PropertyType));
-	luaL_setmetatable(L, "PropertyType");
-	memset(self, 0, sizeof(struct PropertyType));
-	__strtoPropertyType(luaL_checkstring(L, 1), self);
-	return 1;
 }
 int luaopen_orca_PropertyType(lua_State *L) {
 	luaL_newmetatable(L, "PropertyType");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_PropertyType },
-		{ "fromstring", f_fromstring_PropertyType },
 		{ "__newindex", f_PropertyType___newindex },
 		{ "__index", f_PropertyType___index },
 		{ NULL, NULL },
