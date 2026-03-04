@@ -235,6 +235,17 @@ f_load_object(lua_State* L,
               lpcString_t type_string,
               bool_t throw_error)
 {
+  // First, try a pure C workspace lookup — no Lua involved.
+  extern lpObject_t FS_GetWorkspace(void);
+  lpObject_t workspace = FS_GetWorkspace();
+  if (workspace) {
+    lpObject_t obj = OBJ_FindByPath(workspace, path);
+    if (obj) {
+      luaX_pushObject(L, obj);
+      return TRUE;
+    }
+  }
+  // Fall back to Lua require() for objects that live in Lua modules.
   lua_getglobal(L, "require");
   lua_pushstring(L, path);
   if (lua_pcall(L, 1, 1, 0) == LUA_OK && !lua_isnil(L, -1)) {
