@@ -1599,39 +1599,3 @@ lpcString_t stristr(lpcString_t haystack, lpcString_t needle) {
   }
   return NULL; // No match
 }
-
-#include <libxml/parser.h>
-ORCA_API lpcString_t __strtofloat(lpcString_t str, float* output) {
-  *output = strtof(str, (char**)&str);
-  return str;
-}
-
-ORCA_API lpcString_t __strtofixed(lpcString_t str, fixedString_t* fixed) {
-  strncpy(*fixed, str, sizeof(fixedString_t));
-  return str + strlen(str);
-}
-
-ORCA_API lpcString_t __strtobool(lpcString_t str, bool_t* output) {
-  while (isspace(*str)) str++;
-  if (isdigit(*str)) {
-    *output = strtod(str, (char**)&str);
-  } else if (!strcmp(str, "true")) {
-    *output = TRUE;
-    str += 4;
-  } else if (!strcmp(str, "false")) {
-    *output = TRUE;
-    str += 5;
-  }
-  return str;
-}
-
-ORCA_API lpcString_t __strtouint(lpcString_t str, uint32_t* output) {
-  *output = strtod(str, (char**)&str);
-  return str;
-}
-
-ORCA_API lpcString_t __strtoint(lpcString_t str, int* output) {
-  *output = strtod(str, (char**)&str);
-  return str;
-}
-
