@@ -332,7 +332,14 @@ class ExportWriter(Plugin):
 				for type, _ in fields: 
 					if type in Workspace.structs and type != "color":
 						return False # parsing structs from string is not supported due to complexity and ambiguity
-				self.w(f"extern bool_t f_convert_string(lua_State*, lpcPropertyType_t, lpcString_t, bool_t);")
+				# Component (object-reference) fields are optional in fromstring; required fields precede them.
+				# All non-component fields that come before the first component are required.
+				has_components = any(type in Workspace.components for type, _ in fields)
+				min_required = next((i for i, (type, _) in enumerate(fields) if type in Workspace.components), len(fields))
+				if has_components:
+					self.w(f"extern bool_t f_load_object(lua_State*, lpcString_t, lpcString_t, bool_t);")
+				else:
+					self.w(f"extern bool_t f_convert_string(lua_State*, lpcPropertyType_t, lpcString_t, bool_t);")
 				self.w(f"static int f_fromstring_{struct.get('name')}(lua_State *L) {{")
 				pointers = set()
 				for type, name in fields: 
@@ -341,15 +348,26 @@ class ExportWriter(Plugin):
 					elif type in Workspace.components: self.w(f"\tfixedString_t {name};"); pointers.add(name)
 					elif type == "fixed" or type == "bool": self.w(f"\tfixedString_t {name};"); pointers.add(name)
 					else: self.w(f"\t{typedefs.get(type, type)} {name};")
-				self.file.write(f"\tif (sscanf(luaL_checkstring(L, 1), \"")
-				self.file.write(" ".join([get_scanf(type) for type, _ in fields]))
-				self.file.write(f"\", ")
-				self.file.write(", ".join([f"{'' if name in pointers else '&'}{name}" for _, name in fields]))
-				self.file.write(f") == {len(fields)}) {{\n")
+				if has_components:
+					self.file.write(f"\tint n = sscanf(luaL_checkstring(L, 1), \"")
+					self.file.write(" ".join([get_scanf(type) for type, _ in fields]))
+					self.file.write(f"\", ")
+					self.file.write(", ".join([f"{'' if name in pointers else '&'}{name}" for _, name in fields]))
+					self.file.write(f");\n")
+					self.w(f"\tif (n >= {min_required}) {{")
+				else:
+					self.file.write(f"\tif (sscanf(luaL_checkstring(L, 1), \"")
+					self.file.write(" ".join([get_scanf(type) for type, _ in fields]))
+					self.file.write(f"\", ")
+					self.file.write(", ".join([f"{'' if name in pointers else '&'}{name}" for _, name in fields]))
+					self.file.write(f") == {len(fields)}) {{\n")
 				
 				self.w(f"\t\tstruct {struct.get('name')} _out = {{0}};")
-				for type, name in fields:
+				for i, (type, name) in enumerate(fields):
 					addr = repl.get(name, name)
+					is_component = type in Workspace.components
+					if is_component:
+						self.w(f"\t\tif (n >= {i + 1}) {{")
 					if type in Workspace.enums:
 						self.w(f"\t\tlua_pop(L, (lua_pushstring(L, {name}), _out.{addr} = luaL_checkoption(L, -1, NULL, _{type}), 1)); // {name}")
 					elif type == "color":
@@ -358,13 +376,12 @@ class ExportWriter(Plugin):
 						self.w(f"\t\tstrncpy(_out.{addr}, {name}, sizeof(_out.{addr})); // {name}")
 					elif type == "bool":
 						self.w(f"\t\t_out.{addr} = strcmp({name}, \"true\") == 0; // {name}")
-					elif type in Workspace.components:
-						self.w(f"\t\tlua_pop(L, (f_convert_string(L, &(struct PropertyType) {{")
-						self.w(f"\t\t\t.DataType = kDataTypeObject,")
-						self.w(f"\t\t\t.TypeString = \"{type}\"");
-						self.w(f"\t\t}}, {name}, TRUE), _out.{addr} = luaX_check{type}(L, -1), 1)); // {name}")
+					elif is_component:
+						self.w(f"\t\t\tlua_pop(L, (f_load_object(L, {name}, \"{type}\", TRUE), _out.{addr} = luaX_check{type}(L, -1), 1)); // {name}")
 					else:	
 						self.w(f"\t\t_out.{addr} = {name}; // {name}")
+					if is_component:
+						self.w(f"\t\t}}")
 				self.w(f"\t\tluaX_push{struct.get('name')}(L, &_out); // {struct.get('name')}")
 				self.w(f"\t\treturn 1;")
 				self.w(f"\t}} else {{")

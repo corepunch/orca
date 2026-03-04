@@ -229,6 +229,26 @@ f_convert_string(lua_State* L,
   }
 }
 
+ORCA_API bool_t
+f_load_object(lua_State* L,
+              lpcString_t path,
+              lpcString_t type_string,
+              bool_t throw_error)
+{
+  lua_getglobal(L, "require");
+  lua_pushstring(L, path);
+  if (lua_pcall(L, 1, 1, 0) == LUA_OK && !lua_isnil(L, -1)) {
+    return TRUE;
+  }
+  if (throw_error) {
+    return luaL_error(L, "Cannot load object '%s' of type '%s': %s",
+                      path, type_string,
+                      lua_isstring(L, -1) ? lua_tostring(L, -1) : "(unknown error)");
+  }
+  lua_pop(L, 1);
+  return FALSE;
+}
+
 bool_t f_parse_property(lua_State* L,
                         lpProperty_t hProperty,
                         lpcString_t value)

@@ -513,21 +513,21 @@ int f_FontShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in FontShorthand: %s", luaL_checkstring(L, 2));
 }
-extern bool_t f_convert_string(lua_State*, lpcPropertyType_t, lpcString_t, bool_t);
+extern bool_t f_load_object(lua_State*, lpcString_t, lpcString_t, bool_t);
 static int f_fromstring_FontShorthand(lua_State *L) {
 	fixedString_t Weight;
 	fixedString_t Style;
 	float Size;
 	fixedString_t Family;
-	if (sscanf(luaL_checkstring(L, 1), "%s %s %f %s", Weight, Style, &Size, Family) == 4) {
+	int n = sscanf(luaL_checkstring(L, 1), "%s %s %f %s", Weight, Style, &Size, Family);
+	if (n >= 3) {
 		struct FontShorthand _out = {0};
 		lua_pop(L, (lua_pushstring(L, Weight), _out.Weight = luaL_checkoption(L, -1, NULL, _FontWeight), 1)); // Weight
 		lua_pop(L, (lua_pushstring(L, Style), _out.Style = luaL_checkoption(L, -1, NULL, _FontStyle), 1)); // Style
 		_out.Size = Size; // Size
-		lua_pop(L, (f_convert_string(L, &(struct PropertyType) {
-			.DataType = kDataTypeObject,
-			.TypeString = "FontFamily"
-		}, Family, TRUE), _out.Family = luaX_checkFontFamily(L, -1), 1)); // Family
+		if (n >= 4) {
+			lua_pop(L, (f_load_object(L, Family, "FontFamily", TRUE), _out.Family = luaX_checkFontFamily(L, -1), 1)); // Family
+		}
 		luaX_pushFontShorthand(L, &_out); // FontShorthand
 		return 1;
 	} else {
@@ -585,22 +585,21 @@ int f_BrushShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in BrushShorthand: %s", luaL_checkstring(L, 2));
 }
-extern bool_t f_convert_string(lua_State*, lpcPropertyType_t, lpcString_t, bool_t);
+extern bool_t f_load_object(lua_State*, lpcString_t, lpcString_t, bool_t);
 static int f_fromstring_BrushShorthand(lua_State *L) {
 	fixedString_t Color;
 	fixedString_t Image;
 	fixedString_t Material;
-	if (sscanf(luaL_checkstring(L, 1), "%s %s %s", Color, Image, Material) == 3) {
+	int n = sscanf(luaL_checkstring(L, 1), "%s %s %s", Color, Image, Material);
+	if (n >= 1) {
 		struct BrushShorthand _out = {0};
 		_out.Color = COLOR_Parse(Color); // Color
-		lua_pop(L, (f_convert_string(L, &(struct PropertyType) {
-			.DataType = kDataTypeObject,
-			.TypeString = "Texture"
-		}, Image, TRUE), _out.Image = luaX_checkTexture(L, -1), 1)); // Image
-		lua_pop(L, (f_convert_string(L, &(struct PropertyType) {
-			.DataType = kDataTypeObject,
-			.TypeString = "Material"
-		}, Material, TRUE), _out.Material = luaX_checkMaterial(L, -1), 1)); // Material
+		if (n >= 2) {
+			lua_pop(L, (f_load_object(L, Image, "Texture", TRUE), _out.Image = luaX_checkTexture(L, -1), 1)); // Image
+		}
+		if (n >= 3) {
+			lua_pop(L, (f_load_object(L, Material, "Material", TRUE), _out.Material = luaX_checkMaterial(L, -1), 1)); // Material
+		}
 		luaX_pushBrushShorthand(L, &_out); // BrushShorthand
 		return 1;
 	} else {
