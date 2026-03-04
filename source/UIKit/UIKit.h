@@ -87,14 +87,14 @@ luaX_pushUnderlineShorthand(lua_State *L, lpcUnderlineShorthand_t UnderlineShort
 ORCA_API lpUnderlineShorthand_t
 luaX_checkUnderlineShorthand(lua_State *L, int idx);
 
-typedef struct BorderWidthShorthand BorderWidthShorthand_t, *lpBorderWidthShorthand_t;
-typedef struct BorderWidthShorthand const cBorderWidthShorthand_t, *lpcBorderWidthShorthand_t;
-/// @brief Push BorderWidthShorthand onto Lua stack.
+typedef struct MarginShorthand MarginShorthand_t, *lpMarginShorthand_t;
+typedef struct MarginShorthand const cMarginShorthand_t, *lpcMarginShorthand_t;
+/// @brief Push MarginShorthand onto Lua stack.
 ORCA_API void
-luaX_pushBorderWidthShorthand(lua_State *L, lpcBorderWidthShorthand_t BorderWidthShorthand);
-/// @brief Check BorderWidthShorthand form Lua stack at index.
-ORCA_API lpBorderWidthShorthand_t
-luaX_checkBorderWidthShorthand(lua_State *L, int idx);
+luaX_pushMarginShorthand(lua_State *L, lpcMarginShorthand_t MarginShorthand);
+/// @brief Check MarginShorthand form Lua stack at index.
+ORCA_API lpMarginShorthand_t
+luaX_checkMarginShorthand(lua_State *L, int idx);
 
 typedef struct BorderShorthand BorderShorthand_t, *lpBorderShorthand_t;
 typedef struct BorderShorthand const cBorderShorthand_t, *lpcBorderShorthand_t;
@@ -104,24 +104,6 @@ luaX_pushBorderShorthand(lua_State *L, lpcBorderShorthand_t BorderShorthand);
 /// @brief Check BorderShorthand form Lua stack at index.
 ORCA_API lpBorderShorthand_t
 luaX_checkBorderShorthand(lua_State *L, int idx);
-
-typedef struct Thickness Thickness_t, *lpThickness_t;
-typedef struct Thickness const cThickness_t, *lpcThickness_t;
-/// @brief Push Thickness onto Lua stack.
-ORCA_API void
-luaX_pushThickness(lua_State *L, lpcThickness_t Thickness);
-/// @brief Check Thickness form Lua stack at index.
-ORCA_API lpThickness_t
-luaX_checkThickness(lua_State *L, int idx);
-
-typedef struct MarginShorthand MarginShorthand_t, *lpMarginShorthand_t;
-typedef struct MarginShorthand const cMarginShorthand_t, *lpcMarginShorthand_t;
-/// @brief Push MarginShorthand onto Lua stack.
-ORCA_API void
-luaX_pushMarginShorthand(lua_State *L, lpcMarginShorthand_t MarginShorthand);
-/// @brief Check MarginShorthand form Lua stack at index.
-ORCA_API lpMarginShorthand_t
-luaX_checkMarginShorthand(lua_State *L, int idx);
 
 typedef struct SizeAxisShorthand SizeAxisShorthand_t, *lpSizeAxisShorthand_t;
 typedef struct SizeAxisShorthand const cSizeAxisShorthand_t, *lpcSizeAxisShorthand_t;
@@ -474,6 +456,13 @@ typedef struct Size* MeasureOverrideEventPtr;
 #define kEventArrangeOverride 0x66d9e437
 typedef struct rect* ArrangeOverrideEventPtr;
 
+#define kEventForegroundContent 0x9a7735e5
+#define kEventPushProperty 0xc5ebaf40
+#define kEventUpdateGeometry 0x12c1a314
+#define kEventDrawBrush 0x0875c1d1
+#define kEventHandleMessage 0xfc48a0da
+#define kEventLoadView 0xa3650e54
+#define kEventTriggered 0x3b1c3ae2
 #define Direction_Count 3
 typedef enum Direction {
 	kDirectionHorizontal, /// Left-to-right horizontal layout
@@ -715,30 +704,17 @@ struct UnderlineShorthand {
 	color_t Color; /// Color of the underline.
 };
 
-/// @brief Border width configuration for rectangular elements
-struct BorderWidthShorthand {
-	EdgeShorthand_t Axis[3]; /// Border width per axis
+/// @brief External spacing configuration for rectangular elements
+struct MarginShorthand {
+	EdgeShorthand_t Axis[3]; /// External spacing per axis
 };
 
 /// @brief Complete border definition for rectangular element
 struct BorderShorthand {
-	BorderWidthShorthand_t Width; /// Border thickness in pixels, specified for each edge
+	MarginShorthand_t Width; /// Border thickness in pixels, specified for each edge
 	color_t Color; /// Border color
 	eBorderStyle_t Style; /// Visual style of the border
 	BorderRadiusShorthand_t Radius; /// Border radius definition per corner
-};
-
-/// @brief Uniform thickness specification for all four edges
-struct Thickness {
-	float Top; /// Top edge thickness
-	float Right; /// Right edge thickness
-	float Bottom; /// Bottom edge thickness
-	float Left; /// Left edge thickness
-};
-
-/// @brief External spacing configuration for rectangular elements
-struct MarginShorthand {
-	EdgeShorthand_t Axis[3]; /// External spacing per axis
 };
 
 /// @brief Complete sizing definition for one axis

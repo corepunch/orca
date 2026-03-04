@@ -3,9 +3,10 @@
 import os
 import string
 
-from . import Plugin, utils, Workspace, typedefs
+from . import Plugin, utils, Workspace, typedefs, AxisConfig
 
 export_xml_parsers = True
+MaxFieldsForFromString = 6
 
 _T = {
 	'shutdown': string.Template(
@@ -64,15 +65,6 @@ _T = {
 		"\treturn f_new_${name}(L);\n"
 		"}\n"
 	),
-	'struct_fromstring': string.Template(
-		"static int f_fromstring_${name}(lua_State *L) {\n"
-		"\t${lpname} self = lua_newuserdata(L, sizeof(struct ${name}));\n"
-		"\tluaL_setmetatable(L, \"${export}\");\n"
-		"\tmemset(self, 0, sizeof(struct ${name}));\n"
-		"\t__strto${name}(luaL_checkstring(L, 1), self);\n"
-		"\treturn 1;\n"
-		"}\n"
-	),
 	'component_lua': string.Template(
 		"void luaX_push${cname}(lua_State *L, ${lpcname} ${cname}) {\n"
 		"\tluaX_pushObject(L, CMP_GetObject(${cname}));\n"
@@ -113,20 +105,20 @@ class ExportWriter(Plugin):
 		self.w(f"#include <{base[base.index('source/'):] + '.h'}>")
 
 		if root.find('class') is not None:
-			self.w(f"#define DECL(SHORT, LONG, CLASS, NAME, FIELD, TYPE,...) {{ \\")
-			self.w(f"\t.Name=#CLASS\".\"NAME, \\")
+			self.w(f"#define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) {{ \\")
+			self.w(f"\t.Name=#CLASS\".\"#NAME, \\")
 			self.w(f"\t.Category=#CLASS, \\")
 			self.w(f"\t.ShortIdentifier=SHORT, \\")
-			self.w(f"\t.FullIdentifier=LONG, \\")
+			self.w(f"\t.FullIdentifier=ID_##CLASS##_##NAME, \\")
 			self.w(f"\t.Offset=offsetof(struct CLASS, FIELD), \\")
 			self.w(f"\t.DataSize=sizeof(((struct CLASS *)NULL)->FIELD), \\")
 			self.w(f"\t.DataType=TYPE, ##__VA_ARGS__ }}")
 
-			self.w(f"#define ARRAY_DECL(SHORT, LONG, CLASS, NAME, FIELD, TYPE,...) {{ \\")
-			self.w(f"\t.Name=#CLASS\".\"NAME, \\")
+			self.w(f"#define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) {{ \\")
+			self.w(f"\t.Name=#CLASS\".\"#NAME, \\")
 			self.w(f"\t.Category=#CLASS, \\")
 			self.w(f"\t.ShortIdentifier=SHORT, \\")
-			self.w(f"\t.FullIdentifier=LONG, \\")
+			self.w(f"\t.FullIdentifier=ID_##CLASS##_##NAME, \\")
 			self.w(f"\t.Offset=offsetof(struct CLASS, FIELD), \\")
 			self.w(f"\t.DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), \\")
 			self.w(f"\t.DataType=TYPE, \\")
@@ -181,22 +173,22 @@ class ExportWriter(Plugin):
 			values=','.join(values),
 			count=len(enums.findall('enum')),
 		))
-		if export_xml_parsers:
-			originals = ['"%s"' % e.get('name') for e in enums.findall('enum')] + ["NULL"]
-			self.w(f"ORCA_API lpcString_t __strto{ename}(lpcString_t string, enum {ename}* output) {{")
-			self.w(f"\tif (string == NULL) return FALSE;")
-			self.w(f"\tif (isdigit(*string)) {{")
-			self.w(f"\t\t*output = strtod(string, (char**)&string);")
-			self.w(f"\t\treturn string;")
-			self.w(f"\t}} else for (const char **s = _{ename}; *s; s++) {{")
-			self.w(f"\t\tif (!strcmp(string, *s)) {{")
-			self.w(f"\t\t\t*output = (enum {ename})(s - _{ename});")
-			self.w(f"\t\t\treturn string + strlen(*s);")
-			self.w(f"\t\t}}")
-			self.w(f"\t}}")
-			self.w(f"\tCon_Error(\"Could not parse '%s' value of property {ename}\", string);")
-			self.w(f"\treturn string + strlen(string);")
-			self.w(f"}}")
+		# if export_xml_parsers:
+		# 	originals = ['"%s"' % e.get('name') for e in enums.findall('enum')] + ["NULL"]
+		# 	self.w(f"ORCA_API lpcString_t __strto{ename}(lpcString_t string, enum {ename}* output) {{")
+		# 	self.w(f"\tif (string == NULL) return FALSE;")
+		# 	self.w(f"\tif (isdigit(*string)) {{")
+		# 	self.w(f"\t\t*output = strtod(string, (char**)&string);")
+		# 	self.w(f"\t\treturn string;")
+		# 	self.w(f"\t}} else for (const char **s = _{ename}; *s; s++) {{")
+		# 	self.w(f"\t\tif (!strcmp(string, *s)) {{")
+		# 	self.w(f"\t\t\t*output = (enum {ename})(s - _{ename});")
+		# 	self.w(f"\t\t\treturn string + strlen(*s);")
+		# 	self.w(f"\t\t}}")
+		# 	self.w(f"\t}}")
+		# 	self.w(f"\tCon_Error(\"Could not parse '%s' value of property {ename}\", string);")
+		# 	self.w(f"\treturn string + strlen(string);")
+		# 	self.w(f"}}")
 
 	def on_resource(self, _, resource):
 		if resource.get('no-lua'):
@@ -260,17 +252,15 @@ class ExportWriter(Plugin):
 				for pos, (i, arg) in enumerate(serializable_fields):
 					field_name = arg.get('name')
 					arg_type = arg.get('type')
-					table_inits += f'\t\tlua_getfield(L, 1, "{field_name}");\n'
 					if arg_type == 'fixed':
-						table_inits += f'\t\tstrncpy(self->{field_name}, luaL_optstring(L, -1, ""), sizeof(self->{field_name}));\n'
+						table_inits += f'\t\tlua_pop(L, (lua_getfield(L, 1, "{field_name}"), strncpy(self->{field_name}, luaL_optstring(L, -1, ""), sizeof(self->{field_name})), 1));\n'
 					elif arg_type in Workspace.enums:
-						table_inits += f'\t\tself->{field_name} = lua_isnil(L, -1) ? 0 : luaX_check{arg_type}(L, -1);\n'
+						table_inits += f'\t\tlua_pop(L, (lua_getfield(L, 1, "{field_name}"), self->{field_name} = lua_isnil(L, -1) ? 0 : luaX_check{arg_type}(L, -1), 1));\n'
 					else:
 						check_fn = utils.atomic_types[arg_type][0]
 						to_fn = check_fn.replace('luaL_check', 'lua_to')
-						table_inits += f'\t\tself->{field_name} = {to_fn}(L, -1);\n'
-					table_inits += f'\t\tlua_pop(L, 1);\n'
-					field_inits += '\t\t' + utils.export_check_var(f"self->{field_name}", arg_type, pos + 1) + ';\n'
+						table_inits += f'\t\tlua_pop(L, (lua_getfield(L, 1, "{field_name}"), self->{field_name} = {to_fn}(L, -1), 1));\n'
+				field_inits += '\t\t' + utils.export_check_var(f"self->{field_name}", arg_type, pos + 1) + ';\n'
 				init_block = f"\tif (lua_istable(L, 1)) {{\n{table_inits}\t}} else {{\n{field_inits}\t}}\n"
 			else:
 				init_block = ""
@@ -283,23 +273,20 @@ class ExportWriter(Plugin):
 		# write __index function
 		self.w(f"int {utils.export_index_name(struct)}(lua_State *L) {{")
 		if is_struct:
-			self.w(f"\tswitch(fnv1a32(luaL_checkstring(L, 2))) {{")
+			self.w(f'\t{lpname} self = luaX_check{name}(L, 1);')
+			self.w(f"\tswitch(self?fnv1a32(luaL_checkstring(L, 2)):0) {{ // Check is not needed but to silence unused variable warning")
 			for field in struct.findall('field'):
 				if field.get('fixed-array') or field.get('private'):
 					continue
 				field_name = field.get('name')
-				self.w(f"\tcase {utils.hash(field_name)}: // {field_name}")
-				self.w(f"\t\t{utils.export_push_var(field, f'luaX_check{name}(L, 1)->{field_name}')};")
-				self.w(f"\t\treturn 1;")
+				self.w(f"\tcase {utils.hash(field_name)}: {utils.export_push_var(field, f'self->{field_name}')}; return 1; // {field_name}")
 		else:
 			self.w(f"\tswitch(fnv1a32(luaL_checkstring(L, 2))) {{")
 		for method in struct.findall('method'):
 			method_name = method.get('export') or method.get('name')
 			if method_name.startswith("__") or method.get('static') or method.get('private'):
 				continue
-			self.w(f"\tcase {utils.hash(utils.camel_case(method_name))}: // {utils.camel_case(method_name)}")
-			self.w(f"\t\tlua_pushcfunction(L, {utils.export_get_name(struct, method)});")
-			self.w(f"\t\treturn 1;")
+			self.w(f"\tcase {utils.hash(utils.camel_case(method_name))}: lua_pushcfunction(L, {utils.export_get_name(struct, method)}); return 1; // {utils.camel_case(method_name)}")
 		if is_struct:
 			self.w(f"\t}}\n\treturn luaL_error(L, \"Unknown field in {name}: %s\", luaL_checkstring(L, 2));\n}}")
 		else:
@@ -307,7 +294,8 @@ class ExportWriter(Plugin):
 		if is_struct:
 			# write __newindex function
 			self.w(f"int {utils.export_newindex_name(struct)}(lua_State *L) {{")
-			self.w(f"\tswitch(fnv1a32(luaL_checkstring(L, 2))) {{")
+			self.w(f'\t{lpname} self = luaX_check{name}(L, 1);')
+			self.w(f"\tswitch(self?fnv1a32(luaL_checkstring(L, 2)):0) {{ // Check is not needed but to silence unused variable warning")
 			for field in struct.findall('field'):
 				if field.get('fixed-array'):
 					continue
@@ -317,37 +305,10 @@ class ExportWriter(Plugin):
 				if field_type in Workspace.enums:      access = ""
 				if field_type in Workspace.resources:  access = ""
 				if field_type in Workspace.components: access = ""
-				self.w(f"\tcase {utils.hash(field_name)}: // {field_name}")
-				self.w(f"\t\t{utils.export_check_var(f'luaX_check{name}(L, 1)->{field_name}', field_type, 3, access)};")
-				self.w(f"\t\treturn 0;")
+				self.w(f"\tcase {utils.hash(field_name)}: {utils.export_check_var(f'self->{field_name}', field_type, 3, access)}; return 0; // {field_name}")
 			self.w(f"\t}}\n\treturn luaL_error(L, \"Unknown field in {name}: %s\", luaL_checkstring(L, 2));\n}}")
 
-		if export_xml_parsers and is_struct:
-			def declare_parsers(struct):
-				types = set()
-				for field in struct.findall('field'):
-					if field.get('fixed-array') or field.get('private') or field.get('pointer'):
-						continue
-					types.add(field.get('type'))
-				for t in sorted(types):
-					# if t in Workspace.structs: self.w(f"\tint xmlto{t}(xmlNodePtr, struct {t}*);")
-					# elif t in Workspace.enums: self.w(f"\tint xmlto{t}(xmlNodePtr, enum {t}*);")
-					# elif t == "fixed": self.w(f"\tint xmlto{t}(xmlNodePtr, fixedString_t*);")
-					# else: self.w(f"\tint xmlto{t}(xmlNodePtr, {t}*);")	
-					if t in Workspace.structs: self.w(f"\tlpcString_t __strto{t}(lpcString_t, struct {t}*);")
-					elif t in Workspace.enums: self.w(f"\tlpcString_t __strto{t}(lpcString_t, enum {t}*);")
-					elif t == "fixed": self.w(f"\tlpcString_t __strto{t}(lpcString_t, fixedString_t*);")
-					else: self.w(f"\tlpcString_t __strto{t}(lpcString_t, {typedefs.get(t,t)}*);")	
-
-			self.w(f"ORCA_API lpcString_t __strto{name}(lpcString_t str, {lpname} output) {{")
-			declare_parsers(struct)
-			for field in struct.findall('field'):
-				if field.get('fixed-array') or field.get('private') or field.get('pointer'):
-					continue
-				field_name, field_type = field.get('name'), field.get('type')
-				self.w(f"\tstr = __strto{field_type}(str, &output->{field_name});")
-			self.w(f"\treturn str;\n}}")
-			self.wt(_T['struct_fromstring'].substitute(name=name, export=struct.get('export') or name, lpname=lpname))
+		export_xml_parsers = is_struct and self.write_parser(struct)
 
 		# write lua_open
 		self.w(f"int luaopen_{root.get('namespace')}_{name}(lua_State *L) {{")
@@ -373,36 +334,109 @@ class ExportWriter(Plugin):
 			self.w(f"\tlua_setmetatable(L, -2);")
 		self.w(f"\treturn 1;\n}}")
 
+	def write_parser(self, struct):
+		def get_scanf(type):
+			if type in Workspace.enums: return "%s"
+			elif type in Workspace.components: return "%s"
+			else:
+				return {"fixed": "%s", "float": "%f", "int": "%d", "uint": "%d", "bool": "%s"}.get(type, "%s")
+
+		def write_fromstring(struct):
+			# fields = [(field.get('type'), field.get('name')) for field in struct.findall('field')]
+			fields = []
+			repl = {}
+			for field in struct.findall('field'):
+				field_type, field_name = field.get('type'), field.get('name')
+				if field.get('fixed-array'):
+					for i in range(int(field.get('fixed-array'))):
+						if field_type in Workspace.structs:
+							for subfield in Workspace.structs[field_type].findall('field'):
+								subfield_type, subfield_name = subfield.get('type'), subfield.get('name')
+								myname = f"{struct.get('name')}_{field_name}{i}_{subfield_name}"
+								fields.append((AxisConfig.get(myname, subfield_type), myname))
+								repl[myname] = f"{field_name}[{i}].{subfield_name}"
+						else:
+							myname = f"{struct.get('name')}_{field_name}{i}"
+							fields.append((AxisConfig.get(myname, field_type), myname))
+							repl[myname] = f"{field_name}[{i}]"
+				else:
+					fields.append((field_type, field_name))
+			if len(fields) > MaxFieldsForFromString:
+				print(f"Warning: Skipping fromstring parser for {struct.get('name')} because it has {len(fields)} fields, which is more than the maximum of {MaxFieldsForFromString}.")
+				return False # too many fields to parse from string
+			for type, _ in fields:
+				if type in Workspace.structs and Workspace.structs[type].get('unwrap') != "true":
+					return False # parsing structs from string is not supported due to complexity and ambiguity
+			# forward declare parser dependencies
+			self.w(f"extern bool_t f_convert_string(lua_State*, lpcPropertyType_t, lpcString_t, bool_t);")
+			# forward declare constructors for parsing from string with constructor syntax
+			for args in [s for s in (struct.get('constructor') or '').split(",") if s]:
+				args_list = ", ".join([type for type, _ in fields[:int(args)]])
+				self.w(f"void {struct.get('name')}_Convert{args}(struct {struct.get('name')}*, {args_list});")
+			# write parser function
+			self.w(f"static int f_fromstring_{struct.get('name')}(lua_State *L) {{")
+			pointers = set()
+			for type, name in fields: 
+				if type in Workspace.enums | Workspace.structs | Workspace.components: self.w(f"\tfixedString_t {name};"); pointers.add(name)
+				elif type == "fixed" or type == "bool": self.w(f"\tfixedString_t {name};"); pointers.add(name)
+				else: self.w(f"\t{typedefs.get(type, type)} {name};")
+			scan_format = ' '.join([get_scanf(type) for type, _ in fields])
+			scan_args = ", ".join([f"{'' if name in pointers else '&'}{name}" for _, name in fields])
+			self.w(f"\tstruct {struct.get('name')} _out = {{0}};")
+			self.file.write(f"\tswitch (sscanf(luaL_checkstring(L, 1), \"{scan_format}\", {scan_args})) {{\n")
+			self.file.write(f"\tcase {len(fields)}:\n")
+			for type, name in fields:
+				addr = repl.get(name, name)
+				if type in Workspace.enums:
+					self.w(f"\t\tlua_pop(L, (lua_pushstring(L, {name}), _out.{addr} = luaL_checkoption(L, -1, NULL, _{type}), 1)); // {name}")
+				elif type == "color": self.w(f"\t\t_out.{addr} = COLOR_Parse({name}); // {name}")
+				elif type == "fixed": self.w(f"\t\tstrncpy(_out.{addr}, {name}, sizeof(_out.{addr})); // {name}")
+				elif type == "bool": self.w(f"\t\t_out.{addr} = strcmp({name}, \"true\") == 0; // {name}")
+				elif type in Workspace.components:
+					self.w(f"\t\tlua_pop(L, (f_convert_string(L, &(struct PropertyType) {{")
+					self.w(f"\t\t\t.DataType = kDataTypeObject,")
+					self.w(f"\t\t\t.TypeString = \"{type}\"")
+					self.w(f"\t\t}}, {name}, TRUE), _out.{addr} = luaX_check{type}(L, -1), 1)); // {name}")
+				else:	
+					self.w(f"\t\t_out.{addr} = {name}; // {name}")
+			self.w(f"\t\tluaX_push{struct.get('name')}(L, &_out); // {struct.get('name')}")
+			self.w(f"\t\treturn 1;")
+			for args in [s for s in (struct.get('constructor') or '').split(",") if s]:
+				args_list = ", ".join([name for _, name in fields[:int(args)]])
+				self.file.write(f"\tcase {args}:\n")
+				self.w(f"\t\t{struct.get('name')}_Convert{args}(&_out, {args_list});")
+				self.w(f"\t\tluaX_push{struct.get('name')}(L, &_out); // {struct.get('name')}")
+				self.w(f"\t\treturn 1;")
+			self.w(f"\tdefault:")
+			self.w(f"\t\treturn luaL_error(L, \"Invalid {struct.get('name')} format: %s\", luaL_checkstring(L, 1));")
+			self.w(f"\t}}")
+			self.w(f"}}")
+			return True
+
+		return write_fromstring(struct)
+
 	def write_property(self, property, component, path):
 		cname = component.get('name')
-		if property.tag == 'shorthand':
-			pname, userdata = property.get('name'), property.get('userdata')
-			self.w(
-				f"\t/* {cname}.{pname} */ DECL({utils.hash(pname)}, {utils.hash(cname + '.' + pname)},\n"
-				f"\t{cname}, \"{pname}\", {path}, kDataTypeEdges, .TypeString=\"{userdata}\"),"
+		sname = utils.property_name(path)
+		ptype = property.get('type')
+		struct = Workspace.structs.get(ptype)
+		typedata = f"kDataType{ptype[:1].upper() + ptype[1:]}"
+		if struct is not None:
+			typedata = (
+				f"kDataTypeStruct, .TypeString=\"{struct.get('export')}\"" if struct.get('export')
+				else f"kDataTypeStruct, .TypeString=\"{ptype}\""
 			)
-		else:
-			sname = utils.property_name(path)
-			ptype = property.get('type')
-			struct = Workspace.structs.get(ptype)
-			typedata = f"kDataType{ptype[:1].upper() + ptype[1:]}"
-			if struct is not None:
-				typedata = (
-					f"kDataTypeStruct, .TypeString=\"{struct.get('export')}\"" if struct.get('export')
-					else f"kDataTypeStruct, .TypeString=\"{ptype}\""
-				)
-			elif ptype in Workspace.enums or sname in Workspace.enums:
-				enum = Workspace.enums.get(ptype) or Workspace.enums.get(sname)
-				values = [e.get('name') for e in enum.findall('enum')]
-				ptype = enum.get('name')
-				typedata = f"kDataTypeEnum, .TypeString=\"{','.join(values)}\""
-			elif ptype in Workspace.components:
-				typedata = f"kDataTypeObject, .TypeString=\"{ptype}\""
-			decl = "ARRAY_DECL" if property.get('array') else "DECL"
-			self.w(
-				f"\t/* {cname}.{sname} */ {decl}({utils.hash(sname)}, {utils.hash(cname + '.' + sname)},\n"
-				f"\t{cname}, \"{sname}\", {path}, {typedata}),"
-			)
+		elif ptype in Workspace.enums or sname in Workspace.enums:
+			enum = Workspace.enums.get(ptype) or Workspace.enums.get(sname)
+			values = [e.get('name') for e in enum.findall('enum')]
+			ptype = enum.get('name')
+			typedata = f"kDataTypeEnum, .TypeString=\"{','.join(values)}\""
+		elif ptype in Workspace.components:
+			typedata = f"kDataTypeObject, .TypeString=\"{ptype}\""
+		decl = "ARRAY_DECL" if property.get('array') else "DECL"
+		self.w(
+			f"\t{decl}({utils.hash(sname)}, {cname}, {sname}, {path}, {typedata}), // {cname + '.' + sname}"
+		)
 
 	def on_class(self, root, component):
 		cname = component.get('name')
@@ -410,15 +444,6 @@ class ExportWriter(Plugin):
 			event = handles.get('event')
 			self.w(f"LRESULT {cname}_{event}({utils.lpobject_t}, {utils.lp(cname)}, wParam_t, {event}EventPtr);")
 		self.w(f"static struct PropertyType const {cname}Properties[k{cname}NumProperties] = {{")
-
-		for shorthand in component.findall("shorthand"):
-			pname, physical, userdata = (
-				shorthand.get('name'), shorthand.get('physical'), shorthand.get('userdata')
-			)
-			self.w(
-				f"\t/* {cname}.{cname} */ DECL({utils.hash(pname)}, {utils.hash(cname + '.' + pname)},\n"
-				f"\t{cname}, \"{pname}\", {physical}, T_EDGES, .TypeString=\"{userdata}\"),"
-			)
 
 		utils.enum_component_properties(component, self.write_property)
 		self.w(f"}};")
@@ -452,8 +477,8 @@ class ExportWriter(Plugin):
 		self.w(f"\tswitch (message) {{")
 		for handles in component.findall('handles'):
 			hname = handles.get('event')
-			self.w(f"\t\tcase {utils.hash(hname)}: // {hname}")
-			self.w(f"\t\t\treturn {cname}_{hname}(object, cmp, wparm, lparm);")
+			# self.w(f"\t\tcase {utils.hash(hname)}: return {cname}_{hname}(object, cmp, wparm, lparm); // {hname}")
+			self.w(f"\t\tcase kEvent{hname}: return {cname}_{hname}(object, cmp, wparm, lparm); // {hname}")
 		self.w(f"}}\n\treturn FALSE;\n}}")
 
 		self.wt(_T['component_lua'].substitute(

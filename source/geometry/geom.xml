@@ -638,7 +638,7 @@
     <field name="bottom" type="float">Bottom edge spacing</field>
   </struct>
 
-  <struct name="color" prefix="COLOR_" export="Color" sealed="true">
+  <struct name="color" prefix="COLOR_" export="Color" sealed="true" unwrap="true">
     <summary>RGBA color representation</summary>
     <details>Represents a color with red, green, blue, and alpha (transparency) components. Values typically range from 0.0 to 1.0.</details>
     <field name="r" type="float">Red component (0.0 to 1.0)</field>

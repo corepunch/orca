@@ -120,6 +120,9 @@ typedef void* AwakeEventPtr;
 #define kEventThemeChanged 0x064087a6
 typedef void* ThemeChangedEventPtr;
 
+#define kEventPropertyChanged 0x6d47e0cc
+typedef struct PropertyChangedEvent* PropertyChangedEventPtr;
+
 #define kEventAttached 0x9352f5d5
 typedef void* AttachedEventPtr;
 
