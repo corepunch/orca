@@ -4,9 +4,96 @@ import os
 import string
 
 from . import Plugin, utils, Workspace, typedefs, AxisConfig
+from .type_kind import Kind, resolve
 
 export_xml_parsers = True
 MaxFieldsForFromString = 6
+
+# ---------------------------------------------------------------------------
+# Module-level dispatch helpers – each replaces a repeated if/elif chain
+# ---------------------------------------------------------------------------
+
+def _table_init_for_field(field_name: str, arg_type: str) -> str:
+	"""Return the Lua table-init C snippet for a single struct field."""
+	kind = resolve(arg_type)
+	if kind == Kind.FIXED:
+		return (
+			f'\t\tlua_pop(L, (lua_getfield(L, 1, "{field_name}"), '
+			f'strncpy(self->{field_name}, luaL_optstring(L, -1, ""), '
+			f'sizeof(self->{field_name})), 1));\n'
+		)
+	if kind == Kind.ENUM:
+		return (
+			f'\t\tlua_pop(L, (lua_getfield(L, 1, "{field_name}"), '
+			f'self->{field_name} = lua_isnil(L, -1) ? 0 : luaX_check{arg_type}(L, -1), 1));\n'
+		)
+	# Kind.ATOMIC — everything else
+	check_fn = utils.atomic_types[arg_type][0]
+	to_fn = check_fn.replace('luaL_check', 'lua_to')
+	return (
+		f'\t\tlua_pop(L, (lua_getfield(L, 1, "{field_name}"), '
+		f'self->{field_name} = {to_fn}(L, -1), 1));\n'
+	)
+
+
+_SCANF_FMT = {
+	"float": "%f",
+	"int":   "%d",
+	"uint":  "%d",
+}
+
+def _get_scanf(type_name: str) -> str:
+	"""Return the sscanf format specifier for *type_name*.
+
+	Enums, components, fixed-strings and bools all scan as ``%s``.
+	"""
+	return _SCANF_FMT.get(type_name, "%s")
+
+
+_SCAN_ASSIGN = {
+	Kind.ENUM: lambda name, addr, t: (
+		f'\t\tlua_pop(L, (lua_pushstring(L, {name}), '
+		f'_out.{addr} = luaL_checkoption(L, -1, NULL, _{t}), 1)); // {name}\n'
+	),
+	Kind.FIXED: lambda name, addr, _: (
+		f'\t\tstrncpy(_out.{addr}, {name}, sizeof(_out.{addr})); // {name}\n'
+	),
+	Kind.BOOL: lambda name, addr, _: (
+		f'\t\t_out.{addr} = strcmp({name}, "true") == 0; // {name}\n'
+	),
+	Kind.COMPONENT: lambda name, addr, t: (
+		f'\t\tlua_pop(L, (f_convert_string(L, &(struct PropertyType) {{\n'
+		f'\t\t\t.DataType = kDataTypeObject,\n'
+		f'\t\t\t.TypeString = "{t}"\n'
+		f'\t\t}}, {name}, TRUE), _out.{addr} = luaX_check{t}(L, -1), 1)); // {name}\n'
+	),
+}
+
+def _scan_assign(type_name: str, name: str, addr: str) -> str:
+	"""Return the post-sscanf field-assignment C snippet."""
+	fn = _SCAN_ASSIGN.get(resolve(type_name))
+	if fn:
+		return fn(name, addr, type_name)
+	return f'\t\t_out.{addr} = {name}; // {name}\n'
+
+
+def _format_default(ptype: str, pdefault: str) -> str:
+	"""Format a property default value as a C initializer expression."""
+	kind = resolve(ptype)
+	if kind == Kind.ENUM and not pdefault.lstrip('-').isdigit():
+		return f"k{ptype}{pdefault}"
+	if kind == Kind.STRUCT:
+		return f"(struct {ptype}) {{ {', '.join(pdefault.split())} }}"
+	if kind == Kind.BOOL:
+		return pdefault.upper()
+	if kind == Kind.FIXED:
+		return f'"{pdefault}"'
+	return pdefault
+
+
+#: Kinds whose Lua representation uses a ``fixedString_t`` local variable
+#: when parsing from a string (all non-numeric scanner targets).
+_FIXED_STR_KINDS = frozenset({Kind.ENUM, Kind.STRUCT, Kind.COMPONENT, Kind.FIXED, Kind.BOOL})
 
 _T = {
 	'shutdown': string.Template(
@@ -252,14 +339,7 @@ class ExportWriter(Plugin):
 				for pos, (i, arg) in enumerate(serializable_fields):
 					field_name = arg.get('name')
 					arg_type = arg.get('type')
-					if arg_type == 'fixed':
-						table_inits += f'\t\tlua_pop(L, (lua_getfield(L, 1, "{field_name}"), strncpy(self->{field_name}, luaL_optstring(L, -1, ""), sizeof(self->{field_name})), 1));\n'
-					elif arg_type in Workspace.enums:
-						table_inits += f'\t\tlua_pop(L, (lua_getfield(L, 1, "{field_name}"), self->{field_name} = lua_isnil(L, -1) ? 0 : luaX_check{arg_type}(L, -1), 1));\n'
-					else:
-						check_fn = utils.atomic_types[arg_type][0]
-						to_fn = check_fn.replace('luaL_check', 'lua_to')
-						table_inits += f'\t\tlua_pop(L, (lua_getfield(L, 1, "{field_name}"), self->{field_name} = {to_fn}(L, -1), 1));\n'
+					table_inits += _table_init_for_field(field_name, arg_type)
 				field_inits += '\t\t' + utils.export_check_var(f"self->{field_name}", arg_type, pos + 1) + ';\n'
 				init_block = f"\tif (lua_istable(L, 1)) {{\n{table_inits}\t}} else {{\n{field_inits}\t}}\n"
 			else:
@@ -300,11 +380,7 @@ class ExportWriter(Plugin):
 				if field.get('fixed-array'):
 					continue
 				field_name, field_type = field.get('name'), field.get('type')
-				access = "*"
-				if field_type in utils.atomic_types:   access = ""
-				if field_type in Workspace.enums:      access = ""
-				if field_type in Workspace.resources:  access = ""
-				if field_type in Workspace.components: access = ""
+				access = "" if resolve(field_type) != Kind.STRUCT else "*"
 				self.w(f"\tcase {utils.hash(field_name)}: {utils.export_check_var(f'self->{field_name}', field_type, 3, access)}; return 0; // {field_name}")
 			self.w(f"\t}}\n\treturn luaL_error(L, \"Unknown field in {name}: %s\", luaL_checkstring(L, 2));\n}}")
 
@@ -335,12 +411,6 @@ class ExportWriter(Plugin):
 		self.w(f"\treturn 1;\n}}")
 
 	def write_parser(self, struct):
-		def get_scanf(type):
-			if type in Workspace.enums: return "%s"
-			elif type in Workspace.components: return "%s"
-			else:
-				return {"fixed": "%s", "float": "%f", "int": "%d", "uint": "%d", "bool": "%s"}.get(type, "%s")
-
 		def write_fromstring(struct):
 			# fields = [(field.get('type'), field.get('name')) for field in struct.findall('field')]
 			fields = []
@@ -376,29 +446,22 @@ class ExportWriter(Plugin):
 			# write parser function
 			self.w(f"static int f_fromstring_{struct.get('name')}(lua_State *L) {{")
 			pointers = set()
-			for type, name in fields: 
-				if type in Workspace.enums | Workspace.structs | Workspace.components: self.w(f"\tfixedString_t {name};"); pointers.add(name)
-				elif type == "fixed" or type == "bool": self.w(f"\tfixedString_t {name};"); pointers.add(name)
-				else: self.w(f"\t{typedefs.get(type, type)} {name};")
-			scan_format = ' '.join([get_scanf(type) for type, _ in fields])
+			for type, name in fields:
+				if resolve(type) in _FIXED_STR_KINDS:
+					self.w(f"\tfixedString_t {name};"); pointers.add(name)
+				else:
+					self.w(f"\t{typedefs.get(type, type)} {name};")
+			scan_format = ' '.join([_get_scanf(type) for type, _ in fields])
 			scan_args = ", ".join([f"{'' if name in pointers else '&'}{name}" for _, name in fields])
 			self.w(f"\tstruct {struct.get('name')} _out = {{0}};")
 			self.file.write(f"\tswitch (sscanf(luaL_checkstring(L, 1), \"{scan_format}\", {scan_args})) {{\n")
 			self.file.write(f"\tcase {len(fields)}:\n")
 			for type, name in fields:
 				addr = repl.get(name, name)
-				if type in Workspace.enums:
-					self.w(f"\t\tlua_pop(L, (lua_pushstring(L, {name}), _out.{addr} = luaL_checkoption(L, -1, NULL, _{type}), 1)); // {name}")
-				elif type == "color": self.w(f"\t\t_out.{addr} = COLOR_Parse({name}); // {name}")
-				elif type == "fixed": self.w(f"\t\tstrncpy(_out.{addr}, {name}, sizeof(_out.{addr})); // {name}")
-				elif type == "bool": self.w(f"\t\t_out.{addr} = strcmp({name}, \"true\") == 0; // {name}")
-				elif type in Workspace.components:
-					self.w(f"\t\tlua_pop(L, (f_convert_string(L, &(struct PropertyType) {{")
-					self.w(f"\t\t\t.DataType = kDataTypeObject,")
-					self.w(f"\t\t\t.TypeString = \"{type}\"")
-					self.w(f"\t\t}}, {name}, TRUE), _out.{addr} = luaX_check{type}(L, -1), 1)); // {name}")
-				else:	
-					self.w(f"\t\t_out.{addr} = {name}; // {name}")
+				if type == "color":
+					self.w(f"\t\t_out.{addr} = COLOR_Parse({name}); // {name}")
+				else:
+					self.wt(_scan_assign(type, name, addr))
 			self.w(f"\t\tluaX_push{struct.get('name')}(L, &_out); // {struct.get('name')}")
 			self.w(f"\t\treturn 1;")
 			for args in [s for s in (struct.get('constructor') or '').split(",") if s]:
@@ -454,16 +517,7 @@ class ExportWriter(Plugin):
 				pname, ptype, pdefault = (
 					property.get('name'), property.get('type'), property.get('default')
 				)
-				if ptype in Workspace.enums and not pdefault.lstrip('-').isdigit():
-					self.w(f"\t.{pname} = k{ptype}{pdefault},")
-				elif ptype in Workspace.structs:
-					self.w(f"\t.{pname} = (struct {ptype}) {{ {', '.join(pdefault.split())} }},")
-				elif ptype == 'bool':
-					self.w(f"\t.{pname} = {pdefault.upper()},")
-				elif ptype == 'fixed':
-					self.w(f"\t.{pname} = \"{pdefault}\",")
-				else:
-					self.w(f"\t.{pname} = {pdefault},")
+				self.w(f"\t.{pname} = {_format_default(ptype, pdefault)},")
 			self.w(f"}};")
 		elif bool(component.findall("property")):
 			self.w(f"static struct {cname} {cname}Defaults = {{0}};")
