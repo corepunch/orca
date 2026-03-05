@@ -332,4 +332,6 @@ struct color
 COLOR_Lerp(struct color*, struct color const*, float);
 struct color
 COLOR_Parse(string);
+
+
 #endif

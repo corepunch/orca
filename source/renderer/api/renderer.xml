@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 <!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
 <module name="renderer" namespace="orca" on-luaopen="on_renderer_module_registered" test-prefix="R_">
+  <require file="../../geometry/geometry.xml"/>
+
   <resource type="fontface"/>
   <resource type="timeline"/>
   <resource type="shader"/>

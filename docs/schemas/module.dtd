@@ -13,7 +13,7 @@
 -->
 
 <!-- Root Element -->
-<!ELEMENT module (include | external | event | resource | enums | struct | interface | class | function)*>
+<!ELEMENT module (require | include | external | event | resource | enums | struct | interface | class | function)*>
 <!ATTLIST module
   name CDATA #REQUIRED
   namespace CDATA #REQUIRED
@@ -24,6 +24,12 @@
 <!-- Include Directive - specifies C header files to include -->
 <!ELEMENT include EMPTY>
 <!ATTLIST include
+  file CDATA #REQUIRED
+>
+
+<!-- Include Directive - specifies C header files to include -->
+<!ELEMENT require EMPTY>
+<!ATTLIST require
   file CDATA #REQUIRED
 >
 

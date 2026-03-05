@@ -1,3 +1,4 @@
+import os
 import xml.etree.ElementTree as ET
 from enum import Enum
 
@@ -35,37 +36,21 @@ class Model:
 	def __init__(self, xml_file):
 		tree = ET.parse(xml_file)
 		self.root = tree.getroot()
+		self.requires = [Model(os.path.join(os.path.dirname(xml_file), req.get('file'))) for req in tree.getroot().findall('require')]
 		self.structs = {s.get('name'): Struct(s, self) for s in self.root.findall(".//struct[@name]")}
 		self.enums = {e.get('name'): Enum(e, self) for e in self.root.findall(".//enums[@name]")}
-		self.components = {c.get('name'): c for c in self.root.findall(".//class[@name]")}
-		self.resources = {c.get('type'): c for c in self.root.findall(".//resource[@type]")}
+		self.components = {c.get('name'): Component(c, self) for c in self.root.findall(".//class[@name]")}
+		self.resources = {c.get('type'): Resource(c, self) for c in self.root.findall(".//resource[@type]")}
 
-	def getModuleName(self):
-		return self.root.get('name')
-
-	def getStruct(self, name):
-		return self.structs.get(name)
-	
-	def getEnum(self, name):
-		return self.enums.get(name)
-	
-	def getComponent(self, name):
-		return self.components.get(name)
-	
-	def getResource(self, resource_type):
-		return self.resources.get(resource_type)
-	
-	def getStructs(self):
-		return self.structs
-	
-	def getEnums(self):
-		return self.enums
-	
-	def getComponents(self):
-		return self.components
-	
-	def getResources(self):
-		return self.resources
+	def getModuleName(self): return self.root.get('name')
+	def getStruct(self, name): return self.structs.get(name)
+	def getEnum(self, name): return self.enums.get(name)
+	def getComponent(self, name): return self.components.get(name)
+	def getResource(self, resource_type): return self.resources.get(resource_type)
+	def getStructs(self): return self.structs
+	def getEnums(self): return self.enums
+	def getComponents(self): return self.components
+	def getResources(self): return self.resources
 
 class Base:
 	def __init__(self, element: ET.Element, model: Model):
@@ -142,6 +127,14 @@ class Struct(Base):
 				return type_
 		raise KeyError(key)
 
+class Component(Struct):
+	def __init__(self, element: ET.Element, model: Model): 
+		super().__init__(element, model)
+
+	def getProperties(self):
+		for f in self._element.findall(".//property[@name]"):
+			yield f.get('name'), Type(f, self._model)
+
 class Enum(Base):
 	def __init__(self, element: ET.Element, model: Model): 
 		super().__init__(element, model)
@@ -149,3 +142,8 @@ class Enum(Base):
 	def getValues(self):
 		for e in self._element.findall(".//enum[@name]"):
 			yield e.get('name'), e.text
+
+
+class Resource(Base):
+	def __init__(self, element: ET.Element, model: Model): 
+		super().__init__(element, model)

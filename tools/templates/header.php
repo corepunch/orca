@@ -27,4 +27,15 @@ struct <?= $name ?> {
 <?= $method->full_name ?>(<?= implode(', ', $method->getArgsTypes()) ?>);
 <?php endforeach ?>
 <?php endforeach ?>
+
+<?php foreach ($model->getComponents() as $name => $component) ?>
+/** <?= $name ?> component */
+typedef struct <?= $name ?> <?= $name ?>_t, *lp<?= $name ?>_t;
+struct <?= $name ?> {
+<?php foreach ($component->getProperties() as $property_name => $property_type) ?>
+	<?= $property_type ?> <?= $property_name ?>;
+<?php endforeach ?>
+};
+<?php endforeach ?>
+
 #endif
