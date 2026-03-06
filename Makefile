@@ -144,7 +144,7 @@ modules:
 #	python3 tools/conv-lua.py presentation
 	cd tools && \
 	python3 -B conv-module.py \
-	../source/geometry/geom.xml \
+	../source/geometry/geometry.xml \
 	../source/core/core.xml \
 	../source/renderer/api/renderer.xml \
 	../source/UIKit/UIKit.xml \

@@ -1,4 +1,4 @@
-import os
+import os, re
 import xml.etree.ElementTree as ET
 from enum import Enum
 
@@ -11,6 +11,22 @@ class Kind(Enum):
     FIXED     = "fixed"
     UNKNOWN   = "unknown"
 
+Axis = [
+	(re.compile(r"(.+)\.Axis\[0\]\.Left(.*)"),              r"\1Left\2"),
+	(re.compile(r"(.+)\.Axis\[0\]\.Right(.*)"),             r"\1Right\2"),
+	(re.compile(r"(.+)\.Axis\[1\]\.Left(.*)"),              r"\1Top\2"),
+	(re.compile(r"(.+)\.Axis\[1\]\.Right(.*)"),             r"\1Bottom\2"),
+	(re.compile(r"(.+)\.Axis\[2\]\.Left(.*)"),              r"\1Front\2"),
+	(re.compile(r"(.+)\.Axis\[2\]\.Right(.*)"),             r"\1Back\2"),
+	(re.compile(r"Size.Axis\[0\]\.(?:Requested)?(.*)"),     r"\1Width"),
+	(re.compile(r"Size.Axis\[1\]\.(?:Requested)?(.*)"),     r"\1Height"),
+	(re.compile(r"Size.Axis\[2\]\.(?:Requested)?(.*)"),     r"\1Depth"),
+	(re.compile(r"(.+)\.Axis\[0\]"),                        r"Horizontal\1"),
+	(re.compile(r"(.+)\.Axis\[1\]"),                        r"Vertical\1"),
+	(re.compile(r"(.+)\.Axis\[2\]"),                        r"Depth\1"),
+	(re.compile(r"Border\.Radius\.(.+)Radius"),             r"Border\1Radius"),
+]
+
 atomic_types = {
 	"float":  ("luaL_checknumber",  "lua_pushnumber"),
 	"int":    ("luaL_checknumber",  "lua_pushnumber"),
@@ -22,6 +38,13 @@ atomic_types = {
 	"handle": ("lua_touserdata",    "lua_pushlightuserdata"),
 }
 
+def conv_name(name):
+	for pat, repl in Axis:
+		s2, n = pat.subn(repl, name, count=1)
+		if n:
+			return s2
+	return name
+
 printers = {
 	Kind.ATOMIC: "%s",
 	Kind.ENUM: "enum %s",
@@ -29,18 +52,33 @@ printers = {
 	Kind.COMPONENT: "struct %s",
 	Kind.RESOURCE: "struct %s",
 	Kind.FIXED: "%sString_t",
-	Kind.UNKNOWN: "%s",
+	Kind.UNKNOWN: "%s_t",
 }
 
 class Model:
-	def __init__(self, xml_file):
+	def __init__(self, xml_file, include_file = None):
 		tree = ET.parse(xml_file)
 		self.root = tree.getroot()
-		self.requires = [Model(os.path.join(os.path.dirname(xml_file), req.get('file'))) for req in tree.getroot().findall('require')]
+		self.source = include_file
+		self.requires = [Model(os.path.join(os.path.dirname(xml_file), req.get('file')), req.get('file')) for req in tree.getroot().findall('require')]
 		self.structs = {s.get('name'): Struct(s, self) for s in self.root.findall(".//struct[@name]")}
 		self.enums = {e.get('name'): Enum(e, self) for e in self.root.findall(".//enums[@name]")}
 		self.components = {c.get('name'): Component(c, self) for c in self.root.findall(".//class[@name]")}
 		self.resources = {c.get('type'): Resource(c, self) for c in self.root.findall(".//resource[@type]")}
+
+	def _has_in(self, key, attr_name, visited=None):
+		if visited is None: 
+			visited = set()
+		if id(self) in visited: 
+			return None
+		visited.add(id(self))
+		if key in getattr(self, attr_name):
+			return getattr(self, attr_name)[key]
+		for req in self.requires:
+			result = req._has_in(key, attr_name, visited)
+			if result: 
+				return result
+		return None
 
 	def getModuleName(self): return self.root.get('name')
 	def getStruct(self, name): return self.structs.get(name)
@@ -51,6 +89,17 @@ class Model:
 	def getEnums(self): return self.enums
 	def getComponents(self): return self.components
 	def getResources(self): return self.resources
+	def getKind(self, _type):
+		if _type == "fixed": return Kind.FIXED, None
+		if _type in atomic_types: return Kind.ATOMIC, None
+		if self._has_in(_type, "enums"): return Kind.ENUM, self._has_in(_type, "enums")
+		if self._has_in(_type, "structs"): return Kind.STRUCT, self._has_in(_type, "structs")
+		if self._has_in(_type, "components"): return Kind.COMPONENT, self._has_in(_type, "components")
+		if self._has_in(_type, "resources"): return Kind.RESOURCE, self._has_in(_type, "resources")
+		return Kind.UNKNOWN, None
+	def getRequires(self): 
+		for r in self.requires:
+			yield (r.getModuleName(), r)
 
 class Base:
 	def __init__(self, element: ET.Element, model: Model):
@@ -66,22 +115,14 @@ class Base:
 class Type(Base):
 	def __init__(self, element: ET.Element, model: Model):
 		super().__init__(element, model)
-		self.kind = self.getKind(model)
+		self.kind, self.data = model.getKind(self.type)
+		self.fixed_array = int(element.get("fixed-array")) if element.get("fixed-array") else None
 
 	def __str__(self):
 		base = printers.get(self.kind, "%s") % self.type
 		if getattr(self, 'const', False): base += " const"
 		if getattr(self, 'pointer', False): base += "*"
 		return base
-
-	def getKind(self, model):
-		if self.type == "fixed":           return Kind.FIXED
-		if self.type in atomic_types:      return Kind.ATOMIC
-		if self.type in model.enums:       return Kind.ENUM
-		if self.type in model.structs:     return Kind.STRUCT
-		if self.type in model.components:  return Kind.COMPONENT
-		if self.type in model.resources:   return Kind.RESOURCE
-		return Kind.UNKNOWN
 
 class Method(Base):
 	def __init__(self, element: ET.Element, model: Model, owner: ET.Element = None):
@@ -109,6 +150,7 @@ class Method(Base):
 class Struct(Base):
 	def __init__(self, element: ET.Element, model: Model): 
 		super().__init__(element, model)
+		self.sealed = element.get('sealed') == "true"
 
 	def getFields(self):
 		for f in self._element.findall(".//field[@name]"):
@@ -132,8 +174,18 @@ class Component(Struct):
 		super().__init__(element, model)
 
 	def getProperties(self):
+		def walk(name_prefix, type_):
+			yield name_prefix, type_
+			if type_.kind == Kind.STRUCT and not type_.data.sealed:
+				for k, v in type_.data.getFields():
+					if v.fixed_array:
+						for i in range(v.fixed_array):
+							yield from walk(f"{name_prefix}.{k}[{i}]", v)
+					else:
+						yield from walk(f"{name_prefix}.{k}", v)
 		for f in self._element.findall(".//property[@name]"):
-			yield f.get('name'), Type(f, self._model)
+			type_ = Type(f, self._model)
+			yield from walk(f.get('name'), type_)
 
 class Enum(Base):
 	def __init__(self, element: ET.Element, model: Model): 
