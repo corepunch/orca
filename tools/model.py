@@ -28,14 +28,14 @@ Axis = [
 ]
 
 atomic_types = {
-	"float":  ("luaL_checknumber",  "lua_pushnumber"),
-	"int":    ("luaL_checknumber",  "lua_pushnumber"),
-	"uint":   ("luaL_checknumber",  "lua_pushnumber"),
-	"long":   ("luaL_checkinteger", "lua_pushinteger"),
-	"bool":   ("lua_toboolean",     "lua_pushboolean"),
-	"string": ("luaL_checkstring",  "lua_pushstring"),
-	"fixed":  ("luaL_checkstring",  "lua_pushstring"),
-	"handle": ("lua_touserdata",    "lua_pushlightuserdata"),
+	"float":  ("luaL_checknumber",  "lua_pushnumber", "%f"),
+	"int":    ("luaL_checknumber",  "lua_pushnumber", "%d"),
+	"uint":   ("luaL_checknumber",  "lua_pushnumber", "%u"),
+	"long":   ("luaL_checkinteger", "lua_pushinteger", "%ld"),
+	"bool":   ("lua_toboolean",     "lua_pushboolean", "%d"),
+	"string": ("luaL_checkstring",  "lua_pushstring", "%s"),
+	"fixed":  ("luaL_checkstring",  "lua_pushstring", "%s"),
+	"handle": ("lua_touserdata",    "lua_pushlightuserdata", "%s"),
 }
 
 printers = {
@@ -112,6 +112,16 @@ class Type(Base):
 		if getattr(self, 'const', False): base += " const"
 		if getattr(self, 'pointer', False): base += "*"
 		return base
+
+	def getFormatPlaceholder(self):
+		if self.kind == Kind.ATOMIC or self.kind == Kind.FIXED:
+			return atomic_types[self.type][2]
+		elif self.kind == Kind.ENUM:
+			return "%s"
+		elif self.kind in (Kind.STRUCT, Kind.COMPONENT, Kind.RESOURCE):
+			return f"%s"
+		else:
+			return None
 	
 	def getImporter(self, index):
 		if self.kind == Kind.ATOMIC or self.kind == Kind.FIXED:
@@ -208,6 +218,26 @@ class Struct(Base):
 			if name == key:
 				return type_
 		raise KeyError(key)
+
+	def getParsers(self):
+		def poll():
+			for name, field in self.getFields():
+				if field.fixed_array:
+					for i in range(field.fixed_array):
+						if field.kind == Kind.STRUCT:
+							for sub_name, sub_type in field.data.getFields():
+								myname = f"{self.name}_{name}{i}_{sub_name}"
+								# fields.append((AxisConfig.get(myname, sub_type), myname))
+								# repl[myname] = f"{sub_name}[{i}].{subsub_name}"
+								yield myname, sub_type
+						else:
+							# fields.append((AxisConfig.get(myname, field_type), myname))
+							# repl[myname] = f"{sub_name}[{i}]"
+							myname = f"{self.name}_{name}{i}"
+							yield myname, field
+				else:
+					yield name, field
+		return dict(poll())
 
 class Component(Struct):
 	def __init__(self, element: ET.Element, model: Model): 

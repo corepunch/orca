@@ -321,6 +321,21 @@ static int f_new_BorderRadiusShorthand(lua_State *L) {
 	}
 	return 1;
 }
+static int f_fromstring_BorderRadiusShorthand(lua_State *L) {
+	float TopLeftRadius;
+	float TopRightRadius;
+	float BottomRightRadius;
+	float BottomLeftRadius;
+	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &TopLeftRadius, &TopRightRadius, &BottomRightRadius, &BottomLeftRadius)) {
+		default:
+			return luaL_error(L, "Invalid format for BorderRadiusShorthand: %s", luaL_checkstring(L, 1));
+	}
+
+	
+
+	return 1;
+}
+
 int f_BorderRadiusShorthand___index(lua_State *L) {
 	stuct BorderRadiusShorthand* self = luaX_checkBorderRadiusShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -342,7 +357,7 @@ int f_BorderRadiusShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in BorderRadiusShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_BorderRadiusShorthand___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_BorderRadiusShorthand(L));  // remove BorderRadiusShorthand from stack
+	return (lua_remove(L, 1), f_new_BorderRadiusShorthand(L));  // remove BorderRadiusShorthand from stack and call constructor
 }
 int luaopen_orca_BorderRadiusShorthand(lua_State *L) {
 	luaL_newmetatable(L, "BorderRadiusShorthand");
@@ -384,6 +399,19 @@ static int f_new_EdgeShorthand(lua_State *L) {
 	}
 	return 1;
 }
+static int f_fromstring_EdgeShorthand(lua_State *L) {
+	float Left;
+	float Right;
+	switch (sscanf(luaL_checkstring(L, 1), "%f %f", &Left, &Right)) {
+		default:
+			return luaL_error(L, "Invalid format for EdgeShorthand: %s", luaL_checkstring(L, 1));
+	}
+
+	
+
+	return 1;
+}
+
 int f_EdgeShorthand___index(lua_State *L) {
 	stuct EdgeShorthand* self = luaX_checkEdgeShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -401,7 +429,7 @@ int f_EdgeShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in EdgeShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_EdgeShorthand___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_EdgeShorthand(L));  // remove EdgeShorthand from stack
+	return (lua_remove(L, 1), f_new_EdgeShorthand(L));  // remove EdgeShorthand from stack and call constructor
 }
 int luaopen_orca_EdgeShorthand(lua_State *L) {
 	luaL_newmetatable(L, "EdgeShorthand");
@@ -441,6 +469,20 @@ static int f_new_AlignmentShorthand(lua_State *L) {
 	}
 	return 1;
 }
+static int f_fromstring_AlignmentShorthand(lua_State *L) {
+	int AlignmentShorthand_Axis0;
+	int AlignmentShorthand_Axis1;
+	int AlignmentShorthand_Axis2;
+	switch (sscanf(luaL_checkstring(L, 1), "%d %d %d", &AlignmentShorthand_Axis0, &AlignmentShorthand_Axis1, &AlignmentShorthand_Axis2)) {
+		default:
+			return luaL_error(L, "Invalid format for AlignmentShorthand: %s", luaL_checkstring(L, 1));
+	}
+
+	
+
+	return 1;
+}
+
 int f_AlignmentShorthand___index(lua_State *L) {
 	stuct AlignmentShorthand* self = luaX_checkAlignmentShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -456,7 +498,7 @@ int f_AlignmentShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in AlignmentShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_AlignmentShorthand___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_AlignmentShorthand(L));  // remove AlignmentShorthand from stack
+	return (lua_remove(L, 1), f_new_AlignmentShorthand(L));  // remove AlignmentShorthand from stack and call constructor
 }
 int luaopen_orca_AlignmentShorthand(lua_State *L) {
 	luaL_newmetatable(L, "AlignmentShorthand");
@@ -502,6 +544,21 @@ static int f_new_FontShorthand(lua_State *L) {
 	}
 	return 1;
 }
+static int f_fromstring_FontShorthand(lua_State *L) {
+	enum FontWeight Weight;
+	enum FontStyle Style;
+	float Size;
+	struct FontFamily* Family;
+	switch (sscanf(luaL_checkstring(L, 1), "%s %s %f %s", &Weight, &Style, &Size, &Family)) {
+		default:
+			return luaL_error(L, "Invalid format for FontShorthand: %s", luaL_checkstring(L, 1));
+	}
+
+	
+
+	return 1;
+}
+
 int f_FontShorthand___index(lua_State *L) {
 	stuct FontShorthand* self = luaX_checkFontShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -523,7 +580,7 @@ int f_FontShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in FontShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_FontShorthand___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_FontShorthand(L));  // remove FontShorthand from stack
+	return (lua_remove(L, 1), f_new_FontShorthand(L));  // remove FontShorthand from stack and call constructor
 }
 int luaopen_orca_FontShorthand(lua_State *L) {
 	luaL_newmetatable(L, "FontShorthand");
@@ -567,6 +624,20 @@ static int f_new_BrushShorthand(lua_State *L) {
 	}
 	return 1;
 }
+static int f_fromstring_BrushShorthand(lua_State *L) {
+	struct color Color;
+	struct Texture* Image;
+	struct Material* Material;
+	switch (sscanf(luaL_checkstring(L, 1), "%s %s %s", &Color, &Image, &Material)) {
+		default:
+			return luaL_error(L, "Invalid format for BrushShorthand: %s", luaL_checkstring(L, 1));
+	}
+
+	
+
+	return 1;
+}
+
 int f_BrushShorthand___index(lua_State *L) {
 	stuct BrushShorthand* self = luaX_checkBrushShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -586,7 +657,7 @@ int f_BrushShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in BrushShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_BrushShorthand___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_BrushShorthand(L));  // remove BrushShorthand from stack
+	return (lua_remove(L, 1), f_new_BrushShorthand(L));  // remove BrushShorthand from stack and call constructor
 }
 int luaopen_orca_BrushShorthand(lua_State *L) {
 	luaL_newmetatable(L, "BrushShorthand");
@@ -632,6 +703,21 @@ static int f_new_ShadowShorthand(lua_State *L) {
 	}
 	return 1;
 }
+static int f_fromstring_ShadowShorthand(lua_State *L) {
+	struct vec2 Offset;
+	float BlurRadius;
+	float SpreadRadius;
+	struct color Color;
+	switch (sscanf(luaL_checkstring(L, 1), "%s %f %f %s", &Offset, &BlurRadius, &SpreadRadius, &Color)) {
+		default:
+			return luaL_error(L, "Invalid format for ShadowShorthand: %s", luaL_checkstring(L, 1));
+	}
+
+	
+
+	return 1;
+}
+
 int f_ShadowShorthand___index(lua_State *L) {
 	stuct ShadowShorthand* self = luaX_checkShadowShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -653,7 +739,7 @@ int f_ShadowShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in ShadowShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_ShadowShorthand___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_ShadowShorthand(L));  // remove ShadowShorthand from stack
+	return (lua_remove(L, 1), f_new_ShadowShorthand(L));  // remove ShadowShorthand from stack and call constructor
 }
 int luaopen_orca_ShadowShorthand(lua_State *L) {
 	luaL_newmetatable(L, "ShadowShorthand");
@@ -697,6 +783,20 @@ static int f_new_RingShorthand(lua_State *L) {
 	}
 	return 1;
 }
+static int f_fromstring_RingShorthand(lua_State *L) {
+	float Offset;
+	float Width;
+	struct color Color;
+	switch (sscanf(luaL_checkstring(L, 1), "%f %f %s", &Offset, &Width, &Color)) {
+		default:
+			return luaL_error(L, "Invalid format for RingShorthand: %s", luaL_checkstring(L, 1));
+	}
+
+	
+
+	return 1;
+}
+
 int f_RingShorthand___index(lua_State *L) {
 	stuct RingShorthand* self = luaX_checkRingShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -716,7 +816,7 @@ int f_RingShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in RingShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_RingShorthand___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_RingShorthand(L));  // remove RingShorthand from stack
+	return (lua_remove(L, 1), f_new_RingShorthand(L));  // remove RingShorthand from stack and call constructor
 }
 int luaopen_orca_RingShorthand(lua_State *L) {
 	luaL_newmetatable(L, "RingShorthand");
@@ -758,6 +858,19 @@ static int f_new_OverflowShorthand(lua_State *L) {
 	}
 	return 1;
 }
+static int f_fromstring_OverflowShorthand(lua_State *L) {
+	enum Overflow x;
+	enum Overflow y;
+	switch (sscanf(luaL_checkstring(L, 1), "%s %s", &x, &y)) {
+		default:
+			return luaL_error(L, "Invalid format for OverflowShorthand: %s", luaL_checkstring(L, 1));
+	}
+
+	
+
+	return 1;
+}
+
 int f_OverflowShorthand___index(lua_State *L) {
 	stuct OverflowShorthand* self = luaX_checkOverflowShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -775,7 +888,7 @@ int f_OverflowShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in OverflowShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_OverflowShorthand___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_OverflowShorthand(L));  // remove OverflowShorthand from stack
+	return (lua_remove(L, 1), f_new_OverflowShorthand(L));  // remove OverflowShorthand from stack and call constructor
 }
 int luaopen_orca_OverflowShorthand(lua_State *L) {
 	luaL_newmetatable(L, "OverflowShorthand");
@@ -819,6 +932,20 @@ static int f_new_UnderlineShorthand(lua_State *L) {
 	}
 	return 1;
 }
+static int f_fromstring_UnderlineShorthand(lua_State *L) {
+	float Offset;
+	float Width;
+	struct color Color;
+	switch (sscanf(luaL_checkstring(L, 1), "%f %f %s", &Offset, &Width, &Color)) {
+		default:
+			return luaL_error(L, "Invalid format for UnderlineShorthand: %s", luaL_checkstring(L, 1));
+	}
+
+	
+
+	return 1;
+}
+
 int f_UnderlineShorthand___index(lua_State *L) {
 	stuct UnderlineShorthand* self = luaX_checkUnderlineShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -838,7 +965,7 @@ int f_UnderlineShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in UnderlineShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_UnderlineShorthand___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_UnderlineShorthand(L));  // remove UnderlineShorthand from stack
+	return (lua_remove(L, 1), f_new_UnderlineShorthand(L));  // remove UnderlineShorthand from stack and call constructor
 }
 int luaopen_orca_UnderlineShorthand(lua_State *L) {
 	luaL_newmetatable(L, "UnderlineShorthand");
@@ -878,6 +1005,23 @@ static int f_new_MarginShorthand(lua_State *L) {
 	}
 	return 1;
 }
+static int f_fromstring_MarginShorthand(lua_State *L) {
+	float MarginShorthand_Axis0_Left;
+	float MarginShorthand_Axis0_Right;
+	float MarginShorthand_Axis1_Left;
+	float MarginShorthand_Axis1_Right;
+	float MarginShorthand_Axis2_Left;
+	float MarginShorthand_Axis2_Right;
+	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f %f %f", &MarginShorthand_Axis0_Left, &MarginShorthand_Axis0_Right, &MarginShorthand_Axis1_Left, &MarginShorthand_Axis1_Right, &MarginShorthand_Axis2_Left, &MarginShorthand_Axis2_Right)) {
+		default:
+			return luaL_error(L, "Invalid format for MarginShorthand: %s", luaL_checkstring(L, 1));
+	}
+
+	
+
+	return 1;
+}
+
 int f_MarginShorthand___index(lua_State *L) {
 	stuct MarginShorthand* self = luaX_checkMarginShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -893,7 +1037,7 @@ int f_MarginShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in MarginShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_MarginShorthand___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_MarginShorthand(L));  // remove MarginShorthand from stack
+	return (lua_remove(L, 1), f_new_MarginShorthand(L));  // remove MarginShorthand from stack and call constructor
 }
 int luaopen_orca_MarginShorthand(lua_State *L) {
 	luaL_newmetatable(L, "MarginShorthand");
@@ -939,6 +1083,21 @@ static int f_new_BorderShorthand(lua_State *L) {
 	}
 	return 1;
 }
+static int f_fromstring_BorderShorthand(lua_State *L) {
+	struct MarginShorthand Width;
+	struct color Color;
+	enum BorderStyle Style;
+	struct BorderRadiusShorthand Radius;
+	switch (sscanf(luaL_checkstring(L, 1), "%s %s %s %s", &Width, &Color, &Style, &Radius)) {
+		default:
+			return luaL_error(L, "Invalid format for BorderShorthand: %s", luaL_checkstring(L, 1));
+	}
+
+	
+
+	return 1;
+}
+
 int f_BorderShorthand___index(lua_State *L) {
 	stuct BorderShorthand* self = luaX_checkBorderShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -960,7 +1119,7 @@ int f_BorderShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in BorderShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_BorderShorthand___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_BorderShorthand(L));  // remove BorderShorthand from stack
+	return (lua_remove(L, 1), f_new_BorderShorthand(L));  // remove BorderShorthand from stack and call constructor
 }
 int luaopen_orca_BorderShorthand(lua_State *L) {
 	luaL_newmetatable(L, "BorderShorthand");
@@ -1008,6 +1167,22 @@ static int f_new_SizeAxisShorthand(lua_State *L) {
 	}
 	return 1;
 }
+static int f_fromstring_SizeAxisShorthand(lua_State *L) {
+	float Requested;
+	float Desired;
+	float Min;
+	float Actual;
+	float Scroll;
+	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f %f", &Requested, &Desired, &Min, &Actual, &Scroll)) {
+		default:
+			return luaL_error(L, "Invalid format for SizeAxisShorthand: %s", luaL_checkstring(L, 1));
+	}
+
+	
+
+	return 1;
+}
+
 int f_SizeAxisShorthand___index(lua_State *L) {
 	stuct SizeAxisShorthand* self = luaX_checkSizeAxisShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -1031,7 +1206,7 @@ int f_SizeAxisShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in SizeAxisShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_SizeAxisShorthand___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_SizeAxisShorthand(L));  // remove SizeAxisShorthand from stack
+	return (lua_remove(L, 1), f_new_SizeAxisShorthand(L));  // remove SizeAxisShorthand from stack and call constructor
 }
 int luaopen_orca_SizeAxisShorthand(lua_State *L) {
 	luaL_newmetatable(L, "SizeAxisShorthand");
@@ -1071,6 +1246,32 @@ static int f_new_SizeShorthand(lua_State *L) {
 	}
 	return 1;
 }
+static int f_fromstring_SizeShorthand(lua_State *L) {
+	float SizeShorthand_Axis0_Requested;
+	float SizeShorthand_Axis0_Desired;
+	float SizeShorthand_Axis0_Min;
+	float SizeShorthand_Axis0_Actual;
+	float SizeShorthand_Axis0_Scroll;
+	float SizeShorthand_Axis1_Requested;
+	float SizeShorthand_Axis1_Desired;
+	float SizeShorthand_Axis1_Min;
+	float SizeShorthand_Axis1_Actual;
+	float SizeShorthand_Axis1_Scroll;
+	float SizeShorthand_Axis2_Requested;
+	float SizeShorthand_Axis2_Desired;
+	float SizeShorthand_Axis2_Min;
+	float SizeShorthand_Axis2_Actual;
+	float SizeShorthand_Axis2_Scroll;
+	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &SizeShorthand_Axis0_Requested, &SizeShorthand_Axis0_Desired, &SizeShorthand_Axis0_Min, &SizeShorthand_Axis0_Actual, &SizeShorthand_Axis0_Scroll, &SizeShorthand_Axis1_Requested, &SizeShorthand_Axis1_Desired, &SizeShorthand_Axis1_Min, &SizeShorthand_Axis1_Actual, &SizeShorthand_Axis1_Scroll, &SizeShorthand_Axis2_Requested, &SizeShorthand_Axis2_Desired, &SizeShorthand_Axis2_Min, &SizeShorthand_Axis2_Actual, &SizeShorthand_Axis2_Scroll)) {
+		default:
+			return luaL_error(L, "Invalid format for SizeShorthand: %s", luaL_checkstring(L, 1));
+	}
+
+	
+
+	return 1;
+}
+
 int f_SizeShorthand___index(lua_State *L) {
 	stuct SizeShorthand* self = luaX_checkSizeShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -1086,7 +1287,7 @@ int f_SizeShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in SizeShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_SizeShorthand___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_SizeShorthand(L));  // remove SizeShorthand from stack
+	return (lua_remove(L, 1), f_new_SizeShorthand(L));  // remove SizeShorthand from stack and call constructor
 }
 int luaopen_orca_SizeShorthand(lua_State *L) {
 	luaL_newmetatable(L, "SizeShorthand");
@@ -1128,6 +1329,19 @@ static int f_new_NavigateToPageArguments(lua_State *L) {
 	}
 	return 1;
 }
+static int f_fromstring_NavigateToPageArguments(lua_State *L) {
+	fixedString_t URL;
+	enum TransitionType TransitionType;
+	switch (sscanf(luaL_checkstring(L, 1), "%s %s", &URL, &TransitionType)) {
+		default:
+			return luaL_error(L, "Invalid format for NavigateToPageArguments: %s", luaL_checkstring(L, 1));
+	}
+
+	
+
+	return 1;
+}
+
 int f_NavigateToPageArguments___index(lua_State *L) {
 	stuct NavigateToPageArguments* self = luaX_checkNavigateToPageArguments(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -1145,7 +1359,7 @@ int f_NavigateToPageArguments___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in NavigateToPageArguments: %s", luaL_checkstring(L, 2));
 }
 static int f_NavigateToPageArguments___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_NavigateToPageArguments(L));  // remove NavigateToPageArguments from stack
+	return (lua_remove(L, 1), f_new_NavigateToPageArguments(L));  // remove NavigateToPageArguments from stack and call constructor
 }
 int luaopen_orca_NavigateToPageArguments(lua_State *L) {
 	luaL_newmetatable(L, "NavigateToPageArguments");
@@ -1185,6 +1399,18 @@ static int f_new_NavigateBackArguments(lua_State *L) {
 	}
 	return 1;
 }
+static int f_fromstring_NavigateBackArguments(lua_State *L) {
+	enum TransitionType TransitionType;
+	switch (sscanf(luaL_checkstring(L, 1), "%s", &TransitionType)) {
+		default:
+			return luaL_error(L, "Invalid format for NavigateBackArguments: %s", luaL_checkstring(L, 1));
+	}
+
+	
+
+	return 1;
+}
+
 int f_NavigateBackArguments___index(lua_State *L) {
 	stuct NavigateBackArguments* self = luaX_checkNavigateBackArguments(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -1200,7 +1426,7 @@ int f_NavigateBackArguments___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in NavigateBackArguments: %s", luaL_checkstring(L, 2));
 }
 static int f_NavigateBackArguments___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_NavigateBackArguments(L));  // remove NavigateBackArguments from stack
+	return (lua_remove(L, 1), f_new_NavigateBackArguments(L));  // remove NavigateBackArguments from stack and call constructor
 }
 int luaopen_orca_NavigateBackArguments(lua_State *L) {
 	luaL_newmetatable(L, "NavigateBackArguments");

@@ -27,6 +27,24 @@ static int f_new_<?= $name ?>(lua_State *L) {
 	}
 	return 1;
 }
+static int f_fromstring_<?= $name ?>(lua_State *L) {
+	<?php foreach ($struct->getParsers() as $field => $type):?>
+	<?= $type ?> <?= $field ?>;
+	<?php endforeach ?>
+	<?php 
+	$format = implode(" ", array_map(fn($v) => $v->getFormatPlaceholder(), $struct->getParsers())) 
+	$targets = implode(", ", array_map(fn($k) => "&{$k}", array_keys($struct->getParsers())))
+	?>
+	switch (sscanf(luaL_checkstring(L, 1), "<?= $format ?>", <?= $targets ?>)) {
+		default:
+			return luaL_error(L, "Invalid format for <?= $name ?>: %s", luaL_checkstring(L, 1));
+	}
+
+	
+
+	return 1;
+}
+
 int f_<?= $name ?>___index(lua_State *L) {
 	stuct <?= $name ?>* self = luaX_check<?= $name ?>(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -46,7 +64,7 @@ int f_<?= $name ?>___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in <?= $name ?>: %s", luaL_checkstring(L, 2));
 }
 static int f_<?= $name ?>___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_<?= $name ?>(L));  // remove <?= $name ?> from stack
+	return (lua_remove(L, 1), f_new_<?= $name ?>(L));  // remove <?= $name ?> from stack and call constructor
 }
 int luaopen_orca_<?= $name ?>(lua_State *L) {
 	luaL_newmetatable(L, "<?= $name ?>");
