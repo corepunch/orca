@@ -1,52 +1,7 @@
 import os, re
 import xml.etree.ElementTree as ET
+import config
 from enum import Enum
-
-class Kind(Enum):
-	ATOMIC    = "atomic"
-	ENUM      = "enum"
-	STRUCT    = "struct"
-	COMPONENT = "component"
-	RESOURCE  = "resource"
-	FIXED     = "fixed"
-	UNKNOWN   = "unknown"
-
-Axis = [
-	(re.compile(r"(.+)\.Axis\[0\]\.Left(.*)"),              r"\1Left\2"),
-	(re.compile(r"(.+)\.Axis\[0\]\.Right(.*)"),             r"\1Right\2"),
-	(re.compile(r"(.+)\.Axis\[1\]\.Left(.*)"),              r"\1Top\2"),
-	(re.compile(r"(.+)\.Axis\[1\]\.Right(.*)"),             r"\1Bottom\2"),
-	(re.compile(r"(.+)\.Axis\[2\]\.Left(.*)"),              r"\1Front\2"),
-	(re.compile(r"(.+)\.Axis\[2\]\.Right(.*)"),             r"\1Back\2"),
-	(re.compile(r"Size.Axis\[0\]\.(?:Requested)?(.*)"),     r"\1Width"),
-	(re.compile(r"Size.Axis\[1\]\.(?:Requested)?(.*)"),     r"\1Height"),
-	(re.compile(r"Size.Axis\[2\]\.(?:Requested)?(.*)"),     r"\1Depth"),
-	(re.compile(r"(.+)\.Axis\[0\]"),                        r"Horizontal\1"),
-	(re.compile(r"(.+)\.Axis\[1\]"),                        r"Vertical\1"),
-	(re.compile(r"(.+)\.Axis\[2\]"),                        r"Depth\1"),
-	(re.compile(r"Border\.Radius\.(.+)Radius"),             r"Border\1Radius"),
-]
-
-atomic_types = {
-	"float":  ("luaL_checknumber",  "lua_pushnumber", "%f"),
-	"int":    ("luaL_checknumber",  "lua_pushnumber", "%d"),
-	"uint":   ("luaL_checknumber",  "lua_pushnumber", "%u"),
-	"long":   ("luaL_checkinteger", "lua_pushinteger", "%ld"),
-	"bool":   ("lua_toboolean",     "lua_pushboolean", "%d"),
-	"string": ("luaL_checkstring",  "lua_pushstring", "%s"),
-	"fixed":  ("luaL_checkstring",  "lua_pushstring", "%s"),
-	"handle": ("lua_touserdata",    "lua_pushlightuserdata", "%s"),
-}
-
-printers = {
-	Kind.ATOMIC: "%s",
-	Kind.ENUM: "enum %s",
-	Kind.STRUCT: "struct %s",
-	Kind.COMPONENT: "struct %s",
-	Kind.RESOURCE: "struct %s",
-	Kind.FIXED: "%sString_t",
-	Kind.UNKNOWN: "%s_t",
-}
 
 class Model:
 	def __init__(self, xml_file, include_file = None):
@@ -78,13 +33,11 @@ class Model:
 	def getComponents(self): return self.components
 	def getResources(self): return self.resources
 	def getKind(self, _type):
-		if _type == "fixed": return Kind.FIXED, None
-		if _type in atomic_types: return Kind.ATOMIC, None
-		if self._has_in(_type, "enums"): return Kind.ENUM, self._has_in(_type, "enums")
-		if self._has_in(_type, "structs"): return Kind.STRUCT, self._has_in(_type, "structs")
-		if self._has_in(_type, "components"): return Kind.COMPONENT, self._has_in(_type, "components")
-		if self._has_in(_type, "resources"): return Kind.RESOURCE, self._has_in(_type, "resources")
-		return Kind.UNKNOWN, None
+		if self._has_in(_type, "enums"): return "enum", self._has_in(_type, "enums")
+		if self._has_in(_type, "structs"): return "struct", self._has_in(_type, "structs")
+		if self._has_in(_type, "components"): return "component", self._has_in(_type, "components")
+		if self._has_in(_type, "resources"): return "resource", self._has_in(_type, "resources")
+		return _type, None
 	def getRequires(self): 
 		for r in self.requires:
 			yield (r.getModuleName(), r)
@@ -105,44 +58,24 @@ class Type(Base):
 		super().__init__(element, model)
 		self.kind, self.data = model.getKind(self.type)
 		self.fixed_array = int(element.get("fixed-array")) if element.get("fixed-array") else None
-		self.export = self.data.export if self.kind == Kind.STRUCT else self.type
+		self.export = self.data.export if self.kind == "struct" else self.type
+		self.default = element.get("default")
 
 	def __str__(self):
-		base = printers.get(self.kind, "%s") % self.type
+		base = {
+			"enum": "enum %s",
+			"struct": "struct %s",
+			"component": "struct %s",
+			"resource": "struct %s",
+			"fixed": "%sString_t",
+		}.get(self.kind, "%s") % self.type
 		if getattr(self, 'const', False): base += " const"
 		if getattr(self, 'pointer', False): base += "*"
 		return base
 
-	def getFormatPlaceholder(self):
-		if self.kind == Kind.ATOMIC or self.kind == Kind.FIXED:
-			return atomic_types[self.type][2]
-		elif self.kind == Kind.ENUM:
-			return "%s"
-		elif self.kind in (Kind.STRUCT, Kind.COMPONENT, Kind.RESOURCE):
-			return f"%s"
-		else:
-			return None
+	def get(self, name, arg = None, addr = None):
+		return config.TypeInfos[self.kind][name].format(type = self.type, arg = arg, addr = addr)
 	
-	def getImporter(self, index):
-		if self.kind == Kind.ATOMIC or self.kind == Kind.FIXED:
-			return f"{atomic_types[self.type][0]}(L, {index})"
-		elif self.kind == Kind.ENUM:
-			return f"luaL_checkoption(L, index, NULL, _{self.type})"
-		elif self.kind in (Kind.STRUCT, Kind.COMPONENT, Kind.RESOURCE):
-			return f"luaX_check{self.type}(L, {index})"
-		else:
-			return None
-
-	def getExporter(self, variable):
-		if self.kind == Kind.ATOMIC or self.kind == Kind.FIXED:
-			return f"{atomic_types[self.type][1]}(L, {variable})"
-		elif self.kind == Kind.ENUM:
-			return f"lua_pushstring(L, {self.type}ToString({variable}))"
-		elif self.kind in (Kind.STRUCT, Kind.COMPONENT, Kind.RESOURCE):
-			return f"luaX_push{self.type}(L, {variable})"
-		else:
-			return None
-
 def fnv1a32(str):
 	hval = 0x811C9DC5
 	prime = 0x01000193
@@ -155,20 +88,22 @@ def fnv1a32(str):
 class FieldName(str):
 	def __new__(cls, name):
 		self = super().__new__(cls, name)
-		self.id = "0x%s"%fnv1a32(name)
+		self.id = "0x%s" % fnv1a32(name)
 		return self
 
 class PropertyName:
 	def __init__(self, classname, *args):
 		self.classname = classname
 		self.path = args
+		self.addr = '.'.join(args)
+		self.id = "0x%s" % fnv1a32(''.join(args))
 		
 	def __str__(self): return self.format()
 	def getPath(self): return '.'.join(self.path)
 	def format(self):
 		name = self.getPath()
-		for pat, repl in Axis:
-			s2, n = pat.subn(repl, name, count=1)
+		for pat, repl in config.Axis:
+			s2, n = re.compile(pat).subn(repl, name, count=1)
 			if n:
 				return s2.replace('.', '')
 		return name.replace('.', '')
@@ -195,6 +130,13 @@ class Method(Base):
 	def getArgsTypes(self):
 		for _, type_ in self.args:
 			yield type_
+
+class ParserType(str):
+	def __new__(cls, name, addr, type_):
+		self = super().__new__(cls, name)
+		self.addr = addr
+		self.pointer = f"&{name}" if type_.get("format") != "%s" else name
+		return self
 
 class Struct(Base):
 	def __init__(self, element: ET.Element, model: Model): 
@@ -224,39 +166,44 @@ class Struct(Base):
 			for name, field in self.getFields():
 				if field.fixed_array:
 					for i in range(field.fixed_array):
-						if field.kind == Kind.STRUCT:
+						if field.kind == "struct":
 							for sub_name, sub_type in field.data.getFields():
-								myname = f"{self.name}_{name}{i}_{sub_name}"
-								# fields.append((AxisConfig.get(myname, sub_type), myname))
-								# repl[myname] = f"{sub_name}[{i}].{subsub_name}"
-								yield myname, sub_type
+								yield ParserType(f"{self.name}_{name}{i}_{sub_name}", f"{name}[{i}].{sub_name}", sub_type), sub_type
 						else:
-							# fields.append((AxisConfig.get(myname, field_type), myname))
-							# repl[myname] = f"{sub_name}[{i}]"
-							myname = f"{self.name}_{name}{i}"
-							yield myname, field
+							yield ParserType(f"{self.name}_{name}{i}", f"{name}[{i}]", field), field
 				else:
-					yield name, field
+					yield ParserType(name, name, field), field
 		return dict(poll())
+
+	def getConstructors(self):
+		if self._element.get("constructor"):
+			for n in self._element.get("constructor").split(','):
+				yield int(n)
 
 class Component(Struct):
 	def __init__(self, element: ET.Element, model: Model): 
 		super().__init__(element, model)
 
 	def getProperties(self):
-		def walk(type_, *args):
-			yield PropertyName(*args), type_
-			if type_.kind == Kind.STRUCT and not type_.data.sealed:
-				for k, v in type_.data.getFields():
-					if v.fixed_array:
-						for i in range(v.fixed_array):
-							yield from walk(v, *args, f"{k}[{i}]")
-					else:
-						yield from walk(v, *args, k)
+		def func():
+			def walk(type_, *args):
+				yield PropertyName(*args), type_
+				if type_.kind == "struct" and not type_.data.sealed:
+					for k, v in type_.data.getFields():
+						if v.fixed_array:
+							for i in range(v.fixed_array):
+								yield from walk(v, *args, f"{k}[{i}]")
+						else:
+							yield from walk(v, *args, k)
 
-		for f in self._element.findall(".//property[@name]"):
-			type_ = Type(f, self._model)
-			yield from walk(type_, self.name, f.get('name'))
+			for f in self._element.findall(".//property[@name]"):
+				type_ = Type(f, self._model)
+				yield from walk(type_, self.name, f.get('name'))
+		return dict(func())
+
+	def getEventHandlers(self):
+		for node in self._element.findall("handles"):
+			yield node.get("event")
 
 class Enum(Base):
 	def __init__(self, element: ET.Element, model: Model): 

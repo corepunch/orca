@@ -16,40 +16,51 @@ static int f_new_<?= $name ?>(lua_State *L) {
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		<?php foreach ($struct->getFields() as $field => $type):?>
-		lua_pop(L, (lua_getfield(L, 1, "<?= $field ?>"), self-><?= $field ?> = <?= $type->getImporter(-1) ?>, 1));
+		lua_pop(L, (lua_getfield(L, 1, "<?= $field ?>"), self-><?= $field ?> = <?= $type->get("check", -1) ?>, 1));
 		<?php endforeach ?>
 	} else {
 		<?php $index = 1 ?>
 		<?php foreach ($struct->getFields() as $field => $type):?>
-		self-><?= $field ?> = <?= $type->getImporter($index) ?>;
+		self-><?= $field ?> = <?= $type->get("check", $index) ?>;
 		<?php $index = $index + 1 ?>
 		<?php endforeach ?>
 	}
 	return 1;
 }
+
+<?php foreach ($struct->getConstructors() as $numargs):?>
+void <?= $name ?>_Convert<?= $numargs ?>(struct <?= $name ?>*, <?= implode(", ", array_slice(array_values($struct->getParsers()), 0, $numargs)) ?>);
+<?php endforeach ?>
+
 static int f_fromstring_<?= $name ?>(lua_State *L) {
 	<?php foreach ($struct->getParsers() as $field => $type):?>
 	<?= $type ?> <?= $field ?>;
 	<?php endforeach ?>
 	<?php 
-	$format = implode(" ", array_map(fn($v) => $v->getFormatPlaceholder(), $struct->getParsers())) 
-	$targets = implode(", ", array_map(fn($k) => "&{$k}", array_keys($struct->getParsers())))
+	$format = implode(" ", array_map(fn($v) => $v->get('format'), $struct->getParsers())) 
+	$targets = implode(", ", array_map(fn($k) => $k->pointer, array_keys($struct->getParsers())))
 	?>
+	struct <?= $name ?> self = {0};
 	switch (sscanf(luaL_checkstring(L, 1), "<?= $format ?>", <?= $targets ?>)) {
+		case <?= count($struct->getParsers()) ?>: 
+			<?php foreach ($struct->getParsers() as $field => $type):?>
+			<?= $type->get('convert', $field, $field->addr) ?>;
+			<?php endforeach ?>
+			return (luaX_push<?= $name ?>(L, &self), 1);
+		<?php foreach ($struct->getConstructors() as $numargs):?>
+		case <?= $numargs ?>:
+			<?= $name ?>_Convert<?= $numargs ?>(&self, <?= implode(", ", array_slice(array_keys($struct->getParsers()), 0, $numargs)) ?>);
+			return (luaX_push<?= $name ?>(L, &self), 1);
+		<?php endforeach ?>
 		default:
 			return luaL_error(L, "Invalid format for <?= $name ?>: %s", luaL_checkstring(L, 1));
 	}
-
-	
-
-	return 1;
 }
-
 int f_<?= $name ?>___index(lua_State *L) {
 	stuct <?= $name ?>* self = luaX_check<?= $name ?>(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 		<?php foreach ($struct->getFields() as $field => $type):?>
-		case <?= $field->id ?>: <?= $type->getExporter("self->$field") ?>; return 1; // <?= $field ?>
+		case <?= $field->id ?>: <?= $type->get('push', "self->$field") ?>; return 1; // <?= $field ?>
 		<?php endforeach ?>
 	}
 	return luaL_error(L, "Unknown field in <?= $name ?>: %s", luaL_checkstring(L, 2));
@@ -58,7 +69,7 @@ int f_<?= $name ?>___newindex(lua_State *L) {
 	stuct <?= $name ?>* self = luaX_check<?= $name ?>(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 		<?php foreach ($struct->getFields() as $field => $type):?>
-		case <?= $field->id ?>: self-><?= $field ?> = <?= $type->getImporter(3) ?>; return 0; // <?= $field ?>
+		case <?= $field->id ?>: self-><?= $field ?> = <?= $type->get('check', 3) ?>; return 0; // <?= $field ?>
 		<?php endforeach ?>
 	}
 	return luaL_error(L, "Unknown field in <?= $name ?>: %s", luaL_checkstring(L, 2));
