@@ -38,12 +38,30 @@ atomic_types = {
 	"handle": ("lua_touserdata",    "lua_pushlightuserdata"),
 }
 
+typedefs = {
+	"nresults": "int32_t",
+	"string":   "const char*",
+	"handle":   "void*",
+	"bool":     "bool_t",
+	"uint":     "uint32_t",
+	"long":     "long",
+	"int":      "int32_t",
+	"float":    "float",
+	"fixed":    "fixedString_t",
+}
+
 def conv_name(name):
 	for pat, repl in Axis:
 		s2, n = pat.subn(repl, name, count=1)
 		if n:
 			return s2
 	return name
+
+def property_name(path):
+	"""Transform a raw property path (e.g. 'Size.Axis[0].Requested') into
+	a C identifier fragment (e.g. 'Width') using the Axis substitution rules."""
+	name = conv_name(path)
+	return "".join(s[:1].upper() + s[1:] for s in name.split('.') if s)
 
 printers = {
 	Kind.ATOMIC: "%s",
@@ -89,6 +107,10 @@ class Model:
 	def getEnums(self): return self.enums
 	def getComponents(self): return self.components
 	def getResources(self): return self.resources
+	def hasClasses(self): return bool(self.root.find('class') is not None)
+	def getElements(self):
+		"""Yield all direct child elements of the module root in document order."""
+		yield from self.root
 	def getKind(self, _type):
 		if _type == "fixed": return Kind.FIXED, None
 		if _type in atomic_types: return Kind.ATOMIC, None
@@ -111,6 +133,7 @@ class Base:
 	def getName(self): return self._element.get('name')
 	def getAttribute(self, key): return self._element.get(key)
 	def getAttributes(self): return self._element.attrib
+	def getSummary(self): return self._element.findtext('summary') or ''
 
 class Type(Base):
 	def __init__(self, element: ET.Element, model: Model):
@@ -119,10 +142,23 @@ class Type(Base):
 		self.fixed_array = int(element.get("fixed-array")) if element.get("fixed-array") else None
 
 	def __str__(self):
-		base = printers.get(self.kind, "%s") % self.type
-		if getattr(self, 'const', False): base += " const"
-		if getattr(self, 'pointer', False): base += "*"
-		return base
+		t = self.type
+		is_pointer = getattr(self, 'pointer', None) or getattr(self, 'array', None)
+		is_const = getattr(self, 'const', None)
+		if t in typedefs:
+			base = typedefs[t]
+			return base + "*" if is_pointer else base
+		if self.kind == Kind.ENUM:
+			return f'e{t}_t'
+		if self.kind in (Kind.STRUCT, Kind.COMPONENT, Kind.RESOURCE):
+			if is_pointer:
+				return f'lpc{t}_t' if is_const else f'lp{t}_t'
+			return f'c{t}_t' if is_const else f'{t}_t'
+		if self.kind == Kind.FIXED:
+			return "fixedString_t"
+		return f'{t}_t'
+
+	def getDoc(self): return self._element.text or ''
 
 class Method(Base):
 	def __init__(self, element: ET.Element, model: Model, owner: ET.Element = None):
@@ -172,6 +208,15 @@ class Struct(Base):
 class Component(Struct):
 	def __init__(self, element: ET.Element, model: Model): 
 		super().__init__(element, model)
+		# Mirror the NumXxx injection that conv-module.py performs at runtime so
+		# that getEnumProperties() and getProperties() include the count field.
+		import xml.etree.ElementTree as _ET
+		children = list(element)
+		for i, p in reversed(list(enumerate(children))):
+			if p.tag == "property" and p.get("array"):
+				num_elem = _ET.Element('property', {'name': f"Num{p.get('name')}", 'type': 'int'})
+				num_elem.text = f"Number of {p.get('name')}"
+				element.insert(i + 1, num_elem)
 
 	def getProperties(self):
 		def walk(name_prefix, type_):
@@ -186,6 +231,21 @@ class Component(Struct):
 		for f in self._element.findall(".//property[@name]"):
 			type_ = Type(f, self._model)
 			yield from walk(f.get('name'), type_)
+
+	def getEnumProperties(self):
+		"""Return a list of C-identifier property names (with Axis transforms applied).
+
+		Matches the enumeration order used by ``properties_writer.py`` so the
+		generated ``enum XxxProperties`` and ``#define ID_Xxx_Yyy`` blocks are
+		byte-for-byte identical to those produced by the Python plugin."""
+		result = []
+		if self._element.get('sealed'):
+			return result
+		for sh in self._element.findall("shorthand"):
+			result.append(sh.get('name'))
+		for raw_path, _ in self.getProperties():
+			result.append(property_name(raw_path))
+		return result
 
 class Enum(Base):
 	def __init__(self, element: ET.Element, model: Model): 

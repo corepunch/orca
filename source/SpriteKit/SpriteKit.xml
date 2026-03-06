@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 <!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
 <module name="SpriteKit" namespace="orca" on-luaopen="on_spritekit_module_registered">
+  <require file="../geometry/geometry.xml"/>
+  <require file="../UIKit/UIKit.xml"/>
   <include file="source/UIKit/UIKit.h"/>
   <include file="source/renderer/api/renderer.h"/>
   <include file="include/renderer.h"/>

@@ -1,14 +1,18 @@
 <?php require "model.py"; ?>
 <?php $model = new Model($argv[1]); ?>
-#ifndef __<?= strtoupper($model->getModuleName()) ?>_PROPERTIES_H__
-#define __<?= strtoupper($model->getModuleName()) ?>_PROPERTIES_H__
-<?php foreach ($model->getComponents() as $name => $component)
-	$hashed_class = hash('fnv1a32', $name)
-	echo("\n// {$name}\n")
-	echo("#define ID_{$name} 0x$hashed_class\n")
-	foreach ($component->getProperties() as $property_name => $property_type) 
-		$hashed_property = hash('fnv1a32', "$name.$property_name");
-		echo("#define ID_{$name}_{$property_name} 0x$hashed_property // {$name}.{$property_name}\n");
- endforeach 
-endforeach ?>
-#endif
+<?php foreach ($model->getComponents() as $name => $component): ?>
+<?php $props = $component->getEnumProperties(); ?>
+#define ID_<?= $name ?> 0x<?= hash('fnv1a32', $name) ?>
+#define Get<?= $name ?>(_P)((struct <?= $name ?>*)((_P)?OBJ_GetComponent(_P,ID_<?= $name ?>):NULL))
+#define <?= $name ?>_GetProperty(_P,_N)OBJ_GetPropertyAtIndex(_P,ID_<?= $name ?>,sizeof(struct <?= $name ?>),_N)
+enum <?= $name ?>Properties {
+<?php foreach ($props as $prop): ?>
+	k<?= $name ?><?= $prop ?>,
+<?php endforeach ?>
+	k<?= $name ?>NumProperties
+};
+
+<?php foreach ($props as $prop): ?>
+#define ID_<?= $name ?>_<?= $prop ?> 0x<?= hash('fnv1a32', "$name.$prop") ?>
+<?php endforeach ?>
+<?php endforeach ?>
