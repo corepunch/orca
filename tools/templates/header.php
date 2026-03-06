@@ -1,4 +1,4 @@
-<?php require "model.py"; ?>
+<?php require "model.php"; ?>
 <?php $model = new Model($argv[1]); ?>
 
 <?php function printContents($list) {
