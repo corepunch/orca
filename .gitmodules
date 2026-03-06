@@ -2,5 +2,5 @@
 	path = libs/platform
 	url = https://github.com/corepunch/platform.git
 [submodule "tools/pyphp"]
-path = tools/pyphp
-url = https://github.com/corepunch/PyPHP.git
+	path = tools/pyphp
+	url = https://github.com/corepunch/PyPHP.git
