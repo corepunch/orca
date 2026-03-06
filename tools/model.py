@@ -52,23 +52,18 @@ class Model:
 	def __init__(self, xml_file, include_file = None):
 		tree = ET.parse(xml_file)
 		self.root = tree.getroot()
-		self.source = include_file
+		self.source = include_file or xml_file
 		self.requires = [Model(os.path.join(os.path.dirname(xml_file), req.get('file')), req.get('file')) for req in tree.getroot().findall('require')]
 		self.structs = {s.get('name'): Struct(s, self) for s in self.root.findall(".//struct[@name]")}
 		self.enums = {e.get('name'): Enum(e, self) for e in self.root.findall(".//enums[@name]")}
 		self.components = {c.get('name'): Component(c, self) for c in self.root.findall(".//class[@name]")}
 		self.resources = {c.get('type'): Resource(c, self) for c in self.root.findall(".//resource[@type]")}
 
-	def _has_in(self, key, attr_name, visited=None):
-		if visited is None: 
-			visited = set()
-		if id(self) in visited: 
-			return None
-		visited.add(id(self))
+	def _has_in(self, key, attr_name):
 		if key in getattr(self, attr_name):
 			return getattr(self, attr_name)[key]
 		for req in self.requires:
-			result = req._has_in(key, attr_name, visited)
+			result = req._has_in(key, attr_name)
 			if result: 
 				return result
 		return None
@@ -110,12 +105,63 @@ class Type(Base):
 		super().__init__(element, model)
 		self.kind, self.data = model.getKind(self.type)
 		self.fixed_array = int(element.get("fixed-array")) if element.get("fixed-array") else None
+		self.export = self.data.export if self.kind == Kind.STRUCT else self.type
 
 	def __str__(self):
 		base = printers.get(self.kind, "%s") % self.type
 		if getattr(self, 'const', False): base += " const"
 		if getattr(self, 'pointer', False): base += "*"
 		return base
+	
+	def getImporter(self, index):
+		if self.kind == Kind.ATOMIC or self.kind == Kind.FIXED:
+			return f"{atomic_types[self.type][0]}(L, {index})"
+		elif self.kind == Kind.ENUM:
+			return f"luaL_checkoption(L, index, NULL, _{self.type})"
+		elif self.kind in (Kind.STRUCT, Kind.COMPONENT, Kind.RESOURCE):
+			return f"luaX_check{self.type}(L, {index})"
+		else:
+			return None
+
+	def getExporter(self, variable):
+		if self.kind == Kind.ATOMIC or self.kind == Kind.FIXED:
+			return f"{atomic_types[self.type][1]}(L, {variable})"
+		elif self.kind == Kind.ENUM:
+			return f"lua_pushstring(L, {self.type}ToString({variable}))"
+		elif self.kind in (Kind.STRUCT, Kind.COMPONENT, Kind.RESOURCE):
+			return f"luaX_push{self.type}(L, {variable})"
+		else:
+			return None
+
+def fnv1a32(str):
+	hval = 0x811C9DC5
+	prime = 0x01000193
+	uint32_max = 2 ** 32
+	for s in str:
+		hval = hval ^ ord(s)
+		hval = (hval * prime) % uint32_max
+	return "%08x" % hval	
+
+class FieldName(str):
+	def __new__(cls, name):
+		self = super().__new__(cls, name)
+		self.id = "0x%s"%fnv1a32(name)
+		return self
+
+class PropertyName:
+	def __init__(self, classname, *args):
+		self.classname = classname
+		self.path = args
+		
+	def __str__(self): return self.format()
+	def getPath(self): return '.'.join(self.path)
+	def format(self):
+		name = self.getPath()
+		for pat, repl in Axis:
+			s2, n = pat.subn(repl, name, count=1)
+			if n:
+				return s2.replace('.', '')
+		return name.replace('.', '')
 
 class Method(Base):
 	def __init__(self, element: ET.Element, model: Model, owner: ET.Element = None):
@@ -144,10 +190,11 @@ class Struct(Base):
 	def __init__(self, element: ET.Element, model: Model): 
 		super().__init__(element, model)
 		self.sealed = element.get('sealed') == "true"
+		self.export = element.get('export') or self.name
 
 	def getFields(self):
 		for f in self._element.findall(".//field[@name]"):
-			yield f.get('name'), Type(f, self._model)
+			yield FieldName(f.get('name')), Type(f, self._model)
 
 	def getMethods(self):
 		for m in self._element.findall(".//method[@name]"):
@@ -161,21 +208,6 @@ class Struct(Base):
 			if name == key:
 				return type_
 		raise KeyError(key)
-
-class PropertyName:
-	def __init__(self, classname, *args):
-		self.classname = classname
-		self.path = args
-		
-	def __str__(self): return self.format()
-	def getPath(self): return '.'.join(self.path)
-	def format(self):
-		name = self.getPath()
-		for pat, repl in Axis:
-			s2, n = pat.subn(repl, name, count=1)
-			if n:
-				return s2.replace('.', '')
-		return name.replace('.', '')
 
 class Component(Struct):
 	def __init__(self, element: ET.Element, model: Model): 
@@ -203,6 +235,10 @@ class Enum(Base):
 	def getValues(self):
 		for e in self._element.findall(".//enum[@name]"):
 			yield e.get('name'), e.text
+
+	def getValuesNames(self):
+		for e in self._element.findall(".//enum[@name]"):
+			yield e.get('name')
 
 class Resource(Base):
 	def __init__(self, element: ET.Element, model: Model): 
