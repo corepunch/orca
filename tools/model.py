@@ -2,7 +2,10 @@ import os, re
 import xml.etree.ElementTree as ET
 from enum import Enum
 
-# C typedefs used for argument/return type generation
+# C typedefs used for argument/return type generation.
+# Maps XML primitive type names to their C type alias equivalents so that
+# generated code uses the project-wide typedefs (e.g. ``int32_t`` instead of
+# ``int``, ``bool_t`` instead of ``bool``).
 _typedefs = {
 	"nresults": "int32_t",
 	"string":   "const char*",
