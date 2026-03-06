@@ -3,13 +3,13 @@ import xml.etree.ElementTree as ET
 from enum import Enum
 
 class Kind(Enum):
-    ATOMIC    = "atomic"
-    ENUM      = "enum"
-    STRUCT    = "struct"
-    COMPONENT = "component"
-    RESOURCE  = "resource"
-    FIXED     = "fixed"
-    UNKNOWN   = "unknown"
+	ATOMIC    = "atomic"
+	ENUM      = "enum"
+	STRUCT    = "struct"
+	COMPONENT = "component"
+	RESOURCE  = "resource"
+	FIXED     = "fixed"
+	UNKNOWN   = "unknown"
 
 Axis = [
 	(re.compile(r"(.+)\.Axis\[0\]\.Left(.*)"),              r"\1Left\2"),
@@ -37,13 +37,6 @@ atomic_types = {
 	"fixed":  ("luaL_checkstring",  "lua_pushstring"),
 	"handle": ("lua_touserdata",    "lua_pushlightuserdata"),
 }
-
-def conv_name(name):
-	for pat, repl in Axis:
-		s2, n = pat.subn(repl, name, count=1)
-		if n:
-			return s2
-	return name
 
 printers = {
 	Kind.ATOMIC: "%s",
@@ -169,23 +162,39 @@ class Struct(Base):
 				return type_
 		raise KeyError(key)
 
+class PropertyName:
+	def __init__(self, classname, *args):
+		self.classname = classname
+		self.path = args
+		
+	def __str__(self): return self.format()
+	def getPath(self): return '.'.join(self.path)
+	def format(self):
+		name = self.getPath()
+		for pat, repl in Axis:
+			s2, n = pat.subn(repl, name, count=1)
+			if n:
+				return s2.replace('.', '')
+		return name.replace('.', '')
+
 class Component(Struct):
 	def __init__(self, element: ET.Element, model: Model): 
 		super().__init__(element, model)
 
 	def getProperties(self):
-		def walk(name_prefix, type_):
-			yield name_prefix, type_
+		def walk(type_, *args):
+			yield PropertyName(*args), type_
 			if type_.kind == Kind.STRUCT and not type_.data.sealed:
 				for k, v in type_.data.getFields():
 					if v.fixed_array:
 						for i in range(v.fixed_array):
-							yield from walk(f"{name_prefix}.{k}[{i}]", v)
+							yield from walk(v, *args, f"{k}[{i}]")
 					else:
-						yield from walk(f"{name_prefix}.{k}", v)
+						yield from walk(v, *args, k)
+
 		for f in self._element.findall(".//property[@name]"):
 			type_ = Type(f, self._model)
-			yield from walk(f.get('name'), type_)
+			yield from walk(type_, self.name, f.get('name'))
 
 class Enum(Base):
 	def __init__(self, element: ET.Element, model: Model): 
@@ -194,7 +203,6 @@ class Enum(Base):
 	def getValues(self):
 		for e in self._element.findall(".//enum[@name]"):
 			yield e.get('name'), e.text
-
 
 class Resource(Base):
 	def __init__(self, element: ET.Element, model: Model): 
