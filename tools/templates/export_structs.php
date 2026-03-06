@@ -1,4 +1,5 @@
 <?php foreach ($model->getStructs() as $name => $struct):?>
+<?php $fromstring = $struct->getFromstringInfo() ?>
 
 void luaX_push<?= $name ?>(lua_State *L, lpc<?= $name ?>_t data) {
 if (data == NULL) { lua_pushnil(L); return; }
@@ -48,11 +49,14 @@ case <?= $field->id ?>: self-><?= $field ?> = <?= $type->getImporter(3) ?>; retu
 }
 return luaL_error(L, "Unknown field in <?= $name ?>: %s", luaL_checkstring(L, 2));
 }
+<?php if ($fromstring != null):?>
+<?= $fromstring->generateCode() ?>
+<?php endif?>
 int luaopen_<?= $model->getNamespace() ?>_<?= $name ?>(lua_State *L) {
 luaL_newmetatable(L, "<?= $struct->export ?>");
 luaL_setfuncs(L, ((luaL_Reg[]) {
 { "new", f_new_<?= $name ?> },
-{ "fromstring", f_fromstring_<?= $name ?> },
+<?php if ($fromstring != null):?>{ "fromstring", f_fromstring_<?= $name ?> },<?php endif?>
 { "__newindex", f_<?= $name ?>___newindex },
 { "__index", f_<?= $name ?>___index },
 { NULL, NULL },

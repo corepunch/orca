@@ -258,6 +258,57 @@ class Struct(Base):
 				return type_
 		raise KeyError(key)
 
+	def getFromstringInfo(self):
+		"""Return a :class:`FromstringInfo` for this struct, or ``None`` when a
+		fromstring parser cannot be generated.
+
+		A parser is skipped when the struct has more than 6 scannable fields, or
+		when any field's type is a struct that isn't marked ``unwrap="true"``.
+		"""
+		_MAX_FIELDS = 6
+		_AXIS_CONFIG = {
+			"AlignmentShorthand_Axis0": "HorizontalAlignment",
+			"AlignmentShorthand_Axis1": "VerticalAlignment",
+			"AlignmentShorthand_Axis2": "DepthAlignment",
+		}
+		fields = []   # list of (type_name, local_var_name)
+		repl   = {}   # local_var_name → field access expression (for fixed-arrays)
+
+		for field_elem in self._element.findall('field'):
+			field_type = field_elem.get('type')
+			field_name = field_elem.get('name')
+			fixed = field_elem.get('fixed-array')
+
+			if fixed:
+				for i in range(int(fixed)):
+					sub_struct = self._model._has_in(field_type, 'structs')
+					if sub_struct is not None:
+						for sf in sub_struct._element.findall('field'):
+							sf_type = sf.get('type')
+							sf_name = sf.get('name')
+							myname = f"{self.name}_{field_name}{i}_{sf_name}"
+							actual_type = _AXIS_CONFIG.get(myname, sf_type)
+							fields.append((actual_type, myname))
+							repl[myname] = f"{field_name}[{i}].{sf_name}"
+					else:
+						myname = f"{self.name}_{field_name}{i}"
+						actual_type = _AXIS_CONFIG.get(myname, field_type)
+						fields.append((actual_type, myname))
+						repl[myname] = f"{field_name}[{i}]"
+			else:
+				fields.append((field_type, field_name))
+
+		if len(fields) > _MAX_FIELDS:
+			return None
+
+		for type_name, _ in fields:
+			sub_struct = self._model._has_in(type_name, 'structs')
+			if sub_struct is not None and sub_struct._element.get('unwrap') != 'true':
+				return None
+
+		constructors = [s for s in (self._element.get('constructor') or '').split(',') if s.strip()]
+		return FromstringInfo(self.name, fields, repl, constructors, self._model)
+
 class Component(Struct):
 	def __init__(self, element: ET.Element, model: Model): 
 		super().__init__(element, model)
@@ -614,6 +665,100 @@ class Interface(Base):
 
 	def hasNoCheck(self):
 		return bool(self._element.get('no-check'))
+
+
+# ---------------------------------------------------------------------------
+# Fromstring parser helper  (used by Struct.getFromstringInfo)
+# ---------------------------------------------------------------------------
+
+_SCANF_FMT = {"float": "%f", "int": "%d", "uint": "%d"}
+
+
+def _get_scanf_fmt(type_name):
+	"""Return the sscanf format specifier for *type_name*."""
+	return _SCANF_FMT.get(type_name, "%s")
+
+
+def _get_scan_assign(type_name, var_name, addr, model):
+	"""Return the post-sscanf C assignment snippet for one field."""
+	kind, _ = model.getKind(type_name)
+	if kind == Kind.ENUM:
+		return (
+			f'\t\tlua_pop(L, (lua_pushstring(L, {var_name}), '
+			f'_out.{addr} = luaL_checkoption(L, -1, NULL, _{type_name}), 1)); // {var_name}\n'
+		)
+	if kind == Kind.FIXED or type_name == 'fixed':
+		return f'\t\tstrncpy(_out.{addr}, {var_name}, sizeof(_out.{addr})); // {var_name}\n'
+	if type_name == 'bool':
+		return f'\t\t_out.{addr} = strcmp({var_name}, "true") == 0; // {var_name}\n'
+	if kind == Kind.COMPONENT:
+		return (
+			f'\t\tlua_pop(L, (f_convert_string(L, &(struct PropertyType) {{\n'
+			f'\t\t\t.DataType = kDataTypeObject,\n'
+			f'\t\t\t.TypeString = "{type_name}"\n'
+			f'\t\t}}, {var_name}, TRUE), _out.{addr} = luaX_check{type_name}(L, -1), 1)); // {var_name}\n'
+		)
+	return f'\t\t_out.{addr} = {var_name}; // {var_name}\n'
+
+
+class FromstringInfo:
+	"""Encapsulates everything needed to generate a ``f_fromstring_xxx`` function."""
+
+	def __init__(self, struct_name, fields, replacements, constructors, model):
+		self.struct_name  = struct_name
+		self.fields       = fields        # [(type_name, local_var_name), ...]
+		self.replacements = replacements  # {local_var_name: field_access_path}
+		self.constructors = constructors  # [str, ...] – each is an arg count string
+		self._model       = model
+
+	def generateCode(self):
+		"""Return the complete C source for the fromstring function."""
+		lines = []
+		lines.append('extern bool_t f_convert_string(lua_State*, lpcPropertyType_t, lpcString_t, bool_t);')
+		# Forward-declare alternate constructors
+		for args in self.constructors:
+			args_list = ', '.join(t for t, _ in self.fields[:int(args)])
+			lines.append(f'void {self.struct_name}_Convert{args}(struct {self.struct_name}*, {args_list});')
+		# Function opening
+		lines.append(f'static int f_fromstring_{self.struct_name}(lua_State *L) {{')
+		# Local variable declarations
+		pointers = set()
+		for type_name, var_name in self.fields:
+			kind, _ = self._model.getKind(type_name)
+			if kind in (Kind.ENUM, Kind.COMPONENT, Kind.FIXED) or type_name in ('bool', 'fixed'):
+				lines.append(f'\tfixedString_t {var_name};')
+				pointers.add(var_name)
+			else:
+				c_type = _typedefs.get(type_name, type_name)
+				lines.append(f'\t{c_type} {var_name};')
+		# sscanf call
+		scan_fmt  = ' '.join(_get_scanf_fmt(t) for t, _ in self.fields)
+		scan_args = ', '.join(
+			('' if n in pointers else '&') + n for _, n in self.fields
+		)
+		lines.append(f'\tstruct {self.struct_name} _out = {{0}};')
+		lines.append(f'\tswitch (sscanf(luaL_checkstring(L, 1), "{scan_fmt}", {scan_args})) {{')
+		lines.append(f'\tcase {len(self.fields)}:')
+		for type_name, var_name in self.fields:
+			addr = self.replacements.get(var_name, var_name)
+			lines.append(_get_scan_assign(type_name, var_name, addr, self._model).rstrip('\n'))
+		lines.append(f'\t\tluaX_push{self.struct_name}(L, &_out); // {self.struct_name}')
+		lines.append('\t\treturn 1;')
+		# Alternate constructors
+		for args in self.constructors:
+			args_list = ', '.join(n for _, n in self.fields[:int(args)])
+			lines.append(f'\tcase {args}:')
+			lines.append(f'\t\t{self.struct_name}_Convert{args}(&_out, {args_list});')
+			lines.append(f'\t\tluaX_push{self.struct_name}(L, &_out); // {self.struct_name}')
+			lines.append('\t\treturn 1;')
+		lines.append('\tdefault:')
+		lines.append(
+			f'\t\treturn luaL_error(L, "Invalid {self.struct_name} format: %s", '
+			f'luaL_checkstring(L, 1));'
+		)
+		lines.append('\t}')
+		lines.append('}')
+		return '\n'.join(lines)
 
 
 # ---------------------------------------------------------------------------
