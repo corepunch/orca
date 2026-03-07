@@ -191,10 +191,8 @@ class Struct extends Base {
 	function __construct($elem, $model) {
 		parent::__construct($elem, $model);
 		$this->sealed = $elem["sealed"] === "true";
-		$exp = $elem["export"];
-		$this->export = $exp !== null ? $exp : $elem["name"];
-		$pfx = $elem["prefix"];
-		$this->prefix = $pfx !== null ? $pfx : $elem["name"];
+		$this->export = $elem["export"] ?? $elem["name"];
+		$this->prefix = $elem["prefix"] ?? $elem["name"];
 	}
 
 	function getFields() {
