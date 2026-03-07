@@ -5,7 +5,13 @@ LRESULT <?= $name ?>_<?= $event ?>(struct Object*, struct <?= $name ?>*, wParam_
 
 static struct PropertyType const <?= $name ?>Properties[k<?= $name ?>NumProperties] = {
 <?php foreach ($component->getProperties() as $property => $type):?>
+	<?php if ($type->kind === 'enum'): ?>
+	DECL(<?= $property->id ?>, <?= $name ?>, <?= $property ?>, <?= $property->addr ?>, kDataType<?= ucfirst($type->kind) ?>, .Enums = _<?= $type->name ?>), // <?= $name ?>.<?= $property ?>
+	<?php elseif ($type->kind === 'struct'): ?>
+	DECL(<?= $property->id ?>, <?= $name ?>, <?= $property ?>, <?= $property->addr ?>, kDataType<?= ucfirst($type->kind) ?>, .TypeString = "<?= $type->export ?>"), // <?= $name ?>.<?= $property ?>
+	<?php else: ?>
 	DECL(<?= $property->id ?>, <?= $name ?>, <?= $property ?>, <?= $property->addr ?>, kDataType<?= ucfirst($type->kind) ?>), // <?= $name ?>.<?= $property ?>
+	<?php endif ?>
 <?php endforeach ?>
 };
 static struct <?= $name ?> <?= $name ?>Defaults = {

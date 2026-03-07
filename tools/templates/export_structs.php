@@ -1,5 +1,4 @@
 <?php foreach ($model->getStructs() as $name => $struct):?>
-
 void luaX_push<?= $name ?>(lua_State *L, <?= $name ?> const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct <?= $name ?>* self = lua_newuserdata(L, sizeof(struct <?= $name ?>));
@@ -27,18 +26,16 @@ static int f_new_<?= $name ?>(lua_State *L) {
 	}
 	return 1;
 }
-
 <?php foreach ($struct->getConstructors() as $numargs):?>
 void <?= $name ?>_Convert<?= $numargs ?>(struct <?= $name ?>*, <?= implode(", ", array_slice(array_values($struct->getParsers()), 0, $numargs)) ?>);
 <?php endforeach ?>
-
 static int f_fromstring_<?= $name ?>(lua_State *L) {
 	<?php foreach ($struct->getParsers() as $field => $type):?>
 	<?= $type ?> <?= $field ?>;
 	<?php endforeach ?>
 	<?php 
-	$format = implode(" ", array_map(fn($v) => $v->get('format'), $struct->getParsers())) 
-	$targets = implode(", ", array_map(fn($k) => $k->pointer, array_keys($struct->getParsers())))
+	$format = implode(" ", array_map(fn($v) => $v->get('format'), $struct->getParsers()));
+	$targets = implode(", ", array_map(fn($k) => $k->pointer, array_keys($struct->getParsers())));
 	?>
 	struct <?= $name ?> self = {0};
 	switch (sscanf(luaL_checkstring(L, 1), "<?= $format ?>", <?= $targets ?>)) {
@@ -57,7 +54,7 @@ static int f_fromstring_<?= $name ?>(lua_State *L) {
 	}
 }
 int f_<?= $name ?>___index(lua_State *L) {
-	stuct <?= $name ?>* self = luaX_check<?= $name ?>(L, 1);
+	struct <?= $name ?>* self = luaX_check<?= $name ?>(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 		<?php foreach ($struct->getFields() as $field => $type):?>
 		case <?= $field->id ?>: <?= $type->get('push', "self->$field") ?>; return 1; // <?= $field ?>
@@ -66,7 +63,7 @@ int f_<?= $name ?>___index(lua_State *L) {
 	return luaL_error(L, "Unknown field in <?= $name ?>: %s", luaL_checkstring(L, 2));
 }
 int f_<?= $name ?>___newindex(lua_State *L) {
-	stuct <?= $name ?>* self = luaX_check<?= $name ?>(L, 1);
+	struct <?= $name ?>* self = luaX_check<?= $name ?>(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 		<?php foreach ($struct->getFields() as $field => $type):?>
 		case <?= $field->id ?>: self-><?= $field ?> = <?= $type->get('check', 3) ?>; return 0; // <?= $field ?>
@@ -77,6 +74,23 @@ int f_<?= $name ?>___newindex(lua_State *L) {
 static int f_<?= $name ?>___call(lua_State *L) {
 	return (lua_remove(L, 1), f_new_<?= $name ?>(L));  // remove <?= $name ?> from stack and call constructor
 }
+<?php foreach ($struct->getMethods() as $method_name => $method):?>
+int f_<?= $struct->prefix.$method_name ?>(lua_State *L) {
+	<?php $index = 1 ?>
+	<?php foreach ($method->getArgs() as $param_name => $param_type):?>
+	<?= $param_type ?> <?= $param_name ?> = <?= $param_type->get('check', $index) ?>;
+		<?php $index++ ?>
+	<?php endforeach ?>
+	<?php if ($method->returns): ?>
+	<?= $method->getReturnType() ?> result_ = <?= $struct->prefix.$method_name ?>(<?= implode(", ", array_keys($method->getArgs())) ?>);
+	<?= $method->getReturnType()->get('push', 'result_') ?>;
+	return 1;
+	<?php else: ?>
+	<?= $struct->prefix.$method_name ?>(<?= implode(", ", array_keys($method->getArgs())) ?> <?= $method->getReturnType() != "void" ? ", " : "" ?>);
+	return 0;
+	<?php endif ?>
+}
+<?php endforeach ?>
 int luaopen_orca_<?= $name ?>(lua_State *L) {
 	luaL_newmetatable(L, "<?= $name ?>");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -84,6 +98,9 @@ int luaopen_orca_<?= $name ?>(lua_State *L) {
 		{ "fromstring", f_fromstring_<?= $name ?> },
 		{ "__newindex", f_<?= $name ?>___newindex },
 		{ "__index", f_<?= $name ?>___index },
+	<?php foreach ($struct->getMethods() as $method_name => $method):?>
+		{ "<?= lcfirst($method_name) ?>", f_<?= $struct->prefix.$method_name ?> },
+	<?php endforeach ?>
 		{ NULL, NULL },
 	}), 0);
 	// Make <?= $name ?> creatable like via constructor-like syntax

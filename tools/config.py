@@ -43,8 +43,10 @@ TypeInfos = {
 		"format": "%s"
 	},
 	"enum": {
-		"check": "luaL_checkoption(L, {arg}, NULL, _{type})", 
-		"push": "lua_pushstring(L, {type}ToString({arg}))", 
+		# "check": "luaL_checkoption(L, {arg}, NULL, _{type})", 
+		# "push": "lua_pushstring(L, {type}ToString({arg}))", 
+		"check": "luaX_check{type}(L, {arg})", 
+		"push": "luaX_push{type}(L, {arg})", 
 		"convert": "lua_pop(L, (lua_pushstring(L, {arg}), self.{addr} = luaL_checkoption(L, -1, NULL, _{type}), 1));",
 		"format": "%s"
 	},

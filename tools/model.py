@@ -13,6 +13,7 @@ class Model:
 		self.enums = {e.get('name'): Enum(e, self) for e in self.root.findall(".//enums[@name]")}
 		self.components = {c.get('name'): Component(c, self) for c in self.root.findall(".//class[@name]")}
 		self.resources = {c.get('type'): Resource(c, self) for c in self.root.findall(".//resource[@type]")}
+		self.on_luaopen = self.root.get('on-luaopen')
 
 	def _has_in(self, key, attr_name):
 		if key in getattr(self, attr_name):
@@ -114,14 +115,18 @@ class Method(Base):
 		self.args = [(arg.get('name'), Type(arg, model)) for arg in self._element.findall('arg')]
 		self.static = self._element.get('static')
 		if owner is not None and not self.static:
-			self.args = [("this", Type(ET.Element("arg", {
-				"name": "this", 
+			self.args = [("this_", Type(ET.Element("arg", {
+				"name": "this_", 
 				"type": owner.get('name'), 
-				"pointer": "true"
+				"const": self._element.get('const') or False,
+				"pointer": True
 			}), model))] + self.args
 		returns = self._element.find('returns')
-		self.return_type = Type(returns, model) if returns is not None else 'void'
+		self.returns = Type(returns, model) if returns is not None else None
 		self.full_name = f"{owner.get('prefix', '')}{self.getName()}" if owner is not None else self.getName()
+
+	def getReturnType(self):
+		return self.returns or "void"
 
 	def getArgs(self):
 		for name, type_ in self.args:
@@ -143,6 +148,7 @@ class Struct(Base):
 		super().__init__(element, model)
 		self.sealed = element.get('sealed') == "true"
 		self.export = element.get('export') or self.name
+		self.prefix = element.get('prefix') or self.name
 
 	def getFields(self):
 		for f in self._element.findall(".//field[@name]"):
@@ -185,21 +191,19 @@ class Component(Struct):
 		super().__init__(element, model)
 
 	def getProperties(self):
-		def func():
-			def walk(type_, *args):
-				yield PropertyName(*args), type_
-				if type_.kind == "struct" and not type_.data.sealed:
-					for k, v in type_.data.getFields():
-						if v.fixed_array:
-							for i in range(v.fixed_array):
-								yield from walk(v, *args, f"{k}[{i}]")
-						else:
-							yield from walk(v, *args, k)
+		def walk(type_, *args):
+			yield PropertyName(*args), type_
+			if type_.kind == "struct" and not type_.data.sealed:
+				for k, v in type_.data.getFields():
+					if v.fixed_array:
+						for i in range(v.fixed_array):
+							yield from walk(v, *args, f"{k}[{i}]")
+					else:
+						yield from walk(v, *args, k)
 
-			for f in self._element.findall(".//property[@name]"):
-				type_ = Type(f, self._model)
-				yield from walk(type_, self.name, f.get('name'))
-		return dict(func())
+		for f in self._element.findall(".//property[@name]"):
+			type_ = Type(f, self._model)
+			yield from walk(type_, self.name, f.get('name'))
 
 	def getEventHandlers(self):
 		for node in self._element.findall("handles"):
