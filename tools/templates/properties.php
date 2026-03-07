@@ -1,4 +1,4 @@
-<?php require "model.py"; ?>
+<?php require "model/module.php"; ?>
 <?php $model = new Model($argv[1]); ?>
 #ifndef __<?= strtoupper($model->getModuleName()) ?>_PROPERTIES_H__
 #define __<?= strtoupper($model->getModuleName()) ?>_PROPERTIES_H__
