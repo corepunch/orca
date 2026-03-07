@@ -1,36 +1,7 @@
 <?php
 
-// Python module imports (pyphp maps use A\B as C -> import A.B as C)
-use xml\etree\ElementTree as ET;
 use os;
 use config;
-
-// --- Base ---
-
-class Base {
-	public $_element;
-	public $_model;
-
-	function __construct($element, $model) {
-		$this->_element = $element;
-		$this->_model = $model;
-		foreach ($element->attrib as $k => $v) {
-			setattr($this, $k, $v);
-		}
-	}
-
-	function getName() {
-		return $this->_element->get('name');
-	}
-
-	function getAttribute($key) {
-		return $this->_element->get($key);
-	}
-
-	function getAttributes() {
-		return $this->_element->attrib;
-	}
-}
 
 // --- FieldName ---
 
@@ -73,15 +44,13 @@ class PropertyName {
 	}
 
 	function format() {
-		$axis = config::Axis;
 		$name = $this->getPath();
-		foreach ($axis as $pair) {
+		foreach (config::Axis as $pair) {
 			$pat = $pair[0];
 			$repl = $pair[1];
 			$pattern = '/' . $pat . '/';
 			if (preg_match($pattern, $name)) {
-				$s2 = preg_replace($pattern, $repl, $name, 1);
-				return str_replace('.', '', $s2);
+				return str_replace('.', '', preg_replace($pattern, $repl, $name, 1));
 			}
 		}
 		return str_replace('.', '', $name);
@@ -110,17 +79,29 @@ class ParserType {
 	}
 }
 
+// --- Base ---
+
+class Base {
+	function __construct($elem, $model) {
+		$this->_elem = $elem;
+		$this->_model = $model;
+		foreach ($elem->attributes() as $k => $v) {
+			setattr($this, $k, $v);
+		}
+	}
+}
+
 // --- Type ---
 
 class Type extends Base {
-	function __construct($element, $model) {
-		parent::__construct($element, $model);
-		$this->type = $element->get('type');
+	function __construct($elem, $model) {
+		parent::__construct($elem, $model);
+		$this->type = $elem["type"];
 		[$this->kind, $this->data] = $model->getKind($this->type);
-		$fa = $element->get("fixed-array");
+		$fa = $elem["fixed-array"];
 		$this->fixed_array = $fa !== null ? intval($fa) : null;
 		$this->export = ($this->kind === "struct" && $this->data) ? $this->data->export : $this->type;
-		$this->default = $element->get("default");
+		$this->default = $elem["default"];
 	}
 
 	function __str__() {
@@ -151,29 +132,30 @@ class Type extends Base {
 // --- Method ---
 
 class Method extends Base {
-	function __construct($element, $model, $owner = null) {
-		parent::__construct($element, $model);
+	function __construct($elem, $model, $owner = null) {
+		parent::__construct($elem, $model);
 		$this->args = [];
-		foreach ($element->findall('arg') as $arg) {
-			array_push($this->args, [$arg->get('name'), new Type($arg, $model)]);
+		foreach ($elem->xpath("arg") as $arg) {
+			array_push($this->args, [$arg["name"], new Type($arg, $model)]);
 		}
-		$this->static = $element->get('static');
+		$this->static = $elem["static"];
 		if ($owner !== null && !$this->static) {
-			$attrs = ["name" => "this_", "type" => $owner->get('name'), "pointer" => "1"];
-			if ($element->get('const')) {
-				$attrs["const"] = $element->get('const');
+			$wrapper = simplexml_load_string('<args/>');
+			$thisElem = $wrapper->addChild("arg");
+			$thisElem->addAttribute("name", "this_");
+			$thisElem->addAttribute("type", $owner["name"]);
+			$thisElem->addAttribute("pointer", "1");
+			$const = $elem["const"];
+			if ($const) {
+				$thisElem->addAttribute("const", $const);
 			}
-			$thisElem = ET::Element("arg", $attrs);
 			array_unshift($this->args, ["this_", new Type($thisElem, $model)]);
 		}
-		$returns = $element->find('returns');
-		$this->returns = $returns !== null ? new Type($returns, $model) : null;
-		$prefix = '';
-		if ($owner) {
-			$p = $owner->get('prefix');
-			$prefix = $p !== null ? $p : '';
-		}
-		$base_name = $this->getName();
+		$rets = $elem->xpath("returns");
+		$this->returns = count($rets) > 0 ? new Type($rets[0], $model) : null;
+		$pfx = $owner !== null ? $owner["prefix"] : null;
+		$prefix = $pfx !== null ? $pfx : "";
+		$base_name = $elem["name"];
 		if ($owner !== null) {
 			$this->full_name = $prefix . $base_name;
 		} else {
@@ -206,24 +188,26 @@ class Method extends Base {
 // --- Struct ---
 
 class Struct extends Base {
-	function __construct($element, $model) {
-		parent::__construct($element, $model);
-		$this->sealed = $element->get('sealed') === "true";
-		$this->export = $element->get('export') ?? $this->getName();
-		$this->prefix = $element->get('prefix') ?? $this->getName();
+	function __construct($elem, $model) {
+		parent::__construct($elem, $model);
+		$this->sealed = $elem["sealed"] === "true";
+		$exp = $elem["export"];
+		$this->export = $exp !== null ? $exp : $elem["name"];
+		$pfx = $elem["prefix"];
+		$this->prefix = $pfx !== null ? $pfx : $elem["name"];
 	}
 
 	function getFields() {
-		$elem = $this->_element;
-		foreach ($elem->findall(".//field[@name]") as $f) {
-			yield new FieldName($f->get('name')) => new Type($f, $this->_model);
+		$elem = $this->_elem;
+		foreach ($elem->xpath(".//field[@name]") as $f) {
+			yield new FieldName($f["name"]) => new Type($f, $this->_model);
 		}
 	}
 
 	function getMethods() {
-		$elem = $this->_element;
-		foreach ($elem->findall(".//method[@name]") as $m) {
-			yield $m->get('name') => new Method($m, $this->_model, $this->_element);
+		$elem = $this->_elem;
+		foreach ($elem->xpath(".//method[@name]") as $m) {
+			yield $m["name"] => new Method($m, $this->_model, $this->_elem);
 		}
 	}
 
@@ -236,13 +220,13 @@ class Struct extends Base {
 					if ($field->kind === "struct") {
 						$sub_fields = $field->data->getFields();
 						foreach ($sub_fields as $sub_name => $sub_type) {
-							$pt_name = $this->getName() . "_" . $name . $i . "_" . $sub_name;
+							$pt_name = $this->name . "_" . $name . $i . "_" . $sub_name;
 							$pt_addr = $name . "[" . $i . "]." . $sub_name;
 							$pt = new ParserType($pt_name, $pt_addr, $sub_type);
 							$result[$pt] = $sub_type;
 						}
 					} else {
-						$pt_name = $this->getName() . "_" . $name . $i;
+						$pt_name = $this->name . "_" . $name . $i;
 						$pt_addr = $name . "[" . $i . "]";
 						$pt = new ParserType($pt_name, $pt_addr, $field);
 						$result[$pt] = $field;
@@ -257,7 +241,7 @@ class Struct extends Base {
 	}
 
 	function getConstructors() {
-		$ctor = $this->_element->get("constructor");
+		$ctor = $this->_elem["constructor"];
 		if ($ctor) {
 			foreach (explode(',', $ctor) as $n) {
 				yield intval(trim($n));
@@ -269,11 +253,10 @@ class Struct extends Base {
 // --- Component ---
 
 class Component extends Struct {
-	function __construct($element, $model) {
-		parent::__construct($element, $model);
+	function __construct($elem, $model) {
+		parent::__construct($elem, $model);
 	}
 
-	// Recursive generator: $args[0] is classname, remaining elements are the property path
 	private function _walkProperties($type_, $args) {
 		$path = array_slice($args, 1);
 		yield new PropertyName($args[0], $path) => $type_;
@@ -293,17 +276,17 @@ class Component extends Struct {
 	}
 
 	function getProperties() {
-		$elem = $this->_element;
-		foreach ($elem->findall(".//property[@name]") as $f) {
+		$elem = $this->_elem;
+		foreach ($elem->xpath(".//property[@name]") as $f) {
 			$type_ = new Type($f, $this->_model);
-			yield from $this->_walkProperties($type_, [$this->getName(), $f->get('name')]);
+			yield from $this->_walkProperties($type_, [$this->name, $f["name"]]);
 		}
 	}
 
 	function getEventHandlers() {
-		$elem = $this->_element;
-		foreach ($elem->findall("handles") as $node) {
-			yield $node->get("event");
+		$elem = $this->_elem;
+		foreach ($elem->xpath("handles") as $node) {
+			yield $node["event"];
 		}
 	}
 }
@@ -311,21 +294,21 @@ class Component extends Struct {
 // --- Enum ---
 
 class Enum extends Base {
-	function __construct($element, $model) {
-		parent::__construct($element, $model);
+	function __construct($elem, $model) {
+		parent::__construct($elem, $model);
 	}
 
 	function getValues() {
-		$elem = $this->_element;
-		foreach ($elem->findall(".//enum[@name]") as $e) {
-			yield $e->get('name') => $e->text;
+		$elem = $this->_elem;
+		foreach ($elem->xpath(".//enum[@name]") as $e) {
+			yield $e["name"] => (string)$e;
 		}
 	}
 
 	function getValuesNames() {
-		$elem = $this->_element;
-		foreach ($elem->findall(".//enum[@name]") as $e) {
-			yield $e->get('name');
+		$elem = $this->_elem;
+		foreach ($elem->xpath(".//enum[@name]") as $e) {
+			yield $e["name"];
 		}
 	}
 }
@@ -333,56 +316,47 @@ class Enum extends Base {
 // --- Resource ---
 
 class Resource extends Base {
-	function __construct($element, $model) {
-		parent::__construct($element, $model);
+	function __construct($elem, $model) {
+		parent::__construct($elem, $model);
 	}
 }
 
 // --- Model ---
 
 class Model {
-	public $root;
-	public $source;
-	public $requires;
-	public $structs;
-	public $enums;
-	public $components;
-	public $resources;
-	public $on_luaopen;
-
 	function __construct($xml_file, $include_file = null) {
-		$tree = ET::parse($xml_file);
-		$root = $tree->getroot();
-		$this->root = $root;
+		$xml = simplexml_load_file($xml_file);
+		$this->root = $xml;
 		$this->source = $include_file !== null ? $include_file : $xml_file;
 		$this->requires = [];
-		foreach ($root->findall('require') as $req) {
+		foreach ($xml->xpath("require") as $r) {
 			array_push($this->requires, new Model(
-			os::path->join(os::path->dirname($xml_file), $req->get('file')),
-			$req->get('file')
+			os::path->join(os::path->dirname($xml_file), $r["file"]),
+			$r["file"]
 			));
 		}
-		$this->structs = dict();
-		$struct_nodes = $root->findall(".//struct[@name]");
-		foreach ($struct_nodes as $s) {
-			$this->structs[$s->get('name')] = new Struct($s, $this);
-		}
-		$this->enums = dict();
-		$enum_nodes = $root->findall(".//enums[@name]");
-		foreach ($enum_nodes as $e) {
-			$this->enums[$e->get('name')] = new Enum($e, $this);
-		}
-		$this->components = dict();
-		$class_nodes = $root->findall(".//class[@name]");
-		foreach ($class_nodes as $c) {
-			$this->components[$c->get('name')] = new Component($c, $this);
-		}
-		$this->resources = dict();
-		$resource_nodes = $root->findall(".//resource[@type]");
-		foreach ($resource_nodes as $c) {
-			$this->resources[$c->get('type')] = new Resource($c, $this);
-		}
-		$this->on_luaopen = $root->get('on-luaopen');
+		$self = $this;
+		$sn = $xml->xpath(".//struct[@name]");
+		$this->structs = array_combine(
+		array_map(fn($s) => $s["name"], $sn),
+		array_map(fn($s) => new Struct($s, $self), $sn)
+		);
+		$en = $xml->xpath(".//enums[@name]");
+		$this->enums = array_combine(
+		array_map(fn($e) => $e["name"], $en),
+		array_map(fn($e) => new Enum($e, $self), $en)
+		);
+		$cn = $xml->xpath(".//class[@name]");
+		$this->components = array_combine(
+		array_map(fn($c) => $c["name"], $cn),
+		array_map(fn($c) => new Component($c, $self), $cn)
+		);
+		$rn = $xml->xpath(".//resource[@type]");
+		$this->resources = array_combine(
+		array_map(fn($r) => $r["type"], $rn),
+		array_map(fn($r) => new Resource($r, $self), $rn)
+		);
+		$this->on_luaopen = $xml["on-luaopen"];
 	}
 
 	private function _has_in($key, $attr_name) {
@@ -401,35 +375,23 @@ class Model {
 	}
 
 	function getModuleName() {
-		return $this->root->get('name');
+		return $this->root["name"];
 	}
 
 	function getStruct($name) {
-		if (isset($this->structs[$name])) {
-			return $this->structs[$name];
-		}
-		return null;
+		return isset($this->structs[$name]) ? $this->structs[$name] : null;
 	}
 
 	function getEnum($name) {
-		if (isset($this->enums[$name])) {
-			return $this->enums[$name];
-		}
-		return null;
+		return isset($this->enums[$name]) ? $this->enums[$name] : null;
 	}
 
 	function getComponent($name) {
-		if (isset($this->components[$name])) {
-			return $this->components[$name];
-		}
-		return null;
+		return isset($this->components[$name]) ? $this->components[$name] : null;
 	}
 
 	function getResource($resource_type) {
-		if (isset($this->resources[$resource_type])) {
-			return $this->resources[$resource_type];
-		}
-		return null;
+		return isset($this->resources[$resource_type]) ? $this->resources[$resource_type] : null;
 	}
 
 	function getStructs() {
