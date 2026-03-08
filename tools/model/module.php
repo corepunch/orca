@@ -174,9 +174,7 @@ class Method extends Base {
 		$this->full_name = $prefix . $elem["name"];
 	}
 
-	function getReturnType() {
-		return $this->returns ?? "void";
-	}
+	function getReturnType() { return $this->returns ?? "void"; }
 
 	function getArgs() {
 		foreach ($this->args as $pair) {
@@ -218,20 +216,20 @@ class Struct extends Base {
 	}
 
 	function getParsers() {
-		$result = dict();
+		$result = [];
 		foreach ($this->getFields() as $name => $field) {
 			if ($field->fixed_array) {
 				for ($i = 0; $i < $field->fixed_array; $i++) {
 					if ($field->kind === "struct") {
 						foreach ($field->data->getFields() as $sub_name => $sub_type) {
-							$pt_name = $this->name . "_" . $name . $i . "_" . $sub_name;
-							$pt_addr = $name . "[" . $i . "]." . $sub_name;
+							$pt_name = "{$this->name}_{$name}{$i}_{$sub_name}";
+							$pt_addr = "{$name}[$i].{$sub_name}";
 							$pt = new ParserType($pt_name, $pt_addr, $sub_type);
 							$result[$pt] = $sub_type;
 						}
 					} else {
-						$pt_name = $this->name . "_" . $name . $i;
-						$pt_addr = $name . "[" . $i . "]";
+						$pt_name = "{$this->name}_{$name}{$i}";
+						$pt_addr = "{$name}[$i]";
 						$pt = new ParserType($pt_name, $pt_addr, $field);
 						$result[$pt] = $field;
 					}
@@ -268,7 +266,7 @@ class Component extends Struct {
 			foreach ($type_->data->getFields() as $k => $v) {
 				if ($v->fixed_array) {
 					for ($i = 0; $i < $v->fixed_array; $i++) {
-						$new_seg = (string)$k . "[" . $i . "]";
+						$new_seg = "{$k}[$i]";
 						yield from $this->_walkProperties($v, array_merge($args, [$new_seg]));
 					}
 				} else {
@@ -378,41 +376,23 @@ class Model {
 		return null;
 	}
 
-	function getModuleName() {
-		return $this->root["name"];
-	}
+	function getModuleName() { return $this->root["name"]; }
 
-	function getStruct($name) {
-		return $this->structs[$name] ?? null;
-	}
+	function getStruct($name) { return $this->structs[$name] ?? null; }
 
-	function getEnum($name) {
-		return $this->enums[$name] ?? null;
-	}
+	function getEnum($name) { return $this->enums[$name] ?? null; }
 
-	function getComponent($name) {
-		return $this->components[$name] ?? null;
-	}
+	function getComponent($name) { return $this->components[$name] ?? null; }
 
-	function getResource($resource_type) {
-		return $this->resources[$resource_type] ?? null;
-	}
+	function getResource($resource_type) { return $this->resources[$resource_type] ?? null; }
 
-	function getStructs() {
-		return $this->structs;
-	}
+	function getStructs() { return $this->structs; }
 
-	function getEnums() {
-		return $this->enums;
-	}
+	function getEnums() { return $this->enums; }
 
-	function getComponents() {
-		return $this->components;
-	}
+	function getComponents() { return $this->components; }
 
-	function getResources() {
-		return $this->resources;
-	}
+	function getResources() { return $this->resources; }
 
 	function getKind($_type) {
 		$r = $this->_has_in($_type, "enums");
