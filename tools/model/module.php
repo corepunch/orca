@@ -216,7 +216,7 @@ class Struct extends Base {
 	}
 
 	function getParsers() {
-		$result = [];
+		$result = dict();
 		foreach ($this->getFields() as $name => $field) {
 			if ($field->fixed_array) {
 				for ($i = 0; $i < $field->fixed_array; $i++) {
