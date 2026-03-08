@@ -1,7 +1,7 @@
 <?php
 
 use os;
-use config;
+require "model/config.php";
 
 // --- FieldName ---
 
@@ -82,11 +82,15 @@ class ParserType {
 // --- Base ---
 
 class Base {
+	protected $_elem;
+	protected $_model;
+	public $name;
+
 	function __construct($elem, $model) {
 		$this->_elem = $elem;
 		$this->_model = $model;
 		foreach ($elem->attributes() as $k => $v) {
-			setattr($this, $k, $v);
+			$this->$k = $v;
 		}
 	}
 }
@@ -94,6 +98,15 @@ class Base {
 // --- Type ---
 
 class Type extends Base {
+	public $type;
+	public $kind;
+	public $data;
+	public $fixed_array;
+	public $export;
+	public $default;
+	public $const = null;
+	public $pointer = null;
+
 	function __construct($elem, $model) {
 		parent::__construct($elem, $model);
 		$this->type = $elem["type"];
@@ -114,10 +127,10 @@ class Type extends Base {
 		];
 		$format = $map[$this->kind] ?? "%s";
 		$base = sprintf($format, $this->type);
-		if (getattr($this, 'const', null)) {
+		if ($this->const) {
 			$base .= " const";
 		}
-		if (getattr($this, 'pointer', null)) {
+		if ($this->pointer) {
 			$base .= "*";
 		}
 		return $base;
@@ -132,6 +145,11 @@ class Type extends Base {
 // --- Method ---
 
 class Method extends Base {
+	public $args;
+	public $static;
+	public $returns;
+	public $full_name;
+
 	function __construct($elem, $model, $owner = null) {
 		parent::__construct($elem, $model);
 		$this->args = [];
@@ -177,6 +195,10 @@ class Method extends Base {
 // --- Struct ---
 
 class Struct extends Base {
+	public $sealed;
+	public $export;
+	public $prefix;
+
 	function __construct($elem, $model) {
 		parent::__construct($elem, $model);
 		$this->sealed = $elem["sealed"] === "true";
@@ -302,6 +324,15 @@ class Resource extends Base {
 // --- Model ---
 
 class Model {
+	public $root;
+	public $source;
+	public $requires;
+	public $structs;
+	public $enums;
+	public $components;
+	public $resources;
+	public $on_luaopen;
+
 	function __construct($xml_file, $include_file = null) {
 		$xml = simplexml_load_file($xml_file);
 		$this->root = $xml;
@@ -335,7 +366,7 @@ class Model {
 	}
 
 	private function _has_in($key, $attr_name) {
-		$map = getattr($this, $attr_name);
+		$map = $this->$attr_name;
 		if (isset($map[$key])) {
 			return $map[$key];
 		}
