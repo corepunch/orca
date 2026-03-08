@@ -13,7 +13,7 @@ class FieldName {
 		$this->id = "0x" . hash("fnv1a32", $name);
 	}
 
-	function __str__() { return $this->name; }
+	function __toString() { return $this->name; }
 }
 
 // --- PropertyName ---
@@ -28,7 +28,7 @@ class PropertyName {
 		$this->path = $path;
 	}
 
-	function __str__() { return $this->format(); }
+	function __toString() { return $this->format(); }
 
 	function getPath() { return implode('.', $this->path); }
 
@@ -87,7 +87,7 @@ class Type extends Base {
 		$this->default = $elem["default"] ?? null;
 	}
 
-	function __str__() {
+	function __toString() {
 		$map = [
 			"enum"      => "enum %s",
 			"struct"    => "struct %s",
@@ -199,12 +199,12 @@ class Struct extends Base {
 					if ($field->kind === "struct") {
 						foreach ($field->data->getFields() as $sub_name => $sub_type) {
 							$pt_name = "{$this->name}_{$name}{$i}_{$sub_name}";
-							$pt_addr = "$name[$i].$sub_name";
+							$pt_addr = "$name\[$i\].$sub_name";
 							$result[$pt_name] = ["addr" => $pt_addr, "type" => $sub_type];
 						}
 					} else {
 						$pt_name = "{$this->name}_{$name}{$i}";
-						$pt_addr = "$name[$i]";
+						$pt_addr = "$name\[$i\]";
 						$result[$pt_name] = ["addr" => $pt_addr, "type" => $field];
 					}
 				}

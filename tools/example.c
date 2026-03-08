@@ -1890,3 +1890,4 @@ enum StyleProperties {
 	kStyleNumProperties	
 };
 #endif
+?>
