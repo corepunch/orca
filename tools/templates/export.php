@@ -37,6 +37,7 @@ LRESULT <?= $name ?>Proc(struct Object* object, void* cmp, uint32_t message, wPa
 	<?php foreach ($component->getEventHandlers() as $event): ?>
 		case kEvent<?= $event ?>: return <?= $name ?>_<?= $event ?>(object, cmp, wparm, lparm); // <?= $event ?>
 	<?php endforeach ?>
+	}
 	return FALSE;
 }
 void luaX_push<?= $name ?>(lua_State *L, struct <?= $name ?>* <?= $name ?>) {
@@ -61,7 +62,7 @@ ORCA_API struct ClassDesc _<?= $name ?> = {
 
 <?php endforeach ?>
 
-ORCA_API int luaopen_orca_UIKit(lua_State *L) {
+ORCA_API int luaopen_orca_<?= $model->getModuleName() ?>(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { { NULL, NULL } }));
 	<?php if ($model->on_luaopen): ?>
 	void <?= $model->on_luaopen ?>(lua_State *L);

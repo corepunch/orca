@@ -1,12 +1,5 @@
 <?php require "model/module.php"; ?>
 <?php $model = new Model($argv[1]); ?>
-
-<?php function printContents($list) {
-	foreach ($list as $name => $type) {
-		echo("\t$type $name;\n"); 
-	}
-} ?>
-
 #ifndef __<?= strtoupper($model->getModuleName()) ?>_H__
 #define __<?= strtoupper($model->getModuleName()) ?>_H__
 
@@ -30,10 +23,11 @@ enum <?= $name ?> {
 /** <?= $name ?> struct */
 typedef struct <?= $name ?> <?= $name ?>_t, *<?= $name ?>Ptr_t;
 struct <?= $name ?> {
-<?php printContents($struct->getFields()) ?>
+<?php foreach ($struct->getFields() as $field => $type): ?>
+	<?= $type ?> <?= $field ?>;
+<?php endforeach ?>
 };
 <?php foreach ($struct->getMethods() as $method_name => $method): ?>
-<?php $i = 0; $args = $method->getArgs(); ?>
 <?= $method->getReturnType() ?>
 <?= $method->full_name ?>(<?= implode(', ', $method->getArgsTypes()) ?>);
 <?php endforeach ?>
@@ -43,8 +37,12 @@ struct <?= $name ?> {
 /** <?= $name ?> component */
 typedef struct <?= $name ?> <?= $name ?>_t, *<?= $name ?>Ptr_t;
 struct <?= $name ?> {
-	<?php printContents($component->getProperties()) ?>
-	<?php printContents($component->getFields()) ?>
+<?php foreach ($component->getProperties() as $field => $type): ?>
+	<?= $type ?> <?= $field ?>;
+<?php endforeach ?>
+<?php foreach ($component->getFields() as $field => $type): ?>
+	<?= $type ?> <?= $field ?>;
+<?php endforeach ?>
 };
 <?php endforeach ?>
 
