@@ -44,7 +44,7 @@ class PropertyName {
 
 	function format() {
 		$name = $this->getPath();
-		foreach (config::Axis as $pair) {
+		foreach (config::$Axis as $pair) {
 			$pat = $pair[0];
 			$repl = $pair[1];
 			$pattern = '/' . $pat . '/';
@@ -109,7 +109,7 @@ class Type extends Base {
 	function __construct($elem, $model) {
 		parent::__construct($elem, $model);
 		$this->type = $elem["type"];
-		$kind_data = $model->getKind($this->type);
+		$kind_data = $model->getKind(strval($this->type));
 		$this->kind = $kind_data[0];
 		$this->data = $kind_data[1];
 		$fa = $elem["fixed-array"];
@@ -138,7 +138,7 @@ class Type extends Base {
 	}
 
 	function get($name, $arg = null, $addr = null) {
-		$template = config::TypeInfos[$this->kind][$name];
+		$template = config::$TypeInfos[$this->kind][$name];
 		return str_replace(['{type}', '{arg}', '{addr}'], [$this->type, $arg, $addr], $template);
 	}
 }
@@ -185,9 +185,7 @@ class Method extends Base {
 	}
 
 	function getArgsTypes() {
-		foreach ($this->args as $pair) {
-			yield $pair[1];
-		}
+		return array_column($this->args, 1); // index 1 = type (each arg is [name, type])
 	}
 }
 
@@ -237,7 +235,7 @@ class Struct extends Base {
 					}
 				}
 			} else {
-				$pt = new ParserType((string)$name, (string)$name, $field);
+				$pt = new ParserType(strval($name), strval($name), $field);
 				$result[$pt] = $field;
 			}
 		}
@@ -306,9 +304,11 @@ class Enum extends Base {
 	}
 
 	function getValuesNames() {
+		$names = [];
 		foreach ($this->_elem->xpath(".//enum[@name]") as $e) {
-			yield $e["name"];
+			$names[] = strval($e["name"]);
 		}
+		return $names;
 	}
 }
 
@@ -320,9 +320,9 @@ class Resource extends Base {
 	}
 }
 
-// --- Model ---
+// --- Controller ---
 
-class Model {
+class Controller {
 	public $root;
 	public $source;
 	public $requires;
@@ -339,26 +339,26 @@ class Model {
 		$this->requires = [];
 		foreach ($xml->xpath("require") as $r) {
 			$path = dirname($xml_file).'/'.$r["file"];
-			$this->requires[] = new Model($path, $r["file"]);
+			$this->requires[] = new Controller($path, $r["file"]);
 		}
 		$sn = $xml->xpath(".//struct[@name]");
 		$this->structs = array_combine(
-		array_map(fn($s) => $s["name"], $sn),
+		array_map(fn($s) => strval($s["name"]), $sn),
 		array_map(fn($s) => new Struct($s, $this), $sn)
 		);
 		$en = $xml->xpath(".//enums[@name]");
 		$this->enums = array_combine(
-		array_map(fn($e) => $e["name"], $en),
+		array_map(fn($e) => strval($e["name"]), $en),
 		array_map(fn($e) => new Enum($e, $this), $en)
 		);
 		$cn = $xml->xpath(".//class[@name]");
 		$this->components = array_combine(
-		array_map(fn($c) => $c["name"], $cn),
+		array_map(fn($c) => strval($c["name"]), $cn),
 		array_map(fn($c) => new Component($c, $this), $cn)
 		);
 		$rn = $xml->xpath(".//resource[@type]");
 		$this->resources = array_combine(
-		array_map(fn($r) => $r["type"], $rn),
+		array_map(fn($r) => strval($r["type"]), $rn),
 		array_map(fn($r) => new Resource($r, $this), $rn)
 		);
 		$this->on_luaopen = $xml["on-luaopen"];

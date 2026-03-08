@@ -1,16 +1,16 @@
 <?php require "model/module.php"; ?>
-<?php $model = new Model($argv[1]); ?>
-#ifndef __<?= strtoupper($model->getModuleName()) ?>_H__
-#define __<?= strtoupper($model->getModuleName()) ?>_H__
+<?php $controller = new Controller($argv[1]); ?>
+#ifndef __<?= strtoupper($controller->getModuleName()) ?>_H__
+#define __<?= strtoupper($controller->getModuleName()) ?>_H__
 
 #include <stdbool.h>
 #include <stdint.h>
-<?php foreach ($model->getRequires() as $name => $module): ?>
+<?php foreach ($controller->getRequires() as $name => $module): ?>
 // including <?= $name ?>
 #include "<?= substr($module->source, 0, -4) ?>.h"
 <?php endforeach ?>
 
-<?php foreach ($model->getEnums() as $name => $enum): ?>
+<?php foreach ($controller->getEnums() as $name => $enum): ?>
 /** <?= $name ?> enum */
 enum <?= $name ?> {
 <?php foreach ($enum->getValues() as $enum_name => $enum_doc): ?>
@@ -19,7 +19,7 @@ enum <?= $name ?> {
 };
 
 <?php endforeach ?>
-<?php foreach ($model->getStructs() as $name => $struct): ?>
+<?php foreach ($controller->getStructs() as $name => $struct): ?>
 /** <?= $name ?> struct */
 typedef struct <?= $name ?> <?= $name ?>_t, *<?= $name ?>Ptr_t;
 struct <?= $name ?> {
@@ -33,7 +33,7 @@ struct <?= $name ?> {
 <?php endforeach ?>
 <?php endforeach ?>
 
-<?php foreach ($model->getComponents() as $name => $component): ?>
+<?php foreach ($controller->getComponents() as $name => $component): ?>
 /** <?= $name ?> component */
 typedef struct <?= $name ?> <?= $name ?>_t, *<?= $name ?>Ptr_t;
 struct <?= $name ?> {
