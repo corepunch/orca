@@ -222,13 +222,13 @@ class Struct extends Base {
 				for ($i = 0; $i < $field->fixed_array; $i++) {
 					if ($field->kind === "struct") {
 						foreach ($field->data->getFields() as $sub_name => $sub_type) {
-							$pt_name = "{$this->name}_{$name}{$i}_{$sub_name}";
+							$pt_name = $this->name . "_{$name}{$i}_{$sub_name}";
 							$pt_addr = "{$name}[$i].{$sub_name}";
 							$pt = new ParserType($pt_name, $pt_addr, $sub_type);
 							$result[$pt] = $sub_type;
 						}
 					} else {
-						$pt_name = "{$this->name}_{$name}{$i}";
+						$pt_name = $this->name . "_{$name}{$i}";
 						$pt_addr = "{$name}[$i]";
 						$pt = new ParserType($pt_name, $pt_addr, $field);
 						$result[$pt] = $field;
