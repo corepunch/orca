@@ -20,12 +20,12 @@ static int f_new_SpriteFrame(lua_State *L) {
 	memset(self, 0, sizeof(struct SpriteFrame));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-				lua_pop(L, (lua_getfield(L, 1, "Rect"), self->Rect = luaX_checkrect(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "UvRect"), self->UvRect = luaX_checkrect(L, -1), 1));
-			} else {
-						self->Rect = luaX_checkrect(L, 1);
-						self->UvRect = luaX_checkrect(L, 2);
-					}
+		lua_pop(L, (lua_getfield(L, 1, "Rect"), self->Rect = *luaX_checkrect(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "UvRect"), self->UvRect = *luaX_checkrect(L, -1), 1));
+	} else {
+		self->Rect = *luaX_checkrect(L, 1);
+		self->UvRect = *luaX_checkrect(L, 2);
+	}
 	return 1;
 }
 static int f_fromstring_SpriteFrame(lua_State *L) {
@@ -44,13 +44,17 @@ static int f_fromstring_SpriteFrame(lua_State *L) {
 int f_SpriteFrame___index(lua_State *L) {
 	struct SpriteFrame* self = luaX_checkSpriteFrame(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0x6b109927: luaX_pushrect(L, &self->Rect); return 1; // Rect				case 0xae3d25c0: luaX_pushrect(L, &self->UvRect); return 1; // UvRect			}
+		case 0x6b109927: luaX_pushrect(L, &self->Rect); return 1; // Rect
+		case 0xae3d25c0: luaX_pushrect(L, &self->UvRect); return 1; // UvRect
+	}
 	return luaL_error(L, "Unknown field in SpriteFrame: %s", luaL_checkstring(L, 2));
 }
 int f_SpriteFrame___newindex(lua_State *L) {
 	struct SpriteFrame* self = luaX_checkSpriteFrame(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0x6b109927: self->Rect = luaX_checkrect(L, 3); return 0; // Rect				case 0xae3d25c0: self->UvRect = luaX_checkrect(L, 3); return 0; // UvRect			}
+		case 0x6b109927: self->Rect = *luaX_checkrect(L, 3); return 0; // Rect
+		case 0xae3d25c0: self->UvRect = *luaX_checkrect(L, 3); return 0; // UvRect
+	}
 	return luaL_error(L, "Unknown field in SpriteFrame: %s", luaL_checkstring(L, 2));
 }
 static int f_SpriteFrame___call(lua_State *L) {
@@ -63,7 +67,7 @@ int luaopen_orca_SpriteFrame(lua_State *L) {
 		{ "fromstring", f_fromstring_SpriteFrame },
 		{ "__newindex", f_SpriteFrame___newindex },
 		{ "__index", f_SpriteFrame___index },
-			{ NULL, NULL },
+		{ NULL, NULL },
 	}), 0);
 	// Make SpriteFrame creatable like via constructor-like syntax
 	lua_newtable(L);
@@ -75,7 +79,10 @@ int luaopen_orca_SpriteFrame(lua_State *L) {
 
 	
 static struct PropertyType const SpriteAnimationProperties[kSpriteAnimationNumProperties] = {
-				DECL(0x590ca79a, SpriteAnimation, Image, Image, kDataTypeTexture), // SpriteAnimation.Image						DECL(0xbebf2a84, SpriteAnimation, Framerate, Framerate, kDataTypeFloat), // SpriteAnimation.Framerate						DECL(0xf03e266f, SpriteAnimation, Frames, Frames, kDataTypeStruct, .TypeString = "SpriteFrame"), // SpriteAnimation.Frames			};
+	DECL(0x590ca79a, SpriteAnimation, Image, Image, kDataTypeTexture), // SpriteAnimation.Image
+	DECL(0xbebf2a84, SpriteAnimation, Framerate, Framerate, kDataTypeFloat), // SpriteAnimation.Framerate
+	DECL(0xf03e266f, SpriteAnimation, Frames, Frames, kDataTypeStruct, .TypeString = "SpriteFrame"), // SpriteAnimation.Frames
+};
 static struct SpriteAnimation SpriteAnimationDefaults = {
 							};
 LRESULT SpriteAnimationProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -106,7 +113,10 @@ ORCA_API struct ClassDesc _SpriteAnimation = {
 	LRESULT SKNode_UpdateMatrix(struct Object*, struct SKNode*, wParam_t, UpdateMatrixPtr);
 	
 static struct PropertyType const SKNodeProperties[kSKNodeNumProperties] = {
-				DECL(0xe27f342a, SKNode, Position, Position, kDataTypeVec2), // SKNode.Position						DECL(0xa6478e7c, SKNode, Size, Size, kDataTypeVec2), // SKNode.Size						DECL(0xb54055d4, SKNode, Anchor, Anchor, kDataTypeVec2), // SKNode.Anchor			};
+	DECL(0xe27f342a, SKNode, Position, Position, kDataTypeVec2), // SKNode.Position
+	DECL(0xa6478e7c, SKNode, Size, Size, kDataTypeVec2), // SKNode.Size
+	DECL(0xb54055d4, SKNode, Anchor, Anchor, kDataTypeVec2), // SKNode.Anchor
+};
 static struct SKNode SKNodeDefaults = {
 							};
 LRESULT SKNodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -137,7 +147,7 @@ ORCA_API struct ClassDesc _SKNode = {
 	LRESULT SKScene_UpdateMatrix(struct Object*, struct SKScene*, wParam_t, UpdateMatrixPtr);
 	
 static struct PropertyType const SKSceneProperties[kSKSceneNumProperties] = {
-	};
+};
 static struct SKScene SKSceneDefaults = {
 	};
 LRESULT SKSceneProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -168,7 +178,13 @@ ORCA_API struct ClassDesc _SKScene = {
 	LRESULT SKSpriteNode_Render(struct Object*, struct SKSpriteNode*, wParam_t, RenderPtr);
 	
 static struct PropertyType const SKSpriteNodeProperties[kSKSpriteNodeNumProperties] = {
-				DECL(0x41e389fd, SKSpriteNode, Animation, Animation, kDataTypeComponent), // SKSpriteNode.Animation						DECL(0x8831f0dd, SKSpriteNode, Animation2, Animation2, kDataTypeComponent), // SKSpriteNode.Animation2						DECL(0x590ca79a, SKSpriteNode, Image, Image, kDataTypeTexture), // SKSpriteNode.Image						DECL(0xa9f98a53, SKSpriteNode, FreezeFrame, FreezeFrame, kDataTypeInt), // SKSpriteNode.FreezeFrame						DECL(0x0038792b, SKSpriteNode, BlendMode, BlendMode, kDataTypeBlendMode), // SKSpriteNode.BlendMode						DECL(0xae3d25c0, SKSpriteNode, UvRect, UvRect, kDataTypeRect), // SKSpriteNode.UvRect			};
+	DECL(0x41e389fd, SKSpriteNode, Animation, Animation, kDataTypeComponent), // SKSpriteNode.Animation
+	DECL(0x8831f0dd, SKSpriteNode, Animation2, Animation2, kDataTypeComponent), // SKSpriteNode.Animation2
+	DECL(0x590ca79a, SKSpriteNode, Image, Image, kDataTypeTexture), // SKSpriteNode.Image
+	DECL(0xa9f98a53, SKSpriteNode, FreezeFrame, FreezeFrame, kDataTypeInt), // SKSpriteNode.FreezeFrame
+	DECL(0x0038792b, SKSpriteNode, BlendMode, BlendMode, kDataTypeBlendMode), // SKSpriteNode.BlendMode
+	DECL(0xae3d25c0, SKSpriteNode, UvRect, UvRect, kDataTypeRect), // SKSpriteNode.UvRect
+};
 static struct SKSpriteNode SKSpriteNodeDefaults = {
 								  .FreezeFrame = -1,
 			  .BlendMode = AlphaAutomatic,
@@ -202,7 +218,8 @@ ORCA_API struct ClassDesc _SKSpriteNode = {
 	LRESULT SKLabelNode_Create(struct Object*, struct SKLabelNode*, wParam_t, CreatePtr);
 	
 static struct PropertyType const SKLabelNodeProperties[kSKLabelNodeNumProperties] = {
-				DECL(0xe5b43cf8, SKLabelNode, Color, Color, kDataTypeColor), // SKLabelNode.Color			};
+	DECL(0xe5b43cf8, SKLabelNode, Color, Color, kDataTypeColor), // SKLabelNode.Color
+};
 static struct SKLabelNode SKLabelNodeDefaults = {
 			};
 LRESULT SKLabelNodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -233,7 +250,10 @@ ORCA_API struct ClassDesc _SKLabelNode = {
 	LRESULT SKView_ForegroundContent(struct Object*, struct SKView*, wParam_t, ForegroundContentPtr);
 	
 static struct PropertyType const SKViewProperties[kSKViewNumProperties] = {
-				DECL(0x499d2ae6, SKView, ReferenceWidth, ReferenceWidth, kDataTypeFloat), // SKView.ReferenceWidth						DECL(0xf011cff9, SKView, ReferenceHeight, ReferenceHeight, kDataTypeFloat), // SKView.ReferenceHeight						DECL(0xc89b38b3, SKView, Scene, Scene, kDataTypeFixed), // SKView.Scene			};
+	DECL(0x499d2ae6, SKView, ReferenceWidth, ReferenceWidth, kDataTypeFloat), // SKView.ReferenceWidth
+	DECL(0xf011cff9, SKView, ReferenceHeight, ReferenceHeight, kDataTypeFloat), // SKView.ReferenceHeight
+	DECL(0xc89b38b3, SKView, Scene, Scene, kDataTypeFixed), // SKView.Scene
+};
 static struct SKView SKViewDefaults = {
 							};
 LRESULT SKViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {

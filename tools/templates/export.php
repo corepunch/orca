@@ -18,15 +18,16 @@ LRESULT <?= $name ?>_<?= $event ?>(struct Object*, struct <?= $name ?>*, wParam_
 	<?php endforeach ?>
 
 static struct PropertyType const <?= $name ?>Properties[k<?= $name ?>NumProperties] = {
-	<?php foreach ($component->getProperties() as $property => $type):?>
-		<?php if ($type->kind === 'enum'): ?>
-	DECL(<?= $property->id ?>, <?= $name ?>, <?= $property ?>, <?= $property->addr ?>, kDataType<?= ucfirst($type->kind) ?>, .Enums = _<?= $type->name ?>), // <?= $name ?>.<?= $property ?>
-		<?php elseif ($type->kind === 'struct'): ?>
-	DECL(<?= $property->id ?>, <?= $name ?>, <?= $property ?>, <?= $property->addr ?>, kDataType<?= ucfirst($type->kind) ?>, .TypeString = "<?= $type->export ?>"), // <?= $name ?>.<?= $property ?>
-		<?php else: ?>
-	DECL(<?= $property->id ?>, <?= $name ?>, <?= $property ?>, <?= $property->addr ?>, kDataType<?= ucfirst($type->kind) ?>), // <?= $name ?>.<?= $property ?>
-		<?php endif ?>
-	<?php endforeach ?>
+<?php foreach ($component->getProperties() as $property => $type) {
+	$addr = $property->addr; $kind_upper = ucfirst($type->kind); $pid = $property->id;
+	if ($type->kind === 'enum') {
+		echo "\tDECL($pid, $name, $property, $addr, kDataType$kind_upper, .Enums = _" . $type->name . "), // $name.$property\n";
+	} elseif ($type->kind === 'struct') {
+		echo "\tDECL($pid, $name, $property, $addr, kDataType$kind_upper, .TypeString = \"" . $type->export . "\"), // $name.$property\n";
+	} else {
+		echo "\tDECL($pid, $name, $property, $addr, kDataType$kind_upper), // $name.$property\n";
+	}
+} ?>
 };
 static struct <?= $name ?> <?= $name ?>Defaults = {
 	<?php foreach ($component->getProperties() as $property => $type): ?>

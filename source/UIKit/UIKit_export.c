@@ -308,16 +308,16 @@ static int f_new_BorderRadiusShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct BorderRadiusShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-				lua_pop(L, (lua_getfield(L, 1, "TopLeftRadius"), self->TopLeftRadius = luaL_checknumber(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "TopRightRadius"), self->TopRightRadius = luaL_checknumber(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "BottomRightRadius"), self->BottomRightRadius = luaL_checknumber(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "BottomLeftRadius"), self->BottomLeftRadius = luaL_checknumber(L, -1), 1));
-			} else {
-						self->TopLeftRadius = luaL_checknumber(L, 1);
-						self->TopRightRadius = luaL_checknumber(L, 2);
-						self->BottomRightRadius = luaL_checknumber(L, 3);
-						self->BottomLeftRadius = luaL_checknumber(L, 4);
-					}
+		lua_pop(L, (lua_getfield(L, 1, "TopLeftRadius"), self->TopLeftRadius = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "TopRightRadius"), self->TopRightRadius = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "BottomRightRadius"), self->BottomRightRadius = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "BottomLeftRadius"), self->BottomLeftRadius = luaL_checknumber(L, -1), 1));
+	} else {
+		self->TopLeftRadius = luaL_checknumber(L, 1);
+		self->TopRightRadius = luaL_checknumber(L, 2);
+		self->BottomRightRadius = luaL_checknumber(L, 3);
+		self->BottomLeftRadius = luaL_checknumber(L, 4);
+	}
 	return 1;
 }
 static int f_fromstring_BorderRadiusShorthand(lua_State *L) {
@@ -340,13 +340,21 @@ static int f_fromstring_BorderRadiusShorthand(lua_State *L) {
 int f_BorderRadiusShorthand___index(lua_State *L) {
 	struct BorderRadiusShorthand* self = luaX_checkBorderRadiusShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0xd5ac3a0b: lua_pushnumber(L, self->TopLeftRadius); return 1; // TopLeftRadius				case 0xdbe5a724: lua_pushnumber(L, self->TopRightRadius); return 1; // TopRightRadius				case 0xf6ae40ce: lua_pushnumber(L, self->BottomRightRadius); return 1; // BottomRightRadius				case 0x7f5fe235: lua_pushnumber(L, self->BottomLeftRadius); return 1; // BottomLeftRadius			}
+		case 0xd5ac3a0b: lua_pushnumber(L, self->TopLeftRadius); return 1; // TopLeftRadius
+		case 0xdbe5a724: lua_pushnumber(L, self->TopRightRadius); return 1; // TopRightRadius
+		case 0xf6ae40ce: lua_pushnumber(L, self->BottomRightRadius); return 1; // BottomRightRadius
+		case 0x7f5fe235: lua_pushnumber(L, self->BottomLeftRadius); return 1; // BottomLeftRadius
+	}
 	return luaL_error(L, "Unknown field in BorderRadiusShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_BorderRadiusShorthand___newindex(lua_State *L) {
 	struct BorderRadiusShorthand* self = luaX_checkBorderRadiusShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0xd5ac3a0b: self->TopLeftRadius = luaL_checknumber(L, 3); return 0; // TopLeftRadius				case 0xdbe5a724: self->TopRightRadius = luaL_checknumber(L, 3); return 0; // TopRightRadius				case 0xf6ae40ce: self->BottomRightRadius = luaL_checknumber(L, 3); return 0; // BottomRightRadius				case 0x7f5fe235: self->BottomLeftRadius = luaL_checknumber(L, 3); return 0; // BottomLeftRadius			}
+		case 0xd5ac3a0b: self->TopLeftRadius = luaL_checknumber(L, 3); return 0; // TopLeftRadius
+		case 0xdbe5a724: self->TopRightRadius = luaL_checknumber(L, 3); return 0; // TopRightRadius
+		case 0xf6ae40ce: self->BottomRightRadius = luaL_checknumber(L, 3); return 0; // BottomRightRadius
+		case 0x7f5fe235: self->BottomLeftRadius = luaL_checknumber(L, 3); return 0; // BottomLeftRadius
+	}
 	return luaL_error(L, "Unknown field in BorderRadiusShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_BorderRadiusShorthand___call(lua_State *L) {
@@ -359,7 +367,7 @@ int luaopen_orca_BorderRadiusShorthand(lua_State *L) {
 		{ "fromstring", f_fromstring_BorderRadiusShorthand },
 		{ "__newindex", f_BorderRadiusShorthand___newindex },
 		{ "__index", f_BorderRadiusShorthand___index },
-			{ NULL, NULL },
+		{ NULL, NULL },
 	}), 0);
 	// Make BorderRadiusShorthand creatable like via constructor-like syntax
 	lua_newtable(L);
@@ -383,12 +391,12 @@ static int f_new_EdgeShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct EdgeShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-				lua_pop(L, (lua_getfield(L, 1, "Left"), self->Left = luaL_checknumber(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "Right"), self->Right = luaL_checknumber(L, -1), 1));
-			} else {
-						self->Left = luaL_checknumber(L, 1);
-						self->Right = luaL_checknumber(L, 2);
-					}
+		lua_pop(L, (lua_getfield(L, 1, "Left"), self->Left = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Right"), self->Right = luaL_checknumber(L, -1), 1));
+	} else {
+		self->Left = luaL_checknumber(L, 1);
+		self->Right = luaL_checknumber(L, 2);
+	}
 	return 1;
 }
 void EdgeShorthand_Convert1(struct EdgeShorthand*, float);
@@ -411,13 +419,17 @@ static int f_fromstring_EdgeShorthand(lua_State *L) {
 int f_EdgeShorthand___index(lua_State *L) {
 	struct EdgeShorthand* self = luaX_checkEdgeShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0x92773890: lua_pushnumber(L, self->Left); return 1; // Left				case 0x1e9e9f85: lua_pushnumber(L, self->Right); return 1; // Right			}
+		case 0x92773890: lua_pushnumber(L, self->Left); return 1; // Left
+		case 0x1e9e9f85: lua_pushnumber(L, self->Right); return 1; // Right
+	}
 	return luaL_error(L, "Unknown field in EdgeShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_EdgeShorthand___newindex(lua_State *L) {
 	struct EdgeShorthand* self = luaX_checkEdgeShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0x92773890: self->Left = luaL_checknumber(L, 3); return 0; // Left				case 0x1e9e9f85: self->Right = luaL_checknumber(L, 3); return 0; // Right			}
+		case 0x92773890: self->Left = luaL_checknumber(L, 3); return 0; // Left
+		case 0x1e9e9f85: self->Right = luaL_checknumber(L, 3); return 0; // Right
+	}
 	return luaL_error(L, "Unknown field in EdgeShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_EdgeShorthand___call(lua_State *L) {
@@ -430,7 +442,7 @@ int luaopen_orca_EdgeShorthand(lua_State *L) {
 		{ "fromstring", f_fromstring_EdgeShorthand },
 		{ "__newindex", f_EdgeShorthand___newindex },
 		{ "__index", f_EdgeShorthand___index },
-			{ NULL, NULL },
+		{ NULL, NULL },
 	}), 0);
 	// Make EdgeShorthand creatable like via constructor-like syntax
 	lua_newtable(L);
@@ -454,10 +466,10 @@ static int f_new_AlignmentShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct AlignmentShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-				lua_pop(L, (lua_getfield(L, 1, "Axis"), self->Axis = luaL_checknumber(L, -1), 1));
-			} else {
-						self->Axis = luaL_checknumber(L, 1);
-					}
+		lua_pop(L, (lua_getfield(L, 1, "Axis"), self->Axis = luaL_checknumber(L, -1), 1));
+	} else {
+		self->Axis = luaL_checknumber(L, 1);
+	}
 	return 1;
 }
 static int f_fromstring_AlignmentShorthand(lua_State *L) {
@@ -478,13 +490,15 @@ static int f_fromstring_AlignmentShorthand(lua_State *L) {
 int f_AlignmentShorthand___index(lua_State *L) {
 	struct AlignmentShorthand* self = luaX_checkAlignmentShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0xed57fa14: lua_pushnumber(L, self->Axis); return 1; // Axis			}
+		case 0xed57fa14: lua_pushnumber(L, self->Axis); return 1; // Axis
+	}
 	return luaL_error(L, "Unknown field in AlignmentShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_AlignmentShorthand___newindex(lua_State *L) {
 	struct AlignmentShorthand* self = luaX_checkAlignmentShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0xed57fa14: self->Axis = luaL_checknumber(L, 3); return 0; // Axis			}
+		case 0xed57fa14: self->Axis = luaL_checknumber(L, 3); return 0; // Axis
+	}
 	return luaL_error(L, "Unknown field in AlignmentShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_AlignmentShorthand___call(lua_State *L) {
@@ -497,7 +511,7 @@ int luaopen_orca_AlignmentShorthand(lua_State *L) {
 		{ "fromstring", f_fromstring_AlignmentShorthand },
 		{ "__newindex", f_AlignmentShorthand___newindex },
 		{ "__index", f_AlignmentShorthand___index },
-			{ NULL, NULL },
+		{ NULL, NULL },
 	}), 0);
 	// Make AlignmentShorthand creatable like via constructor-like syntax
 	lua_newtable(L);
@@ -521,16 +535,16 @@ static int f_new_FontShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct FontShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-				lua_pop(L, (lua_getfield(L, 1, "Weight"), self->Weight = luaX_checkFontWeight(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "Style"), self->Style = luaX_checkFontStyle(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "Size"), self->Size = luaL_checknumber(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "Family"), self->Family = luaX_checkFontFamily(L, -1), 1));
-			} else {
-						self->Weight = luaX_checkFontWeight(L, 1);
-						self->Style = luaX_checkFontStyle(L, 2);
-						self->Size = luaL_checknumber(L, 3);
-						self->Family = luaX_checkFontFamily(L, 4);
-					}
+		lua_pop(L, (lua_getfield(L, 1, "Weight"), self->Weight = luaX_checkFontWeight(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Style"), self->Style = luaX_checkFontStyle(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Size"), self->Size = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Family"), self->Family = luaX_checkFontFamily(L, -1), 1));
+	} else {
+		self->Weight = luaX_checkFontWeight(L, 1);
+		self->Style = luaX_checkFontStyle(L, 2);
+		self->Size = luaL_checknumber(L, 3);
+		self->Family = luaX_checkFontFamily(L, 4);
+	}
 	return 1;
 }
 static int f_fromstring_FontShorthand(lua_State *L) {
@@ -553,13 +567,21 @@ static int f_fromstring_FontShorthand(lua_State *L) {
 int f_FontShorthand___index(lua_State *L) {
 	struct FontShorthand* self = luaX_checkFontShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0x993014d9: luaX_pushFontWeight(L, self->Weight); return 1; // Weight				case 0x5467ec76: luaX_pushFontStyle(L, self->Style); return 1; // Style				case 0xa6478e7c: lua_pushnumber(L, self->Size); return 1; // Size				case 0xc46f8f49: luaX_pushFontFamily(L, self->Family); return 1; // Family			}
+		case 0x993014d9: luaX_pushFontWeight(L, self->Weight); return 1; // Weight
+		case 0x5467ec76: luaX_pushFontStyle(L, self->Style); return 1; // Style
+		case 0xa6478e7c: lua_pushnumber(L, self->Size); return 1; // Size
+		case 0xc46f8f49: luaX_pushFontFamily(L, self->Family); return 1; // Family
+	}
 	return luaL_error(L, "Unknown field in FontShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_FontShorthand___newindex(lua_State *L) {
 	struct FontShorthand* self = luaX_checkFontShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0x993014d9: self->Weight = luaX_checkFontWeight(L, 3); return 0; // Weight				case 0x5467ec76: self->Style = luaX_checkFontStyle(L, 3); return 0; // Style				case 0xa6478e7c: self->Size = luaL_checknumber(L, 3); return 0; // Size				case 0xc46f8f49: self->Family = luaX_checkFontFamily(L, 3); return 0; // Family			}
+		case 0x993014d9: self->Weight = luaX_checkFontWeight(L, 3); return 0; // Weight
+		case 0x5467ec76: self->Style = luaX_checkFontStyle(L, 3); return 0; // Style
+		case 0xa6478e7c: self->Size = luaL_checknumber(L, 3); return 0; // Size
+		case 0xc46f8f49: self->Family = luaX_checkFontFamily(L, 3); return 0; // Family
+	}
 	return luaL_error(L, "Unknown field in FontShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_FontShorthand___call(lua_State *L) {
@@ -572,7 +594,7 @@ int luaopen_orca_FontShorthand(lua_State *L) {
 		{ "fromstring", f_fromstring_FontShorthand },
 		{ "__newindex", f_FontShorthand___newindex },
 		{ "__index", f_FontShorthand___index },
-			{ NULL, NULL },
+		{ NULL, NULL },
 	}), 0);
 	// Make FontShorthand creatable like via constructor-like syntax
 	lua_newtable(L);
@@ -596,14 +618,14 @@ static int f_new_BrushShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct BrushShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-				lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = luaX_checkcolor(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "Image"), self->Image = luaX_checkTexture(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "Material"), self->Material = luaX_checkMaterial(L, -1), 1));
-			} else {
-						self->Color = luaX_checkcolor(L, 1);
-						self->Image = luaX_checkTexture(L, 2);
-						self->Material = luaX_checkMaterial(L, 3);
-					}
+		lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = *luaX_checkcolor(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Image"), self->Image = luaX_checkTexture(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Material"), self->Material = luaX_checkMaterial(L, -1), 1));
+	} else {
+		self->Color = *luaX_checkcolor(L, 1);
+		self->Image = luaX_checkTexture(L, 2);
+		self->Material = luaX_checkMaterial(L, 3);
+	}
 	return 1;
 }
 static int f_fromstring_BrushShorthand(lua_State *L) {
@@ -624,13 +646,19 @@ static int f_fromstring_BrushShorthand(lua_State *L) {
 int f_BrushShorthand___index(lua_State *L) {
 	struct BrushShorthand* self = luaX_checkBrushShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0xe5b43cf8: luaX_pushcolor(L, &self->Color); return 1; // Color				case 0x590ca79a: luaX_pushTexture(L, self->Image); return 1; // Image				case 0xcbd54f80: luaX_pushMaterial(L, self->Material); return 1; // Material			}
+		case 0xe5b43cf8: luaX_pushcolor(L, &self->Color); return 1; // Color
+		case 0x590ca79a: luaX_pushTexture(L, self->Image); return 1; // Image
+		case 0xcbd54f80: luaX_pushMaterial(L, self->Material); return 1; // Material
+	}
 	return luaL_error(L, "Unknown field in BrushShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_BrushShorthand___newindex(lua_State *L) {
 	struct BrushShorthand* self = luaX_checkBrushShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0xe5b43cf8: self->Color = luaX_checkcolor(L, 3); return 0; // Color				case 0x590ca79a: self->Image = luaX_checkTexture(L, 3); return 0; // Image				case 0xcbd54f80: self->Material = luaX_checkMaterial(L, 3); return 0; // Material			}
+		case 0xe5b43cf8: self->Color = *luaX_checkcolor(L, 3); return 0; // Color
+		case 0x590ca79a: self->Image = luaX_checkTexture(L, 3); return 0; // Image
+		case 0xcbd54f80: self->Material = luaX_checkMaterial(L, 3); return 0; // Material
+	}
 	return luaL_error(L, "Unknown field in BrushShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_BrushShorthand___call(lua_State *L) {
@@ -643,7 +671,7 @@ int luaopen_orca_BrushShorthand(lua_State *L) {
 		{ "fromstring", f_fromstring_BrushShorthand },
 		{ "__newindex", f_BrushShorthand___newindex },
 		{ "__index", f_BrushShorthand___index },
-			{ NULL, NULL },
+		{ NULL, NULL },
 	}), 0);
 	// Make BrushShorthand creatable like via constructor-like syntax
 	lua_newtable(L);
@@ -667,16 +695,16 @@ static int f_new_ShadowShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct ShadowShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-				lua_pop(L, (lua_getfield(L, 1, "Offset"), self->Offset = luaX_checkvec2(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "BlurRadius"), self->BlurRadius = luaL_checknumber(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "SpreadRadius"), self->SpreadRadius = luaL_checknumber(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = luaX_checkcolor(L, -1), 1));
-			} else {
-						self->Offset = luaX_checkvec2(L, 1);
-						self->BlurRadius = luaL_checknumber(L, 2);
-						self->SpreadRadius = luaL_checknumber(L, 3);
-						self->Color = luaX_checkcolor(L, 4);
-					}
+		lua_pop(L, (lua_getfield(L, 1, "Offset"), self->Offset = *luaX_checkvec2(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "BlurRadius"), self->BlurRadius = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "SpreadRadius"), self->SpreadRadius = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = *luaX_checkcolor(L, -1), 1));
+	} else {
+		self->Offset = *luaX_checkvec2(L, 1);
+		self->BlurRadius = luaL_checknumber(L, 2);
+		self->SpreadRadius = luaL_checknumber(L, 3);
+		self->Color = *luaX_checkcolor(L, 4);
+	}
 	return 1;
 }
 static int f_fromstring_ShadowShorthand(lua_State *L) {
@@ -699,13 +727,21 @@ static int f_fromstring_ShadowShorthand(lua_State *L) {
 int f_ShadowShorthand___index(lua_State *L) {
 	struct ShadowShorthand* self = luaX_checkShadowShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0x8995c7ea: luaX_pushvec2(L, &self->Offset); return 1; // Offset				case 0x961749ae: lua_pushnumber(L, self->BlurRadius); return 1; // BlurRadius				case 0x80066a9c: lua_pushnumber(L, self->SpreadRadius); return 1; // SpreadRadius				case 0xe5b43cf8: luaX_pushcolor(L, &self->Color); return 1; // Color			}
+		case 0x8995c7ea: luaX_pushvec2(L, &self->Offset); return 1; // Offset
+		case 0x961749ae: lua_pushnumber(L, self->BlurRadius); return 1; // BlurRadius
+		case 0x80066a9c: lua_pushnumber(L, self->SpreadRadius); return 1; // SpreadRadius
+		case 0xe5b43cf8: luaX_pushcolor(L, &self->Color); return 1; // Color
+	}
 	return luaL_error(L, "Unknown field in ShadowShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_ShadowShorthand___newindex(lua_State *L) {
 	struct ShadowShorthand* self = luaX_checkShadowShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0x8995c7ea: self->Offset = luaX_checkvec2(L, 3); return 0; // Offset				case 0x961749ae: self->BlurRadius = luaL_checknumber(L, 3); return 0; // BlurRadius				case 0x80066a9c: self->SpreadRadius = luaL_checknumber(L, 3); return 0; // SpreadRadius				case 0xe5b43cf8: self->Color = luaX_checkcolor(L, 3); return 0; // Color			}
+		case 0x8995c7ea: self->Offset = *luaX_checkvec2(L, 3); return 0; // Offset
+		case 0x961749ae: self->BlurRadius = luaL_checknumber(L, 3); return 0; // BlurRadius
+		case 0x80066a9c: self->SpreadRadius = luaL_checknumber(L, 3); return 0; // SpreadRadius
+		case 0xe5b43cf8: self->Color = *luaX_checkcolor(L, 3); return 0; // Color
+	}
 	return luaL_error(L, "Unknown field in ShadowShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_ShadowShorthand___call(lua_State *L) {
@@ -718,7 +754,7 @@ int luaopen_orca_ShadowShorthand(lua_State *L) {
 		{ "fromstring", f_fromstring_ShadowShorthand },
 		{ "__newindex", f_ShadowShorthand___newindex },
 		{ "__index", f_ShadowShorthand___index },
-			{ NULL, NULL },
+		{ NULL, NULL },
 	}), 0);
 	// Make ShadowShorthand creatable like via constructor-like syntax
 	lua_newtable(L);
@@ -742,14 +778,14 @@ static int f_new_RingShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct RingShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-				lua_pop(L, (lua_getfield(L, 1, "Offset"), self->Offset = luaL_checknumber(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "Width"), self->Width = luaL_checknumber(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = luaX_checkcolor(L, -1), 1));
-			} else {
-						self->Offset = luaL_checknumber(L, 1);
-						self->Width = luaL_checknumber(L, 2);
-						self->Color = luaX_checkcolor(L, 3);
-					}
+		lua_pop(L, (lua_getfield(L, 1, "Offset"), self->Offset = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Width"), self->Width = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = *luaX_checkcolor(L, -1), 1));
+	} else {
+		self->Offset = luaL_checknumber(L, 1);
+		self->Width = luaL_checknumber(L, 2);
+		self->Color = *luaX_checkcolor(L, 3);
+	}
 	return 1;
 }
 static int f_fromstring_RingShorthand(lua_State *L) {
@@ -770,13 +806,19 @@ static int f_fromstring_RingShorthand(lua_State *L) {
 int f_RingShorthand___index(lua_State *L) {
 	struct RingShorthand* self = luaX_checkRingShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0x8995c7ea: lua_pushnumber(L, self->Offset); return 1; // Offset				case 0x3b42dfbf: lua_pushnumber(L, self->Width); return 1; // Width				case 0xe5b43cf8: luaX_pushcolor(L, &self->Color); return 1; // Color			}
+		case 0x8995c7ea: lua_pushnumber(L, self->Offset); return 1; // Offset
+		case 0x3b42dfbf: lua_pushnumber(L, self->Width); return 1; // Width
+		case 0xe5b43cf8: luaX_pushcolor(L, &self->Color); return 1; // Color
+	}
 	return luaL_error(L, "Unknown field in RingShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_RingShorthand___newindex(lua_State *L) {
 	struct RingShorthand* self = luaX_checkRingShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0x8995c7ea: self->Offset = luaL_checknumber(L, 3); return 0; // Offset				case 0x3b42dfbf: self->Width = luaL_checknumber(L, 3); return 0; // Width				case 0xe5b43cf8: self->Color = luaX_checkcolor(L, 3); return 0; // Color			}
+		case 0x8995c7ea: self->Offset = luaL_checknumber(L, 3); return 0; // Offset
+		case 0x3b42dfbf: self->Width = luaL_checknumber(L, 3); return 0; // Width
+		case 0xe5b43cf8: self->Color = *luaX_checkcolor(L, 3); return 0; // Color
+	}
 	return luaL_error(L, "Unknown field in RingShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_RingShorthand___call(lua_State *L) {
@@ -789,7 +831,7 @@ int luaopen_orca_RingShorthand(lua_State *L) {
 		{ "fromstring", f_fromstring_RingShorthand },
 		{ "__newindex", f_RingShorthand___newindex },
 		{ "__index", f_RingShorthand___index },
-			{ NULL, NULL },
+		{ NULL, NULL },
 	}), 0);
 	// Make RingShorthand creatable like via constructor-like syntax
 	lua_newtable(L);
@@ -813,12 +855,12 @@ static int f_new_OverflowShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct OverflowShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-				lua_pop(L, (lua_getfield(L, 1, "x"), self->x = luaX_checkOverflow(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "y"), self->y = luaX_checkOverflow(L, -1), 1));
-			} else {
-						self->x = luaX_checkOverflow(L, 1);
-						self->y = luaX_checkOverflow(L, 2);
-					}
+		lua_pop(L, (lua_getfield(L, 1, "x"), self->x = luaX_checkOverflow(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "y"), self->y = luaX_checkOverflow(L, -1), 1));
+	} else {
+		self->x = luaX_checkOverflow(L, 1);
+		self->y = luaX_checkOverflow(L, 2);
+	}
 	return 1;
 }
 static int f_fromstring_OverflowShorthand(lua_State *L) {
@@ -837,13 +879,17 @@ static int f_fromstring_OverflowShorthand(lua_State *L) {
 int f_OverflowShorthand___index(lua_State *L) {
 	struct OverflowShorthand* self = luaX_checkOverflowShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0xfd0c5087: luaX_pushOverflow(L, self->x); return 1; // x				case 0xfc0c4ef4: luaX_pushOverflow(L, self->y); return 1; // y			}
+		case 0xfd0c5087: luaX_pushOverflow(L, self->x); return 1; // x
+		case 0xfc0c4ef4: luaX_pushOverflow(L, self->y); return 1; // y
+	}
 	return luaL_error(L, "Unknown field in OverflowShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_OverflowShorthand___newindex(lua_State *L) {
 	struct OverflowShorthand* self = luaX_checkOverflowShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0xfd0c5087: self->x = luaX_checkOverflow(L, 3); return 0; // x				case 0xfc0c4ef4: self->y = luaX_checkOverflow(L, 3); return 0; // y			}
+		case 0xfd0c5087: self->x = luaX_checkOverflow(L, 3); return 0; // x
+		case 0xfc0c4ef4: self->y = luaX_checkOverflow(L, 3); return 0; // y
+	}
 	return luaL_error(L, "Unknown field in OverflowShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_OverflowShorthand___call(lua_State *L) {
@@ -856,7 +902,7 @@ int luaopen_orca_OverflowShorthand(lua_State *L) {
 		{ "fromstring", f_fromstring_OverflowShorthand },
 		{ "__newindex", f_OverflowShorthand___newindex },
 		{ "__index", f_OverflowShorthand___index },
-			{ NULL, NULL },
+		{ NULL, NULL },
 	}), 0);
 	// Make OverflowShorthand creatable like via constructor-like syntax
 	lua_newtable(L);
@@ -880,14 +926,14 @@ static int f_new_UnderlineShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct UnderlineShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-				lua_pop(L, (lua_getfield(L, 1, "Offset"), self->Offset = luaL_checknumber(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "Width"), self->Width = luaL_checknumber(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = luaX_checkcolor(L, -1), 1));
-			} else {
-						self->Offset = luaL_checknumber(L, 1);
-						self->Width = luaL_checknumber(L, 2);
-						self->Color = luaX_checkcolor(L, 3);
-					}
+		lua_pop(L, (lua_getfield(L, 1, "Offset"), self->Offset = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Width"), self->Width = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = *luaX_checkcolor(L, -1), 1));
+	} else {
+		self->Offset = luaL_checknumber(L, 1);
+		self->Width = luaL_checknumber(L, 2);
+		self->Color = *luaX_checkcolor(L, 3);
+	}
 	return 1;
 }
 static int f_fromstring_UnderlineShorthand(lua_State *L) {
@@ -908,13 +954,19 @@ static int f_fromstring_UnderlineShorthand(lua_State *L) {
 int f_UnderlineShorthand___index(lua_State *L) {
 	struct UnderlineShorthand* self = luaX_checkUnderlineShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0x8995c7ea: lua_pushnumber(L, self->Offset); return 1; // Offset				case 0x3b42dfbf: lua_pushnumber(L, self->Width); return 1; // Width				case 0xe5b43cf8: luaX_pushcolor(L, &self->Color); return 1; // Color			}
+		case 0x8995c7ea: lua_pushnumber(L, self->Offset); return 1; // Offset
+		case 0x3b42dfbf: lua_pushnumber(L, self->Width); return 1; // Width
+		case 0xe5b43cf8: luaX_pushcolor(L, &self->Color); return 1; // Color
+	}
 	return luaL_error(L, "Unknown field in UnderlineShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_UnderlineShorthand___newindex(lua_State *L) {
 	struct UnderlineShorthand* self = luaX_checkUnderlineShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0x8995c7ea: self->Offset = luaL_checknumber(L, 3); return 0; // Offset				case 0x3b42dfbf: self->Width = luaL_checknumber(L, 3); return 0; // Width				case 0xe5b43cf8: self->Color = luaX_checkcolor(L, 3); return 0; // Color			}
+		case 0x8995c7ea: self->Offset = luaL_checknumber(L, 3); return 0; // Offset
+		case 0x3b42dfbf: self->Width = luaL_checknumber(L, 3); return 0; // Width
+		case 0xe5b43cf8: self->Color = *luaX_checkcolor(L, 3); return 0; // Color
+	}
 	return luaL_error(L, "Unknown field in UnderlineShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_UnderlineShorthand___call(lua_State *L) {
@@ -927,7 +979,7 @@ int luaopen_orca_UnderlineShorthand(lua_State *L) {
 		{ "fromstring", f_fromstring_UnderlineShorthand },
 		{ "__newindex", f_UnderlineShorthand___newindex },
 		{ "__index", f_UnderlineShorthand___index },
-			{ NULL, NULL },
+		{ NULL, NULL },
 	}), 0);
 	// Make UnderlineShorthand creatable like via constructor-like syntax
 	lua_newtable(L);
@@ -951,10 +1003,10 @@ static int f_new_MarginShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct MarginShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-				lua_pop(L, (lua_getfield(L, 1, "Axis"), self->Axis = luaX_checkEdgeShorthand(L, -1), 1));
-			} else {
-						self->Axis = luaX_checkEdgeShorthand(L, 1);
-					}
+		lua_pop(L, (lua_getfield(L, 1, "Axis"), self->Axis = *luaX_checkEdgeShorthand(L, -1), 1));
+	} else {
+		self->Axis = *luaX_checkEdgeShorthand(L, 1);
+	}
 	return 1;
 }
 void MarginShorthand_Convert4(struct MarginShorthand*, float, float, float, float);
@@ -993,13 +1045,15 @@ static int f_fromstring_MarginShorthand(lua_State *L) {
 int f_MarginShorthand___index(lua_State *L) {
 	struct MarginShorthand* self = luaX_checkMarginShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0xed57fa14: luaX_pushEdgeShorthand(L, &self->Axis); return 1; // Axis			}
+		case 0xed57fa14: luaX_pushEdgeShorthand(L, &self->Axis); return 1; // Axis
+	}
 	return luaL_error(L, "Unknown field in MarginShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_MarginShorthand___newindex(lua_State *L) {
 	struct MarginShorthand* self = luaX_checkMarginShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0xed57fa14: self->Axis = luaX_checkEdgeShorthand(L, 3); return 0; // Axis			}
+		case 0xed57fa14: self->Axis = *luaX_checkEdgeShorthand(L, 3); return 0; // Axis
+	}
 	return luaL_error(L, "Unknown field in MarginShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_MarginShorthand___call(lua_State *L) {
@@ -1012,7 +1066,7 @@ int luaopen_orca_MarginShorthand(lua_State *L) {
 		{ "fromstring", f_fromstring_MarginShorthand },
 		{ "__newindex", f_MarginShorthand___newindex },
 		{ "__index", f_MarginShorthand___index },
-			{ NULL, NULL },
+		{ NULL, NULL },
 	}), 0);
 	// Make MarginShorthand creatable like via constructor-like syntax
 	lua_newtable(L);
@@ -1036,16 +1090,16 @@ static int f_new_BorderShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct BorderShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-				lua_pop(L, (lua_getfield(L, 1, "Width"), self->Width = luaX_checkMarginShorthand(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = luaX_checkcolor(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "Style"), self->Style = luaX_checkBorderStyle(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "Radius"), self->Radius = luaX_checkBorderRadiusShorthand(L, -1), 1));
-			} else {
-						self->Width = luaX_checkMarginShorthand(L, 1);
-						self->Color = luaX_checkcolor(L, 2);
-						self->Style = luaX_checkBorderStyle(L, 3);
-						self->Radius = luaX_checkBorderRadiusShorthand(L, 4);
-					}
+		lua_pop(L, (lua_getfield(L, 1, "Width"), self->Width = *luaX_checkMarginShorthand(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = *luaX_checkcolor(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Style"), self->Style = luaX_checkBorderStyle(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Radius"), self->Radius = *luaX_checkBorderRadiusShorthand(L, -1), 1));
+	} else {
+		self->Width = *luaX_checkMarginShorthand(L, 1);
+		self->Color = *luaX_checkcolor(L, 2);
+		self->Style = luaX_checkBorderStyle(L, 3);
+		self->Radius = *luaX_checkBorderRadiusShorthand(L, 4);
+	}
 	return 1;
 }
 static int f_fromstring_BorderShorthand(lua_State *L) {
@@ -1068,13 +1122,21 @@ static int f_fromstring_BorderShorthand(lua_State *L) {
 int f_BorderShorthand___index(lua_State *L) {
 	struct BorderShorthand* self = luaX_checkBorderShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0x3b42dfbf: luaX_pushMarginShorthand(L, &self->Width); return 1; // Width				case 0xe5b43cf8: luaX_pushcolor(L, &self->Color); return 1; // Color				case 0x5467ec76: luaX_pushBorderStyle(L, self->Style); return 1; // Style				case 0x3a8111d3: luaX_pushBorderRadiusShorthand(L, &self->Radius); return 1; // Radius			}
+		case 0x3b42dfbf: luaX_pushMarginShorthand(L, &self->Width); return 1; // Width
+		case 0xe5b43cf8: luaX_pushcolor(L, &self->Color); return 1; // Color
+		case 0x5467ec76: luaX_pushBorderStyle(L, self->Style); return 1; // Style
+		case 0x3a8111d3: luaX_pushBorderRadiusShorthand(L, &self->Radius); return 1; // Radius
+	}
 	return luaL_error(L, "Unknown field in BorderShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_BorderShorthand___newindex(lua_State *L) {
 	struct BorderShorthand* self = luaX_checkBorderShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0x3b42dfbf: self->Width = luaX_checkMarginShorthand(L, 3); return 0; // Width				case 0xe5b43cf8: self->Color = luaX_checkcolor(L, 3); return 0; // Color				case 0x5467ec76: self->Style = luaX_checkBorderStyle(L, 3); return 0; // Style				case 0x3a8111d3: self->Radius = luaX_checkBorderRadiusShorthand(L, 3); return 0; // Radius			}
+		case 0x3b42dfbf: self->Width = *luaX_checkMarginShorthand(L, 3); return 0; // Width
+		case 0xe5b43cf8: self->Color = *luaX_checkcolor(L, 3); return 0; // Color
+		case 0x5467ec76: self->Style = luaX_checkBorderStyle(L, 3); return 0; // Style
+		case 0x3a8111d3: self->Radius = *luaX_checkBorderRadiusShorthand(L, 3); return 0; // Radius
+	}
 	return luaL_error(L, "Unknown field in BorderShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_BorderShorthand___call(lua_State *L) {
@@ -1087,7 +1149,7 @@ int luaopen_orca_BorderShorthand(lua_State *L) {
 		{ "fromstring", f_fromstring_BorderShorthand },
 		{ "__newindex", f_BorderShorthand___newindex },
 		{ "__index", f_BorderShorthand___index },
-			{ NULL, NULL },
+		{ NULL, NULL },
 	}), 0);
 	// Make BorderShorthand creatable like via constructor-like syntax
 	lua_newtable(L);
@@ -1111,18 +1173,18 @@ static int f_new_SizeAxisShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct SizeAxisShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-				lua_pop(L, (lua_getfield(L, 1, "Requested"), self->Requested = luaL_checknumber(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "Desired"), self->Desired = luaL_checknumber(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "Min"), self->Min = luaL_checknumber(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "Actual"), self->Actual = luaL_checknumber(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "Scroll"), self->Scroll = luaL_checknumber(L, -1), 1));
-			} else {
-						self->Requested = luaL_checknumber(L, 1);
-						self->Desired = luaL_checknumber(L, 2);
-						self->Min = luaL_checknumber(L, 3);
-						self->Actual = luaL_checknumber(L, 4);
-						self->Scroll = luaL_checknumber(L, 5);
-					}
+		lua_pop(L, (lua_getfield(L, 1, "Requested"), self->Requested = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Desired"), self->Desired = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Min"), self->Min = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Actual"), self->Actual = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Scroll"), self->Scroll = luaL_checknumber(L, -1), 1));
+	} else {
+		self->Requested = luaL_checknumber(L, 1);
+		self->Desired = luaL_checknumber(L, 2);
+		self->Min = luaL_checknumber(L, 3);
+		self->Actual = luaL_checknumber(L, 4);
+		self->Scroll = luaL_checknumber(L, 5);
+	}
 	return 1;
 }
 static int f_fromstring_SizeAxisShorthand(lua_State *L) {
@@ -1147,13 +1209,23 @@ static int f_fromstring_SizeAxisShorthand(lua_State *L) {
 int f_SizeAxisShorthand___index(lua_State *L) {
 	struct SizeAxisShorthand* self = luaX_checkSizeAxisShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0x77ea8663: lua_pushnumber(L, self->Requested); return 1; // Requested				case 0x28adf5d5: lua_pushnumber(L, self->Desired); return 1; // Desired				case 0x2e9445f7: lua_pushnumber(L, self->Min); return 1; // Min				case 0xf1aed197: lua_pushnumber(L, self->Actual); return 1; // Actual				case 0x25dca54c: lua_pushnumber(L, self->Scroll); return 1; // Scroll			}
+		case 0x77ea8663: lua_pushnumber(L, self->Requested); return 1; // Requested
+		case 0x28adf5d5: lua_pushnumber(L, self->Desired); return 1; // Desired
+		case 0x2e9445f7: lua_pushnumber(L, self->Min); return 1; // Min
+		case 0xf1aed197: lua_pushnumber(L, self->Actual); return 1; // Actual
+		case 0x25dca54c: lua_pushnumber(L, self->Scroll); return 1; // Scroll
+	}
 	return luaL_error(L, "Unknown field in SizeAxisShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_SizeAxisShorthand___newindex(lua_State *L) {
 	struct SizeAxisShorthand* self = luaX_checkSizeAxisShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0x77ea8663: self->Requested = luaL_checknumber(L, 3); return 0; // Requested				case 0x28adf5d5: self->Desired = luaL_checknumber(L, 3); return 0; // Desired				case 0x2e9445f7: self->Min = luaL_checknumber(L, 3); return 0; // Min				case 0xf1aed197: self->Actual = luaL_checknumber(L, 3); return 0; // Actual				case 0x25dca54c: self->Scroll = luaL_checknumber(L, 3); return 0; // Scroll			}
+		case 0x77ea8663: self->Requested = luaL_checknumber(L, 3); return 0; // Requested
+		case 0x28adf5d5: self->Desired = luaL_checknumber(L, 3); return 0; // Desired
+		case 0x2e9445f7: self->Min = luaL_checknumber(L, 3); return 0; // Min
+		case 0xf1aed197: self->Actual = luaL_checknumber(L, 3); return 0; // Actual
+		case 0x25dca54c: self->Scroll = luaL_checknumber(L, 3); return 0; // Scroll
+	}
 	return luaL_error(L, "Unknown field in SizeAxisShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_SizeAxisShorthand___call(lua_State *L) {
@@ -1166,7 +1238,7 @@ int luaopen_orca_SizeAxisShorthand(lua_State *L) {
 		{ "fromstring", f_fromstring_SizeAxisShorthand },
 		{ "__newindex", f_SizeAxisShorthand___newindex },
 		{ "__index", f_SizeAxisShorthand___index },
-			{ NULL, NULL },
+		{ NULL, NULL },
 	}), 0);
 	// Make SizeAxisShorthand creatable like via constructor-like syntax
 	lua_newtable(L);
@@ -1190,10 +1262,10 @@ static int f_new_SizeShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct SizeShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-				lua_pop(L, (lua_getfield(L, 1, "Axis"), self->Axis = luaX_checkSizeAxisShorthand(L, -1), 1));
-			} else {
-						self->Axis = luaX_checkSizeAxisShorthand(L, 1);
-					}
+		lua_pop(L, (lua_getfield(L, 1, "Axis"), self->Axis = *luaX_checkSizeAxisShorthand(L, -1), 1));
+	} else {
+		self->Axis = *luaX_checkSizeAxisShorthand(L, 1);
+	}
 	return 1;
 }
 static int f_fromstring_SizeShorthand(lua_State *L) {
@@ -1238,13 +1310,15 @@ static int f_fromstring_SizeShorthand(lua_State *L) {
 int f_SizeShorthand___index(lua_State *L) {
 	struct SizeShorthand* self = luaX_checkSizeShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0xed57fa14: luaX_pushSizeAxisShorthand(L, &self->Axis); return 1; // Axis			}
+		case 0xed57fa14: luaX_pushSizeAxisShorthand(L, &self->Axis); return 1; // Axis
+	}
 	return luaL_error(L, "Unknown field in SizeShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_SizeShorthand___newindex(lua_State *L) {
 	struct SizeShorthand* self = luaX_checkSizeShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0xed57fa14: self->Axis = luaX_checkSizeAxisShorthand(L, 3); return 0; // Axis			}
+		case 0xed57fa14: self->Axis = *luaX_checkSizeAxisShorthand(L, 3); return 0; // Axis
+	}
 	return luaL_error(L, "Unknown field in SizeShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_SizeShorthand___call(lua_State *L) {
@@ -1257,7 +1331,7 @@ int luaopen_orca_SizeShorthand(lua_State *L) {
 		{ "fromstring", f_fromstring_SizeShorthand },
 		{ "__newindex", f_SizeShorthand___newindex },
 		{ "__index", f_SizeShorthand___index },
-			{ NULL, NULL },
+		{ NULL, NULL },
 	}), 0);
 	// Make SizeShorthand creatable like via constructor-like syntax
 	lua_newtable(L);
@@ -1281,12 +1355,12 @@ static int f_new_NavigateToPageArguments(lua_State *L) {
 	memset(self, 0, sizeof(struct NavigateToPageArguments));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-				lua_pop(L, (lua_getfield(L, 1, "URL"), self->URL = luaL_checkstring(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "TransitionType"), self->TransitionType = luaX_checkTransitionType(L, -1), 1));
-			} else {
-						self->URL = luaL_checkstring(L, 1);
-						self->TransitionType = luaX_checkTransitionType(L, 2);
-					}
+		lua_pop(L, (lua_getfield(L, 1, "URL"), strncpy(self->URL, luaL_checkstring(L, -1), sizeof(self->URL)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "TransitionType"), self->TransitionType = luaX_checkTransitionType(L, -1), 1));
+	} else {
+		strncpy(self->URL, luaL_checkstring(L, 1), sizeof(self->URL));
+		self->TransitionType = luaX_checkTransitionType(L, 2);
+	}
 	return 1;
 }
 static int f_fromstring_NavigateToPageArguments(lua_State *L) {
@@ -1305,13 +1379,17 @@ static int f_fromstring_NavigateToPageArguments(lua_State *L) {
 int f_NavigateToPageArguments___index(lua_State *L) {
 	struct NavigateToPageArguments* self = luaX_checkNavigateToPageArguments(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0x7569633e: lua_pushstring(L, self->URL); return 1; // URL				case 0x84ff7372: luaX_pushTransitionType(L, self->TransitionType); return 1; // TransitionType			}
+		case 0x7569633e: lua_pushstring(L, self->URL); return 1; // URL
+		case 0x84ff7372: luaX_pushTransitionType(L, self->TransitionType); return 1; // TransitionType
+	}
 	return luaL_error(L, "Unknown field in NavigateToPageArguments: %s", luaL_checkstring(L, 2));
 }
 int f_NavigateToPageArguments___newindex(lua_State *L) {
 	struct NavigateToPageArguments* self = luaX_checkNavigateToPageArguments(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0x7569633e: self->URL = luaL_checkstring(L, 3); return 0; // URL				case 0x84ff7372: self->TransitionType = luaX_checkTransitionType(L, 3); return 0; // TransitionType			}
+		case 0x7569633e: strncpy(self->URL, luaL_checkstring(L, 3), sizeof(self->URL)); return 0; // URL
+		case 0x84ff7372: self->TransitionType = luaX_checkTransitionType(L, 3); return 0; // TransitionType
+	}
 	return luaL_error(L, "Unknown field in NavigateToPageArguments: %s", luaL_checkstring(L, 2));
 }
 static int f_NavigateToPageArguments___call(lua_State *L) {
@@ -1324,7 +1402,7 @@ int luaopen_orca_NavigateToPageArguments(lua_State *L) {
 		{ "fromstring", f_fromstring_NavigateToPageArguments },
 		{ "__newindex", f_NavigateToPageArguments___newindex },
 		{ "__index", f_NavigateToPageArguments___index },
-			{ NULL, NULL },
+		{ NULL, NULL },
 	}), 0);
 	// Make NavigateToPageArguments creatable like via constructor-like syntax
 	lua_newtable(L);
@@ -1348,10 +1426,10 @@ static int f_new_NavigateBackArguments(lua_State *L) {
 	memset(self, 0, sizeof(struct NavigateBackArguments));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-				lua_pop(L, (lua_getfield(L, 1, "TransitionType"), self->TransitionType = luaX_checkTransitionType(L, -1), 1));
-			} else {
-						self->TransitionType = luaX_checkTransitionType(L, 1);
-					}
+		lua_pop(L, (lua_getfield(L, 1, "TransitionType"), self->TransitionType = luaX_checkTransitionType(L, -1), 1));
+	} else {
+		self->TransitionType = luaX_checkTransitionType(L, 1);
+	}
 	return 1;
 }
 static int f_fromstring_NavigateBackArguments(lua_State *L) {
@@ -1368,13 +1446,15 @@ static int f_fromstring_NavigateBackArguments(lua_State *L) {
 int f_NavigateBackArguments___index(lua_State *L) {
 	struct NavigateBackArguments* self = luaX_checkNavigateBackArguments(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0x84ff7372: luaX_pushTransitionType(L, self->TransitionType); return 1; // TransitionType			}
+		case 0x84ff7372: luaX_pushTransitionType(L, self->TransitionType); return 1; // TransitionType
+	}
 	return luaL_error(L, "Unknown field in NavigateBackArguments: %s", luaL_checkstring(L, 2));
 }
 int f_NavigateBackArguments___newindex(lua_State *L) {
 	struct NavigateBackArguments* self = luaX_checkNavigateBackArguments(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0x84ff7372: self->TransitionType = luaX_checkTransitionType(L, 3); return 0; // TransitionType			}
+		case 0x84ff7372: self->TransitionType = luaX_checkTransitionType(L, 3); return 0; // TransitionType
+	}
 	return luaL_error(L, "Unknown field in NavigateBackArguments: %s", luaL_checkstring(L, 2));
 }
 static int f_NavigateBackArguments___call(lua_State *L) {
@@ -1387,7 +1467,7 @@ int luaopen_orca_NavigateBackArguments(lua_State *L) {
 		{ "fromstring", f_fromstring_NavigateBackArguments },
 		{ "__newindex", f_NavigateBackArguments___newindex },
 		{ "__index", f_NavigateBackArguments___index },
-			{ NULL, NULL },
+		{ NULL, NULL },
 	}), 0);
 	// Make NavigateBackArguments creatable like via constructor-like syntax
 	lua_newtable(L);
@@ -1399,7 +1479,7 @@ int luaopen_orca_NavigateBackArguments(lua_State *L) {
 
 	
 static struct PropertyType const DataObjectProperties[kDataObjectNumProperties] = {
-	};
+};
 static struct DataObject DataObjectDefaults = {
 	};
 LRESULT DataObjectProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1429,7 +1509,14 @@ ORCA_API struct ClassDesc _DataObject = {
 
 	
 static struct PropertyType const AnimationPlayerProperties[kAnimationPlayerNumProperties] = {
-				DECL(0x706b62d9, AnimationPlayer, AutoplayEnabled, AutoplayEnabled, kDataTypeBool), // AnimationPlayer.AutoplayEnabled						DECL(0x9bcd7639, AnimationPlayer, DurationScale, DurationScale, kDataTypeFloat), // AnimationPlayer.DurationScale						DECL(0x234c71cf, AnimationPlayer, PlaybackMode, PlaybackMode, kDataTypeEnum, .Enums = _PlaybackMode), // AnimationPlayer.PlaybackMode						DECL(0x9b01fbb4, AnimationPlayer, RelativePlayback, RelativePlayback, kDataTypeBool), // AnimationPlayer.RelativePlayback						DECL(0xa3a5f0a1, AnimationPlayer, RepeatCount, RepeatCount, kDataTypeInt), // AnimationPlayer.RepeatCount						DECL(0x280cbcbb, AnimationPlayer, RestoreOriginalValuesAfterPlayback, RestoreOriginalValuesAfterPlayback, kDataTypeBool), // AnimationPlayer.RestoreOriginalValuesAfterPlayback						DECL(0x30d783f6, AnimationPlayer, Timeline, Timeline, kDataTypeComponent), // AnimationPlayer.Timeline			};
+	DECL(0x706b62d9, AnimationPlayer, AutoplayEnabled, AutoplayEnabled, kDataTypeBool), // AnimationPlayer.AutoplayEnabled
+	DECL(0x9bcd7639, AnimationPlayer, DurationScale, DurationScale, kDataTypeFloat), // AnimationPlayer.DurationScale
+	DECL(0x234c71cf, AnimationPlayer, PlaybackMode, PlaybackMode, kDataTypeEnum, .Enums = _PlaybackMode), // AnimationPlayer.PlaybackMode
+	DECL(0x9b01fbb4, AnimationPlayer, RelativePlayback, RelativePlayback, kDataTypeBool), // AnimationPlayer.RelativePlayback
+	DECL(0xa3a5f0a1, AnimationPlayer, RepeatCount, RepeatCount, kDataTypeInt), // AnimationPlayer.RepeatCount
+	DECL(0x280cbcbb, AnimationPlayer, RestoreOriginalValuesAfterPlayback, RestoreOriginalValuesAfterPlayback, kDataTypeBool), // AnimationPlayer.RestoreOriginalValuesAfterPlayback
+	DECL(0x30d783f6, AnimationPlayer, Timeline, Timeline, kDataTypeComponent), // AnimationPlayer.Timeline
+};
 static struct AnimationPlayer AnimationPlayerDefaults = {
 															};
 LRESULT AnimationPlayerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1461,7 +1548,9 @@ ORCA_API struct ClassDesc _AnimationPlayer = {
 	LRESULT Trigger_Attached(struct Object*, struct Trigger*, wParam_t, AttachedPtr);
 	
 static struct PropertyType const TriggerProperties[kTriggerNumProperties] = {
-				DECL(0x5221f9e8, Trigger, Property, Property, kDataTypeFixed), // Trigger.Property						DECL(0xd147f96a, Trigger, Value, Value, kDataTypeInt), // Trigger.Value			};
+	DECL(0x5221f9e8, Trigger, Property, Property, kDataTypeFixed), // Trigger.Property
+	DECL(0xd147f96a, Trigger, Value, Value, kDataTypeInt), // Trigger.Value
+};
 static struct Trigger TriggerDefaults = {
 					};
 LRESULT TriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1492,7 +1581,9 @@ ORCA_API struct ClassDesc _Trigger = {
 	LRESULT OnPropertyChangedTrigger_PropertyChanged(struct Object*, struct OnPropertyChangedTrigger*, wParam_t, PropertyChangedPtr);
 	
 static struct PropertyType const OnPropertyChangedTriggerProperties[kOnPropertyChangedTriggerNumProperties] = {
-				DECL(0x9ff03304, OnPropertyChangedTrigger, SourceNode, SourceNode, kDataTypeFixed), // OnPropertyChangedTrigger.SourceNode						DECL(0x5221f9e8, OnPropertyChangedTrigger, Property, Property, kDataTypeFixed), // OnPropertyChangedTrigger.Property			};
+	DECL(0x9ff03304, OnPropertyChangedTrigger, SourceNode, SourceNode, kDataTypeFixed), // OnPropertyChangedTrigger.SourceNode
+	DECL(0x5221f9e8, OnPropertyChangedTrigger, Property, Property, kDataTypeFixed), // OnPropertyChangedTrigger.Property
+};
 static struct OnPropertyChangedTrigger OnPropertyChangedTriggerDefaults = {
 					};
 LRESULT OnPropertyChangedTriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1523,7 +1614,7 @@ ORCA_API struct ClassDesc _OnPropertyChangedTrigger = {
 	LRESULT OnAttachedTrigger_Attached(struct Object*, struct OnAttachedTrigger*, wParam_t, AttachedPtr);
 	
 static struct PropertyType const OnAttachedTriggerProperties[kOnAttachedTriggerNumProperties] = {
-	};
+};
 static struct OnAttachedTrigger OnAttachedTriggerDefaults = {
 	};
 LRESULT OnAttachedTriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1554,7 +1645,8 @@ ORCA_API struct ClassDesc _OnAttachedTrigger = {
 	LRESULT EventTrigger_HandleMessage(struct Object*, struct EventTrigger*, wParam_t, HandleMessagePtr);
 	
 static struct PropertyType const EventTriggerProperties[kEventTriggerNumProperties] = {
-				DECL(0x30d77e1a, EventTrigger, RoutedEvent, RoutedEvent, kDataTypeFixed), // EventTrigger.RoutedEvent			};
+	DECL(0x30d77e1a, EventTrigger, RoutedEvent, RoutedEvent, kDataTypeFixed), // EventTrigger.RoutedEvent
+};
 static struct EventTrigger EventTriggerDefaults = {
 			};
 LRESULT EventTriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1585,7 +1677,10 @@ ORCA_API struct ClassDesc _EventTrigger = {
 	LRESULT Setter_Triggered(struct Object*, struct Setter*, wParam_t, TriggeredPtr);
 	
 static struct PropertyType const SetterProperties[kSetterNumProperties] = {
-				DECL(0xa5ea0da3, Setter, Trigger, Trigger, kDataTypeComponent), // Setter.Trigger						DECL(0x5221f9e8, Setter, Property, Property, kDataTypeFixed), // Setter.Property						DECL(0xd147f96a, Setter, Value, Value, kDataTypeFixed), // Setter.Value			};
+	DECL(0xa5ea0da3, Setter, Trigger, Trigger, kDataTypeComponent), // Setter.Trigger
+	DECL(0x5221f9e8, Setter, Property, Property, kDataTypeFixed), // Setter.Property
+	DECL(0xd147f96a, Setter, Value, Value, kDataTypeFixed), // Setter.Value
+};
 static struct Setter SetterDefaults = {
 							};
 LRESULT SetterProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1616,7 +1711,10 @@ ORCA_API struct ClassDesc _Setter = {
 	LRESULT Handler_Triggered(struct Object*, struct Handler*, wParam_t, TriggeredPtr);
 	
 static struct PropertyType const HandlerProperties[kHandlerNumProperties] = {
-				DECL(0xa5ea0da3, Handler, Trigger, Trigger, kDataTypeComponent), // Handler.Trigger						DECL(0x8b67f168, Handler, Target, Target, kDataTypeObject), // Handler.Target						DECL(0x98a79a69, Handler, Function, Function, kDataTypeFixed), // Handler.Function			};
+	DECL(0xa5ea0da3, Handler, Trigger, Trigger, kDataTypeComponent), // Handler.Trigger
+	DECL(0x8b67f168, Handler, Target, Target, kDataTypeObject), // Handler.Target
+	DECL(0x98a79a69, Handler, Function, Function, kDataTypeFixed), // Handler.Function
+};
 static struct Handler HandlerDefaults = {
 							};
 LRESULT HandlerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1646,7 +1744,7 @@ ORCA_API struct ClassDesc _Handler = {
 
 	
 static struct PropertyType const BrushProperties[kBrushNumProperties] = {
-	};
+};
 static struct Brush BrushDefaults = {
 	};
 LRESULT BrushProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1676,7 +1774,8 @@ ORCA_API struct ClassDesc _Brush = {
 
 	
 static struct PropertyType const ColorBrushProperties[kColorBrushNumProperties] = {
-				DECL(0xe5b43cf8, ColorBrush, Color, Color, kDataTypeStruct, .TypeString = "Color"), // ColorBrush.Color			};
+	DECL(0xe5b43cf8, ColorBrush, Color, Color, kDataTypeStruct, .TypeString = "Color"), // ColorBrush.Color
+};
 static struct ColorBrush ColorBrushDefaults = {
 			};
 LRESULT ColorBrushProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1709,7 +1808,74 @@ ORCA_API struct ClassDesc _ColorBrush = {
 	LRESULT Node_IsVisible(struct Object*, struct Node*, wParam_t, IsVisiblePtr);
 	
 static struct PropertyType const NodeProperties[kNodeNumProperties] = {
-				DECL(0xa6478e7c, Node, Size, Size, kDataTypeStruct, .TypeString = "SizeShorthand"), // Node.Size						DECL(0x5e3799b1, Node, HorizontalSize, Size.Axis[0], kDataTypeStruct, .TypeString = "SizeAxisShorthand"), // Node.HorizontalSize						DECL(0x0b9623c7, Node, Width, Size.Axis[0].Requested, kDataTypeFloat), // Node.Width						DECL(0x96650259, Node, DesiredWidth, Size.Axis[0].Desired, kDataTypeFloat), // Node.DesiredWidth						DECL(0x93c257ab, Node, MinWidth, Size.Axis[0].Min, kDataTypeFloat), // Node.MinWidth						DECL(0x36c6f09b, Node, ActualWidth, Size.Axis[0].Actual, kDataTypeFloat), // Node.ActualWidth						DECL(0x79135e00, Node, ScrollWidth, Size.Axis[0].Scroll, kDataTypeFloat), // Node.ScrollWidth						DECL(0x1a3b003c, Node, VerticalSize, Size.Axis[1], kDataTypeStruct, .TypeString = "SizeAxisShorthand"), // Node.VerticalSize						DECL(0x2474776c, Node, Height, Size.Axis[1].Requested, kDataTypeFloat), // Node.Height						DECL(0x9c4bdff6, Node, DesiredHeight, Size.Axis[1].Desired, kDataTypeFloat), // Node.DesiredHeight						DECL(0x8f41b1f0, Node, MinHeight, Size.Axis[1].Min, kDataTypeFloat), // Node.MinHeight						DECL(0x8a37261a, Node, ActualHeight, Size.Axis[1].Actual, kDataTypeFloat), // Node.ActualHeight						DECL(0x8cdd00f5, Node, ScrollHeight, Size.Axis[1].Scroll, kDataTypeFloat), // Node.ScrollHeight						DECL(0x1a32b177, Node, DepthSize, Size.Axis[2], kDataTypeStruct, .TypeString = "SizeAxisShorthand"), // Node.DepthSize						DECL(0x5eeb6429, Node, Depth, Size.Axis[2].Requested, kDataTypeFloat), // Node.Depth						DECL(0xb57663c3, Node, DesiredDepth, Size.Axis[2].Desired, kDataTypeFloat), // Node.DesiredDepth						DECL(0x40804651, Node, MinDepth, Size.Axis[2].Min, kDataTypeFloat), // Node.MinDepth						DECL(0xc8c32e9d, Node, ActualDepth, Size.Axis[2].Actual, kDataTypeFloat), // Node.ActualDepth						DECL(0x4764e986, Node, ScrollDepth, Size.Axis[2].Scroll, kDataTypeFloat), // Node.ScrollDepth						DECL(0xc4cc799b, Node, Margin, Margin, kDataTypeStruct, .TypeString = "MarginShorthand"), // Node.Margin						DECL(0x935c66f8, Node, HorizontalMargin, Margin.Axis[0], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.HorizontalMargin						DECL(0x8c225869, Node, MarginLeft, Margin.Axis[0].Left, kDataTypeFloat), // Node.MarginLeft						DECL(0x1efb398a, Node, MarginRight, Margin.Axis[0].Right, kDataTypeFloat), // Node.MarginRight						DECL(0x975a2ead, Node, VerticalMargin, Margin.Axis[1], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.VerticalMargin						DECL(0x2dd3ed28, Node, MarginTop, Margin.Axis[1].Left, kDataTypeFloat), // Node.MarginTop						DECL(0xf5942f3d, Node, MarginBottom, Margin.Axis[1].Right, kDataTypeFloat), // Node.MarginBottom						DECL(0x57578b56, Node, DepthMargin, Margin.Axis[2], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.DepthMargin						DECL(0x7d0c55b3, Node, MarginFront, Margin.Axis[2].Left, kDataTypeFloat), // Node.MarginFront						DECL(0xc97d4cbc, Node, MarginBack, Margin.Axis[2].Right, kDataTypeFloat), // Node.MarginBack						DECL(0x0736dd56, Node, Padding, Padding, kDataTypeStruct, .TypeString = "MarginShorthand"), // Node.Padding						DECL(0x983bed47, Node, HorizontalPadding, Padding.Axis[0], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.HorizontalPadding						DECL(0xc8bdc1ce, Node, PaddingLeft, Padding.Axis[0].Left, kDataTypeFloat), // Node.PaddingLeft						DECL(0x09958923, Node, PaddingRight, Padding.Axis[0].Right, kDataTypeFloat), // Node.PaddingRight						DECL(0x9c3e322a, Node, VerticalPadding, Padding.Axis[1], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.VerticalPadding						DECL(0xf0c0da87, Node, PaddingTop, Padding.Axis[1].Left, kDataTypeFloat), // Node.PaddingTop						DECL(0xf01ed4b8, Node, PaddingBottom, Padding.Axis[1].Right, kDataTypeFloat), // Node.PaddingBottom						DECL(0x5c400c01, Node, DepthPadding, Padding.Axis[2], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.DepthPadding						DECL(0xe3b770ac, Node, PaddingFront, Padding.Axis[2].Left, kDataTypeFloat), // Node.PaddingFront						DECL(0x4ef0c5b9, Node, PaddingBack, Padding.Axis[2].Right, kDataTypeFloat), // Node.PaddingBack						DECL(0x0cad6f57, Node, Border, Border, kDataTypeStruct, .TypeString = "BorderShorthand"), // Node.Border						DECL(0x0aaf7cf9, Node, BorderWidth, Border.Width, kDataTypeStruct, .TypeString = "MarginShorthand"), // Node.BorderWidth						DECL(0x8e4cc862, Node, HorizontalBorderWidth, Border.Width.Axis[0], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.HorizontalBorderWidth						DECL(0xed2c25cf, Node, BorderWidthLeft, Border.Width.Axis[0].Left, kDataTypeFloat), // Node.BorderWidthLeft						DECL(0x6edcef40, Node, BorderWidthRight, Border.Width.Axis[0].Right, kDataTypeFloat), // Node.BorderWidthRight						DECL(0xca49553f, Node, VerticalBorderWidth, Border.Width.Axis[1], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.VerticalBorderWidth						DECL(0x4eca22b6, Node, BorderWidthTop, Border.Width.Axis[1].Left, kDataTypeFloat), // Node.BorderWidthTop						DECL(0x93552aeb, Node, BorderWidthBottom, Border.Width.Axis[1].Right, kDataTypeFloat), // Node.BorderWidthBottom						DECL(0xca51a404, Node, DepthBorderWidth, Border.Width.Axis[2], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.DepthBorderWidth						DECL(0x11c3e045, Node, BorderWidthFront, Border.Width.Axis[2].Left, kDataTypeFloat), // Node.BorderWidthFront						DECL(0xd481189e, Node, BorderWidthBack, Border.Width.Axis[2].Right, kDataTypeFloat), // Node.BorderWidthBack						DECL(0x933e48c6, Node, BorderColor, Border.Color, kDataTypeStruct, .TypeString = "Color"), // Node.BorderColor						DECL(0x390b4488, Node, BorderStyle, Border.Style, kDataTypeEnum, .Enums = _Style), // Node.BorderStyle						DECL(0xb8e9fe05, Node, BorderRadius, Border.Radius, kDataTypeStruct, .TypeString = "BorderRadiusShorthand"), // Node.BorderRadius						DECL(0x319ccd4b, Node, BorderTopLeftRadius, Border.Radius.TopLeftRadius, kDataTypeFloat), // Node.BorderTopLeftRadius						DECL(0x579cab64, Node, BorderTopRightRadius, Border.Radius.TopRightRadius, kDataTypeFloat), // Node.BorderTopRightRadius						DECL(0xcd47000e, Node, BorderBottomRightRadius, Border.Radius.BottomRightRadius, kDataTypeFloat), // Node.BorderBottomRightRadius						DECL(0xabbc6175, Node, BorderBottomLeftRadius, Border.Radius.BottomLeftRadius, kDataTypeFloat), // Node.BorderBottomLeftRadius						DECL(0xd66abafe, Node, Alignment, Alignment, kDataTypeStruct, .TypeString = "AlignmentShorthand"), // Node.Alignment						DECL(0x464aee5f, Node, HorizontalAlignment, Alignment.Axis[0], kDataTypeInt), // Node.HorizontalAlignment						DECL(0x8a4d9802, Node, VerticalAlignment, Alignment.Axis[1], kDataTypeInt), // Node.VerticalAlignment						DECL(0x8a4fd699, Node, DepthAlignment, Alignment.Axis[2], kDataTypeInt), // Node.DepthAlignment						DECL(0x592a4941, Node, Visible, Visible, kDataTypeBool), // Node.Visible						DECL(0x20d9ba7c, Node, QuickHide, QuickHide, kDataTypeBool), // Node.QuickHide						DECL(0xa0b06d26, Node, VisibleAmountInParent, VisibleAmountInParent, kDataTypeFloat), // Node.VisibleAmountInParent						DECL(0xde1f0406, Node, Opacity, Opacity, kDataTypeFloat), // Node.Opacity						DECL(0x76bda0c0, Node, Tags, Tags, kDataTypeObjectTags), // Node.Tags						DECL(0xa310331c, Node, DataContext, DataContext, kDataTypeComponent), // Node.DataContext			};
+	DECL(0xa6478e7c, Node, Size, Size, kDataTypeStruct, .TypeString = "SizeShorthand"), // Node.Size
+	DECL(0x5e3799b1, Node, HorizontalSize, Size.Axis[0], kDataTypeStruct, .TypeString = "SizeAxisShorthand"), // Node.HorizontalSize
+	DECL(0x0b9623c7, Node, Width, Size.Axis[0].Requested, kDataTypeFloat), // Node.Width
+	DECL(0x96650259, Node, DesiredWidth, Size.Axis[0].Desired, kDataTypeFloat), // Node.DesiredWidth
+	DECL(0x93c257ab, Node, MinWidth, Size.Axis[0].Min, kDataTypeFloat), // Node.MinWidth
+	DECL(0x36c6f09b, Node, ActualWidth, Size.Axis[0].Actual, kDataTypeFloat), // Node.ActualWidth
+	DECL(0x79135e00, Node, ScrollWidth, Size.Axis[0].Scroll, kDataTypeFloat), // Node.ScrollWidth
+	DECL(0x1a3b003c, Node, VerticalSize, Size.Axis[1], kDataTypeStruct, .TypeString = "SizeAxisShorthand"), // Node.VerticalSize
+	DECL(0x2474776c, Node, Height, Size.Axis[1].Requested, kDataTypeFloat), // Node.Height
+	DECL(0x9c4bdff6, Node, DesiredHeight, Size.Axis[1].Desired, kDataTypeFloat), // Node.DesiredHeight
+	DECL(0x8f41b1f0, Node, MinHeight, Size.Axis[1].Min, kDataTypeFloat), // Node.MinHeight
+	DECL(0x8a37261a, Node, ActualHeight, Size.Axis[1].Actual, kDataTypeFloat), // Node.ActualHeight
+	DECL(0x8cdd00f5, Node, ScrollHeight, Size.Axis[1].Scroll, kDataTypeFloat), // Node.ScrollHeight
+	DECL(0x1a32b177, Node, DepthSize, Size.Axis[2], kDataTypeStruct, .TypeString = "SizeAxisShorthand"), // Node.DepthSize
+	DECL(0x5eeb6429, Node, Depth, Size.Axis[2].Requested, kDataTypeFloat), // Node.Depth
+	DECL(0xb57663c3, Node, DesiredDepth, Size.Axis[2].Desired, kDataTypeFloat), // Node.DesiredDepth
+	DECL(0x40804651, Node, MinDepth, Size.Axis[2].Min, kDataTypeFloat), // Node.MinDepth
+	DECL(0xc8c32e9d, Node, ActualDepth, Size.Axis[2].Actual, kDataTypeFloat), // Node.ActualDepth
+	DECL(0x4764e986, Node, ScrollDepth, Size.Axis[2].Scroll, kDataTypeFloat), // Node.ScrollDepth
+	DECL(0xc4cc799b, Node, Margin, Margin, kDataTypeStruct, .TypeString = "MarginShorthand"), // Node.Margin
+	DECL(0x935c66f8, Node, HorizontalMargin, Margin.Axis[0], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.HorizontalMargin
+	DECL(0x8c225869, Node, MarginLeft, Margin.Axis[0].Left, kDataTypeFloat), // Node.MarginLeft
+	DECL(0x1efb398a, Node, MarginRight, Margin.Axis[0].Right, kDataTypeFloat), // Node.MarginRight
+	DECL(0x975a2ead, Node, VerticalMargin, Margin.Axis[1], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.VerticalMargin
+	DECL(0x2dd3ed28, Node, MarginTop, Margin.Axis[1].Left, kDataTypeFloat), // Node.MarginTop
+	DECL(0xf5942f3d, Node, MarginBottom, Margin.Axis[1].Right, kDataTypeFloat), // Node.MarginBottom
+	DECL(0x57578b56, Node, DepthMargin, Margin.Axis[2], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.DepthMargin
+	DECL(0x7d0c55b3, Node, MarginFront, Margin.Axis[2].Left, kDataTypeFloat), // Node.MarginFront
+	DECL(0xc97d4cbc, Node, MarginBack, Margin.Axis[2].Right, kDataTypeFloat), // Node.MarginBack
+	DECL(0x0736dd56, Node, Padding, Padding, kDataTypeStruct, .TypeString = "MarginShorthand"), // Node.Padding
+	DECL(0x983bed47, Node, HorizontalPadding, Padding.Axis[0], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.HorizontalPadding
+	DECL(0xc8bdc1ce, Node, PaddingLeft, Padding.Axis[0].Left, kDataTypeFloat), // Node.PaddingLeft
+	DECL(0x09958923, Node, PaddingRight, Padding.Axis[0].Right, kDataTypeFloat), // Node.PaddingRight
+	DECL(0x9c3e322a, Node, VerticalPadding, Padding.Axis[1], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.VerticalPadding
+	DECL(0xf0c0da87, Node, PaddingTop, Padding.Axis[1].Left, kDataTypeFloat), // Node.PaddingTop
+	DECL(0xf01ed4b8, Node, PaddingBottom, Padding.Axis[1].Right, kDataTypeFloat), // Node.PaddingBottom
+	DECL(0x5c400c01, Node, DepthPadding, Padding.Axis[2], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.DepthPadding
+	DECL(0xe3b770ac, Node, PaddingFront, Padding.Axis[2].Left, kDataTypeFloat), // Node.PaddingFront
+	DECL(0x4ef0c5b9, Node, PaddingBack, Padding.Axis[2].Right, kDataTypeFloat), // Node.PaddingBack
+	DECL(0x0cad6f57, Node, Border, Border, kDataTypeStruct, .TypeString = "BorderShorthand"), // Node.Border
+	DECL(0x0aaf7cf9, Node, BorderWidth, Border.Width, kDataTypeStruct, .TypeString = "MarginShorthand"), // Node.BorderWidth
+	DECL(0x8e4cc862, Node, HorizontalBorderWidth, Border.Width.Axis[0], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.HorizontalBorderWidth
+	DECL(0xed2c25cf, Node, BorderWidthLeft, Border.Width.Axis[0].Left, kDataTypeFloat), // Node.BorderWidthLeft
+	DECL(0x6edcef40, Node, BorderWidthRight, Border.Width.Axis[0].Right, kDataTypeFloat), // Node.BorderWidthRight
+	DECL(0xca49553f, Node, VerticalBorderWidth, Border.Width.Axis[1], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.VerticalBorderWidth
+	DECL(0x4eca22b6, Node, BorderWidthTop, Border.Width.Axis[1].Left, kDataTypeFloat), // Node.BorderWidthTop
+	DECL(0x93552aeb, Node, BorderWidthBottom, Border.Width.Axis[1].Right, kDataTypeFloat), // Node.BorderWidthBottom
+	DECL(0xca51a404, Node, DepthBorderWidth, Border.Width.Axis[2], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.DepthBorderWidth
+	DECL(0x11c3e045, Node, BorderWidthFront, Border.Width.Axis[2].Left, kDataTypeFloat), // Node.BorderWidthFront
+	DECL(0xd481189e, Node, BorderWidthBack, Border.Width.Axis[2].Right, kDataTypeFloat), // Node.BorderWidthBack
+	DECL(0x933e48c6, Node, BorderColor, Border.Color, kDataTypeStruct, .TypeString = "Color"), // Node.BorderColor
+	DECL(0x390b4488, Node, BorderStyle, Border.Style, kDataTypeEnum, .Enums = _Style), // Node.BorderStyle
+	DECL(0xb8e9fe05, Node, BorderRadius, Border.Radius, kDataTypeStruct, .TypeString = "BorderRadiusShorthand"), // Node.BorderRadius
+	DECL(0x319ccd4b, Node, BorderTopLeftRadius, Border.Radius.TopLeftRadius, kDataTypeFloat), // Node.BorderTopLeftRadius
+	DECL(0x579cab64, Node, BorderTopRightRadius, Border.Radius.TopRightRadius, kDataTypeFloat), // Node.BorderTopRightRadius
+	DECL(0xcd47000e, Node, BorderBottomRightRadius, Border.Radius.BottomRightRadius, kDataTypeFloat), // Node.BorderBottomRightRadius
+	DECL(0xabbc6175, Node, BorderBottomLeftRadius, Border.Radius.BottomLeftRadius, kDataTypeFloat), // Node.BorderBottomLeftRadius
+	DECL(0xd66abafe, Node, Alignment, Alignment, kDataTypeStruct, .TypeString = "AlignmentShorthand"), // Node.Alignment
+	DECL(0x464aee5f, Node, HorizontalAlignment, Alignment.Axis[0], kDataTypeInt), // Node.HorizontalAlignment
+	DECL(0x8a4d9802, Node, VerticalAlignment, Alignment.Axis[1], kDataTypeInt), // Node.VerticalAlignment
+	DECL(0x8a4fd699, Node, DepthAlignment, Alignment.Axis[2], kDataTypeInt), // Node.DepthAlignment
+	DECL(0x592a4941, Node, Visible, Visible, kDataTypeBool), // Node.Visible
+	DECL(0x20d9ba7c, Node, QuickHide, QuickHide, kDataTypeBool), // Node.QuickHide
+	DECL(0xa0b06d26, Node, VisibleAmountInParent, VisibleAmountInParent, kDataTypeFloat), // Node.VisibleAmountInParent
+	DECL(0xde1f0406, Node, Opacity, Opacity, kDataTypeFloat), // Node.Opacity
+	DECL(0x76bda0c0, Node, Tags, Tags, kDataTypeObjectTags), // Node.Tags
+	DECL(0xa310331c, Node, DataContext, DataContext, kDataTypeComponent), // Node.DataContext
+};
 static struct Node NodeDefaults = {
 																																																																																																																												  .Visible = TRUE,
 					  .VisibleAmountInParent = 1,
@@ -1742,7 +1908,22 @@ ORCA_API struct ClassDesc _Node = {
 
 	
 static struct PropertyType const TextRunProperties[kTextRunNumProperties] = {
-				DECL(0x3e142d5e, TextRun, Text, Text, kDataTypeFixed), // TextRun.Text						DECL(0xa77a5eb0, TextRun, Font, Font, kDataTypeStruct, .TypeString = "FontShorthand"), // TextRun.Font						DECL(0xd0616ad0, TextRun, FontWeight, Font.Weight, kDataTypeEnum, .Enums = _Weight), // TextRun.FontWeight						DECL(0x6c164db5, TextRun, FontStyle, Font.Style, kDataTypeEnum, .Enums = _Style), // TextRun.FontStyle						DECL(0xa26a44e1, TextRun, FontSize, Font.Size, kDataTypeFloat), // TextRun.FontSize						DECL(0xf6319880, TextRun, FontFamily, Font.Family, kDataTypeComponent), // TextRun.FontFamily						DECL(0x9a85011f, TextRun, Underline, Underline, kDataTypeStruct, .TypeString = "UnderlineShorthand"), // TextRun.Underline						DECL(0x34ec6004, TextRun, UnderlineOffset, Underline.Offset, kDataTypeFloat), // TextRun.UnderlineOffset						DECL(0xee253b91, TextRun, UnderlineWidth, Underline.Width, kDataTypeFloat), // TextRun.UnderlineWidth						DECL(0x00c40cce, TextRun, UnderlineColor, Underline.Color, kDataTypeStruct, .TypeString = "Color"), // TextRun.UnderlineColor						DECL(0x44b2c826, TextRun, LetterSpacing, LetterSpacing, kDataTypeFloat), // TextRun.LetterSpacing						DECL(0xb5107238, TextRun, LineHeight, LineHeight, kDataTypeFloat), // TextRun.LineHeight						DECL(0x04055b71, TextRun, CharacterSpacing, CharacterSpacing, kDataTypeFloat), // TextRun.CharacterSpacing						DECL(0xfe97e678, TextRun, FixedCharacterWidth, FixedCharacterWidth, kDataTypeFloat), // TextRun.FixedCharacterWidth						DECL(0xbd23c708, TextRun, RemoveSideBearingsProperty, RemoveSideBearingsProperty, kDataTypeBool), // TextRun.RemoveSideBearingsProperty			};
+	DECL(0x3e142d5e, TextRun, Text, Text, kDataTypeFixed), // TextRun.Text
+	DECL(0xa77a5eb0, TextRun, Font, Font, kDataTypeStruct, .TypeString = "FontShorthand"), // TextRun.Font
+	DECL(0xd0616ad0, TextRun, FontWeight, Font.Weight, kDataTypeEnum, .Enums = _Weight), // TextRun.FontWeight
+	DECL(0x6c164db5, TextRun, FontStyle, Font.Style, kDataTypeEnum, .Enums = _Style), // TextRun.FontStyle
+	DECL(0xa26a44e1, TextRun, FontSize, Font.Size, kDataTypeFloat), // TextRun.FontSize
+	DECL(0xf6319880, TextRun, FontFamily, Font.Family, kDataTypeComponent), // TextRun.FontFamily
+	DECL(0x9a85011f, TextRun, Underline, Underline, kDataTypeStruct, .TypeString = "UnderlineShorthand"), // TextRun.Underline
+	DECL(0x34ec6004, TextRun, UnderlineOffset, Underline.Offset, kDataTypeFloat), // TextRun.UnderlineOffset
+	DECL(0xee253b91, TextRun, UnderlineWidth, Underline.Width, kDataTypeFloat), // TextRun.UnderlineWidth
+	DECL(0x00c40cce, TextRun, UnderlineColor, Underline.Color, kDataTypeStruct, .TypeString = "Color"), // TextRun.UnderlineColor
+	DECL(0x44b2c826, TextRun, LetterSpacing, LetterSpacing, kDataTypeFloat), // TextRun.LetterSpacing
+	DECL(0xb5107238, TextRun, LineHeight, LineHeight, kDataTypeFloat), // TextRun.LineHeight
+	DECL(0x04055b71, TextRun, CharacterSpacing, CharacterSpacing, kDataTypeFloat), // TextRun.CharacterSpacing
+	DECL(0xfe97e678, TextRun, FixedCharacterWidth, FixedCharacterWidth, kDataTypeFloat), // TextRun.FixedCharacterWidth
+	DECL(0xbd23c708, TextRun, RemoveSideBearingsProperty, RemoveSideBearingsProperty, kDataTypeBool), // TextRun.RemoveSideBearingsProperty
+};
 static struct TextRun TextRunDefaults = {
 				  .Font = .Size=DEFAULT_FONT_SIZE,
 																					  .LineHeight = 1,
@@ -1777,7 +1958,21 @@ ORCA_API struct ClassDesc _TextRun = {
 	LRESULT TextBlockConcept_MakeText(struct Object*, struct TextBlockConcept*, wParam_t, MakeTextPtr);
 	
 static struct PropertyType const TextBlockConceptProperties[kTextBlockConceptNumProperties] = {
-				DECL(0x43c114fb, TextBlockConcept, TextResourceID, TextResourceID, kDataTypeFixed), // TextBlockConcept.TextResourceID						DECL(0x73dd50ec, TextBlockConcept, TextResourceConfiguration, TextResourceConfiguration, kDataTypeFixed), // TextBlockConcept.TextResourceConfiguration						DECL(0xdccaa011, TextBlockConcept, PlaceholderText, PlaceholderText, kDataTypeFixed), // TextBlockConcept.PlaceholderText						DECL(0x3dcadc9c, TextBlockConcept, TextOverflow, TextOverflow, kDataTypeEnum, .Enums = _TextOverflow), // TextBlockConcept.TextOverflow						DECL(0x8987413a, TextBlockConcept, Placeholder, Placeholder, kDataTypeStruct, .TypeString = "BrushShorthand"), // TextBlockConcept.Placeholder						DECL(0xb272976d, TextBlockConcept, PlaceholderColor, Placeholder.Color, kDataTypeStruct, .TypeString = "Color"), // TextBlockConcept.PlaceholderColor						DECL(0x6b519bcf, TextBlockConcept, PlaceholderImage, Placeholder.Image, kDataTypeComponent), // TextBlockConcept.PlaceholderImage						DECL(0x6d974ebf, TextBlockConcept, PlaceholderMaterial, Placeholder.Material, kDataTypeComponent), // TextBlockConcept.PlaceholderMaterial						DECL(0x27e35097, TextBlockConcept, UseFullFontHeight, UseFullFontHeight, kDataTypeBool), // TextBlockConcept.UseFullFontHeight						DECL(0xda466bac, TextBlockConcept, ConstrainContentHeight, ConstrainContentHeight, kDataTypeBool), // TextBlockConcept.ConstrainContentHeight						DECL(0x468540fd, TextBlockConcept, WordWrap, WordWrap, kDataTypeBool), // TextBlockConcept.WordWrap						DECL(0x65cdc8f2, TextBlockConcept, TextWrapping, TextWrapping, kDataTypeEnum, .Enums = _TextWrapping), // TextBlockConcept.TextWrapping						DECL(0xf46faf37, TextBlockConcept, TextHorizontalAlignment, TextHorizontalAlignment, kDataTypeEnum, .Enums = _TextHorizontalAlignment), // TextBlockConcept.TextHorizontalAlignment						DECL(0xbc8a8a99, TextBlockConcept, TextVerticalAlignment, TextVerticalAlignment, kDataTypeEnum, .Enums = _TextVerticalAlignment), // TextBlockConcept.TextVerticalAlignment			};
+	DECL(0x43c114fb, TextBlockConcept, TextResourceID, TextResourceID, kDataTypeFixed), // TextBlockConcept.TextResourceID
+	DECL(0x73dd50ec, TextBlockConcept, TextResourceConfiguration, TextResourceConfiguration, kDataTypeFixed), // TextBlockConcept.TextResourceConfiguration
+	DECL(0xdccaa011, TextBlockConcept, PlaceholderText, PlaceholderText, kDataTypeFixed), // TextBlockConcept.PlaceholderText
+	DECL(0x3dcadc9c, TextBlockConcept, TextOverflow, TextOverflow, kDataTypeEnum, .Enums = _TextOverflow), // TextBlockConcept.TextOverflow
+	DECL(0x8987413a, TextBlockConcept, Placeholder, Placeholder, kDataTypeStruct, .TypeString = "BrushShorthand"), // TextBlockConcept.Placeholder
+	DECL(0xb272976d, TextBlockConcept, PlaceholderColor, Placeholder.Color, kDataTypeStruct, .TypeString = "Color"), // TextBlockConcept.PlaceholderColor
+	DECL(0x6b519bcf, TextBlockConcept, PlaceholderImage, Placeholder.Image, kDataTypeComponent), // TextBlockConcept.PlaceholderImage
+	DECL(0x6d974ebf, TextBlockConcept, PlaceholderMaterial, Placeholder.Material, kDataTypeComponent), // TextBlockConcept.PlaceholderMaterial
+	DECL(0x27e35097, TextBlockConcept, UseFullFontHeight, UseFullFontHeight, kDataTypeBool), // TextBlockConcept.UseFullFontHeight
+	DECL(0xda466bac, TextBlockConcept, ConstrainContentHeight, ConstrainContentHeight, kDataTypeBool), // TextBlockConcept.ConstrainContentHeight
+	DECL(0x468540fd, TextBlockConcept, WordWrap, WordWrap, kDataTypeBool), // TextBlockConcept.WordWrap
+	DECL(0x65cdc8f2, TextBlockConcept, TextWrapping, TextWrapping, kDataTypeEnum, .Enums = _TextWrapping), // TextBlockConcept.TextWrapping
+	DECL(0xf46faf37, TextBlockConcept, TextHorizontalAlignment, TextHorizontalAlignment, kDataTypeEnum, .Enums = _TextHorizontalAlignment), // TextBlockConcept.TextHorizontalAlignment
+	DECL(0xbc8a8a99, TextBlockConcept, TextVerticalAlignment, TextVerticalAlignment, kDataTypeEnum, .Enums = _TextVerticalAlignment), // TextBlockConcept.TextVerticalAlignment
+};
 static struct TextBlockConcept TextBlockConceptDefaults = {
 																		  .UseFullFontHeight = TRUE,
 			  .ConstrainContentHeight = TRUE,
@@ -1822,7 +2017,51 @@ ORCA_API struct ClassDesc _TextBlockConcept = {
 	LRESULT Node2D_ArrangeOverride(struct Object*, struct Node2D*, wParam_t, ArrangeOverridePtr);
 	
 static struct PropertyType const Node2DProperties[kNode2DNumProperties] = {
-				DECL(0x3f19bf01, Node2D, LayoutTransform, LayoutTransform, kDataTypeStruct, .TypeString = "Transform2D"), // Node2D.LayoutTransform						DECL(0xc0fba640, Node2D, LayoutTransformtranslation, LayoutTransform.translation, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.LayoutTransformtranslation						DECL(0x99152e23, Node2D, LayoutTransformrotation, LayoutTransform.rotation, kDataTypeFloat), // Node2D.LayoutTransformrotation						DECL(0x8831b2f5, Node2D, LayoutTransformscale, LayoutTransform.scale, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.LayoutTransformscale						DECL(0xe9e55063, Node2D, RenderTransform, RenderTransform, kDataTypeStruct, .TypeString = "Transform2D"), // Node2D.RenderTransform						DECL(0x14c0d062, Node2D, RenderTransformtranslation, RenderTransform.translation, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.RenderTransformtranslation						DECL(0xdd7a3a1d, Node2D, RenderTransformrotation, RenderTransform.rotation, kDataTypeFloat), // Node2D.RenderTransformrotation						DECL(0x75f353bb, Node2D, RenderTransformscale, RenderTransform.scale, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.RenderTransformscale						DECL(0xdc65ec6d, Node2D, RenderTransformOrigin, RenderTransformOrigin, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.RenderTransformOrigin						DECL(0x35a57c45, Node2D, ContentOffset, ContentOffset, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.ContentOffset						DECL(0xe9d1810c, Node2D, Matrix, Matrix, kDataTypeStruct, .TypeString = "Matrix3D"), // Node2D.Matrix						DECL(0x64abadd0, Node2D, RenderTarget, RenderTarget, kDataTypeComponent), // Node2D.RenderTarget						DECL(0xbafc0abd, Node2D, Background, Background, kDataTypeStruct, .TypeString = "BrushShorthand"), // Node2D.Background						DECL(0xd1496d30, Node2D, BackgroundColor, Background.Color, kDataTypeStruct, .TypeString = "Color"), // Node2D.BackgroundColor						DECL(0xe0bbc082, Node2D, BackgroundImage, Background.Image, kDataTypeComponent), // Node2D.BackgroundImage						DECL(0x843e6b88, Node2D, BackgroundMaterial, Background.Material, kDataTypeComponent), // Node2D.BackgroundMaterial						DECL(0xd96b36e0, Node2D, Foreground, Foreground, kDataTypeStruct, .TypeString = "BrushShorthand"), // Node2D.Foreground						DECL(0x94392057, Node2D, ForegroundColor, Foreground.Color, kDataTypeStruct, .TypeString = "Color"), // Node2D.ForegroundColor						DECL(0xb03161dd, Node2D, ForegroundImage, Foreground.Image, kDataTypeComponent), // Node2D.ForegroundImage						DECL(0xa654aab9, Node2D, ForegroundMaterial, Foreground.Material, kDataTypeComponent), // Node2D.ForegroundMaterial						DECL(0xce1f078a, Node2D, BoxShadow, BoxShadow, kDataTypeStruct, .TypeString = "ShadowShorthand"), // Node2D.BoxShadow						DECL(0x047c9a3d, Node2D, BoxShadowOffset, BoxShadow.Offset, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.BoxShadowOffset						DECL(0x623ff5f9, Node2D, BoxShadowBlurRadius, BoxShadow.BlurRadius, kDataTypeFloat), // Node2D.BoxShadowBlurRadius						DECL(0xe284b26f, Node2D, BoxShadowSpreadRadius, BoxShadow.SpreadRadius, kDataTypeFloat), // Node2D.BoxShadowSpreadRadius						DECL(0xe0ae423d, Node2D, BoxShadowColor, BoxShadow.Color, kDataTypeStruct, .TypeString = "Color"), // Node2D.BoxShadowColor						DECL(0x3cf02b8b, Node2D, Overflow, Overflow, kDataTypeStruct, .TypeString = "OverflowShorthand"), // Node2D.Overflow						DECL(0xe1152f89, Node2D, Overflowx, Overflow.x, kDataTypeEnum, .Enums = _x), // Node2D.Overflowx						DECL(0xe0152df6, Node2D, Overflowy, Overflow.y, kDataTypeEnum, .Enums = _y), // Node2D.Overflowy						DECL(0x7787478b, Node2D, Ring, Ring, kDataTypeStruct, .TypeString = "RingShorthand"), // Node2D.Ring						DECL(0xfd700608, Node2D, RingOffset, Ring.Offset, kDataTypeFloat), // Node2D.RingOffset						DECL(0x5fff552d, Node2D, RingWidth, Ring.Width, kDataTypeFloat), // Node2D.RingWidth						DECL(0x97d6200a, Node2D, RingColor, Ring.Color, kDataTypeStruct, .TypeString = "Color"), // Node2D.RingColor						DECL(0x74622217, Node2D, CompositionBrush, CompositionBrush, kDataTypeComponent), // Node2D.CompositionBrush						DECL(0x5488c4f2, Node2D, CompositionDesignSize, CompositionDesignSize, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.CompositionDesignSize						DECL(0x45513b32, Node2D, SizeToContent, SizeToContent, kDataTypeBool), // Node2D.SizeToContent						DECL(0x6a1cb2a6, Node2D, OffscreenRendering, OffscreenRendering, kDataTypeBool), // Node2D.OffscreenRendering						DECL(0x635bcdbe, Node2D, ForceComposition, ForceComposition, kDataTypeBool), // Node2D.ForceComposition						DECL(0x9aa6e904, Node2D, CacheResult, CacheResult, kDataTypeBool), // Node2D.CacheResult						DECL(0x2e5c547c, Node2D, SnapToPixel, SnapToPixel, kDataTypeBool), // Node2D.SnapToPixel						DECL(0x6db8d484, Node2D, ClipChildren, ClipChildren, kDataTypeBool), // Node2D.ClipChildren						DECL(0x639756ff, Node2D, ContentStretch, ContentStretch, kDataTypeBool), // Node2D.ContentStretch						DECL(0x09dc5114, Node2D, Hovered, Hovered, kDataTypeBool), // Node2D.Hovered						DECL(0xfdba6cd0, Node2D, IgnoreHitTest, IgnoreHitTest, kDataTypeBool), // Node2D.IgnoreHitTest						DECL(0xf068ff19, Node2D, ForegroundHint, ForegroundHint, kDataTypeEnum, .Enums = _ForegroundHint), // Node2D.ForegroundHint			};
+	DECL(0x3f19bf01, Node2D, LayoutTransform, LayoutTransform, kDataTypeStruct, .TypeString = "Transform2D"), // Node2D.LayoutTransform
+	DECL(0xc0fba640, Node2D, LayoutTransformtranslation, LayoutTransform.translation, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.LayoutTransformtranslation
+	DECL(0x99152e23, Node2D, LayoutTransformrotation, LayoutTransform.rotation, kDataTypeFloat), // Node2D.LayoutTransformrotation
+	DECL(0x8831b2f5, Node2D, LayoutTransformscale, LayoutTransform.scale, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.LayoutTransformscale
+	DECL(0xe9e55063, Node2D, RenderTransform, RenderTransform, kDataTypeStruct, .TypeString = "Transform2D"), // Node2D.RenderTransform
+	DECL(0x14c0d062, Node2D, RenderTransformtranslation, RenderTransform.translation, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.RenderTransformtranslation
+	DECL(0xdd7a3a1d, Node2D, RenderTransformrotation, RenderTransform.rotation, kDataTypeFloat), // Node2D.RenderTransformrotation
+	DECL(0x75f353bb, Node2D, RenderTransformscale, RenderTransform.scale, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.RenderTransformscale
+	DECL(0xdc65ec6d, Node2D, RenderTransformOrigin, RenderTransformOrigin, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.RenderTransformOrigin
+	DECL(0x35a57c45, Node2D, ContentOffset, ContentOffset, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.ContentOffset
+	DECL(0xe9d1810c, Node2D, Matrix, Matrix, kDataTypeStruct, .TypeString = "Matrix3D"), // Node2D.Matrix
+	DECL(0x64abadd0, Node2D, RenderTarget, RenderTarget, kDataTypeComponent), // Node2D.RenderTarget
+	DECL(0xbafc0abd, Node2D, Background, Background, kDataTypeStruct, .TypeString = "BrushShorthand"), // Node2D.Background
+	DECL(0xd1496d30, Node2D, BackgroundColor, Background.Color, kDataTypeStruct, .TypeString = "Color"), // Node2D.BackgroundColor
+	DECL(0xe0bbc082, Node2D, BackgroundImage, Background.Image, kDataTypeComponent), // Node2D.BackgroundImage
+	DECL(0x843e6b88, Node2D, BackgroundMaterial, Background.Material, kDataTypeComponent), // Node2D.BackgroundMaterial
+	DECL(0xd96b36e0, Node2D, Foreground, Foreground, kDataTypeStruct, .TypeString = "BrushShorthand"), // Node2D.Foreground
+	DECL(0x94392057, Node2D, ForegroundColor, Foreground.Color, kDataTypeStruct, .TypeString = "Color"), // Node2D.ForegroundColor
+	DECL(0xb03161dd, Node2D, ForegroundImage, Foreground.Image, kDataTypeComponent), // Node2D.ForegroundImage
+	DECL(0xa654aab9, Node2D, ForegroundMaterial, Foreground.Material, kDataTypeComponent), // Node2D.ForegroundMaterial
+	DECL(0xce1f078a, Node2D, BoxShadow, BoxShadow, kDataTypeStruct, .TypeString = "ShadowShorthand"), // Node2D.BoxShadow
+	DECL(0x047c9a3d, Node2D, BoxShadowOffset, BoxShadow.Offset, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.BoxShadowOffset
+	DECL(0x623ff5f9, Node2D, BoxShadowBlurRadius, BoxShadow.BlurRadius, kDataTypeFloat), // Node2D.BoxShadowBlurRadius
+	DECL(0xe284b26f, Node2D, BoxShadowSpreadRadius, BoxShadow.SpreadRadius, kDataTypeFloat), // Node2D.BoxShadowSpreadRadius
+	DECL(0xe0ae423d, Node2D, BoxShadowColor, BoxShadow.Color, kDataTypeStruct, .TypeString = "Color"), // Node2D.BoxShadowColor
+	DECL(0x3cf02b8b, Node2D, Overflow, Overflow, kDataTypeStruct, .TypeString = "OverflowShorthand"), // Node2D.Overflow
+	DECL(0xe1152f89, Node2D, Overflowx, Overflow.x, kDataTypeEnum, .Enums = _x), // Node2D.Overflowx
+	DECL(0xe0152df6, Node2D, Overflowy, Overflow.y, kDataTypeEnum, .Enums = _y), // Node2D.Overflowy
+	DECL(0x7787478b, Node2D, Ring, Ring, kDataTypeStruct, .TypeString = "RingShorthand"), // Node2D.Ring
+	DECL(0xfd700608, Node2D, RingOffset, Ring.Offset, kDataTypeFloat), // Node2D.RingOffset
+	DECL(0x5fff552d, Node2D, RingWidth, Ring.Width, kDataTypeFloat), // Node2D.RingWidth
+	DECL(0x97d6200a, Node2D, RingColor, Ring.Color, kDataTypeStruct, .TypeString = "Color"), // Node2D.RingColor
+	DECL(0x74622217, Node2D, CompositionBrush, CompositionBrush, kDataTypeComponent), // Node2D.CompositionBrush
+	DECL(0x5488c4f2, Node2D, CompositionDesignSize, CompositionDesignSize, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.CompositionDesignSize
+	DECL(0x45513b32, Node2D, SizeToContent, SizeToContent, kDataTypeBool), // Node2D.SizeToContent
+	DECL(0x6a1cb2a6, Node2D, OffscreenRendering, OffscreenRendering, kDataTypeBool), // Node2D.OffscreenRendering
+	DECL(0x635bcdbe, Node2D, ForceComposition, ForceComposition, kDataTypeBool), // Node2D.ForceComposition
+	DECL(0x9aa6e904, Node2D, CacheResult, CacheResult, kDataTypeBool), // Node2D.CacheResult
+	DECL(0x2e5c547c, Node2D, SnapToPixel, SnapToPixel, kDataTypeBool), // Node2D.SnapToPixel
+	DECL(0x6db8d484, Node2D, ClipChildren, ClipChildren, kDataTypeBool), // Node2D.ClipChildren
+	DECL(0x639756ff, Node2D, ContentStretch, ContentStretch, kDataTypeBool), // Node2D.ContentStretch
+	DECL(0x09dc5114, Node2D, Hovered, Hovered, kDataTypeBool), // Node2D.Hovered
+	DECL(0xfdba6cd0, Node2D, IgnoreHitTest, IgnoreHitTest, kDataTypeBool), // Node2D.IgnoreHitTest
+	DECL(0xf068ff19, Node2D, ForegroundHint, ForegroundHint, kDataTypeEnum, .Enums = _ForegroundHint), // Node2D.ForegroundHint
+};
 static struct Node2D Node2DDefaults = {
 		  .LayoutTransform = .scale={1,1},
 									  .RenderTransform = .scale={1,1},
@@ -1855,7 +2094,9 @@ ORCA_API struct ClassDesc _Node2D = {
 	LRESULT PrefabView2D_LoadView(struct Object*, struct PrefabView2D*, wParam_t, LoadViewPtr);
 	
 static struct PropertyType const PrefabView2DProperties[kPrefabView2DNumProperties] = {
-				DECL(0x57f28ff6, PrefabView2D, SCA, SCA, kDataTypeFixed), // PrefabView2D.SCA						DECL(0xd6415ba3, PrefabView2D, Prefab, Prefab, kDataTypeFixed), // PrefabView2D.Prefab			};
+	DECL(0x57f28ff6, PrefabView2D, SCA, SCA, kDataTypeFixed), // PrefabView2D.SCA
+	DECL(0xd6415ba3, PrefabView2D, Prefab, Prefab, kDataTypeFixed), // PrefabView2D.Prefab
+};
 static struct PrefabView2D PrefabView2DDefaults = {
 					};
 LRESULT PrefabView2DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1890,7 +2131,7 @@ ORCA_API struct ClassDesc _PrefabView2D = {
 	LRESULT TextBlock_DrawBrush(struct Object*, struct TextBlock*, wParam_t, DrawBrushPtr);
 	
 static struct PropertyType const TextBlockProperties[kTextBlockNumProperties] = {
-	};
+};
 static struct TextBlock TextBlockDefaults = {
 	};
 LRESULT TextBlockProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1927,7 +2168,12 @@ ORCA_API struct ClassDesc _TextBlock = {
 	LRESULT Input_MeasureOverride(struct Object*, struct Input*, wParam_t, MeasureOverridePtr);
 	
 static struct PropertyType const InputProperties[kInputNumProperties] = {
-				DECL(0x0fe07306, Input, Name, Name, kDataTypeFixed), // Input.Name						DECL(0xd155d06d, Input, Type, Type, kDataTypeEnum, .Enums = _Type), // Input.Type						DECL(0x558a502f, Input, Cursor, Cursor, kDataTypeInt), // Input.Cursor						DECL(0xe890d540, Input, Multiline, Multiline, kDataTypeBool), // Input.Multiline						DECL(0x51ba2a66, Input, Checked, Checked, kDataTypeBool), // Input.Checked			};
+	DECL(0x0fe07306, Input, Name, Name, kDataTypeFixed), // Input.Name
+	DECL(0xd155d06d, Input, Type, Type, kDataTypeEnum, .Enums = _Type), // Input.Type
+	DECL(0x558a502f, Input, Cursor, Cursor, kDataTypeInt), // Input.Cursor
+	DECL(0xe890d540, Input, Multiline, Multiline, kDataTypeBool), // Input.Multiline
+	DECL(0x51ba2a66, Input, Checked, Checked, kDataTypeBool), // Input.Checked
+};
 static struct Input InputDefaults = {
 											};
 LRESULT InputProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1961,7 +2207,8 @@ ORCA_API struct ClassDesc _Input = {
 	LRESULT Button_DrawBrush(struct Object*, struct Button*, wParam_t, DrawBrushPtr);
 	
 static struct PropertyType const ButtonProperties[kButtonNumProperties] = {
-				DECL(0xd155d06d, Button, Type, Type, kDataTypeEnum, .Enums = _Type), // Button.Type			};
+	DECL(0xd155d06d, Button, Type, Type, kDataTypeEnum, .Enums = _Type), // Button.Type
+};
 static struct Button ButtonDefaults = {
 			};
 LRESULT ButtonProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1992,7 +2239,8 @@ ORCA_API struct ClassDesc _Button = {
 	LRESULT Label_LeftMouseUp(struct Object*, struct Label*, wParam_t, LeftMouseUpPtr);
 	
 static struct PropertyType const LabelProperties[kLabelNumProperties] = {
-				DECL(0x0f7e1b30, Label, For, For, kDataTypeFixed), // Label.For			};
+	DECL(0x0f7e1b30, Label, For, For, kDataTypeFixed), // Label.For
+};
 static struct Label LabelDefaults = {
 			};
 LRESULT LabelProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -2024,7 +2272,12 @@ ORCA_API struct ClassDesc _Label = {
 	LRESULT StackView_ArrangeOverride(struct Object*, struct StackView*, wParam_t, ArrangeOverridePtr);
 	
 static struct PropertyType const StackViewProperties[kStackViewNumProperties] = {
-				DECL(0xcee65dd3, StackView, Reversed, Reversed, kDataTypeBool), // StackView.Reversed						DECL(0x61fefc0a, StackView, Direction, Direction, kDataTypeEnum, .Enums = _Direction), // StackView.Direction						DECL(0x517ab5aa, StackView, AlignItems, AlignItems, kDataTypeEnum, .Enums = _AlignItems), // StackView.AlignItems						DECL(0x98c61698, StackView, JustifyContent, JustifyContent, kDataTypeEnum, .Enums = _JustifyContent), // StackView.JustifyContent						DECL(0x8777939e, StackView, Spacing, Spacing, kDataTypeFloat), // StackView.Spacing			};
+	DECL(0xcee65dd3, StackView, Reversed, Reversed, kDataTypeBool), // StackView.Reversed
+	DECL(0x61fefc0a, StackView, Direction, Direction, kDataTypeEnum, .Enums = _Direction), // StackView.Direction
+	DECL(0x517ab5aa, StackView, AlignItems, AlignItems, kDataTypeEnum, .Enums = _AlignItems), // StackView.AlignItems
+	DECL(0x98c61698, StackView, JustifyContent, JustifyContent, kDataTypeEnum, .Enums = _JustifyContent), // StackView.JustifyContent
+	DECL(0x8777939e, StackView, Spacing, Spacing, kDataTypeFloat), // StackView.Spacing
+};
 static struct StackView StackViewDefaults = {
 											};
 LRESULT StackViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -2056,7 +2309,7 @@ ORCA_API struct ClassDesc _StackView = {
 	LRESULT Form_Submit(struct Object*, struct Form*, wParam_t, SubmitPtr);
 	
 static struct PropertyType const FormProperties[kFormNumProperties] = {
-	};
+};
 static struct Form FormDefaults = {
 	};
 LRESULT FormProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -2086,7 +2339,13 @@ ORCA_API struct ClassDesc _Form = {
 
 	
 static struct PropertyType const ControlProperties[kControlNumProperties] = {
-				DECL(0x705293c5, Control, Pressed, Pressed, kDataTypeBool), // Control.Pressed						DECL(0xbfce9925, Control, Disabled, Disabled, kDataTypeBool), // Control.Disabled						DECL(0x09dc5114, Control, Hovered, Hovered, kDataTypeBool), // Control.Hovered						DECL(0xd6635bf2, Control, Focused, Focused, kDataTypeBool), // Control.Focused						DECL(0xd147f96a, Control, Value, Value, kDataTypeBool), // Control.Value						DECL(0x28528e11, Control, Scale, Scale, kDataTypeFloat), // Control.Scale			};
+	DECL(0x705293c5, Control, Pressed, Pressed, kDataTypeBool), // Control.Pressed
+	DECL(0xbfce9925, Control, Disabled, Disabled, kDataTypeBool), // Control.Disabled
+	DECL(0x09dc5114, Control, Hovered, Hovered, kDataTypeBool), // Control.Hovered
+	DECL(0xd6635bf2, Control, Focused, Focused, kDataTypeBool), // Control.Focused
+	DECL(0xd147f96a, Control, Value, Value, kDataTypeBool), // Control.Value
+	DECL(0x28528e11, Control, Scale, Scale, kDataTypeFloat), // Control.Scale
+};
 static struct Control ControlDefaults = {
 													};
 LRESULT ControlProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -2121,7 +2380,9 @@ ORCA_API struct ClassDesc _Control = {
 	LRESULT Screen_WindowResized(struct Object*, struct Screen*, wParam_t, WindowResizedPtr);
 	
 static struct PropertyType const ScreenProperties[kScreenNumProperties] = {
-				DECL(0xeb16b675, Screen, ClearColor, ClearColor, kDataTypeStruct, .TypeString = "Color"), // Screen.ClearColor						DECL(0x3dd888be, Screen, ResizeMode, ResizeMode, kDataTypeEnum, .Enums = _ResizeMode), // Screen.ResizeMode			};
+	DECL(0xeb16b675, Screen, ClearColor, ClearColor, kDataTypeStruct, .TypeString = "Color"), // Screen.ClearColor
+	DECL(0x3dd888be, Screen, ResizeMode, ResizeMode, kDataTypeEnum, .Enums = _ResizeMode), // Screen.ResizeMode
+};
 static struct Screen ScreenDefaults = {
 					};
 LRESULT ScreenProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -2152,7 +2413,11 @@ ORCA_API struct ClassDesc _Screen = {
 	LRESULT Cinematic_DrawBrush(struct Object*, struct Cinematic*, wParam_t, DrawBrushPtr);
 	
 static struct PropertyType const CinematicProperties[kCinematicNumProperties] = {
-				DECL(0x5ffdd888, Cinematic, FileName, FileName, kDataTypeFixed), // Cinematic.FileName						DECL(0x3eeb76a4, Cinematic, FrameRate, FrameRate, kDataTypeFloat), // Cinematic.FrameRate						DECL(0x32caacb1, Cinematic, NumFrames, NumFrames, kDataTypeFloat), // Cinematic.NumFrames						DECL(0xc1e58e65, Cinematic, FadeOut, FadeOut, kDataTypeFloat), // Cinematic.FadeOut			};
+	DECL(0x5ffdd888, Cinematic, FileName, FileName, kDataTypeFixed), // Cinematic.FileName
+	DECL(0x3eeb76a4, Cinematic, FrameRate, FrameRate, kDataTypeFloat), // Cinematic.FrameRate
+	DECL(0x32caacb1, Cinematic, NumFrames, NumFrames, kDataTypeFloat), // Cinematic.NumFrames
+	DECL(0xc1e58e65, Cinematic, FadeOut, FadeOut, kDataTypeFloat), // Cinematic.FadeOut
+};
 static struct Cinematic CinematicDefaults = {
 									};
 LRESULT CinematicProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -2184,7 +2449,13 @@ ORCA_API struct ClassDesc _Cinematic = {
 	LRESULT Grid_ArrangeOverride(struct Object*, struct Grid*, wParam_t, ArrangeOverridePtr);
 	
 static struct PropertyType const GridProperties[kGridNumProperties] = {
-				DECL(0xea156fdc, Grid, Columns, Columns, kDataTypeFixed), // Grid.Columns						DECL(0xaa6592b8, Grid, Rows, Rows, kDataTypeFixed), // Grid.Rows						DECL(0x61fefc0a, Grid, Direction, Direction, kDataTypeEnum, .Enums = _Direction), // Grid.Direction						DECL(0x8777939e, Grid, Spacing, Spacing, kDataTypeFloat), // Grid.Spacing						DECL(0x57e1566f, Grid, CellWidth, CellWidth, kDataTypeFloat), // Grid.CellWidth						DECL(0xd2dc9412, Grid, CellHeight, CellHeight, kDataTypeFloat), // Grid.CellHeight			};
+	DECL(0xea156fdc, Grid, Columns, Columns, kDataTypeFixed), // Grid.Columns
+	DECL(0xaa6592b8, Grid, Rows, Rows, kDataTypeFixed), // Grid.Rows
+	DECL(0x61fefc0a, Grid, Direction, Direction, kDataTypeEnum, .Enums = _Direction), // Grid.Direction
+	DECL(0x8777939e, Grid, Spacing, Spacing, kDataTypeFloat), // Grid.Spacing
+	DECL(0x57e1566f, Grid, CellWidth, CellWidth, kDataTypeFloat), // Grid.CellWidth
+	DECL(0xd2dc9412, Grid, CellHeight, CellHeight, kDataTypeFloat), // Grid.CellHeight
+};
 static struct Grid GridDefaults = {
 													};
 LRESULT GridProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -2219,7 +2490,13 @@ ORCA_API struct ClassDesc _Grid = {
 	LRESULT ImageView_LoadView(struct Object*, struct ImageView*, wParam_t, LoadViewPtr);
 	
 static struct PropertyType const ImageViewProperties[kImageViewNumProperties] = {
-				DECL(0x35c77969, ImageView, Src, Src, kDataTypeFixed), // ImageView.Src						DECL(0x590ca79a, ImageView, Image, Image, kDataTypeComponent), // ImageView.Image						DECL(0x079106fd, ImageView, Edges, Edges, kDataTypeStruct, .TypeString = "Vector4D"), // ImageView.Edges						DECL(0x062cedef, ImageView, Insets, Insets, kDataTypeStruct, .TypeString = "Vector4D"), // ImageView.Insets						DECL(0xa8c81591, ImageView, Viewbox, Viewbox, kDataTypeStruct, .TypeString = "Vector4D"), // ImageView.Viewbox						DECL(0x03d3b9ca, ImageView, Stretch, Stretch, kDataTypeEnum, .Enums = _Stretch), // ImageView.Stretch			};
+	DECL(0x35c77969, ImageView, Src, Src, kDataTypeFixed), // ImageView.Src
+	DECL(0x590ca79a, ImageView, Image, Image, kDataTypeComponent), // ImageView.Image
+	DECL(0x079106fd, ImageView, Edges, Edges, kDataTypeStruct, .TypeString = "Vector4D"), // ImageView.Edges
+	DECL(0x062cedef, ImageView, Insets, Insets, kDataTypeStruct, .TypeString = "Vector4D"), // ImageView.Insets
+	DECL(0xa8c81591, ImageView, Viewbox, Viewbox, kDataTypeStruct, .TypeString = "Vector4D"), // ImageView.Viewbox
+	DECL(0x03d3b9ca, ImageView, Stretch, Stretch, kDataTypeEnum, .Enums = _Stretch), // ImageView.Stretch
+};
 static struct ImageView ImageViewDefaults = {
 										  .Viewbox = 0 0 1 1,
 				};
@@ -2253,7 +2530,21 @@ ORCA_API struct ClassDesc _ImageView = {
 	LRESULT NinePatchImage_DrawBrush(struct Object*, struct NinePatchImage*, wParam_t, DrawBrushPtr);
 	
 static struct PropertyType const NinePatchImageProperties[kNinePatchImageNumProperties] = {
-				DECL(0x9f40b6ad, NinePatchImage, StretchTypeTop, StretchTypeTop, kDataTypeFloat), // NinePatchImage.StretchTypeTop						DECL(0x0697c1c9, NinePatchImage, StretchTypeBottom, StretchTypeBottom, kDataTypeFloat), // NinePatchImage.StretchTypeBottom						DECL(0xe5d554e7, NinePatchImage, StretchTypeLeft, StretchTypeLeft, kDataTypeFloat), // NinePatchImage.StretchTypeLeft						DECL(0xa26ba898, NinePatchImage, StretchTypeRight, StretchTypeRight, kDataTypeFloat), // NinePatchImage.StretchTypeRight						DECL(0xa81f8dff, NinePatchImage, StretchTypeCenter, StretchTypeCenter, kDataTypeFloat), // NinePatchImage.StretchTypeCenter						DECL(0xc7948178, NinePatchImage, ImageTopLeft, ImageTopLeft, kDataTypeComponent), // NinePatchImage.ImageTopLeft						DECL(0x28c29b5d, NinePatchImage, ImageTop, ImageTop, kDataTypeComponent), // NinePatchImage.ImageTop						DECL(0x810ee5cd, NinePatchImage, ImageTopRight, ImageTopRight, kDataTypeComponent), // NinePatchImage.ImageTopRight						DECL(0x2cd3c0d7, NinePatchImage, ImageLeft, ImageLeft, kDataTypeComponent), // NinePatchImage.ImageLeft						DECL(0x7ab05ecf, NinePatchImage, ImageCenter, ImageCenter, kDataTypeComponent), // NinePatchImage.ImageCenter						DECL(0x1c7d5648, NinePatchImage, ImageRight, ImageRight, kDataTypeComponent), // NinePatchImage.ImageRight						DECL(0x35657294, NinePatchImage, ImageBottomLeft, ImageBottomLeft, kDataTypeComponent), // NinePatchImage.ImageBottomLeft						DECL(0x80ed3299, NinePatchImage, ImageBottom, ImageBottom, kDataTypeComponent), // NinePatchImage.ImageBottom						DECL(0x42a461c1, NinePatchImage, ImageBottomRight, ImageBottomRight, kDataTypeComponent), // NinePatchImage.ImageBottomRight			};
+	DECL(0x9f40b6ad, NinePatchImage, StretchTypeTop, StretchTypeTop, kDataTypeFloat), // NinePatchImage.StretchTypeTop
+	DECL(0x0697c1c9, NinePatchImage, StretchTypeBottom, StretchTypeBottom, kDataTypeFloat), // NinePatchImage.StretchTypeBottom
+	DECL(0xe5d554e7, NinePatchImage, StretchTypeLeft, StretchTypeLeft, kDataTypeFloat), // NinePatchImage.StretchTypeLeft
+	DECL(0xa26ba898, NinePatchImage, StretchTypeRight, StretchTypeRight, kDataTypeFloat), // NinePatchImage.StretchTypeRight
+	DECL(0xa81f8dff, NinePatchImage, StretchTypeCenter, StretchTypeCenter, kDataTypeFloat), // NinePatchImage.StretchTypeCenter
+	DECL(0xc7948178, NinePatchImage, ImageTopLeft, ImageTopLeft, kDataTypeComponent), // NinePatchImage.ImageTopLeft
+	DECL(0x28c29b5d, NinePatchImage, ImageTop, ImageTop, kDataTypeComponent), // NinePatchImage.ImageTop
+	DECL(0x810ee5cd, NinePatchImage, ImageTopRight, ImageTopRight, kDataTypeComponent), // NinePatchImage.ImageTopRight
+	DECL(0x2cd3c0d7, NinePatchImage, ImageLeft, ImageLeft, kDataTypeComponent), // NinePatchImage.ImageLeft
+	DECL(0x7ab05ecf, NinePatchImage, ImageCenter, ImageCenter, kDataTypeComponent), // NinePatchImage.ImageCenter
+	DECL(0x1c7d5648, NinePatchImage, ImageRight, ImageRight, kDataTypeComponent), // NinePatchImage.ImageRight
+	DECL(0x35657294, NinePatchImage, ImageBottomLeft, ImageBottomLeft, kDataTypeComponent), // NinePatchImage.ImageBottomLeft
+	DECL(0x80ed3299, NinePatchImage, ImageBottom, ImageBottom, kDataTypeComponent), // NinePatchImage.ImageBottom
+	DECL(0x42a461c1, NinePatchImage, ImageBottomRight, ImageBottomRight, kDataTypeComponent), // NinePatchImage.ImageBottomRight
+};
 static struct NinePatchImage NinePatchImageDefaults = {
 																													};
 LRESULT NinePatchImageProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -2287,7 +2578,12 @@ ORCA_API struct ClassDesc _NinePatchImage = {
 	LRESULT TerminalView_ScrollWheel(struct Object*, struct TerminalView*, wParam_t, ScrollWheelPtr);
 	
 static struct PropertyType const TerminalViewProperties[kTerminalViewNumProperties] = {
-				DECL(0xdd1f241d, TerminalView, BufferWidth, BufferWidth, kDataTypeInt), // TerminalView.BufferWidth						DECL(0xd75e2af4, TerminalView, BufferHeight, BufferHeight, kDataTypeInt), // TerminalView.BufferHeight						DECL(0x558a502f, TerminalView, Cursor, Cursor, kDataTypeInt), // TerminalView.Cursor						DECL(0x98eca570, TerminalView, SelectedIndex, SelectedIndex, kDataTypeInt), // TerminalView.SelectedIndex						DECL(0x87f68bc8, TerminalView, DropShadow, DropShadow, kDataTypeBool), // TerminalView.DropShadow			};
+	DECL(0xdd1f241d, TerminalView, BufferWidth, BufferWidth, kDataTypeInt), // TerminalView.BufferWidth
+	DECL(0xd75e2af4, TerminalView, BufferHeight, BufferHeight, kDataTypeInt), // TerminalView.BufferHeight
+	DECL(0x558a502f, TerminalView, Cursor, Cursor, kDataTypeInt), // TerminalView.Cursor
+	DECL(0x98eca570, TerminalView, SelectedIndex, SelectedIndex, kDataTypeInt), // TerminalView.SelectedIndex
+	DECL(0x87f68bc8, TerminalView, DropShadow, DropShadow, kDataTypeBool), // TerminalView.DropShadow
+};
 static struct TerminalView TerminalViewDefaults = {
 		  .BufferWidth = 256,
 			  .BufferHeight = 256,
@@ -2320,7 +2616,10 @@ ORCA_API struct ClassDesc _TerminalView = {
 	LRESULT Page_Create(struct Object*, struct Page*, wParam_t, CreatePtr);
 	
 static struct PropertyType const PageProperties[kPageNumProperties] = {
-				DECL(0x24d471a9, Page, Title, Title, kDataTypeFixed), // Page.Title						DECL(0xeb66e456, Page, Path, Path, kDataTypeFixed), // Page.Path						DECL(0xe69ce202, Page, Transition, Transition, kDataTypeFloat), // Page.Transition			};
+	DECL(0x24d471a9, Page, Title, Title, kDataTypeFixed), // Page.Title
+	DECL(0xeb66e456, Page, Path, Path, kDataTypeFixed), // Page.Path
+	DECL(0xe69ce202, Page, Transition, Transition, kDataTypeFloat), // Page.Transition
+};
 static struct Page PageDefaults = {
 							};
 LRESULT PageProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -2353,7 +2652,8 @@ ORCA_API struct ClassDesc _Page = {
 	LRESULT PageHost_NavigateBack(struct Object*, struct PageHost*, wParam_t, NavigateBackPtr);
 	
 static struct PropertyType const PageHostProperties[kPageHostNumProperties] = {
-				DECL(0x2e149db4, PageHost, ActivePage, ActivePage, kDataTypeComponent), // PageHost.ActivePage			};
+	DECL(0x2e149db4, PageHost, ActivePage, ActivePage, kDataTypeComponent), // PageHost.ActivePage
+};
 static struct PageHost PageHostDefaults = {
 			};
 LRESULT PageHostProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -2383,7 +2683,7 @@ ORCA_API struct ClassDesc _PageHost = {
 
 	
 static struct PropertyType const PageViewportProperties[kPageViewportNumProperties] = {
-	};
+};
 static struct PageViewport PageViewportDefaults = {
 	};
 LRESULT PageViewportProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -2413,7 +2713,9 @@ ORCA_API struct ClassDesc _PageViewport = {
 
 	
 static struct PropertyType const StyleProperties[kStyleNumProperties] = {
-				DECL(0x77ada720, Style, TargetType, TargetType, kDataTypeFixed), // Style.TargetType						DECL(0xd155d06d, Style, Type, Type, kDataTypeEnum, .Enums = _Type), // Style.Type			};
+	DECL(0x77ada720, Style, TargetType, TargetType, kDataTypeFixed), // Style.TargetType
+	DECL(0xd155d06d, Style, Type, Type, kDataTypeEnum, .Enums = _Type), // Style.Type
+};
 static struct Style StyleDefaults = {
 					};
 LRESULT StyleProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {

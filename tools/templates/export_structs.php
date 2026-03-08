@@ -14,15 +14,9 @@ static int f_new_<?= $name ?>(lua_State *L) {
 	memset(self, 0, sizeof(struct <?= $name ?>));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		<?php foreach ($struct->getFields() as $field => $type):?>
-		lua_pop(L, (lua_getfield(L, 1, "<?= $field ?>"), self-><?= $field ?> = <?= $type->get("check", -1) ?>, 1));
-		<?php endforeach ?>
+<?php foreach ($struct->getFields() as $field => $type): echo "\t\tlua_pop(L, (lua_getfield(L, 1, \"$field\"), " . $type->get("set", -1, $field) . ", 1));\n"; endforeach; ?>
 	} else {
-		<?php $index = 1 ?>
-		<?php foreach ($struct->getFields() as $field => $type):?>
-		self-><?= $field ?> = <?= $type->get("check", $index) ?>;
-		<?php $index = $index + 1 ?>
-		<?php endforeach ?>
+<?php $index = 1; foreach ($struct->getFields() as $field => $type) { echo "\t\t" . $type->get("set", $index, $field) . ";\n"; $index++; } ?>
 	}
 	return 1;
 }
@@ -56,18 +50,14 @@ static int f_fromstring_<?= $name ?>(lua_State *L) {
 int f_<?= $name ?>___index(lua_State *L) {
 	struct <?= $name ?>* self = luaX_check<?= $name ?>(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		<?php foreach ($struct->getFields() as $field => $type):?>
-		case <?= $field->id ?>: <?= $type->get('push', "self->$field") ?>; return 1; // <?= $field ?>
-		<?php endforeach ?>
+<?php foreach ($struct->getFields() as $field => $type) { echo "\t\tcase " . $field->id . ": " . $type->get('push', "self->$field") . "; return 1; // " . $field . "\n"; } ?>
 	}
 	return luaL_error(L, "Unknown field in <?= $name ?>: %s", luaL_checkstring(L, 2));
 }
 int f_<?= $name ?>___newindex(lua_State *L) {
 	struct <?= $name ?>* self = luaX_check<?= $name ?>(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		<?php foreach ($struct->getFields() as $field => $type):?>
-		case <?= $field->id ?>: self-><?= $field ?> = <?= $type->get('check', 3) ?>; return 0; // <?= $field ?>
-		<?php endforeach ?>
+<?php foreach ($struct->getFields() as $field => $type) { echo "\t\tcase " . $field->id . ": " . $type->get('set', 3, $field) . "; return 0; // " . $field . "\n"; } ?>
 	}
 	return luaL_error(L, "Unknown field in <?= $name ?>: %s", luaL_checkstring(L, 2));
 }
@@ -91,17 +81,14 @@ int f_<?= $struct->prefix.$method_name ?>(lua_State *L) {
 	<?php endif ?>
 }
 <?php endforeach ?>
-int luaopen_orca_<?= $name ?>(lua_State *L) {
+int luaopen_<?= $model->getNamespace() ?>_<?= $name ?>(lua_State *L) {
 	luaL_newmetatable(L, "<?= $name ?>");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_<?= $name ?> },
 		{ "fromstring", f_fromstring_<?= $name ?> },
 		{ "__newindex", f_<?= $name ?>___newindex },
 		{ "__index", f_<?= $name ?>___index },
-	<?php foreach ($struct->getMethods() as $method_name => $method):?>
-		{ "<?= lcfirst($method_name) ?>", f_<?= $struct->prefix.$method_name ?> },
-	<?php endforeach ?>
-		{ NULL, NULL },
+<?php foreach ($struct->getMethods() as $method_name => $method) { echo "\t\t{ \"" . lcfirst($method_name) . "\", f_" . $struct->prefix . $method_name . " },\n"; } ?>		{ NULL, NULL },
 	}), 0);
 	// Make <?= $name ?> creatable like via constructor-like syntax
 	lua_newtable(L);

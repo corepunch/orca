@@ -54,12 +54,12 @@ static int f_new_PropertyEnumValue(lua_State *L) {
 	memset(self, 0, sizeof(struct PropertyEnumValue));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-				lua_pop(L, (lua_getfield(L, 1, "Name"), self->Name = luaL_checkstring(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "Value"), self->Value = luaL_checknumber(L, -1), 1));
-			} else {
-						self->Name = luaL_checkstring(L, 1);
-						self->Value = luaL_checknumber(L, 2);
-					}
+		lua_pop(L, (lua_getfield(L, 1, "Name"), strncpy(self->Name, luaL_checkstring(L, -1), sizeof(self->Name)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Value"), self->Value = luaL_checknumber(L, -1), 1));
+	} else {
+		strncpy(self->Name, luaL_checkstring(L, 1), sizeof(self->Name));
+		self->Value = luaL_checknumber(L, 2);
+	}
 	return 1;
 }
 static int f_fromstring_PropertyEnumValue(lua_State *L) {
@@ -78,13 +78,17 @@ static int f_fromstring_PropertyEnumValue(lua_State *L) {
 int f_PropertyEnumValue___index(lua_State *L) {
 	struct PropertyEnumValue* self = luaX_checkPropertyEnumValue(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0x0fe07306: lua_pushstring(L, self->Name); return 1; // Name				case 0xd147f96a: lua_pushnumber(L, self->Value); return 1; // Value			}
+		case 0x0fe07306: lua_pushstring(L, self->Name); return 1; // Name
+		case 0xd147f96a: lua_pushnumber(L, self->Value); return 1; // Value
+	}
 	return luaL_error(L, "Unknown field in PropertyEnumValue: %s", luaL_checkstring(L, 2));
 }
 int f_PropertyEnumValue___newindex(lua_State *L) {
 	struct PropertyEnumValue* self = luaX_checkPropertyEnumValue(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0x0fe07306: self->Name = luaL_checkstring(L, 3); return 0; // Name				case 0xd147f96a: self->Value = luaL_checknumber(L, 3); return 0; // Value			}
+		case 0x0fe07306: strncpy(self->Name, luaL_checkstring(L, 3), sizeof(self->Name)); return 0; // Name
+		case 0xd147f96a: self->Value = luaL_checknumber(L, 3); return 0; // Value
+	}
 	return luaL_error(L, "Unknown field in PropertyEnumValue: %s", luaL_checkstring(L, 2));
 }
 static int f_PropertyEnumValue___call(lua_State *L) {
@@ -97,7 +101,7 @@ int luaopen_orca_PropertyEnumValue(lua_State *L) {
 		{ "fromstring", f_fromstring_PropertyEnumValue },
 		{ "__newindex", f_PropertyEnumValue___newindex },
 		{ "__index", f_PropertyEnumValue___index },
-			{ NULL, NULL },
+		{ NULL, NULL },
 	}), 0);
 	// Make PropertyEnumValue creatable like via constructor-like syntax
 	lua_newtable(L);
@@ -121,48 +125,48 @@ static int f_new_PropertyType(lua_State *L) {
 	memset(self, 0, sizeof(struct PropertyType));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-				lua_pop(L, (lua_getfield(L, 1, "Name"), self->Name = luaL_checkstring(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "Category"), self->Category = luaL_checkstring(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "DataType"), self->DataType = luaX_checkDataType(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "DefaultValue"), self->DefaultValue = luaL_checkstring(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "TypeString"), self->TypeString = luaL_checkstring(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "AffectLayout"), self->AffectLayout = lua_toboolean(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "AffectRender"), self->AffectRender = lua_toboolean(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "IsReadOnly"), self->IsReadOnly = lua_toboolean(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "IsHidden"), self->IsHidden = lua_toboolean(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "IsInherited"), self->IsInherited = lua_toboolean(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "Key"), self->Key = luaL_checkstring(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "Value"), self->Value = luaL_checkstring(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "Step"), self->Step = luaL_checknumber(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "UpperBound"), self->UpperBound = luaL_checknumber(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "LowerBound"), self->LowerBound = luaL_checknumber(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "ShortIdentifier"), self->ShortIdentifier = luaL_checknumber(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "FullIdentifier"), self->FullIdentifier = luaL_checknumber(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "Offset"), self->Offset = luaL_checknumber(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "DataSize"), self->DataSize = luaL_checknumber(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "IsArray"), self->IsArray = lua_toboolean(L, -1), 1));
-			} else {
-						self->Name = luaL_checkstring(L, 1);
-						self->Category = luaL_checkstring(L, 2);
-						self->DataType = luaX_checkDataType(L, 3);
-						self->DefaultValue = luaL_checkstring(L, 4);
-						self->TypeString = luaL_checkstring(L, 5);
-						self->AffectLayout = lua_toboolean(L, 6);
-						self->AffectRender = lua_toboolean(L, 7);
-						self->IsReadOnly = lua_toboolean(L, 8);
-						self->IsHidden = lua_toboolean(L, 9);
-						self->IsInherited = lua_toboolean(L, 10);
-						self->Key = luaL_checkstring(L, 11);
-						self->Value = luaL_checkstring(L, 12);
-						self->Step = luaL_checknumber(L, 13);
-						self->UpperBound = luaL_checknumber(L, 14);
-						self->LowerBound = luaL_checknumber(L, 15);
-						self->ShortIdentifier = luaL_checknumber(L, 16);
-						self->FullIdentifier = luaL_checknumber(L, 17);
-						self->Offset = luaL_checknumber(L, 18);
-						self->DataSize = luaL_checknumber(L, 19);
-						self->IsArray = lua_toboolean(L, 20);
-					}
+		lua_pop(L, (lua_getfield(L, 1, "Name"), strncpy(self->Name, luaL_checkstring(L, -1), sizeof(self->Name)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Category"), strncpy(self->Category, luaL_checkstring(L, -1), sizeof(self->Category)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "DataType"), self->DataType = luaX_checkDataType(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "DefaultValue"), strncpy(self->DefaultValue, luaL_checkstring(L, -1), sizeof(self->DefaultValue)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "TypeString"), strncpy(self->TypeString, luaL_checkstring(L, -1), sizeof(self->TypeString)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "AffectLayout"), self->AffectLayout = lua_toboolean(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "AffectRender"), self->AffectRender = lua_toboolean(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "IsReadOnly"), self->IsReadOnly = lua_toboolean(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "IsHidden"), self->IsHidden = lua_toboolean(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "IsInherited"), self->IsInherited = lua_toboolean(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Key"), strncpy(self->Key, luaL_checkstring(L, -1), sizeof(self->Key)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Value"), strncpy(self->Value, luaL_checkstring(L, -1), sizeof(self->Value)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Step"), self->Step = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "UpperBound"), self->UpperBound = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "LowerBound"), self->LowerBound = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "ShortIdentifier"), self->ShortIdentifier = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "FullIdentifier"), self->FullIdentifier = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Offset"), self->Offset = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "DataSize"), self->DataSize = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "IsArray"), self->IsArray = lua_toboolean(L, -1), 1));
+	} else {
+		strncpy(self->Name, luaL_checkstring(L, 1), sizeof(self->Name));
+		strncpy(self->Category, luaL_checkstring(L, 2), sizeof(self->Category));
+		self->DataType = luaX_checkDataType(L, 3);
+		strncpy(self->DefaultValue, luaL_checkstring(L, 4), sizeof(self->DefaultValue));
+		strncpy(self->TypeString, luaL_checkstring(L, 5), sizeof(self->TypeString));
+		self->AffectLayout = lua_toboolean(L, 6);
+		self->AffectRender = lua_toboolean(L, 7);
+		self->IsReadOnly = lua_toboolean(L, 8);
+		self->IsHidden = lua_toboolean(L, 9);
+		self->IsInherited = lua_toboolean(L, 10);
+		strncpy(self->Key, luaL_checkstring(L, 11), sizeof(self->Key));
+		strncpy(self->Value, luaL_checkstring(L, 12), sizeof(self->Value));
+		self->Step = luaL_checknumber(L, 13);
+		self->UpperBound = luaL_checknumber(L, 14);
+		self->LowerBound = luaL_checknumber(L, 15);
+		self->ShortIdentifier = luaL_checknumber(L, 16);
+		self->FullIdentifier = luaL_checknumber(L, 17);
+		self->Offset = luaL_checknumber(L, 18);
+		self->DataSize = luaL_checknumber(L, 19);
+		self->IsArray = lua_toboolean(L, 20);
+	}
 	return 1;
 }
 static int f_fromstring_PropertyType(lua_State *L) {
@@ -217,13 +221,53 @@ static int f_fromstring_PropertyType(lua_State *L) {
 int f_PropertyType___index(lua_State *L) {
 	struct PropertyType* self = luaX_checkPropertyType(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0x0fe07306: lua_pushstring(L, self->Name); return 1; // Name				case 0xafb3e591: lua_pushstring(L, self->Category); return 1; // Category				case 0x840d6c6d: luaX_pushDataType(L, self->DataType); return 1; // DataType				case 0xcd093f9f: lua_pushstring(L, self->DefaultValue); return 1; // DefaultValue				case 0xdf6c0780: lua_pushstring(L, self->TypeString); return 1; // TypeString				case 0xd2d3694e: lua_pushboolean(L, self->AffectLayout); return 1; // AffectLayout				case 0xcae7b378: lua_pushboolean(L, self->AffectRender); return 1; // AffectRender				case 0xd9ee91e7: lua_pushboolean(L, self->IsReadOnly); return 1; // IsReadOnly				case 0x3bf0d5c9: lua_pushboolean(L, self->IsHidden); return 1; // IsHidden				case 0x26e59151: lua_pushboolean(L, self->IsInherited); return 1; // IsInherited				case 0xcd1ac90c: lua_pushstring(L, self->Key); return 1; // Key				case 0xd147f96a: lua_pushstring(L, self->Value); return 1; // Value				case 0x4771f92f: lua_pushnumber(L, self->Step); return 1; // Step				case 0x48b88645: lua_pushnumber(L, self->UpperBound); return 1; // UpperBound				case 0xccc57b3a: lua_pushnumber(L, self->LowerBound); return 1; // LowerBound				case 0x0f76864e: lua_pushnumber(L, self->ShortIdentifier); return 1; // ShortIdentifier				case 0x429417cf: lua_pushnumber(L, self->FullIdentifier); return 1; // FullIdentifier				case 0x8995c7ea: lua_pushnumber(L, self->Offset); return 1; // Offset				case 0x58ff2a7c: lua_pushnumber(L, self->DataSize); return 1; // DataSize				case 0x660880b6: lua_pushboolean(L, self->IsArray); return 1; // IsArray			}
+		case 0x0fe07306: lua_pushstring(L, self->Name); return 1; // Name
+		case 0xafb3e591: lua_pushstring(L, self->Category); return 1; // Category
+		case 0x840d6c6d: luaX_pushDataType(L, self->DataType); return 1; // DataType
+		case 0xcd093f9f: lua_pushstring(L, self->DefaultValue); return 1; // DefaultValue
+		case 0xdf6c0780: lua_pushstring(L, self->TypeString); return 1; // TypeString
+		case 0xd2d3694e: lua_pushboolean(L, self->AffectLayout); return 1; // AffectLayout
+		case 0xcae7b378: lua_pushboolean(L, self->AffectRender); return 1; // AffectRender
+		case 0xd9ee91e7: lua_pushboolean(L, self->IsReadOnly); return 1; // IsReadOnly
+		case 0x3bf0d5c9: lua_pushboolean(L, self->IsHidden); return 1; // IsHidden
+		case 0x26e59151: lua_pushboolean(L, self->IsInherited); return 1; // IsInherited
+		case 0xcd1ac90c: lua_pushstring(L, self->Key); return 1; // Key
+		case 0xd147f96a: lua_pushstring(L, self->Value); return 1; // Value
+		case 0x4771f92f: lua_pushnumber(L, self->Step); return 1; // Step
+		case 0x48b88645: lua_pushnumber(L, self->UpperBound); return 1; // UpperBound
+		case 0xccc57b3a: lua_pushnumber(L, self->LowerBound); return 1; // LowerBound
+		case 0x0f76864e: lua_pushnumber(L, self->ShortIdentifier); return 1; // ShortIdentifier
+		case 0x429417cf: lua_pushnumber(L, self->FullIdentifier); return 1; // FullIdentifier
+		case 0x8995c7ea: lua_pushnumber(L, self->Offset); return 1; // Offset
+		case 0x58ff2a7c: lua_pushnumber(L, self->DataSize); return 1; // DataSize
+		case 0x660880b6: lua_pushboolean(L, self->IsArray); return 1; // IsArray
+	}
 	return luaL_error(L, "Unknown field in PropertyType: %s", luaL_checkstring(L, 2));
 }
 int f_PropertyType___newindex(lua_State *L) {
 	struct PropertyType* self = luaX_checkPropertyType(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0x0fe07306: self->Name = luaL_checkstring(L, 3); return 0; // Name				case 0xafb3e591: self->Category = luaL_checkstring(L, 3); return 0; // Category				case 0x840d6c6d: self->DataType = luaX_checkDataType(L, 3); return 0; // DataType				case 0xcd093f9f: self->DefaultValue = luaL_checkstring(L, 3); return 0; // DefaultValue				case 0xdf6c0780: self->TypeString = luaL_checkstring(L, 3); return 0; // TypeString				case 0xd2d3694e: self->AffectLayout = lua_toboolean(L, 3); return 0; // AffectLayout				case 0xcae7b378: self->AffectRender = lua_toboolean(L, 3); return 0; // AffectRender				case 0xd9ee91e7: self->IsReadOnly = lua_toboolean(L, 3); return 0; // IsReadOnly				case 0x3bf0d5c9: self->IsHidden = lua_toboolean(L, 3); return 0; // IsHidden				case 0x26e59151: self->IsInherited = lua_toboolean(L, 3); return 0; // IsInherited				case 0xcd1ac90c: self->Key = luaL_checkstring(L, 3); return 0; // Key				case 0xd147f96a: self->Value = luaL_checkstring(L, 3); return 0; // Value				case 0x4771f92f: self->Step = luaL_checknumber(L, 3); return 0; // Step				case 0x48b88645: self->UpperBound = luaL_checknumber(L, 3); return 0; // UpperBound				case 0xccc57b3a: self->LowerBound = luaL_checknumber(L, 3); return 0; // LowerBound				case 0x0f76864e: self->ShortIdentifier = luaL_checknumber(L, 3); return 0; // ShortIdentifier				case 0x429417cf: self->FullIdentifier = luaL_checknumber(L, 3); return 0; // FullIdentifier				case 0x8995c7ea: self->Offset = luaL_checknumber(L, 3); return 0; // Offset				case 0x58ff2a7c: self->DataSize = luaL_checknumber(L, 3); return 0; // DataSize				case 0x660880b6: self->IsArray = lua_toboolean(L, 3); return 0; // IsArray			}
+		case 0x0fe07306: strncpy(self->Name, luaL_checkstring(L, 3), sizeof(self->Name)); return 0; // Name
+		case 0xafb3e591: strncpy(self->Category, luaL_checkstring(L, 3), sizeof(self->Category)); return 0; // Category
+		case 0x840d6c6d: self->DataType = luaX_checkDataType(L, 3); return 0; // DataType
+		case 0xcd093f9f: strncpy(self->DefaultValue, luaL_checkstring(L, 3), sizeof(self->DefaultValue)); return 0; // DefaultValue
+		case 0xdf6c0780: strncpy(self->TypeString, luaL_checkstring(L, 3), sizeof(self->TypeString)); return 0; // TypeString
+		case 0xd2d3694e: self->AffectLayout = lua_toboolean(L, 3); return 0; // AffectLayout
+		case 0xcae7b378: self->AffectRender = lua_toboolean(L, 3); return 0; // AffectRender
+		case 0xd9ee91e7: self->IsReadOnly = lua_toboolean(L, 3); return 0; // IsReadOnly
+		case 0x3bf0d5c9: self->IsHidden = lua_toboolean(L, 3); return 0; // IsHidden
+		case 0x26e59151: self->IsInherited = lua_toboolean(L, 3); return 0; // IsInherited
+		case 0xcd1ac90c: strncpy(self->Key, luaL_checkstring(L, 3), sizeof(self->Key)); return 0; // Key
+		case 0xd147f96a: strncpy(self->Value, luaL_checkstring(L, 3), sizeof(self->Value)); return 0; // Value
+		case 0x4771f92f: self->Step = luaL_checknumber(L, 3); return 0; // Step
+		case 0x48b88645: self->UpperBound = luaL_checknumber(L, 3); return 0; // UpperBound
+		case 0xccc57b3a: self->LowerBound = luaL_checknumber(L, 3); return 0; // LowerBound
+		case 0x0f76864e: self->ShortIdentifier = luaL_checknumber(L, 3); return 0; // ShortIdentifier
+		case 0x429417cf: self->FullIdentifier = luaL_checknumber(L, 3); return 0; // FullIdentifier
+		case 0x8995c7ea: self->Offset = luaL_checknumber(L, 3); return 0; // Offset
+		case 0x58ff2a7c: self->DataSize = luaL_checknumber(L, 3); return 0; // DataSize
+		case 0x660880b6: self->IsArray = lua_toboolean(L, 3); return 0; // IsArray
+	}
 	return luaL_error(L, "Unknown field in PropertyType: %s", luaL_checkstring(L, 2));
 }
 static int f_PropertyType___call(lua_State *L) {
@@ -236,7 +280,7 @@ int luaopen_orca_PropertyType(lua_State *L) {
 		{ "fromstring", f_fromstring_PropertyType },
 		{ "__newindex", f_PropertyType___newindex },
 		{ "__index", f_PropertyType___index },
-			{ NULL, NULL },
+		{ NULL, NULL },
 	}), 0);
 	// Make PropertyType creatable like via constructor-like syntax
 	lua_newtable(L);

@@ -236,7 +236,16 @@ void luaX_pushShading(lua_State *L, enum Shading value) {
 
 	
 static struct PropertyType const TextureProperties[kTextureNumProperties] = {
-				DECL(0x47bdcfab, Texture, MinificationFilter, MinificationFilter, kDataTypeEnum, .Enums = _MinificationFilter), // Texture.MinificationFilter						DECL(0xf5ff802c, Texture, MagnificationFilter, MagnificationFilter, kDataTypeEnum, .Enums = _MagnificationFilter), // Texture.MagnificationFilter						DECL(0xc2114a32, Texture, WrapMode, WrapMode, kDataTypeEnum, .Enums = _WrapMode), // Texture.WrapMode						DECL(0xffb0ff72, Texture, Format, Format, kDataTypeEnum, .Enums = _Format), // Texture.Format						DECL(0x28528e11, Texture, Scale, Scale, kDataTypeInt), // Texture.Scale						DECL(0xb3ad7612, Texture, MipmapMode, MipmapMode, kDataTypeEnum, .Enums = _MipmapMode), // Texture.MipmapMode						DECL(0x78736795, Texture, AnisotropyType, AnisotropyType, kDataTypeEnum, .Enums = _AnisotropyType), // Texture.AnisotropyType						DECL(0x3b42dfbf, Texture, Width, Width, kDataTypeInt), // Texture.Width						DECL(0x1bd13562, Texture, Height, Height, kDataTypeInt), // Texture.Height			};
+	DECL(0x47bdcfab, Texture, MinificationFilter, MinificationFilter, kDataTypeEnum, .Enums = _MinificationFilter), // Texture.MinificationFilter
+	DECL(0xf5ff802c, Texture, MagnificationFilter, MagnificationFilter, kDataTypeEnum, .Enums = _MagnificationFilter), // Texture.MagnificationFilter
+	DECL(0xc2114a32, Texture, WrapMode, WrapMode, kDataTypeEnum, .Enums = _WrapMode), // Texture.WrapMode
+	DECL(0xffb0ff72, Texture, Format, Format, kDataTypeEnum, .Enums = _Format), // Texture.Format
+	DECL(0x28528e11, Texture, Scale, Scale, kDataTypeInt), // Texture.Scale
+	DECL(0xb3ad7612, Texture, MipmapMode, MipmapMode, kDataTypeEnum, .Enums = _MipmapMode), // Texture.MipmapMode
+	DECL(0x78736795, Texture, AnisotropyType, AnisotropyType, kDataTypeEnum, .Enums = _AnisotropyType), // Texture.AnisotropyType
+	DECL(0x3b42dfbf, Texture, Width, Width, kDataTypeInt), // Texture.Width
+	DECL(0x1bd13562, Texture, Height, Height, kDataTypeInt), // Texture.Height
+};
 static struct Texture TextureDefaults = {
 																			};
 LRESULT TextureProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -267,7 +276,31 @@ ORCA_API struct ClassDesc _Texture = {
 	LRESULT Image_Start(struct Object*, struct Image*, wParam_t, StartPtr);
 	
 static struct PropertyType const ImageProperties[kImageNumProperties] = {
-				DECL(0x61e2a3f8, Image, Source, Source, kDataTypeFixed), // Image.Source						DECL(0xa3c8af46, Image, PremultiplyAlpha, PremultiplyAlpha, kDataTypeBool), // Image.PremultiplyAlpha						DECL(0xd155d06d, Image, Type, Type, kDataTypeEnum, .Enums = _Type), // Image.Type						DECL(0xdb9ccf58, Image, HasMipmaps, HasMipmaps, kDataTypeBool), // Image.HasMipmaps						DECL(0xa6478e7c, Image, Size, Size, kDataTypeFixed), // Image.Size						DECL(0x7588b4d5, Image, BitDepth, BitDepth, kDataTypeInt), // Image.BitDepth						DECL(0x94ab250b, Image, FileHasTransparency, FileHasTransparency, kDataTypeBool), // Image.FileHasTransparency						DECL(0xb5f815c3, Image, FileHasICCProfile, FileHasICCProfile, kDataTypeBool), // Image.FileHasICCProfile						DECL(0x86ff7dab, Image, TargetFormat, TargetFormat, kDataTypeEnum, .Enums = _TargetFormat), // Image.TargetFormat						DECL(0x79fe08b6, Image, AtcCompressionScheme, AtcCompressionScheme, kDataTypeEnum, .Enums = _AtcCompressionScheme), // Image.AtcCompressionScheme						DECL(0x18e754ba, Image, PvrtcBitDepth, PvrtcBitDepth, kDataTypeInt), // Image.PvrtcBitDepth						DECL(0x022a53d7, Image, PvrtcQuality, PvrtcQuality, kDataTypeInt), // Image.PvrtcQuality						DECL(0x55e09913, Image, PvrtcCompressionScheme, PvrtcCompressionScheme, kDataTypeInt), // Image.PvrtcCompressionScheme						DECL(0x8bceff48, Image, AstcBlockSize, AstcBlockSize, kDataTypeEnum, .Enums = _AstcBlockSize), // Image.AstcBlockSize						DECL(0x52120f05, Image, AstcCompressionSpeed, AstcCompressionSpeed, kDataTypeEnum, .Enums = _AstcCompressionSpeed), // Image.AstcCompressionSpeed						DECL(0x0ccdd5f0, Image, AstcIsSRGB, AstcIsSRGB, kDataTypeBool), // Image.AstcIsSRGB						DECL(0xfe76304d, Image, RawColorByteFormat, RawColorByteFormat, kDataTypeEnum, .Enums = _RawColorByteFormat), // Image.RawColorByteFormat						DECL(0x66001361, Image, SpansionCompressionScheme, SpansionCompressionScheme, kDataTypeEnum, .Enums = _SpansionCompressionScheme), // Image.SpansionCompressionScheme						DECL(0x28b08476, Image, FilePngCompressionLevel, FilePngCompressionLevel, kDataTypeEnum, .Enums = _FilePngCompressionLevel), // Image.FilePngCompressionLevel						DECL(0xd96ef887, Image, Etc2Effort, Etc2Effort, kDataTypeInt), // Image.Etc2Effort						DECL(0x84841aff, Image, FileExportSourceTexture, FileExportSourceTexture, kDataTypeBool), // Image.FileExportSourceTexture						DECL(0xc1e7dbf8, Image, FileExportAlways, FileExportAlways, kDataTypeBool), // Image.FileExportAlways						DECL(0x1c849134, Image, FileExportEmptyWhenFileIsMissing, FileExportEmptyWhenFileIsMissing, kDataTypeBool), // Image.FileExportEmptyWhenFileIsMissing						DECL(0x85202b31, Image, FileExportSourceImage, FileExportSourceImage, kDataTypeFixed), // Image.FileExportSourceImage			};
+	DECL(0x61e2a3f8, Image, Source, Source, kDataTypeFixed), // Image.Source
+	DECL(0xa3c8af46, Image, PremultiplyAlpha, PremultiplyAlpha, kDataTypeBool), // Image.PremultiplyAlpha
+	DECL(0xd155d06d, Image, Type, Type, kDataTypeEnum, .Enums = _Type), // Image.Type
+	DECL(0xdb9ccf58, Image, HasMipmaps, HasMipmaps, kDataTypeBool), // Image.HasMipmaps
+	DECL(0xa6478e7c, Image, Size, Size, kDataTypeFixed), // Image.Size
+	DECL(0x7588b4d5, Image, BitDepth, BitDepth, kDataTypeInt), // Image.BitDepth
+	DECL(0x94ab250b, Image, FileHasTransparency, FileHasTransparency, kDataTypeBool), // Image.FileHasTransparency
+	DECL(0xb5f815c3, Image, FileHasICCProfile, FileHasICCProfile, kDataTypeBool), // Image.FileHasICCProfile
+	DECL(0x86ff7dab, Image, TargetFormat, TargetFormat, kDataTypeEnum, .Enums = _TargetFormat), // Image.TargetFormat
+	DECL(0x79fe08b6, Image, AtcCompressionScheme, AtcCompressionScheme, kDataTypeEnum, .Enums = _AtcCompressionScheme), // Image.AtcCompressionScheme
+	DECL(0x18e754ba, Image, PvrtcBitDepth, PvrtcBitDepth, kDataTypeInt), // Image.PvrtcBitDepth
+	DECL(0x022a53d7, Image, PvrtcQuality, PvrtcQuality, kDataTypeInt), // Image.PvrtcQuality
+	DECL(0x55e09913, Image, PvrtcCompressionScheme, PvrtcCompressionScheme, kDataTypeInt), // Image.PvrtcCompressionScheme
+	DECL(0x8bceff48, Image, AstcBlockSize, AstcBlockSize, kDataTypeEnum, .Enums = _AstcBlockSize), // Image.AstcBlockSize
+	DECL(0x52120f05, Image, AstcCompressionSpeed, AstcCompressionSpeed, kDataTypeEnum, .Enums = _AstcCompressionSpeed), // Image.AstcCompressionSpeed
+	DECL(0x0ccdd5f0, Image, AstcIsSRGB, AstcIsSRGB, kDataTypeBool), // Image.AstcIsSRGB
+	DECL(0xfe76304d, Image, RawColorByteFormat, RawColorByteFormat, kDataTypeEnum, .Enums = _RawColorByteFormat), // Image.RawColorByteFormat
+	DECL(0x66001361, Image, SpansionCompressionScheme, SpansionCompressionScheme, kDataTypeEnum, .Enums = _SpansionCompressionScheme), // Image.SpansionCompressionScheme
+	DECL(0x28b08476, Image, FilePngCompressionLevel, FilePngCompressionLevel, kDataTypeEnum, .Enums = _FilePngCompressionLevel), // Image.FilePngCompressionLevel
+	DECL(0xd96ef887, Image, Etc2Effort, Etc2Effort, kDataTypeInt), // Image.Etc2Effort
+	DECL(0x84841aff, Image, FileExportSourceTexture, FileExportSourceTexture, kDataTypeBool), // Image.FileExportSourceTexture
+	DECL(0xc1e7dbf8, Image, FileExportAlways, FileExportAlways, kDataTypeBool), // Image.FileExportAlways
+	DECL(0x1c849134, Image, FileExportEmptyWhenFileIsMissing, FileExportEmptyWhenFileIsMissing, kDataTypeBool), // Image.FileExportEmptyWhenFileIsMissing
+	DECL(0x85202b31, Image, FileExportSourceImage, FileExportSourceImage, kDataTypeFixed), // Image.FileExportSourceImage
+};
 static struct Image ImageDefaults = {
 																																																	};
 LRESULT ImageProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -298,7 +331,14 @@ ORCA_API struct ClassDesc _Image = {
 	LRESULT RenderTargetTexture_Start(struct Object*, struct RenderTargetTexture*, wParam_t, StartPtr);
 	
 static struct PropertyType const RenderTargetTextureProperties[kRenderTargetTextureNumProperties] = {
-				DECL(0x3b42dfbf, RenderTargetTexture, Width, Width, kDataTypeInt), // RenderTargetTexture.Width						DECL(0x1bd13562, RenderTargetTexture, Height, Height, kDataTypeInt), // RenderTargetTexture.Height						DECL(0x77ada720, RenderTargetTexture, TargetType, TargetType, kDataTypeEnum, .Enums = _TargetType), // RenderTargetTexture.TargetType						DECL(0xdb3b9d57, RenderTargetTexture, SupportSimpleRenderTarget, SupportSimpleRenderTarget, kDataTypeBool), // RenderTargetTexture.SupportSimpleRenderTarget						DECL(0x9048e288, RenderTargetTexture, Attachment, Attachment, kDataTypeEnum, .Enums = _Attachment), // RenderTargetTexture.Attachment						DECL(0x337c9af1, RenderTargetTexture, AllowDepthFallback, AllowDepthFallback, kDataTypeBool), // RenderTargetTexture.AllowDepthFallback						DECL(0x76f1691e, RenderTargetTexture, SampleCount, SampleCount, kDataTypeInt), // RenderTargetTexture.SampleCount			};
+	DECL(0x3b42dfbf, RenderTargetTexture, Width, Width, kDataTypeInt), // RenderTargetTexture.Width
+	DECL(0x1bd13562, RenderTargetTexture, Height, Height, kDataTypeInt), // RenderTargetTexture.Height
+	DECL(0x77ada720, RenderTargetTexture, TargetType, TargetType, kDataTypeEnum, .Enums = _TargetType), // RenderTargetTexture.TargetType
+	DECL(0xdb3b9d57, RenderTargetTexture, SupportSimpleRenderTarget, SupportSimpleRenderTarget, kDataTypeBool), // RenderTargetTexture.SupportSimpleRenderTarget
+	DECL(0x9048e288, RenderTargetTexture, Attachment, Attachment, kDataTypeEnum, .Enums = _Attachment), // RenderTargetTexture.Attachment
+	DECL(0x337c9af1, RenderTargetTexture, AllowDepthFallback, AllowDepthFallback, kDataTypeBool), // RenderTargetTexture.AllowDepthFallback
+	DECL(0x76f1691e, RenderTargetTexture, SampleCount, SampleCount, kDataTypeInt), // RenderTargetTexture.SampleCount
+};
 static struct RenderTargetTexture RenderTargetTextureDefaults = {
 															};
 LRESULT RenderTargetTextureProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -329,7 +369,13 @@ ORCA_API struct ClassDesc _RenderTargetTexture = {
 	LRESULT CubeMapTexture_Start(struct Object*, struct CubeMapTexture*, wParam_t, StartPtr);
 	
 static struct PropertyType const CubeMapTextureProperties[kCubeMapTextureNumProperties] = {
-				DECL(0x59f82b67, CubeMapTexture, BackImage, BackImage, kDataTypeFixed), // CubeMapTexture.BackImage						DECL(0xe5328805, CubeMapTexture, FrontImage, FrontImage, kDataTypeFixed), // CubeMapTexture.FrontImage						DECL(0xd2e8522d, CubeMapTexture, LeftImage, LeftImage, kDataTypeFixed), // CubeMapTexture.LeftImage						DECL(0x7d77ff5a, CubeMapTexture, RightImage, RightImage, kDataTypeFixed), // CubeMapTexture.RightImage						DECL(0xea5c127f, CubeMapTexture, BottomImage, BottomImage, kDataTypeFixed), // CubeMapTexture.BottomImage						DECL(0x5d1df0f9, CubeMapTexture, TopImage, TopImage, kDataTypeFixed), // CubeMapTexture.TopImage			};
+	DECL(0x59f82b67, CubeMapTexture, BackImage, BackImage, kDataTypeFixed), // CubeMapTexture.BackImage
+	DECL(0xe5328805, CubeMapTexture, FrontImage, FrontImage, kDataTypeFixed), // CubeMapTexture.FrontImage
+	DECL(0xd2e8522d, CubeMapTexture, LeftImage, LeftImage, kDataTypeFixed), // CubeMapTexture.LeftImage
+	DECL(0x7d77ff5a, CubeMapTexture, RightImage, RightImage, kDataTypeFixed), // CubeMapTexture.RightImage
+	DECL(0xea5c127f, CubeMapTexture, BottomImage, BottomImage, kDataTypeFixed), // CubeMapTexture.BottomImage
+	DECL(0x5d1df0f9, CubeMapTexture, TopImage, TopImage, kDataTypeFixed), // CubeMapTexture.TopImage
+};
 static struct CubeMapTexture CubeMapTextureDefaults = {
 													};
 LRESULT CubeMapTextureProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -360,7 +406,8 @@ ORCA_API struct ClassDesc _CubeMapTexture = {
 	LRESULT IOSurfaceTexture_Start(struct Object*, struct IOSurfaceTexture*, wParam_t, StartPtr);
 	
 static struct PropertyType const IOSurfaceTextureProperties[kIOSurfaceTextureNumProperties] = {
-				DECL(0xb5fc4968, IOSurfaceTexture, IOSurface, IOSurface, kDataTypeInt), // IOSurfaceTexture.IOSurface			};
+	DECL(0xb5fc4968, IOSurfaceTexture, IOSurface, IOSurface, kDataTypeInt), // IOSurfaceTexture.IOSurface
+};
 static struct IOSurfaceTexture IOSurfaceTextureDefaults = {
 			};
 LRESULT IOSurfaceTextureProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -390,7 +437,10 @@ ORCA_API struct ClassDesc _IOSurfaceTexture = {
 
 	
 static struct PropertyType const VertexShaderProperties[kVertexShaderNumProperties] = {
-				DECL(0x5dcdd537, VertexShader, Version, Version, kDataTypeInt), // VertexShader.Version						DECL(0x1ecae757, VertexShader, FloatPrecision, FloatPrecision, kDataTypeEnum, .Enums = _FloatPrecision), // VertexShader.FloatPrecision						DECL(0x2cbcb34d, VertexShader, Shading, Shading, kDataTypeEnum, .Enums = _Shading), // VertexShader.Shading			};
+	DECL(0x5dcdd537, VertexShader, Version, Version, kDataTypeInt), // VertexShader.Version
+	DECL(0x1ecae757, VertexShader, FloatPrecision, FloatPrecision, kDataTypeEnum, .Enums = _FloatPrecision), // VertexShader.FloatPrecision
+	DECL(0x2cbcb34d, VertexShader, Shading, Shading, kDataTypeEnum, .Enums = _Shading), // VertexShader.Shading
+};
 static struct VertexShader VertexShaderDefaults = {
 							};
 LRESULT VertexShaderProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -420,7 +470,10 @@ ORCA_API struct ClassDesc _VertexShader = {
 
 	
 static struct PropertyType const FragmentShaderProperties[kFragmentShaderNumProperties] = {
-				DECL(0x5dcdd537, FragmentShader, Version, Version, kDataTypeInt), // FragmentShader.Version						DECL(0x1ecae757, FragmentShader, FloatPrecision, FloatPrecision, kDataTypeEnum, .Enums = _FloatPrecision), // FragmentShader.FloatPrecision						DECL(0x0da660ff, FragmentShader, Out, Out, kDataTypeFixed), // FragmentShader.Out			};
+	DECL(0x5dcdd537, FragmentShader, Version, Version, kDataTypeInt), // FragmentShader.Version
+	DECL(0x1ecae757, FragmentShader, FloatPrecision, FloatPrecision, kDataTypeEnum, .Enums = _FloatPrecision), // FragmentShader.FloatPrecision
+	DECL(0x0da660ff, FragmentShader, Out, Out, kDataTypeFixed), // FragmentShader.Out
+};
 static struct FragmentShader FragmentShaderDefaults = {
 							};
 LRESULT FragmentShaderProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -452,7 +505,10 @@ ORCA_API struct ClassDesc _FragmentShader = {
 	LRESULT Shader_Destroy(struct Object*, struct Shader*, wParam_t, DestroyPtr);
 	
 static struct PropertyType const ShaderProperties[kShaderNumProperties] = {
-				DECL(0x0038792b, Shader, BlendMode, BlendMode, kDataTypeEnum, .Enums = _BlendMode), // Shader.BlendMode						DECL(0xb7e582be, Shader, DepthTestFunction, DepthTestFunction, kDataTypeEnum, .Enums = _DepthTestFunction), // Shader.DepthTestFunction						DECL(0x8ec3072e, Shader, DepthWriteEnabled, DepthWriteEnabled, kDataTypeBool), // Shader.DepthWriteEnabled			};
+	DECL(0x0038792b, Shader, BlendMode, BlendMode, kDataTypeEnum, .Enums = _BlendMode), // Shader.BlendMode
+	DECL(0xb7e582be, Shader, DepthTestFunction, DepthTestFunction, kDataTypeEnum, .Enums = _DepthTestFunction), // Shader.DepthTestFunction
+	DECL(0x8ec3072e, Shader, DepthWriteEnabled, DepthWriteEnabled, kDataTypeBool), // Shader.DepthWriteEnabled
+};
 static struct Shader ShaderDefaults = {
 		  .BlendMode = -1,
 						};
@@ -483,7 +539,22 @@ ORCA_API struct ClassDesc _Shader = {
 
 	
 static struct PropertyType const MaterialProperties[kMaterialNumProperties] = {
-				DECL(0x7deb3888, Material, Shader, Shader, kDataTypeComponent), // Material.Shader						DECL(0x63792322, Material, GlobalAmbient, GlobalAmbient, kDataTypeStruct, .TypeString = "Color"), // Material.GlobalAmbient						DECL(0x33f2678b, Material, Ambient, Ambient, kDataTypeStruct, .TypeString = "Color"), // Material.Ambient						DECL(0x84d12add, Material, Diffuse, Diffuse, kDataTypeStruct, .TypeString = "Color"), // Material.Diffuse						DECL(0x555cbaee, Material, Emissive, Emissive, kDataTypeStruct, .TypeString = "Color"), // Material.Emissive						DECL(0xd5e66b37, Material, SpecularColor, SpecularColor, kDataTypeStruct, .TypeString = "Color"), // Material.SpecularColor						DECL(0x841db767, Material, SpecularExponent, SpecularExponent, kDataTypeFloat), // Material.SpecularExponent						DECL(0x994c5594, Material, Texture, Texture, kDataTypeComponent), // Material.Texture						DECL(0xf92ad452, Material, Texture2, Texture2, kDataTypeComponent), // Material.Texture2						DECL(0xe83ca8af, Material, TextureOffset, TextureOffset, kDataTypeStruct, .TypeString = "Vector2D"), // Material.TextureOffset						DECL(0x861dbc5b, Material, TextureTiling, TextureTiling, kDataTypeStruct, .TypeString = "Vector2D"), // Material.TextureTiling						DECL(0x5df90df9, Material, BlendIntensity, BlendIntensity, kDataTypeFloat), // Material.BlendIntensity						DECL(0x0038792b, Material, BlendMode, BlendMode, kDataTypeEnum, .Enums = _BlendMode), // Material.BlendMode						DECL(0x6adb8ff0, Material, u_color, u_color, kDataTypeStruct, .TypeString = "Color"), // Material.u_color						DECL(0xb7cf764c, Material, u_texture, u_texture, kDataTypeComponent), // Material.u_texture			};
+	DECL(0x7deb3888, Material, Shader, Shader, kDataTypeComponent), // Material.Shader
+	DECL(0x63792322, Material, GlobalAmbient, GlobalAmbient, kDataTypeStruct, .TypeString = "Color"), // Material.GlobalAmbient
+	DECL(0x33f2678b, Material, Ambient, Ambient, kDataTypeStruct, .TypeString = "Color"), // Material.Ambient
+	DECL(0x84d12add, Material, Diffuse, Diffuse, kDataTypeStruct, .TypeString = "Color"), // Material.Diffuse
+	DECL(0x555cbaee, Material, Emissive, Emissive, kDataTypeStruct, .TypeString = "Color"), // Material.Emissive
+	DECL(0xd5e66b37, Material, SpecularColor, SpecularColor, kDataTypeStruct, .TypeString = "Color"), // Material.SpecularColor
+	DECL(0x841db767, Material, SpecularExponent, SpecularExponent, kDataTypeFloat), // Material.SpecularExponent
+	DECL(0x994c5594, Material, Texture, Texture, kDataTypeComponent), // Material.Texture
+	DECL(0xf92ad452, Material, Texture2, Texture2, kDataTypeComponent), // Material.Texture2
+	DECL(0xe83ca8af, Material, TextureOffset, TextureOffset, kDataTypeStruct, .TypeString = "Vector2D"), // Material.TextureOffset
+	DECL(0x861dbc5b, Material, TextureTiling, TextureTiling, kDataTypeStruct, .TypeString = "Vector2D"), // Material.TextureTiling
+	DECL(0x5df90df9, Material, BlendIntensity, BlendIntensity, kDataTypeFloat), // Material.BlendIntensity
+	DECL(0x0038792b, Material, BlendMode, BlendMode, kDataTypeEnum, .Enums = _BlendMode), // Material.BlendMode
+	DECL(0x6adb8ff0, Material, u_color, u_color, kDataTypeStruct, .TypeString = "Color"), // Material.u_color
+	DECL(0xb7cf764c, Material, u_texture, u_texture, kDataTypeComponent), // Material.u_texture
+};
 static struct Material MaterialDefaults = {
 																										  .BlendMode = AlphaAutomatic,
 						};
@@ -516,7 +587,10 @@ ORCA_API struct ClassDesc _Material = {
 	LRESULT Mesh_Destroy(struct Object*, struct Mesh*, wParam_t, DestroyPtr);
 	
 static struct PropertyType const MeshProperties[kMeshNumProperties] = {
-				DECL(0x61e2a3f8, Mesh, Source, Source, kDataTypeFixed), // Mesh.Source						DECL(0xcbd54f80, Mesh, Material, Material, kDataTypeComponent), // Mesh.Material						DECL(0x553fd778, Mesh, MeshMorphTargets, MeshMorphTargets, kDataTypeFixed), // Mesh.MeshMorphTargets			};
+	DECL(0x61e2a3f8, Mesh, Source, Source, kDataTypeFixed), // Mesh.Source
+	DECL(0xcbd54f80, Mesh, Material, Material, kDataTypeComponent), // Mesh.Material
+	DECL(0x553fd778, Mesh, MeshMorphTargets, MeshMorphTargets, kDataTypeFixed), // Mesh.MeshMorphTargets
+};
 static struct Mesh MeshDefaults = {
 							};
 LRESULT MeshProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -548,7 +622,11 @@ ORCA_API struct ClassDesc _Mesh = {
 	LRESULT FontFamily_Destroy(struct Object*, struct FontFamily*, wParam_t, DestroyPtr);
 	
 static struct PropertyType const FontFamilyProperties[kFontFamilyNumProperties] = {
-				DECL(0xe750f2b7, FontFamily, Regular, Regular, kDataTypeFixed), // FontFamily.Regular						DECL(0x45768d96, FontFamily, Bold, Bold, kDataTypeFixed), // FontFamily.Bold						DECL(0x8db0c08d, FontFamily, Italic, Italic, kDataTypeFixed), // FontFamily.Italic						DECL(0x6e1d4e1a, FontFamily, BoldItalic, BoldItalic, kDataTypeFixed), // FontFamily.BoldItalic			};
+	DECL(0xe750f2b7, FontFamily, Regular, Regular, kDataTypeFixed), // FontFamily.Regular
+	DECL(0x45768d96, FontFamily, Bold, Bold, kDataTypeFixed), // FontFamily.Bold
+	DECL(0x8db0c08d, FontFamily, Italic, Italic, kDataTypeFixed), // FontFamily.Italic
+	DECL(0x6e1d4e1a, FontFamily, BoldItalic, BoldItalic, kDataTypeFixed), // FontFamily.BoldItalic
+};
 static struct FontFamily FontFamilyDefaults = {
 									};
 LRESULT FontFamilyProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -578,7 +656,7 @@ ORCA_API struct ClassDesc _FontFamily = {
 
 	
 static struct PropertyType const TrajectoryProperties[kTrajectoryNumProperties] = {
-	};
+};
 static struct Trajectory TrajectoryDefaults = {
 	};
 LRESULT TrajectoryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -608,7 +686,7 @@ ORCA_API struct ClassDesc _Trajectory = {
 
 	
 static struct PropertyType const TimelineProperties[kTimelineNumProperties] = {
-	};
+};
 static struct Timeline TimelineDefaults = {
 	};
 LRESULT TimelineProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {

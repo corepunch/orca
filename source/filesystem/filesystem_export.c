@@ -20,12 +20,12 @@ static int f_new_ProjectReference(lua_State *L) {
 	memset(self, 0, sizeof(struct ProjectReference));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-				lua_pop(L, (lua_getfield(L, 1, "Name"), self->Name = luaL_checkstring(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "Path"), self->Path = luaL_checkstring(L, -1), 1));
-			} else {
-						self->Name = luaL_checkstring(L, 1);
-						self->Path = luaL_checkstring(L, 2);
-					}
+		lua_pop(L, (lua_getfield(L, 1, "Name"), strncpy(self->Name, luaL_checkstring(L, -1), sizeof(self->Name)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Path"), strncpy(self->Path, luaL_checkstring(L, -1), sizeof(self->Path)), 1));
+	} else {
+		strncpy(self->Name, luaL_checkstring(L, 1), sizeof(self->Name));
+		strncpy(self->Path, luaL_checkstring(L, 2), sizeof(self->Path));
+	}
 	return 1;
 }
 static int f_fromstring_ProjectReference(lua_State *L) {
@@ -44,13 +44,17 @@ static int f_fromstring_ProjectReference(lua_State *L) {
 int f_ProjectReference___index(lua_State *L) {
 	struct ProjectReference* self = luaX_checkProjectReference(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0x0fe07306: lua_pushstring(L, self->Name); return 1; // Name				case 0xeb66e456: lua_pushstring(L, self->Path); return 1; // Path			}
+		case 0x0fe07306: lua_pushstring(L, self->Name); return 1; // Name
+		case 0xeb66e456: lua_pushstring(L, self->Path); return 1; // Path
+	}
 	return luaL_error(L, "Unknown field in ProjectReference: %s", luaL_checkstring(L, 2));
 }
 int f_ProjectReference___newindex(lua_State *L) {
 	struct ProjectReference* self = luaX_checkProjectReference(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0x0fe07306: self->Name = luaL_checkstring(L, 3); return 0; // Name				case 0xeb66e456: self->Path = luaL_checkstring(L, 3); return 0; // Path			}
+		case 0x0fe07306: strncpy(self->Name, luaL_checkstring(L, 3), sizeof(self->Name)); return 0; // Name
+		case 0xeb66e456: strncpy(self->Path, luaL_checkstring(L, 3), sizeof(self->Path)); return 0; // Path
+	}
 	return luaL_error(L, "Unknown field in ProjectReference: %s", luaL_checkstring(L, 2));
 }
 static int f_ProjectReference___call(lua_State *L) {
@@ -63,7 +67,7 @@ int luaopen_orca_ProjectReference(lua_State *L) {
 		{ "fromstring", f_fromstring_ProjectReference },
 		{ "__newindex", f_ProjectReference___newindex },
 		{ "__index", f_ProjectReference___index },
-			{ NULL, NULL },
+		{ NULL, NULL },
 	}), 0);
 	// Make ProjectReference creatable like via constructor-like syntax
 	lua_newtable(L);
@@ -87,14 +91,14 @@ static int f_new_SystemMessage(lua_State *L) {
 	memset(self, 0, sizeof(struct SystemMessage));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-				lua_pop(L, (lua_getfield(L, 1, "Message"), self->Message = luaL_checkstring(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "Key"), self->Key = luaL_checkstring(L, -1), 1));
-				lua_pop(L, (lua_getfield(L, 1, "Command"), self->Command = luaL_checkstring(L, -1), 1));
-			} else {
-						self->Message = luaL_checkstring(L, 1);
-						self->Key = luaL_checkstring(L, 2);
-						self->Command = luaL_checkstring(L, 3);
-					}
+		lua_pop(L, (lua_getfield(L, 1, "Message"), strncpy(self->Message, luaL_checkstring(L, -1), sizeof(self->Message)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Key"), strncpy(self->Key, luaL_checkstring(L, -1), sizeof(self->Key)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Command"), strncpy(self->Command, luaL_checkstring(L, -1), sizeof(self->Command)), 1));
+	} else {
+		strncpy(self->Message, luaL_checkstring(L, 1), sizeof(self->Message));
+		strncpy(self->Key, luaL_checkstring(L, 2), sizeof(self->Key));
+		strncpy(self->Command, luaL_checkstring(L, 3), sizeof(self->Command));
+	}
 	return 1;
 }
 static int f_fromstring_SystemMessage(lua_State *L) {
@@ -115,13 +119,19 @@ static int f_fromstring_SystemMessage(lua_State *L) {
 int f_SystemMessage___index(lua_State *L) {
 	struct SystemMessage* self = luaX_checkSystemMessage(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0xae0ed984: lua_pushstring(L, self->Message); return 1; // Message				case 0xcd1ac90c: lua_pushstring(L, self->Key); return 1; // Key				case 0xc67c8f52: lua_pushstring(L, self->Command); return 1; // Command			}
+		case 0xae0ed984: lua_pushstring(L, self->Message); return 1; // Message
+		case 0xcd1ac90c: lua_pushstring(L, self->Key); return 1; // Key
+		case 0xc67c8f52: lua_pushstring(L, self->Command); return 1; // Command
+	}
 	return luaL_error(L, "Unknown field in SystemMessage: %s", luaL_checkstring(L, 2));
 }
 int f_SystemMessage___newindex(lua_State *L) {
 	struct SystemMessage* self = luaX_checkSystemMessage(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-				case 0xae0ed984: self->Message = luaL_checkstring(L, 3); return 0; // Message				case 0xcd1ac90c: self->Key = luaL_checkstring(L, 3); return 0; // Key				case 0xc67c8f52: self->Command = luaL_checkstring(L, 3); return 0; // Command			}
+		case 0xae0ed984: strncpy(self->Message, luaL_checkstring(L, 3), sizeof(self->Message)); return 0; // Message
+		case 0xcd1ac90c: strncpy(self->Key, luaL_checkstring(L, 3), sizeof(self->Key)); return 0; // Key
+		case 0xc67c8f52: strncpy(self->Command, luaL_checkstring(L, 3), sizeof(self->Command)); return 0; // Command
+	}
 	return luaL_error(L, "Unknown field in SystemMessage: %s", luaL_checkstring(L, 2));
 }
 static int f_SystemMessage___call(lua_State *L) {
@@ -134,7 +144,7 @@ int luaopen_orca_SystemMessage(lua_State *L) {
 		{ "fromstring", f_fromstring_SystemMessage },
 		{ "__newindex", f_SystemMessage___newindex },
 		{ "__index", f_SystemMessage___index },
-			{ NULL, NULL },
+		{ NULL, NULL },
 	}), 0);
 	// Make SystemMessage creatable like via constructor-like syntax
 	lua_newtable(L);
@@ -146,7 +156,7 @@ int luaopen_orca_SystemMessage(lua_State *L) {
 
 	
 static struct PropertyType const WorkspaceProperties[kWorkspaceNumProperties] = {
-	};
+};
 static struct Workspace WorkspaceDefaults = {
 	};
 LRESULT WorkspaceProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -177,7 +187,42 @@ ORCA_API struct ClassDesc _Workspace = {
 	LRESULT Project_Start(struct Object*, struct Project*, wParam_t, StartPtr);
 	
 static struct PropertyType const ProjectProperties[kProjectNumProperties] = {
-				DECL(0xbcd19216, Project, HalfFloatTextureFormat, HalfFloatTextureFormat, kDataTypeBool), // Project.HalfFloatTextureFormat						DECL(0xfba1938f, Project, HalfFloatTextureFormatLinear, HalfFloatTextureFormatLinear, kDataTypeBool), // Project.HalfFloatTextureFormatLinear						DECL(0x1275837c, Project, HalfFloatColorAttachment, HalfFloatColorAttachment, kDataTypeBool), // Project.HalfFloatColorAttachment						DECL(0x6b1586db, Project, RenderToMipmapLevels, RenderToMipmapLevels, kDataTypeBool), // Project.RenderToMipmapLevels						DECL(0x377aea3d, Project, ExternalTexture, ExternalTexture, kDataTypeBool), // Project.ExternalTexture						DECL(0xb3cce876, Project, StartupScreen, StartupScreen, kDataTypeFixed), // Project.StartupScreen						DECL(0xe1bb158a, Project, PreviewWindowBackgroundColor, PreviewWindowBackgroundColor, kDataTypeColor), // Project.PreviewWindowBackgroundColor						DECL(0xb92de767, Project, MessageLimitPerFrame, MessageLimitPerFrame, kDataTypeInt), // Project.MessageLimitPerFrame						DECL(0xe310dade, Project, GlobalTimelineStartTime, GlobalTimelineStartTime, kDataTypeInt), // Project.GlobalTimelineStartTime						DECL(0x5d90d07b, Project, GlobalTimelineEndTime, GlobalTimelineEndTime, kDataTypeInt), // Project.GlobalTimelineEndTime						DECL(0x527cf409, Project, BinaryExportDirectory, BinaryExportDirectory, kDataTypeFixed), // Project.BinaryExportDirectory						DECL(0x5d547d12, Project, ApplicationExportDirectory, ApplicationExportDirectory, kDataTypeFixed), // Project.ApplicationExportDirectory						DECL(0xf6c72bc0, Project, IsMasterProject, IsMasterProject, kDataTypeBool), // Project.IsMasterProject						DECL(0x3762ffdf, Project, OptimizeMeshes, OptimizeMeshes, kDataTypeBool), // Project.OptimizeMeshes						DECL(0xda2eb7cc, Project, TargetPlatformVertexCacheSize, TargetPlatformVertexCacheSize, kDataTypeInt), // Project.TargetPlatformVertexCacheSize						DECL(0xdc968859, Project, PlotAnimations, PlotAnimations, kDataTypeBool), // Project.PlotAnimations						DECL(0x66a084f4, Project, RoundImagesToNearestPowerOf2, RoundImagesToNearestPowerOf2, kDataTypeBool), // Project.RoundImagesToNearestPowerOf2						DECL(0xeb929bed, Project, ProjectExportShaderSourceCode, ProjectExportShaderSourceCode, kDataTypeBool), // Project.ProjectExportShaderSourceCode						DECL(0xc3c2d763, Project, ProjectExportMainKzbWithBakedThemes, ProjectExportMainKzbWithBakedThemes, kDataTypeBool), // Project.ProjectExportMainKzbWithBakedThemes						DECL(0xad8222eb, Project, ProjectGroupByThemeNameInBakedThemeExport, ProjectGroupByThemeNameInBakedThemeExport, kDataTypeBool), // Project.ProjectGroupByThemeNameInBakedThemeExport						DECL(0x18da08d1, Project, IsLocalizationEnabled, IsLocalizationEnabled, kDataTypeBool), // Project.IsLocalizationEnabled						DECL(0xdf498299, Project, FullScreenPreviewLayer, FullScreenPreviewLayer, kDataTypeBool), // Project.FullScreenPreviewLayer						DECL(0x76bfa6c4, Project, ShowChildrenInLayerThumbnails, ShowChildrenInLayerThumbnails, kDataTypeBool), // Project.ShowChildrenInLayerThumbnails						DECL(0x5488c4f2, Project, CompositionDesignSize, CompositionDesignSize, kDataTypeVec2), // Project.CompositionDesignSize						DECL(0x5734b5cd, Project, ProjectUsePremultipliedAlpha, ProjectUsePremultipliedAlpha, kDataTypeBool), // Project.ProjectUsePremultipliedAlpha						DECL(0xb617d580, Project, ProjectRemoveICCProfilesOfPngs, ProjectRemoveICCProfilesOfPngs, kDataTypeBool), // Project.ProjectRemoveICCProfilesOfPngs						DECL(0x0f9ae251, Project, BinaryFileName, BinaryFileName, kDataTypeFixed), // Project.BinaryFileName						DECL(0x76ac7909, Project, IsAssetPackage, IsAssetPackage, kDataTypeBool), // Project.IsAssetPackage						DECL(0x982e8227, Project, KanziConnectEnabled, KanziConnectEnabled, kDataTypeBool), // Project.KanziConnectEnabled						DECL(0x0c93d3a3, Project, DefaultMaterial, DefaultMaterial, kDataTypeFixed), // Project.DefaultMaterial						DECL(0xdc5503a7, Project, WindowWidth, WindowWidth, kDataTypeInt), // Project.WindowWidth						DECL(0xbd75892a, Project, WindowHeight, WindowHeight, kDataTypeInt), // Project.WindowHeight						DECL(0x3cee6129, Project, PropertyTypes, PropertyTypes, kDataTypePropertyType), // Project.PropertyTypes						DECL(0x0a978b48, Project, ProjectReferences, ProjectReferences, kDataTypeStruct, .TypeString = "ProjectReference"), // Project.ProjectReferences						DECL(0x2fd1aed8, Project, SystemMessages, SystemMessages, kDataTypeStruct, .TypeString = "SystemMessage"), // Project.SystemMessages			};
+	DECL(0xbcd19216, Project, HalfFloatTextureFormat, HalfFloatTextureFormat, kDataTypeBool), // Project.HalfFloatTextureFormat
+	DECL(0xfba1938f, Project, HalfFloatTextureFormatLinear, HalfFloatTextureFormatLinear, kDataTypeBool), // Project.HalfFloatTextureFormatLinear
+	DECL(0x1275837c, Project, HalfFloatColorAttachment, HalfFloatColorAttachment, kDataTypeBool), // Project.HalfFloatColorAttachment
+	DECL(0x6b1586db, Project, RenderToMipmapLevels, RenderToMipmapLevels, kDataTypeBool), // Project.RenderToMipmapLevels
+	DECL(0x377aea3d, Project, ExternalTexture, ExternalTexture, kDataTypeBool), // Project.ExternalTexture
+	DECL(0xb3cce876, Project, StartupScreen, StartupScreen, kDataTypeFixed), // Project.StartupScreen
+	DECL(0xe1bb158a, Project, PreviewWindowBackgroundColor, PreviewWindowBackgroundColor, kDataTypeColor), // Project.PreviewWindowBackgroundColor
+	DECL(0xb92de767, Project, MessageLimitPerFrame, MessageLimitPerFrame, kDataTypeInt), // Project.MessageLimitPerFrame
+	DECL(0xe310dade, Project, GlobalTimelineStartTime, GlobalTimelineStartTime, kDataTypeInt), // Project.GlobalTimelineStartTime
+	DECL(0x5d90d07b, Project, GlobalTimelineEndTime, GlobalTimelineEndTime, kDataTypeInt), // Project.GlobalTimelineEndTime
+	DECL(0x527cf409, Project, BinaryExportDirectory, BinaryExportDirectory, kDataTypeFixed), // Project.BinaryExportDirectory
+	DECL(0x5d547d12, Project, ApplicationExportDirectory, ApplicationExportDirectory, kDataTypeFixed), // Project.ApplicationExportDirectory
+	DECL(0xf6c72bc0, Project, IsMasterProject, IsMasterProject, kDataTypeBool), // Project.IsMasterProject
+	DECL(0x3762ffdf, Project, OptimizeMeshes, OptimizeMeshes, kDataTypeBool), // Project.OptimizeMeshes
+	DECL(0xda2eb7cc, Project, TargetPlatformVertexCacheSize, TargetPlatformVertexCacheSize, kDataTypeInt), // Project.TargetPlatformVertexCacheSize
+	DECL(0xdc968859, Project, PlotAnimations, PlotAnimations, kDataTypeBool), // Project.PlotAnimations
+	DECL(0x66a084f4, Project, RoundImagesToNearestPowerOf2, RoundImagesToNearestPowerOf2, kDataTypeBool), // Project.RoundImagesToNearestPowerOf2
+	DECL(0xeb929bed, Project, ProjectExportShaderSourceCode, ProjectExportShaderSourceCode, kDataTypeBool), // Project.ProjectExportShaderSourceCode
+	DECL(0xc3c2d763, Project, ProjectExportMainKzbWithBakedThemes, ProjectExportMainKzbWithBakedThemes, kDataTypeBool), // Project.ProjectExportMainKzbWithBakedThemes
+	DECL(0xad8222eb, Project, ProjectGroupByThemeNameInBakedThemeExport, ProjectGroupByThemeNameInBakedThemeExport, kDataTypeBool), // Project.ProjectGroupByThemeNameInBakedThemeExport
+	DECL(0x18da08d1, Project, IsLocalizationEnabled, IsLocalizationEnabled, kDataTypeBool), // Project.IsLocalizationEnabled
+	DECL(0xdf498299, Project, FullScreenPreviewLayer, FullScreenPreviewLayer, kDataTypeBool), // Project.FullScreenPreviewLayer
+	DECL(0x76bfa6c4, Project, ShowChildrenInLayerThumbnails, ShowChildrenInLayerThumbnails, kDataTypeBool), // Project.ShowChildrenInLayerThumbnails
+	DECL(0x5488c4f2, Project, CompositionDesignSize, CompositionDesignSize, kDataTypeVec2), // Project.CompositionDesignSize
+	DECL(0x5734b5cd, Project, ProjectUsePremultipliedAlpha, ProjectUsePremultipliedAlpha, kDataTypeBool), // Project.ProjectUsePremultipliedAlpha
+	DECL(0xb617d580, Project, ProjectRemoveICCProfilesOfPngs, ProjectRemoveICCProfilesOfPngs, kDataTypeBool), // Project.ProjectRemoveICCProfilesOfPngs
+	DECL(0x0f9ae251, Project, BinaryFileName, BinaryFileName, kDataTypeFixed), // Project.BinaryFileName
+	DECL(0x76ac7909, Project, IsAssetPackage, IsAssetPackage, kDataTypeBool), // Project.IsAssetPackage
+	DECL(0x982e8227, Project, KanziConnectEnabled, KanziConnectEnabled, kDataTypeBool), // Project.KanziConnectEnabled
+	DECL(0x0c93d3a3, Project, DefaultMaterial, DefaultMaterial, kDataTypeFixed), // Project.DefaultMaterial
+	DECL(0xdc5503a7, Project, WindowWidth, WindowWidth, kDataTypeInt), // Project.WindowWidth
+	DECL(0xbd75892a, Project, WindowHeight, WindowHeight, kDataTypeInt), // Project.WindowHeight
+	DECL(0x3cee6129, Project, PropertyTypes, PropertyTypes, kDataTypePropertyType), // Project.PropertyTypes
+	DECL(0x0a978b48, Project, ProjectReferences, ProjectReferences, kDataTypeStruct, .TypeString = "ProjectReference"), // Project.ProjectReferences
+	DECL(0x2fd1aed8, Project, SystemMessages, SystemMessages, kDataTypeStruct, .TypeString = "SystemMessage"), // Project.SystemMessages
+};
 static struct Project ProjectDefaults = {
 																										  .IsMasterProject = false,
 			  .OptimizeMeshes = false,
@@ -223,7 +268,8 @@ ORCA_API struct ClassDesc _Project = {
 
 	
 static struct PropertyType const LibraryProperties[kLibraryNumProperties] = {
-				DECL(0x1cb8f23a, Library, IsExternal, IsExternal, kDataTypeBool), // Library.IsExternal			};
+	DECL(0x1cb8f23a, Library, IsExternal, IsExternal, kDataTypeBool), // Library.IsExternal
+};
 static struct Library LibraryDefaults = {
 			};
 LRESULT LibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -253,7 +299,7 @@ ORCA_API struct ClassDesc _Library = {
 
 	
 static struct PropertyType const AnimationClipLibraryProperties[kAnimationClipLibraryNumProperties] = {
-	};
+};
 static struct AnimationClipLibrary AnimationClipLibraryDefaults = {
 	};
 LRESULT AnimationClipLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -283,7 +329,7 @@ ORCA_API struct ClassDesc _AnimationClipLibrary = {
 
 	
 static struct PropertyType const ScreenLibraryProperties[kScreenLibraryNumProperties] = {
-	};
+};
 static struct ScreenLibrary ScreenLibraryDefaults = {
 	};
 LRESULT ScreenLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -313,7 +359,7 @@ ORCA_API struct ClassDesc _ScreenLibrary = {
 
 	
 static struct PropertyType const MaterialTypeLibraryProperties[kMaterialTypeLibraryNumProperties] = {
-	};
+};
 static struct MaterialTypeLibrary MaterialTypeLibraryDefaults = {
 	};
 LRESULT MaterialTypeLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -343,7 +389,7 @@ ORCA_API struct ClassDesc _MaterialTypeLibrary = {
 
 	
 static struct PropertyType const MaterialLibraryProperties[kMaterialLibraryNumProperties] = {
-	};
+};
 static struct MaterialLibrary MaterialLibraryDefaults = {
 	};
 LRESULT MaterialLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -373,7 +419,7 @@ ORCA_API struct ClassDesc _MaterialLibrary = {
 
 	
 static struct PropertyType const BrushLibraryProperties[kBrushLibraryNumProperties] = {
-	};
+};
 static struct BrushLibrary BrushLibraryDefaults = {
 	};
 LRESULT BrushLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -403,7 +449,7 @@ ORCA_API struct ClassDesc _BrushLibrary = {
 
 	
 static struct PropertyType const MeshLibraryProperties[kMeshLibraryNumProperties] = {
-	};
+};
 static struct MeshLibrary MeshLibraryDefaults = {
 	};
 LRESULT MeshLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -433,7 +479,7 @@ ORCA_API struct ClassDesc _MeshLibrary = {
 
 	
 static struct PropertyType const TimelineSequenceLibraryProperties[kTimelineSequenceLibraryNumProperties] = {
-	};
+};
 static struct TimelineSequenceLibrary TimelineSequenceLibraryDefaults = {
 	};
 LRESULT TimelineSequenceLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -463,7 +509,7 @@ ORCA_API struct ClassDesc _TimelineSequenceLibrary = {
 
 	
 static struct PropertyType const SceneObjectLibraryProperties[kSceneObjectLibraryNumProperties] = {
-	};
+};
 static struct SceneObjectLibrary SceneObjectLibraryDefaults = {
 	};
 LRESULT SceneObjectLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -493,7 +539,7 @@ ORCA_API struct ClassDesc _SceneObjectLibrary = {
 
 	
 static struct PropertyType const ComposerLibraryProperties[kComposerLibraryNumProperties] = {
-	};
+};
 static struct ComposerLibrary ComposerLibraryDefaults = {
 	};
 LRESULT ComposerLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -523,7 +569,7 @@ ORCA_API struct ClassDesc _ComposerLibrary = {
 
 	
 static struct PropertyType const PipelineItemLibraryProperties[kPipelineItemLibraryNumProperties] = {
-	};
+};
 static struct PipelineItemLibrary PipelineItemLibraryDefaults = {
 	};
 LRESULT PipelineItemLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -553,7 +599,7 @@ ORCA_API struct ClassDesc _PipelineItemLibrary = {
 
 	
 static struct PropertyType const SceneLibraryProperties[kSceneLibraryNumProperties] = {
-	};
+};
 static struct SceneLibrary SceneLibraryDefaults = {
 	};
 LRESULT SceneLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -583,7 +629,7 @@ ORCA_API struct ClassDesc _SceneLibrary = {
 
 	
 static struct PropertyType const TrajectoryLibraryProperties[kTrajectoryLibraryNumProperties] = {
-	};
+};
 static struct TrajectoryLibrary TrajectoryLibraryDefaults = {
 	};
 LRESULT TrajectoryLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -613,7 +659,7 @@ ORCA_API struct ClassDesc _TrajectoryLibrary = {
 
 	
 static struct PropertyType const TransitionLibraryProperties[kTransitionLibraryNumProperties] = {
-	};
+};
 static struct TransitionLibrary TransitionLibraryDefaults = {
 	};
 LRESULT TransitionLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -643,7 +689,7 @@ ORCA_API struct ClassDesc _TransitionLibrary = {
 
 	
 static struct PropertyType const SplineLibraryProperties[kSplineLibraryNumProperties] = {
-	};
+};
 static struct SplineLibrary SplineLibraryDefaults = {
 	};
 LRESULT SplineLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -673,7 +719,7 @@ ORCA_API struct ClassDesc _SplineLibrary = {
 
 	
 static struct PropertyType const PrefabLibraryProperties[kPrefabLibraryNumProperties] = {
-	};
+};
 static struct PrefabLibrary PrefabLibraryDefaults = {
 	};
 LRESULT PrefabLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -703,7 +749,7 @@ ORCA_API struct ClassDesc _PrefabLibrary = {
 
 	
 static struct PropertyType const ProfileLibraryProperties[kProfileLibraryNumProperties] = {
-	};
+};
 static struct ProfileLibrary ProfileLibraryDefaults = {
 	};
 LRESULT ProfileLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -734,7 +780,7 @@ ORCA_API struct ClassDesc _ProfileLibrary = {
 	LRESULT EnginePluginLibrary_Attached(struct Object*, struct EnginePluginLibrary*, wParam_t, AttachedPtr);
 	
 static struct PropertyType const EnginePluginLibraryProperties[kEnginePluginLibraryNumProperties] = {
-	};
+};
 static struct EnginePluginLibrary EnginePluginLibraryDefaults = {
 	};
 LRESULT EnginePluginLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -764,7 +810,7 @@ ORCA_API struct ClassDesc _EnginePluginLibrary = {
 
 	
 static struct PropertyType const ShortcutLibraryProperties[kShortcutLibraryNumProperties] = {
-	};
+};
 static struct ShortcutLibrary ShortcutLibraryDefaults = {
 	};
 LRESULT ShortcutLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -794,7 +840,7 @@ ORCA_API struct ClassDesc _ShortcutLibrary = {
 
 	
 static struct PropertyType const LayerLibraryProperties[kLayerLibraryNumProperties] = {
-	};
+};
 static struct LayerLibrary LayerLibraryDefaults = {
 	};
 LRESULT LayerLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -824,7 +870,7 @@ ORCA_API struct ClassDesc _LayerLibrary = {
 
 	
 static struct PropertyType const AnimationLibraryProperties[kAnimationLibraryNumProperties] = {
-	};
+};
 static struct AnimationLibrary AnimationLibraryDefaults = {
 	};
 LRESULT AnimationLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -854,7 +900,7 @@ ORCA_API struct ClassDesc _AnimationLibrary = {
 
 	
 static struct PropertyType const TagLibraryProperties[kTagLibraryNumProperties] = {
-	};
+};
 static struct TagLibrary TagLibraryDefaults = {
 	};
 LRESULT TagLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -884,7 +930,7 @@ ORCA_API struct ClassDesc _TagLibrary = {
 
 	
 static struct PropertyType const ThemeLibraryProperties[kThemeLibraryNumProperties] = {
-	};
+};
 static struct ThemeLibrary ThemeLibraryDefaults = {
 	};
 LRESULT ThemeLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -914,7 +960,7 @@ ORCA_API struct ClassDesc _ThemeLibrary = {
 
 	
 static struct PropertyType const ResourceExportTagLibraryProperties[kResourceExportTagLibraryNumProperties] = {
-	};
+};
 static struct ResourceExportTagLibrary ResourceExportTagLibraryDefaults = {
 	};
 LRESULT ResourceExportTagLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -944,7 +990,7 @@ ORCA_API struct ClassDesc _ResourceExportTagLibrary = {
 
 	
 static struct PropertyType const LocaleLibraryProperties[kLocaleLibraryNumProperties] = {
-	};
+};
 static struct LocaleLibrary LocaleLibraryDefaults = {
 	};
 LRESULT LocaleLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -974,7 +1020,7 @@ ORCA_API struct ClassDesc _LocaleLibrary = {
 
 	
 static struct PropertyType const DataSourceLibraryProperties[kDataSourceLibraryNumProperties] = {
-	};
+};
 static struct DataSourceLibrary DataSourceLibraryDefaults = {
 	};
 LRESULT DataSourceLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1004,7 +1050,7 @@ ORCA_API struct ClassDesc _DataSourceLibrary = {
 
 	
 static struct PropertyType const PageTransitionCollectionLibraryProperties[kPageTransitionCollectionLibraryNumProperties] = {
-	};
+};
 static struct PageTransitionCollectionLibrary PageTransitionCollectionLibraryDefaults = {
 	};
 LRESULT PageTransitionCollectionLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1034,7 +1080,7 @@ ORCA_API struct ClassDesc _PageTransitionCollectionLibrary = {
 
 	
 static struct PropertyType const TextureLibraryProperties[kTextureLibraryNumProperties] = {
-	};
+};
 static struct TextureLibrary TextureLibraryDefaults = {
 	};
 LRESULT TextureLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1064,7 +1110,7 @@ ORCA_API struct ClassDesc _TextureLibrary = {
 
 	
 static struct PropertyType const StyleLibraryProperties[kStyleLibraryNumProperties] = {
-	};
+};
 static struct StyleLibrary StyleLibraryDefaults = {
 	};
 LRESULT StyleLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1094,7 +1140,7 @@ ORCA_API struct ClassDesc _StyleLibrary = {
 
 	
 static struct PropertyType const StateManagerLibraryProperties[kStateManagerLibraryNumProperties] = {
-	};
+};
 static struct StateManagerLibrary StateManagerLibraryDefaults = {
 	};
 LRESULT StateManagerLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1124,7 +1170,7 @@ ORCA_API struct ClassDesc _StateManagerLibrary = {
 
 	
 static struct PropertyType const ConnectServiceLibraryProperties[kConnectServiceLibraryNumProperties] = {
-	};
+};
 static struct ConnectServiceLibrary ConnectServiceLibraryDefaults = {
 	};
 LRESULT ConnectServiceLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1154,7 +1200,7 @@ ORCA_API struct ClassDesc _ConnectServiceLibrary = {
 
 	
 static struct PropertyType const ConnectUserServiceLibraryProperties[kConnectUserServiceLibraryNumProperties] = {
-	};
+};
 static struct ConnectUserServiceLibrary ConnectUserServiceLibraryDefaults = {
 	};
 LRESULT ConnectUserServiceLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1184,7 +1230,7 @@ ORCA_API struct ClassDesc _ConnectUserServiceLibrary = {
 
 	
 static struct PropertyType const SpriteLibraryProperties[kSpriteLibraryNumProperties] = {
-	};
+};
 static struct SpriteLibrary SpriteLibraryDefaults = {
 	};
 LRESULT SpriteLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1214,7 +1260,7 @@ ORCA_API struct ClassDesc _SpriteLibrary = {
 
 	
 static struct PropertyType const SpriteAnimationLibraryProperties[kSpriteAnimationLibraryNumProperties] = {
-	};
+};
 static struct SpriteAnimationLibrary SpriteAnimationLibraryDefaults = {
 	};
 LRESULT SpriteAnimationLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1244,7 +1290,7 @@ ORCA_API struct ClassDesc _SpriteAnimationLibrary = {
 
 	
 static struct PropertyType const ImageLibraryProperties[kImageLibraryNumProperties] = {
-	};
+};
 static struct ImageLibrary ImageLibraryDefaults = {
 	};
 LRESULT ImageLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1274,7 +1320,7 @@ ORCA_API struct ClassDesc _ImageLibrary = {
 
 	
 static struct PropertyType const FontLibraryProperties[kFontLibraryNumProperties] = {
-	};
+};
 static struct FontLibrary FontLibraryDefaults = {
 	};
 LRESULT FontLibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1304,7 +1350,7 @@ ORCA_API struct ClassDesc _FontLibrary = {
 
 	
 static struct PropertyType const LocaleReferenceItemProperties[kLocaleReferenceItemNumProperties] = {
-	};
+};
 static struct LocaleReferenceItem LocaleReferenceItemDefaults = {
 	};
 LRESULT LocaleReferenceItemProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1334,7 +1380,8 @@ ORCA_API struct ClassDesc _LocaleReferenceItem = {
 
 	
 static struct PropertyType const TagProperties[kTagNumProperties] = {
-				DECL(0xc35a8c07, Tag, TagIsInherited, TagIsInherited, kDataTypeBool), // Tag.TagIsInherited			};
+	DECL(0xc35a8c07, Tag, TagIsInherited, TagIsInherited, kDataTypeBool), // Tag.TagIsInherited
+};
 static struct Tag TagDefaults = {
 			};
 LRESULT TagProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1364,7 +1411,7 @@ ORCA_API struct ClassDesc _Tag = {
 
 	
 static struct PropertyType const EnginePluginProperties[kEnginePluginNumProperties] = {
-	};
+};
 static struct EnginePlugin EnginePluginDefaults = {
 	};
 LRESULT EnginePluginProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1394,7 +1441,8 @@ ORCA_API struct ClassDesc _EnginePlugin = {
 
 	
 static struct PropertyType const EngineMetaclassProperties[kEngineMetaclassNumProperties] = {
-				DECL(0x099ceef3, EngineMetaclass, BaseClassName, BaseClassName, kDataTypeFixed), // EngineMetaclass.BaseClassName			};
+	DECL(0x099ceef3, EngineMetaclass, BaseClassName, BaseClassName, kDataTypeFixed), // EngineMetaclass.BaseClassName
+};
 static struct EngineMetaclass EngineMetaclassDefaults = {
 			};
 LRESULT EngineMetaclassProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1424,7 +1472,8 @@ ORCA_API struct ClassDesc _EngineMetaclass = {
 
 	
 static struct PropertyType const ThemeGroupProperties[kThemeGroupNumProperties] = {
-				DECL(0x1cf2c938, ThemeGroup, SelectedDictionary, SelectedDictionary, kDataTypeFixed), // ThemeGroup.SelectedDictionary			};
+	DECL(0x1cf2c938, ThemeGroup, SelectedDictionary, SelectedDictionary, kDataTypeFixed), // ThemeGroup.SelectedDictionary
+};
 static struct ThemeGroup ThemeGroupDefaults = {
 			};
 LRESULT ThemeGroupProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1454,7 +1503,8 @@ ORCA_API struct ClassDesc _ThemeGroup = {
 
 	
 static struct PropertyType const ThemeProperties[kThemeNumProperties] = {
-				DECL(0x1ed11084, Theme, IsThemeVisible, IsThemeVisible, kDataTypeBool), // Theme.IsThemeVisible			};
+	DECL(0x1ed11084, Theme, IsThemeVisible, IsThemeVisible, kDataTypeBool), // Theme.IsThemeVisible
+};
 static struct Theme ThemeDefaults = {
 			};
 LRESULT ThemeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1484,7 +1534,7 @@ ORCA_API struct ClassDesc _Theme = {
 
 	
 static struct PropertyType const EntryProperties[kEntryNumProperties] = {
-	};
+};
 static struct Entry EntryDefaults = {
 	};
 LRESULT EntryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1514,7 +1564,7 @@ ORCA_API struct ClassDesc _Entry = {
 
 	
 static struct PropertyType const ThemeDefaultValuesDictionaryProperties[kThemeDefaultValuesDictionaryNumProperties] = {
-	};
+};
 static struct ThemeDefaultValuesDictionary ThemeDefaultValuesDictionaryDefaults = {
 	};
 LRESULT ThemeDefaultValuesDictionaryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
