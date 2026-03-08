@@ -4,7 +4,7 @@
 // Output goes to stdout (redirect to docs/schemas/orca.dtd)
 // Appends content of docs/schemas/append.dtd at the end.
 
-require __DIR__ . "/../model.php";
+require __DIR__ . "/../model/module.php";
 
 if ($argc < 2) {
     fwrite(STDERR, "Usage: php dtd.php file1.xml [file2.xml ...]\n");

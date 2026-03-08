@@ -2,7 +2,7 @@
 // Generates HTML documentation from XML module files.
 // Usage: php templates/html.php file1.xml [file2.xml ...] > docs/index.html
 
-require __DIR__ . "/../model.php";
+require __DIR__ . "/../model/module.php";
 
 if ($argc < 2) {
     fwrite(STDERR, "Usage: php html.php file1.xml [file2.xml ...]\n");
