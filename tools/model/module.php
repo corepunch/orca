@@ -109,7 +109,9 @@ class Type extends Base {
 	function __construct($elem, $model) {
 		parent::__construct($elem, $model);
 		$this->type = $elem["type"];
-		[$this->kind, $this->data] = $model->getKind($this->type);
+		$kind_data = $model->getKind($this->type);
+		$this->kind = $kind_data[0];
+		$this->data = $kind_data[1];
 		$fa = $elem["fixed-array"];
 		$this->fixed_array = $fa !== null ? intval($fa) : null;
 		$this->export = ($this->kind === "struct" && $this->data) ? $this->data->export : $this->type;
