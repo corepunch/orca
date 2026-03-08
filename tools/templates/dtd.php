@@ -36,7 +36,7 @@ function dtd_collect_struct_fields($struct_elem, $prefix, &$attribs) {
     }
     foreach ($struct_elem->field as $field) {
         $fname = (string)$field['name'];
-        if ($field['fixed-array']) {
+        if ((string)($field['fixed-array'] ?? '') !== '') {
             for ($idx = 0; $idx < (int)$field['fixed-array']; $idx++) {
                 dtd_collect_property($field, "{$prefix}{$fname}[{$idx}]", $attribs);
             }
@@ -50,7 +50,7 @@ function dtd_collect_property($prop, $path, &$attribs) {
     global $ws_structs, $ws_enums;
     $prop_type = (string)$prop['type'];
     $struct = $ws_structs[$prop_type] ?? null;
-    if (!(string)($prop['exclude-self'] ?? '')) {
+    if ((string)($prop['exclude-self'] ?? '') !== 'true') {
         $sname = propertyNameFormat($path);
         $enum = $ws_enums[$prop_type] ?? null;
         if ($enum === null && $struct === null) {
@@ -72,7 +72,7 @@ function dtd_iter_component_attribs($component_elem) {
     $attribs = [];
     foreach ($component_elem->property as $prop) {
         $pname = (string)$prop['name'];
-        if ($prop['fixed-array']) {
+        if ((string)($prop['fixed-array'] ?? '') !== '') {
             for ($idx = 0; $idx < (int)$prop['fixed-array']; $idx++) {
                 dtd_collect_property($prop, "{$pname}[{$idx}]", $attribs);
             }

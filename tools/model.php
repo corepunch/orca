@@ -48,10 +48,16 @@ function propertyNameFormat($path) {
         list($pattern, $replacement) = $item;
         $result = preg_replace($pattern, $replacement, $path, 1, $count);
         if ($count > 0) {
-            return str_replace('.', '', $result);
+            // Capitalize the first letter of each dot-separated segment, then join
+            $segments = explode('.', $result);
+            $capitalized = array_map(fn($s) => $s !== '' ? strtoupper($s[0]) . substr($s, 1) : '', $segments);
+            return implode('', $capitalized);
         }
     }
-    return str_replace('.', '', $path);
+    // No Axis pattern matched: capitalize each segment and join
+    $segments = explode('.', $path);
+    $capitalized = array_map(fn($s) => $s !== '' ? strtoupper($s[0]) . substr($s, 1) : '', $segments);
+    return implode('', $capitalized);
 }
 
 class Model {
@@ -225,7 +231,7 @@ class Method extends Base {
     public $args = [];
     public $return_type;
     public $full_name;
-    public $static;
+    public $is_static;
 
     public function __construct($element, $model, $owner = null) {
         parent::__construct($element, $model);
@@ -234,9 +240,9 @@ class Method extends Base {
             $this->args[] = [(string)$arg['name'], new TypeDef($arg, $model)];
         }
 
-        $this->static = (string)($element['static'] ?? '');
+        $this->is_static = (string)($element['static'] ?? '');
 
-        if ($owner !== null && !$this->static) {
+        if ($owner !== null && !$this->is_static) {
             $owner_elem = simplexml_load_string(
                 '<arg name="this" type="' . htmlspecialchars((string)$owner['name']) . '" pointer="true"/>'
             );

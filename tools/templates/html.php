@@ -80,15 +80,16 @@ $LUA_KEYWORDS = explode('|', 'require|and|break|do|else|elseif|end|false|for|fun
 function highlight_lua($code) {
     global $dom, $LUA_KEYWORDS;
     $root = el('code', ['class' => 'source code-listing']);
-    // Tokenize: strings, comments, words, numbers, symbols
+    // Tokenize: strings ("..."), comments (--...), newlines, tabs,
+    //           identifiers/keywords (\w+), numbers (\d+), and any other char.
     $pattern = '/"[^"\n]*"|--[^\n]*|\n|\t|\w+|\d+|[^\w\d\n\t]/';
     preg_match_all($pattern, $code, $matches);
     foreach ($matches[0] as $tok) {
         if (in_array($tok, $LUA_KEYWORDS)) {
             $root->appendChild(el('span', ['class' => 'syntax-keyword'], $tok));
-        } elseif (strpos($tok, '--') !== false) {
+        } elseif (strpos($tok, '--') === 0) {
             $root->appendChild(el('span', ['class' => 'syntax-comment'], $tok));
-        } elseif (strpos($tok, '"') !== false) {
+        } elseif (isset($tok[0]) && $tok[0] === '"') {
             $root->appendChild(el('span', ['class' => 'syntax-string'], $tok));
         } elseif (ctype_digit($tok)) {
             $root->appendChild(el('span', ['class' => 'syntax-number'], $tok));
