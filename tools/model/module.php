@@ -136,7 +136,7 @@ class Method extends Base {
 		parent::__construct($elem, $model);
 		$this->args = [];
 		foreach ($elem->xpath("arg") as $arg) {
-			array_push($this->args, [$arg["name"], new Type($arg, $model)]);
+			$this->args[] = [$arg["name"], new Type($arg, $model)];
 		}
 		$this->static = $elem["static"];
 		if ($owner !== null && !$this->static) {
@@ -154,32 +154,22 @@ class Method extends Base {
 		$rets = $elem->xpath("returns");
 		$this->returns = count($rets) > 0 ? new Type($rets[0], $model) : null;
 		$pfx = $owner !== null ? $owner["prefix"] : null;
-		$prefix = $pfx !== null ? $pfx : "";
-		$base_name = $elem["name"];
-		if ($owner !== null) {
-			$this->full_name = $prefix . $base_name;
-		} else {
-			$this->full_name = $base_name;
-		}
+		$prefix = $pfx ?? "";
+		$this->full_name = $prefix . $elem["name"];
 	}
 
 	function getReturnType() {
-		if ($this->returns !== null) {
-			return $this->returns;
-		}
-		return "void";
+		return $this->returns ?? "void";
 	}
 
 	function getArgs() {
-		$args = $this->args;
-		foreach ($args as $pair) {
+		foreach ($this->args as $pair) {
 			yield $pair[0] => $pair[1];
 		}
 	}
 
 	function getArgsTypes() {
-		$args = $this->args;
-		foreach ($args as $pair) {
+		foreach ($this->args as $pair) {
 			yield $pair[1];
 		}
 	}
@@ -196,28 +186,24 @@ class Struct extends Base {
 	}
 
 	function getFields() {
-		$elem = $this->_elem;
-		foreach ($elem->xpath(".//field[@name]") as $f) {
+		foreach ($this->_elem->xpath(".//field[@name]") as $f) {
 			yield new FieldName($f["name"]) => new Type($f, $this->_model);
 		}
 	}
 
 	function getMethods() {
-		$elem = $this->_elem;
-		foreach ($elem->xpath(".//method[@name]") as $m) {
+		foreach ($this->_elem->xpath(".//method[@name]") as $m) {
 			yield $m["name"] => new Method($m, $this->_model, $this->_elem);
 		}
 	}
 
 	function getParsers() {
 		$result = dict();
-		$fields = $this->getFields();
-		foreach ($fields as $name => $field) {
+		foreach ($this->getFields() as $name => $field) {
 			if ($field->fixed_array) {
 				for ($i = 0; $i < $field->fixed_array; $i++) {
 					if ($field->kind === "struct") {
-						$sub_fields = $field->data->getFields();
-						foreach ($sub_fields as $sub_name => $sub_type) {
+						foreach ($field->data->getFields() as $sub_name => $sub_type) {
 							$pt_name = $this->name . "_" . $name . $i . "_" . $sub_name;
 							$pt_addr = $name . "[" . $i . "]." . $sub_name;
 							$pt = new ParserType($pt_name, $pt_addr, $sub_type);
@@ -259,8 +245,7 @@ class Component extends Struct {
 		$path = array_slice($args, 1);
 		yield new PropertyName($args[0], $path) => $type_;
 		if ($type_->kind === "struct" && !$type_->data->sealed) {
-			$fields = $type_->data->getFields();
-			foreach ($fields as $k => $v) {
+			foreach ($type_->data->getFields() as $k => $v) {
 				if ($v->fixed_array) {
 					for ($i = 0; $i < $v->fixed_array; $i++) {
 						$new_seg = (string)$k . "[" . $i . "]";
@@ -274,16 +259,14 @@ class Component extends Struct {
 	}
 
 	function getProperties() {
-		$elem = $this->_elem;
-		foreach ($elem->xpath(".//property[@name]") as $f) {
+		foreach ($this->_elem->xpath(".//property[@name]") as $f) {
 			$type_ = new Type($f, $this->_model);
 			yield from $this->_walkProperties($type_, [$this->name, $f["name"]]);
 		}
 	}
 
 	function getEventHandlers() {
-		$elem = $this->_elem;
-		foreach ($elem->xpath("handles") as $node) {
+		foreach ($this->_elem->xpath("handles") as $node) {
 			yield $node["event"];
 		}
 	}
@@ -297,15 +280,13 @@ class Enum extends Base {
 	}
 
 	function getValues() {
-		$elem = $this->_elem;
-		foreach ($elem->xpath(".//enum[@name]") as $e) {
+		foreach ($this->_elem->xpath(".//enum[@name]") as $e) {
 			yield $e["name"] => (string)$e;
 		}
 	}
 
 	function getValuesNames() {
-		$elem = $this->_elem;
-		foreach ($elem->xpath(".//enum[@name]") as $e) {
+		foreach ($this->_elem->xpath(".//enum[@name]") as $e) {
 			yield $e["name"];
 		}
 	}
@@ -325,34 +306,31 @@ class Model {
 	function __construct($xml_file, $include_file = null) {
 		$xml = simplexml_load_file($xml_file);
 		$this->root = $xml;
-		$this->source = $include_file !== null ? $include_file : $xml_file;
+		$this->source = $include_file ?? $xml_file;
 		$this->requires = [];
 		foreach ($xml->xpath("require") as $r) {
-			array_push($this->requires, new Model(
-			os::path->join(os::path->dirname($xml_file), $r["file"]),
-			$r["file"]
-			));
+			$path = os::path->join(os::path->dirname($xml_file), $r["file"]);
+			$this->requires[] = new Model($path, $r["file"]);
 		}
-		$self = $this;
 		$sn = $xml->xpath(".//struct[@name]");
 		$this->structs = array_combine(
 		array_map(fn($s) => $s["name"], $sn),
-		array_map(fn($s) => new Struct($s, $self), $sn)
+		array_map(fn($s) => new Struct($s, $this), $sn)
 		);
 		$en = $xml->xpath(".//enums[@name]");
 		$this->enums = array_combine(
 		array_map(fn($e) => $e["name"], $en),
-		array_map(fn($e) => new Enum($e, $self), $en)
+		array_map(fn($e) => new Enum($e, $this), $en)
 		);
 		$cn = $xml->xpath(".//class[@name]");
 		$this->components = array_combine(
 		array_map(fn($c) => $c["name"], $cn),
-		array_map(fn($c) => new Component($c, $self), $cn)
+		array_map(fn($c) => new Component($c, $this), $cn)
 		);
 		$rn = $xml->xpath(".//resource[@type]");
 		$this->resources = array_combine(
 		array_map(fn($r) => $r["type"], $rn),
-		array_map(fn($r) => new Resource($r, $self), $rn)
+		array_map(fn($r) => new Resource($r, $this), $rn)
 		);
 		$this->on_luaopen = $xml["on-luaopen"];
 	}
@@ -362,8 +340,7 @@ class Model {
 		if (isset($map[$key])) {
 			return $map[$key];
 		}
-		$reqs = $this->requires;
-		foreach ($reqs as $req) {
+		foreach ($this->requires as $req) {
 			$result = $req->_has_in($key, $attr_name);
 			if ($result) {
 				return $result;
@@ -377,19 +354,19 @@ class Model {
 	}
 
 	function getStruct($name) {
-		return isset($this->structs[$name]) ? $this->structs[$name] : null;
+		return $this->structs[$name] ?? null;
 	}
 
 	function getEnum($name) {
-		return isset($this->enums[$name]) ? $this->enums[$name] : null;
+		return $this->enums[$name] ?? null;
 	}
 
 	function getComponent($name) {
-		return isset($this->components[$name]) ? $this->components[$name] : null;
+		return $this->components[$name] ?? null;
 	}
 
 	function getResource($resource_type) {
-		return isset($this->resources[$resource_type]) ? $this->resources[$resource_type] : null;
+		return $this->resources[$resource_type] ?? null;
 	}
 
 	function getStructs() {
@@ -429,8 +406,7 @@ class Model {
 	}
 
 	function getRequires() {
-		$reqs = $this->requires;
-		foreach ($reqs as $r) {
+		foreach ($this->requires as $r) {
 			yield $r->getModuleName() => $r;
 		}
 	}
