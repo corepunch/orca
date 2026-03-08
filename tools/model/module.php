@@ -1,7 +1,6 @@
 <?php
 
-use os;
-require "model/config.php";
+require "config.php";
 
 // --- FieldName ---
 
@@ -339,7 +338,7 @@ class Model {
 		$this->source = $include_file ?? $xml_file;
 		$this->requires = [];
 		foreach ($xml->xpath("require") as $r) {
-			$path = os::path->join(os::path->dirname($xml_file), $r["file"]);
+			$path = dirname($xml_file).'/'.$r["file"];
 			$this->requires[] = new Model($path, $r["file"]);
 		}
 		$sn = $xml->xpath(".//struct[@name]");
