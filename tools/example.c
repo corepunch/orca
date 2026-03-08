@@ -309,36 +309,28 @@ static int f_new_BorderRadiusShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct BorderRadiusShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "TopLeftRadius"), self->TopLeftRadius = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "TopRightRadius"), self->TopRightRadius = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "BottomRightRadius"), self->BottomRightRadius = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "BottomLeftRadius"), self->BottomLeftRadius = luaL_checknumber(L, -1), 1));
-	} else {
-		self->TopLeftRadius = luaL_checknumber(L, 1);
-		self->TopRightRadius = luaL_checknumber(L, 2);
-		self->BottomRightRadius = luaL_checknumber(L, 3);
-		self->BottomLeftRadius = luaL_checknumber(L, 4);
-	}
+				lua_pop(L, (lua_getfield(L, 1, "TopLeftRadius"), self->TopLeftRadius = luaL_checknumber(L, -1), 1));
+				lua_pop(L, (lua_getfield(L, 1, "TopRightRadius"), self->TopRightRadius = luaL_checknumber(L, -1), 1));
+				lua_pop(L, (lua_getfield(L, 1, "BottomRightRadius"), self->BottomRightRadius = luaL_checknumber(L, -1), 1));
+				lua_pop(L, (lua_getfield(L, 1, "BottomLeftRadius"), self->BottomLeftRadius = luaL_checknumber(L, -1), 1));
+			} else {
+						self->TopLeftRadius = luaL_checknumber(L, 1);
+						self->TopRightRadius = luaL_checknumber(L, 2);
+						self->BottomRightRadius = luaL_checknumber(L, 3);
+						self->BottomLeftRadius = luaL_checknumber(L, 4);
+					}
 	return 1;
 }
 int f_BorderRadiusShorthand___index(lua_State *L) {
-	stuct BorderRadiusShorthand* self = luaX_checkBorderRadiusShorthand(L, 1);
+	struct BorderRadiusShorthand* self = luaX_checkBorderRadiusShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0xd5ac3a0b: lua_pushnumber(L, self->TopLeftRadius); return 1; // TopLeftRadius
-		case 0xdbe5a724: lua_pushnumber(L, self->TopRightRadius); return 1; // TopRightRadius
-		case 0xf6ae40ce: lua_pushnumber(L, self->BottomRightRadius); return 1; // BottomRightRadius
-		case 0x7f5fe235: lua_pushnumber(L, self->BottomLeftRadius); return 1; // BottomLeftRadius
-	}
+				case 0xd5ac3a0b: lua_pushnumber(L, self->TopLeftRadius); return 1; // TopLeftRadius				case 0xdbe5a724: lua_pushnumber(L, self->TopRightRadius); return 1; // TopRightRadius				case 0xf6ae40ce: lua_pushnumber(L, self->BottomRightRadius); return 1; // BottomRightRadius				case 0x7f5fe235: lua_pushnumber(L, self->BottomLeftRadius); return 1; // BottomLeftRadius			}
 	return luaL_error(L, "Unknown field in BorderRadiusShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_BorderRadiusShorthand___newindex(lua_State *L) {
-	stuct BorderRadiusShorthand* self = luaX_checkBorderRadiusShorthand(L, 1);
+	struct BorderRadiusShorthand* self = luaX_checkBorderRadiusShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0xd5ac3a0b: self->TopLeftRadius = luaL_checknumber(L, 3); return 0; // TopLeftRadius
-		case 0xdbe5a724: self->TopRightRadius = luaL_checknumber(L, 3); return 0; // TopRightRadius
-		case 0xf6ae40ce: self->BottomRightRadius = luaL_checknumber(L, 3); return 0; // BottomRightRadius
-		case 0x7f5fe235: self->BottomLeftRadius = luaL_checknumber(L, 3); return 0; // BottomLeftRadius
-	}
+				case 0xd5ac3a0b: self->TopLeftRadius = luaL_checknumber(L, 3); return 0; // TopLeftRadius				case 0xdbe5a724: self->TopRightRadius = luaL_checknumber(L, 3); return 0; // TopRightRadius				case 0xf6ae40ce: self->BottomRightRadius = luaL_checknumber(L, 3); return 0; // BottomRightRadius				case 0x7f5fe235: self->BottomLeftRadius = luaL_checknumber(L, 3); return 0; // BottomLeftRadius			}
 	return luaL_error(L, "Unknown field in BorderRadiusShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_BorderRadiusShorthand___call(lua_State *L) {
@@ -376,28 +368,24 @@ static int f_new_EdgeShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct EdgeShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Left"), self->Left = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Right"), self->Right = luaL_checknumber(L, -1), 1));
-	} else {
-		self->Left = luaL_checknumber(L, 1);
-		self->Right = luaL_checknumber(L, 2);
-	}
+				lua_pop(L, (lua_getfield(L, 1, "Left"), self->Left = luaL_checknumber(L, -1), 1));
+				lua_pop(L, (lua_getfield(L, 1, "Right"), self->Right = luaL_checknumber(L, -1), 1));
+			} else {
+						self->Left = luaL_checknumber(L, 1);
+						self->Right = luaL_checknumber(L, 2);
+					}
 	return 1;
 }
 int f_EdgeShorthand___index(lua_State *L) {
-	stuct EdgeShorthand* self = luaX_checkEdgeShorthand(L, 1);
+	struct EdgeShorthand* self = luaX_checkEdgeShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0x92773890: lua_pushnumber(L, self->Left); return 1; // Left
-		case 0x1e9e9f85: lua_pushnumber(L, self->Right); return 1; // Right
-	}
+				case 0x92773890: lua_pushnumber(L, self->Left); return 1; // Left				case 0x1e9e9f85: lua_pushnumber(L, self->Right); return 1; // Right			}
 	return luaL_error(L, "Unknown field in EdgeShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_EdgeShorthand___newindex(lua_State *L) {
-	stuct EdgeShorthand* self = luaX_checkEdgeShorthand(L, 1);
+	struct EdgeShorthand* self = luaX_checkEdgeShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0x92773890: self->Left = luaL_checknumber(L, 3); return 0; // Left
-		case 0x1e9e9f85: self->Right = luaL_checknumber(L, 3); return 0; // Right
-	}
+				case 0x92773890: self->Left = luaL_checknumber(L, 3); return 0; // Left				case 0x1e9e9f85: self->Right = luaL_checknumber(L, 3); return 0; // Right			}
 	return luaL_error(L, "Unknown field in EdgeShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_EdgeShorthand___call(lua_State *L) {
@@ -435,24 +423,22 @@ static int f_new_AlignmentShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct AlignmentShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Axis"), self->Axis = luaL_checknumber(L, -1), 1));
-	} else {
-		self->Axis = luaL_checknumber(L, 1);
-	}
+				lua_pop(L, (lua_getfield(L, 1, "Axis"), self->Axis = luaL_checknumber(L, -1), 1));
+			} else {
+						self->Axis = luaL_checknumber(L, 1);
+					}
 	return 1;
 }
 int f_AlignmentShorthand___index(lua_State *L) {
-	stuct AlignmentShorthand* self = luaX_checkAlignmentShorthand(L, 1);
+	struct AlignmentShorthand* self = luaX_checkAlignmentShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0xed57fa14: lua_pushnumber(L, self->Axis); return 1; // Axis
-	}
+				case 0xed57fa14: lua_pushnumber(L, self->Axis); return 1; // Axis			}
 	return luaL_error(L, "Unknown field in AlignmentShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_AlignmentShorthand___newindex(lua_State *L) {
-	stuct AlignmentShorthand* self = luaX_checkAlignmentShorthand(L, 1);
+	struct AlignmentShorthand* self = luaX_checkAlignmentShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0xed57fa14: self->Axis = luaL_checknumber(L, 3); return 0; // Axis
-	}
+				case 0xed57fa14: self->Axis = luaL_checknumber(L, 3); return 0; // Axis			}
 	return luaL_error(L, "Unknown field in AlignmentShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_AlignmentShorthand___call(lua_State *L) {
@@ -490,36 +476,28 @@ static int f_new_FontShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct FontShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Weight"), self->Weight = luaL_checkoption(L, index, NULL, _FontWeight), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Style"), self->Style = luaL_checkoption(L, index, NULL, _FontStyle), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Size"), self->Size = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Family"), self->Family = luaX_checkFontFamily(L, -1), 1));
-	} else {
-		self->Weight = luaL_checkoption(L, index, NULL, _FontWeight);
-		self->Style = luaL_checkoption(L, index, NULL, _FontStyle);
-		self->Size = luaL_checknumber(L, 3);
-		self->Family = luaX_checkFontFamily(L, 4);
-	}
+				lua_pop(L, (lua_getfield(L, 1, "Weight"), self->Weight = luaL_checkoption(L, -1, NULL, _FontWeight), 1));
+				lua_pop(L, (lua_getfield(L, 1, "Style"), self->Style = luaL_checkoption(L, -1, NULL, _FontStyle), 1));
+				lua_pop(L, (lua_getfield(L, 1, "Size"), self->Size = luaL_checknumber(L, -1), 1));
+				lua_pop(L, (lua_getfield(L, 1, "Family"), self->Family = luaX_checkFontFamily(L, -1), 1));
+			} else {
+						self->Weight = luaL_checkoption(L, 1, NULL, _FontWeight);
+						self->Style = luaL_checkoption(L, 2, NULL, _FontStyle);
+						self->Size = luaL_checknumber(L, 3);
+						self->Family = luaX_checkFontFamily(L, 4);
+					}
 	return 1;
 }
 int f_FontShorthand___index(lua_State *L) {
-	stuct FontShorthand* self = luaX_checkFontShorthand(L, 1);
+	struct FontShorthand* self = luaX_checkFontShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0x993014d9: lua_pushstring(L, FontWeightToString(self->Weight)); return 1; // Weight
-		case 0x5467ec76: lua_pushstring(L, FontStyleToString(self->Style)); return 1; // Style
-		case 0xa6478e7c: lua_pushnumber(L, self->Size); return 1; // Size
-		case 0xc46f8f49: luaX_pushFontFamily(L, self->Family); return 1; // Family
-	}
+				case 0x993014d9: lua_pushstring(L, FontWeightToString(self->Weight)); return 1; // Weight				case 0x5467ec76: lua_pushstring(L, FontStyleToString(self->Style)); return 1; // Style				case 0xa6478e7c: lua_pushnumber(L, self->Size); return 1; // Size				case 0xc46f8f49: luaX_pushFontFamily(L, self->Family); return 1; // Family			}
 	return luaL_error(L, "Unknown field in FontShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_FontShorthand___newindex(lua_State *L) {
-	stuct FontShorthand* self = luaX_checkFontShorthand(L, 1);
+	struct FontShorthand* self = luaX_checkFontShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0x993014d9: self->Weight = luaL_checkoption(L, index, NULL, _FontWeight); return 0; // Weight
-		case 0x5467ec76: self->Style = luaL_checkoption(L, index, NULL, _FontStyle); return 0; // Style
-		case 0xa6478e7c: self->Size = luaL_checknumber(L, 3); return 0; // Size
-		case 0xc46f8f49: self->Family = luaX_checkFontFamily(L, 3); return 0; // Family
-	}
+				case 0x993014d9: self->Weight = luaL_checkoption(L, 3, NULL, _FontWeight); return 0; // Weight				case 0x5467ec76: self->Style = luaL_checkoption(L, 3, NULL, _FontStyle); return 0; // Style				case 0xa6478e7c: self->Size = luaL_checknumber(L, 3); return 0; // Size				case 0xc46f8f49: self->Family = luaX_checkFontFamily(L, 3); return 0; // Family			}
 	return luaL_error(L, "Unknown field in FontShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_FontShorthand___call(lua_State *L) {
@@ -557,32 +535,26 @@ static int f_new_BrushShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct BrushShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = luaX_checkcolor(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Image"), self->Image = luaX_checkTexture(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Material"), self->Material = luaX_checkMaterial(L, -1), 1));
-	} else {
-		self->Color = luaX_checkcolor(L, 1);
-		self->Image = luaX_checkTexture(L, 2);
-		self->Material = luaX_checkMaterial(L, 3);
-	}
+				lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = luaX_checkcolor(L, -1), 1));
+				lua_pop(L, (lua_getfield(L, 1, "Image"), self->Image = luaX_checkTexture(L, -1), 1));
+				lua_pop(L, (lua_getfield(L, 1, "Material"), self->Material = luaX_checkMaterial(L, -1), 1));
+			} else {
+						self->Color = luaX_checkcolor(L, 1);
+						self->Image = luaX_checkTexture(L, 2);
+						self->Material = luaX_checkMaterial(L, 3);
+					}
 	return 1;
 }
 int f_BrushShorthand___index(lua_State *L) {
-	stuct BrushShorthand* self = luaX_checkBrushShorthand(L, 1);
+	struct BrushShorthand* self = luaX_checkBrushShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0xe5b43cf8: luaX_pushcolor(L, self->Color); return 1; // Color
-		case 0x590ca79a: luaX_pushTexture(L, self->Image); return 1; // Image
-		case 0xcbd54f80: luaX_pushMaterial(L, self->Material); return 1; // Material
-	}
+				case 0xe5b43cf8: luaX_pushcolor(L, self->Color); return 1; // Color				case 0x590ca79a: luaX_pushTexture(L, self->Image); return 1; // Image				case 0xcbd54f80: luaX_pushMaterial(L, self->Material); return 1; // Material			}
 	return luaL_error(L, "Unknown field in BrushShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_BrushShorthand___newindex(lua_State *L) {
-	stuct BrushShorthand* self = luaX_checkBrushShorthand(L, 1);
+	struct BrushShorthand* self = luaX_checkBrushShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0xe5b43cf8: self->Color = luaX_checkcolor(L, 3); return 0; // Color
-		case 0x590ca79a: self->Image = luaX_checkTexture(L, 3); return 0; // Image
-		case 0xcbd54f80: self->Material = luaX_checkMaterial(L, 3); return 0; // Material
-	}
+				case 0xe5b43cf8: self->Color = luaX_checkcolor(L, 3); return 0; // Color				case 0x590ca79a: self->Image = luaX_checkTexture(L, 3); return 0; // Image				case 0xcbd54f80: self->Material = luaX_checkMaterial(L, 3); return 0; // Material			}
 	return luaL_error(L, "Unknown field in BrushShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_BrushShorthand___call(lua_State *L) {
@@ -620,36 +592,28 @@ static int f_new_ShadowShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct ShadowShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Offset"), self->Offset = luaX_checkvec2(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "BlurRadius"), self->BlurRadius = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "SpreadRadius"), self->SpreadRadius = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = luaX_checkcolor(L, -1), 1));
-	} else {
-		self->Offset = luaX_checkvec2(L, 1);
-		self->BlurRadius = luaL_checknumber(L, 2);
-		self->SpreadRadius = luaL_checknumber(L, 3);
-		self->Color = luaX_checkcolor(L, 4);
-	}
+				lua_pop(L, (lua_getfield(L, 1, "Offset"), self->Offset = luaX_checkvec2(L, -1), 1));
+				lua_pop(L, (lua_getfield(L, 1, "BlurRadius"), self->BlurRadius = luaL_checknumber(L, -1), 1));
+				lua_pop(L, (lua_getfield(L, 1, "SpreadRadius"), self->SpreadRadius = luaL_checknumber(L, -1), 1));
+				lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = luaX_checkcolor(L, -1), 1));
+			} else {
+						self->Offset = luaX_checkvec2(L, 1);
+						self->BlurRadius = luaL_checknumber(L, 2);
+						self->SpreadRadius = luaL_checknumber(L, 3);
+						self->Color = luaX_checkcolor(L, 4);
+					}
 	return 1;
 }
 int f_ShadowShorthand___index(lua_State *L) {
-	stuct ShadowShorthand* self = luaX_checkShadowShorthand(L, 1);
+	struct ShadowShorthand* self = luaX_checkShadowShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0x8995c7ea: luaX_pushvec2(L, self->Offset); return 1; // Offset
-		case 0x961749ae: lua_pushnumber(L, self->BlurRadius); return 1; // BlurRadius
-		case 0x80066a9c: lua_pushnumber(L, self->SpreadRadius); return 1; // SpreadRadius
-		case 0xe5b43cf8: luaX_pushcolor(L, self->Color); return 1; // Color
-	}
+				case 0x8995c7ea: luaX_pushvec2(L, self->Offset); return 1; // Offset				case 0x961749ae: lua_pushnumber(L, self->BlurRadius); return 1; // BlurRadius				case 0x80066a9c: lua_pushnumber(L, self->SpreadRadius); return 1; // SpreadRadius				case 0xe5b43cf8: luaX_pushcolor(L, self->Color); return 1; // Color			}
 	return luaL_error(L, "Unknown field in ShadowShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_ShadowShorthand___newindex(lua_State *L) {
-	stuct ShadowShorthand* self = luaX_checkShadowShorthand(L, 1);
+	struct ShadowShorthand* self = luaX_checkShadowShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0x8995c7ea: self->Offset = luaX_checkvec2(L, 3); return 0; // Offset
-		case 0x961749ae: self->BlurRadius = luaL_checknumber(L, 3); return 0; // BlurRadius
-		case 0x80066a9c: self->SpreadRadius = luaL_checknumber(L, 3); return 0; // SpreadRadius
-		case 0xe5b43cf8: self->Color = luaX_checkcolor(L, 3); return 0; // Color
-	}
+				case 0x8995c7ea: self->Offset = luaX_checkvec2(L, 3); return 0; // Offset				case 0x961749ae: self->BlurRadius = luaL_checknumber(L, 3); return 0; // BlurRadius				case 0x80066a9c: self->SpreadRadius = luaL_checknumber(L, 3); return 0; // SpreadRadius				case 0xe5b43cf8: self->Color = luaX_checkcolor(L, 3); return 0; // Color			}
 	return luaL_error(L, "Unknown field in ShadowShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_ShadowShorthand___call(lua_State *L) {
@@ -687,32 +651,26 @@ static int f_new_RingShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct RingShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Offset"), self->Offset = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Width"), self->Width = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = luaX_checkcolor(L, -1), 1));
-	} else {
-		self->Offset = luaL_checknumber(L, 1);
-		self->Width = luaL_checknumber(L, 2);
-		self->Color = luaX_checkcolor(L, 3);
-	}
+				lua_pop(L, (lua_getfield(L, 1, "Offset"), self->Offset = luaL_checknumber(L, -1), 1));
+				lua_pop(L, (lua_getfield(L, 1, "Width"), self->Width = luaL_checknumber(L, -1), 1));
+				lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = luaX_checkcolor(L, -1), 1));
+			} else {
+						self->Offset = luaL_checknumber(L, 1);
+						self->Width = luaL_checknumber(L, 2);
+						self->Color = luaX_checkcolor(L, 3);
+					}
 	return 1;
 }
 int f_RingShorthand___index(lua_State *L) {
-	stuct RingShorthand* self = luaX_checkRingShorthand(L, 1);
+	struct RingShorthand* self = luaX_checkRingShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0x8995c7ea: lua_pushnumber(L, self->Offset); return 1; // Offset
-		case 0x3b42dfbf: lua_pushnumber(L, self->Width); return 1; // Width
-		case 0xe5b43cf8: luaX_pushcolor(L, self->Color); return 1; // Color
-	}
+				case 0x8995c7ea: lua_pushnumber(L, self->Offset); return 1; // Offset				case 0x3b42dfbf: lua_pushnumber(L, self->Width); return 1; // Width				case 0xe5b43cf8: luaX_pushcolor(L, self->Color); return 1; // Color			}
 	return luaL_error(L, "Unknown field in RingShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_RingShorthand___newindex(lua_State *L) {
-	stuct RingShorthand* self = luaX_checkRingShorthand(L, 1);
+	struct RingShorthand* self = luaX_checkRingShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0x8995c7ea: self->Offset = luaL_checknumber(L, 3); return 0; // Offset
-		case 0x3b42dfbf: self->Width = luaL_checknumber(L, 3); return 0; // Width
-		case 0xe5b43cf8: self->Color = luaX_checkcolor(L, 3); return 0; // Color
-	}
+				case 0x8995c7ea: self->Offset = luaL_checknumber(L, 3); return 0; // Offset				case 0x3b42dfbf: self->Width = luaL_checknumber(L, 3); return 0; // Width				case 0xe5b43cf8: self->Color = luaX_checkcolor(L, 3); return 0; // Color			}
 	return luaL_error(L, "Unknown field in RingShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_RingShorthand___call(lua_State *L) {
@@ -750,28 +708,24 @@ static int f_new_OverflowShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct OverflowShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "x"), self->x = luaL_checkoption(L, index, NULL, _Overflow), 1));
-		lua_pop(L, (lua_getfield(L, 1, "y"), self->y = luaL_checkoption(L, index, NULL, _Overflow), 1));
-	} else {
-		self->x = luaL_checkoption(L, index, NULL, _Overflow);
-		self->y = luaL_checkoption(L, index, NULL, _Overflow);
-	}
+				lua_pop(L, (lua_getfield(L, 1, "x"), self->x = luaL_checkoption(L, -1, NULL, _Overflow), 1));
+				lua_pop(L, (lua_getfield(L, 1, "y"), self->y = luaL_checkoption(L, -1, NULL, _Overflow), 1));
+			} else {
+						self->x = luaL_checkoption(L, 1, NULL, _Overflow);
+						self->y = luaL_checkoption(L, 2, NULL, _Overflow);
+					}
 	return 1;
 }
 int f_OverflowShorthand___index(lua_State *L) {
-	stuct OverflowShorthand* self = luaX_checkOverflowShorthand(L, 1);
+	struct OverflowShorthand* self = luaX_checkOverflowShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0xfd0c5087: lua_pushstring(L, OverflowToString(self->x)); return 1; // x
-		case 0xfc0c4ef4: lua_pushstring(L, OverflowToString(self->y)); return 1; // y
-	}
+				case 0xfd0c5087: lua_pushstring(L, OverflowToString(self->x)); return 1; // x				case 0xfc0c4ef4: lua_pushstring(L, OverflowToString(self->y)); return 1; // y			}
 	return luaL_error(L, "Unknown field in OverflowShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_OverflowShorthand___newindex(lua_State *L) {
-	stuct OverflowShorthand* self = luaX_checkOverflowShorthand(L, 1);
+	struct OverflowShorthand* self = luaX_checkOverflowShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0xfd0c5087: self->x = luaL_checkoption(L, index, NULL, _Overflow); return 0; // x
-		case 0xfc0c4ef4: self->y = luaL_checkoption(L, index, NULL, _Overflow); return 0; // y
-	}
+				case 0xfd0c5087: self->x = luaL_checkoption(L, 3, NULL, _Overflow); return 0; // x				case 0xfc0c4ef4: self->y = luaL_checkoption(L, 3, NULL, _Overflow); return 0; // y			}
 	return luaL_error(L, "Unknown field in OverflowShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_OverflowShorthand___call(lua_State *L) {
@@ -809,32 +763,26 @@ static int f_new_UnderlineShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct UnderlineShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Offset"), self->Offset = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Width"), self->Width = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = luaX_checkcolor(L, -1), 1));
-	} else {
-		self->Offset = luaL_checknumber(L, 1);
-		self->Width = luaL_checknumber(L, 2);
-		self->Color = luaX_checkcolor(L, 3);
-	}
+				lua_pop(L, (lua_getfield(L, 1, "Offset"), self->Offset = luaL_checknumber(L, -1), 1));
+				lua_pop(L, (lua_getfield(L, 1, "Width"), self->Width = luaL_checknumber(L, -1), 1));
+				lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = luaX_checkcolor(L, -1), 1));
+			} else {
+						self->Offset = luaL_checknumber(L, 1);
+						self->Width = luaL_checknumber(L, 2);
+						self->Color = luaX_checkcolor(L, 3);
+					}
 	return 1;
 }
 int f_UnderlineShorthand___index(lua_State *L) {
-	stuct UnderlineShorthand* self = luaX_checkUnderlineShorthand(L, 1);
+	struct UnderlineShorthand* self = luaX_checkUnderlineShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0x8995c7ea: lua_pushnumber(L, self->Offset); return 1; // Offset
-		case 0x3b42dfbf: lua_pushnumber(L, self->Width); return 1; // Width
-		case 0xe5b43cf8: luaX_pushcolor(L, self->Color); return 1; // Color
-	}
+				case 0x8995c7ea: lua_pushnumber(L, self->Offset); return 1; // Offset				case 0x3b42dfbf: lua_pushnumber(L, self->Width); return 1; // Width				case 0xe5b43cf8: luaX_pushcolor(L, self->Color); return 1; // Color			}
 	return luaL_error(L, "Unknown field in UnderlineShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_UnderlineShorthand___newindex(lua_State *L) {
-	stuct UnderlineShorthand* self = luaX_checkUnderlineShorthand(L, 1);
+	struct UnderlineShorthand* self = luaX_checkUnderlineShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0x8995c7ea: self->Offset = luaL_checknumber(L, 3); return 0; // Offset
-		case 0x3b42dfbf: self->Width = luaL_checknumber(L, 3); return 0; // Width
-		case 0xe5b43cf8: self->Color = luaX_checkcolor(L, 3); return 0; // Color
-	}
+				case 0x8995c7ea: self->Offset = luaL_checknumber(L, 3); return 0; // Offset				case 0x3b42dfbf: self->Width = luaL_checknumber(L, 3); return 0; // Width				case 0xe5b43cf8: self->Color = luaX_checkcolor(L, 3); return 0; // Color			}
 	return luaL_error(L, "Unknown field in UnderlineShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_UnderlineShorthand___call(lua_State *L) {
@@ -872,24 +820,22 @@ static int f_new_MarginShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct MarginShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Axis"), self->Axis = luaX_checkEdgeShorthand(L, -1), 1));
-	} else {
-		self->Axis = luaX_checkEdgeShorthand(L, 1);
-	}
+				lua_pop(L, (lua_getfield(L, 1, "Axis"), self->Axis = luaX_checkEdgeShorthand(L, -1), 1));
+			} else {
+						self->Axis = luaX_checkEdgeShorthand(L, 1);
+					}
 	return 1;
 }
 int f_MarginShorthand___index(lua_State *L) {
-	stuct MarginShorthand* self = luaX_checkMarginShorthand(L, 1);
+	struct MarginShorthand* self = luaX_checkMarginShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0xed57fa14: luaX_pushEdgeShorthand(L, self->Axis); return 1; // Axis
-	}
+				case 0xed57fa14: luaX_pushEdgeShorthand(L, self->Axis); return 1; // Axis			}
 	return luaL_error(L, "Unknown field in MarginShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_MarginShorthand___newindex(lua_State *L) {
-	stuct MarginShorthand* self = luaX_checkMarginShorthand(L, 1);
+	struct MarginShorthand* self = luaX_checkMarginShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0xed57fa14: self->Axis = luaX_checkEdgeShorthand(L, 3); return 0; // Axis
-	}
+				case 0xed57fa14: self->Axis = luaX_checkEdgeShorthand(L, 3); return 0; // Axis			}
 	return luaL_error(L, "Unknown field in MarginShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_MarginShorthand___call(lua_State *L) {
@@ -927,36 +873,28 @@ static int f_new_BorderShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct BorderShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Width"), self->Width = luaX_checkMarginShorthand(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = luaX_checkcolor(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Style"), self->Style = luaL_checkoption(L, index, NULL, _BorderStyle), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Radius"), self->Radius = luaX_checkBorderRadiusShorthand(L, -1), 1));
-	} else {
-		self->Width = luaX_checkMarginShorthand(L, 1);
-		self->Color = luaX_checkcolor(L, 2);
-		self->Style = luaL_checkoption(L, index, NULL, _BorderStyle);
-		self->Radius = luaX_checkBorderRadiusShorthand(L, 4);
-	}
+				lua_pop(L, (lua_getfield(L, 1, "Width"), self->Width = luaX_checkMarginShorthand(L, -1), 1));
+				lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = luaX_checkcolor(L, -1), 1));
+				lua_pop(L, (lua_getfield(L, 1, "Style"), self->Style = luaL_checkoption(L, -1, NULL, _BorderStyle), 1));
+				lua_pop(L, (lua_getfield(L, 1, "Radius"), self->Radius = luaX_checkBorderRadiusShorthand(L, -1), 1));
+			} else {
+						self->Width = luaX_checkMarginShorthand(L, 1);
+						self->Color = luaX_checkcolor(L, 2);
+						self->Style = luaL_checkoption(L, 3, NULL, _BorderStyle);
+						self->Radius = luaX_checkBorderRadiusShorthand(L, 4);
+					}
 	return 1;
 }
 int f_BorderShorthand___index(lua_State *L) {
-	stuct BorderShorthand* self = luaX_checkBorderShorthand(L, 1);
+	struct BorderShorthand* self = luaX_checkBorderShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0x3b42dfbf: luaX_pushMarginShorthand(L, self->Width); return 1; // Width
-		case 0xe5b43cf8: luaX_pushcolor(L, self->Color); return 1; // Color
-		case 0x5467ec76: lua_pushstring(L, BorderStyleToString(self->Style)); return 1; // Style
-		case 0x3a8111d3: luaX_pushBorderRadiusShorthand(L, self->Radius); return 1; // Radius
-	}
+				case 0x3b42dfbf: luaX_pushMarginShorthand(L, self->Width); return 1; // Width				case 0xe5b43cf8: luaX_pushcolor(L, self->Color); return 1; // Color				case 0x5467ec76: lua_pushstring(L, BorderStyleToString(self->Style)); return 1; // Style				case 0x3a8111d3: luaX_pushBorderRadiusShorthand(L, self->Radius); return 1; // Radius			}
 	return luaL_error(L, "Unknown field in BorderShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_BorderShorthand___newindex(lua_State *L) {
-	stuct BorderShorthand* self = luaX_checkBorderShorthand(L, 1);
+	struct BorderShorthand* self = luaX_checkBorderShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0x3b42dfbf: self->Width = luaX_checkMarginShorthand(L, 3); return 0; // Width
-		case 0xe5b43cf8: self->Color = luaX_checkcolor(L, 3); return 0; // Color
-		case 0x5467ec76: self->Style = luaL_checkoption(L, index, NULL, _BorderStyle); return 0; // Style
-		case 0x3a8111d3: self->Radius = luaX_checkBorderRadiusShorthand(L, 3); return 0; // Radius
-	}
+				case 0x3b42dfbf: self->Width = luaX_checkMarginShorthand(L, 3); return 0; // Width				case 0xe5b43cf8: self->Color = luaX_checkcolor(L, 3); return 0; // Color				case 0x5467ec76: self->Style = luaL_checkoption(L, 3, NULL, _BorderStyle); return 0; // Style				case 0x3a8111d3: self->Radius = luaX_checkBorderRadiusShorthand(L, 3); return 0; // Radius			}
 	return luaL_error(L, "Unknown field in BorderShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_BorderShorthand___call(lua_State *L) {
@@ -994,40 +932,30 @@ static int f_new_SizeAxisShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct SizeAxisShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Requested"), self->Requested = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Desired"), self->Desired = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Min"), self->Min = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Actual"), self->Actual = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Scroll"), self->Scroll = luaL_checknumber(L, -1), 1));
-	} else {
-		self->Requested = luaL_checknumber(L, 1);
-		self->Desired = luaL_checknumber(L, 2);
-		self->Min = luaL_checknumber(L, 3);
-		self->Actual = luaL_checknumber(L, 4);
-		self->Scroll = luaL_checknumber(L, 5);
-	}
+				lua_pop(L, (lua_getfield(L, 1, "Requested"), self->Requested = luaL_checknumber(L, -1), 1));
+				lua_pop(L, (lua_getfield(L, 1, "Desired"), self->Desired = luaL_checknumber(L, -1), 1));
+				lua_pop(L, (lua_getfield(L, 1, "Min"), self->Min = luaL_checknumber(L, -1), 1));
+				lua_pop(L, (lua_getfield(L, 1, "Actual"), self->Actual = luaL_checknumber(L, -1), 1));
+				lua_pop(L, (lua_getfield(L, 1, "Scroll"), self->Scroll = luaL_checknumber(L, -1), 1));
+			} else {
+						self->Requested = luaL_checknumber(L, 1);
+						self->Desired = luaL_checknumber(L, 2);
+						self->Min = luaL_checknumber(L, 3);
+						self->Actual = luaL_checknumber(L, 4);
+						self->Scroll = luaL_checknumber(L, 5);
+					}
 	return 1;
 }
 int f_SizeAxisShorthand___index(lua_State *L) {
-	stuct SizeAxisShorthand* self = luaX_checkSizeAxisShorthand(L, 1);
+	struct SizeAxisShorthand* self = luaX_checkSizeAxisShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0x77ea8663: lua_pushnumber(L, self->Requested); return 1; // Requested
-		case 0x28adf5d5: lua_pushnumber(L, self->Desired); return 1; // Desired
-		case 0x2e9445f7: lua_pushnumber(L, self->Min); return 1; // Min
-		case 0xf1aed197: lua_pushnumber(L, self->Actual); return 1; // Actual
-		case 0x25dca54c: lua_pushnumber(L, self->Scroll); return 1; // Scroll
-	}
+				case 0x77ea8663: lua_pushnumber(L, self->Requested); return 1; // Requested				case 0x28adf5d5: lua_pushnumber(L, self->Desired); return 1; // Desired				case 0x2e9445f7: lua_pushnumber(L, self->Min); return 1; // Min				case 0xf1aed197: lua_pushnumber(L, self->Actual); return 1; // Actual				case 0x25dca54c: lua_pushnumber(L, self->Scroll); return 1; // Scroll			}
 	return luaL_error(L, "Unknown field in SizeAxisShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_SizeAxisShorthand___newindex(lua_State *L) {
-	stuct SizeAxisShorthand* self = luaX_checkSizeAxisShorthand(L, 1);
+	struct SizeAxisShorthand* self = luaX_checkSizeAxisShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0x77ea8663: self->Requested = luaL_checknumber(L, 3); return 0; // Requested
-		case 0x28adf5d5: self->Desired = luaL_checknumber(L, 3); return 0; // Desired
-		case 0x2e9445f7: self->Min = luaL_checknumber(L, 3); return 0; // Min
-		case 0xf1aed197: self->Actual = luaL_checknumber(L, 3); return 0; // Actual
-		case 0x25dca54c: self->Scroll = luaL_checknumber(L, 3); return 0; // Scroll
-	}
+				case 0x77ea8663: self->Requested = luaL_checknumber(L, 3); return 0; // Requested				case 0x28adf5d5: self->Desired = luaL_checknumber(L, 3); return 0; // Desired				case 0x2e9445f7: self->Min = luaL_checknumber(L, 3); return 0; // Min				case 0xf1aed197: self->Actual = luaL_checknumber(L, 3); return 0; // Actual				case 0x25dca54c: self->Scroll = luaL_checknumber(L, 3); return 0; // Scroll			}
 	return luaL_error(L, "Unknown field in SizeAxisShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_SizeAxisShorthand___call(lua_State *L) {
@@ -1065,24 +993,22 @@ static int f_new_SizeShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct SizeShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Axis"), self->Axis = luaX_checkSizeAxisShorthand(L, -1), 1));
-	} else {
-		self->Axis = luaX_checkSizeAxisShorthand(L, 1);
-	}
+				lua_pop(L, (lua_getfield(L, 1, "Axis"), self->Axis = luaX_checkSizeAxisShorthand(L, -1), 1));
+			} else {
+						self->Axis = luaX_checkSizeAxisShorthand(L, 1);
+					}
 	return 1;
 }
 int f_SizeShorthand___index(lua_State *L) {
-	stuct SizeShorthand* self = luaX_checkSizeShorthand(L, 1);
+	struct SizeShorthand* self = luaX_checkSizeShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0xed57fa14: luaX_pushSizeAxisShorthand(L, self->Axis); return 1; // Axis
-	}
+				case 0xed57fa14: luaX_pushSizeAxisShorthand(L, self->Axis); return 1; // Axis			}
 	return luaL_error(L, "Unknown field in SizeShorthand: %s", luaL_checkstring(L, 2));
 }
 int f_SizeShorthand___newindex(lua_State *L) {
-	stuct SizeShorthand* self = luaX_checkSizeShorthand(L, 1);
+	struct SizeShorthand* self = luaX_checkSizeShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0xed57fa14: self->Axis = luaX_checkSizeAxisShorthand(L, 3); return 0; // Axis
-	}
+				case 0xed57fa14: self->Axis = luaX_checkSizeAxisShorthand(L, 3); return 0; // Axis			}
 	return luaL_error(L, "Unknown field in SizeShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_SizeShorthand___call(lua_State *L) {
@@ -1120,28 +1046,24 @@ static int f_new_NavigateToPageArguments(lua_State *L) {
 	memset(self, 0, sizeof(struct NavigateToPageArguments));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "URL"), self->URL = luaL_checkstring(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "TransitionType"), self->TransitionType = luaL_checkoption(L, index, NULL, _TransitionType), 1));
-	} else {
-		self->URL = luaL_checkstring(L, 1);
-		self->TransitionType = luaL_checkoption(L, index, NULL, _TransitionType);
-	}
+				lua_pop(L, (lua_getfield(L, 1, "URL"), self->URL = luaL_checkstring(L, -1), 1));
+				lua_pop(L, (lua_getfield(L, 1, "TransitionType"), self->TransitionType = luaL_checkoption(L, -1, NULL, _TransitionType), 1));
+			} else {
+						self->URL = luaL_checkstring(L, 1);
+						self->TransitionType = luaL_checkoption(L, 2, NULL, _TransitionType);
+					}
 	return 1;
 }
 int f_NavigateToPageArguments___index(lua_State *L) {
-	stuct NavigateToPageArguments* self = luaX_checkNavigateToPageArguments(L, 1);
+	struct NavigateToPageArguments* self = luaX_checkNavigateToPageArguments(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0x7569633e: lua_pushstring(L, self->URL); return 1; // URL
-		case 0x84ff7372: lua_pushstring(L, TransitionTypeToString(self->TransitionType)); return 1; // TransitionType
-	}
+				case 0x7569633e: lua_pushstring(L, self->URL); return 1; // URL				case 0x84ff7372: lua_pushstring(L, TransitionTypeToString(self->TransitionType)); return 1; // TransitionType			}
 	return luaL_error(L, "Unknown field in NavigateToPageArguments: %s", luaL_checkstring(L, 2));
 }
 int f_NavigateToPageArguments___newindex(lua_State *L) {
-	stuct NavigateToPageArguments* self = luaX_checkNavigateToPageArguments(L, 1);
+	struct NavigateToPageArguments* self = luaX_checkNavigateToPageArguments(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0x7569633e: self->URL = luaL_checkstring(L, 3); return 0; // URL
-		case 0x84ff7372: self->TransitionType = luaL_checkoption(L, index, NULL, _TransitionType); return 0; // TransitionType
-	}
+				case 0x7569633e: self->URL = luaL_checkstring(L, 3); return 0; // URL				case 0x84ff7372: self->TransitionType = luaL_checkoption(L, 3, NULL, _TransitionType); return 0; // TransitionType			}
 	return luaL_error(L, "Unknown field in NavigateToPageArguments: %s", luaL_checkstring(L, 2));
 }
 static int f_NavigateToPageArguments___call(lua_State *L) {
@@ -1179,24 +1101,22 @@ static int f_new_NavigateBackArguments(lua_State *L) {
 	memset(self, 0, sizeof(struct NavigateBackArguments));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "TransitionType"), self->TransitionType = luaL_checkoption(L, index, NULL, _TransitionType), 1));
-	} else {
-		self->TransitionType = luaL_checkoption(L, index, NULL, _TransitionType);
-	}
+				lua_pop(L, (lua_getfield(L, 1, "TransitionType"), self->TransitionType = luaL_checkoption(L, -1, NULL, _TransitionType), 1));
+			} else {
+						self->TransitionType = luaL_checkoption(L, 1, NULL, _TransitionType);
+					}
 	return 1;
 }
 int f_NavigateBackArguments___index(lua_State *L) {
-	stuct NavigateBackArguments* self = luaX_checkNavigateBackArguments(L, 1);
+	struct NavigateBackArguments* self = luaX_checkNavigateBackArguments(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0x84ff7372: lua_pushstring(L, TransitionTypeToString(self->TransitionType)); return 1; // TransitionType
-	}
+				case 0x84ff7372: lua_pushstring(L, TransitionTypeToString(self->TransitionType)); return 1; // TransitionType			}
 	return luaL_error(L, "Unknown field in NavigateBackArguments: %s", luaL_checkstring(L, 2));
 }
 int f_NavigateBackArguments___newindex(lua_State *L) {
-	stuct NavigateBackArguments* self = luaX_checkNavigateBackArguments(L, 1);
+	struct NavigateBackArguments* self = luaX_checkNavigateBackArguments(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0x84ff7372: self->TransitionType = luaL_checkoption(L, index, NULL, _TransitionType); return 0; // TransitionType
-	}
+				case 0x84ff7372: self->TransitionType = luaL_checkoption(L, 3, NULL, _TransitionType); return 0; // TransitionType			}
 	return luaL_error(L, "Unknown field in NavigateBackArguments: %s", luaL_checkstring(L, 2));
 }
 static int f_NavigateBackArguments___call(lua_State *L) {
