@@ -153,8 +153,7 @@ class Method extends Base {
 		}
 		$rets = $elem->xpath("returns");
 		$this->returns = count($rets) > 0 ? new Type($rets[0], $model) : null;
-		$pfx = $owner !== null ? $owner["prefix"] : null;
-		$prefix = $pfx ?? "";
+		$prefix = $owner !== null ? ($owner["prefix"] ?? "") : "";
 		$this->full_name = $prefix . $elem["name"];
 	}
 
