@@ -1,5 +1,5 @@
 <?php foreach ($model->getStructs() as $name => $struct):?>
-void luaX_push<?= $name ?>(lua_State *L, <?= $name ?> const* data) {
+void luaX_push<?= $name ?>(lua_State *L, struct <?= $name ?> const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct <?= $name ?>* self = lua_newuserdata(L, sizeof(struct <?= $name ?>));
 	luaL_setmetatable(L, "<?= $name ?>");
@@ -15,12 +15,12 @@ static int f_new_<?= $name ?>(lua_State *L) {
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		<?php foreach ($struct->getFields() as $field => $type):?>
-		lua_pop(L, (lua_getfield(L, 1, "<?= $field ?>"), self-><?= $field ?> = <?= $type->get("check", -1) ?>, 1));
+		lua_pop(L, (lua_getfield(L, 1, "<?= $field ?>"), self-><?= $field ?> = <?= $type->get("pop", -1) ?>, 1));
 		<?php endforeach ?>
 	} else {
 		<?php $index = 1 ?>
 		<?php foreach ($struct->getFields() as $field => $type):?>
-		self-><?= $field ?> = <?= $type->get("check", $index) ?>;
+		self-><?= $field ?> = <?= $type->get("pop", $index) ?>;
 		<?php $index = $index + 1 ?>
 		<?php endforeach ?>
 	}
@@ -66,7 +66,7 @@ int f_<?= $name ?>___newindex(lua_State *L) {
 	struct <?= $name ?>* self = luaX_check<?= $name ?>(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 		<?php foreach ($struct->getFields() as $field => $type):?>
-		case <?= $field->id ?>: self-><?= $field ?> = <?= $type->get('check', 3) ?>; return 0; // <?= $field ?>
+		case <?= $field->id ?>: self-><?= $field ?> = <?= $type->get('pop', 3) ?>; return 0; // <?= $field ?>
 		<?php endforeach ?>
 	}
 	return luaL_error(L, "Unknown field in <?= $name ?>: %s", luaL_checkstring(L, 2));

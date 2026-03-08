@@ -8,7 +8,7 @@ typedef unsigned int bool_t;
 typedef unsigned int uint32_t;
 
 #include "orcadef.h"
-#include "source/geometry/geom.h"
+#include "source/geometry/geometry.h"
 
 #define EPSILON 1e-6
 #define INLINE static inline

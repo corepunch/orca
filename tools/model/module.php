@@ -44,7 +44,7 @@ class PropertyName {
 
 	function format() {
 		$name = $this->getPath();
-		foreach (config::Axis as $pair) {
+		foreach (config::$Axis as $pair) {
 			$pat = $pair[0];
 			$repl = $pair[1];
 			$pattern = '/' . $pat . '/';
@@ -138,7 +138,7 @@ class Type extends Base {
 	}
 
 	function get($name, $arg = null, $addr = null) {
-		$template = config::TypeInfos[$this->kind][$name];
+		$template = config::$TypeInfos[$this->kind][$name];
 		return str_replace(['{type}', '{arg}', '{addr}'], [$this->type, $arg, $addr], $template);
 	}
 }
@@ -320,6 +320,17 @@ class Resource extends Base {
 	}
 }
 
+class IncludeFile extends Base {
+	public $file;
+	function __construct($elem, $model) {
+		parent::__construct($elem, $model);
+		$this->file = $elem['file'];
+	}
+	function __toString() {
+		return $this->file;
+	}
+}
+
 // --- Model ---
 
 class Model {
@@ -330,6 +341,7 @@ class Model {
 	public $enums;
 	public $components;
 	public $resources;
+	public $includes;
 	public $on_luaopen;
 
 	function __construct($xml_file, $include_file = null) {
@@ -361,6 +373,11 @@ class Model {
 		array_map(fn($r) => $r["type"], $rn),
 		array_map(fn($r) => new Resource($r, $this), $rn)
 		);
+		$rn = $xml->xpath(".//include[@file]");
+		$this->includes = array_combine(
+		array_map(fn($r) => $r["file"], $rn),
+		array_map(fn($r) => new IncludeFile($r, $this), $rn)
+		);
 		$this->on_luaopen = $xml["on-luaopen"];
 	}
 
@@ -379,22 +396,15 @@ class Model {
 	}
 
 	function getModuleName() { return $this->root["name"]; }
-
 	function getStruct($name) { return $this->structs[$name] ?? null; }
-
 	function getEnum($name) { return $this->enums[$name] ?? null; }
-
 	function getComponent($name) { return $this->components[$name] ?? null; }
-
 	function getResource($resource_type) { return $this->resources[$resource_type] ?? null; }
-
 	function getStructs() { return $this->structs; }
-
 	function getEnums() { return $this->enums; }
-
 	function getComponents() { return $this->components; }
-
 	function getResources() { return $this->resources; }
+	function getIncludes() { return $this->includes; }
 
 	function getKind($_type) {
 		$r = $this->_has_in($_type, "enums");

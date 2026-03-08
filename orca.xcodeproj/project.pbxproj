@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		5D44D6CC2E5A31C000A2D26B /* geom.h in Headers */ = {isa = PBXBuildFile; fileRef = 5D44D6C92E5A31C000A2D26B /* geom.h */; };
 		7810D29C2D58C98700DB632F /* orcalib.c in Sources */ = {isa = PBXBuildFile; fileRef = 786BFCD72AFA403F00216782 /* orcalib.c */; };
 		7810D3102D58F7FE00DB632F /* fs_local.h in Headers */ = {isa = PBXBuildFile; fileRef = 7810D30F2D58F7FA00DB632F /* fs_local.h */; };
 		7810D3132D5902C200DB632F /* liborca.so in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7810D25E2D58A81100DB632F /* liborca.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -16,7 +15,6 @@
 		781CA6B02E13E05100FFCFD9 /* ed_stab_property.h in Headers */ = {isa = PBXBuildFile; fileRef = 781CA6AF2E13E04700FFCFD9 /* ed_stab_property.h */; };
 		781CA6B22E13E08700FFCFD9 /* ed_stab_component.h in Headers */ = {isa = PBXBuildFile; fileRef = 781CA6B12E13E08400FFCFD9 /* ed_stab_component.h */; };
 		781CA6B42E14073700FFCFD9 /* ed_stab_filesystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 781CA6B32E14073300FFCFD9 /* ed_stab_filesystem.h */; };
-		781CA6DB2E15029D00FFCFD9 /* geom_ops.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C737A62B8F616A00FD598E /* geom_ops.c */; };
 		781CA6DC2E1502A900FFCFD9 /* liborca.geometry.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA6CE2E15024F00FFCFD9 /* liborca.geometry.so */; };
 		781CA6E52E15245800FFCFD9 /* filesystem.c in Sources */ = {isa = PBXBuildFile; fileRef = 78B136F42AF3CC4E00AAAE53 /* filesystem.c */; };
 		781CA6E62E15245800FFCFD9 /* w_filesystem.c in Sources */ = {isa = PBXBuildFile; fileRef = 786BFC852AF7E97900216782 /* w_filesystem.c */; };
@@ -173,7 +171,6 @@
 		783976FF2E54B25B00DCFC0F /* core.h in Headers */ = {isa = PBXBuildFile; fileRef = 783976FE2E54B25900DCFC0F /* core.h */; };
 		783977032E54CA5E00DCFC0F /* renderer.h in Headers */ = {isa = PBXBuildFile; fileRef = 783977022E54CA5A00DCFC0F /* renderer.h */; };
 		783977072E604D5A00DCFC0F /* renderer_export.c in Sources */ = {isa = PBXBuildFile; fileRef = 783977062E604D5A00DCFC0F /* renderer_export.c */; };
-		783977092E60587100DCFC0F /* geom_export.c in Sources */ = {isa = PBXBuildFile; fileRef = 783977082E60587100DCFC0F /* geom_export.c */; };
 		7839770E2E60A5AB00DCFC0F /* core_export.c in Sources */ = {isa = PBXBuildFile; fileRef = 7839770D2E60A5AB00DCFC0F /* core_export.c */; };
 		783C970C2F2640E000612323 /* liborca.platform.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; };
 		783C970D2F26420300612323 /* liborca.platform.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; };
@@ -371,8 +368,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		5D44D6C92E5A31C000A2D26B /* geom.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = geom.h; sourceTree = "<group>"; };
-		5D44D6CD2E5E31A600A2D26B /* geom.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = geom.xml; sourceTree = "<group>"; };
 		7808CD8D2D9EC93A00D484F9 /* backend.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = backend.c; sourceTree = "<group>"; };
 		7808CD8F2D9ECB2400D484F9 /* queue.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = queue.c; sourceTree = "<group>"; };
 		7808CD912D9ECE9A00D484F9 /* message.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = message.c; sourceTree = "<group>"; };
@@ -418,7 +413,6 @@
 		783976FE2E54B25900DCFC0F /* core.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = core.h; sourceTree = "<group>"; };
 		783977022E54CA5A00DCFC0F /* renderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = renderer.h; sourceTree = "<group>"; };
 		783977062E604D5A00DCFC0F /* renderer_export.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = renderer_export.c; sourceTree = "<group>"; };
-		783977082E60587100DCFC0F /* geom_export.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = geom_export.c; sourceTree = "<group>"; };
 		7839770A2E60758500DCFC0F /* core.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = core.xml; sourceTree = "<group>"; };
 		7839770D2E60A5AB00DCFC0F /* core_export.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = core_export.c; sourceTree = "<group>"; };
 		7839770F2E60AA3100DCFC0F /* renderer.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = renderer.xml; sourceTree = "<group>"; };
@@ -550,7 +544,6 @@
 		78C7376E2B8F60C600FD598E /* Viewport3D.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Viewport3D.c; sourceTree = "<group>"; };
 		78C737742B8F60C600FD598E /* PlaneMeshNode.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PlaneMeshNode.c; sourceTree = "<group>"; };
 		78C737752B8F60C600FD598E /* TrajectoryList3D.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = TrajectoryList3D.c; sourceTree = "<group>"; };
-		78C737A62B8F616A00FD598E /* geom_ops.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = geom_ops.c; sourceTree = "<group>"; };
 		78C737AA2B8F616A00FD598E /* easing.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = easing.c; sourceTree = "<group>"; };
 		78C737AB2B8F616A00FD598E /* animation2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = animation2.c; sourceTree = "<group>"; };
 		78C737AC2B8F616A00FD598E /* n_tween.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = n_tween.c; sourceTree = "<group>"; };
@@ -601,6 +594,7 @@
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		783C96DF2F263D9C00612323 /* libs */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (783C973B2F26638500612323 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = libs; sourceTree = "<group>"; };
+		78AF635B2F5E08CA008D08A3 /* geometry */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = geometry; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -982,17 +976,6 @@
 			path = tools;
 			sourceTree = "<group>";
 		};
-		789D757D2BD0F4A900E2ADB9 /* geometry */ = {
-			isa = PBXGroup;
-			children = (
-				783977082E60587100DCFC0F /* geom_export.c */,
-				78C737A62B8F616A00FD598E /* geom_ops.c */,
-				5D44D6C92E5A31C000A2D26B /* geom.h */,
-				5D44D6CD2E5E31A600A2D26B /* geom.xml */,
-			);
-			path = geometry;
-			sourceTree = "<group>";
-		};
 		78B136982AF3CA3A00AAAE53 = {
 			isa = PBXGroup;
 			children = (
@@ -1061,7 +1044,7 @@
 				78C7374E2B8F60C600FD598E /* core */,
 				786F2B1D2E12EE7F00B519AB /* editor */,
 				7810D2662D58B1B800DB632F /* filesystem */,
-				789D757D2BD0F4A900E2ADB9 /* geometry */,
+				78AF635B2F5E08CA008D08A3 /* geometry */,
 				7810D3172D5B32FC00DB632F /* localization */,
 				786BFD062AFBA00D00216782 /* network */,
 				7810D26E2D58C06000DB632F /* orca */,
@@ -1243,7 +1226,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5D44D6CC2E5A31C000A2D26B /* geom.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1427,6 +1409,9 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				78AF635B2F5E08CA008D08A3 /* geometry */,
 			);
 			name = orca.geometry;
 			packageProductDependencies = (
@@ -1850,8 +1835,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				783977092E60587100DCFC0F /* geom_export.c in Sources */,
-				781CA6DB2E15029D00FFCFD9 /* geom_ops.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
