@@ -13,7 +13,7 @@ class FieldName {
 		$this->id = "0x" . hash("fnv1a32", $name);
 	}
 
-	function __str__() {
+	function __toString() {
 		return $this->name;
 	}
 }
@@ -34,7 +34,7 @@ class PropertyName {
 		$this->id = "0x" . hash("fnv1a32", implode('', $path));
 	}
 
-	function __str__() {
+	function __toString() {
 		return $this->format();
 	}
 
@@ -73,7 +73,7 @@ class ParserType {
 		}
 	}
 
-	function __str__() {
+	function __toString() {
 		return $this->name;
 	}
 }
@@ -116,7 +116,7 @@ class Type extends Base {
 		$this->default = $elem["default"];
 	}
 
-	function __str__() {
+	function __toString() {
 		$map = [
 		"enum"      => "enum %s",
 		"struct"    => "struct %s",
