@@ -4,12 +4,13 @@
 #include <include/api.h>
 #include "<?= substr($model->source, 0, -4) ?>.h"
 
+<?php if ($model->getComponents()): ?>
 #define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
 #define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
+<?php endif ?>
 
 <?php require "templates/export_enums.php"; ?>
 <?php require "templates/export_structs.php"; ?>
-<?php //require "templates/export_components.php"; ?>
 
 <?php foreach ($model->getComponents() as $name => $component):?>
 	<?php foreach ($component->getEventHandlers() as $event): ?>
@@ -28,8 +29,10 @@ static struct PropertyType const <?= $name ?>Properties[k<?= $name ?>NumProperti
 	<?php endforeach ?>
 };
 static struct <?= $name ?> <?= $name ?>Defaults = {
-	<?php foreach (array_filter($component->getProperties(), fn($type) => $type->default) as $property => $type): ?>
+	<?php foreach ($component->getProperties() as $property => $type): ?>
+	<?php if ($type->default): ?>
   .<?= $property ?> = <?= $type->default ?>,
+	<?php endif ?>
 	<?php endforeach ?>
 };
 LRESULT <?= $name ?>Proc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -37,6 +40,7 @@ LRESULT <?= $name ?>Proc(struct Object* object, void* cmp, uint32_t message, wPa
 	<?php foreach ($component->getEventHandlers() as $event): ?>
 		case kEvent<?= $event ?>: return <?= $name ?>_<?= $event ?>(object, cmp, wparm, lparm); // <?= $event ?>
 	<?php endforeach ?>
+	}
 	return FALSE;
 }
 void luaX_push<?= $name ?>(lua_State *L, struct <?= $name ?>* <?= $name ?>) {
@@ -61,19 +65,29 @@ ORCA_API struct ClassDesc _<?= $name ?> = {
 
 <?php endforeach ?>
 
-ORCA_API int luaopen_orca_UIKit(lua_State *L) {
-	luaL_newlib(L, ((luaL_Reg[]) { { NULL, NULL } }));
-	<?php if ($model->on_luaopen): ?>
-	void <?= $model->on_luaopen ?>(lua_State *L);
-	<?= $model->on_luaopen ?>(L);
+ORCA_API int luaopen_<?= $model->getNamespace() ?>_<?= $model->getModuleName() ?>(lua_State *L) {
+	luaL_newlib(L, ((luaL_Reg[]) {
+	<?php foreach ($model->getFunctions() as $fn): ?>
+		{ "<?= lcfirst($fn["name"]) ?>", f_<?= $model->getModuleName() ?>_<?= lcfirst($fn["name"]) ?> },
+	<?php endforeach ?>
+		{ NULL, NULL }
+	}));
+	<?php if ($model->getOnLuaopen()): ?>
+	void <?= $model->getOnLuaopen() ?>(lua_State *L);
+	<?= $model->getOnLuaopen() ?>(L);
 	<?php endif ?>
 	// Structs
 	<?php foreach ($model->getStructs() as $name => $struct):?>
-	lua_setfield(L, (luaopen_orca_<?= $name ?>(L), -2), "<?= $name ?>");
+	luaopen_<?= $model->getNamespace() ?>_<?= $name ?>(L);
+	lua_setfield(L, -2, "<?= $struct->export ?>");
 	<?php endforeach ?>
 	// Components
 	<?php foreach ($model->getComponents() as $name => $component):?>
-	lua_setfield(L, (lua_pushclass(L, &_<?= $name ?>), -2), "<?= $name ?>");
+	lua_pushclass(L, &_<?= $name ?>);
+	lua_setfield(L, -2, "<?= $name ?>");
+	<?php endforeach ?>
+	<?php foreach ($model->getShutdowns() as $shutdown): ?>
+	API_MODULE_SHUTDOWN(L, f_<?= $model->getModuleName() ?>_gc);
 	<?php endforeach ?>
 	return 1;
 }

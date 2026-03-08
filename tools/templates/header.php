@@ -34,8 +34,7 @@ struct <?= $name ?> {
 };
 <?php foreach ($struct->getMethods() as $method_name => $method): ?>
 <?php $i = 0; $args = $method->getArgs(); ?>
-<?= $method->getReturnType() ?>
-<?= $method->full_name ?>(<?= implode(', ', $method->getArgsTypes()) ?>);
+<?= $method->getReturnType() . "\n" ?><?= $method->full_name ?>(<?= implode(', ', $method->getArgsTypes()) ?>);
 <?php endforeach ?>
 <?php endforeach ?>
 

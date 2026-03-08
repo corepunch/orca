@@ -27,21 +27,21 @@ static int f_new_<?= $name ?>(lua_State *L) {
 	return 1;
 }
 <?php foreach ($struct->getConstructors() as $numargs):?>
-void <?= $name ?>_Convert<?= $numargs ?>(struct <?= $name ?>*, <?= implode(", ", array_slice(array_values($struct->getParsers()), 0, $numargs)) ?>);
+void <?= $name ?>_Convert<?= $numargs ?>(struct <?= $name ?>*, <?= implode(", ", array_slice(array_values(array_map(fn($v) => $v[1], $struct->getParsers())), 0, $numargs)) ?>);
 <?php endforeach ?>
 static int f_fromstring_<?= $name ?>(lua_State *L) {
-	<?php foreach ($struct->getParsers() as $field => $type):?>
-	<?= $type ?> <?= $field ?>;
+	<?php foreach ($struct->getParsers() as $varname => [$pt, $type]):?>
+	<?= $type ?> <?= $varname ?>;
 	<?php endforeach ?>
 	<?php 
-	$format = implode(" ", array_map(fn($v) => $v->get('format'), $struct->getParsers()));
-	$targets = implode(", ", array_map(fn($k) => $k->pointer, array_keys($struct->getParsers())));
+	$format = implode(" ", array_map(fn($v) => $v[1]->get('format'), $struct->getParsers()));
+	$targets = implode(", ", array_map(fn($v) => $v[0]->pointer, $struct->getParsers()));
 	?>
 	struct <?= $name ?> self = {0};
 	switch (sscanf(luaL_checkstring(L, 1), "<?= $format ?>", <?= $targets ?>)) {
 		case <?= count($struct->getParsers()) ?>: 
-			<?php foreach ($struct->getParsers() as $field => $type):?>
-			<?= $type->get('convert', $field, $field->addr) ?>;
+			<?php foreach ($struct->getParsers() as $varname => [$pt, $type]):?>
+			<?= $type->get('convert', $varname, $pt->addr) ?>;
 			<?php endforeach ?>
 			return (luaX_push<?= $name ?>(L, &self), 1);
 		<?php foreach ($struct->getConstructors() as $numargs):?>
@@ -86,7 +86,7 @@ int f_<?= $struct->prefix.$method_name ?>(lua_State *L) {
 	<?= $method->getReturnType()->get('push', 'result_') ?>;
 	return 1;
 	<?php else: ?>
-	<?= $struct->prefix.$method_name ?>(<?= implode(", ", array_keys($method->getArgs())) ?> <?= $method->getReturnType() != "void" ? ", " : "" ?>);
+	<?= $struct->prefix.$method_name ?>(<?= implode(", ", array_keys($method->getArgs())) ?>);
 	return 0;
 	<?php endif ?>
 }

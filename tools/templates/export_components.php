@@ -15,8 +15,10 @@ static struct PropertyType const <?= $name ?>Properties[k<?= $name ?>NumProperti
 <?php endforeach ?>
 };
 static struct <?= $name ?> <?= $name ?>Defaults = {
-<?php foreach (array_filter($component->getProperties(), fn($type) => $type->default) as $property => $type): ?>
+<?php foreach ($component->getProperties() as $property => $type): ?>
+<?php if ($type->default): ?>
   .<?= $property ?> = <?= $type->default ?>,
+<?php endif ?>
 <?php endforeach ?>
 };
 <?php endforeach ?>

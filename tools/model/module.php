@@ -44,7 +44,7 @@ class PropertyName {
 
 	function format() {
 		$name = $this->getPath();
-		foreach (config::Axis as $pair) {
+		foreach (config::$Axis as $pair) {
 			$pat = $pair[0];
 			$repl = $pair[1];
 			$pattern = '/' . $pat . '/';
@@ -81,7 +81,7 @@ class ParserType {
 // --- Base ---
 
 class Base {
-	protected $_elem;
+	public $_elem;
 	protected $_model;
 	public $name;
 
@@ -108,14 +108,14 @@ class Type extends Base {
 
 	function __construct($elem, $model) {
 		parent::__construct($elem, $model);
-		$this->type = $elem["type"];
+		$this->type = (string)$elem["type"];
 		$kind_data = $model->getKind($this->type);
-		$this->kind = $kind_data[0];
+		$this->kind = (string)$kind_data[0];
 		$this->data = $kind_data[1];
 		$fa = $elem["fixed-array"];
 		$this->fixed_array = $fa !== null ? intval($fa) : null;
 		$this->export = ($this->kind === "struct" && $this->data) ? $this->data->export : $this->type;
-		$this->default = $elem["default"];
+		$this->default = (string)$elem["default"] ?: null;
 	}
 
 	function __toString() {
@@ -138,7 +138,8 @@ class Type extends Base {
 	}
 
 	function get($name, $arg = null, $addr = null) {
-		$template = config::TypeInfos[$this->kind][$name];
+		$kindInfo = config::$TypeInfos[$this->kind] ?? config::$TypeInfos["struct"];
+		$template = $kindInfo[$name] ?? config::$TypeInfos["struct"][$name];
 		return str_replace(['{type}', '{arg}', '{addr}'], [$this->type, $arg, $addr], $template);
 	}
 }
@@ -179,15 +180,19 @@ class Method extends Base {
 	function getReturnType() { return $this->returns ?? "void"; }
 
 	function getArgs() {
+		$result = [];
 		foreach ($this->args as $pair) {
-			yield $pair[0] => $pair[1];
+			$result[(string)$pair[0]] = $pair[1];
 		}
+		return $result;
 	}
 
 	function getArgsTypes() {
+		$result = [];
 		foreach ($this->args as $pair) {
-			yield $pair[1];
+			$result[] = $pair[1];
 		}
+		return $result;
 	}
 }
 
@@ -200,7 +205,7 @@ class Struct extends Base {
 
 	function __construct($elem, $model) {
 		parent::__construct($elem, $model);
-		$this->sealed = $elem["sealed"] === "true";
+		$this->sealed = (string)$elem["sealed"] === "true";
 		$this->export = $elem["export"] ?? $elem["name"];
 		$this->prefix = $elem["prefix"] ?? $elem["name"];
 	}
@@ -213,12 +218,12 @@ class Struct extends Base {
 
 	function getMethods() {
 		foreach ($this->_elem->xpath(".//method[@name]") as $m) {
-			yield $m["name"] => new Method($m, $this->_model, $this->_elem);
+			yield (string)$m["name"] => new Method($m, $this->_model, $this->_elem);
 		}
 	}
 
 	function getParsers() {
-		$result = dict();
+		$result = [];
 		foreach ($this->getFields() as $name => $field) {
 			if ($field->fixed_array) {
 				for ($i = 0; $i < $field->fixed_array; $i++) {
@@ -227,30 +232,32 @@ class Struct extends Base {
 							$pt_name = $this->name . "_{$name}{$i}_{$sub_name}";
 							$pt_addr = "{$name}[$i].{$sub_name}";
 							$pt = new ParserType($pt_name, $pt_addr, $sub_type);
-							$result[$pt] = $sub_type;
+							$result[$pt_name] = [$pt, $sub_type];
 						}
 					} else {
 						$pt_name = $this->name . "_{$name}{$i}";
 						$pt_addr = "{$name}[$i]";
 						$pt = new ParserType($pt_name, $pt_addr, $field);
-						$result[$pt] = $field;
+						$result[$pt_name] = [$pt, $field];
 					}
 				}
 			} else {
 				$pt = new ParserType((string)$name, (string)$name, $field);
-				$result[$pt] = $field;
+				$result[(string)$name] = [$pt, $field];
 			}
 		}
 		return $result;
 	}
 
 	function getConstructors() {
+		$result = [];
 		$ctor = $this->_elem["constructor"];
 		if ($ctor) {
 			foreach (explode(',', $ctor) as $n) {
-				yield intval(trim($n));
+				$result[] = intval(trim($n));
 			}
 		}
+		return $result;
 	}
 }
 
@@ -286,9 +293,11 @@ class Component extends Struct {
 	}
 
 	function getEventHandlers() {
+		$result = [];
 		foreach ($this->_elem->xpath("handles") as $node) {
-			yield $node["event"];
+			$result[] = (string)$node["event"];
 		}
+		return $result;
 	}
 }
 
@@ -300,15 +309,19 @@ class Enum extends Base {
 	}
 
 	function getValues() {
+		$result = [];
 		foreach ($this->_elem->xpath(".//enum[@name]") as $e) {
-			yield $e["name"] => (string)$e;
+			$result[(string)$e["name"]] = (string)$e;
 		}
+		return $result;
 	}
 
 	function getValuesNames() {
+		$result = [];
 		foreach ($this->_elem->xpath(".//enum[@name]") as $e) {
-			yield $e["name"];
+			$result[] = (string)$e["name"];
 		}
+		return $result;
 	}
 }
 
@@ -366,6 +379,7 @@ class Model {
 
 	private function _has_in($key, $attr_name) {
 		$map = $this->$attr_name;
+		$key = (string)$key;
 		if (isset($map[$key])) {
 			return $map[$key];
 		}
@@ -378,7 +392,17 @@ class Model {
 		return null;
 	}
 
-	function getModuleName() { return $this->root["name"]; }
+	function getModuleName() { return (string)$this->root["name"]; }
+
+	function getNamespace() { return (string)$this->root["namespace"]; }
+
+	function getOnLuaopen() { return $this->on_luaopen ? (string)$this->on_luaopen : null; }
+
+	function getFunctions() { return $this->root->xpath("function"); }
+
+	function getShutdowns() { return $this->root->xpath("shutdown"); }
+
+	function getInterfaces() { return $this->root->xpath("interface"); }
 
 	function getStruct($name) { return $this->structs[$name] ?? null; }
 
