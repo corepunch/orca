@@ -99,7 +99,7 @@ static int f_<?= $name ?>___fromstring(lua_State *L) {
 }
 <?php endif ?>
 static int f_<?= $name ?>___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_<?= $name ?>(L));  // remove <?= $name ?> from stack and call constructor
+	return ((void)lua_remove(L, 1), f_new_<?= $name ?>(L));  // remove <?= $name ?> from stack and call constructor
 }
 int luaopen_orca_<?= $name ?>(lua_State *L) {
 	luaL_newmetatable(L, "<?= $struct->export ?>");
@@ -115,7 +115,7 @@ int luaopen_orca_<?= $name ?>(lua_State *L) {
 	<?php endforeach ?>
 		{ NULL, NULL },
 	}), 0);
-	// Make <?= $name ?> creatable like via constructor-like syntax
+	// Make <?= $name ?> creatable via constructor-like syntax
 	lua_newtable(L);
 	lua_pushcfunction(L, f_<?= $name ?>___call);
 	lua_setfield(L, -2, "__call");

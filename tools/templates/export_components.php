@@ -1,3 +1,7 @@
+<?php if ($model->hasComponents()):?>
+#define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
+#define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
+<?php endif ?>
 <?php foreach ($model->getComponents() as $name => $component):?>
 <?php foreach ($component->getEventHandlers() as $event): ?>
 LRESULT <?= $name ?>_<?= $event ?>(struct Object*, struct <?= $name ?>*, wParam_t, <?= $event ?>Ptr);
@@ -19,7 +23,6 @@ static struct <?= $name ?> <?= $name ?>Defaults = {
   .<?= $property ?> = <?= $type->default ?>,
 <?php endforeach ?>
 };
-<?php endforeach ?>
 LRESULT <?= $name ?>Proc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
 	<?php foreach ($component->getEventHandlers() as $event): ?>
