@@ -37,7 +37,7 @@ static struct <?= $name ?> <?= $name ?>Defaults = {
 LRESULT <?= $name ?>Proc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
 	<?php foreach ($component->getEventHandlers() as $event): ?>
-		case kEvent<?= $event ?>: return <?= $name ?>_<?= $event ?>(object, cmp, wparm, lparm); // <?= $event ?>
+	case kEvent<?= $event ?>: return <?= $name ?>_<?= $event ?>(object, cmp, wparm, lparm); // <?= $event ?>
 	<?php endforeach ?>
 	return FALSE;
 }
@@ -65,17 +65,17 @@ ORCA_API struct ClassDesc _<?= $name ?> = {
 
 ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { { NULL, NULL } }));
-	<?php if ($model->on_luaopen): ?>
+<?php if ($model->on_luaopen): ?>
 	void <?= $model->on_luaopen ?>(lua_State *L);
 	<?= $model->on_luaopen ?>(L);
-	<?php endif ?>
+<?php endif ?>
 	// Structs
-	<?php foreach ($model->getStructs() as $name => $struct):?>
+<?php foreach ($model->getStructs() as $name => $struct):?>
 	lua_setfield(L, (luaopen_orca_<?= $name ?>(L), -2), "<?= $name ?>");
-	<?php endforeach ?>
+<?php endforeach ?>
 	// Components
-	<?php foreach ($model->getComponents() as $name => $component):?>
+<?php foreach ($model->getComponents() as $name => $component):?>
 	lua_setfield(L, (lua_pushclass(L, &_<?= $name ?>), -2), "<?= $name ?>");
-	<?php endforeach ?>
+<?php endforeach ?>
 	return 1;
 }

@@ -143,6 +143,8 @@ class Method extends Base {
 	public $static;
 	public $returns;
 	public $full_name;
+	public $export;
+	public $id;
 
 	function __construct($elem, $model, $owner = null) {
 		parent::__construct($elem, $model);
@@ -150,7 +152,9 @@ class Method extends Base {
 		foreach ($elem->xpath("arg") as $arg) {
 			$this->args[] = [$arg["name"], new Type($arg, $model)];
 		}
+		$this->export = $elem["export"] ?? lcfirst($elem["name"]);
 		$this->static = $elem["static"];
+		$this->id = "0x" . hash("fnv1a32", (lcfirst($elem["name"])));
 		if ($owner !== null && !$this->static) {
 			$wrapper = simplexml_load_string('<args/>');
 			$thisElem = $wrapper->addChild("arg");
@@ -168,6 +172,8 @@ class Method extends Base {
 		$prefix = $owner !== null ? ($owner["prefix"] ?? "") : "";
 		$this->full_name = $prefix . $elem["name"];
 	}
+
+	function isMetaMethod() { return str_starts_with($this->export, "__"); }
 
 	function getReturnType() { return $this->returns ?? "void"; }
 
@@ -235,6 +241,15 @@ class Struct extends Base {
 			}
 		}
 		return $result;
+	}
+
+	function hasFromString() {
+		foreach ($this->getFields() as $field => $type) {
+			if ($type->kind == "struct" && $type->name != "color") {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	function getConstructors() {
