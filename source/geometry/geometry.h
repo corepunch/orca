@@ -184,6 +184,7 @@ luaX_pushcolor(lua_State *L, lpccolor_t color);
 ORCA_API lpcolor_t
 luaX_checkcolor(lua_State *L, int idx);
 
+#include <source/geometry/geometry.h>
 #define RotationOrder_Count 6
 typedef enum RotationOrder {
 	kRotationOrderXYZ, /// Rotate around X axis first, then Y, then Z

@@ -119,14 +119,7 @@ class Type extends Base {
 	}
 
 	function __toString() {
-		$map = [
-		"enum"      => "enum %s",
-		"struct"    => "struct %s",
-		"component" => "struct %s",
-		"resource"  => "struct %s",
-		"fixed"     => "%sString_t",
-		];
-		$format = $map[$this->kind] ?? "%s";
+		$format = config::$TypeInfos[$this->kind]["decl"];
 		$base = sprintf($format, $this->type);
 		if ($this->const) {
 			$base .= " const";

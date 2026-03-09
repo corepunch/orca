@@ -429,9 +429,10 @@ luaX_pushStyle(lua_State *L, lpcStyle_t Style);
 ORCA_API lpStyle_t
 luaX_checkStyle(lua_State *L, int idx);
 
-#include <source/renderer/api/renderer.h>
 #include <include/renderer.h>
+#include <source/renderer/api/renderer.h>
 #include <source/UIKit/uidef.h>
+#include <source/UIKit/UIKit.h>
 typedef struct Object Object_t, *lpObject_t;
 typedef struct Object const cObject_t, *lpcObject_t;
 typedef struct ViewText ViewText_t, *lpViewText_t;
