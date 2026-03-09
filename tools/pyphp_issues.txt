@@ -1,0 +1,203 @@
+pyphp bug report
+================
+pyphp submodule commit: 236fdac89337dd6632a1e3592f6bd799fdca014f
+  (https://github.com/corepunch/PyPHP)
+File: pyphp/pyphp/preprocessor.py
+
+
+------------------------------------------------------------------------
+BUG 1 (FIXED in this repo): _php_expr() missing static-property step
+------------------------------------------------------------------------
+
+LOCATION
+  preprocessor.py, function _php_expr() (~line 2863)
+
+SYMPTOM
+  PHP Fatal error: Uncaught AttributeError: type object 'config' has no
+  attribute '_ClassName__Prop'
+
+CAUSE
+  _php_expr() is called to convert the iterable expression of a foreach
+  statement before the general $var -> __var substitution (step 8) runs
+  on the rest of the file.  It correctly converts $this -> self first,
+  but it does NOT apply the static-property step (ClassName::$Prop ->
+  ClassName::_s_Prop) that php_to_python() applies as step 7b.
+
+  Therefore, foreach (config::$Axis as $pair) inside class PropertyName
+  becomes:
+
+    for __pair in _foreach_vals(config.__Axis):   # WRONG
+
+  Python's name-mangling rule transforms any __name identifier (two
+  leading underscores, not ending with __) used inside a class body:
+  config.__Axis -> config._PropertyName__Axis, raising AttributeError.
+
+  The same problem affects any foreach whose iterable expression
+  contains a static property access (ClassName::$Prop) when the foreach
+  body lives inside a class method.
+
+MINIMAL REPRODUCER
+  <?php
+  class Config {
+      public static $Items = ["a", "b", "c"];
+  }
+  class Processor {
+      function run() {
+          foreach (Config::$Items as $item) {
+              echo $item . "\n";
+          }
+      }
+  }
+  $p = new Processor();
+  $p->run();
+  ?>
+
+  Current (broken) _php_expr() body:
+
+    expr = expr.strip()
+    expr = _re_new.sub(r'\1(', expr)
+    expr = _re_this.sub('self', expr)     # $this -> self
+    expr = _re_var.sub(r'__\1', expr)     # $var  -> __var  (too early!)
+    return expr
+
+  Config::$Items -> Config::__Items; inside class Processor Python
+  mangles __Items -> _Processor__Items -> AttributeError.
+
+FIX
+  In _php_expr(), apply _re_static_prop before _re_var:
+
+    def _php_expr(expr: str) -> str:
+        expr = expr.strip()
+        expr = _re_new.sub(r'\1(', expr)
+        expr = _re_this.sub('self', expr)          # $this  -> self
+        expr = _re_static_prop.sub(r'::_s_\1', expr)  # ::$Prop -> ::_s_Prop  <-- ADD
+        expr = _re_var.sub(r'__\1', expr)          # $var   -> __var
+        return expr
+
+  This matches the ordering already used in php_to_python() (step 7b
+  runs before step 8).
+
+
+------------------------------------------------------------------------
+BUG 2: _re_string doesn't skip // line comments
+------------------------------------------------------------------------
+
+LOCATION
+  preprocessor.py, line 38 (_re_string definition)
+  preprocessor.py, function _sub_outside_strings() (~line 135)
+
+SYMPTOM
+  PHP // comments that contain an apostrophe (e.g. "Python's") cause
+  all subsequent // comment lines to remain as // in the generated
+  Python instead of being converted to #.  When those lines also
+  contain non-ASCII characters (e.g. Unicode box-drawing chars used as
+  decorative separators) Python raises:
+
+    SyntaxError: invalid character '─' (U+2500)
+
+  More broadly, any substitution performed by _sub_outside_strings()
+  may silently produce wrong output for code that follows the offending
+  comment, because the code is mistakenly treated as being inside a
+  string literal.
+
+CAUSE
+  _re_string is used by _sub_outside_strings() to locate string-literal
+  regions that must be left unchanged.  Its pattern only recognises
+  single- and double-quoted strings:
+
+    _re_string = re.compile(r'f?"(?:[^"\\]|\\.)*"|f?\'(?:[^\'\\]|\\.)*\'')
+
+  It has no knowledge of PHP // line comments.  When the scanner
+  encounters a lone apostrophe inside a // comment (e.g. the 's in
+  "Python's"), it treats it as the opening delimiter of a single-quoted
+  string and greedily consumes everything up to the next matching quote
+  character, which may be many lines later.
+
+  All code inside that falsely-matched "string" span is then protected
+  from substitution, so // -> # conversion, $var -> __var, etc. all
+  silently fail for those lines.
+
+MINIMAL REPRODUCER
+  <?php
+  // Python's apostrophe tricks _re_string into starting a fake string.
+  // This line and all subsequent // comments won't become # comments.
+  $x = 1;
+  echo $x . "\n";  // outputs "1" but generated Python may be broken
+  ?>
+
+FIX (suggested)
+  Extend _re_string to also match // single-line comments as opaque
+  spans, so that quotes inside comments are consumed and never treated
+  as string delimiters.  Adjacent string literals in a re.compile()
+  call are concatenated by Python, so the pattern below is equivalent
+  to a single alternation string:
+
+    _re_string = re.compile(
+        r'//[^\n]*'                 # // line comment (consume to EOL)
+        + r'|f?"(?:[^"\\]|\\.)*"'   # double-quoted string
+        + r"|f?'(?:[^'\\]|\\.)*'"   # single-quoted string
+    )
+
+  Then update _sub_outside_strings() to allow pattern substitution
+  inside comment spans (so // -> # still works) while still protecting
+  string spans:
+
+    def _sub_outside_strings(pattern, repl, code):
+        result, pos = [], 0
+        for m in _re_string.finditer(code):
+            result.append(pattern.sub(repl, code[pos:m.start()]))
+            if m.group().startswith('//'):
+                # Comment: allow the pattern to apply (e.g. // -> #),
+                # but the comment text itself is already consumed so
+                # quotes inside it won't start a new string match.
+                result.append(pattern.sub(repl, m.group()))
+            else:
+                # String literal: preserve verbatim.
+                result.append(m.group())
+            pos = m.end()
+        result.append(pattern.sub(repl, code[pos:]))
+        return ''.join(result)
+
+  The same change should be applied to _sub_cast_outside_strings() and
+  anywhere else that builds string_ranges from _re_string.finditer().
+
+
+------------------------------------------------------------------------
+KNOWN LIMITATIONS (not bugs, but worth noting for users)
+------------------------------------------------------------------------
+
+The following are known pyphp limitations encountered when running the
+orca code-generation templates.  Workarounds are shown where available.
+
+1. No (string) type cast
+   PHP:        (string)$expr
+   pyphp:      not supported
+   Workaround: strval($expr)
+
+2. No short list destructuring on LHS
+   PHP:        [$a, $b] = expr;
+   pyphp:      converted to _php_list(...) which is not a valid
+               assignment target
+   Workaround: $tmp = expr; $a = $tmp[0]; $b = $tmp[1];
+
+3. No $this->prop in string interpolation
+   PHP:        "{$this->name}"
+   pyphp:      only {$word} and {$word[key]} forms are handled;
+               -> is not allowed inside {}
+   Workaround: $this->name . "rest of string"
+
+4. Multi-line nested dict literals inside classes fail
+   PHP:        public static $T = [
+                   "k" => ["a" => 1,
+                           "b" => 2],
+               ];
+   pyphp:      the outer {} from _convert_php_arrays is
+               misprocessed by _braces_to_indent
+   Workaround: keep every inner dict on a single line
+
+5. ?? nested inside a PHP ternary
+   PHP:        $a ? ($b ?? $c) : $d
+   pyphp:      the ternary rewriter runs before ?? is resolved,
+               leaving raw ?? in the Python output
+   Workaround: hoist the ?? to a separate assignment:
+               $bc = $b ?? $c; $a ? $bc : $d
