@@ -9,11 +9,25 @@
 typedef struct lua_State lua_State;
 
 <?php function printContents($list) {
+	foreach ($list as $field) {
+		$doc = "";
+		if ($field->doc) {
+			$doc = " ///< " . $field->doc;
+		}
+		if ($field->type->fixed_array) {
+			echo("\t" . $field->type . " " . $field->name . "[" . $field->type->fixed_array . "];" . $doc . "\n"); 
+		} else {
+			echo("\t" . $field->type . " " . $field->name . ";" . $doc . "\n"); 
+		}
+	}
+}
+
+function printProperties($list) {
 	foreach ($list as $name => $type) {
 		if ($type->fixed_array) {
-			echo("\t$type {$name}[{$type->fixed_array}];\n"); 
+			echo("\t" . $type . " " . $name . "[" . $type->fixed_array . "];\n"); 
 		} else {
-			echo("\t$type $name;\n"); 
+			echo("\t" . $type . " " . $name . ";\n"); 
 		}
 	}
 } ?>
@@ -36,6 +50,9 @@ typedef <?= $event ?>* <?= $name ?>EventPtr;
 <?php endforeach ?>
 
 <?php foreach ($model->getEnums() as $name => $enum): ?>
+<?php if ($enum->doc): ?>
+/// @brief <?= $enum->doc ?>
+<?php endif ?>
 /** <?= $name ?> enum */
 typedef enum <?= $name ?> {
 <?php foreach ($enum->getValues() as $enum_name => $enum_doc): ?>
@@ -66,6 +83,9 @@ ORCA_API <?= $method->getReturnType() ?>
 <?php endforeach ?>
 
 <?php foreach ($model->getStructs() as $name => $struct): ?>
+<?php if ($struct->doc): ?>
+/// @brief <?= $struct->doc ?>
+<?php endif ?>
 /** <?= $name ?> struct */
 struct <?= $name ?> {
 <?php printContents($struct->getFields()) ?>
@@ -79,11 +99,14 @@ ORCA_API <?= $method->getReturnType() ?>
 <?php endforeach ?>
 
 <?php foreach ($model->getComponents() as $name => $component): ?>
+<?php if ($component->doc): ?>
+/// @brief <?= $component->doc ?>
+<?php endif ?>
 /** <?= $name ?> component */
 typedef struct <?= $name ?> <?= $name ?>_t, *<?= $name ?>Ptr, *lp<?= $name ?>_t;
 typedef struct <?= $name ?> const *<?= $name ?>CPtr, *lpc<?= $name ?>_t;
 struct <?= $name ?> {
-	<?php printContents($component->getProperties(false)) ?>
+	<?php printProperties($component->getProperties(false)) ?>
 	<?php printContents($component->getFields()) ?>
 };
 ORCA_API void luaX_push<?= $name ?>(lua_State *L, struct <?= $name ?> const* <?= $name ?>);
