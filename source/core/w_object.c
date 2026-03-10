@@ -351,7 +351,6 @@ lpObject_t OBJ_DispatchEvent(lua_State* L, lpObject_t self, lpcString_t event)
   lua_remove(L, 2); // clear event name to send object with args to parents
   for (lpObject_t obj = self; obj; obj = OBJ_GetParent(obj)) {
     struct HandleMessageEventArgs event = {
-      .lua_state = L,
       .FirstArg = 1,
       .NumArgs = dwNumArgs + 1,
     };

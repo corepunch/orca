@@ -1,17 +1,15 @@
 php:
-	python3 -m pyphp.pyphp templates/header.php ../source/core/core.xml > ../source/core/core.h
-	python3 -m pyphp.pyphp templates/properties.php ../source/core/core.xml > ../source/core/core_properties.h
-	python3 -m pyphp.pyphp templates/export.php ../source/core/core.xml > ../source/core/core_export.c
-
-	python3 -m pyphp.pyphp templates/header.php ../source/renderer/api/renderer.xml > ../source/renderer/api/renderer.h
-	python3 -m pyphp.pyphp templates/properties.php ../source/renderer/api/renderer.xml > ../source/renderer/api/renderer_properties.h
-	python3 -m pyphp.pyphp templates/export.php ../source/renderer/api/renderer.xml > ../source/renderer/api/renderer_export.c
-
-	python3 -m pyphp.pyphp templates/header.php ../source/geometry/geometry.xml > ../source/geometry/geometry.h
-	python3 -m pyphp.pyphp templates/properties.php ../source/geometry/geometry.xml > ../source/geometry/geometry_properties.h
-	python3 -m pyphp.pyphp templates/export.php ../source/geometry/geometry.xml > ../source/geometry/geometry_export.c
-
-	python3 -m pyphp.pyphp templates/header.php ../source/UIKit/UIKit.xml > ../source/UIKit/UIKit.h
-	python3 -m pyphp.pyphp templates/properties.php ../source/UIKit/UIKit.xml > ../source/UIKit/UIKit_properties.h
-	python3 -m pyphp.pyphp templates/export.php ../source/UIKit/UIKit.xml > ../source/UIKit/UIKit_export.c
-
+	for mod in \
+		core/core \
+		renderer/api/renderer \
+		geometry/geometry \
+		UIKit/UIKit \
+		SceneKit/SceneKit \
+		SpriteKit/SpriteKit; do \
+		echo "Generating $$mod..."; \
+		xml=../source/$$mod.xml; \
+		base=../source/$$mod; \
+		python3 -m cProfile -s cumtime -o profile.out -m pyphp.pyphp templates/header.php $$xml > $${base}.h; \
+		python3 -m cProfile -s cumtime -o profile.out -m pyphp.pyphp templates/properties.php $$xml > $${base}_properties.h; \
+		python3 -m cProfile -s cumtime -o profile.out -m pyphp.pyphp templates/export.php $$xml > $${base}_export.c; \
+	done

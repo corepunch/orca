@@ -1,8 +1,10 @@
 <?xml version="1.0"?>
 <!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
 <module name="SceneKit" namespace="orca">
-  <include file="source/renderer/api/renderer.h"/>
+  <require file="../renderer/api/renderer.xml"/>
+
   <include file="include/renderer.h"/>
+  <include file="source/core/core.h"/>
   <include file="source/UIKit/UIKit.h"/>
 
   <enums name="StencilOp">
