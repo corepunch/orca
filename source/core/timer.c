@@ -9,7 +9,7 @@ struct timer
   struct timer* next;
 };
 
-int OBJ_API(SetTimer)
+int OBJ_SetTimer(lua_State* L, lpObject_t self)
 {
   static uint32_t counter = 0;
   luaX_parsefield(lpcString_t, name, 2, luaL_optstring, NULL);

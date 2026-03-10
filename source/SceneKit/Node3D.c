@@ -15,20 +15,16 @@ HANDLER(Node3D, UpdateMatrix)
 
   matrix = MAT4_Multiply(&layoutMatrix, &renderMatrix);
 
-  if (pUpdateMatrix->parent) {
-    pNode3D->Matrix = MAT4_Multiply(pUpdateMatrix->parent, &matrix);
-  } else {
-    pNode3D->Matrix = matrix;
-  }
-
+  pNode3D->Matrix = MAT4_Multiply(&pUpdateMatrix->parent, &matrix);
   pNode3D->_opacity = GetNode(hObject)->Opacity * pUpdateMatrix->opacity;
+  
   matrix = pNode3D->Matrix;
 
   MAT4_Translate(&matrix, &contentOffset);
 
   FOR_EACH_CHILD(hObject, OBJ_SendMessageW, kEventUpdateMatrix, 0,
-                 &(UPDATEMATRIXSTRUCT){
-                   .parent = &pNode3D->Matrix,
+                 &(struct UpdateMatrixEventArgs){
+                   .parent = pNode3D->Matrix,
                    .opacity = pNode3D->_opacity,
                  });
 

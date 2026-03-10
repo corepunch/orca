@@ -52,7 +52,10 @@ HANDLER(SKView, ForegroundContent)
   if (w <= 0 || h <= 0) return FALSE;
 
   OBJ_SendMessageW(scene, kEventUpdateMatrix, 0,
-                   &(UPDATEMATRIXSTRUCT){ .opacity = 1.0f });
+                   &(struct UpdateMatrixEventArgs){
+    .parent = MAT4_Identity(),
+    .opacity = 1.0f
+  });
 
   struct ViewDef viewdef = {0};
   viewdef.projectionMatrix = MAT4_Ortho(0, w, 0, h, -1, 1);

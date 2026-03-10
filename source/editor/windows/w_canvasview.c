@@ -200,12 +200,12 @@ void ED_DrawCanvasView(HEDWND wnd, struct _CANVASVIEW* sv) {
   
   OBJ_UpdateLayout(scene, view.width, view.height);
   
-  OBJ_SendMessageW(scene, kEventUpdateMatrix, 0, &(UPDATEMATRIXSTRUCT){
-    .parent = NULL,
+  OBJ_SendMessageW(scene, kEventUpdateMatrix, 0, &(struct UpdateMatrixEventArgs){
+    .parent = MAT4_Identity(),
     .opacity = 1,
   });
   
-  OBJ_SendMessageW(scene, kEventRenderScreen, 0, &(RENDERSCREENSTRUCT){
+  OBJ_SendMessageW(scene, kEventRenderScreen, 0, &(struct RenderScreenEventArgs){
     .width = view.width,
     .height = view.height,
     .stereo = 0,

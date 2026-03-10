@@ -986,3 +986,8 @@ void on_renderer_module_registered(lua_State* L) {
   WI_Init();
   FT_Init();
 }
+
+
+void luaX_pushViewDef(lua_State* L, struct ViewDef const* viewdef) {
+  lua_pushnil(L);
+}

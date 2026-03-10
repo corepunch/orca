@@ -112,7 +112,7 @@ OBJ_AddClass(lpObject_t hobj, lpcString_t cls)
 
 static lua_State* g_L = NULL;
 
-void OBJ_API(AddStyleSheet, lpcString_t name)
+void OBJ_AddStyleSheet(lua_State* L, lpObject_t self, lpcString_t name)
 {
   uint32_t classID = *name == '.' ? fnv1a32(name + 1) : 0;
   if (lua_type(L, 3) != LUA_TTABLE) {

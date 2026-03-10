@@ -35,15 +35,7 @@ class PropertyName {
 	}
 
 	function __toString() {
-		return $this->format();
-	}
-
-	function getPath() {
-		return implode('.', $this->path);
-	}
-
-	function format() {
-		$name = $this->getPath();
+		$name = implode('.', array_map('ucfirst', $this->path));
 		foreach (config::$Axis as $pair) {
 			$pat = $pair[0];
 			$repl = $pair[1];
@@ -53,6 +45,10 @@ class PropertyName {
 			}
 		}
 		return str_replace('.', '', $name);
+	}
+
+	function getPath() {
+		return implode('.', $this->path);
 	}
 }
 
@@ -108,7 +104,7 @@ class Type extends Base {
 
 	function __construct($elem, $model) {
 		parent::__construct($elem, $model);
-		$this->type = $elem["type"];
+		$this->type = $elem["type"] ?? "void";
 		$kind_data = $model->getKind($this->type);
 		$this->kind = $kind_data[0];
 		$this->data = $kind_data[1];
@@ -119,7 +115,8 @@ class Type extends Base {
 	}
 
 	function __toString() {
-		$format = config::$TypeInfos[$this->kind]["decl"];
+		$info = config::$TypeInfos[$this->kind] ?? [];
+		$format = $info["decl"] ?? "%s_t";
 		$base = sprintf($format, $this->type);
 		if ($this->const) {
 			$base .= " const";
@@ -131,8 +128,21 @@ class Type extends Base {
 	}
 
 	function get($name, $arg = null, $addr = null) {
+		if ($name === 'push' && $this->kind === 'struct' && $this->pointer) $arg = '*'.$arg;
 		$template = config::$TypeInfos[$this->kind][$name];
 		return str_replace(['{type}', '{arg}', '{addr}'], [$this->type, $arg, $addr], $template);
+	}
+
+	function getContainer() {
+		$map = [
+			"%s" => "fixedString_t",
+			"%d" => "int",
+			"%f" => "float",
+			"%u" => "unsigned",
+			"%ld" => "long",
+		];
+		$fmt = config::$TypeInfos[$this->kind]["format"] ?? null;
+		return $map[$fmt] ?? null;
 	}
 }
 
@@ -153,19 +163,25 @@ class Method extends Base {
 			$this->args[] = [$arg["name"], new Type($arg, $model)];
 		}
 		$this->export = $elem["export"] ?? lcfirst($elem["name"]);
-		$this->static = $elem["static"];
+		$this->static = $elem["static"] == 'true';
 		$this->id = "0x" . hash("fnv1a32", (lcfirst($elem["name"])));
 		if ($owner !== null && !$this->static) {
-			$wrapper = simplexml_load_string('<args/>');
-			$thisElem = $wrapper->addChild("arg");
+			$thisElem = simplexml_load_string("<arg/>");
 			$thisElem->addAttribute("name", "this_");
 			$thisElem->addAttribute("type", $owner["name"]);
-			$thisElem->addAttribute("pointer", "1");
+			$thisElem->addAttribute("pointer", "true");
 			$const = $elem["const"];
 			if ($const) {
 				$thisElem->addAttribute("const", $const);
 			}
 			array_unshift($this->args, ["this_", new Type($thisElem, $model)]);
+		}
+		if ($elem["lua"]== 'true') {
+			$thisElem = simplexml_load_string("<arg/>");
+			$thisElem->addAttribute("name", "L");
+			$thisElem->addAttribute("type", "lua_State");
+			$thisElem->addAttribute("pointer", "true");
+			array_unshift($this->args, ["L", new Type($thisElem, $model)]);
 		}
 		$rets = $elem->xpath("returns");
 		$this->returns = count($rets) > 0 ? new Type($rets[0], $model) : null;
@@ -184,15 +200,34 @@ class Method extends Base {
 	}
 
 	function getArgsTypes() {
+		$returned = false;
 		foreach ($this->args as $pair) {
+			$returned = true;
 			yield $pair[1];
+		}
+		if (!$returned) {
+			yield "void";
+		}
+	}
+}
+
+// --- Interface ---
+
+class Interface extends Base {
+	function __construct($elem, $model) {
+		parent::__construct($elem, $model);
+	}
+
+	function getMethods() {
+		foreach ($this->_elem->xpath(".//method[@name]") as $m) {
+			yield $m["name"] => new Method($m, $this->_model, $this->_elem);
 		}
 	}
 }
 
 // --- Struct ---
 
-class Struct extends Base {
+class Struct extends Interface {
 	public $sealed;
 	public $export;
 	public $prefix;
@@ -207,12 +242,6 @@ class Struct extends Base {
 	function getFields() {
 		foreach ($this->_elem->xpath(".//field[@name]") as $f) {
 			yield new FieldName($f["name"]) => new Type($f, $this->_model);
-		}
-	}
-
-	function getMethods() {
-		foreach ($this->_elem->xpath(".//method[@name]") as $m) {
-			yield $m["name"] => new Method($m, $this->_model, $this->_elem);
 		}
 	}
 
@@ -286,10 +315,14 @@ class Component extends Struct {
 		}
 	}
 
-	function getProperties() {
+	function getProperties($recursive = true) {
 		foreach ($this->_elem->xpath(".//property[@name]") as $f) {
 			$type_ = new Type($f, $this->_model);
-			yield from $this->_walkProperties($type_, [$this->name, $f["name"]]);
+			if ($recursive) {
+				yield from $this->_walkProperties($type_, [$this->name, (string)$f["name"]]);
+			} else {
+				yield new PropertyName($this->name, [(string)$f["name"]]) => $type_;
+			}
 		}
 	}
 
@@ -320,6 +353,12 @@ class Enum extends Base {
 	}
 }
 
+class Event extends Type {
+	function __construct($elem, $model) {
+		parent::__construct($elem, $model);
+	}
+}
+
 // --- Resource ---
 
 class Resource extends Base {
@@ -339,6 +378,17 @@ class IncludeFile extends Base {
 	}
 }
 
+class ExternalStruct extends Base {
+	public $struct;
+	function __construct($elem, $model) {
+		parent::__construct($elem, $model);
+		$this->struct = $elem['struct'];
+	}
+	function __toString() {
+		return $this->struct;
+	}
+}
+
 // --- Model ---
 
 class Model {
@@ -350,6 +400,10 @@ class Model {
 	public $components;
 	public $resources;
 	public $includes;
+	public $events;
+	public $interfaces;
+	public $functions;
+	public $external_structs;
 	public $on_luaopen;
 
 	function __construct($xml_file, $include_file = null) {
@@ -357,14 +411,25 @@ class Model {
 		$this->root = $xml;
 		$this->source = $include_file ?? $xml_file;
 		$this->requires = [];
+		$this->prefix = $xml["prefix"] ?? ($xml["name"] . '_');
 		foreach ($xml->xpath("require") as $r) {
 			$path = dirname($xml_file).'/'.$r["file"];
 			$this->requires[] = new Model($path, $r["file"]);
 		}
+		$rn = $xml->xpath(".//external[@struct]");
+		$this->external_structs = array_combine(
+		array_map(fn($r) => $r["struct"], $rn),
+		array_map(fn($r) => new ExternalStruct($r, $this), $rn)
+		);
 		$sn = $xml->xpath(".//struct[@name]");
 		$this->structs = array_combine(
 		array_map(fn($s) => $s["name"], $sn),
 		array_map(fn($s) => new Struct($s, $this), $sn)
+		);
+		$sn = $xml->xpath(".//interface[@name]");
+		$this->interfaces = array_combine(
+		array_map(fn($s) => $s["name"], $sn),
+		array_map(fn($s) => new Interface($s, $this), $sn)
 		);
 		$en = $xml->xpath(".//enums[@name]");
 		$this->enums = array_combine(
@@ -386,6 +451,16 @@ class Model {
 		array_map(fn($r) => $r["file"], $rn),
 		array_map(fn($r) => new IncludeFile($r, $this), $rn)
 		);
+		$rn = $xml->xpath(".//event[@name]");
+		$this->events = array_combine(
+		array_map(fn($r) => $r["name"], $rn),
+		array_map(fn($r) => new Event($r, $this), $rn)
+		);
+		$rn = $xml->xpath(".//function[@name]");
+		$this->functions = array_combine(
+		array_map(fn($r) => $r["name"], $rn),
+		array_map(fn($r) => new Method($r, $this), $rn)
+		);
 		$this->on_luaopen = $xml["on-luaopen"];
 	}
 
@@ -406,14 +481,20 @@ class Model {
 	function hasComponents() { return count($this->components) > 0; }
 	function getModuleName() { return $this->root["name"]; }
 	function getStruct($name) { return $this->structs[$name] ?? null; }
+	function getInterface($name) { return $this->interfaces[$name] ?? null; }
 	function getEnum($name) { return $this->enums[$name] ?? null; }
 	function getComponent($name) { return $this->components[$name] ?? null; }
 	function getResource($resource_type) { return $this->resources[$resource_type] ?? null; }
+
 	function getStructs() { return $this->structs; }
+	function getInterfaces() { return $this->interfaces; }
 	function getEnums() { return $this->enums; }
 	function getComponents() { return $this->components; }
 	function getResources() { return $this->resources; }
 	function getIncludes() { return $this->includes; }
+	function getEvents() { return $this->events; }
+	function getFunctions() { return $this->functions; }
+	function getExternalStructs() { return $this->external_structs; }
 
 	function getKind($_type) {
 		$r = $this->_has_in($_type, "enums");
@@ -424,6 +505,10 @@ class Model {
 		if ($r) {
 			return ["struct", $r];
 		}
+		$r = $this->_has_in($_type, "interfaces");
+		if ($r) {
+			return ["interface", $r];
+		}
 		$r = $this->_has_in($_type, "components");
 		if ($r) {
 			return ["component", $r];
@@ -431,6 +516,10 @@ class Model {
 		$r = $this->_has_in($_type, "resources");
 		if ($r) {
 			return ["resource", $r];
+		}
+		$r = $this->_has_in($_type, "external_structs");
+		if ($r) {
+			return ["external_struct", $r];
 		}
 		return [$_type, null];
 	}

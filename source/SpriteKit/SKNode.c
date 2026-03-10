@@ -15,17 +15,12 @@ HANDLER(SKNode, UpdateMatrix)
 
 //  matrix = MAT4_Multiply(&layoutMatrix, &renderMatrix);
   matrix = MAT4_FromTranslation(&(vec3_t){pSKNode->Position.x, pSKNode->Position.y});
-  if (pUpdateMatrix->parent) {
-    pSKNode->Matrix = MAT4_Multiply(pUpdateMatrix->parent, &matrix);
-  } else {
-    pSKNode->Matrix = matrix;
-  }
-
+  pSKNode->Matrix = MAT4_Multiply(&pUpdateMatrix->parent, &matrix);
   pSKNode->_opacity = GetNode(hObject)->Opacity * pUpdateMatrix->opacity;
 
   FOR_EACH_CHILD(hObject, OBJ_SendMessageW, kEventUpdateMatrix, 0,
-                 &(UPDATEMATRIXSTRUCT){
-                   .parent = &pSKNode->Matrix,
+                 &(struct UpdateMatrixEventArgs){
+                   .parent = pSKNode->Matrix,
                    .opacity = pSKNode->_opacity,
                  });
 

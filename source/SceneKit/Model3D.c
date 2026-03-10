@@ -16,14 +16,14 @@ _CollectUniforms(lpObject_t hObject,
 
   if (mat) {
     ent->shader = mat->Shader;
-    if (mat->BlendMode != -1) {
+    if (mat->BlendMode != kBlendModeMixedAlpha) {
       ent->material.blendMode = (enum blend_mode)mat->BlendMode;
     }
     ent->material.numUniforms +=
     OBJ_GetUniforms(CMP_GetObject(mat),
                     u + ent->material.numUniforms);
   }
-  if (blendMode != -1) {
+  if (blendMode != kBlendModeMixedAlpha) {
     ent->material.blendMode = (enum blend_mode)blendMode;
   }
 }
@@ -66,7 +66,7 @@ HANDLER(Model3D, Render)
   //		int a=0;
   //	}
 
-  R_DrawEntity(pRender, &ent);
+  R_DrawEntity(pRender->ViewDef, &ent);
 
   return TRUE;
 }

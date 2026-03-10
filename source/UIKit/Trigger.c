@@ -14,13 +14,13 @@ HANDLER(Trigger, Attached)
 
 HANDLER(Trigger, PropertyChanged)
 {
-  if (strcmp(PROP_GetName(pPropertyChanged->hProperty), pTrigger->Property))
+  if (strcmp(PROP_GetName(pPropertyChanged->Property), pTrigger->Property))
     return FALSE;
-  switch (PROP_GetType(pPropertyChanged->hProperty)) {
+  switch (PROP_GetType(pPropertyChanged->Property)) {
     case kDataTypeFloat:
-      if (fabs(*(float*)PROP_GetValue(pPropertyChanged->hProperty) -
+      if (fabs(*(float*)PROP_GetValue(pPropertyChanged->Property) -
                pTrigger->Value) < 0.001f) {
-        OBJ_SendMessageW(hObject, kEventTriggered, 0, &(TRIGGEREDSTRUCT){
+        OBJ_SendMessageW(hObject, kEventTriggered, 0, &(struct TriggeredEventArgs){
           pTrigger
         });
       }
@@ -28,9 +28,9 @@ HANDLER(Trigger, PropertyChanged)
     case kDataTypeInt:
     case kDataTypeBool:
     case kDataTypeEnum:
-      if (*(int*)PROP_GetValue(pPropertyChanged->hProperty) ==
+      if (*(int*)PROP_GetValue(pPropertyChanged->Property) ==
           pTrigger->Value) {
-        OBJ_SendMessageW(hObject, kEventTriggered, 0, &(TRIGGEREDSTRUCT){
+        OBJ_SendMessageW(hObject, kEventTriggered, 0, &(struct TriggeredEventArgs){
           pTrigger
         });
       }
@@ -42,8 +42,8 @@ HANDLER(Trigger, PropertyChanged)
 
 HANDLER(OnAttachedTrigger, Attached)
 {
-  OBJ_SendMessageW(hObject, kEventTriggered, 0, &(TRIGGEREDSTRUCT){
-    pOnAttachedTrigger
+  OBJ_SendMessageW(hObject, kEventTriggered, 0, &(struct TriggeredEventArgs){
+    GetTrigger(CMP_GetObject(pOnAttachedTrigger)),
   });
   return FALSE;
 }
@@ -66,12 +66,12 @@ HANDLER(Setter, Triggered)
 
 HANDLER(Handler, Triggered)
 {
-  EVENT_PTR(HandleMessage) msg = pTriggered->message;
+  HandleMessageEventPtr msg = &pTriggered->message;
   if (pTriggered->Trigger ==
         CMP_GetUserData((struct component*)pHandler->Trigger) &&
       msg) {
-    lpObject_t pTarget = pHandler->Target ? pHandler->Target : hObject;
-    lua_State* L = msg->L;
+    lpObject_t pTarget = pHandler->Target ? CMP_GetObject(pHandler->Target) : hObject;
+    lua_State* L = OBJ_GetDomain(hObject);
     lua_geti(L, LUA_REGISTRYINDEX, OBJ_GetLuaObject(pTarget));
     lua_getfield(L, -1, pHandler->Function);
     if (lua_type(L, -1) == LUA_TFUNCTION) {
@@ -92,7 +92,7 @@ HANDLER(Handler, Triggered)
 HANDLER(EventTrigger, HandleMessage)
 {
   if (!strcmp(pHandleMessage->EventName, pEventTrigger->RoutedEvent)) {
-    TRIGGEREDSTRUCT parm = { pEventTrigger, pHandleMessage };
+    struct TriggeredEventArgs parm = { GetTrigger(CMP_GetObject(pEventTrigger)), *pHandleMessage };
     return OBJ_SendMessageW(hObject, kEventTriggered, 0, &parm);
   }
   return FALSE;
@@ -100,14 +100,14 @@ HANDLER(EventTrigger, HandleMessage)
 
 HANDLER(OnPropertyChangedTrigger, PropertyChanged)
 {
-  if (strcmp(PROP_GetName(pPropertyChanged->hProperty),
+  if (strcmp(PROP_GetName(pPropertyChanged->Property),
              pOnPropertyChangedTrigger->Property))
     return FALSE;
-  lua_State* L = pPropertyChanged->L;
-  luaX_pushProperty(L, pPropertyChanged->hProperty);
-  TRIGGEREDSTRUCT parm = {
-    pOnPropertyChangedTrigger,
-    &(HANDLEMESSAGESTRUCT){ .NumArgs = 1 },
+  lua_State* L = OBJ_GetDomain(hObject);
+  luaX_pushProperty(L, pPropertyChanged->Property);
+  struct TriggeredEventArgs parm = {
+    GetTrigger(CMP_GetObject(pOnPropertyChangedTrigger)),
+    { .NumArgs = 1 },
   };
   return OBJ_SendMessageW(hObject, kEventTriggered, 0, &parm);
 }

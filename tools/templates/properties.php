@@ -2,6 +2,9 @@
 <?php $model = new Model($argv[1]); ?>
 #ifndef __<?= strtoupper($model->getModuleName()) ?>_PROPERTIES_H__
 #define __<?= strtoupper($model->getModuleName()) ?>_PROPERTIES_H__
+<?php foreach ($model->getEvents() as $name => $event):?>
+#define kEvent<?= $name ?> 0x<?= hash('fnv1a32', $name) ?>
+<?php endforeach ?>
 <?php foreach ($model->getComponents() as $classname => $class):?>
 // <?= $classname ?>
 #define ID_<?= $classname ?> 0x<?= hash('fnv1a32', $classname) ?>

@@ -160,7 +160,7 @@ HANDLER(TextBlock, MeasureOverride)
 {
   TextRunPtr output = GetTextRun(hObject);
   TextBlockConceptPtr textblock = GetTextBlockConcept(hObject);
-  OBJ_SendMessageW(hObject, kEventMakeText, 0, &(MAKETEXTSTRUCT){
+  OBJ_SendMessageW(hObject, kEventMakeText, 0, &(struct MakeTextEventArgs){
                      .text = textblock->_text,
                      .availableSpace = pMeasureOverride->width
                    });
@@ -199,7 +199,7 @@ HANDLER(TextBlock, UpdateGeometry)
 
 HANDLER(TextBlock, DrawBrush)
 {
-	if (!memcmp(pDrawBrush->brush,
+	if (!memcmp(&pDrawBrush->brush,
 							&(struct BrushShorthand){0},
 							sizeof(struct BrushShorthand)) &&
 			!pDrawBrush->foreground)
@@ -211,13 +211,13 @@ HANDLER(TextBlock, DrawBrush)
   if (text->PlaceholderText == text->_text->run[0].string && pDrawBrush->foreground) {
     static struct BrushShorthand zero = { 0 };
     if (memcmp(&text->Placeholder, &zero, sizeof(struct BrushShorthand))) {
-      pDrawBrush->brush = &text->Placeholder;
+      pDrawBrush->brush = text->Placeholder;
     } else {
       modopacity = PLACEHOLDER_OPACITY;
     }
   }
 
-  Node2D_GetViewEntity(hObject, &entity, pDrawBrush->image, pDrawBrush->brush);
+  Node2D_GetViewEntity(GetNode2D(hObject), &entity, pDrawBrush->image, &pDrawBrush->brush);
 
   if (pDrawBrush->foreground) {
     entity.material.texture = 0;

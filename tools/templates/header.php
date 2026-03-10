@@ -1,51 +1,97 @@
 <?php require "model/module.php"; ?>
 <?php $model = new Model($argv[1]); ?>
-
-<?php function printContents($list) {
-	foreach ($list as $name => $type) {
-		echo("\t$type $name;\n"); 
-	}
-} ?>
-
 #ifndef __<?= strtoupper($model->getModuleName()) ?>_H__
 #define __<?= strtoupper($model->getModuleName()) ?>_H__
 
 #include <stdbool.h>
 #include <stdint.h>
+
+typedef struct lua_State lua_State;
+
+<?php function printContents($list) {
+	foreach ($list as $name => $type) {
+		if ($type->fixed_array) {
+			echo("\t$type {$name}[{$type->fixed_array}];\n"); 
+		} else {
+			echo("\t$type $name;\n"); 
+		}
+	}
+} ?>
+
+<?php foreach ($model->getExternalStructs() as $name => $struct):?>
+struct <?= $name ?>;
+<?php endforeach ?>
+
+<?php foreach ($model->getIncludes() as $include):?>
+#include <<?= $include ?>>
+<?php endforeach ?>
+
+#include "<?= $model->getModuleName() ?>_properties.h"
 <?php foreach ($model->getRequires() as $name => $module): ?>
-// including <?= $name ?>
 #include "<?= substr($module->source, 0, -4) ?>.h"
+<?php endforeach ?>
+
+<?php foreach ($model->getEvents() as $name => $event):?>
+typedef <?= $event ?>* <?= $name ?>EventPtr;
 <?php endforeach ?>
 
 <?php foreach ($model->getEnums() as $name => $enum): ?>
 /** <?= $name ?> enum */
-enum <?= $name ?> {
+typedef enum <?= $name ?> {
 <?php foreach ($enum->getValues() as $enum_name => $enum_doc): ?>
 	k<?= $name ?><?= $enum_name ?>, // <?= $enum_doc ?>
 <?php endforeach ?>
-};
-
+} e<?= $name ?>_t;
+#define <?= $name ?>_Count <?= count($enum->getValues()) ?>
+ORCA_API const char *<?= $name ?>ToString(enum <?= $name ?> value);
+ORCA_API enum <?= $name ?> luaX_check<?= $name ?>(lua_State *L, int idx);
+ORCA_API void luaX_push<?= $name ?>(lua_State *L, enum <?= $name ?> value);
 <?php endforeach ?>
+
+<?php foreach ($model->getStructs() as $name => $struct): ?>
+typedef struct <?= $name ?> <?= $name ?>_t, *lp<?= $name ?>_t;
+typedef struct <?= $name ?> const c<?= $name ?>_t, *lpc<?= $name ?>_t;
+<?php endforeach ?>
+
+<?php foreach ($model->getFunctions() as $name => $func):?>
+ORCA_API <?= $func->getReturnType() ?>
+<?= $model->prefix.$name ?>(<?= implode(', ', $func->getArgsTypes()) ?>);
+<?php endforeach ?>
+
+<?php foreach ($model->getInterfaces() as $name => $interface): ?>
+<?php foreach ($interface->getMethods() as $method_name => $method): ?>
+ORCA_API <?= $method->getReturnType() ?>
+<?= $method->full_name ?>(<?= implode(', ', $method->getArgsTypes()) ?>);
+<?php endforeach ?>
+<?php endforeach ?>
+
 <?php foreach ($model->getStructs() as $name => $struct): ?>
 /** <?= $name ?> struct */
-typedef struct <?= $name ?> <?= $name ?>_t, *<?= $name ?>Ptr_t;
 struct <?= $name ?> {
 <?php printContents($struct->getFields()) ?>
 };
+ORCA_API void luaX_push<?= $name ?>(lua_State *L, struct <?= $name ?> const* <?= $name ?>);
+ORCA_API struct <?= $name ?>* luaX_check<?= $name ?>(lua_State *L, int idx);
 <?php foreach ($struct->getMethods() as $method_name => $method): ?>
-<?php $i = 0; $args = $method->getArgs(); ?>
-<?= $method->getReturnType() ?>
+ORCA_API <?= $method->getReturnType() ?>
 <?= $method->full_name ?>(<?= implode(', ', $method->getArgsTypes()) ?>);
 <?php endforeach ?>
 <?php endforeach ?>
 
 <?php foreach ($model->getComponents() as $name => $component): ?>
 /** <?= $name ?> component */
-typedef struct <?= $name ?> <?= $name ?>_t, *<?= $name ?>Ptr_t;
+typedef struct <?= $name ?> <?= $name ?>_t, *<?= $name ?>Ptr, *lp<?= $name ?>_t;
+typedef struct <?= $name ?> const *<?= $name ?>CPtr, *lpc<?= $name ?>_t;
 struct <?= $name ?> {
-	<?php printContents($component->getProperties()) ?>
+	<?php printContents($component->getProperties(false)) ?>
 	<?php printContents($component->getFields()) ?>
 };
+ORCA_API void luaX_push<?= $name ?>(lua_State *L, struct <?= $name ?> const* <?= $name ?>);
+ORCA_API struct <?= $name ?>* luaX_check<?= $name ?>(lua_State *L, int idx);
+<?php foreach ($component->getMethods() as $method_name => $method): ?>
+ORCA_API <?= $method->getReturnType() ?>
+<?= $component->name ?>_<?= $method->name ?>(<?= implode(', ', $method->getArgsTypes()) ?>);
+<?php endforeach ?>
 <?php endforeach ?>
 
 #endif

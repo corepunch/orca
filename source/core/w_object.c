@@ -220,7 +220,7 @@ static lpcString_t PascalCase(lpcString_t pname) {
 }
 
 #include <source/UIKit/UIKit.h>
-bool_t OBJ_API(SetProperty, lpcString_t name) {
+bool_t OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name) {
   switch (fnv1a32(name)) {
     case p_id:
 		case p_Name:
@@ -319,7 +319,7 @@ static struct {
   uint16_t writer;
 } g_mem;
 
-void OBJ_API(PostMessage, lpcString_t message)
+void OBJ_PostMessage(lua_State* L, lpObject_t self, lpcString_t message)
 {
   if (lua_type(L, 3) == LUA_TUSERDATA) {
     size_t size = lua_rawlen(L, 3);
@@ -343,19 +343,19 @@ void OBJ_API(PostMessage, lpcString_t message)
   }
 }
 
-lpObject_t OBJ_API(DispatchEvent, lpcString_t event)
+lpObject_t OBJ_DispatchEvent(lua_State* L, lpObject_t self, lpcString_t event)
 {
   uint32_t dwNumArgs = MAX(0, lua_gettop(L) - 2);
   shortStr_t pszEventName;
   strncpy(pszEventName, event, sizeof(pszEventName));
   lua_remove(L, 2); // clear event name to send object with args to parents
   for (lpObject_t obj = self; obj; obj = OBJ_GetParent(obj)) {
-    HANDLEMESSAGESTRUCT event = {
-      .L = L,
-      .EventName = pszEventName,
+    struct HandleMessageEventArgs event = {
+      .lua_state = L,
       .FirstArg = 1,
       .NumArgs = dwNumArgs + 1,
     };
+    strncpy(event.EventName, pszEventName, sizeof(event.EventName));
     if (OBJ_SendMessage(obj, "HandleMessage", 0, &event)) {
       return obj;
     }
@@ -363,7 +363,7 @@ lpObject_t OBJ_API(DispatchEvent, lpcString_t event)
   return NULL;
 }
 
-int OBJ_API(GetProperty, lpcString_t name)
+int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
 {
   uint32_t ident = fnv1a32(name);
   switch (ident) {
@@ -470,7 +470,7 @@ int OBJ_API(GetProperty, lpcString_t name)
 //  return 1;
 //}
 
-void OBJ_API(SetContext)
+void OBJ_SetContext(lua_State* L, lpObject_t self)
 {
   lpObject_t* ctx = lua_getextraspace(L);
   *ctx = self;
@@ -514,7 +514,7 @@ static int f_rebuild(lua_State *L) {
   return 0;
 }
 
-void OBJ_API(Rebuild) {
+void OBJ_Rebuild(lua_State* L, lpObject_t self) {
   const int nargs = lua_gettop(L);
   lua_State* co = lua_newthread(L);
   *((lpObject_t *)lua_getextraspace(co)) = luaX_checkObject(L, 1);

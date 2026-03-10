@@ -13,8 +13,6 @@
 #define CORE_COMMANDS "__commands__"
 #define CORE_KEMAP "__keymap__"
 
-#define OBJ_API(NAME, ...) OBJ_##NAME(lua_State *L, lpObject_t self, ##__VA_ARGS__)
-
 #define EDITOR_LIB
 
 #define PARENT_ELEMENT 1

@@ -4,29 +4,16 @@
   <require file="../renderer/api/renderer.xml"/>
 
   <include file="include/renderer.h"/>
-  <include file="source/renderer/api/renderer.h"/>
+  <include file="source/core/core.h"/>
   <include file="source/UIKit/uidef.h"/>
-  <include file="source/UIKit/UIKit.h"/>
 
   <external struct="Object"/>
+  <external struct="ViewEntity"/>
   <external struct="ViewText"/>
+  <external struct="ViewDef"/>
   <external struct="text_info"/>
-
-  <event name="GetSize" type="void"/>
-  <event name="Submit" type="void"/>
-  <event name="Measure" type="Size"/>
-  <event name="Arrange" type="rect"/>
-  <event name="MeasureOverride" type="Size"/>
-  <event name="ArrangeOverride" type="rect"/>
-  <event name="ForegroundContent"/>
-  <!-- <event name="BackgroundContent"/> -->
-  <event name="PushProperty"/>
-  <event name="UpdateGeometry"/>
-  <event name="DrawBrush"/>
-  <event name="HandleMessage"/>
-  <event name="LoadView"/>
-  <event name="Triggered"/>
-
+  <external struct="lua_State"/>
+  
   <enums name="Direction">
     <summary>Defines the primary axis for layout operations</summary>
     <enum name="Horizontal">Left-to-right horizontal layout</enum>
@@ -282,6 +269,56 @@
     <field name="Axis" type="SizeAxisShorthand" fixed-array="3">A number value per axis</field>
   </struct>
 
+  <struct name="PushPropertyEventArgs">
+    <field name="Placeholder" type="int"/>
+  </struct>
+
+  <struct name="ForegroundContentEventArgs">
+    <field name="result" type="Texture" pointer="true"/>
+  </struct>
+  
+  <struct name="HandleMessageEventArgs">
+    <field name="EventName" type="fixed"/>
+    <field name="FirstArg" type="uint"/>
+    <field name="NumArgs" type="uint"/>
+  </struct>
+  
+  <struct name="MakeTextEventArgs">
+    <summary>Event data structure for text rendering requests</summary>
+    <field name="text" type="ViewText" pointer="true">Text view to render</field>
+    <field name="availableSpace" type="uint">Available space for text layout</field>
+  </struct>
+  
+  <struct name="DrawBrushEventArgs">
+    <summary>Event data structure for brush drawing operations</summary>
+    <details>Contains information required for rendering a brush, including transformation matrices, target textures, and brush configuration.</details>
+    <field name="projection" type="mat4">Projection matrix for 3D to 2D transformation</field>
+    <field name="image" type="Texture" pointer="true">Target image handle for rendering</field>
+    <field name="brush" type="BrushShorthand">Brush configuration to draw with</field>
+    <field name="borderOffset" type="float">Border offset adjustment for rendering</field>
+    <field name="borderWidth" type="vec4">Border width for each edge (top, right, bottom, left)</field>
+    <field name="foreground" type="bool">True if drawing foreground, false for background</field>
+    <field name="viewdef" type="ViewDef" pointer="true">View definition context for rendering</field>
+  </struct>
+
+
+  <event name="GetSize" type="void"/>
+  <event name="Submit" type="void"/>
+  <event name="Measure" type="Size"/>
+  <event name="Arrange" type="rect"/>
+  <event name="MeasureOverride" type="Size"/>
+  <event name="ArrangeOverride" type="rect"/>
+  <event name="ForegroundContent" type="ForegroundContentEventArgs"/>
+  <event name="PushProperty" type="PushPropertyEventArgs"/>
+  <event name="UpdateGeometry"/>
+  <event name="DrawBrush" type="DrawBrushEventArgs"/>
+  <event name="HandleMessage" type="HandleMessageEventArgs"/>
+  <struct name="LoadViewEventArgs">
+    <field name="lua_state" type="lua_State" pointer="true"/>
+  </struct>
+  <event name="LoadView" type="LoadViewEventArgs"/>
+  <event name="MakeText" type="MakeTextEventArgs"/>
+
   <class name="DataObject">
     <summary>Base class for data-holding objects within the framework</summary>
     <details>Provides fundamental data management capabilities and serves as the base for objects that participate in data binding operations.</details>
@@ -310,7 +347,14 @@
     <property name="Value" type="int">Associated value for the trigger condition </property>
   </class>
 
-  <class name="OnPropertyChangedTrigger">
+  <struct name="TriggeredEventArgs">
+    <field name="Trigger" type="Trigger" pointer="true"/>
+    <field name="message" type="HandleMessageEventArgs"/>
+  </struct>
+  
+  <event name="Triggered" type="TriggeredEventArgs"/>
+
+  <class name="OnPropertyChangedTrigger" parent="Trigger">
     <summary>Responds to property value changes on specified nodes</summary>
     <details>Monitors a named property on a source node and triggers actions when the property value changes. Useful for reactive UI updates.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -319,14 +363,14 @@
     <property name="Property" type="fixed">Property name to watch for changes </property>
   </class>
 
-  <class name="OnAttachedTrigger">
+  <class name="OnAttachedTrigger" parent="Trigger">
     <summary>Triggers when an element is attached to the visual tree</summary>
     <details>Useful for initialization actions that should occur when an element becomes part of the active UI hierarchy.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <handles event="Attached"/>
   </class>
 
-  <class name="EventTrigger">
+  <class name="EventTrigger" parent="Trigger">
     <summary>Responds to routed UI events (mouse, keyboard, etc.)</summary>
     <details>Listens for specific routed events and can execute actions in response. Supports the standard UI event bubbling system.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -358,7 +402,7 @@
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <handles event="Triggered"/>
     <property name="Trigger" type="Trigger" pointer="true">Triggering condition or state image </property>
-    <property name="Target" type="Object" pointer="true">Target object to call function on </property>
+    <property name="Target" type="Node" pointer="true">Target object to call function on </property>
     <property name="Function" type="fixed">Function name to execute on target </property>
   </class>
   
@@ -515,14 +559,6 @@
       <arg name="field" type="Box3Field"/>
       <returns type="float"/>
     </method>
-    <!-- <method name="GetViewEntity">
-      <summary>Create a view entity for rendering operations</summary>
-      <details>Prepares a view entity that can be used in the rendering pipeline with the specified image and brush configuration.</details>
-      <arg name="Object" type="Object" pointer="true"/>
-      <arg name="ViewEntity" type="ViewEntity" pointer="true"/>
-      <arg name="image" type="Texture" const="true" pointer="true"/>
-      <arg name="brush" type="BrushShorthand" const="true" pointer="true"/>
-    </method> -->
     <method name="GetBounds">
       <summary>Get the layout bounds of a Node2D along a specific axis</summary>
       <arg name="axis" type="Direction"/>
@@ -543,6 +579,13 @@
       <arg name="axis" type="Direction"/>
       <arg name="sizing" type="Sizing"/>
       <returns type="float"/>
+    </method>
+    <method name="GetViewEntity">
+      <summary>Create a view entity for rendering operations</summary>
+      <details>Prepares a view entity that can be used in the rendering pipeline with the specified image and brush configuration.</details>
+      <arg name="ViewEntity" type="ViewEntity" pointer="true"/>
+      <arg name="image" type="Texture" const="true" pointer="true"/>
+      <arg name="brush" type="BrushShorthand" const="true" pointer="true"/>
     </method>
   </class>
 
@@ -713,7 +756,7 @@
     <property name="Image" type="Texture" pointer="true">Direct reference to loaded image </property>
     <property name="Edges" type="vec4">Edge inset values for nine-patch rendering </property>
     <property name="Insets" type="vec4">Content inset values for image positioning </property>
-    <property name="Viewbox" type="vec4" default="0 0 1 1">Viewport rectangle for image cropping/scaling </property>
+    <property name="Viewbox" type="vec4" default="0,0,1,1">Viewport rectangle for image cropping/scaling </property>
     <property name="Stretch" type="Stretch">Determines how the image is scaled to fill its allocated layout space</property>
     <field name="_loadedImage" type="int">Hashed value of loaded image resource </field>
   </class>

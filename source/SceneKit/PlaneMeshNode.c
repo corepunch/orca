@@ -37,7 +37,7 @@ HANDLER(PlaneMeshNode, Render)
     entity.mesh = BOX_PTR(Mesh, MD_DOT);
   }
 
-  R_DrawEntity(pRender, &entity);
+  R_DrawEntity(pRender->ViewDef, &entity);
 
   return TRUE;
 }
