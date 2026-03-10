@@ -105,7 +105,7 @@ ORCA_API <?= $method->getReturnType() ?>
 typedef struct <?= $name ?> <?= $name ?>_t, *<?= $name ?>Ptr, *lp<?= $name ?>_t;
 typedef struct <?= $name ?> const *<?= $name ?>CPtr, *lpc<?= $name ?>_t;
 struct <?= $name ?> {
-<?php printContents($component->getOwnProperties()) ?>
+<?php printContents($component->getProperties(false)) ?>
 <?php printContents($component->getFields()) ?>
 };
 ORCA_API void luaX_push<?= $name ?>(lua_State *L, struct <?= $name ?> const* <?= $name ?>);

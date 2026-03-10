@@ -12,28 +12,28 @@ LRESULT <?= $name ?>_<?= $event ?>(struct Object*, struct <?= $name ?>*, wParam_
 	<?php endforeach ?>
 
 static struct PropertyType const <?= $name ?>Properties[k<?= $name ?>NumProperties] = {
-<?php foreach ($component->getProperties() as $property => $type):?>
-	<?php if ($type->kind === 'enum'): ?>
-	DECL(<?= $property->id ?>, <?= $name ?>, <?= $property ?>, <?= $property->addr ?>, kDataType<?= ucfirst($type->kind) ?>, .TypeString = "<?= implode(',', $type->data->getValuesNames()) ?>"), // <?= $name ?>.<?= $property ?>
-	<?php elseif ($type->array): ?>
-	ARRAY_DECL(<?= $property->id ?>, <?= $name ?>, <?= $property ?>, <?= $property->addr ?>, kDataType<?= ucfirst($type->kind) ?>), // <?= $name ?>.<?= $property ?>
-	<?php elseif ($type->kind === 'struct'): ?>
-	DECL(<?= $property->id ?>, <?= $name ?>, <?= $property ?>, <?= $property->addr ?>, kDataType<?= ucfirst($type->kind) ?>, .TypeString = "<?= $type->export ?>"), // <?= $name ?>.<?= $property ?>
-	<?php elseif ($type->kind === 'component'): ?>
-	DECL(<?= $property->id ?>, <?= $name ?>, <?= $property ?>, <?= $property->addr ?>, kDataTypeObject, .TypeString = "<?= $type->export ?>"), // <?= $name ?>.<?= $property ?>
+<?php foreach ($component->getProperties() as $property):?>
+	<?php if ($property->type->kind === 'enum'): ?>
+	DECL(<?= $property->name->id ?>, <?= $name ?>, <?= $property->name ?>, <?= $property->name->addr ?>, kDataType<?= ucfirst($property->type->kind) ?>, .TypeString = "<?= implode(',', $property->type->data->getValuesNames()) ?>"), // <?= $name ?>.<?= $property->name ?>
+	<?php elseif ($property->type->array): ?>
+	ARRAY_DECL(<?= $property->name->id ?>, <?= $name ?>, <?= $property->name ?>, <?= $property->name->addr ?>, kDataType<?= ucfirst($property->type->kind) ?>), // <?= $name ?>.<?= $property->name ?>
+	<?php elseif ($property->type->kind === 'struct'): ?>
+	DECL(<?= $property->name->id ?>, <?= $name ?>, <?= $property->name ?>, <?= $property->name->addr ?>, kDataType<?= ucfirst($property->type->kind) ?>, .TypeString = "<?= $property->type->export ?>"), // <?= $name ?>.<?= $property->name ?>
+	<?php elseif ($property->type->kind === 'component'): ?>
+	DECL(<?= $property->name->id ?>, <?= $name ?>, <?= $property->name ?>, <?= $property->name->addr ?>, kDataTypeObject, .TypeString = "<?= $property->type->export ?>"), // <?= $name ?>.<?= $property->name ?>
 	<?php else: ?>
-	DECL(<?= $property->id ?>, <?= $name ?>, <?= $property ?>, <?= $property->addr ?>, kDataType<?= ucfirst($type->kind) ?>), // <?= $name ?>.<?= $property ?>
+	DECL(<?= $property->name->id ?>, <?= $name ?>, <?= $property->name ?>, <?= $property->name->addr ?>, kDataType<?= ucfirst($property->type->kind) ?>), // <?= $name ?>.<?= $property->name ?>
 	<?php endif ?>
 <?php endforeach ?>
 };
 static struct <?= $name ?> <?= $name ?>Defaults = {
-<?php foreach (array_filter($component->getProperties(), fn($type) => $type->default) as $property => $type): ?>
-	<?php if ($type->kind === 'struct'): ?>
-  .<?= $property ?> = {<?= $type->default ?>},
-	<?php elseif ($type->kind === 'enum'): ?>
-  .<?= $property ?> = k<?= $type->name.$type->default ?>,
+<?php foreach (array_filter($component->getProperties(), fn($prop) => $prop->type->default) as $property): ?>
+	<?php if ($property->type->kind === 'struct'): ?>
+  .<?= $property->name ?> = {<?= $property->type->default ?>},
+	<?php elseif ($property->type->kind === 'enum'): ?>
+  .<?= $property->name ?> = k<?= $property->type->name.$property->type->default ?>,
 	<?php else: ?>
-  .<?= $property ?> = <?= $type->default ?>,
+  .<?= $property->name ?> = <?= $property->type->default ?>,
 	<?php endif ?>
 <?php endforeach ?>
 };

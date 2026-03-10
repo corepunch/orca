@@ -97,6 +97,7 @@ class Property {
 	public $doc;
 
 	function __construct($elem, $model, $classname) {
+		if ($elem === null) { return; }
 		$this->name = new PropertyName($classname, [(string)$elem["name"]]);
 		$this->type = new Type($elem, $model);
 		$text = trim((string)$elem);
@@ -337,9 +338,13 @@ class Component extends Struct {
 		parent::__construct($elem, $model);
 	}
 
-	private function _walkProperties($type_, $args) {
+	private function _walkProperties($type_, $args, $doc = null) {
 		$path = array_slice($args, 1);
-		yield new PropertyName($args[0], $path) => $type_;
+		$p = new Property(null, null, null);
+		$p->name = new PropertyName($args[0], $path);
+		$p->type = $type_;
+		$p->doc = $doc;
+		yield $p;
 		if ($type_->kind === "struct" && !$type_->data->sealed) {
 			foreach ($type_->data->getFields() as $f) {
 				$k = $f->name;
@@ -359,21 +364,21 @@ class Component extends Struct {
 	function getProperties($recursive = true) {
 		foreach ($this->_elem->xpath(".//property[@name]") as $f) {
 			$type_ = new Type($f, $this->_model);
+			$text = trim((string)$f);
+			$doc = strlen($text) > 0 ? $text : null;
 			if ($recursive) {
-				yield from $this->_walkProperties($type_, [$this->name, (string)$f["name"]]);
+				yield from $this->_walkProperties($type_, [$this->name, (string)$f["name"]], $doc);
 			} else {
-				yield new PropertyName($this->name, [(string)$f["name"]]) => $type_;
+				yield new Property($f, $this->_model, $this->name);
 			}
 			if ($type_->array === "true") {
 				$int = new Type(simplexml_load_string("<type type=\"int\"/>"), $this->_model);
-				yield new PropertyName($this->name, ['Num' . $f["name"]]) => $int;
+				$p = new Property(null, null, null);
+				$p->name = new PropertyName($this->name, ['Num' . $f["name"]]);
+				$p->type = $int;
+				$p->doc = null;
+				yield $p;
 			}
-		}
-	}
-
-	function getOwnProperties() {
-		foreach ($this->_elem->xpath("property[@name]") as $f) {
-			yield new Property($f, $this->_model, $this->name);
 		}
 	}
 
