@@ -89,6 +89,21 @@ class Field {
 	}
 }
 
+// --- Property ---
+
+class Property {
+	public $name;
+	public $type;
+	public $doc;
+
+	function __construct($elem, $model, $classname) {
+		$this->name = new PropertyName($classname, [(string)$elem["name"]]);
+		$this->type = new Type($elem, $model);
+		$text = trim((string)$elem);
+		$this->doc = strlen($text) > 0 ? $text : null;
+	}
+}
+
 // --- Base ---
 
 class Base {
@@ -132,10 +147,6 @@ class Type extends Base {
 		$this->array = $elem["array"] ?? null;
 		$this->export = ($this->kind === "struct" && $this->data) ? $this->data->export : $this->type;
 		$this->default = $elem["default"];
-		if ($this->doc === null) {
-			$text = trim((string)$elem);
-			$this->doc = strlen($text) > 0 ? $text : null;
-		}
 	}
 
 	function __toString() {
@@ -357,6 +368,12 @@ class Component extends Struct {
 				$int = new Type(simplexml_load_string("<type type=\"int\"/>"), $this->_model);
 				yield new PropertyName($this->name, ['Num' . $f["name"]]) => $int;
 			}
+		}
+	}
+
+	function getOwnProperties() {
+		foreach ($this->_elem->xpath("property[@name]") as $f) {
+			yield new Property($f, $this->_model, $this->name);
 		}
 	}
 

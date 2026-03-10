@@ -20,20 +20,6 @@ typedef struct lua_State lua_State;
 			echo("\t" . $field->type . " " . $field->name . ";" . $doc . "\n"); 
 		}
 	}
-}
-
-function printProperties($list) {
-	foreach ($list as $name => $type) {
-		$doc = "";
-		if ($type->doc) {
-			$doc = " ///< " . $type->doc;
-		}
-		if ($type->fixed_array) {
-			echo("\t" . $type . " " . $name . "[" . $type->fixed_array . "];" . $doc . "\n"); 
-		} else {
-			echo("\t" . $type . " " . $name . ";" . $doc . "\n"); 
-		}
-	}
 } ?>
 
 <?php foreach ($model->getExternalStructs() as $name => $struct):?>
@@ -119,8 +105,8 @@ ORCA_API <?= $method->getReturnType() ?>
 typedef struct <?= $name ?> <?= $name ?>_t, *<?= $name ?>Ptr, *lp<?= $name ?>_t;
 typedef struct <?= $name ?> const *<?= $name ?>CPtr, *lpc<?= $name ?>_t;
 struct <?= $name ?> {
-	<?php printProperties($component->getProperties(false)) ?>
-	<?php printContents($component->getFields()) ?>
+<?php printContents($component->getOwnProperties()) ?>
+<?php printContents($component->getFields()) ?>
 };
 ORCA_API void luaX_push<?= $name ?>(lua_State *L, struct <?= $name ?> const* <?= $name ?>);
 ORCA_API struct <?= $name ?>* luaX_check<?= $name ?>(lua_State *L, int idx);
