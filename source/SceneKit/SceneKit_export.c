@@ -574,7 +574,7 @@ static struct PropertyType const PipelineStateRenderPassProperties[kPipelineStat
 };
 static struct PipelineStateRenderPass PipelineStateRenderPassDefaults = {
   .ViewportMode = kViewportModeRelative,
-  .ScissorMode = kScissorModeRelative,
+  .ScissorMode = kViewportModeRelative,
 };
 LRESULT PipelineStateRenderPassProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {

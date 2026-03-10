@@ -7,10 +7,12 @@
 #define ID_SpriteAnimation_Image 0xb710ed59 // SpriteAnimation.Image
 #define ID_SpriteAnimation_Framerate 0xc51f93cb // SpriteAnimation.Framerate
 #define ID_SpriteAnimation_Frames 0xcbc4645e // SpriteAnimation.Frames
+#define ID_SpriteAnimation_NumFrames 0x37cc69de // SpriteAnimation.NumFrames
 enum SpriteAnimationProperties {
 	kSpriteAnimationImage,
 	kSpriteAnimationFramerate,
 	kSpriteAnimationFrames,
+	kSpriteAnimationNumFrames,
 	kSpriteAnimationNumProperties	
 };
 // SKNode

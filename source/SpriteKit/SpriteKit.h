@@ -36,7 +36,8 @@ typedef struct SpriteAnimation const *SpriteAnimationCPtr, *lpcSpriteAnimation_t
 struct SpriteAnimation {
 	struct Texture* Image;
 	float Framerate;
-	struct SpriteFrame Frames;
+	struct SpriteFrame* Frames;
+	int32_t NumFrames;
 };
 ORCA_API void luaX_pushSpriteAnimation(lua_State *L, struct SpriteAnimation const* SpriteAnimation);
 ORCA_API struct SpriteAnimation* luaX_checkSpriteAnimation(lua_State *L, int idx);

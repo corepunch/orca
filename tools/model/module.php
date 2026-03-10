@@ -97,6 +97,7 @@ class Type extends Base {
 	public $kind;
 	public $data;
 	public $fixed_array;
+	public $array;
 	public $export;
 	public $default;
 	public $const = null;
@@ -110,6 +111,7 @@ class Type extends Base {
 		$this->data = $kind_data[1];
 		$fa = $elem["fixed-array"];
 		$this->fixed_array = $fa !== null ? intval($fa) : null;
+		$this->array = $elem["array"] ?? null;
 		$this->export = ($this->kind === "struct" && $this->data) ? $this->data->export : $this->type;
 		$this->default = $elem["default"];
 	}
@@ -121,7 +123,7 @@ class Type extends Base {
 		if ($this->const) {
 			$base .= " const";
 		}
-		if ($this->pointer) {
+		if ($this->pointer || $this->array) {
 			$base .= "*";
 		}
 		return $base;
@@ -322,6 +324,10 @@ class Component extends Struct {
 				yield from $this->_walkProperties($type_, [$this->name, (string)$f["name"]]);
 			} else {
 				yield new PropertyName($this->name, [(string)$f["name"]]) => $type_;
+			}
+			if ($type_->array === "true") {
+				$int = new Type(simplexml_load_string("<type type=\"int\"/>"), $this->_model);
+				yield new PropertyName($this->name, ['Num' . $f["name"]]) => $int;
 			}
 		}
 	}

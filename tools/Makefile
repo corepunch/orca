@@ -1,15 +1,28 @@
-php:
-	for mod in \
-		core/core \
-		renderer/api/renderer \
-		geometry/geometry \
-		UIKit/UIKit \
-		SceneKit/SceneKit \
-		SpriteKit/SpriteKit; do \
-		echo "Generating $$mod..."; \
-		xml=../source/$$mod.xml; \
-		base=../source/$$mod; \
-		python3 -m cProfile -s cumtime -o profile.out -m pyphp.pyphp templates/header.php $$xml > $${base}.h; \
-		python3 -m cProfile -s cumtime -o profile.out -m pyphp.pyphp templates/properties.php $$xml > $${base}_properties.h; \
-		python3 -m cProfile -s cumtime -o profile.out -m pyphp.pyphp templates/export.php $$xml > $${base}_export.c; \
-	done
+MODULES := \
+    core/core \
+    renderer/api/renderer \
+    geometry/geometry \
+    UIKit/UIKit \
+    SceneKit/SceneKit \
+    SpriteKit/SpriteKit
+
+SOURCE_DIR := ../source
+TEMPLATES  := templates
+
+PYPHP := python3 -m pyphp.pyphp
+
+# Top-level targets
+.PHONY: all $(MODULES)
+
+all: $(MODULES)
+
+# Per-module rule — each module builds its 3 files
+define MODULE_RULE
+$(1):
+	@echo "Generating $(1)..."
+	$(PYPHP) $(TEMPLATES)/header.php     $(SOURCE_DIR)/$(1).xml > $(SOURCE_DIR)/$(1).h
+	$(PYPHP) $(TEMPLATES)/properties.php $(SOURCE_DIR)/$(1).xml > $(SOURCE_DIR)/$(1)_properties.h
+	$(PYPHP) $(TEMPLATES)/export.php     $(SOURCE_DIR)/$(1).xml > $(SOURCE_DIR)/$(1)_export.c
+endef
+
+$(foreach mod,$(MODULES),$(eval $(call MODULE_RULE,$(mod))))

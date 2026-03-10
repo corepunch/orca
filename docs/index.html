@@ -21,14 +21,18 @@
 </span></a><a class="leaf-link" href="#edges"><i class="fa-solid fa-gear icon"></i><span>edges
 </span></a><a class="leaf-link" href="#color"><i class="fa-solid fa-gear icon"></i><span>color
 </span></a><div class="technology-title"><span class="fa-solid fa-folder-open icon"></span>orca.core
-</div><a class="leaf-link" href="#BindingMode"><i class="fa-solid fa-bars icon"></i><span>BindingMode
+</div><a class="leaf-link" href="#PropertyChangedEventArgs"><i class="fa-solid fa-gear icon"></i><span>PropertyChangedEventArgs
+</span></a><a class="leaf-link" href="#UpdateMatrixEventArgs"><i class="fa-solid fa-gear icon"></i><span>UpdateMatrixEventArgs
+</span></a><a class="leaf-link" href="#BindingMode"><i class="fa-solid fa-bars icon"></i><span>BindingMode
 </span></a><a class="leaf-link" href="#PropertyAttribute"><i class="fa-solid fa-bars icon"></i><span>PropertyAttribute
 </span></a><a class="leaf-link" href="#Object"><i class="fa-solid fa-atom icon"></i><span>Object
 </span></a><a class="leaf-link" href="#DataType"><i class="fa-solid fa-bars icon"></i><span>DataType
 </span></a><a class="leaf-link" href="#PropertyEnumValue"><i class="fa-solid fa-gear icon"></i><span>PropertyEnumValue
 </span></a><a class="leaf-link" href="#PropertyType"><i class="fa-solid fa-gear icon"></i><span>PropertyType
 </span></a><div class="technology-title"><span class="fa-solid fa-folder-open icon"></span>orca.renderer
-</div><a class="leaf-link" href="#window"><i class="fa-solid fa-atom icon"></i><span>window
+</div><a class="leaf-link" href="#RenderScreenEventArgs"><i class="fa-solid fa-gear icon"></i><span>RenderScreenEventArgs
+</span></a><a class="leaf-link" href="#RenderEventArgs"><i class="fa-solid fa-gear icon"></i><span>RenderEventArgs
+</span></a><a class="leaf-link" href="#window"><i class="fa-solid fa-atom icon"></i><span>window
 </span></a><a class="leaf-link" href="#BlendMode"><i class="fa-solid fa-bars icon"></i><span>BlendMode
 </span></a><a class="leaf-link" href="#CompareFunc"><i class="fa-solid fa-bars icon"></i><span>CompareFunc
 </span></a><a class="leaf-link" href="#TextureFilter"><i class="fa-solid fa-bars icon"></i><span>TextureFilter
@@ -95,9 +99,16 @@
 </span></a><a class="leaf-link" href="#BorderShorthand"><i class="fa-solid fa-gear icon"></i><span>BorderShorthand
 </span></a><a class="leaf-link" href="#SizeAxisShorthand"><i class="fa-solid fa-gear icon"></i><span>SizeAxisShorthand
 </span></a><a class="leaf-link" href="#SizeShorthand"><i class="fa-solid fa-gear icon"></i><span>SizeShorthand
+</span></a><a class="leaf-link" href="#PushPropertyEventArgs"><i class="fa-solid fa-gear icon"></i><span>PushPropertyEventArgs
+</span></a><a class="leaf-link" href="#ForegroundContentEventArgs"><i class="fa-solid fa-gear icon"></i><span>ForegroundContentEventArgs
+</span></a><a class="leaf-link" href="#HandleMessageEventArgs"><i class="fa-solid fa-gear icon"></i><span>HandleMessageEventArgs
+</span></a><a class="leaf-link" href="#MakeTextEventArgs"><i class="fa-solid fa-gear icon"></i><span>MakeTextEventArgs
+</span></a><a class="leaf-link" href="#DrawBrushEventArgs"><i class="fa-solid fa-gear icon"></i><span>DrawBrushEventArgs
+</span></a><a class="leaf-link" href="#LoadViewEventArgs"><i class="fa-solid fa-gear icon"></i><span>LoadViewEventArgs
 </span></a><a class="leaf-link" href="#DataObject"><i class="fa-solid fa-layer-group icon"></i><span>DataObject
 </span></a><a class="leaf-link" href="#AnimationPlayer"><i class="fa-solid fa-layer-group icon"></i><span>AnimationPlayer
 </span></a><a class="leaf-link" href="#Trigger"><i class="fa-solid fa-layer-group icon"></i><span>Trigger
+</span></a><a class="leaf-link" href="#TriggeredEventArgs"><i class="fa-solid fa-gear icon"></i><span>TriggeredEventArgs
 </span></a><a class="leaf-link" href="#OnPropertyChangedTrigger"><i class="fa-solid fa-layer-group icon"></i><span>OnPropertyChangedTrigger
 </span></a><a class="leaf-link" href="#OnAttachedTrigger"><i class="fa-solid fa-layer-group icon"></i><span>OnAttachedTrigger
 </span></a><a class="leaf-link" href="#EventTrigger"><i class="fa-solid fa-layer-group icon"></i><span>EventTrigger
@@ -497,7 +508,21 @@
 <div class="small-abstract"><span>Alpha (transparency) component (0.0 = transparent, 1.0 = opaque)
 </span></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">lerp</span>(<span class="identifier">other</span>:<span class="decorator">color</span>, <span class="identifier">t</span>:<span class="decorator">float</span>)<span class="decorator"> -&gt;</span><span> color</span></code><div class="small-abstract"><span>Linear interpolation between colors
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">parse</span>(<span class="identifier">code</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> color</span></code><div class="small-abstract"><span>Parses color from string representation
-</span></div></div></div><div id="BindingMode" class="class" data-name="BindingMode" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
+</span></div></div></div><div id="PropertyChangedEventArgs" class="class" data-name="PropertyChangedEventArgs" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">PropertyChangedEventArgs
+</h1><div class="abstract">Event arguments for a property change event
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">core.PropertyChangedEventArgs</span></code><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Property</span>: <span>Property</span></code></div>
+<div class="small-abstract"><span>The property that changed
+</span></div></div><div id="UpdateMatrixEventArgs" class="class" data-name="UpdateMatrixEventArgs" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">UpdateMatrixEventArgs
+</h1><div class="abstract">Event arguments for an update matrix event
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">core.UpdateMatrixEventArgs</span></code><div class="topic"><code class="decorator"><span>var </span><span class="identifier">parent</span>: <a class="type-identifier-link" href="#mat4">mat4</a></code></div>
+<div class="small-abstract"><span>The parent matrix
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">opacity</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>The opacity value
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">force</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Indicates if the update is forced
+</span></div></div><div id="BindingMode" class="class" data-name="BindingMode" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
 </div><h1 class="header">BindingMode
 </h1><h2 class="title">Constants</h2><div class="topic"><code class="decorator"><span>case </span><span class="identifier">OneWay</span></code><div class="small-abstract"><span>Default mode, updates target property when source changes
 </span></div></div>
@@ -602,6 +627,7 @@
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">attachPropertyProgram</span>(<span class="identifier">name</span>:<span class="decorator">string</span>, <span class="identifier">program</span>:<span class="decorator">string</span>, <span class="identifier">attribute</span>:<span class="decorator">PropertyAttribute</span>, <span class="identifier">mode</span>:<span class="decorator">BindingMode</span>, <span class="identifier">enabled</span>:<span class="decorator">bool</span>)<span class="decorator"> -&gt;</span><span> bool</span></code><div class="small-abstract"><span>Attaches a property program to the specified property
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">findPropertyByPath</span>(<span class="identifier">path</span>:<span class="decorator">string</span>)<span class="decorator"> -&gt;</span><span> Property</span></code><div class="small-abstract"><span>Finds a property by navigating a hierarchical path
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">rebuild</span>()</code><div class="small-abstract"><span>Rebuilds the object's body content asynchronously
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getDomain</span>()<span class="decorator"> -&gt;</span><span> lua_State</span></code><div class="small-abstract"><span>Gets the domain of the object
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getFocus</span>()<span class="decorator"> -&gt;</span><span> Object</span></code><div class="small-abstract"><span>Retrieves currently active object.
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getHover</span>()<span class="decorator"> -&gt;</span><span> Object</span></code><div class="small-abstract"><span>Gets the currently hovered object
 </span></div></div></div><div id="DataType" class="class" data-name="DataType" data-inherits="None" data-xmlns="None"><div class="eyebrow">Enum
@@ -679,6 +705,26 @@
 <div class="small-abstract"><span>Size of the property data in bytes.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">IsArray</span>: <span>bool</span></code></div>
 <div class="small-abstract"><span>Indicates whether the property is an array type, will generate Num* property to indicate the number of elements.
+</span></div></div><div id="RenderScreenEventArgs" class="class" data-name="RenderScreenEventArgs" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">RenderScreenEventArgs
+</h1><div class="abstract">Event arguments for a render screen event
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">renderer.RenderScreenEventArgs</span></code><div class="topic"><code class="decorator"><span>var </span><span class="identifier">width</span>: <span>uint</span></code></div>
+<div class="small-abstract"><span>The width of the render screen
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">height</span>: <span>uint</span></code></div>
+<div class="small-abstract"><span>The height of the render screen
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">stereo</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>The stereo value of the render screen
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">angle</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>The angle of the render screen
+</span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">target</span>: <a class="type-identifier-link" href="#Texture">Texture</a></code></div>
+<div class="small-abstract"><span>The target handle of the render screen
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">only_paint</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>Indicates if only painting is required
+</span></div></div><div id="RenderEventArgs" class="class" data-name="RenderEventArgs" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">RenderEventArgs
+</h1><div class="abstract">Event arguments for a render event
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">renderer.RenderEventArgs</span></code><div class="topic"><code class="decorator"><span>var </span><span class="identifier">ViewDef</span>: <span>ViewDef</span></code></div>
+<div class="small-abstract"><span>The view definition for rendering
 </span></div></div><div id="window" class="class" data-name="window" data-inherits="None" data-xmlns="None"><div class="eyebrow">Interface
 </div><h1 class="header">window
 </h1><div class="abstract">Window interface abstraction.
@@ -1101,7 +1147,7 @@
 </span></div></div><div id="Shader" class="class" data-name="Shader" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">Shader
 </h1><div class="abstract">Complete shader program definition combining vertex and fragment stages
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">renderer.Shader</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Encapsulates the entire shader pipeline with configurable uniforms, attributes, and shared variables. Uniforms provide per-draw parameters (textures, colors, transforms), attributes supply per-vertex data (positions, UVs, colors), and shared variables pass interpolated data between shader stages.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>resource </span><span class="identifier">shader</span>: <span>shader</span></code></div>
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">renderer.Shader</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Encapsulates the entire shader pipeline with configurable uniforms, attributes, and shared variables. Uniforms provide per-draw parameters (textures, colors, transforms), attributes supply per-vertex data (positions, UVs, colors), and shared variables pass interpolated data between shader stages.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">shader</span>: <span>shader</span></code></div>
 <div class="small-abstract"><span>Compiled shader for runtime use
 </span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">BlendMode</span>: <a class="type-identifier-link" href="#BlendMode">BlendMode</a></code></div>
 <div class="small-abstract"><span>The default blending mode for the shader, controlling how rendered output combines with the existing framebuffer content.
@@ -1138,14 +1184,10 @@
 <div class="small-abstract"><span>Adjusts the opacity or blending strength of the material
 </span></div><div class="topic"><code class="decorator"><span>enum </span><span class="identifier">BlendMode</span>: <a class="type-identifier-link" href="#BlendMode">BlendMode</a></code></div>
 <div class="small-abstract"><span>Blending mode for material rendering 
-</span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">U_color</span>: <a class="type-identifier-link" href="#color">color</a></code></div>
-<div class="small-abstract"><span>Uniform color parameter for shader 
-</span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">U_texture</span>: <a class="type-identifier-link" href="#Texture">Texture</a></code></div>
-<div class="small-abstract"><span>Uniform texture parameter for shader 
 </span></div></div><div id="Mesh" class="class" data-name="Mesh" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">Mesh
 </h1><div class="abstract">Renderable 3D geometry component with material and model data
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">renderer.Mesh</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Represents a 3D mesh object in the scene. Manages the geometry data (vertices, indices, normals, UVs) and associated material for rendering. Responds to lifecycle events for loading and cleanup of mesh resources.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>resource </span><span class="identifier">model</span>: <span>model</span></code></div>
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">renderer.Mesh</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Represents a 3D mesh object in the scene. Manages the geometry data (vertices, indices, normals, UVs) and associated material for rendering. Responds to lifecycle events for loading and cleanup of mesh resources.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">model</span>: <span>model</span></code></div>
 <div class="small-abstract"><span>Internal pointer to the loaded model data structure containing the mesh geometry.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Source</span>: <span>fixed</span></code></div>
 <div class="small-abstract"><span>Path or identifier to the mesh geometry file or resource. Specifies where to load the 3D model data from.
@@ -1156,13 +1198,13 @@
 </span></div></div><div id="FontFamily" class="class" data-name="FontFamily" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">FontFamily
 </h1><div class="abstract">TrueType font resource for text rendering
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">renderer.FontFamily</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Loads and manages a TrueType font file for rendering text in the scene. Provides glyph data and metrics for text layout and rendering. May be extended in the future to support font families with variants (regular, bold, italic).</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>resource </span><span class="identifier">regular</span>: <span>fontface</span></code></div>
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">renderer.FontFamily</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Loads and manages a TrueType font file for rendering text in the scene. Provides glyph data and metrics for text layout and rendering. May be extended in the future to support font families with variants (regular, bold, italic).</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">regular</span>: <span>fontface</span></code></div>
 <div class="small-abstract"><span>Internal pointer to the loaded font data.
-</span></div><div class="topic"><code class="decorator"><span>resource </span><span class="identifier">bold</span>: <span>fontface</span></code></div>
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">bold</span>: <span>fontface</span></code></div>
 <div class="small-abstract"><span>Internal pointer to the loaded font data.
-</span></div><div class="topic"><code class="decorator"><span>resource </span><span class="identifier">italic</span>: <span>fontface</span></code></div>
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">italic</span>: <span>fontface</span></code></div>
 <div class="small-abstract"><span>Internal pointer to the loaded font data.
-</span></div><div class="topic"><code class="decorator"><span>resource </span><span class="identifier">bolditalic</span>: <span>fontface</span></code></div>
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">bolditalic</span>: <span>fontface</span></code></div>
 <div class="small-abstract"><span>Internal pointer to the loaded font data.
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Regular</span>: <span>fixed</span></code></div>
 <div class="small-abstract"><span>Path of the TrueType font file to be used as the regular font variant.
@@ -1511,7 +1553,45 @@
 </h1><div class="abstract">Sizing configuration of elements (e.g., Width, Height, Depth)
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.SizeShorthand</span></code><h2 class="title">Overview</h2><div class="abstract">You can set values and the engine will try it's best to preserve those.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Axis</span>: <a class="type-identifier-link" href="#SizeAxisShorthand">SizeAxisShorthand</a></code></div>
 <div class="small-abstract"><span>A number value per axis
-</span></div></div><div id="DataObject" class="class" data-name="DataObject" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
+</span></div></div><div id="PushPropertyEventArgs" class="class" data-name="PushPropertyEventArgs" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">PushPropertyEventArgs
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.PushPropertyEventArgs</span></code><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Placeholder</span>: <span>int</span></code></div>
+</div><div id="ForegroundContentEventArgs" class="class" data-name="ForegroundContentEventArgs" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">ForegroundContentEventArgs
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.ForegroundContentEventArgs</span></code><div class="topic"><code class="decorator"><span>object </span><span class="identifier">result</span>: <a class="type-identifier-link" href="#Texture">Texture</a></code></div>
+</div><div id="HandleMessageEventArgs" class="class" data-name="HandleMessageEventArgs" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">HandleMessageEventArgs
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.HandleMessageEventArgs</span></code><div class="topic"><code class="decorator"><span>var </span><span class="identifier">EventName</span>: <span>fixed</span></code></div>
+<div class="topic"><code class="decorator"><span>var </span><span class="identifier">FirstArg</span>: <span>uint</span></code></div>
+<div class="topic"><code class="decorator"><span>var </span><span class="identifier">NumArgs</span>: <span>uint</span></code></div>
+</div><div id="MakeTextEventArgs" class="class" data-name="MakeTextEventArgs" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">MakeTextEventArgs
+</h1><div class="abstract">Event data structure for text rendering requests
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.MakeTextEventArgs</span></code><div class="topic"><code class="decorator"><span>var </span><span class="identifier">text</span>: <span>ViewText</span></code></div>
+<div class="small-abstract"><span>Text view to render
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">availableSpace</span>: <span>uint</span></code></div>
+<div class="small-abstract"><span>Available space for text layout
+</span></div></div><div id="DrawBrushEventArgs" class="class" data-name="DrawBrushEventArgs" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">DrawBrushEventArgs
+</h1><div class="abstract">Event data structure for brush drawing operations
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.DrawBrushEventArgs</span></code><h2 class="title">Overview</h2><div class="abstract">Contains information required for rendering a brush, including transformation matrices, target textures, and brush configuration.</div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">projection</span>: <a class="type-identifier-link" href="#mat4">mat4</a></code></div>
+<div class="small-abstract"><span>Projection matrix for 3D to 2D transformation
+</span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">image</span>: <a class="type-identifier-link" href="#Texture">Texture</a></code></div>
+<div class="small-abstract"><span>Target image handle for rendering
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">brush</span>: <a class="type-identifier-link" href="#BrushShorthand">BrushShorthand</a></code></div>
+<div class="small-abstract"><span>Brush configuration to draw with
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">borderOffset</span>: <span>float</span></code></div>
+<div class="small-abstract"><span>Border offset adjustment for rendering
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">borderWidth</span>: <a class="type-identifier-link" href="#vec4">vec4</a></code></div>
+<div class="small-abstract"><span>Border width for each edge (top, right, bottom, left)
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">foreground</span>: <span>bool</span></code></div>
+<div class="small-abstract"><span>True if drawing foreground, false for background
+</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">viewdef</span>: <span>ViewDef</span></code></div>
+<div class="small-abstract"><span>View definition context for rendering
+</span></div></div><div id="LoadViewEventArgs" class="class" data-name="LoadViewEventArgs" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">LoadViewEventArgs
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.LoadViewEventArgs</span></code><div class="topic"><code class="decorator"><span>var </span><span class="identifier">lua_state</span>: <span>lua_State</span></code></div>
+</div><div id="DataObject" class="class" data-name="DataObject" data-inherits="None" data-xmlns="None"><div class="eyebrow">Class
 </div><h1 class="header">DataObject
 </h1><div class="abstract">Base class for data-holding objects within the framework
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.DataObject</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Provides fundamental data management capabilities and serves as the base for objects that participate in data binding operations.</div></div><div id="AnimationPlayer" class="class" data-name="AnimationPlayer" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
@@ -1538,20 +1618,24 @@
 <div class="small-abstract"><span>Target property name to monitor or modify 
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Value</span>: <span>int</span></code></div>
 <div class="small-abstract"><span>Associated value for the trigger condition 
-</span></div></div><div id="OnPropertyChangedTrigger" class="class" data-name="OnPropertyChangedTrigger" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
+</span></div></div><div id="TriggeredEventArgs" class="class" data-name="TriggeredEventArgs" data-inherits="None" data-xmlns="None"><div class="eyebrow">Struct
+</div><h1 class="header">TriggeredEventArgs
+</h1><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.TriggeredEventArgs</span></code><div class="topic"><code class="decorator"><span>object </span><span class="identifier">Trigger</span>: <a class="type-identifier-link" href="#Trigger">Trigger</a></code></div>
+<div class="topic"><code class="decorator"><span>var </span><span class="identifier">message</span>: <a class="type-identifier-link" href="#HandleMessageEventArgs">HandleMessageEventArgs</a></code></div>
+</div><div id="OnPropertyChangedTrigger" class="class" data-name="OnPropertyChangedTrigger" data-inherits="Trigger" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">OnPropertyChangedTrigger
 </h1><div class="abstract">Responds to property value changes on specified nodes
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.OnPropertyChangedTrigger</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Monitors a named property on a source node and triggers actions when the property value changes. Useful for reactive UI updates.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">SourceNode</span>: <span>fixed</span></code></div>
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.OnPropertyChangedTrigger</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Trigger" class="name base">Trigger</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Monitors a named property on a source node and triggers actions when the property value changes. Useful for reactive UI updates.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">SourceNode</span>: <span>fixed</span></code></div>
 <div class="small-abstract"><span>Name or identifier of the node to monitor 
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Property</span>: <span>fixed</span></code></div>
 <div class="small-abstract"><span>Property name to watch for changes 
-</span></div></div><div id="OnAttachedTrigger" class="class" data-name="OnAttachedTrigger" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
+</span></div></div><div id="OnAttachedTrigger" class="class" data-name="OnAttachedTrigger" data-inherits="Trigger" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">OnAttachedTrigger
 </h1><div class="abstract">Triggers when an element is attached to the visual tree
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.OnAttachedTrigger</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Useful for initialization actions that should occur when an element becomes part of the active UI hierarchy.</div></div><div id="EventTrigger" class="class" data-name="EventTrigger" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.OnAttachedTrigger</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Trigger" class="name base">Trigger</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Useful for initialization actions that should occur when an element becomes part of the active UI hierarchy.</div></div><div id="EventTrigger" class="class" data-name="EventTrigger" data-inherits="Trigger" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">EventTrigger
 </h1><div class="abstract">Responds to routed UI events (mouse, keyboard, etc.)
-</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.EventTrigger</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Listens for specific routed events and can execute actions in response. Supports the standard UI event bubbling system.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RoutedEvent</span>: <span>fixed</span></code></div>
+</div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.EventTrigger</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#Trigger" class="name base">Trigger</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">Listens for specific routed events and can execute actions in response. Supports the standard UI event bubbling system.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>var </span><span class="identifier">RoutedEvent</span>: <span>fixed</span></code></div>
 <div class="small-abstract"><span>Name of the routed event to handle (e.g., "MouseDown", "KeyPress") 
 </span></div></div><div id="Setter" class="class" data-name="Setter" data-inherits="None" data-xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation"><div class="eyebrow">Class
 </div><h1 class="header">Setter
@@ -1567,7 +1651,7 @@
 </h1><div class="abstract">Executes custom functions when triggered by specified conditions
 </div><code class="source"><span class="token-keyword">struct </span><span class="token-identifier">UIKit.Handler</span><span class="token-keyword"> inherits </span><ui class="comma-list"><li><a href="#object" class="name base">object</a></li></ui></code><h2 class="title">Overview</h2><div class="abstract">More flexible than Setter - can call arbitrary functions on target objects rather than just setting properties.</div><h2 class="title">Properties</h2><div class="topic"><code class="decorator"><span>object </span><span class="identifier">Trigger</span>: <a class="type-identifier-link" href="#Trigger">Trigger</a></code></div>
 <div class="small-abstract"><span>Triggering condition or state image 
-</span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Target</span>: <span>Object</span></code></div>
+</span></div><div class="topic"><code class="decorator"><span>object </span><span class="identifier">Target</span>: <a class="type-identifier-link" href="#Node">Node</a></code></div>
 <div class="small-abstract"><span>Target object to call function on 
 </span></div><div class="topic"><code class="decorator"><span>var </span><span class="identifier">Function</span>: <span>fixed</span></code></div>
 <div class="small-abstract"><span>Function name to execute on target 
@@ -1814,6 +1898,7 @@
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getRect</span>()<span class="decorator"> -&gt;</span><span> rect</span></code><div class="small-abstract"><span>Get the rectangle bounds of a Node2D including padding and margin
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getBackgroundRect</span>()<span class="decorator"> -&gt;</span><span> rect</span></code><div class="small-abstract"><span>Get the background rendering rectangle for a Node2D
 </span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getSize</span>(<span class="identifier">axis</span>:<span class="decorator">Direction</span>, <span class="identifier">sizing</span>:<span class="decorator">Sizing</span>)<span class="decorator"> -&gt;</span><span> float</span></code><div class="small-abstract"><span>Utility function for calculating node dimensions with different sizing modes
+</span></div></div><div class="topic"><code class="decorator"><span>func </span><span class="identifier">getViewEntity</span>(<span class="identifier">ViewEntity</span>:<span class="decorator">ViewEntity</span>, <span class="identifier">image</span>:<span class="decorator">Texture</span>, <span class="identifier">brush</span>:<span class="decorator">BrushShorthand</span>)</code><div class="small-abstract"><span>Create a view entity for rendering operations
 </span></div></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">LayoutTransform</span>: <a class="type-identifier-link" href="#transform2">transform2</a></code></div>
 <div class="small-abstract"><span>Transformation applied during layout calculations. Affects size and positioning but does not influence local rendering.
 </span></div><div class="topic"><code class="decorator"><span>struct </span><span class="identifier">LayoutTransformTranslation</span>: <a class="type-identifier-link" href="#vec2">vec2</a></code></div>

@@ -267,8 +267,6 @@
 	TextureTiling CDATA #IMPLIED
 	BlendIntensity CDATA #IMPLIED
 	BlendMode (%BlendMode;) #IMPLIED
-	U_color CDATA #IMPLIED
-	U_texture CDATA #IMPLIED
 ">
 <!ELEMENT Material.Shader (#PCDATA | Binding)*>
 <!ATTLIST Material.Shader Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
@@ -296,11 +294,7 @@
 <!ATTLIST Material.BlendIntensity Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Material.BlendMode (#PCDATA | Binding)*>
 <!ATTLIST Material.BlendMode Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Material.U_color (#PCDATA | Binding)*>
-<!ATTLIST Material.U_color Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Material.U_texture (#PCDATA | Binding)*>
-<!ATTLIST Material.U_texture Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % MaterialElements "Material.Shader|Material.GlobalAmbient|Material.Ambient|Material.Diffuse|Material.Emissive|Material.SpecularColor|Material.SpecularExponent|Material.Texture|Material.Texture2|Material.TextureOffset|Material.TextureTiling|Material.BlendIntensity|Material.BlendMode|Material.U_color|Material.U_texture">
+<!ENTITY % MaterialElements "Material.Shader|Material.GlobalAmbient|Material.Ambient|Material.Diffuse|Material.Emissive|Material.SpecularColor|Material.SpecularExponent|Material.Texture|Material.Texture2|Material.TextureOffset|Material.TextureTiling|Material.BlendIntensity|Material.BlendMode">
 <!ELEMENT Material EMPTY>
 <!ATTLIST Material %MaterialAttribs;>
 <!ENTITY % MeshAttribs "
@@ -435,10 +429,7 @@
 <!ELEMENT Trigger EMPTY>
 <!ATTLIST Trigger %TriggerAttribs;>
 <!ENTITY % OnPropertyChangedTriggerAttribs "
-	Name CDATA #REQUIRED
-	Style CDATA #IMPLIED
-	IsDisabled (true|false) #IMPLIED
-	StateManager CDATA #IMPLIED
+	%TriggerAttribs;
 	SourceNode CDATA #IMPLIED
 	Property CDATA #IMPLIED
 ">
@@ -446,28 +437,22 @@
 <!ATTLIST OnPropertyChangedTrigger.SourceNode Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT OnPropertyChangedTrigger.Property (#PCDATA | Binding)*>
 <!ATTLIST OnPropertyChangedTrigger.Property Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % OnPropertyChangedTriggerElements "OnPropertyChangedTrigger.SourceNode|OnPropertyChangedTrigger.Property">
+<!ENTITY % OnPropertyChangedTriggerElements "OnPropertyChangedTrigger.SourceNode|OnPropertyChangedTrigger.Property|%TriggerElements;">
 <!ELEMENT OnPropertyChangedTrigger EMPTY>
 <!ATTLIST OnPropertyChangedTrigger %OnPropertyChangedTriggerAttribs;>
 <!ENTITY % OnAttachedTriggerAttribs "
-	Name CDATA #REQUIRED
-	Style CDATA #IMPLIED
-	IsDisabled (true|false) #IMPLIED
-	StateManager CDATA #IMPLIED
+	%TriggerAttribs;
 ">
-<!ENTITY % OnAttachedTriggerElements "">
+<!ENTITY % OnAttachedTriggerElements "%TriggerElements;">
 <!ELEMENT OnAttachedTrigger EMPTY>
 <!ATTLIST OnAttachedTrigger %OnAttachedTriggerAttribs;>
 <!ENTITY % EventTriggerAttribs "
-	Name CDATA #REQUIRED
-	Style CDATA #IMPLIED
-	IsDisabled (true|false) #IMPLIED
-	StateManager CDATA #IMPLIED
+	%TriggerAttribs;
 	RoutedEvent CDATA #IMPLIED
 ">
 <!ELEMENT EventTrigger.RoutedEvent (#PCDATA | Binding)*>
 <!ATTLIST EventTrigger.RoutedEvent Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % EventTriggerElements "EventTrigger.RoutedEvent">
+<!ENTITY % EventTriggerElements "EventTrigger.RoutedEvent|%TriggerElements;">
 <!ELEMENT EventTrigger EMPTY>
 <!ATTLIST EventTrigger %EventTriggerAttribs;>
 <!ENTITY % SetterAttribs "

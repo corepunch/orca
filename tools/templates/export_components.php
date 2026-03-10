@@ -15,6 +15,8 @@ static struct PropertyType const <?= $name ?>Properties[k<?= $name ?>NumProperti
 <?php foreach ($component->getProperties() as $property => $type):?>
 	<?php if ($type->kind === 'enum'): ?>
 	DECL(<?= $property->id ?>, <?= $name ?>, <?= $property ?>, <?= $property->addr ?>, kDataType<?= ucfirst($type->kind) ?>, .TypeString = "<?= implode(',', $type->data->getValuesNames()) ?>"), // <?= $name ?>.<?= $property ?>
+	<?php elseif ($type->array): ?>
+	ARRAY_DECL(<?= $property->id ?>, <?= $name ?>, <?= $property ?>, <?= $property->addr ?>, kDataType<?= ucfirst($type->kind) ?>), // <?= $name ?>.<?= $property ?>
 	<?php elseif ($type->kind === 'struct'): ?>
 	DECL(<?= $property->id ?>, <?= $name ?>, <?= $property ?>, <?= $property->addr ?>, kDataType<?= ucfirst($type->kind) ?>, .TypeString = "<?= $type->export ?>"), // <?= $name ?>.<?= $property ?>
 	<?php elseif ($type->kind === 'component'): ?>
