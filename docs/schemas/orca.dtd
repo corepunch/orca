@@ -1,359 +1,3 @@
-<!ENTITY % RotationOrder "XYZ|XZY|YZX|YXZ|ZXY|ZYX">
-<!ENTITY % BindingMode "OneWay|TwoWay|OneWayToSource|Expression">
-<!ENTITY % PropertyAttribute "WholeProperty|ColorR|ColorG|ColorB|ColorA|VectorX|VectorY|VectorZ|VectorW">
-<!ENTITY % DataType "None|Bool|Int|Enum|Float|Fixed|LongString|ObjectTags|Event|Struct|Object">
-<!ENTITY % BlendMode "AlphaAutomatic|Opaque|Alpha|Additive|PremultipliedAlpha|MixedAlpha">
-<!ENTITY % CompareFunc "Never|Always|Less|LessOrEqual|Greater|GreaterOrEqual|Equal|NotEqual|Disabled">
-<!ENTITY % TextureFilter "Nearest|Linear|Trilinear">
-<!ENTITY % TextureWrap "Clamp|Repeat|Base">
-<!ENTITY % TextureFormat "Automatic|Rgba8|Rgb8|Alpha8|DepthComponent|DepthStencil">
-<!ENTITY % MipmapMode "Base|Nearest|Linear|Trilinear">
-<!ENTITY % AnisotropyType "None|X2|X4|X8|X16">
-<!ENTITY % TextureAttribs "
-	Name CDATA #REQUIRED
-	Style CDATA #IMPLIED
-	IsDisabled (true|false) #IMPLIED
-	StateManager CDATA #IMPLIED
-	MinificationFilter (%TextureFilter;) #IMPLIED
-	MagnificationFilter (%TextureFilter;) #IMPLIED
-	WrapMode (%TextureWrap;) #IMPLIED
-	Format (%TextureFormat;) #IMPLIED
-	Scale CDATA #IMPLIED
-	MipmapMode (%MipmapMode;) #IMPLIED
-	AnisotropyType (%AnisotropyType;) #IMPLIED
-	Width CDATA #IMPLIED
-	Height CDATA #IMPLIED
-">
-<!ELEMENT Texture.MinificationFilter (#PCDATA | Binding)*>
-<!ATTLIST Texture.MinificationFilter Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Texture.MagnificationFilter (#PCDATA | Binding)*>
-<!ATTLIST Texture.MagnificationFilter Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Texture.WrapMode (#PCDATA | Binding)*>
-<!ATTLIST Texture.WrapMode Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Texture.Format (#PCDATA | Binding)*>
-<!ATTLIST Texture.Format Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Texture.Scale (#PCDATA | Binding)*>
-<!ATTLIST Texture.Scale Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Texture.MipmapMode (#PCDATA | Binding)*>
-<!ATTLIST Texture.MipmapMode Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Texture.AnisotropyType (#PCDATA | Binding)*>
-<!ATTLIST Texture.AnisotropyType Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Texture.Width (#PCDATA | Binding)*>
-<!ATTLIST Texture.Width Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Texture.Height (#PCDATA | Binding)*>
-<!ATTLIST Texture.Height Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % TextureElements "Texture.MinificationFilter|Texture.MagnificationFilter|Texture.WrapMode|Texture.Format|Texture.Scale|Texture.MipmapMode|Texture.AnisotropyType|Texture.Width|Texture.Height">
-<!ELEMENT Texture EMPTY>
-<!ATTLIST Texture %TextureAttribs;>
-<!ENTITY % ImageFormat "Png|Jpeg|Svg|Astc|Pvrtc">
-<!ENTITY % AstcFormat "UnormBlock4x4|UnormBlock5x4|UnormBlock5x5|UnormBlock6x5|UnormBlock6x6|UnormBlock8x5|UnormBlock8x6|UnormBlock8x8|UnormBlock10x5|UnormBlock10x6|UnormBlock10x8|UnormBlock10x10|UnormBlock12x10|UnormBlock12x12|SrgbBlock4x4|SrgbBlock5x4|SrgbBlock5x5|SrgbBlock6x5|SrgbBlock6x6|SrgbBlock8x5|SrgbBlock8x6|SrgbBlock8x8|SrgbBlock10x5|SrgbBlock10x6|SrgbBlock10x8|SrgbBlock10x10|SrgbBlock12x10|SrgbBlock12x12">
-<!ENTITY % AtcCompressionScheme "ExplicitAlpha|InterpolatedAlpha|Rgb">
-<!ENTITY % AstcCompressionSpeed "VeryFast|Fast|Medium|Thorough|Exhaustive">
-<!ENTITY % RawColorByteFormat "Rgba8|Rgb8|Bgra8|Rgba16f|Rgb10a2|R11g11b10f|Rgba32f">
-<!ENTITY % FilePngCompressionLevel "None|Fast|Normal|Maximum|ProjectDefault">
-<!ENTITY % SpansionCompressionScheme "None|Standard|Enhanced">
-<!ENTITY % ImageType "Normal|Mask">
-<!ENTITY % ImageAttribs "
-	%TextureAttribs;
-	Source CDATA #IMPLIED
-	PremultiplyAlpha (true|false) #IMPLIED
-	Type (%ImageType;) #IMPLIED
-	HasMipmaps (true|false) #IMPLIED
-	Size CDATA #IMPLIED
-	BitDepth CDATA #IMPLIED
-	FileHasTransparency (true|false) #IMPLIED
-	FileHasICCProfile (true|false) #IMPLIED
-	TargetFormat (%ImageFormat;) #IMPLIED
-	AtcCompressionScheme (%AtcCompressionScheme;) #IMPLIED
-	PvrtcBitDepth CDATA #IMPLIED
-	PvrtcQuality CDATA #IMPLIED
-	PvrtcCompressionScheme CDATA #IMPLIED
-	AstcBlockSize (%AstcFormat;) #IMPLIED
-	AstcCompressionSpeed (%AstcCompressionSpeed;) #IMPLIED
-	AstcIsSRGB (true|false) #IMPLIED
-	RawColorByteFormat (%RawColorByteFormat;) #IMPLIED
-	SpansionCompressionScheme (%SpansionCompressionScheme;) #IMPLIED
-	FilePngCompressionLevel (%FilePngCompressionLevel;) #IMPLIED
-	Etc2Effort CDATA #IMPLIED
-	FileExportSourceTexture (true|false) #IMPLIED
-	FileExportAlways (true|false) #IMPLIED
-	FileExportEmptyWhenFileIsMissing (true|false) #IMPLIED
-	FileExportSourceImage CDATA #IMPLIED
-">
-<!ELEMENT Image.Source (#PCDATA | Binding)*>
-<!ATTLIST Image.Source Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Image.PremultiplyAlpha (#PCDATA | Binding)*>
-<!ATTLIST Image.PremultiplyAlpha Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Image.Type (#PCDATA | Binding)*>
-<!ATTLIST Image.Type Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Image.HasMipmaps (#PCDATA | Binding)*>
-<!ATTLIST Image.HasMipmaps Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Image.Size (#PCDATA | Binding)*>
-<!ATTLIST Image.Size Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Image.BitDepth (#PCDATA | Binding)*>
-<!ATTLIST Image.BitDepth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Image.FileHasTransparency (#PCDATA | Binding)*>
-<!ATTLIST Image.FileHasTransparency Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Image.FileHasICCProfile (#PCDATA | Binding)*>
-<!ATTLIST Image.FileHasICCProfile Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Image.TargetFormat (#PCDATA | Binding)*>
-<!ATTLIST Image.TargetFormat Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Image.AtcCompressionScheme (#PCDATA | Binding)*>
-<!ATTLIST Image.AtcCompressionScheme Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Image.PvrtcBitDepth (#PCDATA | Binding)*>
-<!ATTLIST Image.PvrtcBitDepth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Image.PvrtcQuality (#PCDATA | Binding)*>
-<!ATTLIST Image.PvrtcQuality Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Image.PvrtcCompressionScheme (#PCDATA | Binding)*>
-<!ATTLIST Image.PvrtcCompressionScheme Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Image.AstcBlockSize (#PCDATA | Binding)*>
-<!ATTLIST Image.AstcBlockSize Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Image.AstcCompressionSpeed (#PCDATA | Binding)*>
-<!ATTLIST Image.AstcCompressionSpeed Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Image.AstcIsSRGB (#PCDATA | Binding)*>
-<!ATTLIST Image.AstcIsSRGB Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Image.RawColorByteFormat (#PCDATA | Binding)*>
-<!ATTLIST Image.RawColorByteFormat Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Image.SpansionCompressionScheme (#PCDATA | Binding)*>
-<!ATTLIST Image.SpansionCompressionScheme Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Image.FilePngCompressionLevel (#PCDATA | Binding)*>
-<!ATTLIST Image.FilePngCompressionLevel Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Image.Etc2Effort (#PCDATA | Binding)*>
-<!ATTLIST Image.Etc2Effort Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Image.FileExportSourceTexture (#PCDATA | Binding)*>
-<!ATTLIST Image.FileExportSourceTexture Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Image.FileExportAlways (#PCDATA | Binding)*>
-<!ATTLIST Image.FileExportAlways Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Image.FileExportEmptyWhenFileIsMissing (#PCDATA | Binding)*>
-<!ATTLIST Image.FileExportEmptyWhenFileIsMissing Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Image.FileExportSourceImage (#PCDATA | Binding)*>
-<!ATTLIST Image.FileExportSourceImage Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % ImageElements "Image.Source|Image.PremultiplyAlpha|Image.Type|Image.HasMipmaps|Image.Size|Image.BitDepth|Image.FileHasTransparency|Image.FileHasICCProfile|Image.TargetFormat|Image.AtcCompressionScheme|Image.PvrtcBitDepth|Image.PvrtcQuality|Image.PvrtcCompressionScheme|Image.AstcBlockSize|Image.AstcCompressionSpeed|Image.AstcIsSRGB|Image.RawColorByteFormat|Image.SpansionCompressionScheme|Image.FilePngCompressionLevel|Image.Etc2Effort|Image.FileExportSourceTexture|Image.FileExportAlways|Image.FileExportEmptyWhenFileIsMissing|Image.FileExportSourceImage|%TextureElements;">
-<!ELEMENT Image EMPTY>
-<!ATTLIST Image %ImageAttribs;>
-<!ENTITY % RenderTargetType "Color|Depth|Stencil|DepthStencil|Normal|Specular|Emission">
-<!ENTITY % RenderTargetTextureAttachment "None|Color0|Color1|Color2|Color3|Depth|Stencil|DepthStencil">
-<!ENTITY % RenderTargetTextureAttribs "
-	%TextureAttribs;
-	Width CDATA #IMPLIED
-	Height CDATA #IMPLIED
-	TargetType (%RenderTargetType;) #IMPLIED
-	SupportSimpleRenderTarget (true|false) #IMPLIED
-	Attachment (%RenderTargetTextureAttachment;) #IMPLIED
-	AllowDepthFallback (true|false) #IMPLIED
-	SampleCount CDATA #IMPLIED
-">
-<!ELEMENT RenderTargetTexture.Width (#PCDATA | Binding)*>
-<!ATTLIST RenderTargetTexture.Width Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT RenderTargetTexture.Height (#PCDATA | Binding)*>
-<!ATTLIST RenderTargetTexture.Height Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT RenderTargetTexture.TargetType (#PCDATA | Binding)*>
-<!ATTLIST RenderTargetTexture.TargetType Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT RenderTargetTexture.SupportSimpleRenderTarget (#PCDATA | Binding)*>
-<!ATTLIST RenderTargetTexture.SupportSimpleRenderTarget Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT RenderTargetTexture.Attachment (#PCDATA | Binding)*>
-<!ATTLIST RenderTargetTexture.Attachment Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT RenderTargetTexture.AllowDepthFallback (#PCDATA | Binding)*>
-<!ATTLIST RenderTargetTexture.AllowDepthFallback Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT RenderTargetTexture.SampleCount (#PCDATA | Binding)*>
-<!ATTLIST RenderTargetTexture.SampleCount Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % RenderTargetTextureElements "RenderTargetTexture.Width|RenderTargetTexture.Height|RenderTargetTexture.TargetType|RenderTargetTexture.SupportSimpleRenderTarget|RenderTargetTexture.Attachment|RenderTargetTexture.AllowDepthFallback|RenderTargetTexture.SampleCount|%TextureElements;">
-<!ELEMENT RenderTargetTexture EMPTY>
-<!ATTLIST RenderTargetTexture %RenderTargetTextureAttribs;>
-<!ENTITY % CubeMapTextureAttribs "
-	%TextureAttribs;
-	BackImage CDATA #IMPLIED
-	FrontImage CDATA #IMPLIED
-	LeftImage CDATA #IMPLIED
-	RightImage CDATA #IMPLIED
-	BottomImage CDATA #IMPLIED
-	TopImage CDATA #IMPLIED
-">
-<!ELEMENT CubeMapTexture.BackImage (#PCDATA | Binding)*>
-<!ATTLIST CubeMapTexture.BackImage Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT CubeMapTexture.FrontImage (#PCDATA | Binding)*>
-<!ATTLIST CubeMapTexture.FrontImage Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT CubeMapTexture.LeftImage (#PCDATA | Binding)*>
-<!ATTLIST CubeMapTexture.LeftImage Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT CubeMapTexture.RightImage (#PCDATA | Binding)*>
-<!ATTLIST CubeMapTexture.RightImage Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT CubeMapTexture.BottomImage (#PCDATA | Binding)*>
-<!ATTLIST CubeMapTexture.BottomImage Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT CubeMapTexture.TopImage (#PCDATA | Binding)*>
-<!ATTLIST CubeMapTexture.TopImage Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % CubeMapTextureElements "CubeMapTexture.BackImage|CubeMapTexture.FrontImage|CubeMapTexture.LeftImage|CubeMapTexture.RightImage|CubeMapTexture.BottomImage|CubeMapTexture.TopImage|%TextureElements;">
-<!ELEMENT CubeMapTexture EMPTY>
-<!ATTLIST CubeMapTexture %CubeMapTextureAttribs;>
-<!ENTITY % IOSurfaceTextureAttribs "
-	%TextureAttribs;
-	IOSurface CDATA #IMPLIED
-">
-<!ELEMENT IOSurfaceTexture.IOSurface (#PCDATA | Binding)*>
-<!ATTLIST IOSurfaceTexture.IOSurface Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % IOSurfaceTextureElements "IOSurfaceTexture.IOSurface|%TextureElements;">
-<!ELEMENT IOSurfaceTexture EMPTY>
-<!ATTLIST IOSurfaceTexture %IOSurfaceTextureAttribs;>
-<!ENTITY % FloatPrecision "Unset|Low|Medium|High">
-<!ENTITY % Shading "Unlit|Phong|Standard">
-<!ENTITY % VertexShaderAttribs "
-	Name CDATA #REQUIRED
-	Style CDATA #IMPLIED
-	IsDisabled (true|false) #IMPLIED
-	StateManager CDATA #IMPLIED
-	Version CDATA #IMPLIED
-	FloatPrecision (%FloatPrecision;) #IMPLIED
-	Shading (%Shading;) #IMPLIED
-">
-<!ELEMENT VertexShader.Version (#PCDATA | Binding)*>
-<!ATTLIST VertexShader.Version Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT VertexShader.FloatPrecision (#PCDATA | Binding)*>
-<!ATTLIST VertexShader.FloatPrecision Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT VertexShader.Shading (#PCDATA | Binding)*>
-<!ATTLIST VertexShader.Shading Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % VertexShaderElements "VertexShader.Version|VertexShader.FloatPrecision|VertexShader.Shading">
-<!ELEMENT VertexShader EMPTY>
-<!ATTLIST VertexShader %VertexShaderAttribs;>
-<!ENTITY % FragmentShaderAttribs "
-	Name CDATA #REQUIRED
-	Style CDATA #IMPLIED
-	IsDisabled (true|false) #IMPLIED
-	StateManager CDATA #IMPLIED
-	Version CDATA #IMPLIED
-	FloatPrecision (%FloatPrecision;) #IMPLIED
-	Out CDATA #IMPLIED
-">
-<!ELEMENT FragmentShader.Version (#PCDATA | Binding)*>
-<!ATTLIST FragmentShader.Version Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT FragmentShader.FloatPrecision (#PCDATA | Binding)*>
-<!ATTLIST FragmentShader.FloatPrecision Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT FragmentShader.Out (#PCDATA | Binding)*>
-<!ATTLIST FragmentShader.Out Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % FragmentShaderElements "FragmentShader.Version|FragmentShader.FloatPrecision|FragmentShader.Out">
-<!ELEMENT FragmentShader EMPTY>
-<!ATTLIST FragmentShader %FragmentShaderAttribs;>
-<!ENTITY % ShaderAttribs "
-	Name CDATA #REQUIRED
-	Style CDATA #IMPLIED
-	IsDisabled (true|false) #IMPLIED
-	StateManager CDATA #IMPLIED
-	BlendMode (%BlendMode;) #IMPLIED
-	DepthTestFunction (%CompareFunc;) #IMPLIED
-	DepthWriteEnabled (true|false) #IMPLIED
-">
-<!ELEMENT Shader.BlendMode (#PCDATA | Binding)*>
-<!ATTLIST Shader.BlendMode Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Shader.DepthTestFunction (#PCDATA | Binding)*>
-<!ATTLIST Shader.DepthTestFunction Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Shader.DepthWriteEnabled (#PCDATA | Binding)*>
-<!ATTLIST Shader.DepthWriteEnabled Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % ShaderElements "Shader.BlendMode|Shader.DepthTestFunction|Shader.DepthWriteEnabled">
-<!ELEMENT Shader EMPTY>
-<!ATTLIST Shader %ShaderAttribs;>
-<!ENTITY % MaterialAttribs "
-	Name CDATA #REQUIRED
-	Style CDATA #IMPLIED
-	IsDisabled (true|false) #IMPLIED
-	StateManager CDATA #IMPLIED
-	Shader CDATA #IMPLIED
-	GlobalAmbient CDATA #IMPLIED
-	Ambient CDATA #IMPLIED
-	Diffuse CDATA #IMPLIED
-	Emissive CDATA #IMPLIED
-	SpecularColor CDATA #IMPLIED
-	SpecularExponent CDATA #IMPLIED
-	Texture CDATA #IMPLIED
-	Texture2 CDATA #IMPLIED
-	TextureOffset CDATA #IMPLIED
-	TextureTiling CDATA #IMPLIED
-	BlendIntensity CDATA #IMPLIED
-	BlendMode (%BlendMode;) #IMPLIED
-">
-<!ELEMENT Material.Shader (#PCDATA | Binding)*>
-<!ATTLIST Material.Shader Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Material.GlobalAmbient (#PCDATA | Binding)*>
-<!ATTLIST Material.GlobalAmbient Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Material.Ambient (#PCDATA | Binding)*>
-<!ATTLIST Material.Ambient Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Material.Diffuse (#PCDATA | Binding)*>
-<!ATTLIST Material.Diffuse Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Material.Emissive (#PCDATA | Binding)*>
-<!ATTLIST Material.Emissive Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Material.SpecularColor (#PCDATA | Binding)*>
-<!ATTLIST Material.SpecularColor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Material.SpecularExponent (#PCDATA | Binding)*>
-<!ATTLIST Material.SpecularExponent Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Material.Texture (#PCDATA | Binding)*>
-<!ATTLIST Material.Texture Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Material.Texture2 (#PCDATA | Binding)*>
-<!ATTLIST Material.Texture2 Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Material.TextureOffset (#PCDATA | Binding)*>
-<!ATTLIST Material.TextureOffset Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Material.TextureTiling (#PCDATA | Binding)*>
-<!ATTLIST Material.TextureTiling Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Material.BlendIntensity (#PCDATA | Binding)*>
-<!ATTLIST Material.BlendIntensity Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Material.BlendMode (#PCDATA | Binding)*>
-<!ATTLIST Material.BlendMode Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % MaterialElements "Material.Shader|Material.GlobalAmbient|Material.Ambient|Material.Diffuse|Material.Emissive|Material.SpecularColor|Material.SpecularExponent|Material.Texture|Material.Texture2|Material.TextureOffset|Material.TextureTiling|Material.BlendIntensity|Material.BlendMode">
-<!ELEMENT Material EMPTY>
-<!ATTLIST Material %MaterialAttribs;>
-<!ENTITY % MeshAttribs "
-	Name CDATA #REQUIRED
-	Style CDATA #IMPLIED
-	IsDisabled (true|false) #IMPLIED
-	StateManager CDATA #IMPLIED
-	Source CDATA #IMPLIED
-	Material CDATA #IMPLIED
-	MeshMorphTargets CDATA #IMPLIED
-">
-<!ELEMENT Mesh.Source (#PCDATA | Binding)*>
-<!ATTLIST Mesh.Source Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Mesh.Material (#PCDATA | Binding)*>
-<!ATTLIST Mesh.Material Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Mesh.MeshMorphTargets (#PCDATA | Binding)*>
-<!ATTLIST Mesh.MeshMorphTargets Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % MeshElements "Mesh.Source|Mesh.Material|Mesh.MeshMorphTargets">
-<!ELEMENT Mesh EMPTY>
-<!ATTLIST Mesh %MeshAttribs;>
-<!ENTITY % FontFamilyAttribs "
-	Name CDATA #REQUIRED
-	Style CDATA #IMPLIED
-	IsDisabled (true|false) #IMPLIED
-	StateManager CDATA #IMPLIED
-	Regular CDATA #IMPLIED
-	Bold CDATA #IMPLIED
-	Italic CDATA #IMPLIED
-	BoldItalic CDATA #IMPLIED
-">
-<!ELEMENT FontFamily.Regular (#PCDATA | Binding)*>
-<!ATTLIST FontFamily.Regular Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT FontFamily.Bold (#PCDATA | Binding)*>
-<!ATTLIST FontFamily.Bold Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT FontFamily.Italic (#PCDATA | Binding)*>
-<!ATTLIST FontFamily.Italic Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT FontFamily.BoldItalic (#PCDATA | Binding)*>
-<!ATTLIST FontFamily.BoldItalic Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % FontFamilyElements "FontFamily.Regular|FontFamily.Bold|FontFamily.Italic|FontFamily.BoldItalic">
-<!ELEMENT FontFamily EMPTY>
-<!ATTLIST FontFamily %FontFamilyAttribs;>
-<!ENTITY % TrajectoryAttribs "
-	Name CDATA #REQUIRED
-	Style CDATA #IMPLIED
-	IsDisabled (true|false) #IMPLIED
-	StateManager CDATA #IMPLIED
-">
-<!ENTITY % TrajectoryElements "">
-<!ELEMENT Trajectory EMPTY>
-<!ATTLIST Trajectory %TrajectoryAttribs;>
-<!ENTITY % TimelineAttribs "
-	Name CDATA #REQUIRED
-	Style CDATA #IMPLIED
-	IsDisabled (true|false) #IMPLIED
-	StateManager CDATA #IMPLIED
-">
-<!ENTITY % TimelineElements "">
-<!ELEMENT Timeline EMPTY>
-<!ATTLIST Timeline %TimelineAttribs;>
 <!ENTITY % Direction "Horizontal|Vertical|Depth">
 <!ENTITY % Box3Field "X|Y|Z|Width|Height|Depth">
 <!ENTITY % TextOverflow "Clip|Ellipsis">
@@ -374,6 +18,17 @@
 <!ENTITY % ButtonType "Normal|Submit">
 <!ENTITY % InputType "Text|Password|Number|Checkbox|Radio">
 <!ENTITY % Sizing "PlusMargin|SizeOnly|MinusPadding">
+<!ENTITY % ResizeMode "NoResize|CanMinimize|CanResize|CanResizeWithGrip">
+<!ENTITY % Stretch "Uniform|None|Fill|UniformToFill">
+<!ENTITY % TransitionType "None|Slide|Fade">
+<!ENTITY % StyleType "Generic|Named">
+<!ENTITY % StencilOp "Keep|Zero|Replace|Increment|IncrementWrap|Decrement|DecrementWrap|Invert">
+<!ENTITY % ViewportMode "Relative|Absolute">
+<!ENTITY % CullMode "None|Back|Front">
+<!ENTITY % ColorWriteMode "None|RGB|RGBA|R|G|B|GB|A">
+<!ENTITY % FovType "Xfov|Yfov">
+<!ENTITY % ProjectionType "Perspective|Orthographic">
+<!ENTITY % LightType "Point|Spot">
 <!ENTITY % DataObjectAttribs "
 	Name CDATA #REQUIRED
 	Style CDATA #IMPLIED
@@ -848,7 +503,7 @@
 	BoxShadowBlurRadius CDATA #IMPLIED
 	BoxShadowSpreadRadius CDATA #IMPLIED
 	BoxShadowColor CDATA #IMPLIED
-	Overflow CDATA #IMPLIED
+	Overflow (%Overflow;) #IMPLIED
 	OverflowX (%Overflow;) #IMPLIED
 	OverflowY (%Overflow;) #IMPLIED
 	Ring CDATA #IMPLIED
@@ -957,7 +612,7 @@
 <!ELEMENT Node2D.ForegroundHint (#PCDATA | Binding)*>
 <!ATTLIST Node2D.ForegroundHint Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % Node2DElements "Node2D.LayoutTransform|Node2D.LayoutTransformTranslation|Node2D.LayoutTransformRotation|Node2D.LayoutTransformScale|Node2D.RenderTransform|Node2D.RenderTransformTranslation|Node2D.RenderTransformRotation|Node2D.RenderTransformScale|Node2D.RenderTransformOrigin|Node2D.ContentOffset|Node2D.Matrix|Node2D.RenderTarget|Node2D.Background|Node2D.BackgroundColor|Node2D.BackgroundImage|Node2D.BackgroundMaterial|Node2D.Foreground|Node2D.ForegroundColor|Node2D.ForegroundImage|Node2D.ForegroundMaterial|Node2D.BoxShadow|Node2D.BoxShadowOffset|Node2D.BoxShadowBlurRadius|Node2D.BoxShadowSpreadRadius|Node2D.BoxShadowColor|Node2D.Overflow|Node2D.OverflowX|Node2D.OverflowY|Node2D.Ring|Node2D.RingOffset|Node2D.RingWidth|Node2D.RingColor|Node2D.CompositionBrush|Node2D.CompositionDesignSize|Node2D.SizeToContent|Node2D.OffscreenRendering|Node2D.ForceComposition|Node2D.CacheResult|Node2D.SnapToPixel|Node2D.ClipChildren|Node2D.ContentStretch|Node2D.Hovered|Node2D.IgnoreHitTest|Node2D.ForegroundHint|%NodeElements;">
-<!ELEMENT Node2D (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%Node2DElements;)*>
+<!ELEMENT Node2D (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%Node2DElements;)*>
 <!ATTLIST Node2D %Node2DAttribs;>
 <!ENTITY % PrefabView2DAttribs "
 	%Node2DAttribs;
@@ -969,14 +624,14 @@
 <!ELEMENT PrefabView2D.Prefab (#PCDATA | Binding)*>
 <!ATTLIST PrefabView2D.Prefab Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % PrefabView2DElements "PrefabView2D.SCA|PrefabView2D.Prefab|%Node2DElements;">
-<!ELEMENT PrefabView2D (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%PrefabView2DElements;)*>
+<!ELEMENT PrefabView2D (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%PrefabView2DElements;)*>
 <!ATTLIST PrefabView2D %PrefabView2DAttribs;>
 <!ENTITY % TextBlockAttribs "
 	%Node2DAttribs;
 	%TextBlockConceptAttribs;
 ">
 <!ENTITY % TextBlockElements "%Node2DElements;|%TextBlockConceptElements;">
-<!ELEMENT TextBlock (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%TextBlockElements;)*>
+<!ELEMENT TextBlock (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%TextBlockElements;)*>
 <!ATTLIST TextBlock %TextBlockAttribs;>
 <!ENTITY % InputAttribs "
 	%TextBlockAttribs;
@@ -997,7 +652,7 @@
 <!ELEMENT Input.Checked (#PCDATA | Binding)*>
 <!ATTLIST Input.Checked Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % InputElements "Input.Name|Input.Type|Input.Cursor|Input.Multiline|Input.Checked|%TextBlockElements;">
-<!ELEMENT Input (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%InputElements;)*>
+<!ELEMENT Input (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%InputElements;)*>
 <!ATTLIST Input %InputAttribs;>
 <!ENTITY % ButtonAttribs "
 	%TextBlockAttribs;
@@ -1006,7 +661,7 @@
 <!ELEMENT Button.Type (#PCDATA | Binding)*>
 <!ATTLIST Button.Type Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % ButtonElements "Button.Type|%TextBlockElements;">
-<!ELEMENT Button (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ButtonElements;)*>
+<!ELEMENT Button (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ButtonElements;)*>
 <!ATTLIST Button %ButtonAttribs;>
 <!ENTITY % LabelAttribs "
 	%TextBlockAttribs;
@@ -1015,7 +670,7 @@
 <!ELEMENT Label.For (#PCDATA | Binding)*>
 <!ATTLIST Label.For Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % LabelElements "Label.For|%TextBlockElements;">
-<!ELEMENT Label (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%LabelElements;)*>
+<!ELEMENT Label (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%LabelElements;)*>
 <!ATTLIST Label %LabelAttribs;>
 <!ENTITY % StackViewAttribs "
 	%Node2DAttribs;
@@ -1036,13 +691,13 @@
 <!ELEMENT StackView.Spacing (#PCDATA | Binding)*>
 <!ATTLIST StackView.Spacing Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % StackViewElements "StackView.Reversed|StackView.Direction|StackView.AlignItems|StackView.JustifyContent|StackView.Spacing|%Node2DElements;">
-<!ELEMENT StackView (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%StackViewElements;)*>
+<!ELEMENT StackView (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%StackViewElements;)*>
 <!ATTLIST StackView %StackViewAttribs;>
 <!ENTITY % FormAttribs "
 	%StackViewAttribs;
 ">
 <!ENTITY % FormElements "%StackViewElements;">
-<!ELEMENT Form (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%FormElements;)*>
+<!ELEMENT Form (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%FormElements;)*>
 <!ATTLIST Form %FormAttribs;>
 <!ENTITY % ControlAttribs "
 	%Node2DAttribs;
@@ -1066,9 +721,8 @@
 <!ELEMENT Control.Scale (#PCDATA | Binding)*>
 <!ATTLIST Control.Scale Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % ControlElements "Control.Pressed|Control.Disabled|Control.Hovered|Control.Focused|Control.Value|Control.Scale|%Node2DElements;">
-<!ELEMENT Control (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ControlElements;)*>
+<!ELEMENT Control (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ControlElements;)*>
 <!ATTLIST Control %ControlAttribs;>
-<!ENTITY % ResizeMode "NoResize|CanMinimize|CanResize|CanResizeWithGrip">
 <!ENTITY % ScreenAttribs "
 	%Node2DAttribs;
 	ClearColor CDATA #IMPLIED
@@ -1079,7 +733,7 @@
 <!ELEMENT Screen.ResizeMode (#PCDATA | Binding)*>
 <!ATTLIST Screen.ResizeMode Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % ScreenElements "Screen.ClearColor|Screen.ResizeMode|%Node2DElements;">
-<!ELEMENT Screen (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ScreenElements;)*>
+<!ELEMENT Screen (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ScreenElements;)*>
 <!ATTLIST Screen %ScreenAttribs;>
 <!ENTITY % CinematicAttribs "
 	%Node2DAttribs;
@@ -1097,7 +751,7 @@
 <!ELEMENT Cinematic.FadeOut (#PCDATA | Binding)*>
 <!ATTLIST Cinematic.FadeOut Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % CinematicElements "Cinematic.FileName|Cinematic.FrameRate|Cinematic.NumFrames|Cinematic.FadeOut|%Node2DElements;">
-<!ELEMENT Cinematic (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%CinematicElements;)*>
+<!ELEMENT Cinematic (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%CinematicElements;)*>
 <!ATTLIST Cinematic %CinematicAttribs;>
 <!ENTITY % GridAttribs "
 	%Node2DAttribs;
@@ -1121,9 +775,8 @@
 <!ELEMENT Grid.CellHeight (#PCDATA | Binding)*>
 <!ATTLIST Grid.CellHeight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % GridElements "Grid.Columns|Grid.Rows|Grid.Direction|Grid.Spacing|Grid.CellWidth|Grid.CellHeight|%Node2DElements;">
-<!ELEMENT Grid (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%GridElements;)*>
+<!ELEMENT Grid (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%GridElements;)*>
 <!ATTLIST Grid %GridAttribs;>
-<!ENTITY % Stretch "Uniform|None|Fill|UniformToFill">
 <!ENTITY % ImageViewAttribs "
 	%Node2DAttribs;
 	Src CDATA #IMPLIED
@@ -1146,7 +799,7 @@
 <!ELEMENT ImageView.Stretch (#PCDATA | Binding)*>
 <!ATTLIST ImageView.Stretch Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % ImageViewElements "ImageView.Src|ImageView.Image|ImageView.Edges|ImageView.Insets|ImageView.Viewbox|ImageView.Stretch|%Node2DElements;">
-<!ELEMENT ImageView (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ImageViewElements;)*>
+<!ELEMENT ImageView (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ImageViewElements;)*>
 <!ATTLIST ImageView %ImageViewAttribs;>
 <!ENTITY % NinePatchImageAttribs "
 	%Node2DAttribs;
@@ -1194,7 +847,7 @@
 <!ELEMENT NinePatchImage.ImageBottomRight (#PCDATA | Binding)*>
 <!ATTLIST NinePatchImage.ImageBottomRight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % NinePatchImageElements "NinePatchImage.StretchTypeTop|NinePatchImage.StretchTypeBottom|NinePatchImage.StretchTypeLeft|NinePatchImage.StretchTypeRight|NinePatchImage.StretchTypeCenter|NinePatchImage.ImageTopLeft|NinePatchImage.ImageTop|NinePatchImage.ImageTopRight|NinePatchImage.ImageLeft|NinePatchImage.ImageCenter|NinePatchImage.ImageRight|NinePatchImage.ImageBottomLeft|NinePatchImage.ImageBottom|NinePatchImage.ImageBottomRight|%Node2DElements;">
-<!ELEMENT NinePatchImage (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%NinePatchImageElements;)*>
+<!ELEMENT NinePatchImage (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%NinePatchImageElements;)*>
 <!ATTLIST NinePatchImage %NinePatchImageAttribs;>
 <!ENTITY % TerminalViewAttribs "
 	%Node2DAttribs;
@@ -1215,9 +868,8 @@
 <!ELEMENT TerminalView.DropShadow (#PCDATA | Binding)*>
 <!ATTLIST TerminalView.DropShadow Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % TerminalViewElements "TerminalView.BufferWidth|TerminalView.BufferHeight|TerminalView.Cursor|TerminalView.SelectedIndex|TerminalView.DropShadow|%Node2DElements;">
-<!ELEMENT TerminalView (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%TerminalViewElements;)*>
+<!ELEMENT TerminalView (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%TerminalViewElements;)*>
 <!ATTLIST TerminalView %TerminalViewAttribs;>
-<!ENTITY % TransitionType "None|Slide|Fade">
 <!ENTITY % PageAttribs "
 	%Node2DAttribs;
 	Title CDATA #IMPLIED
@@ -1231,7 +883,7 @@
 <!ELEMENT Page.Transition (#PCDATA | Binding)*>
 <!ATTLIST Page.Transition Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % PageElements "Page.Title|Page.Path|Page.Transition|%Node2DElements;">
-<!ELEMENT Page (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%PageElements;)*>
+<!ELEMENT Page (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%PageElements;)*>
 <!ATTLIST Page %PageAttribs;>
 <!ENTITY % PageHostAttribs "
 	%PageAttribs;
@@ -1240,15 +892,14 @@
 <!ELEMENT PageHost.ActivePage (#PCDATA | Binding)*>
 <!ATTLIST PageHost.ActivePage Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % PageHostElements "PageHost.ActivePage|%PageElements;">
-<!ELEMENT PageHost (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%PageHostElements;)*>
+<!ELEMENT PageHost (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%PageHostElements;)*>
 <!ATTLIST PageHost %PageHostAttribs;>
 <!ENTITY % PageViewportAttribs "
 	%Node2DAttribs;
 ">
 <!ENTITY % PageViewportElements "%Node2DElements;">
-<!ELEMENT PageViewport (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%PageViewportElements;)*>
+<!ELEMENT PageViewport (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%PageViewportElements;)*>
 <!ATTLIST PageViewport %PageViewportAttribs;>
-<!ENTITY % StyleType "Generic|Named">
 <!ENTITY % StyleAttribs "
 	Name CDATA #REQUIRED
 	Style CDATA #IMPLIED
@@ -1264,13 +915,6 @@
 <!ENTITY % StyleElements "Style.TargetType|Style.Type">
 <!ELEMENT Style EMPTY>
 <!ATTLIST Style %StyleAttribs;>
-<!ENTITY % StencilOp "Keep|Zero|Replace|Increment|IncrementWrap|Decrement|DecrementWrap|Invert">
-<!ENTITY % ViewportMode "Relative|Absolute">
-<!ENTITY % CullMode "None|Back|Front">
-<!ENTITY % ColorWriteMode "None|RGB|RGBA|R|G|B|GB|A">
-<!ENTITY % FovType "Xfov|Yfov">
-<!ENTITY % ProjectionType "Perspective|Orthographic">
-<!ENTITY % LightType "Point|Spot">
 <!ENTITY % Node3DAttribs "
 	%NodeAttribs;
 	LayoutTransform CDATA #IMPLIED
@@ -1455,7 +1099,7 @@
 <!ELEMENT Viewport3D.Scene (#PCDATA | Binding)*>
 <!ATTLIST Viewport3D.Scene Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % Viewport3DElements "Viewport3D.Camera|Viewport3D.PreviewCamera|Viewport3D.HitTestCamera|Viewport3D.RenderPass|Viewport3D.Scene|%Node2DElements;">
-<!ELEMENT Viewport3D (Texture|Image|RenderTargetTexture|CubeMapTexture|IOSurfaceTexture|VertexShader|FragmentShader|Shader|Material|Mesh|FontFamily|Trajectory|Timeline|DataObject|AnimationPlayer|Trigger|OnPropertyChangedTrigger|OnAttachedTrigger|EventTrigger|Setter|Handler|Brush|ColorBrush|Node|TextRun|TextBlockConcept|Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|Style|Node3D|Scene|Model3D|PlaneMeshNode|Camera|TrajectoryList3D|Viewport3D|PrefabView3D|RenderPass|CompositionTargetRenderPass|BlitRenderPass|ClearRenderPass|DrawObjectsRenderPass|PipelineStateRenderPass|TextBlock3D|Light3D|SpriteView|Resource|StyleSheet|ObjectPrefabPlaceholder|%Viewport3DElements;)*>
+<!ELEMENT Viewport3D (DataObject|AnimationPlayer|Trigger|OnPropertyChangedTrigger|OnAttachedTrigger|EventTrigger|Setter|Handler|Brush|ColorBrush|Node|TextRun|TextBlockConcept|Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|Style|Node3D|Scene|Model3D|PlaneMeshNode|Camera|TrajectoryList3D|Viewport3D|PrefabView3D|RenderPass|CompositionTargetRenderPass|BlitRenderPass|ClearRenderPass|DrawObjectsRenderPass|PipelineStateRenderPass|TextBlock3D|Light3D|SpriteView|SpriteAnimation|SKNode|SKScene|SKSpriteNode|SKLabelNode|SKView|Resource|StyleSheet|ObjectPrefabPlaceholder|%Viewport3DElements;)*>
 <!ATTLIST Viewport3D %Viewport3DAttribs;>
 <!ENTITY % PrefabView3DAttribs "
 	%Node3DAttribs;
@@ -1519,16 +1163,16 @@
 <!ATTLIST DrawObjectsRenderPass %DrawObjectsRenderPassAttribs;>
 <!ENTITY % PipelineStateRenderPassAttribs "
 	%RenderPassAttribs;
-	BlendMode (%BlendMode;) #IMPLIED
+	BlendMode CDATA #IMPLIED
 	ColorWriteMode (%ColorWriteMode;) #IMPLIED
 	CullMode (%CullMode;) #IMPLIED
-	DepthTestFunction (%CompareFunc;) #IMPLIED
+	DepthTestFunction CDATA #IMPLIED
 	DepthWriteEnabled (true|false) #IMPLIED
 	ViewportMode (%ViewportMode;) #IMPLIED
 	ScissorMode (%ViewportMode;) #IMPLIED
 	Viewport CDATA #IMPLIED
 	Scissor CDATA #IMPLIED
-	StencilTestFunction (%CompareFunc;) #IMPLIED
+	StencilTestFunction CDATA #IMPLIED
 	StencilReferenceValue CDATA #IMPLIED
 	StencilMask CDATA #IMPLIED
 	StencilFailOperation (%StencilOp;) #IMPLIED
@@ -1645,13 +1289,13 @@
 <!ELEMENT SKNode.Anchor (#PCDATA | Binding)*>
 <!ATTLIST SKNode.Anchor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % SKNodeElements "SKNode.Position|SKNode.Size|SKNode.Anchor|%NodeElements;">
-<!ELEMENT SKNode EMPTY>
+<!ELEMENT SKNode (SKNode|SKScene|SKSpriteNode|SKLabelNode|Resource|%SKNodeElements;)*>
 <!ATTLIST SKNode %SKNodeAttribs;>
 <!ENTITY % SKSceneAttribs "
 	%SKNodeAttribs;
 ">
 <!ENTITY % SKSceneElements "%SKNodeElements;">
-<!ELEMENT SKScene EMPTY>
+<!ELEMENT SKScene (SKNode|SKScene|SKSpriteNode|SKLabelNode|Resource|%SKSceneElements;)*>
 <!ATTLIST SKScene %SKSceneAttribs;>
 <!ENTITY % SKSpriteNodeAttribs "
 	%SKNodeAttribs;
@@ -1659,7 +1303,7 @@
 	Animation2 CDATA #IMPLIED
 	Image CDATA #IMPLIED
 	FreezeFrame CDATA #IMPLIED
-	BlendMode (%BlendMode;) #IMPLIED
+	BlendMode CDATA #IMPLIED
 	UvRect CDATA #IMPLIED
 	UvRectX CDATA #IMPLIED
 	UvRectY CDATA #IMPLIED
@@ -1687,7 +1331,7 @@
 <!ELEMENT SKSpriteNode.UvRectHeight (#PCDATA | Binding)*>
 <!ATTLIST SKSpriteNode.UvRectHeight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % SKSpriteNodeElements "SKSpriteNode.Animation|SKSpriteNode.Animation2|SKSpriteNode.Image|SKSpriteNode.FreezeFrame|SKSpriteNode.BlendMode|SKSpriteNode.UvRect|SKSpriteNode.UvRectX|SKSpriteNode.UvRectY|SKSpriteNode.UvRectWidth|SKSpriteNode.UvRectHeight|%SKNodeElements;">
-<!ELEMENT SKSpriteNode EMPTY>
+<!ELEMENT SKSpriteNode (SKNode|SKScene|SKSpriteNode|SKLabelNode|Resource|%SKSpriteNodeElements;)*>
 <!ATTLIST SKSpriteNode %SKSpriteNodeAttribs;>
 <!ENTITY % SKLabelNodeAttribs "
 	%SKNodeAttribs;
@@ -1697,7 +1341,7 @@
 <!ELEMENT SKLabelNode.Color (#PCDATA | Binding)*>
 <!ATTLIST SKLabelNode.Color Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % SKLabelNodeElements "SKLabelNode.Color|%SKNodeElements;|%TextBlockConceptElements;">
-<!ELEMENT SKLabelNode EMPTY>
+<!ELEMENT SKLabelNode (SKNode|SKScene|SKSpriteNode|SKLabelNode|Resource|%SKLabelNodeElements;)*>
 <!ATTLIST SKLabelNode %SKLabelNodeAttribs;>
 <!ENTITY % SKViewAttribs "
 	%Node2DAttribs;
@@ -1714,444 +1358,6 @@
 <!ENTITY % SKViewElements "SKView.ReferenceWidth|SKView.ReferenceHeight|SKView.Scene|%Node2DElements;">
 <!ELEMENT SKView (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%SKViewElements;)*>
 <!ATTLIST SKView %SKViewAttribs;>
-<!ENTITY % WorkspaceAttribs "
-	Name CDATA #REQUIRED
-	Style CDATA #IMPLIED
-	IsDisabled (true|false) #IMPLIED
-	StateManager CDATA #IMPLIED
-">
-<!ENTITY % WorkspaceElements "">
-<!ELEMENT Workspace EMPTY>
-<!ATTLIST Workspace %WorkspaceAttribs;>
-<!ENTITY % ProjectAttribs "
-	Name CDATA #REQUIRED
-	Style CDATA #IMPLIED
-	IsDisabled (true|false) #IMPLIED
-	StateManager CDATA #IMPLIED
-	HalfFloatTextureFormat (true|false) #IMPLIED
-	HalfFloatTextureFormatLinear (true|false) #IMPLIED
-	HalfFloatColorAttachment (true|false) #IMPLIED
-	RenderToMipmapLevels (true|false) #IMPLIED
-	ExternalTexture (true|false) #IMPLIED
-	StartupScreen CDATA #IMPLIED
-	PreviewWindowBackgroundColor CDATA #IMPLIED
-	MessageLimitPerFrame CDATA #IMPLIED
-	GlobalTimelineStartTime CDATA #IMPLIED
-	GlobalTimelineEndTime CDATA #IMPLIED
-	BinaryExportDirectory CDATA #IMPLIED
-	ApplicationExportDirectory CDATA #IMPLIED
-	IsMasterProject (true|false) #IMPLIED
-	OptimizeMeshes (true|false) #IMPLIED
-	TargetPlatformVertexCacheSize CDATA #IMPLIED
-	PlotAnimations (true|false) #IMPLIED
-	RoundImagesToNearestPowerOf2 (true|false) #IMPLIED
-	ProjectExportShaderSourceCode (true|false) #IMPLIED
-	ProjectExportMainKzbWithBakedThemes (true|false) #IMPLIED
-	ProjectGroupByThemeNameInBakedThemeExport (true|false) #IMPLIED
-	IsLocalizationEnabled (true|false) #IMPLIED
-	FullScreenPreviewLayer (true|false) #IMPLIED
-	ShowChildrenInLayerThumbnails (true|false) #IMPLIED
-	CompositionDesignSize CDATA #IMPLIED
-	ProjectUsePremultipliedAlpha (true|false) #IMPLIED
-	ProjectRemoveICCProfilesOfPngs (true|false) #IMPLIED
-	BinaryFileName CDATA #IMPLIED
-	IsAssetPackage (true|false) #IMPLIED
-	KanziConnectEnabled (true|false) #IMPLIED
-	DefaultMaterial CDATA #IMPLIED
-	WindowWidth CDATA #IMPLIED
-	WindowHeight CDATA #IMPLIED
-	PropertyTypes CDATA #IMPLIED
-	NumPropertyTypes CDATA #IMPLIED
-	ProjectReferences CDATA #IMPLIED
-	NumProjectReferences CDATA #IMPLIED
-	SystemMessages CDATA #IMPLIED
-	NumSystemMessages CDATA #IMPLIED
-">
-<!ELEMENT Project.HalfFloatTextureFormat (#PCDATA | Binding)*>
-<!ATTLIST Project.HalfFloatTextureFormat Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.HalfFloatTextureFormatLinear (#PCDATA | Binding)*>
-<!ATTLIST Project.HalfFloatTextureFormatLinear Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.HalfFloatColorAttachment (#PCDATA | Binding)*>
-<!ATTLIST Project.HalfFloatColorAttachment Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.RenderToMipmapLevels (#PCDATA | Binding)*>
-<!ATTLIST Project.RenderToMipmapLevels Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.ExternalTexture (#PCDATA | Binding)*>
-<!ATTLIST Project.ExternalTexture Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.StartupScreen (#PCDATA | Binding)*>
-<!ATTLIST Project.StartupScreen Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.PreviewWindowBackgroundColor (#PCDATA | Binding)*>
-<!ATTLIST Project.PreviewWindowBackgroundColor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.MessageLimitPerFrame (#PCDATA | Binding)*>
-<!ATTLIST Project.MessageLimitPerFrame Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.GlobalTimelineStartTime (#PCDATA | Binding)*>
-<!ATTLIST Project.GlobalTimelineStartTime Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.GlobalTimelineEndTime (#PCDATA | Binding)*>
-<!ATTLIST Project.GlobalTimelineEndTime Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.BinaryExportDirectory (#PCDATA | Binding)*>
-<!ATTLIST Project.BinaryExportDirectory Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.ApplicationExportDirectory (#PCDATA | Binding)*>
-<!ATTLIST Project.ApplicationExportDirectory Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.IsMasterProject (#PCDATA | Binding)*>
-<!ATTLIST Project.IsMasterProject Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.OptimizeMeshes (#PCDATA | Binding)*>
-<!ATTLIST Project.OptimizeMeshes Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.TargetPlatformVertexCacheSize (#PCDATA | Binding)*>
-<!ATTLIST Project.TargetPlatformVertexCacheSize Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.PlotAnimations (#PCDATA | Binding)*>
-<!ATTLIST Project.PlotAnimations Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.RoundImagesToNearestPowerOf2 (#PCDATA | Binding)*>
-<!ATTLIST Project.RoundImagesToNearestPowerOf2 Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.ProjectExportShaderSourceCode (#PCDATA | Binding)*>
-<!ATTLIST Project.ProjectExportShaderSourceCode Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.ProjectExportMainKzbWithBakedThemes (#PCDATA | Binding)*>
-<!ATTLIST Project.ProjectExportMainKzbWithBakedThemes Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.ProjectGroupByThemeNameInBakedThemeExport (#PCDATA | Binding)*>
-<!ATTLIST Project.ProjectGroupByThemeNameInBakedThemeExport Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.IsLocalizationEnabled (#PCDATA | Binding)*>
-<!ATTLIST Project.IsLocalizationEnabled Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.FullScreenPreviewLayer (#PCDATA | Binding)*>
-<!ATTLIST Project.FullScreenPreviewLayer Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.ShowChildrenInLayerThumbnails (#PCDATA | Binding)*>
-<!ATTLIST Project.ShowChildrenInLayerThumbnails Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.CompositionDesignSize (#PCDATA | Binding)*>
-<!ATTLIST Project.CompositionDesignSize Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.ProjectUsePremultipliedAlpha (#PCDATA | Binding)*>
-<!ATTLIST Project.ProjectUsePremultipliedAlpha Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.ProjectRemoveICCProfilesOfPngs (#PCDATA | Binding)*>
-<!ATTLIST Project.ProjectRemoveICCProfilesOfPngs Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.BinaryFileName (#PCDATA | Binding)*>
-<!ATTLIST Project.BinaryFileName Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.IsAssetPackage (#PCDATA | Binding)*>
-<!ATTLIST Project.IsAssetPackage Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.KanziConnectEnabled (#PCDATA | Binding)*>
-<!ATTLIST Project.KanziConnectEnabled Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.DefaultMaterial (#PCDATA | Binding)*>
-<!ATTLIST Project.DefaultMaterial Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.WindowWidth (#PCDATA | Binding)*>
-<!ATTLIST Project.WindowWidth Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.WindowHeight (#PCDATA | Binding)*>
-<!ATTLIST Project.WindowHeight Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.PropertyTypes (#PCDATA | Binding)*>
-<!ATTLIST Project.PropertyTypes Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.NumPropertyTypes (#PCDATA | Binding)*>
-<!ATTLIST Project.NumPropertyTypes Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.ProjectReferences (#PCDATA | Binding)*>
-<!ATTLIST Project.ProjectReferences Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.NumProjectReferences (#PCDATA | Binding)*>
-<!ATTLIST Project.NumProjectReferences Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.SystemMessages (#PCDATA | Binding)*>
-<!ATTLIST Project.SystemMessages Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Project.NumSystemMessages (#PCDATA | Binding)*>
-<!ATTLIST Project.NumSystemMessages Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % ProjectElements "Project.HalfFloatTextureFormat|Project.HalfFloatTextureFormatLinear|Project.HalfFloatColorAttachment|Project.RenderToMipmapLevels|Project.ExternalTexture|Project.StartupScreen|Project.PreviewWindowBackgroundColor|Project.MessageLimitPerFrame|Project.GlobalTimelineStartTime|Project.GlobalTimelineEndTime|Project.BinaryExportDirectory|Project.ApplicationExportDirectory|Project.IsMasterProject|Project.OptimizeMeshes|Project.TargetPlatformVertexCacheSize|Project.PlotAnimations|Project.RoundImagesToNearestPowerOf2|Project.ProjectExportShaderSourceCode|Project.ProjectExportMainKzbWithBakedThemes|Project.ProjectGroupByThemeNameInBakedThemeExport|Project.IsLocalizationEnabled|Project.FullScreenPreviewLayer|Project.ShowChildrenInLayerThumbnails|Project.CompositionDesignSize|Project.ProjectUsePremultipliedAlpha|Project.ProjectRemoveICCProfilesOfPngs|Project.BinaryFileName|Project.IsAssetPackage|Project.KanziConnectEnabled|Project.DefaultMaterial|Project.WindowWidth|Project.WindowHeight|Project.PropertyTypes|Project.NumPropertyTypes|Project.ProjectReferences|Project.NumProjectReferences|Project.SystemMessages|Project.NumSystemMessages">
-<!ELEMENT Project EMPTY>
-<!ATTLIST Project %ProjectAttribs;>
-<!ENTITY % LibraryAttribs "
-	Name CDATA #REQUIRED
-	Style CDATA #IMPLIED
-	IsDisabled (true|false) #IMPLIED
-	StateManager CDATA #IMPLIED
-	IsExternal (true|false) #IMPLIED
-">
-<!ELEMENT Library.IsExternal (#PCDATA | Binding)*>
-<!ATTLIST Library.IsExternal Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % LibraryElements "Library.IsExternal">
-<!ELEMENT Library EMPTY>
-<!ATTLIST Library %LibraryAttribs;>
-<!ENTITY % AnimationClipLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % AnimationClipLibraryElements "%LibraryElements;">
-<!ELEMENT AnimationClipLibrary EMPTY>
-<!ATTLIST AnimationClipLibrary %AnimationClipLibraryAttribs;>
-<!ENTITY % ScreenLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % ScreenLibraryElements "%LibraryElements;">
-<!ELEMENT ScreenLibrary EMPTY>
-<!ATTLIST ScreenLibrary %ScreenLibraryAttribs;>
-<!ENTITY % MaterialTypeLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % MaterialTypeLibraryElements "%LibraryElements;">
-<!ELEMENT MaterialTypeLibrary EMPTY>
-<!ATTLIST MaterialTypeLibrary %MaterialTypeLibraryAttribs;>
-<!ENTITY % MaterialLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % MaterialLibraryElements "%LibraryElements;">
-<!ELEMENT MaterialLibrary EMPTY>
-<!ATTLIST MaterialLibrary %MaterialLibraryAttribs;>
-<!ENTITY % BrushLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % BrushLibraryElements "%LibraryElements;">
-<!ELEMENT BrushLibrary EMPTY>
-<!ATTLIST BrushLibrary %BrushLibraryAttribs;>
-<!ENTITY % MeshLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % MeshLibraryElements "%LibraryElements;">
-<!ELEMENT MeshLibrary EMPTY>
-<!ATTLIST MeshLibrary %MeshLibraryAttribs;>
-<!ENTITY % TimelineSequenceLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % TimelineSequenceLibraryElements "%LibraryElements;">
-<!ELEMENT TimelineSequenceLibrary EMPTY>
-<!ATTLIST TimelineSequenceLibrary %TimelineSequenceLibraryAttribs;>
-<!ENTITY % SceneObjectLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % SceneObjectLibraryElements "%LibraryElements;">
-<!ELEMENT SceneObjectLibrary EMPTY>
-<!ATTLIST SceneObjectLibrary %SceneObjectLibraryAttribs;>
-<!ENTITY % ComposerLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % ComposerLibraryElements "%LibraryElements;">
-<!ELEMENT ComposerLibrary EMPTY>
-<!ATTLIST ComposerLibrary %ComposerLibraryAttribs;>
-<!ENTITY % PipelineItemLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % PipelineItemLibraryElements "%LibraryElements;">
-<!ELEMENT PipelineItemLibrary EMPTY>
-<!ATTLIST PipelineItemLibrary %PipelineItemLibraryAttribs;>
-<!ENTITY % SceneLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % SceneLibraryElements "%LibraryElements;">
-<!ELEMENT SceneLibrary EMPTY>
-<!ATTLIST SceneLibrary %SceneLibraryAttribs;>
-<!ENTITY % TrajectoryLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % TrajectoryLibraryElements "%LibraryElements;">
-<!ELEMENT TrajectoryLibrary EMPTY>
-<!ATTLIST TrajectoryLibrary %TrajectoryLibraryAttribs;>
-<!ENTITY % TransitionLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % TransitionLibraryElements "%LibraryElements;">
-<!ELEMENT TransitionLibrary EMPTY>
-<!ATTLIST TransitionLibrary %TransitionLibraryAttribs;>
-<!ENTITY % SplineLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % SplineLibraryElements "%LibraryElements;">
-<!ELEMENT SplineLibrary EMPTY>
-<!ATTLIST SplineLibrary %SplineLibraryAttribs;>
-<!ENTITY % PrefabLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % PrefabLibraryElements "%LibraryElements;">
-<!ELEMENT PrefabLibrary EMPTY>
-<!ATTLIST PrefabLibrary %PrefabLibraryAttribs;>
-<!ENTITY % ProfileLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % ProfileLibraryElements "%LibraryElements;">
-<!ELEMENT ProfileLibrary EMPTY>
-<!ATTLIST ProfileLibrary %ProfileLibraryAttribs;>
-<!ENTITY % EnginePluginLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % EnginePluginLibraryElements "%LibraryElements;">
-<!ELEMENT EnginePluginLibrary EMPTY>
-<!ATTLIST EnginePluginLibrary %EnginePluginLibraryAttribs;>
-<!ENTITY % ShortcutLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % ShortcutLibraryElements "%LibraryElements;">
-<!ELEMENT ShortcutLibrary EMPTY>
-<!ATTLIST ShortcutLibrary %ShortcutLibraryAttribs;>
-<!ENTITY % LayerLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % LayerLibraryElements "%LibraryElements;">
-<!ELEMENT LayerLibrary EMPTY>
-<!ATTLIST LayerLibrary %LayerLibraryAttribs;>
-<!ENTITY % AnimationLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % AnimationLibraryElements "%LibraryElements;">
-<!ELEMENT AnimationLibrary EMPTY>
-<!ATTLIST AnimationLibrary %AnimationLibraryAttribs;>
-<!ENTITY % TagLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % TagLibraryElements "%LibraryElements;">
-<!ELEMENT TagLibrary EMPTY>
-<!ATTLIST TagLibrary %TagLibraryAttribs;>
-<!ENTITY % ThemeLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % ThemeLibraryElements "%LibraryElements;">
-<!ELEMENT ThemeLibrary EMPTY>
-<!ATTLIST ThemeLibrary %ThemeLibraryAttribs;>
-<!ENTITY % ResourceExportTagLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % ResourceExportTagLibraryElements "%LibraryElements;">
-<!ELEMENT ResourceExportTagLibrary EMPTY>
-<!ATTLIST ResourceExportTagLibrary %ResourceExportTagLibraryAttribs;>
-<!ENTITY % LocaleLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % LocaleLibraryElements "%LibraryElements;">
-<!ELEMENT LocaleLibrary EMPTY>
-<!ATTLIST LocaleLibrary %LocaleLibraryAttribs;>
-<!ENTITY % DataSourceLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % DataSourceLibraryElements "%LibraryElements;">
-<!ELEMENT DataSourceLibrary EMPTY>
-<!ATTLIST DataSourceLibrary %DataSourceLibraryAttribs;>
-<!ENTITY % PageTransitionCollectionLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % PageTransitionCollectionLibraryElements "%LibraryElements;">
-<!ELEMENT PageTransitionCollectionLibrary EMPTY>
-<!ATTLIST PageTransitionCollectionLibrary %PageTransitionCollectionLibraryAttribs;>
-<!ENTITY % TextureLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % TextureLibraryElements "%LibraryElements;">
-<!ELEMENT TextureLibrary EMPTY>
-<!ATTLIST TextureLibrary %TextureLibraryAttribs;>
-<!ENTITY % StyleLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % StyleLibraryElements "%LibraryElements;">
-<!ELEMENT StyleLibrary EMPTY>
-<!ATTLIST StyleLibrary %StyleLibraryAttribs;>
-<!ENTITY % StateManagerLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % StateManagerLibraryElements "%LibraryElements;">
-<!ELEMENT StateManagerLibrary EMPTY>
-<!ATTLIST StateManagerLibrary %StateManagerLibraryAttribs;>
-<!ENTITY % ConnectServiceLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % ConnectServiceLibraryElements "%LibraryElements;">
-<!ELEMENT ConnectServiceLibrary EMPTY>
-<!ATTLIST ConnectServiceLibrary %ConnectServiceLibraryAttribs;>
-<!ENTITY % ConnectUserServiceLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % ConnectUserServiceLibraryElements "%LibraryElements;">
-<!ELEMENT ConnectUserServiceLibrary EMPTY>
-<!ATTLIST ConnectUserServiceLibrary %ConnectUserServiceLibraryAttribs;>
-<!ENTITY % SpriteLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % SpriteLibraryElements "%LibraryElements;">
-<!ELEMENT SpriteLibrary EMPTY>
-<!ATTLIST SpriteLibrary %SpriteLibraryAttribs;>
-<!ENTITY % SpriteAnimationLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % SpriteAnimationLibraryElements "%LibraryElements;">
-<!ELEMENT SpriteAnimationLibrary EMPTY>
-<!ATTLIST SpriteAnimationLibrary %SpriteAnimationLibraryAttribs;>
-<!ENTITY % ImageLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % ImageLibraryElements "%LibraryElements;">
-<!ELEMENT ImageLibrary EMPTY>
-<!ATTLIST ImageLibrary %ImageLibraryAttribs;>
-<!ENTITY % FontLibraryAttribs "
-	%LibraryAttribs;
-">
-<!ENTITY % FontLibraryElements "%LibraryElements;">
-<!ELEMENT FontLibrary EMPTY>
-<!ATTLIST FontLibrary %FontLibraryAttribs;>
-<!ENTITY % LocaleReferenceItemAttribs "
-	Name CDATA #REQUIRED
-	Style CDATA #IMPLIED
-	IsDisabled (true|false) #IMPLIED
-	StateManager CDATA #IMPLIED
-">
-<!ENTITY % LocaleReferenceItemElements "">
-<!ELEMENT LocaleReferenceItem EMPTY>
-<!ATTLIST LocaleReferenceItem %LocaleReferenceItemAttribs;>
-<!ENTITY % TagAttribs "
-	Name CDATA #REQUIRED
-	Style CDATA #IMPLIED
-	IsDisabled (true|false) #IMPLIED
-	StateManager CDATA #IMPLIED
-	TagIsInherited (true|false) #IMPLIED
-">
-<!ELEMENT Tag.TagIsInherited (#PCDATA | Binding)*>
-<!ATTLIST Tag.TagIsInherited Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % TagElements "Tag.TagIsInherited">
-<!ELEMENT Tag EMPTY>
-<!ATTLIST Tag %TagAttribs;>
-<!ENTITY % EnginePluginAttribs "
-	Name CDATA #REQUIRED
-	Style CDATA #IMPLIED
-	IsDisabled (true|false) #IMPLIED
-	StateManager CDATA #IMPLIED
-">
-<!ENTITY % EnginePluginElements "">
-<!ELEMENT EnginePlugin EMPTY>
-<!ATTLIST EnginePlugin %EnginePluginAttribs;>
-<!ENTITY % EngineMetaclassAttribs "
-	Name CDATA #REQUIRED
-	Style CDATA #IMPLIED
-	IsDisabled (true|false) #IMPLIED
-	StateManager CDATA #IMPLIED
-	BaseClassName CDATA #IMPLIED
-">
-<!ELEMENT EngineMetaclass.BaseClassName (#PCDATA | Binding)*>
-<!ATTLIST EngineMetaclass.BaseClassName Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % EngineMetaclassElements "EngineMetaclass.BaseClassName">
-<!ELEMENT EngineMetaclass EMPTY>
-<!ATTLIST EngineMetaclass %EngineMetaclassAttribs;>
-<!ENTITY % ThemeGroupAttribs "
-	Name CDATA #REQUIRED
-	Style CDATA #IMPLIED
-	IsDisabled (true|false) #IMPLIED
-	StateManager CDATA #IMPLIED
-	SelectedDictionary CDATA #IMPLIED
-">
-<!ELEMENT ThemeGroup.SelectedDictionary (#PCDATA | Binding)*>
-<!ATTLIST ThemeGroup.SelectedDictionary Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % ThemeGroupElements "ThemeGroup.SelectedDictionary">
-<!ELEMENT ThemeGroup EMPTY>
-<!ATTLIST ThemeGroup %ThemeGroupAttribs;>
-<!ENTITY % ThemeAttribs "
-	Name CDATA #REQUIRED
-	Style CDATA #IMPLIED
-	IsDisabled (true|false) #IMPLIED
-	StateManager CDATA #IMPLIED
-	IsThemeVisible (true|false) #IMPLIED
-">
-<!ELEMENT Theme.IsThemeVisible (#PCDATA | Binding)*>
-<!ATTLIST Theme.IsThemeVisible Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % ThemeElements "Theme.IsThemeVisible">
-<!ELEMENT Theme EMPTY>
-<!ATTLIST Theme %ThemeAttribs;>
-<!ENTITY % EntryAttribs "
-	Name CDATA #REQUIRED
-	Style CDATA #IMPLIED
-	IsDisabled (true|false) #IMPLIED
-	StateManager CDATA #IMPLIED
-">
-<!ENTITY % EntryElements "">
-<!ELEMENT Entry EMPTY>
-<!ATTLIST Entry %EntryAttribs;>
-<!ENTITY % ThemeDefaultValuesDictionaryAttribs "
-	Name CDATA #REQUIRED
-	Style CDATA #IMPLIED
-	IsDisabled (true|false) #IMPLIED
-	StateManager CDATA #IMPLIED
-">
-<!ENTITY % ThemeDefaultValuesDictionaryElements "">
-<!ELEMENT ThemeDefaultValuesDictionary EMPTY>
-<!ATTLIST ThemeDefaultValuesDictionary %ThemeDefaultValuesDictionaryAttribs;>
 <!ELEMENT Resource (#PCDATA)>
 <!ATTLIST Resource Key CDATA #REQUIRED>
 

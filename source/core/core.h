@@ -61,10 +61,10 @@ typedef void* ViewDidLoadEventPtr;
 
 /** BindingMode enum */
 typedef enum BindingMode {
-	kBindingModeOneWay, // Default mode, updates target property when source changes
-	kBindingModeTwoWay, // Updates target property when source changes and updates source when target changes
-	kBindingModeOneWayToSource, // Updates source property when target changes, but not the other way around
-	kBindingModeExpression, // Allows binding to a custom expression
+	kBindingModeOneWay, ///< Default mode, updates target property when source changes
+	kBindingModeTwoWay, ///< Updates target property when source changes and updates source when target changes
+	kBindingModeOneWayToSource, ///< Updates source property when target changes, but not the other way around
+	kBindingModeExpression, ///< Allows binding to a custom expression
 } eBindingMode_t;
 #define BindingMode_Count 4
 ORCA_API const char *BindingModeToString(enum BindingMode value);
@@ -72,33 +72,34 @@ ORCA_API enum BindingMode luaX_checkBindingMode(lua_State *L, int idx);
 ORCA_API void luaX_pushBindingMode(lua_State *L, enum BindingMode value);
 /** PropertyAttribute enum */
 typedef enum PropertyAttribute {
-	kPropertyAttributeWholeProperty, // Default binding to the whole property
-	kPropertyAttributeColorR, // Bind to the red channel of a color property
-	kPropertyAttributeColorG, // Bind to the green channel of a color property
-	kPropertyAttributeColorB, // Bind to the blue channel of a color property
-	kPropertyAttributeColorA, // Bind to the alpha channel of a color property
-	kPropertyAttributeVectorX, // Bind to the X component of a vector property
-	kPropertyAttributeVectorY, // Bind to the Y component of a vector property
-	kPropertyAttributeVectorZ, // Bind to the Z component of a vector property
-	kPropertyAttributeVectorW, // Bind to the W component of a vector property
+	kPropertyAttributeWholeProperty, ///< Default binding to the whole property
+	kPropertyAttributeColorR, ///< Bind to the red channel of a color property
+	kPropertyAttributeColorG, ///< Bind to the green channel of a color property
+	kPropertyAttributeColorB, ///< Bind to the blue channel of a color property
+	kPropertyAttributeColorA, ///< Bind to the alpha channel of a color property
+	kPropertyAttributeVectorX, ///< Bind to the X component of a vector property
+	kPropertyAttributeVectorY, ///< Bind to the Y component of a vector property
+	kPropertyAttributeVectorZ, ///< Bind to the Z component of a vector property
+	kPropertyAttributeVectorW, ///< Bind to the W component of a vector property
 } ePropertyAttribute_t;
 #define PropertyAttribute_Count 9
 ORCA_API const char *PropertyAttributeToString(enum PropertyAttribute value);
 ORCA_API enum PropertyAttribute luaX_checkPropertyAttribute(lua_State *L, int idx);
 ORCA_API void luaX_pushPropertyAttribute(lua_State *L, enum PropertyAttribute value);
+/// @brief Specifies the underlying data type of a property.
 /** DataType enum */
 typedef enum DataType {
-	kDataTypeNone, // No data type specified.
-	kDataTypeBool, // Boolean value representing true or false.
-	kDataTypeInt, // Signed integer value.
-	kDataTypeEnum, // Enumeration type represented by integer values mapped to named constants.
-	kDataTypeFloat, // Floating-point numeric value.
-	kDataTypeFixed, // Fixed-length string or symbolic value.
-	kDataTypeLongString, // Extended string data, intended for larger text content.
-	kDataTypeObjectTags, // List of tag identifiers associated with an object.
-	kDataTypeEvent, // Event reference used to bind triggers or callbacks.
-	kDataTypeStruct, // Composite data structure containing multiple fields used for packaging related geometric, visual, and layout properties together.
-	kDataTypeObject, // Reference to a complex object instance.
+	kDataTypeNone, ///< No data type specified.
+	kDataTypeBool, ///< Boolean value representing true or false.
+	kDataTypeInt, ///< Signed integer value.
+	kDataTypeEnum, ///< Enumeration type represented by integer values mapped to named constants.
+	kDataTypeFloat, ///< Floating-point numeric value.
+	kDataTypeFixed, ///< Fixed-length string or symbolic value.
+	kDataTypeLongString, ///< Extended string data, intended for larger text content.
+	kDataTypeObjectTags, ///< List of tag identifiers associated with an object.
+	kDataTypeEvent, ///< Event reference used to bind triggers or callbacks.
+	kDataTypeStruct, ///< Composite data structure containing multiple fields used for packaging related geometric, visual, and layout properties together.
+	kDataTypeObject, ///< Reference to a complex object instance.
 } eDataType_t;
 #define DataType_Count 11
 ORCA_API const char *DataTypeToString(enum DataType value);
@@ -114,195 +115,271 @@ typedef struct PropertyEnumValue const cPropertyEnumValue_t, *lpcPropertyEnumVal
 typedef struct PropertyType PropertyType_t, *lpPropertyType_t;
 typedef struct PropertyType const cPropertyType_t, *lpcPropertyType_t;
 
+/// @brief Retrieves currently active object.
 ORCA_API struct Object*
 core_GetFocus(void);
+/// @brief Gets the currently hovered object
 ORCA_API struct Object*
 core_GetHover(void);
 
+/// @brief Clear all children of the object.
 ORCA_API void
 OBJ_Clear(struct lua_State*, struct Object*);
+/// @brief Garbage-collect an object (clear and release).
 ORCA_API void
 OBJ_Release(struct lua_State*, struct Object*);
+/// @brief Compare two objects for equality.
 ORCA_API bool_t
 OBJ_Equals(struct Object const*, struct Object const*);
+/// @brief Initializes the core component when it is loaded, an essential lifecycle method.
 ORCA_API void
 OBJ_Awake(struct lua_State*, struct Object*);
+/// @brief Runs object animations.
 ORCA_API void
 OBJ_Animate(struct lua_State*, struct Object*);
+/// @brief Loads and instantiates prefabs.
 ORCA_API void
 OBJ_LoadPrefabs(struct lua_State*, struct Object*);
+/// @brief Emits onPropertyChanged events by comparing to previous values.
 ORCA_API void
 OBJ_EmitPropertyChangedEvents(struct lua_State*, struct Object*);
+/// @brief Updates object properties.
 ORCA_API void
 OBJ_UpdateProperties(struct Object*);
+/// @brief Updates object layout.
 ORCA_API void
 OBJ_UpdateLayout(struct Object*, int32_t, int32_t);
+/// @brief Add a child object.
 ORCA_API void
 OBJ_AddChild(struct Object*, struct Object*, bool_t);
+/// @brief Destroys an object.
 ORCA_API void
 OBJ_RemoveFromParent(struct lua_State*, struct Object*, bool_t);
+/// @brief Set a property on the object.
 ORCA_API bool_t
 OBJ_SetProperty(struct lua_State*, struct Object*, const char*);
+/// @brief Get a property value from an object.
 ORCA_API int
 OBJ_GetProperty(struct lua_State*, struct Object*, const char*);
+/// @brief Find a child object by name.
 ORCA_API struct Object*
 OBJ_FindChild(struct Object*, const char*, bool_t);
+/// @brief Dispatch an event starting from this object and bubbling up parents.
 ORCA_API struct Object*
 OBJ_DispatchEvent(struct lua_State*, struct Object*, const char*);
+/// @brief Posts a message to the global message queue.
 ORCA_API void
 OBJ_PostMessage(struct lua_State*, struct Object*, const char*);
+/// @brief Play an animation or resource on the object.
 ORCA_API void
 OBJ_Play(struct Object*, const char*);
+/// @brief Set focus on the object.
 ORCA_API void
 OBJ_SetFocus(struct Object*);
+/// @brief Tween an object property over time.
 ORCA_API void
 OBJ_DoTween(struct lua_State*, struct Object*);
+/// @brief Add a stylesheet to the object.
 ORCA_API void
 OBJ_AddStyleSheet(struct lua_State*, struct Object*, const char*);
+/// @brief Set a timer on the object.
 ORCA_API int
 OBJ_SetTimer(struct lua_State*, struct Object*);
+/// @brief Set the current context object where newly created objects will be parented.
 ORCA_API void
 OBJ_SetContext(struct lua_State*, struct Object*);
+/// @brief Retrieves the object's name identifier
 ORCA_API const char*
 OBJ_GetName(struct Object const*);
+/// @brief Sets the object's name identifier
 ORCA_API void
 OBJ_SetName(struct Object*, const char*);
+/// @brief Returns the object's class type name
 ORCA_API const char*
 OBJ_GetClassName(struct Object const*);
+/// @brief Checks if object has a specific name
 ORCA_API bool_t
 OBJ_CheckName(struct Object const*, const char*);
+/// @brief Finds child object by hierarchical path
 ORCA_API struct Object*
 OBJ_FindByPath(struct Object*, const char*);
+/// @brief Retrieves object style flags
 ORCA_API uint32_t
 OBJ_GetStyle(struct Object const*);
+/// @brief Sets object style flags
 ORCA_API void
 OBJ_SetStyle(struct Object*, uint32_t);
+/// @brief Retrieves callback function name for event ID
 ORCA_API const char*
 OBJ_FindCallbackForID(struct Object*, uint32_t);
+/// @brief Applies style changes to object hierarchy
 ORCA_API void
 OBJ_ApplyStyles(struct Object*, bool_t);
+/// @brief Sets object dirty and queues it for recalculation
 ORCA_API void
 OBJ_SetDirty(struct Object*);
+/// @brief Gets the parent object in the hierarchy
 ORCA_API struct Object*
 OBJ_GetParent(struct Object const*);
+/// @brief Gets the first child object
 ORCA_API struct Object*
 OBJ_GetFirstChild(struct Object const*);
+/// @brief Gets the next sibling object
 ORCA_API struct Object*
 OBJ_GetNext(struct Object const*);
+/// @brief Gets the root object of the hierarchy
 ORCA_API struct Object*
 OBJ_GetRoot(struct Object*);
+/// @brief Finds a child object by its unique identifier
 ORCA_API struct Object*
 OBJ_FindChildByID(struct Object*, uint32_t);
+/// @brief Finds a child object by its alias identifier
 ORCA_API struct Object*
 OBJ_FindChildByAlias(struct Object*, uint32_t);
+/// @brief Gets the source file path
 ORCA_API const char*
 OBJ_GetSourceFile(struct Object const*);
+/// @brief Gets the text content of the object
 ORCA_API const char*
 OBJ_GetTextContent(struct Object const*);
+/// @brief Gets the last modified timestamp
 ORCA_API long
 OBJ_GetTimestamp(struct Object const*);
+/// @brief Gets the Lua object reference
 ORCA_API uint32_t
 OBJ_GetLuaObject(struct Object const*);
+/// @brief Gets the alias identifier
 ORCA_API uint32_t
 OBJ_GetAlias(struct Object const*);
+/// @brief Gets the object flags
 ORCA_API uint32_t
 OBJ_GetFlags(struct Object const*);
+/// @brief Sets the object flags
 ORCA_API void
 OBJ_SetFlags(struct Object*, uint32_t);
+/// @brief Gets the identifier of the object
 ORCA_API uint32_t
 OBJ_GetIdentifier(struct Object const*);
+/// @brief Gets the modal child object
 ORCA_API struct Object*
 OBJ_GetModal(struct Object const*);
+/// @brief Sets or clears the modal child object
 ORCA_API void
 OBJ_SetModal(struct Object*, struct Object*);
+/// @brief Checks if this object currently has focus
 ORCA_API bool_t
 OBJ_IsFocused(struct Object const*);
+/// @brief Sets the hover state for an object
 ORCA_API void
 OBJ_SetHover(struct Object*);
+/// @brief Sets the text content of the object
 ORCA_API void
 OBJ_SetTextContent(struct Object*, const char*);
+/// @brief Sets the source file path of the object
 ORCA_API void
 OBJ_SetSourceFile(struct Object*, const char*);
+/// @brief Sets the class name of the object
 ORCA_API void
 OBJ_SetClassName(struct Object*, const char*);
+/// @brief Finds the nearest parent object of a specific class
 ORCA_API struct Object*
 OBJ_FindParentOfClass(struct Object*, uint32_t);
+/// @brief Finds a child object of a specific class
 ORCA_API struct Object*
 OBJ_FindChildOfClass(struct Object*, uint32_t);
+/// @brief Checks if this object is a prefab view container
 ORCA_API bool_t
 OBJ_IsPrefabView(struct Object const*);
+/// @brief Registers an alias for a child object path
 ORCA_API void
 OBJ_AddAlias(struct Object*, const char*, const char*);
+/// @brief Resolves and assigns all registered aliases for an object
 ORCA_API void
 OBJ_AssignAliases(struct Object*, const char*);
+/// @brief Parses and applies multiple class names from a class attribute string
 ORCA_API void
 OBJ_ParseClassAttribute(struct Object*, const char*);
+/// @brief Sets the active animation by name
 ORCA_API void
 OBJ_SetAnimation(struct Object*, const char*);
+/// @brief Gets the currently active animation
 ORCA_API struct KeyframeAnim const*
 OBJ_GetAnimation(struct Object const*);
+/// @brief Adds a keyframe animation to the object's animation library
 ORCA_API void
 OBJ_AddAnimation(struct Object*, struct KeyframeAnim*);
+/// @brief Gets an integer property value by identifier
 ORCA_API int32_t
 OBJ_GetInteger(struct Object const*, uint32_t, int32_t);
+/// @brief Gets the properties collection
 ORCA_API struct Property*
 OBJ_GetProperties(struct Object const*);
+/// @brief Looks up a property by context-driven syntax, like "Column" instead of "Grid.Column"
 ORCA_API struct PropertyType*
 OBJ_FindImplicitProperty(struct Object*, const char*);
+/// @brief Looks up a property by full syntax, like "Grid.Column" instead of "Column"
 ORCA_API struct PropertyType*
 OBJ_FindExplicitProperty(struct Object*, const char*);
+/// @brief Attaches a property program to the specified property
 ORCA_API bool_t
 OBJ_AttachPropertyProgram(struct Object*, const char*, const char*, enum PropertyAttribute, enum BindingMode, bool_t);
+/// @brief Finds a property by navigating a hierarchical path
 ORCA_API struct Property*
 OBJ_FindPropertyByPath(struct Object*, const char*);
+/// @brief Rebuilds the object's body content asynchronously
 ORCA_API void
 OBJ_Rebuild(struct lua_State*, struct Object*);
+/// @brief Gets the domain of the object
 ORCA_API struct lua_State*
 OBJ_GetDomain(struct Object*);
 
+/// @brief Event arguments for a property change event
 /** PropertyChangedEventArgs struct */
 struct PropertyChangedEventArgs {
-	struct Property* Property;
+	struct Property* Property; ///< The property that changed
 };
 ORCA_API void luaX_pushPropertyChangedEventArgs(lua_State *L, struct PropertyChangedEventArgs const* PropertyChangedEventArgs);
 ORCA_API struct PropertyChangedEventArgs* luaX_checkPropertyChangedEventArgs(lua_State *L, int idx);
+/// @brief Event arguments for an update matrix event
 /** UpdateMatrixEventArgs struct */
 struct UpdateMatrixEventArgs {
-	struct mat4 parent;
-	float opacity;
-	bool_t force;
+	struct mat4 parent; ///< The parent matrix
+	float opacity; ///< The opacity value
+	bool_t force; ///< Indicates if the update is forced
 };
 ORCA_API void luaX_pushUpdateMatrixEventArgs(lua_State *L, struct UpdateMatrixEventArgs const* UpdateMatrixEventArgs);
 ORCA_API struct UpdateMatrixEventArgs* luaX_checkUpdateMatrixEventArgs(lua_State *L, int idx);
+/// @brief Enum value descriptor for a property.
 /** PropertyEnumValue struct */
 struct PropertyEnumValue {
-	fixedString_t Name;
-	int32_t Value;
+	fixedString_t Name; ///< Unique name identifier for the value.
+	int32_t Value; ///< Integer value representing the enum.
 };
 ORCA_API void luaX_pushPropertyEnumValue(lua_State *L, struct PropertyEnumValue const* PropertyEnumValue);
 ORCA_API struct PropertyEnumValue* luaX_checkPropertyEnumValue(lua_State *L, int idx);
+/// @brief Defines a custom property type that can be attached to engine objects.
 /** PropertyType struct */
 struct PropertyType {
-	fixedString_t Name;
-	fixedString_t Category;
-	enum DataType DataType;
-	fixedString_t DefaultValue;
-	fixedString_t TypeString;
-	bool_t AffectLayout;
-	bool_t AffectRender;
-	bool_t IsReadOnly;
-	bool_t IsHidden;
-	bool_t IsInherited;
-	fixedString_t Key;
-	fixedString_t Value;
-	float Step;
-	float UpperBound;
-	float LowerBound;
-	uint32_t ShortIdentifier;
-	uint32_t FullIdentifier;
-	uint32_t Offset;
-	uint32_t DataSize;
-	bool_t IsArray;
+	fixedString_t Name; ///< Unique name identifier for the property type.
+	fixedString_t Category; ///< Organizational category for this property, used for grouping in editors and UIs.
+	enum DataType DataType; ///< Underlying data type that determines how the property value is interpreted and stored.
+	fixedString_t DefaultValue; ///< Default value assigned when the property is not explicitly set.
+	fixedString_t TypeString; ///< String representation of the property type, used to store enum values or struct type names.
+	bool_t AffectLayout; ///< Indicates whether this property affects element layout (e.g., size or alignment).
+	bool_t AffectRender; ///< Indicates whether this property influences the rendering output.
+	bool_t IsReadOnly; ///< If true, the property value cannot be modified at runtime or through the editor.
+	bool_t IsHidden; ///< If true, the property is excluded from the UI or inspector views.
+	bool_t IsInherited; ///< Specifies whether the property value can be inherited from parent components.
+	fixedString_t Key; ///< Internal key name used for property identification and lookup.
+	fixedString_t Value; ///< Runtime value stored in this property instance.
+	float Step; ///< Increment step used for numeric adjustments in UI controls.
+	float UpperBound; ///< Maximum allowed value for numeric properties.
+	float LowerBound; ///< Minimum allowed value for numeric properties.
+	uint32_t ShortIdentifier; ///< Unique short identifier for the property type, automatically generated from implicit property name.
+	uint32_t FullIdentifier; ///< Unique full identifier for the property type, automatically generated from explicit (ie. Grid.Columns) property name.
+	uint32_t Offset; ///< Byte offset of the property within the structure.
+	uint32_t DataSize; ///< Size of the property data in bytes.
+	bool_t IsArray; ///< Indicates whether the property is an array type, will generate Num* property to indicate the number of elements.
 };
 ORCA_API void luaX_pushPropertyType(lua_State *L, struct PropertyType const* PropertyType);
 ORCA_API struct PropertyType* luaX_checkPropertyType(lua_State *L, int idx);
