@@ -9,11 +9,15 @@
 typedef struct lua_State lua_State;
 
 <?php function printContents($list) {
-	foreach ($list as $name => $type) {
-		if ($type->fixed_array) {
-			echo("\t$type {$name}[{$type->fixed_array}];\n"); 
+	foreach ($list as $field) {
+		$doc = "";
+		if ($field->doc) {
+			$doc = " ///< " . $field->doc;
+		}
+		if ($field->type->fixed_array) {
+			echo("\t" . $field->type . " " . $field->name . "[" . $field->type->fixed_array . "];" . $doc . "\n"); 
 		} else {
-			echo("\t$type $name;\n"); 
+			echo("\t" . $field->type . " " . $field->name . ";" . $doc . "\n"); 
 		}
 	}
 } ?>
@@ -36,10 +40,13 @@ typedef <?= $event ?>* <?= $name ?>EventPtr;
 <?php endforeach ?>
 
 <?php foreach ($model->getEnums() as $name => $enum): ?>
+<?php if ($enum->doc): ?>
+/// @brief <?= $enum->doc ?>
+<?php endif ?>
 /** <?= $name ?> enum */
 typedef enum <?= $name ?> {
 <?php foreach ($enum->getValues() as $enum_name => $enum_doc): ?>
-	k<?= $name ?><?= $enum_name ?>, // <?= $enum_doc ?>
+	k<?= $name ?><?= $enum_name ?>, ///< <?= $enum_doc ?>
 <?php endforeach ?>
 } e<?= $name ?>_t;
 #define <?= $name ?>_Count <?= count($enum->getValues()) ?>
@@ -54,18 +61,27 @@ typedef struct <?= $name ?> const c<?= $name ?>_t, *lpc<?= $name ?>_t;
 <?php endforeach ?>
 
 <?php foreach ($model->getFunctions() as $name => $func):?>
+<?php if ($func->doc): ?>
+/// @brief <?= $func->doc ?>
+<?php endif ?>
 ORCA_API <?= $func->getReturnType() ?>
 <?= $model->prefix.$name ?>(<?= implode(', ', $func->getArgsTypes()) ?>);
 <?php endforeach ?>
 
 <?php foreach ($model->getInterfaces() as $name => $interface): ?>
 <?php foreach ($interface->getMethods() as $method_name => $method): ?>
+<?php if ($method->doc): ?>
+/// @brief <?= $method->doc ?>
+<?php endif ?>
 ORCA_API <?= $method->getReturnType() ?>
 <?= $method->full_name ?>(<?= implode(', ', $method->getArgsTypes()) ?>);
 <?php endforeach ?>
 <?php endforeach ?>
 
 <?php foreach ($model->getStructs() as $name => $struct): ?>
+<?php if ($struct->doc): ?>
+/// @brief <?= $struct->doc ?>
+<?php endif ?>
 /** <?= $name ?> struct */
 struct <?= $name ?> {
 <?php printContents($struct->getFields()) ?>
@@ -73,22 +89,31 @@ struct <?= $name ?> {
 ORCA_API void luaX_push<?= $name ?>(lua_State *L, struct <?= $name ?> const* <?= $name ?>);
 ORCA_API struct <?= $name ?>* luaX_check<?= $name ?>(lua_State *L, int idx);
 <?php foreach ($struct->getMethods() as $method_name => $method): ?>
+<?php if ($method->doc): ?>
+/// @brief <?= $method->doc ?>
+<?php endif ?>
 ORCA_API <?= $method->getReturnType() ?>
 <?= $method->full_name ?>(<?= implode(', ', $method->getArgsTypes()) ?>);
 <?php endforeach ?>
 <?php endforeach ?>
 
 <?php foreach ($model->getComponents() as $name => $component): ?>
+<?php if ($component->doc): ?>
+/// @brief <?= $component->doc ?>
+<?php endif ?>
 /** <?= $name ?> component */
 typedef struct <?= $name ?> <?= $name ?>_t, *<?= $name ?>Ptr, *lp<?= $name ?>_t;
 typedef struct <?= $name ?> const *<?= $name ?>CPtr, *lpc<?= $name ?>_t;
 struct <?= $name ?> {
-	<?php printContents($component->getProperties(false)) ?>
-	<?php printContents($component->getFields()) ?>
+<?php printContents($component->getProperties(false)) ?>
+<?php printContents($component->getFields()) ?>
 };
 ORCA_API void luaX_push<?= $name ?>(lua_State *L, struct <?= $name ?> const* <?= $name ?>);
 ORCA_API struct <?= $name ?>* luaX_check<?= $name ?>(lua_State *L, int idx);
 <?php foreach ($component->getMethods() as $method_name => $method): ?>
+<?php if ($method->doc): ?>
+/// @brief <?= $method->doc ?>
+<?php endif ?>
 ORCA_API <?= $method->getReturnType() ?>
 <?= $component->name ?>_<?= $method->name ?>(<?= implode(', ', $method->getArgsTypes()) ?>);
 <?php endforeach ?>

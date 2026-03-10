@@ -14,15 +14,15 @@ static int f_new_<?= $name ?>(lua_State *L) {
 	memset(self, 0, sizeof(struct <?= $name ?>));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		<?php foreach ($struct->getFields() as $field => $type):?>
-			<?php if ($type->fixed_array) continue; ?>
-		lua_pop(L, (lua_getfield(L, 1, "<?= $field ?>"), <?= $type->get("pop", -1, "self->$field") ?>, 1));
+		<?php foreach ($struct->getFields() as $field):?>
+			<?php if ($field->type->fixed_array) continue; ?>
+		lua_pop(L, (lua_getfield(L, 1, "<?= $field->name ?>"), <?= $field->type->get("pop", -1, "self->" . $field->name) ?>, 1));
 		<?php endforeach ?>
 	} else {
 		<?php $index = 1 ?>
-		<?php foreach ($struct->getFields() as $field => $type):?>
-			<?php if ($type->fixed_array) continue; ?>
-		<?= $type->get("pop", $index, "self->$field") ?>;
+		<?php foreach ($struct->getFields() as $field):?>
+			<?php if ($field->type->fixed_array) continue; ?>
+		<?= $field->type->get("pop", $index, "self->" . $field->name) ?>;
 		<?php $index = $index + 1 ?>
 		<?php endforeach ?>
 	}
@@ -49,9 +49,9 @@ int f_<?= $name ?>_<?= $method_name ?>(lua_State *L) {
 int f_<?= $name ?>___index(lua_State *L) {
 	struct <?= $name ?>* self = luaX_check<?= $name ?>(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	<?php foreach ($struct->getFields() as $field => $type):?>
-		<?php if ($type->fixed_array) continue; ?>
-	case <?= $field->id ?>: <?= $type->get('push', "self->$field") ?>; return 1; // <?= $field ?>
+	<?php foreach ($struct->getFields() as $field):?>
+		<?php if ($field->type->fixed_array) continue; ?>
+	case <?= $field->name->id ?>: <?= $field->type->get('push', "self->" . $field->name) ?>; return 1; // <?= $field->name ?>
 	<?php endforeach ?>
 	<?php foreach ($struct->getMethods() as $method_name => $method):?>
 		<?php if ($method->static) continue; ?>
@@ -63,9 +63,9 @@ int f_<?= $name ?>___index(lua_State *L) {
 int f_<?= $name ?>___newindex(lua_State *L) {
 	struct <?= $name ?>* self = luaX_check<?= $name ?>(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	<?php foreach ($struct->getFields() as $field => $type):?>
-		<?php if ($type->fixed_array) continue; ?>
-	case <?= $field->id ?>: <?= $type->get("pop", 3, "self->$field") ?>; return 0; // <?= $field ?>
+	<?php foreach ($struct->getFields() as $field):?>
+		<?php if ($field->type->fixed_array) continue; ?>
+	case <?= $field->name->id ?>: <?= $field->type->get("pop", 3, "self->" . $field->name) ?>; return 0; // <?= $field->name ?>
 	<?php endforeach ?>
 	}
 	return luaL_error(L, "Unknown field in <?= $name ?>(%p): %s", self, luaL_checkstring(L, 2));

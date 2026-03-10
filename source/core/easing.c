@@ -28,391 +28,250 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdio.h>
-
-#include <include/orcadef.h>
+#include <include/orca.h>
 #include <include/shared.h>
 
-/* blend if (amplitude < fabsf(change) */
 #define USE_ELASTIC_BLEND
 
-float
-anim_back_ease_in(float time,
-                  float begin,
-                  float change,
-                  float duration,
-                  float overshoot)
+static float
+bounce_ease_out(float t)
 {
-  time /= duration;
-  return change * time * time * ((overshoot + 1) * time - overshoot) + begin;
-}
-
-float
-anim_back_ease_out(float time,
-                   float begin,
-                   float change,
-                   float duration,
-                   float overshoot)
-{
-  time = time / duration - 1;
-  return change * (time * time * ((overshoot + 1) * time + overshoot) + 1) +
-         begin;
-}
-
-float
-anim_back_ease_in_out(float time,
-                      float begin,
-                      float change,
-                      float duration,
-                      float overshoot)
-{
-  overshoot *= 1.525f;
-  if ((time /= duration / 2) < 1.0f) {
-    return change / 2 * (time * time * ((overshoot + 1) * time - overshoot)) +
-           begin;
-  }
-  time -= 2.0f;
-  return change / 2 * (time * time * ((overshoot + 1) * time + overshoot) + 2) +
-         begin;
-}
-
-float
-anim_bounce_ease_out(float time, float begin, float change, float duration)
-{
-  time /= duration;
-  if (time < (1 / 2.75f)) {
-    return change * (7.5625f * time * time) + begin;
-  } else if (time < (2 / 2.75f)) {
-    time -= (1.5f / 2.75f);
-    return change * ((7.5625f * time) * time + 0.75f) + begin;
-  } else if (time < (2.5f / 2.75f)) {
-    time -= (2.25f / 2.75f);
-    return change * ((7.5625f * time) * time + 0.9375f) + begin;
+  if (t < (1.0f / 2.75f)) {
+    return 7.5625f * t * t;
+  } else if (t < (2.0f / 2.75f)) {
+    t -= 1.5f / 2.75f;
+    return 7.5625f * t * t + 0.75f;
+  } else if (t < (2.5f / 2.75f)) {
+    t -= 2.25f / 2.75f;
+    return 7.5625f * t * t + 0.9375f;
   } else {
-    time -= (2.625f / 2.75f);
-    return change * ((7.5625f * time) * time + 0.984375f) + begin;
+    t -= 2.625f / 2.75f;
+    return 7.5625f * t * t + 0.984375f;
   }
 }
 
-float
-anim_bounce_ease_in(float time, float begin, float change, float duration)
+static float
+bounce_ease_in(float t)
 {
-  return change - anim_bounce_ease_out(duration - time, 0, change, duration) +
-         begin;
-}
-
-float
-anim_bounce_ease_in_out(float time, float begin, float change, float duration)
-{
-  if (time < duration / 2)
-    return anim_bounce_ease_in(time * 2, 0, change, duration) * 0.5f + begin;
-  else
-    return anim_bounce_ease_out(time * 2 - duration, 0, change, duration) *
-             0.5f +
-           change * 0.5f + begin;
-}
-
-float
-anim_circ_ease_in(float time, float begin, float change, float duration)
-{
-  time /= duration;
-  return -change * (sqrtf(1 - time * time) - 1) + begin;
-}
-
-float
-anim_circ_ease_out(float time, float begin, float change, float duration)
-{
-  time = time / duration - 1;
-  return change * sqrtf(1 - time * time) + begin;
-}
-
-float
-anim_circ_ease_in_out(float time, float begin, float change, float duration)
-{
-  if ((time /= duration / 2) < 1.0f)
-    return -change / 2 * (sqrtf(1 - time * time) - 1) + begin;
-  time -= 2.0f;
-  return change / 2 * (sqrtf(1 - time * time) + 1) + begin;
-}
-
-float
-anim_cubic_ease_in(float time, float begin, float change, float duration)
-{
-  time /= duration;
-  return change * time * time * time + begin;
-}
-
-float
-anim_cubic_ease_out(float time, float begin, float change, float duration)
-{
-  time = time / duration - 1;
-  return change * (time * time * time + 1) + begin;
-}
-
-float
-anim_cubic_ease_in_out(float time, float begin, float change, float duration)
-{
-  if ((time /= duration / 2) < 1.0f)
-    return change / 2 * time * time * time + begin;
-  time -= 2.0f;
-  return change / 2 * (time * time * time + 2) + begin;
+  return 1.0f - bounce_ease_out(1.0f - t);
 }
 
 #ifdef USE_ELASTIC_BLEND
-/**
- * When the amplitude is less than the change, we need to blend
- * \a f when we're close to the crossing point (int time), else we get an ugly
- * sharp falloff.
- */
 static float
-elastic_blend(float time,
-              float change,
-              float duration,
-              float amplitude,
-              float s,
-              float f)
+elastic_blend(float time, float change, float duration, float amplitude,
+              float s, float f)
 {
   if (change) {
-    /* Looks like a magic number,
-     * but this is a part of the sine curve we need to blend from */
     float const t = fabsf(s);
     if (amplitude) {
       f *= amplitude / fabsf(change);
     } else {
       f = 0.0f;
     }
-
     if (fabsf(time * duration) < t) {
       float l = fabsf(time * duration) / t;
       f = (f * l) + (1.0f - l);
     }
   }
-
   return f;
 }
 #endif
 
 float
-anim_elastic_ease_in(float time,
-                     float begin,
-                     float change,
-                     float duration,
-                     float amplitude,
-                     float period)
+anim_interpolate(enum ipo_type ipo, enum easing easing, float time)
 {
-  float s;
-  float f = 1.0f;
-
-  if (time == 0.0f)
-    return begin;
-
-  if ((time /= duration) == 1.0f)
-    return begin + change;
-  time -= 1.0f;
-  if (!period)
-    period = duration * 0.3f;
-  if (!amplitude || amplitude < fabsf(change)) {
-    s = period / 4;
+  /* float const overshoot = 1.3f; */
+  float const amplitude = 1.5f;
+  float const period = 2.f;
+  switch (ipo) {
+    case IPO_LINEAR:
+      return time;
+    case IPO_CONST:
+      return 1.0f;
+    case IPO_BACK: {
+      /* overshoot = 1.3f: constants below are (overshoot+1) and overshoot */
+      float t2;
+      switch (easing) {
+        case IPO_EASE_IN:
+          return time * time * (2.3f * time - 1.3f);
+        case IPO_EASE_OUT:
+          t2 = time - 1.0f;
+          return t2 * t2 * (2.3f * t2 + 1.3f) + 1.0f;
+        case IPO_EASE_IN_OUT:
+          /* overshoot *= 1.525f → 1.3f*1.525f ≈ 1.9825f; constants are (os+1) and os */
+          t2 = time * 2.0f;
+          if (t2 < 1.0f)
+            return 0.5f * t2 * t2 * (2.9825f * t2 - 1.9825f);
+          t2 -= 2.0f;
+          return 0.5f * (t2 * t2 * (2.9825f * t2 + 1.9825f) + 2.0f);
+      }
+      break;
+    }
+    case IPO_BOUNCE:
+      switch (easing) {
+        case IPO_EASE_IN:
+          return bounce_ease_in(time);
+        case IPO_EASE_OUT:
+          return bounce_ease_out(time);
+        case IPO_EASE_IN_OUT:
+          if (time < 0.5f)
+            return bounce_ease_in(time * 2.0f) * 0.5f;
+          return bounce_ease_out(time * 2.0f - 1.0f) * 0.5f + 0.5f;
+      }
+      break;
+    case IPO_CIRC: {
+      float t2;
+      switch (easing) {
+        case IPO_EASE_IN:
+          return 1.0f - sqrtf(1.0f - time * time);
+        case IPO_EASE_OUT:
+          t2 = time - 1.0f;
+          return sqrtf(1.0f - t2 * t2);
+        case IPO_EASE_IN_OUT:
+          t2 = time * 2.0f;
+          if (t2 < 1.0f)
+            return -0.5f * (sqrtf(1.0f - t2 * t2) - 1.0f);
+          t2 -= 2.0f;
+          return 0.5f * (sqrtf(1.0f - t2 * t2) + 1.0f);
+      }
+      break;
+    }
+    case IPO_CUBIC: {
+      float t2;
+      switch (easing) {
+        case IPO_EASE_IN:
+          return time * time * time;
+        case IPO_EASE_OUT:
+          t2 = time - 1.0f;
+          return t2 * t2 * t2 + 1.0f;
+        case IPO_EASE_IN_OUT:
+          t2 = time * 2.0f;
+          if (t2 < 1.0f)
+            return 0.5f * t2 * t2 * t2;
+          t2 -= 2.0f;
+          return 0.5f * (t2 * t2 * t2 + 2.0f);
+      }
+      break;
+    }
+    case IPO_ELASTIC: {
+      float s, f = 1.0f, t2;
+      switch (easing) {
+        case IPO_EASE_IN:
+          if (time == 0.0f) return 0.0f;
+          if (time == 1.0f) return 1.0f;
+          t2 = time - 1.0f;
+          s = period / 4.0f; /* quarter-period phase shift when amplitude >= change */
 #ifdef USE_ELASTIC_BLEND
-    f = elastic_blend(time, change, duration, amplitude, s, f);
+          f = elastic_blend(t2, 1.0f, 1.0f, amplitude, s, f);
 #endif
-    amplitude = change;
-  } else
-    s = period / (2 * (float)M_PI) * asinf(change / amplitude);
-
-  return (-f * (amplitude * powf(2, 10 * time) *
-                sinf((time * duration - s) * (2 * (float)M_PI) / period))) +
-         begin;
-}
-
-float
-anim_elastic_ease_out(float time,
-                      float begin,
-                      float change,
-                      float duration,
-                      float amplitude,
-                      float period)
-{
-  float s;
-  float f = 1.0f;
-
-  if (time == 0.0f)
-    return begin;
-  if ((time /= duration) == 1.0f)
-    return begin + change;
-  time = -time;
-  if (!period)
-    period = duration * 0.3f;
-  if (!amplitude || amplitude < fabsf(change)) {
-    s = period / 4;
+          return -(f * amplitude * powf(2.0f, 10.0f * t2) *
+                   sinf((t2 - s) * (2.0f * (float)M_PI) / period));
+        case IPO_EASE_OUT:
+          if (time == 0.0f) return 0.0f;
+          if (time == 1.0f) return 1.0f;
+          t2 = -time;
+          s = period / 4.0f;
 #ifdef USE_ELASTIC_BLEND
-    f = elastic_blend(time, change, duration, amplitude, s, f);
+          f = elastic_blend(t2, 1.0f, 1.0f, amplitude, s, f);
 #endif
-    amplitude = change;
-  } else
-    s = period / (2 * (float)M_PI) * asinf(change / amplitude);
-
-  return (f * (amplitude * powf(2, 10 * time) *
-               sinf((time * duration - s) * (2 * (float)M_PI) / period))) +
-         change + begin;
-}
-
-float
-anim_elastic_ease_in_out(float time,
-                         float begin,
-                         float change,
-                         float duration,
-                         float amplitude,
-                         float period)
-{
-  float s;
-  float f = 1.0f;
-
-  if (time == 0.0f)
-    return begin;
-  if ((time /= duration / 2) == 2.0f)
-    return begin + change;
-  time -= 1.0f;
-  if (!period)
-    period = duration * (0.3f * 1.5f);
-  if (!amplitude || amplitude < fabsf(change)) {
-    s = period / 4;
+          return f * amplitude * powf(2.0f, 10.0f * t2) *
+          sinf((t2 - s) * (2.0f * (float)M_PI) / period) + 1.0f;
+        case IPO_EASE_IN_OUT:
+          if (time == 0.0f) return 0.0f;
+          if ((t2 = time * 2.0f) == 2.0f) return 1.0f;
+          t2 -= 1.0f;
+          s = period / 4.0f;
 #ifdef USE_ELASTIC_BLEND
-    f = elastic_blend(time, change, duration, amplitude, s, f);
+          f = elastic_blend(t2, 1.0f, 1.0f, amplitude, s, f);
 #endif
-    amplitude = change;
-  } else
-    s = period / (2 * (float)M_PI) * asinf(change / amplitude);
-
-  if (time < 0.0f) {
-    f *= -0.5f;
-    return (f * (amplitude * powf(2, 10 * time) *
-                 sinf((time * duration - s) * (2 * (float)M_PI) / period))) +
-           begin;
-  } else {
-    time = -time;
-    f *= 0.5f;
-    return (f * (amplitude * powf(2, 10 * time) *
-                 sinf((time * duration - s) * (2 * (float)M_PI) / period))) +
-           change + begin;
+          if (t2 < 0.0f) {
+            return -0.5f * f * amplitude * powf(2.0f, 10.0f * t2) *
+            sinf((t2 - s) * (2.0f * (float)M_PI) / period);
+          }
+          t2 = -t2;
+          return 0.5f * f * amplitude * powf(2.0f, 10.0f * t2) *
+          sinf((t2 - s) * (2.0f * (float)M_PI) / period) + 1.0f;
+      }
+      break;
+    }
+    case IPO_EXPO: {
+      float t2;
+      switch (easing) {
+        case IPO_EASE_IN:
+          return (time == 0.0f) ? 0.0f : powf(2.0f, 10.0f * (time - 1.0f));
+        case IPO_EASE_OUT:
+          return (time == 1.0f) ? 1.0f : 1.0f - powf(2.0f, -10.0f * time);
+        case IPO_EASE_IN_OUT:
+          if (time == 0.0f) return 0.0f;
+          if (time == 1.0f) return 1.0f;
+          t2 = time * 2.0f;
+          if (t2 < 1.0f)
+            return 0.5f * powf(2.0f, 10.0f * (t2 - 1.0f));
+          t2 -= 1.0f;
+          return 0.5f * (2.0f - powf(2.0f, -10.0f * t2));
+      }
+      break;
+    }
+    case IPO_QUAD: {
+      float t2;
+      switch (easing) {
+        case IPO_EASE_IN:
+          return time * time;
+        case IPO_EASE_OUT:
+          return -time * (time - 2.0f);
+        case IPO_EASE_IN_OUT:
+          t2 = time * 2.0f;
+          if (t2 < 1.0f)
+            return 0.5f * t2 * t2;
+          t2 -= 1.0f;
+          return -0.5f * (t2 * (t2 - 2.0f) - 1.0f);
+      }
+      break;
+    }
+    case IPO_QUART: {
+      float t2;
+      switch (easing) {
+        case IPO_EASE_IN:
+          return time * time * time * time;
+        case IPO_EASE_OUT:
+          t2 = time - 1.0f;
+          return -(t2 * t2 * t2 * t2 - 1.0f);
+        case IPO_EASE_IN_OUT:
+          t2 = time * 2.0f;
+          if (t2 < 1.0f)
+            return 0.5f * t2 * t2 * t2 * t2;
+          t2 -= 2.0f;
+          return -0.5f * (t2 * t2 * t2 * t2 - 2.0f);
+      }
+      break;
+    }
+    case IPO_QUINT: {
+      float t2;
+      switch (easing) {
+        case IPO_EASE_IN:
+          return time * time * time * time * time;
+        case IPO_EASE_OUT:
+          t2 = time - 1.0f;
+          return t2 * t2 * t2 * t2 * t2 + 1.0f;
+        case IPO_EASE_IN_OUT:
+          t2 = time * 2.0f;
+          if (t2 < 1.0f)
+            return 0.5f * t2 * t2 * t2 * t2 * t2;
+          t2 -= 2.0f;
+          return 0.5f * (t2 * t2 * t2 * t2 * t2 + 2.0f);
+      }
+      break;
+    }
+    case IPO_SINE:
+      switch (easing) {
+        case IPO_EASE_IN:
+          return 1.0f - cosf(time * (float)M_PI_2);
+        case IPO_EASE_OUT:
+          return sinf(time * (float)M_PI_2);
+        case IPO_EASE_IN_OUT:
+          return -0.5f * (cosf((float)M_PI * time) - 1.0f);
+      }
+      break;
   }
-}
-
-float
-anim_expo_ease_in(float time, float begin, float change, float duration)
-{
-  return (time == 0.0f) ? begin
-                        : change * powf(2, 10 * (time / duration - 1)) + begin;
-}
-
-float
-anim_expo_ease_out(float time, float begin, float change, float duration)
-{
-  return (time == duration)
-           ? begin + change
-           : change * (-powf(2, -10 * time / duration) + 1) + begin;
-}
-
-float
-anim_expo_ease_in_out(float time, float begin, float change, float duration)
-{
-  if (time == 0.0f)
-    return begin;
-  if (time == duration)
-    return begin + change;
-  if ((time /= duration / 2) < 1)
-    return change / 2 * powf(2, 10 * (time - 1)) + begin;
-  time -= 1.0f;
-  return change / 2 * (-powf(2, -10 * time) + 2) + begin;
-}
-
-float
-anim_linear_ease(float time, float begin, float change, float duration)
-{
-  return change * time / duration + begin;
-}
-
-float
-anim_quad_ease_in(float time, float begin, float change, float duration)
-{
-  time /= duration;
-  return change * time * time + begin;
-}
-
-float
-anim_quad_ease_out(float time, float begin, float change, float duration)
-{
-  time /= duration;
-  return -change * time * (time - 2) + begin;
-}
-
-float
-anim_quad_ease_in_out(float time, float begin, float change, float duration)
-{
-  if ((time /= duration / 2) < 1.0f)
-    return change / 2 * time * time + begin;
-  time -= 1.0f;
-  return -change / 2 * (time * (time - 2) - 1) + begin;
-}
-
-float
-anim_quart_ease_in(float time, float begin, float change, float duration)
-{
-  time /= duration;
-  return change * time * time * time * time + begin;
-}
-
-float
-anim_quart_ease_out(float time, float begin, float change, float duration)
-{
-  time = time / duration - 1;
-  return -change * (time * time * time * time - 1) + begin;
-}
-
-float
-anim_quart_ease_in_out(float time, float begin, float change, float duration)
-{
-  if ((time /= duration / 2) < 1.0f)
-    return change / 2 * time * time * time * time + begin;
-  time -= 2.0f;
-  return -change / 2 * (time * time * time * time - 2) + begin;
-}
-
-float
-anim_quint_ease_in(float time, float begin, float change, float duration)
-{
-  time /= duration;
-  return change * time * time * time * time * time + begin;
-}
-float
-anim_quint_ease_out(float time, float begin, float change, float duration)
-{
-  time = time / duration - 1;
-  return change * (time * time * time * time * time + 1) + begin;
-}
-float
-anim_quint_ease_in_out(float time, float begin, float change, float duration)
-{
-  if ((time /= duration / 2) < 1.0f)
-    return change / 2 * time * time * time * time * time + begin;
-  time -= 2.0f;
-  return change / 2 * (time * time * time * time * time + 2) + begin;
-}
-
-float
-anim_sine_ease_in(float time, float begin, float change, float duration)
-{
-  return -change * cosf(time / duration * (float)M_PI_2) + change + begin;
-}
-
-float
-anim_sine_ease_out(float time, float begin, float change, float duration)
-{
-  return change * sinf(time / duration * (float)M_PI_2) + begin;
-}
-
-float
-anim_sine_ease_in_out(float time, float begin, float change, float duration)
-{
-  return -change / 2 * (cosf((float)M_PI * time / duration) - 1) + begin;
+  return 1.0f;
 }

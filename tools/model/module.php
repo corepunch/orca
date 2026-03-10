@@ -74,12 +74,44 @@ class ParserType {
 	}
 }
 
+// --- Field ---
+
+class Field {
+	public $name;
+	public $type;
+	public $doc;
+
+	function __construct($elem, $model) {
+		$this->name = new FieldName($elem["name"]);
+		$this->type = new Type($elem, $model);
+		$text = trim((string)$elem);
+		$this->doc = strlen($text) > 0 ? $text : null;
+	}
+}
+
+// --- Property ---
+
+class Property {
+	public $name;
+	public $type;
+	public $doc;
+
+	function __construct($elem, $model, $classname) {
+		if ($elem === null) { return; }
+		$this->name = new PropertyName($classname, [(string)$elem["name"]]);
+		$this->type = new Type($elem, $model);
+		$text = trim((string)$elem);
+		$this->doc = strlen($text) > 0 ? $text : null;
+	}
+}
+
 // --- Base ---
 
 class Base {
 	protected $_elem;
 	protected $_model;
 	public $name;
+	public $doc;
 
 	function __construct($elem, $model) {
 		$this->_elem = $elem;
@@ -87,6 +119,8 @@ class Base {
 		foreach ($elem->attributes() as $k => $v) {
 			$this->$k = $v;
 		}
+		$summary = $elem->xpath("summary");
+		$this->doc = count($summary) > 0 ? trim((string)$summary[0]) : null;
 	}
 }
 
@@ -243,17 +277,21 @@ class Struct extends Interface {
 
 	function getFields() {
 		foreach ($this->_elem->xpath(".//field[@name]") as $f) {
-			yield new FieldName($f["name"]) => new Type($f, $this->_model);
+			yield new Field($f, $this->_model);
 		}
 	}
 
 	function getParsers() {
 		$result = dict();
-		foreach ($this->getFields() as $name => $field) {
+		foreach ($this->getFields() as $field_obj) {
+			$name = $field_obj->name;
+			$field = $field_obj->type;
 			if ($field->fixed_array) {
 				for ($i = 0; $i < $field->fixed_array; $i++) {
 					if ($field->kind === "struct") {
-						foreach ($field->data->getFields() as $sub_name => $sub_type) {
+						foreach ($field->data->getFields() as $sub_field) {
+							$sub_name = $sub_field->name;
+							$sub_type = $sub_field->type;
 							$pt_name = $this->name . "_{$name}{$i}_{$sub_name}";
 							$pt_addr = "{$name}[$i].{$sub_name}";
 							$pt = new ParserType($pt_name, $pt_addr, $sub_type);
@@ -267,7 +305,7 @@ class Struct extends Interface {
 					}
 				}
 			} else {
-				$pt = new ParserType((string)$name, (string)$name, $field);
+				$pt = new ParserType(strval($name), strval($name), $field);
 				$result[$pt] = $field;
 			}
 		}
@@ -275,8 +313,8 @@ class Struct extends Interface {
 	}
 
 	function hasFromString() {
-		foreach ($this->getFields() as $field => $type) {
-			if ($type->kind == "struct" && $type->name != "color") {
+		foreach ($this->getFields() as $field) {
+			if ($field->type->kind == "struct" && $field->type->name != "color") {
 				return false;
 			}
 		}
@@ -300,18 +338,24 @@ class Component extends Struct {
 		parent::__construct($elem, $model);
 	}
 
-	private function _walkProperties($type_, $args) {
+	private function _walkProperties($type_, $args, $doc = null) {
 		$path = array_slice($args, 1);
-		yield new PropertyName($args[0], $path) => $type_;
+		$p = new Property(null, null, null);
+		$p->name = new PropertyName($args[0], $path);
+		$p->type = $type_;
+		$p->doc = $doc;
+		yield $p;
 		if ($type_->kind === "struct" && !$type_->data->sealed) {
-			foreach ($type_->data->getFields() as $k => $v) {
+			foreach ($type_->data->getFields() as $f) {
+				$k = $f->name;
+				$v = $f->type;
 				if ($v->fixed_array) {
 					for ($i = 0; $i < $v->fixed_array; $i++) {
-						$new_seg = "{$k}[$i]";
+						$new_seg = strval($k) . "[$i]";
 						yield from $this->_walkProperties($v, array_merge($args, [$new_seg]));
 					}
 				} else {
-					yield from $this->_walkProperties($v, array_merge($args, [(string)$k]));
+					yield from $this->_walkProperties($v, array_merge($args, [strval($k)]));
 				}
 			}
 		}
@@ -320,14 +364,20 @@ class Component extends Struct {
 	function getProperties($recursive = true) {
 		foreach ($this->_elem->xpath(".//property[@name]") as $f) {
 			$type_ = new Type($f, $this->_model);
+			$text = trim((string)$f);
+			$doc = strlen($text) > 0 ? $text : null;
 			if ($recursive) {
-				yield from $this->_walkProperties($type_, [$this->name, (string)$f["name"]]);
+				yield from $this->_walkProperties($type_, [$this->name, (string)$f["name"]], $doc);
 			} else {
-				yield new PropertyName($this->name, [(string)$f["name"]]) => $type_;
+				yield new Property($f, $this->_model, $this->name);
 			}
 			if ($type_->array === "true") {
 				$int = new Type(simplexml_load_string("<type type=\"int\"/>"), $this->_model);
-				yield new PropertyName($this->name, ['Num' . $f["name"]]) => $int;
+				$p = new Property(null, null, null);
+				$p->name = new PropertyName($this->name, ['Num' . $f["name"]]);
+				$p->type = $int;
+				$p->doc = null;
+				yield $p;
 			}
 		}
 	}
