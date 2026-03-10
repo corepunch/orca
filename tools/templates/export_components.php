@@ -31,7 +31,7 @@ static struct <?= $name ?> <?= $name ?>Defaults = {
 	<?php if ($property->type->kind === 'struct'): ?>
   .<?= $property->name ?> = {<?= $property->type->default ?>},
 	<?php elseif ($property->type->kind === 'enum'): ?>
-  .<?= $property->name ?> = k<?= $property->type->name.$property->type->default ?>,
+  .<?= $property->name ?> = k<?= $property->type->type.$property->type->default ?>,
 	<?php else: ?>
   .<?= $property->name ?> = <?= $property->type->default ?>,
 	<?php endif ?>
