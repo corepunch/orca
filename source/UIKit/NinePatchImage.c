@@ -84,7 +84,7 @@ HANDLER(NinePatchImage, ForegroundContent)
 
 HANDLER(NinePatchImage, DrawBrush)
 {
-	if (!memcmp(pDrawBrush->brush,
+	if (!memcmp(&pDrawBrush->brush,
 							&(struct BrushShorthand){0},
 							sizeof(struct BrushShorthand)))
     return FALSE;
@@ -121,7 +121,7 @@ HANDLER(NinePatchImage, DrawBrush)
     };
     struct ViewEntity entity;
 
-    Node2D_GetViewEntity(hObject, &entity, images[index], pDrawBrush->brush);
+    Node2D_GetViewEntity(pNode2D, &entity, images[index], &pDrawBrush->brush);
 
     entity.bbox = BOX3_FromRect(frame);
 

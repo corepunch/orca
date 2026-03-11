@@ -35,13 +35,13 @@ HANDLER(Node2D, HitTest) {
     lpObject_t hittest = NULL;
     if (OBJ_SendMessageW(hChild, kEventHitTest, MAKEDWORD(lx, ly), &hittest)) {
       success = TRUE;
-      *pHitTest = hittest;
+      *(void**)pHitTest = hittest;
     }
   }
   if (success) {
     return TRUE;
   } else if (_ContainsPoint(pNode2D, x, y)) {
-    *pHitTest = hObject;
+    *(void**)pHitTest = hObject;
     return TRUE;
   } else {
     return FALSE;
@@ -158,10 +158,8 @@ HANDLER(Node2D, UpdateMatrix)
 
     if (matprop && (PROP_GetFlags(matprop) & PF_MODIFIED)) {
       // skip if set from outside
-    } else if (pUpdateMatrix->parent) {
-      pNode2D->Matrix = MAT4_Multiply(pUpdateMatrix->parent, &Matrix);
     } else {
-      pNode2D->Matrix = Matrix;
+      pNode2D->Matrix = MAT4_Multiply(&pUpdateMatrix->parent, &Matrix);
     }
 
     pNode2D->_opacity = GetNode(hObject)->Opacity * pUpdateMatrix->opacity;
@@ -178,8 +176,8 @@ HANDLER(Node2D, UpdateMatrix)
   }
 
   FOR_EACH_CHILD(hObject, OBJ_SendMessageW, kEventUpdateMatrix, 0,
-                 &(UPDATEMATRIXSTRUCT){
-                   .parent = &Matrix,
+                 &(struct UpdateMatrixEventArgs){
+                   .parent = Matrix,
                    .opacity = pNode2D->_opacity,
                    .force = bInvalidate,
                  });
@@ -230,7 +228,7 @@ HANDLER(Node2D, HandleMessage)
 {
   if (!OBJ_GetLuaObject(hObject))
     return FALSE;
-  lua_State* L = pHandleMessage->L;
+  lua_State* L = OBJ_GetDomain(hObject);
   shortStr_t pszHandler;
   sprintf(pszHandler, "on%s", pHandleMessage->EventName);
   lua_geti(L, LUA_REGISTRYINDEX, OBJ_GetLuaObject(hObject));
@@ -273,7 +271,7 @@ HANDLER(Node2D, MouseMoved)
   return FALSE;
 }
 
-float Node2D_GetSize(Node2DPtr pNode2D, eDirection_t axis, eSizing_t sizing) {
+float Node2D_GetSize(Node2DPtr pNode2D, enum Direction axis, enum Sizing sizing) {
   float const size = Node2D_GetFrame(pNode2D, kBox3FieldWidth + axis);
   switch (sizing) {
     case kSizingPlusMargin:

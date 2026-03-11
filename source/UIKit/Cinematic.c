@@ -10,7 +10,7 @@ UI_GetTime(void);
 
 HANDLER(Cinematic, DrawBrush)
 {
-	if (!memcmp(pDrawBrush->brush,
+	if (!memcmp(&pDrawBrush->brush,
 							&(struct BrushShorthand){0},
 							sizeof(struct BrushShorthand)) &&
 			!pDrawBrush->foreground)
@@ -27,7 +27,7 @@ HANDLER(Cinematic, DrawBrush)
     pCinematic->_starttime = realtime;
   }
 
-  Node2D_GetViewEntity(hObject, &entity, 0, pDrawBrush->brush);
+  Node2D_GetViewEntity(GetNode2D(hObject), &entity, 0, &pDrawBrush->brush);
 
   entity.bbox = BOX3_FromRect(GetNode2D(hObject)->_rect);
   entity.mesh = BOX_PTR(Mesh, MD_RECTANGLE);

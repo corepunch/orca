@@ -191,7 +191,7 @@ HANDLER(TerminalView, Create) {
 }
 
 HANDLER(TerminalView, PushProperty) {
-  lua_State *L = pPushProperty;
+  lua_State* L = OBJ_GetDomain(hObject);
   switch (wParam) {
     case 0x18bff8a6: // println
       lua_pushcfunction(L, f_println);

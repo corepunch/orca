@@ -293,7 +293,6 @@ void luaX_pushStyleType(lua_State *L, enum StyleType value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _StyleType[value]);
 }
-
 void luaX_pushBorderRadiusShorthand(lua_State *L, BorderRadiusShorthand const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct BorderRadiusShorthand* self = lua_newuserdata(L, sizeof(struct BorderRadiusShorthand));
@@ -321,6 +320,23 @@ static int f_new_BorderRadiusShorthand(lua_State *L) {
 	}
 	return 1;
 }
+static int f_fromstring_BorderRadiusShorthand(lua_State *L) {
+	float TopLeftRadius;
+	float TopRightRadius;
+	float BottomRightRadius;
+	float BottomLeftRadius;
+	struct BorderRadiusShorthand self = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &TopLeftRadius, &TopRightRadius, &BottomRightRadius, &BottomLeftRadius)) {
+		case 4: 
+			self.TopLeftRadius = TopLeftRadius;
+			self.TopRightRadius = TopRightRadius;
+			self.BottomRightRadius = BottomRightRadius;
+			self.BottomLeftRadius = BottomLeftRadius;
+			return (luaX_pushBorderRadiusShorthand(L, &self), 1);
+		default:
+			return luaL_error(L, "Invalid format for BorderRadiusShorthand: %s", luaL_checkstring(L, 1));
+	}
+}
 int f_BorderRadiusShorthand___index(lua_State *L) {
 	stuct BorderRadiusShorthand* self = luaX_checkBorderRadiusShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -342,7 +358,7 @@ int f_BorderRadiusShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in BorderRadiusShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_BorderRadiusShorthand___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_BorderRadiusShorthand(L));  // remove BorderRadiusShorthand from stack
+	return (lua_remove(L, 1), f_new_BorderRadiusShorthand(L));  // remove BorderRadiusShorthand from stack and call constructor
 }
 int luaopen_orca_BorderRadiusShorthand(lua_State *L) {
 	luaL_newmetatable(L, "BorderRadiusShorthand");
@@ -360,7 +376,6 @@ int luaopen_orca_BorderRadiusShorthand(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
-
 void luaX_pushEdgeShorthand(lua_State *L, EdgeShorthand const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct EdgeShorthand* self = lua_newuserdata(L, sizeof(struct EdgeShorthand));
@@ -384,6 +399,23 @@ static int f_new_EdgeShorthand(lua_State *L) {
 	}
 	return 1;
 }
+void EdgeShorthand_Convert1(struct EdgeShorthand*, float);
+static int f_fromstring_EdgeShorthand(lua_State *L) {
+	float Left;
+	float Right;
+	struct EdgeShorthand self = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%f %f", &Left, &Right)) {
+		case 2: 
+			self.Left = Left;
+			self.Right = Right;
+			return (luaX_pushEdgeShorthand(L, &self), 1);
+		case 1:
+			EdgeShorthand_Convert1(&self, Left);
+			return (luaX_pushEdgeShorthand(L, &self), 1);
+		default:
+			return luaL_error(L, "Invalid format for EdgeShorthand: %s", luaL_checkstring(L, 1));
+	}
+}
 int f_EdgeShorthand___index(lua_State *L) {
 	stuct EdgeShorthand* self = luaX_checkEdgeShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -401,7 +433,7 @@ int f_EdgeShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in EdgeShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_EdgeShorthand___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_EdgeShorthand(L));  // remove EdgeShorthand from stack
+	return (lua_remove(L, 1), f_new_EdgeShorthand(L));  // remove EdgeShorthand from stack and call constructor
 }
 int luaopen_orca_EdgeShorthand(lua_State *L) {
 	luaL_newmetatable(L, "EdgeShorthand");
@@ -419,7 +451,6 @@ int luaopen_orca_EdgeShorthand(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
-
 void luaX_pushAlignmentShorthand(lua_State *L, AlignmentShorthand const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct AlignmentShorthand* self = lua_newuserdata(L, sizeof(struct AlignmentShorthand));
@@ -441,6 +472,21 @@ static int f_new_AlignmentShorthand(lua_State *L) {
 	}
 	return 1;
 }
+static int f_fromstring_AlignmentShorthand(lua_State *L) {
+	int AlignmentShorthand_Axis0;
+	int AlignmentShorthand_Axis1;
+	int AlignmentShorthand_Axis2;
+	struct AlignmentShorthand self = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%d %d %d", &AlignmentShorthand_Axis0, &AlignmentShorthand_Axis1, &AlignmentShorthand_Axis2)) {
+		case 3: 
+			self.Axis[0] = AlignmentShorthand_Axis0;
+			self.Axis[1] = AlignmentShorthand_Axis1;
+			self.Axis[2] = AlignmentShorthand_Axis2;
+			return (luaX_pushAlignmentShorthand(L, &self), 1);
+		default:
+			return luaL_error(L, "Invalid format for AlignmentShorthand: %s", luaL_checkstring(L, 1));
+	}
+}
 int f_AlignmentShorthand___index(lua_State *L) {
 	stuct AlignmentShorthand* self = luaX_checkAlignmentShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -456,7 +502,7 @@ int f_AlignmentShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in AlignmentShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_AlignmentShorthand___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_AlignmentShorthand(L));  // remove AlignmentShorthand from stack
+	return (lua_remove(L, 1), f_new_AlignmentShorthand(L));  // remove AlignmentShorthand from stack and call constructor
 }
 int luaopen_orca_AlignmentShorthand(lua_State *L) {
 	luaL_newmetatable(L, "AlignmentShorthand");
@@ -474,7 +520,6 @@ int luaopen_orca_AlignmentShorthand(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
-
 void luaX_pushFontShorthand(lua_State *L, FontShorthand const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct FontShorthand* self = lua_newuserdata(L, sizeof(struct FontShorthand));
@@ -490,17 +535,34 @@ static int f_new_FontShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct FontShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Weight"), self->Weight = luaL_checkoption(L, index, NULL, _FontWeight), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Style"), self->Style = luaL_checkoption(L, index, NULL, _FontStyle), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Weight"), self->Weight = luaL_checkoption(L, -1, NULL, _FontWeight), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Style"), self->Style = luaL_checkoption(L, -1, NULL, _FontStyle), 1));
 		lua_pop(L, (lua_getfield(L, 1, "Size"), self->Size = luaL_checknumber(L, -1), 1));
 		lua_pop(L, (lua_getfield(L, 1, "Family"), self->Family = luaX_checkFontFamily(L, -1), 1));
 	} else {
-		self->Weight = luaL_checkoption(L, index, NULL, _FontWeight);
-		self->Style = luaL_checkoption(L, index, NULL, _FontStyle);
+		self->Weight = luaL_checkoption(L, 1, NULL, _FontWeight);
+		self->Style = luaL_checkoption(L, 2, NULL, _FontStyle);
 		self->Size = luaL_checknumber(L, 3);
 		self->Family = luaX_checkFontFamily(L, 4);
 	}
 	return 1;
+}
+static int f_fromstring_FontShorthand(lua_State *L) {
+	enum FontWeight Weight;
+	enum FontStyle Style;
+	float Size;
+	struct FontFamily* Family;
+	struct FontShorthand self = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%s %s %f %s", Weight, Style, &Size, Family)) {
+		case 4: 
+			lua_pop(L, (lua_pushstring(L, Weight), self.Weight = luaL_checkoption(L, -1, NULL, _FontWeight), 1));;
+			lua_pop(L, (lua_pushstring(L, Style), self.Style = luaL_checkoption(L, -1, NULL, _FontStyle), 1));;
+			self.Size = Size;
+			lua_pop(L, (f_convert_string(L, &(struct PropertyType) { .DataType = kDataTypeObject, .TypeString = "FontFamily" }, Family, TRUE), self.Family = luaX_checkFontFamily(L, -1), 1));;
+			return (luaX_pushFontShorthand(L, &self), 1);
+		default:
+			return luaL_error(L, "Invalid format for FontShorthand: %s", luaL_checkstring(L, 1));
+	}
 }
 int f_FontShorthand___index(lua_State *L) {
 	stuct FontShorthand* self = luaX_checkFontShorthand(L, 1);
@@ -515,15 +577,15 @@ int f_FontShorthand___index(lua_State *L) {
 int f_FontShorthand___newindex(lua_State *L) {
 	stuct FontShorthand* self = luaX_checkFontShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0x993014d9: self->Weight = luaL_checkoption(L, index, NULL, _FontWeight); return 0; // Weight
-		case 0x5467ec76: self->Style = luaL_checkoption(L, index, NULL, _FontStyle); return 0; // Style
+		case 0x993014d9: self->Weight = luaL_checkoption(L, 3, NULL, _FontWeight); return 0; // Weight
+		case 0x5467ec76: self->Style = luaL_checkoption(L, 3, NULL, _FontStyle); return 0; // Style
 		case 0xa6478e7c: self->Size = luaL_checknumber(L, 3); return 0; // Size
 		case 0xc46f8f49: self->Family = luaX_checkFontFamily(L, 3); return 0; // Family
 	}
 	return luaL_error(L, "Unknown field in FontShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_FontShorthand___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_FontShorthand(L));  // remove FontShorthand from stack
+	return (lua_remove(L, 1), f_new_FontShorthand(L));  // remove FontShorthand from stack and call constructor
 }
 int luaopen_orca_FontShorthand(lua_State *L) {
 	luaL_newmetatable(L, "FontShorthand");
@@ -541,7 +603,6 @@ int luaopen_orca_FontShorthand(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
-
 void luaX_pushBrushShorthand(lua_State *L, BrushShorthand const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct BrushShorthand* self = lua_newuserdata(L, sizeof(struct BrushShorthand));
@@ -567,6 +628,21 @@ static int f_new_BrushShorthand(lua_State *L) {
 	}
 	return 1;
 }
+static int f_fromstring_BrushShorthand(lua_State *L) {
+	struct color Color;
+	struct Texture* Image;
+	struct Material* Material;
+	struct BrushShorthand self = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%s %s %s", Color, Image, Material)) {
+		case 3: 
+			self.Color = Color;
+			lua_pop(L, (f_convert_string(L, &(struct PropertyType) { .DataType = kDataTypeObject, .TypeString = "Texture" }, Image, TRUE), self.Image = luaX_checkTexture(L, -1), 1));;
+			lua_pop(L, (f_convert_string(L, &(struct PropertyType) { .DataType = kDataTypeObject, .TypeString = "Material" }, Material, TRUE), self.Material = luaX_checkMaterial(L, -1), 1));;
+			return (luaX_pushBrushShorthand(L, &self), 1);
+		default:
+			return luaL_error(L, "Invalid format for BrushShorthand: %s", luaL_checkstring(L, 1));
+	}
+}
 int f_BrushShorthand___index(lua_State *L) {
 	stuct BrushShorthand* self = luaX_checkBrushShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -586,7 +662,7 @@ int f_BrushShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in BrushShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_BrushShorthand___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_BrushShorthand(L));  // remove BrushShorthand from stack
+	return (lua_remove(L, 1), f_new_BrushShorthand(L));  // remove BrushShorthand from stack and call constructor
 }
 int luaopen_orca_BrushShorthand(lua_State *L) {
 	luaL_newmetatable(L, "BrushShorthand");
@@ -604,7 +680,6 @@ int luaopen_orca_BrushShorthand(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
-
 void luaX_pushShadowShorthand(lua_State *L, ShadowShorthand const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct ShadowShorthand* self = lua_newuserdata(L, sizeof(struct ShadowShorthand));
@@ -632,6 +707,23 @@ static int f_new_ShadowShorthand(lua_State *L) {
 	}
 	return 1;
 }
+static int f_fromstring_ShadowShorthand(lua_State *L) {
+	struct vec2 Offset;
+	float BlurRadius;
+	float SpreadRadius;
+	struct color Color;
+	struct ShadowShorthand self = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%s %f %f %s", Offset, &BlurRadius, &SpreadRadius, Color)) {
+		case 4: 
+			self.Offset = Offset;
+			self.BlurRadius = BlurRadius;
+			self.SpreadRadius = SpreadRadius;
+			self.Color = Color;
+			return (luaX_pushShadowShorthand(L, &self), 1);
+		default:
+			return luaL_error(L, "Invalid format for ShadowShorthand: %s", luaL_checkstring(L, 1));
+	}
+}
 int f_ShadowShorthand___index(lua_State *L) {
 	stuct ShadowShorthand* self = luaX_checkShadowShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -653,7 +745,7 @@ int f_ShadowShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in ShadowShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_ShadowShorthand___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_ShadowShorthand(L));  // remove ShadowShorthand from stack
+	return (lua_remove(L, 1), f_new_ShadowShorthand(L));  // remove ShadowShorthand from stack and call constructor
 }
 int luaopen_orca_ShadowShorthand(lua_State *L) {
 	luaL_newmetatable(L, "ShadowShorthand");
@@ -671,7 +763,6 @@ int luaopen_orca_ShadowShorthand(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
-
 void luaX_pushRingShorthand(lua_State *L, RingShorthand const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct RingShorthand* self = lua_newuserdata(L, sizeof(struct RingShorthand));
@@ -697,6 +788,21 @@ static int f_new_RingShorthand(lua_State *L) {
 	}
 	return 1;
 }
+static int f_fromstring_RingShorthand(lua_State *L) {
+	float Offset;
+	float Width;
+	struct color Color;
+	struct RingShorthand self = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%f %f %s", &Offset, &Width, Color)) {
+		case 3: 
+			self.Offset = Offset;
+			self.Width = Width;
+			self.Color = Color;
+			return (luaX_pushRingShorthand(L, &self), 1);
+		default:
+			return luaL_error(L, "Invalid format for RingShorthand: %s", luaL_checkstring(L, 1));
+	}
+}
 int f_RingShorthand___index(lua_State *L) {
 	stuct RingShorthand* self = luaX_checkRingShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -716,7 +822,7 @@ int f_RingShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in RingShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_RingShorthand___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_RingShorthand(L));  // remove RingShorthand from stack
+	return (lua_remove(L, 1), f_new_RingShorthand(L));  // remove RingShorthand from stack and call constructor
 }
 int luaopen_orca_RingShorthand(lua_State *L) {
 	luaL_newmetatable(L, "RingShorthand");
@@ -734,7 +840,6 @@ int luaopen_orca_RingShorthand(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
-
 void luaX_pushOverflowShorthand(lua_State *L, OverflowShorthand const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct OverflowShorthand* self = lua_newuserdata(L, sizeof(struct OverflowShorthand));
@@ -750,13 +855,26 @@ static int f_new_OverflowShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct OverflowShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "x"), self->x = luaL_checkoption(L, index, NULL, _Overflow), 1));
-		lua_pop(L, (lua_getfield(L, 1, "y"), self->y = luaL_checkoption(L, index, NULL, _Overflow), 1));
+		lua_pop(L, (lua_getfield(L, 1, "x"), self->x = luaL_checkoption(L, -1, NULL, _Overflow), 1));
+		lua_pop(L, (lua_getfield(L, 1, "y"), self->y = luaL_checkoption(L, -1, NULL, _Overflow), 1));
 	} else {
-		self->x = luaL_checkoption(L, index, NULL, _Overflow);
-		self->y = luaL_checkoption(L, index, NULL, _Overflow);
+		self->x = luaL_checkoption(L, 1, NULL, _Overflow);
+		self->y = luaL_checkoption(L, 2, NULL, _Overflow);
 	}
 	return 1;
+}
+static int f_fromstring_OverflowShorthand(lua_State *L) {
+	enum Overflow x;
+	enum Overflow y;
+	struct OverflowShorthand self = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%s %s", x, y)) {
+		case 2: 
+			lua_pop(L, (lua_pushstring(L, x), self.x = luaL_checkoption(L, -1, NULL, _Overflow), 1));;
+			lua_pop(L, (lua_pushstring(L, y), self.y = luaL_checkoption(L, -1, NULL, _Overflow), 1));;
+			return (luaX_pushOverflowShorthand(L, &self), 1);
+		default:
+			return luaL_error(L, "Invalid format for OverflowShorthand: %s", luaL_checkstring(L, 1));
+	}
 }
 int f_OverflowShorthand___index(lua_State *L) {
 	stuct OverflowShorthand* self = luaX_checkOverflowShorthand(L, 1);
@@ -769,13 +887,13 @@ int f_OverflowShorthand___index(lua_State *L) {
 int f_OverflowShorthand___newindex(lua_State *L) {
 	stuct OverflowShorthand* self = luaX_checkOverflowShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0xfd0c5087: self->x = luaL_checkoption(L, index, NULL, _Overflow); return 0; // x
-		case 0xfc0c4ef4: self->y = luaL_checkoption(L, index, NULL, _Overflow); return 0; // y
+		case 0xfd0c5087: self->x = luaL_checkoption(L, 3, NULL, _Overflow); return 0; // x
+		case 0xfc0c4ef4: self->y = luaL_checkoption(L, 3, NULL, _Overflow); return 0; // y
 	}
 	return luaL_error(L, "Unknown field in OverflowShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_OverflowShorthand___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_OverflowShorthand(L));  // remove OverflowShorthand from stack
+	return (lua_remove(L, 1), f_new_OverflowShorthand(L));  // remove OverflowShorthand from stack and call constructor
 }
 int luaopen_orca_OverflowShorthand(lua_State *L) {
 	luaL_newmetatable(L, "OverflowShorthand");
@@ -793,7 +911,6 @@ int luaopen_orca_OverflowShorthand(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
-
 void luaX_pushUnderlineShorthand(lua_State *L, UnderlineShorthand const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct UnderlineShorthand* self = lua_newuserdata(L, sizeof(struct UnderlineShorthand));
@@ -819,6 +936,21 @@ static int f_new_UnderlineShorthand(lua_State *L) {
 	}
 	return 1;
 }
+static int f_fromstring_UnderlineShorthand(lua_State *L) {
+	float Offset;
+	float Width;
+	struct color Color;
+	struct UnderlineShorthand self = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%f %f %s", &Offset, &Width, Color)) {
+		case 3: 
+			self.Offset = Offset;
+			self.Width = Width;
+			self.Color = Color;
+			return (luaX_pushUnderlineShorthand(L, &self), 1);
+		default:
+			return luaL_error(L, "Invalid format for UnderlineShorthand: %s", luaL_checkstring(L, 1));
+	}
+}
 int f_UnderlineShorthand___index(lua_State *L) {
 	stuct UnderlineShorthand* self = luaX_checkUnderlineShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -838,7 +970,7 @@ int f_UnderlineShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in UnderlineShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_UnderlineShorthand___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_UnderlineShorthand(L));  // remove UnderlineShorthand from stack
+	return (lua_remove(L, 1), f_new_UnderlineShorthand(L));  // remove UnderlineShorthand from stack and call constructor
 }
 int luaopen_orca_UnderlineShorthand(lua_State *L) {
 	luaL_newmetatable(L, "UnderlineShorthand");
@@ -856,7 +988,6 @@ int luaopen_orca_UnderlineShorthand(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
-
 void luaX_pushMarginShorthand(lua_State *L, MarginShorthand const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct MarginShorthand* self = lua_newuserdata(L, sizeof(struct MarginShorthand));
@@ -878,6 +1009,39 @@ static int f_new_MarginShorthand(lua_State *L) {
 	}
 	return 1;
 }
+void MarginShorthand_Convert4(struct MarginShorthand*, float, float, float, float);
+void MarginShorthand_Convert2(struct MarginShorthand*, float, float);
+void MarginShorthand_Convert1(struct MarginShorthand*, float);
+static int f_fromstring_MarginShorthand(lua_State *L) {
+	float MarginShorthand_Axis0_Left;
+	float MarginShorthand_Axis0_Right;
+	float MarginShorthand_Axis1_Left;
+	float MarginShorthand_Axis1_Right;
+	float MarginShorthand_Axis2_Left;
+	float MarginShorthand_Axis2_Right;
+	struct MarginShorthand self = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f %f %f", &MarginShorthand_Axis0_Left, &MarginShorthand_Axis0_Right, &MarginShorthand_Axis1_Left, &MarginShorthand_Axis1_Right, &MarginShorthand_Axis2_Left, &MarginShorthand_Axis2_Right)) {
+		case 6: 
+			self.Axis[0].Left = MarginShorthand_Axis0_Left;
+			self.Axis[0].Right = MarginShorthand_Axis0_Right;
+			self.Axis[1].Left = MarginShorthand_Axis1_Left;
+			self.Axis[1].Right = MarginShorthand_Axis1_Right;
+			self.Axis[2].Left = MarginShorthand_Axis2_Left;
+			self.Axis[2].Right = MarginShorthand_Axis2_Right;
+			return (luaX_pushMarginShorthand(L, &self), 1);
+		case 4:
+			MarginShorthand_Convert4(&self, MarginShorthand_Axis0_Left, MarginShorthand_Axis0_Right, MarginShorthand_Axis1_Left, MarginShorthand_Axis1_Right);
+			return (luaX_pushMarginShorthand(L, &self), 1);
+		case 2:
+			MarginShorthand_Convert2(&self, MarginShorthand_Axis0_Left, MarginShorthand_Axis0_Right);
+			return (luaX_pushMarginShorthand(L, &self), 1);
+		case 1:
+			MarginShorthand_Convert1(&self, MarginShorthand_Axis0_Left);
+			return (luaX_pushMarginShorthand(L, &self), 1);
+		default:
+			return luaL_error(L, "Invalid format for MarginShorthand: %s", luaL_checkstring(L, 1));
+	}
+}
 int f_MarginShorthand___index(lua_State *L) {
 	stuct MarginShorthand* self = luaX_checkMarginShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -893,7 +1057,7 @@ int f_MarginShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in MarginShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_MarginShorthand___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_MarginShorthand(L));  // remove MarginShorthand from stack
+	return (lua_remove(L, 1), f_new_MarginShorthand(L));  // remove MarginShorthand from stack and call constructor
 }
 int luaopen_orca_MarginShorthand(lua_State *L) {
 	luaL_newmetatable(L, "MarginShorthand");
@@ -911,7 +1075,6 @@ int luaopen_orca_MarginShorthand(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
-
 void luaX_pushBorderShorthand(lua_State *L, BorderShorthand const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct BorderShorthand* self = lua_newuserdata(L, sizeof(struct BorderShorthand));
@@ -929,15 +1092,32 @@ static int f_new_BorderShorthand(lua_State *L) {
 	if (lua_istable(L, 1)) {
 		lua_pop(L, (lua_getfield(L, 1, "Width"), self->Width = luaX_checkMarginShorthand(L, -1), 1));
 		lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = luaX_checkcolor(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Style"), self->Style = luaL_checkoption(L, index, NULL, _BorderStyle), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Style"), self->Style = luaL_checkoption(L, -1, NULL, _BorderStyle), 1));
 		lua_pop(L, (lua_getfield(L, 1, "Radius"), self->Radius = luaX_checkBorderRadiusShorthand(L, -1), 1));
 	} else {
 		self->Width = luaX_checkMarginShorthand(L, 1);
 		self->Color = luaX_checkcolor(L, 2);
-		self->Style = luaL_checkoption(L, index, NULL, _BorderStyle);
+		self->Style = luaL_checkoption(L, 3, NULL, _BorderStyle);
 		self->Radius = luaX_checkBorderRadiusShorthand(L, 4);
 	}
 	return 1;
+}
+static int f_fromstring_BorderShorthand(lua_State *L) {
+	struct MarginShorthand Width;
+	struct color Color;
+	enum BorderStyle Style;
+	struct BorderRadiusShorthand Radius;
+	struct BorderShorthand self = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%s %s %s %s", Width, Color, Style, Radius)) {
+		case 4: 
+			self.Width = Width;
+			self.Color = Color;
+			lua_pop(L, (lua_pushstring(L, Style), self.Style = luaL_checkoption(L, -1, NULL, _BorderStyle), 1));;
+			self.Radius = Radius;
+			return (luaX_pushBorderShorthand(L, &self), 1);
+		default:
+			return luaL_error(L, "Invalid format for BorderShorthand: %s", luaL_checkstring(L, 1));
+	}
 }
 int f_BorderShorthand___index(lua_State *L) {
 	stuct BorderShorthand* self = luaX_checkBorderShorthand(L, 1);
@@ -954,13 +1134,13 @@ int f_BorderShorthand___newindex(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 		case 0x3b42dfbf: self->Width = luaX_checkMarginShorthand(L, 3); return 0; // Width
 		case 0xe5b43cf8: self->Color = luaX_checkcolor(L, 3); return 0; // Color
-		case 0x5467ec76: self->Style = luaL_checkoption(L, index, NULL, _BorderStyle); return 0; // Style
+		case 0x5467ec76: self->Style = luaL_checkoption(L, 3, NULL, _BorderStyle); return 0; // Style
 		case 0x3a8111d3: self->Radius = luaX_checkBorderRadiusShorthand(L, 3); return 0; // Radius
 	}
 	return luaL_error(L, "Unknown field in BorderShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_BorderShorthand___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_BorderShorthand(L));  // remove BorderShorthand from stack
+	return (lua_remove(L, 1), f_new_BorderShorthand(L));  // remove BorderShorthand from stack and call constructor
 }
 int luaopen_orca_BorderShorthand(lua_State *L) {
 	luaL_newmetatable(L, "BorderShorthand");
@@ -978,7 +1158,6 @@ int luaopen_orca_BorderShorthand(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
-
 void luaX_pushSizeAxisShorthand(lua_State *L, SizeAxisShorthand const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct SizeAxisShorthand* self = lua_newuserdata(L, sizeof(struct SizeAxisShorthand));
@@ -1008,6 +1187,25 @@ static int f_new_SizeAxisShorthand(lua_State *L) {
 	}
 	return 1;
 }
+static int f_fromstring_SizeAxisShorthand(lua_State *L) {
+	float Requested;
+	float Desired;
+	float Min;
+	float Actual;
+	float Scroll;
+	struct SizeAxisShorthand self = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f %f", &Requested, &Desired, &Min, &Actual, &Scroll)) {
+		case 5: 
+			self.Requested = Requested;
+			self.Desired = Desired;
+			self.Min = Min;
+			self.Actual = Actual;
+			self.Scroll = Scroll;
+			return (luaX_pushSizeAxisShorthand(L, &self), 1);
+		default:
+			return luaL_error(L, "Invalid format for SizeAxisShorthand: %s", luaL_checkstring(L, 1));
+	}
+}
 int f_SizeAxisShorthand___index(lua_State *L) {
 	stuct SizeAxisShorthand* self = luaX_checkSizeAxisShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -1031,7 +1229,7 @@ int f_SizeAxisShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in SizeAxisShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_SizeAxisShorthand___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_SizeAxisShorthand(L));  // remove SizeAxisShorthand from stack
+	return (lua_remove(L, 1), f_new_SizeAxisShorthand(L));  // remove SizeAxisShorthand from stack and call constructor
 }
 int luaopen_orca_SizeAxisShorthand(lua_State *L) {
 	luaL_newmetatable(L, "SizeAxisShorthand");
@@ -1049,7 +1247,6 @@ int luaopen_orca_SizeAxisShorthand(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
-
 void luaX_pushSizeShorthand(lua_State *L, SizeShorthand const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct SizeShorthand* self = lua_newuserdata(L, sizeof(struct SizeShorthand));
@@ -1071,6 +1268,45 @@ static int f_new_SizeShorthand(lua_State *L) {
 	}
 	return 1;
 }
+static int f_fromstring_SizeShorthand(lua_State *L) {
+	float SizeShorthand_Axis0_Requested;
+	float SizeShorthand_Axis0_Desired;
+	float SizeShorthand_Axis0_Min;
+	float SizeShorthand_Axis0_Actual;
+	float SizeShorthand_Axis0_Scroll;
+	float SizeShorthand_Axis1_Requested;
+	float SizeShorthand_Axis1_Desired;
+	float SizeShorthand_Axis1_Min;
+	float SizeShorthand_Axis1_Actual;
+	float SizeShorthand_Axis1_Scroll;
+	float SizeShorthand_Axis2_Requested;
+	float SizeShorthand_Axis2_Desired;
+	float SizeShorthand_Axis2_Min;
+	float SizeShorthand_Axis2_Actual;
+	float SizeShorthand_Axis2_Scroll;
+	struct SizeShorthand self = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &SizeShorthand_Axis0_Requested, &SizeShorthand_Axis0_Desired, &SizeShorthand_Axis0_Min, &SizeShorthand_Axis0_Actual, &SizeShorthand_Axis0_Scroll, &SizeShorthand_Axis1_Requested, &SizeShorthand_Axis1_Desired, &SizeShorthand_Axis1_Min, &SizeShorthand_Axis1_Actual, &SizeShorthand_Axis1_Scroll, &SizeShorthand_Axis2_Requested, &SizeShorthand_Axis2_Desired, &SizeShorthand_Axis2_Min, &SizeShorthand_Axis2_Actual, &SizeShorthand_Axis2_Scroll)) {
+		case 15: 
+			self.Axis[0].Requested = SizeShorthand_Axis0_Requested;
+			self.Axis[0].Desired = SizeShorthand_Axis0_Desired;
+			self.Axis[0].Min = SizeShorthand_Axis0_Min;
+			self.Axis[0].Actual = SizeShorthand_Axis0_Actual;
+			self.Axis[0].Scroll = SizeShorthand_Axis0_Scroll;
+			self.Axis[1].Requested = SizeShorthand_Axis1_Requested;
+			self.Axis[1].Desired = SizeShorthand_Axis1_Desired;
+			self.Axis[1].Min = SizeShorthand_Axis1_Min;
+			self.Axis[1].Actual = SizeShorthand_Axis1_Actual;
+			self.Axis[1].Scroll = SizeShorthand_Axis1_Scroll;
+			self.Axis[2].Requested = SizeShorthand_Axis2_Requested;
+			self.Axis[2].Desired = SizeShorthand_Axis2_Desired;
+			self.Axis[2].Min = SizeShorthand_Axis2_Min;
+			self.Axis[2].Actual = SizeShorthand_Axis2_Actual;
+			self.Axis[2].Scroll = SizeShorthand_Axis2_Scroll;
+			return (luaX_pushSizeShorthand(L, &self), 1);
+		default:
+			return luaL_error(L, "Invalid format for SizeShorthand: %s", luaL_checkstring(L, 1));
+	}
+}
 int f_SizeShorthand___index(lua_State *L) {
 	stuct SizeShorthand* self = luaX_checkSizeShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -1086,7 +1322,7 @@ int f_SizeShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in SizeShorthand: %s", luaL_checkstring(L, 2));
 }
 static int f_SizeShorthand___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_SizeShorthand(L));  // remove SizeShorthand from stack
+	return (lua_remove(L, 1), f_new_SizeShorthand(L));  // remove SizeShorthand from stack and call constructor
 }
 int luaopen_orca_SizeShorthand(lua_State *L) {
 	luaL_newmetatable(L, "SizeShorthand");
@@ -1104,7 +1340,6 @@ int luaopen_orca_SizeShorthand(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
-
 void luaX_pushNavigateToPageArguments(lua_State *L, NavigateToPageArguments const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct NavigateToPageArguments* self = lua_newuserdata(L, sizeof(struct NavigateToPageArguments));
@@ -1121,12 +1356,25 @@ static int f_new_NavigateToPageArguments(lua_State *L) {
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_pop(L, (lua_getfield(L, 1, "URL"), self->URL = luaL_checkstring(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "TransitionType"), self->TransitionType = luaL_checkoption(L, index, NULL, _TransitionType), 1));
+		lua_pop(L, (lua_getfield(L, 1, "TransitionType"), self->TransitionType = luaL_checkoption(L, -1, NULL, _TransitionType), 1));
 	} else {
 		self->URL = luaL_checkstring(L, 1);
-		self->TransitionType = luaL_checkoption(L, index, NULL, _TransitionType);
+		self->TransitionType = luaL_checkoption(L, 2, NULL, _TransitionType);
 	}
 	return 1;
+}
+static int f_fromstring_NavigateToPageArguments(lua_State *L) {
+	fixedString_t URL;
+	enum TransitionType TransitionType;
+	struct NavigateToPageArguments self = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%s %s", URL, TransitionType)) {
+		case 2: 
+			strncpy(self.URL, URL, sizeof(self.URL));
+			lua_pop(L, (lua_pushstring(L, TransitionType), self.TransitionType = luaL_checkoption(L, -1, NULL, _TransitionType), 1));;
+			return (luaX_pushNavigateToPageArguments(L, &self), 1);
+		default:
+			return luaL_error(L, "Invalid format for NavigateToPageArguments: %s", luaL_checkstring(L, 1));
+	}
 }
 int f_NavigateToPageArguments___index(lua_State *L) {
 	stuct NavigateToPageArguments* self = luaX_checkNavigateToPageArguments(L, 1);
@@ -1140,12 +1388,12 @@ int f_NavigateToPageArguments___newindex(lua_State *L) {
 	stuct NavigateToPageArguments* self = luaX_checkNavigateToPageArguments(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 		case 0x7569633e: self->URL = luaL_checkstring(L, 3); return 0; // URL
-		case 0x84ff7372: self->TransitionType = luaL_checkoption(L, index, NULL, _TransitionType); return 0; // TransitionType
+		case 0x84ff7372: self->TransitionType = luaL_checkoption(L, 3, NULL, _TransitionType); return 0; // TransitionType
 	}
 	return luaL_error(L, "Unknown field in NavigateToPageArguments: %s", luaL_checkstring(L, 2));
 }
 static int f_NavigateToPageArguments___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_NavigateToPageArguments(L));  // remove NavigateToPageArguments from stack
+	return (lua_remove(L, 1), f_new_NavigateToPageArguments(L));  // remove NavigateToPageArguments from stack and call constructor
 }
 int luaopen_orca_NavigateToPageArguments(lua_State *L) {
 	luaL_newmetatable(L, "NavigateToPageArguments");
@@ -1163,7 +1411,6 @@ int luaopen_orca_NavigateToPageArguments(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
-
 void luaX_pushNavigateBackArguments(lua_State *L, NavigateBackArguments const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct NavigateBackArguments* self = lua_newuserdata(L, sizeof(struct NavigateBackArguments));
@@ -1179,11 +1426,22 @@ static int f_new_NavigateBackArguments(lua_State *L) {
 	memset(self, 0, sizeof(struct NavigateBackArguments));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "TransitionType"), self->TransitionType = luaL_checkoption(L, index, NULL, _TransitionType), 1));
+		lua_pop(L, (lua_getfield(L, 1, "TransitionType"), self->TransitionType = luaL_checkoption(L, -1, NULL, _TransitionType), 1));
 	} else {
-		self->TransitionType = luaL_checkoption(L, index, NULL, _TransitionType);
+		self->TransitionType = luaL_checkoption(L, 1, NULL, _TransitionType);
 	}
 	return 1;
+}
+static int f_fromstring_NavigateBackArguments(lua_State *L) {
+	enum TransitionType TransitionType;
+	struct NavigateBackArguments self = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%s", TransitionType)) {
+		case 1: 
+			lua_pop(L, (lua_pushstring(L, TransitionType), self.TransitionType = luaL_checkoption(L, -1, NULL, _TransitionType), 1));;
+			return (luaX_pushNavigateBackArguments(L, &self), 1);
+		default:
+			return luaL_error(L, "Invalid format for NavigateBackArguments: %s", luaL_checkstring(L, 1));
+	}
 }
 int f_NavigateBackArguments___index(lua_State *L) {
 	stuct NavigateBackArguments* self = luaX_checkNavigateBackArguments(L, 1);
@@ -1195,12 +1453,12 @@ int f_NavigateBackArguments___index(lua_State *L) {
 int f_NavigateBackArguments___newindex(lua_State *L) {
 	stuct NavigateBackArguments* self = luaX_checkNavigateBackArguments(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-		case 0x84ff7372: self->TransitionType = luaL_checkoption(L, index, NULL, _TransitionType); return 0; // TransitionType
+		case 0x84ff7372: self->TransitionType = luaL_checkoption(L, 3, NULL, _TransitionType); return 0; // TransitionType
 	}
 	return luaL_error(L, "Unknown field in NavigateBackArguments: %s", luaL_checkstring(L, 2));
 }
 static int f_NavigateBackArguments___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_NavigateBackArguments(L));  // remove NavigateBackArguments from stack
+	return (lua_remove(L, 1), f_new_NavigateBackArguments(L));  // remove NavigateBackArguments from stack and call constructor
 }
 int luaopen_orca_NavigateBackArguments(lua_State *L) {
 	luaL_newmetatable(L, "NavigateBackArguments");
@@ -1219,674 +1477,549 @@ int luaopen_orca_NavigateBackArguments(lua_State *L) {
 	return 1;
 }
 
-#ifndef __UIKIT_PROPERTIES_H__
-#define __UIKIT_PROPERTIES_H__
-// DataObject
-#define ID_DataObject 0xeb3560da
-#define GetDataObject(_P) ((struct DataObject*)((_P)?OBJ_GetComponent(_P,ID_DataObject):NULL))
-#define DataObject_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_DataObject,sizeof(struct DataObject),_N)
-enum DataObjectProperties {
-	kDataObjectNumProperties	
+static struct PropertyType const DataObjectProperties[kDataObjectNumProperties] = {
 };
-// AnimationPlayer
-#define ID_AnimationPlayer 0x81ac71d8
-#define GetAnimationPlayer(_P) ((struct AnimationPlayer*)((_P)?OBJ_GetComponent(_P,ID_AnimationPlayer):NULL))
-#define AnimationPlayer_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_AnimationPlayer,sizeof(struct AnimationPlayer),_N)
-#define ID_AnimationPlayer_AutoplayEnabled 0xbb4b7f90 // AnimationPlayer.AutoplayEnabled
-#define ID_AnimationPlayer_DurationScale 0x742d0c5c // AnimationPlayer.DurationScale
-#define ID_AnimationPlayer_PlaybackMode 0xb886a1a0 // AnimationPlayer.PlaybackMode
-#define ID_AnimationPlayer_RelativePlayback 0xb10f4317 // AnimationPlayer.RelativePlayback
-#define ID_AnimationPlayer_RepeatCount 0x02afaefc // AnimationPlayer.RepeatCount
-#define ID_AnimationPlayer_RestoreOriginalValuesAfterPlayback 0xb982b350 // AnimationPlayer.RestoreOriginalValuesAfterPlayback
-#define ID_AnimationPlayer_Timeline 0x17c5cb89 // AnimationPlayer.Timeline
-enum AnimationPlayerProperties {
-	kAnimationPlayerAutoplayEnabled,
-	kAnimationPlayerDurationScale,
-	kAnimationPlayerPlaybackMode,
-	kAnimationPlayerRelativePlayback,
-	kAnimationPlayerRepeatCount,
-	kAnimationPlayerRestoreOriginalValuesAfterPlayback,
-	kAnimationPlayerTimeline,
-	kAnimationPlayerNumProperties	
+static struct DataObject DataObjectDefaults = {
 };
-// Trigger
-#define ID_Trigger 0xa5ea0da3
-#define GetTrigger(_P) ((struct Trigger*)((_P)?OBJ_GetComponent(_P,ID_Trigger):NULL))
-#define Trigger_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Trigger,sizeof(struct Trigger),_N)
-#define ID_Trigger_Property 0x7a6c1a46 // Trigger.Property
-#define ID_Trigger_Value 0x5229f3cc // Trigger.Value
-enum TriggerProperties {
-	kTriggerProperty,
-	kTriggerValue,
-	kTriggerNumProperties	
+
+static struct PropertyType const AnimationPlayerProperties[kAnimationPlayerNumProperties] = {
+	DECL(0x706b62d9, AnimationPlayer, AutoplayEnabled, AutoplayEnabled, kDataTypeBool), // AnimationPlayer.AutoplayEnabled
+	DECL(0x9bcd7639, AnimationPlayer, DurationScale, DurationScale, kDataTypeFloat), // AnimationPlayer.DurationScale
+	DECL(0x234c71cf, AnimationPlayer, PlaybackMode, PlaybackMode, kDataTypeEnum, .Enums = _PlaybackMode), // AnimationPlayer.PlaybackMode
+	DECL(0x9b01fbb4, AnimationPlayer, RelativePlayback, RelativePlayback, kDataTypeBool), // AnimationPlayer.RelativePlayback
+	DECL(0xa3a5f0a1, AnimationPlayer, RepeatCount, RepeatCount, kDataTypeInt), // AnimationPlayer.RepeatCount
+	DECL(0x280cbcbb, AnimationPlayer, RestoreOriginalValuesAfterPlayback, RestoreOriginalValuesAfterPlayback, kDataTypeBool), // AnimationPlayer.RestoreOriginalValuesAfterPlayback
+	DECL(0x30d783f6, AnimationPlayer, Timeline, Timeline, kDataTypeComponent), // AnimationPlayer.Timeline
 };
-// OnPropertyChangedTrigger
-#define ID_OnPropertyChangedTrigger 0xde0f7949
-#define GetOnPropertyChangedTrigger(_P) ((struct OnPropertyChangedTrigger*)((_P)?OBJ_GetComponent(_P,ID_OnPropertyChangedTrigger):NULL))
-#define OnPropertyChangedTrigger_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_OnPropertyChangedTrigger,sizeof(struct OnPropertyChangedTrigger),_N)
-#define ID_OnPropertyChangedTrigger_SourceNode 0x5d55b664 // OnPropertyChangedTrigger.SourceNode
-#define ID_OnPropertyChangedTrigger_Property 0x8664fe08 // OnPropertyChangedTrigger.Property
-enum OnPropertyChangedTriggerProperties {
-	kOnPropertyChangedTriggerSourceNode,
-	kOnPropertyChangedTriggerProperty,
-	kOnPropertyChangedTriggerNumProperties	
+static struct AnimationPlayer AnimationPlayerDefaults = {
 };
-// OnAttachedTrigger
-#define ID_OnAttachedTrigger 0x677fe670
-#define GetOnAttachedTrigger(_P) ((struct OnAttachedTrigger*)((_P)?OBJ_GetComponent(_P,ID_OnAttachedTrigger):NULL))
-#define OnAttachedTrigger_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_OnAttachedTrigger,sizeof(struct OnAttachedTrigger),_N)
-enum OnAttachedTriggerProperties {
-	kOnAttachedTriggerNumProperties	
+LRESULT Trigger_PropertyChanged(struct Object*, struct Trigger*, wParam_t, PropertyChangedPtr);
+LRESULT Trigger_Attached(struct Object*, struct Trigger*, wParam_t, AttachedPtr);
+
+static struct PropertyType const TriggerProperties[kTriggerNumProperties] = {
+	DECL(0x5221f9e8, Trigger, Property, Property, kDataTypeFixed), // Trigger.Property
+	DECL(0xd147f96a, Trigger, Value, Value, kDataTypeInt), // Trigger.Value
 };
-// EventTrigger
-#define ID_EventTrigger 0x88bab1a1
-#define GetEventTrigger(_P) ((struct EventTrigger*)((_P)?OBJ_GetComponent(_P,ID_EventTrigger):NULL))
-#define EventTrigger_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_EventTrigger,sizeof(struct EventTrigger),_N)
-#define ID_EventTrigger_RoutedEvent 0x0c5f2982 // EventTrigger.RoutedEvent
-enum EventTriggerProperties {
-	kEventTriggerRoutedEvent,
-	kEventTriggerNumProperties	
+static struct Trigger TriggerDefaults = {
 };
-// Setter
-#define ID_Setter 0xf849aee6
-#define GetSetter(_P) ((struct Setter*)((_P)?OBJ_GetComponent(_P,ID_Setter):NULL))
-#define Setter_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Setter,sizeof(struct Setter),_N)
-#define ID_Setter_Trigger 0xd1fad954 // Setter.Trigger
-#define ID_Setter_Property 0x89d17a41 // Setter.Property
-#define ID_Setter_Value 0x8fd76d09 // Setter.Value
-enum SetterProperties {
-	kSetterTrigger,
-	kSetterProperty,
-	kSetterValue,
-	kSetterNumProperties	
+LRESULT OnPropertyChangedTrigger_PropertyChanged(struct Object*, struct OnPropertyChangedTrigger*, wParam_t, PropertyChangedPtr);
+
+static struct PropertyType const OnPropertyChangedTriggerProperties[kOnPropertyChangedTriggerNumProperties] = {
+	DECL(0x9ff03304, OnPropertyChangedTrigger, SourceNode, SourceNode, kDataTypeFixed), // OnPropertyChangedTrigger.SourceNode
+	DECL(0x5221f9e8, OnPropertyChangedTrigger, Property, Property, kDataTypeFixed), // OnPropertyChangedTrigger.Property
 };
-// Handler
-#define ID_Handler 0x04d66a13
-#define GetHandler(_P) ((struct Handler*)((_P)?OBJ_GetComponent(_P,ID_Handler):NULL))
-#define Handler_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Handler,sizeof(struct Handler),_N)
-#define ID_Handler_Trigger 0x0ef3b2a9 // Handler.Trigger
-#define ID_Handler_Target 0x2798724a // Handler.Target
-#define ID_Handler_Function 0x595dd2a7 // Handler.Function
-enum HandlerProperties {
-	kHandlerTrigger,
-	kHandlerTarget,
-	kHandlerFunction,
-	kHandlerNumProperties	
+static struct OnPropertyChangedTrigger OnPropertyChangedTriggerDefaults = {
 };
-// Brush
-#define ID_Brush 0xccbef093
-#define GetBrush(_P) ((struct Brush*)((_P)?OBJ_GetComponent(_P,ID_Brush):NULL))
-#define Brush_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Brush,sizeof(struct Brush),_N)
-enum BrushProperties {
-	kBrushNumProperties	
+LRESULT OnAttachedTrigger_Attached(struct Object*, struct OnAttachedTrigger*, wParam_t, AttachedPtr);
+
+static struct PropertyType const OnAttachedTriggerProperties[kOnAttachedTriggerNumProperties] = {
 };
-// ColorBrush
-#define ID_ColorBrush 0x2077ee58
-#define GetColorBrush(_P) ((struct ColorBrush*)((_P)?OBJ_GetComponent(_P,ID_ColorBrush):NULL))
-#define ColorBrush_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_ColorBrush,sizeof(struct ColorBrush),_N)
-#define ID_ColorBrush_Color 0xb7f26275 // ColorBrush.Color
-enum ColorBrushProperties {
-	kColorBrushColor,
-	kColorBrushNumProperties	
+static struct OnAttachedTrigger OnAttachedTriggerDefaults = {
 };
-// Node
-#define ID_Node 0x3468032d
-#define GetNode(_P) ((struct Node*)((_P)?OBJ_GetComponent(_P,ID_Node):NULL))
-#define Node_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Node,sizeof(struct Node),_N)
-#define ID_Node_Size 0xc8371588 // Node.Size
-#define ID_Node_HorizontalSize 0x8dd5feec // Node.HorizontalSize
-#define ID_Node_Width 0xc28a97d3 // Node.Width
-#define ID_Node_DesiredWidth 0x3aae910b // Node.DesiredWidth
-#define ID_Node_MinWidth 0x1ebf4605 // Node.MinWidth
-#define ID_Node_ActualWidth 0xf66f0265 // Node.ActualWidth
-#define ID_Node_ScrollWidth 0x7ccec714 // Node.ScrollWidth
-#define ID_Node_VerticalSize 0x41e70316 // Node.VerticalSize
-#define ID_Node_Height 0x5615e70e // Node.Height
-#define ID_Node_DesiredHeight 0x18b527e6 // Node.DesiredHeight
-#define ID_Node_MinHeight 0x7a45235c // Node.MinHeight
-#define ID_Node_ActualHeight 0xfca3503c // Node.ActualHeight
-#define ID_Node_ScrollHeight 0x4288c2c3 // Node.ScrollHeight
-#define ID_Node_DepthSize 0x86dbf73f // Node.DepthSize
-#define ID_Node_Depth 0x9aed1cde // Node.Depth
-#define ID_Node_DesiredDepth 0xbbf1c3e6 // Node.DesiredDepth
-#define ID_Node_MinDepth 0x63a6319c // Node.MinDepth
-#define ID_Node_ActualDepth 0x38d9f1fc // Node.ActualDepth
-#define ID_Node_ScrollDepth 0x580ae93d // Node.ScrollDepth
-#define ID_Node_Margin 0x3b2ed3f7 // Node.Margin
-#define ID_Node_HorizontalMargin 0xe4abc3eb // Node.HorizontalMargin
-#define ID_Node_MarginLeft 0xae3827de // Node.MarginLeft
-#define ID_Node_MarginRight 0xf5c8d933 // Node.MarginRight
-#define ID_Node_VerticalMargin 0x73189bc9 // Node.VerticalMargin
-#define ID_Node_MarginTop 0x720b58b6 // Node.MarginTop
-#define ID_Node_MarginBottom 0xd1367ec8 // Node.MarginBottom
-#define ID_Node_DepthMargin 0x45ad5268 // Node.DepthMargin
-#define ID_Node_MarginFront 0xb567a99e // Node.MarginFront
-#define ID_Node_MarginBack 0x81d2d3e0 // Node.MarginBack
-#define ID_Node_Padding 0xc7721c32 // Node.Padding
-#define ID_Node_HorizontalPadding 0x18bd87c6 // Node.HorizontalPadding
-#define ID_Node_PaddingLeft 0xbf34d9ff // Node.PaddingLeft
-#define ID_Node_PaddingRight 0x6f0935b0 // Node.PaddingRight
-#define ID_Node_VerticalPadding 0xb2aba4fc // Node.VerticalPadding
-#define ID_Node_PaddingTop 0x42f6b495 // Node.PaddingTop
-#define ID_Node_PaddingBottom 0x06044a21 // Node.PaddingBottom
-#define ID_Node_DepthPadding 0x70b717ef // Node.DepthPadding
-#define ID_Node_PaddingFront 0x0ac7b2b5 // Node.PaddingFront
-#define ID_Node_PaddingBack 0xd22b7a31 // Node.PaddingBack
-#define ID_Node_Border 0x2a3ce9f3 // Node.Border
-#define ID_Node_BorderWidth 0x52e9a9e5 // Node.BorderWidth
-#define ID_Node_HorizontalBorderWidth 0xae7c2f49 // Node.HorizontalBorderWidth
-#define ID_Node_BorderWidthLeft 0x86dcb870 // Node.BorderWidthLeft
-#define ID_Node_BorderWidthRight 0xfa6751e5 // Node.BorderWidthRight
-#define ID_Node_VerticalBorderWidth 0xd5d44d93 // Node.VerticalBorderWidth
-#define ID_Node_BorderWidthTop 0x4587603c // Node.BorderWidthTop
-#define ID_Node_BorderWidthBottom 0x31ac172a // Node.BorderWidthBottom
-#define ID_Node_DepthBorderWidth 0x0c1d04f8 // Node.DepthBorderWidth
-#define ID_Node_BorderWidthFront 0x62fdffd8 // Node.BorderWidthFront
-#define ID_Node_BorderWidthBack 0xd045eda2 // Node.BorderWidthBack
-#define ID_Node_BorderColor 0x85e5d732 // Node.BorderColor
-#define ID_Node_BorderStyle 0x88c40c44 // Node.BorderStyle
-#define ID_Node_BorderRadius 0x867eed01 // Node.BorderRadius
-#define ID_Node_BorderTopLeftRadius 0xa13859b5 // Node.BorderTopLeftRadius
-#define ID_Node_BorderTopRightRadius 0xbe725f4e // Node.BorderTopRightRadius
-#define ID_Node_BorderBottomRightRadius 0xe9173b64 // Node.BorderBottomRightRadius
-#define ID_Node_BorderBottomLeftRadius 0x9511fd4b // Node.BorderBottomLeftRadius
-#define ID_Node_Alignment 0x6ae48d82 // Node.Alignment
-#define ID_Node_HorizontalAlignment 0xe230b1ee // Node.HorizontalAlignment
-#define ID_Node_VerticalAlignment 0x1c45d168 // Node.VerticalAlignment
-#define ID_Node_DepthAlignment 0x5b191ce3 // Node.DepthAlignment
-#define ID_Node_Visible 0xe1936ee5 // Node.Visible
-#define ID_Node_QuickHide 0x7e26e1b0 // Node.QuickHide
-#define ID_Node_VisibleAmountInParent 0xbe0696b2 // Node.VisibleAmountInParent
-#define ID_Node_Opacity 0xb6882472 // Node.Opacity
-#define ID_Node_Tags 0xec56af24 // Node.Tags
-#define ID_Node_DataContext 0x80b43db0 // Node.DataContext
-enum NodeProperties {
-	kNodeSize,
-	kNodeHorizontalSize,
-	kNodeWidth,
-	kNodeDesiredWidth,
-	kNodeMinWidth,
-	kNodeActualWidth,
-	kNodeScrollWidth,
-	kNodeVerticalSize,
-	kNodeHeight,
-	kNodeDesiredHeight,
-	kNodeMinHeight,
-	kNodeActualHeight,
-	kNodeScrollHeight,
-	kNodeDepthSize,
-	kNodeDepth,
-	kNodeDesiredDepth,
-	kNodeMinDepth,
-	kNodeActualDepth,
-	kNodeScrollDepth,
-	kNodeMargin,
-	kNodeHorizontalMargin,
-	kNodeMarginLeft,
-	kNodeMarginRight,
-	kNodeVerticalMargin,
-	kNodeMarginTop,
-	kNodeMarginBottom,
-	kNodeDepthMargin,
-	kNodeMarginFront,
-	kNodeMarginBack,
-	kNodePadding,
-	kNodeHorizontalPadding,
-	kNodePaddingLeft,
-	kNodePaddingRight,
-	kNodeVerticalPadding,
-	kNodePaddingTop,
-	kNodePaddingBottom,
-	kNodeDepthPadding,
-	kNodePaddingFront,
-	kNodePaddingBack,
-	kNodeBorder,
-	kNodeBorderWidth,
-	kNodeHorizontalBorderWidth,
-	kNodeBorderWidthLeft,
-	kNodeBorderWidthRight,
-	kNodeVerticalBorderWidth,
-	kNodeBorderWidthTop,
-	kNodeBorderWidthBottom,
-	kNodeDepthBorderWidth,
-	kNodeBorderWidthFront,
-	kNodeBorderWidthBack,
-	kNodeBorderColor,
-	kNodeBorderStyle,
-	kNodeBorderRadius,
-	kNodeBorderTopLeftRadius,
-	kNodeBorderTopRightRadius,
-	kNodeBorderBottomRightRadius,
-	kNodeBorderBottomLeftRadius,
-	kNodeAlignment,
-	kNodeHorizontalAlignment,
-	kNodeVerticalAlignment,
-	kNodeDepthAlignment,
-	kNodeVisible,
-	kNodeQuickHide,
-	kNodeVisibleAmountInParent,
-	kNodeOpacity,
-	kNodeTags,
-	kNodeDataContext,
-	kNodeNumProperties	
+LRESULT EventTrigger_HandleMessage(struct Object*, struct EventTrigger*, wParam_t, HandleMessagePtr);
+
+static struct PropertyType const EventTriggerProperties[kEventTriggerNumProperties] = {
+	DECL(0x30d77e1a, EventTrigger, RoutedEvent, RoutedEvent, kDataTypeFixed), // EventTrigger.RoutedEvent
 };
-// TextRun
-#define ID_TextRun 0x4362c3d7
-#define GetTextRun(_P) ((struct TextRun*)((_P)?OBJ_GetComponent(_P,ID_TextRun):NULL))
-#define TextRun_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_TextRun,sizeof(struct TextRun),_N)
-#define ID_TextRun_Text 0xcba1ea6c // TextRun.Text
-#define ID_TextRun_Font 0x3900dfa2 // TextRun.Font
-#define ID_TextRun_FontWeight 0x69432eea // TextRun.FontWeight
-#define ID_TextRun_FontStyle 0xbcedda87 // TextRun.FontStyle
-#define ID_TextRun_FontSize 0x307249cb // TextRun.FontSize
-#define ID_TextRun_FontFamily 0x2991bcb6 // TextRun.FontFamily
-#define ID_TextRun_Underline 0x0b0d856d // TextRun.Underline
-#define ID_TextRun_UnderlineOffset 0x0a823d42 // TextRun.UnderlineOffset
-#define ID_TextRun_UnderlineWidth 0xc80a55b7 // TextRun.UnderlineWidth
-#define ID_TextRun_UnderlineColor 0xcacb7660 // TextRun.UnderlineColor
-#define ID_TextRun_LetterSpacing 0x83b2ad0c // TextRun.LetterSpacing
-#define ID_TextRun_LineHeight 0x45c78196 // TextRun.LineHeight
-#define ID_TextRun_CharacterSpacing 0xda8217e7 // TextRun.CharacterSpacing
-#define ID_TextRun_FixedCharacterWidth 0xb71765fa // TextRun.FixedCharacterWidth
-#define ID_TextRun_RemoveSideBearingsProperty 0xc20f6de6 // TextRun.RemoveSideBearingsProperty
-enum TextRunProperties {
-	kTextRunText,
-	kTextRunFont,
-	kTextRunFontWeight,
-	kTextRunFontStyle,
-	kTextRunFontSize,
-	kTextRunFontFamily,
-	kTextRunUnderline,
-	kTextRunUnderlineOffset,
-	kTextRunUnderlineWidth,
-	kTextRunUnderlineColor,
-	kTextRunLetterSpacing,
-	kTextRunLineHeight,
-	kTextRunCharacterSpacing,
-	kTextRunFixedCharacterWidth,
-	kTextRunRemoveSideBearingsProperty,
-	kTextRunNumProperties	
+static struct EventTrigger EventTriggerDefaults = {
 };
-// TextBlockConcept
-#define ID_TextBlockConcept 0x4903089d
-#define GetTextBlockConcept(_P) ((struct TextBlockConcept*)((_P)?OBJ_GetComponent(_P,ID_TextBlockConcept):NULL))
-#define TextBlockConcept_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_TextBlockConcept,sizeof(struct TextBlockConcept),_N)
-#define ID_TextBlockConcept_TextResourceID 0x7617ef4f // TextBlockConcept.TextResourceID
-#define ID_TextBlockConcept_TextResourceConfiguration 0x445231c0 // TextBlockConcept.TextResourceConfiguration
-#define ID_TextBlockConcept_PlaceholderText 0xadd54a35 // TextBlockConcept.PlaceholderText
-#define ID_TextBlockConcept_TextOverflow 0x9717f5b0 // TextBlockConcept.TextOverflow
-#define ID_TextBlockConcept_Placeholder 0x78889986 // TextBlockConcept.Placeholder
-#define ID_TextBlockConcept_PlaceholderColor 0x8f53db89 // TextBlockConcept.PlaceholderColor
-#define ID_TextBlockConcept_PlaceholderImage 0x2275c70b // TextBlockConcept.PlaceholderImage
-#define ID_TextBlockConcept_PlaceholderMaterial 0x16a577db // TextBlockConcept.PlaceholderMaterial
-#define ID_TextBlockConcept_UseFullFontHeight 0x95fcf16b // TextBlockConcept.UseFullFontHeight
-#define ID_TextBlockConcept_ConstrainContentHeight 0x8468e688 // TextBlockConcept.ConstrainContentHeight
-#define ID_TextBlockConcept_WordWrap 0x34b71f41 // TextBlockConcept.WordWrap
-#define ID_TextBlockConcept_TextWrapping 0x709f2f06 // TextBlockConcept.TextWrapping
-#define ID_TextBlockConcept_TextHorizontalAlignment 0xe480096b // TextBlockConcept.TextHorizontalAlignment
-#define ID_TextBlockConcept_TextVerticalAlignment 0xbf0260e5 // TextBlockConcept.TextVerticalAlignment
-enum TextBlockConceptProperties {
-	kTextBlockConceptTextResourceID,
-	kTextBlockConceptTextResourceConfiguration,
-	kTextBlockConceptPlaceholderText,
-	kTextBlockConceptTextOverflow,
-	kTextBlockConceptPlaceholder,
-	kTextBlockConceptPlaceholderColor,
-	kTextBlockConceptPlaceholderImage,
-	kTextBlockConceptPlaceholderMaterial,
-	kTextBlockConceptUseFullFontHeight,
-	kTextBlockConceptConstrainContentHeight,
-	kTextBlockConceptWordWrap,
-	kTextBlockConceptTextWrapping,
-	kTextBlockConceptTextHorizontalAlignment,
-	kTextBlockConceptTextVerticalAlignment,
-	kTextBlockConceptNumProperties	
+LRESULT Setter_Triggered(struct Object*, struct Setter*, wParam_t, TriggeredPtr);
+
+static struct PropertyType const SetterProperties[kSetterNumProperties] = {
+	DECL(0xa5ea0da3, Setter, Trigger, Trigger, kDataTypeComponent), // Setter.Trigger
+	DECL(0x5221f9e8, Setter, Property, Property, kDataTypeFixed), // Setter.Property
+	DECL(0xd147f96a, Setter, Value, Value, kDataTypeFixed), // Setter.Value
 };
-// Node2D
-#define ID_Node2D 0x6c63a2ab
-#define GetNode2D(_P) ((struct Node2D*)((_P)?OBJ_GetComponent(_P,ID_Node2D):NULL))
-#define Node2D_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Node2D,sizeof(struct Node2D),_N)
-#define ID_Node2D_LayoutTransform 0x7c78c87b // Node2D.LayoutTransform
-#define ID_Node2D_LayoutTransformtranslation 0xebd873fa // Node2D.LayoutTransformtranslation
-#define ID_Node2D_LayoutTransformrotation 0x771ce875 // Node2D.LayoutTransformrotation
-#define ID_Node2D_LayoutTransformscale 0x808ce873 // Node2D.LayoutTransformscale
-#define ID_Node2D_RenderTransform 0xa5faec05 // Node2D.RenderTransform
-#define ID_Node2D_RenderTransformtranslation 0x1835026c // Node2D.RenderTransformtranslation
-#define ID_Node2D_RenderTransformrotation 0x2afcfe9f // Node2D.RenderTransformrotation
-#define ID_Node2D_RenderTransformscale 0x144d2cb1 // Node2D.RenderTransformscale
-#define ID_Node2D_RenderTransformOrigin 0x43a9dbaf // Node2D.RenderTransformOrigin
-#define ID_Node2D_ContentOffset 0xb5cb609b // Node2D.ContentOffset
-#define ID_Node2D_Matrix 0x09a64b02 // Node2D.Matrix
-#define ID_Node2D_RenderTarget 0x441af9f6 // Node2D.RenderTarget
-#define ID_Node2D_Background 0x59353973 // Node2D.Background
-#define ID_Node2D_BackgroundColor 0x0796e5b2 // Node2D.BackgroundColor
-#define ID_Node2D_BackgroundImage 0xeb919ee8 // Node2D.BackgroundImage
-#define ID_Node2D_BackgroundMaterial 0x973fabea // Node2D.BackgroundMaterial
-#define ID_Node2D_Foreground 0xaeaca316 // Node2D.Foreground
-#define ID_Node2D_ForegroundColor 0xf890bd19 // Node2D.ForegroundColor
-#define ID_Node2D_ForegroundImage 0xd8914fbb // Node2D.ForegroundImage
-#define ID_Node2D_ForegroundMaterial 0x4f98b2ab // Node2D.ForegroundMaterial
-#define ID_Node2D_BoxShadow 0x47152f84 // Node2D.BoxShadow
-#define ID_Node2D_BoxShadowOffset 0xfa0a729f // Node2D.BoxShadowOffset
-#define ID_Node2D_BoxShadowBlurRadius 0x16c10efb // Node2D.BoxShadowBlurRadius
-#define ID_Node2D_BoxShadowSpreadRadius 0x8804c4f1 // Node2D.BoxShadowSpreadRadius
-#define ID_Node2D_BoxShadowColor 0xc855fc8b // Node2D.BoxShadowColor
-#define ID_Node2D_Overflow 0xd5704155 // Node2D.Overflow
-#define ID_Node2D_Overflowx 0x2cb699d7 // Node2D.Overflowx
-#define ID_Node2D_Overflowy 0x2bb69844 // Node2D.Overflowy
-#define ID_Node2D_Ring 0x039ac541 // Node2D.Ring
-#define ID_Node2D_RingOffset 0x674cacfe // Node2D.RingOffset
-#define ID_Node2D_RingWidth 0x1a88410b // Node2D.RingWidth
-#define ID_Node2D_RingColor 0xecbe3144 // Node2D.RingColor
-#define ID_Node2D_CompositionBrush 0x04f99755 // Node2D.CompositionBrush
-#define ID_Node2D_CompositionDesignSize 0x8a2688dc // Node2D.CompositionDesignSize
-#define ID_Node2D_SizeToContent 0xe55ab2cc // Node2D.SizeToContent
-#define ID_Node2D_OffscreenRendering 0x893fea40 // Node2D.OffscreenRendering
-#define ID_Node2D_ForceComposition 0x987f2560 // Node2D.ForceComposition
-#define ID_Node2D_CacheResult 0xfa85e55a // Node2D.CacheResult
-#define ID_Node2D_SnapToPixel 0x752cbd46 // Node2D.SnapToPixel
-#define ID_Node2D_ClipChildren 0xe3db0cc6 // Node2D.ClipChildren
-#define ID_Node2D_ContentStretch 0x09a28d25 // Node2D.ContentStretch
-#define ID_Node2D_Hovered 0x982d5e3e // Node2D.Hovered
-#define ID_Node2D_IgnoreHitTest 0x0943bf6a // Node2D.IgnoreHitTest
-#define ID_Node2D_ForegroundHint 0x1a0ea5e3 // Node2D.ForegroundHint
-enum Node2DProperties {
-	kNode2DLayoutTransform,
-	kNode2DLayoutTransformtranslation,
-	kNode2DLayoutTransformrotation,
-	kNode2DLayoutTransformscale,
-	kNode2DRenderTransform,
-	kNode2DRenderTransformtranslation,
-	kNode2DRenderTransformrotation,
-	kNode2DRenderTransformscale,
-	kNode2DRenderTransformOrigin,
-	kNode2DContentOffset,
-	kNode2DMatrix,
-	kNode2DRenderTarget,
-	kNode2DBackground,
-	kNode2DBackgroundColor,
-	kNode2DBackgroundImage,
-	kNode2DBackgroundMaterial,
-	kNode2DForeground,
-	kNode2DForegroundColor,
-	kNode2DForegroundImage,
-	kNode2DForegroundMaterial,
-	kNode2DBoxShadow,
-	kNode2DBoxShadowOffset,
-	kNode2DBoxShadowBlurRadius,
-	kNode2DBoxShadowSpreadRadius,
-	kNode2DBoxShadowColor,
-	kNode2DOverflow,
-	kNode2DOverflowx,
-	kNode2DOverflowy,
-	kNode2DRing,
-	kNode2DRingOffset,
-	kNode2DRingWidth,
-	kNode2DRingColor,
-	kNode2DCompositionBrush,
-	kNode2DCompositionDesignSize,
-	kNode2DSizeToContent,
-	kNode2DOffscreenRendering,
-	kNode2DForceComposition,
-	kNode2DCacheResult,
-	kNode2DSnapToPixel,
-	kNode2DClipChildren,
-	kNode2DContentStretch,
-	kNode2DHovered,
-	kNode2DIgnoreHitTest,
-	kNode2DForegroundHint,
-	kNode2DNumProperties	
+static struct Setter SetterDefaults = {
 };
-// PrefabView2D
-#define ID_PrefabView2D 0xe741d328
-#define GetPrefabView2D(_P) ((struct PrefabView2D*)((_P)?OBJ_GetComponent(_P,ID_PrefabView2D):NULL))
-#define PrefabView2D_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_PrefabView2D,sizeof(struct PrefabView2D),_N)
-#define ID_PrefabView2D_SCA 0x1ab11f83 // PrefabView2D.SCA
-#define ID_PrefabView2D_Prefab 0xef0b7c70 // PrefabView2D.Prefab
-enum PrefabView2DProperties {
-	kPrefabView2DSCA,
-	kPrefabView2DPrefab,
-	kPrefabView2DNumProperties	
+LRESULT Handler_Triggered(struct Object*, struct Handler*, wParam_t, TriggeredPtr);
+
+static struct PropertyType const HandlerProperties[kHandlerNumProperties] = {
+	DECL(0xa5ea0da3, Handler, Trigger, Trigger, kDataTypeComponent), // Handler.Trigger
+	DECL(0x8b67f168, Handler, Target, Target, kDataTypeObject), // Handler.Target
+	DECL(0x98a79a69, Handler, Function, Function, kDataTypeFixed), // Handler.Function
 };
-// TextBlock
-#define ID_TextBlock 0x40f4d77b
-#define GetTextBlock(_P) ((struct TextBlock*)((_P)?OBJ_GetComponent(_P,ID_TextBlock):NULL))
-#define TextBlock_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_TextBlock,sizeof(struct TextBlock),_N)
-enum TextBlockProperties {
-	kTextBlockNumProperties	
+static struct Handler HandlerDefaults = {
 };
-// Input
-#define ID_Input 0x9f93e11b
-#define GetInput(_P) ((struct Input*)((_P)?OBJ_GetComponent(_P,ID_Input):NULL))
-#define Input_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Input,sizeof(struct Input),_N)
-#define ID_Input_Name 0x56849c4c // Input.Name
-#define ID_Input_Type 0x84bfe237 // Input.Type
-#define ID_Input_Cursor 0xb89f7b0d // Input.Cursor
-#define ID_Input_Multiline 0xa42cd2d2 // Input.Multiline
-#define ID_Input_Checked 0x62ce5658 // Input.Checked
-enum InputProperties {
-	kInputName,
-	kInputType,
-	kInputCursor,
-	kInputMultiline,
-	kInputChecked,
-	kInputNumProperties	
+
+static struct PropertyType const BrushProperties[kBrushNumProperties] = {
 };
-// Button
-#define ID_Button 0x33881a91
-#define GetButton(_P) ((struct Button*)((_P)?OBJ_GetComponent(_P,ID_Button):NULL))
-#define Button_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Button,sizeof(struct Button),_N)
-#define ID_Button_Type 0x843eb785 // Button.Type
-enum ButtonProperties {
-	kButtonType,
-	kButtonNumProperties	
+static struct Brush BrushDefaults = {
 };
-// Label
-#define ID_Label 0x9eccf29d
-#define GetLabel(_P) ((struct Label*)((_P)?OBJ_GetComponent(_P,ID_Label):NULL))
-#define Label_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Label,sizeof(struct Label),_N)
-#define ID_Label_For 0x8ea77d4c // Label.For
-enum LabelProperties {
-	kLabelFor,
-	kLabelNumProperties	
+
+static struct PropertyType const ColorBrushProperties[kColorBrushNumProperties] = {
+	DECL(0xe5b43cf8, ColorBrush, Color, Color, kDataTypeStruct, .TypeString = "Color"), // ColorBrush.Color
 };
-// StackView
-#define ID_StackView 0x56aa550a
-#define GetStackView(_P) ((struct StackView*)((_P)?OBJ_GetComponent(_P,ID_StackView):NULL))
-#define StackView_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_StackView,sizeof(struct StackView),_N)
-#define ID_StackView_Reversed 0x4f7ea66a // StackView.Reversed
-#define ID_StackView_Direction 0x4f1430fd // StackView.Direction
-#define ID_StackView_AlignItems 0x4d502153 // StackView.AlignItems
-#define ID_StackView_JustifyContent 0x6b245371 // StackView.JustifyContent
-#define ID_StackView_Spacing 0xf9ff1755 // StackView.Spacing
-enum StackViewProperties {
-	kStackViewReversed,
-	kStackViewDirection,
-	kStackViewAlignItems,
-	kStackViewJustifyContent,
-	kStackViewSpacing,
-	kStackViewNumProperties	
+static struct ColorBrush ColorBrushDefaults = {
 };
-// Form
-#define ID_Form 0xc0851367
-#define GetForm(_P) ((struct Form*)((_P)?OBJ_GetComponent(_P,ID_Form):NULL))
-#define Form_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Form,sizeof(struct Form),_N)
-enum FormProperties {
-	kFormNumProperties	
+LRESULT Node_ThemeChanged(struct Object*, struct Node*, wParam_t, ThemeChangedPtr);
+LRESULT Node_GetSize(struct Object*, struct Node*, wParam_t, GetSizePtr);
+LRESULT Node_IsVisible(struct Object*, struct Node*, wParam_t, IsVisiblePtr);
+
+static struct PropertyType const NodeProperties[kNodeNumProperties] = {
+	DECL(0xa6478e7c, Node, Size, Size, kDataTypeStruct, .TypeString = "SizeShorthand"), // Node.Size
+	DECL(0x5e3799b1, Node, HorizontalSize, Size.Axis[0], kDataTypeStruct, .TypeString = "SizeAxisShorthand"), // Node.HorizontalSize
+	DECL(0x0b9623c7, Node, Width, Size.Axis[0].Requested, kDataTypeFloat), // Node.Width
+	DECL(0x96650259, Node, DesiredWidth, Size.Axis[0].Desired, kDataTypeFloat), // Node.DesiredWidth
+	DECL(0x93c257ab, Node, MinWidth, Size.Axis[0].Min, kDataTypeFloat), // Node.MinWidth
+	DECL(0x36c6f09b, Node, ActualWidth, Size.Axis[0].Actual, kDataTypeFloat), // Node.ActualWidth
+	DECL(0x79135e00, Node, ScrollWidth, Size.Axis[0].Scroll, kDataTypeFloat), // Node.ScrollWidth
+	DECL(0x1a3b003c, Node, VerticalSize, Size.Axis[1], kDataTypeStruct, .TypeString = "SizeAxisShorthand"), // Node.VerticalSize
+	DECL(0x2474776c, Node, Height, Size.Axis[1].Requested, kDataTypeFloat), // Node.Height
+	DECL(0x9c4bdff6, Node, DesiredHeight, Size.Axis[1].Desired, kDataTypeFloat), // Node.DesiredHeight
+	DECL(0x8f41b1f0, Node, MinHeight, Size.Axis[1].Min, kDataTypeFloat), // Node.MinHeight
+	DECL(0x8a37261a, Node, ActualHeight, Size.Axis[1].Actual, kDataTypeFloat), // Node.ActualHeight
+	DECL(0x8cdd00f5, Node, ScrollHeight, Size.Axis[1].Scroll, kDataTypeFloat), // Node.ScrollHeight
+	DECL(0x1a32b177, Node, DepthSize, Size.Axis[2], kDataTypeStruct, .TypeString = "SizeAxisShorthand"), // Node.DepthSize
+	DECL(0x5eeb6429, Node, Depth, Size.Axis[2].Requested, kDataTypeFloat), // Node.Depth
+	DECL(0xb57663c3, Node, DesiredDepth, Size.Axis[2].Desired, kDataTypeFloat), // Node.DesiredDepth
+	DECL(0x40804651, Node, MinDepth, Size.Axis[2].Min, kDataTypeFloat), // Node.MinDepth
+	DECL(0xc8c32e9d, Node, ActualDepth, Size.Axis[2].Actual, kDataTypeFloat), // Node.ActualDepth
+	DECL(0x4764e986, Node, ScrollDepth, Size.Axis[2].Scroll, kDataTypeFloat), // Node.ScrollDepth
+	DECL(0xc4cc799b, Node, Margin, Margin, kDataTypeStruct, .TypeString = "MarginShorthand"), // Node.Margin
+	DECL(0x935c66f8, Node, HorizontalMargin, Margin.Axis[0], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.HorizontalMargin
+	DECL(0x8c225869, Node, MarginLeft, Margin.Axis[0].Left, kDataTypeFloat), // Node.MarginLeft
+	DECL(0x1efb398a, Node, MarginRight, Margin.Axis[0].Right, kDataTypeFloat), // Node.MarginRight
+	DECL(0x975a2ead, Node, VerticalMargin, Margin.Axis[1], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.VerticalMargin
+	DECL(0x2dd3ed28, Node, MarginTop, Margin.Axis[1].Left, kDataTypeFloat), // Node.MarginTop
+	DECL(0xf5942f3d, Node, MarginBottom, Margin.Axis[1].Right, kDataTypeFloat), // Node.MarginBottom
+	DECL(0x57578b56, Node, DepthMargin, Margin.Axis[2], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.DepthMargin
+	DECL(0x7d0c55b3, Node, MarginFront, Margin.Axis[2].Left, kDataTypeFloat), // Node.MarginFront
+	DECL(0xc97d4cbc, Node, MarginBack, Margin.Axis[2].Right, kDataTypeFloat), // Node.MarginBack
+	DECL(0x0736dd56, Node, Padding, Padding, kDataTypeStruct, .TypeString = "MarginShorthand"), // Node.Padding
+	DECL(0x983bed47, Node, HorizontalPadding, Padding.Axis[0], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.HorizontalPadding
+	DECL(0xc8bdc1ce, Node, PaddingLeft, Padding.Axis[0].Left, kDataTypeFloat), // Node.PaddingLeft
+	DECL(0x09958923, Node, PaddingRight, Padding.Axis[0].Right, kDataTypeFloat), // Node.PaddingRight
+	DECL(0x9c3e322a, Node, VerticalPadding, Padding.Axis[1], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.VerticalPadding
+	DECL(0xf0c0da87, Node, PaddingTop, Padding.Axis[1].Left, kDataTypeFloat), // Node.PaddingTop
+	DECL(0xf01ed4b8, Node, PaddingBottom, Padding.Axis[1].Right, kDataTypeFloat), // Node.PaddingBottom
+	DECL(0x5c400c01, Node, DepthPadding, Padding.Axis[2], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.DepthPadding
+	DECL(0xe3b770ac, Node, PaddingFront, Padding.Axis[2].Left, kDataTypeFloat), // Node.PaddingFront
+	DECL(0x4ef0c5b9, Node, PaddingBack, Padding.Axis[2].Right, kDataTypeFloat), // Node.PaddingBack
+	DECL(0x0cad6f57, Node, Border, Border, kDataTypeStruct, .TypeString = "BorderShorthand"), // Node.Border
+	DECL(0x0aaf7cf9, Node, BorderWidth, Border.Width, kDataTypeStruct, .TypeString = "MarginShorthand"), // Node.BorderWidth
+	DECL(0x8e4cc862, Node, HorizontalBorderWidth, Border.Width.Axis[0], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.HorizontalBorderWidth
+	DECL(0xed2c25cf, Node, BorderWidthLeft, Border.Width.Axis[0].Left, kDataTypeFloat), // Node.BorderWidthLeft
+	DECL(0x6edcef40, Node, BorderWidthRight, Border.Width.Axis[0].Right, kDataTypeFloat), // Node.BorderWidthRight
+	DECL(0xca49553f, Node, VerticalBorderWidth, Border.Width.Axis[1], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.VerticalBorderWidth
+	DECL(0x4eca22b6, Node, BorderWidthTop, Border.Width.Axis[1].Left, kDataTypeFloat), // Node.BorderWidthTop
+	DECL(0x93552aeb, Node, BorderWidthBottom, Border.Width.Axis[1].Right, kDataTypeFloat), // Node.BorderWidthBottom
+	DECL(0xca51a404, Node, DepthBorderWidth, Border.Width.Axis[2], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.DepthBorderWidth
+	DECL(0x11c3e045, Node, BorderWidthFront, Border.Width.Axis[2].Left, kDataTypeFloat), // Node.BorderWidthFront
+	DECL(0xd481189e, Node, BorderWidthBack, Border.Width.Axis[2].Right, kDataTypeFloat), // Node.BorderWidthBack
+	DECL(0x933e48c6, Node, BorderColor, Border.Color, kDataTypeStruct, .TypeString = "Color"), // Node.BorderColor
+	DECL(0x390b4488, Node, BorderStyle, Border.Style, kDataTypeEnum, .Enums = _Style), // Node.BorderStyle
+	DECL(0xb8e9fe05, Node, BorderRadius, Border.Radius, kDataTypeStruct, .TypeString = "BorderRadiusShorthand"), // Node.BorderRadius
+	DECL(0x319ccd4b, Node, BorderTopLeftRadius, Border.Radius.TopLeftRadius, kDataTypeFloat), // Node.BorderTopLeftRadius
+	DECL(0x579cab64, Node, BorderTopRightRadius, Border.Radius.TopRightRadius, kDataTypeFloat), // Node.BorderTopRightRadius
+	DECL(0xcd47000e, Node, BorderBottomRightRadius, Border.Radius.BottomRightRadius, kDataTypeFloat), // Node.BorderBottomRightRadius
+	DECL(0xabbc6175, Node, BorderBottomLeftRadius, Border.Radius.BottomLeftRadius, kDataTypeFloat), // Node.BorderBottomLeftRadius
+	DECL(0xd66abafe, Node, Alignment, Alignment, kDataTypeStruct, .TypeString = "AlignmentShorthand"), // Node.Alignment
+	DECL(0x464aee5f, Node, HorizontalAlignment, Alignment.Axis[0], kDataTypeInt), // Node.HorizontalAlignment
+	DECL(0x8a4d9802, Node, VerticalAlignment, Alignment.Axis[1], kDataTypeInt), // Node.VerticalAlignment
+	DECL(0x8a4fd699, Node, DepthAlignment, Alignment.Axis[2], kDataTypeInt), // Node.DepthAlignment
+	DECL(0x592a4941, Node, Visible, Visible, kDataTypeBool), // Node.Visible
+	DECL(0x20d9ba7c, Node, QuickHide, QuickHide, kDataTypeBool), // Node.QuickHide
+	DECL(0xa0b06d26, Node, VisibleAmountInParent, VisibleAmountInParent, kDataTypeFloat), // Node.VisibleAmountInParent
+	DECL(0xde1f0406, Node, Opacity, Opacity, kDataTypeFloat), // Node.Opacity
+	DECL(0x76bda0c0, Node, Tags, Tags, kDataTypeObjectTags), // Node.Tags
+	DECL(0xa310331c, Node, DataContext, DataContext, kDataTypeComponent), // Node.DataContext
 };
-// Control
-#define ID_Control 0x8347bf3e
-#define GetControl(_P) ((struct Control*)((_P)?OBJ_GetComponent(_P,ID_Control):NULL))
-#define Control_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Control,sizeof(struct Control),_N)
-#define ID_Control_Pressed 0x0bfbf446 // Control.Pressed
-#define ID_Control_Disabled 0x08680018 // Control.Disabled
-#define ID_Control_Hovered 0xd61b4c93 // Control.Hovered
-#define ID_Control_Focused 0x9d297c69 // Control.Focused
-#define ID_Control_Value 0xbb44f9c1 // Control.Value
-#define ID_Control_Scale 0xb46d6752 // Control.Scale
-enum ControlProperties {
-	kControlPressed,
-	kControlDisabled,
-	kControlHovered,
-	kControlFocused,
-	kControlValue,
-	kControlScale,
-	kControlNumProperties	
+static struct Node NodeDefaults = {
+  .Visible = TRUE,
+  .VisibleAmountInParent = 1,
+  .Opacity = 1,
 };
-// Screen
-#define ID_Screen 0x9bd8c631
-#define GetScreen(_P) ((struct Screen*)((_P)?OBJ_GetComponent(_P,ID_Screen):NULL))
-#define Screen_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Screen,sizeof(struct Screen),_N)
-#define ID_Screen_ClearColor 0x1bfc36dd // Screen.ClearColor
-#define ID_Screen_ResizeMode 0xc3203446 // Screen.ResizeMode
-enum ScreenProperties {
-	kScreenClearColor,
-	kScreenResizeMode,
-	kScreenNumProperties	
+
+static struct PropertyType const TextRunProperties[kTextRunNumProperties] = {
+	DECL(0x3e142d5e, TextRun, Text, Text, kDataTypeFixed), // TextRun.Text
+	DECL(0xa77a5eb0, TextRun, Font, Font, kDataTypeStruct, .TypeString = "FontShorthand"), // TextRun.Font
+	DECL(0xd0616ad0, TextRun, FontWeight, Font.Weight, kDataTypeEnum, .Enums = _Weight), // TextRun.FontWeight
+	DECL(0x6c164db5, TextRun, FontStyle, Font.Style, kDataTypeEnum, .Enums = _Style), // TextRun.FontStyle
+	DECL(0xa26a44e1, TextRun, FontSize, Font.Size, kDataTypeFloat), // TextRun.FontSize
+	DECL(0xf6319880, TextRun, FontFamily, Font.Family, kDataTypeComponent), // TextRun.FontFamily
+	DECL(0x9a85011f, TextRun, Underline, Underline, kDataTypeStruct, .TypeString = "UnderlineShorthand"), // TextRun.Underline
+	DECL(0x34ec6004, TextRun, UnderlineOffset, Underline.Offset, kDataTypeFloat), // TextRun.UnderlineOffset
+	DECL(0xee253b91, TextRun, UnderlineWidth, Underline.Width, kDataTypeFloat), // TextRun.UnderlineWidth
+	DECL(0x00c40cce, TextRun, UnderlineColor, Underline.Color, kDataTypeStruct, .TypeString = "Color"), // TextRun.UnderlineColor
+	DECL(0x44b2c826, TextRun, LetterSpacing, LetterSpacing, kDataTypeFloat), // TextRun.LetterSpacing
+	DECL(0xb5107238, TextRun, LineHeight, LineHeight, kDataTypeFloat), // TextRun.LineHeight
+	DECL(0x04055b71, TextRun, CharacterSpacing, CharacterSpacing, kDataTypeFloat), // TextRun.CharacterSpacing
+	DECL(0xfe97e678, TextRun, FixedCharacterWidth, FixedCharacterWidth, kDataTypeFloat), // TextRun.FixedCharacterWidth
+	DECL(0xbd23c708, TextRun, RemoveSideBearingsProperty, RemoveSideBearingsProperty, kDataTypeBool), // TextRun.RemoveSideBearingsProperty
 };
-// Cinematic
-#define ID_Cinematic 0xc04cee0e
-#define GetCinematic(_P) ((struct Cinematic*)((_P)?OBJ_GetComponent(_P,ID_Cinematic):NULL))
-#define Cinematic_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Cinematic,sizeof(struct Cinematic),_N)
-#define ID_Cinematic_FileName 0xabe998d5 // Cinematic.FileName
-#define ID_Cinematic_FrameRate 0xead5c9cf // Cinematic.FrameRate
-#define ID_Cinematic_NumFrames 0x46a2037a // Cinematic.NumFrames
-#define ID_Cinematic_FadeOut 0x314b07da // Cinematic.FadeOut
-enum CinematicProperties {
-	kCinematicFileName,
-	kCinematicFrameRate,
-	kCinematicNumFrames,
-	kCinematicFadeOut,
-	kCinematicNumProperties	
+static struct TextRun TextRunDefaults = {
+  .Font = .Size=DEFAULT_FONT_SIZE,
+  .LineHeight = 1,
 };
-// Grid
-#define ID_Grid 0x2fb366b1
-#define GetGrid(_P) ((struct Grid*)((_P)?OBJ_GetComponent(_P,ID_Grid):NULL))
-#define Grid_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Grid,sizeof(struct Grid),_N)
-#define ID_Grid_Columns 0x5d28e334 // Grid.Columns
-#define ID_Grid_Rows 0x1a2b78b0 // Grid.Rows
-#define ID_Grid_Direction 0x252effe2 // Grid.Direction
-#define ID_Grid_Spacing 0x5d2ffdd6 // Grid.Spacing
-#define ID_Grid_CellWidth 0x534e3267 // Grid.CellWidth
-#define ID_Grid_CellHeight 0xa97554ea // Grid.CellHeight
-enum GridProperties {
-	kGridColumns,
-	kGridRows,
-	kGridDirection,
-	kGridSpacing,
-	kGridCellWidth,
-	kGridCellHeight,
-	kGridNumProperties	
+LRESULT TextBlockConcept_Create(struct Object*, struct TextBlockConcept*, wParam_t, CreatePtr);
+LRESULT TextBlockConcept_Destroy(struct Object*, struct TextBlockConcept*, wParam_t, DestroyPtr);
+LRESULT TextBlockConcept_MakeText(struct Object*, struct TextBlockConcept*, wParam_t, MakeTextPtr);
+
+static struct PropertyType const TextBlockConceptProperties[kTextBlockConceptNumProperties] = {
+	DECL(0x43c114fb, TextBlockConcept, TextResourceID, TextResourceID, kDataTypeFixed), // TextBlockConcept.TextResourceID
+	DECL(0x73dd50ec, TextBlockConcept, TextResourceConfiguration, TextResourceConfiguration, kDataTypeFixed), // TextBlockConcept.TextResourceConfiguration
+	DECL(0xdccaa011, TextBlockConcept, PlaceholderText, PlaceholderText, kDataTypeFixed), // TextBlockConcept.PlaceholderText
+	DECL(0x3dcadc9c, TextBlockConcept, TextOverflow, TextOverflow, kDataTypeEnum, .Enums = _TextOverflow), // TextBlockConcept.TextOverflow
+	DECL(0x8987413a, TextBlockConcept, Placeholder, Placeholder, kDataTypeStruct, .TypeString = "BrushShorthand"), // TextBlockConcept.Placeholder
+	DECL(0xb272976d, TextBlockConcept, PlaceholderColor, Placeholder.Color, kDataTypeStruct, .TypeString = "Color"), // TextBlockConcept.PlaceholderColor
+	DECL(0x6b519bcf, TextBlockConcept, PlaceholderImage, Placeholder.Image, kDataTypeComponent), // TextBlockConcept.PlaceholderImage
+	DECL(0x6d974ebf, TextBlockConcept, PlaceholderMaterial, Placeholder.Material, kDataTypeComponent), // TextBlockConcept.PlaceholderMaterial
+	DECL(0x27e35097, TextBlockConcept, UseFullFontHeight, UseFullFontHeight, kDataTypeBool), // TextBlockConcept.UseFullFontHeight
+	DECL(0xda466bac, TextBlockConcept, ConstrainContentHeight, ConstrainContentHeight, kDataTypeBool), // TextBlockConcept.ConstrainContentHeight
+	DECL(0x468540fd, TextBlockConcept, WordWrap, WordWrap, kDataTypeBool), // TextBlockConcept.WordWrap
+	DECL(0x65cdc8f2, TextBlockConcept, TextWrapping, TextWrapping, kDataTypeEnum, .Enums = _TextWrapping), // TextBlockConcept.TextWrapping
+	DECL(0xf46faf37, TextBlockConcept, TextHorizontalAlignment, TextHorizontalAlignment, kDataTypeEnum, .Enums = _TextHorizontalAlignment), // TextBlockConcept.TextHorizontalAlignment
+	DECL(0xbc8a8a99, TextBlockConcept, TextVerticalAlignment, TextVerticalAlignment, kDataTypeEnum, .Enums = _TextVerticalAlignment), // TextBlockConcept.TextVerticalAlignment
 };
-// ImageView
-#define ID_ImageView 0xfe686eb3
-#define GetImageView(_P) ((struct ImageView*)((_P)?OBJ_GetComponent(_P,ID_ImageView):NULL))
-#define ImageView_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_ImageView,sizeof(struct ImageView),_N)
-#define ID_ImageView_Src 0xe2534f6b // ImageView.Src
-#define ID_ImageView_Image 0x0b666f9c // ImageView.Image
-#define ID_ImageView_Edges 0xbc1ab5c3 // ImageView.Edges
-#define ID_ImageView_Insets 0xddc76755 // ImageView.Insets
-#define ID_ImageView_Viewbox 0x4fff923f // ImageView.Viewbox
-#define ID_ImageView_Stretch 0x13aa1da4 // ImageView.Stretch
-enum ImageViewProperties {
-	kImageViewSrc,
-	kImageViewImage,
-	kImageViewEdges,
-	kImageViewInsets,
-	kImageViewViewbox,
-	kImageViewStretch,
-	kImageViewNumProperties	
+static struct TextBlockConcept TextBlockConceptDefaults = {
+  .UseFullFontHeight = TRUE,
+  .ConstrainContentHeight = TRUE,
 };
-// NinePatchImage
-#define ID_NinePatchImage 0xbd86cb1e
-#define GetNinePatchImage(_P) ((struct NinePatchImage*)((_P)?OBJ_GetComponent(_P,ID_NinePatchImage):NULL))
-#define NinePatchImage_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_NinePatchImage,sizeof(struct NinePatchImage),_N)
-#define ID_NinePatchImage_StretchTypeTop 0x9375dc9c // NinePatchImage.StretchTypeTop
-#define ID_NinePatchImage_StretchTypeBottom 0x400be60a // NinePatchImage.StretchTypeBottom
-#define ID_NinePatchImage_StretchTypeLeft 0xee979d50 // NinePatchImage.StretchTypeLeft
-#define ID_NinePatchImage_StretchTypeRight 0x659e0345 // NinePatchImage.StretchTypeRight
-#define ID_NinePatchImage_StretchTypeCenter 0xcab1ae64 // NinePatchImage.StretchTypeCenter
-#define ID_NinePatchImage_ImageTopLeft 0x4b2c37e5 // NinePatchImage.ImageTopLeft
-#define ID_NinePatchImage_ImageTop 0x5e5bf7e4 // NinePatchImage.ImageTop
-#define ID_NinePatchImage_ImageTopRight 0xc001b5be // NinePatchImage.ImageTopRight
-#define ID_NinePatchImage_ImageLeft 0x6b2a74a8 // NinePatchImage.ImageLeft
-#define ID_NinePatchImage_ImageCenter 0x1811e0dc // NinePatchImage.ImageCenter
-#define ID_NinePatchImage_ImageRight 0x04cb7dbd // NinePatchImage.ImageRight
-#define ID_NinePatchImage_ImageBottomLeft 0xe446356f // NinePatchImage.ImageBottomLeft
-#define ID_NinePatchImage_ImageBottom 0xc398b8c2 // NinePatchImage.ImageBottom
-#define ID_NinePatchImage_ImageBottomRight 0x87575d60 // NinePatchImage.ImageBottomRight
-enum NinePatchImageProperties {
-	kNinePatchImageStretchTypeTop,
-	kNinePatchImageStretchTypeBottom,
-	kNinePatchImageStretchTypeLeft,
-	kNinePatchImageStretchTypeRight,
-	kNinePatchImageStretchTypeCenter,
-	kNinePatchImageImageTopLeft,
-	kNinePatchImageImageTop,
-	kNinePatchImageImageTopRight,
-	kNinePatchImageImageLeft,
-	kNinePatchImageImageCenter,
-	kNinePatchImageImageRight,
-	kNinePatchImageImageBottomLeft,
-	kNinePatchImageImageBottom,
-	kNinePatchImageImageBottomRight,
-	kNinePatchImageNumProperties	
+LRESULT Node2D_UpdateMatrix(struct Object*, struct Node2D*, wParam_t, UpdateMatrixPtr);
+LRESULT Node2D_Create(struct Object*, struct Node2D*, wParam_t, CreatePtr);
+LRESULT Node2D_Destroy(struct Object*, struct Node2D*, wParam_t, DestroyPtr);
+LRESULT Node2D_UpdateGeometry(struct Object*, struct Node2D*, wParam_t, UpdateGeometryPtr);
+LRESULT Node2D_DrawBrush(struct Object*, struct Node2D*, wParam_t, DrawBrushPtr);
+LRESULT Node2D_HandleMessage(struct Object*, struct Node2D*, wParam_t, HandleMessagePtr);
+LRESULT Node2D_ScrollWheel(struct Object*, struct Node2D*, wParam_t, ScrollWheelPtr);
+LRESULT Node2D_MouseMoved(struct Object*, struct Node2D*, wParam_t, MouseMovedPtr);
+LRESULT Node2D_HitTest(struct Object*, struct Node2D*, wParam_t, HitTestPtr);
+LRESULT Node2D_Measure(struct Object*, struct Node2D*, wParam_t, MeasurePtr);
+LRESULT Node2D_Arrange(struct Object*, struct Node2D*, wParam_t, ArrangePtr);
+LRESULT Node2D_MeasureOverride(struct Object*, struct Node2D*, wParam_t, MeasureOverridePtr);
+LRESULT Node2D_ArrangeOverride(struct Object*, struct Node2D*, wParam_t, ArrangeOverridePtr);
+
+static struct PropertyType const Node2DProperties[kNode2DNumProperties] = {
+	DECL(0x3f19bf01, Node2D, LayoutTransform, LayoutTransform, kDataTypeStruct, .TypeString = "Transform2D"), // Node2D.LayoutTransform
+	DECL(0xc0fba640, Node2D, LayoutTransformtranslation, LayoutTransform.translation, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.LayoutTransformtranslation
+	DECL(0x99152e23, Node2D, LayoutTransformrotation, LayoutTransform.rotation, kDataTypeFloat), // Node2D.LayoutTransformrotation
+	DECL(0x8831b2f5, Node2D, LayoutTransformscale, LayoutTransform.scale, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.LayoutTransformscale
+	DECL(0xe9e55063, Node2D, RenderTransform, RenderTransform, kDataTypeStruct, .TypeString = "Transform2D"), // Node2D.RenderTransform
+	DECL(0x14c0d062, Node2D, RenderTransformtranslation, RenderTransform.translation, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.RenderTransformtranslation
+	DECL(0xdd7a3a1d, Node2D, RenderTransformrotation, RenderTransform.rotation, kDataTypeFloat), // Node2D.RenderTransformrotation
+	DECL(0x75f353bb, Node2D, RenderTransformscale, RenderTransform.scale, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.RenderTransformscale
+	DECL(0xdc65ec6d, Node2D, RenderTransformOrigin, RenderTransformOrigin, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.RenderTransformOrigin
+	DECL(0x35a57c45, Node2D, ContentOffset, ContentOffset, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.ContentOffset
+	DECL(0xe9d1810c, Node2D, Matrix, Matrix, kDataTypeStruct, .TypeString = "Matrix3D"), // Node2D.Matrix
+	DECL(0x64abadd0, Node2D, RenderTarget, RenderTarget, kDataTypeComponent), // Node2D.RenderTarget
+	DECL(0xbafc0abd, Node2D, Background, Background, kDataTypeStruct, .TypeString = "BrushShorthand"), // Node2D.Background
+	DECL(0xd1496d30, Node2D, BackgroundColor, Background.Color, kDataTypeStruct, .TypeString = "Color"), // Node2D.BackgroundColor
+	DECL(0xe0bbc082, Node2D, BackgroundImage, Background.Image, kDataTypeComponent), // Node2D.BackgroundImage
+	DECL(0x843e6b88, Node2D, BackgroundMaterial, Background.Material, kDataTypeComponent), // Node2D.BackgroundMaterial
+	DECL(0xd96b36e0, Node2D, Foreground, Foreground, kDataTypeStruct, .TypeString = "BrushShorthand"), // Node2D.Foreground
+	DECL(0x94392057, Node2D, ForegroundColor, Foreground.Color, kDataTypeStruct, .TypeString = "Color"), // Node2D.ForegroundColor
+	DECL(0xb03161dd, Node2D, ForegroundImage, Foreground.Image, kDataTypeComponent), // Node2D.ForegroundImage
+	DECL(0xa654aab9, Node2D, ForegroundMaterial, Foreground.Material, kDataTypeComponent), // Node2D.ForegroundMaterial
+	DECL(0xce1f078a, Node2D, BoxShadow, BoxShadow, kDataTypeStruct, .TypeString = "ShadowShorthand"), // Node2D.BoxShadow
+	DECL(0x047c9a3d, Node2D, BoxShadowOffset, BoxShadow.Offset, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.BoxShadowOffset
+	DECL(0x623ff5f9, Node2D, BoxShadowBlurRadius, BoxShadow.BlurRadius, kDataTypeFloat), // Node2D.BoxShadowBlurRadius
+	DECL(0xe284b26f, Node2D, BoxShadowSpreadRadius, BoxShadow.SpreadRadius, kDataTypeFloat), // Node2D.BoxShadowSpreadRadius
+	DECL(0xe0ae423d, Node2D, BoxShadowColor, BoxShadow.Color, kDataTypeStruct, .TypeString = "Color"), // Node2D.BoxShadowColor
+	DECL(0x3cf02b8b, Node2D, Overflow, Overflow, kDataTypeStruct, .TypeString = "OverflowShorthand"), // Node2D.Overflow
+	DECL(0xe1152f89, Node2D, Overflowx, Overflow.x, kDataTypeEnum, .Enums = _x), // Node2D.Overflowx
+	DECL(0xe0152df6, Node2D, Overflowy, Overflow.y, kDataTypeEnum, .Enums = _y), // Node2D.Overflowy
+	DECL(0x7787478b, Node2D, Ring, Ring, kDataTypeStruct, .TypeString = "RingShorthand"), // Node2D.Ring
+	DECL(0xfd700608, Node2D, RingOffset, Ring.Offset, kDataTypeFloat), // Node2D.RingOffset
+	DECL(0x5fff552d, Node2D, RingWidth, Ring.Width, kDataTypeFloat), // Node2D.RingWidth
+	DECL(0x97d6200a, Node2D, RingColor, Ring.Color, kDataTypeStruct, .TypeString = "Color"), // Node2D.RingColor
+	DECL(0x74622217, Node2D, CompositionBrush, CompositionBrush, kDataTypeComponent), // Node2D.CompositionBrush
+	DECL(0x5488c4f2, Node2D, CompositionDesignSize, CompositionDesignSize, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.CompositionDesignSize
+	DECL(0x45513b32, Node2D, SizeToContent, SizeToContent, kDataTypeBool), // Node2D.SizeToContent
+	DECL(0x6a1cb2a6, Node2D, OffscreenRendering, OffscreenRendering, kDataTypeBool), // Node2D.OffscreenRendering
+	DECL(0x635bcdbe, Node2D, ForceComposition, ForceComposition, kDataTypeBool), // Node2D.ForceComposition
+	DECL(0x9aa6e904, Node2D, CacheResult, CacheResult, kDataTypeBool), // Node2D.CacheResult
+	DECL(0x2e5c547c, Node2D, SnapToPixel, SnapToPixel, kDataTypeBool), // Node2D.SnapToPixel
+	DECL(0x6db8d484, Node2D, ClipChildren, ClipChildren, kDataTypeBool), // Node2D.ClipChildren
+	DECL(0x639756ff, Node2D, ContentStretch, ContentStretch, kDataTypeBool), // Node2D.ContentStretch
+	DECL(0x09dc5114, Node2D, Hovered, Hovered, kDataTypeBool), // Node2D.Hovered
+	DECL(0xfdba6cd0, Node2D, IgnoreHitTest, IgnoreHitTest, kDataTypeBool), // Node2D.IgnoreHitTest
+	DECL(0xf068ff19, Node2D, ForegroundHint, ForegroundHint, kDataTypeEnum, .Enums = _ForegroundHint), // Node2D.ForegroundHint
 };
-// TerminalView
-#define ID_TerminalView 0xb1477a0c
-#define GetTerminalView(_P) ((struct TerminalView*)((_P)?OBJ_GetComponent(_P,ID_TerminalView):NULL))
-#define TerminalView_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_TerminalView,sizeof(struct TerminalView),_N)
-#define ID_TerminalView_BufferWidth 0xdf51183c // TerminalView.BufferWidth
-#define ID_TerminalView_BufferHeight 0xfd169aab // TerminalView.BufferHeight
-#define ID_TerminalView_Cursor 0x550c9034 // TerminalView.Cursor
-#define ID_TerminalView_SelectedIndex 0xc6c048a5 // TerminalView.SelectedIndex
-#define ID_TerminalView_DropShadow 0x8c72c3cb // TerminalView.DropShadow
-enum TerminalViewProperties {
-	kTerminalViewBufferWidth,
-	kTerminalViewBufferHeight,
-	kTerminalViewCursor,
-	kTerminalViewSelectedIndex,
-	kTerminalViewDropShadow,
-	kTerminalViewNumProperties	
+static struct Node2D Node2DDefaults = {
+  .LayoutTransform = .scale={1,1},
+  .RenderTransform = .scale={1,1},
 };
-// Page
-#define ID_Page 0xe83d9196
-#define GetPage(_P) ((struct Page*)((_P)?OBJ_GetComponent(_P,ID_Page):NULL))
-#define Page_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Page,sizeof(struct Page),_N)
-#define ID_Page_Title 0x31e209ce // Page.Title
-#define ID_Page_Path 0x20109b7f // Page.Path
-#define ID_Page_Transition 0xb60425fb // Page.Transition
-enum PageProperties {
-	kPageTitle,
-	kPagePath,
-	kPageTransition,
-	kPageNumProperties	
+LRESULT PrefabView2D_LoadView(struct Object*, struct PrefabView2D*, wParam_t, LoadViewPtr);
+
+static struct PropertyType const PrefabView2DProperties[kPrefabView2DNumProperties] = {
+	DECL(0x57f28ff6, PrefabView2D, SCA, SCA, kDataTypeFixed), // PrefabView2D.SCA
+	DECL(0xd6415ba3, PrefabView2D, Prefab, Prefab, kDataTypeFixed), // PrefabView2D.Prefab
 };
-// PageHost
-#define ID_PageHost 0x6f2dc6c0
-#define GetPageHost(_P) ((struct PageHost*)((_P)?OBJ_GetComponent(_P,ID_PageHost):NULL))
-#define PageHost_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_PageHost,sizeof(struct PageHost),_N)
-#define ID_PageHost_ActivePage 0xb276c4f7 // PageHost.ActivePage
-enum PageHostProperties {
-	kPageHostActivePage,
-	kPageHostNumProperties	
+static struct PrefabView2D PrefabView2DDefaults = {
 };
-// PageViewport
-#define ID_PageViewport 0x61a2c1e0
-#define GetPageViewport(_P) ((struct PageViewport*)((_P)?OBJ_GetComponent(_P,ID_PageViewport):NULL))
-#define PageViewport_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_PageViewport,sizeof(struct PageViewport),_N)
-enum PageViewportProperties {
-	kPageViewportNumProperties	
+LRESULT TextBlock_MeasureOverride(struct Object*, struct TextBlock*, wParam_t, MeasureOverridePtr);
+LRESULT TextBlock_ForegroundContent(struct Object*, struct TextBlock*, wParam_t, ForegroundContentPtr);
+LRESULT TextBlock_UpdateGeometry(struct Object*, struct TextBlock*, wParam_t, UpdateGeometryPtr);
+LRESULT TextBlock_Create(struct Object*, struct TextBlock*, wParam_t, CreatePtr);
+LRESULT TextBlock_DrawBrush(struct Object*, struct TextBlock*, wParam_t, DrawBrushPtr);
+
+static struct PropertyType const TextBlockProperties[kTextBlockNumProperties] = {
 };
-// Style
-#define ID_Style 0x5467ec76
-#define GetStyle(_P) ((struct Style*)((_P)?OBJ_GetComponent(_P,ID_Style):NULL))
-#define Style_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Style,sizeof(struct Style),_N)
-#define ID_Style_TargetType 0x26cf4319 // Style.TargetType
-#define ID_Style_Type 0x8f053d80 // Style.Type
-enum StyleProperties {
-	kStyleTargetType,
-	kStyleType,
-	kStyleNumProperties	
+static struct TextBlock TextBlockDefaults = {
 };
-#endif
+LRESULT Input_Create(struct Object*, struct Input*, wParam_t, CreatePtr);
+LRESULT Input_DrawBrush(struct Object*, struct Input*, wParam_t, DrawBrushPtr);
+LRESULT Input_MakeText(struct Object*, struct Input*, wParam_t, MakeTextPtr);
+LRESULT Input_KeyDown(struct Object*, struct Input*, wParam_t, KeyDownPtr);
+LRESULT Input_KillFocus(struct Object*, struct Input*, wParam_t, KillFocusPtr);
+LRESULT Input_LeftMouseUp(struct Object*, struct Input*, wParam_t, LeftMouseUpPtr);
+LRESULT Input_MeasureOverride(struct Object*, struct Input*, wParam_t, MeasureOverridePtr);
+
+static struct PropertyType const InputProperties[kInputNumProperties] = {
+	DECL(0x0fe07306, Input, Name, Name, kDataTypeFixed), // Input.Name
+	DECL(0xd155d06d, Input, Type, Type, kDataTypeEnum, .Enums = _Type), // Input.Type
+	DECL(0x558a502f, Input, Cursor, Cursor, kDataTypeInt), // Input.Cursor
+	DECL(0xe890d540, Input, Multiline, Multiline, kDataTypeBool), // Input.Multiline
+	DECL(0x51ba2a66, Input, Checked, Checked, kDataTypeBool), // Input.Checked
+};
+static struct Input InputDefaults = {
+};
+LRESULT Button_Create(struct Object*, struct Button*, wParam_t, CreatePtr);
+LRESULT Button_LeftMouseUp(struct Object*, struct Button*, wParam_t, LeftMouseUpPtr);
+LRESULT Button_KeyDown(struct Object*, struct Button*, wParam_t, KeyDownPtr);
+LRESULT Button_DrawBrush(struct Object*, struct Button*, wParam_t, DrawBrushPtr);
+
+static struct PropertyType const ButtonProperties[kButtonNumProperties] = {
+	DECL(0xd155d06d, Button, Type, Type, kDataTypeEnum, .Enums = _Type), // Button.Type
+};
+static struct Button ButtonDefaults = {
+};
+LRESULT Label_LeftMouseUp(struct Object*, struct Label*, wParam_t, LeftMouseUpPtr);
+
+static struct PropertyType const LabelProperties[kLabelNumProperties] = {
+	DECL(0x0f7e1b30, Label, For, For, kDataTypeFixed), // Label.For
+};
+static struct Label LabelDefaults = {
+};
+LRESULT StackView_MeasureOverride(struct Object*, struct StackView*, wParam_t, MeasureOverridePtr);
+LRESULT StackView_ArrangeOverride(struct Object*, struct StackView*, wParam_t, ArrangeOverridePtr);
+
+static struct PropertyType const StackViewProperties[kStackViewNumProperties] = {
+	DECL(0xcee65dd3, StackView, Reversed, Reversed, kDataTypeBool), // StackView.Reversed
+	DECL(0x61fefc0a, StackView, Direction, Direction, kDataTypeEnum, .Enums = _Direction), // StackView.Direction
+	DECL(0x517ab5aa, StackView, AlignItems, AlignItems, kDataTypeEnum, .Enums = _AlignItems), // StackView.AlignItems
+	DECL(0x98c61698, StackView, JustifyContent, JustifyContent, kDataTypeEnum, .Enums = _JustifyContent), // StackView.JustifyContent
+	DECL(0x8777939e, StackView, Spacing, Spacing, kDataTypeFloat), // StackView.Spacing
+};
+static struct StackView StackViewDefaults = {
+};
+LRESULT Form_Create(struct Object*, struct Form*, wParam_t, CreatePtr);
+LRESULT Form_Submit(struct Object*, struct Form*, wParam_t, SubmitPtr);
+
+static struct PropertyType const FormProperties[kFormNumProperties] = {
+};
+static struct Form FormDefaults = {
+};
+
+static struct PropertyType const ControlProperties[kControlNumProperties] = {
+	DECL(0x705293c5, Control, Pressed, Pressed, kDataTypeBool), // Control.Pressed
+	DECL(0xbfce9925, Control, Disabled, Disabled, kDataTypeBool), // Control.Disabled
+	DECL(0x09dc5114, Control, Hovered, Hovered, kDataTypeBool), // Control.Hovered
+	DECL(0xd6635bf2, Control, Focused, Focused, kDataTypeBool), // Control.Focused
+	DECL(0xd147f96a, Control, Value, Value, kDataTypeBool), // Control.Value
+	DECL(0x28528e11, Control, Scale, Scale, kDataTypeFloat), // Control.Scale
+};
+static struct Control ControlDefaults = {
+};
+LRESULT Screen_RenderScreen(struct Object*, struct Screen*, wParam_t, RenderScreenPtr);
+LRESULT Screen_MeasureOverride(struct Object*, struct Screen*, wParam_t, MeasureOverridePtr);
+LRESULT Screen_Create(struct Object*, struct Screen*, wParam_t, CreatePtr);
+LRESULT Screen_Destroy(struct Object*, struct Screen*, wParam_t, DestroyPtr);
+LRESULT Screen_WindowResized(struct Object*, struct Screen*, wParam_t, WindowResizedPtr);
+
+static struct PropertyType const ScreenProperties[kScreenNumProperties] = {
+	DECL(0xeb16b675, Screen, ClearColor, ClearColor, kDataTypeStruct, .TypeString = "Color"), // Screen.ClearColor
+	DECL(0x3dd888be, Screen, ResizeMode, ResizeMode, kDataTypeEnum, .Enums = _ResizeMode), // Screen.ResizeMode
+};
+static struct Screen ScreenDefaults = {
+};
+LRESULT Cinematic_DrawBrush(struct Object*, struct Cinematic*, wParam_t, DrawBrushPtr);
+
+static struct PropertyType const CinematicProperties[kCinematicNumProperties] = {
+	DECL(0x5ffdd888, Cinematic, FileName, FileName, kDataTypeFixed), // Cinematic.FileName
+	DECL(0x3eeb76a4, Cinematic, FrameRate, FrameRate, kDataTypeFloat), // Cinematic.FrameRate
+	DECL(0x32caacb1, Cinematic, NumFrames, NumFrames, kDataTypeFloat), // Cinematic.NumFrames
+	DECL(0xc1e58e65, Cinematic, FadeOut, FadeOut, kDataTypeFloat), // Cinematic.FadeOut
+};
+static struct Cinematic CinematicDefaults = {
+};
+LRESULT Grid_MeasureOverride(struct Object*, struct Grid*, wParam_t, MeasureOverridePtr);
+LRESULT Grid_ArrangeOverride(struct Object*, struct Grid*, wParam_t, ArrangeOverridePtr);
+
+static struct PropertyType const GridProperties[kGridNumProperties] = {
+	DECL(0xea156fdc, Grid, Columns, Columns, kDataTypeFixed), // Grid.Columns
+	DECL(0xaa6592b8, Grid, Rows, Rows, kDataTypeFixed), // Grid.Rows
+	DECL(0x61fefc0a, Grid, Direction, Direction, kDataTypeEnum, .Enums = _Direction), // Grid.Direction
+	DECL(0x8777939e, Grid, Spacing, Spacing, kDataTypeFloat), // Grid.Spacing
+	DECL(0x57e1566f, Grid, CellWidth, CellWidth, kDataTypeFloat), // Grid.CellWidth
+	DECL(0xd2dc9412, Grid, CellHeight, CellHeight, kDataTypeFloat), // Grid.CellHeight
+};
+static struct Grid GridDefaults = {
+};
+LRESULT ImageView_MeasureOverride(struct Object*, struct ImageView*, wParam_t, MeasureOverridePtr);
+LRESULT ImageView_ArrangeOverride(struct Object*, struct ImageView*, wParam_t, ArrangeOverridePtr);
+LRESULT ImageView_ForegroundContent(struct Object*, struct ImageView*, wParam_t, ForegroundContentPtr);
+LRESULT ImageView_DrawBrush(struct Object*, struct ImageView*, wParam_t, DrawBrushPtr);
+LRESULT ImageView_LoadView(struct Object*, struct ImageView*, wParam_t, LoadViewPtr);
+
+static struct PropertyType const ImageViewProperties[kImageViewNumProperties] = {
+	DECL(0x35c77969, ImageView, Src, Src, kDataTypeFixed), // ImageView.Src
+	DECL(0x590ca79a, ImageView, Image, Image, kDataTypeComponent), // ImageView.Image
+	DECL(0x079106fd, ImageView, Edges, Edges, kDataTypeStruct, .TypeString = "Vector4D"), // ImageView.Edges
+	DECL(0x062cedef, ImageView, Insets, Insets, kDataTypeStruct, .TypeString = "Vector4D"), // ImageView.Insets
+	DECL(0xa8c81591, ImageView, Viewbox, Viewbox, kDataTypeStruct, .TypeString = "Vector4D"), // ImageView.Viewbox
+	DECL(0x03d3b9ca, ImageView, Stretch, Stretch, kDataTypeEnum, .Enums = _Stretch), // ImageView.Stretch
+};
+static struct ImageView ImageViewDefaults = {
+  .Viewbox = 0 0 1 1,
+};
+LRESULT NinePatchImage_MeasureOverride(struct Object*, struct NinePatchImage*, wParam_t, MeasureOverridePtr);
+LRESULT NinePatchImage_ForegroundContent(struct Object*, struct NinePatchImage*, wParam_t, ForegroundContentPtr);
+LRESULT NinePatchImage_DrawBrush(struct Object*, struct NinePatchImage*, wParam_t, DrawBrushPtr);
+
+static struct PropertyType const NinePatchImageProperties[kNinePatchImageNumProperties] = {
+	DECL(0x9f40b6ad, NinePatchImage, StretchTypeTop, StretchTypeTop, kDataTypeFloat), // NinePatchImage.StretchTypeTop
+	DECL(0x0697c1c9, NinePatchImage, StretchTypeBottom, StretchTypeBottom, kDataTypeFloat), // NinePatchImage.StretchTypeBottom
+	DECL(0xe5d554e7, NinePatchImage, StretchTypeLeft, StretchTypeLeft, kDataTypeFloat), // NinePatchImage.StretchTypeLeft
+	DECL(0xa26ba898, NinePatchImage, StretchTypeRight, StretchTypeRight, kDataTypeFloat), // NinePatchImage.StretchTypeRight
+	DECL(0xa81f8dff, NinePatchImage, StretchTypeCenter, StretchTypeCenter, kDataTypeFloat), // NinePatchImage.StretchTypeCenter
+	DECL(0xc7948178, NinePatchImage, ImageTopLeft, ImageTopLeft, kDataTypeComponent), // NinePatchImage.ImageTopLeft
+	DECL(0x28c29b5d, NinePatchImage, ImageTop, ImageTop, kDataTypeComponent), // NinePatchImage.ImageTop
+	DECL(0x810ee5cd, NinePatchImage, ImageTopRight, ImageTopRight, kDataTypeComponent), // NinePatchImage.ImageTopRight
+	DECL(0x2cd3c0d7, NinePatchImage, ImageLeft, ImageLeft, kDataTypeComponent), // NinePatchImage.ImageLeft
+	DECL(0x7ab05ecf, NinePatchImage, ImageCenter, ImageCenter, kDataTypeComponent), // NinePatchImage.ImageCenter
+	DECL(0x1c7d5648, NinePatchImage, ImageRight, ImageRight, kDataTypeComponent), // NinePatchImage.ImageRight
+	DECL(0x35657294, NinePatchImage, ImageBottomLeft, ImageBottomLeft, kDataTypeComponent), // NinePatchImage.ImageBottomLeft
+	DECL(0x80ed3299, NinePatchImage, ImageBottom, ImageBottom, kDataTypeComponent), // NinePatchImage.ImageBottom
+	DECL(0x42a461c1, NinePatchImage, ImageBottomRight, ImageBottomRight, kDataTypeComponent), // NinePatchImage.ImageBottomRight
+};
+static struct NinePatchImage NinePatchImageDefaults = {
+};
+LRESULT TerminalView_Create(struct Object*, struct TerminalView*, wParam_t, CreatePtr);
+LRESULT TerminalView_DrawBrush(struct Object*, struct TerminalView*, wParam_t, DrawBrushPtr);
+LRESULT TerminalView_PushProperty(struct Object*, struct TerminalView*, wParam_t, PushPropertyPtr);
+LRESULT TerminalView_ScrollWheel(struct Object*, struct TerminalView*, wParam_t, ScrollWheelPtr);
+
+static struct PropertyType const TerminalViewProperties[kTerminalViewNumProperties] = {
+	DECL(0xdd1f241d, TerminalView, BufferWidth, BufferWidth, kDataTypeInt), // TerminalView.BufferWidth
+	DECL(0xd75e2af4, TerminalView, BufferHeight, BufferHeight, kDataTypeInt), // TerminalView.BufferHeight
+	DECL(0x558a502f, TerminalView, Cursor, Cursor, kDataTypeInt), // TerminalView.Cursor
+	DECL(0x98eca570, TerminalView, SelectedIndex, SelectedIndex, kDataTypeInt), // TerminalView.SelectedIndex
+	DECL(0x87f68bc8, TerminalView, DropShadow, DropShadow, kDataTypeBool), // TerminalView.DropShadow
+};
+static struct TerminalView TerminalViewDefaults = {
+  .BufferWidth = 256,
+  .BufferHeight = 256,
+};
+LRESULT Page_Create(struct Object*, struct Page*, wParam_t, CreatePtr);
+
+static struct PropertyType const PageProperties[kPageNumProperties] = {
+	DECL(0x24d471a9, Page, Title, Title, kDataTypeFixed), // Page.Title
+	DECL(0xeb66e456, Page, Path, Path, kDataTypeFixed), // Page.Path
+	DECL(0xe69ce202, Page, Transition, Transition, kDataTypeFloat), // Page.Transition
+};
+static struct Page PageDefaults = {
+};
+LRESULT PageHost_ViewDidLoad(struct Object*, struct PageHost*, wParam_t, ViewDidLoadPtr);
+LRESULT PageHost_NavigateToPage(struct Object*, struct PageHost*, wParam_t, NavigateToPagePtr);
+LRESULT PageHost_NavigateBack(struct Object*, struct PageHost*, wParam_t, NavigateBackPtr);
+
+static struct PropertyType const PageHostProperties[kPageHostNumProperties] = {
+	DECL(0x2e149db4, PageHost, ActivePage, ActivePage, kDataTypeComponent), // PageHost.ActivePage
+};
+static struct PageHost PageHostDefaults = {
+};
+
+static struct PropertyType const PageViewportProperties[kPageViewportNumProperties] = {
+};
+static struct PageViewport PageViewportDefaults = {
+};
+
+static struct PropertyType const StyleProperties[kStyleNumProperties] = {
+	DECL(0x77ada720, Style, TargetType, TargetType, kDataTypeFixed), // Style.TargetType
+	DECL(0xd155d06d, Style, Type, Type, kDataTypeEnum, .Enums = _Type), // Style.Type
+};
+static struct Style StyleDefaults = {
+};
+LRESULT StyleProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+	return FALSE;
+}
+void luaX_pushStyle(lua_State *L, struct Style* Style) {
+	luaX_pushObject(L, CMP_GetObject(Style));
+}
+struct Style* luaX_checkStyle(lua_State *L, int idx) {
+	return GetStyle(luaX_checkObject(L, idx));
+}
+ORCA_API struct ClassDesc _Style = {
+	.ClassName = "Style",
+	.DefaultName = "Style",
+	.ContentType = "Style",
+	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
+	.ParentClasses = {NULL},
+	.ClassID = ID_Style,
+	.ClassSize = sizeof(struct Style),
+	.Properties = StyleProperties,
+	.ObjProc = StyleProc,
+	.Defaults = &StyleDefaults,
+	.NumProperties = kStyleNumProperties,
+};
+
+
+ORCA_API int luaopen_orca_UIKit(lua_State *L) {
+	luaL_newlib(L, ((luaL_Reg[]) { { NULL, NULL } }));
+	void on_ui_module_registered(lua_State *L);
+	on_ui_module_registered(L);
+	// Structs
+	lua_setfield(L, (luaopen_orca_BorderRadiusShorthand(L), -2), "BorderRadiusShorthand");
+	lua_setfield(L, (luaopen_orca_EdgeShorthand(L), -2), "EdgeShorthand");
+	lua_setfield(L, (luaopen_orca_AlignmentShorthand(L), -2), "AlignmentShorthand");
+	lua_setfield(L, (luaopen_orca_FontShorthand(L), -2), "FontShorthand");
+	lua_setfield(L, (luaopen_orca_BrushShorthand(L), -2), "BrushShorthand");
+	lua_setfield(L, (luaopen_orca_ShadowShorthand(L), -2), "ShadowShorthand");
+	lua_setfield(L, (luaopen_orca_RingShorthand(L), -2), "RingShorthand");
+	lua_setfield(L, (luaopen_orca_OverflowShorthand(L), -2), "OverflowShorthand");
+	lua_setfield(L, (luaopen_orca_UnderlineShorthand(L), -2), "UnderlineShorthand");
+	lua_setfield(L, (luaopen_orca_MarginShorthand(L), -2), "MarginShorthand");
+	lua_setfield(L, (luaopen_orca_BorderShorthand(L), -2), "BorderShorthand");
+	lua_setfield(L, (luaopen_orca_SizeAxisShorthand(L), -2), "SizeAxisShorthand");
+	lua_setfield(L, (luaopen_orca_SizeShorthand(L), -2), "SizeShorthand");
+	lua_setfield(L, (luaopen_orca_NavigateToPageArguments(L), -2), "NavigateToPageArguments");
+	lua_setfield(L, (luaopen_orca_NavigateBackArguments(L), -2), "NavigateBackArguments");
+	// Components
+	lua_setfield(L, (lua_pushclass(L, &_DataObject), -2), "DataObject");
+	lua_setfield(L, (lua_pushclass(L, &_AnimationPlayer), -2), "AnimationPlayer");
+	lua_setfield(L, (lua_pushclass(L, &_Trigger), -2), "Trigger");
+	lua_setfield(L, (lua_pushclass(L, &_OnPropertyChangedTrigger), -2), "OnPropertyChangedTrigger");
+	lua_setfield(L, (lua_pushclass(L, &_OnAttachedTrigger), -2), "OnAttachedTrigger");
+	lua_setfield(L, (lua_pushclass(L, &_EventTrigger), -2), "EventTrigger");
+	lua_setfield(L, (lua_pushclass(L, &_Setter), -2), "Setter");
+	lua_setfield(L, (lua_pushclass(L, &_Handler), -2), "Handler");
+	lua_setfield(L, (lua_pushclass(L, &_Brush), -2), "Brush");
+	lua_setfield(L, (lua_pushclass(L, &_ColorBrush), -2), "ColorBrush");
+	lua_setfield(L, (lua_pushclass(L, &_Node), -2), "Node");
+	lua_setfield(L, (lua_pushclass(L, &_TextRun), -2), "TextRun");
+	lua_setfield(L, (lua_pushclass(L, &_TextBlockConcept), -2), "TextBlockConcept");
+	lua_setfield(L, (lua_pushclass(L, &_Node2D), -2), "Node2D");
+	lua_setfield(L, (lua_pushclass(L, &_PrefabView2D), -2), "PrefabView2D");
+	lua_setfield(L, (lua_pushclass(L, &_TextBlock), -2), "TextBlock");
+	lua_setfield(L, (lua_pushclass(L, &_Input), -2), "Input");
+	lua_setfield(L, (lua_pushclass(L, &_Button), -2), "Button");
+	lua_setfield(L, (lua_pushclass(L, &_Label), -2), "Label");
+	lua_setfield(L, (lua_pushclass(L, &_StackView), -2), "StackView");
+	lua_setfield(L, (lua_pushclass(L, &_Form), -2), "Form");
+	lua_setfield(L, (lua_pushclass(L, &_Control), -2), "Control");
+	lua_setfield(L, (lua_pushclass(L, &_Screen), -2), "Screen");
+	lua_setfield(L, (lua_pushclass(L, &_Cinematic), -2), "Cinematic");
+	lua_setfield(L, (lua_pushclass(L, &_Grid), -2), "Grid");
+	lua_setfield(L, (lua_pushclass(L, &_ImageView), -2), "ImageView");
+	lua_setfield(L, (lua_pushclass(L, &_NinePatchImage), -2), "NinePatchImage");
+	lua_setfield(L, (lua_pushclass(L, &_TerminalView), -2), "TerminalView");
+	lua_setfield(L, (lua_pushclass(L, &_Page), -2), "Page");
+	lua_setfield(L, (lua_pushclass(L, &_PageHost), -2), "PageHost");
+	lua_setfield(L, (lua_pushclass(L, &_PageViewport), -2), "PageViewport");
+	lua_setfield(L, (lua_pushclass(L, &_Style), -2), "Style");
+	return 1;
+}
+?>

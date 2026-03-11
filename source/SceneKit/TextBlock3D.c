@@ -57,7 +57,7 @@ HANDLER(TextBlock3D, Render)
   
   TextRunPtr pTextRun = GetTextRun(hObject);
   TextBlockConceptPtr pTextBlock = GetTextBlockConcept(hObject);
-  OBJ_SendMessageW(hObject, kEventMakeText, 0, &(MAKETEXTSTRUCT){
+  OBJ_SendMessageW(hObject, kEventMakeText, 0, &(struct MakeTextEventArgs){
                      .text = pTextBlock->_text,
                      .availableSpace = 512
                    });
@@ -94,7 +94,7 @@ HANDLER(TextBlock3D, Render)
 //                  OBJ_GetLocalization(hObject), output->TextResourceID, LOC_TEXT);
 //  }
   
-  R_DrawEntity(pRender, &entity);
+  R_DrawEntity(pRender->ViewDef, &entity);
   
   return TRUE;
 }

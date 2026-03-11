@@ -1,6 +1,27 @@
 <?xml version="1.0"?>
 <!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
 <module name="core" namespace="orca" on-luaopen="on_core_module_registered">
+  <require file="../geometry/geometry.xml"/> <!-- For mat4 -->
+
+  <external struct="WI_Message"/>
+  <external struct="localization"/>
+  <external struct="game"/>
+  <external struct="Property"/>
+  <external struct="KeyframeAnim"/>
+  <external struct="lua_State"/>
+  
+  <struct name="PropertyChangedEventArgs">
+    <summary>Event arguments for a property change event</summary>
+    <field name="Property" type="Property" pointer="true">The property that changed</field>
+  </struct>
+
+  <struct name="UpdateMatrixEventArgs">
+    <summary>Event arguments for an update matrix event</summary>
+    <field name="parent" type="mat4">The parent matrix</field>
+    <field name="opacity" type="float">The opacity value</field>
+    <field name="force" type="bool">Indicates if the update is forced</field>
+  </struct>
+
   <event name="LeftMouseDown" type="WI_Message"/>
   <event name="RightMouseDown" type="WI_Message"/>
   <event name="OtherMouseDown" type="WI_Message"/>
@@ -27,27 +48,20 @@
   <event name="KillFocus" type="void"/>
   <event name="SetFocus" type="void"/>
   <event name="Timer"/>
-  <event name="UpdateMatrix"/>
-  <event name="RenderScreen"/>
-  <event name="Render"/>
+  <event name="UpdateMatrix" type="UpdateMatrixEventArgs"/>
   <event name="HitTest"/>
   <event name="IsVisible" type="void"/>
   <event name="Create" type="void"/>
   <event name="Start" type="void"/>
   <event name="Awake" type="void"/>
   <event name="ThemeChanged" type="void"/>
-  <event name="PropertyChanged" type="PropertyChangedEvent"/>
+  <event name="PropertyChanged" type="PropertyChangedEventArgs"/>
   <event name="Attached" type="void"/>
   <event name="Release" type="void"/>
   <event name="Destroy" type="void"/>
   <event name="ResumeCoroutine"/>
   <event name="StopCoroutine"/>
   <event name="ViewDidLoad" type="void"/>
-
-  <resource type="localization"/>
-  <resource type="game"/>
-  <resource type="Property" no-lua="true"/>
-  <resource type="KeyframeAnim" no-lua="true"/>
   
   <enums name="BindingMode">
     <enum name="OneWay">Default mode, updates target property when source changes</enum>
@@ -503,6 +517,12 @@
       <summary>Rebuilds the object's body content asynchronously</summary>
       <details>This method triggers a rebuild of the behavior by either executing a function body, adding a child from a string, and then posting a 'ViewDidLoad' message.</details>
     </method>    
+
+    <method name="GetDomain">
+      <summary>Gets the domain of the object</summary>
+      <details>Returns the domain to which this object belongs, which can be used for organizational or scoping purposes within the engine.</details>
+      <returns type="lua_State" pointer="true">The domain of the object</returns>
+    </method> 
   </interface>
   
   <function name="GetFocus">

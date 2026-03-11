@@ -603,6 +603,7 @@
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		783C96DF2F263D9C00612323 /* libs */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (783C973B2F26638500612323 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = libs; sourceTree = "<group>"; };
+		78AF635B2F5E08CA008D08A3 /* geometry */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = geometry; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -984,18 +985,6 @@
 			path = tools;
 			sourceTree = "<group>";
 		};
-		789A94F62F6078C400FD32A9 /* geometry */ = {
-			isa = PBXGroup;
-			children = (
-				789A94F12F6078C400FD32A9 /* geometry.h */,
-				789A94F22F6078C400FD32A9 /* geometry.xml */,
-				789A94F32F6078C400FD32A9 /* geometry_export.c */,
-				789A94F42F6078C400FD32A9 /* geometry_ops.c */,
-				789A94F52F6078C400FD32A9 /* geometry_properties.h */,
-			);
-			path = geometry;
-			sourceTree = "<group>";
-		};
 		78B136982AF3CA3A00AAAE53 = {
 			isa = PBXGroup;
 			children = (
@@ -1064,7 +1053,7 @@
 				78C7374E2B8F60C600FD598E /* core */,
 				786F2B1D2E12EE7F00B519AB /* editor */,
 				7810D2662D58B1B800DB632F /* filesystem */,
-				789A94F62F6078C400FD32A9 /* geometry */,
+				78AF635B2F5E08CA008D08A3 /* geometry */,
 				7810D3172D5B32FC00DB632F /* localization */,
 				786BFD062AFBA00D00216782 /* network */,
 				7810D26E2D58C06000DB632F /* orca */,
@@ -1246,8 +1235,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				789A94F92F6078C400FD32A9 /* geometry.h in Headers */,
-				789A94FA2F6078C400FD32A9 /* geometry_properties.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1431,6 +1418,9 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				78AF635B2F5E08CA008D08A3 /* geometry */,
 			);
 			name = orca.geometry;
 			packageProductDependencies = (
@@ -1854,8 +1844,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				789A94F72F6078C400FD32A9 /* geometry_export.c in Sources */,
-				789A94F82F6078C400FD32A9 /* geometry_ops.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -388,66 +388,7 @@ typedef LRESULT (*objectProc_t)(lpObject_t, void*, uint32_t, wParam_t, lParam_t)
 
 #define EVENT_PTR(NAME) NAME##EventPtr
 
-typedef lpObject_t* EVENT_PTR(HitTest);
-typedef struct lua_State* PushPropertyEventPtr;
-typedef lpObject_t EVENT_PTR(Object);
-typedef struct lua_State* EVENT_PTR(LoadView);
-
-typedef struct PropertyChangedEvent
-{
-  lua_State* L;
-  lpProperty_t hProperty;
-} PropertyChangedEvent, *EVENT_PTR(PropertyChanged);
-
-typedef struct
-{
-  lua_State* L;
-  lpcString_t EventName;
-  uint32_t FirstArg;
-  uint32_t NumArgs;
-} HANDLEMESSAGESTRUCT, *EVENT_PTR(HandleMessage);
-
-typedef struct
-{
-  void* Trigger;
-  EVENT_PTR(HandleMessage) message;
-} TRIGGEREDSTRUCT, *EVENT_PTR(Triggered);
-
-typedef struct _RENDERSCREENSTRUCT
-{
-  uint32_t width;
-  uint32_t height;
-  float stereo;
-  float angle;
-  handle_t target;
-  bool_t only_paint;
-} RENDERSCREENSTRUCT, *EVENT_PTR(RenderScreen);
-
-typedef struct _UPDATEMATRIXSTRUCT
-{
-  struct mat4 const* parent;
-  float opacity;
-  bool_t force;
-} UPDATEMATRIXSTRUCT, *EVENT_PTR(UpdateMatrix);
-
-// Node2D messages
-
-typedef void* EVENT_PTR(UpdateGeometry);
-
-typedef struct _FOREGROUNDCONTENTSTRUCT
-{
-  handle_t result;
-} FOREGROUNDCONTENTSTRUCT, *EVENT_PTR(ForegroundContent);
-
-// Node3D messages
-
-typedef struct ViewDef* EVENT_PTR(Render);
-
-typedef struct _ARRANGECHILDRENSTRUCT
-{
-  /*enum Direction*/ uint32_t axis;
-  struct bounds const* bounds;
-} ARRANGECHILDRENSTRUCT, *EVENT_PTR(ArrangeChildren);
+//typedef lpObject_t* EVENT_PTR(HitTest);
 
 #define OF_UPDATED_ONCE (1 << 0)
 #define OF_STATEMANAGER_INITIALIZED (1 << 1)

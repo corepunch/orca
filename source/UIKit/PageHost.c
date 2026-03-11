@@ -17,7 +17,7 @@
 //}
 
 static void
-_SetActivePage(PageHostPtr pPageHost, lpPage_t pPage)
+_SetActivePage(PageHostPtr pPageHost, PagePtr pPage)
 {
   if (pPageHost->ActivePage) {
     pPageHost->ActivePage->_node->Visible = FALSE;
@@ -27,22 +27,22 @@ _SetActivePage(PageHostPtr pPageHost, lpPage_t pPage)
   }
 }
 
-static lpPage_t
+static PagePtr
 PageHost_FindPageByPath(lpObject_t hObject, const char* path)
 {
   FOR_EACH_OBJECT(hChild, hObject) {
-    lpPage_t pPage = GetPage(hChild);
+    PagePtr pPage = GetPage(hChild);
     if (pPage && strcmp(pPage->Path, path) == 0) {
       return pPage;
     }
-    lpPage_t pFound = PageHost_FindPageByPath(hChild, path);
+    PagePtr pFound = PageHost_FindPageByPath(hChild, path);
     if (pFound) return pFound;
   }
   return NULL;
 }
 
 HANDLER(PageHost, NavigateToPage) {
-  lpPage_t pTarget = PageHost_FindPageByPath(hObject, pNavigateToPage->URL);
+  PagePtr pTarget = PageHost_FindPageByPath(hObject, pNavigateToPage->URL);
   if (!pTarget) {
     Con_Error("Page not found: %s", pNavigateToPage->URL);
     return FALSE;
@@ -61,7 +61,7 @@ HANDLER(PageHost, NavigateToPage) {
 HANDLER(PageHost, NavigateBack) {
   if (pPageHost->_historySize <= 0) return FALSE;
 
-  lpPage_t pPrev = pPageHost->_historyStack[--pPageHost->_historySize];
+  PagePtr pPrev = pPageHost->_historyStack[--pPageHost->_historySize];
   _SetActivePage(pPageHost, pPrev);
 
   return TRUE;

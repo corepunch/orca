@@ -48,7 +48,7 @@ HANDLER(SpriteView, Render)
     },
   };
   
-  R_DrawEntity(pRender, &entity);
+  R_DrawEntity(pRender->ViewDef, &entity);
   
   return TRUE;
 }

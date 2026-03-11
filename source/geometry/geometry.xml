@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 <!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
 <module name="geometry" namespace="orca">
+  <include file="source/geometry/geometry.h"/>
+
   <enums name="RotationOrder">
     <summary>Euler angle rotation order enumeration</summary>
     <details>Specifies the order in which rotations are applied around the X, Y, and Z axes. Different orders produce different final orientations for the same euler angles.</details>

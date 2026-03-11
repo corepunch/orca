@@ -4,7 +4,7 @@
 
 HANDLER(PrefabView2D, LoadView)
 {
-  lua_State* L = pLoadView;
+  lua_State* L = pLoadView->lua_state;
   if (*pPrefabView2D->SCA &&
       pPrefabView2D->_loadedSCA != fnv1a32(pPrefabView2D->SCA))
   {

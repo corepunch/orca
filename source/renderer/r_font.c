@@ -46,7 +46,7 @@ struct fontface
 
 static struct _FONTGLOBALS
 {
-  FontFamily font;
+  struct FontFamily font;
   void* ft;
 } fg = { 0 };
 
