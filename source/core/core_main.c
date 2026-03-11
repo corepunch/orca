@@ -160,12 +160,12 @@ CORE_Update(lua_State* L,
   OBJ_UpdateProperties(root);
   OBJ_UpdateLayout(root, LOWORD(winsize), HIWORD(winsize));
   
-  OBJ_SendMessageW(root, kEventUpdateMatrix, 0, &(UPDATEMATRIXSTRUCT){
-    .parent = NULL,
+  OBJ_SendMessageW(root, kEventUpdateMatrix, 0, &(struct UpdateMatrixEventArgs){
+    .parent = MAT4_Identity(),
     .opacity = 1,
   });
   
-  OBJ_SendMessageW(root, kEventRenderScreen, 0, &(RENDERSCREENSTRUCT) {
+  OBJ_SendMessageW(root, kEventRenderScreen, 0, &(struct RenderScreenEventArgs) {
     .width = LOWORD(winsize),
     .height = HIWORD(winsize),
     .stereo = 0,
@@ -424,7 +424,7 @@ int f_addHotKeys(lua_State* L) {
   return 0;
 }
 
-eDataType_t luaX_checkDataType(lua_State *L, int idx);
+enum DataType luaX_checkDataType(lua_State *L, int idx);
 int f_registerPropertyType(lua_State *L) {
   char n[MAX_PROPERTY_STRING];
   lpcString_t name = luaL_checkstring(L, 1);
@@ -432,7 +432,7 @@ int f_registerPropertyType(lua_State *L) {
   lua_getfield(L, LUA_REGISTRYINDEX, n);
   if (!lua_isnil(L, -1)) return 0;
   lua_pop(L, 1);
-  luaX_parsefield(eDataType_t, type, 2, luaX_checkDataType);
+  luaX_parsefield(enum DataType, type, 2, luaX_checkDataType);
   size_t size = sizeof(PropertyType_t)+MAX_PROPERTY_STRING;
   lpPropertyType_t ds = lua_newuserdata(L, size);
   memset(ds, 0, size);

@@ -40,8 +40,8 @@ HANDLER(SKSpriteNode, Render)
   SKNodePtr node = GetSKNode(hObject);
   if (!node) return FALSE;
 
-  float const refW = Node2D_GetFrame(GetNode2D(pRender->viewport), kBox3FieldWidth);
-  float const refH = Node2D_GetFrame(GetNode2D(pRender->viewport), kBox3FieldHeight);
+  float const refW = Node2D_GetFrame(GetNode2D(pRender->ViewDef->viewport), kBox3FieldWidth);
+  float const refH = Node2D_GetFrame(GetNode2D(pRender->ViewDef->viewport), kBox3FieldHeight);
   lpTexture_t image = pSKSpriteNode->Image;
   struct SpriteAnimation const *anim = pSKSpriteNode->Animation;
   struct mat3 texmat = MAT3_Identity();
@@ -101,7 +101,7 @@ HANDLER(SKSpriteNode, Render)
     },
   };
 
-  R_DrawEntity(pRender, &entity);
+  R_DrawEntity(pRender->ViewDef, &entity);
 
   struct SpriteAnimation const *anim2 = pSKSpriteNode->Animation2;
   if (anim2 && anim2->NumFrames > 0) {
@@ -132,7 +132,7 @@ HANDLER(SKSpriteNode, Render)
         .blendMode = blendMode,
       },
     };
-    R_DrawEntity(pRender, &entity2);
+    R_DrawEntity(pRender->ViewDef, &entity2);
   }
 
   return TRUE;

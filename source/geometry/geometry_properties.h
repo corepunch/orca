@@ -1,0 +1,3 @@
+#ifndef __GEOMETRY_PROPERTIES_H__
+#define __GEOMETRY_PROPERTIES_H__
+#endif

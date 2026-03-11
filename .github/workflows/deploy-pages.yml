@@ -30,11 +30,25 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-      - name: Copy DTD schemas to docs
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: Install MkDocs
+        run: pip install mkdocs-material
+
+      - name: Generate DTD and API docs
         run: |
-          mkdir -p docs/schemas
-          cp tools/schemas/*.dtd docs/schemas/
+          cd tools
+          make dtd
+          make docs
+
+      - name: Build documentation site
+        run: mkdocs build
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -42,8 +56,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload the docs directory
-          path: 'docs'
+          # Upload the MkDocs-generated site directory
+          path: 'site'
 
   # Deployment job
   deploy:

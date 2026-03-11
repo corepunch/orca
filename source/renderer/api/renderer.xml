@@ -3,11 +3,32 @@
 <module name="renderer" namespace="orca" on-luaopen="on_renderer_module_registered" test-prefix="R_">
   <require file="../../geometry/geometry.xml"/>
 
-  <resource type="fontface"/>
-  <resource type="timeline"/>
-  <resource type="shader"/>
-  <resource type="model"/>
-  <resource type="shape"/>
+  <external struct="fontface"/>
+  <external struct="timeline"/>
+  <external struct="shader"/>
+  <external struct="model"/>
+  <external struct="shape"/>
+  <external struct="ViewDef"/>
+  <external struct="lua_State"/>
+  
+  <struct name="RenderScreenEventArgs">
+    <summary>Event arguments for a render screen event</summary>
+    <field name="width" type="uint">The width of the render screen</field>
+    <field name="height" type="uint">The height of the render screen</field>
+    <field name="stereo" type="float">The stereo value of the render screen</field>
+    <field name="angle" type="float">The angle of the render screen</field>
+    <field name="target" type="Texture" pointer="true">The target handle of the render screen</field>
+    <field name="only_paint" type="bool">Indicates if only painting is required</field>
+  </struct>
+  
+  <struct name="RenderEventArgs">
+    <summary>Event arguments for a render event</summary>
+    <field name="ViewDef" type="ViewDef" pointer="true">The view definition for rendering</field>
+  </struct>
+  
+  <event name="RenderScreen" type="RenderScreenEventArgs"/>
+  <event name="Render" type="RenderEventArgs"/>
+
 <!--  <shutdown name="R_Shutdown"/>-->
   <interface name="window" prefix="WI_" export="Window">
     <summary>Window interface abstraction.</summary>
@@ -376,7 +397,7 @@
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <handles event="Start"/>
     <handles event="Destroy"/>
-    <property name="BlendMode" type="BlendMode" default="-1">The default blending mode for the shader, controlling how rendered output combines with the existing framebuffer content.</property>
+    <property name="BlendMode" type="BlendMode" default="MixedAlpha">The default blending mode for the shader, controlling how rendered output combines with the existing framebuffer content.</property>
     <property name="DepthTestFunction" type="CompareFunc">The default depth comparison function used for depth testing, determining which fragments are visible based on their depth values.</property>
     <property name="DepthWriteEnabled" type="bool">Whether depth buffer writing is enabled by default. When true, rendered fragments update the depth buffer; when false, depth values are not written.</property>
     BlendMode
@@ -400,8 +421,6 @@
     <property name="TextureTiling" type="vec2">UV tiling (repetition) for the base texture mapping</property>
     <property name="BlendIntensity" type="float">Adjusts the opacity or blending strength of the material</property>
     <property name="BlendMode" type="BlendMode" default="AlphaAutomatic">Blending mode for material rendering </property>
-    <property name="u_color" type="color">Uniform color parameter for shader </property>
-    <property name="u_texture" type="Texture" pointer="true">Uniform texture parameter for shader </property>
   </class>
   
   <class name="Mesh">

@@ -141,16 +141,7 @@ move_pz2:
 	done
 
 modules:
-#	python3 tools/conv-lua.py presentation
-	cd tools && \
-	python3 -B conv-module.py \
-	../source/geometry/geometry.xml \
-	../source/core/core.xml \
-	../source/renderer/api/renderer.xml \
-	../source/UIKit/UIKit.xml \
-	../source/SceneKit/SceneKit.xml \
-	../source/SpriteKit/SpriteKit.xml \
-	../source/filesystem/filesystem.xml && cd ..
+	$(MAKE) -j8 -C tools
 
 fonts:
 	python3 cd tools && \

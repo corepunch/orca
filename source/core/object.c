@@ -46,6 +46,8 @@ struct Object
 
   longTime_t dirty;
   
+  lua_State *domain;
+  
   byte_t   data[MAX_OBJECT_DATA];
 };
 
@@ -94,6 +96,7 @@ OBJ_Create(lua_State* L, lpcClassDesc_t cls)
   memset(object, 0, sizeof(struct Object));
   object->components = CMP_Create(object, cls);
   object->unique = ++unique_counter;
+  object->domain = L;
   OBJ_SetDirty(object);
   OBJ_SetName(object, cls->DefaultName);
   return object;
@@ -207,7 +210,7 @@ void
 OBJ_LoadPrefabs(lua_State* L, lpObject_t object)
 {
   if (!OBJ_IsHidden(object)) {
-    OBJ_SendMessage(object, "LoadView", 0, L);
+    OBJ_SendMessage(object, "LoadView", 0, &L);
   }
   FOR_EACH_OBJECT(child, object) {
     OBJ_LoadPrefabs(L, child);
@@ -853,5 +856,9 @@ OBJ_AttachPropertyProgram(lpObject_t self,
   }
 }
 
+lua_State*
+OBJ_GetDomain(lpObject_t self) {
+  return self->domain;
+}
 
 #include <source/editor/ed_stab_object.h>

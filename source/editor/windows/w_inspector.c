@@ -215,16 +215,16 @@ ED_PrintProperty(LPPROPDEF pdef, LPVOID parm)
   }
 }
 
-static void
-ED_PrintPropertyType(lpcString_t name, LPVOID parm)
-{
-  HEDWND wnd = parm;
-  if (Con_CheckOverflow(ED_GetClient(wnd)))
-    return;
-  ED_Echo(wnd, FMT_NEXT_LINE FMT_COMMAND, 0);
-  ED_Echo(wnd, STYLE_HIDDEN);
-  ED_Echo(wnd, "%-*.*s", NAME_WIDTH, NAME_WIDTH, name);
-}
+//static void
+//ED_PrintPropertyType(lpcString_t name, LPVOID parm)
+//{
+//  HEDWND wnd = parm;
+//  if (Con_CheckOverflow(ED_GetClient(wnd)))
+//    return;
+//  ED_Echo(wnd, FMT_NEXT_LINE FMT_COMMAND, 0);
+//  ED_Echo(wnd, STYLE_HIDDEN);
+//  ED_Echo(wnd, "%-*.*s", NAME_WIDTH, NAME_WIDTH, name);
+//}
 
 lpcString_t ED_SelectedFilePath(DWORD file) {
   struct _OBJDEF ov;

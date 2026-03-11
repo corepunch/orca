@@ -16,7 +16,7 @@ HANDLER(Input, DrawBrush)
 
   if (pDrawBrush->foreground && core_GetFocus() == hObject) {
     memset(&entity, 0, sizeof(entity));
-    Node2D_GetViewEntity(hObject, &entity, NULL, pDrawBrush->brush);
+    Node2D_GetViewEntity(pNode2D, &entity, NULL, &pDrawBrush->brush);
     memset(&entity.borderWidth, 0, sizeof(entity.borderWidth));
     memset(&entity.radius, 0, sizeof(entity.radius));
     entity.text = NULL;
@@ -44,7 +44,7 @@ HANDLER(Input, DrawBrush)
   if (pInput->Type == kInputTypeCheckbox) {
     memset(&entity, 0, sizeof(entity));
     Node2DPtr pNode2D = GetNode2D(hObject);
-    Node2D_GetViewEntity(hObject, &entity, NULL, pDrawBrush->brush);
+    Node2D_GetViewEntity(pNode2D, &entity, NULL, &pDrawBrush->brush);
     float w = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
     float h = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
     entity.bbox.max.x = entity.bbox.min.x + w;

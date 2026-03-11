@@ -22,84 +22,6 @@ typedef unsigned int uint32_t;
 #define edges_new(l, t, r, b) (struct edges){ l, t, r, b }
 #define color_new(r, g, b, a) (struct color){ r, g, b, a }
 
-// easing.c
-ORCA_API float
-anim_back_ease_in(float t, float a, float diff, float dur, float overshoot);
-ORCA_API float
-anim_back_ease_out(float t, float a, float diff, float dur, float overshoot);
-ORCA_API float
-anim_back_ease_in_out(float t, float a, float diff, float dur, float overshoot);
-ORCA_API float
-anim_bounce_ease_out(float t, float a, float diff, float dur);
-ORCA_API float
-anim_bounce_ease_in(float t, float a, float diff, float dur);
-ORCA_API float
-anim_bounce_ease_in_out(float t, float a, float diff, float dur);
-ORCA_API float
-anim_circ_ease_in(float t, float a, float diff, float dur);
-ORCA_API float
-anim_circ_ease_out(float t, float a, float diff, float dur);
-ORCA_API float
-anim_circ_ease_in_out(float t, float a, float diff, float dur);
-ORCA_API float
-anim_cubic_ease_in(float t, float a, float diff, float dur);
-ORCA_API float
-anim_cubic_ease_out(float t, float a, float diff, float dur);
-ORCA_API float
-anim_cubic_ease_in_out(float t, float a, float diff, float dur);
-ORCA_API float
-anim_elastic_ease_in(float t,
-                     float a,
-                     float diff,
-                     float dur,
-                     float amplitude,
-                     float period);
-ORCA_API float
-anim_elastic_ease_out(float t,
-                      float a,
-                      float diff,
-                      float dur,
-                      float amplitude,
-                      float period);
-ORCA_API float
-anim_elastic_ease_in_out(float t,
-                         float a,
-                         float diff,
-                         float dur,
-                         float amplitude,
-                         float period);
-ORCA_API float
-anim_expo_ease_in(float t, float a, float diff, float dur);
-ORCA_API float
-anim_expo_ease_out(float t, float a, float diff, float dur);
-ORCA_API float
-anim_expo_ease_in_out(float t, float a, float diff, float dur);
-ORCA_API float
-anim_linear_ease(float t, float a, float diff, float dur);
-ORCA_API float
-anim_quad_ease_in(float t, float a, float diff, float dur);
-ORCA_API float
-anim_quad_ease_out(float t, float a, float diff, float dur);
-ORCA_API float
-anim_quad_ease_in_out(float t, float a, float diff, float dur);
-ORCA_API float
-anim_quart_ease_in(float t, float a, float diff, float dur);
-ORCA_API float
-anim_quart_ease_out(float t, float a, float diff, float dur);
-ORCA_API float
-anim_quart_ease_in_out(float t, float a, float diff, float dur);
-ORCA_API float
-anim_quint_ease_in(float t, float a, float diff, float dur);
-ORCA_API float
-anim_quint_ease_out(float t, float a, float diff, float dur);
-ORCA_API float
-anim_quint_ease_in_out(float t, float a, float diff, float dur);
-ORCA_API float
-anim_sine_ease_in(float t, float a, float diff, float dur);
-ORCA_API float
-anim_sine_ease_out(float t, float a, float diff, float dur);
-ORCA_API float
-anim_sine_ease_in_out(float t, float a, float diff, float dur);
 
 ORCA_API void
 calculate_ninepatch(struct vec2 const* framesize,
@@ -108,6 +30,8 @@ calculate_ninepatch(struct vec2 const* framesize,
                     struct edges const* edges,
                     struct rect const* uv,
                     struct mat4* output);
+
+typedef const char *lpcString_t;
 
 ORCA_API uint32_t strlistidx(lpcString_t needle, lpcString_t haystack, lpcString_t *out);
 ORCA_API lpcString_t strlistget(uint32_t index, lpcString_t haystack);

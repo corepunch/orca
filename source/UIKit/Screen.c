@@ -100,7 +100,7 @@ draw_children(lpObject_t hObject,
     struct ViewEntity entity;
     struct ViewDef viewdef;
     handle_t rt = node2D->RenderTarget;
-    Node2D_GetViewEntity(hObject, &entity, rt, 0);
+    Node2D_GetViewEntity(node2D, &entity, rt, 0);
     Init_ViewDef(&viewdef, pDraw2DContent);
     entity.material.opacity = 1;
     tmp.OnlyDecorations = TRUE;
@@ -115,7 +115,7 @@ draw_children(lpObject_t hObject,
 HANDLER(Node2D, DrawBrush)
 {
   // #define ID_Material_Texture 0x0789ca7d
-	if (!memcmp(pDrawBrush->brush,
+	if (!memcmp(&pDrawBrush->brush,
 							&(struct BrushShorthand){0},
 							sizeof(struct BrushShorthand)))
     return FALSE;
@@ -129,7 +129,7 @@ HANDLER(Node2D, DrawBrush)
 
   struct ViewEntity entity;
 
-  Node2D_GetViewEntity(hObject,&entity,pDrawBrush->image,pDrawBrush->brush);
+  Node2D_GetViewEntity(GetNode2D(hObject),&entity,pDrawBrush->image,&pDrawBrush->brush);
 
   if (!pDrawBrush->foreground) {
 		entity.bbox = BOX3_FromRect(Node2D_GetBackgroundRect(pNode2D));
@@ -216,8 +216,8 @@ _DrawModal(lpObject_t object, Draw2DContentEventPtr params)
       NODE2D_FRAME(pNode2D, Size, kBox3FieldHeight).Actual - TOTAL_PADDING(pNode2D, 1),
     };
     OBJ_SendMessageW(mod, kEventArrange, 0, &content);
-    OBJ_SendMessageW(mod, kEventUpdateMatrix, 0, &(UPDATEMATRIXSTRUCT) {
-      .parent = &GetNode2D(OBJ_GetParent(mod))->Matrix,
+    OBJ_SendMessageW(mod, kEventUpdateMatrix, 0, &(struct UpdateMatrixEventArgs) {
+      .parent = GetNode2D(OBJ_GetParent(mod))->Matrix,
       .opacity = 1,
     });
     Node2D_Draw2DContent(mod, GetNode2D(mod), 0, params);
@@ -308,14 +308,12 @@ HANDLER(Screen, RenderScreen) {
 }
 
 void
-Node2D_GetViewEntity(lpObject_t hObject,
+Node2D_GetViewEntity(struct Node2D* node2d,
                      struct ViewEntity* entity,
 										 struct Texture const* image,
 										 struct BrushShorthand const* brush)
 {
   static struct uniform uniforms[MAX_UNIFORMS];
-
-  Node2DPtr node2d = GetNode2D(hObject);
 
   memset(entity, 0, sizeof(struct ViewEntity));
 
@@ -327,7 +325,7 @@ Node2D_GetViewEntity(lpObject_t hObject,
     .texture = image,
     .textureMatrix = MAT3_Identity(),
     .uniforms = uniforms,
-    .numUniforms = OBJ_GetUniforms(hObject, uniforms),
+    .numUniforms = OBJ_GetUniforms(node2d->_object, uniforms),
   };
 	if (!brush) {
 	} else if (brush->Material) {
@@ -379,7 +377,7 @@ HANDLER(Node2D, Draw2DContent)
       &pNode2D->RenderTarget);
   }
 
-  FOREGROUNDCONTENTSTRUCT foreground = { 0 };
+  struct ForegroundContentEventArgs foreground = { 0 };
 
 #define kEventDrawBrush 0x0875c1d1
 #define kEventUpdateGeometry 0x12c1a314
@@ -414,8 +412,8 @@ HANDLER(Node2D, Draw2DContent)
   }
 
   if (pNode2D->Ring.Width > 0) {
-    OBJ_SendMessageW(hObject, kEventDrawBrush, 0, &(DRAWBRUSHSTRUCT){
-      .projection = &pDraw2DContent->ProjectionMatrix,
+    OBJ_SendMessageW(hObject, kEventDrawBrush, 0, &(struct DrawBrushEventArgs){
+      .projection = pDraw2DContent->ProjectionMatrix,
       .borderOffset = pNode2D->Ring.Offset,
       .borderWidth = {
         pNode2D->Ring.Width,
@@ -425,7 +423,7 @@ HANDLER(Node2D, Draw2DContent)
       },
       .foreground = FALSE,
       .viewdef = &viewdef,
-      .brush = &(struct BrushShorthand) {
+      .brush = {
         .Color = pNode2D->Ring.Color
       }});
   }
@@ -438,29 +436,29 @@ HANDLER(Node2D, Draw2DContent)
   }, Zero = {0};
 
   if (memcmp(&BorderWidth, &Zero, sizeof(struct vec4))) {
-    OBJ_SendMessageW(hObject, kEventDrawBrush, 0, &(DRAWBRUSHSTRUCT){
-      .projection = &pDraw2DContent->ProjectionMatrix,
+    OBJ_SendMessageW(hObject, kEventDrawBrush, 0, &(struct DrawBrushEventArgs){
+      .projection = pDraw2DContent->ProjectionMatrix,
       .borderWidth = BorderWidth,
       .foreground = FALSE,
       .viewdef = &viewdef,
-      .brush = &(struct BrushShorthand) {
+      .brush = {
         .Color = pNode2D->_node->Border.Color
       }
     });
   }
 
   if (!pDraw2DContent->OnlyDecorations) {
-    OBJ_SendMessageW(hObject, kEventDrawBrush, 0, &(DRAWBRUSHSTRUCT){
-     .projection = &pDraw2DContent->ProjectionMatrix,
-     .brush = &pNode2D->Background,
+    OBJ_SendMessageW(hObject, kEventDrawBrush, 0, &(struct DrawBrushEventArgs){
+     .projection = pDraw2DContent->ProjectionMatrix,
+     .brush = pNode2D->Background,
      .foreground = FALSE,
      .viewdef = &viewdef,
     });
 
-    OBJ_SendMessageW(hObject, kEventDrawBrush, 0, &(DRAWBRUSHSTRUCT){
-      .projection = &pDraw2DContent->ProjectionMatrix,
+    OBJ_SendMessageW(hObject, kEventDrawBrush, 0, &(struct DrawBrushEventArgs){
+      .projection = pDraw2DContent->ProjectionMatrix,
       .image = foreground.result,
-      .brush = &pNode2D->Foreground,
+      .brush = pNode2D->Foreground,
       .foreground = TRUE,
       .viewdef = &viewdef,
     });

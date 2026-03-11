@@ -3,7 +3,7 @@
 
 HANDLER(PrefabView3D, LoadView)
 {
-  lua_State* L = pLoadView;
+  lua_State* L = pLoadView->lua_state;
   if (*pPrefabView3D->SCA &&
       pPrefabView3D->_loadedSCA != fnv1a32(pPrefabView3D->SCA)) {
     //		Con_Error("LoadSCA: %s", pPrefabView3D->SCA);

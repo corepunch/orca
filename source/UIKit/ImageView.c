@@ -78,7 +78,7 @@ HANDLER(ImageView, DrawBrush)
   struct vec2 imgsize = _GetImageSize(hObject, pImageView);
   struct ViewEntity entity;
 
-	if (!memcmp(pDrawBrush->brush,
+	if (!memcmp(&pDrawBrush->brush,
 							&(struct BrushShorthand){0},
 							sizeof(struct BrushShorthand)) &&
 			!pDrawBrush->foreground)
@@ -104,7 +104,7 @@ HANDLER(ImageView, DrawBrush)
 #endif
 
   lpTexture_t img = pDrawBrush->foreground ? pImageView->Image : NULL;
-  Node2D_GetViewEntity(hObject, &entity, img, pDrawBrush->brush);
+  Node2D_GetViewEntity(pNode2D, &entity, img, &pDrawBrush->brush);
   
   calculate_ninepatch(&(vec2_t){ width, height },
                       &imgsize,
@@ -149,7 +149,7 @@ HANDLER(ImageView, ForegroundContent)
 
 HANDLER(ImageView, LoadView)
 {
-  lua_State* L = pLoadView;
+  lua_State* L = pLoadView->lua_state;
   if (!(OBJ_GetFlags(hObject) & OF_ACTIVATED)) {
     return TRUE;
   }
