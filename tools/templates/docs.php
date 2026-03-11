@@ -75,7 +75,7 @@ function methodSection($methods, $ownerName) {
         foreach ($method->getArgs() as $argName => $argType) {
             $argName = strval($argName);
             if ($argName === "this_" || $argName === "L") continue;
-            $sigParts[] = $argName . ": " . strval($argType->type);
+            $sigParts[] = strval($argType->type);
         }
         $sig = $export . "(" . implode(", ", $sigParts) . ")";
         if ($method->returns !== null) {
