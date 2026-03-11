@@ -11,11 +11,11 @@ extern void luaX_push<?= $name ?>(lua_State *L, struct <?= $name ?> const* value
 extern struct <?= $name ?>* luaX_check<?= $name ?>(lua_State *L, int index);
 <?php endforeach ?>
 
-<?php require "templates/export_enums.php"; ?>
-<?php require "templates/export_interfaces.php"; ?>
-<?php require "templates/export_structs.php"; ?>
-<?php require "templates/export_components.php"; ?>
-<?php require "templates/export_functions.php"; ?>
+<?php // require "templates/export_enums.php"; ?>
+<?php // require "templates/export_interfaces.php"; ?>
+<?php // require "templates/export_structs.php"; ?>
+<?php // require "templates/export_components.php"; ?>
+<?php require "templates/export_functions2.php"; ?>
 
 ORCA_API int luaopen_orca_<?= $model->getModuleName() ?>(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 

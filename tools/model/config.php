@@ -1,117 +1,212 @@
 <?php
 
 class config {
-	// Each type entry must be a single-line array (pyphp limitation with nested multi-line dicts)
-	public static $TypeInfos = [
+	public static $TypeInfos2 = [
 		"float" => [
 			'decl' => 'float', 
-			'check' => 'luaL_checknumber(L, {arg})', 
-			'pop' => '{addr} = luaL_checknumber(L, {arg})', 
-			'push' => 'lua_pushnumber(L, {arg})',  
-			'convert' => '{addr} = {arg}', 
+			'pop' => '%s = luaL_checknumber/*%s*/(L, %d)', 
+			'push' => 'lua_pushnumber/*%s*/(L, %s)',  
+			'convert' => '%s = {arg}', 
 			'format' => "%f"
 		],
 		"int" => [
 			'decl' => 'int32_t', 
-			'check' => 'luaL_checknumber(L, {arg})', 
-			'pop' => '{addr} = luaL_checknumber(L, {arg})', 
-			'push' => 'lua_pushnumber(L, {arg})',  
-			'convert' => '{addr} = {arg}', 
+			'pop' => '%s = luaL_checknumber/*%s*/(L, %d)', 
+			'push' => 'lua_pushnumber/*%s*/(L, %s)',  
+			'convert' => '%s = {arg}', 
 			'format' => "%d"
 		],
 		"uint" => [
 			'decl' => 'uint32_t', 
-			'check' => 'luaL_checknumber(L, {arg})', 
-			'pop' => '{addr} = luaL_checknumber(L, {arg})', 
-			'push' => 'lua_pushnumber(L, {arg})',  
-			'convert' => '{addr} = {arg}', 
+			'pop' => '%s = luaL_checknumber/*%s*/(L, %d)', 
+			'push' => 'lua_pushnumber/*%s*/(L, %s)',  
+			'convert' => '%s = {arg}', 
 			'format' => "%u"
 		],
 		"long" => [
 			'decl' => 'long', 
-			'check' => 'luaL_checkinteger(L, {arg})',
-			'pop' => '{addr} = luaL_checkinteger(L, {arg})',
-			'push' => 'lua_pushinteger(L, {arg})', 
-			'convert' => '{addr} = {arg}', 
+			'pop' => '%s = luaL_checkinteger/*%s*/(L, %d)',
+			'push' => 'lua_pushinteger/*%s*/(L, %s)', 
+			'convert' => '%s = {arg}', 
 			'format' => "%ld"
 		],
 		"bool" => [
 			'decl' => 'bool_t', 
-			'check' => 'lua_toboolean(L, {arg})', 
-			'pop' => '{addr} = lua_toboolean(L, {arg})', 
-			'push' => 'lua_pushboolean(L, {arg})', 
-			'convert' => '{addr} = !strcmp({arg}, "true")', 
+			'pop' => '%s = lua_toboolean/*%s*/(L, %d)', 
+			'push' => 'lua_pushboolean/*%s*/(L, %s)', 
+			'convert' => '%s = !strcmp({arg}, "true")', 
 			'format' => "%s"
 		],
 		"string" => [
 			'decl' => 'const char*', 
-			'check' => 'luaL_checkstring(L, {arg})', 
-			'pop' => '{addr} = strdup(luaL_checkstring(L, {arg}))', 
-			'push' => 'lua_pushstring(L, {arg})',  
-			'convert' => '{addr} = {arg}', 
+			'pop' => '%s = strdup(luaL_check%s(L, %d))', 
+			'push' => 'lua_push%s(L, %s)',  
+			'convert' => '%s = {arg}', 
 			'format' => "%s"
 		],
 		"objectTags" => [
 			'decl' => 'objectTags_t', 
-			'check' => 'luaL_checkinteger(L, {arg})',
-			'pop' => '{addr} = luaL_checkinteger(L, {arg})',
-			'push' => 'lua_pushinteger(L, {arg})', 
-			'convert' => '{addr} = {arg}', 
+			'pop' => '%s = luaL_checkinteger(L, %d)',
+			'push' => 'lua_pushinteger/*%s*/(L, %s)', 
+			'convert' => '%s = {arg}', 
 			'format' => "%ld"
 		],
 		"fixed" => [
 			'decl' => '%sString_t', 
-			'check' => 'luaL_checkstring(L, {arg})', 
-			'pop' => 'strncpy({addr}, luaL_checkstring(L, {arg}), sizeof({addr}))', 
-			'push' => 'lua_pushstring(L, {arg})',  
-			'convert' => 'strncpy({addr}, {arg}, sizeof({addr}))', 
+			'pop' => 'strncpy(%s, luaL_checkstring(L, %d), sizeof(%s))', 
+			'push' => 'lua_pushstring/*%s*/(L, %s)',  
+			'convert' => 'strncpy(%s, %d, sizeof(%s))', 
 			'format' => "%s"
 		],
 		"enum" => [
 			'decl' => 'enum %s', 
-			'check' => 'luaX_check{type}(L, {arg})', 
-			'pop' => '{addr} = luaX_check{type}(L, {arg})', 
-			'push' => 'luaX_push{type}(L, {arg})', 
-			'convert' => 'lua_pop(L, (lua_pushstring(L, {arg}), {addr} = luaL_checkoption(L, -1, NULL, _{type}), 1));', 
+			'pop' => '%s = luaX_check%s(L, %d)', 
+			'push' => 'luaX_push%s(L, %s)', 
+			'convert' => 'lua_pop(L, (lua_pushstring(L, %d), %s = luaL_checkoption(L, -1, NULL, _%s), 1));', 
 			'format' => "%s"
 		],
 		"struct" => [
 			'decl' => 'struct %s', 
-			'check' => 'luaX_check{type}(L, {arg})', 
-			'pop' => '{addr} = *luaX_check{type}(L, {arg})',
-			'push' => 'luaX_push{type}(L, &{arg})',
-			'convert' => '{addr} = {arg}', 
+			'pop' => '%s = *luaX_check%s(L, %d)',
+			'push' => 'luaX_push%s(L, &%s)',
+			'convert' => '%s = {arg}', 
 			'format' => "%s"
 		],
 		"interface" => [
 			'decl' => 'struct %s', 
-			'check' => 'luaX_check{type}(L, {arg})', 
-			'pop' => '{addr} = luaX_check{type}(L, {arg})',
-			'push' => 'luaX_push{type}(L, {arg})',
-			'convert' => '{addr} = {arg}', 
+			'pop' => '%s = luaX_check%s(L, %d)',
+			'push' => 'luaX_push%s(L, %s)',
+			'convert' => '%s = {arg}', 
 			'format' => "%s"
 		],
 		"component" => [
 			'decl' => 'struct %s', 
-			'check' => 'luaX_check{type}(L, {arg})', 
-			'pop' => '{addr} = luaX_check{type}(L, {arg})',
-			'push' => 'luaX_push{type}(L, {arg})', 
-			'convert' => 'lua_pop(L, (f_convert_string(L, &(struct PropertyType) { .DataType = kDataTypeObject, .TypeString = "{type}" }, {arg}, TRUE), {addr} = luaX_check{type}(L, -1), 1));', 
+			'pop' => '%s = luaX_check%s(L, %d)',
+			'push' => 'luaX_push%s(L, %s)', 
+			'convert' => 'lua_pop(L, (f_convert_string(L, &(struct PropertyType) { .DataType = kDataTypeObject, .TypeString = "%s" }, %d, TRUE), %s = luaX_check%s(L, -1), 1));', 
 			'format' => "%s"
 		],
 		"resource" => [
 			'decl' => 'struct %s', 
-			'check' => 'luaX_check{type}(L, {arg})', 
-			'pop' => '{addr} = luaX_check{type}(L, {arg})',
-			'push' => 'luaX_push{type}(L, {arg})', 
-			'convert' => '{addr} = {arg}', 
+			'pop' => '%s = luaX_check%s(L, %d)',
+			'push' => 'luaX_push%s(L, %s)', 
+			'convert' => '%s = {arg}', 
 			'format' => "%s"
 		],
 		"external_struct" => [
 			'decl' => 'struct %s', 
-			'check' => 'NULL', 
-			'pop' => '{addr} = NULL',
-			'push' => 'luaX_push{type}(L, {arg})',
+			'pop' => '%s = NULL',
+			'push' => 'luaX_push%s(L, %s)',
+			'convert' => '', 
+			'format' => "%s"
+		],
+		"nresults" => [
+			'decl' => 'int',
+			'push' => 'lua_pushnil(L)', 
+			'return' => 'return {arg};' 
+		],
+		"void" => [
+			'decl' => '%s', 
+			'return' => '{arg};\n\treturn 0;' 
+		],
+		"lua_State" => [],
+	];
+	public static $TypeInfos = [
+		"float" => [
+			'decl' => 'float', 
+			'pop' => '%s = luaL_checknumber/*%s*/(L, %d)', 
+			'push' => 'lua_pushnumber(L, %s)',  
+			'convert' => '%s = {arg}', 
+			'format' => "%f"
+		],
+		"int" => [
+			'decl' => 'int32_t', 
+			'pop' => '%s = luaL_checknumber/*%s*/(L, %d)', 
+			'push' => 'lua_pushnumber(L, %s)',  
+			'convert' => '%s = {arg}', 
+			'format' => "%d"
+		],
+		"uint" => [
+			'decl' => 'uint32_t', 
+			'pop' => '%s = luaL_checknumber/*%s*/(L, %d)', 
+			'push' => 'lua_pushnumber(L, %s)',  
+			'convert' => '%s = {arg}', 
+			'format' => "%u"
+		],
+		"long" => [
+			'decl' => 'long', 
+			'pop' => '%s = luaL_checkinteger(L, %d)',
+			'push' => 'lua_pushinteger(L, %s)', 
+			'convert' => '%s = {arg}', 
+			'format' => "%ld"
+		],
+		"bool" => [
+			'decl' => 'bool_t', 
+			'pop' => '%s = lua_toboolean(L, %d)', 
+			'push' => 'lua_pushboolean(L, %s)', 
+			'convert' => '%s = !strcmp({arg}, "true")', 
+			'format' => "%s"
+		],
+		"string" => [
+			'decl' => 'const char*', 
+			'pop' => '%s = strdup(luaL_checkstring(L, %d))', 
+			'push' => 'lua_pushstring(L, %s)',  
+			'convert' => '%s = {arg}', 
+			'format' => "%s"
+		],
+		"objectTags" => [
+			'decl' => 'objectTags_t', 
+			'pop' => '%s = luaL_checkinteger(L, %d)',
+			'push' => 'lua_pushinteger(L, %s)', 
+			'convert' => '%s = {arg}', 
+			'format' => "%ld"
+		],
+		"fixed" => [
+			'decl' => '%sString_t', 
+			'pop' => 'strncpy(%s, luaL_checkstring(L, %d), sizeof(%s))', 
+			'push' => 'lua_pushstring(L, %s)',  
+			'convert' => 'strncpy(%s, %d, sizeof(%s))', 
+			'format' => "%s"
+		],
+		"enum" => [
+			'decl' => 'enum %s', 
+			'pop' => '%s = luaX_check%s(L, %d)', 
+			'push' => 'luaX_push%s(L, %s)', 
+			'convert' => 'lua_pop(L, (lua_pushstring(L, %d), %s = luaL_checkoption(L, -1, NULL, _%s), 1));', 
+			'format' => "%s"
+		],
+		"struct" => [
+			'decl' => 'struct %s', 
+			'pop' => '%s = *luaX_check%s(L, %d)',
+			'push' => 'luaX_push%s(L, &{arg})',
+			'convert' => '%s = {arg}', 
+			'format' => "%s"
+		],
+		"interface" => [
+			'decl' => 'struct %s', 
+			'pop' => '%s = luaX_check%s(L, %d)',
+			'push' => 'luaX_push%s(L, %s)',
+			'convert' => '%s = {arg}', 
+			'format' => "%s"
+		],
+		"component" => [
+			'decl' => 'struct %s', 
+			'pop' => '%s = luaX_check%s(L, %d)',
+			'push' => 'luaX_push%s(L, %s)', 
+			'convert' => 'lua_pop(L, (f_convert_string(L, &(struct PropertyType) { .DataType = kDataTypeObject, .TypeString = "%s" }, %d, TRUE), %s = luaX_check%s(L, -1), 1));', 
+			'format' => "%s"
+		],
+		"resource" => [
+			'decl' => 'struct %s', 
+			'pop' => '%s = luaX_check%s(L, %d)',
+			'push' => 'luaX_push%s(L, %s)', 
+			'convert' => '%s = {arg}', 
+			'format' => "%s"
+		],
+		"external_struct" => [
+			'decl' => 'struct %s', 
+			'pop' => '%s = NULL',
+			'push' => 'luaX_push%s(L, %s)',
 			'convert' => '', 
 			'format' => "%s"
 		],
