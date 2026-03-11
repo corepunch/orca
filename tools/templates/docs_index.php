@@ -1,4 +1,3 @@
-<?php require "model/module.php"; ?>
 <?php
 $docsDir = __DIR__ . "/../../docs";
 
@@ -15,8 +14,7 @@ $md .= "## API Modules\n\n";
 $md .= "| Module | Contents |\n";
 $md .= "|--------|----------|\n";
 
-for ($i = 1; $i < count($argv); $i++) {
-    $model = new Model($argv[$i]);
+foreach ($models as $model) {
     $moduleName = strval($model->getModuleName());
     $namespaceAttr = $model->root["namespace"];
     $namespace = $namespaceAttr !== null ? strval($namespaceAttr) : "orca";

@@ -1,5 +1,3 @@
-<?php require "model/module.php"; ?>
-<?php $model = new Model($argv[1]); ?>
 #ifndef __<?= strtoupper($model->getModuleName()) ?>_H__
 #define __<?= strtoupper($model->getModuleName()) ?>_H__
 

@@ -596,3 +596,32 @@ class Model {
 	}
 }
 
+// include_template loads a named view template. Variables are shared via the
+// global scope (pyphp executes all requires in a single shared scope).
+// The $variables parameter follows thebuggenie's interface for compatibility.
+function include_template($template, $variables = []) {
+	if ($template === 'header') {
+		require "templates/header.php";
+	} elseif ($template === 'properties') {
+		require "templates/properties.php";
+	} elseif ($template === 'export') {
+		require "templates/export.php";
+	} elseif ($template === 'export_enums') {
+		require "templates/export_enums.php";
+	} elseif ($template === 'export_interfaces') {
+		require "templates/export_interfaces.php";
+	} elseif ($template === 'export_structs') {
+		require "templates/export_structs.php";
+	} elseif ($template === 'export_components') {
+		require "templates/export_components.php";
+	} elseif ($template === 'export_functions') {
+		require "templates/export_functions.php";
+	} elseif ($template === 'dtd') {
+		require "templates/dtd.php";
+	} elseif ($template === 'docs') {
+		require "templates/docs.php";
+	} elseif ($template === 'docs_index') {
+		require "templates/docs_index.php";
+	}
+}
+

@@ -1,4 +1,3 @@
-<?php require "model/module.php"; ?>
 <?php
 // --- Global registry: collect entities from all supplied XML files ---
 
@@ -6,9 +5,8 @@ $globalEnums = [];
 $globalStructs = [];
 $globalComponents = [];
 
-function loadModule($xmlFile) {
+function loadModule($model) {
     global $globalEnums, $globalStructs, $globalComponents;
-    $model = new Model($xmlFile);
     foreach ($model->getEnums() as $name => $enum) {
         $globalEnums[strval($name)] = $enum;
     }
@@ -20,8 +18,8 @@ function loadModule($xmlFile) {
     }
 }
 
-for ($i = 1; $i < count($argv); $i++) {
-    loadModule($argv[$i]);
+foreach ($models as $model) {
+    loadModule($model);
 }
 
 // --- Helper: check if a component (by name) is a 2D or 3D node via inheritance ---

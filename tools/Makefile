@@ -33,9 +33,9 @@ all: $(MODULES)
 define MODULE_RULE
 $(1):
 	@echo "Generating $(1)..."
-	$(PYPHP) $(TEMPLATES)/header.php     $(SOURCE_DIR)/$(1).xml > $(SOURCE_DIR)/$(1).h
-	$(PYPHP) $(TEMPLATES)/properties.php $(SOURCE_DIR)/$(1).xml > $(SOURCE_DIR)/$(1)_properties.h
-	$(PYPHP) $(TEMPLATES)/export.php     $(SOURCE_DIR)/$(1).xml > $(SOURCE_DIR)/$(1)_export.c
+	$(PYPHP) $(TEMPLATES)/index.php codegen/header     $(SOURCE_DIR)/$(1).xml > $(SOURCE_DIR)/$(1).h
+	$(PYPHP) $(TEMPLATES)/index.php codegen/properties $(SOURCE_DIR)/$(1).xml > $(SOURCE_DIR)/$(1)_properties.h
+	$(PYPHP) $(TEMPLATES)/index.php codegen/export     $(SOURCE_DIR)/$(1).xml > $(SOURCE_DIR)/$(1)_export.c
 endef
 
 $(foreach mod,$(MODULES),$(eval $(call MODULE_RULE,$(mod))))
@@ -43,7 +43,7 @@ $(foreach mod,$(MODULES),$(eval $(call MODULE_RULE,$(mod))))
 # Generate orca.dtd from UI modules
 dtd:
 	@echo "Generating DTD..."
-	$(PYPHP) $(TEMPLATES)/dtd.php \
+	$(PYPHP) $(TEMPLATES)/index.php dtd/generate \
 		$(SOURCE_DIR)/UIKit/UIKit.xml \
 		$(SOURCE_DIR)/SceneKit/SceneKit.xml \
 		$(SOURCE_DIR)/SpriteKit/SpriteKit.xml \
@@ -53,14 +53,14 @@ dtd:
 define DOCS_RULE
 docs-$(1):
 	@echo "Generating docs for $(1)..."
-	$(PYPHP) $(TEMPLATES)/docs.php $(SOURCE_DIR)/$(1).xml
+	$(PYPHP) $(TEMPLATES)/index.php docs/generate $(SOURCE_DIR)/$(1).xml
 endef
 
 $(foreach mod,$(DOC_MODULES),$(eval $(call DOCS_RULE,$(mod))))
 
 docs-index:
 	@echo "Generating docs index..."
-	$(PYPHP) $(TEMPLATES)/docs_index.php \
+	$(PYPHP) $(TEMPLATES)/index.php docs/index \
 		$(foreach mod,$(DOC_MODULES),$(SOURCE_DIR)/$(mod).xml)
 
 docs: $(foreach mod,$(DOC_MODULES),docs-$(mod)) docs-index

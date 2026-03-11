@@ -1,6 +1,4 @@
-<?php require "model/module.php"; ?>
 <?php
-$model = new Model($argv[1]);
 $moduleName = strval($model->getModuleName());
 $namespaceAttr = $model->root["namespace"];
 $namespace = $namespaceAttr !== null ? strval($namespaceAttr) : "orca";
