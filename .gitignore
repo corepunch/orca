@@ -76,7 +76,6 @@ build.log
 
 # Generated API docs (built by make docs and deployed via GitHub Pages)
 docs/api/
-docs/index.md
 
 # MkDocs generated site (built by mkdocs build in CI)
 site/
