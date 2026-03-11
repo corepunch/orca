@@ -1,4 +1,4 @@
-<?php foreach ($model->getInterfaces() as $name => $interface):?>
+<?php foreach ($interfaces as $name => $interface):?>
 <?php foreach ($interface->getMethods() as $method_name => $method):?>
 int f_<?= $name ?>_<?= $method_name ?>(lua_State *L) {
 	<?php $index = 1 ?>

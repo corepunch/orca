@@ -1,4 +1,4 @@
-<?php foreach ($model->getEnums() as $name => $enum):?>
+<?php foreach ($enums as $name => $enum):?>
 static const char *_<?= $name ?>[] = {"<?= implode('","', $enum->getValuesNames()) ?>",NULL};
 const char *<?= $name ?>ToString(enum <?= $name ?> value) {
 	assert(value >= 0 && value < <?= count($enum->getValuesNames()) ?>);

@@ -1,4 +1,4 @@
-<?php foreach ($model->getStructs() as $name => $struct):?>
+<?php foreach ($structs as $name => $struct):?>
 void luaX_push<?= $name ?>(lua_State *L, struct <?= $name ?> const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct <?= $name ?>* self = lua_newuserdata(L, sizeof(struct <?= $name ?>));

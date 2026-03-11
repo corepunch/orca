@@ -596,10 +596,12 @@ class Model {
 	}
 }
 
-// include_template loads a named view template. Variables are shared via the
-// global scope (pyphp executes all requires in a single shared scope).
-// The $variables parameter follows thebuggenie's interface for compatibility.
+// include_template loads a named view template. $variables is an associative
+// array of data to expose inside the template as plain PHP variables, following
+// thebuggenie's include_template convention. extract() writes each key into the
+// shared execution scope so the required file sees them immediately.
 function include_template($template, $variables = []) {
+	extract($variables);
 	require "templates/$template.php";
 }
 

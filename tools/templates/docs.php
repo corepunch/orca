@@ -1,8 +1,4 @@
 <?php
-$moduleName = strval($model->getModuleName());
-$namespaceAttr = $model->root["namespace"];
-$namespace = $namespaceAttr !== null ? strval($namespaceAttr) : "orca";
-
 $outDir = __DIR__ . "/../../docs/api/" . $moduleName;
 if (!is_dir($outDir)) {
     mkdir($outDir, 511, true);
@@ -112,7 +108,7 @@ function methodSection($methods, $ownerName) {
 }
 
 // ---- Generate per-enum page ----
-foreach ($model->getEnums() as $ename => $enum) {
+foreach ($enums as $ename => $enum) {
     $ename = strval($ename);
     $summary = $enum->doc;
     $details = getDetails($enum->_elem);
@@ -136,7 +132,7 @@ foreach ($model->getEnums() as $ename => $enum) {
 }
 
 // ---- Generate per-struct page ----
-foreach ($model->getStructs() as $sname => $struct) {
+foreach ($structs as $sname => $struct) {
     $sname = strval($sname);
     $summary = $struct->doc;
     $details = getDetails($struct->_elem);
@@ -181,7 +177,7 @@ foreach ($model->getStructs() as $sname => $struct) {
 }
 
 // ---- Generate per-interface page ----
-foreach ($model->getInterfaces() as $iname => $interface) {
+foreach ($interfaces as $iname => $interface) {
     $iname = strval($iname);
     $summary = $interface->doc;
     $details = getDetails($interface->_elem);
@@ -202,7 +198,7 @@ foreach ($model->getInterfaces() as $iname => $interface) {
 }
 
 // ---- Generate per-class (component) page ----
-foreach ($model->getComponents() as $cname => $comp) {
+foreach ($components as $cname => $comp) {
     $cname = strval($cname);
     $summary = $comp->doc;
     $details = getDetails($comp->_elem);
@@ -248,7 +244,7 @@ $readme .= "API reference for the `" . $moduleName . "` module.\n\n";
 
 $hasEnums = false;
 $enumsMd = "## Enumerations\n\n";
-foreach ($model->getEnums() as $ename => $enum) {
+foreach ($enums as $ename => $enum) {
     $hasEnums = true;
     $ename = strval($ename);
     $summary = $enum->doc;
@@ -264,7 +260,7 @@ if ($hasEnums) {
 
 $hasStructs = false;
 $structsMd = "## Structures\n\n";
-foreach ($model->getStructs() as $sname => $struct) {
+foreach ($structs as $sname => $struct) {
     $hasStructs = true;
     $sname = strval($sname);
     $summary = $struct->doc;
@@ -280,7 +276,7 @@ if ($hasStructs) {
 
 $hasIfaces = false;
 $ifacesMd = "## Interfaces\n\n";
-foreach ($model->getInterfaces() as $iname => $iface) {
+foreach ($interfaces as $iname => $iface) {
     $hasIfaces = true;
     $iname = strval($iname);
     $summary = $iface->doc;
@@ -296,7 +292,7 @@ if ($hasIfaces) {
 
 $hasComps = false;
 $compsMd = "## Classes\n\n";
-foreach ($model->getComponents() as $cname => $comp) {
+foreach ($components as $cname => $comp) {
     $hasComps = true;
     $cname = strval($cname);
     $summary = $comp->doc;

@@ -1,5 +1,5 @@
-#ifndef __<?= strtoupper($model->getModuleName()) ?>_H__
-#define __<?= strtoupper($model->getModuleName()) ?>_H__
+#ifndef __<?= strtoupper($moduleName) ?>_H__
+#define __<?= strtoupper($moduleName) ?>_H__
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -20,24 +20,24 @@ typedef struct lua_State lua_State;
 	}
 } ?>
 
-<?php foreach ($model->getExternalStructs() as $name => $struct):?>
+<?php foreach ($externalStructs as $name => $struct):?>
 struct <?= $name ?>;
 <?php endforeach ?>
 
-<?php foreach ($model->getIncludes() as $include):?>
+<?php foreach ($includes as $include):?>
 #include <<?= $include ?>>
 <?php endforeach ?>
 
-#include "<?= $model->getModuleName() ?>_properties.h"
-<?php foreach ($model->getRequires() as $name => $module): ?>
+#include "<?= $moduleName ?>_properties.h"
+<?php foreach ($requires as $name => $module): ?>
 #include "<?= substr($module->source, 0, -4) ?>.h"
 <?php endforeach ?>
 
-<?php foreach ($model->getEvents() as $name => $event):?>
+<?php foreach ($events as $name => $event):?>
 typedef <?= $event ?>* <?= $name ?>EventPtr;
 <?php endforeach ?>
 
-<?php foreach ($model->getEnums() as $name => $enum): ?>
+<?php foreach ($enums as $name => $enum): ?>
 <?php if ($enum->doc): ?>
 /// @brief <?= $enum->doc ?>
 <?php endif ?>
@@ -53,20 +53,20 @@ ORCA_API enum <?= $name ?> luaX_check<?= $name ?>(lua_State *L, int idx);
 ORCA_API void luaX_push<?= $name ?>(lua_State *L, enum <?= $name ?> value);
 <?php endforeach ?>
 
-<?php foreach ($model->getStructs() as $name => $struct): ?>
+<?php foreach ($structs as $name => $struct): ?>
 typedef struct <?= $name ?> <?= $name ?>_t, *lp<?= $name ?>_t;
 typedef struct <?= $name ?> const c<?= $name ?>_t, *lpc<?= $name ?>_t;
 <?php endforeach ?>
 
-<?php foreach ($model->getFunctions() as $name => $func):?>
+<?php foreach ($functions as $name => $func):?>
 <?php if ($func->doc): ?>
 /// @brief <?= $func->doc ?>
 <?php endif ?>
 ORCA_API <?= $func->getReturnType() ?>
-<?= $model->prefix.$name ?>(<?= implode(', ', $func->getArgsTypes()) ?>);
+<?= $prefix.$name ?>(<?= implode(', ', $func->getArgsTypes()) ?>);
 <?php endforeach ?>
 
-<?php foreach ($model->getInterfaces() as $name => $interface): ?>
+<?php foreach ($interfaces as $name => $interface): ?>
 <?php foreach ($interface->getMethods() as $method_name => $method): ?>
 <?php if ($method->doc): ?>
 /// @brief <?= $method->doc ?>
@@ -76,7 +76,7 @@ ORCA_API <?= $method->getReturnType() ?>
 <?php endforeach ?>
 <?php endforeach ?>
 
-<?php foreach ($model->getStructs() as $name => $struct): ?>
+<?php foreach ($structs as $name => $struct): ?>
 <?php if ($struct->doc): ?>
 /// @brief <?= $struct->doc ?>
 <?php endif ?>
@@ -95,7 +95,7 @@ ORCA_API <?= $method->getReturnType() ?>
 <?php endforeach ?>
 <?php endforeach ?>
 
-<?php foreach ($model->getComponents() as $name => $component): ?>
+<?php foreach ($components as $name => $component): ?>
 <?php if ($component->doc): ?>
 /// @brief <?= $component->doc ?>
 <?php endif ?>

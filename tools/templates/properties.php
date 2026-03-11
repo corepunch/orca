@@ -1,9 +1,9 @@
-#ifndef __<?= strtoupper($model->getModuleName()) ?>_PROPERTIES_H__
-#define __<?= strtoupper($model->getModuleName()) ?>_PROPERTIES_H__
-<?php foreach ($model->getEvents() as $name => $event):?>
+#ifndef __<?= strtoupper($moduleName) ?>_PROPERTIES_H__
+#define __<?= strtoupper($moduleName) ?>_PROPERTIES_H__
+<?php foreach ($events as $name => $event):?>
 #define kEvent<?= $name ?> 0x<?= hash('fnv1a32', $name) ?>
 <?php endforeach ?>
-<?php foreach ($model->getComponents() as $classname => $class):?>
+<?php foreach ($components as $classname => $class):?>
 // <?= $classname ?>
 #define ID_<?= $classname ?> 0x<?= hash('fnv1a32', $classname) ?>
 #define Get<?= $classname ?>(_P) ((struct <?= $classname ?>*)((_P)?OBJ_GetComponent(_P,ID_<?= $classname ?>):NULL))
