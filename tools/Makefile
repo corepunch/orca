@@ -25,7 +25,7 @@ DOCS_DIR   := ../docs
 PYPHP := python3 -m pyphp.pyphp
 
 # Top-level targets
-.PHONY: all dtd docs $(MODULES)
+.PHONY: all dtd docs docs-index $(MODULES)
 
 all: $(MODULES)
 
@@ -58,4 +58,9 @@ endef
 
 $(foreach mod,$(DOC_MODULES),$(eval $(call DOCS_RULE,$(mod))))
 
-docs: $(foreach mod,$(DOC_MODULES),docs-$(mod))
+docs-index:
+	@echo "Generating docs index..."
+	$(PYPHP) $(TEMPLATES)/docs_index.php \
+		$(foreach mod,$(DOC_MODULES),$(SOURCE_DIR)/$(mod).xml)
+
+docs: $(foreach mod,$(DOC_MODULES),docs-$(mod)) docs-index
