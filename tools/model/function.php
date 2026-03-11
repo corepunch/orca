@@ -1,6 +1,6 @@
 <?php
 
-require "model/config.php";
+require "model/config_new.php";
 
 class Workspace {
 	private $workspace;
@@ -28,7 +28,7 @@ class Workspace {
 	}
 
 	function decorate($arg) {
-		foreach (config::$TypeInfos2 as $type => $config) {
+		foreach (config_new::$TypeInfos as $type => $config) {
 			if ($arg['type'] == $type || $this->findType($arg['type'], $type)) {
 				foreach ($config as $key => $value) {
 					$arg->addAttribute($key, $value);
@@ -53,6 +53,12 @@ class Function {
 		}
 		foreach ($this->locals->xpath('//struct') as $struct) {
 			foreach ($struct->method as $method) {
+				// $thisElem = $method->addChild('arg');
+				// $thisElem->addAttribute('name', 'this_');
+				// $thisElem->addAttribute('type', $struct['name']);
+				// $thisElem->addAttribute('pointer', 'true');
+				// if ($method['const']) $thisElem->addAttribute('const', $method['const']);
+				// $method->addChild($thisElem);
 				foreach ($method->arg as $arg) $this->workspace->decorate($arg);
 				foreach ($method->returns as $arg) $this->workspace->decorate($arg);
 				yield "{$struct['prefix'] ?? $struct['name']}_{$method['name']}" => $method;
