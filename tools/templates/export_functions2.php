@@ -1,4 +1,5 @@
 <?php 
+// this is a placeholder, later on we'll use proper controller class to render views
 require "model/function.php"; 
 $function = new Function(argv[1]);
 ?>
