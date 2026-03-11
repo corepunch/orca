@@ -44,59 +44,75 @@ local node = ui.Node2D { name = "My Node" }
 
 ## Methods
 
-### `isFrameSet`
+### `isFrameSet(field: Box3Field) → bool`
 
 Check if a specific frame property is set on a Node2D
 
-**Parameters:** `field`: `Box3Field`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `field` | `Box3Field` |  |
 
 **Returns:** `bool`
 
-### `setFrame`
+### `setFrame(field: Box3Field, value: float)`
 
 Set a frame property value on a Node2D
 
-**Parameters:** `field`: `Box3Field`, `value`: `float`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `field` | `Box3Field` |  |
+| `value` | `float` |  |
 
-### `getFrame`
+### `getFrame(field: Box3Field) → float`
 
 Get a frame property value from a Node2D
 
-**Parameters:** `field`: `Box3Field`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `field` | `Box3Field` |  |
 
 **Returns:** `float`
 
-### `getBounds`
+### `getBounds(axis: Direction) → bounds`
 
 Get the layout bounds of a Node2D along a specific axis
 
-**Parameters:** `axis`: `Direction`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `axis` | `Direction` |  |
 
 **Returns:** `bounds`
 
-### `getRect`
+### `getRect() → rect`
 
 Get the rectangle bounds of a Node2D including padding and margin
 
 **Returns:** `rect`
 
-### `getBackgroundRect`
+### `getBackgroundRect() → rect`
 
 Get the background rendering rectangle for a Node2D
 
 **Returns:** `rect`
 
-### `getSize`
+### `getSize(axis: Direction, sizing: Sizing) → float`
 
 Utility function for calculating node dimensions with different sizing modes
 
-**Parameters:** `axis`: `Direction`, `sizing`: `Sizing`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `axis` | `Direction` |  |
+| `sizing` | `Sizing` |  |
 
 **Returns:** `float`
 
-### `getViewEntity`
+### `getViewEntity(ViewEntity: ViewEntity, image: Texture, brush: BrushShorthand)`
 
 Create a view entity for rendering operations
 
-**Parameters:** `ViewEntity`: `ViewEntity`, `image`: `Texture`, `brush`: `BrushShorthand`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `ViewEntity` | `ViewEntity` |  |
+| `image` | `Texture` |  |
+| `brush` | `BrushShorthand` |  |
 

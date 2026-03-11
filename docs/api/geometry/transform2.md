@@ -18,17 +18,19 @@ Encapsulates 2D translation, rotation, and scaling. Provides convenient interfac
 
 ## Methods
 
-### `identity`
+### `identity() → transform2`
 
 Creates identity transformation
 
-**Returns:** `transform2`
+**Returns:** `transform2` — Identity transform
 
-### `toMatrix3D`
+### `toMatrix3D(pivot: vec2) → mat4`
 
 Converts to 4x4 transformation matrix
 
-**Parameters:** `pivot`: `vec2`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `pivot` | `vec2` | Pivot point for rotation and scaling |
 
-**Returns:** `mat4`
+**Returns:** `mat4` — 4x4 transformation matrix
 

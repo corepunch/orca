@@ -18,17 +18,19 @@ Encapsulates 3D translation, rotation (as Euler angles), and scaling. Provides c
 
 ## Methods
 
-### `identity`
+### `identity() → transform3`
 
 Creates identity transformation
 
-**Returns:** `transform3`
+**Returns:** `transform3` — Identity transform
 
-### `toMatrix3D`
+### `toMatrix3D(pivot: vec3) → mat4`
 
 Converts to 4x4 transformation matrix
 
-**Parameters:** `pivot`: `vec3`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `pivot` | `vec3` | Pivot point for rotation and scaling |
 
-**Returns:** `mat4`
+**Returns:** `mat4` — 4x4 transformation matrix
 

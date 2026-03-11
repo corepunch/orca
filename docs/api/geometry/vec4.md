@@ -19,25 +19,35 @@ Represents a 4-component vector with x, y, z, and w components. Commonly used fo
 
 ## Methods
 
-### `set`
+### `set(x: float, y: float, z: float, w: float)`
 
 Sets all vector components
 
-**Parameters:** `x`: `float`, `y`: `float`, `z`: `float`, `w`: `float`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `x` | `float` | New X component value |
+| `y` | `float` | New Y component value |
+| `z` | `float` | New Z component value |
+| `w` | `float` | New W component value |
 
-### `scale`
+### `scale(s: float) → vec4`
 
 Returns a scaled copy of the vector
 
-**Parameters:** `s`: `float`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `s` | `float` | Scale factor to apply |
 
-**Returns:** `vec4`
+**Returns:** `vec4` — New scaled vector
 
-### `lerp`
+### `lerp(other: vec4, t: float) → vec4`
 
 Linear interpolation between this vector and another
 
-**Parameters:** `other`: `vec4`, `t`: `float`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `other` | `vec4` | Target vector to interpolate towards |
+| `t` | `float` | Interpolation factor (0.0 = this vector, 1.0 = other vector) |
 
-**Returns:** `vec4`
+**Returns:** `vec4` — Interpolated vector
 

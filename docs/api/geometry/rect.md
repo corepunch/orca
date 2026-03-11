@@ -19,41 +19,49 @@ Represents a rectangle using position (x, y) and dimensions (width, height). Pro
 
 ## Methods
 
-### `contains`
+### `contains(point: vec2) → bool`
 
 Tests if a point is inside the rectangle
 
-**Parameters:** `point`: `vec2`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `point` | `vec2` | Point to test |
 
-**Returns:** `bool`
+**Returns:** `bool` — True if point is inside the rectangle
 
-### `scale`
+### `scale(scale: float) → rect`
 
 Returns a scaled copy of the rectangle
 
-**Parameters:** `scale`: `float`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `scale` | `float` | Scale factor to apply |
 
-**Returns:** `rect`
+**Returns:** `rect` — New scaled rectangle
 
-### `expand`
+### `expand(padding: float) → rect`
 
 Returns a expanded copy of the rectangle
 
-**Parameters:** `padding`: `float`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `padding` | `float` | Padding to apply on each side |
 
-**Returns:** `rect`
+**Returns:** `rect` — New expanded rectangle
 
-### `center`
+### `center() → vec2`
 
 Calculates the center point of the rectangle
 
-**Returns:** `vec2`
+**Returns:** `vec2` — Center point of the rectangle
 
-### `fit`
+### `fit(big: vec2) → rect`
 
 Scales rectangle to fit within given dimensions while preserving aspect ratio
 
-**Parameters:** `big`: `vec2`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `big` | `vec2` | Target dimensions to fit within |
 
-**Returns:** `rect`
+**Returns:** `rect` — Fitted rectangle
 

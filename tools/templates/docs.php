@@ -69,21 +69,45 @@ function methodSection($methods, $ownerName) {
     foreach ($methods as $mname => $method) {
         if ($method->isMetaMethod()) continue;
         $export = strval($method->export);
-        $md .= "### `" . $export . "`\n\n";
-        if ($method->doc) {
-            $md .= strval($method->doc) . "\n\n";
-        }
-        $params = [];
+
+        // Build signature: collect user-visible params (skip 'this_' and 'L')
+        $sigParts = [];
         foreach ($method->getArgs() as $argName => $argType) {
             $argName = strval($argName);
             if ($argName === "this_" || $argName === "L") continue;
-            $params[] = "`" . $argName . "`: `" . strval($argType->type) . "`";
+            $sigParts[] = $argName . ": " . strval($argType->type);
         }
-        if (count($params) > 0) {
-            $md .= "**Parameters:** " . implode(", ", $params) . "\n\n";
-        }
+        $sig = $export . "(" . implode(", ", $sigParts) . ")";
         if ($method->returns !== null) {
-            $md .= "**Returns:** `" . strval($method->returns->type) . "`\n\n";
+            $sig .= " → " . strval($method->returns->type);
+        }
+
+        $md .= "### `" . $sig . "`\n\n";
+        if ($method->doc) {
+            $md .= strval($method->doc) . "\n\n";
+        }
+
+        // Parameter table (only if any user-visible params have descriptions)
+        $hasArgs = false;
+        $paramTable = "| Parameter | Type | Description |\n|-----------|------|-------------|\n";
+        foreach ($method->getArgs() as $argName => $argType) {
+            $argName = strval($argName);
+            if ($argName === "this_" || $argName === "L") continue;
+            $hasArgs = true;
+            $argDoc = trim(strval($argType->_elem));
+            $paramTable .= "| `" . $argName . "` | `" . strval($argType->type) . "` | " . mdEscape($argDoc) . " |\n";
+        }
+        if ($hasArgs) {
+            $md .= $paramTable . "\n";
+        }
+
+        if ($method->returns !== null) {
+            $retDoc = trim(strval($method->returns->_elem));
+            $retLine = "**Returns:** `" . strval($method->returns->type) . "`";
+            if ($retDoc) {
+                $retLine .= " — " . $retDoc;
+            }
+            $md .= $retLine . "\n\n";
         }
     }
     return $md;

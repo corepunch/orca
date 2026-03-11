@@ -17,23 +17,27 @@ Represents a rectangular region in 2D space defined by minimum and maximum corne
 
 ## Methods
 
-### `center`
+### `center() → vec2`
 
 Calculates the center point of the box
 
-**Returns:** `vec2`
+**Returns:** `vec2` — Center point of the bounding box
 
-### `moveTo`
+### `moveTo(location: vec2)`
 
 Moves the box so its center is at the specified location
 
-**Parameters:** `location`: `vec2`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `location` | `vec2` | New center position |
 
-### `containsPoint`
+### `containsPoint(point: vec2) → bool`
 
 Tests if a point is inside the box
 
-**Parameters:** `point`: `vec2`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `point` | `vec2` | Point to test |
 
-**Returns:** `bool`
+**Returns:** `bool` — True if point is inside the box
 

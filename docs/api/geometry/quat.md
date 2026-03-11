@@ -19,61 +19,76 @@ Represents a rotation in 3D space using quaternion mathematics. Provides smooth 
 
 ## Methods
 
-### `fromEuler`
+### `fromEuler(euler: vec3, order: RotationOrder) → quat`
 
 Creates quaternion from Euler angles
 
-**Parameters:** `euler`: `vec3`, `order`: `RotationOrder`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `euler` | `vec3` | Euler angles in radians (x=pitch, y=yaw, z=roll) |
+| `order` | `RotationOrder` | Order to apply rotations |
 
-**Returns:** `quat`
+**Returns:** `quat` — Quaternion representing the rotation
 
-### `fromMatrix`
+### `fromMatrix(matrix: mat4) → quat`
 
 Extracts quaternion from rotation matrix
 
-**Parameters:** `matrix`: `mat4`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `matrix` | `mat4` | 4x4 transformation matrix |
 
-**Returns:** `quat`
+**Returns:** `quat` — Quaternion representing the matrix rotation
 
-### `dotProduct`
+### `dotProduct(other: quat) → float`
 
 Calculates dot product with another quaternion
 
-**Parameters:** `other`: `quat`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `other` | `quat` | Quaternion to calculate dot product with |
 
-**Returns:** `float`
+**Returns:** `float` — Dot product result
 
-### `length`
+### `length() → float`
 
 Returns the magnitude of the quaternion
 
-**Returns:** `float`
+**Returns:** `float` — Length of the quaternion
 
-### `unm`
+### `unm() → quat`
 
 Returns the conjugate of the quaternion
 
-**Returns:** `quat`
+**Returns:** `quat` — Conjugate quaternion
 
-### `normalized`
+### `normalized() → quat`
 
 Returns a normalized copy of the quaternion
 
-**Returns:** `quat`
+**Returns:** `quat` — Normalized quaternion
 
-### `slerp`
+### `slerp(q: quat, t: float) → quat`
 
 Spherical linear interpolation between quaternions
 
-**Parameters:** `q`: `quat`, `t`: `float`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `q` | `quat` | Target quaternion to interpolate towards |
+| `t` | `float` | Interpolation factor (0.0 = this quat, 1.0 = target quat) |
 
-**Returns:** `quat`
+**Returns:** `quat` — Interpolated quaternion
 
-### `sqlerp`
+### `sqlerp(b: quat, c: quat, d: quat, t: float) → quat`
 
 Squad (spherical cubic) interpolation between quaternions
 
-**Parameters:** `b`: `quat`, `c`: `quat`, `d`: `quat`, `t`: `float`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `b` | `quat` | Second control quaternion |
+| `c` | `quat` | Third control quaternion |
+| `d` | `quat` | Fourth control quaternion |
+| `t` | `float` | Interpolation parameter (0.0 to 1.0) |
 
-**Returns:** `quat`
+**Returns:** `quat` — Interpolated quaternion
 

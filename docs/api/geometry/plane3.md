@@ -19,15 +19,17 @@ Represents an infinite plane in 3D space using the equation ax + by + cz + d = 0
 
 ## Methods
 
-### `normalize`
+### `normalize()`
 
 Normalizes the plane equation
 
-### `multiplyVector3D`
+### `multiplyVector3D(point: vec3) → float`
 
 Calculates signed distance from point to plane
 
-**Parameters:** `point`: `vec3`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `point` | `vec3` | 3D point to test |
 
-**Returns:** `float`
+**Returns:** `float` — Signed distance from point to plane
 

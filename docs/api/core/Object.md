@@ -14,399 +14,474 @@ An `Object` is not tied to a specific visual or logical role by itself. Instead,
 
 ## Methods
 
-### `clear`
+### `clear()`
 
 Clear all children of the object.
 
-### `awake`
+### `awake()`
 
 Initializes the core component when it is loaded, an essential lifecycle method.
 
-### `animate`
+### `animate()`
 
 Runs object animations.
 
-### `loadPrefabs`
+### `loadPrefabs()`
 
 Loads and instantiates prefabs.
 
-### `emitPropertyChangedEvents`
+### `emitPropertyChangedEvents()`
 
 Emits onPropertyChanged events by comparing to previous values.
 
-### `updateProperties`
+### `updateProperties()`
 
 Updates object properties.
 
-### `updateLayout`
+### `updateLayout(width: int, height: int)`
 
 Updates object layout.
 
-**Parameters:** `width`: `int`, `height`: `int`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `width` | `int` | Available width for layout calculations |
+| `height` | `int` | Available height for layout calculations |
 
-### `addChild`
+### `addChild(child: Object, is_template: bool)`
 
 Add a child object.
 
-**Parameters:** `child`: `Object`, `is_template`: `bool`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `child` | `Object` | The child object to add to this object's hierarchy |
+| `is_template` | `bool` | If true, marks this object with the OF_TEMPLATE flag to indicate it contains template children |
 
-### `removeFromParent`
+### `removeFromParent(dropModal: bool)`
 
 Destroys an object.
 
-**Parameters:** `dropModal`: `bool`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `dropModal` | `bool` | If set, would remove the entire chain of modal windows, like nested menus |
 
-### `findChild`
+### `findChild(name: string, recursive: bool) → Object`
 
 Find a child object by name.
 
-**Parameters:** `name`: `string`, `recursive`: `bool`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `name` | `string` | The exact name of the child object to locate |
+| `recursive` | `bool` | If true, searches recursively through all descendants; if false, searches only immediate children |
 
-**Returns:** `Object`
+**Returns:** `Object` — Pointer to the first child object found with the matching name, or null if no match is found
 
-### `dispatchEvent`
+### `dispatchEvent(event: string) → Object`
 
 Dispatch an event starting from this object and bubbling up parents.
 
-**Parameters:** `event`: `string`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `event` | `string` | The name of the event to dispatch through the hierarchy |
 
-**Returns:** `Object`
+**Returns:** `Object` — Pointer to the object that successfully handled the event, or null if no object in the hierarchy handled it
 
-### `postMessage`
+### `postMessage(message: string)`
 
 Posts a message to the global message queue.
 
-**Parameters:** `message`: `string`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `message` | `string` | The name of the message to post |
 
-### `play`
+### `play(animation: string)`
 
 Play an animation or resource on the object.
 
-**Parameters:** `animation`: `string`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `animation` | `string` | Name or identifier of the animation to play, resolved from the object's animation library |
 
-### `setFocus`
+### `setFocus()`
 
 Set focus on the object.
 
-### `doTween`
+### `doTween()`
 
 Tween an object property over time.
 
-### `addStyleSheet`
+### `addStyleSheet(source: string)`
 
 Add a stylesheet to the object.
 
-**Parameters:** `source`: `string`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `source` | `string` | Name or path of the stylesheet resource to load and apply to this object |
 
-### `setTimer`
+### `setTimer() → nresults`
 
 Set a timer on the object.
 
-**Returns:** `nresults`
+**Returns:** `nresults` — Handle or identifier for the created timer, which can be used to control or cancel the timer before it expires
 
-### `getName`
+### `getName() → string`
 
 Retrieves the object's name identifier
 
-**Returns:** `string`
+**Returns:** `string` — Current name of the object
 
-### `setName`
+### `setName(name: string)`
 
 Sets the object's name identifier
 
-**Parameters:** `name`: `string`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `name` | `string` | New name to assign to the object |
 
-### `getClassName`
+### `getClassName() → string`
 
 Returns the object's class type name
 
-**Returns:** `string`
+**Returns:** `string` — Class name of the object type
 
-### `checkName`
+### `checkName(name: string) → bool`
 
 Checks if object has a specific name
 
-**Parameters:** `name`: `string`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `name` | `string` | Name to check against |
 
-**Returns:** `bool`
+**Returns:** `bool` — True if object name matches the provided string
 
-### `findByPath`
+### `findByPath(name: string) → Object`
 
 Finds child object by hierarchical path
 
-**Parameters:** `name`: `string`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `name` | `string` | Hierarchical path to the target object |
 
-**Returns:** `Object`
+**Returns:** `Object` — Pointer to found object, or null if not found
 
-### `getStyle`
+### `getStyle() → uint`
 
 Retrieves object style flags
 
-**Returns:** `uint`
+**Returns:** `uint` — Current style flags as bitmask
 
-### `setStyle`
+### `setStyle(style: uint)`
 
 Sets object style flags
 
-**Parameters:** `style`: `uint`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `style` | `uint` | Style flags bitmask to apply |
 
-### `findCallbackForID`
+### `findCallbackForID(event: uint) → string`
 
 Retrieves callback function name for event ID
 
-**Parameters:** `event`: `uint`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `event` | `uint` | Event ID to find callback for |
 
-**Returns:** `string`
+**Returns:** `string` — Name of callback function, or empty if none registered
 
-### `applyStyles`
+### `applyStyles(recursive: bool)`
 
 Applies style changes to object hierarchy
 
-**Parameters:** `recursive`: `bool`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `recursive` | `bool` | Whether to apply styles to child objects recursively |
 
-### `setDirty`
+### `setDirty()`
 
 Sets object dirty and queues it for recalculation
 
-### `getParent`
+### `getParent() → Object`
 
 Gets the parent object in the hierarchy
 
-**Returns:** `Object`
+**Returns:** `Object` — Pointer to parent object, or null if no parent
 
-### `getFirstChild`
+### `getFirstChild() → Object`
 
 Gets the first child object
 
-**Returns:** `Object`
+**Returns:** `Object` — Pointer to first child object, or null if no children
 
-### `getNext`
+### `getNext() → Object`
 
 Gets the next sibling object
 
-**Returns:** `Object`
+**Returns:** `Object` — Pointer to next sibling object, or null if no next sibling
 
-### `getRoot`
+### `getRoot() → Object`
 
 Gets the root object of the hierarchy
 
-**Returns:** `Object`
+**Returns:** `Object` — Pointer to root object
 
-### `findChildByID`
+### `findChildByID(id: uint) → Object`
 
 Finds a child object by its unique identifier
 
-**Parameters:** `id`: `uint`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | `uint` | Unique identifier of the child object to find |
 
-**Returns:** `Object`
+**Returns:** `Object` — Pointer to child object with matching ID, or null if not found
 
-### `findChildByAlias`
+### `findChildByAlias(id: uint) → Object`
 
 Finds a child object by its alias identifier
 
-**Parameters:** `id`: `uint`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | `uint` | Alias identifier of the child object to find |
 
-**Returns:** `Object`
+**Returns:** `Object` — Pointer to child object with matching alias, or null if not found
 
-### `getSourceFile`
+### `getSourceFile() → string`
 
 Gets the source file path
 
-**Returns:** `string`
+**Returns:** `string` — Path to the source file
 
-### `getTextContent`
+### `getTextContent() → string`
 
 Gets the text content of the object
 
-**Returns:** `string`
+**Returns:** `string` — Text content of the object
 
-### `getTimestamp`
+### `getTimestamp() → long`
 
 Gets the last modified timestamp
 
-**Returns:** `long`
+**Returns:** `long` — Timestamp of last dirty marking
 
-### `getLuaObject`
+### `getLuaObject() → uint`
 
 Gets the Lua object reference
 
-**Returns:** `uint`
+**Returns:** `uint` — Lua registry index for the object
 
-### `getAlias`
+### `getAlias() → uint`
 
 Gets the alias identifier
 
-**Returns:** `uint`
+**Returns:** `uint` — Alias identifier
 
-### `getFlags`
+### `getFlags() → uint`
 
 Gets the object flags
 
-**Returns:** `uint`
+**Returns:** `uint` — Bitfield of object flags
 
-### `setFlags`
+### `setFlags(flags: uint)`
 
 Sets the object flags
 
-**Parameters:** `flags`: `uint`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `flags` | `uint` | New bitfield value for the object flags |
 
-### `getIdentifier`
+### `getIdentifier() → uint`
 
 Gets the identifier of the object
 
-**Returns:** `uint`
+**Returns:** `uint` — Hashed identifier of the object
 
-### `getModal`
+### `getModal() → Object`
 
 Gets the modal child object
 
-**Returns:** `Object`
+**Returns:** `Object` — Pointer to the modal child object, or null if no modal is set
 
-### `setModal`
+### `setModal(modal: Object)`
 
 Sets or clears the modal child object
 
-**Parameters:** `modal`: `Object`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `modal` | `Object` | The object to set as modal, or null to clear the current modal |
 
-### `isFocused`
+### `isFocused() → bool`
 
 Checks if this object currently has focus
 
-**Returns:** `bool`
+**Returns:** `bool` — True if this object has focus, false otherwise
 
-### `setHover`
+### `setHover()`
 
 Sets the hover state for an object
 
-### `setTextContent`
+### `setTextContent(text: string)`
 
 Sets the text content of the object
 
-**Parameters:** `text`: `string`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `text` | `string` | The text content to display |
 
-### `setSourceFile`
+### `setSourceFile(path: string)`
 
 Sets the source file path of the object
 
-**Parameters:** `path`: `string`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `path` | `string` | The file path to associate with the object |
 
-### `setClassName`
+### `setClassName(classID: string)`
 
 Sets the class name of the object
 
-**Parameters:** `classID`: `string`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `classID` | `string` | The class name to assign to the object |
 
-### `findParentOfClass`
+### `findParentOfClass(classID: uint) → Object`
 
 Finds the nearest parent object of a specific class
 
-**Parameters:** `classID`: `uint`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `classID` | `uint` | The hashed identifier of the class to search for |
 
-**Returns:** `Object`
+**Returns:** `Object` — Pointer to the matching parent object, or null if not found
 
-### `findChildOfClass`
+### `findChildOfClass(classID: uint) → Object`
 
 Finds a child object of a specific class
 
-**Parameters:** `classID`: `uint`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `classID` | `uint` | The hashed identifier of the class to search for |
 
-**Returns:** `Object`
+**Returns:** `Object` — Pointer to the matching child object, or null if not found
 
-### `isPrefabView`
+### `isPrefabView() → bool`
 
 Checks if this object is a prefab view container
 
-**Returns:** `bool`
+**Returns:** `bool` — True if this object is a PrefabView, false otherwise
 
-### `addAlias`
+### `addAlias(name: string, path: string)`
 
 Registers an alias for a child object path
 
-**Parameters:** `name`: `string`, `path`: `string`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `name` | `string` | The alias name (used as #name in references) |
+| `path` | `string` | The full path to the object being aliased |
 
-### `assignAliases`
+### `assignAliases(pathToObject: string)`
 
 Resolves and assigns all registered aliases for an object
 
-**Parameters:** `pathToObject`: `string`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `pathToObject` | `string` | The path to the object being processed for alias resolution |
 
-### `parseClassAttribute`
+### `parseClassAttribute(classString: string)`
 
 Parses and applies multiple class names from a class attribute string
 
-**Parameters:** `classString`: `string`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `classString` | `string` | Space-separated class names, as from a class="..." attribute |
 
-### `setAnimation`
+### `setAnimation(name: string)`
 
 Sets the active animation by name
 
-**Parameters:** `name`: `string`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `name` | `string` | The name of the animation to activate |
 
-### `getAnimation`
+### `getAnimation() → KeyframeAnim`
 
 Gets the currently active animation
 
-**Returns:** `KeyframeAnim`
+**Returns:** `KeyframeAnim` — Pointer to the active keyframe animation, or null if none is set
 
-### `addAnimation`
+### `addAnimation(animation: KeyframeAnim)`
 
 Adds a keyframe animation to the object's animation library
 
-**Parameters:** `animation`: `KeyframeAnim`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `animation` | `KeyframeAnim` | The keyframe animation to add to the library |
 
-### `getInteger`
+### `getInteger(ident: uint, fallback: int) → int`
 
 Gets an integer property value by identifier
 
-**Parameters:** `ident`: `uint`, `fallback`: `int`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `ident` | `uint` | The hashed long identifier "ObjectClass.PropertyName" of the property to retrieve |
+| `fallback` | `int` | The value to return if the property is not found or incompatible |
 
-**Returns:** `int`
+**Returns:** `int` — The property value if found and compatible, otherwise the fallback value
 
-### `getProperties`
+### `getProperties() → Property`
 
 Gets the properties collection
 
-**Returns:** `Property`
+**Returns:** `Property` — Pointer to properties collection
 
-### `findImplicitProperty`
+### `findImplicitProperty(name: string) → PropertyType`
 
 Looks up a property by context-driven syntax, like "Column" instead of "Grid.Column"
 
-**Parameters:** `name`: `string`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `name` | `string` | The name of the property to find |
 
-**Returns:** `PropertyType`
+**Returns:** `PropertyType` — Pointer to a property type, null if not found
 
-### `findExplicitProperty`
+### `findExplicitProperty(name: string) → PropertyType`
 
 Looks up a property by full syntax, like "Grid.Column" instead of "Column"
 
-**Parameters:** `name`: `string`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `name` | `string` | The full name of the property to find |
 
-**Returns:** `PropertyType`
+**Returns:** `PropertyType` — Pointer to a property type, null if not found
 
-### `attachPropertyProgram`
+### `attachPropertyProgram(name: string, program: string, attribute: PropertyAttribute, mode: BindingMode, enabled: bool) → bool`
 
 Attaches a property program to the specified property
 
-**Parameters:** `name`: `string`, `program`: `string`, `attribute`: `PropertyAttribute`, `mode`: `BindingMode`, `enabled`: `bool`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `name` | `string` | The full name of the property to attach the program to |
+| `program` | `string` | The program or expression to attach to the property |
+| `attribute` | `PropertyAttribute` | The attribute of the property to attach the program to (e.g., Value, Color, etc.) |
+| `mode` | `BindingMode` | The binding mode for the property program (e.g., OneWay, TwoWay, OneWayToSource) |
+| `enabled` | `bool` | Whether the property program is enabled |
 
-**Returns:** `bool`
+**Returns:** `bool` — True if the property program was successfully attached, false otherwise
 
-### `findPropertyByPath`
+### `findPropertyByPath(path: string) → Property`
 
 Finds a property by navigating a hierarchical path
 
-**Parameters:** `path`: `string`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `path` | `string` | Slash-separated path to the property (e.g., "Child1/Child2/PropertyName") |
 
-**Returns:** `Property`
+**Returns:** `Property` — Pointer to the property if found, or null if the path is invalid
 
-### `rebuild`
+### `rebuild()`
 
 Rebuilds the object's body content asynchronously
 
-### `getDomain`
+### `getDomain() → lua_State`
 
 Gets the domain of the object
 
-**Returns:** `lua_State`
+**Returns:** `lua_State` — The domain of the object
 

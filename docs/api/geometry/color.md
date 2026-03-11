@@ -19,19 +19,24 @@ Represents a color with red, green, blue, and alpha (transparency) components. V
 
 ## Methods
 
-### `lerp`
+### `lerp(other: color, t: float) → color`
 
 Linear interpolation between colors
 
-**Parameters:** `other`: `color`, `t`: `float`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `other` | `color` | Target color to interpolate towards |
+| `t` | `float` | Interpolation factor (0.0 = this color, 1.0 = other color) |
 
-**Returns:** `color`
+**Returns:** `color` — Interpolated color
 
-### `parse`
+### `parse(code: string) → color`
 
 Parses color from string representation
 
-**Parameters:** `code`: `string`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `code` | `string` | Color string to parse |
 
-**Returns:** `color`
+**Returns:** `color` — Parsed color value
 

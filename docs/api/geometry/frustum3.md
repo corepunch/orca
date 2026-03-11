@@ -21,43 +21,54 @@ Represents a truncated pyramid used for camera view volumes and culling. Defined
 
 ## Methods
 
-### `calculate`
+### `calculate(matrix: mat4) → frustum3`
 
 Extracts frustum planes from projection matrix
 
-**Parameters:** `matrix`: `mat4`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `matrix` | `mat4` | View-projection matrix |
 
-**Returns:** `frustum3`
+**Returns:** `frustum3` — Calculated frustum with normalized planes
 
-### `containsPoint`
+### `containsPoint(point: vec3) → bool`
 
 Tests if a point is inside the frustum
 
-**Parameters:** `point`: `vec3`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `point` | `vec3` | 3D point to test |
 
-**Returns:** `bool`
+**Returns:** `bool` — True if point is inside all frustum planes
 
-### `containsSphere`
+### `containsSphere(sphere: sphere3) → bool`
 
 Tests if a sphere intersects the frustum
 
-**Parameters:** `sphere`: `sphere3`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `sphere` | `sphere3` | Sphere to test |
 
-**Returns:** `bool`
+**Returns:** `bool` — True if sphere intersects or is inside frustum
 
-### `containsBox`
+### `containsBox(box: box3, matrix: mat4) → bool`
 
 Tests if a transformed bounding box intersects the frustum
 
-**Parameters:** `box`: `box3`, `matrix`: `mat4`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `box` | `box3` | Axis-aligned bounding box |
+| `matrix` | `mat4` | Transformation matrix for the box |
 
-**Returns:** `bool`
+**Returns:** `bool` — True if transformed box intersects frustum
 
-### `containsAABox`
+### `containsAABox(box: box3) → bool`
 
 Tests if an axis-aligned box intersects the frustum
 
-**Parameters:** `box`: `box3`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `box` | `box3` | Axis-aligned bounding box to test |
 
-**Returns:** `bool`
+**Returns:** `bool` — True if box intersects frustum
 

@@ -17,9 +17,9 @@ Represents a rectangular volume in 3D space defined by minimum and maximum corne
 
 ## Methods
 
-### `center`
+### `center() → vec3`
 
 Calculates the center point of the box
 
-**Returns:** `vec3`
+**Returns:** `vec3` — Center point of the bounding box
 

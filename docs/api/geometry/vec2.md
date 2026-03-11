@@ -17,65 +17,80 @@ Represents a point or direction in 2D space with x and y components. Supports co
 
 ## Methods
 
-### `set`
+### `set(x: float, y: float)`
 
 Sets the vector components
 
-**Parameters:** `x`: `float`, `y`: `float`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `x` | `float` | New X component value |
+| `y` | `float` | New Y component value |
 
-### `scale`
+### `scale(s: float) → vec2`
 
 Returns a scaled copy of the vector
 
-**Parameters:** `s`: `float`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `s` | `float` | Scale factor to apply |
 
-**Returns:** `vec2`
+**Returns:** `vec2` — New scaled vector
 
-### `dot`
+### `dot(other: vec2) → float`
 
 Calculates dot product with another vector
 
-**Parameters:** `other`: `vec2`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `other` | `vec2` | Vector to calculate dot product with |
 
-**Returns:** `float`
+**Returns:** `float` — Dot product result
 
-### `lengthsq`
+### `lengthsq() → float`
 
 Returns the squared length of the vector
 
-**Returns:** `float`
+**Returns:** `float` — Squared magnitude of the vector
 
-### `len`
+### `len() → float`
 
 Returns the length (magnitude) of the vector
 
-**Returns:** `float`
+**Returns:** `float` — Length of the vector
 
-### `distance`
+### `distance(other: vec2) → float`
 
 Calculates distance to another vector
 
-**Parameters:** `other`: `vec2`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `other` | `vec2` | Target vector to measure distance to |
 
-**Returns:** `float`
+**Returns:** `float` — Distance between the two vectors
 
-### `normalize`
+### `normalize()`
 
 Normalizes the vector in place to unit length
 
-### `lerp`
+### `lerp(other: vec2, t: float) → vec2`
 
 Linear interpolation between this vector and another
 
-**Parameters:** `other`: `vec2`, `t`: `float`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `other` | `vec2` | Target vector to interpolate towards |
+| `t` | `float` | Interpolation factor (0.0 = this vector, 1.0 = other vector) |
 
-**Returns:** `vec2`
+**Returns:** `vec2` — Interpolated vector
 
-### `mad`
+### `mad(s: float, other: vec2) → vec2`
 
 Multiply-add operation: returns this + (s * other)
 
-**Parameters:** `s`: `float`, `other`: `vec2`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `s` | `float` | Scale factor for the other vector |
+| `other` | `vec2` | Vector to scale and add |
 
-**Returns:** `vec2`
+**Returns:** `vec2` — Result of multiply-add operation
 

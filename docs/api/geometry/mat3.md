@@ -16,29 +16,35 @@ Represents 2D transformations and 3D normal transformations. Stored in column-ma
 
 ## Methods
 
-### `identity`
+### `identity() → mat3`
 
 Creates an identity matrix
 
-**Returns:** `mat3`
+**Returns:** `mat3` — 3x3 identity matrix
 
-### `normal`
+### `normal(matrix: mat4) → mat3`
 
 Creates normal transformation matrix from 4x4 matrix
 
-**Parameters:** `matrix`: `mat4`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `matrix` | `mat4` | Source 4x4 transformation matrix |
 
-**Returns:** `mat3`
+**Returns:** `mat3` — Normal transformation matrix
 
-### `translate`
+### `translate(offset: vec2)`
 
 Applies translation to the matrix
 
-**Parameters:** `offset`: `vec2`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `offset` | `vec2` | Translation offset |
 
-### `scale`
+### `scale(scale: vec2)`
 
 Applies scaling to the matrix
 
-**Parameters:** `scale`: `vec2`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `scale` | `vec2` | Scale factors for X and Y axes |
 

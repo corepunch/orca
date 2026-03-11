@@ -18,9 +18,9 @@ Represents a triangle in 3D space defined by three vertices. Used for mesh geome
 
 ## Methods
 
-### `normal`
+### `normal() → vec3`
 
 Calculates the triangle's surface normal
 
-**Returns:** `vec3`
+**Returns:** `vec3` — Unit normal vector
 

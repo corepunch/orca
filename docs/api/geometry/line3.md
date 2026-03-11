@@ -17,35 +17,47 @@ Represents a line segment in 3D space defined by two endpoints. Provides interse
 
 ## Methods
 
-### `intersect_sphere3`
+### `intersect_sphere3(sphere: sphere3, out: vec3) → bool`
 
 Tests intersection with a sphere
 
-**Parameters:** `sphere`: `sphere3`, `out`: `vec3`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `sphere` | `sphere3` | Sphere to test intersection with |
+| `out` | `vec3` | Output parameter for intersection point |
 
-**Returns:** `bool`
+**Returns:** `bool` — True if intersection occurs, false otherwise
 
-### `intersect_plane3`
+### `intersect_plane3(plane: plane3, out: vec3) → bool`
 
 Tests intersection with a plane
 
-**Parameters:** `plane`: `plane3`, `out`: `vec3`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `plane` | `plane3` | Plane to test intersection with |
+| `out` | `vec3` | Output parameter for intersection point |
 
-**Returns:** `bool`
+**Returns:** `bool` — True if intersection occurs, false otherwise
 
-### `intersect_triangle`
+### `intersect_triangle(triangle: triangle3, out: vec3) → bool`
 
 Tests intersection with a triangle
 
-**Parameters:** `triangle`: `triangle3`, `out`: `vec3`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `triangle` | `triangle3` | Triangle to test intersection with |
+| `out` | `vec3` | Output parameter for intersection point |
 
-**Returns:** `bool`
+**Returns:** `bool` — True if intersection occurs within triangle, false otherwise
 
-### `intersect_box3`
+### `intersect_box3(box: box3, out: vec3) → bool`
 
 Tests intersection with a 3D bounding box
 
-**Parameters:** `box`: `box3`, `out`: `vec3`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `box` | `box3` | Bounding box to test intersection with |
+| `out` | `vec3` | Output parameter for intersection point |
 
-**Returns:** `bool`
+**Returns:** `bool` — True if intersection occurs, false otherwise
 
