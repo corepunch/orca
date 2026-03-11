@@ -6,13 +6,26 @@ MODULES := \
     SceneKit/SceneKit \
     SpriteKit/SpriteKit
 
+UI_MODULES := \
+    UIKit/UIKit \
+    SceneKit/SceneKit \
+    SpriteKit/SpriteKit
+
+DOC_MODULES := \
+    geometry/geometry \
+    core/core \
+    UIKit/UIKit \
+    SceneKit/SceneKit \
+    SpriteKit/SpriteKit
+
 SOURCE_DIR := ../source
 TEMPLATES  := templates
+DOCS_DIR   := ../docs
 
 PYPHP := python3 -m pyphp.pyphp
 
 # Top-level targets
-.PHONY: all $(MODULES)
+.PHONY: all dtd docs $(MODULES)
 
 all: $(MODULES)
 
@@ -26,3 +39,23 @@ $(1):
 endef
 
 $(foreach mod,$(MODULES),$(eval $(call MODULE_RULE,$(mod))))
+
+# Generate orca.dtd from UI modules
+dtd:
+	@echo "Generating DTD..."
+	$(PYPHP) $(TEMPLATES)/dtd.php \
+		$(SOURCE_DIR)/UIKit/UIKit.xml \
+		$(SOURCE_DIR)/SceneKit/SceneKit.xml \
+		$(SOURCE_DIR)/SpriteKit/SpriteKit.xml \
+		> $(DOCS_DIR)/schemas/orca.dtd
+
+# Generate Markdown API docs for each documented module
+define DOCS_RULE
+docs-$(1):
+	@echo "Generating docs for $(1)..."
+	$(PYPHP) $(TEMPLATES)/docs.php $(SOURCE_DIR)/$(1).xml
+endef
+
+$(foreach mod,$(DOC_MODULES),$(eval $(call DOCS_RULE,$(mod))))
+
+docs: $(foreach mod,$(DOC_MODULES),docs-$(mod))
