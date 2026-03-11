@@ -27,6 +27,8 @@ int luaopen_orca_<?= $name ?>(lua_State *L) {
 	<?php endforeach ?>
 		{ NULL, NULL },
 	}), 0);
+	lua_pushvalue(L, -1);
+	lua_setfield(L, -2, "__index");
 	return 1;
 }
 <?php endforeach ?>

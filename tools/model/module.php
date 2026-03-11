@@ -31,7 +31,7 @@ class PropertyName {
 		$this->classname = $classname;
 		$this->path = $path;
 		$this->addr = implode('.', $path);
-		$this->id = "0x" . hash("fnv1a32", implode('', $path));
+		$this->id = "0x" . hash("fnv1a32", $this);
 	}
 
 	function __toString() {
@@ -385,6 +385,15 @@ class Component extends Struct {
 	function getEventHandlers() {
 		foreach ($this->_elem->xpath("handles") as $node) {
 			yield $node["event"];
+		}
+	}
+
+	function getParents() {
+		if ($this->_elem["parent"]) {
+			yield $this->_elem["parent"];
+		}
+		if ($this->_elem["concept"]) {
+			yield $this->_elem["concept"];
 		}
 	}
 }

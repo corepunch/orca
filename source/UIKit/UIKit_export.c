@@ -1853,7 +1853,7 @@ ORCA_API struct ClassDesc _DataObject = {
 	.DefaultName = "DataObject",
 	.ContentType = "DataObject",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { NULL },
 	.ClassID = ID_DataObject,
 	.ClassSize = sizeof(struct DataObject),
 	.Properties = DataObjectProperties,
@@ -1890,7 +1890,7 @@ ORCA_API struct ClassDesc _AnimationPlayer = {
 	.DefaultName = "AnimationPlayer",
 	.ContentType = "AnimationPlayer",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { NULL },
 	.ClassID = ID_AnimationPlayer,
 	.ClassSize = sizeof(struct AnimationPlayer),
 	.Properties = AnimationPlayerProperties,
@@ -1926,7 +1926,7 @@ ORCA_API struct ClassDesc _Trigger = {
 	.DefaultName = "Trigger",
 	.ContentType = "Trigger",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { NULL },
 	.ClassID = ID_Trigger,
 	.ClassSize = sizeof(struct Trigger),
 	.Properties = TriggerProperties,
@@ -1955,12 +1955,13 @@ void luaX_pushOnPropertyChangedTrigger(lua_State *L, struct OnPropertyChangedTri
 struct OnPropertyChangedTrigger* luaX_checkOnPropertyChangedTrigger(lua_State *L, int idx) {
 	return GetOnPropertyChangedTrigger(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Trigger;
 ORCA_API struct ClassDesc _OnPropertyChangedTrigger = {
 	.ClassName = "OnPropertyChangedTrigger",
 	.DefaultName = "OnPropertyChangedTrigger",
 	.ContentType = "OnPropertyChangedTrigger",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Trigger, NULL },
 	.ClassID = ID_OnPropertyChangedTrigger,
 	.ClassSize = sizeof(struct OnPropertyChangedTrigger),
 	.Properties = OnPropertyChangedTriggerProperties,
@@ -1987,12 +1988,13 @@ void luaX_pushOnAttachedTrigger(lua_State *L, struct OnAttachedTrigger const* On
 struct OnAttachedTrigger* luaX_checkOnAttachedTrigger(lua_State *L, int idx) {
 	return GetOnAttachedTrigger(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Trigger;
 ORCA_API struct ClassDesc _OnAttachedTrigger = {
 	.ClassName = "OnAttachedTrigger",
 	.DefaultName = "OnAttachedTrigger",
 	.ContentType = "OnAttachedTrigger",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Trigger, NULL },
 	.ClassID = ID_OnAttachedTrigger,
 	.ClassSize = sizeof(struct OnAttachedTrigger),
 	.Properties = OnAttachedTriggerProperties,
@@ -2020,12 +2022,13 @@ void luaX_pushEventTrigger(lua_State *L, struct EventTrigger const* EventTrigger
 struct EventTrigger* luaX_checkEventTrigger(lua_State *L, int idx) {
 	return GetEventTrigger(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Trigger;
 ORCA_API struct ClassDesc _EventTrigger = {
 	.ClassName = "EventTrigger",
 	.DefaultName = "EventTrigger",
 	.ContentType = "EventTrigger",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Trigger, NULL },
 	.ClassID = ID_EventTrigger,
 	.ClassSize = sizeof(struct EventTrigger),
 	.Properties = EventTriggerProperties,
@@ -2060,7 +2063,7 @@ ORCA_API struct ClassDesc _Setter = {
 	.DefaultName = "Setter",
 	.ContentType = "Setter",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { NULL },
 	.ClassID = ID_Setter,
 	.ClassSize = sizeof(struct Setter),
 	.Properties = SetterProperties,
@@ -2095,7 +2098,7 @@ ORCA_API struct ClassDesc _Handler = {
 	.DefaultName = "Handler",
 	.ContentType = "Handler",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { NULL },
 	.ClassID = ID_Handler,
 	.ClassSize = sizeof(struct Handler),
 	.Properties = HandlerProperties,
@@ -2125,7 +2128,7 @@ ORCA_API struct ClassDesc _Brush = {
 	.DefaultName = "Brush",
 	.ContentType = "Brush",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { NULL },
 	.ClassID = ID_Brush,
 	.ClassSize = sizeof(struct Brush),
 	.Properties = BrushProperties,
@@ -2151,12 +2154,13 @@ void luaX_pushColorBrush(lua_State *L, struct ColorBrush const* ColorBrush) {
 struct ColorBrush* luaX_checkColorBrush(lua_State *L, int idx) {
 	return GetColorBrush(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Brush;
 ORCA_API struct ClassDesc _ColorBrush = {
 	.ClassName = "ColorBrush",
 	.DefaultName = "ColorBrush",
 	.ContentType = "ColorBrush",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Brush, NULL },
 	.ClassID = ID_ColorBrush,
 	.ClassSize = sizeof(struct ColorBrush),
 	.Properties = ColorBrushProperties,
@@ -2171,66 +2175,66 @@ LRESULT Node_IsVisible(struct Object*, struct Node*, wParam_t, IsVisibleEventPtr
 
 static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	DECL(0xa6478e7c, Node, Size, Size, kDataTypeStruct, .TypeString = "SizeShorthand"), // Node.Size
-	DECL(0x5e3799b1, Node, HorizontalSize, Size.Axis[0], kDataTypeStruct, .TypeString = "SizeAxisShorthand"), // Node.HorizontalSize
-	DECL(0x0b9623c7, Node, Width, Size.Axis[0].Requested, kDataTypeFloat), // Node.Width
-	DECL(0x96650259, Node, DesiredWidth, Size.Axis[0].Desired, kDataTypeFloat), // Node.DesiredWidth
-	DECL(0x93c257ab, Node, MinWidth, Size.Axis[0].Min, kDataTypeFloat), // Node.MinWidth
-	DECL(0x36c6f09b, Node, ActualWidth, Size.Axis[0].Actual, kDataTypeFloat), // Node.ActualWidth
-	DECL(0x79135e00, Node, ScrollWidth, Size.Axis[0].Scroll, kDataTypeFloat), // Node.ScrollWidth
-	DECL(0x1a3b003c, Node, VerticalSize, Size.Axis[1], kDataTypeStruct, .TypeString = "SizeAxisShorthand"), // Node.VerticalSize
-	DECL(0x2474776c, Node, Height, Size.Axis[1].Requested, kDataTypeFloat), // Node.Height
-	DECL(0x9c4bdff6, Node, DesiredHeight, Size.Axis[1].Desired, kDataTypeFloat), // Node.DesiredHeight
-	DECL(0x8f41b1f0, Node, MinHeight, Size.Axis[1].Min, kDataTypeFloat), // Node.MinHeight
-	DECL(0x8a37261a, Node, ActualHeight, Size.Axis[1].Actual, kDataTypeFloat), // Node.ActualHeight
-	DECL(0x8cdd00f5, Node, ScrollHeight, Size.Axis[1].Scroll, kDataTypeFloat), // Node.ScrollHeight
-	DECL(0x1a32b177, Node, DepthSize, Size.Axis[2], kDataTypeStruct, .TypeString = "SizeAxisShorthand"), // Node.DepthSize
-	DECL(0x5eeb6429, Node, Depth, Size.Axis[2].Requested, kDataTypeFloat), // Node.Depth
-	DECL(0xb57663c3, Node, DesiredDepth, Size.Axis[2].Desired, kDataTypeFloat), // Node.DesiredDepth
-	DECL(0x40804651, Node, MinDepth, Size.Axis[2].Min, kDataTypeFloat), // Node.MinDepth
-	DECL(0xc8c32e9d, Node, ActualDepth, Size.Axis[2].Actual, kDataTypeFloat), // Node.ActualDepth
-	DECL(0x4764e986, Node, ScrollDepth, Size.Axis[2].Scroll, kDataTypeFloat), // Node.ScrollDepth
+	DECL(0x2dbf56d8, Node, HorizontalSize, Size.Axis[0], kDataTypeStruct, .TypeString = "SizeAxisShorthand"), // Node.HorizontalSize
+	DECL(0x3b42dfbf, Node, Width, Size.Axis[0].Requested, kDataTypeFloat), // Node.Width
+	DECL(0xbe3d446f, Node, DesiredWidth, Size.Axis[0].Desired, kDataTypeFloat), // Node.DesiredWidth
+	DECL(0xfe87ddd9, Node, MinWidth, Size.Axis[0].Min, kDataTypeFloat), // Node.MinWidth
+	DECL(0xa6d77d39, Node, ActualWidth, Size.Axis[0].Actual, kDataTypeFloat), // Node.ActualWidth
+	DECL(0x29366f18, Node, ScrollWidth, Size.Axis[0].Scroll, kDataTypeFloat), // Node.ScrollWidth
+	DECL(0x629fba9a, Node, VerticalSize, Size.Axis[1], kDataTypeStruct, .TypeString = "SizeAxisShorthand"), // Node.VerticalSize
+	DECL(0x1bd13562, Node, Height, Size.Axis[1].Requested, kDataTypeFloat), // Node.Height
+	DECL(0xf5943e12, Node, DesiredHeight, Size.Axis[1].Desired, kDataTypeFloat), // Node.DesiredHeight
+	DECL(0x9f6bc248, Node, MinHeight, Size.Axis[1].Min, kDataTypeFloat), // Node.MinHeight
+	DECL(0x34c40b28, Node, ActualHeight, Size.Axis[1].Actual, kDataTypeFloat), // Node.ActualHeight
+	DECL(0x5320b4af, Node, ScrollHeight, Size.Axis[1].Scroll, kDataTypeFloat), // Node.ScrollHeight
+	DECL(0x51724993, Node, DepthSize, Size.Axis[2], kDataTypeStruct, .TypeString = "SizeAxisShorthand"), // Node.DepthSize
+	DECL(0xd070218a, Node, Depth, Size.Axis[2].Requested, kDataTypeFloat), // Node.Depth
+	DECL(0xe3fa9b3a, Node, DesiredDepth, Size.Axis[2].Desired, kDataTypeFloat), // Node.DesiredDepth
+	DECL(0xe01ae1b0, Node, MinDepth, Size.Axis[2].Min, kDataTypeFloat), // Node.MinDepth
+	DECL(0x886c1410, Node, ActualDepth, Size.Axis[2].Actual, kDataTypeFloat), // Node.ActualDepth
+	DECL(0x04d53041, Node, ScrollDepth, Size.Axis[2].Scroll, kDataTypeFloat), // Node.ScrollDepth
 	DECL(0xc4cc799b, Node, Margin, Margin, kDataTypeStruct, .TypeString = "MarginShorthand"), // Node.Margin
-	DECL(0x935c66f8, Node, HorizontalMargin, Margin.Axis[0], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.HorizontalMargin
-	DECL(0x8c225869, Node, MarginLeft, Margin.Axis[0].Left, kDataTypeFloat), // Node.MarginLeft
-	DECL(0x1efb398a, Node, MarginRight, Margin.Axis[0].Right, kDataTypeFloat), // Node.MarginRight
-	DECL(0x975a2ead, Node, VerticalMargin, Margin.Axis[1], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.VerticalMargin
-	DECL(0x2dd3ed28, Node, MarginTop, Margin.Axis[1].Left, kDataTypeFloat), // Node.MarginTop
-	DECL(0xf5942f3d, Node, MarginBottom, Margin.Axis[1].Right, kDataTypeFloat), // Node.MarginBottom
-	DECL(0x57578b56, Node, DepthMargin, Margin.Axis[2], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.DepthMargin
-	DECL(0x7d0c55b3, Node, MarginFront, Margin.Axis[2].Left, kDataTypeFloat), // Node.MarginFront
-	DECL(0xc97d4cbc, Node, MarginBack, Margin.Axis[2].Right, kDataTypeFloat), // Node.MarginBack
+	DECL(0x1d32e627, Node, HorizontalMargin, Margin.Axis[0], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.HorizontalMargin
+	DECL(0x0bdcf7a2, Node, MarginLeft, Margin.Axis[0].Left, kDataTypeFloat), // Node.MarginLeft
+	DECL(0xe9999c8f, Node, MarginRight, Margin.Axis[0].Right, kDataTypeFloat), // Node.MarginRight
+	DECL(0xb859064d, Node, VerticalMargin, Margin.Axis[1], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.VerticalMargin
+	DECL(0xe0a2f632, Node, MarginTop, Margin.Axis[1].Left, kDataTypeFloat), // Node.MarginTop
+	DECL(0x4231df34, Node, MarginBottom, Margin.Axis[1].Right, kDataTypeFloat), // Node.MarginBottom
+	DECL(0x606034ac, Node, DepthMargin, Margin.Axis[2], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.DepthMargin
+	DECL(0x8bfc919a, Node, MarginFront, Margin.Axis[2].Left, kDataTypeFloat), // Node.MarginFront
+	DECL(0xfc651334, Node, MarginBack, Margin.Axis[2].Right, kDataTypeFloat), // Node.MarginBack
 	DECL(0x0736dd56, Node, Padding, Padding, kDataTypeStruct, .TypeString = "MarginShorthand"), // Node.Padding
-	DECL(0x983bed47, Node, HorizontalPadding, Padding.Axis[0], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.HorizontalPadding
-	DECL(0xc8bdc1ce, Node, PaddingLeft, Padding.Axis[0].Left, kDataTypeFloat), // Node.PaddingLeft
-	DECL(0x09958923, Node, PaddingRight, Padding.Axis[0].Right, kDataTypeFloat), // Node.PaddingRight
-	DECL(0x9c3e322a, Node, VerticalPadding, Padding.Axis[1], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.VerticalPadding
-	DECL(0xf0c0da87, Node, PaddingTop, Padding.Axis[1].Left, kDataTypeFloat), // Node.PaddingTop
-	DECL(0xf01ed4b8, Node, PaddingBottom, Padding.Axis[1].Right, kDataTypeFloat), // Node.PaddingBottom
-	DECL(0x5c400c01, Node, DepthPadding, Padding.Axis[2], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.DepthPadding
-	DECL(0xe3b770ac, Node, PaddingFront, Padding.Axis[2].Left, kDataTypeFloat), // Node.PaddingFront
-	DECL(0x4ef0c5b9, Node, PaddingBack, Padding.Axis[2].Right, kDataTypeFloat), // Node.PaddingBack
+	DECL(0x96255a02, Node, HorizontalPadding, Padding.Axis[0], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.HorizontalPadding
+	DECL(0x380ec7b3, Node, PaddingLeft, Padding.Axis[0].Left, kDataTypeFloat), // Node.PaddingLeft
+	DECL(0x2e56c2bc, Node, PaddingRight, Padding.Axis[0].Right, kDataTypeFloat), // Node.PaddingRight
+	DECL(0x147a27e0, Node, VerticalPadding, Padding.Axis[1], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.VerticalPadding
+	DECL(0x67bd6401, Node, PaddingTop, Padding.Axis[1].Left, kDataTypeFloat), // Node.PaddingTop
+	DECL(0x8e7f220d, Node, PaddingBottom, Padding.Axis[1].Right, kDataTypeFloat), // Node.PaddingBottom
+	DECL(0xcba5b053, Node, DepthPadding, Padding.Axis[2], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.DepthPadding
+	DECL(0x3d180671, Node, PaddingFront, Padding.Axis[2].Left, kDataTypeFloat), // Node.PaddingFront
+	DECL(0x8c287ea5, Node, PaddingBack, Padding.Axis[2].Right, kDataTypeFloat), // Node.PaddingBack
 	DECL(0x0cad6f57, Node, Border, Border, kDataTypeStruct, .TypeString = "BorderShorthand"), // Node.Border
 	DECL(0x0aaf7cf9, Node, BorderWidth, Border.Width, kDataTypeStruct, .TypeString = "MarginShorthand"), // Node.BorderWidth
-	DECL(0x8e4cc862, Node, HorizontalBorderWidth, Border.Width.Axis[0], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.HorizontalBorderWidth
-	DECL(0xed2c25cf, Node, BorderWidthLeft, Border.Width.Axis[0].Left, kDataTypeFloat), // Node.BorderWidthLeft
-	DECL(0x6edcef40, Node, BorderWidthRight, Border.Width.Axis[0].Right, kDataTypeFloat), // Node.BorderWidthRight
-	DECL(0xca49553f, Node, VerticalBorderWidth, Border.Width.Axis[1], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.VerticalBorderWidth
-	DECL(0x4eca22b6, Node, BorderWidthTop, Border.Width.Axis[1].Left, kDataTypeFloat), // Node.BorderWidthTop
-	DECL(0x93552aeb, Node, BorderWidthBottom, Border.Width.Axis[1].Right, kDataTypeFloat), // Node.BorderWidthBottom
-	DECL(0xca51a404, Node, DepthBorderWidth, Border.Width.Axis[2], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.DepthBorderWidth
-	DECL(0x11c3e045, Node, BorderWidthFront, Border.Width.Axis[2].Left, kDataTypeFloat), // Node.BorderWidthFront
-	DECL(0xd481189e, Node, BorderWidthBack, Border.Width.Axis[2].Right, kDataTypeFloat), // Node.BorderWidthBack
+	DECL(0x19c21815, Node, HorizontalBorderWidth, Border.Width.Axis[0], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.HorizontalBorderWidth
+	DECL(0x63b03bb4, Node, BorderWidthLeft, Border.Width.Axis[0].Left, kDataTypeFloat), // Node.BorderWidthLeft
+	DECL(0xe6977c61, Node, BorderWidthRight, Border.Width.Axis[0].Right, kDataTypeFloat), // Node.BorderWidthRight
+	DECL(0x6b40a6c7, Node, VerticalBorderWidth, Border.Width.Axis[1], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.VerticalBorderWidth
+	DECL(0x54b7f688, Node, BorderWidthTop, Border.Width.Axis[1].Left, kDataTypeFloat), // Node.BorderWidthTop
+	DECL(0xa44eab36, Node, BorderWidthBottom, Border.Width.Axis[1].Right, kDataTypeFloat), // Node.BorderWidthBottom
+	DECL(0x3170de3c, Node, DepthBorderWidth, Border.Width.Axis[2], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.DepthBorderWidth
+	DECL(0x14d0d564, Node, BorderWidthFront, Border.Width.Axis[2].Left, kDataTypeFloat), // Node.BorderWidthFront
+	DECL(0x7c087736, Node, BorderWidthBack, Border.Width.Axis[2].Right, kDataTypeFloat), // Node.BorderWidthBack
 	DECL(0x933e48c6, Node, BorderColor, Border.Color, kDataTypeStruct, .TypeString = "Color"), // Node.BorderColor
 	DECL(0x390b4488, Node, BorderStyle, Border.Style, kDataTypeEnum, .TypeString = "None,Hidden,Dotted,Dashed,Solid,Double,Groove,Ridge,Inset,Outset"), // Node.BorderStyle
 	DECL(0xb8e9fe05, Node, BorderRadius, Border.Radius, kDataTypeStruct, .TypeString = "BorderRadiusShorthand"), // Node.BorderRadius
-	DECL(0x319ccd4b, Node, BorderTopLeftRadius, Border.Radius.TopLeftRadius, kDataTypeFloat), // Node.BorderTopLeftRadius
-	DECL(0x579cab64, Node, BorderTopRightRadius, Border.Radius.TopRightRadius, kDataTypeFloat), // Node.BorderTopRightRadius
-	DECL(0xcd47000e, Node, BorderBottomRightRadius, Border.Radius.BottomRightRadius, kDataTypeFloat), // Node.BorderBottomRightRadius
-	DECL(0xabbc6175, Node, BorderBottomLeftRadius, Border.Radius.BottomLeftRadius, kDataTypeFloat), // Node.BorderBottomLeftRadius
+	DECL(0x22252041, Node, BorderTopLeftRadius, Border.Radius.TopLeftRadius, kDataTypeFloat), // Node.BorderTopLeftRadius
+	DECL(0x789f0d82, Node, BorderTopRightRadius, Border.Radius.TopRightRadius, kDataTypeFloat), // Node.BorderTopRightRadius
+	DECL(0xc321a1f8, Node, BorderBottomRightRadius, Border.Radius.BottomRightRadius, kDataTypeFloat), // Node.BorderBottomRightRadius
+	DECL(0x700e8e07, Node, BorderBottomLeftRadius, Border.Radius.BottomLeftRadius, kDataTypeFloat), // Node.BorderBottomLeftRadius
 	DECL(0xd66abafe, Node, Alignment, Alignment, kDataTypeStruct, .TypeString = "AlignmentShorthand"), // Node.Alignment
-	DECL(0x464aee5f, Node, HorizontalAlignment, Alignment.Axis[0], kDataTypeInt), // Node.HorizontalAlignment
-	DECL(0x8a4d9802, Node, VerticalAlignment, Alignment.Axis[1], kDataTypeInt), // Node.VerticalAlignment
-	DECL(0x8a4fd699, Node, DepthAlignment, Alignment.Axis[2], kDataTypeInt), // Node.DepthAlignment
+	DECL(0x1b8d5152, Node, HorizontalAlignment, Alignment.Axis[0], kDataTypeInt), // Node.HorizontalAlignment
+	DECL(0x94b01054, Node, VerticalAlignment, Alignment.Axis[1], kDataTypeInt), // Node.VerticalAlignment
+	DECL(0x7ef540ff, Node, DepthAlignment, Alignment.Axis[2], kDataTypeInt), // Node.DepthAlignment
 	DECL(0x592a4941, Node, Visible, Visible, kDataTypeBool), // Node.Visible
 	DECL(0x20d9ba7c, Node, QuickHide, QuickHide, kDataTypeBool), // Node.QuickHide
 	DECL(0xa0b06d26, Node, VisibleAmountInParent, VisibleAmountInParent, kDataTypeFloat), // Node.VisibleAmountInParent
@@ -2262,7 +2266,7 @@ ORCA_API struct ClassDesc _Node = {
 	.DefaultName = "Node",
 	.ContentType = "Node",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { NULL },
 	.ClassID = ID_Node,
 	.ClassSize = sizeof(struct Node),
 	.Properties = NodeProperties,
@@ -2309,7 +2313,7 @@ ORCA_API struct ClassDesc _TextRun = {
 	.DefaultName = "TextRun",
 	.ContentType = "TextRun",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { NULL },
 	.ClassID = ID_TextRun,
 	.ClassSize = sizeof(struct TextRun),
 	.Properties = TextRunProperties,
@@ -2356,12 +2360,13 @@ void luaX_pushTextBlockConcept(lua_State *L, struct TextBlockConcept const* Text
 struct TextBlockConcept* luaX_checkTextBlockConcept(lua_State *L, int idx) {
 	return GetTextBlockConcept(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _TextRun;
 ORCA_API struct ClassDesc _TextBlockConcept = {
 	.ClassName = "TextBlockConcept",
 	.DefaultName = "TextBlockConcept",
 	.ContentType = "TextBlockConcept",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_TextRun, NULL },
 	.ClassID = ID_TextBlockConcept,
 	.ClassSize = sizeof(struct TextBlockConcept),
 	.Properties = TextBlockConceptProperties,
@@ -2386,13 +2391,13 @@ LRESULT Node2D_ArrangeOverride(struct Object*, struct Node2D*, wParam_t, Arrange
 
 static struct PropertyType const Node2DProperties[kNode2DNumProperties] = {
 	DECL(0x3f19bf01, Node2D, LayoutTransform, LayoutTransform, kDataTypeStruct, .TypeString = "Transform2D"), // Node2D.LayoutTransform
-	DECL(0xc0fba640, Node2D, LayoutTransformTranslation, LayoutTransform.translation, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.LayoutTransformTranslation
-	DECL(0x99152e23, Node2D, LayoutTransformRotation, LayoutTransform.rotation, kDataTypeFloat), // Node2D.LayoutTransformRotation
-	DECL(0x8831b2f5, Node2D, LayoutTransformScale, LayoutTransform.scale, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.LayoutTransformScale
+	DECL(0xfc7e27e0, Node2D, LayoutTransformTranslation, LayoutTransform.translation, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.LayoutTransformTranslation
+	DECL(0x9560ef43, Node2D, LayoutTransformRotation, LayoutTransform.rotation, kDataTypeFloat), // Node2D.LayoutTransformRotation
+	DECL(0x5a2c3595, Node2D, LayoutTransformScale, LayoutTransform.scale, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.LayoutTransformScale
 	DECL(0xe9e55063, Node2D, RenderTransform, RenderTransform, kDataTypeStruct, .TypeString = "Transform2D"), // Node2D.RenderTransform
-	DECL(0x14c0d062, Node2D, RenderTransformTranslation, RenderTransform.translation, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.RenderTransformTranslation
-	DECL(0xdd7a3a1d, Node2D, RenderTransformRotation, RenderTransform.rotation, kDataTypeFloat), // Node2D.RenderTransformRotation
-	DECL(0x75f353bb, Node2D, RenderTransformScale, RenderTransform.scale, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.RenderTransformScale
+	DECL(0xb8e70ec2, Node2D, RenderTransformTranslation, RenderTransform.translation, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.RenderTransformTranslation
+	DECL(0x3c611efd, Node2D, RenderTransformRotation, RenderTransform.rotation, kDataTypeFloat), // Node2D.RenderTransformRotation
+	DECL(0xd037e21b, Node2D, RenderTransformScale, RenderTransform.scale, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.RenderTransformScale
 	DECL(0xdc65ec6d, Node2D, RenderTransformOrigin, RenderTransformOrigin, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.RenderTransformOrigin
 	DECL(0x35a57c45, Node2D, ContentOffset, ContentOffset, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.ContentOffset
 	DECL(0xe9d1810c, Node2D, Matrix, Matrix, kDataTypeStruct, .TypeString = "Matrix3D"), // Node2D.Matrix
@@ -2411,8 +2416,8 @@ static struct PropertyType const Node2DProperties[kNode2DNumProperties] = {
 	DECL(0xe284b26f, Node2D, BoxShadowSpreadRadius, BoxShadow.SpreadRadius, kDataTypeFloat), // Node2D.BoxShadowSpreadRadius
 	DECL(0xe0ae423d, Node2D, BoxShadowColor, BoxShadow.Color, kDataTypeStruct, .TypeString = "Color"), // Node2D.BoxShadowColor
 	DECL(0x3cf02b8b, Node2D, Overflow, Overflow, kDataTypeStruct, .TypeString = "OverflowShorthand"), // Node2D.Overflow
-	DECL(0xe1152f89, Node2D, OverflowX, Overflow.x, kDataTypeEnum, .TypeString = "Visible,Hidden,Clip,Scroll,Auto"), // Node2D.OverflowX
-	DECL(0xe0152df6, Node2D, OverflowY, Overflow.y, kDataTypeEnum, .TypeString = "Visible,Hidden,Clip,Scroll,Auto"), // Node2D.OverflowY
+	DECL(0xc114fd29, Node2D, OverflowX, Overflow.x, kDataTypeEnum, .TypeString = "Visible,Hidden,Clip,Scroll,Auto"), // Node2D.OverflowX
+	DECL(0xc014fb96, Node2D, OverflowY, Overflow.y, kDataTypeEnum, .TypeString = "Visible,Hidden,Clip,Scroll,Auto"), // Node2D.OverflowY
 	DECL(0x7787478b, Node2D, Ring, Ring, kDataTypeStruct, .TypeString = "RingShorthand"), // Node2D.Ring
 	DECL(0xfd700608, Node2D, RingOffset, Ring.Offset, kDataTypeFloat), // Node2D.RingOffset
 	DECL(0x5fff552d, Node2D, RingWidth, Ring.Width, kDataTypeFloat), // Node2D.RingWidth
@@ -2458,12 +2463,13 @@ void luaX_pushNode2D(lua_State *L, struct Node2D const* Node2D) {
 struct Node2D* luaX_checkNode2D(lua_State *L, int idx) {
 	return GetNode2D(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Node;
 ORCA_API struct ClassDesc _Node2D = {
 	.ClassName = "Node2D",
 	.DefaultName = "Node2D",
 	.ContentType = "Node2D",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Node, NULL },
 	.ClassID = ID_Node2D,
 	.ClassSize = sizeof(struct Node2D),
 	.Properties = Node2DProperties,
@@ -2492,12 +2498,13 @@ void luaX_pushPrefabView2D(lua_State *L, struct PrefabView2D const* PrefabView2D
 struct PrefabView2D* luaX_checkPrefabView2D(lua_State *L, int idx) {
 	return GetPrefabView2D(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Node2D;
 ORCA_API struct ClassDesc _PrefabView2D = {
 	.ClassName = "PrefabView2D",
 	.DefaultName = "PrefabView2D",
 	.ContentType = "PrefabView2D",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Node2D, NULL },
 	.ClassID = ID_PrefabView2D,
 	.ClassSize = sizeof(struct PrefabView2D),
 	.Properties = PrefabView2DProperties,
@@ -2532,12 +2539,14 @@ void luaX_pushTextBlock(lua_State *L, struct TextBlock const* TextBlock) {
 struct TextBlock* luaX_checkTextBlock(lua_State *L, int idx) {
 	return GetTextBlock(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Node2D;
+extern struct ClassDesc _TextBlockConcept;
 ORCA_API struct ClassDesc _TextBlock = {
 	.ClassName = "TextBlock",
 	.DefaultName = "TextBlock",
 	.ContentType = "TextBlock",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Node2D, &_TextBlockConcept, NULL },
 	.ClassID = ID_TextBlock,
 	.ClassSize = sizeof(struct TextBlock),
 	.Properties = TextBlockProperties,
@@ -2581,12 +2590,13 @@ void luaX_pushInput(lua_State *L, struct Input const* Input) {
 struct Input* luaX_checkInput(lua_State *L, int idx) {
 	return GetInput(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _TextBlock;
 ORCA_API struct ClassDesc _Input = {
 	.ClassName = "Input",
 	.DefaultName = "Input",
 	.ContentType = "Input",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_TextBlock, NULL },
 	.ClassID = ID_Input,
 	.ClassSize = sizeof(struct Input),
 	.Properties = InputProperties,
@@ -2620,12 +2630,13 @@ void luaX_pushButton(lua_State *L, struct Button const* Button) {
 struct Button* luaX_checkButton(lua_State *L, int idx) {
 	return GetButton(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _TextBlock;
 ORCA_API struct ClassDesc _Button = {
 	.ClassName = "Button",
 	.DefaultName = "Button",
 	.ContentType = "Button",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_TextBlock, NULL },
 	.ClassID = ID_Button,
 	.ClassSize = sizeof(struct Button),
 	.Properties = ButtonProperties,
@@ -2653,12 +2664,13 @@ void luaX_pushLabel(lua_State *L, struct Label const* Label) {
 struct Label* luaX_checkLabel(lua_State *L, int idx) {
 	return GetLabel(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _TextBlock;
 ORCA_API struct ClassDesc _Label = {
 	.ClassName = "Label",
 	.DefaultName = "Label",
 	.ContentType = "Label",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_TextBlock, NULL },
 	.ClassID = ID_Label,
 	.ClassSize = sizeof(struct Label),
 	.Properties = LabelProperties,
@@ -2692,12 +2704,13 @@ void luaX_pushStackView(lua_State *L, struct StackView const* StackView) {
 struct StackView* luaX_checkStackView(lua_State *L, int idx) {
 	return GetStackView(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Node2D;
 ORCA_API struct ClassDesc _StackView = {
 	.ClassName = "StackView",
 	.DefaultName = "StackView",
 	.ContentType = "StackView",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Node2D, NULL },
 	.ClassID = ID_StackView,
 	.ClassSize = sizeof(struct StackView),
 	.Properties = StackViewProperties,
@@ -2726,12 +2739,13 @@ void luaX_pushForm(lua_State *L, struct Form const* Form) {
 struct Form* luaX_checkForm(lua_State *L, int idx) {
 	return GetForm(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _StackView;
 ORCA_API struct ClassDesc _Form = {
 	.ClassName = "Form",
 	.DefaultName = "Form",
 	.ContentType = "Form",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_StackView, NULL },
 	.ClassID = ID_Form,
 	.ClassSize = sizeof(struct Form),
 	.Properties = FormProperties,
@@ -2762,12 +2776,13 @@ void luaX_pushControl(lua_State *L, struct Control const* Control) {
 struct Control* luaX_checkControl(lua_State *L, int idx) {
 	return GetControl(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Node2D;
 ORCA_API struct ClassDesc _Control = {
 	.ClassName = "Control",
 	.DefaultName = "Control",
 	.ContentType = "Control",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Node2D, NULL },
 	.ClassID = ID_Control,
 	.ClassSize = sizeof(struct Control),
 	.Properties = ControlProperties,
@@ -2804,12 +2819,13 @@ void luaX_pushScreen(lua_State *L, struct Screen const* Screen) {
 struct Screen* luaX_checkScreen(lua_State *L, int idx) {
 	return GetScreen(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Node2D;
 ORCA_API struct ClassDesc _Screen = {
 	.ClassName = "Screen",
 	.DefaultName = "Screen",
 	.ContentType = "Screen",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Node2D, NULL },
 	.ClassID = ID_Screen,
 	.ClassSize = sizeof(struct Screen),
 	.Properties = ScreenProperties,
@@ -2840,12 +2856,13 @@ void luaX_pushCinematic(lua_State *L, struct Cinematic const* Cinematic) {
 struct Cinematic* luaX_checkCinematic(lua_State *L, int idx) {
 	return GetCinematic(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Node2D;
 ORCA_API struct ClassDesc _Cinematic = {
 	.ClassName = "Cinematic",
 	.DefaultName = "Cinematic",
 	.ContentType = "Cinematic",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Node2D, NULL },
 	.ClassID = ID_Cinematic,
 	.ClassSize = sizeof(struct Cinematic),
 	.Properties = CinematicProperties,
@@ -2880,12 +2897,13 @@ void luaX_pushGrid(lua_State *L, struct Grid const* Grid) {
 struct Grid* luaX_checkGrid(lua_State *L, int idx) {
 	return GetGrid(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Node2D;
 ORCA_API struct ClassDesc _Grid = {
 	.ClassName = "Grid",
 	.DefaultName = "Grid",
 	.ContentType = "Grid",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Node2D, NULL },
 	.ClassID = ID_Grid,
 	.ClassSize = sizeof(struct Grid),
 	.Properties = GridProperties,
@@ -2927,12 +2945,13 @@ void luaX_pushImageView(lua_State *L, struct ImageView const* ImageView) {
 struct ImageView* luaX_checkImageView(lua_State *L, int idx) {
 	return GetImageView(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Node2D;
 ORCA_API struct ClassDesc _ImageView = {
 	.ClassName = "ImageView",
 	.DefaultName = "ImageView",
 	.ContentType = "ImageView",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Node2D, NULL },
 	.ClassID = ID_ImageView,
 	.ClassSize = sizeof(struct ImageView),
 	.Properties = ImageViewProperties,
@@ -2977,12 +2996,13 @@ void luaX_pushNinePatchImage(lua_State *L, struct NinePatchImage const* NinePatc
 struct NinePatchImage* luaX_checkNinePatchImage(lua_State *L, int idx) {
 	return GetNinePatchImage(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Node2D;
 ORCA_API struct ClassDesc _NinePatchImage = {
 	.ClassName = "NinePatchImage",
 	.DefaultName = "NinePatchImage",
 	.ContentType = "NinePatchImage",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Node2D, NULL },
 	.ClassID = ID_NinePatchImage,
 	.ClassSize = sizeof(struct NinePatchImage),
 	.Properties = NinePatchImageProperties,
@@ -3022,12 +3042,13 @@ void luaX_pushTerminalView(lua_State *L, struct TerminalView const* TerminalView
 struct TerminalView* luaX_checkTerminalView(lua_State *L, int idx) {
 	return GetTerminalView(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Node2D;
 ORCA_API struct ClassDesc _TerminalView = {
 	.ClassName = "TerminalView",
 	.DefaultName = "TerminalView",
 	.ContentType = "TerminalView",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Node2D, NULL },
 	.ClassID = ID_TerminalView,
 	.ClassSize = sizeof(struct TerminalView),
 	.Properties = TerminalViewProperties,
@@ -3057,12 +3078,13 @@ void luaX_pushPage(lua_State *L, struct Page const* Page) {
 struct Page* luaX_checkPage(lua_State *L, int idx) {
 	return GetPage(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Node2D;
 ORCA_API struct ClassDesc _Page = {
 	.ClassName = "Page",
 	.DefaultName = "Page",
 	.ContentType = "Page",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Node2D, NULL },
 	.ClassID = ID_Page,
 	.ClassSize = sizeof(struct Page),
 	.Properties = PageProperties,
@@ -3094,12 +3116,13 @@ void luaX_pushPageHost(lua_State *L, struct PageHost const* PageHost) {
 struct PageHost* luaX_checkPageHost(lua_State *L, int idx) {
 	return GetPageHost(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Page;
 ORCA_API struct ClassDesc _PageHost = {
 	.ClassName = "PageHost",
 	.DefaultName = "PageHost",
 	.ContentType = "PageHost",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Page, NULL },
 	.ClassID = ID_PageHost,
 	.ClassSize = sizeof(struct PageHost),
 	.Properties = PageHostProperties,
@@ -3124,12 +3147,13 @@ void luaX_pushPageViewport(lua_State *L, struct PageViewport const* PageViewport
 struct PageViewport* luaX_checkPageViewport(lua_State *L, int idx) {
 	return GetPageViewport(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Node2D;
 ORCA_API struct ClassDesc _PageViewport = {
 	.ClassName = "PageViewport",
 	.DefaultName = "PageViewport",
 	.ContentType = "PageViewport",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Node2D, NULL },
 	.ClassID = ID_PageViewport,
 	.ClassSize = sizeof(struct PageViewport),
 	.Properties = PageViewportProperties,
@@ -3161,7 +3185,7 @@ ORCA_API struct ClassDesc _Style = {
 	.DefaultName = "Style",
 	.ContentType = "Style",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { NULL },
 	.ClassID = ID_Style,
 	.ClassSize = sizeof(struct Style),
 	.Properties = StyleProperties,
@@ -3178,7 +3202,6 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	}));
 	void on_ui_module_registered(lua_State *L);
 	on_ui_module_registered(L);
-	// Structs
 	lua_setfield(L, ((void)luaopen_orca_BorderRadiusShorthand(L), -2), "BorderRadiusShorthand");
 	lua_setfield(L, ((void)luaopen_orca_EdgeShorthand(L), -2), "EdgeShorthand");
 	lua_setfield(L, ((void)luaopen_orca_AlignmentShorthand(L), -2), "AlignmentShorthand");
@@ -3201,7 +3224,6 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_TriggeredEventArgs(L), -2), "TriggeredEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_NavigateToPageArguments(L), -2), "NavigateToPageArguments");
 	lua_setfield(L, ((void)luaopen_orca_NavigateBackArguments(L), -2), "NavigateBackArguments");
-	// Components
 	lua_setfield(L, ((void)lua_pushclass(L, &_DataObject), -2), "DataObject");
 	lua_setfield(L, ((void)lua_pushclass(L, &_AnimationPlayer), -2), "AnimationPlayer");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Trigger), -2), "Trigger");

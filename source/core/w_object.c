@@ -130,7 +130,7 @@ _assign_callbacks(lua_State* L, lpObject_t pobj, int idx)
   lua_pop(L, 2);
 }
 
-int f_new_Object(lua_State *L) {
+int OBJ_CreateFromLuaState(lua_State *L) {
   luaX_parsefield(lpcClassDesc_t, __nativeclass, 1, lua_touserdata);
   lpObject_t pobj = OBJ_Create(L, __nativeclass);
   if (lua_getfield(L, 1, "__class") == LUA_TTABLE) {

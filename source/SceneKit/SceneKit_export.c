@@ -95,13 +95,13 @@ LRESULT Node3D_UpdateMatrix(struct Object*, struct Node3D*, wParam_t, UpdateMatr
 
 static struct PropertyType const Node3DProperties[kNode3DNumProperties] = {
 	DECL(0x3f19bf01, Node3D, LayoutTransform, LayoutTransform, kDataTypeStruct, .TypeString = "Transform3D"), // Node3D.LayoutTransform
-	DECL(0xc0fba640, Node3D, LayoutTransformTranslation, LayoutTransform.translation, kDataTypeStruct, .TypeString = "Vector3D"), // Node3D.LayoutTransformTranslation
-	DECL(0x99152e23, Node3D, LayoutTransformRotation, LayoutTransform.rotation, kDataTypeStruct, .TypeString = "Vector3D"), // Node3D.LayoutTransformRotation
-	DECL(0x8831b2f5, Node3D, LayoutTransformScale, LayoutTransform.scale, kDataTypeStruct, .TypeString = "Vector3D"), // Node3D.LayoutTransformScale
+	DECL(0xfc7e27e0, Node3D, LayoutTransformTranslation, LayoutTransform.translation, kDataTypeStruct, .TypeString = "Vector3D"), // Node3D.LayoutTransformTranslation
+	DECL(0x9560ef43, Node3D, LayoutTransformRotation, LayoutTransform.rotation, kDataTypeStruct, .TypeString = "Vector3D"), // Node3D.LayoutTransformRotation
+	DECL(0x5a2c3595, Node3D, LayoutTransformScale, LayoutTransform.scale, kDataTypeStruct, .TypeString = "Vector3D"), // Node3D.LayoutTransformScale
 	DECL(0xe9e55063, Node3D, RenderTransform, RenderTransform, kDataTypeStruct, .TypeString = "Transform3D"), // Node3D.RenderTransform
-	DECL(0x14c0d062, Node3D, RenderTransformTranslation, RenderTransform.translation, kDataTypeStruct, .TypeString = "Vector3D"), // Node3D.RenderTransformTranslation
-	DECL(0xdd7a3a1d, Node3D, RenderTransformRotation, RenderTransform.rotation, kDataTypeStruct, .TypeString = "Vector3D"), // Node3D.RenderTransformRotation
-	DECL(0x75f353bb, Node3D, RenderTransformScale, RenderTransform.scale, kDataTypeStruct, .TypeString = "Vector3D"), // Node3D.RenderTransformScale
+	DECL(0xb8e70ec2, Node3D, RenderTransformTranslation, RenderTransform.translation, kDataTypeStruct, .TypeString = "Vector3D"), // Node3D.RenderTransformTranslation
+	DECL(0x3c611efd, Node3D, RenderTransformRotation, RenderTransform.rotation, kDataTypeStruct, .TypeString = "Vector3D"), // Node3D.RenderTransformRotation
+	DECL(0xd037e21b, Node3D, RenderTransformScale, RenderTransform.scale, kDataTypeStruct, .TypeString = "Vector3D"), // Node3D.RenderTransformScale
 	DECL(0xdc65ec6d, Node3D, RenderTransformOrigin, RenderTransformOrigin, kDataTypeStruct, .TypeString = "Vector3D"), // Node3D.RenderTransformOrigin
 	DECL(0x35a57c45, Node3D, ContentOffset, ContentOffset, kDataTypeStruct, .TypeString = "Vector3D"), // Node3D.ContentOffset
 	DECL(0xe9d1810c, Node3D, Matrix, Matrix, kDataTypeStruct, .TypeString = "Matrix3D"), // Node3D.Matrix
@@ -123,12 +123,13 @@ void luaX_pushNode3D(lua_State *L, struct Node3D const* Node3D) {
 struct Node3D* luaX_checkNode3D(lua_State *L, int idx) {
 	return GetNode3D(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Node;
 ORCA_API struct ClassDesc _Node3D = {
 	.ClassName = "Node3D",
 	.DefaultName = "Node3D",
 	.ContentType = "Node3D",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Node, NULL },
 	.ClassID = ID_Node3D,
 	.ClassSize = sizeof(struct Node3D),
 	.Properties = Node3DProperties,
@@ -162,12 +163,13 @@ void luaX_pushScene(lua_State *L, struct Scene const* Scene) {
 struct Scene* luaX_checkScene(lua_State *L, int idx) {
 	return GetScene(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Node3D;
 ORCA_API struct ClassDesc _Scene = {
 	.ClassName = "Scene",
 	.DefaultName = "Scene",
 	.ContentType = "Scene",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Node3D, NULL },
 	.ClassID = ID_Scene,
 	.ClassSize = sizeof(struct Scene),
 	.Properties = SceneProperties,
@@ -196,12 +198,13 @@ void luaX_pushModel3D(lua_State *L, struct Model3D const* Model3D) {
 struct Model3D* luaX_checkModel3D(lua_State *L, int idx) {
 	return GetModel3D(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Node3D;
 ORCA_API struct ClassDesc _Model3D = {
 	.ClassName = "Model3D",
 	.DefaultName = "Model3D",
 	.ContentType = "Model3D",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Node3D, NULL },
 	.ClassID = ID_Model3D,
 	.ClassSize = sizeof(struct Model3D),
 	.Properties = Model3DProperties,
@@ -235,12 +238,13 @@ void luaX_pushPlaneMeshNode(lua_State *L, struct PlaneMeshNode const* PlaneMeshN
 struct PlaneMeshNode* luaX_checkPlaneMeshNode(lua_State *L, int idx) {
 	return GetPlaneMeshNode(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Model3D;
 ORCA_API struct ClassDesc _PlaneMeshNode = {
 	.ClassName = "PlaneMeshNode",
 	.DefaultName = "PlaneMeshNode",
 	.ContentType = "PlaneMeshNode",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Model3D, NULL },
 	.ClassID = ID_PlaneMeshNode,
 	.ClassSize = sizeof(struct PlaneMeshNode),
 	.Properties = PlaneMeshNodeProperties,
@@ -274,12 +278,13 @@ void luaX_pushCamera(lua_State *L, struct Camera const* Camera) {
 struct Camera* luaX_checkCamera(lua_State *L, int idx) {
 	return GetCamera(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Node3D;
 ORCA_API struct ClassDesc _Camera = {
 	.ClassName = "Camera",
 	.DefaultName = "Camera",
 	.ContentType = "Camera",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Node3D, NULL },
 	.ClassID = ID_Camera,
 	.ClassSize = sizeof(struct Camera),
 	.Properties = CameraProperties,
@@ -312,12 +317,13 @@ void luaX_pushTrajectoryList3D(lua_State *L, struct TrajectoryList3D const* Traj
 struct TrajectoryList3D* luaX_checkTrajectoryList3D(lua_State *L, int idx) {
 	return GetTrajectoryList3D(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Node3D;
 ORCA_API struct ClassDesc _TrajectoryList3D = {
 	.ClassName = "TrajectoryList3D",
 	.DefaultName = "TrajectoryList3D",
 	.ContentType = "TrajectoryList3D",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Node3D, NULL },
 	.ClassID = ID_TrajectoryList3D,
 	.ClassSize = sizeof(struct TrajectoryList3D),
 	.Properties = TrajectoryList3DProperties,
@@ -349,12 +355,13 @@ void luaX_pushViewport3D(lua_State *L, struct Viewport3D const* Viewport3D) {
 struct Viewport3D* luaX_checkViewport3D(lua_State *L, int idx) {
 	return GetViewport3D(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Node2D;
 ORCA_API struct ClassDesc _Viewport3D = {
 	.ClassName = "Viewport3D",
 	.DefaultName = "Viewport3D",
 	.ContentType = "Viewport3D",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Node2D, NULL },
 	.ClassID = ID_Viewport3D,
 	.ClassSize = sizeof(struct Viewport3D),
 	.Properties = Viewport3DProperties,
@@ -383,12 +390,13 @@ void luaX_pushPrefabView3D(lua_State *L, struct PrefabView3D const* PrefabView3D
 struct PrefabView3D* luaX_checkPrefabView3D(lua_State *L, int idx) {
 	return GetPrefabView3D(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Node3D;
 ORCA_API struct ClassDesc _PrefabView3D = {
 	.ClassName = "PrefabView3D",
 	.DefaultName = "PrefabView3D",
 	.ContentType = "PrefabView3D",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Node3D, NULL },
 	.ClassID = ID_PrefabView3D,
 	.ClassSize = sizeof(struct PrefabView3D),
 	.Properties = PrefabView3DProperties,
@@ -413,12 +421,13 @@ void luaX_pushRenderPass(lua_State *L, struct RenderPass const* RenderPass) {
 struct RenderPass* luaX_checkRenderPass(lua_State *L, int idx) {
 	return GetRenderPass(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Node;
 ORCA_API struct ClassDesc _RenderPass = {
 	.ClassName = "RenderPass",
 	.DefaultName = "RenderPass",
 	.ContentType = "RenderPass",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Node, NULL },
 	.ClassID = ID_RenderPass,
 	.ClassSize = sizeof(struct RenderPass),
 	.Properties = RenderPassProperties,
@@ -443,12 +452,13 @@ void luaX_pushCompositionTargetRenderPass(lua_State *L, struct CompositionTarget
 struct CompositionTargetRenderPass* luaX_checkCompositionTargetRenderPass(lua_State *L, int idx) {
 	return GetCompositionTargetRenderPass(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _RenderPass;
 ORCA_API struct ClassDesc _CompositionTargetRenderPass = {
 	.ClassName = "CompositionTargetRenderPass",
 	.DefaultName = "CompositionTargetRenderPass",
 	.ContentType = "CompositionTargetRenderPass",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_RenderPass, NULL },
 	.ClassID = ID_CompositionTargetRenderPass,
 	.ClassSize = sizeof(struct CompositionTargetRenderPass),
 	.Properties = CompositionTargetRenderPassProperties,
@@ -473,12 +483,13 @@ void luaX_pushBlitRenderPass(lua_State *L, struct BlitRenderPass const* BlitRend
 struct BlitRenderPass* luaX_checkBlitRenderPass(lua_State *L, int idx) {
 	return GetBlitRenderPass(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _RenderPass;
 ORCA_API struct ClassDesc _BlitRenderPass = {
 	.ClassName = "BlitRenderPass",
 	.DefaultName = "BlitRenderPass",
 	.ContentType = "BlitRenderPass",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_RenderPass, NULL },
 	.ClassID = ID_BlitRenderPass,
 	.ClassSize = sizeof(struct BlitRenderPass),
 	.Properties = BlitRenderPassProperties,
@@ -506,12 +517,13 @@ void luaX_pushClearRenderPass(lua_State *L, struct ClearRenderPass const* ClearR
 struct ClearRenderPass* luaX_checkClearRenderPass(lua_State *L, int idx) {
 	return GetClearRenderPass(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _RenderPass;
 ORCA_API struct ClassDesc _ClearRenderPass = {
 	.ClassName = "ClearRenderPass",
 	.DefaultName = "ClearRenderPass",
 	.ContentType = "ClearRenderPass",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_RenderPass, NULL },
 	.ClassID = ID_ClearRenderPass,
 	.ClassSize = sizeof(struct ClearRenderPass),
 	.Properties = ClearRenderPassProperties,
@@ -539,12 +551,13 @@ void luaX_pushDrawObjectsRenderPass(lua_State *L, struct DrawObjectsRenderPass c
 struct DrawObjectsRenderPass* luaX_checkDrawObjectsRenderPass(lua_State *L, int idx) {
 	return GetDrawObjectsRenderPass(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _RenderPass;
 ORCA_API struct ClassDesc _DrawObjectsRenderPass = {
 	.ClassName = "DrawObjectsRenderPass",
 	.DefaultName = "DrawObjectsRenderPass",
 	.ContentType = "DrawObjectsRenderPass",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_RenderPass, NULL },
 	.ClassID = ID_DrawObjectsRenderPass,
 	.ClassSize = sizeof(struct DrawObjectsRenderPass),
 	.Properties = DrawObjectsRenderPassProperties,
@@ -587,12 +600,13 @@ void luaX_pushPipelineStateRenderPass(lua_State *L, struct PipelineStateRenderPa
 struct PipelineStateRenderPass* luaX_checkPipelineStateRenderPass(lua_State *L, int idx) {
 	return GetPipelineStateRenderPass(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _RenderPass;
 ORCA_API struct ClassDesc _PipelineStateRenderPass = {
 	.ClassName = "PipelineStateRenderPass",
 	.DefaultName = "PipelineStateRenderPass",
 	.ContentType = "PipelineStateRenderPass",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_RenderPass, NULL },
 	.ClassID = ID_PipelineStateRenderPass,
 	.ClassSize = sizeof(struct PipelineStateRenderPass),
 	.Properties = PipelineStateRenderPassProperties,
@@ -621,12 +635,14 @@ void luaX_pushTextBlock3D(lua_State *L, struct TextBlock3D const* TextBlock3D) {
 struct TextBlock3D* luaX_checkTextBlock3D(lua_State *L, int idx) {
 	return GetTextBlock3D(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Node3D;
+extern struct ClassDesc _TextBlockConcept;
 ORCA_API struct ClassDesc _TextBlock3D = {
 	.ClassName = "TextBlock3D",
 	.DefaultName = "TextBlock3D",
 	.ContentType = "TextBlock3D",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Node3D, &_TextBlockConcept, NULL },
 	.ClassID = ID_TextBlock3D,
 	.ClassSize = sizeof(struct TextBlock3D),
 	.Properties = TextBlock3DProperties,
@@ -660,12 +676,13 @@ void luaX_pushLight3D(lua_State *L, struct Light3D const* Light3D) {
 struct Light3D* luaX_checkLight3D(lua_State *L, int idx) {
 	return GetLight3D(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Node3D;
 ORCA_API struct ClassDesc _Light3D = {
 	.ClassName = "Light3D",
 	.DefaultName = "Light3D",
 	.ContentType = "Light3D",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Node3D, NULL },
 	.ClassID = ID_Light3D,
 	.ClassSize = sizeof(struct Light3D),
 	.Properties = Light3DProperties,
@@ -694,12 +711,13 @@ void luaX_pushSpriteView(lua_State *L, struct SpriteView const* SpriteView) {
 struct SpriteView* luaX_checkSpriteView(lua_State *L, int idx) {
 	return GetSpriteView(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Node3D;
 ORCA_API struct ClassDesc _SpriteView = {
 	.ClassName = "SpriteView",
 	.DefaultName = "SpriteView",
 	.ContentType = "SpriteView",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Node3D, NULL },
 	.ClassID = ID_SpriteView,
 	.ClassSize = sizeof(struct SpriteView),
 	.Properties = SpriteViewProperties,
@@ -714,8 +732,6 @@ ORCA_API int luaopen_orca_SceneKit(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
 		{ NULL, NULL } 
 	}));
-	// Structs
-	// Components
 	lua_setfield(L, ((void)lua_pushclass(L, &_Node3D), -2), "Node3D");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Scene), -2), "Scene");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Model3D), -2), "Model3D");

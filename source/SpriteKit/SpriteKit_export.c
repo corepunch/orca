@@ -89,7 +89,7 @@ ORCA_API struct ClassDesc _SpriteAnimation = {
 	.DefaultName = "SpriteAnimation",
 	.ContentType = "SpriteAnimation",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { NULL },
 	.ClassID = ID_SpriteAnimation,
 	.ClassSize = sizeof(struct SpriteAnimation),
 	.Properties = SpriteAnimationProperties,
@@ -119,12 +119,13 @@ void luaX_pushSKNode(lua_State *L, struct SKNode const* SKNode) {
 struct SKNode* luaX_checkSKNode(lua_State *L, int idx) {
 	return GetSKNode(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Node;
 ORCA_API struct ClassDesc _SKNode = {
 	.ClassName = "SKNode",
 	.DefaultName = "SKNode",
 	.ContentType = "SKNode",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Node, NULL },
 	.ClassID = ID_SKNode,
 	.ClassSize = sizeof(struct SKNode),
 	.Properties = SKNodeProperties,
@@ -151,12 +152,13 @@ void luaX_pushSKScene(lua_State *L, struct SKScene const* SKScene) {
 struct SKScene* luaX_checkSKScene(lua_State *L, int idx) {
 	return GetSKScene(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _SKNode;
 ORCA_API struct ClassDesc _SKScene = {
 	.ClassName = "SKScene",
 	.DefaultName = "SKScene",
 	.ContentType = "SKScene",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_SKNode, NULL },
 	.ClassID = ID_SKScene,
 	.ClassSize = sizeof(struct SKScene),
 	.Properties = SKSceneProperties,
@@ -174,10 +176,10 @@ static struct PropertyType const SKSpriteNodeProperties[kSKSpriteNodeNumProperti
 	DECL(0xa9f98a53, SKSpriteNode, FreezeFrame, FreezeFrame, kDataTypeInt), // SKSpriteNode.FreezeFrame
 	DECL(0x0038792b, SKSpriteNode, BlendMode, BlendMode, kDataTypeEnum, .TypeString = "AlphaAutomatic,Opaque,Alpha,Additive,PremultipliedAlpha,MixedAlpha"), // SKSpriteNode.BlendMode
 	DECL(0xae3d25c0, SKSpriteNode, UvRect, UvRect, kDataTypeStruct, .TypeString = "Rectangle"), // SKSpriteNode.UvRect
-	DECL(0x024260a8, SKSpriteNode, UvRectX, UvRect.x, kDataTypeFloat), // SKSpriteNode.UvRectX
-	DECL(0x0342623b, SKSpriteNode, UvRectY, UvRect.y, kDataTypeFloat), // SKSpriteNode.UvRectY
-	DECL(0x4467942c, SKSpriteNode, UvRectWidth, UvRect.width, kDataTypeFloat), // SKSpriteNode.UvRectWidth
-	DECL(0xee804d9b, SKSpriteNode, UvRectHeight, UvRect.height, kDataTypeFloat), // SKSpriteNode.UvRectHeight
+	DECL(0xe2422e48, SKSpriteNode, UvRectX, UvRect.x, kDataTypeFloat), // SKSpriteNode.UvRectX
+	DECL(0xe3422fdb, SKSpriteNode, UvRectY, UvRect.y, kDataTypeFloat), // SKSpriteNode.UvRectY
+	DECL(0xec9d6ecc, SKSpriteNode, UvRectWidth, UvRect.width, kDataTypeFloat), // SKSpriteNode.UvRectWidth
+	DECL(0xdbdb8abb, SKSpriteNode, UvRectHeight, UvRect.height, kDataTypeFloat), // SKSpriteNode.UvRectHeight
 };
 static struct SKSpriteNode SKSpriteNodeDefaults = {
   .FreezeFrame = -1,
@@ -195,12 +197,13 @@ void luaX_pushSKSpriteNode(lua_State *L, struct SKSpriteNode const* SKSpriteNode
 struct SKSpriteNode* luaX_checkSKSpriteNode(lua_State *L, int idx) {
 	return GetSKSpriteNode(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _SKNode;
 ORCA_API struct ClassDesc _SKSpriteNode = {
 	.ClassName = "SKSpriteNode",
 	.DefaultName = "SKSpriteNode",
 	.ContentType = "SKSpriteNode",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_SKNode, NULL },
 	.ClassID = ID_SKSpriteNode,
 	.ClassSize = sizeof(struct SKSpriteNode),
 	.Properties = SKSpriteNodeProperties,
@@ -230,12 +233,14 @@ void luaX_pushSKLabelNode(lua_State *L, struct SKLabelNode const* SKLabelNode) {
 struct SKLabelNode* luaX_checkSKLabelNode(lua_State *L, int idx) {
 	return GetSKLabelNode(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _SKNode;
+extern struct ClassDesc _TextBlockConcept;
 ORCA_API struct ClassDesc _SKLabelNode = {
 	.ClassName = "SKLabelNode",
 	.DefaultName = "SKLabelNode",
 	.ContentType = "SKLabelNode",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_SKNode, &_TextBlockConcept, NULL },
 	.ClassID = ID_SKLabelNode,
 	.ClassSize = sizeof(struct SKLabelNode),
 	.Properties = SKLabelNodeProperties,
@@ -265,12 +270,13 @@ void luaX_pushSKView(lua_State *L, struct SKView const* SKView) {
 struct SKView* luaX_checkSKView(lua_State *L, int idx) {
 	return GetSKView(luaX_checkObject(L, idx));
 }
+extern struct ClassDesc _Node2D;
 ORCA_API struct ClassDesc _SKView = {
 	.ClassName = "SKView",
 	.DefaultName = "SKView",
 	.ContentType = "SKView",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = {NULL},
+	.ParentClasses = { &_Node2D, NULL },
 	.ClassID = ID_SKView,
 	.ClassSize = sizeof(struct SKView),
 	.Properties = SKViewProperties,
@@ -287,9 +293,7 @@ ORCA_API int luaopen_orca_SpriteKit(lua_State *L) {
 	}));
 	void on_spritekit_module_registered(lua_State *L);
 	on_spritekit_module_registered(L);
-	// Structs
 	lua_setfield(L, ((void)luaopen_orca_SpriteFrame(L), -2), "SpriteFrame");
-	// Components
 	lua_setfield(L, ((void)lua_pushclass(L, &_SpriteAnimation), -2), "SpriteAnimation");
 	lua_setfield(L, ((void)lua_pushclass(L, &_SKNode), -2), "SKNode");
 	lua_setfield(L, ((void)lua_pushclass(L, &_SKScene), -2), "SKScene");

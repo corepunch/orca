@@ -2268,7 +2268,6 @@ ORCA_API int luaopen_orca_geometry(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
 		{ NULL, NULL } 
 	}));
-	// Structs
 	lua_setfield(L, ((void)luaopen_orca_vec2(L), -2), "vec2");
 	lua_setfield(L, ((void)luaopen_orca_vec3(L), -2), "vec3");
 	lua_setfield(L, ((void)luaopen_orca_vec4(L), -2), "vec4");
@@ -2289,6 +2288,5 @@ ORCA_API int luaopen_orca_geometry(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_line3(L), -2), "line3");
 	lua_setfield(L, ((void)luaopen_orca_edges(L), -2), "edges");
 	lua_setfield(L, ((void)luaopen_orca_color(L), -2), "color");
-	// Components
 	return 1;
 }

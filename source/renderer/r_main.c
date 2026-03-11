@@ -995,7 +995,3 @@ ORCA_API void luaX_pushViewDef(lua_State* L, struct ViewDef const* viewdef) {
 ORCA_API void luaX_pushViewText(lua_State* L, struct ViewText const* viewtext) {
   lua_pushnil(L);
 }
-
-ORCA_API void luaX_pushlua_State(lua_State* L, lua_State const* state) {
-  lua_pushnil(L);
-}

@@ -58,6 +58,9 @@ void luaX_pushDataType(lua_State *L, enum DataType value) {
 	assert(value >= 0 && value < 11);
 	lua_pushstring(L, _DataType[value]);
 }
+int f_Object_CreateFromLuaState(lua_State *L) {
+	return OBJ_CreateFromLuaState(L);
+}
 int f_Object_Clear(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	OBJ_Clear(L, this_ );
@@ -490,6 +493,7 @@ int f_Object_GetDomain(lua_State *L) {
 int luaopen_orca_Object(lua_State *L) {
 	luaL_newmetatable(L, "Object");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ "new", f_Object_CreateFromLuaState },
 		{ "clear", f_Object_Clear },
 		{ "__gc", f_Object_Release },
 		{ "__eq", f_Object_Equals },
@@ -562,6 +566,8 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "getDomain", f_Object_GetDomain },
 		{ NULL, NULL },
 	}), 0);
+	lua_pushvalue(L, -1);
+	lua_setfield(L, -2, "__index");
 	return 1;
 }
 void luaX_pushPropertyChangedEventArgs(lua_State *L, struct PropertyChangedEventArgs const* data) {
@@ -1004,11 +1010,10 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	}));
 	void on_core_module_registered(lua_State *L);
 	on_core_module_registered(L);
-	// Structs
 	lua_setfield(L, ((void)luaopen_orca_PropertyChangedEventArgs(L), -2), "PropertyChangedEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_UpdateMatrixEventArgs(L), -2), "UpdateMatrixEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_PropertyEnumValue(L), -2), "PropertyEnumValue");
 	lua_setfield(L, ((void)luaopen_orca_PropertyType(L), -2), "PropertyType");
-	// Components
+	lua_setfield(L, ((void)luaopen_orca_Object(L), -2), "Object");
 	return 1;
 }

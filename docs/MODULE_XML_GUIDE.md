@@ -130,7 +130,6 @@ Similar to `<struct>`, but defines an abstract interface or base class.
 ```xml
 <interface name="Object" prefix="OBJ_" export="Object" no-check="true">
   <summary>Core engine host object.</summary>
-  <init/>
   <method name="Clear" export="clear" lua="true">
     <summary>Clear all children of the object.</summary>
   </method>
@@ -339,15 +338,6 @@ Declares that a component handles a specific event.
 **Example:**
 ```xml
 <handles event="Attached"/>
-```
-
-### `<init>` - Initialization Marker
-
-Indicates that a struct/interface has an initialization method.
-
-**Example:**
-```xml
-<init/>
 ```
 
 ### Documentation Elements

@@ -122,6 +122,9 @@ core_GetFocus(void);
 ORCA_API struct Object*
 core_GetHover(void);
 
+/// @brief Create new object.
+ORCA_API int
+OBJ_CreateFromLuaState(struct lua_State*);
 /// @brief Clear all children of the object.
 ORCA_API void
 OBJ_Clear(struct lua_State*, struct Object*);

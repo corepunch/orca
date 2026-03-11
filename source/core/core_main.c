@@ -283,6 +283,9 @@ int CORE_ProcessMessage(lua_State *L, struct WI_Message* msg) {
   return FALSE;
 }
 
+ORCA_API void luaX_pushlua_State(lua_State* L, lua_State const* other) {
+  lua_pushnil(L);
+}
 
 static int predicate_always_true(lua_State* L) {
   lua_pushboolean(L, 1);

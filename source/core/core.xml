@@ -88,7 +88,12 @@
       <p>The `Object` type is the root of the runtime type system. Every element that can appear in a scene, be manipulated through scripts, or participate in rendering and logic derives its basic functionality from Object. It establishes the fundamental contract that all other types extend, providing common lifecycle methods, hierarchy management, and component composition.</p>
       <p>An `Object` is not tied to a specific visual or logical role by itself. Instead, it serves as a container for components, and these components define the actual capabilities of the instance. Higher-level types such as `Node`, `Node2D`, or `ImageView` are constructed by layering specialized components on top of the base `Object`.</p>
     </details>
-    <init/>
+
+    <method name="CreateFromLuaState" export="new" lua="true" static="true">
+      <summary>Create new object.</summary>
+      <details>This is a fall through constructor, that you can pass a table of properties to</details>
+      <returns type="nresults"></returns>
+    </method>
     
     <method name="Clear" export="clear" lua="true">
       <summary>Clear all children of the object.</summary>
