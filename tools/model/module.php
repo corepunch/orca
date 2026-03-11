@@ -180,6 +180,15 @@ class Type extends Base {
 		$fmt = config::$TypeInfos[$this->kind]["format"] ?? null;
 		return $map[$fmt] ?? null;
 	}
+
+	public static function getTypeById($name, $model) {
+		$escaped = htmlspecialchars($name, ENT_XML1 | ENT_QUOTES, 'UTF-8');
+		$elem = simplexml_load_string("<type type=\"$escaped\"/>");
+		if ($elem === false) {
+			throw new Exception("Invalid type name: $name");
+		}
+		return new Type($elem, $model);
+	}
 }
 
 // --- Method ---
