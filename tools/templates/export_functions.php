@@ -3,8 +3,7 @@ int f_<?= $model->prefix.$name ?>(lua_State *L) {
 	<?php $index = 1 ?>
 	<?php foreach ($func->getArgs() as $param_name => $param_type):?>
 		<?php if ($param_name === "L") continue; ?>
-	<?= $param_type ?> <?= $param_name ?> = <?= $param_type->get('check', $index) ?>;
-		<?php $index++ ?>
+	<?= $param_type ?> <?= $param_name ?> = <?= $param_type->get('check', $index++) ?>;
 	<?php endforeach ?>
 	<?php if ($func->returns && $func->returns->kind === 'nresults'): ?>
 	return <?= $model->prefix.$name ?>(<?= implode(", ", array_keys($func->getArgs())) ?>);
