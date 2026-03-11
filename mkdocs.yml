@@ -5,9 +5,14 @@ site_dir: site
 theme:
   name: material
   palette:
-    scheme: slate
-    primary: deep purple
-    accent: purple
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: purple
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: purple
   features:
     - navigation.instant
     - navigation.tracking
