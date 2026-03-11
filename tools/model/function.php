@@ -23,13 +23,18 @@ class XmlConnection {
 // Analogous to Book in MVC examples.
 // Wraps a <function> XML element.  All XML attributes (name, lua, …)
 // are copied onto the object by the Base constructor — no explicit
-// property declarations are needed.  Child elements such as <arg> and
-// <returns> are accessible via __get, so $function->arg and
-// $function->returns work as iterators for free.
+// property declarations are needed.  The public $node property exposes
+// the underlying SimpleXMLElement so that child elements are accessible
+// for free: foreach ($function->node->arg as $arg) works without any
+// getter definitions.  In native PHP, __get also enables the shorthand
+// $function->arg directly.
 
 class XmlFunction extends Base {
+	public $node;
+
 	public function __construct($elem) {
 		parent::__construct($elem, XmlConnection::getModel());
+		$this->node = $elem;
 	}
 
 	public function __get($name) {
