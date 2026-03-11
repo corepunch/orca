@@ -9,6 +9,11 @@ function countLabel($n, $singular, $plural) {
     return $n . " " . $singular;
 }
 
+$apiDir = $docsDir . "/api";
+if (!is_dir($apiDir)) {
+    mkdir($apiDir, 511, true);
+}
+
 $md = "# Orca API Documentation\n\n";
 $md .= "Welcome to the Orca API reference. Browse the modules below or use the search bar to find specific types and functions.\n\n";
 $md .= "## API Modules\n\n";
@@ -41,23 +46,23 @@ for ($i = 1; $i < count($argv); $i++) {
     }
 
     $summary = implode(", ", $counts);
-    $md .= "| [**" . $namespace . "." . $moduleName . "**](api/" . $moduleName . "/README.md) | " . $summary . " |\n";
+    $md .= "| [**" . $namespace . "." . $moduleName . "**](" . $moduleName . "/README.md) | " . $summary . " |\n";
 }
 
 $md .= "\n";
 
 $guides = [];
 if (file_exists($docsDir . "/MODULE_XML_GUIDE.md")) {
-    $guides[] = "- [Module XML Guide](MODULE_XML_GUIDE.md)";
+    $guides[] = "- [Module XML Guide](../MODULE_XML_GUIDE.md)";
 }
 if (file_exists($docsDir . "/MESH_POINTER_BOXING.md")) {
-    $guides[] = "- [Mesh Pointer Boxing](MESH_POINTER_BOXING.md)";
+    $guides[] = "- [Mesh Pointer Boxing](../MESH_POINTER_BOXING.md)";
 }
 
 if (count($guides) > 0) {
     $md .= "## Guides\n\n" . implode("\n", $guides) . "\n";
 }
 
-file_put_contents($docsDir . "/index.md", $md);
-echo "Index written to " . $docsDir . "/index.md\n";
+file_put_contents($docsDir . "/api/index.md", $md);
+echo "Index written to " . $docsDir . "/api/index.md\n";
 ?>

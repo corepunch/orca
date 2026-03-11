@@ -46,6 +46,7 @@ jobs:
           cd tools
           make dtd
           make docs
+          cp ../QUICKSTART.md ../docs/quickstart.md
 
       - name: Build documentation site
         run: mkdocs build
