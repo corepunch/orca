@@ -253,18 +253,9 @@ void luaX_pushShading(lua_State *L, enum Shading value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _Shading[value]);
 }
-void luaX_pushwindow(lua_State *L, struct window const* data);
-struct window* luaX_checkwindow(lua_State *L, int idx);
-int f_window___index(lua_State *L) {
-	struct window* self = luaX_checkwindow(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	}
-	return luaL_error(L, "Unknown field in window(%p): %s", self, luaL_checkstring(L, 2));
-}
 int luaopen_orca_window(lua_State *L) {
 	luaL_newmetatable(L, "Window");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "__index", f_window___index },
 		{ NULL, NULL },
 	}), 0);
 	return 1;

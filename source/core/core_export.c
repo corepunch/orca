@@ -58,8 +58,6 @@ void luaX_pushDataType(lua_State *L, enum DataType value) {
 	assert(value >= 0 && value < 11);
 	lua_pushstring(L, _DataType[value]);
 }
-void luaX_pushObject(lua_State *L, struct Object const* data);
-struct Object* luaX_checkObject(lua_State *L, int idx);
 int f_Object_Clear(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	OBJ_Clear(L, this_ );
@@ -489,86 +487,9 @@ int f_Object_GetDomain(lua_State *L) {
 	luaX_pushlua_State(L, result_);
 	return 1;
 }
-int f_Object___index(lua_State *L) {
-	struct Object* self = luaX_checkObject(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x5c6e1222: lua_pushcfunction(L, f_Object_Clear); return 1; // clear
-	case 0x1036ae7e: lua_pushcfunction(L, f_Object_Release); return 1; // release
-	case 0x513c8d94: lua_pushcfunction(L, f_Object_Equals); return 1; // equals
-	case 0xd71034dc: lua_pushcfunction(L, f_Object_Awake); return 1; // awake
-	case 0xe79c66b0: lua_pushcfunction(L, f_Object_Animate); return 1; // animate
-	case 0xd43670bc: lua_pushcfunction(L, f_Object_LoadPrefabs); return 1; // loadPrefabs
-	case 0xaac1a1fc: lua_pushcfunction(L, f_Object_EmitPropertyChangedEvents); return 1; // emitPropertyChangedEvents
-	case 0x8aef52d9: lua_pushcfunction(L, f_Object_UpdateProperties); return 1; // updateProperties
-	case 0x37fc391a: lua_pushcfunction(L, f_Object_UpdateLayout); return 1; // updateLayout
-	case 0x14e0dba2: lua_pushcfunction(L, f_Object_AddChild); return 1; // addChild
-	case 0x90d2bfd5: lua_pushcfunction(L, f_Object_RemoveFromParent); return 1; // removeFromParent
-	case 0xdf772baa: lua_pushcfunction(L, f_Object_SetProperty); return 1; // setProperty
-	case 0x28baa0e6: lua_pushcfunction(L, f_Object_GetProperty); return 1; // getProperty
-	case 0x95c0f780: lua_pushcfunction(L, f_Object_FindChild); return 1; // findChild
-	case 0x46310439: lua_pushcfunction(L, f_Object_DispatchEvent); return 1; // dispatchEvent
-	case 0x2a7c8ec6: lua_pushcfunction(L, f_Object_PostMessage); return 1; // postMessage
-	case 0xc2cbd863: lua_pushcfunction(L, f_Object_Play); return 1; // play
-	case 0x417e6e85: lua_pushcfunction(L, f_Object_SetFocus); return 1; // setFocus
-	case 0x67e26693: lua_pushcfunction(L, f_Object_DoTween); return 1; // doTween
-	case 0x913ef93c: lua_pushcfunction(L, f_Object_AddStyleSheet); return 1; // addStyleSheet
-	case 0x874125d8: lua_pushcfunction(L, f_Object_SetTimer); return 1; // setTimer
-	case 0xeca5cf4a: lua_pushcfunction(L, f_Object_SetContext); return 1; // setContext
-	case 0x1f1b2f34: lua_pushcfunction(L, f_Object_GetName); return 1; // getName
-	case 0xbac20468: lua_pushcfunction(L, f_Object_SetName); return 1; // setName
-	case 0xcb556952: lua_pushcfunction(L, f_Object_GetClassName); return 1; // getClassName
-	case 0xbfdb0d64: lua_pushcfunction(L, f_Object_CheckName); return 1; // checkName
-	case 0xccee3724: lua_pushcfunction(L, f_Object_FindByPath); return 1; // findByPath
-	case 0x871aec88: lua_pushcfunction(L, f_Object_GetStyle); return 1; // getStyle
-	case 0x08819dd4: lua_pushcfunction(L, f_Object_SetStyle); return 1; // setStyle
-	case 0xd2bdfc55: lua_pushcfunction(L, f_Object_FindCallbackForID); return 1; // findCallbackForID
-	case 0xc431c97d: lua_pushcfunction(L, f_Object_ApplyStyles); return 1; // applyStyles
-	case 0xd93fb1e1: lua_pushcfunction(L, f_Object_SetDirty); return 1; // setDirty
-	case 0xc98e64d7: lua_pushcfunction(L, f_Object_GetParent); return 1; // getParent
-	case 0x2f984b2b: lua_pushcfunction(L, f_Object_GetFirstChild); return 1; // getFirstChild
-	case 0xb6d23e36: lua_pushcfunction(L, f_Object_GetNext); return 1; // getNext
-	case 0x9184f6db: lua_pushcfunction(L, f_Object_GetRoot); return 1; // getRoot
-	case 0x17702518: lua_pushcfunction(L, f_Object_FindChildByID); return 1; // findChildByID
-	case 0xc2b337cf: lua_pushcfunction(L, f_Object_FindChildByAlias); return 1; // findChildByAlias
-	case 0x97139044: lua_pushcfunction(L, f_Object_GetSourceFile); return 1; // getSourceFile
-	case 0xc768d4f5: lua_pushcfunction(L, f_Object_GetTextContent); return 1; // getTextContent
-	case 0xbdbd90e5: lua_pushcfunction(L, f_Object_GetTimestamp); return 1; // getTimestamp
-	case 0x37d3ba44: lua_pushcfunction(L, f_Object_GetLuaObject); return 1; // getLuaObject
-	case 0x8bb4da01: lua_pushcfunction(L, f_Object_GetAlias); return 1; // getAlias
-	case 0x9d1d3b0e: lua_pushcfunction(L, f_Object_GetFlags); return 1; // getFlags
-	case 0x40443eda: lua_pushcfunction(L, f_Object_SetFlags); return 1; // setFlags
-	case 0xda6c15fc: lua_pushcfunction(L, f_Object_GetIdentifier); return 1; // getIdentifier
-	case 0x02e6a110: lua_pushcfunction(L, f_Object_GetModal); return 1; // getModal
-	case 0xeb276564: lua_pushcfunction(L, f_Object_SetModal); return 1; // setModal
-	case 0xc86983e2: lua_pushcfunction(L, f_Object_IsFocused); return 1; // isFocused
-	case 0x37b88e13: lua_pushcfunction(L, f_Object_SetHover); return 1; // setHover
-	case 0xfb656971: lua_pushcfunction(L, f_Object_SetTextContent); return 1; // setTextContent
-	case 0x337ee4d0: lua_pushcfunction(L, f_Object_SetSourceFile); return 1; // setSourceFile
-	case 0x72d988f6: lua_pushcfunction(L, f_Object_SetClassName); return 1; // setClassName
-	case 0xfa1508f5: lua_pushcfunction(L, f_Object_FindParentOfClass); return 1; // findParentOfClass
-	case 0x23386cab: lua_pushcfunction(L, f_Object_FindChildOfClass); return 1; // findChildOfClass
-	case 0x57a31c36: lua_pushcfunction(L, f_Object_IsPrefabView); return 1; // isPrefabView
-	case 0xf53c8710: lua_pushcfunction(L, f_Object_AddAlias); return 1; // addAlias
-	case 0xcf2ffd7c: lua_pushcfunction(L, f_Object_AssignAliases); return 1; // assignAliases
-	case 0xef604934: lua_pushcfunction(L, f_Object_ParseClassAttribute); return 1; // parseClassAttribute
-	case 0x2d3d15fb: lua_pushcfunction(L, f_Object_SetAnimation); return 1; // setAnimation
-	case 0x8b9c8f7f: lua_pushcfunction(L, f_Object_GetAnimation); return 1; // getAnimation
-	case 0xbb6beb62: lua_pushcfunction(L, f_Object_AddAnimation); return 1; // addAnimation
-	case 0xafe50917: lua_pushcfunction(L, f_Object_GetInteger); return 1; // getInteger
-	case 0x3957f90e: lua_pushcfunction(L, f_Object_GetProperties); return 1; // getProperties
-	case 0xf2167b80: lua_pushcfunction(L, f_Object_FindImplicitProperty); return 1; // findImplicitProperty
-	case 0x0c3ece1f: lua_pushcfunction(L, f_Object_FindExplicitProperty); return 1; // findExplicitProperty
-	case 0x22b2f99b: lua_pushcfunction(L, f_Object_AttachPropertyProgram); return 1; // attachPropertyProgram
-	case 0xfc8bdeb9: lua_pushcfunction(L, f_Object_FindPropertyByPath); return 1; // findPropertyByPath
-	case 0x7e809e90: lua_pushcfunction(L, f_Object_Rebuild); return 1; // rebuild
-	case 0x2dd1583b: lua_pushcfunction(L, f_Object_GetDomain); return 1; // getDomain
-	}
-	return luaL_error(L, "Unknown field in Object(%p): %s", self, luaL_checkstring(L, 2));
-}
 int luaopen_orca_Object(lua_State *L) {
 	luaL_newmetatable(L, "Object");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "__index", f_Object___index },
 		{ "clear", f_Object_Clear },
 		{ "__gc", f_Object_Release },
 		{ "__eq", f_Object_Equals },
