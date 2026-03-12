@@ -82,26 +82,28 @@ Good XML tooling makes a real difference. Below are recommended plugins for popu
 2. Search for **XML** and install the [Red Hat XML](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-xml) extension.
 3. Include the hosted `DOCTYPE` declaration at the top of every screen file (as shown in the XML example above). The Red Hat XML extension reads the `SYSTEM` URL automatically and provides full autocomplete and inline validation — no additional configuration needed.
 
-**Speed up file creation with a snippet.** Add an XML snippet so you can type `orca-screen` and press Tab to get the full boilerplate:
+**Speed up file creation with a snippet.** Add an XML snippet so you can type `orca` and press Tab to get the full boilerplate with the element type as the first editable field:
 
 1. Open **File → Preferences → Configure User Snippets** and choose **xml.json** (or your workspace snippets file).
 2. Paste:
 
 ```json
 {
-  "ORCA Screen": {
-    "prefix": "orca-screen",
+  "ORCA Element": {
+    "prefix": "orca",
     "body": [
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
-      "<!DOCTYPE Screen SYSTEM \"https://corepunch.github.io/orca/schemas/orca.dtd\">",
-      "<Screen Name=\"${1:MyScreen}\" Height=\"${2:768}\" Width=\"${3:1024}\">",
+      "<!DOCTYPE ${1:Screen} SYSTEM \"https://corepunch.github.io/orca/schemas/orca.dtd\">",
+      "<${1:Screen} Name=\"${2:MyElement}\" Height=\"${3:768}\" Width=\"${4:1024}\">",
       "\t$0",
-      "</Screen>"
+      "</${1:Screen}>"
     ],
-    "description": "New ORCA screen file"
+    "description": "New ORCA element file"
   }
 }
 ```
+
+Tab through the placeholders: **①** sets the element type (e.g. `Screen`, `Prefab`) and is mirrored automatically in the `DOCTYPE` and closing tag; **②–④** fill in `Name`, `Height`, and `Width`.
 
 ### Other editors
 
