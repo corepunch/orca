@@ -79,3 +79,4 @@ docs/api/
 
 # MkDocs generated site (built by mkdocs build in CI)
 site/
+docs/quickstart.md
