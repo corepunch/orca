@@ -29,13 +29,13 @@ ORCA_API int luaopen_orca_<?= $model->getModuleName() ?>(lua_State *L) {
 	<?= $model->on_luaopen ?>(L);
 <?php endif ?>
 <?php foreach ($model->getStructs() as $name => $struct):?>
-	lua_setfield(L, ((void)luaopen_orca_<?= $name ?>(L), -2), "<?= $name ?>");
+	lua_setfield(L, ((void)luaopen_orca_<?= $name ?>(L), -2), "<?= $struct->export ?>");
 <?php endforeach ?>
 <?php foreach ($model->getInterfaces() as $name => $interface):?>
-	lua_setfield(L, ((void)luaopen_orca_<?= $name ?>(L), -2), "<?= $name ?>");
+	lua_setfield(L, ((void)luaopen_orca_<?= $name ?>(L), -2), "<?= $interface->export ?>");
 <?php endforeach ?>
 <?php foreach ($model->getComponents() as $name => $component):?>
-	lua_setfield(L, ((void)lua_pushclass(L, &_<?= $name ?>), -2), "<?= $name ?>");
+	lua_setfield(L, ((void)lua_pushclass(L, &_<?= $name ?>), -2), "<?= $component->export ?>");
 <?php endforeach ?>
 	return 1;
 }

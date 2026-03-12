@@ -962,7 +962,7 @@ ORCA_API int luaopen_orca_renderer(lua_State *L) {
 	on_renderer_module_registered(L);
 	lua_setfield(L, ((void)luaopen_orca_RenderScreenEventArgs(L), -2), "RenderScreenEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_RenderEventArgs(L), -2), "RenderEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_window(L), -2), "window");
+	lua_setfield(L, ((void)luaopen_orca_window(L), -2), "Window");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Texture), -2), "Texture");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Image), -2), "Image");
 	lua_setfield(L, ((void)lua_pushclass(L, &_RenderTargetTexture), -2), "RenderTargetTexture");

@@ -2268,25 +2268,25 @@ ORCA_API int luaopen_orca_geometry(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
 		{ NULL, NULL } 
 	}));
-	lua_setfield(L, ((void)luaopen_orca_vec2(L), -2), "vec2");
-	lua_setfield(L, ((void)luaopen_orca_vec3(L), -2), "vec3");
-	lua_setfield(L, ((void)luaopen_orca_vec4(L), -2), "vec4");
-	lua_setfield(L, ((void)luaopen_orca_box2(L), -2), "box2");
-	lua_setfield(L, ((void)luaopen_orca_box3(L), -2), "box3");
+	lua_setfield(L, ((void)luaopen_orca_vec2(L), -2), "Vector2D");
+	lua_setfield(L, ((void)luaopen_orca_vec3(L), -2), "Vector3D");
+	lua_setfield(L, ((void)luaopen_orca_vec4(L), -2), "Vector4D");
+	lua_setfield(L, ((void)luaopen_orca_box2(L), -2), "Box2D");
+	lua_setfield(L, ((void)luaopen_orca_box3(L), -2), "Box3D");
 	lua_setfield(L, ((void)luaopen_orca_Size(L), -2), "Size");
-	lua_setfield(L, ((void)luaopen_orca_rect(L), -2), "rect");
-	lua_setfield(L, ((void)luaopen_orca_quat(L), -2), "quat");
-	lua_setfield(L, ((void)luaopen_orca_mat3(L), -2), "mat3");
-	lua_setfield(L, ((void)luaopen_orca_mat4(L), -2), "mat4");
-	lua_setfield(L, ((void)luaopen_orca_bounds(L), -2), "bounds");
-	lua_setfield(L, ((void)luaopen_orca_plane3(L), -2), "plane3");
-	lua_setfield(L, ((void)luaopen_orca_sphere3(L), -2), "sphere3");
-	lua_setfield(L, ((void)luaopen_orca_frustum3(L), -2), "frustum3");
-	lua_setfield(L, ((void)luaopen_orca_transform2(L), -2), "transform2");
-	lua_setfield(L, ((void)luaopen_orca_transform3(L), -2), "transform3");
-	lua_setfield(L, ((void)luaopen_orca_triangle3(L), -2), "triangle3");
-	lua_setfield(L, ((void)luaopen_orca_line3(L), -2), "line3");
-	lua_setfield(L, ((void)luaopen_orca_edges(L), -2), "edges");
-	lua_setfield(L, ((void)luaopen_orca_color(L), -2), "color");
+	lua_setfield(L, ((void)luaopen_orca_rect(L), -2), "Rectangle");
+	lua_setfield(L, ((void)luaopen_orca_quat(L), -2), "Quaternion");
+	lua_setfield(L, ((void)luaopen_orca_mat3(L), -2), "Matrix2D");
+	lua_setfield(L, ((void)luaopen_orca_mat4(L), -2), "Matrix3D");
+	lua_setfield(L, ((void)luaopen_orca_bounds(L), -2), "Bounds");
+	lua_setfield(L, ((void)luaopen_orca_plane3(L), -2), "Plane");
+	lua_setfield(L, ((void)luaopen_orca_sphere3(L), -2), "Sphere");
+	lua_setfield(L, ((void)luaopen_orca_frustum3(L), -2), "Frustum");
+	lua_setfield(L, ((void)luaopen_orca_transform2(L), -2), "Transform2D");
+	lua_setfield(L, ((void)luaopen_orca_transform3(L), -2), "Transform3D");
+	lua_setfield(L, ((void)luaopen_orca_triangle3(L), -2), "Triangle3D");
+	lua_setfield(L, ((void)luaopen_orca_line3(L), -2), "Line3D");
+	lua_setfield(L, ((void)luaopen_orca_edges(L), -2), "Edges");
+	lua_setfield(L, ((void)luaopen_orca_color(L), -2), "Color");
 	return 1;
 }

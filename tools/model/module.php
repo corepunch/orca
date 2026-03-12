@@ -342,7 +342,11 @@ class Component extends Struct {
 		$path = array_slice($args, 1);
 		$p = new Property(null, null, null);
 		$p->name = new PropertyName($args[0], $path);
-		$p->type = $type_;
+		if ($type_->kind === 'int' && $this->_model->_has_in((string)$p->name, "enums")) {
+			$p->type = new Type(simplexml_load_string("<arg type='{$p->name}'/>"), $this->_model);
+		} else {
+			$p->type = $type_;
+		}
 		$p->doc = $doc;
 		yield $p;
 		if ($type_->kind === "struct" && !$type_->data->sealed) {

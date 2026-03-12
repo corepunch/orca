@@ -2232,9 +2232,9 @@ static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	DECL(0xc321a1f8, Node, BorderBottomRightRadius, Border.Radius.BottomRightRadius, kDataTypeFloat), // Node.BorderBottomRightRadius
 	DECL(0x700e8e07, Node, BorderBottomLeftRadius, Border.Radius.BottomLeftRadius, kDataTypeFloat), // Node.BorderBottomLeftRadius
 	DECL(0xd66abafe, Node, Alignment, Alignment, kDataTypeStruct, .TypeString = "AlignmentShorthand"), // Node.Alignment
-	DECL(0x1b8d5152, Node, HorizontalAlignment, Alignment.Axis[0], kDataTypeInt), // Node.HorizontalAlignment
-	DECL(0x94b01054, Node, VerticalAlignment, Alignment.Axis[1], kDataTypeInt), // Node.VerticalAlignment
-	DECL(0x7ef540ff, Node, DepthAlignment, Alignment.Axis[2], kDataTypeInt), // Node.DepthAlignment
+	DECL(0x1b8d5152, Node, HorizontalAlignment, Alignment.Axis[0], kDataTypeEnum, .TypeString = "Stretch,Left,Center,Right"), // Node.HorizontalAlignment
+	DECL(0x94b01054, Node, VerticalAlignment, Alignment.Axis[1], kDataTypeEnum, .TypeString = "Stretch,Top,Center,Bottom"), // Node.VerticalAlignment
+	DECL(0x7ef540ff, Node, DepthAlignment, Alignment.Axis[2], kDataTypeEnum, .TypeString = "Near,Center,Far,Stretch"), // Node.DepthAlignment
 	DECL(0x592a4941, Node, Visible, Visible, kDataTypeBool), // Node.Visible
 	DECL(0x20d9ba7c, Node, QuickHide, QuickHide, kDataTypeBool), // Node.QuickHide
 	DECL(0xa0b06d26, Node, VisibleAmountInParent, VisibleAmountInParent, kDataTypeFloat), // Node.VisibleAmountInParent
