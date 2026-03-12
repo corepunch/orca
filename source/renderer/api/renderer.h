@@ -6,7 +6,6 @@
 
 typedef struct lua_State lua_State;
 
-
 struct fontface;
 struct timeline;
 struct shader;

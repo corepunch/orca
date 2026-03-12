@@ -14,19 +14,29 @@ class CodegenController {
 
 	function header($args) {
 		$model = new Model($args[0]);
-		include_template('header', [
+		include_template('header/preamble', [
 			'moduleName'      => $model->getModuleName(),
-			'prefix'          => $model->prefix,
-			'enums'           => $model->getEnums(),
-			'structs'         => $model->getStructs(),
-			'interfaces'      => $model->getInterfaces(),
-			'components'      => $model->getComponents(),
-			'functions'       => $model->getFunctions(),
-			'events'          => $model->getEvents(),
 			'externalStructs' => $model->getExternalStructs(),
-			'requires'        => $model->getRequires(),
 			'includes'        => $model->getIncludes(),
+			'requires'        => $model->getRequires(),
+			'events'          => $model->getEvents(),
 		]);
+		include_template('header/enums', [
+			'enums' => $model->getEnums(),
+		]);
+		include_template('header/declarations', [
+			'structs'     => $model->getStructs(),
+			'functions'   => $model->getFunctions(),
+			'prefix'      => $model->prefix,
+			'interfaces'  => $model->getInterfaces(),
+		]);
+		include_template('header/structs', [
+			'structs' => $model->getStructs(),
+		]);
+		include_template('header/components', [
+			'components' => $model->getComponents(),
+		]);
+		include_template('header/footer', []);
 	}
 
 	function properties($args) {

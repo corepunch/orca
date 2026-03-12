@@ -7,7 +7,6 @@
 typedef struct lua_State lua_State;
 
 
-
 #include <include/renderer.h>
 #include <source/core/core.h>
 #include <source/UIKit/UIKit.h>

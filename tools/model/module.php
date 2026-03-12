@@ -605,3 +605,18 @@ function include_template($template, $variables = []) {
 	require "templates/$template.php";
 }
 
+// printContents renders a list of Fields or Properties as C struct member lines.
+function printContents($list) {
+	foreach ($list as $field) {
+		$doc = "";
+		if ($field->doc) {
+			$doc = " ///< " . $field->doc;
+		}
+		if ($field->type->fixed_array) {
+			echo("\t" . $field->type . " " . $field->name . "[" . $field->type->fixed_array . "];" . $doc . "\n"); 
+		} else {
+			echo("\t" . $field->type . " " . $field->name . ";" . $doc . "\n"); 
+		}
+	}
+}
+
