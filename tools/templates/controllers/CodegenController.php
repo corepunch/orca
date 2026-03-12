@@ -40,29 +40,29 @@ class CodegenController {
 
 	function export($args) {
 		$model = new Model($args[0]);
-		include_template('export_preamble', [
+		include_template('export/preamble', [
 			'moduleName'      => $model->getModuleName(),
 			'externalStructs' => $model->getExternalStructs(),
 		]);
-		include_template('export_enums', [
+		include_template('export/enums', [
 			'enums' => $model->getEnums(),
 		]);
-		include_template('export_interfaces', [
+		include_template('export/interfaces', [
 			'interfaces' => $model->getInterfaces(),
 		]);
-		include_template('export_structs', [
+		include_template('export/structs', [
 			'structs' => $model->getStructs(),
 		]);
-		include_template('export_components', [
+		include_template('export/components', [
 			'components'    => $model->getComponents(),
 			'events'        => $model->getEvents(),
 			'hasComponents' => $model->hasComponents(),
 		]);
-		include_template('export_functions', [
+		include_template('export/functions', [
 			'functions' => $model->getFunctions(),
 			'prefix'    => $model->prefix,
 		]);
-		include_template('export_luaopen', [
+		include_template('export/luaopen', [
 			'moduleName' => $model->getModuleName(),
 			'prefix'     => $model->prefix,
 			'on_luaopen' => $model->on_luaopen,
