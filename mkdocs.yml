@@ -12,9 +12,9 @@ nav:
     - UIKit: api/UIKit/README.md
     - SceneKit: api/SceneKit/README.md
     - SpriteKit: api/SpriteKit/README.md
-  - Guides:
-    - Module XML Guide: MODULE_XML_GUIDE.md
-    - Mesh Pointer Boxing: MESH_POINTER_BOXING.md
+  - '──────────────': '#'
+  - Module XML Guide: MODULE_XML_GUIDE.md
+  - Mesh Pointer Boxing: MESH_POINTER_BOXING.md
 
 theme:
   name: material
