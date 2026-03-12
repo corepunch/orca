@@ -11,10 +11,10 @@ extern void luaX_push<?= $name ?>(lua_State *L, struct <?= $name ?> const* value
 extern struct <?= $name ?>* luaX_check<?= $name ?>(lua_State *L, int index);
 <?php endforeach ?>
 
-<?php include_template("export_enums", ['model' => $model]) ?>
-<?php include_template("export_interfaces", ['model' => $model]) ?>
-<?php include_template("export_structs", ['model' => $model]) ?>
-<?php include_template("export_components", ['model' => $model]) ?>
+<?php include_template("export_enums", ['enums' => $model->getEnums()]) ?>
+<?php include_template("export_interfaces", ['interfaces' => $model->getInterfaces()]) ?>
+<?php include_template("export_structs", ['structs' => $model->getStructs()]) ?>
+<?php include_template("export_components", ['components' => $model->getComponents(), 'events' => $model->getEvents(), 'hasComponents' => $model->hasComponents()]) ?>
 <?php include_template("export_functions", ['functions' => $model->getFunctions(), 'prefix' => $model->prefix]) ?>
 
 ORCA_API int luaopen_orca_<?= $model->getModuleName() ?>(lua_State *L) {
