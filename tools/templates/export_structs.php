@@ -40,7 +40,7 @@ int f_<?= $name ?>___index(lua_State *L) {
 	<?php endforeach ?>
 	<?php foreach ($struct->getMethods() as $method_name => $method):?>
 		<?php if ($method->static) continue; ?>
-	case <?= $method->id ?>: lua_pushcfunction(L, f_<?= $prefix.$method_name ?>); return 1; // <?= lcfirst($method_name) ?>
+	case <?= $method->id ?>: lua_pushcfunction(L, f_<?= $struct->prefix.$method_name ?>); return 1; // <?= lcfirst($method_name) ?>
 	<?php endforeach ?>
 	}
 	return luaL_error(L, "Unknown field in <?= $name ?>(%p): %s", self, luaL_checkstring(L, 2));
@@ -98,7 +98,7 @@ int luaopen_orca_<?= $name ?>(lua_State *L) {
 		{ "__newindex", f_<?= $name ?>___newindex },
 		{ "__index", f_<?= $name ?>___index },
 	<?php foreach ($struct->getMethods() as $method_name => $method):?>
-		{ "<?= $method->export ?>", f_<?= $prefix.$method_name ?> },
+		{ "<?= $method->export ?>", f_<?= $struct->prefix.$method_name ?> },
 	<?php endforeach ?>
 		{ NULL, NULL },
 	}), 0);
