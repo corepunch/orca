@@ -80,28 +80,28 @@ Good XML tooling makes a real difference. Below are recommended plugins for popu
 
 1. Open the **Extensions** panel (`Ctrl+Shift+X` / `⌘⇧X`).
 2. Search for **XML** and install the [Red Hat XML](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-xml) extension.
-3. Create `.vscode/settings.json` inside your project:
+3. Include the hosted `DOCTYPE` declaration at the top of every screen file (as shown in the XML example above). The Red Hat XML extension reads the `SYSTEM` URL automatically and provides full autocomplete and inline validation — no additional configuration needed.
+
+**Speed up file creation with a snippet.** Add an XML snippet so you can type `orca-screen` and press Tab to get the full boilerplate:
+
+1. Open **File → Preferences → Configure User Snippets** and choose **xml.json** (or your workspace snippets file).
+2. Paste:
 
 ```json
 {
-  "xml.fileAssociations": [
-    {
-      "pattern": "**/Screens/*.xml",
-      "systemId": "../../tools/schemas/orca.dtd"
-    },
-    {
-      "pattern": "**/Prefabs/*.xml",
-      "systemId": "../../tools/schemas/orca.dtd"
-    },
-    {
-      "pattern": "**/Shaders/*.xml",
-      "systemId": "../../tools/schemas/shader.dtd"
-    }
-  ]
+  "ORCA Screen": {
+    "prefix": "orca-screen",
+    "body": [
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
+      "<!DOCTYPE Screen SYSTEM \"https://corepunch.github.io/orca/schemas/orca.dtd\">",
+      "<Screen Name=\"${1:MyScreen}\" Height=\"${2:768}\" Width=\"${3:1024}\">",
+      "\t$0",
+      "</Screen>"
+    ],
+    "description": "New ORCA screen file"
+  }
 }
 ```
-
-Adjust the `systemId` paths to match your project's location relative to `tools/schemas/`.
 
 ### Other editors
 
