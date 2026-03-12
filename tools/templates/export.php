@@ -15,7 +15,7 @@ extern struct <?= $name ?>* luaX_check<?= $name ?>(lua_State *L, int index);
 <?php require "templates/export_interfaces.php"; ?>
 <?php require "templates/export_structs.php"; ?>
 <?php require "templates/export_components.php"; ?>
-<?php require "templates/export_functions.php"; ?>
+<?php include_template("export_functions", ['functions' => $model->getFunctions(), 'prefix' => $model->prefix]) ?>
 
 ORCA_API int luaopen_orca_<?= $model->getModuleName() ?>(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 

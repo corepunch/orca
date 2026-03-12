@@ -1,9 +1,11 @@
 <?xml version="1.0"?>
 <!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
 <module name="filesystem" namespace="orca" on-luaopen="on_filesystem_module_registered" prefix="FS_">
+  <require file="../core/core.xml"/>
+  
   <event name="ReadCommands" type="void"/>
   
-  <resource type="Package"/>
+  <external struct="Package"/>
   
   <struct name="ProjectReference" sealed="true">
     <summary>External project reference</summary>

@@ -27,14 +27,8 @@ static struct PropertyType const <?= $name ?>Properties[k<?= $name ?>NumProperti
 	<?php endforeach ?>
 };
 static struct <?= $name ?> <?= $name ?>Defaults = {
-	<?php foreach (array_filter($component->getProperties(), fn($prop) => $prop->type->default) as $property): ?>
-		<?php if ($property->type->kind === 'struct'): ?>
-  .<?= $property->name ?> = {<?= $property->type->default ?>},
-		<?php elseif ($property->type->kind === 'enum'): ?>
-  .<?= $property->name ?> = k<?= $property->type->type.$property->type->default ?>,
-		<?php else: ?>
-  .<?= $property->name ?> = <?= $property->type->default ?>,
-		<?php endif ?>
+	<?php foreach (array_filter($component->getProperties(), fn($prop) => $prop->type->default) as $property): ?>		
+  .<?= $property->name ?> = <?= sprintf($property->type->get('default'), $property->type->default) ?>,
 	<?php endforeach ?>
 };
 LRESULT <?= $name ?>Proc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {

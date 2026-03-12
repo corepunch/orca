@@ -2,6 +2,7 @@ MODULES := \
     core/core \
     renderer/api/renderer \
     geometry/geometry \
+		filesystem/filesystem \
     UIKit/UIKit \
     SceneKit/SceneKit \
     SpriteKit/SpriteKit
@@ -14,6 +15,7 @@ UI_MODULES := \
 DOC_MODULES := \
     geometry/geometry \
     core/core \
+		filesystem/filesystem \
     UIKit/UIKit \
     SceneKit/SceneKit \
     SpriteKit/SpriteKit
@@ -47,6 +49,7 @@ dtd:
 		$(SOURCE_DIR)/UIKit/UIKit.xml \
 		$(SOURCE_DIR)/SceneKit/SceneKit.xml \
 		$(SOURCE_DIR)/SpriteKit/SpriteKit.xml \
+		$(SOURCE_DIR)/filesystem/filesystem.xml \
 		> $(DOCS_DIR)/schemas/orca.dtd
 
 # Generate Markdown API docs for each documented module

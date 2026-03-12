@@ -337,6 +337,8 @@ static int f_new_BorderRadiusShorthand(lua_State *L) {
 	}
 	return 1;
 }
+
+
 int f_BorderRadiusShorthand___index(lua_State *L) {
 	struct BorderRadiusShorthand* self = luaX_checkBorderRadiusShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -417,6 +419,8 @@ static int f_new_EdgeShorthand(lua_State *L) {
 	}
 	return 1;
 }
+
+
 int f_EdgeShorthand___index(lua_State *L) {
 	struct EdgeShorthand* self = luaX_checkEdgeShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -489,6 +493,8 @@ static int f_new_AlignmentShorthand(lua_State *L) {
 	}
 	return 1;
 }
+
+
 int f_AlignmentShorthand___index(lua_State *L) {
 	struct AlignmentShorthand* self = luaX_checkAlignmentShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -563,6 +569,8 @@ static int f_new_FontShorthand(lua_State *L) {
 	}
 	return 1;
 }
+
+
 int f_FontShorthand___index(lua_State *L) {
 	struct FontShorthand* self = luaX_checkFontShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -645,6 +653,8 @@ static int f_new_BrushShorthand(lua_State *L) {
 	}
 	return 1;
 }
+
+
 int f_BrushShorthand___index(lua_State *L) {
 	struct BrushShorthand* self = luaX_checkBrushShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -708,6 +718,8 @@ static int f_new_ShadowShorthand(lua_State *L) {
 	}
 	return 1;
 }
+
+
 int f_ShadowShorthand___index(lua_State *L) {
 	struct ShadowShorthand* self = luaX_checkShadowShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -771,6 +783,8 @@ static int f_new_RingShorthand(lua_State *L) {
 	}
 	return 1;
 }
+
+
 int f_RingShorthand___index(lua_State *L) {
 	struct RingShorthand* self = luaX_checkRingShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -830,6 +844,8 @@ static int f_new_OverflowShorthand(lua_State *L) {
 	}
 	return 1;
 }
+
+
 int f_OverflowShorthand___index(lua_State *L) {
 	struct OverflowShorthand* self = luaX_checkOverflowShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -904,6 +920,8 @@ static int f_new_UnderlineShorthand(lua_State *L) {
 	}
 	return 1;
 }
+
+
 int f_UnderlineShorthand___index(lua_State *L) {
 	struct UnderlineShorthand* self = luaX_checkUnderlineShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -959,6 +977,8 @@ static int f_new_MarginShorthand(lua_State *L) {
 	}
 	return 1;
 }
+
+
 int f_MarginShorthand___index(lua_State *L) {
 	struct MarginShorthand* self = luaX_checkMarginShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -1016,6 +1036,8 @@ static int f_new_BorderShorthand(lua_State *L) {
 	}
 	return 1;
 }
+
+
 int f_BorderShorthand___index(lua_State *L) {
 	struct BorderShorthand* self = luaX_checkBorderShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -1083,6 +1105,8 @@ static int f_new_SizeAxisShorthand(lua_State *L) {
 	}
 	return 1;
 }
+
+
 int f_SizeAxisShorthand___index(lua_State *L) {
 	struct SizeAxisShorthand* self = luaX_checkSizeAxisShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -1163,6 +1187,8 @@ static int f_new_SizeShorthand(lua_State *L) {
 	}
 	return 1;
 }
+
+
 int f_SizeShorthand___index(lua_State *L) {
 	struct SizeShorthand* self = luaX_checkSizeShorthand(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -1214,6 +1240,8 @@ static int f_new_PushPropertyEventArgs(lua_State *L) {
 	}
 	return 1;
 }
+
+
 int f_PushPropertyEventArgs___index(lua_State *L) {
 	struct PushPropertyEventArgs* self = luaX_checkPushPropertyEventArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -1280,6 +1308,8 @@ static int f_new_ForegroundContentEventArgs(lua_State *L) {
 	}
 	return 1;
 }
+
+
 int f_ForegroundContentEventArgs___index(lua_State *L) {
 	struct ForegroundContentEventArgs* self = luaX_checkForegroundContentEventArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -1350,6 +1380,8 @@ static int f_new_HandleMessageEventArgs(lua_State *L) {
 	}
 	return 1;
 }
+
+
 int f_HandleMessageEventArgs___index(lua_State *L) {
 	struct HandleMessageEventArgs* self = luaX_checkHandleMessageEventArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -1426,6 +1458,8 @@ static int f_new_MakeTextEventArgs(lua_State *L) {
 	}
 	return 1;
 }
+
+
 int f_MakeTextEventArgs___index(lua_State *L) {
 	struct MakeTextEventArgs* self = luaX_checkMakeTextEventArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -1508,6 +1542,8 @@ static int f_new_DrawBrushEventArgs(lua_State *L) {
 	}
 	return 1;
 }
+
+
 int f_DrawBrushEventArgs___index(lua_State *L) {
 	struct DrawBrushEventArgs* self = luaX_checkDrawBrushEventArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -1573,6 +1609,8 @@ static int f_new_LoadViewEventArgs(lua_State *L) {
 	}
 	return 1;
 }
+
+
 int f_LoadViewEventArgs___index(lua_State *L) {
 	struct LoadViewEventArgs* self = luaX_checkLoadViewEventArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -1641,6 +1679,8 @@ static int f_new_TriggeredEventArgs(lua_State *L) {
 	}
 	return 1;
 }
+
+
 int f_TriggeredEventArgs___index(lua_State *L) {
 	struct TriggeredEventArgs* self = luaX_checkTriggeredEventArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -1698,6 +1738,8 @@ static int f_new_NavigateToPageArguments(lua_State *L) {
 	}
 	return 1;
 }
+
+
 int f_NavigateToPageArguments___index(lua_State *L) {
 	struct NavigateToPageArguments* self = luaX_checkNavigateToPageArguments(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -1768,6 +1810,8 @@ static int f_new_NavigateBackArguments(lua_State *L) {
 	}
 	return 1;
 }
+
+
 int f_NavigateBackArguments___index(lua_State *L) {
 	struct NavigateBackArguments* self = luaX_checkNavigateBackArguments(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -2243,8 +2287,11 @@ static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	DECL(0xa310331c, Node, DataContext, DataContext, kDataTypeObject, .TypeString = "DataObject"), // Node.DataContext
 };
 static struct Node NodeDefaults = {
+		
   .Visible = TRUE,
+		
   .VisibleAmountInParent = 1,
+		
   .Opacity = 1,
 };
 LRESULT NodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -2294,7 +2341,9 @@ static struct PropertyType const TextRunProperties[kTextRunNumProperties] = {
 	DECL(0xbd23c708, TextRun, RemoveSideBearingsProperty, RemoveSideBearingsProperty, kDataTypeBool), // TextRun.RemoveSideBearingsProperty
 };
 static struct TextRun TextRunDefaults = {
+		
   .Font = {.Size=DEFAULT_FONT_SIZE},
+		
   .LineHeight = 1,
 };
 LRESULT TextRunProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -2343,7 +2392,9 @@ static struct PropertyType const TextBlockConceptProperties[kTextBlockConceptNum
 	DECL(0xbc8a8a99, TextBlockConcept, TextVerticalAlignment, TextVerticalAlignment, kDataTypeEnum, .TypeString = "Top,Center,Bottom,Baseline"), // TextBlockConcept.TextVerticalAlignment
 };
 static struct TextBlockConcept TextBlockConceptDefaults = {
+		
   .UseFullFontHeight = TRUE,
+		
   .ConstrainContentHeight = TRUE,
 };
 LRESULT TextBlockConceptProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -2436,7 +2487,9 @@ static struct PropertyType const Node2DProperties[kNode2DNumProperties] = {
 	DECL(0xf068ff19, Node2D, ForegroundHint, ForegroundHint, kDataTypeEnum, .TypeString = "None,Translucent,Opaque"), // Node2D.ForegroundHint
 };
 static struct Node2D Node2DDefaults = {
+		
   .LayoutTransform = {.scale={1,1}},
+		
   .RenderTransform = {.scale={1,1}},
 };
 LRESULT Node2DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -2927,6 +2980,7 @@ static struct PropertyType const ImageViewProperties[kImageViewNumProperties] = 
 	DECL(0x03d3b9ca, ImageView, Stretch, Stretch, kDataTypeEnum, .TypeString = "Uniform,None,Fill,UniformToFill"), // ImageView.Stretch
 };
 static struct ImageView ImageViewDefaults = {
+		
   .Viewbox = {0,0,1,1},
 };
 LRESULT ImageViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -3024,7 +3078,9 @@ static struct PropertyType const TerminalViewProperties[kTerminalViewNumProperti
 	DECL(0x87f68bc8, TerminalView, DropShadow, DropShadow, kDataTypeBool), // TerminalView.DropShadow
 };
 static struct TerminalView TerminalViewDefaults = {
+		
   .BufferWidth = 256,
+		
   .BufferHeight = 256,
 };
 LRESULT TerminalViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {

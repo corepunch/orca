@@ -28,24 +28,9 @@ static int f_new_<?= $name ?>(lua_State *L) {
 	}
 	return 1;
 }
-<?php foreach ($struct->getMethods() as $method_name => $method):?>
-int f_<?= $name ?>_<?= $method_name ?>(lua_State *L) {
-	<?php $index = 1 ?>
-	<?php foreach ($method->getArgs() as $param_name => $param_type):?>
-		<?php if ($param_name === "L") continue; ?>
-	<?= $param_type ?> <?= $param_name ?> = <?= $param_type->get('check', $index) ?>;
-		<?php $index++ ?>
-	<?php endforeach ?>
-	<?php if ($method->returns): ?>
-	<?= $method->returns ?> result_ = <?= $struct->prefix.$method_name ?>(<?= implode(", ", array_keys($method->getArgs())) ?>);
-	<?= $method->returns->get('push', 'result_') ?>;
-	return 1;
-	<?php else: ?>
-	<?= $struct->prefix.$method_name ?>(<?= implode(", ", array_keys($method->getArgs())) ?> <?= $method->getReturnType() != "void" ? ", " : "" ?>);
-	return 0;
-	<?php endif ?>
-}
-<?php endforeach ?>
+
+<?php include_template("export_functions", ['functions' => $struct->getMethods(), 'prefix' => $struct->prefix]) ?>
+
 int f_<?= $name ?>___index(lua_State *L) {
 	struct <?= $name ?>* self = luaX_check<?= $name ?>(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -55,7 +40,7 @@ int f_<?= $name ?>___index(lua_State *L) {
 	<?php endforeach ?>
 	<?php foreach ($struct->getMethods() as $method_name => $method):?>
 		<?php if ($method->static) continue; ?>
-	case <?= $method->id ?>: lua_pushcfunction(L, f_<?= $name ?>_<?= $method_name ?>); return 1; // <?= lcfirst($method_name) ?>
+	case <?= $method->id ?>: lua_pushcfunction(L, f_<?= $prefix.$method_name ?>); return 1; // <?= lcfirst($method_name) ?>
 	<?php endforeach ?>
 	}
 	return luaL_error(L, "Unknown field in <?= $name ?>(%p): %s", self, luaL_checkstring(L, 2));
@@ -113,7 +98,7 @@ int luaopen_orca_<?= $name ?>(lua_State *L) {
 		{ "__newindex", f_<?= $name ?>___newindex },
 		{ "__index", f_<?= $name ?>___index },
 	<?php foreach ($struct->getMethods() as $method_name => $method):?>
-		{ "<?= $method->export ?>", f_<?= $name ?>_<?= $method_name ?> },
+		{ "<?= $method->export ?>", f_<?= $prefix.$method_name ?> },
 	<?php endforeach ?>
 		{ NULL, NULL },
 	}), 0);

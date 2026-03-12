@@ -108,7 +108,9 @@ static struct PropertyType const Node3DProperties[kNode3DNumProperties] = {
 	DECL(0xd5710b2e, Node3D, CalculatedOffset, CalculatedOffset, kDataTypeFloat), // Node3D.CalculatedOffset
 };
 static struct Node3D Node3DDefaults = {
+		
   .LayoutTransform = {.scale={1,1,1}},
+		
   .RenderTransform = {.scale={1,1,1}},
 };
 LRESULT Node3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -586,7 +588,9 @@ static struct PropertyType const PipelineStateRenderPassProperties[kPipelineStat
 	DECL(0xb0b1cdf3, PipelineStateRenderPass, StencilWriteEnabled, StencilWriteEnabled, kDataTypeBool), // PipelineStateRenderPass.StencilWriteEnabled
 };
 static struct PipelineStateRenderPass PipelineStateRenderPassDefaults = {
+		
   .ViewportMode = kViewportModeRelative,
+		
   .ScissorMode = kViewportModeRelative,
 };
 LRESULT PipelineStateRenderPassProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -661,7 +665,9 @@ static struct PropertyType const Light3DProperties[kLight3DNumProperties] = {
 	DECL(0xd155d06d, Light3D, Type, Type, kDataTypeEnum, .TypeString = "Point,Spot"), // Light3D.Type
 };
 static struct Light3D Light3DDefaults = {
+		
   .Intensity = 1,
+		
   .Range = 10,
 };
 LRESULT Light3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {

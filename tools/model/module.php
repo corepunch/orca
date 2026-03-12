@@ -467,7 +467,6 @@ class Model {
 	public $structs;
 	public $enums;
 	public $components;
-	public $resources;
 	public $includes;
 	public $events;
 	public $interfaces;
@@ -510,11 +509,6 @@ class Model {
 		array_map(fn($c) => $c["name"], $cn),
 		array_map(fn($c) => new Component($c, $this), $cn)
 		);
-		$rn = $xml->xpath(".//resource[@type]");
-		$this->resources = array_combine(
-		array_map(fn($r) => $r["type"], $rn),
-		array_map(fn($r) => new Resource($r, $this), $rn)
-		);
 		$rn = $xml->xpath(".//include[@file]");
 		$this->includes = array_combine(
 		array_map(fn($r) => $r["file"], $rn),
@@ -553,13 +547,11 @@ class Model {
 	function getInterface($name) { return $this->interfaces[$name] ?? null; }
 	function getEnum($name) { return $this->enums[$name] ?? null; }
 	function getComponent($name) { return $this->components[$name] ?? null; }
-	function getResource($resource_type) { return $this->resources[$resource_type] ?? null; }
 
 	function getStructs() { return $this->structs; }
 	function getInterfaces() { return $this->interfaces; }
 	function getEnums() { return $this->enums; }
 	function getComponents() { return $this->components; }
-	function getResources() { return $this->resources; }
 	function getIncludes() { return $this->includes; }
 	function getEvents() { return $this->events; }
 	function getFunctions() { return $this->functions; }
@@ -582,10 +574,6 @@ class Model {
 		if ($r) {
 			return ["component", $r];
 		}
-		$r = $this->_has_in($_type, "resources");
-		if ($r) {
-			return ["resource", $r];
-		}
 		$r = $this->_has_in($_type, "external_structs");
 		if ($r) {
 			return ["external_struct", $r];
@@ -600,3 +588,7 @@ class Model {
 	}
 }
 
+function include_template($template, $variables = []) {
+	extract($variables);
+	require "templates/$template.php";
+}

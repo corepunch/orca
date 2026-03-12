@@ -253,6 +253,8 @@ void luaX_pushShading(lua_State *L, enum Shading value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _Shading[value]);
 }
+
+
 int luaopen_orca_window(lua_State *L) {
 	luaL_newmetatable(L, "Window");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -293,6 +295,8 @@ static int f_new_RenderScreenEventArgs(lua_State *L) {
 	}
 	return 1;
 }
+
+
 int f_RenderScreenEventArgs___index(lua_State *L) {
 	struct RenderScreenEventArgs* self = luaX_checkRenderScreenEventArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -379,6 +383,8 @@ static int f_new_RenderEventArgs(lua_State *L) {
 	}
 	return 1;
 }
+
+
 int f_RenderEventArgs___index(lua_State *L) {
 	struct RenderEventArgs* self = luaX_checkRenderEventArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -713,6 +719,7 @@ static struct PropertyType const ShaderProperties[kShaderNumProperties] = {
 	DECL(0x8ec3072e, Shader, DepthWriteEnabled, DepthWriteEnabled, kDataTypeBool), // Shader.DepthWriteEnabled
 };
 static struct Shader ShaderDefaults = {
+		
   .BlendMode = kBlendModeMixedAlpha,
 };
 LRESULT ShaderProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -759,6 +766,7 @@ static struct PropertyType const MaterialProperties[kMaterialNumProperties] = {
 	DECL(0x0038792b, Material, BlendMode, BlendMode, kDataTypeEnum, .TypeString = "AlphaAutomatic,Opaque,Alpha,Additive,PremultipliedAlpha,MixedAlpha"), // Material.BlendMode
 };
 static struct Material MaterialDefaults = {
+		
   .BlendMode = kBlendModeAlphaAutomatic,
 };
 LRESULT MaterialProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {

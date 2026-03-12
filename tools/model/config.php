@@ -9,7 +9,8 @@ class config {
 			'pop' => '{addr} = luaL_checknumber(L, {arg})', 
 			'push' => 'lua_pushnumber(L, {arg})',  
 			'convert' => '{addr} = {arg}', 
-			'format' => "%f"
+			'format' => "%f",
+			'default' => "%s",
 		],
 		"int" => [
 			'decl' => 'int32_t', 
@@ -17,7 +18,8 @@ class config {
 			'pop' => '{addr} = luaL_checknumber(L, {arg})', 
 			'push' => 'lua_pushnumber(L, {arg})',  
 			'convert' => '{addr} = {arg}', 
-			'format' => "%d"
+			'format' => "%d",
+			'default' => "%s",
 		],
 		"uint" => [
 			'decl' => 'uint32_t', 
@@ -25,7 +27,8 @@ class config {
 			'pop' => '{addr} = luaL_checknumber(L, {arg})', 
 			'push' => 'lua_pushnumber(L, {arg})',  
 			'convert' => '{addr} = {arg}', 
-			'format' => "%u"
+			'format' => "%u",
+			'default' => "%s",
 		],
 		"long" => [
 			'decl' => 'long', 
@@ -33,7 +36,8 @@ class config {
 			'pop' => '{addr} = luaL_checkinteger(L, {arg})',
 			'push' => 'lua_pushinteger(L, {arg})', 
 			'convert' => '{addr} = {arg}', 
-			'format' => "%ld"
+			'format' => "%ld",
+			'default' => "%s",
 		],
 		"bool" => [
 			'decl' => 'bool_t', 
@@ -41,7 +45,8 @@ class config {
 			'pop' => '{addr} = lua_toboolean(L, {arg})', 
 			'push' => 'lua_pushboolean(L, {arg})', 
 			'convert' => '{addr} = !strcmp({arg}, "true")', 
-			'format' => "%s"
+			'format' => "%s",
+			'default' => "%s",
 		],
 		"string" => [
 			'decl' => 'const char*', 
@@ -49,7 +54,8 @@ class config {
 			'pop' => '{addr} = strdup(luaL_checkstring(L, {arg}))', 
 			'push' => 'lua_pushstring(L, {arg})',  
 			'convert' => '{addr} = {arg}', 
-			'format' => "%s"
+			'format' => "%s",
+			'default' => "\"%s\"",
 		],
 		"objectTags" => [
 			'decl' => 'objectTags_t', 
@@ -57,7 +63,8 @@ class config {
 			'pop' => '{addr} = luaL_checkinteger(L, {arg})',
 			'push' => 'lua_pushinteger(L, {arg})', 
 			'convert' => '{addr} = {arg}', 
-			'format' => "%ld"
+			'format' => "%ld",
+			'default' => "%s",
 		],
 		"fixed" => [
 			'decl' => '%sString_t', 
@@ -65,7 +72,8 @@ class config {
 			'pop' => 'strncpy({addr}, luaL_checkstring(L, {arg}), sizeof({addr}))', 
 			'push' => 'lua_pushstring(L, {arg})',  
 			'convert' => 'strncpy({addr}, {arg}, sizeof({addr}))', 
-			'format' => "%s"
+			'format' => "%s",
+			'default' => "\"%s\"",
 		],
 		"enum" => [
 			'decl' => 'enum %s', 
@@ -73,7 +81,8 @@ class config {
 			'pop' => '{addr} = luaX_check{type}(L, {arg})', 
 			'push' => 'luaX_push{type}(L, {arg})', 
 			'convert' => 'lua_pop(L, (lua_pushstring(L, {arg}), {addr} = luaL_checkoption(L, -1, NULL, _{type}), 1));', 
-			'format' => "%s"
+			'format' => "%s",
+			'default' => "k{type}%s",
 		],
 		"struct" => [
 			'decl' => 'struct %s', 
@@ -81,7 +90,8 @@ class config {
 			'pop' => '{addr} = *luaX_check{type}(L, {arg})',
 			'push' => 'luaX_push{type}(L, &{arg})',
 			'convert' => '{addr} = {arg}', 
-			'format' => "%s"
+			'format' => "%s",
+			'default' => "{%s}",
 		],
 		"interface" => [
 			'decl' => 'struct %s', 
@@ -89,7 +99,8 @@ class config {
 			'pop' => '{addr} = luaX_check{type}(L, {arg})',
 			'push' => 'luaX_push{type}(L, {arg})',
 			'convert' => '{addr} = {arg}', 
-			'format' => "%s"
+			'format' => "%s",
+			'default' => "{%s}",
 		],
 		"component" => [
 			'decl' => 'struct %s', 
@@ -97,15 +108,8 @@ class config {
 			'pop' => '{addr} = luaX_check{type}(L, {arg})',
 			'push' => 'luaX_push{type}(L, {arg})', 
 			'convert' => 'lua_pop(L, (f_convert_string(L, &(struct PropertyType) { .DataType = kDataTypeObject, .TypeString = "{type}" }, {arg}, TRUE), {addr} = luaX_check{type}(L, -1), 1));', 
-			'format' => "%s"
-		],
-		"resource" => [
-			'decl' => 'struct %s', 
-			'check' => 'luaX_check{type}(L, {arg})', 
-			'pop' => '{addr} = luaX_check{type}(L, {arg})',
-			'push' => 'luaX_push{type}(L, {arg})', 
-			'convert' => '{addr} = {arg}', 
-			'format' => "%s"
+			'format' => "%s",
+			'default' => "{%s}",
 		],
 		"external_struct" => [
 			'decl' => 'struct %s', 
@@ -113,7 +117,8 @@ class config {
 			'pop' => '{addr} = NULL',
 			'push' => 'luaX_push{type}(L, {arg})',
 			'convert' => '', 
-			'format' => "%s"
+			'format' => "%s",
+			'default' => "{%s}"
 		],
 		"nresults" => [
 			'decl' => 'int',

@@ -27,6 +27,8 @@ static int f_new_SpriteFrame(lua_State *L) {
 	}
 	return 1;
 }
+
+
 int f_SpriteFrame___index(lua_State *L) {
 	struct SpriteFrame* self = luaX_checkSpriteFrame(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -182,7 +184,9 @@ static struct PropertyType const SKSpriteNodeProperties[kSKSpriteNodeNumProperti
 	DECL(0xdbdb8abb, SKSpriteNode, UvRectHeight, UvRect.height, kDataTypeFloat), // SKSpriteNode.UvRectHeight
 };
 static struct SKSpriteNode SKSpriteNodeDefaults = {
+		
   .FreezeFrame = -1,
+		
   .BlendMode = kBlendModeAlphaAutomatic,
 };
 LRESULT SKSpriteNodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
