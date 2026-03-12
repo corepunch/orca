@@ -70,7 +70,7 @@ int luaopen_orca_SpriteFrame(lua_State *L) {
 static struct PropertyType const SpriteAnimationProperties[kSpriteAnimationNumProperties] = {
 	DECL(0x590ca79a, SpriteAnimation, Image, Image, kDataTypeObject, .TypeString = "Texture"), // SpriteAnimation.Image
 	DECL(0xbebf2a84, SpriteAnimation, Framerate, Framerate, kDataTypeFloat), // SpriteAnimation.Framerate
-	ARRAY_DECL(0xf03e266f, SpriteAnimation, Frames, Frames, kDataTypeStruct), // SpriteAnimation.Frames
+	ARRAY_DECL(0xf03e266f, SpriteAnimation, Frames, Frames, kDataTypeStruct, .TypeString = "SpriteFrame"), // SpriteAnimation.Frames
 	DECL(0x32caacb1, SpriteAnimation, NumFrames, NumFrames, kDataTypeInt), // SpriteAnimation.NumFrames
 };
 static struct SpriteAnimation SpriteAnimationDefaults = {

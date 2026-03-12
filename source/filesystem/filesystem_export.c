@@ -230,11 +230,11 @@ static struct PropertyType const ProjectProperties[kProjectNumProperties] = {
 	DECL(0x0c93d3a3, Project, DefaultMaterial, DefaultMaterial, kDataTypeFixed), // Project.DefaultMaterial
 	DECL(0xdc5503a7, Project, WindowWidth, WindowWidth, kDataTypeInt), // Project.WindowWidth
 	DECL(0xbd75892a, Project, WindowHeight, WindowHeight, kDataTypeInt), // Project.WindowHeight
-	ARRAY_DECL(0x3cee6129, Project, PropertyTypes, PropertyTypes, kDataTypeStruct), // Project.PropertyTypes
+	ARRAY_DECL(0x3cee6129, Project, PropertyTypes, PropertyTypes, kDataTypeStruct, .TypeString = "PropertyType"), // Project.PropertyTypes
 	DECL(0x5d64948b, Project, NumPropertyTypes, NumPropertyTypes, kDataTypeInt), // Project.NumPropertyTypes
-	ARRAY_DECL(0x0a978b48, Project, ProjectReferences, ProjectReferences, kDataTypeStruct), // Project.ProjectReferences
+	ARRAY_DECL(0x0a978b48, Project, ProjectReferences, ProjectReferences, kDataTypeStruct, .TypeString = "ProjectReference"), // Project.ProjectReferences
 	DECL(0xc405deba, Project, NumProjectReferences, NumProjectReferences, kDataTypeInt), // Project.NumProjectReferences
-	ARRAY_DECL(0x2fd1aed8, Project, SystemMessages, SystemMessages, kDataTypeStruct), // Project.SystemMessages
+	ARRAY_DECL(0x2fd1aed8, Project, SystemMessages, SystemMessages, kDataTypeStruct, .TypeString = "SystemMessage"), // Project.SystemMessages
 	DECL(0xbf690676, Project, NumSystemMessages, NumSystemMessages, kDataTypeInt), // Project.NumSystemMessages
 };
 static struct Project ProjectDefaults = {
