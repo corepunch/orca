@@ -347,30 +347,29 @@ HANDLER(Node2D, Measure)
 HANDLER(Node2D, Arrange)
 {
   struct Node2D *n = pNode2D;
-  struct rect const *a = pArrange;
   struct Size s = {0};
 
   if (!isnan(NODE2D_FRAME(n, Size, 0).Requested)) {
     s.width = NODE2D_FRAME(n, Size, 0).Requested;
-  } else if (NODE2D_FRAME(n, Alignment, 0) || isinf(a->width)) {
+  } else if (NODE2D_FRAME(n, Alignment, 0) || isinf(pArrange->width)) {
     s.width = NODE2D_FRAME(n, Size, 0).Desired;
   } else {
-    s.width = a->width - TOTAL_MARGIN(n, 0);
+    s.width = pArrange->width - TOTAL_MARGIN(n, 0);
   }
 
   if (!isnan(NODE2D_FRAME(n, Size, 1).Requested)) {
     s.height = NODE2D_FRAME(n, Size, 1).Requested;
-  } else if (NODE2D_FRAME(n, Alignment, 1) || isinf(a->height)) {
+  } else if (NODE2D_FRAME(n, Alignment, 1) || isinf(pArrange->height)) {
     s.height = NODE2D_FRAME(n, Size, 1).Desired;
   } else {
-    s.height = a->height - TOTAL_MARGIN(n, 1);
+    s.height = pArrange->height - TOTAL_MARGIN(n, 1);
   }
   
   struct rect m = {
-    a->x + MARGIN_TOP(n, 0),
-    a->y + MARGIN_TOP(n, 1),
-    a->width - TOTAL_MARGIN(n, 0),
-    a->height - TOTAL_MARGIN(n, 1),
+    pArrange->x + MARGIN_TOP(n, 0),
+    pArrange->y + MARGIN_TOP(n, 1),
+    pArrange->width - TOTAL_MARGIN(n, 0),
+    pArrange->height - TOTAL_MARGIN(n, 1),
   };
 
   struct rect rect = {
