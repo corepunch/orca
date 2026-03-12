@@ -1,64 +1,36 @@
 <?php
 require "model/module.php";
 
-// Route format: controller/action
-// e.g. codegen/header, codegen/export, dtd/generate, docs/generate, docs/index
+// Routes: "controller/action" => "ControllerClass@method"
+$routes = [
+	"codegen/header"     => "CodegenController@header",
+	"codegen/properties" => "CodegenController@properties",
+	"codegen/export"     => "CodegenController@export",
+	"dtd/generate"       => "DtdController@generate",
+	"docs/generate"      => "DocsController@generate",
+	"docs/index"         => "DocsController@index",
+];
+
 $route = $argv[1];
 $xmlArgs = array_slice($argv, 2);
 
-$routeParts = explode('/', $route, 2);
-$controller = $routeParts[0];
-$action = $routeParts[1];
-
-if ($controller === 'codegen') {
-	$model = new Model($xmlArgs[0]);
-	$vars = [
-		"moduleName"     => $model->getModuleName(),
-		"prefix"         => $model->prefix,
-		"on_luaopen"     => $model->on_luaopen,
-		"enums"          => $model->getEnums(),
-		"structs"        => $model->getStructs(),
-		"interfaces"     => $model->getInterfaces(),
-		"components"     => $model->getComponents(),
-		"functions"      => $model->getFunctions(),
-		"events"         => $model->getEvents(),
-		"externalStructs" => $model->getExternalStructs(),
-		"requires"       => $model->getRequires(),
-		"includes"       => $model->getIncludes(),
-		"hasComponents"  => $model->hasComponents(),
-	];
-	include_template($action, $vars);
-} elseif ($controller === 'dtd') {
-	$models = [];
-	foreach ($xmlArgs as $xmlFile) {
-		$models[] = new Model($xmlFile);
-	}
-	include_template('dtd', ["models" => $models]);
-} elseif ($controller === 'docs') {
-	if ($action === 'generate') {
-		$model = new Model($xmlArgs[0]);
-		$namespaceAttr = $model->root["namespace"];
-		$namespace = $namespaceAttr !== null ? strval($namespaceAttr) : "orca";
-		$vars = [
-			"moduleName"  => $model->getModuleName(),
-			"namespace"   => $namespace,
-			"enums"       => $model->getEnums(),
-			"structs"     => $model->getStructs(),
-			"interfaces"  => $model->getInterfaces(),
-			"components"  => $model->getComponents(),
-		];
-		include_template('docs', $vars);
-	} elseif ($action === 'index') {
-		$models = [];
-		foreach ($xmlArgs as $xmlFile) {
-			$models[] = new Model($xmlFile);
-		}
-		include_template('docs_index', ["models" => $models]);
-	} else {
-		fwrite(STDERR, "Unknown docs action: " . $action . "\n");
-		exit(1);
-	}
-} else {
+$handler = isset($routes[$route]) ? $routes[$route] : "";
+if ($handler === "") {
 	fwrite(STDERR, "Unknown route: " . $route . "\n");
 	exit(1);
+}
+
+$parts = explode('/', $route, 2);
+$controller = $parts[0];
+$action = $parts[1];
+
+if ($controller === 'codegen') {
+	require "templates/controllers/CodegenController.php";
+	(new CodegenController())->handle($action, $xmlArgs);
+} elseif ($controller === 'dtd') {
+	require "templates/controllers/DtdController.php";
+	(new DtdController())->handle($action, $xmlArgs);
+} elseif ($controller === 'docs') {
+	require "templates/controllers/DocsController.php";
+	(new DocsController())->handle($action, $xmlArgs);
 }

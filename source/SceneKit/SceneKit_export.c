@@ -727,7 +727,6 @@ ORCA_API struct ClassDesc _SpriteView = {
 };
 
 
-
 ORCA_API int luaopen_orca_SceneKit(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
 		{ NULL, NULL } 
@@ -751,3 +750,4 @@ ORCA_API int luaopen_orca_SceneKit(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_SpriteView), -2), "SpriteView");
 	return 1;
 }
+

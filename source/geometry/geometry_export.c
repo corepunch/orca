@@ -2263,7 +2263,6 @@ int luaopen_orca_color(lua_State *L) {
 }
 
 
-
 ORCA_API int luaopen_orca_geometry(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
 		{ NULL, NULL } 
@@ -2290,3 +2289,4 @@ ORCA_API int luaopen_orca_geometry(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_color(L), -2), "color");
 	return 1;
 }
+

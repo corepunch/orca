@@ -1001,7 +1001,6 @@ int f_core_GetHover(lua_State *L) {
 	luaX_pushObject(L, result_);
 	return 1;
 }
-
 ORCA_API int luaopen_orca_core(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
 		{ "getFocus", f_core_GetFocus },
@@ -1017,3 +1016,4 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_Object(L), -2), "Object");
 	return 1;
 }
+

@@ -3195,7 +3195,6 @@ ORCA_API struct ClassDesc _Style = {
 };
 
 
-
 ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
 		{ NULL, NULL } 
@@ -3258,3 +3257,4 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_Style), -2), "Style");
 	return 1;
 }
+

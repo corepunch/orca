@@ -286,7 +286,6 @@ ORCA_API struct ClassDesc _SKView = {
 };
 
 
-
 ORCA_API int luaopen_orca_SpriteKit(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
 		{ NULL, NULL } 
@@ -302,3 +301,4 @@ ORCA_API int luaopen_orca_SpriteKit(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_SKView), -2), "SKView");
 	return 1;
 }
+

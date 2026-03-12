@@ -948,7 +948,6 @@ int f_renderer_DrawImage(lua_State *L) {
 	renderer_DrawImage(L );
 	return 0;
 }
-
 ORCA_API int luaopen_orca_renderer(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
 		{ "init", f_renderer_Init },
@@ -978,3 +977,4 @@ ORCA_API int luaopen_orca_renderer(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_Timeline), -2), "Timeline");
 	return 1;
 }
+
