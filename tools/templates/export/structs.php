@@ -29,7 +29,7 @@ static int f_new_<?= $name ?>(lua_State *L) {
 	return 1;
 }
 
-<?php include_template("export_functions", ['functions' => $struct->getMethods(), 'prefix' => $struct->prefix]) ?>
+<?php include_template("export/functions", ['functions' => $struct->getMethods(), 'prefix' => $struct->prefix]) ?>
 
 int f_<?= $name ?>___index(lua_State *L) {
 	struct <?= $name ?>* self = luaX_check<?= $name ?>(L, 1);

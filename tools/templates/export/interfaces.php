@@ -1,6 +1,6 @@
 <?php foreach ($interfaces as $name => $interface):?>
 
-<?php include_template("export_functions", ['functions' => $interface->getMethods(), 'prefix' => $interface->prefix]) ?>
+<?php include_template("export/functions", ['functions' => $interface->getMethods(), 'prefix' => $interface->prefix]) ?>
 
 int luaopen_orca_<?= $name ?>(lua_State *L) {
 	luaL_newmetatable(L, "<?= $interface->export ?>");

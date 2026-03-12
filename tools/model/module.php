@@ -541,7 +541,6 @@ class Model {
 		return null;
 	}
 
-	function hasComponents() { return count($this->components) > 0; }
 	function getModuleName() { return $this->root["name"]; }
 	function getStruct($name) { return $this->structs[$name] ?? null; }
 	function getInterface($name) { return $this->interfaces[$name] ?? null; }
