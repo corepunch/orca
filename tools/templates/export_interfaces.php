@@ -1,4 +1,4 @@
-<?php foreach ($model->getInterfaces() as $name => $interface):?>
+<?php foreach ($interfaces as $name => $interface):?>
 
 <?php include_template("export_functions", ['functions' => $interface->getMethods(), 'prefix' => $interface->prefix]) ?>
 
