@@ -11,6 +11,13 @@ void EdgeShorthand_Convert1(struct EdgeShorthand* self, float value) {
   self->Right = value;
 }
 
+void BorderRadiusShorthand_Convert1(struct  BorderRadiusShorthand* self, float value) {
+  self->BottomLeftRadius = value;
+  self->BottomRightRadius = value;
+  self->TopLeftRadius = value;
+  self->TopRightRadius = value;
+}
+
 void MarginShorthand_Convert4(struct MarginShorthand* self, float left, float top, float right, float bottom) {
   self->Axis[0].Left = left;
   self->Axis[0].Right = right;

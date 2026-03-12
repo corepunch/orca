@@ -192,6 +192,12 @@
       <arg name="message" type="string">The name of the message to post</arg>
     </method>
     
+    <method name="SendMessage2" lua="true">
+      <summary>Send a message to directly to the object ignoring queue.</summary>
+      <details>Messge sent will be immediately processed without using coroutines.</details>
+      <arg name="message" type="string">The name of the message to send</arg>
+    </method>
+    
     <method name="Play">
       <summary>Play an animation or resource on the object.</summary>
       <details>Initiates playback of the specified animation or media resource on this object. The animation name is resolved against the object's animation library or external animation resources. This triggers the animation system to begin updating the object's properties over time according to the animation's keyframes and timeline.</details>

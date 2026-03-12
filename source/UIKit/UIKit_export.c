@@ -360,6 +360,7 @@ int f_BorderRadiusShorthand___newindex(lua_State *L) {
 	return luaL_error(L, "Unknown field in BorderRadiusShorthand(%p): %s", self, luaL_checkstring(L, 2));
 }
 extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
+void BorderRadiusShorthand_Convert1(struct BorderRadiusShorthand*, float);
 static int f_BorderRadiusShorthand___fromstring(lua_State *L) {
 	float TopLeftRadius;
 	float TopRightRadius;
@@ -372,6 +373,9 @@ static int f_BorderRadiusShorthand___fromstring(lua_State *L) {
 		self.TopRightRadius = TopRightRadius;
 		self.BottomRightRadius = BottomRightRadius;
 		self.BottomLeftRadius = BottomLeftRadius;
+		return (luaX_pushBorderRadiusShorthand(L, &self), 1);
+	case 1:
+		BorderRadiusShorthand_Convert1(&self, TopLeftRadius);
 		return (luaX_pushBorderRadiusShorthand(L, &self), 1);
 	default:
 		return luaL_error(L, "Invalid format for BorderRadiusShorthand: %s", luaL_checkstring(L, 1));

@@ -172,7 +172,7 @@
     <enum name="MinusPadding">Subtract padding from size</enum>
   </enums>
 
-  <struct name="BorderRadiusShorthand">
+  <struct name="BorderRadiusShorthand" constructor="1">
     <summary>Corner rounding configuration for rectangular elements</summary>
     <details>Allows independent control of each corner's rounding radius.</details>
     <field name="TopLeftRadius" type="float">Top-left corner radius</field>

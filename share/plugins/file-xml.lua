@@ -160,6 +160,8 @@ local function construct_node(element)
 			xpcall(node.addChild, print, node, construct_node(sub))
 		end
 	end
+	print(element.tag.." node constructed with name: "..(node.Name or "nil"))
+	node:sendMessage2("Start")
 	return node
 end
 

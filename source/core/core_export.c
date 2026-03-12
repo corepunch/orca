@@ -157,6 +157,12 @@ int f_OBJ_PostMessage(lua_State *L) {
 	OBJ_PostMessage(L, this_, message );
 	return 0;
 }
+int f_OBJ_SendMessage2(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	const char* message = luaL_checkstring(L, 2);
+	OBJ_SendMessage2(L, this_, message );
+	return 0;
+}
 int f_OBJ_Play(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	const char* animation = luaL_checkstring(L, 2);
@@ -512,6 +518,7 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "findChild", f_OBJ_FindChild },
 		{ "dispatchEvent", f_OBJ_DispatchEvent },
 		{ "postMessage", f_OBJ_PostMessage },
+		{ "sendMessage2", f_OBJ_SendMessage2 },
 		{ "play", f_OBJ_Play },
 		{ "setFocus", f_OBJ_SetFocus },
 		{ "doTween", f_OBJ_DoTween },

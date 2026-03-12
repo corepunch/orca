@@ -729,18 +729,18 @@ static int f_xml_read_document(lua_State* L)
   }
 }
 
-static int f_find_xml(lua_State* L)
-{
-  lpcString_t module = luaL_checkstring(L, 1);
-  path_t path = { 0 };
-  snprintf(path, sizeof(path), "%s.xml", FS_PathFromModule(module));
-  if (FS_FileExists(path)) {
-    lua_pushcfunction(L, f_xml_read_document);
-    return 1;
-  } else {
-    return 0;
-  }
-}
+//static int f_find_xml(lua_State* L)
+//{
+//  lpcString_t module = luaL_checkstring(L, 1);
+//  path_t path = { 0 };
+//  snprintf(path, sizeof(path), "%s.xml", FS_PathFromModule(module));
+//  if (FS_FileExists(path)) {
+//    lua_pushcfunction(L, f_xml_read_document);
+//    return 1;
+//  } else {
+//    return 0;
+//  }
+//}
 
 lua_State* global_L = NULL;
 
@@ -776,7 +776,7 @@ ORCA_API int luaopen_orca_parsers_xml(lua_State* L)
                 0);
   lua_setfield(L, -2, "XmlDoc");
 
-  lua_register(L, "fs_findxml", f_find_xml);
+//  lua_register(L, "fs_findxml", f_find_xml);
 //  luaL_dostring(L, "table.insert(package.searchers, fs_findxml)");
   
   API_CallRequire(L, "orca.filesystem", 1);

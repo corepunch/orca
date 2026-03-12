@@ -23,6 +23,8 @@ local fallbacks = {
 	end,
 }
 
+local cache = {}
+
 orca.tags = {
 	parse = function(self, tag)
 		for i = 1, #self do if self[i] == tag then return i end end
@@ -56,11 +58,12 @@ orca.typeconverter = {
 	Fixed = function(value) return value end,
 	Object = function(path, type)
 		local ok, resource = pcall(require, path)
-		if ok then return resource end
+		if ok then return resource() end
 		local fallback = fallbacks[type.TypeString]
 		if fallback then
+			if cache[path] then return cache[path] end
 			local result = fallback(path)
-			package.loaded[path] = result
+			cache[path] = result
 			if result then return result end
 		end
 		error(string.format("Cannot convert '%s' to %s(Object)", path, type.TypeString))

@@ -172,6 +172,9 @@ OBJ_DispatchEvent(struct lua_State*, struct Object*, const char*);
 /// @brief Posts a message to the global message queue.
 ORCA_API void
 OBJ_PostMessage(struct lua_State*, struct Object*, const char*);
+/// @brief Send a message to directly to the object ignoring queue.
+ORCA_API void
+OBJ_SendMessage2(struct lua_State*, struct Object*, const char*);
 /// @brief Play an animation or resource on the object.
 ORCA_API void
 OBJ_Play(struct Object*, const char*);

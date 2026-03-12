@@ -343,6 +343,21 @@ void OBJ_PostMessage(lua_State* L, lpObject_t self, lpcString_t message)
   }
 }
 
+
+// HACK: hacked in quickly
+void OBJ_SendMessage2(lua_State* L, lpObject_t self, lpcString_t message)
+{
+  if (lua_type(L, 3) == LUA_TUSERDATA) {
+    OBJ_SendMessage(self, message, 0, lua_touserdata(L, 3));
+  } else if (!strcmp(message, "WindowPaint")) {
+    struct WI_Size size;
+    WI_GetSize(&size);
+    OBJ_SendMessage(self, message, MAKEDWORD(size.width, size.height), NULL);
+  } else {
+    OBJ_SendMessage(self, message, 0, NULL);
+  }
+}
+
 lpObject_t OBJ_DispatchEvent(lua_State* L, lpObject_t self, lpcString_t event)
 {
   uint32_t dwNumArgs = MAX(0, lua_gettop(L) - 2);
@@ -360,6 +375,12 @@ lpObject_t OBJ_DispatchEvent(lua_State* L, lpObject_t self, lpcString_t event)
     }
   }
   return NULL;
+}
+
+static int HACK_Start(lua_State* L) {
+  struct Object* hobj = luaX_checkObject(L, 1);
+  OBJ_SendMessageW(hobj, kEventStart, 0, NULL);
+  return 0;
 }
 
 int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
@@ -416,6 +437,11 @@ int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
     }
     default:
       break;
+  }
+  
+  if (!strcmp(name, "start")) {
+    lua_pushcfunction(L, HACK_Start);
+    return 1;
   }
 
 #define kEventPushProperty 0xc5ebaf40
