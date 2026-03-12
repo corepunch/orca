@@ -365,10 +365,17 @@ HANDLER(Node2D, Arrange)
   } else {
     s.height = a->height - TOTAL_MARGIN(n, 1);
   }
+  
+  struct rect m = {
+    a->x + MARGIN_TOP(n, 0),
+    a->y + MARGIN_TOP(n, 1),
+    a->width - TOTAL_MARGIN(n, 0),
+    a->height - TOTAL_MARGIN(n, 1),
+  };
 
   struct rect rect = {
-    .x = Node2D_Align(n, a, 0, NODE2D_FRAME(n, Alignment, 0), s.width) + MARGIN_TOP(n, 0),
-    .y = Node2D_Align(n, a, 1, NODE2D_FRAME(n, Alignment, 1), s.height) + MARGIN_TOP(n, 1),
+    .x = Node2D_Align(n, &m, 0, NODE2D_FRAME(n, Alignment, 0), s.width),
+    .y = Node2D_Align(n, &m, 1, NODE2D_FRAME(n, Alignment, 1), s.height),
     .width  = s.width,
     .height = s.height,
   };
