@@ -700,11 +700,11 @@
     <handles event="Create"/>
     <handles event="Destroy"/>
     <handles event="WindowResized"/>
+    <handles event="WindowPaint"/>
     <property name="ClearColor" type="color">Background clear color for the screen </property>
     <property name="ResizeMode" type="ResizeMode">Specifies how the window can be resized or displayed</property>
     <field name="_rt" type="Texture" pointer="true">Internal render target for the screen</field>
     <field name="_size" type="uint">Currently set size (to resize window when changed).</field>
-    <field name="_initialized" type="bool">Used to set initial window size</field>
   </class>
 
   <class name="Cinematic" parent="Node2D">

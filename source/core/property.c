@@ -107,8 +107,6 @@ PROP_Update(lpProperty_t property)
         property->programs[i] = NULL;
       } else {
         property->flags &= ~PF_NIL;
-        extern int _numbindings;
-        _numbindings++;
       }
     }
   }

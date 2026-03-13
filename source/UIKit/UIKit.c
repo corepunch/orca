@@ -4,8 +4,6 @@
 #define DRAG_SESSION "__DRAG_SESSION__"
 #define DRAG_THRESHOLD 4
 
-//static bool_t ignore_upcoming_click = FALSE;
-
 void EdgeShorthand_Convert1(struct EdgeShorthand* self, float value) {
   self->Left = value;
   self->Right = value;
@@ -86,6 +84,9 @@ UI_HandleMouseEvent(lua_State* L, lpObject_t root, struct WI_Message* e)
   lpObject_t focused = core_GetFocus();
   lpObject_t sender = NULL;
   bool_t success = FALSE;
+  while (OBJ_GetNext(root)) {
+    root = OBJ_GetNext(root);
+  }
   if (focused && OBJ_GetFlags(focused)&OF_NOACTIVATE) {
     if (OBJ_SendMessageW(focused, kEventHitTest, e->wParam, &sender))
       goto handle;
@@ -97,7 +98,6 @@ UI_HandleMouseEvent(lua_State* L, lpObject_t root, struct WI_Message* e)
         if (OBJ_SendMessageW(mod, kEventHitTest, e->wParam, &sender))
           goto handle;
         OBJ_RemoveFromParent(L, mod, FALSE);
-        //        ignore_upcoming_click = TRUE;
       }
       return TRUE;
     }
@@ -197,10 +197,6 @@ int ui_handle_event(lua_State* L, struct WI_Message *msg) {
     case kEventLeftMouseUp:
     case kEventRightMouseUp:
     case kEventOtherMouseUp:
-      //      if (ignore_upcoming_click) {
-      //        ignore_upcoming_click = FALSE;
-      //        return FALSE;
-      //      }
     case kEventLeftMouseDown:
     case kEventRightMouseDown:
     case kEventOtherMouseDown:

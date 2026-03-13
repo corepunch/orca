@@ -284,14 +284,12 @@ static int f_new_RenderScreenEventArgs(lua_State *L) {
 		lua_pop(L, (lua_getfield(L, 1, "stereo"), self->stereo = luaL_checknumber(L, -1), 1));
 		lua_pop(L, (lua_getfield(L, 1, "angle"), self->angle = luaL_checknumber(L, -1), 1));
 		lua_pop(L, (lua_getfield(L, 1, "target"), self->target = luaX_checkTexture(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "only_paint"), self->only_paint = lua_toboolean(L, -1), 1));
 	} else {
 		self->width = luaL_checknumber(L, 1);
 		self->height = luaL_checknumber(L, 2);
 		self->stereo = luaL_checknumber(L, 3);
 		self->angle = luaL_checknumber(L, 4);
 		self->target = luaX_checkTexture(L, 5);
-		self->only_paint = lua_toboolean(L, 6);
 	}
 	return 1;
 }
@@ -305,7 +303,6 @@ int f_RenderScreenEventArgs___index(lua_State *L) {
 	case 0xcc87a64d: lua_pushnumber(L, self->stereo); return 1; // stereo
 	case 0xad544418: lua_pushnumber(L, self->angle); return 1; // angle
 	case 0x32608848: luaX_pushTexture(L, self->target); return 1; // target
-	case 0xc577ec54: lua_pushboolean(L, self->only_paint); return 1; // only_paint
 	}
 	return luaL_error(L, "Unknown field in RenderScreenEventArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
@@ -317,7 +314,6 @@ int f_RenderScreenEventArgs___newindex(lua_State *L) {
 	case 0xcc87a64d: self->stereo = luaL_checknumber(L, 3); return 0; // stereo
 	case 0xad544418: self->angle = luaL_checknumber(L, 3); return 0; // angle
 	case 0x32608848: self->target = luaX_checkTexture(L, 3); return 0; // target
-	case 0xc577ec54: self->only_paint = lua_toboolean(L, 3); return 0; // only_paint
 	}
 	return luaL_error(L, "Unknown field in RenderScreenEventArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
@@ -328,16 +324,14 @@ static int f_RenderScreenEventArgs___fromstring(lua_State *L) {
 	float stereo;
 	float angle;
 	fixedString_t target;
-	fixedString_t only_paint;
 	struct RenderScreenEventArgs self = {0};
-	switch (sscanf(luaL_checkstring(L, 1), "%u %u %f %f %s %s", &width, &height, &stereo, &angle, target, only_paint)) {
-	case 6: 
+	switch (sscanf(luaL_checkstring(L, 1), "%u %u %f %f %s", &width, &height, &stereo, &angle, target)) {
+	case 5: 
 		self.width = width;
 		self.height = height;
 		self.stereo = stereo;
 		self.angle = angle;
 		lua_pop(L, (f_convert_string(L, &(struct PropertyType) { .DataType = kDataTypeObject, .TypeString = "Texture" }, target, TRUE), self.target = luaX_checkTexture(L, -1), 1));;
-		self.only_paint = !strcmp(only_paint, "true");
 		return (luaX_pushRenderScreenEventArgs(L, &self), 1);
 	default:
 		return luaL_error(L, "Invalid format for RenderScreenEventArgs: %s", luaL_checkstring(L, 1));

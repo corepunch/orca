@@ -31,9 +31,6 @@ HANDLER(Node2D, HitTest) {
   int16_t lx = x - pNode2D->ContentOffset.x;
   int16_t ly = y - pNode2D->ContentOffset.y;
   bool_t success = FALSE;
-  if (OBJ_GetModal(hObject)) {
-    return OBJ_SendMessageW(OBJ_GetModal(hObject), kEventHitTest, wParam, pHitTest);
-  }
   FOR_EACH_OBJECT(hChild, hObject) {
     lpObject_t hittest = NULL;
     if (OBJ_SendMessageW(hChild, kEventHitTest, MAKEDWORD(lx, ly), &hittest)) {

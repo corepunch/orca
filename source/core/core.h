@@ -223,6 +223,9 @@ OBJ_ApplyStyles(struct Object*, bool_t);
 /// @brief Sets object dirty and queues it for recalculation
 ORCA_API void
 OBJ_SetDirty(struct Object*);
+/// @brief Clears dirty flags, marks object as recalculated
+ORCA_API void
+OBJ_ClearDirtyFlags(struct Object*);
 /// @brief Gets the parent object in the hierarchy
 ORCA_API struct Object*
 OBJ_GetParent(struct Object const*);
@@ -265,12 +268,9 @@ OBJ_SetFlags(struct Object*, uint32_t);
 /// @brief Gets the identifier of the object
 ORCA_API uint32_t
 OBJ_GetIdentifier(struct Object const*);
-/// @brief Gets the modal child object
-ORCA_API struct Object*
-OBJ_GetModal(struct Object const*);
 /// @brief Sets or clears the modal child object
 ORCA_API void
-OBJ_SetModal(struct Object*, struct Object*);
+OBJ_ShowModal(struct Object*, struct Object*);
 /// @brief Checks if this object currently has focus
 ORCA_API bool_t
 OBJ_IsFocused(struct Object const*);

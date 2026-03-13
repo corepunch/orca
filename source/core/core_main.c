@@ -134,51 +134,9 @@ void UI_Shutdown(void) {
 static int _fps[MAX_FPS_CACHE]={0};
 static int _counter=0;
 
-int _numbindings=0;
-
 void OBJ_UpdateLayout(lpObject_t obj, int width, int height) {
   OBJ_SendMessage(obj, "Measure", 0, &(struct Size){ .width = width, .height = height });
   OBJ_SendMessage(obj, "Arrange", 0, &(struct rect){ .width = width, .height = height });
-}
-
-void
-CORE_Update(lua_State* L,
-            lpObject_t root,
-            uint32_t winsize,
-            longTime_t time)
-{
-  _fps[_counter++%MAX_FPS_CACHE] = (int)(time - core.realtime);
-  _numbindings = 0;
-
-  core.realtime = time;
-  core.frame++;
-  
-  OBJ_Awake(L, root);
-  OBJ_Animate(L, root);
-  OBJ_LoadPrefabs(L, root);
-  OBJ_EmitPropertyChangedEvents(L, root);
-  OBJ_UpdateProperties(root);
-  OBJ_UpdateLayout(root, LOWORD(winsize), HIWORD(winsize));
-  
-  OBJ_SendMessageW(root, kEventUpdateMatrix, 0, &(struct UpdateMatrixEventArgs){
-    .parent = MAT4_Identity(),
-    .opacity = 1,
-  });
-  
-  OBJ_SendMessageW(root, kEventRenderScreen, 0, &(struct RenderScreenEventArgs) {
-    .width = LOWORD(winsize),
-    .height = HIWORD(winsize),
-    .stereo = 0,
-    .target = 0,
-    .angle = 0,
-  });
-  
-//  int tmp = 0;
-//  FOR_LOOP(i, MAX_FPS_CACHE) { tmp += _fps[i]; }
-//  void DEBUG_Draw(float fps, int bindings);
-//  DEBUG_Draw(MAX_FPS_CACHE*1000.f/tmp, _numbindings);
-
-  OBJ_ClearDirtyFlags(root);
 }
 
 ORCA_API longTime_t
@@ -236,9 +194,14 @@ int CORE_ProcessMessage(lua_State *L, struct WI_Message* msg) {
   switch (msg->message) {
     case kEventWindowPaint:
     case kEventWindowResized:
-      CORE_Update(L, msg->target, msg->wParam, WI_GetMilliseconds());
-//      WI_PostMessageW(msg->target, kEventWindowPaint, msg->wParam, NULL);
-      break;
+      _fps[_counter++%MAX_FPS_CACHE] = (int)(WI_GetMilliseconds() - core.realtime);
+      core.realtime = WI_GetMilliseconds();
+      core.frame++;
+      if (CORE_HandleObjectMessage(L, msg)) {
+        return TRUE;
+      } else {
+        return FALSE;
+      }
     case kEventLeftMouseDown:
     case kEventRightMouseDown:
     case kEventOtherMouseDown:

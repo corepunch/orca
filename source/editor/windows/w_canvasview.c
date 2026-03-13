@@ -210,7 +210,6 @@ void ED_DrawCanvasView(HEDWND wnd, struct _CANVASVIEW* sv) {
     .height = view.height,
     .stereo = 0,
     .target = sv->scene_texture,
-    .only_paint = TRUE,
   });
     
   R_DrawImage(&(DRAWIMAGESTRUCT) {

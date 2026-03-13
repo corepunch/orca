@@ -193,40 +193,14 @@ _FallThrough(ScreenCPtr s, NodeCPtr n, RenderScreenEventPtr r)
 {
   if (s->ResizeMode==kResizeModeCanResize)
     return TRUE;
-  if (!n->Size.Axis[0].Requested || !n->Size.Axis[1].Requested)
+  if (isnan(n->Size.Axis[0].Requested) || isnan(n->Size.Axis[1].Requested))
     return TRUE;
   if (n->Size.Axis[0].Requested != r->width || n->Size.Axis[1].Requested != r->height)
     return FALSE;
   return TRUE;
 }
 
-static void
-_DrawModal(lpObject_t object, Draw2DContentEventPtr params)
-{
-  for (lpObject_t modal = OBJ_GetModal(object); modal; modal = OBJ_GetModal(modal)) {
-    Node2DPtr pNode2D = GetNode2D(object);
-    rect_t content = {
-      PADDING_TOP(pNode2D, 0),
-      PADDING_TOP(pNode2D, 1),
-      NODE2D_FRAME(pNode2D, Size, 0).Actual - TOTAL_PADDING(pNode2D, 0),
-      NODE2D_FRAME(pNode2D, Size, 1).Actual - TOTAL_PADDING(pNode2D, 1),
-    };
-    OBJ_SendMessageW(modal, kEventMeasure, 0, &content.width);
-    OBJ_SendMessageW(modal, kEventArrange, 0, &content);
-    OBJ_SendMessageW(modal, kEventUpdateMatrix, 0, &(struct UpdateMatrixEventArgs) {
-      .parent = GetNode2D(OBJ_GetParent(modal))->Matrix,
-      .opacity = 1,
-    });
-    Node2D_Draw2DContent(modal, GetNode2D(modal), 0, params);
-    FOR_EACH_CHILD(modal, _DrawModal, params);
-  }
-  FOR_EACH_CHILD(object, _DrawModal, params);
-}
-
 HANDLER(Screen, RenderScreen) {
-  if (!pRenderScreen->only_paint) {
-    R_BeginFrame((struct color){ 0,0,0 });
-  }
   NodePtr node = GetNode(hObject);
   float width = pRenderScreen->width;
   float height = pRenderScreen->height;
@@ -241,12 +215,12 @@ HANDLER(Screen, RenderScreen) {
       }, &pScreen->_rt);
     }
     rt = pScreen->_rt;
-  } else if (pScreen->_initialized) {
+  } else if (!isnan(node->Size.Axis[0].Requested) &&
+             !isnan(node->Size.Axis[1].Requested))
+  {
     node->Size.Axis[0].Requested = width;
     node->Size.Axis[1].Requested = height;
   }
-  
-  pScreen->_initialized = TRUE;
   
   // setup pipeline
   PIPELINESTATE ps = _Pipeline2D(width, height);
@@ -283,8 +257,6 @@ HANDLER(Screen, RenderScreen) {
   R_SetPipelineState(&ps);
 
   Node2D_Draw2DContent(hObject, GetNode2D(hObject), 0, &params);
-  
-  _DrawModal(hObject, &params);
 
   if (pRenderScreen->target != rt) {
     R_BindFramebuffer(pRenderScreen->target);
@@ -297,10 +269,6 @@ HANDLER(Screen, RenderScreen) {
     });
   }
   R_BindFramebuffer(0);
-  if (!pRenderScreen->only_paint) {
-    R_EndFrame();
-  }
-
   return FALSE;
 }
 
@@ -509,8 +477,54 @@ HANDLER(Screen, Destroy) {
   return FALSE;
 }
 
+HANDLER(Screen, WindowPaint) {
+  lua_State *L = OBJ_GetDomain(hObject);
+
+  if (!pWindowPaint) {
+    R_BeginFrame((struct color){ 0,0,0,0 });
+  }
+  
+  OBJ_Awake(L, hObject);
+  OBJ_Animate(L, hObject);
+  OBJ_LoadPrefabs(L, hObject);
+  OBJ_EmitPropertyChangedEvents(L, hObject);
+  OBJ_UpdateProperties(hObject);
+  OBJ_UpdateLayout(hObject, LOWORD(wParam), HIWORD(wParam));
+  
+  OBJ_SendMessageW(hObject, kEventUpdateMatrix, 0, &(struct UpdateMatrixEventArgs){
+    .parent = MAT4_Identity(),
+    .opacity = 1,
+  });
+  
+  OBJ_SendMessageW(hObject, kEventRenderScreen, 0, &(struct RenderScreenEventArgs) {
+    .width = LOWORD(wParam),
+    .height = HIWORD(wParam),
+    .stereo = 0,
+    .target = 0,
+    .angle = 0,
+  });
+    
+  //  int tmp = 0;
+  //  FOR_LOOP(i, MAX_FPS_CACHE) { tmp += _fps[i]; }
+  //  void DEBUG_Draw(float fps, int bindings);
+  //  DEBUG_Draw(MAX_FPS_CACHE*1000.f/tmp);
+  
+  OBJ_ClearDirtyFlags(hObject);
+  
+  if (OBJ_GetNext(hObject)) { // Render modal screens
+    OBJ_SendMessageW(OBJ_GetNext(hObject), kEventWindowPaint, wParam, hObject);
+  }
+  
+  if (!pWindowPaint) {
+    R_EndFrame();
+  }
+
+  return TRUE;
+}
+
 HANDLER(Screen, WindowResized) {
   GetNode(hObject)->Size.Axis[0].Requested = LOWORD(wParam);
   GetNode(hObject)->Size.Axis[1].Requested = HIWORD(wParam);
+  OBJ_SendMessageW(hObject, kEventWindowPaint, wParam, NULL);
   return FALSE;
 }

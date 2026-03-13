@@ -308,7 +308,6 @@ struct RenderScreenEventArgs {
 	float stereo; ///< The stereo value of the render screen
 	float angle; ///< The angle of the render screen
 	struct Texture* target; ///< The target handle of the render screen
-	bool_t only_paint; ///< Indicates if only painting is required
 };
 ORCA_API void luaX_pushRenderScreenEventArgs(lua_State *L, struct RenderScreenEventArgs const* RenderScreenEventArgs);
 ORCA_API struct RenderScreenEventArgs* luaX_checkRenderScreenEventArgs(lua_State *L, int idx);

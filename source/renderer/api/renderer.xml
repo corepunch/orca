@@ -18,7 +18,6 @@
     <field name="stereo" type="float">The stereo value of the render screen</field>
     <field name="angle" type="float">The angle of the render screen</field>
     <field name="target" type="Texture" pointer="true">The target handle of the render screen</field>
-    <field name="only_paint" type="bool">Indicates if only painting is required</field>
   </struct>
   
   <struct name="RenderEventArgs">

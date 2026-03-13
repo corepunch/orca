@@ -2853,6 +2853,7 @@ LRESULT Screen_MeasureOverride(struct Object*, struct Screen*, wParam_t, Measure
 LRESULT Screen_Create(struct Object*, struct Screen*, wParam_t, CreateEventPtr);
 LRESULT Screen_Destroy(struct Object*, struct Screen*, wParam_t, DestroyEventPtr);
 LRESULT Screen_WindowResized(struct Object*, struct Screen*, wParam_t, WindowResizedEventPtr);
+LRESULT Screen_WindowPaint(struct Object*, struct Screen*, wParam_t, WindowPaintEventPtr);
 
 static struct PropertyType const ScreenProperties[kScreenNumProperties] = {
 	DECL(0xeb16b675, Screen, ClearColor, ClearColor, kDataTypeStruct, .TypeString = "Color"), // Screen.ClearColor
@@ -2867,6 +2868,7 @@ LRESULT ScreenProc(struct Object* object, void* cmp, uint32_t message, wParam_t 
 		case kEventCreate: return Screen_Create(object, cmp, wparm, lparm); // Create
 		case kEventDestroy: return Screen_Destroy(object, cmp, wparm, lparm); // Destroy
 		case kEventWindowResized: return Screen_WindowResized(object, cmp, wparm, lparm); // WindowResized
+		case kEventWindowPaint: return Screen_WindowPaint(object, cmp, wparm, lparm); // WindowPaint
 	}
 	return FALSE;
 }

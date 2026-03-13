@@ -10,7 +10,6 @@ struct Object
   lpObject_t parent;
   lpObject_t children;
   lpObject_t next;
-  lpObject_t modal;
 
   LPSTR SourceFile;
   LPSTR TextContent;
@@ -363,9 +362,6 @@ OBJ_Awake(lua_State* L, lpObject_t object)
     OBJ_ApplyStyles(object, FALSE);
     object->flags |= OF_UPDATED_ONCE;
   }
-  if (object->modal) {
-    OBJ_Awake(L, object->modal);
-  }
   FOR_EACH_OBJECT(child, object) OBJ_Awake(L, child);
 }
 
@@ -491,9 +487,6 @@ OBJ_RemoveFromParent(lua_State* L, lpObject_t self, bool_t dropModal)
   }
   if (self->parent) {
     REMOVE_FROM_LIST(struct Object, self, self->parent->children);
-    if (self->parent->modal == self) {
-      self->parent->modal = NULL;
-    }
     self->parent = NULL;
   }
   if (core.focus == self) {
@@ -653,9 +646,7 @@ lpObject_t
 core_GetFocus(void)
 {
   if (core.focus && !OBJ_IsHidden(core.focus)) {
-    lpObject_t focused = core.focus;
-    for (; OBJ_GetModal(focused); focused = OBJ_GetModal(focused));
-    return focused;
+    return core.focus;
   } else {
     return NULL;
   }
@@ -821,33 +812,36 @@ OBJ_FindChildOfClass(lpObject_t self, uint32_t comp_id)
   return NULL;
 }
 
+#define ID_Screen 0x9bd8c631
+
 lpObject_t
 OBJ_GetModal(lpcObject_t self)
 {
-  return self->modal;
+  if (OBJ_GetComponent((lpObject_t)self, ID_Screen)) {
+    return self->next;
+  } else {
+    return NULL;
+  }
 }
 
-#define ID_Screen 0x9bd8c631
-
 void
-OBJ_SetModal(lpObject_t self, lpObject_t modal)
+OBJ_ShowModal(lpObject_t self, lpObject_t modal)
 {
   while (OBJ_GetParent(self) && !OBJ_GetComponent(self, ID_Screen)) {
     self = OBJ_GetParent(self);
   }
-  if (!self) return;
-  if (self->modal) {
-    OBJ_RemoveFromParent(core.L, self->modal, FALSE);
-    self->modal = NULL;
+  if (!self) {
+    Con_Error("Could not find Screen for object %s", OBJ_GetName(self));
+    return;
   }
-  if (modal) {
-    if (modal->parent) {
-      REMOVE_FROM_LIST(struct Object, modal, modal->parent->children);
-    }
-    self->modal = modal;
-    modal->parent = self;
-    modal->flags |= OF_NOACTIVATE;
+  if (modal->parent) {
+    REMOVE_FROM_LIST(struct Object, modal, modal->parent->children);
   }
+  lpObject_t *next = &self->next;
+  while (*next) next = &(*next)->next;
+  *next = modal;
+  modal->parent = self;
+  modal->flags |= OF_NOACTIVATE;
 }
 
 bool_t

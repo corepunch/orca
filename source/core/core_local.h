@@ -132,9 +132,6 @@ void
 OBJ_UpdateProperties(lpObject_t);
 
 void
-OBJ_ClearDirtyFlags(lpObject_t);
-
-void
 OBJ_EnumStyleClasses(lpObject_t, lpcString_t, STYLEPROC, void*);
 
 uint32_t

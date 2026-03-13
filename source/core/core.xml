@@ -293,6 +293,11 @@
       <details>Marks the object as needing recalculation and updates the timestamp. Dirty objects are processed during the next update cycle to ensure consistent state.</details>
     </method>
     
+    <method name="ClearDirtyFlags">
+      <summary>Clears dirty flags, marks object as recalculated</summary>
+      <details>Resets the dirty state of the object, indicating that it has been recalculated and no further updates are needed until it becomes dirty again.</details>
+    </method>
+    
     <method name="GetParent" const="true">
       <summary>Gets the parent object in the hierarchy</summary>
       <details>Returns a pointer to the parent object, or null if this is the root object.</details>
@@ -380,13 +385,7 @@
       <returns type="uint">Hashed identifier of the object</returns>
     </method>
     
-    <method name="GetModal" const="true">
-      <summary>Gets the modal child object</summary>
-      <details>Returns a pointer to the modal child object if one is set, or null otherwise. Modal objects are typically used for popup dialogs, menus, or other UI elements that should capture input exclusively.</details>
-      <returns type="Object" pointer="true">Pointer to the modal child object, or null if no modal is set</returns>
-    </method>
-    
-    <method name="SetModal">
+    <method name="ShowModal">
       <summary>Sets or clears the modal child object</summary>
       <details>Sets a child object as modal, or clears the existing modal by passing null. When set, the previous modal is removed from the parent and the new modal object is attached. The modal object has the OF_NOACTIVATE flag set and its parent pointer is updated. Modal objects are typically used for popups, menus, or dialogs that should capture input.</details>
       <arg name="modal" type="Object" pointer="true">The object to set as modal, or null to clear the current modal</arg>

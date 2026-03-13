@@ -256,6 +256,11 @@ int f_OBJ_SetDirty(lua_State *L) {
 	OBJ_SetDirty(this_ );
 	return 0;
 }
+int f_OBJ_ClearDirtyFlags(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	OBJ_ClearDirtyFlags(this_ );
+	return 0;
+}
 int f_OBJ_GetParent(lua_State *L) {
 	struct Object const* this_ = luaX_checkObject(L, 1);
 	struct Object* result_ = OBJ_GetParent(this_);
@@ -342,16 +347,10 @@ int f_OBJ_GetIdentifier(lua_State *L) {
 	lua_pushnumber(L, result_);
 	return 1;
 }
-int f_OBJ_GetModal(lua_State *L) {
-	struct Object const* this_ = luaX_checkObject(L, 1);
-	struct Object* result_ = OBJ_GetModal(this_);
-	luaX_pushObject(L, result_);
-	return 1;
-}
-int f_OBJ_SetModal(lua_State *L) {
+int f_OBJ_ShowModal(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	struct Object* modal = luaX_checkObject(L, 2);
-	OBJ_SetModal(this_, modal );
+	OBJ_ShowModal(this_, modal );
 	return 0;
 }
 int f_OBJ_IsFocused(lua_State *L) {
@@ -535,6 +534,7 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "findCallbackForID", f_OBJ_FindCallbackForID },
 		{ "applyStyles", f_OBJ_ApplyStyles },
 		{ "setDirty", f_OBJ_SetDirty },
+		{ "clearDirtyFlags", f_OBJ_ClearDirtyFlags },
 		{ "getParent", f_OBJ_GetParent },
 		{ "getFirstChild", f_OBJ_GetFirstChild },
 		{ "getNext", f_OBJ_GetNext },
@@ -549,8 +549,7 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "getFlags", f_OBJ_GetFlags },
 		{ "setFlags", f_OBJ_SetFlags },
 		{ "getIdentifier", f_OBJ_GetIdentifier },
-		{ "getModal", f_OBJ_GetModal },
-		{ "setModal", f_OBJ_SetModal },
+		{ "showModal", f_OBJ_ShowModal },
 		{ "isFocused", f_OBJ_IsFocused },
 		{ "setHover", f_OBJ_SetHover },
 		{ "setTextContent", f_OBJ_SetTextContent },
