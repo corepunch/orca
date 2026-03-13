@@ -350,7 +350,7 @@ SV_CMD(DELETE, node) {
   xmlAddChild(response, ED_ConvertNode(object, NULL));
   _xmlSetPropFormat(response, "index", "%d", index);
   _xmlSetProp(response, "command", "create");
-  OBJ_RemoveFromParent(L, object, FALSE);
+  OBJ_RemoveFromParent(L, object);
   return NULL;
 }
 

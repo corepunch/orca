@@ -120,8 +120,7 @@ int f_OBJ_AddChild(lua_State *L) {
 }
 int f_OBJ_RemoveFromParent(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	bool_t dropModal = lua_toboolean(L, 2);
-	OBJ_RemoveFromParent(L, this_, dropModal );
+	OBJ_RemoveFromParent(L, this_ );
 	return 0;
 }
 int f_OBJ_SetProperty(lua_State *L) {
@@ -350,8 +349,7 @@ int f_OBJ_GetIdentifier(lua_State *L) {
 int f_OBJ_ShowModal(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	struct Object* modal = luaX_checkObject(L, 2);
-	OBJ_ShowModal(this_, modal );
-	return 0;
+	return OBJ_ShowModal(L, this_, modal);
 }
 int f_OBJ_IsFocused(lua_State *L) {
 	struct Object const* this_ = luaX_checkObject(L, 1);

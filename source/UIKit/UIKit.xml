@@ -703,6 +703,7 @@
     <handles event="WindowPaint"/>
     <property name="ClearColor" type="color">Background clear color for the screen </property>
     <property name="ResizeMode" type="ResizeMode">Specifies how the window can be resized or displayed</property>
+    <property name="DialogResult" type="float" default="NAN">Result value for dialog interactions</property>
     <field name="_rt" type="Texture" pointer="true">Internal render target for the screen</field>
     <field name="_size" type="uint">Currently set size (to resize window when changed).</field>
   </class>

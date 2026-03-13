@@ -256,12 +256,6 @@ bool_t OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name) {
 				return TRUE;
 			}
   }
-  if (!strcmp(name, "modal")) {
-    OBJ_ShowModal(self, luaX_checkObject(L, 3));
-    OBJ_Awake(L, luaX_checkObject(L, 3));
-    OBJ_SendMessageW(luaX_checkObject(L, 3), kEventAttached, 0, self);
-    return TRUE;
-  }
   if (!strcmp(name, "x") && GetNode2D(self)) {
     GetNode2D(self)->LayoutTransform.translation.x = luaL_checknumber(L, 3);
     return TRUE;

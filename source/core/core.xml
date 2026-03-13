@@ -154,7 +154,6 @@
     <method name="RemoveFromParent" lua="true">
       <summary>Destroys an object.</summary>
       <details>Detaches object form it's parent that causes the object to be garbage collected.</details>
-      <arg name="dropModal" type="bool">If set, would remove the entire chain of modal windows, like nested menus</arg>
     </method>
     
     <method name="SetProperty" export="__setproperty" lua="true">
@@ -385,10 +384,11 @@
       <returns type="uint">Hashed identifier of the object</returns>
     </method>
     
-    <method name="ShowModal">
+    <method name="ShowModal" lua="true">
       <summary>Sets or clears the modal child object</summary>
       <details>Sets a child object as modal, or clears the existing modal by passing null. When set, the previous modal is removed from the parent and the new modal object is attached. The modal object has the OF_NOACTIVATE flag set and its parent pointer is updated. Modal objects are typically used for popups, menus, or dialogs that should capture input.</details>
       <arg name="modal" type="Object" pointer="true">The object to set as modal, or null to clear the current modal</arg>
+      <returns type="nresults">Starts a coroutine</returns>
     </method>
     
     <method name="IsFocused" const="true">

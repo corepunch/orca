@@ -164,7 +164,7 @@ write_callback(void* ptr, size_t size, size_t nmemb, buffer_t* buffer)
 #define HTTP_OK 200
 #define HTTP_CREATED 201
 #define HTTP_NO_CONTENT 204
-#define HTTP_BAD_REQUEST 400
+
 #define HTTP_UNAUTHORIZED 401
 #define HTTP_FORBIDDEN 403
 #define HTTP_NOT_FOUND 404

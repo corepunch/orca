@@ -478,26 +478,16 @@ OBJ_SetPropertyValue(lpObject_t object,
 }
 
 void
-OBJ_RemoveFromParent(lua_State* L, lpObject_t self, bool_t dropModal)
+OBJ_RemoveFromParent(lua_State* L, lpObject_t self)
 {
-  lpObject_t parent = OBJ_GetParent(self);
-  if (dropModal && parent && OBJ_GetFlags(parent)&OF_NOACTIVATE) {
-    OBJ_RemoveFromParent(L, parent, dropModal);
-    return;
-  }
   if (self->parent) {
-    REMOVE_FROM_LIST(struct Object, self, self->parent->children);
+    REMOVE_FROM_LIST(struct Object, self, self->parent->children); // remove from parent's children
+    REMOVE_FROM_LIST(struct Object, self, self->parent); // modal windows are at the same level
     self->parent = NULL;
   }
-  if (core.focus == self) {
-    core.focus = NULL;
-  }
-  if (core.hover == self) {
-    core.hover = NULL;
-  }
-  if (core.hover2 == self) {
-    core.hover2 = NULL;
-  }
+  if (core.focus == self) core.focus = NULL;
+  if (core.hover == self) core.hover = NULL;
+  if (core.hover2 == self) core.hover2 = NULL;
   OBJ_Clear(L, self);
   WI_RemoveFromQueue(self);
   if (self->luaObject) {
@@ -511,7 +501,7 @@ OBJ_Clear(lua_State* L, lpObject_t pobj)
 {
   FOR_EACH_OBJECT(other, pobj) {
     OBJ_Clear(L, other);
-    OBJ_RemoveFromParent(L, other, FALSE);
+    OBJ_RemoveFromParent(L, other);
   }
   pobj->children = NULL;
 }
@@ -534,7 +524,7 @@ OBJ_Release(lua_State* L, lpObject_t pobj)
 
   OBJ_Clear(L, pobj);
   OBJ_SendMessage(pobj, "Destroy", 0, NULL);
-  OBJ_RemoveFromParent(L, pobj, FALSE);
+  OBJ_RemoveFromParent(L, pobj);
 
 //  if (pobj->parent) {
 //    REMOVE_FROM_LIST(struct Object, pobj, pobj->parent->children);
@@ -812,8 +802,7 @@ OBJ_FindChildOfClass(lpObject_t self, uint32_t comp_id)
   return NULL;
 }
 
-#define ID_Screen 0x9bd8c631
-
+#include <source/UIKit/UIKit.h>
 lpObject_t
 OBJ_GetModal(lpcObject_t self)
 {
@@ -824,15 +813,27 @@ OBJ_GetModal(lpcObject_t self)
   }
 }
 
-void
-OBJ_ShowModal(lpObject_t self, lpObject_t modal)
+static int modal_continue(lua_State *L, int status, lua_KContext ctx)
+{
+  struct Screen* modal = GetScreen((lpObject_t)ctx);
+  if (!isnan(modal->DialogResult)) {
+    lua_pushboolean(L, modal->DialogResult == 0);
+    OBJ_RemoveFromParent(L, (lpObject_t)ctx);
+    return 1; // resume Lua script after ShowModal()
+  } else {
+    return lua_yieldk(L, 0, ctx, modal_continue);
+  }
+}
+
+int
+OBJ_ShowModal(lua_State* L, lpObject_t self, lpObject_t modal)
 {
   while (OBJ_GetParent(self) && !OBJ_GetComponent(self, ID_Screen)) {
     self = OBJ_GetParent(self);
   }
   if (!self) {
     Con_Error("Could not find Screen for object %s", OBJ_GetName(self));
-    return;
+    return 0;
   }
   if (modal->parent) {
     REMOVE_FROM_LIST(struct Object, modal, modal->parent->children);
@@ -842,6 +843,7 @@ OBJ_ShowModal(lpObject_t self, lpObject_t modal)
   *next = modal;
   modal->parent = self;
   modal->flags |= OF_NOACTIVATE;
+  return lua_yieldk(L, 0, (lua_KContext)modal, modal_continue);
 }
 
 bool_t

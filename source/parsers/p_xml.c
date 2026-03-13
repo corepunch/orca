@@ -686,62 +686,6 @@ int lua_xml_node_newindex(lua_State* L)
     L, "Incorrect field name %s for %s", name, API_TYPE_XML_NODE);
 }
 
-static int f_xml_read_document(lua_State* L)
-{
-  lpcString_t module = luaL_checkstring(L, 1);
-  xmlDocPtr doc = FS_LoadXML(FS_PathFromModule(module));
-  if (!doc || !xmlDocGetRootElement(doc)) {
-    return 0;
-//  } else if (!xmlStrcmp(xmlDocGetRootElement(doc)->name, XMLSTR("Project"))) {
-//    xmlNodePtr root = xmlDocGetRootElement(doc);
-//    // local server = require 'orca.backend'
-//    lua_getglobal(L, "require");
-//    lua_pushstring(L, "orca.backend");
-//    lua_pcall(L, 1, 1, 0);
-//    // __PEEK = server.peek_message
-//    lua_getfield(L, -1, "peek_message"); lua_setglobal(L, "__PEEK");
-//    lua_getfield(L, -1, "dispatch_message"); lua_setglobal(L, "__DISPATCH");
-//    // local window = server.Window { width = $(ScreenWidth), height = $(ScreenHeight) }
-//    lua_getfield(L, -1, "Window");
-//    lua_newtable(L);
-//    lua_setnumberfield(root, "ScreenWidth", "width", 640);
-//    lua_setnumberfield(root, "ScreenHeight", "height", 480);
-//    lua_pcall(L, 1, 1, 0);
-//    // window:loadPage $(StartupScene)
-//    xmlWith(xmlChar, StartupScene, xmlGetProp(root, XMLSTR("StartupScene")), xmlFree) {
-//      lua_pushstring(L, (lpcString_t )StartupScene);
-//      lua_setglobal(L, "__STARTUP");
-//      lua_getfield(L, -1, "loadPage");
-//      lua_pushvalue(L, -2);
-//      lua_pushstring(L, (lpcString_t )StartupScene);
-//      if (lua_pcall(L, 2, 1, 0) != LUA_OK) {
-//        Con_Error("%s", lua_tostring(L, -1));
-//        return 1;
-//      }
-//    }
-//    xmlFreeDoc(doc);
-//    return luaL_dostring(L, run_loop);
-  } else {
-    xmlDocPtr* ptr = lua_newuserdata(L, sizeof(xmlDocPtr*));
-    luaL_setmetatable(L, "XmlDoc");
-    *ptr = doc;
-    return 1;
-  }
-}
-
-//static int f_find_xml(lua_State* L)
-//{
-//  lpcString_t module = luaL_checkstring(L, 1);
-//  path_t path = { 0 };
-//  snprintf(path, sizeof(path), "%s.xml", FS_PathFromModule(module));
-//  if (FS_FileExists(path)) {
-//    lua_pushcfunction(L, f_xml_read_document);
-//    return 1;
-//  } else {
-//    return 0;
-//  }
-//}
-
 lua_State* global_L = NULL;
 
 ORCA_API int luaopen_orca_parsers_xml(lua_State* L)
@@ -775,9 +719,6 @@ ORCA_API int luaopen_orca_parsers_xml(lua_State* L)
                                { NULL, NULL } }),
                 0);
   lua_setfield(L, -2, "XmlDoc");
-
-//  lua_register(L, "fs_findxml", f_find_xml);
-//  luaL_dostring(L, "table.insert(package.searchers, fs_findxml)");
   
   API_CallRequire(L, "orca.filesystem", 1);
   lua_pushcfunction(L, f_loadProject);

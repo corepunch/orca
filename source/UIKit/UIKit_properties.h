@@ -534,9 +534,11 @@ enum ControlProperties {
 #define Screen_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Screen,sizeof(struct Screen),_N)
 #define ID_Screen_ClearColor 0x1bfc36dd // Screen.ClearColor
 #define ID_Screen_ResizeMode 0xc3203446 // Screen.ResizeMode
+#define ID_Screen_DialogResult 0x2f02ab20 // Screen.DialogResult
 enum ScreenProperties {
 	kScreenClearColor,
 	kScreenResizeMode,
+	kScreenDialogResult,
 	kScreenNumProperties	
 };
 // Cinematic

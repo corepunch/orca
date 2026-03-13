@@ -2858,8 +2858,11 @@ LRESULT Screen_WindowPaint(struct Object*, struct Screen*, wParam_t, WindowPaint
 static struct PropertyType const ScreenProperties[kScreenNumProperties] = {
 	DECL(0xeb16b675, Screen, ClearColor, ClearColor, kDataTypeStruct, .TypeString = "Color"), // Screen.ClearColor
 	DECL(0x3dd888be, Screen, ResizeMode, ResizeMode, kDataTypeEnum, .TypeString = "NoResize,CanMinimize,CanResize,CanResizeWithGrip"), // Screen.ResizeMode
+	DECL(0x9a645b38, Screen, DialogResult, DialogResult, kDataTypeFloat), // Screen.DialogResult
 };
 static struct Screen ScreenDefaults = {
+		
+  .DialogResult = NAN,
 };
 LRESULT ScreenProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {

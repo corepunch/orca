@@ -156,7 +156,7 @@ ORCA_API void
 OBJ_AddChild(struct Object*, struct Object*, bool_t);
 /// @brief Destroys an object.
 ORCA_API void
-OBJ_RemoveFromParent(struct lua_State*, struct Object*, bool_t);
+OBJ_RemoveFromParent(struct lua_State*, struct Object*);
 /// @brief Set a property on the object.
 ORCA_API bool_t
 OBJ_SetProperty(struct lua_State*, struct Object*, const char*);
@@ -269,8 +269,8 @@ OBJ_SetFlags(struct Object*, uint32_t);
 ORCA_API uint32_t
 OBJ_GetIdentifier(struct Object const*);
 /// @brief Sets or clears the modal child object
-ORCA_API void
-OBJ_ShowModal(struct Object*, struct Object*);
+ORCA_API int
+OBJ_ShowModal(struct lua_State*, struct Object*, struct Object*);
 /// @brief Checks if this object currently has focus
 ORCA_API bool_t
 OBJ_IsFocused(struct Object const*);

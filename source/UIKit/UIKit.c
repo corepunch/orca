@@ -97,7 +97,7 @@ UI_HandleMouseEvent(lua_State* L, lpObject_t root, struct WI_Message* e)
       {
         if (OBJ_SendMessageW(mod, kEventHitTest, e->wParam, &sender))
           goto handle;
-        OBJ_RemoveFromParent(L, mod, FALSE);
+        OBJ_RemoveFromParent(L, mod);
       }
       return TRUE;
     }

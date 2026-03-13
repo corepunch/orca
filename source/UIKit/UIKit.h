@@ -868,6 +868,7 @@ typedef struct Screen const *ScreenCPtr, *lpcScreen_t;
 struct Screen {
 	struct color ClearColor; ///< Background clear color for the screen
 	enum ResizeMode ResizeMode; ///< Specifies how the window can be resized or displayed
+	float DialogResult; ///< Result value for dialog interactions
 	struct Texture* _rt; ///< Internal render target for the screen
 	uint32_t _size; ///< Currently set size (to resize window when changed).
 };
