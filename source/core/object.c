@@ -817,7 +817,7 @@ static int modal_continue(lua_State *L, int status, lua_KContext ctx)
 {
   struct Screen* modal = GetScreen((lpObject_t)ctx);
   if (!isnan(modal->DialogResult)) {
-    lua_pushboolean(L, modal->DialogResult == 0);
+    lua_pushboolean(L, modal->DialogResult != 0);
     OBJ_RemoveFromParent(L, (lpObject_t)ctx);
     return 1; // resume Lua script after ShowModal()
   } else {
