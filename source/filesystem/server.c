@@ -445,7 +445,7 @@ int filesystem_handle_event(lua_State *L, struct WI_Message *msg) {
     xmlWith(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFreeDoc) {
       xmlNodePtr response = xmlNewNode(NULL, XMLSTR("response"));
       enum cmd cmd = cmd_GET;
-      fprintf(stderr, "%s\n", url);
+      fprintf(stderr, "Requested URL: %s\n", url);
       FOR_LOOP(i, sizeof(cmdsprfx)/sizeof(*cmdsprfx)) {
         if (!strncmp(url, cmdsprfx[i], strlen(cmdsprfx[i]))) {
           url += strlen(cmdsprfx[i]);

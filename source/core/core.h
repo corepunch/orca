@@ -94,7 +94,7 @@ typedef enum DataType {
 	kDataTypeEnum, ///< Enumeration type represented by integer values mapped to named constants.
 	kDataTypeFloat, ///< Floating-point numeric value.
 	kDataTypeFixed, ///< Fixed-length string or symbolic value.
-	kDataTypeLongString, ///< Extended string data, intended for larger text content.
+	kDataTypeString, ///< Extended string data, intended for larger text content.
 	kDataTypeObjectTags, ///< List of tag identifiers associated with an object.
 	kDataTypeEvent, ///< Event reference used to bind triggers or callbacks.
 	kDataTypeStruct, ///< Composite data structure containing multiple fields used for packaging related geometric, visual, and layout properties together.
@@ -320,10 +320,10 @@ OBJ_GetInteger(struct Object const*, uint32_t, int32_t);
 ORCA_API struct Property*
 OBJ_GetProperties(struct Object const*);
 /// @brief Looks up a property by context-driven syntax, like "Column" instead of "Grid.Column"
-ORCA_API struct PropertyType*
+ORCA_API struct PropertyType const*
 OBJ_FindImplicitProperty(struct Object*, const char*);
 /// @brief Looks up a property by full syntax, like "Grid.Column" instead of "Column"
-ORCA_API struct PropertyType*
+ORCA_API struct PropertyType const*
 OBJ_FindExplicitProperty(struct Object*, const char*);
 /// @brief Attaches a property program to the specified property
 ORCA_API bool_t

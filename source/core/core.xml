@@ -495,14 +495,14 @@
       <summary>Looks up a property by context-driven syntax, like "Column" instead of "Grid.Column"</summary>
       <details>Searches for a property using a context-driven approach, allowing shorthand notation for commonly used properties. This method simplifies property access by inferring the full property path based on the current context.</details>
       <arg name="name" type="string">The name of the property to find</arg>
-      <returns type="PropertyType" pointer="true">Pointer to a property type, null if not found</returns>
+      <returns type="PropertyType" pointer="true" const="true">Pointer to a property type, null if not found</returns>
     </method>
     
     <method name="FindExplicitProperty">
       <summary>Looks up a property by full syntax, like "Grid.Column" instead of "Column"</summary>
       <details>Searches for a property using the full property path, requiring the complete syntax for accurate identification. This method ensures precise property access by using the explicit path provided.</details>
       <arg name="name" type="string">The full name of the property to find</arg>
-      <returns type="PropertyType" pointer="true">Pointer to a property type, null if not found</returns>
+      <returns type="PropertyType" pointer="true" const="true">Pointer to a property type, null if not found</returns>
     </method>
 
     <method name="AttachPropertyProgram"> 
@@ -560,7 +560,7 @@
     <enum name="Enum">Enumeration type represented by integer values mapped to named constants.</enum>
     <enum name="Float">Floating-point numeric value.</enum>
     <enum name="Fixed">Fixed-length string or symbolic value.</enum>
-    <enum name="LongString">Extended string data, intended for larger text content.</enum>
+    <enum name="String">Extended string data, intended for larger text content.</enum>
     <enum name="ObjectTags">List of tag identifiers associated with an object.</enum>
     <enum name="Event">Event reference used to bind triggers or callbacks.</enum>
     <enum name="Struct">Composite data structure containing multiple fields used for packaging related geometric, visual, and layout properties together.</enum>

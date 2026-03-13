@@ -622,6 +622,38 @@ void FS_Shutdown(void) {
   MainBundle = NULL;
 }
 
+void FS_RegisterObject(lpObject_t object, lpcString_t path) {
+  if (GetProject(object)) {
+    OBJ_AddChild(FS_GetWorkspace(), object, FALSE);
+  } else {
+    if (!strrchr(path, '/')) {
+      Con_Error("Expected / in %s", path);
+      return;
+    }
+    path_t tmp = {0}, dir = {0};
+    strncpy(tmp, path, MIN(strrchr(path, '/')-path, sizeof(tmp)));
+    lpObject_t library = OBJ_FindByPath(FS_GetWorkspace(), tmp);
+    FS_GetDirName(tmp, dir, sizeof(dir));
+//    if (!library && OBJ_FindChild(FS_GetWorkspace(), dir, FALSE)) {
+//      //      Con_Error("Could not find library %s, creating", tmp);
+//      xmlWith(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFreeDoc) {
+//        xmlNodePtr root = xmlNewNode(NULL, XMLSTR("Library"));
+//        xmlSetProp(root, XMLSTR("Name"), XMLSTR(FS_GetBaseName(tmp)));
+//        xmlDocSetRootElement(doc, root);
+//        extern lua_State *global_L;
+//        if ((library = OBJ_LoadDocument(global_L, doc))) {
+//          OBJ_AddChild(OBJ_FindChild(FS_GetWorkspace(), dir, FALSE), library, FALSE);
+//        }
+//      }
+//    }
+    if (library) {
+      OBJ_AddChild(library, object, FALSE);
+    } else{
+      Con_Error("Could not find or create library %s", tmp);
+    }
+  }
+}
+
 ORCA_API lpcString_t PACK_GetName(struct Package *package) {
   return package->name;
 }

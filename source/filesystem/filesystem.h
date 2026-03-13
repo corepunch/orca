@@ -50,6 +50,9 @@ FS_SetWorkspace(struct Object*);
 /// @brief Gets the current workspace
 ORCA_API struct Object*
 FS_GetWorkspace(void);
+/// @brief Registers object in the workspace tree
+ORCA_API void
+FS_RegisterObject(struct Object*, const char*);
 
 
 /// @brief External project reference

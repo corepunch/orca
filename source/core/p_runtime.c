@@ -401,7 +401,7 @@ PrintToProperty(lpProperty_t prop, struct vm_register* r)
       PROP_SetValue(prop, dest);
       return TRUE;
     case kDataTypeFixed:
-    case kDataTypeLongString:
+    case kDataTypeString:
       PROP_SetValue(prop, r->value);
       return TRUE;
       //	case kDataTypeGroup: {
@@ -578,7 +578,7 @@ jwPropertyExport(lpProperty_t prop,
       case kDataTypeBool:
         *r->value = *(int*)PROP_GetValue(prop);
         return TRUE;
-      case kDataTypeLongString:
+      case kDataTypeString:
         strncpy((LPSTR)r->value, PROP_GetValue(prop), sizeof(r->value));
         return TRUE;
       default:

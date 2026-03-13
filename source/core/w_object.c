@@ -277,7 +277,7 @@ bool_t OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name) {
     luaX_readProperty(L, 3, property);
     return TRUE;
 //  } else if (lua_type(L, 3) == LUA_TSTRING) {
-//    property = PROP_Create(L, self, name, kDataTypeLongString, NULL);
+//    property = PROP_Create(L, self, name, kDataTypeString, NULL);
 //    luaX_readProperty(L, 3, property);
 //    return TRUE;
 //  } else if (lua_type(L, 3) == LUA_TNUMBER) {

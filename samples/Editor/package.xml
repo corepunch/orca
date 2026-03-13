@@ -9,6 +9,6 @@
     <SystemMessage Message="RequestReload" Command="window:refresh()"/>
   </Project.SystemMessages>
   <Project.PropertyTypes>
-    <PropertyType Name="URL" DataType="Fixed" />
+    <PropertyType Name="URL" DataType="String" />
   </Project.PropertyTypes>
 </Project>

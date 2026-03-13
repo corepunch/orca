@@ -54,7 +54,7 @@ orca.typeconverter = {
 		end
 		error(string.format("Cannot convert '%s' to %s(Enum)", value, type.TypeString))
 	end,
-  LongString = function(value) return value end,
+  String = function(value) return value end,
 	Fixed = function(value) return value end,
 	Object = function(path, type)
 		local ok, resource = pcall(require, path)

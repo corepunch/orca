@@ -21,7 +21,7 @@ static size_t psize[] = {
   sizeof(transform2_t),  // Transform2D,
   sizeof(transform3_t),  // Transform3D,
   MAX_PROPERTY_STRING,  // FixedString,
-  sizeof(void*),  // LongString,
+  sizeof(void*),  // String,
   sizeof(color_t),  // Color,
   sizeof(vec4_t),  // Edges,
   sizeof(objectTags_t),  // ObjectTags,
@@ -191,7 +191,7 @@ void const*
 PROP_GetValue(lpcProperty_t property)
 {
   switch (property->type) {
-    case kDataTypeLongString:
+    case kDataTypeString:
       return *(lpcString_t*)property->value;
     case kDataTypeObject:
       return &property->intermediate;
@@ -203,7 +203,7 @@ PROP_GetValue(lpcProperty_t property)
 void
 PROP_SetValue(lpProperty_t property, void const* source)
 {
-  if (property->type == kDataTypeLongString) {
+  if (property->type == kDataTypeString) {
     LPSTR ptr = *(LPSTR*)property->value;
     *((LPSTR*)property->value) = strdup(source);
     if (ptr) {
@@ -364,6 +364,9 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
           p->flags &= ~PF_NIL;
           p->flags |= PF_MODIFIED;
           break;
+        case kDataTypeString:
+          PROP_SetValue(p, luaL_checkstring(L, idx));
+          break;
         // We support loading of objects by passing a string to property
         case kDataTypeInt:
 //          Con_Error("Passing string to int property %s", p->pdesc->Name);
@@ -378,7 +381,7 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
           }
         default:
           Con_Error("Trying to parse a property %s with a string %s", p->pdesc->Name, luaL_checkstring(L, idx));
-          assert(!"Parsing of properties not supported out of the box");
+          assert(!"Parsing of properties is deprecated");
           break;
       }
       break;
@@ -460,7 +463,7 @@ void _pushproperty(lua_State* L,
       memcpy(lua_newuserdata(L, type->DataSize), value, type->DataSize);
       luaL_setmetatable(L, type->TypeString);
       break;
-    case kDataTypeLongString:
+    case kDataTypeString:
       lua_pushstring(L, *(lpcString_t*)value);
       break;
     case kDataTypeFixed:

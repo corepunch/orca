@@ -46,7 +46,7 @@ void luaX_pushPropertyAttribute(lua_State *L, enum PropertyAttribute value) {
 	assert(value >= 0 && value < 9);
 	lua_pushstring(L, _PropertyAttribute[value]);
 }
-static const char *_DataType[] = {"None","Bool","Int","Enum","Float","Fixed","LongString","ObjectTags","Event","Struct","Object",NULL};
+static const char *_DataType[] = {"None","Bool","Int","Enum","Float","Fixed","String","ObjectTags","Event","Struct","Object",NULL};
 const char *DataTypeToString(enum DataType value) {
 	assert(value >= 0 && value < 11);
 	return _DataType[value];
@@ -454,14 +454,14 @@ int f_OBJ_GetProperties(lua_State *L) {
 int f_OBJ_FindImplicitProperty(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	const char* name = luaL_checkstring(L, 2);
-	struct PropertyType* result_ = OBJ_FindImplicitProperty(this_, name);
+	struct PropertyType const* result_ = OBJ_FindImplicitProperty(this_, name);
 	luaX_pushPropertyType(L, &*result_);
 	return 1;
 }
 int f_OBJ_FindExplicitProperty(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	const char* name = luaL_checkstring(L, 2);
-	struct PropertyType* result_ = OBJ_FindExplicitProperty(this_, name);
+	struct PropertyType const* result_ = OBJ_FindExplicitProperty(this_, name);
 	luaX_pushPropertyType(L, &*result_);
 	return 1;
 }

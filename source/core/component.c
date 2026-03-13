@@ -59,7 +59,7 @@ _CreateClassProperty(lpObject_t object, uint32_t ident)
   return NULL;
 }
 
-lpPropertyType_t
+lpcPropertyType_t
 OBJ_FindImplicitProperty(lpObject_t object, lpcString_t name)
 {
   uint32_t identifier = fnv1a32(name);
@@ -75,7 +75,7 @@ OBJ_FindImplicitProperty(lpObject_t object, lpcString_t name)
   return NULL;
 }
 
-lpPropertyType_t
+lpcPropertyType_t
 OBJ_FindExplicitProperty(lpObject_t object, lpcString_t name)
 {
   uint32_t identifier = fnv1a32(name);
@@ -88,7 +88,7 @@ OBJ_FindExplicitProperty(lpObject_t object, lpcString_t name)
       }
     }
   }
-  return NULL;
+  return OBJ_FindPropertyType(identifier);
 }
 
 void

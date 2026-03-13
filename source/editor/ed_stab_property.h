@@ -68,7 +68,7 @@ PDESC_Print(lpcPropertyType_t pdesc, LPSTR buffer, DWORD len, float const* pf)
     case kDataTypeFixed:
       strncpy(buffer, (lpcString_t)pf, len);
       break;
-    case kDataTypeLongString:
+    case kDataTypeString:
       strncpy(buffer, (lpcString_t)pf, len);
       break;
     case kDataTypeObject:

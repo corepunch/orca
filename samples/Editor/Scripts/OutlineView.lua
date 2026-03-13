@@ -16,7 +16,6 @@ end
 local OultineView = ui.TerminalView:extend {
 	onAwake = function (self)
 		self.doc = Workspace.process:get(self.URL)
-		print(self.doc)
 		-- self.doc = xml.load(DATADIR.."/Samples/SceneHierarchy.xml")
 		self.expanded = {}
 		self.indents = {}
