@@ -203,25 +203,22 @@ _FallThrough(ScreenCPtr s, NodeCPtr n, RenderScreenEventPtr r)
 static void
 _DrawModal(lpObject_t object, Draw2DContentEventPtr params)
 {
-  for (lpObject_t mod = OBJ_GetModal(object); mod; mod = OBJ_GetModal(mod)) {
-    OBJ_SendMessageW(mod, kEventMeasure, 0, &(struct Size){
-      .width = GetNode(mod)->Size.Axis[0].Requested,
-      .height = GetNode(mod)->Size.Axis[1].Requested,
-    });
+  for (lpObject_t modal = OBJ_GetModal(object); modal; modal = OBJ_GetModal(modal)) {
     Node2DPtr pNode2D = GetNode2D(object);
     rect_t content = {
       PADDING_TOP(pNode2D, 0),
       PADDING_TOP(pNode2D, 1),
-      NODE2D_FRAME(pNode2D, Size, kBox3FieldWidth).Actual - TOTAL_PADDING(pNode2D, 0),
-      NODE2D_FRAME(pNode2D, Size, kBox3FieldHeight).Actual - TOTAL_PADDING(pNode2D, 1),
+      NODE2D_FRAME(pNode2D, Size, 0).Actual - TOTAL_PADDING(pNode2D, 0),
+      NODE2D_FRAME(pNode2D, Size, 1).Actual - TOTAL_PADDING(pNode2D, 1),
     };
-    OBJ_SendMessageW(mod, kEventArrange, 0, &content);
-    OBJ_SendMessageW(mod, kEventUpdateMatrix, 0, &(struct UpdateMatrixEventArgs) {
-      .parent = GetNode2D(OBJ_GetParent(mod))->Matrix,
+    OBJ_SendMessageW(modal, kEventMeasure, 0, &content.width);
+    OBJ_SendMessageW(modal, kEventArrange, 0, &content);
+    OBJ_SendMessageW(modal, kEventUpdateMatrix, 0, &(struct UpdateMatrixEventArgs) {
+      .parent = GetNode2D(OBJ_GetParent(modal))->Matrix,
       .opacity = 1,
     });
-    Node2D_Draw2DContent(mod, GetNode2D(mod), 0, params);
-    FOR_EACH_CHILD(mod, _DrawModal, params);
+    Node2D_Draw2DContent(modal, GetNode2D(modal), 0, params);
+    FOR_EACH_CHILD(modal, _DrawModal, params);
   }
   FOR_EACH_CHILD(object, _DrawModal, params);
 }
@@ -385,7 +382,7 @@ HANDLER(Node2D, Draw2DContent)
 
   OBJ_SendMessageW(hObject, kEventUpdateGeometry, 0, NULL);
   OBJ_SendMessageW(hObject, kEventForegroundContent, 0, &foreground);
-
+  
   if (pNode2D->BoxShadow.Color.a) {
     //		struct mat4 mat, offset;
     //		offset = MAT4_Identity();

@@ -60,8 +60,8 @@ static int lua_pushmousevent(lua_State* L,
     case kEventLeftMouseDragged:
     case kEventRightMouseDragged:
     case kEventOtherMouseDragged:
-      //      lua_pushnumber(L, LOWORD(e->wParam));
-      //      lua_pushnumber(L, HIWORD(e->wParam));
+      // lua_pushnumber(L, LOWORD(e->wParam));
+      // lua_pushnumber(L, HIWORD(e->wParam));
       lua_pushnumber(L, point.x);
       lua_pushnumber(L, point.y);
       lua_pushnumber(L, LOWORD((intptr_t)e->lParam));
@@ -70,8 +70,8 @@ static int lua_pushmousevent(lua_State* L,
     case kEventDragDrop:
     case kEventDragEnter:
       lua_getfield(L, LUA_REGISTRYINDEX, DRAG_SESSION);
-      //      lua_pushnumber(L, LOWORD(e->wParam));
-      //      lua_pushnumber(L, HIWORD(e->wParam));
+      // lua_pushnumber(L, LOWORD(e->wParam));
+      // lua_pushnumber(L, HIWORD(e->wParam));
       lua_pushnumber(L, point.x);
       lua_pushnumber(L, point.y);
       return 3;

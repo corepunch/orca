@@ -363,6 +363,9 @@ OBJ_Awake(lua_State* L, lpObject_t object)
     OBJ_ApplyStyles(object, FALSE);
     object->flags |= OF_UPDATED_ONCE;
   }
+  if (object->modal) {
+    OBJ_Awake(L, object->modal);
+  }
   FOR_EACH_OBJECT(child, object) OBJ_Awake(L, child);
 }
 
@@ -824,14 +827,23 @@ OBJ_GetModal(lpcObject_t self)
   return self->modal;
 }
 
+#define ID_Screen 0x9bd8c631
+
 void
 OBJ_SetModal(lpObject_t self, lpObject_t modal)
 {
+  while (OBJ_GetParent(self) && !OBJ_GetComponent(self, ID_Screen)) {
+    self = OBJ_GetParent(self);
+  }
+  if (!self) return;
   if (self->modal) {
     OBJ_RemoveFromParent(core.L, self->modal, FALSE);
     self->modal = NULL;
   }
   if (modal) {
+    if (modal->parent) {
+      REMOVE_FROM_LIST(struct Object, modal, modal->parent->children);
+    }
     self->modal = modal;
     modal->parent = self;
     modal->flags |= OF_NOACTIVATE;
