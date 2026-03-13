@@ -995,6 +995,32 @@ int f_MarginShorthand___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in MarginShorthand(%p): %s", self, luaL_checkstring(L, 2));
 }
+extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
+void MarginShorthand_Convert4(struct MarginShorthand*, float, float, float, float);
+void MarginShorthand_Convert2(struct MarginShorthand*, float, float);
+void MarginShorthand_Convert1(struct MarginShorthand*, float);
+static int f_MarginShorthand___fromstring(lua_State *L) {
+	float MarginShorthand_Axis0_Left;
+	float MarginShorthand_Axis0_Right;
+	float MarginShorthand_Axis1_Left;
+	float MarginShorthand_Axis1_Right;
+	float MarginShorthand_Axis2_Left;
+	float MarginShorthand_Axis2_Right;
+	struct MarginShorthand self = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f %f %f", &MarginShorthand_Axis0_Left, &MarginShorthand_Axis0_Right, &MarginShorthand_Axis1_Left, &MarginShorthand_Axis1_Right, &MarginShorthand_Axis2_Left, &MarginShorthand_Axis2_Right)) {
+	case 4:
+		MarginShorthand_Convert4(&self, MarginShorthand_Axis0_Left, MarginShorthand_Axis0_Right, MarginShorthand_Axis1_Left, MarginShorthand_Axis1_Right);
+		return (luaX_pushMarginShorthand(L, &self), 1);
+	case 2:
+		MarginShorthand_Convert2(&self, MarginShorthand_Axis0_Left, MarginShorthand_Axis0_Right);
+		return (luaX_pushMarginShorthand(L, &self), 1);
+	case 1:
+		MarginShorthand_Convert1(&self, MarginShorthand_Axis0_Left);
+		return (luaX_pushMarginShorthand(L, &self), 1);
+	default:
+		return luaL_error(L, "Invalid format for MarginShorthand: %s", luaL_checkstring(L, 1));
+	}
+}
 static int f_MarginShorthand___call(lua_State *L) {
 	return ((void)lua_remove(L, 1), f_new_MarginShorthand(L));  // remove MarginShorthand from stack and call constructor
 }
@@ -1002,6 +1028,7 @@ int luaopen_orca_MarginShorthand(lua_State *L) {
 	luaL_newmetatable(L, "MarginShorthand");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_MarginShorthand },
+		{ "fromstring", f_MarginShorthand___fromstring },
 		{ "__newindex", f_MarginShorthand___newindex },
 		{ "__index", f_MarginShorthand___index },
 		{ NULL, NULL },

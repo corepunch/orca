@@ -53,7 +53,7 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "/Users/igor/Developer/ui-framework/samples/Banking"
+            argument = "/Users/igor/Developer/orca/samples/Banking"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

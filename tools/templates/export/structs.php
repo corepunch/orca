@@ -55,7 +55,7 @@ int f_<?= $name ?>___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in <?= $name ?>(%p): %s", self, luaL_checkstring(L, 2));
 }
-<?php if ($struct->hasFromString()):?>
+<?php if ($struct->hasFromString() || count($struct->getConstructors()) > 0):?>
 extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
 	<?php foreach ($struct->getConstructors() as $numargs):?>
 void <?= $name ?>_Convert<?= $numargs ?>(struct <?= $name ?>*, <?= implode(", ", array_slice(array_values($struct->getParsers()), 0, $numargs)) ?>);
@@ -70,11 +70,13 @@ static int f_<?= $name ?>___fromstring(lua_State *L) {
 		?>
 	struct <?= $name ?> self = {0};
 	switch (sscanf(luaL_checkstring(L, 1), "<?= $format ?>", <?= $targets ?>)) {
+	<?php if ($struct->hasFromString()):?>
 	case <?= count($struct->getParsers()) ?>: 
 		<?php foreach ($struct->getParsers() as $field => $type):?>
 		<?= $type->get('convert', $field, "self.".$field->addr) ?>;
 		<?php endforeach ?>
 		return (luaX_push<?= $name ?>(L, &self), 1);
+	<?php endif ?>
 	<?php foreach ($struct->getConstructors() as $numargs):?>
 	case <?= $numargs ?>:
 		<?= $name ?>_Convert<?= $numargs ?>(&self, <?= implode(", ", array_slice(array_keys($struct->getParsers()), 0, $numargs)) ?>);
@@ -92,7 +94,7 @@ int luaopen_orca_<?= $name ?>(lua_State *L) {
 	luaL_newmetatable(L, "<?= $struct->export ?>");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_<?= $name ?> },
-<?php if ($struct->hasFromString()):?>
+<?php if ($struct->hasFromString() || count($struct->getConstructors()) > 0):?>
 		{ "fromstring", f_<?= $name ?>___fromstring },
 <?php endif ?>
 		{ "__newindex", f_<?= $name ?>___newindex },

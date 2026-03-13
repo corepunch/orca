@@ -30,7 +30,7 @@ HEDWND ED_InitLayout(void) {
         /*{ED_Spreadsheet},*/
         {ED_WelcomeView},
         {ED_TextEditor},
-//        {ED_SceneView, 0, "/Users/igor/Developer/ui-framework/projects/Example/Application.xml"},//editor.screen},
+//        {ED_SceneView, 0, "/Users/igor/Developer/orca/projects/Example/Application.xml"},//editor.screen},
         {ED_GameView},
         {NULL}
       }},

@@ -50,25 +50,35 @@ struct shader_desc shader_rect = {
     { "u_modelViewProjectionTransform", UT_FLOAT_MAT4, PRECISION_HIGH },
     { "u_textureTransform", UT_FLOAT_MAT3, PRECISION_HIGH },
     { "u_texture", UT_SAMPLER_2D_RECT, PRECISION_LOW },
+    { "u_color", UT_COLOR, PRECISION_LOW },
+    { "u_bboxMin", UT_FLOAT_VEC3, PRECISION_LOW },
+    { "u_bboxMax", UT_FLOAT_VEC3, PRECISION_LOW },
     { "u_opacity", UT_FLOAT, PRECISION_LOW },
   },
     .Attributes = {
       { "a_position", UT_FLOAT_VEC4 },
       { "a_texcoord0", UT_FLOAT_VEC2 },
+      { "a_texcoord1", UT_FLOAT_VEC2 },
     },
     .Shared = {
+      { "v_position", UT_FLOAT_VEC4 },
+      { "v_normal", UT_FLOAT_VEC3 },
       { "v_texcoord0", UT_FLOAT_VEC2 },
     },
     .VertexShader =
+  "#define r u_radius\n"
+  "#define b u_borderWidth\n"
   "void main() {\n"
-  "    gl_Position = u_modelViewProjectionTransform * a_position;\n"
-  "    v_texcoord0 = (u_textureTransform * vec3(a_texcoord0.xy, 1.0)).xy;\n"
+  "  vec2 rectSize = u_bboxMax.xy - u_bboxMin.xy;\n"
+  "  vec2 pos = a_position.xy * rectSize;\n"
+  "  vec3 tex = vec3(pos.x / rectSize.x, 1.0 - pos.y / rectSize.y, 1.0);\n"
+  "  v_texcoord0 = (u_textureTransform * tex).xy;\n"
+  "  gl_Position = u_modelViewProjectionTransform * vec4(pos + u_bboxMin.xy, 0, 1);\n"
   "}\n",
     .FragmentShader =
   "void main() {\n"
-  "    fragColor = texture(u_texture, v_texcoord0);\n"
-  "}\n"
-};
+  "  fragColor = texture(u_texture, v_texcoord0);\n"
+  "}\n"};
 #endif
 
 struct shader_desc shader_ui = {

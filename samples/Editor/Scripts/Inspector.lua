@@ -136,7 +136,7 @@ local Inspector = ui.TerminalView:extend {
 			self.modal = TextInput {
 				text = item:get'value',
 				minwidth = #item:get'value',
-				LayoutTransformTranslation = geom.Vector2.new(x, y),
+				LayoutTransformTranslation = geom.Vector2D.new(x, y),
 				onAccept = function(value)
 					self:setItemValue(item, value)
 					self:invalidate()

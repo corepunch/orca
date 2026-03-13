@@ -262,7 +262,7 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
 {
 #ifdef GL_SAMPLER_2D_RECT
   lpcTexture_t texture = ent->material.texture;
-  uint32_t fallback = SHADER_UI;
+  enum shader_type fallback = SHADER_UI;
   if (texture && texture->IOSurface) {
     fallback = SHADER_2D_RECT;
     ent->material.textureMatrix.v[0] *= texture->Width;
@@ -271,7 +271,7 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
     ent->material.textureMatrix.v[7] *= texture->Height;
   }
 #else
-  uint32_t fallback = SHADER_UI;
+  enum shader_type fallback = SHADER_UI;
 #endif
   
   // Handle shader pointer boxing: shader can be either a real pointer or a boxed tag value
@@ -336,14 +336,6 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
     return NOERROR;
   }
   
-  // If no model yet, check for boxed mesh tags
-  if (model) {
-    // all good, skip
-  } else if (ent->mesh && !BOX_IS_PTR((uintptr_t)ent->mesh)) {
-
-  } else if (!ent->mesh) {
-  }
-  
   struct shader_universal_target const *target = &shader->shader->target;
 
   if (ent->material.blendMode != BLEND_MODE_INHERIT) {
@@ -377,12 +369,11 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
     R_Call(glDrawArrays, GL_TRIANGLES, 0, model->numVertices);
   }
 
-  //    tr.mesh_render++;
-
   if (ent->mesh == BOX_PTR(Mesh, MD_NINEPATCH)) {
     Model_Release(model);
   }
 
+  // tr.mesh_render++;
   tr.drawCalls++;
 
   return S_OK;
@@ -430,19 +421,19 @@ R_DrawImage(PDRAWIMAGESTRUCT parm)
 
   view.projectionMatrix = MAT4_Ortho(0, screen.width, screen.height, 0, -1, 1);
 
-//  if (image->IOSurface) {
-//#ifdef GL_SAMPLER_2D_RECT
-//    ent.material.textureMatrix.v[0] = parm->uv.width * screen.width;
-//    ent.material.textureMatrix.v[4] = parm->uv.height * screen.height;
-//    ent.material.textureMatrix.v[6] = parm->uv.x * screen.width;
-//    ent.material.textureMatrix.v[7] = parm->uv.y * screen.height;
-//#endif
-//  } else {
+  if (image->IOSurface) {
+#ifdef GL_SAMPLER_2D_RECT
+    ent.material.textureMatrix.v[0] = parm->uv.width * screen.width;
+    ent.material.textureMatrix.v[4] = parm->uv.height * screen.height;
+    ent.material.textureMatrix.v[6] = parm->uv.x * screen.width;
+    ent.material.textureMatrix.v[7] = parm->uv.y * screen.height;
+#endif
+  } else {
     ent.material.textureMatrix.v[0] = parm->uv.width;
     ent.material.textureMatrix.v[4] = parm->uv.height;
     ent.material.textureMatrix.v[6] = parm->uv.x;
     ent.material.textureMatrix.v[7] = parm->uv.y;
-//  }
+  }
   
   R_DrawEntity(&view, &ent);
 

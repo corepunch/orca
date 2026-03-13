@@ -1,3 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Screen SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
 <Screen Width="1024" Height="1024" ResizeMode="CanResize">
 	<Grid Rows="16px 400px auto" Spacing="1">
 		<LayerPrefabPlaceholder PlaceholderTemplate="Editor/Scripts/MenuBar" />

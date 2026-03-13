@@ -371,8 +371,15 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
         case kDataTypeEnum:
           f_parse_property(L, p, luaL_checkstring(L, idx));
           break;
+        case kDataTypeStruct:
+          if (!strcmp(p->pdesc->TypeString, "Color")) {
+            f_parse_property(L, p, luaL_checkstring(L, idx));
+            break;
+          }
         default:
+          Con_Error("Trying to parse a property %s with a string %s", p->pdesc->Name, luaL_checkstring(L, idx));
           assert(!"Parsing of properties not supported out of the box");
+          break;
       }
       break;
     case LUA_TBOOLEAN:

@@ -1,11 +1,14 @@
 <?xml version="1.0"?>
 <Project Name="Editor" StartupScreen="Editor/Screens/Screen">
-  <ProjectReferenceLibrary Name="Project Refereces">
-    <!-- <ProjectReferenceItem Name="ICHMIMain">../hmi_main/ICHMIMain/projects/high/ICHMIMain</ProjectReferenceItem> -->
-  </ProjectReferenceLibrary>
-  <MessageLibrary Name="Messages">
-    <SystemMessage message="KeyDown" key="q">return</SystemMessage>
-    <SystemMessage message="WindowClosed">return</SystemMessage>
-    <SystemMessage message="RequestReload">return PROJECTFILE</SystemMessage>
-  </MessageLibrary>
+  <Project.ProjectReferences>
+    <!-- <ProjectReference Name="ICHMIMain" Path="../hmi_main/ICHMIMain/projects/high/ICHMIMain"/> -->
+  </Project.ProjectReferences>
+  <Project.SystemMessages>
+    <SystemMessage Message="KeyDown" Key="q" Command="return"/>
+    <SystemMessage Message="WindowClosed" Command="return"/>
+    <SystemMessage Message="RequestReload" Command="window:refresh()"/>
+  </Project.SystemMessages>
+  <Project.PropertyTypes>
+    <PropertyType Name="URL" DataType="Fixed" />
+  </Project.PropertyTypes>
 </Project>

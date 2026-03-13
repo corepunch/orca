@@ -238,8 +238,7 @@ HANDLER(Node2D, HandleMessage)
     for (uint32_t i = 0; i < pHandleMessage->NumArgs; i++) {
       lua_pushvalue(L, pHandleMessage->FirstArg + i);
     }
-    return luaX_executecallback(
-      L, hObject, pszHandler, pHandleMessage->NumArgs);
+    return luaX_executecallback(L, hObject, pszHandler, pHandleMessage->NumArgs);
   } else {
     lua_pop(L, 2);
   }

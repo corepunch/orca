@@ -79,7 +79,7 @@ local OultineView = ui.TerminalView:extend {
 				text = cmd:get'name',
 				minwidth = #cmd:get'name',
 				nopadding = true,
-				LayoutTransformTranslation = geom.Vector2.new(x, y),
+				LayoutTransformTranslation = geom.Vector2D.new(x, y),
 				onAccept = function(name)
  					Workspace.process:post('node/%s?class=%s&name=%s', path, cmd:get'name', name)
 					Workspace.inspector:showPathInInspector(path, name)
@@ -219,7 +219,7 @@ core.addCommands(function(self) return self:is(OultineView) and self.selectedIte
 			text = self.selectedItem:get'name',
 			minwidth = #self.selectedItem:get'name',
 			nopadding = true,
-			LayoutTransformTranslation = geom.Vector2.new(x, y),
+			LayoutTransformTranslation = geom.Vector2D.new(x, y),
 			onAccept = function(name)
 				Workspace.process:put('node/%s?Name=%s', path, name)
 				Workspace.inspector:showPathInInspector(self.selectedItem.parent:getPath(), name)
@@ -239,7 +239,7 @@ core.addCommands(OultineView, {
 			text = self.searching,
 			placeholder = "Enter node name",
 			nopadding = true,
-			LayoutTransformTranslation = geom.Vector2.new(config.char_width*2, 0),
+			LayoutTransformTranslation = geom.Vector2D.new(config.char_width*2, 0),
 			onAccept = function(name)
 				self.searching = false
 				self:invalidate()

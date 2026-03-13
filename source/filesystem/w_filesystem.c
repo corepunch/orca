@@ -339,6 +339,9 @@ static int filesystem_gc(lua_State* L)
 //  return 0;
 //}
 
+int luaopen_orca_pipe(lua_State *L);
+int filesystem_handle_event(lua_State *L, struct WI_Message *msg);
+
 int f_init(lua_State* L)
 {
   API_CallRequire(L, "orca.filesystem", 1);
@@ -353,6 +356,12 @@ int f_init(lua_State* L)
   if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
     return luaL_error(L, lua_tostring(L, -1));
   }
+  lua_getglobal(L, "SERVER");
+  if (lua_toboolean(L, -1)) {
+    SV_RegisterMessageProc(filesystem_handle_event);
+    WI_PostMessageW(NULL, kEventReadCommands, 0, NULL); // launch reader
+  }
+  lua_pop(L, 1);
   return 0;
 }
 
@@ -364,9 +373,6 @@ int f_trackChangedFiles(lua_State* L) {
   }
   return 0;
 }
-
-int luaopen_orca_pipe(lua_State *L);
-int filesystem_handle_event(lua_State *L, struct WI_Message *msg);
 
 static lua_State *global_L;
 
@@ -575,14 +581,7 @@ void on_filesystem_module_registered(lua_State* L)
   lua_setfield(L, -2, "pipe");
   
   API_MODULE_SHUTDOWN(L, filesystem_gc);
-  
-  lua_getglobal(L, "SERVER");
-  if (lua_toboolean(L, -1)) {
-    SV_RegisterMessageProc(filesystem_handle_event);
-    WI_PostMessageW(NULL, kEventReadCommands, 0, NULL);
-  }
-  lua_pop(L, 1);
-  
+    
   global_L = L;
 }
 

@@ -80,8 +80,7 @@ HANDLER(Handler, Triggered)
       for (int i = 0; i < msg->NumArgs; i++) {
         lua_pushvalue(L, -(1 + msg->NumArgs));
       }
-      return luaX_executecallback(
-        L, pTarget, pHandler->Function, msg->NumArgs + 1);
+      return luaX_executecallback(L, pTarget, pHandler->Function, msg->NumArgs + 1);
     } else {
       lua_pop(L, 2);
     }

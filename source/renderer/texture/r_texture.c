@@ -422,26 +422,6 @@ R_LoadImageFromMemory(lua_State* L, void* pBuffer, uint32_t dwSize)
   return object;
 }
 
-//HRESULT
-//R_CreateIOSurfaceTexture(uint32_t surf, struct Texture** img)
-//{
-//  struct image* image = IOSurface_CreateTextureFrom(surf);
-//  if (!image) {
-//    return Texture_Create(
-//                          &(CREATEIMGSTRUCT){
-//                            .Width = 1,
-//                            .Height = 1,
-//                            .Format = TEXTURE_RGBA,
-//                            .ImageData = &(int){ 0xff800080 },
-//                          },
-//                          (struct image**)img);
-//  } else {
-//    *img = image;
-//    return S_OK;
-//  }
-//}
-//
-
 #if __APPLE__
 #include <IOSurface/IOSurface.h>
 #include <OpenGL/OpenGL.h>

@@ -5,7 +5,7 @@ local core = require "orca.core"
 local plugs = "-plugins=~/Developer/icui/plugins"
 local server = "-server=true"
 -- local proj = "/Users/icherna/Developer/icui/ICHMIMain"
-local proj = "~/Developer/ui-framework/samples/Example"
+local proj = "~/Developer/orca/samples/Example"
 
 local system = require "orca.system"
 
@@ -23,7 +23,7 @@ function ui.TerminalView:showDropDown(item, x, y, callback)
 	local dropdown = DropDown {
 		doc = item,
     callback = callback,
-		LayoutTransformTranslation = geom.Vector2.new(x, y),
+		LayoutTransformTranslation = geom.Vector2D.new(x, y),
 	}
   self.modal = dropdown
 	return dropdown

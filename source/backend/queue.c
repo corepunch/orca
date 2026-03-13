@@ -71,11 +71,12 @@ int f_peek_message(lua_State* L) {
 //}
 
 #define MAX_CLIENTS 256
+#define kEventReadCommands 0x23d83fd3
 typedef int (*message_proc_t)(lua_State*, struct WI_Message*);
 static message_proc_t clients[MAX_CLIENTS];
 
 bool_t SV_DispatchMessage(lua_State* L, struct WI_Message* msg) {
-  if (!msg->target)
+  if (!msg->target && msg->message != kEventReadCommands)
     return FALSE;
   for (int i = 0; i < MAX_CLIENTS; i++) {
     if (clients[i] && clients[i](L, msg)) {

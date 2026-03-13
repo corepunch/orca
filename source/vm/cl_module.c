@@ -503,7 +503,7 @@ void *read_whole_file(FILE *fp, size_t *psize) {
 }
 
 PVM VM_Init(void) {
-    FILE *fp = fopen("/Users/igor/Developer/ui-framework/Build/bin/orca.vm", "rb");
+    FILE *fp = fopen("/Users/igor/Developer/orca/Build/bin/orca.vm", "rb");
     if (!fp) {
         Con_Error("Can't find vm file\n");
         return NULL;
@@ -517,7 +517,7 @@ PVM VM_Init(void) {
     }
     PVM vm = vm_create(G_SystemCalls, VM_STACK_SIZE, VM_HEAP_SIZE, program);
 
-    FILE *d_fp = fopen("/Users/igor/Developer/ui-framework/Build/bin/orca.vm_d", "rb");
+    FILE *d_fp = fopen("/Users/igor/Developer/orca/Build/bin/orca.vm_d", "rb");
     if (d_fp) {
         size_t dsize = 0;
         PVMDEBUG debug = read_whole_file(d_fp, &dsize);

@@ -4,7 +4,7 @@
   <Grid Name="Layout">
     <Grid.Columns Value="auto auto"/>
     <ImageView Name="Image" Image="Example/Images/peacock" Stretch="None" BorderWidth="5 5 5 5" />
-    <TextBlock Name="TextBlock" FontSize="40" ForegroundColor="#ff00ff" LayoutTransform="10 10 0 1 1">
+    <TextBlock Name="TextBlock" FontSize="40" ForegroundColor="#ff00ff">
       <TextRun.Text Value="Hello World"/>
     </TextBlock>
   </Grid>
