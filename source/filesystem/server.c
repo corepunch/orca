@@ -133,18 +133,15 @@ add_subproperty(xmlNodePtr xml,
       break;
     case kDataTypeStruct:
       _xmlSetProp(n, "data-compound", "true");
-      for (int i = pdesc->Offset, j = 1,
-           end = pdesc->Offset + pdesc->DataSize; i < end; j++)
-      {
-        if (i < pdesc[j].Offset) continue;
-        void* dest_ = ((byte_t*)dest) + pdesc[j].Offset - pdesc->Offset;
-        i = add_subproperty(n, obj, &pdesc[j], dest_);
+      for (int off = pdesc->Offset, idx = 1, end = pdesc->Offset + pdesc->DataSize; off < end; idx++) {
+        if (off < pdesc[idx].Offset) continue;
+        off = add_subproperty(n, obj, &pdesc[idx], ((byte_t*)dest) + pdesc[idx].Offset - pdesc->Offset);
       }
-      return pdesc->Offset + pdesc->DataSize;
+      break;
     default:
       break;
   }
-  return 0;
+  return pdesc->Offset + pdesc->DataSize;;
 }
 
 static xmlNodePtr

@@ -214,6 +214,10 @@
 		78932BF72F38D6D5007C59CC /* liborca.platform.so in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		78932EF42F3F255F007C59CC /* backend.c in Sources */ = {isa = PBXBuildFile; fileRef = 7808CD8D2D9EC93A00D484F9 /* backend.c */; };
 		7896A18E2E45275B00086970 /* liborca.UIKit.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA74D2E1556FF00FFCFD9 /* liborca.UIKit.so */; };
+		789A97D42F65490800FD32A9 /* geometry.h in Headers */ = {isa = PBXBuildFile; fileRef = 789A97CE2F65490800FD32A9 /* geometry.h */; };
+		789A97D52F65490800FD32A9 /* geometry_properties.h in Headers */ = {isa = PBXBuildFile; fileRef = 789A97D22F65490800FD32A9 /* geometry_properties.h */; };
+		789A97D62F65490800FD32A9 /* geometry_export.c in Sources */ = {isa = PBXBuildFile; fileRef = 789A97D02F65490800FD32A9 /* geometry_export.c */; };
+		789A97D72F65490800FD32A9 /* geometry_ops.c in Sources */ = {isa = PBXBuildFile; fileRef = 789A97D12F65490800FD32A9 /* geometry_ops.c */; };
 		78AF62512F562AEB008D08A3 /* p_program.c in Sources */ = {isa = PBXBuildFile; fileRef = 78FD53222D8F2A8800122823 /* p_program.c */; };
 		78AF62CB2F58BE63008D08A3 /* UIKit.c in Headers */ = {isa = PBXBuildFile; fileRef = 78AF62CA2F58BE5B008D08A3 /* UIKit.c */; };
 		78AF62CC2F58BECF008D08A3 /* UIKit.c in Sources */ = {isa = PBXBuildFile; fileRef = 78AF62CA2F58BE5B008D08A3 /* UIKit.c */; };
@@ -484,6 +488,11 @@
 		787C7BA42BB33679006FD937 /* r_builtin_charset2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = r_builtin_charset2.c; sourceTree = "<group>"; };
 		788483212E867C9C00DB9C1F /* w_plugins.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = w_plugins.c; sourceTree = "<group>"; };
 		788AF31D2BBCA0A500E755B1 /* r_builtin_palette.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = r_builtin_palette.c; sourceTree = "<group>"; };
+		789A97CE2F65490800FD32A9 /* geometry.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = geometry.h; sourceTree = "<group>"; };
+		789A97CF2F65490800FD32A9 /* geometry.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = geometry.xml; sourceTree = "<group>"; };
+		789A97D02F65490800FD32A9 /* geometry_export.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = geometry_export.c; sourceTree = "<group>"; };
+		789A97D12F65490800FD32A9 /* geometry_ops.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = geometry_ops.c; sourceTree = "<group>"; };
+		789A97D22F65490800FD32A9 /* geometry_properties.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = geometry_properties.h; sourceTree = "<group>"; };
 		789D74F52BCA6ABB00E2ADB9 /* api_renderer.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = api_renderer.c; sourceTree = "<group>"; };
 		789ED2E92C8EE475003A3CDF /* localization.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = localization.c; sourceTree = "<group>"; };
 		78A5AD052B7CFBCB005BF50C /* r_shape.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = r_shape.c; sourceTree = "<group>"; };
@@ -594,7 +603,6 @@
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		783C96DF2F263D9C00612323 /* libs */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (783C973B2F26638500612323 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = libs; sourceTree = "<group>"; };
-		78AF635B2F5E08CA008D08A3 /* geometry */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = geometry; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -976,15 +984,27 @@
 			path = tools;
 			sourceTree = "<group>";
 		};
+		789A97D32F65490800FD32A9 /* geometry */ = {
+			isa = PBXGroup;
+			children = (
+				789A97CE2F65490800FD32A9 /* geometry.h */,
+				789A97CF2F65490800FD32A9 /* geometry.xml */,
+				789A97D02F65490800FD32A9 /* geometry_export.c */,
+				789A97D12F65490800FD32A9 /* geometry_ops.c */,
+				789A97D22F65490800FD32A9 /* geometry_properties.h */,
+			);
+			path = geometry;
+			sourceTree = "<group>";
+		};
 		78B136982AF3CA3A00AAAE53 = {
 			isa = PBXGroup;
 			children = (
-				78623C292F5451F6003BFDA3 /* share */,
-				783C96DF2F263D9C00612323 /* libs */,
 				78BCC20C2E61C23300CA0A41 /* Makefile */,
+				78623C292F5451F6003BFDA3 /* share */,
 				78DE4E792D987F4C00C0488C /* README.md */,
 				78C7367A2B8F224200FD598E /* Frameworks */,
 				78B1385A2AF3CC4E00AAAE53 /* include */,
+				783C96DF2F263D9C00612323 /* libs */,
 				78B136AB2AF3CAD000AAAE53 /* Products */,
 				78B1375D2AF3CC4E00AAAE53 /* source */,
 				787C7B942BB30A7C006FD937 /* tools */,
@@ -1044,7 +1064,7 @@
 				78C7374E2B8F60C600FD598E /* core */,
 				786F2B1D2E12EE7F00B519AB /* editor */,
 				7810D2662D58B1B800DB632F /* filesystem */,
-				78AF635B2F5E08CA008D08A3 /* geometry */,
+				789A97D32F65490800FD32A9 /* geometry */,
 				7810D3172D5B32FC00DB632F /* localization */,
 				786BFD062AFBA00D00216782 /* network */,
 				7810D26E2D58C06000DB632F /* orca */,
@@ -1226,6 +1246,8 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				789A97D42F65490800FD32A9 /* geometry.h in Headers */,
+				789A97D52F65490800FD32A9 /* geometry_properties.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1409,9 +1431,6 @@
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				78AF635B2F5E08CA008D08A3 /* geometry */,
 			);
 			name = orca.geometry;
 			packageProductDependencies = (
@@ -1835,6 +1854,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				789A97D62F65490800FD32A9 /* geometry_export.c in Sources */,
+				789A97D72F65490800FD32A9 /* geometry_ops.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
