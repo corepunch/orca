@@ -73,8 +73,15 @@ check_images(struct _SHADERCONST *u, void* pVoid)
 HANDLER(ImageView, DrawBrush)
 {
   Node2DPtr pNode2D = GetNode2D(hObject);
-  uint32_t width = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
-  uint32_t height = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
+  /* PADDING_TOP/PADDING_BOTTOM map to the leading/trailing edge per axis:
+   * axis 0 (horizontal): PADDING_TOP = left padding, PADDING_BOTTOM = right padding
+   * axis 1 (vertical):   PADDING_TOP = top padding,  PADDING_BOTTOM = bottom padding */
+  float const padLeft   = PADDING_TOP(pNode2D, 0);
+  float const padRight  = PADDING_BOTTOM(pNode2D, 0);
+  float const padTop    = PADDING_TOP(pNode2D, 1);
+  float const padBottom = PADDING_BOTTOM(pNode2D, 1);
+  float const width  = Node2D_GetFrame(pNode2D, kBox3FieldWidth)  - padLeft - padRight;
+  float const height = Node2D_GetFrame(pNode2D, kBox3FieldHeight) - padTop  - padBottom;
   struct vec2 imgsize = _GetImageSize(hObject, pImageView);
   struct ViewEntity entity;
 
@@ -114,15 +121,15 @@ HANDLER(ImageView, DrawBrush)
                       &entity.ninepatch);
 
   entity.mesh = BOX_PTR(Mesh, MD_NINEPATCH);
-  entity.bbox = BOX3_FromRect(GetNode2D(hObject)->_rect);
+  entity.bbox = BOX3_FromRect(((struct rect){ padLeft, padTop, width, height }));
   entity.material.blendMode = OBJ_GetInteger(hObject, ID_Material_BlendMode, kBlendModeAlpha);
 
   if (pImageView->Stretch == kStretchUniform) {
     struct rect temp_rect = {
-      entity.bbox.min.x,
-      entity.bbox.min.y,
-      entity.bbox.max.x - entity.bbox.min.x,
-      entity.bbox.max.y - entity.bbox.min.y
+      padLeft,
+      padTop,
+      width,
+      height,
     };
     temp_rect = RECT_Fit(&temp_rect, &imgsize);
     entity.bbox = BOX3_FromRect(temp_rect);

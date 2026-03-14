@@ -32,7 +32,7 @@ text_pos(EdgeShorthand_t padding, uint32_t align, float size, float space)
 {
   switch (align) {
     case kTextHorizontalAlignmentRight:
-      return space - size + padding.Left;
+      return space - size - padding.Right;
     case kTextHorizontalAlignmentCenter:
       return padding.Left + (space - padding.Left - padding.Right - size) / 2;
     case kTextHorizontalAlignmentLeft:

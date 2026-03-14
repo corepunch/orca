@@ -423,6 +423,84 @@ local function test_property_change_notification()
 	node:removeFromParent()
 end
 
+local function test_image_view_padding_layout()
+	local padding = 15
+	local image_view = screen + orca.ui.ImageView {
+		HorizontalAlignment = "Left",
+		VerticalAlignment = "Top",
+		Width = 100,
+		Height = 80,
+	}
+
+	screen:updateLayout(screen.Width, screen.Height)
+
+	local width_before = image_view.ActualWidth
+	local height_before = image_view.ActualHeight
+
+	-- Adding padding should not change ActualWidth/Height when explicit size is set
+	image_view.Padding = padding
+
+	screen:updateLayout(screen.Width, screen.Height)
+
+	assert(image_view.ActualWidth == width_before, "ImageView ActualWidth should not change when Width is explicitly set")
+	assert(image_view.ActualHeight == height_before, "ImageView ActualHeight should not change when Height is explicitly set")
+
+	image_view:removeFromParent()
+
+	-- Without an explicit size, padding should increase the desired size
+	local auto_image_view = screen + orca.ui.ImageView {
+		HorizontalAlignment = "Left",
+		VerticalAlignment = "Top",
+	}
+
+	screen:updateLayout(screen.Width, screen.Height)
+
+	local auto_width_before = auto_image_view.ActualWidth
+
+	auto_image_view.Padding = padding
+
+	screen:updateLayout(screen.Width, screen.Height)
+
+	assert(auto_image_view.ActualWidth == auto_width_before + padding * 2,
+		"ImageView ActualWidth should increase by padding*2 when no explicit Width is set")
+
+	auto_image_view:removeFromParent()
+end
+
+local function test_text_block_right_alignment_padding()
+	local padding = 10
+	-- A right-aligned TextBlock with no padding, to get a baseline width
+	local tb_no_pad = screen + orca.ui.TextBlock {
+		HorizontalAlignment = "Left",
+		Text = "Hello",
+		TextHorizontalAlignment = "Right",
+	}
+
+	screen:updateLayout(screen.Width, screen.Height)
+
+	local width_no_pad = tb_no_pad.ActualWidth
+
+	tb_no_pad:removeFromParent()
+
+	-- A right-aligned TextBlock with padding: the text should sit inside the padding on both sides
+	local tb = screen + orca.ui.TextBlock {
+		HorizontalAlignment = "Left",
+		Text = "Hello",
+		TextHorizontalAlignment = "Right",
+		Padding = padding,
+	}
+
+	screen:updateLayout(screen.Width, screen.Height)
+
+	-- The ActualWidth should include padding on both sides of the text
+	assert(tb.ActualWidth == width_no_pad + padding * 2,
+		"Right-aligned TextBlock ActualWidth should increase by padding*2 when padding is added")
+	assert(tb.PaddingLeft == padding, "PaddingLeft should be set")
+	assert(tb.PaddingRight == padding, "PaddingRight should be set")
+
+	tb:removeFromParent()
+end
+
 -- Simulate asynchronous execution by using a timer or a delayed call
 -- For testing purposes, we can just call the callback immediately
 orca.async = function (callback) callback() end
@@ -440,3 +518,5 @@ test_input_checkbox()
 test_form_populate_inputs()
 test_node_visibility()
 test_property_change_notification()
+test_image_view_padding_layout()
+test_text_block_right_alignment_padding()
