@@ -526,7 +526,6 @@ OBJ_EnumClassProperties(lpObject_t object,
 #define PACK_ZIP 2
 #define CHUNK_SIZE 16384 // 16 KB buffer size, you can adjust this as needed
 
-#define IDPAKHEADER MAKE_FOURCC('P', 'A', 'C', 'K')
 #define IDMESHHEADER MAKE_FOURCC('M', 'E', 'S', 'H')
 
 typedef char path_t[MAX_OSPATH];

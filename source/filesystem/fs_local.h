@@ -16,31 +16,7 @@ typedef struct _MONITOREDFILE
 }* PMONITOREDFILE;
 #endif
 
-struct dpackheader
-{
-  uint32_t identifier; // == IDPAKHEADER
-  uint32_t version;
-  uint32_t dirofs;
-  uint32_t dirlen;
-};
-
-typedef struct _PACK
-{
-  char filename[MAX_OSPATH];
-  FILE* handle;
-  int numfiles;
-  struct _PACKFILE* files;
-}* PPACK;
-
-typedef struct _PACKFILE
-{
-  uint32_t identifier;
-  uint32_t flags;
-  uint32_t filepos;
-  uint32_t filelen;
-  uint32_t decompsize;
-  struct WI_Size imagesize;
-}* PPACKFILE;
+typedef struct _PACK* PPACK;
 
 struct Package
 {

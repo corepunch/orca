@@ -48,6 +48,7 @@ OBJ_RegisterClass(lpcClassDesc_t class)
       core.classes[i] = class;
       return TRUE;
     } else if (core.classes[i]->ClassID == class->ClassID) {
+      Con_Error("Class %s is already registered", class->ClassName);
       return TRUE;
     }
   }

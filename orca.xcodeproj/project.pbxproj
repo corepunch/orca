@@ -218,6 +218,7 @@
 		789A97D52F65490800FD32A9 /* geometry_properties.h in Headers */ = {isa = PBXBuildFile; fileRef = 789A97D22F65490800FD32A9 /* geometry_properties.h */; };
 		789A97D62F65490800FD32A9 /* geometry_export.c in Sources */ = {isa = PBXBuildFile; fileRef = 789A97D02F65490800FD32A9 /* geometry_export.c */; };
 		789A97D72F65490800FD32A9 /* geometry_ops.c in Sources */ = {isa = PBXBuildFile; fileRef = 789A97D12F65490800FD32A9 /* geometry_ops.c */; };
+		78A5AFA42F66BA0200E6A765 /* pakfile.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A5AFA32F66B9FA00E6A765 /* pakfile.c */; };
 		78AF62512F562AEB008D08A3 /* p_program.c in Sources */ = {isa = PBXBuildFile; fileRef = 78FD53222D8F2A8800122823 /* p_program.c */; };
 		78AF62CB2F58BE63008D08A3 /* UIKit.c in Headers */ = {isa = PBXBuildFile; fileRef = 78AF62CA2F58BE5B008D08A3 /* UIKit.c */; };
 		78AF62CC2F58BECF008D08A3 /* UIKit.c in Sources */ = {isa = PBXBuildFile; fileRef = 78AF62CA2F58BE5B008D08A3 /* UIKit.c */; };
@@ -496,6 +497,7 @@
 		789D74F52BCA6ABB00E2ADB9 /* api_renderer.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = api_renderer.c; sourceTree = "<group>"; };
 		789ED2E92C8EE475003A3CDF /* localization.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = localization.c; sourceTree = "<group>"; };
 		78A5AD052B7CFBCB005BF50C /* r_shape.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = r_shape.c; sourceTree = "<group>"; };
+		78A5AFA32F66B9FA00E6A765 /* pakfile.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = pakfile.c; sourceTree = "<group>"; };
 		78A8213E2C873EF400ACD0A9 /* p_runtime.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = p_runtime.c; sourceTree = "<group>"; };
 		78AF62CA2F58BE5B008D08A3 /* UIKit.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = UIKit.c; sourceTree = "<group>"; };
 		78B136CF2AF3CC4E00AAAE53 /* r_shader.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = r_shader.c; sourceTree = "<group>"; };
@@ -820,6 +822,7 @@
 			children = (
 				782E9EE72E97EF6F009C3946 /* filesystem_export.c */,
 				78B136F42AF3CC4E00AAAE53 /* filesystem.c */,
+				78A5AFA32F66B9FA00E6A765 /* pakfile.c */,
 				781FC4A52E894AC400571445 /* popen2.c */,
 				781FC4A72E8D7CB800571445 /* server.c */,
 				786BFC852AF7E97900216782 /* w_filesystem.c */,
@@ -1865,6 +1868,7 @@
 			files = (
 				78E4A9BB2E941A0300E3A503 /* server.c in Sources */,
 				781CA6E52E15245800FFCFD9 /* filesystem.c in Sources */,
+				78A5AFA42F66BA0200E6A765 /* pakfile.c in Sources */,
 				781CA6E62E15245800FFCFD9 /* w_filesystem.c in Sources */,
 				781FC4A62E894AC800571445 /* popen2.c in Sources */,
 				782E9EE92E97EF6F009C3946 /* filesystem_export.c in Sources */,
