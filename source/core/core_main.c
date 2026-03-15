@@ -97,6 +97,19 @@ OBJ_EnumClasses(lpcClassDesc_t p, void (*fnProc)(lpcClassDesc_t, void*), void* p
   }
 }
 
+void
+OBJ_EnumClassesBySuperClass(uint32_t superClassID,
+                             void (*fnProc)(lpcClassDesc_t, void*),
+                             void* param)
+{
+  FOR_LOOP(i, MAX_CLASSES) {
+    lpcClassDesc_t cl = core.classes[i];
+    if (cl && cl->SuperClassID == superClassID) {
+      fnProc(cl, param);
+    }
+  }
+}
+
 int MakeLocalizedString(lua_State* L)
 {
   lpcString_t string = luaL_checkstring(L, 1);

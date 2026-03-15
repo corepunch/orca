@@ -11,6 +11,7 @@
 #endif
 
 #include <include/orca.h>
+#include <include/plugapi.h>
 
 #define IDPAKHEADER MAKE_FOURCC('P', 'A', 'C', 'K')
 #define MAX_READ 0x10000
@@ -295,4 +296,55 @@ void _FreePack(PPACK pack) {
   free(pack->files);
   free(pack);
 }
+
+/*
+ * pz2 PackageLoader plugin
+ *
+ * Exposes the pz2 format as a ClassDesc with SuperClassID == SCLASS_FILESYSTEM
+ * so that the filesystem module discovers it through the plugin registry.
+ */
+
+static void*
+Pz2_LoadPackage(lpcString_t path)
+{
+  path_t pakfile = {0};
+  snprintf(pakfile, sizeof(pakfile), "%s.pz2", path);
+  return _LoadPackFile(pakfile);
+}
+
+static void
+Pz2_FreePackage(void* pack)
+{
+  _FreePack((PPACK)pack);
+}
+
+static struct file*
+Pz2_ReadFile(lpcString_t filename, void* pack)
+{
+  return _ReadPakFile(filename, (PPACK)pack);
+}
+
+static bool_t
+Pz2_FindFile(lpcString_t filename, void* pack)
+{
+  return _FindPackFile(filename, (PPACK)pack);
+}
+
+static PackageLoaderDesc_t _Pz2LoaderDesc = {
+  .LoadPackage = Pz2_LoadPackage,
+  .FreePackage = Pz2_FreePackage,
+  .ReadFile    = Pz2_ReadFile,
+  .FindFile    = Pz2_FindFile,
+};
+
+/* ClassID == fnv1a32("Pz2PackageLoader") */
+#define ID_Pz2PackageLoader 0x97f7e9da
+
+ORCA_API struct ClassDesc _Pz2PackageLoader = {
+  .ClassName   = "Pz2PackageLoader",
+  .DefaultName = "Pz2PackageLoader",
+  .ClassID     = ID_Pz2PackageLoader,
+  .SuperClassID = SCLASS_FILESYSTEM,
+  .ClassData   = &_Pz2LoaderDesc,
+};
 

@@ -2,6 +2,7 @@
 #define ORCA_FILESYSTEM_H
 
 #include <include/orca.h>
+#include <include/plugapi.h>
 
 #include "filesystem.h"
 
@@ -16,14 +17,13 @@ typedef struct _MONITOREDFILE
 }* PMONITOREDFILE;
 #endif
 
-typedef struct _PACK* PPACK;
-
 struct Package
 {
   shortStr_t name;
   uint8_t namelen;
   path_t path;
-  PPACK pack;
+  void* packData;
+  PackageLoaderDesc_t const* loader;
   struct Package* next;
 #ifdef MONITOR_FILES
   PMONITOREDFILE monitoredFiles;

@@ -580,6 +580,10 @@ void on_filesystem_module_registered(lua_State* L)
   luaopen_orca_pipe(L);
   lua_setfield(L, -2, "pipe");
   
+  /* Register the built-in pz2 package-loader plugin. */
+  extern struct ClassDesc _Pz2PackageLoader;
+  OBJ_RegisterClass(&_Pz2PackageLoader);
+  
   API_MODULE_SHUTDOWN(L, filesystem_gc);
     
   global_L = L;

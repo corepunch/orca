@@ -410,6 +410,7 @@ struct ClassDesc
   objectProc_t ObjProc;
   lpcPropertyType_t Properties;
   void const *Defaults;
+  void const *ClassData;
   lpcString_t ClassName;
   lpcString_t DefaultName;
   lpcString_t ContentType;
@@ -417,6 +418,7 @@ struct ClassDesc
   uint32_t ParentClasses[16];
   uint32_t NumProperties;
   uint32_t ClassID;
+  uint32_t SuperClassID;
   uint32_t ClassSize;
   uint32_t MemorySize;
 };
@@ -496,6 +498,11 @@ OBJ_RegisterPropertyType(lpcPropertyType_t pt);
 
 ORCA_API void
 OBJ_EnumClasses(lpcClassDesc_t, void (*fnProc)(lpcClassDesc_t, void*), void*);
+
+ORCA_API void
+OBJ_EnumClassesBySuperClass(uint32_t superClassID,
+                             void (*fnProc)(lpcClassDesc_t, void*),
+                             void* param);
 
 ORCA_API void
 OBJ_EnumObjectClasses(lpObject_t pobj,

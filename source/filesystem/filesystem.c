@@ -1,4 +1,5 @@
 #include <include/orca.h>
+#include <include/plugapi.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <stdio.h>
@@ -9,11 +10,6 @@
 #define FS_FindPackage(ITER, filename) \
 FOR_EACH_LIST(struct Package, ITER, MainBundle) \
 if (!strncmp(ITER->name, filename, ITER->namelen))
-
-void _FreePack(PPACK pack);
-PPACK _LoadPackFile(lpcString_t szPackfile);
-bool_t _FindPackFile(lpcString_t basename, PPACK pak);
-struct file* _ReadPakFile(lpcString_t filename, PPACK pack);
 
 static lpObject_t workspace = NULL;
 static struct Package *MainBundle=NULL;
@@ -172,8 +168,8 @@ FS_FileExists(lpcString_t path)
   FS_GetPathName(path, name, sizeof(name));
   FS_FindPackage(search, name) {
     lpcString_t basename = name+search->namelen;
-    if (search->pack) {
-      if (_FindPackFile(basename,  search->pack)) {
+    if (search->packData && search->loader) {
+      if (search->loader->FindFile(basename, search->packData)) {
         return TRUE;
       }
     } else {
@@ -212,12 +208,11 @@ _ReadRawFile(lpcString_t szFileName, struct Package *search) {
 
 ORCA_API struct file*
 FS_ReadPackageFile(lpcString_t szFileName, struct Package *search) {
-  if (search->pack) {
-    return _ReadPakFile(szFileName, search->pack);
+  if (search->packData && search->loader) {
+    return search->loader->ReadFile(szFileName, search->packData);
   } else {
     return _ReadRawFile(szFileName, search);
   }
-  return NULL;
 }
 
 struct file*
@@ -298,16 +293,38 @@ _SetPackageName(struct Package* pPackage, lpcString_t szName)
   pPackage->namelen = strlen(pPackage->name);
 }
 
+struct _LoadPackageCtx {
+  lpcString_t path;
+  void* packData;
+  PackageLoaderDesc_t const* loader;
+};
+
+static void
+_TryLoadPlugin(lpcClassDesc_t cls, void* param)
+{
+  struct _LoadPackageCtx* ctx = (struct _LoadPackageCtx*)param;
+  if (ctx->packData) return;
+  lpcPackageLoaderDesc_t desc = (lpcPackageLoaderDesc_t)cls->ClassData;
+  if (!desc || !desc->LoadPackage) return;
+  ctx->packData = desc->LoadPackage(ctx->path);
+  if (ctx->packData) {
+    ctx->loader = desc;
+  }
+}
+
 static struct Package*
 FS_MakePackage(lpcString_t szDirname, lpcString_t szName)
 {
   struct Package* search = ZeroAlloc(sizeof(struct Package));
-  path_t pakfile = {0};
   strncpy(search->path, szDirname, sizeof(search->path));
   _SetPackageName(search, szName);
-  // Try to load optional .pz2 file next to the directory
-  snprintf(pakfile, sizeof(pakfile), "%s.pz2", szDirname);
-  search->pack = _LoadPackFile(pakfile);
+  /* Let each registered package-loader plugin try to open its own format.
+   * Plugins receive the base directory path and are responsible for
+   * constructing the full file path (e.g. appending ".pz2", ".zip", …). */
+  struct _LoadPackageCtx ctx = { .path = szDirname };
+  OBJ_EnumClassesBySuperClass(SCLASS_FILESYSTEM, _TryLoadPlugin, &ctx);
+  search->packData = ctx.packData;
+  search->loader   = ctx.loader;
   return search;
 }
 
@@ -373,7 +390,9 @@ static void FS_Release(struct Package *search) {
   FOR_EACH_LIST(struct _MONITOREDFILE, mf, search->monitoredFiles) free(mf);
 #endif
   SafeDelete(search->next, FS_Release);
-  SafeDelete(search->pack, _FreePack);
+  if (search->packData && search->loader) {
+    search->loader->FreePackage(search->packData);
+  }
   free(search);
 }
 
