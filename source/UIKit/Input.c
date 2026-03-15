@@ -7,7 +7,6 @@ text_pos(EdgeShorthand_t padding, uint32_t align, float size, float space);
 
 HANDLER(Input, DrawBrush)
 {
-//  TextBlockPtr pTextBlock = GetTextBlock(hObject);
   TextRunPtr pTextRun = GetTextRun(hObject);
   Node2DPtr pNode2D = GetNode2D(hObject);
   TextBlockConceptPtr pTextBlockConcept = GetTextBlockConcept(hObject);
@@ -169,7 +168,7 @@ HANDLER(Input, MeasureOverride)
   if (pInput->Type == kInputTypeCheckbox) {
     return MAKEDWORD(16, 16);
   } else {
-    return MAKEDWORD(pMeasureOverride->width, pMeasureOverride->height);
+    return 0; // Pass through to TextBlock
   }
 }
 
