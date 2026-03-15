@@ -133,6 +133,7 @@ HANDLER(Node2D, UpdateMatrix)
     struct vec2 size = { frame.width, frame.height };
     struct vec2 pivot = VEC2_Mul(&size, &pNode2D->RenderTransformOrigin);
     struct vec2 center = VEC2_Scale(&size, 0.5f);
+    struct Property* matprop = Node2D_GetProperty(hObject, kNode2DMatrix);
 
     layoutMatrix = transform2_ToMatrix3D(
       &(struct transform2){ .translation = { frame.x, frame.y },
@@ -143,8 +144,6 @@ HANDLER(Node2D, UpdateMatrix)
     renderMatrix = transform2_ToMatrix3D(RenderTransform, &pivot);
 
     Matrix = MAT4_Multiply(&layoutMatrix, &renderMatrix);
-
-    lpProperty_t matprop = Node2D_GetProperty(hObject, kNode2DMatrix);
 
     if (matprop && (PROP_GetFlags(matprop) & PF_MODIFIED)) {
       // skip if set from outside

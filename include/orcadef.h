@@ -43,8 +43,8 @@
   struct _##SYSNAME
 
 #define HANDLER(CLASS, EVENT)                                                  \
-  LRESULT CLASS##_##EVENT(lpObject_t hObject,                              \
-                          CLASS##Ptr p##CLASS,                                 \
+  LRESULT CLASS##_##EVENT(struct Object* hObject,                              \
+                          struct CLASS* p##CLASS,                                 \
                           wParam_t wParam,                                       \
                           EVENT##EventPtr p##EVENT)
 
