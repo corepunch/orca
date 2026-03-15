@@ -414,7 +414,7 @@ struct ClassDesc
   lpcString_t DefaultName;
   lpcString_t ContentType;
   lpcString_t Xmlns;
-  lpcClassDesc_t ParentClasses[16];
+  uint32_t ParentClasses[16];
   uint32_t NumProperties;
   uint32_t ClassID;
   uint32_t ClassSize;
@@ -484,6 +484,9 @@ OBJ_RegisterClass(lpcClassDesc_t);
 
 ORCA_API lpcClassDesc_t
 OBJ_FindClass(lpcString_t);
+
+ORCA_API lpcClassDesc_t
+OBJ_FindClassW(uint32_t);
 
 ORCA_API lpcPropertyType_t
 OBJ_FindPropertyType(uint32_t);

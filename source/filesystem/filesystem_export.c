@@ -186,7 +186,7 @@ ORCA_API struct ClassDesc _Workspace = {
 	.DefaultName = "Workspace",
 	.ContentType = "Workspace",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { NULL },
+	.ParentClasses = { 0 },
 	.ClassID = ID_Workspace,
 	.ClassSize = sizeof(struct Workspace),
 	.Properties = WorkspaceProperties,
@@ -288,7 +288,7 @@ ORCA_API struct ClassDesc _Project = {
 	.DefaultName = "Project",
 	.ContentType = "Project",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { NULL },
+	.ParentClasses = { 0 },
 	.ClassID = ID_Project,
 	.ClassSize = sizeof(struct Project),
 	.Properties = ProjectProperties,
@@ -319,7 +319,7 @@ ORCA_API struct ClassDesc _Library = {
 	.DefaultName = "Library",
 	.ContentType = "Library",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { NULL },
+	.ParentClasses = { 0 },
 	.ClassID = ID_Library,
 	.ClassSize = sizeof(struct Library),
 	.Properties = LibraryProperties,
@@ -344,13 +344,13 @@ void luaX_pushAnimationClipLibrary(lua_State *L, struct AnimationClipLibrary con
 struct AnimationClipLibrary* luaX_checkAnimationClipLibrary(lua_State *L, int idx) {
 	return GetAnimationClipLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _AnimationClipLibrary = {
 	.ClassName = "AnimationClipLibrary",
 	.DefaultName = "AnimationClipLibrary",
 	.ContentType = "AnimationClipLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_AnimationClipLibrary,
 	.ClassSize = sizeof(struct AnimationClipLibrary),
 	.Properties = AnimationClipLibraryProperties,
@@ -375,13 +375,13 @@ void luaX_pushScreenLibrary(lua_State *L, struct ScreenLibrary const* ScreenLibr
 struct ScreenLibrary* luaX_checkScreenLibrary(lua_State *L, int idx) {
 	return GetScreenLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _ScreenLibrary = {
 	.ClassName = "ScreenLibrary",
 	.DefaultName = "ScreenLibrary",
 	.ContentType = "ScreenLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_ScreenLibrary,
 	.ClassSize = sizeof(struct ScreenLibrary),
 	.Properties = ScreenLibraryProperties,
@@ -406,13 +406,13 @@ void luaX_pushMaterialTypeLibrary(lua_State *L, struct MaterialTypeLibrary const
 struct MaterialTypeLibrary* luaX_checkMaterialTypeLibrary(lua_State *L, int idx) {
 	return GetMaterialTypeLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _MaterialTypeLibrary = {
 	.ClassName = "MaterialTypeLibrary",
 	.DefaultName = "MaterialTypeLibrary",
 	.ContentType = "MaterialTypeLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_MaterialTypeLibrary,
 	.ClassSize = sizeof(struct MaterialTypeLibrary),
 	.Properties = MaterialTypeLibraryProperties,
@@ -437,13 +437,13 @@ void luaX_pushMaterialLibrary(lua_State *L, struct MaterialLibrary const* Materi
 struct MaterialLibrary* luaX_checkMaterialLibrary(lua_State *L, int idx) {
 	return GetMaterialLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _MaterialLibrary = {
 	.ClassName = "MaterialLibrary",
 	.DefaultName = "MaterialLibrary",
 	.ContentType = "MaterialLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_MaterialLibrary,
 	.ClassSize = sizeof(struct MaterialLibrary),
 	.Properties = MaterialLibraryProperties,
@@ -468,13 +468,13 @@ void luaX_pushBrushLibrary(lua_State *L, struct BrushLibrary const* BrushLibrary
 struct BrushLibrary* luaX_checkBrushLibrary(lua_State *L, int idx) {
 	return GetBrushLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _BrushLibrary = {
 	.ClassName = "BrushLibrary",
 	.DefaultName = "BrushLibrary",
 	.ContentType = "BrushLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_BrushLibrary,
 	.ClassSize = sizeof(struct BrushLibrary),
 	.Properties = BrushLibraryProperties,
@@ -499,13 +499,13 @@ void luaX_pushMeshLibrary(lua_State *L, struct MeshLibrary const* MeshLibrary) {
 struct MeshLibrary* luaX_checkMeshLibrary(lua_State *L, int idx) {
 	return GetMeshLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _MeshLibrary = {
 	.ClassName = "MeshLibrary",
 	.DefaultName = "MeshLibrary",
 	.ContentType = "MeshLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_MeshLibrary,
 	.ClassSize = sizeof(struct MeshLibrary),
 	.Properties = MeshLibraryProperties,
@@ -530,13 +530,13 @@ void luaX_pushTimelineSequenceLibrary(lua_State *L, struct TimelineSequenceLibra
 struct TimelineSequenceLibrary* luaX_checkTimelineSequenceLibrary(lua_State *L, int idx) {
 	return GetTimelineSequenceLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _TimelineSequenceLibrary = {
 	.ClassName = "TimelineSequenceLibrary",
 	.DefaultName = "TimelineSequenceLibrary",
 	.ContentType = "TimelineSequenceLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_TimelineSequenceLibrary,
 	.ClassSize = sizeof(struct TimelineSequenceLibrary),
 	.Properties = TimelineSequenceLibraryProperties,
@@ -561,13 +561,13 @@ void luaX_pushSceneObjectLibrary(lua_State *L, struct SceneObjectLibrary const* 
 struct SceneObjectLibrary* luaX_checkSceneObjectLibrary(lua_State *L, int idx) {
 	return GetSceneObjectLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _SceneObjectLibrary = {
 	.ClassName = "SceneObjectLibrary",
 	.DefaultName = "SceneObjectLibrary",
 	.ContentType = "SceneObjectLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_SceneObjectLibrary,
 	.ClassSize = sizeof(struct SceneObjectLibrary),
 	.Properties = SceneObjectLibraryProperties,
@@ -592,13 +592,13 @@ void luaX_pushComposerLibrary(lua_State *L, struct ComposerLibrary const* Compos
 struct ComposerLibrary* luaX_checkComposerLibrary(lua_State *L, int idx) {
 	return GetComposerLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _ComposerLibrary = {
 	.ClassName = "ComposerLibrary",
 	.DefaultName = "ComposerLibrary",
 	.ContentType = "ComposerLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_ComposerLibrary,
 	.ClassSize = sizeof(struct ComposerLibrary),
 	.Properties = ComposerLibraryProperties,
@@ -623,13 +623,13 @@ void luaX_pushPipelineItemLibrary(lua_State *L, struct PipelineItemLibrary const
 struct PipelineItemLibrary* luaX_checkPipelineItemLibrary(lua_State *L, int idx) {
 	return GetPipelineItemLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _PipelineItemLibrary = {
 	.ClassName = "PipelineItemLibrary",
 	.DefaultName = "PipelineItemLibrary",
 	.ContentType = "PipelineItemLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_PipelineItemLibrary,
 	.ClassSize = sizeof(struct PipelineItemLibrary),
 	.Properties = PipelineItemLibraryProperties,
@@ -654,13 +654,13 @@ void luaX_pushSceneLibrary(lua_State *L, struct SceneLibrary const* SceneLibrary
 struct SceneLibrary* luaX_checkSceneLibrary(lua_State *L, int idx) {
 	return GetSceneLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _SceneLibrary = {
 	.ClassName = "SceneLibrary",
 	.DefaultName = "SceneLibrary",
 	.ContentType = "SceneLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_SceneLibrary,
 	.ClassSize = sizeof(struct SceneLibrary),
 	.Properties = SceneLibraryProperties,
@@ -685,13 +685,13 @@ void luaX_pushTrajectoryLibrary(lua_State *L, struct TrajectoryLibrary const* Tr
 struct TrajectoryLibrary* luaX_checkTrajectoryLibrary(lua_State *L, int idx) {
 	return GetTrajectoryLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _TrajectoryLibrary = {
 	.ClassName = "TrajectoryLibrary",
 	.DefaultName = "TrajectoryLibrary",
 	.ContentType = "TrajectoryLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_TrajectoryLibrary,
 	.ClassSize = sizeof(struct TrajectoryLibrary),
 	.Properties = TrajectoryLibraryProperties,
@@ -716,13 +716,13 @@ void luaX_pushTransitionLibrary(lua_State *L, struct TransitionLibrary const* Tr
 struct TransitionLibrary* luaX_checkTransitionLibrary(lua_State *L, int idx) {
 	return GetTransitionLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _TransitionLibrary = {
 	.ClassName = "TransitionLibrary",
 	.DefaultName = "TransitionLibrary",
 	.ContentType = "TransitionLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_TransitionLibrary,
 	.ClassSize = sizeof(struct TransitionLibrary),
 	.Properties = TransitionLibraryProperties,
@@ -747,13 +747,13 @@ void luaX_pushSplineLibrary(lua_State *L, struct SplineLibrary const* SplineLibr
 struct SplineLibrary* luaX_checkSplineLibrary(lua_State *L, int idx) {
 	return GetSplineLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _SplineLibrary = {
 	.ClassName = "SplineLibrary",
 	.DefaultName = "SplineLibrary",
 	.ContentType = "SplineLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_SplineLibrary,
 	.ClassSize = sizeof(struct SplineLibrary),
 	.Properties = SplineLibraryProperties,
@@ -778,13 +778,13 @@ void luaX_pushPrefabLibrary(lua_State *L, struct PrefabLibrary const* PrefabLibr
 struct PrefabLibrary* luaX_checkPrefabLibrary(lua_State *L, int idx) {
 	return GetPrefabLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _PrefabLibrary = {
 	.ClassName = "PrefabLibrary",
 	.DefaultName = "PrefabLibrary",
 	.ContentType = "PrefabLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_PrefabLibrary,
 	.ClassSize = sizeof(struct PrefabLibrary),
 	.Properties = PrefabLibraryProperties,
@@ -809,13 +809,13 @@ void luaX_pushProfileLibrary(lua_State *L, struct ProfileLibrary const* ProfileL
 struct ProfileLibrary* luaX_checkProfileLibrary(lua_State *L, int idx) {
 	return GetProfileLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _ProfileLibrary = {
 	.ClassName = "ProfileLibrary",
 	.DefaultName = "ProfileLibrary",
 	.ContentType = "ProfileLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_ProfileLibrary,
 	.ClassSize = sizeof(struct ProfileLibrary),
 	.Properties = ProfileLibraryProperties,
@@ -842,13 +842,13 @@ void luaX_pushEnginePluginLibrary(lua_State *L, struct EnginePluginLibrary const
 struct EnginePluginLibrary* luaX_checkEnginePluginLibrary(lua_State *L, int idx) {
 	return GetEnginePluginLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _EnginePluginLibrary = {
 	.ClassName = "EnginePluginLibrary",
 	.DefaultName = "EnginePluginLibrary",
 	.ContentType = "EnginePluginLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_EnginePluginLibrary,
 	.ClassSize = sizeof(struct EnginePluginLibrary),
 	.Properties = EnginePluginLibraryProperties,
@@ -873,13 +873,13 @@ void luaX_pushShortcutLibrary(lua_State *L, struct ShortcutLibrary const* Shortc
 struct ShortcutLibrary* luaX_checkShortcutLibrary(lua_State *L, int idx) {
 	return GetShortcutLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _ShortcutLibrary = {
 	.ClassName = "ShortcutLibrary",
 	.DefaultName = "ShortcutLibrary",
 	.ContentType = "ShortcutLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_ShortcutLibrary,
 	.ClassSize = sizeof(struct ShortcutLibrary),
 	.Properties = ShortcutLibraryProperties,
@@ -904,13 +904,13 @@ void luaX_pushLayerLibrary(lua_State *L, struct LayerLibrary const* LayerLibrary
 struct LayerLibrary* luaX_checkLayerLibrary(lua_State *L, int idx) {
 	return GetLayerLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _LayerLibrary = {
 	.ClassName = "LayerLibrary",
 	.DefaultName = "LayerLibrary",
 	.ContentType = "LayerLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_LayerLibrary,
 	.ClassSize = sizeof(struct LayerLibrary),
 	.Properties = LayerLibraryProperties,
@@ -935,13 +935,13 @@ void luaX_pushAnimationLibrary(lua_State *L, struct AnimationLibrary const* Anim
 struct AnimationLibrary* luaX_checkAnimationLibrary(lua_State *L, int idx) {
 	return GetAnimationLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _AnimationLibrary = {
 	.ClassName = "AnimationLibrary",
 	.DefaultName = "AnimationLibrary",
 	.ContentType = "AnimationLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_AnimationLibrary,
 	.ClassSize = sizeof(struct AnimationLibrary),
 	.Properties = AnimationLibraryProperties,
@@ -966,13 +966,13 @@ void luaX_pushTagLibrary(lua_State *L, struct TagLibrary const* TagLibrary) {
 struct TagLibrary* luaX_checkTagLibrary(lua_State *L, int idx) {
 	return GetTagLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _TagLibrary = {
 	.ClassName = "TagLibrary",
 	.DefaultName = "TagLibrary",
 	.ContentType = "TagLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_TagLibrary,
 	.ClassSize = sizeof(struct TagLibrary),
 	.Properties = TagLibraryProperties,
@@ -997,13 +997,13 @@ void luaX_pushThemeLibrary(lua_State *L, struct ThemeLibrary const* ThemeLibrary
 struct ThemeLibrary* luaX_checkThemeLibrary(lua_State *L, int idx) {
 	return GetThemeLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _ThemeLibrary = {
 	.ClassName = "ThemeLibrary",
 	.DefaultName = "ThemeLibrary",
 	.ContentType = "ThemeLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_ThemeLibrary,
 	.ClassSize = sizeof(struct ThemeLibrary),
 	.Properties = ThemeLibraryProperties,
@@ -1028,13 +1028,13 @@ void luaX_pushResourceExportTagLibrary(lua_State *L, struct ResourceExportTagLib
 struct ResourceExportTagLibrary* luaX_checkResourceExportTagLibrary(lua_State *L, int idx) {
 	return GetResourceExportTagLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _ResourceExportTagLibrary = {
 	.ClassName = "ResourceExportTagLibrary",
 	.DefaultName = "ResourceExportTagLibrary",
 	.ContentType = "ResourceExportTagLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_ResourceExportTagLibrary,
 	.ClassSize = sizeof(struct ResourceExportTagLibrary),
 	.Properties = ResourceExportTagLibraryProperties,
@@ -1059,13 +1059,13 @@ void luaX_pushLocaleLibrary(lua_State *L, struct LocaleLibrary const* LocaleLibr
 struct LocaleLibrary* luaX_checkLocaleLibrary(lua_State *L, int idx) {
 	return GetLocaleLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _LocaleLibrary = {
 	.ClassName = "LocaleLibrary",
 	.DefaultName = "LocaleLibrary",
 	.ContentType = "LocaleLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_LocaleLibrary,
 	.ClassSize = sizeof(struct LocaleLibrary),
 	.Properties = LocaleLibraryProperties,
@@ -1090,13 +1090,13 @@ void luaX_pushDataSourceLibrary(lua_State *L, struct DataSourceLibrary const* Da
 struct DataSourceLibrary* luaX_checkDataSourceLibrary(lua_State *L, int idx) {
 	return GetDataSourceLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _DataSourceLibrary = {
 	.ClassName = "DataSourceLibrary",
 	.DefaultName = "DataSourceLibrary",
 	.ContentType = "DataSourceLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_DataSourceLibrary,
 	.ClassSize = sizeof(struct DataSourceLibrary),
 	.Properties = DataSourceLibraryProperties,
@@ -1121,13 +1121,13 @@ void luaX_pushPageTransitionCollectionLibrary(lua_State *L, struct PageTransitio
 struct PageTransitionCollectionLibrary* luaX_checkPageTransitionCollectionLibrary(lua_State *L, int idx) {
 	return GetPageTransitionCollectionLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _PageTransitionCollectionLibrary = {
 	.ClassName = "PageTransitionCollectionLibrary",
 	.DefaultName = "PageTransitionCollectionLibrary",
 	.ContentType = "PageTransitionCollectionLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_PageTransitionCollectionLibrary,
 	.ClassSize = sizeof(struct PageTransitionCollectionLibrary),
 	.Properties = PageTransitionCollectionLibraryProperties,
@@ -1152,13 +1152,13 @@ void luaX_pushTextureLibrary(lua_State *L, struct TextureLibrary const* TextureL
 struct TextureLibrary* luaX_checkTextureLibrary(lua_State *L, int idx) {
 	return GetTextureLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _TextureLibrary = {
 	.ClassName = "TextureLibrary",
 	.DefaultName = "TextureLibrary",
 	.ContentType = "TextureLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_TextureLibrary,
 	.ClassSize = sizeof(struct TextureLibrary),
 	.Properties = TextureLibraryProperties,
@@ -1183,13 +1183,13 @@ void luaX_pushStyleLibrary(lua_State *L, struct StyleLibrary const* StyleLibrary
 struct StyleLibrary* luaX_checkStyleLibrary(lua_State *L, int idx) {
 	return GetStyleLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _StyleLibrary = {
 	.ClassName = "StyleLibrary",
 	.DefaultName = "StyleLibrary",
 	.ContentType = "StyleLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_StyleLibrary,
 	.ClassSize = sizeof(struct StyleLibrary),
 	.Properties = StyleLibraryProperties,
@@ -1214,13 +1214,13 @@ void luaX_pushStateManagerLibrary(lua_State *L, struct StateManagerLibrary const
 struct StateManagerLibrary* luaX_checkStateManagerLibrary(lua_State *L, int idx) {
 	return GetStateManagerLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _StateManagerLibrary = {
 	.ClassName = "StateManagerLibrary",
 	.DefaultName = "StateManagerLibrary",
 	.ContentType = "StateManagerLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_StateManagerLibrary,
 	.ClassSize = sizeof(struct StateManagerLibrary),
 	.Properties = StateManagerLibraryProperties,
@@ -1245,13 +1245,13 @@ void luaX_pushConnectServiceLibrary(lua_State *L, struct ConnectServiceLibrary c
 struct ConnectServiceLibrary* luaX_checkConnectServiceLibrary(lua_State *L, int idx) {
 	return GetConnectServiceLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _ConnectServiceLibrary = {
 	.ClassName = "ConnectServiceLibrary",
 	.DefaultName = "ConnectServiceLibrary",
 	.ContentType = "ConnectServiceLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_ConnectServiceLibrary,
 	.ClassSize = sizeof(struct ConnectServiceLibrary),
 	.Properties = ConnectServiceLibraryProperties,
@@ -1276,13 +1276,13 @@ void luaX_pushConnectUserServiceLibrary(lua_State *L, struct ConnectUserServiceL
 struct ConnectUserServiceLibrary* luaX_checkConnectUserServiceLibrary(lua_State *L, int idx) {
 	return GetConnectUserServiceLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _ConnectUserServiceLibrary = {
 	.ClassName = "ConnectUserServiceLibrary",
 	.DefaultName = "ConnectUserServiceLibrary",
 	.ContentType = "ConnectUserServiceLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_ConnectUserServiceLibrary,
 	.ClassSize = sizeof(struct ConnectUserServiceLibrary),
 	.Properties = ConnectUserServiceLibraryProperties,
@@ -1307,13 +1307,13 @@ void luaX_pushSpriteLibrary(lua_State *L, struct SpriteLibrary const* SpriteLibr
 struct SpriteLibrary* luaX_checkSpriteLibrary(lua_State *L, int idx) {
 	return GetSpriteLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _SpriteLibrary = {
 	.ClassName = "SpriteLibrary",
 	.DefaultName = "SpriteLibrary",
 	.ContentType = "SpriteLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_SpriteLibrary,
 	.ClassSize = sizeof(struct SpriteLibrary),
 	.Properties = SpriteLibraryProperties,
@@ -1338,13 +1338,13 @@ void luaX_pushSpriteAnimationLibrary(lua_State *L, struct SpriteAnimationLibrary
 struct SpriteAnimationLibrary* luaX_checkSpriteAnimationLibrary(lua_State *L, int idx) {
 	return GetSpriteAnimationLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _SpriteAnimationLibrary = {
 	.ClassName = "SpriteAnimationLibrary",
 	.DefaultName = "SpriteAnimationLibrary",
 	.ContentType = "SpriteAnimationLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_SpriteAnimationLibrary,
 	.ClassSize = sizeof(struct SpriteAnimationLibrary),
 	.Properties = SpriteAnimationLibraryProperties,
@@ -1369,13 +1369,13 @@ void luaX_pushImageLibrary(lua_State *L, struct ImageLibrary const* ImageLibrary
 struct ImageLibrary* luaX_checkImageLibrary(lua_State *L, int idx) {
 	return GetImageLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _ImageLibrary = {
 	.ClassName = "ImageLibrary",
 	.DefaultName = "ImageLibrary",
 	.ContentType = "ImageLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_ImageLibrary,
 	.ClassSize = sizeof(struct ImageLibrary),
 	.Properties = ImageLibraryProperties,
@@ -1400,13 +1400,13 @@ void luaX_pushFontLibrary(lua_State *L, struct FontLibrary const* FontLibrary) {
 struct FontLibrary* luaX_checkFontLibrary(lua_State *L, int idx) {
 	return GetFontLibrary(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Library;
+#define ID_Library 0xa8532270
 ORCA_API struct ClassDesc _FontLibrary = {
 	.ClassName = "FontLibrary",
 	.DefaultName = "FontLibrary",
 	.ContentType = "FontLibrary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Library, NULL },
+	.ParentClasses = { ID_Library, 0 },
 	.ClassID = ID_FontLibrary,
 	.ClassSize = sizeof(struct FontLibrary),
 	.Properties = FontLibraryProperties,
@@ -1436,7 +1436,7 @@ ORCA_API struct ClassDesc _LocaleReferenceItem = {
 	.DefaultName = "LocaleReferenceItem",
 	.ContentType = "LocaleReferenceItem",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { NULL },
+	.ParentClasses = { 0 },
 	.ClassID = ID_LocaleReferenceItem,
 	.ClassSize = sizeof(struct LocaleReferenceItem),
 	.Properties = LocaleReferenceItemProperties,
@@ -1467,7 +1467,7 @@ ORCA_API struct ClassDesc _Tag = {
 	.DefaultName = "Tag",
 	.ContentType = "Tag",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { NULL },
+	.ParentClasses = { 0 },
 	.ClassID = ID_Tag,
 	.ClassSize = sizeof(struct Tag),
 	.Properties = TagProperties,
@@ -1497,7 +1497,7 @@ ORCA_API struct ClassDesc _EnginePlugin = {
 	.DefaultName = "EnginePlugin",
 	.ContentType = "EnginePlugin",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { NULL },
+	.ParentClasses = { 0 },
 	.ClassID = ID_EnginePlugin,
 	.ClassSize = sizeof(struct EnginePlugin),
 	.Properties = EnginePluginProperties,
@@ -1528,7 +1528,7 @@ ORCA_API struct ClassDesc _EngineMetaclass = {
 	.DefaultName = "EngineMetaclass",
 	.ContentType = "EngineMetaclass",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { NULL },
+	.ParentClasses = { 0 },
 	.ClassID = ID_EngineMetaclass,
 	.ClassSize = sizeof(struct EngineMetaclass),
 	.Properties = EngineMetaclassProperties,
@@ -1559,7 +1559,7 @@ ORCA_API struct ClassDesc _ThemeGroup = {
 	.DefaultName = "ThemeGroup",
 	.ContentType = "ThemeGroup",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { NULL },
+	.ParentClasses = { 0 },
 	.ClassID = ID_ThemeGroup,
 	.ClassSize = sizeof(struct ThemeGroup),
 	.Properties = ThemeGroupProperties,
@@ -1590,7 +1590,7 @@ ORCA_API struct ClassDesc _Theme = {
 	.DefaultName = "Theme",
 	.ContentType = "Theme",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { NULL },
+	.ParentClasses = { 0 },
 	.ClassID = ID_Theme,
 	.ClassSize = sizeof(struct Theme),
 	.Properties = ThemeProperties,
@@ -1620,7 +1620,7 @@ ORCA_API struct ClassDesc _Entry = {
 	.DefaultName = "Entry",
 	.ContentType = "Entry",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { NULL },
+	.ParentClasses = { 0 },
 	.ClassID = ID_Entry,
 	.ClassSize = sizeof(struct Entry),
 	.Properties = EntryProperties,
@@ -1650,7 +1650,7 @@ ORCA_API struct ClassDesc _ThemeDefaultValuesDictionary = {
 	.DefaultName = "ThemeDefaultValuesDictionary",
 	.ContentType = "ThemeDefaultValuesDictionary",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { NULL },
+	.ParentClasses = { 0 },
 	.ClassID = ID_ThemeDefaultValuesDictionary,
 	.ClassSize = sizeof(struct ThemeDefaultValuesDictionary),
 	.Properties = ThemeDefaultValuesDictionaryProperties,

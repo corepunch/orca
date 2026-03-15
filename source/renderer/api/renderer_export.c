@@ -459,7 +459,7 @@ ORCA_API struct ClassDesc _Texture = {
 	.DefaultName = "Texture",
 	.ContentType = "Texture",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { NULL },
+	.ParentClasses = { 0 },
 	.ClassID = ID_Texture,
 	.ClassSize = sizeof(struct Texture),
 	.Properties = TextureProperties,
@@ -510,13 +510,13 @@ void luaX_pushImage(lua_State *L, struct Image const* Image) {
 struct Image* luaX_checkImage(lua_State *L, int idx) {
 	return GetImage(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Texture;
+#define ID_Texture 0x994c5594
 ORCA_API struct ClassDesc _Image = {
 	.ClassName = "Image",
 	.DefaultName = "Image",
 	.ContentType = "Image",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Texture, NULL },
+	.ParentClasses = { ID_Texture, 0 },
 	.ClassID = ID_Image,
 	.ClassSize = sizeof(struct Image),
 	.Properties = ImageProperties,
@@ -550,13 +550,13 @@ void luaX_pushRenderTargetTexture(lua_State *L, struct RenderTargetTexture const
 struct RenderTargetTexture* luaX_checkRenderTargetTexture(lua_State *L, int idx) {
 	return GetRenderTargetTexture(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Texture;
+#define ID_Texture 0x994c5594
 ORCA_API struct ClassDesc _RenderTargetTexture = {
 	.ClassName = "RenderTargetTexture",
 	.DefaultName = "RenderTargetTexture",
 	.ContentType = "RenderTargetTexture",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Texture, NULL },
+	.ParentClasses = { ID_Texture, 0 },
 	.ClassID = ID_RenderTargetTexture,
 	.ClassSize = sizeof(struct RenderTargetTexture),
 	.Properties = RenderTargetTextureProperties,
@@ -589,13 +589,13 @@ void luaX_pushCubeMapTexture(lua_State *L, struct CubeMapTexture const* CubeMapT
 struct CubeMapTexture* luaX_checkCubeMapTexture(lua_State *L, int idx) {
 	return GetCubeMapTexture(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Texture;
+#define ID_Texture 0x994c5594
 ORCA_API struct ClassDesc _CubeMapTexture = {
 	.ClassName = "CubeMapTexture",
 	.DefaultName = "CubeMapTexture",
 	.ContentType = "CubeMapTexture",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Texture, NULL },
+	.ParentClasses = { ID_Texture, 0 },
 	.ClassID = ID_CubeMapTexture,
 	.ClassSize = sizeof(struct CubeMapTexture),
 	.Properties = CubeMapTextureProperties,
@@ -623,13 +623,13 @@ void luaX_pushIOSurfaceTexture(lua_State *L, struct IOSurfaceTexture const* IOSu
 struct IOSurfaceTexture* luaX_checkIOSurfaceTexture(lua_State *L, int idx) {
 	return GetIOSurfaceTexture(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Texture;
+#define ID_Texture 0x994c5594
 ORCA_API struct ClassDesc _IOSurfaceTexture = {
 	.ClassName = "IOSurfaceTexture",
 	.DefaultName = "IOSurfaceTexture",
 	.ContentType = "IOSurfaceTexture",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Texture, NULL },
+	.ParentClasses = { ID_Texture, 0 },
 	.ClassID = ID_IOSurfaceTexture,
 	.ClassSize = sizeof(struct IOSurfaceTexture),
 	.Properties = IOSurfaceTextureProperties,
@@ -662,7 +662,7 @@ ORCA_API struct ClassDesc _VertexShader = {
 	.DefaultName = "VertexShader",
 	.ContentType = "VertexShader",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { NULL },
+	.ParentClasses = { 0 },
 	.ClassID = ID_VertexShader,
 	.ClassSize = sizeof(struct VertexShader),
 	.Properties = VertexShaderProperties,
@@ -695,7 +695,7 @@ ORCA_API struct ClassDesc _FragmentShader = {
 	.DefaultName = "FragmentShader",
 	.ContentType = "FragmentShader",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { NULL },
+	.ParentClasses = { 0 },
 	.ClassID = ID_FragmentShader,
 	.ClassSize = sizeof(struct FragmentShader),
 	.Properties = FragmentShaderProperties,
@@ -734,7 +734,7 @@ ORCA_API struct ClassDesc _Shader = {
 	.DefaultName = "Shader",
 	.ContentType = "Shader",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { NULL },
+	.ParentClasses = { 0 },
 	.ClassID = ID_Shader,
 	.ClassSize = sizeof(struct Shader),
 	.Properties = ShaderProperties,
@@ -779,7 +779,7 @@ ORCA_API struct ClassDesc _Material = {
 	.DefaultName = "Material",
 	.ContentType = "Material",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { NULL },
+	.ParentClasses = { 0 },
 	.ClassID = ID_Material,
 	.ClassSize = sizeof(struct Material),
 	.Properties = MaterialProperties,
@@ -816,7 +816,7 @@ ORCA_API struct ClassDesc _Mesh = {
 	.DefaultName = "Mesh",
 	.ContentType = "Mesh",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { NULL },
+	.ParentClasses = { 0 },
 	.ClassID = ID_Mesh,
 	.ClassSize = sizeof(struct Mesh),
 	.Properties = MeshProperties,
@@ -854,7 +854,7 @@ ORCA_API struct ClassDesc _FontFamily = {
 	.DefaultName = "FontFamily",
 	.ContentType = "FontFamily",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { NULL },
+	.ParentClasses = { 0 },
 	.ClassID = ID_FontFamily,
 	.ClassSize = sizeof(struct FontFamily),
 	.Properties = FontFamilyProperties,
@@ -884,7 +884,7 @@ ORCA_API struct ClassDesc _Trajectory = {
 	.DefaultName = "Trajectory",
 	.ContentType = "Trajectory",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { NULL },
+	.ParentClasses = { 0 },
 	.ClassID = ID_Trajectory,
 	.ClassSize = sizeof(struct Trajectory),
 	.Properties = TrajectoryProperties,
@@ -914,7 +914,7 @@ ORCA_API struct ClassDesc _Timeline = {
 	.DefaultName = "Timeline",
 	.ContentType = "Timeline",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { NULL },
+	.ParentClasses = { 0 },
 	.ClassID = ID_Timeline,
 	.ClassSize = sizeof(struct Timeline),
 	.Properties = TimelineProperties,

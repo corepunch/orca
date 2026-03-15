@@ -56,15 +56,21 @@ OBJ_RegisterClass(lpcClassDesc_t class)
 }
 
 lpcClassDesc_t
-OBJ_FindClass(lpcString_t classname)
+OBJ_FindClassW(uint32_t class_id)
 {
   FOR_LOOP(i, MAX_CLASSES) {
     lpcClassDesc_t cl = core.classes[i];
-    if (cl && !strcmp(cl->ClassName, classname)) {
+    if (cl->ClassID == class_id) {
       return cl;
     }
   }
   return NULL;
+}
+
+lpcClassDesc_t
+OBJ_FindClass(lpcString_t classname)
+{
+  return OBJ_FindClassW(fnv1a32(classname));
 }
 
 static bool_t
@@ -72,8 +78,8 @@ is_class_inherited(lpcClassDesc_t self, lpcClassDesc_t parent)
 {
   if (!self) return FALSE;
   if (!parent || self == parent) return TRUE;
-  for(lpcClassDesc_t const *cd = self->ParentClasses; *cd; cd++) {
-    if (is_class_inherited(*cd, parent)) {
+  for(uint32_t const *cd = self->ParentClasses; *cd; cd++) {
+    if (is_class_inherited(OBJ_FindClassW(*cd), parent)) {
       return TRUE;
     }
   }
