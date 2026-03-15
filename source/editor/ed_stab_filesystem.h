@@ -197,10 +197,12 @@ xmlNodePtr FS_FindLibrary(lpcString_t libname) {
 int FS_HasChildren(lpcString_t parent, lpcString_t filename) {
   char dir_path[1024]={0};
   snprintf(dir_path, sizeof(dir_path), "%s/%s", parent, filename);
-  if (!MainBundle) {
+  lpObject_t mainProject = OBJ_GetFirstChild(FS_GetWorkspace());
+  struct Directory* mainDir = mainProject ? GetDirectory(mainProject) : NULL;
+  if (!mainDir) {
     return FALSE;
   }
-  if (!strcmp(parent, MainBundle->path) && FS_FindLibrary(filename)) {
+  if (!strcmp(parent, mainDir->Path) && FS_FindLibrary(filename)) {
     return FS_FindLibrary(filename)->children != NULL;
 //    uint32_t library = strfind(libraries, kNumLibraries, name, szLibrary);
   }
@@ -388,23 +390,26 @@ FS_FilterFiles(lpcString_t szFilter,
 {
   if (strlen(szFilter) < 3)
     return;
-  FOR_EACH_LIST(struct Package, fs, MainBundle) {
-    if (fs->pack)
+  FOR_EACH_OBJECT(child, FS_GetWorkspace()) {
+    struct Directory* dir = GetDirectory(child);
+    if (!dir)
       continue;
-    FS_FilterFilesInDir(fs->path, szFilter, lpProc, lpParm);
+    FS_FilterFilesInDir(dir->Path, szFilter, lpProc, lpParm);
   }
 }
 
 ORCA_API BOOL FS_GetFileName(HANDLE ident, LPSTR path, BOOL fullpath)
 {
   if (!ident) {
-    if (MainBundle) {
+    lpObject_t mainProject = OBJ_GetFirstChild(FS_GetWorkspace());
+    struct Directory* mainDir = mainProject ? GetDirectory(mainProject) : NULL;
+    if (mainDir) {
       LPFILEHASH lpfh = &_fh.filehashes[(_fh.writehash++)%MAX_FILE_HASHES];
-      lpfh->dwHash = fnv1a32(MainBundle->path);
+      lpfh->dwHash = fnv1a32(mainDir->Path);
       lpfh->dwParent = 0;
-      lpfh->szFileName = MainBundle->path;
+      lpfh->szFileName = mainDir->Path;
 //      strcpy(path, fullpath ? search->path : search->relative);
-      strcpy(path, MainBundle->path);
+      strcpy(path, mainDir->Path);
       return TRUE;
     } else {
       return FALSE;
@@ -660,7 +665,7 @@ __xmlNewChild(xmlNodePtr p, lpcString_t name, lpcString_t args[])
 //}
 
 ORCA_API lpcString_t FS_GetMainBundleName(void) {
-  return MainBundle->name;
+  return OBJ_GetName(OBJ_GetFirstChild(FS_GetWorkspace()));
 }
 
 ORCA_API xmlDocPtr
