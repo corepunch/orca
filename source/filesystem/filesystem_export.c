@@ -310,6 +310,7 @@ typedef void* HasChangedFilesEventPtr;
 LRESULT Directory_OpenFile(struct Object*, struct Directory*, wParam_t, OpenFileEventPtr);
 LRESULT Directory_FileExists(struct Object*, struct Directory*, wParam_t, FileExistsEventPtr);
 LRESULT Directory_HasChangedFiles(struct Object*, struct Directory*, wParam_t, HasChangedFilesEventPtr);
+LRESULT Directory_Destroy(struct Object*, struct Directory*, wParam_t, DestroyEventPtr);
 
 static struct PropertyType const DirectoryProperties[kDirectoryNumProperties] = {
 	DECL(0xeb66e456, Directory, Path, Path, kDataTypeFixed), // Directory.Path
@@ -321,6 +322,7 @@ LRESULT DirectoryProc(struct Object* object, void* cmp, uint32_t message, wParam
 		case kEventOpenFile: return Directory_OpenFile(object, cmp, wparm, lparm); // OpenFile
 		case kEventFileExists: return Directory_FileExists(object, cmp, wparm, lparm); // FileExists
 		case kEventHasChangedFiles: return Directory_HasChangedFiles(object, cmp, wparm, lparm); // HasChangedFiles
+		case kEventDestroy: return Directory_Destroy(object, cmp, wparm, lparm); // Destroy
 	}
 	return FALSE;
 }
@@ -342,6 +344,44 @@ ORCA_API struct ClassDesc _Directory = {
 	.ObjProc = DirectoryProc,
 	.Defaults = &DirectoryDefaults,
 	.NumProperties = kDirectoryNumProperties,
+};
+
+LRESULT PackagePZ2_OpenFile(struct Object*, struct PackagePZ2*, wParam_t, OpenFileEventPtr);
+LRESULT PackagePZ2_FileExists(struct Object*, struct PackagePZ2*, wParam_t, FileExistsEventPtr);
+LRESULT PackagePZ2_HasChangedFiles(struct Object*, struct PackagePZ2*, wParam_t, HasChangedFilesEventPtr);
+LRESULT PackagePZ2_Destroy(struct Object*, struct PackagePZ2*, wParam_t, DestroyEventPtr);
+
+static struct PropertyType const PackagePZ2Properties[kPackagePZ2NumProperties] = {
+};
+static struct PackagePZ2 PackagePZ2Defaults = {
+};
+LRESULT PackagePZ2Proc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+		case kEventOpenFile: return PackagePZ2_OpenFile(object, cmp, wparm, lparm); // OpenFile
+		case kEventFileExists: return PackagePZ2_FileExists(object, cmp, wparm, lparm); // FileExists
+		case kEventHasChangedFiles: return PackagePZ2_HasChangedFiles(object, cmp, wparm, lparm); // HasChangedFiles
+		case kEventDestroy: return PackagePZ2_Destroy(object, cmp, wparm, lparm); // Destroy
+	}
+	return FALSE;
+}
+void luaX_pushPackagePZ2(lua_State *L, struct PackagePZ2 const* PackagePZ2) {
+	luaX_pushObject(L, CMP_GetObject(PackagePZ2));
+}
+struct PackagePZ2* luaX_checkPackagePZ2(lua_State *L, int idx) {
+	return GetPackagePZ2(luaX_checkObject(L, idx));
+}
+ORCA_API struct ClassDesc _PackagePZ2 = {
+	.ClassName = "PackagePZ2",
+	.DefaultName = "PackagePZ2",
+	.ContentType = "PackagePZ2",
+	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
+	.ParentClasses = { 0 },
+	.ClassID = ID_PackagePZ2,
+	.ClassSize = sizeof(struct PackagePZ2),
+	.Properties = PackagePZ2Properties,
+	.ObjProc = PackagePZ2Proc,
+	.Defaults = &PackagePZ2Defaults,
+	.NumProperties = kPackagePZ2NumProperties,
 };
 
 
@@ -1883,9 +1923,9 @@ int f_FS_FileExists(lua_State *L) {
 	lua_pushboolean(L, result_);
 	return 1;
 }
-int f_FS_AddSearchPath(lua_State *L) {
+int f_FS_LoadBundle(lua_State *L) {
 	const char* path = luaL_checkstring(L, 1);
-	struct Object* result_ = FS_AddSearchPath(L, path);
+	struct Object* result_ = FS_LoadBundle(L, path);
 	luaX_pushObject(L, result_);
 	return 1;
 }
@@ -1915,7 +1955,7 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 		{ "hasChangedFiles", f_FS_HasChangedFiles },
 		{ "makeDirectory", f_FS_MakeDirectory },
 		{ "fileExists", f_FS_FileExists },
-		{ "addSearchPath", f_FS_AddSearchPath },
+		{ "loadBundle", f_FS_LoadBundle },
 		{ "setWorkspace", f_FS_SetWorkspace },
 		{ "getWorkspace", f_FS_GetWorkspace },
 		{ "registerObject", f_FS_RegisterObject },
@@ -1928,6 +1968,7 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_OpenFileArgs(L), -2), "OpenFileArgs");
 	lua_setfield(L, ((void)luaopen_orca_FileExistsArgs(L), -2), "FileExistsArgs");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Directory), -2), "Directory");
+	lua_setfield(L, ((void)lua_pushclass(L, &_PackagePZ2), -2), "PackagePZ2");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Workspace), -2), "Workspace");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Project), -2), "Project");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Library), -2), "Library");

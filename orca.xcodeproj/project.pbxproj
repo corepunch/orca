@@ -164,7 +164,6 @@
 		782E9EEA2E97EF6F009C3946 /* filesystem_properties.h in Headers */ = {isa = PBXBuildFile; fileRef = 782E9EE82E97EF6F009C3946 /* filesystem_properties.h */; };
 		782E9EEB2E97EF6F009C3946 /* filesystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 782E9EE62E97EF6F009C3946 /* filesystem.h */; };
 		782E9EEC2E984174009C3946 /* liborca.filesystem.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA6E12E15241200FFCFD9 /* liborca.filesystem.so */; };
-		782E9EEE2E98E94C009C3946 /* p_project.c in Sources */ = {isa = PBXBuildFile; fileRef = 782E9EED2E98E946009C3946 /* p_project.c */; };
 		7831E4602F34DD0000236E4E /* r_tangents.h in Headers */ = {isa = PBXBuildFile; fileRef = 7831E45F2F34DCF700236E4E /* r_tangents.h */; };
 		7834B8D72F479D980071F07F /* PageHost.c in Sources */ = {isa = PBXBuildFile; fileRef = 7834B8D62F479D940071F07F /* PageHost.c */; };
 		783976FF2E54B25B00DCFC0F /* core.h in Headers */ = {isa = PBXBuildFile; fileRef = 783976FE2E54B25900DCFC0F /* core.h */; };
@@ -215,6 +214,8 @@
 		789A97D72F65490800FD32A9 /* geometry_ops.c in Sources */ = {isa = PBXBuildFile; fileRef = 789A97D12F65490800FD32A9 /* geometry_ops.c */; };
 		78A5AFA42F66BA0200E6A765 /* pakfile.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A5AFA32F66B9FA00E6A765 /* pakfile.c */; };
 		78A5AFA52F66C81E00E6A765 /* liborca.platform.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; };
+		78A5AFAA2F67395E00E6A765 /* Directory.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A5AFA92F67395B00E6A765 /* Directory.c */; };
+		78A5AFAC2F673B6000E6A765 /* io_open.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A5AFAB2F673B5A00E6A765 /* io_open.c */; };
 		78AF62512F562AEB008D08A3 /* p_program.c in Sources */ = {isa = PBXBuildFile; fileRef = 78FD53222D8F2A8800122823 /* p_program.c */; };
 		78AF62CB2F58BE63008D08A3 /* UIKit.c in Headers */ = {isa = PBXBuildFile; fileRef = 78AF62CA2F58BE5B008D08A3 /* UIKit.c */; };
 		78AF62CC2F58BECF008D08A3 /* UIKit.c in Sources */ = {isa = PBXBuildFile; fileRef = 78AF62CA2F58BE5B008D08A3 /* UIKit.c */; };
@@ -404,7 +405,6 @@
 		782E9EE62E97EF6F009C3946 /* filesystem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = filesystem.h; sourceTree = "<group>"; };
 		782E9EE72E97EF6F009C3946 /* filesystem_export.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = filesystem_export.c; sourceTree = "<group>"; };
 		782E9EE82E97EF6F009C3946 /* filesystem_properties.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = filesystem_properties.h; sourceTree = "<group>"; };
-		782E9EED2E98E946009C3946 /* p_project.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = p_project.c; sourceTree = "<group>"; };
 		7831E45F2F34DCF700236E4E /* r_tangents.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = r_tangents.h; sourceTree = "<group>"; };
 		78346DE62C96EFE800E0CFD1 /* SceneKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SceneKit.h; sourceTree = "<group>"; };
 		78346DE92C96F06100E0CFD1 /* PrefabView3D.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = PrefabView3D.c; sourceTree = "<group>"; };
@@ -494,6 +494,8 @@
 		789ED2E92C8EE475003A3CDF /* localization.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = localization.c; sourceTree = "<group>"; };
 		78A5AD052B7CFBCB005BF50C /* r_shape.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = r_shape.c; sourceTree = "<group>"; };
 		78A5AFA32F66B9FA00E6A765 /* pakfile.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = pakfile.c; sourceTree = "<group>"; };
+		78A5AFA92F67395B00E6A765 /* Directory.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Directory.c; sourceTree = "<group>"; };
+		78A5AFAB2F673B5A00E6A765 /* io_open.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = io_open.c; sourceTree = "<group>"; };
 		78A8213E2C873EF400ACD0A9 /* p_runtime.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = p_runtime.c; sourceTree = "<group>"; };
 		78AF62CA2F58BE5B008D08A3 /* UIKit.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = UIKit.c; sourceTree = "<group>"; };
 		78B136CF2AF3CC4E00AAAE53 /* r_shader.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = r_shader.c; sourceTree = "<group>"; };
@@ -812,6 +814,8 @@
 		7810D2662D58B1B800DB632F /* filesystem */ = {
 			isa = PBXGroup;
 			children = (
+				78A5AFAB2F673B5A00E6A765 /* io_open.c */,
+				78A5AFA92F67395B00E6A765 /* Directory.c */,
 				782E9EE72E97EF6F009C3946 /* filesystem_export.c */,
 				78B136F42AF3CC4E00AAAE53 /* filesystem.c */,
 				78A5AFA32F66B9FA00E6A765 /* pakfile.c */,
@@ -854,7 +858,6 @@
 			isa = PBXGroup;
 			children = (
 				78BC7E1E2D4BE7D800907913 /* p_json.c */,
-				782E9EED2E98E946009C3946 /* p_project.c */,
 				78346EBC2C99558F00E0CFD1 /* p_xml.c */,
 				78E4A99E2E93D71300E3A503 /* xml_local.h */,
 			);
@@ -1860,6 +1863,8 @@
 			files = (
 				78E4A9BB2E941A0300E3A503 /* server.c in Sources */,
 				781CA6E52E15245800FFCFD9 /* filesystem.c in Sources */,
+				78A5AFAA2F67395E00E6A765 /* Directory.c in Sources */,
+				78A5AFAC2F673B6000E6A765 /* io_open.c in Sources */,
 				78A5AFA42F66BA0200E6A765 /* pakfile.c in Sources */,
 				781CA6E62E15245800FFCFD9 /* w_filesystem.c in Sources */,
 				781FC4A62E894AC800571445 /* popen2.c in Sources */,
@@ -2033,7 +2038,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				78E4A9A32E93E0A200E3A503 /* xml_local.h in Sources */,
-				782E9EEE2E98E94C009C3946 /* p_project.c in Sources */,
 				781CA7DC2E15B24400FFCFD9 /* p_json.c in Sources */,
 				781CA7DD2E15B24400FFCFD9 /* p_xml.c in Sources */,
 			);

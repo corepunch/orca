@@ -75,7 +75,7 @@ static uint32_t unique_counter = 0;
 ORCA_API lpObject_t
 OBJ_MakeNativeObject(lpcClassDesc_t cls) {
   lpObject_t object = ZeroAlloc(sizeof(struct Object));
-  object->components = CMP_Create(object, cls);
+  object->components = OBJ_AddComponent(object, cls->ClassID);
 //  object->window = WI_Get(L);
 //  object->game = GetGame(L);
 //  object->localization = GetLocalization(L);
@@ -93,9 +93,9 @@ OBJ_Create(lua_State* L, lpcClassDesc_t cls)
   lpObject_t object = lua_newuserdata(L, sizeof(struct Object));
   luaL_setmetatable(L, API_TYPE_OBJECT);
   memset(object, 0, sizeof(struct Object));
-  object->components = CMP_Create(object, cls);
   object->unique = ++unique_counter;
   object->domain = L;
+  OBJ_AddComponent(object, cls->ClassID);
   OBJ_SetDirty(object);
   OBJ_SetName(object, cls->DefaultName);
   return object;

@@ -720,11 +720,6 @@ ORCA_API int luaopen_orca_parsers_xml(lua_State* L)
                 0);
   lua_setfield(L, -2, "XmlDoc");
   
-  API_CallRequire(L, "orca.filesystem", 1);
-  lua_pushcfunction(L, f_loadProject);
-  lua_setfield(L, -2, "loadBundle");
-  lua_pop(L, 1);
-  
   global_L = L;
   
   return 1;

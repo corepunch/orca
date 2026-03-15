@@ -42,8 +42,18 @@
     <handles event="OpenFile"/>
     <handles event="FileExists"/>
     <handles event="HasChangedFiles"/>
+    <handles event="Destroy"/>
     <property name="Path" type="fixed"/>
     <field name="_monitoredfiles" type="void" pointer="true"/>
+  </class>
+
+  <class name="PackagePZ2">
+    <handles event="OpenFile"/>
+    <handles event="FileExists"/>
+    <handles event="HasChangedFiles"/>
+    <handles event="Destroy"/>
+    <property name="FileName" type="fixed"/>
+<!--    <field name="_monitoredfiles" type="void" pointer="true"/>-->
   </class>
 
   <class name="Workspace" />
@@ -228,7 +238,7 @@
     <returns type="bool">True if the file exists, false otherwise</returns>
   </function>
   
-  <function name="AddSearchPath" lua="true">
+  <function name="LoadBundle" lua="true">
     <summary>Adds a package to the resource search path</summary>
     <details>Creates a package from the specified directory path and adds it to the global resource search path. When loading resources (such as UI files, scripts, textures, or other assets), the system will search through all added packages in order to locate the requested file. The Lua state is used to maintain the list of active packages for script integration.  The function returns the created package for further reference or manipulation.</details>
     <arg name="path" type="string">The directory of the package to add to the search path</arg>

@@ -13,6 +13,13 @@ enum DirectoryProperties {
 	kDirectoryPath,
 	kDirectoryNumProperties	
 };
+// PackagePZ2
+#define ID_PackagePZ2 0xb6ebfd99
+#define GetPackagePZ2(_P) ((struct PackagePZ2*)((_P)?OBJ_GetComponent(_P,ID_PackagePZ2):NULL))
+#define PackagePZ2_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_PackagePZ2,sizeof(struct PackagePZ2),_N)
+enum PackagePZ2Properties {
+	kPackagePZ2NumProperties	
+};
 // Workspace
 #define ID_Workspace 0x27419f56
 #define GetWorkspace(_P) ((struct Workspace*)((_P)?OBJ_GetComponent(_P,ID_Workspace):NULL))

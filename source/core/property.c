@@ -278,7 +278,7 @@ PROP_Create(lua_State* L,
 }
 
 lpProperty_t
-CMP_CreateProperty(lua_State* L,
+OBJ_AddComponentProperty(lua_State* L,
                    struct component* comp,
                    lpcPropertyType_t desc)
 {

@@ -25,9 +25,6 @@ struct Package
   path_t path;
   PPACK pack;
   struct Package* next;
-#ifdef MONITOR_FILES
-  PMONITOREDFILE monitoredFiles;
-#endif
 };
 
 struct _xmlNode*
@@ -53,5 +50,7 @@ char buf_##__LINE__[256]; \
 snprintf(buf_##__LINE__, sizeof(buf_##__LINE__), FMT, ##__VA_ARGS__); \
 xmlSetProp(NODE, XMLSTR(PROP), XMLSTR(buf_##__LINE__)); \
 } while (0)
+
+struct file *_ReadOnDisk(FILE *fp);
 
 #endif

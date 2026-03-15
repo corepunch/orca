@@ -11,6 +11,7 @@
 #endif
 
 #include <include/orca.h>
+#include "fs_local.h"
 
 #define IDPAKHEADER MAKE_FOURCC('P', 'A', 'C', 'K')
 #define MAX_READ 0x10000
@@ -296,3 +297,76 @@ void _FreePack(PPACK pack) {
   free(pack);
 }
 
+char* _ExtractPackageXmlToTemp(PPACK pack) {
+  struct file* xmlFile = _ReadPakFile(pack, "package.xml");
+  if (!xmlFile) {
+    Con_Error("package.xml not found in pak");
+    return NULL;
+  }
+
+  #if defined(__APPLE__)
+    // Use mkstemp on macOS for secure temp file creation
+    char tmpName[] = "/tmp/orca_package_xml_macos_XXXXXX";
+    int fd = mkstemp(tmpName);
+    if (fd == -1) {
+      Con_Error("Failed to generate temp filename");
+      free(xmlFile);
+      return NULL;
+    }
+    FILE* tmp = fdopen(fd, "wb");
+    if (!tmp) {
+      Con_Error("Failed to open temp file");
+      close(fd);
+      remove(tmpName);
+      free(xmlFile);
+      return NULL;
+    }
+  #else
+    // Use tmpnam on non-Apple systems (note: tmpnam is considered unsafe, but used here for compatibility)
+    char tmpName[L_tmpnam];
+    if (!tmpnam(tmpName)) {
+      Con_Error("Failed to generate temp filename");
+      free(xmlFile);
+      return NULL;
+    }
+    FILE* tmp = fopen(tmpName, "wb");
+    if (!tmp) {
+      Con_Error("Failed to open temp file");
+      free(xmlFile);
+      return NULL;
+    }
+  #endif
+
+    if (fwrite(xmlFile->data, 1, xmlFile->size, tmp) != xmlFile->size) {
+      Con_Error("Failed to write to temp file");
+      fclose(tmp);
+      remove(tmpName);
+      free(xmlFile);
+      return NULL;
+    }
+
+    fclose(tmp);
+    free(xmlFile);
+
+    // Return a copy of the temp filename
+    return strdup(tmpName);
+}
+
+
+HANDLER(PackagePZ2, OpenFile) {
+  return FALSE;
+}
+
+
+HANDLER(PackagePZ2, Destroy) {
+  return FALSE;
+}
+
+
+HANDLER(PackagePZ2, FileExists) {
+  return FALSE;
+}
+
+HANDLER(PackagePZ2, HasChangedFiles) {
+  return FALSE;
+}

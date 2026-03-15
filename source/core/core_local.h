@@ -171,12 +171,10 @@ OBJ_NameEquals(lpObject_t object, lpcString_t name)
   return !strcmp(OBJ_GetName(object), name);
 }
 
-struct component*
-CMP_Create(lpObject_t, lpcClassDesc_t);
 lpProperty_t
-CMP_CreateProperty(lua_State*, struct component*, lpcPropertyType_t);
+OBJ_AddComponentProperty(lua_State*, struct component*, lpcPropertyType_t);
 //lpProperty_t
-//CMP_CreateProperty2(lua_State*, struct component*, lpcString_t);
+//OBJ_AddComponentProperty2(lua_State*, struct component*, lpcString_t);
 lpcString_t
 CMP_GetClassName(struct component*);
 lpObject_t

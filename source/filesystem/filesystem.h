@@ -51,7 +51,7 @@ ORCA_API bool_t
 FS_FileExists(const char*);
 /// @brief Adds a package to the resource search path
 ORCA_API struct Object*
-FS_AddSearchPath(struct lua_State*, const char*);
+FS_LoadBundle(struct lua_State*, const char*);
 /// @brief Sets the current workspace
 ORCA_API void
 FS_SetWorkspace(struct Object*);
@@ -103,6 +103,13 @@ struct Directory {
 };
 ORCA_API void luaX_pushDirectory(lua_State *L, struct Directory const* Directory);
 ORCA_API struct Directory* luaX_checkDirectory(lua_State *L, int idx);
+/** PackagePZ2 component */
+typedef struct PackagePZ2 PackagePZ2_t, *PackagePZ2Ptr, *lpPackagePZ2_t;
+typedef struct PackagePZ2 const *PackagePZ2CPtr, *lpcPackagePZ2_t;
+struct PackagePZ2 {
+};
+ORCA_API void luaX_pushPackagePZ2(lua_State *L, struct PackagePZ2 const* PackagePZ2);
+ORCA_API struct PackagePZ2* luaX_checkPackagePZ2(lua_State *L, int idx);
 /** Workspace component */
 typedef struct Workspace Workspace_t, *WorkspacePtr, *lpWorkspace_t;
 typedef struct Workspace const *WorkspaceCPtr, *lpcWorkspace_t;

@@ -10,10 +10,12 @@
 FOR_EACH_OBJECT(ITER, FS_GetWorkspace()) \
 if (!strncmp(OBJ_GetName(ITER), filename, strlen(OBJ_GetName(ITER))) && filename[strlen(OBJ_GetName(ITER))] == '/')
 
-PPACK _LoadPackFile(lpcString_t szPackfile);
+PPACK _LoadPackFile(lpcString_t filename);
 bool_t _FindPackFile(PPACK pak, lpcString_t basename);
 struct file* _ReadPakFile(PPACK pack, lpcString_t filename);
 void _FreePack(PPACK pack);
+char* _ExtractPackageXmlToTemp(PPACK pack);
+static struct Package *MainBundle=NULL;
 
 static lpObject_t workspace = NULL;
 
@@ -91,67 +93,6 @@ FS_JoinPaths(lpcString_t base, lpcString_t relative)
   return result;
 }
 
-int FS_FileLength(FILE* f)
-{
-  size_t pos, end;
-  pos = ftell(f);
-  fseek(f, 0, SEEK_END);
-  end = ftell(f);
-  fseek(f, pos, SEEK_SET);
-  return (int)end;
-}
-
-#ifdef MONITOR_FILES
-bool_t
-FS_GetModifiedTime(lpcString_t, longTime_t*);
-
-static void
-_WatchFile(struct Directory* psrch, lpcString_t filename)
-{
-  struct _MONITOREDFILE* files = psrch->_monitoredfiles;
-  FOR_EACH_LIST(struct _MONITOREDFILE, mf, files)
-  {
-    if (!strcmp(mf->Filename, filename)) {
-      return;
-    }
-  }
-  PMONITOREDFILE mf = ZeroAlloc(sizeof(struct _MONITOREDFILE));
-  strncpy(mf->Filename, filename, sizeof(mf->Filename));
-  FS_GetModifiedTime(filename, &mf->Modified);
-  ADD_TO_LIST(mf, files);
-  psrch->_monitoredfiles = files;
-}
-#endif
-
-//static lpcString_t
-//FS_GetPathName(lpcString_t path, lpcString_t name, int32_t maxlen)
-//{
-//  memset((char*)name, 0, maxlen);
-//  strncpy((char*)name, path, maxlen);
-//  return name;
-//}
-
-//static FILE*
-//_OpenFile(lpcString_t basename, struct Package *search)
-//{
-//  FILE* file = fopen(FS_JoinPaths(search->path, basename), "rb");
-//  if (file) {
-//    return file;
-//  } else {
-//    return NULL;
-//  }
-//}
-//
-//struct file *
-//_ReadOnDisk(FILE *fp) {
-//  uint32_t dwFileSize = FS_FileLength(fp);
-//  // add 1 to size to be able to add '/0' to the end
-//  struct file *pFile = ZeroAlloc(sizeof(struct file) + dwFileSize + 1);
-//  pFile->size = dwFileSize;
-//  fread(pFile->data, dwFileSize, 1, fp);
-//  return pFile;
-//}
-//
 //static struct file*
 //_ReadRawFile(struct Package *search, lpcString_t szFileName) {
 //  FILE* fp;
@@ -267,25 +208,19 @@ FS_LoadXML(lpcString_t szObjectName)
   return doc;
 }
 
-void FS_MoveFileSystem(struct Package *src, struct Package *dest) {
-  dest->next = src->next;
-  src->next = NULL;
-}
-
-static void FS_Release(struct Package *search) {
-#ifdef MONITOR_FILES
-  FOR_EACH_LIST(struct _MONITOREDFILE, mf, search->monitoredFiles) free(mf);
-#endif
-  SafeDelete(search->next, FS_Release);
-  SafeDelete(search->pack, _FreePack);
-  free(search);
-}
+//static void FS_Release(struct Package *search) {
+//  SafeDelete(search->next, FS_Release);
+//  SafeDelete(search->pack, _FreePack);
+//  free(search);
+//}
 
 void FS_Shutdown(void) {
   fprintf(stderr, "Shutting down filesystem\n");
 }
 
-void FS_RegisterObject(lpObject_t object, lpcString_t path) {
+void
+FS_RegisterObject(lpObject_t object, lpcString_t path)
+{
   if (GetProject(object)) {
     OBJ_AddChild(FS_GetWorkspace(), object, FALSE);
   } else {
@@ -317,53 +252,6 @@ void FS_RegisterObject(lpObject_t object, lpcString_t path) {
   }
 }
 
-ORCA_API lpcString_t PACK_GetName(struct Package *package) {
-  return package->name;
-}
-
-HANDLER(Directory, OpenFile) {
-  FILE* fp = fopen(FS_JoinPaths(pDirectory->Path, pOpenFile->FileName), "rb");
-  if (!fp)
-    return 0;
-#ifdef MONITOR_FILES
-  _WatchFile(pDirectory, FS_JoinPaths(pDirectory->Path, pOpenFile->FileName));
-#endif
-  uint32_t dwFileSize = FS_FileLength(fp);
-  // add 1 to size to be able to add '/0' to the end
-  struct file *pFile = ZeroAlloc(sizeof(struct file) + dwFileSize + 1);
-  pFile->size = dwFileSize;
-  fread(pFile->data, dwFileSize, 1, fp);
-  fclose(fp);
-  return (LRESULT)pFile;
-}
-
-HANDLER(Directory, FileExists) {
-  FILE* file = fopen(FS_JoinPaths(pDirectory->Path, pFileExists->FileName), "rb");
-  if (file) {
-    fclose(file);
-    return TRUE;
-  } else {
-    return FALSE;
-  }
-}
-
-HANDLER(Directory, HasChangedFiles) {
-#ifdef MONITOR_FILES
-  longTime_t time;
-  struct _MONITOREDFILE* files = pDirectory->_monitoredfiles;
-  FOR_EACH_LIST(struct _MONITOREDFILE, mf, files) {
-    if (FS_GetModifiedTime(mf->Filename, &time) && mf->Modified != time) {
-      mf->Modified = time;
-      return TRUE;
-    }
-  }
-  return FALSE;
-#else
-  return FALSE;
-#endif
-}
-
-
 bool_t
 FS_FileExists(lpcString_t path)
 {
@@ -381,6 +269,12 @@ struct file*
 FS_LoadFile(lpcString_t szFileName)
 {
   struct file* pFile;
+  FILE* fp = NULL;
+  if ((fp = fopen(szFileName, "rb"))) {
+    pFile = _ReadOnDisk(fp);
+    fclose(fp);
+    return pFile;
+  }
   FS_FindPackage(package, szFileName) {
     if ((pFile = (struct file*)OBJ_SendMessageW(package, kEventOpenFile, 0, &(struct OpenFileArgs){
       .FileName = szFileName + strlen(OBJ_GetName(package)) + 1,
@@ -410,48 +304,126 @@ FS_FreeFile(struct file* pFile)
   return NOERROR;
 }
 
-struct Object*
-FS_AddSearchPath(lua_State* L, lpcString_t szDirname)
-{
-  lpcString_t szName = FS_GetBaseName(szDirname);
-  // Prevent duplicates
+static void _AddLibrary(lpcClassDesc_t cd, void* param) {
+  lua_State *L = ((void**)param)[0];
+  FOR_EACH_OBJECT(lib, ((void**)param)[1]) {
+    if (OBJ_GetComponent(lib, cd->ClassID))
+      return;
+  }
+  lua_getfield(L, LUA_REGISTRYINDEX, cd->ClassName);
+  lua_call(L, 0, 1);
+  OBJ_AddChild(((void**)param)[1], luaX_checkObject(L, -1), FALSE);
+  lua_pop(L, 1);
+}
+
+static void _InitPropertyTypes(lpProject_t project) {
+  FOR_LOOP(i, project->NumPropertyTypes) {
+    lpPropertyType_t type = &project->PropertyTypes[i];
+    fixedString_t tmp={0};
+    if (*type->Category) {
+      snprintf(tmp, sizeof(tmp), "%s.%s", type->Category, type->Name);
+    } else {
+      strncpy(tmp, type->Name, sizeof(tmp));
+    }
+    lpcString_t dot = strrchr(type->Name, '.');
+    type->ShortIdentifier = dot ? fnv1a32(dot + 1) : fnv1a32(type->Name);
+    // type->ShortIdentifier = fnv1a32(type->Name);
+    type->FullIdentifier = fnv1a32(tmp);
+    type->DataSize = 4; // TODO: properly identify size of a property
+    OBJ_RegisterPropertyType(type);
+  }
+}
+
+static void _InitProjectRefences(lua_State *L, lpProject_t project, lpcString_t szDirname) {
+  FOR_LOOP(i, project->NumProjectReferences) {
+    FS_LoadBundle(L, FS_JoinPaths(szDirname, project->ProjectReferences[i].Path));
+  }
+}
+
+static bool_t _HasExistingPackages(lpcString_t szDirname, lpcString_t szName) {
   FOR_EACH_OBJECT(package, FS_GetWorkspace()) {
     if (GetDirectory(package) && !strcasecmp(GetDirectory(package)->Path, szDirname)) {
-      return NULL;
+      // skip quietly
+      return TRUE;
     }
     if (!strcasecmp(OBJ_GetName(package), szName)) {
       Con_Error("Cannot load package %s: name conflicts with already loaded package %s", szDirname, OBJ_GetName(package));
-      return NULL;
+      return TRUE;
     }
   }
-  lua_getglobal(L, "require");
-  lua_pushstring(L, "orca.filesystem");
-  lua_call(L, 1, 1);
-  path_t pakfile;
-  snprintf(pakfile, sizeof(pakfile), "%s.pz2", szDirname);
-  FILE* fp = fopen(pakfile, "rb");
-  if (fp) {
-//    lua_getfield(L, -1, "PackagePz2");
-    assert(!"Not implemented");
-    lua_pop(L, 1);
-    fclose(fp);
-  } else {
-    lua_getfield(L, -1, "Directory");
-    lua_newtable(L);
-    xmlWith(xmlDoc, doc, xmlReadFile(FS_JoinPaths(szDirname, "package.xml"), NULL, 0), xmlFreeDoc) {
-      xmlNodePtr root = xmlDocGetRootElement(doc);
-      xmlWith(xmlChar,Name,root?xmlGetProp(root,XMLSTR("Name")):NULL,xmlFree) {
-        lua_pushstring(L, (char*)Name);
-        lua_setfield(L, -2, "Name");
+  return FALSE;
+}
+
+struct ext_class {
+  lpcString_t ext;
+  uint32_t class_id;
+} classes[] = {
+  { "pz2", ID_PackagePZ2 },
+  { NULL, 0 }
+};
+
+static lpProject_t _InitProject(lua_State *L, lpcString_t szDirname) {
+  uint32_t class_id = ID_Directory;
+  path_t tmp, packpath;
+  snprintf(packpath, sizeof(packpath), "%s/package", szDirname);
+  for (struct ext_class *c = classes; c->ext; c++) {
+    snprintf(tmp, sizeof(tmp), "%s.%s", szDirname, c->ext);
+    FILE *fp = fopen(tmp, "rb");
+    if (fp) {
+      fclose(fp);
+      void* pack = _LoadPackFile(tmp);
+      char* path = _ExtractPackageXmlToTemp(pack);
+      if (path) {
+        strncpy(packpath, path, sizeof(packpath));
+        free(path);
       }
+      _FreePack(pack);
+      class_id = ID_PackagePZ2;
     }
-    lua_pushstring(L, szDirname);
-    lua_setfield(L, -2, "Path");
-    lua_call(L, 1, 1);
   }
-  struct Object* pPackage = luaX_checkObject(L, -1);
+
+  lua_getglobal(L, "require");
+  lua_pushstring(L, packpath);
+  if (lua_pcall(L, 1, 1, 0) || lua_pcall(L, 0, 1, 0)) {
+    API_CallRequire(L, "orca.filesystem", 1);
+    lua_getfield(L, -1, "Project");
+    if (lua_pcall(L, 0, 1, 0)) {
+      Con_Error("%s\n", lua_tostring(L, -1));
+      lua_pop(L, 1);
+      return NULL;
+    } else {
+      OBJ_SetName(luaX_checkObject(L, -1), FS_GetBaseName(szDirname));
+    }
+  }
+  OBJ_AddComponent(luaX_checkObject(L, -1), class_id);
+  return luaX_checkProject(L, -1);
+}
+
+struct Object*
+FS_LoadBundle(lua_State* L, lpcString_t szDirname)
+{
+  lpcString_t szName = FS_GetBaseName(szDirname);
+  // Prevent duplicates
+  if (_HasExistingPackages(szDirname, szName)) {
+    return NULL;
+  }
+    
+  lpProject_t project = _InitProject(L, szDirname);
+  // Safe exit if project loading failed
+  if (!project) {
+    Con_Error("Failed to initialize project %s", szDirname);
+    return NULL;
+  }
+
+  OBJ_EnumClasses(OBJ_FindClass("Library"), _AddLibrary, ((void*[]){ L, CMP_GetObject(project) }));
+  OBJ_AddChild(FS_GetWorkspace(), CMP_GetObject(project), FALSE);
+
+  _InitPropertyTypes(project);
+  _InitProjectRefences(L, project, szDirname);
+
   lua_pop(L, 1);
-  return OBJ_AddChild(FS_GetWorkspace(), pPackage, FALSE);
+
+  return OBJ_AddChild(FS_GetWorkspace(), CMP_GetObject(project), FALSE);
 }
 
 #include <source/editor/ed_stab_filesystem.h>

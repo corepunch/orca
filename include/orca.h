@@ -464,7 +464,7 @@ ORCA_API lpObject_t
 CMP_GetObject(void const*);
 
 ORCA_API struct component*
-OBJ_AddComponent(lpObject_t, lpcClassDesc_t);
+OBJ_AddComponent(lpObject_t, uint32_t class_id);
 
 ORCA_API void
 OBJ_AddStyleClass(lpObject_t,
