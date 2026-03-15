@@ -98,14 +98,18 @@ OBJ_EnumClasses(lpcClassDesc_t p, void (*fnProc)(lpcClassDesc_t, void*), void* p
 }
 
 void
-OBJ_EnumClassesBySuperClass(uint32_t superClassID,
-                             void (*fnProc)(lpcClassDesc_t, void*),
-                             void* param)
+OBJ_EnumClassesW(uint32_t classID,
+                 void (*fnProc)(lpcClassDesc_t, void*),
+                 void* param)
 {
   FOR_LOOP(i, MAX_CLASSES) {
     lpcClassDesc_t cl = core.classes[i];
-    if (cl && cl->SuperClassID == superClassID) {
-      fnProc(cl, param);
+    if (!cl) continue;
+    for (uint32_t const *cd = cl->ParentClasses; *cd; cd++) {
+      if (*cd == classID) {
+        fnProc(cl, param);
+        break;
+      }
     }
   }
 }

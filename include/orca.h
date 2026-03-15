@@ -417,7 +417,6 @@ struct ClassDesc
   uint32_t ParentClasses[16];
   uint32_t NumProperties;
   uint32_t ClassID;
-  uint32_t SuperClassID;
   uint32_t ClassSize;
   uint32_t MemorySize;
 };
@@ -499,9 +498,9 @@ ORCA_API void
 OBJ_EnumClasses(lpcClassDesc_t, void (*fnProc)(lpcClassDesc_t, void*), void*);
 
 ORCA_API void
-OBJ_EnumClassesBySuperClass(uint32_t superClassID,
-                             void (*fnProc)(lpcClassDesc_t, void*),
-                             void* param);
+OBJ_EnumClassesW(uint32_t classID,
+                 void (*fnProc)(lpcClassDesc_t, void*),
+                 void* param);
 
 ORCA_API void
 OBJ_EnumObjectClasses(lpObject_t pobj,

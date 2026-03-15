@@ -325,7 +325,7 @@ FS_MakePackage(lpcString_t szDirname, lpcString_t szName)
    * Plugins receive the base directory path and are responsible for
    * constructing the full file path (e.g. appending ".pz2", ".zip", …). */
   struct _LoadPackageCtx ctx = { .path = szDirname };
-  OBJ_EnumClassesBySuperClass(SCLASS_FILESYSTEM, _TryLoadPlugin, &ctx);
+  OBJ_EnumClassesW(ID_FileSystem, _TryLoadPlugin, &ctx);
   search->packData = ctx.packData;
   search->proc     = ctx.proc;
   return search;

@@ -300,7 +300,7 @@ void _FreePack(PPACK pack) {
 /*
  * pz2 PackageLoader plugin
  *
- * Implements a ClassDesc with SuperClassID == SCLASS_FILESYSTEM.  The single
+ * Implements a ClassDesc that inherits from ID_FileSystem.  The single
  * ObjProc handles kMsgPackageLoad / kMsgPackageFree / kMsgFileRead /
  * kMsgFileFind messages so that the filesystem module can drive pz2 packages
  * through the generic plugin proc interface.
@@ -338,10 +338,10 @@ Pz2PackageLoaderProc(lpObject_t object, void* userData,
 #define ID_Pz2PackageLoader 0x97f7e9da
 
 ORCA_API struct ClassDesc _Pz2PackageLoader = {
-  .ClassName    = "Pz2PackageLoader",
-  .DefaultName  = "Pz2PackageLoader",
-  .ClassID      = ID_Pz2PackageLoader,
-  .SuperClassID = SCLASS_FILESYSTEM,
-  .ObjProc      = Pz2PackageLoaderProc,
+  .ClassName     = "Pz2PackageLoader",
+  .DefaultName   = "Pz2PackageLoader",
+  .ClassID       = ID_Pz2PackageLoader,
+  .ParentClasses = { ID_FileSystem },
+  .ObjProc       = Pz2PackageLoaderProc,
 };
 

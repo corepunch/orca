@@ -5,39 +5,26 @@
 #include <include/version.h>
 
 /*
- * Superclass IDs identify the category of a plugin, similar to 3ds Max's
- * SuperClassID system.  Set ClassDesc.SuperClassID to one of these values to
- * declare what kind of plugin the ClassDesc provides.  The engine (and other
- * subsystems) use OBJ_EnumClassesBySuperClass() to locate all registered
- * plugins of a particular category at runtime.
- */
-
-/** Generic / uncategorised plugin. */
-#define SCLASS_GENERIC    0x00000000
-
-/** UI / scene node classes (buttons, panels, 3D nodes, …). */
-#define SCLASS_NODE       0x00000001
-
-/** Renderer plugins. */
-#define SCLASS_RENDERER   0x00000002
-
-/**
- * Filesystem / package-format loader plugins.
+ * Base ClassIDs for plugin categories.
  *
- * A ClassDesc with this SuperClassID must set its ObjProc to a
- * PackageLoaderProc that handles the kMsgPackage* and kMsgFile* messages
- * defined below.
+ * To create a plugin of a given category, list the corresponding ID in the
+ * plugin's ClassDesc.ParentClasses array.  The engine locates all plugins of
+ * a category at runtime using OBJ_EnumClassesW(ID_FileSystem, ...) etc.
+ *
+ *   ID_FileSystem — fnv1a32("FileSystem")
+ *   ID_Renderer   — fnv1a32("Renderer")
  */
-#define SCLASS_FILESYSTEM 0x00000003
+#define ID_FileSystem 0xe12a3bca
+#define ID_Renderer   0x594a391e
 
 /*
- * Message IDs for SCLASS_FILESYSTEM plugin procs.
+ * Message IDs for ID_FileSystem plugin procs.
  *
- * Each filesystem plugin implements ClassDesc.ObjProc as a PackageLoaderProc
- * (same signature as objectProc_t) and responds to these messages:
+ * Each filesystem plugin sets ClassDesc.ObjProc to a proc that responds to
+ * these messages.  ParentClasses must include ID_FileSystem.
  *
  *   kMsgPackageLoad — open a package.
- *     userData: NULL (no existing pack)
+ *     userData: NULL
  *     wParam:   (lpcString_t) base directory/path passed to FS_AddSearchPath
  *     lParam:   (void**) output — set *lParam to the opaque pack handle on success
  *     returns:  TRUE on success, FALSE if the format is not recognised
@@ -63,10 +50,10 @@
 #define kMsgFileFind    0x2e2f1280  /* fnv1a32("FileFind")    */
 
 /*
- * Message IDs for SCLASS_RENDERER plugin procs.
+ * Message IDs for ID_Renderer plugin procs.
  *
- * A renderer plugin sets ClassDesc.ObjProc to a RendererProc and responds to
- * these messages:
+ * A renderer plugin sets ClassDesc.ObjProc to a proc that responds to these
+ * messages.  ParentClasses must include ID_Renderer.
  *
  *   kMsgRendererCreate — allocate and initialise a renderer instance.
  *     userData: NULL
