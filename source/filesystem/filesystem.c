@@ -168,8 +168,8 @@ FS_FileExists(lpcString_t path)
   FS_GetPathName(path, name, sizeof(name));
   FS_FindPackage(search, name) {
     lpcString_t basename = name+search->namelen;
-    if (search->packData && search->loader) {
-      if (search->loader->FindFile(basename, search->packData)) {
+    if (search->packData && search->proc) {
+      if (search->proc(NULL, search->packData, kMsgFileFind, (wParam_t)basename, NULL)) {
         return TRUE;
       }
     } else {
@@ -208,8 +208,10 @@ _ReadRawFile(lpcString_t szFileName, struct Package *search) {
 
 ORCA_API struct file*
 FS_ReadPackageFile(lpcString_t szFileName, struct Package *search) {
-  if (search->packData && search->loader) {
-    return search->loader->ReadFile(szFileName, search->packData);
+  if (search->packData && search->proc) {
+    struct file* file = NULL;
+    search->proc(NULL, search->packData, kMsgFileRead, (wParam_t)szFileName, (lParam_t)&file);
+    return file;
   } else {
     return _ReadRawFile(szFileName, search);
   }
@@ -296,7 +298,7 @@ _SetPackageName(struct Package* pPackage, lpcString_t szName)
 struct _LoadPackageCtx {
   lpcString_t path;
   void* packData;
-  PackageLoaderDesc_t const* loader;
+  objectProc_t proc;
 };
 
 static void
@@ -304,11 +306,12 @@ _TryLoadPlugin(lpcClassDesc_t cls, void* param)
 {
   struct _LoadPackageCtx* ctx = (struct _LoadPackageCtx*)param;
   if (ctx->packData) return;
-  lpcPackageLoaderDesc_t desc = (lpcPackageLoaderDesc_t)cls->ClassData;
-  if (!desc || !desc->LoadPackage) return;
-  ctx->packData = desc->LoadPackage(ctx->path);
-  if (ctx->packData) {
-    ctx->loader = desc;
+  if (!cls->ObjProc) return;
+  void* packData = NULL;
+  cls->ObjProc(NULL, NULL, kMsgPackageLoad, (wParam_t)ctx->path, (lParam_t)&packData);
+  if (packData) {
+    ctx->packData = packData;
+    ctx->proc = cls->ObjProc;
   }
 }
 
@@ -324,7 +327,7 @@ FS_MakePackage(lpcString_t szDirname, lpcString_t szName)
   struct _LoadPackageCtx ctx = { .path = szDirname };
   OBJ_EnumClassesBySuperClass(SCLASS_FILESYSTEM, _TryLoadPlugin, &ctx);
   search->packData = ctx.packData;
-  search->loader   = ctx.loader;
+  search->proc     = ctx.proc;
   return search;
 }
 
@@ -390,8 +393,8 @@ static void FS_Release(struct Package *search) {
   FOR_EACH_LIST(struct _MONITOREDFILE, mf, search->monitoredFiles) free(mf);
 #endif
   SafeDelete(search->next, FS_Release);
-  if (search->packData && search->loader) {
-    search->loader->FreePackage(search->packData);
+  if (search->packData && search->proc) {
+    search->proc(NULL, search->packData, kMsgPackageFree, 0, NULL);
   }
   free(search);
 }

@@ -300,51 +300,48 @@ void _FreePack(PPACK pack) {
 /*
  * pz2 PackageLoader plugin
  *
- * Exposes the pz2 format as a ClassDesc with SuperClassID == SCLASS_FILESYSTEM
- * so that the filesystem module discovers it through the plugin registry.
+ * Implements a ClassDesc with SuperClassID == SCLASS_FILESYSTEM.  The single
+ * ObjProc handles kMsgPackageLoad / kMsgPackageFree / kMsgFileRead /
+ * kMsgFileFind messages so that the filesystem module can drive pz2 packages
+ * through the generic plugin proc interface.
  */
 
-static void*
-Pz2_LoadPackage(lpcString_t path)
+static LRESULT
+Pz2PackageLoaderProc(lpObject_t object, void* userData,
+                     uint32_t msgID, wParam_t wParam, lParam_t lParam)
 {
-  path_t pakfile = {0};
-  snprintf(pakfile, sizeof(pakfile), "%s.pz2", path);
-  return _LoadPackFile(pakfile);
+  switch (msgID) {
+    case kMsgPackageLoad: {
+      path_t pakfile = {0};
+      snprintf(pakfile, sizeof(pakfile), "%s.pz2", (lpcString_t)wParam);
+      void** output = (void**)lParam;
+      *output = _LoadPackFile(pakfile);
+      return *output ? TRUE : FALSE;
+    }
+    case kMsgPackageFree:
+      _FreePack((PPACK)userData);
+      return TRUE;
+    case kMsgFileRead: {
+      struct file** output = (struct file**)lParam;
+      *output = _ReadPakFile((lpcString_t)wParam, (PPACK)userData);
+      return *output ? TRUE : FALSE;
+    }
+    case kMsgFileFind:
+      return _FindPackFile((lpcString_t)wParam, (PPACK)userData);
+    default:
+      return FALSE;
+  }
+  return FALSE;
 }
-
-static void
-Pz2_FreePackage(void* pack)
-{
-  _FreePack((PPACK)pack);
-}
-
-static struct file*
-Pz2_ReadFile(lpcString_t filename, void* pack)
-{
-  return _ReadPakFile(filename, (PPACK)pack);
-}
-
-static bool_t
-Pz2_FindFile(lpcString_t filename, void* pack)
-{
-  return _FindPackFile(filename, (PPACK)pack);
-}
-
-static PackageLoaderDesc_t _Pz2LoaderDesc = {
-  .LoadPackage = Pz2_LoadPackage,
-  .FreePackage = Pz2_FreePackage,
-  .ReadFile    = Pz2_ReadFile,
-  .FindFile    = Pz2_FindFile,
-};
 
 /* ClassID == fnv1a32("Pz2PackageLoader") */
 #define ID_Pz2PackageLoader 0x97f7e9da
 
 ORCA_API struct ClassDesc _Pz2PackageLoader = {
-  .ClassName   = "Pz2PackageLoader",
-  .DefaultName = "Pz2PackageLoader",
-  .ClassID     = ID_Pz2PackageLoader,
+  .ClassName    = "Pz2PackageLoader",
+  .DefaultName  = "Pz2PackageLoader",
+  .ClassID      = ID_Pz2PackageLoader,
   .SuperClassID = SCLASS_FILESYSTEM,
-  .ClassData   = &_Pz2LoaderDesc,
+  .ObjProc      = Pz2PackageLoaderProc,
 };
 

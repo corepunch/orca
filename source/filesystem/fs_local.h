@@ -23,7 +23,7 @@ struct Package
   uint8_t namelen;
   path_t path;
   void* packData;
-  PackageLoaderDesc_t const* loader;
+  objectProc_t proc;
   struct Package* next;
 #ifdef MONITOR_FILES
   PMONITOREDFILE monitoredFiles;

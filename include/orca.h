@@ -410,7 +410,6 @@ struct ClassDesc
   objectProc_t ObjProc;
   lpcPropertyType_t Properties;
   void const *Defaults;
-  void const *ClassData;
   lpcString_t ClassName;
   lpcString_t DefaultName;
   lpcString_t ContentType;
