@@ -63,12 +63,6 @@ static luaL_Reg const orca_modules[] = {
   { NULL, NULL }
 };
 
-int f_registerEngineClass(lua_State *L) {
-  lua_pushvalue(L, 2);
-  lua_setfield(L, LUA_REGISTRYINDEX, luaL_checkstring(L, 1));
-  return 0;
-}
-
 static int f_async(lua_State* L) {
   const int nargs = lua_gettop(L);
   lua_State* co = lua_newthread(L);
@@ -128,14 +122,51 @@ static int f_orca_index(lua_State* L) {
 }
 #endif
 
-int f_register_loader(lua_State *L) {
-  assert(lua_type(L, 2) == LUA_TFUNCTION);
+int load_plugins(lua_State *L)
+{
+  int no_errors = 1;
+  char SHAREDIR[MAX_OSPATH];
 
-  lua_getfield(L, LUA_REGISTRYINDEX, "LOADERS");
-  lua_pushvalue(L, 2);
-  lua_setfield(L, -2, luaL_checkstring(L, 1));
+  lua_getglobal(L, "SHAREDIR");
+  strncpy(SHAREDIR, luaL_checkstring(L, -1), sizeof(SHAREDIR));
+  lua_pop(L, 1);
 
-  return 0;
+  lua_getglobal(L, "require");
+  lua_pushstring(L, "orca.system");
+  lua_call(L, 1, 1);                        // sys
+    
+  lua_getfield(L, -1, "list_dir");
+  lua_pushfstring(L, "%s/plugins", SHAREDIR);
+  lua_call(L, 1, 1);                        // iterator
+  
+  for (;;) {
+    lua_pushvalue(L, -1);
+    lua_call(L, 0, 1);                    // f
+    if (lua_isnil(L, -1)) break;
+    
+    const char *f = lua_tostring(L, -1);
+//    size_t n = strlen(f);
+//    if (n > 4 && !strcmp(f + n - 4, ".lua")) n -= 4;
+//    
+//    lua_getglobal(L, "require");
+//    lua_pushfstring(L, "plugins.%.*s", (int)n, f);
+    
+    lua_getglobal(L, "dofile");
+    lua_pushfstring(L, "%s/plugins/%s", SHAREDIR, f);
+    
+    if (lua_pcall(L, 1, 0, 0) == LUA_OK)
+//      fprintf(stderr, "Loaded plugin \"%.*s\"\n", (int)n, f);
+      fprintf(stderr, "Loaded plugin \"%s\"\n", f);
+    else {
+      fprintf(stderr, "%s\n", lua_tostring(L, -1));
+      lua_pop(L, 1);
+      no_errors = 0;
+    }
+    
+    lua_pop(L, 1);                        // pop f
+  }
+  
+  return no_errors;
 }
 
 static int f_find_metatable(lua_State* L) {
@@ -154,8 +185,6 @@ ORCA_API int luaopen_orca(lua_State* L)
   }
 
   luaL_newlib(L, ((luaL_Reg[]){
-    { "registerEngineClass", f_registerEngineClass },
-    { "register_loader", f_register_loader },
     { NULL, NULL }
   }));
 
@@ -174,21 +203,22 @@ ORCA_API int luaopen_orca(lua_State* L)
   lua_pushcfunction(L, f_async);
   lua_setfield(L, -2, "async");
 
-  if (luaL_dostring(L,
-                    "return function()\n"
-                    "\tlocal sys = require 'orca.system'\n"
-                    "\tlocal no_errors = true\n"
-                    "\tfor f in sys.list_dir(SHAREDIR..'/plugins') do\n"
-                    "\t\tlocal ok, err = pcall(require, 'plugins.'..f:gsub('.lua$', ''))\n"
-                    "\t\tif ok then io.stderr:write(string.format('Loaded plugin %q\\n', f:gsub('.lua$', '')))\n"
-                    "\t\telse io.stderr:write(err, '\\n') no_errors = false end\n"
-                    "\tend\n"
-                    "\treturn no_errors\n"
-                    "end\n") != LUA_OK)
-  {
-    Con_Error("%s\n", lua_tostring(L, -1));
-  }
-  assert(lua_type(L, -1) == LUA_TFUNCTION);
+//  if (luaL_dostring(L,
+//                    "return function()\n"
+//                    "\tlocal sys = require 'orca.system'\n"
+//                    "\tlocal no_errors = true\n"
+//                    "\tfor f in sys.list_dir(SHAREDIR..'/plugins') do\n"
+//                    "\t\tlocal ok, err = pcall(require, 'plugins.'..f:gsub('.lua$', ''))\n"
+//                    "\t\tif ok then io.stderr:write(string.format('Loaded plugin %q\\n', f:gsub('.lua$', '')))\n"
+//                    "\t\telse io.stderr:write(err, '\\n') no_errors = false end\n"
+//                    "\tend\n"
+//                    "\treturn no_errors\n"
+//                    "end\n") != LUA_OK)
+//  {
+//    Con_Error("%s\n", lua_tostring(L, -1));
+//  }
+//  assert(lua_type(L, -1) == LUA_TFUNCTION);
+  lua_pushcfunction(L, load_plugins);
   lua_setfield(L, -2, "init");
   
 #ifdef EASY_MODULE_ACCESS

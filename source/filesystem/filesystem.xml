@@ -6,7 +6,8 @@
   <event name="ReadCommands" type="void"/>
   
   <external struct="Package"/>
-  
+  <external struct="Object"/>
+
   <struct name="ProjectReference" sealed="true">
     <summary>External project reference</summary>
     <details>Consists of a name and a relative path to the project</details>
@@ -21,6 +22,29 @@
     <field name="Key" type="fixed">Associated key for the message, if applicable</field>
     <field name="Command" type="fixed">Command to execute when the message is received</field>
   </struct>
+
+  <struct name="OpenFileArgs">
+    <field name="FileName" type="string"/>
+  </struct>
+
+  <struct name="FileExistsArgs">
+    <summary>Checks if a file exists at the specified path</summary>
+    <details>Returns true if a file exists at the given path, false otherwise.  This function only checks for file existence and does not verify read permissions or whether the path points to a directory.</details>
+    <field name="FileName" type="string">The file path to check for existence</field>
+    <returns type="bool">True if the file exists, false otherwise</returns>
+  </struct>
+
+  <event name="OpenFile" type="OpenFileArgs"/>
+  <event name="FileExists" type="FileExistsArgs"/>
+  <event name="HasChangedFiles" type="void"/>
+  
+  <class name="Directory">
+    <handles event="OpenFile"/>
+    <handles event="FileExists"/>
+    <handles event="HasChangedFiles"/>
+    <property name="Path" type="fixed"/>
+    <field name="_monitoredfiles" type="void" pointer="true"/>
+  </class>
 
   <class name="Workspace" />
   
@@ -203,12 +227,12 @@
     <arg name="path" type="string">The file path to check for existence</arg>
     <returns type="bool">True if the file exists, false otherwise</returns>
   </function>
-
+  
   <function name="AddSearchPath" lua="true">
     <summary>Adds a package to the resource search path</summary>
     <details>Creates a package from the specified directory path and adds it to the global resource search path. When loading resources (such as UI files, scripts, textures, or other assets), the system will search through all added packages in order to locate the requested file. The Lua state is used to maintain the list of active packages for script integration.  The function returns the created package for further reference or manipulation.</details>
     <arg name="path" type="string">The directory of the package to add to the search path</arg>
-    <returns type="Package" pointer="true">Pointer to the created and registered package</returns>
+    <returns type="Object" pointer="true">Pointer to the created and registered package</returns>
   </function>
 
   <function name="SetWorkspace">

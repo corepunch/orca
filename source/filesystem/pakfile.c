@@ -265,7 +265,7 @@ _OpenPakFile(lpcString_t filename, PPACK pack, PPACKFILE desc)
   return NULL;
 }
 
-bool_t _FindPackFile(lpcString_t basename, PPACK pak) {
+bool_t _FindPackFile(PPACK pak, lpcString_t basename) {
   uint32_t identifier = fnv1a32(basename);
   for (int i = 0; i < pak->numfiles; i++) {
     if (pak->files[i].identifier == identifier) {
@@ -275,7 +275,7 @@ bool_t _FindPackFile(lpcString_t basename, PPACK pak) {
   return FALSE;
 }
 
-struct file* _ReadPakFile(lpcString_t filename, PPACK pack) {
+struct file* _ReadPakFile(PPACK pack, lpcString_t filename) {
   FILE* fp;
   struct file* file = NULL;
   struct _PACKFILE pf = { 0 };

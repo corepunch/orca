@@ -1,6 +1,18 @@
 #ifndef __FILESYSTEM_PROPERTIES_H__
 #define __FILESYSTEM_PROPERTIES_H__
 #define kEventReadCommands 0x23d83fd3
+#define kEventOpenFile 0xa2c038cf
+#define kEventFileExists 0x38dfc973
+#define kEventHasChangedFiles 0x5390a564
+// Directory
+#define ID_Directory 0x94226a28
+#define GetDirectory(_P) ((struct Directory*)((_P)?OBJ_GetComponent(_P,ID_Directory):NULL))
+#define Directory_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Directory,sizeof(struct Directory),_N)
+#define ID_Directory_Path 0xe78c5471 // Directory.Path
+enum DirectoryProperties {
+	kDirectoryPath,
+	kDirectoryNumProperties	
+};
 // Workspace
 #define ID_Workspace 0x27419f56
 #define GetWorkspace(_P) ((struct Workspace*)((_P)?OBJ_GetComponent(_P,ID_Workspace):NULL))

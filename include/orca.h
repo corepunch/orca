@@ -12,7 +12,7 @@ typedef unsigned char byte_t;
 typedef void* handle_t;
 typedef unsigned int uint32_t;
 typedef unsigned short uint16_t;
-typedef uint32_t LRESULT;
+typedef intptr_t LRESULT;
 typedef signed int HRESULT;
 typedef uint32_t wParam_t;
 typedef void* lParam_t;
@@ -445,10 +445,10 @@ ORCA_API void*
 CMP_GetUserData(struct component*);
 
 ORCA_API bool_t
-SV_RegisterMessageProc(int (*proc)(lua_State*, struct WI_Message*));
+SV_RegisterMessageProc(LRESULT (*proc)(lua_State*, struct WI_Message*));
 
 ORCA_API bool_t
-SV_UnregisterMessageProc(int (*proc)(lua_State*, struct WI_Message*));
+SV_UnregisterMessageProc(LRESULT (*proc)(lua_State*, struct WI_Message*));
 
 ORCA_API void
 OBJ_Release(lua_State *L, lpObject_t);

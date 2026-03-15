@@ -115,8 +115,9 @@ int f_OBJ_AddChild(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	struct Object* child = luaX_checkObject(L, 2);
 	bool_t is_template = lua_toboolean(L, 3);
-	OBJ_AddChild(this_, child, is_template );
-	return 0;
+	struct Object* result_ = OBJ_AddChild(this_, child, is_template);
+	luaX_pushObject(L, result_);
+	return 1;
 }
 int f_OBJ_RemoveFromParent(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);

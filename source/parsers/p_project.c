@@ -3,7 +3,6 @@
 
 #include "xml_local.h"
 
-extern struct file* FS_ReadPackageFile(lpcString_t, struct Package *);
 extern void FS_EnumDir2(lpcString_t, void (*callback)(lpcString_t,void*), void*);
 //ORCA_API lpObject_t FS_GetWorkspace(void);
 
@@ -50,12 +49,11 @@ extern lpProject_t luaX_checkProject(lua_State *L, int idx);
 
 int f_loadProject(lua_State* L) {
   lpcString_t szDirname = luaL_checkstring(L, 1);
-  struct Package* search = FS_AddSearchPath(L, szDirname);
-  if (!search) {
+  lpObject_t search = FS_AddSearchPath(L, szDirname);
+  if (!search)
     return 0;
-  }
   lua_getglobal(L, "require");
-  lua_pushfstring(L, "%spackage", PACK_GetName(search));
+  lua_pushfstring(L, "%s/package", OBJ_GetName(search));
   if (lua_pcall(L, 1, 1, 0) || lua_pcall(L, 0, 1, 0)) {
     API_CallRequire(L, "orca.filesystem", 1);
     lua_getfield(L, -1, "Project");
@@ -69,8 +67,7 @@ int f_loadProject(lua_State* L) {
   }
   lpProject_t project = luaX_checkProject(L, -1);
   
-  OBJ_EnumClasses(OBJ_FindClass("Library"), add_library,
-                  ((void*[]){ L, CMP_GetObject(project) }));
+  OBJ_EnumClasses(OBJ_FindClass("Library"), add_library, ((void*[]){ L, CMP_GetObject(project) }));
   
   FOR_LOOP(i, project->NumPropertyTypes) {
     lpPropertyType_t type = &project->PropertyTypes[i];

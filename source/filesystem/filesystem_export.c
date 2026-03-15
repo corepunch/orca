@@ -6,6 +6,9 @@
 // Package
 extern void luaX_pushPackage(lua_State *L, struct Package const* value);
 extern struct Package* luaX_checkPackage(lua_State *L, int index);
+// Object
+extern void luaX_pushObject(lua_State *L, struct Object const* value);
+extern struct Object* luaX_checkObject(lua_State *L, int index);
 
 void luaX_pushProjectReference(lua_State *L, struct ProjectReference const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
@@ -161,10 +164,186 @@ int luaopen_orca_SystemMessage(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
+void luaX_pushOpenFileArgs(lua_State *L, struct OpenFileArgs const* data) {
+	if (data == NULL) { lua_pushnil(L); return; }
+	struct OpenFileArgs* self = lua_newuserdata(L, sizeof(struct OpenFileArgs));
+	luaL_setmetatable(L, "OpenFileArgs");
+	memcpy(self, data, sizeof(struct OpenFileArgs));
+}
+struct OpenFileArgs* luaX_checkOpenFileArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "OpenFileArgs");
+}
+static int f_new_OpenFileArgs(lua_State *L) {
+	struct OpenFileArgs* self = lua_newuserdata(L, sizeof(struct OpenFileArgs));
+	luaL_setmetatable(L, "OpenFileArgs");
+	memset(self, 0, sizeof(struct OpenFileArgs));
+	if (lua_gettop(L) == 1) return 1;
+	if (lua_istable(L, 1)) {
+		lua_pop(L, (lua_getfield(L, 1, "FileName"), self->FileName = strdup(luaL_checkstring(L, -1)), 1));
+	} else {
+		self->FileName = strdup(luaL_checkstring(L, 1));
+	}
+	return 1;
+}
+
+
+int f_OpenFileArgs___index(lua_State *L) {
+	struct OpenFileArgs* self = luaX_checkOpenFileArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x5ffdd888: lua_pushstring(L, self->FileName); return 1; // FileName
+	}
+	return luaL_error(L, "Unknown field in OpenFileArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+int f_OpenFileArgs___newindex(lua_State *L) {
+	struct OpenFileArgs* self = luaX_checkOpenFileArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x5ffdd888: self->FileName = strdup(luaL_checkstring(L, 3)); return 0; // FileName
+	}
+	return luaL_error(L, "Unknown field in OpenFileArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
+static int f_OpenFileArgs___fromstring(lua_State *L) {
+	fixedString_t FileName;
+	struct OpenFileArgs self = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%s", FileName)) {
+	case 1: 
+		self.FileName = FileName;
+		return (luaX_pushOpenFileArgs(L, &self), 1);
+	default:
+		return luaL_error(L, "Invalid format for OpenFileArgs: %s", luaL_checkstring(L, 1));
+	}
+}
+static int f_OpenFileArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_OpenFileArgs(L));  // remove OpenFileArgs from stack and call constructor
+}
+int luaopen_orca_OpenFileArgs(lua_State *L) {
+	luaL_newmetatable(L, "OpenFileArgs");
+	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ "new", f_new_OpenFileArgs },
+		{ "fromstring", f_OpenFileArgs___fromstring },
+		{ "__newindex", f_OpenFileArgs___newindex },
+		{ "__index", f_OpenFileArgs___index },
+		{ NULL, NULL },
+	}), 0);
+	// Make OpenFileArgs creatable via constructor-like syntax
+	lua_newtable(L);
+	lua_pushcfunction(L, f_OpenFileArgs___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+	return 1;
+}
+void luaX_pushFileExistsArgs(lua_State *L, struct FileExistsArgs const* data) {
+	if (data == NULL) { lua_pushnil(L); return; }
+	struct FileExistsArgs* self = lua_newuserdata(L, sizeof(struct FileExistsArgs));
+	luaL_setmetatable(L, "FileExistsArgs");
+	memcpy(self, data, sizeof(struct FileExistsArgs));
+}
+struct FileExistsArgs* luaX_checkFileExistsArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "FileExistsArgs");
+}
+static int f_new_FileExistsArgs(lua_State *L) {
+	struct FileExistsArgs* self = lua_newuserdata(L, sizeof(struct FileExistsArgs));
+	luaL_setmetatable(L, "FileExistsArgs");
+	memset(self, 0, sizeof(struct FileExistsArgs));
+	if (lua_gettop(L) == 1) return 1;
+	if (lua_istable(L, 1)) {
+		lua_pop(L, (lua_getfield(L, 1, "FileName"), self->FileName = strdup(luaL_checkstring(L, -1)), 1));
+	} else {
+		self->FileName = strdup(luaL_checkstring(L, 1));
+	}
+	return 1;
+}
+
+
+int f_FileExistsArgs___index(lua_State *L) {
+	struct FileExistsArgs* self = luaX_checkFileExistsArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x5ffdd888: lua_pushstring(L, self->FileName); return 1; // FileName
+	}
+	return luaL_error(L, "Unknown field in FileExistsArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+int f_FileExistsArgs___newindex(lua_State *L) {
+	struct FileExistsArgs* self = luaX_checkFileExistsArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x5ffdd888: self->FileName = strdup(luaL_checkstring(L, 3)); return 0; // FileName
+	}
+	return luaL_error(L, "Unknown field in FileExistsArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
+static int f_FileExistsArgs___fromstring(lua_State *L) {
+	fixedString_t FileName;
+	struct FileExistsArgs self = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%s", FileName)) {
+	case 1: 
+		self.FileName = FileName;
+		return (luaX_pushFileExistsArgs(L, &self), 1);
+	default:
+		return luaL_error(L, "Invalid format for FileExistsArgs: %s", luaL_checkstring(L, 1));
+	}
+}
+static int f_FileExistsArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_FileExistsArgs(L));  // remove FileExistsArgs from stack and call constructor
+}
+int luaopen_orca_FileExistsArgs(lua_State *L) {
+	luaL_newmetatable(L, "FileExistsArgs");
+	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ "new", f_new_FileExistsArgs },
+		{ "fromstring", f_FileExistsArgs___fromstring },
+		{ "__newindex", f_FileExistsArgs___newindex },
+		{ "__index", f_FileExistsArgs___index },
+		{ NULL, NULL },
+	}), 0);
+	// Make FileExistsArgs creatable via constructor-like syntax
+	lua_newtable(L);
+	lua_pushcfunction(L, f_FileExistsArgs___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+	return 1;
+}
 #define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
 #define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
 
 typedef void* ReadCommandsEventPtr;
+typedef struct OpenFileArgs* OpenFileEventPtr;
+typedef struct FileExistsArgs* FileExistsEventPtr;
+typedef void* HasChangedFilesEventPtr;
+LRESULT Directory_OpenFile(struct Object*, struct Directory*, wParam_t, OpenFileEventPtr);
+LRESULT Directory_FileExists(struct Object*, struct Directory*, wParam_t, FileExistsEventPtr);
+LRESULT Directory_HasChangedFiles(struct Object*, struct Directory*, wParam_t, HasChangedFilesEventPtr);
+
+static struct PropertyType const DirectoryProperties[kDirectoryNumProperties] = {
+	DECL(0xeb66e456, Directory, Path, Path, kDataTypeFixed), // Directory.Path
+};
+static struct Directory DirectoryDefaults = {
+};
+LRESULT DirectoryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+		case kEventOpenFile: return Directory_OpenFile(object, cmp, wparm, lparm); // OpenFile
+		case kEventFileExists: return Directory_FileExists(object, cmp, wparm, lparm); // FileExists
+		case kEventHasChangedFiles: return Directory_HasChangedFiles(object, cmp, wparm, lparm); // HasChangedFiles
+	}
+	return FALSE;
+}
+void luaX_pushDirectory(lua_State *L, struct Directory const* Directory) {
+	luaX_pushObject(L, CMP_GetObject(Directory));
+}
+struct Directory* luaX_checkDirectory(lua_State *L, int idx) {
+	return GetDirectory(luaX_checkObject(L, idx));
+}
+ORCA_API struct ClassDesc _Directory = {
+	.ClassName = "Directory",
+	.DefaultName = "Directory",
+	.ContentType = "Directory",
+	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
+	.ParentClasses = { 0 },
+	.ClassID = ID_Directory,
+	.ClassSize = sizeof(struct Directory),
+	.Properties = DirectoryProperties,
+	.ObjProc = DirectoryProc,
+	.Defaults = &DirectoryDefaults,
+	.NumProperties = kDirectoryNumProperties,
+};
+
 
 static struct PropertyType const WorkspaceProperties[kWorkspaceNumProperties] = {
 };
@@ -1706,8 +1885,8 @@ int f_FS_FileExists(lua_State *L) {
 }
 int f_FS_AddSearchPath(lua_State *L) {
 	const char* path = luaL_checkstring(L, 1);
-	struct Package* result_ = FS_AddSearchPath(L, path);
-	luaX_pushPackage(L, result_);
+	struct Object* result_ = FS_AddSearchPath(L, path);
+	luaX_pushObject(L, result_);
 	return 1;
 }
 int f_FS_SetWorkspace(lua_State *L) {
@@ -1746,6 +1925,9 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	on_filesystem_module_registered(L);
 	lua_setfield(L, ((void)luaopen_orca_ProjectReference(L), -2), "ProjectReference");
 	lua_setfield(L, ((void)luaopen_orca_SystemMessage(L), -2), "SystemMessage");
+	lua_setfield(L, ((void)luaopen_orca_OpenFileArgs(L), -2), "OpenFileArgs");
+	lua_setfield(L, ((void)luaopen_orca_FileExistsArgs(L), -2), "FileExistsArgs");
+	lua_setfield(L, ((void)lua_pushclass(L, &_Directory), -2), "Directory");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Workspace), -2), "Workspace");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Project), -2), "Project");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Library), -2), "Library");

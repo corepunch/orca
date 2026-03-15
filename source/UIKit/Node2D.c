@@ -314,7 +314,7 @@ static float _MeasureAxis(Node2DPtr n, float space, int axis) {
 HANDLER(Node2D, Measure)
 {
   struct Node2D *n = pNode2D;
-  int size = OBJ_SendMessageW(hObject, kEventMeasureOverride, 0, &(struct Size) {
+  LRESULT size = OBJ_SendMessageW(hObject, kEventMeasureOverride, 0, &(struct Size) {
     .width  = _MeasureAxis(n, pMeasure->width  - TOTAL_MARGIN(n, 0), 0) - TOTAL_PADDING(n, 0),
     .height = _MeasureAxis(n, pMeasure->height - TOTAL_MARGIN(n, 1), 1) - TOTAL_PADDING(n, 1),
   });
@@ -367,7 +367,7 @@ HANDLER(Node2D, Arrange)
     .height = s.height,
   };
   
-  int size = OBJ_SendMessageW(hObject, kEventArrangeOverride, 0, &(struct rect) {
+  LRESULT size = OBJ_SendMessageW(hObject, kEventArrangeOverride, 0, &(struct rect) {
     .x      = PADDING_TOP(n, 0),
     .y      = PADDING_TOP(n, 1),
     .width  = rect.width  - TOTAL_PADDING(n, 0),

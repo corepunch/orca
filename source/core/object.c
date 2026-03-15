@@ -192,7 +192,7 @@ OBJ_SetName(lpObject_t object, lpcString_t szName)
   object->identifier = fnv1a32(object->Name);
 }
 
-void OBJ_AddChild(lpObject_t self, lpObject_t child, bool_t is_template)
+lpObject_t OBJ_AddChild(lpObject_t self, lpObject_t child, bool_t is_template)
 {
   if (child->parent) {
     REMOVE_FROM_LIST(struct Object, child, child->parent->children);
@@ -203,6 +203,7 @@ void OBJ_AddChild(lpObject_t self, lpObject_t child, bool_t is_template)
   if (is_template) {
     OBJ_SetFlags(self, OBJ_GetFlags(self) | OF_TEMPLATE);
   }
+  return child;
 }
 
 void

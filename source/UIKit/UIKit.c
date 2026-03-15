@@ -78,7 +78,7 @@ static int lua_pushmousevent(lua_State* L,
   }
 }
 
-bool_t
+LRESULT
 UI_HandleMouseEvent(lua_State* L, lpObject_t root, struct WI_Message* e)
 {
   lpObject_t focused = core_GetFocus();
@@ -192,7 +192,7 @@ handle:
   return success || e->message == kEventDragEnter;
 }
 
-int ui_handle_event(lua_State* L, struct WI_Message *msg) {
+LRESULT ui_handle_event(lua_State* L, struct WI_Message *msg) {
   switch (msg->message) {
     case kEventLeftMouseUp:
     case kEventRightMouseUp:

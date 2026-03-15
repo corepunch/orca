@@ -7,18 +7,26 @@
 typedef struct lua_State lua_State;
 
 struct Package;
+struct Object;
 
 
 #include "filesystem_properties.h"
 #include "../core/core.h"
 
 typedef void* ReadCommandsEventPtr;
+typedef struct OpenFileArgs* OpenFileEventPtr;
+typedef struct FileExistsArgs* FileExistsEventPtr;
+typedef void* HasChangedFilesEventPtr;
 
 
 typedef struct ProjectReference ProjectReference_t, *lpProjectReference_t;
 typedef struct ProjectReference const cProjectReference_t, *lpcProjectReference_t;
 typedef struct SystemMessage SystemMessage_t, *lpSystemMessage_t;
 typedef struct SystemMessage const cSystemMessage_t, *lpcSystemMessage_t;
+typedef struct OpenFileArgs OpenFileArgs_t, *lpOpenFileArgs_t;
+typedef struct OpenFileArgs const cOpenFileArgs_t, *lpcOpenFileArgs_t;
+typedef struct FileExistsArgs FileExistsArgs_t, *lpFileExistsArgs_t;
+typedef struct FileExistsArgs const cFileExistsArgs_t, *lpcFileExistsArgs_t;
 
 /// @brief Gets the base filename from a path
 ORCA_API const char*
@@ -42,7 +50,7 @@ FS_MakeDirectory(const char*);
 ORCA_API bool_t
 FS_FileExists(const char*);
 /// @brief Adds a package to the resource search path
-ORCA_API struct Package*
+ORCA_API struct Object*
 FS_AddSearchPath(struct lua_State*, const char*);
 /// @brief Sets the current workspace
 ORCA_API void
@@ -72,7 +80,29 @@ struct SystemMessage {
 };
 ORCA_API void luaX_pushSystemMessage(lua_State *L, struct SystemMessage const* SystemMessage);
 ORCA_API struct SystemMessage* luaX_checkSystemMessage(lua_State *L, int idx);
+/** OpenFileArgs struct */
+struct OpenFileArgs {
+	const char* FileName;
+};
+ORCA_API void luaX_pushOpenFileArgs(lua_State *L, struct OpenFileArgs const* OpenFileArgs);
+ORCA_API struct OpenFileArgs* luaX_checkOpenFileArgs(lua_State *L, int idx);
+/// @brief Checks if a file exists at the specified path
+/** FileExistsArgs struct */
+struct FileExistsArgs {
+	const char* FileName; ///< The file path to check for existence
+};
+ORCA_API void luaX_pushFileExistsArgs(lua_State *L, struct FileExistsArgs const* FileExistsArgs);
+ORCA_API struct FileExistsArgs* luaX_checkFileExistsArgs(lua_State *L, int idx);
 
+/** Directory component */
+typedef struct Directory Directory_t, *DirectoryPtr, *lpDirectory_t;
+typedef struct Directory const *DirectoryCPtr, *lpcDirectory_t;
+struct Directory {
+	fixedString_t Path;
+	void* _monitoredfiles;
+};
+ORCA_API void luaX_pushDirectory(lua_State *L, struct Directory const* Directory);
+ORCA_API struct Directory* luaX_checkDirectory(lua_State *L, int idx);
 /** Workspace component */
 typedef struct Workspace Workspace_t, *WorkspacePtr, *lpWorkspace_t;
 typedef struct Workspace const *WorkspaceCPtr, *lpcWorkspace_t;

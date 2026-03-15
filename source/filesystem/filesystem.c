@@ -7,16 +7,15 @@
 #include "fs_local.h"
 
 #define FS_FindPackage(ITER, filename) \
-FOR_EACH_LIST(struct Package, ITER, MainBundle) \
-if (!strncmp(ITER->name, filename, ITER->namelen))
+FOR_EACH_OBJECT(ITER, FS_GetWorkspace()) \
+if (!strncmp(OBJ_GetName(ITER), filename, strlen(OBJ_GetName(ITER))) && filename[strlen(OBJ_GetName(ITER))] == '/')
 
-void _FreePack(PPACK pack);
 PPACK _LoadPackFile(lpcString_t szPackfile);
-bool_t _FindPackFile(lpcString_t basename, PPACK pak);
-struct file* _ReadPakFile(lpcString_t filename, PPACK pack);
+bool_t _FindPackFile(PPACK pak, lpcString_t basename);
+struct file* _ReadPakFile(PPACK pack, lpcString_t filename);
+void _FreePack(PPACK pack);
 
 static lpObject_t workspace = NULL;
-static struct Package *MainBundle=NULL;
 
 void FS_SetWorkspace(lpObject_t object) {
   workspace = object;
@@ -106,25 +105,11 @@ int FS_FileLength(FILE* f)
 bool_t
 FS_GetModifiedTime(lpcString_t, longTime_t*);
 
-bool_t
-FS_HasChangedFiles(void)
-{
-  longTime_t time;
-  FOR_EACH_LIST(struct Package, search, MainBundle) {
-    FOR_EACH_LIST(struct _MONITOREDFILE, mf, search->monitoredFiles) {
-      if (FS_GetModifiedTime(mf->Filename, &time) && mf->Modified != time) {
-				mf->Modified = time;
-        return TRUE;
-      }
-    }
-  }
-  return FALSE;
-}
-
 static void
-_WatchFile(struct Package* psrch, lpcString_t filename)
+_WatchFile(struct Directory* psrch, lpcString_t filename)
 {
-  FOR_EACH_LIST(struct _MONITOREDFILE, mf, psrch->monitoredFiles)
+  struct _MONITOREDFILE* files = psrch->_monitoredfiles;
+  FOR_EACH_LIST(struct _MONITOREDFILE, mf, files)
   {
     if (!strcmp(mf->Filename, filename)) {
       return;
@@ -133,114 +118,62 @@ _WatchFile(struct Package* psrch, lpcString_t filename)
   PMONITOREDFILE mf = ZeroAlloc(sizeof(struct _MONITOREDFILE));
   strncpy(mf->Filename, filename, sizeof(mf->Filename));
   FS_GetModifiedTime(filename, &mf->Modified);
-  ADD_TO_LIST(mf, psrch->monitoredFiles);
-}
-#else
-bool_t
-FS_HasChangedFiles(void)
-{
-	return FALSE;
+  ADD_TO_LIST(mf, files);
+  psrch->_monitoredfiles = files;
 }
 #endif
 
-static FILE*
-_OpenFile(lpcString_t basename, struct Package *search)
-{
-  FILE* file = fopen(FS_JoinPaths(search->path, basename), "rb");
-  if (file) {
-#ifdef MONITOR_FILES
-    _WatchFile(search, FS_JoinPaths(search->path, basename));
-#endif
-    return file;
-  } else {
-    return NULL;
-  }
-}
+//static lpcString_t
+//FS_GetPathName(lpcString_t path, lpcString_t name, int32_t maxlen)
+//{
+//  memset((char*)name, 0, maxlen);
+//  strncpy((char*)name, path, maxlen);
+//  return name;
+//}
 
-static lpcString_t
-FS_GetPathName(lpcString_t path, lpcString_t name, int32_t maxlen)
-{
-  memset((char*)name, 0, maxlen);
-  strncpy((char*)name, path, maxlen);
-  return name;
-}
-
-bool_t
-FS_FileExists(lpcString_t path)
-{
-  path_t name;
-  FS_GetPathName(path, name, sizeof(name));
-  FS_FindPackage(search, name) {
-    lpcString_t basename = name+search->namelen;
-    if (search->pack) {
-      if (_FindPackFile(basename,  search->pack)) {
-        return TRUE;
-      }
-    } else {
-      FILE* file = fopen(FS_JoinPaths(search->path, basename), "rb");
-      if (file) {
-        fclose(file);
-        return TRUE;
-      }
-    }
-  }
-  return FALSE;
-}
-
-struct file *
-_ReadOnDisk(FILE *fp) {
-  uint32_t dwFileSize = FS_FileLength(fp);
-  // add 1 to size to be able to add '/0' to the end
-  struct file *pFile = ZeroAlloc(sizeof(struct file) + dwFileSize + 1);
-  pFile->size = dwFileSize;
-  fread(pFile->data, dwFileSize, 1, fp);
-  return pFile;
-}
-
-static struct file*
-_ReadRawFile(lpcString_t szFileName, struct Package *search) {
-  FILE* fp;
-  struct file* file;
-  if ((fp = _OpenFile(szFileName, search))) {
-    file = _ReadOnDisk(fp);
-    fclose(fp);
-    return file;
-  } else {
-    return NULL;
-  }
-}
-
-ORCA_API struct file*
-FS_ReadPackageFile(lpcString_t szFileName, struct Package *search) {
-  if (search->pack) {
-    return _ReadPakFile(szFileName, search->pack);
-  } else {
-    return _ReadRawFile(szFileName, search);
-  }
-  return NULL;
-}
-
-struct file*
-FS_LoadFile(lpcString_t szFileName)
-{
-  //    static int counter = 0;
-  //    Con_Error("%d %s\n", counter++, path);
-  path_t path;
-  FS_FindPackage(search, FS_GetPathName(szFileName, path, sizeof(path))) {
-    struct file *pFile = FS_ReadPackageFile(path+search->namelen, search);
-    if (pFile) {
-      return pFile;
-    }
-  }
-  return NULL;
-}
-
-HRESULT
-FS_FreeFile(struct file* pFile)
-{
-  free(pFile);
-  return NOERROR;
-}
+//static FILE*
+//_OpenFile(lpcString_t basename, struct Package *search)
+//{
+//  FILE* file = fopen(FS_JoinPaths(search->path, basename), "rb");
+//  if (file) {
+//    return file;
+//  } else {
+//    return NULL;
+//  }
+//}
+//
+//struct file *
+//_ReadOnDisk(FILE *fp) {
+//  uint32_t dwFileSize = FS_FileLength(fp);
+//  // add 1 to size to be able to add '/0' to the end
+//  struct file *pFile = ZeroAlloc(sizeof(struct file) + dwFileSize + 1);
+//  pFile->size = dwFileSize;
+//  fread(pFile->data, dwFileSize, 1, fp);
+//  return pFile;
+//}
+//
+//static struct file*
+//_ReadRawFile(struct Package *search, lpcString_t szFileName) {
+//  FILE* fp;
+//  struct file* file;
+//  if ((fp = _OpenFile(szFileName, search))) {
+//    file = _ReadOnDisk(fp);
+//    fclose(fp);
+//    return file;
+//  } else {
+//    return NULL;
+//  }
+//}
+//
+//static struct file*
+//FS_ReadPackageFile(struct Package *search, lpcString_t szFileName) {
+//  if (search->pack) {
+//    return _ReadPakFile(search->pack, szFileName);
+//  } else {
+//    return _ReadRawFile(search, szFileName);
+//  }
+//  return NULL;
+//}
 
 //static int read_big_endian_int(FILE* fp)
 //{
@@ -291,54 +224,25 @@ FS_FreeFile(struct file* pFile)
 //  }
 //}
 
-static void
-_SetPackageName(struct Package* pPackage, lpcString_t szName)
-{
-  snprintf(pPackage->name, sizeof(pPackage->name), "%s/", szName);
-  pPackage->namelen = strlen(pPackage->name);
-}
+//static void
+//_SetPackageName(struct Package* pPackage, lpcString_t szName)
+//{
+//  snprintf(pPackage->name, sizeof(pPackage->name), "%s/", szName);
+//  pPackage->namelen = strlen(pPackage->name);
+//}
 
-static struct Package*
-FS_MakePackage(lpcString_t szDirname, lpcString_t szName)
-{
-  struct Package* search = ZeroAlloc(sizeof(struct Package));
-  path_t pakfile = {0};
-  strncpy(search->path, szDirname, sizeof(search->path));
-  _SetPackageName(search, szName);
-  // Try to load optional .pz2 file next to the directory
-  snprintf(pakfile, sizeof(pakfile), "%s.pz2", szDirname);
-  search->pack = _LoadPackFile(pakfile);
-  return search;
-}
-
-struct Package*
-FS_AddSearchPath(lua_State* L, lpcString_t szDirname)
-{
-  lpcString_t szName = FS_GetBaseName(szDirname);
-  // Prevent duplicates
-  FOR_EACH_LIST(struct Package, pack, MainBundle) {
-    if (!strcasecmp(pack->path, szDirname)) {
-      return NULL;
-    }
-    if (!strcasecmp(pack->name, szName)) {
-      Con_Error("Cannot load package %s: name conflicts with already loaded package %s",
-                szDirname, pack->path);
-      return NULL;
-    }
-  }
-//  Con_Error("Loading project %s", szDirname);
-  struct Package* search = FS_MakePackage(szDirname, szName);
-  // Append to the global search list
-  ADD_TO_LIST_END(struct Package, search, MainBundle);
-  // Load embedded project file
-  xmlWith(xmlDoc, doc, FS_LoadXML(FS_JoinPaths(szName, "package")), xmlFreeDoc) {
-    xmlNodePtr root = xmlDocGetRootElement(doc);
-    xmlWith(xmlChar,Name,root?xmlGetProp(root,XMLSTR("Name")):NULL,xmlFree) {
-      _SetPackageName(search, (lpcString_t)Name);
-    }
-  }
-  return search;
-}
+//static struct Package*
+//FS_MakePackage(lpcString_t szDirname, lpcString_t szName)
+//{
+//  struct Package* search = ZeroAlloc(sizeof(struct Package));
+//  path_t pakfile = {0};
+//  strncpy(search->path, szDirname, sizeof(search->path));
+//  _SetPackageName(search, szName);
+//  // Try to load optional .pz2 file next to the directory
+//  snprintf(pakfile, sizeof(pakfile), "%s.pz2", szDirname);
+//  search->pack = _LoadPackFile(pakfile);
+//  return search;
+//}
 
 // void FS_Init(void) {
 //	Con_Error("Initializing file system");
@@ -378,8 +282,7 @@ static void FS_Release(struct Package *search) {
 }
 
 void FS_Shutdown(void) {
-  SafeDelete(MainBundle, FS_Release);
-  MainBundle = NULL;
+  fprintf(stderr, "Shutting down filesystem\n");
 }
 
 void FS_RegisterObject(lpObject_t object, lpcString_t path) {
@@ -416,6 +319,139 @@ void FS_RegisterObject(lpObject_t object, lpcString_t path) {
 
 ORCA_API lpcString_t PACK_GetName(struct Package *package) {
   return package->name;
+}
+
+HANDLER(Directory, OpenFile) {
+  FILE* fp = fopen(FS_JoinPaths(pDirectory->Path, pOpenFile->FileName), "rb");
+  if (!fp)
+    return 0;
+#ifdef MONITOR_FILES
+  _WatchFile(pDirectory, FS_JoinPaths(pDirectory->Path, pOpenFile->FileName));
+#endif
+  uint32_t dwFileSize = FS_FileLength(fp);
+  // add 1 to size to be able to add '/0' to the end
+  struct file *pFile = ZeroAlloc(sizeof(struct file) + dwFileSize + 1);
+  pFile->size = dwFileSize;
+  fread(pFile->data, dwFileSize, 1, fp);
+  fclose(fp);
+  return (LRESULT)pFile;
+}
+
+HANDLER(Directory, FileExists) {
+  FILE* file = fopen(FS_JoinPaths(pDirectory->Path, pFileExists->FileName), "rb");
+  if (file) {
+    fclose(file);
+    return TRUE;
+  } else {
+    return FALSE;
+  }
+}
+
+HANDLER(Directory, HasChangedFiles) {
+#ifdef MONITOR_FILES
+  longTime_t time;
+  struct _MONITOREDFILE* files = pDirectory->_monitoredfiles;
+  FOR_EACH_LIST(struct _MONITOREDFILE, mf, files) {
+    if (FS_GetModifiedTime(mf->Filename, &time) && mf->Modified != time) {
+      mf->Modified = time;
+      return TRUE;
+    }
+  }
+  return FALSE;
+#else
+  return FALSE;
+#endif
+}
+
+
+bool_t
+FS_FileExists(lpcString_t path)
+{
+  FS_FindPackage(search, path) {
+    if (OBJ_SendMessageW(search, kEventFileExists, 0, &(struct FileExistsArgs) {
+      .FileName = path + strlen(OBJ_GetName(search)) + 1
+    })) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+struct file*
+FS_LoadFile(lpcString_t szFileName)
+{
+  struct file* pFile;
+  FS_FindPackage(package, szFileName) {
+    if ((pFile = (struct file*)OBJ_SendMessageW(package, kEventOpenFile, 0, &(struct OpenFileArgs){
+      .FileName = szFileName + strlen(OBJ_GetName(package)) + 1,
+    }))) {
+      return pFile;
+    }
+  }
+  return NULL;
+}
+
+bool_t
+FS_HasChangedFiles(void)
+{
+  FOR_EACH_OBJECT(package, FS_GetWorkspace()) {
+    if (OBJ_SendMessageW(package, kEventHasChangedFiles, 0, NULL)) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+
+HRESULT
+FS_FreeFile(struct file* pFile)
+{
+  free(pFile);
+  return NOERROR;
+}
+
+struct Object*
+FS_AddSearchPath(lua_State* L, lpcString_t szDirname)
+{
+  lpcString_t szName = FS_GetBaseName(szDirname);
+  // Prevent duplicates
+  FOR_EACH_OBJECT(package, FS_GetWorkspace()) {
+    if (GetDirectory(package) && !strcasecmp(GetDirectory(package)->Path, szDirname)) {
+      return NULL;
+    }
+    if (!strcasecmp(OBJ_GetName(package), szName)) {
+      Con_Error("Cannot load package %s: name conflicts with already loaded package %s", szDirname, OBJ_GetName(package));
+      return NULL;
+    }
+  }
+  lua_getglobal(L, "require");
+  lua_pushstring(L, "orca.filesystem");
+  lua_call(L, 1, 1);
+  path_t pakfile;
+  snprintf(pakfile, sizeof(pakfile), "%s.pz2", szDirname);
+  FILE* fp = fopen(pakfile, "rb");
+  if (fp) {
+//    lua_getfield(L, -1, "PackagePz2");
+    assert(!"Not implemented");
+    lua_pop(L, 1);
+    fclose(fp);
+  } else {
+    lua_getfield(L, -1, "Directory");
+    lua_newtable(L);
+    xmlWith(xmlDoc, doc, xmlReadFile(FS_JoinPaths(szDirname, "package.xml"), NULL, 0), xmlFreeDoc) {
+      xmlNodePtr root = xmlDocGetRootElement(doc);
+      xmlWith(xmlChar,Name,root?xmlGetProp(root,XMLSTR("Name")):NULL,xmlFree) {
+        lua_pushstring(L, (char*)Name);
+        lua_setfield(L, -2, "Name");
+      }
+    }
+    lua_pushstring(L, szDirname);
+    lua_setfield(L, -2, "Path");
+    lua_call(L, 1, 1);
+  }
+  struct Object* pPackage = luaX_checkObject(L, -1);
+  lua_pop(L, 1);
+  return OBJ_AddChild(FS_GetWorkspace(), pPackage, FALSE);
 }
 
 #include <source/editor/ed_stab_filesystem.h>

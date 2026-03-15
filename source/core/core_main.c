@@ -196,7 +196,7 @@ int lua_pushclass(lua_State* L, struct ClassDesc* cl)
 bool_t CORE_HandleObjectMessage(lua_State *L, struct WI_Message* msg);
 bool_t CORE_HandleKeyEvent(lua_State *L, struct WI_Message* msg);
 
-int CORE_ProcessMessage(lua_State *L, struct WI_Message* msg) {
+LRESULT CORE_ProcessMessage(lua_State *L, struct WI_Message* msg) {
   int tmp=0;
   switch (msg->message) {
     case kEventWindowPaint:

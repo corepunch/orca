@@ -340,7 +340,7 @@ static int filesystem_gc(lua_State* L)
 //}
 
 int luaopen_orca_pipe(lua_State *L);
-int filesystem_handle_event(lua_State *L, struct WI_Message *msg);
+LRESULT filesystem_handle_event(lua_State *L, struct WI_Message *msg);
 
 int f_init(lua_State* L)
 {

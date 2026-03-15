@@ -134,7 +134,7 @@ HANDLER(Grid, MeasureOverride)
     struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
     struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
 
-    uint32_t s = OBJ_SendMessageW(hChild, kEventMeasure, 0, &(struct Size) {
+    LRESULT s = OBJ_SendMessageW(hChild, kEventMeasure, 0, &(struct Size) {
       .width  = (w ? w->width : size.width),
       .height = (h ? h->width : size.height),
     });
