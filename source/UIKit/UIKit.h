@@ -749,9 +749,6 @@ struct Node2D {
 };
 ORCA_API void luaX_pushNode2D(lua_State *L, struct Node2D const* Node2D);
 ORCA_API struct Node2D* luaX_checkNode2D(lua_State *L, int idx);
-/// @brief Check if a specific frame property is set on a Node2D
-ORCA_API bool_t
-Node2D_IsFrameSet(struct Node2D*, enum Box3Field);
 /// @brief Set a frame property value on a Node2D
 ORCA_API void
 Node2D_SetFrame(struct Node2D*, enum Box3Field, float);

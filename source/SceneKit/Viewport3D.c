@@ -70,6 +70,17 @@ static void collect_lights(lpObject_t object,
 
 void R_RenderViewport(lpObject_t, struct ViewDef*);
 
+struct rect
+Node2D_GetRect(Node2DPtr pNode2D)
+{
+  return (struct rect){
+    .x = pNode2D->_actual_pos[0],
+    .y = pNode2D->_actual_pos[1],
+    .width = NODE2D_FRAME(pNode2D, Size, 0).Actual,
+    .height = NODE2D_FRAME(pNode2D, Size, 1).Actual,
+  };
+}
+
 HANDLER(Viewport3D, ForegroundContent)
 {
   lpObject_t screen = OBJ_FindParentOfClass(hObject, ID_Screen);

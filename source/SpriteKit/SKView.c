@@ -16,8 +16,8 @@ SKNode_GetReferenceSize(lpObject_t node)
     struct SKView const *view = GetSKView(viewport);
     float const w = view->ReferenceWidth;
     float const h = view->ReferenceHeight;
-    value.x = Node2D_GetFrame(GetNode2D(viewport), kBox3FieldWidth) - w;
-    value.y = Node2D_GetFrame(GetNode2D(viewport), kBox3FieldHeight) - h;
+    value.x = NODE2D_FRAME(GetNode2D(viewport), Size, 0).Actual - w;
+    value.y = NODE2D_FRAME(GetNode2D(viewport), Size, 1).Actual - h;
     return value;
   } else {
     return value;
@@ -47,8 +47,8 @@ HANDLER(SKView, ForegroundContent)
 
   if (!scene) return FALSE;
 
-  float w = Node2D_GetFrame(GetNode2D(hObject), kBox3FieldWidth);
-  float h = Node2D_GetFrame(GetNode2D(hObject), kBox3FieldHeight);
+  float w = NODE2D_FRAME(GetNode2D(hObject), Size, 0).Actual;
+  float h = NODE2D_FRAME(GetNode2D(hObject), Size, 1).Actual;
   if (w <= 0 || h <= 0) return FALSE;
 
   OBJ_SendMessageW(scene, kEventUpdateMatrix, 0,

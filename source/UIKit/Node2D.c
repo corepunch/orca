@@ -71,10 +71,17 @@ Node2D_GetRect(Node2DPtr node)
   };
 }
 
-bool_t
-Node2D_IsFrameSet(Node2DPtr pNode2D, enum Box3Field parm)
+float
+Node2D_GetFrame(Node2DPtr pNode2D, enum Box3Field parm)
 {
-  return (pNode2D->_bbox_flags & (1 << parm)) != 0;
+  switch (parm) {
+    case kBox3FieldWidth:
+    case kBox3FieldHeight:
+    case kBox3FieldDepth:
+      return MAX(NODE2D_FRAME(pNode2D, Size, parm - kBox3FieldWidth).Actual, 0);
+    default:
+      return pNode2D->_actual_pos[parm];
+  }
 }
 
 void
@@ -85,30 +92,13 @@ Node2D_SetFrame(Node2DPtr pNode2D, enum Box3Field parm, float value)
     case kBox3FieldHeight:
     case kBox3FieldDepth:
       NODE2D_FRAME(pNode2D, Size, parm - kBox3FieldWidth).Actual =
-        MAX(NODE2D_FRAME(pNode2D, Size, parm - kBox3FieldWidth).Min, value);
+      MAX(NODE2D_FRAME(pNode2D, Size, parm - kBox3FieldWidth).Min, value);
       break;
     default:
       pNode2D->_actual_pos[parm] = value;
       break;
   }
   pNode2D->_bbox_flags |= 1 << parm;
-}
-
-float
-Node2D_GetFrame(Node2DPtr pNode2D, enum Box3Field parm)
-{
-  if (Node2D_IsFrameSet(pNode2D, parm)) {
-    switch (parm) {
-      case kBox3FieldWidth:
-      case kBox3FieldHeight:
-      case kBox3FieldDepth:
-        return MAX(NODE2D_FRAME(pNode2D, Size, parm - kBox3FieldWidth).Actual, 0);
-      default:
-        return pNode2D->_actual_pos[parm];
-    }
-  } else {
-    return 0;
-  }
 }
 
 // static uint32_t _IndexInParent(lpObject_t  hObject) {

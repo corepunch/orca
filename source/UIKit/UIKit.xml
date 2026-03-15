@@ -544,11 +544,6 @@
     <field name="_actual_pos" type="actualPos">Internal computed position </field>
     <field name="_opacity" type="float">Internal opacity value </field>
     <field name="_bbox_flags" type="int">Internal bounding box flags </field>
-    <method name="IsFrameSet">
-      <summary>Check if a specific frame property is set on a Node2D</summary>
-      <arg name="field" type="Box3Field"/>
-      <returns type="bool"/>
-    </method>
     <method name="SetFrame">
       <summary>Set a frame property value on a Node2D</summary>
       <arg name="field" type="Box3Field"/>

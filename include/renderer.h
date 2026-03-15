@@ -379,7 +379,9 @@ struct ViewDef
   lpObject_t viewport;
   struct view_light lights[MAX_VIEW_LIGHTS];
   float stereoSeparation;
-  uint32_t flags, camera, num_lights;
+  uint32_t flags;
+  uint32_t camera;
+  uint32_t num_lights;
 };
 
 struct _SHADERCONST

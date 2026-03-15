@@ -40,8 +40,8 @@ HANDLER(SKSpriteNode, Render)
   SKNodePtr node = GetSKNode(hObject);
   if (!node) return FALSE;
 
-  float const refW = Node2D_GetFrame(GetNode2D(pRender->ViewDef->viewport), kBox3FieldWidth);
-  float const refH = Node2D_GetFrame(GetNode2D(pRender->ViewDef->viewport), kBox3FieldHeight);
+  float const refW = NODE2D_FRAME(GetNode2D(pRender->ViewDef->viewport), Size, 0).Actual;
+  float const refH = NODE2D_FRAME(GetNode2D(pRender->ViewDef->viewport), Size, 1).Actual;
   lpTexture_t image = pSKSpriteNode->Image;
   struct SpriteAnimation const *anim = pSKSpriteNode->Animation;
   struct mat3 texmat = MAT3_Identity();

@@ -134,7 +134,6 @@
 		781CA7C22E15642900FFCFD9 /* liborca.geometry.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA6CE2E15024F00FFCFD9 /* liborca.geometry.so */; };
 		781CA7C52E15657A00FFCFD9 /* liborca.renderer.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7052E15369F00FFCFD9 /* liborca.renderer.so */; };
 		781CA7C62E15658900FFCFD9 /* liborca.renderer.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7052E15369F00FFCFD9 /* liborca.renderer.so */; };
-		781CA7C72E15660100FFCFD9 /* liborca.UIKit.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA74D2E1556FF00FFCFD9 /* liborca.UIKit.so */; };
 		781CA7C82E15660E00FFCFD9 /* liborca.localization.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7BA2E1562F700FFCFD9 /* liborca.localization.so */; };
 		781CA7C92E15661500FFCFD9 /* liborca.backend.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7862E155C9C00FFCFD9 /* liborca.backend.so */; };
 		781CA7CA2E1566FB00FFCFD9 /* liborca.editor.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7922E155D0500FFCFD9 /* liborca.editor.so */; };
@@ -188,9 +187,6 @@
 		78623C9C2F55EEAC003BFDA3 /* liborca.geometry.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA6CE2E15024F00FFCFD9 /* liborca.geometry.so */; };
 		78623C9D2F55EEAC003BFDA3 /* liborca.geometry.so in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 781CA6CE2E15024F00FFCFD9 /* liborca.geometry.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		786258462E3A1A8F007154EA /* w_newproperty.c in Sources */ = {isa = PBXBuildFile; fileRef = 786258452E3A1A7E007154EA /* w_newproperty.c */; };
-		786865352F50A96100DC87FC /* liborca.platform.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; };
-		786865362F50A96100DC87FC /* liborca.backend.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7862E155C9C00FFCFD9 /* liborca.backend.so */; };
-		786865372F50A96100DC87FC /* liborca.localization.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7BA2E1562F700FFCFD9 /* liborca.localization.so */; };
 		786865382F50A96100DC87FC /* liborca.renderer.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7052E15369F00FFCFD9 /* liborca.renderer.so */; };
 		786865392F50A96100DC87FC /* liborca.core.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7662E15575600FFCFD9 /* liborca.core.so */; };
 		7868653A2F50A96100DC87FC /* liborca.geometry.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA6CE2E15024F00FFCFD9 /* liborca.geometry.so */; };
@@ -205,7 +201,6 @@
 		786865672F50AA6400DC87FC /* liborca.SpriteKit.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 7868653E2F50A96100DC87FC /* liborca.SpriteKit.so */; };
 		786865682F50AA6400DC87FC /* liborca.SpriteKit.so in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 7868653E2F50A96100DC87FC /* liborca.SpriteKit.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		7868656C2F50B4E100DC87FC /* SKLabelNode.c in Sources */ = {isa = PBXBuildFile; fileRef = 7868656B2F50B4DE00DC87FC /* SKLabelNode.c */; };
-		7868656D2F50B55100DC87FC /* liborca.UIKit.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA74D2E1556FF00FFCFD9 /* liborca.UIKit.so */; };
 		7868656E2F50B55100DC87FC /* liborca.UIKit.so in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 781CA74D2E1556FF00FFCFD9 /* liborca.UIKit.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		786A4BD12E86B06500C40C9F /* TerminalView.c in Sources */ = {isa = PBXBuildFile; fileRef = 786A4BD02E86B05E00C40C9F /* TerminalView.c */; };
 		786F2B332E12EE7F00B519AB /* ed_local.h in Headers */ = {isa = PBXBuildFile; fileRef = 786F2B152E12EE7F00B519AB /* ed_local.h */; };
@@ -219,6 +214,7 @@
 		789A97D62F65490800FD32A9 /* geometry_export.c in Sources */ = {isa = PBXBuildFile; fileRef = 789A97D02F65490800FD32A9 /* geometry_export.c */; };
 		789A97D72F65490800FD32A9 /* geometry_ops.c in Sources */ = {isa = PBXBuildFile; fileRef = 789A97D12F65490800FD32A9 /* geometry_ops.c */; };
 		78A5AFA42F66BA0200E6A765 /* pakfile.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A5AFA32F66B9FA00E6A765 /* pakfile.c */; };
+		78A5AFA52F66C81E00E6A765 /* liborca.platform.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; };
 		78AF62512F562AEB008D08A3 /* p_program.c in Sources */ = {isa = PBXBuildFile; fileRef = 78FD53222D8F2A8800122823 /* p_program.c */; };
 		78AF62CB2F58BE63008D08A3 /* UIKit.c in Headers */ = {isa = PBXBuildFile; fileRef = 78AF62CA2F58BE5B008D08A3 /* UIKit.c */; };
 		78AF62CC2F58BECF008D08A3 /* UIKit.c in Sources */ = {isa = PBXBuildFile; fileRef = 78AF62CA2F58BE5B008D08A3 /* UIKit.c */; };
@@ -672,7 +668,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				78C8AFD72E229CAC00645F8C /* liborca.backend.so in Frameworks */,
-				781CA7C72E15660100FFCFD9 /* liborca.UIKit.so in Frameworks */,
 				781CA7C52E15657A00FFCFD9 /* liborca.renderer.so in Frameworks */,
 				781CA77D2E1557EC00FFCFD9 /* liborca.core.so in Frameworks */,
 				781CA7482E154EE400FFCFD9 /* liborca.geometry.so in Frameworks */,
@@ -773,13 +768,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				786865352F50A96100DC87FC /* liborca.platform.so in Frameworks */,
-				786865362F50A96100DC87FC /* liborca.backend.so in Frameworks */,
-				786865372F50A96100DC87FC /* liborca.localization.so in Frameworks */,
+				78A5AFA52F66C81E00E6A765 /* liborca.platform.so in Frameworks */,
 				786865382F50A96100DC87FC /* liborca.renderer.so in Frameworks */,
 				786865392F50A96100DC87FC /* liborca.core.so in Frameworks */,
 				7868653A2F50A96100DC87FC /* liborca.geometry.so in Frameworks */,
-				7868656D2F50B55100DC87FC /* liborca.UIKit.so in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
