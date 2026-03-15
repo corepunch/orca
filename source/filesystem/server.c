@@ -42,8 +42,8 @@ static int print_classes(lpcClassDesc_t cd, LPSTR s, int n) {
   if (!cd || n <= 0) return 0;
   int w = snprintf(s, n, "%s,", cd->ClassName);
   n -= w;
-  for (lpcClassDesc_t const *p = cd->ParentClasses; *p && n > 1; p++)
-    w += print_classes(*p, s + w, n - w);
+  for (uint32_t const *id = cd->SuperClassIDs; *id && n > 1; id++)
+    w += print_classes(OBJ_FindClassByID(*id), s + w, n - w);
   return w;
 }
 

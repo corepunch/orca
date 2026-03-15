@@ -67,13 +67,25 @@ OBJ_FindClass(lpcString_t classname)
   return NULL;
 }
 
+lpcClassDesc_t
+OBJ_FindClassByID(uint32_t classid)
+{
+  FOR_LOOP(i, MAX_CLASSES) {
+    lpcClassDesc_t cl = core.classes[i];
+    if (cl && cl->ClassID == classid) {
+      return cl;
+    }
+  }
+  return NULL;
+}
+
 static bool_t
 is_class_inherited(lpcClassDesc_t self, lpcClassDesc_t parent)
 {
   if (!self) return FALSE;
   if (!parent || self == parent) return TRUE;
-  for(lpcClassDesc_t const *cd = self->ParentClasses; *cd; cd++) {
-    if (is_class_inherited(*cd, parent)) {
+  for (uint32_t const *id = self->SuperClassIDs; *id; id++) {
+    if (is_class_inherited(OBJ_FindClassByID(*id), parent)) {
       return TRUE;
     }
   }

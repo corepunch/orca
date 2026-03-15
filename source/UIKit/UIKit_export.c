@@ -1928,7 +1928,7 @@ ORCA_API struct ClassDesc _DataObject = {
 	.DefaultName = "DataObject",
 	.ContentType = "DataObject",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { NULL },
+	.SuperClassIDs = { 0 },
 	.ClassID = ID_DataObject,
 	.ClassSize = sizeof(struct DataObject),
 	.Properties = DataObjectProperties,
@@ -1965,7 +1965,7 @@ ORCA_API struct ClassDesc _AnimationPlayer = {
 	.DefaultName = "AnimationPlayer",
 	.ContentType = "AnimationPlayer",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { NULL },
+	.SuperClassIDs = { 0 },
 	.ClassID = ID_AnimationPlayer,
 	.ClassSize = sizeof(struct AnimationPlayer),
 	.Properties = AnimationPlayerProperties,
@@ -2001,7 +2001,7 @@ ORCA_API struct ClassDesc _Trigger = {
 	.DefaultName = "Trigger",
 	.ContentType = "Trigger",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { NULL },
+	.SuperClassIDs = { 0 },
 	.ClassID = ID_Trigger,
 	.ClassSize = sizeof(struct Trigger),
 	.Properties = TriggerProperties,
@@ -2030,13 +2030,12 @@ void luaX_pushOnPropertyChangedTrigger(lua_State *L, struct OnPropertyChangedTri
 struct OnPropertyChangedTrigger* luaX_checkOnPropertyChangedTrigger(lua_State *L, int idx) {
 	return GetOnPropertyChangedTrigger(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Trigger;
 ORCA_API struct ClassDesc _OnPropertyChangedTrigger = {
 	.ClassName = "OnPropertyChangedTrigger",
 	.DefaultName = "OnPropertyChangedTrigger",
 	.ContentType = "OnPropertyChangedTrigger",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Trigger, NULL },
+	.SuperClassIDs = { ID_Trigger, 0 },
 	.ClassID = ID_OnPropertyChangedTrigger,
 	.ClassSize = sizeof(struct OnPropertyChangedTrigger),
 	.Properties = OnPropertyChangedTriggerProperties,
@@ -2063,13 +2062,12 @@ void luaX_pushOnAttachedTrigger(lua_State *L, struct OnAttachedTrigger const* On
 struct OnAttachedTrigger* luaX_checkOnAttachedTrigger(lua_State *L, int idx) {
 	return GetOnAttachedTrigger(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Trigger;
 ORCA_API struct ClassDesc _OnAttachedTrigger = {
 	.ClassName = "OnAttachedTrigger",
 	.DefaultName = "OnAttachedTrigger",
 	.ContentType = "OnAttachedTrigger",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Trigger, NULL },
+	.SuperClassIDs = { ID_Trigger, 0 },
 	.ClassID = ID_OnAttachedTrigger,
 	.ClassSize = sizeof(struct OnAttachedTrigger),
 	.Properties = OnAttachedTriggerProperties,
@@ -2097,13 +2095,12 @@ void luaX_pushEventTrigger(lua_State *L, struct EventTrigger const* EventTrigger
 struct EventTrigger* luaX_checkEventTrigger(lua_State *L, int idx) {
 	return GetEventTrigger(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Trigger;
 ORCA_API struct ClassDesc _EventTrigger = {
 	.ClassName = "EventTrigger",
 	.DefaultName = "EventTrigger",
 	.ContentType = "EventTrigger",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Trigger, NULL },
+	.SuperClassIDs = { ID_Trigger, 0 },
 	.ClassID = ID_EventTrigger,
 	.ClassSize = sizeof(struct EventTrigger),
 	.Properties = EventTriggerProperties,
@@ -2138,7 +2135,7 @@ ORCA_API struct ClassDesc _Setter = {
 	.DefaultName = "Setter",
 	.ContentType = "Setter",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { NULL },
+	.SuperClassIDs = { 0 },
 	.ClassID = ID_Setter,
 	.ClassSize = sizeof(struct Setter),
 	.Properties = SetterProperties,
@@ -2173,7 +2170,7 @@ ORCA_API struct ClassDesc _Handler = {
 	.DefaultName = "Handler",
 	.ContentType = "Handler",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { NULL },
+	.SuperClassIDs = { 0 },
 	.ClassID = ID_Handler,
 	.ClassSize = sizeof(struct Handler),
 	.Properties = HandlerProperties,
@@ -2203,7 +2200,7 @@ ORCA_API struct ClassDesc _Brush = {
 	.DefaultName = "Brush",
 	.ContentType = "Brush",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { NULL },
+	.SuperClassIDs = { 0 },
 	.ClassID = ID_Brush,
 	.ClassSize = sizeof(struct Brush),
 	.Properties = BrushProperties,
@@ -2229,13 +2226,12 @@ void luaX_pushColorBrush(lua_State *L, struct ColorBrush const* ColorBrush) {
 struct ColorBrush* luaX_checkColorBrush(lua_State *L, int idx) {
 	return GetColorBrush(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Brush;
 ORCA_API struct ClassDesc _ColorBrush = {
 	.ClassName = "ColorBrush",
 	.DefaultName = "ColorBrush",
 	.ContentType = "ColorBrush",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Brush, NULL },
+	.SuperClassIDs = { ID_Brush, 0 },
 	.ClassID = ID_ColorBrush,
 	.ClassSize = sizeof(struct ColorBrush),
 	.Properties = ColorBrushProperties,
@@ -2344,7 +2340,7 @@ ORCA_API struct ClassDesc _Node = {
 	.DefaultName = "Node",
 	.ContentType = "Node",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { NULL },
+	.SuperClassIDs = { 0 },
 	.ClassID = ID_Node,
 	.ClassSize = sizeof(struct Node),
 	.Properties = NodeProperties,
@@ -2393,7 +2389,7 @@ ORCA_API struct ClassDesc _TextRun = {
 	.DefaultName = "TextRun",
 	.ContentType = "TextRun",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { NULL },
+	.SuperClassIDs = { 0 },
 	.ClassID = ID_TextRun,
 	.ClassSize = sizeof(struct TextRun),
 	.Properties = TextRunProperties,
@@ -2442,13 +2438,12 @@ void luaX_pushTextBlockConcept(lua_State *L, struct TextBlockConcept const* Text
 struct TextBlockConcept* luaX_checkTextBlockConcept(lua_State *L, int idx) {
 	return GetTextBlockConcept(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _TextRun;
 ORCA_API struct ClassDesc _TextBlockConcept = {
 	.ClassName = "TextBlockConcept",
 	.DefaultName = "TextBlockConcept",
 	.ContentType = "TextBlockConcept",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_TextRun, NULL },
+	.SuperClassIDs = { ID_TextRun, 0 },
 	.ClassID = ID_TextBlockConcept,
 	.ClassSize = sizeof(struct TextBlockConcept),
 	.Properties = TextBlockConceptProperties,
@@ -2547,13 +2542,12 @@ void luaX_pushNode2D(lua_State *L, struct Node2D const* Node2D) {
 struct Node2D* luaX_checkNode2D(lua_State *L, int idx) {
 	return GetNode2D(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Node;
 ORCA_API struct ClassDesc _Node2D = {
 	.ClassName = "Node2D",
 	.DefaultName = "Node2D",
 	.ContentType = "Node2D",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Node, NULL },
+	.SuperClassIDs = { ID_Node, 0 },
 	.ClassID = ID_Node2D,
 	.ClassSize = sizeof(struct Node2D),
 	.Properties = Node2DProperties,
@@ -2582,13 +2576,12 @@ void luaX_pushPrefabView2D(lua_State *L, struct PrefabView2D const* PrefabView2D
 struct PrefabView2D* luaX_checkPrefabView2D(lua_State *L, int idx) {
 	return GetPrefabView2D(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Node2D;
 ORCA_API struct ClassDesc _PrefabView2D = {
 	.ClassName = "PrefabView2D",
 	.DefaultName = "PrefabView2D",
 	.ContentType = "PrefabView2D",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Node2D, NULL },
+	.SuperClassIDs = { ID_Node2D, 0 },
 	.ClassID = ID_PrefabView2D,
 	.ClassSize = sizeof(struct PrefabView2D),
 	.Properties = PrefabView2DProperties,
@@ -2623,14 +2616,12 @@ void luaX_pushTextBlock(lua_State *L, struct TextBlock const* TextBlock) {
 struct TextBlock* luaX_checkTextBlock(lua_State *L, int idx) {
 	return GetTextBlock(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Node2D;
-extern struct ClassDesc _TextBlockConcept;
 ORCA_API struct ClassDesc _TextBlock = {
 	.ClassName = "TextBlock",
 	.DefaultName = "TextBlock",
 	.ContentType = "TextBlock",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Node2D, &_TextBlockConcept, NULL },
+	.SuperClassIDs = { ID_Node2D, ID_TextBlockConcept, 0 },
 	.ClassID = ID_TextBlock,
 	.ClassSize = sizeof(struct TextBlock),
 	.Properties = TextBlockProperties,
@@ -2674,13 +2665,12 @@ void luaX_pushInput(lua_State *L, struct Input const* Input) {
 struct Input* luaX_checkInput(lua_State *L, int idx) {
 	return GetInput(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _TextBlock;
 ORCA_API struct ClassDesc _Input = {
 	.ClassName = "Input",
 	.DefaultName = "Input",
 	.ContentType = "Input",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_TextBlock, NULL },
+	.SuperClassIDs = { ID_TextBlock, 0 },
 	.ClassID = ID_Input,
 	.ClassSize = sizeof(struct Input),
 	.Properties = InputProperties,
@@ -2714,13 +2704,12 @@ void luaX_pushButton(lua_State *L, struct Button const* Button) {
 struct Button* luaX_checkButton(lua_State *L, int idx) {
 	return GetButton(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _TextBlock;
 ORCA_API struct ClassDesc _Button = {
 	.ClassName = "Button",
 	.DefaultName = "Button",
 	.ContentType = "Button",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_TextBlock, NULL },
+	.SuperClassIDs = { ID_TextBlock, 0 },
 	.ClassID = ID_Button,
 	.ClassSize = sizeof(struct Button),
 	.Properties = ButtonProperties,
@@ -2748,13 +2737,12 @@ void luaX_pushLabel(lua_State *L, struct Label const* Label) {
 struct Label* luaX_checkLabel(lua_State *L, int idx) {
 	return GetLabel(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _TextBlock;
 ORCA_API struct ClassDesc _Label = {
 	.ClassName = "Label",
 	.DefaultName = "Label",
 	.ContentType = "Label",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_TextBlock, NULL },
+	.SuperClassIDs = { ID_TextBlock, 0 },
 	.ClassID = ID_Label,
 	.ClassSize = sizeof(struct Label),
 	.Properties = LabelProperties,
@@ -2788,13 +2776,12 @@ void luaX_pushStackView(lua_State *L, struct StackView const* StackView) {
 struct StackView* luaX_checkStackView(lua_State *L, int idx) {
 	return GetStackView(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Node2D;
 ORCA_API struct ClassDesc _StackView = {
 	.ClassName = "StackView",
 	.DefaultName = "StackView",
 	.ContentType = "StackView",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Node2D, NULL },
+	.SuperClassIDs = { ID_Node2D, 0 },
 	.ClassID = ID_StackView,
 	.ClassSize = sizeof(struct StackView),
 	.Properties = StackViewProperties,
@@ -2823,13 +2810,12 @@ void luaX_pushForm(lua_State *L, struct Form const* Form) {
 struct Form* luaX_checkForm(lua_State *L, int idx) {
 	return GetForm(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _StackView;
 ORCA_API struct ClassDesc _Form = {
 	.ClassName = "Form",
 	.DefaultName = "Form",
 	.ContentType = "Form",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_StackView, NULL },
+	.SuperClassIDs = { ID_StackView, 0 },
 	.ClassID = ID_Form,
 	.ClassSize = sizeof(struct Form),
 	.Properties = FormProperties,
@@ -2860,13 +2846,12 @@ void luaX_pushControl(lua_State *L, struct Control const* Control) {
 struct Control* luaX_checkControl(lua_State *L, int idx) {
 	return GetControl(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Node2D;
 ORCA_API struct ClassDesc _Control = {
 	.ClassName = "Control",
 	.DefaultName = "Control",
 	.ContentType = "Control",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Node2D, NULL },
+	.SuperClassIDs = { ID_Node2D, 0 },
 	.ClassID = ID_Control,
 	.ClassSize = sizeof(struct Control),
 	.Properties = ControlProperties,
@@ -2908,13 +2893,12 @@ void luaX_pushScreen(lua_State *L, struct Screen const* Screen) {
 struct Screen* luaX_checkScreen(lua_State *L, int idx) {
 	return GetScreen(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Node2D;
 ORCA_API struct ClassDesc _Screen = {
 	.ClassName = "Screen",
 	.DefaultName = "Screen",
 	.ContentType = "Screen",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Node2D, NULL },
+	.SuperClassIDs = { ID_Node2D, 0 },
 	.ClassID = ID_Screen,
 	.ClassSize = sizeof(struct Screen),
 	.Properties = ScreenProperties,
@@ -2945,13 +2929,12 @@ void luaX_pushCinematic(lua_State *L, struct Cinematic const* Cinematic) {
 struct Cinematic* luaX_checkCinematic(lua_State *L, int idx) {
 	return GetCinematic(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Node2D;
 ORCA_API struct ClassDesc _Cinematic = {
 	.ClassName = "Cinematic",
 	.DefaultName = "Cinematic",
 	.ContentType = "Cinematic",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Node2D, NULL },
+	.SuperClassIDs = { ID_Node2D, 0 },
 	.ClassID = ID_Cinematic,
 	.ClassSize = sizeof(struct Cinematic),
 	.Properties = CinematicProperties,
@@ -2986,13 +2969,12 @@ void luaX_pushGrid(lua_State *L, struct Grid const* Grid) {
 struct Grid* luaX_checkGrid(lua_State *L, int idx) {
 	return GetGrid(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Node2D;
 ORCA_API struct ClassDesc _Grid = {
 	.ClassName = "Grid",
 	.DefaultName = "Grid",
 	.ContentType = "Grid",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Node2D, NULL },
+	.SuperClassIDs = { ID_Node2D, 0 },
 	.ClassID = ID_Grid,
 	.ClassSize = sizeof(struct Grid),
 	.Properties = GridProperties,
@@ -3035,13 +3017,12 @@ void luaX_pushImageView(lua_State *L, struct ImageView const* ImageView) {
 struct ImageView* luaX_checkImageView(lua_State *L, int idx) {
 	return GetImageView(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Node2D;
 ORCA_API struct ClassDesc _ImageView = {
 	.ClassName = "ImageView",
 	.DefaultName = "ImageView",
 	.ContentType = "ImageView",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Node2D, NULL },
+	.SuperClassIDs = { ID_Node2D, 0 },
 	.ClassID = ID_ImageView,
 	.ClassSize = sizeof(struct ImageView),
 	.Properties = ImageViewProperties,
@@ -3086,13 +3067,12 @@ void luaX_pushNinePatchImage(lua_State *L, struct NinePatchImage const* NinePatc
 struct NinePatchImage* luaX_checkNinePatchImage(lua_State *L, int idx) {
 	return GetNinePatchImage(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Node2D;
 ORCA_API struct ClassDesc _NinePatchImage = {
 	.ClassName = "NinePatchImage",
 	.DefaultName = "NinePatchImage",
 	.ContentType = "NinePatchImage",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Node2D, NULL },
+	.SuperClassIDs = { ID_Node2D, 0 },
 	.ClassID = ID_NinePatchImage,
 	.ClassSize = sizeof(struct NinePatchImage),
 	.Properties = NinePatchImageProperties,
@@ -3134,13 +3114,12 @@ void luaX_pushTerminalView(lua_State *L, struct TerminalView const* TerminalView
 struct TerminalView* luaX_checkTerminalView(lua_State *L, int idx) {
 	return GetTerminalView(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Node2D;
 ORCA_API struct ClassDesc _TerminalView = {
 	.ClassName = "TerminalView",
 	.DefaultName = "TerminalView",
 	.ContentType = "TerminalView",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Node2D, NULL },
+	.SuperClassIDs = { ID_Node2D, 0 },
 	.ClassID = ID_TerminalView,
 	.ClassSize = sizeof(struct TerminalView),
 	.Properties = TerminalViewProperties,
@@ -3170,13 +3149,12 @@ void luaX_pushPage(lua_State *L, struct Page const* Page) {
 struct Page* luaX_checkPage(lua_State *L, int idx) {
 	return GetPage(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Node2D;
 ORCA_API struct ClassDesc _Page = {
 	.ClassName = "Page",
 	.DefaultName = "Page",
 	.ContentType = "Page",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Node2D, NULL },
+	.SuperClassIDs = { ID_Node2D, 0 },
 	.ClassID = ID_Page,
 	.ClassSize = sizeof(struct Page),
 	.Properties = PageProperties,
@@ -3208,13 +3186,12 @@ void luaX_pushPageHost(lua_State *L, struct PageHost const* PageHost) {
 struct PageHost* luaX_checkPageHost(lua_State *L, int idx) {
 	return GetPageHost(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Page;
 ORCA_API struct ClassDesc _PageHost = {
 	.ClassName = "PageHost",
 	.DefaultName = "PageHost",
 	.ContentType = "PageHost",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Page, NULL },
+	.SuperClassIDs = { ID_Page, 0 },
 	.ClassID = ID_PageHost,
 	.ClassSize = sizeof(struct PageHost),
 	.Properties = PageHostProperties,
@@ -3239,13 +3216,12 @@ void luaX_pushPageViewport(lua_State *L, struct PageViewport const* PageViewport
 struct PageViewport* luaX_checkPageViewport(lua_State *L, int idx) {
 	return GetPageViewport(luaX_checkObject(L, idx));
 }
-extern struct ClassDesc _Node2D;
 ORCA_API struct ClassDesc _PageViewport = {
 	.ClassName = "PageViewport",
 	.DefaultName = "PageViewport",
 	.ContentType = "PageViewport",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { &_Node2D, NULL },
+	.SuperClassIDs = { ID_Node2D, 0 },
 	.ClassID = ID_PageViewport,
 	.ClassSize = sizeof(struct PageViewport),
 	.Properties = PageViewportProperties,
@@ -3277,7 +3253,7 @@ ORCA_API struct ClassDesc _Style = {
 	.DefaultName = "Style",
 	.ContentType = "Style",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { NULL },
+	.SuperClassIDs = { 0 },
 	.ClassID = ID_Style,
 	.ClassSize = sizeof(struct Style),
 	.Properties = StyleProperties,

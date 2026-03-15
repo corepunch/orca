@@ -24,8 +24,10 @@ CMP_Create(lpObject_t pobj, lpcClassDesc_t cls)
   comp->pcls = cls;
   comp->pobj = pobj;
 
-  for (lpcClassDesc_t const* p = cls->ParentClasses; *p; p++) {
-    struct component *c = CMP_Create(pobj, *p), *b = c;
+  for (uint32_t const* id = cls->SuperClassIDs; *id; id++) {
+    lpcClassDesc_t p = OBJ_FindClassByID(*id);
+    if (!p) continue;
+    struct component *c = CMP_Create(pobj, p), *b = c;
     for (; b->next; b = b->next)
       ;
     b->next = comp->next;

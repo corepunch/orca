@@ -45,13 +45,12 @@ void luaX_push<?= $name ?>(lua_State *L, struct <?= $name ?> const* <?= $name ?>
 struct <?= $name ?>* luaX_check<?= $name ?>(lua_State *L, int idx) {
 	return Get<?= $name ?>(luaX_checkObject(L, idx));
 }
-<?php foreach ($component->getParents() as $parent) echo "extern struct ClassDesc _$parent;\n"; ?>
 ORCA_API struct ClassDesc _<?= $name ?> = {
 	.ClassName = "<?= $name ?>",
 	.DefaultName = "<?= $name ?>",
 	.ContentType = "<?= $name ?>",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { <?= implode(', ', array_merge(array_map(fn($p) => "&_$p", $component->getParents()), ['NULL'])) ?> },
+	.SuperClassIDs = { <?= implode(', ', array_merge(array_map(fn($p) => "ID_$p", $component->getParents()), ['0'])) ?> },
 	.ClassID = ID_<?= $name ?>,
 	.ClassSize = sizeof(struct <?= $name ?>),
 	.Properties = <?= $name ?>Properties,
