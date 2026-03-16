@@ -6,8 +6,23 @@
 static lpObject_t _SprFile_Load(lua_State* L, uint8_t const *data, uint32_t size, lpcString_t name);
 
 /*
- * Loader function returned by the package searcher.
- * Called by Lua's require system to perform the actual loading.
+ * Level 3 – CLASS closure.
+ * Returned to user code by require(). Each call returns the SpriteAnimation
+ * instance that was loaded when the LOADER ran.
+ * Upvalue 1: the registered SpriteAnimation object (userdata).
+ */
+static int
+f_spr_class(lua_State *L)
+{
+  lua_pushvalue(L, lua_upvalueindex(1));
+  return 1;
+}
+
+/*
+ * Level 2 – LOADER closure.
+ * Called by Lua's require machinery after the searcher confirms the file
+ * exists. Loads and parses the .spr, registers the object, then returns
+ * the CLASS closure (f_spr_class) as the result of require().
  * Upvalue 1: the module name string.
  */
 static int
@@ -31,14 +46,16 @@ f_do_load_spr(lua_State *L)
     return luaL_error(L, "SpriteAnimation class not found, cannot load '%s'", path);
 
   FS_RegisterObject(obj, module);
-  luaX_pushObject(L, obj);
+  luaX_pushObject(L, obj);                  /* push obj as upvalue for CLASS */
+  lua_pushcclosure(L, f_spr_class, 1);
   return 1;
 }
 
 /*
- * Package searcher: checks whether a .spr file exists for the given module
- * path. Returns a loader function if found, nil otherwise.
- * This is called by Lua's require machinery before the asset is loaded.
+ * Level 1 – SEARCHER.
+ * Registered in package.searchers. Checks whether a .spr file exists for
+ * the given module path and returns the LOADER closure, or nil to let other
+ * searchers try.
  */
 static int
 f_load_spr(lua_State *L)
@@ -48,10 +65,9 @@ f_load_spr(lua_State *L)
   snprintf(path, sizeof(path), "%s.spr", FS_PathFromModule(module));
 
   if (!FS_FileExists(path))
-    return 0;  /* not found – let other searchers try */
+    return 0;
 
-  /* File exists: return a loader closure capturing the module name */
-  lua_pushvalue(L, 1);
+  lua_pushvalue(L, 1);                      /* module name as upvalue for LOADER */
   lua_pushcclosure(L, f_do_load_spr, 1);
   return 1;
 }
