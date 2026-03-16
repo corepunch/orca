@@ -73,6 +73,7 @@
  */
 
 #include <include/orca.h>
+#include <include/api.h>
 #include <include/renderer.h>
 #include <source/core/core.h>
 #include <plugins/SpriteKit/SpriteKit.h>
@@ -128,8 +129,8 @@ _read_i32(uint8_t const *buf, uint32_t off)
 /*  Object.  Returns NULL on any error.								 */
 /* ------------------------------------------------------------------ */
 
-static lpObject_t
-_SprFile_Load(uint8_t const *data, uint32_t size, lpcString_t name)
+lpObject_t
+_SprFile_Load(lua_State* L, uint8_t const *data, uint32_t size, lpcString_t name)
 {
     /* ---- 1. validate header ---- */
     if (size < (uint32_t)SPR_HEADER_SIZE) {
@@ -390,7 +391,33 @@ _SprFile_Load(uint8_t const *data, uint32_t size, lpcString_t name)
     }
 
     /* ---- 10. create SpriteAnimation Object ---- */
-    lpObject_t obj = OBJ_MakeNativeObject(ID_SpriteAnimation);
+		lua_getglobal(L, "require");
+		lua_pushstring(L, "orca.SpriteKit");
+		if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
+			fprintf(stderr, "SPR '%s': failed to require SpriteKit: %s\n",
+					name, lua_tostring(L, -1));
+			lua_pop(L, 1);
+			free(frames);
+			Texture_Release(tex);
+			return NULL;
+		}
+		lua_getfield(L, -1, "SpriteAnimation");
+		if (!lua_isfunction(L, -1) && !lua_istable(L, -1)) {
+			fprintf(stderr, "SPR '%s': SpriteKit.SpriteAnimation not found\n", name);
+			lua_pop(L, 2);
+			free(frames);
+			Texture_Release(tex);
+			return NULL;
+		}
+		if (lua_pcall(L, 0, 1, 0) != LUA_OK) {
+			fprintf(stderr, "SPR '%s': failed to call SpriteKit.SpriteAnimation: %s\n",
+					name, lua_tostring(L, -1));
+			lua_pop(L, 1);
+			free(frames);
+			Texture_Release(tex);
+			return NULL;
+		}
+    lpObject_t obj = luaX_checkObject(L, -1);
     if (!obj) {
         fprintf(stderr, "SPR '%s': failed to create SpriteAnimation object\n", name);
         free(frames);
@@ -415,3 +442,4 @@ fail:
     free(sects);
     return NULL;
 }
+
