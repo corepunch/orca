@@ -182,130 +182,189 @@ HANDLER(FtgPackage, Destroy) {
   return FALSE;
 }
 
-/* ---- .spr loading ---- */
+/* ---- .spr / .spt loading ---- */
 
-#define SPR_DEFAULT_FRAMERATE 10.0f  /* default animation frames per second */
+#define SPR_DEFAULT_FRAMERATE 10.0f  /* used when the SPR stores framerate=0 */
 
 /*
- * Raw .spr on-disk layout (all fields little-endian).
- * The compiler must not add inter-field padding.
+ * Dark Reign sprite format (best-effort reverse-engineering of the 1997 Auran
+ * engine, cross-referenced with the Volcano Lua conversion data):
+ *
+ * SPR file — animation descriptor, no pixel data:
+ *   Header (32 bytes):
+ *     char     texture_name[28]  null-terminated name of the .spt texture
+ *                                file that holds the actual pixels (no ext)
+ *     uint16_t num_frames        number of animation frames
+ *     uint16_t framerate         frames per second (0 → use SPR_DEFAULT_FRAMERATE)
+ *
+ *   Per-frame descriptors (12 bytes × num_frames):
+ *     uint16_t x, y   pixel position of the frame in the .spt texture
+ *     uint16_t w, h   frame dimensions in pixels
+ *     int16_t  dx, dy display hotspot offset
+ *
+ * SPT file — the palette-indexed texture atlas:
+ *   uint16_t width
+ *   uint16_t height
+ *   [optional 256-entry palette: 256 × 3 bytes RGB, skipped here]
+ *   uint8_t  pixels[width × height]   palette indices, treated as GL_RED
+ *
+ * Because multiple SPR animations can reference the same SPT atlas, the atlas
+ * texture is loaded once per SPT filename (deduplication is left to the GPU
+ * driver's texture cache).
  */
+#define SPT_HEADER_SIZE  4           /* uint16 width + uint16 height */
+#define SPT_PALETTE_SIZE (256 * 3)   /* 256-entry RGB palette        */
+
 #pragma pack(push, 1)
 struct _spr_header {
-  uint16_t num_frames;
-  uint16_t max_width;
-  uint16_t max_height;
-  uint16_t reserved;
+  char     texture_name[28]; /* null-terminated SPT name (no extension)     */
+  uint16_t num_frames;       /* number of animation frames                  */
+  uint16_t framerate;        /* frames per second; 0 → SPR_DEFAULT_FRAMERATE */
 };
 struct _spr_frame_desc {
-  uint16_t width;
-  uint16_t height;
-  int16_t  offset_x;
-  int16_t  offset_y;
+  uint16_t x;       /* pixel x in SPT atlas  */
+  uint16_t y;       /* pixel y in SPT atlas  */
+  uint16_t w;       /* frame width in pixels */
+  uint16_t h;       /* frame height in pixels*/
+  int16_t  dx;      /* hotspot x offset      */
+  int16_t  dy;      /* hotspot y offset      */
 };
 #pragma pack(pop)
 
 /*
- * _SprFile_Load
+ * _SptFile_Load
  *
- * Parse raw .spr bytes, build a horizontal-strip texture atlas, and return a
- * heap-allocated SpriteAnimation Object (owned by the caller, not by any Lua
- * state).  Returns NULL on any parse or allocation failure.
+ * Read the SPT texture file named <texture_name>.spt from the FTG archive,
+ * upload it as a kTextureFormatAlpha8 texture and return it.  Writes the
+ * texture dimensions into *out_w / *out_h.  Returns NULL on failure.
  *
- * The atlas is a 1-channel (kTextureFormatAlpha8 / GL_RED) texture built by
- * placing each frame's raw palette-index pixels side-by-side left-to-right.
- * Since we have no palette, each byte is treated as a greyscale intensity.
- *
- *   atlas_width  = sum of all frame widths
- *   atlas_height = maximum frame height
+ * The SPT layout is: uint16 width, uint16 height, then either
+ *   a) width × height raw bytes                (no palette)
+ *   b) 768 bytes palette, then width × height  (with palette, palette skipped)
+ * We distinguish the two cases by comparing the file size.
  */
-static lpObject_t
-_SprFile_Load(uint8_t const *data, uint32_t size, lpcString_t name)
+static struct Texture *
+_SptFile_Load(PFTG ftg, char const *texture_name, int32_t *out_w, int32_t *out_h)
 {
-  /* ---- validate header ---- */
-  if (size < sizeof(struct _spr_header))
+  char spt_name[FTG_MAX_FILENAME] = {0};
+  snprintf(spt_name, sizeof(spt_name) - 1, "%s.spt", texture_name);
+
+  struct _FTGFILE *entry = _FindFtgEntry(ftg, spt_name);
+  if (!entry)
     return NULL;
 
-  struct _spr_header const *hdr = (struct _spr_header const *)data;
-  uint16_t const num_frames = hdr->num_frames;
-  if (num_frames == 0)
+  struct file *f = _ReadFtgEntry(ftg, entry);
+  if (!f)
     return NULL;
 
-  uint32_t const desc_start  = (uint32_t)sizeof(struct _spr_header);
-  uint32_t const desc_bytes  = (uint32_t)num_frames * (uint32_t)sizeof(struct _spr_frame_desc);
-  if (size < desc_start + desc_bytes)
+  if (f->size < SPT_HEADER_SIZE) {
+    free(f);
     return NULL;
-
-  struct _spr_frame_desc const *descs =
-      (struct _spr_frame_desc const *)(data + desc_start);
-
-  /* ---- compute atlas dimensions and total pixel count ---- */
-  uint32_t atlas_w    = 0;
-  uint32_t atlas_h    = 0;
-  uint32_t pixel_need = 0;
-
-  for (uint16_t i = 0; i < num_frames; i++) {
-    uint32_t fw = descs[i].width;
-    uint32_t fh = descs[i].height;
-    if (fw == 0 || fh == 0)
-      continue;
-    /* guard against 32-bit overflow when accumulating */
-    if (atlas_w > UINT32_MAX - fw || pixel_need > UINT32_MAX - fw * fh)
-      return NULL;
-    atlas_w    += fw;
-    if (fh > atlas_h) atlas_h = fh;
-    pixel_need += fw * fh;
   }
 
-  if (atlas_w == 0 || atlas_h == 0)
+  /* Use memcpy to read uint16 fields safely regardless of alignment */
+  uint16_t w, h;
+  memcpy(&w, f->data + 0, sizeof(w));
+  memcpy(&h, f->data + 2, sizeof(h));
+
+  if (w == 0 || h == 0) {
+    free(f);
     return NULL;
-
-  uint32_t const pixel_start = desc_start + desc_bytes;
-  if (size < pixel_start + pixel_need)
-    return NULL;
-
-  /* ---- build horizontal-strip atlas ---- */
-  uint32_t const atlas_bytes = atlas_w * atlas_h;
-  uint8_t *atlas = (uint8_t *)calloc(1, atlas_bytes);
-  if (!atlas)
-    return NULL;
-
-  {
-    uint8_t const *src      = data + pixel_start;
-    uint32_t       x_cursor = 0;
-
-    for (uint16_t i = 0; i < num_frames; i++) {
-      uint32_t fw = descs[i].width;
-      uint32_t fh = descs[i].height;
-      if (fw == 0 || fh == 0)
-        continue;
-      /* copy each row of the frame into the atlas at the correct x offset */
-      for (uint32_t row = 0; row < fh; row++)
-        memcpy(atlas + row * atlas_w + x_cursor, src + row * fw, fw);
-      src      += fw * fh;
-      x_cursor += fw;
-    }
   }
 
-  /* ---- upload to GL as a 1-channel texture ---- */
+  uint32_t const expected_plain   = (uint32_t)SPT_HEADER_SIZE + (uint32_t)w * h;
+  uint32_t const expected_palette = (uint32_t)SPT_HEADER_SIZE + SPT_PALETTE_SIZE
+                                    + (uint32_t)w * h;
+
+  uint8_t const *pixels = NULL;
+  if (f->size >= expected_palette) {
+    pixels = f->data + SPT_HEADER_SIZE + SPT_PALETTE_SIZE; /* skip header + palette */
+  } else if (f->size >= expected_plain) {
+    pixels = f->data + SPT_HEADER_SIZE;                    /* no palette */
+  } else {
+    Con_Error("DarkReign: '%s' size %u too small for %ux%u image",
+              spt_name, f->size, w, h);
+    free(f);
+    return NULL;
+  }
+
   struct Texture *tex = NULL;
   HRESULT hr = Texture_Create(
       &(CREATEIMGSTRUCT){
-        .Width     = atlas_w,
-        .Height    = atlas_h,
+        .Width     = w,
+        .Height    = h,
         .Scale     = 1,
         .Format    = kTextureFormatAlpha8,
-        .ImageData = atlas,
+        .ImageData = pixels,
         .MinFilter = kTextureFilterNearest,
         .MagFilter = kTextureFilterNearest,
         .WrapMode  = kTextureWrapClamp,
       },
       &tex);
-  free(atlas);
+  free(f);
+
   if (FAILED(hr) || !tex)
     return NULL;
 
-  /* ---- allocate per-frame descriptor array ---- */
+  if (out_w) *out_w = w;
+  if (out_h) *out_h = h;
+  return tex;
+}
+
+/*
+ * _SprFile_Load
+ *
+ * Parse a raw .spr descriptor file, load the referenced .spt texture from
+ * the same FTG archive, and return a heap-allocated SpriteAnimation Object.
+ * Returns NULL on any parse or allocation failure.
+ *
+ * On format mismatch the first 32 file bytes are printed to stderr so the
+ * caller can diagnose unexpected file layouts.
+ */
+static lpObject_t
+_SprFile_Load(PFTG ftg, uint8_t const *data, uint32_t size, lpcString_t name)
+{
+  /* ---- validate SPR header ---- */
+  if (size < sizeof(struct _spr_header)) {
+    Con_Error("DarkReign: '%s' too small for SPR header (%u bytes)", name, size);
+    return NULL;
+  }
+
+  struct _spr_header const *hdr = (struct _spr_header const *)data;
+
+  /* texture_name must be a non-empty printable ASCII string */
+  if ((unsigned char)hdr->texture_name[0] < 0x20) {
+    /* Dump the first bytes to help diagnose unexpected formats */
+    uint32_t const dump_len = size < 31 ? size : 31; /* 31 × 3 + '\0' = 94 bytes */
+    char hex[100] = {0};
+    for (uint32_t k = 0; k < dump_len; k++)
+      snprintf(hex + k*3, sizeof(hex) - k*3, "%02x ", data[k]);
+    Con_Error("DarkReign: '%s' has unexpected header (size=%u bytes=%s...)",
+              name, size, hex);
+    return NULL;
+  }
+
+  uint16_t const num_frames = hdr->num_frames;
+  if (num_frames == 0)
+    return NULL;
+
+  uint32_t const frame_bytes = (uint32_t)num_frames * sizeof(struct _spr_frame_desc);
+  if (size < sizeof(struct _spr_header) + frame_bytes)
+    return NULL;
+
+  struct _spr_frame_desc const *descs =
+      (struct _spr_frame_desc const *)(data + sizeof(struct _spr_header));
+
+  /* ---- load the referenced SPT texture ---- */
+  int32_t tex_w = 0, tex_h = 0;
+  struct Texture *tex = _SptFile_Load(ftg, hdr->texture_name, &tex_w, &tex_h);
+  if (!tex) {
+    Con_Error("DarkReign: '%s' references texture '%s' which could not be loaded",
+              name, hdr->texture_name);
+    return NULL;
+  }
+
+  /* ---- build per-frame UV descriptors ---- */
   struct SpriteFrame *frames =
       (struct SpriteFrame *)malloc((size_t)num_frames * sizeof(struct SpriteFrame));
   if (!frames) {
@@ -313,28 +372,20 @@ _SprFile_Load(uint8_t const *data, uint32_t size, lpcString_t name)
     return NULL;
   }
 
-  {
-    uint32_t x_cursor = 0;
-    for (uint16_t i = 0; i < num_frames; i++) {
-      float fw = (float)descs[i].width;
-      float fh = (float)descs[i].height;
+  float const ftw = (float)tex_w;
+  float const fth = (float)tex_h;
+  for (uint16_t i = 0; i < num_frames; i++) {
+    /* Rect: place sprite so its hotspot falls at the node's origin */
+    frames[i].Rect.x      = -(float)descs[i].dx;
+    frames[i].Rect.y      = -(float)descs[i].dy;
+    frames[i].Rect.width  =  (float)descs[i].w;
+    frames[i].Rect.height =  (float)descs[i].h;
 
-      /* Rect: position the sprite so its hotspot is at the node origin */
-      frames[i].Rect.x      = -(float)descs[i].offset_x;
-      frames[i].Rect.y      = -(float)descs[i].offset_y;
-      frames[i].Rect.width  = fw;
-      frames[i].Rect.height = fh;
-
-      /* UvRect: frame's portion of the atlas in normalized coordinates.
-       * UvRect.y = 0 because every frame starts at the top of the atlas
-       * (data row 0 <-> GL y=0 = UV y=0 for this 1-channel texture). */
-      frames[i].UvRect.x      = (float)x_cursor / (float)atlas_w;
-      frames[i].UvRect.y      = 0.0f;
-      frames[i].UvRect.width  = fw / (float)atlas_w;
-      frames[i].UvRect.height = fh / (float)atlas_h;
-
-      x_cursor += (uint32_t)descs[i].width;
-    }
+    /* UvRect: normalized atlas coordinates derived from pixel positions */
+    frames[i].UvRect.x      = (float)descs[i].x / ftw;
+    frames[i].UvRect.y      = (float)descs[i].y / fth;
+    frames[i].UvRect.width  = (float)descs[i].w / ftw;
+    frames[i].UvRect.height = (float)descs[i].h / fth;
   }
 
   /* ---- create SpriteAnimation Object ---- */
@@ -348,7 +399,8 @@ _SprFile_Load(uint8_t const *data, uint32_t size, lpcString_t name)
 
   struct SpriteAnimation *anim = GetSpriteAnimation(obj);
   anim->Image     = tex;
-  anim->Framerate = SPR_DEFAULT_FRAMERATE;
+  anim->Framerate = hdr->framerate > 0 ? (float)hdr->framerate
+                                       : SPR_DEFAULT_FRAMERATE;
   anim->NumFrames = (int32_t)num_frames;
   anim->Frames    = frames;
 
@@ -361,10 +413,13 @@ _SprFile_Load(uint8_t const *data, uint32_t size, lpcString_t name)
  * Walk every entry in the FTG archive.  For each file whose name ends with
  * ".spr" (case-insensitive), parse it with _SprFile_Load() and add the
  * resulting SpriteAnimation Object as a direct child of |project|.
+ * Successfully loaded animations are accessible by their basename (no ext).
  */
 static void
 _LoadSprAnimations(PFTG ftg, lpObject_t project)
 {
+  int loaded = 0, skipped = 0;
+
   for (int i = 0; i < ftg->numfiles; i++) {
     char const *fname = ftg->files[i].name;
     size_t      flen  = strnlen(fname, FTG_MAX_FILENAME);
@@ -378,6 +433,7 @@ _LoadSprAnimations(PFTG ftg, lpObject_t project)
     struct file *f = _ReadFtgEntry(ftg, &ftg->files[i]);
     if (!f) {
       Con_Error("DarkReign: could not read '%s'", fname);
+      skipped++;
       continue;
     }
 
@@ -391,16 +447,21 @@ _LoadSprAnimations(PFTG ftg, lpObject_t project)
         *dot = '\0';
     }
 
-    lpObject_t anim_obj = _SprFile_Load(f->data, f->size, anim_name);
+    lpObject_t anim_obj = _SprFile_Load(ftg, f->data, f->size, anim_name);
     free(f);
 
     if (!anim_obj) {
-      Con_Error("DarkReign: failed to parse sprite '%s'", fname);
+      skipped++;
       continue;
     }
 
     OBJ_AddChild(project, anim_obj, FALSE);
+    loaded++;
   }
+
+  if (skipped > 0)
+    Con_Error("DarkReign: loaded %d sprite animations, skipped %d "
+              "(missing .spt or unexpected format)", loaded, skipped);
 }
 
 /*
