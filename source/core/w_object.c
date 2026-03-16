@@ -219,7 +219,7 @@ static lpcString_t PascalCase(lpcString_t pname) {
   return pname;
 }
 
-#include <source/UIKit/UIKit.h>
+#include <plugins/UIKit/UIKit.h>
 bool_t OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name) {
   switch (fnv1a32(name)) {
     case p_id:

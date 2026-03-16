@@ -4,7 +4,7 @@
 #include "../core/core_local.h"
 
 #include <source/core/core.h>
-#include <source/UIKit/UIKit.h>
+#include <plugins/UIKit/UIKit.h>
 
 #define REQUIRE(type, name, expr, error) type name = expr; if (!name) return error;
 #define ERROR_CANT_FIND_OBJECT "Can't find object"

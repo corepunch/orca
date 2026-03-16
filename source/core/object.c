@@ -803,7 +803,7 @@ OBJ_FindChildOfClass(lpObject_t self, uint32_t comp_id)
   return NULL;
 }
 
-#include <source/UIKit/UIKit.h>
+#include <plugins/UIKit/UIKit.h>
 lpObject_t
 OBJ_GetModal(lpcObject_t self)
 {

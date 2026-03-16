@@ -5,7 +5,7 @@
 
   <include file="include/renderer.h"/>
   <include file="source/core/core.h"/>
-  <include file="source/UIKit/UIKit.h"/>
+  <include file="plugins/UIKit/UIKit.h"/>
 
   <enums name="StencilOp">
     <summary>Operations performed on stencil buffer values when stencil tests pass or fail</summary>

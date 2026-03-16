@@ -1,6 +1,6 @@
 #include <include/orca.h>
 
-#include <source/UIKit/UIKit.h>
+#include <plugins/UIKit/UIKit.h>
 
 HANDLER(Label, LeftMouseUp)
 {

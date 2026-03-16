@@ -5,7 +5,7 @@
 
   <include file="include/renderer.h"/>
   <include file="source/core/core.h"/>
-  <include file="source/UIKit/uidef.h"/>
+  <include file="plugins/UIKit/uidef.h"/>
 
   <external struct="Object"/>
   <external struct="ViewEntity"/>

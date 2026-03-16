@@ -1,6 +1,6 @@
 #include "../ed_local.h"
 
-#include <source/UIKit/UIKit.h>
+#include <plugins/UIKit/UIKit.h>
 
 #define MAX_INSPECTOR_ITEMS 256
 

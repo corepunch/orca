@@ -84,7 +84,7 @@ PrintLine(struct color32* buffer,
   }
 }
 
-//#include <source/UIKit/UIKit.h>
+//#include <plugins/UIKit/UIKit.h>
 //
 //static void
 //PrintNode(lpObject_t hobj,

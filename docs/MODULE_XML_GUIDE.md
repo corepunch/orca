@@ -20,8 +20,8 @@ Module XML files are located in the `source/` directory alongside their correspo
 - `source/geometry/geom.xml` - Geometry types (vectors, matrices, etc.)
 - `source/core/core.xml` - Core engine objects and components
 - `source/renderer/api/renderer.xml` - Rendering interfaces
-- `source/UIKit/UIKit.xml` - UI components
-- `source/SceneKit/SceneKit.xml` - 3D scene graph components
+- `plugins/UIKit/UIKit.xml` - UI components
+- `plugins/SceneKit/SceneKit.xml` - 3D scene graph components
 - `source/filesystem/filesystem.xml` - File system access
 
 To generate code from these XML files, run:

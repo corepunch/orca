@@ -15,7 +15,7 @@ struct lua_State;
 
 #include <include/renderer.h>
 #include <source/core/core.h>
-#include <source/UIKit/uidef.h>
+#include <plugins/UIKit/uidef.h>
 
 #include "UIKit_properties.h"
 #include "../renderer/api/renderer.h"

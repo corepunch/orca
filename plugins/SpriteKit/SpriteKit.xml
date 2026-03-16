@@ -5,7 +5,7 @@
 
   <include file="include/renderer.h"/>
   <include file="source/core/core.h"/>
-  <include file="source/UIKit/UIKit.h"/>
+  <include file="plugins/UIKit/UIKit.h"/>
 
   <struct name="SpriteFrame" export="SpriteFrame" sealed="true">
     <field name="Rect" type="rect"/>

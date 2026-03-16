@@ -1003,6 +1003,7 @@
 				78C7367A2B8F224200FD598E /* Frameworks */,
 				78B1385A2AF3CC4E00AAAE53 /* include */,
 				783C96DF2F263D9C00612323 /* libs */,
+				7800AABB1234EF56780011AA /* plugins */,
 				78B136AB2AF3CAD000AAAE53 /* Products */,
 				78B1375D2AF3CC4E00AAAE53 /* source */,
 				787C7B942BB30A7C006FD937 /* tools */,
@@ -1054,6 +1055,16 @@
 			path = renderer;
 			sourceTree = "<group>";
 		};
+		7800AABB1234EF56780011AA /* plugins */ = {
+			isa = PBXGroup;
+			children = (
+				78346DE52C96EFC900E0CFD1 /* SceneKit */,
+				7868655D2F50A9BD00DC87FC /* SpriteKit */,
+				78C7374F2B8F60C600FD598E /* UIKit */,
+			);
+			path = plugins;
+			sourceTree = "<group>";
+		};
 		78B1375D2AF3CC4E00AAAE53 /* source */ = {
 			isa = PBXGroup;
 			children = (
@@ -1068,10 +1079,7 @@
 				7810D26E2D58C06000DB632F /* orca */,
 				7817693F2D61CD4E003CBEA9 /* parsers */,
 				78B136CD2AF3CC4E00AAAE53 /* renderer */,
-				78346DE52C96EFC900E0CFD1 /* SceneKit */,
-				7868655D2F50A9BD00DC87FC /* SpriteKit */,
 				7810D2692D58B1E500DB632F /* sysutil */,
-				78C7374F2B8F60C600FD598E /* UIKit */,
 				78664E7B2B89E2E40006A947 /* vm */,
 				78FD53372D940BB200122823 /* vsomeip */,
 			);
@@ -2361,6 +2369,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/$(CONFIGURATION)/liborca";
 				DEVELOPMENT_TEAM = BM2R8F5YHC;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -2376,6 +2385,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/$(CONFIGURATION)/liborca";
 				DEVELOPMENT_TEAM = BM2R8F5YHC;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -2391,6 +2401,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/$(CONFIGURATION)/liborca";
 				DEVELOPMENT_TEAM = BM2R8F5YHC;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -2406,6 +2417,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/$(CONFIGURATION)/liborca";
 				DEVELOPMENT_TEAM = BM2R8F5YHC;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -2679,6 +2691,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/$(CONFIGURATION)/liborca";
 				DEVELOPMENT_TEAM = BM2R8F5YHC;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -2694,6 +2707,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/$(CONFIGURATION)/liborca";
 				DEVELOPMENT_TEAM = BM2R8F5YHC;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
