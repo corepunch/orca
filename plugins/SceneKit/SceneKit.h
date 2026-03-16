@@ -9,10 +9,10 @@ typedef struct lua_State lua_State;
 
 #include <include/renderer.h>
 #include <source/core/core.h>
-#include <source/UIKit/UIKit.h>
+#include <plugins/UIKit/UIKit.h>
 
 #include "SceneKit_properties.h"
-#include "../renderer/api/renderer.h"
+#include "../../source/renderer/api/renderer.h"
 
 
 /// @brief Operations performed on stencil buffer values when stencil tests pass or fail

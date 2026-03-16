@@ -1,6 +1,6 @@
 #include <include/orca.h>
 
-#include <source/UIKit/UIKit.h>
+#include <plugins/UIKit/UIKit.h>
 
 lpObject_t
 _NextTabStop(lpObject_t hObject);

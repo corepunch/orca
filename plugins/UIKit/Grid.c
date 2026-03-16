@@ -3,7 +3,7 @@
 #include <include/orca.h>
 #include <include/renderer.h>
 
-#include <source/UIKit/UIKit.h>
+#include <plugins/UIKit/UIKit.h>
 
 
 #define MAX_COLUMNS 16

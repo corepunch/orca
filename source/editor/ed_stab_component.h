@@ -1,8 +1,8 @@
 #include "ed_local.h"
 
-#include <source/UIKit/UIKit.h>
+#include <plugins/UIKit/UIKit.h>
 
-#include <source/SceneKit/SceneKit.h>
+#include <plugins/SceneKit/SceneKit.h>
 
 lpcClassDesc_t
 get_node_class_desc(lpObject_t object)

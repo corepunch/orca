@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
 <module name="UIKit" namespace="orca" on-luaopen="on_ui_module_registered">
-  <require file="../renderer/api/renderer.xml"/>
+  <require file="../../source/renderer/api/renderer.xml"/>
 
   <include file="include/renderer.h"/>
   <include file="source/core/core.h"/>
-  <include file="source/UIKit/uidef.h"/>
+  <include file="plugins/UIKit/uidef.h"/>
 
   <external struct="Object"/>
   <external struct="ViewEntity"/>
