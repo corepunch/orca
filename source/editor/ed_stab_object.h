@@ -31,7 +31,7 @@ int cmp_prop(const void *a, const void *b) {
   return strcmp(PROP_GetName(nodeA), PROP_GetName(nodeB));
 }
 
-#include "../UIKit/UIKit.h"
+#include <plugins/UIKit/UIKit.h>
 
 void UI_FillOutObjectView(HOBJ object, LPOBJDEF lpOut) {
   memset(lpOut, 0, sizeof(struct _OBJDEF));

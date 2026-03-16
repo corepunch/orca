@@ -2,12 +2,14 @@ APPNAME = orca
 LIBNAME = orca
 BUILDDIR = build
 SOURCEDIR = source
+PLUGINDIR = plugins
 DATADIR = data
 RESOURCEDIR = share
 OBJECTDIR = $(BUILDDIR)/obj
 SHAREDIR = $(BUILDDIR)/share
 BINDIR = $(BUILDDIR)/bin
 LIBDIR = $(BUILDDIR)/lib
+PLUGINLIBDIR = $(LIBDIR)/liborca
 TARGET = $(BINDIR)/$(APPNAME)
 TARGETLIB = $(LIBDIR)/lib$(LIBNAME).so
 PLATFORM_LIBDIR = libs/platform
@@ -19,7 +21,8 @@ CFLAGS ?= -O2 -g
 # Always add these flags, even if CFLAGS is passed from outside
 CFLAGS += -fpic -I. -I$(CURDIR)
 LDFLAGS = -L$(LIBDIR)
-MODULES = geometry orca platform sysutil console localization parsers UIKit debug network renderer filesystem core SceneKit SpriteKit vsomeip server editor backend
+MODULES = geometry orca platform sysutil console localization parsers debug network renderer filesystem core vsomeip server editor backend
+PLUGINS = UIKit SceneKit SpriteKit
 SOURCEMODULES = $(addprefix ${SOURCEDIR}/, $(MODULES))
 OBJECTS = $(patsubst %.c, %.o, $(foreach dir,$(SOURCEMODULES),$(wildcard $(dir)/*.c)))
 HEADERS = $(wildcard *.h)
@@ -44,7 +47,7 @@ INST_BINDIR ?= $(INST_PREFIX)/bin
 INST_LIBDIR ?= $(INST_PREFIX)/lib/lua/5.4
 INST_LUADIR ?= $(INST_PREFIX)/share/lua/5.4
 
-.PHONY: default all CLEAN directories unite buildlib app platform example install
+.PHONY: default all CLEAN directories unite buildlib buildplugins app platform example install
 
 default: directories modules unite
 all: default
@@ -65,10 +68,24 @@ else
 	$(CC) $(addprefix ${OBJECTDIR}/,$(UNITEOBJECTS)) -shared -Wall $(LIBS) -o $(TARGETLIB) $(LDFLAGS) -Wl,-rpath,'$$ORIGIN'
 endif
 
+buildplugins: buildlib
+	mkdir -p $(PLUGINLIBDIR)
+ifeq ($(shell uname -s),Darwin)
+	$(foreach p,$(PLUGINS), \
+		find $(PLUGINDIR)/$(p) -name "*.c" | sed 's/.*/#include "&"/' | \
+		$(CC) $(CFLAGS) -x c -c -o $(OBJECTDIR)/plugin_$(p).o - && \
+		$(CC) $(OBJECTDIR)/plugin_$(p).o -shared -Wall $(LIBS) -lorca -o $(PLUGINLIBDIR)/$(p).so $(LDFLAGS) -Wl,-rpath,@loader_path || exit 1;)
+else
+	$(foreach p,$(PLUGINS), \
+		find $(PLUGINDIR)/$(p) -name "*.c" | sed 's/.*/#include "&"/' | \
+		$(CC) $(CFLAGS) -x c -c -o $(OBJECTDIR)/plugin_$(p).o - && \
+		$(CC) $(OBJECTDIR)/plugin_$(p).o -shared -Wall $(LIBS) -lorca -o $(PLUGINLIBDIR)/$(p).so $(LDFLAGS) -Wl,-rpath,'$$ORIGIN/..' || exit 1;)
+endif
+
 app: platform
 	$(CC) $(CFLAGS) $(SOURCEDIR)/orca.c -Wall $(LIBS) -o $(TARGET) $(LDFLAGS)
 
-unite: directories buildunite buildlib app copyshare
+unite: directories buildunite buildlib buildplugins app copyshare
 
 %.o: %.c $(HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $(addprefix $(OBJECTDIR)/,$(notdir $@))
@@ -77,6 +94,7 @@ directories:
 	mkdir -p ${OBJECTDIR}
 	mkdir -p ${BINDIR}
 	mkdir -p ${LIBDIR}
+	mkdir -p ${PLUGINLIBDIR}
 	mkdir -p ${SHAREDIR}
 
 copyshare:
@@ -104,6 +122,7 @@ clean:
 	-rm -f $(BINDIR)/$(APPNAME)
 	-rm -f $(TARGET)
 	-rm -rf $(SHAREDIR)/*
+	-rm -rf $(PLUGINLIBDIR)
 	$(MAKE) -C $(PLATFORM_LIBDIR) clean
 
 andrun: unite
