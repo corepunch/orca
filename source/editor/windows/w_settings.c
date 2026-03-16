@@ -65,7 +65,6 @@ lpcString_t cats[] = {
   NULL
 };
 
-extern lpObject_t OBJ_MakeNativeObject(lpcClassDesc_t cls);
 extern struct ClassDesc _Project;
 
 EDWINPROC(ProjectSettings) {
