@@ -3,9 +3,6 @@
 
 #include "filesystem.h"
 
-// Package
-extern void luaX_pushPackage(lua_State *L, struct Package const* value);
-extern struct Package* luaX_checkPackage(lua_State *L, int index);
 // Object
 extern void luaX_pushObject(lua_State *L, struct Object const* value);
 extern struct Object* luaX_checkObject(lua_State *L, int index);
@@ -352,6 +349,7 @@ LRESULT PackagePZ2_HasChangedFiles(struct Object*, struct PackagePZ2*, wParam_t,
 LRESULT PackagePZ2_Destroy(struct Object*, struct PackagePZ2*, wParam_t, DestroyEventPtr);
 
 static struct PropertyType const PackagePZ2Properties[kPackagePZ2NumProperties] = {
+	DECL(0x5ffdd888, PackagePZ2, FileName, FileName, kDataTypeFixed), // PackagePZ2.FileName
 };
 static struct PackagePZ2 PackagePZ2Defaults = {
 };

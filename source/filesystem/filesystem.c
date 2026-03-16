@@ -10,13 +10,6 @@
 FOR_EACH_OBJECT(ITER, FS_GetWorkspace()) \
 if (!strncmp(OBJ_GetName(ITER), filename, strlen(OBJ_GetName(ITER))) && filename[strlen(OBJ_GetName(ITER))] == '/')
 
-PPACK _LoadPackFile(lpcString_t filename);
-bool_t _FindPackFile(PPACK pak, lpcString_t basename);
-struct file* _ReadPakFile(PPACK pack, lpcString_t filename);
-void _FreePack(PPACK pack);
-char* _ExtractPackageXmlToTemp(PPACK pack);
-static struct Package *MainBundle=NULL;
-
 static lpObject_t workspace = NULL;
 
 void FS_SetWorkspace(lpObject_t object) {
@@ -364,22 +357,26 @@ struct ext_class {
   { NULL, 0 }
 };
 
+typedef struct _PACK* PPACK;
+
+PPACK _LoadPackFile(lpcString_t filename);
+//bool_t _FindPackFile(PPACK pak, lpcString_t basename);
+//struct file* _ReadPakFile(PPACK pack, lpcString_t filename);
+void _FreePack(PPACK pack);
+char* _ExtractPackageXmlToTemp(PPACK pack);
+
 static lpProject_t _InitProject(lua_State *L, lpcString_t szDirname) {
   uint32_t class_id = ID_Directory;
   path_t tmp, packpath;
   snprintf(packpath, sizeof(packpath), "%s/package", szDirname);
   for (struct ext_class *c = classes; c->ext; c++) {
     snprintf(tmp, sizeof(tmp), "%s.%s", szDirname, c->ext);
-    FILE *fp = fopen(tmp, "rb");
-    if (fp) {
-      fclose(fp);
-      void* pack = _LoadPackFile(tmp);
-      char* path = _ExtractPackageXmlToTemp(pack);
-      if (path) {
-        strncpy(packpath, path, sizeof(packpath));
-        free(path);
+    xmlWith(FILE, fp, fopen(tmp, "rb"), fclose) {
+      xmlWith(void, pack, _LoadPackFile(tmp), _FreePack) {
+        xmlWith(char, path, _ExtractPackageXmlToTemp(pack), free) {
+          strncpy(packpath, path, sizeof(packpath));
+        }
       }
-      _FreePack(pack);
       class_id = ID_PackagePZ2;
     }
   }

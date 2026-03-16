@@ -1,7 +1,15 @@
 #include "fs_local.h"
 #include "filesystem.h"
 
+#define MONITOR_FILES
+
 #ifdef MONITOR_FILES
+struct _MONITOREDFILE
+{
+  path_t Filename;
+  longTime_t Modified;
+  struct _MONITOREDFILE* next;
+};
 bool_t
 FS_GetModifiedTime(lpcString_t, longTime_t*);
 
@@ -37,7 +45,7 @@ _WatchFile(struct Directory* psrch, lpcString_t filename)
       return;
     }
   }
-  PMONITOREDFILE mf = ZeroAlloc(sizeof(struct _MONITOREDFILE));
+  struct _MONITOREDFILE* mf = ZeroAlloc(sizeof(struct _MONITOREDFILE));
   strncpy(mf->Filename, filename, sizeof(mf->Filename));
   FS_GetModifiedTime(filename, &mf->Modified);
   ADD_TO_LIST(mf, files);

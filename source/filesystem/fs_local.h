@@ -5,28 +5,6 @@
 
 #include "filesystem.h"
 
-#define MONITOR_FILES
-
-#ifdef MONITOR_FILES
-typedef struct _MONITOREDFILE
-{
-  path_t Filename;
-  longTime_t Modified;
-  struct _MONITOREDFILE* next;
-}* PMONITOREDFILE;
-#endif
-
-typedef struct _PACK* PPACK;
-
-struct Package
-{
-  shortStr_t name;
-  uint8_t namelen;
-  path_t path;
-  PPACK pack;
-  struct Package* next;
-};
-
 struct _xmlNode*
 __xmlNewChild(struct _xmlNode* p, lpcString_t name, lpcString_t args[]);
 

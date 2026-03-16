@@ -5,7 +5,6 @@
   
   <event name="ReadCommands" type="void"/>
   
-  <external struct="Package"/>
   <external struct="Object"/>
 
   <struct name="ProjectReference" sealed="true">
@@ -114,7 +113,6 @@
     <property name="SystemMessages" type="SystemMessage" array="true"/>
 
     <field name="isPackage" type="bool"/>
-    <field name="package" type="Package" pointer="true"/>
   </class>
   
   <class name="Library">

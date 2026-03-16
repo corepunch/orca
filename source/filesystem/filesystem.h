@@ -6,7 +6,6 @@
 
 typedef struct lua_State lua_State;
 
-struct Package;
 struct Object;
 
 
@@ -107,6 +106,7 @@ ORCA_API struct Directory* luaX_checkDirectory(lua_State *L, int idx);
 typedef struct PackagePZ2 PackagePZ2_t, *PackagePZ2Ptr, *lpPackagePZ2_t;
 typedef struct PackagePZ2 const *PackagePZ2CPtr, *lpcPackagePZ2_t;
 struct PackagePZ2 {
+	fixedString_t FileName;
 };
 ORCA_API void luaX_pushPackagePZ2(lua_State *L, struct PackagePZ2 const* PackagePZ2);
 ORCA_API struct PackagePZ2* luaX_checkPackagePZ2(lua_State *L, int idx);
@@ -160,7 +160,6 @@ struct Project {
 	struct SystemMessage* SystemMessages;
 	int32_t NumSystemMessages;
 	bool_t isPackage;
-	struct Package* package;
 };
 ORCA_API void luaX_pushProject(lua_State *L, struct Project const* Project);
 ORCA_API struct Project* luaX_checkProject(lua_State *L, int idx);

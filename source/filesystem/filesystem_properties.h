@@ -17,7 +17,9 @@ enum DirectoryProperties {
 #define ID_PackagePZ2 0xb6ebfd99
 #define GetPackagePZ2(_P) ((struct PackagePZ2*)((_P)?OBJ_GetComponent(_P,ID_PackagePZ2):NULL))
 #define PackagePZ2_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_PackagePZ2,sizeof(struct PackagePZ2),_N)
+#define ID_PackagePZ2_FileName 0xbcc20518 // PackagePZ2.FileName
 enum PackagePZ2Properties {
+	kPackagePZ2FileName,
 	kPackagePZ2NumProperties	
 };
 // Workspace
