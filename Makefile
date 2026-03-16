@@ -29,7 +29,6 @@ HEADERS = $(wildcard *.h)
 SOURCEMODULES2 = $(addprefix /, $(MODULES))
 UNITEOBJECTS = $(addsuffix .o, $(MODULES))
 UNITE = $(patsubst %.c, %.o, $(foreach dir,$(SOURCEMODULES),$(wildcard $(dir)/*.c)))
-PLUGINSOURCEMODULES2 = $(addprefix /plugins/, $(PLUGINS))
 CFLAGS += $(shell pkg-config --cflags zlib liblz4 lua5.4 libjpeg freetype2 libxml-2.0 2>/dev/null)
 LDFLAGS += $(shell pkg-config --libs zlib liblz4 lua5.4 freetype2 libjpeg libpng libxml-2.0 2>/dev/null)
 
@@ -57,9 +56,6 @@ build: default
 /%:
 	find ${SOURCEDIR}$@ -name "*.c" | sed 's/.*/#include "&"/' | $(CC) $(CFLAGS) -x c -c -o $(OBJECTDIR)$@.o -
 
-/plugins/%:
-	find ${PLUGINDIR}/$* -name "*.c" | sed 's/.*/#include "&"/' | $(CC) $(CFLAGS) -x c -c -o $(OBJECTDIR)/plugin_$*.o -
-
 platform:
 	$(MAKE) -C $(PLATFORM_LIBDIR) OUTDIR=../../$(LIBDIR)
 
@@ -72,12 +68,18 @@ else
 	$(CC) $(addprefix ${OBJECTDIR}/,$(UNITEOBJECTS)) -shared -Wall $(LIBS) -o $(TARGETLIB) $(LDFLAGS) -Wl,-rpath,'$$ORIGIN'
 endif
 
-buildplugins: buildlib $(PLUGINSOURCEMODULES2)
+buildplugins: buildlib
 	mkdir -p $(PLUGINLIBDIR)
 ifeq ($(shell uname -s),Darwin)
-	$(foreach p,$(PLUGINS),$(CC) $(OBJECTDIR)/plugin_$(p).o -shared -Wall $(LIBS) -lorca -o $(PLUGINLIBDIR)/liborca.$(p).so $(LDFLAGS) -Wl,-rpath,@loader_path;)
+	$(foreach p,$(PLUGINS), \
+		find $(PLUGINDIR)/$(p) -name "*.c" | sed 's/.*/#include "&"/' | \
+		$(CC) $(CFLAGS) -x c -c -o $(OBJECTDIR)/plugin_$(p).o - && \
+		$(CC) $(OBJECTDIR)/plugin_$(p).o -shared -Wall $(LIBS) -lorca -o $(PLUGINLIBDIR)/liborca.$(p).so $(LDFLAGS) -Wl,-rpath,@loader_path || exit 1;)
 else
-	$(foreach p,$(PLUGINS),$(CC) $(OBJECTDIR)/plugin_$(p).o -shared -Wall $(LIBS) -lorca -o $(PLUGINLIBDIR)/liborca.$(p).so $(LDFLAGS) -Wl,-rpath,'$$ORIGIN/..';)
+	$(foreach p,$(PLUGINS), \
+		find $(PLUGINDIR)/$(p) -name "*.c" | sed 's/.*/#include "&"/' | \
+		$(CC) $(CFLAGS) -x c -c -o $(OBJECTDIR)/plugin_$(p).o - && \
+		$(CC) $(OBJECTDIR)/plugin_$(p).o -shared -Wall $(LIBS) -lorca -o $(PLUGINLIBDIR)/liborca.$(p).so $(LDFLAGS) -Wl,-rpath,'$$ORIGIN/..' || exit 1;)
 endif
 
 app: platform
