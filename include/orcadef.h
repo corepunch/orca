@@ -11,6 +11,7 @@
 #define MAX_UNIFORMS 64
 #define MAX_CAMERAS 64
 #define MAX_MSGLEN 4096           // max length of a message
+#define MAX_OSPATH 1024
 #define MAX_OBJECT_PROPERTIES 256 // for editor
 #define FPS_BUFFER_SIZE 64
 #define PACKET_HEADER 10 // two ints and a short
@@ -26,13 +27,13 @@
 #define BOX_FROM_PTR(p) ((uintptr_t)(p))
 #define BOX_PTR(TYPE, ID) ((struct TYPE const*)ID)
 
+#define MAKE_FOURCC(a, b, c, d) ((int)(d) << 24 | (int)(c) << 16 | (b) << 8 | (a))
+
 #define LOWORD(l) ((uint16_t)(l & 0xFFFF))
 #define HIWORD(l) ((uint16_t)((l >> 16) & 0xFFFF))
-#define MAKEDWORD(low, high)                                                   \
-  ((uint32_t)(((uint16_t)(low)) | ((uint32_t)((uint16_t)(high))) << 16))
+#define MAKEDWORD(low, high) ((uint32_t)(((uint16_t)(low)) | ((uint32_t)((uint16_t)(high))) << 16))
 #define MFCH(ch, n) ((int)(char)(ch) << n)
-#define MAKEFOURCC(ch0, ch1, ch2, ch3)                                         \
-  (MFCH(ch0, 0) | MFCH(ch1, 8) | MFCH(ch2, 16) | MFCH(ch3, 24))
+#define MAKEFOURCC(ch0, ch1, ch2, ch3) (MFCH(ch0, 0) | MFCH(ch1, 8) | MFCH(ch2, 16) | MFCH(ch3, 24))
 #define DECLARE_INTERFACE(NAME, SYSNAME)                                       \
   typedef struct _##SYSNAME* P##SYSNAME;                                       \
   static inline P##SYSNAME Get##NAME(void)                                     \
@@ -179,15 +180,32 @@ enum
   type_service,
 };
 
-INLINE void
-_keep(void const* ptr)
-{
-}
-
 #define Con_Error(FMT, ...) \
 fprintf(stderr, "%s: " FMT "\n", __func__, ##__VA_ARGS__)
 
 #define Con_Warning(FMT, ...) \
 Con_Error("Warning: " FMT, ##__VA_ARGS__)
+
+typedef unsigned int bool_t;
+typedef unsigned char byte_t;
+typedef void* handle_t;
+typedef unsigned int uint32_t;
+typedef unsigned short uint16_t;
+typedef intptr_t LRESULT;
+typedef signed int HRESULT;
+typedef uint32_t wParam_t;
+typedef void* lParam_t;
+typedef long long objectTags_t;
+typedef unsigned long longTime_t;
+typedef char shortStr_t[MAX_NAMELEN];
+typedef const char *lpcString_t;
+typedef char *LPSTR;
+typedef int *lpint;
+
+#define MAX_PROPERTY_STRING 256
+//#define MAX_PROPERTIES 65536
+
+typedef char fixedString_t[MAX_PROPERTY_STRING];
+
 
 #endif

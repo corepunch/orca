@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
+<module name="DarkReign" namespace="orca" on-luaopen="on_darkreign_module_registered">
+  <require file="../../source/filesystem/filesystem.xml"/>
+
+  <external struct="_FTG"/>
+
+  <class name="FtgPackage" parent="Bundle">
+    <summary>Loader for FTG archives (Dark Reign game format)</summary>
+    <details>Reads FTG archives as used by the Dark Reign game. The FTG format stores files in a flat directory with 28-byte filenames, uncompressed data at fixed offsets. Register with FS_LoadBundle to make files accessible via FS_LoadFile as "bundlename/filename". To load sprites, create ImageLibrary entries from the extracted bitmap data, define SpriteAnimation frame rects, and assign them to SKSpriteNode.Animation.</details>
+    <handles event="LoadProject"/>
+    <handles event="OpenFile"/>
+    <handles event="FileExists"/>
+    <handles event="HasChangedFiles"/>
+    <handles event="Destroy"/>
+    <property name="FileName" type="fixed"/>
+    <field name="_ftg" type="_FTG" pointer="true"/>
+  </class>
+</module>

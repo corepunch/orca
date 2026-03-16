@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
 <module name="geometry" namespace="orca">
-  <include file="source/geometry/geometry.h"/>
+  <include file="include/orcadef.h"/>
 
   <enums name="RotationOrder">
     <summary>Euler angle rotation order enumeration</summary>

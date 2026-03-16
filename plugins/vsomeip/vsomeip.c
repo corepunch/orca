@@ -300,13 +300,11 @@ _ReadNode(xmlNodePtr node, PBUFFER buffer)
 
 int Read_Service(long dwService, long dwMethod, long dwLength, void* lpData)
 {
-  xmlWith(xmlNode, method, _FindMethod(_FindService(dwService), dwMethod), _keep)
-  {
-    if (_ReadNode(method, &(struct _BUFFER){ dwLength, lpData })) {
-      Con_Error("Error reading %s packet of %d bytes\n",
-              (char const*)method->name,
-              (int)dwLength);
-    }
+  xmlNode* method = _FindMethod(_FindService(dwService), dwMethod);
+  if (method && _ReadNode(method, &(struct _BUFFER){ dwLength, lpData })) {
+    Con_Error("Error reading %s packet of %d bytes\n",
+            (char const*)method->name,
+            (int)dwLength);
   }
   return FALSE;
 }

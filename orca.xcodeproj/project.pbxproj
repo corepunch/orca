@@ -152,7 +152,6 @@
 		781CA7F82E15B38500FFCFD9 /* vsomeip.c in Sources */ = {isa = PBXBuildFile; fileRef = 78FD53362D940BB200122823 /* vsomeip.c */; };
 		781CA7F92E15B39300FFCFD9 /* someip.h in Headers */ = {isa = PBXBuildFile; fileRef = 78FD53342D940BB200122823 /* someip.h */; };
 		781CA7FA2E15B39300FFCFD9 /* vsomeip.h in Headers */ = {isa = PBXBuildFile; fileRef = 78FD53352D940BB200122823 /* vsomeip.h */; };
-		781CA7FB2E15B3AA00FFCFD9 /* liborca.vsomeip.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7F32E15B37800FFCFD9 /* liborca.vsomeip.so */; };
 		781CA7FC2E15B3BA00FFCFD9 /* liborca.filesystem.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA6E12E15241200FFCFD9 /* liborca.filesystem.so */; };
 		781CA7FE2E19371400FFCFD9 /* w_bindings.c in Sources */ = {isa = PBXBuildFile; fileRef = 781CA7FD2E19371000FFCFD9 /* w_bindings.c */; };
 		781FC4A62E894AC800571445 /* popen2.c in Sources */ = {isa = PBXBuildFile; fileRef = 781FC4A52E894AC400571445 /* popen2.c */; };
@@ -382,7 +381,7 @@
 		781CA7BA2E1562F700FFCFD9 /* liborca.localization.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca.localization.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		781CA7D72E15B22500FFCFD9 /* liborca.parsers.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca.parsers.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		781CA7E52E15B2D000FFCFD9 /* liborca.network.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca.network.so; sourceTree = BUILT_PRODUCTS_DIR; };
-		781CA7F32E15B37800FFCFD9 /* liborca.vsomeip.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca.vsomeip.so; sourceTree = BUILT_PRODUCTS_DIR; };
+		781CA7F32E15B37800FFCFD9 /* liborca/vsomeip.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca/vsomeip.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		781CA7FD2E19371000FFCFD9 /* w_bindings.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = w_bindings.c; sourceTree = "<group>"; };
 		781FC4A52E894AC400571445 /* popen2.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = popen2.c; sourceTree = "<group>"; };
 		781FC4A72E8D7CB800571445 /* server.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = server.c; sourceTree = "<group>"; };
@@ -599,7 +598,6 @@
 			files = (
 				78932BF62F38D6D5007C59CC /* liborca.platform.so in Frameworks */,
 				78E4A9CD2E94206B00E3A503 /* liborca.system.so in Frameworks */,
-				781CA7FB2E15B3AA00FFCFD9 /* liborca.vsomeip.so in Frameworks */,
 				781CA7EB2E15B30100FFCFD9 /* liborca.network.so in Frameworks */,
 				781CA7DE2E15B26900FFCFD9 /* liborca.parsers.so in Frameworks */,
 				781CA7CA2E1566FB00FFCFD9 /* liborca.editor.so in Frameworks */,
@@ -983,6 +981,7 @@
 				78346DE52C96EFC900E0CFD1 /* SceneKit */,
 				7868655D2F50A9BD00DC87FC /* SpriteKit */,
 				78C7374F2B8F60C600FD598E /* UIKit */,
+				78FD53372D940BB200122823 /* vsomeip */,
 			);
 			path = plugins;
 			sourceTree = "<group>";
@@ -1021,7 +1020,7 @@
 				781CA7BA2E1562F700FFCFD9 /* liborca.localization.so */,
 				781CA7D72E15B22500FFCFD9 /* liborca.parsers.so */,
 				781CA7E52E15B2D000FFCFD9 /* liborca.network.so */,
-				781CA7F32E15B37800FFCFD9 /* liborca.vsomeip.so */,
+				781CA7F32E15B37800FFCFD9 /* liborca/vsomeip.so */,
 				78E4A9C62E941ECD00E3A503 /* liborca.system.so */,
 				783C97032F263E7600612323 /* liborca.platform.so */,
 				7868653E2F50A96100DC87FC /* liborca/SpriteKit.so */,
@@ -1064,7 +1063,6 @@
 				78B136CD2AF3CC4E00AAAE53 /* renderer */,
 				7810D2692D58B1E500DB632F /* sysutil */,
 				78664E7B2B89E2E40006A947 /* vm */,
-				78FD53372D940BB200122823 /* vsomeip */,
 			);
 			path = source;
 			sourceTree = "<group>";
@@ -1619,9 +1617,9 @@
 			productReference = 781CA7E52E15B2D000FFCFD9 /* liborca.network.so */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
-		781CA7F22E15B37800FFCFD9 /* orca.vsomeip */ = {
+		781CA7F22E15B37800FFCFD9 /* orca/vsomeip */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 781CA7F42E15B37800FFCFD9 /* Build configuration list for PBXNativeTarget "orca.vsomeip" */;
+			buildConfigurationList = 781CA7F42E15B37800FFCFD9 /* Build configuration list for PBXNativeTarget "orca/vsomeip" */;
 			buildPhases = (
 				781CA7EF2E15B37800FFCFD9 /* Headers */,
 				781CA7F02E15B37800FFCFD9 /* Sources */,
@@ -1631,11 +1629,11 @@
 			);
 			dependencies = (
 			);
-			name = orca.vsomeip;
+			name = orca/vsomeip;
 			packageProductDependencies = (
 			);
 			productName = orca.vsomeip;
-			productReference = 781CA7F32E15B37800FFCFD9 /* liborca.vsomeip.so */;
+			productReference = 781CA7F32E15B37800FFCFD9 /* liborca/vsomeip.so */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		783C96FB2F263E7600612323 /* orca.platform */ = {
@@ -1811,9 +1809,9 @@
 				781CA7B92E1562F700FFCFD9 /* orca.localization */,
 				781CA7D62E15B22500FFCFD9 /* orca.parsers */,
 				781CA7E42E15B2D000FFCFD9 /* orca.network */,
-				781CA7F22E15B37800FFCFD9 /* orca.vsomeip */,
 				78E4A9BD2E941ECD00E3A503 /* orca.system */,
 				783C96FB2F263E7600612323 /* orca.platform */,
+				781CA7F22E15B37800FFCFD9 /* orca/vsomeip */,
 				781CA74C2E1556FF00FFCFD9 /* orca/UIKit */,
 				781CA7342E154DE300FFCFD9 /* orca/SceneKit */,
 				7868651B2F50A96100DC87FC /* orca/SpriteKit */,
@@ -3093,7 +3091,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		781CA7F42E15B37800FFCFD9 /* Build configuration list for PBXNativeTarget "orca.vsomeip" */ = {
+		781CA7F42E15B37800FFCFD9 /* Build configuration list for PBXNativeTarget "orca/vsomeip" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				781CA7F52E15B37800FFCFD9 /* Debug */,

@@ -37,7 +37,6 @@ int luaopen_orca_parsers_xml(lua_State*);
 int luaopen_orca_renderer(lua_State*);
 int luaopen_orca_backend(lua_State*);
 int luaopen_orca_system(lua_State*);
-int luaopen_orca_vsomeip(lua_State*);
 int luaopen_orca_editor(lua_State*);
 
 static luaL_Reg const orca_modules[] = {
@@ -52,7 +51,6 @@ static luaL_Reg const orca_modules[] = {
   { "orca.renderer", luaopen_orca_renderer },
   { "orca.backend", luaopen_orca_backend },
   { "orca.system", luaopen_orca_system },
-  { "orca.vsomeip", luaopen_orca_vsomeip },
   { "orca.editor", luaopen_orca_editor },
   { NULL, NULL }
 };
