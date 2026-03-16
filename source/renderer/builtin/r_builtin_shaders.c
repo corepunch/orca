@@ -158,37 +158,6 @@ struct shader_desc shader_cinematic = {
   "}\n"
 };
 
-struct shader_desc shader_sprite = {
-  .Name = "Sprite Palette Shader",
-  .Version = 150,
-  .Precision = PRECISION_LOW,
-  .FragmentOut = "fragColor",
-  .Uniforms = {
-    { "u_modelViewProjectionTransform", UT_FLOAT_MAT4, PRECISION_HIGH },
-    { "u_textureTransform", UT_FLOAT_MAT3, PRECISION_HIGH },
-    { "u_opacity", UT_FLOAT, PRECISION_LOW },
-    { "u_texture", UT_SAMPLER_2D, PRECISION_LOW },
-    { "u_spritePalette", UT_SAMPLER_2D, PRECISION_LOW },
-  },
-    .Attributes = {
-      { "a_position", UT_FLOAT_VEC4 },
-      { "a_texcoord0", UT_FLOAT_VEC2 },
-    },
-    .Shared = {
-      { "v_texcoord0", UT_FLOAT_VEC2 },
-    },
-    .VertexShader =
-  "void main() {\n"
-  "    gl_Position = u_modelViewProjectionTransform * a_position;\n"
-  "    v_texcoord0 = (u_textureTransform * vec3(a_texcoord0.xy, 1.0)).xy;\n"
-  "}\n",
-    .FragmentShader =
-  "void main() {\n"
-  "    vec4 col = texture(u_texture, v_texcoord0);\n"
-  "    fragColor = texture(u_spritePalette, vec2(col.r, 0.5)) * u_opacity;\n"
-  "}\n"
-};
-
 #define CHARSER_WIDTH 16
 #define CONSOLE_CHAR_BASE 16
 

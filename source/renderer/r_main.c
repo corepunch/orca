@@ -495,22 +495,15 @@ static void Texture_CreatePalette(struct Texture **img) {
   R_Call(glTexImage2D,GL_TEXTURE_2D,0,GL_SRGB8_ALPHA8,16,1,0,GL_RGBA,GL_UNSIGNED_BYTE,palette);
 }
 
-static void Texture_CreateCinematicPalette(struct Texture **img) {
-  *img = ZeroAlloc(sizeof(struct Texture));
-  struct color32 empty[256];
-  R_Call(glGenTextures, 1, &(*img)->texnum);
-  R_Call(glBindTexture, GL_TEXTURE_2D, (*img)->texnum);
-  R_Call(glTexImage2D,GL_TEXTURE_2D,0,GL_SRGB8_ALPHA8,256,1,0,GL_RGBA,GL_UNSIGNED_BYTE,empty);
-}
-
-/* Hard-coded Dark Reign sprite palette (256 entries).
+/* The cinematic palette doubles as the sprite palette for palette-indexed
+ * (8-bit) textures such as Dark Reign SPR files.
  * Index 0 is transparent. Indices 1-255 are a placeholder grayscale ramp
  * that can be replaced once the actual game palette is available. */
-static void Texture_CreateSpritePalette(struct Texture **img) {
+static void Texture_CreateCinematicPalette(struct Texture **img) {
   struct color32 palette[256];
   palette[0] = (struct color32){ 0, 0, 0, 0 };   /* index 0: transparent */
   for (int i = 1; i < 256; i++) {
-    unsigned char v = (unsigned char)i;
+    unsigned char v = i;
     palette[i] = (struct color32){ v, v, v, 255 };
   }
   *img = ZeroAlloc(sizeof(struct Texture));
@@ -520,9 +513,9 @@ static void Texture_CreateSpritePalette(struct Texture **img) {
 }
 
 struct Texture*
-R_GetSpritePalette(void)
+R_GetCinematicPalette(void)
 {
-  return tr.textures[TX_SPRITEPALETTE];
+  return tr.textures[TX_CINEMATICPALETTE];
 }
 
 static HRESULT Texture_CreateBlack(struct Texture** img) {
@@ -603,7 +596,6 @@ R_InitResources(void)
   Shader_LoadFromDef(&shader_ui, &tr.shaders[SHADER_UI].shader);
   Shader_LoadFromDef(&shader_charset, &tr.shaders[SHADER_CHARSET].shader);
   Shader_LoadFromDef(&shader_cinematic, &tr.shaders[SHADER_CINEMATIC].shader);
-  Shader_LoadFromDef(&shader_sprite, &tr.shaders[SHADER_SPRITE].shader);
   Shader_LoadFromDef(&shader_vertexcolor, &tr.shaders[SHADER_VERTEXCOLOR].shader);
   Shader_LoadFromDef(&shader_error, &tr.shaders[SHADER_ERROR].shader);
   Shader_LoadFromDef(&shader_button, &tr.shaders[SHADER_BUTTON].shader);
@@ -616,7 +608,6 @@ R_InitResources(void)
   Texture_CreateBlack(tr.textures+TX_BLACK);
   Texture_CreatePalette(tr.textures+TX_PALETTE);
   Texture_CreateCinematicPalette(tr.textures+TX_CINEMATICPALETTE);
-  Texture_CreateSpritePalette(tr.textures+TX_SPRITEPALETTE);
   Texture_CreateDefaultCube(tr.textures+TX_CUBE);
   Texture_CreateCharset(tr.textures+TX_CHARSET);
   Texture_CreateToolbar(tr.textures+TX_TOOLBAR);

@@ -431,7 +431,7 @@ _SprFile_Load(lua_State* L, uint8_t const *data, uint32_t size, lpcString_t name
     anim->Framerate = SPR_DEFAULT_FRAMERATE;
     anim->NumFrames = total_frames;
     anim->Frames    = frames;
-    anim->Palette   = R_GetSpritePalette();
+    anim->Palette   = R_GetCinematicPalette();
 
     // fprintf(stderr, "SPR '%s': loaded %d frames into %ux%u atlas\n",
     //         name, total_frames, atlas_w, atlas_h);

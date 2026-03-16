@@ -22,7 +22,6 @@ static lpcString_t uniforms[kShaderUniform_Count] = {
   "u_charset",                      // kShaderUniform_Charset,
   "u_palette",                      // kShaderUniform_Palette,
   "u_cinematicPalette",             // kShaderUniform_CinematicPalette,
-  "u_spritePalette",                // kShaderUniform_SpritePalette,
   "u_morphWeights",                 // kShaderUniform_MorphWeights
   "u_cursorPosition",               // kShaderUniform_CursorPosition
   "u_radius",                       // kShaderUniform_Radius
@@ -605,10 +604,6 @@ Shader_BindMaterial(struct shader const* shader,
         break;
       case kShaderUniform_CinematicPalette:
         Texture_Bind(tr.textures[TX_CINEMATICPALETTE], GL_TEXTURE_2D, location, 2);
-        R_SetPointFiltering();
-        break;
-      case kShaderUniform_SpritePalette:
-        Texture_Bind(tr.textures[TX_SPRITEPALETTE], GL_TEXTURE_2D, location, 2);
         R_SetPointFiltering();
         break;
       case kShaderUniform_Viewport:

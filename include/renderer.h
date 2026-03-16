@@ -285,7 +285,6 @@ enum shader_type {
   SHADER_ERROR,
   SHADER_CHARSET,
   SHADER_CINEMATIC,
-  SHADER_SPRITE,
   SHADER_BUTTON,
   SHADER_ROUNDEDBOX,
   SHADER_2D_RECT,
@@ -589,7 +588,7 @@ ORCA_API HRESULT UserData_Create(lpcString_t, uint32_t, void**);
 // Resource operations
 ORCA_API HRESULT Texture_Create(PCREATEIMGSTRUCT, struct Texture**);
 ORCA_API HRESULT Texture_Release(struct Texture*);
-ORCA_API struct Texture* R_GetSpritePalette(void);
+ORCA_API struct Texture* R_GetCinematicPalette(void);
 ORCA_API lpObject_t R_LoadImageFromMemory(lua_State *L, void*, uint32_t);
 ORCA_API HRESULT R_BeginFrame(struct color);
 ORCA_API HRESULT R_EndFrame(void);
