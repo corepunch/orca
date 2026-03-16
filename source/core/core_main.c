@@ -75,10 +75,10 @@ OBJ_FindClass(lpcString_t classname)
 }
 
 static bool_t
-is_class_inherited(lpcClassDesc_t self, lpcClassDesc_t parent)
+is_class_inherited(lpcClassDesc_t self, uint32_t parent)
 {
   if (!self) return FALSE;
-  if (!parent || self == parent) return TRUE;
+  if (!parent || self->ClassID == parent) return TRUE;
   for(uint32_t const *cd = self->ParentClasses; *cd; cd++) {
     if (is_class_inherited(OBJ_FindClassW(*cd), parent)) {
       return TRUE;
@@ -90,10 +90,8 @@ is_class_inherited(lpcClassDesc_t self, lpcClassDesc_t parent)
 void
 OBJ_EnumClasses(uint32_t superclass, void (*fnProc)(lpcClassDesc_t, void*), void* param)
 {
-  lpcClassDesc_t p = OBJ_FindClassW(superclass);
-  if (!p) return;
   FOR_LOOP(i, MAX_CLASSES) {
-    if (is_class_inherited(core.classes[i], p)) {
+    if (!superclass || is_class_inherited(core.classes[i], superclass)) {
       fnProc(core.classes[i], param);
     }
   }

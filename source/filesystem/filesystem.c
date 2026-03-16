@@ -349,13 +349,12 @@ static bool_t _HasExistingPackages(lpcString_t szDirname, lpcString_t szName) {
   return FALSE;
 }
 
-typedef struct _PACK* PPACK;
-
 struct package_iterator {
   lpcString_t directory;
   lua_State* L;
   struct Object* project;
 };
+
 static void _TryLoadBundle(lpcClassDesc_t c, void* args) {
   struct package_iterator* it = args;
   if (!it->project) {
