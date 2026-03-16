@@ -5,6 +5,41 @@
 /* forward declaration – defined in SprFormat.c, compiled as one unit */
 static lpObject_t _SprFile_Load(lua_State* L, uint8_t const *data, uint32_t size, lpcString_t name);
 
+/*
+ * Loader function returned by the package searcher.
+ * Called by Lua's require system to perform the actual loading.
+ * Upvalue 1: the module name string.
+ */
+static int
+f_do_load_spr(lua_State *L)
+{
+  lpcString_t module = lua_tostring(L, lua_upvalueindex(1));
+  path_t path = {0};
+  snprintf(path, sizeof(path), "%s.spr", FS_PathFromModule(module));
+
+  struct file *f = FS_LoadFile(path);
+  if (!f)
+    return luaL_error(L, "SPR file not found: %s", path);
+
+  lpObject_t obj = _SprFile_Load(L, f->data, f->size, module);
+  FS_FreeFile(f);
+
+  if (!obj)
+    return luaL_error(L, "Failed to parse SPR file: %s", path);
+
+  if (!GetSpriteAnimation(obj))
+    return luaL_error(L, "SpriteAnimation class not found, cannot load '%s'", path);
+
+  FS_RegisterObject(obj, module);
+  luaX_pushObject(L, obj);
+  return 1;
+}
+
+/*
+ * Package searcher: checks whether a .spr file exists for the given module
+ * path. Returns a loader function if found, nil otherwise.
+ * This is called by Lua's require machinery before the asset is loaded.
+ */
 static int
 f_load_spr(lua_State *L)
 {
@@ -12,41 +47,20 @@ f_load_spr(lua_State *L)
   path_t path = {0};
   snprintf(path, sizeof(path), "%s.spr", FS_PathFromModule(module));
 
-  struct file *f = FS_LoadFile(path);
-  if (!f)
-    return 0;
+  if (!FS_FileExists(path))
+    return 0;  /* not found – let other searchers try */
 
-  lpObject_t obj = _SprFile_Load(L, f->data, f->size, module);
-  FS_FreeFile(f);
-
-  if (!obj) {
-    fprintf(stderr, "DarkReign: failed to parse SPR file '%s'\n", path);
-    return 0;
-  }
-
-  fprintf(stderr, "DarkReign: loaded SPR file '%s' as object '%s'\n", path, module);
-
-  if (!GetSpriteAnimation(obj)) {
-    fprintf(stderr, "DarkReign: SpriteAnimation class not found, cannot load '%s'\n", path);
-    return 0;
-  }
-
-  FS_RegisterObject(obj, module);
-  luaX_pushObject(L, obj);
+  /* File exists: return a loader closure capturing the module name */
+  lua_pushvalue(L, 1);
+  lua_pushcclosure(L, f_do_load_spr, 1);
   return 1;
 }
 
 void
 on_darkreign_module_registered(lua_State *L)
 {
-  fprintf(stderr, "DarkReign: module registered, setting up SPR loader\n");
   lua_register(L, "darkreign_loadspr", f_load_spr);
-  if (luaL_dostring(L,
-    "table.insert(package.searchers, function(path)\n"
-    "  local ok, obj = pcall(darkreign_loadspr, path)\n"
-    "  return ok and obj and function() return obj end or nil\n"
-    "end)\n"
-  ) != LUA_OK) {
+  if (luaL_dostring(L, "table.insert(package.searchers, darkreign_loadspr)\n") != LUA_OK) {
     fprintf(stderr, "DarkReign: failed to register SPR package searcher: %s\n",
             lua_tostring(L, -1));
     lua_pop(L, 1);
