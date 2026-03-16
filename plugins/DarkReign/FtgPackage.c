@@ -182,213 +182,245 @@ HANDLER(FtgPackage, Destroy) {
   return FALSE;
 }
 
-/* ---- .spr / .spt loading ---- */
-
-#define SPR_DEFAULT_FRAMERATE 10.0f  /* used when the SPR stores framerate=0 */
+/* ---- .spr loading ---- */
 
 /*
- * Dark Reign sprite format (best-effort reverse-engineering of the 1997 Auran
- * engine, cross-referenced with the Volcano Lua conversion data):
+ * Dark Reign .spr format (Auran engine, 1997).
+ * Reference: github.com/drogoganor/OpenDR — OpenRA.Mods.Dr/SpriteLoaders/DrSprLoader.cs
  *
- * SPR file — animation descriptor, no pixel data:
- *   Header (32 bytes):
- *     char     texture_name[28]  null-terminated name of the .spt texture
- *                                file that holds the actual pixels (no ext)
- *     uint16_t num_frames        number of animation frames
- *     uint16_t framerate         frames per second (0 → use SPR_DEFAULT_FRAMERATE)
+ * Header (8 × int32 = 32 bytes, all little-endian):
+ *   char[4]  magic     "RSPR" (regular) or "SSPR" (shadow — pixels set to index 47)
+ *   int32    version   0x0210
+ *   int32    nanims    total animation frame count (across all sections)
+ *   int32    nrots     rotation directions (e.g. 8 for 8-directional unit)
+ *   int32    szx       sprite cell width in pixels
+ *   int32    szy       sprite cell height in pixels
+ *   int32    npics     number of unique compressed pictures
+ *   int32    nsects    number of animation sections
  *
- *   Per-frame descriptors (12 bytes × num_frames):
- *     uint16_t x, y   pixel position of the frame in the .spt texture
- *     uint16_t w, h   frame dimensions in pixels
- *     int16_t  dx, dy display hotspot offset
+ * Layout after header:
+ *   int32[nanims × nrots]        pic-index table: pic# = table[anim*nrots + rot]
+ *   SprSection[nsects]           each 16 bytes: firstanim, lastanim, fps, nhot
+ *   int32[nanims]                (per-anim extra data, not used here)
+ *   PicEntry[npics] + int32      each 8 bytes: {picoff, hotoff}; +4 end sentinel
+ *   uint8[]                      RLE-compressed pixel data
  *
- * SPT file — the palette-indexed texture atlas:
- *   uint16_t width
- *   uint16_t height
- *   [optional 256-entry palette: 256 × 3 bytes RGB, skipped here]
- *   uint8_t  pixels[width × height]   palette indices, treated as GL_RED
+ * RLE encoding (per scanline, alternating transparent/opaque runs):
+ *   step=0 (transparent): n = src[curr++]; skip n pixels (remain 0)
+ *   step=1 (opaque):       n = src[curr++] & 0x7f; copy n bytes into output
+ *   … repeat until currx == szx
  *
- * Because multiple SPR animations can reference the same SPT atlas, the atlas
- * texture is loaded once per SPT filename (deduplication is left to the GPU
- * driver's texture cache).
+ * Atlas layout:  nrots columns × nanims rows, each cell szx × szy pixels.
+ * Frame (anim a, rotation r) → cell at column r, row a.
  */
-#define SPT_HEADER_SIZE  4           /* uint16 width + uint16 height */
-#define SPT_PALETTE_SIZE (256 * 3)   /* 256-entry RGB palette        */
 
-#pragma pack(push, 1)
-struct _spr_header {
-  char     texture_name[28]; /* null-terminated SPT name (no extension)     */
-  uint16_t num_frames;       /* number of animation frames                  */
-  uint16_t framerate;        /* frames per second; 0 → SPR_DEFAULT_FRAMERATE */
-};
-struct _spr_frame_desc {
-  uint16_t x;       /* pixel x in SPT atlas  */
-  uint16_t y;       /* pixel y in SPT atlas  */
-  uint16_t w;       /* frame width in pixels */
-  uint16_t h;       /* frame height in pixels*/
-  int16_t  dx;      /* hotspot x offset      */
-  int16_t  dy;      /* hotspot y offset      */
-};
-#pragma pack(pop)
+#define SPR_HEADER_SIZE  32
+#define SPR_VERSION      0x0210
 
-/*
- * _SptFile_Load
- *
- * Read the SPT texture file named <texture_name>.spt from the FTG archive,
- * upload it as a kTextureFormatAlpha8 texture and return it.  Writes the
- * texture dimensions into *out_w / *out_h.  Returns NULL on failure.
- *
- * The SPT layout is: uint16 width, uint16 height, then either
- *   a) width × height raw bytes                (no palette)
- *   b) 768 bytes palette, then width × height  (with palette, palette skipped)
- * We distinguish the two cases by comparing the file size.
- */
-static struct Texture *
-_SptFile_Load(PFTG ftg, char const *texture_name, int32_t *out_w, int32_t *out_h)
+static bool
+_spr_is_valid(uint8_t const *data, uint32_t size)
 {
-  char spt_name[FTG_MAX_FILENAME] = {0};
-  snprintf(spt_name, sizeof(spt_name) - 1, "%s.spt", texture_name);
+  if (size < SPR_HEADER_SIZE)
+    return false;
+  if (memcmp(data, "RSPR", 4) != 0 && memcmp(data, "SSPR", 4) != 0)
+    return false;
+  int32_t version;
+  memcpy(&version, data + 4, sizeof(version));
+  return version == SPR_VERSION;
+}
 
-  struct _FTGFILE *entry = _FindFtgEntry(ftg, spt_name);
-  if (!entry)
-    return NULL;
-
-  struct file *f = _ReadFtgEntry(ftg, entry);
-  if (!f)
-    return NULL;
-
-  if (f->size < SPT_HEADER_SIZE) {
-    free(f);
-    return NULL;
+/* Decompress one RLE-encoded picture into a szx×szy output buffer.
+ * Shadow sprites fill every opaque pixel with palette index 47. */
+static void
+_spr_decompress(uint8_t *restrict out, uint32_t szx, uint32_t szy,
+                uint8_t const *src, uint32_t src_len, bool is_shadow)
+{
+  memset(out, 0, szx * szy);
+  uint32_t curr = 0;
+  for (uint32_t l = 0; l < szy; l++) {
+    uint32_t step = 0, currx = 0;
+    while (currx < szx) {
+      if (curr >= src_len) return;
+      uint32_t cnt = src[curr++];
+      bool const opaque = (step & 1u) != 0;
+      if (opaque) cnt &= 0x7fu;
+      if (opaque) {
+        /* opaque run: copy pixel bytes into output */
+        for (uint32_t i = 0; i < cnt; i++) {
+          if (curr >= src_len) return;
+          uint8_t px = src[curr++];
+          uint32_t idx = l * szx + currx + i;
+          if (idx < szx * szy)
+            out[idx] = is_shadow ? 47u : px;
+        }
+      }
+      /* transparent run: pixels remain 0 */
+      currx += cnt;
+      step++;
+    }
   }
-
-  /* Use memcpy to read uint16 fields safely regardless of alignment */
-  uint16_t w, h;
-  memcpy(&w, f->data + 0, sizeof(w));
-  memcpy(&h, f->data + 2, sizeof(h));
-
-  if (w == 0 || h == 0) {
-    free(f);
-    return NULL;
-  }
-
-  uint32_t const expected_plain   = (uint32_t)SPT_HEADER_SIZE + (uint32_t)w * h;
-  uint32_t const expected_palette = (uint32_t)SPT_HEADER_SIZE + SPT_PALETTE_SIZE
-                                    + (uint32_t)w * h;
-
-  uint8_t const *pixels = NULL;
-  if (f->size >= expected_palette) {
-    pixels = f->data + SPT_HEADER_SIZE + SPT_PALETTE_SIZE; /* skip header + palette */
-  } else if (f->size >= expected_plain) {
-    pixels = f->data + SPT_HEADER_SIZE;                    /* no palette */
-  } else {
-    Con_Error("DarkReign: '%s' size %u too small for %ux%u image",
-              spt_name, f->size, w, h);
-    free(f);
-    return NULL;
-  }
-
-  struct Texture *tex = NULL;
-  HRESULT hr = Texture_Create(
-      &(CREATEIMGSTRUCT){
-        .Width     = w,
-        .Height    = h,
-        .Scale     = 1,
-        .Format    = kTextureFormatAlpha8,
-        .ImageData = pixels,
-        .MinFilter = kTextureFilterNearest,
-        .MagFilter = kTextureFilterNearest,
-        .WrapMode  = kTextureWrapClamp,
-      },
-      &tex);
-  free(f);
-
-  if (FAILED(hr) || !tex)
-    return NULL;
-
-  if (out_w) *out_w = w;
-  if (out_h) *out_h = h;
-  return tex;
 }
 
 /*
  * _SprFile_Load
  *
- * Parse a raw .spr descriptor file, load the referenced .spt texture from
- * the same FTG archive, and return a heap-allocated SpriteAnimation Object.
+ * Parse a Dark Reign .spr file from raw bytes, decompress all frames into a
+ * texture atlas, and return a heap-allocated SpriteAnimation Object.
  * Returns NULL on any parse or allocation failure.
  *
- * On format mismatch the first 32 file bytes are printed to stderr so the
- * caller can diagnose unexpected file layouts.
+ * The atlas is nrots×szx wide and nanims×szy tall.  Frame (a, r) occupies
+ * the cell at pixel column r*szx and row a*szy.
  */
 static lpObject_t
-_SprFile_Load(PFTG ftg, uint8_t const *data, uint32_t size, lpcString_t name)
+_SprFile_Load(uint8_t const *data, uint32_t size, lpcString_t name)
 {
-  /* ---- validate SPR header ---- */
-  if (size < sizeof(struct _spr_header)) {
-    Con_Error("DarkReign: '%s' too small for SPR header (%u bytes)", name, size);
+  if (!_spr_is_valid(data, size)) {
+    Con_Error("DarkReign: '%s': not a valid RSPR/SSPR file (size=%u)", name, size);
     return NULL;
   }
 
-  struct _spr_header const *hdr = (struct _spr_header const *)data;
+  bool const is_shadow = (memcmp(data, "SSPR", 4) == 0);
 
-  /* texture_name must be a non-empty printable ASCII string */
-  if ((unsigned char)hdr->texture_name[0] < 0x20) {
-    /* Dump the first bytes to help diagnose unexpected formats */
-    uint32_t const dump_len = size < 31 ? size : 31; /* 31 × 3 + '\0' = 94 bytes */
-    char hex[100] = {0};
-    for (uint32_t k = 0; k < dump_len; k++)
-      snprintf(hex + k*3, sizeof(hex) - k*3, "%02x ", data[k]);
-    Con_Error("DarkReign: '%s' has unexpected header (size=%u bytes=%s...)",
-              name, size, hex);
+  /* Read header fields with memcpy for alignment safety */
+  int32_t nanims, nrots, szx, szy, npics, nsects;
+  memcpy(&nanims,  data +  8, 4);
+  memcpy(&nrots,   data + 12, 4);
+  memcpy(&szx,     data + 16, 4);
+  memcpy(&szy,     data + 20, 4);
+  memcpy(&npics,   data + 24, 4);
+  memcpy(&nsects,  data + 28, 4);
+
+  if (nanims <= 0 || nrots <= 0 || szx <= 0 || szy <= 0 || npics <= 0 || nsects <= 0) {
+    Con_Error("DarkReign: '%s': invalid SPR dimensions", name);
     return NULL;
   }
 
-  uint16_t const num_frames = hdr->num_frames;
-  if (num_frames == 0)
-    return NULL;
+  /* Compute data-section offsets (all relative to start of file) */
+  uint32_t const off_pic_table  = SPR_HEADER_SIZE;          /* int32 × nanims×nrots */
+  uint32_t const off_sections   = off_pic_table
+                                   + (uint32_t)nanims * (uint32_t)nrots * 4u;
+  uint32_t const off_anims      = off_sections + (uint32_t)nsects * 16u;
+  uint32_t const off_picoffs    = off_anims + (uint32_t)nanims * 4u;
+  uint32_t const off_bits       = off_picoffs + (uint32_t)npics * 8u + 4u;
 
-  uint32_t const frame_bytes = (uint32_t)num_frames * sizeof(struct _spr_frame_desc);
-  if (size < sizeof(struct _spr_header) + frame_bytes)
-    return NULL;
-
-  struct _spr_frame_desc const *descs =
-      (struct _spr_frame_desc const *)(data + sizeof(struct _spr_header));
-
-  /* ---- load the referenced SPT texture ---- */
-  int32_t tex_w = 0, tex_h = 0;
-  struct Texture *tex = _SptFile_Load(ftg, hdr->texture_name, &tex_w, &tex_h);
-  if (!tex) {
-    Con_Error("DarkReign: '%s' references texture '%s' which could not be loaded",
-              name, hdr->texture_name);
+  if (size < off_bits) {
+    Con_Error("DarkReign: '%s': file too small (%u bytes, need %u)", name, size, off_bits);
     return NULL;
   }
 
-  /* ---- build per-frame UV descriptors ---- */
+  /* Read framerate from the first section (firstanim, lastanim, fps, nhot) */
+  int32_t fps = 0;
+  if (size >= off_sections + 12u)
+    memcpy(&fps, data + off_sections + 8u, 4);
+  float const framerate = (fps > 0) ? (float)fps : 10.0f;
+
+  /* Build atlas: nrots columns × nanims rows, each cell szx×szy */
+  uint32_t const atlas_w = (uint32_t)nrots  * (uint32_t)szx;
+  uint32_t const atlas_h = (uint32_t)nanims * (uint32_t)szy;
+
+  /* Guard against implausibly large atlases (max 8192×8192) */
+  if (atlas_w > 8192u || atlas_h > 8192u) {
+    Con_Error("DarkReign: '%s': atlas too large (%ux%u)", name, atlas_w, atlas_h);
+    return NULL;
+  }
+
+  uint8_t *atlas = (uint8_t *)calloc(1, (size_t)atlas_w * (size_t)atlas_h);
+  if (!atlas)
+    return NULL;
+
+  /* Decompress every (anim, rot) pair into the atlas */
+  for (int32_t a = 0; a < nanims; a++) {
+    for (int32_t r = 0; r < nrots; r++) {
+      /* Look up the compressed-picture index for this (anim, rot) */
+      uint32_t const tbl_off = off_pic_table + (uint32_t)(a * nrots + r) * 4u;
+      if (tbl_off + 4u > size) continue;
+      int32_t picnr;
+      memcpy(&picnr, data + tbl_off, 4);
+      if (picnr < 0 || picnr >= npics) continue;
+
+      /* Read the compressed-data offset pair for this picture */
+      uint32_t const pe_off      = off_picoffs + (uint32_t)picnr * 8u;
+      uint32_t const pe_next_off = off_picoffs + (uint32_t)(picnr + 1) * 8u;
+      if (pe_next_off + 4u > size) continue;
+      int32_t picoff, nextpicoff;
+      memcpy(&picoff,     data + pe_off,      4);
+      memcpy(&nextpicoff, data + pe_next_off, 4);
+      if (picoff < 0 || nextpicoff <= picoff) continue;
+
+      uint32_t const src_start = off_bits + (uint32_t)picoff;
+      uint32_t const src_end   = off_bits + (uint32_t)nextpicoff;
+      if (src_end > size) continue;
+
+      /* Decompress into a temporary cell-sized buffer */
+      uint8_t *cell = (uint8_t *)calloc(1, (size_t)szx * (size_t)szy);
+      if (!cell) {
+        Con_Warning("DarkReign: '%s': out of memory for frame (%d,%d)", name, a, r);
+        continue;
+      }
+      _spr_decompress(cell, (uint32_t)szx, (uint32_t)szy,
+                      data + src_start, src_end - src_start, is_shadow);
+
+      /* Copy cell into the atlas at (col=r, row=a) */
+      uint32_t const cell_x = (uint32_t)r * (uint32_t)szx;
+      uint32_t const cell_y = (uint32_t)a * (uint32_t)szy;
+      for (int32_t row = 0; row < szy; row++) {
+        memcpy(atlas + (cell_y + (uint32_t)row) * atlas_w + cell_x,
+               cell  + (uint32_t)row * (uint32_t)szx,
+               (size_t)szx);
+      }
+      free(cell);
+    }
+  }
+
+  /* Upload atlas as a single-channel texture */
+  struct Texture *tex = NULL;
+  HRESULT hr = Texture_Create(
+      &(CREATEIMGSTRUCT){
+        .Width     = (int32_t)atlas_w,
+        .Height    = (int32_t)atlas_h,
+        .Scale     = 1,
+        .Format    = kTextureFormatAlpha8,
+        .ImageData = atlas,
+        .MinFilter = kTextureFilterNearest,
+        .MagFilter = kTextureFilterNearest,
+        .WrapMode  = kTextureWrapClamp,
+      },
+      &tex);
+  free(atlas);
+  if (FAILED(hr) || !tex)
+    return NULL;
+
+  /* Build per-frame SpriteFrame array (nanims × nrots frames) */
+  int32_t const nframes = nanims * nrots;
   struct SpriteFrame *frames =
-      (struct SpriteFrame *)malloc((size_t)num_frames * sizeof(struct SpriteFrame));
+      (struct SpriteFrame *)malloc((size_t)nframes * sizeof(struct SpriteFrame));
   if (!frames) {
     Texture_Release(tex);
     return NULL;
   }
 
-  float const ftw = (float)tex_w;
-  float const fth = (float)tex_h;
-  for (uint16_t i = 0; i < num_frames; i++) {
-    /* Rect: place sprite so its hotspot falls at the node's origin */
-    frames[i].Rect.x      = -(float)descs[i].dx;
-    frames[i].Rect.y      = -(float)descs[i].dy;
-    frames[i].Rect.width  =  (float)descs[i].w;
-    frames[i].Rect.height =  (float)descs[i].h;
+  float const inv_w = 1.0f / (float)atlas_w;
+  float const inv_h = 1.0f / (float)atlas_h;
+  float const uv_cw = (float)szx * inv_w;  /* normalized cell width  */
+  float const uv_ch = (float)szy * inv_h;  /* normalized cell height */
 
-    /* UvRect: normalized atlas coordinates derived from pixel positions */
-    frames[i].UvRect.x      = (float)descs[i].x / ftw;
-    frames[i].UvRect.y      = (float)descs[i].y / fth;
-    frames[i].UvRect.width  = (float)descs[i].w / ftw;
-    frames[i].UvRect.height = (float)descs[i].h / fth;
+  for (int32_t a = 0; a < nanims; a++) {
+    for (int32_t r = 0; r < nrots; r++) {
+      int32_t const fi = a * nrots + r;
+      /* Rect: full cell size, origin at cell centre (hotspot not read here) */
+      frames[fi].Rect.x      = -(float)szx * 0.5f;
+      frames[fi].Rect.y      = -(float)szy * 0.5f;
+      frames[fi].Rect.width  =  (float)szx;
+      frames[fi].Rect.height =  (float)szy;
+      /* UvRect: this (anim, rot) cell in the atlas */
+      frames[fi].UvRect.x      = (float)r * uv_cw;
+      frames[fi].UvRect.y      = (float)a * uv_ch;
+      frames[fi].UvRect.width  = uv_cw;
+      frames[fi].UvRect.height = uv_ch;
+    }
   }
 
-  /* ---- create SpriteAnimation Object ---- */
+  /* Create SpriteAnimation Object */
   lpObject_t obj = OBJ_MakeNativeObject(ID_SpriteAnimation);
   if (!obj) {
     free(frames);
@@ -399,9 +431,8 @@ _SprFile_Load(PFTG ftg, uint8_t const *data, uint32_t size, lpcString_t name)
 
   struct SpriteAnimation *anim = GetSpriteAnimation(obj);
   anim->Image     = tex;
-  anim->Framerate = hdr->framerate > 0 ? (float)hdr->framerate
-                                       : SPR_DEFAULT_FRAMERATE;
-  anim->NumFrames = (int32_t)num_frames;
+  anim->Framerate = framerate;
+  anim->NumFrames = nframes;
   anim->Frames    = frames;
 
   return obj;
@@ -447,7 +478,7 @@ _LoadSprAnimations(PFTG ftg, lpObject_t project)
         *dot = '\0';
     }
 
-    lpObject_t anim_obj = _SprFile_Load(ftg, f->data, f->size, anim_name);
+    lpObject_t anim_obj = _SprFile_Load(f->data, f->size, anim_name);
     free(f);
 
     if (!anim_obj) {
@@ -461,7 +492,7 @@ _LoadSprAnimations(PFTG ftg, lpObject_t project)
 
   if (skipped > 0)
     Con_Error("DarkReign: loaded %d sprite animations, skipped %d "
-              "(missing .spt or unexpected format)", loaded, skipped);
+              "(invalid RSPR/SSPR format or allocation failure)", loaded, skipped);
 }
 
 /*
