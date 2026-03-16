@@ -5,31 +5,6 @@
 
 #include "filesystem.h"
 
-#define MONITOR_FILES
-
-#ifdef MONITOR_FILES
-typedef struct _MONITOREDFILE
-{
-  path_t Filename;
-  longTime_t Modified;
-  struct _MONITOREDFILE* next;
-}* PMONITOREDFILE;
-#endif
-
-typedef struct _PACK* PPACK;
-
-struct Package
-{
-  shortStr_t name;
-  uint8_t namelen;
-  path_t path;
-  PPACK pack;
-  struct Package* next;
-#ifdef MONITOR_FILES
-  PMONITOREDFILE monitoredFiles;
-#endif
-};
-
 struct _xmlNode*
 __xmlNewChild(struct _xmlNode* p, lpcString_t name, lpcString_t args[]);
 
@@ -53,5 +28,7 @@ char buf_##__LINE__[256]; \
 snprintf(buf_##__LINE__, sizeof(buf_##__LINE__), FMT, ##__VA_ARGS__); \
 xmlSetProp(NODE, XMLSTR(PROP), XMLSTR(buf_##__LINE__)); \
 } while (0)
+
+struct file *_ReadOnDisk(FILE *fp);
 
 #endif

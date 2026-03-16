@@ -37,7 +37,7 @@ static LPCRECT _GetRight(HEDWND wnd, SPLITVIEWDESC const *desc) {
 }
 
 LPVOID ED_GetUserDataOffset(HEDWND wnd) {
-  DWORD offset = ED_SendMessage(wnd, EVT_EXTRASPACE, 0, NULL);
+  LRESULT offset = ED_SendMessage(wnd, EVT_EXTRASPACE, 0, NULL);
   LPSTR buf = ED_GetUserData(wnd);
   return buf + offset;
 }
@@ -62,7 +62,7 @@ EDWINPROC(SplitView) {
   switch (msg) {
     case EVT_CREATE: {
       SPLITVIEWDESC *parm = lparm;
-      ED_AllocUserData(wnd, sizeof(SPLITVIEW)+ED_SendMessage(wnd, EVT_EXTRASPACE, 0, NULL));
+      ED_AllocUserData(wnd, sizeof(SPLITVIEW)+(int)ED_SendMessage(wnd, EVT_EXTRASPACE, 0, NULL));
       LPSPLITVIEW data = ED_GetUserDataOffset(wnd);
       data->left = ED_CreateWindow(parm->left.proc, parm->left.flags, _GetLeft(wnd, parm), wnd, parm->left.parm);
       data->right = ED_CreateWindow(parm->right.proc, parm->right.flags, _GetRight(wnd, parm), wnd, parm->right.parm);

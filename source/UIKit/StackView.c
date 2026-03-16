@@ -68,7 +68,7 @@ _Arrange(lpObject_t hObject,
     Node2DPtr subview = GetNode2D(child);
     lpProperty_t p = StackView_GetProperty(hObject, kStackViewAlignItems);
     int *alignment = &subview->_node->Alignment.Axis[!pStackView->Direction];
-    uint32_t s;
+    LRESULT s;
     switch (p ? pStackView->AlignItems : -1) {
       case kAlignItemsStart: *alignment = kHorizontalAlignmentLeft; break;
       case kAlignItemsBaseline: *alignment = kHorizontalAlignmentLeft; break;
@@ -123,7 +123,7 @@ HANDLER(StackView, MeasureOverride)
     pStackView->Direction == kDirectionVertical ? -pStackView->Spacing : 0,
   };
   FOR_EACH_LAYOUTABLE(hChild, pNode2D->_object) {
-    uint32_t s;;
+    LRESULT s;
     switch (pStackView->Direction) {
       case kDirectionHorizontal:
         s = OBJ_SendMessageW(hChild, kEventMeasure, 0, &(struct Size) {

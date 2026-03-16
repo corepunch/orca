@@ -9,8 +9,9 @@ struct component
 };
 
 struct component*
-CMP_Create(lpObject_t pobj, lpcClassDesc_t cls)
+OBJ_AddComponent(lpObject_t pobj, uint32_t class_id)
 {
+  lpcClassDesc_t cls = OBJ_FindClassW(class_id);
   uint32_t clsSize = sizeof(struct component) + cls->ClassSize;
   uint32_t propsSize = cls->NumProperties * sizeof(void*);
   struct component* comp = ZeroAlloc(clsSize + propsSize);
@@ -21,16 +22,13 @@ CMP_Create(lpObject_t pobj, lpcClassDesc_t cls)
   if (cls->Defaults) {
     memcpy(comp->pUserData, cls->Defaults, cls->ClassSize);
   }
+
   comp->pcls = cls;
   comp->pobj = pobj;
+  
+  ADD_TO_LIST_END(struct component, comp, _GetComponents(pobj));
 
-  for (uint32_t const* p = cls->ParentClasses; *p; p++) {
-    struct component *c = CMP_Create(pobj, OBJ_FindClassW(*p)), *b = c;
-    for (; b->next; b = b->next)
-      ;
-    b->next = comp->next;
-    comp->next = c;
-  }
+  for (uint32_t const* p = cls->ParentClasses; *p; OBJ_AddComponent(pobj, *(p++)));
 
   return comp;
 }
@@ -52,7 +50,7 @@ _CreateClassProperty(lpObject_t object, uint32_t ident)
       if (pdesc->ShortIdentifier == ident ||
           pdesc->FullIdentifier == ident)
       {
-        return CMP_CreateProperty(NULL, cmp, pdesc);
+        return OBJ_AddComponentProperty(NULL, cmp, pdesc);
       }
     }
   }
@@ -156,27 +154,15 @@ OBJ_SendMessage(lpObject_t pobj, lpcString_t Msg, wParam_t wParam, lParam_t lPar
   return OBJ_SendMessageW(pobj, fnv1a32(Msg), wParam, lParam);
 }
 
-struct component*
-OBJ_AddComponent(lpObject_t pobj, lpcClassDesc_t cls)
-{
-  struct component* comp = CMP_Create(pobj, cls);
-  if (comp) {
-    ADD_TO_LIST_END(struct component, comp, _GetComponents(pobj));
-    return comp;
-  } else {
-    return NULL;
-  }
-}
-
 //lpProperty_t
-//CMP_CreateProperty2(lua_State* L, struct component* pcmp, lpcString_t name)
+//OBJ_AddComponentProperty2(lua_State* L, struct component* pcmp, lpcString_t name)
 //{
 //  uint32_t dwIdentifier = fnv1a32(name);
 //  FOR_LOOP(n, pcmp->pcls->NumProperties)
 //  {
 //    lpcPropertyType_t desc = &pcmp->pcls->Properties[n];
 //    if (desc->short_identifier == dwIdentifier) {
-//      return CMP_CreateProperty(L, pcmp, desc);
+//      return OBJ_AddComponentProperty(L, pcmp, desc);
 //    }
 //  }
 //  return NULL;

@@ -152,7 +152,7 @@ OBJ_UpdateProperties(struct Object*);
 ORCA_API void
 OBJ_UpdateLayout(struct Object*, int32_t, int32_t);
 /// @brief Add a child object.
-ORCA_API void
+ORCA_API struct Object*
 OBJ_AddChild(struct Object*, struct Object*, bool_t);
 /// @brief Destroys an object.
 ORCA_API void

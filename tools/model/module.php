@@ -336,6 +336,7 @@ class Struct extends Interface {
 class Component extends Struct {
 	function __construct($elem, $model) {
 		parent::__construct($elem, $model);
+		$this->extension = $elem["extension"] ?? null;
 	}
 
 	private function _walkProperties($type_, $args, $doc = null) {

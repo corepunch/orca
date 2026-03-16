@@ -88,8 +88,10 @@ is_class_inherited(lpcClassDesc_t self, lpcClassDesc_t parent)
 }
 
 void
-OBJ_EnumClasses(lpcClassDesc_t p, void (*fnProc)(lpcClassDesc_t, void*), void* param)
+OBJ_EnumClasses(uint32_t superclass, void (*fnProc)(lpcClassDesc_t, void*), void* param)
 {
+  lpcClassDesc_t p = OBJ_FindClassW(superclass);
+  if (!p) return;
   FOR_LOOP(i, MAX_CLASSES) {
     if (is_class_inherited(core.classes[i], p)) {
       fnProc(core.classes[i], param);
@@ -196,7 +198,7 @@ int lua_pushclass(lua_State* L, struct ClassDesc* cl)
 bool_t CORE_HandleObjectMessage(lua_State *L, struct WI_Message* msg);
 bool_t CORE_HandleKeyEvent(lua_State *L, struct WI_Message* msg);
 
-int CORE_ProcessMessage(lua_State *L, struct WI_Message* msg) {
+LRESULT CORE_ProcessMessage(lua_State *L, struct WI_Message* msg) {
   int tmp=0;
   switch (msg->message) {
     case kEventWindowPaint:

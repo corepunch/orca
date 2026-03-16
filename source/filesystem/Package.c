@@ -11,6 +11,7 @@
 #endif
 
 #include <include/orca.h>
+#include "fs_local.h"
 
 #define IDPAKHEADER MAKE_FOURCC('P', 'A', 'C', 'K')
 #define MAX_READ 0x10000
@@ -252,7 +253,7 @@ static struct file *_ReadFromPak(FILE *fp, PPACKFILE pf) {
   }
 }
 
-FILE*
+static FILE*
 _OpenPakFile(lpcString_t filename, PPACK pack, PPACKFILE desc)
 {
   PPACKFILE pf;
@@ -265,7 +266,7 @@ _OpenPakFile(lpcString_t filename, PPACK pack, PPACKFILE desc)
   return NULL;
 }
 
-bool_t _FindPackFile(lpcString_t basename, PPACK pak) {
+bool_t _FindPackFile(PPACK pak, lpcString_t basename) {
   uint32_t identifier = fnv1a32(basename);
   for (int i = 0; i < pak->numfiles; i++) {
     if (pak->files[i].identifier == identifier) {
@@ -275,7 +276,9 @@ bool_t _FindPackFile(lpcString_t basename, PPACK pak) {
   return FALSE;
 }
 
-struct file* _ReadPakFile(lpcString_t filename, PPACK pack) {
+struct file*
+_ReadPakFile(PPACK pack, lpcString_t filename)
+{
   FILE* fp;
   struct file* file = NULL;
   struct _PACKFILE pf = { 0 };
@@ -296,3 +299,96 @@ void _FreePack(PPACK pack) {
   free(pack);
 }
 
+static char* _ExtractPackageXmlToTemp(PPACK pack) {
+  struct file* xmlFile = _ReadPakFile(pack, "package.xml");
+  if (!xmlFile) {
+    Con_Error("package.xml not found in pak");
+    return NULL;
+  }
+
+#if defined(__APPLE__)
+  // Use mkstemp on macOS for secure temp file creation
+  char tmpName[] = "/tmp/orca_package_xml_macos_XXXXXX";
+  int fd = mkstemp(tmpName);
+  if (fd == -1) {
+    Con_Error("Failed to generate temp filename");
+    free(xmlFile);
+    return NULL;
+  }
+  FILE* tmp = fdopen(fd, "wb");
+  if (!tmp) {
+    Con_Error("Failed to open temp file");
+    close(fd);
+    remove(tmpName);
+    free(xmlFile);
+    return NULL;
+  }
+#else
+  // Use tmpnam on non-Apple systems (note: tmpnam is considered unsafe, but used here for compatibility)
+  char tmpName[L_tmpnam];
+  if (!tmpnam(tmpName)) {
+    Con_Error("Failed to generate temp filename");
+    free(xmlFile);
+    return NULL;
+  }
+  FILE* tmp = fopen(tmpName, "wb");
+  if (!tmp) {
+    Con_Error("Failed to open temp file");
+    free(xmlFile);
+    return NULL;
+  }
+#endif
+
+  if (fwrite(xmlFile->data, 1, xmlFile->size, tmp) != xmlFile->size) {
+    Con_Error("Failed to write to temp file");
+    fclose(tmp);
+    remove(tmpName);
+    free(xmlFile);
+    return NULL;
+  }
+
+  fclose(tmp);
+  free(xmlFile);
+
+  // Return a copy of the temp filename
+  return strdup(tmpName);
+}
+
+
+HANDLER(Package, OpenFile) {
+  return (intptr_t)_ReadPakFile(pPackage->_package, pOpenFile->FileName);
+}
+
+
+HANDLER(Package, Destroy) {
+  _FreePack(pPackage->_package);
+  return FALSE;
+}
+
+HANDLER(Package, FileExists) {
+  return _FindPackFile(pPackage->_package, pFileExists->FileName);
+}
+
+HANDLER(Package, HasChangedFiles) {
+  return FALSE;
+}
+
+lpObject_t _LoadProject(lua_State *L, lpcString_t path, lpcString_t name);
+
+HANDLER(Package, LoadProject) {
+  path_t tmp={0}, packpath={0};
+  lua_State* L = (lua_State*)pPackage;
+  lpObject_t project = NULL;
+  snprintf(tmp, sizeof(tmp), "%s.pz2", pLoadProject->Path);
+  xmlWith(FILE, fp, fopen(tmp, "rb"), fclose) {
+    xmlWith(void, pack, _LoadPackFile(tmp), _FreePack) {
+      xmlWith(char, path, _ExtractPackageXmlToTemp(pack), free) {
+        strncpy(packpath, path, sizeof(packpath));
+      }
+      project = _LoadProject(L, packpath, FS_GetBaseName(pLoadProject->Path));
+      OBJ_AddComponent(project, ID_Package);
+      GetPackage(project)->_package = _LoadPackFile(tmp);
+    }
+  }
+  return (intptr_t)project;
+}

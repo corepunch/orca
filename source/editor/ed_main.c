@@ -195,7 +195,7 @@ EDWINPROC(SendMessage) {
   }
   if (!wnd || wnd->flags&EDWF_DISABLED)
     return 0;
-  DWORD result = wnd->fnProc(wnd, msg, wparm, lparm);
+  LRESULT result = wnd->fnProc(wnd, msg, wparm, lparm);
   if (result) {
     return result;
   } else switch (msg) {
@@ -795,7 +795,7 @@ ORCA_API BOOL ED_IsRunning(void) {
   return !editor.bHasFinished;
 }
 
-static int _DispatchMessage(lua_State *L, struct WI_Message *msg) {
+static LRESULT _DispatchMessage(lua_State *L, struct WI_Message *msg) {
   return ED_DispatchMessage(msg->message, msg->wParam, msg->lParam);
 }
 

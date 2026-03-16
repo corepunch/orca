@@ -13,5 +13,3 @@ OBJ_SetClassName(lpObject_t, lpcString_t);
 
 extern void
 PROP_AttachProgram(lpProperty_t p, enum PropertyAttribute a, struct token* program, lpcString_t code);
-
-int f_loadProject(lua_State* L);

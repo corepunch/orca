@@ -439,9 +439,9 @@ int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
   }
 
 #define kEventPushProperty 0xc5ebaf40
-  int found = OBJ_SendMessageW(self, kEventPushProperty, ident, L);
+  LRESULT found = OBJ_SendMessageW(self, kEventPushProperty, ident, L);
   if (found) {
-    return found;
+    return (int)found;
   }
   
   lpProperty_t property = NULL;
