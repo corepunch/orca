@@ -166,6 +166,7 @@ HANDLER(FtgPackage, OpenFile) {
   struct _FTGFILE *entry = _FindFtgEntry(pFtgPackage->_ftg, pOpenFile->FileName);
   if (!entry)
     return 0;
+  fprintf(stderr, "FtgPackage: opening file '%s' from archive '%s'\n", entry->name, pFtgPackage->_ftg->filename);
   return (LRESULT)_ReadFtgEntry(pFtgPackage->_ftg, entry);
 }
 
@@ -191,10 +192,10 @@ HANDLER(FtgPackage, Destroy) {
  */
 
 static lpObject_t
-_SprFile_Load(uint8_t const *data, uint32_t size, lpcString_t name);
+_SprFile_Load(lua_State* L, uint8_t const *data, uint32_t size, lpcString_t name);
 
 static void
-_LoadSprAnimations(PFTG ftg, lpObject_t project)
+_LoadSprAnimations(lua_State* L, PFTG ftg, lpObject_t project)
 {
   for (int i = 0; i < ftg->numfiles; i++) {
     char const *fname = ftg->files[i].name;
@@ -222,7 +223,7 @@ _LoadSprAnimations(PFTG ftg, lpObject_t project)
         *dot = '\0';
     }
 
-    lpObject_t anim_obj = _SprFile_Load(f->data, f->size, anim_name);
+    lpObject_t anim_obj = _SprFile_Load(L, f->data, f->size, anim_name);
     free(f);
 
     if (!anim_obj) {
@@ -284,7 +285,7 @@ HANDLER(FtgPackage, LoadProject) {
 
   /* Load all .spr sprite files from the archive and attach them to the project
    * as SpriteAnimation children so they are immediately accessible by name. */
-  _LoadSprAnimations(ftg, project);
+  // _LoadSprAnimations(L, ftg, project);
 
   return (intptr_t)project;
 }
