@@ -7,6 +7,7 @@
   
   <external struct="Object"/>
   <external struct="_PACK"/>
+  <external struct="_FTG"/>
 
   <struct name="ProjectReference" sealed="true">
     <summary>External project reference</summary>
@@ -67,6 +68,18 @@
     <handles event="Destroy"/>
     <property name="FileName" type="fixed"/>
     <field name="_package" type="_PACK" pointer="true"/>
+  </class>
+
+  <class name="FtgPackage" parent="Bundle">
+    <summary>Loader for FTG archives (Dark Reign game format)</summary>
+    <details>Reads FTG archives as used by the Dark Reign game. Each FTG file contains an uncompressed directory listing followed by raw file data. Files inside the archive can be loaded transparently via FS_LoadFile once the bundle is registered with FS_LoadBundle. To load sprites, register the FTG bundle and then reference files as "bundlename/filename.ext"; use the raw bitmap data with ImageLibrary and SpriteAnimation entries to drive SKSpriteNode rendering.</details>
+    <handles event="LoadProject"/>
+    <handles event="OpenFile"/>
+    <handles event="FileExists"/>
+    <handles event="HasChangedFiles"/>
+    <handles event="Destroy"/>
+    <property name="FileName" type="fixed"/>
+    <field name="_ftg" type="_FTG" pointer="true"/>
   </class>
 
   <class name="Workspace" />

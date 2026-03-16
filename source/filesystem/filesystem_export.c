@@ -9,6 +9,9 @@ extern struct Object* luaX_checkObject(lua_State *L, int index);
 // _PACK
 extern void luaX_push_PACK(lua_State *L, struct _PACK const* value);
 extern struct _PACK* luaX_check_PACK(lua_State *L, int index);
+// _FTG
+extern void luaX_push_FTG(lua_State *L, struct _FTG const* value);
+extern struct _FTG* luaX_check_FTG(lua_State *L, int index);
 
 void luaX_pushProjectReference(lua_State *L, struct ProjectReference const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
@@ -487,6 +490,48 @@ ORCA_API struct ClassDesc _Package = {
 	.ObjProc = PackageProc,
 	.Defaults = &PackageDefaults,
 	.NumProperties = kPackageNumProperties,
+};
+
+LRESULT FtgPackage_LoadProject(struct Object*, struct FtgPackage*, wParam_t, LoadProjectEventPtr);
+LRESULT FtgPackage_OpenFile(struct Object*, struct FtgPackage*, wParam_t, OpenFileEventPtr);
+LRESULT FtgPackage_FileExists(struct Object*, struct FtgPackage*, wParam_t, FileExistsEventPtr);
+LRESULT FtgPackage_HasChangedFiles(struct Object*, struct FtgPackage*, wParam_t, HasChangedFilesEventPtr);
+LRESULT FtgPackage_Destroy(struct Object*, struct FtgPackage*, wParam_t, DestroyEventPtr);
+
+static struct PropertyType const FtgPackageProperties[kFtgPackageNumProperties] = {
+	DECL(0x5ffdd888, FtgPackage, FileName, FileName, kDataTypeFixed), // FtgPackage.FileName
+};
+static struct FtgPackage FtgPackageDefaults = {
+};
+LRESULT FtgPackageProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+		case kEventLoadProject: return FtgPackage_LoadProject(object, cmp, wparm, lparm); // LoadProject
+		case kEventOpenFile: return FtgPackage_OpenFile(object, cmp, wparm, lparm); // OpenFile
+		case kEventFileExists: return FtgPackage_FileExists(object, cmp, wparm, lparm); // FileExists
+		case kEventHasChangedFiles: return FtgPackage_HasChangedFiles(object, cmp, wparm, lparm); // HasChangedFiles
+		case kEventDestroy: return FtgPackage_Destroy(object, cmp, wparm, lparm); // Destroy
+	}
+	return FALSE;
+}
+void luaX_pushFtgPackage(lua_State *L, struct FtgPackage const* FtgPackage) {
+	luaX_pushObject(L, CMP_GetObject(FtgPackage));
+}
+struct FtgPackage* luaX_checkFtgPackage(lua_State *L, int idx) {
+	return GetFtgPackage(luaX_checkObject(L, idx));
+}
+#define ID_Bundle 0xe6397a25
+ORCA_API struct ClassDesc _FtgPackage = {
+	.ClassName = "FtgPackage",
+	.DefaultName = "FtgPackage",
+	.ContentType = "FtgPackage",
+	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
+	.ParentClasses = { ID_Bundle, 0 },
+	.ClassID = ID_FtgPackage,
+	.ClassSize = sizeof(struct FtgPackage),
+	.Properties = FtgPackageProperties,
+	.ObjProc = FtgPackageProc,
+	.Defaults = &FtgPackageDefaults,
+	.NumProperties = kFtgPackageNumProperties,
 };
 
 
@@ -2076,6 +2121,7 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_Bundle), -2), "Bundle");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Directory), -2), "Directory");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Package), -2), "Package");
+	lua_setfield(L, ((void)lua_pushclass(L, &_FtgPackage), -2), "FtgPackage");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Workspace), -2), "Workspace");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Project), -2), "Project");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Library), -2), "Library");
