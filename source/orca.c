@@ -310,7 +310,7 @@ int main (int argc, LPSTR *argv)
     }
     
     luaL_dostring(L, "package.path = PLUGDIR..'/?.lua;'..SHAREDIR..'/?.lua;'..package.path\n");
-    luaL_dostring(L, "print(LIBDIR);package.cpath = LIBDIR..'/lib?.so;'..package.cpath\n");
+    luaL_dostring(L, "package.cpath = LIBDIR..'/lib?.so;'..package.cpath\n");
 
     lua_pushstring(L, szProject);
     lua_setglobal(L, "DATADIR");
