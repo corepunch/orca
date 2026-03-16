@@ -407,18 +407,18 @@ typedef LRESULT (*objectProc_t)(lpObject_t, void*, uint32_t, wParam_t, lParam_t)
 
 struct ClassDesc
 {
-  objectProc_t ObjProc;
-  lpcPropertyType_t Properties;
-  void const *Defaults;
-  lpcString_t ClassName;
-  lpcString_t DefaultName;
-  lpcString_t ContentType;
-  lpcString_t Xmlns;
-  uint32_t ParentClasses[16];
-  uint32_t NumProperties;
-  uint32_t ClassID;
-  uint32_t ClassSize;
-  uint32_t MemorySize;
+  objectProc_t ObjProc; // pointer to the main message handling function for this class, used for dispatching messages to objects of this class
+  lpcPropertyType_t Properties; // pointer to an array of property descriptors, should be sorted by long identifier for efficient lookup
+  lpcString_t ClassName; // human-readable name of the class, used for debugging and editor display, should be unique across all classes
+  lpcString_t DefaultName; // string used for naming objects of this class when no name is provided, should be unique across all classes
+  lpcString_t ContentType; // optional string describing the type of content this class represents, used for auto-detecting packages and for editor filtering
+  lpcString_t Xmlns; // optional XML namespace associated with this class, used for auto-detecting packages
+  uint32_t ParentClasses[16]; // array of class IDs of parent classes, used for inheritance and type checking, should be ordered from most derived to least derived
+  uint32_t NumProperties; // number of properties defined directly on this class, used for iterating over properties and for calculating offsets of properties in the object struct
+  uint32_t ClassID; // hash of the class name, used for quick comparisons and lookups, should be unique across all classes
+  uint32_t ClassSize; // size of the class itself excluding components, used for calculating offsets of components and properties
+  uint32_t MemorySize; // total size of an instance of this class including components, used for memory allocation
+  void const *Defaults; // pointer to a struct containing default values for properties of this class, used for resetting to defaults and for inheriting default values in subclasses
 };
 
 struct component;
@@ -495,7 +495,7 @@ ORCA_API bool_t
 OBJ_RegisterPropertyType(lpcPropertyType_t pt);
 
 ORCA_API void
-OBJ_EnumClasses(lpcClassDesc_t, void (*fnProc)(lpcClassDesc_t, void*), void*);
+OBJ_EnumClasses(uint32_t superclass, void (*fnProc)(lpcClassDesc_t, void*), void*);
 
 ORCA_API void
 OBJ_EnumObjectClasses(lpObject_t pobj,

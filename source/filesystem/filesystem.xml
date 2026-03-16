@@ -6,6 +6,7 @@
   <event name="ReadCommands" type="void"/>
   
   <external struct="Object"/>
+  <external struct="_PACK"/>
 
   <struct name="ProjectReference" sealed="true">
     <summary>External project reference</summary>
@@ -32,12 +33,24 @@
     <field name="FileName" type="string">The file path to check for existence</field>
     <returns type="bool">True if the file exists, false otherwise</returns>
   </struct>
+  
+  <struct name="LoadProjectArgs">
+    <summary>Loads a bundle from the specified path</summary>
+    <field name="Path" type="string">Directory name to load the bundle</field>
+  </struct>
 
   <event name="OpenFile" type="OpenFileArgs"/>
   <event name="FileExists" type="FileExistsArgs"/>
   <event name="HasChangedFiles" type="void"/>
+  <event name="LoadProject" type="LoadProjectArgs"/>
+
+  <class name="Bundle">
+    <summary>Base class for all bundles</summary>
+    <details>Used to iterate all bundle plugins to load bundles</details>
+  </class>
   
   <class name="Directory">
+    <handles event="LoadProject"/>
     <handles event="OpenFile"/>
     <handles event="FileExists"/>
     <handles event="HasChangedFiles"/>
@@ -46,13 +59,14 @@
     <field name="_monitoredfiles" type="void" pointer="true"/>
   </class>
 
-  <class name="PackagePZ2">
+  <class name="Package" parent="Bundle">
+    <handles event="LoadProject"/>
     <handles event="OpenFile"/>
     <handles event="FileExists"/>
     <handles event="HasChangedFiles"/>
     <handles event="Destroy"/>
     <property name="FileName" type="fixed"/>
-<!--    <field name="_monitoredfiles" type="void" pointer="true"/>-->
+    <field name="_package" type="_PACK" pointer="true"/>
   </class>
 
   <class name="Workspace" />

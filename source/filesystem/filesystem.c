@@ -349,56 +349,30 @@ static bool_t _HasExistingPackages(lpcString_t szDirname, lpcString_t szName) {
   return FALSE;
 }
 
-struct ext_class {
-  lpcString_t ext;
-  uint32_t class_id;
-} classes[] = {
-  { "pz2", ID_PackagePZ2 },
-  { NULL, 0 }
-};
-
 typedef struct _PACK* PPACK;
 
-PPACK _LoadPackFile(lpcString_t filename);
-//bool_t _FindPackFile(PPACK pak, lpcString_t basename);
-//struct file* _ReadPakFile(PPACK pack, lpcString_t filename);
-void _FreePack(PPACK pack);
-char* _ExtractPackageXmlToTemp(PPACK pack);
+struct package_iterator {
+  lpcString_t directory;
+  lua_State* L;
+  struct Object* project;
+};
+static void _TryLoadBundle(lpcClassDesc_t c, void* args) {
+  struct package_iterator* it = args;
+  if (!it->project) {
+    it->project =
+    (struct Object*)c->ObjProc(NULL, it->L, kEventLoadProject, 0, &(struct LoadProjectArgs) { .Path = (void*)it->directory });
+  }
+}
 
 static lpProject_t _InitProject(lua_State *L, lpcString_t szDirname) {
-  uint32_t class_id = ID_Directory;
-  path_t tmp, packpath;
-  snprintf(packpath, sizeof(packpath), "%s/package", szDirname);
-  for (struct ext_class *c = classes; c->ext; c++) {
-    snprintf(tmp, sizeof(tmp), "%s.%s", szDirname, c->ext);
-    xmlWith(FILE, fp, fopen(tmp, "rb"), fclose) {
-      xmlWith(void, pack, _LoadPackFile(tmp), _FreePack) {
-        xmlWith(char, path, _ExtractPackageXmlToTemp(pack), free) {
-          strncpy(packpath, path, sizeof(packpath));
-        }
-      }
-      class_id = ID_PackagePZ2;
-    }
+  struct package_iterator it={.directory=szDirname,.L=L};
+  OBJ_EnumClasses(ID_Bundle, _TryLoadBundle, &it);
+  if (!it.project) {
+    extern ClassDesc_t _Directory;
+    return GetProject((struct Object*)_Directory.ObjProc(NULL, L, kEventLoadProject, 0, &(struct LoadProjectArgs){ .Path = (void*)szDirname }));
+  } else {
+    return GetProject(it.project);
   }
-
-  lua_getglobal(L, "require");
-  lua_pushstring(L, packpath);
-  if (lua_pcall(L, 1, 1, 0) || lua_pcall(L, 0, 1, 0)) {
-    API_CallRequire(L, "orca.filesystem", 1);
-    lua_getfield(L, -1, "Project");
-    if (lua_pcall(L, 0, 1, 0)) {
-      Con_Error("%s\n", lua_tostring(L, -1));
-      lua_pop(L, 1);
-      return NULL;
-    } else {
-      OBJ_SetName(luaX_checkObject(L, -1), FS_GetBaseName(szDirname));
-    }
-  }
-  OBJ_AddComponent(luaX_checkObject(L, -1), class_id);
-  if (class_id == ID_Directory) {
-    strncpy(GetDirectory(luaX_checkObject(L, -1))->Path, szDirname, sizeof(fixedString_t));
-  }
-  return luaX_checkProject(L, -1);
 }
 
 struct Object*
@@ -417,7 +391,7 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
     return NULL;
   }
 
-  OBJ_EnumClasses(OBJ_FindClass("Library"), _AddLibrary, ((void*[]){ L, CMP_GetObject(project) }));
+  OBJ_EnumClasses(ID_Library, _AddLibrary, ((void*[]){ L, CMP_GetObject(project) }));
   OBJ_AddChild(FS_GetWorkspace(), CMP_GetObject(project), FALSE);
 
   _InitPropertyTypes(project);

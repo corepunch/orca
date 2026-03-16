@@ -364,7 +364,7 @@ static void output_class(lpcClassDesc_t desc, void *param) {
 }
 
 SV_CMD(GET, class) {
-  OBJ_EnumClasses(OBJ_FindClass(endpoint), output_class, response);
+  OBJ_EnumClasses(fnv1a32(endpoint), output_class, response);
   return NULL;
 }
 

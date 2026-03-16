@@ -102,3 +102,30 @@ HANDLER(Directory, Destroy) {
   return FALSE;
 }
 
+#include <include/api.h>
+
+lpObject_t _LoadProject(lua_State *L, lpcString_t path, lpcString_t name) {
+  lua_getglobal(L, "require");
+  lua_pushstring(L, path);
+  if (lua_pcall(L, 1, 1, 0) || lua_pcall(L, 0, 1, 0)) {
+    API_CallRequire(L, "orca.filesystem", 1);
+    lua_getfield(L, -1, "Project");
+    if (lua_pcall(L, 0, 1, 0)) {
+      Con_Error("%s\n", lua_tostring(L, -1));
+      lua_pop(L, 1);
+      return NULL;
+    } else {
+      OBJ_SetName(luaX_checkObject(L, -1), name);
+    }
+  }
+  return luaX_checkObject(L, -1);
+}
+
+HANDLER(Directory, LoadProject) {
+  path_t packpath = {0};
+  snprintf(packpath, sizeof(packpath), "%s/package", pLoadProject->Path);
+  lpObject_t project = _LoadProject((lua_State*)pDirectory, packpath, FS_GetBaseName(pLoadProject->Path));
+  OBJ_AddComponent(project, ID_Directory);
+  strncpy(GetDirectory(project)->Path, pLoadProject->Path, sizeof(fixedString_t));
+  return (intptr_t)project;
+}

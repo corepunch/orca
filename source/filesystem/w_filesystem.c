@@ -6,10 +6,6 @@
 lpcString_t const package_paths[] = { "%s.lua", "%s/init.lua", NULL };
 lpcString_t const moonpackage_paths[] = { "%s.moon", "%s/init.moon", NULL };
 
-void luaX_pushPackage(lua_State* L, struct Package const* package) {
-  lua_pushnil(L);
-}
-
 lpcString_t
 FS_PathFromModule(lpcString_t module)
 {

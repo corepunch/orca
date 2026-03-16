@@ -7,6 +7,7 @@
 typedef struct lua_State lua_State;
 
 struct Object;
+struct _PACK;
 
 
 #include "filesystem_properties.h"
@@ -16,6 +17,7 @@ typedef void* ReadCommandsEventPtr;
 typedef struct OpenFileArgs* OpenFileEventPtr;
 typedef struct FileExistsArgs* FileExistsEventPtr;
 typedef void* HasChangedFilesEventPtr;
+typedef struct LoadProjectArgs* LoadProjectEventPtr;
 
 
 typedef struct ProjectReference ProjectReference_t, *lpProjectReference_t;
@@ -26,6 +28,8 @@ typedef struct OpenFileArgs OpenFileArgs_t, *lpOpenFileArgs_t;
 typedef struct OpenFileArgs const cOpenFileArgs_t, *lpcOpenFileArgs_t;
 typedef struct FileExistsArgs FileExistsArgs_t, *lpFileExistsArgs_t;
 typedef struct FileExistsArgs const cFileExistsArgs_t, *lpcFileExistsArgs_t;
+typedef struct LoadProjectArgs LoadProjectArgs_t, *lpLoadProjectArgs_t;
+typedef struct LoadProjectArgs const cLoadProjectArgs_t, *lpcLoadProjectArgs_t;
 
 /// @brief Gets the base filename from a path
 ORCA_API const char*
@@ -92,7 +96,22 @@ struct FileExistsArgs {
 };
 ORCA_API void luaX_pushFileExistsArgs(lua_State *L, struct FileExistsArgs const* FileExistsArgs);
 ORCA_API struct FileExistsArgs* luaX_checkFileExistsArgs(lua_State *L, int idx);
+/// @brief Loads a bundle from the specified path
+/** LoadProjectArgs struct */
+struct LoadProjectArgs {
+	const char* Path; ///< Directory name to load the bundle
+};
+ORCA_API void luaX_pushLoadProjectArgs(lua_State *L, struct LoadProjectArgs const* LoadProjectArgs);
+ORCA_API struct LoadProjectArgs* luaX_checkLoadProjectArgs(lua_State *L, int idx);
 
+/// @brief Base class for all bundles
+/** Bundle component */
+typedef struct Bundle Bundle_t, *BundlePtr, *lpBundle_t;
+typedef struct Bundle const *BundleCPtr, *lpcBundle_t;
+struct Bundle {
+};
+ORCA_API void luaX_pushBundle(lua_State *L, struct Bundle const* Bundle);
+ORCA_API struct Bundle* luaX_checkBundle(lua_State *L, int idx);
 /** Directory component */
 typedef struct Directory Directory_t, *DirectoryPtr, *lpDirectory_t;
 typedef struct Directory const *DirectoryCPtr, *lpcDirectory_t;
@@ -102,14 +121,15 @@ struct Directory {
 };
 ORCA_API void luaX_pushDirectory(lua_State *L, struct Directory const* Directory);
 ORCA_API struct Directory* luaX_checkDirectory(lua_State *L, int idx);
-/** PackagePZ2 component */
-typedef struct PackagePZ2 PackagePZ2_t, *PackagePZ2Ptr, *lpPackagePZ2_t;
-typedef struct PackagePZ2 const *PackagePZ2CPtr, *lpcPackagePZ2_t;
-struct PackagePZ2 {
+/** Package component */
+typedef struct Package Package_t, *PackagePtr, *lpPackage_t;
+typedef struct Package const *PackageCPtr, *lpcPackage_t;
+struct Package {
 	fixedString_t FileName;
+	struct _PACK* _package;
 };
-ORCA_API void luaX_pushPackagePZ2(lua_State *L, struct PackagePZ2 const* PackagePZ2);
-ORCA_API struct PackagePZ2* luaX_checkPackagePZ2(lua_State *L, int idx);
+ORCA_API void luaX_pushPackage(lua_State *L, struct Package const* Package);
+ORCA_API struct Package* luaX_checkPackage(lua_State *L, int idx);
 /** Workspace component */
 typedef struct Workspace Workspace_t, *WorkspacePtr, *lpWorkspace_t;
 typedef struct Workspace const *WorkspaceCPtr, *lpcWorkspace_t;

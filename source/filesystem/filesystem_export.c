@@ -6,6 +6,9 @@
 // Object
 extern void luaX_pushObject(lua_State *L, struct Object const* value);
 extern struct Object* luaX_checkObject(lua_State *L, int index);
+// _PACK
+extern void luaX_push_PACK(lua_State *L, struct _PACK const* value);
+extern struct _PACK* luaX_check_PACK(lua_State *L, int index);
 
 void luaX_pushProjectReference(lua_State *L, struct ProjectReference const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
@@ -297,6 +300,74 @@ int luaopen_orca_FileExistsArgs(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
+void luaX_pushLoadProjectArgs(lua_State *L, struct LoadProjectArgs const* data) {
+	if (data == NULL) { lua_pushnil(L); return; }
+	struct LoadProjectArgs* self = lua_newuserdata(L, sizeof(struct LoadProjectArgs));
+	luaL_setmetatable(L, "LoadProjectArgs");
+	memcpy(self, data, sizeof(struct LoadProjectArgs));
+}
+struct LoadProjectArgs* luaX_checkLoadProjectArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "LoadProjectArgs");
+}
+static int f_new_LoadProjectArgs(lua_State *L) {
+	struct LoadProjectArgs* self = lua_newuserdata(L, sizeof(struct LoadProjectArgs));
+	luaL_setmetatable(L, "LoadProjectArgs");
+	memset(self, 0, sizeof(struct LoadProjectArgs));
+	if (lua_gettop(L) == 1) return 1;
+	if (lua_istable(L, 1)) {
+		lua_pop(L, (lua_getfield(L, 1, "Path"), self->Path = strdup(luaL_checkstring(L, -1)), 1));
+	} else {
+		self->Path = strdup(luaL_checkstring(L, 1));
+	}
+	return 1;
+}
+
+
+int f_LoadProjectArgs___index(lua_State *L) {
+	struct LoadProjectArgs* self = luaX_checkLoadProjectArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0xeb66e456: lua_pushstring(L, self->Path); return 1; // Path
+	}
+	return luaL_error(L, "Unknown field in LoadProjectArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+int f_LoadProjectArgs___newindex(lua_State *L) {
+	struct LoadProjectArgs* self = luaX_checkLoadProjectArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0xeb66e456: self->Path = strdup(luaL_checkstring(L, 3)); return 0; // Path
+	}
+	return luaL_error(L, "Unknown field in LoadProjectArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
+static int f_LoadProjectArgs___fromstring(lua_State *L) {
+	fixedString_t Path;
+	struct LoadProjectArgs self = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%s", Path)) {
+	case 1: 
+		self.Path = Path;
+		return (luaX_pushLoadProjectArgs(L, &self), 1);
+	default:
+		return luaL_error(L, "Invalid format for LoadProjectArgs: %s", luaL_checkstring(L, 1));
+	}
+}
+static int f_LoadProjectArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_LoadProjectArgs(L));  // remove LoadProjectArgs from stack and call constructor
+}
+int luaopen_orca_LoadProjectArgs(lua_State *L) {
+	luaL_newmetatable(L, "LoadProjectArgs");
+	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ "new", f_new_LoadProjectArgs },
+		{ "fromstring", f_LoadProjectArgs___fromstring },
+		{ "__newindex", f_LoadProjectArgs___newindex },
+		{ "__index", f_LoadProjectArgs___index },
+		{ NULL, NULL },
+	}), 0);
+	// Make LoadProjectArgs creatable via constructor-like syntax
+	lua_newtable(L);
+	lua_pushcfunction(L, f_LoadProjectArgs___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+	return 1;
+}
 #define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
 #define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
 
@@ -304,6 +375,38 @@ typedef void* ReadCommandsEventPtr;
 typedef struct OpenFileArgs* OpenFileEventPtr;
 typedef struct FileExistsArgs* FileExistsEventPtr;
 typedef void* HasChangedFilesEventPtr;
+typedef struct LoadProjectArgs* LoadProjectEventPtr;
+
+static struct PropertyType const BundleProperties[kBundleNumProperties] = {
+};
+static struct Bundle BundleDefaults = {
+};
+LRESULT BundleProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+	}
+	return FALSE;
+}
+void luaX_pushBundle(lua_State *L, struct Bundle const* Bundle) {
+	luaX_pushObject(L, CMP_GetObject(Bundle));
+}
+struct Bundle* luaX_checkBundle(lua_State *L, int idx) {
+	return GetBundle(luaX_checkObject(L, idx));
+}
+ORCA_API struct ClassDesc _Bundle = {
+	.ClassName = "Bundle",
+	.DefaultName = "Bundle",
+	.ContentType = "Bundle",
+	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
+	.ParentClasses = { 0 },
+	.ClassID = ID_Bundle,
+	.ClassSize = sizeof(struct Bundle),
+	.Properties = BundleProperties,
+	.ObjProc = BundleProc,
+	.Defaults = &BundleDefaults,
+	.NumProperties = kBundleNumProperties,
+};
+
+LRESULT Directory_LoadProject(struct Object*, struct Directory*, wParam_t, LoadProjectEventPtr);
 LRESULT Directory_OpenFile(struct Object*, struct Directory*, wParam_t, OpenFileEventPtr);
 LRESULT Directory_FileExists(struct Object*, struct Directory*, wParam_t, FileExistsEventPtr);
 LRESULT Directory_HasChangedFiles(struct Object*, struct Directory*, wParam_t, HasChangedFilesEventPtr);
@@ -316,6 +419,7 @@ static struct Directory DirectoryDefaults = {
 };
 LRESULT DirectoryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
+		case kEventLoadProject: return Directory_LoadProject(object, cmp, wparm, lparm); // LoadProject
 		case kEventOpenFile: return Directory_OpenFile(object, cmp, wparm, lparm); // OpenFile
 		case kEventFileExists: return Directory_FileExists(object, cmp, wparm, lparm); // FileExists
 		case kEventHasChangedFiles: return Directory_HasChangedFiles(object, cmp, wparm, lparm); // HasChangedFiles
@@ -343,43 +447,46 @@ ORCA_API struct ClassDesc _Directory = {
 	.NumProperties = kDirectoryNumProperties,
 };
 
-LRESULT PackagePZ2_OpenFile(struct Object*, struct PackagePZ2*, wParam_t, OpenFileEventPtr);
-LRESULT PackagePZ2_FileExists(struct Object*, struct PackagePZ2*, wParam_t, FileExistsEventPtr);
-LRESULT PackagePZ2_HasChangedFiles(struct Object*, struct PackagePZ2*, wParam_t, HasChangedFilesEventPtr);
-LRESULT PackagePZ2_Destroy(struct Object*, struct PackagePZ2*, wParam_t, DestroyEventPtr);
+LRESULT Package_LoadProject(struct Object*, struct Package*, wParam_t, LoadProjectEventPtr);
+LRESULT Package_OpenFile(struct Object*, struct Package*, wParam_t, OpenFileEventPtr);
+LRESULT Package_FileExists(struct Object*, struct Package*, wParam_t, FileExistsEventPtr);
+LRESULT Package_HasChangedFiles(struct Object*, struct Package*, wParam_t, HasChangedFilesEventPtr);
+LRESULT Package_Destroy(struct Object*, struct Package*, wParam_t, DestroyEventPtr);
 
-static struct PropertyType const PackagePZ2Properties[kPackagePZ2NumProperties] = {
-	DECL(0x5ffdd888, PackagePZ2, FileName, FileName, kDataTypeFixed), // PackagePZ2.FileName
+static struct PropertyType const PackageProperties[kPackageNumProperties] = {
+	DECL(0x5ffdd888, Package, FileName, FileName, kDataTypeFixed), // Package.FileName
 };
-static struct PackagePZ2 PackagePZ2Defaults = {
+static struct Package PackageDefaults = {
 };
-LRESULT PackagePZ2Proc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+LRESULT PackageProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventOpenFile: return PackagePZ2_OpenFile(object, cmp, wparm, lparm); // OpenFile
-		case kEventFileExists: return PackagePZ2_FileExists(object, cmp, wparm, lparm); // FileExists
-		case kEventHasChangedFiles: return PackagePZ2_HasChangedFiles(object, cmp, wparm, lparm); // HasChangedFiles
-		case kEventDestroy: return PackagePZ2_Destroy(object, cmp, wparm, lparm); // Destroy
+		case kEventLoadProject: return Package_LoadProject(object, cmp, wparm, lparm); // LoadProject
+		case kEventOpenFile: return Package_OpenFile(object, cmp, wparm, lparm); // OpenFile
+		case kEventFileExists: return Package_FileExists(object, cmp, wparm, lparm); // FileExists
+		case kEventHasChangedFiles: return Package_HasChangedFiles(object, cmp, wparm, lparm); // HasChangedFiles
+		case kEventDestroy: return Package_Destroy(object, cmp, wparm, lparm); // Destroy
 	}
 	return FALSE;
 }
-void luaX_pushPackagePZ2(lua_State *L, struct PackagePZ2 const* PackagePZ2) {
-	luaX_pushObject(L, CMP_GetObject(PackagePZ2));
+void luaX_pushPackage(lua_State *L, struct Package const* Package) {
+	luaX_pushObject(L, CMP_GetObject(Package));
 }
-struct PackagePZ2* luaX_checkPackagePZ2(lua_State *L, int idx) {
-	return GetPackagePZ2(luaX_checkObject(L, idx));
+struct Package* luaX_checkPackage(lua_State *L, int idx) {
+	return GetPackage(luaX_checkObject(L, idx));
 }
-ORCA_API struct ClassDesc _PackagePZ2 = {
-	.ClassName = "PackagePZ2",
-	.DefaultName = "PackagePZ2",
-	.ContentType = "PackagePZ2",
+#define ID_Bundle 0xe6397a25
+ORCA_API struct ClassDesc _Package = {
+	.ClassName = "Package",
+	.DefaultName = "Package",
+	.ContentType = "Package",
 	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { 0 },
-	.ClassID = ID_PackagePZ2,
-	.ClassSize = sizeof(struct PackagePZ2),
-	.Properties = PackagePZ2Properties,
-	.ObjProc = PackagePZ2Proc,
-	.Defaults = &PackagePZ2Defaults,
-	.NumProperties = kPackagePZ2NumProperties,
+	.ParentClasses = { ID_Bundle, 0 },
+	.ClassID = ID_Package,
+	.ClassSize = sizeof(struct Package),
+	.Properties = PackageProperties,
+	.ObjProc = PackageProc,
+	.Defaults = &PackageDefaults,
+	.NumProperties = kPackageNumProperties,
 };
 
 
@@ -1965,8 +2072,10 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_SystemMessage(L), -2), "SystemMessage");
 	lua_setfield(L, ((void)luaopen_orca_OpenFileArgs(L), -2), "OpenFileArgs");
 	lua_setfield(L, ((void)luaopen_orca_FileExistsArgs(L), -2), "FileExistsArgs");
+	lua_setfield(L, ((void)luaopen_orca_LoadProjectArgs(L), -2), "LoadProjectArgs");
+	lua_setfield(L, ((void)lua_pushclass(L, &_Bundle), -2), "Bundle");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Directory), -2), "Directory");
-	lua_setfield(L, ((void)lua_pushclass(L, &_PackagePZ2), -2), "PackagePZ2");
+	lua_setfield(L, ((void)lua_pushclass(L, &_Package), -2), "Package");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Workspace), -2), "Workspace");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Project), -2), "Project");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Library), -2), "Library");

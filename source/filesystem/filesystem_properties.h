@@ -4,6 +4,14 @@
 #define kEventOpenFile 0xa2c038cf
 #define kEventFileExists 0x38dfc973
 #define kEventHasChangedFiles 0x5390a564
+#define kEventLoadProject 0x31b9fee2
+// Bundle
+#define ID_Bundle 0xe6397a25
+#define GetBundle(_P) ((struct Bundle*)((_P)?OBJ_GetComponent(_P,ID_Bundle):NULL))
+#define Bundle_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Bundle,sizeof(struct Bundle),_N)
+enum BundleProperties {
+	kBundleNumProperties	
+};
 // Directory
 #define ID_Directory 0x94226a28
 #define GetDirectory(_P) ((struct Directory*)((_P)?OBJ_GetComponent(_P,ID_Directory):NULL))
@@ -13,14 +21,14 @@ enum DirectoryProperties {
 	kDirectoryPath,
 	kDirectoryNumProperties	
 };
-// PackagePZ2
-#define ID_PackagePZ2 0xb6ebfd99
-#define GetPackagePZ2(_P) ((struct PackagePZ2*)((_P)?OBJ_GetComponent(_P,ID_PackagePZ2):NULL))
-#define PackagePZ2_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_PackagePZ2,sizeof(struct PackagePZ2),_N)
-#define ID_PackagePZ2_FileName 0xbcc20518 // PackagePZ2.FileName
-enum PackagePZ2Properties {
-	kPackagePZ2FileName,
-	kPackagePZ2NumProperties	
+// Package
+#define ID_Package 0xfe8f4b9b
+#define GetPackage(_P) ((struct Package*)((_P)?OBJ_GetComponent(_P,ID_Package):NULL))
+#define Package_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Package,sizeof(struct Package),_N)
+#define ID_Package_FileName 0x389d60fa // Package.FileName
+enum PackageProperties {
+	kPackageFileName,
+	kPackageNumProperties	
 };
 // Workspace
 #define ID_Workspace 0x27419f56

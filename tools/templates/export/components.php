@@ -58,6 +58,9 @@ ORCA_API struct ClassDesc _<?= $name ?> = {
 	.ObjProc = <?= $name ?>Proc,
 	.Defaults = &<?= $name ?>Defaults,
 	.NumProperties = k<?= $name ?>NumProperties,
+<?php if ($component->extension) {
+	echo "\t.Extension = \"{$component->extension}\",\n";
+} ?>
 };
 
 <?php endforeach ?>
