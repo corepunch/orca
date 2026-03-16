@@ -270,11 +270,13 @@ FS_LoadFile(lpcString_t szFileName)
 {
   struct file* pFile;
   FILE* fp = NULL;
+  // Try to open as a regular file first
   if ((fp = fopen(szFileName, "rb"))) {
     pFile = _ReadOnDisk(fp);
     fclose(fp);
     return pFile;
   }
+  // If that fails, try to find it in loaded packages
   FS_FindPackage(package, szFileName) {
     if ((pFile = (struct file*)OBJ_SendMessageW(package, kEventOpenFile, 0, &(struct OpenFileArgs){
       .FileName = szFileName + strlen(OBJ_GetName(package)) + 1,
@@ -396,6 +398,9 @@ static lpProject_t _InitProject(lua_State *L, lpcString_t szDirname) {
     }
   }
   OBJ_AddComponent(luaX_checkObject(L, -1), class_id);
+  if (class_id == ID_Directory) {
+    strncpy(GetDirectory(luaX_checkObject(L, -1))->Path, szDirname, sizeof(fixedString_t));
+  }
   return luaX_checkProject(L, -1);
 }
 
