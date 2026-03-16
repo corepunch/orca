@@ -4,8 +4,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-typedef uint8_t bool_t;
-
 typedef uint32_t message_t;
 typedef uint16_t service_t;
 typedef uint16_t method_t;
@@ -297,9 +295,9 @@ typedef struct
 typedef struct
 {
   instance_t instance;
-  bool_t flush;
-  bool_t realiable;
-  bool_t is_valid_crc;
+  uint8_t flush;
+  uint8_t realiable;
+  uint8_t is_valid_crc;
   client_t dst_client;
 } send_cmd_t;
 

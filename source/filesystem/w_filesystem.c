@@ -22,7 +22,7 @@ int f_find_module(lua_State* L)
 {
   lpcString_t module = luaL_checkstring(L, 1);
 	path_t path = { 0 };
-  ospathfmt_t desc;
+  char desc[MAX_OSPATH+MAX_OSPATH]= {0};
 	struct file* fp;
   assert(*module);
   for (int i = 0; package_paths[i]; i++) {

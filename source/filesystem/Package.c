@@ -15,6 +15,13 @@
 
 #define IDPAKHEADER MAKE_FOURCC('P', 'A', 'C', 'K')
 #define MAX_READ 0x10000
+#define MAX_RESOURCEPATH 256
+#define PACK_FLAT 0
+#define PACK_LZ4 1
+#define PACK_ZIP 2
+#define CHUNK_SIZE 16384 // 16 KB buffer size, you can adjust this as needed
+
+typedef char ospathfmt_t[MAX_OSPATH + MAX_RESOURCEPATH];
 
 struct dpackheader
 {

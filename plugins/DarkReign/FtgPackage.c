@@ -28,6 +28,7 @@
  *        - Assign the SpriteAnimation to an SKSpriteNode.Animation property
  */
 
+#include <include/orca.h>
 #include "DarkReign.h"
 
 #define FTG_MAX_FILENAME 28     /* 27 chars + 1 null terminator */

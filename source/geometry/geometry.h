@@ -7,7 +7,7 @@
 typedef struct lua_State lua_State;
 
 
-#include <source/geometry/geometry.h>
+#include <include/orcadef.h>
 
 #include "geometry_properties.h"
 

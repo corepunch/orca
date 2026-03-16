@@ -7,22 +7,6 @@
 
 typedef struct lua_State lua_State;
 
-typedef unsigned int bool_t;
-typedef unsigned char byte_t;
-typedef void* handle_t;
-typedef unsigned int uint32_t;
-typedef unsigned short uint16_t;
-typedef intptr_t LRESULT;
-typedef signed int HRESULT;
-typedef uint32_t wParam_t;
-typedef void* lParam_t;
-typedef long long objectTags_t;
-typedef unsigned long longTime_t;
-typedef char shortStr_t[MAX_NAMELEN];
-typedef const char *lpcString_t;
-typedef char *LPSTR;
-typedef int *lpint;
-
 struct renderer;
 struct game;
 struct localization;
@@ -272,11 +256,6 @@ enum
  Property data structures
  */
 
-#define MAX_PROPERTY_STRING 256
-//#define MAX_PROPERTIES 65536
-
-typedef char fixedString_t[MAX_PROPERTY_STRING];
-
 #include <source/core/core.h>
 
 ORCA_API bool_t
@@ -515,21 +494,9 @@ OBJ_EnumClassProperties(lpObject_t object,
  File system access
  */
 
-#define MAX_RESOURCEPATH 256
-#define MAX_OSPATH 1024
-#define MAX_SEARCHPATHS 32
-#define MAX_ENVVARS 32
-#define MAKE_FOURCC(a, b, c, d)                                                \
-  ((int)(d) << 24 | (int)(c) << 16 | (b) << 8 | (a))
-#define PACK_FLAT 0
-#define PACK_LZ4 1
-#define PACK_ZIP 2
-#define CHUNK_SIZE 16384 // 16 KB buffer size, you can adjust this as needed
-
 #define IDMESHHEADER MAKE_FOURCC('M', 'E', 'S', 'H')
 
 typedef char path_t[MAX_OSPATH];
-typedef char ospathfmt_t[MAX_OSPATH + MAX_RESOURCEPATH];
 
 struct file {
   uint32_t size;
