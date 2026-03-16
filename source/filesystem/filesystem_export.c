@@ -84,6 +84,74 @@ int luaopen_orca_ProjectReference(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
+void luaX_pushProjectPlugin(lua_State *L, struct ProjectPlugin const* data) {
+	if (data == NULL) { lua_pushnil(L); return; }
+	struct ProjectPlugin* self = lua_newuserdata(L, sizeof(struct ProjectPlugin));
+	luaL_setmetatable(L, "ProjectPlugin");
+	memcpy(self, data, sizeof(struct ProjectPlugin));
+}
+struct ProjectPlugin* luaX_checkProjectPlugin(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "ProjectPlugin");
+}
+static int f_new_ProjectPlugin(lua_State *L) {
+	struct ProjectPlugin* self = lua_newuserdata(L, sizeof(struct ProjectPlugin));
+	luaL_setmetatable(L, "ProjectPlugin");
+	memset(self, 0, sizeof(struct ProjectPlugin));
+	if (lua_gettop(L) == 1) return 1;
+	if (lua_istable(L, 1)) {
+		lua_pop(L, (lua_getfield(L, 1, "Name"), strncpy(self->Name, luaL_checkstring(L, -1), sizeof(self->Name)), 1));
+	} else {
+		strncpy(self->Name, luaL_checkstring(L, 1), sizeof(self->Name));
+	}
+	return 1;
+}
+
+
+int f_ProjectPlugin___index(lua_State *L) {
+	struct ProjectPlugin* self = luaX_checkProjectPlugin(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x0fe07306: lua_pushstring(L, self->Name); return 1; // Name
+	}
+	return luaL_error(L, "Unknown field in ProjectPlugin(%p): %s", self, luaL_checkstring(L, 2));
+}
+int f_ProjectPlugin___newindex(lua_State *L) {
+	struct ProjectPlugin* self = luaX_checkProjectPlugin(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x0fe07306: strncpy(self->Name, luaL_checkstring(L, 3), sizeof(self->Name)); return 0; // Name
+	}
+	return luaL_error(L, "Unknown field in ProjectPlugin(%p): %s", self, luaL_checkstring(L, 2));
+}
+extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
+static int f_ProjectPlugin___fromstring(lua_State *L) {
+	fixedString_t Name;
+	struct ProjectPlugin self = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%s", Name)) {
+	case 1: 
+		strncpy(self.Name, Name, sizeof(self.Name));
+		return (luaX_pushProjectPlugin(L, &self), 1);
+	default:
+		return luaL_error(L, "Invalid format for ProjectPlugin: %s", luaL_checkstring(L, 1));
+	}
+}
+static int f_ProjectPlugin___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_ProjectPlugin(L));  // remove ProjectPlugin from stack and call constructor
+}
+int luaopen_orca_ProjectPlugin(lua_State *L) {
+	luaL_newmetatable(L, "ProjectPlugin");
+	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ "new", f_new_ProjectPlugin },
+		{ "fromstring", f_ProjectPlugin___fromstring },
+		{ "__newindex", f_ProjectPlugin___newindex },
+		{ "__index", f_ProjectPlugin___index },
+		{ NULL, NULL },
+	}), 0);
+	// Make ProjectPlugin creatable via constructor-like syntax
+	lua_newtable(L);
+	lua_pushcfunction(L, f_ProjectPlugin___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+	return 1;
+}
 void luaX_pushSystemMessage(lua_State *L, struct SystemMessage const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct SystemMessage* self = lua_newuserdata(L, sizeof(struct SystemMessage));
@@ -560,6 +628,8 @@ static struct PropertyType const ProjectProperties[kProjectNumProperties] = {
 	DECL(0xc405deba, Project, NumProjectReferences, NumProjectReferences, kDataTypeInt), // Project.NumProjectReferences
 	ARRAY_DECL(0x2fd1aed8, Project, SystemMessages, SystemMessages, kDataTypeStruct, .TypeString = "SystemMessage"), // Project.SystemMessages
 	DECL(0xbf690676, Project, NumSystemMessages, NumSystemMessages, kDataTypeInt), // Project.NumSystemMessages
+	ARRAY_DECL(0x847d7bcb, Project, Plugins, Plugins, kDataTypeStruct, .TypeString = "ProjectPlugin"), // Project.Plugins
+	DECL(0x5c755751, Project, NumPlugins, NumPlugins, kDataTypeInt), // Project.NumPlugins
 };
 static struct Project ProjectDefaults = {
 		
@@ -2069,6 +2139,7 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	void on_filesystem_module_registered(lua_State *L);
 	on_filesystem_module_registered(L);
 	lua_setfield(L, ((void)luaopen_orca_ProjectReference(L), -2), "ProjectReference");
+	lua_setfield(L, ((void)luaopen_orca_ProjectPlugin(L), -2), "ProjectPlugin");
 	lua_setfield(L, ((void)luaopen_orca_SystemMessage(L), -2), "SystemMessage");
 	lua_setfield(L, ((void)luaopen_orca_OpenFileArgs(L), -2), "OpenFileArgs");
 	lua_setfield(L, ((void)luaopen_orca_FileExistsArgs(L), -2), "FileExistsArgs");

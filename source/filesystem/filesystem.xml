@@ -14,6 +14,12 @@
     <field name="Name" type="fixed">Name of the project, will be used as Project/Library/Resource when referencing it's resources</field>
     <field name="Path" type="fixed">Path to the project relative to the workspace</field>
   </struct>
+
+  <struct name="ProjectPlugin" sealed="true">
+    <summary>Plugin requirement</summary>
+    <details>Would load the plugin and make it's classes available</details>
+    <field name="Name" type="fixed">Name of the plugin</field>
+  </struct>
   
   <struct name="SystemMessage" sealed="true">
     <summary>Handler of system messages you can add to your project</summary>
@@ -125,6 +131,7 @@
     <property name="PropertyTypes" type="PropertyType" array="true" />
     <property name="ProjectReferences" type="ProjectReference" array="true" />
     <property name="SystemMessages" type="SystemMessage" array="true"/>
+    <property name="Plugins" type="ProjectPlugin" array="true"/>
 
     <field name="isPackage" type="bool"/>
   </class>

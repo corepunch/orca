@@ -377,6 +377,17 @@ static lpProject_t _InitProject(lua_State *L, lpcString_t szDirname) {
   }
 }
 
+static void _InitPlugins(lua_State *L, lpcProject_t project) {
+  FOR_LOOP(i, project->NumPlugins) {
+    lua_getglobal(L, "require");
+    lua_pushstring(L, project->Plugins[i].Name);
+    if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
+      Con_Error("%s", lua_tostring(L, -1));
+      lua_pop(L, 1);
+    }
+  }
+}
+
 struct Object*
 FS_LoadBundle(lua_State* L, lpcString_t szDirname)
 {
@@ -396,6 +407,7 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
   OBJ_EnumClasses(ID_Library, _AddLibrary, ((void*[]){ L, CMP_GetObject(project) }));
   OBJ_AddChild(FS_GetWorkspace(), CMP_GetObject(project), FALSE);
 
+  _InitPlugins(L, project);
   _InitPropertyTypes(project);
   _InitProjectRefences(L, project, szDirname);
 

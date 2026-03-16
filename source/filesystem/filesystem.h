@@ -22,6 +22,8 @@ typedef struct LoadProjectArgs* LoadProjectEventPtr;
 
 typedef struct ProjectReference ProjectReference_t, *lpProjectReference_t;
 typedef struct ProjectReference const cProjectReference_t, *lpcProjectReference_t;
+typedef struct ProjectPlugin ProjectPlugin_t, *lpProjectPlugin_t;
+typedef struct ProjectPlugin const cProjectPlugin_t, *lpcProjectPlugin_t;
 typedef struct SystemMessage SystemMessage_t, *lpSystemMessage_t;
 typedef struct SystemMessage const cSystemMessage_t, *lpcSystemMessage_t;
 typedef struct OpenFileArgs OpenFileArgs_t, *lpOpenFileArgs_t;
@@ -74,6 +76,13 @@ struct ProjectReference {
 };
 ORCA_API void luaX_pushProjectReference(lua_State *L, struct ProjectReference const* ProjectReference);
 ORCA_API struct ProjectReference* luaX_checkProjectReference(lua_State *L, int idx);
+/// @brief Plugin requirement
+/** ProjectPlugin struct */
+struct ProjectPlugin {
+	fixedString_t Name; ///< Name of the plugin
+};
+ORCA_API void luaX_pushProjectPlugin(lua_State *L, struct ProjectPlugin const* ProjectPlugin);
+ORCA_API struct ProjectPlugin* luaX_checkProjectPlugin(lua_State *L, int idx);
 /// @brief Handler of system messages you can add to your project
 /** SystemMessage struct */
 struct SystemMessage {
@@ -179,6 +188,8 @@ struct Project {
 	int32_t NumProjectReferences;
 	struct SystemMessage* SystemMessages;
 	int32_t NumSystemMessages;
+	struct ProjectPlugin* Plugins;
+	int32_t NumPlugins;
 	bool_t isPackage;
 };
 ORCA_API void luaX_pushProject(lua_State *L, struct Project const* Project);

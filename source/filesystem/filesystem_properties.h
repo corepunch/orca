@@ -79,6 +79,8 @@ enum WorkspaceProperties {
 #define ID_Project_NumProjectReferences 0x6c9cdb5b // Project.NumProjectReferences
 #define ID_Project_SystemMessages 0xd3829a01 // Project.SystemMessages
 #define ID_Project_NumSystemMessages 0x89eac941 // Project.NumSystemMessages
+#define ID_Project_Plugins 0xf63a7450 // Project.Plugins
+#define ID_Project_NumPlugins 0x2ed36890 // Project.NumPlugins
 enum ProjectProperties {
 	kProjectHalfFloatTextureFormat,
 	kProjectHalfFloatTextureFormatLinear,
@@ -118,6 +120,8 @@ enum ProjectProperties {
 	kProjectNumProjectReferences,
 	kProjectSystemMessages,
 	kProjectNumSystemMessages,
+	kProjectPlugins,
+	kProjectNumPlugins,
 	kProjectNumProperties	
 };
 // Library
