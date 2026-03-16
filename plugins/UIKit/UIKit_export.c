@@ -3286,8 +3286,6 @@ ORCA_API struct ClassDesc _Style = {
 	.NumProperties = kStyleNumProperties,
 };
 
-
-
 ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
 		{ NULL, NULL } 

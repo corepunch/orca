@@ -14,7 +14,7 @@ Then in your Lua code:
 
 ```lua
 local orca = require "orca"
-local ui = require "orca.ui"
+local ui = require "orca.UIKit"
 ```
 
 See [LUAROCKS.md](LUAROCKS.md) for detailed LuaRocks installation and usage instructions.
@@ -143,7 +143,7 @@ Let's compare the same UI component in both languages using ORCA's framework:
 
 **Pure Lua with ORCA** (still verbose):
 ```lua
-local StackView = require("orca.ui").StackView
+local StackView = require("orca.UIKit").StackView
 
 local ContactCard = StackView:extend {
   apply = function(self)
@@ -162,7 +162,7 @@ local ContactCard = StackView:extend {
 
 **MoonScript with ORCA** (clean and elegant):
 ```moonscript
-import StackView from require "orca.ui"
+import StackView from require "orca.UIKit"
 
 class ContactCard extends StackView
   apply: => "contact-card"

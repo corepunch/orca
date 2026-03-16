@@ -199,10 +199,10 @@ project "orca.scene"
     targetprefix "lib"
     targetdir "build/lib"
     files {
-        "source/SceneKit/**.c",
-        "source/SceneKit/**.h"
+        "plugins/SceneKit/**.c",
+        "plugins/SceneKit/**.h"
     }
-    includedirs { "source/SceneKit" }
+    includedirs { "plugins/SceneKit" }
     links { 
         "orca.geometry",
         "orca.renderer"
@@ -216,8 +216,8 @@ project "orca.ui"
     targetprefix "lib"
     targetdir "build/lib"
     files {
-        "source/UIKit/**.c",
-        "source/UIKit/**.h"
+        "plugins/UIKit/**.c",
+        "plugins/UIKit/**.h"
     }
     links { 
         "orca.core",
@@ -403,8 +403,8 @@ newaction {
             source/geometry/geom.xml \
             source/core/core.xml \
             source/renderer/api/renderer.xml \
-            source/UIKit/UIKit.xml \
-            source/SceneKit/SceneKit.xml \
+            plugins/UIKit/UIKit.xml \
+            plugins/SceneKit/SceneKit.xml \
             source/filesystem/filesystem.xml]])
     end
 }

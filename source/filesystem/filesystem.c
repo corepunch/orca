@@ -269,6 +269,9 @@ FS_LoadFile(lpcString_t szFileName)
     fclose(fp);
     return pFile;
   }
+  if (!FS_GetWorkspace()) {
+    return NULL;
+  }
   // If that fails, try to find it in loaded packages
   FS_FindPackage(package, szFileName) {
     if ((pFile = (struct file*)OBJ_SendMessageW(package, kEventOpenFile, 0, &(struct OpenFileArgs){

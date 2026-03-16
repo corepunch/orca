@@ -137,7 +137,7 @@ local specials = {
 local function construct_node(element)
 	local class =
 		try_prefab_placeholder(element) or
-		try_require_memeber("orca.ui", element.tag) or
+		try_require_memeber("orca.UIKit", element.tag) or
 		try_require_memeber("orca.SceneKit", element.tag) or
 		try_require_memeber("orca.SpriteKit", element.tag) or
 		try_require_memeber("orca.filesystem", element.tag) or

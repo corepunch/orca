@@ -9,10 +9,10 @@ typedef struct lua_State lua_State;
 
 #include <include/renderer.h>
 #include <source/core/core.h>
-#include <source/UIKit/UIKit.h>
+#include <plugins/UIKit/UIKit.h>
 
 #include "SpriteKit_properties.h"
-#include "../renderer/api/renderer.h"
+#include "../../source/renderer/api/renderer.h"
 
 
 

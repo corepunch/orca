@@ -2,7 +2,7 @@
 #include <include/orca.h>
 #include <include/renderer.h>
 
-#include <source/UIKit/UIKit.h>
+#include <plugins/UIKit/UIKit.h>
 
 #define ITEMS_LIST "__items"
 #define SCROLL_SENSIVITY 1.2f

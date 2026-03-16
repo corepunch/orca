@@ -1,8 +1,9 @@
 local orca = require "orca"
+local ui = require "orca.UIKit"
 orca.init()
 require "orca.core"
 require "orca.renderer"
-local screen = orca.ui.Screen { Width = 1000, Height = 1000 }
+local screen = ui.Screen { Width = 1000, Height = 1000 }
 
 screen.refresh = function (self)
 	self:updateLayout(self.Width, self.Height)
@@ -15,11 +16,11 @@ local function test_text_block_layout()
 		padding = 10,
 		radius = 5
 	}
-	local text = screen + orca.ui.TextBlock {
+	local text = screen + ui.TextBlock {
 		Name = "Text", 
 		Text = config.text,
 		HorizontalAlignment = "Left",
-		HorizontalMargin = orca.ui.EdgeShorthand { Left = config.margin.left, Right = config.margin.right },
+		HorizontalMargin = ui.EdgeShorthand { Left = config.margin.left, Right = config.margin.right },
 		BorderRadius = config.radius, -- this should apply the same radius to all corners
 	}
 
@@ -46,8 +47,8 @@ local function test_text_block_layout()
 	assert(text:getRoot() == screen, "Text block's root should be the screen")
 
 	-- Verify that common classes and properties are available
-	assert(type(orca.ui.TextBlock) == 'table', "orca.ui.TextBlock should be a table")
-	assert(type(orca.ui.EdgeShorthand) == 'table', "orca.ui.EdgeShorthand should be a table")
+	assert(type(ui.TextBlock) == 'table', "ui.TextBlock should be a table")
+	assert(type(ui.EdgeShorthand) == 'table', "ui.EdgeShorthand should be a table")
 
 	text:setFocus()
 	text.Padding = config.padding
@@ -93,18 +94,18 @@ local function test_stack_view_layout()
 		node_height = 50,
 		node_margin = 5,
 	}
-	local stack = screen + orca.ui.StackView {
+	local stack = screen + ui.StackView {
 		Name = "test_stack_view_layout",
 		Direction = "Vertical",
 		VerticalAlignment = "Top",
 		Margin = config.stack_margin,
 		Spacing = config.stack_spacing
 	}
-	local node1 = stack + orca.ui.TextBlock {
+	local node1 = stack + ui.TextBlock {
 		Text = "Node without margin",
 		Height = config.node_height,
 	}
-	local node2 = stack + orca.ui.TextBlock {
+	local node2 = stack + ui.TextBlock {
 		Text = "Node with margin",
 		Height = config.node_height,
 		Margin = config.node_margin
@@ -126,7 +127,7 @@ end
 
 local function test_button_interaction()
 	local clicked = false
-	local button = screen + orca.ui.Button { Width = 100, Height = 100, onLeftMouseDown = function () clicked = true end }
+	local button = screen + ui.Button { Width = 100, Height = 100, onLeftMouseDown = function () clicked = true end }
 	screen:updateLayout(screen.Width, screen.Height)
 	-- Simulate a left mouse down event on the button
 	orca.backend.dispatchMessage {
@@ -143,7 +144,7 @@ end
 
 local function test_input_interaction()
 	local config = { text = "Hello World!" }
-	local input = screen + orca.ui.Input { Width = 100, Height = 100 }
+	local input = screen + ui.Input { Width = 100, Height = 100 }
 	input:setFocus()
 	screen:updateLayout(screen.Width, screen.Height)
 	-- Simulate a left mouse down event on the button
@@ -167,10 +168,10 @@ local function test_grid_view_layout()
 		margin = 8,
 	}
 	local rows = string.format("%dpx auto %dpx", config.header, config.footer)
-	local grid = screen + orca.ui.Grid { Rows = rows }
-	local header = grid + orca.ui.Node2D { Margin = config.margin }
-	local content = grid + orca.ui.Node2D { Margin = config.margin }
-	local footer = grid + orca.ui.Node2D { Margin = config.margin }
+	local grid = screen + ui.Grid { Rows = rows }
+	local header = grid + ui.Node2D { Margin = config.margin }
+	local content = grid + ui.Node2D { Margin = config.margin }
+	local footer = grid + ui.Node2D { Margin = config.margin }
 	screen:updateLayout(screen.Width, screen.Height)
 	assert(grid.ActualWidth == screen.Width, "GridView ActualWidth should match screen width when horizontal alignment is 'Stretch'")
 	assert(grid.ActualHeight == screen.Height, "GridView ActualHeight should match screen height when vertical alignment is 'Stretch'")
@@ -182,8 +183,8 @@ end
 
 local function test_text_single_line_layout()
 	-- "Hello World" should render on one line, not two
-	local single_word = screen + orca.ui.TextBlock { HorizontalAlignment = "Left", Text = "Hello" }
-	local two_words = screen + orca.ui.TextBlock { HorizontalAlignment = "Left", Text = "Hello World" }
+	local single_word = screen + ui.TextBlock { HorizontalAlignment = "Left", Text = "Hello" }
+	local two_words = screen + ui.TextBlock { HorizontalAlignment = "Left", Text = "Hello World" }
 
 	screen:updateLayout(screen.Width, screen.Height)
 
@@ -203,13 +204,13 @@ local function test_grid_view_in_stack_layout()
 		grid_header = 64,
 		grid_footer = 48,
 	}
-	local stack = screen + orca.ui.StackView { Direction = "Vertical", Spacing = config.stack_spacing }
-	local row1 = stack + orca.ui.Grid { Columns = "auto auto" }
-	local row2 = stack + orca.ui.Grid { Columns = "auto auto" }
-	local text11 = row1 + orca.ui.TextBlock { Text = "Text", Margin = config.grid_margin, FontSize = 16 }
-	local text12 = row1 + orca.ui.TextBlock { Text = "Text", Margin = config.grid_margin, FontSize = 24 }
-	local text21 = row2 + orca.ui.TextBlock { Text = "Text", Margin = config.grid_margin, FontSize = 18, VerticalAlignment= "Top" }
-	local text22 = row2 + orca.ui.TextBlock { Text = "Text", Margin = config.grid_margin, FontSize = 32, VerticalAlignment= "Top" }
+	local stack = screen + ui.StackView { Direction = "Vertical", Spacing = config.stack_spacing }
+	local row1 = stack + ui.Grid { Columns = "auto auto" }
+	local row2 = stack + ui.Grid { Columns = "auto auto" }
+	local text11 = row1 + ui.TextBlock { Text = "Text", Margin = config.grid_margin, FontSize = 16 }
+	local text12 = row1 + ui.TextBlock { Text = "Text", Margin = config.grid_margin, FontSize = 24 }
+	local text21 = row2 + ui.TextBlock { Text = "Text", Margin = config.grid_margin, FontSize = 18, VerticalAlignment= "Top" }
+	local text22 = row2 + ui.TextBlock { Text = "Text", Margin = config.grid_margin, FontSize = 32, VerticalAlignment= "Top" }
 	
 	assert(row1.ActualHeight == 0, "Row 1 should have zero height before layout update")
 
@@ -231,16 +232,16 @@ local function test_horizontal_stack_view_layout()
 		node_width = 60,
 		node_margin = 5,
 	}
-	local stack = screen + orca.ui.StackView {
+	local stack = screen + ui.StackView {
 		Direction = "Horizontal",
 		HorizontalAlignment = "Left",
 		Spacing = config.stack_spacing,
 	}
-	local node1 = stack + orca.ui.TextBlock {
+	local node1 = stack + ui.TextBlock {
 		Text = "Item 1",
 		Width = config.node_width,
 	}
-	local node2 = stack + orca.ui.TextBlock {
+	local node2 = stack + ui.TextBlock {
 		Text = "Item 2",
 		Width = config.node_width,
 		Margin = config.node_margin,
@@ -272,11 +273,11 @@ end
 
 local function test_node_alignment()
 	-- A node with default HorizontalAlignment (Stretch) fills parent width
-	local stretch_node = screen + orca.ui.Node2D {}
+	local stretch_node = screen + ui.Node2D {}
 
 	-- A node with HorizontalAlignment = "Left" and explicit Width uses that width
 	local fixed_width = 200
-	local left_node = screen + orca.ui.Node2D {
+	local left_node = screen + ui.Node2D {
 		HorizontalAlignment = "Left",
 		Width = fixed_width,
 	}
@@ -300,7 +301,7 @@ local function test_node_alignment()
 end
 
 local function test_input_checkbox()
-	local checkbox = screen + orca.ui.Input {
+	local checkbox = screen + ui.Input {
 		Type = "Checkbox",
 		Width = 24,
 		Height = 24,
@@ -324,15 +325,15 @@ end
 
 local function test_form_populate_inputs()
 	local config = { username = "alice", password = "test_password_123" }
-	local form = screen + orca.ui.Form {
+	local form = screen + ui.Form {
 		Direction = "Vertical",
 	}
-	local username_input = form + orca.ui.Input {
+	local username_input = form + ui.Input {
 		Name = "username",
 		Width = 200,
 		Height = 30,
 	}
-	local password_input = form + orca.ui.Input {
+	local password_input = form + ui.Input {
 		Name = "password",
 		Width = 200,
 		Height = 30,
@@ -376,7 +377,7 @@ local function test_form_populate_inputs()
 end
 
 local function test_node_visibility()
-	local node = screen + orca.ui.Node2D {
+	local node = screen + ui.Node2D {
 		Width = 100,
 		Height = 50,
 	}
@@ -402,7 +403,7 @@ local function test_property_change_notification()
 	-- on an object enables automatic change tracking for that property.
 	-- emitPropertyChangedEvents() fires all pending callbacks (runs each frame).
 	local last_text = nil
-	local node = screen + orca.ui.TextBlock {
+	local node = screen + ui.TextBlock {
 		HorizontalAlignment = "Left",
 		Text = "Initial",
 	}

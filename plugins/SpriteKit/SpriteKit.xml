@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
 <module name="SpriteKit" namespace="orca" on-luaopen="on_spritekit_module_registered">
-  <require file="../renderer/api/renderer.xml"/>
+  <require file="../../source/renderer/api/renderer.xml"/>
 
   <include file="include/renderer.h"/>
   <include file="source/core/core.h"/>
-  <include file="source/UIKit/UIKit.h"/>
+  <include file="plugins/UIKit/UIKit.h"/>
 
   <struct name="SpriteFrame" export="SpriteFrame" sealed="true">
     <field name="Rect" type="rect"/>

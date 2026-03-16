@@ -1,6 +1,6 @@
 #include <include/renderer.h>
 
-#include <source/UIKit/UIKit.h>
+#include <plugins/UIKit/UIKit.h>
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480

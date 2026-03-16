@@ -31,7 +31,7 @@ int cmp_prop(const void *a, const void *b) {
   return strcmp(PROP_GetName(nodeA), PROP_GetName(nodeB));
 }
 
-#include "../UIKit/UIKit.h"
+#include <plugins/UIKit/UIKit.h>
 
 void UI_FillOutObjectView(HOBJ object, LPOBJDEF lpOut) {
   memset(lpOut, 0, sizeof(struct _OBJDEF));
@@ -157,16 +157,16 @@ BOOL UI_RenameObject(HOBJ object, lpcString_t szName) {
 HOBJ UI_NewObject(HOBJ parent, lpcString_t szName, DWORD dwType) {
   struct lua_State *L = core.L;
   switch (dwType) {
-    case ID_OBJECT_LABEL: luaX_import(L, "orca.ui", "TextBlock"); break;
-    case ID_OBJECT_IMAGE: luaX_import(L, "orca.ui", "ImageView"); break;
-    case ID_OBJECT_STACK: luaX_import(L, "orca.ui", "StackView"); break;
-    case ID_OBJECT_GRID: luaX_import(L, "orca.ui", "Grid"); break;
-    case ID_OBJECT_CINEMATIC: luaX_import(L, "orca.ui", "Cinematic"); break;
+    case ID_OBJECT_LABEL: luaX_import(L, "orca.UIKit", "TextBlock"); break;
+    case ID_OBJECT_IMAGE: luaX_import(L, "orca.UIKit", "ImageView"); break;
+    case ID_OBJECT_STACK: luaX_import(L, "orca.UIKit", "StackView"); break;
+    case ID_OBJECT_GRID: luaX_import(L, "orca.UIKit", "Grid"); break;
+    case ID_OBJECT_CINEMATIC: luaX_import(L, "orca.UIKit", "Cinematic"); break;
     default:
       Con_Error("Unknown type %d", dwType);
       return NULL;
   }
-//  luaX_import(L, "orca.ui", "TextBlock");
+//  luaX_import(L, "orca.UIKit", "TextBlock");
   if (lua_pcall(L, 0, 1, 0) != LUA_OK) {
     Con_Error("UI_NewObject: %s\n", lua_tostring(L, -1));
     lua_pop(L, 1);

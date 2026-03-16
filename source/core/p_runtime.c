@@ -622,7 +622,7 @@ jwPropertyExport(lpProperty_t prop,
   }
 }
 
-#include <source/UIKit/UIKit.h> // for GetNode(it)
+#include <plugins/UIKit/UIKit.h> // for GetNode(it)
 
 tok_op(argument)
 {
