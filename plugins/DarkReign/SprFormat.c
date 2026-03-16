@@ -73,6 +73,7 @@
  */
 
 #include <include/orca.h>
+#include <include/api.h>
 #include <include/renderer.h>
 #include <source/core/core.h>
 #include <plugins/SpriteKit/SpriteKit.h>
@@ -128,7 +129,7 @@ _read_i32(uint8_t const *buf, uint32_t off)
 /*  Object.  Returns NULL on any error.								 */
 /* ------------------------------------------------------------------ */
 
-static lpObject_t
+lpObject_t
 _SprFile_Load(lua_State* L, uint8_t const *data, uint32_t size, lpcString_t name)
 {
     /* ---- 1. validate header ---- */
@@ -441,3 +442,4 @@ fail:
     free(sects);
     return NULL;
 }
+

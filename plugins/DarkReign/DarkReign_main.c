@@ -3,7 +3,7 @@
 #include "DarkReign.h"
 
 /* forward declaration – defined in SprFormat.c, compiled as one unit */
-static lpObject_t _SprFile_Load(lua_State* L, uint8_t const *data, uint32_t size, lpcString_t name);
+lpObject_t _SprFile_Load(lua_State* L, uint8_t const *data, uint32_t size, lpcString_t name);
 
 /*
  * Level 3 – CLASS closure.

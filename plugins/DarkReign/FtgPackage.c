@@ -191,7 +191,8 @@ HANDLER(FtgPackage, Destroy) {
  * resulting SpriteAnimation Object as a direct child of |project|.
  */
 
-static lpObject_t
+#if 0
+lpObject_t
 _SprFile_Load(lua_State* L, uint8_t const *data, uint32_t size, lpcString_t name);
 
 static void
@@ -234,6 +235,7 @@ _LoadSprAnimations(lua_State* L, PFTG ftg, lpObject_t project)
     OBJ_AddChild(project, anim_obj, FALSE);
   }
 }
+#endif
 
 /*
  * FtgPackage_LoadProject
@@ -282,6 +284,11 @@ HANDLER(FtgPackage, LoadProject) {
 
   OBJ_AddComponent(project, ID_FtgPackage);
   GetFtgPackage(project)->_ftg = ftg;
+
+  for (int i = 0; i < ftg->numfiles; i++) {
+    char const *fname = ftg->files[i].name;
+    fprintf(stderr, "FtgPackage: found file '%s' in archive '%s' size %u\n", fname, ftg->filename, ftg->files[i].size);
+  }
 
   /* Load all .spr sprite files from the archive and attach them to the project
    * as SpriteAnimation children so they are immediately accessible by name. */
