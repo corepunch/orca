@@ -146,7 +146,6 @@ Cin_Load(lpcString_t filename, uint32_t frame)
   GLenum datatype = GL_UNSIGNED_BYTE;
 
   struct Texture* tex = tr.textures[TX_CINEMATIC];
-  struct Texture* pal = tr.textures[TX_CINEMATICPALETTE];
 
   R_Call(glBindTexture, GL_TEXTURE_2D, tex->texnum);
 
@@ -171,10 +170,7 @@ Cin_Load(lpcString_t filename, uint32_t frame)
 
   R_SetPointFiltering();
 
-  R_Call(glBindTexture, GL_TEXTURE_2D, pal->texnum);
-  R_Call(glTexSubImage2D, GL_TEXTURE_2D, 0, 0, 0, 256, 1, GL_RGBA, datatype, cin.palette);
-
-  R_SetPointFiltering();
+  R_SetPalette(cin.palette);
 
   //    R_DrawStretchRaw(&(DRAWSTRETCHRAWSTRUCT) {
   //        .rect = { (1920.f-cin.width)/2, (720.f-cin.height)/2, cin.width,

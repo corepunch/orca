@@ -513,9 +513,20 @@ static void Texture_CreateCinematicPalette(struct Texture **img) {
 }
 
 struct Texture*
-R_GetCinematicPalette(void)
+R_GetPalette(void)
 {
   return tr.textures[TX_CINEMATICPALETTE];
+}
+
+void
+R_SetPalette(struct color32 const palette[256])
+{
+  struct Texture *pal = tr.textures[TX_CINEMATICPALETTE];
+  if (!pal) return;
+  R_Call(glBindTexture, GL_TEXTURE_2D, pal->texnum);
+  R_Call(glTexSubImage2D, GL_TEXTURE_2D, 0, 0, 0, 256, 1, GL_RGBA,
+         GL_UNSIGNED_BYTE, palette);
+  R_SetPointFiltering();
 }
 
 static HRESULT Texture_CreateBlack(struct Texture** img) {
