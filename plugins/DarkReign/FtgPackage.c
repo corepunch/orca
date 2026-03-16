@@ -52,9 +52,6 @@
 #include <plugins/SpriteKit/SpriteKit.h>
 #include "DarkReign.h"
 
-/* SpriteAnimation ClassDesc is defined in SpriteKit_export.c */
-extern struct ClassDesc _SpriteAnimation;
-
 #define FTG_MAX_FILENAME 28     /* 27 chars + 1 null terminator */
 #define FTG_MAX_FILES    65536  /* sanity cap to prevent DoS via huge fileCount */
 
@@ -341,7 +338,7 @@ _SprFile_Load(uint8_t const *data, uint32_t size, lpcString_t name)
   }
 
   /* ---- create SpriteAnimation Object ---- */
-  lpObject_t obj = OBJ_MakeNativeObject(&_SpriteAnimation);
+  lpObject_t obj = OBJ_MakeNativeObject(ID_SpriteAnimation);
   if (!obj) {
     free(frames);
     Texture_Release(tex);

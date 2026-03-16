@@ -65,11 +65,9 @@ lpcString_t cats[] = {
   NULL
 };
 
-extern struct ClassDesc _Project;
-
 EDWINPROC(ProjectSettings) {
   static lpObject_t obj = NULL;
-  if (!obj) obj = OBJ_MakeNativeObject(&_Project);
+  if (!obj) obj = OBJ_MakeNativeObject(ID_Project);
   switch (msg) {
     case EVT_CREATE:
       ED_SplitView(wnd, msg, wparm, &(SPLITVIEWDESC) {
