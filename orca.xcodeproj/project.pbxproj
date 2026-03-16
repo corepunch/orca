@@ -62,7 +62,6 @@
 		781CA7432E154E4A00FFCFD9 /* TrajectoryList3D.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C737752B8F60C600FD598E /* TrajectoryList3D.c */; };
 		781CA7442E154E4A00FFCFD9 /* Viewport3D.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C7376E2B8F60C600FD598E /* Viewport3D.c */; };
 		781CA7452E154E5300FFCFD9 /* SceneKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 78346DE62C96EFE800E0CFD1 /* SceneKit.h */; };
-		781CA7462E154E9F00FFCFD9 /* liborca.SceneKit.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7352E154DE300FFCFD9 /* liborca.SceneKit.so */; };
 		781CA7482E154EE400FFCFD9 /* liborca.geometry.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA6CE2E15024F00FFCFD9 /* liborca.geometry.so */; };
 		781CA7512E15571400FFCFD9 /* Button.c in Sources */ = {isa = PBXBuildFile; fileRef = 78688D222D7E1F2D008DE67B /* Button.c */; };
 		781CA7522E15571400FFCFD9 /* Cinematic.c in Sources */ = {isa = PBXBuildFile; fileRef = 78423AA72BE526EF0052D403 /* Cinematic.c */; };
@@ -140,7 +139,6 @@
 		781CA7CB2E1566FC00FFCFD9 /* liborca.localization.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7BA2E1562F700FFCFD9 /* liborca.localization.so */; };
 		781CA7CC2E1566FC00FFCFD9 /* liborca.core.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7662E15575600FFCFD9 /* liborca.core.so */; };
 		781CA7CD2E1566FC00FFCFD9 /* liborca.backend.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7862E155C9C00FFCFD9 /* liborca.backend.so */; };
-		781CA7CE2E1566FC00FFCFD9 /* liborca.UIKit.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA74D2E1556FF00FFCFD9 /* liborca.UIKit.so */; };
 		781CA7D22E15783F00FFCFD9 /* debug.c in Sources */ = {isa = PBXBuildFile; fileRef = 78FD532F2D929AFE00122823 /* debug.c */; };
 		781CA7DC2E15B24400FFCFD9 /* p_json.c in Sources */ = {isa = PBXBuildFile; fileRef = 78BC7E1E2D4BE7D800907913 /* p_json.c */; };
 		781CA7DD2E15B24400FFCFD9 /* p_xml.c in Sources */ = {isa = PBXBuildFile; fileRef = 78346EBC2C99558F00E0CFD1 /* p_xml.c */; };
@@ -197,17 +195,14 @@
 		786865632F50A9BD00DC87FC /* SKView.c in Sources */ = {isa = PBXBuildFile; fileRef = 786865562F50A9BD00DC87FC /* SKView.c */; };
 		786865642F50A9BD00DC87FC /* SpriteKit_properties.h in Headers */ = {isa = PBXBuildFile; fileRef = 7868655C2F50A9BD00DC87FC /* SpriteKit_properties.h */; };
 		786865662F50A9BD00DC87FC /* SpriteKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 786865572F50A9BD00DC87FC /* SpriteKit.h */; };
-		786865672F50AA6400DC87FC /* liborca.SpriteKit.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 7868653E2F50A96100DC87FC /* liborca.SpriteKit.so */; };
-		786865682F50AA6400DC87FC /* liborca.SpriteKit.so in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 7868653E2F50A96100DC87FC /* liborca.SpriteKit.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		7868656C2F50B4E100DC87FC /* SKLabelNode.c in Sources */ = {isa = PBXBuildFile; fileRef = 7868656B2F50B4DE00DC87FC /* SKLabelNode.c */; };
-		7868656E2F50B55100DC87FC /* liborca.UIKit.so in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 781CA74D2E1556FF00FFCFD9 /* liborca.UIKit.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		7868656E2F50B55100DC87FC /* liborca/UIKit.so in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 781CA74D2E1556FF00FFCFD9 /* liborca/UIKit.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		786A4BD12E86B06500C40C9F /* TerminalView.c in Sources */ = {isa = PBXBuildFile; fileRef = 786A4BD02E86B05E00C40C9F /* TerminalView.c */; };
 		786F2B332E12EE7F00B519AB /* ed_local.h in Headers */ = {isa = PBXBuildFile; fileRef = 786F2B152E12EE7F00B519AB /* ed_local.h */; };
 		788483222E867CA000DB9C1F /* w_plugins.c in Sources */ = {isa = PBXBuildFile; fileRef = 788483212E867C9C00DB9C1F /* w_plugins.c */; };
 		78932BF62F38D6D5007C59CC /* liborca.platform.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; };
 		78932BF72F38D6D5007C59CC /* liborca.platform.so in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		78932EF42F3F255F007C59CC /* backend.c in Sources */ = {isa = PBXBuildFile; fileRef = 7808CD8D2D9EC93A00D484F9 /* backend.c */; };
-		7896A18E2E45275B00086970 /* liborca.UIKit.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA74D2E1556FF00FFCFD9 /* liborca.UIKit.so */; };
 		789A97D42F65490800FD32A9 /* geometry.h in Headers */ = {isa = PBXBuildFile; fileRef = 789A97CE2F65490800FD32A9 /* geometry.h */; };
 		789A97D52F65490800FD32A9 /* geometry_properties.h in Headers */ = {isa = PBXBuildFile; fileRef = 789A97D22F65490800FD32A9 /* geometry_properties.h */; };
 		789A97D62F65490800FD32A9 /* geometry_export.c in Sources */ = {isa = PBXBuildFile; fileRef = 789A97D02F65490800FD32A9 /* geometry_export.c */; };
@@ -265,13 +260,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = 781CA6CD2E15024F00FFCFD9;
 			remoteInfo = orca.geometry;
-		};
-		786865692F50AA6400DC87FC /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 78B136992AF3CA3A00AAAE53 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 7868651B2F50A96100DC87FC;
-			remoteInfo = orca.SpriteKit;
 		};
 		7868656F2F50B55100DC87FC /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -341,7 +329,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				7868656E2F50B55100DC87FC /* liborca.UIKit.so in Embed Libraries */,
+				7868656E2F50B55100DC87FC /* liborca/UIKit.so in Embed Libraries */,
 			);
 			name = "Embed Libraries";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -353,7 +341,6 @@
 			dstSubfolderSpec = 10;
 			files = (
 				78932BF72F38D6D5007C59CC /* liborca.platform.so in Embed Libraries */,
-				786865682F50AA6400DC87FC /* liborca.SpriteKit.so in Embed Libraries */,
 			);
 			name = "Embed Libraries";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -387,8 +374,8 @@
 		781CA6CE2E15024F00FFCFD9 /* liborca.geometry.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca.geometry.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		781CA6E12E15241200FFCFD9 /* liborca.filesystem.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca.filesystem.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		781CA7052E15369F00FFCFD9 /* liborca.renderer.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca.renderer.so; sourceTree = BUILT_PRODUCTS_DIR; };
-		781CA7352E154DE300FFCFD9 /* liborca.SceneKit.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca.SceneKit.so; sourceTree = BUILT_PRODUCTS_DIR; };
-		781CA74D2E1556FF00FFCFD9 /* liborca.UIKit.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca.UIKit.so; sourceTree = BUILT_PRODUCTS_DIR; };
+		781CA7352E154DE300FFCFD9 /* liborca/SceneKit.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca/SceneKit.so; sourceTree = BUILT_PRODUCTS_DIR; };
+		781CA74D2E1556FF00FFCFD9 /* liborca/UIKit.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca/UIKit.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		781CA7662E15575600FFCFD9 /* liborca.core.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca.core.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		781CA7862E155C9C00FFCFD9 /* liborca.backend.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca.backend.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		781CA7922E155D0500FFCFD9 /* liborca.editor.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca.editor.so; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -431,7 +418,7 @@
 		78664E7D2B89E2F80006A947 /* cl_module.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = cl_module.c; sourceTree = "<group>"; };
 		78664E8E2B8A27530006A947 /* vm.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = vm.c; sourceTree = "<group>"; };
 		78664E902B8A27BD0006A947 /* vm_local.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = vm_local.h; sourceTree = "<group>"; };
-		7868653E2F50A96100DC87FC /* liborca.SpriteKit.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca.SpriteKit.so; sourceTree = BUILT_PRODUCTS_DIR; };
+		7868653E2F50A96100DC87FC /* liborca/SpriteKit.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca/SpriteKit.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		786865532F50A9BD00DC87FC /* SKNode.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SKNode.c; sourceTree = "<group>"; };
 		786865542F50A9BD00DC87FC /* SKScene.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SKScene.c; sourceTree = "<group>"; };
 		786865552F50A9BD00DC87FC /* SKSpriteNode.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SKSpriteNode.c; sourceTree = "<group>"; };
@@ -612,7 +599,6 @@
 			files = (
 				78932BF62F38D6D5007C59CC /* liborca.platform.so in Frameworks */,
 				78E4A9CD2E94206B00E3A503 /* liborca.system.so in Frameworks */,
-				786865672F50AA6400DC87FC /* liborca.SpriteKit.so in Frameworks */,
 				781CA7FB2E15B3AA00FFCFD9 /* liborca.vsomeip.so in Frameworks */,
 				781CA7EB2E15B30100FFCFD9 /* liborca.network.so in Frameworks */,
 				781CA7DE2E15B26900FFCFD9 /* liborca.parsers.so in Frameworks */,
@@ -622,9 +608,7 @@
 				781CA7CB2E1566FC00FFCFD9 /* liborca.localization.so in Frameworks */,
 				781CA7CC2E1566FC00FFCFD9 /* liborca.core.so in Frameworks */,
 				781CA7292E15374000FFCFD9 /* liborca.renderer.so in Frameworks */,
-				781CA7462E154E9F00FFCFD9 /* liborca.SceneKit.so in Frameworks */,
 				781CA7CD2E1566FC00FFCFD9 /* liborca.backend.so in Frameworks */,
-				781CA7CE2E1566FC00FFCFD9 /* liborca.UIKit.so in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -714,7 +698,6 @@
 			files = (
 				783C97132F26449B00612323 /* liborca.platform.so in Frameworks */,
 				78E4A9A92E93E59800E3A503 /* liborca.parsers.so in Frameworks */,
-				7896A18E2E45275B00086970 /* liborca.UIKit.so in Frameworks */,
 				781CA7B52E15615C00FFCFD9 /* liborca.core.so in Frameworks */,
 				781CA7B42E15611900FFCFD9 /* liborca.geometry.so in Frameworks */,
 				781CA7B32E15600600FFCFD9 /* liborca.backend.so in Frameworks */,
@@ -1019,8 +1002,8 @@
 				781CA6CE2E15024F00FFCFD9 /* liborca.geometry.so */,
 				781CA6E12E15241200FFCFD9 /* liborca.filesystem.so */,
 				781CA7052E15369F00FFCFD9 /* liborca.renderer.so */,
-				781CA7352E154DE300FFCFD9 /* liborca.SceneKit.so */,
-				781CA74D2E1556FF00FFCFD9 /* liborca.UIKit.so */,
+				781CA7352E154DE300FFCFD9 /* liborca/SceneKit.so */,
+				781CA74D2E1556FF00FFCFD9 /* liborca/UIKit.so */,
 				781CA7662E15575600FFCFD9 /* liborca.core.so */,
 				781CA7862E155C9C00FFCFD9 /* liborca.backend.so */,
 				781CA7922E155D0500FFCFD9 /* liborca.editor.so */,
@@ -1030,7 +1013,7 @@
 				781CA7F32E15B37800FFCFD9 /* liborca.vsomeip.so */,
 				78E4A9C62E941ECD00E3A503 /* liborca.system.so */,
 				783C97032F263E7600612323 /* liborca.platform.so */,
-				7868653E2F50A96100DC87FC /* liborca.SpriteKit.so */,
+				7868653E2F50A96100DC87FC /* liborca/SpriteKit.so */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1392,7 +1375,6 @@
 			);
 			dependencies = (
 				78932BF92F38D6D5007C59CC /* PBXTargetDependency */,
-				7868656A2F50AA6400DC87FC /* PBXTargetDependency */,
 			);
 			name = orca;
 			packageProductDependencies = (
@@ -1477,9 +1459,9 @@
 			productReference = 781CA7052E15369F00FFCFD9 /* liborca.renderer.so */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
-		781CA7342E154DE300FFCFD9 /* orca.SceneKit */ = {
+		781CA7342E154DE300FFCFD9 /* orca/SceneKit */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 781CA7362E154DE300FFCFD9 /* Build configuration list for PBXNativeTarget "orca.SceneKit" */;
+			buildConfigurationList = 781CA7362E154DE300FFCFD9 /* Build configuration list for PBXNativeTarget "orca/SceneKit" */;
 			buildPhases = (
 				781CA7312E154DE300FFCFD9 /* Headers */,
 				781CA7322E154DE300FFCFD9 /* Sources */,
@@ -1489,16 +1471,16 @@
 			);
 			dependencies = (
 			);
-			name = orca.SceneKit;
+			name = orca/SceneKit;
 			packageProductDependencies = (
 			);
 			productName = orca.scene;
-			productReference = 781CA7352E154DE300FFCFD9 /* liborca.SceneKit.so */;
+			productReference = 781CA7352E154DE300FFCFD9 /* liborca/SceneKit.so */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
-		781CA74C2E1556FF00FFCFD9 /* orca.UIKit */ = {
+		781CA74C2E1556FF00FFCFD9 /* orca/UIKit */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 781CA74E2E1556FF00FFCFD9 /* Build configuration list for PBXNativeTarget "orca.UIKit" */;
+			buildConfigurationList = 781CA74E2E1556FF00FFCFD9 /* Build configuration list for PBXNativeTarget "orca/UIKit" */;
 			buildPhases = (
 				781CA7492E1556FF00FFCFD9 /* Headers */,
 				781CA74A2E1556FF00FFCFD9 /* Sources */,
@@ -1508,11 +1490,11 @@
 			);
 			dependencies = (
 			);
-			name = orca.UIKit;
+			name = orca/UIKit;
 			packageProductDependencies = (
 			);
 			productName = orca.ui;
-			productReference = 781CA74D2E1556FF00FFCFD9 /* liborca.UIKit.so */;
+			productReference = 781CA74D2E1556FF00FFCFD9 /* liborca/UIKit.so */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		781CA7652E15575600FFCFD9 /* orca.core */ = {
@@ -1667,9 +1649,9 @@
 			productReference = 783C97032F263E7600612323 /* liborca.platform.so */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
-		7868651B2F50A96100DC87FC /* orca.SpriteKit */ = {
+		7868651B2F50A96100DC87FC /* orca/SpriteKit */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 7868653B2F50A96100DC87FC /* Build configuration list for PBXNativeTarget "orca.SpriteKit" */;
+			buildConfigurationList = 7868653B2F50A96100DC87FC /* Build configuration list for PBXNativeTarget "orca/SpriteKit" */;
 			buildPhases = (
 				7868651C2F50A96100DC87FC /* Headers */,
 				786865202F50A96100DC87FC /* Sources */,
@@ -1681,11 +1663,11 @@
 			dependencies = (
 				786865702F50B55100DC87FC /* PBXTargetDependency */,
 			);
-			name = orca.SpriteKit;
+			name = orca/SpriteKit;
 			packageProductDependencies = (
 			);
 			productName = orca.ui;
-			productReference = 7868653E2F50A96100DC87FC /* liborca.SpriteKit.so */;
+			productReference = 7868653E2F50A96100DC87FC /* liborca/SpriteKit.so */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		78B139A32AF3DE9800AAAE53 /* launcher */ = {
@@ -1824,9 +1806,9 @@
 				781CA7F22E15B37800FFCFD9 /* orca.vsomeip */,
 				78E4A9BD2E941ECD00E3A503 /* orca.system */,
 				783C96FB2F263E7600612323 /* orca.platform */,
-				781CA74C2E1556FF00FFCFD9 /* orca.UIKit */,
-				781CA7342E154DE300FFCFD9 /* orca.SceneKit */,
-				7868651B2F50A96100DC87FC /* orca.SpriteKit */,
+				781CA74C2E1556FF00FFCFD9 /* orca/UIKit */,
+				781CA7342E154DE300FFCFD9 /* orca/SceneKit */,
+				7868651B2F50A96100DC87FC /* orca/SpriteKit */,
 			);
 		};
 /* End PBXProject section */
@@ -2118,14 +2100,9 @@
 			target = 781CA6CD2E15024F00FFCFD9 /* orca.geometry */;
 			targetProxy = 78623C9E2F55EEAC003BFDA3 /* PBXContainerItemProxy */;
 		};
-		7868656A2F50AA6400DC87FC /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 7868651B2F50A96100DC87FC /* orca.SpriteKit */;
-			targetProxy = 786865692F50AA6400DC87FC /* PBXContainerItemProxy */;
-		};
 		786865702F50B55100DC87FC /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 781CA74C2E1556FF00FFCFD9 /* orca.UIKit */;
+			target = 781CA74C2E1556FF00FFCFD9 /* orca/UIKit */;
 			targetProxy = 7868656F2F50B55100DC87FC /* PBXContainerItemProxy */;
 		};
 		78932BF92F38D6D5007C59CC /* PBXTargetDependency */ = {
@@ -3036,7 +3013,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		781CA7362E154DE300FFCFD9 /* Build configuration list for PBXNativeTarget "orca.SceneKit" */ = {
+		781CA7362E154DE300FFCFD9 /* Build configuration list for PBXNativeTarget "orca/SceneKit" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				781CA7372E154DE300FFCFD9 /* Debug */,
@@ -3045,7 +3022,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		781CA74E2E1556FF00FFCFD9 /* Build configuration list for PBXNativeTarget "orca.UIKit" */ = {
+		781CA74E2E1556FF00FFCFD9 /* Build configuration list for PBXNativeTarget "orca/UIKit" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				781CA74F2E1556FF00FFCFD9 /* Debug */,
@@ -3126,7 +3103,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		7868653B2F50A96100DC87FC /* Build configuration list for PBXNativeTarget "orca.SpriteKit" */ = {
+		7868653B2F50A96100DC87FC /* Build configuration list for PBXNativeTarget "orca/SpriteKit" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7868653C2F50A96100DC87FC /* Debug */,

@@ -61,7 +61,7 @@ lpcString_t requires[] = {
   "orca.filesystem",
   "orca.renderer",
   "orca.parsers.xml",
-  "orca.ui",
+  "orca.UIKit",
   "orca.SceneKit",
   "orca.SpriteKit",
 };
@@ -108,6 +108,7 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirName) {
     fprintf(mem, "local loc = require 'orca.localization'\n");
     fprintf(mem, "local ref = require 'orca.renderer'\n");
     fprintf(mem, "local s = require 'orca.backend'\n");
+    fprintf(mem, "local ui = require 'orca.UIKit'\n");
 
     xmlNodePtr root = xmlDocGetRootElement(doc);
 
@@ -142,14 +143,14 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirName) {
       fprintf(mem, "local ok, screen = pcall(require, '%s')\n", StartupScreen);
       fprintf(mem, "if ok then screen = screen()\n");
       fprintf(mem, "else local err = screen\n");
-      fprintf(mem, "screen = orca.ui.Screen { Width = %d, Height = %d }\n", windowsize[0], windowsize[1]);
-      fprintf(mem, "local term = orca.ui.TerminalView {\n");
+      fprintf(mem, "screen = ui.Screen { Width = %d, Height = %d }\n", windowsize[0], windowsize[1]);
+      fprintf(mem, "local term = ui.TerminalView {\n");
       fprintf(mem, "\tBufferWidth=screen.Width/8,\n");
       fprintf(mem, "\tBufferHeight=screen.Height/16}\n");
       fprintf(mem, "term:println(nil, err)\n");
       fprintf(mem, "screen:addChild(term)\n");
       fprintf(mem, "print(err)\n");
-//      fprintf(mem, "screen:addChild(orca.ui.TextBlock(err))\n");
+//      fprintf(mem, "screen:addChild(ui.TextBlock(err))\n");
       fprintf(mem, "end\n");
   }
 #ifdef ORCA_FEATURE_DEBUG
@@ -195,7 +196,7 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirName) {
       }
     }
     fprintf(mem, "\nlocal ok, res = pcall(s.dispatchMessage, msg)\n");
-    fprintf(mem, "if not ok then print(res) screen:clear() screen:addChild(orca.ui.TextBlock(res))\n");
+    fprintf(mem, "if not ok then print(res) screen:clear() screen:addChild(ui.TextBlock(res))\n");
 //    fprintf(mem, "\nif s.dispatchMessage(msg) then screen:paint(ref.getSize()) end \n");
     fprintf(mem, "\nelseif res and not msg:is 'WindowPaint' then\n");
     fprintf(mem, "\t\tscreen:postMessage 'WindowPaint' end \n");
@@ -309,7 +310,7 @@ int main (int argc, LPSTR *argv)
     }
     
     luaL_dostring(L, "package.path = PLUGDIR..'/?.lua;'..SHAREDIR..'/?.lua;'..package.path\n");
-    luaL_dostring(L, "package.cpath = LIBDIR..'/lib?.so;'..package.cpath\n");
+    luaL_dostring(L, "print(LIBDIR);package.cpath = LIBDIR..'/lib?.so;'..package.cpath\n");
 
     lua_pushstring(L, szProject);
     lua_setglobal(L, "DATADIR");
