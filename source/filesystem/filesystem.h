@@ -8,7 +8,6 @@ typedef struct lua_State lua_State;
 
 struct Object;
 struct _PACK;
-struct _FTG;
 
 
 #include "filesystem_properties.h"
@@ -131,16 +130,6 @@ struct Package {
 };
 ORCA_API void luaX_pushPackage(lua_State *L, struct Package const* Package);
 ORCA_API struct Package* luaX_checkPackage(lua_State *L, int idx);
-/// @brief Loader for FTG archives (Dark Reign game format)
-/** FtgPackage component */
-typedef struct FtgPackage FtgPackage_t, *FtgPackagePtr, *lpFtgPackage_t;
-typedef struct FtgPackage const *FtgPackageCPtr, *lpcFtgPackage_t;
-struct FtgPackage {
-	fixedString_t FileName;
-	struct _FTG* _ftg;
-};
-ORCA_API void luaX_pushFtgPackage(lua_State *L, struct FtgPackage const* FtgPackage);
-ORCA_API struct FtgPackage* luaX_checkFtgPackage(lua_State *L, int idx);
 /** Workspace component */
 typedef struct Workspace Workspace_t, *WorkspacePtr, *lpWorkspace_t;
 typedef struct Workspace const *WorkspaceCPtr, *lpcWorkspace_t;

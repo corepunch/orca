@@ -5,7 +5,8 @@ MODULES := \
 		source/filesystem/filesystem \
     plugins/UIKit/UIKit \
     plugins/SceneKit/SceneKit \
-    plugins/SpriteKit/SpriteKit
+    plugins/SpriteKit/SpriteKit \
+    plugins/DarkReign/DarkReign
 
 UI_MODULES := \
     plugins/UIKit/UIKit \

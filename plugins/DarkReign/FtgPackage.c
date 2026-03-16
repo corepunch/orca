@@ -1,5 +1,5 @@
 /*
- * FtgPackage.c - FTG package loader for Orca
+ * FtgPackage.c - FTG package loader for Orca (DarkReign plugin)
  *
  * FTG is the archive format used by the Dark Reign game.
  * Based on the drExplorer reference: https://github.com/btigi/drExplorer
@@ -11,7 +11,7 @@
  *     int32_t  fileCount;         // Number of files in the archive
  *
  *   Directory (at directoryOffset, each entry is 36 bytes):
- *     char    name[28];           // Null-terminated filename (up to 27 chars)
+ *     char    name[28];           // Null-terminated filename (up to 27 chars + NUL)
  *     int32_t offset;             // Byte offset of the file data
  *     int32_t size;               // Size of the file data in bytes
  *
@@ -28,8 +28,7 @@
  *        - Assign the SpriteAnimation to an SKSpriteNode.Animation property
  */
 
-#include <include/orca.h>
-#include "fs_local.h"
+#include "DarkReign.h"
 
 #define FTG_MAX_FILENAME 28     /* 27 chars + 1 null terminator */
 #define FTG_MAX_FILES    65536  /* sanity cap to prevent DoS via huge fileCount */
