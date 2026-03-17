@@ -294,28 +294,22 @@ $(LIBDIR):
 	mkdir -p $(LIBDIR)
 
 # Auto-generate forward declarations and plugin_modules[] table for orcalib.c.
-# Scans each plugin source file for "ORCA_API int luaopen_orca_<Name>(" lines,
-# strips the "luaopen_" prefix, and replaces underscores with dots to derive the
-# Lua module name (e.g. luaopen_orca_UIKit -> "orca.UIKit").
+# Extracts every luaopen_orca_<Name> symbol from the plugin sources, strips the
+# "luaopen_" prefix, and replaces underscores with dots for the Lua module name
+# (e.g. luaopen_orca_UIKit -> "orca.UIKit").
 $(WEBGL_PLUGINS_H): $(WEBGL_PLUGIN_SRCS) | $(WEBGL_DIR)
-	awk 'BEGIN { \
-	    printf "/* Auto-generated plugin Lua module registrations.  Do not edit. */\n"; \
-	    n=0 \
-	} \
-	/^ORCA_API int luaopen_orca_/ { \
-	    match($$0, /luaopen_orca_[A-Za-z_0-9]+/); \
-	    fn=substr($$0, RSTART, RLENGTH); \
-	    mod=substr(fn, 9); \
-	    gsub(/_/, ".", mod); \
-	    printf "int %s(lua_State*);\n", fn; \
-	    mods[n]=mod; fns[n]=fn; n++ \
-	} \
-	END { \
-	    printf "static luaL_Reg const plugin_modules[] = {\n"; \
-	    for (i=0; i<n; i++) \
-	        printf "  { \"%s\", %s },\n", mods[i], fns[i]; \
-	    printf "  { NULL, NULL }\n};\n" \
-	}' $(WEBGL_PLUGIN_SRCS) > $@
+	( \
+	  printf "/* Auto-generated plugin Lua module registrations.  Do not edit. */\n"; \
+	  grep -ohP 'luaopen_orca_\w+' $(WEBGL_PLUGIN_SRCS) | sort -u | while read fn; do \
+	    printf "int %s(lua_State*);\n" "$$fn"; \
+	  done; \
+	  printf "static luaL_Reg const plugin_modules[] = {\n"; \
+	  grep -ohP 'luaopen_orca_\w+' $(WEBGL_PLUGIN_SRCS) | sort -u | while read fn; do \
+	    mod=$$(echo "$$fn" | sed 's/^luaopen_//; s/_/./g'); \
+	    printf "  { \"%s\", %s },\n" "$$mod" "$$fn"; \
+	  done; \
+	  printf "  { NULL, NULL }\n};\n" \
+	) > $@
 
 # ─── WASM dependency build recipes ────────────────────────────────────────
 
