@@ -77,6 +77,9 @@ build.log
 # Generated API docs (built by make docs and deployed via GitHub Pages)
 docs/api/
 
+# Auto-generated WebGL plugin registration header (produced by make webgl)
+build/webgl/plugins_luaopen.h
+
 # MkDocs generated site (built by mkdocs build in CI)
 site/
 docs/quickstart.md

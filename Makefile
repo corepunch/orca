@@ -121,7 +121,9 @@ WEBGL_CFLAGS  += -I$(WASM_DEPS_DIR)/include -I$(WASM_DEPS_DIR)/include/libxml2
 WEBGL_LDFLAGS += -L$(WASM_DEPS_DIR)/lib -llua5.4 -lxml2 -llz4
 
 # Enable static plugin Lua-module registration (consumed by orcalib.c).
-WEBGL_CFLAGS  += -DPLUGINS_LUAOPEN -I$(WEBGL_DIR)
+# orcalib.c uses __has_include("plugins_luaopen.h") to detect the generated
+# header — no extra macro needed; only the include path must be set.
+WEBGL_CFLAGS  += -I$(WEBGL_DIR)
 
 # Bundle data directory into the VFS when WEBGL_DATA is set.
 ifneq ($(WEBGL_DATA),)
