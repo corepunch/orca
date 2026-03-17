@@ -264,7 +264,7 @@ int main (int argc, LPSTR *argv)
     *(void**)lua_getextraspace(L) = NULL;
     
     luaL_openlibs(L);
-    
+
     path_t exename = { 0 };
     get_exe_filename(exename, sizeof(exename));
 
@@ -281,11 +281,8 @@ int main (int argc, LPSTR *argv)
 
 #if __EMSCRIPTEN__
     int luaopen_orca(lua_State*);
-    lua_getglobal(L, "package");
-    lua_getfield(L, -1, "preload");
-    lua_pushcfunction(L, luaopen_orca);
-    lua_setfield(L, -2, "orca");
-    lua_pop(L, 2);
+    int luaL_preload(lua_State*, lpcString_t, lua_CFunction);
+    luaL_preload(L, "orca", luaopen_orca);
 #endif
     
 #ifdef LIBDIR
