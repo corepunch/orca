@@ -294,21 +294,15 @@ $(LIBDIR):
 	mkdir -p $(LIBDIR)
 
 # Auto-generate forward declarations and plugin_modules[] table for orcalib.c.
-# Extracts every luaopen_orca_<Name> symbol from the plugin sources, strips the
-# "luaopen_orca_" prefix, and replaces underscores with dots for the Lua module
-# name (e.g. luaopen_orca_UIKit -> "UIKit").
+# Matches all luaopen_<ns>_<name> symbols (e.g. luaopen_orca_UIKit -> "orca.UIKit").
 $(WEBGL_PLUGINS_H): $(WEBGL_PLUGIN_SRCS) | $(WEBGL_DIR)
 	{ \
 	  echo "/* Auto-generated plugin Lua module registrations. Do not edit. */"; \
-	  grep -ohP 'luaopen_orca_\w+' $(WEBGL_PLUGIN_SRCS) | sort -u | while read fn; do \
-	    mod=$$(echo "$${fn#luaopen_orca_}" | tr '_' '.'); \
-	    echo "int $$fn(lua_State*);"; \
-	  done; \
+	  grep -ohE 'luaopen_[A-Za-z0-9_]+_[A-Za-z0-9_]+' $(WEBGL_PLUGIN_SRCS) | sort -u | \
+	    sed -E 's/luaopen_([A-Za-z0-9_]+)_([A-Za-z0-9_]+)/int &(lua_State*);/'; \
 	  echo "static luaL_Reg const plugin_modules[] = {"; \
-	  grep -ohP 'luaopen_orca_\w+' $(WEBGL_PLUGIN_SRCS) | sort -u | while read fn; do \
-	    mod=$$(echo "$${fn#luaopen_orca_}" | tr '_' '.'); \
-	    echo "  { \"$$mod\", $$fn },"; \
-	  done; \
+	  grep -ohE 'luaopen_[A-Za-z0-9_]+_[A-Za-z0-9_]+' $(WEBGL_PLUGIN_SRCS) | sort -u | \
+	    sed -E 's/luaopen_([A-Za-z0-9_]+)_([A-Za-z0-9_]+)/  { "\1.\2", & },/'; \
 	  echo "  { NULL, NULL }"; \
 	  echo "};"; \
 	} > $@
