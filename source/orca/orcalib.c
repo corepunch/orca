@@ -55,6 +55,15 @@ static luaL_Reg const orca_modules[] = {
   { NULL, NULL }
 };
 
+// When PLUGINS_LUAOPEN is defined (e.g. WebGL/static builds), a header is
+// generated at build time by scanning plugin sources for luaopen_orca_* symbols.
+// Each symbol luaopen_orca_Foo maps to the Lua module "orca.Foo" (underscores
+// between name components become dots).  The header provides forward declarations
+// and the plugin_modules table consumed in luaopen_orca() below.
+#ifdef PLUGINS_LUAOPEN
+#include "plugins_luaopen.h"
+#endif
+
 static int f_async(lua_State* L) {
   const int nargs = lua_gettop(L);
   lua_State* co = lua_newthread(L);
@@ -175,6 +184,13 @@ ORCA_API int luaopen_orca(lua_State* L)
   for (luaL_Reg const* fn = orca_modules; fn->name; fn++) {
     luaL_preload(L, fn->name, fn->func);
   }
+
+#ifdef PLUGINS_LUAOPEN
+  // Register statically-linked plugin modules (WebGL / single-binary builds).
+  for (luaL_Reg const* fn = plugin_modules; fn->name; fn++) {
+    luaL_preload(L, fn->name, fn->func);
+  }
+#endif
 
   luaL_newlib(L, ((luaL_Reg[]){
     { NULL, NULL }
