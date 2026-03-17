@@ -92,7 +92,7 @@ HANDLER(SKSpriteNode, Render)
     .bbox = BOX3_FromRect(bbox),
     .matrix = node->Matrix,
     .mesh = BOX_PTR(Mesh, MD_RECTANGLE),
-    .palette = anim ? anim->Palette : NULL,
+    .palette = anim ? (struct color32 const*)anim->Palette : NULL,
     .material = {
       .opacity = node->_opacity,
       .color = {1, 1, 1, 1},

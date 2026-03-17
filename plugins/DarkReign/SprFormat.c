@@ -1,5 +1,5 @@
 /*
- * SPR sprite file format (Dark Reign, palette-indexed RLE, 8 bits per pixel)
+ * SPR sprite file format (Dark Reign, _palette-indexed RLE, 8 bits per pixel)
  *
  * All multi-byte integers are little-endian.
  *
@@ -52,7 +52,7 @@
  *	 - If step is even (0, 2, 4, …): transparent run of cnt pixels – skip.
  *	 - If step is odd  (1, 3, 5, …): opaque run of cnt pixels.
  *		 Normal  sprite: copy cnt literal bytes from the stream.
- *		 Shadow  sprite: fill cnt pixels with palette index 47.
+ *		 Shadow  sprite: fill cnt pixels with _palette index 47.
  *	 - Advance currx += cnt; step++.
  *	 - Repeat until currx == szx.
  *
@@ -78,88 +78,11 @@
 #include <source/core/core.h>
 #include <plugins/SpriteKit/SpriteKit.h>
 #include "DarkReign.h"
+#include "Palette.h"
 
 #define SPR_DEFAULT_FRAMERATE 10.0f
 
-/* Simple Dark Reign palette (256 entries, 0x00RRGGBB).
- * Index 0 is always transparent. The remaining entries cover the principal
- * hues used in the Dark Reign campaign art so that sprites render with
- * recognisable colours while a proper per-level palette is not yet wired up. */
-static uint32_t const spr_palette[256] = {
-  /* 0 – transparent (only alpha=0 matters; RGB values are ignored) */ 0x00000000,
-  /* 1-15: greens (terrain / foliage) */
-  0x003A5F2A, 0x00496E35, 0x00587D40, 0x00678C4B, 0x00769B56,
-  0x0085AA61, 0x0094B96C, 0x00A3C877, 0x00B2D782, 0x00C1E68D,
-  0x00D0F598, 0x00C8EE90, 0x00BFE788, 0x00B6E080, 0x00ADD978,
-  /* 16-31: browns / earth */
-  0x006B4226, 0x007A5130, 0x0089603A, 0x00986F44, 0x00A77E4E,
-  0x00B68D58, 0x00C59C62, 0x00D4AB6C, 0x00E3BA76, 0x00F2C980,
-  0x00D4A96A, 0x00BB9060, 0x00A27756, 0x008A5F4D, 0x00724844,
-  0x005A313B,
-  /* 32-47: greys / concrete */
-  0x00181818, 0x00222222, 0x002C2C2C, 0x00363636, 0x00404040,
-  0x004A4A4A, 0x00545454, 0x005E5E5E, 0x00686868, 0x00727272,
-  0x007C7C7C, 0x00868686, 0x00909090, 0x009A9A9A, 0x00A4A4A4,
-  0x00AEAEAE,
-  /* 48-63: blues (water / sky) */
-  0x00102040, 0x00182840, 0x00203050, 0x00283860, 0x00304070,
-  0x00384880, 0x00405090, 0x004858A0, 0x005060B0, 0x005868C0,
-  0x006070D0, 0x006878E0, 0x0070A0E0, 0x0078B0E8, 0x0080C0F0,
-  0x0088D0F8,
-  /* 64-79: reds / rust (TCA military) */
-  0x00500000, 0x00600000, 0x00700010, 0x00800020, 0x00901030,
-  0x00A02040, 0x00B03050, 0x00C04060, 0x00D05070, 0x00E06080,
-  0x00F07090, 0x00E86888, 0x00E06080, 0x00D85878, 0x00D05070,
-  0x00C84868,
-  /* 80-95: yellows / gold (Imperium) */
-  0x00705000, 0x00806000, 0x00907010, 0x00A08020, 0x00B09030,
-  0x00C0A040, 0x00D0B050, 0x00E0C060, 0x00F0D070, 0x00FFE080,
-  0x00FFD060, 0x00FFC040, 0x00FFB020, 0x00FFA000, 0x00E09000,
-  0x00C08000,
-  /* 96-127: mixed mid-tones */
-  0x00204000, 0x00284800, 0x00305000, 0x00385800, 0x00406000,
-  0x00486800, 0x00507000, 0x00587800, 0x00608000, 0x00688800,
-  0x00709000, 0x00789800, 0x0080A000, 0x0088A800, 0x0090B000,
-  0x0098B800, 0x0038200A, 0x00482814, 0x0058301E, 0x00683828,
-  0x00784032, 0x0088483C, 0x00985046, 0x00A85850, 0x00B8605A,
-  0x00C86864, 0x00D8706E, 0x00A06040, 0x00906050, 0x00806060,
-  0x00706070, 0x00606080,
-  /* 128-191: 64 ramp entries (general shading) */
-  0x00080808, 0x00101010, 0x00181818, 0x00202020,
-  0x00282828, 0x00303030, 0x00383838, 0x00404040,
-  0x00484848, 0x00505050, 0x00585858, 0x00606060,
-  0x00686868, 0x00707070, 0x00787878, 0x00808080,
-  0x00888888, 0x00909090, 0x00989898, 0x00A0A0A0,
-  0x00A8A8A8, 0x00B0B0B0, 0x00B8B8B8, 0x00C0C0C0,
-  0x00C8C8C8, 0x00D0D0D0, 0x00D8D8D8, 0x00E0E0E0,
-  0x00E8E8E8, 0x00F0F0F0, 0x00F8F8F8, 0x00FFFFFF,
-  0x00102030, 0x00203040, 0x00304050, 0x00405060,
-  0x00506070, 0x00607080, 0x00708090, 0x008090A0,
-  0x0090A0B0, 0x00A0B0C0, 0x00B0C0D0, 0x00C0D0E0,
-  0x00D0E0F0, 0x00001020, 0x00002030, 0x00003040,
-  0x00300010, 0x00400020, 0x00500030, 0x00600040,
-  0x00700050, 0x00800060, 0x00900070, 0x00A00080,
-  0x00203000, 0x00304000, 0x00405000, 0x00506000,
-  0x00607000, 0x00708000, 0x00809000, 0x0090A000,
-  /* 192-255: fill with a generic palette ramp */
-  0x00C00000, 0x00C80800, 0x00D01000, 0x00D81800,
-  0x00E02000, 0x00E82800, 0x00F03000, 0x00F83800,
-  0x0000C000, 0x0008C800, 0x0010D000, 0x0018D800,
-  0x0020E000, 0x0028E800, 0x0030F000, 0x0038F800,
-  0x000000C0, 0x000008C8, 0x000010D0, 0x000018D8,
-  0x000020E0, 0x000028E8, 0x000030F0, 0x000038F8,
-  0x00C0C000, 0x00C8C800, 0x00D0D000, 0x00D8D800,
-  0x00E0E000, 0x00E8E800, 0x00F0F000, 0x00F8F800,
-  0x00C000C0, 0x00C800C8, 0x00D000D0, 0x00D800D8,
-  0x00E000E0, 0x00E800E8, 0x00F000F0, 0x00F800F8,
-  0x0000C0C0, 0x0000C8C8, 0x0000D0D0, 0x0000D8D8,
-  0x0000E0E0, 0x0000E8E8, 0x0000F0F0, 0x0000F8F8,
-  0x00804000, 0x00884800, 0x00905000, 0x00985800,
-  0x00A06000, 0x00A86800, 0x00B07000, 0x00B87800,
-  0x00408000, 0x00488800, 0x00509000, 0x00589800,
-  0x0060A000, 0x0068A800, 0x0070B000, 0x0078B800,
-};
-
+#include "pal.h"
 
 /* ---- on-disk structs (packed to prevent padding) ---- */
 
@@ -178,7 +101,7 @@ struct _spr_header {
 
 #define SPR_HEADER_SIZE   32	/* sizeof _spr_header – explicit for offset math */
 #define SPR_SECTION_SIZE  16	/* 4 × int32_t per section entry				 */
-#define SPR_SHADOW_INDEX  47	/* palette index used to fill shadow pixels	   */
+#define SPR_SHADOW_INDEX  47	/* _palette index used to fill shadow pixels	   */
 
 /* A parsed section from the section table. */
 struct _spr_section {
@@ -208,6 +131,9 @@ _read_i32(uint8_t const *buf, uint32_t off)
 /*  horizontal-strip texture atlas, and return a SpriteAnimation	   */
 /*  Object.  Returns NULL on any error.								 */
 /* ------------------------------------------------------------------ */
+
+static uint32_t _palette[256];
+static int palette_initialized = 0;
 
 lpObject_t
 _SprFile_Load(lua_State* L, uint8_t const *data, uint32_t size, lpcString_t name)
@@ -506,12 +432,24 @@ _SprFile_Load(lua_State* L, uint8_t const *data, uint32_t size, lpcString_t name
     }
     OBJ_SetName(obj, name);
 
+		if (!palette_initialized) {
+			xmlWith(struct file, fp, FS_LoadFile("DarkReign/BARREN.PAL"), FS_FreeFile) {
+				dr_palette_from_buffer(fp->data, fp->size, &(DrPalInfo){
+					.shadow_index = SPR_SHADOW_INDEX,
+					.standard_palette_multiplier = 6,
+					.terrain_palette_multiplier = 6,
+					.gamma = 1,
+				}, _palette);
+			}
+			palette_initialized = 1;
+		}
+
     struct SpriteAnimation *anim = GetSpriteAnimation(obj);
     anim->Image     = tex;
     anim->Framerate = SPR_DEFAULT_FRAMERATE;
     anim->NumFrames = total_frames;
     anim->Frames    = frames;
-    anim->Palette   = spr_palette;
+    anim->Palette   = _palette;
 
     // fprintf(stderr, "SPR '%s': loaded %d frames into %ux%u atlas\n",
     //         name, total_frames, atlas_w, atlas_h);

@@ -332,6 +332,7 @@ struct ViewEntity
   struct ViewText* text;
   struct Mesh const* mesh;
   struct Shader const* shader;
+  struct color32 const *palette; // optional palette for indexed (8-bit) textures
   struct box3 bbox;
   struct vec4 radius;
   struct vec4 borderWidth;
@@ -339,7 +340,6 @@ struct ViewEntity
   uint32_t submesh;
   uint32_t flags;
   uint32_t frame;
-  uint32_t const *palette; // optional palette for indexed (8-bit) textures
   struct mat4 ninepatch; // also has other usecases
 };
 

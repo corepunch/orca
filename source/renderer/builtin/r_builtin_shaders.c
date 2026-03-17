@@ -155,7 +155,7 @@ struct shader_desc shader_cinematic = {
 //  "  v_texcoord0 = (u_textureTransform * vec3(a_texcoord0.xy, 1.0)).xy;\n"
   "  vec2 rectSize = u_bboxMax.xy - u_bboxMin.xy;\n"
   "  vec2 pos = a_position.xy * rectSize;\n"
-  "  vec3 tex = vec3(pos.x / rectSize.x, 1.0 - pos.y / rectSize.y, 1.0);\n"
+  "  vec3 tex = vec3(pos.x / rectSize.x, pos.y / rectSize.y, 1.0);\n"
   "  v_texcoord0 = (u_textureTransform * tex).xy;\n"
   "  gl_Position = u_modelViewProjectionTransform * vec4(pos + u_bboxMin.xy, 0, 1);\n"
   "}\n",

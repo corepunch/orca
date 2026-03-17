@@ -3,7 +3,7 @@
 
 #include "r_local.h"
 
-static void R_SetPalette(uint32_t const palette[256]);
+static HRESULT R_SetPalette(struct color32 const palette[256]);
 struct renderer tr={0};
 
 #if 1
@@ -517,27 +517,29 @@ static void Texture_CreateCinematicPalette(struct Texture **img) {
   *img = ZeroAlloc(sizeof(struct Texture));
   R_Call(glGenTextures, 1, &(*img)->texnum);
   R_Call(glBindTexture, GL_TEXTURE_2D, (*img)->texnum);
-  R_Call(glTexImage2D,GL_TEXTURE_2D,0,GL_SRGB8_ALPHA8,256,1,0,GL_RGBA,GL_UNSIGNED_BYTE,palette);
+  R_Call(glTexImage2D,GL_TEXTURE_2D,0,GL_RGBA/*GL_SRGB8_ALPHA8*/,256,1,0,GL_RGBA,GL_UNSIGNED_BYTE,palette);
 }
 
-static void
-R_SetPalette(uint32_t const palette[256])
+static HRESULT
+R_SetPalette(struct color32 const palette[256])
 {
   struct Texture *pal = tr.textures[TX_CINEMATICPALETTE];
-  if (!pal) return;
-  /* Convert 0x00RRGGBB entries to RGBA, forcing alpha 0 for index 0 and
-   * 255 for all other indices.  Index 0 is always transparent regardless
-   * of its RGB values. */
-  struct color32 rgba[256];
-  for (int i = 0; i < 256; i++) {
-    rgba[i].r = (palette[i] >> 16) & 0xFF;
-    rgba[i].g = (palette[i] >>  8) & 0xFF;
-    rgba[i].b = (palette[i]      ) & 0xFF;
-    rgba[i].a = (i == 0) ? 0 : 255;
+  if (pal) {
+    R_Call(glBindTexture, GL_TEXTURE_2D, pal->texnum);
+    struct color32 rgba[256];
+    for (int i = 0; i < 256; i++) {
+      rgba[i].r = (((uint32_t*)palette)[i] >> 16) & 0xFF;
+      rgba[i].g = (((uint32_t*)palette)[i] >>  8) & 0xFF;
+      rgba[i].b = (((uint32_t*)palette)[i]      ) & 0xFF;
+      rgba[i].a = (i == 0) ? 0 : 255;
+    }
+    R_Call(glBindTexture, GL_TEXTURE_2D, pal->texnum);
+    R_Call(glTexSubImage2D, GL_TEXTURE_2D, 0, 0, 0, 256, 1, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
+    R_SetPointFiltering();
+    return S_OK;
+  } else {
+    return E_ITEMNOTFOUND;
   }
-  R_Call(glBindTexture, GL_TEXTURE_2D, pal->texnum);
-  R_Call(glTexSubImage2D, GL_TEXTURE_2D, 0, 0, 0, 256, 1, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
-  R_SetPointFiltering();
 }
 
 static HRESULT Texture_CreateBlack(struct Texture** img) {
