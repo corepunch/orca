@@ -285,10 +285,11 @@ HANDLER(FtgPackage, LoadProject) {
   OBJ_AddComponent(project, ID_FtgPackage);
   GetFtgPackage(project)->_ftg = ftg;
 
-  for (int i = 0; i < ftg->numfiles; i++) {
-    char const *fname = ftg->files[i].name;
-    fprintf(stderr, "FtgPackage: found file '%s' in archive '%s' size %u\n", fname, ftg->filename, ftg->files[i].size);
-  }
+  // Debug: list all files in the archive
+  // for (int i = 0; i < ftg->numfiles; i++) {
+  //   char const *fname = ftg->files[i].name;
+  //   fprintf(stderr, "FtgPackage: found file '%s' in archive '%s' size %u\n", fname, ftg->filename, ftg->files[i].size);
+  // }
 
   /* Load all .spr sprite files from the archive and attach them to the project
    * as SpriteAnimation children so they are immediately accessible by name. */

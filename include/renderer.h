@@ -339,8 +339,8 @@ struct ViewEntity
   uint32_t submesh;
   uint32_t flags;
   uint32_t frame;
-  struct mat4 ninepatch; // also has other usecases
   uint32_t const *palette; // optional palette for indexed (8-bit) textures
+  struct mat4 ninepatch; // also has other usecases
 };
 
 enum light_type {

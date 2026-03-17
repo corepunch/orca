@@ -520,12 +520,6 @@ static void Texture_CreateCinematicPalette(struct Texture **img) {
   R_Call(glTexImage2D,GL_TEXTURE_2D,0,GL_SRGB8_ALPHA8,256,1,0,GL_RGBA,GL_UNSIGNED_BYTE,palette);
 }
 
-static struct Texture*
-R_GetPalette(void)
-{
-  return tr.textures[TX_CINEMATICPALETTE];
-}
-
 static void
 R_SetPalette(uint32_t const palette[256])
 {
@@ -542,8 +536,7 @@ R_SetPalette(uint32_t const palette[256])
     rgba[i].a = (i == 0) ? 0 : 255;
   }
   R_Call(glBindTexture, GL_TEXTURE_2D, pal->texnum);
-  R_Call(glTexSubImage2D, GL_TEXTURE_2D, 0, 0, 0, 256, 1, GL_RGBA,
-         GL_UNSIGNED_BYTE, rgba);
+  R_Call(glTexSubImage2D, GL_TEXTURE_2D, 0, 0, 0, 256, 1, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
   R_SetPointFiltering();
 }
 
