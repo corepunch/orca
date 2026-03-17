@@ -39,6 +39,7 @@ plugins:
   - search
 
 markdown_extensions:
+  - attr_list
   - tables
   - toc:
       permalink: true

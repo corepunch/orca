@@ -241,6 +241,7 @@ int main (int argc, LPSTR *argv)
     next_arg:;
   }
   
+#ifndef PROJECTDIR
   if (!szProject && !args.test) {
     Con_Error("Usage: orca [options] <project_dir>\n");
     Con_Error("Options:");
@@ -250,6 +251,11 @@ int main (int argc, LPSTR *argv)
     Con_Error("\t-plugins=<plugins_dir>   Set the plugins directory");
     return 1;
   }
+#else
+  if (!szProject && !args.test) {
+    szProject = PROJECTDIR;
+  }
+#endif
   
   do {
     lua_State* L = luaL_newstate();
