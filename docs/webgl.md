@@ -1,0 +1,188 @@
+# WebGL / Emscripten Build
+
+Orca can be compiled to WebAssembly and run in a browser using the
+[Emscripten](https://emscripten.org/) toolchain.  The `libs/platform`
+submodule already contains a complete WebGL backend (`libs/platform/webgl/`)
+so only the engine's Makefile and a few small source-level guards needed to be
+added.
+
+## Quick Start
+
+```bash
+# 1. Install the Emscripten SDK (one-time setup)
+git clone https://github.com/emscripten-core/emsdk.git
+cd emsdk && ./emsdk install latest && ./emsdk activate latest
+source ./emsdk_env.sh   # adds emcc/emmake to PATH
+
+# 2. Build the platform library for WebGL
+emmake make -C libs/platform OUTDIR=../../build/lib
+
+# 3. Build Orca as orca.html + orca.js + orca.wasm
+make webgl
+
+# 4. Serve the output directory from a local HTTP server
+#    (browsers block direct file:// access to WebAssembly)
+python3 -m http.server --directory build/webgl
+# then open http://localhost:8000/orca.html
+```
+
+To bundle a project's data directory into the build:
+
+```bash
+make webgl WEBGL_DATA=samples/Example
+```
+
+The `--preload-file` flag packs the directory into the WASM virtual file
+system so the engine can read its files at runtime.
+
+---
+
+## Prerequisites
+
+### Emscripten ports (automatic)
+
+These libraries are fetched and compiled automatically by Emscripten via
+`-sUSE_*` linker flags — no manual work required:
+
+| Library   | Flag              |
+|-----------|-------------------|
+| zlib      | `-sUSE_ZLIB=1`    |
+| libpng    | `-sUSE_LIBPNG=1`  |
+| libjpeg   | `-sUSE_LIBJPEG=1` |
+| freetype  | `-sUSE_FREETYPE=1`|
+
+### Libraries that must be compiled manually for WASM
+
+The following libraries are not bundled as Emscripten ports and must be
+compiled from source with `emcc` before a fully-linked binary can be produced:
+
+| Library  | Source                                             | Notes |
+|----------|----------------------------------------------------|-------|
+| lua 5.4  | https://www.lua.org/download.html                  | Build with `emmake make` inside the Lua source tree |
+| libxml2  | https://gitlab.gnome.org/GNOME/libxml2             | Use CMake with `-DCMAKE_TOOLCHAIN_FILE=$EMSDK/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake` |
+| liblz4   | https://github.com/lz4/lz4                         | `emmake make` in the root of the lz4 source tree |
+
+Once these are built, add their include and library paths to `WEBGL_CFLAGS`
+and `WEBGL_LDFLAGS` in the `Makefile`.
+
+---
+
+## How the WebGL Backend Works
+
+The `libs/platform/webgl/` directory contains three source files:
+
+| File                      | Purpose |
+|---------------------------|---------|
+| `webgl_system.c`          | `WI_Init` / `WI_Shutdown`, timing, platform strings |
+| `webgl_window.c`          | Canvas sizing, WebGL context, `WI_BeginPaint`/`WI_EndPaint` |
+| `webgl_event.c`           | Emscripten input callbacks → internal event queue; `WI_PollEvent` |
+
+The platform Makefile detects `EMSCRIPTEN` automatically when invoked with
+`emmake` and selects only the `webgl/` sources.
+
+### Main Loop and ASYNCIFY
+
+The engine's main loop is a Lua `while true do … end` that polls for events
+via `WI_PollEvent`.  Browsers cannot run a blocking loop on the main thread;
+the JavaScript event loop must be allowed to yield periodically.
+
+**Solution:** Compile with `-sASYNCIFY=1`.  In
+`source/backend/queue.c::f_peek_iterator`, an `emscripten_sleep(0)` call is
+inserted whenever `WI_PollEvent` returns zero (queue empty).  With ASYNCIFY
+this suspends the C stack, yields control back to the browser (so input
+callbacks fire and `requestAnimationFrame` can schedule a repaint), then
+resumes the Lua loop on the next tick.
+
+### GLSL Shader Version
+
+The renderer dynamically prepends a version preamble to every shader.  On
+desktop it uses `#version 330 core`; on WebGL 2 it must use
+`#version 300 es`.  The guard in `source/renderer/r_shader.c` was extended to
+cover `__EMSCRIPTEN__` in addition to the existing `__QNX__` case.
+
+---
+
+## Modules Excluded from the WebGL Build
+
+Some engine modules cannot work inside a browser and are excluded from the
+`WEBGL_MODULES` list in the Makefile:
+
+| Module    | Reason |
+|-----------|--------|
+| `network` | Uses BSD sockets / libcurl; use `fetch()` or WebSockets instead |
+| `vsomeip` | C++ SOME/IP service-discovery library, host-only |
+| `server`  | Server-mode listener; host-only |
+| `editor`  | Native desktop file-dialog and font-rendering features |
+
+---
+
+## Findings: What Should Move to `libs/platform`
+
+While wiring up the WebGL build the following platform-specific concerns in
+the main engine were identified.  They are candidates to be abstracted into
+`libs/platform` so that the engine core stays portable:
+
+### 1. Executable / Resource Path Discovery
+
+`source/orca.c::get_exe_filename()` uses `readlink("/proc/<pid>/exe")`,
+`_NSGetExecutablePath`, or `GetModuleFileName` to locate the binary, then
+derives `LIBDIR`, `SHAREDIR`, and `PLUGDIR` from it.
+
+In WebGL there is no executable on a filesystem.  The engine currently falls
+back to the `WI_LibDirectory()` / `WI_ShareDirectory()` helpers already
+provided by `platform.h`, but the path-stripping logic (`strrchr(exename, '/')
+ strip two segments`) still runs.
+
+**Recommendation:** Add a `WI_GetExecutablePath(char *buf, size_t sz)` to
+`platform.h` and implement it per-platform (including a no-op for WebGL that
+fills `buf` with `"."`) so `orca.c` has a single call for all platforms.
+
+### 2. Lua C-Module Loading (`.so` Path)
+
+`orca.c` appends `LIBDIR/lib?.so` to `package.cpath` so Lua's `require` can
+find shared libraries.  This works on Linux/macOS but is a no-op in WebGL
+because all C modules are statically linked into the binary.
+
+For WebGL the `.so` path line is skipped (`#ifndef __EMSCRIPTEN__`), but the
+engine still calls `require 'orca'`, `require 'orca.core'`, etc. which will
+fail unless the C functions are pre-registered before the Lua state starts.
+
+**Recommendation:** Provide a `WI_RegisterLuaModules(lua_State*)` hook in the
+platform layer (or an Emscripten-specific `main` wrapper) that calls
+`luaL_requiref` for every statically-linked module.  Native platforms would
+leave this as a no-op.
+
+### 3. Dynamic Plugin Loading
+
+Plugins (`build/lib/liborca/*.so`) are discovered and loaded at runtime via
+`dlopen`.  Emscripten supports `SIDE_MODULE` / `MAIN_MODULE` dynamic linking
+but it requires all side modules to be listed at link time; fully runtime
+dlopen is not supported.
+
+**Recommendation:** For WebGL builds, link plugins statically and register
+them during startup.  A thin platform abstraction (`WI_LoadPlugin(path)`) that
+calls `dlopen` on native and performs a static lookup table on WebGL would
+isolate the difference cleanly.
+
+### 4. Thread / Blocking I/O
+
+`source/network/*.c` uses blocking POSIX sockets and `source/sysutil/w_system.c`
+uses `opendir`/`readdir` for directory listing.  Directory listing works via
+Emscripten's VFS; network operations require replacing curl/sockets with
+Emscripten's `emscripten_fetch` API.
+
+**Recommendation:** Move the network abstraction into `libs/platform`
+(`WI_FetchURL`, `WI_OpenSocket`) so the engine calls a single API and each
+platform provides the appropriate implementation (POSIX vs. Fetch API).
+
+### 5. `WI_Sleep` / Frame Pacing
+
+`WI_Sleep(ms)` is currently a `nanosleep` on POSIX and a no-op on WebGL.
+The comment in `webgl_system.c` suggests using `emscripten_sleep(msec)` (with
+ASYNCIFY) for a proper sleep.  This is already partially handled by the
+`emscripten_sleep(0)` yield in `queue.c`, but a non-zero duration sleep may
+be useful for CPU throttling.
+
+**Recommendation:** Implement `WI_Sleep` in `webgl_system.c` as
+`emscripten_sleep(msec)` once ASYNCIFY is confirmed stable.  The ASYNCIFY
+build flag is already set in the `webgl` Makefile target.

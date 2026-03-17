@@ -14,6 +14,8 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#elif __EMSCRIPTEN__
+#include <emscripten.h>
 #elif __linux__
 #include <unistd.h>
 #elif __APPLE__
@@ -274,6 +276,9 @@ int main (int argc, LPSTR *argv)
 #ifdef LIBDIR
     lua_pushstring(L, LIBDIR);
     lua_setglobal(L, "LIBDIR");
+#elif __EMSCRIPTEN__
+    lua_pushstring(L, WI_LibDirectory());
+    lua_setglobal(L, "LIBDIR");
 #elif __linux__ || __APPLE__
 #ifdef XCODE
     lua_pushfstring(L, "%s/Debug", exename);
@@ -289,6 +294,9 @@ int main (int argc, LPSTR *argv)
 
 #ifdef SHAREDIR
     lua_pushstring(L, SHAREDIR);
+    lua_setglobal(L, "SHAREDIR");
+#elif __EMSCRIPTEN__
+    lua_pushstring(L, WI_ShareDirectory());
     lua_setglobal(L, "SHAREDIR");
 #elif __linux__ || __APPLE__
     lua_pushfstring(L, "%s/share", exename);
@@ -316,7 +324,9 @@ int main (int argc, LPSTR *argv)
     }
     
     luaL_dostring(L, "package.path = PLUGDIR..'/?.lua;'..SHAREDIR..'/?.lua;'..package.path\n");
+#ifndef __EMSCRIPTEN__
     luaL_dostring(L, "package.cpath = LIBDIR..'/lib?.so;'..package.cpath\n");
+#endif
 
     lua_pushstring(L, szProject);
     lua_setglobal(L, "DATADIR");

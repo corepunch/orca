@@ -151,7 +151,7 @@ static GLuint _LoadGLShader(GLenum type, struct shader_desc* def)
     return 0;
   }
   //    lpcString_t  v150 = "#version 150";
-#ifdef __QNX__
+#if defined(__QNX__) || defined(__EMSCRIPTEN__)
   lpcString_t v300 = "#version 300 es\nprecision lowp float;\n";
 #else
   lpcString_t v300 = "#version 330 core\nprecision lowp float;\n";

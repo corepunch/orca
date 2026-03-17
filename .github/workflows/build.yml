@@ -93,6 +93,41 @@ jobs:
             build/lib/liborca/
             build/share/
 
+  build-webgl:
+    runs-on: ubuntu-latest
+    # The WebGL build requires lua5.4, libxml2, and liblz4 to be compiled for
+    # WASM.  Until those are available this job is informational; set
+    # continue-on-error so failures here don't block the release pipeline.
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: latest
+
+      - name: Build platform library for WebGL
+        run: |
+          mkdir -p build/lib
+          emmake make -C libs/platform OUTDIR=../../build/lib
+
+      - name: Build WASM dependencies (lua5.4, libxml2, liblz4)
+        run: emmake make wasm-deps
+
+      - name: Build Orca for WebGL
+        run: emmake make webgl WEBGL_EMCC=emcc
+
+      - name: Upload WebGL artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: orca-webgl
+          path: build/webgl/
+
   release:
     needs: [build-linux, build-macos]
     runs-on: ubuntu-latest
