@@ -206,6 +206,21 @@
 		789A97D52F65490800FD32A9 /* geometry_properties.h in Headers */ = {isa = PBXBuildFile; fileRef = 789A97D22F65490800FD32A9 /* geometry_properties.h */; };
 		789A97D62F65490800FD32A9 /* geometry_export.c in Sources */ = {isa = PBXBuildFile; fileRef = 789A97D02F65490800FD32A9 /* geometry_export.c */; };
 		789A97D72F65490800FD32A9 /* geometry_ops.c in Sources */ = {isa = PBXBuildFile; fileRef = 789A97D12F65490800FD32A9 /* geometry_ops.c */; };
+		789AE3BE2F687AF90067DC75 /* liborca.platform.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; };
+		789AE3BF2F687AF90067DC75 /* liborca.renderer.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7052E15369F00FFCFD9 /* liborca.renderer.so */; };
+		789AE3C02F687AF90067DC75 /* liborca.core.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7662E15575600FFCFD9 /* liborca.core.so */; };
+		789AE3C12F687AF90067DC75 /* liborca.geometry.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA6CE2E15024F00FFCFD9 /* liborca.geometry.so */; };
+		789AE3C32F687AF90067DC75 /* liborca/UIKit.so in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 781CA74D2E1556FF00FFCFD9 /* liborca/UIKit.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		789AE3D02F687B250067DC75 /* DarkReign_properties.h in Headers */ = {isa = PBXBuildFile; fileRef = 789AE3CC2F687B250067DC75 /* DarkReign_properties.h */; };
+		789AE3D12F687B250067DC75 /* DarkReign.h in Headers */ = {isa = PBXBuildFile; fileRef = 789AE3C82F687B250067DC75 /* DarkReign.h */; };
+		789AE3D22F687B250067DC75 /* DarkReign_export.c in Sources */ = {isa = PBXBuildFile; fileRef = 789AE3CA2F687B250067DC75 /* DarkReign_export.c */; };
+		789AE3D32F687B250067DC75 /* DRFtgPackage.c in Sources */ = {isa = PBXBuildFile; fileRef = 789AE3CD2F687B250067DC75 /* DRFtgPackage.c */; };
+		789AE3D42F687B250067DC75 /* DRSprFormat.c in Sources */ = {isa = PBXBuildFile; fileRef = 789AE3CE2F687B250067DC75 /* DRSprFormat.c */; };
+		789AE3D52F687B250067DC75 /* DarkReign.c in Sources */ = {isa = PBXBuildFile; fileRef = 789AE3CB2F687B250067DC75 /* DarkReign.c */; };
+		789AE3E02F687BDE0067DC75 /* liborca.filesystem.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA6E12E15241200FFCFD9 /* liborca.filesystem.so */; };
+		789AE3E12F687BDE0067DC75 /* liborca.filesystem.so in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 781CA6E12E15241200FFCFD9 /* liborca.filesystem.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		789AE44D2F694ED30067DC75 /* DRPalette.c in Sources */ = {isa = PBXBuildFile; fileRef = 789AE44C2F694ECE0067DC75 /* DRPalette.c */; };
+		789AE44F2F694F1C0067DC75 /* DRPalette.h in Headers */ = {isa = PBXBuildFile; fileRef = 789AE44E2F694F180067DC75 /* DRPalette.h */; };
 		78A5AFA42F66BA0200E6A765 /* Package.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A5AFA32F66B9FA00E6A765 /* Package.c */; };
 		78A5AFA52F66C81E00E6A765 /* liborca.platform.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; };
 		78A5AFAA2F67395E00E6A765 /* Directory.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A5AFA92F67395B00E6A765 /* Directory.c */; };
@@ -281,6 +296,55 @@
 			remoteGlobalIDString = 7810D25D2D58A81100DB632F;
 			remoteInfo = orca;
 		};
+		789AE3B12F687AF90067DC75 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 78B136992AF3CA3A00AAAE53 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 781CA74C2E1556FF00FFCFD9;
+			remoteInfo = orca.UIKit;
+		};
+		789AE3D62F687B560067DC75 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 78B136992AF3CA3A00AAAE53 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 789AE3AF2F687AF90067DC75;
+			remoteInfo = orca/DarkReign;
+		};
+		789AE3D82F687B560067DC75 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 78B136992AF3CA3A00AAAE53 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 781CA7342E154DE300FFCFD9;
+			remoteInfo = orca/SceneKit;
+		};
+		789AE3DA2F687B560067DC75 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 78B136992AF3CA3A00AAAE53 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7868651B2F50A96100DC87FC;
+			remoteInfo = orca/SpriteKit;
+		};
+		789AE3DC2F687B560067DC75 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 78B136992AF3CA3A00AAAE53 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 781CA74C2E1556FF00FFCFD9;
+			remoteInfo = orca/UIKit;
+		};
+		789AE3DE2F687B560067DC75 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 78B136992AF3CA3A00AAAE53 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 781CA7F22E15B37800FFCFD9;
+			remoteInfo = orca/vsomeip;
+		};
+		789AE3E22F687BDE0067DC75 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 78B136992AF3CA3A00AAAE53 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 781CA6E02E15241200FFCFD9;
+			remoteInfo = orca.filesystem;
+		};
 		78DE4E892D994A3E00C0488C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 78B136992AF3CA3A00AAAE53 /* Project object */;
@@ -340,6 +404,18 @@
 			dstSubfolderSpec = 10;
 			files = (
 				78932BF72F38D6D5007C59CC /* liborca.platform.so in Embed Libraries */,
+			);
+			name = "Embed Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		789AE3C22F687AF90067DC75 /* Embed Libraries */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				789AE3E12F687BDE0067DC75 /* liborca.filesystem.so in Embed Libraries */,
+				789AE3C32F687AF90067DC75 /* liborca/UIKit.so in Embed Libraries */,
 			);
 			name = "Embed Libraries";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -476,6 +552,16 @@
 		789A97D02F65490800FD32A9 /* geometry_export.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = geometry_export.c; sourceTree = "<group>"; };
 		789A97D12F65490800FD32A9 /* geometry_ops.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = geometry_ops.c; sourceTree = "<group>"; };
 		789A97D22F65490800FD32A9 /* geometry_properties.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = geometry_properties.h; sourceTree = "<group>"; };
+		789AE3C72F687AF90067DC75 /* liborca/DarkReign.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca/DarkReign.so; sourceTree = BUILT_PRODUCTS_DIR; };
+		789AE3C82F687B250067DC75 /* DarkReign.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DarkReign.h; sourceTree = "<group>"; };
+		789AE3C92F687B250067DC75 /* DarkReign.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = DarkReign.xml; sourceTree = "<group>"; };
+		789AE3CA2F687B250067DC75 /* DarkReign_export.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = DarkReign_export.c; sourceTree = "<group>"; };
+		789AE3CB2F687B250067DC75 /* DarkReign.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = DarkReign.c; sourceTree = "<group>"; };
+		789AE3CC2F687B250067DC75 /* DarkReign_properties.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DarkReign_properties.h; sourceTree = "<group>"; };
+		789AE3CD2F687B250067DC75 /* DRFtgPackage.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = DRFtgPackage.c; sourceTree = "<group>"; };
+		789AE3CE2F687B250067DC75 /* DRSprFormat.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = DRSprFormat.c; sourceTree = "<group>"; };
+		789AE44C2F694ECE0067DC75 /* DRPalette.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = DRPalette.c; sourceTree = "<group>"; };
+		789AE44E2F694F180067DC75 /* DRPalette.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DRPalette.h; sourceTree = "<group>"; };
 		789D74F52BCA6ABB00E2ADB9 /* api_renderer.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = api_renderer.c; sourceTree = "<group>"; };
 		789ED2E92C8EE475003A3CDF /* localization.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = localization.c; sourceTree = "<group>"; };
 		78A5AD052B7CFBCB005BF50C /* r_shape.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = r_shape.c; sourceTree = "<group>"; };
@@ -758,6 +844,18 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		789AE3BD2F687AF90067DC75 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				789AE3BE2F687AF90067DC75 /* liborca.platform.so in Frameworks */,
+				789AE3E02F687BDE0067DC75 /* liborca.filesystem.so in Frameworks */,
+				789AE3BF2F687AF90067DC75 /* liborca.renderer.so in Frameworks */,
+				789AE3C02F687AF90067DC75 /* liborca.core.so in Frameworks */,
+				789AE3C12F687AF90067DC75 /* liborca.geometry.so in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		78B139A12AF3DE9800AAAE53 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -975,9 +1073,26 @@
 			path = geometry;
 			sourceTree = "<group>";
 		};
+		789AE3CF2F687B250067DC75 /* DarkReign */ = {
+			isa = PBXGroup;
+			children = (
+				789AE44E2F694F180067DC75 /* DRPalette.h */,
+				789AE44C2F694ECE0067DC75 /* DRPalette.c */,
+				789AE3C82F687B250067DC75 /* DarkReign.h */,
+				789AE3C92F687B250067DC75 /* DarkReign.xml */,
+				789AE3CA2F687B250067DC75 /* DarkReign_export.c */,
+				789AE3CB2F687B250067DC75 /* DarkReign.c */,
+				789AE3CC2F687B250067DC75 /* DarkReign_properties.h */,
+				789AE3CD2F687B250067DC75 /* DRFtgPackage.c */,
+				789AE3CE2F687B250067DC75 /* DRSprFormat.c */,
+			);
+			path = DarkReign;
+			sourceTree = "<group>";
+		};
 		78A5B0672F6828CA00E6A765 /* plugins */ = {
 			isa = PBXGroup;
 			children = (
+				789AE3CF2F687B250067DC75 /* DarkReign */,
 				78346DE52C96EFC900E0CFD1 /* SceneKit */,
 				7868655D2F50A9BD00DC87FC /* SpriteKit */,
 				78C7374F2B8F60C600FD598E /* UIKit */,
@@ -1024,6 +1139,7 @@
 				78E4A9C62E941ECD00E3A503 /* liborca.system.so */,
 				783C97032F263E7600612323 /* liborca.platform.so */,
 				7868653E2F50A96100DC87FC /* liborca/SpriteKit.so */,
+				789AE3C72F687AF90067DC75 /* liborca/DarkReign.so */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1356,6 +1472,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		789AE3B22F687AF90067DC75 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				789AE44F2F694F1C0067DC75 /* DRPalette.h in Headers */,
+				789AE3D02F687B250067DC75 /* DarkReign_properties.h in Headers */,
+				789AE3D12F687B250067DC75 /* DarkReign.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		78E4A9BE2E941ECD00E3A503 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -1380,6 +1506,11 @@
 			buildRules = (
 			);
 			dependencies = (
+				789AE3D72F687B560067DC75 /* PBXTargetDependency */,
+				789AE3D92F687B560067DC75 /* PBXTargetDependency */,
+				789AE3DB2F687B560067DC75 /* PBXTargetDependency */,
+				789AE3DD2F687B560067DC75 /* PBXTargetDependency */,
+				789AE3DF2F687B560067DC75 /* PBXTargetDependency */,
 				78932BF92F38D6D5007C59CC /* PBXTargetDependency */,
 			);
 			name = orca;
@@ -1676,6 +1807,28 @@
 			productReference = 7868653E2F50A96100DC87FC /* liborca/SpriteKit.so */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
+		789AE3AF2F687AF90067DC75 /* orca/DarkReign */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 789AE3C42F687AF90067DC75 /* Build configuration list for PBXNativeTarget "orca/DarkReign" */;
+			buildPhases = (
+				789AE3B22F687AF90067DC75 /* Headers */,
+				789AE3B52F687AF90067DC75 /* Sources */,
+				789AE3BD2F687AF90067DC75 /* Frameworks */,
+				789AE3C22F687AF90067DC75 /* Embed Libraries */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				789AE3B02F687AF90067DC75 /* PBXTargetDependency */,
+				789AE3E32F687BDE0067DC75 /* PBXTargetDependency */,
+			);
+			name = orca/DarkReign;
+			packageProductDependencies = (
+			);
+			productName = orca.ui;
+			productReference = 789AE3C72F687AF90067DC75 /* liborca/DarkReign.so */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
 		78B139A32AF3DE9800AAAE53 /* launcher */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 78B139A82AF3DE9800AAAE53 /* Build configuration list for PBXNativeTarget "launcher" */;
@@ -1815,6 +1968,7 @@
 				781CA74C2E1556FF00FFCFD9 /* orca/UIKit */,
 				781CA7342E154DE300FFCFD9 /* orca/SceneKit */,
 				7868651B2F50A96100DC87FC /* orca/SpriteKit */,
+				789AE3AF2F687AF90067DC75 /* orca/DarkReign */,
 			);
 		};
 /* End PBXProject section */
@@ -2069,6 +2223,18 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		789AE3B52F687AF90067DC75 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				789AE3D22F687B250067DC75 /* DarkReign_export.c in Sources */,
+				789AE44D2F694ED30067DC75 /* DRPalette.c in Sources */,
+				789AE3D32F687B250067DC75 /* DRFtgPackage.c in Sources */,
+				789AE3D42F687B250067DC75 /* DRSprFormat.c in Sources */,
+				789AE3D52F687B250067DC75 /* DarkReign.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		78B139A02AF3DE9800AAAE53 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -2120,6 +2286,41 @@
 			isa = PBXTargetDependency;
 			target = 7810D25D2D58A81100DB632F /* orca */;
 			targetProxy = 78994F652E8525FD00A0227F /* PBXContainerItemProxy */;
+		};
+		789AE3B02F687AF90067DC75 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 781CA74C2E1556FF00FFCFD9 /* orca/UIKit */;
+			targetProxy = 789AE3B12F687AF90067DC75 /* PBXContainerItemProxy */;
+		};
+		789AE3D72F687B560067DC75 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 789AE3AF2F687AF90067DC75 /* orca/DarkReign */;
+			targetProxy = 789AE3D62F687B560067DC75 /* PBXContainerItemProxy */;
+		};
+		789AE3D92F687B560067DC75 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 781CA7342E154DE300FFCFD9 /* orca/SceneKit */;
+			targetProxy = 789AE3D82F687B560067DC75 /* PBXContainerItemProxy */;
+		};
+		789AE3DB2F687B560067DC75 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7868651B2F50A96100DC87FC /* orca/SpriteKit */;
+			targetProxy = 789AE3DA2F687B560067DC75 /* PBXContainerItemProxy */;
+		};
+		789AE3DD2F687B560067DC75 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 781CA74C2E1556FF00FFCFD9 /* orca/UIKit */;
+			targetProxy = 789AE3DC2F687B560067DC75 /* PBXContainerItemProxy */;
+		};
+		789AE3DF2F687B560067DC75 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 781CA7F22E15B37800FFCFD9 /* orca/vsomeip */;
+			targetProxy = 789AE3DE2F687B560067DC75 /* PBXContainerItemProxy */;
+		};
+		789AE3E32F687BDE0067DC75 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 781CA6E02E15241200FFCFD9 /* orca.filesystem */;
+			targetProxy = 789AE3E22F687BDE0067DC75 /* PBXContainerItemProxy */;
 		};
 		78DE4E882D994A3E00C0488C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -2688,6 +2889,36 @@
 			};
 			name = Release;
 		};
+		789AE3C52F687AF90067DC75 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = BM2R8F5YHC;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		789AE3C62F687AF90067DC75 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = BM2R8F5YHC;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
 		78B1369E2AF3CA3B00AAAE53 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -3114,6 +3345,15 @@
 			buildConfigurations = (
 				7868653C2F50A96100DC87FC /* Debug */,
 				7868653D2F50A96100DC87FC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		789AE3C42F687AF90067DC75 /* Build configuration list for PBXNativeTarget "orca/DarkReign" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				789AE3C52F687AF90067DC75 /* Debug */,
+				789AE3C62F687AF90067DC75 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

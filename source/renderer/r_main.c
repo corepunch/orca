@@ -3,6 +3,7 @@
 
 #include "r_local.h"
 
+static HRESULT R_SetPalette(struct color32 const palette[256]);
 struct renderer tr={0};
 
 #if 1
@@ -276,7 +277,10 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
   
   // Handle shader pointer boxing: shader can be either a real pointer or a boxed tag value
   lpcShader_t shader = NULL;
-  if (!ent->shader) {
+  if (ent->palette && !ent->shader) {
+    // Palette-indexed entity: automatically use the cinematic (palette lookup) shader
+    shader = &tr.shaders[SHADER_CINEMATIC];
+  } else if (!ent->shader) {
     // Default shader when not specified
     shader = &tr.shaders[fallback];
   } else if (BOX_IS_PTR((uintptr_t)ent->shader)) {
@@ -287,7 +291,11 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
     enum shader_type shader_index = (enum shader_type)((uintptr_t)ent->shader & MESH_TAG_MASK);
     shader = &tr.shaders[shader_index];
   }
-  
+
+  if (ent->palette) {
+    R_SetPalette(ent->palette);
+  }
+
   if (((uintptr_t)ent->shader & MESH_TAG_MASK) == SHADER_CINEMATIC) {
     _UpdateCinematicEntity(ent);
   }
@@ -495,12 +503,43 @@ static void Texture_CreatePalette(struct Texture **img) {
   R_Call(glTexImage2D,GL_TEXTURE_2D,0,GL_SRGB8_ALPHA8,16,1,0,GL_RGBA,GL_UNSIGNED_BYTE,palette);
 }
 
+/* The cinematic palette doubles as the sprite palette for palette-indexed
+ * (8-bit) textures such as Dark Reign SPR files.
+ * Index 0 is transparent. Indices 1-255 are a placeholder grayscale ramp
+ * that can be replaced once the actual game palette is available. */
 static void Texture_CreateCinematicPalette(struct Texture **img) {
+  struct color32 palette[256];
+  palette[0] = (struct color32){ 0, 0, 0, 0 };   /* index 0: transparent */
+  for (int i = 1; i < 256; i++) {
+    unsigned char v = i;
+    palette[i] = (struct color32){ v, v, v, 255 };
+  }
   *img = ZeroAlloc(sizeof(struct Texture));
-  struct color32 empty[256];
   R_Call(glGenTextures, 1, &(*img)->texnum);
   R_Call(glBindTexture, GL_TEXTURE_2D, (*img)->texnum);
-  R_Call(glTexImage2D,GL_TEXTURE_2D,0,GL_SRGB8_ALPHA8,256,1,0,GL_RGBA,GL_UNSIGNED_BYTE,empty);
+  R_Call(glTexImage2D,GL_TEXTURE_2D,0,GL_RGBA/*GL_SRGB8_ALPHA8*/,256,1,0,GL_RGBA,GL_UNSIGNED_BYTE,palette);
+}
+
+static HRESULT
+R_SetPalette(struct color32 const palette[256])
+{
+  struct Texture *pal = tr.textures[TX_CINEMATICPALETTE];
+  if (pal) {
+    R_Call(glBindTexture, GL_TEXTURE_2D, pal->texnum);
+    struct color32 rgba[256];
+    for (int i = 0; i < 256; i++) {
+      rgba[i].r = (((uint32_t*)palette)[i] >> 16) & 0xFF;
+      rgba[i].g = (((uint32_t*)palette)[i] >>  8) & 0xFF;
+      rgba[i].b = (((uint32_t*)palette)[i]      ) & 0xFF;
+      rgba[i].a = (i == 0) ? 0 : 255;
+    }
+    R_Call(glBindTexture, GL_TEXTURE_2D, pal->texnum);
+    R_Call(glTexSubImage2D, GL_TEXTURE_2D, 0, 0, 0, 256, 1, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
+    R_SetPointFiltering();
+    return S_OK;
+  } else {
+    return E_ITEMNOTFOUND;
+  }
 }
 
 static HRESULT Texture_CreateBlack(struct Texture** img) {

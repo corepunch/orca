@@ -73,7 +73,8 @@ static int counter = 0;
 static uint32_t unique_counter = 0;
 
 ORCA_API lpObject_t
-OBJ_MakeNativeObject(lpcClassDesc_t cls) {
+OBJ_MakeNativeObject(uint32_t class_id) {
+  lpcClassDesc_t cls = OBJ_FindClassW(class_id);
   lpObject_t object = ZeroAlloc(sizeof(struct Object));
   object->components = OBJ_AddComponent(object, cls->ClassID);
 //  object->window = WI_Get(L);

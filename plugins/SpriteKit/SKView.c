@@ -28,7 +28,7 @@ static void
 SKNode_RenderTree(lpObject_t hObject, struct ViewDef *viewdef)
 {
   if (OBJ_IsHidden(hObject)) return;
-  OBJ_SendMessageW(hObject, kEventRender, 0, viewdef);
+  OBJ_SendMessageW(hObject, kEventRender, 0, &(struct RenderEventArgs) {viewdef});
   FOR_EACH_OBJECT(child, hObject) {
     SKNode_RenderTree(child, viewdef);
   }

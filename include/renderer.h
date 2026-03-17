@@ -321,6 +321,10 @@ struct ViewMaterial
 // Mesh pointer boxing: The mesh field holds either a real Mesh pointer or a boxed
 // entity type constant (MESH_RECTANGLE, MESH_CAPSULE, etc.). Use BOX_IS_PTR() to check.
 // Example: ent.mesh = MESH_CAPSULE;
+/* 256-entry palette: each element is 0x00RRGGBB; alpha is added by the
+ * renderer (index 0 = transparent, all others = fully opaque). */
+typedef uint32_t palette_t[256];
+
 struct ViewEntity
 {
   struct mat4 matrix;
@@ -328,6 +332,7 @@ struct ViewEntity
   struct ViewText* text;
   struct Mesh const* mesh;
   struct Shader const* shader;
+  struct color32 const *palette; // optional palette for indexed (8-bit) textures
   struct box3 bbox;
   struct vec4 radius;
   struct vec4 borderWidth;
@@ -586,6 +591,7 @@ ORCA_API HRESULT UserData_Create(lpcString_t, uint32_t, void**);
 //};
 //
 // Resource operations
+ORCA_API HRESULT Texture_Create(PCREATEIMGSTRUCT, struct Texture**);
 ORCA_API HRESULT Texture_Release(struct Texture*);
 ORCA_API lpObject_t R_LoadImageFromMemory(lua_State *L, void*, uint32_t);
 ORCA_API HRESULT R_BeginFrame(struct color);

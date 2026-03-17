@@ -17,18 +17,39 @@
  *
  *   File data is stored uncompressed at the given offsets.
  *
- * Loading sprites from an FTG package:
- *   1. Register the FTG archive as a bundle:
- *        FS_LoadBundle(L, "path/to/archive");   // opens "archive.ftg"
- *   2. Access files by path "packagename/filename":
- *        struct file *f = FS_LoadFile("archive/sprites/hero.raw");
- *   3. To use with SpriteKit, map the raw bitmap data to a SpriteAnimation:
- *        - Create an ImageLibrary entry pointing to the loaded image data
- *        - Create a SpriteAnimation referencing the image with frame rects
- *        - Assign the SpriteAnimation to an SKSpriteNode.Animation property
+ * SPR sprite file format (palette-indexed, 8 bits per pixel):
+ *
+ *   Header (8 bytes):
+ *     uint16_t num_frames   – total number of animation frames
+ *     uint16_t max_width    – maximum frame width  (informational; may be 0)
+ *     uint16_t max_height   – maximum frame height (informational; may be 0)
+ *     uint16_t reserved     – unused / padding
+ *
+ *   Per-frame descriptors (8 bytes × num_frames):
+ *     uint16_t width        – pixel width of this frame
+ *     uint16_t height       – pixel height of this frame
+ *     int16_t  offset_x     – display hotspot X: sprite origin is offset_x pixels
+ *                             to the right of the top-left corner
+ *     int16_t  offset_y     – display hotspot Y: sprite origin is offset_y pixels
+ *                             below the top-left corner
+ *
+ *   Raw pixel data (1 byte per pixel, palette index):
+ *     For each frame in order: width × height bytes, rows top-to-bottom.
+ *     Palette is not stored; each byte is uploaded as-is to a 1-channel
+ *     GL_RED (kTextureFormatAlpha8) texture.
+ *
+ * Texture atlas strategy:
+ *   Frames are packed into a horizontal strip:
+ *     atlas_width  = sum of all frame widths
+ *     atlas_height = maximum frame height
+ *   Frame i starts at x = sum of widths of frames 0 … i-1, y = 0.
+ *   Short frames are not padded; their UvRect.height is set proportionally.
  */
 
 #include <include/orca.h>
+#include <include/renderer.h>
+#include <source/core/core.h>
+#include <plugins/SpriteKit/SpriteKit.h>
 #include "DarkReign.h"
 
 #define FTG_MAX_FILENAME 28     /* 27 chars + 1 null terminator */
@@ -145,6 +166,7 @@ HANDLER(FtgPackage, OpenFile) {
   struct _FTGFILE *entry = _FindFtgEntry(pFtgPackage->_ftg, pOpenFile->FileName);
   if (!entry)
     return 0;
+//  fprintf(stderr, "FtgPackage: opening file '%s' from archive '%s'\n", entry->name, pFtgPackage->_ftg->filename);
   return (LRESULT)_ReadFtgEntry(pFtgPackage->_ftg, entry);
 }
 
@@ -160,6 +182,60 @@ HANDLER(FtgPackage, Destroy) {
   _FreeFtg(pFtgPackage->_ftg);
   return FALSE;
 }
+
+/*
+ * _LoadSprAnimations
+ *
+ * Walk every entry in the FTG archive.  For each file whose name ends with
+ * ".spr" (case-insensitive), parse it with _SprFile_Load() and add the
+ * resulting SpriteAnimation Object as a direct child of |project|.
+ */
+
+#if 0
+lpObject_t
+_SprFile_Load(lua_State* L, uint8_t const *data, uint32_t size, lpcString_t name);
+
+static void
+_LoadSprAnimations(lua_State* L, PFTG ftg, lpObject_t project)
+{
+  for (int i = 0; i < ftg->numfiles; i++) {
+    char const *fname = ftg->files[i].name;
+    size_t      flen  = strnlen(fname, FTG_MAX_FILENAME);
+
+    /* need at least "x.spr" (5 chars) */
+    if (flen < 5)
+      continue;
+    if (strcasecmp(fname + flen - 4, ".spr") != 0)
+      continue;
+
+    struct file *f = _ReadFtgEntry(ftg, &ftg->files[i]);
+    if (!f) {
+      Con_Error("DarkReign: could not read '%s'", fname);
+      continue;
+    }
+
+    /* derive the animation name by stripping the ".spr" suffix */
+    char anim_name[FTG_MAX_FILENAME] = {0};
+    strncpy(anim_name, fname, sizeof(anim_name) - 1);
+    anim_name[sizeof(anim_name) - 1] = '\0';
+    {
+      char *dot = strrchr(anim_name, '.');
+      if (dot)
+        *dot = '\0';
+    }
+
+    lpObject_t anim_obj = _SprFile_Load(L, f->data, f->size, anim_name);
+    free(f);
+
+    if (!anim_obj) {
+      Con_Error("DarkReign: failed to parse sprite '%s'", fname);
+      continue;
+    }
+
+    OBJ_AddChild(project, anim_obj, FALSE);
+  }
+}
+#endif
 
 /*
  * FtgPackage_LoadProject
@@ -208,6 +284,16 @@ HANDLER(FtgPackage, LoadProject) {
 
   OBJ_AddComponent(project, ID_FtgPackage);
   GetFtgPackage(project)->_ftg = ftg;
+
+  // Debug: list all files in the archive
+  // for (int i = 0; i < ftg->numfiles; i++) {
+  //   char const *fname = ftg->files[i].name;
+  //   fprintf(stderr, "FtgPackage: found file '%s' in archive '%s' size %u\n", fname, ftg->filename, ftg->files[i].size);
+  // }
+
+  /* Load all .spr sprite files from the archive and attach them to the project
+   * as SpriteAnimation children so they are immediately accessible by name. */
+  // _LoadSprAnimations(L, ftg, project);
 
   return (intptr_t)project;
 }
