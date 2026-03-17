@@ -151,6 +151,8 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirName) {
       fprintf(mem, "\tscreen:addChild(term)\n");
       fprintf(mem, "\tprint(err)\n");
 //      fprintf(mem, "screen:addChild(ui.TextBlock(err))\n");
+//      fprintf(mem, "else screen = screen.__userdata and screen or screen()\n");
+      fprintf(mem, "else screen = screen()\n");
       fprintf(mem, "end\n");
   }
 #ifdef ORCA_FEATURE_DEBUG
