@@ -351,11 +351,14 @@ SV_CMD(DELETE, node) {
   return NULL;
 }
 
-extern uint32_t _IOSurface;
-
 SV_CMD(GET, preview) {
   xmlNodePtr n = xmlNewChild(response, NULL, XMLSTR("IOSurfaceTexture"), NULL);
+#if __APPLE__
+  extern uint32_t _IOSurface;
   _xmlSetPropFormat(n, "IOSurface", "%d", _IOSurface);
+#else
+  _xmlSetPropFormat(n, "IOSurface", "%d", 0);
+#endif
   return NULL;
 }
 

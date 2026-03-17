@@ -157,7 +157,7 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirName) {
       fprintf(mem, "else screen = screen()\n");
       fprintf(mem, "end\n");
   }
-#ifdef ORCA_FEATURE_DEBUG
+#if defined(ORCA_FEATURE_DEBUG) && !defined(__EMSCRIPTEN__)
     fprintf(mem, "local editor = require 'orca.editor'\n");
     fprintf(mem, "editor.setScreen(screen)\n");
 #endif
@@ -264,7 +264,7 @@ int main (int argc, LPSTR *argv)
     *(void**)lua_getextraspace(L) = NULL;
     
     luaL_openlibs(L);
-    
+
     path_t exename = { 0 };
     get_exe_filename(exename, sizeof(exename));
 
@@ -277,6 +277,12 @@ int main (int argc, LPSTR *argv)
 #else
     for (int i = 0; strrchr(exename, '/') && i < 2; i++)
       *strrchr(exename, '/') = '\0';
+#endif
+
+#if __EMSCRIPTEN__
+    int luaopen_orca(lua_State*);
+    int luaL_preload(lua_State*, lpcString_t, lua_CFunction);
+    luaL_preload(L, "orca", luaopen_orca);
 #endif
     
 #ifdef LIBDIR
