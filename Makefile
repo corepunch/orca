@@ -48,7 +48,60 @@ INST_LIBDIR ?= $(INST_PREFIX)/lib/lua/5.4
 INST_LUADIR ?= $(INST_PREFIX)/share/lua/5.4
 INST_SHAREDIR ?= $(INST_PREFIX)/share/orca
 
-.PHONY: default all CLEAN directories unite buildlib buildplugins app platform example install
+# ─── WebGL / Emscripten build ─────────────────────────────────────────────
+# Build all C modules into a single .html/.js/.wasm output using emcc.
+#
+# Prerequisites (install once via emsdk):
+#   git clone https://github.com/emscripten-core/emsdk.git
+#   cd emsdk && ./emsdk install latest && ./emsdk activate latest
+#   source ./emsdk_env.sh
+#
+# Additional libraries that must be compiled for WASM with emcc first:
+#   - lua5.4  : build from https://www.lua.org/download.html with emcc
+#   - libxml2 : build from https://gitlab.gnome.org/GNOME/libxml2 with emcc
+#   - liblz4  : build from https://github.com/lz4/lz4 with emcc
+#
+# Libraries available as Emscripten ports (no manual build needed):
+#   zlib, libpng, libjpeg, freetype  -- provided via -sUSE_* flags below.
+#
+# Usage:
+#   make webgl                          # build without bundled data
+#   make webgl WEBGL_DATA=samples/Example  # bundle a project into the build
+# ──────────────────────────────────────────────────────────────────────────
+
+WEBGL_DIR      = build/webgl
+WEBGL_DATA    ?=
+WEBGL_EMCC     = emcc
+
+# Modules included in the WebGL build.  Excluded: network (curl/sockets),
+# vsomeip (C++ service discovery), server (host-only), editor (desktop UI).
+WEBGL_MODULES  = geometry orca sysutil console localization parsers debug \
+                 renderer filesystem core backend
+WEBGL_SRCMODS  = $(addprefix $(SOURCEDIR)/, $(WEBGL_MODULES))
+WEBGL_SOURCES  = $(foreach d, $(WEBGL_SRCMODS), $(wildcard $(d)/*.c))
+
+# Platform sources compiled directly into the binary (no SIDE_MODULE needed).
+WEBGL_PLAT_SRC = $(wildcard $(PLATFORM_LIBDIR)/webgl/*.c)
+
+WEBGL_CFLAGS  = -O2 -g -I. -I$(CURDIR) -I$(PLATFORM_LIBDIR) \
+                -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG=1 \
+                -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
+                -sASYNCIFY=1 -sASYNCIFY_IMPORTS='["emscripten_sleep"]' \
+                -sALLOW_MEMORY_GROWTH=1
+
+WEBGL_LDFLAGS = -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG=1 \
+                -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
+                -sASYNCIFY=1 -sASYNCIFY_IMPORTS='["emscripten_sleep"]' \
+                -sALLOW_MEMORY_GROWTH=1 \
+                -sEXPORTED_RUNTIME_METHODS='["ccall","cwrap","FS"]' \
+                -sEXIT_RUNTIME=0
+
+# Bundle data directory into the VFS when WEBGL_DATA is set.
+ifneq ($(WEBGL_DATA),)
+WEBGL_LDFLAGS += --preload-file $(WEBGL_DATA)@/$(WEBGL_DATA)
+endif
+
+.PHONY: default all CLEAN directories unite buildlib buildplugins app platform example install webgl
 
 default: directories modules unite
 all: default
@@ -190,3 +243,18 @@ install: all
 test:
 	$(TARGET) -test=tests/test1.lua
 	$(TARGET) -test=tests/test.xml
+
+# ─── WebGL build target ────────────────────────────────────────────────────
+# Compiles all engine modules into a self-contained orca.html + orca.js +
+# orca.wasm triple using Emscripten.  See the WEBGL section at the top of
+# this Makefile for a full list of prerequisites and usage notes.
+webgl: $(WEBGL_DIR)
+	$(WEBGL_EMCC) $(WEBGL_CFLAGS) \
+		$(WEBGL_PLAT_SRC) \
+		$(WEBGL_SOURCES) \
+		$(SOURCEDIR)/orca.c \
+		$(WEBGL_LDFLAGS) \
+		-o $(WEBGL_DIR)/orca.html
+
+$(WEBGL_DIR):
+	mkdir -p $(WEBGL_DIR)

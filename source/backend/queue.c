@@ -2,11 +2,26 @@
 #include <include/orca.h>
 #include <include/renderer.h>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 int f_peek_iterator(lua_State* L)
 {
-  struct WI_Message msg;
+  struct WI_Message msg = {0};
   lpObject_t __userdata = lua_touserdata(L, lua_upvalueindex(1));
-  WI_PollEvent(&msg);
+  int has_event = WI_PollEvent(&msg);
+#ifdef __EMSCRIPTEN__
+  /* Yield to the browser event loop when the queue is empty so that
+     input callbacks (registered via emscripten_set_*_callback) have a
+     chance to fire and requestAnimationFrame can schedule repaints.
+     ASYNCIFY must be enabled (-sASYNCIFY=1) for emscripten_sleep to work. */
+  if (!has_event) {
+    emscripten_sleep(0);
+  }
+#else
+  (void)has_event;  /* suppress -Wunused-but-set-variable on non-Emscripten targets */
+#endif
   switch (msg.message) {
     case kEventLeftMouseDown:
     case kEventRightMouseDown:
