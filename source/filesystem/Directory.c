@@ -107,7 +107,7 @@ HANDLER(Directory, Destroy) {
 ORCA_API lpObject_t _LoadProject(lua_State *L, lpcString_t path, lpcString_t name) {
   lua_getglobal(L, "require");
   lua_pushstring(L, path);
-  if (lua_pcall(L, 1, 1, 0) || lua_pcall(L, 0, 1, 0)) {
+  if (lua_pcall(L, 1, 1, 0)) {
     API_CallRequire(L, "orca.filesystem", 1);
     lua_getfield(L, -1, "Project");
     if (lua_pcall(L, 0, 1, 0)) {

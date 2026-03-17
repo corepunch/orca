@@ -85,7 +85,7 @@ local function try_prefab_placeholder(element)
 	}
 	local placeholder = placeholders[element.tag]
 	if placeholder then
-		return placeholder(element:get "PlaceholderTemplate" or element:get "ClassName")
+		return placeholder(element:get "PlaceholderTemplate" or element:get "ClassName")()
 	else
 		return nil
 	end
@@ -183,12 +183,15 @@ table.insert(package.searchers, function(path)
 	local xml = require "orca.parsers.xml"
 	local ok, doc = pcall(xml.load, path..'.xml')
 	return ok and doc and function()
-		return function()
-			local filesystem = require "orca.filesystem"
-			local node = construct_node(doc.root)
-			node:setSourceFile(path)
-			filesystem.registerObject(node, path)
-			return node
+		local filesystem = require "orca.filesystem"
+		local node = construct_node(doc.root)
+		node:setSourceFile(path)
+		node.instantiate = function()
+			local instance = construct_node(doc.root)
+			instance:setSourceFile(path)
+			return instance
 		end
+		filesystem.registerObject(node, path)
+		return node
 	end or nil
 end)
