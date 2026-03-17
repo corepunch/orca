@@ -461,9 +461,6 @@ SM_ReadStateManager(lua_State*, lpObject_t, struct _xmlDoc*, propertyParser_t);
 ORCA_API bool_t
 OBJ_RegisterClass(lpcClassDesc_t);
 
-ORCA_API lpObject_t
-OBJ_MakeNativeObject(uint32_t class_id);
-
 ORCA_API lpcClassDesc_t
 OBJ_FindClass(lpcString_t);
 

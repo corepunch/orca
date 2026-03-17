@@ -166,7 +166,7 @@ HANDLER(FtgPackage, OpenFile) {
   struct _FTGFILE *entry = _FindFtgEntry(pFtgPackage->_ftg, pOpenFile->FileName);
   if (!entry)
     return 0;
-  fprintf(stderr, "FtgPackage: opening file '%s' from archive '%s'\n", entry->name, pFtgPackage->_ftg->filename);
+//  fprintf(stderr, "FtgPackage: opening file '%s' from archive '%s'\n", entry->name, pFtgPackage->_ftg->filename);
   return (LRESULT)_ReadFtgEntry(pFtgPackage->_ftg, entry);
 }
 
