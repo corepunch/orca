@@ -69,7 +69,7 @@ FMTF(data_OdometerSinceStart, "%s", "978");
 FMTF(data_OdometerZeroEmissionSinceStart, "%s", "35");
 FMTF(data_DurationZeroEmissionSinceStart, "%s", "3:16");
 
-FORMATARG args[] = {
+static FORMATARG args[] = {
   //    TireMonitoring_Var2
   VARIABLE(data_FrontRightTireTemperature),
   VARIABLE(data_FrontRightTirePressure),

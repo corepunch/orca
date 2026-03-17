@@ -167,11 +167,13 @@ static int f_get_time_span(lua_State* L)
 
 static bool_t dark_theme = FALSE;
 
+#ifndef __EMSCRIPTEN__
 bool_t
 WI_IsDarkTheme(void)
 {
   return dark_theme;
 }
+#endif
 
 static int f_get_theme(lua_State* L)
 {
