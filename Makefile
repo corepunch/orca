@@ -108,7 +108,9 @@ LZ4_VERSION     = 1.10.0
 XML2_VERSION    = 2.9.14
 
 # Add WASM dep headers / libraries to the WebGL compiler and linker flags.
-WEBGL_CFLAGS  += -I$(WASM_DEPS_DIR)/include
+# libxml2 installs headers to $(prefix)/include/libxml2/libxml/, so both the
+# top-level include dir and the libxml2 sub-directory must be on the path.
+WEBGL_CFLAGS  += -I$(WASM_DEPS_DIR)/include -I$(WASM_DEPS_DIR)/include/libxml2
 WEBGL_LDFLAGS += -L$(WASM_DEPS_DIR)/lib -llua5.4 -lxml2 -llz4
 
 # Bundle data directory into the VFS when WEBGL_DATA is set.
