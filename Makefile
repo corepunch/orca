@@ -67,6 +67,8 @@ INST_SHAREDIR ?= $(INST_PREFIX)/share/orca
 # Usage:
 #   make webgl                          # build without bundled data
 #   make webgl WEBGL_DATA=samples/Example  # bundle a project into the build
+#   make webgl-demo                     # build with WEBGL_DEMO (default: samples/Example)
+#   make webgl-demo WEBGL_DEMO=samples/MyProject  # override the demo project
 #
 # Size optimisation: WEBGL_CFLAGS uses -Oz -flto; WEBGL_LDFLAGS uses
 # --closure 1 -sASSERTIONS=0.  To enable debug symbols temporarily, add
@@ -75,6 +77,7 @@ INST_SHAREDIR ?= $(INST_PREFIX)/share/orca
 
 WEBGL_DIR      = build/webgl
 WEBGL_DATA    ?=
+WEBGL_DEMO    ?= samples/Example
 WEBGL_EMCC     = emcc
 
 # Modules included in the WebGL build.  Excluded: network (curl/sockets),
@@ -141,7 +144,7 @@ WEBGL_CFLAGS  += -DPROJECTDIR='"$(WEBGL_DATA)"'
 endif
 
 .PHONY: default all CLEAN directories unite buildlib buildplugins app platform example install webgl \
-        wasm-deps wasm-lua wasm-lz4 wasm-xml2
+        webgl-demo wasm-deps wasm-lua wasm-lz4 wasm-xml2
 
 default: directories modules unite
 all: default
@@ -296,6 +299,12 @@ webgl: $(WEBGL_PLUGINS_H) $(LIBDIR)
 		$(SOURCEDIR)/orca.c \
 		$(WEBGL_LDFLAGS) \
 		-o $(WEBGL_DIR)/orca.html
+
+# Bundle the demo project (WEBGL_DEMO) and deploy-ready share/ assets.
+# Override WEBGL_DEMO from the command line to bundle a different project:
+#   make webgl-demo WEBGL_DEMO=samples/MyProject
+webgl-demo:
+	$(MAKE) webgl WEBGL_DATA=$(WEBGL_DEMO)
 
 $(WEBGL_DIR):
 	mkdir -p $(WEBGL_DIR)

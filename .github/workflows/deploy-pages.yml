@@ -73,7 +73,7 @@ jobs:
         run: mkdocs build
 
       - name: Build WebGL demo (Example project)
-        run: emmake make webgl WEBGL_EMCC=emcc WEBGL_DATA=samples/Example
+        run: emmake make webgl-demo WEBGL_EMCC=emcc
 
       - name: Copy WebGL demo into site
         run: |
