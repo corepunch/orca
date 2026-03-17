@@ -70,7 +70,7 @@ static void collect_lights(lpObject_t object,
 
 void R_RenderViewport(lpObject_t, struct ViewDef*);
 
-struct rect
+static struct rect
 Node2D_GetRect(Node2DPtr pNode2D)
 {
   return (struct rect){
