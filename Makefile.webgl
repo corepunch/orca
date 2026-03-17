@@ -35,8 +35,7 @@ WEBGL_EMCC     = emcc
 WEBGL_MODULES  = geometry orca sysutil console localization parsers debug \
                  renderer filesystem core backend
 WEBGL_SRCMODS  = $(addprefix $(SOURCEDIR)/, $(WEBGL_MODULES))
-WEBGL_SOURCES  = $(filter-out %/server.c, \
-                   $(foreach d, $(WEBGL_SRCMODS), $(wildcard $(d)/*.c $(d)/*/*.c)))
+WEBGL_SOURCES  = $(foreach d, $(WEBGL_SRCMODS), $(wildcard $(d)/*.c $(d)/*/*.c))
 
 # Platform sources compiled directly into the binary (no SIDE_MODULE needed).
 WEBGL_PLAT_SRC = $(wildcard $(PLATFORM_LIBDIR)/webgl/*.c)
