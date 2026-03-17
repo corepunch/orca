@@ -126,7 +126,13 @@ Similar to `<struct>`, but defines an abstract interface or base class.
 **Attributes:** Same as `<struct>`, plus:
 - `no-check` (optional) - If "true", skips type checking in generated code
 
-**Example:**
+**Child Elements:**
+- `<summary>` - Brief description
+- `<details>` - Detailed explanation
+- `<method>` - Method definition (flat, ungrouped)
+- `<topic>` - Named group of methods (see below)
+
+**Example (flat):**
 ```xml
 <interface name="Object" prefix="OBJ_" export="Object" no-check="true">
   <summary>Core engine host object.</summary>
@@ -135,6 +141,46 @@ Similar to `<struct>`, but defines an abstract interface or base class.
   </method>
 </interface>
 ```
+
+**Example (with topics):**
+```xml
+<interface name="Object" prefix="OBJ_" export="Object" no-check="true">
+  <summary>Core engine host object.</summary>
+  <topic name="Lifecycle">
+    <method name="Awake" lua="true">
+      <summary>Initializes the object when loaded.</summary>
+    </method>
+    <method name="Clear" export="clear" lua="true">
+      <summary>Clear all children of the object.</summary>
+    </method>
+  </topic>
+  <topic name="Hierarchy">
+    <method name="AddChild">
+      <summary>Add a child object.</summary>
+      <arg name="child" type="Object" pointer="true">The object to add as a child</arg>
+    </method>
+    <method name="RemoveFromParent" lua="true">
+      <summary>Removes the object from its parent.</summary>
+    </method>
+  </topic>
+</interface>
+```
+
+#### `<topic>` - Method Groups within an Interface
+
+Topics group related methods under a named heading. They affect how the API documentation is generated — each topic renders as its own `##` section — but are **transparent to code generation**: the C header and Lua export templates use the XPath `.//method[@name]` which traverses into topic children automatically.
+
+**Attributes:**
+- `name` (required) - The section title used in generated documentation
+
+**Rules:**
+- A `<topic>` may only appear directly inside an `<interface>` element.
+- An interface may mix ungrouped `<method>` elements and `<topic>` groups, but for consistency prefer one style per interface.
+- Topics are ignored by `getMethods()` and all code-generation templates. Only `docs.php` renders them as headings.
+
+**When to use topics:**
+- Use topics when an interface has more than ~10 methods and the methods fall into clear functional groups (lifecycle, hierarchy, input, etc.).
+- See `source/core/core.xml` for a real-world example with 10 topics covering 72 methods.
 
 ### 4. `<component>` - Component Definitions
 
@@ -430,9 +476,10 @@ The DTD schema is published at `https://corepunch.github.io/orca/schemas/module.
 1. **Always include documentation** - Every element should have at least a `<summary>`
 2. **Use consistent naming** - Follow C naming conventions for elements
 3. **Group related items** - Place related structs, enums, and functions together
-4. **Keep it simple** - XML should describe the API, not implementation details
-5. **Test generation** - Run `make modules` after changes to verify XML is valid
-6. **Check generated code** - Review the generated `.h` and `.c` files to ensure correctness
+4. **Use `<topic>` for large interfaces** - If an `<interface>` has more than ~10 methods, group them with `<topic>` elements (e.g., Lifecycle, Hierarchy, Messaging). Topics appear as sections in the generated documentation but are invisible to code generation.
+5. **Keep it simple** - XML should describe the API, not implementation details
+6. **Test generation** - Run `make modules` after changes to verify XML is valid
+7. **Check generated code** - Review the generated `.h` and `.c` files to ensure correctness
 
 ## Troubleshooting
 
