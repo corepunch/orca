@@ -62,6 +62,16 @@ void luaX_pushDataType(lua_State *L, enum DataType value) {
 int f_OBJ_CreateFromLuaState(lua_State *L) {
 	return OBJ_CreateFromLuaState(L);
 }
+int f_OBJ_Awake(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	OBJ_Awake(L, this_ );
+	return 0;
+}
+int f_OBJ_Animate(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	OBJ_Animate(L, this_ );
+	return 0;
+}
 int f_OBJ_Clear(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	OBJ_Clear(L, this_ );
@@ -79,42 +89,9 @@ int f_OBJ_Equals(lua_State *L) {
 	lua_pushboolean(L, result_);
 	return 1;
 }
-int f_OBJ_Awake(lua_State *L) {
+int f_OBJ_Rebuild(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_Awake(L, this_ );
-	return 0;
-}
-int f_OBJ_Animate(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_Animate(L, this_ );
-	return 0;
-}
-int f_OBJ_LoadPrefabs(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_LoadPrefabs(L, this_ );
-	return 0;
-}
-int f_OBJ_Instantiate(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	struct Object* result_ = OBJ_Instantiate(L, this_);
-	luaX_pushObject(L, result_);
-	return 1;
-}
-int f_OBJ_EmitPropertyChangedEvents(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_EmitPropertyChangedEvents(L, this_ );
-	return 0;
-}
-int f_OBJ_UpdateProperties(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_UpdateProperties(this_ );
-	return 0;
-}
-int f_OBJ_UpdateLayout(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	int32_t width = luaL_checknumber(L, 2);
-	int32_t height = luaL_checknumber(L, 3);
-	OBJ_UpdateLayout(this_, width, height );
+	OBJ_Rebuild(L, this_ );
 	return 0;
 }
 int f_OBJ_AddChild(lua_State *L) {
@@ -128,143 +105,6 @@ int f_OBJ_AddChild(lua_State *L) {
 int f_OBJ_RemoveFromParent(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	OBJ_RemoveFromParent(L, this_ );
-	return 0;
-}
-int f_OBJ_SetProperty(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	const char* Property = luaL_checkstring(L, 2);
-	bool_t result_ = OBJ_SetProperty(L, this_, Property);
-	lua_pushboolean(L, result_);
-	return 1;
-}
-int f_OBJ_GetProperty(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	const char* Property = luaL_checkstring(L, 2);
-	return OBJ_GetProperty(L, this_, Property);
-}
-int f_OBJ_FindChild(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	const char* name = luaL_checkstring(L, 2);
-	bool_t recursive = lua_toboolean(L, 3);
-	struct Object* result_ = OBJ_FindChild(this_, name, recursive);
-	luaX_pushObject(L, result_);
-	return 1;
-}
-int f_OBJ_DispatchEvent(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	const char* event = luaL_checkstring(L, 2);
-	struct Object* result_ = OBJ_DispatchEvent(L, this_, event);
-	luaX_pushObject(L, result_);
-	return 1;
-}
-int f_OBJ_PostMessage(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	const char* message = luaL_checkstring(L, 2);
-	OBJ_PostMessage(L, this_, message );
-	return 0;
-}
-int f_OBJ_SendMessage2(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	const char* message = luaL_checkstring(L, 2);
-	OBJ_SendMessage2(L, this_, message );
-	return 0;
-}
-int f_OBJ_Play(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	const char* animation = luaL_checkstring(L, 2);
-	OBJ_Play(this_, animation );
-	return 0;
-}
-int f_OBJ_SetFocus(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_SetFocus(this_ );
-	return 0;
-}
-int f_OBJ_DoTween(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_DoTween(L, this_ );
-	return 0;
-}
-int f_OBJ_AddStyleSheet(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	const char* source = luaL_checkstring(L, 2);
-	OBJ_AddStyleSheet(L, this_, source );
-	return 0;
-}
-int f_OBJ_SetTimer(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	return OBJ_SetTimer(L, this_);
-}
-int f_OBJ_SetContext(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_SetContext(L, this_ );
-	return 0;
-}
-int f_OBJ_GetName(lua_State *L) {
-	struct Object const* this_ = luaX_checkObject(L, 1);
-	const char* result_ = OBJ_GetName(this_);
-	lua_pushstring(L, result_);
-	return 1;
-}
-int f_OBJ_SetName(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	const char* name = luaL_checkstring(L, 2);
-	OBJ_SetName(this_, name );
-	return 0;
-}
-int f_OBJ_GetClassName(lua_State *L) {
-	struct Object const* this_ = luaX_checkObject(L, 1);
-	const char* result_ = OBJ_GetClassName(this_);
-	lua_pushstring(L, result_);
-	return 1;
-}
-int f_OBJ_CheckName(lua_State *L) {
-	struct Object const* this_ = luaX_checkObject(L, 1);
-	const char* name = luaL_checkstring(L, 2);
-	bool_t result_ = OBJ_CheckName(this_, name);
-	lua_pushboolean(L, result_);
-	return 1;
-}
-int f_OBJ_FindByPath(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	const char* name = luaL_checkstring(L, 2);
-	struct Object* result_ = OBJ_FindByPath(this_, name);
-	luaX_pushObject(L, result_);
-	return 1;
-}
-int f_OBJ_GetStyle(lua_State *L) {
-	struct Object const* this_ = luaX_checkObject(L, 1);
-	uint32_t result_ = OBJ_GetStyle(this_);
-	lua_pushnumber(L, result_);
-	return 1;
-}
-int f_OBJ_SetStyle(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	uint32_t style = luaL_checknumber(L, 2);
-	OBJ_SetStyle(this_, style );
-	return 0;
-}
-int f_OBJ_FindCallbackForID(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	uint32_t event = luaL_checknumber(L, 2);
-	const char* result_ = OBJ_FindCallbackForID(this_, event);
-	lua_pushstring(L, result_);
-	return 1;
-}
-int f_OBJ_ApplyStyles(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	bool_t recursive = lua_toboolean(L, 2);
-	OBJ_ApplyStyles(this_, recursive );
-	return 0;
-}
-int f_OBJ_SetDirty(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_SetDirty(this_ );
-	return 0;
-}
-int f_OBJ_ClearDirtyFlags(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_ClearDirtyFlags(this_ );
 	return 0;
 }
 int f_OBJ_GetParent(lua_State *L) {
@@ -291,6 +131,21 @@ int f_OBJ_GetRoot(lua_State *L) {
 	luaX_pushObject(L, result_);
 	return 1;
 }
+int f_OBJ_FindChild(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	const char* name = luaL_checkstring(L, 2);
+	bool_t recursive = lua_toboolean(L, 3);
+	struct Object* result_ = OBJ_FindChild(this_, name, recursive);
+	luaX_pushObject(L, result_);
+	return 1;
+}
+int f_OBJ_FindByPath(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	const char* name = luaL_checkstring(L, 2);
+	struct Object* result_ = OBJ_FindByPath(this_, name);
+	luaX_pushObject(L, result_);
+	return 1;
+}
 int f_OBJ_FindChildByID(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	uint32_t id = luaL_checknumber(L, 2);
@@ -305,87 +160,12 @@ int f_OBJ_FindChildByAlias(lua_State *L) {
 	luaX_pushObject(L, result_);
 	return 1;
 }
-int f_OBJ_GetSourceFile(lua_State *L) {
-	struct Object const* this_ = luaX_checkObject(L, 1);
-	const char* result_ = OBJ_GetSourceFile(this_);
-	lua_pushstring(L, result_);
-	return 1;
-}
-int f_OBJ_GetTextContent(lua_State *L) {
-	struct Object const* this_ = luaX_checkObject(L, 1);
-	const char* result_ = OBJ_GetTextContent(this_);
-	lua_pushstring(L, result_);
-	return 1;
-}
-int f_OBJ_GetTimestamp(lua_State *L) {
-	struct Object const* this_ = luaX_checkObject(L, 1);
-	long result_ = OBJ_GetTimestamp(this_);
-	lua_pushinteger(L, result_);
-	return 1;
-}
-int f_OBJ_GetLuaObject(lua_State *L) {
-	struct Object const* this_ = luaX_checkObject(L, 1);
-	uint32_t result_ = OBJ_GetLuaObject(this_);
-	lua_pushnumber(L, result_);
-	return 1;
-}
-int f_OBJ_GetAlias(lua_State *L) {
-	struct Object const* this_ = luaX_checkObject(L, 1);
-	uint32_t result_ = OBJ_GetAlias(this_);
-	lua_pushnumber(L, result_);
-	return 1;
-}
-int f_OBJ_GetFlags(lua_State *L) {
-	struct Object const* this_ = luaX_checkObject(L, 1);
-	uint32_t result_ = OBJ_GetFlags(this_);
-	lua_pushnumber(L, result_);
-	return 1;
-}
-int f_OBJ_SetFlags(lua_State *L) {
+int f_OBJ_FindChildOfClass(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	uint32_t flags = luaL_checknumber(L, 2);
-	OBJ_SetFlags(this_, flags );
-	return 0;
-}
-int f_OBJ_GetIdentifier(lua_State *L) {
-	struct Object const* this_ = luaX_checkObject(L, 1);
-	uint32_t result_ = OBJ_GetIdentifier(this_);
-	lua_pushnumber(L, result_);
+	uint32_t classID = luaL_checknumber(L, 2);
+	struct Object* result_ = OBJ_FindChildOfClass(this_, classID);
+	luaX_pushObject(L, result_);
 	return 1;
-}
-int f_OBJ_ShowModal(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	struct Object* modal = luaX_checkObject(L, 2);
-	return OBJ_ShowModal(L, this_, modal);
-}
-int f_OBJ_IsFocused(lua_State *L) {
-	struct Object const* this_ = luaX_checkObject(L, 1);
-	bool_t result_ = OBJ_IsFocused(this_);
-	lua_pushboolean(L, result_);
-	return 1;
-}
-int f_OBJ_SetHover(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_SetHover(this_ );
-	return 0;
-}
-int f_OBJ_SetTextContent(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	const char* text = luaL_checkstring(L, 2);
-	OBJ_SetTextContent(this_, text );
-	return 0;
-}
-int f_OBJ_SetSourceFile(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	const char* path = luaL_checkstring(L, 2);
-	OBJ_SetSourceFile(this_, path );
-	return 0;
-}
-int f_OBJ_SetClassName(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	const char* classID = luaL_checkstring(L, 2);
-	OBJ_SetClassName(this_, classID );
-	return 0;
 }
 int f_OBJ_FindParentOfClass(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
@@ -394,69 +174,53 @@ int f_OBJ_FindParentOfClass(lua_State *L) {
 	luaX_pushObject(L, result_);
 	return 1;
 }
-int f_OBJ_FindChildOfClass(lua_State *L) {
+int f_OBJ_DispatchEvent(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	uint32_t classID = luaL_checknumber(L, 2);
-	struct Object* result_ = OBJ_FindChildOfClass(this_, classID);
+	const char* event = luaL_checkstring(L, 2);
+	struct Object* result_ = OBJ_DispatchEvent(L, this_, event);
 	luaX_pushObject(L, result_);
 	return 1;
 }
-int f_OBJ_IsPrefabView(lua_State *L) {
-	struct Object const* this_ = luaX_checkObject(L, 1);
-	bool_t result_ = OBJ_IsPrefabView(this_);
+int f_OBJ_PostMessage(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	const char* message = luaL_checkstring(L, 2);
+	OBJ_PostMessage(L, this_, message );
+	return 0;
+}
+int f_OBJ_SendMessage2(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	const char* message = luaL_checkstring(L, 2);
+	OBJ_SendMessage2(L, this_, message );
+	return 0;
+}
+int f_OBJ_FindCallbackForID(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	uint32_t event = luaL_checknumber(L, 2);
+	const char* result_ = OBJ_FindCallbackForID(this_, event);
+	lua_pushstring(L, result_);
+	return 1;
+}
+int f_OBJ_SetProperty(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	const char* Property = luaL_checkstring(L, 2);
+	bool_t result_ = OBJ_SetProperty(L, this_, Property);
 	lua_pushboolean(L, result_);
 	return 1;
 }
-int f_OBJ_AddAlias(lua_State *L) {
+int f_OBJ_GetProperty(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	const char* name = luaL_checkstring(L, 2);
-	const char* path = luaL_checkstring(L, 3);
-	OBJ_AddAlias(this_, name, path );
+	const char* Property = luaL_checkstring(L, 2);
+	return OBJ_GetProperty(L, this_, Property);
+}
+int f_OBJ_UpdateProperties(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	OBJ_UpdateProperties(this_ );
 	return 0;
 }
-int f_OBJ_AssignAliases(lua_State *L) {
+int f_OBJ_EmitPropertyChangedEvents(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	const char* pathToObject = luaL_checkstring(L, 2);
-	OBJ_AssignAliases(this_, pathToObject );
+	OBJ_EmitPropertyChangedEvents(L, this_ );
 	return 0;
-}
-int f_OBJ_ParseClassAttribute(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	const char* classString = luaL_checkstring(L, 2);
-	OBJ_ParseClassAttribute(this_, classString );
-	return 0;
-}
-int f_OBJ_SetAnimation(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	const char* name = luaL_checkstring(L, 2);
-	OBJ_SetAnimation(this_, name );
-	return 0;
-}
-int f_OBJ_GetAnimation(lua_State *L) {
-	struct Object const* this_ = luaX_checkObject(L, 1);
-	struct KeyframeAnim const* result_ = OBJ_GetAnimation(this_);
-	luaX_pushKeyframeAnim(L, result_);
-	return 1;
-}
-int f_OBJ_AddAnimation(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	struct KeyframeAnim* animation = NULL;
-	OBJ_AddAnimation(this_, animation );
-	return 0;
-}
-int f_OBJ_GetInteger(lua_State *L) {
-	struct Object const* this_ = luaX_checkObject(L, 1);
-	uint32_t ident = luaL_checknumber(L, 2);
-	int32_t fallback = luaL_checknumber(L, 3);
-	int32_t result_ = OBJ_GetInteger(this_, ident, fallback);
-	lua_pushnumber(L, result_);
-	return 1;
-}
-int f_OBJ_GetProperties(lua_State *L) {
-	struct Object const* this_ = luaX_checkObject(L, 1);
-	struct Property* result_ = OBJ_GetProperties(this_);
-	luaX_pushProperty(L, result_);
-	return 1;
 }
 int f_OBJ_FindImplicitProperty(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
@@ -490,10 +254,205 @@ int f_OBJ_FindPropertyByPath(lua_State *L) {
 	luaX_pushProperty(L, result_);
 	return 1;
 }
-int f_OBJ_Rebuild(lua_State *L) {
+int f_OBJ_GetProperties(lua_State *L) {
+	struct Object const* this_ = luaX_checkObject(L, 1);
+	struct Property* result_ = OBJ_GetProperties(this_);
+	luaX_pushProperty(L, result_);
+	return 1;
+}
+int f_OBJ_GetInteger(lua_State *L) {
+	struct Object const* this_ = luaX_checkObject(L, 1);
+	uint32_t ident = luaL_checknumber(L, 2);
+	int32_t fallback = luaL_checknumber(L, 3);
+	int32_t result_ = OBJ_GetInteger(this_, ident, fallback);
+	lua_pushnumber(L, result_);
+	return 1;
+}
+int f_OBJ_UpdateLayout(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_Rebuild(L, this_ );
+	int32_t width = luaL_checknumber(L, 2);
+	int32_t height = luaL_checknumber(L, 3);
+	OBJ_UpdateLayout(this_, width, height );
 	return 0;
+}
+int f_OBJ_SetDirty(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	OBJ_SetDirty(this_ );
+	return 0;
+}
+int f_OBJ_ClearDirtyFlags(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	OBJ_ClearDirtyFlags(this_ );
+	return 0;
+}
+int f_OBJ_ApplyStyles(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	bool_t recursive = lua_toboolean(L, 2);
+	OBJ_ApplyStyles(this_, recursive );
+	return 0;
+}
+int f_OBJ_AddStyleSheet(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	const char* source = luaL_checkstring(L, 2);
+	OBJ_AddStyleSheet(L, this_, source );
+	return 0;
+}
+int f_OBJ_GetStyle(lua_State *L) {
+	struct Object const* this_ = luaX_checkObject(L, 1);
+	uint32_t result_ = OBJ_GetStyle(this_);
+	lua_pushnumber(L, result_);
+	return 1;
+}
+int f_OBJ_SetStyle(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	uint32_t style = luaL_checknumber(L, 2);
+	OBJ_SetStyle(this_, style );
+	return 0;
+}
+int f_OBJ_Play(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	const char* animation = luaL_checkstring(L, 2);
+	OBJ_Play(this_, animation );
+	return 0;
+}
+int f_OBJ_DoTween(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	OBJ_DoTween(L, this_ );
+	return 0;
+}
+int f_OBJ_SetAnimation(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	const char* name = luaL_checkstring(L, 2);
+	OBJ_SetAnimation(this_, name );
+	return 0;
+}
+int f_OBJ_GetAnimation(lua_State *L) {
+	struct Object const* this_ = luaX_checkObject(L, 1);
+	struct KeyframeAnim const* result_ = OBJ_GetAnimation(this_);
+	luaX_pushKeyframeAnim(L, result_);
+	return 1;
+}
+int f_OBJ_AddAnimation(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	struct KeyframeAnim* animation = NULL;
+	OBJ_AddAnimation(this_, animation );
+	return 0;
+}
+int f_OBJ_SetFocus(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	OBJ_SetFocus(this_ );
+	return 0;
+}
+int f_OBJ_IsFocused(lua_State *L) {
+	struct Object const* this_ = luaX_checkObject(L, 1);
+	bool_t result_ = OBJ_IsFocused(this_);
+	lua_pushboolean(L, result_);
+	return 1;
+}
+int f_OBJ_SetHover(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	OBJ_SetHover(this_ );
+	return 0;
+}
+int f_OBJ_ShowModal(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	struct Object* modal = luaX_checkObject(L, 2);
+	return OBJ_ShowModal(L, this_, modal);
+}
+int f_OBJ_SetTimer(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	return OBJ_SetTimer(L, this_);
+}
+int f_OBJ_GetName(lua_State *L) {
+	struct Object const* this_ = luaX_checkObject(L, 1);
+	const char* result_ = OBJ_GetName(this_);
+	lua_pushstring(L, result_);
+	return 1;
+}
+int f_OBJ_SetName(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	const char* name = luaL_checkstring(L, 2);
+	OBJ_SetName(this_, name );
+	return 0;
+}
+int f_OBJ_GetClassName(lua_State *L) {
+	struct Object const* this_ = luaX_checkObject(L, 1);
+	const char* result_ = OBJ_GetClassName(this_);
+	lua_pushstring(L, result_);
+	return 1;
+}
+int f_OBJ_SetClassName(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	const char* classID = luaL_checkstring(L, 2);
+	OBJ_SetClassName(this_, classID );
+	return 0;
+}
+int f_OBJ_CheckName(lua_State *L) {
+	struct Object const* this_ = luaX_checkObject(L, 1);
+	const char* name = luaL_checkstring(L, 2);
+	bool_t result_ = OBJ_CheckName(this_, name);
+	lua_pushboolean(L, result_);
+	return 1;
+}
+int f_OBJ_GetFlags(lua_State *L) {
+	struct Object const* this_ = luaX_checkObject(L, 1);
+	uint32_t result_ = OBJ_GetFlags(this_);
+	lua_pushnumber(L, result_);
+	return 1;
+}
+int f_OBJ_SetFlags(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	uint32_t flags = luaL_checknumber(L, 2);
+	OBJ_SetFlags(this_, flags );
+	return 0;
+}
+int f_OBJ_GetIdentifier(lua_State *L) {
+	struct Object const* this_ = luaX_checkObject(L, 1);
+	uint32_t result_ = OBJ_GetIdentifier(this_);
+	lua_pushnumber(L, result_);
+	return 1;
+}
+int f_OBJ_GetAlias(lua_State *L) {
+	struct Object const* this_ = luaX_checkObject(L, 1);
+	uint32_t result_ = OBJ_GetAlias(this_);
+	lua_pushnumber(L, result_);
+	return 1;
+}
+int f_OBJ_GetSourceFile(lua_State *L) {
+	struct Object const* this_ = luaX_checkObject(L, 1);
+	const char* result_ = OBJ_GetSourceFile(this_);
+	lua_pushstring(L, result_);
+	return 1;
+}
+int f_OBJ_SetSourceFile(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	const char* path = luaL_checkstring(L, 2);
+	OBJ_SetSourceFile(this_, path );
+	return 0;
+}
+int f_OBJ_GetTextContent(lua_State *L) {
+	struct Object const* this_ = luaX_checkObject(L, 1);
+	const char* result_ = OBJ_GetTextContent(this_);
+	lua_pushstring(L, result_);
+	return 1;
+}
+int f_OBJ_SetTextContent(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	const char* text = luaL_checkstring(L, 2);
+	OBJ_SetTextContent(this_, text );
+	return 0;
+}
+int f_OBJ_GetTimestamp(lua_State *L) {
+	struct Object const* this_ = luaX_checkObject(L, 1);
+	long result_ = OBJ_GetTimestamp(this_);
+	lua_pushinteger(L, result_);
+	return 1;
+}
+int f_OBJ_GetLuaObject(lua_State *L) {
+	struct Object const* this_ = luaX_checkObject(L, 1);
+	uint32_t result_ = OBJ_GetLuaObject(this_);
+	lua_pushnumber(L, result_);
+	return 1;
 }
 int f_OBJ_GetDomain(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
@@ -501,83 +460,124 @@ int f_OBJ_GetDomain(lua_State *L) {
 	luaX_pushlua_State(L, result_);
 	return 1;
 }
+int f_OBJ_SetContext(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	OBJ_SetContext(L, this_ );
+	return 0;
+}
+int f_OBJ_ParseClassAttribute(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	const char* classString = luaL_checkstring(L, 2);
+	OBJ_ParseClassAttribute(this_, classString );
+	return 0;
+}
+int f_OBJ_Instantiate(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	struct Object* result_ = OBJ_Instantiate(L, this_);
+	luaX_pushObject(L, result_);
+	return 1;
+}
+int f_OBJ_LoadPrefabs(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	OBJ_LoadPrefabs(L, this_ );
+	return 0;
+}
+int f_OBJ_IsPrefabView(lua_State *L) {
+	struct Object const* this_ = luaX_checkObject(L, 1);
+	bool_t result_ = OBJ_IsPrefabView(this_);
+	lua_pushboolean(L, result_);
+	return 1;
+}
+int f_OBJ_AddAlias(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	const char* name = luaL_checkstring(L, 2);
+	const char* path = luaL_checkstring(L, 3);
+	OBJ_AddAlias(this_, name, path );
+	return 0;
+}
+int f_OBJ_AssignAliases(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	const char* pathToObject = luaL_checkstring(L, 2);
+	OBJ_AssignAliases(this_, pathToObject );
+	return 0;
+}
 
 int luaopen_orca_Object(lua_State *L) {
 	luaL_newmetatable(L, "Object");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_OBJ_CreateFromLuaState },
+		{ "awake", f_OBJ_Awake },
+		{ "animate", f_OBJ_Animate },
 		{ "clear", f_OBJ_Clear },
 		{ "__gc", f_OBJ_Release },
 		{ "__eq", f_OBJ_Equals },
-		{ "awake", f_OBJ_Awake },
-		{ "animate", f_OBJ_Animate },
-		{ "loadPrefabs", f_OBJ_LoadPrefabs },
-		{ "instantiate", f_OBJ_Instantiate },
-		{ "emitPropertyChangedEvents", f_OBJ_EmitPropertyChangedEvents },
-		{ "updateProperties", f_OBJ_UpdateProperties },
-		{ "updateLayout", f_OBJ_UpdateLayout },
+		{ "rebuild", f_OBJ_Rebuild },
 		{ "addChild", f_OBJ_AddChild },
 		{ "removeFromParent", f_OBJ_RemoveFromParent },
-		{ "__setproperty", f_OBJ_SetProperty },
-		{ "__getproperty", f_OBJ_GetProperty },
-		{ "findChild", f_OBJ_FindChild },
-		{ "dispatchEvent", f_OBJ_DispatchEvent },
-		{ "postMessage", f_OBJ_PostMessage },
-		{ "sendMessage2", f_OBJ_SendMessage2 },
-		{ "play", f_OBJ_Play },
-		{ "setFocus", f_OBJ_SetFocus },
-		{ "doTween", f_OBJ_DoTween },
-		{ "addStyleSheet", f_OBJ_AddStyleSheet },
-		{ "setTimer", f_OBJ_SetTimer },
-		{ "__setcontext", f_OBJ_SetContext },
-		{ "getName", f_OBJ_GetName },
-		{ "setName", f_OBJ_SetName },
-		{ "getClassName", f_OBJ_GetClassName },
-		{ "checkName", f_OBJ_CheckName },
-		{ "findByPath", f_OBJ_FindByPath },
-		{ "getStyle", f_OBJ_GetStyle },
-		{ "setStyle", f_OBJ_SetStyle },
-		{ "findCallbackForID", f_OBJ_FindCallbackForID },
-		{ "applyStyles", f_OBJ_ApplyStyles },
-		{ "setDirty", f_OBJ_SetDirty },
-		{ "clearDirtyFlags", f_OBJ_ClearDirtyFlags },
 		{ "getParent", f_OBJ_GetParent },
 		{ "getFirstChild", f_OBJ_GetFirstChild },
 		{ "getNext", f_OBJ_GetNext },
 		{ "getRoot", f_OBJ_GetRoot },
+		{ "findChild", f_OBJ_FindChild },
+		{ "findByPath", f_OBJ_FindByPath },
 		{ "findChildByID", f_OBJ_FindChildByID },
 		{ "findChildByAlias", f_OBJ_FindChildByAlias },
-		{ "getSourceFile", f_OBJ_GetSourceFile },
-		{ "getTextContent", f_OBJ_GetTextContent },
-		{ "getTimestamp", f_OBJ_GetTimestamp },
-		{ "getLuaObject", f_OBJ_GetLuaObject },
-		{ "getAlias", f_OBJ_GetAlias },
-		{ "getFlags", f_OBJ_GetFlags },
-		{ "setFlags", f_OBJ_SetFlags },
-		{ "getIdentifier", f_OBJ_GetIdentifier },
-		{ "showModal", f_OBJ_ShowModal },
-		{ "isFocused", f_OBJ_IsFocused },
-		{ "setHover", f_OBJ_SetHover },
-		{ "setTextContent", f_OBJ_SetTextContent },
-		{ "setSourceFile", f_OBJ_SetSourceFile },
-		{ "setClassName", f_OBJ_SetClassName },
-		{ "findParentOfClass", f_OBJ_FindParentOfClass },
 		{ "findChildOfClass", f_OBJ_FindChildOfClass },
-		{ "isPrefabView", f_OBJ_IsPrefabView },
-		{ "addAlias", f_OBJ_AddAlias },
-		{ "assignAliases", f_OBJ_AssignAliases },
-		{ "parseClassAttribute", f_OBJ_ParseClassAttribute },
-		{ "setAnimation", f_OBJ_SetAnimation },
-		{ "getAnimation", f_OBJ_GetAnimation },
-		{ "addAnimation", f_OBJ_AddAnimation },
-		{ "getInteger", f_OBJ_GetInteger },
-		{ "getProperties", f_OBJ_GetProperties },
+		{ "findParentOfClass", f_OBJ_FindParentOfClass },
+		{ "dispatchEvent", f_OBJ_DispatchEvent },
+		{ "postMessage", f_OBJ_PostMessage },
+		{ "sendMessage2", f_OBJ_SendMessage2 },
+		{ "findCallbackForID", f_OBJ_FindCallbackForID },
+		{ "__setproperty", f_OBJ_SetProperty },
+		{ "__getproperty", f_OBJ_GetProperty },
+		{ "updateProperties", f_OBJ_UpdateProperties },
+		{ "emitPropertyChangedEvents", f_OBJ_EmitPropertyChangedEvents },
 		{ "findImplicitProperty", f_OBJ_FindImplicitProperty },
 		{ "findExplicitProperty", f_OBJ_FindExplicitProperty },
 		{ "attachPropertyProgram", f_OBJ_AttachPropertyProgram },
 		{ "findPropertyByPath", f_OBJ_FindPropertyByPath },
-		{ "rebuild", f_OBJ_Rebuild },
+		{ "getProperties", f_OBJ_GetProperties },
+		{ "getInteger", f_OBJ_GetInteger },
+		{ "updateLayout", f_OBJ_UpdateLayout },
+		{ "setDirty", f_OBJ_SetDirty },
+		{ "clearDirtyFlags", f_OBJ_ClearDirtyFlags },
+		{ "applyStyles", f_OBJ_ApplyStyles },
+		{ "addStyleSheet", f_OBJ_AddStyleSheet },
+		{ "getStyle", f_OBJ_GetStyle },
+		{ "setStyle", f_OBJ_SetStyle },
+		{ "play", f_OBJ_Play },
+		{ "doTween", f_OBJ_DoTween },
+		{ "setAnimation", f_OBJ_SetAnimation },
+		{ "getAnimation", f_OBJ_GetAnimation },
+		{ "addAnimation", f_OBJ_AddAnimation },
+		{ "setFocus", f_OBJ_SetFocus },
+		{ "isFocused", f_OBJ_IsFocused },
+		{ "setHover", f_OBJ_SetHover },
+		{ "showModal", f_OBJ_ShowModal },
+		{ "setTimer", f_OBJ_SetTimer },
+		{ "getName", f_OBJ_GetName },
+		{ "setName", f_OBJ_SetName },
+		{ "getClassName", f_OBJ_GetClassName },
+		{ "setClassName", f_OBJ_SetClassName },
+		{ "checkName", f_OBJ_CheckName },
+		{ "getFlags", f_OBJ_GetFlags },
+		{ "setFlags", f_OBJ_SetFlags },
+		{ "getIdentifier", f_OBJ_GetIdentifier },
+		{ "getAlias", f_OBJ_GetAlias },
+		{ "getSourceFile", f_OBJ_GetSourceFile },
+		{ "setSourceFile", f_OBJ_SetSourceFile },
+		{ "getTextContent", f_OBJ_GetTextContent },
+		{ "setTextContent", f_OBJ_SetTextContent },
+		{ "getTimestamp", f_OBJ_GetTimestamp },
+		{ "getLuaObject", f_OBJ_GetLuaObject },
 		{ "getDomain", f_OBJ_GetDomain },
+		{ "__setcontext", f_OBJ_SetContext },
+		{ "parseClassAttribute", f_OBJ_ParseClassAttribute },
+		{ "instantiate", f_OBJ_Instantiate },
+		{ "loadPrefabs", f_OBJ_LoadPrefabs },
+		{ "isPrefabView", f_OBJ_IsPrefabView },
+		{ "addAlias", f_OBJ_AddAlias },
+		{ "assignAliases", f_OBJ_AssignAliases },
 		{ NULL, NULL },
 	}), 0);
 	lua_pushvalue(L, -1);

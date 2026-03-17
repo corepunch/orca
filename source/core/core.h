@@ -124,6 +124,12 @@ core_GetHover(void);
 /// @brief Create new object.
 ORCA_API int
 OBJ_CreateFromLuaState(struct lua_State*);
+/// @brief Initializes the core component when it is loaded, an essential lifecycle method.
+ORCA_API void
+OBJ_Awake(struct lua_State*, struct Object*);
+/// @brief Runs object animations.
+ORCA_API void
+OBJ_Animate(struct lua_State*, struct Object*);
 /// @brief Clear all children of the object.
 ORCA_API void
 OBJ_Clear(struct lua_State*, struct Object*);
@@ -133,102 +139,15 @@ OBJ_Release(struct lua_State*, struct Object*);
 /// @brief Compare two objects for equality.
 ORCA_API bool_t
 OBJ_Equals(struct Object const*, struct Object const*);
-/// @brief Initializes the core component when it is loaded, an essential lifecycle method.
+/// @brief Rebuilds the object's body content asynchronously
 ORCA_API void
-OBJ_Awake(struct lua_State*, struct Object*);
-/// @brief Runs object animations.
-ORCA_API void
-OBJ_Animate(struct lua_State*, struct Object*);
-/// @brief Loads and instantiates prefabs.
-ORCA_API void
-OBJ_LoadPrefabs(struct lua_State*, struct Object*);
-/// @brief Instantiates a new object from this prefab.
-ORCA_API struct Object*
-OBJ_Instantiate(struct lua_State*, struct Object*);
-/// @brief Emits onPropertyChanged events by comparing to previous values.
-ORCA_API void
-OBJ_EmitPropertyChangedEvents(struct lua_State*, struct Object*);
-/// @brief Updates object properties.
-ORCA_API void
-OBJ_UpdateProperties(struct Object*);
-/// @brief Updates object layout.
-ORCA_API void
-OBJ_UpdateLayout(struct Object*, int32_t, int32_t);
+OBJ_Rebuild(struct lua_State*, struct Object*);
 /// @brief Add a child object.
 ORCA_API struct Object*
 OBJ_AddChild(struct Object*, struct Object*, bool_t);
 /// @brief Destroys an object.
 ORCA_API void
 OBJ_RemoveFromParent(struct lua_State*, struct Object*);
-/// @brief Set a property on the object.
-ORCA_API bool_t
-OBJ_SetProperty(struct lua_State*, struct Object*, const char*);
-/// @brief Get a property value from an object.
-ORCA_API int
-OBJ_GetProperty(struct lua_State*, struct Object*, const char*);
-/// @brief Find a child object by name.
-ORCA_API struct Object*
-OBJ_FindChild(struct Object*, const char*, bool_t);
-/// @brief Dispatch an event starting from this object and bubbling up parents.
-ORCA_API struct Object*
-OBJ_DispatchEvent(struct lua_State*, struct Object*, const char*);
-/// @brief Posts a message to the global message queue.
-ORCA_API void
-OBJ_PostMessage(struct lua_State*, struct Object*, const char*);
-/// @brief Send a message to directly to the object ignoring queue.
-ORCA_API void
-OBJ_SendMessage2(struct lua_State*, struct Object*, const char*);
-/// @brief Play an animation or resource on the object.
-ORCA_API void
-OBJ_Play(struct Object*, const char*);
-/// @brief Set focus on the object.
-ORCA_API void
-OBJ_SetFocus(struct Object*);
-/// @brief Tween an object property over time.
-ORCA_API void
-OBJ_DoTween(struct lua_State*, struct Object*);
-/// @brief Add a stylesheet to the object.
-ORCA_API void
-OBJ_AddStyleSheet(struct lua_State*, struct Object*, const char*);
-/// @brief Set a timer on the object.
-ORCA_API int
-OBJ_SetTimer(struct lua_State*, struct Object*);
-/// @brief Set the current context object where newly created objects will be parented.
-ORCA_API void
-OBJ_SetContext(struct lua_State*, struct Object*);
-/// @brief Retrieves the object's name identifier
-ORCA_API const char*
-OBJ_GetName(struct Object const*);
-/// @brief Sets the object's name identifier
-ORCA_API void
-OBJ_SetName(struct Object*, const char*);
-/// @brief Returns the object's class type name
-ORCA_API const char*
-OBJ_GetClassName(struct Object const*);
-/// @brief Checks if object has a specific name
-ORCA_API bool_t
-OBJ_CheckName(struct Object const*, const char*);
-/// @brief Finds child object by hierarchical path
-ORCA_API struct Object*
-OBJ_FindByPath(struct Object*, const char*);
-/// @brief Retrieves object style flags
-ORCA_API uint32_t
-OBJ_GetStyle(struct Object const*);
-/// @brief Sets object style flags
-ORCA_API void
-OBJ_SetStyle(struct Object*, uint32_t);
-/// @brief Retrieves callback function name for event ID
-ORCA_API const char*
-OBJ_FindCallbackForID(struct Object*, uint32_t);
-/// @brief Applies style changes to object hierarchy
-ORCA_API void
-OBJ_ApplyStyles(struct Object*, bool_t);
-/// @brief Sets object dirty and queues it for recalculation
-ORCA_API void
-OBJ_SetDirty(struct Object*);
-/// @brief Clears dirty flags, marks object as recalculated
-ORCA_API void
-OBJ_ClearDirtyFlags(struct Object*);
 /// @brief Gets the parent object in the hierarchy
 ORCA_API struct Object*
 OBJ_GetParent(struct Object const*);
@@ -241,87 +160,48 @@ OBJ_GetNext(struct Object const*);
 /// @brief Gets the root object of the hierarchy
 ORCA_API struct Object*
 OBJ_GetRoot(struct Object*);
+/// @brief Find a child object by name.
+ORCA_API struct Object*
+OBJ_FindChild(struct Object*, const char*, bool_t);
+/// @brief Finds child object by hierarchical path
+ORCA_API struct Object*
+OBJ_FindByPath(struct Object*, const char*);
 /// @brief Finds a child object by its unique identifier
 ORCA_API struct Object*
 OBJ_FindChildByID(struct Object*, uint32_t);
 /// @brief Finds a child object by its alias identifier
 ORCA_API struct Object*
 OBJ_FindChildByAlias(struct Object*, uint32_t);
-/// @brief Gets the source file path
-ORCA_API const char*
-OBJ_GetSourceFile(struct Object const*);
-/// @brief Gets the text content of the object
-ORCA_API const char*
-OBJ_GetTextContent(struct Object const*);
-/// @brief Gets the last modified timestamp
-ORCA_API long
-OBJ_GetTimestamp(struct Object const*);
-/// @brief Gets the Lua object reference
-ORCA_API uint32_t
-OBJ_GetLuaObject(struct Object const*);
-/// @brief Gets the alias identifier
-ORCA_API uint32_t
-OBJ_GetAlias(struct Object const*);
-/// @brief Gets the object flags
-ORCA_API uint32_t
-OBJ_GetFlags(struct Object const*);
-/// @brief Sets the object flags
-ORCA_API void
-OBJ_SetFlags(struct Object*, uint32_t);
-/// @brief Gets the identifier of the object
-ORCA_API uint32_t
-OBJ_GetIdentifier(struct Object const*);
-/// @brief Sets or clears the modal child object
-ORCA_API int
-OBJ_ShowModal(struct lua_State*, struct Object*, struct Object*);
-/// @brief Checks if this object currently has focus
-ORCA_API bool_t
-OBJ_IsFocused(struct Object const*);
-/// @brief Sets the hover state for an object
-ORCA_API void
-OBJ_SetHover(struct Object*);
-/// @brief Sets the text content of the object
-ORCA_API void
-OBJ_SetTextContent(struct Object*, const char*);
-/// @brief Sets the source file path of the object
-ORCA_API void
-OBJ_SetSourceFile(struct Object*, const char*);
-/// @brief Sets the class name of the object
-ORCA_API void
-OBJ_SetClassName(struct Object*, const char*);
-/// @brief Finds the nearest parent object of a specific class
-ORCA_API struct Object*
-OBJ_FindParentOfClass(struct Object*, uint32_t);
 /// @brief Finds a child object of a specific class
 ORCA_API struct Object*
 OBJ_FindChildOfClass(struct Object*, uint32_t);
-/// @brief Checks if this object is a prefab view container
+/// @brief Finds the nearest parent object of a specific class
+ORCA_API struct Object*
+OBJ_FindParentOfClass(struct Object*, uint32_t);
+/// @brief Dispatch an event starting from this object and bubbling up parents.
+ORCA_API struct Object*
+OBJ_DispatchEvent(struct lua_State*, struct Object*, const char*);
+/// @brief Posts a message to the global message queue.
+ORCA_API void
+OBJ_PostMessage(struct lua_State*, struct Object*, const char*);
+/// @brief Send a message to directly to the object ignoring queue.
+ORCA_API void
+OBJ_SendMessage2(struct lua_State*, struct Object*, const char*);
+/// @brief Retrieves callback function name for event ID
+ORCA_API const char*
+OBJ_FindCallbackForID(struct Object*, uint32_t);
+/// @brief Set a property on the object.
 ORCA_API bool_t
-OBJ_IsPrefabView(struct Object const*);
-/// @brief Registers an alias for a child object path
+OBJ_SetProperty(struct lua_State*, struct Object*, const char*);
+/// @brief Get a property value from an object.
+ORCA_API int
+OBJ_GetProperty(struct lua_State*, struct Object*, const char*);
+/// @brief Updates object properties.
 ORCA_API void
-OBJ_AddAlias(struct Object*, const char*, const char*);
-/// @brief Resolves and assigns all registered aliases for an object
+OBJ_UpdateProperties(struct Object*);
+/// @brief Emits onPropertyChanged events by comparing to previous values.
 ORCA_API void
-OBJ_AssignAliases(struct Object*, const char*);
-/// @brief Parses and applies multiple class names from a class attribute string
-ORCA_API void
-OBJ_ParseClassAttribute(struct Object*, const char*);
-/// @brief Sets the active animation by name
-ORCA_API void
-OBJ_SetAnimation(struct Object*, const char*);
-/// @brief Gets the currently active animation
-ORCA_API struct KeyframeAnim const*
-OBJ_GetAnimation(struct Object const*);
-/// @brief Adds a keyframe animation to the object's animation library
-ORCA_API void
-OBJ_AddAnimation(struct Object*, struct KeyframeAnim*);
-/// @brief Gets an integer property value by identifier
-ORCA_API int32_t
-OBJ_GetInteger(struct Object const*, uint32_t, int32_t);
-/// @brief Gets the properties collection
-ORCA_API struct Property*
-OBJ_GetProperties(struct Object const*);
+OBJ_EmitPropertyChangedEvents(struct lua_State*, struct Object*);
 /// @brief Looks up a property by context-driven syntax, like "Column" instead of "Grid.Column"
 ORCA_API struct PropertyType const*
 OBJ_FindImplicitProperty(struct Object*, const char*);
@@ -334,12 +214,132 @@ OBJ_AttachPropertyProgram(struct Object*, const char*, const char*, enum Propert
 /// @brief Finds a property by navigating a hierarchical path
 ORCA_API struct Property*
 OBJ_FindPropertyByPath(struct Object*, const char*);
-/// @brief Rebuilds the object's body content asynchronously
+/// @brief Gets the properties collection
+ORCA_API struct Property*
+OBJ_GetProperties(struct Object const*);
+/// @brief Gets an integer property value by identifier
+ORCA_API int32_t
+OBJ_GetInteger(struct Object const*, uint32_t, int32_t);
+/// @brief Updates object layout.
 ORCA_API void
-OBJ_Rebuild(struct lua_State*, struct Object*);
+OBJ_UpdateLayout(struct Object*, int32_t, int32_t);
+/// @brief Sets object dirty and queues it for recalculation
+ORCA_API void
+OBJ_SetDirty(struct Object*);
+/// @brief Clears dirty flags, marks object as recalculated
+ORCA_API void
+OBJ_ClearDirtyFlags(struct Object*);
+/// @brief Applies style changes to object hierarchy
+ORCA_API void
+OBJ_ApplyStyles(struct Object*, bool_t);
+/// @brief Add a stylesheet to the object.
+ORCA_API void
+OBJ_AddStyleSheet(struct lua_State*, struct Object*, const char*);
+/// @brief Retrieves object style flags
+ORCA_API uint32_t
+OBJ_GetStyle(struct Object const*);
+/// @brief Sets object style flags
+ORCA_API void
+OBJ_SetStyle(struct Object*, uint32_t);
+/// @brief Play an animation or resource on the object.
+ORCA_API void
+OBJ_Play(struct Object*, const char*);
+/// @brief Tween an object property over time.
+ORCA_API void
+OBJ_DoTween(struct lua_State*, struct Object*);
+/// @brief Sets the active animation by name
+ORCA_API void
+OBJ_SetAnimation(struct Object*, const char*);
+/// @brief Gets the currently active animation
+ORCA_API struct KeyframeAnim const*
+OBJ_GetAnimation(struct Object const*);
+/// @brief Adds a keyframe animation to the object's animation library
+ORCA_API void
+OBJ_AddAnimation(struct Object*, struct KeyframeAnim*);
+/// @brief Set focus on the object.
+ORCA_API void
+OBJ_SetFocus(struct Object*);
+/// @brief Checks if this object currently has focus
+ORCA_API bool_t
+OBJ_IsFocused(struct Object const*);
+/// @brief Sets the hover state for an object
+ORCA_API void
+OBJ_SetHover(struct Object*);
+/// @brief Sets or clears the modal child object
+ORCA_API int
+OBJ_ShowModal(struct lua_State*, struct Object*, struct Object*);
+/// @brief Set a timer on the object.
+ORCA_API int
+OBJ_SetTimer(struct lua_State*, struct Object*);
+/// @brief Retrieves the object's name identifier
+ORCA_API const char*
+OBJ_GetName(struct Object const*);
+/// @brief Sets the object's name identifier
+ORCA_API void
+OBJ_SetName(struct Object*, const char*);
+/// @brief Returns the object's class type name
+ORCA_API const char*
+OBJ_GetClassName(struct Object const*);
+/// @brief Sets the class name of the object
+ORCA_API void
+OBJ_SetClassName(struct Object*, const char*);
+/// @brief Checks if object has a specific name
+ORCA_API bool_t
+OBJ_CheckName(struct Object const*, const char*);
+/// @brief Gets the object flags
+ORCA_API uint32_t
+OBJ_GetFlags(struct Object const*);
+/// @brief Sets the object flags
+ORCA_API void
+OBJ_SetFlags(struct Object*, uint32_t);
+/// @brief Gets the identifier of the object
+ORCA_API uint32_t
+OBJ_GetIdentifier(struct Object const*);
+/// @brief Gets the alias identifier
+ORCA_API uint32_t
+OBJ_GetAlias(struct Object const*);
+/// @brief Gets the source file path
+ORCA_API const char*
+OBJ_GetSourceFile(struct Object const*);
+/// @brief Sets the source file path of the object
+ORCA_API void
+OBJ_SetSourceFile(struct Object*, const char*);
+/// @brief Gets the text content of the object
+ORCA_API const char*
+OBJ_GetTextContent(struct Object const*);
+/// @brief Sets the text content of the object
+ORCA_API void
+OBJ_SetTextContent(struct Object*, const char*);
+/// @brief Gets the last modified timestamp
+ORCA_API long
+OBJ_GetTimestamp(struct Object const*);
+/// @brief Gets the Lua object reference
+ORCA_API uint32_t
+OBJ_GetLuaObject(struct Object const*);
 /// @brief Gets the domain of the object
 ORCA_API struct lua_State*
 OBJ_GetDomain(struct Object*);
+/// @brief Set the current context object where newly created objects will be parented.
+ORCA_API void
+OBJ_SetContext(struct lua_State*, struct Object*);
+/// @brief Parses and applies multiple class names from a class attribute string
+ORCA_API void
+OBJ_ParseClassAttribute(struct Object*, const char*);
+/// @brief Instantiates a new object from this prefab.
+ORCA_API struct Object*
+OBJ_Instantiate(struct lua_State*, struct Object*);
+/// @brief Loads and instantiates prefabs.
+ORCA_API void
+OBJ_LoadPrefabs(struct lua_State*, struct Object*);
+/// @brief Checks if this object is a prefab view container
+ORCA_API bool_t
+OBJ_IsPrefabView(struct Object const*);
+/// @brief Registers an alias for a child object path
+ORCA_API void
+OBJ_AddAlias(struct Object*, const char*, const char*);
+/// @brief Resolves and assigns all registered aliases for an object
+ORCA_API void
+OBJ_AssignAliases(struct Object*, const char*);
 
 /// @brief Event arguments for a property change event
 /** PropertyChangedEventArgs struct */

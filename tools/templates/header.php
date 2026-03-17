@@ -55,12 +55,24 @@ ORCA_API <?= $func->getReturnType() ?>
 <?php endforeach ?>
 
 <?php foreach ($model->getInterfaces() as $name => $interface): ?>
-<?php foreach ($interface->getMethods() as $method_name => $method): ?>
+<?php foreach ($interface->getTopics() as $topicTitle => $topicData): ?>
+<?php $topicMethods = isset($topicData["methods"]) ? $topicData["methods"] : []; ?>
+<?php $topicDesc = isset($topicData["desc"]) ? $topicData["desc"] : ''; ?>
+<?php if ($topicTitle): ?>
+/// @name <?= $topicTitle ?>
+
+<?php if ($topicDesc): ?>
+/// <?= $topicDesc ?>
+
+<?php endif ?>
+<?php endif ?>
+<?php foreach ($topicMethods as $method_name => $method): ?>
 <?php if ($method->doc): ?>
 /// @brief <?= $method->doc ?>
 <?php endif ?>
 ORCA_API <?= $method->getReturnType() ?>
 <?= $method->full_name ?>(<?= implode(', ', $method->getArgsTypes()) ?>);
+<?php endforeach ?>
 <?php endforeach ?>
 <?php endforeach ?>
 

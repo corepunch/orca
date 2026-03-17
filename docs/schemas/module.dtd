@@ -76,13 +76,19 @@
 >
 
 <!-- Interface Definition (similar to struct but for abstract types) -->
-<!ELEMENT interface (summary?, details?, init?, method*)>
+<!ELEMENT interface (summary?, details?, init?, (method | topic)*)>
 <!ATTLIST interface
   name CDATA #REQUIRED
   prefix CDATA #IMPLIED
   export CDATA #IMPLIED
   no-check (true|false) #IMPLIED
   parent CDATA #IMPLIED
+>
+
+<!-- Topic Separator (inline section divider between methods in an interface) -->
+<!ELEMENT topic (#PCDATA)>
+<!ATTLIST topic
+  title CDATA #REQUIRED
 >
 
 <!-- Component Definition -->
