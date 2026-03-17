@@ -147,10 +147,9 @@ For WebGL the `.so` path line is skipped (`#ifndef __EMSCRIPTEN__`), but the
 engine still calls `require 'orca'`, `require 'orca.core'`, etc. which will
 fail unless the C functions are pre-registered before the Lua state starts.
 
-**Recommendation:** Provide a `WI_RegisterLuaModules(lua_State*)` hook in the
-platform layer (or an Emscripten-specific `main` wrapper) that calls
-`luaL_requiref` for every statically-linked module.  Native platforms would
-leave this as a no-op.
+**Status: resolved.** All built-in C modules are pre-registered by
+`luaopen_orca` via `luaL_preload` before Lua code runs; no `.so` discovery is
+needed for WebGL.
 
 ### 3. Dynamic Plugin Loading
 
@@ -159,10 +158,20 @@ Plugins (`build/lib/liborca/*.so`) are discovered and loaded at runtime via
 but it requires all side modules to be listed at link time; fully runtime
 dlopen is not supported.
 
-**Recommendation:** For WebGL builds, link plugins statically and register
-them during startup.  A thin platform abstraction (`WI_LoadPlugin(path)`) that
-calls `dlopen` on native and performs a static lookup table on WebGL would
-isolate the difference cleanly.
+**Status: resolved.** The Makefile `webgl` target now:
+
+1. Lists the plugins to bundle in `WEBGL_PLUGINS` (UIKit, SceneKit, SpriteKit,
+   DarkReign — vsomeip is excluded because it is C++ / SOME/IP).
+2. Compiles all plugin `.c` sources directly into the single WASM binary
+   alongside the engine modules.
+3. Auto-generates `build/webgl/plugins_luaopen.h` at build time by scanning
+   the plugin sources for `ORCA_API int luaopen_orca_*` symbols and building a
+   `plugin_modules[]` registration table.  The Lua module name is derived from
+   the C symbol name by stripping the `luaopen_` prefix and replacing `_` with
+   `.` (e.g. `luaopen_orca_UIKit` → `"orca.UIKit"`).
+4. Passes `-DPLUGINS_LUAOPEN` when compiling `orcalib.c`.  Under that guard the
+   generated header is included and each plugin module is registered via
+   `luaL_preload` in `luaopen_orca`, exactly like the built-in modules.
 
 ### 4. Thread / Blocking I/O
 

@@ -83,6 +83,13 @@ WEBGL_SOURCES  = $(foreach d, $(WEBGL_SRCMODS), $(wildcard $(d)/*.c))
 # Platform sources compiled directly into the binary (no SIDE_MODULE needed).
 WEBGL_PLAT_SRC = $(wildcard $(PLATFORM_LIBDIR)/webgl/*.c)
 
+# Plugins linked statically into the WebGL binary (vsomeip excluded: C++/sockets).
+WEBGL_PLUGINS     = UIKit SceneKit SpriteKit DarkReign
+WEBGL_PLUGIN_SRCS = $(foreach p, $(WEBGL_PLUGINS), $(wildcard $(PLUGINDIR)/$(p)/*.c))
+# Generated header: forward-declares every luaopen_orca_* symbol found in the
+# plugin sources and builds the plugin_modules[] table used by orcalib.c.
+WEBGL_PLUGINS_H   = $(WEBGL_DIR)/plugins_luaopen.h
+
 WEBGL_CFLAGS  = -O2 -g -I. -I$(CURDIR) -I$(PLATFORM_LIBDIR) \
                 -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG=1 \
                 -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
@@ -112,6 +119,11 @@ XML2_VERSION    = 2.9.14
 # top-level include dir and the libxml2 sub-directory must be on the path.
 WEBGL_CFLAGS  += -I$(WASM_DEPS_DIR)/include -I$(WASM_DEPS_DIR)/include/libxml2
 WEBGL_LDFLAGS += -L$(WASM_DEPS_DIR)/lib -llua5.4 -lxml2 -llz4
+
+# Enable static plugin Lua-module registration (consumed by orcalib.c).
+# orcalib.c uses __has_include("plugins_luaopen.h") to detect the generated
+# header — no extra macro needed; only the include path must be set.
+WEBGL_CFLAGS  += -I$(WEBGL_DIR)
 
 # Bundle data directory into the VFS when WEBGL_DATA is set.
 ifneq ($(WEBGL_DATA),)
@@ -266,10 +278,11 @@ test:
 # Compiles all engine modules into a self-contained orca.html + orca.js +
 # orca.wasm triple using Emscripten.  See the WEBGL section at the top of
 # this Makefile for a full list of prerequisites and usage notes.
-webgl: $(WEBGL_DIR) $(LIBDIR)
+webgl: $(WEBGL_PLUGINS_H) $(LIBDIR)
 	$(WEBGL_EMCC) $(WEBGL_CFLAGS) \
 		$(WEBGL_PLAT_SRC) \
 		$(WEBGL_SOURCES) \
+		$(WEBGL_PLUGIN_SRCS) \
 		$(SOURCEDIR)/orca.c \
 		$(WEBGL_LDFLAGS) \
 		-o $(WEBGL_DIR)/orca.html
@@ -279,6 +292,20 @@ $(WEBGL_DIR):
 
 $(LIBDIR):
 	mkdir -p $(LIBDIR)
+
+# Auto-generate forward declarations and plugin_modules[] table for orcalib.c.
+# Matches all luaopen_<ns>_<name> symbols (e.g. luaopen_orca_UIKit -> "orca.UIKit").
+$(WEBGL_PLUGINS_H): $(WEBGL_PLUGIN_SRCS) | $(WEBGL_DIR)
+	{ \
+	  echo "/* Auto-generated plugin Lua module registrations. Do not edit. */"; \
+	  grep -ohE 'luaopen_[A-Za-z0-9_]+_[A-Za-z0-9_]+' $(WEBGL_PLUGIN_SRCS) | sort -u | \
+	    sed -E 's/luaopen_([A-Za-z0-9_]+)_([A-Za-z0-9_]+)/int &(lua_State*);/'; \
+	  echo "static luaL_Reg const plugin_modules[] = {"; \
+	  grep -ohE 'luaopen_[A-Za-z0-9_]+_[A-Za-z0-9_]+' $(WEBGL_PLUGIN_SRCS) | sort -u | \
+	    sed -E 's/luaopen_([A-Za-z0-9_]+)_([A-Za-z0-9_]+)/  { "\1.\2", & },/'; \
+	  echo "  { NULL, NULL }"; \
+	  echo "};"; \
+	} > $@
 
 # ─── WASM dependency build recipes ────────────────────────────────────────
 

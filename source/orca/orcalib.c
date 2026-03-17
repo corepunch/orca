@@ -176,6 +176,14 @@ ORCA_API int luaopen_orca(lua_State* L)
     luaL_preload(L, fn->name, fn->func);
   }
 
+#if __has_include("plugins_luaopen.h")
+#include "plugins_luaopen.h"
+  // Register statically-linked plugin modules (WebGL / single-binary builds).
+  for (luaL_Reg const* fn = plugin_modules; fn->name; fn++) {
+    luaL_preload(L, fn->name, fn->func);
+  }
+#endif
+
   luaL_newlib(L, ((luaL_Reg[]){
     { NULL, NULL }
   }));

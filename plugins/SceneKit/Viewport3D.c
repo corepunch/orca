@@ -70,8 +70,8 @@ static void collect_lights(lpObject_t object,
 
 void R_RenderViewport(lpObject_t, struct ViewDef*);
 
-struct rect
-Node2D_GetRect(Node2DPtr pNode2D)
+static struct rect
+_Node2D_GetRect(Node2DPtr pNode2D)
 {
   return (struct rect){
     .x = pNode2D->_actual_pos[0],
@@ -86,8 +86,8 @@ HANDLER(Viewport3D, ForegroundContent)
   lpObject_t screen = OBJ_FindParentOfClass(hObject, ID_Screen);
   lpcString_t camera = Viewport3D_camera(hObject);
   bool_t camalias = camera && *camera == '#';
-  struct rect viewrect = Node2D_GetRect(GetNode2D(hObject));
-  struct rect scrnrect = Node2D_GetRect(GetNode2D(screen));
+  struct rect viewrect = _Node2D_GetRect(GetNode2D(hObject));
+  struct rect scrnrect = _Node2D_GetRect(GetNode2D(screen));
 
   // struct ViewEntity entity = {
   //   .type = ET_VIEWPORT,
