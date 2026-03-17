@@ -37,7 +37,7 @@ struct SpriteAnimation {
 	float Framerate; ///< Frames per second
 	struct SpriteFrame* Frames; ///< Variable-length frame data array
 	int32_t NumFrames;
-	uint32_t const *Palette;
+	uint32_t const* Palette;
 };
 ORCA_API void luaX_pushSpriteAnimation(lua_State *L, struct SpriteAnimation const* SpriteAnimation);
 ORCA_API struct SpriteAnimation* luaX_checkSpriteAnimation(lua_State *L, int idx);

@@ -16,7 +16,7 @@
     <property name="Image" type="Texture" pointer="true">Spritesheet texture</property>
     <property name="Framerate" type="float">Frames per second</property>
     <property name="Frames" type="SpriteFrame" array="true">Variable-length frame data array</property>
-    <field name="Palette" type="uint32_t" pointer="true" const="true"/>
+    <field name="Palette" type="uint" pointer="true" const="true"/>
   </class>
   
   <class name="SKNode" parent="Node" children="SKNode">

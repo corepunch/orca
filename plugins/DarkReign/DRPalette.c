@@ -2,14 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define PALETTE_SIZE 256
+#include "DRPalette.h"
 
-typedef struct {
-  int shadow_index;
-  int standard_palette_multiplier;
-  int terrain_palette_multiplier;
-  int gamma;
-} DrPalInfo;
+#define PALETTE_SIZE 256
 
 static uint32_t make_argb(uint8_t a, uint8_t r, uint8_t g, uint8_t b)
 {

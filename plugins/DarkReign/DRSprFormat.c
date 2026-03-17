@@ -78,7 +78,7 @@
 #include <source/core/core.h>
 #include <plugins/SpriteKit/SpriteKit.h>
 #include "DarkReign.h"
-#include "Palette.h"
+#include "DRPalette.h"
 
 #define SPR_DEFAULT_FRAMERATE 10.0f
 

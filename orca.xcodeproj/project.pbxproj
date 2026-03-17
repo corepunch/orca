@@ -214,13 +214,13 @@
 		789AE3D02F687B250067DC75 /* DarkReign_properties.h in Headers */ = {isa = PBXBuildFile; fileRef = 789AE3CC2F687B250067DC75 /* DarkReign_properties.h */; };
 		789AE3D12F687B250067DC75 /* DarkReign.h in Headers */ = {isa = PBXBuildFile; fileRef = 789AE3C82F687B250067DC75 /* DarkReign.h */; };
 		789AE3D22F687B250067DC75 /* DarkReign_export.c in Sources */ = {isa = PBXBuildFile; fileRef = 789AE3CA2F687B250067DC75 /* DarkReign_export.c */; };
-		789AE3D32F687B250067DC75 /* FtgPackage.c in Sources */ = {isa = PBXBuildFile; fileRef = 789AE3CD2F687B250067DC75 /* FtgPackage.c */; };
-		789AE3D42F687B250067DC75 /* SprFormat.c in Sources */ = {isa = PBXBuildFile; fileRef = 789AE3CE2F687B250067DC75 /* SprFormat.c */; };
-		789AE3D52F687B250067DC75 /* DarkReign_main.c in Sources */ = {isa = PBXBuildFile; fileRef = 789AE3CB2F687B250067DC75 /* DarkReign_main.c */; };
+		789AE3D32F687B250067DC75 /* DRFtgPackage.c in Sources */ = {isa = PBXBuildFile; fileRef = 789AE3CD2F687B250067DC75 /* DRFtgPackage.c */; };
+		789AE3D42F687B250067DC75 /* DRSprFormat.c in Sources */ = {isa = PBXBuildFile; fileRef = 789AE3CE2F687B250067DC75 /* DRSprFormat.c */; };
+		789AE3D52F687B250067DC75 /* DarkReign.c in Sources */ = {isa = PBXBuildFile; fileRef = 789AE3CB2F687B250067DC75 /* DarkReign.c */; };
 		789AE3E02F687BDE0067DC75 /* liborca.filesystem.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA6E12E15241200FFCFD9 /* liborca.filesystem.so */; };
 		789AE3E12F687BDE0067DC75 /* liborca.filesystem.so in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 781CA6E12E15241200FFCFD9 /* liborca.filesystem.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		789AE44D2F694ED30067DC75 /* Palette.c in Sources */ = {isa = PBXBuildFile; fileRef = 789AE44C2F694ECE0067DC75 /* Palette.c */; };
-		789AE44F2F694F1C0067DC75 /* Palette.h in Headers */ = {isa = PBXBuildFile; fileRef = 789AE44E2F694F180067DC75 /* Palette.h */; };
+		789AE44D2F694ED30067DC75 /* DRPalette.c in Sources */ = {isa = PBXBuildFile; fileRef = 789AE44C2F694ECE0067DC75 /* DRPalette.c */; };
+		789AE44F2F694F1C0067DC75 /* DRPalette.h in Headers */ = {isa = PBXBuildFile; fileRef = 789AE44E2F694F180067DC75 /* DRPalette.h */; };
 		78A5AFA42F66BA0200E6A765 /* Package.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A5AFA32F66B9FA00E6A765 /* Package.c */; };
 		78A5AFA52F66C81E00E6A765 /* liborca.platform.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; };
 		78A5AFAA2F67395E00E6A765 /* Directory.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A5AFA92F67395B00E6A765 /* Directory.c */; };
@@ -556,12 +556,12 @@
 		789AE3C82F687B250067DC75 /* DarkReign.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DarkReign.h; sourceTree = "<group>"; };
 		789AE3C92F687B250067DC75 /* DarkReign.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = DarkReign.xml; sourceTree = "<group>"; };
 		789AE3CA2F687B250067DC75 /* DarkReign_export.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = DarkReign_export.c; sourceTree = "<group>"; };
-		789AE3CB2F687B250067DC75 /* DarkReign_main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = DarkReign_main.c; sourceTree = "<group>"; };
+		789AE3CB2F687B250067DC75 /* DarkReign.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = DarkReign.c; sourceTree = "<group>"; };
 		789AE3CC2F687B250067DC75 /* DarkReign_properties.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DarkReign_properties.h; sourceTree = "<group>"; };
-		789AE3CD2F687B250067DC75 /* FtgPackage.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = FtgPackage.c; sourceTree = "<group>"; };
-		789AE3CE2F687B250067DC75 /* SprFormat.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SprFormat.c; sourceTree = "<group>"; };
-		789AE44C2F694ECE0067DC75 /* Palette.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Palette.c; sourceTree = "<group>"; };
-		789AE44E2F694F180067DC75 /* Palette.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Palette.h; sourceTree = "<group>"; };
+		789AE3CD2F687B250067DC75 /* DRFtgPackage.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = DRFtgPackage.c; sourceTree = "<group>"; };
+		789AE3CE2F687B250067DC75 /* DRSprFormat.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = DRSprFormat.c; sourceTree = "<group>"; };
+		789AE44C2F694ECE0067DC75 /* DRPalette.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = DRPalette.c; sourceTree = "<group>"; };
+		789AE44E2F694F180067DC75 /* DRPalette.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DRPalette.h; sourceTree = "<group>"; };
 		789D74F52BCA6ABB00E2ADB9 /* api_renderer.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = api_renderer.c; sourceTree = "<group>"; };
 		789ED2E92C8EE475003A3CDF /* localization.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = localization.c; sourceTree = "<group>"; };
 		78A5AD052B7CFBCB005BF50C /* r_shape.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = r_shape.c; sourceTree = "<group>"; };
@@ -1076,15 +1076,15 @@
 		789AE3CF2F687B250067DC75 /* DarkReign */ = {
 			isa = PBXGroup;
 			children = (
-				789AE44E2F694F180067DC75 /* Palette.h */,
-				789AE44C2F694ECE0067DC75 /* Palette.c */,
+				789AE44E2F694F180067DC75 /* DRPalette.h */,
+				789AE44C2F694ECE0067DC75 /* DRPalette.c */,
 				789AE3C82F687B250067DC75 /* DarkReign.h */,
 				789AE3C92F687B250067DC75 /* DarkReign.xml */,
 				789AE3CA2F687B250067DC75 /* DarkReign_export.c */,
-				789AE3CB2F687B250067DC75 /* DarkReign_main.c */,
+				789AE3CB2F687B250067DC75 /* DarkReign.c */,
 				789AE3CC2F687B250067DC75 /* DarkReign_properties.h */,
-				789AE3CD2F687B250067DC75 /* FtgPackage.c */,
-				789AE3CE2F687B250067DC75 /* SprFormat.c */,
+				789AE3CD2F687B250067DC75 /* DRFtgPackage.c */,
+				789AE3CE2F687B250067DC75 /* DRSprFormat.c */,
 			);
 			path = DarkReign;
 			sourceTree = "<group>";
@@ -1476,7 +1476,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				789AE44F2F694F1C0067DC75 /* Palette.h in Headers */,
+				789AE44F2F694F1C0067DC75 /* DRPalette.h in Headers */,
 				789AE3D02F687B250067DC75 /* DarkReign_properties.h in Headers */,
 				789AE3D12F687B250067DC75 /* DarkReign.h in Headers */,
 			);
@@ -2228,10 +2228,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				789AE3D22F687B250067DC75 /* DarkReign_export.c in Sources */,
-				789AE44D2F694ED30067DC75 /* Palette.c in Sources */,
-				789AE3D32F687B250067DC75 /* FtgPackage.c in Sources */,
-				789AE3D42F687B250067DC75 /* SprFormat.c in Sources */,
-				789AE3D52F687B250067DC75 /* DarkReign_main.c in Sources */,
+				789AE44D2F694ED30067DC75 /* DRPalette.c in Sources */,
+				789AE3D32F687B250067DC75 /* DRFtgPackage.c in Sources */,
+				789AE3D42F687B250067DC75 /* DRSprFormat.c in Sources */,
+				789AE3D52F687B250067DC75 /* DarkReign.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
