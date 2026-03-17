@@ -6,19 +6,6 @@
 lpObject_t _SprFile_Load(lua_State* L, uint8_t const *data, uint32_t size, lpcString_t name);
 
 /*
- * Level 3 – CLASS closure.
- * Returned to user code by require(). Each call returns the SpriteAnimation
- * instance that was loaded when the LOADER ran.
- * Upvalue 1: the registered SpriteAnimation object (userdata).
- */
-static int
-f_spr_class(lua_State *L)
-{
-  lua_pushvalue(L, lua_upvalueindex(1));
-  return 1;
-}
-
-/*
  * Level 2 – LOADER closure.
  * Called by Lua's require machinery after the searcher confirms the file
  * exists. Loads and parses the .spr, registers the object, then returns
@@ -46,8 +33,7 @@ f_do_load_spr(lua_State *L)
     return luaL_error(L, "SpriteAnimation class not found, cannot load '%s'", path);
 
   FS_RegisterObject(obj, module);
-  luaX_pushObject(L, obj);                  /* push obj as upvalue for CLASS */
-  lua_pushcclosure(L, f_spr_class, 1);
+  luaX_pushObject(L, obj);
   return 1;
 }
 

@@ -94,6 +94,12 @@ int f_OBJ_LoadPrefabs(lua_State *L) {
 	OBJ_LoadPrefabs(L, this_ );
 	return 0;
 }
+int f_OBJ_Instantiate(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	struct Object* result_ = OBJ_Instantiate(L, this_);
+	luaX_pushObject(L, result_);
+	return 1;
+}
 int f_OBJ_EmitPropertyChangedEvents(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	OBJ_EmitPropertyChangedEvents(L, this_ );
@@ -506,6 +512,7 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "awake", f_OBJ_Awake },
 		{ "animate", f_OBJ_Animate },
 		{ "loadPrefabs", f_OBJ_LoadPrefabs },
+		{ "instantiate", f_OBJ_Instantiate },
 		{ "emitPropertyChangedEvents", f_OBJ_EmitPropertyChangedEvents },
 		{ "updateProperties", f_OBJ_UpdateProperties },
 		{ "updateLayout", f_OBJ_UpdateLayout },

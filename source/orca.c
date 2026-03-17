@@ -141,15 +141,15 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirName) {
 //      fprintf(mem, "local Screen = require '%s'\n", StartupScreen);
 //      fprintf(mem, "local screen = Screen()\n");
       fprintf(mem, "local ok, screen = pcall(require, '%s')\n", StartupScreen);
-      fprintf(mem, "if ok then screen = screen()\n");
-      fprintf(mem, "else local err = screen\n");
-      fprintf(mem, "screen = ui.Screen { Width = %d, Height = %d }\n", windowsize[0], windowsize[1]);
-      fprintf(mem, "local term = ui.TerminalView {\n");
+      fprintf(mem, "if not ok then\n");
+      fprintf(mem, "\tlocal err = screen\n");
+      fprintf(mem, "\tscreen = ui.Screen { Width = %d, Height = %d }\n", windowsize[0], windowsize[1]);
+      fprintf(mem, "\tlocal term = ui.TerminalView {\n");
       fprintf(mem, "\tBufferWidth=screen.Width/8,\n");
       fprintf(mem, "\tBufferHeight=screen.Height/16}\n");
-      fprintf(mem, "term:println(nil, err)\n");
-      fprintf(mem, "screen:addChild(term)\n");
-      fprintf(mem, "print(err)\n");
+      fprintf(mem, "\tterm:println(nil, err)\n");
+      fprintf(mem, "\tscreen:addChild(term)\n");
+      fprintf(mem, "\tprint(err)\n");
 //      fprintf(mem, "screen:addChild(ui.TextBlock(err))\n");
       fprintf(mem, "end\n");
   }

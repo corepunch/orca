@@ -542,3 +542,8 @@ void OBJ_Rebuild(lua_State* L, lpObject_t self) {
   lua_xmove(L, co, nargs);
   WI_PostMessageW(co, kEventResumeCoroutine, MAKEDWORD(nargs, ref), NULL);
 }
+
+lpObject_t OBJ_Instantiate(lua_State* L, lpObject_t prefab) {
+  assert(!"Not implemented");
+  return NULL;
+}

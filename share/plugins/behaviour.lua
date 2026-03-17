@@ -114,11 +114,8 @@ _base_0.__index = _base_0
 local _class_0 = setmetatable({
   __init = function(self, ...)
     local _base_1 = getmetatable(self)
-    
-    _base_1.__add = function(_self_0, ...)
-      _self_0:addChild(...)
-      return ...
-    end
+    _base_1.__add = function(_self_0, ...) _self_0:addChild(...) return ... end
+    _base_1.__call = function(_self_0, ...) return _self_0:instantiate(...) end
     _base_1.__index = function(_self_0, key)
       local ud = rawget(_self_0, '__userdata')
       local mt = getmetatable(_base_1) or {}

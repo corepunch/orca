@@ -58,7 +58,7 @@ orca.typeconverter = {
 	Fixed = function(value) return value end,
 	Object = function(path, type)
 		local ok, resource = pcall(require, path)
-		if ok then return resource() end
+		if ok then return resource end
 		local fallback = fallbacks[type.TypeString]
 		if fallback then
 			if cache[path] then return cache[path] end

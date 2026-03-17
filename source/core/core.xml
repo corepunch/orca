@@ -126,6 +126,12 @@
       <summary>Loads and instantiates prefabs.</summary>
       <details>Resolves and loads prefab resources for this object tree.</details>
     </method>
+        
+    <method name="Instantiate" lua="true">
+      <summary>Instantiates a new object from this prefab.</summary>
+      <details>Will load from the source, not adding it to the static workspace hierarchy</details>
+      <returns type="Object" pointer="true">Returns the instantiated object</returns>
+    </method>
 
     <method name="EmitPropertyChangedEvents" lua="true">
       <summary>Emits onPropertyChanged events by comparing to previous values.</summary>

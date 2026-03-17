@@ -142,6 +142,9 @@ OBJ_Animate(struct lua_State*, struct Object*);
 /// @brief Loads and instantiates prefabs.
 ORCA_API void
 OBJ_LoadPrefabs(struct lua_State*, struct Object*);
+/// @brief Instantiates a new object from this prefab.
+ORCA_API struct Object*
+OBJ_Instantiate(struct lua_State*, struct Object*);
 /// @brief Emits onPropertyChanged events by comparing to previous values.
 ORCA_API void
 OBJ_EmitPropertyChangedEvents(struct lua_State*, struct Object*);
