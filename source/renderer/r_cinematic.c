@@ -146,7 +146,6 @@ Cin_Load(lpcString_t filename, uint32_t frame)
   GLenum datatype = GL_UNSIGNED_BYTE;
 
   struct Texture* tex = tr.textures[TX_CINEMATIC];
-  struct Texture* pal = tr.textures[TX_CINEMATICPALETTE];
 
   R_Call(glBindTexture, GL_TEXTURE_2D, tex->texnum);
 
@@ -171,9 +170,11 @@ Cin_Load(lpcString_t filename, uint32_t frame)
 
   R_SetPointFiltering();
 
+  /* Upload the cinematic's colour palette to the shared palette slot. */
+  struct Texture* pal = tr.textures[TX_CINEMATICPALETTE];
   R_Call(glBindTexture, GL_TEXTURE_2D, pal->texnum);
-  R_Call(glTexSubImage2D, GL_TEXTURE_2D, 0, 0, 0, 256, 1, GL_RGBA, datatype, cin.palette);
-
+  R_Call(glTexSubImage2D, GL_TEXTURE_2D, 0, 0, 0, 256, 1, GL_RGBA,
+         GL_UNSIGNED_BYTE, cin.palette);
   R_SetPointFiltering();
 
   //    R_DrawStretchRaw(&(DRAWSTRETCHRAWSTRUCT) {

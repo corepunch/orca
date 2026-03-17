@@ -1,5 +1,5 @@
 /*
- * SPR sprite file format (Dark Reign, palette-indexed RLE, 8 bits per pixel)
+ * SPR sprite file format (Dark Reign, _palette-indexed RLE, 8 bits per pixel)
  *
  * All multi-byte integers are little-endian.
  *
@@ -52,7 +52,7 @@
  *	 - If step is even (0, 2, 4, …): transparent run of cnt pixels – skip.
  *	 - If step is odd  (1, 3, 5, …): opaque run of cnt pixels.
  *		 Normal  sprite: copy cnt literal bytes from the stream.
- *		 Shadow  sprite: fill cnt pixels with palette index 47.
+ *		 Shadow  sprite: fill cnt pixels with _palette index 47.
  *	 - Advance currx += cnt; step++.
  *	 - Repeat until currx == szx.
  *
@@ -78,8 +78,11 @@
 #include <source/core/core.h>
 #include <plugins/SpriteKit/SpriteKit.h>
 #include "DarkReign.h"
+#include "Palette.h"
 
 #define SPR_DEFAULT_FRAMERATE 10.0f
+
+#include "pal.h"
 
 /* ---- on-disk structs (packed to prevent padding) ---- */
 
@@ -98,7 +101,7 @@ struct _spr_header {
 
 #define SPR_HEADER_SIZE   32	/* sizeof _spr_header – explicit for offset math */
 #define SPR_SECTION_SIZE  16	/* 4 × int32_t per section entry				 */
-#define SPR_SHADOW_INDEX  47	/* palette index used to fill shadow pixels	   */
+#define SPR_SHADOW_INDEX  47	/* _palette index used to fill shadow pixels	   */
 
 /* A parsed section from the section table. */
 struct _spr_section {
@@ -128,6 +131,9 @@ _read_i32(uint8_t const *buf, uint32_t off)
 /*  horizontal-strip texture atlas, and return a SpriteAnimation	   */
 /*  Object.  Returns NULL on any error.								 */
 /* ------------------------------------------------------------------ */
+
+static uint32_t _palette[256];
+static int palette_initialized = 0;
 
 lpObject_t
 _SprFile_Load(lua_State* L, uint8_t const *data, uint32_t size, lpcString_t name)
@@ -426,11 +432,24 @@ _SprFile_Load(lua_State* L, uint8_t const *data, uint32_t size, lpcString_t name
     }
     OBJ_SetName(obj, name);
 
+		if (!palette_initialized) {
+			xmlWith(struct file, fp, FS_LoadFile("DarkReign/BARREN.PAL"), FS_FreeFile) {
+				dr_palette_from_buffer(fp->data, fp->size, &(DrPalInfo){
+					.shadow_index = SPR_SHADOW_INDEX,
+					.standard_palette_multiplier = 6,
+					.terrain_palette_multiplier = 6,
+					.gamma = 1,
+				}, _palette);
+			}
+			palette_initialized = 1;
+		}
+
     struct SpriteAnimation *anim = GetSpriteAnimation(obj);
     anim->Image     = tex;
     anim->Framerate = SPR_DEFAULT_FRAMERATE;
     anim->NumFrames = total_frames;
     anim->Frames    = frames;
+    anim->Palette   = _palette;
 
     // fprintf(stderr, "SPR '%s': loaded %d frames into %ux%u atlas\n",
     //         name, total_frames, atlas_w, atlas_h);

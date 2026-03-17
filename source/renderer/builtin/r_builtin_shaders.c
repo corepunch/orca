@@ -138,6 +138,9 @@ struct shader_desc shader_cinematic = {
     { "u_opacity", UT_FLOAT, PRECISION_LOW },
     { "u_texture", UT_SAMPLER_2D, PRECISION_LOW },
     { "u_cinematicPalette", UT_SAMPLER_2D, PRECISION_LOW },
+ 
+    { "u_bboxMin", UT_FLOAT_VEC3, PRECISION_LOW },
+    { "u_bboxMax", UT_FLOAT_VEC3, PRECISION_LOW },
   },
     .Attributes = {
       { "a_position", UT_FLOAT_VEC4 },
@@ -148,13 +151,18 @@ struct shader_desc shader_cinematic = {
     },
     .VertexShader =
   "void main() {\n"
-  "    gl_Position = u_modelViewProjectionTransform * a_position;\n"
-  "    v_texcoord0 = (u_textureTransform * vec3(a_texcoord0.xy, 1.0)).xy;\n"
+//  "  gl_Position = u_modelViewProjectionTransform * a_position;\n"
+//  "  v_texcoord0 = (u_textureTransform * vec3(a_texcoord0.xy, 1.0)).xy;\n"
+  "  vec2 rectSize = u_bboxMax.xy - u_bboxMin.xy;\n"
+  "  vec2 pos = a_position.xy * rectSize;\n"
+  "  vec3 tex = vec3(pos.x / rectSize.x, pos.y / rectSize.y, 1.0);\n"
+  "  v_texcoord0 = (u_textureTransform * tex).xy;\n"
+  "  gl_Position = u_modelViewProjectionTransform * vec4(pos + u_bboxMin.xy, 0, 1);\n"
   "}\n",
     .FragmentShader =
   "void main() {\n"
-  "    vec4 col = texture(u_texture, v_texcoord0);\n"
-  "    fragColor = texture(u_cinematicPalette, vec2(col.r, 0.5)) * u_opacity;\n"
+  "  vec4 col = texture(u_texture, v_texcoord0);\n"
+  "  fragColor = texture(u_cinematicPalette, vec2(col.r, 0.5)) * u_opacity;\n"
   "}\n"
 };
 
