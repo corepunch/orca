@@ -1,0 +1,63 @@
+name: Deploy to LuaRocks
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Version tag to deploy (e.g. v2.6)'
+        required: true
+
+# Sets permissions of the GITHUB_TOKEN
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install LuaRocks
+        run: sudo apt-get install -y luarocks
+
+      - name: Extract version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG="${GITHUB_REF#refs/tags/}"
+          fi
+          if ! echo "$TAG" | grep -qE '^v[0-9]+(\.[0-9]+)*$'; then
+            echo "Error: tag '$TAG' does not match expected format 'v<major>.<minor>[...]'"
+            exit 1
+          fi
+          VERSION="${TAG#v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Create versioned rockspec
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          TAG="${{ steps.version.outputs.tag }}"
+          ROCKSPEC="orca-${VERSION}-1.rockspec"
+          cp orca-dev-1.rockspec "$ROCKSPEC"
+          sed -i "s/version = \"dev-1\"/version = \"${VERSION}-1\"/" "$ROCKSPEC"
+          sed -i "s|url = \"git://github.com/corepunch/orca.git\",|url = \"https://github.com/corepunch/orca/archive/refs/tags/${TAG}.tar.gz\",|" "$ROCKSPEC"
+          sed -i "/branch = \"main\"/d" "$ROCKSPEC"
+          grep -q "version = \"${VERSION}-1\"" "$ROCKSPEC" || { echo "Error: version substitution failed"; exit 1; }
+          grep -q "archive/refs/tags/${TAG}.tar.gz" "$ROCKSPEC" || { echo "Error: URL substitution failed"; exit 1; }
+          echo "Generated rockspec:"
+          cat "$ROCKSPEC"
+
+      - name: Upload to LuaRocks
+        env:
+          LUAROCKS_API_KEY: ${{ secrets.LUAROCKS_API_KEY }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          luarocks config upload.api_key "$LUAROCKS_API_KEY"
+          luarocks upload "orca-${VERSION}-1.rockspec"
