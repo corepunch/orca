@@ -23,6 +23,7 @@
 #endif
 
 int luaopen_orca(lua_State*);
+int luaL_preload(lua_State*, lpcString_t, lua_CFunction);
 
 #define ORCA_FEATURE_DEBUG
 #define DEFAULT_WINDOW_SIZE 1024, 768
@@ -267,8 +268,7 @@ int main (int argc, LPSTR *argv)
     
     luaL_openlibs(L);
 
-    luaL_requiref(L, "orca", luaopen_orca, 0);
-    lua_pop(L, 1);
+    luaL_preload(L, "orca", luaopen_orca);
     
     path_t exename = { 0 };
     get_exe_filename(exename, sizeof(exename));
