@@ -115,12 +115,11 @@ jobs:
           mkdir -p build/lib
           emmake make -C libs/platform OUTDIR=../../build/lib
 
+      - name: Build WASM dependencies (lua5.4, libxml2, liblz4)
+        run: emmake make wasm-deps
+
       - name: Build Orca for WebGL
-        run: |
-          # lua5.4, libxml2, and liblz4 must be compiled for WASM before this
-          # step can produce a fully linked binary.  See docs/webgl.md for the
-          # complete dependency setup.
-          emmake make webgl WEBGL_EMCC=emcc
+        run: emmake make webgl WEBGL_EMCC=emcc
 
       - name: Upload WebGL artifact
         if: success()
