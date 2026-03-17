@@ -15,7 +15,7 @@
 #   zlib, libpng, libjpeg, freetype  -- provided via -sUSE_* flags below.
 #
 # Usage:
-#   make webgl                          # build without bundled data
+#   make webgl                          # build with share/ assets only
 #   make webgl WEBGL_DATA=samples/Example  # bundle a project into the build
 #   make webgl-demo                     # build with WEBGL_DEMO (default: samples/Example)
 #   make webgl-demo WEBGL_DEMO=samples/MyProject  # override the demo project
@@ -84,12 +84,16 @@ WEBGL_LDFLAGS += -L$(WASM_DEPS_DIR)/lib -llua5.4 -lxml2 -llz4
 # header — no extra macro needed; only the include path must be set.
 WEBGL_CFLAGS  += -I$(WEBGL_DIR)
 
+# Always preload share/ into the VFS – Lua plugins and fonts are needed
+# regardless of whether a project data directory is bundled.
+# Define SHAREDIR so orca.c finds the correct path in the Emscripten VFS.
+WEBGL_LDFLAGS += --preload-file share@/share
+WEBGL_CFLAGS  += -DSHAREDIR='"/share"'
+
 # Bundle data directory into the VFS when WEBGL_DATA is set.
-# Also define PROJECTDIR so orca.c uses it as the default project path,
-# and preload the share/ directory so Lua plugins and fonts are available.
+# Also define PROJECTDIR so orca.c uses it as the default project path.
 ifneq ($(WEBGL_DATA),)
 WEBGL_LDFLAGS += --preload-file $(WEBGL_DATA)@/$(WEBGL_DATA)
-WEBGL_LDFLAGS += --preload-file share@/share
 WEBGL_CFLAGS  += -DPROJECTDIR='"$(WEBGL_DATA)"'
 endif
 
