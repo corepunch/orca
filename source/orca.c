@@ -269,26 +269,30 @@ int main (int argc, LPSTR *argv)
       *strrchr(exename, '/') = '\0';
 #endif
     
-#if __linux__
-    lua_pushfstring(L, "%s/lib", exename);
+#ifdef LIBDIR
+    lua_pushstring(L, LIBDIR);
     lua_setglobal(L, "LIBDIR");
-    lua_pushfstring(L, "%s/share", exename);
-    lua_setglobal(L, "SHAREDIR");
-#elif __APPLE__
+#elif __linux__ || __APPLE__
 #ifdef XCODE
     lua_pushfstring(L, "%s/Debug", exename);
     lua_setglobal(L, "LIBDIR");
 #else
-//    lua_pushfstring(L, "%s/lib/darwin", exename);
     lua_pushfstring(L, "%s/lib", exename);
     lua_setglobal(L, "LIBDIR");
 #endif
+#else
+    lua_pushstring(L, ".");
+    lua_setglobal(L, "LIBDIR");
+#endif
+
+#ifdef SHAREDIR
+    lua_pushstring(L, SHAREDIR);
+    lua_setglobal(L, "SHAREDIR");
+#elif __linux__ || __APPLE__
     lua_pushfstring(L, "%s/share", exename);
     lua_setglobal(L, "SHAREDIR");
 #else
-    lua_pushfstring(L, ".");
-    lua_setglobal(L, "LIBDIR");
-    lua_pushfstring(L, ".");
+    lua_pushstring(L, ".");
     lua_setglobal(L, "SHAREDIR");
 #endif
 

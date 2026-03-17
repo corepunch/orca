@@ -46,6 +46,7 @@ INST_PREFIX ?= /usr/local
 INST_BINDIR ?= $(INST_PREFIX)/bin
 INST_LIBDIR ?= $(INST_PREFIX)/lib/lua/5.4
 INST_LUADIR ?= $(INST_PREFIX)/share/lua/5.4
+INST_SHAREDIR ?= $(INST_PREFIX)/share/orca
 
 .PHONY: default all CLEAN directories unite buildlib buildplugins app platform example install
 
@@ -173,6 +174,7 @@ install: all
 	mkdir -p $(INST_BINDIR)
 	mkdir -p $(INST_LIBDIR)
 	mkdir -p $(INST_LUADIR)/orca
+	mkdir -p $(INST_SHAREDIR)
 	# Install the binary
 	install -m 0755 $(TARGET) $(INST_BINDIR)/
 	# Install the shared library (rename for Lua's require system)
@@ -182,6 +184,8 @@ install: all
 	# Install Lua modules
 	install -m 0644 source/core/behaviour.lua $(INST_LUADIR)/orca/behaviour.lua
 	install -m 0644 main.lua $(INST_LUADIR)/orca/main.lua
+	# Install shared data files (fonts, icons, Lua plugins)
+	cp -r $(RESOURCEDIR)/* $(INST_SHAREDIR)/
 
 test:
 	$(TARGET) -test=tests/test1.lua

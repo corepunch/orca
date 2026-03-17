@@ -51,6 +51,9 @@ jobs:
           path: |
             build/bin/orca
             build/lib/liborca.*
+            build/lib/libplatform.*
+            build/lib/liborca/
+            build/share/
 
   build-macos:
     runs-on: macos-latest
@@ -86,3 +89,50 @@ jobs:
           path: |
             build/bin/orca
             build/lib/liborca.*
+            build/lib/libplatform.*
+            build/lib/liborca/
+            build/share/
+
+  release:
+    needs: [build-linux, build-macos]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      contents: write
+    steps:
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: orca-linux
+          path: artifacts/linux
+
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: orca-macos
+          path: artifacts/macos
+
+      - name: Package artifacts
+        run: |
+          tar czf orca-linux.tar.gz -C artifacts/linux .
+          tar czf orca-macos.tar.gz -C artifacts/macos .
+
+      - name: Create or update rolling "latest" release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: "Latest Build"
+          body: |
+            Automated build from the `main` branch (commit ${{ github.sha }}).
+
+            These are pre-built binaries for Linux and macOS. For versioned releases, see the tagged releases.
+
+            **Install via LuaRocks (from source):**
+            ```
+            luarocks install --dev orca
+            ```
+          files: |
+            orca-linux.tar.gz
+            orca-macos.tar.gz
+          prerelease: true
+          make_latest: false
