@@ -196,9 +196,19 @@ foreach ($model->getInterfaces() as $iname => $interface) {
     if ($details) {
         $md .= "## Overview\n\n" . $details . "\n\n";
     }
-    $methodsMd = methodSection($interface->getMethods(), $iname);
-    if ($methodsMd) {
-        $md .= "## Methods\n\n" . $methodsMd;
+    $hasTopics = $interface->hasTopics();
+    if ($hasTopics) {
+        foreach ($interface->getTopics() as $topicName => $methods) {
+            if (!empty($methods)) {
+                $md .= "## " . $topicName . "\n\n";
+                $md .= methodSection($methods, $iname);
+            }
+        }
+    } else {
+        $methodsMd = methodSection($interface->getMethods(), $iname);
+        if ($methodsMd) {
+            $md .= "## Methods\n\n" . $methodsMd;
+        }
     }
     file_put_contents($outDir . "/" . $iname . ".md", $md);
 }

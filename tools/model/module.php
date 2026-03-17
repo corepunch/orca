@@ -259,6 +259,30 @@ class Interface extends Base {
 			yield $m["name"] => new Method($m, $this->_model, $this->_elem);
 		}
 	}
+
+	function getTopics() {
+		$topicElems = $this->_elem->xpath("topic");
+		if (count($topicElems) > 0) {
+			foreach ($topicElems as $topic) {
+				$topicName = strval($topic["name"]);
+				$methods = [];
+				foreach ($topic->xpath("method[@name]") as $m) {
+					$methods[strval($m["name"])] = new Method($m, $this->_model, $this->_elem);
+				}
+				yield $topicName => $methods;
+			}
+		} else {
+			$methods = [];
+			foreach ($this->getMethods() as $name => $method) {
+				$methods[strval($name)] = $method;
+			}
+			yield "" => $methods;
+		}
+	}
+
+	function hasTopics() {
+		return count($this->_elem->xpath("topic")) > 0;
+	}
 }
 
 // --- Struct ---
