@@ -261,22 +261,25 @@ class Interface extends Base {
 	}
 
 	function getTopics() {
-		$topicElems = $this->_elem->xpath("topic");
-		if (count($topicElems) > 0) {
-			foreach ($topicElems as $topic) {
-				$topicName = strval($topic["name"]);
-				$methods = [];
-				foreach ($topic->xpath("method[@name]") as $m) {
-					$methods[strval($m["name"])] = new Method($m, $this->_model, $this->_elem);
+		$currentTitle = '';
+		$currentDesc = '';
+		$currentMethods = [];
+		foreach ($this->_elem->children() as $child) {
+			$tag = $child->getName();
+			if ($tag === "topic") {
+				if (count($currentMethods) > 0) {
+					yield $currentTitle => ["desc" => $currentDesc, "methods" => $currentMethods];
+					$currentMethods = [];
 				}
-				yield $topicName => $methods;
+				$currentTitle = strval($child["title"]);
+				$currentDesc = trim(strval($child));
+			} elseif ($tag === "method" && isset($child["name"])) {
+				$mname = strval($child["name"]);
+				$currentMethods[$mname] = new Method($child, $this->_model, $this->_elem);
 			}
-		} else {
-			$methods = [];
-			foreach ($this->getMethods() as $name => $method) {
-				$methods[strval($name)] = $method;
-			}
-			yield "" => $methods;
+		}
+		if (count($currentMethods) > 0) {
+			yield $currentTitle => ["desc" => $currentDesc, "methods" => $currentMethods];
 		}
 	}
 

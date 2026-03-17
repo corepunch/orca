@@ -52,36 +52,39 @@ See `docs/MODULE_XML_GUIDE.md` for full reference. Quick summary:
 | `<function>` | Global function |
 | `<event>` | Event declaration |
 | `<method>` | Method on a struct/interface/class |
-| `<topic>` | Named group of methods **inside an `<interface>`** (docs only) |
+| `<topic>` | Inline section separator **inside an `<interface>`** — has `title` attr and description text (docs only) |
 | `<field>` | Struct data member |
 | `<property>` | Component property (exposed to Lua) |
 | `<arg>` | Function/method argument |
 | `<returns>` | Return value description |
 
-### `<topic>` — method grouping inside interfaces
+### `<topic>` — inline section separator inside interfaces
 
-Topics group related `<method>` elements under a named heading in generated documentation. They are **transparent to code generation** — the C header and Lua export templates use XPath `.//method[@name]` which traverses into `<topic>` children automatically.
+`<topic>` is a **sibling separator** placed between `<method>` elements, not a container wrapping them. It marks the start of a named section in generated documentation, with optional prose description as its text content.
 
 ```xml
 <interface name="Object" prefix="OBJ_" export="Object" no-check="true">
   <summary>Core engine host object.</summary>
 
-  <topic name="Lifecycle">
-    <method name="Awake" lua="true">
-      <summary>Initializes the object when loaded.</summary>
-    </method>
-  </topic>
+  <topic title="Lifecycle">Manages object creation, initialization, and destruction.</topic>
+  <method name="Awake" lua="true">
+    <summary>Initializes the object when loaded.</summary>
+  </method>
 
-  <topic name="Hierarchy">
-    <method name="AddChild">
-      <summary>Add a child object.</summary>
-      <arg name="child" type="Object" pointer="true">Child to add</arg>
-    </method>
-  </topic>
+  <topic title="Hierarchy">Navigates and manipulates the parent-child relationship tree.</topic>
+  <method name="AddChild">
+    <summary>Add a child object.</summary>
+    <arg name="child" type="Object" pointer="true">Child to add</arg>
+  </method>
 </interface>
 ```
 
-Use topics when an interface has more than ~10 methods. See `source/core/core.xml` for a full example with 10 topics covering 72 methods.
+- `title` attribute (required) — the section heading in generated docs
+- Text content (optional) — description paragraph rendered below the heading
+- Methods **after** a `<topic>` belong to that section until the next `<topic>` or end of interface
+- `<topic>` is invisible to code generation: `getMethods()` (XPath `.//method[@name]`) traverses all sibling methods regardless of intervening topic separators
+
+Use topics when an interface has more than ~10 methods. See `source/core/core.xml` for a full example with 10 topic separators covering 73 methods.
 
 The DTD allows `(method | topic)*` as the `interface` content model. `struct` and `class` elements do **not** support topics.
 
@@ -118,8 +121,8 @@ $model->getEvents();      // array of Event objects
 ```
 
 `Interface` class key methods:
-- `getMethods()` — yields all methods, including those inside `<topic>` children (uses `.//method[@name]`)
-- `getTopics()` — yields `[topicName => [methods]]`; falls back to a single unnamed group if no topics defined
+- `getMethods()` — yields all methods (uses `.//method[@name]`); topic separators are transparent
+- `getTopics()` — yields `[topicTitle => ["desc" => $desc, "methods" => $methods]]`; falls back to a single unnamed group if no topics defined
 - `hasTopics()` — returns true if the interface has `<topic>` children
 
 ### pyphp limitations
@@ -168,7 +171,7 @@ The `pyphp` Python-PHP bridge has several quirks:
 </method>
 ```
 
-If the interface uses `<topic>` grouping, put the method inside the appropriate topic.
+If the interface uses `<topic>` separators, place the method after the appropriate `<topic title="...">` separator.
 
 ### Run code generation
 

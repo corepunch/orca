@@ -198,9 +198,16 @@ foreach ($model->getInterfaces() as $iname => $interface) {
     }
     $hasTopics = $interface->hasTopics();
     if ($hasTopics) {
-        foreach ($interface->getTopics() as $topicName => $methods) {
+        foreach ($interface->getTopics() as $topicTitle => $topicData) {
+            $methods = isset($topicData["methods"]) ? $topicData["methods"] : [];
+            $topicDesc = isset($topicData["desc"]) ? $topicData["desc"] : '';
             if (!empty($methods)) {
-                $md .= "## " . $topicName . "\n\n";
+                if ($topicTitle) {
+                    $md .= "## " . $topicTitle . "\n\n";
+                }
+                if ($topicDesc) {
+                    $md .= $topicDesc . "\n\n";
+                }
                 $md .= methodSection($methods, $iname);
             }
         }

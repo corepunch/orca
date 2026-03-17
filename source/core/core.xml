@@ -89,8 +89,7 @@
       <p>An `Object` is not tied to a specific visual or logical role by itself. Instead, it serves as a container for components, and these components define the actual capabilities of the instance. Higher-level types such as `Node`, `Node2D`, or `ImageView` are constructed by layering specialized components on top of the base `Object`.</p>
     </details>
 
-    <topic name="Lifecycle">
-
+    <topic title="Lifecycle">Manages object creation, initialization, update cycles, and destruction.</topic>
     <method name="CreateFromLuaState" export="new" lua="true" static="true">
       <summary>Create new object.</summary>
       <details>This is a fall through constructor, that you can pass a table of properties to</details>
@@ -134,10 +133,8 @@
       <summary>Rebuilds the object's body content asynchronously</summary>
       <details>This method triggers a rebuild of the behavior by either executing a function body, adding a child from a string, and then posting a 'ViewDidLoad' message.</details>
     </method>
-    </topic>
 
-    <topic name="Hierarchy">
-
+    <topic title="Hierarchy">Navigates and manipulates the parent-child relationship tree.</topic>
     <method name="AddChild">
       <summary>Add a child object.</summary>
       <details>Adds the specified object as a child of this object in the hierarchy. If the child already has a parent, it is first removed from that parent's children list using REMOVE_FROM_LIST. The child is then added to the end of this object's children list and its parent pointer is set to this object. An "Attached" message is sent to the newly added child. If is_template is true, the OF_TEMPLATE flag is set on this object to indicate it contains template children.</details>
@@ -228,10 +225,8 @@
       <arg name="classID" type="uint">The hashed identifier of the class to search for</arg>
       <returns type="Object" pointer="true">Pointer to the matching parent object, or null if not found</returns>
     </method>
-    </topic>
 
-    <topic name="Messaging">
-    
+    <topic title="Messaging">Dispatches events and sends messages between objects.</topic>
     <method name="DispatchEvent" lua="true">
       <summary>Dispatch an event starting from this object and bubbling up parents.</summary>
       <details>Initiates an event that begins at this object and bubbles up through the parent hierarchy. Each object in the chain has the opportunity to handle the event through registered event handlers or callbacks. The bubbling continues until either an object handles the event or the root of the hierarchy is reached. This implements a standard event propagation pattern commonly used in UI systems.</details>
@@ -260,10 +255,8 @@
       <arg name="event" type="uint">Event ID to find callback for</arg>
       <returns type="string">Name of callback function, or empty if none registered</returns>
     </method>
-    </topic>
 
-    <topic name="Properties">
-    
+    <topic title="Properties">Reads and writes typed properties, applying and observing changes.</topic>
     <method name="SetProperty" export="__setproperty" lua="true">
       <summary>Set a property on the object.</summary>
       <details>Sets or updates a named property on this object. If the property doesn't exist, it may be created. If it exists, its value is updated. This method integrates with the Lua property system and may trigger property change callbacks and validation. The property system supports various data types including primitives, vectors, colors, and custom types.</details>
@@ -342,10 +335,8 @@
       <arg name="fallback" type="int">The value to return if the property is not found or incompatible</arg>
       <returns type="int">The property value if found and compatible, otherwise the fallback value</returns>
     </method>
-    </topic>
 
-    <topic name="Layout">
-
+    <topic title="Layout">Controls position, size, and dirty-flag propagation for layout passes.</topic>
     <method name="UpdateLayout">
       <summary>Updates object layout.</summary>
       <details>Recalculates layout based on current properties and hierarchy.</details>
@@ -371,10 +362,8 @@
       <details>Forces style recalculation and application, optionally propagating changes to child objects in the hierarchy.</details>
       <arg name="recursive" type="bool">Whether to apply styles to child objects recursively</arg>
     </method>
-    </topic>
 
-    <topic name="Style">
-    
+    <topic title="Style">Manages style sheets and resolves computed style values.</topic>
     <method name="AddStyleSheet" lua="true">
       <summary>Add a stylesheet to the object.</summary>
       <details>Attaches a stylesheet resource to this object, enabling rule-based styling capabilities. The stylesheet contains rules that can modify the appearance and behavior of this object and potentially its children. Stylesheets support selectors, property assignments, and cascading rules. Multiple stylesheets can be applied to the same object, with later sheets taking precedence for conflicting rules.</details>
@@ -394,10 +383,8 @@
       <details>Applies a bitmask of style flags to control object appearance and behavior. Flags can be combined using bitwise OR operations like WinAPI styles.</details>
       <arg name="style" type="uint">Style flags bitmask to apply</arg>
     </method>
-    </topic>
 
-    <topic name="Animation">
-    
+    <topic title="Animation">Attaches, plays, and transitions keyframe animations on this object.</topic>
     <method name="Play">
       <summary>Play an animation or resource on the object.</summary>
       <details>Initiates playback of the specified animation or media resource on this object. The animation name is resolved against the object's animation library or external animation resources. This triggers the animation system to begin updating the object's properties over time according to the animation's keyframes and timeline.</details>
@@ -430,10 +417,8 @@
       <details>Registers a keyframe animation in the object's animation library, making it available for activation via SetAnimation. Multiple animations can be added to an object's library and switched between at runtime. The animation is added to a linked list of animations maintained by the object.</details>
       <arg name="animation" type="KeyframeAnim" pointer="true">The keyframe animation to add to the library</arg>
     </method>
-    </topic>
 
-    <topic name="Focus and Input">
-    
+    <topic title="Focus and Input">Controls focus state, hover, modal presentation, and timers.</topic>
     <method name="SetFocus">
       <summary>Set focus on the object.</summary>
       <details>Makes this object the currently focused object in the game interface. This triggers focus change events: sends "KillFocus" to the previously focused object (if any) and "SetFocus" to this object. Also posts "ThemeChanged" messages to both objects to update their visual appearance. Updates the game's global focus reference to point to this object.</details>
@@ -466,10 +451,8 @@
       <details>Creates and starts a timer associated with this object. Timers can be one-shot or repeating, and execute callback functions after specified delays or intervals. The timer is automatically cleaned up when the object is destroyed. Multiple timers can be active on the same object simultaneously. Timers integrate with the game's update loop and respect pause states.</details>
       <returns type="nresults">Handle or identifier for the created timer, which can be used to control or cancel the timer before it expires</returns>
     </method>
-    </topic>
 
-    <topic name="Identity and State">
-    
+    <topic title="Identity and State">Accesses name, class, flags, aliases, text content, and Lua state.</topic>
     <method name="GetName" const="true">
       <summary>Retrieves the object's name identifier</summary>
       <details>Returns the string name assigned to this object instance for identification and lookup purposes.</details>
@@ -593,10 +576,8 @@
       <details>Parses a space-separated class attribute string (e.g., class="button primary large"). The function splits the string by spaces and adds each class name to the object.  This is typically called during XML/markup parsing when processing class="..." attributes, allowing UI elements to be assigned multiple class names for styling and identification purposes.  Empty strings are ignored.</details>
       <arg name="classString" type="string">Space-separated class names, as from a class="..." attribute</arg>
     </method>
-    </topic>
 
-    <topic name="Prefabs and Aliases">
-
+    <topic title="Prefabs and Aliases">Loads prefab templates and manages named child aliases.</topic>
     <method name="Instantiate" lua="true">
       <summary>Instantiates a new object from this prefab.</summary>
       <details>Will load from the source, not adding it to the static workspace hierarchy</details>
@@ -630,7 +611,6 @@
       <details>Called after the loading phase to resolve alias references and assign aliased children to internal structures. This compilation step processes all aliases registered via AddAlias and updates internal pointers to the actual objects referenced by the given path. This ensures that alias references like #AliasName/Child/Property are properly resolved and ready for use at runtime.</details>
       <arg name="pathToObject" type="string">The path to the object being processed for alias resolution</arg>
     </method>
-    </topic>
   </interface>
   
   <function name="GetFocus">

@@ -85,10 +85,10 @@
   parent CDATA #IMPLIED
 >
 
-<!-- Topic Definition (groups methods within an interface into named sections) -->
-<!ELEMENT topic (method*)>
+<!-- Topic Separator (inline section divider between methods in an interface) -->
+<!ELEMENT topic (#PCDATA)>
 <!ATTLIST topic
-  name CDATA #REQUIRED
+  title CDATA #REQUIRED
 >
 
 <!-- Component Definition -->
