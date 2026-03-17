@@ -328,4 +328,4 @@ $(WASM_DEPS_DIR)/lib/libxml2.a:
 	    --disable-shared --enable-static \
 	    --without-python --without-http --without-ftp \
 	    --without-zlib --without-lzma --without-iconv
-	cd /tmp/wasm-xml2 && emmake make install-strip
+	cd /tmp/wasm-xml2 && emmake make install
