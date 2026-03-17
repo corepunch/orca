@@ -248,7 +248,7 @@ test:
 # Compiles all engine modules into a self-contained orca.html + orca.js +
 # orca.wasm triple using Emscripten.  See the WEBGL section at the top of
 # this Makefile for a full list of prerequisites and usage notes.
-webgl: $(WEBGL_DIR)
+webgl: $(WEBGL_DIR) $(LIBDIR)
 	$(WEBGL_EMCC) $(WEBGL_CFLAGS) \
 		$(WEBGL_PLAT_SRC) \
 		$(WEBGL_SOURCES) \
@@ -258,3 +258,6 @@ webgl: $(WEBGL_DIR)
 
 $(WEBGL_DIR):
 	mkdir -p $(WEBGL_DIR)
+
+$(LIBDIR):
+	mkdir -p $(LIBDIR)

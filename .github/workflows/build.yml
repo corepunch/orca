@@ -111,7 +111,9 @@ jobs:
           version: latest
 
       - name: Build platform library for WebGL
-        run: emmake make -C libs/platform OUTDIR=../../build/lib
+        run: |
+          mkdir -p build/lib
+          emmake make -C libs/platform OUTDIR=../../build/lib
 
       - name: Build Orca for WebGL
         run: |
