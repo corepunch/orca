@@ -170,7 +170,12 @@ Cin_Load(lpcString_t filename, uint32_t frame)
 
   R_SetPointFiltering();
 
-  R_SetPalette(cin.palette);
+  /* Upload the cinematic's colour palette to the shared palette slot. */
+  struct Texture* pal = tr.textures[TX_CINEMATICPALETTE];
+  R_Call(glBindTexture, GL_TEXTURE_2D, pal->texnum);
+  R_Call(glTexSubImage2D, GL_TEXTURE_2D, 0, 0, 0, 256, 1, GL_RGBA,
+         GL_UNSIGNED_BYTE, cin.palette);
+  R_SetPointFiltering();
 
   //    R_DrawStretchRaw(&(DRAWSTRETCHRAWSTRUCT) {
   //        .rect = { (1920.f-cin.width)/2, (720.f-cin.height)/2, cin.width,

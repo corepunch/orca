@@ -3,6 +3,7 @@
 
 #include "r_local.h"
 
+static void R_SetPalette(uint32_t const palette[256]);
 struct renderer tr={0};
 
 #if 1
@@ -276,7 +277,10 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
   
   // Handle shader pointer boxing: shader can be either a real pointer or a boxed tag value
   lpcShader_t shader = NULL;
-  if (!ent->shader) {
+  if (ent->palette && !ent->shader) {
+    // Palette-indexed entity: automatically use the cinematic (palette lookup) shader
+    shader = &tr.shaders[SHADER_CINEMATIC];
+  } else if (!ent->shader) {
     // Default shader when not specified
     shader = &tr.shaders[fallback];
   } else if (BOX_IS_PTR((uintptr_t)ent->shader)) {
@@ -287,7 +291,11 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
     enum shader_type shader_index = (enum shader_type)((uintptr_t)ent->shader & MESH_TAG_MASK);
     shader = &tr.shaders[shader_index];
   }
-  
+
+  if (ent->palette) {
+    R_SetPalette(ent->palette);
+  }
+
   if (((uintptr_t)ent->shader & MESH_TAG_MASK) == SHADER_CINEMATIC) {
     _UpdateCinematicEntity(ent);
   }
@@ -512,20 +520,30 @@ static void Texture_CreateCinematicPalette(struct Texture **img) {
   R_Call(glTexImage2D,GL_TEXTURE_2D,0,GL_SRGB8_ALPHA8,256,1,0,GL_RGBA,GL_UNSIGNED_BYTE,palette);
 }
 
-struct Texture*
+static struct Texture*
 R_GetPalette(void)
 {
   return tr.textures[TX_CINEMATICPALETTE];
 }
 
-void
-R_SetPalette(struct color32 const palette[256])
+static void
+R_SetPalette(uint32_t const palette[256])
 {
   struct Texture *pal = tr.textures[TX_CINEMATICPALETTE];
   if (!pal) return;
+  /* Convert 0x00RRGGBB entries to RGBA, forcing alpha 0 for index 0 and
+   * 255 for all other indices.  Index 0 is always transparent regardless
+   * of its RGB values. */
+  struct color32 rgba[256];
+  for (int i = 0; i < 256; i++) {
+    rgba[i].r = (palette[i] >> 16) & 0xFF;
+    rgba[i].g = (palette[i] >>  8) & 0xFF;
+    rgba[i].b = (palette[i]      ) & 0xFF;
+    rgba[i].a = (i == 0) ? 0 : 255;
+  }
   R_Call(glBindTexture, GL_TEXTURE_2D, pal->texnum);
   R_Call(glTexSubImage2D, GL_TEXTURE_2D, 0, 0, 0, 256, 1, GL_RGBA,
-         GL_UNSIGNED_BYTE, palette);
+         GL_UNSIGNED_BYTE, rgba);
   R_SetPointFiltering();
 }
 
