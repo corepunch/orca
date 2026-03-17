@@ -32,8 +32,11 @@ To bundle a project's data directory into the build:
 make webgl WEBGL_DATA=samples/Example
 ```
 
-The `--preload-file` flag packs the directory into the WASM virtual file
-system so the engine can read its files at runtime.
+This packs the project directory and the `share/` assets into the WASM virtual file
+system, and compiles `PROJECTDIR` into the binary so the engine opens the bundled
+project automatically without needing a command-line argument.
+
+The build uses `-Oz --closure 1` for minimum output size.
 
 ---
 

@@ -67,10 +67,17 @@ INST_SHAREDIR ?= $(INST_PREFIX)/share/orca
 # Usage:
 #   make webgl                          # build without bundled data
 #   make webgl WEBGL_DATA=samples/Example  # bundle a project into the build
+#   make webgl-demo                     # build with WEBGL_DEMO (default: samples/Example)
+#   make webgl-demo WEBGL_DEMO=samples/MyProject  # override the demo project
+#
+# Size optimisation: WEBGL_CFLAGS uses -Oz -flto; WEBGL_LDFLAGS uses
+# --closure 1 -sASSERTIONS=0.  To enable debug symbols temporarily, add
+# WEBGL_CFLAGS="-g -O2 ..." on the make command line.
 # ──────────────────────────────────────────────────────────────────────────
 
 WEBGL_DIR      = build/webgl
 WEBGL_DATA    ?=
+WEBGL_DEMO    ?= samples/Example
 WEBGL_EMCC     = emcc
 
 # Modules included in the WebGL build.  Excluded: network (curl/sockets),
@@ -90,7 +97,7 @@ WEBGL_PLUGIN_SRCS = $(foreach p, $(WEBGL_PLUGINS), $(wildcard $(PLUGINDIR)/$(p)/
 # plugin sources and builds the plugin_modules[] table used by orcalib.c.
 WEBGL_PLUGINS_H   = $(WEBGL_DIR)/plugins_luaopen.h
 
-WEBGL_CFLAGS  = -O2 -g -I. -I$(CURDIR) -I$(PLATFORM_LIBDIR) \
+WEBGL_CFLAGS  = -Oz -flto -I. -I$(CURDIR) -I$(PLATFORM_LIBDIR) \
                 -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG=1 \
                 -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
                 -sASYNCIFY=1 -sASYNCIFY_IMPORTS='["emscripten_sleep"]' \
@@ -101,7 +108,9 @@ WEBGL_LDFLAGS = -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG=1 \
                 -sASYNCIFY=1 -sASYNCIFY_IMPORTS='["emscripten_sleep"]' \
                 -sALLOW_MEMORY_GROWTH=1 \
                 -sEXPORTED_RUNTIME_METHODS='["ccall","cwrap","FS"]' \
-                -sEXIT_RUNTIME=0
+                -sEXIT_RUNTIME=0 \
+                -sASSERTIONS=0 \
+                --closure 1
 
 # ─── WASM dependency builds ───────────────────────────────────────────────
 # Builds lua5.4, libxml2, and liblz4 as WASM static libraries.
@@ -126,12 +135,16 @@ WEBGL_LDFLAGS += -L$(WASM_DEPS_DIR)/lib -llua5.4 -lxml2 -llz4
 WEBGL_CFLAGS  += -I$(WEBGL_DIR)
 
 # Bundle data directory into the VFS when WEBGL_DATA is set.
+# Also define PROJECTDIR so orca.c uses it as the default project path,
+# and preload the share/ directory so Lua plugins and fonts are available.
 ifneq ($(WEBGL_DATA),)
 WEBGL_LDFLAGS += --preload-file $(WEBGL_DATA)@/$(WEBGL_DATA)
+WEBGL_LDFLAGS += --preload-file share@/share
+WEBGL_CFLAGS  += -DPROJECTDIR='"$(WEBGL_DATA)"'
 endif
 
 .PHONY: default all CLEAN directories unite buildlib buildplugins app platform example install webgl \
-        wasm-deps wasm-lua wasm-lz4 wasm-xml2
+        webgl-demo wasm-deps wasm-lua wasm-lz4 wasm-xml2
 
 default: directories modules unite
 all: default
@@ -286,6 +299,12 @@ webgl: $(WEBGL_PLUGINS_H) $(LIBDIR)
 		$(SOURCEDIR)/orca.c \
 		$(WEBGL_LDFLAGS) \
 		-o $(WEBGL_DIR)/orca.html
+
+# Bundle the demo project (WEBGL_DEMO) and deploy-ready share/ assets.
+# Override WEBGL_DEMO from the command line to bundle a different project:
+#   make webgl-demo WEBGL_DEMO=samples/MyProject
+webgl-demo:
+	$(MAKE) webgl WEBGL_DATA=$(WEBGL_DEMO)
 
 $(WEBGL_DIR):
 	mkdir -p $(WEBGL_DIR)

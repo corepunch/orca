@@ -41,6 +41,27 @@ jobs:
       - name: Install MkDocs
         run: pip install mkdocs-material
 
+      - name: Install Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: latest
+
+      - name: Cache WASM dependencies
+        id: wasm-deps-cache
+        uses: actions/cache@v4
+        with:
+          path: build/wasm-deps
+          key: wasm-deps-${{ runner.os }}-${{ hashFiles('Makefile') }}
+
+      - name: Build WASM dependencies (lua5.4, libxml2, liblz4)
+        if: steps.wasm-deps-cache.outputs.cache-hit != 'true'
+        run: emmake make wasm-deps
+
+      - name: Build platform library for WebGL
+        run: |
+          mkdir -p build/lib
+          emmake make -C libs/platform OUTDIR=../../build/lib
+
       - name: Generate DTD and API docs
         run: |
           cd tools
@@ -50,6 +71,14 @@ jobs:
 
       - name: Build documentation site
         run: mkdocs build
+
+      - name: Build WebGL demo (Example project)
+        run: emmake make webgl-demo WEBGL_EMCC=emcc
+
+      - name: Copy WebGL demo into site
+        run: |
+          mkdir -p site/demo
+          cp -r build/webgl/. site/demo/
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

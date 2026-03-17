@@ -2,6 +2,8 @@
 
 ORCA is a lightweight, cross-platform UI framework powered by Lua. Write your application logic and UI **once** and run it on **mobile**, **desktop**, and **embedded** devices — from Android and iOS phones to Linux desktops, macOS laptops, and embedded Linux boards.
 
+[▶ Live Demo](demo/orca.html){ .md-button .md-button--primary }
+
 ## Use Cases
 
 | Platform | Examples |
