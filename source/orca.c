@@ -157,7 +157,7 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirName) {
       fprintf(mem, "else screen = screen()\n");
       fprintf(mem, "end\n");
   }
-#ifdef ORCA_FEATURE_DEBUG
+#if defined(ORCA_FEATURE_DEBUG) && !defined(__EMSCRIPTEN__)
     fprintf(mem, "local editor = require 'orca.editor'\n");
     fprintf(mem, "editor.setScreen(screen)\n");
 #endif

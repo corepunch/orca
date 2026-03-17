@@ -45,13 +45,15 @@ static luaL_Reg const orca_modules[] = {
   { "orca.filesystem.native", luaopen_orca_filesystem_native },
   { "orca.geometry", luaopen_orca_geometry },
   { "orca.localization", luaopen_orca_localization },
+#ifndef __EMSCRIPTEN__
+  { "orca.editor", luaopen_orca_editor },
   { "orca.network", luaopen_orca_network },
+#endif
   { "orca.parsers.json", luaopen_orca_parsers_json },
   { "orca.parsers.xml", luaopen_orca_parsers_xml },
   { "orca.renderer", luaopen_orca_renderer },
   { "orca.backend", luaopen_orca_backend },
   { "orca.system", luaopen_orca_system },
-  { "orca.editor", luaopen_orca_editor },
   { NULL, NULL }
 };
 
