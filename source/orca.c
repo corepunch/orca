@@ -22,6 +22,8 @@
 #include <mach-o/dyld.h>
 #endif
 
+int luaopen_orca(lua_State*);
+
 #define ORCA_FEATURE_DEBUG
 #define DEFAULT_WINDOW_SIZE 1024, 768
 
@@ -264,6 +266,9 @@ int main (int argc, LPSTR *argv)
     *(void**)lua_getextraspace(L) = NULL;
     
     luaL_openlibs(L);
+
+    luaL_requiref(L, "orca", luaopen_orca, 0);
+    lua_pop(L, 1);
     
     path_t exename = { 0 };
     get_exe_filename(exename, sizeof(exename));
