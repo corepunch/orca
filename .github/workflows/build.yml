@@ -107,6 +107,12 @@ jobs:
           version: 3.1.74
           actions-cache-folder: emsdk-cache
 
+      - name: Build WASM dependencies (lua5.4, libxml2, liblz4)
+        # Builds into libs/wasm/ (WASM_DEPS_DIR default). The Makefile targets
+        # use the output files as prerequisites, so this is a no-op once the
+        # pre-built libraries are committed to the repository.
+        run: emmake make wasm-deps
+
       - name: Build platform library for WebGL
         run: |
           mkdir -p build/lib

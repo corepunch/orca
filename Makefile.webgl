@@ -107,7 +107,7 @@ WEBGL_LDFLAGS += --preload-file $(WEBGL_DATA)@/$(WEBGL_DATA)
 WEBGL_CFLAGS  += -DPROJECTDIR='"$(WEBGL_DATA)"'
 endif
 
-.PHONY: webgl webgl-demo wasm-deps wasm-lua wasm-lz4 wasm-xml2
+.PHONY: webgl webgl-demo wasm-deps
 
 # ─── WebGL build target ────────────────────────────────────────────────────
 # Compiles all engine modules into a self-contained orca.html + orca.js +
