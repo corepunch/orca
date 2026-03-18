@@ -43,6 +43,50 @@ The build uses `-Oz --closure 1` for minimum output size.
 
 ---
 
+## Debug Build
+
+When a production build produces an unhelpful error like:
+
+```
+RuntimeError: Out of bounds memory access (evaluating 'a(...c)')
+```
+
+the underlying C source location is hidden by JS minification (`--closure 1`)
+and disabled runtime assertions (`-sASSERTIONS=0`).  Use the debug target to
+get C file names and line numbers instead:
+
+```bash
+emmake make webgl-debug                          # share/ assets only
+emmake make webgl-debug WEBGL_DATA=samples/Example  # bundle a project
+# or use the convenience alias:
+emmake make webgl-debug-demo
+```
+
+Serve the output directory (Chrome/Firefox block `file://` WebAssembly access):
+
+```bash
+python3 -m http.server --directory build/webgl
+# Open http://localhost:8000/orca.html
+```
+
+The debug target differs from the production build in the following ways:
+
+| Flag | Effect |
+|------|--------|
+| `-g` | Embed DWARF debug information in `orca.wasm` |
+| `-gsource-map` | Emit `orca.wasm.map` — maps every WASM byte back to the original C file and line number.  Chrome DevTools shows the C source location automatically when the map file is served alongside `orca.wasm`. |
+| `-sASSERTIONS=2` | Enable strict runtime checks: out-of-bounds memory accesses, null-pointer dereferences, type mismatches, and stack overflows all produce descriptive error messages that name the offending C symbol. |
+| `-sSAFE_HEAP=1` | Validate every heap read and write for alignment and bounds.  This catches the class of errors that appear as `"Out of bounds memory access"` in production builds. |
+| `-O1` (not `-Oz`) | Minimal optimisation — code structure is preserved and stack traces are readable. |
+| *(no `--closure 1`)* | JavaScript output is not minified, so DevTools stack traces show real function names instead of single-letter identifiers like `a`, `b`, `c`. |
+| *(no `-flto`)* | Link-time optimisation is disabled for faster iteration. |
+
+> **Tip:** Open DevTools → **Sources** tab after loading the debug build.
+> If `orca.wasm.map` is served correctly, Emscripten errors will include a
+> clickable link to the exact C file and line that triggered the fault.
+
+---
+
 ## Prerequisites
 
 ### Emscripten ports (automatic)
