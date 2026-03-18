@@ -161,14 +161,26 @@ R_SetBlendMode(enum blend_mode value)
 void
 R_SetViewportRect(struct rect const *rect)
 {
+#ifdef __EMSCRIPTEN__
+  /* The WebGL canvas buffer size is set in CSS pixels via
+     emscripten_set_canvas_element_size(), not in physical device pixels.
+     Multiplying by WI_GetScaling() (devicePixelRatio) would make the
+     viewport larger than the actual framebuffer on HiDPI displays. */
+  float s = 1.0f;
+#else
   float s = WI_GetScaling();
+#endif
   R_Call(glViewport, rect->x * s, rect->y * s, rect->width * s, rect->height * s);
 }
 
 void
 R_SetScissorRect(struct rect const *rect)
 {
+#ifdef __EMSCRIPTEN__
+  float s = 1.0f;
+#else
   float s = WI_GetScaling();
+#endif
   R_Call(glScissor, rect->x * s, rect->y * s, rect->width * s, rect->height * s);
 }
 

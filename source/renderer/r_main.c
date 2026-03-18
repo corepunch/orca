@@ -3,6 +3,10 @@
 
 #include "r_local.h"
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 static HRESULT R_SetPalette(struct color32 const palette[256]);
 struct renderer tr={0};
 
@@ -987,6 +991,16 @@ R_EndFrame(void)
   glFlush();
 
   WI_EndPaint();
+
+#ifdef __EMSCRIPTEN__
+  /* In WebGL there is no explicit buffer swap like on desktop.  The browser
+     composites the canvas contents only when the JavaScript event loop is
+     allowed to run.  If the C event queue is non-empty (e.g. key-repeat or
+     mouse-move events keep arriving) emscripten_sleep(0) in f_peek_iterator
+     is never reached, so the rendered frame is never presented.  Yield here
+     after every frame so the browser always gets a chance to composite. */
+  emscripten_sleep(0);
+#endif
 
   return NOERROR;
 }
