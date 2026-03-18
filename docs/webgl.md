@@ -77,6 +77,7 @@ The debug target differs from the production build in the following ways:
 | `-gsource-map` | Emit `orca.wasm.map` — maps every WASM byte back to the original C file and line number.  Chrome DevTools shows the C source location automatically when the map file is served alongside `orca.wasm`. |
 | `-sASSERTIONS=2` | Enable strict runtime checks: out-of-bounds memory accesses, null-pointer dereferences, type mismatches, and stack overflows all produce descriptive error messages that name the offending C symbol. |
 | `-sSAFE_HEAP=1` | Validate every heap read and write for alignment and bounds.  This catches the class of errors that appear as `"Out of bounds memory access"` in production builds. |
+| `-sSTACK_SIZE=1048576` | Set the C stack size to 1 MB (up from the 64 KB Emscripten default).  The renderer initialization requires deep call chains that exceed the default stack; this prevents `"stack overflow"` aborts at startup. |
 | `-sSTACK_OVERFLOW_CHECK=2` | Detect stack overflows with precise per-call checking.  Reports the offending function when the C stack is exhausted. |
 | `-sDEMANGLE_SUPPORT=1` | Demangle C/C++ symbols in stack traces so function names are human-readable instead of mangled identifiers. |
 | `-sEXCEPTION_STACK_TRACES=1` | Attach a full stack trace to every thrown exception, visible in the browser console. |
