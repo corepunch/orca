@@ -77,7 +77,7 @@ The debug target differs from the production build in the following ways:
 | `-gsource-map` | Emit `orca.wasm.map` — maps every WASM byte back to the original C file and line number.  Chrome DevTools shows the C source location automatically when the map file is served alongside `orca.wasm`. |
 | `-sASSERTIONS=2` | Enable strict runtime checks: out-of-bounds memory accesses, null-pointer dereferences, type mismatches, and stack overflows all produce descriptive error messages that name the offending C symbol. |
 | `-sSAFE_HEAP=1` | Validate every heap read and write for alignment and bounds.  This catches the class of errors that appear as `"Out of bounds memory access"` in production builds. |
-| `-sSTACK_SIZE=1048576` | Set the C stack size to 1 MB (up from the 64 KB Emscripten default).  The renderer initialization requires deep call chains that exceed the default stack; without this the engine aborts at startup with `"stack overflow (Attempt to set SP to 0x…, with stack limits [0x… - 0x…])"`. |
+| `-sSTACK_SIZE=1048576` | Set the C stack size to 1 MB (up from the 64 KB Emscripten default).  The WASM stack grows **downward**: `SP` starts at `STACK_MAX` (high address) and decreases with each function call.  `STACK_BASE = STACK_MAX − STACK_SIZE` is the **lower** boundary; when `SP` crosses it the runtime aborts with `"stack overflow (Attempt to set SP to 0x…, with stack limits [STACK_BASE − STACK_MAX])"`.  Increasing `STACK_SIZE` lowers `STACK_BASE`, giving the downward-growing stack more room.  Without this flag the renderer init (shader compilation + texture loading via ASYNCIFY-instrumented call chains) exceeds the 64 KB default and crashes immediately. |
 | `-sSTACK_OVERFLOW_CHECK=2` | Detect stack overflows with precise per-call checking.  Reports the offending function when the C stack is exhausted. |
 | `-O1` (not `-Oz`) | Minimal optimisation — code structure is preserved and stack traces are readable. |
 | *(no `--closure 1`)* | JavaScript output is not minified, so DevTools stack traces show real function names instead of single-letter identifiers like `a`, `b`, `c`. |
@@ -146,6 +146,18 @@ inserted whenever `WI_PollEvent` returns zero (queue empty).  With ASYNCIFY
 this suspends the C stack, yields control back to the browser (so input
 callbacks fire and `requestAnimationFrame` can schedule a repaint), then
 resumes the Lua loop on the next tick.
+
+**Stack size impact:** ASYNCIFY instruments every function that can
+transitively reach `emscripten_sleep` — which includes the entire renderer
+init path — by adding local variables to save and restore the call state at
+each potential suspension point.  This inflates per-frame stack usage
+significantly beyond what the same code requires without ASYNCIFY.  The WASM
+stack grows **downward** (`SP` decreases with each frame pushed); the default
+64 KB region (`STACK_BASE = STACK_MAX − 65536`) is exhausted by the combined
+depth of shader compilation, texture loading, and model creation calls during
+startup, producing an `"Attempt to set SP to 0x…, with stack limits
+[STACK_BASE − STACK_MAX]"` abort.  `-sSTACK_SIZE=1048576` lowers `STACK_BASE`
+by 1 MB, giving the downward-growing stack enough room.
 
 ### GLSL Shader Version
 

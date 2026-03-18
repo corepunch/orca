@@ -638,7 +638,9 @@ static void Texture_CreateCinematic(struct Texture** img) {
 static void
 R_InitResources(void)
 {
+#ifdef __EMSCRIPTEN__
   fprintf(stderr, "Initializing shaders...\n");
+#endif
   Shader_LoadFromDef(&shader_default, &tr.shaders[SHADER_DEFAULT].shader);
   Shader_LoadFromDef(&shader_ui, &tr.shaders[SHADER_UI].shader);
   Shader_LoadFromDef(&shader_charset, &tr.shaders[SHADER_CHARSET].shader);
@@ -651,7 +653,9 @@ R_InitResources(void)
   Shader_LoadFromDef(&shader_rect, &tr.shaders[SHADER_2D_RECT].shader);
 #endif
 
+#ifdef __EMSCRIPTEN__
   fprintf(stderr, "Initializing textures...\n");
+#endif
   Texture_CreateWhite(tr.textures+TX_WHITE);
   Texture_CreateBlack(tr.textures+TX_BLACK);
   Texture_CreatePalette(tr.textures+TX_PALETTE);
@@ -662,7 +666,9 @@ R_InitResources(void)
   Texture_CreateDebug(tr.textures+TX_DEBUG);
   Texture_CreateCinematic(tr.textures+TX_CINEMATIC);
 
+#ifdef __EMSCRIPTEN__
   fprintf(stderr, "Initializing models...\n");
+#endif
   Model_CreateRectangle(&(struct rect){ 0, 0, 1, 1 }, NULL, VERTEX_ORDER_DEFAULT, tr.models+MD_RECTANGLE);
   tr.models[MD_TEAPOT] = NULL; // Placeholder; runtime uses tr.models[MD_PLANE]
   Model_CreatePlane(1, 1, tr.models+MD_PLANE);
@@ -676,7 +682,6 @@ R_InitResources(void)
 /* GL_FRAMEBUFFER_SRGB and sRGB textures are gated behind R_USE_SRGB, which
  * is disabled for WebGL / Emscripten builds — see include/renderer.h. */
 #ifdef R_USE_SRGB
-  fprintf(stderr, "Enabling sRGB framebuffer...\n");
   glEnable(GL_FRAMEBUFFER_SRGB);
 #endif
 }
@@ -942,7 +947,9 @@ R_DrawToolbarIcon(PDRAWTOOLBARICONSTRUCT parm)
 static void
 R_InitBuffers(void)
 {
+#ifdef __EMSCRIPTEN__
   fprintf(stderr, "Initializing buffers...\n");
+#endif
   R_Call(glGenVertexArrays, 1, &tr.vao);
   R_Call(glBindVertexArray, tr.vao);
   R_Call(glGenBuffers, 1, &tr.buffer);
@@ -987,7 +994,9 @@ R_EndFrame(void)
 HRESULT
 renderer_Init(uint32_t dwWidth, uint32_t dwHeight, bool_t bOffscreen)
 {
+#ifdef __EMSCRIPTEN__
   fprintf(stderr, "Initializing renderer...\n");
+#endif
 
   memset(&tr, 0, sizeof(tr));
   memcpy(&tr.state, &DEFAULTSTATE, sizeof(PIPELINESTATE));
@@ -995,10 +1004,14 @@ renderer_Init(uint32_t dwWidth, uint32_t dwHeight, bool_t bOffscreen)
   tr.frame = -1;
 
   if (bOffscreen) {
+#ifdef __EMSCRIPTEN__
     fprintf(stderr, "Initializing offscreen surface...\n");
+#endif
     WI_CreateSurface(dwWidth, dwHeight);
   } else {
+#ifdef __EMSCRIPTEN__
     fprintf(stderr, "Initializing window...\n");
+#endif
     WI_CreateWindow("Window", dwWidth, dwHeight, 0);
   }
 
@@ -1006,6 +1019,8 @@ renderer_Init(uint32_t dwWidth, uint32_t dwHeight, bool_t bOffscreen)
 
   R_InitBuffers();
 
+  /* Log the GL version and extension list on embedded/WebGL targets where the
+   * available extension set can vary unexpectedly and is useful for debugging. */
 #if defined(__QNX__) || defined(__EMSCRIPTEN__)
   const GLubyte* version = R_Call(glGetString, GL_VERSION);
   fprintf(stderr, "OpenGL Version: %s\n", version);
@@ -1017,7 +1032,9 @@ renderer_Init(uint32_t dwWidth, uint32_t dwHeight, bool_t bOffscreen)
   }
 #endif
 
+#ifdef __EMSCRIPTEN__
   fprintf(stderr, "Renderer initialized successfully.\n");
+#endif
 
   return NOERROR;
 }
@@ -1025,7 +1042,9 @@ renderer_Init(uint32_t dwWidth, uint32_t dwHeight, bool_t bOffscreen)
 void
 renderer_Shutdown(void)
 {
+#ifdef __EMSCRIPTEN__
   fprintf(stderr, "Shutting down renderer...\n");
+#endif
 
   WI_MakeCurrentContext();
 
