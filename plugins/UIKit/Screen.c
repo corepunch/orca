@@ -343,7 +343,7 @@ HANDLER(Node2D, Draw2DContent)
       &pNode2D->RenderTarget);
   }
   
-  Con_Printf("%d %d", Node2D_GetFrame(pNode2D, kBox3FieldWidth), Node2D_GetFrame(pNode2D, kBox3FieldHeight));
+  Con_Printf("Draw2DContent: %f %f", Node2D_GetFrame(pNode2D, kBox3FieldWidth), Node2D_GetFrame(pNode2D, kBox3FieldHeight));
 
   struct ForegroundContentEventArgs foreground = { 0 };
 
