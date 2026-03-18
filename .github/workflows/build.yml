@@ -118,8 +118,8 @@ jobs:
 
       - name: Build Orca for WebGL
         run: |
-          SHORT_SHA=$(git rev-parse --short HEAD)
-          emmake make webgl WEBGL_EMCC=emcc WEBGL_VERSION="Build #${{ github.run_number }} (${SHORT_SHA})"
+          COMMIT_TITLE=$(git log -1 --format=%s)
+          emmake make webgl WEBGL_EMCC=emcc WEBGL_VERSION="${COMMIT_TITLE}"
 
       - name: Upload WebGL artifact
         if: success()
