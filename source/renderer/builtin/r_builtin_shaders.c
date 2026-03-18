@@ -377,7 +377,7 @@ struct shader_desc shader_button = {
   // Rim lighting for depth
   "  float NdotV = max(dot(viewDir, -normal), 0.0);"
   "  float F0 = 0.04;" // base reflectance, ~0.04 for plastics
-  "  float fresnel = F0 + (1.0 - F0) * pow(1 - NdotV, 1.0);"
+  "  float fresnel = F0 + (1.0 - F0) * pow(1.0 - NdotV, 1.0);"
 
   // Combine texture, color, and lighting
   "  float baseColor = mix(0.45, 1.75, (diff + refr) * (1.0 - fresnel));"
@@ -445,7 +445,7 @@ struct shader_desc shader_roundedbox = {
   // Rim lighting for depth
   "  float NdotV = max(dot(viewDir, -normal), 0.0);"
   "  float F0 = 0.04;" // base reflectance, ~0.04 for plastics
-  "  float fresnel = F0 + (1.0 - F0) * pow(1 - NdotV, 1.0);"
+  "  float fresnel = F0 + (1.0 - F0) * pow(1.0 - NdotV, 1.0);"
 
   // Combine texture, color, and lighting
   "  float baseColor = mix(0.45, 1.75, (diff + refr) * (1.0 - fresnel));"
