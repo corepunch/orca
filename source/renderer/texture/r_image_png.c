@@ -189,7 +189,13 @@ R_TexImagePNG(GLenum target, struct WI_Buffer* sb, bool_t premultiply_alpha)
     }
   }
 
-  R_Call(glTexImage2D,target,0,GL_SRGB8_ALPHA8,width,height,0,GL_RGBA,GL_UNSIGNED_BYTE,image_data);
+  R_Call(glTexImage2D,target,0,
+#ifdef R_USE_SRGB
+         GL_SRGB8_ALPHA8,
+#else
+         GL_RGBA,
+#endif
+         width,height,0,GL_RGBA,GL_UNSIGNED_BYTE,image_data);
 
   // clean up
   png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);

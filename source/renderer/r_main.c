@@ -500,7 +500,13 @@ static void Texture_CreatePalette(struct Texture **img) {
   *img = ZeroAlloc(sizeof(struct Texture));
   R_Call(glGenTextures, 1, &(*img)->texnum);
   R_Call(glBindTexture, GL_TEXTURE_2D, (*img)->texnum);
-  R_Call(glTexImage2D,GL_TEXTURE_2D,0,GL_SRGB8_ALPHA8,16,1,0,GL_RGBA,GL_UNSIGNED_BYTE,palette);
+  R_Call(glTexImage2D,GL_TEXTURE_2D,0,
+#ifdef R_USE_SRGB
+         GL_SRGB8_ALPHA8,
+#else
+         GL_RGBA,
+#endif
+         16,1,0,GL_RGBA,GL_UNSIGNED_BYTE,palette);
 }
 
 /* The cinematic palette doubles as the sprite palette for palette-indexed
@@ -648,11 +654,9 @@ R_InitResources(void)
   Model_CreateRoundedRectangle(tr.models+MD_ROUNDED_RECT);
   Model_CreateRoundedBorder(tr.models+MD_ROUNDED_BORDER);
   
-/* GL_FRAMEBUFFER_SRGB is a desktop-OpenGL feature that tells the GPU to
- * convert linear fragment colours to sRGB on write.  It is not available
- * in WebGL 2 (GLES 3.0) and passing it to glEnable() generates
- * GL_INVALID_ENUM, which would surface as a console error in the browser. */
-#ifndef __EMSCRIPTEN__
+/* GL_FRAMEBUFFER_SRGB and sRGB textures are gated behind R_USE_SRGB, which
+ * is disabled for WebGL / Emscripten builds — see include/renderer.h. */
+#ifdef R_USE_SRGB
   glEnable(GL_FRAMEBUFFER_SRGB);
 #endif
 }
