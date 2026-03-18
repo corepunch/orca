@@ -18,8 +18,6 @@ int f_peek_iterator(lua_State* L)
      ASYNCIFY must be enabled (-sASYNCIFY=1) for emscripten_sleep to work. */
   if (!has_event) {
     emscripten_sleep(0);
-  } else {
-    Con_Printf("Got event %08x", msg.message);
   }
 #else
   (void)has_event;  /* suppress -Wunused-but-set-variable on non-Emscripten targets */

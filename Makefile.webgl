@@ -119,7 +119,7 @@ webgl: $(WEBGL_PLUGINS_H) $(LIBDIR)
 		$(WEBGL_LDFLAGS) \
 		--shell-file $(WEBGL_SHELL) \
 		-o $(WEBGL_DIR)/orca.html
-	sed -i.bak 's/@@BUILD_VERSION@@/$(WEBGL_VERSION)/g' $(WEBGL_DIR)/orca.html && \
+	sed -i.bak 's|@@BUILD_VERSION@@|$(WEBGL_VERSION)|g' $(WEBGL_DIR)/orca.html && \
 	  rm -f $(WEBGL_DIR)/orca.html.bak
 
 # Bundle the demo project (WEBGL_DEMO) and deploy-ready share/ assets.
@@ -197,7 +197,7 @@ webgl-debug: $(WEBGL_PLUGINS_H) $(WEBGL_DIR)
 		$(WEBGL_DEBUG_LDFLAGS) \
 		--shell-file $(WEBGL_SHELL) \
 		-o $(WEBGL_DIR)/orca.html
-	sed -i.bak 's/@@BUILD_VERSION@@/$(WEBGL_VERSION)/g' $(WEBGL_DIR)/orca.html && \
+	sed -i.bak 's|@@BUILD_VERSION@@|$(WEBGL_VERSION)|g' $(WEBGL_DIR)/orca.html && \
 	  rm -f $(WEBGL_DIR)/orca.html.bak
 
 webgl-debug-demo:
