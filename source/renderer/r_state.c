@@ -162,11 +162,11 @@ void
 R_SetViewportRect(struct rect const *rect)
 {
 #ifdef __EMSCRIPTEN__
-  /* The WebGL canvas buffer size is set in CSS pixels via
-     emscripten_set_canvas_element_size(), not in physical device pixels.
-     Multiplying by WI_GetScaling() (devicePixelRatio) would make the
-     viewport larger than the actual framebuffer on HiDPI displays. */
-  float s = 1.0f;
+  /* On WebGL, the two framebuffer spaces have different pixel densities:
+   *   - Default framebuffer: CSS pixel units (set via emscripten_set_canvas_element_size)
+   *   - Render textures: physical device pixels (created with Scale = WI_GetScaling())
+   * Apply the device pixel ratio only when a render texture is currently bound. */
+  float s = tr.currentRenderTarget ? WI_GetScaling() : 1.0f;
 #else
   float s = WI_GetScaling();
 #endif
@@ -177,7 +177,7 @@ void
 R_SetScissorRect(struct rect const *rect)
 {
 #ifdef __EMSCRIPTEN__
-  float s = 1.0f;
+  float s = tr.currentRenderTarget ? WI_GetScaling() : 1.0f;
 #else
   float s = WI_GetScaling();
 #endif
