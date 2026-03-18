@@ -3,6 +3,19 @@
 
 #include <include/orca.h>
 
+/* R_USE_SRGB: enable sRGB-aware internal texture formats (GL_SRGB8_ALPHA8)
+ * and framebuffer sRGB conversion (GL_FRAMEBUFFER_SRGB).
+ *
+ * WebGL 2 / GLES 3.0 does not support GL_FRAMEBUFFER_SRGB and calling
+ * glEnable() with it generates GL_INVALID_ENUM.  GL_SRGB8_ALPHA8 is valid
+ * in WebGL 2 for textures, but without framebuffer sRGB support the colour
+ * pipeline is inconsistent, so we disable both together when building for
+ * Emscripten / WebGL.
+ */
+#ifndef __EMSCRIPTEN__
+#define R_USE_SRGB
+#endif
+
 #define RF_USE_FONT_HEIGHT (1 << 0)
 #define RF_CAMERA_ALIAS (1 << 2)
 #define RF_DRAW_DEBUG (1 << 3)
