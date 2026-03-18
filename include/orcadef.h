@@ -188,10 +188,10 @@ Con_Error("Warning: " FMT, ##__VA_ARGS__)
 
 #if defined(__EMSCRIPTEN__) || defined(__QNX__)
 #define Con_Printf(FMT, ...) \
-do { fprintf(stdout, FMT, ##__VA_ARGS__); fflush(stdout); } while(0)
+do { fprintf(stdout, FMT "\n", ##__VA_ARGS__); fflush(stdout); } while(0)
 #else
 #define Con_Printf(FMT, ...) \
-fprintf(stderr, FMT, ##__VA_ARGS__)
+fprintf(stderr, FMT "\n", ##__VA_ARGS__)
 #endif
 
 typedef unsigned int bool_t;

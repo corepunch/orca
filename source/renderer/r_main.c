@@ -639,7 +639,7 @@ static void
 R_InitResources(void)
 {
 #ifdef __EMSCRIPTEN__
-  Con_Printf("Initializing shaders...\n");
+  Con_Printf("Initializing shaders...");
 #endif
   Shader_LoadFromDef(&shader_default, &tr.shaders[SHADER_DEFAULT].shader);
   Shader_LoadFromDef(&shader_ui, &tr.shaders[SHADER_UI].shader);
@@ -654,7 +654,7 @@ R_InitResources(void)
 #endif
 
 #ifdef __EMSCRIPTEN__
-  Con_Printf("Initializing textures...\n");
+  Con_Printf("Initializing textures...");
 #endif
   Texture_CreateWhite(tr.textures+TX_WHITE);
   Texture_CreateBlack(tr.textures+TX_BLACK);
@@ -667,7 +667,7 @@ R_InitResources(void)
   Texture_CreateCinematic(tr.textures+TX_CINEMATIC);
 
 #ifdef __EMSCRIPTEN__
-  Con_Printf("Initializing models...\n");
+  Con_Printf("Initializing models...");
 #endif
   Model_CreateRectangle(&(struct rect){ 0, 0, 1, 1 }, NULL, VERTEX_ORDER_DEFAULT, tr.models+MD_RECTANGLE);
   tr.models[MD_TEAPOT] = NULL; // Placeholder; runtime uses tr.models[MD_PLANE]
@@ -948,7 +948,7 @@ static void
 R_InitBuffers(void)
 {
 #ifdef __EMSCRIPTEN__
-  Con_Printf("Initializing buffers...\n");
+  Con_Printf("Initializing buffers...");
 #endif
   R_Call(glGenVertexArrays, 1, &tr.vao);
   R_Call(glBindVertexArray, tr.vao);
@@ -995,7 +995,7 @@ HRESULT
 renderer_Init(uint32_t dwWidth, uint32_t dwHeight, bool_t bOffscreen)
 {
 #ifdef __EMSCRIPTEN__
-  Con_Printf("Initializing renderer...\n");
+  Con_Printf("Initializing renderer...");
 #endif
 
   memset(&tr, 0, sizeof(tr));
@@ -1005,12 +1005,12 @@ renderer_Init(uint32_t dwWidth, uint32_t dwHeight, bool_t bOffscreen)
 
   if (bOffscreen) {
 #ifdef __EMSCRIPTEN__
-    Con_Printf("Initializing offscreen surface...\n");
+    Con_Printf("Initializing offscreen surface...");
 #endif
     WI_CreateSurface(dwWidth, dwHeight);
   } else {
 #ifdef __EMSCRIPTEN__
-    Con_Printf("Initializing window...\n");
+    Con_Printf("Initializing window...");
 #endif
     WI_CreateWindow("Window", dwWidth, dwHeight, 0);
   }
@@ -1026,19 +1026,19 @@ renderer_Init(uint32_t dwWidth, uint32_t dwHeight, bool_t bOffscreen)
    * WebGL 2 and is used for the extension list on both targets. */
 #if defined(__QNX__)
   const GLubyte* version = R_Call(glGetString, GL_VERSION);
-  Con_Printf("OpenGL Version: %s\n", version);
+  Con_Printf("OpenGL Version: %s", version);
 #endif
 #if defined(__QNX__) || defined(__EMSCRIPTEN__)
   GLint n = 0;
   R_Call(glGetIntegerv, GL_NUM_EXTENSIONS, &n);
   for (GLint i = 0; i < n; i++) {
     lpcString_t extension = (lpcString_t)R_Call(glGetStringi, GL_EXTENSIONS, i);
-    Con_Printf("%s\n", extension);
+    Con_Printf("%s", extension);
   }
 #endif
 
 #ifdef __EMSCRIPTEN__
-  Con_Printf("Renderer initialized successfully.\n");
+  Con_Printf("Renderer initialized successfully.");
 #endif
 
   return NOERROR;
@@ -1048,7 +1048,7 @@ void
 renderer_Shutdown(void)
 {
 #ifdef __EMSCRIPTEN__
-  Con_Printf("Shutting down renderer...\n");
+  Con_Printf("Shutting down renderer...");
 #endif
 
   WI_MakeCurrentContext();
