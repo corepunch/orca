@@ -463,9 +463,11 @@ Shader_BindConstants(struct shader const* shader,
         break;
       case GL_FLOAT_VEC4:
         if (desc->type == UT_COLOR) {
+#ifdef R_USE_SRGB
           for (int i = 0; i < 3; i++) {
             value[i] = powf(value[i], 2.2f);
           }
+#endif
         }
         R_Call(glUniform4fv, desc->location, 1, value);
         break;
@@ -528,8 +530,12 @@ Shader_BindMaterial(struct shader const* shader,
 
 	if (!memcmp(&color, &(struct color){0}, sizeof(struct color))) {
 		color = (struct color){1, 1, 1, 1};
-  } else for (int i = 0; i < 3; i++) {
-    ((float*)&color)[i] = powf(((float*)&color)[i], 2.2f);
+  } else {
+#ifdef R_USE_SRGB
+    for (int i = 0; i < 3; i++) {
+      ((float*)&color)[i] = powf(((float*)&color)[i], 2.2f);
+    }
+#endif
   }
 
   FOR_LOOP(uniform, kShaderUniform_Count)
