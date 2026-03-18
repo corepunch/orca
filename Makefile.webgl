@@ -133,22 +133,26 @@ webgl-demo:
 # Emscripten errors show C file names and line numbers instead of minified JS.
 #
 # Key differences from the production `webgl` target:
-#   -g              Emit DWARF debug information into the WASM binary.
-#   -gsource-map    Generate orca.wasm.map that maps WASM bytes back to C
-#                   source lines.  Chrome/Firefox DevTools show the original
-#                   C file + line when the source map file is served alongside
-#                   orca.wasm (same directory).
-#   -sASSERTIONS=2  Enable strict runtime checks: out-of-bounds memory,
-#                   null-pointer dereferences, type mismatches, and more.
-#                   Error messages include the C symbol name and context.
-#   -sSAFE_HEAP=1   Validate every heap read/write for alignment and bounds.
-#                   Catches the class of errors that appear as
-#                   "Out of bounds memory access" in production builds.
-#   -O1             Minimal optimisation — keeps code structure readable while
-#                   still running at an acceptable speed.
-#   (no --closure)  JS output is not minified, so stack traces show real
-#                   function names instead of single-letter identifiers.
-#   (no -flto)      Link-time optimisation is disabled for faster iteration.
+#   -g                      Emit DWARF debug information into the WASM binary.
+#   -gsource-map            Generate orca.wasm.map that maps WASM bytes back to C
+#                           source lines.  Chrome/Firefox DevTools show the original
+#                           C file + line when the source map file is served alongside
+#                           orca.wasm (same directory).
+#   -sASSERTIONS=2          Enable strict runtime checks: out-of-bounds memory,
+#                           null-pointer dereferences, type mismatches, and more.
+#                           Error messages include the C symbol name and context.
+#   -sSAFE_HEAP=1           Validate every heap read/write for alignment and bounds.
+#                           Catches the class of errors that appear as
+#                           "Out of bounds memory access" in production builds.
+#   -sSTACK_OVERFLOW_CHECK=2 Detect stack overflows with precise checking.
+#   -sDEMANGLE_SUPPORT=1    Show readable C/C++ symbol names in stack traces
+#                           instead of mangled identifiers.
+#   -sEXCEPTION_STACK_TRACES=1 Include full stack traces when exceptions are thrown.
+#   -O1                     Minimal optimisation — keeps code structure readable while
+#                           still running at an acceptable speed.
+#   (no --closure)          JS output is not minified, so stack traces show real
+#                           function names instead of single-letter identifiers.
+#   (no -flto)              Link-time optimisation is disabled for faster iteration.
 #
 # Usage:
 #   emmake make webgl-debug
@@ -163,11 +167,12 @@ WEBGL_DEBUG_CFLAGS  = -g -O1 -I. -I$(CURDIR) -I$(PLATFORM_LIBDIR) \
                       -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
                       -sASYNCIFY=1 -sASYNCIFY_IMPORTS='["emscripten_sleep"]' \
                       -sALLOW_MEMORY_GROWTH=1 \
+                      -sDEMANGLE_SUPPORT=1 \
                       -I$(WASM_DEPS_DIR)/include -I$(WASM_DEPS_DIR)/include/libxml2 \
                       -I$(WEBGL_DIR) \
                       -DSHAREDIR='"/share"'
 
-# Debug LDFLAGS: no --closure, ASSERTIONS=2, SAFE_HEAP, source map.
+# Debug LDFLAGS: no --closure, ASSERTIONS=2, SAFE_HEAP, source map, stack traces.
 WEBGL_DEBUG_LDFLAGS = -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG=1 \
                       -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
                       -sASYNCIFY=1 -sASYNCIFY_IMPORTS='["emscripten_sleep"]' \
@@ -176,6 +181,9 @@ WEBGL_DEBUG_LDFLAGS = -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG
                       -sEXIT_RUNTIME=0 \
                       -sASSERTIONS=2 \
                       -sSAFE_HEAP=1 \
+                      -sSTACK_OVERFLOW_CHECK=2 \
+                      -sDEMANGLE_SUPPORT=1 \
+                      -sEXCEPTION_STACK_TRACES=1 \
                       -gsource-map \
                       -L$(WASM_DEPS_DIR)/lib -llua5.4 -lxml2 -llz4 \
                       --preload-file share@/share
