@@ -83,8 +83,3 @@ build/webgl/plugins_luaopen.h
 # MkDocs generated site (built by mkdocs build in CI)
 site/
 docs/quickstart.md
-
-# Pre-built WASM libraries checked into the repository (libs/wasm/).
-# Override the global *.a exclusion so these can be tracked by git.
-!libs/wasm/
-!libs/wasm/**
