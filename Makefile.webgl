@@ -146,9 +146,6 @@ webgl-demo:
 #                           Catches the class of errors that appear as
 #                           "Out of bounds memory access" in production builds.
 #   -sSTACK_OVERFLOW_CHECK=2 Detect stack overflows with precise checking.
-#   -sDEMANGLE_SUPPORT=1    Show readable C/C++ symbol names in stack traces
-#                           instead of mangled identifiers.
-#   -sEXCEPTION_STACK_TRACES=1 Include full stack traces when exceptions are thrown.
 #   -O1                     Minimal optimisation — keeps code structure readable while
 #                           still running at an acceptable speed.
 #   (no --closure)          JS output is not minified, so stack traces show real
@@ -168,7 +165,6 @@ WEBGL_DEBUG_CFLAGS  = -g -O1 -I. -I$(CURDIR) -I$(PLATFORM_LIBDIR) \
                       -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
                       -sASYNCIFY=1 -sASYNCIFY_IMPORTS='["emscripten_sleep"]' \
                       -sALLOW_MEMORY_GROWTH=1 \
-                      -sDEMANGLE_SUPPORT=1 \
                       -I$(WASM_DEPS_DIR)/include -I$(WASM_DEPS_DIR)/include/libxml2 \
                       -I$(WEBGL_DIR) \
                       -DSHAREDIR='"/share"'
@@ -184,8 +180,6 @@ WEBGL_DEBUG_LDFLAGS = -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG
                       -sASSERTIONS=2 \
                       -sSAFE_HEAP=1 \
                       -sSTACK_OVERFLOW_CHECK=2 \
-                      -sDEMANGLE_SUPPORT=1 \
-                      -sEXCEPTION_STACK_TRACES=1 \
                       -gsource-map \
                       -L$(WASM_DEPS_DIR)/lib -llua5.4 -lxml2 -llz4 \
                       --preload-file share@/share
