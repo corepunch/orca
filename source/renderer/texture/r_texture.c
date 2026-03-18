@@ -126,10 +126,15 @@ R_ApplyImageParms(struct Texture* image, GLenum target, bool_t mipmaps)
   R_Call(glTexParameteri, target, GL_TEXTURE_WRAP_T, gl_wrap);
   
   if (image->Format == kTextureFormatAlpha8) {
+#ifndef __EMSCRIPTEN__
+    /* GL_TEXTURE_SWIZZLE_* is a desktop-GL feature; not available in WebGL 2
+     * (GLES 3.0).  On WebGL, Alpha8 textures are uploaded as GL_RGBA with all
+     * four channels set to the coverage byte, so no swizzle is needed. */
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_RED);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_RED);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_RED);
+#endif
   }
 }
 
@@ -142,6 +147,39 @@ Texture_Reallocate(struct Texture* img, PCREATEIMGSTRUCT _in)
   GLenum const datatype = GL_UNSIGNED_BYTE;
   GLvoid const* data = _in->ImageData;
 
+#ifdef __EMSCRIPTEN__
+  if (_in->Format == kTextureFormatAlpha8) {
+    /* WebGL 2 does not support GL_TEXTURE_SWIZZLE_*.  Upload as GL_RGBA with
+     * every channel set to the coverage byte so that shaders reading any of
+     * .r/.g/.b/.a get the correct value — matching the desktop behaviour
+     * provided by the RRRR swizzle mask. */
+    R_Call(glPixelStorei, GL_UNPACK_ALIGNMENT, 4);
+    R_Call(glBindTexture, GL_TEXTURE_2D, img->texnum);
+    const int pixel_count = w * h;
+    uint8_t *rgba = calloc((size_t)pixel_count, 4);
+    if (rgba && data) {
+      const uint8_t *src = (const uint8_t *)data;
+      for (int i = 0; i < pixel_count; i++) {
+        rgba[i*4+0] = rgba[i*4+1] = rgba[i*4+2] = rgba[i*4+3] = src[i];
+      }
+    }
+    if (img->loaded && img->Width == w && img->Height == h && img->Format == _in->Format) {
+      if (rgba) {
+        R_Call(glTexSubImage2D, GL_TEXTURE_2D, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
+      }
+    } else {
+      R_Call(glTexImage2D, GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
+    }
+    free(rgba);
+    img->loaded = TRUE;
+    img->Width = w;
+    img->Height = h;
+    img->Format = _in->Format;
+    img->Scale = MAX(1, _in->Scale);
+    return;
+  }
+#endif
+
   R_Call(glPixelStorei, GL_UNPACK_ALIGNMENT, fmt != GL_RGBA ? 1 : 4);
   R_Call(glBindTexture, GL_TEXTURE_2D, img->texnum);
 
@@ -152,12 +190,14 @@ Texture_Reallocate(struct Texture* img, PCREATEIMGSTRUCT _in)
     R_Call(glTexImage2D, GL_TEXTURE_2D, 0, _int, w, h, 0, fmt, datatype, data);
   }
 
+#ifndef __EMSCRIPTEN__
   if (_in->Format == kTextureFormatAlpha8) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_RED);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_RED);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_RED);
   }
+#endif
 
   //    uint32_t error = 0xff00ffff;
   //    R_Call(glTexImage2D,
