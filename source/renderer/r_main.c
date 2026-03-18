@@ -648,7 +648,13 @@ R_InitResources(void)
   Model_CreateRoundedRectangle(tr.models+MD_ROUNDED_RECT);
   Model_CreateRoundedBorder(tr.models+MD_ROUNDED_BORDER);
   
+/* GL_FRAMEBUFFER_SRGB is a desktop-OpenGL feature that tells the GPU to
+ * convert linear fragment colours to sRGB on write.  It is not available
+ * in WebGL 2 (GLES 3.0) and passing it to glEnable() generates
+ * GL_INVALID_ENUM, which would surface as a console error in the browser. */
+#ifndef __EMSCRIPTEN__
   glEnable(GL_FRAMEBUFFER_SRGB);
+#endif
 }
 
 static void

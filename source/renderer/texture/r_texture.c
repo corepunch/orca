@@ -152,7 +152,7 @@ Texture_Reallocate(struct Texture* img, PCREATEIMGSTRUCT _in)
     R_Call(glTexImage2D, GL_TEXTURE_2D, 0, _int, w, h, 0, fmt, datatype, data);
   }
 
-  if (fmt == kTextureFormatAlpha8) {
+  if (_in->Format == kTextureFormatAlpha8) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_RED);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_RED);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
