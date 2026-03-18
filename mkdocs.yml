@@ -5,6 +5,11 @@ site_dir: site
 nav:
   - Welcome: index.md
   - Quickstart: quickstart.md
+  - Architecture:
+    - Overview: architecture/index.md
+    - Object + Component System: architecture/object-component-system.md
+    - Plugin System: architecture/plugin-system.md
+    - Code Generation: architecture/code-generation.md
   - API Reference:
     - Overview: api/index.md
     - geometry: api/geometry/README.md
