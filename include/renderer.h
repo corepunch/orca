@@ -244,7 +244,7 @@ typedef struct _DRAWVERT
   struct vec3 normal;
   struct vec3 tangent;
   struct vec3 binormal;
-#ifndef __EMSCRIPTEN__
+#if __EMSCRIPTEN__
   struct vec2 texcoord[2];
   struct vec4 weight;
 #else
