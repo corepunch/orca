@@ -57,21 +57,27 @@ These libraries are fetched and compiled automatically by Emscripten via
 | libjpeg   | `-sUSE_LIBJPEG=1` |
 | freetype  | `-sUSE_FREETYPE=1`|
 
-### Libraries that must be compiled manually for WASM
+### Pre-built WASM libraries (checked into the repository)
 
-The following libraries are not bundled as Emscripten ports and must be
-compiled from source with `emcc` before a fully-linked binary can be produced:
+The following libraries are **pre-built and checked into `libs/wasm/`**.  No
+manual compilation step is required — `make webgl` uses them directly.
 
-| Library  | Source                                             | Notes |
-|----------|----------------------------------------------------|-------|
-| lua 5.4  | https://www.lua.org/download.html                  | Build with `emmake make` inside the Lua source tree |
-| libxml2  | https://gitlab.gnome.org/GNOME/libxml2             | Use CMake with `-DCMAKE_TOOLCHAIN_FILE=$EMSDK/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake` |
-| liblz4   | https://github.com/lz4/lz4                         | `emmake make` in the root of the lz4 source tree |
+| Library  | Version | Source                                          |
+|----------|---------|-------------------------------------------------|
+| lua 5.4  | 5.4.7   | https://www.lua.org/download.html               |
+| libxml2  | 2.9.14  | https://gitlab.gnome.org/GNOME/libxml2          |
+| liblz4   | 1.10.0  | https://github.com/lz4/lz4                      |
 
-Once these are built, add their include and library paths to `WEBGL_CFLAGS`
-and `WEBGL_LDFLAGS` in the `Makefile`.
+If you need to rebuild these libraries (e.g. after an Emscripten version
+upgrade), run:
 
----
+```bash
+source /path/to/emsdk/emsdk_env.sh
+emmake make wasm-deps
+git add libs/wasm && git commit -m "chore: update WASM deps"
+```
+
+See `libs/wasm/README.md` for details.
 
 ## How the WebGL Backend Works
 

@@ -6,10 +6,11 @@
 #   cd emsdk && ./emsdk install latest && ./emsdk activate latest
 #   source ./emsdk_env.sh
 #
-# Additional libraries that must be compiled for WASM with emcc first:
-#   - lua5.4  : build from https://www.lua.org/download.html with emcc
-#   - libxml2 : build from https://gitlab.gnome.org/GNOME/libxml2 with emcc
-#   - liblz4  : build from https://github.com/lz4/lz4 with emcc
+# The WASM static libraries (lua5.4, libxml2, liblz4) are pre-built and
+# checked into libs/wasm/ so no manual dependency build step is needed.
+# If you need to regenerate them (e.g. after an Emscripten version bump):
+#   emmake make wasm-deps
+# Then commit the updated libs/wasm/ directory.
 #
 # Libraries available as Emscripten ports (no manual build needed):
 #   zlib, libpng, libjpeg, freetype  -- provided via -sUSE_* flags below.
@@ -63,12 +64,21 @@ WEBGL_LDFLAGS = -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG=1 \
                 --closure 1
 
 # ─── WASM dependency builds ───────────────────────────────────────────────
-# Builds lua5.4, libxml2, and liblz4 as WASM static libraries.
-# Run once before `make webgl` (with emcc in PATH):
+# Builds lua5.4, libxml2, and liblz4 as WASM static libraries and installs
+# them into WASM_DEPS_DIR (default: libs/wasm/).
+#
+# These libraries are pre-built and checked into libs/wasm/ so normally you
+# do NOT need to run this target.  Run it only when you need to rebuild the
+# libraries (e.g. after an Emscripten version bump or a library upgrade):
+#
+#   source /path/to/emsdk/emsdk_env.sh   # make emcc available
 #   emmake make wasm-deps
-# Override WASM_DEPS_DIR to install into a custom prefix.
+#   git add libs/wasm && git commit -m "chore: update WASM deps"
+#
+# Override WASM_DEPS_DIR to install into a custom prefix instead:
+#   emmake make wasm-deps WASM_DEPS_DIR=/path/to/prefix
 # ──────────────────────────────────────────────────────────────────────────
-WASM_DEPS_DIR  ?= build/wasm-deps
+WASM_DEPS_DIR  ?= libs/wasm
 LUA_VERSION     = 5.4.7
 LZ4_VERSION     = 1.10.0
 XML2_VERSION    = 2.9.14
@@ -97,7 +107,7 @@ WEBGL_LDFLAGS += --preload-file $(WEBGL_DATA)@/$(WEBGL_DATA)
 WEBGL_CFLAGS  += -DPROJECTDIR='"$(WEBGL_DATA)"'
 endif
 
-.PHONY: webgl webgl-demo wasm-deps wasm-lua wasm-lz4 wasm-xml2
+.PHONY: webgl webgl-demo wasm-deps
 
 # ─── WebGL build target ────────────────────────────────────────────────────
 # Compiles all engine modules into a self-contained orca.html + orca.js +
