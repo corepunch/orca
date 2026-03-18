@@ -28,6 +28,8 @@ WEBGL_DIR      = build/webgl
 WEBGL_DATA    ?=
 WEBGL_DEMO    ?= samples/Example
 WEBGL_EMCC     = emcc
+WEBGL_SHELL   ?= web/shell.html
+WEBGL_VERSION ?= dev
 
 # Modules included in the WebGL build.  Excluded: network (curl/sockets),
 # vsomeip (C++ service discovery), server (host-only), editor (desktop UI).
@@ -113,7 +115,10 @@ webgl: $(WEBGL_PLUGINS_H) $(LIBDIR)
 		$(WEBGL_PLUGIN_SRCS) \
 		$(SOURCEDIR)/orca.c \
 		$(WEBGL_LDFLAGS) \
+		--shell-file $(WEBGL_SHELL) \
 		-o $(WEBGL_DIR)/orca.html
+	sed -i.bak 's/@@BUILD_VERSION@@/$(WEBGL_VERSION)/g' $(WEBGL_DIR)/orca.html && \
+	  rm -f $(WEBGL_DIR)/orca.html.bak
 
 # Bundle the demo project (WEBGL_DEMO) and deploy-ready share/ assets.
 # Override WEBGL_DEMO from the command line to bundle a different project:
