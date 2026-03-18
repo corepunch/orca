@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Screen SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
-<Screen Name="Application" Height="768" Width="1024">
+<Screen Name="Application" Height="768" Width="1024" ClearColor="#001020">
   <Grid Name="Layout">
     <Grid.Columns Value="auto auto"/>
     <ImageView Name="Image" Image="Example/Images/peacock" Stretch="None" BorderWidth="5 5 5 5" />
