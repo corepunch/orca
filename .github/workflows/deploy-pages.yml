@@ -67,7 +67,7 @@ jobs:
       - name: Build WebGL demo (Example project)
         run: |
           SHORT_SHA=$(git rev-parse --short HEAD)
-          emmake make webgl-demo WEBGL_EMCC=emcc WEBGL_VERSION="Build #${{ github.run_number }} (${SHORT_SHA})"
+          emmake make webgl-debug-demo WEBGL_EMCC=emcc WEBGL_VERSION="Build #${{ github.run_number }} (${SHORT_SHA})"
 
       - name: Copy WebGL demo into site
         run: |
