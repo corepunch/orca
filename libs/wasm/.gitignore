@@ -1,0 +1,6 @@
+# Un-ignore pre-built WASM static libraries and their headers so they can be
+# checked into the repository.  The root .gitignore globally excludes *.a
+# files; the overrides here allow this specific directory to be tracked.
+!*.a
+!**/*.a
+!**/*.h

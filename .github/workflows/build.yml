@@ -95,10 +95,6 @@ jobs:
 
   build-webgl:
     runs-on: ubuntu-latest
-    # The WebGL build requires lua5.4, libxml2, and liblz4 to be compiled for
-    # WASM.  Until those are available this job is informational; set
-    # continue-on-error so failures here don't block the release pipeline.
-    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -110,17 +106,6 @@ jobs:
         with:
           version: 3.1.74
           actions-cache-folder: emsdk-cache
-
-      - name: Cache WASM dependencies
-        id: cache-wasm-deps
-        uses: actions/cache@v4
-        with:
-          path: build/wasm-deps
-          key: wasm-deps-lua5.4.7-lz4-1.10.0-xml2-2.9.14
-
-      - name: Build WASM dependencies (lua5.4, libxml2, liblz4)
-        if: steps.cache-wasm-deps.outputs.cache-hit != 'true'
-        run: emmake make wasm-deps
 
       - name: Build platform library for WebGL
         run: |
