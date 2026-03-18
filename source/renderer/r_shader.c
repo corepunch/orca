@@ -41,11 +41,32 @@ static struct shader_attr const attributes[VERTEX_SEMANTIC_COUNT] = {
   { "a_color", 4, GL_UNSIGNED_BYTE, 1, VERT_FOFS(color) },
   { "a_texcoord0", 2, GL_FLOAT, 0, VERT_FOFS(texcoord[0]) },
   { "a_texcoord1", 2, GL_FLOAT, 0, VERT_FOFS(texcoord[1]) },
+#ifndef __EMSCRIPTEN__
+  { "a_texcoord2", 2, GL_FLOAT, 0, 0 },
+  { "a_texcoord3", 2, GL_FLOAT, 0, 0 },
+  { "a_texcoord4", 2, GL_FLOAT, 0, 0 },
+#else
   { "a_texcoord2", 2, GL_FLOAT, 0, VERT_FOFS(texcoord[2]) },
   { "a_texcoord3", 2, GL_FLOAT, 0, VERT_FOFS(texcoord[3]) },
   { "a_texcoord4", 2, GL_FLOAT, 0, VERT_FOFS(texcoord[4]) },
+#endif
   { "a_weight", 4, GL_FLOAT, 0, VERT_FOFS(weight) },
-  { "a_matrix_indices", 4, GL_FLOAT, 0, VERT_FOFS(matrix_indices) },
+#ifndef __EMSCRIPTEN__
+  { "a_matrix_indices", 4, GL_FLOAT, 0, 0 },
+  { "a_morph0_position", 3, GL_FLOAT, 0, 0 },
+  { "a_morph1_position", 3, GL_FLOAT, 0, 0 },
+  { "a_morph2_position", 3, GL_FLOAT, 0, 0 },
+  { "a_morph3_position", 3, GL_FLOAT, 0, 0 },
+  { "a_morph0_normal", 3, GL_FLOAT, 0, 0 },
+  { "a_morph1_normal", 3, GL_FLOAT, 0, 0 },
+  { "a_morph2_normal", 3, GL_FLOAT, 0, 0 },
+  { "a_morph3_normal", 3, GL_FLOAT, 0, 0 },
+  { "a_morph0_tangent", 3, GL_FLOAT, 0, 0 },
+  { "a_morph1_tangent", 3, GL_FLOAT, 0, 0 },
+  { "a_morph2_tangent", 3, GL_FLOAT, 0, 0 },
+  { "a_morph3_tangent", 3, GL_FLOAT, 0, 0 },
+  { "a_matrix_indices", 4, GL_FLOAT, 0, 0 },
+#else
   { "a_morph0_position", 3, GL_FLOAT, 0, VERT_FOFS(morph_target[0].position) },
   { "a_morph1_position", 3, GL_FLOAT, 0, VERT_FOFS(morph_target[1].position) },
   { "a_morph2_position", 3, GL_FLOAT, 0, VERT_FOFS(morph_target[2].position) },
@@ -58,6 +79,7 @@ static struct shader_attr const attributes[VERTEX_SEMANTIC_COUNT] = {
   { "a_morph1_tangent", 3, GL_FLOAT, 0, VERT_FOFS(morph_target[1].tangent) },
   { "a_morph2_tangent", 3, GL_FLOAT, 0, VERT_FOFS(morph_target[2].tangent) },
   { "a_morph3_tangent", 3, GL_FLOAT, 0, VERT_FOFS(morph_target[3].tangent) },
+#endif
   { "a_userdata", 4, GL_UNSIGNED_BYTE, 0, VERT_FOFS(userdata) },
 };
 
