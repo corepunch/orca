@@ -50,8 +50,8 @@ jobs:
         id: wasm-deps-cache
         uses: actions/cache@v4
         with:
-          path: build/wasm-deps
-          key: wasm-deps-${{ runner.os }}-${{ hashFiles('Makefile') }}
+          path: libs/wasm
+          key: wasm-deps-v2-${{ runner.os }}-${{ hashFiles('Makefile.webgl') }}
 
       - name: Build WASM dependencies (lua5.4, libxml2, liblz4)
         if: steps.wasm-deps-cache.outputs.cache-hit != 'true'
