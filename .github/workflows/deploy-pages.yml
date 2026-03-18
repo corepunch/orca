@@ -65,7 +65,9 @@ jobs:
         run: mkdocs build
 
       - name: Build WebGL demo (Example project)
-        run: emmake make webgl-demo WEBGL_EMCC=emcc
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          emmake make webgl-demo WEBGL_EMCC=emcc WEBGL_VERSION="Build #${{ github.run_number }} (${SHORT_SHA})"
 
       - name: Copy WebGL demo into site
         run: |
