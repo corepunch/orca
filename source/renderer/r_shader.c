@@ -93,7 +93,7 @@ lpcString_t glsl_type[] = {
   "mat4",          // UT_FLOAT_MAT4,
   "int",           // UT_INT,
   "bool",          // UT_BOOL,
-  "unsigned int",  // UT_UNSIGNED_INT,
+  "uint",          // UT_UNSIGNED_INT,
   "sampler2D",     // UT_SAMPLER_2D,
   "sampler2DRect", // UT_SAMPLER_2D_RECT,
   "samplerCube",   // UT_SAMPLER_CUBE,
@@ -174,9 +174,9 @@ static GLuint _LoadGLShader(GLenum type, struct shader_desc* def)
   }
   //    lpcString_t  v150 = "#version 150";
 #if defined(__QNX__) || defined(__EMSCRIPTEN__)
-  lpcString_t v300 = "#version 300 es\nprecision lowp float;\n";
+  lpcString_t v300 = "#version 300 es\nprecision mediump float;\n";
 #else
-  lpcString_t v300 = "#version 330 core\nprecision lowp float;\n";
+  lpcString_t v300 = "#version 330 core\nprecision mediump float;\n";
 #endif
 
   static char pszTexts[255][256];
@@ -207,7 +207,7 @@ static GLuint _LoadGLShader(GLenum type, struct shader_desc* def)
   } else {
     ADD_TEXT(def->Shared, "in");
     if (def->FragmentOut) {
-      snprintf(pszTexts[dwNumTexts++],sizeof(*pszTexts),"out lowp vec4 %s;\n",def->FragmentOut);
+      snprintf(pszTexts[dwNumTexts++],sizeof(*pszTexts),"out mediump vec4 %s;\n",def->FragmentOut);
     }
   }
 
@@ -786,7 +786,7 @@ static lpcString_t _PBRPointLight =
 "  vec3   diffuse = diffuseColor * NdotL * lightColor;\n"
 "  vec3   specular = specularColor * spec * lightColor;\n"
 "  float  distSqr = dist * dist;\n"
-"  float  k = 2.0f;\n"
+"  float  k = 2.0;\n"
 "  float  rangeFactor = dist / range;\n"
 "  float  falloff = clamp(1.0 - rangeFactor * rangeFactor, 0.0, 1.0);\n"
 "  float  att = intensity / (distSqr + k) * falloff * falloff;\n"
