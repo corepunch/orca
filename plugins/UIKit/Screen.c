@@ -259,6 +259,7 @@ HANDLER(Screen, RenderScreen) {
   Node2D_Draw2DContent(hObject, GetNode2D(hObject), 0, &params);
 
   if (pRenderScreen->target != rt) {
+    Con_Printf("R_DrawImage %f %f", width, height );
     R_BindFramebuffer(pRenderScreen->target);
     R_DrawImage(&(DRAWIMAGESTRUCT) {
       .img = pScreen->_rt,
@@ -341,6 +342,8 @@ HANDLER(Node2D, Draw2DContent)
                          .Scale = WI_GetScaling() },
       &pNode2D->RenderTarget);
   }
+  
+  Con_Printf("%d %d", Node2D_GetFrame(pNode2D, kBox3FieldWidth), Node2D_GetFrame(pNode2D, kBox3FieldHeight));
 
   struct ForegroundContentEventArgs foreground = { 0 };
 
