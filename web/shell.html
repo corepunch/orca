@@ -82,20 +82,46 @@
       }
     }
 
+    // Patch console methods so all JS output appears on the page.
+    (function () {
+      function formatArgs(args) {
+        return Array.prototype.slice.call(args).map(function (a) {
+          if (typeof a === 'object') {
+            try { return JSON.stringify(a); } catch (e) { return String(a); }
+          }
+          return String(a);
+        }).join(' ');
+      }
+
+      function patchConsole(method, prefix) {
+        var orig = console[method].bind(console);
+        console[method] = function () {
+          orig.apply(console, arguments);
+          var text = formatArgs(arguments);
+          appendOutput(prefix ? prefix + text : text);
+        };
+      }
+
+      patchConsole('log',   '');
+      patchConsole('info',  'INFO: ');
+      patchConsole('warn',  'WARN: ');
+      patchConsole('error', 'ERROR: ');
+    })();
+
     var Module = {
       print: function (text) {
         if (arguments.length > 1) {
           text = Array.prototype.slice.call(arguments).join(' ');
         }
+        // Goes through the patched console.log → also lands in the textarea.
         console.log(text);
-        appendOutput(text);
       },
       printErr: function (text) {
         if (arguments.length > 1) {
           text = Array.prototype.slice.call(arguments).join(' ');
         }
+        // Goes through the patched console.error → also lands in the textarea.
         console.error(text);
-        appendOutput('ERROR: ' + text);
       },
       canvas: (function () {
         var canvas = document.getElementById('canvas');
@@ -119,7 +145,14 @@
 
     window.addEventListener('error', function (e) {
       Module.setStatus('Exception: ' + e.message);
-      appendOutput('EXCEPTION: ' + e.message);
+      console.error('EXCEPTION: ' + e.message +
+        (e.filename ? ' at ' + e.filename + ':' + e.lineno : ''));
+    });
+
+    window.addEventListener('unhandledrejection', function (e) {
+      var msg = (e.reason && e.reason.message) ? e.reason.message : String(e.reason);
+      Module.setStatus('Unhandled rejection: ' + msg);
+      console.error('UNHANDLED REJECTION: ' + msg);
     });
   </script>
   {{{ SCRIPT }}}
