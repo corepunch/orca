@@ -12,6 +12,7 @@ int f_peek_iterator(lua_State* L)
   lpObject_t __userdata = lua_touserdata(L, lua_upvalueindex(1));
   int has_event = WI_PollEvent(&msg);
 #ifdef __EMSCRIPTEN__
+  Con_Printf("Got event %08x", msg->message);
   /* Yield to the browser event loop when the queue is empty so that
      input callbacks (registered via emscripten_set_*_callback) have a
      chance to fire and requestAnimationFrame can schedule repaints.
