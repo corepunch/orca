@@ -244,10 +244,15 @@ typedef struct _DRAWVERT
   struct vec3 normal;
   struct vec3 tangent;
   struct vec3 binormal;
+#ifndef __EMSCRIPTEN__
+  struct vec2 texcoord[2];
+  struct vec4 weight;
+#else
   struct vec2 texcoord[5];
   struct vec4 weight;
   struct vec4 matrix_indices;
   struct morph_target morph_target[4];
+#endif
   struct color32 color;
   struct color32 userdata;
 } DRAWVERT, *PDRAWVERT;
