@@ -119,10 +119,10 @@ static int f_orca_index(lua_State* L) {
 int load_plugins(lua_State *L)
 {
   int no_errors = 1;
-  char SHAREDIR[MAX_OSPATH];
+  char sharedir[MAX_OSPATH];
 
   lua_getglobal(L, "SHAREDIR");
-  strncpy(SHAREDIR, luaL_checkstring(L, -1), sizeof(SHAREDIR));
+  strncpy(sharedir, luaL_checkstring(L, -1), sizeof(sharedir));
   lua_pop(L, 1);
 
   lua_getglobal(L, "require");
@@ -130,7 +130,7 @@ int load_plugins(lua_State *L)
   lua_call(L, 1, 1);                        // sys
     
   lua_getfield(L, -1, "list_dir");
-  lua_pushfstring(L, "%s/plugins", SHAREDIR);
+  lua_pushfstring(L, "%s/plugins", sharedir);
   lua_call(L, 1, 1);                        // iterator
   
   for (;;) {
@@ -146,7 +146,7 @@ int load_plugins(lua_State *L)
 //    lua_pushfstring(L, "plugins.%.*s", (int)n, f);
     
     lua_getglobal(L, "dofile");
-    lua_pushfstring(L, "%s/plugins/%s", SHAREDIR, f);
+    lua_pushfstring(L, "%s/plugins/%s", sharedir, f);
     
     if (lua_pcall(L, 1, 0, 0) == LUA_OK)
 //      fprintf(stderr, "Loaded plugin \"%.*s\"\n", (int)n, f);
