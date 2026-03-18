@@ -481,7 +481,7 @@ HANDLER(Screen, WindowPaint) {
   lua_State *L = OBJ_GetDomain(hObject);
 
   if (!pWindowPaint) {
-    R_BeginFrame((struct color){ 0,0,0,0 });
+    R_BeginFrame(pScreen->ClearColor);
   }
   
   OBJ_Awake(L, hObject);
