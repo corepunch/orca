@@ -73,7 +73,7 @@ struct shader_desc shader_rect = {
   "  vec2 pos = a_position.xy * rectSize;\n"
   "  vec3 tex = vec3(pos.x / rectSize.x, 1.0 - pos.y / rectSize.y, 1.0);\n"
   "  v_texcoord0 = (u_textureTransform * tex).xy;\n"
-  "  gl_Position = u_modelViewProjectionTransform * vec4(pos + u_bboxMin.xy, 0, 1);\n"
+  "  gl_Position = u_modelViewProjectionTransform * vec4(pos + u_bboxMin.xy, 0.0, 1.0);\n"
   "}\n",
     .FragmentShader =
   "void main() {\n"
@@ -118,7 +118,7 @@ struct shader_desc shader_ui = {
   "  vec2 pos = a_position.xy * rectSize + a_texcoord0 * rad + a_texcoord1 * brd;\n"
   "  vec3 tex = vec3(pos.x / rectSize.x, 1.0 - pos.y / rectSize.y, 1.0);\n"
   "  v_texcoord0 = (u_textureTransform * tex).xy;\n"
-  "  gl_Position = u_modelViewProjectionTransform * vec4(pos + u_bboxMin.xy, 0, 1);\n"
+  "  gl_Position = u_modelViewProjectionTransform * vec4(pos + u_bboxMin.xy, 0.0, 1.0);\n"
   "}\n",
     .FragmentShader =
   "void main() {\n"
@@ -157,7 +157,7 @@ struct shader_desc shader_cinematic = {
   "  vec2 pos = a_position.xy * rectSize;\n"
   "  vec3 tex = vec3(pos.x / rectSize.x, pos.y / rectSize.y, 1.0);\n"
   "  v_texcoord0 = (u_textureTransform * tex).xy;\n"
-  "  gl_Position = u_modelViewProjectionTransform * vec4(pos + u_bboxMin.xy, 0, 1);\n"
+  "  gl_Position = u_modelViewProjectionTransform * vec4(pos + u_bboxMin.xy, 0.0, 1.0);\n"
   "}\n",
     .FragmentShader =
   "void main() {\n"
@@ -253,9 +253,9 @@ struct shader_desc shader_charset= {
   "  vec4 fg = palette(colors.x, 1.0);\n"
   "  vec4 bg = palette(colors.y, 0.0);\n"
   "  float t = tex.a;\n"
-  "  t = mix(t,1.0-t,u_selectedItem==chr.ba);\n"
+  "  t = mix(t,1.0-t,1.0-step(0.002,abs(u_selectedItem.x-chr.b)+abs(u_selectedItem.y-chr.a)));\n"
   "  vec2 curs = abs(u_cursorPos-v_texcoord0*u_textureSize);\n"
-  "  t = mix(t,1.0-t,curs.x<0.5&&curs.y<0.5&&fr.x<0.25);\n"
+  "  t = mix(t,1.0-t,step(curs.x,0.5)*step(curs.y,0.5)*step(fr.x,0.25));\n"
   //    "  vec4 col = mix(bg, fg, mix(tex.a,1.0-tex.a,chr.a==1.0&&fr.x<0.25));\n"
   //    "  if (fr.y > 0.875 && chr.r > 0.45) tex.a = 1.0 - tex.a;\n"
   "  fragColor = step(fr.y, 1.0) * mix(bg, fg, t) * u_opacity;\n"
@@ -347,7 +347,7 @@ struct shader_desc shader_button = {
   "  vec3 pos = a_position.xyz;// * u_rect.zww;// + a_texcoord0 * rad + a_texcoord1 * brd;\n"
   "  vec3 rectSize = u_bboxMax - u_bboxMin;\n"
   "  float koeff = rectSize.y / rectSize.x;\n"
-  "  pos.x = mix((pos.x + 0.5) * koeff - 0.5, (pos.x - 0.5) * koeff + 0.5, pos.x > 0.0);\n"
+  "  pos.x = mix((pos.x + 0.5) * koeff - 0.5, (pos.x - 0.5) * koeff + 0.5, step(0.0, pos.x));\n"
   "  pos *= rectSize.xyy;\n"
 //  "  vec3 tex = vec3(pos.x / u_rect.z, 1.0 - pos.y / u_rect.w, 1.0);\n"
   "  vec3 rectCenter = mix(u_bboxMin, u_bboxMax, vec3(0.5));\n"
