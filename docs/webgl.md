@@ -57,10 +57,11 @@ These libraries are fetched and compiled automatically by Emscripten via
 | libjpeg   | `-sUSE_LIBJPEG=1` |
 | freetype  | `-sUSE_FREETYPE=1`|
 
-### Pre-built WASM libraries (checked into the repository)
+### WASM libraries (built from source with emmake)
 
-The following libraries are **pre-built and checked into `libs/wasm/`**.  No
-manual compilation step is required — `make webgl` uses them directly.
+The following libraries must be compiled for WASM before running `make webgl`.
+Run `emmake make wasm-deps` once (with `emcc` in PATH) to build and install
+them into `build/wasm-deps/`:
 
 | Library  | Version | Source                                          |
 |----------|---------|-------------------------------------------------|
@@ -68,16 +69,11 @@ manual compilation step is required — `make webgl` uses them directly.
 | libxml2  | 2.9.14  | https://gitlab.gnome.org/GNOME/libxml2          |
 | liblz4   | 1.10.0  | https://github.com/lz4/lz4                      |
 
-If you need to rebuild these libraries (e.g. after an Emscripten version
-upgrade), run:
-
 ```bash
 source /path/to/emsdk/emsdk_env.sh
 emmake make wasm-deps
-git add libs/wasm && git commit -m "chore: update WASM deps"
+# then: emmake make webgl
 ```
-
-See `libs/wasm/README.md` for details.
 
 ## How the WebGL Backend Works
 
