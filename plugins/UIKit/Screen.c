@@ -482,6 +482,8 @@ HANDLER(Screen, Destroy) {
 
 HANDLER(Screen, WindowPaint) {
   lua_State *L = OBJ_GetDomain(hObject);
+  
+  Con_Printf("WindowPAint: %d %d", LOWORD(wParam), HIWORD(wParam));
 
   if (!pWindowPaint) {
     R_BeginFrame(pScreen->ClearColor);
