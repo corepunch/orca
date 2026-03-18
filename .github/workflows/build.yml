@@ -108,15 +108,24 @@ jobs:
       - name: Install Emscripten
         uses: mymindstorm/setup-emsdk@v14
         with:
-          version: latest
+          version: 3.1.74
+          actions-cache-folder: emsdk-cache
+
+      - name: Cache WASM dependencies
+        id: cache-wasm-deps
+        uses: actions/cache@v4
+        with:
+          path: build/wasm-deps
+          key: wasm-deps-lua5.4.7-lz4-1.10.0-xml2-2.9.14
+
+      - name: Build WASM dependencies (lua5.4, libxml2, liblz4)
+        if: steps.cache-wasm-deps.outputs.cache-hit != 'true'
+        run: emmake make wasm-deps
 
       - name: Build platform library for WebGL
         run: |
           mkdir -p build/lib
           emmake make -C libs/platform OUTDIR=../../build/lib
-
-      - name: Build WASM dependencies (lua5.4, libxml2, liblz4)
-        run: emmake make wasm-deps
 
       - name: Build Orca for WebGL
         run: emmake make webgl WEBGL_EMCC=emcc
