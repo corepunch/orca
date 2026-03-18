@@ -149,10 +149,10 @@ int load_plugins(lua_State *L)
     lua_pushfstring(L, "%s/plugins/%s", sharedir, f);
     
     if (lua_pcall(L, 1, 0, 0) == LUA_OK)
-//      fprintf(stderr, "Loaded plugin \"%.*s\"\n", (int)n, f);
-      fprintf(stderr, "Loaded plugin \"%s\"\n", f);
+//      Con_Print("Loaded plugin \"%.*s\"", (int)n, f);
+      Con_Printf("Loaded plugin \"%s\"", f);
     else {
-      fprintf(stderr, "%s\n", lua_tostring(L, -1));
+      Con_Error("%s", lua_tostring(L, -1));
       lua_pop(L, 1);
       no_errors = 0;
     }
