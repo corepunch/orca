@@ -1020,10 +1020,15 @@ renderer_Init(uint32_t dwWidth, uint32_t dwHeight, bool_t bOffscreen)
   R_InitBuffers();
 
   /* Log the GL version and extension list on embedded/WebGL targets where the
-   * available extension set can vary unexpectedly and is useful for debugging. */
-#if defined(__QNX__) || defined(__EMSCRIPTEN__)
+   * available extension set can vary unexpectedly and is useful for debugging.
+   * glGetString(GL_VERSION) is not available in WebGL 2 (Emscripten), so it
+   * is guarded to QNX only.  glGetStringi is available in both GLES 3 and
+   * WebGL 2 and is used for the extension list on both targets. */
+#if defined(__QNX__)
   const GLubyte* version = R_Call(glGetString, GL_VERSION);
   fprintf(stderr, "OpenGL Version: %s\n", version);
+#endif
+#if defined(__QNX__) || defined(__EMSCRIPTEN__)
   GLint n = 0;
   R_Call(glGetIntegerv, GL_NUM_EXTENSIONS, &n);
   for (GLint i = 0; i < n; i++) {
