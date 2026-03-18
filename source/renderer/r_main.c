@@ -98,6 +98,12 @@ R_DrawLines(struct ViewDef const* view, PDRAWLINESSTRUCT def)
 {
   struct ViewEntity ent;
   struct Shader* shader = &tr.shaders[SHADER_VERTEXCOLOR];
+
+  if (!shader->shader) {
+    Con_Error("vertex color shader not loaded");
+    return E_FAIL;
+  }
+
   GLuint posattr = shader->shader->attributes[VERTEX_SEMANTIC_POSITION];
 
   memset(&ent, 0, sizeof(struct ViewEntity));
@@ -342,6 +348,16 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
   if (ent->flags & RF_DRAW_DEBUG) {
     _DrawDebug(ent, view);
     return NOERROR;
+  }
+
+  if (!shader->shader) {
+    Con_Error("no shader loaded for rendering");
+    return E_FAIL;
+  }
+
+  if (!model) {
+    Con_Error("no model available for rendering");
+    return E_FAIL;
   }
   
   struct shader_universal_target const *target = &shader->shader->target;
@@ -752,6 +768,10 @@ R_DrawConsole(PDRAWCONSOLESTRUCT parm)
   ent.material.textureMatrix.v[7] -= parm->Scroll.y / (CONSOLE_CHAR_HEIGHT * parm->Height);
 
   struct Shader *shader = &tr.shaders[SHADER_CHARSET];
+  if (!shader->shader) {
+    Con_Error("charset shader not loaded");
+    return E_FAIL;
+  }
   struct _SHADERCONST *u_selectedItem = _FindShaderConst(shader->shader, 0x1605eab3);
   struct _SHADERCONST *u_cursorPos = _FindShaderConst(shader->shader, 0x71f37957);
 

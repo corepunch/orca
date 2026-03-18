@@ -196,20 +196,28 @@ static GLuint _LoadGLShader(GLenum type, struct shader_desc* def)
     dwNumTexts = _ApplyLighting(def, pszCodes, dwNumTexts);
   }
 
-  pszCodes[dwNumTexts++] = type == GL_VERTEX_SHADER ? def->VertexShader : def->FragmentShader;
+  lpcString_t shaderType = type == GL_VERTEX_SHADER ? "vertex" : "fragment";
+  lpcString_t source = type == GL_VERTEX_SHADER ? def->VertexShader : def->FragmentShader;
+  if (!source) {
+    Con_Error("%s: missing %s shader source", def->Name, shaderType);
+    R_Call(glDeleteShader, shader);
+    return 0;
+  }
+  pszCodes[dwNumTexts++] = source;
 
   R_Call(glShaderSource, shader, dwNumTexts, pszCodes, NULL);
   R_Call(glCompileShader, shader);
-  R_Call(glGetShaderiv, shader, GL_INFO_LOG_LENGTH, &logLength);
-  if (logLength > 0) {
-    LPSTR mem = malloc(logLength);
-    R_Call(glGetShaderInfoLog, shader, logLength, &logLength, mem);
-//		FOR_LOOP(i, dwNumTexts + 1) Con_Error("%s", pszCodes[i]);
-    Con_Error("%s: %s", def->Name, mem);
-    free(mem);
-  }
   R_Call(glGetShaderiv, shader, GL_COMPILE_STATUS, &success);
   if (success == GL_FALSE) {
+    R_Call(glGetShaderiv, shader, GL_INFO_LOG_LENGTH, &logLength);
+    if (logLength > 1) {
+      LPSTR mem = malloc(logLength);
+      R_Call(glGetShaderInfoLog, shader, logLength, &logLength, mem);
+      Con_Error("%s: %s shader compilation failed: %s", def->Name, shaderType, mem);
+      free(mem);
+    } else {
+      Con_Error("%s: %s shader compilation failed", def->Name, shaderType);
+    }
     R_Call(glDeleteShader, shader);
     return 0;
   }
@@ -239,18 +247,18 @@ static GLuint _CreateGLProgram(struct shader_desc* def)
   R_Call(glAttachShader, program, vertexShader);
   R_Call(glAttachShader, program, fragmentShader);
   R_Call(glLinkProgram, program);
-  R_Call(glGetProgramiv, program, GL_INFO_LOG_LENGTH, &logLength);
-
-  if (logLength > 0) {
-    LPSTR mem = malloc(logLength);
-    R_Call(glGetProgramInfoLog, program, logLength, &logLength, mem);
-    Con_Error("%s: %s", def->Name, mem);
-    free(mem);
-  }
-
   R_Call(glGetProgramiv, program, GL_LINK_STATUS, &success);
 
   if (success == GL_FALSE) {
+    R_Call(glGetProgramiv, program, GL_INFO_LOG_LENGTH, &logLength);
+    if (logLength > 1) {
+      LPSTR mem = malloc(logLength);
+      R_Call(glGetProgramInfoLog, program, logLength, &logLength, mem);
+      Con_Error("%s: program link failed: %s", def->Name, mem);
+      free(mem);
+    } else {
+      Con_Error("%s: program link failed", def->Name);
+    }
     goto shader_cleanup;
   } else {
     R_Call(glUseProgram, program);
