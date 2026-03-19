@@ -127,6 +127,19 @@ HANDLER(ImageView, DrawBrush)
     temp_rect = RECT_Fit(&temp_rect, &imgsize);
     entity.bbox = BOX3_FromRect(temp_rect);
     entity.mesh = BOX_PTR(Mesh, MD_RECTANGLE);
+  } else if (pImageView->Stretch == kStretchUniformToFill && imgsize.x > 0 && imgsize.y > 0) {
+    float scaleX = (float)width / imgsize.x;
+    float scaleY = (float)height / imgsize.y;
+    float scale = scaleX > scaleY ? scaleX : scaleY;
+    float uvScaleX = scaleX / scale;
+    float uvScaleY = scaleY / scale;
+    float uvOffsetX = (1.0f - uvScaleX) / 2.0f;
+    float uvOffsetY = (1.0f - uvScaleY) / 2.0f;
+    entity.material.textureMatrix.v[0] = uvScaleX * pImageView->Viewbox.z;
+    entity.material.textureMatrix.v[4] = uvScaleY * pImageView->Viewbox.w;
+    entity.material.textureMatrix.v[6] = pImageView->Viewbox.x + uvOffsetX * pImageView->Viewbox.z;
+    entity.material.textureMatrix.v[7] = pImageView->Viewbox.y + uvOffsetY * pImageView->Viewbox.w;
+    entity.mesh = BOX_PTR(Mesh, MD_RECTANGLE);
   }
   
   R_DrawEntity(pDrawBrush->viewdef, &entity);
