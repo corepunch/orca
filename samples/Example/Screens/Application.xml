@@ -1,14 +1,104 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Screen SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
-<Screen Name="Application" Height="768" Width="1024" ClearColor="#202020">
-  <Grid Name="Layout" Rows="60px auto 60px">
-    <Node2D BackgroundColor="#404040">
-      <TextBlock Name="TextBlock" FontSize="40" ForegroundColor="#ffffff" Text="Hello World" TextHorizontalAlignment="Center" TextVerticalAlignment="Center"/>
+<Screen Name="Application" Width="1280" Height="800" ClearColor="#0B0B12">
+  <Grid Rows="64px 360px auto" Spacing="0">
+
+    <!-- Navigation bar -->
+    <Node2D BackgroundColor="#11111C">
+      <StackView Direction="Horizontal" Spacing="32" AlignItems="Center" Margin="40">
+        <TextBlock Text="ORCA" FontSize="20" ForegroundColor="#8B5CF6" Width="72"/>
+        <TextBlock Text="Overview" FontSize="14" ForegroundColor="#94A3B8"/>
+        <TextBlock Text="Features" FontSize="14" ForegroundColor="#94A3B8"/>
+        <TextBlock Text="Gallery"  FontSize="14" ForegroundColor="#94A3B8"/>
+        <TextBlock Text="Docs"     FontSize="14" ForegroundColor="#94A3B8"/>
+      </StackView>
     </Node2D>
-    <Grid Name="Layout" Columns="auto auto" Spacing="8" Margin="8">
-      <ImageView Name="Image" Image="Example/Images/peacock" />
-      <TextBlock Name="TextBlock" BackgroundColor="#505050" FontSize="40" ForegroundColor="#ffffff" Text="Hello World"/>
+
+    <!-- Hero: headline + stats on left, image on right -->
+    <Grid Columns="1fr 1fr" Spacing="0">
+      <Node2D BackgroundColor="#0B0B12" Padding="56">
+        <StackView Direction="Vertical" Spacing="0">
+          <TextBlock Text="Build stunning"  FontSize="48" ForegroundColor="#F1F5F9"/>
+          <TextBlock Text="UI in real-time." FontSize="48" ForegroundColor="#8B5CF6"/>
+          <Node2D Height="20"/>
+          <TextBlock
+            Text="A modern UI engine for games and native apps. Compose layouts from grids, stacks, text, and images — all rendered at 60 fps."
+            FontSize="15"
+            ForegroundColor="#64748B"
+            WordWrap="true"
+            Width="480"/>
+          <Node2D Height="40"/>
+          <!-- Metric cards -->
+          <Grid Columns="auto auto auto" Spacing="16">
+            <Node2D BackgroundColor="#1A1A28" Padding="20" Width="140">
+              <StackView Direction="Vertical" Spacing="4">
+                <TextBlock Text="2.4 M"       FontSize="28" ForegroundColor="#8B5CF6"/>
+                <TextBlock Text="Active users" FontSize="11" ForegroundColor="#4B5563"/>
+              </StackView>
+            </Node2D>
+            <Node2D BackgroundColor="#1A1A28" Padding="20" Width="140">
+              <StackView Direction="Vertical" Spacing="4">
+                <TextBlock Text="99.9 %"   FontSize="28" ForegroundColor="#10B981"/>
+                <TextBlock Text="Uptime SLA" FontSize="11" ForegroundColor="#4B5563"/>
+              </StackView>
+            </Node2D>
+            <Node2D BackgroundColor="#1A1A28" Padding="20" Width="140">
+              <StackView Direction="Vertical" Spacing="4">
+                <TextBlock Text="1.2 ms"    FontSize="28" ForegroundColor="#3B82F6"/>
+                <TextBlock Text="Frame time" FontSize="11" ForegroundColor="#4B5563"/>
+              </StackView>
+            </Node2D>
+          </Grid>
+        </StackView>
+      </Node2D>
+      <ImageView Image="Example/Images/peacock" BackgroundColor="#141422"/>
     </Grid>
-    <Node2D BackgroundColor="#404040"/>
+
+    <!-- Feature cards -->
+    <Node2D BackgroundColor="#09090F" Padding="40">
+      <Grid Columns="1fr 1fr 1fr" Spacing="20">
+
+        <!-- Text rendering card -->
+        <Node2D BackgroundColor="#141420" Padding="28">
+          <StackView Direction="Vertical" Spacing="10">
+            <TextBlock Text="Aa" FontSize="20" ForegroundColor="#8B5CF6" BackgroundColor="#1E1833"
+                       Width="44" Height="40"
+                       TextHorizontalAlignment="Center" TextVerticalAlignment="Center"/>
+            <Node2D Height="8"/>
+            <TextBlock Text="Text Rendering" FontSize="16" ForegroundColor="#F1F5F9"/>
+            <TextBlock
+              Text="Pixel-perfect typography with kerning, multi-language support, and full font control."
+              FontSize="13" ForegroundColor="#4B5563" WordWrap="true"/>
+          </StackView>
+        </Node2D>
+
+        <!-- Layout card -->
+        <Node2D BackgroundColor="#141420" Padding="28">
+          <StackView Direction="Vertical" Spacing="10">
+            <TextBlock Text="#" FontSize="22" ForegroundColor="#10B981" BackgroundColor="#0D2020"
+                       Width="44" Height="40"
+                       TextHorizontalAlignment="Center" TextVerticalAlignment="Center"/>
+            <Node2D Height="8"/>
+            <TextBlock Text="Flexible Layouts" FontSize="16" ForegroundColor="#F1F5F9"/>
+            <TextBlock
+              Text="Grid and stack containers that adapt to any resolution, defined declaratively in XML."
+              FontSize="13" ForegroundColor="#4B5563" WordWrap="true"/>
+          </StackView>
+        </Node2D>
+
+        <!-- Image card -->
+        <Node2D BackgroundColor="#141420" Padding="28">
+          <StackView Direction="Vertical" Spacing="10">
+            <ImageView Image="Example/Images/lake" Width="200" Height="80"/>
+            <TextBlock Text="Image Integration" FontSize="16" ForegroundColor="#F1F5F9"/>
+            <TextBlock
+              Text="Fast texture loading with stretch, crop, and nine-patch rendering built in."
+              FontSize="13" ForegroundColor="#4B5563" WordWrap="true"/>
+          </StackView>
+        </Node2D>
+
+      </Grid>
+    </Node2D>
+
   </Grid>
 </Screen>
