@@ -1028,6 +1028,18 @@ renderer_Init(uint32_t dwWidth, uint32_t dwHeight, bool_t bOffscreen)
   return NOERROR;
 }
 
+HRESULT
+R_ClearTextCache(void)
+{
+  FOR_LOOP(i, MAX_TEXTCACHE) {
+    if (tr.textcache[i].image) {
+      SafeDelete(tr.textcache[i].image, Texture_Release);
+    }
+  }
+  memset(tr.textcache, 0, sizeof(tr.textcache));
+  return NOERROR;
+}
+
 void
 renderer_Shutdown(void)
 {

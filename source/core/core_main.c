@@ -197,10 +197,7 @@ bool_t CORE_HandleObjectMessage(lua_State *L, struct WI_Message* msg);
 bool_t CORE_HandleKeyEvent(lua_State *L, struct WI_Message* msg);
 
 LRESULT CORE_ProcessMessage(lua_State *L, struct WI_Message* msg) {
-  int tmp=0;
-  if (msg->message == kEventWindowResized) {
-    Con_Printf("WindowResized: %d x %d", LOWORD(msg->wParam), HIWORD(msg->wParam));
-  }
+  int tmp;
   switch (msg->message) {
     case kEventWindowPaint:
     case kEventWindowResized:

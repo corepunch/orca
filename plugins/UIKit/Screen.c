@@ -535,6 +535,7 @@ HANDLER(Screen, WindowResized) {
     node->Size.Axis[0].Requested = LOWORD(wParam);
     node->Size.Axis[1].Requested = HIWORD(wParam);
   }
+  R_ClearTextCache();
   OBJ_SendMessageW(hObject, kEventWindowPaint, wParam, NULL);
   return FALSE;
 }

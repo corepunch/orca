@@ -593,6 +593,7 @@ ORCA_API HRESULT R_ClearScreen(struct color color, float depth, byte_t stencil);
 ORCA_API HRESULT R_SetPipelineState(PPIPELINESTATE);
 ORCA_API HRESULT R_GetPipelineState(PPIPELINESTATE);
 ORCA_API HRESULT R_BindFramebuffer(struct Texture*);
+ORCA_API HRESULT R_ClearTextCache(void);
 ORCA_API HRESULT RenderTexture_Create(PCREATERTSTRUCT, struct Texture**);
 ORCA_API HRESULT Text_GetInfo(struct ViewText const*, struct text_info*);
 ORCA_API HRESULT Image_GetInfo(struct Texture const*, struct image_info*);
