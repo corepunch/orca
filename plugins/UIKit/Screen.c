@@ -527,6 +527,11 @@ HANDLER(Screen, WindowPaint) {
   return TRUE;
 }
 
+static void OBJ_SetTreeDirty(lpObject_t obj) {
+  OBJ_SetDirty(obj);
+  FOR_EACH_CHILD(obj, OBJ_SetTreeDirty);
+}
+
 HANDLER(Screen, WindowResized) {
   NodePtr node = GetNode(hObject);
   if (pScreen->ResizeMode == kResizeModeCanResize ||
@@ -536,6 +541,7 @@ HANDLER(Screen, WindowResized) {
     node->Size.Axis[1].Requested = HIWORD(wParam);
   }
   R_ClearTextCache();
+  OBJ_SetTreeDirty(hObject);
   OBJ_SendMessageW(hObject, kEventWindowPaint, wParam, NULL);
   return FALSE;
 }

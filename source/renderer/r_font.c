@@ -393,7 +393,7 @@ Text_Print(struct ViewText const* pViewText,
         if (textwidth == 0) { // first word print anyway
           x += spaceWidth;
           textwidth += spaceWidth;
-        } else if (pViewText->availableWidth > 0 && pViewText->textWrapping != TEXT_WRAP_NO_WRAP && textwidth + wordwidth + spaceWidth > pViewText->availableWidth * pViewText->scale) {
+        } else if (pViewText->availableWidth > 0 && pViewText->textWrapping != TEXT_WRAP_NO_WRAP && textwidth + wordwidth > pViewText->availableWidth * pViewText->scale) {
           textwidth = 0;
           y += FT_SCALE(lineheight);
           x = 0;
