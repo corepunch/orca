@@ -91,7 +91,10 @@ T_GetFontFace(struct ViewTextRun const* run)
   if ((&fg.font.regular)[run->fontStyle]) {
     return (&fg.font.regular)[run->fontStyle]->face;
   }
-  return fg.font.regular->face;
+  if (fg.font.regular) {
+    return fg.font.regular->face;
+  }
+  return NULL;
 }
 
 HRESULT
@@ -194,6 +197,9 @@ T_GetSize(struct ViewText const* text,
        run++)
   {
     FT_Face const face = T_GetFontFace(run);
+    if (!face) {
+      return textSize;
+    }
     if (FT_Set_Pixel_Sizes(face, 0, run->fontSize * text->scale)) {
       return textSize;
     }
@@ -595,7 +601,8 @@ Text_GetInsets(struct ViewText const* text,
        run++)
   {
     FT_Face const face = T_GetFontFace(run);
-    if (FT_Set_Pixel_Sizes(face, 0, run->fontSize * text->scale) ||
+    if (!face ||
+        FT_Set_Pixel_Sizes(face, 0, run->fontSize * text->scale) ||
         (text->flags & RF_USE_FONT_HEIGHT))
     {
       *edges = (struct edges){ 0 };

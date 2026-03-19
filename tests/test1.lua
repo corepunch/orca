@@ -1,6 +1,6 @@
 local orca = require "orca"
-local ui = require "orca.UIKit"
 orca.init()
+local ui = require "orca.UIKit"
 require "orca.core"
 require "orca.renderer"
 local screen = ui.Screen { Width = 1000, Height = 1000 }
@@ -424,6 +424,82 @@ local function test_property_change_notification()
 	node:removeFromParent()
 end
 
+local function test_grid_fr_units()
+	-- fr units distribute available space proportionally by weight.
+	-- 1fr == auto (equal share); 2fr takes twice as much as 1fr.
+	-- Grid is a direct child of Screen so it gets the full screen width.
+	local grid = screen + ui.Grid { Columns = "1fr 2fr" }
+	local cell1 = grid + ui.Node2D {}
+	local cell2 = grid + ui.Node2D {}
+
+	screen:updateLayout(screen.Width, screen.Height)
+
+	-- Total width is screen.Width; 1fr + 2fr = 3 parts.
+	local expected1 = math.floor(screen.Width / 3)
+	local expected2 = screen.Width - expected1  -- remaining after 1fr
+	assert(math.abs(cell1.ActualWidth - expected1) <= 1,
+		string.format("1fr column width should be ~%d, got %d", expected1, cell1.ActualWidth))
+	assert(math.abs(cell2.ActualWidth - expected2) <= 1,
+		string.format("2fr column width should be ~%d, got %d", expected2, cell2.ActualWidth))
+	-- 2fr cell should be roughly twice as wide as 1fr cell
+	assert(math.abs(cell2.ActualWidth - cell1.ActualWidth * 2) <= 2,
+		"2fr column should be approximately twice the width of 1fr column")
+
+	grid:removeFromParent()
+end
+
+local function test_node2d_container_height()
+	-- A Node2D with Padding wrapping a TextBlock must have height = text height + 2*padding.
+	-- The container must be inside a StackView so it receives an unconstrained (INFINITY)
+	-- height, which triggers the content-sizing path in Node2D.MeasureOverride.
+	-- Previously Node2D.MeasureOverride always returned (0,0) so only padding was counted.
+	local padding = 20
+	local outer = screen + ui.StackView { Direction = "Vertical" }
+	local container = outer + ui.Node2D {
+		Width = 140,
+		Padding = padding,
+	}
+	local label = container + ui.TextBlock {
+		Text = "2.4 M",
+		FontSize = 28,
+	}
+
+	screen:updateLayout(screen.Width, screen.Height)
+
+	assert(label.ActualHeight > 0,
+		"TextBlock inside Node2D should have positive height after layout")
+	assert(container.ActualHeight == label.ActualHeight + 2 * padding,
+		string.format("Node2D height (%d) should equal TextBlock height (%d) + 2*padding (%d)",
+			container.ActualHeight, label.ActualHeight, 2 * padding))
+
+	outer:removeFromParent()
+end
+
+local function test_grid_in_vstack_height()
+	-- v-stack > h-grid (auto columns) > v-stack > 2 nodes of known height.
+	-- The grid must derive its height from the inner stack's content, not default to 0.
+	local node_height = 50
+	local outer_stack = screen + ui.StackView { Direction = "Vertical" }
+	local grid = outer_stack + ui.Grid { Columns = "auto auto auto" }
+	local inner_stack = grid + ui.StackView { Direction = "Vertical" }
+	local node1 = inner_stack + ui.Node2D { Height = node_height }
+	local node2 = inner_stack + ui.Node2D { Height = node_height }
+
+	screen:updateLayout(screen.Width, screen.Height)
+
+	local expected_inner_height = node_height * 2
+	assert(inner_stack.ActualHeight == expected_inner_height,
+		string.format("Inner StackView height should be %d, got %d",
+			expected_inner_height, inner_stack.ActualHeight))
+	assert(grid.ActualHeight == inner_stack.ActualHeight,
+		string.format("Grid height (%d) should match inner StackView height (%d)",
+			grid.ActualHeight, inner_stack.ActualHeight))
+	assert(grid.ActualHeight > 0,
+		"Grid inside vertical StackView should have positive height derived from children")
+
+	outer_stack:removeFromParent()
+end
+
 -- Simulate asynchronous execution by using a timer or a delayed call
 -- For testing purposes, we can just call the callback immediately
 orca.async = function (callback) callback() end
@@ -441,3 +517,6 @@ test_input_checkbox()
 test_form_populate_inputs()
 test_node_visibility()
 test_property_change_notification()
+test_grid_fr_units()
+test_node2d_container_height()
+test_grid_in_vstack_height()

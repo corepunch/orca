@@ -13,6 +13,7 @@ enum column_type
   column_type_invalid,
   column_type_auto,
   column_type_pixel,
+  column_type_fr,
 };
 
 struct column
@@ -36,12 +37,14 @@ static struct column
 column_parse(lpcString_t a)
 {
   if (!strncmp(a, "auto", 4)) {
-    return (struct column){ column_type_auto, 0 };
+    return (struct column){ column_type_auto, 1, 0 };
   } else if (!isdigit(*a)) {
     return (struct column){ column_type_invalid, 0 };
   } else {
-    int value = (int)strtol(a, (LPSTR*)&a, 10);
-    if (!strncmp(a, "px", 2)) {
+    float value = strtof(a, (LPSTR*)&a);
+    if (!strncmp(a, "fr", 2)) {
+      return (struct column){ column_type_fr, value > 0 ? value : 1, 0 };
+    } else if (!strncmp(a, "px", 2)) {
       return (struct column){ column_type_pixel, value };
     } else {
       return (struct column){ column_type_invalid, 0 };
@@ -94,17 +97,23 @@ column_at_cellindex(PGRIDVIEW pGrid, enum Direction axis, int cellindex)
   }
 }
 
+static bool_t
+_column_is_flexible(struct column const *col)
+{
+  return col->type == column_type_auto || col->type == column_type_fr;
+}
+
 static void
 _CalculateAutos(float spacing, float avl, PCOLUMNS columns)
 {
-  uint32_t num_autos = 0;
+  float total_weight = 0;
   if (columns->count > 0) {
     avl -= spacing * (columns->count - 1);
   }
   FOR_LOOP(i, columns->count)
   {
-    if (columns->columns[i].type == column_type_auto) {
-      num_autos++;
+    if (_column_is_flexible(&columns->columns[i])) {
+      total_weight += columns->columns[i].width; /* width holds the fr weight */
     } else {
       avl -= columns->columns[i].width;
     }
@@ -112,8 +121,14 @@ _CalculateAutos(float spacing, float avl, PCOLUMNS columns)
   float cursor = 0;
   FOR_LOOP(i, columns->count)
   {
-    if (columns->columns[i].type == column_type_auto) {
-      columns->columns[i].width = avl / num_autos;
+    if (_column_is_flexible(&columns->columns[i])) {
+      if (!isinf(avl) && total_weight > 0) {
+        /* distribute proportionally by weight (fr or auto=1fr) */
+        columns->columns[i].width = avl * columns->columns[i].width / total_weight;
+      } else {
+        /* unconstrained: start at 0; will be content-sized in a first pass */
+        columns->columns[i].width = 0;
+      }
     }
     columns->columns[i].position = cursor;
     cursor += columns->columns[i].width + spacing;
@@ -126,9 +141,70 @@ HANDLER(Grid, MeasureOverride)
   Size_t size = *pMeasureOverride;
   Size_t desired = {0};
 
-  _CalculateAutos(pGrid->Spacing, size.width, columns_at_axis(pGrid, 0, TRUE));
-  _CalculateAutos(pGrid->Spacing, size.height, columns_at_axis(pGrid, 1, TRUE));
-	
+  PCOLUMNS hcols = columns_at_axis(pGrid, 0, TRUE);
+  PCOLUMNS vcols = columns_at_axis(pGrid, 1, TRUE);
+
+  _CalculateAutos(pGrid->Spacing, size.width, hcols);
+  _CalculateAutos(pGrid->Spacing, size.height, vcols);
+
+  /*
+   * When the available height is unconstrained (INFINITY) and we have
+   * flexible (auto/fr) rows, do a content-sizing first pass: measure each
+   * child and expand the owning row to fit, then recompute row positions.
+   * Without this, row positions stay at 0 causing rows beyond the first to
+   * overlap or produce incorrect (infinite) accumulated heights.
+   */
+  if (isinf(size.height) && vcols->count > 0) {
+    cellindex = 0;
+    FOR_EACH_LAYOUTABLE(hChild, hObject) {
+      struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
+      struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
+      if (h && _column_is_flexible(h)) {
+        LRESULT s = OBJ_SendMessageW(hChild, kEventMeasure, 0, &(struct Size) {
+          .width  = (w ? w->width : size.width),
+          .height = INFINITY,
+        });
+        float child_h = (float)HIWORD(s);
+        if (h->width < child_h) {
+          h->width = child_h;
+        }
+      }
+      cellindex++;
+    }
+    /* Recompute vertical positions with the content-sized row heights. */
+    float cursor = 0;
+    FOR_LOOP(i, vcols->count) {
+      vcols->columns[i].position = cursor;
+      cursor += vcols->columns[i].width + pGrid->Spacing;
+    }
+  }
+
+  /* Symmetric first pass for unconstrained width with flexible columns. */
+  if (isinf(size.width) && hcols->count > 0) {
+    cellindex = 0;
+    FOR_EACH_LAYOUTABLE(hChild, hObject) {
+      struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
+      struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
+      if (w && _column_is_flexible(w)) {
+        LRESULT s = OBJ_SendMessageW(hChild, kEventMeasure, 0, &(struct Size) {
+          .width  = INFINITY,
+          .height = (h ? h->width : size.height),
+        });
+        float child_w = (float)LOWORD(s);
+        if (w->width < child_w) {
+          w->width = child_w;
+        }
+      }
+      cellindex++;
+    }
+    float cursor = 0;
+    FOR_LOOP(i, hcols->count) {
+      hcols->columns[i].position = cursor;
+      cursor += hcols->columns[i].width + pGrid->Spacing;
+    }
+  }
+
+  cellindex = 0;
   FOR_EACH_LAYOUTABLE(hChild, hObject)
   {
     struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
@@ -150,6 +226,8 @@ HANDLER(Grid, MeasureOverride)
 HANDLER(Grid, ArrangeOverride)
 {
   uint32_t cellindex = 0;
+  _CalculateAutos(pGrid->Spacing, pArrangeOverride->width, columns_at_axis(pGrid, 0, TRUE));
+  _CalculateAutos(pGrid->Spacing, pArrangeOverride->height, columns_at_axis(pGrid, 1, TRUE));
   FOR_EACH_LAYOUTABLE(hChild, hObject)
   {
     struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
@@ -159,8 +237,6 @@ HANDLER(Grid, ArrangeOverride)
       .y = pArrangeOverride->y + (h ? h->position : 0),
       .width = (w ? w->width : pArrangeOverride->width),
       .height = (h ? h->width : pArrangeOverride->height),
-//      .width = NODE2D_FRAME(GetNode2D(hChild), Size, 0).Desired,
-//      .height = NODE2D_FRAME(GetNode2D(hChild), Size, 1).Desired,
   });
     cellindex++;
   }
