@@ -148,10 +148,9 @@ int load_plugins(lua_State *L)
     lua_getglobal(L, "dofile");
     lua_pushfstring(L, "%s/plugins/%s", sharedir, f);
     
-    if (lua_pcall(L, 1, 0, 0) == LUA_OK)
-//      Con_Print("Loaded plugin \"%.*s\"", (int)n, f);
+    if (lua_pcall(L, 1, 0, 0) == LUA_OK) {
       Con_Printf("Loaded plugin \"%s\"", f);
-    else {
+    } else {
       Con_Error("%s", lua_tostring(L, -1));
       lua_pop(L, 1);
       no_errors = 0;

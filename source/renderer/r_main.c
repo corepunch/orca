@@ -383,6 +383,8 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
 
   //	glPolygonMode(GL_FRONT_AND_BACK, ent->shader?GL_LINE:GL_FILL);
 
+  Con_Printf("Drawing model with shader %p", shader->shader);
+  
   if (ent->mesh && ent->submesh > 0 && model->numIndices > 0) {
     DRAWSUBMESH const* submesh = &model->submeshes[ent->submesh - 1];
     void const* addr = (void*)(submesh->start * sizeof(DRAWINDEX));
@@ -638,9 +640,7 @@ static void Texture_CreateCinematic(struct Texture** img) {
 static void
 R_InitResources(void)
 {
-#ifdef __EMSCRIPTEN__
   Con_Printf("Initializing shaders...");
-#endif
   Shader_LoadFromDef(&shader_default, &tr.shaders[SHADER_DEFAULT].shader);
   Shader_LoadFromDef(&shader_ui, &tr.shaders[SHADER_UI].shader);
   Shader_LoadFromDef(&shader_charset, &tr.shaders[SHADER_CHARSET].shader);
@@ -653,9 +653,7 @@ R_InitResources(void)
   Shader_LoadFromDef(&shader_rect, &tr.shaders[SHADER_2D_RECT].shader);
 #endif
 
-#ifdef __EMSCRIPTEN__
   Con_Printf("Initializing textures...");
-#endif
   Texture_CreateWhite(tr.textures+TX_WHITE);
   Texture_CreateBlack(tr.textures+TX_BLACK);
   Texture_CreatePalette(tr.textures+TX_PALETTE);
@@ -666,9 +664,7 @@ R_InitResources(void)
   Texture_CreateDebug(tr.textures+TX_DEBUG);
   Texture_CreateCinematic(tr.textures+TX_CINEMATIC);
 
-#ifdef __EMSCRIPTEN__
   Con_Printf("Initializing models...");
-#endif
   Model_CreateRectangle(&(struct rect){ 0, 0, 1, 1 }, NULL, VERTEX_ORDER_DEFAULT, tr.models+MD_RECTANGLE);
   tr.models[MD_TEAPOT] = NULL; // Placeholder; runtime uses tr.models[MD_PLANE]
   Model_CreatePlane(1, 1, tr.models+MD_PLANE);
@@ -947,9 +943,7 @@ R_DrawToolbarIcon(PDRAWTOOLBARICONSTRUCT parm)
 static void
 R_InitBuffers(void)
 {
-#ifdef __EMSCRIPTEN__
   Con_Printf("Initializing buffers...");
-#endif
   R_Call(glGenVertexArrays, 1, &tr.vao);
   R_Call(glBindVertexArray, tr.vao);
   R_Call(glGenBuffers, 1, &tr.buffer);
@@ -994,9 +988,7 @@ R_EndFrame(void)
 HRESULT
 renderer_Init(uint32_t dwWidth, uint32_t dwHeight, bool_t bOffscreen)
 {
-#ifdef __EMSCRIPTEN__
   Con_Printf("Initializing renderer...");
-#endif
 
   memset(&tr, 0, sizeof(tr));
   memcpy(&tr.state, &DEFAULTSTATE, sizeof(PIPELINESTATE));
@@ -1004,14 +996,10 @@ renderer_Init(uint32_t dwWidth, uint32_t dwHeight, bool_t bOffscreen)
   tr.frame = -1;
 
   if (bOffscreen) {
-#ifdef __EMSCRIPTEN__
     Con_Printf("Initializing offscreen surface...");
-#endif
     WI_CreateSurface(dwWidth, dwHeight);
   } else {
-#ifdef __EMSCRIPTEN__
     Con_Printf("Initializing window...");
-#endif
     WI_CreateWindow("Window", dwWidth, dwHeight, 0);
   }
 
@@ -1028,7 +1016,7 @@ renderer_Init(uint32_t dwWidth, uint32_t dwHeight, bool_t bOffscreen)
   const GLubyte* version = R_Call(glGetString, GL_VERSION);
   Con_Printf("OpenGL Version: %s", version);
 #endif
-#if defined(__QNX__) || defined(__EMSCRIPTEN__)
+#if defined(__QNX__)// || defined(__EMSCRIPTEN__)
   GLint n = 0;
   R_Call(glGetIntegerv, GL_NUM_EXTENSIONS, &n);
   for (GLint i = 0; i < n; i++) {
@@ -1037,9 +1025,7 @@ renderer_Init(uint32_t dwWidth, uint32_t dwHeight, bool_t bOffscreen)
   }
 #endif
 
-#ifdef __EMSCRIPTEN__
   Con_Printf("Renderer initialized successfully.");
-#endif
 
   return NOERROR;
 }

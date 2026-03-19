@@ -161,16 +161,26 @@ R_SetBlendMode(enum blend_mode value)
 void
 R_SetViewportRect(struct rect const *rect)
 {
+#ifdef __EMSCRIPTEN__
+  /* On WebGL, the two framebuffer spaces have different pixel densities:
+   *   - Default framebuffer: CSS pixel units (set via emscripten_set_canvas_element_size)
+   *   - Render textures: physical device pixels (created with Scale = WI_GetScaling())
+   * Apply the device pixel ratio only when a render texture is currently bound. */
+  float s = tr.currentRenderTarget ? WI_GetScaling() : 1.0f;
+#else
   float s = WI_GetScaling();
-  Con_Printf("%f", s);
+#endif
   R_Call(glViewport, rect->x * s, rect->y * s, rect->width * s, rect->height * s);
 }
 
 void
 R_SetScissorRect(struct rect const *rect)
 {
+#ifdef __EMSCRIPTEN__
+  float s = tr.currentRenderTarget ? WI_GetScaling() : 1.0f;
+#else
   float s = WI_GetScaling();
-  Con_Printf("%f", s);
+#endif
   R_Call(glScissor, rect->x * s, rect->y * s, rect->width * s, rect->height * s);
 }
 
