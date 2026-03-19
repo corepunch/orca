@@ -382,8 +382,6 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
   Shader_BindAttributes(shader->shader, model);
 
   //	glPolygonMode(GL_FRONT_AND_BACK, ent->shader?GL_LINE:GL_FILL);
-
-  Con_Printf("Drawing model with shader %p", shader->shader);
   
   if (ent->mesh && ent->submesh > 0 && model->numIndices > 0) {
     DRAWSUBMESH const* submesh = &model->submeshes[ent->submesh - 1];
