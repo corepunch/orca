@@ -465,15 +465,15 @@ HANDLER(Screen, MeasureOverride) {
 
 
 HANDLER(Screen, Create) {
-//  extern bool_t is_server;
-//  extern int ScreenWidth, ScreenHeight;
-////  uint16_t width = MAX(640, GetNode(hObject)->Size.Axis[0].Requested);
-////  uint16_t height = MAX(480, GetNode(hObject)->Size.Axis[1].Requested);
-//  uint16_t width = MAX(256, ScreenWidth);
-//  uint16_t height = MAX(256, ScreenHeight);
-//  GetNode(hObject)->Size.Axis[0].Requested = width;
-//  GetNode(hObject)->Size.Axis[1].Requested = height;
-//  pScreen->_size = MAKEDWORD(width, height);  
+  if (pScreen->ResizeMode == kResizeModeCanResize) {
+    struct WI_Size size;
+    WI_GetSize(&size);
+    if (size.width > 0 && size.height > 0) {
+      NodePtr node = GetNode(hObject);
+      node->Size.Axis[0].Requested = (float)size.width;
+      node->Size.Axis[1].Requested = (float)size.height;
+    }
+  }
   return FALSE;
 }
 
