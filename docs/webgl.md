@@ -39,7 +39,7 @@ This additionally packs the project directory and compiles `PROJECTDIR` into
 the binary so the engine opens the bundled project automatically without
 needing a command-line argument.
 
-The build uses `-Oz --closure 1` for minimum output size and sets `-sSTACK_SIZE=262144` (256 KB) for safe call-stack headroom.
+The build uses `-Oz --closure 1` for minimum output size.
 
 ---
 
@@ -77,7 +77,7 @@ The debug target differs from the production build in the following ways:
 | `-gsource-map` | Emit `orca.wasm.map` — maps every WASM byte back to the original C file and line number.  Chrome DevTools shows the C source location automatically when the map file is served alongside `orca.wasm`. |
 | `-sASSERTIONS=2` | Enable strict runtime checks: out-of-bounds memory accesses, null-pointer dereferences, type mismatches, and stack overflows all produce descriptive error messages that name the offending C symbol. |
 | `-sSAFE_HEAP=1` | Validate every heap read and write for alignment and bounds.  This catches the class of errors that appear as `"Out of bounds memory access"` in production builds. |
-| `-sSTACK_SIZE=1048576` | Set the C stack size to 1 MB (up from the 256 KB production default).  The WASM stack grows **downward**: `SP` starts at `STACK_MAX` (high address) and decreases with each function call; `STACK_BASE = STACK_MAX − STACK_SIZE` is the **lower** boundary.  The larger stack gives more headroom when analysing deep call chains under ASYNCIFY instrumentation. |
+| `-sSTACK_SIZE=1048576` | Set the C stack size to 1 MB (up from the 64 KB Emscripten default).  The WASM stack grows **downward**: `SP` starts at `STACK_MAX` (high address) and decreases with each function call; `STACK_BASE = STACK_MAX − STACK_SIZE` is the **lower** boundary.  The larger stack gives more headroom when analysing deep call chains under ASYNCIFY instrumentation. |
 | `-sSTACK_OVERFLOW_CHECK=2` | Detect stack overflows with precise per-call checking.  Reports the offending function when the C stack is exhausted. |
 | `-O1` (not `-Oz`) | Minimal optimisation — code structure is preserved and stack traces are readable. |
 | *(no `--closure 1`)* | JavaScript output is not minified, so DevTools stack traces show real function names instead of single-letter identifiers like `a`, `b`, `c`. |

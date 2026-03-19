@@ -2,87 +2,106 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ORCA WebGL Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>ORCA</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
-      background: #111;
-      color: #ccc;
-      font-family: monospace;
+      width: 100%;
       height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+    canvas#canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      outline: none;
+    }
+
+    /* ── Loading overlay ────────────────────────────────────────── */
+    #loading-overlay {
+      position: fixed;
+      inset: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      background: #333;
+      z-index: 10;
+      transition: opacity 0.3s ease;
     }
-    #canvas-container {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      max-width: 100vw;
+    #loading-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
     }
-    canvas#canvas {
-      display: block;
-      width: 854px;
-      height: 480px;
-      max-width: 100vw;
-      border: 2px solid #333;
-      background: #000;
-      outline: none;
+    #progress-bar-wrap {
+      width: 240px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 3px;
+      overflow: hidden;
     }
-    #status-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 4px 8px;
-      background: #1a1a1a;
-      border: 1px solid #333;
-      border-top: none;
-      font-size: 11px;
+    #progress-bar {
+      height: 100%;
+      width: 0%;
+      background: #fff;
+      border-radius: 3px;
+      transition: width 0.15s ease;
     }
-    #status { color: #aaa; }
-    #build-version { color: #555; }
-    #output {
-      width: 854px;
-      max-width: 100vw;
-      height: 100px;
-      background: #0a0a0a;
-      color: #0c0;
-      padding: 4px 8px;
-      font-size: 11px;
-      border: 1px solid #222;
-      border-top: none;
-      overflow-y: auto;
-      resize: vertical;
-      outline: none;
+
+    /* ── Corner info overlay ────────────────────────────────────── */
+    #corner-info {
+      position: fixed;
+      bottom: 8px;
+      right: 8px;
+      font-family: monospace;
+      font-size: 10px;
+      line-height: 1.4;
+      text-align: right;
+      pointer-events: none;
+      z-index: 5;
+    }
+    #last-message {
+      color: rgba(255, 255, 255, 0.35);
+      max-width: 360px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    #build-id {
+      color: rgba(255, 255, 255, 0.2);
     }
   </style>
 </head>
 <body>
-  <div id="canvas-container">
-    <canvas id="canvas" width="854" height="480"
-            oncontextmenu="event.preventDefault()"
-            tabindex="-1"></canvas>
-    <div id="status-bar">
-      <span id="status">Loading&hellip;</span>
-      <span id="build-version">@@BUILD_VERSION@@</span>
+  <!-- Loading overlay with progress bar -->
+  <div id="loading-overlay">
+    <div id="progress-bar-wrap">
+      <div id="progress-bar"></div>
     </div>
-    <textarea id="output" rows="6" readonly></textarea>
   </div>
-  <script>
-    var outputEl = document.getElementById('output');
-    var statusEl = document.getElementById('status');
 
-    function appendOutput(text) {
-      if (outputEl) {
-        outputEl.value += text + '\n';
-        outputEl.scrollTop = outputEl.scrollHeight;
-      }
+  <!-- Full-screen canvas -->
+  <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+
+  <!-- Corner info: last debug message + build ID -->
+  <div id="corner-info">
+    <div id="last-message"></div>
+    <div id="build-id">@@BUILD_VERSION@@</div>
+  </div>
+
+  <script>
+    var LOADING_FADE_DELAY_MS = 300; /* matches the 0.3s CSS transition on #loading-overlay */
+    var progressBar     = document.getElementById('progress-bar');
+    var loadingOverlay  = document.getElementById('loading-overlay');
+    var lastMessageEl   = document.getElementById('last-message');
+
+    function setLastMessage(text) {
+      if (lastMessageEl) lastMessageEl.textContent = text;
     }
 
-    // Patch console methods so all JS output appears on the page.
+    // Route all console output to the corner last-message display (not to a textarea).
     (function () {
       function formatArgs(args) {
         return Array.prototype.slice.call(args).map(function (a) {
@@ -92,35 +111,26 @@
           return String(a);
         }).join(' ');
       }
-
-      function patchConsole(method, prefix) {
+      function patchConsoleMethod(method) {
         var orig = console[method].bind(console);
         console[method] = function () {
           orig.apply(console, arguments);
-          var text = formatArgs(arguments);
-          appendOutput(prefix ? prefix + text : text);
+          setLastMessage(formatArgs(arguments));
         };
       }
-
-      patchConsole('log',   '');
-      patchConsole('info',  'INFO: ');
-      patchConsole('warn',  'WARN: ');
-      patchConsole('error', 'ERROR: ');
+      patchConsoleMethod('log');
+      patchConsoleMethod('info');
+      patchConsoleMethod('warn');
+      patchConsoleMethod('error');
     })();
 
     var Module = {
       print: function (text) {
-        if (arguments.length > 1) {
-          text = Array.prototype.slice.call(arguments).join(' ');
-        }
-        // Goes through the patched console.log → also lands in the textarea.
+        if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
         console.log(text);
       },
       printErr: function (text) {
-        if (arguments.length > 1) {
-          text = Array.prototype.slice.call(arguments).join(' ');
-        }
-        // Goes through the patched console.error → also lands in the textarea.
+        if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
         console.error(text);
       },
       canvas: (function () {
@@ -132,27 +142,29 @@
         return canvas;
       })(),
       setStatus: function (text) {
-        if (statusEl) statusEl.textContent = text || 'Ready';
+        setLastMessage(text || '');
       },
       totalDependencies: 0,
       monitorRunDependencies: function (left) {
         this.totalDependencies = Math.max(this.totalDependencies, left);
-        Module.setStatus(left
-          ? 'Loading… (' + (this.totalDependencies - left) + '/' + this.totalDependencies + ')'
-          : 'Ready');
+        var total = this.totalDependencies;
+        var pct = total > 0 ? Math.round((total - left) / total * 100) : (left === 0 ? 100 : 0);
+        if (progressBar) progressBar.style.width = pct + '%';
+        if (left === 0) {
+          setTimeout(function () {
+            if (loadingOverlay) loadingOverlay.classList.add('hidden');
+          }, LOADING_FADE_DELAY_MS);
+        }
       }
     };
 
     window.addEventListener('error', function (e) {
-      Module.setStatus('Exception: ' + e.message);
-      console.error('EXCEPTION: ' + e.message +
-        (e.filename ? ' at ' + e.filename + ':' + e.lineno : ''));
+      setLastMessage('Error: ' + e.message);
     });
 
     window.addEventListener('unhandledrejection', function (e) {
       var msg = (e.reason && e.reason.message) ? e.reason.message : String(e.reason);
-      Module.setStatus('Unhandled rejection: ' + msg);
-      console.error('UNHANDLED REJECTION: ' + msg);
+      setLastMessage('Error: ' + msg);
     });
   </script>
   {{{ SCRIPT }}}
