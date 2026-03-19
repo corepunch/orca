@@ -966,14 +966,6 @@ R_BeginFrame(struct color color)
 HRESULT
 R_EndFrame(void)
 {
-  //    FOR_LOOP(i, MAX_TEXTCACHE) {
-  //        if (tr.textcache[i].image && tr.textcache[i].frame !=
-  //        tr.frame) {
-  //            Texture_Cleanup(tr.textcache[i].image);
-  //            free(tr.textcache[i].image);
-  //            memset(&tr.textcache[i], 0, sizeof(struct _TEXTCACHE));
-  //        }
-  //    }
   tr.frame++;
 
   glFlush();
@@ -1046,6 +1038,8 @@ renderer_Shutdown(void)
   Con_Printf("Shutting down renderer...");
 
   WI_MakeCurrentContext();
+
+  R_ClearTextCache();
 
   FOR_LOOP(i, SHADER_COUNT) SafeDelete(tr.shaders[i].shader, Shader_Release);
   FOR_LOOP(i, TX_COUNT) SafeDelete(tr.textures[i], Texture_Release);
