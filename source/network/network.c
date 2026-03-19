@@ -401,7 +401,7 @@ static luaL_Reg const lib_response[] = { { "__tostring", f_response_text },
 static void
 Net_Init(void)
 {
-  Con_Error("Initializing network");
+  Con_Printf("Initializing network");
   
   curl_global_init(CURL_GLOBAL_DEFAULT);
 }
@@ -409,7 +409,7 @@ Net_Init(void)
 static void
 Net_Shutdown(void)
 {
-  Con_Error("Shutting down network");
+  Con_Printf("Shutting down network");
   
   curl_global_cleanup();
 }

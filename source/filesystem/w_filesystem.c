@@ -40,7 +40,8 @@ int f_find_module(lua_State* L)
 			}
 		}
   }
-	
+  
+#ifndef __EMSCRIPTEN__
 	lua_getglobal(L, "require");
 	lua_pushstring(L, "moonscript");
 	if (lua_pcall(L, 1, 1, 0) == LUA_OK) {
@@ -64,6 +65,7 @@ int f_find_module(lua_State* L)
 	} else {
 		lua_pop(L, 1);
 	}
+#endif
 
   return 0;
 }

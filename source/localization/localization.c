@@ -228,7 +228,7 @@ static int f_load_localization(lua_State* L)
 
 int w_localization_shutdown(lua_State* L)
 {
-  Con_Error("Shutting down localization");
+  Con_Printf("Shutting down localization");
   FOR_EACH_LIST(struct _LOCALE, loc, locales)
   {
     free(loc);
@@ -241,7 +241,7 @@ static luaL_Reg const lib_files[] = { { "load", f_load_localization },
 
 ORCA_API int luaopen_orca_localization(lua_State* L)
 {
-  Con_Error("Initializing localization");
+  Con_Printf("Initializing localization");
   
   locales = 0;
   

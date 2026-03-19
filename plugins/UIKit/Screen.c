@@ -342,8 +342,6 @@ HANDLER(Node2D, Draw2DContent)
                          .Scale = WI_GetScaling() },
       &pNode2D->RenderTarget);
   }
-  
-  Con_Printf("Draw2DContent: %f %f", Node2D_GetFrame(pNode2D, kBox3FieldWidth), Node2D_GetFrame(pNode2D, kBox3FieldHeight));
 
   struct ForegroundContentEventArgs foreground = { 0 };
 
@@ -483,8 +481,6 @@ HANDLER(Screen, Destroy) {
 HANDLER(Screen, WindowPaint) {
   lua_State *L = OBJ_GetDomain(hObject);
   
-  Con_Printf("WindowPAint: %d %d", LOWORD(wParam), HIWORD(wParam));
-
   if (!pWindowPaint) {
     R_BeginFrame(pScreen->ClearColor);
   }

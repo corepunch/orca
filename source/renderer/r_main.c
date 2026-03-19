@@ -1033,9 +1033,7 @@ renderer_Init(uint32_t dwWidth, uint32_t dwHeight, bool_t bOffscreen)
 void
 renderer_Shutdown(void)
 {
-#ifdef __EMSCRIPTEN__
   Con_Printf("Shutting down renderer...");
-#endif
 
   WI_MakeCurrentContext();
 

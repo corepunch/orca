@@ -179,11 +179,11 @@ FS_JoinPaths(lpcString_t base, lpcString_t relative)
 //}
 
 // void FS_Init(void) {
-//	Con_Error("Initializing file system");
+//	Con_Printf("Initializing file system");
 // }
 //
 // void FS_Shutdown(void) {
-//	Con_Error("Shutting down file system");
+//	Con_Printf("Shutting down file system");
 //
 // }
 
