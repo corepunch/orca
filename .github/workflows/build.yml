@@ -36,13 +36,17 @@ jobs:
             libcurl4-openssl-dev \
             libwayland-dev \
             libegl1-mesa-dev \
-            libgles2-mesa-dev
+            libgles2-mesa-dev \
+            xvfb
 
       - name: Build
         run: make
 
-      - name: Test
-        run: make test
+      - name: Test (headless layout)
+        run: make test-headless
+
+      - name: Test (display required)
+        run: xvfb-run make test
 
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
@@ -78,6 +82,9 @@ jobs:
 
       - name: Build
         run: make
+
+      - name: Test (headless layout)
+        run: make test-headless
 
       - name: Test
         run: make test

@@ -187,8 +187,11 @@ install: all
 	# Install shared data files (fonts, icons, Lua plugins)
 	cp -r $(RESOURCEDIR)/* $(INST_SHAREDIR)/
 
-test:
+test: test-headless
 	$(TARGET) -test=tests/test1.lua
 	$(TARGET) -test=tests/test.xml
+
+test-headless:
+	$(TARGET) -test=tests/test_layout.lua
 
 include Makefile.webgl
