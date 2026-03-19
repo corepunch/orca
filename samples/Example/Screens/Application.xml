@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Screen SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
-<Screen Name="Application" Height="768" Width="1024" ClearColor="#001020">
-  <Grid Name="Layout">
-    <Grid.Columns Value="auto auto"/>
-    <ImageView Name="Image" Image="Example/Images/peacock" Stretch="None" BorderWidth="5 5 5 5" />
-    <TextBlock Name="TextBlock" FontSize="40" ForegroundColor="#ff00ff">
-      <TextRun.Text Value="Hello World"/>
-    </TextBlock>
+<Screen Name="Application" Height="768" Width="1024" ClearColor="#202020">
+  <Grid Name="Layout" Rows="60px auto 60px">
+    <Node2D BackgroundColor="#404040">
+      <TextBlock Name="TextBlock" FontSize="40" ForegroundColor="#ffffff" Text="Hello World" TextHorizontalAlignment="Center" TextVerticalAlignment="Center"/>
+    </Node2D>
+    <Grid Name="Layout" Columns="auto auto" Spacing="8" Margin="8">
+      <ImageView Name="Image" Image="Example/Images/peacock" />
+      <TextBlock Name="TextBlock" BackgroundColor="#505050" FontSize="40" ForegroundColor="#ffffff" Text="Hello World"/>
+    </Grid>
+    <Node2D BackgroundColor="#404040"/>
   </Grid>
 </Screen>
