@@ -81,7 +81,7 @@
 
           <Node2D Name="CardImage" BackgroundColor="#141420" Padding="28">
             <StackView Name="CardImageStack" Direction="Vertical" Spacing="10">
-              <ImageView Name="CardImageThumb" Image="Example/Images/laptop" Width="200" Height="80"/>
+              <ImageView Name="CardImageThumb" Image="Example/Images/butterfly" Width="200" Height="80"/>
               <TextBlock Name="CardImageTitle" Text="Image Integration" FontSize="16" ForegroundColor="#F1F5F9"/>
               <TextBlock Name="CardImageBody"
                 Text="Fast texture loading with stretch, crop, and nine-patch rendering built in."
