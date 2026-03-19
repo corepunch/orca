@@ -483,6 +483,8 @@ HANDLER(Screen, Destroy) {
 }
 
 HANDLER(Screen, WindowPaint) {
+  printf("Screen_WindowPaint %d %d", LOWORD(wParam), HIWORD(wParam));
+  
   lua_State *L = OBJ_GetDomain(hObject);
   
   if (!pWindowPaint) {
@@ -533,6 +535,7 @@ static void OBJ_SetTreeDirty(lpObject_t obj) {
 }
 
 HANDLER(Screen, WindowResized) {
+  printf("Screen_WindowResized %d %d", LOWORD(wParam), HIWORD(wParam));
   NodePtr node = GetNode(hObject);
   if (pScreen->ResizeMode == kResizeModeCanResize ||
       isnan(node->Size.Axis[0].Requested) ||
