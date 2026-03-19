@@ -524,8 +524,13 @@ HANDLER(Screen, WindowPaint) {
 }
 
 HANDLER(Screen, WindowResized) {
-  GetNode(hObject)->Size.Axis[0].Requested = LOWORD(wParam);
-  GetNode(hObject)->Size.Axis[1].Requested = HIWORD(wParam);
+  NodePtr node = GetNode(hObject);
+  if (pScreen->ResizeMode == kResizeModeCanResize ||
+      isnan(node->Size.Axis[0].Requested) ||
+      isnan(node->Size.Axis[1].Requested)) {
+    node->Size.Axis[0].Requested = LOWORD(wParam);
+    node->Size.Axis[1].Requested = HIWORD(wParam);
+  }
   OBJ_SendMessageW(hObject, kEventWindowPaint, wParam, NULL);
   return FALSE;
 }
