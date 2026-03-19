@@ -2,6 +2,10 @@
 
 #include <plugins/UIKit/UIKit.h>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
 
@@ -484,7 +488,29 @@ HANDLER(Screen, Destroy) {
 
 HANDLER(Screen, WindowPaint) {
   lua_State *L = OBJ_GetDomain(hObject);
-  
+
+#ifdef __EMSCRIPTEN__
+  /* On WebGL the HTML canvas drawing-buffer must match the browser viewport
+   * so that the C-side letterboxing in Screen_RenderScreen works correctly.
+   * WI_CreateWindow initialises the canvas to the app's fixed resolution;
+   * the CSS rule "width:100%;height:100%" then stretches it visually without
+   * letterboxing.  Detect the mismatch here, resize the canvas to the real
+   * viewport, and re-queue a WindowResized event.  The subsequent WindowPaint
+   * will find the sizes equal and proceed to render with proper letterboxing. */
+  if (!pWindowPaint) {
+    struct WI_Size canvasSize;
+    WI_GetSize(&canvasSize);
+    int vpW = EM_ASM_INT({ return window.innerWidth  | 0; });
+    int vpH = EM_ASM_INT({ return window.innerHeight | 0; });
+    int canvasW = (int)canvasSize.width;
+    int canvasH = (int)canvasSize.height;
+    if (vpW > 0 && vpH > 0 && (canvasW != vpW || canvasH != vpH)) {
+      WI_SetSize((uint32_t)vpW, (uint32_t)vpH, FALSE);
+      return TRUE;
+    }
+  }
+#endif
+
   if (!pWindowPaint) {
     R_BeginFrame(pScreen->ClearColor);
   }
