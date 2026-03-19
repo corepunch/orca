@@ -180,18 +180,13 @@ enum
   type_service,
 };
 
-#define Con_Error(FMT, ...) \
-fprintf(stderr, "%s: " FMT "\n", __func__, ##__VA_ARGS__)
-
-#define Con_Warning(FMT, ...) \
-Con_Error("Warning: " FMT, ##__VA_ARGS__)
+#define Con_Error(FMT, ...) fprintf(stderr, "%s: " FMT "\n", __func__, ##__VA_ARGS__)
+#define Con_Warning(FMT, ...) Con_Error("Warning: " FMT, ##__VA_ARGS__)
 
 #if defined(__EMSCRIPTEN__) || defined(__QNX__)
-#define Con_Printf(FMT, ...) \
-do { fprintf(stdout, FMT "\n", ##__VA_ARGS__); fflush(stdout); } while(0)
+#define Con_Printf(FMT, ...) fprintf(stdout, FMT "\n", ##__VA_ARGS__);
 #else
-#define Con_Printf(FMT, ...) \
-fprintf(stderr, FMT "\n", ##__VA_ARGS__)
+#define Con_Printf(FMT, ...) fprintf(stderr, FMT "\n", ##__VA_ARGS__)
 #endif
 
 typedef unsigned int bool_t;
