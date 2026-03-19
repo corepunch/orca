@@ -23,8 +23,7 @@
               Text="A modern UI engine for games and native apps. Compose layouts from grids, stacks, text, and images — all rendered at 60 fps."
               FontSize="15"
               ForegroundColor="#64748B"
-              WordWrap="true"
-              Width="480"/>
+              WordWrap="true"/>
             <Node2D Name="MetricSpacer" Height="40"/>
             <Grid Name="Metrics" Columns="auto auto auto" Spacing="16">
               <Node2D Name="MetricUsers" BackgroundColor="#1A1A28" Padding="20" Width="120">
@@ -48,7 +47,7 @@
             </Grid>
           </StackView>
         </Node2D>
-        <ImageView Name="HeroImage" Image="Example/Images/people" Stretch="UniformToFill" MarginRight="56"/>
+        <ImageView Name="HeroImage" Image="Example/Images/people" Stretch="UniformToFill" MarginRight="56" MarginTop="16"/>
       </Grid>
 
       <Node2D Name="FeatureSection" BackgroundColor="#09090F" Padding="40">

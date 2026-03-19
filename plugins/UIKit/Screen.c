@@ -441,14 +441,16 @@ HANDLER(Node2D, Draw2DContent)
 HANDLER(Screen, MeasureOverride) {
   NodeCPtr n = GetNode(hObject);
   
-#if defined(__EMSCRIPTEN__) || defined(__QNX__)
-  struct WI_Size size;
-  if (WI_GetSize(&size)) {
-    NodePtr node = GetNode(hObject);
-    node->Size.Axis[0].Requested = (float)size.width;
-    node->Size.Axis[1].Requested = (float)size.height;
+//#if defined(__EMSCRIPTEN__) || defined(__QNX__)
+  if (pScreen->ResizeMode == kResizeModeCanResize) {
+    struct WI_Size size;
+    if (WI_GetSize(&size)) {
+      NodePtr node = GetNode(hObject);
+      node->Size.Axis[0].Requested = (float)size.width;
+      node->Size.Axis[1].Requested = (float)size.height;
+    }
   }
-#endif
+//#endif
 
   if (!isnan(n->Size.Axis[0].Requested)) {
     pMeasureOverride->width = n->Size.Axis[0].Requested;
