@@ -13,8 +13,8 @@
         </StackView>
       </Node2D>
 
-      <Grid Name="Hero" Columns="1fr 1fr" Spacing="0">
-        <Node2D Name="HeroContent" BackgroundColor="#0B0B12" Padding="56">
+      <Grid Name="Hero" Columns="auto auto" Spacing="24" BackgroundColor="#0B0B12">
+        <Node2D Name="HeroContent" Padding="56">
           <StackView Name="HeroStack" Direction="Vertical" Spacing="0">
             <TextBlock Name="HeadlineLine1" Text="Build stunning"  FontSize="48" ForegroundColor="#F1F5F9"/>
             <TextBlock Name="HeadlineLine2" Text="UI in real-time." FontSize="48" ForegroundColor="#8B5CF6"/>
@@ -27,19 +27,19 @@
               Width="480"/>
             <Node2D Name="MetricSpacer" Height="40"/>
             <Grid Name="Metrics" Columns="auto auto auto" Spacing="16">
-              <Node2D Name="MetricUsers" BackgroundColor="#1A1A28" Padding="20" Width="140">
+              <Node2D Name="MetricUsers" BackgroundColor="#1A1A28" Padding="20" Width="120">
                 <StackView Direction="Vertical" Spacing="4">
                   <TextBlock Name="MetricUsersValue" Text="2.4 M"       FontSize="28" ForegroundColor="#8B5CF6"/>
                   <TextBlock Name="MetricUsersLabel" Text="Active users" FontSize="11" ForegroundColor="#4B5563"/>
                 </StackView>
               </Node2D>
-              <Node2D Name="MetricUptime" BackgroundColor="#1A1A28" Padding="20" Width="140">
+              <Node2D Name="MetricUptime" BackgroundColor="#1A1A28" Padding="20" Width="120">
                 <StackView Direction="Vertical" Spacing="4">
                   <TextBlock Name="MetricUptimeValue" Text="99.9 %"    FontSize="28" ForegroundColor="#10B981"/>
                   <TextBlock Name="MetricUptimeLabel" Text="Uptime SLA" FontSize="11" ForegroundColor="#4B5563"/>
                 </StackView>
               </Node2D>
-              <Node2D Name="MetricFrame" BackgroundColor="#1A1A28" Padding="20" Width="140">
+              <Node2D Name="MetricFrame" BackgroundColor="#1A1A28" Padding="20" Width="120">
                 <StackView Direction="Vertical" Spacing="4">
                   <TextBlock Name="MetricFrameValue" Text="1.2 ms"    FontSize="28" ForegroundColor="#3B82F6"/>
                   <TextBlock Name="MetricFrameLabel" Text="Frame time" FontSize="11" ForegroundColor="#4B5563"/>
@@ -48,11 +48,11 @@
             </Grid>
           </StackView>
         </Node2D>
-        <ImageView Name="HeroImage" Image="Example/Images/peacock" BackgroundColor="#141422"/>
+        <ImageView Name="HeroImage" Image="Example/Images/people" Stretch="UniformToFill" MarginRight="56"/>
       </Grid>
 
       <Node2D Name="FeatureSection" BackgroundColor="#09090F" Padding="40">
-        <Grid Name="FeatureCards" Columns="1fr 1fr 1fr" Spacing="20">
+        <Grid Name="FeatureCards" Columns="auto auto auto" Spacing="20">
 
           <Node2D Name="CardText" BackgroundColor="#141420" Padding="28">
             <StackView Name="CardTextStack" Direction="Vertical" Spacing="10">
@@ -82,7 +82,7 @@
 
           <Node2D Name="CardImage" BackgroundColor="#141420" Padding="28">
             <StackView Name="CardImageStack" Direction="Vertical" Spacing="10">
-              <ImageView Name="CardImageThumb" Image="Example/Images/lake" Width="200" Height="80"/>
+              <ImageView Name="CardImageThumb" Image="Example/Images/laptop" Width="200" Height="80"/>
               <TextBlock Name="CardImageTitle" Text="Image Integration" FontSize="16" ForegroundColor="#F1F5F9"/>
               <TextBlock Name="CardImageBody"
                 Text="Fast texture loading with stretch, crop, and nine-patch rendering built in."

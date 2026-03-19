@@ -385,8 +385,13 @@ HANDLER(Node2D, Arrange)
 
 HANDLER(Node2D, MeasureOverride)
 {
-  FOR_EACH_CHILD(hObject, OBJ_SendMessageW, kEventMeasure, 0, pMeasureOverride);
-  return MAKEDWORD(0,0);//pMeasureOverride->width, pMeasureOverride->height);
+  uint16_t width = 0, height = 0;
+  FOR_EACH_OBJECT(hChild, hObject) {
+    uint32_t size = (uint32_t)OBJ_SendMessageW(hChild, kEventMeasure, 0, pMeasureOverride);
+    width = MAX(width, LOWORD(size));
+    height = MAX(height, HIWORD(size));
+  }
+  return MAKEDWORD(isinf(pMeasureOverride->width)?width:0,isinf(pMeasureOverride->height)?height:0);
 }
 
 HANDLER(Node2D, ArrangeOverride)
