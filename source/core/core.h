@@ -121,6 +121,10 @@ core_GetFocus(void);
 ORCA_API struct Object*
 core_GetHover(void);
 
+/// @name Lifecycle
+
+/// Manages object creation, initialization, update cycles, and destruction.
+
 /// @brief Create new object.
 ORCA_API int
 OBJ_CreateFromLuaState(struct lua_State*);
@@ -142,6 +146,10 @@ OBJ_Equals(struct Object const*, struct Object const*);
 /// @brief Rebuilds the object's body content asynchronously
 ORCA_API void
 OBJ_Rebuild(struct lua_State*, struct Object*);
+/// @name Hierarchy
+
+/// Navigates and manipulates the parent-child relationship tree.
+
 /// @brief Add a child object.
 ORCA_API struct Object*
 OBJ_AddChild(struct Object*, struct Object*, bool_t);
@@ -178,6 +186,10 @@ OBJ_FindChildOfClass(struct Object*, uint32_t);
 /// @brief Finds the nearest parent object of a specific class
 ORCA_API struct Object*
 OBJ_FindParentOfClass(struct Object*, uint32_t);
+/// @name Messaging
+
+/// Dispatches events and sends messages between objects.
+
 /// @brief Dispatch an event starting from this object and bubbling up parents.
 ORCA_API struct Object*
 OBJ_DispatchEvent(struct lua_State*, struct Object*, const char*);
@@ -190,6 +202,10 @@ OBJ_SendMessage2(struct lua_State*, struct Object*, const char*);
 /// @brief Retrieves callback function name for event ID
 ORCA_API const char*
 OBJ_FindCallbackForID(struct Object*, uint32_t);
+/// @name Properties
+
+/// Reads and writes typed properties, applying and observing changes.
+
 /// @brief Set a property on the object.
 ORCA_API bool_t
 OBJ_SetProperty(struct lua_State*, struct Object*, const char*);
@@ -220,6 +236,10 @@ OBJ_GetProperties(struct Object const*);
 /// @brief Gets an integer property value by identifier
 ORCA_API int32_t
 OBJ_GetInteger(struct Object const*, uint32_t, int32_t);
+/// @name Layout
+
+/// Controls position, size, and dirty-flag propagation for layout passes.
+
 /// @brief Updates object layout.
 ORCA_API void
 OBJ_UpdateLayout(struct Object*, int32_t, int32_t);
@@ -232,6 +252,10 @@ OBJ_ClearDirtyFlags(struct Object*);
 /// @brief Applies style changes to object hierarchy
 ORCA_API void
 OBJ_ApplyStyles(struct Object*, bool_t);
+/// @name Style
+
+/// Manages style sheets and resolves computed style values.
+
 /// @brief Add a stylesheet to the object.
 ORCA_API void
 OBJ_AddStyleSheet(struct lua_State*, struct Object*, const char*);
@@ -241,6 +265,10 @@ OBJ_GetStyle(struct Object const*);
 /// @brief Sets object style flags
 ORCA_API void
 OBJ_SetStyle(struct Object*, uint32_t);
+/// @name Animation
+
+/// Attaches, plays, and transitions keyframe animations on this object.
+
 /// @brief Play an animation or resource on the object.
 ORCA_API void
 OBJ_Play(struct Object*, const char*);
@@ -256,6 +284,10 @@ OBJ_GetAnimation(struct Object const*);
 /// @brief Adds a keyframe animation to the object's animation library
 ORCA_API void
 OBJ_AddAnimation(struct Object*, struct KeyframeAnim*);
+/// @name Focus and Input
+
+/// Controls focus state, hover, modal presentation, and timers.
+
 /// @brief Set focus on the object.
 ORCA_API void
 OBJ_SetFocus(struct Object*);
@@ -271,6 +303,10 @@ OBJ_ShowModal(struct lua_State*, struct Object*, struct Object*);
 /// @brief Set a timer on the object.
 ORCA_API int
 OBJ_SetTimer(struct lua_State*, struct Object*);
+/// @name Identity and State
+
+/// Accesses name, class, flags, aliases, text content, and Lua state.
+
 /// @brief Retrieves the object's name identifier
 ORCA_API const char*
 OBJ_GetName(struct Object const*);
@@ -325,6 +361,10 @@ OBJ_SetContext(struct lua_State*, struct Object*);
 /// @brief Parses and applies multiple class names from a class attribute string
 ORCA_API void
 OBJ_ParseClassAttribute(struct Object*, const char*);
+/// @name Prefabs and Aliases
+
+/// Loads prefab templates and manages named child aliases.
+
 /// @brief Instantiates a new object from this prefab.
 ORCA_API struct Object*
 OBJ_Instantiate(struct lua_State*, struct Object*);

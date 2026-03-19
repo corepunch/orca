@@ -680,10 +680,10 @@
 
   <enums name="ResizeMode">
     <summary>Defines how the window can be resized by the user or system.</summary>
-    <enum name="NoResize">The window size is fixed. The user cannot resize or maximize the window.</enum>
-    <enum name="CanMinimize">The user can minimize the window, but resizing and maximizing are disabled.</enum>
     <enum name="CanResize">The user can freely resize the window and maximize it.</enum>
+    <enum name="CanMinimize">The user can minimize the window, but resizing and maximizing are disabled.</enum>
     <enum name="CanResizeWithGrip">The user can resize and maximize the window. A resize grip is displayed in the lower-right corner if the platform supports it.</enum>
+    <enum name="NoResize">The window size is fixed. The user cannot resize or maximize the window.</enum>
   </enums>
 
   <class name="Screen" parent="Node2D">

@@ -262,7 +262,7 @@ void luaX_pushSizing(lua_State *L, enum Sizing value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _Sizing[value]);
 }
-static const char *_ResizeMode[] = {"NoResize","CanMinimize","CanResize","CanResizeWithGrip",NULL};
+static const char *_ResizeMode[] = {"CanResize","CanMinimize","CanResizeWithGrip","NoResize",NULL};
 const char *ResizeModeToString(enum ResizeMode value) {
 	assert(value >= 0 && value < 4);
 	return _ResizeMode[value];
@@ -2884,7 +2884,7 @@ LRESULT Screen_WindowPaint(struct Object*, struct Screen*, wParam_t, WindowPaint
 
 static struct PropertyType const ScreenProperties[kScreenNumProperties] = {
 	DECL(0xeb16b675, Screen, ClearColor, ClearColor, kDataTypeStruct, .TypeString = "Color"), // Screen.ClearColor
-	DECL(0x3dd888be, Screen, ResizeMode, ResizeMode, kDataTypeEnum, .TypeString = "NoResize,CanMinimize,CanResize,CanResizeWithGrip"), // Screen.ResizeMode
+	DECL(0x3dd888be, Screen, ResizeMode, ResizeMode, kDataTypeEnum, .TypeString = "CanResize,CanMinimize,CanResizeWithGrip,NoResize"), // Screen.ResizeMode
 	DECL(0x9a645b38, Screen, DialogResult, DialogResult, kDataTypeFloat), // Screen.DialogResult
 };
 static struct Screen ScreenDefaults = {

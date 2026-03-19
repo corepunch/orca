@@ -278,10 +278,10 @@ ORCA_API void luaX_pushSizing(lua_State *L, enum Sizing value);
 /// @brief Defines how the window can be resized by the user or system.
 /** ResizeMode enum */
 typedef enum ResizeMode {
-	kResizeModeNoResize, ///< The window size is fixed. The user cannot resize or maximize the window.
-	kResizeModeCanMinimize, ///< The user can minimize the window, but resizing and maximizing are disabled.
 	kResizeModeCanResize, ///< The user can freely resize the window and maximize it.
+	kResizeModeCanMinimize, ///< The user can minimize the window, but resizing and maximizing are disabled.
 	kResizeModeCanResizeWithGrip, ///< The user can resize and maximize the window. A resize grip is displayed in the lower-right corner if the platform supports it.
+	kResizeModeNoResize, ///< The window size is fixed. The user cannot resize or maximize the window.
 } eResizeMode_t;
 #define ResizeMode_Count 4
 ORCA_API const char *ResizeModeToString(enum ResizeMode value);
