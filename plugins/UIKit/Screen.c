@@ -440,6 +440,16 @@ HANDLER(Node2D, Draw2DContent)
 
 HANDLER(Screen, MeasureOverride) {
   NodeCPtr n = GetNode(hObject);
+  
+  if (pScreen->ResizeMode == kResizeModeCanResize) {
+    struct WI_Size size;
+    if (WI_GetSize(&size)) {
+      NodePtr node = GetNode(hObject);
+      node->Size.Axis[0].Requested = (float)size.width;
+      node->Size.Axis[1].Requested = (float)size.height;
+    }
+  }
+
   if (!isnan(n->Size.Axis[0].Requested)) {
     pMeasureOverride->width = n->Size.Axis[0].Requested;
   }
@@ -465,15 +475,14 @@ HANDLER(Screen, MeasureOverride) {
 
 
 HANDLER(Screen, Create) {
-  if (pScreen->ResizeMode == kResizeModeCanResize) {
-    struct WI_Size size;
-    WI_GetSize(&size);
-    if (size.width > 0 && size.height > 0) {
-      NodePtr node = GetNode(hObject);
-      node->Size.Axis[0].Requested = (float)size.width;
-      node->Size.Axis[1].Requested = (float)size.height;
-    }
-  }
+//  struct WI_Size size;
+//  if (pScreen->ResizeMode == kResizeModeCanResize) {
+//    if (WI_GetSize(&size)) {
+//      NodePtr node = GetNode(hObject);
+//      node->Size.Axis[0].Requested = (float)size.width;
+//      node->Size.Axis[1].Requested = (float)size.height;
+//    }
+//  }
   return FALSE;
 }
 
@@ -483,14 +492,12 @@ HANDLER(Screen, Destroy) {
 }
 
 HANDLER(Screen, WindowPaint) {
-  Con_Printf("Screen_WindowPaint %d %d", LOWORD(wParam), HIWORD(wParam));
-  
   lua_State *L = OBJ_GetDomain(hObject);
   
   if (!pWindowPaint) {
     R_BeginFrame(pScreen->ClearColor);
   }
-  
+    
   OBJ_Awake(L, hObject);
   OBJ_Animate(L, hObject);
   OBJ_LoadPrefabs(L, hObject);
@@ -535,7 +542,6 @@ static void OBJ_SetTreeDirty(lpObject_t obj) {
 }
 
 HANDLER(Screen, WindowResized) {
-  Con_Printf("Screen_WindowResized %d %d", LOWORD(wParam), HIWORD(wParam));
   NodePtr node = GetNode(hObject);
   if (pScreen->ResizeMode == kResizeModeCanResize ||
       isnan(node->Size.Axis[0].Requested) ||
