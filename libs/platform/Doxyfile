@@ -1,0 +1,62 @@
+# Doxyfile — configuration for the platform library API documentation.
+# Generated docs are published to GitHub Pages via .github/workflows/docs.yml.
+
+#---------------------------------------------------------------------------
+# Project
+#---------------------------------------------------------------------------
+PROJECT_NAME        = "Platform"
+PROJECT_BRIEF       = "Cross-platform window, input & rendering abstraction"
+PROJECT_NUMBER      = ""
+OUTPUT_DIRECTORY    = docs
+
+#---------------------------------------------------------------------------
+# Input
+#---------------------------------------------------------------------------
+INPUT               = README.md platform.h events.h
+FILE_PATTERNS       = *.h *.md
+RECURSIVE           = NO
+EXCLUDE_PATTERNS    =
+USE_MDFILE_AS_MAINPAGE = README.md
+
+#---------------------------------------------------------------------------
+# Source & language
+#---------------------------------------------------------------------------
+OPTIMIZE_OUTPUT_FOR_C = YES
+EXTRACT_ALL           = NO
+EXTRACT_STATIC        = NO
+HIDE_UNDOC_MEMBERS    = YES
+HIDE_UNDOC_CLASSES    = YES
+SHOW_FILES            = NO
+SHOW_NAMESPACES       = NO
+
+#---------------------------------------------------------------------------
+# HTML output  (used for GitHub Pages)
+#---------------------------------------------------------------------------
+GENERATE_HTML       = YES
+HTML_OUTPUT         = html
+HTML_FILE_EXTENSION = .html
+HTML_COLORSTYLE     = AUTO_DARK
+DISABLE_INDEX       = NO
+GENERATE_TREEVIEW   = YES
+FULL_SIDEBAR        = NO
+
+#---------------------------------------------------------------------------
+# Other output formats — disabled
+#---------------------------------------------------------------------------
+GENERATE_LATEX      = NO
+GENERATE_MAN        = NO
+GENERATE_RTF        = NO
+GENERATE_XML        = NO
+
+#---------------------------------------------------------------------------
+# Graphs / diagrams — disabled (no Graphviz required in CI)
+#---------------------------------------------------------------------------
+HAVE_DOT            = NO
+
+#---------------------------------------------------------------------------
+# Warnings
+#---------------------------------------------------------------------------
+QUIET               = NO
+WARNINGS            = YES
+WARN_IF_UNDOCUMENTED = YES
+WARN_NO_PARAMDOC     = YES

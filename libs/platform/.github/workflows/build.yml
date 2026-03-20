@@ -1,0 +1,144 @@
+name: Build
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: msys2/setup-msys2@v2
+      with:
+        msystem: MINGW64
+        install: >-
+          mingw-w64-x86_64-gcc
+          make
+
+    - name: Build
+      run: make
+
+    - name: Check library
+      run: |
+        ls -lh libplatform.dll
+        file libplatform.dll
+
+    - name: Test API
+      run: make test
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: libplatform-windows
+        path: libplatform.dll
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libwayland-dev libwayland-egl1-mesa libxkbcommon-dev libegl-dev libgl-dev
+    
+    - name: Build
+      run: make
+    
+    - name: Check library
+      run: |
+        ls -lh libplatform.so
+        file libplatform.so
+        nm -D libplatform.so | grep " T " || true
+    
+    - name: Test API
+      run: make test
+    
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: libplatform-linux
+        path: libplatform.so
+
+  build-linux-x11:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install X11 dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libx11-dev libegl-dev libgl-dev
+
+    - name: Build
+      run: make
+
+    - name: Check library
+      run: |
+        ls -lh libplatform.so
+        file libplatform.so
+        nm -D libplatform.so | grep " T " || true
+
+    - name: Test API
+      run: make test
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: libplatform-linux-x11
+        path: libplatform.so
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Build
+      run: make
+    
+    - name: Check library
+      run: |
+        ls -lh libplatform.dylib
+        file libplatform.dylib
+        nm -gU libplatform.dylib || true
+    
+    - name: Test API
+      run: make test
+    
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: libplatform-macos
+        path: libplatform.dylib
+
+  build-webgl:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Emscripten
+      uses: mymindstorm/setup-emsdk@v14
+
+    - name: Build
+      run: emmake make
+
+    - name: Check library
+      run: |
+        ls -lh libplatform.wasm
+        file libplatform.wasm
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: libplatform-webgl
+        path: libplatform.wasm
