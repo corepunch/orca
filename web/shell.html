@@ -125,6 +125,89 @@
       patchConsoleMethod('error');
     })();
 
+    // ── Data-file download progress tracking ────────────────────────────────
+    // Emscripten's monitorRunDependencies fires only when a dependency starts
+    // or finishes, so the bar stays stuck at ~1% while the large .data file
+    // is downloading.  Patch XMLHttpRequest (and fetch, as a fallback) to
+    // capture byte-level progress on the *.data request and push it to the
+    // progress bar directly.
+    var _dataFileLoading = false;
+    (function () {
+      // Match *.data URLs with optional query string or hash fragment.
+      var DATA_FILE_RE = /\.data(\?[^#]*)?($|#)/;
+
+      function onDataProgress(loaded, total) {
+        if (progressBar && total > 0) {
+          progressBar.style.width = Math.round(loaded / total * 100) + '%';
+        }
+      }
+
+      // ── XMLHttpRequest patch ─────────────────────────────────────────────
+      var origOpen = XMLHttpRequest.prototype.open;
+      var origSend = XMLHttpRequest.prototype.send;
+
+      XMLHttpRequest.prototype.open = function (method, url) {
+        this._trackDataFile = typeof url === 'string' && DATA_FILE_RE.test(url);
+        return origOpen.apply(this, arguments);
+      };
+
+      XMLHttpRequest.prototype.send = function (body) {
+        if (this._trackDataFile) {
+          _dataFileLoading = true;
+          this.addEventListener('progress', function (evt) {
+            if (evt.lengthComputable) {
+              onDataProgress(evt.loaded, evt.total);
+            }
+          });
+          // Reset the flag when the transfer ends (success, error, or abort).
+          var done = function () { _dataFileLoading = false; };
+          this.addEventListener('load', done);
+          this.addEventListener('error', done);
+          this.addEventListener('abort', done);
+        }
+        return origSend.apply(this, arguments);
+      };
+
+      // ── fetch() patch (newer Emscripten versions) ────────────────────────
+      if (typeof window.fetch === 'function' && typeof TransformStream !== 'undefined') {
+        var origFetch = window.fetch;
+        window.fetch = function (resource, init) {
+          var url = typeof resource === 'string' ? resource
+                  : (resource && resource.url) ? resource.url : '';
+          if (!DATA_FILE_RE.test(url)) {
+            return origFetch.apply(this, arguments);
+          }
+          _dataFileLoading = true;
+          return origFetch.apply(this, arguments).then(function (response) {
+            if (!response.body) {
+              _dataFileLoading = false;
+              return response;
+            }
+            var total = parseInt(response.headers.get('Content-Length') || '0', 10);
+            var loaded = 0;
+            var passThrough = new TransformStream({
+              transform: function (chunk, controller) {
+                loaded += chunk.byteLength;
+                onDataProgress(loaded, total);
+                controller.enqueue(chunk);
+              },
+              flush: function () {
+                _dataFileLoading = false;
+              }
+            });
+            return new Response(response.body.pipeThrough(passThrough), {
+              status: response.status,
+              statusText: response.statusText,
+              headers: response.headers
+            });
+          }, function (err) {
+            _dataFileLoading = false;
+            return Promise.reject(err);
+          });
+        };
+      }
+    })();
+
     var Module = {
       print: function (text) {
         if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
@@ -148,13 +231,17 @@
       totalDependencies: 0,
       monitorRunDependencies: function (left) {
         this.totalDependencies = Math.max(this.totalDependencies, left);
-        var total = this.totalDependencies;
-        var pct = total > 0 ? Math.round((total - left) / total * 100) : (left === 0 ? 100 : 0);
-        if (progressBar) progressBar.style.width = pct + '%';
         if (left === 0) {
+          if (progressBar) progressBar.style.width = '100%';
           setTimeout(function () {
             if (loadingOverlay) loadingOverlay.classList.add('hidden');
           }, LOADING_FADE_DELAY_MS);
+        } else if (!_dataFileLoading) {
+          // Fallback: show dependency-count progress when no .data download is
+          // in progress (e.g. cached build or simple no-data project).
+          var total = this.totalDependencies;
+          var pct = total > 0 ? Math.round((total - left) / total * 100) : 0;
+          if (progressBar) progressBar.style.width = pct + '%';
         }
       }
     };
