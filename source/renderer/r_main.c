@@ -1,6 +1,10 @@
 #include <math.h>
 #include <string.h>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 #include "r_local.h"
 
 static HRESULT R_SetPalette(struct color32 const palette[256]);
@@ -1065,6 +1069,15 @@ static int renderer_gc(lua_State* L)
 void on_renderer_module_registered(lua_State* L) {
   API_MODULE_SHUTDOWN(L, renderer_gc);
   WI_Init();
+#ifdef __EMSCRIPTEN__
+  /* Defense-in-depth: snap canvas CSS to integer-pixel dimensions right after
+   * WI_Init so that Emscripten's touch-event glue always receives whole-number
+   * targetX/Y coordinates.  On high-DPI iOS devices (e.g. iPhone 14 Pro Max,
+   * DPR=3), CSS "width:100%" can resolve to a fractional value (355.666px =
+   * 1067px / 3), causing SAFE_HEAP to abort with "attempt to write non-integer
+   * into integer heap".  window.snapCanvas is defined in shell.html. */
+  EM_ASM({ if (window.snapCanvas) window.snapCanvas(); });
+#endif
   FT_Init();
 }
 

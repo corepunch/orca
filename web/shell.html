@@ -120,6 +120,40 @@
   </div>
 
   <script>
+    // ── Canvas integer-pixel snap (iOS touch fix) ──────────────────────────
+    // On high-DPI iOS devices (e.g. iPhone 14 Pro Max with DPR=3), CSS
+    // "width:100%" can resolve to a fractional CSS-pixel size such as 355.666px
+    // (= 1067 physical px / 3).  Emscripten's touch-event glue then computes
+    //   targetX = touch.clientX - getBoundingClientRect().left
+    // which is non-integer, triggering an Emscripten SAFE_HEAP assertion:
+    //   "Assertion failed: attempt to write non-integer (355.666...) into
+    //    integer heap"
+    // Fix: override the canvas inline style with explicit integer-pixel
+    // dimensions derived from window.innerWidth / innerHeight.  The DOM spec
+    // guarantees these properties are integers (long), so touch targetX/Y will
+    // always be whole numbers.
+    // snapCanvas is exposed as window.snapCanvas so the WASM-side EM_ASM in
+    // r_main.c can call it as a defense-in-depth snap after WI_Init().
+    var IOS_ORIENTATION_SETTLE_MS = 100; // iOS defers viewport update after rotation
+    window.snapCanvas = function () {
+      var canvas = document.getElementById('canvas');
+      if (!canvas) return;
+      var w = window.innerWidth;
+      var h = window.innerHeight;
+      if (w > 0 && h > 0) {
+        canvas.style.width  = w + 'px';
+        canvas.style.height = h + 'px';
+      }
+    };
+    // Snap immediately – the <script> runs after <canvas> is already in DOM.
+    window.snapCanvas();
+    // Re-snap after orientation changes; iOS defers viewport update.
+    window.addEventListener('orientationchange', function () {
+      setTimeout(window.snapCanvas, IOS_ORIENTATION_SETTLE_MS);
+    });
+    // Re-snap on generic resize (desktop browsers, iPad split-view, etc.).
+    window.addEventListener('resize', window.snapCanvas);
+
     var LOADING_FADE_DELAY_MS = 300; /* matches the 0.3s CSS transition on #loading-overlay */
     var progressBar     = document.getElementById('progress-bar');
     var loadingOverlay  = document.getElementById('loading-overlay');
