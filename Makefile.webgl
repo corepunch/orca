@@ -141,9 +141,17 @@ webgl-demo:
 #                           source lines.  Chrome/Firefox DevTools show the original
 #                           C file + line when the source map file is served alongside
 #                           orca.wasm (same directory).
-#   -sASSERTIONS=2          Enable strict runtime checks: out-of-bounds memory,
-#                           null-pointer dereferences, type mismatches, and more.
+#   -sASSERTIONS=1          Enable runtime checks: out-of-bounds memory,
+#                           null-pointer dereferences, and more.
 #                           Error messages include the C symbol name and context.
+#                           NOTE: ASSERTIONS=2 is intentionally NOT used here.
+#                           ASSERTIONS=2 adds checkInt32() before every HEAP32
+#                           write; Emscripten's touch event handler writes
+#                           touch.clientX (a JS double, potentially fractional
+#                           on iOS where DPR=3 maps non-multiple physical pixels
+#                           to non-integer CSS pixels) to an i32 HEAP32 slot,
+#                           triggering "attempt to write non-integer into integer
+#                           heap" and aborting the WASM runtime on first touch.
 #   -sSAFE_HEAP=1           Validate every heap read/write for alignment and bounds.
 #                           Catches the class of errors that appear as
 #                           "Out of bounds memory access" in production builds.
@@ -171,7 +179,8 @@ WEBGL_DEBUG_CFLAGS  = -g -O1 -I. -I$(CURDIR) -I$(PLATFORM_LIBDIR) \
                       -I$(WEBGL_DIR) \
                       -DSHAREDIR='"/share"'
 
-# Debug LDFLAGS: no --closure, ASSERTIONS=2, SAFE_HEAP, source map, stack traces.
+# Debug LDFLAGS: no --closure, ASSERTIONS=1, SAFE_HEAP, source map, stack traces.
+# (ASSERTIONS=1 rather than 2: see comment above for why 2 crashes on iOS touch)
 WEBGL_DEBUG_LDFLAGS = -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG=1 \
                       -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
                       -sASYNCIFY=1 -sASYNCIFY_IMPORTS='["emscripten_sleep"]' \
@@ -179,7 +188,7 @@ WEBGL_DEBUG_LDFLAGS = -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG
                       -sSTACK_SIZE=1048576 \
                       -sEXPORTED_RUNTIME_METHODS='["ccall","cwrap","FS"]' \
                       -sEXIT_RUNTIME=0 \
-                      -sASSERTIONS=2 \
+                      -sASSERTIONS=1 \
                       -sSAFE_HEAP=1 \
                       -sSTACK_OVERFLOW_CHECK=2 \
                       -gsource-map \
