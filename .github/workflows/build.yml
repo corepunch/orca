@@ -135,6 +135,41 @@ jobs:
           name: orca-webgl
           path: build/webgl/
 
+  build-webgl-debug:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 3.1.74
+          actions-cache-folder: emsdk-cache
+
+      - name: Build WASM dependencies (lua5.4, libxml2, liblz4)
+        # Builds into build/wasm-deps/ (WASM_DEPS_DIR default in Makefile.webgl).
+        run: emmake make wasm-deps
+
+      - name: Build platform library for WebGL
+        run: |
+          mkdir -p build/lib
+          emmake make -C libs/platform OUTDIR=../../build/lib
+
+      - name: Build Orca for WebGL (debug)
+        run: |
+          COMMIT_TITLE=$(git log -1 --format=%s)
+          emmake make webgl-debug WEBGL_EMCC=emcc WEBGL_VERSION="${COMMIT_TITLE}"
+
+      - name: Upload WebGL debug artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: orca-webgl-debug
+          path: build/webgl/
+
   release:
     needs: [build-linux, build-macos]
     runs-on: ubuntu-latest
