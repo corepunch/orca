@@ -64,7 +64,8 @@ WEBGL_LDFLAGS = -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG=1 \
                 -sEXIT_RUNTIME=0 \
                 -sASSERTIONS=0 \
                 -sLEGACY_VM_SUPPORT=1 \
-                --closure 1
+                --closure 1 \
+                --closure-args "--language_out ECMASCRIPT5"
 # Uncomment to raise the C stack above the 64 KB Emscripten default (e.g. to avoid stack overflows):
 WEBGL_LDFLAGS += -sSTACK_SIZE=262144
 
