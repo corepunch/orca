@@ -60,12 +60,11 @@ WEBGL_LDFLAGS = -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG=1 \
                 -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
                 -sASYNCIFY=1 -sASYNCIFY_IMPORTS='["emscripten_sleep"]' \
                 -sALLOW_MEMORY_GROWTH=1 \
+                -sSTACK_SIZE=524288 \
                 -sEXPORTED_RUNTIME_METHODS='["ccall","cwrap","FS"]' \
                 -sEXIT_RUNTIME=0 \
                 -sASSERTIONS=0 \
                 --closure 1
-# Uncomment to raise the C stack above the 64 KB Emscripten default (e.g. to avoid stack overflows):
-# WEBGL_LDFLAGS += -sSTACK_SIZE=262144
 
 # ─── WASM dependency builds ───────────────────────────────────────────────
 # Builds lua5.4, libxml2, and liblz4 as WASM static libraries and installs
