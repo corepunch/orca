@@ -434,3 +434,73 @@ To preview locally:
 pip install mkdocs-material
 mkdocs serve
 ```
+
+---
+
+## Key Findings & Gotchas
+
+Discoveries made during development that are non-obvious or can trip up developers.
+
+### Renderer: Palette-Indexed Textures
+
+- `palette_t = uint32_t[256]` — each entry is `0x00RRGGBB`; **index 0 is always transparent** (alpha = 0); all other entries get alpha = 255.
+- Set `ViewEntity.palette` to a `struct color32 const*` (256-entry array). Inside `R_DrawEntity`:
+  1. If `ent.shader` is `NULL`, the renderer **automatically selects `SHADER_CINEMATIC`** (palette look-up shader).
+  2. `R_SetPalette` is called to upload the LUT to the `TX_CINEMATICPALETTE` texture slot.
+- `R_SetPalette` is **`static`** (private to `r_main.c`) — never call it directly; set `ViewEntity.palette` instead.
+- `TX_CINEMATICPALETTE` is a **shared** 256×1 texture slot. The cinematic player and palette-indexed sprites both use it; whichever draws last wins.
+
+### Renderer: Shader and Mesh Boxing
+
+- Use `BOX_PTR(Shader, SHADER_*)` to select a built-in shader type without looking up the real pointer.
+- Use `BOX_PTR(Mesh, MD_*)` for built-in geometry types (rectangle, capsule, ninepatch, …).
+- **Always** check `BOX_IS_PTR((uintptr_t)ptr)` before dereferencing a `mesh` or `shader` field — boxed values are small integers cast to pointers and must never be dereferenced.
+- Shader selection in `R_DrawEntity` (in priority order): palette → SHADER_CINEMATIC; no shader → SHADER_UI (or SHADER_2D_RECT on macOS IOSurface); real pointer → use directly; boxed tag → `tr.shaders[tag]`.
+
+### ClassDesc — Extended Fields
+
+Beyond the fields shown in the architecture docs, `ClassDesc` also has:
+
+```c
+lpcString_t DefaultName;   // name given to objects of this class when none is provided
+lpcString_t ContentType;   // used for package auto-detection and editor filtering
+lpcString_t Xmlns;         // XML namespace for package auto-detection
+uint32_t    MemorySize;    // total instance size including all components
+```
+
+Use `OBJ_EnumClasses(superclassID, callback, param)` to iterate all registered classes that inherit from a given class ID.
+
+### Lua Module Loading
+
+- All built-in modules are registered in `package.preload` by `luaopen_orca` **before** any project code runs — they execute lazily on first `require`.
+- The `orca` table has a `__index` metamethod that auto-requires `orca.<key>` on first access and caches the result, so `orca.geometry` and `require "orca.geometry"` are equivalent.
+- On WebGL, `package.cpath` is not extended (no `.so` loading). Plugin modules are compiled into the WASM binary and pre-registered via an auto-generated `plugins_luaopen.h`.
+- **Gotcha — init order:** `luaopen_*` runs on the first `require`, not at registration. If your module init has side effects depending on another module, call `require` explicitly — don't assume registration order.
+
+### Module XML — Topics Are Siblings, Not Containers
+
+`<topic>` elements are **sibling separators** between `<method>` elements inside an `<interface>` — they are NOT containers. Methods follow a `<topic>` as siblings until the next `<topic>` or end of interface. `getMethods()` uses `.//method[@name]` and traverses all methods regardless of intervening topics. Topics are invisible to code generation; they only affect generated documentation.
+
+### pyphp Template Limitations
+
+When editing PHP templates in `tools/templates/`:
+
+- **No `(string)$expr` casts** — use `strval($expr)` instead.
+- **No negated `isset` in `if`** — `if (!isset($arr[$k]))` silently runs the body unconditionally; workaround: `$v = isset($arr[$k]) ? $arr[$k] : ""; if ($v === "") { … }`
+- **No ternary as a dict value** — hoist to a variable: `$ns = $x ? $a : $b; $vars = ["ns" => $ns];`
+- **No `new $varName()`** — only `new ConcreteClass()` and `$obj->concreteMethod()` work.
+- **`?>` eats the following newline** — use `echo "…\n"` inside PHP blocks when emitting C code that must end with a newline.
+
+### Dark Reign SPR Format — Key Gotchas
+
+- Two sprite types: `"RSPR"` (normal) and `"SSPR"` (shadow). Shadow sprites fill all opaque pixels with **palette index 47** instead of reading pixel data from the stream.
+- Rotation 0 on disk means the sprite faces **right**. The loader shifts by `nrots/4` to align sprites with the conventional "up" direction.
+- `off_bits` is derived, not stored: `32 + 4*nanims*nrots + 16*nsects + 4*nanims + 8*npics + 4`.
+- The `TX_CINEMATICPALETTE` slot doubles as the sprite palette for palette-indexed textures.
+
+### WebGL Build
+
+- Use `make webgl` to build; requires `emcc` in PATH.
+- Run `emmake make wasm-deps` once to compile lua5.4, libxml2, and liblz4 for WASM.
+- The engine uses `-sASYNCIFY=1`: the Lua main loop calls `emscripten_sleep(0)` when the event queue is empty, which yields to the browser and resumes on the next tick.
+- `orca.network` and `orca.editor` are excluded from WebGL builds.
