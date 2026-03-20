@@ -23,10 +23,7 @@
     /* ── Loading overlay ────────────────────────────────────────── */
     #loading-overlay {
       position: fixed;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
+      inset: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -65,13 +62,23 @@
       text-align: right;
       pointer-events: none;
       z-index: 5;
-    }
-    #last-message {
-      color: rgba(255, 255, 255, 0.35);
       max-width: 360px;
+    }
+    #console-log {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      max-height: 160px;
+      overflow: hidden;
+    }
+    .console-entry {
+      color: rgba(255, 255, 255, 0.35);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+    }
+    .console-entry.error {
+      color: rgba(255, 120, 80, 0.65);
     }
     #build-id {
       color: rgba(255, 255, 255, 0.2);
@@ -89,9 +96,9 @@
   <!-- Full-screen canvas -->
   <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
 
-  <!-- Corner info: last debug message + build ID -->
+  <!-- Corner info: console log + build ID -->
   <div id="corner-info">
-    <div id="last-message"></div>
+    <div id="console-log"></div>
     <div id="build-id">@@BUILD_VERSION@@</div>
   </div>
 
@@ -99,13 +106,29 @@
     var LOADING_FADE_DELAY_MS = 300; /* matches the 0.3s CSS transition on #loading-overlay */
     var progressBar     = document.getElementById('progress-bar');
     var loadingOverlay  = document.getElementById('loading-overlay');
-    var lastMessageEl   = document.getElementById('last-message');
+    var consoleLogEl    = document.getElementById('console-log');
 
-    function setLastMessage(text) {
-      if (lastMessageEl) lastMessageEl.textContent = text;
+    var MAX_CONSOLE_LINES = 12;
+    var consoleLines = [];
+
+    function addConsoleMessage(text, isError) {
+      if (!consoleLogEl || !text) return;
+      var el = document.createElement('div');
+      el.className = isError ? 'console-entry error' : 'console-entry';
+      el.textContent = text;
+      consoleLogEl.appendChild(el);
+      consoleLines.push(el);
+      while (consoleLines.length > MAX_CONSOLE_LINES) {
+        consoleLogEl.removeChild(consoleLines.shift());
+      }
     }
 
-    // Route all console output to the corner last-message display (not to a textarea).
+    /* setLastMessage kept for backward-compat with Module.setStatus */
+    function setLastMessage(text) {
+      addConsoleMessage(text, false);
+    }
+
+    // Route all console output to the corner console-log overlay.
     (function () {
       function formatArgs(args) {
         return Array.prototype.slice.call(args).map(function (a) {
@@ -115,17 +138,17 @@
           return String(a);
         }).join(' ');
       }
-      function patchConsoleMethod(method) {
+      function patchConsoleMethod(method, isError) {
         var orig = console[method].bind(console);
         console[method] = function () {
           orig.apply(console, arguments);
-          setLastMessage(formatArgs(arguments));
+          addConsoleMessage(formatArgs(arguments), isError);
         };
       }
-      patchConsoleMethod('log');
-      patchConsoleMethod('info');
-      patchConsoleMethod('warn');
-      patchConsoleMethod('error');
+      patchConsoleMethod('log',   false);
+      patchConsoleMethod('info',  false);
+      patchConsoleMethod('warn',  false);
+      patchConsoleMethod('error', true);
     })();
 
     // ── Data-file download progress tracking ────────────────────────────────
@@ -250,12 +273,12 @@
     };
 
     window.addEventListener('error', function (e) {
-      setLastMessage('Error: ' + e.message);
+      addConsoleMessage('Error: ' + e.message, true);
     });
 
     window.addEventListener('unhandledrejection', function (e) {
       var msg = (e.reason && e.reason.message) ? e.reason.message : String(e.reason);
-      setLastMessage('Error: ' + msg);
+      addConsoleMessage('Error: ' + msg, true);
     });
   </script>
   {{{ SCRIPT }}}
