@@ -336,7 +336,7 @@ HANDLER(Node2D, Arrange)
 {
   struct Node2D *n = pNode2D;
   struct Size s = {0};
-
+  
   if (!isnan(NODE2D_FRAME(n, Size, 0).Requested)) {
     s.width = NODE2D_FRAME(n, Size, 0).Requested;
   } else if (NODE2D_FRAME(n, Alignment, 0) || isinf(pArrange->width)) {

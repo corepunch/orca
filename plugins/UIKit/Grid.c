@@ -146,7 +146,7 @@ HANDLER(Grid, MeasureOverride)
 
   _CalculateAutos(pGrid->Spacing, size.width, hcols);
   _CalculateAutos(pGrid->Spacing, size.height, vcols);
-
+  
   /*
    * When the available height is unconstrained (INFINITY) and we have
    * flexible (auto/fr) rows, do a content-sizing first pass: measure each
@@ -215,12 +215,13 @@ HANDLER(Grid, MeasureOverride)
       .height = (h ? h->width : size.height),
     });
     
-    desired.width = fmax((w?w->position:0) + LOWORD(s), desired.width);
-    desired.height = fmax((h?h->position:0) + HIWORD(s), desired.height);
+    if(LOWORD(s)<0xffff)desired.width = fmax((w?w->position:0) + LOWORD(s), desired.width);
+    if(HIWORD(s)<0xffff)desired.height = fmax((h?h->position:0) + HIWORD(s), desired.height);
     cellindex++;
   }
   
-  return MAKEDWORD(desired.width, desired.height);
+  return MAKEDWORD(desired.width?desired.width:pMeasureOverride->width,
+                   desired.height?desired.height:pMeasureOverride->height);
 }
 
 HANDLER(Grid, ArrangeOverride)
