@@ -111,6 +111,10 @@ class config {
 			'format' => "%s",
 			'default' => "{%s}"
 		],
+		"strarray" => [
+			'decl' => 'lpcString_t const*',
+			'format' => "%s",
+		],
 		"nresults" => [
 			'decl' => 'int',
 			'push' => 'lua_pushnil(L)', 

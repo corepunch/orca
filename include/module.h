@@ -166,6 +166,7 @@ typedef struct _PROPDEF {
   LPVOID lpEditorValue;
   LPVOID lpRuntimeValue;
   lpcString_t lpEnumValues;
+  lpcString_t const* lpEnumArray;
   DWORD dwFlags;
   DWORD dwSize;
   LPSTR pPrograms[PropertyAttribute_Count];

@@ -4,7 +4,9 @@
 #include "SceneKit.h"
 
 
-static const char *_StencilOp[] = {"Keep","Zero","Replace","Increment","IncrementWrap","Decrement","DecrementWrap","Invert",NULL};
+extern const char *_BlendMode[];
+extern const char *_CompareFunc[];
+ORCA_API const char *_StencilOp[] = {"Keep","Zero","Replace","Increment","IncrementWrap","Decrement","DecrementWrap","Invert",NULL};
 const char *StencilOpToString(enum StencilOp value) {
 	assert(value >= 0 && value < 8);
 	return _StencilOp[value];
@@ -16,7 +18,7 @@ void luaX_pushStencilOp(lua_State *L, enum StencilOp value) {
 	assert(value >= 0 && value < 8);
 	lua_pushstring(L, _StencilOp[value]);
 }
-static const char *_ViewportMode[] = {"Relative","Absolute",NULL};
+ORCA_API const char *_ViewportMode[] = {"Relative","Absolute",NULL};
 const char *ViewportModeToString(enum ViewportMode value) {
 	assert(value >= 0 && value < 2);
 	return _ViewportMode[value];
@@ -28,7 +30,7 @@ void luaX_pushViewportMode(lua_State *L, enum ViewportMode value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _ViewportMode[value]);
 }
-static const char *_CullMode[] = {"None","Back","Front",NULL};
+ORCA_API const char *_CullMode[] = {"None","Back","Front",NULL};
 const char *CullModeToString(enum CullMode value) {
 	assert(value >= 0 && value < 3);
 	return _CullMode[value];
@@ -40,7 +42,7 @@ void luaX_pushCullMode(lua_State *L, enum CullMode value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _CullMode[value]);
 }
-static const char *_ColorWriteMode[] = {"None","RGB","RGBA","R","G","B","GB","A",NULL};
+ORCA_API const char *_ColorWriteMode[] = {"None","RGB","RGBA","R","G","B","GB","A",NULL};
 const char *ColorWriteModeToString(enum ColorWriteMode value) {
 	assert(value >= 0 && value < 8);
 	return _ColorWriteMode[value];
@@ -52,7 +54,7 @@ void luaX_pushColorWriteMode(lua_State *L, enum ColorWriteMode value) {
 	assert(value >= 0 && value < 8);
 	lua_pushstring(L, _ColorWriteMode[value]);
 }
-static const char *_FovType[] = {"Xfov","Yfov",NULL};
+ORCA_API const char *_FovType[] = {"Xfov","Yfov",NULL};
 const char *FovTypeToString(enum FovType value) {
 	assert(value >= 0 && value < 2);
 	return _FovType[value];
@@ -64,7 +66,7 @@ void luaX_pushFovType(lua_State *L, enum FovType value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _FovType[value]);
 }
-static const char *_ProjectionType[] = {"Perspective","Orthographic",NULL};
+ORCA_API const char *_ProjectionType[] = {"Perspective","Orthographic",NULL};
 const char *ProjectionTypeToString(enum ProjectionType value) {
 	assert(value >= 0 && value < 2);
 	return _ProjectionType[value];
@@ -76,7 +78,7 @@ void luaX_pushProjectionType(lua_State *L, enum ProjectionType value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _ProjectionType[value]);
 }
-static const char *_LightType[] = {"Point","Spot",NULL};
+ORCA_API const char *_LightType[] = {"Point","Spot",NULL};
 const char *LightTypeToString(enum LightType value) {
 	assert(value >= 0 && value < 2);
 	return _LightType[value];
@@ -258,8 +260,8 @@ ORCA_API struct ClassDesc _PlaneMeshNode = {
 
 static struct PropertyType const CameraProperties[kCameraNumProperties] = {
 	DECL(0x137e217c, Camera, Fov, Fov, kDataTypeFloat), // Camera.Fov
-	DECL(0x0ef1c6f4, Camera, FovType, FovType, kDataTypeEnum, .TypeString = "Xfov,Yfov"), // Camera.FovType
-	DECL(0x87320ce8, Camera, ProjectionType, ProjectionType, kDataTypeEnum, .TypeString = "Perspective,Orthographic"), // Camera.ProjectionType
+	DECL(0x0ef1c6f4, Camera, FovType, FovType, kDataTypeEnum, .TypeString = "Xfov,Yfov", .EnumValues = _FovType), // Camera.FovType
+	DECL(0x87320ce8, Camera, ProjectionType, ProjectionType, kDataTypeEnum, .TypeString = "Perspective,Orthographic", .EnumValues = _ProjectionType), // Camera.ProjectionType
 	DECL(0x15af1da7, Camera, ZNear, ZNear, kDataTypeFloat), // Camera.ZNear
 	DECL(0x993918c6, Camera, ZFar, ZFar, kDataTypeFloat), // Camera.ZFar
 	DECL(0xd6d304c6, Camera, EyeSeparation, EyeSeparation, kDataTypeFloat), // Camera.EyeSeparation
@@ -570,21 +572,21 @@ ORCA_API struct ClassDesc _DrawObjectsRenderPass = {
 
 
 static struct PropertyType const PipelineStateRenderPassProperties[kPipelineStateRenderPassNumProperties] = {
-	DECL(0x0038792b, PipelineStateRenderPass, BlendMode, BlendMode, kDataTypeEnum, .TypeString = "AlphaAutomatic,Opaque,Alpha,Additive,PremultipliedAlpha,MixedAlpha"), // PipelineStateRenderPass.BlendMode
-	DECL(0x9d0d3c20, PipelineStateRenderPass, ColorWriteMode, ColorWriteMode, kDataTypeEnum, .TypeString = "None,RGB,RGBA,R,G,B,GB,A"), // PipelineStateRenderPass.ColorWriteMode
-	DECL(0xfe9cfa12, PipelineStateRenderPass, CullMode, CullMode, kDataTypeEnum, .TypeString = "None,Back,Front"), // PipelineStateRenderPass.CullMode
-	DECL(0xb7e582be, PipelineStateRenderPass, DepthTestFunction, DepthTestFunction, kDataTypeEnum, .TypeString = "Never,Always,Less,LessOrEqual,Greater,GreaterOrEqual,Equal,NotEqual,Disabled"), // PipelineStateRenderPass.DepthTestFunction
+	DECL(0x0038792b, PipelineStateRenderPass, BlendMode, BlendMode, kDataTypeEnum, .TypeString = "AlphaAutomatic,Opaque,Alpha,Additive,PremultipliedAlpha,MixedAlpha", .EnumValues = _BlendMode), // PipelineStateRenderPass.BlendMode
+	DECL(0x9d0d3c20, PipelineStateRenderPass, ColorWriteMode, ColorWriteMode, kDataTypeEnum, .TypeString = "None,RGB,RGBA,R,G,B,GB,A", .EnumValues = _ColorWriteMode), // PipelineStateRenderPass.ColorWriteMode
+	DECL(0xfe9cfa12, PipelineStateRenderPass, CullMode, CullMode, kDataTypeEnum, .TypeString = "None,Back,Front", .EnumValues = _CullMode), // PipelineStateRenderPass.CullMode
+	DECL(0xb7e582be, PipelineStateRenderPass, DepthTestFunction, DepthTestFunction, kDataTypeEnum, .TypeString = "Never,Always,Less,LessOrEqual,Greater,GreaterOrEqual,Equal,NotEqual,Disabled", .EnumValues = _CompareFunc), // PipelineStateRenderPass.DepthTestFunction
 	DECL(0x8ec3072e, PipelineStateRenderPass, DepthWriteEnabled, DepthWriteEnabled, kDataTypeBool), // PipelineStateRenderPass.DepthWriteEnabled
-	DECL(0x2dd5f6cc, PipelineStateRenderPass, ViewportMode, ViewportMode, kDataTypeEnum, .TypeString = "Relative,Absolute"), // PipelineStateRenderPass.ViewportMode
-	DECL(0x8c6862de, PipelineStateRenderPass, ScissorMode, ScissorMode, kDataTypeEnum, .TypeString = "Relative,Absolute"), // PipelineStateRenderPass.ScissorMode
+	DECL(0x2dd5f6cc, PipelineStateRenderPass, ViewportMode, ViewportMode, kDataTypeEnum, .TypeString = "Relative,Absolute", .EnumValues = _ViewportMode), // PipelineStateRenderPass.ViewportMode
+	DECL(0x8c6862de, PipelineStateRenderPass, ScissorMode, ScissorMode, kDataTypeEnum, .TypeString = "Relative,Absolute", .EnumValues = _ViewportMode), // PipelineStateRenderPass.ScissorMode
 	DECL(0x60b5afe3, PipelineStateRenderPass, Viewport, Viewport, kDataTypeStruct, .TypeString = "Vector4D"), // PipelineStateRenderPass.Viewport
 	DECL(0x24b3e321, PipelineStateRenderPass, Scissor, Scissor, kDataTypeStruct, .TypeString = "Vector4D"), // PipelineStateRenderPass.Scissor
-	DECL(0xc770fa47, PipelineStateRenderPass, StencilTestFunction, StencilTestFunction, kDataTypeEnum, .TypeString = "Never,Always,Less,LessOrEqual,Greater,GreaterOrEqual,Equal,NotEqual,Disabled"), // PipelineStateRenderPass.StencilTestFunction
+	DECL(0xc770fa47, PipelineStateRenderPass, StencilTestFunction, StencilTestFunction, kDataTypeEnum, .TypeString = "Never,Always,Less,LessOrEqual,Greater,GreaterOrEqual,Equal,NotEqual,Disabled", .EnumValues = _CompareFunc), // PipelineStateRenderPass.StencilTestFunction
 	DECL(0x2ddc4e49, PipelineStateRenderPass, StencilReferenceValue, StencilReferenceValue, kDataTypeInt), // PipelineStateRenderPass.StencilReferenceValue
 	DECL(0x82336fe7, PipelineStateRenderPass, StencilMask, StencilMask, kDataTypeInt), // PipelineStateRenderPass.StencilMask
-	DECL(0x8785338c, PipelineStateRenderPass, StencilFailOperation, StencilFailOperation, kDataTypeEnum, .TypeString = "Keep,Zero,Replace,Increment,IncrementWrap,Decrement,DecrementWrap,Invert"), // PipelineStateRenderPass.StencilFailOperation
-	DECL(0xfc4e75c8, PipelineStateRenderPass, StencilPassDepthFailOperation, StencilPassDepthFailOperation, kDataTypeEnum, .TypeString = "Keep,Zero,Replace,Increment,IncrementWrap,Decrement,DecrementWrap,Invert"), // PipelineStateRenderPass.StencilPassDepthFailOperation
-	DECL(0x6452d1b7, PipelineStateRenderPass, StencilPassDepthPassOperation, StencilPassDepthPassOperation, kDataTypeEnum, .TypeString = "Keep,Zero,Replace,Increment,IncrementWrap,Decrement,DecrementWrap,Invert"), // PipelineStateRenderPass.StencilPassDepthPassOperation
+	DECL(0x8785338c, PipelineStateRenderPass, StencilFailOperation, StencilFailOperation, kDataTypeEnum, .TypeString = "Keep,Zero,Replace,Increment,IncrementWrap,Decrement,DecrementWrap,Invert", .EnumValues = _StencilOp), // PipelineStateRenderPass.StencilFailOperation
+	DECL(0xfc4e75c8, PipelineStateRenderPass, StencilPassDepthFailOperation, StencilPassDepthFailOperation, kDataTypeEnum, .TypeString = "Keep,Zero,Replace,Increment,IncrementWrap,Decrement,DecrementWrap,Invert", .EnumValues = _StencilOp), // PipelineStateRenderPass.StencilPassDepthFailOperation
+	DECL(0x6452d1b7, PipelineStateRenderPass, StencilPassDepthPassOperation, StencilPassDepthPassOperation, kDataTypeEnum, .TypeString = "Keep,Zero,Replace,Increment,IncrementWrap,Decrement,DecrementWrap,Invert", .EnumValues = _StencilOp), // PipelineStateRenderPass.StencilPassDepthPassOperation
 	DECL(0xb0b1cdf3, PipelineStateRenderPass, StencilWriteEnabled, StencilWriteEnabled, kDataTypeBool), // PipelineStateRenderPass.StencilWriteEnabled
 };
 static struct PipelineStateRenderPass PipelineStateRenderPassDefaults = {
@@ -662,7 +664,7 @@ static struct PropertyType const Light3DProperties[kLight3DNumProperties] = {
 	DECL(0xe2c2c340, Light3D, SpotAngle, SpotAngle, kDataTypeStruct, .TypeString = "Vector2D"), // Light3D.SpotAngle
 	DECL(0x53b4f9aa, Light3D, Intensity, Intensity, kDataTypeFloat), // Light3D.Intensity
 	DECL(0xa311e772, Light3D, Range, Range, kDataTypeFloat), // Light3D.Range
-	DECL(0xd155d06d, Light3D, Type, Type, kDataTypeEnum, .TypeString = "Point,Spot"), // Light3D.Type
+	DECL(0xd155d06d, Light3D, Type, Type, kDataTypeEnum, .TypeString = "Point,Spot", .EnumValues = _LightType), // Light3D.Type
 };
 static struct Light3D Light3DDefaults = {
 		

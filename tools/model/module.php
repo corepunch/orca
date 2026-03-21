@@ -80,12 +80,14 @@ class Field {
 	public $name;
 	public $type;
 	public $doc;
+	public $noexport;
 
 	function __construct($elem, $model) {
 		$this->name = new FieldName($elem["name"]);
 		$this->type = new Type($elem, $model);
 		$text = trim((string)$elem);
 		$this->doc = strlen($text) > 0 ? $text : null;
+		$this->noexport = isset($elem["noexport"]) ? strval($elem["noexport"]) === "true" : false;
 	}
 }
 
@@ -313,6 +315,7 @@ class Struct extends Interface {
 		foreach ($this->getFields() as $field_obj) {
 			$name = $field_obj->name;
 			$field = $field_obj->type;
+			if ($field_obj->noexport) continue;
 			if ($field->fixed_array) {
 				for ($i = 0; $i < $field->fixed_array; $i++) {
 					if ($field->kind === "struct") {
@@ -341,6 +344,7 @@ class Struct extends Interface {
 
 	function hasFromString() {
 		foreach ($this->getFields() as $field) {
+			if ($field->noexport) continue;
 			if ($field->type->kind == "struct" && $field->type->name != "color") {
 				return false;
 			}

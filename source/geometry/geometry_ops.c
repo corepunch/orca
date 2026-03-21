@@ -1546,46 +1546,6 @@ calculate_ninepatch(struct vec2 const* framesize,
 #include <ctype.h>
 #include <assert.h>
 
-uint32_t
-strlistidx(lpcString_t needle, lpcString_t haystack, lpcString_t *out)
-{
-  uint32_t index = 0;
-  while (haystack) {
-    lpcString_t next_comma = strchr(haystack, ',');
-    size_t len =
-    next_comma ? (size_t)(next_comma - haystack) : strlen(haystack);
-    if (strncasecmp(needle, haystack, len) == 0 &&
-        (needle[len] == '\0' || (out&&isspace(needle[len])))) {
-      if (out) {
-        *out = &needle[len];
-      }
-      return index;
-    }
-    haystack = next_comma ? next_comma + 1 : NULL;
-    index++;
-  }
-  return -1;
-}
-
-lpcString_t strlistget(uint32_t index, lpcString_t haystack) {
-  while (haystack) {
-    lpcString_t next_comma = strchr(haystack, ',');
-    size_t len =
-    next_comma ? (size_t)(next_comma - haystack) : strlen(haystack);
-    if (index == 0) {
-      static char result[64];
-      assert(len < sizeof(result) - 1);
-      strncpy(result, haystack, len);
-      result[len] = '\0';
-      return result;
-    }
-    
-    haystack = next_comma ? next_comma + 1 : NULL;
-    index--;
-  }
-  return NULL; // Out of bounds
-}
-
 lpcString_t stristr(lpcString_t haystack, lpcString_t needle) {
   size_t needle_len = strlen(needle);
   if (needle_len == 0) {

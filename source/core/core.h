@@ -426,7 +426,8 @@ struct PropertyType {
 	fixedString_t Category; ///< Organizational category for this property, used for grouping in editors and UIs.
 	enum DataType DataType; ///< Underlying data type that determines how the property value is interpreted and stored.
 	fixedString_t DefaultValue; ///< Default value assigned when the property is not explicitly set.
-	fixedString_t TypeString; ///< String representation of the property type, used to store enum values or struct type names.
+	fixedString_t TypeString; ///< String representation of the property type, used to store struct/object type names.
+	lpcString_t const* EnumValues; ///< Null-terminated array of enum value name strings for kDataTypeEnum properties.
 	bool_t AffectLayout; ///< Indicates whether this property affects element layout (e.g., size or alignment).
 	bool_t AffectRender; ///< Indicates whether this property influences the rendering output.
 	bool_t IsReadOnly; ///< If true, the property value cannot be modified at runtime or through the editor.
