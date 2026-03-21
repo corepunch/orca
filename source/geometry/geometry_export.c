@@ -4,7 +4,7 @@
 #include "geometry.h"
 
 
-static const char *_RotationOrder[] = {"XYZ","XZY","YZX","YXZ","ZXY","ZYX",NULL};
+ORCA_API const char *_RotationOrder[] = {"XYZ","XZY","YZX","YXZ","ZXY","ZYX",NULL};
 const char *RotationOrderToString(enum RotationOrder value) {
 	assert(value >= 0 && value < 6);
 	return _RotationOrder[value];

@@ -415,7 +415,7 @@ void ED_ColorField(LPTERMINAL p, LPCOLOR v, DWORD width);
 void ED_FloatField(LPTERMINAL p, FLOAT *value, DWORD width);
 void ED_IntField(LPTERMINAL p, int *value, DWORD width);
 void ED_StringField(LPTERMINAL p, lpcString_t value, DWORD width);
-void ED_EnumField(LPTERMINAL p, DWORD *value, lpcString_t values, DWORD width);
+void ED_EnumField(LPTERMINAL p, DWORD *value, lpcString_t const* values, DWORD width);
 void ED_BooleanField(LPTERMINAL p, BOOL *value, lpcString_t name, DWORD width);
 void ED_SetDragData(DWORD  dwType, lpcString_t szTitle, LPVOID lpObject, BYTE indent);
 void ED_PrintStatus(lpcString_t szFormat, ...);

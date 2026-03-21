@@ -10,7 +10,7 @@ typedef struct _INSPITEM {
   DWORD   type;
   FLOAT   location;
   DWORD   objtype;
-  lpcString_t  options;
+  lpcString_t const* options;
   shortStr_t name;
   DWORD   index;
 } INSPITEM, *LPINSPITEM;
@@ -69,9 +69,9 @@ PrintEnumProperty(HEDWND wnd, LPPROPDEF pdef)
 {
   DWORD item = ED_AddInspectorItem(wnd, pdef, pdef->lpEditorValue, pdef->Type);
   LPINSPSTRUCT inspector = ED_GetUserData(wnd);
-  inspector->items[item].options = pdef->lpEnumValues;
+  inspector->items[item].options = pdef->lpEnumArray;
   ED_Echo(wnd, FMT_COMMAND, item);
-  ED_EnumField(ED_GetClient(wnd), pdef->lpEditorValue, pdef->lpEnumValues, DROPDOWN_WIDTH);
+  ED_EnumField(ED_GetClient(wnd), pdef->lpEditorValue, pdef->lpEnumArray, DROPDOWN_WIDTH);
 }
 
 static void
@@ -401,7 +401,7 @@ ED_PopDropDown(HEDWND wnd, LPINSPITEM item, WORD index)
   };
   strncpy(data.pTitle, item->name, sizeof(item->name));
   for (int i = 0; i < sizeof(data.pStrings)/sizeof(*data.pStrings); i++) {
-    lpcString_t str = strlistget(i, item->options);
+    lpcString_t str = item->options ? item->options[i] : NULL;
     if (!str) break;
     strncpy(data.pStrings[i], str, sizeof(*data.pStrings));
     data.dwNumItems = i+1;

@@ -171,7 +171,7 @@ void _pushproperty(lua_State* L,
       lua_pushinteger(L, *((int*)value));
       break;
     case kDataTypeEnum:
-      lua_pushstring(L, strlistget(*((int*)value), type->TypeString));
+      lua_pushstring(L, type->EnumValues[*((int*)value)]);
       break;
     case kDataTypeFloat:
       lua_pushnumber(L, *((float*)value));

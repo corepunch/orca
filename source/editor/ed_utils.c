@@ -37,9 +37,9 @@ void ED_StringField(LPTERMINAL p, lpcString_t value, DWORD width) {
   Echo(p, "%-*s", width, value);
 }
 
-void ED_EnumField(LPTERMINAL p, DWORD *value, lpcString_t values, DWORD width) {
+void ED_EnumField(LPTERMINAL p, DWORD *value, lpcString_t const* values, DWORD width) {
   Echo(p, STYLE_FIELD_DROPDOWN);
-  lpcString_t s = strlistget(*value, values);
+  lpcString_t s = values ? values[*value] : NULL;
   Echo(p, "%-*s", width - 2, s ? s : "<invalid>");
   //    Echo(p, " \037");
   Echo(p, "\x1c\x1d");
