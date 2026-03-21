@@ -191,7 +191,18 @@ test: test-headless
 	$(TARGET) -test=tests/test1.lua
 	$(TARGET) -test=tests/test.xml
 
-test-headless:
+test-headless: test-unit
 	$(TARGET) -test=tests/test_layout.lua
+
+# Standalone C unit-test binary — no Lua, no renderer required.
+TESTBIN = $(BINDIR)/test-unit
+TESTFLAGS = $(filter-out -fpic,$(CFLAGS)) -I.
+
+test-unit: directories $(TESTBIN)
+	$(TESTBIN)
+
+$(TESTBIN): tests/test_main.c tests/test_geometry.c source/geometry/geometry_ops.c
+	$(CC) $(TESTFLAGS) $^ -o $@ -lm
+
 
 include Makefile.webgl
