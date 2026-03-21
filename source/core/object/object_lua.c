@@ -1,7 +1,7 @@
 #include <include/api.h>
 #include <include/orca.h>
 
-#include "core_local.h"
+#include <source/core/core_local.h>
 
 #define OBJECT_FUNCTION(NAME, FUNCTION)                                        \
   case f_##NAME:                                                               \
@@ -9,23 +9,6 @@
     return 1;
 
 // #define DEBUG_COUNT_OBJECTS
-
-enum
-{
-  p_id = 0x37386ae0,
-  p_Name = 0x0fe07306,
-  p_parent = 0xeacdfcfd,
-  p_children = 0x67a9c9d2,
-  p_lineage = 0x31fcfa9e,
-  p_uniqueID = 0x2837a4fb,
-  p_className = 0xf4795adc,
-  p_source_file = 0x27ba5603,
-  p_focus = 0x14204413,
-  p_hover = 0x70ceab2d,
-	p_selected = 0x4e0a1774,
-	p_class = 0xab3e0bff,
-  p_screen = 0x55c54c11,
-};
 
 lpObject_t luaX_checkObject(lua_State* L, int arg) {
   if (lua_type(L, arg) == LUA_TTABLE) {
@@ -107,20 +90,20 @@ _parse_args(lua_State* L, lpObject_t hobj)
 static void
 _assign_callbacks(lua_State* L, lpObject_t pobj, int idx)
 {
-	luaX_pushObject(L, pobj);
-	int obj_index = lua_gettop(L);
+luaX_pushObject(L, pobj);
+int obj_index = lua_gettop(L);
   lua_pushvalue(L, idx);
   while (lua_type(L, -1) != LUA_TNIL) {
     lua_pushnil(L);
     while (lua_next(L, -2)) {
-			shortStr_t _key;
-			strncpy(_key, luaL_checkstring(L, -2), sizeof(_key));
-			if (strncmp(_key, "__", 2)) {
-				lua_settable(L, obj_index);
-				lua_pushstring(L, _key);
-			} else {
-				lua_pop(L, 1);
-			}
+shortStr_t _key;
+strncpy(_key, luaL_checkstring(L, -2), sizeof(_key));
+if (strncmp(_key, "__", 2)) {
+lua_settable(L, obj_index);
+lua_pushstring(L, _key);
+} else {
+lua_pop(L, 1);
+}
     }
     if (!lua_getmetatable(L, -1)) {
       break;
@@ -156,7 +139,7 @@ int OBJ_CreateFromLuaState(lua_State *L) {
   // send "create" message
   OBJ_SendMessageW(pobj, kEventCreate, 0, L);
   
-	_assign_callbacks(L, pobj, 1);
+_assign_callbacks(L, pobj, 1);
   _parse_args(L, pobj);
 
   // TODO: is there a better way to add class-default style?
@@ -174,326 +157,10 @@ int OBJ_CreateFromLuaState(lua_State *L) {
   return 1;
 }
 
-static int f_object_iterator(lua_State* L)
-{
-  lpObject_t* object = lua_touserdata(L, lua_upvalueindex(1));
-  if ((*object) == NULL)
-    return 0;
-  luaX_pushObject(L, *object);
-  *object = OBJ_GetNext(*object);
-  return 1;
-}
-
-static int f_object_lineage(lua_State* L)
-{
-  lpObject_t* object = lua_touserdata(L, lua_upvalueindex(1));
-  if ((*object) == NULL)
-    return 0;
-  luaX_pushObject(L, *object);
-  *object = OBJ_GetParent(*object);
-  return 1;
-}
-
-// static int API_PropertiesIterator(lua_State *L) {
-//	lpProperty_t *property = lua_touserdata(L, lua_upvalueindex(1));
-//	if ((*property) == NULL)
-//		return 0;
-//	lua_pushstring(L, PROP_GetName(*property));
-//	*property = (*property)->next;
-//	return 1;
-// }
-
 bool_t OBJ_Equals(lpcObject_t self, lpcObject_t other)
 {
   return self == other;
 }
-
-static lpcString_t PascalCase(lpcString_t pname) {
-  // convert to PascalCase
-  static shortStr_t tmp;
-  if (islower(*pname)) {
-    strncpy(tmp, pname, sizeof(tmp));
-    *tmp = toupper(*tmp);
-    pname = tmp;
-  }
-  return pname;
-}
-
-#include <plugins/UIKit/UIKit.h>
-#include <source/filesystem/filesystem.h>
-bool_t
-OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name)
-{
-  if (!strcmp(name, "Path") && GetDirectory(self)) {
-    int a=0;
-  }
-  switch (fnv1a32(name)) {
-    case p_id:
-		case p_Name:
-			OBJ_SetName(self, luaL_checkstring(L, 3));
-			return TRUE;
-		case p_selected: {
-			uint32_t flags = OBJ_GetFlags(self);
-			if (lua_toboolean(L, 3)) {
-				if (!(flags & OF_SELECTED)) {
-					OBJ_SetFlags(self, flags | OF_SELECTED);
-					OBJ_ApplyStyles(self, TRUE);
-				}
-			} else if ((flags & OF_SELECTED)) {
-					OBJ_SetFlags(self, flags & ~OF_SELECTED);
-					OBJ_ApplyStyles(self, TRUE);
-			}
-			return TRUE;
-		}
-		case p_class:
-			if (lua_type(L, 3) == LUA_TSTRING) {
-				OBJ_ParseClassAttribute(self, luaL_checkstring(L, 3));
-				return TRUE;
-			} else {
-				luaL_checktype(L, 3, LUA_TTABLE);
-				lua_pushnil(L);
-				while (lua_next(L, 3)) {
-					struct style_class* _ParseClass(lpcString_t str);
-					void _AddClass(lpObject_t obj, struct style_class* cls);
-					_AddClass(self, _ParseClass(luaL_checkstring(L, -1)));
-					lua_pop(L, 1);
-				}
-				lua_pop(L, 1);
-				return TRUE;
-			}
-  }
-  if (!strcmp(name, "x") && GetNode2D(self)) {
-    GetNode2D(self)->LayoutTransform.translation.x = luaL_checknumber(L, 3);
-    return TRUE;
-  }
-  if (!strcmp(name, "y") && GetNode2D(self)) {
-    GetNode2D(self)->LayoutTransform.translation.y = luaL_checknumber(L, 3);
-    return TRUE;
-  }
-  lpProperty_t property = NULL;
-  if (lua_type(L, 3) == LUA_TTABLE) { // store table for safekeeping
-    luaX_parsefield(lpObject_t, __userdata, 3, luaL_testudata, API_TYPE_OBJECT);
-    if (__userdata) {
-      lua_pushfstring(L, "__hook_%s", name);
-      lua_pushvalue(L, 3);
-      lua_rawset(L, 1);
-    }
-  }
-  if (SUCCEEDED(OBJ_FindShortProperty(self, PascalCase(name), &property))) {
-    luaX_readProperty(L, 3, property);
-    return TRUE;
-//  } else if (lua_type(L, 3) == LUA_TSTRING) {
-//    property = PROP_Create(L, self, name, kDataTypeString, NULL);
-//    luaX_readProperty(L, 3, property);
-//    return TRUE;
-//  } else if (lua_type(L, 3) == LUA_TNUMBER) {
-//    property = PROP_Create(L, self, name, kDataTypeFloat, NULL);
-//    luaX_readProperty(L, 3, property);
-//    return TRUE;
-//  } else if (lua_type(L, 3) == LUA_TBOOLEAN) {
-//    property = PROP_Create(L, self, name, kDataTypeBool, NULL);
-//    luaX_readProperty(L, 3, property);
-//    return TRUE;
-//  } else if (luaL_testudata(L, 3, API_TYPE_OBJECT)) {
-//    property = PROP_Create(L, self, name, kDataTypeObject, "Object");
-//    luaX_readProperty(L, 3, property);
-//    return TRUE;
-//  } else if (!strcmp(name, "Material.Texture")) {
-//    property = PROP_Create(L, self, &(struct PropertyType) {
-//      .Name = name,
-//      .DataType = kDataTypeObject,
-//      .TypeString = "Texture"
-//    });
-//    luaX_readProperty(L, 3, property);
-//    return TRUE;
-  } else if (lua_type(L, 3) == LUA_TFUNCTION) {
-    OBJ_ProcessFunctions(self, name);
-    return FALSE;
-  } else {
-    return FALSE;
-  }
-}
-
-static struct {
-  char data[0x10000];
-  uint16_t writer;
-} g_mem;
-
-void OBJ_PostMessage(lua_State* L, lpObject_t self, lpcString_t message)
-{
-  if (lua_type(L, 3) == LUA_TUSERDATA) {
-    size_t size = lua_rawlen(L, 3);
-    if (size > sizeof(g_mem.data)) {
-      Con_Error("Message data too large: %zu bytes", size);
-      return;
-    }    
-    if (g_mem.writer + size > sizeof(g_mem.data)) {
-      g_mem.writer = 0;
-    }
-    handle_t data = g_mem.data + g_mem.writer;
-    memcpy(data, lua_touserdata(L, 3), size);
-    g_mem.writer += size;
-    SV_PostMessage(self, message, 0, data);
-  } else if (!strcmp(message, "WindowPaint")) {
-    struct WI_Size size;
-    WI_GetSize(&size);
-    SV_PostMessage(self, message, MAKEDWORD(size.width, size.height), NULL);
-  } else {
-    SV_PostMessage(self, message, 0, NULL);
-  }
-}
-
-
-// HACK: hacked in quickly
-void OBJ_SendMessage2(lua_State* L, lpObject_t self, lpcString_t message)
-{
-  if (lua_type(L, 3) == LUA_TUSERDATA) {
-    OBJ_SendMessage(self, message, 0, lua_touserdata(L, 3));
-  } else if (!strcmp(message, "WindowPaint")) {
-    struct WI_Size size;
-    WI_GetSize(&size);
-    OBJ_SendMessage(self, message, MAKEDWORD(size.width, size.height), NULL);
-  } else {
-    OBJ_SendMessage(self, message, 0, NULL);
-  }
-}
-
-lpObject_t OBJ_DispatchEvent(lua_State* L, lpObject_t self, lpcString_t event)
-{
-  uint32_t dwNumArgs = MAX(0, lua_gettop(L) - 2);
-  shortStr_t pszEventName;
-  strncpy(pszEventName, event, sizeof(pszEventName));
-  lua_remove(L, 2); // clear event name to send object with args to parents
-  for (lpObject_t obj = self; obj; obj = OBJ_GetParent(obj)) {
-    struct HandleMessageEventArgs event = {
-      .FirstArg = 1,
-      .NumArgs = dwNumArgs + 1,
-    };
-    strncpy(event.EventName, pszEventName, sizeof(event.EventName));
-    if (OBJ_SendMessage(obj, "HandleMessage", 0, &event)) {
-      return obj;
-    }
-  }
-  return NULL;
-}
-
-static int HACK_Start(lua_State* L) {
-  struct Object* hobj = luaX_checkObject(L, 1);
-  OBJ_SendMessageW(hobj, kEventStart, 0, NULL);
-  return 0;
-}
-
-int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
-{
-  uint32_t ident = fnv1a32(name);
-  switch (ident) {
-    case p_id:
-    case p_Name:
-      if (OBJ_GetName(self)) {
-        lua_pushstring(L, OBJ_GetName(self));
-      } else {
-        lua_pushnil(L);
-      }
-      return 1;
-    case p_className:
-      lua_pushstring(L, OBJ_GetClassName(self));
-      return 1;
-    case p_source_file:
-      lua_pushstring(L, OBJ_GetSourceFile(self));
-      return 1;
-    case p_parent:
-      if (OBJ_GetParent(self)) {
-        luaX_pushObject(L, OBJ_GetParent(self));
-      } else {
-        lua_pushnil(L);
-      }
-      return 1;
-    case p_uniqueID:
-      lua_pushinteger(L, OBJ_GetUniqueID(self));
-      return 1;
-    case p_children:
-      *(lpObject_t*)lua_newuserdata(L, sizeof(lpObject_t*)) =
-        OBJ_GetFirstChild(self);
-      lua_pushcclosure(L, f_object_iterator, 1);
-      return 1;
-    case p_lineage:
-      *(lpObject_t*)lua_newuserdata(L, sizeof(lpObject_t*)) = self;
-      lua_pushcclosure(L, f_object_lineage, 1);
-      return 1;
-    case p_focus:
-      lua_pushboolean(L, core_GetFocus() == self);
-      return 1;
-    case p_hover:
-      lua_pushboolean(L, core_GetHover() == self);
-      return 1;
-		case p_selected:
-			lua_pushboolean(L, OBJ_GetFlags(self) & OF_SELECTED);
-			return 1;
-    case p_screen: {
-#define ID_Screen 0x9bd8c631
-      if ((self=OBJ_FindParentOfClass(self, ID_Screen))) luaX_pushObject(L, self);
-      else lua_pushnil(L);
-      return 1;
-    }
-    default:
-      break;
-  }
-  
-  if (!strcmp(name, "start")) {
-    lua_pushcfunction(L, HACK_Start);
-    return 1;
-  }
-
-#define kEventPushProperty 0xc5ebaf40
-  LRESULT found = OBJ_SendMessageW(self, kEventPushProperty, ident, L);
-  if (found) {
-    return (int)found;
-  }
-  
-  lpProperty_t property = NULL;
-  bool_t OBJ_PushClassProperty(lua_State *, lpObject_t, uint32_t);
-  
-  if (OBJ_PushClassProperty(L, self, ident)) {
-    return 1;
-  } else if ((property = PROP_FindByShortID(OBJ_GetProperties(self), ident))) {
-    luaX_pushProperty(L, property);
-    return 1;
-  } else {
-    lua_pushnil(L);
-    return 1;
-  }
-
-#if 0
-  
-  if (SUCCEEDED(OBJ_FindShortProperty(self, PascalCase(name), &property))) {
-    luaX_pushProperty(L, property);
-    return 1;
-  } else if (SUCCEEDED(OBJ_FindShortProperty(self, name, &property))) {
-    luaX_pushProperty(L, property);
-    return 1;
-  } else {
-    // lpObject_t  child = OBJ_FindImmediateChild(self,
-    // identifier); if (child) {
-    //     lua_geti(L, LUA_REGISTRYINDEX, child->luaObject);
-    //     return 1;
-    // }
-    // lua_getfield(L, -1, name);
-    lua_pushnil(L);
-    return 1;
-  }
-#endif
-}
-
-//static LUAFX(string, translate)
-//{
-//  if (!strchr(string_1, '/')) {
-//    lpcString_t s = Loc_GetString(GetLocalization(L), string_1, LOC_RESOURCE);
-//    lua_pushstring(L, s);
-//  } else {
-//    lua_pushvalue(L, 1);
-//  }
-//  return 1;
-//}
 
 void OBJ_SetContext(lua_State* L, lpObject_t self)
 {
