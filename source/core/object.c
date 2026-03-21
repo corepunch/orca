@@ -533,6 +533,10 @@ OBJ_Release(lua_State* L, lpObject_t pobj)
 //    pobj->parent = NULL;
 //  }
 
+  for (lpProperty_t p = pobj->properties; p; p = PROP_GetNext(p)) {
+    PROP_Clear(p);
+  }
+  
   if (pobj->animlib) {
     ANIM_Release(pobj->animlib);
   }

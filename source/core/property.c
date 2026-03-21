@@ -42,6 +42,7 @@ struct Property
   lpObject_t object;
   lpcPropertyType_t pdesc;
   uint32_t updateFrame;
+  uint32_t stateflags;
   lpProperty_t callbackEvent;
   lpProperty_t next;
   char states[];
@@ -91,6 +92,20 @@ print_name(lpObject_t object)
 }
 #endif
 
+void
+PROP_Clear(lpProperty_t property)
+{
+  FOR_LOOP(i, PropertyState_Count) {
+    if (property->stateflags & (1<<i)) {
+      if (property->pdesc->DataType == kDataTypeString) {
+        free(PROP_GetState(property, i));
+      }
+    }
+  }
+  memset(property->states, 0, PROP_GetSize(property) * PropertyState_Count);
+  property->stateflags = 0;
+}
+
 bool_t
 PROP_Update(lpProperty_t property)
 {
@@ -111,7 +126,8 @@ PROP_Update(lpProperty_t property)
         Token_Release(property->programs[i]);
         property->programs[i] = NULL;
       } else {
-        property->flags &= ~PF_NIL;
+//        TODO: what to do here?
+//        property->state &= ~PF_NIL;
       }
     }
   }
@@ -121,7 +137,7 @@ PROP_Update(lpProperty_t property)
 bool_t
 PROP_IsNull(lpcProperty_t property)
 {
-  return property == NULL || property->flags & PF_NIL;
+  return property == NULL || !property->stateflags;
 }
 
 lpProperty_t
@@ -205,13 +221,15 @@ PROP_GetValue(lpcProperty_t property)
   }
 }
 
-void
-PROP_SetValue(lpProperty_t property, void const* source)
+void*
+PROP_SetStateValue(lpProperty_t property,
+                   void const* source,
+                   enum PropertyState state)
 {
-  void* ptr = PROP_GetState(property, kPropertyStateNormal);
+  void* ptr = PROP_GetState(property, state);
   if (property->type == kDataTypeString) {
-    if (PROP_GetState(property, kPropertyStateNormal)) {
-      free(*(LPSTR*)PROP_GetState(property, kPropertyStateNormal));
+    if (PROP_GetState(property, state)) {
+      free(*(LPSTR*)PROP_GetState(property, state));
     }
     *(LPSTR*)ptr = strdup(source);
   } else if (property->type == kDataTypeFixed) {
@@ -222,28 +240,36 @@ PROP_SetValue(lpProperty_t property, void const* source)
     property->intermediate = object;
     if (!object) {
       memset(ptr, 0, PROP_GetSize(property));
-      property->flags |= PF_NIL;
-      return;
+      property->stateflags &= ~(1<<state);
+      return ptr;
     }
     void* udata = OBJ_GetComponent(object, ident);
     if (!udata) {
       memset(ptr, 0, PROP_GetSize(property));
-      property->flags |= PF_NIL;
+      property->stateflags &= ~(1<<state);
       Con_Error("No %s component in object %s(%s)", property->pdesc->TypeString, OBJ_GetName(object), OBJ_GetClassName(object));
-      return;
+      return ptr;
     }
     memcpy(ptr, &udata, PROP_GetSize(property));
   } else {
     memcpy(ptr, source, PROP_GetSize(property));
   }
-  memcpy(property->value, ptr, PROP_GetSize(property));
-  property->flags &= ~PF_NIL;
+  property->stateflags |= 1 << state;
   property->flags |= PF_MODIFIED;
   if (property->pdesc->FullIdentifier != ID_ContentOffset) {
     OBJ_SetDirty(property->object);
   } else {
     OBJ_SetFlags(property->object, OBJ_GetFlags(property->object) | OF_SCROLL);
   }
+  return ptr;
+}
+
+void
+PROP_SetValue(lpProperty_t property, void const* source)
+{
+  memcpy(property->value,
+         PROP_SetStateValue(property, source, kPropertyStateNormal),
+         PROP_GetSize(property));
 }
 
 static bool_t
@@ -304,7 +330,7 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
   void* udata = NULL;
 
   if (lua_isnil(L, idx)) {
-    PROP_SetFlag(p, PF_NIL);
+    PROP_Clear(p);
     return 0;
   }
   
@@ -644,7 +670,8 @@ void
 PROP_ClearSpecialized(lpProperty_t pprop) {
   FOR_EACH_LIST(struct Property, p, pprop) {
     if (p->flags & PF_SPECIALIZED) {
-      p->flags = (p->flags & ~PF_SPECIALIZED) | PF_NIL;
+      PROP_Clear(p);
+      p->flags = (p->flags & ~PF_SPECIALIZED);
       memset(p->value, 0, PROP_GetSize(p));
     }
   }

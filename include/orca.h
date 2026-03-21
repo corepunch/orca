@@ -235,7 +235,6 @@ _zero_alloc(lpcString_t file, uint32_t line, size_t size)
 
 enum
 {
-  PF_NIL = (1 << 0),
   PF_USED_IN_TRIGGER = (1 << 1),
   PF_USED_IN_STATE_MANAGER = (1 << 2),
   PF_MODIFIED = (1 << 3),
@@ -278,6 +277,9 @@ PROP_GetFlags(lpcProperty_t);
 
 ORCA_API void
 PROP_SetFlag(lpProperty_t, uint32_t value);
+
+ORCA_API void
+PROP_Clear(lpProperty_t);
 
 ORCA_API uint32_t
 PROP_GetLongIdentifier(lpcProperty_t);
