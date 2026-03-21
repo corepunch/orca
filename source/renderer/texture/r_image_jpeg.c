@@ -59,7 +59,11 @@ R_TexImageJPEG(GLenum target, struct WI_Buffer* rgb)
   R_Call(glTexImage2D,
          target,
          0,
+#ifdef R_USE_SRGB
+         GL_SRGB8_ALPHA8,
+#else
          GL_RGBA,
+#endif
          image.width,
          image.height,
          0,
@@ -105,7 +109,11 @@ R_TexImageJPEGwithAlpha(GLenum target,
     R_Call(glTexImage2D,
            target,
            0,
+#ifdef R_USE_SRGB
+           GL_SRGB8_ALPHA8,
+#else
            GL_RGBA,
+#endif
            rgb.width,
            rgb.height,
            0,
@@ -119,7 +127,11 @@ R_TexImageJPEGwithAlpha(GLenum target,
     R_Call(glTexImage2D,
            target,
            0,
+#ifdef R_USE_SRGB
+           GL_SRGB8_ALPHA8,
+#else
            GL_RGBA,
+#endif
            rgb.width,
            rgb.height,
            0,
