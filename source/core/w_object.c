@@ -13,7 +13,7 @@
 enum
 {
   p_id = 0x37386ae0,
-  p_Name= 0x0fe07306,
+  p_Name = 0x0fe07306,
   p_parent = 0xeacdfcfd,
   p_children = 0x67a9c9d2,
   p_lineage = 0x31fcfa9e,

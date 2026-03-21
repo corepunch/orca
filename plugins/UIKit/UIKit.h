@@ -666,8 +666,9 @@ struct Node {
 	bool_t QuickHide; ///< If true, node is quickly hidden without triggering full visibility transitions.
 	float VisibleAmountInParent; ///< Specifies how much of the node is visible within its parent container. Value in range [0.0, 1.0].
 	float Opacity; ///< Opacity of the node, range [0.0 = transparent, 1.0 = fully opaque].
-	objectTags_t Tags; ///< Tag collection for categorizing or querying nodes.
+	const char* Tags; ///< Tag collection for categorizing or querying nodes.
 	struct DataObject* DataContext; ///< Data context (used for data binding, similar to XAML's DataContext).
+	long _tags; ///< Calculated tags value
 };
 ORCA_API void luaX_pushNode(lua_State *L, struct Node const* Node);
 ORCA_API struct Node* luaX_checkNode(lua_State *L, int idx);

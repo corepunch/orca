@@ -2314,7 +2314,7 @@ static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	DECL(0x20d9ba7c, Node, QuickHide, QuickHide, kDataTypeBool), // Node.QuickHide
 	DECL(0xa0b06d26, Node, VisibleAmountInParent, VisibleAmountInParent, kDataTypeFloat), // Node.VisibleAmountInParent
 	DECL(0xde1f0406, Node, Opacity, Opacity, kDataTypeFloat), // Node.Opacity
-	DECL(0x76bda0c0, Node, Tags, Tags, kDataTypeObjectTags), // Node.Tags
+	DECL(0x76bda0c0, Node, Tags, Tags, kDataTypeString), // Node.Tags
 	DECL(0xa310331c, Node, DataContext, DataContext, kDataTypeObject, .TypeString = "DataObject"), // Node.DataContext
 };
 static struct Node NodeDefaults = {

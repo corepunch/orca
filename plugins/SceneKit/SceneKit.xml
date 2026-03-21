@@ -183,8 +183,10 @@
     <summary>Render pass for drawing scene objects with tag-based filtering</summary>
     <details>Renders scene geometry based on object tags and camera configuration. Allows selective rendering of object groups for advanced multi-pass effects and optimization.</details>
     <property name="Camera" type="string">Name of camera to use for object rendering and view/projection matrices</property>
-    <property name="IncludeTags" type="objectTags">Object tags that must be present for objects to be rendered</property>
-    <property name="ExcludeTags" type="objectTags">Object tags that prevent objects from being rendered</property>
+    <property name="IncludeTags" type="string">Object tags that must be present for objects to be rendered</property>
+    <property name="ExcludeTags" type="string">Object tags that prevent objects from being rendered</property>
+    <field name="_includeTags" type="long">Compiled include tags property</field>
+    <field name="_excludeTags" type="long">Compiled exclude tags property</field>
   </class>
 
   <class name="PipelineStateRenderPass" parent="RenderPass">

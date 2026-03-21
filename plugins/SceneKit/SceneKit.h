@@ -255,8 +255,10 @@ typedef struct DrawObjectsRenderPass DrawObjectsRenderPass_t, *DrawObjectsRender
 typedef struct DrawObjectsRenderPass const *DrawObjectsRenderPassCPtr, *lpcDrawObjectsRenderPass_t;
 struct DrawObjectsRenderPass {
 	const char* Camera; ///< Name of camera to use for object rendering and view/projection matrices
-	objectTags_t IncludeTags; ///< Object tags that must be present for objects to be rendered
-	objectTags_t ExcludeTags; ///< Object tags that prevent objects from being rendered
+	const char* IncludeTags; ///< Object tags that must be present for objects to be rendered
+	const char* ExcludeTags; ///< Object tags that prevent objects from being rendered
+	long _includeTags; ///< Compiled include tags property
+	long _excludeTags; ///< Compiled exclude tags property
 };
 ORCA_API void luaX_pushDrawObjectsRenderPass(lua_State *L, struct DrawObjectsRenderPass const* DrawObjectsRenderPass);
 ORCA_API struct DrawObjectsRenderPass* luaX_checkDrawObjectsRenderPass(lua_State *L, int idx);

@@ -445,8 +445,9 @@
     <property name="QuickHide" type="bool">If true, node is quickly hidden without triggering full visibility transitions.</property>
     <property name="VisibleAmountInParent" type="float" default="1">Specifies how much of the node is visible within its parent container. Value in range [0.0, 1.0].</property>
     <property name="Opacity" type="float" default="1">Opacity of the node, range [0.0 = transparent, 1.0 = fully opaque].</property>
-    <property name="Tags" type="objectTags">Tag collection for categorizing or querying nodes.</property>
+    <property name="Tags" type="string">Tag collection for categorizing or querying nodes.</property>
     <property name="DataContext" type="DataObject" pointer="true">Data context (used for data binding, similar to XAML's DataContext).</property>
+    <field name="_tags" type="long">Calculated tags value</field>
   </class>
 
   <class name="TextRun">

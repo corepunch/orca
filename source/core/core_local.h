@@ -102,6 +102,7 @@ struct game
   lpObject_t focus;
   lpObject_t hover;
   lpObject_t hover2;
+  fixedString_t tags[MAX_TAGS];
   lpcClassDesc_t classes[MAX_CLASSES];
   lpcPropertyType_t ptypes[MAX_PROPERTY_TYPES];
 };

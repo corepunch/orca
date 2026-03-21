@@ -42,6 +42,7 @@ struct Object
   uint32_t flags;
   uint32_t rdflags;
   uint32_t datasize;
+  objectTags_t tags;
 
   longTime_t dirty;
   
@@ -74,7 +75,7 @@ static uint32_t unique_counter = 0;
 
 ORCA_API lpObject_t
 OBJ_MakeNativeObject(uint32_t class_id) {
-  lpcClassDesc_t cls = OBJ_FindClassW(class_id);
+lpcClassDesc_t cls = OBJ_FindClassW(class_id);
   lpObject_t object = ZeroAlloc(sizeof(struct Object));
   object->components = OBJ_AddComponent(object, cls->ClassID);
 //  object->window = WI_Get(L);
@@ -880,5 +881,33 @@ lua_State*
 OBJ_GetDomain(lpObject_t self) {
   return self->domain;
 }
+
+static uint8_t find_tag(lpcString_t tag) {
+  uint8_t i;
+  for (i = 0; i < MAX_TAGS; i++) {
+    if (!strcmp(core.tags[i], tag)) {
+      return i;
+    }
+  }
+  if (i < MAX_TAGS) {
+    strcpy(core.tags[i], tag);
+    return i;
+  }
+  return 0xFF;
+}
+
+ORCA_API objectTags_t GetTagsFromString(lpcString_t value) {
+  objectTags_t tags = 0;
+  char *tmp = strdup(value);
+  for (lpcString_t tag = strtok(tmp, ","); tag; tag = strtok(NULL, ",")) {
+    uint8_t tag_id = find_tag(tag);
+    if (tag_id != 0xFF) {
+      tags |= (1 << tag_id);
+    }
+  }
+  free(tmp);
+  return tags;
+}
+
 
 #include <source/editor/ed_stab_object.h>
