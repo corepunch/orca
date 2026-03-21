@@ -25,14 +25,6 @@ local fallbacks = {
 
 local cache = {}
 
-orca.tags = {
-	parse = function(self, tag)
-		for i = 1, #self do if self[i] == tag then return i end end
-		table.insert(self, tag)
-		return #self
-	end
-}
-
 orca.typeconverter = {
 	None = function() error("Cannot convert to none type") end,
 	Bool = function(value, type)
@@ -67,11 +59,6 @@ orca.typeconverter = {
 			if result then return result end
 		end
 		error(string.format("Cannot convert '%s' to %s(Object)", path, type.TypeString))
-	end,
-  ObjectTags = function(path)
-		local tags = 0
-		for tag in path:gmatch("[^,]+") do tags = tags | (1 << orca.tags:parse(tag)) end
-		return tags
 	end,
   Event = function(value, type)
 		error(string.format("Cannot convert '%s' to %s(Event)", value, type.TypeString))

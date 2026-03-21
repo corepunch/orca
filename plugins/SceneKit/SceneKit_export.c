@@ -143,11 +143,11 @@ ORCA_API struct ClassDesc _Node3D = {
 LRESULT Scene_UpdateMatrix(struct Object*, struct Scene*, wParam_t, UpdateMatrixEventPtr);
 
 static struct PropertyType const SceneProperties[kSceneNumProperties] = {
-	DECL(0xe74c7b6e, Scene, Camera, Camera, kDataTypeFixed), // Scene.Camera
-	DECL(0x14a89218, Scene, PreviewCamera, PreviewCamera, kDataTypeFixed), // Scene.PreviewCamera
-	DECL(0xf497b459, Scene, HitTestCamera, HitTestCamera, kDataTypeFixed), // Scene.HitTestCamera
+	DECL(0xe74c7b6e, Scene, Camera, Camera, kDataTypeString), // Scene.Camera
+	DECL(0x14a89218, Scene, PreviewCamera, PreviewCamera, kDataTypeString), // Scene.PreviewCamera
+	DECL(0xf497b459, Scene, HitTestCamera, HitTestCamera, kDataTypeString), // Scene.HitTestCamera
 	DECL(0xf64bbf80, Scene, RenderPass, RenderPass, kDataTypeObject, .TypeString = "RenderPass"), // Scene.RenderPass
-	DECL(0x1fe3e9af, Scene, BackgroundTimelineSequence, BackgroundTimelineSequence, kDataTypeFixed), // Scene.BackgroundTimelineSequence
+	DECL(0x1fe3e9af, Scene, BackgroundTimelineSequence, BackgroundTimelineSequence, kDataTypeString), // Scene.BackgroundTimelineSequence
 	DECL(0xedb9befb, Scene, ComposerOverride, ComposerOverride, kDataTypeObject, .TypeString = "RenderPass"), // Scene.ComposerOverride
 	DECL(0x886f1cad, Scene, EnvironmentTexture, EnvironmentTexture, kDataTypeObject, .TypeString = "Texture"), // Scene.EnvironmentTexture
 };
@@ -337,11 +337,11 @@ ORCA_API struct ClassDesc _TrajectoryList3D = {
 LRESULT Viewport3D_ForegroundContent(struct Object*, struct Viewport3D*, wParam_t, ForegroundContentEventPtr);
 
 static struct PropertyType const Viewport3DProperties[kViewport3DNumProperties] = {
-	DECL(0xe74c7b6e, Viewport3D, Camera, Camera, kDataTypeFixed), // Viewport3D.Camera
-	DECL(0x14a89218, Viewport3D, PreviewCamera, PreviewCamera, kDataTypeFixed), // Viewport3D.PreviewCamera
-	DECL(0xf497b459, Viewport3D, HitTestCamera, HitTestCamera, kDataTypeFixed), // Viewport3D.HitTestCamera
+	DECL(0xe74c7b6e, Viewport3D, Camera, Camera, kDataTypeString), // Viewport3D.Camera
+	DECL(0x14a89218, Viewport3D, PreviewCamera, PreviewCamera, kDataTypeString), // Viewport3D.PreviewCamera
+	DECL(0xf497b459, Viewport3D, HitTestCamera, HitTestCamera, kDataTypeString), // Viewport3D.HitTestCamera
 	DECL(0xf64bbf80, Viewport3D, RenderPass, RenderPass, kDataTypeObject, .TypeString = "RenderPass"), // Viewport3D.RenderPass
-	DECL(0xc89b38b3, Viewport3D, Scene, Scene, kDataTypeFixed), // Viewport3D.Scene
+	DECL(0xc89b38b3, Viewport3D, Scene, Scene, kDataTypeString), // Viewport3D.Scene
 };
 static struct Viewport3D Viewport3DDefaults = {
 };
@@ -375,8 +375,8 @@ ORCA_API struct ClassDesc _Viewport3D = {
 LRESULT PrefabView3D_LoadView(struct Object*, struct PrefabView3D*, wParam_t, LoadViewEventPtr);
 
 static struct PropertyType const PrefabView3DProperties[kPrefabView3DNumProperties] = {
-	DECL(0x57f28ff6, PrefabView3D, SCA, SCA, kDataTypeFixed), // PrefabView3D.SCA
-	DECL(0xd6415ba3, PrefabView3D, Prefab, Prefab, kDataTypeFixed), // PrefabView3D.Prefab
+	DECL(0x57f28ff6, PrefabView3D, SCA, SCA, kDataTypeString), // PrefabView3D.SCA
+	DECL(0xd6415ba3, PrefabView3D, Prefab, Prefab, kDataTypeString), // PrefabView3D.Prefab
 };
 static struct PrefabView3D PrefabView3DDefaults = {
 };
@@ -536,9 +536,9 @@ ORCA_API struct ClassDesc _ClearRenderPass = {
 
 
 static struct PropertyType const DrawObjectsRenderPassProperties[kDrawObjectsRenderPassNumProperties] = {
-	DECL(0xe74c7b6e, DrawObjectsRenderPass, Camera, Camera, kDataTypeFixed), // DrawObjectsRenderPass.Camera
-	DECL(0x785c377a, DrawObjectsRenderPass, IncludeTags, IncludeTags, kDataTypeObjectTags), // DrawObjectsRenderPass.IncludeTags
-	DECL(0x2de02b74, DrawObjectsRenderPass, ExcludeTags, ExcludeTags, kDataTypeObjectTags), // DrawObjectsRenderPass.ExcludeTags
+	DECL(0xe74c7b6e, DrawObjectsRenderPass, Camera, Camera, kDataTypeString), // DrawObjectsRenderPass.Camera
+	DECL(0x785c377a, DrawObjectsRenderPass, IncludeTags, IncludeTags, kDataTypeString), // DrawObjectsRenderPass.IncludeTags
+	DECL(0x2de02b74, DrawObjectsRenderPass, ExcludeTags, ExcludeTags, kDataTypeString), // DrawObjectsRenderPass.ExcludeTags
 };
 static struct DrawObjectsRenderPass DrawObjectsRenderPassDefaults = {
 };

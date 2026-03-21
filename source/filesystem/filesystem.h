@@ -125,7 +125,7 @@ ORCA_API struct Bundle* luaX_checkBundle(lua_State *L, int idx);
 typedef struct Directory Directory_t, *DirectoryPtr, *lpDirectory_t;
 typedef struct Directory const *DirectoryCPtr, *lpcDirectory_t;
 struct Directory {
-	fixedString_t Path;
+	const char* Path;
 	void* _monitoredfiles;
 };
 ORCA_API void luaX_pushDirectory(lua_State *L, struct Directory const* Directory);
@@ -134,7 +134,7 @@ ORCA_API struct Directory* luaX_checkDirectory(lua_State *L, int idx);
 typedef struct Package Package_t, *PackagePtr, *lpPackage_t;
 typedef struct Package const *PackageCPtr, *lpcPackage_t;
 struct Package {
-	fixedString_t FileName;
+	const char* FileName;
 	struct _PACK* _package;
 };
 ORCA_API void luaX_pushPackage(lua_State *L, struct Package const* Package);
@@ -155,13 +155,13 @@ struct Project {
 	bool_t HalfFloatColorAttachment;
 	bool_t RenderToMipmapLevels;
 	bool_t ExternalTexture;
-	fixedString_t StartupScreen;
+	const char* StartupScreen;
 	struct color PreviewWindowBackgroundColor;
 	int32_t MessageLimitPerFrame;
 	int32_t GlobalTimelineStartTime;
 	int32_t GlobalTimelineEndTime;
-	fixedString_t BinaryExportDirectory;
-	fixedString_t ApplicationExportDirectory;
+	const char* BinaryExportDirectory;
+	const char* ApplicationExportDirectory;
 	bool_t IsMasterProject;
 	bool_t OptimizeMeshes;
 	int32_t TargetPlatformVertexCacheSize;
@@ -176,10 +176,10 @@ struct Project {
 	struct vec2 CompositionDesignSize;
 	bool_t ProjectUsePremultipliedAlpha;
 	bool_t ProjectRemoveICCProfilesOfPngs;
-	fixedString_t BinaryFileName;
+	const char* BinaryFileName;
 	bool_t IsAssetPackage;
 	bool_t KanziConnectEnabled;
-	fixedString_t DefaultMaterial;
+	const char* DefaultMaterial;
 	int32_t WindowWidth;
 	int32_t WindowHeight;
 	struct PropertyType* PropertyTypes;
@@ -473,7 +473,7 @@ ORCA_API struct EnginePlugin* luaX_checkEnginePlugin(lua_State *L, int idx);
 typedef struct EngineMetaclass EngineMetaclass_t, *EngineMetaclassPtr, *lpEngineMetaclass_t;
 typedef struct EngineMetaclass const *EngineMetaclassCPtr, *lpcEngineMetaclass_t;
 struct EngineMetaclass {
-	fixedString_t BaseClassName;
+	const char* BaseClassName;
 };
 ORCA_API void luaX_pushEngineMetaclass(lua_State *L, struct EngineMetaclass const* EngineMetaclass);
 ORCA_API struct EngineMetaclass* luaX_checkEngineMetaclass(lua_State *L, int idx);
@@ -481,7 +481,7 @@ ORCA_API struct EngineMetaclass* luaX_checkEngineMetaclass(lua_State *L, int idx
 typedef struct ThemeGroup ThemeGroup_t, *ThemeGroupPtr, *lpThemeGroup_t;
 typedef struct ThemeGroup const *ThemeGroupCPtr, *lpcThemeGroup_t;
 struct ThemeGroup {
-	fixedString_t SelectedDictionary;
+	const char* SelectedDictionary;
 };
 ORCA_API void luaX_pushThemeGroup(lua_State *L, struct ThemeGroup const* ThemeGroup);
 ORCA_API struct ThemeGroup* luaX_checkThemeGroup(lua_State *L, int idx);

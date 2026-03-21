@@ -45,9 +45,6 @@ PDESC_Print(lpcPropertyType_t pdesc, LPSTR buffer, DWORD len, float const* pf)
     case kDataTypeInt:
       snprintf(buffer, len, "%dd", *(int*)pf);
       break;
-    case kDataTypeObjectTags:
-      snprintf(buffer, len, "%lldd", *(objectTags_t*)pf);
-      break;
     case kDataTypeEnum:
       strncpy(buffer, strlistget(*(int*)pf, pdesc->TypeString), len);
       break;
@@ -68,11 +65,10 @@ PDESC_Print(lpcPropertyType_t pdesc, LPSTR buffer, DWORD len, float const* pf)
         snprintf(buffer + buflen, len - buflen, " %g", pf[i+1]);
       }
       break;
-    case kDataTypeFixed:
-      strncpy(buffer, (lpcString_t)pf, len);
-      break;
     case kDataTypeString:
-      strncpy(buffer, (lpcString_t)pf, len);
+      if (pf) {
+        strncpy(buffer, (lpcString_t)pf, len);
+      }
       break;
     case kDataTypeObject:
       if (*(handle_t *)pf) {

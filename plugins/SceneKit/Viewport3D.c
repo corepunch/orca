@@ -24,10 +24,10 @@ static lpcString_t
 Viewport3D_camera(lpObject_t object)
 {
   struct Viewport3D* vp = GetViewport3D(object);
-  if (*vp->Camera) {
+  if (vp->Camera && *vp->Camera) {
     return vp->Camera;
   }
-  if (*vp->PreviewCamera) {
+  if (vp->PreviewCamera && *vp->PreviewCamera) {
     return vp->PreviewCamera;
   }
   lpObject_t scene = Viewport3D_scene(object);

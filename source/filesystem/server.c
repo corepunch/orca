@@ -177,17 +177,17 @@ SV_CMD(GET, node)
 {
   REQUIRE(lpObject_t, object, OBJ_FindByPath(FS_GetWorkspace(), endpoint), ERROR_CANT_FIND_OBJECT);
   xmlNodePtr _g = _xmlNewChild(response, "group", "name", DEFAULT_GROUP, "data-compound", "true");
-//  xmlNodePtr _c = _xmlAddProp(_g, "Class", OBJ_GetClassName(object), kDataTypeFixed);
+//  xmlNodePtr _c = _xmlAddProp(_g, "Class", OBJ_GetClassName(object), kDataTypeString);
 //  _xmlSetProp(_c, "data-readonly", "true");
   if (GetNode(object)) {
     _xmlSetProp(response, "QuickHide", GetNode(object)->QuickHide?"true":"false");
   }
   if (OBJ_GetSourceFile(object)) {
     xmlNodePtr _g = _xmlNewChild(response, "group", "name", "PrefabTemplate", "data-readonly", "true");
-    _xmlAddProp(_g, "Template", OBJ_GetSourceFile(object), kDataTypeFixed);
+    _xmlAddProp(_g, "Template", OBJ_GetSourceFile(object), kDataTypeString);
   }
   _xmlSetProp(response, "source", endpoint);
-  _xmlAddProp(_g, "Name", OBJ_GetName(object), kDataTypeFixed);
+  _xmlAddProp(_g, "Name", OBJ_GetName(object), kDataTypeString);
 
   OBJ_EnumObjectClasses(object, add_group, response);
   OBJ_EnumClassProperties(object, add_property, response);
@@ -220,7 +220,7 @@ SV_CMD(PUT, node)
   _xmlSetProp(response, "source", endpoint);
   for(reqArg_t const* arg = rargs; *arg->name; arg++) {
     if (!strcmp(arg->name, "Name")) {
-      _xmlAddProp(response, arg->name, OBJ_GetName(obj), kDataTypeFixed);
+      _xmlAddProp(response, arg->name, OBJ_GetName(obj), kDataTypeString);
       OBJ_SetName(obj, arg->value);
     } else{
       path_t buf={0};

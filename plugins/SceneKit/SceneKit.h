@@ -123,11 +123,11 @@ ORCA_API struct Node3D* luaX_checkNode3D(lua_State *L, int idx);
 typedef struct Scene Scene_t, *ScenePtr, *lpScene_t;
 typedef struct Scene const *SceneCPtr, *lpcScene_t;
 struct Scene {
-	fixedString_t Camera; ///< Name of the primary camera used for scene rendering
-	fixedString_t PreviewCamera; ///< Name of camera used for preview rendering in design tools
-	fixedString_t HitTestCamera; ///< Name of camera used for 3D hit testing and mouse interaction
+	const char* Camera; ///< Name of the primary camera used for scene rendering
+	const char* PreviewCamera; ///< Name of camera used for preview rendering in design tools
+	const char* HitTestCamera; ///< Name of camera used for 3D hit testing and mouse interaction
 	struct RenderPass* RenderPass; ///< Custom render pass chain for advanced rendering effects
-	fixedString_t BackgroundTimelineSequence; ///< TODO: add support?
+	const char* BackgroundTimelineSequence; ///< TODO: add support?
 	struct RenderPass* ComposerOverride; ///< Override render pass for post-processing composition effects
 	struct Texture* EnvironmentTexture; ///< Environment map texture for reflections and ambient lighting
 };
@@ -194,11 +194,11 @@ ORCA_API struct TrajectoryList3D* luaX_checkTrajectoryList3D(lua_State *L, int i
 typedef struct Viewport3D Viewport3D_t, *Viewport3DPtr, *lpViewport3D_t;
 typedef struct Viewport3D const *Viewport3DCPtr, *lpcViewport3D_t;
 struct Viewport3D {
-	fixedString_t Camera; ///< Name of camera to use for 3D scene rendering within this viewport
-	fixedString_t PreviewCamera; ///< Name of camera used for design-time preview rendering
-	fixedString_t HitTestCamera; ///< Name of camera used for 3D hit testing within the viewport area
+	const char* Camera; ///< Name of camera to use for 3D scene rendering within this viewport
+	const char* PreviewCamera; ///< Name of camera used for design-time preview rendering
+	const char* HitTestCamera; ///< Name of camera used for 3D hit testing within the viewport area
 	struct RenderPass* RenderPass; ///< Custom render pass chain for viewport-specific effects
-	fixedString_t Scene; ///< TODO: add support?
+	const char* Scene; ///< TODO: add support?
 };
 ORCA_API void luaX_pushViewport3D(lua_State *L, struct Viewport3D const* Viewport3D);
 ORCA_API struct Viewport3D* luaX_checkViewport3D(lua_State *L, int idx);
@@ -207,8 +207,8 @@ ORCA_API struct Viewport3D* luaX_checkViewport3D(lua_State *L, int idx);
 typedef struct PrefabView3D PrefabView3D_t, *PrefabView3DPtr, *lpPrefabView3D_t;
 typedef struct PrefabView3D const *PrefabView3DCPtr, *lpcPrefabView3D_t;
 struct PrefabView3D {
-	fixedString_t SCA; ///< Adds "hmi_plugins/{{SCA}}" to search paths and loads from "prefabs/{{SCA}}"
-	fixedString_t Prefab; ///< Path to prefab asset file to instantiate
+	const char* SCA; ///< Adds "hmi_plugins/{{SCA}}" to search paths and loads from "prefabs/{{SCA}}"
+	const char* Prefab; ///< Path to prefab asset file to instantiate
 	int32_t _loadedSCA;
 	int32_t _loadedPrefab;
 };
@@ -254,9 +254,11 @@ ORCA_API struct ClearRenderPass* luaX_checkClearRenderPass(lua_State *L, int idx
 typedef struct DrawObjectsRenderPass DrawObjectsRenderPass_t, *DrawObjectsRenderPassPtr, *lpDrawObjectsRenderPass_t;
 typedef struct DrawObjectsRenderPass const *DrawObjectsRenderPassCPtr, *lpcDrawObjectsRenderPass_t;
 struct DrawObjectsRenderPass {
-	fixedString_t Camera; ///< Name of camera to use for object rendering and view/projection matrices
-	objectTags_t IncludeTags; ///< Object tags that must be present for objects to be rendered
-	objectTags_t ExcludeTags; ///< Object tags that prevent objects from being rendered
+	const char* Camera; ///< Name of camera to use for object rendering and view/projection matrices
+	const char* IncludeTags; ///< Object tags that must be present for objects to be rendered
+	const char* ExcludeTags; ///< Object tags that prevent objects from being rendered
+	long _includeTags; ///< Compiled include tags property
+	long _excludeTags; ///< Compiled exclude tags property
 };
 ORCA_API void luaX_pushDrawObjectsRenderPass(lua_State *L, struct DrawObjectsRenderPass const* DrawObjectsRenderPass);
 ORCA_API struct DrawObjectsRenderPass* luaX_checkDrawObjectsRenderPass(lua_State *L, int idx);

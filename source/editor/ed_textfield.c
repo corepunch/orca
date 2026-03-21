@@ -18,7 +18,7 @@ static void ED_AcceptInput(void) {
       }
       break;
     }
-    case kDataTypeFixed:
+    case kDataTypeString:
       ED_StoreUndo(editor.textEdit.dest,
                    editor.textEditBuffer,
                    MIN(strlen(editor.textEditBuffer), MAX_TEXT_EDIT) + 1);
@@ -113,7 +113,7 @@ void ED_SetTextInput(LPEDTEXTEDIT lpTextEdit) {
     case kDataTypeFloat:
       snprintf(editor.textEditBuffer, MAX_TEXT_EDIT, "%g", *(FLOAT *)lpTextEdit->dest);
       break;
-    case kDataTypeFixed:
+    case kDataTypeString:
       strncpy(editor.textEditBuffer, lpTextEdit->dest, MAX_TEXT_EDIT);
       break;
     case kDataTypeBool:

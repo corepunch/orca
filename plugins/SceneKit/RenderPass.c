@@ -1,6 +1,15 @@
 #include "SceneKit.h"
 #include <include/renderer.h>
 
+extern objectTags_t GetTagsFromString(lpcString_t value);
+
+#define get_tags(node, string, mask) \
+((node)->string ? \
+  ((node)->mask ? \
+    (node)->mask : \
+    ((node)->mask=GetTagsFromString((node)->string))) : \
+  0)
+
 static void
 Camera_WriteViewCamera(lpObject_t object, struct view_camera* out)
 {
@@ -148,9 +157,9 @@ R_DrawEntities(lpObject_t object,
                struct ViewDef* viewdef)
 {
   struct Node* node = GetNode(object);
-  if (OBJ_IsHidden(object) || (excl & node->Tags))
+  if (OBJ_IsHidden(object) || (excl & get_tags(node, Tags, _tags)))
     return;
-  if (!incl || (incl & node->Tags)) {
+  if (!incl || (incl & get_tags(node, Tags, _tags))) {
     OBJ_SendMessageW(object, kEventRender, 0, &(struct RenderEventArgs) { viewdef });
     FOR_EACH_OBJECT(node, object)
     {
@@ -172,7 +181,7 @@ _OBJ_Draws(lpObject_t obj, lpObject_t scene, struct ViewDef* original)
   struct ViewDef vd = *original;
   struct DrawObjectsRenderPass* rp = GetDrawObjectsRenderPass(obj);
 
-  if (!*rp->Camera || !(cam = _FindCamera(scene, rp->Camera))) {
+  if (!rp->Camera || !*rp->Camera || !(cam = _FindCamera(scene, rp->Camera))) {
     if (vd.flags & RF_CAMERA_ALIAS) {
       cam = OBJ_FindChildByAlias(scene, vd.camera);
     } else {
@@ -188,7 +197,10 @@ _OBJ_Draws(lpObject_t obj, lpObject_t scene, struct ViewDef* original)
   vd.projectionMatrix= _GetProjectionMatrix(&viewcam, &vd);
   vd.viewMatrix = _GetViewMatrix(&viewcam);
 
-  R_DrawEntities(scene, rp->IncludeTags, rp->ExcludeTags, &vd);
+  R_DrawEntities(scene,
+                 get_tags(rp, IncludeTags, _includeTags),
+                 get_tags(rp, ExcludeTags, _excludeTags),
+                 &vd);
 }
 
 void

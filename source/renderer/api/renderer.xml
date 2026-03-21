@@ -242,11 +242,11 @@
     <handles event="Start"/>
     <summary>Represents a single, pre-loaded texture image for use in rendering operations.</summary>
     <details>Extends the base Texture class to load a specific image file, providing a straightforward way to incorporate static textures into scenes without dynamic generation or rendering targets.</details>
-    <property name="Source" type="fixed">Path to the texture image file to be loaded.</property>
+    <property name="Source" type="string">Path to the texture image file to be loaded.</property>
     <property name="PremultiplyAlpha" type="bool">When `true`, multiplies RGB channels by alpha during loading for correct alpha blending.</property>
     <property name="Type" type="ImageType">When set to `Mask`, treats the texture as an alpha mask, ignoring RGB components and using only the alpha channel for masking operations.</property>
     <property name="HasMipmaps" type="bool">When `true`, automatically generates mipmap levels for improved texture quality at varying distances and reduced aliasing artifacts.</property>
-    <property name="Size" type="fixed">Texture dimensions in the format "Width x Height", e.g., "256 x 256".</property>
+    <property name="Size" type="string">Texture dimensions in the format "Width x Height", e.g., "256 x 256".</property>
     <property name="BitDepth" type="int">Number of bits per pixel, including all channels.</property>
     <property name="FileHasTransparency" type="bool">Indicates whether the source file contains any transparent pixels.</property>
     <property name="FileHasICCProfile" type="bool">Indicates whether the source file includes an embedded ICC color profile.</property>
@@ -265,7 +265,7 @@
     <property name="FileExportSourceTexture" type="bool">When `true`, exports the original source texture file alongside processed versions.</property>
     <property name="FileExportAlways" type="bool">When `true`, ensures the texture is exported regardless of other conditions.</property>
     <property name="FileExportEmptyWhenFileIsMissing" type="bool">When `true`, exports an empty placeholder if the source file is missing.</property>
-    <property name="FileExportSourceImage" type="fixed"/>
+    <property name="FileExportSourceImage" type="string"/>
   </class>
 
   <enums name="RenderTargetType">
@@ -306,12 +306,12 @@
     <summary>Cubemap texture assembled from six individual images, one for each face of a cube, used for environment mapping, reflections, and sky rendering.</summary>
     <details>Extends the base Texture class to support loading separate images for positive and negative axes of a 3D cube. This configuration allows for realistic spherical mapping in shaders, where texture coordinates are projected onto the cube faces for seamless omnidirectional sampling without seams or distortion at cube edges.</details>
     <handles event="Start"/>
-    <property name="BackImage" type="fixed">Path to the image file for the back face (negative Z-axis) of the cubemap.</property>
-    <property name="FrontImage" type="fixed">Path to the image file for the front face (positive Z-axis) of the cubemap.</property>
-    <property name="LeftImage" type="fixed">Path to the image file for the left face (negative X-axis) of the cubemap.</property>
-    <property name="RightImage" type="fixed">Path to the image file for the right face (positive X-axis) of the cubemap.</property>
-    <property name="BottomImage" type="fixed">Path to the image file for the bottom face (negative Y-axis) of the cubemap.</property>
-    <property name="TopImage" type="fixed">Path to the image file for the top face (positive Y-axis) of the cubemap.</property>
+    <property name="BackImage" type="string">Path to the image file for the back face (negative Z-axis) of the cubemap.</property>
+    <property name="FrontImage" type="string">Path to the image file for the front face (positive Z-axis) of the cubemap.</property>
+    <property name="LeftImage" type="string">Path to the image file for the left face (negative X-axis) of the cubemap.</property>
+    <property name="RightImage" type="string">Path to the image file for the right face (positive X-axis) of the cubemap.</property>
+    <property name="BottomImage" type="string">Path to the image file for the bottom face (negative Y-axis) of the cubemap.</property>
+    <property name="TopImage" type="string">Path to the image file for the top face (positive Y-axis) of the cubemap.</property>
   </class>
 
   <class name="IOSurfaceTexture" parent="Texture">
@@ -387,7 +387,7 @@
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <property name="Version" type="int">GLSL shader language version number (e.g., 150 for GLSL 1.50, 330 for GLSL 3.30)</property>
     <property name="FloatPrecision" type="FloatPrecision">Default floating-point precision for fragment shader calculations</property>
-    <property name="Out" type="fixed">Name of the output variable for fragment color (e.g., "FragColor", "gl_FragColor")</property>
+    <property name="Out" type="string">Name of the output variable for fragment color (e.g., "FragColor", "gl_FragColor")</property>
   </class>
 
   <class name="Shader">
@@ -428,9 +428,9 @@
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <handles event="Start"/>
     <handles event="Destroy"/>
-    <property name="Source" type="fixed">Path or identifier to the mesh geometry file or resource. Specifies where to load the 3D model data from.</property>
+    <property name="Source" type="string">Path or identifier to the mesh geometry file or resource. Specifies where to load the 3D model data from.</property>
     <property name="Material" type="Material" pointer="true">Reference to the material that defines the mesh's visual appearance. Controls shaders, textures, colors, and rendering properties applied to the geometry.</property>
-    <property name="MeshMorphTargets" type="fixed">Name of the morph targets in the mesh</property>
+    <property name="MeshMorphTargets" type="string">Name of the morph targets in the mesh</property>
     <field name="model" type="model" pointer="true">Internal pointer to the loaded model data structure containing the mesh geometry.</field>
   </class>
   
@@ -439,10 +439,10 @@
     <details>Loads and manages a TrueType font file for rendering text in the scene. Provides glyph data and metrics for text layout and rendering. May be extended in the future to support font families with variants (regular, bold, italic).</details>
     <handles event="Start">Called when the mesh component is initialized. Used to load the mesh geometry from the specified source and set up rendering resources.</handles>
     <handles event="Destroy">Called when the mesh component is being destroyed. Used to clean up mesh data, release GPU buffers, and free associated resources.</handles>
-    <property name="Regular" type="fixed">Path of the TrueType font file to be used as the regular font variant.</property>
-    <property name="Bold" type="fixed">Path of the TrueType font file to be used as the bold font variant.</property>
-    <property name="Italic" type="fixed">Path of the TrueType font file to be used as the italic font variant.</property>
-    <property name="BoldItalic" type="fixed">Path of the TrueType font file to be used as the bold italic font variant.</property>
+    <property name="Regular" type="string">Path of the TrueType font file to be used as the regular font variant.</property>
+    <property name="Bold" type="string">Path of the TrueType font file to be used as the bold font variant.</property>
+    <property name="Italic" type="string">Path of the TrueType font file to be used as the italic font variant.</property>
+    <property name="BoldItalic" type="string">Path of the TrueType font file to be used as the bold italic font variant.</property>
     <field name="regular" type="fontface" pointer="true">Internal pointer to the loaded font data.</field>
     <field name="bold" type="fontface" pointer="true">Internal pointer to the loaded font data.</field>
     <field name="italic" type="fontface" pointer="true">Internal pointer to the loaded font data.</field>

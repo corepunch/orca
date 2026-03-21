@@ -346,11 +346,11 @@ ORCA_API struct Texture* luaX_checkTexture(lua_State *L, int idx);
 typedef struct Image Image_t, *ImagePtr, *lpImage_t;
 typedef struct Image const *ImageCPtr, *lpcImage_t;
 struct Image {
-	fixedString_t Source; ///< Path to the texture image file to be loaded.
+	const char* Source; ///< Path to the texture image file to be loaded.
 	bool_t PremultiplyAlpha; ///< When `true`, multiplies RGB channels by alpha during loading for correct alpha blending.
 	enum ImageType Type; ///< When set to `Mask`, treats the texture as an alpha mask, ignoring RGB components and using only the alpha channel for masking operations.
 	bool_t HasMipmaps; ///< When `true`, automatically generates mipmap levels for improved texture quality at varying distances and reduced aliasing artifacts.
-	fixedString_t Size; ///< Texture dimensions in the format "Width x Height", e.g., "256 x 256".
+	const char* Size; ///< Texture dimensions in the format "Width x Height", e.g., "256 x 256".
 	int32_t BitDepth; ///< Number of bits per pixel, including all channels.
 	bool_t FileHasTransparency; ///< Indicates whether the source file contains any transparent pixels.
 	bool_t FileHasICCProfile; ///< Indicates whether the source file includes an embedded ICC color profile.
@@ -369,7 +369,7 @@ struct Image {
 	bool_t FileExportSourceTexture; ///< When `true`, exports the original source texture file alongside processed versions.
 	bool_t FileExportAlways; ///< When `true`, ensures the texture is exported regardless of other conditions.
 	bool_t FileExportEmptyWhenFileIsMissing; ///< When `true`, exports an empty placeholder if the source file is missing.
-	fixedString_t FileExportSourceImage;
+	const char* FileExportSourceImage;
 };
 ORCA_API void luaX_pushImage(lua_State *L, struct Image const* Image);
 ORCA_API struct Image* luaX_checkImage(lua_State *L, int idx);
@@ -393,12 +393,12 @@ ORCA_API struct RenderTargetTexture* luaX_checkRenderTargetTexture(lua_State *L,
 typedef struct CubeMapTexture CubeMapTexture_t, *CubeMapTexturePtr, *lpCubeMapTexture_t;
 typedef struct CubeMapTexture const *CubeMapTextureCPtr, *lpcCubeMapTexture_t;
 struct CubeMapTexture {
-	fixedString_t BackImage; ///< Path to the image file for the back face (negative Z-axis) of the cubemap.
-	fixedString_t FrontImage; ///< Path to the image file for the front face (positive Z-axis) of the cubemap.
-	fixedString_t LeftImage; ///< Path to the image file for the left face (negative X-axis) of the cubemap.
-	fixedString_t RightImage; ///< Path to the image file for the right face (positive X-axis) of the cubemap.
-	fixedString_t BottomImage; ///< Path to the image file for the bottom face (negative Y-axis) of the cubemap.
-	fixedString_t TopImage; ///< Path to the image file for the top face (positive Y-axis) of the cubemap.
+	const char* BackImage; ///< Path to the image file for the back face (negative Z-axis) of the cubemap.
+	const char* FrontImage; ///< Path to the image file for the front face (positive Z-axis) of the cubemap.
+	const char* LeftImage; ///< Path to the image file for the left face (negative X-axis) of the cubemap.
+	const char* RightImage; ///< Path to the image file for the right face (positive X-axis) of the cubemap.
+	const char* BottomImage; ///< Path to the image file for the bottom face (negative Y-axis) of the cubemap.
+	const char* TopImage; ///< Path to the image file for the top face (positive Y-axis) of the cubemap.
 };
 ORCA_API void luaX_pushCubeMapTexture(lua_State *L, struct CubeMapTexture const* CubeMapTexture);
 ORCA_API struct CubeMapTexture* luaX_checkCubeMapTexture(lua_State *L, int idx);
@@ -429,7 +429,7 @@ typedef struct FragmentShader const *FragmentShaderCPtr, *lpcFragmentShader_t;
 struct FragmentShader {
 	int32_t Version; ///< GLSL shader language version number (e.g., 150 for GLSL 1.50, 330 for GLSL 3.30)
 	enum FloatPrecision FloatPrecision; ///< Default floating-point precision for fragment shader calculations
-	fixedString_t Out; ///< Name of the output variable for fragment color (e.g., "FragColor", "gl_FragColor")
+	const char* Out; ///< Name of the output variable for fragment color (e.g., "FragColor", "gl_FragColor")
 };
 ORCA_API void luaX_pushFragmentShader(lua_State *L, struct FragmentShader const* FragmentShader);
 ORCA_API struct FragmentShader* luaX_checkFragmentShader(lua_State *L, int idx);
@@ -471,9 +471,9 @@ ORCA_API struct Material* luaX_checkMaterial(lua_State *L, int idx);
 typedef struct Mesh Mesh_t, *MeshPtr, *lpMesh_t;
 typedef struct Mesh const *MeshCPtr, *lpcMesh_t;
 struct Mesh {
-	fixedString_t Source; ///< Path or identifier to the mesh geometry file or resource. Specifies where to load the 3D model data from.
+	const char* Source; ///< Path or identifier to the mesh geometry file or resource. Specifies where to load the 3D model data from.
 	struct Material* Material; ///< Reference to the material that defines the mesh's visual appearance. Controls shaders, textures, colors, and rendering properties applied to the geometry.
-	fixedString_t MeshMorphTargets; ///< Name of the morph targets in the mesh
+	const char* MeshMorphTargets; ///< Name of the morph targets in the mesh
 	struct model* model; ///< Internal pointer to the loaded model data structure containing the mesh geometry.
 };
 ORCA_API void luaX_pushMesh(lua_State *L, struct Mesh const* Mesh);
@@ -483,10 +483,10 @@ ORCA_API struct Mesh* luaX_checkMesh(lua_State *L, int idx);
 typedef struct FontFamily FontFamily_t, *FontFamilyPtr, *lpFontFamily_t;
 typedef struct FontFamily const *FontFamilyCPtr, *lpcFontFamily_t;
 struct FontFamily {
-	fixedString_t Regular; ///< Path of the TrueType font file to be used as the regular font variant.
-	fixedString_t Bold; ///< Path of the TrueType font file to be used as the bold font variant.
-	fixedString_t Italic; ///< Path of the TrueType font file to be used as the italic font variant.
-	fixedString_t BoldItalic; ///< Path of the TrueType font file to be used as the bold italic font variant.
+	const char* Regular; ///< Path of the TrueType font file to be used as the regular font variant.
+	const char* Bold; ///< Path of the TrueType font file to be used as the bold font variant.
+	const char* Italic; ///< Path of the TrueType font file to be used as the italic font variant.
+	const char* BoldItalic; ///< Path of the TrueType font file to be used as the bold italic font variant.
 	struct fontface* regular; ///< Internal pointer to the loaded font data.
 	struct fontface* bold; ///< Internal pointer to the loaded font data.
 	struct fontface* italic; ///< Internal pointer to the loaded font data.

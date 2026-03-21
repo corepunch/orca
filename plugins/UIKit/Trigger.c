@@ -6,7 +6,7 @@
 HANDLER(Trigger, Attached)
 {
   lpProperty_t prop;
-  if (SUCCEEDED(OBJ_FindShortProperty(hObject, pTrigger->Property, &prop))) {
+  if (pTrigger->Property && SUCCEEDED(OBJ_FindShortProperty(hObject, pTrigger->Property, &prop))) {
     PROP_SetFlag(prop, PF_USED_IN_TRIGGER);
   }
   return FALSE;
@@ -14,7 +14,7 @@ HANDLER(Trigger, Attached)
 
 HANDLER(Trigger, PropertyChanged)
 {
-  if (strcmp(PROP_GetName(pPropertyChanged->Property), pTrigger->Property))
+  if (!pTrigger->Property || strcmp(PROP_GetName(pPropertyChanged->Property), pTrigger->Property))
     return FALSE;
   switch (PROP_GetType(pPropertyChanged->Property)) {
     case kDataTypeFloat:
@@ -53,11 +53,11 @@ HANDLER(Setter, Triggered)
   if (pTriggered->Trigger ==
       CMP_GetUserData((struct component*)pSetter->Trigger)) {
     lpProperty_t p;
-    if (SUCCEEDED(OBJ_FindShortProperty(hObject, pSetter->Property, &p))) {
+    if (pSetter->Property && SUCCEEDED(OBJ_FindShortProperty(hObject, pSetter->Property, &p))) {
 //      PROP_Parse(p, pSetter->Value);
       assert(!"Not implemented");
     }
-    Con_Error("setting %s to %s", pSetter->Property, pSetter->Value);
+    Con_Error("setting %s to %s", pSetter->Property ? pSetter->Property : "", pSetter->Value ? pSetter->Value : "");
   }
   return FALSE;
 }
@@ -73,14 +73,14 @@ HANDLER(Handler, Triggered)
     lpObject_t pTarget = pHandler->Target ? CMP_GetObject(pHandler->Target) : hObject;
     lua_State* L = OBJ_GetDomain(hObject);
     lua_geti(L, LUA_REGISTRYINDEX, OBJ_GetLuaObject(pTarget));
-    lua_getfield(L, -1, pHandler->Function);
+    lua_getfield(L, -1, pHandler->Function ? pHandler->Function : "");
     if (lua_type(L, -1) == LUA_TFUNCTION) {
       lua_pop(L, 2);
       lua_geti(L, LUA_REGISTRYINDEX, OBJ_GetLuaObject(hObject));
       for (int i = 0; i < msg->NumArgs; i++) {
         lua_pushvalue(L, -(1 + msg->NumArgs));
       }
-      return luaX_executecallback(L, pTarget, pHandler->Function, msg->NumArgs + 1);
+      return luaX_executecallback(L, pTarget, pHandler->Function ? pHandler->Function : "", msg->NumArgs + 1);
     } else {
       lua_pop(L, 2);
     }
@@ -90,7 +90,7 @@ HANDLER(Handler, Triggered)
 
 HANDLER(EventTrigger, HandleMessage)
 {
-  if (!strcmp(pHandleMessage->EventName, pEventTrigger->RoutedEvent)) {
+  if (pEventTrigger->RoutedEvent && !strcmp(pHandleMessage->EventName, pEventTrigger->RoutedEvent)) {
     struct TriggeredEventArgs parm = { GetTrigger(CMP_GetObject(pEventTrigger)), *pHandleMessage };
     return OBJ_SendMessageW(hObject, kEventTriggered, 0, &parm);
   }
@@ -99,7 +99,8 @@ HANDLER(EventTrigger, HandleMessage)
 
 HANDLER(OnPropertyChangedTrigger, PropertyChanged)
 {
-  if (strcmp(PROP_GetName(pPropertyChanged->Property),
+  if (!pOnPropertyChangedTrigger->Property ||
+      strcmp(PROP_GetName(pPropertyChanged->Property),
              pOnPropertyChangedTrigger->Property))
     return FALSE;
   lua_State* L = OBJ_GetDomain(hObject);
@@ -115,7 +116,7 @@ HANDLER(OnPropertyChangedTrigger, Attached)
 {
   lpProperty_t pProp;
   lpcString_t szName = pOnPropertyChangedTrigger->Property;
-  if (SUCCEEDED(OBJ_FindShortProperty(hObject, szName, &pProp))) {
+  if (szName && SUCCEEDED(OBJ_FindShortProperty(hObject, szName, &pProp))) {
     PROP_SetFlag(pProp, PF_USED_IN_TRIGGER);
   }
   return FALSE;
