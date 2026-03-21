@@ -166,7 +166,7 @@ void free(void *ptr) {
     do {                                                                     \
         long _now  = (long)s_alloc_count;                                    \
         long _snap = (snap);                                                 \
-        if (_now != _snap) {                                                 \
+        if (_now > _snap) {                                                 \
             fprintf(stderr,                                                  \
                     "  LEAK [%s]: %ld outstanding allocation(s)"             \
                     " (before=%ld after=%ld)\n",                             \
