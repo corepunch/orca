@@ -468,9 +468,7 @@ OBJ_GetInteger(lpcObject_t object, uint32_t ident, int fallback)
 }
 
 HRESULT
-OBJ_SetPropertyValue(lpObject_t object,
-                     lpcString_t name,
-                     void const* value)
+OBJ_SetPropertyValue(lpObject_t object, lpcString_t name, void const* value)
 {
   lpProperty_t prop;
   HRESULT hr = OBJ_FindShortProperty(object, name, &prop);

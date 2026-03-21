@@ -54,6 +54,8 @@ _WatchFile(struct Directory* psrch, lpcString_t filename)
 #endif
 
 HANDLER(Directory, OpenFile) {
+  assert(pDirectory->Path);
+  assert(pOpenFile->FileName);
   FILE* fp = fopen(FS_JoinPaths(pDirectory->Path, pOpenFile->FileName), "rb");
   if (!fp)
     return 0;
@@ -127,5 +129,6 @@ HANDLER(Directory, LoadProject) {
   lpObject_t project = _LoadProject((lua_State*)pDirectory, packpath, FS_GetBaseName(pLoadProject->Path));
   OBJ_AddComponent(project, ID_Directory);
   OBJ_SetPropertyValue(project, "Path", pLoadProject->Path);
+  assert(GetDirectory(project)->Path);
   return (intptr_t)project;
 }
