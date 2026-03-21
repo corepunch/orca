@@ -68,8 +68,8 @@ HANDLER(Input, DrawBrush)
 
 HANDLER(Input, MakeText)
 {
-  LPSTR szText = GetTextRun(hObject)->Text;
-  pInput->Cursor = MIN((int)strlen(szText), pInput->Cursor);
+  const char* text = GetTextRun(hObject)->Text;
+  pInput->Cursor = MIN((int)strlen(text ? text : ""), pInput->Cursor);
   pMakeText->text->cursor = pInput->Cursor;
   return FALSE;
 }
@@ -104,14 +104,17 @@ _NextTabStop(lpObject_t hObject)
 
 HANDLER(Input, KeyDown)
 {
-  LPSTR szText = GetTextRun(hObject)->Text;
+  char szText[MAX_PROPERTY_STRING];
+  const char* currentText = GetTextRun(hObject)->Text;
+  strncpy(szText, currentText ? currentText : "", sizeof(szText) - 1);
+  szText[sizeof(szText) - 1] = 0;
   uint32_t dwLength = (uint32_t)strlen(szText);
 
   switch (pKeyDown->keyCode) {
     case WI_KEY_BACKSPACE:
       if (pInput->Cursor > 0) {
         pInput->Cursor--;
-        for (LPSTR a = &szText[pInput->Cursor]; *a; *a = *(a + 1), a++)
+        for (char *a = &szText[pInput->Cursor]; *a; *a = *(a + 1), a++)
           ;
       }
       break;
@@ -128,11 +131,13 @@ HANDLER(Input, KeyDown)
         OBJ_SetFocus(NULL);
         SV_PostMessage(hObject, "Submit", 0, szText);
       } else {
-        szText[dwLength + 1] = 0;
-        for (uint32_t s = dwLength; s > pInput->Cursor; s--) {
-          szText[s] = szText[s - 1];
+        if (dwLength + 1 < sizeof(szText) - 1) {
+          szText[dwLength + 1] = 0;
+          for (uint32_t s = dwLength; s > pInput->Cursor; s--) {
+            szText[s] = szText[s - 1];
+          }
+          szText[pInput->Cursor++] = '\n';
         }
-        szText[pInput->Cursor++] = '\n';
         SV_PostMessage(hObject, "Char", 0, 0);
       }
       break;
@@ -149,15 +154,21 @@ HANDLER(Input, KeyDown)
       pInput->Cursor = MIN(pInput->Cursor + 1, dwLength);
       break;
     default:
-      if (pInput->Cursor < MAX_PROPERTY_STRING) {
-        szText[dwLength + 1] = 0;
-        for (uint32_t s = dwLength; s > pInput->Cursor; s--) {
-          szText[s] = szText[s - 1];
+      if (pInput->Cursor < (int)sizeof(szText) - 1) {
+        if (dwLength + 1 < sizeof(szText) - 1) {
+          szText[dwLength + 1] = 0;
+          for (uint32_t s = dwLength; s > pInput->Cursor; s--) {
+            szText[s] = szText[s - 1];
+          }
         }
-        szText[pInput->Cursor++] = *(LPSTR)&pKeyDown->lParam;
+        szText[pInput->Cursor++] = *(char*)&pKeyDown->lParam;
       }
       SV_PostMessage(hObject, "Char", 0, 0);
       break;
+  }
+  lpProperty_t prop = TextRun_GetProperty(hObject, kTextRunText);
+  if (prop) {
+    PROP_SetValue(prop, szText);
   }
   OBJ_SetDirty(hObject);
   return TRUE;

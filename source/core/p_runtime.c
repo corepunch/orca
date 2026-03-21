@@ -152,18 +152,18 @@ tok_op(assign)
 tok_op(CONCAT) {
   strncpy((LPSTR)output->value, (lpcString_t)regs[0].value, sizeof(output->value));
   strncat((LPSTR)output->value, (lpcString_t)regs[1].value, sizeof(output->value));
-  InitOutput(output, kDataTypeFixed, MAX_PROPERTY_STRING);
+  InitOutput(output, kDataTypeString, MAX_PROPERTY_STRING);
   return TRUE;
 }
 tok_op(STRING) {
-  InitOutput(output, kDataTypeFixed, MAX_PROPERTY_STRING);
+  InitOutput(output, kDataTypeString, MAX_PROPERTY_STRING);
   switch (regs->type) {
     case kDataTypeBool:
     case kDataTypeFloat:
     case kDataTypeInt:
       snprintf((LPSTR)output->value, sizeof(output->value), "%g", regs->value[0]);
       return TRUE;
-    case kDataTypeFixed:
+    case kDataTypeString:
       strncpy((LPSTR)output->value, (lpcString_t)regs->value, sizeof(output->value));
       return TRUE;
     default:
@@ -179,7 +179,7 @@ tok_op(FLOAT) {
     case kDataTypeInt:
       output->value[0] = regs->value[0];
       return TRUE;
-    case kDataTypeFixed:
+    case kDataTypeString:
       output->value[0] = atof((lpcString_t)regs->value);
       return TRUE;
     default:
@@ -195,7 +195,7 @@ tok_op(INT) {
     case kDataTypeInt:
       output->value[0] = round(regs->value[0]);
       return TRUE;
-    case kDataTypeFixed:
+    case kDataTypeString:
       output->value[0] = atoi((lpcString_t)regs->value);
       return TRUE;
     default:
@@ -204,7 +204,7 @@ tok_op(INT) {
   }
 }
 tok_op(CREATEROTATION_XYZ) {
-  if (regs->type < kDataTypeFixed) {
+  if (regs->type < kDataTypeString) {
     memset(output->value, 0, sizeof(output->value));
     InitOutput(output, kDataTypeFloat, sizeof(struct vec3));
     output->value[token->cache.component] = regs->value[0];
@@ -225,7 +225,7 @@ tok_op(EXTRACT_XYZ) {
 tok_op(MAKE_VECTOR) {
   InitOutput(output, kDataTypeFloat, sizeof(float) * token->cache.component);
   FOR_LOOP(i, token->cache.component) {
-    if (regs[i].type >= kDataTypeFixed) {
+    if (regs[i].type >= kDataTypeString) {
       return FALSE;
     } else {
       output->value[i] = regs[i].value[0];
@@ -234,10 +234,10 @@ tok_op(MAKE_VECTOR) {
   return TRUE;
 }
 tok_op(COLOR4) {
-  if (regs[0].type < kDataTypeFixed &&
-      regs[1].type < kDataTypeFixed &&
-      regs[2].type < kDataTypeFixed &&
-      regs[3].type < kDataTypeFixed)
+  if (regs[0].type < kDataTypeString &&
+      regs[1].type < kDataTypeString &&
+      regs[2].type < kDataTypeString &&
+      regs[3].type < kDataTypeString)
   {
     InitOutput(output, kDataTypeFloat, sizeof(struct color));
     output->value[0] = regs[0].value[0];
@@ -317,7 +317,7 @@ tok_op(call)
     return token->cache.func(token, t, object, output);
   }
   
-  if (!strcmp(token->text, "ADD") && t[0].type == kDataTypeFixed && t[1].type == kDataTypeFixed) {
+  if (!strcmp(token->text, "ADD") && t[0].type == kDataTypeString && t[1].type == kDataTypeString) {
     return (token->cache.func=op_CONCAT)(token, t, object, output);
   }
   CALL(ADD);
@@ -388,7 +388,7 @@ PrintToProperty(lpProperty_t prop, struct vm_register* r)
 {
   char dest[MAX_PROPERTY_STRING];
   if (r->type == kDataTypeNone) {
-    r->type = kDataTypeFixed;
+    r->type = kDataTypeString;
   }
   switch (r->type) {
     case kDataTypeBool:
@@ -400,28 +400,10 @@ PrintToProperty(lpProperty_t prop, struct vm_register* r)
       snprintf(dest, MAX_PROPERTY_STRING, "%g", r->value[0]);
       PROP_SetValue(prop, dest);
       return TRUE;
-    case kDataTypeFixed:
     case kDataTypeString:
       PROP_SetValue(prop, r->value);
       return TRUE;
-      //	case kDataTypeGroup: {
-      //		LPSTR  d=dest;
-      //		uint32_t i=0;
-      //		FOR_RLE(prop->userdata) {
-      //			switch (*s) {
-      //			case 'f':
-      //				if (d != dest) *(d++) = ' ';
-      //				d = ftostr(d, MAX_PROPERTY_STRING,
-      // r->value[i++]); 				break;
-      // default: 				assert(!"Unsupported RLE in
-      // PrintToProperty()"); 				break;
-      //			}
-      //		}
-      //		PROP_SetValue(prop, dest);
-      //		return TRUE;
-      //	}
     default:
-      //		assert(r->type == PROP_GetType(prop));
       return show_error();
   }
 }
@@ -440,9 +422,9 @@ PROP_Import(lpProperty_t prop,
     if (PROP_GetType(prop) == kDataTypeNone) {
       PROP_SetTypeSize(prop, r->type, r->size);
     }
-    if (PROP_GetType(prop) == kDataTypeFixed) {
+    if (PROP_GetType(prop) == kDataTypeString) {
       return PrintToProperty(prop, r);
-    } else if (PROP_GetType(prop) == kDataTypeEnum && r->type == kDataTypeFixed) {
+    } else if (PROP_GetType(prop) == kDataTypeEnum && r->type == kDataTypeString) {
       PROP_SetValue(prop, &(int){
         strlistidx((lpcString_t)r->value, PROP_GetUserData(prop), NULL)
       });
@@ -450,13 +432,13 @@ PROP_Import(lpProperty_t prop,
     } else if (PROP_GetType(prop) == kDataTypeBool && r->type == kDataTypeFloat) {
       PROP_SetValue(prop, &(int){ *r->value > 0 });
       return TRUE;
-    } else if (PROP_GetType(prop) < kDataTypeFloat && r->type < kDataTypeFixed) {
+    } else if (PROP_GetType(prop) < kDataTypeFloat && r->type < kDataTypeString) {
       PROP_SetValue(prop, &(int){ *r->value });
       return TRUE;
-    } else if (PROP_GetType(prop) == kDataTypeFloat && r->type < kDataTypeFixed) {
+    } else if (PROP_GetType(prop) == kDataTypeFloat && r->type < kDataTypeString) {
       PROP_SetValue(prop, r->value);
       return TRUE;
-    } else if (PROP_GetType(prop) == kDataTypeFloat && r->type == kDataTypeFixed) {
+    } else if (PROP_GetType(prop) == kDataTypeFloat && r->type == kDataTypeString) {
       assert(PROP_GetSize(prop) == sizeof(float));
       PROP_SetValue(prop, &(float){ atof((lpcString_t)r->value) });
       return TRUE;
@@ -498,22 +480,22 @@ PROP_Import(lpProperty_t prop,
       struct color color = *(struct color const*)PROP_GetValue(prop);
       switch ((uint32_t)attr) {
         case kPropertyAttributeColorR:
-          assert(r->type < kDataTypeFixed);
+          assert(r->type < kDataTypeString);
           color.r = r->value[0];
           PROP_SetValue(prop, &color);
           return TRUE;
         case kPropertyAttributeColorG:
-          assert(r->type < kDataTypeFixed);
+          assert(r->type < kDataTypeString);
           color.g = r->value[0];
           PROP_SetValue(prop, &color);
           return TRUE;
         case kPropertyAttributeColorB:
-          assert(r->type < kDataTypeFixed);
+          assert(r->type < kDataTypeString);
           color.b = r->value[0];
           PROP_SetValue(prop, &color);
           return TRUE;
         case kPropertyAttributeColorA:
-          assert(r->type < kDataTypeFixed);
+          assert(r->type < kDataTypeString);
           color.a = r->value[0];
           PROP_SetValue(prop, &color);
           return TRUE;
@@ -525,25 +507,25 @@ PROP_Import(lpProperty_t prop,
     struct vec4 vector = *(struct vec4 const*)PROP_GetValue(prop);
     switch ((uint32_t)attr) {
       case kPropertyAttributeVectorX:
-        assert(r->type < kDataTypeFixed);
+        assert(r->type < kDataTypeString);
         assert(PROP_GetSize(prop) >= sizeof(struct vec2));
         vector.x = r->value[0];
         PROP_SetValue(prop, &vector);
         return TRUE;
       case kPropertyAttributeVectorY:
-        assert(r->type < kDataTypeFixed);
+        assert(r->type < kDataTypeString);
         assert(PROP_GetSize(prop) >= sizeof(struct vec2));
         vector.y = r->value[0];
         PROP_SetValue(prop, &vector);
         return TRUE;
       case kPropertyAttributeVectorZ:
-        assert(r->type < kDataTypeFixed);
+        assert(r->type < kDataTypeString);
         assert(PROP_GetSize(prop) >= sizeof(struct vec3));
         vector.z = r->value[0];
         PROP_SetValue(prop, &vector);
         return TRUE;
       case kPropertyAttributeVectorW:
-        assert(r->type < kDataTypeFixed);
+        assert(r->type < kDataTypeString);
         assert(PROP_GetSize(prop) >= sizeof(struct vec4));
         vector.w = r->value[0];
         PROP_SetValue(prop, &vector);
@@ -738,7 +720,7 @@ tok_op(constant)
 }
 tok_op(string)
 {
-  InitOutput(output, kDataTypeFixed, MAX_PROPERTY_STRING);
+  InitOutput(output, kDataTypeString, MAX_PROPERTY_STRING);
   strncpy((LPSTR)output->value, token->text, MAX_PROPERTY_STRING);
   return TRUE;
 }

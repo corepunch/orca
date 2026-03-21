@@ -172,7 +172,7 @@ _OBJ_Draws(lpObject_t obj, lpObject_t scene, struct ViewDef* original)
   struct ViewDef vd = *original;
   struct DrawObjectsRenderPass* rp = GetDrawObjectsRenderPass(obj);
 
-  if (!*rp->Camera || !(cam = _FindCamera(scene, rp->Camera))) {
+  if (!rp->Camera || !*rp->Camera || !(cam = _FindCamera(scene, rp->Camera))) {
     if (vd.flags & RF_CAMERA_ALIAS) {
       cam = OBJ_FindChildByAlias(scene, vd.camera);
     } else {

@@ -481,7 +481,7 @@ LRESULT Directory_HasChangedFiles(struct Object*, struct Directory*, wParam_t, H
 LRESULT Directory_Destroy(struct Object*, struct Directory*, wParam_t, DestroyEventPtr);
 
 static struct PropertyType const DirectoryProperties[kDirectoryNumProperties] = {
-	DECL(0xeb66e456, Directory, Path, Path, kDataTypeFixed), // Directory.Path
+	DECL(0xeb66e456, Directory, Path, Path, kDataTypeString), // Directory.Path
 };
 static struct Directory DirectoryDefaults = {
 };
@@ -522,7 +522,7 @@ LRESULT Package_HasChangedFiles(struct Object*, struct Package*, wParam_t, HasCh
 LRESULT Package_Destroy(struct Object*, struct Package*, wParam_t, DestroyEventPtr);
 
 static struct PropertyType const PackageProperties[kPackageNumProperties] = {
-	DECL(0x5ffdd888, Package, FileName, FileName, kDataTypeFixed), // Package.FileName
+	DECL(0x5ffdd888, Package, FileName, FileName, kDataTypeString), // Package.FileName
 };
 static struct Package PackageDefaults = {
 };
@@ -595,13 +595,13 @@ static struct PropertyType const ProjectProperties[kProjectNumProperties] = {
 	DECL(0x1275837c, Project, HalfFloatColorAttachment, HalfFloatColorAttachment, kDataTypeBool), // Project.HalfFloatColorAttachment
 	DECL(0x6b1586db, Project, RenderToMipmapLevels, RenderToMipmapLevels, kDataTypeBool), // Project.RenderToMipmapLevels
 	DECL(0x377aea3d, Project, ExternalTexture, ExternalTexture, kDataTypeBool), // Project.ExternalTexture
-	DECL(0xb3cce876, Project, StartupScreen, StartupScreen, kDataTypeFixed), // Project.StartupScreen
+	DECL(0xb3cce876, Project, StartupScreen, StartupScreen, kDataTypeString), // Project.StartupScreen
 	DECL(0xe1bb158a, Project, PreviewWindowBackgroundColor, PreviewWindowBackgroundColor, kDataTypeStruct, .TypeString = "Color"), // Project.PreviewWindowBackgroundColor
 	DECL(0xb92de767, Project, MessageLimitPerFrame, MessageLimitPerFrame, kDataTypeInt), // Project.MessageLimitPerFrame
 	DECL(0xe310dade, Project, GlobalTimelineStartTime, GlobalTimelineStartTime, kDataTypeInt), // Project.GlobalTimelineStartTime
 	DECL(0x5d90d07b, Project, GlobalTimelineEndTime, GlobalTimelineEndTime, kDataTypeInt), // Project.GlobalTimelineEndTime
-	DECL(0x527cf409, Project, BinaryExportDirectory, BinaryExportDirectory, kDataTypeFixed), // Project.BinaryExportDirectory
-	DECL(0x5d547d12, Project, ApplicationExportDirectory, ApplicationExportDirectory, kDataTypeFixed), // Project.ApplicationExportDirectory
+	DECL(0x527cf409, Project, BinaryExportDirectory, BinaryExportDirectory, kDataTypeString), // Project.BinaryExportDirectory
+	DECL(0x5d547d12, Project, ApplicationExportDirectory, ApplicationExportDirectory, kDataTypeString), // Project.ApplicationExportDirectory
 	DECL(0xf6c72bc0, Project, IsMasterProject, IsMasterProject, kDataTypeBool), // Project.IsMasterProject
 	DECL(0x3762ffdf, Project, OptimizeMeshes, OptimizeMeshes, kDataTypeBool), // Project.OptimizeMeshes
 	DECL(0xda2eb7cc, Project, TargetPlatformVertexCacheSize, TargetPlatformVertexCacheSize, kDataTypeInt), // Project.TargetPlatformVertexCacheSize
@@ -616,10 +616,10 @@ static struct PropertyType const ProjectProperties[kProjectNumProperties] = {
 	DECL(0x5488c4f2, Project, CompositionDesignSize, CompositionDesignSize, kDataTypeStruct, .TypeString = "Vector2D"), // Project.CompositionDesignSize
 	DECL(0x5734b5cd, Project, ProjectUsePremultipliedAlpha, ProjectUsePremultipliedAlpha, kDataTypeBool), // Project.ProjectUsePremultipliedAlpha
 	DECL(0xb617d580, Project, ProjectRemoveICCProfilesOfPngs, ProjectRemoveICCProfilesOfPngs, kDataTypeBool), // Project.ProjectRemoveICCProfilesOfPngs
-	DECL(0x0f9ae251, Project, BinaryFileName, BinaryFileName, kDataTypeFixed), // Project.BinaryFileName
+	DECL(0x0f9ae251, Project, BinaryFileName, BinaryFileName, kDataTypeString), // Project.BinaryFileName
 	DECL(0x76ac7909, Project, IsAssetPackage, IsAssetPackage, kDataTypeBool), // Project.IsAssetPackage
 	DECL(0x982e8227, Project, KanziConnectEnabled, KanziConnectEnabled, kDataTypeBool), // Project.KanziConnectEnabled
-	DECL(0x0c93d3a3, Project, DefaultMaterial, DefaultMaterial, kDataTypeFixed), // Project.DefaultMaterial
+	DECL(0x0c93d3a3, Project, DefaultMaterial, DefaultMaterial, kDataTypeString), // Project.DefaultMaterial
 	DECL(0xdc5503a7, Project, WindowWidth, WindowWidth, kDataTypeInt), // Project.WindowWidth
 	DECL(0xbd75892a, Project, WindowHeight, WindowHeight, kDataTypeInt), // Project.WindowHeight
 	ARRAY_DECL(0x3cee6129, Project, PropertyTypes, PropertyTypes, kDataTypeStruct, .TypeString = "PropertyType"), // Project.PropertyTypes
@@ -1902,7 +1902,7 @@ ORCA_API struct ClassDesc _EnginePlugin = {
 
 
 static struct PropertyType const EngineMetaclassProperties[kEngineMetaclassNumProperties] = {
-	DECL(0x099ceef3, EngineMetaclass, BaseClassName, BaseClassName, kDataTypeFixed), // EngineMetaclass.BaseClassName
+	DECL(0x099ceef3, EngineMetaclass, BaseClassName, BaseClassName, kDataTypeString), // EngineMetaclass.BaseClassName
 };
 static struct EngineMetaclass EngineMetaclassDefaults = {
 };
@@ -1933,7 +1933,7 @@ ORCA_API struct ClassDesc _EngineMetaclass = {
 
 
 static struct PropertyType const ThemeGroupProperties[kThemeGroupNumProperties] = {
-	DECL(0x1cf2c938, ThemeGroup, SelectedDictionary, SelectedDictionary, kDataTypeFixed), // ThemeGroup.SelectedDictionary
+	DECL(0x1cf2c938, ThemeGroup, SelectedDictionary, SelectedDictionary, kDataTypeString), // ThemeGroup.SelectedDictionary
 };
 static struct ThemeGroup ThemeGroupDefaults = {
 };

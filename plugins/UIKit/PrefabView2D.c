@@ -5,13 +5,13 @@
 HANDLER(PrefabView2D, LoadView)
 {
   lua_State* L = pLoadView->lua_state;
-  if (*pPrefabView2D->SCA &&
+  if (pPrefabView2D->SCA && *pPrefabView2D->SCA &&
       pPrefabView2D->_loadedSCA != fnv1a32(pPrefabView2D->SCA))
   {
     lua_pushstring(L, pPrefabView2D->SCA);
     luaX_executecallback(L, hObject, "loadSCA", 1);
     pPrefabView2D->_loadedSCA = fnv1a32(pPrefabView2D->SCA);
-  } else if (*pPrefabView2D->Prefab &&
+  } else if (pPrefabView2D->Prefab && *pPrefabView2D->Prefab &&
              pPrefabView2D->_loadedPrefab != fnv1a32(pPrefabView2D->Prefab))
   {
     lua_pushstring(L, pPrefabView2D->Prefab);

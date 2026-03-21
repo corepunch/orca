@@ -79,11 +79,11 @@
     <summary>Root container for 3D scene content with camera and rendering configuration</summary>
     <details>Represents a complete 3D scene that can be rendered to a viewport. Manages cameras, render passes, and global scene properties like environment lighting.</details>
     <handles event="UpdateMatrix"/>
-    <property name="Camera" type="fixed">Name of the primary camera used for scene rendering</property>
-    <property name="PreviewCamera" type="fixed">Name of camera used for preview rendering in design tools</property>
-    <property name="HitTestCamera" type="fixed">Name of camera used for 3D hit testing and mouse interaction</property>
+    <property name="Camera" type="string">Name of the primary camera used for scene rendering</property>
+    <property name="PreviewCamera" type="string">Name of camera used for preview rendering in design tools</property>
+    <property name="HitTestCamera" type="string">Name of camera used for 3D hit testing and mouse interaction</property>
     <property name="RenderPass" type="RenderPass" pointer="true">Custom render pass chain for advanced rendering effects</property>
-    <property name="BackgroundTimelineSequence" type="fixed">TODO: add support?</property>
+    <property name="BackgroundTimelineSequence" type="string">TODO: add support?</property>
     <property name="ComposerOverride" type="RenderPass" pointer="true">Override render pass for post-processing composition effects</property>
     <property name="EnvironmentTexture" type="Texture" pointer="true">Environment map texture for reflections and ambient lighting</property>
   </class>
@@ -139,19 +139,19 @@
     <summary>2D viewport component that renders 3D scene content</summary>
     <details>Bridge between 2D UI layout and 3D scene rendering. Allows embedding 3D scenes within 2D user interfaces with independent camera and rendering configuration.</details>
     <handles event="ForegroundContent"/>
-    <property name="Camera" type="fixed">Name of camera to use for 3D scene rendering within this viewport</property>
-    <property name="PreviewCamera" type="fixed">Name of camera used for design-time preview rendering</property>
-    <property name="HitTestCamera" type="fixed">Name of camera used for 3D hit testing within the viewport area</property>
+    <property name="Camera" type="string">Name of camera to use for 3D scene rendering within this viewport</property>
+    <property name="PreviewCamera" type="string">Name of camera used for design-time preview rendering</property>
+    <property name="HitTestCamera" type="string">Name of camera used for 3D hit testing within the viewport area</property>
     <property name="RenderPass" type="RenderPass" pointer="true">Custom render pass chain for viewport-specific effects</property>
-    <property name="Scene" type="fixed">TODO: add support?</property>
+    <property name="Scene" type="string">TODO: add support?</property>
   </class>
 
   <class name="PrefabView3D" parent="Node3D">
     <summary>Dynamic loader for 3D prefab assets and scene files</summary>
     <details>Loads and instantiates 3D content from external files. Supports both SCA (Scene Archive) and prefab formats for modular scene composition and asset reuse.</details>
     <handles event="LoadView"/>
-    <property name="SCA" type="fixed">Adds "hmi_plugins/{{SCA}}" to search paths and loads from "prefabs/{{SCA}}"</property>
-    <property name="Prefab" type="fixed">Path to prefab asset file to instantiate</property>
+    <property name="SCA" type="string">Adds "hmi_plugins/{{SCA}}" to search paths and loads from "prefabs/{{SCA}}"</property>
+    <property name="Prefab" type="string">Path to prefab asset file to instantiate</property>
     <field name="_loadedSCA" type="int"/>
     <field name="_loadedPrefab" type="int"/>
   </class>
@@ -182,7 +182,7 @@
   <class name="DrawObjectsRenderPass" parent="RenderPass">
     <summary>Render pass for drawing scene objects with tag-based filtering</summary>
     <details>Renders scene geometry based on object tags and camera configuration. Allows selective rendering of object groups for advanced multi-pass effects and optimization.</details>
-    <property name="Camera" type="fixed">Name of camera to use for object rendering and view/projection matrices</property>
+    <property name="Camera" type="string">Name of camera to use for object rendering and view/projection matrices</property>
     <property name="IncludeTags" type="objectTags">Object tags that must be present for objects to be rendered</property>
     <property name="ExcludeTags" type="objectTags">Object tags that prevent objects from being rendered</property>
   </class>

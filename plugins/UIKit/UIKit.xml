@@ -343,7 +343,7 @@
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <handles event="PropertyChanged"/>
     <handles event="Attached"/>
-    <property name="Property" type="fixed">Target property name to monitor or modify </property>
+    <property name="Property" type="string">Target property name to monitor or modify </property>
     <property name="Value" type="int">Associated value for the trigger condition </property>
   </class>
 
@@ -359,8 +359,8 @@
     <details>Monitors a named property on a source node and triggers actions when the property value changes. Useful for reactive UI updates.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <handles event="PropertyChanged"/>
-    <property name="SourceNode" type="fixed">Name or identifier of the node to monitor </property>
-    <property name="Property" type="fixed">Property name to watch for changes </property>
+    <property name="SourceNode" type="string">Name or identifier of the node to monitor </property>
+    <property name="Property" type="string">Property name to watch for changes </property>
   </class>
 
   <class name="OnAttachedTrigger" parent="Trigger">
@@ -375,7 +375,7 @@
     <details>Listens for specific routed events and can execute actions in response. Supports the standard UI event bubbling system.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <handles event="HandleMessage"/>
-    <property name="RoutedEvent" type="fixed">Name of the routed event to handle (e.g., "MouseDown", "KeyPress") </property>
+    <property name="RoutedEvent" type="string">Name of the routed event to handle (e.g., "MouseDown", "KeyPress") </property>
   </class>
 
   <class name="Setter">
@@ -384,14 +384,14 @@
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <handles event="Triggered"/>
     <property name="Trigger" type="Trigger" pointer="true">Triggering condition or state image </property>
-    <property name="Property" type="fixed">Target property name to set </property>
-    <property name="Value" type="fixed">Value to apply to the property </property>
+    <property name="Property" type="string">Target property name to set </property>
+    <property name="Value" type="string">Value to apply to the property </property>
   </class>
 
 <!--  <class name="Project">-->
 <!--    <summary>Top-level project configuration and settings</summary>-->
 <!--    <details>Defines global project parameters including screen dimensions and project identification. Typically one per application.</details>-->
-<!--    <property name="Name" type="fixed">Project identifier or display name </property>-->
+<!--    <property name="Name" type="string">Project identifier or display name </property>-->
 <!--    <property name="ScreenWidth" type="int">Target screen width in pixels </property>-->
 <!--    <property name="ScreenHeight" type="int">Target screen height in pixels </property>-->
 <!--  </class>-->
@@ -403,7 +403,7 @@
     <handles event="Triggered"/>
     <property name="Trigger" type="Trigger" pointer="true">Triggering condition or state image </property>
     <property name="Target" type="Node" pointer="true">Target object to call function on </property>
-    <property name="Function" type="fixed">Function name to execute on target </property>
+    <property name="Function" type="string">Function name to execute on target </property>
   </class>
   
   <class name="Brush">
@@ -453,7 +453,7 @@
     <summary>Shared concept for text rendering in 2D and 3D nodes.</summary>
     <details>This class is not instantiated directly. Instead, it provides the common properties and functionality for text rendering, used internally by higher-level components such as 2D and 3D text nodes. The concept encapsulates text content, resources, formatting options, alignment, and font configuration.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <property name="Text" type="fixed">The short text string displayed in the block, limited to 64 bytes. If you need more space consider using `TextResourceID`.</property>
+    <property name="Text" type="string">The short text string displayed in the block, limited to 64 bytes. If you need more space consider using `TextResourceID`.</property>
     <property name="Font" type="FontShorthand" default=".Size=DEFAULT_FONT_SIZE">Font definition used for text rendering. Contains typeface, size, and style information.</property>
     <property name="Underline" type="UnderlineShorthand">Underline style applied to the text.</property>
     <property name="LetterSpacing" type="float">Additional spacing applied between letters.</property>
@@ -472,9 +472,9 @@
     <handles event="Create"/>
     <handles event="Destroy"/>
     <handles event="MakeText"/>
-    <property name="TextResourceID" type="fixed">Resource identifier for localized text lookup.</property>
-    <property name="TextResourceConfiguration" type="fixed">Configuration key used when resolving text resources.</property>
-    <property name="PlaceholderText" type="fixed">Placeholder text displayed when no main text is set.</property>
+    <property name="TextResourceID" type="string">Resource identifier for localized text lookup.</property>
+    <property name="TextResourceConfiguration" type="string">Configuration key used when resolving text resources.</property>
+    <property name="PlaceholderText" type="string">Placeholder text displayed when no main text is set.</property>
     <property name="TextOverflow" type="TextOverflow">Defines how overflowing text should be handled.</property>
 <!--    <property name="HighlightColor" type="color">Color used for highlighting portions of the text.</property>-->
     <property name="Placeholder" type="BrushShorthand">Brush definition for rendering placeholder text.</property>
@@ -589,8 +589,8 @@
     <details>Allows loading of pre-designed UI layouts from external resources. Useful for reusable UI components and modular design patterns.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <handles event="LoadView"/>
-    <property name="SCA" type="fixed">Scene archive identifier or path </property>
-    <property name="Prefab" type="fixed">Prefab resource name within the archive </property>
+    <property name="SCA" type="string">Scene archive identifier or path </property>
+    <property name="Prefab" type="string">Prefab resource name within the archive </property>
     <field name="_loadedSCA" type="int">Hashed value of currently loaded SCA</field>
     <field name="_loadedPrefab" type="int">Hashed value of loaded prefab instance </field>
   </class>
@@ -618,7 +618,7 @@
     <handles event="KillFocus"/>
     <handles event="LeftMouseUp"/>
     <handles event="MeasureOverride"/>
-    <property name="Name" type="fixed">Input identifier for forms and data binding </property>
+    <property name="Name" type="string">Input identifier for forms and data binding </property>
     <property name="Type" type="InputType">Input behavior type (text, password, etc.) </property>
     <property name="Cursor" type="int">Current text cursor position </property>
     <property name="Multiline" type="bool">Allow multiple lines of text input </property>
@@ -642,7 +642,7 @@
     <details>Displays static text that can be associated with input controls for accessibility. Clicking the label can transfer focus to associated control.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <handles event="LeftMouseUp"/>
-    <property name="For" type="fixed">Identifier of associated form control </property>
+    <property name="For" type="string">Identifier of associated form control </property>
   </class>
 
   <class name="StackView" parent="Node2D">
@@ -708,7 +708,7 @@
     <details>Handles playback of video files or frame-based animations with timing control and fade effects.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <handles event="DrawBrush"/>
-    <property name="FileName" type="fixed">Path to media file for playback </property>
+    <property name="FileName" type="string">Path to media file for playback </property>
     <property name="FrameRate" type="float">Playback frame rate (frames per second) </property>
     <property name="NumFrames" type="float">Total number of frames in the media </property>
     <property name="FadeOut" type="float">Fade-out duration in seconds </property>
@@ -722,8 +722,8 @@
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <handles event="MeasureOverride"/>
     <handles event="ArrangeOverride"/>
-    <property name="Columns" type="fixed">Column definition string (e.g., "1fr 2fr 100px") </property>
-    <property name="Rows" type="fixed">Row definition string (e.g., "auto 1fr auto") </property>
+    <property name="Columns" type="string">Column definition string (e.g., "1fr 2fr 100px") </property>
+    <property name="Rows" type="string">Row definition string (e.g., "auto 1fr auto") </property>
     <property name="Direction" type="Direction">Primary fill direction for auto-placement </property>
     <property name="Spacing" type="float">Space between grid cells </property>
     <property name="CellWidth" type="float">Default width for auto-sized cells </property>
@@ -748,7 +748,7 @@
     <handles event="ForegroundContent"/>
     <handles event="DrawBrush"/>
     <handles event="LoadView"/>
-    <property name="Src" type="fixed">Image source path or resource identifier </property>
+    <property name="Src" type="string">Image source path or resource identifier </property>
     <property name="Image" type="Texture" pointer="true">Direct reference to loaded image </property>
     <property name="Edges" type="vec4">Edge inset values for nine-patch rendering </property>
     <property name="Insets" type="vec4">Content inset values for image positioning </property>
@@ -826,8 +826,8 @@
     <summary>Represents a single page within a document or UI container.</summary>
     <details>Used to store navigation related data while all the functionality comes from PageHost</details>
     <handles event="Create"/>
-    <property name="Title" type="fixed">The title of the page.</property>
-    <property name="Path" type="fixed">The URL path of the page, like "/about".</property>
+    <property name="Title" type="string">The title of the page.</property>
+    <property name="Path" type="string">The URL path of the page, like "/about".</property>
     <property name="Transition" type="float">The transition progress of the page.</property>
     <field name="_node" type="Node" pointer="true">Pointer to Node for quick referencing</field>
   </class>
@@ -862,7 +862,7 @@
   <class name="Style">
     <summary>Defines a reusable set of property values and visual configurations for a target component type.</summary>
     <details>Style enables consistent appearance and behavior across multiple components by grouping property definitions under a named style. Each style specifies its target type and classification, such as Generic, Theme, or Override. Styles can be applied globally, by theme, or locally to individual instances, allowing flexible and maintainable UI customization.</details>
-    <property name="TargetType" type="fixed">Specifies the component type this style targets. Only components of the given type or its derived types will use the style.</property>
+    <property name="TargetType" type="string">Specifies the component type this style targets. Only components of the given type or its derived types will use the style.</property>
     <property name="Type" type="StyleType">Defines the classification of this style, such as Generic, Theme, Override, Local, or Template, determining its scope and application behavior.</property>
   </class>
 </module>

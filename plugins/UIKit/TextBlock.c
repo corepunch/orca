@@ -66,11 +66,11 @@ _GetTextBlockText(lpObject_t hObject,
                   TextRunPtr pTextRun)
 {
   lpProperty_t hProp = TextRun_GetProperty(hObject, kTextRunText);
-  if (*pTextRun->Text)
+  if (pTextRun->Text && *pTextRun->Text)
   {
     return pTextRun->Text;
   }
-  else if (*pTextBlockConcept->TextResourceID && !PROP_HasProgram(hProp))
+  else if (pTextBlockConcept->TextResourceID && *pTextBlockConcept->TextResourceID && !PROP_HasProgram(hProp))
   {
     return Loc_GetString(pTextBlockConcept->TextResourceID, LOC_TEXT);
   }
@@ -128,7 +128,7 @@ HANDLER(TextBlockConcept, MakeText)
   FOR_EACH_OBJECT(run, hObject) {
     TextRunPtr tr = GetTextRun(run);
     if (tr && pViewText->numTextRuns < MAX_TEXT_RUNS) {
-      lpcString_t str = *tr->Text ? tr->Text : OBJ_GetTextContent(run);
+      lpcString_t str = (tr->Text && *tr->Text) ? tr->Text : OBJ_GetTextContent(run);
       TextRun_t base = *pTextRun;
       if (TextRun_GetProperty(run, kTextRunFont)) base.Font = tr->Font;
       if (TextRun_GetProperty(run, kTextRunFontWeight)) base.Font.Weight = tr->Font.Weight;
@@ -228,7 +228,7 @@ HANDLER(TextBlock, DrawBrush)
 //    entity.bbox = BOX3_FromRect(mesh_rect(pTextBlock->_node2D, label, &label->_textinfo));
     entity.text = text->_text;
     lpProperty_t hProp = TextRun_GetProperty(hObject, kTextRunText);
-    if (*text->TextResourceID && !PROP_HasProgram(hProp)) {
+    if (text->TextResourceID && *text->TextResourceID && !PROP_HasProgram(hProp)) {
       Loc_GetString(text->TextResourceID, LOC_TEXT);
     }
   } else {

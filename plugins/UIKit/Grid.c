@@ -70,11 +70,11 @@ columns_at_axis(PGRIDVIEW pGrid, enum Direction axis, bool_t parse)
   struct columns* columns = (struct columns*)pGrid->_buffer;
   switch (axis) {
     case kDirectionHorizontal:
-      if (parse)
+      if (parse && pGrid->Columns)
         columns_parse(pGrid->Columns, &columns[axis]);
       return &columns[axis];
     case kDirectionVertical:
-      if (parse)
+      if (parse && pGrid->Rows)
         columns_parse(pGrid->Rows, &columns[axis]);
       return &columns[axis];
     default:

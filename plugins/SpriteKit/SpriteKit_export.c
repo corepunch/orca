@@ -258,7 +258,7 @@ LRESULT SKView_ForegroundContent(struct Object*, struct SKView*, wParam_t, Foreg
 static struct PropertyType const SKViewProperties[kSKViewNumProperties] = {
 	DECL(0x499d2ae6, SKView, ReferenceWidth, ReferenceWidth, kDataTypeFloat), // SKView.ReferenceWidth
 	DECL(0xf011cff9, SKView, ReferenceHeight, ReferenceHeight, kDataTypeFloat), // SKView.ReferenceHeight
-	DECL(0xc89b38b3, SKView, Scene, Scene, kDataTypeFixed), // SKView.Scene
+	DECL(0xc89b38b3, SKView, Scene, Scene, kDataTypeString), // SKView.Scene
 };
 static struct SKView SKViewDefaults = {
 };

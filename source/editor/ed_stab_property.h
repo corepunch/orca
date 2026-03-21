@@ -68,11 +68,10 @@ PDESC_Print(lpcPropertyType_t pdesc, LPSTR buffer, DWORD len, float const* pf)
         snprintf(buffer + buflen, len - buflen, " %g", pf[i+1]);
       }
       break;
-    case kDataTypeFixed:
-      strncpy(buffer, (lpcString_t)pf, len);
-      break;
     case kDataTypeString:
-      strncpy(buffer, (lpcString_t)pf, len);
+      if (pf) {
+        strncpy(buffer, (lpcString_t)pf, len);
+      }
       break;
     case kDataTypeObject:
       if (*(handle_t *)pf) {

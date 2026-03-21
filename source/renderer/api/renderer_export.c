@@ -471,11 +471,11 @@ ORCA_API struct ClassDesc _Texture = {
 LRESULT Image_Start(struct Object*, struct Image*, wParam_t, StartEventPtr);
 
 static struct PropertyType const ImageProperties[kImageNumProperties] = {
-	DECL(0x61e2a3f8, Image, Source, Source, kDataTypeFixed), // Image.Source
+	DECL(0x61e2a3f8, Image, Source, Source, kDataTypeString), // Image.Source
 	DECL(0xa3c8af46, Image, PremultiplyAlpha, PremultiplyAlpha, kDataTypeBool), // Image.PremultiplyAlpha
 	DECL(0xd155d06d, Image, Type, Type, kDataTypeEnum, .TypeString = "Normal,Mask"), // Image.Type
 	DECL(0xdb9ccf58, Image, HasMipmaps, HasMipmaps, kDataTypeBool), // Image.HasMipmaps
-	DECL(0xa6478e7c, Image, Size, Size, kDataTypeFixed), // Image.Size
+	DECL(0xa6478e7c, Image, Size, Size, kDataTypeString), // Image.Size
 	DECL(0x7588b4d5, Image, BitDepth, BitDepth, kDataTypeInt), // Image.BitDepth
 	DECL(0x94ab250b, Image, FileHasTransparency, FileHasTransparency, kDataTypeBool), // Image.FileHasTransparency
 	DECL(0xb5f815c3, Image, FileHasICCProfile, FileHasICCProfile, kDataTypeBool), // Image.FileHasICCProfile
@@ -494,7 +494,7 @@ static struct PropertyType const ImageProperties[kImageNumProperties] = {
 	DECL(0x84841aff, Image, FileExportSourceTexture, FileExportSourceTexture, kDataTypeBool), // Image.FileExportSourceTexture
 	DECL(0xc1e7dbf8, Image, FileExportAlways, FileExportAlways, kDataTypeBool), // Image.FileExportAlways
 	DECL(0x1c849134, Image, FileExportEmptyWhenFileIsMissing, FileExportEmptyWhenFileIsMissing, kDataTypeBool), // Image.FileExportEmptyWhenFileIsMissing
-	DECL(0x85202b31, Image, FileExportSourceImage, FileExportSourceImage, kDataTypeFixed), // Image.FileExportSourceImage
+	DECL(0x85202b31, Image, FileExportSourceImage, FileExportSourceImage, kDataTypeString), // Image.FileExportSourceImage
 };
 static struct Image ImageDefaults = {
 };
@@ -568,12 +568,12 @@ ORCA_API struct ClassDesc _RenderTargetTexture = {
 LRESULT CubeMapTexture_Start(struct Object*, struct CubeMapTexture*, wParam_t, StartEventPtr);
 
 static struct PropertyType const CubeMapTextureProperties[kCubeMapTextureNumProperties] = {
-	DECL(0x59f82b67, CubeMapTexture, BackImage, BackImage, kDataTypeFixed), // CubeMapTexture.BackImage
-	DECL(0xe5328805, CubeMapTexture, FrontImage, FrontImage, kDataTypeFixed), // CubeMapTexture.FrontImage
-	DECL(0xd2e8522d, CubeMapTexture, LeftImage, LeftImage, kDataTypeFixed), // CubeMapTexture.LeftImage
-	DECL(0x7d77ff5a, CubeMapTexture, RightImage, RightImage, kDataTypeFixed), // CubeMapTexture.RightImage
-	DECL(0xea5c127f, CubeMapTexture, BottomImage, BottomImage, kDataTypeFixed), // CubeMapTexture.BottomImage
-	DECL(0x5d1df0f9, CubeMapTexture, TopImage, TopImage, kDataTypeFixed), // CubeMapTexture.TopImage
+	DECL(0x59f82b67, CubeMapTexture, BackImage, BackImage, kDataTypeString), // CubeMapTexture.BackImage
+	DECL(0xe5328805, CubeMapTexture, FrontImage, FrontImage, kDataTypeString), // CubeMapTexture.FrontImage
+	DECL(0xd2e8522d, CubeMapTexture, LeftImage, LeftImage, kDataTypeString), // CubeMapTexture.LeftImage
+	DECL(0x7d77ff5a, CubeMapTexture, RightImage, RightImage, kDataTypeString), // CubeMapTexture.RightImage
+	DECL(0xea5c127f, CubeMapTexture, BottomImage, BottomImage, kDataTypeString), // CubeMapTexture.BottomImage
+	DECL(0x5d1df0f9, CubeMapTexture, TopImage, TopImage, kDataTypeString), // CubeMapTexture.TopImage
 };
 static struct CubeMapTexture CubeMapTextureDefaults = {
 };
@@ -675,7 +675,7 @@ ORCA_API struct ClassDesc _VertexShader = {
 static struct PropertyType const FragmentShaderProperties[kFragmentShaderNumProperties] = {
 	DECL(0x5dcdd537, FragmentShader, Version, Version, kDataTypeInt), // FragmentShader.Version
 	DECL(0x1ecae757, FragmentShader, FloatPrecision, FloatPrecision, kDataTypeEnum, .TypeString = "Unset,Low,Medium,High"), // FragmentShader.FloatPrecision
-	DECL(0x0da660ff, FragmentShader, Out, Out, kDataTypeFixed), // FragmentShader.Out
+	DECL(0x0da660ff, FragmentShader, Out, Out, kDataTypeString), // FragmentShader.Out
 };
 static struct FragmentShader FragmentShaderDefaults = {
 };
@@ -792,9 +792,9 @@ LRESULT Mesh_Start(struct Object*, struct Mesh*, wParam_t, StartEventPtr);
 LRESULT Mesh_Destroy(struct Object*, struct Mesh*, wParam_t, DestroyEventPtr);
 
 static struct PropertyType const MeshProperties[kMeshNumProperties] = {
-	DECL(0x61e2a3f8, Mesh, Source, Source, kDataTypeFixed), // Mesh.Source
+	DECL(0x61e2a3f8, Mesh, Source, Source, kDataTypeString), // Mesh.Source
 	DECL(0xcbd54f80, Mesh, Material, Material, kDataTypeObject, .TypeString = "Material"), // Mesh.Material
-	DECL(0x553fd778, Mesh, MeshMorphTargets, MeshMorphTargets, kDataTypeFixed), // Mesh.MeshMorphTargets
+	DECL(0x553fd778, Mesh, MeshMorphTargets, MeshMorphTargets, kDataTypeString), // Mesh.MeshMorphTargets
 };
 static struct Mesh MeshDefaults = {
 };
@@ -829,10 +829,10 @@ LRESULT FontFamily_Start(struct Object*, struct FontFamily*, wParam_t, StartEven
 LRESULT FontFamily_Destroy(struct Object*, struct FontFamily*, wParam_t, DestroyEventPtr);
 
 static struct PropertyType const FontFamilyProperties[kFontFamilyNumProperties] = {
-	DECL(0xe750f2b7, FontFamily, Regular, Regular, kDataTypeFixed), // FontFamily.Regular
-	DECL(0x45768d96, FontFamily, Bold, Bold, kDataTypeFixed), // FontFamily.Bold
-	DECL(0x8db0c08d, FontFamily, Italic, Italic, kDataTypeFixed), // FontFamily.Italic
-	DECL(0x6e1d4e1a, FontFamily, BoldItalic, BoldItalic, kDataTypeFixed), // FontFamily.BoldItalic
+	DECL(0xe750f2b7, FontFamily, Regular, Regular, kDataTypeString), // FontFamily.Regular
+	DECL(0x45768d96, FontFamily, Bold, Bold, kDataTypeString), // FontFamily.Bold
+	DECL(0x8db0c08d, FontFamily, Italic, Italic, kDataTypeString), // FontFamily.Italic
+	DECL(0x6e1d4e1a, FontFamily, BoldItalic, BoldItalic, kDataTypeString), // FontFamily.BoldItalic
 };
 static struct FontFamily FontFamilyDefaults = {
 };
