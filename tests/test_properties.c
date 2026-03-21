@@ -123,11 +123,15 @@ void *calloc(size_t n, size_t size) {
 
 void *realloc(void *ptr, size_t size) {
     if (is_bootstrap_ptr(ptr)) {
-        /* Bootstrap pointers can't be passed to real realloc; copy to heap. */
+        /* Bootstrap pointers can't be passed to real realloc; copy to heap.
+         * The old allocation size is unknown, so we copy up to the bootstrap
+         * buffer's used capacity as a safe upper bound.  In practice, realloc
+         * of bootstrap pointers does not occur in this test binary. */
         if (!s_real_malloc) return bootstrap_alloc(size);
         void *np = s_real_malloc(size);
         if (np) {
-            memcpy(np, ptr, size); /* conservative: size is new size */
+            size_t old_cap = s_bootstrap_pos; /* upper bound on old size */
+            memcpy(np, ptr, old_cap < size ? old_cap : size);
             __atomic_fetch_add(&s_alloc_count, 1, __ATOMIC_RELAXED);
             __atomic_fetch_add(&s_alloc_total, 1, __ATOMIC_RELAXED);
         }
@@ -1081,23 +1085,25 @@ static void test_memleak_prop_clear_never_set(void)
     MEM_CHECK_LEAK(snap, s_current_test);
 }
 
-/* Leak test: multiple string properties set, then object released. */
+/* Leak test: set/clear/reset one string property and set a second scalar
+ * property, then destroy — no heap string or Property struct leaks. */
 static void test_memleak_multiple_string_props(void)
 {
-    TEST_BEGIN("memleak: multiple string properties set then released");
+    TEST_BEGIN("memleak: multiple property set/clear/release no leak");
     long snap = MEM_SNAPSHOT();
     {
-        /* Use OBJ_SetPropertyValue to create two separate string props */
         lpObject_t obj = make_object();
+        /* String property: set, reassign, clear, set again */
         OBJ_SetPropertyValue(obj, "Label", "alpha");
-        /* Set and clear once to exercise set+clear path */
-        lpProperty_t prop;
-        OBJ_FindShortProperty(obj, "Label", &prop);
-        if (prop) {
-            PROP_SetValue(prop, "alpha2");
-            PROP_Clear(prop);
-            PROP_SetValue(prop, "final");
+        lpProperty_t strprop;
+        OBJ_FindShortProperty(obj, "Label", &strprop);
+        if (strprop) {
+            PROP_SetValue(strprop, "alpha2");
+            PROP_Clear(strprop);
+            PROP_SetValue(strprop, "final");
         }
+        /* Scalar property: set (no heap allocation for value) */
+        OBJ_SetPropertyValue(obj, "Count", &(int){7});
         destroy_object(obj);
     }
     MEM_CHECK_LEAK(snap, s_current_test);
