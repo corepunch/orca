@@ -22,7 +22,7 @@ extern struct KeyframeAnim* luaX_checkKeyframeAnim(lua_State *L, int index);
 extern void luaX_pushlua_State(lua_State *L, struct lua_State const* value);
 extern struct lua_State* luaX_checklua_State(lua_State *L, int index);
 
-static const char *_PropertyState[] = {"Normal","Hover","Focus","Select","Disable","OldValue",NULL};
+ORCA_API const char *_PropertyState[] = {"Normal","Hover","Focus","Select","Disable","OldValue",NULL};
 const char *PropertyStateToString(enum PropertyState value) {
 	assert(value >= 0 && value < 6);
 	return _PropertyState[value];
@@ -34,7 +34,7 @@ void luaX_pushPropertyState(lua_State *L, enum PropertyState value) {
 	assert(value >= 0 && value < 6);
 	lua_pushstring(L, _PropertyState[value]);
 }
-static const char *_BindingMode[] = {"OneWay","TwoWay","OneWayToSource","Expression",NULL};
+ORCA_API const char *_BindingMode[] = {"OneWay","TwoWay","OneWayToSource","Expression",NULL};
 const char *BindingModeToString(enum BindingMode value) {
 	assert(value >= 0 && value < 4);
 	return _BindingMode[value];
@@ -46,7 +46,7 @@ void luaX_pushBindingMode(lua_State *L, enum BindingMode value) {
 	assert(value >= 0 && value < 4);
 	lua_pushstring(L, _BindingMode[value]);
 }
-static const char *_PropertyAttribute[] = {"WholeProperty","ColorR","ColorG","ColorB","ColorA","VectorX","VectorY","VectorZ","VectorW",NULL};
+ORCA_API const char *_PropertyAttribute[] = {"WholeProperty","ColorR","ColorG","ColorB","ColorA","VectorX","VectorY","VectorZ","VectorW",NULL};
 const char *PropertyAttributeToString(enum PropertyAttribute value) {
 	assert(value >= 0 && value < 9);
 	return _PropertyAttribute[value];
@@ -58,7 +58,7 @@ void luaX_pushPropertyAttribute(lua_State *L, enum PropertyAttribute value) {
 	assert(value >= 0 && value < 9);
 	lua_pushstring(L, _PropertyAttribute[value]);
 }
-static const char *_DataType[] = {"None","Bool","Int","Enum","Float","String","Event","Struct","Object",NULL};
+ORCA_API const char *_DataType[] = {"None","Bool","Int","Enum","Float","String","Event","Struct","Object",NULL};
 const char *DataTypeToString(enum DataType value) {
 	assert(value >= 0 && value < 9);
 	return _DataType[value];

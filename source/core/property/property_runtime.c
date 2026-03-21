@@ -462,9 +462,12 @@ PROP_Import(lpProperty_t prop,
     if (PROP_GetType(prop) == kDataTypeString) {
       return PrintToProperty(prop, r);
     } else if (PROP_GetType(prop) == kDataTypeEnum && r->type == kDataTypeString) {
-      PROP_SetValue(prop, &(int){
-        strlistidx(VM_REG_STR(r), PROP_GetUserData(prop), NULL)
-      });
+      lpcString_t const* enum_values = PROP_GetDesc(prop)->EnumValues;
+      int idx = 0;
+      while (enum_values && enum_values[idx] && strcasecmp(enum_values[idx], VM_REG_STR(r)) != 0) {
+        idx++;
+      }
+      PROP_SetValue(prop, &idx);
       return TRUE;
     } else if (PROP_GetType(prop) == kDataTypeBool && r->type == kDataTypeFloat) {
       PROP_SetValue(prop, &(int){ *r->value > 0 });

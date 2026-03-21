@@ -667,7 +667,8 @@
     <field name="Category" type="fixed">Organizational category for this property, used for grouping in editors and UIs.</field>
     <field name="DataType" type="DataType">Underlying data type that determines how the property value is interpreted and stored.</field>
     <field name="DefaultValue" type="fixed">Default value assigned when the property is not explicitly set.</field>
-    <field name="TypeString" type="fixed">String representation of the property type, used to store enum values or struct type names.</field>
+    <field name="TypeString" type="fixed">String representation of the property type, used to store struct/object type names.</field>
+    <field name="EnumValues" type="strarray" noexport="true">Null-terminated array of enum value name strings for kDataTypeEnum properties.</field>
     <field name="AffectLayout" type="bool">Indicates whether this property affects element layout (e.g., size or alignment).</field>
     <field name="AffectRender" type="bool">Indicates whether this property influences the rendering output.</field>
     <field name="IsReadOnly" type="bool">If true, the property value cannot be modified at runtime or through the editor.</field>
@@ -678,7 +679,6 @@
     <field name="Step" type="float">Increment step used for numeric adjustments in UI controls.</field>
     <field name="UpperBound" type="float">Maximum allowed value for numeric properties.</field>
     <field name="LowerBound" type="float">Minimum allowed value for numeric properties.</field>
-    <!--field name="EnumValues" type="fixed" array="true">List of possible enum values for the property.</field-->
     <!-- Additional internal fields for property metadata -->
     <field name="ShortIdentifier" type="uint">Unique short identifier for the property type, automatically generated from implicit property name.</field>
     <field name="FullIdentifier" type="uint">Unique full identifier for the property type, automatically generated from explicit (ie. Grid.Columns) property name.</field>
