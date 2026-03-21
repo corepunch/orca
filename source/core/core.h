@@ -58,6 +58,21 @@ typedef void* ResumeCoroutineEventPtr;
 typedef void* StopCoroutineEventPtr;
 typedef void* ViewDidLoadEventPtr;
 
+/// @brief Represents the various states a property can be in.
+/** PropertyState enum */
+typedef enum PropertyState {
+	kPropertyStateNormal, ///< Normal property state when no triggers are active
+	kPropertyStateHover, ///< Property state when the mouse is hovering over it
+	kPropertyStateFocus, ///< Property state when it has focus
+	kPropertyStateSelect, ///< Property state when it is selected
+	kPropertyStateDisable, ///< Property state when it is disabled
+	kPropertyStateOldValue, ///< Property state representing the previous value
+} ePropertyState_t;
+#define PropertyState_Count 6
+ORCA_API const char *PropertyStateToString(enum PropertyState value);
+ORCA_API enum PropertyState luaX_checkPropertyState(lua_State *L, int idx);
+ORCA_API void luaX_pushPropertyState(lua_State *L, enum PropertyState value);
+/// @brief Various modes to bind properties
 /** BindingMode enum */
 typedef enum BindingMode {
 	kBindingModeOneWay, ///< Default mode, updates target property when source changes
@@ -69,6 +84,7 @@ typedef enum BindingMode {
 ORCA_API const char *BindingModeToString(enum BindingMode value);
 ORCA_API enum BindingMode luaX_checkBindingMode(lua_State *L, int idx);
 ORCA_API void luaX_pushBindingMode(lua_State *L, enum BindingMode value);
+/// @brief Attributes that can be applied to properties for binding purposes.
 /** PropertyAttribute enum */
 typedef enum PropertyAttribute {
 	kPropertyAttributeWholeProperty, ///< Default binding to the whole property

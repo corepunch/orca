@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Screen SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
+<Screen id="Application" Width="1280" Height="800" class="bg-gray-950">
+  <Grid id="Root" Rows="64px auto" class="gap-0">
+
+    <Node2D id="NavBar" class="bg-gray-900">
+      <StackView id="NavLinks" Direction="Horizontal" class="flex-row gap-8 items-center m-10">
+        <TextBlock id="Brand" class="text-xl text-violet-500 w-18">ORCA</TextBlock>
+        <TextBlock id="NavOverview" class="text-sm text-slate-400">Overview</TextBlock>
+        <TextBlock id="NavFeatures" class="text-sm text-slate-400">Features</TextBlock>
+        <TextBlock id="NavGallery" class="text-sm text-slate-400">Gallery</TextBlock>
+        <TextBlock id="NavDocs" class="text-sm text-slate-400">Docs</TextBlock>
+      </StackView>
+    </Node2D>
+
+    <StackView id="Body" Direction="Vertical" class="flex-col gap-0 overflow-y-scroll overflow-hidden">
+      <Grid id="Hero" Columns="auto auto" class="gap-6 bg-gray-950">
+        <Node2D id="HeroContent" class="p-14">
+          <StackView id="HeroStack" Direction="Vertical" class="flex-col gap-0">
+            <TextBlock id="HeadlineLine1" class="text-5xl text-slate-100">Build stunning</TextBlock>
+            <TextBlock id="HeadlineLine2" class="text-5xl text-violet-500">UI in real-time.</TextBlock>
+            <Node2D id="HeadlineSpacer" class="h-5"/>
+            <TextBlock id="SubHeadline" class="text-sm text-slate-500 flex-wrap">A modern UI engine for games and native apps. Compose layouts from grids, stacks, text, and images — all rendered at 60 fps.</TextBlock>
+            <Node2D id="MetricSpacer" class="h-10"/>
+            <Grid id="Metrics" Columns="auto auto auto" class="gap-4">
+              <Node2D id="MetricUsers" class="bg-gray-900 p-5 w-32">
+                <StackView Direction="Vertical" class="flex-col gap-1">
+                  <TextBlock id="MetricUsersValue" class="text-3xl text-violet-500">2.4 M</TextBlock>
+                  <TextBlock id="MetricUsersLabel" class="text-xs text-gray-600">Active users</TextBlock>
+                </StackView>
+              </Node2D>
+              <Node2D id="MetricUptime" class="bg-gray-900 p-5 w-32">
+                <StackView Direction="Vertical" class="flex-col gap-1">
+                  <TextBlock id="MetricUptimeValue" class="text-3xl text-emerald-500">99.9 %</TextBlock>
+                  <TextBlock id="MetricUptimeLabel" class="text-xs text-gray-600">Uptime SLA</TextBlock>
+                </StackView>
+              </Node2D>
+              <Node2D id="MetricFrame" class="bg-gray-900 p-5 w-32">
+                <StackView Direction="Vertical" class="flex-col gap-1">
+                  <TextBlock id="MetricFrameValue" class="text-3xl text-blue-500">1.2 ms</TextBlock>
+                  <TextBlock id="MetricFrameLabel" class="text-xs text-gray-600">Frame time</TextBlock>
+                </StackView>
+              </Node2D>
+            </Grid>
+          </StackView>
+        </Node2D>
+        <ImageView id="HeroImage" Image="Example/Images/people" Stretch="UniformToFill" class="mr-14"/>
+      </Grid>
+
+      <Node2D id="FeatureSection" class="bg-gray-950 p-10">
+        <Grid id="FeatureCards" Columns="auto auto auto" class="gap-5">
+
+          <Node2D id="CardText" class="bg-gray-900 p-7">
+            <StackView id="CardTextStack" Direction="Vertical" class="flex-col gap-2">
+              <TextBlock id="CardTextIcon" class="text-xl text-violet-500 bg-violet-950 w-11 h-10 text-center align-middle">Aa</TextBlock>
+              <Node2D id="CardTextSpacer" class="h-2"/>
+              <TextBlock id="CardTextTitle" class="text-base text-slate-100">Text Rendering</TextBlock>
+              <TextBlock id="CardTextBody" class="text-xs text-gray-600 flex-wrap">Pixel-perfect typography with kerning, multi-language support, and full font control.</TextBlock>
+            </StackView>
+          </Node2D>
+
+          <Node2D id="CardLayout" class="bg-gray-900 p-7">
+            <StackView id="CardLayoutStack" Direction="Vertical" class="flex-col gap-2">
+              <TextBlock id="CardLayoutIcon" class="text-xl text-emerald-500 bg-emerald-950 w-11 h-10 text-center align-middle">#</TextBlock>
+              <Node2D id="CardLayoutSpacer" class="h-2"/>
+              <TextBlock id="CardLayoutTitle" class="text-base text-slate-100">Flexible Layouts</TextBlock>
+              <TextBlock id="CardLayoutBody" class="text-xs text-gray-600 flex-wrap">Grid and stack containers that adapt to any resolution, defined declaratively in XML.</TextBlock>
+            </StackView>
+          </Node2D>
+
+          <Node2D id="CardImage" class="bg-gray-900 p-7">
+            <StackView id="CardImageStack" Direction="Vertical" class="flex-col gap-2">
+              <ImageView id="CardImageThumb" Image="Example/Images/dog" class="w-48 h-20"/>
+              <TextBlock id="CardImageTitle" class="text-base text-slate-100">Image Integration</TextBlock>
+              <TextBlock id="CardImageBody" class="text-xs text-gray-600 flex-wrap">Fast texture loading with stretch, crop, and nine-patch rendering built in.</TextBlock>
+            </StackView>
+          </Node2D>
+
+        </Grid>
+      </Node2D>
+    </StackView>
+  </Grid>
+</Screen>

@@ -40,11 +40,11 @@ struct Property
   void* value;
   void* intermediate; // used to store object reference while value stores component
   lpObject_t object;
-  char oldvalue[MAX_PROPERTY_STRING];
   lpcPropertyType_t pdesc;
   uint32_t updateFrame;
   lpProperty_t callbackEvent;
   lpProperty_t next;
+  char states[];
 };
 
 
@@ -55,12 +55,17 @@ Token_Release(struct token* token)
   free(token);
 }
 
+static void*
+PROP_GetState(lpProperty_t p, enum PropertyState state)
+{
+  return p->states + state * PROP_GetSize(p);
+}
+
 static bool_t
 PROP_HasChanged(lpProperty_t property)
 {
-  //    PROP_Update(property);
-  if (memcmp(property->oldvalue, property->value, PROP_GetSize(property))) {
-    memcpy(property->oldvalue, property->value, PROP_GetSize(property));
+  if (memcmp(PROP_GetState(property, kPropertyStateOldValue), property->value, PROP_GetSize(property))) {
+    memcpy((void*)PROP_GetState(property, kPropertyStateOldValue), property->value, PROP_GetSize(property));
     return TRUE;
   }
   return FALSE;
@@ -203,32 +208,35 @@ PROP_GetValue(lpcProperty_t property)
 void
 PROP_SetValue(lpProperty_t property, void const* source)
 {
+  void* ptr = PROP_GetState(property, kPropertyStateNormal);
   if (property->type == kDataTypeString) {
-    LPSTR ptr = *(LPSTR*)property->value;
-    *((LPSTR*)property->value) = strdup(source);
-    if (ptr) {
-      free(ptr);
+    if (PROP_GetState(property, kPropertyStateNormal)) {
+      free(*(LPSTR*)PROP_GetState(property, kPropertyStateNormal));
     }
+    *(LPSTR*)ptr = strdup(source);
+  } else if (property->type == kDataTypeFixed) {
+    strncpy(ptr, source, MAX_PROPERTY_STRING);
   } else if (property->type == kDataTypeObject) {
     int ident = fnv1a32(property->pdesc->TypeString);
     lpObject_t object = *(lpObject_t *)source;
     property->intermediate = object;
     if (!object) {
-      memset(property->value, 0, PROP_GetSize(property));
+      memset(ptr, 0, PROP_GetSize(property));
       property->flags |= PF_NIL;
       return;
     }
     void* udata = OBJ_GetComponent(object, ident);
     if (!udata) {
-      memset(property->value, 0, PROP_GetSize(property));
+      memset(ptr, 0, PROP_GetSize(property));
       property->flags |= PF_NIL;
       Con_Error("No %s component in object %s(%s)", property->pdesc->TypeString, OBJ_GetName(object), OBJ_GetClassName(object));
       return;
     }
-    memcpy(property->value, &udata, PROP_GetSize(property));
+    memcpy(ptr, &udata, PROP_GetSize(property));
   } else {
-    memcpy(property->value, source, PROP_GetSize(property));
+    memcpy(ptr, source, PROP_GetSize(property));
   }
+  memcpy(property->value, ptr, PROP_GetSize(property));
   property->flags &= ~PF_NIL;
   property->flags |= PF_MODIFIED;
   if (property->pdesc->FullIdentifier != ID_ContentOffset) {
@@ -259,42 +267,33 @@ _AssignCallback(lua_State* L, lpProperty_t property)
   return TRUE;
 }
 
-lpProperty_t
-PROP_Create(lua_State* L,
-            lpObject_t object,
-            lpcPropertyType_t pt)
+static lpProperty_t
+_PropertyAlloc(lua_State* L, lpObject_t object, lpcPropertyType_t pt)
 {
-  lpProperty_t property = ZeroAlloc(sizeof(struct Property));
-  property->next = NULL;
-  property->type = pt->DataType;
-  property->object = object;
-  property->pdesc = pt;
-  memset(property->oldvalue, 0xff, PROP_GetSize(property));
-
-  _RegisterProperty(object, property);
+  lpProperty_t property = ZeroAlloc(sizeof(struct Property) + pt->DataSize * PropertyState_Count);
+  property->type    = pt->DataType;
+  property->object  = object;
+  property->pdesc   = pt;
+  memset(property->states, 0xff, pt->DataSize * PropertyState_Count);
   _AssignCallback(L, property);
-
   return property;
 }
 
 lpProperty_t
-OBJ_AddComponentProperty(lua_State* L,
-                   struct component* comp,
-                   lpcPropertyType_t desc)
+PROP_Create(lua_State* L, lpObject_t object, lpcPropertyType_t pt)
 {
-  lpProperty_t property = ZeroAlloc(sizeof(struct Property));
-  property->next = NULL;
-  property->type = desc->DataType;
-  property->object = CMP_GetOwner(comp);
-  property->pdesc = desc;
+  lpProperty_t property = _PropertyAlloc(L, object, pt);
+  _RegisterProperty(object, property);
+  return property;
+}
 
-  PROP_AddToList(property, &_GetProperties(CMP_GetOwner(comp)));
+lpProperty_t
+OBJ_AddComponentProperty(lua_State* L, struct component* comp, lpcPropertyType_t desc)
+{
+  lpObject_t object = CMP_GetOwner(comp);
+  lpProperty_t property = _PropertyAlloc(L, object, desc);
+  PROP_AddToList(property, &_GetProperties(object));
   CMP_SetProperty(comp, property);
-
-  _AssignCallback(L, property);
-
-  //    PROP_SetValue(property, pdesc->value);
-  memset(property->oldvalue, 0xff, PROP_GetSize(property));
   return property;
 }
 
@@ -360,9 +359,7 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
 			p->type = p->type == kDataTypeNone ? kDataTypeFixed : p->type;
       switch (p->type) {
         case kDataTypeFixed:
-          strncpy(p->value, luaL_checkstring(L, idx), MAX_PROPERTY_STRING);
-          p->flags &= ~PF_NIL;
-          p->flags |= PF_MODIFIED;
+          PROP_SetValue(p, luaL_checkstring(L, idx));
           break;
         case kDataTypeString:
           PROP_SetValue(p, luaL_checkstring(L, idx));

@@ -63,7 +63,18 @@
   <event name="StopCoroutine"/>
   <event name="ViewDidLoad" type="void"/>
   
+  <enums name="PropertyState">
+    <summary>Represents the various states a property can be in.</summary>
+    <enum name="Normal">Normal property state when no triggers are active</enum>
+    <enum name="Hover">Property state when the mouse is hovering over it</enum>
+    <enum name="Focus">Property state when it has focus</enum>
+    <enum name="Select">Property state when it is selected</enum>
+    <enum name="Disable">Property state when it is disabled</enum>
+    <enum name="OldValue">Property state representing the previous value</enum>
+  </enums>
+  
   <enums name="BindingMode">
+    <summary>Various modes to bind properties</summary>
     <enum name="OneWay">Default mode, updates target property when source changes</enum>
     <enum name="TwoWay">Updates target property when source changes and updates source when target changes</enum>
     <enum name="OneWayToSource">Updates source property when target changes, but not the other way around</enum>
@@ -71,6 +82,7 @@
   </enums>
 
   <enums name="PropertyAttribute">
+    <summary>Attributes that can be applied to properties for binding purposes.</summary>
     <enum name="WholeProperty">Default binding to the whole property</enum>
     <enum name="ColorR">Bind to the red channel of a color property</enum>
     <enum name="ColorG">Bind to the green channel of a color property</enum>
