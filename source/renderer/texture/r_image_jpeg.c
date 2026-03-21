@@ -60,9 +60,9 @@ R_TexImageJPEG(GLenum target, struct WI_Buffer* rgb)
          target,
          0,
 #ifdef R_USE_SRGB
-         GL_SRGB8_ALPHA8,
+         image.type == GL_RGBA ? GL_SRGB8_ALPHA8 : GL_SRGB8,
 #else
-         GL_RGBA,
+         image.type,
 #endif
          image.width,
          image.height,
@@ -128,9 +128,9 @@ R_TexImageJPEGwithAlpha(GLenum target,
            target,
            0,
 #ifdef R_USE_SRGB
-           GL_SRGB8_ALPHA8,
+           rgb.type == GL_RGBA ? GL_SRGB8_ALPHA8 : GL_SRGB8,
 #else
-           GL_RGBA,
+           rgb.type,
 #endif
            rgb.width,
            rgb.height,
