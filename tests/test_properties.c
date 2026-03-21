@@ -329,8 +329,8 @@ static void register_test_class(void)
 
 /* ------------------------------------------------------------------ */
 /* Runtime test component (separate from the property tests)           */
-/* FullIdentifiers use the path form (e.g. fnv1a32(".Count")) so that  */
-/* program expressions like ".Count" resolve via OBJ_FindPropertyByPath*/
+/* FullIdentifiers use the plain property name (e.g. fnv1a32("Count")) so  */
+/* that bindings like "{./Count}" resolve via OBJ_FindPropertyByPath.       */
 /* ------------------------------------------------------------------ */
 
 struct RTComp {
@@ -354,8 +354,10 @@ static LRESULT RTComp_Proc(lpObject_t o, void* cmp, uint32_t msg,
 static void register_runtime_class(void)
 {
     /*
-     * FullIdentifier == fnv1a32(".PropName") matches what
-     * OBJ_FindPropertyByPath resolves when the program text is ".PropName".
+     * FullIdentifier == fnv1a32("PropName") matches what
+     * OBJ_FindPropertyByPath resolves for a binding like "{./PropName}":
+     * the "./" prefix is consumed as "same object", leaving "PropName"
+     * as the leaf passed to PROP_FindByFullName.
      */
     memset(&s_rtPropCount, 0, sizeof(s_rtPropCount));
     strncpy(s_rtPropCount.Name, "Count", sizeof(s_rtPropCount.Name) - 1);
@@ -363,7 +365,7 @@ static void register_runtime_class(void)
     s_rtPropCount.DataType        = kDataTypeInt;
     s_rtPropCount.DataSize        = sizeof(int);
     s_rtPropCount.ShortIdentifier = fnv1a32("Count");
-    s_rtPropCount.FullIdentifier  = fnv1a32(".Count");
+    s_rtPropCount.FullIdentifier  = fnv1a32("Count");
     s_rtPropCount.Offset          = offsetof(struct RTComp, Count);
 
     memset(&s_rtPropValue, 0, sizeof(s_rtPropValue));
@@ -372,7 +374,7 @@ static void register_runtime_class(void)
     s_rtPropValue.DataType        = kDataTypeFloat;
     s_rtPropValue.DataSize        = sizeof(float);
     s_rtPropValue.ShortIdentifier = fnv1a32("Value");
-    s_rtPropValue.FullIdentifier  = fnv1a32(".Value");
+    s_rtPropValue.FullIdentifier  = fnv1a32("Value");
     s_rtPropValue.Offset          = offsetof(struct RTComp, Value);
 
     memset(&s_rtPropLabel, 0, sizeof(s_rtPropLabel));
@@ -381,7 +383,7 @@ static void register_runtime_class(void)
     s_rtPropLabel.DataType        = kDataTypeString;
     s_rtPropLabel.DataSize        = sizeof(const char*);
     s_rtPropLabel.ShortIdentifier = fnv1a32("Label");
-    s_rtPropLabel.FullIdentifier  = fnv1a32(".Label");
+    s_rtPropLabel.FullIdentifier  = fnv1a32("Label");
     s_rtPropLabel.Offset          = offsetof(struct RTComp, Label);
 
     s_rtProps[0] = s_rtPropCount;
@@ -947,16 +949,16 @@ static void test_runtime_attach_and_update_string(void)
 }
 
 /*
- * Property-reference by name: the expression ".Value" references the
- * property whose FullIdentifier == fnv1a32(".Value") on the same object.
+ * Property-reference by name: the expression "{./Value}" references the
+ * property whose FullIdentifier == fnv1a32("Value") on the same object.
  * RTComp properties are registered with exactly those identifiers.
  *
- * Flow: set Value=5.0, attach program ".Value" to Count, call PROP_Update —
+ * Flow: set Value=5.0, attach program "{./Value}" to Count, call PROP_Update —
  * Count should be set to 5 (via int conversion of the float).
  */
 static void test_runtime_property_reference(void)
 {
-    TEST_BEGIN("p_runtime: property reference via .PropName binding");
+    TEST_BEGIN("p_runtime: property reference via {./PropName} binding");
     lpObject_t obj = make_rt_object();
     lpProperty_t propCount, propValue;
     OBJ_FindShortProperty(obj, "Count", &propCount);
@@ -970,11 +972,11 @@ static void test_runtime_property_reference(void)
     PROP_SetValue(propValue, &v);
     EXPECT(!PROP_IsNull(propValue));
 
-    /* Compile a program that reads .Value and binds it to Count */
-    struct token *prog = Token_Create(".Value");
+    /* Compile a program that reads {./Value} and binds it to Count */
+    struct token *prog = Token_Create("{./Value}");
     EXPECT(prog != NULL);
     if (prog) {
-        PROP_AttachProgram(propCount, kPropertyAttributeWholeProperty, prog, ".Value");
+        PROP_AttachProgram(propCount, kPropertyAttributeWholeProperty, prog, "{./Value}");
         EXPECT(PROP_HasProgram(propCount));
         core.frame++;
         bool_t ok = PROP_Update(propCount);
@@ -1214,11 +1216,11 @@ static void test_memleak_property_reference_program(void)
         if (propCount && propValue) {
             float v = 7.0f;
             PROP_SetValue(propValue, &v);
-            struct token *prog = Token_Create(".Value");
+            struct token *prog = Token_Create("{./Value}");
             if (prog) {
                 /* Property owns prog after this call. */
                 PROP_AttachProgram(propCount, kPropertyAttributeWholeProperty,
-                                   prog, ".Value");
+                                   prog, "{./Value}");
                 core.frame++;
                 PROP_Update(propCount);
                 /* destroy_object will call Token_Release on prog. */
