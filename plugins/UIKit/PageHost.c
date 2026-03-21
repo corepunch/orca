@@ -32,7 +32,7 @@ PageHost_FindPageByPath(lpObject_t hObject, const char* path)
 {
   FOR_EACH_OBJECT(hChild, hObject) {
     PagePtr pPage = GetPage(hChild);
-    if (pPage && strcmp(pPage->Path, path) == 0) {
+    if (pPage && pPage->Path && strcmp(pPage->Path, path) == 0) {
       return pPage;
     }
     PagePtr pFound = PageHost_FindPageByPath(hChild, path);

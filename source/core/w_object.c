@@ -13,7 +13,7 @@
 enum
 {
   p_id = 0x37386ae0,
-  p_Name= 0x0fe07306,
+  p_Name = 0x0fe07306,
   p_parent = 0xeacdfcfd,
   p_children = 0x67a9c9d2,
   p_lineage = 0x31fcfa9e,
@@ -220,7 +220,13 @@ static lpcString_t PascalCase(lpcString_t pname) {
 }
 
 #include <plugins/UIKit/UIKit.h>
-bool_t OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name) {
+#include <source/filesystem/filesystem.h>
+bool_t
+OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name)
+{
+  if (!strcmp(name, "Path") && GetDirectory(self)) {
+    int a=0;
+  }
   switch (fnv1a32(name)) {
     case p_id:
 		case p_Name:

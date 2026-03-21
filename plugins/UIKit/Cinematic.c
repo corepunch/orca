@@ -43,8 +43,10 @@ HANDLER(Cinematic, DrawBrush)
   }
 
   if (entity.material.opacity > 0) {
-    assert(sizeof(entity.ninepatch) == MAX_PROPERTY_STRING);
-    memcpy(&entity.ninepatch, pCinematic->FileName, MAX_PROPERTY_STRING);
+    memset(&entity.ninepatch, 0, sizeof(entity.ninepatch));
+    if (pCinematic->FileName) {
+      strncpy((char*)&entity.ninepatch, pCinematic->FileName, sizeof(entity.ninepatch) - 1);
+    }
     R_DrawEntity(pDrawBrush->viewdef, &entity);
   }
 

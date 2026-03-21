@@ -93,7 +93,7 @@ typedef struct SKView const *SKViewCPtr, *lpcSKView_t;
 struct SKView {
 	float ReferenceWidth; ///< Reference width for the sprite coordinate system
 	float ReferenceHeight; ///< Reference height for the sprite coordinate system
-	fixedString_t Scene; ///< Name of SKScene to render
+	const char* Scene; ///< Name of SKScene to render
 };
 ORCA_API void luaX_pushSKView(lua_State *L, struct SKView const* SKView);
 ORCA_API struct SKView* luaX_checkSKView(lua_State *L, int idx);

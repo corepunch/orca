@@ -13,7 +13,7 @@
     <handles event="FileExists"/>
     <handles event="HasChangedFiles"/>
     <handles event="Destroy"/>
-    <property name="FileName" type="fixed"/>
+    <property name="FileName" type="string"/>
     <field name="_ftg" type="_FTG" pointer="true"/>
   </class>
 </module>

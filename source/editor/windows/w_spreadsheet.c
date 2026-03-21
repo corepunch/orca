@@ -102,7 +102,7 @@ _GetCellWidth(LPSHEETCELLDEF cell)
         return _GetTransformWidth(cell, 5);
     case kDataTypeTransform3D:
         return _GetTransformWidth(cell, 9);
-    case kDataTypeFixed:
+    case kDataTypeString:
     case kDataTypeObject:
         return DROPDOWN_WIDTH;
     default:
@@ -241,7 +241,7 @@ _DrawCell(DWORD column,
 //        ED_BooleanField(ss->buffer, celldef->data, w);
         break;
     case kDataTypeObject:
-    case kDataTypeFixed:
+    case kDataTypeString:
         Echo(ss->buffer, "%-*.*s", *w, *w, cell->data);
         break;
     default:
@@ -291,7 +291,7 @@ _CalculateWidths(BYTE *widths,
         case kDataTypeTransform3D:
             FOR_LOOP(i, 9) it[i] = _GetTransform3FieldWidth(&cell, i);
             break;
-        case kDataTypeFixed:
+        case kDataTypeString:
         case kDataTypeObject:
             *it = DROPDOWN_WIDTH;
             break;

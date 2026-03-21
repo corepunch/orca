@@ -57,15 +57,6 @@ class config {
 			'format' => "%s",
 			'default' => "\"%s\"",
 		],
-		"objectTags" => [
-			'decl' => 'objectTags_t', 
-			'check' => 'luaL_checkinteger(L, {arg})',
-			'pop' => '{addr} = luaL_checkinteger(L, {arg})',
-			'push' => 'lua_pushinteger(L, {arg})', 
-			'convert' => '{addr} = {arg}', 
-			'format' => "%ld",
-			'default' => "%s",
-		],
 		"fixed" => [
 			'decl' => '%sString_t', 
 			'check' => 'luaL_checkstring(L, {arg})', 

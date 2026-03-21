@@ -61,7 +61,7 @@
     <handles event="FileExists"/>
     <handles event="HasChangedFiles"/>
     <handles event="Destroy"/>
-    <property name="Path" type="fixed"/>
+    <property name="Path" type="string"/>
     <field name="_monitoredfiles" type="void" pointer="true"/>
   </class>
 
@@ -71,7 +71,7 @@
     <handles event="FileExists"/>
     <handles event="HasChangedFiles"/>
     <handles event="Destroy"/>
-    <property name="FileName" type="fixed"/>
+    <property name="FileName" type="string"/>
     <field name="_package" type="_PACK" pointer="true"/>
   </class>
 
@@ -85,13 +85,13 @@
     <property name="RenderToMipmapLevels" type="bool"/>
     <property name="ExternalTexture" type="bool"/>
     <!--    <property name="StartupScreen" type="Screen" pointer="true"/>-->
-    <property name="StartupScreen" type="fixed"/>
+    <property name="StartupScreen" type="string"/>
     <property name="PreviewWindowBackgroundColor" type="color"/>
     <property name="MessageLimitPerFrame" type="int"/>
     <property name="GlobalTimelineStartTime" type="int"/>
     <property name="GlobalTimelineEndTime" type="int"/>
-    <property name="BinaryExportDirectory" type="fixed"/>
-    <property name="ApplicationExportDirectory" type="fixed"/>
+    <property name="BinaryExportDirectory" type="string"/>
+    <property name="ApplicationExportDirectory" type="string"/>
     <!--    <ProjectResourceKeepAliveBehavior>DEFAULT</ProjectResourceKeepAliveBehavior>-->
     <!--    <ProjectShaderKeepAliveBehavior>KEEP_ALIVE</ProjectShaderKeepAliveBehavior>-->
     <property name="IsMasterProject" type="bool" default="false"/>
@@ -115,14 +115,14 @@
     <property name="ProjectUsePremultipliedAlpha" type="bool" default="true"/>
     <!--    <ProjectPngCompressionLevel>Default</ProjectPngCompressionLevel>-->
     <property name="ProjectRemoveICCProfilesOfPngs" type="bool" default="true"/>
-    <property name="BinaryFileName" type="fixed" default="&lt;Project_Name&gt;.kzb"/>
+    <property name="BinaryFileName" type="string" default="&lt;Project_Name&gt;.kzb"/>
     <!--    <TargetGraphicsApi>ES20</TargetGraphicsApi>-->
     <!--    <ProfileExportType>PATCH</ProfileExportType>-->
     <property name="IsAssetPackage" type="bool" default="false"/>
     <!--    <ExportedKzbFormat>Kzb</ExportedKzbFormat>-->
     <property name="KanziConnectEnabled" type="bool" default="false"/>
     <!--    <ProjectDescriptionsFileName>&lt;project_name&gt;_descriptions.txt</ProjectDescriptionsFileName>-->
-    <property name="DefaultMaterial" type="fixed"/>
+    <property name="DefaultMaterial" type="string"/>
 
     <!-- These probably don't belong in Project? -->
     <property name="WindowWidth" type="int"/>
@@ -194,11 +194,11 @@
   </class>
   <class name="EnginePlugin"/>
   <class name="EngineMetaclass">
-    <property name="BaseClassName" type="fixed"/>
+    <property name="BaseClassName" type="string"/>
     
   </class>
   <class name="ThemeGroup">
-    <property name="SelectedDictionary" type="fixed"/>
+    <property name="SelectedDictionary" type="string"/>
   </class>
   <class name="Theme">
     <property name="IsThemeVisible" type="bool"/>

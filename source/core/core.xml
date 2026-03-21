@@ -120,7 +120,6 @@
       <details>Invokes the animation pipeline for this object and its hierarchy.</details>
     </method>
 
-    
     <method name="Clear" export="clear" lua="true">
       <summary>Clear all children of the object.</summary>
       <details>Removes and properly releases all child objects from this object's hierarchy. This operation recursively clears each child object, removes them from the parent-child relationship, unreferences their Lua objects, and sets their parent pointer to NULL. The children list is then cleared. This is a destructive operation that completely empties the object's child hierarchy.</details>
@@ -649,9 +648,7 @@
     <enum name="Int">Signed integer value.</enum>
     <enum name="Enum">Enumeration type represented by integer values mapped to named constants.</enum>
     <enum name="Float">Floating-point numeric value.</enum>
-    <enum name="Fixed">Fixed-length string or symbolic value.</enum>
-    <enum name="String">Extended string data, intended for larger text content.</enum>
-    <enum name="ObjectTags">List of tag identifiers associated with an object.</enum>
+    <enum name="String">String data, heap-allocated to support arbitrary length content.</enum>
     <enum name="Event">Event reference used to bind triggers or callbacks.</enum>
     <enum name="Struct">Composite data structure containing multiple fields used for packaging related geometric, visual, and layout properties together.</enum>
     <enum name="Object">Reference to a complex object instance.</enum>

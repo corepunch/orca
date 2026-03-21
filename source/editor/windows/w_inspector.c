@@ -169,7 +169,7 @@ ED_PrintProperty(LPPROPDEF pdef, LPVOID parm)
 //  }
   switch ((DWORD)pdef->Type)
   {
-    case kDataTypeFixed:
+    case kDataTypeString:
       PrintStringProperty(wnd, pdef);
       break;
     case kDataTypeEnum:
@@ -330,7 +330,7 @@ ED_PrintInspector(HEDWND wnd, LPINSPSTRUCT inspector)
         strcpy(name2, (lpcString_t)name);
       }
       ED_Echo(wnd, STYLE_LABEL "%-*s", NAME_WIDTH, name2);
-      DWORD item = ED_AddInspectorItem(wnd, node, value, kDataTypeFixed);
+      DWORD item = ED_AddInspectorItem(wnd, node, value, kDataTypeString);
       ED_Echo(wnd, FMT_COMMAND, item);
       ED_StringField(ED_GetClient(wnd), (lpcString_t)value, DROPDOWN_WIDTH);
       ED_Echo(wnd, "\n");

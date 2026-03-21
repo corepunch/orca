@@ -58,16 +58,16 @@ void luaX_pushPropertyAttribute(lua_State *L, enum PropertyAttribute value) {
 	assert(value >= 0 && value < 9);
 	lua_pushstring(L, _PropertyAttribute[value]);
 }
-static const char *_DataType[] = {"None","Bool","Int","Enum","Float","Fixed","String","ObjectTags","Event","Struct","Object",NULL};
+static const char *_DataType[] = {"None","Bool","Int","Enum","Float","String","Event","Struct","Object",NULL};
 const char *DataTypeToString(enum DataType value) {
-	assert(value >= 0 && value < 11);
+	assert(value >= 0 && value < 9);
 	return _DataType[value];
 }
 enum DataType luaX_checkDataType(lua_State *L, int idx) {
 	return luaL_checkoption(L, idx, NULL, _DataType);
 }
 void luaX_pushDataType(lua_State *L, enum DataType value) {
-	assert(value >= 0 && value < 11);
+	assert(value >= 0 && value < 9);
 	lua_pushstring(L, _DataType[value]);
 }
 

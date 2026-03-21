@@ -8,44 +8,33 @@
 enum uniform_precision { None, Low, Mid, High };
 
 static size_t psize[] = {
-  MAX_PROPERTY_STRING,  // None
-  sizeof(bool_t),  // Bool,
-  sizeof(int),  // Int,
-  sizeof(int),  // Enum,
-  sizeof(float),  // Float,
-  sizeof(vec2_t),  // Vector2D,
-  sizeof(vec3_t),  // Vector3D,
-  sizeof(vec4_t),  // Vector4D,
-  sizeof(mat3_t),  // Matrix2D,
-  sizeof(mat4_t),  // Matrix3D,
-  sizeof(transform2_t),  // Transform2D,
-  sizeof(transform3_t),  // Transform3D,
-  MAX_PROPERTY_STRING,  // FixedString,
-  sizeof(void*),  // String,
-  sizeof(color_t),  // Color,
-  sizeof(vec4_t),  // Edges,
-  sizeof(objectTags_t),  // ObjectTags,
-  sizeof(void*),  // Event,
-  sizeof(lpObject_t),  // Object,
-  0,  // Group,
+  0,                  // kDataTypeNone
+  sizeof(bool_t),     // kDataTypeBool
+  sizeof(int),        // kDataTypeInt
+  sizeof(int),        // kDataTypeEnum
+  sizeof(float),      // kDataTypeFloat
+  sizeof(char*),      // kDataTypeString
+  sizeof(void*),      // kDataTypeEvent
+  0,                  // kDataTypeStruct
+  sizeof(lpObject_t), // kDataTypeObject
 };
 
 struct Property
 {
-  eDataType_t type;
+  eDataType_t            type;
   enum uniform_precision precision;
-  struct token* programs[PropertyAttribute_Count];
-  LPSTR programSources[PropertyAttribute_Count];
-  uint32_t flags;
-  void* value;
-  void* intermediate; // used to store object reference while value stores component
-  lpObject_t object;
-  lpcPropertyType_t pdesc;
-  uint32_t updateFrame;
-  uint32_t stateflags;
-  lpProperty_t callbackEvent;
-  lpProperty_t next;
-  char states[];
+  struct token*          programs[PropertyAttribute_Count];
+  LPSTR                  programSources[PropertyAttribute_Count];
+  uint32_t               flags;
+  void*                  value;
+  void*                  intermediate; // used to store object reference while value stores component
+  lpObject_t             object;
+  lpcPropertyType_t      pdesc;
+  uint32_t               updateFrame;
+  uint32_t               stateflags;
+  lpProperty_t           callbackEvent;
+  lpProperty_t           next;
+  char                   states[];
 };
 
 
@@ -98,12 +87,15 @@ PROP_Clear(lpProperty_t property)
   FOR_LOOP(i, PropertyState_Count) {
     if (property->stateflags & (1<<i)) {
       if (property->pdesc->DataType == kDataTypeString) {
-        free(PROP_GetState(property, i));
+        free(*(LPSTR*)PROP_GetState(property, i));
       }
     }
   }
   memset(property->states, 0, PROP_GetSize(property) * PropertyState_Count);
   property->stateflags = 0;
+  if (property->type == kDataTypeString && property->value) {
+    *(char**)property->value = NULL;
+  }
 }
 
 bool_t
@@ -228,12 +220,10 @@ PROP_SetStateValue(lpProperty_t property,
 {
   void* ptr = PROP_GetState(property, state);
   if (property->type == kDataTypeString) {
-    if (PROP_GetState(property, state)) {
+    if (property->stateflags & (1 << state)) {
       free(*(LPSTR*)PROP_GetState(property, state));
     }
     *(LPSTR*)ptr = strdup(source);
-  } else if (property->type == kDataTypeFixed) {
-    strncpy(ptr, source, MAX_PROPERTY_STRING);
   } else if (property->type == kDataTypeObject) {
     int ident = fnv1a32(property->pdesc->TypeString);
     lpObject_t object = *(lpObject_t *)source;
@@ -382,11 +372,8 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
   bool_t f_parse_property(lua_State*, lpProperty_t, lpcString_t);
   switch (luatype) {
     case LUA_TSTRING:
-			p->type = p->type == kDataTypeNone ? kDataTypeFixed : p->type;
+			p->type = p->type == kDataTypeNone ? kDataTypeString : p->type;
       switch (p->type) {
-        case kDataTypeFixed:
-          PROP_SetValue(p, luaL_checkstring(L, idx));
-          break;
         case kDataTypeString:
           PROP_SetValue(p, luaL_checkstring(L, idx));
           break;
@@ -489,7 +476,6 @@ void _pushproperty(lua_State* L,
     case kDataTypeString:
       lua_pushstring(L, *(lpcString_t*)value);
       break;
-    case kDataTypeFixed:
     case kDataTypeEvent:
       lua_pushstring(L, value);
       break;
@@ -650,10 +636,20 @@ OBJ_ReleaseProperties(lpObject_t hobj)
 {
   FOR_EACH_LIST(struct Property, p, OBJ_GetProperties(hobj))
   {
+    if (p->type == kDataTypeString) {
+      FOR_LOOP(i, PropertyState_Count) {
+        if (p->stateflags & (1 << i)) {
+          free(*(LPSTR*)PROP_GetState(p, i));
+        }
+      }
+    }
     FOR_LOOP(i, PropertyAttribute_Count)
     {
       if (p->programs[i]) {
         Token_Release(p->programs[i]);
+      }
+      if (p->programSources[i]) {
+        free(p->programSources[i]);
       }
     }
     free(p);
