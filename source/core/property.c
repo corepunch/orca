@@ -8,34 +8,33 @@
 enum uniform_precision { None, Low, Mid, High };
 
 static size_t psize[] = {
-  MAX_PROPERTY_STRING,  // None
-  sizeof(bool_t),  // Bool,
-  sizeof(int),  // Int,
-  sizeof(int),  // Enum,
-  sizeof(float),  // Float,
-  sizeof(void*),  // String,
-  sizeof(objectTags_t),  // ObjectTags,
-  sizeof(void*),  // Event,
-  sizeof(lpObject_t),  // Object,
-  0,  // Struct,
+  0,                  // kDataTypeNone
+  sizeof(bool_t),     // kDataTypeBool
+  sizeof(int),        // kDataTypeInt
+  sizeof(int),        // kDataTypeEnum
+  sizeof(float),      // kDataTypeFloat
+  sizeof(char*),      // kDataTypeString
+  sizeof(void*),      // kDataTypeEvent
+  0,                  // kDataTypeStruct
+  sizeof(lpObject_t), // kDataTypeObject
 };
 
 struct Property
 {
-  eDataType_t type;
+  eDataType_t            type;
   enum uniform_precision precision;
-  struct token* programs[PropertyAttribute_Count];
-  LPSTR programSources[PropertyAttribute_Count];
-  uint32_t flags;
-  void* value;
-  void* intermediate; // used to store object reference while value stores component
-  lpObject_t object;
-  lpcPropertyType_t pdesc;
-  uint32_t updateFrame;
-  uint32_t stateflags;
-  lpProperty_t callbackEvent;
-  lpProperty_t next;
-  char states[];
+  struct token*          programs[PropertyAttribute_Count];
+  LPSTR                  programSources[PropertyAttribute_Count];
+  uint32_t               flags;
+  void*                  value;
+  void*                  intermediate; // used to store object reference while value stores component
+  lpObject_t             object;
+  lpcPropertyType_t      pdesc;
+  uint32_t               updateFrame;
+  uint32_t               stateflags;
+  lpProperty_t           callbackEvent;
+  lpProperty_t           next;
+  char                   states[];
 };
 
 
