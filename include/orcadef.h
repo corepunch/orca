@@ -205,7 +205,7 @@ typedef const char *lpcString_t;
 typedef char *LPSTR;
 typedef int *lpint;
 
-#define MAX_PROPERTY_STRING 64
+#define MAX_PROPERTY_STRING 256
 //#define MAX_PROPERTIES 65536
 
 typedef char fixedString_t[MAX_PROPERTY_STRING];
