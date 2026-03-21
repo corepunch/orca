@@ -1,5 +1,5 @@
 /*
- * test_properties.c — C unit tests for the ORCA property system.
+ * test_properties.c — C unit tests for the ORCA property system and p_runtime.
  *
  * Tests cover:
  *   - Int, float, bool property set/get
@@ -11,12 +11,17 @@
  *   - PROP_IsNull: NULL check before and after set
  *   - Per-state string set (kPropertyStateHover, etc.) and clear
  *   - Struct property set/get (using a simple vec2)
+ *   - p_runtime: Token_Create / Token_Release
+ *   - p_runtime: OBJ_RunProgram with constant, arithmetic, and string expressions
+ *   - p_runtime: PROP_Import — importing vm_register values into properties
+ *   - p_runtime: PROP_AttachProgram + PROP_Update — expression → property
+ *   - p_runtime: property import by name reference (.Property path)
  *
  * Compiled and linked against liborca.so via the `test-properties` Makefile
  * target (depends on `buildlib`).
  */
 
-#include <include/api.h>
+#include <source/core/core_local.h>
 #include <source/core/core.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -158,6 +163,84 @@ static void register_test_class(void)
     s_testClass.DefaultName   = "testcomp";
 
     OBJ_RegisterClass(&s_testClass);
+}
+
+/* ------------------------------------------------------------------ */
+/* Runtime test component (separate from the property tests)           */
+/* FullIdentifiers use the path form (e.g. fnv1a32(".Count")) so that  */
+/* program expressions like ".Count" resolve via OBJ_FindPropertyByPath*/
+/* ------------------------------------------------------------------ */
+
+struct RTComp {
+    int         Count;
+    float       Value;
+    const char* Label;
+};
+
+static struct PropertyType s_rtPropCount;
+static struct PropertyType s_rtPropValue;
+static struct PropertyType s_rtPropLabel;
+static struct PropertyType s_rtProps[3];
+static struct ClassDesc    s_rtClass;
+
+static LRESULT RTComp_Proc(lpObject_t o, void* cmp, uint32_t msg,
+                            wParam_t w, lParam_t l) {
+    (void)o; (void)cmp; (void)msg; (void)w; (void)l;
+    return 0;
+}
+
+static void register_runtime_class(void)
+{
+    /*
+     * FullIdentifier == fnv1a32(".PropName") matches what
+     * OBJ_FindPropertyByPath resolves when the program text is ".PropName".
+     */
+    memset(&s_rtPropCount, 0, sizeof(s_rtPropCount));
+    strncpy(s_rtPropCount.Name, "Count", sizeof(s_rtPropCount.Name) - 1);
+    strncpy(s_rtPropCount.Key,  "Count", sizeof(s_rtPropCount.Key)  - 1);
+    s_rtPropCount.DataType        = kDataTypeInt;
+    s_rtPropCount.DataSize        = sizeof(int);
+    s_rtPropCount.ShortIdentifier = fnv1a32("Count");
+    s_rtPropCount.FullIdentifier  = fnv1a32(".Count");
+    s_rtPropCount.Offset          = offsetof(struct RTComp, Count);
+
+    memset(&s_rtPropValue, 0, sizeof(s_rtPropValue));
+    strncpy(s_rtPropValue.Name, "Value", sizeof(s_rtPropValue.Name) - 1);
+    strncpy(s_rtPropValue.Key,  "Value", sizeof(s_rtPropValue.Key)  - 1);
+    s_rtPropValue.DataType        = kDataTypeFloat;
+    s_rtPropValue.DataSize        = sizeof(float);
+    s_rtPropValue.ShortIdentifier = fnv1a32("Value");
+    s_rtPropValue.FullIdentifier  = fnv1a32(".Value");
+    s_rtPropValue.Offset          = offsetof(struct RTComp, Value);
+
+    memset(&s_rtPropLabel, 0, sizeof(s_rtPropLabel));
+    strncpy(s_rtPropLabel.Name, "Label", sizeof(s_rtPropLabel.Name) - 1);
+    strncpy(s_rtPropLabel.Key,  "Label", sizeof(s_rtPropLabel.Key)  - 1);
+    s_rtPropLabel.DataType        = kDataTypeString;
+    s_rtPropLabel.DataSize        = sizeof(const char*);
+    s_rtPropLabel.ShortIdentifier = fnv1a32("Label");
+    s_rtPropLabel.FullIdentifier  = fnv1a32(".Label");
+    s_rtPropLabel.Offset          = offsetof(struct RTComp, Label);
+
+    s_rtProps[0] = s_rtPropCount;
+    s_rtProps[1] = s_rtPropValue;
+    s_rtProps[2] = s_rtPropLabel;
+
+    memset(&s_rtClass, 0, sizeof(s_rtClass));
+    s_rtClass.ObjProc       = RTComp_Proc;
+    s_rtClass.Properties    = s_rtProps;
+    s_rtClass.ClassName     = "RTComp";
+    s_rtClass.ClassID       = fnv1a32("RTComp");
+    s_rtClass.ClassSize     = sizeof(struct RTComp);
+    s_rtClass.NumProperties = 3;
+    s_rtClass.DefaultName   = "rtcomp";
+
+    OBJ_RegisterClass(&s_rtClass);
+}
+
+static lpObject_t make_rt_object(void)
+{
+    return OBJ_MakeNativeObject(fnv1a32("RTComp"));
 }
 
 /* ------------------------------------------------------------------ */
@@ -483,7 +566,282 @@ static void test_release_without_string_set(void)
 }
 
 /* ------------------------------------------------------------------ */
-/* Entry point                                                         */
+/* p_runtime tests                                                     */
+/* ------------------------------------------------------------------ */
+
+static void test_runtime_token_create_int(void)
+{
+    TEST_BEGIN("Token_Create: integer constant expression");
+    struct token *prog = Token_Create("42");
+    EXPECT(prog != NULL);
+    if (prog) Token_Release(prog);
+}
+
+static void test_runtime_token_create_float(void)
+{
+    TEST_BEGIN("Token_Create: float constant expression");
+    struct token *prog = Token_Create("3.14");
+    EXPECT(prog != NULL);
+    if (prog) Token_Release(prog);
+}
+
+static void test_runtime_token_create_string(void)
+{
+    TEST_BEGIN("Token_Create: string literal expression");
+    struct token *prog = Token_Create("\"hello\"");
+    EXPECT(prog != NULL);
+    if (prog) Token_Release(prog);
+}
+
+static void test_runtime_token_create_arithmetic(void)
+{
+    TEST_BEGIN("Token_Create: arithmetic expression");
+    struct token *prog = Token_Create("ADD(2, 3)");
+    EXPECT(prog != NULL);
+    if (prog) Token_Release(prog);
+}
+
+static void test_runtime_run_int_constant(void)
+{
+    TEST_BEGIN("OBJ_RunProgram: integer constant evaluates to int");
+    lpObject_t obj = make_rt_object();
+    struct token *prog = Token_Create("7");
+    EXPECT(prog != NULL);
+    if (prog) {
+        struct vm_register r = {0};
+        bool_t ok = OBJ_RunProgram(obj, prog, &r);
+        EXPECT(ok);
+        EXPECT(r.type == kDataTypeInt || r.type == kDataTypeFloat);
+        EXPECT((int)r.value[0] == 7);
+        Token_Release(prog);
+    }
+    destroy_object(obj);
+}
+
+static void test_runtime_run_float_constant(void)
+{
+    TEST_BEGIN("OBJ_RunProgram: float constant evaluates to float");
+    lpObject_t obj = make_rt_object();
+    struct token *prog = Token_Create("2.5");
+    EXPECT(prog != NULL);
+    if (prog) {
+        struct vm_register r = {0};
+        bool_t ok = OBJ_RunProgram(obj, prog, &r);
+        EXPECT(ok);
+        EXPECT(r.value[0] == 2.5f);
+        Token_Release(prog);
+    }
+    destroy_object(obj);
+}
+
+static void test_runtime_run_string_constant(void)
+{
+    TEST_BEGIN("OBJ_RunProgram: string literal evaluates to string");
+    lpObject_t obj = make_rt_object();
+    struct token *prog = Token_Create("\"world\"");
+    EXPECT(prog != NULL);
+    if (prog) {
+        struct vm_register r = {0};
+        bool_t ok = OBJ_RunProgram(obj, prog, &r);
+        EXPECT(ok);
+        EXPECT(r.type == kDataTypeString);
+        /* String is stored as a pointer in r.value via VM_REG_SET_STR */
+        const char *str = *(const char *const *)r.value;
+        EXPECT_STR_EQ(str, "world");
+        Token_Release(prog);
+    }
+    destroy_object(obj);
+}
+
+static void test_runtime_run_arithmetic(void)
+{
+    TEST_BEGIN("OBJ_RunProgram: ADD(10, 5) == 15");
+    lpObject_t obj = make_rt_object();
+    struct token *prog = Token_Create("ADD(10, 5)");
+    EXPECT(prog != NULL);
+    if (prog) {
+        struct vm_register r = {0};
+        bool_t ok = OBJ_RunProgram(obj, prog, &r);
+        EXPECT(ok);
+        EXPECT((int)r.value[0] == 15);
+        Token_Release(prog);
+    }
+    destroy_object(obj);
+}
+
+static void test_runtime_import_int(void)
+{
+    TEST_BEGIN("PROP_Import: int register into int property");
+    lpObject_t obj = make_rt_object();
+    lpProperty_t prop;
+    OBJ_FindShortProperty(obj, "Count", &prop);
+    EXPECT(prop != NULL);
+    if (prop) {
+        struct vm_register r = {0};
+        r.type    = kDataTypeInt;
+        r.size    = sizeof(int);
+        r.value[0] = 99.0f;
+        bool_t ok = PROP_Import(prop, kPropertyAttributeWholeProperty, &r);
+        EXPECT(ok);
+        EXPECT(!PROP_IsNull(prop));
+        EXPECT(*(int*)PROP_GetValue(prop) == 99);
+    }
+    destroy_object(obj);
+}
+
+static void test_runtime_import_float(void)
+{
+    TEST_BEGIN("PROP_Import: float register into float property");
+    lpObject_t obj = make_rt_object();
+    lpProperty_t prop;
+    OBJ_FindShortProperty(obj, "Value", &prop);
+    EXPECT(prop != NULL);
+    if (prop) {
+        struct vm_register r = {0};
+        r.type    = kDataTypeFloat;
+        r.size    = sizeof(float);
+        r.value[0] = 1.5f;
+        bool_t ok = PROP_Import(prop, kPropertyAttributeWholeProperty, &r);
+        EXPECT(ok);
+        EXPECT(*(float*)PROP_GetValue(prop) == 1.5f);
+    }
+    destroy_object(obj);
+}
+
+static void test_runtime_import_string(void)
+{
+    TEST_BEGIN("PROP_Import: string register into string property");
+    lpObject_t obj = make_rt_object();
+    lpProperty_t prop;
+    OBJ_FindShortProperty(obj, "Label", &prop);
+    EXPECT(prop != NULL);
+    if (prop) {
+        /* Build a string vm_register the way the VM does it */
+        struct vm_register r = {0};
+        r.type = kDataTypeString;
+        r.size = sizeof(const char*);
+        const char *s = "imported";
+        memcpy(r.value, &s, sizeof(s));
+        bool_t ok = PROP_Import(prop, kPropertyAttributeWholeProperty, &r);
+        EXPECT(ok);
+        EXPECT_STR_EQ((const char*)PROP_GetValue(prop), "imported");
+    }
+    destroy_object(obj);
+}
+
+static void test_runtime_attach_and_update_int(void)
+{
+    TEST_BEGIN("PROP_AttachProgram + PROP_Update: constant int program");
+    lpObject_t obj = make_rt_object();
+    lpProperty_t prop;
+    OBJ_FindShortProperty(obj, "Count", &prop);
+    EXPECT(prop != NULL);
+    if (prop) {
+        struct token *prog = Token_Create("21");
+        EXPECT(prog != NULL);
+        if (prog) {
+            PROP_AttachProgram(prop, kPropertyAttributeWholeProperty, prog, "21");
+            EXPECT(PROP_HasProgram(prop));
+            /* Advance frame so PROP_Update's frame-guard doesn't skip execution */
+            core.frame++;
+            bool_t ok = PROP_Update(prop);
+            EXPECT(ok);
+            EXPECT(!PROP_IsNull(prop));
+            EXPECT(*(int*)PROP_GetValue(prop) == 21);
+        }
+    }
+    destroy_object(obj);
+}
+
+static void test_runtime_attach_and_update_string(void)
+{
+    TEST_BEGIN("PROP_AttachProgram + PROP_Update: constant string program");
+    lpObject_t obj = make_rt_object();
+    lpProperty_t prop;
+    OBJ_FindShortProperty(obj, "Label", &prop);
+    EXPECT(prop != NULL);
+    if (prop) {
+        struct token *prog = Token_Create("\"bound\"");
+        EXPECT(prog != NULL);
+        if (prog) {
+            PROP_AttachProgram(prop, kPropertyAttributeWholeProperty, prog, "\"bound\"");
+            EXPECT(PROP_HasProgram(prop));
+            core.frame++;
+            bool_t ok = PROP_Update(prop);
+            EXPECT(ok);
+            EXPECT(!PROP_IsNull(prop));
+            EXPECT_STR_EQ((const char*)PROP_GetValue(prop), "bound");
+        }
+    }
+    destroy_object(obj);
+}
+
+/*
+ * Property-reference by name: the expression ".Value" references the
+ * property whose FullIdentifier == fnv1a32(".Value") on the same object.
+ * RTComp properties are registered with exactly those identifiers.
+ *
+ * Flow: set Value=5.0, attach program ".Value" to Count, call PROP_Update —
+ * Count should be set to 5 (via int conversion of the float).
+ */
+static void test_runtime_property_reference(void)
+{
+    TEST_BEGIN("p_runtime: property reference via .PropName binding");
+    lpObject_t obj = make_rt_object();
+    lpProperty_t propCount, propValue;
+    OBJ_FindShortProperty(obj, "Count", &propCount);
+    OBJ_FindShortProperty(obj, "Value", &propValue);
+    EXPECT(propCount != NULL);
+    EXPECT(propValue != NULL);
+    if (!propCount || !propValue) { destroy_object(obj); return; }
+
+    /* Set the source property */
+    float v = 5.0f;
+    PROP_SetValue(propValue, &v);
+    EXPECT(!PROP_IsNull(propValue));
+
+    /* Compile a program that reads .Value and binds it to Count */
+    struct token *prog = Token_Create(".Value");
+    EXPECT(prog != NULL);
+    if (prog) {
+        PROP_AttachProgram(propCount, kPropertyAttributeWholeProperty, prog, ".Value");
+        EXPECT(PROP_HasProgram(propCount));
+        core.frame++;
+        bool_t ok = PROP_Update(propCount);
+        EXPECT(ok);
+        EXPECT(!PROP_IsNull(propCount));
+        /* Count is int, Value is float 5.0 → expect 5 */
+        EXPECT(*(int*)PROP_GetValue(propCount) == 5);
+    }
+    destroy_object(obj);
+}
+
+/*
+ * String concatenation: ADD("foo", "bar") should produce "foobar"
+ * and a program that writes it to a string property should work.
+ */
+static void test_runtime_string_concat_program(void)
+{
+    TEST_BEGIN("p_runtime: string concat ADD(\"foo\", \"bar\")");
+    lpObject_t obj = make_rt_object();
+    lpProperty_t prop;
+    OBJ_FindShortProperty(obj, "Label", &prop);
+    EXPECT(prop != NULL);
+    if (prop) {
+        struct token *prog = Token_Create("ADD(\"foo\", \"bar\")");
+        EXPECT(prog != NULL);
+        if (prog) {
+            PROP_AttachProgram(prop, kPropertyAttributeWholeProperty,
+                               prog, "ADD(\"foo\", \"bar\")");
+            core.frame++;
+            bool_t ok = PROP_Update(prop);
+            EXPECT(ok);
+            EXPECT_STR_EQ((const char*)PROP_GetValue(prop), "foobar");
+        }
+    }
+    destroy_object(obj);
+}
+
 /* ------------------------------------------------------------------ */
 
 int main(void)
@@ -492,6 +850,7 @@ int main(void)
     printf("==========================\n");
 
     register_test_class();
+    register_runtime_class();
 
     test_int_property();
     test_float_property();
@@ -508,6 +867,23 @@ int main(void)
     test_multiple_properties_independent();
     test_string_empty();
     test_release_without_string_set();
+
+    printf("\n--- p_runtime tests ---\n");
+    test_runtime_token_create_int();
+    test_runtime_token_create_float();
+    test_runtime_token_create_string();
+    test_runtime_token_create_arithmetic();
+    test_runtime_run_int_constant();
+    test_runtime_run_float_constant();
+    test_runtime_run_string_constant();
+    test_runtime_run_arithmetic();
+    test_runtime_import_int();
+    test_runtime_import_float();
+    test_runtime_import_string();
+    test_runtime_attach_and_update_int();
+    test_runtime_attach_and_update_string();
+    test_runtime_property_reference();
+    test_runtime_string_concat_program();
 
     printf("\n%d test(s) run, %d failure(s)\n", s_tests_run, s_tests_failed);
     return s_tests_failed == 0 ? 0 : 1;
