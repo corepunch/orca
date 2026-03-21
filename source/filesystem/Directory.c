@@ -126,11 +126,6 @@ HANDLER(Directory, LoadProject) {
   snprintf(packpath, sizeof(packpath), "%s/package", pLoadProject->Path);
   lpObject_t project = _LoadProject((lua_State*)pDirectory, packpath, FS_GetBaseName(pLoadProject->Path));
   OBJ_AddComponent(project, ID_Directory);
-  lpProperty_t prop = Directory_GetProperty(project, kDirectoryPath);
-  if (prop) {
-    PROP_SetValue(prop, pLoadProject->Path);
-  } else {
-    Con_Error("Directory: failed to find Path property on project object");
-  }
+  OBJ_SetPropertyValue(project, "Path", pLoadProject->Path);
   return (intptr_t)project;
 }
