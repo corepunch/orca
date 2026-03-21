@@ -86,8 +86,7 @@
 		781CA7702E1557A900FFCFD9 /* message.c in Sources */ = {isa = PBXBuildFile; fileRef = 7808CD912D9ECE9A00D484F9 /* message.c */; };
 		781CA7712E1557A900FFCFD9 /* n_tween.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C737AC2B8F616A00FD598E /* n_tween.c */; };
 		781CA7732E1557A900FFCFD9 /* object.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C737642B8F60C600FD598E /* object.c */; };
-		781CA7752E1557A900FFCFD9 /* p_runtime.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A8213E2C873EF400ACD0A9 /* p_runtime.c */; };
-		781CA7762E1557A900FFCFD9 /* property.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C737662B8F60C600FD598E /* property.c */; };
+		781CA7752E1557A900FFCFD9 /* property_runtime.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A8213E2C873EF400ACD0A9 /* property_runtime.c */; };
 		781CA7782E1557A900FFCFD9 /* state_manager.c in Sources */ = {isa = PBXBuildFile; fileRef = 78FD53262D90344E00122823 /* state_manager.c */; };
 		781CA7792E1557A900FFCFD9 /* style.c in Sources */ = {isa = PBXBuildFile; fileRef = 78688D2A2D89DD69008DE67B /* style.c */; };
 		781CA77A2E1557A900FFCFD9 /* timer.c in Sources */ = {isa = PBXBuildFile; fileRef = 78FD53292D90719800122823 /* timer.c */; };
@@ -198,6 +197,12 @@
 		7868656E2F50B55100DC87FC /* liborca/UIKit.so in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 781CA74D2E1556FF00FFCFD9 /* liborca/UIKit.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		786A4BD12E86B06500C40C9F /* TerminalView.c in Sources */ = {isa = PBXBuildFile; fileRef = 786A4BD02E86B05E00C40C9F /* TerminalView.c */; };
 		786F2B332E12EE7F00B519AB /* ed_local.h in Headers */ = {isa = PBXBuildFile; fileRef = 786F2B152E12EE7F00B519AB /* ed_local.h */; };
+		7870404B2F6F197000A84406 /* property_core.c in Sources */ = {isa = PBXBuildFile; fileRef = 787040472F6F197000A84406 /* property_core.c */; };
+		7870404C2F6F197000A84406 /* property_accessors.c in Sources */ = {isa = PBXBuildFile; fileRef = 787040462F6F197000A84406 /* property_accessors.c */; };
+		7870404D2F6F197000A84406 /* property_lua.c in Sources */ = {isa = PBXBuildFile; fileRef = 7870404A2F6F197000A84406 /* property_lua.c */; };
+		7870404E2F6F197000A84406 /* property_events.c in Sources */ = {isa = PBXBuildFile; fileRef = 787040482F6F197000A84406 /* property_events.c */; };
+		787040502F6F197000A84406 /* core_properties.h in Headers */ = {isa = PBXBuildFile; fileRef = 787040442F6F197000A84406 /* core_properties.h */; };
+		787040512F6F197000A84406 /* property_internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 787040492F6F197000A84406 /* property_internal.h */; };
 		788483222E867CA000DB9C1F /* w_plugins.c in Sources */ = {isa = PBXBuildFile; fileRef = 788483212E867C9C00DB9C1F /* w_plugins.c */; };
 		78932BF62F38D6D5007C59CC /* liborca.platform.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; };
 		78932BF72F38D6D5007C59CC /* liborca.platform.so in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -225,7 +230,7 @@
 		78A5AFA52F66C81E00E6A765 /* liborca.platform.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; };
 		78A5AFAA2F67395E00E6A765 /* Directory.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A5AFA92F67395B00E6A765 /* Directory.c */; };
 		78A5AFAC2F673B6000E6A765 /* io_open.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A5AFAB2F673B5A00E6A765 /* io_open.c */; };
-		78AF62512F562AEB008D08A3 /* p_program.c in Sources */ = {isa = PBXBuildFile; fileRef = 78FD53222D8F2A8800122823 /* p_program.c */; };
+		78AF62512F562AEB008D08A3 /* property_program.c in Sources */ = {isa = PBXBuildFile; fileRef = 78FD53222D8F2A8800122823 /* property_program.c */; };
 		78AF62CB2F58BE63008D08A3 /* UIKit.c in Headers */ = {isa = PBXBuildFile; fileRef = 78AF62CA2F58BE5B008D08A3 /* UIKit.c */; };
 		78AF62CC2F58BECF008D08A3 /* UIKit.c in Sources */ = {isa = PBXBuildFile; fileRef = 78AF62CA2F58BE5B008D08A3 /* UIKit.c */; };
 		78B139CE2AF3DF5800AAAE53 /* orca.c in Sources */ = {isa = PBXBuildFile; fileRef = 78B137AD2AF3CC4E00AAAE53 /* orca.c */; };
@@ -543,6 +548,12 @@
 		786F2B1B2E12EE7F00B519AB /* ed_utils.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ed_utils.c; sourceTree = "<group>"; };
 		786F2B342E12EF1100B519AB /* editor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = editor.h; sourceTree = "<group>"; };
 		786F2B352E12FE8E00B519AB /* module.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = module.h; sourceTree = "<group>"; };
+		787040442F6F197000A84406 /* core_properties.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = core_properties.h; sourceTree = "<group>"; };
+		787040462F6F197000A84406 /* property_accessors.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = property_accessors.c; sourceTree = "<group>"; };
+		787040472F6F197000A84406 /* property_core.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = property_core.c; sourceTree = "<group>"; };
+		787040482F6F197000A84406 /* property_events.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = property_events.c; sourceTree = "<group>"; };
+		787040492F6F197000A84406 /* property_internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = property_internal.h; sourceTree = "<group>"; };
+		7870404A2F6F197000A84406 /* property_lua.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = property_lua.c; sourceTree = "<group>"; };
 		78766BBE2C93208400A2DF11 /* Node3D.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Node3D.c; sourceTree = "<group>"; };
 		787C7BA42BB33679006FD937 /* r_builtin_charset2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = r_builtin_charset2.c; sourceTree = "<group>"; };
 		788483212E867C9C00DB9C1F /* w_plugins.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = w_plugins.c; sourceTree = "<group>"; };
@@ -568,7 +579,7 @@
 		78A5AFA32F66B9FA00E6A765 /* Package.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Package.c; sourceTree = "<group>"; };
 		78A5AFA92F67395B00E6A765 /* Directory.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Directory.c; sourceTree = "<group>"; };
 		78A5AFAB2F673B5A00E6A765 /* io_open.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = io_open.c; sourceTree = "<group>"; };
-		78A8213E2C873EF400ACD0A9 /* p_runtime.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = p_runtime.c; sourceTree = "<group>"; };
+		78A8213E2C873EF400ACD0A9 /* property_runtime.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = property_runtime.c; sourceTree = "<group>"; };
 		78AF62CA2F58BE5B008D08A3 /* UIKit.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = UIKit.c; sourceTree = "<group>"; };
 		78B136CF2AF3CC4E00AAAE53 /* r_shader.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = r_shader.c; sourceTree = "<group>"; };
 		78B136D02AF3CC4E00AAAE53 /* r_builtin_meshes.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = r_builtin_meshes.c; sourceTree = "<group>"; };
@@ -618,7 +629,6 @@
 		78C7375C2B8F60C600FD598E /* animation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = animation.h; sourceTree = "<group>"; };
 		78C737642B8F60C600FD598E /* object.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = object.c; sourceTree = "<group>"; };
 		78C737652B8F60C600FD598E /* core_local.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = core_local.h; sourceTree = "<group>"; };
-		78C737662B8F60C600FD598E /* property.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = property.c; sourceTree = "<group>"; };
 		78C737672B8F60C600FD598E /* animation.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = animation.c; sourceTree = "<group>"; };
 		78C737692B8F60C600FD598E /* w_object.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = w_object.c; sourceTree = "<group>"; };
 		78C7376B2B8F60C600FD598E /* Model3D.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Model3D.c; sourceTree = "<group>"; };
@@ -646,7 +656,7 @@
 		78EE10EC2E44A61D0005DB2A /* w_gameview.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = w_gameview.c; sourceTree = "<group>"; };
 		78EE10F32E4503B60005DB2A /* w_settings.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = w_settings.c; sourceTree = "<group>"; };
 		78F2231B2C635B0C008D5CA3 /* PrefabView2D.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = PrefabView2D.c; sourceTree = "<group>"; };
-		78FD53222D8F2A8800122823 /* p_program.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = p_program.c; sourceTree = "<group>"; };
+		78FD53222D8F2A8800122823 /* property_program.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = property_program.c; sourceTree = "<group>"; };
 		78FD53242D8F405600122823 /* component.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = component.c; sourceTree = "<group>"; };
 		78FD53262D90344E00122823 /* state_manager.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = state_manager.c; sourceTree = "<group>"; };
 		78FD53292D90719800122823 /* timer.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = timer.c; sourceTree = "<group>"; };
@@ -1052,6 +1062,20 @@
 			path = editor;
 			sourceTree = "<group>";
 		};
+		787040522F6F199900A84406 /* property */ = {
+			isa = PBXGroup;
+			children = (
+				787040462F6F197000A84406 /* property_accessors.c */,
+				787040472F6F197000A84406 /* property_core.c */,
+				787040482F6F197000A84406 /* property_events.c */,
+				7870404A2F6F197000A84406 /* property_lua.c */,
+				78FD53222D8F2A8800122823 /* property_program.c */,
+				78A8213E2C873EF400ACD0A9 /* property_runtime.c */,
+				787040492F6F197000A84406 /* property_internal.h */,
+			);
+			path = property;
+			sourceTree = "<group>";
+		};
 		787C7B942BB30A7C006FD937 /* tools */ = {
 			isa = PBXGroup;
 			children = (
@@ -1212,6 +1236,7 @@
 		78C7374E2B8F60C600FD598E /* core */ = {
 			isa = PBXGroup;
 			children = (
+				787040522F6F199900A84406 /* property */,
 				78FD532B2D90746900122823 /* alias.c */,
 				78C737672B8F60C600FD598E /* animation.c */,
 				78C737AB2B8F616A00FD598E /* animation2.c */,
@@ -1225,15 +1250,13 @@
 				7808CD912D9ECE9A00D484F9 /* message.c */,
 				78C737AC2B8F616A00FD598E /* n_tween.c */,
 				78C737642B8F60C600FD598E /* object.c */,
-				78FD53222D8F2A8800122823 /* p_program.c */,
-				78A8213E2C873EF400ACD0A9 /* p_runtime.c */,
-				78C737662B8F60C600FD598E /* property.c */,
 				78FD53262D90344E00122823 /* state_manager.c */,
 				78688D2A2D89DD69008DE67B /* style.c */,
 				78FD53292D90719800122823 /* timer.c */,
 				78C737692B8F60C600FD598E /* w_object.c */,
 				78C7375C2B8F60C600FD598E /* animation.h */,
 				78C737652B8F60C600FD598E /* core_local.h */,
+				787040442F6F197000A84406 /* core_properties.h */,
 				783976FE2E54B25900DCFC0F /* core.h */,
 				7839770A2E60758500DCFC0F /* core.xml */,
 			);
@@ -1402,6 +1425,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				78E4A99F2E93D71500E3A503 /* xml_local.h in Headers */,
+				787040502F6F197000A84406 /* core_properties.h in Headers */,
+				787040512F6F197000A84406 /* property_internal.h in Headers */,
 				783976FF2E54B25B00DCFC0F /* core.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2097,7 +2122,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				78AF62512F562AEB008D08A3 /* p_program.c in Sources */,
+				78AF62512F562AEB008D08A3 /* property_program.c in Sources */,
 				781CA7D22E15783F00FFCFD9 /* debug.c in Sources */,
 				781CA76A2E1557A900FFCFD9 /* alias.c in Sources */,
 				781CA76B2E1557A900FFCFD9 /* animation.c in Sources */,
@@ -2109,9 +2134,12 @@
 				78E4A9A22E93DD4C00E3A503 /* known_prefabs.c in Sources */,
 				781CA7712E1557A900FFCFD9 /* n_tween.c in Sources */,
 				7839770E2E60A5AB00DCFC0F /* core_export.c in Sources */,
+				7870404B2F6F197000A84406 /* property_core.c in Sources */,
+				7870404C2F6F197000A84406 /* property_accessors.c in Sources */,
+				7870404D2F6F197000A84406 /* property_lua.c in Sources */,
+				7870404E2F6F197000A84406 /* property_events.c in Sources */,
 				781CA7732E1557A900FFCFD9 /* object.c in Sources */,
-				781CA7752E1557A900FFCFD9 /* p_runtime.c in Sources */,
-				781CA7762E1557A900FFCFD9 /* property.c in Sources */,
+				781CA7752E1557A900FFCFD9 /* property_runtime.c in Sources */,
 				781CA7782E1557A900FFCFD9 /* state_manager.c in Sources */,
 				781CA7792E1557A900FFCFD9 /* style.c in Sources */,
 				781CA77A2E1557A900FFCFD9 /* timer.c in Sources */,

@@ -1,7 +1,7 @@
 #ifndef __PROPERTY_INTERNAL_H__
 #define __PROPERTY_INTERNAL_H__
 
-#include "core_local.h"
+#include <source/core/core_local.h>
 
 #define ID_ContentOffset 0x35a57c45
 
