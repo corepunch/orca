@@ -21,6 +21,40 @@ op_evaluate(struct token*,
             lpObject_t,
             struct vm_register*);
 
+/* --------------------------------------------------------------------------
+ * Circular string pool for VM register strings.
+ *
+ * String-typed vm_registers store a (const char *) pointer into this pool
+ * rather than inline bytes.  The pool is large enough that strings from
+ * previous evaluations remain valid for the duration of a single frame.
+ * -------------------------------------------------------------------------- */
+#define VM_STRPOOL_SIZE 0x10000
+static char     s_strpool[VM_STRPOOL_SIZE];
+static uint32_t s_strpool_head = 0;
+
+static const char *
+vm_strtmp(const char *str)
+{
+  if (!str) str = "";
+  /* Clamp to leave room for the null terminator without reading past str. */
+  size_t len = strlen(str);
+  if (len >= VM_STRPOOL_SIZE) len = VM_STRPOOL_SIZE - 1;
+  size_t total = len + 1;
+  if (s_strpool_head + total > VM_STRPOOL_SIZE) {
+    s_strpool_head = 0;   /* wrap around */
+  }
+  char *dest = s_strpool + s_strpool_head;
+  memcpy(dest, str, len);
+  dest[len] = '\0';
+  s_strpool_head += (uint32_t)total;
+  return dest;
+}
+
+/* Store / retrieve a const char * in the float[] value array. */
+#define VM_REG_SET_STR(r, s) \
+  do { const char *_p = (s); memcpy((r)->value, &_p, sizeof(_p)); } while (0)
+#define VM_REG_STR(r)  (*(const char *const *)(r)->value)
+
 static eDataType_t
 InitOutput(struct vm_register* output, eDataType_t type, uint32_t size)
 {
@@ -150,21 +184,24 @@ tok_op(assign)
 }
 
 tok_op(CONCAT) {
-  strncpy((LPSTR)output->value, (lpcString_t)regs[0].value, sizeof(output->value));
-  strncat((LPSTR)output->value, (lpcString_t)regs[1].value, sizeof(output->value));
-  InitOutput(output, kDataTypeString, MAX_PROPERTY_STRING);
+  char tmp[MAX_PROPERTY_STRING];
+  snprintf(tmp, sizeof(tmp), "%s%s", VM_REG_STR(&regs[0]), VM_REG_STR(&regs[1]));
+  InitOutput(output, kDataTypeString, sizeof(const char *));
+  VM_REG_SET_STR(output, vm_strtmp(tmp));
   return TRUE;
 }
 tok_op(STRING) {
-  InitOutput(output, kDataTypeString, MAX_PROPERTY_STRING);
+  char tmp[MAX_PROPERTY_STRING];
+  InitOutput(output, kDataTypeString, sizeof(const char *));
   switch (regs->type) {
     case kDataTypeBool:
     case kDataTypeFloat:
     case kDataTypeInt:
-      snprintf((LPSTR)output->value, sizeof(output->value), "%g", regs->value[0]);
+      snprintf(tmp, sizeof(tmp), "%g", regs->value[0]);
+      VM_REG_SET_STR(output, vm_strtmp(tmp));
       return TRUE;
     case kDataTypeString:
-      strncpy((LPSTR)output->value, (lpcString_t)regs->value, sizeof(output->value));
+      VM_REG_SET_STR(output, VM_REG_STR(regs));  /* pointer copy — no re-allocation */
       return TRUE;
     default:
       assert(0);
@@ -180,7 +217,7 @@ tok_op(FLOAT) {
       output->value[0] = regs->value[0];
       return TRUE;
     case kDataTypeString:
-      output->value[0] = atof((lpcString_t)regs->value);
+      output->value[0] = (float)atof(VM_REG_STR(regs));
       return TRUE;
     default:
       assert(0);
@@ -196,7 +233,7 @@ tok_op(INT) {
       output->value[0] = round(regs->value[0]);
       return TRUE;
     case kDataTypeString:
-      output->value[0] = atoi((lpcString_t)regs->value);
+      output->value[0] = (float)atoi(VM_REG_STR(regs));
       return TRUE;
     default:
       assert(0);
@@ -258,7 +295,7 @@ tok_op(ANIMATE) {
     if (token->args[1]->type == tok_string) {
       path = token->args[1]->text;
     } else {
-      path = (lpcString_t)regs[1].value;
+      path = VM_REG_STR(&regs[1]);
     }
     if (!token->cache.animation) {
       token->cache.animation = ZeroAlloc(sizeof(struct curve));
@@ -401,7 +438,7 @@ PrintToProperty(lpProperty_t prop, struct vm_register* r)
       PROP_SetValue(prop, dest);
       return TRUE;
     case kDataTypeString:
-      PROP_SetValue(prop, r->value);
+      PROP_SetValue(prop, VM_REG_STR(r));
       return TRUE;
     default:
       return show_error();
@@ -426,7 +463,7 @@ PROP_Import(lpProperty_t prop,
       return PrintToProperty(prop, r);
     } else if (PROP_GetType(prop) == kDataTypeEnum && r->type == kDataTypeString) {
       PROP_SetValue(prop, &(int){
-        strlistidx((lpcString_t)r->value, PROP_GetUserData(prop), NULL)
+        strlistidx(VM_REG_STR(r), PROP_GetUserData(prop), NULL)
       });
       return TRUE;
     } else if (PROP_GetType(prop) == kDataTypeBool && r->type == kDataTypeFloat) {
@@ -440,7 +477,7 @@ PROP_Import(lpProperty_t prop,
       return TRUE;
     } else if (PROP_GetType(prop) == kDataTypeFloat && r->type == kDataTypeString) {
       assert(PROP_GetSize(prop) == sizeof(float));
-      PROP_SetValue(prop, &(float){ atof((lpcString_t)r->value) });
+      PROP_SetValue(prop, &(float){ (float)atof(VM_REG_STR(r)) });
       return TRUE;
 //    } else if (PROP_GetType(prop) == T_HANDLE && r->type == kDataTypeFixed) {
 //      int type = GetPropertyHandleType(PROP_GetUserData(prop));
@@ -560,9 +597,12 @@ jwPropertyExport(lpProperty_t prop,
       case kDataTypeBool:
         *r->value = *(int*)PROP_GetValue(prop);
         return TRUE;
-      case kDataTypeString:
-        strncpy((LPSTR)r->value, PROP_GetValue(prop), sizeof(r->value));
+      case kDataTypeString: {
+        const char *str = *(const char **)PROP_GetValue(prop);
+        InitOutput(r, kDataTypeString, sizeof(const char *));
+        VM_REG_SET_STR(r, vm_strtmp(str));
         return TRUE;
+      }
       default:
         memcpy(r->value, PROP_GetValue(prop), PROP_GetSize(prop));
         return TRUE;
@@ -720,8 +760,8 @@ tok_op(constant)
 }
 tok_op(string)
 {
-  InitOutput(output, kDataTypeString, MAX_PROPERTY_STRING);
-  strncpy((LPSTR)output->value, token->text, MAX_PROPERTY_STRING);
+  InitOutput(output, kDataTypeString, sizeof(const char *));
+  VM_REG_SET_STR(output, vm_strtmp(token->text));
   return TRUE;
 }
 
