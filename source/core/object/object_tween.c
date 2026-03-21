@@ -1,8 +1,8 @@
 #include <include/api.h>
 
-#include "animation.h"
+#include <source/core/animation.h>
 
-#include "core_local.h"
+#include <source/core/core_local.h>
 
 #define LERP_DEF(TYPE)                                                         \
 void TYPE##_LERP(                                                            \
