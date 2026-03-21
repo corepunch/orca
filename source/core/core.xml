@@ -667,7 +667,8 @@
     <field name="Category" type="fixed">Organizational category for this property, used for grouping in editors and UIs.</field>
     <field name="DataType" type="DataType">Underlying data type that determines how the property value is interpreted and stored.</field>
     <field name="DefaultValue" type="fixed">Default value assigned when the property is not explicitly set.</field>
-    <field name="TypeString" type="fixed">String representation of the property type, used to store struct/object type names.</field>
+    <field name="TypeString" type="fixed">String representation of the property type, used for kDataTypeStruct Lua metatable names and kDataTypeEnum comma-separated value lists.</field>
+    <field name="ClassRef" type="ptr" noexport="true">Direct reference to the class descriptor for kDataTypeObject properties. Resolved automatically at class registration time; NULL for struct and enum types.</field>
     <field name="EnumValues" type="strarray" noexport="true">Null-terminated array of enum value name strings for kDataTypeEnum properties.</field>
     <field name="AffectLayout" type="bool">Indicates whether this property affects element layout (e.g., size or alignment).</field>
     <field name="AffectRender" type="bool">Indicates whether this property influences the rendering output.</field>

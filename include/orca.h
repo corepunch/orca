@@ -389,7 +389,7 @@ typedef LRESULT (*objectProc_t)(lpObject_t, void*, uint32_t, wParam_t, lParam_t)
 struct ClassDesc
 {
   objectProc_t ObjProc; // pointer to the main message handling function for this class, used for dispatching messages to objects of this class
-  lpcPropertyType_t Properties; // pointer to an array of property descriptors, should be sorted by long identifier for efficient lookup
+  lpPropertyType_t Properties; // pointer to an array of property descriptors, should be sorted by long identifier for efficient lookup
   lpcString_t ClassName; // human-readable name of the class, used for debugging and editor display, should be unique across all classes
   lpcString_t DefaultName; // string used for naming objects of this class when no name is provided, should be unique across all classes
   lpcString_t ContentType; // optional string describing the type of content this class represents, used for auto-detecting packages and for editor filtering
@@ -473,7 +473,7 @@ ORCA_API lpcPropertyType_t
 OBJ_FindPropertyType(uint32_t);
 
 ORCA_API bool_t
-OBJ_RegisterPropertyType(lpcPropertyType_t pt);
+OBJ_RegisterPropertyType(lpPropertyType_t pt);
 
 ORCA_API void
 OBJ_EnumClasses(uint32_t superclass, void (*fnProc)(lpcClassDesc_t, void*), void*);

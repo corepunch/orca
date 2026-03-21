@@ -11,7 +11,7 @@ typedef <?= $event ?>* <?= $name ?>EventPtr;
 LRESULT <?= $name ?>_<?= $event ?>(struct Object*, struct <?= $name ?>*, wParam_t, <?= $event ?>EventPtr);
 	<?php endforeach ?>
 
-static struct PropertyType const <?= $name ?>Properties[k<?= $name ?>NumProperties] = {
+static struct PropertyType <?= $name ?>Properties[k<?= $name ?>NumProperties] = {
 	<?php foreach ($component->getProperties() as $property):?>
 		<?php $datatype = 'kDataType' . ucfirst($property->type->kind) ?>
 		<?php if ($property->type->kind === 'component') $datatype = 'kDataTypeObject'; ?>

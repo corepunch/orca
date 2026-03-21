@@ -65,7 +65,7 @@ PROP_GetShortID(lpcProperty_t property)
 lpcString_t
 PROP_GetUserData(lpcProperty_t property)
 {
-  return property->pdesc->TypeString;
+  return property->pdesc->ClassRef ? property->pdesc->ClassRef->ClassName : property->pdesc->TypeString;
 }
 
 void const*
@@ -93,7 +93,12 @@ PROP_SetStateValue(lpProperty_t property,
     }
     *(LPSTR*)ptr = strdup(source);
   } else if (property->type == kDataTypeObject) {
-    int ident = fnv1a32(property->pdesc->TypeString);
+    uint32_t ident = property->pdesc->ClassRef
+                   ? property->pdesc->ClassRef->ClassID
+                   : fnv1a32(property->pdesc->TypeString);
+    lpcString_t typeName = property->pdesc->ClassRef
+                         ? property->pdesc->ClassRef->ClassName
+                         : property->pdesc->TypeString;
     lpObject_t object = *(lpObject_t *)source;
     property->intermediate = object;
     if (!object) {
@@ -105,7 +110,7 @@ PROP_SetStateValue(lpProperty_t property,
     if (!udata) {
       memset(ptr, 0, PROP_GetSize(property));
       property->stateflags &= ~(1<<state);
-      Con_Error("No %s component in object %s(%s)", property->pdesc->TypeString, OBJ_GetName(object), OBJ_GetClassName(object));
+      Con_Error("No %s component in object %s(%s)", typeName, OBJ_GetName(object), OBJ_GetClassName(object));
       return ptr;
     }
     memcpy(ptr, &udata, PROP_GetSize(property));

@@ -121,7 +121,7 @@ add_subproperty(xmlNodePtr xml,
   }
   switch (pdesc->DataType) {
     case kDataTypeObject:
-      _xmlSetProp(n, "data-content", pdesc->TypeString);
+      _xmlSetProp(n, "data-content", pdesc->ClassRef ? pdesc->ClassRef->ClassName : pdesc->TypeString);
       break;
     case kDataTypeEnum:
       xmlWith(char, s, strdup(pdesc->TypeString), free) {

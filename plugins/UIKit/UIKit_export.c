@@ -1908,7 +1908,7 @@ typedef struct TriggeredEventArgs* TriggeredEventPtr;
 typedef struct NavigateToPageArguments* NavigateToPageEventPtr;
 typedef struct NavigateBackArguments* NavigateBackEventPtr;
 
-static struct PropertyType const DataObjectProperties[kDataObjectNumProperties] = {
+static struct PropertyType DataObjectProperties[kDataObjectNumProperties] = {
 };
 static struct DataObject DataObjectDefaults = {
 };
@@ -1938,7 +1938,7 @@ ORCA_API struct ClassDesc _DataObject = {
 };
 
 
-static struct PropertyType const AnimationPlayerProperties[kAnimationPlayerNumProperties] = {
+static struct PropertyType AnimationPlayerProperties[kAnimationPlayerNumProperties] = {
 	DECL(0x706b62d9, AnimationPlayer, AutoplayEnabled, AutoplayEnabled, kDataTypeBool), // AnimationPlayer.AutoplayEnabled
 	DECL(0x9bcd7639, AnimationPlayer, DurationScale, DurationScale, kDataTypeFloat), // AnimationPlayer.DurationScale
 	DECL(0x234c71cf, AnimationPlayer, PlaybackMode, PlaybackMode, kDataTypeEnum, .TypeString = "Normal,Reverse,Pingpong", .EnumValues = _PlaybackMode), // AnimationPlayer.PlaybackMode
@@ -1977,7 +1977,7 @@ ORCA_API struct ClassDesc _AnimationPlayer = {
 LRESULT Trigger_PropertyChanged(struct Object*, struct Trigger*, wParam_t, PropertyChangedEventPtr);
 LRESULT Trigger_Attached(struct Object*, struct Trigger*, wParam_t, AttachedEventPtr);
 
-static struct PropertyType const TriggerProperties[kTriggerNumProperties] = {
+static struct PropertyType TriggerProperties[kTriggerNumProperties] = {
 	DECL(0x5221f9e8, Trigger, Property, Property, kDataTypeString), // Trigger.Property
 	DECL(0xd147f96a, Trigger, Value, Value, kDataTypeInt), // Trigger.Value
 };
@@ -2012,7 +2012,7 @@ ORCA_API struct ClassDesc _Trigger = {
 
 LRESULT OnPropertyChangedTrigger_PropertyChanged(struct Object*, struct OnPropertyChangedTrigger*, wParam_t, PropertyChangedEventPtr);
 
-static struct PropertyType const OnPropertyChangedTriggerProperties[kOnPropertyChangedTriggerNumProperties] = {
+static struct PropertyType OnPropertyChangedTriggerProperties[kOnPropertyChangedTriggerNumProperties] = {
 	DECL(0x9ff03304, OnPropertyChangedTrigger, SourceNode, SourceNode, kDataTypeString), // OnPropertyChangedTrigger.SourceNode
 	DECL(0x5221f9e8, OnPropertyChangedTrigger, Property, Property, kDataTypeString), // OnPropertyChangedTrigger.Property
 };
@@ -2047,7 +2047,7 @@ ORCA_API struct ClassDesc _OnPropertyChangedTrigger = {
 
 LRESULT OnAttachedTrigger_Attached(struct Object*, struct OnAttachedTrigger*, wParam_t, AttachedEventPtr);
 
-static struct PropertyType const OnAttachedTriggerProperties[kOnAttachedTriggerNumProperties] = {
+static struct PropertyType OnAttachedTriggerProperties[kOnAttachedTriggerNumProperties] = {
 };
 static struct OnAttachedTrigger OnAttachedTriggerDefaults = {
 };
@@ -2080,7 +2080,7 @@ ORCA_API struct ClassDesc _OnAttachedTrigger = {
 
 LRESULT EventTrigger_HandleMessage(struct Object*, struct EventTrigger*, wParam_t, HandleMessageEventPtr);
 
-static struct PropertyType const EventTriggerProperties[kEventTriggerNumProperties] = {
+static struct PropertyType EventTriggerProperties[kEventTriggerNumProperties] = {
 	DECL(0x30d77e1a, EventTrigger, RoutedEvent, RoutedEvent, kDataTypeString), // EventTrigger.RoutedEvent
 };
 static struct EventTrigger EventTriggerDefaults = {
@@ -2114,7 +2114,7 @@ ORCA_API struct ClassDesc _EventTrigger = {
 
 LRESULT Setter_Triggered(struct Object*, struct Setter*, wParam_t, TriggeredEventPtr);
 
-static struct PropertyType const SetterProperties[kSetterNumProperties] = {
+static struct PropertyType SetterProperties[kSetterNumProperties] = {
 	DECL(0xa5ea0da3, Setter, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // Setter.Trigger
 	DECL(0x5221f9e8, Setter, Property, Property, kDataTypeString), // Setter.Property
 	DECL(0xd147f96a, Setter, Value, Value, kDataTypeString), // Setter.Value
@@ -2149,7 +2149,7 @@ ORCA_API struct ClassDesc _Setter = {
 
 LRESULT Handler_Triggered(struct Object*, struct Handler*, wParam_t, TriggeredEventPtr);
 
-static struct PropertyType const HandlerProperties[kHandlerNumProperties] = {
+static struct PropertyType HandlerProperties[kHandlerNumProperties] = {
 	DECL(0xa5ea0da3, Handler, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // Handler.Trigger
 	DECL(0x8b67f168, Handler, Target, Target, kDataTypeObject, .TypeString = "Node"), // Handler.Target
 	DECL(0x98a79a69, Handler, Function, Function, kDataTypeString), // Handler.Function
@@ -2183,7 +2183,7 @@ ORCA_API struct ClassDesc _Handler = {
 };
 
 
-static struct PropertyType const BrushProperties[kBrushNumProperties] = {
+static struct PropertyType BrushProperties[kBrushNumProperties] = {
 };
 static struct Brush BrushDefaults = {
 };
@@ -2213,7 +2213,7 @@ ORCA_API struct ClassDesc _Brush = {
 };
 
 
-static struct PropertyType const ColorBrushProperties[kColorBrushNumProperties] = {
+static struct PropertyType ColorBrushProperties[kColorBrushNumProperties] = {
 	DECL(0xe5b43cf8, ColorBrush, Color, Color, kDataTypeStruct, .TypeString = "Color"), // ColorBrush.Color
 };
 static struct ColorBrush ColorBrushDefaults = {
@@ -2248,7 +2248,7 @@ LRESULT Node_ThemeChanged(struct Object*, struct Node*, wParam_t, ThemeChangedEv
 LRESULT Node_GetSize(struct Object*, struct Node*, wParam_t, GetSizeEventPtr);
 LRESULT Node_IsVisible(struct Object*, struct Node*, wParam_t, IsVisibleEventPtr);
 
-static struct PropertyType const NodeProperties[kNodeNumProperties] = {
+static struct PropertyType NodeProperties[kNodeNumProperties] = {
 	DECL(0xa6478e7c, Node, Size, Size, kDataTypeStruct, .TypeString = "SizeShorthand"), // Node.Size
 	DECL(0x2dbf56d8, Node, HorizontalSize, Size.Axis[0], kDataTypeStruct, .TypeString = "SizeAxisShorthand"), // Node.HorizontalSize
 	DECL(0x3b42dfbf, Node, Width, Size.Axis[0].Requested, kDataTypeFloat), // Node.Width
@@ -2354,7 +2354,7 @@ ORCA_API struct ClassDesc _Node = {
 };
 
 
-static struct PropertyType const TextRunProperties[kTextRunNumProperties] = {
+static struct PropertyType TextRunProperties[kTextRunNumProperties] = {
 	DECL(0x3e142d5e, TextRun, Text, Text, kDataTypeString), // TextRun.Text
 	DECL(0xa77a5eb0, TextRun, Font, Font, kDataTypeStruct, .TypeString = "FontShorthand"), // TextRun.Font
 	DECL(0xd0616ad0, TextRun, FontWeight, Font.Weight, kDataTypeEnum, .TypeString = "Normal,Bold", .EnumValues = _FontWeight), // TextRun.FontWeight
@@ -2406,7 +2406,7 @@ LRESULT TextBlockConcept_Create(struct Object*, struct TextBlockConcept*, wParam
 LRESULT TextBlockConcept_Destroy(struct Object*, struct TextBlockConcept*, wParam_t, DestroyEventPtr);
 LRESULT TextBlockConcept_MakeText(struct Object*, struct TextBlockConcept*, wParam_t, MakeTextEventPtr);
 
-static struct PropertyType const TextBlockConceptProperties[kTextBlockConceptNumProperties] = {
+static struct PropertyType TextBlockConceptProperties[kTextBlockConceptNumProperties] = {
 	DECL(0x43c114fb, TextBlockConcept, TextResourceID, TextResourceID, kDataTypeString), // TextBlockConcept.TextResourceID
 	DECL(0x73dd50ec, TextBlockConcept, TextResourceConfiguration, TextResourceConfiguration, kDataTypeString), // TextBlockConcept.TextResourceConfiguration
 	DECL(0xdccaa011, TextBlockConcept, PlaceholderText, PlaceholderText, kDataTypeString), // TextBlockConcept.PlaceholderText
@@ -2471,7 +2471,7 @@ LRESULT Node2D_Arrange(struct Object*, struct Node2D*, wParam_t, ArrangeEventPtr
 LRESULT Node2D_MeasureOverride(struct Object*, struct Node2D*, wParam_t, MeasureOverrideEventPtr);
 LRESULT Node2D_ArrangeOverride(struct Object*, struct Node2D*, wParam_t, ArrangeOverrideEventPtr);
 
-static struct PropertyType const Node2DProperties[kNode2DNumProperties] = {
+static struct PropertyType Node2DProperties[kNode2DNumProperties] = {
 	DECL(0x3f19bf01, Node2D, LayoutTransform, LayoutTransform, kDataTypeStruct, .TypeString = "Transform2D"), // Node2D.LayoutTransform
 	DECL(0xfc7e27e0, Node2D, LayoutTransformTranslation, LayoutTransform.translation, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.LayoutTransformTranslation
 	DECL(0x9560ef43, Node2D, LayoutTransformRotation, LayoutTransform.rotation, kDataTypeFloat), // Node2D.LayoutTransformRotation
@@ -2564,7 +2564,7 @@ ORCA_API struct ClassDesc _Node2D = {
 
 LRESULT PrefabView2D_LoadView(struct Object*, struct PrefabView2D*, wParam_t, LoadViewEventPtr);
 
-static struct PropertyType const PrefabView2DProperties[kPrefabView2DNumProperties] = {
+static struct PropertyType PrefabView2DProperties[kPrefabView2DNumProperties] = {
 	DECL(0x57f28ff6, PrefabView2D, SCA, SCA, kDataTypeString), // PrefabView2D.SCA
 	DECL(0xd6415ba3, PrefabView2D, Prefab, Prefab, kDataTypeString), // PrefabView2D.Prefab
 };
@@ -2603,7 +2603,7 @@ LRESULT TextBlock_UpdateGeometry(struct Object*, struct TextBlock*, wParam_t, Up
 LRESULT TextBlock_Create(struct Object*, struct TextBlock*, wParam_t, CreateEventPtr);
 LRESULT TextBlock_DrawBrush(struct Object*, struct TextBlock*, wParam_t, DrawBrushEventPtr);
 
-static struct PropertyType const TextBlockProperties[kTextBlockNumProperties] = {
+static struct PropertyType TextBlockProperties[kTextBlockNumProperties] = {
 };
 static struct TextBlock TextBlockDefaults = {
 };
@@ -2647,7 +2647,7 @@ LRESULT Input_KillFocus(struct Object*, struct Input*, wParam_t, KillFocusEventP
 LRESULT Input_LeftMouseUp(struct Object*, struct Input*, wParam_t, LeftMouseUpEventPtr);
 LRESULT Input_MeasureOverride(struct Object*, struct Input*, wParam_t, MeasureOverrideEventPtr);
 
-static struct PropertyType const InputProperties[kInputNumProperties] = {
+static struct PropertyType InputProperties[kInputNumProperties] = {
 	DECL(0x0fe07306, Input, Name, Name, kDataTypeString), // Input.Name
 	DECL(0xd155d06d, Input, Type, Type, kDataTypeEnum, .TypeString = "Text,Password,Number,Checkbox,Radio", .EnumValues = _InputType), // Input.Type
 	DECL(0x558a502f, Input, Cursor, Cursor, kDataTypeInt), // Input.Cursor
@@ -2694,7 +2694,7 @@ LRESULT Button_LeftMouseUp(struct Object*, struct Button*, wParam_t, LeftMouseUp
 LRESULT Button_KeyDown(struct Object*, struct Button*, wParam_t, KeyDownEventPtr);
 LRESULT Button_DrawBrush(struct Object*, struct Button*, wParam_t, DrawBrushEventPtr);
 
-static struct PropertyType const ButtonProperties[kButtonNumProperties] = {
+static struct PropertyType ButtonProperties[kButtonNumProperties] = {
 	DECL(0xd155d06d, Button, Type, Type, kDataTypeEnum, .TypeString = "Normal,Submit", .EnumValues = _ButtonType), // Button.Type
 };
 static struct Button ButtonDefaults = {
@@ -2731,7 +2731,7 @@ ORCA_API struct ClassDesc _Button = {
 
 LRESULT Label_LeftMouseUp(struct Object*, struct Label*, wParam_t, LeftMouseUpEventPtr);
 
-static struct PropertyType const LabelProperties[kLabelNumProperties] = {
+static struct PropertyType LabelProperties[kLabelNumProperties] = {
 	DECL(0x0f7e1b30, Label, For, For, kDataTypeString), // Label.For
 };
 static struct Label LabelDefaults = {
@@ -2766,7 +2766,7 @@ ORCA_API struct ClassDesc _Label = {
 LRESULT StackView_MeasureOverride(struct Object*, struct StackView*, wParam_t, MeasureOverrideEventPtr);
 LRESULT StackView_ArrangeOverride(struct Object*, struct StackView*, wParam_t, ArrangeOverrideEventPtr);
 
-static struct PropertyType const StackViewProperties[kStackViewNumProperties] = {
+static struct PropertyType StackViewProperties[kStackViewNumProperties] = {
 	DECL(0xcee65dd3, StackView, Reversed, Reversed, kDataTypeBool), // StackView.Reversed
 	DECL(0x61fefc0a, StackView, Direction, Direction, kDataTypeEnum, .TypeString = "Horizontal,Vertical,Depth", .EnumValues = _Direction), // StackView.Direction
 	DECL(0x517ab5aa, StackView, AlignItems, AlignItems, kDataTypeEnum, .TypeString = "Start,Center,End,Stretch,Baseline", .EnumValues = _AlignItems), // StackView.AlignItems
@@ -2806,7 +2806,7 @@ ORCA_API struct ClassDesc _StackView = {
 LRESULT Form_Create(struct Object*, struct Form*, wParam_t, CreateEventPtr);
 LRESULT Form_Submit(struct Object*, struct Form*, wParam_t, SubmitEventPtr);
 
-static struct PropertyType const FormProperties[kFormNumProperties] = {
+static struct PropertyType FormProperties[kFormNumProperties] = {
 };
 static struct Form FormDefaults = {
 };
@@ -2839,7 +2839,7 @@ ORCA_API struct ClassDesc _Form = {
 };
 
 
-static struct PropertyType const ControlProperties[kControlNumProperties] = {
+static struct PropertyType ControlProperties[kControlNumProperties] = {
 	DECL(0x705293c5, Control, Pressed, Pressed, kDataTypeBool), // Control.Pressed
 	DECL(0xbfce9925, Control, Disabled, Disabled, kDataTypeBool), // Control.Disabled
 	DECL(0x09dc5114, Control, Hovered, Hovered, kDataTypeBool), // Control.Hovered
@@ -2882,7 +2882,7 @@ LRESULT Screen_Destroy(struct Object*, struct Screen*, wParam_t, DestroyEventPtr
 LRESULT Screen_WindowResized(struct Object*, struct Screen*, wParam_t, WindowResizedEventPtr);
 LRESULT Screen_WindowPaint(struct Object*, struct Screen*, wParam_t, WindowPaintEventPtr);
 
-static struct PropertyType const ScreenProperties[kScreenNumProperties] = {
+static struct PropertyType ScreenProperties[kScreenNumProperties] = {
 	DECL(0xeb16b675, Screen, ClearColor, ClearColor, kDataTypeStruct, .TypeString = "Color"), // Screen.ClearColor
 	DECL(0x3dd888be, Screen, ResizeMode, ResizeMode, kDataTypeEnum, .TypeString = "CanResize,CanMinimize,CanResizeWithGrip,NoResize", .EnumValues = _ResizeMode), // Screen.ResizeMode
 	DECL(0x9a645b38, Screen, DialogResult, DialogResult, kDataTypeFloat), // Screen.DialogResult
@@ -2925,7 +2925,7 @@ ORCA_API struct ClassDesc _Screen = {
 
 LRESULT Cinematic_DrawBrush(struct Object*, struct Cinematic*, wParam_t, DrawBrushEventPtr);
 
-static struct PropertyType const CinematicProperties[kCinematicNumProperties] = {
+static struct PropertyType CinematicProperties[kCinematicNumProperties] = {
 	DECL(0x5ffdd888, Cinematic, FileName, FileName, kDataTypeString), // Cinematic.FileName
 	DECL(0x3eeb76a4, Cinematic, FrameRate, FrameRate, kDataTypeFloat), // Cinematic.FrameRate
 	DECL(0x32caacb1, Cinematic, NumFrames, NumFrames, kDataTypeFloat), // Cinematic.NumFrames
@@ -2963,7 +2963,7 @@ ORCA_API struct ClassDesc _Cinematic = {
 LRESULT Grid_MeasureOverride(struct Object*, struct Grid*, wParam_t, MeasureOverrideEventPtr);
 LRESULT Grid_ArrangeOverride(struct Object*, struct Grid*, wParam_t, ArrangeOverrideEventPtr);
 
-static struct PropertyType const GridProperties[kGridNumProperties] = {
+static struct PropertyType GridProperties[kGridNumProperties] = {
 	DECL(0xea156fdc, Grid, Columns, Columns, kDataTypeString), // Grid.Columns
 	DECL(0xaa6592b8, Grid, Rows, Rows, kDataTypeString), // Grid.Rows
 	DECL(0x61fefc0a, Grid, Direction, Direction, kDataTypeEnum, .TypeString = "Horizontal,Vertical,Depth", .EnumValues = _Direction), // Grid.Direction
@@ -3007,7 +3007,7 @@ LRESULT ImageView_ForegroundContent(struct Object*, struct ImageView*, wParam_t,
 LRESULT ImageView_DrawBrush(struct Object*, struct ImageView*, wParam_t, DrawBrushEventPtr);
 LRESULT ImageView_LoadView(struct Object*, struct ImageView*, wParam_t, LoadViewEventPtr);
 
-static struct PropertyType const ImageViewProperties[kImageViewNumProperties] = {
+static struct PropertyType ImageViewProperties[kImageViewNumProperties] = {
 	DECL(0x35c77969, ImageView, Src, Src, kDataTypeString), // ImageView.Src
 	DECL(0x590ca79a, ImageView, Image, Image, kDataTypeObject, .TypeString = "Texture"), // ImageView.Image
 	DECL(0x079106fd, ImageView, Edges, Edges, kDataTypeStruct, .TypeString = "Vector4D"), // ImageView.Edges
@@ -3054,7 +3054,7 @@ LRESULT NinePatchImage_MeasureOverride(struct Object*, struct NinePatchImage*, w
 LRESULT NinePatchImage_ForegroundContent(struct Object*, struct NinePatchImage*, wParam_t, ForegroundContentEventPtr);
 LRESULT NinePatchImage_DrawBrush(struct Object*, struct NinePatchImage*, wParam_t, DrawBrushEventPtr);
 
-static struct PropertyType const NinePatchImageProperties[kNinePatchImageNumProperties] = {
+static struct PropertyType NinePatchImageProperties[kNinePatchImageNumProperties] = {
 	DECL(0x9f40b6ad, NinePatchImage, StretchTypeTop, StretchTypeTop, kDataTypeFloat), // NinePatchImage.StretchTypeTop
 	DECL(0x0697c1c9, NinePatchImage, StretchTypeBottom, StretchTypeBottom, kDataTypeFloat), // NinePatchImage.StretchTypeBottom
 	DECL(0xe5d554e7, NinePatchImage, StretchTypeLeft, StretchTypeLeft, kDataTypeFloat), // NinePatchImage.StretchTypeLeft
@@ -3106,7 +3106,7 @@ LRESULT TerminalView_DrawBrush(struct Object*, struct TerminalView*, wParam_t, D
 LRESULT TerminalView_PushProperty(struct Object*, struct TerminalView*, wParam_t, PushPropertyEventPtr);
 LRESULT TerminalView_ScrollWheel(struct Object*, struct TerminalView*, wParam_t, ScrollWheelEventPtr);
 
-static struct PropertyType const TerminalViewProperties[kTerminalViewNumProperties] = {
+static struct PropertyType TerminalViewProperties[kTerminalViewNumProperties] = {
 	DECL(0xdd1f241d, TerminalView, BufferWidth, BufferWidth, kDataTypeInt), // TerminalView.BufferWidth
 	DECL(0xd75e2af4, TerminalView, BufferHeight, BufferHeight, kDataTypeInt), // TerminalView.BufferHeight
 	DECL(0x558a502f, TerminalView, Cursor, Cursor, kDataTypeInt), // TerminalView.Cursor
@@ -3151,7 +3151,7 @@ ORCA_API struct ClassDesc _TerminalView = {
 
 LRESULT Page_Create(struct Object*, struct Page*, wParam_t, CreateEventPtr);
 
-static struct PropertyType const PageProperties[kPageNumProperties] = {
+static struct PropertyType PageProperties[kPageNumProperties] = {
 	DECL(0x24d471a9, Page, Title, Title, kDataTypeString), // Page.Title
 	DECL(0xeb66e456, Page, Path, Path, kDataTypeString), // Page.Path
 	DECL(0xe69ce202, Page, Transition, Transition, kDataTypeFloat), // Page.Transition
@@ -3189,7 +3189,7 @@ LRESULT PageHost_ViewDidLoad(struct Object*, struct PageHost*, wParam_t, ViewDid
 LRESULT PageHost_NavigateToPage(struct Object*, struct PageHost*, wParam_t, NavigateToPageEventPtr);
 LRESULT PageHost_NavigateBack(struct Object*, struct PageHost*, wParam_t, NavigateBackEventPtr);
 
-static struct PropertyType const PageHostProperties[kPageHostNumProperties] = {
+static struct PropertyType PageHostProperties[kPageHostNumProperties] = {
 	DECL(0x2e149db4, PageHost, ActivePage, ActivePage, kDataTypeObject, .TypeString = "Page"), // PageHost.ActivePage
 };
 static struct PageHost PageHostDefaults = {
@@ -3224,7 +3224,7 @@ ORCA_API struct ClassDesc _PageHost = {
 };
 
 
-static struct PropertyType const PageViewportProperties[kPageViewportNumProperties] = {
+static struct PropertyType PageViewportProperties[kPageViewportNumProperties] = {
 };
 static struct PageViewport PageViewportDefaults = {
 };
@@ -3255,7 +3255,7 @@ ORCA_API struct ClassDesc _PageViewport = {
 };
 
 
-static struct PropertyType const StyleProperties[kStyleNumProperties] = {
+static struct PropertyType StyleProperties[kStyleNumProperties] = {
 	DECL(0x77ada720, Style, TargetType, TargetType, kDataTypeString), // Style.TargetType
 	DECL(0xd155d06d, Style, Type, Type, kDataTypeEnum, .TypeString = "Generic,Named", .EnumValues = _StyleType), // Style.Type
 };

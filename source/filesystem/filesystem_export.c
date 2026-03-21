@@ -445,7 +445,7 @@ typedef struct FileExistsArgs* FileExistsEventPtr;
 typedef void* HasChangedFilesEventPtr;
 typedef struct LoadProjectArgs* LoadProjectEventPtr;
 
-static struct PropertyType const BundleProperties[kBundleNumProperties] = {
+static struct PropertyType BundleProperties[kBundleNumProperties] = {
 };
 static struct Bundle BundleDefaults = {
 };
@@ -480,7 +480,7 @@ LRESULT Directory_FileExists(struct Object*, struct Directory*, wParam_t, FileEx
 LRESULT Directory_HasChangedFiles(struct Object*, struct Directory*, wParam_t, HasChangedFilesEventPtr);
 LRESULT Directory_Destroy(struct Object*, struct Directory*, wParam_t, DestroyEventPtr);
 
-static struct PropertyType const DirectoryProperties[kDirectoryNumProperties] = {
+static struct PropertyType DirectoryProperties[kDirectoryNumProperties] = {
 	DECL(0xeb66e456, Directory, Path, Path, kDataTypeString), // Directory.Path
 };
 static struct Directory DirectoryDefaults = {
@@ -521,7 +521,7 @@ LRESULT Package_FileExists(struct Object*, struct Package*, wParam_t, FileExists
 LRESULT Package_HasChangedFiles(struct Object*, struct Package*, wParam_t, HasChangedFilesEventPtr);
 LRESULT Package_Destroy(struct Object*, struct Package*, wParam_t, DestroyEventPtr);
 
-static struct PropertyType const PackageProperties[kPackageNumProperties] = {
+static struct PropertyType PackageProperties[kPackageNumProperties] = {
 	DECL(0x5ffdd888, Package, FileName, FileName, kDataTypeString), // Package.FileName
 };
 static struct Package PackageDefaults = {
@@ -558,7 +558,7 @@ ORCA_API struct ClassDesc _Package = {
 };
 
 
-static struct PropertyType const WorkspaceProperties[kWorkspaceNumProperties] = {
+static struct PropertyType WorkspaceProperties[kWorkspaceNumProperties] = {
 };
 static struct Workspace WorkspaceDefaults = {
 };
@@ -589,7 +589,7 @@ ORCA_API struct ClassDesc _Workspace = {
 
 LRESULT Project_Start(struct Object*, struct Project*, wParam_t, StartEventPtr);
 
-static struct PropertyType const ProjectProperties[kProjectNumProperties] = {
+static struct PropertyType ProjectProperties[kProjectNumProperties] = {
 	DECL(0xbcd19216, Project, HalfFloatTextureFormat, HalfFloatTextureFormat, kDataTypeBool), // Project.HalfFloatTextureFormat
 	DECL(0xfba1938f, Project, HalfFloatTextureFormatLinear, HalfFloatTextureFormatLinear, kDataTypeBool), // Project.HalfFloatTextureFormatLinear
 	DECL(0x1275837c, Project, HalfFloatColorAttachment, HalfFloatColorAttachment, kDataTypeBool), // Project.HalfFloatColorAttachment
@@ -692,7 +692,7 @@ ORCA_API struct ClassDesc _Project = {
 };
 
 
-static struct PropertyType const LibraryProperties[kLibraryNumProperties] = {
+static struct PropertyType LibraryProperties[kLibraryNumProperties] = {
 	DECL(0x1cb8f23a, Library, IsExternal, IsExternal, kDataTypeBool), // Library.IsExternal
 };
 static struct Library LibraryDefaults = {
@@ -723,7 +723,7 @@ ORCA_API struct ClassDesc _Library = {
 };
 
 
-static struct PropertyType const AnimationClipLibraryProperties[kAnimationClipLibraryNumProperties] = {
+static struct PropertyType AnimationClipLibraryProperties[kAnimationClipLibraryNumProperties] = {
 };
 static struct AnimationClipLibrary AnimationClipLibraryDefaults = {
 };
@@ -754,7 +754,7 @@ ORCA_API struct ClassDesc _AnimationClipLibrary = {
 };
 
 
-static struct PropertyType const ScreenLibraryProperties[kScreenLibraryNumProperties] = {
+static struct PropertyType ScreenLibraryProperties[kScreenLibraryNumProperties] = {
 };
 static struct ScreenLibrary ScreenLibraryDefaults = {
 };
@@ -785,7 +785,7 @@ ORCA_API struct ClassDesc _ScreenLibrary = {
 };
 
 
-static struct PropertyType const MaterialTypeLibraryProperties[kMaterialTypeLibraryNumProperties] = {
+static struct PropertyType MaterialTypeLibraryProperties[kMaterialTypeLibraryNumProperties] = {
 };
 static struct MaterialTypeLibrary MaterialTypeLibraryDefaults = {
 };
@@ -816,7 +816,7 @@ ORCA_API struct ClassDesc _MaterialTypeLibrary = {
 };
 
 
-static struct PropertyType const MaterialLibraryProperties[kMaterialLibraryNumProperties] = {
+static struct PropertyType MaterialLibraryProperties[kMaterialLibraryNumProperties] = {
 };
 static struct MaterialLibrary MaterialLibraryDefaults = {
 };
@@ -847,7 +847,7 @@ ORCA_API struct ClassDesc _MaterialLibrary = {
 };
 
 
-static struct PropertyType const BrushLibraryProperties[kBrushLibraryNumProperties] = {
+static struct PropertyType BrushLibraryProperties[kBrushLibraryNumProperties] = {
 };
 static struct BrushLibrary BrushLibraryDefaults = {
 };
@@ -878,7 +878,7 @@ ORCA_API struct ClassDesc _BrushLibrary = {
 };
 
 
-static struct PropertyType const MeshLibraryProperties[kMeshLibraryNumProperties] = {
+static struct PropertyType MeshLibraryProperties[kMeshLibraryNumProperties] = {
 };
 static struct MeshLibrary MeshLibraryDefaults = {
 };
@@ -909,7 +909,7 @@ ORCA_API struct ClassDesc _MeshLibrary = {
 };
 
 
-static struct PropertyType const TimelineSequenceLibraryProperties[kTimelineSequenceLibraryNumProperties] = {
+static struct PropertyType TimelineSequenceLibraryProperties[kTimelineSequenceLibraryNumProperties] = {
 };
 static struct TimelineSequenceLibrary TimelineSequenceLibraryDefaults = {
 };
@@ -940,7 +940,7 @@ ORCA_API struct ClassDesc _TimelineSequenceLibrary = {
 };
 
 
-static struct PropertyType const SceneObjectLibraryProperties[kSceneObjectLibraryNumProperties] = {
+static struct PropertyType SceneObjectLibraryProperties[kSceneObjectLibraryNumProperties] = {
 };
 static struct SceneObjectLibrary SceneObjectLibraryDefaults = {
 };
@@ -971,7 +971,7 @@ ORCA_API struct ClassDesc _SceneObjectLibrary = {
 };
 
 
-static struct PropertyType const ComposerLibraryProperties[kComposerLibraryNumProperties] = {
+static struct PropertyType ComposerLibraryProperties[kComposerLibraryNumProperties] = {
 };
 static struct ComposerLibrary ComposerLibraryDefaults = {
 };
@@ -1002,7 +1002,7 @@ ORCA_API struct ClassDesc _ComposerLibrary = {
 };
 
 
-static struct PropertyType const PipelineItemLibraryProperties[kPipelineItemLibraryNumProperties] = {
+static struct PropertyType PipelineItemLibraryProperties[kPipelineItemLibraryNumProperties] = {
 };
 static struct PipelineItemLibrary PipelineItemLibraryDefaults = {
 };
@@ -1033,7 +1033,7 @@ ORCA_API struct ClassDesc _PipelineItemLibrary = {
 };
 
 
-static struct PropertyType const SceneLibraryProperties[kSceneLibraryNumProperties] = {
+static struct PropertyType SceneLibraryProperties[kSceneLibraryNumProperties] = {
 };
 static struct SceneLibrary SceneLibraryDefaults = {
 };
@@ -1064,7 +1064,7 @@ ORCA_API struct ClassDesc _SceneLibrary = {
 };
 
 
-static struct PropertyType const TrajectoryLibraryProperties[kTrajectoryLibraryNumProperties] = {
+static struct PropertyType TrajectoryLibraryProperties[kTrajectoryLibraryNumProperties] = {
 };
 static struct TrajectoryLibrary TrajectoryLibraryDefaults = {
 };
@@ -1095,7 +1095,7 @@ ORCA_API struct ClassDesc _TrajectoryLibrary = {
 };
 
 
-static struct PropertyType const TransitionLibraryProperties[kTransitionLibraryNumProperties] = {
+static struct PropertyType TransitionLibraryProperties[kTransitionLibraryNumProperties] = {
 };
 static struct TransitionLibrary TransitionLibraryDefaults = {
 };
@@ -1126,7 +1126,7 @@ ORCA_API struct ClassDesc _TransitionLibrary = {
 };
 
 
-static struct PropertyType const SplineLibraryProperties[kSplineLibraryNumProperties] = {
+static struct PropertyType SplineLibraryProperties[kSplineLibraryNumProperties] = {
 };
 static struct SplineLibrary SplineLibraryDefaults = {
 };
@@ -1157,7 +1157,7 @@ ORCA_API struct ClassDesc _SplineLibrary = {
 };
 
 
-static struct PropertyType const PrefabLibraryProperties[kPrefabLibraryNumProperties] = {
+static struct PropertyType PrefabLibraryProperties[kPrefabLibraryNumProperties] = {
 };
 static struct PrefabLibrary PrefabLibraryDefaults = {
 };
@@ -1188,7 +1188,7 @@ ORCA_API struct ClassDesc _PrefabLibrary = {
 };
 
 
-static struct PropertyType const ProfileLibraryProperties[kProfileLibraryNumProperties] = {
+static struct PropertyType ProfileLibraryProperties[kProfileLibraryNumProperties] = {
 };
 static struct ProfileLibrary ProfileLibraryDefaults = {
 };
@@ -1220,7 +1220,7 @@ ORCA_API struct ClassDesc _ProfileLibrary = {
 
 LRESULT EnginePluginLibrary_Attached(struct Object*, struct EnginePluginLibrary*, wParam_t, AttachedEventPtr);
 
-static struct PropertyType const EnginePluginLibraryProperties[kEnginePluginLibraryNumProperties] = {
+static struct PropertyType EnginePluginLibraryProperties[kEnginePluginLibraryNumProperties] = {
 };
 static struct EnginePluginLibrary EnginePluginLibraryDefaults = {
 };
@@ -1252,7 +1252,7 @@ ORCA_API struct ClassDesc _EnginePluginLibrary = {
 };
 
 
-static struct PropertyType const ShortcutLibraryProperties[kShortcutLibraryNumProperties] = {
+static struct PropertyType ShortcutLibraryProperties[kShortcutLibraryNumProperties] = {
 };
 static struct ShortcutLibrary ShortcutLibraryDefaults = {
 };
@@ -1283,7 +1283,7 @@ ORCA_API struct ClassDesc _ShortcutLibrary = {
 };
 
 
-static struct PropertyType const LayerLibraryProperties[kLayerLibraryNumProperties] = {
+static struct PropertyType LayerLibraryProperties[kLayerLibraryNumProperties] = {
 };
 static struct LayerLibrary LayerLibraryDefaults = {
 };
@@ -1314,7 +1314,7 @@ ORCA_API struct ClassDesc _LayerLibrary = {
 };
 
 
-static struct PropertyType const AnimationLibraryProperties[kAnimationLibraryNumProperties] = {
+static struct PropertyType AnimationLibraryProperties[kAnimationLibraryNumProperties] = {
 };
 static struct AnimationLibrary AnimationLibraryDefaults = {
 };
@@ -1345,7 +1345,7 @@ ORCA_API struct ClassDesc _AnimationLibrary = {
 };
 
 
-static struct PropertyType const TagLibraryProperties[kTagLibraryNumProperties] = {
+static struct PropertyType TagLibraryProperties[kTagLibraryNumProperties] = {
 };
 static struct TagLibrary TagLibraryDefaults = {
 };
@@ -1376,7 +1376,7 @@ ORCA_API struct ClassDesc _TagLibrary = {
 };
 
 
-static struct PropertyType const ThemeLibraryProperties[kThemeLibraryNumProperties] = {
+static struct PropertyType ThemeLibraryProperties[kThemeLibraryNumProperties] = {
 };
 static struct ThemeLibrary ThemeLibraryDefaults = {
 };
@@ -1407,7 +1407,7 @@ ORCA_API struct ClassDesc _ThemeLibrary = {
 };
 
 
-static struct PropertyType const ResourceExportTagLibraryProperties[kResourceExportTagLibraryNumProperties] = {
+static struct PropertyType ResourceExportTagLibraryProperties[kResourceExportTagLibraryNumProperties] = {
 };
 static struct ResourceExportTagLibrary ResourceExportTagLibraryDefaults = {
 };
@@ -1438,7 +1438,7 @@ ORCA_API struct ClassDesc _ResourceExportTagLibrary = {
 };
 
 
-static struct PropertyType const LocaleLibraryProperties[kLocaleLibraryNumProperties] = {
+static struct PropertyType LocaleLibraryProperties[kLocaleLibraryNumProperties] = {
 };
 static struct LocaleLibrary LocaleLibraryDefaults = {
 };
@@ -1469,7 +1469,7 @@ ORCA_API struct ClassDesc _LocaleLibrary = {
 };
 
 
-static struct PropertyType const DataSourceLibraryProperties[kDataSourceLibraryNumProperties] = {
+static struct PropertyType DataSourceLibraryProperties[kDataSourceLibraryNumProperties] = {
 };
 static struct DataSourceLibrary DataSourceLibraryDefaults = {
 };
@@ -1500,7 +1500,7 @@ ORCA_API struct ClassDesc _DataSourceLibrary = {
 };
 
 
-static struct PropertyType const PageTransitionCollectionLibraryProperties[kPageTransitionCollectionLibraryNumProperties] = {
+static struct PropertyType PageTransitionCollectionLibraryProperties[kPageTransitionCollectionLibraryNumProperties] = {
 };
 static struct PageTransitionCollectionLibrary PageTransitionCollectionLibraryDefaults = {
 };
@@ -1531,7 +1531,7 @@ ORCA_API struct ClassDesc _PageTransitionCollectionLibrary = {
 };
 
 
-static struct PropertyType const TextureLibraryProperties[kTextureLibraryNumProperties] = {
+static struct PropertyType TextureLibraryProperties[kTextureLibraryNumProperties] = {
 };
 static struct TextureLibrary TextureLibraryDefaults = {
 };
@@ -1562,7 +1562,7 @@ ORCA_API struct ClassDesc _TextureLibrary = {
 };
 
 
-static struct PropertyType const StyleLibraryProperties[kStyleLibraryNumProperties] = {
+static struct PropertyType StyleLibraryProperties[kStyleLibraryNumProperties] = {
 };
 static struct StyleLibrary StyleLibraryDefaults = {
 };
@@ -1593,7 +1593,7 @@ ORCA_API struct ClassDesc _StyleLibrary = {
 };
 
 
-static struct PropertyType const StateManagerLibraryProperties[kStateManagerLibraryNumProperties] = {
+static struct PropertyType StateManagerLibraryProperties[kStateManagerLibraryNumProperties] = {
 };
 static struct StateManagerLibrary StateManagerLibraryDefaults = {
 };
@@ -1624,7 +1624,7 @@ ORCA_API struct ClassDesc _StateManagerLibrary = {
 };
 
 
-static struct PropertyType const ConnectServiceLibraryProperties[kConnectServiceLibraryNumProperties] = {
+static struct PropertyType ConnectServiceLibraryProperties[kConnectServiceLibraryNumProperties] = {
 };
 static struct ConnectServiceLibrary ConnectServiceLibraryDefaults = {
 };
@@ -1655,7 +1655,7 @@ ORCA_API struct ClassDesc _ConnectServiceLibrary = {
 };
 
 
-static struct PropertyType const ConnectUserServiceLibraryProperties[kConnectUserServiceLibraryNumProperties] = {
+static struct PropertyType ConnectUserServiceLibraryProperties[kConnectUserServiceLibraryNumProperties] = {
 };
 static struct ConnectUserServiceLibrary ConnectUserServiceLibraryDefaults = {
 };
@@ -1686,7 +1686,7 @@ ORCA_API struct ClassDesc _ConnectUserServiceLibrary = {
 };
 
 
-static struct PropertyType const SpriteLibraryProperties[kSpriteLibraryNumProperties] = {
+static struct PropertyType SpriteLibraryProperties[kSpriteLibraryNumProperties] = {
 };
 static struct SpriteLibrary SpriteLibraryDefaults = {
 };
@@ -1717,7 +1717,7 @@ ORCA_API struct ClassDesc _SpriteLibrary = {
 };
 
 
-static struct PropertyType const SpriteAnimationLibraryProperties[kSpriteAnimationLibraryNumProperties] = {
+static struct PropertyType SpriteAnimationLibraryProperties[kSpriteAnimationLibraryNumProperties] = {
 };
 static struct SpriteAnimationLibrary SpriteAnimationLibraryDefaults = {
 };
@@ -1748,7 +1748,7 @@ ORCA_API struct ClassDesc _SpriteAnimationLibrary = {
 };
 
 
-static struct PropertyType const ImageLibraryProperties[kImageLibraryNumProperties] = {
+static struct PropertyType ImageLibraryProperties[kImageLibraryNumProperties] = {
 };
 static struct ImageLibrary ImageLibraryDefaults = {
 };
@@ -1779,7 +1779,7 @@ ORCA_API struct ClassDesc _ImageLibrary = {
 };
 
 
-static struct PropertyType const FontLibraryProperties[kFontLibraryNumProperties] = {
+static struct PropertyType FontLibraryProperties[kFontLibraryNumProperties] = {
 };
 static struct FontLibrary FontLibraryDefaults = {
 };
@@ -1810,7 +1810,7 @@ ORCA_API struct ClassDesc _FontLibrary = {
 };
 
 
-static struct PropertyType const LocaleReferenceItemProperties[kLocaleReferenceItemNumProperties] = {
+static struct PropertyType LocaleReferenceItemProperties[kLocaleReferenceItemNumProperties] = {
 };
 static struct LocaleReferenceItem LocaleReferenceItemDefaults = {
 };
@@ -1840,7 +1840,7 @@ ORCA_API struct ClassDesc _LocaleReferenceItem = {
 };
 
 
-static struct PropertyType const TagProperties[kTagNumProperties] = {
+static struct PropertyType TagProperties[kTagNumProperties] = {
 	DECL(0xc35a8c07, Tag, TagIsInherited, TagIsInherited, kDataTypeBool), // Tag.TagIsInherited
 };
 static struct Tag TagDefaults = {
@@ -1871,7 +1871,7 @@ ORCA_API struct ClassDesc _Tag = {
 };
 
 
-static struct PropertyType const EnginePluginProperties[kEnginePluginNumProperties] = {
+static struct PropertyType EnginePluginProperties[kEnginePluginNumProperties] = {
 };
 static struct EnginePlugin EnginePluginDefaults = {
 };
@@ -1901,7 +1901,7 @@ ORCA_API struct ClassDesc _EnginePlugin = {
 };
 
 
-static struct PropertyType const EngineMetaclassProperties[kEngineMetaclassNumProperties] = {
+static struct PropertyType EngineMetaclassProperties[kEngineMetaclassNumProperties] = {
 	DECL(0x099ceef3, EngineMetaclass, BaseClassName, BaseClassName, kDataTypeString), // EngineMetaclass.BaseClassName
 };
 static struct EngineMetaclass EngineMetaclassDefaults = {
@@ -1932,7 +1932,7 @@ ORCA_API struct ClassDesc _EngineMetaclass = {
 };
 
 
-static struct PropertyType const ThemeGroupProperties[kThemeGroupNumProperties] = {
+static struct PropertyType ThemeGroupProperties[kThemeGroupNumProperties] = {
 	DECL(0x1cf2c938, ThemeGroup, SelectedDictionary, SelectedDictionary, kDataTypeString), // ThemeGroup.SelectedDictionary
 };
 static struct ThemeGroup ThemeGroupDefaults = {
@@ -1963,7 +1963,7 @@ ORCA_API struct ClassDesc _ThemeGroup = {
 };
 
 
-static struct PropertyType const ThemeProperties[kThemeNumProperties] = {
+static struct PropertyType ThemeProperties[kThemeNumProperties] = {
 	DECL(0x1ed11084, Theme, IsThemeVisible, IsThemeVisible, kDataTypeBool), // Theme.IsThemeVisible
 };
 static struct Theme ThemeDefaults = {
@@ -1994,7 +1994,7 @@ ORCA_API struct ClassDesc _Theme = {
 };
 
 
-static struct PropertyType const EntryProperties[kEntryNumProperties] = {
+static struct PropertyType EntryProperties[kEntryNumProperties] = {
 };
 static struct Entry EntryDefaults = {
 };
@@ -2024,7 +2024,7 @@ ORCA_API struct ClassDesc _Entry = {
 };
 
 
-static struct PropertyType const ThemeDefaultValuesDictionaryProperties[kThemeDefaultValuesDictionaryNumProperties] = {
+static struct PropertyType ThemeDefaultValuesDictionaryProperties[kThemeDefaultValuesDictionaryNumProperties] = {
 };
 static struct ThemeDefaultValuesDictionary ThemeDefaultValuesDictionaryDefaults = {
 };

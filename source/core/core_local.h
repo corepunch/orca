@@ -104,7 +104,7 @@ struct game
   lpObject_t hover2;
   fixedString_t tags[MAX_TAGS];
   lpcClassDesc_t classes[MAX_CLASSES];
-  lpcPropertyType_t ptypes[MAX_PROPERTY_TYPES];
+  lpPropertyType_t ptypes[MAX_PROPERTY_TYPES];
 };
 
 // stateman.c

@@ -11,7 +11,7 @@ ORCA_API int luaopen_orca_object(lua_State* L);
 ORCA_API int luaopen_orca_network(lua_State* L);
 
 bool_t
-OBJ_RegisterPropertyType(lpcPropertyType_t pt)
+OBJ_RegisterPropertyType(lpPropertyType_t pt)
 {
   FOR_LOOP(i, MAX_PROPERTY_TYPES) {
     if (!core.ptypes[i]) {
@@ -29,7 +29,7 @@ lpcPropertyType_t
 OBJ_FindPropertyType(uint32_t ident)
 {
   FOR_LOOP(i, MAX_PROPERTY_TYPES) {
-    lpcPropertyType_t pt = core.ptypes[i];
+    lpPropertyType_t pt = core.ptypes[i];
     if (pt && pt->FullIdentifier == ident) {
       return pt;
     }
@@ -43,9 +43,22 @@ OBJ_RegisterClass(lpcClassDesc_t class)
   FOR_LOOP(i, MAX_CLASSES) {
     if (!core.classes[i]) {
       FOR_LOOP(j, class->NumProperties) {
-        OBJ_RegisterPropertyType(&class->Properties[j]);
+        lpPropertyType_t prop = &class->Properties[j];
+        OBJ_RegisterPropertyType(prop);
+        // Resolve ClassRef for kDataTypeObject properties that reference an already-registered class
+        if (prop->DataType == kDataTypeObject && !prop->ClassRef && prop->TypeString[0]) {
+          prop->ClassRef = OBJ_FindClass(prop->TypeString);
+        }
       }
       core.classes[i] = class;
+      // Back-fill ClassRef in already-registered property types that reference this new class
+      FOR_LOOP(k, MAX_PROPERTY_TYPES) {
+        lpPropertyType_t pt = core.ptypes[k];
+        if (pt && pt->DataType == kDataTypeObject && !pt->ClassRef &&
+            pt->TypeString[0] && fnv1a32(pt->TypeString) == class->ClassID) {
+          pt->ClassRef = class;
+        }
+      }
       return TRUE;
     } else if (core.classes[i]->ClassID == class->ClassID) {
       Con_Error("Class %s is already registered", class->ClassName);

@@ -68,7 +68,7 @@ int luaopen_orca_SpriteFrame(lua_State *L) {
 #define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
 
 
-static struct PropertyType const SpriteAnimationProperties[kSpriteAnimationNumProperties] = {
+static struct PropertyType SpriteAnimationProperties[kSpriteAnimationNumProperties] = {
 	DECL(0x590ca79a, SpriteAnimation, Image, Image, kDataTypeObject, .TypeString = "Texture"), // SpriteAnimation.Image
 	DECL(0xbebf2a84, SpriteAnimation, Framerate, Framerate, kDataTypeFloat), // SpriteAnimation.Framerate
 	ARRAY_DECL(0xf03e266f, SpriteAnimation, Frames, Frames, kDataTypeStruct, .TypeString = "SpriteFrame"), // SpriteAnimation.Frames
@@ -103,7 +103,7 @@ ORCA_API struct ClassDesc _SpriteAnimation = {
 
 LRESULT SKNode_UpdateMatrix(struct Object*, struct SKNode*, wParam_t, UpdateMatrixEventPtr);
 
-static struct PropertyType const SKNodeProperties[kSKNodeNumProperties] = {
+static struct PropertyType SKNodeProperties[kSKNodeNumProperties] = {
 	DECL(0xe27f342a, SKNode, Position, Position, kDataTypeStruct, .TypeString = "Vector2D"), // SKNode.Position
 	DECL(0xa6478e7c, SKNode, Size, Size, kDataTypeStruct, .TypeString = "Vector2D"), // SKNode.Size
 	DECL(0xb54055d4, SKNode, Anchor, Anchor, kDataTypeStruct, .TypeString = "Vector2D"), // SKNode.Anchor
@@ -139,7 +139,7 @@ ORCA_API struct ClassDesc _SKNode = {
 
 LRESULT SKScene_UpdateMatrix(struct Object*, struct SKScene*, wParam_t, UpdateMatrixEventPtr);
 
-static struct PropertyType const SKSceneProperties[kSKSceneNumProperties] = {
+static struct PropertyType SKSceneProperties[kSKSceneNumProperties] = {
 };
 static struct SKScene SKSceneDefaults = {
 };
@@ -172,7 +172,7 @@ ORCA_API struct ClassDesc _SKScene = {
 
 LRESULT SKSpriteNode_Render(struct Object*, struct SKSpriteNode*, wParam_t, RenderEventPtr);
 
-static struct PropertyType const SKSpriteNodeProperties[kSKSpriteNodeNumProperties] = {
+static struct PropertyType SKSpriteNodeProperties[kSKSpriteNodeNumProperties] = {
 	DECL(0x41e389fd, SKSpriteNode, Animation, Animation, kDataTypeObject, .TypeString = "SpriteAnimation"), // SKSpriteNode.Animation
 	DECL(0x8831f0dd, SKSpriteNode, Animation2, Animation2, kDataTypeObject, .TypeString = "SpriteAnimation"), // SKSpriteNode.Animation2
 	DECL(0x590ca79a, SKSpriteNode, Image, Image, kDataTypeObject, .TypeString = "Texture"), // SKSpriteNode.Image
@@ -220,7 +220,7 @@ ORCA_API struct ClassDesc _SKSpriteNode = {
 LRESULT SKLabelNode_Render(struct Object*, struct SKLabelNode*, wParam_t, RenderEventPtr);
 LRESULT SKLabelNode_Create(struct Object*, struct SKLabelNode*, wParam_t, CreateEventPtr);
 
-static struct PropertyType const SKLabelNodeProperties[kSKLabelNodeNumProperties] = {
+static struct PropertyType SKLabelNodeProperties[kSKLabelNodeNumProperties] = {
 	DECL(0xe5b43cf8, SKLabelNode, Color, Color, kDataTypeStruct, .TypeString = "Color"), // SKLabelNode.Color
 };
 static struct SKLabelNode SKLabelNodeDefaults = {
@@ -256,7 +256,7 @@ ORCA_API struct ClassDesc _SKLabelNode = {
 
 LRESULT SKView_ForegroundContent(struct Object*, struct SKView*, wParam_t, ForegroundContentEventPtr);
 
-static struct PropertyType const SKViewProperties[kSKViewNumProperties] = {
+static struct PropertyType SKViewProperties[kSKViewNumProperties] = {
 	DECL(0x499d2ae6, SKView, ReferenceWidth, ReferenceWidth, kDataTypeFloat), // SKView.ReferenceWidth
 	DECL(0xf011cff9, SKView, ReferenceHeight, ReferenceHeight, kDataTypeFloat), // SKView.ReferenceHeight
 	DECL(0xc89b38b3, SKView, Scene, Scene, kDataTypeString), // SKView.Scene

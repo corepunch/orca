@@ -50,7 +50,7 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
       }
       switch (lua_type(L, -1)) {
         case LUA_TUSERDATA:
-          memcpy((char*)mem + i * p->pdesc->DataSize, luaL_checkudata(L, -1, p->pdesc->TypeString), p->pdesc->DataSize);
+          memcpy((char*)mem + i * p->pdesc->DataSize, luaL_checkudata(L, -1, PROP_GetUserData(p)), p->pdesc->DataSize);
           break;
         case LUA_TNUMBER:
           switch (p->pdesc->DataType) {
@@ -191,7 +191,12 @@ void _pushproperty(lua_State* L,
       break;
     case kDataTypeObject: {
       lpObject_t object = *(lpObject_t*)value;
-      if (strcmp(type->TypeString, "Object") && *(void**)value) {
+      // When ClassRef is set, the value is a component pointer — use CMP_GetObject to retrieve the parent object.
+      // When ClassRef is NULL the value is already a raw lpObject_t (TypeString == "Object" or untyped).
+      bool_t is_component = type->ClassRef
+                          ? TRUE
+                          : (type->TypeString[0] && strcmp(type->TypeString, "Object"));
+      if (is_component && *(void**)value) {
         object = CMP_GetObject(*(void**)value);
       }
       if (object) {

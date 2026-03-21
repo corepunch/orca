@@ -95,7 +95,7 @@ void luaX_pushLightType(lua_State *L, enum LightType value) {
 
 LRESULT Node3D_UpdateMatrix(struct Object*, struct Node3D*, wParam_t, UpdateMatrixEventPtr);
 
-static struct PropertyType const Node3DProperties[kNode3DNumProperties] = {
+static struct PropertyType Node3DProperties[kNode3DNumProperties] = {
 	DECL(0x3f19bf01, Node3D, LayoutTransform, LayoutTransform, kDataTypeStruct, .TypeString = "Transform3D"), // Node3D.LayoutTransform
 	DECL(0xfc7e27e0, Node3D, LayoutTransformTranslation, LayoutTransform.translation, kDataTypeStruct, .TypeString = "Vector3D"), // Node3D.LayoutTransformTranslation
 	DECL(0x9560ef43, Node3D, LayoutTransformRotation, LayoutTransform.rotation, kDataTypeStruct, .TypeString = "Vector3D"), // Node3D.LayoutTransformRotation
@@ -144,7 +144,7 @@ ORCA_API struct ClassDesc _Node3D = {
 
 LRESULT Scene_UpdateMatrix(struct Object*, struct Scene*, wParam_t, UpdateMatrixEventPtr);
 
-static struct PropertyType const SceneProperties[kSceneNumProperties] = {
+static struct PropertyType SceneProperties[kSceneNumProperties] = {
 	DECL(0xe74c7b6e, Scene, Camera, Camera, kDataTypeString), // Scene.Camera
 	DECL(0x14a89218, Scene, PreviewCamera, PreviewCamera, kDataTypeString), // Scene.PreviewCamera
 	DECL(0xf497b459, Scene, HitTestCamera, HitTestCamera, kDataTypeString), // Scene.HitTestCamera
@@ -184,7 +184,7 @@ ORCA_API struct ClassDesc _Scene = {
 
 LRESULT Model3D_Render(struct Object*, struct Model3D*, wParam_t, RenderEventPtr);
 
-static struct PropertyType const Model3DProperties[kModel3DNumProperties] = {
+static struct PropertyType Model3DProperties[kModel3DNumProperties] = {
 	DECL(0x07e055dc, Model3D, Mesh, Mesh, kDataTypeObject, .TypeString = "Mesh"), // Model3D.Mesh
 	DECL(0xcbd54f80, Model3D, Material, Material, kDataTypeObject, .TypeString = "Material"), // Model3D.Material
 };
@@ -219,7 +219,7 @@ ORCA_API struct ClassDesc _Model3D = {
 
 LRESULT PlaneMeshNode_Render(struct Object*, struct PlaneMeshNode*, wParam_t, RenderEventPtr);
 
-static struct PropertyType const PlaneMeshNodeProperties[kPlaneMeshNodeNumProperties] = {
+static struct PropertyType PlaneMeshNodeProperties[kPlaneMeshNodeNumProperties] = {
 	DECL(0x8f8d39cf, PlaneMeshNode, PlaneWidth, PlaneWidth, kDataTypeFloat), // PlaneMeshNode.PlaneWidth
 	DECL(0x2d44a1f2, PlaneMeshNode, PlaneHeight, PlaneHeight, kDataTypeFloat), // PlaneMeshNode.PlaneHeight
 	DECL(0x0a07d70c, PlaneMeshNode, PlaneInvertU, PlaneInvertU, kDataTypeBool), // PlaneMeshNode.PlaneInvertU
@@ -258,7 +258,7 @@ ORCA_API struct ClassDesc _PlaneMeshNode = {
 };
 
 
-static struct PropertyType const CameraProperties[kCameraNumProperties] = {
+static struct PropertyType CameraProperties[kCameraNumProperties] = {
 	DECL(0x137e217c, Camera, Fov, Fov, kDataTypeFloat), // Camera.Fov
 	DECL(0x0ef1c6f4, Camera, FovType, FovType, kDataTypeEnum, .TypeString = "Xfov,Yfov", .EnumValues = _FovType), // Camera.FovType
 	DECL(0x87320ce8, Camera, ProjectionType, ProjectionType, kDataTypeEnum, .TypeString = "Perspective,Orthographic", .EnumValues = _ProjectionType), // Camera.ProjectionType
@@ -299,7 +299,7 @@ ORCA_API struct ClassDesc _Camera = {
 
 LRESULT TrajectoryList3D_UpdateMatrix(struct Object*, struct TrajectoryList3D*, wParam_t, UpdateMatrixEventPtr);
 
-static struct PropertyType const TrajectoryList3DProperties[kTrajectoryList3DNumProperties] = {
+static struct PropertyType TrajectoryList3DProperties[kTrajectoryList3DNumProperties] = {
 	DECL(0x4cf7cbf8, TrajectoryList3D, Trajectory, Trajectory, kDataTypeObject, .TypeString = "Trajectory"), // TrajectoryList3D.Trajectory
 	DECL(0xeea06ebd, TrajectoryList3D, ScrollAxis, ScrollAxis, kDataTypeStruct, .TypeString = "Vector2D"), // TrajectoryList3D.ScrollAxis
 	DECL(0x343782cd, TrajectoryList3D, Looping, Looping, kDataTypeBool), // TrajectoryList3D.Looping
@@ -338,7 +338,7 @@ ORCA_API struct ClassDesc _TrajectoryList3D = {
 
 LRESULT Viewport3D_ForegroundContent(struct Object*, struct Viewport3D*, wParam_t, ForegroundContentEventPtr);
 
-static struct PropertyType const Viewport3DProperties[kViewport3DNumProperties] = {
+static struct PropertyType Viewport3DProperties[kViewport3DNumProperties] = {
 	DECL(0xe74c7b6e, Viewport3D, Camera, Camera, kDataTypeString), // Viewport3D.Camera
 	DECL(0x14a89218, Viewport3D, PreviewCamera, PreviewCamera, kDataTypeString), // Viewport3D.PreviewCamera
 	DECL(0xf497b459, Viewport3D, HitTestCamera, HitTestCamera, kDataTypeString), // Viewport3D.HitTestCamera
@@ -376,7 +376,7 @@ ORCA_API struct ClassDesc _Viewport3D = {
 
 LRESULT PrefabView3D_LoadView(struct Object*, struct PrefabView3D*, wParam_t, LoadViewEventPtr);
 
-static struct PropertyType const PrefabView3DProperties[kPrefabView3DNumProperties] = {
+static struct PropertyType PrefabView3DProperties[kPrefabView3DNumProperties] = {
 	DECL(0x57f28ff6, PrefabView3D, SCA, SCA, kDataTypeString), // PrefabView3D.SCA
 	DECL(0xd6415ba3, PrefabView3D, Prefab, Prefab, kDataTypeString), // PrefabView3D.Prefab
 };
@@ -410,7 +410,7 @@ ORCA_API struct ClassDesc _PrefabView3D = {
 };
 
 
-static struct PropertyType const RenderPassProperties[kRenderPassNumProperties] = {
+static struct PropertyType RenderPassProperties[kRenderPassNumProperties] = {
 };
 static struct RenderPass RenderPassDefaults = {
 };
@@ -441,7 +441,7 @@ ORCA_API struct ClassDesc _RenderPass = {
 };
 
 
-static struct PropertyType const CompositionTargetRenderPassProperties[kCompositionTargetRenderPassNumProperties] = {
+static struct PropertyType CompositionTargetRenderPassProperties[kCompositionTargetRenderPassNumProperties] = {
 };
 static struct CompositionTargetRenderPass CompositionTargetRenderPassDefaults = {
 };
@@ -472,7 +472,7 @@ ORCA_API struct ClassDesc _CompositionTargetRenderPass = {
 };
 
 
-static struct PropertyType const BlitRenderPassProperties[kBlitRenderPassNumProperties] = {
+static struct PropertyType BlitRenderPassProperties[kBlitRenderPassNumProperties] = {
 };
 static struct BlitRenderPass BlitRenderPassDefaults = {
 };
@@ -503,7 +503,7 @@ ORCA_API struct ClassDesc _BlitRenderPass = {
 };
 
 
-static struct PropertyType const ClearRenderPassProperties[kClearRenderPassNumProperties] = {
+static struct PropertyType ClearRenderPassProperties[kClearRenderPassNumProperties] = {
 	DECL(0xeb16b675, ClearRenderPass, ClearColor, ClearColor, kDataTypeStruct, .TypeString = "Color"), // ClearRenderPass.ClearColor
 	DECL(0xa444e35b, ClearRenderPass, ClearDepth, ClearDepth, kDataTypeFloat), // ClearRenderPass.ClearDepth
 	DECL(0x222bca4e, ClearRenderPass, ClearStencil, ClearStencil, kDataTypeInt), // ClearRenderPass.ClearStencil
@@ -537,7 +537,7 @@ ORCA_API struct ClassDesc _ClearRenderPass = {
 };
 
 
-static struct PropertyType const DrawObjectsRenderPassProperties[kDrawObjectsRenderPassNumProperties] = {
+static struct PropertyType DrawObjectsRenderPassProperties[kDrawObjectsRenderPassNumProperties] = {
 	DECL(0xe74c7b6e, DrawObjectsRenderPass, Camera, Camera, kDataTypeString), // DrawObjectsRenderPass.Camera
 	DECL(0x785c377a, DrawObjectsRenderPass, IncludeTags, IncludeTags, kDataTypeString), // DrawObjectsRenderPass.IncludeTags
 	DECL(0x2de02b74, DrawObjectsRenderPass, ExcludeTags, ExcludeTags, kDataTypeString), // DrawObjectsRenderPass.ExcludeTags
@@ -571,7 +571,7 @@ ORCA_API struct ClassDesc _DrawObjectsRenderPass = {
 };
 
 
-static struct PropertyType const PipelineStateRenderPassProperties[kPipelineStateRenderPassNumProperties] = {
+static struct PropertyType PipelineStateRenderPassProperties[kPipelineStateRenderPassNumProperties] = {
 	DECL(0x0038792b, PipelineStateRenderPass, BlendMode, BlendMode, kDataTypeEnum, .TypeString = "AlphaAutomatic,Opaque,Alpha,Additive,PremultipliedAlpha,MixedAlpha", .EnumValues = _BlendMode), // PipelineStateRenderPass.BlendMode
 	DECL(0x9d0d3c20, PipelineStateRenderPass, ColorWriteMode, ColorWriteMode, kDataTypeEnum, .TypeString = "None,RGB,RGBA,R,G,B,GB,A", .EnumValues = _ColorWriteMode), // PipelineStateRenderPass.ColorWriteMode
 	DECL(0xfe9cfa12, PipelineStateRenderPass, CullMode, CullMode, kDataTypeEnum, .TypeString = "None,Back,Front", .EnumValues = _CullMode), // PipelineStateRenderPass.CullMode
@@ -624,7 +624,7 @@ ORCA_API struct ClassDesc _PipelineStateRenderPass = {
 LRESULT TextBlock3D_Render(struct Object*, struct TextBlock3D*, wParam_t, RenderEventPtr);
 LRESULT TextBlock3D_Create(struct Object*, struct TextBlock3D*, wParam_t, CreateEventPtr);
 
-static struct PropertyType const TextBlock3DProperties[kTextBlock3DNumProperties] = {
+static struct PropertyType TextBlock3DProperties[kTextBlock3DNumProperties] = {
 };
 static struct TextBlock3D TextBlock3DDefaults = {
 };
@@ -659,7 +659,7 @@ ORCA_API struct ClassDesc _TextBlock3D = {
 
 LRESULT Light3D_Render(struct Object*, struct Light3D*, wParam_t, RenderEventPtr);
 
-static struct PropertyType const Light3DProperties[kLight3DNumProperties] = {
+static struct PropertyType Light3DProperties[kLight3DNumProperties] = {
 	DECL(0xe5b43cf8, Light3D, Color, Color, kDataTypeStruct, .TypeString = "Color"), // Light3D.Color
 	DECL(0xe2c2c340, Light3D, SpotAngle, SpotAngle, kDataTypeStruct, .TypeString = "Vector2D"), // Light3D.SpotAngle
 	DECL(0x53b4f9aa, Light3D, Intensity, Intensity, kDataTypeFloat), // Light3D.Intensity
@@ -701,7 +701,7 @@ ORCA_API struct ClassDesc _Light3D = {
 
 LRESULT SpriteView_Render(struct Object*, struct SpriteView*, wParam_t, RenderEventPtr);
 
-static struct PropertyType const SpriteViewProperties[kSpriteViewNumProperties] = {
+static struct PropertyType SpriteViewProperties[kSpriteViewNumProperties] = {
 	DECL(0x590ca79a, SpriteView, Image, Image, kDataTypeObject, .TypeString = "Texture"), // SpriteView.Image
 	DECL(0x2d2c5028, SpriteView, Bounds, Bounds, kDataTypeStruct, .TypeString = "Vector4D"), // SpriteView.Bounds
 };
