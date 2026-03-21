@@ -648,6 +648,9 @@ OBJ_ReleaseProperties(lpObject_t hobj)
       if (p->programs[i]) {
         Token_Release(p->programs[i]);
       }
+      if (p->programSources[i]) {
+        free(p->programSources[i]);
+      }
     }
     free(p);
   }

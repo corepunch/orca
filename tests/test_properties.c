@@ -16,10 +16,168 @@
  *   - p_runtime: PROP_Import — importing vm_register values into properties
  *   - p_runtime: PROP_AttachProgram + PROP_Update — expression → property
  *   - p_runtime: property import by name reference (.Property path)
+ *   - Memory leak tests (compiled with -DTEST_MEMORY): string property lifecycle,
+ *     PROP_Clear, OBJ_ReleaseProperties, Token_Create/Release, and attach+update
  *
  * Compiled and linked against liborca.so via the `test-properties` Makefile
  * target (depends on `buildlib`).
+ *
+ * Build with -DTEST_MEMORY to enable malloc/free/strdup interception and
+ * per-test allocation tracking.
  */
+
+/* ------------------------------------------------------------------ */
+/* TEST_MEMORY: malloc/free/strdup interception for leak detection     */
+/*                                                                     */
+/* When -DTEST_MEMORY is defined, this file provides its own malloc,   */
+/* calloc, realloc, free, and strdup symbols.  Because the test binary */
+/* is linked dynamically against liborca.so, the dynamic linker will   */
+/* prefer the definitions in the main executable, so liborca's         */
+/* allocations are also counted.                                       */
+/*                                                                     */
+/* A small static bootstrap buffer handles allocations that arrive     */
+/* before mem_init() (called at the top of main) resolves the real     */
+/* libc functions via RTLD_NEXT.  Bootstrap pointers are silently      */
+/* ignored by free().                                                  */
+/* ------------------------------------------------------------------ */
+#if TEST_MEMORY
+#include <dlfcn.h>
+#include <stdint.h>
+#include <stddef.h>
+#include <string.h>  /* memset, memcpy, strlen — provided by libc directly */
+
+/* Static bootstrap buffer for very early allocations (before mem_init).
+ * 128 KB is enough for library initialization of all linked modules. */
+#define BOOTSTRAP_BUF_SIZE (128 * 1024)
+static char   s_bootstrap_buf[BOOTSTRAP_BUF_SIZE];
+static size_t s_bootstrap_pos = 0;
+
+static int is_bootstrap_ptr(const void *ptr) {
+    return (const char *)ptr >= s_bootstrap_buf &&
+           (const char *)ptr <  s_bootstrap_buf + BOOTSTRAP_BUF_SIZE;
+}
+
+static void *bootstrap_alloc(size_t size) {
+    size = (size + 15u) & ~(size_t)15u; /* 16-byte alignment */
+    if (s_bootstrap_pos + size > BOOTSTRAP_BUF_SIZE) return NULL;
+    void *p = s_bootstrap_buf + s_bootstrap_pos;
+    s_bootstrap_pos += size;
+    return p;
+}
+
+/* Real allocator function pointers, set by mem_init(). */
+typedef void *(*malloc_fn_t)(size_t);
+typedef void *(*calloc_fn_t)(size_t, size_t);
+typedef void *(*realloc_fn_t)(void *, size_t);
+typedef void  (*free_fn_t)(void *);
+
+static malloc_fn_t  s_real_malloc  = NULL;
+static calloc_fn_t  s_real_calloc  = NULL;
+static realloc_fn_t s_real_realloc = NULL;
+static free_fn_t    s_real_free    = NULL;
+
+/* Live allocation counter: incremented by malloc/calloc/strdup,
+ * decremented by free.  Snapshot before/after a test to detect leaks. */
+static volatile long s_alloc_count = 0;
+static volatile long s_alloc_total = 0;  /* monotonic total, for diagnostics */
+
+/* mem_init() must be called at the start of main(), after which all
+ * allocations from both the test binary and liborca.so are tracked. */
+static void mem_init(void) {
+    s_real_malloc  = (malloc_fn_t) dlsym(RTLD_NEXT, "malloc");
+    s_real_calloc  = (calloc_fn_t) dlsym(RTLD_NEXT, "calloc");
+    s_real_realloc = (realloc_fn_t)dlsym(RTLD_NEXT, "realloc");
+    s_real_free    = (free_fn_t)   dlsym(RTLD_NEXT, "free");
+    /* Reset counter: any bootstrap allocations that survive to this point
+     * live in the static buffer and will never be freed through s_real_free,
+     * so they don't affect future delta checks. */
+    s_alloc_count = 0;
+    s_alloc_total = 0;
+}
+
+/* ---- replacement allocators ---- */
+
+void *malloc(size_t size) {
+    if (!s_real_malloc) return bootstrap_alloc(size);
+    void *p = s_real_malloc(size);
+    if (p) {
+        __atomic_fetch_add(&s_alloc_count, 1, __ATOMIC_RELAXED);
+        __atomic_fetch_add(&s_alloc_total, 1, __ATOMIC_RELAXED);
+    }
+    return p;
+}
+
+void *calloc(size_t n, size_t size) {
+    if (!s_real_calloc) {
+        void *p = bootstrap_alloc(n * size);
+        if (p) memset(p, 0, n * size);
+        return p;
+    }
+    void *p = s_real_calloc(n, size);
+    if (p) {
+        __atomic_fetch_add(&s_alloc_count, 1, __ATOMIC_RELAXED);
+        __atomic_fetch_add(&s_alloc_total, 1, __ATOMIC_RELAXED);
+    }
+    return p;
+}
+
+void *realloc(void *ptr, size_t size) {
+    if (is_bootstrap_ptr(ptr)) {
+        /* Bootstrap pointers can't be passed to real realloc; copy to heap. */
+        if (!s_real_malloc) return bootstrap_alloc(size);
+        void *np = s_real_malloc(size);
+        if (np) {
+            memcpy(np, ptr, size); /* conservative: size is new size */
+            __atomic_fetch_add(&s_alloc_count, 1, __ATOMIC_RELAXED);
+            __atomic_fetch_add(&s_alloc_total, 1, __ATOMIC_RELAXED);
+        }
+        return np;
+    }
+    if (!s_real_realloc) return NULL;
+    void *p = s_real_realloc(ptr, size);
+    /* realloc with non-NULL ptr replaces in-place: count unchanged. */
+    if (!ptr && p) {
+        __atomic_fetch_add(&s_alloc_count, 1, __ATOMIC_RELAXED);
+        __atomic_fetch_add(&s_alloc_total, 1, __ATOMIC_RELAXED);
+    }
+    return p;
+}
+
+void free(void *ptr) {
+    if (!ptr) return;
+    if (is_bootstrap_ptr(ptr)) return; /* bootstrap: silently ignore */
+    if (!s_real_free) return;
+    s_real_free(ptr);
+    __atomic_fetch_sub(&s_alloc_count, 1, __ATOMIC_RELAXED);
+}
+
+/* Note: strdup is NOT overridden here — it internally calls malloc, so
+ * strdup allocations are automatically counted through our malloc wrapper. */
+
+/* ---- snapshot / check macros ---- */
+
+#define MEM_SNAPSHOT()   ((long)s_alloc_count)
+
+#define MEM_CHECK_LEAK(snap, label)                                          \
+    do {                                                                     \
+        long _now  = (long)s_alloc_count;                                    \
+        long _snap = (snap);                                                 \
+        if (_now != _snap) {                                                 \
+            fprintf(stderr,                                                  \
+                    "  LEAK [%s]: %ld outstanding allocation(s)"             \
+                    " (before=%ld after=%ld)\n",                             \
+                    (label), _now - _snap, _snap, _now);                     \
+            s_tests_failed++;                                                \
+        }                                                                    \
+    } while (0)
+
+#else /* !TEST_MEMORY */
+
+static void mem_init(void) {}
+#define MEM_SNAPSHOT()             (0L)
+#define MEM_CHECK_LEAK(snap, label) ((void)(snap))
+
+#endif /* TEST_MEMORY */
 
 #include <source/core/core_local.h>
 #include <source/core/core.h>
@@ -256,15 +414,23 @@ static lpObject_t make_object(void)
 /*
  * Release an object created with make_object().
  * Frees all properties (including heap-allocated strings) via
- * OBJ_ReleaseProperties, then frees the object itself.
+ * OBJ_ReleaseProperties, frees all component blocks, and finally
+ * frees the object itself.
  * Does NOT call OBJ_Release (which needs a Lua state and message dispatch).
- * Component blocks allocated by OBJ_AddComponent are not freed here since
- * this is a test-only allocator; the process exits after the test run.
  */
 static void destroy_object(lpObject_t obj)
 {
     if (!obj) return;
     OBJ_ReleaseProperties(obj);
+    /* Walk the component linked list and free each block.
+     * struct component has `next` as its first field (see component.c),
+     * so we can walk without knowing the full struct layout. */
+    void *cmp = *(void **)OBJ_GetObjectComponent(obj, kCompComponents);
+    while (cmp) {
+        void *next = *(void **)cmp; /* next pointer is first field */
+        free(cmp);
+        cmp = next;
+    }
     free(obj);
 }
 
@@ -843,9 +1009,226 @@ static void test_runtime_string_concat_program(void)
 }
 
 /* ------------------------------------------------------------------ */
+/* Memory-leak tests (active when compiled with -DTEST_MEMORY)         */
+/* Each test takes a snapshot before and checks for leaks after.       */
+/* ------------------------------------------------------------------ */
+
+/* Leak test: set a string property then destroy the object — the
+ * strdup'd string must be freed by OBJ_ReleaseProperties. */
+static void test_memleak_string_set_release(void)
+{
+    TEST_BEGIN("memleak: string property set then object released");
+    long snap = MEM_SNAPSHOT();
+    {
+        lpObject_t obj = make_object();
+        lpProperty_t prop;
+        OBJ_FindShortProperty(obj, "Label", &prop);
+        if (prop) PROP_SetValue(prop, "hello leak test");
+        destroy_object(obj);
+    }
+    MEM_CHECK_LEAK(snap, s_current_test);
+}
+
+/* Leak test: reassign a string multiple times — old strings must be freed. */
+static void test_memleak_string_multiple_sets(void)
+{
+    TEST_BEGIN("memleak: string property multiple reassignments");
+    long snap = MEM_SNAPSHOT();
+    {
+        lpObject_t obj = make_object();
+        lpProperty_t prop;
+        OBJ_FindShortProperty(obj, "Label", &prop);
+        if (prop) {
+            PROP_SetValue(prop, "first");
+            PROP_SetValue(prop, "second");   /* frees "first" */
+            PROP_SetValue(prop, "third");    /* frees "second" */
+        }
+        destroy_object(obj);                 /* frees "third" */
+    }
+    MEM_CHECK_LEAK(snap, s_current_test);
+}
+
+/* Leak test: PROP_Clear must free the heap string and leave no leak. */
+static void test_memleak_prop_clear(void)
+{
+    TEST_BEGIN("memleak: PROP_Clear frees string");
+    long snap = MEM_SNAPSHOT();
+    {
+        lpObject_t obj = make_object();
+        lpProperty_t prop;
+        OBJ_FindShortProperty(obj, "Label", &prop);
+        if (prop) {
+            PROP_SetValue(prop, "to be cleared");
+            PROP_Clear(prop);
+        }
+        destroy_object(obj);
+    }
+    MEM_CHECK_LEAK(snap, s_current_test);
+}
+
+/* Leak test: PROP_Clear on a never-set string must not crash or leak. */
+static void test_memleak_prop_clear_never_set(void)
+{
+    TEST_BEGIN("memleak: PROP_Clear on never-set string property");
+    long snap = MEM_SNAPSHOT();
+    {
+        lpObject_t obj = make_object();
+        lpProperty_t prop;
+        OBJ_FindShortProperty(obj, "Label", &prop);
+        if (prop) PROP_Clear(prop);
+        destroy_object(obj);
+    }
+    MEM_CHECK_LEAK(snap, s_current_test);
+}
+
+/* Leak test: multiple string properties set, then object released. */
+static void test_memleak_multiple_string_props(void)
+{
+    TEST_BEGIN("memleak: multiple string properties set then released");
+    long snap = MEM_SNAPSHOT();
+    {
+        /* Use OBJ_SetPropertyValue to create two separate string props */
+        lpObject_t obj = make_object();
+        OBJ_SetPropertyValue(obj, "Label", "alpha");
+        /* Set and clear once to exercise set+clear path */
+        lpProperty_t prop;
+        OBJ_FindShortProperty(obj, "Label", &prop);
+        if (prop) {
+            PROP_SetValue(prop, "alpha2");
+            PROP_Clear(prop);
+            PROP_SetValue(prop, "final");
+        }
+        destroy_object(obj);
+    }
+    MEM_CHECK_LEAK(snap, s_current_test);
+}
+
+/* Leak test: Token_Create / Token_Release must not leak. */
+static void test_memleak_token_create_release(void)
+{
+    TEST_BEGIN("memleak: Token_Create/Token_Release no leak");
+    long snap = MEM_SNAPSHOT();
+    {
+        struct token *prog = Token_Create("ADD(1, 2)");
+        if (prog) Token_Release(prog);
+    }
+    MEM_CHECK_LEAK(snap, s_current_test);
+}
+
+/* Leak test: Token_Create for a string literal must not leak. */
+static void test_memleak_token_string_literal(void)
+{
+    TEST_BEGIN("memleak: Token_Create string literal no leak");
+    long snap = MEM_SNAPSHOT();
+    {
+        struct token *prog = Token_Create("\"test string\"");
+        if (prog) Token_Release(prog);
+    }
+    MEM_CHECK_LEAK(snap, s_current_test);
+}
+
+/* Leak test: OBJ_RunProgram with a string must not leak VM temporaries. */
+static void test_memleak_run_string_program(void)
+{
+    TEST_BEGIN("memleak: OBJ_RunProgram string constant no leak");
+    long snap = MEM_SNAPSHOT();
+    {
+        lpObject_t obj = make_rt_object();
+        struct token *prog = Token_Create("\"vm string\"");
+        if (prog) {
+            struct vm_register r = {0};
+            OBJ_RunProgram(obj, prog, &r);
+            Token_Release(prog);
+        }
+        destroy_object(obj);
+    }
+    MEM_CHECK_LEAK(snap, s_current_test);
+}
+
+/* Leak test: PROP_AttachProgram + PROP_Update + object destroy, no leak.
+ * After PROP_AttachProgram the property owns the token; destroy_object
+ * calls OBJ_ReleaseProperties which runs Token_Release + frees code strings. */
+static void test_memleak_attach_update_release(void)
+{
+    TEST_BEGIN("memleak: PROP_AttachProgram+Update+destroy_object no leak");
+    long snap = MEM_SNAPSHOT();
+    {
+        lpObject_t obj = make_rt_object();
+        lpProperty_t prop;
+        OBJ_FindShortProperty(obj, "Label", &prop);
+        if (prop) {
+            struct token *prog = Token_Create("\"attached\"");
+            if (prog) {
+                /* Property takes ownership of prog and strdup's the code. */
+                PROP_AttachProgram(prop, kPropertyAttributeWholeProperty,
+                                   prog, "\"attached\"");
+                core.frame++;
+                PROP_Update(prop);
+                /* destroy_object → OBJ_ReleaseProperties → Token_Release +
+                   free(programSources) + free(heap string value). */
+            }
+        }
+        destroy_object(obj);
+    }
+    MEM_CHECK_LEAK(snap, s_current_test);
+}
+
+/* Leak test: set int, float, bool properties — no heap allocations expected. */
+static void test_memleak_scalar_properties(void)
+{
+    TEST_BEGIN("memleak: scalar (int/float/bool) properties no leak");
+    long snap = MEM_SNAPSHOT();
+    {
+        lpObject_t obj = make_object();
+        lpProperty_t pi, pf, pb;
+        OBJ_FindShortProperty(obj, "Count",  &pi);
+        OBJ_FindShortProperty(obj, "Value",  &pf);
+        OBJ_FindShortProperty(obj, "Active", &pb);
+        int   iv = 99;
+        float fv = 1.5f;
+        bool_t bv = true;
+        if (pi) PROP_SetValue(pi, &iv);
+        if (pf) PROP_SetValue(pf, &fv);
+        if (pb) PROP_SetValue(pb, &bv);
+        destroy_object(obj);
+    }
+    MEM_CHECK_LEAK(snap, s_current_test);
+}
+
+/* Leak test: property reference program (reads one prop, writes another). */
+static void test_memleak_property_reference_program(void)
+{
+    TEST_BEGIN("memleak: property reference program no leak");
+    long snap = MEM_SNAPSHOT();
+    {
+        lpObject_t obj = make_rt_object();
+        lpProperty_t propCount, propValue;
+        OBJ_FindShortProperty(obj, "Count", &propCount);
+        OBJ_FindShortProperty(obj, "Value", &propValue);
+        if (propCount && propValue) {
+            float v = 7.0f;
+            PROP_SetValue(propValue, &v);
+            struct token *prog = Token_Create(".Value");
+            if (prog) {
+                /* Property owns prog after this call. */
+                PROP_AttachProgram(propCount, kPropertyAttributeWholeProperty,
+                                   prog, ".Value");
+                core.frame++;
+                PROP_Update(propCount);
+                /* destroy_object will call Token_Release on prog. */
+            }
+        }
+        destroy_object(obj);
+    }
+    MEM_CHECK_LEAK(snap, s_current_test);
+}
+
+/* ------------------------------------------------------------------ */
 
 int main(void)
 {
+    mem_init(); /* must be first: resolves real malloc/free via RTLD_NEXT */
+
     printf("ORCA property system tests\n");
     printf("==========================\n");
 
@@ -884,6 +1267,25 @@ int main(void)
     test_runtime_attach_and_update_string();
     test_runtime_property_reference();
     test_runtime_string_concat_program();
+
+    printf("\n--- memory leak tests ---\n");
+    test_memleak_string_set_release();
+    test_memleak_string_multiple_sets();
+    test_memleak_prop_clear();
+    test_memleak_prop_clear_never_set();
+    test_memleak_multiple_string_props();
+    test_memleak_token_create_release();
+    test_memleak_token_string_literal();
+    test_memleak_run_string_program();
+    test_memleak_attach_update_release();
+    test_memleak_scalar_properties();
+    test_memleak_property_reference_program();
+
+#if TEST_MEMORY
+    printf("\nMemory tracking: %ld total allocation(s) made, "
+           "%ld outstanding at exit\n",
+           s_alloc_total, s_alloc_count);
+#endif
 
     printf("\n%d test(s) run, %d failure(s)\n", s_tests_run, s_tests_failed);
     return s_tests_failed == 0 ? 0 : 1;

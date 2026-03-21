@@ -191,7 +191,7 @@ TEST_PROPERTIES_BIN = $(BINDIR)/test_properties
 TEST_LDFLAGS = $(LDFLAGS) -lorca -ldl -lpthread
 
 test-properties: buildlib
-	$(CC) $(CFLAGS) -Wall tests/test_properties.c -o $(TEST_PROPERTIES_BIN) $(TEST_LDFLAGS)
+	$(CC) $(CFLAGS) -DTEST_MEMORY -Wall tests/test_properties.c -o $(TEST_PROPERTIES_BIN) $(TEST_LDFLAGS)
 	$(TEST_PROPERTIES_BIN)
 
 test: test-headless test-properties
