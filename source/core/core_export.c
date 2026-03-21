@@ -22,6 +22,18 @@ extern struct KeyframeAnim* luaX_checkKeyframeAnim(lua_State *L, int index);
 extern void luaX_pushlua_State(lua_State *L, struct lua_State const* value);
 extern struct lua_State* luaX_checklua_State(lua_State *L, int index);
 
+static const char *_PropertyState[] = {"Normal","Hover","Focus","Select","Disable","OldValue",NULL};
+const char *PropertyStateToString(enum PropertyState value) {
+	assert(value >= 0 && value < 6);
+	return _PropertyState[value];
+}
+enum PropertyState luaX_checkPropertyState(lua_State *L, int idx) {
+	return luaL_checkoption(L, idx, NULL, _PropertyState);
+}
+void luaX_pushPropertyState(lua_State *L, enum PropertyState value) {
+	assert(value >= 0 && value < 6);
+	lua_pushstring(L, _PropertyState[value]);
+}
 static const char *_BindingMode[] = {"OneWay","TwoWay","OneWayToSource","Expression",NULL};
 const char *BindingModeToString(enum BindingMode value) {
 	assert(value >= 0 && value < 4);
