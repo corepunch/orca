@@ -1231,6 +1231,8 @@ static void test_memleak_property_reference_program(void)
 
 /* ------------------------------------------------------------------ */
 
+#define RUN(func) puts("Running " #func "..."); func()
+
 int main(void)
 {
     mem_init(); /* must be first: resolves real malloc/free via RTLD_NEXT */
@@ -1241,51 +1243,49 @@ int main(void)
     register_test_class();
     register_runtime_class();
 
-    test_int_property();
-    test_float_property();
-    test_bool_property();
-    test_string_property_basic();
-    test_string_property_reassign();
-    test_string_property_clear();
-    test_string_property_clear_without_set();
-    test_release_properties_frees_strings();
-    test_set_property_value_api();
-    test_property_state_string();
-    test_struct_property();
-    test_find_property_unknown();
-    test_multiple_properties_independent();
-    test_string_empty();
-    test_release_without_string_set();
+    RUN(test_int_property);
+    RUN(test_float_property);
+    RUN(test_bool_property);
+    RUN(test_string_property_basic);
+    RUN(test_string_property_reassign);
+    RUN(test_string_property_clear);
+    RUN(test_string_property_clear_without_set);
+    RUN(test_release_properties_frees_strings);
+    RUN(test_set_property_value_api);
+    RUN(test_property_state_string);
+    RUN(test_struct_property);
+    RUN(test_find_property_unknown);
+    RUN(test_multiple_properties_independent);
+    RUN(test_string_empty);
+    RUN(test_release_without_string_set);
 
-    printf("\n--- p_runtime tests ---\n");
-    test_runtime_token_create_int();
-    test_runtime_token_create_float();
-    test_runtime_token_create_string();
-    test_runtime_token_create_arithmetic();
-    test_runtime_run_int_constant();
-    test_runtime_run_float_constant();
-    test_runtime_run_string_constant();
-    test_runtime_run_arithmetic();
-    test_runtime_import_int();
-    test_runtime_import_float();
-    test_runtime_import_string();
-    test_runtime_attach_and_update_int();
-    test_runtime_attach_and_update_string();
-    test_runtime_property_reference();
-    test_runtime_string_concat_program();
+    RUN(test_runtime_token_create_int);
+    RUN(test_runtime_token_create_float);
+    RUN(test_runtime_token_create_string);
+    RUN(test_runtime_token_create_arithmetic);
+    RUN(test_runtime_run_int_constant);
+    RUN(test_runtime_run_float_constant);
+    RUN(test_runtime_run_string_constant);
+    RUN(test_runtime_run_arithmetic);
+    RUN(test_runtime_import_int);
+    RUN(test_runtime_import_float);
+    RUN(test_runtime_import_string);
+    RUN(test_runtime_attach_and_update_int);
+    RUN(test_runtime_attach_and_update_string);
+    RUN(test_runtime_property_reference);
+    RUN(test_runtime_string_concat_program);
 
-    printf("\n--- memory leak tests ---\n");
-    test_memleak_string_set_release();
-    test_memleak_string_multiple_sets();
-    test_memleak_prop_clear();
-    test_memleak_prop_clear_never_set();
-    test_memleak_multiple_string_props();
-    test_memleak_token_create_release();
-    test_memleak_token_string_literal();
-    test_memleak_run_string_program();
-    test_memleak_attach_update_release();
-    test_memleak_scalar_properties();
-    test_memleak_property_reference_program();
+    RUN(test_memleak_string_set_release);
+    RUN(test_memleak_string_multiple_sets);
+    RUN(test_memleak_prop_clear);
+    RUN(test_memleak_prop_clear_never_set);
+    RUN(test_memleak_multiple_string_props);
+    RUN(test_memleak_token_create_release);
+    RUN(test_memleak_token_string_literal);
+    RUN(test_memleak_run_string_program);
+    RUN(test_memleak_attach_update_release);
+    RUN(test_memleak_scalar_properties);
+    RUN(test_memleak_property_reference_program);
 
 #if TEST_MEMORY
     printf("\nMemory tracking: %ld total allocation(s) made, "
