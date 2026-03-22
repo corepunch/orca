@@ -35,6 +35,9 @@ OBJ_Create(lua_State* L, lpcClassDesc_t cls)
   OBJ_AddComponent(object, cls->ClassID);
   OBJ_SetDirty(object);
   OBJ_SetName(object, cls->DefaultName);
+  
+  fprintf(stderr, "Creating node of class %s\n", cls->ClassName);
+
   return object;
 }
 
