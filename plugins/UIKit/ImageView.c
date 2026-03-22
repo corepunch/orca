@@ -166,7 +166,7 @@ HANDLER(ImageView, LoadView)
   if (!(OBJ_GetFlags(hObject) & OF_ACTIVATED)) {
     return TRUE;
   }
-  if (*pImageView->Src &&
+  if (pImageView->Src && *pImageView->Src &&
       pImageView->_loadedImage != fnv1a32(pImageView->Src)) {
     lua_pushstring(L, pImageView->Src);
     luaX_executecallback(L, hObject, "loadImageAsync", 1);

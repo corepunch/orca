@@ -25,7 +25,7 @@ extern struct ViewDef* luaX_checkViewDef(lua_State *L, int index);
 extern void luaX_pushlua_State(lua_State *L, struct lua_State const* value);
 extern struct lua_State* luaX_checklua_State(lua_State *L, int index);
 
-static const char *_BlendMode[] = {"AlphaAutomatic","Opaque","Alpha","Additive","PremultipliedAlpha","MixedAlpha",NULL};
+ORCA_API const char *_BlendMode[] = {"AlphaAutomatic","Opaque","Alpha","Additive","PremultipliedAlpha","MixedAlpha",NULL};
 const char *BlendModeToString(enum BlendMode value) {
 	assert(value >= 0 && value < 6);
 	return _BlendMode[value];
@@ -37,7 +37,7 @@ void luaX_pushBlendMode(lua_State *L, enum BlendMode value) {
 	assert(value >= 0 && value < 6);
 	lua_pushstring(L, _BlendMode[value]);
 }
-static const char *_CompareFunc[] = {"Never","Always","Less","LessOrEqual","Greater","GreaterOrEqual","Equal","NotEqual","Disabled",NULL};
+ORCA_API const char *_CompareFunc[] = {"Never","Always","Less","LessOrEqual","Greater","GreaterOrEqual","Equal","NotEqual","Disabled",NULL};
 const char *CompareFuncToString(enum CompareFunc value) {
 	assert(value >= 0 && value < 9);
 	return _CompareFunc[value];
@@ -49,7 +49,7 @@ void luaX_pushCompareFunc(lua_State *L, enum CompareFunc value) {
 	assert(value >= 0 && value < 9);
 	lua_pushstring(L, _CompareFunc[value]);
 }
-static const char *_TextureFilter[] = {"Nearest","Linear","Trilinear",NULL};
+ORCA_API const char *_TextureFilter[] = {"Nearest","Linear","Trilinear",NULL};
 const char *TextureFilterToString(enum TextureFilter value) {
 	assert(value >= 0 && value < 3);
 	return _TextureFilter[value];
@@ -61,7 +61,7 @@ void luaX_pushTextureFilter(lua_State *L, enum TextureFilter value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _TextureFilter[value]);
 }
-static const char *_TextureWrap[] = {"Clamp","Repeat","Base",NULL};
+ORCA_API const char *_TextureWrap[] = {"Clamp","Repeat","Base",NULL};
 const char *TextureWrapToString(enum TextureWrap value) {
 	assert(value >= 0 && value < 3);
 	return _TextureWrap[value];
@@ -73,7 +73,7 @@ void luaX_pushTextureWrap(lua_State *L, enum TextureWrap value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _TextureWrap[value]);
 }
-static const char *_TextureFormat[] = {"Automatic","Rgba8","Rgb8","Alpha8","DepthComponent","DepthStencil",NULL};
+ORCA_API const char *_TextureFormat[] = {"Automatic","Rgba8","Rgb8","Alpha8","DepthComponent","DepthStencil",NULL};
 const char *TextureFormatToString(enum TextureFormat value) {
 	assert(value >= 0 && value < 6);
 	return _TextureFormat[value];
@@ -85,7 +85,7 @@ void luaX_pushTextureFormat(lua_State *L, enum TextureFormat value) {
 	assert(value >= 0 && value < 6);
 	lua_pushstring(L, _TextureFormat[value]);
 }
-static const char *_MipmapMode[] = {"Base","Nearest","Linear","Trilinear",NULL};
+ORCA_API const char *_MipmapMode[] = {"Base","Nearest","Linear","Trilinear",NULL};
 const char *MipmapModeToString(enum MipmapMode value) {
 	assert(value >= 0 && value < 4);
 	return _MipmapMode[value];
@@ -97,7 +97,7 @@ void luaX_pushMipmapMode(lua_State *L, enum MipmapMode value) {
 	assert(value >= 0 && value < 4);
 	lua_pushstring(L, _MipmapMode[value]);
 }
-static const char *_AnisotropyType[] = {"None","X2","X4","X8","X16",NULL};
+ORCA_API const char *_AnisotropyType[] = {"None","X2","X4","X8","X16",NULL};
 const char *AnisotropyTypeToString(enum AnisotropyType value) {
 	assert(value >= 0 && value < 5);
 	return _AnisotropyType[value];
@@ -109,7 +109,7 @@ void luaX_pushAnisotropyType(lua_State *L, enum AnisotropyType value) {
 	assert(value >= 0 && value < 5);
 	lua_pushstring(L, _AnisotropyType[value]);
 }
-static const char *_ImageFormat[] = {"Png","Jpeg","Svg","Astc","Pvrtc",NULL};
+ORCA_API const char *_ImageFormat[] = {"Png","Jpeg","Svg","Astc","Pvrtc",NULL};
 const char *ImageFormatToString(enum ImageFormat value) {
 	assert(value >= 0 && value < 5);
 	return _ImageFormat[value];
@@ -121,7 +121,7 @@ void luaX_pushImageFormat(lua_State *L, enum ImageFormat value) {
 	assert(value >= 0 && value < 5);
 	lua_pushstring(L, _ImageFormat[value]);
 }
-static const char *_AstcFormat[] = {"UnormBlock4x4","UnormBlock5x4","UnormBlock5x5","UnormBlock6x5","UnormBlock6x6","UnormBlock8x5","UnormBlock8x6","UnormBlock8x8","UnormBlock10x5","UnormBlock10x6","UnormBlock10x8","UnormBlock10x10","UnormBlock12x10","UnormBlock12x12","SrgbBlock4x4","SrgbBlock5x4","SrgbBlock5x5","SrgbBlock6x5","SrgbBlock6x6","SrgbBlock8x5","SrgbBlock8x6","SrgbBlock8x8","SrgbBlock10x5","SrgbBlock10x6","SrgbBlock10x8","SrgbBlock10x10","SrgbBlock12x10","SrgbBlock12x12",NULL};
+ORCA_API const char *_AstcFormat[] = {"UnormBlock4x4","UnormBlock5x4","UnormBlock5x5","UnormBlock6x5","UnormBlock6x6","UnormBlock8x5","UnormBlock8x6","UnormBlock8x8","UnormBlock10x5","UnormBlock10x6","UnormBlock10x8","UnormBlock10x10","UnormBlock12x10","UnormBlock12x12","SrgbBlock4x4","SrgbBlock5x4","SrgbBlock5x5","SrgbBlock6x5","SrgbBlock6x6","SrgbBlock8x5","SrgbBlock8x6","SrgbBlock8x8","SrgbBlock10x5","SrgbBlock10x6","SrgbBlock10x8","SrgbBlock10x10","SrgbBlock12x10","SrgbBlock12x12",NULL};
 const char *AstcFormatToString(enum AstcFormat value) {
 	assert(value >= 0 && value < 28);
 	return _AstcFormat[value];
@@ -133,7 +133,7 @@ void luaX_pushAstcFormat(lua_State *L, enum AstcFormat value) {
 	assert(value >= 0 && value < 28);
 	lua_pushstring(L, _AstcFormat[value]);
 }
-static const char *_AtcCompressionScheme[] = {"ExplicitAlpha","InterpolatedAlpha","Rgb",NULL};
+ORCA_API const char *_AtcCompressionScheme[] = {"ExplicitAlpha","InterpolatedAlpha","Rgb",NULL};
 const char *AtcCompressionSchemeToString(enum AtcCompressionScheme value) {
 	assert(value >= 0 && value < 3);
 	return _AtcCompressionScheme[value];
@@ -145,7 +145,7 @@ void luaX_pushAtcCompressionScheme(lua_State *L, enum AtcCompressionScheme value
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _AtcCompressionScheme[value]);
 }
-static const char *_AstcCompressionSpeed[] = {"VeryFast","Fast","Medium","Thorough","Exhaustive",NULL};
+ORCA_API const char *_AstcCompressionSpeed[] = {"VeryFast","Fast","Medium","Thorough","Exhaustive",NULL};
 const char *AstcCompressionSpeedToString(enum AstcCompressionSpeed value) {
 	assert(value >= 0 && value < 5);
 	return _AstcCompressionSpeed[value];
@@ -157,7 +157,7 @@ void luaX_pushAstcCompressionSpeed(lua_State *L, enum AstcCompressionSpeed value
 	assert(value >= 0 && value < 5);
 	lua_pushstring(L, _AstcCompressionSpeed[value]);
 }
-static const char *_RawColorByteFormat[] = {"Rgba8","Rgb8","Bgra8","Rgba16f","Rgb10a2","R11g11b10f","Rgba32f",NULL};
+ORCA_API const char *_RawColorByteFormat[] = {"Rgba8","Rgb8","Bgra8","Rgba16f","Rgb10a2","R11g11b10f","Rgba32f",NULL};
 const char *RawColorByteFormatToString(enum RawColorByteFormat value) {
 	assert(value >= 0 && value < 7);
 	return _RawColorByteFormat[value];
@@ -169,7 +169,7 @@ void luaX_pushRawColorByteFormat(lua_State *L, enum RawColorByteFormat value) {
 	assert(value >= 0 && value < 7);
 	lua_pushstring(L, _RawColorByteFormat[value]);
 }
-static const char *_FilePngCompressionLevel[] = {"None","Fast","Normal","Maximum","ProjectDefault",NULL};
+ORCA_API const char *_FilePngCompressionLevel[] = {"None","Fast","Normal","Maximum","ProjectDefault",NULL};
 const char *FilePngCompressionLevelToString(enum FilePngCompressionLevel value) {
 	assert(value >= 0 && value < 5);
 	return _FilePngCompressionLevel[value];
@@ -181,7 +181,7 @@ void luaX_pushFilePngCompressionLevel(lua_State *L, enum FilePngCompressionLevel
 	assert(value >= 0 && value < 5);
 	lua_pushstring(L, _FilePngCompressionLevel[value]);
 }
-static const char *_SpansionCompressionScheme[] = {"None","Standard","Enhanced",NULL};
+ORCA_API const char *_SpansionCompressionScheme[] = {"None","Standard","Enhanced",NULL};
 const char *SpansionCompressionSchemeToString(enum SpansionCompressionScheme value) {
 	assert(value >= 0 && value < 3);
 	return _SpansionCompressionScheme[value];
@@ -193,7 +193,7 @@ void luaX_pushSpansionCompressionScheme(lua_State *L, enum SpansionCompressionSc
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _SpansionCompressionScheme[value]);
 }
-static const char *_ImageType[] = {"Normal","Mask",NULL};
+ORCA_API const char *_ImageType[] = {"Normal","Mask",NULL};
 const char *ImageTypeToString(enum ImageType value) {
 	assert(value >= 0 && value < 2);
 	return _ImageType[value];
@@ -205,7 +205,7 @@ void luaX_pushImageType(lua_State *L, enum ImageType value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _ImageType[value]);
 }
-static const char *_RenderTargetType[] = {"Color","Depth","Stencil","DepthStencil","Normal","Specular","Emission",NULL};
+ORCA_API const char *_RenderTargetType[] = {"Color","Depth","Stencil","DepthStencil","Normal","Specular","Emission",NULL};
 const char *RenderTargetTypeToString(enum RenderTargetType value) {
 	assert(value >= 0 && value < 7);
 	return _RenderTargetType[value];
@@ -217,7 +217,7 @@ void luaX_pushRenderTargetType(lua_State *L, enum RenderTargetType value) {
 	assert(value >= 0 && value < 7);
 	lua_pushstring(L, _RenderTargetType[value]);
 }
-static const char *_RenderTargetTextureAttachment[] = {"None","Color0","Color1","Color2","Color3","Depth","Stencil","DepthStencil",NULL};
+ORCA_API const char *_RenderTargetTextureAttachment[] = {"None","Color0","Color1","Color2","Color3","Depth","Stencil","DepthStencil",NULL};
 const char *RenderTargetTextureAttachmentToString(enum RenderTargetTextureAttachment value) {
 	assert(value >= 0 && value < 8);
 	return _RenderTargetTextureAttachment[value];
@@ -229,7 +229,7 @@ void luaX_pushRenderTargetTextureAttachment(lua_State *L, enum RenderTargetTextu
 	assert(value >= 0 && value < 8);
 	lua_pushstring(L, _RenderTargetTextureAttachment[value]);
 }
-static const char *_FloatPrecision[] = {"Unset","Low","Medium","High",NULL};
+ORCA_API const char *_FloatPrecision[] = {"Unset","Low","Medium","High",NULL};
 const char *FloatPrecisionToString(enum FloatPrecision value) {
 	assert(value >= 0 && value < 4);
 	return _FloatPrecision[value];
@@ -241,7 +241,7 @@ void luaX_pushFloatPrecision(lua_State *L, enum FloatPrecision value) {
 	assert(value >= 0 && value < 4);
 	lua_pushstring(L, _FloatPrecision[value]);
 }
-static const char *_Shading[] = {"Unlit","Phong","Standard",NULL};
+ORCA_API const char *_Shading[] = {"Unlit","Phong","Standard",NULL};
 const char *ShadingToString(enum Shading value) {
 	assert(value >= 0 && value < 3);
 	return _Shading[value];
@@ -431,13 +431,13 @@ typedef struct RenderScreenEventArgs* RenderScreenEventPtr;
 typedef struct RenderEventArgs* RenderEventPtr;
 
 static struct PropertyType const TextureProperties[kTextureNumProperties] = {
-	DECL(0x47bdcfab, Texture, MinificationFilter, MinificationFilter, kDataTypeEnum, .TypeString = "Nearest,Linear,Trilinear"), // Texture.MinificationFilter
-	DECL(0xf5ff802c, Texture, MagnificationFilter, MagnificationFilter, kDataTypeEnum, .TypeString = "Nearest,Linear,Trilinear"), // Texture.MagnificationFilter
-	DECL(0xc2114a32, Texture, WrapMode, WrapMode, kDataTypeEnum, .TypeString = "Clamp,Repeat,Base"), // Texture.WrapMode
-	DECL(0xffb0ff72, Texture, Format, Format, kDataTypeEnum, .TypeString = "Automatic,Rgba8,Rgb8,Alpha8,DepthComponent,DepthStencil"), // Texture.Format
+	DECL(0x47bdcfab, Texture, MinificationFilter, MinificationFilter, kDataTypeEnum, .TypeString = "Nearest,Linear,Trilinear", .EnumValues = _TextureFilter), // Texture.MinificationFilter
+	DECL(0xf5ff802c, Texture, MagnificationFilter, MagnificationFilter, kDataTypeEnum, .TypeString = "Nearest,Linear,Trilinear", .EnumValues = _TextureFilter), // Texture.MagnificationFilter
+	DECL(0xc2114a32, Texture, WrapMode, WrapMode, kDataTypeEnum, .TypeString = "Clamp,Repeat,Base", .EnumValues = _TextureWrap), // Texture.WrapMode
+	DECL(0xffb0ff72, Texture, Format, Format, kDataTypeEnum, .TypeString = "Automatic,Rgba8,Rgb8,Alpha8,DepthComponent,DepthStencil", .EnumValues = _TextureFormat), // Texture.Format
 	DECL(0x28528e11, Texture, Scale, Scale, kDataTypeInt), // Texture.Scale
-	DECL(0xb3ad7612, Texture, MipmapMode, MipmapMode, kDataTypeEnum, .TypeString = "Base,Nearest,Linear,Trilinear"), // Texture.MipmapMode
-	DECL(0x78736795, Texture, AnisotropyType, AnisotropyType, kDataTypeEnum, .TypeString = "None,X2,X4,X8,X16"), // Texture.AnisotropyType
+	DECL(0xb3ad7612, Texture, MipmapMode, MipmapMode, kDataTypeEnum, .TypeString = "Base,Nearest,Linear,Trilinear", .EnumValues = _MipmapMode), // Texture.MipmapMode
+	DECL(0x78736795, Texture, AnisotropyType, AnisotropyType, kDataTypeEnum, .TypeString = "None,X2,X4,X8,X16", .EnumValues = _AnisotropyType), // Texture.AnisotropyType
 	DECL(0x3b42dfbf, Texture, Width, Width, kDataTypeInt), // Texture.Width
 	DECL(0x1bd13562, Texture, Height, Height, kDataTypeInt), // Texture.Height
 };
@@ -471,30 +471,30 @@ ORCA_API struct ClassDesc _Texture = {
 LRESULT Image_Start(struct Object*, struct Image*, wParam_t, StartEventPtr);
 
 static struct PropertyType const ImageProperties[kImageNumProperties] = {
-	DECL(0x61e2a3f8, Image, Source, Source, kDataTypeFixed), // Image.Source
+	DECL(0x61e2a3f8, Image, Source, Source, kDataTypeString), // Image.Source
 	DECL(0xa3c8af46, Image, PremultiplyAlpha, PremultiplyAlpha, kDataTypeBool), // Image.PremultiplyAlpha
-	DECL(0xd155d06d, Image, Type, Type, kDataTypeEnum, .TypeString = "Normal,Mask"), // Image.Type
+	DECL(0xd155d06d, Image, Type, Type, kDataTypeEnum, .TypeString = "Normal,Mask", .EnumValues = _ImageType), // Image.Type
 	DECL(0xdb9ccf58, Image, HasMipmaps, HasMipmaps, kDataTypeBool), // Image.HasMipmaps
-	DECL(0xa6478e7c, Image, Size, Size, kDataTypeFixed), // Image.Size
+	DECL(0xa6478e7c, Image, Size, Size, kDataTypeString), // Image.Size
 	DECL(0x7588b4d5, Image, BitDepth, BitDepth, kDataTypeInt), // Image.BitDepth
 	DECL(0x94ab250b, Image, FileHasTransparency, FileHasTransparency, kDataTypeBool), // Image.FileHasTransparency
 	DECL(0xb5f815c3, Image, FileHasICCProfile, FileHasICCProfile, kDataTypeBool), // Image.FileHasICCProfile
-	DECL(0x86ff7dab, Image, TargetFormat, TargetFormat, kDataTypeEnum, .TypeString = "Png,Jpeg,Svg,Astc,Pvrtc"), // Image.TargetFormat
-	DECL(0x79fe08b6, Image, AtcCompressionScheme, AtcCompressionScheme, kDataTypeEnum, .TypeString = "ExplicitAlpha,InterpolatedAlpha,Rgb"), // Image.AtcCompressionScheme
+	DECL(0x86ff7dab, Image, TargetFormat, TargetFormat, kDataTypeEnum, .TypeString = "Png,Jpeg,Svg,Astc,Pvrtc", .EnumValues = _ImageFormat), // Image.TargetFormat
+	DECL(0x79fe08b6, Image, AtcCompressionScheme, AtcCompressionScheme, kDataTypeEnum, .TypeString = "ExplicitAlpha,InterpolatedAlpha,Rgb", .EnumValues = _AtcCompressionScheme), // Image.AtcCompressionScheme
 	DECL(0x18e754ba, Image, PvrtcBitDepth, PvrtcBitDepth, kDataTypeInt), // Image.PvrtcBitDepth
 	DECL(0x022a53d7, Image, PvrtcQuality, PvrtcQuality, kDataTypeInt), // Image.PvrtcQuality
 	DECL(0x55e09913, Image, PvrtcCompressionScheme, PvrtcCompressionScheme, kDataTypeInt), // Image.PvrtcCompressionScheme
-	DECL(0x8bceff48, Image, AstcBlockSize, AstcBlockSize, kDataTypeEnum, .TypeString = "UnormBlock4x4,UnormBlock5x4,UnormBlock5x5,UnormBlock6x5,UnormBlock6x6,UnormBlock8x5,UnormBlock8x6,UnormBlock8x8,UnormBlock10x5,UnormBlock10x6,UnormBlock10x8,UnormBlock10x10,UnormBlock12x10,UnormBlock12x12,SrgbBlock4x4,SrgbBlock5x4,SrgbBlock5x5,SrgbBlock6x5,SrgbBlock6x6,SrgbBlock8x5,SrgbBlock8x6,SrgbBlock8x8,SrgbBlock10x5,SrgbBlock10x6,SrgbBlock10x8,SrgbBlock10x10,SrgbBlock12x10,SrgbBlock12x12"), // Image.AstcBlockSize
-	DECL(0x52120f05, Image, AstcCompressionSpeed, AstcCompressionSpeed, kDataTypeEnum, .TypeString = "VeryFast,Fast,Medium,Thorough,Exhaustive"), // Image.AstcCompressionSpeed
+	DECL(0x8bceff48, Image, AstcBlockSize, AstcBlockSize, kDataTypeEnum, .TypeString = "UnormBlock4x4,UnormBlock5x4,UnormBlock5x5,UnormBlock6x5,UnormBlock6x6,UnormBlock8x5,UnormBlock8x6,UnormBlock8x8,UnormBlock10x5,UnormBlock10x6,UnormBlock10x8,UnormBlock10x10,UnormBlock12x10,UnormBlock12x12,SrgbBlock4x4,SrgbBlock5x4,SrgbBlock5x5,SrgbBlock6x5,SrgbBlock6x6,SrgbBlock8x5,SrgbBlock8x6,SrgbBlock8x8,SrgbBlock10x5,SrgbBlock10x6,SrgbBlock10x8,SrgbBlock10x10,SrgbBlock12x10,SrgbBlock12x12", .EnumValues = _AstcFormat), // Image.AstcBlockSize
+	DECL(0x52120f05, Image, AstcCompressionSpeed, AstcCompressionSpeed, kDataTypeEnum, .TypeString = "VeryFast,Fast,Medium,Thorough,Exhaustive", .EnumValues = _AstcCompressionSpeed), // Image.AstcCompressionSpeed
 	DECL(0x0ccdd5f0, Image, AstcIsSRGB, AstcIsSRGB, kDataTypeBool), // Image.AstcIsSRGB
-	DECL(0xfe76304d, Image, RawColorByteFormat, RawColorByteFormat, kDataTypeEnum, .TypeString = "Rgba8,Rgb8,Bgra8,Rgba16f,Rgb10a2,R11g11b10f,Rgba32f"), // Image.RawColorByteFormat
-	DECL(0x66001361, Image, SpansionCompressionScheme, SpansionCompressionScheme, kDataTypeEnum, .TypeString = "None,Standard,Enhanced"), // Image.SpansionCompressionScheme
-	DECL(0x28b08476, Image, FilePngCompressionLevel, FilePngCompressionLevel, kDataTypeEnum, .TypeString = "None,Fast,Normal,Maximum,ProjectDefault"), // Image.FilePngCompressionLevel
+	DECL(0xfe76304d, Image, RawColorByteFormat, RawColorByteFormat, kDataTypeEnum, .TypeString = "Rgba8,Rgb8,Bgra8,Rgba16f,Rgb10a2,R11g11b10f,Rgba32f", .EnumValues = _RawColorByteFormat), // Image.RawColorByteFormat
+	DECL(0x66001361, Image, SpansionCompressionScheme, SpansionCompressionScheme, kDataTypeEnum, .TypeString = "None,Standard,Enhanced", .EnumValues = _SpansionCompressionScheme), // Image.SpansionCompressionScheme
+	DECL(0x28b08476, Image, FilePngCompressionLevel, FilePngCompressionLevel, kDataTypeEnum, .TypeString = "None,Fast,Normal,Maximum,ProjectDefault", .EnumValues = _FilePngCompressionLevel), // Image.FilePngCompressionLevel
 	DECL(0xd96ef887, Image, Etc2Effort, Etc2Effort, kDataTypeInt), // Image.Etc2Effort
 	DECL(0x84841aff, Image, FileExportSourceTexture, FileExportSourceTexture, kDataTypeBool), // Image.FileExportSourceTexture
 	DECL(0xc1e7dbf8, Image, FileExportAlways, FileExportAlways, kDataTypeBool), // Image.FileExportAlways
 	DECL(0x1c849134, Image, FileExportEmptyWhenFileIsMissing, FileExportEmptyWhenFileIsMissing, kDataTypeBool), // Image.FileExportEmptyWhenFileIsMissing
-	DECL(0x85202b31, Image, FileExportSourceImage, FileExportSourceImage, kDataTypeFixed), // Image.FileExportSourceImage
+	DECL(0x85202b31, Image, FileExportSourceImage, FileExportSourceImage, kDataTypeString), // Image.FileExportSourceImage
 };
 static struct Image ImageDefaults = {
 };
@@ -530,9 +530,9 @@ LRESULT RenderTargetTexture_Start(struct Object*, struct RenderTargetTexture*, w
 static struct PropertyType const RenderTargetTextureProperties[kRenderTargetTextureNumProperties] = {
 	DECL(0x3b42dfbf, RenderTargetTexture, Width, Width, kDataTypeInt), // RenderTargetTexture.Width
 	DECL(0x1bd13562, RenderTargetTexture, Height, Height, kDataTypeInt), // RenderTargetTexture.Height
-	DECL(0x77ada720, RenderTargetTexture, TargetType, TargetType, kDataTypeEnum, .TypeString = "Color,Depth,Stencil,DepthStencil,Normal,Specular,Emission"), // RenderTargetTexture.TargetType
+	DECL(0x77ada720, RenderTargetTexture, TargetType, TargetType, kDataTypeEnum, .TypeString = "Color,Depth,Stencil,DepthStencil,Normal,Specular,Emission", .EnumValues = _RenderTargetType), // RenderTargetTexture.TargetType
 	DECL(0xdb3b9d57, RenderTargetTexture, SupportSimpleRenderTarget, SupportSimpleRenderTarget, kDataTypeBool), // RenderTargetTexture.SupportSimpleRenderTarget
-	DECL(0x9048e288, RenderTargetTexture, Attachment, Attachment, kDataTypeEnum, .TypeString = "None,Color0,Color1,Color2,Color3,Depth,Stencil,DepthStencil"), // RenderTargetTexture.Attachment
+	DECL(0x9048e288, RenderTargetTexture, Attachment, Attachment, kDataTypeEnum, .TypeString = "None,Color0,Color1,Color2,Color3,Depth,Stencil,DepthStencil", .EnumValues = _RenderTargetTextureAttachment), // RenderTargetTexture.Attachment
 	DECL(0x337c9af1, RenderTargetTexture, AllowDepthFallback, AllowDepthFallback, kDataTypeBool), // RenderTargetTexture.AllowDepthFallback
 	DECL(0x76f1691e, RenderTargetTexture, SampleCount, SampleCount, kDataTypeInt), // RenderTargetTexture.SampleCount
 };
@@ -568,12 +568,12 @@ ORCA_API struct ClassDesc _RenderTargetTexture = {
 LRESULT CubeMapTexture_Start(struct Object*, struct CubeMapTexture*, wParam_t, StartEventPtr);
 
 static struct PropertyType const CubeMapTextureProperties[kCubeMapTextureNumProperties] = {
-	DECL(0x59f82b67, CubeMapTexture, BackImage, BackImage, kDataTypeFixed), // CubeMapTexture.BackImage
-	DECL(0xe5328805, CubeMapTexture, FrontImage, FrontImage, kDataTypeFixed), // CubeMapTexture.FrontImage
-	DECL(0xd2e8522d, CubeMapTexture, LeftImage, LeftImage, kDataTypeFixed), // CubeMapTexture.LeftImage
-	DECL(0x7d77ff5a, CubeMapTexture, RightImage, RightImage, kDataTypeFixed), // CubeMapTexture.RightImage
-	DECL(0xea5c127f, CubeMapTexture, BottomImage, BottomImage, kDataTypeFixed), // CubeMapTexture.BottomImage
-	DECL(0x5d1df0f9, CubeMapTexture, TopImage, TopImage, kDataTypeFixed), // CubeMapTexture.TopImage
+	DECL(0x59f82b67, CubeMapTexture, BackImage, BackImage, kDataTypeString), // CubeMapTexture.BackImage
+	DECL(0xe5328805, CubeMapTexture, FrontImage, FrontImage, kDataTypeString), // CubeMapTexture.FrontImage
+	DECL(0xd2e8522d, CubeMapTexture, LeftImage, LeftImage, kDataTypeString), // CubeMapTexture.LeftImage
+	DECL(0x7d77ff5a, CubeMapTexture, RightImage, RightImage, kDataTypeString), // CubeMapTexture.RightImage
+	DECL(0xea5c127f, CubeMapTexture, BottomImage, BottomImage, kDataTypeString), // CubeMapTexture.BottomImage
+	DECL(0x5d1df0f9, CubeMapTexture, TopImage, TopImage, kDataTypeString), // CubeMapTexture.TopImage
 };
 static struct CubeMapTexture CubeMapTextureDefaults = {
 };
@@ -641,8 +641,8 @@ ORCA_API struct ClassDesc _IOSurfaceTexture = {
 
 static struct PropertyType const VertexShaderProperties[kVertexShaderNumProperties] = {
 	DECL(0x5dcdd537, VertexShader, Version, Version, kDataTypeInt), // VertexShader.Version
-	DECL(0x1ecae757, VertexShader, FloatPrecision, FloatPrecision, kDataTypeEnum, .TypeString = "Unset,Low,Medium,High"), // VertexShader.FloatPrecision
-	DECL(0x2cbcb34d, VertexShader, Shading, Shading, kDataTypeEnum, .TypeString = "Unlit,Phong,Standard"), // VertexShader.Shading
+	DECL(0x1ecae757, VertexShader, FloatPrecision, FloatPrecision, kDataTypeEnum, .TypeString = "Unset,Low,Medium,High", .EnumValues = _FloatPrecision), // VertexShader.FloatPrecision
+	DECL(0x2cbcb34d, VertexShader, Shading, Shading, kDataTypeEnum, .TypeString = "Unlit,Phong,Standard", .EnumValues = _Shading), // VertexShader.Shading
 };
 static struct VertexShader VertexShaderDefaults = {
 };
@@ -674,8 +674,8 @@ ORCA_API struct ClassDesc _VertexShader = {
 
 static struct PropertyType const FragmentShaderProperties[kFragmentShaderNumProperties] = {
 	DECL(0x5dcdd537, FragmentShader, Version, Version, kDataTypeInt), // FragmentShader.Version
-	DECL(0x1ecae757, FragmentShader, FloatPrecision, FloatPrecision, kDataTypeEnum, .TypeString = "Unset,Low,Medium,High"), // FragmentShader.FloatPrecision
-	DECL(0x0da660ff, FragmentShader, Out, Out, kDataTypeFixed), // FragmentShader.Out
+	DECL(0x1ecae757, FragmentShader, FloatPrecision, FloatPrecision, kDataTypeEnum, .TypeString = "Unset,Low,Medium,High", .EnumValues = _FloatPrecision), // FragmentShader.FloatPrecision
+	DECL(0x0da660ff, FragmentShader, Out, Out, kDataTypeString), // FragmentShader.Out
 };
 static struct FragmentShader FragmentShaderDefaults = {
 };
@@ -708,8 +708,8 @@ LRESULT Shader_Start(struct Object*, struct Shader*, wParam_t, StartEventPtr);
 LRESULT Shader_Destroy(struct Object*, struct Shader*, wParam_t, DestroyEventPtr);
 
 static struct PropertyType const ShaderProperties[kShaderNumProperties] = {
-	DECL(0x0038792b, Shader, BlendMode, BlendMode, kDataTypeEnum, .TypeString = "AlphaAutomatic,Opaque,Alpha,Additive,PremultipliedAlpha,MixedAlpha"), // Shader.BlendMode
-	DECL(0xb7e582be, Shader, DepthTestFunction, DepthTestFunction, kDataTypeEnum, .TypeString = "Never,Always,Less,LessOrEqual,Greater,GreaterOrEqual,Equal,NotEqual,Disabled"), // Shader.DepthTestFunction
+	DECL(0x0038792b, Shader, BlendMode, BlendMode, kDataTypeEnum, .TypeString = "AlphaAutomatic,Opaque,Alpha,Additive,PremultipliedAlpha,MixedAlpha", .EnumValues = _BlendMode), // Shader.BlendMode
+	DECL(0xb7e582be, Shader, DepthTestFunction, DepthTestFunction, kDataTypeEnum, .TypeString = "Never,Always,Less,LessOrEqual,Greater,GreaterOrEqual,Equal,NotEqual,Disabled", .EnumValues = _CompareFunc), // Shader.DepthTestFunction
 	DECL(0x8ec3072e, Shader, DepthWriteEnabled, DepthWriteEnabled, kDataTypeBool), // Shader.DepthWriteEnabled
 };
 static struct Shader ShaderDefaults = {
@@ -757,7 +757,7 @@ static struct PropertyType const MaterialProperties[kMaterialNumProperties] = {
 	DECL(0xe83ca8af, Material, TextureOffset, TextureOffset, kDataTypeStruct, .TypeString = "Vector2D"), // Material.TextureOffset
 	DECL(0x861dbc5b, Material, TextureTiling, TextureTiling, kDataTypeStruct, .TypeString = "Vector2D"), // Material.TextureTiling
 	DECL(0x5df90df9, Material, BlendIntensity, BlendIntensity, kDataTypeFloat), // Material.BlendIntensity
-	DECL(0x0038792b, Material, BlendMode, BlendMode, kDataTypeEnum, .TypeString = "AlphaAutomatic,Opaque,Alpha,Additive,PremultipliedAlpha,MixedAlpha"), // Material.BlendMode
+	DECL(0x0038792b, Material, BlendMode, BlendMode, kDataTypeEnum, .TypeString = "AlphaAutomatic,Opaque,Alpha,Additive,PremultipliedAlpha,MixedAlpha", .EnumValues = _BlendMode), // Material.BlendMode
 };
 static struct Material MaterialDefaults = {
 		
@@ -792,9 +792,9 @@ LRESULT Mesh_Start(struct Object*, struct Mesh*, wParam_t, StartEventPtr);
 LRESULT Mesh_Destroy(struct Object*, struct Mesh*, wParam_t, DestroyEventPtr);
 
 static struct PropertyType const MeshProperties[kMeshNumProperties] = {
-	DECL(0x61e2a3f8, Mesh, Source, Source, kDataTypeFixed), // Mesh.Source
+	DECL(0x61e2a3f8, Mesh, Source, Source, kDataTypeString), // Mesh.Source
 	DECL(0xcbd54f80, Mesh, Material, Material, kDataTypeObject, .TypeString = "Material"), // Mesh.Material
-	DECL(0x553fd778, Mesh, MeshMorphTargets, MeshMorphTargets, kDataTypeFixed), // Mesh.MeshMorphTargets
+	DECL(0x553fd778, Mesh, MeshMorphTargets, MeshMorphTargets, kDataTypeString), // Mesh.MeshMorphTargets
 };
 static struct Mesh MeshDefaults = {
 };
@@ -829,10 +829,10 @@ LRESULT FontFamily_Start(struct Object*, struct FontFamily*, wParam_t, StartEven
 LRESULT FontFamily_Destroy(struct Object*, struct FontFamily*, wParam_t, DestroyEventPtr);
 
 static struct PropertyType const FontFamilyProperties[kFontFamilyNumProperties] = {
-	DECL(0xe750f2b7, FontFamily, Regular, Regular, kDataTypeFixed), // FontFamily.Regular
-	DECL(0x45768d96, FontFamily, Bold, Bold, kDataTypeFixed), // FontFamily.Bold
-	DECL(0x8db0c08d, FontFamily, Italic, Italic, kDataTypeFixed), // FontFamily.Italic
-	DECL(0x6e1d4e1a, FontFamily, BoldItalic, BoldItalic, kDataTypeFixed), // FontFamily.BoldItalic
+	DECL(0xe750f2b7, FontFamily, Regular, Regular, kDataTypeString), // FontFamily.Regular
+	DECL(0x45768d96, FontFamily, Bold, Bold, kDataTypeString), // FontFamily.Bold
+	DECL(0x8db0c08d, FontFamily, Italic, Italic, kDataTypeString), // FontFamily.Italic
+	DECL(0x6e1d4e1a, FontFamily, BoldItalic, BoldItalic, kDataTypeString), // FontFamily.BoldItalic
 };
 static struct FontFamily FontFamilyDefaults = {
 };

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Screen SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
+<Screen Width="1280" Height="800" bg="gray-950"> <!-- Application -->
+  <Grid Rows="64px auto" gap="0"> <!-- Root -->
+
+    <Node2D bg="gray-900"> <!-- NavBar -->
+      <StackView dir="horizontal" gap="8" items="center" m="10"> <!-- NavLinks -->
+        <TextBlock text="xl violet-500" w="18">ORCA</TextBlock> <!-- Brand -->
+        <TextBlock text="sm slate-400">Overview</TextBlock> <!-- NavOverview -->
+        <TextBlock text="sm slate-400">Features</TextBlock> <!-- NavFeatures -->
+        <TextBlock text="sm slate-400">Gallery</TextBlock> <!-- NavGallery -->
+        <TextBlock text="sm slate-400">Docs</TextBlock> <!-- NavDocs -->
+      </StackView>
+    </Node2D>
+
+    <StackView dir="vertical" gap="0" overflow-y="scroll" overflow="hidden"> <!-- Body -->
+      <Grid Columns="auto auto" gap="6" bg="gray-950"> <!-- Hero -->
+        <Node2D p="14"> <!-- HeroContent -->
+          <StackView dir="vertical" gap="0"> <!-- HeroStack -->
+            <TextBlock text="5xl slate-100">Build stunning</TextBlock> <!-- HeadlineLine1 -->
+            <TextBlock text="5xl violet-500">UI in real-time.</TextBlock> <!-- HeadlineLine2 -->
+            <Node2D h="5"/> <!-- HeadlineSpacer -->
+            <TextBlock text="sm slate-500" wrap="true">A modern UI engine for games and native apps. Compose layouts from grids, stacks, text, and images — all rendered at 60 fps.</TextBlock> <!-- SubHeadline -->
+            <Node2D h="10"/> <!-- MetricSpacer -->
+            <Grid Columns="auto auto auto" gap="4"> <!-- Metrics -->
+              <Node2D bg="gray-900" p="5" w="32"> <!-- MetricUsers -->
+                <StackView dir="vertical" gap="1">
+                  <TextBlock text="3xl violet-500">2.4 M</TextBlock> <!-- MetricUsersValue -->
+                  <TextBlock text="xs gray-600">Active users</TextBlock> <!-- MetricUsersLabel -->
+                </StackView>
+              </Node2D>
+              <Node2D bg="gray-900" p="5" w="32"> <!-- MetricUptime -->
+                <StackView dir="vertical" gap="1">
+                  <TextBlock text="3xl emerald-500">99.9 %</TextBlock> <!-- MetricUptimeValue -->
+                  <TextBlock text="xs gray-600">Uptime SLA</TextBlock> <!-- MetricUptimeLabel -->
+                </StackView>
+              </Node2D>
+              <Node2D bg="gray-900" p="5" w="32"> <!-- MetricFrame -->
+                <StackView dir="vertical" gap="1">
+                  <TextBlock text="3xl blue-500">1.2 ms</TextBlock> <!-- MetricFrameValue -->
+                  <TextBlock text="xs gray-600">Frame time</TextBlock> <!-- MetricFrameLabel -->
+                </StackView>
+              </Node2D>
+            </Grid>
+          </StackView>
+        </Node2D>
+        <ImageView src="Example/Images/people" stretch="uniform-fill" mr="14"/> <!-- HeroImage -->
+      </Grid>
+
+      <Node2D bg="gray-950" p="10"> <!-- FeatureSection -->
+        <Grid Columns="auto auto auto" gap="5"> <!-- FeatureCards -->
+
+          <Node2D bg="gray-900" p="7"> <!-- CardText -->
+            <StackView dir="vertical" gap="2"> <!-- CardTextStack -->
+              <TextBlock text="xl violet-500" bg="violet-950" w="11" h="10" align="center middle">Aa</TextBlock> <!-- CardTextIcon -->
+              <Node2D h="2"/> <!-- CardTextSpacer -->
+              <TextBlock text="base slate-100">Text Rendering</TextBlock> <!-- CardTextTitle -->
+              <TextBlock text="xs gray-600" wrap="true">Pixel-perfect typography with kerning, multi-language support, and full font control.</TextBlock> <!-- CardTextBody -->
+            </StackView>
+          </Node2D>
+
+          <Node2D bg="gray-900" p="7"> <!-- CardLayout -->
+            <StackView dir="vertical" gap="2"> <!-- CardLayoutStack -->
+              <TextBlock text="xl emerald-500" bg="emerald-950" w="11" h="10" align="center middle">#</TextBlock> <!-- CardLayoutIcon -->
+              <Node2D h="2"/> <!-- CardLayoutSpacer -->
+              <TextBlock text="base slate-100">Flexible Layouts</TextBlock> <!-- CardLayoutTitle -->
+              <TextBlock text="xs gray-600" wrap="true">Grid and stack containers that adapt to any resolution, defined declaratively in XML.</TextBlock> <!-- CardLayoutBody -->
+            </StackView>
+          </Node2D>
+
+          <Node2D bg="gray-900" p="7"> <!-- CardImage -->
+            <StackView dir="vertical" gap="2"> <!-- CardImageStack -->
+              <ImageView src="Example/Images/dog" w="48" h="20"/> <!-- CardImageThumb -->
+              <TextBlock text="base slate-100">Image Integration</TextBlock> <!-- CardImageTitle -->
+              <TextBlock text="xs gray-600" wrap="true">Fast texture loading with stretch, crop, and nine-patch rendering built in.</TextBlock> <!-- CardImageBody -->
+            </StackView>
+          </Node2D>
+
+        </Grid>
+      </Node2D>
+    </StackView>
+  </Grid>
+</Screen>

@@ -22,7 +22,7 @@ extern struct text_info* luaX_checktext_info(lua_State *L, int index);
 extern void luaX_pushlua_State(lua_State *L, struct lua_State const* value);
 extern struct lua_State* luaX_checklua_State(lua_State *L, int index);
 
-static const char *_Direction[] = {"Horizontal","Vertical","Depth",NULL};
+ORCA_API const char *_Direction[] = {"Horizontal","Vertical","Depth",NULL};
 const char *DirectionToString(enum Direction value) {
 	assert(value >= 0 && value < 3);
 	return _Direction[value];
@@ -34,7 +34,7 @@ void luaX_pushDirection(lua_State *L, enum Direction value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _Direction[value]);
 }
-static const char *_Box3Field[] = {"X","Y","Z","Width","Height","Depth",NULL};
+ORCA_API const char *_Box3Field[] = {"X","Y","Z","Width","Height","Depth",NULL};
 const char *Box3FieldToString(enum Box3Field value) {
 	assert(value >= 0 && value < 6);
 	return _Box3Field[value];
@@ -46,7 +46,7 @@ void luaX_pushBox3Field(lua_State *L, enum Box3Field value) {
 	assert(value >= 0 && value < 6);
 	lua_pushstring(L, _Box3Field[value]);
 }
-static const char *_TextOverflow[] = {"Clip","Ellipsis",NULL};
+ORCA_API const char *_TextOverflow[] = {"Clip","Ellipsis",NULL};
 const char *TextOverflowToString(enum TextOverflow value) {
 	assert(value >= 0 && value < 2);
 	return _TextOverflow[value];
@@ -58,7 +58,7 @@ void luaX_pushTextOverflow(lua_State *L, enum TextOverflow value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _TextOverflow[value]);
 }
-static const char *_TextWrapping[] = {"WrapWithOverflow","NoWrap","Wrap",NULL};
+ORCA_API const char *_TextWrapping[] = {"WrapWithOverflow","NoWrap","Wrap",NULL};
 const char *TextWrappingToString(enum TextWrapping value) {
 	assert(value >= 0 && value < 3);
 	return _TextWrapping[value];
@@ -70,7 +70,7 @@ void luaX_pushTextWrapping(lua_State *L, enum TextWrapping value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _TextWrapping[value]);
 }
-static const char *_TextHorizontalAlignment[] = {"Left","Center","Right",NULL};
+ORCA_API const char *_TextHorizontalAlignment[] = {"Left","Center","Right",NULL};
 const char *TextHorizontalAlignmentToString(enum TextHorizontalAlignment value) {
 	assert(value >= 0 && value < 3);
 	return _TextHorizontalAlignment[value];
@@ -82,7 +82,7 @@ void luaX_pushTextHorizontalAlignment(lua_State *L, enum TextHorizontalAlignment
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _TextHorizontalAlignment[value]);
 }
-static const char *_TextVerticalAlignment[] = {"Top","Center","Bottom","Baseline",NULL};
+ORCA_API const char *_TextVerticalAlignment[] = {"Top","Center","Bottom","Baseline",NULL};
 const char *TextVerticalAlignmentToString(enum TextVerticalAlignment value) {
 	assert(value >= 0 && value < 4);
 	return _TextVerticalAlignment[value];
@@ -94,7 +94,7 @@ void luaX_pushTextVerticalAlignment(lua_State *L, enum TextVerticalAlignment val
 	assert(value >= 0 && value < 4);
 	lua_pushstring(L, _TextVerticalAlignment[value]);
 }
-static const char *_HorizontalAlignment[] = {"Stretch","Left","Center","Right",NULL};
+ORCA_API const char *_HorizontalAlignment[] = {"Stretch","Left","Center","Right",NULL};
 const char *HorizontalAlignmentToString(enum HorizontalAlignment value) {
 	assert(value >= 0 && value < 4);
 	return _HorizontalAlignment[value];
@@ -106,7 +106,7 @@ void luaX_pushHorizontalAlignment(lua_State *L, enum HorizontalAlignment value) 
 	assert(value >= 0 && value < 4);
 	lua_pushstring(L, _HorizontalAlignment[value]);
 }
-static const char *_VerticalAlignment[] = {"Stretch","Top","Center","Bottom",NULL};
+ORCA_API const char *_VerticalAlignment[] = {"Stretch","Top","Center","Bottom",NULL};
 const char *VerticalAlignmentToString(enum VerticalAlignment value) {
 	assert(value >= 0 && value < 4);
 	return _VerticalAlignment[value];
@@ -118,7 +118,7 @@ void luaX_pushVerticalAlignment(lua_State *L, enum VerticalAlignment value) {
 	assert(value >= 0 && value < 4);
 	lua_pushstring(L, _VerticalAlignment[value]);
 }
-static const char *_AlignItems[] = {"Start","Center","End","Stretch","Baseline",NULL};
+ORCA_API const char *_AlignItems[] = {"Start","Center","End","Stretch","Baseline",NULL};
 const char *AlignItemsToString(enum AlignItems value) {
 	assert(value >= 0 && value < 5);
 	return _AlignItems[value];
@@ -130,7 +130,7 @@ void luaX_pushAlignItems(lua_State *L, enum AlignItems value) {
 	assert(value >= 0 && value < 5);
 	lua_pushstring(L, _AlignItems[value]);
 }
-static const char *_DepthAlignment[] = {"Near","Center","Far","Stretch",NULL};
+ORCA_API const char *_DepthAlignment[] = {"Near","Center","Far","Stretch",NULL};
 const char *DepthAlignmentToString(enum DepthAlignment value) {
 	assert(value >= 0 && value < 4);
 	return _DepthAlignment[value];
@@ -142,7 +142,7 @@ void luaX_pushDepthAlignment(lua_State *L, enum DepthAlignment value) {
 	assert(value >= 0 && value < 4);
 	lua_pushstring(L, _DepthAlignment[value]);
 }
-static const char *_Overflow[] = {"Visible","Hidden","Clip","Scroll","Auto",NULL};
+ORCA_API const char *_Overflow[] = {"Visible","Hidden","Clip","Scroll","Auto",NULL};
 const char *OverflowToString(enum Overflow value) {
 	assert(value >= 0 && value < 5);
 	return _Overflow[value];
@@ -154,7 +154,7 @@ void luaX_pushOverflow(lua_State *L, enum Overflow value) {
 	assert(value >= 0 && value < 5);
 	lua_pushstring(L, _Overflow[value]);
 }
-static const char *_ForegroundHint[] = {"None","Translucent","Opaque",NULL};
+ORCA_API const char *_ForegroundHint[] = {"None","Translucent","Opaque",NULL};
 const char *ForegroundHintToString(enum ForegroundHint value) {
 	assert(value >= 0 && value < 3);
 	return _ForegroundHint[value];
@@ -166,7 +166,7 @@ void luaX_pushForegroundHint(lua_State *L, enum ForegroundHint value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _ForegroundHint[value]);
 }
-static const char *_JustifyContent[] = {"Start","End","Center","SpaceBetween","SpaceAround","SpaceEvenly",NULL};
+ORCA_API const char *_JustifyContent[] = {"Start","End","Center","SpaceBetween","SpaceAround","SpaceEvenly",NULL};
 const char *JustifyContentToString(enum JustifyContent value) {
 	assert(value >= 0 && value < 6);
 	return _JustifyContent[value];
@@ -178,7 +178,7 @@ void luaX_pushJustifyContent(lua_State *L, enum JustifyContent value) {
 	assert(value >= 0 && value < 6);
 	lua_pushstring(L, _JustifyContent[value]);
 }
-static const char *_FontWeight[] = {"Normal","Bold",NULL};
+ORCA_API const char *_FontWeight[] = {"Normal","Bold",NULL};
 const char *FontWeightToString(enum FontWeight value) {
 	assert(value >= 0 && value < 2);
 	return _FontWeight[value];
@@ -190,7 +190,7 @@ void luaX_pushFontWeight(lua_State *L, enum FontWeight value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _FontWeight[value]);
 }
-static const char *_FontStyle[] = {"Normal","Italic",NULL};
+ORCA_API const char *_FontStyle[] = {"Normal","Italic",NULL};
 const char *FontStyleToString(enum FontStyle value) {
 	assert(value >= 0 && value < 2);
 	return _FontStyle[value];
@@ -202,7 +202,7 @@ void luaX_pushFontStyle(lua_State *L, enum FontStyle value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _FontStyle[value]);
 }
-static const char *_BorderStyle[] = {"None","Hidden","Dotted","Dashed","Solid","Double","Groove","Ridge","Inset","Outset",NULL};
+ORCA_API const char *_BorderStyle[] = {"None","Hidden","Dotted","Dashed","Solid","Double","Groove","Ridge","Inset","Outset",NULL};
 const char *BorderStyleToString(enum BorderStyle value) {
 	assert(value >= 0 && value < 10);
 	return _BorderStyle[value];
@@ -214,7 +214,7 @@ void luaX_pushBorderStyle(lua_State *L, enum BorderStyle value) {
 	assert(value >= 0 && value < 10);
 	lua_pushstring(L, _BorderStyle[value]);
 }
-static const char *_PlaybackMode[] = {"Normal","Reverse","Pingpong",NULL};
+ORCA_API const char *_PlaybackMode[] = {"Normal","Reverse","Pingpong",NULL};
 const char *PlaybackModeToString(enum PlaybackMode value) {
 	assert(value >= 0 && value < 3);
 	return _PlaybackMode[value];
@@ -226,7 +226,7 @@ void luaX_pushPlaybackMode(lua_State *L, enum PlaybackMode value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _PlaybackMode[value]);
 }
-static const char *_ButtonType[] = {"Normal","Submit",NULL};
+ORCA_API const char *_ButtonType[] = {"Normal","Submit",NULL};
 const char *ButtonTypeToString(enum ButtonType value) {
 	assert(value >= 0 && value < 2);
 	return _ButtonType[value];
@@ -238,7 +238,7 @@ void luaX_pushButtonType(lua_State *L, enum ButtonType value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _ButtonType[value]);
 }
-static const char *_InputType[] = {"Text","Password","Number","Checkbox","Radio",NULL};
+ORCA_API const char *_InputType[] = {"Text","Password","Number","Checkbox","Radio",NULL};
 const char *InputTypeToString(enum InputType value) {
 	assert(value >= 0 && value < 5);
 	return _InputType[value];
@@ -250,7 +250,7 @@ void luaX_pushInputType(lua_State *L, enum InputType value) {
 	assert(value >= 0 && value < 5);
 	lua_pushstring(L, _InputType[value]);
 }
-static const char *_Sizing[] = {"PlusMargin","SizeOnly","MinusPadding",NULL};
+ORCA_API const char *_Sizing[] = {"PlusMargin","SizeOnly","MinusPadding",NULL};
 const char *SizingToString(enum Sizing value) {
 	assert(value >= 0 && value < 3);
 	return _Sizing[value];
@@ -262,7 +262,7 @@ void luaX_pushSizing(lua_State *L, enum Sizing value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _Sizing[value]);
 }
-static const char *_ResizeMode[] = {"CanResize","CanMinimize","CanResizeWithGrip","NoResize",NULL};
+ORCA_API const char *_ResizeMode[] = {"CanResize","CanMinimize","CanResizeWithGrip","NoResize",NULL};
 const char *ResizeModeToString(enum ResizeMode value) {
 	assert(value >= 0 && value < 4);
 	return _ResizeMode[value];
@@ -274,7 +274,7 @@ void luaX_pushResizeMode(lua_State *L, enum ResizeMode value) {
 	assert(value >= 0 && value < 4);
 	lua_pushstring(L, _ResizeMode[value]);
 }
-static const char *_Stretch[] = {"Uniform","None","Fill","UniformToFill",NULL};
+ORCA_API const char *_Stretch[] = {"Uniform","None","Fill","UniformToFill",NULL};
 const char *StretchToString(enum Stretch value) {
 	assert(value >= 0 && value < 4);
 	return _Stretch[value];
@@ -286,7 +286,7 @@ void luaX_pushStretch(lua_State *L, enum Stretch value) {
 	assert(value >= 0 && value < 4);
 	lua_pushstring(L, _Stretch[value]);
 }
-static const char *_TransitionType[] = {"None","Slide","Fade",NULL};
+ORCA_API const char *_TransitionType[] = {"None","Slide","Fade",NULL};
 const char *TransitionTypeToString(enum TransitionType value) {
 	assert(value >= 0 && value < 3);
 	return _TransitionType[value];
@@ -298,7 +298,7 @@ void luaX_pushTransitionType(lua_State *L, enum TransitionType value) {
 	assert(value >= 0 && value < 3);
 	lua_pushstring(L, _TransitionType[value]);
 }
-static const char *_StyleType[] = {"Generic","Named",NULL};
+ORCA_API const char *_StyleType[] = {"Generic","Named",NULL};
 const char *StyleTypeToString(enum StyleType value) {
 	assert(value >= 0 && value < 2);
 	return _StyleType[value];
@@ -1941,7 +1941,7 @@ ORCA_API struct ClassDesc _DataObject = {
 static struct PropertyType const AnimationPlayerProperties[kAnimationPlayerNumProperties] = {
 	DECL(0x706b62d9, AnimationPlayer, AutoplayEnabled, AutoplayEnabled, kDataTypeBool), // AnimationPlayer.AutoplayEnabled
 	DECL(0x9bcd7639, AnimationPlayer, DurationScale, DurationScale, kDataTypeFloat), // AnimationPlayer.DurationScale
-	DECL(0x234c71cf, AnimationPlayer, PlaybackMode, PlaybackMode, kDataTypeEnum, .TypeString = "Normal,Reverse,Pingpong"), // AnimationPlayer.PlaybackMode
+	DECL(0x234c71cf, AnimationPlayer, PlaybackMode, PlaybackMode, kDataTypeEnum, .TypeString = "Normal,Reverse,Pingpong", .EnumValues = _PlaybackMode), // AnimationPlayer.PlaybackMode
 	DECL(0x9b01fbb4, AnimationPlayer, RelativePlayback, RelativePlayback, kDataTypeBool), // AnimationPlayer.RelativePlayback
 	DECL(0xa3a5f0a1, AnimationPlayer, RepeatCount, RepeatCount, kDataTypeInt), // AnimationPlayer.RepeatCount
 	DECL(0x280cbcbb, AnimationPlayer, RestoreOriginalValuesAfterPlayback, RestoreOriginalValuesAfterPlayback, kDataTypeBool), // AnimationPlayer.RestoreOriginalValuesAfterPlayback
@@ -1978,7 +1978,7 @@ LRESULT Trigger_PropertyChanged(struct Object*, struct Trigger*, wParam_t, Prope
 LRESULT Trigger_Attached(struct Object*, struct Trigger*, wParam_t, AttachedEventPtr);
 
 static struct PropertyType const TriggerProperties[kTriggerNumProperties] = {
-	DECL(0x5221f9e8, Trigger, Property, Property, kDataTypeFixed), // Trigger.Property
+	DECL(0x5221f9e8, Trigger, Property, Property, kDataTypeString), // Trigger.Property
 	DECL(0xd147f96a, Trigger, Value, Value, kDataTypeInt), // Trigger.Value
 };
 static struct Trigger TriggerDefaults = {
@@ -2013,8 +2013,8 @@ ORCA_API struct ClassDesc _Trigger = {
 LRESULT OnPropertyChangedTrigger_PropertyChanged(struct Object*, struct OnPropertyChangedTrigger*, wParam_t, PropertyChangedEventPtr);
 
 static struct PropertyType const OnPropertyChangedTriggerProperties[kOnPropertyChangedTriggerNumProperties] = {
-	DECL(0x9ff03304, OnPropertyChangedTrigger, SourceNode, SourceNode, kDataTypeFixed), // OnPropertyChangedTrigger.SourceNode
-	DECL(0x5221f9e8, OnPropertyChangedTrigger, Property, Property, kDataTypeFixed), // OnPropertyChangedTrigger.Property
+	DECL(0x9ff03304, OnPropertyChangedTrigger, SourceNode, SourceNode, kDataTypeString), // OnPropertyChangedTrigger.SourceNode
+	DECL(0x5221f9e8, OnPropertyChangedTrigger, Property, Property, kDataTypeString), // OnPropertyChangedTrigger.Property
 };
 static struct OnPropertyChangedTrigger OnPropertyChangedTriggerDefaults = {
 };
@@ -2081,7 +2081,7 @@ ORCA_API struct ClassDesc _OnAttachedTrigger = {
 LRESULT EventTrigger_HandleMessage(struct Object*, struct EventTrigger*, wParam_t, HandleMessageEventPtr);
 
 static struct PropertyType const EventTriggerProperties[kEventTriggerNumProperties] = {
-	DECL(0x30d77e1a, EventTrigger, RoutedEvent, RoutedEvent, kDataTypeFixed), // EventTrigger.RoutedEvent
+	DECL(0x30d77e1a, EventTrigger, RoutedEvent, RoutedEvent, kDataTypeString), // EventTrigger.RoutedEvent
 };
 static struct EventTrigger EventTriggerDefaults = {
 };
@@ -2116,8 +2116,8 @@ LRESULT Setter_Triggered(struct Object*, struct Setter*, wParam_t, TriggeredEven
 
 static struct PropertyType const SetterProperties[kSetterNumProperties] = {
 	DECL(0xa5ea0da3, Setter, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // Setter.Trigger
-	DECL(0x5221f9e8, Setter, Property, Property, kDataTypeFixed), // Setter.Property
-	DECL(0xd147f96a, Setter, Value, Value, kDataTypeFixed), // Setter.Value
+	DECL(0x5221f9e8, Setter, Property, Property, kDataTypeString), // Setter.Property
+	DECL(0xd147f96a, Setter, Value, Value, kDataTypeString), // Setter.Value
 };
 static struct Setter SetterDefaults = {
 };
@@ -2152,7 +2152,7 @@ LRESULT Handler_Triggered(struct Object*, struct Handler*, wParam_t, TriggeredEv
 static struct PropertyType const HandlerProperties[kHandlerNumProperties] = {
 	DECL(0xa5ea0da3, Handler, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // Handler.Trigger
 	DECL(0x8b67f168, Handler, Target, Target, kDataTypeObject, .TypeString = "Node"), // Handler.Target
-	DECL(0x98a79a69, Handler, Function, Function, kDataTypeFixed), // Handler.Function
+	DECL(0x98a79a69, Handler, Function, Function, kDataTypeString), // Handler.Function
 };
 static struct Handler HandlerDefaults = {
 };
@@ -2300,21 +2300,21 @@ static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	DECL(0x14d0d564, Node, BorderWidthFront, Border.Width.Axis[2].Left, kDataTypeFloat), // Node.BorderWidthFront
 	DECL(0x7c087736, Node, BorderWidthBack, Border.Width.Axis[2].Right, kDataTypeFloat), // Node.BorderWidthBack
 	DECL(0x933e48c6, Node, BorderColor, Border.Color, kDataTypeStruct, .TypeString = "Color"), // Node.BorderColor
-	DECL(0x390b4488, Node, BorderStyle, Border.Style, kDataTypeEnum, .TypeString = "None,Hidden,Dotted,Dashed,Solid,Double,Groove,Ridge,Inset,Outset"), // Node.BorderStyle
+	DECL(0x390b4488, Node, BorderStyle, Border.Style, kDataTypeEnum, .TypeString = "None,Hidden,Dotted,Dashed,Solid,Double,Groove,Ridge,Inset,Outset", .EnumValues = _BorderStyle), // Node.BorderStyle
 	DECL(0xb8e9fe05, Node, BorderRadius, Border.Radius, kDataTypeStruct, .TypeString = "BorderRadiusShorthand"), // Node.BorderRadius
 	DECL(0x22252041, Node, BorderTopLeftRadius, Border.Radius.TopLeftRadius, kDataTypeFloat), // Node.BorderTopLeftRadius
 	DECL(0x789f0d82, Node, BorderTopRightRadius, Border.Radius.TopRightRadius, kDataTypeFloat), // Node.BorderTopRightRadius
 	DECL(0xc321a1f8, Node, BorderBottomRightRadius, Border.Radius.BottomRightRadius, kDataTypeFloat), // Node.BorderBottomRightRadius
 	DECL(0x700e8e07, Node, BorderBottomLeftRadius, Border.Radius.BottomLeftRadius, kDataTypeFloat), // Node.BorderBottomLeftRadius
 	DECL(0xd66abafe, Node, Alignment, Alignment, kDataTypeStruct, .TypeString = "AlignmentShorthand"), // Node.Alignment
-	DECL(0x1b8d5152, Node, HorizontalAlignment, Alignment.Axis[0], kDataTypeEnum, .TypeString = "Stretch,Left,Center,Right"), // Node.HorizontalAlignment
-	DECL(0x94b01054, Node, VerticalAlignment, Alignment.Axis[1], kDataTypeEnum, .TypeString = "Stretch,Top,Center,Bottom"), // Node.VerticalAlignment
-	DECL(0x7ef540ff, Node, DepthAlignment, Alignment.Axis[2], kDataTypeEnum, .TypeString = "Near,Center,Far,Stretch"), // Node.DepthAlignment
+	DECL(0x1b8d5152, Node, HorizontalAlignment, Alignment.Axis[0], kDataTypeEnum, .TypeString = "Stretch,Left,Center,Right", .EnumValues = _HorizontalAlignment), // Node.HorizontalAlignment
+	DECL(0x94b01054, Node, VerticalAlignment, Alignment.Axis[1], kDataTypeEnum, .TypeString = "Stretch,Top,Center,Bottom", .EnumValues = _VerticalAlignment), // Node.VerticalAlignment
+	DECL(0x7ef540ff, Node, DepthAlignment, Alignment.Axis[2], kDataTypeEnum, .TypeString = "Near,Center,Far,Stretch", .EnumValues = _DepthAlignment), // Node.DepthAlignment
 	DECL(0x592a4941, Node, Visible, Visible, kDataTypeBool), // Node.Visible
 	DECL(0x20d9ba7c, Node, QuickHide, QuickHide, kDataTypeBool), // Node.QuickHide
 	DECL(0xa0b06d26, Node, VisibleAmountInParent, VisibleAmountInParent, kDataTypeFloat), // Node.VisibleAmountInParent
 	DECL(0xde1f0406, Node, Opacity, Opacity, kDataTypeFloat), // Node.Opacity
-	DECL(0x76bda0c0, Node, Tags, Tags, kDataTypeObjectTags), // Node.Tags
+	DECL(0x76bda0c0, Node, Tags, Tags, kDataTypeString), // Node.Tags
 	DECL(0xa310331c, Node, DataContext, DataContext, kDataTypeObject, .TypeString = "DataObject"), // Node.DataContext
 };
 static struct Node NodeDefaults = {
@@ -2355,10 +2355,10 @@ ORCA_API struct ClassDesc _Node = {
 
 
 static struct PropertyType const TextRunProperties[kTextRunNumProperties] = {
-	DECL(0x3e142d5e, TextRun, Text, Text, kDataTypeFixed), // TextRun.Text
+	DECL(0x3e142d5e, TextRun, Text, Text, kDataTypeString), // TextRun.Text
 	DECL(0xa77a5eb0, TextRun, Font, Font, kDataTypeStruct, .TypeString = "FontShorthand"), // TextRun.Font
-	DECL(0xd0616ad0, TextRun, FontWeight, Font.Weight, kDataTypeEnum, .TypeString = "Normal,Bold"), // TextRun.FontWeight
-	DECL(0x6c164db5, TextRun, FontStyle, Font.Style, kDataTypeEnum, .TypeString = "Normal,Italic"), // TextRun.FontStyle
+	DECL(0xd0616ad0, TextRun, FontWeight, Font.Weight, kDataTypeEnum, .TypeString = "Normal,Bold", .EnumValues = _FontWeight), // TextRun.FontWeight
+	DECL(0x6c164db5, TextRun, FontStyle, Font.Style, kDataTypeEnum, .TypeString = "Normal,Italic", .EnumValues = _FontStyle), // TextRun.FontStyle
 	DECL(0xa26a44e1, TextRun, FontSize, Font.Size, kDataTypeFloat), // TextRun.FontSize
 	DECL(0xf6319880, TextRun, FontFamily, Font.Family, kDataTypeObject, .TypeString = "FontFamily"), // TextRun.FontFamily
 	DECL(0x9a85011f, TextRun, Underline, Underline, kDataTypeStruct, .TypeString = "UnderlineShorthand"), // TextRun.Underline
@@ -2407,10 +2407,10 @@ LRESULT TextBlockConcept_Destroy(struct Object*, struct TextBlockConcept*, wPara
 LRESULT TextBlockConcept_MakeText(struct Object*, struct TextBlockConcept*, wParam_t, MakeTextEventPtr);
 
 static struct PropertyType const TextBlockConceptProperties[kTextBlockConceptNumProperties] = {
-	DECL(0x43c114fb, TextBlockConcept, TextResourceID, TextResourceID, kDataTypeFixed), // TextBlockConcept.TextResourceID
-	DECL(0x73dd50ec, TextBlockConcept, TextResourceConfiguration, TextResourceConfiguration, kDataTypeFixed), // TextBlockConcept.TextResourceConfiguration
-	DECL(0xdccaa011, TextBlockConcept, PlaceholderText, PlaceholderText, kDataTypeFixed), // TextBlockConcept.PlaceholderText
-	DECL(0x3dcadc9c, TextBlockConcept, TextOverflow, TextOverflow, kDataTypeEnum, .TypeString = "Clip,Ellipsis"), // TextBlockConcept.TextOverflow
+	DECL(0x43c114fb, TextBlockConcept, TextResourceID, TextResourceID, kDataTypeString), // TextBlockConcept.TextResourceID
+	DECL(0x73dd50ec, TextBlockConcept, TextResourceConfiguration, TextResourceConfiguration, kDataTypeString), // TextBlockConcept.TextResourceConfiguration
+	DECL(0xdccaa011, TextBlockConcept, PlaceholderText, PlaceholderText, kDataTypeString), // TextBlockConcept.PlaceholderText
+	DECL(0x3dcadc9c, TextBlockConcept, TextOverflow, TextOverflow, kDataTypeEnum, .TypeString = "Clip,Ellipsis", .EnumValues = _TextOverflow), // TextBlockConcept.TextOverflow
 	DECL(0x8987413a, TextBlockConcept, Placeholder, Placeholder, kDataTypeStruct, .TypeString = "BrushShorthand"), // TextBlockConcept.Placeholder
 	DECL(0xb272976d, TextBlockConcept, PlaceholderColor, Placeholder.Color, kDataTypeStruct, .TypeString = "Color"), // TextBlockConcept.PlaceholderColor
 	DECL(0x6b519bcf, TextBlockConcept, PlaceholderImage, Placeholder.Image, kDataTypeObject, .TypeString = "Texture"), // TextBlockConcept.PlaceholderImage
@@ -2418,9 +2418,9 @@ static struct PropertyType const TextBlockConceptProperties[kTextBlockConceptNum
 	DECL(0x27e35097, TextBlockConcept, UseFullFontHeight, UseFullFontHeight, kDataTypeBool), // TextBlockConcept.UseFullFontHeight
 	DECL(0xda466bac, TextBlockConcept, ConstrainContentHeight, ConstrainContentHeight, kDataTypeBool), // TextBlockConcept.ConstrainContentHeight
 	DECL(0x468540fd, TextBlockConcept, WordWrap, WordWrap, kDataTypeBool), // TextBlockConcept.WordWrap
-	DECL(0x65cdc8f2, TextBlockConcept, TextWrapping, TextWrapping, kDataTypeEnum, .TypeString = "WrapWithOverflow,NoWrap,Wrap"), // TextBlockConcept.TextWrapping
-	DECL(0xf46faf37, TextBlockConcept, TextHorizontalAlignment, TextHorizontalAlignment, kDataTypeEnum, .TypeString = "Left,Center,Right"), // TextBlockConcept.TextHorizontalAlignment
-	DECL(0xbc8a8a99, TextBlockConcept, TextVerticalAlignment, TextVerticalAlignment, kDataTypeEnum, .TypeString = "Top,Center,Bottom,Baseline"), // TextBlockConcept.TextVerticalAlignment
+	DECL(0x65cdc8f2, TextBlockConcept, TextWrapping, TextWrapping, kDataTypeEnum, .TypeString = "WrapWithOverflow,NoWrap,Wrap", .EnumValues = _TextWrapping), // TextBlockConcept.TextWrapping
+	DECL(0xf46faf37, TextBlockConcept, TextHorizontalAlignment, TextHorizontalAlignment, kDataTypeEnum, .TypeString = "Left,Center,Right", .EnumValues = _TextHorizontalAlignment), // TextBlockConcept.TextHorizontalAlignment
+	DECL(0xbc8a8a99, TextBlockConcept, TextVerticalAlignment, TextVerticalAlignment, kDataTypeEnum, .TypeString = "Top,Center,Bottom,Baseline", .EnumValues = _TextVerticalAlignment), // TextBlockConcept.TextVerticalAlignment
 };
 static struct TextBlockConcept TextBlockConceptDefaults = {
 		
@@ -2498,8 +2498,8 @@ static struct PropertyType const Node2DProperties[kNode2DNumProperties] = {
 	DECL(0xe284b26f, Node2D, BoxShadowSpreadRadius, BoxShadow.SpreadRadius, kDataTypeFloat), // Node2D.BoxShadowSpreadRadius
 	DECL(0xe0ae423d, Node2D, BoxShadowColor, BoxShadow.Color, kDataTypeStruct, .TypeString = "Color"), // Node2D.BoxShadowColor
 	DECL(0x3cf02b8b, Node2D, Overflow, Overflow, kDataTypeStruct, .TypeString = "OverflowShorthand"), // Node2D.Overflow
-	DECL(0xc114fd29, Node2D, OverflowX, Overflow.x, kDataTypeEnum, .TypeString = "Visible,Hidden,Clip,Scroll,Auto"), // Node2D.OverflowX
-	DECL(0xc014fb96, Node2D, OverflowY, Overflow.y, kDataTypeEnum, .TypeString = "Visible,Hidden,Clip,Scroll,Auto"), // Node2D.OverflowY
+	DECL(0xc114fd29, Node2D, OverflowX, Overflow.x, kDataTypeEnum, .TypeString = "Visible,Hidden,Clip,Scroll,Auto", .EnumValues = _Overflow), // Node2D.OverflowX
+	DECL(0xc014fb96, Node2D, OverflowY, Overflow.y, kDataTypeEnum, .TypeString = "Visible,Hidden,Clip,Scroll,Auto", .EnumValues = _Overflow), // Node2D.OverflowY
 	DECL(0x7787478b, Node2D, Ring, Ring, kDataTypeStruct, .TypeString = "RingShorthand"), // Node2D.Ring
 	DECL(0xfd700608, Node2D, RingOffset, Ring.Offset, kDataTypeFloat), // Node2D.RingOffset
 	DECL(0x5fff552d, Node2D, RingWidth, Ring.Width, kDataTypeFloat), // Node2D.RingWidth
@@ -2515,7 +2515,7 @@ static struct PropertyType const Node2DProperties[kNode2DNumProperties] = {
 	DECL(0x639756ff, Node2D, ContentStretch, ContentStretch, kDataTypeBool), // Node2D.ContentStretch
 	DECL(0x09dc5114, Node2D, Hovered, Hovered, kDataTypeBool), // Node2D.Hovered
 	DECL(0xfdba6cd0, Node2D, IgnoreHitTest, IgnoreHitTest, kDataTypeBool), // Node2D.IgnoreHitTest
-	DECL(0xf068ff19, Node2D, ForegroundHint, ForegroundHint, kDataTypeEnum, .TypeString = "None,Translucent,Opaque"), // Node2D.ForegroundHint
+	DECL(0xf068ff19, Node2D, ForegroundHint, ForegroundHint, kDataTypeEnum, .TypeString = "None,Translucent,Opaque", .EnumValues = _ForegroundHint), // Node2D.ForegroundHint
 };
 static struct Node2D Node2DDefaults = {
 		
@@ -2565,8 +2565,8 @@ ORCA_API struct ClassDesc _Node2D = {
 LRESULT PrefabView2D_LoadView(struct Object*, struct PrefabView2D*, wParam_t, LoadViewEventPtr);
 
 static struct PropertyType const PrefabView2DProperties[kPrefabView2DNumProperties] = {
-	DECL(0x57f28ff6, PrefabView2D, SCA, SCA, kDataTypeFixed), // PrefabView2D.SCA
-	DECL(0xd6415ba3, PrefabView2D, Prefab, Prefab, kDataTypeFixed), // PrefabView2D.Prefab
+	DECL(0x57f28ff6, PrefabView2D, SCA, SCA, kDataTypeString), // PrefabView2D.SCA
+	DECL(0xd6415ba3, PrefabView2D, Prefab, Prefab, kDataTypeString), // PrefabView2D.Prefab
 };
 static struct PrefabView2D PrefabView2DDefaults = {
 };
@@ -2648,8 +2648,8 @@ LRESULT Input_LeftMouseUp(struct Object*, struct Input*, wParam_t, LeftMouseUpEv
 LRESULT Input_MeasureOverride(struct Object*, struct Input*, wParam_t, MeasureOverrideEventPtr);
 
 static struct PropertyType const InputProperties[kInputNumProperties] = {
-	DECL(0x0fe07306, Input, Name, Name, kDataTypeFixed), // Input.Name
-	DECL(0xd155d06d, Input, Type, Type, kDataTypeEnum, .TypeString = "Text,Password,Number,Checkbox,Radio"), // Input.Type
+	DECL(0x0fe07306, Input, Name, Name, kDataTypeString), // Input.Name
+	DECL(0xd155d06d, Input, Type, Type, kDataTypeEnum, .TypeString = "Text,Password,Number,Checkbox,Radio", .EnumValues = _InputType), // Input.Type
 	DECL(0x558a502f, Input, Cursor, Cursor, kDataTypeInt), // Input.Cursor
 	DECL(0xe890d540, Input, Multiline, Multiline, kDataTypeBool), // Input.Multiline
 	DECL(0x51ba2a66, Input, Checked, Checked, kDataTypeBool), // Input.Checked
@@ -2695,7 +2695,7 @@ LRESULT Button_KeyDown(struct Object*, struct Button*, wParam_t, KeyDownEventPtr
 LRESULT Button_DrawBrush(struct Object*, struct Button*, wParam_t, DrawBrushEventPtr);
 
 static struct PropertyType const ButtonProperties[kButtonNumProperties] = {
-	DECL(0xd155d06d, Button, Type, Type, kDataTypeEnum, .TypeString = "Normal,Submit"), // Button.Type
+	DECL(0xd155d06d, Button, Type, Type, kDataTypeEnum, .TypeString = "Normal,Submit", .EnumValues = _ButtonType), // Button.Type
 };
 static struct Button ButtonDefaults = {
 };
@@ -2732,7 +2732,7 @@ ORCA_API struct ClassDesc _Button = {
 LRESULT Label_LeftMouseUp(struct Object*, struct Label*, wParam_t, LeftMouseUpEventPtr);
 
 static struct PropertyType const LabelProperties[kLabelNumProperties] = {
-	DECL(0x0f7e1b30, Label, For, For, kDataTypeFixed), // Label.For
+	DECL(0x0f7e1b30, Label, For, For, kDataTypeString), // Label.For
 };
 static struct Label LabelDefaults = {
 };
@@ -2768,9 +2768,9 @@ LRESULT StackView_ArrangeOverride(struct Object*, struct StackView*, wParam_t, A
 
 static struct PropertyType const StackViewProperties[kStackViewNumProperties] = {
 	DECL(0xcee65dd3, StackView, Reversed, Reversed, kDataTypeBool), // StackView.Reversed
-	DECL(0x61fefc0a, StackView, Direction, Direction, kDataTypeEnum, .TypeString = "Horizontal,Vertical,Depth"), // StackView.Direction
-	DECL(0x517ab5aa, StackView, AlignItems, AlignItems, kDataTypeEnum, .TypeString = "Start,Center,End,Stretch,Baseline"), // StackView.AlignItems
-	DECL(0x98c61698, StackView, JustifyContent, JustifyContent, kDataTypeEnum, .TypeString = "Start,End,Center,SpaceBetween,SpaceAround,SpaceEvenly"), // StackView.JustifyContent
+	DECL(0x61fefc0a, StackView, Direction, Direction, kDataTypeEnum, .TypeString = "Horizontal,Vertical,Depth", .EnumValues = _Direction), // StackView.Direction
+	DECL(0x517ab5aa, StackView, AlignItems, AlignItems, kDataTypeEnum, .TypeString = "Start,Center,End,Stretch,Baseline", .EnumValues = _AlignItems), // StackView.AlignItems
+	DECL(0x98c61698, StackView, JustifyContent, JustifyContent, kDataTypeEnum, .TypeString = "Start,End,Center,SpaceBetween,SpaceAround,SpaceEvenly", .EnumValues = _JustifyContent), // StackView.JustifyContent
 	DECL(0x8777939e, StackView, Spacing, Spacing, kDataTypeFloat), // StackView.Spacing
 };
 static struct StackView StackViewDefaults = {
@@ -2884,7 +2884,7 @@ LRESULT Screen_WindowPaint(struct Object*, struct Screen*, wParam_t, WindowPaint
 
 static struct PropertyType const ScreenProperties[kScreenNumProperties] = {
 	DECL(0xeb16b675, Screen, ClearColor, ClearColor, kDataTypeStruct, .TypeString = "Color"), // Screen.ClearColor
-	DECL(0x3dd888be, Screen, ResizeMode, ResizeMode, kDataTypeEnum, .TypeString = "CanResize,CanMinimize,CanResizeWithGrip,NoResize"), // Screen.ResizeMode
+	DECL(0x3dd888be, Screen, ResizeMode, ResizeMode, kDataTypeEnum, .TypeString = "CanResize,CanMinimize,CanResizeWithGrip,NoResize", .EnumValues = _ResizeMode), // Screen.ResizeMode
 	DECL(0x9a645b38, Screen, DialogResult, DialogResult, kDataTypeFloat), // Screen.DialogResult
 };
 static struct Screen ScreenDefaults = {
@@ -2926,7 +2926,7 @@ ORCA_API struct ClassDesc _Screen = {
 LRESULT Cinematic_DrawBrush(struct Object*, struct Cinematic*, wParam_t, DrawBrushEventPtr);
 
 static struct PropertyType const CinematicProperties[kCinematicNumProperties] = {
-	DECL(0x5ffdd888, Cinematic, FileName, FileName, kDataTypeFixed), // Cinematic.FileName
+	DECL(0x5ffdd888, Cinematic, FileName, FileName, kDataTypeString), // Cinematic.FileName
 	DECL(0x3eeb76a4, Cinematic, FrameRate, FrameRate, kDataTypeFloat), // Cinematic.FrameRate
 	DECL(0x32caacb1, Cinematic, NumFrames, NumFrames, kDataTypeFloat), // Cinematic.NumFrames
 	DECL(0xc1e58e65, Cinematic, FadeOut, FadeOut, kDataTypeFloat), // Cinematic.FadeOut
@@ -2964,9 +2964,9 @@ LRESULT Grid_MeasureOverride(struct Object*, struct Grid*, wParam_t, MeasureOver
 LRESULT Grid_ArrangeOverride(struct Object*, struct Grid*, wParam_t, ArrangeOverrideEventPtr);
 
 static struct PropertyType const GridProperties[kGridNumProperties] = {
-	DECL(0xea156fdc, Grid, Columns, Columns, kDataTypeFixed), // Grid.Columns
-	DECL(0xaa6592b8, Grid, Rows, Rows, kDataTypeFixed), // Grid.Rows
-	DECL(0x61fefc0a, Grid, Direction, Direction, kDataTypeEnum, .TypeString = "Horizontal,Vertical,Depth"), // Grid.Direction
+	DECL(0xea156fdc, Grid, Columns, Columns, kDataTypeString), // Grid.Columns
+	DECL(0xaa6592b8, Grid, Rows, Rows, kDataTypeString), // Grid.Rows
+	DECL(0x61fefc0a, Grid, Direction, Direction, kDataTypeEnum, .TypeString = "Horizontal,Vertical,Depth", .EnumValues = _Direction), // Grid.Direction
 	DECL(0x8777939e, Grid, Spacing, Spacing, kDataTypeFloat), // Grid.Spacing
 	DECL(0x57e1566f, Grid, CellWidth, CellWidth, kDataTypeFloat), // Grid.CellWidth
 	DECL(0xd2dc9412, Grid, CellHeight, CellHeight, kDataTypeFloat), // Grid.CellHeight
@@ -3008,12 +3008,12 @@ LRESULT ImageView_DrawBrush(struct Object*, struct ImageView*, wParam_t, DrawBru
 LRESULT ImageView_LoadView(struct Object*, struct ImageView*, wParam_t, LoadViewEventPtr);
 
 static struct PropertyType const ImageViewProperties[kImageViewNumProperties] = {
-	DECL(0x35c77969, ImageView, Src, Src, kDataTypeFixed), // ImageView.Src
+	DECL(0x35c77969, ImageView, Src, Src, kDataTypeString), // ImageView.Src
 	DECL(0x590ca79a, ImageView, Image, Image, kDataTypeObject, .TypeString = "Texture"), // ImageView.Image
 	DECL(0x079106fd, ImageView, Edges, Edges, kDataTypeStruct, .TypeString = "Vector4D"), // ImageView.Edges
 	DECL(0x062cedef, ImageView, Insets, Insets, kDataTypeStruct, .TypeString = "Vector4D"), // ImageView.Insets
 	DECL(0xa8c81591, ImageView, Viewbox, Viewbox, kDataTypeStruct, .TypeString = "Vector4D"), // ImageView.Viewbox
-	DECL(0x03d3b9ca, ImageView, Stretch, Stretch, kDataTypeEnum, .TypeString = "Uniform,None,Fill,UniformToFill"), // ImageView.Stretch
+	DECL(0x03d3b9ca, ImageView, Stretch, Stretch, kDataTypeEnum, .TypeString = "Uniform,None,Fill,UniformToFill", .EnumValues = _Stretch), // ImageView.Stretch
 };
 static struct ImageView ImageViewDefaults = {
 		
@@ -3152,8 +3152,8 @@ ORCA_API struct ClassDesc _TerminalView = {
 LRESULT Page_Create(struct Object*, struct Page*, wParam_t, CreateEventPtr);
 
 static struct PropertyType const PageProperties[kPageNumProperties] = {
-	DECL(0x24d471a9, Page, Title, Title, kDataTypeFixed), // Page.Title
-	DECL(0xeb66e456, Page, Path, Path, kDataTypeFixed), // Page.Path
+	DECL(0x24d471a9, Page, Title, Title, kDataTypeString), // Page.Title
+	DECL(0xeb66e456, Page, Path, Path, kDataTypeString), // Page.Path
 	DECL(0xe69ce202, Page, Transition, Transition, kDataTypeFloat), // Page.Transition
 };
 static struct Page PageDefaults = {
@@ -3256,8 +3256,8 @@ ORCA_API struct ClassDesc _PageViewport = {
 
 
 static struct PropertyType const StyleProperties[kStyleNumProperties] = {
-	DECL(0x77ada720, Style, TargetType, TargetType, kDataTypeFixed), // Style.TargetType
-	DECL(0xd155d06d, Style, Type, Type, kDataTypeEnum, .TypeString = "Generic,Named"), // Style.Type
+	DECL(0x77ada720, Style, TargetType, TargetType, kDataTypeString), // Style.TargetType
+	DECL(0xd155d06d, Style, Type, Type, kDataTypeEnum, .TypeString = "Generic,Named", .EnumValues = _StyleType), // Style.Type
 };
 static struct Style StyleDefaults = {
 };

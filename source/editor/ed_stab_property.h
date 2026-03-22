@@ -30,6 +30,7 @@ void UI_FillOutPropDef(HOBJ object, HPROP p, LPPROPDEF lpPropDef) {
   lpPropDef->lpRuntimeValue = (void*)PROP_GetValue(p);
   lpPropDef->bHasBinding    = PROP_HasProgram(p);
   lpPropDef->lpEnumValues   = PROP_GetUserData(p);
+  lpPropDef->lpEnumArray    = p->pdesc->EnumValues;
   lpPropDef->dwFlags        = PROP_GetFlags(p);
   memcpy(lpPropDef->pPrograms, p->programSources, sizeof(p->programSources));
   lpPropDef->bIsUsedInBinding = FALSE;
@@ -45,11 +46,8 @@ PDESC_Print(lpcPropertyType_t pdesc, LPSTR buffer, DWORD len, float const* pf)
     case kDataTypeInt:
       snprintf(buffer, len, "%dd", *(int*)pf);
       break;
-    case kDataTypeObjectTags:
-      snprintf(buffer, len, "%lldd", *(objectTags_t*)pf);
-      break;
     case kDataTypeEnum:
-      strncpy(buffer, strlistget(*(int*)pf, pdesc->TypeString), len);
+      strncpy(buffer, pdesc->EnumValues[*(int*)pf], len);
       break;
     case kDataTypeStruct:
       if (!strcmp(pdesc->TypeString, "Color")) {
@@ -68,11 +66,10 @@ PDESC_Print(lpcPropertyType_t pdesc, LPSTR buffer, DWORD len, float const* pf)
         snprintf(buffer + buflen, len - buflen, " %g", pf[i+1]);
       }
       break;
-    case kDataTypeFixed:
-      strncpy(buffer, (lpcString_t)pf, len);
-      break;
     case kDataTypeString:
-      strncpy(buffer, (lpcString_t)pf, len);
+      if (pf) {
+        strncpy(buffer, (lpcString_t)pf, len);
+      }
       break;
     case kDataTypeObject:
       if (*(handle_t *)pf) {

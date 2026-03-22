@@ -193,7 +193,7 @@ FS_LoadXML(lpcString_t szObjectName)
   strcat(pszFileName, ".xml");
   struct _xmlDoc* doc = NULL;
   
-  xmlWith(struct file, file, FS_LoadFile(pszFileName), FS_FreeFile) {
+  WITH(struct file, file, FS_LoadFile(pszFileName), FS_FreeFile) {
     doc = xmlReadMemory((char*)file->data, file->size, szObjectName, NULL, XML_FLAGS);
   }
   return doc;
@@ -225,7 +225,7 @@ FS_RegisterObject(lpObject_t object, lpcString_t path)
     FS_GetDirName(tmp, dir, sizeof(dir));
 //    if (!library && OBJ_FindChild(FS_GetWorkspace(), dir, FALSE)) {
 //      //      Con_Error("Could not find library %s, creating", tmp);
-//      xmlWith(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFreeDoc) {
+//      WITH(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFreeDoc) {
 //        xmlNodePtr root = xmlNewNode(NULL, XMLSTR("Library"));
 //        xmlSetProp(root, XMLSTR("Name"), XMLSTR(FS_GetBaseName(tmp)));
 //        xmlDocSetRootElement(doc, root);
@@ -370,7 +370,9 @@ static lpProject_t _InitProject(lua_State *L, lpcString_t szDirname) {
   OBJ_EnumClasses(ID_Bundle, _TryLoadBundle, &it);
   if (!it.project) {
     extern ClassDesc_t _Directory;
-    return GetProject((struct Object*)_Directory.ObjProc(NULL, L, kEventLoadProject, 0, &(struct LoadProjectArgs){ .Path = (void*)szDirname }));
+    struct LoadProjectArgs args = { .Path = (void*)szDirname };
+    LRESULT project = _Directory.ObjProc(NULL, L, kEventLoadProject, 0, &args);
+    return GetProject((struct Object*)project);
   } else {
     return GetProject(it.project);
   }

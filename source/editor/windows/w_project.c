@@ -48,7 +48,7 @@ _NewFile(LPVOID lpObject, lpcString_t szName, DWORD dwType) {
       FS_JoinPaths(szDir, sizeof(szDir), pPath, szName);
       FS_MakeDirectory(szDir);
       snprintf(pPath, sizeof(pPath), "%s/%s.xml", szDir, szName);
-      xmlWith(xmlDoc, doc, FS_InitProject(szName), xmlFreeDoc) {
+      WITH(xmlDoc, doc, FS_InitProject(szName), xmlFreeDoc) {
         xmlSaveFormatFile(pPath, doc, TRUE);
       }
       return FS_NewFile((HANDLE)(intptr_t)lpObject, pPath, PROJITEM_PROJECT);

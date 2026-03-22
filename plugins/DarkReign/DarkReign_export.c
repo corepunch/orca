@@ -17,7 +17,7 @@ LRESULT FtgPackage_HasChangedFiles(struct Object*, struct FtgPackage*, wParam_t,
 LRESULT FtgPackage_Destroy(struct Object*, struct FtgPackage*, wParam_t, DestroyEventPtr);
 
 static struct PropertyType const FtgPackageProperties[kFtgPackageNumProperties] = {
-	DECL(0x5ffdd888, FtgPackage, FileName, FileName, kDataTypeFixed), // FtgPackage.FileName
+	DECL(0x5ffdd888, FtgPackage, FileName, FileName, kDataTypeString), // FtgPackage.FileName
 };
 static struct FtgPackage FtgPackageDefaults = {
 };

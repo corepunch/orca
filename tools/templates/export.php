@@ -11,7 +11,26 @@ extern void luaX_push<?= $name ?>(lua_State *L, struct <?= $name ?> const* value
 extern struct <?= $name ?>* luaX_check<?= $name ?>(lua_State *L, int index);
 <?php endforeach ?>
 
-<?php include_template("export/enums", ['enums' => $model->getEnums()]) ?>
+<?php
+$local_enums = $model->getEnums();
+$extern_enums = [];
+foreach ($model->getComponents() as $cname => $comp) {
+	foreach ($comp->getProperties() as $prop) {
+		if ($prop->type->kind === 'enum') {
+			$ename = strval($prop->type->type);
+			$in_local = isset($local_enums[$ename]) ? $local_enums[$ename] : null;
+			$in_extern = isset($extern_enums[$ename]) ? $extern_enums[$ename] : null;
+			if ($in_local === null && $in_extern === null) {
+				$extern_enums[$ename] = $prop->type->data;
+			}
+		}
+	}
+}
+?>
+<?php foreach ($extern_enums as $ename => $eobj): ?>
+extern const char *_<?= $ename ?>[];
+<?php endforeach ?>
+<?php include_template("export/enums", ['enums' => $local_enums]) ?>
 <?php include_template("export/interfaces", ['interfaces' => $model->getInterfaces()]) ?>
 <?php include_template("export/structs", ['structs' => $model->getStructs()]) ?>
 <?php include_template("export/components", ['components' => $model->getComponents(), 'events' => $model->getEvents()]) ?>

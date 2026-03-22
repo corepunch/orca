@@ -95,14 +95,18 @@ HANDLER(CubeMapTexture, Start)
   R_Call(glActiveTexture, GL_TEXTURE0);
   R_Call(glBindTexture, GL_TEXTURE_CUBE_MAP, texture->texnum);
   
-  fixedString_t *images = &pCubeMapTexture->BackImage;
+  const char **images = &pCubeMapTexture->BackImage;
   
   FOR_LOOP(index, kCubemapNumImages)
   {
     GLenum const target = cubmap_to_gl(index);
-    struct Image img={0};
-    snprintf(img.Source, sizeof(img.Source), "%s.png", images[index]);
-    R_LoadImageFromSource(target, texture, &img);//images[index]);
+    if (images[index]) {
+      char src[MAX_PROPERTY_STRING];
+      struct Image img={0};
+      snprintf(src, sizeof(src), "%s.png", images[index]);
+      img.Source = src;
+      R_LoadImageFromSource(target, texture, &img);
+    }
   }
   
   R_Call(glTexParameteri, GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

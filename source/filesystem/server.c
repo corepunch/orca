@@ -124,7 +124,7 @@ add_subproperty(xmlNodePtr xml,
       _xmlSetProp(n, "data-content", pdesc->TypeString);
       break;
     case kDataTypeEnum:
-      xmlWith(char, s, strdup(pdesc->TypeString), free) {
+      WITH(char, s, strdup(pdesc->TypeString), free) {
         for (LPSTR t = strtok(s,","); t; t = strtok(NULL, ",")) {
           _xmlNewChild(n, "menu-item", "header", t, "name", t);
   //          xmlNewChild(n, NULL, XMLSTR("value"), XMLSTR(t));
@@ -148,7 +148,7 @@ static xmlNodePtr
 xmlFindNode(xmlNodePtr node, xmlChar const *name) {
   xmlForEach(child, node) {
     if (xmlStrcmp(child->name, XMLSTR("group"))) continue;
-    xmlWith(xmlChar, _name, xmlGetProp(child, XMLSTR("name")), xmlFree) {
+    WITH(xmlChar, _name, xmlGetProp(child, XMLSTR("name")), xmlFree) {
       if (xmlStrcmp(_name, name)) continue;
       return child;
     }
@@ -177,17 +177,17 @@ SV_CMD(GET, node)
 {
   REQUIRE(lpObject_t, object, OBJ_FindByPath(FS_GetWorkspace(), endpoint), ERROR_CANT_FIND_OBJECT);
   xmlNodePtr _g = _xmlNewChild(response, "group", "name", DEFAULT_GROUP, "data-compound", "true");
-//  xmlNodePtr _c = _xmlAddProp(_g, "Class", OBJ_GetClassName(object), kDataTypeFixed);
+//  xmlNodePtr _c = _xmlAddProp(_g, "Class", OBJ_GetClassName(object), kDataTypeString);
 //  _xmlSetProp(_c, "data-readonly", "true");
   if (GetNode(object)) {
     _xmlSetProp(response, "QuickHide", GetNode(object)->QuickHide?"true":"false");
   }
   if (OBJ_GetSourceFile(object)) {
     xmlNodePtr _g = _xmlNewChild(response, "group", "name", "PrefabTemplate", "data-readonly", "true");
-    _xmlAddProp(_g, "Template", OBJ_GetSourceFile(object), kDataTypeFixed);
+    _xmlAddProp(_g, "Template", OBJ_GetSourceFile(object), kDataTypeString);
   }
   _xmlSetProp(response, "source", endpoint);
-  _xmlAddProp(_g, "Name", OBJ_GetName(object), kDataTypeFixed);
+  _xmlAddProp(_g, "Name", OBJ_GetName(object), kDataTypeString);
 
   OBJ_EnumObjectClasses(object, add_group, response);
   OBJ_EnumClassProperties(object, add_property, response);
@@ -220,7 +220,7 @@ SV_CMD(PUT, node)
   _xmlSetProp(response, "source", endpoint);
   for(reqArg_t const* arg = rargs; *arg->name; arg++) {
     if (!strcmp(arg->name, "Name")) {
-      _xmlAddProp(response, arg->name, OBJ_GetName(obj), kDataTypeFixed);
+      _xmlAddProp(response, arg->name, OBJ_GetName(obj), kDataTypeString);
       OBJ_SetName(obj, arg->value);
     } else{
       path_t buf={0};
@@ -268,7 +268,7 @@ SV_CMD(GET, project_overview) {
     lpcString_t szRoot = OBJ_GetSourceFile(proj);
     FOR_EACH_OBJECT(lib, proj) {
       path_t joined = {0};
-      xmlWith(char, path, strdup(FS_JoinPaths(joined, sizeof(joined), szRoot, OBJ_GetName(lib))), free) {
+      WITH(char, path, strdup(FS_JoinPaths(joined, sizeof(joined), szRoot, OBJ_GetName(lib))), free) {
         char buf[256];
         snprintf(buf,sizeof(buf),"%s/%s",OBJ_GetName(proj),OBJ_GetName(lib));
         FS_EnumDir2(path, load_library, ((void*[]){L, buf}));
@@ -316,7 +316,7 @@ SV_CMD(POST, node) {
   if (SV_ARG("source")) {
     REQUIRE(lpObject_t, source, OBJ_FindByPath(FS_GetWorkspace(), SV_ARG("source")), "Can't find specified source object");
     if (OBJ_GetSourceFile(source)) return "Object is already a prefab";
-    xmlWith(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFree) {
+    WITH(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFree) {
       xmlDocSetRootElement(doc, ED_ConvertNode(source, NULL));
       OBJ_AddChild(root, OBJ_LoadDocument(L, doc), FALSE);
     }
@@ -444,7 +444,7 @@ LRESULT filesystem_handle_event(lua_State *L, struct WI_Message *msg) {
   if (msg->message == kEventReadCommands) {
     LPSTR url = UI_ReadClientCommands();
     if (!url) exit(0);
-    xmlWith(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFreeDoc) {
+    WITH(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFreeDoc) {
       xmlNodePtr response = xmlNewNode(NULL, XMLSTR("response"));
       enum cmd cmd = cmd_GET;
       fprintf(stderr, "Requested URL: %s\n", url);

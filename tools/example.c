@@ -1497,7 +1497,7 @@ LRESULT Trigger_PropertyChanged(struct Object*, struct Trigger*, wParam_t, Prope
 LRESULT Trigger_Attached(struct Object*, struct Trigger*, wParam_t, AttachedPtr);
 
 static struct PropertyType const TriggerProperties[kTriggerNumProperties] = {
-	DECL(0x5221f9e8, Trigger, Property, Property, kDataTypeFixed), // Trigger.Property
+	DECL(0x5221f9e8, Trigger, Property, Property, kDataTypeString), // Trigger.Property
 	DECL(0xd147f96a, Trigger, Value, Value, kDataTypeInt), // Trigger.Value
 };
 static struct Trigger TriggerDefaults = {
@@ -1505,8 +1505,8 @@ static struct Trigger TriggerDefaults = {
 LRESULT OnPropertyChangedTrigger_PropertyChanged(struct Object*, struct OnPropertyChangedTrigger*, wParam_t, PropertyChangedPtr);
 
 static struct PropertyType const OnPropertyChangedTriggerProperties[kOnPropertyChangedTriggerNumProperties] = {
-	DECL(0x9ff03304, OnPropertyChangedTrigger, SourceNode, SourceNode, kDataTypeFixed), // OnPropertyChangedTrigger.SourceNode
-	DECL(0x5221f9e8, OnPropertyChangedTrigger, Property, Property, kDataTypeFixed), // OnPropertyChangedTrigger.Property
+	DECL(0x9ff03304, OnPropertyChangedTrigger, SourceNode, SourceNode, kDataTypeString), // OnPropertyChangedTrigger.SourceNode
+	DECL(0x5221f9e8, OnPropertyChangedTrigger, Property, Property, kDataTypeString), // OnPropertyChangedTrigger.Property
 };
 static struct OnPropertyChangedTrigger OnPropertyChangedTriggerDefaults = {
 };
@@ -1519,7 +1519,7 @@ static struct OnAttachedTrigger OnAttachedTriggerDefaults = {
 LRESULT EventTrigger_HandleMessage(struct Object*, struct EventTrigger*, wParam_t, HandleMessagePtr);
 
 static struct PropertyType const EventTriggerProperties[kEventTriggerNumProperties] = {
-	DECL(0x30d77e1a, EventTrigger, RoutedEvent, RoutedEvent, kDataTypeFixed), // EventTrigger.RoutedEvent
+	DECL(0x30d77e1a, EventTrigger, RoutedEvent, RoutedEvent, kDataTypeString), // EventTrigger.RoutedEvent
 };
 static struct EventTrigger EventTriggerDefaults = {
 };
@@ -1527,8 +1527,8 @@ LRESULT Setter_Triggered(struct Object*, struct Setter*, wParam_t, TriggeredPtr)
 
 static struct PropertyType const SetterProperties[kSetterNumProperties] = {
 	DECL(0xa5ea0da3, Setter, Trigger, Trigger, kDataTypeComponent), // Setter.Trigger
-	DECL(0x5221f9e8, Setter, Property, Property, kDataTypeFixed), // Setter.Property
-	DECL(0xd147f96a, Setter, Value, Value, kDataTypeFixed), // Setter.Value
+	DECL(0x5221f9e8, Setter, Property, Property, kDataTypeString), // Setter.Property
+	DECL(0xd147f96a, Setter, Value, Value, kDataTypeString), // Setter.Value
 };
 static struct Setter SetterDefaults = {
 };
@@ -1537,7 +1537,7 @@ LRESULT Handler_Triggered(struct Object*, struct Handler*, wParam_t, TriggeredPt
 static struct PropertyType const HandlerProperties[kHandlerNumProperties] = {
 	DECL(0xa5ea0da3, Handler, Trigger, Trigger, kDataTypeComponent), // Handler.Trigger
 	DECL(0x8b67f168, Handler, Target, Target, kDataTypeObject), // Handler.Target
-	DECL(0x98a79a69, Handler, Function, Function, kDataTypeFixed), // Handler.Function
+	DECL(0x98a79a69, Handler, Function, Function, kDataTypeString), // Handler.Function
 };
 static struct Handler HandlerDefaults = {
 };
@@ -1632,7 +1632,7 @@ static struct Node NodeDefaults = {
 };
 
 static struct PropertyType const TextRunProperties[kTextRunNumProperties] = {
-	DECL(0x3e142d5e, TextRun, Text, Text, kDataTypeFixed), // TextRun.Text
+	DECL(0x3e142d5e, TextRun, Text, Text, kDataTypeString), // TextRun.Text
 	DECL(0xa77a5eb0, TextRun, Font, Font, kDataTypeStruct, .TypeString = "FontShorthand"), // TextRun.Font
 	DECL(0xd0616ad0, TextRun, FontWeight, Font.Weight, kDataTypeEnum, .Enums = _Weight), // TextRun.FontWeight
 	DECL(0x6c164db5, TextRun, FontStyle, Font.Style, kDataTypeEnum, .Enums = _Style), // TextRun.FontStyle
@@ -1657,9 +1657,9 @@ LRESULT TextBlockConcept_Destroy(struct Object*, struct TextBlockConcept*, wPara
 LRESULT TextBlockConcept_MakeText(struct Object*, struct TextBlockConcept*, wParam_t, MakeTextPtr);
 
 static struct PropertyType const TextBlockConceptProperties[kTextBlockConceptNumProperties] = {
-	DECL(0x43c114fb, TextBlockConcept, TextResourceID, TextResourceID, kDataTypeFixed), // TextBlockConcept.TextResourceID
-	DECL(0x73dd50ec, TextBlockConcept, TextResourceConfiguration, TextResourceConfiguration, kDataTypeFixed), // TextBlockConcept.TextResourceConfiguration
-	DECL(0xdccaa011, TextBlockConcept, PlaceholderText, PlaceholderText, kDataTypeFixed), // TextBlockConcept.PlaceholderText
+	DECL(0x43c114fb, TextBlockConcept, TextResourceID, TextResourceID, kDataTypeString), // TextBlockConcept.TextResourceID
+	DECL(0x73dd50ec, TextBlockConcept, TextResourceConfiguration, TextResourceConfiguration, kDataTypeString), // TextBlockConcept.TextResourceConfiguration
+	DECL(0xdccaa011, TextBlockConcept, PlaceholderText, PlaceholderText, kDataTypeString), // TextBlockConcept.PlaceholderText
 	DECL(0x3dcadc9c, TextBlockConcept, TextOverflow, TextOverflow, kDataTypeEnum, .Enums = _TextOverflow), // TextBlockConcept.TextOverflow
 	DECL(0x8987413a, TextBlockConcept, Placeholder, Placeholder, kDataTypeStruct, .TypeString = "BrushShorthand"), // TextBlockConcept.Placeholder
 	DECL(0xb272976d, TextBlockConcept, PlaceholderColor, Placeholder.Color, kDataTypeStruct, .TypeString = "Color"), // TextBlockConcept.PlaceholderColor
@@ -1743,8 +1743,8 @@ static struct Node2D Node2DDefaults = {
 LRESULT PrefabView2D_LoadView(struct Object*, struct PrefabView2D*, wParam_t, LoadViewPtr);
 
 static struct PropertyType const PrefabView2DProperties[kPrefabView2DNumProperties] = {
-	DECL(0x57f28ff6, PrefabView2D, SCA, SCA, kDataTypeFixed), // PrefabView2D.SCA
-	DECL(0xd6415ba3, PrefabView2D, Prefab, Prefab, kDataTypeFixed), // PrefabView2D.Prefab
+	DECL(0x57f28ff6, PrefabView2D, SCA, SCA, kDataTypeString), // PrefabView2D.SCA
+	DECL(0xd6415ba3, PrefabView2D, Prefab, Prefab, kDataTypeString), // PrefabView2D.Prefab
 };
 static struct PrefabView2D PrefabView2DDefaults = {
 };
@@ -1767,7 +1767,7 @@ LRESULT Input_LeftMouseUp(struct Object*, struct Input*, wParam_t, LeftMouseUpPt
 LRESULT Input_MeasureOverride(struct Object*, struct Input*, wParam_t, MeasureOverridePtr);
 
 static struct PropertyType const InputProperties[kInputNumProperties] = {
-	DECL(0x0fe07306, Input, Name, Name, kDataTypeFixed), // Input.Name
+	DECL(0x0fe07306, Input, Name, Name, kDataTypeString), // Input.Name
 	DECL(0xd155d06d, Input, Type, Type, kDataTypeEnum, .Enums = _Type), // Input.Type
 	DECL(0x558a502f, Input, Cursor, Cursor, kDataTypeInt), // Input.Cursor
 	DECL(0xe890d540, Input, Multiline, Multiline, kDataTypeBool), // Input.Multiline
@@ -1788,7 +1788,7 @@ static struct Button ButtonDefaults = {
 LRESULT Label_LeftMouseUp(struct Object*, struct Label*, wParam_t, LeftMouseUpPtr);
 
 static struct PropertyType const LabelProperties[kLabelNumProperties] = {
-	DECL(0x0f7e1b30, Label, For, For, kDataTypeFixed), // Label.For
+	DECL(0x0f7e1b30, Label, For, For, kDataTypeString), // Label.For
 };
 static struct Label LabelDefaults = {
 };
@@ -1837,7 +1837,7 @@ static struct Screen ScreenDefaults = {
 LRESULT Cinematic_DrawBrush(struct Object*, struct Cinematic*, wParam_t, DrawBrushPtr);
 
 static struct PropertyType const CinematicProperties[kCinematicNumProperties] = {
-	DECL(0x5ffdd888, Cinematic, FileName, FileName, kDataTypeFixed), // Cinematic.FileName
+	DECL(0x5ffdd888, Cinematic, FileName, FileName, kDataTypeString), // Cinematic.FileName
 	DECL(0x3eeb76a4, Cinematic, FrameRate, FrameRate, kDataTypeFloat), // Cinematic.FrameRate
 	DECL(0x32caacb1, Cinematic, NumFrames, NumFrames, kDataTypeFloat), // Cinematic.NumFrames
 	DECL(0xc1e58e65, Cinematic, FadeOut, FadeOut, kDataTypeFloat), // Cinematic.FadeOut
@@ -1848,8 +1848,8 @@ LRESULT Grid_MeasureOverride(struct Object*, struct Grid*, wParam_t, MeasureOver
 LRESULT Grid_ArrangeOverride(struct Object*, struct Grid*, wParam_t, ArrangeOverridePtr);
 
 static struct PropertyType const GridProperties[kGridNumProperties] = {
-	DECL(0xea156fdc, Grid, Columns, Columns, kDataTypeFixed), // Grid.Columns
-	DECL(0xaa6592b8, Grid, Rows, Rows, kDataTypeFixed), // Grid.Rows
+	DECL(0xea156fdc, Grid, Columns, Columns, kDataTypeString), // Grid.Columns
+	DECL(0xaa6592b8, Grid, Rows, Rows, kDataTypeString), // Grid.Rows
 	DECL(0x61fefc0a, Grid, Direction, Direction, kDataTypeEnum, .Enums = _Direction), // Grid.Direction
 	DECL(0x8777939e, Grid, Spacing, Spacing, kDataTypeFloat), // Grid.Spacing
 	DECL(0x57e1566f, Grid, CellWidth, CellWidth, kDataTypeFloat), // Grid.CellWidth
@@ -1864,7 +1864,7 @@ LRESULT ImageView_DrawBrush(struct Object*, struct ImageView*, wParam_t, DrawBru
 LRESULT ImageView_LoadView(struct Object*, struct ImageView*, wParam_t, LoadViewPtr);
 
 static struct PropertyType const ImageViewProperties[kImageViewNumProperties] = {
-	DECL(0x35c77969, ImageView, Src, Src, kDataTypeFixed), // ImageView.Src
+	DECL(0x35c77969, ImageView, Src, Src, kDataTypeString), // ImageView.Src
 	DECL(0x590ca79a, ImageView, Image, Image, kDataTypeComponent), // ImageView.Image
 	DECL(0x079106fd, ImageView, Edges, Edges, kDataTypeStruct, .TypeString = "Vector4D"), // ImageView.Edges
 	DECL(0x062cedef, ImageView, Insets, Insets, kDataTypeStruct, .TypeString = "Vector4D"), // ImageView.Insets
@@ -1915,8 +1915,8 @@ static struct TerminalView TerminalViewDefaults = {
 LRESULT Page_Create(struct Object*, struct Page*, wParam_t, CreatePtr);
 
 static struct PropertyType const PageProperties[kPageNumProperties] = {
-	DECL(0x24d471a9, Page, Title, Title, kDataTypeFixed), // Page.Title
-	DECL(0xeb66e456, Page, Path, Path, kDataTypeFixed), // Page.Path
+	DECL(0x24d471a9, Page, Title, Title, kDataTypeString), // Page.Title
+	DECL(0xeb66e456, Page, Path, Path, kDataTypeString), // Page.Path
 	DECL(0xe69ce202, Page, Transition, Transition, kDataTypeFloat), // Page.Transition
 };
 static struct Page PageDefaults = {
@@ -1937,7 +1937,7 @@ static struct PageViewport PageViewportDefaults = {
 };
 
 static struct PropertyType const StyleProperties[kStyleNumProperties] = {
-	DECL(0x77ada720, Style, TargetType, TargetType, kDataTypeFixed), // Style.TargetType
+	DECL(0x77ada720, Style, TargetType, TargetType, kDataTypeString), // Style.TargetType
 	DECL(0xd155d06d, Style, Type, Type, kDataTypeEnum, .Enums = _Type), // Style.Type
 };
 static struct Style StyleDefaults = {

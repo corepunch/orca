@@ -23,7 +23,7 @@ struct _FTG;
 typedef struct FtgPackage FtgPackage_t, *FtgPackagePtr, *lpFtgPackage_t;
 typedef struct FtgPackage const *FtgPackageCPtr, *lpcFtgPackage_t;
 struct FtgPackage {
-	fixedString_t FileName;
+	const char* FileName;
 	struct _FTG* _ftg;
 };
 ORCA_API void luaX_pushFtgPackage(lua_State *L, struct FtgPackage const* FtgPackage);

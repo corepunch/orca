@@ -96,7 +96,7 @@ OBJ_ParseClassAttribute(lpObject_t obj, lpcString_t original)
 {
   if (!*original)
     return;
-  xmlWith(char, classes, strdup(original), free)
+  WITH(char, classes, strdup(original), free)
   {
     for (lpcString_t s = strtok(classes, " "); s; s = strtok(NULL, " ")) {
       _AddClass(obj, _ParseClass(s));

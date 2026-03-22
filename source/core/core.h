@@ -58,6 +58,21 @@ typedef void* ResumeCoroutineEventPtr;
 typedef void* StopCoroutineEventPtr;
 typedef void* ViewDidLoadEventPtr;
 
+/// @brief Represents the various states a property can be in.
+/** PropertyState enum */
+typedef enum PropertyState {
+	kPropertyStateNormal, ///< Normal property state when no triggers are active
+	kPropertyStateHover, ///< Property state when the mouse is hovering over it
+	kPropertyStateFocus, ///< Property state when it has focus
+	kPropertyStateSelect, ///< Property state when it is selected
+	kPropertyStateDisable, ///< Property state when it is disabled
+	kPropertyStateOldValue, ///< Property state representing the previous value
+} ePropertyState_t;
+#define PropertyState_Count 6
+ORCA_API const char *PropertyStateToString(enum PropertyState value);
+ORCA_API enum PropertyState luaX_checkPropertyState(lua_State *L, int idx);
+ORCA_API void luaX_pushPropertyState(lua_State *L, enum PropertyState value);
+/// @brief Various modes to bind properties
 /** BindingMode enum */
 typedef enum BindingMode {
 	kBindingModeOneWay, ///< Default mode, updates target property when source changes
@@ -69,6 +84,7 @@ typedef enum BindingMode {
 ORCA_API const char *BindingModeToString(enum BindingMode value);
 ORCA_API enum BindingMode luaX_checkBindingMode(lua_State *L, int idx);
 ORCA_API void luaX_pushBindingMode(lua_State *L, enum BindingMode value);
+/// @brief Attributes that can be applied to properties for binding purposes.
 /** PropertyAttribute enum */
 typedef enum PropertyAttribute {
 	kPropertyAttributeWholeProperty, ///< Default binding to the whole property
@@ -93,14 +109,12 @@ typedef enum DataType {
 	kDataTypeInt, ///< Signed integer value.
 	kDataTypeEnum, ///< Enumeration type represented by integer values mapped to named constants.
 	kDataTypeFloat, ///< Floating-point numeric value.
-	kDataTypeFixed, ///< Fixed-length string or symbolic value.
-	kDataTypeString, ///< Extended string data, intended for larger text content.
-	kDataTypeObjectTags, ///< List of tag identifiers associated with an object.
+	kDataTypeString, ///< String data, heap-allocated to support arbitrary length content.
 	kDataTypeEvent, ///< Event reference used to bind triggers or callbacks.
 	kDataTypeStruct, ///< Composite data structure containing multiple fields used for packaging related geometric, visual, and layout properties together.
 	kDataTypeObject, ///< Reference to a complex object instance.
 } eDataType_t;
-#define DataType_Count 11
+#define DataType_Count 9
 ORCA_API const char *DataTypeToString(enum DataType value);
 ORCA_API enum DataType luaX_checkDataType(lua_State *L, int idx);
 ORCA_API void luaX_pushDataType(lua_State *L, enum DataType value);
@@ -412,7 +426,8 @@ struct PropertyType {
 	fixedString_t Category; ///< Organizational category for this property, used for grouping in editors and UIs.
 	enum DataType DataType; ///< Underlying data type that determines how the property value is interpreted and stored.
 	fixedString_t DefaultValue; ///< Default value assigned when the property is not explicitly set.
-	fixedString_t TypeString; ///< String representation of the property type, used to store enum values or struct type names.
+	fixedString_t TypeString; ///< String representation of the property type, used to store struct/object type names.
+	lpcString_t const* EnumValues; ///< Null-terminated array of enum value name strings for kDataTypeEnum properties.
 	bool_t AffectLayout; ///< Indicates whether this property affects element layout (e.g., size or alignment).
 	bool_t AffectRender; ///< Indicates whether this property influences the rendering output.
 	bool_t IsReadOnly; ///< If true, the property value cannot be modified at runtime or through the editor.

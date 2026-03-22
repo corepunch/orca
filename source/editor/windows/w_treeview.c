@@ -283,7 +283,7 @@ void TreeView_NewItem(HEDWND wnd, LPTREEVIEW treeview, DWORD item_id, DWORD type
   DWORD end = (itmpos/ED_GetClient(wnd)->width+1)*ED_GetClient(wnd)->width;
   ED_SetTextInput(&(EDTEXTEDIT) {
     .dest = "Noname",
-    .type = kDataTypeFixed,
+    .type = kDataTypeString,
     .pindex = item_id,
     .bounds = MAKEDWORD(itmpos+offs, end-itmpos-2),
     .callback = TreeView_CreateCallback,
@@ -446,7 +446,7 @@ TreeView_OnCommand(HEDWND wnd, LPTREEVIEW treeview, wParam_t cmd)
       memset(treeview->filtertext, 0, sizeof(treeview->filtertext));
       ED_SetTextInput(&(EDTEXTEDIT) {
         .dest = treeview->filtertext,
-        .type = kDataTypeFixed,
+        .type = kDataTypeString,
         .placeholder = "Enter filter text",
         .bounds = ED_GetClient(wnd)->width << 16,
         .callback = TreeView_FilterCallack,
@@ -496,7 +496,7 @@ TreeView_OnCommand(HEDWND wnd, LPTREEVIEW treeview, wParam_t cmd)
       int end = (itmpos/ED_GetClient(wnd)->width+1)*ED_GetClient(wnd)->width;
       ED_SetTextInput(&(EDTEXTEDIT) {
         .dest = item->name,
-        .type = kDataTypeFixed,
+        .type = kDataTypeString,
         .pindex = item->identifier,
         .bounds = itmpos | ((end-itmpos)<<16),
         .callback = TreeView_RenameCallback,

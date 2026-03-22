@@ -387,9 +387,9 @@ HANDLER(Package, LoadProject) {
   lua_State* L = (lua_State*)pPackage;
   lpObject_t project = NULL;
   snprintf(tmp, sizeof(tmp), "%s.pz2", pLoadProject->Path);
-  xmlWith(FILE, fp, fopen(tmp, "rb"), fclose) {
-    xmlWith(void, pack, _LoadPackFile(tmp), _FreePack) {
-      xmlWith(char, path, _ExtractPackageXmlToTemp(pack), free) {
+  WITH(FILE, fp, fopen(tmp, "rb"), fclose) {
+    WITH(void, pack, _LoadPackFile(tmp), _FreePack) {
+      WITH(char, path, _ExtractPackageXmlToTemp(pack), free) {
         strncpy(packpath, path, sizeof(packpath));
       }
       project = _LoadProject(L, packpath, FS_GetBaseName(pLoadProject->Path));

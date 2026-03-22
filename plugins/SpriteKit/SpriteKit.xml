@@ -67,7 +67,7 @@
     <handles event="ForegroundContent"/>
     <property name="ReferenceWidth" type="float">Reference width for the sprite coordinate system</property>
     <property name="ReferenceHeight" type="float">Reference height for the sprite coordinate system</property>
-    <property name="Scene" type="fixed">Name of SKScene to render</property>
+    <property name="Scene" type="string">Name of SKScene to render</property>
   </class>
 
 </module>

@@ -1,4 +1,4 @@
-#include "core_local.h"
+#include <source/core/core_local.h>
 
 #define MAX_REGISTERS 64
 #define MAX_ARGS 16

@@ -200,7 +200,7 @@ ED_HierarchyOnCommand(HEDWND wnd, LPVOID udata, DWORD cmd)
     case ID_EDIT_PASTE:
       if (xml) {
         HOBJ root = editor.screen;
-        xmlWith(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFree) {
+        WITH(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFree) {
           xmlDocSetRootElement(doc, xml);
           lpObject_t OBJ_LoadDocument(lua_State* L, xmlDocPtr doc);
           HOBJ obj = OBJ_LoadDocument(editor.L, doc);

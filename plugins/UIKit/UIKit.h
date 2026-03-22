@@ -581,7 +581,7 @@ ORCA_API struct AnimationPlayer* luaX_checkAnimationPlayer(lua_State *L, int idx
 typedef struct Trigger Trigger_t, *TriggerPtr, *lpTrigger_t;
 typedef struct Trigger const *TriggerCPtr, *lpcTrigger_t;
 struct Trigger {
-	fixedString_t Property; ///< Target property name to monitor or modify
+	const char* Property; ///< Target property name to monitor or modify
 	int32_t Value; ///< Associated value for the trigger condition
 };
 ORCA_API void luaX_pushTrigger(lua_State *L, struct Trigger const* Trigger);
@@ -591,8 +591,8 @@ ORCA_API struct Trigger* luaX_checkTrigger(lua_State *L, int idx);
 typedef struct OnPropertyChangedTrigger OnPropertyChangedTrigger_t, *OnPropertyChangedTriggerPtr, *lpOnPropertyChangedTrigger_t;
 typedef struct OnPropertyChangedTrigger const *OnPropertyChangedTriggerCPtr, *lpcOnPropertyChangedTrigger_t;
 struct OnPropertyChangedTrigger {
-	fixedString_t SourceNode; ///< Name or identifier of the node to monitor
-	fixedString_t Property; ///< Property name to watch for changes
+	const char* SourceNode; ///< Name or identifier of the node to monitor
+	const char* Property; ///< Property name to watch for changes
 };
 ORCA_API void luaX_pushOnPropertyChangedTrigger(lua_State *L, struct OnPropertyChangedTrigger const* OnPropertyChangedTrigger);
 ORCA_API struct OnPropertyChangedTrigger* luaX_checkOnPropertyChangedTrigger(lua_State *L, int idx);
@@ -609,7 +609,7 @@ ORCA_API struct OnAttachedTrigger* luaX_checkOnAttachedTrigger(lua_State *L, int
 typedef struct EventTrigger EventTrigger_t, *EventTriggerPtr, *lpEventTrigger_t;
 typedef struct EventTrigger const *EventTriggerCPtr, *lpcEventTrigger_t;
 struct EventTrigger {
-	fixedString_t RoutedEvent; ///< Name of the routed event to handle (e.g., "MouseDown", "KeyPress")
+	const char* RoutedEvent; ///< Name of the routed event to handle (e.g., "MouseDown", "KeyPress")
 };
 ORCA_API void luaX_pushEventTrigger(lua_State *L, struct EventTrigger const* EventTrigger);
 ORCA_API struct EventTrigger* luaX_checkEventTrigger(lua_State *L, int idx);
@@ -619,8 +619,8 @@ typedef struct Setter Setter_t, *SetterPtr, *lpSetter_t;
 typedef struct Setter const *SetterCPtr, *lpcSetter_t;
 struct Setter {
 	struct Trigger* Trigger; ///< Triggering condition or state image
-	fixedString_t Property; ///< Target property name to set
-	fixedString_t Value; ///< Value to apply to the property
+	const char* Property; ///< Target property name to set
+	const char* Value; ///< Value to apply to the property
 };
 ORCA_API void luaX_pushSetter(lua_State *L, struct Setter const* Setter);
 ORCA_API struct Setter* luaX_checkSetter(lua_State *L, int idx);
@@ -631,7 +631,7 @@ typedef struct Handler const *HandlerCPtr, *lpcHandler_t;
 struct Handler {
 	struct Trigger* Trigger; ///< Triggering condition or state image
 	struct Node* Target; ///< Target object to call function on
-	fixedString_t Function; ///< Function name to execute on target
+	const char* Function; ///< Function name to execute on target
 };
 ORCA_API void luaX_pushHandler(lua_State *L, struct Handler const* Handler);
 ORCA_API struct Handler* luaX_checkHandler(lua_State *L, int idx);
@@ -666,8 +666,9 @@ struct Node {
 	bool_t QuickHide; ///< If true, node is quickly hidden without triggering full visibility transitions.
 	float VisibleAmountInParent; ///< Specifies how much of the node is visible within its parent container. Value in range [0.0, 1.0].
 	float Opacity; ///< Opacity of the node, range [0.0 = transparent, 1.0 = fully opaque].
-	objectTags_t Tags; ///< Tag collection for categorizing or querying nodes.
+	const char* Tags; ///< Tag collection for categorizing or querying nodes.
 	struct DataObject* DataContext; ///< Data context (used for data binding, similar to XAML's DataContext).
+	long _tags; ///< Calculated tags value
 };
 ORCA_API void luaX_pushNode(lua_State *L, struct Node const* Node);
 ORCA_API struct Node* luaX_checkNode(lua_State *L, int idx);
@@ -676,7 +677,7 @@ ORCA_API struct Node* luaX_checkNode(lua_State *L, int idx);
 typedef struct TextRun TextRun_t, *TextRunPtr, *lpTextRun_t;
 typedef struct TextRun const *TextRunCPtr, *lpcTextRun_t;
 struct TextRun {
-	fixedString_t Text; ///< The short text string displayed in the block, limited to 64 bytes. If you need more space consider using `TextResourceID`.
+	const char* Text; ///< The short text string displayed in the block, limited to 64 bytes. If you need more space consider using `TextResourceID`.
 	struct FontShorthand Font; ///< Font definition used for text rendering. Contains typeface, size, and style information.
 	struct UnderlineShorthand Underline; ///< Underline style applied to the text.
 	float LetterSpacing; ///< Additional spacing applied between letters.
@@ -694,9 +695,9 @@ ORCA_API struct TextRun* luaX_checkTextRun(lua_State *L, int idx);
 typedef struct TextBlockConcept TextBlockConcept_t, *TextBlockConceptPtr, *lpTextBlockConcept_t;
 typedef struct TextBlockConcept const *TextBlockConceptCPtr, *lpcTextBlockConcept_t;
 struct TextBlockConcept {
-	fixedString_t TextResourceID; ///< Resource identifier for localized text lookup.
-	fixedString_t TextResourceConfiguration; ///< Configuration key used when resolving text resources.
-	fixedString_t PlaceholderText; ///< Placeholder text displayed when no main text is set.
+	const char* TextResourceID; ///< Resource identifier for localized text lookup.
+	const char* TextResourceConfiguration; ///< Configuration key used when resolving text resources.
+	const char* PlaceholderText; ///< Placeholder text displayed when no main text is set.
 	enum TextOverflow TextOverflow; ///< Defines how overflowing text should be handled.
 	struct BrushShorthand Placeholder; ///< Brush definition for rendering placeholder text.
 	bool_t UseFullFontHeight; ///< When true, uses the font's full height for layout calculations.
@@ -775,8 +776,8 @@ Node2D_GetViewEntity(struct Node2D*, struct ViewEntity*, struct Texture const*, 
 typedef struct PrefabView2D PrefabView2D_t, *PrefabView2DPtr, *lpPrefabView2D_t;
 typedef struct PrefabView2D const *PrefabView2DCPtr, *lpcPrefabView2D_t;
 struct PrefabView2D {
-	fixedString_t SCA; ///< Scene archive identifier or path
-	fixedString_t Prefab; ///< Prefab resource name within the archive
+	const char* SCA; ///< Scene archive identifier or path
+	const char* Prefab; ///< Prefab resource name within the archive
 	int32_t _loadedSCA; ///< Hashed value of currently loaded SCA
 	int32_t _loadedPrefab; ///< Hashed value of loaded prefab instance
 };
@@ -796,7 +797,7 @@ ORCA_API struct TextBlock* luaX_checkTextBlock(lua_State *L, int idx);
 typedef struct Input Input_t, *InputPtr, *lpInput_t;
 typedef struct Input const *InputCPtr, *lpcInput_t;
 struct Input {
-	fixedString_t Name; ///< Input identifier for forms and data binding
+	const char* Name; ///< Input identifier for forms and data binding
 	enum InputType Type; ///< Input behavior type (text, password, etc.)
 	int32_t Cursor; ///< Current text cursor position
 	bool_t Multiline; ///< Allow multiple lines of text input
@@ -819,7 +820,7 @@ ORCA_API struct Button* luaX_checkButton(lua_State *L, int idx);
 typedef struct Label Label_t, *LabelPtr, *lpLabel_t;
 typedef struct Label const *LabelCPtr, *lpcLabel_t;
 struct Label {
-	fixedString_t For; ///< Identifier of associated form control
+	const char* For; ///< Identifier of associated form control
 };
 ORCA_API void luaX_pushLabel(lua_State *L, struct Label const* Label);
 ORCA_API struct Label* luaX_checkLabel(lua_State *L, int idx);
@@ -876,7 +877,7 @@ ORCA_API struct Screen* luaX_checkScreen(lua_State *L, int idx);
 typedef struct Cinematic Cinematic_t, *CinematicPtr, *lpCinematic_t;
 typedef struct Cinematic const *CinematicCPtr, *lpcCinematic_t;
 struct Cinematic {
-	fixedString_t FileName; ///< Path to media file for playback
+	const char* FileName; ///< Path to media file for playback
 	float FrameRate; ///< Playback frame rate (frames per second)
 	float NumFrames; ///< Total number of frames in the media
 	float FadeOut; ///< Fade-out duration in seconds
@@ -890,8 +891,8 @@ ORCA_API struct Cinematic* luaX_checkCinematic(lua_State *L, int idx);
 typedef struct Grid Grid_t, *GridPtr, *lpGrid_t;
 typedef struct Grid const *GridCPtr, *lpcGrid_t;
 struct Grid {
-	fixedString_t Columns; ///< Column definition string (e.g., "1fr 2fr 100px")
-	fixedString_t Rows; ///< Row definition string (e.g., "auto 1fr auto")
+	const char* Columns; ///< Column definition string (e.g., "1fr 2fr 100px")
+	const char* Rows; ///< Row definition string (e.g., "auto 1fr auto")
 	enum Direction Direction; ///< Primary fill direction for auto-placement
 	float Spacing; ///< Space between grid cells
 	float CellWidth; ///< Default width for auto-sized cells
@@ -905,7 +906,7 @@ ORCA_API struct Grid* luaX_checkGrid(lua_State *L, int idx);
 typedef struct ImageView ImageView_t, *ImageViewPtr, *lpImageView_t;
 typedef struct ImageView const *ImageViewCPtr, *lpcImageView_t;
 struct ImageView {
-	fixedString_t Src; ///< Image source path or resource identifier
+	const char* Src; ///< Image source path or resource identifier
 	struct Texture* Image; ///< Direct reference to loaded image
 	struct vec4 Edges; ///< Edge inset values for nine-patch rendering
 	struct vec4 Insets; ///< Content inset values for image positioning
@@ -958,8 +959,8 @@ ORCA_API struct TerminalView* luaX_checkTerminalView(lua_State *L, int idx);
 typedef struct Page Page_t, *PagePtr, *lpPage_t;
 typedef struct Page const *PageCPtr, *lpcPage_t;
 struct Page {
-	fixedString_t Title; ///< The title of the page.
-	fixedString_t Path; ///< The URL path of the page, like "/about".
+	const char* Title; ///< The title of the page.
+	const char* Path; ///< The URL path of the page, like "/about".
 	float Transition; ///< The transition progress of the page.
 	struct Node* _node; ///< Pointer to Node for quick referencing
 };
@@ -989,7 +990,7 @@ ORCA_API struct PageViewport* luaX_checkPageViewport(lua_State *L, int idx);
 typedef struct Style Style_t, *StylePtr, *lpStyle_t;
 typedef struct Style const *StyleCPtr, *lpcStyle_t;
 struct Style {
-	fixedString_t TargetType; ///< Specifies the component type this style targets. Only components of the given type or its derived types will use the style.
+	const char* TargetType; ///< Specifies the component type this style targets. Only components of the given type or its derived types will use the style.
 	enum StyleType Type; ///< Defines the classification of this style, such as Generic, Theme, Override, Local, or Template, determining its scope and application behavior.
 };
 ORCA_API void luaX_pushStyle(lua_State *L, struct Style const* Style);

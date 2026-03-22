@@ -10,7 +10,7 @@ typedef struct _INSPITEM {
   DWORD   type;
   FLOAT   location;
   DWORD   objtype;
-  lpcString_t  options;
+  lpcString_t const* options;
   shortStr_t name;
   DWORD   index;
 } INSPITEM, *LPINSPITEM;
@@ -69,9 +69,9 @@ PrintEnumProperty(HEDWND wnd, LPPROPDEF pdef)
 {
   DWORD item = ED_AddInspectorItem(wnd, pdef, pdef->lpEditorValue, pdef->Type);
   LPINSPSTRUCT inspector = ED_GetUserData(wnd);
-  inspector->items[item].options = pdef->lpEnumValues;
+  inspector->items[item].options = pdef->lpEnumArray;
   ED_Echo(wnd, FMT_COMMAND, item);
-  ED_EnumField(ED_GetClient(wnd), pdef->lpEditorValue, pdef->lpEnumValues, DROPDOWN_WIDTH);
+  ED_EnumField(ED_GetClient(wnd), pdef->lpEditorValue, pdef->lpEnumArray, DROPDOWN_WIDTH);
 }
 
 static void
@@ -169,7 +169,7 @@ ED_PrintProperty(LPPROPDEF pdef, LPVOID parm)
 //  }
   switch ((DWORD)pdef->Type)
   {
-    case kDataTypeFixed:
+    case kDataTypeString:
       PrintStringProperty(wnd, pdef);
       break;
     case kDataTypeEnum:
@@ -262,7 +262,7 @@ ED_PrintInspector(HEDWND wnd, LPINSPSTRUCT inspector)
       }
     } else if (strstr(szFilePath, ".xml")) {
       lpObject_t OBJ_LoadDocument(lua_State* L, xmlDocPtr doc);
-      xmlWith(xmlDoc, doc, xmlReadFile(szFilePath, NULL, 0), xmlFreeDoc) {
+      WITH(xmlDoc, doc, xmlReadFile(szFilePath, NULL, 0), xmlFreeDoc) {
         inspector->selected.object = OBJ_LoadDocument(editor.L, doc);
       }
       if (inspector->selected.object) {
@@ -330,7 +330,7 @@ ED_PrintInspector(HEDWND wnd, LPINSPSTRUCT inspector)
         strcpy(name2, (lpcString_t)name);
       }
       ED_Echo(wnd, STYLE_LABEL "%-*s", NAME_WIDTH, name2);
-      DWORD item = ED_AddInspectorItem(wnd, node, value, kDataTypeFixed);
+      DWORD item = ED_AddInspectorItem(wnd, node, value, kDataTypeString);
       ED_Echo(wnd, FMT_COMMAND, item);
       ED_StringField(ED_GetClient(wnd), (lpcString_t)value, DROPDOWN_WIDTH);
       ED_Echo(wnd, "\n");
@@ -401,7 +401,7 @@ ED_PopDropDown(HEDWND wnd, LPINSPITEM item, WORD index)
   };
   strncpy(data.pTitle, item->name, sizeof(item->name));
   for (int i = 0; i < sizeof(data.pStrings)/sizeof(*data.pStrings); i++) {
-    lpcString_t str = strlistget(i, item->options);
+    lpcString_t str = item->options ? item->options[i] : NULL;
     if (!str) break;
     strncpy(data.pStrings[i], str, sizeof(*data.pStrings));
     data.dwNumItems = i+1;
