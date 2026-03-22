@@ -40,7 +40,6 @@ OBJ_FindPropertyType(uint32_t ident)
 bool_t
 OBJ_RegisterClass(lpcClassDesc_t class)
 {
-  Con_Error("Registering class 0x%08x %s", class->ClassID, class->ClassName);
   FOR_LOOP(i, MAX_CLASSES) {
     if (!core.classes[i]) {
       FOR_LOOP(j, class->NumProperties) {
@@ -49,7 +48,6 @@ OBJ_RegisterClass(lpcClassDesc_t class)
       core.classes[i] = class;
       return TRUE;
     } else if (core.classes[i]->ClassID == class->ClassID) {
-      Con_Error("Class %s is already registered", class->ClassName);
       return TRUE;
     }
   }
@@ -60,13 +58,9 @@ OBJ_RegisterClass(lpcClassDesc_t class)
 lpcClassDesc_t
 OBJ_FindClassW(uint32_t class_id)
 {
-  Con_Error("Looking for classes 0x%08x", class_id);
   FOR_LOOP(i, MAX_CLASSES) {
     lpcClassDesc_t cl = core.classes[i];
-    if (cl) {
-      Con_Error("Class 0x%08x %s", cl->ClassID, cl->ClassName);
-    }
-    if (cl->ClassID == class_id) {
+    if (cl && cl->ClassID == class_id) {
       return cl;
     }
   }
