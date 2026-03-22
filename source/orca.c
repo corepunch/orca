@@ -347,6 +347,30 @@ int main (int argc, LPSTR *argv)
       szProject = RunProject(L, szProject);
     } else if (strstr(args.test, ".xml")) {
       RunTest(L, args.test);
+#ifdef ORCA_C_TESTS
+    } else if (strrchr(args.test, '.') && strcmp(strrchr(args.test, '.'), ".c") == 0) {
+      extern int run_c_tests(lua_State *L);
+      /* Load engine modules so UIKit classes (Node2D, etc.) are registered. */
+      {
+        size_t sz = 0; char *init = NULL;
+        FILE *im = open_memstream(&init, &sz);
+        fprintf(im, "local orca = require 'orca'\n");
+        fprintf(im, "orca.init()\n");
+        FOR_LOOP(i, sizeof(requires)/sizeof(*requires)) {
+          fprintf(im, "require '%s'\n", requires[i]);
+        }
+        fclose(im);
+        if (luaL_loadbuffer(L, init, sz, "@ctest_init") || lua_pcall(L, 0, 0, 0)) {
+          fprintf(stderr, "C test init: %s\n", lua_tostring(L, -1));
+          lua_pop(L, 1);
+        }
+        free(init);
+      }
+      if (run_c_tests(L)) {
+        exit(1);
+      }
+      szProject = NULL;
+#endif
     } else if (luaL_dofile(L, args.test) != LUA_OK) {
       fprintf(stderr, "%s\n", lua_tostring(L, -1));
       szProject = NULL;

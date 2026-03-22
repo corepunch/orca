@@ -165,8 +165,13 @@ static inline lpObject_t _make_test_obj(void)
 
 static inline void _free_test_obj(lpObject_t obj)
 {
-    OBJ_Release(s_test_L, obj);
+    /* Pop from the stack (makes the userdata unreachable from Lua),
+     * then run one GC cycle so __gc fires (calling OBJ_Release) exactly once.
+     * This avoids the double-release that would occur if we called
+     * OBJ_Release here AND let __gc fire later. */
     lua_pop(s_test_L, 1);
+    lua_gc(s_test_L, LUA_GCCOLLECT, 0);
+    (void)obj;
 }
 
 #define objWith(obj) \

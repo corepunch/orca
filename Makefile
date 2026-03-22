@@ -191,18 +191,18 @@ test: test-headless
 	$(TARGET) -test=tests/test1.lua
 	$(TARGET) -test=tests/test.xml
 
-test-headless: test-unit
+test-headless: test-unit-c
 	$(TARGET) -test=tests/test_layout.lua
 
-# Standalone C unit-test binary — no Lua, no renderer required.
-TESTBIN = $(BINDIR)/test-unit
-TESTFLAGS = $(filter-out -fpic,$(CFLAGS)) -I.
+# C property test binary — orca binary compiled with C tests enabled.
+# Requires buildplugins to have run first (liborca.so + UIKit plugin needed).
+TESTBIN_C   = $(BINDIR)/orca-ctest
+TESTCFLAGS  = $(CFLAGS) -DORCA_C_TESTS -I.
 
-test-unit: directories $(TESTBIN)
-	$(TESTBIN)
+test-unit-c: directories $(TESTBIN_C)
+	$(TESTBIN_C) -test=tests/test_properties.c
 
-$(TESTBIN): tests/test_main.c tests/test_geometry.c source/geometry/geometry_ops.c
-	$(CC) $(TESTFLAGS) $^ -o $@ -lm
-
+$(TESTBIN_C): $(SOURCEDIR)/orca.c tests/test_main.c tests/test_properties.c
+	$(CC) $(TESTCFLAGS) $^ -Wall $(LIBS) -lorca -o $@ $(LDFLAGS)
 
 include Makefile.webgl

@@ -1,14 +1,15 @@
-/* tests/test_main.c — entry point for the standalone C unit-test binary.
+/* tests/test_main.c — C test driver compiled into the orca binary.
  *
- * Build with:
- *   make test-unit
+ * When the orca binary is built with -DORCA_C_TESTS (see 'make test-unit-c'),
+ * test_main.c and test_properties.c are compiled in.  The main loop in
+ * orca.c calls run_c_tests() when the test path has a '.c' extension.
  *
- * The binary links only against geometry_ops.c and libc — no Lua, no
- * renderer, no windowing system.  Object-property tests (which need a
- * Lua state and UIKit) are run via the normal orca binary; see
- * 'make test'.
+ * Usage:
+ *   make test-unit-c            → builds and runs the C property tests
  */
 
+#include <include/api.h>
+#include <include/orca.h>
 #include "test.h"
 
 /* Global test state — extern-declared in test.h, defined here. */
@@ -16,10 +17,29 @@ const char *s_current_test = NULL;
 int         s_tests_run    = 0;
 int         s_tests_failed = 0;
 
-void run_geometry_tests(void);
+/* Lua state and test class set by run_c_tests() before each test suite. */
+lua_State     *s_test_L     = NULL;
+lpcClassDesc_t s_test_class = NULL;
 
-int main(void)
+/* Defined in test_properties.c */
+void run_property_tests(void);
+
+/* Called from orca.c main loop when the test file ends with '.c'. */
+int run_c_tests(lua_State *L)
 {
-    run_geometry_tests();
-    return test_summary();
+    s_test_L     = L;
+    s_test_class = OBJ_FindClass("Node2D");
+    if (!s_test_class) {
+        fprintf(stderr, "C test setup failed: Node2D class not found "
+                "(UIKit plugin may not be loaded).\n");
+        return 1;
+    }
+    run_property_tests();
+    if (s_tests_failed == 0) {
+        printf("All %d C property tests passed.\n", s_tests_run);
+    } else {
+        fprintf(stderr, "%d/%d C property tests FAILED.\n",
+                s_tests_failed, s_tests_run);
+    }
+    return s_tests_failed;
 }
