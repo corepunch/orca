@@ -206,8 +206,7 @@ static int s_tests_run    = 0;
 static int s_tests_failed = 0;
 static const char* s_current_test = NULL;
 
-#define TEST_BEGIN(name) \
-    do { s_current_test = (name); s_tests_run++; } while(0)
+#define TEST_BEGIN(name) 
 
 #define EXPECT(cond) \
     do { \
@@ -1160,7 +1159,11 @@ MEMLEAK_TEST_END
 
 /* ------------------------------------------------------------------ */
 
-#define RUN(func) puts("Running " #func "..."); func()
+#define RUN(func) \
+s_current_test = #func; \
+s_tests_run++ \
+puts("Running " #func "..."); \
+func()
 
 int main(void)
 {
