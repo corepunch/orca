@@ -216,16 +216,7 @@ static const char* s_current_test = NULL;
         return; \
     } 
 
-#define EXPECT_STR_EQ(a, b) \
-    do { \
-        const char *_a = (a), *_b = (b); \
-        if (_a == NULL || _b == NULL || strcmp(_a, _b) != 0) { \
-            fprintf(stderr, "  FAIL [%s]: expected \"%s\", got \"%s\" (line %d)\n", \
-                    s_current_test, _b ? _b : "(null)", _a ? _a : "(null)", __LINE__); \
-            s_tests_failed++; \
-            return; \
-        } \
-    } while(0)
+#define EXPECT_STR_EQ(a, b) EXPECT((a) && (b) && !strcmp(a, b))
 
 /* ------------------------------------------------------------------ */
 /* Test component definition                                          */
