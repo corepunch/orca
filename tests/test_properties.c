@@ -228,7 +228,12 @@ struct TestComp {
     bool_t  Active;
     const char* Label;
     float   Position[2]; /* used as a struct/vec2 */
+    int     Mode;        /* enum property: Normal=0, Hover=1, Focus=2 */
 };
+
+/* Enum value names used by the Mode property (null-terminated array, as required
+ * by the EnumValues field introduced in commit 8df9e226). */
+static const char *s_modeValues[] = {"Normal", "Hover", "Focus", NULL};
 
 /* Property descriptors — identifiers pre-computed from fnv1a32 at build time,
  * matching what register_test_class previously computed at runtime. */
@@ -238,12 +243,14 @@ struct TestComp {
 /* fnv1a32("Active")=0x1f89134f fnv1a32("TestComp.Active")=0xcc3a31be */
 /* fnv1a32("Label")=0x9eccf29d  fnv1a32("TestComp.Label")=0x7707c43a  */
 /* fnv1a32("Position")=0xe27f342a fnv1a32("TestComp.Position")=0x77494c8f */
-static struct PropertyType s_testProps[5] = {
+/* fnv1a32("Mode")=0x534e7732   fnv1a32("TestComp.Mode")=0xf48883ef   */
+static struct PropertyType s_testProps[6] = {
     { .Name = "Count",    .Key = "Count",    .DataType = kDataTypeInt,    .DataSize = sizeof(int),           .ShortIdentifier = 0xe1e7b894, .FullIdentifier = 0x1be61373, .Offset = offsetof(struct TestComp, Count)    },
     { .Name = "Value",    .Key = "Value",    .DataType = kDataTypeFloat,  .DataSize = sizeof(float),         .ShortIdentifier = 0xd147f96a, .FullIdentifier = 0xa6d2bd25, .Offset = offsetof(struct TestComp, Value)    },
     { .Name = "Active",   .Key = "Active",   .DataType = kDataTypeBool,   .DataSize = sizeof(bool_t),        .ShortIdentifier = 0x1f89134f, .FullIdentifier = 0xcc3a31be, .Offset = offsetof(struct TestComp, Active)   },
     { .Name = "Label",    .Key = "Label",    .DataType = kDataTypeString, .DataSize = sizeof(const char*),   .ShortIdentifier = 0x9eccf29d, .FullIdentifier = 0x7707c43a, .Offset = offsetof(struct TestComp, Label)    },
     { .Name = "Position", .Key = "Position", .DataType = kDataTypeStruct, .DataSize = sizeof(float[2]),      .ShortIdentifier = 0xe27f342a, .FullIdentifier = 0x77494c8f, .Offset = offsetof(struct TestComp, Position) },
+    { .Name = "Mode",     .Key = "Mode",     .DataType = kDataTypeEnum,   .DataSize = sizeof(int),           .ShortIdentifier = 0x534e7732, .FullIdentifier = 0xf48883ef, .Offset = offsetof(struct TestComp, Mode),   .EnumValues = s_modeValues },
 };
 
 /* Null ObjProc — components in these tests never receive messages.
@@ -260,7 +267,7 @@ static struct ClassDesc s_testClass = {
     .ClassName     = "TestComp",
     .ClassID       = 0xc87d9b4a, /* fnv1a32("TestComp") */
     .ClassSize     = sizeof(struct TestComp),
-    .NumProperties = 5,
+    .NumProperties = 6,
     .DefaultName   = "testcomp",
 };
 
@@ -279,15 +286,18 @@ struct RTComp {
     int         Count;
     float       Value;
     const char* Label;
+    int         Mode;  /* enum property for testing PROP_Import with EnumValues */
 };
 
 /* fnv1a32("Count")=0xe1e7b894 (ShortIdentifier == FullIdentifier for runtime bindings) */
 /* fnv1a32("Value")=0xd147f96a */
 /* fnv1a32("Label")=0x9eccf29d */
-static struct PropertyType s_rtProps[3] = {
+/* fnv1a32("Mode")=0x534e7732  */
+static struct PropertyType s_rtProps[4] = {
     { .Name = "Count", .Key = "Count", .DataType = kDataTypeInt,    .DataSize = sizeof(int),         .ShortIdentifier = 0xe1e7b894, .FullIdentifier = 0xe1e7b894, .Offset = offsetof(struct RTComp, Count) },
     { .Name = "Value", .Key = "Value", .DataType = kDataTypeFloat,  .DataSize = sizeof(float),       .ShortIdentifier = 0xd147f96a, .FullIdentifier = 0xd147f96a, .Offset = offsetof(struct RTComp, Value) },
     { .Name = "Label", .Key = "Label", .DataType = kDataTypeString, .DataSize = sizeof(const char*), .ShortIdentifier = 0x9eccf29d, .FullIdentifier = 0x9eccf29d, .Offset = offsetof(struct RTComp, Label) },
+    { .Name = "Mode",  .Key = "Mode",  .DataType = kDataTypeEnum,   .DataSize = sizeof(int),         .ShortIdentifier = 0x534e7732, .FullIdentifier = 0x534e7732, .Offset = offsetof(struct RTComp, Mode),  .EnumValues = s_modeValues },
 };
 
 static LRESULT RTComp_Proc(lpObject_t o, void* cmp, uint32_t msg,
@@ -302,7 +312,7 @@ static struct ClassDesc s_rtClass = {
     .ClassName     = "RTComp",
     .ClassID       = 0xfc2d6a10, /* fnv1a32("RTComp") */
     .ClassSize     = sizeof(struct RTComp),
-    .NumProperties = 3,
+    .NumProperties = 4,
     .DefaultName   = "rtcomp",
 };
 
@@ -512,6 +522,88 @@ static void test_struct_property(void) {
         float *result = (float*)PROP_GetValue(prop);
         EXPECT(result[0] == 10.0f);
         EXPECT(result[1] == 20.0f);
+    }
+}
+
+/* Test basic enum property set/get via PROP_SetValue.
+ * Verifies that the EnumValues field (added in commit 8df9e226) is accessible
+ * and that integer indices round-trip correctly. */
+static void test_enum_property(void) {
+    TEST_BEGIN("enum property set/get");
+    WITH(struct Object, obj, make_object(), destroy_object) {
+        lpProperty_t prop;
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Mode", &prop)));
+        EXPECT(PROP_GetType(prop) == kDataTypeEnum);
+        EXPECT(PROP_IsNull(prop));
+
+        /* EnumValues must be the null-terminated array set in the descriptor */
+        EXPECT(PROP_GetDesc(prop)->EnumValues != NULL);
+        EXPECT(PROP_GetDesc(prop)->EnumValues[0] != NULL);
+        EXPECT_STR_EQ(PROP_GetDesc(prop)->EnumValues[0], "Normal");
+        EXPECT_STR_EQ(PROP_GetDesc(prop)->EnumValues[1], "Hover");
+        EXPECT_STR_EQ(PROP_GetDesc(prop)->EnumValues[2], "Focus");
+        EXPECT(PROP_GetDesc(prop)->EnumValues[3] == NULL);
+
+        /* Set to Hover (index 1) and read back */
+        int hover = 1;
+        PROP_SetValue(prop, &hover);
+        EXPECT(!PROP_IsNull(prop));
+        EXPECT(*(int*)PROP_GetValue(prop) == 1);
+
+        /* Set to Focus (index 2) */
+        int focus = 2;
+        PROP_SetValue(prop, &focus);
+        EXPECT(*(int*)PROP_GetValue(prop) == 2);
+
+        /* Reset to Normal (index 0) */
+        int normal = 0;
+        PROP_SetValue(prop, &normal);
+        EXPECT(*(int*)PROP_GetValue(prop) == 0);
+    }
+}
+
+/* Test PROP_Import with a kDataTypeEnum property and a string-typed vm_register.
+ * This exercises the code path in property_runtime.c that replaced strlistidx
+ * with an EnumValues-based lookup (commit 8df9e226). */
+static void test_runtime_import_enum(void) {
+    TEST_BEGIN("PROP_Import: string → enum via EnumValues");
+    WITH(struct Object, obj, make_rt_object(), destroy_object) {
+        lpProperty_t prop;
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Mode", &prop)));
+        if (prop) {
+            struct vm_register r = {0};
+            r.type = kDataTypeString;
+            r.size = sizeof(const char*);
+
+            /* Import "Hover" — should resolve to index 1 */
+            const char *hover_str = "Hover";
+            memcpy(r.value, &hover_str, sizeof(hover_str));
+            bool_t ok = PROP_Import(prop, kPropertyAttributeWholeProperty, &r);
+            EXPECT(ok);
+            EXPECT(!PROP_IsNull(prop));
+            EXPECT(*(int*)PROP_GetValue(prop) == 1);
+
+            /* Import "Focus" — should resolve to index 2 */
+            const char *focus_str = "Focus";
+            memcpy(r.value, &focus_str, sizeof(focus_str));
+            ok = PROP_Import(prop, kPropertyAttributeWholeProperty, &r);
+            EXPECT(ok);
+            EXPECT(*(int*)PROP_GetValue(prop) == 2);
+
+            /* Import "Normal" — should resolve to index 0 */
+            const char *normal_str = "Normal";
+            memcpy(r.value, &normal_str, sizeof(normal_str));
+            ok = PROP_Import(prop, kPropertyAttributeWholeProperty, &r);
+            EXPECT(ok);
+            EXPECT(*(int*)PROP_GetValue(prop) == 0);
+
+            /* Case-insensitive: "hover" should also resolve to 1 */
+            const char *hover_lower = "hover";
+            memcpy(r.value, &hover_lower, sizeof(hover_lower));
+            ok = PROP_Import(prop, kPropertyAttributeWholeProperty, &r);
+            EXPECT(ok);
+            EXPECT(*(int*)PROP_GetValue(prop) == 1);
+        }
     }
 }
 
@@ -927,6 +1019,7 @@ int main(void) {
     RUN(test_set_property_value_api);
     RUN(test_property_state_string);
     RUN(test_struct_property);
+    RUN(test_enum_property);
     RUN(test_find_property_unknown);
     RUN(test_multiple_properties_independent);
     RUN(test_string_empty);
@@ -943,6 +1036,7 @@ int main(void) {
     RUN(test_runtime_import_int);
     RUN(test_runtime_import_float);
     RUN(test_runtime_import_string);
+    RUN(test_runtime_import_enum);
     RUN(test_runtime_attach_and_update_int);
     RUN(test_runtime_attach_and_update_string);
     RUN(test_runtime_property_reference);
