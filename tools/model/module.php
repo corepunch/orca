@@ -148,6 +148,8 @@ class Type extends Base {
 		$this->array = $elem["array"] ?? null;
 		$this->export = ($this->kind === "struct" && $this->data) ? $this->data->export : $this->type;
 		$this->default = $elem["default"];
+		$this->output_attr = $elem["output"] ? strval($elem["output"]) : "";
+		$this->bufsize_attr = $elem["bufsize"] ? strval($elem["bufsize"]) : "";
 	}
 
 	function __toString() {

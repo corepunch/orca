@@ -2069,9 +2069,11 @@ int f_FS_GetDirName(lua_State *L) {
 	return 1;
 }
 int f_FS_JoinPaths(lua_State *L) {
+	path_t buffer = {0};
+	int32_t size = sizeof(buffer);
 	const char* path1 = luaL_checkstring(L, 1);
 	const char* path2 = luaL_checkstring(L, 2);
-	const char* result_ = FS_JoinPaths(path1, path2);
+	const char* result_ = FS_JoinPaths(buffer, size, path1, path2);
 	lua_pushstring(L, result_);
 	return 1;
 }

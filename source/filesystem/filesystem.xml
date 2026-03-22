@@ -224,10 +224,12 @@
   
   <function name="JoinPaths">
     <summary>Joins two path segments into a complete path</summary>
-    <details>Combines two path components into a single path string, automatically handling path separators. For example, joining "/path/to" and "file.txt" produces "/path/to/file. txt". The function handles cases where the first path may or may not end with a separator.</details>
+    <details>Combines two path components into a single path string, automatically handling path separators. For example, joining "/path/to" and "file.txt" produces "/path/to/file.txt". The function handles cases where the first path may or may not end with a separator. Returns the buffer pointer to allow call chaining.</details>
+    <arg name="buffer" type="string" output="path_t">Output buffer to receive the joined path</arg>
+    <arg name="size" type="int" bufsize="buffer">Size of the output buffer</arg>
     <arg name="path1" type="string">The first path component (typically a directory)</arg>
     <arg name="path2" type="string">The second path component (typically a filename or subdirectory)</arg>
-    <returns type="string">Newly allocated string containing the joined path</returns>
+    <returns type="string">Pointer to the output buffer containing the joined path</returns>
   </function>
   
   <function name="PathFromModule">

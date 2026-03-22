@@ -131,7 +131,8 @@ LPEDPAK ED_LoadPackage(lpcString_t szPath) {
         if (xmlStrcmp(dep->name, XMLSTR("Dependency")))
           continue;
         LPXMLSTR szPackage = xmlNodeGetContent(dep);
-        ED_LoadPackage(FS_JoinPaths(pak->folder, (LPSTR)szPackage));
+        path_t deppath = {0};
+        ED_LoadPackage(FS_JoinPaths(deppath, sizeof(deppath), pak->folder, (LPSTR)szPackage));
         xmlFree(szPackage);
       }
     } else if (!xmlStrcmp(node->name, XMLSTR("StartupScreen"))) {
@@ -157,9 +158,9 @@ LPXMLNODE ED_LoadXML(lpcString_t szFileName) {
     ED_Printf("%s: can't find package %s among loaded", szFileName, package);
     return NULL;
   }
-  PATHSTR filepath;
-  strncpy(filepath, FS_JoinPaths(pak->folder, relative+1), sizeof(filepath)-4);
-  strcat(filepath, ".xml");
+  PATHSTR filepath = {0};
+  FS_JoinPaths(filepath, sizeof(filepath), pak->folder, relative+1);
+  strncat(filepath, ".xml", sizeof(filepath) - strlen(filepath) - 1);
   LPXMLDOC doc = xmlReadFile(filepath, NULL, 0);
   if (!doc) {
     ED_Printf("%s: file not found", szFileName);

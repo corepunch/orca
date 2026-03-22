@@ -44,17 +44,16 @@ FS_GetDirName(lpcString_t szPath, lpcString_t out, int32_t size)
 
 
 lpcString_t
-FS_JoinPaths(lpcString_t base, lpcString_t relative)
+FS_JoinPaths(lpcString_t buffer, int32_t size, lpcString_t base, lpcString_t relative)
 {
-  static uint8_t counter = 0;
-  static path_t buffer[256];
+  LPSTR buf = (LPSTR)buffer;
   path_t temp = { 0 };
   LPSTR components[sizeof(path_t)];
   int component_count = 0;
 
-  strcpy(temp, base);
-  strcat(temp, "/");
-  strcat(temp, relative);
+  strncpy(temp, base, sizeof(temp) - 1);
+  strncat(temp, "/", sizeof(temp) - strlen(temp) - 1);
+  strncat(temp, relative, sizeof(temp) - strlen(temp) - 1);
 
   // Tokenize the combined path
   LPSTR token = strtok(temp, "/");
@@ -68,22 +67,21 @@ FS_JoinPaths(lpcString_t base, lpcString_t relative)
     token = strtok(NULL, "/");
   }
 
-  LPSTR result = buffer[counter++];
   // Construct the final result
-  result[0] = '\0';
+  buf[0] = '\0';
   if (base[0] == '/') {
-    strcat(result, "/");
+    strncat(buf, "/", size - 1);
   } else if (base[0] == '.' && (base[1] == '/' || base[1] == '\0')) {
-    strcat(result, "./");
+    strncat(buf, "./", size - 1);
   }
   if (component_count > 0) {
-    strcat(result, components[0]);
+    strncat(buf, components[0], size - (int32_t)strlen(buf) - 1);
     for (int i = 1; i < component_count; i++) {
-      strcat(result, "/");
-      strcat(result, components[i]);
+      strncat(buf, "/", size - (int32_t)strlen(buf) - 1);
+      strncat(buf, components[i], size - (int32_t)strlen(buf) - 1);
     }
   }
-  return result;
+  return buffer;
 }
 
 //static struct file*
@@ -334,7 +332,8 @@ static void _InitPropertyTypes(lpProject_t project) {
 
 static void _InitProjectRefences(lua_State *L, lpProject_t project, lpcString_t szDirname) {
   FOR_LOOP(i, project->NumProjectReferences) {
-    FS_LoadBundle(L, FS_JoinPaths(szDirname, project->ProjectReferences[i].Path));
+    path_t joined = {0};
+    FS_LoadBundle(L, FS_JoinPaths(joined, sizeof(joined), szDirname, project->ProjectReferences[i].Path));
   }
 }
 

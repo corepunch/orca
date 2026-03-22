@@ -41,7 +41,7 @@ ORCA_API const char*
 FS_GetDirName(const char*, const char*, int32_t);
 /// @brief Joins two path segments into a complete path
 ORCA_API const char*
-FS_JoinPaths(const char*, const char*);
+FS_JoinPaths(const char*, int32_t, const char*, const char*);
 /// @brief Converts a module name to a file path
 ORCA_API const char*
 FS_PathFromModule(const char*);
