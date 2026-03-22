@@ -1,3 +1,4 @@
+#include <math.h>
 #include <include/api.h>
 #include <include/orca.h>
 #include <include/renderer.h>
@@ -58,7 +59,7 @@ _ChildMainSize(Node2DPtr subview,
                enum Direction direction,
                float item_override)
 {
-  if (item_override > 0)
+  if (!isnan(item_override))
     return item_override;
   if (direction == kDirectionHorizontal)
     return NODE2D_FRAME(subview, Size, 0).Desired + TOTAL_MARGIN(subview, 0);
@@ -161,11 +162,11 @@ HANDLER(WrapPanel, MeasureOverride)
   for (int i = 0; i < n; i++) {
     Size_t avail;
     if (pWrapPanel->Direction == kDirectionHorizontal) {
-      avail.width  = item_main  > 0 ? item_main  : INFINITY;
-      avail.height = item_cross > 0 ? item_cross : pMeasureOverride->height;
+      avail.width  = !isnan(item_main)  ? item_main  : INFINITY;
+      avail.height = !isnan(item_cross) ? item_cross : pMeasureOverride->height;
     } else {
-      avail.width  = item_cross > 0 ? item_cross : pMeasureOverride->width;
-      avail.height = item_main  > 0 ? item_main  : INFINITY;
+      avail.width  = !isnan(item_cross) ? item_cross : pMeasureOverride->width;
+      avail.height = !isnan(item_main)  ? item_main  : INFINITY;
     }
     OBJ_SendMessageW(children[i], kEventMeasure, 0, &avail);
   }
@@ -218,11 +219,11 @@ HANDLER(WrapPanel, ArrangeOverride)
   for (int i = 0; i < n; i++) {
     Size_t avail;
     if (pWrapPanel->Direction == kDirectionHorizontal) {
-      avail.width  = item_main  > 0 ? item_main  : INFINITY;
-      avail.height = item_cross > 0 ? item_cross : pArrangeOverride->height;
+      avail.width  = !isnan(item_main)  ? item_main  : INFINITY;
+      avail.height = !isnan(item_cross) ? item_cross : pArrangeOverride->height;
     } else {
-      avail.width  = item_cross > 0 ? item_cross : pArrangeOverride->width;
-      avail.height = item_main  > 0 ? item_main  : INFINITY;
+      avail.width  = !isnan(item_cross) ? item_cross : pArrangeOverride->width;
+      avail.height = !isnan(item_main)  ? item_main  : INFINITY;
     }
     OBJ_SendMessageW(children[i], kEventMeasure, 0, &avail);
   }
@@ -242,7 +243,7 @@ HANDLER(WrapPanel, ArrangeOverride)
                       : pArrangeOverride->x;
 
   for (int li = 0; li < num_lines; li++) {
-    float line_cross = item_cross > 0 ? item_cross : lines[li].cross_size;
+    float line_cross = !isnan(item_cross) ? item_cross : lines[li].cross_size;
     float main_pos   = pWrapPanel->Direction == kDirectionHorizontal
                          ? pArrangeOverride->x
                          : pArrangeOverride->y;

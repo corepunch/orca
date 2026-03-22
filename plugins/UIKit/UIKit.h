@@ -908,8 +908,8 @@ typedef struct WrapPanel const *WrapPanelCPtr, *lpcWrapPanel_t;
 struct WrapPanel {
 	enum Direction Direction; ///< Primary layout direction: Horizontal flows items left-to-right and wraps into rows; Vertical flows top-to-bottom and wraps into columns
 	float Spacing; ///< Space between items within a line and between lines
-	float ItemWidth; ///< Fixed width override for all items (0 = use each child's measured width)
-	float ItemHeight; ///< Fixed height override for all items (0 = use each child's measured height)
+	float ItemWidth; ///< Fixed width override for all items (NaN = use each child's measured width)
+	float ItemHeight; ///< Fixed height override for all items (NaN = use each child's measured height)
 };
 ORCA_API void luaX_pushWrapPanel(lua_State *L, struct WrapPanel const* WrapPanel);
 ORCA_API struct WrapPanel* luaX_checkWrapPanel(lua_State *L, int idx);

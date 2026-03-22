@@ -3011,6 +3011,10 @@ static struct PropertyType const WrapPanelProperties[kWrapPanelNumProperties] = 
 	DECL(0x1c3f56ad, WrapPanel, ItemHeight, ItemHeight, kDataTypeFloat), // WrapPanel.ItemHeight
 };
 static struct WrapPanel WrapPanelDefaults = {
+		
+  .ItemWidth = NAN,
+		
+  .ItemHeight = NAN,
 };
 LRESULT WrapPanelProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {

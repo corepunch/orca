@@ -734,14 +734,14 @@
 
   <class name="WrapPanel" parent="Node2D">
     <summary>Wrap layout container that flows children into rows or columns</summary>
-    <details>Arranges children sequentially along a primary axis and wraps onto a new line when the available space is exhausted. Similar to WPF's WrapPanel. Use ItemWidth/ItemHeight to force uniform item sizes, or leave at 0 to use each child's measured size.</details>
+    <details>Arranges children sequentially along a primary axis and wraps onto a new line when the available space is exhausted. Similar to WPF's WrapPanel. Use ItemWidth/ItemHeight to force uniform item sizes, or leave unset (NaN) to use each child's measured size.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <handles event="MeasureOverride"/>
     <handles event="ArrangeOverride"/>
     <property name="Direction" type="Direction">Primary layout direction: Horizontal flows items left-to-right and wraps into rows; Vertical flows top-to-bottom and wraps into columns </property>
     <property name="Spacing" type="float">Space between items within a line and between lines </property>
-    <property name="ItemWidth" type="float">Fixed width override for all items (0 = use each child's measured width) </property>
-    <property name="ItemHeight" type="float">Fixed height override for all items (0 = use each child's measured height) </property>
+    <property name="ItemWidth" type="float" default="NAN">Fixed width override for all items (NaN = use each child's measured width) </property>
+    <property name="ItemHeight" type="float" default="NAN">Fixed height override for all items (NaN = use each child's measured height) </property>
   </class>
 
   <enums name="Stretch">
