@@ -382,7 +382,7 @@ LRESULT ED_CanvasView(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm) {
           if (data->selected && OBJ_GetParent(data->selected)) {
             xmlNodePtr xml = ED_ConvertNode(data->selected, NULL);
 //            HOBJ root = CanvasView_GetScene(wnd);
-            xmlWith(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFree) {
+            WITH(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFree) {
               xmlDocSetRootElement(doc, xml);
               lpObject_t OBJ_LoadDocument(lua_State* L, xmlDocPtr doc);
               OBJ_AddChild(OBJ_GetParent(data->selected), OBJ_LoadDocument(editor.L, doc), FALSE);

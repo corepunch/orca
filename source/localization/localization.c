@@ -185,11 +185,11 @@ Locale_Load(xmlNodePtr xml)
   if (!xmlStrcmp(xml->name, XMLSTR("Locale"))) {
     xmlForEach(entry, xml)
     {
-      xmlWith(xmlChar, name, xmlGetProp(entry, XMLSTR("Key")), xmlFree)
+      WITH(xmlChar, name, xmlGetProp(entry, XMLSTR("Key")), xmlFree)
       {
-        xmlWith(xmlChar, type, xmlGetProp(entry, XMLSTR("Type")), xmlFree)
+        WITH(xmlChar, type, xmlGetProp(entry, XMLSTR("Type")), xmlFree)
         {
-          xmlWith(xmlChar, content, xmlNodeGetContent(entry), xmlFree)
+          WITH(xmlChar, content, xmlNodeGetContent(entry), xmlFree)
           {
             PLOCALE locale =
               ZeroAlloc(sizeof(struct _LOCALE) + xmlStrlen(content));
@@ -218,7 +218,7 @@ static int f_load_localization(lua_State* L)
 {
 	lpcString_t source = luaL_checkstring(L, 1);
   bool_t loaded = FALSE;
-  xmlWith(struct _xmlDoc, doc, FS_LoadXML(source), xmlFreeDoc)
+  WITH(struct _xmlDoc, doc, FS_LoadXML(source), xmlFreeDoc)
   {
     loaded = Locale_Load(xmlDocGetRootElement(doc));
   }

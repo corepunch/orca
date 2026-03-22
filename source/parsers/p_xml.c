@@ -65,7 +65,7 @@ static int lua_xml_read_document(lua_State* L)
 {
   lpcString_t filename = luaL_checkstring(L, 1);
   xmlDocPtr doc = NULL;
-  xmlWith(struct file, file, FS_LoadFile(filename), FS_FreeFile) {
+  WITH(struct file, file, FS_LoadFile(filename), FS_FreeFile) {
     doc = xmlReadMemory((char*)file->data, file->size, filename, NULL, XML_PARSE_NOBLANKS | XML_PARSE_COMPACT);
   }
   if (doc) {
@@ -250,7 +250,7 @@ static int lua_xml_doc_index(lua_State* L)
   if (root && !xmlStrcmp(root->name, XMLSTR("Plugin"))) {
     path_t tmp={0};
     snprintf(tmp, sizeof(tmp), "%s.%s", (*doc)->name, name);
-//    xmlWith(xmlChar, name, xmlGetProp(root, XMLSTR("name")), xmlFree) {
+//    WITH(xmlChar, name, xmlGetProp(root, XMLSTR("name")), xmlFree) {
 //      snprintf(tmp, sizeof(tmp), "%s.%s", (lpcString_t )name, name);
 //    }
     lua_getglobal(L, "require");

@@ -26,7 +26,7 @@ EDWINPROC(GameView) {
 //  LPGAMEVIEW data = ED_GetUserData(wnd);
   switch (msg) {
     case EVT_CREATE:
-//      xmlWith(xmlDoc, doc, xmlReadFile(lparm, NULL, 0), xmlFreeDoc) {
+//      WITH(xmlDoc, doc, xmlReadFile(lparm, NULL, 0), xmlFreeDoc) {
 //        PATHSTR path = {0};
 //        strncpy(path, lparm, sizeof(path));
 //        if (strrchr(path, '.')) *strrchr(path, '.') = 0;

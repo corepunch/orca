@@ -134,9 +134,9 @@ lua_setfield(L, LUA_REGISTRYINDEX, IID);
 
 #define xmlFindAllText(CHILD, CONTENT, XML, TYPE)                              \
   xmlFindAll(CHILD, XML, TYPE)                                                 \
-  xmlWith(xmlChar, CONTENT, xmlNodeGetContent(CHILD), xmlFree)
+  WITH(xmlChar, CONTENT, xmlNodeGetContent(CHILD), xmlFree)
 
-#define xmlWith(type, var, expr, free)                                         \
+#define WITH(type, var, expr, free)                                         \
   for (type* var = expr; var; free(var), var = NULL)
 
 #define FOR_LOOP(property, max)                                                \

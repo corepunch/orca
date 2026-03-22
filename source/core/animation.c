@@ -22,40 +22,40 @@ static struct curve*
 animation_load_xml(xmlNodePtr xml) {
   size_t size = animation_size(num_keyframes(xml));
   struct curve* anim = ZeroAlloc(size);
-  xmlWith(xmlChar, Path, xmlGetProp(xml, XMLSTR("Path")), xmlFree) {
+  WITH(xmlChar, Path, xmlGetProp(xml, XMLSTR("Path")), xmlFree) {
     strncpy(anim->path, (LPSTR)Path, sizeof(anim->path));
   }
-  xmlWith(xmlChar, Property, xmlGetProp(xml, XMLSTR("Property")), xmlFree) {
+  WITH(xmlChar, Property, xmlGetProp(xml, XMLSTR("Property")), xmlFree) {
     strncpy(anim->property, (LPSTR)Property, sizeof(anim->property));
   }
   xmlForEach(child, xml) {
     if (!xmlStrcmp(child->name, XMLSTR("Keyframe"))) {
-      xmlWith(xmlChar, time, xmlGetProp(child, XMLSTR("time")), xmlFree) {
+      WITH(xmlChar, time, xmlGetProp(child, XMLSTR("time")), xmlFree) {
         anim->keyframes[anim->num_keyframes].time = atof((LPSTR)time);
       }
-      xmlWith(xmlChar, tangentMode, xmlGetProp(child, XMLSTR("tangentMode")), xmlFree) {
+      WITH(xmlChar, tangentMode, xmlGetProp(child, XMLSTR("tangentMode")), xmlFree) {
         anim->keyframes[anim->num_keyframes].tangentMode = atoi((LPSTR)tangentMode);
       }
-      xmlWith(xmlChar, weightedMode, xmlGetProp(child, XMLSTR("weightedMode")), xmlFree) {
+      WITH(xmlChar, weightedMode, xmlGetProp(child, XMLSTR("weightedMode")), xmlFree) {
         anim->keyframes[anim->num_keyframes].weightedMode = atoi((LPSTR)weightedMode);
       }
-      xmlWith(xmlChar, inSlope, xmlGetProp(child, XMLSTR("inSlope")), xmlFree) {
+      WITH(xmlChar, inSlope, xmlGetProp(child, XMLSTR("inSlope")), xmlFree) {
         float *out = anim->keyframes[anim->num_keyframes].inSlope;
         sscanf((LPSTR)inSlope, "%f %f %f %f", &out[0], &out[1], &out[2], &out[3]);
       }
-      xmlWith(xmlChar, outSlope, xmlGetProp(child, XMLSTR("outSlope")), xmlFree) {
+      WITH(xmlChar, outSlope, xmlGetProp(child, XMLSTR("outSlope")), xmlFree) {
         float *out = anim->keyframes[anim->num_keyframes].outSlope;
         sscanf((LPSTR)outSlope, "%f %f %f %f", &out[0], &out[1], &out[2], &out[3]);
       }
-      xmlWith(xmlChar, inWeight, xmlGetProp(child, XMLSTR("inWeight")), xmlFree) {
+      WITH(xmlChar, inWeight, xmlGetProp(child, XMLSTR("inWeight")), xmlFree) {
         float *out = anim->keyframes[anim->num_keyframes].inWeight;
         sscanf((LPSTR)inWeight, "%f %f %f %f", &out[0], &out[1], &out[2], &out[3]);
       }
-      xmlWith(xmlChar, outWeight, xmlGetProp(child, XMLSTR("outWeight")), xmlFree) {
+      WITH(xmlChar, outWeight, xmlGetProp(child, XMLSTR("outWeight")), xmlFree) {
         float *out = anim->keyframes[anim->num_keyframes].outWeight;
         sscanf((LPSTR)outWeight, "%f %f %f %f", &out[0], &out[1], &out[2], &out[3]);
       }
-      xmlWith(xmlChar, value, xmlGetProp(child, XMLSTR("value")), xmlFree) {
+      WITH(xmlChar, value, xmlGetProp(child, XMLSTR("value")), xmlFree) {
         float *out = anim->keyframes[anim->num_keyframes].value;
         sscanf((LPSTR)value, "%f %f %f %f", &out[0], &out[1], &out[2], &out[3]);
 //        anim->keyframes[anim->num_keyframes].value[0] = atof((LPSTR)value);
@@ -204,7 +204,7 @@ ANIM_Load(xmlDocPtr doc)
   }
   anim = ZeroAlloc(sizeof(KeyframeAnim_t));
   anim->filename = strdup((lpcString_t)doc->URL);
-  xmlWith(xmlChar, Mode, xmlGetProp(xml, XMLSTR("Mode")), xmlFree) {
+  WITH(xmlChar, Mode, xmlGetProp(xml, XMLSTR("Mode")), xmlFree) {
     if (!xmlStrcmp(Mode, XMLSTR("PlayOnce"))) {
       anim->mode = kAnimationPlayOnce;
     } else if (!xmlStrcmp(Mode, XMLSTR("Loop"))) {
@@ -213,10 +213,10 @@ ANIM_Load(xmlDocPtr doc)
       anim->mode = kAnimationPingPong;
     }
   }
-  xmlWith(xmlChar, StartTime, xmlGetProp(xml, XMLSTR("StartTime")), xmlFree) {
+  WITH(xmlChar, StartTime, xmlGetProp(xml, XMLSTR("StartTime")), xmlFree) {
     anim->start_time = atof((LPSTR)StartTime);
   }
-  xmlWith(xmlChar, StopTime, xmlGetProp(xml, XMLSTR("StopTime")), xmlFree) {
+  WITH(xmlChar, StopTime, xmlGetProp(xml, XMLSTR("StopTime")), xmlFree) {
     anim->stop_time = atof((LPSTR)StopTime);
   }
   xmlForEach(child, xml)

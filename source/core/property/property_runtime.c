@@ -100,7 +100,7 @@ findnode(xmlNodePtr node, xmlChar const* lookup)
 {
   xmlForEach(child, node)
   {
-    xmlWith(xmlChar, name, xmlGetProp(child, XMLSTR("name")), xmlFree)
+    WITH(xmlChar, name, xmlGetProp(child, XMLSTR("name")), xmlFree)
     {
       if (!xmlStrcmp(name, lookup)) {
         xmlFree(name);
@@ -304,7 +304,7 @@ tok_op(ANIMATE) {
         Con_Error("No userdata set in ANIMATE token");
         return FALSE;
       }
-      xmlWith(xmlDoc, doc, LoadXmlDoc(path), xmlFreeDoc) {
+      WITH(xmlDoc, doc, LoadXmlDoc(path), xmlFreeDoc) {
         SafeSet(token->cache.animation, Animation_Register(doc), free);
       }
     }
