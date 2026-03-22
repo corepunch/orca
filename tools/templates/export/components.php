@@ -18,7 +18,7 @@ static struct PropertyType const <?= $name ?>Properties[k<?= $name ?>NumProperti
 		<?php echo($property->type->array ? "\tARRAY_DECL(" : "\tDECL(") ?>
 		<?php echo("{$property->name->id}, $name, {$property->name}, {$property->name->addr}, $datatype") ?>
 		<?php if ($property->type->kind === 'enum') {
-			echo (", .TypeString = \"" . implode(',', $property->type->data->getValuesNames()) . "\", .EnumValues = _" . $property->type->type . "), // $name.{$property->name}\n");
+			echo (", .EnumValues = _" . $property->type->type . "), // $name.{$property->name}\n");
 		} elseif ($property->type->kind === 'struct' || $property->type->kind === 'component') {
 			echo (", .TypeString = \"{$property->type->export}\"), // $name.{$property->name}\n");
  		} else {

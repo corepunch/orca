@@ -33,6 +33,4 @@ calculate_ninepatch(struct vec2 const* framesize,
 
 typedef const char *lpcString_t;
 
-ORCA_API lpcString_t stristr(lpcString_t haystack, lpcString_t needle);
-
 #endif

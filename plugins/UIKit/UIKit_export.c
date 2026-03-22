@@ -1941,7 +1941,7 @@ ORCA_API struct ClassDesc _DataObject = {
 static struct PropertyType const AnimationPlayerProperties[kAnimationPlayerNumProperties] = {
 	DECL(0x706b62d9, AnimationPlayer, AutoplayEnabled, AutoplayEnabled, kDataTypeBool), // AnimationPlayer.AutoplayEnabled
 	DECL(0x9bcd7639, AnimationPlayer, DurationScale, DurationScale, kDataTypeFloat), // AnimationPlayer.DurationScale
-	DECL(0x234c71cf, AnimationPlayer, PlaybackMode, PlaybackMode, kDataTypeEnum, .TypeString = "Normal,Reverse,Pingpong", .EnumValues = _PlaybackMode), // AnimationPlayer.PlaybackMode
+	DECL(0x234c71cf, AnimationPlayer, PlaybackMode, PlaybackMode, kDataTypeEnum, .EnumValues = _PlaybackMode), // AnimationPlayer.PlaybackMode
 	DECL(0x9b01fbb4, AnimationPlayer, RelativePlayback, RelativePlayback, kDataTypeBool), // AnimationPlayer.RelativePlayback
 	DECL(0xa3a5f0a1, AnimationPlayer, RepeatCount, RepeatCount, kDataTypeInt), // AnimationPlayer.RepeatCount
 	DECL(0x280cbcbb, AnimationPlayer, RestoreOriginalValuesAfterPlayback, RestoreOriginalValuesAfterPlayback, kDataTypeBool), // AnimationPlayer.RestoreOriginalValuesAfterPlayback
@@ -2300,16 +2300,16 @@ static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	DECL(0x14d0d564, Node, BorderWidthFront, Border.Width.Axis[2].Left, kDataTypeFloat), // Node.BorderWidthFront
 	DECL(0x7c087736, Node, BorderWidthBack, Border.Width.Axis[2].Right, kDataTypeFloat), // Node.BorderWidthBack
 	DECL(0x933e48c6, Node, BorderColor, Border.Color, kDataTypeStruct, .TypeString = "Color"), // Node.BorderColor
-	DECL(0x390b4488, Node, BorderStyle, Border.Style, kDataTypeEnum, .TypeString = "None,Hidden,Dotted,Dashed,Solid,Double,Groove,Ridge,Inset,Outset", .EnumValues = _BorderStyle), // Node.BorderStyle
+	DECL(0x390b4488, Node, BorderStyle, Border.Style, kDataTypeEnum, .EnumValues = _BorderStyle), // Node.BorderStyle
 	DECL(0xb8e9fe05, Node, BorderRadius, Border.Radius, kDataTypeStruct, .TypeString = "BorderRadiusShorthand"), // Node.BorderRadius
 	DECL(0x22252041, Node, BorderTopLeftRadius, Border.Radius.TopLeftRadius, kDataTypeFloat), // Node.BorderTopLeftRadius
 	DECL(0x789f0d82, Node, BorderTopRightRadius, Border.Radius.TopRightRadius, kDataTypeFloat), // Node.BorderTopRightRadius
 	DECL(0xc321a1f8, Node, BorderBottomRightRadius, Border.Radius.BottomRightRadius, kDataTypeFloat), // Node.BorderBottomRightRadius
 	DECL(0x700e8e07, Node, BorderBottomLeftRadius, Border.Radius.BottomLeftRadius, kDataTypeFloat), // Node.BorderBottomLeftRadius
 	DECL(0xd66abafe, Node, Alignment, Alignment, kDataTypeStruct, .TypeString = "AlignmentShorthand"), // Node.Alignment
-	DECL(0x1b8d5152, Node, HorizontalAlignment, Alignment.Axis[0], kDataTypeEnum, .TypeString = "Stretch,Left,Center,Right", .EnumValues = _HorizontalAlignment), // Node.HorizontalAlignment
-	DECL(0x94b01054, Node, VerticalAlignment, Alignment.Axis[1], kDataTypeEnum, .TypeString = "Stretch,Top,Center,Bottom", .EnumValues = _VerticalAlignment), // Node.VerticalAlignment
-	DECL(0x7ef540ff, Node, DepthAlignment, Alignment.Axis[2], kDataTypeEnum, .TypeString = "Near,Center,Far,Stretch", .EnumValues = _DepthAlignment), // Node.DepthAlignment
+	DECL(0x1b8d5152, Node, HorizontalAlignment, Alignment.Axis[0], kDataTypeEnum, .EnumValues = _HorizontalAlignment), // Node.HorizontalAlignment
+	DECL(0x94b01054, Node, VerticalAlignment, Alignment.Axis[1], kDataTypeEnum, .EnumValues = _VerticalAlignment), // Node.VerticalAlignment
+	DECL(0x7ef540ff, Node, DepthAlignment, Alignment.Axis[2], kDataTypeEnum, .EnumValues = _DepthAlignment), // Node.DepthAlignment
 	DECL(0x592a4941, Node, Visible, Visible, kDataTypeBool), // Node.Visible
 	DECL(0x20d9ba7c, Node, QuickHide, QuickHide, kDataTypeBool), // Node.QuickHide
 	DECL(0xa0b06d26, Node, VisibleAmountInParent, VisibleAmountInParent, kDataTypeFloat), // Node.VisibleAmountInParent
@@ -2357,8 +2357,8 @@ ORCA_API struct ClassDesc _Node = {
 static struct PropertyType const TextRunProperties[kTextRunNumProperties] = {
 	DECL(0x3e142d5e, TextRun, Text, Text, kDataTypeString), // TextRun.Text
 	DECL(0xa77a5eb0, TextRun, Font, Font, kDataTypeStruct, .TypeString = "FontShorthand"), // TextRun.Font
-	DECL(0xd0616ad0, TextRun, FontWeight, Font.Weight, kDataTypeEnum, .TypeString = "Normal,Bold", .EnumValues = _FontWeight), // TextRun.FontWeight
-	DECL(0x6c164db5, TextRun, FontStyle, Font.Style, kDataTypeEnum, .TypeString = "Normal,Italic", .EnumValues = _FontStyle), // TextRun.FontStyle
+	DECL(0xd0616ad0, TextRun, FontWeight, Font.Weight, kDataTypeEnum, .EnumValues = _FontWeight), // TextRun.FontWeight
+	DECL(0x6c164db5, TextRun, FontStyle, Font.Style, kDataTypeEnum, .EnumValues = _FontStyle), // TextRun.FontStyle
 	DECL(0xa26a44e1, TextRun, FontSize, Font.Size, kDataTypeFloat), // TextRun.FontSize
 	DECL(0xf6319880, TextRun, FontFamily, Font.Family, kDataTypeObject, .TypeString = "FontFamily"), // TextRun.FontFamily
 	DECL(0x9a85011f, TextRun, Underline, Underline, kDataTypeStruct, .TypeString = "UnderlineShorthand"), // TextRun.Underline
@@ -2410,7 +2410,7 @@ static struct PropertyType const TextBlockConceptProperties[kTextBlockConceptNum
 	DECL(0x43c114fb, TextBlockConcept, TextResourceID, TextResourceID, kDataTypeString), // TextBlockConcept.TextResourceID
 	DECL(0x73dd50ec, TextBlockConcept, TextResourceConfiguration, TextResourceConfiguration, kDataTypeString), // TextBlockConcept.TextResourceConfiguration
 	DECL(0xdccaa011, TextBlockConcept, PlaceholderText, PlaceholderText, kDataTypeString), // TextBlockConcept.PlaceholderText
-	DECL(0x3dcadc9c, TextBlockConcept, TextOverflow, TextOverflow, kDataTypeEnum, .TypeString = "Clip,Ellipsis", .EnumValues = _TextOverflow), // TextBlockConcept.TextOverflow
+	DECL(0x3dcadc9c, TextBlockConcept, TextOverflow, TextOverflow, kDataTypeEnum, .EnumValues = _TextOverflow), // TextBlockConcept.TextOverflow
 	DECL(0x8987413a, TextBlockConcept, Placeholder, Placeholder, kDataTypeStruct, .TypeString = "BrushShorthand"), // TextBlockConcept.Placeholder
 	DECL(0xb272976d, TextBlockConcept, PlaceholderColor, Placeholder.Color, kDataTypeStruct, .TypeString = "Color"), // TextBlockConcept.PlaceholderColor
 	DECL(0x6b519bcf, TextBlockConcept, PlaceholderImage, Placeholder.Image, kDataTypeObject, .TypeString = "Texture"), // TextBlockConcept.PlaceholderImage
@@ -2418,9 +2418,9 @@ static struct PropertyType const TextBlockConceptProperties[kTextBlockConceptNum
 	DECL(0x27e35097, TextBlockConcept, UseFullFontHeight, UseFullFontHeight, kDataTypeBool), // TextBlockConcept.UseFullFontHeight
 	DECL(0xda466bac, TextBlockConcept, ConstrainContentHeight, ConstrainContentHeight, kDataTypeBool), // TextBlockConcept.ConstrainContentHeight
 	DECL(0x468540fd, TextBlockConcept, WordWrap, WordWrap, kDataTypeBool), // TextBlockConcept.WordWrap
-	DECL(0x65cdc8f2, TextBlockConcept, TextWrapping, TextWrapping, kDataTypeEnum, .TypeString = "WrapWithOverflow,NoWrap,Wrap", .EnumValues = _TextWrapping), // TextBlockConcept.TextWrapping
-	DECL(0xf46faf37, TextBlockConcept, TextHorizontalAlignment, TextHorizontalAlignment, kDataTypeEnum, .TypeString = "Left,Center,Right", .EnumValues = _TextHorizontalAlignment), // TextBlockConcept.TextHorizontalAlignment
-	DECL(0xbc8a8a99, TextBlockConcept, TextVerticalAlignment, TextVerticalAlignment, kDataTypeEnum, .TypeString = "Top,Center,Bottom,Baseline", .EnumValues = _TextVerticalAlignment), // TextBlockConcept.TextVerticalAlignment
+	DECL(0x65cdc8f2, TextBlockConcept, TextWrapping, TextWrapping, kDataTypeEnum, .EnumValues = _TextWrapping), // TextBlockConcept.TextWrapping
+	DECL(0xf46faf37, TextBlockConcept, TextHorizontalAlignment, TextHorizontalAlignment, kDataTypeEnum, .EnumValues = _TextHorizontalAlignment), // TextBlockConcept.TextHorizontalAlignment
+	DECL(0xbc8a8a99, TextBlockConcept, TextVerticalAlignment, TextVerticalAlignment, kDataTypeEnum, .EnumValues = _TextVerticalAlignment), // TextBlockConcept.TextVerticalAlignment
 };
 static struct TextBlockConcept TextBlockConceptDefaults = {
 		
@@ -2498,8 +2498,8 @@ static struct PropertyType const Node2DProperties[kNode2DNumProperties] = {
 	DECL(0xe284b26f, Node2D, BoxShadowSpreadRadius, BoxShadow.SpreadRadius, kDataTypeFloat), // Node2D.BoxShadowSpreadRadius
 	DECL(0xe0ae423d, Node2D, BoxShadowColor, BoxShadow.Color, kDataTypeStruct, .TypeString = "Color"), // Node2D.BoxShadowColor
 	DECL(0x3cf02b8b, Node2D, Overflow, Overflow, kDataTypeStruct, .TypeString = "OverflowShorthand"), // Node2D.Overflow
-	DECL(0xc114fd29, Node2D, OverflowX, Overflow.x, kDataTypeEnum, .TypeString = "Visible,Hidden,Clip,Scroll,Auto", .EnumValues = _Overflow), // Node2D.OverflowX
-	DECL(0xc014fb96, Node2D, OverflowY, Overflow.y, kDataTypeEnum, .TypeString = "Visible,Hidden,Clip,Scroll,Auto", .EnumValues = _Overflow), // Node2D.OverflowY
+	DECL(0xc114fd29, Node2D, OverflowX, Overflow.x, kDataTypeEnum, .EnumValues = _Overflow), // Node2D.OverflowX
+	DECL(0xc014fb96, Node2D, OverflowY, Overflow.y, kDataTypeEnum, .EnumValues = _Overflow), // Node2D.OverflowY
 	DECL(0x7787478b, Node2D, Ring, Ring, kDataTypeStruct, .TypeString = "RingShorthand"), // Node2D.Ring
 	DECL(0xfd700608, Node2D, RingOffset, Ring.Offset, kDataTypeFloat), // Node2D.RingOffset
 	DECL(0x5fff552d, Node2D, RingWidth, Ring.Width, kDataTypeFloat), // Node2D.RingWidth
@@ -2515,7 +2515,7 @@ static struct PropertyType const Node2DProperties[kNode2DNumProperties] = {
 	DECL(0x639756ff, Node2D, ContentStretch, ContentStretch, kDataTypeBool), // Node2D.ContentStretch
 	DECL(0x09dc5114, Node2D, Hovered, Hovered, kDataTypeBool), // Node2D.Hovered
 	DECL(0xfdba6cd0, Node2D, IgnoreHitTest, IgnoreHitTest, kDataTypeBool), // Node2D.IgnoreHitTest
-	DECL(0xf068ff19, Node2D, ForegroundHint, ForegroundHint, kDataTypeEnum, .TypeString = "None,Translucent,Opaque", .EnumValues = _ForegroundHint), // Node2D.ForegroundHint
+	DECL(0xf068ff19, Node2D, ForegroundHint, ForegroundHint, kDataTypeEnum, .EnumValues = _ForegroundHint), // Node2D.ForegroundHint
 };
 static struct Node2D Node2DDefaults = {
 		
@@ -2649,7 +2649,7 @@ LRESULT Input_MeasureOverride(struct Object*, struct Input*, wParam_t, MeasureOv
 
 static struct PropertyType const InputProperties[kInputNumProperties] = {
 	DECL(0x0fe07306, Input, Name, Name, kDataTypeString), // Input.Name
-	DECL(0xd155d06d, Input, Type, Type, kDataTypeEnum, .TypeString = "Text,Password,Number,Checkbox,Radio", .EnumValues = _InputType), // Input.Type
+	DECL(0xd155d06d, Input, Type, Type, kDataTypeEnum, .EnumValues = _InputType), // Input.Type
 	DECL(0x558a502f, Input, Cursor, Cursor, kDataTypeInt), // Input.Cursor
 	DECL(0xe890d540, Input, Multiline, Multiline, kDataTypeBool), // Input.Multiline
 	DECL(0x51ba2a66, Input, Checked, Checked, kDataTypeBool), // Input.Checked
@@ -2695,7 +2695,7 @@ LRESULT Button_KeyDown(struct Object*, struct Button*, wParam_t, KeyDownEventPtr
 LRESULT Button_DrawBrush(struct Object*, struct Button*, wParam_t, DrawBrushEventPtr);
 
 static struct PropertyType const ButtonProperties[kButtonNumProperties] = {
-	DECL(0xd155d06d, Button, Type, Type, kDataTypeEnum, .TypeString = "Normal,Submit", .EnumValues = _ButtonType), // Button.Type
+	DECL(0xd155d06d, Button, Type, Type, kDataTypeEnum, .EnumValues = _ButtonType), // Button.Type
 };
 static struct Button ButtonDefaults = {
 };
@@ -2768,9 +2768,9 @@ LRESULT StackView_ArrangeOverride(struct Object*, struct StackView*, wParam_t, A
 
 static struct PropertyType const StackViewProperties[kStackViewNumProperties] = {
 	DECL(0xcee65dd3, StackView, Reversed, Reversed, kDataTypeBool), // StackView.Reversed
-	DECL(0x61fefc0a, StackView, Direction, Direction, kDataTypeEnum, .TypeString = "Horizontal,Vertical,Depth", .EnumValues = _Direction), // StackView.Direction
-	DECL(0x517ab5aa, StackView, AlignItems, AlignItems, kDataTypeEnum, .TypeString = "Start,Center,End,Stretch,Baseline", .EnumValues = _AlignItems), // StackView.AlignItems
-	DECL(0x98c61698, StackView, JustifyContent, JustifyContent, kDataTypeEnum, .TypeString = "Start,End,Center,SpaceBetween,SpaceAround,SpaceEvenly", .EnumValues = _JustifyContent), // StackView.JustifyContent
+	DECL(0x61fefc0a, StackView, Direction, Direction, kDataTypeEnum, .EnumValues = _Direction), // StackView.Direction
+	DECL(0x517ab5aa, StackView, AlignItems, AlignItems, kDataTypeEnum, .EnumValues = _AlignItems), // StackView.AlignItems
+	DECL(0x98c61698, StackView, JustifyContent, JustifyContent, kDataTypeEnum, .EnumValues = _JustifyContent), // StackView.JustifyContent
 	DECL(0x8777939e, StackView, Spacing, Spacing, kDataTypeFloat), // StackView.Spacing
 };
 static struct StackView StackViewDefaults = {
@@ -2884,7 +2884,7 @@ LRESULT Screen_WindowPaint(struct Object*, struct Screen*, wParam_t, WindowPaint
 
 static struct PropertyType const ScreenProperties[kScreenNumProperties] = {
 	DECL(0xeb16b675, Screen, ClearColor, ClearColor, kDataTypeStruct, .TypeString = "Color"), // Screen.ClearColor
-	DECL(0x3dd888be, Screen, ResizeMode, ResizeMode, kDataTypeEnum, .TypeString = "CanResize,CanMinimize,CanResizeWithGrip,NoResize", .EnumValues = _ResizeMode), // Screen.ResizeMode
+	DECL(0x3dd888be, Screen, ResizeMode, ResizeMode, kDataTypeEnum, .EnumValues = _ResizeMode), // Screen.ResizeMode
 	DECL(0x9a645b38, Screen, DialogResult, DialogResult, kDataTypeFloat), // Screen.DialogResult
 };
 static struct Screen ScreenDefaults = {
@@ -2966,7 +2966,7 @@ LRESULT Grid_ArrangeOverride(struct Object*, struct Grid*, wParam_t, ArrangeOver
 static struct PropertyType const GridProperties[kGridNumProperties] = {
 	DECL(0xea156fdc, Grid, Columns, Columns, kDataTypeString), // Grid.Columns
 	DECL(0xaa6592b8, Grid, Rows, Rows, kDataTypeString), // Grid.Rows
-	DECL(0x61fefc0a, Grid, Direction, Direction, kDataTypeEnum, .TypeString = "Horizontal,Vertical,Depth", .EnumValues = _Direction), // Grid.Direction
+	DECL(0x61fefc0a, Grid, Direction, Direction, kDataTypeEnum, .EnumValues = _Direction), // Grid.Direction
 	DECL(0x8777939e, Grid, Spacing, Spacing, kDataTypeFloat), // Grid.Spacing
 	DECL(0x57e1566f, Grid, CellWidth, CellWidth, kDataTypeFloat), // Grid.CellWidth
 	DECL(0xd2dc9412, Grid, CellHeight, CellHeight, kDataTypeFloat), // Grid.CellHeight
@@ -3013,7 +3013,7 @@ static struct PropertyType const ImageViewProperties[kImageViewNumProperties] = 
 	DECL(0x079106fd, ImageView, Edges, Edges, kDataTypeStruct, .TypeString = "Vector4D"), // ImageView.Edges
 	DECL(0x062cedef, ImageView, Insets, Insets, kDataTypeStruct, .TypeString = "Vector4D"), // ImageView.Insets
 	DECL(0xa8c81591, ImageView, Viewbox, Viewbox, kDataTypeStruct, .TypeString = "Vector4D"), // ImageView.Viewbox
-	DECL(0x03d3b9ca, ImageView, Stretch, Stretch, kDataTypeEnum, .TypeString = "Uniform,None,Fill,UniformToFill", .EnumValues = _Stretch), // ImageView.Stretch
+	DECL(0x03d3b9ca, ImageView, Stretch, Stretch, kDataTypeEnum, .EnumValues = _Stretch), // ImageView.Stretch
 };
 static struct ImageView ImageViewDefaults = {
 		
@@ -3257,7 +3257,7 @@ ORCA_API struct ClassDesc _PageViewport = {
 
 static struct PropertyType const StyleProperties[kStyleNumProperties] = {
 	DECL(0x77ada720, Style, TargetType, TargetType, kDataTypeString), // Style.TargetType
-	DECL(0xd155d06d, Style, Type, Type, kDataTypeEnum, .TypeString = "Generic,Named", .EnumValues = _StyleType), // Style.Type
+	DECL(0xd155d06d, Style, Type, Type, kDataTypeEnum, .EnumValues = _StyleType), // Style.Type
 };
 static struct Style StyleDefaults = {
 };
