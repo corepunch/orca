@@ -402,6 +402,10 @@ struct ClassDesc
   void const *Defaults; // pointer to a struct containing default values for properties of this class, used for resetting to defaults and for inheriting default values in subclasses
 };
 
+#define _SendMessage(OBJECT, MESSAGE, ...) \
+OBJ_SendMessageW(hObject, kEvent##MESSAGE, 0, \
+&(struct MESSAGE##EventArgs) { __VA_ARGS__ });
+
 struct component;
 
 ORCA_API HRESULT
