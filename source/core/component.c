@@ -8,10 +8,15 @@ struct component
   char pUserData[];
 };
 
+void print_debug_component(lpObject_t pobj, int line) {
+  fprintf(stderr, "%d %s\n", line, _GetComponents(pobj)->pcls->ClassName);
+}
+
 struct component*
 OBJ_AddComponent(lpObject_t pobj, uint32_t class_id)
 {
   lpcClassDesc_t cls = OBJ_FindClassW(class_id);
+  fprintf(stderr, "Found class 0x%08x, %s, %p\n", class_id, cls->ClassName, cls);
   uint32_t clsSize = sizeof(struct component) + cls->ClassSize;
   uint32_t propsSize = cls->NumProperties * sizeof(void*);
   struct component* comp = ZeroAlloc(clsSize + propsSize);
@@ -127,10 +132,6 @@ lpcString_t
 CMP_GetClassName(struct component* hcmp)
 {
   return hcmp->pcls->ClassName;
-}
-
-void print_debug_component(lpObject_t pobj, int line) {
-  fprintf(stderr, "%d %s\n", line, _GetComponents(pobj)->pcls->ClassName);
 }
 
 LRESULT

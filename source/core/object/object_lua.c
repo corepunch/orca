@@ -112,47 +112,34 @@ lua_pop(L, 1);
   }
   lua_pop(L, 2);
 }
-void print_debug_component(lpObject_t pobj, int);
+
 int OBJ_CreateFromLuaState(lua_State *L) {
   luaX_parsefield(lpcClassDesc_t, __nativeclass, 1, lua_touserdata);
   lpObject_t pobj = OBJ_Create(L, __nativeclass);
-  print_debug_component(pobj, __LINE__);
-  fprintf(stderr, "OBJ_CreateFromLuaState\n");
-  print_debug_component(pobj, __LINE__);
   if (lua_getfield(L, 1, "__class") == LUA_TTABLE) {
     luaX_parsefield(lpcString_t, __name, -1, luaL_optstring, NULL);
     if (__name && strcmp(__name, "LuaBehaviour")) {
       OBJ_SetName(pobj, __name);
       OBJ_SetClassName(pobj, __name);
-      fprintf(stderr, "Creating %s\n", __name);
     }
   }
   lua_pop(L, 1);
-  print_debug_component(pobj, __LINE__);
-
+  
   lua_setfield(L, 1, "__userdata");
-  print_debug_component(pobj, __LINE__);
-
+  
   // register object in registry
   lua_pushvalue(L, 1);
-  print_debug_component(pobj, __LINE__);
   OBJ_SetLuaObject(pobj, luaL_ref(L, LUA_REGISTRYINDEX));
-  print_debug_component(pobj, __LINE__);
 
   lpObject_t* ctx = lua_getextraspace(L);
   if (*ctx) {
-    print_debug_component(pobj, __LINE__);
     OBJ_AddChild(*ctx, pobj, FALSE);
-    print_debug_component(pobj, __LINE__);
   }
-  print_debug_component(pobj, __LINE__);
 
   // send "create" message
-  fprintf(stderr, "Sending kEventCreate\n");
   OBJ_SendMessageW(pobj, kEventCreate, 0, L);
-  fprintf(stderr, "Sent kEventCreate successfully\n");
-
-  _assign_callbacks(L, pobj, 1);
+  
+_assign_callbacks(L, pobj, 1);
   _parse_args(L, pobj);
 
   // TODO: is there a better way to add class-default style?
