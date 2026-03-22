@@ -206,27 +206,17 @@ static int s_tests_run    = 0;
 static int s_tests_failed = 0;
 static const char* s_current_test = NULL;
 
-#define TEST_BEGIN(name) 
+#define TEST_BEGIN(name)
 
 #define EXPECT(...) \
-    do { \
-        if (!(__VA_ARGS__)) { \
-            fprintf(stderr, "  FAIL [%s]: %s (line %d)\n", \
-                    s_current_test, #__VA_ARGS__, __LINE__); \
-            s_tests_failed++; \
-        } \
-    } while(0)
+    if (!(__VA_ARGS__)) { \
+        fprintf(stderr, "  FAIL [%s]: %s (line %d)\n", \
+                s_current_test, #__VA_ARGS__, __LINE__); \
+        s_tests_failed++; \
+        return; \
+    } 
 
-#define EXPECT_STR_EQ(a, b) \
-    do { \
-        const char *_a = (a), *_b = (b); \
-        if (_a == NULL || _b == NULL || strcmp(_a, _b) != 0) { \
-            fprintf(stderr, "  FAIL [%s]: expected \"%s\", got \"%s\" (line %d)\n", \
-                    s_current_test, _b ? _b : "(null)", _a ? _a : "(null)", __LINE__); \
-            s_tests_failed++; \
-        } \
-    } while(0)
-
+#define EXPECT_STR_EQ(a, b) EXPECT((a) && (b) && !strcmp(a, b))
 
 /* ------------------------------------------------------------------ */
 /* Test component definition                                          */
@@ -581,85 +571,72 @@ static void test_release_without_string_set(void) {
 /* ------------------------------------------------------------------ */
 
 static void test_runtime_token_create_int(void) {
-    struct token *prog = Token_Create("42");
-    EXPECT(prog != NULL);
-    if (prog) Token_Release(prog);
+    WITH(struct token, prog, Token_Create("42"), Token_Release) {
+        EXPECT(prog != NULL);
+    }
 }
 
 static void test_runtime_token_create_float(void) {
-    struct token *prog = Token_Create("3.14");
-    EXPECT(prog != NULL);
-    if (prog) Token_Release(prog);
+    WITH(struct token, prog, Token_Create("3.14"), Token_Release) {
+        EXPECT(prog != NULL);
+    }
 }
 
 static void test_runtime_token_create_string(void) {
-    struct token *prog = Token_Create("\"hello\"");
-    EXPECT(prog != NULL);
-    if (prog) Token_Release(prog);
+    WITH(struct token, prog, Token_Create("\"hello\""), Token_Release) {
+        EXPECT(prog != NULL);
+    }
 }
 
 static void test_runtime_token_create_arithmetic(void) {
-    struct token *prog = Token_Create("ADD(2, 3)");
-    EXPECT(prog != NULL);
-    if (prog) Token_Release(prog);
+    WITH(struct token, prog, Token_Create("ADD(2, 3)"), Token_Release) {
+        EXPECT(prog != NULL);
+    }
 }
 
 static void test_runtime_run_int_constant(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
-        struct token *prog = Token_Create("7");
-        EXPECT(prog != NULL);
-        if (prog) {
+        WITH(struct token, prog, Token_Create("7"), Token_Release) {
+            EXPECT(prog != NULL);
             struct vm_register r = {0};
-            bool_t ok = OBJ_RunProgram(obj, prog, &r);
-            EXPECT(ok);
+            EXPECT(OBJ_RunProgram(obj, prog, &r));
             EXPECT(r.type == kDataTypeInt || r.type == kDataTypeFloat);
             EXPECT((int)r.value[0] == 7);
-            Token_Release(prog);
         }
     }
 }
 
 static void test_runtime_run_float_constant(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
-        struct token *prog = Token_Create("2.5");
-        EXPECT(prog != NULL);
-        if (prog) {
+        WITH(struct token, prog, Token_Create("2.5"), Token_Release) {
+            EXPECT(prog != NULL);
             struct vm_register r = {0};
-            bool_t ok = OBJ_RunProgram(obj, prog, &r);
-            EXPECT(ok);
+            EXPECT(OBJ_RunProgram(obj, prog, &r));
             EXPECT(r.value[0] == 2.5f);
-            Token_Release(prog);
         }
     }
 }
 
 static void test_runtime_run_string_constant(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
-        struct token *prog = Token_Create("\"world\"");
-        EXPECT(prog != NULL);
-        if (prog) {
+        WITH(struct token, prog, Token_Create("\"world\""), Token_Release) {
+            EXPECT(prog != NULL);
             struct vm_register r = {0};
-            bool_t ok = OBJ_RunProgram(obj, prog, &r);
-            EXPECT(ok);
+            EXPECT(OBJ_RunProgram(obj, prog, &r));
             EXPECT(r.type == kDataTypeString);
-            /* String is stored as a pointer in r.value via VM_REG_SET_STR */
             const char *str = *(const char *const *)r.value;
             EXPECT_STR_EQ(str, "world");
-            Token_Release(prog);
         }
     }
 }
 
 static void test_runtime_run_arithmetic(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
-        struct token *prog = Token_Create("ADD(10, 5)");
-        EXPECT(prog != NULL);
-        if (prog) {
+        WITH(struct token, prog, Token_Create("ADD(10, 5)"), Token_Release) {
+            EXPECT(prog != NULL);
             struct vm_register r = {0};
-            bool_t ok = OBJ_RunProgram(obj, prog, &r);
-            EXPECT(ok);
+            EXPECT(OBJ_RunProgram(obj, prog, &r));
             EXPECT((int)r.value[0] == 15);
-            Token_Release(prog);
         }
     }
 }
@@ -668,15 +645,12 @@ static void test_runtime_import_int(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t prop;
         EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Count", &prop)));
-        if (prop) {
-            struct vm_register r = {0};
-            r.type    = kDataTypeInt;
-            r.value[0] = 99.0f;
-            bool_t ok = PROP_Import(prop, kPropertyAttributeWholeProperty, &r);
-            EXPECT(ok);
-            EXPECT(!PROP_IsNull(prop));
-            EXPECT(*(int*)PROP_GetValue(prop) == 99);
-        }
+        struct vm_register r = {0};
+        r.type     = kDataTypeInt;
+        r.value[0] = 99.0f;
+        EXPECT(PROP_Import(prop, kPropertyAttributeWholeProperty, &r));
+        EXPECT(!PROP_IsNull(prop));
+        EXPECT(*(int*)PROP_GetValue(prop) == 99);
     }
 }
 
@@ -684,15 +658,12 @@ static void test_runtime_import_float(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t prop;
         EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Value", &prop)));
-        if (prop) {
-            struct vm_register r = {0};
-            r.type    = kDataTypeFloat;
-            r.size    = sizeof(float);
-            r.value[0] = 1.5f;
-            bool_t ok = PROP_Import(prop, kPropertyAttributeWholeProperty, &r);
-            EXPECT(ok);
-            EXPECT(*(float*)PROP_GetValue(prop) == 1.5f);
-        }
+        struct vm_register r = {0};
+        r.type     = kDataTypeFloat;
+        r.size     = sizeof(float);
+        r.value[0] = 1.5f;
+        EXPECT(PROP_Import(prop, kPropertyAttributeWholeProperty, &r));
+        EXPECT(*(float*)PROP_GetValue(prop) == 1.5f);
     }
 }
 
@@ -700,17 +671,13 @@ static void test_runtime_import_string(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t prop;
         EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
-        if (prop) {
-            /* Build a string vm_register the way the VM does it */
-            struct vm_register r = {0};
-            r.type = kDataTypeString;
-            r.size = sizeof(const char*);
-            const char *s = "imported";
-            memcpy(r.value, &s, sizeof(s));
-            bool_t ok = PROP_Import(prop, kPropertyAttributeWholeProperty, &r);
-            EXPECT(ok);
-            EXPECT_STR_EQ((const char*)PROP_GetValue(prop), "imported");
-        }
+        struct vm_register r = {0};
+        r.type = kDataTypeString;
+        r.size = sizeof(const char*);
+        const char *s = "imported";
+        memcpy(r.value, &s, sizeof(s));
+        EXPECT(PROP_Import(prop, kPropertyAttributeWholeProperty, &r));
+        EXPECT_STR_EQ((const char*)PROP_GetValue(prop), "imported");
     }
 }
 
@@ -718,20 +685,14 @@ static void test_runtime_attach_and_update_int(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t prop;
         EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Count", &prop)));
-        if (prop) {
-            struct token *prog = Token_Create("21");
-            EXPECT(prog != NULL);
-            if (prog) {
-                PROP_AttachProgram(prop, kPropertyAttributeWholeProperty, prog, "21");
-                EXPECT(PROP_HasProgram(prop));
-                /* Advance frame so PROP_Update's frame-guard doesn't skip execution */
-                core.frame++;
-                bool_t ok = PROP_Update(prop);
-                EXPECT(ok);
-                EXPECT(!PROP_IsNull(prop));
-                EXPECT(*(int*)PROP_GetValue(prop) == 21);
-            }
-        }
+        struct token *prog = Token_Create("21");
+        EXPECT(prog != NULL);
+        PROP_AttachProgram(prop, kPropertyAttributeWholeProperty, prog, "21");
+        EXPECT(PROP_HasProgram(prop));
+        core.frame++;
+        EXPECT(PROP_Update(prop));
+        EXPECT(!PROP_IsNull(prop));
+        EXPECT(*(int*)PROP_GetValue(prop) == 21);
     }
 }
 
@@ -739,19 +700,14 @@ static void test_runtime_attach_and_update_string(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t prop;
         EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
-        if (prop) {
-            struct token *prog = Token_Create("\"bound\"");
-            EXPECT(prog != NULL);
-            if (prog) {
-                PROP_AttachProgram(prop, kPropertyAttributeWholeProperty, prog, "\"bound\"");
-                EXPECT(PROP_HasProgram(prop));
-                core.frame++;
-                bool_t ok = PROP_Update(prop);
-                EXPECT(ok);
-                EXPECT(!PROP_IsNull(prop));
-                EXPECT_STR_EQ((const char*)PROP_GetValue(prop), "bound");
-            }
-        }
+        struct token *prog = Token_Create("\"bound\"");
+        EXPECT(prog != NULL);
+        PROP_AttachProgram(prop, kPropertyAttributeWholeProperty, prog, "\"bound\"");
+        EXPECT(PROP_HasProgram(prop));
+        core.frame++;
+        EXPECT(PROP_Update(prop));
+        EXPECT(!PROP_IsNull(prop));
+        EXPECT_STR_EQ((const char*)PROP_GetValue(prop), "bound");
     }
 }
 
@@ -768,26 +724,19 @@ static void test_runtime_property_reference(void) {
         lpProperty_t propCount, propValue;
         EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Count", &propCount)));
         EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Value", &propValue)));
-        if (propCount && propValue) {
-            /* Set the source property */
-            float v = 5.0f;
-            PROP_SetValue(propValue, &v);
-            EXPECT(!PROP_IsNull(propValue));
 
-            /* Compile a program that reads {./Value} and binds it to Count */
-            struct token *prog = Token_Create("{./Value}");
-            EXPECT(prog != NULL);
-            if (prog) {
-                PROP_AttachProgram(propCount, kPropertyAttributeWholeProperty, prog, "{./Value}");
-                EXPECT(PROP_HasProgram(propCount));
-                core.frame++;
-                bool_t ok = PROP_Update(propCount);
-                EXPECT(ok);
-                EXPECT(!PROP_IsNull(propCount));
-                /* Count is int, Value is float 5.0 → expect 5 */
-                EXPECT(*(int*)PROP_GetValue(propCount) == 5);
-            }
-        }
+        float v = 5.0f;
+        PROP_SetValue(propValue, &v);
+        EXPECT(!PROP_IsNull(propValue));
+
+        struct token *prog = Token_Create("{./Value}");
+        EXPECT(prog != NULL);
+        PROP_AttachProgram(propCount, kPropertyAttributeWholeProperty, prog, "{./Value}");
+        EXPECT(PROP_HasProgram(propCount));
+        core.frame++;
+        EXPECT(PROP_Update(propCount));
+        EXPECT(!PROP_IsNull(propCount));
+        EXPECT(*(int*)PROP_GetValue(propCount) == 5);
     }
 }
 
@@ -799,18 +748,13 @@ static void test_runtime_string_concat_program(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t prop;
         EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
-        if (prop) {
-            struct token *prog = Token_Create("ADD(\"foo\", \"bar\")");
-            EXPECT(prog != NULL);
-            if (prog) {
-                PROP_AttachProgram(prop, kPropertyAttributeWholeProperty,
-                                   prog, "ADD(\"foo\", \"bar\")");
-                core.frame++;
-                bool_t ok = PROP_Update(prop);
-                EXPECT(ok);
-                EXPECT_STR_EQ((const char*)PROP_GetValue(prop), "foobar");
-            }
-        }
+        struct token *prog = Token_Create("ADD(\"foo\", \"bar\")");
+        EXPECT(prog != NULL);
+        PROP_AttachProgram(prop, kPropertyAttributeWholeProperty,
+                           prog, "ADD(\"foo\", \"bar\")");
+        core.frame++;
+        EXPECT(PROP_Update(prop));
+        EXPECT_STR_EQ((const char*)PROP_GetValue(prop), "foobar");
     }
 }
 
@@ -825,7 +769,7 @@ static void test_memleak_string_set_release(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
         OBJ_FindShortProperty(obj, "Label", &prop);
-        if (prop) PROP_SetValue(prop, "hello leak test");
+        PROP_SetValue(prop, "hello leak test");
     }
 }
 
@@ -834,12 +778,10 @@ static void test_memleak_string_multiple_sets(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
         OBJ_FindShortProperty(obj, "Label", &prop);
-        if (prop) {
-            PROP_SetValue(prop, "first");
-            PROP_SetValue(prop, "second");   /* frees "first" */
-            PROP_SetValue(prop, "third");    /* frees "second" */
-        }
-    }                                        /* destroy_object frees "third" */
+        PROP_SetValue(prop, "first");
+        PROP_SetValue(prop, "second");   /* frees "first" */
+        PROP_SetValue(prop, "third");    /* frees "second" */
+    }                                    /* destroy_object frees "third" */
 }
 
 /* Leak test: PROP_Clear must free the heap string and leave no leak. */
@@ -847,10 +789,8 @@ static void test_memleak_prop_clear(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
         OBJ_FindShortProperty(obj, "Label", &prop);
-        if (prop) {
-            PROP_SetValue(prop, "to be cleared");
-            PROP_Clear(prop);
-        }
+        PROP_SetValue(prop, "to be cleared");
+        PROP_Clear(prop);
     }
 }
 
@@ -859,7 +799,7 @@ static void test_memleak_prop_clear_never_set(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
         OBJ_FindShortProperty(obj, "Label", &prop);
-        if (prop) PROP_Clear(prop);
+        PROP_Clear(prop);
     }
 }
 
@@ -871,11 +811,9 @@ static void test_memleak_multiple_string_props(void) {
         OBJ_SetPropertyValue(obj, "Label", "alpha");
         lpProperty_t strprop;
         OBJ_FindShortProperty(obj, "Label", &strprop);
-        if (strprop) {
-            PROP_SetValue(strprop, "alpha2");
-            PROP_Clear(strprop);
-            PROP_SetValue(strprop, "final");
-        }
+        PROP_SetValue(strprop, "alpha2");
+        PROP_Clear(strprop);
+        PROP_SetValue(strprop, "final");
         /* Scalar property: set (no heap allocation for value) */
         OBJ_SetPropertyValue(obj, "Count", &(int){7});
     }
@@ -883,8 +821,6 @@ static void test_memleak_multiple_string_props(void) {
 
 /* Leak test: Token_Create / Token_Release must not leak. */
 static void test_memleak_token_create_release(void) {
-    /* Create a token and let WITH auto-release it — body is empty because
-     * the test only verifies the create/release lifecycle has no leaks. */
     WITH(struct token, prog, Token_Create("ADD(1, 2)"), Token_Release) {
         (void)prog;
     }
@@ -892,7 +828,6 @@ static void test_memleak_token_create_release(void) {
 
 /* Leak test: Token_Create for a string literal must not leak. */
 static void test_memleak_token_string_literal(void) {
-    /* Create a string-literal token and let WITH auto-release it. */
     WITH(struct token, prog, Token_Create("\"test string\""), Token_Release) {
         (void)prog;
     }
@@ -915,18 +850,15 @@ static void test_memleak_attach_update_release(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t prop;
         OBJ_FindShortProperty(obj, "Label", &prop);
-        if (prop) {
-            struct token *prog = Token_Create("\"attached\"");
-            if (prog) {
-                /* Property takes ownership of prog and strdup's the code. */
-                PROP_AttachProgram(prop, kPropertyAttributeWholeProperty,
-                                   prog, "\"attached\"");
-                core.frame++;
-                PROP_Update(prop);
-                /* destroy_object → OBJ_ReleaseProperties → Token_Release +
-                   free(programSources) + free(heap string value). */
-            }
-        }
+        struct token *prog = Token_Create("\"attached\"");
+        EXPECT(prog != NULL);
+        /* Property takes ownership of prog and strdup's the code. */
+        PROP_AttachProgram(prop, kPropertyAttributeWholeProperty,
+                           prog, "\"attached\"");
+        core.frame++;
+        PROP_Update(prop);
+        /* destroy_object → OBJ_ReleaseProperties → Token_Release +
+           free(programSources) + free(heap string value). */
     }
 }
 
@@ -937,12 +869,12 @@ static void test_memleak_scalar_properties(void) {
         OBJ_FindShortProperty(obj, "Count",  &pi);
         OBJ_FindShortProperty(obj, "Value",  &pf);
         OBJ_FindShortProperty(obj, "Active", &pb);
-        int   iv = 99;
-        float fv = 1.5f;
+        int    iv = 99;
+        float  fv = 1.5f;
         bool_t bv = true;
-        if (pi) PROP_SetValue(pi, &iv);
-        if (pf) PROP_SetValue(pf, &fv);
-        if (pb) PROP_SetValue(pb, &bv);
+        PROP_SetValue(pi, &iv);
+        PROP_SetValue(pf, &fv);
+        PROP_SetValue(pb, &bv);
     }
 }
 
@@ -952,19 +884,16 @@ static void test_memleak_property_reference_program(void) {
         lpProperty_t propCount, propValue;
         OBJ_FindShortProperty(obj, "Count", &propCount);
         OBJ_FindShortProperty(obj, "Value", &propValue);
-        if (propCount && propValue) {
-            float v = 7.0f;
-            PROP_SetValue(propValue, &v);
-            struct token *prog = Token_Create("{./Value}");
-            if (prog) {
-                /* Property owns prog after this call. */
-                PROP_AttachProgram(propCount, kPropertyAttributeWholeProperty,
-                                   prog, "{./Value}");
-                core.frame++;
-                PROP_Update(propCount);
-                /* destroy_object will call Token_Release on prog. */
-            }
-        }
+        float v = 7.0f;
+        PROP_SetValue(propValue, &v);
+        struct token *prog = Token_Create("{./Value}");
+        EXPECT(prog != NULL);
+        /* Property owns prog after this call. */
+        PROP_AttachProgram(propCount, kPropertyAttributeWholeProperty,
+                           prog, "{./Value}");
+        core.frame++;
+        PROP_Update(propCount);
+        /* destroy_object will call Token_Release on prog. */
     }
 }
 
