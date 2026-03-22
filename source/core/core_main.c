@@ -40,6 +40,7 @@ OBJ_FindPropertyType(uint32_t ident)
 bool_t
 OBJ_RegisterClass(lpcClassDesc_t class)
 {
+  Con_Error("Registering class 0x%08x %s", class->ClassID, class->ClassName);
   FOR_LOOP(i, MAX_CLASSES) {
     if (!core.classes[i]) {
       FOR_LOOP(j, class->NumProperties) {
