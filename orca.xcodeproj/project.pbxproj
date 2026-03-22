@@ -85,7 +85,6 @@
 		781CA76F2E1557A900FFCFD9 /* easing.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C737AA2B8F616A00FD598E /* easing.c */; };
 		781CA7702E1557A900FFCFD9 /* message.c in Sources */ = {isa = PBXBuildFile; fileRef = 7808CD912D9ECE9A00D484F9 /* message.c */; };
 		781CA7712E1557A900FFCFD9 /* object_tween.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C737AC2B8F616A00FD598E /* object_tween.c */; };
-		781CA7732E1557A900FFCFD9 /* object.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C737642B8F60C600FD598E /* object.c */; };
 		781CA7752E1557A900FFCFD9 /* property_runtime.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A8213E2C873EF400ACD0A9 /* property_runtime.c */; };
 		781CA7782E1557A900FFCFD9 /* state_manager.c in Sources */ = {isa = PBXBuildFile; fileRef = 78FD53262D90344E00122823 /* state_manager.c */; };
 		781CA7792E1557A900FFCFD9 /* style.c in Sources */ = {isa = PBXBuildFile; fileRef = 78688D2A2D89DD69008DE67B /* style.c */; };
@@ -203,6 +202,14 @@
 		7870404E2F6F197000A84406 /* property_events.c in Sources */ = {isa = PBXBuildFile; fileRef = 787040482F6F197000A84406 /* property_events.c */; };
 		787040502F6F197000A84406 /* core_properties.h in Headers */ = {isa = PBXBuildFile; fileRef = 787040442F6F197000A84406 /* core_properties.h */; };
 		787040512F6F197000A84406 /* property_internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 787040492F6F197000A84406 /* property_internal.h */; };
+		787041782F6FDDD800A84406 /* object_internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 787041742F6FDDD800A84406 /* object_internal.h */; };
+		787041792F6FDDD800A84406 /* object_hierarchy.c in Sources */ = {isa = PBXBuildFile; fileRef = 787041732F6FDDD800A84406 /* object_hierarchy.c */; };
+		7870417A2F6FDDD800A84406 /* object_events.c in Sources */ = {isa = PBXBuildFile; fileRef = 787041722F6FDDD800A84406 /* object_events.c */; };
+		7870417B2F6FDDD800A84406 /* object_lua_msg.c in Sources */ = {isa = PBXBuildFile; fileRef = 787041752F6FDDD800A84406 /* object_lua_msg.c */; };
+		7870417C2F6FDDD800A84406 /* object_accessors.c in Sources */ = {isa = PBXBuildFile; fileRef = 787041702F6FDDD800A84406 /* object_accessors.c */; };
+		7870417D2F6FDDD800A84406 /* object_lua_props.c in Sources */ = {isa = PBXBuildFile; fileRef = 787041762F6FDDD800A84406 /* object_lua_props.c */; };
+		7870417E2F6FDDD800A84406 /* object_properties.c in Sources */ = {isa = PBXBuildFile; fileRef = 787041772F6FDDD800A84406 /* object_properties.c */; };
+		7870417F2F6FDDD800A84406 /* object_core.c in Sources */ = {isa = PBXBuildFile; fileRef = 787041712F6FDDD800A84406 /* object_core.c */; };
 		788483222E867CA000DB9C1F /* w_plugins.c in Sources */ = {isa = PBXBuildFile; fileRef = 788483212E867C9C00DB9C1F /* w_plugins.c */; };
 		78932BF62F38D6D5007C59CC /* liborca.platform.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; };
 		78932BF72F38D6D5007C59CC /* liborca.platform.so in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -554,6 +561,14 @@
 		787040482F6F197000A84406 /* property_events.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = property_events.c; sourceTree = "<group>"; };
 		787040492F6F197000A84406 /* property_internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = property_internal.h; sourceTree = "<group>"; };
 		7870404A2F6F197000A84406 /* property_lua.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = property_lua.c; sourceTree = "<group>"; };
+		787041702F6FDDD800A84406 /* object_accessors.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = object_accessors.c; sourceTree = "<group>"; };
+		787041712F6FDDD800A84406 /* object_core.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = object_core.c; sourceTree = "<group>"; };
+		787041722F6FDDD800A84406 /* object_events.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = object_events.c; sourceTree = "<group>"; };
+		787041732F6FDDD800A84406 /* object_hierarchy.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = object_hierarchy.c; sourceTree = "<group>"; };
+		787041742F6FDDD800A84406 /* object_internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = object_internal.h; sourceTree = "<group>"; };
+		787041752F6FDDD800A84406 /* object_lua_msg.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = object_lua_msg.c; sourceTree = "<group>"; };
+		787041762F6FDDD800A84406 /* object_lua_props.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = object_lua_props.c; sourceTree = "<group>"; };
+		787041772F6FDDD800A84406 /* object_properties.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = object_properties.c; sourceTree = "<group>"; };
 		78766BBE2C93208400A2DF11 /* Node3D.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Node3D.c; sourceTree = "<group>"; };
 		787C7BA42BB33679006FD937 /* r_builtin_charset2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = r_builtin_charset2.c; sourceTree = "<group>"; };
 		788483212E867C9C00DB9C1F /* w_plugins.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = w_plugins.c; sourceTree = "<group>"; };
@@ -627,7 +642,6 @@
 		78C737582B8F60C600FD598E /* StackView.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = StackView.c; sourceTree = "<group>"; };
 		78C7375B2B8F60C600FD598E /* TextBlock.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = TextBlock.c; sourceTree = "<group>"; };
 		78C7375C2B8F60C600FD598E /* animation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = animation.h; sourceTree = "<group>"; };
-		78C737642B8F60C600FD598E /* object.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = object.c; sourceTree = "<group>"; };
 		78C737652B8F60C600FD598E /* core_local.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = core_local.h; sourceTree = "<group>"; };
 		78C737672B8F60C600FD598E /* animation.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = animation.c; sourceTree = "<group>"; };
 		78C737692B8F60C600FD598E /* object_lua.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = object_lua.c; sourceTree = "<group>"; };
@@ -1079,9 +1093,16 @@
 		787040532F6F1A3200A84406 /* object */ = {
 			isa = PBXGroup;
 			children = (
-				78C737642B8F60C600FD598E /* object.c */,
+				787041702F6FDDD800A84406 /* object_accessors.c */,
+				787041712F6FDDD800A84406 /* object_core.c */,
+				787041722F6FDDD800A84406 /* object_events.c */,
+				787041732F6FDDD800A84406 /* object_hierarchy.c */,
+				787041752F6FDDD800A84406 /* object_lua_msg.c */,
+				787041762F6FDDD800A84406 /* object_lua_props.c */,
 				78C737692B8F60C600FD598E /* object_lua.c */,
+				787041772F6FDDD800A84406 /* object_properties.c */,
 				78C737AC2B8F616A00FD598E /* object_tween.c */,
+				787041742F6FDDD800A84406 /* object_internal.h */,
 			);
 			path = object;
 			sourceTree = "<group>";
@@ -1435,6 +1456,7 @@
 				78E4A99F2E93D71500E3A503 /* xml_local.h in Headers */,
 				787040502F6F197000A84406 /* core_properties.h in Headers */,
 				787040512F6F197000A84406 /* property_internal.h in Headers */,
+				787041782F6FDDD800A84406 /* object_internal.h in Headers */,
 				783976FF2E54B25B00DCFC0F /* core.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2146,8 +2168,14 @@
 				7870404C2F6F197000A84406 /* property_accessors.c in Sources */,
 				7870404D2F6F197000A84406 /* property_lua.c in Sources */,
 				7870404E2F6F197000A84406 /* property_events.c in Sources */,
-				781CA7732E1557A900FFCFD9 /* object.c in Sources */,
 				781CA7752E1557A900FFCFD9 /* property_runtime.c in Sources */,
+				787041792F6FDDD800A84406 /* object_hierarchy.c in Sources */,
+				7870417A2F6FDDD800A84406 /* object_events.c in Sources */,
+				7870417B2F6FDDD800A84406 /* object_lua_msg.c in Sources */,
+				7870417C2F6FDDD800A84406 /* object_accessors.c in Sources */,
+				7870417D2F6FDDD800A84406 /* object_lua_props.c in Sources */,
+				7870417E2F6FDDD800A84406 /* object_properties.c in Sources */,
+				7870417F2F6FDDD800A84406 /* object_core.c in Sources */,
 				781CA7782E1557A900FFCFD9 /* state_manager.c in Sources */,
 				781CA7792E1557A900FFCFD9 /* style.c in Sources */,
 				781CA77A2E1557A900FFCFD9 /* timer.c in Sources */,
