@@ -16,13 +16,15 @@ struct component*
 OBJ_AddComponent(lpObject_t pobj, uint32_t class_id)
 {
   lpcClassDesc_t cls = OBJ_FindClassW(class_id);
-  fprintf(stderr, "Found class 0x%08x, %s, %p\n", class_id, cls->ClassName, cls);
+  if (!cls) {
+    Con_Error("class_id 0x%08x not found\n", class_id);
+    return NULL;
+  }
   uint32_t clsSize = sizeof(struct component) + cls->ClassSize;
   uint32_t propsSize = cls->NumProperties * sizeof(void*);
   struct component* comp = ZeroAlloc(clsSize + propsSize);
 
-  if (!comp)
-    return NULL;
+  assert(comp);
 
   if (cls->Defaults) {
     memcpy(comp->pUserData, cls->Defaults, cls->ClassSize);
