@@ -38,7 +38,7 @@
 						</StackView>
 					</Grid>
 				</StackView>
-				<ImageView Name="HeroImage" Image="Example/Images/people" MinWidth="300" Stretch="UniformToFill" MarginRight="56"/>
+				<ImageView Name="HeroImage" Image="Example/Images/people" MinWidth="512" Height="320" Stretch="UniformToFill" MarginRight="56"/>
 			</WrapPanel>
       <Grid Name="FeatureSection" Columns="auto auto auto" Spacing="20" BackgroundColor="#09090F" Padding="40">
         <StackView Name="CardText" Direction="Vertical" Spacing="10" BackgroundColor="#141420" Padding="28">
