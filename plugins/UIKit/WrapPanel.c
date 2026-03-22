@@ -22,6 +22,21 @@
  *   Spacing     – Gap between items within a line and between lines.
  *   ItemWidth   – Fixed width for every item (0 = use measured width).
  *   ItemHeight  – Fixed height for every item (0 = use measured height).
+ *
+ * Line-breaking algorithm — non-greedy:
+ *   WrapPanel tries to fit all remaining children on the current line by
+ *   giving each an equal share of the available main-axis space.  A child
+ *   wraps to the next line only when its MinWidth (or MinHeight for a
+ *   Vertical panel) would be violated by the equal-share allocation.
+ *
+ *   Consequence: elements with no MinWidth set are never forced to wrap;
+ *   they shrink to share the line.  Set MinWidth (or MinHeight) to control
+ *   the minimum acceptable size before wrapping.
+ *
+ *   When ItemWidth/ItemHeight is set the override width is used for every
+ *   item (traditional fixed-size behaviour).  When avail_main is INFINITY
+ *   (e.g. inside a StackView) all children share one line and are measured
+ *   with INFINITY so their natural sizes are reported.
  */
 
 #define MAX_WRAP_CHILDREN 256
@@ -32,6 +47,7 @@ typedef struct {
   int   start;      /* index of first child in this line */
   int   count;      /* number of children in this line   */
   float cross_size; /* max child cross-axis size in this line */
+  float share;      /* main-axis allocation per item on this line */
 } WrapLine;
 
 /* -----------------------------------------------------------------------
@@ -51,23 +67,6 @@ _CollectChildren(lpObject_t hObject, lpObject_t *children, int max_count)
 }
 
 /* -----------------------------------------------------------------------
- * _ChildMainSize – effective main-axis size of a child after measuring.
- * If ItemWidth/ItemHeight override is active it takes precedence.
- * ----------------------------------------------------------------------- */
-static float
-_ChildMainSize(Node2DPtr subview,
-               enum Direction direction,
-               float item_override)
-{
-  if (!isnan(item_override))
-    return item_override;
-  if (direction == kDirectionHorizontal)
-    return NODE2D_FRAME(subview, Size, 0).Desired + TOTAL_MARGIN(subview, 0);
-  else
-    return NODE2D_FRAME(subview, Size, 1).Desired + TOTAL_MARGIN(subview, 1);
-}
-
-/* -----------------------------------------------------------------------
  * _ChildCrossSize – effective cross-axis size of a child after measuring.
  * ----------------------------------------------------------------------- */
 static float
@@ -80,66 +79,109 @@ _ChildCrossSize(Node2DPtr subview, enum Direction direction)
 }
 
 /* -----------------------------------------------------------------------
- * _ComputeLines – greedy line-break algorithm.
+ * _ChildMinMain – MinWidth (horizontal) or MinHeight (vertical) of a child.
+ * ----------------------------------------------------------------------- */
+static float
+_ChildMinMain(Node2DPtr subview, enum Direction direction)
+{
+  float min = (direction == kDirectionHorizontal)
+              ? NODE2D_FRAME(subview, Size, 0).Min
+              : NODE2D_FRAME(subview, Size, 1).Min;
+  return isnan(min) ? 0.0f : min;
+}
+
+/* -----------------------------------------------------------------------
+ * _LineShare – main-axis allocation per item for a line with 'count' items.
+ * When item_override is set (not NaN), every item gets that fixed size.
+ * When avail_main is INFINITY, returns INFINITY (natural-size pass).
+ * ----------------------------------------------------------------------- */
+static float
+_LineShare(int count, float avail_main, float spacing, float item_override)
+{
+  if (!isnan(item_override))
+    return item_override;
+  if (count == 0 || isinf(avail_main))
+    return INFINITY;
+  return (avail_main - (float)(count - 1) * spacing) / (float)count;
+}
+
+/* -----------------------------------------------------------------------
+ * _ComputeLines – non-greedy line-break algorithm.
  *
- * Populates out_lines[] and returns the number of lines.
- * When avail_main is INFINITY no wrapping occurs (all children in one line).
+ * For each line the algorithm:
+ *   1. Starts by attempting to fit all remaining children on one line.
+ *   2. Computes each child's equal share of the available main-axis space.
+ *   3. Reduces the candidate count by 1 whenever any child's MinMain
+ *      exceeds its equal share, then retries.
+ *   4. Measures each line's children with their allocated share.
+ *
+ * Special cases:
+ *   • ItemWidth/ItemHeight set  → fixed share, all remaining fit (greedy).
+ *   • avail_main == INFINITY    → all children on one line, share = INFINITY.
  * ----------------------------------------------------------------------- */
 static int
 _ComputeLines(lpObject_t      *children,
               int              n,
               enum Direction   direction,
               float            avail_main,
+              float            cross_avail,
               float            spacing,
               float            item_override_main,
+              float            item_override_cross,
               WrapLine        *out_lines,
               int              max_lines)
 {
-  int   num_lines   = 0;
-  int   line_start  = 0;
-  int   line_count  = 0;
-  float line_main   = 0;
-  float line_cross  = 0;
-  bool_t first_in_line = TRUE;
+  int num_lines  = 0;
+  int line_start = 0;
 
-  for (int i = 0; i < n; i++) {
-    Node2DPtr subview   = GetNode2D(children[i]);
-    float     child_m   = _ChildMainSize(subview, direction, item_override_main);
-    float     child_c   = _ChildCrossSize(subview, direction);
+  while (line_start < n && num_lines < max_lines) {
+    int remaining = n - line_start;
 
-    /* Does this child overflow the current line? */
-    bool_t wraps = !first_in_line &&
-                   !isinf(avail_main) &&
-                   (line_main + spacing + child_m > avail_main);
-
-    if (wraps) {
-      if (num_lines < max_lines) {
-        out_lines[num_lines].start      = line_start;
-        out_lines[num_lines].count      = line_count;
-        out_lines[num_lines].cross_size = line_cross;
-        num_lines++;
+    /* --- Determine how many items fit on this line. --- */
+    int count;
+    if (!isnan(item_override_main) || isinf(avail_main)) {
+      /* Fixed ItemWidth or unlimited space: put all remaining on one line. */
+      count = remaining;
+    } else {
+      /* Non-greedy: try to fit all remaining; reduce if MinMain violated. */
+      count = remaining;
+      while (count > 1) {
+        float share = _LineShare(count, avail_main, spacing, item_override_main);
+        bool_t all_fit = TRUE;
+        for (int i = line_start; i < line_start + count; i++) {
+          if (_ChildMinMain(GetNode2D(children[i]), direction) > share) {
+            all_fit = FALSE;
+            break;
+          }
+        }
+        if (all_fit) break;
+        count--;
       }
-      line_start    = i;
-      line_count    = 0;
-      line_main     = 0;
-      line_cross    = 0;
-      first_in_line = TRUE;
     }
 
-    if (!first_in_line)
-      line_main += spacing;
-    line_main   += child_m;
-    line_cross   = fmax(line_cross, child_c);
-    line_count++;
-    first_in_line = FALSE;
-  }
+    /* --- Measure items on this line with their allocated share. --- */
+    float share      = _LineShare(count, avail_main, spacing, item_override_main);
+    float line_cross = 0.0f;
 
-  /* Flush the last (possibly only) line. */
-  if (line_count > 0 && num_lines < max_lines) {
+    for (int i = line_start; i < line_start + count; i++) {
+      Size_t avail;
+      if (direction == kDirectionHorizontal) {
+        avail.width  = share;
+        avail.height = isfinite(item_override_cross) ? item_override_cross : cross_avail;
+      } else {
+        avail.width  = isfinite(item_override_cross) ? item_override_cross : cross_avail;
+        avail.height = share;
+      }
+      OBJ_SendMessageW(children[i], kEventMeasure, 0, &avail);
+      line_cross = fmaxf(line_cross, _ChildCrossSize(GetNode2D(children[i]), direction));
+    }
+
     out_lines[num_lines].start      = line_start;
-    out_lines[num_lines].count      = line_count;
+    out_lines[num_lines].count      = count;
     out_lines[num_lines].cross_size = line_cross;
+    out_lines[num_lines].share      = share;
     num_lines++;
+    line_start += count;
   }
 
   return num_lines;
@@ -158,40 +200,37 @@ HANDLER(WrapPanel, MeasureOverride)
   float item_cross = pWrapPanel->Direction == kDirectionHorizontal
                        ? pWrapPanel->ItemHeight : pWrapPanel->ItemWidth;
 
-  /* Measure all children. */
-  for (int i = 0; i < n; i++) {
-    Size_t avail;
-    if (pWrapPanel->Direction == kDirectionHorizontal) {
-      avail.width  = !isnan(item_main)  ? item_main  : INFINITY;
-      avail.height = !isnan(item_cross) ? item_cross : pMeasureOverride->height;
-    } else {
-      avail.width  = !isnan(item_cross) ? item_cross : pMeasureOverride->width;
-      avail.height = !isnan(item_main)  ? item_main  : INFINITY;
-    }
-    OBJ_SendMessageW(children[i], kEventMeasure, 0, &avail);
-  }
-
-  float avail_main = pWrapPanel->Direction == kDirectionHorizontal
-                       ? pMeasureOverride->width
-                       : pMeasureOverride->height;
+  float avail_main  = pWrapPanel->Direction == kDirectionHorizontal
+                        ? pMeasureOverride->width  : pMeasureOverride->height;
+  float cross_avail = pWrapPanel->Direction == kDirectionHorizontal
+                        ? pMeasureOverride->height : pMeasureOverride->width;
 
   WrapLine lines[MAX_WRAP_LINES];
   int num_lines = _ComputeLines(children, n, pWrapPanel->Direction,
-                                avail_main, pWrapPanel->Spacing,
-                                item_main, lines, MAX_WRAP_LINES);
+                                avail_main, cross_avail, pWrapPanel->Spacing,
+                                item_main, item_cross, lines, MAX_WRAP_LINES);
 
   /* Accumulate desired size across lines. */
-  float max_main    = 0;
-  float total_cross = 0;
+  float max_main    = 0.0f;
+  float total_cross = 0.0f;
 
   for (int li = 0; li < num_lines; li++) {
-    float line_main = 0;
-    for (int ci = 0; ci < lines[li].count; ci++) {
-      Node2DPtr sv = GetNode2D(children[lines[li].start + ci]);
-      if (ci > 0) line_main += pWrapPanel->Spacing;
-      line_main += _ChildMainSize(sv, pWrapPanel->Direction, item_main);
+    float line_main;
+    if (isinf(lines[li].share)) {
+      /* Natural-size pass: sum individual desired widths. */
+      line_main = 0.0f;
+      for (int ci = 0; ci < lines[li].count; ci++) {
+        Node2DPtr sv = GetNode2D(children[lines[li].start + ci]);
+        int axis = pWrapPanel->Direction == kDirectionHorizontal ? 0 : 1;
+        if (ci > 0) line_main += pWrapPanel->Spacing;
+        line_main += NODE2D_FRAME(sv, Size, axis).Desired + TOTAL_MARGIN(sv, axis);
+      }
+    } else {
+      /* Equal-share pass: line width = count*share + (count-1)*spacing. */
+      line_main = lines[li].share * (float)lines[li].count
+                  + (float)(lines[li].count - 1) * pWrapPanel->Spacing;
     }
-    max_main = fmax(max_main, line_main);
+    max_main = fmaxf(max_main, line_main);
     if (li > 0) total_cross += pWrapPanel->Spacing;
     total_cross += lines[li].cross_size;
   }
@@ -215,49 +254,34 @@ HANDLER(WrapPanel, ArrangeOverride)
   float item_cross = pWrapPanel->Direction == kDirectionHorizontal
                        ? pWrapPanel->ItemHeight : pWrapPanel->ItemWidth;
 
-  /* Re-measure children with the final arrange constraints. */
-  for (int i = 0; i < n; i++) {
-    Size_t avail;
-    if (pWrapPanel->Direction == kDirectionHorizontal) {
-      avail.width  = !isnan(item_main)  ? item_main  : INFINITY;
-      avail.height = !isnan(item_cross) ? item_cross : pArrangeOverride->height;
-    } else {
-      avail.width  = !isnan(item_cross) ? item_cross : pArrangeOverride->width;
-      avail.height = !isnan(item_main)  ? item_main  : INFINITY;
-    }
-    OBJ_SendMessageW(children[i], kEventMeasure, 0, &avail);
-  }
-
-  float avail_main = pWrapPanel->Direction == kDirectionHorizontal
-                       ? pArrangeOverride->width
-                       : pArrangeOverride->height;
+  float avail_main  = pWrapPanel->Direction == kDirectionHorizontal
+                        ? pArrangeOverride->width  : pArrangeOverride->height;
+  float cross_avail = pWrapPanel->Direction == kDirectionHorizontal
+                        ? pArrangeOverride->height : pArrangeOverride->width;
 
   WrapLine lines[MAX_WRAP_LINES];
   int num_lines = _ComputeLines(children, n, pWrapPanel->Direction,
-                                avail_main, pWrapPanel->Spacing,
-                                item_main, lines, MAX_WRAP_LINES);
+                                avail_main, cross_avail, pWrapPanel->Spacing,
+                                item_main, item_cross, lines, MAX_WRAP_LINES);
 
   /* Lay out lines along the cross axis. */
   float cross_pos = pWrapPanel->Direction == kDirectionHorizontal
-                      ? pArrangeOverride->y
-                      : pArrangeOverride->x;
+                      ? pArrangeOverride->y : pArrangeOverride->x;
 
   for (int li = 0; li < num_lines; li++) {
-    float line_cross = !isnan(item_cross) ? item_cross : lines[li].cross_size;
+    float line_cross = isfinite(item_cross) ? item_cross : lines[li].cross_size;
     float main_pos   = pWrapPanel->Direction == kDirectionHorizontal
-                         ? pArrangeOverride->x
-                         : pArrangeOverride->y;
+                         ? pArrangeOverride->x : pArrangeOverride->y;
+    float share = lines[li].share;
 
     for (int ci = 0; ci < lines[li].count; ci++) {
-      int       idx     = lines[li].start + ci;
-      Node2DPtr subview = GetNode2D(children[idx]);
-      float     child_m = _ChildMainSize(subview, pWrapPanel->Direction, item_main);
+      int idx = lines[li].start + ci;
 
       if (pWrapPanel->Direction == kDirectionHorizontal) {
         OBJ_SendMessageW(children[idx], kEventArrange, 0, &(struct rect) {
           .x      = main_pos,
           .y      = cross_pos,
-          .width  = child_m,
+          .width  = share,
           .height = line_cross,
         });
       } else {
@@ -265,10 +289,10 @@ HANDLER(WrapPanel, ArrangeOverride)
           .x      = cross_pos,
           .y      = main_pos,
           .width  = line_cross,
-          .height = child_m,
+          .height = share,
         });
       }
-      main_pos += child_m + pWrapPanel->Spacing;
+      main_pos += share + pWrapPanel->Spacing;
     }
 
     cross_pos += line_cross + pWrapPanel->Spacing;
@@ -276,3 +300,4 @@ HANDLER(WrapPanel, ArrangeOverride)
 
   return MAKEDWORD(pArrangeOverride->width, pArrangeOverride->height);
 }
+

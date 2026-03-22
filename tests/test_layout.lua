@@ -153,17 +153,18 @@ local function test_wrappanel_single_row()
 end
 
 -- ---------------------------------------------------------------------------
--- WrapPanel: horizontal wrapping — items wrap when they exceed available width
+-- WrapPanel: horizontal wrapping — MinWidth forces overflow onto next row
 -- ---------------------------------------------------------------------------
 local function test_wrappanel_wraps_to_second_row()
-	-- Screen is 1000px wide.  Each item is 400px wide.
-	-- Row 1: items 1+2 (800px ≤ 1000px).  Row 2: item 3 (400px).
-	-- Wrap in a vertical StackView so the panel content-sizes its height.
+	-- Screen is 1000px wide.  Each item declares MinWidth=400.
+	-- Non-greedy with count=3: share=333 < 400 → reduce.
+	-- Non-greedy with count=2: share=500 >= 400 → Row 1 gets items 1+2.
+	-- Item 3 alone on Row 2 (share=1000).
 	local outer = screen + ui.StackView { Direction = "Vertical" }
 	local panel = outer + ui.WrapPanel { Spacing = 0 }
-	local item1 = panel + ui.Node2D { Width = 400, Height = 50 }
-	local item2 = panel + ui.Node2D { Width = 400, Height = 50 }
-	local item3 = panel + ui.Node2D { Width = 400, Height = 50 }
+	local item1 = panel + ui.Node2D { Width = 400, Height = 50, MinWidth = 400 }
+	local item2 = panel + ui.Node2D { Width = 400, Height = 50, MinWidth = 400 }
+	local item3 = panel + ui.Node2D { Width = 400, Height = 50, MinWidth = 400 }
 
 	screen:updateLayout(screen.Width, screen.Height)
 
@@ -188,11 +189,12 @@ local function test_wrappanel_wraps_to_second_row()
 end
 
 -- ---------------------------------------------------------------------------
--- WrapPanel: spacing is applied between items within a row
+-- WrapPanel: spacing is applied between item slots within a row
 -- ---------------------------------------------------------------------------
 local function test_wrappanel_spacing()
 	local sp = 10
-	-- Two items of 200px with 10px spacing → 200+10+200 = 410px, fits in 1000px row.
+	-- Two items with 10px spacing.  Non-greedy gives each an equal share:
+	-- share = (1000 - 10) / 2 = 495.  Item 2 slot starts at 495 + 10 = 505.
 	local outer = screen + ui.StackView { Direction = "Vertical" }
 	local panel = outer + ui.WrapPanel { Spacing = sp }
 	local item1 = panel + ui.Node2D { Width = 200, Height = 60 }
@@ -200,10 +202,12 @@ local function test_wrappanel_spacing()
 
 	screen:updateLayout(screen.Width, screen.Height)
 
-	-- Item 2 X = item 1 X + width + spacing.
-	local expected_x2 = item1.ActualX + 200 + sp
+	-- Item 2 starts one share + spacing to the right of item 1.
+	local share = (screen.Width - sp) / 2   -- 495
+	local expected_x2 = item1.ActualX + share + sp
 	assert(item2.ActualX == expected_x2,
-		string.format("item 2 X: expected %d, got %d", expected_x2, item2.ActualX))
+		string.format("item 2 X: expected %d (share %d + spacing %d), got %d",
+			expected_x2, share, sp, item2.ActualX))
 
 	outer:removeFromParent()
 	print("PASS: test_wrappanel_spacing")
@@ -214,12 +218,12 @@ end
 -- ---------------------------------------------------------------------------
 local function test_wrappanel_row_spacing()
 	local sp = 8
-	-- Each item 600px wide; screen 1000px → each item on its own row.
-	-- Wrap in a vertical StackView so the panel content-sizes its height.
+	-- Items declare MinWidth=600.  Non-greedy with count=2: share=496 < 600 →
+	-- each item gets its own row (share=1000 >= 600).
 	local outer = screen + ui.StackView { Direction = "Vertical" }
 	local panel = outer + ui.WrapPanel { Spacing = sp }
-	local item1 = panel + ui.Node2D { Width = 600, Height = 40 }
-	local item2 = panel + ui.Node2D { Width = 600, Height = 40 }
+	local item1 = panel + ui.Node2D { Width = 600, Height = 40, MinWidth = 600 }
+	local item2 = panel + ui.Node2D { Width = 600, Height = 40, MinWidth = 600 }
 
 	screen:updateLayout(screen.Width, screen.Height)
 
@@ -306,13 +310,14 @@ end
 -- WrapPanel: Vertical direction wraps into a second column when height exceeded
 -- ---------------------------------------------------------------------------
 local function test_wrappanel_vertical_wraps_column()
-	-- Screen 1000×1000. Each item 400px tall. Direction=Vertical, no spacing.
-	-- Panel is a direct child of Screen so available height = 1000px.
-	-- Col 1: items 1+2 (800px ≤ 1000). Col 2: item 3.
+	-- Screen 1000×1000. Each item declares MinHeight=400. Direction=Vertical.
+	-- Non-greedy with count=3: share=333 < 400 → reduce.
+	-- Non-greedy with count=2: share=500 >= 400 → Col 1 gets items 1+2.
+	-- Item 3 alone in Col 2.
 	local panel = screen + ui.WrapPanel { Direction = "Vertical", Spacing = 0 }
-	local item1 = panel + ui.Node2D { Width = 50, Height = 400 }
-	local item2 = panel + ui.Node2D { Width = 50, Height = 400 }
-	local item3 = panel + ui.Node2D { Width = 50, Height = 400 }
+	local item1 = panel + ui.Node2D { Width = 50, Height = 400, MinHeight = 400 }
+	local item2 = panel + ui.Node2D { Width = 50, Height = 400, MinHeight = 400 }
+	local item3 = panel + ui.Node2D { Width = 50, Height = 400, MinHeight = 400 }
 
 	screen:updateLayout(screen.Width, screen.Height)
 
@@ -372,18 +377,19 @@ end
 -- WrapPanel: row height is the tallest item in that row
 -- ---------------------------------------------------------------------------
 local function test_wrappanel_row_height_is_max_child()
-	-- Row 1: item1 (600×50) + item2 (300×80) → fits (900 ≤ 1000), row height = 80.
-	-- Row 2: item3 (600×30) wraps.
-	-- Wrap in a vertical StackView so the panel content-sizes its height.
+	-- Items 1 (600×50, MinWidth=400) + 2 (300×80, MinWidth=300):
+	--   count=3: share=333 < 400 (item1 MinWidth) → reduce.
+	--   count=2: share=500 >= 400 and >= 300 → Row 1 has items 1+2, height=80.
+	-- Item 3 (600×30) alone on Row 2.
 	local outer = screen + ui.StackView { Direction = "Vertical" }
 	local panel = outer + ui.WrapPanel { Spacing = 0 }
-	local item1 = panel + ui.Node2D { Width = 600, Height = 50 }
-	local item2 = panel + ui.Node2D { Width = 300, Height = 80 }
+	local item1 = panel + ui.Node2D { Width = 600, Height = 50, MinWidth = 400 }
+	local item2 = panel + ui.Node2D { Width = 300, Height = 80, MinWidth = 300 }
 	local item3 = panel + ui.Node2D { Width = 600, Height = 30 }
 
 	screen:updateLayout(screen.Width, screen.Height)
 
-	-- Items 1+2 fit (600+300 = 900 ≤ 1000), item 3 wraps below row 1.
+	-- Items 1+2 on Row 1; item 3 wraps below.
 	assert(item3.ActualY == 80,
 		string.format("item 3 Y: expected 80 (tallest in row 1), got %d", item3.ActualY))
 
@@ -396,15 +402,13 @@ local function test_wrappanel_row_height_is_max_child()
 end
 
 -- ---------------------------------------------------------------------------
--- WrapPanel: children without explicit Width use their natural content size.
--- A StackView with known-width children reports that width when measured with
--- INFINITY (WPF behaviour), so WrapPanel can place multiple such items on the
--- same row when they collectively fit within the available space.
+-- WrapPanel: content-sized children share the row by default (no MinWidth needed)
+-- Reproduces the HeroContent + HeroImage use-case from the original bug report.
 -- ---------------------------------------------------------------------------
 local function test_wrappanel_content_sized_children()
-	-- Two StackViews, each containing two nodes of Width=120.
-	-- StackView Vertical with a child of Width=120 reports Desired.width=120.
-	-- 120+120 = 240 << 1000px screen → both fit on one row.
+	-- Two StackViews with no explicit width → each gets an equal share of the
+	-- WrapPanel's width.  Neither has MinWidth set, so they never wrap.
+	-- Both must be on the same row regardless of their natural content size.
 	local outer  = screen + ui.StackView { Direction = "Vertical" }
 	local panel  = outer  + ui.WrapPanel { Spacing = 0 }
 	local left   = panel  + ui.StackView { Direction = "Vertical", Spacing = 0 }
@@ -432,6 +436,40 @@ local function test_wrappanel_content_sized_children()
 	print("PASS: test_wrappanel_content_sized_children")
 end
 
+-- ---------------------------------------------------------------------------
+-- WrapPanel: wraps when MinWidth forces items off the shared row
+-- ---------------------------------------------------------------------------
+local function test_wrappanel_minwidth_wrap()
+	-- 3 items each with MinWidth=400.
+	-- count=3: share=333 < 400 → reduce.  count=2: share=500 >= 400 → Row 1.
+	-- Item 3 alone on Row 2 with share=1000 >= 400.
+	local outer  = screen + ui.StackView { Direction = "Vertical" }
+	local panel  = outer  + ui.WrapPanel { Spacing = 0 }
+	local item1  = panel  + ui.Node2D { Height = 60, MinWidth = 400 }
+	local item2  = panel  + ui.Node2D { Height = 60, MinWidth = 400 }
+	local item3  = panel  + ui.Node2D { Height = 60, MinWidth = 400 }
+
+	screen:updateLayout(screen.Width, screen.Height)
+
+	-- Items 1+2 on same row.
+	assert(item1.ActualY == item2.ActualY,
+		string.format("items 1+2 should be on same row: Y %d vs %d",
+			item1.ActualY, item2.ActualY))
+
+	-- Item 3 wraps to the next row.
+	assert(item3.ActualY > item2.ActualY,
+		string.format("item 3 (Y=%d) should be below row 1 (Y=%d)",
+			item3.ActualY, item1.ActualY))
+
+	-- Item 3 starts at the left edge (same X as item 1).
+	assert(item3.ActualX == item1.ActualX,
+		string.format("item 3 X (%d) should match row-start X (%d)",
+			item3.ActualX, item1.ActualX))
+
+	outer:removeFromParent()
+	print("PASS: test_wrappanel_minwidth_wrap")
+end
+
 
 test_grid_fr_units()
 test_grid_auto_columns()
@@ -449,5 +487,6 @@ test_wrappanel_empty()
 test_wrappanel_single_item()
 test_wrappanel_row_height_is_max_child()
 test_wrappanel_content_sized_children()
+test_wrappanel_minwidth_wrap()
 
 print("All layout tests passed.")
