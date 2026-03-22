@@ -24,21 +24,35 @@ HANDLER(ImageView, MeasureOverride)
   if (pImageView->Image) {
     vec2_t size = _GetImageSize(hObject, pImageView);
     lpcedges_t e = (struct edges const*)&pImageView->Insets;
-//    vec2_t calcsize = {
-//      fmin(size.x - e->left - e->right, pMeasureOverride->width),
-//      fmin(size.y - e->top - e->bottom, pMeasureOverride->height),
-//    };
+    float intrinsic_w = size.x - e->left - e->right;
+    float intrinsic_h = size.y - e->top  - e->bottom;
+
     if (pImageView->Stretch == kStretchNone) {
-      return MAKEDWORD(size.x - e->left - e->right, size.y - e->top - e->bottom);
+      return MAKEDWORD(intrinsic_w, intrinsic_h);
     } else if (pImageView->Stretch == kStretchUniform) {
-      rect_t avail = {0, 0, pMeasureOverride->width, pMeasureOverride->height};
+      /* Scale uniformly to fit within the available area.
+       * Clamp any non-finite dimension to the image's intrinsic size so that
+       * the scale factor stays finite (matching WPF Image behaviour). */
+      float avail_w = isfinite(pMeasureOverride->width)  ? pMeasureOverride->width  : intrinsic_w;
+      float avail_h = isfinite(pMeasureOverride->height) ? pMeasureOverride->height : intrinsic_h;
+      rect_t avail = {0, 0, avail_w, avail_h};
       rect_t final = RECT_Fit(&avail, &size);
       return MAKEDWORD(final.width, final.height);
     } else {
-      return MAKEDWORD(pMeasureOverride->width, pMeasureOverride->height);
+      /* Fill / UniformToFill: use the available dimension, but fall back to
+       * the intrinsic size for any axis that is unconstrained (non-finite).
+       * This matches WPF where Image reports its source size when the
+       * container provides no constraint. */
+      float w = isfinite(pMeasureOverride->width)  ? pMeasureOverride->width  : intrinsic_w;
+      float h = isfinite(pMeasureOverride->height) ? pMeasureOverride->height : intrinsic_h;
+      return MAKEDWORD(w, h);
     }
   } else {
-    return MAKEDWORD(pMeasureOverride->width, pMeasureOverride->height);
+    /* No image loaded — report 0 for any non-finite axis so that the
+     * element does not claim infinite space in WrapPanel or StackView. */
+    float w = isfinite(pMeasureOverride->width)  ? pMeasureOverride->width  : 0;
+    float h = isfinite(pMeasureOverride->height) ? pMeasureOverride->height : 0;
+    return MAKEDWORD(w, h);
   }
 }
 

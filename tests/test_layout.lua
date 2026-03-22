@@ -396,8 +396,43 @@ local function test_wrappanel_row_height_is_max_child()
 end
 
 -- ---------------------------------------------------------------------------
--- Run all tests
+-- WrapPanel: children without explicit Width use their natural content size.
+-- A StackView with known-width children reports that width when measured with
+-- INFINITY (WPF behaviour), so WrapPanel can place multiple such items on the
+-- same row when they collectively fit within the available space.
 -- ---------------------------------------------------------------------------
+local function test_wrappanel_content_sized_children()
+	-- Two StackViews, each containing two nodes of Width=120.
+	-- StackView Vertical with a child of Width=120 reports Desired.width=120.
+	-- 120+120 = 240 << 1000px screen → both fit on one row.
+	local outer  = screen + ui.StackView { Direction = "Vertical" }
+	local panel  = outer  + ui.WrapPanel { Spacing = 0 }
+	local left   = panel  + ui.StackView { Direction = "Vertical", Spacing = 0 }
+	local right  = panel  + ui.StackView { Direction = "Vertical", Spacing = 0 }
+	local _ = left  + ui.Node2D { Width = 120, Height = 40 }
+	local _ = right + ui.Node2D { Width = 120, Height = 40 }
+
+	screen:updateLayout(screen.Width, screen.Height)
+
+	-- Both sub-stacks should be on the same row (same Y).
+	assert(left.ActualY == right.ActualY,
+		string.format("content-sized children should share row Y: left=%d right=%d",
+			left.ActualY, right.ActualY))
+
+	-- Right column must start to the right of the left column.
+	assert(right.ActualX > left.ActualX,
+		string.format("right column X (%d) should be > left column X (%d)",
+			right.ActualX, left.ActualX))
+
+	-- Panel height = single row height (40px).
+	assert(panel.ActualHeight == 40,
+		string.format("panel height: expected 40, got %d", panel.ActualHeight))
+
+	outer:removeFromParent()
+	print("PASS: test_wrappanel_content_sized_children")
+end
+
+
 test_grid_fr_units()
 test_grid_auto_columns()
 test_grid_in_vstack_height()
@@ -413,5 +448,6 @@ test_wrappanel_vertical_wraps_column()
 test_wrappanel_empty()
 test_wrappanel_single_item()
 test_wrappanel_row_height_is_max_child()
+test_wrappanel_content_sized_children()
 
 print("All layout tests passed.")

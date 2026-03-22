@@ -186,6 +186,15 @@ int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
     return 1;
   }
 
+  if (!strcmp(name, "ActualX")) {
+    Node2DPtr n2d = GetNode2D(self);
+    if (n2d) { lua_pushnumber(L, n2d->_actual_pos[kBox3FieldX]); return 1; }
+  }
+  if (!strcmp(name, "ActualY")) {
+    Node2DPtr n2d = GetNode2D(self);
+    if (n2d) { lua_pushnumber(L, n2d->_actual_pos[kBox3FieldY]); return 1; }
+  }
+
 #define kEventPushProperty 0xc5ebaf40
   LRESULT found = OBJ_SendMessageW(self, kEventPushProperty, ident, L);
   if (found) {
