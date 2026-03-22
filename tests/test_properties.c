@@ -414,7 +414,7 @@ static void test_string_property_basic(void) {
 static void test_string_property_reassign(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
-        OBJ_FindShortProperty(obj, "Label", &prop);
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
 
         PROP_SetValue(prop, "first");
         EXPECT_STR_EQ((const char*)PROP_GetValue(prop), "first");
@@ -461,7 +461,7 @@ static void test_string_property_clear_without_set(void) {
 static void test_release_properties_frees_strings(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
-        OBJ_FindShortProperty(obj, "Label", &prop);
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
         PROP_SetValue(prop, "will be freed");
         /* destroy_object (called by WITH) calls OBJ_ReleaseProperties which must
            free the strdup'd string without crashing. */
@@ -546,7 +546,7 @@ static void test_multiple_properties_independent(void) {
 static void test_string_empty(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
-        OBJ_FindShortProperty(obj, "Label", &prop);
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
 
         PROP_SetValue(prop, "");
         EXPECT(!PROP_IsNull(prop));
@@ -558,7 +558,7 @@ static void test_release_without_string_set(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         /* Only set a non-string property */
         lpProperty_t prop;
-        OBJ_FindShortProperty(obj, "Count", &prop);
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Count", &prop)));
         int val = 1;
         PROP_SetValue(prop, &val);
         /* destroy_object (called by WITH) calls OBJ_ReleaseProperties which must
@@ -768,7 +768,7 @@ static void test_runtime_string_concat_program(void) {
 static void test_memleak_string_set_release(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
-        OBJ_FindShortProperty(obj, "Label", &prop);
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
         PROP_SetValue(prop, "hello leak test");
     }
 }
@@ -777,7 +777,7 @@ static void test_memleak_string_set_release(void) {
 static void test_memleak_string_multiple_sets(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
-        OBJ_FindShortProperty(obj, "Label", &prop);
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
         PROP_SetValue(prop, "first");
         PROP_SetValue(prop, "second");   /* frees "first" */
         PROP_SetValue(prop, "third");    /* frees "second" */
@@ -788,7 +788,7 @@ static void test_memleak_string_multiple_sets(void) {
 static void test_memleak_prop_clear(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
-        OBJ_FindShortProperty(obj, "Label", &prop);
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
         PROP_SetValue(prop, "to be cleared");
         PROP_Clear(prop);
     }
@@ -798,7 +798,7 @@ static void test_memleak_prop_clear(void) {
 static void test_memleak_prop_clear_never_set(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
-        OBJ_FindShortProperty(obj, "Label", &prop);
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
         PROP_Clear(prop);
     }
 }
@@ -810,7 +810,7 @@ static void test_memleak_multiple_string_props(void) {
         /* String property: set, reassign, clear, set again */
         OBJ_SetPropertyValue(obj, "Label", "alpha");
         lpProperty_t strprop;
-        OBJ_FindShortProperty(obj, "Label", &strprop);
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &strprop)));
         PROP_SetValue(strprop, "alpha2");
         PROP_Clear(strprop);
         PROP_SetValue(strprop, "final");
@@ -838,7 +838,7 @@ static void test_memleak_run_string_program(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         WITH(struct token, prog, Token_Create("\"vm string\""), Token_Release) {
             struct vm_register r = {0};
-            OBJ_RunProgram(obj, prog, &r);
+            EXPECT(OBJ_RunProgram(obj, prog, &r));
         }
     }
 }
@@ -849,7 +849,7 @@ static void test_memleak_run_string_program(void) {
 static void test_memleak_attach_update_release(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t prop;
-        OBJ_FindShortProperty(obj, "Label", &prop);
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
         struct token *prog = Token_Create("\"attached\"");
         EXPECT(prog != NULL);
         /* Property takes ownership of prog and strdup's the code. */
@@ -866,9 +866,9 @@ static void test_memleak_attach_update_release(void) {
 static void test_memleak_scalar_properties(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t pi, pf, pb;
-        OBJ_FindShortProperty(obj, "Count",  &pi);
-        OBJ_FindShortProperty(obj, "Value",  &pf);
-        OBJ_FindShortProperty(obj, "Active", &pb);
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Count",  &pi)));
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Value",  &pf)));
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Active", &pb)));
         int    iv = 99;
         float  fv = 1.5f;
         bool_t bv = true;
@@ -882,8 +882,8 @@ static void test_memleak_scalar_properties(void) {
 static void test_memleak_property_reference_program(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t propCount, propValue;
-        OBJ_FindShortProperty(obj, "Count", &propCount);
-        OBJ_FindShortProperty(obj, "Value", &propValue);
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Count", &propCount)));
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Value", &propValue)));
         float v = 7.0f;
         PROP_SetValue(propValue, &v);
         struct token *prog = Token_Create("{./Value}");
