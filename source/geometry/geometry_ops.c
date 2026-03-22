@@ -1542,20 +1542,3 @@ calculate_ninepatch(struct vec2 const* framesize,
   memcpy(&output->v[8], _u, sizeof(struct vec4));
   memcpy(&output->v[12], _v, sizeof(struct vec4));
 }
-
-#include <ctype.h>
-#include <assert.h>
-
-lpcString_t stristr(lpcString_t haystack, lpcString_t needle) {
-  size_t needle_len = strlen(needle);
-  if (needle_len == 0) {
-    return haystack; // Empty needle matches everything
-  }
-  while (*haystack) {
-    if (strncasecmp(haystack, needle, needle_len) == 0) {
-      return haystack; // Match found
-    }
-    haystack++;
-  }
-  return NULL; // No match
-}
