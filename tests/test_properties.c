@@ -216,6 +216,7 @@ static const char* s_current_test = NULL;
         break; \
     } 
 
+#define EXPECT_OK(hr) EXPECT((hr) == NOERROR)
 #define EXPECT_STR_EQ(a, b) EXPECT((a) && (b) && !strcmp(a, b))
 
 /* ------------------------------------------------------------------ */
@@ -353,7 +354,7 @@ static void destroy_object(lpObject_t obj) {
 static void test_int_property(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Count", &prop)));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Count", &prop));
         EXPECT(PROP_GetType(prop) == kDataTypeInt);
         EXPECT(PROP_IsNull(prop));
 
@@ -371,7 +372,7 @@ static void test_int_property(void) {
 static void test_float_property(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Value", &prop)));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Value", &prop));
         EXPECT(PROP_GetType(prop) == kDataTypeFloat);
         EXPECT(PROP_IsNull(prop));
 
@@ -385,7 +386,7 @@ static void test_float_property(void) {
 static void test_bool_property(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Active", &prop)));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Active", &prop));
         EXPECT(PROP_GetType(prop) == kDataTypeBool);
 
         bool_t yes = TRUE;
@@ -401,7 +402,7 @@ static void test_bool_property(void) {
 static void test_string_property_basic(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
         EXPECT(PROP_GetType(prop) == kDataTypeString);
         EXPECT(PROP_IsNull(prop));
 
@@ -414,7 +415,7 @@ static void test_string_property_basic(void) {
 static void test_string_property_reassign(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
 
         PROP_SetValue(prop, "first");
         EXPECT_STR_EQ((const char*)PROP_GetValue(prop), "first");
@@ -434,7 +435,7 @@ static void test_string_property_reassign(void) {
 static void test_string_property_clear(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
 
         PROP_SetValue(prop, "some string");
         EXPECT(!PROP_IsNull(prop));
@@ -451,7 +452,7 @@ static void test_string_property_clear(void) {
 static void test_string_property_clear_without_set(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
 
         /* Clearing a never-set string property must not crash */
         EXPECT(PROP_Clear(prop), PROP_IsNull(prop));
@@ -461,7 +462,7 @@ static void test_string_property_clear_without_set(void) {
 static void test_release_properties_frees_strings(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
         PROP_SetValue(prop, "will be freed");
         /* destroy_object (called by WITH) calls OBJ_ReleaseProperties which must
            free the strdup'd string without crashing. */
@@ -471,14 +472,14 @@ static void test_release_properties_frees_strings(void) {
 static void test_set_property_value_api(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         /* OBJ_SetPropertyValue creates the property on demand */
-        EXPECT(SUCCEEDED(OBJ_SetPropertyValue(obj, "Count", &(int){99})));
+        EXPECT_OK(OBJ_SetPropertyValue(obj, "Count", &(int){99}));
 
         lpProperty_t prop;
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Count", &prop)));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Count", &prop));
         EXPECT(*(int*)PROP_GetValue(prop) == 99);
 
-        EXPECT(SUCCEEDED(OBJ_SetPropertyValue(obj, "Label", "via api")));
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
+        EXPECT_OK(OBJ_SetPropertyValue(obj, "Label", "via api"));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
         EXPECT_STR_EQ((const char*)PROP_GetValue(prop), "via api");
     }
 }
@@ -486,7 +487,7 @@ static void test_set_property_value_api(void) {
 static void test_property_state_string(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
 
         /* Set the hover state value */
         PROP_SetValue(prop, "normal");
@@ -504,7 +505,7 @@ static void test_property_state_string(void) {
 static void test_struct_property(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Position", &prop)));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Position", &prop));
         EXPECT(PROP_GetType(prop) == kDataTypeStruct);
 
         float pos[2] = {10.0f, 20.0f};
@@ -525,8 +526,8 @@ static void test_find_property_unknown(void) {
 static void test_multiple_properties_independent(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t pCount, pLabel;
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Count", &pCount)));
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &pLabel)));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Count", &pCount));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &pLabel));
         EXPECT(pCount != pLabel);
 
         int val = 5;
@@ -546,7 +547,7 @@ static void test_multiple_properties_independent(void) {
 static void test_string_empty(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
 
         PROP_SetValue(prop, "");
         EXPECT(!PROP_IsNull(prop));
@@ -558,7 +559,7 @@ static void test_release_without_string_set(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         /* Only set a non-string property */
         lpProperty_t prop;
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Count", &prop)));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Count", &prop));
         int val = 1;
         PROP_SetValue(prop, &val);
         /* destroy_object (called by WITH) calls OBJ_ReleaseProperties which must
@@ -644,7 +645,7 @@ static void test_runtime_run_arithmetic(void) {
 static void test_runtime_import_int(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t prop;
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Count", &prop)));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Count", &prop));
         struct vm_register r = {0};
         r.type     = kDataTypeInt;
         r.value[0] = 99.0f;
@@ -657,7 +658,7 @@ static void test_runtime_import_int(void) {
 static void test_runtime_import_float(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t prop;
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Value", &prop)));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Value", &prop));
         struct vm_register r = {0};
         r.type     = kDataTypeFloat;
         r.size     = sizeof(float);
@@ -670,7 +671,7 @@ static void test_runtime_import_float(void) {
 static void test_runtime_import_string(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t prop;
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
         struct vm_register r = {0};
         r.type = kDataTypeString;
         r.size = sizeof(const char*);
@@ -684,7 +685,7 @@ static void test_runtime_import_string(void) {
 static void test_runtime_attach_and_update_int(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t prop;
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Count", &prop)));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Count", &prop));
         struct token *prog = Token_Create("21");
         EXPECT(prog != NULL);
         PROP_AttachProgram(prop, kPropertyAttributeWholeProperty, prog, "21");
@@ -699,7 +700,7 @@ static void test_runtime_attach_and_update_int(void) {
 static void test_runtime_attach_and_update_string(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t prop;
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
         struct token *prog = Token_Create("\"bound\"");
         EXPECT(prog != NULL);
         PROP_AttachProgram(prop, kPropertyAttributeWholeProperty, prog, "\"bound\"");
@@ -722,8 +723,8 @@ static void test_runtime_attach_and_update_string(void) {
 static void test_runtime_property_reference(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t propCount, propValue;
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Count", &propCount)));
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Value", &propValue)));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Count", &propCount));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Value", &propValue));
 
         float v = 5.0f;
         PROP_SetValue(propValue, &v);
@@ -747,7 +748,7 @@ static void test_runtime_property_reference(void) {
 static void test_runtime_string_concat_program(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t prop;
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
         struct token *prog = Token_Create("ADD(\"foo\", \"bar\")");
         EXPECT(prog != NULL);
         PROP_AttachProgram(prop, kPropertyAttributeWholeProperty,
@@ -768,7 +769,7 @@ static void test_runtime_string_concat_program(void) {
 static void test_memleak_string_set_release(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
         PROP_SetValue(prop, "hello leak test");
     }
 }
@@ -777,7 +778,7 @@ static void test_memleak_string_set_release(void) {
 static void test_memleak_string_multiple_sets(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
         PROP_SetValue(prop, "first");
         PROP_SetValue(prop, "second");   /* frees "first" */
         PROP_SetValue(prop, "third");    /* frees "second" */
@@ -788,7 +789,7 @@ static void test_memleak_string_multiple_sets(void) {
 static void test_memleak_prop_clear(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
         PROP_SetValue(prop, "to be cleared");
         PROP_Clear(prop);
     }
@@ -798,7 +799,7 @@ static void test_memleak_prop_clear(void) {
 static void test_memleak_prop_clear_never_set(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
         PROP_Clear(prop);
     }
 }
@@ -808,14 +809,14 @@ static void test_memleak_prop_clear_never_set(void) {
 static void test_memleak_multiple_string_props(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         /* String property: set, reassign, clear, set again */
-        OBJ_SetPropertyValue(obj, "Label", "alpha");
+        EXPECT_OK(OBJ_SetPropertyValue(obj, "Label", "alpha"));
         lpProperty_t strprop;
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &strprop)));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &strprop));
         PROP_SetValue(strprop, "alpha2");
         PROP_Clear(strprop);
         PROP_SetValue(strprop, "final");
         /* Scalar property: set (no heap allocation for value) */
-        OBJ_SetPropertyValue(obj, "Count", &(int){7});
+        EXPECT_OK(OBJ_SetPropertyValue(obj, "Count", &(int){7}));
     }
 }
 
@@ -849,7 +850,7 @@ static void test_memleak_run_string_program(void) {
 static void test_memleak_attach_update_release(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t prop;
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
         struct token *prog = Token_Create("\"attached\"");
         EXPECT(prog != NULL);
         /* Property takes ownership of prog and strdup's the code. */
@@ -866,9 +867,9 @@ static void test_memleak_attach_update_release(void) {
 static void test_memleak_scalar_properties(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t pi, pf, pb;
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Count",  &pi)));
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Value",  &pf)));
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Active", &pb)));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Count",  &pi));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Value",  &pf));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Active", &pb));
         int    iv = 99;
         float  fv = 1.5f;
         bool_t bv = true;
@@ -882,8 +883,8 @@ static void test_memleak_scalar_properties(void) {
 static void test_memleak_property_reference_program(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t propCount, propValue;
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Count", &propCount)));
-        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Value", &propValue)));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Count", &propCount));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Value", &propValue));
         float v = 7.0f;
         PROP_SetValue(propValue, &v);
         struct token *prog = Token_Create("{./Value}");
