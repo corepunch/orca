@@ -2,6 +2,7 @@
 #define __ORCA_H__
 
 #include "orcadef.h"
+#include "script.h"
 
 #include <libs/platform/platform.h>
 
@@ -426,10 +427,10 @@ ORCA_API void*
 CMP_GetUserData(struct component*);
 
 ORCA_API bool_t
-SV_RegisterMessageProc(LRESULT (*proc)(lua_State*, struct WI_Message*));
+SV_RegisterMessageProc(ScriptMessageProc proc, ScriptContext ctx);
 
 ORCA_API bool_t
-SV_UnregisterMessageProc(LRESULT (*proc)(lua_State*, struct WI_Message*));
+SV_UnregisterMessageProc(ScriptMessageProc proc);
 
 ORCA_API void
 OBJ_Release(lua_State *L, lpObject_t);

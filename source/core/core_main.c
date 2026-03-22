@@ -196,7 +196,8 @@ int lua_pushclass(lua_State* L, struct ClassDesc* cl)
 bool_t CORE_HandleObjectMessage(lua_State *L, struct WI_Message* msg);
 bool_t CORE_HandleKeyEvent(lua_State *L, struct WI_Message* msg);
 
-LRESULT CORE_ProcessMessage(lua_State *L, struct WI_Message* msg) {
+LRESULT CORE_ProcessMessage(ScriptContext ctx, struct WI_Message* msg) {
+  lua_State *L = (lua_State *)ctx;
   int tmp;
   switch (msg->message) {
     case kEventWindowPaint:
@@ -446,7 +447,7 @@ on_core_module_registered(lua_State* L)
   lua_setglobal(L, "L");
   
   SV_Init();
-  SV_RegisterMessageProc(CORE_ProcessMessage);
+  SV_RegisterMessageProc(CORE_ProcessMessage, (ScriptContext)L);
   
   // Create commands table
   lua_newtable(L);

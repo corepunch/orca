@@ -87,14 +87,18 @@ int f_peek_message(lua_State* L) {
 
 #define MAX_CLIENTS 256
 #define kEventReadCommands 0x23d83fd3
-typedef LRESULT (*message_proc_t)(lua_State*, struct WI_Message*);
-static message_proc_t clients[MAX_CLIENTS];
 
-bool_t SV_DispatchMessage(lua_State* L, struct WI_Message* msg) {
+struct sv_client {
+  ScriptMessageProc proc;
+  ScriptContext ctx;
+};
+static struct sv_client clients[MAX_CLIENTS];
+
+bool_t SV_DispatchMessage(struct WI_Message* msg) {
   if (!msg->target && msg->message != kEventReadCommands)
     return FALSE;
   for (int i = 0; i < MAX_CLIENTS; i++) {
-    if (clients[i] && clients[i](L, msg)) {
+    if (clients[i].proc && clients[i].proc(clients[i].ctx, msg)) {
       return TRUE;
     }
   }
@@ -111,25 +115,27 @@ int f_dispatch_message(lua_State* L) {
     lua_insert(L, -2);
     lua_call(L, 1, 1);
   } else {
-    lua_pushboolean(L, SV_DispatchMessage(L, luaL_checkudata(L, 1, "Event")));
+    lua_pushboolean(L, SV_DispatchMessage(luaL_checkudata(L, 1, "Event")));
   }
   return 1;
 }
 
-bool_t SV_RegisterMessageProc(LRESULT (*proc)(lua_State*, struct WI_Message *)) {
+bool_t SV_RegisterMessageProc(ScriptMessageProc proc, ScriptContext ctx) {
   memmove(&clients[1], &clients[0], (MAX_CLIENTS - 1) * sizeof(clients[0]));
-  clients[0] = proc;
+  clients[0].proc = proc;
+  clients[0].ctx = ctx;
   return FALSE;
 }
 
-bool_t SV_UnregisterMessageProc(LRESULT (*proc)(lua_State*, struct WI_Message *)) {
+bool_t SV_UnregisterMessageProc(ScriptMessageProc proc) {
   for (int i = 0; i < MAX_CLIENTS; i++) {
-    if (clients[i] == proc) {
+    if (clients[i].proc == proc) {
       int remaining = MAX_CLIENTS - i - 1;
       if (remaining > 0) {
         memmove(&clients[i], &clients[i + 1], remaining * sizeof(clients[0]));
       }
-      clients[MAX_CLIENTS - 1] = NULL; // clean up last slot
+      clients[MAX_CLIENTS - 1].proc = NULL;
+      clients[MAX_CLIENTS - 1].ctx = NULL;
       return TRUE;
     }
   }

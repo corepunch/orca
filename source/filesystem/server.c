@@ -440,7 +440,8 @@ LPSTR UI_ReadClientCommands(void) {
   return strtok(buf, "\n");
 }
 
-LRESULT filesystem_handle_event(lua_State *L, struct WI_Message *msg) {
+LRESULT filesystem_handle_event(ScriptContext ctx, struct WI_Message *msg) {
+  lua_State *L = (lua_State *)ctx;
   if (msg->message == kEventReadCommands) {
     LPSTR url = UI_ReadClientCommands();
     if (!url) exit(0);

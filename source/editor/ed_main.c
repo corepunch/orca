@@ -795,7 +795,8 @@ ORCA_API BOOL ED_IsRunning(void) {
   return !editor.bHasFinished;
 }
 
-static LRESULT _DispatchMessage(lua_State *L, struct WI_Message *msg) {
+static LRESULT _DispatchMessage(ScriptContext ctx, struct WI_Message *msg) {
+  (void)ctx;
   return ED_DispatchMessage(msg->message, msg->wParam, msg->lParam);
 }
 
@@ -824,7 +825,7 @@ ORCA_API int luaopen_orca_editor(lua_State* L)
   
   editor.L = L;
   
-  SV_RegisterMessageProc(_DispatchMessage);
+  SV_RegisterMessageProc(_DispatchMessage, (ScriptContext)L);
   
   return 1;
 }

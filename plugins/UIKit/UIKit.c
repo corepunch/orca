@@ -192,7 +192,8 @@ handle:
   return success || e->message == kEventDragEnter;
 }
 
-LRESULT ui_handle_event(lua_State* L, struct WI_Message *msg) {
+LRESULT ui_handle_event(ScriptContext ctx, struct WI_Message *msg) {
+  lua_State *L = (lua_State *)ctx;
   switch (msg->message) {
     case kEventLeftMouseUp:
     case kEventRightMouseUp:
@@ -226,7 +227,7 @@ void on_ui_module_registered(lua_State* L) {
   lua_getglobal(L, "SERVER");
   is_server = lua_toboolean(L, -1);
   lua_pop(L, 1);
-  SV_RegisterMessageProc(ui_handle_event);
+  SV_RegisterMessageProc(ui_handle_event, (ScriptContext)L);
   lua_pushcfunction(L, f_beginDraggingSession);
   lua_setfield(L, -2, "beginDraggingSession");
 }
