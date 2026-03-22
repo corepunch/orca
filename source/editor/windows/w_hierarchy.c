@@ -79,7 +79,8 @@ LPXMLDOC ED_FindXMLCache(lpcString_t filename) {
       return cache->doc;
     }
   }
-  LPXMLDOC doc = xmlReadFile(FS_JoinPaths(editor.currentProject, filename), NULL, 0);
+  path_t joined = {0};
+  LPXMLDOC doc = xmlReadFile(FS_JoinPaths(joined, sizeof(joined), editor.currentProject, filename), NULL, 0);
   if (doc) {
     LPEDCACHE cache = ZeroAlloc(sizeof(EDCACHE));
     strncpy(cache->path, filename, sizeof(cache->path));
@@ -112,7 +113,8 @@ void XML_EnumChildObjects(HANDLE handle, EnumChildProc proc, LPVOID parm) {
         return;
       PATHSTR str={0};
       sprintf(str, "../../../icui/hmi_plugins/SCAManager/projects/ic/high/common/%s/Prefabs/%s.xml", SCA, SCA);
-      LPXMLDOC doc = ED_FindXMLCache(FS_JoinPaths(editor.currentProject, str));
+      path_t xmlpath = {0};
+      LPXMLDOC doc = ED_FindXMLCache(FS_JoinPaths(xmlpath, sizeof(xmlpath), editor.currentProject, str));
       if (doc) {
         _GetObjDef(xmlDocGetRootElement(doc), proc, parm);
       }

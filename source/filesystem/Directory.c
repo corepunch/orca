@@ -54,11 +54,12 @@ _WatchFile(struct Directory* psrch, lpcString_t filename)
 #endif
 
 HANDLER(Directory, OpenFile) {
-  FILE* fp = fopen(FS_JoinPaths(pDirectory->Path, pOpenFile->FileName), "rb");
+  path_t joined = {0};
+  FILE* fp = fopen(FS_JoinPaths(joined, sizeof(joined), pDirectory->Path, pOpenFile->FileName), "rb");
   if (!fp)
     return 0;
 #ifdef MONITOR_FILES
-  _WatchFile(pDirectory, FS_JoinPaths(pDirectory->Path, pOpenFile->FileName));
+  _WatchFile(pDirectory, joined);
 #endif
   uint32_t dwFileSize = FS_FileLength(fp);
   // add 1 to size to be able to add '/0' to the end
@@ -70,7 +71,8 @@ HANDLER(Directory, OpenFile) {
 }
 
 HANDLER(Directory, FileExists) {
-  FILE* file = fopen(FS_JoinPaths(pDirectory->Path, pFileExists->FileName), "rb");
+  path_t joined = {0};
+  FILE* file = fopen(FS_JoinPaths(joined, sizeof(joined), pDirectory->Path, pFileExists->FileName), "rb");
   if (file) {
     fclose(file);
     return TRUE;

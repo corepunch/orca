@@ -143,7 +143,8 @@ static int l_directory_iterator(lua_State* L)
     }
 
     // Get full path
-    lpcString_t fullpath = FS_JoinPaths(path, entry->d_name);
+    path_t fullpath = {0};
+    FS_JoinPaths(fullpath, sizeof(fullpath), path, entry->d_name);
 
     // Check if entry is a directory
     struct stat st;
@@ -257,13 +258,11 @@ static int f_mkdir(lua_State* L)
 static int f_joinpaths(lua_State* L)
 {
   path_t tmp = { 0 };
-  strncpy(tmp,
-          FS_JoinPaths(luaL_checkstring(L, 1), luaL_checkstring(L, 2)),
-          sizeof(tmp));
+  FS_JoinPaths(tmp, sizeof(tmp), luaL_checkstring(L, 1), luaL_checkstring(L, 2));
   for (int i = 3; i <= lua_gettop(L); i++) {
     path_t tmp2 = { 0 };
     strncpy(tmp2, tmp, sizeof(tmp2));
-    strncpy(tmp, FS_JoinPaths(tmp2, luaL_checkstring(L, i)), sizeof(tmp));
+    FS_JoinPaths(tmp, sizeof(tmp), tmp2, luaL_checkstring(L, i));
   }
   lua_pushstring(L, tmp);
   return 1;

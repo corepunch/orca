@@ -44,7 +44,8 @@ _NewFile(LPVOID lpObject, lpcString_t szName, DWORD dwType) {
       .lpstrFile = pPath,
       .nMaxFile = sizeof(pPath),
     })) {
-      lpcString_t szDir = FS_JoinPaths(pPath, szName);
+      path_t szDir = {0};
+      FS_JoinPaths(szDir, sizeof(szDir), pPath, szName);
       FS_MakeDirectory(szDir);
       snprintf(pPath, sizeof(pPath), "%s/%s.xml", szDir, szName);
       xmlWith(xmlDoc, doc, FS_InitProject(szName), xmlFreeDoc) {

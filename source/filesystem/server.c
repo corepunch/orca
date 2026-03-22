@@ -267,7 +267,8 @@ SV_CMD(GET, project_overview) {
   if (proj) {
     lpcString_t szRoot = OBJ_GetSourceFile(proj);
     FOR_EACH_OBJECT(lib, proj) {
-      xmlWith(char, path, strdup(FS_JoinPaths(szRoot, OBJ_GetName(lib))), free) {
+      path_t joined = {0};
+      xmlWith(char, path, strdup(FS_JoinPaths(joined, sizeof(joined), szRoot, OBJ_GetName(lib))), free) {
         char buf[256];
         snprintf(buf,sizeof(buf),"%s/%s",OBJ_GetName(proj),OBJ_GetName(lib));
         FS_EnumDir2(path, load_library, ((void*[]){L, buf}));
@@ -319,7 +320,8 @@ SV_CMD(POST, node) {
       xmlDocSetRootElement(doc, ED_ConvertNode(source, NULL));
       OBJ_AddChild(root, OBJ_LoadDocument(L, doc), FALSE);
     }
-    OBJ_SetSourceFile(source, FS_JoinPaths(endpoint, OBJ_GetName(source)));
+    path_t sourcepath = {0};
+    OBJ_SetSourceFile(source, FS_JoinPaths(sourcepath, sizeof(sourcepath), endpoint, OBJ_GetName(source)));
     return NULL;
   }
   REQUIRE(lpcString_t, cls, SV_ARG("class"), "Should provide 'class' or 'source' argument");
