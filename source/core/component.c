@@ -129,6 +129,10 @@ CMP_GetClassName(struct component* hcmp)
   return hcmp->pcls->ClassName;
 }
 
+void print_debug_component(lpObject_t pobj, int line) {
+  fprintf(stderr, "%d %s\n", line, _GetComponents(pobj)->pcls->ClassName);
+}
+
 LRESULT
 OBJ_SendMessageW(lpObject_t pobj, uint32_t MsgID, wParam_t wParam, lParam_t lParam)
 {
@@ -136,14 +140,10 @@ OBJ_SendMessageW(lpObject_t pobj, uint32_t MsgID, wParam_t wParam, lParam_t lPar
 //	if (MsgID == kEventUpdateLayout && !(OBJ_GetFlags(pobj) & OF_DIRTY))
 //		return FALSE;
 //#endif
-  fprintf(stderr, "Will iterate components\n");
   FOR_EACH_LIST(struct component, cmp, _GetComponents(pobj))
   {
-    fprintf(stderr, "Component %s\n", cmp->pcls->ClassName);
     if (cmp->pcls->ObjProc) {
-      fprintf(stderr, "Has ObjProc\n");
       LRESULT res = cmp->pcls->ObjProc(pobj, cmp->pUserData, MsgID, wParam, lParam);
-      fprintf(stderr, "Called ObjProc\n");
       if (res) {
         return res;
       }
