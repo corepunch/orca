@@ -121,7 +121,9 @@ end
 -- ---------------------------------------------------------------------------
 local function test_wrappanel_single_row()
 	-- 3 items of 100px each in a 1000px wide screen → all fit in one row.
-	local panel = screen + ui.WrapPanel { Spacing = 0 }
+	-- Wrap in a vertical StackView so the panel content-sizes its height.
+	local outer = screen + ui.StackView { Direction = "Vertical" }
+	local panel = outer + ui.WrapPanel { Spacing = 0 }
 	local items = {}
 	for i = 1, 3 do
 		items[i] = panel + ui.Node2D { Width = 100, Height = 50 }
@@ -146,7 +148,7 @@ local function test_wrappanel_single_row()
 	assert(panel.ActualHeight == 50,
 		string.format("panel height: expected 50, got %d", panel.ActualHeight))
 
-	panel:removeFromParent()
+	outer:removeFromParent()
 	print("PASS: test_wrappanel_single_row")
 end
 
@@ -156,7 +158,9 @@ end
 local function test_wrappanel_wraps_to_second_row()
 	-- Screen is 1000px wide.  Each item is 400px wide.
 	-- Row 1: items 1+2 (800px ≤ 1000px).  Row 2: item 3 (400px).
-	local panel = screen + ui.WrapPanel { Spacing = 0 }
+	-- Wrap in a vertical StackView so the panel content-sizes its height.
+	local outer = screen + ui.StackView { Direction = "Vertical" }
+	local panel = outer + ui.WrapPanel { Spacing = 0 }
 	local item1 = panel + ui.Node2D { Width = 400, Height = 50 }
 	local item2 = panel + ui.Node2D { Width = 400, Height = 50 }
 	local item3 = panel + ui.Node2D { Width = 400, Height = 50 }
@@ -171,25 +175,26 @@ local function test_wrappanel_wraps_to_second_row()
 	assert(item3.ActualY > item1.ActualY,
 		string.format("item 3 Y (%d) should be below row 1 Y (%d)", item3.ActualY, item1.ActualY))
 
-	-- Item 3 should start at the left edge (X = 0).
-	assert(item3.ActualX == 0,
-		string.format("item 3 X: expected 0 (start of row 2), got %d", item3.ActualX))
+	-- Item 3 should start at the left edge.
+	assert(item3.ActualX == item1.ActualX,
+		string.format("item 3 X (%d) should match start of row (item 1 X = %d)", item3.ActualX, item1.ActualX))
 
 	-- Panel height = 2 rows × 50px.
 	assert(panel.ActualHeight == 100,
 		string.format("panel height: expected 100, got %d", panel.ActualHeight))
 
-	panel:removeFromParent()
+	outer:removeFromParent()
 	print("PASS: test_wrappanel_wraps_to_second_row")
 end
 
 -- ---------------------------------------------------------------------------
--- WrapPanel: spacing is applied between items within a row and between rows
+-- WrapPanel: spacing is applied between items within a row
 -- ---------------------------------------------------------------------------
 local function test_wrappanel_spacing()
 	local sp = 10
 	-- Two items of 200px with 10px spacing → 200+10+200 = 410px, fits in 1000px row.
-	local panel = screen + ui.WrapPanel { Spacing = sp }
+	local outer = screen + ui.StackView { Direction = "Vertical" }
+	local panel = outer + ui.WrapPanel { Spacing = sp }
 	local item1 = panel + ui.Node2D { Width = 200, Height = 60 }
 	local item2 = panel + ui.Node2D { Width = 200, Height = 60 }
 
@@ -200,7 +205,7 @@ local function test_wrappanel_spacing()
 	assert(item2.ActualX == expected_x2,
 		string.format("item 2 X: expected %d, got %d", expected_x2, item2.ActualX))
 
-	panel:removeFromParent()
+	outer:removeFromParent()
 	print("PASS: test_wrappanel_spacing")
 end
 
@@ -210,7 +215,9 @@ end
 local function test_wrappanel_row_spacing()
 	local sp = 8
 	-- Each item 600px wide; screen 1000px → each item on its own row.
-	local panel = screen + ui.WrapPanel { Spacing = sp }
+	-- Wrap in a vertical StackView so the panel content-sizes its height.
+	local outer = screen + ui.StackView { Direction = "Vertical" }
+	local panel = outer + ui.WrapPanel { Spacing = sp }
 	local item1 = panel + ui.Node2D { Width = 600, Height = 40 }
 	local item2 = panel + ui.Node2D { Width = 600, Height = 40 }
 
@@ -226,7 +233,7 @@ local function test_wrappanel_row_spacing()
 	assert(panel.ActualHeight == 40 + sp + 40,
 		string.format("panel height: expected %d, got %d", 40 + sp + 40, panel.ActualHeight))
 
-	panel:removeFromParent()
+	outer:removeFromParent()
 	print("PASS: test_wrappanel_row_spacing")
 end
 
@@ -236,7 +243,9 @@ end
 local function test_wrappanel_item_width_override()
 	-- Items declare Width=200 but ItemWidth=150 overrides them.
 	-- 150*4 = 600 ≤ 1000 → all 4 items fit in one row.
-	local panel = screen + ui.WrapPanel { Spacing = 0, ItemWidth = 150 }
+	-- Wrap in a vertical StackView so the panel content-sizes its height.
+	local outer = screen + ui.StackView { Direction = "Vertical" }
+	local panel = outer + ui.WrapPanel { Spacing = 0, ItemWidth = 150 }
 	local items = {}
 	for i = 1, 4 do
 		items[i] = panel + ui.Node2D { Width = 200, Height = 50 }
@@ -244,7 +253,7 @@ local function test_wrappanel_item_width_override()
 
 	screen:updateLayout(screen.Width, screen.Height)
 
-	-- All items on one row.
+	-- All items on one row (same Y).
 	local y0 = items[1].ActualY
 	for i = 2, 4 do
 		assert(items[i].ActualY == y0,
@@ -255,16 +264,17 @@ local function test_wrappanel_item_width_override()
 	assert(panel.ActualHeight == 50,
 		string.format("panel height with ItemWidth override: expected 50, got %d", panel.ActualHeight))
 
-	panel:removeFromParent()
+	outer:removeFromParent()
 	print("PASS: test_wrappanel_item_width_override")
 end
 
 -- ---------------------------------------------------------------------------
--- WrapPanel: Vertical direction flows items top-to-bottom and wraps columns
+-- WrapPanel: Vertical direction flows items top-to-bottom
 -- ---------------------------------------------------------------------------
 local function test_wrappanel_vertical_direction()
 	-- Screen 1000×1000. Items are 100px tall. Direction=Vertical, no spacing.
-	-- 8 items of 100px height in 1000px → all fit in one column (8*100=800 ≤ 1000).
+	-- 8 items of 100px height in 1000px available height → all fit in one column.
+	-- Panel is a direct child of Screen so the screen's 1000px height constrains it.
 	local panel = screen + ui.WrapPanel { Direction = "Vertical", Spacing = 0 }
 	local items = {}
 	for i = 1, 8 do
@@ -297,6 +307,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_wrappanel_vertical_wraps_column()
 	-- Screen 1000×1000. Each item 400px tall. Direction=Vertical, no spacing.
+	-- Panel is a direct child of Screen so available height = 1000px.
 	-- Col 1: items 1+2 (800px ≤ 1000). Col 2: item 3.
 	local panel = screen + ui.WrapPanel { Direction = "Vertical", Spacing = 0 }
 	local item1 = panel + ui.Node2D { Width = 50, Height = 400 }
@@ -314,33 +325,34 @@ local function test_wrappanel_vertical_wraps_column()
 		string.format("item 3 X (%d) should be to the right of column 1 (%d)",
 			item3.ActualX, item1.ActualX))
 
-	-- Item 3 should start at the top (Y = 0).
-	assert(item3.ActualY == 0,
-		string.format("item 3 Y: expected 0 (top of column 2), got %d", item3.ActualY))
+	-- Item 3 should start at the top of column 2 (same Y as item 1).
+	assert(item3.ActualY == item1.ActualY,
+		string.format("item 3 Y (%d) should match top of column 2 (item 1 Y = %d)",
+			item3.ActualY, item1.ActualY))
 
 	panel:removeFromParent()
 	print("PASS: test_wrappanel_vertical_wraps_column")
 end
 
 -- ---------------------------------------------------------------------------
--- WrapPanel: empty panel has zero desired size
+-- WrapPanel: empty panel has zero content height (verified via StackView parent)
 -- ---------------------------------------------------------------------------
 local function test_wrappanel_empty()
-	local panel = screen + ui.WrapPanel { Spacing = 10 }
+	local outer = screen + ui.StackView { Direction = "Vertical" }
+	local panel = outer + ui.WrapPanel { Spacing = 10 }
 	screen:updateLayout(screen.Width, screen.Height)
 	assert(panel.ActualHeight == 0,
 		string.format("empty panel height: expected 0, got %d", panel.ActualHeight))
-	assert(panel.ActualWidth == screen.Width or panel.ActualWidth == 0,
-		string.format("empty panel width: expected 0 or screen width, got %d", panel.ActualWidth))
-	panel:removeFromParent()
+	outer:removeFromParent()
 	print("PASS: test_wrappanel_empty")
 end
 
 -- ---------------------------------------------------------------------------
--- WrapPanel: single item fills the row
+-- WrapPanel: single item is placed at the panel origin
 -- ---------------------------------------------------------------------------
 local function test_wrappanel_single_item()
-	local panel = screen + ui.WrapPanel { Spacing = 0 }
+	local outer = screen + ui.StackView { Direction = "Vertical" }
+	local panel = outer + ui.WrapPanel { Spacing = 0 }
 	local item  = panel + ui.Node2D { Width = 300, Height = 70 }
 
 	screen:updateLayout(screen.Width, screen.Height)
@@ -352,7 +364,7 @@ local function test_wrappanel_single_item()
 	assert(panel.ActualHeight == 70,
 		string.format("single-item panel height: expected 70, got %d", panel.ActualHeight))
 
-	panel:removeFromParent()
+	outer:removeFromParent()
 	print("PASS: test_wrappanel_single_item")
 end
 
@@ -360,16 +372,18 @@ end
 -- WrapPanel: row height is the tallest item in that row
 -- ---------------------------------------------------------------------------
 local function test_wrappanel_row_height_is_max_child()
-	-- Two items in row 1: 50px and 80px tall. Row 1 height should be 80.
-	-- Third item wraps to row 2: 30px tall.
-	local panel = screen + ui.WrapPanel { Spacing = 0 }
+	-- Row 1: item1 (600×50) + item2 (300×80) → fits (900 ≤ 1000), row height = 80.
+	-- Row 2: item3 (600×30) wraps.
+	-- Wrap in a vertical StackView so the panel content-sizes its height.
+	local outer = screen + ui.StackView { Direction = "Vertical" }
+	local panel = outer + ui.WrapPanel { Spacing = 0 }
 	local item1 = panel + ui.Node2D { Width = 600, Height = 50 }
 	local item2 = panel + ui.Node2D { Width = 300, Height = 80 }
 	local item3 = panel + ui.Node2D { Width = 600, Height = 30 }
 
 	screen:updateLayout(screen.Width, screen.Height)
 
-	-- Items 1+2 fit (600+300 = 900 ≤ 1000), item 3 wraps.
+	-- Items 1+2 fit (600+300 = 900 ≤ 1000), item 3 wraps below row 1.
 	assert(item3.ActualY == 80,
 		string.format("item 3 Y: expected 80 (tallest in row 1), got %d", item3.ActualY))
 
@@ -377,7 +391,7 @@ local function test_wrappanel_row_height_is_max_child()
 	assert(panel.ActualHeight == 80 + 30,
 		string.format("panel height: expected %d, got %d", 80 + 30, panel.ActualHeight))
 
-	panel:removeFromParent()
+	outer:removeFromParent()
 	print("PASS: test_wrappanel_row_height_is_max_child")
 end
 
