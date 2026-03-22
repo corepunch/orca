@@ -3001,6 +3001,49 @@ ORCA_API struct ClassDesc _Grid = {
 	.NumProperties = kGridNumProperties,
 };
 
+LRESULT WrapPanel_MeasureOverride(struct Object*, struct WrapPanel*, wParam_t, MeasureOverrideEventPtr);
+LRESULT WrapPanel_ArrangeOverride(struct Object*, struct WrapPanel*, wParam_t, ArrangeOverrideEventPtr);
+
+static struct PropertyType const WrapPanelProperties[kWrapPanelNumProperties] = {
+	DECL(0x61fefc0a, WrapPanel, Direction, Direction, kDataTypeEnum, .TypeString = "Horizontal,Vertical,Depth", .EnumValues = _Direction), // WrapPanel.Direction
+	DECL(0x8777939e, WrapPanel, Spacing, Spacing, kDataTypeFloat), // WrapPanel.Spacing
+	DECL(0xed258ed2, WrapPanel, ItemWidth, ItemWidth, kDataTypeFloat), // WrapPanel.ItemWidth
+	DECL(0x1c3f56ad, WrapPanel, ItemHeight, ItemHeight, kDataTypeFloat), // WrapPanel.ItemHeight
+};
+static struct WrapPanel WrapPanelDefaults = {
+		
+  .ItemWidth = NAN,
+		
+  .ItemHeight = NAN,
+};
+LRESULT WrapPanelProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+		case kEventMeasureOverride: return WrapPanel_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
+		case kEventArrangeOverride: return WrapPanel_ArrangeOverride(object, cmp, wparm, lparm); // ArrangeOverride
+	}
+	return FALSE;
+}
+void luaX_pushWrapPanel(lua_State *L, struct WrapPanel const* WrapPanel) {
+	luaX_pushObject(L, CMP_GetObject(WrapPanel));
+}
+struct WrapPanel* luaX_checkWrapPanel(lua_State *L, int idx) {
+	return GetWrapPanel(luaX_checkObject(L, idx));
+}
+#define ID_Node2D 0x6c63a2ab
+ORCA_API struct ClassDesc _WrapPanel = {
+	.ClassName = "WrapPanel",
+	.DefaultName = "WrapPanel",
+	.ContentType = "WrapPanel",
+	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
+	.ParentClasses = { ID_Node2D, 0 },
+	.ClassID = ID_WrapPanel,
+	.ClassSize = sizeof(struct WrapPanel),
+	.Properties = WrapPanelProperties,
+	.ObjProc = WrapPanelProc,
+	.Defaults = &WrapPanelDefaults,
+	.NumProperties = kWrapPanelNumProperties,
+};
+
 LRESULT ImageView_MeasureOverride(struct Object*, struct ImageView*, wParam_t, MeasureOverrideEventPtr);
 LRESULT ImageView_ArrangeOverride(struct Object*, struct ImageView*, wParam_t, ArrangeOverrideEventPtr);
 LRESULT ImageView_ForegroundContent(struct Object*, struct ImageView*, wParam_t, ForegroundContentEventPtr);
@@ -3341,6 +3384,7 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_Screen), -2), "Screen");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Cinematic), -2), "Cinematic");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Grid), -2), "Grid");
+	lua_setfield(L, ((void)lua_pushclass(L, &_WrapPanel), -2), "WrapPanel");
 	lua_setfield(L, ((void)lua_pushclass(L, &_ImageView), -2), "ImageView");
 	lua_setfield(L, ((void)lua_pushclass(L, &_NinePatchImage), -2), "NinePatchImage");
 	lua_setfield(L, ((void)lua_pushclass(L, &_TerminalView), -2), "TerminalView");

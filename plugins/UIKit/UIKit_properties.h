@@ -575,6 +575,21 @@ enum GridProperties {
 	kGridCellHeight,
 	kGridNumProperties	
 };
+// WrapPanel
+#define ID_WrapPanel 0xfe2560e5
+#define GetWrapPanel(_P) ((struct WrapPanel*)((_P)?OBJ_GetComponent(_P,ID_WrapPanel):NULL))
+#define WrapPanel_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_WrapPanel,sizeof(struct WrapPanel),_N)
+#define ID_WrapPanel_Direction 0xa5b7cf66 // WrapPanel.Direction
+#define ID_WrapPanel_Spacing 0x0d7009a2 // WrapPanel.Spacing
+#define ID_WrapPanel_ItemWidth 0x0dec27b6 // WrapPanel.ItemWidth
+#define ID_WrapPanel_ItemHeight 0xf86ca2c9 // WrapPanel.ItemHeight
+enum WrapPanelProperties {
+	kWrapPanelDirection,
+	kWrapPanelSpacing,
+	kWrapPanelItemWidth,
+	kWrapPanelItemHeight,
+	kWrapPanelNumProperties	
+};
 // ImageView
 #define ID_ImageView 0xfe686eb3
 #define GetImageView(_P) ((struct ImageView*)((_P)?OBJ_GetComponent(_P,ID_ImageView):NULL))
