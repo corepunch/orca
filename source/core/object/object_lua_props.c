@@ -56,9 +56,6 @@ static lpcString_t PascalCase(lpcString_t pname) {
 bool_t
 OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name)
 {
-  if (!strcmp(name, "Path") && GetDirectory(self)) {
-    int a=0;
-  }
   switch (fnv1a32(name)) {
     case p_id:
 		case p_Name:

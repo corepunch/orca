@@ -46,6 +46,8 @@ void OBJ_SendMessage2(lua_State* L, lpObject_t self, lpcString_t message)
   }
 }
 
+#include <plugins/UIKit/UIKit.h>
+
 lpObject_t OBJ_DispatchEvent(lua_State* L, lpObject_t self, lpcString_t event)
 {
   uint32_t dwNumArgs = MAX(0, lua_gettop(L) - 2);

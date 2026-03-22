@@ -83,3 +83,4 @@ build/webgl/plugins_luaopen.h
 # MkDocs generated site (built by mkdocs build in CI)
 site/
 docs/quickstart.md
+gdb.txt
