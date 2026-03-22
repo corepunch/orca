@@ -213,7 +213,7 @@ static const char* s_current_test = NULL;
         fprintf(stderr, "  FAIL [%s]: %s (line %d)\n", \
                 s_current_test, #__VA_ARGS__, __LINE__); \
         s_tests_failed++; \
-        return; \
+        break; \
     } 
 
 #define EXPECT_STR_EQ(a, b) EXPECT((a) && (b) && !strcmp(a, b))
