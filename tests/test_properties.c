@@ -208,11 +208,11 @@ static const char* s_current_test = NULL;
 
 #define TEST_BEGIN(name) 
 
-#define EXPECT(cond) \
+#define EXPECT(...) \
     do { \
-        if (!(cond)) { \
+        if (!(__VA_ARGS__)) { \
             fprintf(stderr, "  FAIL [%s]: %s (line %d)\n", \
-                    s_current_test, #cond, __LINE__); \
+                    s_current_test, #__VA_ARGS__, __LINE__); \
             s_tests_failed++; \
         } \
     } while(0)
@@ -240,15 +240,21 @@ struct TestComp {
     float   Position[2]; /* used as a struct/vec2 */
 };
 
-/* Property descriptors — identifiers derived via fnv1a32 at runtime */
+/* Property descriptors — identifiers pre-computed from fnv1a32 at build time,
+ * matching what register_test_class previously computed at runtime. */
 
-static struct PropertyType s_propCount;
-static struct PropertyType s_propValue;
-static struct PropertyType s_propActive;
-static struct PropertyType s_propLabel;
-static struct PropertyType s_propPosition;
-
-static struct PropertyType s_testProps[5];
+/* fnv1a32("Count")=0xe1e7b894  fnv1a32("TestComp.Count")=0x1be61373  */
+/* fnv1a32("Value")=0xd147f96a  fnv1a32("TestComp.Value")=0xa6d2bd25  */
+/* fnv1a32("Active")=0x1f89134f fnv1a32("TestComp.Active")=0xcc3a31be */
+/* fnv1a32("Label")=0x9eccf29d  fnv1a32("TestComp.Label")=0x7707c43a  */
+/* fnv1a32("Position")=0xe27f342a fnv1a32("TestComp.Position")=0x77494c8f */
+static struct PropertyType s_testProps[5] = {
+    { .Name = "Count",    .Key = "Count",    .DataType = kDataTypeInt,    .DataSize = sizeof(int),           .ShortIdentifier = 0xe1e7b894, .FullIdentifier = 0x1be61373, .Offset = offsetof(struct TestComp, Count)    },
+    { .Name = "Value",    .Key = "Value",    .DataType = kDataTypeFloat,  .DataSize = sizeof(float),         .ShortIdentifier = 0xd147f96a, .FullIdentifier = 0xa6d2bd25, .Offset = offsetof(struct TestComp, Value)    },
+    { .Name = "Active",   .Key = "Active",   .DataType = kDataTypeBool,   .DataSize = sizeof(bool_t),        .ShortIdentifier = 0x1f89134f, .FullIdentifier = 0xcc3a31be, .Offset = offsetof(struct TestComp, Active)   },
+    { .Name = "Label",    .Key = "Label",    .DataType = kDataTypeString, .DataSize = sizeof(const char*),   .ShortIdentifier = 0x9eccf29d, .FullIdentifier = 0x7707c43a, .Offset = offsetof(struct TestComp, Label)    },
+    { .Name = "Position", .Key = "Position", .DataType = kDataTypeStruct, .DataSize = sizeof(float[2]),      .ShortIdentifier = 0xe27f342a, .FullIdentifier = 0x77494c8f, .Offset = offsetof(struct TestComp, Position) },
+};
 
 /* Null ObjProc — components in these tests never receive messages.
  * Signature must match objectProc_t exactly:
@@ -258,71 +264,18 @@ static LRESULT TestComp_Proc(lpObject_t o, void* cmp, uint32_t msg, wParam_t w, 
     return 0;
 }
 
-static struct ClassDesc s_testClass;
+static struct ClassDesc s_testClass = {
+    .ObjProc       = TestComp_Proc,
+    .Properties    = s_testProps,
+    .ClassName     = "TestComp",
+    .ClassID       = 0xc87d9b4a, /* fnv1a32("TestComp") */
+    .ClassSize     = sizeof(struct TestComp),
+    .NumProperties = 5,
+    .DefaultName   = "testcomp",
+};
 
-static void register_test_class(void) {
-    /* Compute identifiers at runtime using fnv1a32 */
-
-    memset(&s_propCount, 0, sizeof(s_propCount));
-    strncpy(s_propCount.Name, "Count", sizeof(s_propCount.Name) - 1);
-    strncpy(s_propCount.Key,  "Count", sizeof(s_propCount.Key)  - 1);
-    s_propCount.DataType        = kDataTypeInt;
-    s_propCount.DataSize        = sizeof(int);
-    s_propCount.ShortIdentifier = fnv1a32("Count");
-    s_propCount.FullIdentifier  = fnv1a32("TestComp.Count");
-    s_propCount.Offset          = offsetof(struct TestComp, Count);
-
-    memset(&s_propValue, 0, sizeof(s_propValue));
-    strncpy(s_propValue.Name, "Value", sizeof(s_propValue.Name) - 1);
-    strncpy(s_propValue.Key,  "Value", sizeof(s_propValue.Key)  - 1);
-    s_propValue.DataType        = kDataTypeFloat;
-    s_propValue.DataSize        = sizeof(float);
-    s_propValue.ShortIdentifier = fnv1a32("Value");
-    s_propValue.FullIdentifier  = fnv1a32("TestComp.Value");
-    s_propValue.Offset          = offsetof(struct TestComp, Value);
-
-    memset(&s_propActive, 0, sizeof(s_propActive));
-    strncpy(s_propActive.Name, "Active", sizeof(s_propActive.Name) - 1);
-    strncpy(s_propActive.Key,  "Active", sizeof(s_propActive.Key)  - 1);
-    s_propActive.DataType        = kDataTypeBool;
-    s_propActive.DataSize        = sizeof(bool_t);
-    s_propActive.ShortIdentifier = fnv1a32("Active");
-    s_propActive.FullIdentifier  = fnv1a32("TestComp.Active");
-    s_propActive.Offset          = offsetof(struct TestComp, Active);
-
-    memset(&s_propLabel, 0, sizeof(s_propLabel));
-    strncpy(s_propLabel.Name, "Label", sizeof(s_propLabel.Name) - 1);
-    strncpy(s_propLabel.Key,  "Label", sizeof(s_propLabel.Key)  - 1);
-    s_propLabel.DataType        = kDataTypeString;
-    s_propLabel.DataSize        = sizeof(const char*);
-    s_propLabel.ShortIdentifier = fnv1a32("Label");
-    s_propLabel.FullIdentifier  = fnv1a32("TestComp.Label");
-    s_propLabel.Offset          = offsetof(struct TestComp, Label);
-
-    memset(&s_propPosition, 0, sizeof(s_propPosition));
-    strncpy(s_propPosition.Name, "Position", sizeof(s_propPosition.Name) - 1);
-    strncpy(s_propPosition.Key,  "Position", sizeof(s_propPosition.Key)  - 1);
-    s_propPosition.DataType        = kDataTypeStruct;
-    s_propPosition.DataSize        = sizeof(float[2]);
-    s_propPosition.ShortIdentifier = fnv1a32("Position");
-    s_propPosition.FullIdentifier  = fnv1a32("TestComp.Position");
-    s_propPosition.Offset          = offsetof(struct TestComp, Position);
-
-    s_testProps[0] = s_propCount;
-    s_testProps[1] = s_propValue;
-    s_testProps[2] = s_propActive;
-    s_testProps[3] = s_propLabel;
-    s_testProps[4] = s_propPosition;
-
-    memset(&s_testClass, 0, sizeof(s_testClass));
-    s_testClass.ObjProc       = TestComp_Proc;
-    s_testClass.Properties    = s_testProps;
-    s_testClass.ClassName     = "TestComp";
-    s_testClass.ClassID       = fnv1a32("TestComp");
-    s_testClass.ClassSize     = sizeof(struct TestComp);
-    s_testClass.NumProperties = 5;
-    s_testClass.DefaultName   = "testcomp";
-
+static void register_test_class(void)
+{
     OBJ_RegisterClass(&s_testClass);
 }
 
@@ -338,11 +291,14 @@ struct RTComp {
     const char* Label;
 };
 
-static struct PropertyType s_rtPropCount;
-static struct PropertyType s_rtPropValue;
-static struct PropertyType s_rtPropLabel;
-static struct PropertyType s_rtProps[3];
-static struct ClassDesc    s_rtClass;
+/* fnv1a32("Count")=0xe1e7b894 (ShortIdentifier == FullIdentifier for runtime bindings) */
+/* fnv1a32("Value")=0xd147f96a */
+/* fnv1a32("Label")=0x9eccf29d */
+static struct PropertyType s_rtProps[3] = {
+    { .Name = "Count", .Key = "Count", .DataType = kDataTypeInt,    .DataSize = sizeof(int),         .ShortIdentifier = 0xe1e7b894, .FullIdentifier = 0xe1e7b894, .Offset = offsetof(struct RTComp, Count) },
+    { .Name = "Value", .Key = "Value", .DataType = kDataTypeFloat,  .DataSize = sizeof(float),       .ShortIdentifier = 0xd147f96a, .FullIdentifier = 0xd147f96a, .Offset = offsetof(struct RTComp, Value) },
+    { .Name = "Label", .Key = "Label", .DataType = kDataTypeString, .DataSize = sizeof(const char*), .ShortIdentifier = 0x9eccf29d, .FullIdentifier = 0x9eccf29d, .Offset = offsetof(struct RTComp, Label) },
+};
 
 static LRESULT RTComp_Proc(lpObject_t o, void* cmp, uint32_t msg,
                             wParam_t w, lParam_t l) {
@@ -350,53 +306,18 @@ static LRESULT RTComp_Proc(lpObject_t o, void* cmp, uint32_t msg,
     return 0;
 }
 
-static void register_runtime_class(void) {
-    /*
-     * FullIdentifier == fnv1a32("PropName") matches what
-     * OBJ_FindPropertyByPath resolves for a binding like "{./PropName}":
-     * the "./" prefix is consumed as "same object", leaving "PropName"
-     * as the leaf passed to PROP_FindByFullName.
-     */
-    memset(&s_rtPropCount, 0, sizeof(s_rtPropCount));
-    strncpy(s_rtPropCount.Name, "Count", sizeof(s_rtPropCount.Name) - 1);
-    strncpy(s_rtPropCount.Key,  "Count", sizeof(s_rtPropCount.Key)  - 1);
-    s_rtPropCount.DataType        = kDataTypeInt;
-    s_rtPropCount.DataSize        = sizeof(int);
-    s_rtPropCount.ShortIdentifier = fnv1a32("Count");
-    s_rtPropCount.FullIdentifier  = fnv1a32("Count");
-    s_rtPropCount.Offset          = offsetof(struct RTComp, Count);
+static struct ClassDesc s_rtClass = {
+    .ObjProc       = RTComp_Proc,
+    .Properties    = s_rtProps,
+    .ClassName     = "RTComp",
+    .ClassID       = 0xfc2d6a10, /* fnv1a32("RTComp") */
+    .ClassSize     = sizeof(struct RTComp),
+    .NumProperties = 3,
+    .DefaultName   = "rtcomp",
+};
 
-    memset(&s_rtPropValue, 0, sizeof(s_rtPropValue));
-    strncpy(s_rtPropValue.Name, "Value", sizeof(s_rtPropValue.Name) - 1);
-    strncpy(s_rtPropValue.Key,  "Value", sizeof(s_rtPropValue.Key)  - 1);
-    s_rtPropValue.DataType        = kDataTypeFloat;
-    s_rtPropValue.DataSize        = sizeof(float);
-    s_rtPropValue.ShortIdentifier = fnv1a32("Value");
-    s_rtPropValue.FullIdentifier  = fnv1a32("Value");
-    s_rtPropValue.Offset          = offsetof(struct RTComp, Value);
-
-    memset(&s_rtPropLabel, 0, sizeof(s_rtPropLabel));
-    strncpy(s_rtPropLabel.Name, "Label", sizeof(s_rtPropLabel.Name) - 1);
-    strncpy(s_rtPropLabel.Key,  "Label", sizeof(s_rtPropLabel.Key)  - 1);
-    s_rtPropLabel.DataType        = kDataTypeString;
-    s_rtPropLabel.DataSize        = sizeof(const char*);
-    s_rtPropLabel.ShortIdentifier = fnv1a32("Label");
-    s_rtPropLabel.FullIdentifier  = fnv1a32("Label");
-    s_rtPropLabel.Offset          = offsetof(struct RTComp, Label);
-
-    s_rtProps[0] = s_rtPropCount;
-    s_rtProps[1] = s_rtPropValue;
-    s_rtProps[2] = s_rtPropLabel;
-
-    memset(&s_rtClass, 0, sizeof(s_rtClass));
-    s_rtClass.ObjProc       = RTComp_Proc;
-    s_rtClass.Properties    = s_rtProps;
-    s_rtClass.ClassName     = "RTComp";
-    s_rtClass.ClassID       = fnv1a32("RTComp");
-    s_rtClass.ClassSize     = sizeof(struct RTComp);
-    s_rtClass.NumProperties = 3;
-    s_rtClass.DefaultName   = "rtcomp";
-
+static void register_runtime_class(void)
+{
     OBJ_RegisterClass(&s_rtClass);
 }
 
@@ -442,9 +363,7 @@ static void destroy_object(lpObject_t obj) {
 static void test_int_property(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
-        HRESULT hr = OBJ_FindShortProperty(obj, "Count", &prop);
-        EXPECT(SUCCEEDED(hr));
-        EXPECT(prop != NULL);
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Count", &prop)));
         EXPECT(PROP_GetType(prop) == kDataTypeInt);
         EXPECT(PROP_IsNull(prop));
 
@@ -462,8 +381,7 @@ static void test_int_property(void) {
 static void test_float_property(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
-        HRESULT hr = OBJ_FindShortProperty(obj, "Value", &prop);
-        EXPECT(SUCCEEDED(hr));
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Value", &prop)));
         EXPECT(PROP_GetType(prop) == kDataTypeFloat);
         EXPECT(PROP_IsNull(prop));
 
@@ -477,8 +395,7 @@ static void test_float_property(void) {
 static void test_bool_property(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
-        OBJ_FindShortProperty(obj, "Active", &prop);
-        EXPECT(prop != NULL);
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Active", &prop)));
         EXPECT(PROP_GetType(prop) == kDataTypeBool);
 
         bool_t yes = TRUE;
@@ -494,8 +411,7 @@ static void test_bool_property(void) {
 static void test_string_property_basic(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
-        OBJ_FindShortProperty(obj, "Label", &prop);
-        EXPECT(prop != NULL);
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
         EXPECT(PROP_GetType(prop) == kDataTypeString);
         EXPECT(PROP_IsNull(prop));
 
@@ -528,14 +444,13 @@ static void test_string_property_reassign(void) {
 static void test_string_property_clear(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
-        OBJ_FindShortProperty(obj, "Label", &prop);
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
 
         PROP_SetValue(prop, "some string");
         EXPECT(!PROP_IsNull(prop));
 
-        PROP_Clear(prop);
         /* After clear the property should be null/reset */
-        EXPECT(PROP_IsNull(prop));
+        EXPECT(PROP_Clear(prop), PROP_IsNull(prop));
 
         /* Setting after clear must not double-free */
         PROP_SetValue(prop, "after clear");
@@ -546,11 +461,10 @@ static void test_string_property_clear(void) {
 static void test_string_property_clear_without_set(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
-        OBJ_FindShortProperty(obj, "Label", &prop);
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
 
         /* Clearing a never-set string property must not crash */
-        PROP_Clear(prop);
-        EXPECT(PROP_IsNull(prop));
+        EXPECT(PROP_Clear(prop), PROP_IsNull(prop));
     }
 }
 
@@ -567,17 +481,14 @@ static void test_release_properties_frees_strings(void) {
 static void test_set_property_value_api(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         /* OBJ_SetPropertyValue creates the property on demand */
-        HRESULT hr = OBJ_SetPropertyValue(obj, "Count", &(int){99});
-        EXPECT(SUCCEEDED(hr));
+        EXPECT(SUCCEEDED(OBJ_SetPropertyValue(obj, "Count", &(int){99})));
 
         lpProperty_t prop;
-        OBJ_FindShortProperty(obj, "Count", &prop);
-        EXPECT(prop != NULL);
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Count", &prop)));
         EXPECT(*(int*)PROP_GetValue(prop) == 99);
 
-        hr = OBJ_SetPropertyValue(obj, "Label", "via api");
-        EXPECT(SUCCEEDED(hr));
-        OBJ_FindShortProperty(obj, "Label", &prop);
+        EXPECT(SUCCEEDED(OBJ_SetPropertyValue(obj, "Label", "via api")));
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
         EXPECT_STR_EQ((const char*)PROP_GetValue(prop), "via api");
     }
 }
@@ -585,16 +496,14 @@ static void test_set_property_value_api(void) {
 static void test_property_state_string(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
-        OBJ_FindShortProperty(obj, "Label", &prop);
-        EXPECT(prop != NULL);
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
 
         /* Set the hover state value */
         PROP_SetValue(prop, "normal");
         EXPECT_STR_EQ((const char*)PROP_GetValue(prop), "normal");
 
         /* Clear all states — should free heap strings without crashing */
-        PROP_Clear(prop);
-        EXPECT(PROP_IsNull(prop));
+        EXPECT(PROP_Clear(prop), PROP_IsNull(prop));
 
         /* Re-set after full clear */
         PROP_SetValue(prop, "reset");
@@ -605,8 +514,7 @@ static void test_property_state_string(void) {
 static void test_struct_property(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
-        OBJ_FindShortProperty(obj, "Position", &prop);
-        EXPECT(prop != NULL);
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Position", &prop)));
         EXPECT(PROP_GetType(prop) == kDataTypeStruct);
 
         float pos[2] = {10.0f, 20.0f};
@@ -620,18 +528,15 @@ static void test_struct_property(void) {
 static void test_find_property_unknown(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop = NULL;
-        HRESULT hr = OBJ_FindShortProperty(obj, "NonExistentProp", &prop);
-        EXPECT(FAILED(hr));
+        EXPECT(FAILED(OBJ_FindShortProperty(obj, "NonExistentProp", &prop)));
     }
 }
 
 static void test_multiple_properties_independent(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t pCount, pLabel;
-        OBJ_FindShortProperty(obj, "Count", &pCount);
-        OBJ_FindShortProperty(obj, "Label", &pLabel);
-        EXPECT(pCount != NULL);
-        EXPECT(pLabel != NULL);
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Count", &pCount)));
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &pLabel)));
         EXPECT(pCount != pLabel);
 
         int val = 5;
@@ -762,12 +667,10 @@ static void test_runtime_run_arithmetic(void) {
 static void test_runtime_import_int(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t prop;
-        OBJ_FindShortProperty(obj, "Count", &prop);
-        EXPECT(prop != NULL);
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Count", &prop)));
         if (prop) {
             struct vm_register r = {0};
             r.type    = kDataTypeInt;
-            r.size    = sizeof(int);
             r.value[0] = 99.0f;
             bool_t ok = PROP_Import(prop, kPropertyAttributeWholeProperty, &r);
             EXPECT(ok);
@@ -780,8 +683,7 @@ static void test_runtime_import_int(void) {
 static void test_runtime_import_float(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t prop;
-        OBJ_FindShortProperty(obj, "Value", &prop);
-        EXPECT(prop != NULL);
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Value", &prop)));
         if (prop) {
             struct vm_register r = {0};
             r.type    = kDataTypeFloat;
@@ -797,8 +699,7 @@ static void test_runtime_import_float(void) {
 static void test_runtime_import_string(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t prop;
-        OBJ_FindShortProperty(obj, "Label", &prop);
-        EXPECT(prop != NULL);
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
         if (prop) {
             /* Build a string vm_register the way the VM does it */
             struct vm_register r = {0};
@@ -816,8 +717,7 @@ static void test_runtime_import_string(void) {
 static void test_runtime_attach_and_update_int(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t prop;
-        OBJ_FindShortProperty(obj, "Count", &prop);
-        EXPECT(prop != NULL);
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Count", &prop)));
         if (prop) {
             struct token *prog = Token_Create("21");
             EXPECT(prog != NULL);
@@ -838,8 +738,7 @@ static void test_runtime_attach_and_update_int(void) {
 static void test_runtime_attach_and_update_string(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t prop;
-        OBJ_FindShortProperty(obj, "Label", &prop);
-        EXPECT(prop != NULL);
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
         if (prop) {
             struct token *prog = Token_Create("\"bound\"");
             EXPECT(prog != NULL);
@@ -867,10 +766,8 @@ static void test_runtime_attach_and_update_string(void) {
 static void test_runtime_property_reference(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t propCount, propValue;
-        OBJ_FindShortProperty(obj, "Count", &propCount);
-        OBJ_FindShortProperty(obj, "Value", &propValue);
-        EXPECT(propCount != NULL);
-        EXPECT(propValue != NULL);
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Count", &propCount)));
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Value", &propValue)));
         if (propCount && propValue) {
             /* Set the source property */
             float v = 5.0f;
@@ -901,8 +798,7 @@ static void test_runtime_property_reference(void) {
 static void test_runtime_string_concat_program(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t prop;
-        OBJ_FindShortProperty(obj, "Label", &prop);
-        EXPECT(prop != NULL);
+        EXPECT(SUCCEEDED(OBJ_FindShortProperty(obj, "Label", &prop)));
         if (prop) {
             struct token *prog = Token_Create("ADD(\"foo\", \"bar\")");
             EXPECT(prog != NULL);
@@ -1073,7 +969,6 @@ static void test_memleak_property_reference_program(void) {
 }
 
 /* ------------------------------------------------------------------ */
-
 
 #define RUN(func) \
 long snap_##func = MEM_SNAPSHOT(); \
