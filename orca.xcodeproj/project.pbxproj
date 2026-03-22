@@ -210,6 +210,7 @@
 		7870417D2F6FDDD800A84406 /* object_lua_props.c in Sources */ = {isa = PBXBuildFile; fileRef = 787041762F6FDDD800A84406 /* object_lua_props.c */; };
 		7870417E2F6FDDD800A84406 /* object_properties.c in Sources */ = {isa = PBXBuildFile; fileRef = 787041772F6FDDD800A84406 /* object_properties.c */; };
 		7870417F2F6FDDD800A84406 /* object_core.c in Sources */ = {isa = PBXBuildFile; fileRef = 787041712F6FDDD800A84406 /* object_core.c */; };
+		7870439B2F7025D000A84406 /* WrapPanel.c in Sources */ = {isa = PBXBuildFile; fileRef = 7870439A2F7025D000A84406 /* WrapPanel.c */; };
 		788483222E867CA000DB9C1F /* w_plugins.c in Sources */ = {isa = PBXBuildFile; fileRef = 788483212E867C9C00DB9C1F /* w_plugins.c */; };
 		78932BF62F38D6D5007C59CC /* liborca.platform.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; };
 		78932BF72F38D6D5007C59CC /* liborca.platform.so in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -569,6 +570,7 @@
 		787041752F6FDDD800A84406 /* object_lua_msg.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = object_lua_msg.c; sourceTree = "<group>"; };
 		787041762F6FDDD800A84406 /* object_lua_props.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = object_lua_props.c; sourceTree = "<group>"; };
 		787041772F6FDDD800A84406 /* object_properties.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = object_properties.c; sourceTree = "<group>"; };
+		7870439A2F7025D000A84406 /* WrapPanel.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = WrapPanel.c; sourceTree = "<group>"; };
 		78766BBE2C93208400A2DF11 /* Node3D.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Node3D.c; sourceTree = "<group>"; };
 		787C7BA42BB33679006FD937 /* r_builtin_charset2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = r_builtin_charset2.c; sourceTree = "<group>"; };
 		788483212E867C9C00DB9C1F /* w_plugins.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = w_plugins.c; sourceTree = "<group>"; };
@@ -1313,6 +1315,7 @@
 				78CDFED42CC13EE200D247E4 /* Trigger.c */,
 				78BCC20F2E62FA3A00CA0A41 /* UIKit_export.c */,
 				78AF62CA2F58BE5B008D08A3 /* UIKit.c */,
+				7870439A2F7025D000A84406 /* WrapPanel.c */,
 				78BCC2122E63172D00CA0A41 /* uidef.h */,
 				78BCC2142E6342D700CA0A41 /* UIKit_properties.h */,
 				78BCC20D2E62FA3A00CA0A41 /* UIKit.h */,
@@ -2141,6 +2144,7 @@
 				781CA75D2E15571400FFCFD9 /* Node2D.c in Sources */,
 				781CA75E2E15571400FFCFD9 /* PrefabView2D.c in Sources */,
 				781CA75F2E15571400FFCFD9 /* StackView.c in Sources */,
+				7870439B2F7025D000A84406 /* WrapPanel.c in Sources */,
 				7834B8D72F479D980071F07F /* PageHost.c in Sources */,
 				781CA7602E15571400FFCFD9 /* TextBlock.c in Sources */,
 				786A4BD12E86B06500C40C9F /* TerminalView.c in Sources */,
