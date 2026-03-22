@@ -36,7 +36,10 @@
 						</StackView>
 					</Grid>
 				</StackView>
-				<ImageView Name="HeroImage" Image="Example/Images/people" Stretch="UniformToFill" MarginRight="56"/>
+				<ImageView Name="HeroImage" Image="Example/Images/people" Stretch="UniformToFill" MarginRight="56">
+					<Node.Visible>STEP(640, {../../../Node.ActualWidth})</Node.Visible>
+				</ImageView>
+				<!-- <Grid.Columns>OR(AND(STEP(800, {../../../Node.ActualWidth}), "auto auto"), "auto")</Grid.Columns> -->
 			</Grid>
       <Grid Name="FeatureSection" Columns="auto auto auto" Spacing="20" BackgroundColor="#09090F" Padding="40">
         <StackView Name="CardText" Direction="Vertical" Spacing="10" BackgroundColor="#141420" Padding="28">

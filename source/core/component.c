@@ -8,10 +8,6 @@ struct component
   char pUserData[];
 };
 
-void print_debug_component(lpObject_t pobj, int line) {
-  fprintf(stderr, "%d %s\n", line, _GetComponents(pobj)->pcls->ClassName);
-}
-
 struct component*
 OBJ_AddComponent(lpObject_t pobj, uint32_t class_id)
 {

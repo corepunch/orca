@@ -14,7 +14,7 @@ PROP_AddToList(lpProperty_t property, lpProperty_t* list)
   return property;
 }
 
-//#define DEBUG_PROGRAM
+#define DEBUG_PROGRAM
 
 #ifdef DEBUG_PROGRAM
 static void

@@ -92,8 +92,9 @@ OBJ_FindPropertyByPath(lpObject_t object, lpcString_t path)
     }
   } else {
     lpProperty_t plist = OBJ_GetProperties(object);
-    lpProperty_t p = PROP_FindByFullName(plist, path);
-    if (p) {
+//    lpProperty_t p = PROP_FindByFullName(plist, path);
+    lpProperty_t p;
+    if (SUCCEEDED(OBJ_FindLongProperty(object, fnv1a32(path), &p))) {
       return p;
     } else if (!strcmp(path, "Material.BlendIntensity")||
                !strcmp(path, "_BlendIntensity"))

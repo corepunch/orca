@@ -50,7 +50,7 @@ function Property.parse_binding(node, name, element)
 	local Enabled = element:get "Enabled" or "true"
 	local Attribute = element:get "Attribute" or "WholeProperty"
 	local Mode = element:get "Mode" or "Expression"
-	node:attachPropertyProgram(name, Attribute, element.text or "", Mode, Enabled ~= "false")
+	node:attachPropertyProgram(name, element.text, Attribute, Mode, Enabled ~= "false")
 end
 
 function Property.construct(node, property, element)

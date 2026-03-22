@@ -591,9 +591,9 @@ jwPropertyExport(lpProperty_t prop,
                  struct vm_register* r)
 {
   PROP_Update(prop);
-  if (PROP_IsNull(prop)) {
-    return show_error();
-  }
+//  if (PROP_IsNull(prop)) {
+//    return show_error();
+//  }
   if (!attr) {
     switch (InitOutput(r, PROP_GetType(prop), PROP_GetSize(prop))) {
       case kDataTypeInt:
