@@ -116,11 +116,13 @@ lua_pop(L, 1);
 int OBJ_CreateFromLuaState(lua_State *L) {
   luaX_parsefield(lpcClassDesc_t, __nativeclass, 1, lua_touserdata);
   lpObject_t pobj = OBJ_Create(L, __nativeclass);
+  fprintf(stderr, "OBJ_CreateFromLuaState\n");
   if (lua_getfield(L, 1, "__class") == LUA_TTABLE) {
     luaX_parsefield(lpcString_t, __name, -1, luaL_optstring, NULL);
     if (__name && strcmp(__name, "LuaBehaviour")) {
       OBJ_SetName(pobj, __name);
       OBJ_SetClassName(pobj, __name);
+      fprintf(stderr, "Creating %s\n", __name);
     }
   }
   lua_pop(L, 1);
@@ -137,9 +139,11 @@ int OBJ_CreateFromLuaState(lua_State *L) {
   }
 
   // send "create" message
+  fprintf(stderr, "Sending kEventCreate\n");
   OBJ_SendMessageW(pobj, kEventCreate, 0, L);
-  
-_assign_callbacks(L, pobj, 1);
+  fprintf(stderr, "Sent kEventCreate successfully\n");
+
+  _assign_callbacks(L, pobj, 1);
   _parse_args(L, pobj);
 
   // TODO: is there a better way to add class-default style?
