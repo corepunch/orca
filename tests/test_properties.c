@@ -313,7 +313,7 @@ static void register_runtime_class(void)
 }
 
 static lpObject_t make_rt_object(void) {
-    return OBJ_MakeNativeObject(fnv1a32("RTComp"));
+    return OBJ_MakeNativeObject(s_rtClass.ClassID);
 }
 
 /* ------------------------------------------------------------------ */
@@ -322,7 +322,7 @@ static lpObject_t make_rt_object(void) {
 
 /* Allocate a bare TestComp object without a Lua state */
 static lpObject_t make_object(void) {
-    return OBJ_MakeNativeObject(fnv1a32("TestComp"));
+    return OBJ_MakeNativeObject(s_testClass.ClassID);
 }
 
 /*

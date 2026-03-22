@@ -2,15 +2,17 @@
 <!DOCTYPE Screen SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
 <Screen Name="Application" Width="1280" Height="800" ClearColor="#0B0B12">
 	<Grid Name="Root" Rows="64px auto" Spacing="0">
-		<StackView Name="NavBar" BackgroundColor="#1A1A28"  Direction="Horizontal" Spacing="32" AlignItems="Center" Margin="40">
-			<TextBlock Name="Brand" Text="ORCA" FontSize="20" ForegroundColor="#8B5CF6" Width="72"/>
-			<TextBlock Name="NavOverview" Text="Overview" FontSize="14" ForegroundColor="#94A3B8"/>
-			<TextBlock Name="NavFeatures" Text="Features" FontSize="14" ForegroundColor="#94A3B8"/>
-			<TextBlock Name="NavGallery" Text="Gallery" FontSize="14" ForegroundColor="#94A3B8"/>
-			<TextBlock Name="NavDocs" Text="Docs" FontSize="14" ForegroundColor="#94A3B8"/>
-		</StackView>
+		<Node2D BackgroundColor="#1A1A28">
+			<StackView Name="NavBar"  Direction="Horizontal" Spacing="32" AlignItems="Center" Margin="40">
+				<TextBlock Name="Brand" Text="ORCA" FontSize="20" ForegroundColor="#8B5CF6" Width="72"/>
+				<TextBlock Name="NavOverview" Text="Overview" FontSize="14" ForegroundColor="#94A3B8"/>
+				<TextBlock Name="NavFeatures" Text="Features" FontSize="14" ForegroundColor="#94A3B8"/>
+				<TextBlock Name="NavGallery" Text="Gallery" FontSize="14" ForegroundColor="#94A3B8"/>
+				<TextBlock Name="NavDocs" Text="Docs" FontSize="14" ForegroundColor="#94A3B8"/>
+			</StackView>
+		</Node2D>
 		<StackView Name="Body" Direction="Vertical" Spacing="0" OverflowY="Scroll" ClipChildren="true">
-			<Grid Name="Hero" Columns="auto auto" Spacing="24" BackgroundColor="#0B0B12">
+			<WrapPanel Name="Hero" Spacing="24" Direction="Horizontal" BackgroundColor="#0B0B12">
 				<StackView Name="HeroContent" Direction="Vertical" Spacing="0" Padding="56">
 					<TextBlock Name="HeadlineLine1" Text="Build stunning" FontSize="48" ForegroundColor="#F1F5F9"/>
 					<TextBlock Name="HeadlineLine2" Text="UI in real-time." FontSize="48" ForegroundColor="#8B5CF6"/>
@@ -37,7 +39,7 @@
 					</Grid>
 				</StackView>
 				<ImageView Name="HeroImage" Image="Example/Images/people" Stretch="UniformToFill" MarginRight="56"/>
-			</Grid>
+			</WrapPanel>
       <Grid Name="FeatureSection" Columns="auto auto auto" Spacing="20" BackgroundColor="#09090F" Padding="40">
         <StackView Name="CardText" Direction="Vertical" Spacing="10" BackgroundColor="#141420" Padding="28">
           <TextBlock Name="CardTextIcon" Text="Aa" FontSize="20" ForegroundColor="#8B5CF6" BackgroundColor="#1E1833"
