@@ -32,7 +32,6 @@ OBJ_Create(lua_State* L, lpcClassDesc_t cls)
   memset(object, 0, sizeof(struct Object));
   object->unique = ++unique_counter;
   object->domain = L;
-  fprintf(stderr, "Creating node of class %s %p\n", cls->ClassName, cls);
   OBJ_AddComponent(object, cls->ClassID);
   OBJ_SetDirty(object);
   OBJ_SetName(object, cls->DefaultName);

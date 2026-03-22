@@ -40,13 +40,11 @@ OBJ_FindPropertyType(uint32_t ident)
 bool_t
 OBJ_RegisterClass(lpcClassDesc_t class)
 {
-  Con_Printf("Registering class 0x%08x %s", class->ClassID, class->ClassName);
   FOR_LOOP(i, MAX_CLASSES) {
     if (!core.classes[i]) {
       FOR_LOOP(j, class->NumProperties) {
         OBJ_RegisterPropertyType(&class->Properties[j]);
       }
-      Con_Printf("Assigned %d", i);
       core.classes[i] = class;
       return TRUE;
     } else if (core.classes[i]->ClassID == class->ClassID) {
@@ -61,12 +59,8 @@ OBJ_RegisterClass(lpcClassDesc_t class)
 lpcClassDesc_t
 OBJ_FindClassW(uint32_t class_id)
 {
-  Con_Printf("Looking for classes 0x%08x", class_id);
   FOR_LOOP(i, MAX_CLASSES) {
     lpcClassDesc_t cl = core.classes[i];
-    if (cl) {
-      Con_Printf("Class 0x%08x %s", cl->ClassID, cl->ClassName);
-    }
     if (cl->ClassID == class_id) {
       return cl;
     }
