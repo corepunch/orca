@@ -94,7 +94,7 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirName) {
   path_t path={0};
   int windowsize[] = { DEFAULT_WINDOW_SIZE };
   snprintf(path, sizeof(path), "%s/%s", szDirName, ORCA_PACKAGE_NAME);
-  xmlWith(xmlDoc, doc, xmlReadFile(path, NULL, 0), xmlFreeDoc) {
+  WITH(xmlDoc, doc, xmlReadFile(path, NULL, 0), xmlFreeDoc) {
     FILE *mem = open_memstream(&buf, &size);
 
     fprintf(mem, "local orca = require 'orca'\n");
@@ -117,16 +117,16 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirName) {
 //    lua_getglobal(L, "DATADIR");
 //    lpcString_t DATADIR = luaL_checkstring(L, -1);
 
-    xmlWith(xmlChar, Name, xmlGetProp(root, XMLSTR("Name")), xmlFree) {
+    WITH(xmlChar, Name, xmlGetProp(root, XMLSTR("Name")), xmlFree) {
       lua_pushstring(L, (lpcString_t)Name);
       lua_setglobal(L, "PROJECTNAME");
     }
 
-    xmlWith(xmlChar, WindowWidth, xmlGetProp(root, XMLSTR("WindowWidth")), xmlFree) {
+    WITH(xmlChar, WindowWidth, xmlGetProp(root, XMLSTR("WindowWidth")), xmlFree) {
       windowsize[0] = atoi((char*)WindowWidth);
     }
 
-    xmlWith(xmlChar, WindowHeight, xmlGetProp(root, XMLSTR("WindowHeight")), xmlFree) {
+    WITH(xmlChar, WindowHeight, xmlGetProp(root, XMLSTR("WindowHeight")), xmlFree) {
       windowsize[1] = atoi((char*)WindowHeight);
     }
 
@@ -139,7 +139,7 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirName) {
       fprintf(mem, "loc.load '%s'\n", content);
     }
 
-    xmlWith(xmlChar, StartupScreen, xmlGetProp(root, XMLSTR("StartupScreen")), xmlFree) {
+    WITH(xmlChar, StartupScreen, xmlGetProp(root, XMLSTR("StartupScreen")), xmlFree) {
 //      fprintf(mem, "local Screen = require '%s'\n", StartupScreen);
 //      fprintf(mem, "local screen = Screen()\n");
       fprintf(mem, "local ok, screen = pcall(require, '%s')\n", StartupScreen);
@@ -176,7 +176,7 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirName) {
         FOR_EACH_LIST(xmlAttr, attr, message->properties) {
           if (!xmlStrcmp(attr->name, XMLSTR("Name"))) continue;
           if (!xmlStrcmp(attr->name, XMLSTR("Command"))) continue;
-          xmlWith(xmlChar, value, xmlNodeGetContent((xmlNode*)attr), xmlFree) {
+          WITH(xmlChar, value, xmlNodeGetContent((xmlNode*)attr), xmlFree) {
             if (written) {
               fprintf(mem, " and");
             }
@@ -193,7 +193,7 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirName) {
             written = TRUE;
           }
         }
-        xmlWith(xmlChar, content, xmlGetProp(message, XMLSTR("Command")), xmlFree) {
+        WITH(xmlChar, content, xmlGetProp(message, XMLSTR("Command")), xmlFree) {
           fprintf(mem, " then\n%s\nelse", content);
         }
         has_written = TRUE;

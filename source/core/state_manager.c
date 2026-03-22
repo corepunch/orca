@@ -115,7 +115,7 @@ SM_ApplyStateGroup(PSTATEMAN stateman,
 {
   lpObject_t object = stateman->object;
 
-  xmlWith(xmlChar, Path, xmlGetProp(stateObject, XMLSTR("Path")), xmlFree)
+  WITH(xmlChar, Path, xmlGetProp(stateObject, XMLSTR("Path")), xmlFree)
   {
     object = OBJ_FindByPath(object, (lpcString_t)Path);
     if (!object) {
@@ -142,7 +142,7 @@ SM_ApplyStateGroup(PSTATEMAN stateman,
       continue;
     }
 
-    xmlWith(xmlChar, value, xmlNodeGetContent((xmlNode*)attr), xmlFree)
+    WITH(xmlChar, value, xmlNodeGetContent((xmlNode*)attr), xmlFree)
     {
       lua_State* L = core.L;
       if (FAILED(_parser(L, object, (lpcString_t)attr->name, (lpcString_t)value))) {
@@ -179,7 +179,7 @@ SM_HandleControllerChange(lpObject_t hobj, lpProperty_t prop)
     {
       if (xmlStrcmp(state->name, XMLSTR("State")))
         continue;
-      xmlWith(xmlChar, value, xmlGetProp(state, stategroup->name), xmlFree)
+      WITH(xmlChar, value, xmlGetProp(state, stategroup->name), xmlFree)
       {
         lpProperty_t p = stategroup->property;
         float pval = *(float*)PROP_GetValue(p);

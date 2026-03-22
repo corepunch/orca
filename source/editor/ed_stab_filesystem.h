@@ -238,7 +238,7 @@ static struct _file *_AddFile(lpcString_t name, DWORD d_type, struct _file *file
 ORCA_API void
 FS_EnumDir2(lpcString_t root_dir, void (*callback)(lpcString_t,LPVOID), LPVOID parm)
 {
-  xmlWith(DIR, dir, opendir(root_dir), closedir) {
+  WITH(DIR, dir, opendir(root_dir), closedir) {
     for (struct dirent *entry = readdir(dir); entry; entry = readdir(dir)) {
       if (*entry->d_name == '.')
         continue;
@@ -274,7 +274,7 @@ FS_EnumDir(lpcString_t root_dir,
     //    FS_EnumSearchPaths(search, callback, parm);
   } else if ((lib = FS_FindLibrary(FS_GetBaseName(root_dir)))) {
     xmlForEach(item, lib) {
-      xmlWith(xmlChar, Name, xmlGetProp(item, XMLSTR("Name")), xmlFree) {
+      WITH(xmlChar, Name, xmlGetProp(item, XMLSTR("Name")), xmlFree) {
         _AddFile((lpcString_t)Name, DT_CHR, &files[_numfiles++], root_dir);
       }
     }
@@ -476,7 +476,7 @@ FS_NewFile(HANDLE hHandle, lpcString_t szName, DWORD dwType)
 {
   struct _OBJDEF objdef;
   if (dwType == PROJITEM_PROJECT) {
-    xmlWith(xmlDoc, doc, xmlReadFile(szName, NULL, 0), xmlFreeDoc) {
+    WITH(xmlDoc, doc, xmlReadFile(szName, NULL, 0), xmlFreeDoc) {
       xmlFindAllText(_, Name, xmlDocGetRootElement(doc), XMLSTR("Name")) {
         path_t tmp={0};
         strncpy(tmp, szName, sizeof(tmp));
@@ -508,7 +508,7 @@ FS_NewFile(HANDLE hHandle, lpcString_t szName, DWORD dwType)
         return 0;
     }
     FS_MakeDirectory(objdef.szFullPath);
-    xmlWith(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFreeDoc) {
+    WITH(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFreeDoc) {
       xmlNodePtr root=NULL;
       switch (dwType) {
         case PROJITEM_SCENE:
@@ -555,9 +555,9 @@ FS_GetProjectReference(lpcString_t szName, LPSTR pOut, DWORD nMaxLen)
   //    return FALSE;
   //  BOOL bWritten = TRUE;
   //  xmlForEach(item, MainBundle->libraries[kProjectReferenceLibrary]) {
-  //    xmlWith(xmlChar, Name, xmlGetProp(item, XMLSTR("Name")), xmlFree) {
+  //    WITH(xmlChar, Name, xmlGetProp(item, XMLSTR("Name")), xmlFree) {
   //      if (!xmlStrcmp(Name, XMLSTR(szName))) {
-  //        xmlWith(xmlChar, Content, xmlNodeGetContent(item), xmlFree) {
+  //        WITH(xmlChar, Content, xmlNodeGetContent(item), xmlFree) {
   //          lpcString_t path = FS_JoinPaths(MainBundle->path, (const char *)Content);
   //          strncpy(pOut, path, nMaxLen);
   //        }
@@ -592,7 +592,7 @@ FS_GetProjectReference(lpcString_t szName, LPSTR pOut, DWORD nMaxLen)
 //static void
 //collect(lpcString_t szDirectory, lpcString_t szType, xmlNodePtr parent)
 //{
-//  xmlWith(DIR, dir, opendir(szDirectory), closedir) {
+//  WITH(DIR, dir, opendir(szDirectory), closedir) {
 //    for (struct dirent *e = readdir(dir); e != NULL; e = readdir(dir)) {
 //      if (*e->d_name == '.')
 //        continue;
@@ -655,7 +655,7 @@ __xmlNewChild(xmlNodePtr p, lpcString_t name, lpcString_t args[])
 //      collect(FS_JoinPaths(MainBundle->path, libraries[i].name), libraries[i].type, node);
 //    } else if (MainBundle->libraries[i]) {
 //      xmlForEach(item, MainBundle->libraries[i]) {
-//        xmlWith(xmlChar, Name, xmlGetProp(item, XMLSTR("Name")), xmlFree) {
+//        WITH(xmlChar, Name, xmlGetProp(item, XMLSTR("Name")), xmlFree) {
 //          _xmlNewChild(node, "File", "name", (lpcString_t)Name);
 //        }
 //      }

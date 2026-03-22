@@ -35,7 +35,7 @@ _parse_args(lua_State* L, lpObject_t hobj)
   if (lua_type(L, 2) == LUA_TSTRING) {
     lpcString_t arg = luaL_checkstring(L, 2);
     if (*arg == '#') {
-      xmlWith(char, dup, strdup(++arg), free)
+      WITH(char, dup, strdup(++arg), free)
       {
         OBJ_SetName(hobj, strtok(dup, "."));
         while ((arg = strtok(NULL, ".")))
@@ -43,7 +43,7 @@ _parse_args(lua_State* L, lpObject_t hobj)
         lua_remove(L, 2);
       }
     } else if (*arg == '.') {
-      xmlWith(char, dup, strdup(++arg), free)
+      WITH(char, dup, strdup(++arg), free)
       {
         OBJ_AddClass(hobj, strtok(dup, "."));
         while ((arg = strtok(NULL, ".")))

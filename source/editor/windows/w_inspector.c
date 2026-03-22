@@ -262,7 +262,7 @@ ED_PrintInspector(HEDWND wnd, LPINSPSTRUCT inspector)
       }
     } else if (strstr(szFilePath, ".xml")) {
       lpObject_t OBJ_LoadDocument(lua_State* L, xmlDocPtr doc);
-      xmlWith(xmlDoc, doc, xmlReadFile(szFilePath, NULL, 0), xmlFreeDoc) {
+      WITH(xmlDoc, doc, xmlReadFile(szFilePath, NULL, 0), xmlFreeDoc) {
         inspector->selected.object = OBJ_LoadDocument(editor.L, doc);
       }
       if (inspector->selected.object) {

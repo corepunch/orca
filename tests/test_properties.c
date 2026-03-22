@@ -227,26 +227,6 @@ static const char* s_current_test = NULL;
         } \
     } while(0)
 
-/* Declare a memory-leak test function.  Pair with MEMLEAK_TEST_END.
- * Takes a snapshot before the body and checks for outstanding
- * allocations after it.  The macro opens an inner scope block `{` that
- * MEMLEAK_TEST_END closes with `}` before running MEM_CHECK_LEAK — this
- * scoping ensures all local variables (including xmlWith-managed objects)
- * are destroyed before the leak check fires.  Usage:
- *   MEMLEAK_TEST(test_memleak_foo, "memleak: ...")
- *       // body — use xmlWith for object/token lifetimes
- *   MEMLEAK_TEST_END
- */
-#define MEMLEAK_TEST(fn, label) \
-    static void fn(void) { \
-        TEST_BEGIN(label); \
-        long snap = MEM_SNAPSHOT(); \
-        {
-
-#define MEMLEAK_TEST_END \
-        } \
-        MEM_CHECK_LEAK(snap, s_current_test); \
-    }
 
 /* ------------------------------------------------------------------ */
 /* Test component definition                                          */
@@ -280,8 +260,7 @@ static LRESULT TestComp_Proc(lpObject_t o, void* cmp, uint32_t msg, wParam_t w, 
 
 static struct ClassDesc s_testClass;
 
-static void register_test_class(void)
-{
+static void register_test_class(void) {
     /* Compute identifiers at runtime using fnv1a32 */
 
     memset(&s_propCount, 0, sizeof(s_propCount));
@@ -371,8 +350,7 @@ static LRESULT RTComp_Proc(lpObject_t o, void* cmp, uint32_t msg,
     return 0;
 }
 
-static void register_runtime_class(void)
-{
+static void register_runtime_class(void) {
     /*
      * FullIdentifier == fnv1a32("PropName") matches what
      * OBJ_FindPropertyByPath resolves for a binding like "{./PropName}":
@@ -422,8 +400,7 @@ static void register_runtime_class(void)
     OBJ_RegisterClass(&s_rtClass);
 }
 
-static lpObject_t make_rt_object(void)
-{
+static lpObject_t make_rt_object(void) {
     return OBJ_MakeNativeObject(fnv1a32("RTComp"));
 }
 
@@ -432,8 +409,7 @@ static lpObject_t make_rt_object(void)
 /* ------------------------------------------------------------------ */
 
 /* Allocate a bare TestComp object without a Lua state */
-static lpObject_t make_object(void)
-{
+static lpObject_t make_object(void) {
     return OBJ_MakeNativeObject(fnv1a32("TestComp"));
 }
 
@@ -444,8 +420,7 @@ static lpObject_t make_object(void)
  * frees the object itself.
  * Does NOT call OBJ_Release (which needs a Lua state and message dispatch).
  */
-static void destroy_object(lpObject_t obj)
-{
+static void destroy_object(lpObject_t obj) {
     if (!obj) return;
     OBJ_ReleaseProperties(obj);
     /* Walk the component linked list and free each block.
@@ -464,10 +439,8 @@ static void destroy_object(lpObject_t obj)
 /* Tests                                                               */
 /* ------------------------------------------------------------------ */
 
-static void test_int_property(void)
-{
-    TEST_BEGIN("int property set/get");
-    xmlWith(struct Object, obj, make_object(), destroy_object) {
+static void test_int_property(void) {
+    WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
         HRESULT hr = OBJ_FindShortProperty(obj, "Count", &prop);
         EXPECT(SUCCEEDED(hr));
@@ -486,10 +459,8 @@ static void test_int_property(void)
     }
 }
 
-static void test_float_property(void)
-{
-    TEST_BEGIN("float property set/get");
-    xmlWith(struct Object, obj, make_object(), destroy_object) {
+static void test_float_property(void) {
+    WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
         HRESULT hr = OBJ_FindShortProperty(obj, "Value", &prop);
         EXPECT(SUCCEEDED(hr));
@@ -503,10 +474,8 @@ static void test_float_property(void)
     }
 }
 
-static void test_bool_property(void)
-{
-    TEST_BEGIN("bool property set/get");
-    xmlWith(struct Object, obj, make_object(), destroy_object) {
+static void test_bool_property(void) {
+    WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
         OBJ_FindShortProperty(obj, "Active", &prop);
         EXPECT(prop != NULL);
@@ -522,10 +491,8 @@ static void test_bool_property(void)
     }
 }
 
-static void test_string_property_basic(void)
-{
-    TEST_BEGIN("string property set/get");
-    xmlWith(struct Object, obj, make_object(), destroy_object) {
+static void test_string_property_basic(void) {
+    WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
         OBJ_FindShortProperty(obj, "Label", &prop);
         EXPECT(prop != NULL);
@@ -538,10 +505,8 @@ static void test_string_property_basic(void)
     }
 }
 
-static void test_string_property_reassign(void)
-{
-    TEST_BEGIN("string property multiple reassignments");
-    xmlWith(struct Object, obj, make_object(), destroy_object) {
+static void test_string_property_reassign(void) {
+    WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
         OBJ_FindShortProperty(obj, "Label", &prop);
 
@@ -560,10 +525,8 @@ static void test_string_property_reassign(void)
     }
 }
 
-static void test_string_property_clear(void)
-{
-    TEST_BEGIN("string property PROP_Clear");
-    xmlWith(struct Object, obj, make_object(), destroy_object) {
+static void test_string_property_clear(void) {
+    WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
         OBJ_FindShortProperty(obj, "Label", &prop);
 
@@ -580,10 +543,8 @@ static void test_string_property_clear(void)
     }
 }
 
-static void test_string_property_clear_without_set(void)
-{
-    TEST_BEGIN("string property PROP_Clear without prior set");
-    xmlWith(struct Object, obj, make_object(), destroy_object) {
+static void test_string_property_clear_without_set(void) {
+    WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
         OBJ_FindShortProperty(obj, "Label", &prop);
 
@@ -593,22 +554,18 @@ static void test_string_property_clear_without_set(void)
     }
 }
 
-static void test_release_properties_frees_strings(void)
-{
-    TEST_BEGIN("OBJ_ReleaseProperties frees string memory");
-    xmlWith(struct Object, obj, make_object(), destroy_object) {
+static void test_release_properties_frees_strings(void) {
+    WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
         OBJ_FindShortProperty(obj, "Label", &prop);
         PROP_SetValue(prop, "will be freed");
-        /* destroy_object (called by xmlWith) calls OBJ_ReleaseProperties which must
+        /* destroy_object (called by WITH) calls OBJ_ReleaseProperties which must
            free the strdup'd string without crashing. */
     }
 }
 
-static void test_set_property_value_api(void)
-{
-    TEST_BEGIN("OBJ_SetPropertyValue (demand creation)");
-    xmlWith(struct Object, obj, make_object(), destroy_object) {
+static void test_set_property_value_api(void) {
+    WITH(struct Object, obj, make_object(), destroy_object) {
         /* OBJ_SetPropertyValue creates the property on demand */
         HRESULT hr = OBJ_SetPropertyValue(obj, "Count", &(int){99});
         EXPECT(SUCCEEDED(hr));
@@ -625,10 +582,8 @@ static void test_set_property_value_api(void)
     }
 }
 
-static void test_property_state_string(void)
-{
-    TEST_BEGIN("per-state string property set/clear");
-    xmlWith(struct Object, obj, make_object(), destroy_object) {
+static void test_property_state_string(void) {
+    WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
         OBJ_FindShortProperty(obj, "Label", &prop);
         EXPECT(prop != NULL);
@@ -647,10 +602,8 @@ static void test_property_state_string(void)
     }
 }
 
-static void test_struct_property(void)
-{
-    TEST_BEGIN("struct (vec2) property set/get");
-    xmlWith(struct Object, obj, make_object(), destroy_object) {
+static void test_struct_property(void) {
+    WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
         OBJ_FindShortProperty(obj, "Position", &prop);
         EXPECT(prop != NULL);
@@ -664,20 +617,16 @@ static void test_struct_property(void)
     }
 }
 
-static void test_find_property_unknown(void)
-{
-    TEST_BEGIN("OBJ_FindShortProperty for unknown property returns error");
-    xmlWith(struct Object, obj, make_object(), destroy_object) {
+static void test_find_property_unknown(void) {
+    WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop = NULL;
         HRESULT hr = OBJ_FindShortProperty(obj, "NonExistentProp", &prop);
         EXPECT(FAILED(hr));
     }
 }
 
-static void test_multiple_properties_independent(void)
-{
-    TEST_BEGIN("multiple properties on same object are independent");
-    xmlWith(struct Object, obj, make_object(), destroy_object) {
+static void test_multiple_properties_independent(void) {
+    WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t pCount, pLabel;
         OBJ_FindShortProperty(obj, "Count", &pCount);
         OBJ_FindShortProperty(obj, "Label", &pLabel);
@@ -699,10 +648,8 @@ static void test_multiple_properties_independent(void)
     }
 }
 
-static void test_string_empty(void)
-{
-    TEST_BEGIN("string property with empty string");
-    xmlWith(struct Object, obj, make_object(), destroy_object) {
+static void test_string_empty(void) {
+    WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
         OBJ_FindShortProperty(obj, "Label", &prop);
 
@@ -712,16 +659,14 @@ static void test_string_empty(void)
     }
 }
 
-static void test_release_without_string_set(void)
-{
-    TEST_BEGIN("OBJ_ReleaseProperties with no string set");
-    xmlWith(struct Object, obj, make_object(), destroy_object) {
+static void test_release_without_string_set(void) {
+    WITH(struct Object, obj, make_object(), destroy_object) {
         /* Only set a non-string property */
         lpProperty_t prop;
         OBJ_FindShortProperty(obj, "Count", &prop);
         int val = 1;
         PROP_SetValue(prop, &val);
-        /* destroy_object (called by xmlWith) calls OBJ_ReleaseProperties which must
+        /* destroy_object (called by WITH) calls OBJ_ReleaseProperties which must
            not crash even though the Label string property was never set */
     }
 }
@@ -730,42 +675,32 @@ static void test_release_without_string_set(void)
 /* p_runtime tests                                                     */
 /* ------------------------------------------------------------------ */
 
-static void test_runtime_token_create_int(void)
-{
-    TEST_BEGIN("Token_Create: integer constant expression");
+static void test_runtime_token_create_int(void) {
     struct token *prog = Token_Create("42");
     EXPECT(prog != NULL);
     if (prog) Token_Release(prog);
 }
 
-static void test_runtime_token_create_float(void)
-{
-    TEST_BEGIN("Token_Create: float constant expression");
+static void test_runtime_token_create_float(void) {
     struct token *prog = Token_Create("3.14");
     EXPECT(prog != NULL);
     if (prog) Token_Release(prog);
 }
 
-static void test_runtime_token_create_string(void)
-{
-    TEST_BEGIN("Token_Create: string literal expression");
+static void test_runtime_token_create_string(void) {
     struct token *prog = Token_Create("\"hello\"");
     EXPECT(prog != NULL);
     if (prog) Token_Release(prog);
 }
 
-static void test_runtime_token_create_arithmetic(void)
-{
-    TEST_BEGIN("Token_Create: arithmetic expression");
+static void test_runtime_token_create_arithmetic(void) {
     struct token *prog = Token_Create("ADD(2, 3)");
     EXPECT(prog != NULL);
     if (prog) Token_Release(prog);
 }
 
-static void test_runtime_run_int_constant(void)
-{
-    TEST_BEGIN("OBJ_RunProgram: integer constant evaluates to int");
-    xmlWith(struct Object, obj, make_rt_object(), destroy_object) {
+static void test_runtime_run_int_constant(void) {
+    WITH(struct Object, obj, make_rt_object(), destroy_object) {
         struct token *prog = Token_Create("7");
         EXPECT(prog != NULL);
         if (prog) {
@@ -779,10 +714,8 @@ static void test_runtime_run_int_constant(void)
     }
 }
 
-static void test_runtime_run_float_constant(void)
-{
-    TEST_BEGIN("OBJ_RunProgram: float constant evaluates to float");
-    xmlWith(struct Object, obj, make_rt_object(), destroy_object) {
+static void test_runtime_run_float_constant(void) {
+    WITH(struct Object, obj, make_rt_object(), destroy_object) {
         struct token *prog = Token_Create("2.5");
         EXPECT(prog != NULL);
         if (prog) {
@@ -795,10 +728,8 @@ static void test_runtime_run_float_constant(void)
     }
 }
 
-static void test_runtime_run_string_constant(void)
-{
-    TEST_BEGIN("OBJ_RunProgram: string literal evaluates to string");
-    xmlWith(struct Object, obj, make_rt_object(), destroy_object) {
+static void test_runtime_run_string_constant(void) {
+    WITH(struct Object, obj, make_rt_object(), destroy_object) {
         struct token *prog = Token_Create("\"world\"");
         EXPECT(prog != NULL);
         if (prog) {
@@ -814,10 +745,8 @@ static void test_runtime_run_string_constant(void)
     }
 }
 
-static void test_runtime_run_arithmetic(void)
-{
-    TEST_BEGIN("OBJ_RunProgram: ADD(10, 5) == 15");
-    xmlWith(struct Object, obj, make_rt_object(), destroy_object) {
+static void test_runtime_run_arithmetic(void) {
+    WITH(struct Object, obj, make_rt_object(), destroy_object) {
         struct token *prog = Token_Create("ADD(10, 5)");
         EXPECT(prog != NULL);
         if (prog) {
@@ -830,10 +759,8 @@ static void test_runtime_run_arithmetic(void)
     }
 }
 
-static void test_runtime_import_int(void)
-{
-    TEST_BEGIN("PROP_Import: int register into int property");
-    xmlWith(struct Object, obj, make_rt_object(), destroy_object) {
+static void test_runtime_import_int(void) {
+    WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t prop;
         OBJ_FindShortProperty(obj, "Count", &prop);
         EXPECT(prop != NULL);
@@ -850,10 +777,8 @@ static void test_runtime_import_int(void)
     }
 }
 
-static void test_runtime_import_float(void)
-{
-    TEST_BEGIN("PROP_Import: float register into float property");
-    xmlWith(struct Object, obj, make_rt_object(), destroy_object) {
+static void test_runtime_import_float(void) {
+    WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t prop;
         OBJ_FindShortProperty(obj, "Value", &prop);
         EXPECT(prop != NULL);
@@ -869,10 +794,8 @@ static void test_runtime_import_float(void)
     }
 }
 
-static void test_runtime_import_string(void)
-{
-    TEST_BEGIN("PROP_Import: string register into string property");
-    xmlWith(struct Object, obj, make_rt_object(), destroy_object) {
+static void test_runtime_import_string(void) {
+    WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t prop;
         OBJ_FindShortProperty(obj, "Label", &prop);
         EXPECT(prop != NULL);
@@ -890,10 +813,8 @@ static void test_runtime_import_string(void)
     }
 }
 
-static void test_runtime_attach_and_update_int(void)
-{
-    TEST_BEGIN("PROP_AttachProgram + PROP_Update: constant int program");
-    xmlWith(struct Object, obj, make_rt_object(), destroy_object) {
+static void test_runtime_attach_and_update_int(void) {
+    WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t prop;
         OBJ_FindShortProperty(obj, "Count", &prop);
         EXPECT(prop != NULL);
@@ -914,10 +835,8 @@ static void test_runtime_attach_and_update_int(void)
     }
 }
 
-static void test_runtime_attach_and_update_string(void)
-{
-    TEST_BEGIN("PROP_AttachProgram + PROP_Update: constant string program");
-    xmlWith(struct Object, obj, make_rt_object(), destroy_object) {
+static void test_runtime_attach_and_update_string(void) {
+    WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t prop;
         OBJ_FindShortProperty(obj, "Label", &prop);
         EXPECT(prop != NULL);
@@ -945,10 +864,8 @@ static void test_runtime_attach_and_update_string(void)
  * Flow: set Value=5.0, attach program "{./Value}" to Count, call PROP_Update —
  * Count should be set to 5 (via int conversion of the float).
  */
-static void test_runtime_property_reference(void)
-{
-    TEST_BEGIN("p_runtime: property reference via {./PropName} binding");
-    xmlWith(struct Object, obj, make_rt_object(), destroy_object) {
+static void test_runtime_property_reference(void) {
+    WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t propCount, propValue;
         OBJ_FindShortProperty(obj, "Count", &propCount);
         OBJ_FindShortProperty(obj, "Value", &propValue);
@@ -981,10 +898,8 @@ static void test_runtime_property_reference(void)
  * String concatenation: ADD("foo", "bar") should produce "foobar"
  * and a program that writes it to a string property should work.
  */
-static void test_runtime_string_concat_program(void)
-{
-    TEST_BEGIN("p_runtime: string concat ADD(\"foo\", \"bar\")");
-    xmlWith(struct Object, obj, make_rt_object(), destroy_object) {
+static void test_runtime_string_concat_program(void) {
+    WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t prop;
         OBJ_FindShortProperty(obj, "Label", &prop);
         EXPECT(prop != NULL);
@@ -1010,17 +925,17 @@ static void test_runtime_string_concat_program(void)
 
 /* Leak test: set a string property then destroy the object — the
  * strdup'd string must be freed by OBJ_ReleaseProperties. */
-MEMLEAK_TEST(test_memleak_string_set_release, "memleak: string property set then object released")
-    xmlWith(struct Object, obj, make_object(), destroy_object) {
+static void test_memleak_string_set_release(void) {
+    WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
         OBJ_FindShortProperty(obj, "Label", &prop);
         if (prop) PROP_SetValue(prop, "hello leak test");
     }
-MEMLEAK_TEST_END
+}
 
 /* Leak test: reassign a string multiple times — old strings must be freed. */
-MEMLEAK_TEST(test_memleak_string_multiple_sets, "memleak: string property multiple reassignments")
-    xmlWith(struct Object, obj, make_object(), destroy_object) {
+static void test_memleak_string_multiple_sets(void) {
+    WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
         OBJ_FindShortProperty(obj, "Label", &prop);
         if (prop) {
@@ -1029,11 +944,11 @@ MEMLEAK_TEST(test_memleak_string_multiple_sets, "memleak: string property multip
             PROP_SetValue(prop, "third");    /* frees "second" */
         }
     }                                        /* destroy_object frees "third" */
-MEMLEAK_TEST_END
+}
 
 /* Leak test: PROP_Clear must free the heap string and leave no leak. */
-MEMLEAK_TEST(test_memleak_prop_clear, "memleak: PROP_Clear frees string")
-    xmlWith(struct Object, obj, make_object(), destroy_object) {
+static void test_memleak_prop_clear(void) {
+    WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
         OBJ_FindShortProperty(obj, "Label", &prop);
         if (prop) {
@@ -1041,21 +956,21 @@ MEMLEAK_TEST(test_memleak_prop_clear, "memleak: PROP_Clear frees string")
             PROP_Clear(prop);
         }
     }
-MEMLEAK_TEST_END
+}
 
 /* Leak test: PROP_Clear on a never-set string must not crash or leak. */
-MEMLEAK_TEST(test_memleak_prop_clear_never_set, "memleak: PROP_Clear on never-set string property")
-    xmlWith(struct Object, obj, make_object(), destroy_object) {
+static void test_memleak_prop_clear_never_set(void) {
+    WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
         OBJ_FindShortProperty(obj, "Label", &prop);
         if (prop) PROP_Clear(prop);
     }
-MEMLEAK_TEST_END
+}
 
 /* Leak test: set/clear/reset one string property and set a second scalar
  * property, then destroy — no heap string or Property struct leaks. */
-MEMLEAK_TEST(test_memleak_multiple_string_props, "memleak: multiple property set/clear/release no leak")
-    xmlWith(struct Object, obj, make_object(), destroy_object) {
+static void test_memleak_multiple_string_props(void) {
+    WITH(struct Object, obj, make_object(), destroy_object) {
         /* String property: set, reassign, clear, set again */
         OBJ_SetPropertyValue(obj, "Label", "alpha");
         lpProperty_t strprop;
@@ -1068,40 +983,40 @@ MEMLEAK_TEST(test_memleak_multiple_string_props, "memleak: multiple property set
         /* Scalar property: set (no heap allocation for value) */
         OBJ_SetPropertyValue(obj, "Count", &(int){7});
     }
-MEMLEAK_TEST_END
+}
 
 /* Leak test: Token_Create / Token_Release must not leak. */
-MEMLEAK_TEST(test_memleak_token_create_release, "memleak: Token_Create/Token_Release no leak")
-    /* Create a token and let xmlWith auto-release it — body is empty because
+static void test_memleak_token_create_release(void) {
+    /* Create a token and let WITH auto-release it — body is empty because
      * the test only verifies the create/release lifecycle has no leaks. */
-    xmlWith(struct token, prog, Token_Create("ADD(1, 2)"), Token_Release) {
+    WITH(struct token, prog, Token_Create("ADD(1, 2)"), Token_Release) {
         (void)prog;
     }
-MEMLEAK_TEST_END
+}
 
 /* Leak test: Token_Create for a string literal must not leak. */
-MEMLEAK_TEST(test_memleak_token_string_literal, "memleak: Token_Create string literal no leak")
-    /* Create a string-literal token and let xmlWith auto-release it. */
-    xmlWith(struct token, prog, Token_Create("\"test string\""), Token_Release) {
+static void test_memleak_token_string_literal(void) {
+    /* Create a string-literal token and let WITH auto-release it. */
+    WITH(struct token, prog, Token_Create("\"test string\""), Token_Release) {
         (void)prog;
     }
-MEMLEAK_TEST_END
+}
 
 /* Leak test: OBJ_RunProgram with a string must not leak VM temporaries. */
-MEMLEAK_TEST(test_memleak_run_string_program, "memleak: OBJ_RunProgram string constant no leak")
-    xmlWith(struct Object, obj, make_rt_object(), destroy_object) {
-        xmlWith(struct token, prog, Token_Create("\"vm string\""), Token_Release) {
+static void test_memleak_run_string_program(void) {
+    WITH(struct Object, obj, make_rt_object(), destroy_object) {
+        WITH(struct token, prog, Token_Create("\"vm string\""), Token_Release) {
             struct vm_register r = {0};
             OBJ_RunProgram(obj, prog, &r);
         }
     }
-MEMLEAK_TEST_END
+}
 
 /* Leak test: PROP_AttachProgram + PROP_Update + object destroy, no leak.
  * After PROP_AttachProgram the property owns the token; destroy_object
  * calls OBJ_ReleaseProperties which runs Token_Release + frees code strings. */
-MEMLEAK_TEST(test_memleak_attach_update_release, "memleak: PROP_AttachProgram+Update+destroy_object no leak")
-    xmlWith(struct Object, obj, make_rt_object(), destroy_object) {
+static void test_memleak_attach_update_release(void) {
+    WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t prop;
         OBJ_FindShortProperty(obj, "Label", &prop);
         if (prop) {
@@ -1117,11 +1032,11 @@ MEMLEAK_TEST(test_memleak_attach_update_release, "memleak: PROP_AttachProgram+Up
             }
         }
     }
-MEMLEAK_TEST_END
+}
 
 /* Leak test: set int, float, bool properties — no heap allocations expected. */
-MEMLEAK_TEST(test_memleak_scalar_properties, "memleak: scalar (int/float/bool) properties no leak")
-    xmlWith(struct Object, obj, make_object(), destroy_object) {
+static void test_memleak_scalar_properties(void) {
+    WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t pi, pf, pb;
         OBJ_FindShortProperty(obj, "Count",  &pi);
         OBJ_FindShortProperty(obj, "Value",  &pf);
@@ -1133,11 +1048,11 @@ MEMLEAK_TEST(test_memleak_scalar_properties, "memleak: scalar (int/float/bool) p
         if (pf) PROP_SetValue(pf, &fv);
         if (pb) PROP_SetValue(pb, &bv);
     }
-MEMLEAK_TEST_END
+}
 
 /* Leak test: property reference program (reads one prop, writes another). */
-MEMLEAK_TEST(test_memleak_property_reference_program, "memleak: property reference program no leak")
-    xmlWith(struct Object, obj, make_rt_object(), destroy_object) {
+static void test_memleak_property_reference_program(void) {
+    WITH(struct Object, obj, make_rt_object(), destroy_object) {
         lpProperty_t propCount, propValue;
         OBJ_FindShortProperty(obj, "Count", &propCount);
         OBJ_FindShortProperty(obj, "Value", &propValue);
@@ -1155,18 +1070,20 @@ MEMLEAK_TEST(test_memleak_property_reference_program, "memleak: property referen
             }
         }
     }
-MEMLEAK_TEST_END
+}
 
 /* ------------------------------------------------------------------ */
 
-#define RUN(func) \
-s_current_test = #func; \
-s_tests_run++ \
-puts("Running " #func "..."); \
-func()
 
-int main(void)
-{
+#define RUN(func) \
+long snap_##func = MEM_SNAPSHOT(); \
+s_current_test = #func; \
+s_tests_run++; \
+puts("Running " #func "..."); \
+func(); \
+MEM_CHECK_LEAK(snap_##func, #func)
+
+int main(void) {
     mem_init(); /* must be first: resolves real malloc/free via RTLD_NEXT */
 
     printf("ORCA property system tests\n");

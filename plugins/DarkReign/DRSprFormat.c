@@ -433,7 +433,7 @@ _SprFile_Load(lua_State* L, uint8_t const *data, uint32_t size, lpcString_t name
     OBJ_SetName(obj, name);
 
 		if (!palette_initialized) {
-			xmlWith(struct file, fp, FS_LoadFile("DarkReign/BARREN.PAL"), FS_FreeFile) {
+			WITH(struct file, fp, FS_LoadFile("DarkReign/BARREN.PAL"), FS_FreeFile) {
 				dr_palette_from_buffer(fp->data, fp->size, &(DrPalInfo){
 					.shadow_index = SPR_SHADOW_INDEX,
 					.standard_palette_multiplier = 6,
