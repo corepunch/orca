@@ -97,7 +97,8 @@ WEBGL_CFLAGS  += -I$(WEBGL_DIR)
 # Always preload share/ into the VFS – Lua plugins and fonts are needed
 # regardless of whether a project data directory is bundled.
 # Define SHAREDIR so orca.c finds the correct path in the Emscripten VFS.
-WEBGL_LDFLAGS += --preload-file share@/share
+# Exclude editor-only source files (.xcf GIMP files) that are not needed at runtime.
+WEBGL_LDFLAGS += --preload-file share@/share --exclude-file *.xcf
 WEBGL_CFLAGS  += -DSHAREDIR='"/share"'
 
 # Bundle data directory into the VFS when WEBGL_DATA is set.
@@ -191,9 +192,9 @@ WEBGL_DEBUG_LDFLAGS = -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG
                       -sASSERTIONS=1 \
                       -sSAFE_HEAP=1 \
                       -sSTACK_OVERFLOW_CHECK=2 \
-                      -gsource-map \
+                      -gsource-map --source-map-base ./ \
                       -L$(WASM_DEPS_DIR)/lib -llua5.4 -lxml2 -llz4 \
-                      --preload-file share@/share
+                      --preload-file share@/share --exclude-file *.xcf
 
 ifneq ($(WEBGL_DATA),)
 WEBGL_DEBUG_LDFLAGS += --preload-file $(WEBGL_DATA)@/$(WEBGL_DATA)
@@ -284,5 +285,6 @@ $(WASM_DEPS_DIR)/lib/libxml2.a:
 	    --prefix=$(abspath $(WASM_DEPS_DIR)) \
 	    --disable-shared --enable-static \
 	    --without-python --without-http --without-ftp \
-	    --without-zlib --without-lzma --without-iconv
+	    --without-zlib --without-lzma --without-iconv \
+	    CFLAGS="-O2 -DNDEBUG"
 	cd /tmp/wasm-xml2 && emmake make -j$(shell nproc) install
