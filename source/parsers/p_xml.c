@@ -290,7 +290,9 @@ static int lua_xml_attr_iterator(lua_State* L)
   // Push the attribute name and value
   lua_pushstring(L, (lpcString_t)attr->name);
 
-  xmlChar* value = xmlNodeListGetString(attr->parent->doc, attr->children, 1);
+  xmlChar* value = attr->ns
+      ? xmlGetNsProp(attr->parent, attr->name, attr->ns->href)
+      : xmlGetProp(attr->parent, attr->name);
   lua_pushstring(L, (lpcString_t)value);
   xmlFree(value);
 

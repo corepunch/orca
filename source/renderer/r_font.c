@@ -196,6 +196,9 @@ T_GetSize(struct ViewText const* text,
        run - text->run < text->numTextRuns;
        run++)
   {
+    if (!run->string)
+      continue;
+    
     FT_Face const face = T_GetFontFace(run);
     if (!face) {
       return textSize;
@@ -343,6 +346,8 @@ Text_Print(struct ViewText const* pViewText,
        run - pViewText->run < pViewText->numTextRuns && !bDone;
        run++)
   {
+    if (!run->string)
+      continue;
     FT_Face const face = T_GetFontFace(run);
     if (FT_Set_Pixel_Sizes(face, 0, run->fontSize * pViewText->scale)) {
       free(image_data);

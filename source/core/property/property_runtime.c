@@ -341,6 +341,20 @@ OPERATOR(MOD, fmodf(v[0], v[1]));
 OPERATOR(REM, fmodf(v[0], v[1]));
 OPERATOR(POW, powf(v[0], v[1]));
 
+tok_op(IF) {
+  /* regs[0] = condition, regs[1] = true-value, regs[2] = false-value */
+  bool_t cond;
+  if (regs[0].type == kDataTypeString) {
+    const char *s = VM_REG_STR(&regs[0]);
+    cond = s && *s != '\0';
+  } else {
+    cond = regs[0].value[0] != 0.0f;
+  }
+  struct vm_register *result = cond ? &regs[1] : &regs[2];
+  memcpy(output, result, sizeof(*output));
+  return TRUE;
+}
+
 tok_op(call)
 {
   struct vm_register t[TOKEN_MAX_ARGS] = { 0 };
@@ -381,6 +395,7 @@ tok_op(call)
   CALL(MOD);
   CALL(REM);
   CALL(POW);
+  CALL(IF);
   CALL(STRING);
   CALL(FLOAT);
   CALL(INT);
