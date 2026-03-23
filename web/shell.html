@@ -44,6 +44,14 @@
       opacity: 0;
       pointer-events: none;
     }
+    #loading-status {
+      margin-top: 12px;
+      font-family: monospace;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.45);
+      text-align: center;
+      min-height: 1em;
+    }
     #progress-bar-wrap {
       width: 240px;
       height: 6px;
@@ -100,6 +108,7 @@
     <div id="progress-bar-wrap">
       <div id="progress-bar"></div>
     </div>
+    <div id="loading-status"></div>
   </div>
 
   <!-- Full-screen canvas -->
@@ -149,7 +158,14 @@
     var LOADING_FADE_DELAY_MS = 300; /* matches the 0.3s CSS transition on #loading-overlay */
     var progressBar     = document.getElementById('progress-bar');
     var loadingOverlay  = document.getElementById('loading-overlay');
+    var loadingStatusEl = document.getElementById('loading-status');
     var consoleLogEl    = document.getElementById('console-log');
+
+    function formatBytes(bytes) {
+      if (bytes >= 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + '\u00a0MB';
+      if (bytes >= 1024) return Math.round(bytes / 1024) + '\u00a0KB';
+      return bytes + '\u00a0B';
+    }
 
     function addConsoleMessage(text, isError) {
       if (!consoleLogEl) return;
@@ -199,6 +215,11 @@
       function onDataProgress(loaded, total) {
         if (progressBar && total > 0) {
           progressBar.style.width = Math.round(loaded / total * 100) + '%';
+        }
+        if (loadingStatusEl) {
+          loadingStatusEl.textContent = total > 0
+            ? formatBytes(loaded) + ' / ' + formatBytes(total)
+            : formatBytes(loaded);
         }
       }
 
@@ -301,6 +322,12 @@
       })(),
       setStatus: function (text) {
         setLastMessage(text || '');
+        /* Show non-download status (e.g. "Preparing…") in the overlay status
+         * line.  onDataProgress overwrites it with byte counts during the
+         * .data download, so skip updating here while a download is active. */
+        if (loadingStatusEl && !_dataFileLoading) {
+          loadingStatusEl.textContent = text || '';
+        }
       },
       totalDependencies: 0,
       monitorRunDependencies: function (left) {
@@ -309,6 +336,7 @@
           if (progressBar) progressBar.style.width = '100%';
           setTimeout(function () {
             if (loadingOverlay) loadingOverlay.classList.add('hidden');
+            if (loadingStatusEl) loadingStatusEl.textContent = '';
           }, LOADING_FADE_DELAY_MS);
         } else if (!_dataFileLoading) {
           // Fallback: show dependency-count progress when no .data download is
