@@ -33,10 +33,11 @@ WEBGL_EMCC     = emcc
 WEBGL_SHELL   ?= web/shell.html
 WEBGL_VERSION ?= dev
 
-# Modules included in the WebGL build.  Excluded: network (curl/sockets),
-# vsomeip (C++ service discovery), server (host-only), editor (desktop UI).
+# Modules included in the WebGL build.  Excluded: vsomeip (C++ service
+# discovery), server (host-only), editor (desktop UI).  network is included
+# and compiled against emscripten_fetch (no curl dependency).
 WEBGL_MODULES  = geometry orca sysutil console localization parsers debug \
-                 renderer filesystem core backend
+                 renderer filesystem core backend network
 WEBGL_SRCMODS  = $(addprefix $(SOURCEDIR)/, $(WEBGL_MODULES))
 WEBGL_SOURCES  = $(foreach d, $(WEBGL_SRCMODS), $(wildcard $(d)/*.c $(d)/*/*.c))
 
@@ -54,7 +55,8 @@ WEBGL_CFLAGS  = -Oz -flto -I. -I$(CURDIR) -I$(PLATFORM_LIBDIR) \
                 -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG=1 \
                 -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
                 -sASYNCIFY=1 -sASYNCIFY_IMPORTS='["emscripten_sleep"]' \
-                -sALLOW_MEMORY_GROWTH=1
+                -sALLOW_MEMORY_GROWTH=1 \
+                -sFETCH=1
 
 WEBGL_LDFLAGS = -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG=1 \
                 -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
@@ -64,6 +66,7 @@ WEBGL_LDFLAGS = -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG=1 \
                 -sEXIT_RUNTIME=0 \
                 -sASSERTIONS=0 \
                 -sLEGACY_VM_SUPPORT=1 \
+                -sFETCH=1 \
                 --closure 1
 # Uncomment to raise the C stack above the 64 KB Emscripten default (e.g. to avoid stack overflows):
 WEBGL_LDFLAGS += -sSTACK_SIZE=262144
@@ -176,6 +179,7 @@ WEBGL_DEBUG_CFLAGS  = -g -O1 -I. -I$(CURDIR) -I$(PLATFORM_LIBDIR) \
                       -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
                       -sASYNCIFY=1 -sASYNCIFY_IMPORTS='["emscripten_sleep"]' \
                       -sALLOW_MEMORY_GROWTH=1 \
+                      -sFETCH=1 \
                       -I$(WASM_DEPS_DIR)/include -I$(WASM_DEPS_DIR)/include/libxml2 \
                       -I$(WEBGL_DIR) \
                       -DSHAREDIR='"/share"'
@@ -193,6 +197,7 @@ WEBGL_DEBUG_LDFLAGS = -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG
                       -sSAFE_HEAP=1 \
                       -sSTACK_OVERFLOW_CHECK=2 \
                       -gsource-map --source-map-base ./ \
+                      -sFETCH=1 \
                       -L$(WASM_DEPS_DIR)/lib -llua5.4 -lxml2 -llz4 \
                       --preload-file share@/share --exclude-file *.xcf
 
