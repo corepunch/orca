@@ -179,6 +179,13 @@
       }, LOADING_FADE_DELAY_MS);
     };
 
+    /* C code calls this (via EM_ASM) at each renderer init stage so the user
+     * can see what is happening during the 10-20 s initialization phase.
+     * @param {string} text - Status message to show in the loading overlay. */
+    window.setLoadingStatus = function (text) {
+      if (loadingStatusEl) loadingStatusEl.textContent = text || '';
+    };
+
     function formatBytes(bytes) {
       if (bytes >= 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + '\u00a0MB';
       if (bytes >= 1024) return Math.round(bytes / 1024) + '\u00a0KB';
