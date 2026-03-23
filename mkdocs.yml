@@ -24,6 +24,7 @@ nav:
     - Renderer Internals: renderer-internals.md
     - Lua Scripting: lua-scripting.md
     - Dark Reign Formats: dark-reign-formats.md
+  - Team & Project History: team-and-history.md
 
 theme:
   name: material
