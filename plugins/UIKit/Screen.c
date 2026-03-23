@@ -559,6 +559,11 @@ HANDLER(Screen, WindowPaint) {
   if (!pWindowPaint) {
     R_BeginFrame(pScreen->ClearColor);
   }
+  
+  if (pScreen->ResizeMode == kResizeModeCanResize) {
+    Node2D_SetFrame(GetNode2D(hObject), kBox3FieldWidth, LOWORD(wParam));
+    Node2D_SetFrame(GetNode2D(hObject), kBox3FieldHeight, HIWORD(wParam));
+  }
     
   OBJ_Awake(L, hObject);
   OBJ_Animate(L, hObject);
