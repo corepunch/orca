@@ -3,7 +3,7 @@ orca.init()
 local ui = require "orca.UIKit"
 require "orca.core"
 require "orca.renderer"
-local screen = ui.Screen { Width = 1000, Height = 1000 }
+local screen = ui.Screen { Width = 1000, Height = 1000, ResizeMode = "NoResize" }
 
 screen.refresh = function (self)
 	self:updateLayout(self.Width, self.Height)

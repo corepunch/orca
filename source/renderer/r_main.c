@@ -1039,6 +1039,10 @@ R_ClearTextCache(void)
 void
 renderer_Shutdown(void)
 {
+  if (!tr.buffer) {
+    return;  /* renderer was never initialized; nothing to clean up */
+  }
+
   Con_Printf("Shutting down renderer...");
 
   WI_MakeCurrentContext();

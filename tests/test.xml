@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Screen SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
-<Screen Name="test-screen" Width="1000" Height="1000">
+<Screen Name="test-screen" Width="1000" Height="1000" ResizeMode="NoResize">
 	<TextBlock Name="test-text" FontSize="20" Text="This is a test screen." />
 	<!-- Test: v-stack > h-grid (auto cols) > v-stack > 2 nodes of known height.
 	     The grid must derive its height from the inner stack, not default to 0. -->
