@@ -4,6 +4,10 @@ void
 Token_Release(struct token* token)
 {
   SafeDelete(token->next, Token_Release);
+  FOR_LOOP(i, TOKEN_MAX_ARGS)
+  {
+    SafeDelete(token->args[i], Token_Release);
+  }
   free(token);
 }
 

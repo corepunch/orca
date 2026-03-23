@@ -47,7 +47,7 @@
 #include <string.h>  /* memset, memcpy, strlen — provided by libc directly */
 
 /* Static bootstrap buffer for very early allocations (before mem_init).
- * 128 KB is enough for library initialization of all linked modules. */
+ * Handles small allocations needed by dlsym itself during mem_init(). */
 #define BOOTSTRAP_BUF_SIZE (128 * 1024)
 static char   s_bootstrap_buf[BOOTSTRAP_BUF_SIZE];
 static size_t s_bootstrap_pos = 0;
@@ -57,12 +57,26 @@ static int is_bootstrap_ptr(const void *ptr) {
            (const char *)ptr <  s_bootstrap_buf + BOOTSTRAP_BUF_SIZE;
 }
 
+/* glibc provides these raw allocator symbols that bypass any interposer.
+ * Declared weak so the code compiles on non-glibc systems too; on those
+ * systems the bootstrap buffer is the only fallback. */
+extern void *__libc_malloc(size_t)          __attribute__((weak));
+extern void *__libc_calloc(size_t, size_t)  __attribute__((weak));
+extern void *__libc_realloc(void *, size_t) __attribute__((weak));
+extern void  __libc_free(void *)            __attribute__((weak));
+
 static void *bootstrap_alloc(size_t size) {
     size = (size + 15u) & ~(size_t)15u; /* 16-byte alignment */
-    if (s_bootstrap_pos + size > BOOTSTRAP_BUF_SIZE) return NULL;
-    void *p = s_bootstrap_buf + s_bootstrap_pos;
-    s_bootstrap_pos += size;
-    return p;
+    if (s_bootstrap_pos + size <= BOOTSTRAP_BUF_SIZE) {
+        void *p = s_bootstrap_buf + s_bootstrap_pos;
+        s_bootstrap_pos += size;
+        return p;
+    }
+    /* Bootstrap buffer exhausted.  Fall back to the raw glibc allocator so
+     * that library constructors (GnuTLS, libEGL, …) can complete without
+     * receiving NULL from malloc.  These allocations are not counted in
+     * s_alloc_count because they precede mem_init(). */
+    return __libc_malloc ? __libc_malloc(size) : NULL;
 }
 
 /* Real allocator function pointers, set by mem_init(). */
@@ -110,7 +124,9 @@ void *malloc(size_t size) {
 void *calloc(size_t n, size_t size) {
     if (!s_real_calloc) {
         void *p = bootstrap_alloc(n * size);
-        if (p) memset(p, 0, n * size);
+        /* The BSS bootstrap buffer is already zero-initialised; overflow
+         * pointers from __libc_malloc are not — zero them explicitly. */
+        if (p && !is_bootstrap_ptr(p)) memset(p, 0, n * size);
         return p;
     }
     void *p = s_real_calloc(n, size);
@@ -137,7 +153,10 @@ void *realloc(void *ptr, size_t size) {
         }
         return np;
     }
-    if (!s_real_realloc) return NULL;
+    if (!s_real_realloc) {
+        /* Pre-init realloc of an overflow-bootstrap (non-BSS) pointer. */
+        return __libc_realloc ? __libc_realloc(ptr, size) : NULL;
+    }
     void *p = s_real_realloc(ptr, size);
     /* realloc with non-NULL ptr replaces in-place: count unchanged. */
     if (!ptr && p) {
@@ -150,7 +169,11 @@ void *realloc(void *ptr, size_t size) {
 void free(void *ptr) {
     if (!ptr) return;
     if (is_bootstrap_ptr(ptr)) return; /* bootstrap: silently ignore */
-    if (!s_real_free) return;
+    if (!s_real_free) {
+        /* Pre-init free of an overflow-bootstrap pointer — release via glibc. */
+        if (__libc_free) __libc_free(ptr);
+        return;
+    }
     s_real_free(ptr);
     __atomic_fetch_sub(&s_alloc_count, 1, __ATOMIC_RELAXED);
 }
@@ -759,6 +782,45 @@ static void test_runtime_string_concat_program(void) {
     }
 }
 
+/*
+ * IF operator: IF(cond, true-value, false-value) works like Excel IF.
+ * When condition is non-zero, returns true-value; otherwise false-value.
+ */
+static void test_runtime_if_true_branch(void) {
+    WITH(struct Object, obj, make_rt_object(), destroy_object) {
+        WITH(struct token, prog, Token_Create("IF(1, 10, 20)"), Token_Release) {
+            EXPECT(prog != NULL);
+            struct vm_register r = {0};
+            EXPECT(OBJ_RunProgram(obj, prog, &r));
+            EXPECT((int)r.value[0] == 10);
+        }
+    }
+}
+
+static void test_runtime_if_false_branch(void) {
+    WITH(struct Object, obj, make_rt_object(), destroy_object) {
+        WITH(struct token, prog, Token_Create("IF(0, 10, 20)"), Token_Release) {
+            EXPECT(prog != NULL);
+            struct vm_register r = {0};
+            EXPECT(OBJ_RunProgram(obj, prog, &r));
+            EXPECT((int)r.value[0] == 20);
+        }
+    }
+}
+
+static void test_runtime_if_string_branch(void) {
+    WITH(struct Object, obj, make_rt_object(), destroy_object) {
+        WITH(struct token, prog, Token_Create("IF(0, \"yes\", \"no\")"), Token_Release) {
+            EXPECT(prog != NULL);
+            struct vm_register r = {0};
+            EXPECT(OBJ_RunProgram(obj, prog, &r));
+            EXPECT(r.type == kDataTypeString);
+            const char *str = *(const char *const *)r.value;
+            EXPECT_STR_EQ(str, "no");
+        }
+    }
+}
+
 /* ------------------------------------------------------------------ */
 /* Memory-leak tests (active when compiled with -DTEST_MEMORY)         */
 /* Each test takes a snapshot before and checks for leaks after.       */
@@ -948,6 +1010,9 @@ int main(void) {
     RUN(test_runtime_attach_and_update_string);
     RUN(test_runtime_property_reference);
     RUN(test_runtime_string_concat_program);
+    RUN(test_runtime_if_true_branch);
+    RUN(test_runtime_if_false_branch);
+    RUN(test_runtime_if_string_branch);
 
     RUN(test_memleak_string_set_release);
     RUN(test_memleak_string_multiple_sets);
