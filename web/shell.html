@@ -161,6 +161,24 @@
     var loadingStatusEl = document.getElementById('loading-status');
     var consoleLogEl    = document.getElementById('console-log');
 
+    // ── Loading overlay hide ─────────────────────────────────────────────────
+    // The overlay is hidden explicitly by C code (via EM_ASM calling
+    // window.hideLoadingOverlay) after renderer_Init() finishes, so the overlay
+    // stays visible and informative through shader compilation and texture
+    // upload.  A 30-second fallback hides it automatically in case of a crash
+    // or silent hang, so the user is never permanently stuck on the splash.
+    var _overlayFallbackTimer = null;
+    window.hideLoadingOverlay = function () {
+      if (_overlayFallbackTimer) {
+        clearTimeout(_overlayFallbackTimer);
+        _overlayFallbackTimer = null;
+      }
+      if (loadingOverlay) loadingOverlay.classList.add('hidden');
+      setTimeout(function () {
+        if (loadingStatusEl) loadingStatusEl.textContent = '';
+      }, LOADING_FADE_DELAY_MS);
+    };
+
     function formatBytes(bytes) {
       if (bytes >= 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + '\u00a0MB';
       if (bytes >= 1024) return Math.round(bytes / 1024) + '\u00a0KB';
@@ -334,10 +352,12 @@
         this.totalDependencies = Math.max(this.totalDependencies, left);
         if (left === 0) {
           if (progressBar) progressBar.style.width = '100%';
-          setTimeout(function () {
-            if (loadingOverlay) loadingOverlay.classList.add('hidden');
-            if (loadingStatusEl) loadingStatusEl.textContent = '';
-          }, LOADING_FADE_DELAY_MS);
+          /* Don't hide the overlay here — C code calls window.hideLoadingOverlay()
+           * explicitly after renderer_Init() finishes so the overlay stays visible
+           * and shows shader/texture status during the 3-5 s init phase.
+           * A 30 s fallback ensures it always hides even on crash or silent hang. */
+          if (loadingStatusEl) loadingStatusEl.textContent = 'Initializing\u2026';
+          _overlayFallbackTimer = setTimeout(window.hideLoadingOverlay, 30000);
         } else if (!_dataFileLoading) {
           // Fallback: show dependency-count progress when no .data download is
           // in progress (e.g. cached build or simple no-data project).
