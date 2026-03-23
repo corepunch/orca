@@ -654,6 +654,15 @@ R_InitResources(void)
 #ifdef GL_SAMPLER_2D_RECT
   Shader_LoadFromDef(&shader_rect, &tr.shaders[SHADER_2D_RECT].shader);
 #endif
+#ifdef __EMSCRIPTEN__
+  /* Yield to the browser event loop after shader compilation.  On mobile GPUs
+   * (Android), compiling all shaders can block the main thread for several
+   * seconds, preventing the loading overlay from hiding and making the page
+   * appear frozen.  emscripten_sleep(0) suspends the WASM stack via ASYNCIFY
+   * and returns control to the browser so that pending setTimeout callbacks
+   * (including the overlay-hide timer) have a chance to fire. */
+  emscripten_sleep(0);
+#endif
 
   Con_Printf("Initializing textures...");
   Texture_CreateWhite(tr.textures+TX_WHITE);

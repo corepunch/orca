@@ -229,7 +229,15 @@
       };
 
       // ── fetch() patch (newer Emscripten versions) ────────────────────────
-      if (typeof window.fetch === 'function' && typeof TransformStream !== 'undefined') {
+      // Track progress on a clone of the response and return the original
+      // response unmodified to Emscripten.  The previous approach wrapped the
+      // response body with a TransformStream/pipeThrough pipeline, which has a
+      // bug on some Android Chrome versions: the piped stream's end signal is
+      // not propagated correctly, so Emscripten's arrayBuffer() call never
+      // resolves and the page hangs at 100% indefinitely.  Using clone() +
+      // getReader() avoids that issue entirely while still providing granular
+      // byte-level progress feedback.
+      if (typeof window.fetch === 'function') {
         var origFetch = window.fetch;
         window.fetch = function (resource, init) {
           var url = typeof resource === 'string' ? resource
@@ -239,27 +247,33 @@
           }
           _dataFileLoading = true;
           return origFetch.apply(this, arguments).then(function (response) {
-            if (!response.body) {
+            var total = parseInt(response.headers.get('Content-Length') || '0', 10);
+            if (!response.body || total === 0) {
               _dataFileLoading = false;
               return response;
             }
-            var total = parseInt(response.headers.get('Content-Length') || '0', 10);
-            var loaded = 0;
-            var passThrough = new TransformStream({
-              transform: function (chunk, controller) {
-                loaded += chunk.byteLength;
-                onDataProgress(loaded, total);
-                controller.enqueue(chunk);
-              },
-              flush: function () {
-                _dataFileLoading = false;
+            // Clone the response for progress tracking; return the original to
+            // Emscripten so it can read the body without any wrapping.
+            try {
+              var clone = response.clone();
+              var reader = clone.body.getReader();
+              var received = 0;
+              function pump() {
+                return reader.read().then(function (result) {
+                  if (result.done) {
+                    _dataFileLoading = false;
+                    return;
+                  }
+                  received += result.value.byteLength;
+                  onDataProgress(received, total);
+                  return pump();
+                }, function () { _dataFileLoading = false; });
               }
-            });
-            return new Response(response.body.pipeThrough(passThrough), {
-              status: response.status,
-              statusText: response.statusText,
-              headers: response.headers
-            });
+              pump().catch(function () { _dataFileLoading = false; });
+            } catch (e) {
+              _dataFileLoading = false;
+            }
+            return response;
           }, function (err) {
             _dataFileLoading = false;
             return Promise.reject(err);
