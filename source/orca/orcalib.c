@@ -47,8 +47,8 @@ static luaL_Reg const orca_modules[] = {
   { "orca.localization", luaopen_orca_localization },
 #ifndef __EMSCRIPTEN__
   { "orca.editor", luaopen_orca_editor },
-  { "orca.network", luaopen_orca_network },
 #endif
+  { "orca.network", luaopen_orca_network },
   { "orca.parsers.json", luaopen_orca_parsers_json },
   { "orca.parsers.xml", luaopen_orca_parsers_xml },
   { "orca.renderer", luaopen_orca_renderer },
