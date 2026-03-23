@@ -162,11 +162,13 @@
     var consoleLogEl    = document.getElementById('console-log');
 
     // ── Loading overlay hide ─────────────────────────────────────────────────
-    // The overlay is hidden explicitly by C code (via EM_ASM calling
-    // window.hideLoadingOverlay) after renderer_Init() finishes, so the overlay
-    // stays visible and informative through shader compilation and texture
-    // upload.  A 30-second fallback hides it automatically in case of a crash
-    // or silent hang, so the user is never permanently stuck on the splash.
+    // The overlay is hidden as soon as Emscripten calls setStatus("") — which
+    // happens the moment the WASM module finishes its own startup and control
+    // passes to the Lua entry point.  That corresponds to "Running…" disappearing
+    // from the status line.  A 30-second fallback hides it automatically in case
+    // of a crash or silent hang, so the user is never permanently stuck on the
+    // splash.  C code may also call window.hideLoadingOverlay() directly; calling
+    // it on an already-hidden overlay is a safe no-op.
     var _overlayFallbackTimer = null;
     window.hideLoadingOverlay = function () {
       if (_overlayFallbackTimer) {
@@ -350,16 +352,15 @@
         /* Show non-download status (e.g. "Preparing…") in the overlay status
          * line.  onDataProgress overwrites it with byte counts during the
          * .data download, so skip updating here while a download is active. */
-        if (loadingStatusEl && !_dataFileLoading) {
-          /* When Emscripten clears the status to an empty string (e.g. after
-           * "Running…" once the WASM module starts), the overlay is still
-           * visible and the app may be performing slow startup work such as
-           * network requests.  Show a generic "Loading…" placeholder so the
-           * user always sees feedback rather than a blank status line. */
-          if (!text && loadingOverlay && !loadingOverlay.classList.contains('hidden')) {
-            loadingStatusEl.textContent = 'Loading\u2026';
-          } else {
-            loadingStatusEl.textContent = text || '';
+        if (!_dataFileLoading) {
+          if (loadingStatusEl) loadingStatusEl.textContent = text || '';
+          /* When Emscripten clears the status to an empty string it means
+           * "Running…" has just disappeared — the WASM module is running and
+           * control has passed to Lua.  Hide the loading overlay immediately
+           * so the user is not stuck staring at a spinner during the
+           * network-dependent startup phase. */
+          if (!text) {
+            window.hideLoadingOverlay();
           }
         }
       },
@@ -368,10 +369,10 @@
         this.totalDependencies = Math.max(this.totalDependencies, left);
         if (left === 0) {
           if (progressBar) progressBar.style.width = '100%';
-          /* Don't hide the overlay here — C code calls window.hideLoadingOverlay()
-           * explicitly after renderer_Init() finishes so the overlay stays visible
-           * and shows shader/texture status during the 3-5 s init phase.
-           * A 30 s fallback ensures it always hides even on crash or silent hang. */
+          /* Show "Initializing…" while the WASM module bootstraps; the overlay
+           * is dismissed by setStatus("") once Emscripten calls it with an empty
+           * string (when "Running…" disappears).  The 30 s fallback catches any
+           * crash or silent hang so the user is never permanently stuck. */
           if (loadingStatusEl) loadingStatusEl.textContent = 'Initializing\u2026';
           _overlayFallbackTimer = setTimeout(window.hideLoadingOverlay, 30000);
         } else if (!_dataFileLoading) {
