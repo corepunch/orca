@@ -28,6 +28,8 @@ python3 -m http.server --directory build/webgl
 
 The `share/` assets are always packed into the WASM virtual file system (they
 contain fonts and Lua plugins that the engine requires at runtime).
+Editor-only source files (`.xcf` GIMP files) are automatically excluded from
+the bundle via `--exclude-file *.xcf`.
 
 To bundle a project's data directory into the build as well:
 
@@ -74,7 +76,7 @@ The debug target differs from the production build in the following ways:
 | Flag | Effect |
 |------|--------|
 | `-g` | Embed DWARF debug information in `orca.wasm` |
-| `-gsource-map` | Emit `orca.wasm.map` — maps every WASM byte back to the original C file and line number.  Chrome DevTools shows the C source location automatically when the map file is served alongside `orca.wasm`. |
+| `-gsource-map --source-map-base ./` | Emit `orca.wasm.map` — maps every WASM byte back to the original C file and line number.  `--source-map-base ./` ensures the browser looks for the map file in the same directory as `orca.wasm` rather than embedding it inline in `orca.js`. Chrome DevTools shows the C source location automatically when the map file is served alongside `orca.wasm`. |
 | `-sASSERTIONS=2` | Enable strict runtime checks: out-of-bounds memory accesses, null-pointer dereferences, type mismatches, and stack overflows all produce descriptive error messages that name the offending C symbol. |
 | `-sSAFE_HEAP=1` | Validate every heap read and write for alignment and bounds.  This catches the class of errors that appear as `"Out of bounds memory access"` in production builds. |
 | `-sSTACK_SIZE=1048576` | Set the C stack size to 1 MB (up from the 64 KB Emscripten default).  The WASM stack grows **downward**: `SP` starts at `STACK_MAX` (high address) and decreases with each function call; `STACK_BASE = STACK_MAX − STACK_SIZE` is the **lower** boundary.  The larger stack gives more headroom when analysing deep call chains under ASYNCIFY instrumentation. |
@@ -114,6 +116,13 @@ them into `build/wasm-deps/`:
 | lua 5.4  | 5.4.7   | https://www.lua.org/download.html               |
 | libxml2  | 2.9.14  | https://gitlab.gnome.org/GNOME/libxml2          |
 | liblz4   | 1.10.0  | https://github.com/lz4/lz4                      |
+
+All three are compiled with `CFLAGS="-O2 -DNDEBUG"` (no `-g`) so that no
+DWARF debug sections are embedded in the resulting `.a` archives.  Without
+this, libxml2's autoconf default CFLAGS would include `-g`, causing DWARF
+entries that reference every transitively-included header (including emsdk's
+internal OpenSSL headers) to propagate into the final `orca.js` / `orca.wasm`
+output via Emscripten's DWARF processing pass.
 
 ```bash
 source /path/to/emsdk/emsdk_env.sh
