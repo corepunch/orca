@@ -193,6 +193,10 @@ int lua_pushclass(lua_State* L, struct ClassDesc* cl)
   return 1;
 }
 
+ORCA_API void CORE_AdvanceFrame(void) {
+  core.frame++;
+}
+
 bool_t CORE_HandleObjectMessage(lua_State *L, struct WI_Message* msg);
 bool_t CORE_HandleKeyEvent(lua_State *L, struct WI_Message* msg);
 

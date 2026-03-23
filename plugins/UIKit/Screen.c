@@ -573,15 +573,16 @@ HANDLER(Screen, WindowPaint) {
   OBJ_EmitPropertyChangedEvents(L, hObject);
   OBJ_UpdateProperties(hObject);
   OBJ_UpdateLayout(hObject, LOWORD(wParam), HIWORD(wParam));
-
+  
   // If screen size has changed, we need to make sure all properties
   // are recalculated with the new size
   if (get_size(hObject) != _size) {
-    OBJ_EmitPropertyChangedEvents(L, hObject);
+    ORCA_API void CORE_AdvanceFrame(void);
+    CORE_AdvanceFrame();
     OBJ_UpdateProperties(hObject);
     OBJ_UpdateLayout(hObject, LOWORD(wParam), HIWORD(wParam));
   }
-  
+
   OBJ_SendMessageW(hObject, kEventUpdateMatrix, 0, &(struct UpdateMatrixEventArgs){
     .parent = MAT4_Identity(),
     .opacity = 1,
