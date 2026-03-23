@@ -351,7 +351,16 @@
          * line.  onDataProgress overwrites it with byte counts during the
          * .data download, so skip updating here while a download is active. */
         if (loadingStatusEl && !_dataFileLoading) {
-          loadingStatusEl.textContent = text || '';
+          /* When Emscripten clears the status to an empty string (e.g. after
+           * "Running…" once the WASM module starts), the overlay is still
+           * visible and the app may be performing slow startup work such as
+           * network requests.  Show a generic "Loading…" placeholder so the
+           * user always sees feedback rather than a blank status line. */
+          if (!text && loadingOverlay && !loadingOverlay.classList.contains('hidden')) {
+            loadingStatusEl.textContent = 'Loading\u2026';
+          } else {
+            loadingStatusEl.textContent = text || '';
+          }
         }
       },
       totalDependencies: 0,
