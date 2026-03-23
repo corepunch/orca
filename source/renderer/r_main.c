@@ -3,6 +3,12 @@
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
+/* Update the loading-overlay status text from C code.
+ * msg must be a string literal — EM_ASM does not support runtime C strings. */
+#define R_UpdateLoadingStatus(msg) \
+  EM_ASM({ if (window.setLoadingStatus) window.setLoadingStatus(msg); })
+#else
+#define R_UpdateLoadingStatus(msg) ((void)0)
 #endif
 
 #include "r_local.h"
@@ -643,6 +649,7 @@ static void
 R_InitResources(void)
 {
   Con_Printf("Initializing shaders...");
+  R_UpdateLoadingStatus('Compiling shaders\u2026');
   Shader_LoadFromDef(&shader_default, &tr.shaders[SHADER_DEFAULT].shader);
   Shader_LoadFromDef(&shader_ui, &tr.shaders[SHADER_UI].shader);
   Shader_LoadFromDef(&shader_charset, &tr.shaders[SHADER_CHARSET].shader);
@@ -656,6 +663,7 @@ R_InitResources(void)
 #endif
 
   Con_Printf("Initializing textures...");
+  R_UpdateLoadingStatus('Loading textures\u2026');
   Texture_CreateWhite(tr.textures+TX_WHITE);
   Texture_CreateBlack(tr.textures+TX_BLACK);
   Texture_CreatePalette(tr.textures+TX_PALETTE);
@@ -667,6 +675,7 @@ R_InitResources(void)
   Texture_CreateCinematic(tr.textures+TX_CINEMATIC);
 
   Con_Printf("Initializing models...");
+  R_UpdateLoadingStatus('Loading models\u2026');
   Model_CreateRectangle(&(struct rect){ 0, 0, 1, 1 }, NULL, VERTEX_ORDER_DEFAULT, tr.models+MD_RECTANGLE);
   tr.models[MD_TEAPOT] = NULL; // Placeholder; runtime uses tr.models[MD_PLANE]
   Model_CreatePlane(1, 1, tr.models+MD_PLANE);
@@ -946,6 +955,7 @@ static void
 R_InitBuffers(void)
 {
   Con_Printf("Initializing buffers...");
+  R_UpdateLoadingStatus('Initializing\u2026');
   R_Call(glGenVertexArrays, 1, &tr.vao);
   R_Call(glBindVertexArray, tr.vao);
   R_Call(glGenBuffers, 1, &tr.buffer);
@@ -1020,6 +1030,14 @@ renderer_Init(uint32_t dwWidth, uint32_t dwHeight, bool_t bOffscreen)
 #endif
 
   Con_Printf("Renderer initialized successfully.");
+
+#ifdef __EMSCRIPTEN__
+  /* Dismiss the loading overlay now that the renderer is fully ready.
+   * This replaces the 30-second fallback timer as the primary dismiss path,
+   * so the user sees the content as soon as initialization completes rather
+   * than waiting for the timer to fire. */
+  EM_ASM({ if (window.hideLoadingOverlay) window.hideLoadingOverlay(); });
+#endif
 
   return NOERROR;
 }
