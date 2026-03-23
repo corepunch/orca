@@ -44,6 +44,7 @@
 #include <dlfcn.h>
 #include <stdint.h>
 #include <stddef.h>
+#include <stdlib.h>  /* abort() */
 #include <string.h>  /* memset, memcpy, strlen — provided by libc directly */
 
 /* Small bootstrap buffer used *only* while dlsym() resolves the real
