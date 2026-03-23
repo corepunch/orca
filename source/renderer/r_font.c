@@ -196,6 +196,9 @@ T_GetSize(struct ViewText const* text,
        run - text->run < text->numTextRuns;
        run++)
   {
+    if (!run->string)
+      continue;
+    
     FT_Face const face = T_GetFontFace(run);
     if (!face) {
       return textSize;
