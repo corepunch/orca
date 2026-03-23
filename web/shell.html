@@ -44,6 +44,14 @@
       opacity: 0;
       pointer-events: none;
     }
+    #loading-status {
+      margin-top: 12px;
+      font-family: monospace;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.45);
+      text-align: center;
+      min-height: 1em;
+    }
     #progress-bar-wrap {
       width: 240px;
       height: 6px;
@@ -100,6 +108,7 @@
     <div id="progress-bar-wrap">
       <div id="progress-bar"></div>
     </div>
+    <div id="loading-status"></div>
   </div>
 
   <!-- Full-screen canvas -->
@@ -149,7 +158,32 @@
     var LOADING_FADE_DELAY_MS = 300; /* matches the 0.3s CSS transition on #loading-overlay */
     var progressBar     = document.getElementById('progress-bar');
     var loadingOverlay  = document.getElementById('loading-overlay');
+    var loadingStatusEl = document.getElementById('loading-status');
     var consoleLogEl    = document.getElementById('console-log');
+
+    // ── Loading overlay hide ─────────────────────────────────────────────────
+    // The overlay is hidden explicitly by C code (via EM_ASM calling
+    // window.hideLoadingOverlay) after renderer_Init() finishes, so the overlay
+    // stays visible and informative through shader compilation and texture
+    // upload.  A 30-second fallback hides it automatically in case of a crash
+    // or silent hang, so the user is never permanently stuck on the splash.
+    var _overlayFallbackTimer = null;
+    window.hideLoadingOverlay = function () {
+      if (_overlayFallbackTimer) {
+        clearTimeout(_overlayFallbackTimer);
+        _overlayFallbackTimer = null;
+      }
+      if (loadingOverlay) loadingOverlay.classList.add('hidden');
+      setTimeout(function () {
+        if (loadingStatusEl) loadingStatusEl.textContent = '';
+      }, LOADING_FADE_DELAY_MS);
+    };
+
+    function formatBytes(bytes) {
+      if (bytes >= 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + '\u00a0MB';
+      if (bytes >= 1024) return Math.round(bytes / 1024) + '\u00a0KB';
+      return bytes + '\u00a0B';
+    }
 
     function addConsoleMessage(text, isError) {
       if (!consoleLogEl) return;
@@ -200,6 +234,11 @@
         if (progressBar && total > 0) {
           progressBar.style.width = Math.round(loaded / total * 100) + '%';
         }
+        if (loadingStatusEl) {
+          loadingStatusEl.textContent = total > 0
+            ? formatBytes(loaded) + ' / ' + formatBytes(total)
+            : formatBytes(loaded);
+        }
       }
 
       // ── XMLHttpRequest patch ─────────────────────────────────────────────
@@ -229,7 +268,15 @@
       };
 
       // ── fetch() patch (newer Emscripten versions) ────────────────────────
-      if (typeof window.fetch === 'function' && typeof TransformStream !== 'undefined') {
+      // Track progress on a clone of the response and return the original
+      // response unmodified to Emscripten.  The previous approach wrapped the
+      // response body with a TransformStream/pipeThrough pipeline, which has a
+      // bug on some Android Chrome versions: the piped stream's end signal is
+      // not propagated correctly, so Emscripten's arrayBuffer() call never
+      // resolves and the page hangs at 100% indefinitely.  Using clone() +
+      // getReader() avoids that issue entirely while still providing granular
+      // byte-level progress feedback.
+      if (typeof window.fetch === 'function') {
         var origFetch = window.fetch;
         window.fetch = function (resource, init) {
           var url = typeof resource === 'string' ? resource
@@ -239,27 +286,33 @@
           }
           _dataFileLoading = true;
           return origFetch.apply(this, arguments).then(function (response) {
-            if (!response.body) {
+            var total = parseInt(response.headers.get('Content-Length') || '0', 10);
+            if (!response.body || total === 0) {
               _dataFileLoading = false;
               return response;
             }
-            var total = parseInt(response.headers.get('Content-Length') || '0', 10);
-            var loaded = 0;
-            var passThrough = new TransformStream({
-              transform: function (chunk, controller) {
-                loaded += chunk.byteLength;
-                onDataProgress(loaded, total);
-                controller.enqueue(chunk);
-              },
-              flush: function () {
-                _dataFileLoading = false;
+            // Clone the response for progress tracking; return the original to
+            // Emscripten so it can read the body without any wrapping.
+            try {
+              var clone = response.clone();
+              var reader = clone.body.getReader();
+              var received = 0;
+              function pump() {
+                return reader.read().then(function (result) {
+                  if (result.done) {
+                    _dataFileLoading = false;
+                    return;
+                  }
+                  received += result.value.byteLength;
+                  onDataProgress(received, total);
+                  return pump();
+                }, function () { _dataFileLoading = false; });
               }
-            });
-            return new Response(response.body.pipeThrough(passThrough), {
-              status: response.status,
-              statusText: response.statusText,
-              headers: response.headers
-            });
+              pump().catch(function () { _dataFileLoading = false; });
+            } catch (e) {
+              _dataFileLoading = false;
+            }
+            return response;
           }, function (err) {
             _dataFileLoading = false;
             return Promise.reject(err);
@@ -287,15 +340,24 @@
       })(),
       setStatus: function (text) {
         setLastMessage(text || '');
+        /* Show non-download status (e.g. "Preparing…") in the overlay status
+         * line.  onDataProgress overwrites it with byte counts during the
+         * .data download, so skip updating here while a download is active. */
+        if (loadingStatusEl && !_dataFileLoading) {
+          loadingStatusEl.textContent = text || '';
+        }
       },
       totalDependencies: 0,
       monitorRunDependencies: function (left) {
         this.totalDependencies = Math.max(this.totalDependencies, left);
         if (left === 0) {
           if (progressBar) progressBar.style.width = '100%';
-          setTimeout(function () {
-            if (loadingOverlay) loadingOverlay.classList.add('hidden');
-          }, LOADING_FADE_DELAY_MS);
+          /* Don't hide the overlay here — C code calls window.hideLoadingOverlay()
+           * explicitly after renderer_Init() finishes so the overlay stays visible
+           * and shows shader/texture status during the 3-5 s init phase.
+           * A 30 s fallback ensures it always hides even on crash or silent hang. */
+          if (loadingStatusEl) loadingStatusEl.textContent = 'Initializing\u2026';
+          _overlayFallbackTimer = setTimeout(window.hideLoadingOverlay, 30000);
         } else if (!_dataFileLoading) {
           // Fallback: show dependency-count progress when no .data download is
           // in progress (e.g. cached build or simple no-data project).

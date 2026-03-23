@@ -642,17 +642,52 @@ static void Texture_CreateCinematic(struct Texture** img) {
 static void
 R_InitResources(void)
 {
+#ifdef __EMSCRIPTEN__
+  /* Show "Compiling shaders…" on the loading overlay and yield to the browser
+   * before starting GPU shader compilation.  Each glCompileShader/glLinkProgram
+   * call can block the JS thread for hundreds of milliseconds on mobile GPUs
+   * (iOS, Android).  Yielding with emscripten_sleep(0) after every shader lets
+   * the browser repaint the loading overlay status text and keeps the page
+   * responsive between each compile step. */
+  EM_ASM({ if (Module.setStatus) Module.setStatus('Compiling shaders\u2026'); });
+  emscripten_sleep(0);
+#endif
   Con_Printf("Initializing shaders...");
   Shader_LoadFromDef(&shader_default, &tr.shaders[SHADER_DEFAULT].shader);
+#ifdef __EMSCRIPTEN__
+  emscripten_sleep(0);
+#endif
   Shader_LoadFromDef(&shader_ui, &tr.shaders[SHADER_UI].shader);
+#ifdef __EMSCRIPTEN__
+  emscripten_sleep(0);
+#endif
   Shader_LoadFromDef(&shader_charset, &tr.shaders[SHADER_CHARSET].shader);
+#ifdef __EMSCRIPTEN__
+  emscripten_sleep(0);
+#endif
   Shader_LoadFromDef(&shader_cinematic, &tr.shaders[SHADER_CINEMATIC].shader);
+#ifdef __EMSCRIPTEN__
+  emscripten_sleep(0);
+#endif
   Shader_LoadFromDef(&shader_vertexcolor, &tr.shaders[SHADER_VERTEXCOLOR].shader);
+#ifdef __EMSCRIPTEN__
+  emscripten_sleep(0);
+#endif
   Shader_LoadFromDef(&shader_error, &tr.shaders[SHADER_ERROR].shader);
+#ifdef __EMSCRIPTEN__
+  emscripten_sleep(0);
+#endif
   Shader_LoadFromDef(&shader_button, &tr.shaders[SHADER_BUTTON].shader);
+#ifdef __EMSCRIPTEN__
+  emscripten_sleep(0);
+#endif
   Shader_LoadFromDef(&shader_roundedbox, &tr.shaders[SHADER_ROUNDEDBOX].shader);
 #ifdef GL_SAMPLER_2D_RECT
   Shader_LoadFromDef(&shader_rect, &tr.shaders[SHADER_2D_RECT].shader);
+#endif
+#ifdef __EMSCRIPTEN__
+  EM_ASM({ if (Module.setStatus) Module.setStatus('Initializing\u2026'); });
+  emscripten_sleep(0);
 #endif
 
   Con_Printf("Initializing textures...");
@@ -1020,6 +1055,14 @@ renderer_Init(uint32_t dwWidth, uint32_t dwHeight, bool_t bOffscreen)
 #endif
 
   Con_Printf("Renderer initialized successfully.");
+
+#ifdef __EMSCRIPTEN__
+  /* All shaders, textures and geometry buffers are ready.  Hide the loading
+   * overlay now so the canvas is revealed cleanly.  This replaces the
+   * previous JS setTimeout approach, which fired during shader compilation
+   * (causing the overlay to disappear while the page was still frozen). */
+  EM_ASM({ if (window.hideLoadingOverlay) window.hideLoadingOverlay(); });
+#endif
 
   return NOERROR;
 }
