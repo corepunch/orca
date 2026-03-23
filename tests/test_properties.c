@@ -47,7 +47,9 @@
 #include <string.h>  /* memset, memcpy, strlen — provided by libc directly */
 
 /* Static bootstrap buffer for very early allocations (before mem_init).
- * Handles small allocations needed by dlsym itself during mem_init(). */
+ * Handles allocations from dlsym and from transitive library constructors
+ * (GnuTLS, libEGL, …) that run before main().  The overflow path below
+ * handles any allocation that exceeds this buffer. */
 #define BOOTSTRAP_BUF_SIZE (128 * 1024)
 static char   s_bootstrap_buf[BOOTSTRAP_BUF_SIZE];
 static size_t s_bootstrap_pos = 0;
@@ -59,7 +61,8 @@ static int is_bootstrap_ptr(const void *ptr) {
 
 /* glibc provides these raw allocator symbols that bypass any interposer.
  * Declared weak so the code compiles on non-glibc systems too; on those
- * systems the bootstrap buffer is the only fallback. */
+ * systems the bootstrap buffer is the only fallback and overflow will still
+ * return NULL (same behaviour as before this fix). */
 extern void *__libc_malloc(size_t)          __attribute__((weak));
 extern void *__libc_calloc(size_t, size_t)  __attribute__((weak));
 extern void *__libc_realloc(void *, size_t) __attribute__((weak));
