@@ -2,7 +2,7 @@
 <!DOCTYPE Screen SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
 <Screen Name="Application" Width="1280" Height="800" ClearColor="#0B0B12">
 	<Grid Name="Root" Rows="64px auto" Spacing="0">
-		<StackView Name="NavBar" BackgroundColor="#1A1A28"  Direction="Horizontal" Spacing="32" AlignItems="Center" Margin="40">
+		<StackView Name="NavBar" BackgroundColor="#1A1A28"  Direction="Horizontal" Spacing="32" AlignItems="Center" HorizontalPadding="40">
 			<TextBlock Name="Brand" Text="ORCA" FontSize="20" ForegroundColor="#8B5CF6" Width="72"/>
 			<TextBlock Name="NavOverview" Text="Overview" FontSize="14" ForegroundColor="#94A3B8"/>
 			<TextBlock Name="NavFeatures" Text="Features" FontSize="14" ForegroundColor="#94A3B8"/>
