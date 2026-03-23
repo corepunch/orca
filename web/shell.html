@@ -1,235 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>ORCA</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #000;
-    }
-    canvas#canvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-      outline: none;
-      touch-action: none;
-    }
-
-    /* ── Loading overlay ────────────────────────────────────────── */
-    #loading-overlay {
-      position: fixed;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-      display: -webkit-flex;
-      display: flex;
-      -webkit-flex-direction: column;
-      flex-direction: column;
-      -webkit-align-items: center;
-      align-items: center;
-      -webkit-justify-content: center;
-      justify-content: center;
-      background: #333;
-      z-index: 10;
-      -webkit-transition: opacity 0.3s ease;
-      transition: opacity 0.3s ease;
-    }
-    #loading-overlay.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
-    #progress-bar-wrap {
-      width: 240px;
-      height: 6px;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 3px;
-      overflow: hidden;
-    }
-    #progress-bar {
-      height: 100%;
-      width: 0%;
-      background: #fff;
-      border-radius: 3px;
-      transition: width 0.15s ease;
-    }
-
-    /* ── Corner info overlay ────────────────────────────────────── */
-    #corner-info {
-      position: fixed;
-      bottom: 8px;
-      right: 8px;
-      font-family: monospace;
-      font-size: 10px;
-      line-height: 1.4;
-      text-align: right;
-      pointer-events: none;
-      z-index: 5;
-      max-width: 360px;
-    }
-    #console-log {
-      word-break: break-word;
-    }
-    #console-log.error {
-      color: rgba(255, 120, 80, 0.65);
-    }
-    #console-log:not(.error) {
-      color: rgba(255, 255, 255, 0.35);
-    }
-    #build-id {
-      color: rgba(255, 255, 255, 0.2);
-    }
-    .browser-warning {
-      color: #f88;
-      font-family: sans-serif;
-      font-size: 14px;
-      text-align: center;
-      padding: 16px;
-      max-width: 300px;
-    }
-  </style>
-</head>
-<body>
-  <!-- Loading overlay with progress bar -->
-  <div id="loading-overlay">
-    <div id="progress-bar-wrap">
-      <div id="progress-bar"></div>
-    </div>
-  </div>
-
-  <!-- Full-screen canvas -->
-  <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
-
-  <!-- Corner info: console log + build ID -->
-  <div id="corner-info">
-    <div id="console-log"></div>
-    <div id="build-id">@@BUILD_VERSION@@</div>
-  </div>
-
-  <script>
-    // ── Canvas integer-pixel snap (iOS touch fix) ──────────────────────────
-    // On high-DPI iOS devices (e.g. iPhone 14 Pro Max with DPR=3), CSS
-    // "width:100%" can resolve to a fractional CSS-pixel size such as 355.666px
-    // (= 1067 physical px / 3).  Emscripten's touch-event glue then computes
-    //   targetX = touch.clientX - getBoundingClientRect().left
-    // which is non-integer, triggering an Emscripten SAFE_HEAP assertion:
-    //   "Assertion failed: attempt to write non-integer (355.666...) into
-    //    integer heap"
-    // Fix: override the canvas inline style with explicit integer-pixel
-    // dimensions derived from window.innerWidth / innerHeight.  The DOM spec
-    // guarantees these properties are integers (long), so touch targetX/Y will
-    // always be whole numbers.
-    // snapCanvas is exposed as window.snapCanvas so the WASM-side EM_ASM in
-    // r_main.c can call it as a defense-in-depth snap after WI_Init().
-    var IOS_ORIENTATION_SETTLE_MS = 100; // iOS defers viewport update after rotation
-    window.snapCanvas = function () {
-      var canvas = document.getElementById('canvas');
-      if (!canvas) return;
-      var w = window.innerWidth;
-      var h = window.innerHeight;
-      if (w > 0 && h > 0) {
-        canvas.style.width  = w + 'px';
-        canvas.style.height = h + 'px';
-      }
-    };
-    // Snap immediately – the <script> runs after <canvas> is already in DOM.
-    window.snapCanvas();
-    // Re-snap after orientation changes; iOS defers viewport update.
-    window.addEventListener('orientationchange', function () {
-      setTimeout(window.snapCanvas, IOS_ORIENTATION_SETTLE_MS);
-    });
-    // Re-snap on generic resize (desktop browsers, iPad split-view, etc.).
-    window.addEventListener('resize', window.snapCanvas);
-
-    var LOADING_FADE_DELAY_MS = 300; /* matches the 0.3s CSS transition on #loading-overlay */
-    var progressBar     = document.getElementById('progress-bar');
-    var loadingOverlay  = document.getElementById('loading-overlay');
-    var consoleLogEl    = document.getElementById('console-log');
-
-    function addConsoleMessage(text, isError) {
-      if (!consoleLogEl) return;
-      consoleLogEl.textContent = text || '';
-      consoleLogEl.className = isError ? 'error' : '';
-    }
-
-    /* setLastMessage kept for backward-compat with Module.setStatus */
-    function setLastMessage(text) {
-      addConsoleMessage(text, false);
-    }
-
-    // Route all console output to the corner console-log overlay.
-    (function () {
-      function formatArgs(args) {
-        return Array.prototype.slice.call(args).map(function (a) {
-          if (typeof a === 'object') {
-            try { return JSON.stringify(a); } catch (e) { return String(a); }
-          }
-          return String(a);
-        }).join(' ');
-      }
-      function patchConsoleMethod(method, isError) {
-        var orig = console[method].bind(console);
-        console[method] = function () {
-          orig.apply(console, arguments);
-          addConsoleMessage(formatArgs(arguments), isError);
-        };
-      }
-      patchConsoleMethod('log',   false);
-      patchConsoleMethod('info',  false);
-      patchConsoleMethod('warn',  false);
-      patchConsoleMethod('error', true);
-    })();
-
-    // ── Data-file download progress tracking ────────────────────────────────
-    // Emscripten's monitorRunDependencies fires only when a dependency starts
-    // or finishes, so the bar stays stuck at ~1% while the large .data file
-    // is downloading.  Patch XMLHttpRequest (and fetch, as a fallback) to
-    // capture byte-level progress on the *.data request and push it to the
-    // progress bar directly.
-    var _dataFileLoading = false;
-    (function () {
-      // Match *.data URLs with optional query string or hash fragment.
-      var DATA_FILE_RE = /\.data(\?[^#]*)?($|#)/;
-
-      function onDataProgress(loaded, total) {
-        if (progressBar && total > 0) {
-          progressBar.style.width = Math.round(loaded / total * 100) + '%';
-        }
-      }
-
-      // ── XMLHttpRequest patch ─────────────────────────────────────────────
-      var origOpen = XMLHttpRequest.prototype.open;
-      var origSend = XMLHttpRequest.prototype.send;
-
-      XMLHttpRequest.prototype.open = function (method, url) {
-        this._trackDataFile = typeof url === 'string' && DATA_FILE_RE.test(url);
-        return origOpen.apply(this, arguments);
-      };
-
-      XMLHttpRequest.prototype.send = function (body) {
-        if (this._trackDataFile) {
-          _dataFileLoading = true;
-          this.addEventListener('progress', function (evt) {
-            if (evt.lengthComputable) {
-              onDataProgress(evt.loaded, evt.total);
-            }
-          });
-          // Reset the flag when the transfer ends (success, error, or abort).
-          var done = function () { _dataFileLoading = false; };
-          this.addEventListener('load', done);
-          this.addEventListener('error', done);
-          this.addEventListener('abort', done);
-        }
-        return origSend.apply(this, arguments);
-      };
-
       // ── fetch() patch (newer Emscripten versions) ────────────────────────
-      if (typeof window.fetch === 'function' && typeof TransformStream !== 'undefined') {
+      if (typeof window.fetch === 'function') {
         var origFetch = window.fetch;
         window.fetch = function (resource, init) {
           var url = typeof resource === 'string' ? resource
@@ -238,105 +8,44 @@
             return origFetch.apply(this, arguments);
           }
           _dataFileLoading = true;
-          return origFetch.apply(this, arguments).then(function (response) {
-            if (!response.body) {
+          
+          // Use streaming progress if TransformStream is available
+          if (typeof TransformStream !== 'undefined') {
+            return origFetch.apply(this, arguments).then(function (response) {
+              if (!response.body) {
+                _dataFileLoading = false;
+                return response;
+              }
+              var total = parseInt(response.headers.get('Content-Length') || '0', 10);
+              var loaded = 0;
+              var passThrough = new TransformStream({
+                transform: function (chunk, controller) {
+                  loaded += chunk.byteLength;
+                  onDataProgress(loaded, total);
+                  controller.enqueue(chunk);
+                },
+                flush: function () {
+                  _dataFileLoading = false;
+                }
+              });
+              return new Response(response.body.pipeThrough(passThrough), {
+                status: response.status,
+                statusText: response.statusText,
+                headers: response.headers
+              });
+            }, function (err) {
+              _dataFileLoading = false;
+              return Promise.reject(err);
+            });
+          } else {
+            // Fallback for Android browsers without TransformStream
+            return origFetch.apply(this, arguments).then(function (response) {
               _dataFileLoading = false;
               return response;
-            }
-            var total = parseInt(response.headers.get('Content-Length') || '0', 10);
-            var loaded = 0;
-            var passThrough = new TransformStream({
-              transform: function (chunk, controller) {
-                loaded += chunk.byteLength;
-                onDataProgress(loaded, total);
-                controller.enqueue(chunk);
-              },
-              flush: function () {
-                _dataFileLoading = false;
-              }
+            }, function (err) {
+              _dataFileLoading = false;
+              return Promise.reject(err);
             });
-            return new Response(response.body.pipeThrough(passThrough), {
-              status: response.status,
-              statusText: response.statusText,
-              headers: response.headers
-            });
-          }, function (err) {
-            _dataFileLoading = false;
-            return Promise.reject(err);
-          });
+          }
         };
       }
-    })();
-
-    var Module = {
-      print: function (text) {
-        if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
-        console.log(text);
-      },
-      printErr: function (text) {
-        if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
-        console.error(text);
-      },
-      canvas: (function () {
-        var canvas = document.getElementById('canvas');
-        canvas.addEventListener('webglcontextlost', function (e) {
-          alert('WebGL context lost. Please reload the page.');
-          e.preventDefault();
-        }, false);
-        return canvas;
-      })(),
-      setStatus: function (text) {
-        setLastMessage(text || '');
-      },
-      totalDependencies: 0,
-      monitorRunDependencies: function (left) {
-        this.totalDependencies = Math.max(this.totalDependencies, left);
-        if (left === 0) {
-          if (progressBar) progressBar.style.width = '100%';
-          setTimeout(function () {
-            if (loadingOverlay) loadingOverlay.classList.add('hidden');
-          }, LOADING_FADE_DELAY_MS);
-        } else if (!_dataFileLoading) {
-          // Fallback: show dependency-count progress when no .data download is
-          // in progress (e.g. cached build or simple no-data project).
-          var total = this.totalDependencies;
-          var pct = total > 0 ? Math.round((total - left) / total * 100) : 0;
-          if (progressBar) progressBar.style.width = pct + '%';
-        }
-      }
-    };
-
-    window.addEventListener('error', function (e) {
-      addConsoleMessage('Error: ' + e.message, true);
-    });
-
-    if ('onunhandledrejection' in window) {
-      window.addEventListener('unhandledrejection', function (e) {
-        var msg = (e.reason && e.reason.message) ? e.reason.message : String(e.reason);
-        addConsoleMessage('Error: ' + msg, true);
-      });
-    }
-
-    // ── Feature checks ──────────────────────────────────────────────────────
-    // Show a friendly message if the browser lacks WebAssembly or WebGL.
-    (function () {
-      var missing = [];
-      if (typeof WebAssembly === 'undefined') missing.push('WebAssembly');
-      if (!window.WebGLRenderingContext) missing.push('WebGL');
-      if (missing.length) {
-        var msg = 'This page requires ' + missing.join(' and ') +
-                  ', which your browser does not support. ' +
-                  'Please upgrade to a modern browser.';
-        if (loadingOverlay) {
-          var warn = document.createElement('div');
-          warn.className = 'browser-warning';
-          warn.textContent = msg;
-          loadingOverlay.appendChild(warn);
-        }
-        console.error(msg);
-      }
-    })();
-  </script>
-  {{{ SCRIPT }}}
-</body>
-</html>
