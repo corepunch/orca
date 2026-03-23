@@ -7,6 +7,15 @@
 
 // #define DEBUG_FETCH
 
+typedef struct
+{
+  size_t size;
+  long code;
+  char data[];
+} response_t;
+
+#ifndef __EMSCRIPTEN__
+
 void
 SZ_Init(struct WI_Buffer* buf, void* data, int length)
 {
@@ -93,13 +102,6 @@ StopService(struct network_service* service)
 #include <curl/curl.h>
 
 #define INITIAL_BUFFER_SIZE 1024
-
-typedef struct
-{
-  size_t size;
-  long code;
-  char data[];
-} response_t;
 
 typedef struct
 {
@@ -350,6 +352,213 @@ int fetch_http(lua_State* L)
   return 0;
 }
 
+static void
+Net_Init(void)
+{
+  Con_Printf("Initializing network");
+  
+  curl_global_init(CURL_GLOBAL_DEFAULT);
+}
+
+static void
+Net_Shutdown(void)
+{
+  Con_Printf("Shutting down network");
+  
+  curl_global_cleanup();
+}
+
+#else // __EMSCRIPTEN__
+
+#include <emscripten.h>
+#include <emscripten/fetch.h>
+
+#define MAX_FETCH_HEADERS 32
+
+typedef struct
+{
+  int done;
+  int success;
+  emscripten_fetch_t* fetch;
+} webgl_fetch_state_t;
+
+static void
+on_fetch_success(emscripten_fetch_t* fetch)
+{
+  webgl_fetch_state_t* state = (webgl_fetch_state_t*)fetch->userData;
+  state->fetch = fetch;
+  state->success = 1;
+  state->done = 1;
+}
+
+static void
+on_fetch_error(emscripten_fetch_t* fetch)
+{
+  webgl_fetch_state_t* state = (webgl_fetch_state_t*)fetch->userData;
+  state->fetch = fetch;
+  state->success = 0;
+  state->done = 1;
+}
+
+#define HTTP_OK 200
+#define HTTP_CREATED 201
+#define HTTP_NO_CONTENT 204
+
+int fetch_http(lua_State* L)
+{
+  lpcString_t url = luaL_checkstring(L, 1);
+
+#ifdef DEBUG_FETCH
+  Con_Error("Fetching %s", url);
+#endif
+
+  emscripten_fetch_attr_t attr;
+  emscripten_fetch_attr_init(&attr);
+  strcpy(attr.requestMethod, "GET");
+  attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
+  attr.onsuccess = on_fetch_success;
+  attr.onerror = on_fetch_error;
+
+  // Collect header key/value pairs.  emscripten_fetch needs a
+  // NULL-terminated array of alternating "Key", "Value" strings.
+  const char* header_keys[MAX_FETCH_HEADERS];
+  const char* header_vals[MAX_FETCH_HEADERS];
+  char* header_buf = NULL;
+  int n_headers = 0;
+
+  const char* body = NULL;
+  size_t body_size = 0;
+
+  if (lua_type(L, 2) == LUA_TTABLE) {
+    lua_getfield(L, 2, "method");
+    if (!lua_isnil(L, -1)) {
+      strncpy(attr.requestMethod, luaL_checkstring(L, -1),
+              sizeof(attr.requestMethod) - 1);
+      attr.requestMethod[sizeof(attr.requestMethod) - 1] = '\0';
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, 2, "body");
+    if (lua_isstring(L, -1)) {
+      size_t len = 0;
+      body = lua_tolstring(L, -1, &len);
+      body_size = len;
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, 2, "headers");
+    if (lua_type(L, -1) == LUA_TTABLE) {
+      // First pass: count headers and total string length.
+      size_t total_len = 0;
+      lua_pushnil(L);
+      while (lua_next(L, -2) && n_headers < MAX_FETCH_HEADERS) {
+        total_len += strlen(luaL_checkstring(L, -2)) + 1;
+        total_len += strlen(luaL_checkstring(L, -1)) + 1;
+        n_headers++;
+        lua_pop(L, 1);
+      }
+      // Second pass: copy strings into a single buffer.
+      if (n_headers > 0) {
+        header_buf = (char*)malloc(total_len);
+        if (!header_buf) {
+          lua_pop(L, 1);
+          return luaL_error(L, "out of memory allocating header buffer");
+        }
+        char* p = header_buf;
+        int i = 0;
+        lua_pushnil(L);
+        while (lua_next(L, -2) && i < n_headers) {
+          lpcString_t k = luaL_checkstring(L, -2);
+          lpcString_t v = luaL_checkstring(L, -1);
+          size_t klen = strlen(k) + 1;
+          size_t vlen = strlen(v) + 1;
+          memcpy(p, k, klen); header_keys[i] = p; p += klen;
+          memcpy(p, v, vlen); header_vals[i] = p; p += vlen;
+          i++;
+          lua_pop(L, 1);
+        }
+      }
+    }
+    lua_pop(L, 1);
+  }
+
+  // Build the NULL-terminated requestHeaders array expected by emscripten_fetch.
+  const char* req_headers[MAX_FETCH_HEADERS * 2 + 1];
+  for (int i = 0; i < n_headers; i++) {
+    req_headers[i * 2]     = header_keys[i];
+    req_headers[i * 2 + 1] = header_vals[i];
+  }
+  req_headers[n_headers * 2] = NULL;
+  if (n_headers > 0) {
+    attr.requestHeaders = (const char* const*)req_headers;
+  }
+
+  if (body) {
+    attr.requestData = body;
+    attr.requestDataSize = body_size;
+  }
+
+  webgl_fetch_state_t* state = (webgl_fetch_state_t*)malloc(sizeof(webgl_fetch_state_t));
+  if (!state) {
+    free(header_buf);
+    return luaL_error(L, "out of memory");
+  }
+  memset(state, 0, sizeof(webgl_fetch_state_t));
+  attr.userData = state;
+
+  emscripten_fetch(&attr, url);
+
+  // Poll until the fetch callback fires.  ASYNCIFY suspends the WASM and
+  // yields to the browser event loop on each emscripten_sleep call, which
+  // allows the XHR to make progress and eventually fire its callbacks.
+  // emscripten_sleep(0) yields immediately without introducing artificial delay.
+  while (!state->done) {
+    emscripten_sleep(0);
+  }
+
+  emscripten_fetch_t* fetch = state->fetch;
+  int success = state->success;
+  free(state);
+  free(header_buf);
+
+  size_t size = (size_t)fetch->numBytes;
+  response_t* response = (response_t*)lua_newuserdata(L, sizeof(response_t) + size + 1);
+  luaL_setmetatable(L, API_TYPE_RESPONSE);
+  response->size = size;
+  response->code = (long)fetch->status;
+  if (size > 0) {
+    memcpy(response->data, fetch->data, size);
+  }
+  response->data[size] = '\0';
+
+  emscripten_fetch_close(fetch);
+
+  lua_pushinteger(L, response->code);
+
+  switch (response->code) {
+    case HTTP_OK:
+    case HTTP_CREATED:
+    case HTTP_NO_CONTENT:
+      return 2;
+    default:
+      return lua_error(L);
+  }
+}
+
+static void
+Net_Init(void)
+{
+  Con_Printf("Initializing network");
+}
+
+static void
+Net_Shutdown(void)
+{
+  Con_Printf("Shutting down network");
+}
+
+#endif // __EMSCRIPTEN__
+
 int f_response_text(lua_State* L)
 {
   response_t* res = luaL_checkudata(L, 1, API_TYPE_RESPONSE);
@@ -380,6 +589,7 @@ int f_response_code(lua_State* L)
   return 1;
 }
 
+#ifndef __EMSCRIPTEN__
 #include <include/renderer.h>
 int f_response_image(lua_State* L)
 {
@@ -389,6 +599,12 @@ int f_response_image(lua_State* L)
   //  luaX_pushObject(L, R_LoadImageFromMemory(L, res->data, (uint32_t)res->size));
   return 1;
 }
+#else
+int f_response_image(lua_State* L)
+{
+  return luaL_error(L, "response:image() is not supported in WebGL builds");
+}
+#endif
 
 static luaL_Reg const lib_response[] = { { "__tostring", f_response_text },
   { "text", f_response_text },
@@ -397,22 +613,6 @@ static luaL_Reg const lib_response[] = { { "__tostring", f_response_text },
   { "size", f_response_size },
   { "code", f_response_code },
   { NULL, NULL } };
-
-static void
-Net_Init(void)
-{
-  Con_Printf("Initializing network");
-  
-  curl_global_init(CURL_GLOBAL_DEFAULT);
-}
-
-static void
-Net_Shutdown(void)
-{
-  Con_Printf("Shutting down network");
-  
-  curl_global_cleanup();
-}
 
 int f_network_shutdown(lua_State* L)
 {
