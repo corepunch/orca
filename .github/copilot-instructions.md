@@ -504,3 +504,47 @@ When editing PHP templates in `tools/templates/`:
 - Run `emmake make wasm-deps` once to compile lua5.4, libxml2, and liblz4 for WASM.
 - The engine uses `-sASYNCIFY=1`: the Lua main loop calls `emscripten_sleep(0)` when the event queue is empty, which yields to the browser and resumes on the next tick.
 - `orca.network` and `orca.editor` are excluded from WebGL builds.
+
+### Renderer Lifecycle — `tr.buffer` as Initialization Sentinel
+
+`renderer_Init()` (`source/renderer/r_main.c`) is the only function that creates the OpenGL context and calls `R_InitBuffers()` → `glGenBuffers()`, which sets `tr.buffer` to a non-zero value. Requiring `orca.renderer` (via `luaopen_orca_renderer`) only calls `WI_Init()` — it does **not** initialize the full renderer.
+
+**Gotcha:** Calling `renderer_Shutdown()` without having first called `renderer_Init()` crashes in `WI_MakeCurrentContext()` because no GL context exists. The guard `if (!tr.buffer) return;` at the top of `renderer_Shutdown` short-circuits this path. Always check `tr.buffer` before performing any GL teardown.
+
+This matters in test harnesses (`RunTest` in `source/orca.c`) that `require "orca.renderer"` for XML parsing but never create a window.
+
+### XML Attribute Iterator — `xmlGetProp` vs `xmlNodeListGetString`
+
+The XML attribute iterator in `source/parsers/p_xml.c` previously used `xmlNodeListGetString(attr->parent->doc, attr->children, 1)` to read attribute values. When `XML_PARSE_COMPACT` is active (the default flag in `include/orcadef.h`), libxml2 may store small text nodes differently, causing `xmlNodeListGetString` to return `NULL` even for non-empty attributes. This manifested as `setName(nil)` errors in `file-xml.lua`.
+
+**Fix:** Use `xmlGetProp(node, attr->name)` (or `xmlGetNsProp` for namespaced attributes) — the canonical libxml2 API for reading attribute values, which is immune to compact-mode storage differences. Always free the returned `xmlChar*` with `xmlFree`.
+
+### Screen ResizeMode in Tests and Headless Contexts
+
+`Screen.MeasureOverride` calls `WI_GetSize()` and overrides the screen's requested `Width`/`Height` with the actual window dimensions when `ResizeMode == kResizeModeCanResize` (the **default** value). On a virtual framebuffer (e.g., `xvfb-run` in CI), the window is 640×480, so any test that creates a `Screen { Width = 1000, Height = 1000 }` without setting `ResizeMode` will silently get a 640×480 screen — causing layout assertions to fail.
+
+**Fix:** Always set `ResizeMode = "NoResize"` (Lua) or `ResizeMode="NoResize"` (XML attribute) for test screens that must keep their explicit dimensions.
+
+```lua
+local screen = ui.Screen { Width = 1000, Height = 1000, ResizeMode = "NoResize" }
+```
+
+### Property VM — `Token_Release` Must Recurse into `args[]`
+
+`Token_Release` in `source/core/property/property_runtime.c` walks `token->next` to release sibling tokens, but **does not** recurse into `token->args[]`. Every function-call token (`ADD`, `MUL`, `IF`, …) keeps its argument sub-tokens in `args[0..TOKEN_MAX_ARGS-1]`. Failing to release them leaks all arguments of every operator token.
+
+**Fix:** After releasing `token->next`, loop over `token->args[i]` for `i < TOKEN_MAX_ARGS` and call `Token_Release` on each non-NULL arg before freeing the token itself.
+
+### Property VM — `IF` Operator
+
+The property VM supports an `IF(cond, true-val, false-val)` operator following Excel/formula semantics:
+
+- Condition is **numeric** (`cond.value[0] != 0`) or **string** (non-empty string = truthy).
+- The result type follows whichever branch is selected — works with int, float, and string registers.
+- Registered in `op_call` alongside `ADD`, `MUL`, etc. via `CALL(IF)`.
+
+```xml
+<property name="Label">
+  <Binding>IF(EQUAL({./IsActive}, 1), "On", "Off")</Binding>
+</property>
+```
