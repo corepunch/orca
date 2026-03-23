@@ -46,11 +46,12 @@
 #include <stddef.h>
 #include <string.h>  /* memset, memcpy, strlen — provided by libc directly */
 
-/* Static bootstrap buffer for very early allocations (before mem_init).
- * Handles allocations from dlsym and from transitive library constructors
- * (GnuTLS, libEGL, …) that run before main().  The overflow path below
- * handles any allocation that exceeds this buffer. */
-#define BOOTSTRAP_BUF_SIZE (128 * 1024)
+/* Small bootstrap buffer used *only* while dlsym() resolves the real
+ * allocator pointers.  dlsym itself calls calloc() once internally (on
+ * glibc/macOS), so we need enough space for that one allocation.
+ * All other pre-main allocations (GnuTLS, libEGL, …) go to the real
+ * libc once the lazy initialiser fires. */
+#define BOOTSTRAP_BUF_SIZE 1024
 static char   s_bootstrap_buf[BOOTSTRAP_BUF_SIZE];
 static size_t s_bootstrap_pos = 0;
 
@@ -59,30 +60,15 @@ static int is_bootstrap_ptr(const void *ptr) {
            (const char *)ptr <  s_bootstrap_buf + BOOTSTRAP_BUF_SIZE;
 }
 
-/* glibc provides these raw allocator symbols that bypass any interposer.
- * Declared weak so the code compiles on non-glibc systems too; on those
- * systems the bootstrap buffer is the only fallback and overflow will still
- * return NULL (same behaviour as before this fix). */
-extern void *__libc_malloc(size_t)          __attribute__((weak));
-extern void *__libc_calloc(size_t, size_t)  __attribute__((weak));
-extern void *__libc_realloc(void *, size_t) __attribute__((weak));
-extern void  __libc_free(void *)            __attribute__((weak));
-
 static void *bootstrap_alloc(size_t size) {
     size = (size + 15u) & ~(size_t)15u; /* 16-byte alignment */
-    if (s_bootstrap_pos + size <= BOOTSTRAP_BUF_SIZE) {
-        void *p = s_bootstrap_buf + s_bootstrap_pos;
-        s_bootstrap_pos += size;
-        return p;
-    }
-    /* Bootstrap buffer exhausted.  Fall back to the raw glibc allocator so
-     * that library constructors (GnuTLS, libEGL, …) can complete without
-     * receiving NULL from malloc.  These allocations are not counted in
-     * s_alloc_count because they precede mem_init(). */
-    return __libc_malloc ? __libc_malloc(size) : NULL;
+    if (s_bootstrap_pos + size > BOOTSTRAP_BUF_SIZE) return NULL;
+    void *p = s_bootstrap_buf + s_bootstrap_pos;
+    s_bootstrap_pos += size;
+    return p;
 }
 
-/* Real allocator function pointers, set by mem_init(). */
+/* Real allocator function pointers resolved lazily on first use. */
 typedef void *(*malloc_fn_t)(size_t);
 typedef void *(*calloc_fn_t)(size_t, size_t);
 typedef void *(*realloc_fn_t)(void *, size_t);
@@ -93,31 +79,58 @@ static calloc_fn_t  s_real_calloc  = NULL;
 static realloc_fn_t s_real_realloc = NULL;
 static free_fn_t    s_real_free    = NULL;
 
-/* Live allocation counter: incremented by malloc/calloc/strdup,
- * decremented by free.  Snapshot before/after a test to detect leaks. */
+/* Recursion guard: set to 1 while dlsym() is running so that the
+ * calloc() invoked internally by dlsym uses the bootstrap buffer
+ * instead of trying to re-enter init_alloc_funcs(). */
+static int s_init_in_progress = 0;
+
+/* Tracking is enabled only after mem_init() is called from main().
+ * Allocations that happen before that point (library constructors,
+ * dlsym overhead) are served by the real libc but NOT counted. */
+static int s_tracking_active = 0;
+
+/* Resolve the real allocator function pointers via dlsym(RTLD_NEXT).
+ * Safe to call from any intercepted allocator; the recursion guard
+ * prevents re-entrancy.  Aborts if dlsym fails (indicates a broken
+ * runtime environment where tests cannot run meaningfully). */
+static void init_alloc_funcs(void) {
+    s_init_in_progress = 1;
+    s_real_malloc  = (malloc_fn_t)  dlsym(RTLD_NEXT, "malloc");
+    s_real_calloc  = (calloc_fn_t)  dlsym(RTLD_NEXT, "calloc");
+    s_real_realloc = (realloc_fn_t) dlsym(RTLD_NEXT, "realloc");
+    s_real_free    = (free_fn_t)    dlsym(RTLD_NEXT, "free");
+    s_init_in_progress = 0;
+    if (!s_real_malloc || !s_real_calloc || !s_real_realloc || !s_real_free) {
+        /* Cannot locate libc allocators — tests cannot run. */
+        abort();
+    }
+}
+
+/* Live allocation counter: incremented by malloc/calloc, decremented
+ * by free.  Only active after mem_init() enables tracking. */
 static volatile long s_alloc_count = 0;
 static volatile long s_alloc_total = 0;  /* monotonic total, for diagnostics */
 
-/* mem_init() must be called at the start of main(), after which all
- * allocations from both the test binary and liborca.so are tracked. */
+/* mem_init() must be called at the start of main(). From this point
+ * onward all allocations from both the test binary and liborca.so are
+ * tracked.  Allocations that occurred before mem_init() (library
+ * constructors, dlsym overhead) are NOT counted. */
 static void mem_init(void) {
-    s_real_malloc  = (malloc_fn_t) dlsym(RTLD_NEXT, "malloc");
-    s_real_calloc  = (calloc_fn_t) dlsym(RTLD_NEXT, "calloc");
-    s_real_realloc = (realloc_fn_t)dlsym(RTLD_NEXT, "realloc");
-    s_real_free    = (free_fn_t)   dlsym(RTLD_NEXT, "free");
-    /* Reset counter: any bootstrap allocations that survive to this point
-     * live in the static buffer and will never be freed through s_real_free,
-     * so they don't affect future delta checks. */
+    if (!s_real_malloc) init_alloc_funcs();
     s_alloc_count = 0;
     s_alloc_total = 0;
+    s_tracking_active = 1;
 }
 
 /* ---- replacement allocators ---- */
 
 void *malloc(size_t size) {
-    if (!s_real_malloc) return bootstrap_alloc(size);
+    if (!s_real_malloc) {
+        if (s_init_in_progress) return bootstrap_alloc(size);
+        init_alloc_funcs();
+    }
     void *p = s_real_malloc(size);
-    if (p) {
+    if (p && s_tracking_active) {
         __atomic_fetch_add(&s_alloc_count, 1, __ATOMIC_RELAXED);
         __atomic_fetch_add(&s_alloc_total, 1, __ATOMIC_RELAXED);
     }
@@ -126,14 +139,15 @@ void *malloc(size_t size) {
 
 void *calloc(size_t n, size_t size) {
     if (!s_real_calloc) {
-        void *p = bootstrap_alloc(n * size);
-        /* The BSS bootstrap buffer is already zero-initialised; overflow
-         * pointers from __libc_malloc are not — zero them explicitly. */
-        if (p && !is_bootstrap_ptr(p)) memset(p, 0, n * size);
-        return p;
+        if (s_init_in_progress) {
+            /* Called from dlsym — use the bootstrap buffer (zeroed by BSS). */
+            void *p = bootstrap_alloc(n * size);
+            return p;
+        }
+        init_alloc_funcs();
     }
     void *p = s_real_calloc(n, size);
-    if (p) {
+    if (p && s_tracking_active) {
         __atomic_fetch_add(&s_alloc_count, 1, __ATOMIC_RELAXED);
         __atomic_fetch_add(&s_alloc_total, 1, __ATOMIC_RELAXED);
     }
@@ -142,27 +156,30 @@ void *calloc(size_t n, size_t size) {
 
 void *realloc(void *ptr, size_t size) {
     if (is_bootstrap_ptr(ptr)) {
-        /* Bootstrap pointers can't be passed to real realloc; copy to heap.
-         * The old allocation size is unknown, so we copy up to the bootstrap
-         * buffer's used capacity as a safe upper bound.  In practice, realloc
-         * of bootstrap pointers does not occur in this test binary. */
-        if (!s_real_malloc) return bootstrap_alloc(size);
+        /* Bootstrap pointers cannot be passed to the real realloc.
+         * Copy to heap; in practice this path is never taken. */
+        if (!s_real_malloc) {
+            if (s_init_in_progress) return bootstrap_alloc(size);
+            init_alloc_funcs();
+        }
         void *np = s_real_malloc(size);
         if (np) {
-            size_t old_cap = s_bootstrap_pos; /* upper bound on old size */
+            size_t old_cap = s_bootstrap_pos;
             memcpy(np, ptr, old_cap < size ? old_cap : size);
-            __atomic_fetch_add(&s_alloc_count, 1, __ATOMIC_RELAXED);
-            __atomic_fetch_add(&s_alloc_total, 1, __ATOMIC_RELAXED);
+            if (s_tracking_active) {
+                __atomic_fetch_add(&s_alloc_count, 1, __ATOMIC_RELAXED);
+                __atomic_fetch_add(&s_alloc_total, 1, __ATOMIC_RELAXED);
+            }
         }
         return np;
     }
     if (!s_real_realloc) {
-        /* Pre-init realloc of an overflow-bootstrap (non-BSS) pointer. */
-        return __libc_realloc ? __libc_realloc(ptr, size) : NULL;
+        if (s_init_in_progress) return NULL;
+        init_alloc_funcs();
     }
     void *p = s_real_realloc(ptr, size);
-    /* realloc with non-NULL ptr replaces in-place: count unchanged. */
-    if (!ptr && p) {
+    /* realloc(NULL, size) is equivalent to malloc(size): count it. */
+    if (!ptr && p && s_tracking_active) {
         __atomic_fetch_add(&s_alloc_count, 1, __ATOMIC_RELAXED);
         __atomic_fetch_add(&s_alloc_total, 1, __ATOMIC_RELAXED);
     }
@@ -172,13 +189,11 @@ void *realloc(void *ptr, size_t size) {
 void free(void *ptr) {
     if (!ptr) return;
     if (is_bootstrap_ptr(ptr)) return; /* bootstrap: silently ignore */
-    if (!s_real_free) {
-        /* Pre-init free of an overflow-bootstrap pointer — release via glibc. */
-        if (__libc_free) __libc_free(ptr);
-        return;
-    }
+    if (!s_real_free) init_alloc_funcs(); /* aborts if dlsym fails */
     s_real_free(ptr);
-    __atomic_fetch_sub(&s_alloc_count, 1, __ATOMIC_RELAXED);
+    if (s_tracking_active) {
+        __atomic_fetch_sub(&s_alloc_count, 1, __ATOMIC_RELAXED);
+    }
 }
 
 /* Note: strdup is NOT overridden here — it internally calls malloc, so
