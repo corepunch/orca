@@ -553,24 +553,34 @@ HANDLER(Screen, Destroy) {
   return FALSE;
 }
 
+static uint32_t get_size(lpObject_t obj) {
+  return MAKEDWORD(NODE2D_FRAME(GetNode2D(obj), Size, 0).Actual,
+                   NODE2D_FRAME(GetNode2D(obj), Size, 1).Actual);
+}
+
 HANDLER(Screen, WindowPaint) {
   lua_State *L = OBJ_GetDomain(hObject);
   
   if (!pWindowPaint) {
     R_BeginFrame(pScreen->ClearColor);
   }
+
+  uint32_t const _size = get_size(hObject);
   
-  if (pScreen->ResizeMode == kResizeModeCanResize) {
-    Node2D_SetFrame(GetNode2D(hObject), kBox3FieldWidth, LOWORD(wParam));
-    Node2D_SetFrame(GetNode2D(hObject), kBox3FieldHeight, HIWORD(wParam));
-  }
-    
   OBJ_Awake(L, hObject);
   OBJ_Animate(L, hObject);
   OBJ_LoadPrefabs(L, hObject);
   OBJ_EmitPropertyChangedEvents(L, hObject);
   OBJ_UpdateProperties(hObject);
   OBJ_UpdateLayout(hObject, LOWORD(wParam), HIWORD(wParam));
+
+  // If screen size has changed, we need to make sure all properties
+  // are recalculated with the new size
+  if (get_size(hObject) != _size) {
+    OBJ_EmitPropertyChangedEvents(L, hObject);
+    OBJ_UpdateProperties(hObject);
+    OBJ_UpdateLayout(hObject, LOWORD(wParam), HIWORD(wParam));
+  }
   
   OBJ_SendMessageW(hObject, kEventUpdateMatrix, 0, &(struct UpdateMatrixEventArgs){
     .parent = MAT4_Identity(),
