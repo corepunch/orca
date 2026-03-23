@@ -14,6 +14,7 @@ typedef struct _DRAW2DCONTENTSTRUCT
   bool_t ForceRender;
   bool_t OnlyDecorations;
   float FontSize;
+  uint8_t StencilRef;
 } DRAW2DCONTENTSTRUCT, *EVENT_PTR(Draw2DContent);
 
 HANDLER(Node2D, Draw2DContent);
@@ -70,17 +71,76 @@ _GetContentsMatrix(Node2DPtr pNode2D,
 static bool_t
 _IsOutOfBounds(Node2DPtr node, Draw2DContentEventPtr param)
 {
-//  if (param->ForceRender)
+  if (param->ForceRender)
     return FALSE;
-//  struct mat4 mvp;
-//  mvp = MAT4_Multiply(&param->BoundsMatrix, &node->Matrix);
-//  struct vec3 _min = MAT4_MultiplyVector3D(&mvp, &(struct vec3){ 0, 0, 0 });
-//  struct vec3 _max =
-//    MAT4_MultiplyVector3D(&mvp,
-//                          &(struct vec3){ Node2D_GetFrame(node, kBox3FieldWidth),
-//                                          Node2D_GetFrame(node, kBox3FieldHeight),
-//                                          0 });
-//  return _min.y < -1 || _min.x < -1 || _max.y > 1 || _max.x > 1;
+  struct mat4 mvp;
+  mvp = MAT4_Multiply(&param->BoundsMatrix, &node->Matrix);
+  struct vec3 _min = MAT4_MultiplyVector3D(&mvp, &(struct vec3){ 0, 0, 0 });
+  struct vec3 _max =
+    MAT4_MultiplyVector3D(&mvp,
+                          &(struct vec3){ Node2D_GetFrame(node, kBox3FieldWidth),
+                                          Node2D_GetFrame(node, kBox3FieldHeight),
+                                          0 });
+  return _max.x < -1.0f || _min.x > 1.0f || _min.y < -1.0f || _max.y > 1.0f; /* NDC bounds */
+}
+
+static void
+_EnterStencilClip(Node2DPtr pNode2D, struct ViewDef* viewdef, uint8_t clipRef)
+{
+  PIPELINESTATE ps;
+  R_GetPipelineState(&ps);
+
+  ps.color_write_mode = COLOR_WRITE_MODE_NONE;
+  ps.stencil = (struct stencil_state){
+    .mask = 0xFF,
+    .ref = clipRef,
+    .write = TRUE,
+    .func = COMPARE_FUNC_ALWAYS,
+    .fail = STENCIL_OP_KEEP,
+    .zfail = STENCIL_OP_KEEP,
+    .zpass = STENCIL_OP_REPLACE,
+  };
+  R_SetPipelineState(&ps);
+
+  struct ViewEntity clip = { 0 };
+  clip.bbox = BOX3_FromRect(Node2D_GetBackgroundRect(pNode2D));
+  clip.matrix = pNode2D->Matrix;
+  clip.material.opacity = 1;
+  R_DrawEntity(viewdef, &clip);
+
+  ps.color_write_mode = COLOR_WRITE_MODE_RGBA;
+  ps.stencil = (struct stencil_state){
+    .mask = 0xFF,
+    .ref = clipRef,
+    .write = FALSE,
+    .func = COMPARE_FUNC_EQUAL,
+    .fail = STENCIL_OP_KEEP,
+    .zfail = STENCIL_OP_KEEP,
+    .zpass = STENCIL_OP_KEEP,
+  };
+  R_SetPipelineState(&ps);
+}
+
+static void
+_ExitStencilClip(uint8_t parentRef)
+{
+  PIPELINESTATE ps;
+  R_GetPipelineState(&ps);
+
+  if (parentRef > 0) {
+    ps.stencil = (struct stencil_state){
+      .mask = 0xFF,
+      .ref = parentRef,
+      .write = FALSE,
+      .func = COMPARE_FUNC_EQUAL,
+      .fail = STENCIL_OP_KEEP,
+      .zfail = STENCIL_OP_KEEP,
+      .zpass = STENCIL_OP_KEEP,
+    };
+  } else {
+    ps.stencil = (struct stencil_state){ 0 };
+  }
+  R_SetPipelineState(&ps);
 }
 
 static void
@@ -336,16 +396,6 @@ HANDLER(Node2D, Draw2DContent)
   
   if (_IsOutOfBounds(pNode2D, pDraw2DContent))
     return FALSE;
-  
-  if (pNode2D->ClipChildren && !pNode2D->RenderTarget) {
-    uint32_t dwWidth = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
-    uint32_t dwHeight = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
-    RenderTexture_Create(
-      &(CREATERTSTRUCT){ .Width = dwWidth,
-                         .Height = dwHeight,
-                         .Scale = WI_GetScaling() },
-      &pNode2D->RenderTarget);
-  }
 
   struct ForegroundContentEventArgs foreground = { 0 };
 
@@ -432,8 +482,18 @@ HANDLER(Node2D, Draw2DContent)
       .foreground = TRUE,
       .viewdef = &viewdef,
     });
-    
-    FOR_EACH_CHILD(hObject, draw_children, pDraw2DContent, pNode2D->Foreground.Color);
+
+    if (pNode2D->ClipChildren && pDraw2DContent->StencilRef < 255) {
+      uint8_t parentStencilRef = pDraw2DContent->StencilRef;
+      uint8_t clipRef = parentStencilRef + 1;
+      _EnterStencilClip(pNode2D, &viewdef, clipRef);
+      pDraw2DContent->StencilRef = clipRef;
+      FOR_EACH_CHILD(hObject, draw_children, pDraw2DContent, pNode2D->Foreground.Color);
+      pDraw2DContent->StencilRef = parentStencilRef;
+      _ExitStencilClip(parentStencilRef);
+    } else {
+      FOR_EACH_CHILD(hObject, draw_children, pDraw2DContent, pNode2D->Foreground.Color);
+    }
   }
   return TRUE;
 }

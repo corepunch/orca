@@ -123,11 +123,12 @@ R_SetStencilState(struct stencil_state const* stencil)
     GLenum gl_zfail = R_GetStencilOp(stencil->zfail);
     GLenum gl_zpass = R_GetStencilOp(stencil->zpass);
     R_Call(glEnable, GL_STENCIL_TEST);
-    R_Call(glStencilMask, stencil->mask);
-    R_Call(glStencilFunc, gl_func, 1, stencil->ref);
+    R_Call(glStencilMask, stencil->write ? stencil->mask : 0);
+    R_Call(glStencilFunc, gl_func, stencil->ref, stencil->mask);
     R_Call(glStencilOp, gl_fail, gl_zfail, gl_zpass);
   } else {
     R_Call(glDisable, GL_STENCIL_TEST);
+    R_Call(glStencilMask, 0xFF);
   }
 }
 
