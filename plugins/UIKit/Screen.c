@@ -566,7 +566,20 @@ HANDLER(Screen, WindowPaint) {
   OBJ_EmitPropertyChangedEvents(L, hObject);
   OBJ_UpdateProperties(hObject);
   OBJ_UpdateLayout(hObject, LOWORD(wParam), HIWORD(wParam));
-  
+
+  // On a window resize / rotation the new dimensions are set in WindowResized
+  // before WindowPaint is called, so ActualWidth/ActualHeight are only updated
+  // by the layout pass above.  Re-emit property changed events and re-evaluate
+  // bindings now that layout has run with the new size, then do a second layout
+  // pass so responsive rules (e.g. column count, visibility) take effect in
+  // the same frame rather than being deferred by one frame.
+  if (pScreen->_resized) {
+    pScreen->_resized = FALSE;
+    OBJ_EmitPropertyChangedEvents(L, hObject);
+    OBJ_UpdateProperties(hObject);
+    OBJ_UpdateLayout(hObject, LOWORD(wParam), HIWORD(wParam));
+  }
+
   OBJ_SendMessageW(hObject, kEventUpdateMatrix, 0, &(struct UpdateMatrixEventArgs){
     .parent = MAT4_Identity(),
     .opacity = 1,
@@ -613,6 +626,7 @@ HANDLER(Screen, WindowResized) {
   }
   R_ClearTextCache();
   OBJ_SetTreeDirty(hObject);
+  pScreen->_resized = TRUE;
   OBJ_SendMessageW(hObject, kEventWindowPaint, wParam, NULL);
   return FALSE;
 }

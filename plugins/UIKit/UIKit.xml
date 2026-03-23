@@ -702,6 +702,7 @@
     <property name="DialogResult" type="float" default="NAN">Result value for dialog interactions</property>
     <field name="_rt" type="Texture" pointer="true">Internal render target for the screen</field>
     <field name="_size" type="uint">Currently set size (to resize window when changed).</field>
+    <field name="_resized" type="bool">Set by WindowResized to trigger a second layout pass so responsive bindings update in the same frame.</field>
   </class>
 
   <class name="Cinematic" parent="Node2D">

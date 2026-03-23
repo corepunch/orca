@@ -869,6 +869,7 @@ struct Screen {
 	float DialogResult; ///< Result value for dialog interactions
 	struct Texture* _rt; ///< Internal render target for the screen
 	uint32_t _size; ///< Currently set size (to resize window when changed).
+	bool_t _resized; ///< Set by WindowResized to trigger a second layout pass so responsive bindings update in the same frame.
 };
 ORCA_API void luaX_pushScreen(lua_State *L, struct Screen const* Screen);
 ORCA_API struct Screen* luaX_checkScreen(lua_State *L, int idx);
