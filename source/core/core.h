@@ -112,9 +112,10 @@ typedef enum DataType {
 	kDataTypeString, ///< String data, heap-allocated to support arbitrary length content.
 	kDataTypeEvent, ///< Event reference used to bind triggers or callbacks.
 	kDataTypeStruct, ///< Composite data structure containing multiple fields used for packaging related geometric, visual, and layout properties together.
+	kDataTypeColor, ///< RGBA color value represented as four floating-point components (red, green, blue, alpha) in the range 0.0 to 1.0.
 	kDataTypeObject, ///< Reference to a complex object instance.
 } eDataType_t;
-#define DataType_Count 9
+#define DataType_Count 10
 ORCA_API const char *DataTypeToString(enum DataType value);
 ORCA_API enum DataType luaX_checkDataType(lua_State *L, int idx);
 ORCA_API void luaX_pushDataType(lua_State *L, enum DataType value);

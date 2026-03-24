@@ -37,6 +37,10 @@ OBJ_GetUniforms(lpObject_t object, struct uniform* pUniforms)
         pUniforms->Type = UT_FLOAT;
         PROP_CopyValue(property, pUniforms->Value);
         break;
+      case kDataTypeColor:
+        pUniforms->Type = UT_COLOR;
+        PROP_CopyValue(property, pUniforms->Value);
+        break;
       case kDataTypeStruct:
         switch (PROP_GetSize(property)) {
           case sizeof(vec2_t):

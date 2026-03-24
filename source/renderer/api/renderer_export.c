@@ -746,11 +746,11 @@ ORCA_API struct ClassDesc _Shader = {
 
 static struct PropertyType const MaterialProperties[kMaterialNumProperties] = {
 	DECL(0x7deb3888, Material, Shader, Shader, kDataTypeObject, .TypeString = "Shader"), // Material.Shader
-	DECL(0x63792322, Material, GlobalAmbient, GlobalAmbient, kDataTypeStruct, .TypeString = "Color"), // Material.GlobalAmbient
-	DECL(0x33f2678b, Material, Ambient, Ambient, kDataTypeStruct, .TypeString = "Color"), // Material.Ambient
-	DECL(0x84d12add, Material, Diffuse, Diffuse, kDataTypeStruct, .TypeString = "Color"), // Material.Diffuse
-	DECL(0x555cbaee, Material, Emissive, Emissive, kDataTypeStruct, .TypeString = "Color"), // Material.Emissive
-	DECL(0xd5e66b37, Material, SpecularColor, SpecularColor, kDataTypeStruct, .TypeString = "Color"), // Material.SpecularColor
+	DECL(0x63792322, Material, GlobalAmbient, GlobalAmbient, kDataTypeColor), // Material.GlobalAmbient
+	DECL(0x33f2678b, Material, Ambient, Ambient, kDataTypeColor), // Material.Ambient
+	DECL(0x84d12add, Material, Diffuse, Diffuse, kDataTypeColor), // Material.Diffuse
+	DECL(0x555cbaee, Material, Emissive, Emissive, kDataTypeColor), // Material.Emissive
+	DECL(0xd5e66b37, Material, SpecularColor, SpecularColor, kDataTypeColor), // Material.SpecularColor
 	DECL(0x841db767, Material, SpecularExponent, SpecularExponent, kDataTypeFloat), // Material.SpecularExponent
 	DECL(0x994c5594, Material, Texture, Texture, kDataTypeObject, .TypeString = "Texture"), // Material.Texture
 	DECL(0xf92ad452, Material, Texture2, Texture2, kDataTypeObject, .TypeString = "Texture"), // Material.Texture2

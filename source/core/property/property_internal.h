@@ -16,6 +16,7 @@ static size_t psize[] = {
   sizeof(char*),      // kDataTypeString
   sizeof(void*),      // kDataTypeEvent
   0,                  // kDataTypeStruct
+  sizeof(struct color), // kDataTypeColor
   sizeof(lpObject_t), // kDataTypeObject
 };
 

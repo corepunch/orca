@@ -221,7 +221,7 @@ LRESULT SKLabelNode_Render(struct Object*, struct SKLabelNode*, wParam_t, Render
 LRESULT SKLabelNode_Create(struct Object*, struct SKLabelNode*, wParam_t, CreateEventPtr);
 
 static struct PropertyType const SKLabelNodeProperties[kSKLabelNodeNumProperties] = {
-	DECL(0xe5b43cf8, SKLabelNode, Color, Color, kDataTypeStruct, .TypeString = "Color"), // SKLabelNode.Color
+	DECL(0xe5b43cf8, SKLabelNode, Color, Color, kDataTypeColor), // SKLabelNode.Color
 };
 static struct SKLabelNode SKLabelNodeDefaults = {
 };

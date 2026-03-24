@@ -2214,7 +2214,7 @@ ORCA_API struct ClassDesc _Brush = {
 
 
 static struct PropertyType const ColorBrushProperties[kColorBrushNumProperties] = {
-	DECL(0xe5b43cf8, ColorBrush, Color, Color, kDataTypeStruct, .TypeString = "Color"), // ColorBrush.Color
+	DECL(0xe5b43cf8, ColorBrush, Color, Color, kDataTypeColor), // ColorBrush.Color
 };
 static struct ColorBrush ColorBrushDefaults = {
 };
@@ -2299,7 +2299,7 @@ static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	DECL(0x3170de3c, Node, DepthBorderWidth, Border.Width.Axis[2], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.DepthBorderWidth
 	DECL(0x14d0d564, Node, BorderWidthFront, Border.Width.Axis[2].Left, kDataTypeFloat), // Node.BorderWidthFront
 	DECL(0x7c087736, Node, BorderWidthBack, Border.Width.Axis[2].Right, kDataTypeFloat), // Node.BorderWidthBack
-	DECL(0x933e48c6, Node, BorderColor, Border.Color, kDataTypeStruct, .TypeString = "Color"), // Node.BorderColor
+	DECL(0x933e48c6, Node, BorderColor, Border.Color, kDataTypeColor), // Node.BorderColor
 	DECL(0x390b4488, Node, BorderStyle, Border.Style, kDataTypeEnum, .TypeString = "None,Hidden,Dotted,Dashed,Solid,Double,Groove,Ridge,Inset,Outset", .EnumValues = _BorderStyle), // Node.BorderStyle
 	DECL(0xb8e9fe05, Node, BorderRadius, Border.Radius, kDataTypeStruct, .TypeString = "BorderRadiusShorthand"), // Node.BorderRadius
 	DECL(0x22252041, Node, BorderTopLeftRadius, Border.Radius.TopLeftRadius, kDataTypeFloat), // Node.BorderTopLeftRadius
@@ -2364,7 +2364,7 @@ static struct PropertyType const TextRunProperties[kTextRunNumProperties] = {
 	DECL(0x9a85011f, TextRun, Underline, Underline, kDataTypeStruct, .TypeString = "UnderlineShorthand"), // TextRun.Underline
 	DECL(0x34ec6004, TextRun, UnderlineOffset, Underline.Offset, kDataTypeFloat), // TextRun.UnderlineOffset
 	DECL(0xee253b91, TextRun, UnderlineWidth, Underline.Width, kDataTypeFloat), // TextRun.UnderlineWidth
-	DECL(0x00c40cce, TextRun, UnderlineColor, Underline.Color, kDataTypeStruct, .TypeString = "Color"), // TextRun.UnderlineColor
+	DECL(0x00c40cce, TextRun, UnderlineColor, Underline.Color, kDataTypeColor), // TextRun.UnderlineColor
 	DECL(0x44b2c826, TextRun, LetterSpacing, LetterSpacing, kDataTypeFloat), // TextRun.LetterSpacing
 	DECL(0xb5107238, TextRun, LineHeight, LineHeight, kDataTypeFloat), // TextRun.LineHeight
 	DECL(0x04055b71, TextRun, CharacterSpacing, CharacterSpacing, kDataTypeFloat), // TextRun.CharacterSpacing
@@ -2412,7 +2412,7 @@ static struct PropertyType const TextBlockConceptProperties[kTextBlockConceptNum
 	DECL(0xdccaa011, TextBlockConcept, PlaceholderText, PlaceholderText, kDataTypeString), // TextBlockConcept.PlaceholderText
 	DECL(0x3dcadc9c, TextBlockConcept, TextOverflow, TextOverflow, kDataTypeEnum, .TypeString = "Clip,Ellipsis", .EnumValues = _TextOverflow), // TextBlockConcept.TextOverflow
 	DECL(0x8987413a, TextBlockConcept, Placeholder, Placeholder, kDataTypeStruct, .TypeString = "BrushShorthand"), // TextBlockConcept.Placeholder
-	DECL(0xb272976d, TextBlockConcept, PlaceholderColor, Placeholder.Color, kDataTypeStruct, .TypeString = "Color"), // TextBlockConcept.PlaceholderColor
+	DECL(0xb272976d, TextBlockConcept, PlaceholderColor, Placeholder.Color, kDataTypeColor), // TextBlockConcept.PlaceholderColor
 	DECL(0x6b519bcf, TextBlockConcept, PlaceholderImage, Placeholder.Image, kDataTypeObject, .TypeString = "Texture"), // TextBlockConcept.PlaceholderImage
 	DECL(0x6d974ebf, TextBlockConcept, PlaceholderMaterial, Placeholder.Material, kDataTypeObject, .TypeString = "Material"), // TextBlockConcept.PlaceholderMaterial
 	DECL(0x27e35097, TextBlockConcept, UseFullFontHeight, UseFullFontHeight, kDataTypeBool), // TextBlockConcept.UseFullFontHeight
@@ -2485,25 +2485,25 @@ static struct PropertyType const Node2DProperties[kNode2DNumProperties] = {
 	DECL(0xe9d1810c, Node2D, Matrix, Matrix, kDataTypeStruct, .TypeString = "Matrix3D"), // Node2D.Matrix
 	DECL(0x64abadd0, Node2D, RenderTarget, RenderTarget, kDataTypeObject, .TypeString = "Texture"), // Node2D.RenderTarget
 	DECL(0xbafc0abd, Node2D, Background, Background, kDataTypeStruct, .TypeString = "BrushShorthand"), // Node2D.Background
-	DECL(0xd1496d30, Node2D, BackgroundColor, Background.Color, kDataTypeStruct, .TypeString = "Color"), // Node2D.BackgroundColor
+	DECL(0xd1496d30, Node2D, BackgroundColor, Background.Color, kDataTypeColor), // Node2D.BackgroundColor
 	DECL(0xe0bbc082, Node2D, BackgroundImage, Background.Image, kDataTypeObject, .TypeString = "Texture"), // Node2D.BackgroundImage
 	DECL(0x843e6b88, Node2D, BackgroundMaterial, Background.Material, kDataTypeObject, .TypeString = "Material"), // Node2D.BackgroundMaterial
 	DECL(0xd96b36e0, Node2D, Foreground, Foreground, kDataTypeStruct, .TypeString = "BrushShorthand"), // Node2D.Foreground
-	DECL(0x94392057, Node2D, ForegroundColor, Foreground.Color, kDataTypeStruct, .TypeString = "Color"), // Node2D.ForegroundColor
+	DECL(0x94392057, Node2D, ForegroundColor, Foreground.Color, kDataTypeColor), // Node2D.ForegroundColor
 	DECL(0xb03161dd, Node2D, ForegroundImage, Foreground.Image, kDataTypeObject, .TypeString = "Texture"), // Node2D.ForegroundImage
 	DECL(0xa654aab9, Node2D, ForegroundMaterial, Foreground.Material, kDataTypeObject, .TypeString = "Material"), // Node2D.ForegroundMaterial
 	DECL(0xce1f078a, Node2D, BoxShadow, BoxShadow, kDataTypeStruct, .TypeString = "ShadowShorthand"), // Node2D.BoxShadow
 	DECL(0x047c9a3d, Node2D, BoxShadowOffset, BoxShadow.Offset, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.BoxShadowOffset
 	DECL(0x623ff5f9, Node2D, BoxShadowBlurRadius, BoxShadow.BlurRadius, kDataTypeFloat), // Node2D.BoxShadowBlurRadius
 	DECL(0xe284b26f, Node2D, BoxShadowSpreadRadius, BoxShadow.SpreadRadius, kDataTypeFloat), // Node2D.BoxShadowSpreadRadius
-	DECL(0xe0ae423d, Node2D, BoxShadowColor, BoxShadow.Color, kDataTypeStruct, .TypeString = "Color"), // Node2D.BoxShadowColor
+	DECL(0xe0ae423d, Node2D, BoxShadowColor, BoxShadow.Color, kDataTypeColor), // Node2D.BoxShadowColor
 	DECL(0x3cf02b8b, Node2D, Overflow, Overflow, kDataTypeStruct, .TypeString = "OverflowShorthand"), // Node2D.Overflow
 	DECL(0xc114fd29, Node2D, OverflowX, Overflow.x, kDataTypeEnum, .TypeString = "Visible,Hidden,Clip,Scroll,Auto", .EnumValues = _Overflow), // Node2D.OverflowX
 	DECL(0xc014fb96, Node2D, OverflowY, Overflow.y, kDataTypeEnum, .TypeString = "Visible,Hidden,Clip,Scroll,Auto", .EnumValues = _Overflow), // Node2D.OverflowY
 	DECL(0x7787478b, Node2D, Ring, Ring, kDataTypeStruct, .TypeString = "RingShorthand"), // Node2D.Ring
 	DECL(0xfd700608, Node2D, RingOffset, Ring.Offset, kDataTypeFloat), // Node2D.RingOffset
 	DECL(0x5fff552d, Node2D, RingWidth, Ring.Width, kDataTypeFloat), // Node2D.RingWidth
-	DECL(0x97d6200a, Node2D, RingColor, Ring.Color, kDataTypeStruct, .TypeString = "Color"), // Node2D.RingColor
+	DECL(0x97d6200a, Node2D, RingColor, Ring.Color, kDataTypeColor), // Node2D.RingColor
 	DECL(0x74622217, Node2D, CompositionBrush, CompositionBrush, kDataTypeObject, .TypeString = "Material"), // Node2D.CompositionBrush
 	DECL(0x5488c4f2, Node2D, CompositionDesignSize, CompositionDesignSize, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.CompositionDesignSize
 	DECL(0x45513b32, Node2D, SizeToContent, SizeToContent, kDataTypeBool), // Node2D.SizeToContent
@@ -2883,7 +2883,7 @@ LRESULT Screen_WindowResized(struct Object*, struct Screen*, wParam_t, WindowRes
 LRESULT Screen_WindowPaint(struct Object*, struct Screen*, wParam_t, WindowPaintEventPtr);
 
 static struct PropertyType const ScreenProperties[kScreenNumProperties] = {
-	DECL(0xeb16b675, Screen, ClearColor, ClearColor, kDataTypeStruct, .TypeString = "Color"), // Screen.ClearColor
+	DECL(0xeb16b675, Screen, ClearColor, ClearColor, kDataTypeColor), // Screen.ClearColor
 	DECL(0x3dd888be, Screen, ResizeMode, ResizeMode, kDataTypeEnum, .TypeString = "CanResize,CanMinimize,CanResizeWithGrip,NoResize", .EnumValues = _ResizeMode), // Screen.ResizeMode
 	DECL(0x9a645b38, Screen, DialogResult, DialogResult, kDataTypeFloat), // Screen.DialogResult
 };
