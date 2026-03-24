@@ -404,6 +404,49 @@ on_fetch_error(emscripten_fetch_t* fetch)
 #define HTTP_CREATED 201
 #define HTTP_NO_CONTENT 204
 
+/* Push the completed fetch result onto the Lua stack and return. */
+static int
+fetch_http_finish(lua_State* L, webgl_fetch_state_t* state)
+{
+  emscripten_fetch_t* fetch = state->fetch;
+  free(state);
+
+  size_t size = (size_t)fetch->numBytes;
+  response_t* response = (response_t*)lua_newuserdata(L, sizeof(response_t) + size + 1);
+  luaL_setmetatable(L, API_TYPE_RESPONSE);
+  response->size = size;
+  response->code = (long)fetch->status;
+  if (size > 0) {
+    memcpy(response->data, fetch->data, size);
+  }
+  response->data[size] = '\0';
+
+  emscripten_fetch_close(fetch);
+
+  lua_pushinteger(L, response->code);
+
+  switch (response->code) {
+    case HTTP_OK:
+    case HTTP_CREATED:
+    case HTTP_NO_CONTENT:
+      return 2;
+    default:
+      return lua_error(L);
+  }
+}
+
+/* lua_yieldk continuation: re-yield until the fetch callback fires, then
+   finish.  network.fetch() must be called from a Lua coroutine (orca.async). */
+static int
+fetch_http_resume(lua_State* L, int status, lua_KContext ctx)
+{
+  webgl_fetch_state_t* state = (webgl_fetch_state_t*)ctx;
+  if (!state->done) {
+    return lua_yieldk(L, 0, ctx, fetch_http_resume);
+  }
+  return fetch_http_finish(L, state);
+}
+
 int fetch_http(lua_State* L)
 {
   lpcString_t url = luaL_checkstring(L, 1);
@@ -507,42 +550,16 @@ int fetch_http(lua_State* L)
   attr.userData = state;
 
   emscripten_fetch(&attr, url);
-
-  // Poll until the fetch callback fires.  ASYNCIFY suspends the WASM and
-  // yields to the browser event loop on each emscripten_sleep call, which
-  // allows the XHR to make progress and eventually fire its callbacks.
-  // emscripten_sleep(0) yields immediately without introducing artificial delay.
-  while (!state->done) {
-    emscripten_sleep(0);
-  }
-
-  emscripten_fetch_t* fetch = state->fetch;
-  int success = state->success;
-  free(state);
+  /* emscripten_fetch has processed requestHeaders and requestData before
+     returning, so header_buf is no longer needed. */
   free(header_buf);
 
-  size_t size = (size_t)fetch->numBytes;
-  response_t* response = (response_t*)lua_newuserdata(L, sizeof(response_t) + size + 1);
-  luaL_setmetatable(L, API_TYPE_RESPONSE);
-  response->size = size;
-  response->code = (long)fetch->status;
-  if (size > 0) {
-    memcpy(response->data, fetch->data, size);
+  /* Yield the Lua coroutine until the XHR callback fires.  Each resume
+     from kEventResumeCoroutine checks state->done via fetch_http_resume. */
+  if (!state->done) {
+    return lua_yieldk(L, 0, (lua_KContext)state, fetch_http_resume);
   }
-  response->data[size] = '\0';
-
-  emscripten_fetch_close(fetch);
-
-  lua_pushinteger(L, response->code);
-
-  switch (response->code) {
-    case HTTP_OK:
-    case HTTP_CREATED:
-    case HTTP_NO_CONTENT:
-      return 2;
-    default:
-      return lua_error(L);
-  }
+  return fetch_http_finish(L, state);
 }
 
 static void

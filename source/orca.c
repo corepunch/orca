@@ -67,6 +67,40 @@ lpcString_t requires[] = {
   "orca.SceneKit",
   "orca.SpriteKit",
 };
+
+#if __EMSCRIPTEN__
+/* ── Emscripten callback-driven main loop ────────────────────────────────────
+ * Without ASYNCIFY the Lua main loop runs as a coroutine.  RunProject loads
+ * the project script into g_co and calls emscripten_set_main_loop so the
+ * browser invokes orca_main_loop_iter() on every requestAnimationFrame.
+ * Each frame we inject a WindowPaint event and resume the coroutine, which
+ * drains the event queue and yields via coroutine.yield() when the queue is
+ * empty.  Input events posted by the platform callbacks accumulate between
+ * frames and are processed on the next resume.
+ * --------------------------------------------------------------------------*/
+static lua_State *g_L   = NULL;
+static lua_State *g_co  = NULL;
+static int g_co_ref = LUA_NOREF;
+
+static void orca_main_loop_iter(void) {
+  /* Drive rendering: inject a WindowPaint event every rAF tick. */
+  WI_PostMessageW(NULL, kEventWindowPaint, WI_GetSize(NULL), 0);
+  int nres = 0;
+  int status = lua_resume(g_co, g_L, 0, &nres);
+  lua_pop(g_co, nres);
+  if (status == LUA_YIELD) {
+    return; /* coroutine will be resumed next frame */
+  }
+  /* Script returned (e.g. hot-reload) or errored. */
+  if (status != LUA_OK) {
+    fprintf(stderr, "orca: Lua coroutine error: %s\n", lua_tostring(g_co, -1));
+  }
+  luaL_unref(g_L, LUA_REGISTRYINDEX, g_co_ref);
+  g_co = NULL;
+  g_co_ref = LUA_NOREF;
+  emscripten_cancel_main_loop();
+}
+#endif
 lpcString_t RunTest(lua_State *L, lpcString_t szFileName) {
   size_t size = 0;
   char *buf = NULL;
@@ -207,10 +241,32 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirName) {
     if (has_written) {
       fprintf(mem, "end\n");
     }
+#if __EMSCRIPTEN__
+    /* On Emscripten the main loop is driven by orca_main_loop_iter() via
+       emscripten_set_main_loop.  After draining all queued events the
+       coroutine yields back to the browser so input callbacks can fire. */
+    fprintf(mem, "end\ncoroutine.yield()\nend\n");
+#else
     fprintf(mem, "end end\n");
+#endif
     fprintf(mem, "ref.shutdown()\n");
     fclose(mem);
   }
+#if __EMSCRIPTEN__
+  if (luaL_loadbuffer(L, buf, size, "@main")) {
+    fprintf(stderr, "Uncaught exception: %s\n", lua_tostring(L, -1));
+    lua_pop(L, 1);
+    free(buf);
+    return NULL;
+  }
+  free(buf);
+  g_L     = L;
+  g_co    = lua_newthread(L);
+  g_co_ref = luaL_ref(L, LUA_REGISTRYINDEX); /* pin coroutine against GC */
+  lua_xmove(L, g_co, 1);                     /* move compiled chunk to co */
+  emscripten_set_main_loop(orca_main_loop_iter, 0, 1); /* never returns */
+  return NULL;
+#else
   if (luaL_loadbuffer(L, buf, size, "@main") || lua_pcall(L, 0, 1, 0)) {
     fprintf(stderr, "Uncaught exception: %s\n", lua_tostring(L, -1));
     lua_pop(L, 1);
@@ -224,6 +280,7 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirName) {
   }
   free(buf);
   return NULL;
+#endif
 }
 
 int main (int argc, LPSTR *argv)

@@ -54,21 +54,18 @@ WEBGL_PLUGINS_H   = $(WEBGL_DIR)/plugins_luaopen.h
 WEBGL_CFLAGS  = -Oz -flto -I. -I$(CURDIR) -I$(PLATFORM_LIBDIR) \
                 -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG=1 \
                 -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
-                -sASYNCIFY=1 -sASYNCIFY_IMPORTS='["emscripten_sleep"]' \
-                -sALLOW_MEMORY_GROWTH=1 \
                 -sFETCH=1
 
 WEBGL_LDFLAGS = -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG=1 \
                 -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
-                -sASYNCIFY=1 -sASYNCIFY_IMPORTS='["emscripten_sleep"]' \
-                -sALLOW_MEMORY_GROWTH=1 \
+                -sINITIAL_MEMORY=96MB \
                 -sEXPORTED_RUNTIME_METHODS='["ccall","cwrap","FS"]' \
                 -sEXIT_RUNTIME=0 \
                 -sASSERTIONS=0 \
                 -sFETCH=1 \
                 --closure 1
-# Uncomment to raise the C stack above the 64 KB Emscripten default (e.g. to avoid stack overflows):
-# WEBGL_LDFLAGS += -sSTACK_SIZE=262144
+# 1 MB stack for Lua's call depth (well above the 64 KB Emscripten default).
+# Without ASYNCIFY there is no shadow-stack overhead, but Lua still needs room.
 WEBGL_LDFLAGS += -sSTACK_SIZE=1048576
 
 # ─── WASM dependency builds ───────────────────────────────────────────────
@@ -177,8 +174,6 @@ webgl-demo:
 WEBGL_DEBUG_CFLAGS  = -g -O1 -I. -I$(CURDIR) -I$(PLATFORM_LIBDIR) \
                       -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG=1 \
                       -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
-                      -sASYNCIFY=1 -sASYNCIFY_IMPORTS='["emscripten_sleep"]' \
-                      -sALLOW_MEMORY_GROWTH=1 \
                       -sFETCH=1 \
                       -I$(WASM_DEPS_DIR)/include -I$(WASM_DEPS_DIR)/include/libxml2 \
                       -I$(WEBGL_DIR) \
@@ -188,8 +183,7 @@ WEBGL_DEBUG_CFLAGS  = -g -O1 -I. -I$(CURDIR) -I$(PLATFORM_LIBDIR) \
 # (ASSERTIONS=1 rather than 2: see comment above for why 2 crashes on iOS touch)
 WEBGL_DEBUG_LDFLAGS = -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG=1 \
                       -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
-                      -sASYNCIFY=1 -sASYNCIFY_IMPORTS='["emscripten_sleep"]' \
-                      -sALLOW_MEMORY_GROWTH=1 \
+                      -sINITIAL_MEMORY=96MB \
                       -sSTACK_SIZE=1048576 \
                       -sEXPORTED_RUNTIME_METHODS='["ccall","cwrap","FS"]' \
                       -sEXIT_RUNTIME=0 \
