@@ -2,8 +2,15 @@
 <Project Name="Example" StartupScreen="Example/Screens/Application">
   <ScreenLibrary Name="Screens" IsExternal="true"/>
   <ImageLibrary Name="Images" IsExternal="true"/>
+  <PrefabLibrary Name="Prefabs" IsExternal="true"/>
   <Project.PropertyTypes>
-    <PropertyType Name="Speed" DataType="Float" Category="Custom"/>
+    <PropertyType Name="Title" DataType="String" Category="Card"/>
+    <PropertyType Name="Subtitle" DataType="String" Category="Card"/>
+    <PropertyType Name="Body" DataType="String" Category="Card"/>
+    <PropertyType Name="Icon" DataType="String" Category="Card"/>
+    <PropertyType Name="IconBackground" DataType="Color" Category="Card"/>
+    <PropertyType Name="Image" DataType="Object" TypeString="Texture" Category="Card"/>
+    <PropertyType Name="PrimaryColor" DataType="Color" Category="Card"/>
   </Project.PropertyTypes>
   <Project.SystemMessages>
     <SystemMessage Message="KeyDown" Key="q" Command="return"/>

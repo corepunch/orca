@@ -91,11 +91,10 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
         case kDataTypeEnum:
           f_parse_property(L, p, luaL_checkstring(L, idx));
           break;
+        case kDataTypeColor:
+          f_parse_property(L, p, luaL_checkstring(L, idx));
+          break;
         case kDataTypeStruct:
-          if (!strcmp(p->pdesc->TypeString, "Color")) {
-            f_parse_property(L, p, luaL_checkstring(L, idx));
-            break;
-          }
         default:
           Con_Error("Trying to parse a property %s with a string %s", p->pdesc->Name, luaL_checkstring(L, idx));
           assert(!"Parsing of properties is deprecated");
@@ -112,6 +111,7 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
     case LUA_TNUMBER:
       switch (p->type) {
         case kDataTypeStruct:
+        case kDataTypeColor:
           // TODO: do we want to support such syntax?
           for (size_t s = 0; s < p->pdesc->DataSize/sizeof(float); s++) {
             ((float*)p->value)[s] = luaL_checknumber(L, idx);
@@ -147,6 +147,9 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
         case kDataTypeStruct:
           PROP_SetValue(p, luaL_checkudata(L, idx, PROP_GetUserData(p)));
           break;
+        case kDataTypeColor:
+          PROP_SetValue(p, luaX_checkcolor(L, idx));
+          break;
         default:
           return luaL_error(L, "Incorrect input (lua_type=%d) for (type=%d) %s property\n", lua_type(L, idx), p->type, p->pdesc->Name);
       }
@@ -179,6 +182,9 @@ void _pushproperty(lua_State* L,
     case kDataTypeStruct:
       memcpy(lua_newuserdata(L, type->DataSize), value, type->DataSize);
       luaL_setmetatable(L, type->TypeString);
+      break;
+    case kDataTypeColor:
+      luaX_pushcolor(L, value);
       break;
     case kDataTypeString:
       lua_pushstring(L, *(lpcString_t*)value);

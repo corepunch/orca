@@ -23,18 +23,9 @@
 						WordWrap="true"/>
 					<Node2D Name="MetricSpacer" Height="40"/>
 					<Grid Name="Metrics" Columns="auto auto auto" Spacing="16">
-						<StackView Name="MetricUsers" Direction="Vertical" Spacing="4" BackgroundColor="#1A1A28" Padding="20" Width="120">
-							<TextBlock Name="MetricUsersValue" Text="2.4 M" FontSize="28" ForegroundColor="#8B5CF6"/>
-							<TextBlock Name="MetricUsersLabel" Text="Active users" FontSize="11" ForegroundColor="#4B5563"/>
-						</StackView>
-						<StackView Name="MetricUptime" Direction="Vertical" Spacing="4" BackgroundColor="#1A1A28" Padding="20" Width="120">
-							<TextBlock Name="MetricUptimeValue" Text="99.9 %" FontSize="28" ForegroundColor="#10B981"/>
-							<TextBlock Name="MetricUptimeLabel" Text="Uptime SLA" FontSize="11" ForegroundColor="#4B5563"/>
-						</StackView>
-						<StackView Name="MetricFrame" Direction="Vertical" Spacing="4" BackgroundColor="#1A1A28" Padding="20" Width="120">
-							<TextBlock Name="MetricFrameValue" Text="1.2 ms" FontSize="28" ForegroundColor="#3B82F6"/>
-							<TextBlock Name="MetricFrameLabel" Text="Frame time" FontSize="11" ForegroundColor="#4B5563"/>
-						</StackView>
+						<LayerPrefabPlaceholder Name="MetricUsers" PlaceholderTemplate="Example/Prefabs/Mertic" Card.Title="2.4 M" Card.Subtitle="Active users" Card.PrimaryColor="#8B5CF6"/>
+						<LayerPrefabPlaceholder Name="MetricUptime" PlaceholderTemplate="Example/Prefabs/Mertic" Card.Title="99.9 %" Card.Subtitle="Uptime SLA" Card.PrimaryColor="#10B981"/>
+						<LayerPrefabPlaceholder Name="MetricFrame" PlaceholderTemplate="Example/Prefabs/Mertic" Card.Title="1.2 ms" Card.Subtitle="Frame time" Card.PrimaryColor="#3B82F6"/>
 					</Grid>
 				</StackView>
 				<ImageView Name="HeroImage" Image="Example/Images/people" Stretch="UniformToFill">
@@ -43,26 +34,14 @@
 				<Grid.Columns>IF(STEP(640, {../../../Node.ActualWidth}), "auto auto", "auto")</Grid.Columns>
 			</Grid>
 			<Grid Name="FeatureSection" Columns="auto auto auto" Spacing="20">
-				<StackView Name="CardText" Direction="Vertical" Spacing="10" BackgroundColor="#141420" Padding="28">
-					<TextBlock Name="CardTextIcon" Text="Aa" FontSize="20" ForegroundColor="#8B5CF6" BackgroundColor="#1E1833"
-						Width="44" Height="40"
-						TextHorizontalAlignment="Center" TextVerticalAlignment="Center"/>
-					<Node2D Name="CardTextSpacer" Height="8"/>
-					<TextBlock Name="CardTextTitle" Text="Text Rendering" FontSize="16" ForegroundColor="#F1F5F9"/>
-					<TextBlock Name="CardTextBody"
-						Text="Pixel-perfect typography with kerning, multi-language support, and full font control."
-						FontSize="13" ForegroundColor="#4B5563" WordWrap="true"/>
-				</StackView>
-				<StackView Name="CardLayout" Direction="Vertical" Spacing="10" BackgroundColor="#141420" Padding="28">
-					<TextBlock Name="CardLayoutIcon" Text="#" FontSize="22" ForegroundColor="#10B981" BackgroundColor="#0D2020"
-						Width="44" Height="40"
-						TextHorizontalAlignment="Center" TextVerticalAlignment="Center"/>
-					<Node2D Name="CardLayoutSpacer" Height="8"/>
-					<TextBlock Name="CardLayoutTitle" Text="Flexible Layouts" FontSize="16" ForegroundColor="#F1F5F9"/>
-					<TextBlock Name="CardLayoutBody"
-						Text="Grid and stack containers that adapt to any resolution, defined declaratively in XML."
-						FontSize="13" ForegroundColor="#4B5563" WordWrap="true"/>
-				</StackView>
+				<LayerPrefabPlaceholder Name="CardText" PlaceholderTemplate="Example/Prefabs/FeatureCard"
+					Card.Icon="Aa" Card.Title="Text Rendering"
+					Card.Body="Pixel-perfect typography with kerning, multi-language support, and full font control."
+					Card.PrimaryColor="#8B5CF6" Card.IconBackground="#1E1833"/>
+				<LayerPrefabPlaceholder Name="CardLayout" PlaceholderTemplate="Example/Prefabs/FeatureCard"
+					Card.Icon="#" Card.Title="Flexible Layouts"
+					Card.Body="Grid and stack containers that adapt to any resolution, defined declaratively in XML."
+					Card.PrimaryColor="#10B981" Card.IconBackground="#0D2020"/>
 				<StackView Name="CardImage" Direction="Vertical" Spacing="10" BackgroundColor="#141420" Padding="28">
 					<ImageView Name="CardImageThumb" Image="Example/Images/dog" Width="200" Height="80"/>
 					<TextBlock Name="CardImageTitle" Text="Image Integration" FontSize="16" ForegroundColor="#F1F5F9"/>
@@ -78,22 +57,12 @@
 					Text="Screenshots and scenes rendered entirely by the ORCA engine."
 					FontSize="14" ForegroundColor="#64748B"/>
 				<Grid Name="GalleryGrid" Columns="auto auto" Spacing="16">
-					<StackView Name="GalleryCard1" Direction="Vertical" Spacing="0" BackgroundColor="#141420">
-						<ImageView Name="GalleryImg1" Image="Example/Images/lake" Height="180" Stretch="UniformToFill"/>
-						<StackView Name="GalleryCard1Caption" Direction="Vertical" Spacing="4" Padding="16">
-							<TextBlock Name="GalleryCard1Title" Text="Lake Scene" FontSize="15" ForegroundColor="#F1F5F9"/>
-							<TextBlock Name="GalleryCard1Body" Text="Real-time reflections and water surface rendered at 60 fps."
-								FontSize="12" ForegroundColor="#4B5563" WordWrap="true"/>
-						</StackView>
-					</StackView>
-					<StackView Name="GalleryCard2" Direction="Vertical" Spacing="0" BackgroundColor="#141420">
-						<ImageView Name="GalleryImg2" Image="Example/Images/peacock" Height="180" Stretch="UniformToFill"/>
-						<StackView Name="GalleryCard2Caption" Direction="Vertical" Spacing="4" Padding="16">
-							<TextBlock Name="GalleryCard2Title" Text="Peacock" FontSize="15" ForegroundColor="#F1F5F9"/>
-							<TextBlock Name="GalleryCard2Body" Text="High-fidelity texture sampling with anisotropic filtering."
-								FontSize="12" ForegroundColor="#4B5563" WordWrap="true"/>
-						</StackView>
-					</StackView>
+					<LayerPrefabPlaceholder Name="GalleryCard1" PlaceholderTemplate="Example/Prefabs/GalleryCard"
+						Card.Image="Example/Images/lake" Card.Title="Lake Scene"
+						Card.Subtitle="Real-time reflections and water surface rendered at 60 fps."/>
+					<LayerPrefabPlaceholder Name="GalleryCard2" PlaceholderTemplate="Example/Prefabs/GalleryCard"
+						Card.Image="Example/Images/peacock" Card.Title="Peacock"
+						Card.Subtitle="High-fidelity texture sampling with anisotropic filtering."/>
 				</Grid>
 			</StackView>
 			<StackView Name="WorkflowSection" Direction="Vertical" Spacing="24" BackgroundColor="#09090F" Padding="40">
@@ -104,66 +73,33 @@
 					FontSize="14" ForegroundColor="#64748B"/>
 				<Grid Name="WorkflowSteps" Columns="auto auto auto auto" Spacing="16">
 					<Grid.Columns>IF(STEP(640, {../../../Node.ActualWidth}), "auto auto auto auto", "auto auto")</Grid.Columns>
-					<StackView Name="Step1" Direction="Vertical" Spacing="12" BackgroundColor="#141420" Padding="24">
-						<TextBlock Name="Step1Number" Text="01" FontSize="32" ForegroundColor="#8B5CF6"/>
-						<TextBlock Name="Step1Title" Text="Define Layout" FontSize="15" ForegroundColor="#F1F5F9"/>
-						<TextBlock Name="Step1Body" Text="Write your screen as an XML file with familiar Grid and StackView containers."
-							FontSize="12" ForegroundColor="#4B5563" WordWrap="true"/>
-					</StackView>
-					<StackView Name="Step2" Direction="Vertical" Spacing="12" BackgroundColor="#141420" Padding="24">
-						<TextBlock Name="Step2Number" Text="02" FontSize="32" ForegroundColor="#3B82F6"/>
-						<TextBlock Name="Step2Title" Text="Load Assets" FontSize="15" ForegroundColor="#F1F5F9"/>
-						<TextBlock Name="Step2Body" Text="Images, fonts, and data files are streamed from packages at runtime."
-							FontSize="12" ForegroundColor="#4B5563" WordWrap="true"/>
-					</StackView>
-					<StackView Name="Step3" Direction="Vertical" Spacing="12" BackgroundColor="#141420" Padding="24">
-						<TextBlock Name="Step3Number" Text="03" FontSize="32" ForegroundColor="#10B981"/>
-						<TextBlock Name="Step3Title" Text="Script Logic" FontSize="15" ForegroundColor="#F1F5F9"/>
-						<TextBlock Name="Step3Body" Text="Attach Lua scripts to any component for interactivity and data binding."
-							FontSize="12" ForegroundColor="#4B5563" WordWrap="true"/>
-					</StackView>
-					<StackView Name="Step4" Direction="Vertical" Spacing="12" BackgroundColor="#141420" Padding="24">
-						<TextBlock Name="Step4Number" Text="04" FontSize="32" ForegroundColor="#F59E0B"/>
-						<TextBlock Name="Step4Title" Text="Ship" FontSize="15" ForegroundColor="#F1F5F9"/>
-						<TextBlock Name="Step4Body" Text="Deploy to desktop, mobile, or WebGL with a single build command."
-							FontSize="12" ForegroundColor="#4B5563" WordWrap="true"/>
-					</StackView>
+					<LayerPrefabPlaceholder Name="Step1" PlaceholderTemplate="Example/Prefabs/WorkflowStep"
+						Card.Title="01" Card.Subtitle="Define Layout" Card.PrimaryColor="#8B5CF6"
+						Card.Body="Write your screen as an XML file with familiar Grid and StackView containers."/>
+					<LayerPrefabPlaceholder Name="Step2" PlaceholderTemplate="Example/Prefabs/WorkflowStep"
+						Card.Title="02" Card.Subtitle="Load Assets" Card.PrimaryColor="#3B82F6"
+						Card.Body="Images, fonts, and data files are streamed from packages at runtime."/>
+					<LayerPrefabPlaceholder Name="Step3" PlaceholderTemplate="Example/Prefabs/WorkflowStep"
+						Card.Title="03" Card.Subtitle="Script Logic" Card.PrimaryColor="#10B981"
+						Card.Body="Attach Lua scripts to any component for interactivity and data binding."/>
+					<LayerPrefabPlaceholder Name="Step4" PlaceholderTemplate="Example/Prefabs/WorkflowStep"
+						Card.Title="04" Card.Subtitle="Ship" Card.PrimaryColor="#F59E0B"
+						Card.Body="Deploy to desktop, mobile, or WebGL with a single build command."/>
 				</Grid>
 			</StackView>
 			<StackView Name="TestimonialsSection" Direction="Vertical" Spacing="24" BackgroundColor="#0B0B12" Padding="40">
 				<Node.HorizontalPadding>IF(STEP(640, {../../Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</Node.HorizontalPadding>
 				<TextBlock Name="TestimonialsHeading" Text="What Developers Say" FontSize="28" ForegroundColor="#F1F5F9"/>
 				<Grid Name="TestimonialsGrid" Columns="auto auto auto" Spacing="20">
-					<StackView Name="Quote1" Direction="Vertical" Spacing="16" BackgroundColor="#141420" Padding="28">
-						<TextBlock Name="Quote1Mark" Text="&#x201C;" FontSize="48" ForegroundColor="#8B5CF6"/>
-						<TextBlock Name="Quote1Text"
-							Text="ORCA lets us ship native-quality UI on every platform from a single XML source. It changed how we build products."
-							FontSize="13" ForegroundColor="#94A3B8" WordWrap="true"/>
-						<StackView Name="Quote1Author" Direction="Horizontal" Spacing="12" AlignItems="Center">
-							<TextBlock Name="Quote1AuthorName" Text="— Alex R." FontSize="13" ForegroundColor="#F1F5F9"/>
-							<TextBlock Name="Quote1AuthorRole" Text="Lead Engineer" FontSize="11" ForegroundColor="#4B5563"/>
-						</StackView>
-					</StackView>
-					<StackView Name="Quote2" Direction="Vertical" Spacing="16" BackgroundColor="#141420" Padding="28">
-						<TextBlock Name="Quote2Mark" Text="&#x201C;" FontSize="48" ForegroundColor="#10B981"/>
-						<TextBlock Name="Quote2Text"
-							Text="The declarative layout system is a joy to work with. Our designers write XML and developers hook up the logic — perfect split."
-							FontSize="13" ForegroundColor="#94A3B8" WordWrap="true"/>
-						<StackView Name="Quote2Author" Direction="Horizontal" Spacing="12" AlignItems="Center">
-							<TextBlock Name="Quote2AuthorName" Text="— Sam T." FontSize="13" ForegroundColor="#F1F5F9"/>
-							<TextBlock Name="Quote2AuthorRole" Text="UI Architect" FontSize="11" ForegroundColor="#4B5563"/>
-						</StackView>
-					</StackView>
-					<StackView Name="Quote3" Direction="Vertical" Spacing="16" BackgroundColor="#141420" Padding="28">
-						<TextBlock Name="Quote3Mark" Text="&#x201C;" FontSize="48" ForegroundColor="#3B82F6"/>
-						<TextBlock Name="Quote3Text"
-							Text="Sub-millisecond frame times even on mid-range hardware. We ditched our old HTML renderer the day we tried ORCA."
-							FontSize="13" ForegroundColor="#94A3B8" WordWrap="true"/>
-						<StackView Name="Quote3Author" Direction="Horizontal" Spacing="12" AlignItems="Center">
-							<TextBlock Name="Quote3AuthorName" Text="— Jordan M." FontSize="13" ForegroundColor="#F1F5F9"/>
-							<TextBlock Name="Quote3AuthorRole" Text="Game Developer" FontSize="11" ForegroundColor="#4B5563"/>
-						</StackView>
-					</StackView>
+					<LayerPrefabPlaceholder Name="Quote1" PlaceholderTemplate="Example/Prefabs/Quote"
+						Card.PrimaryColor="#8B5CF6" Card.Title="— Alex R." Card.Subtitle="Lead Engineer"
+						Card.Body="ORCA lets us ship native-quality UI on every platform from a single XML source. It changed how we build products."/>
+					<LayerPrefabPlaceholder Name="Quote2" PlaceholderTemplate="Example/Prefabs/Quote"
+						Card.PrimaryColor="#10B981" Card.Title="— Sam T." Card.Subtitle="UI Architect"
+						Card.Body="The declarative layout system is a joy to work with. Our designers write XML and developers hook up the logic — perfect split."/>
+					<LayerPrefabPlaceholder Name="Quote3" PlaceholderTemplate="Example/Prefabs/Quote"
+						Card.PrimaryColor="#3B82F6" Card.Title="— Jordan M." Card.Subtitle="Game Developer"
+						Card.Body="Sub-millisecond frame times even on mid-range hardware. We ditched our old HTML renderer the day we tried ORCA."/>
 				</Grid>
 			</StackView>
 			<StackView Name="CtaSection" Direction="Vertical" Spacing="24" BackgroundColor="#1A1A28" Padding="60" AlignItems="Center">

@@ -16,214 +16,19 @@
  *   - p_runtime: PROP_Import — importing vm_register values into properties
  *   - p_runtime: PROP_AttachProgram + PROP_Update — expression → property
  *   - p_runtime: property import by name reference (.Property path)
- *   - Memory leak tests (compiled with -DTEST_MEMORY): string property lifecycle,
- *     PROP_Clear, OBJ_ReleaseProperties, Token_Create/Release, and attach+update
+ *   - project-defined (dynamic) string property type: set/get with correct DataSize
+ *   - kDataTypeColor: set/get, channel import/export, COLOR4 binding
  *
  * Compiled and linked against liborca.so via the `test-properties` Makefile
  * target (depends on `buildlib`).
  *
  * Build with -DTEST_MEMORY to enable malloc/free/strdup interception and
- * per-test allocation tracking.
+ * per-test allocation tracking.  Memory leak coverage for all functional
+ * tests is provided automatically through that mechanism — there are no
+ * separate memleak test functions.
  */
 
-/* ------------------------------------------------------------------ */
-/* TEST_MEMORY: malloc/free/strdup interception for leak detection     */
-/*                                                                     */
-/* When -DTEST_MEMORY is defined, this file provides its own malloc,   */
-/* calloc, realloc, free, and strdup symbols.  Because the test binary */
-/* is linked dynamically against liborca.so, the dynamic linker will   */
-/* prefer the definitions in the main executable, so liborca's         */
-/* allocations are also counted.                                       */
-/*                                                                     */
-/* A small static bootstrap buffer handles allocations that arrive     */
-/* before mem_init() (called at the top of main) resolves the real     */
-/* libc functions via RTLD_NEXT.  Bootstrap pointers are silently      */
-/* ignored by free().                                                  */
-/* ------------------------------------------------------------------ */
-#if TEST_MEMORY
-#include <dlfcn.h>
-#include <stdint.h>
-#include <stddef.h>
-#include <stdlib.h>  /* abort() */
-#include <string.h>  /* memset, memcpy, strlen — provided by libc directly */
-
-/* Small bootstrap buffer used *only* while dlsym() resolves the real
- * allocator pointers.  dlsym itself calls calloc() once internally (on
- * glibc/macOS), so we need enough space for that one allocation.
- * All other pre-main allocations (GnuTLS, libEGL, …) go to the real
- * libc once the lazy initialiser fires. */
-#define BOOTSTRAP_BUF_SIZE 1024
-static char   s_bootstrap_buf[BOOTSTRAP_BUF_SIZE];
-static size_t s_bootstrap_pos = 0;
-
-static int is_bootstrap_ptr(const void *ptr) {
-    return (const char *)ptr >= s_bootstrap_buf &&
-           (const char *)ptr <  s_bootstrap_buf + BOOTSTRAP_BUF_SIZE;
-}
-
-static void *bootstrap_alloc(size_t size) {
-    size = (size + 15u) & ~(size_t)15u; /* 16-byte alignment */
-    if (s_bootstrap_pos + size > BOOTSTRAP_BUF_SIZE) return NULL;
-    void *p = s_bootstrap_buf + s_bootstrap_pos;
-    s_bootstrap_pos += size;
-    return p;
-}
-
-/* Real allocator function pointers resolved lazily on first use. */
-typedef void *(*malloc_fn_t)(size_t);
-typedef void *(*calloc_fn_t)(size_t, size_t);
-typedef void *(*realloc_fn_t)(void *, size_t);
-typedef void  (*free_fn_t)(void *);
-
-static malloc_fn_t  s_real_malloc  = NULL;
-static calloc_fn_t  s_real_calloc  = NULL;
-static realloc_fn_t s_real_realloc = NULL;
-static free_fn_t    s_real_free    = NULL;
-
-/* Recursion guard: set to 1 while dlsym() is running so that the
- * calloc() invoked internally by dlsym uses the bootstrap buffer
- * instead of trying to re-enter init_alloc_funcs(). */
-static int s_init_in_progress = 0;
-
-/* Tracking is enabled only after mem_init() is called from main().
- * Allocations that happen before that point (library constructors,
- * dlsym overhead) are served by the real libc but NOT counted. */
-static int s_tracking_active = 0;
-
-/* Resolve the real allocator function pointers via dlsym(RTLD_NEXT).
- * Safe to call from any intercepted allocator; the recursion guard
- * prevents re-entrancy.  Aborts if dlsym fails (indicates a broken
- * runtime environment where tests cannot run meaningfully). */
-static void init_alloc_funcs(void) {
-    s_init_in_progress = 1;
-    s_real_malloc  = (malloc_fn_t)  dlsym(RTLD_NEXT, "malloc");
-    s_real_calloc  = (calloc_fn_t)  dlsym(RTLD_NEXT, "calloc");
-    s_real_realloc = (realloc_fn_t) dlsym(RTLD_NEXT, "realloc");
-    s_real_free    = (free_fn_t)    dlsym(RTLD_NEXT, "free");
-    s_init_in_progress = 0;
-    if (!s_real_malloc || !s_real_calloc || !s_real_realloc || !s_real_free) {
-        /* Cannot locate libc allocators — tests cannot run. */
-        abort();
-    }
-}
-
-/* Live allocation counter: incremented by malloc/calloc, decremented
- * by free.  Only active after mem_init() enables tracking. */
-static volatile long s_alloc_count = 0;
-static volatile long s_alloc_total = 0;  /* monotonic total, for diagnostics */
-
-/* mem_init() must be called at the start of main(). From this point
- * onward all allocations from both the test binary and liborca.so are
- * tracked.  Allocations that occurred before mem_init() (library
- * constructors, dlsym overhead) are NOT counted. */
-static void mem_init(void) {
-    if (!s_real_malloc) init_alloc_funcs();
-    s_alloc_count = 0;
-    s_alloc_total = 0;
-    s_tracking_active = 1;
-}
-
-/* ---- replacement allocators ---- */
-
-void *malloc(size_t size) {
-    if (!s_real_malloc) {
-        if (s_init_in_progress) return bootstrap_alloc(size);
-        init_alloc_funcs();
-    }
-    void *p = s_real_malloc(size);
-    if (p && s_tracking_active) {
-        __atomic_fetch_add(&s_alloc_count, 1, __ATOMIC_RELAXED);
-        __atomic_fetch_add(&s_alloc_total, 1, __ATOMIC_RELAXED);
-    }
-    return p;
-}
-
-void *calloc(size_t n, size_t size) {
-    if (!s_real_calloc) {
-        if (s_init_in_progress) {
-            /* Called from dlsym — use the bootstrap buffer (zeroed by BSS). */
-            void *p = bootstrap_alloc(n * size);
-            return p;
-        }
-        init_alloc_funcs();
-    }
-    void *p = s_real_calloc(n, size);
-    if (p && s_tracking_active) {
-        __atomic_fetch_add(&s_alloc_count, 1, __ATOMIC_RELAXED);
-        __atomic_fetch_add(&s_alloc_total, 1, __ATOMIC_RELAXED);
-    }
-    return p;
-}
-
-void *realloc(void *ptr, size_t size) {
-    if (is_bootstrap_ptr(ptr)) {
-        /* Bootstrap pointers cannot be passed to the real realloc.
-         * Copy to heap; in practice this path is never taken. */
-        if (!s_real_malloc) {
-            if (s_init_in_progress) return bootstrap_alloc(size);
-            init_alloc_funcs();
-        }
-        void *np = s_real_malloc(size);
-        if (np) {
-            size_t old_cap = s_bootstrap_pos;
-            memcpy(np, ptr, old_cap < size ? old_cap : size);
-            if (s_tracking_active) {
-                __atomic_fetch_add(&s_alloc_count, 1, __ATOMIC_RELAXED);
-                __atomic_fetch_add(&s_alloc_total, 1, __ATOMIC_RELAXED);
-            }
-        }
-        return np;
-    }
-    if (!s_real_realloc) {
-        if (s_init_in_progress) return NULL;
-        init_alloc_funcs();
-    }
-    void *p = s_real_realloc(ptr, size);
-    /* realloc(NULL, size) is equivalent to malloc(size): count it. */
-    if (!ptr && p && s_tracking_active) {
-        __atomic_fetch_add(&s_alloc_count, 1, __ATOMIC_RELAXED);
-        __atomic_fetch_add(&s_alloc_total, 1, __ATOMIC_RELAXED);
-    }
-    return p;
-}
-
-void free(void *ptr) {
-    if (!ptr) return;
-    if (is_bootstrap_ptr(ptr)) return; /* bootstrap: silently ignore */
-    if (!s_real_free) init_alloc_funcs(); /* aborts if dlsym fails */
-    s_real_free(ptr);
-    if (s_tracking_active) {
-        __atomic_fetch_sub(&s_alloc_count, 1, __ATOMIC_RELAXED);
-    }
-}
-
-/* Note: strdup is NOT overridden here — it internally calls malloc, so
- * strdup allocations are automatically counted through our malloc wrapper. */
-
-/* ---- snapshot / check macros ---- */
-
-#define MEM_SNAPSHOT()   ((long)s_alloc_count)
-
-#define MEM_CHECK_LEAK(snap, label)                                          \
-    do {                                                                     \
-        long _now  = (long)s_alloc_count;                                    \
-        long _snap = (snap);                                                 \
-        if (_now > _snap) {                                                 \
-            fprintf(stderr,                                                  \
-                    "  LEAK [%s]: %ld outstanding allocation(s)"             \
-                    " (before=%ld after=%ld)\n",                             \
-                    (label), _now - _snap, _snap, _now);                     \
-            s_tests_failed++;                                                \
-        }                                                                    \
-    } while (0)
-
-#else /* !TEST_MEMORY */
-
-static void mem_init(void) {}
-#define MEM_SNAPSHOT()             (0L)
-#define MEM_CHECK_LEAK(snap, label) ((void)(snap))
-
-#endif /* TEST_MEMORY */
+#include "mem_tracker.h"
 
 #include <source/core/core_local.h>
 #include <source/core/core.h>
@@ -239,6 +44,7 @@ static void mem_init(void) {}
  */
 extern lpObject_t OBJ_MakeNativeObject(uint32_t class_id);
 extern void OBJ_ReleaseProperties(lpObject_t);
+extern struct color COLOR_Parse(lpcString_t);
 
 /* ------------------------------------------------------------------ */
 /* Minimal test harness                                               */
@@ -260,6 +66,36 @@ static const char* s_current_test = NULL;
 
 #define EXPECT_OK(hr) EXPECT((hr) == NOERROR)
 #define EXPECT_STR_EQ(a, b) EXPECT((a) && (b) && !strcmp(a, b))
+
+/*
+ * PROP_TEST — shorthand for the common find→type→null→set→not-null→value
+ * pattern shared by simple scalar/string property tests.  _p names the
+ * lpProperty_t used inside cmpval so callers can write e.g.
+ *   PROP_TEST(obj, "Value", kDataTypeFloat, &(float){3.14f},
+ *             *(float*)PROP_GetValue(_p) == 3.14f);
+ * The block (not do…while) lets EXPECT's break reach the enclosing WITH loop.
+ */
+#define PROP_TEST(obj, name, dtype, setval, cmpval)                          \
+    {                                                                        \
+        lpProperty_t _p;                                                     \
+        EXPECT_OK(OBJ_FindShortProperty(obj, name, &_p));                    \
+        EXPECT(PROP_GetType(_p) == dtype);                                   \
+        EXPECT(PROP_IsNull(_p));                                             \
+        PROP_SetValue(_p, setval);                                           \
+        EXPECT(!PROP_IsNull(_p));                                            \
+        EXPECT(cmpval);                                                      \
+    }
+
+/*
+ * RUN_PROG — shorthand for create-token → run-program → release-token.
+ * Wraps the three inner lines that appear in every "run a constant/arithmetic
+ * expression" test.  EXPECT inside uses break which exits the WITH loop.
+ */
+#define RUN_PROG(obj, expr, reg)                                             \
+    WITH(struct token, _t, Token_Create(expr), Token_Release) {              \
+        EXPECT(_t != NULL);                                                  \
+        EXPECT(OBJ_RunProgram(obj, _t, reg));                                \
+    }
 
 /* ------------------------------------------------------------------ */
 /* Test component definition                                          */
@@ -359,6 +195,100 @@ static lpObject_t make_rt_object(void) {
 }
 
 /* ------------------------------------------------------------------ */
+/* Color test component                                                */
+/* Basic set/get/import/export of kDataTypeColor properties.          */
+/* ------------------------------------------------------------------ */
+
+struct ColorComp {
+    struct color Tint; /* kDataTypeColor */
+};
+
+/* fnv1a32("ColorComp")      = 0x1628afcf */
+/* fnv1a32("ColorComp.Tint") = 0x7a0bf43e */
+/* fnv1a32("Tint")           = 0xdedc93ac */
+static struct PropertyType s_colorProps[1] = {
+    { .Name = "Tint", .Key = "Tint", .DataType = kDataTypeColor,
+      .DataSize = sizeof(struct color),
+      .ShortIdentifier = 0xdedc93ac, .FullIdentifier = 0x7a0bf43e,
+      .Offset = offsetof(struct ColorComp, Tint) },
+};
+
+static LRESULT ColorComp_Proc(lpObject_t o, void* cmp, uint32_t msg,
+                              wParam_t w, lParam_t l) {
+    (void)o; (void)cmp; (void)msg; (void)w; (void)l;
+    return 0;
+}
+
+static struct ClassDesc s_colorClass = {
+    .ObjProc       = ColorComp_Proc,
+    .Properties    = s_colorProps,
+    .ClassName     = "ColorComp",
+    .ClassID       = 0x1628afcf, /* fnv1a32("ColorComp") */
+    .ClassSize     = sizeof(struct ColorComp),
+    .NumProperties = 1,
+    .DefaultName   = "colorcomp",
+};
+
+static void register_color_class(void) {
+    OBJ_RegisterClass(&s_colorClass);
+}
+
+static lpObject_t make_color_object(void) {
+    return OBJ_MakeNativeObject(fnv1a32("ColorComp"));
+}
+
+/* ------------------------------------------------------------------ */
+/* Runtime color component                                             */
+/* Used for binding tests: Color (source) + Alpha (float sink).       */
+/* FullIdentifiers are plain fnv1a32(name) so {./Color}.COLORR works. */
+/* ------------------------------------------------------------------ */
+
+struct RTColorComp {
+    struct color Color; /* kDataTypeColor — binding source */
+    float        Alpha; /* kDataTypeFloat — float sink for channel binding */
+};
+
+/* fnv1a32("RTColorComp")       = 0x179ee081                          */
+/* fnv1a32("RTColorComp.Color") = 0xa40d18f0 (not used for binding)  */
+/* fnv1a32("RTColorComp.Alpha") = 0xe4dc94f3 (not used for binding)  */
+/* fnv1a32("Color")             = 0xe5b43cf8  ← FullIdentifier        */
+/* fnv1a32("Alpha")             = 0x0348724b  ← FullIdentifier        */
+static struct PropertyType s_rtColorProps[2] = {
+    { .Name = "Color", .Key = "Color", .DataType = kDataTypeColor,
+      .DataSize = sizeof(struct color),
+      .ShortIdentifier = 0xe5b43cf8, .FullIdentifier = 0xe5b43cf8,
+      .Offset = offsetof(struct RTColorComp, Color) },
+    { .Name = "Alpha", .Key = "Alpha", .DataType = kDataTypeFloat,
+      .DataSize = sizeof(float),
+      .ShortIdentifier = 0x0348724b, .FullIdentifier = 0x0348724b,
+      .Offset = offsetof(struct RTColorComp, Alpha) },
+};
+
+static LRESULT RTColorComp_Proc(lpObject_t o, void* cmp, uint32_t msg,
+                                wParam_t w, lParam_t l) {
+    (void)o; (void)cmp; (void)msg; (void)w; (void)l;
+    return 0;
+}
+
+static struct ClassDesc s_rtColorClass = {
+    .ObjProc       = RTColorComp_Proc,
+    .Properties    = s_rtColorProps,
+    .ClassName     = "RTColorComp",
+    .ClassID       = 0x179ee081, /* fnv1a32("RTColorComp") */
+    .ClassSize     = sizeof(struct RTColorComp),
+    .NumProperties = 2,
+    .DefaultName   = "rtcolorcomp",
+};
+
+static void register_rt_color_class(void) {
+    OBJ_RegisterClass(&s_rtColorClass);
+}
+
+static lpObject_t make_rt_color_object(void) {
+    return OBJ_MakeNativeObject(fnv1a32("RTColorComp"));
+}
+
+/* ------------------------------------------------------------------ */
 /* Object lifecycle helper                                            */
 /* ------------------------------------------------------------------ */
 
@@ -413,15 +343,8 @@ static void test_int_property(void) {
 
 static void test_float_property(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
-        lpProperty_t prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Value", &prop));
-        EXPECT(PROP_GetType(prop) == kDataTypeFloat);
-        EXPECT(PROP_IsNull(prop));
-
-        float f = 3.14f;
-        PROP_SetValue(prop, &f);
-        EXPECT(!PROP_IsNull(prop));
-        EXPECT(*(float*)PROP_GetValue(prop) == 3.14f);
+        PROP_TEST(obj, "Value", kDataTypeFloat, &(float){3.14f},
+                  *(float*)PROP_GetValue(_p) == 3.14f);
     }
 }
 
@@ -443,14 +366,8 @@ static void test_bool_property(void) {
 
 static void test_string_property_basic(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
-        lpProperty_t prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
-        EXPECT(PROP_GetType(prop) == kDataTypeString);
-        EXPECT(PROP_IsNull(prop));
-
-        PROP_SetValue(prop, "hello");
-        EXPECT(!PROP_IsNull(prop));
-        EXPECT_STR_EQ((const char*)PROP_GetValue(prop), "hello");
+        PROP_TEST(obj, "Label", kDataTypeString, "hello",
+                  !strcmp((const char*)PROP_GetValue(_p), "hello"));
     }
 }
 
@@ -639,48 +556,36 @@ static void test_runtime_token_create_arithmetic(void) {
 
 static void test_runtime_run_int_constant(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
-        WITH(struct token, prog, Token_Create("7"), Token_Release) {
-            EXPECT(prog != NULL);
-            struct vm_register r = {0};
-            EXPECT(OBJ_RunProgram(obj, prog, &r));
-            EXPECT(r.type == kDataTypeInt || r.type == kDataTypeFloat);
-            EXPECT((int)r.value[0] == 7);
-        }
+        struct vm_register r = {0};
+        RUN_PROG(obj, "7", &r);
+        EXPECT(r.type == kDataTypeInt || r.type == kDataTypeFloat);
+        EXPECT((int)r.value[0] == 7);
     }
 }
 
 static void test_runtime_run_float_constant(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
-        WITH(struct token, prog, Token_Create("2.5"), Token_Release) {
-            EXPECT(prog != NULL);
-            struct vm_register r = {0};
-            EXPECT(OBJ_RunProgram(obj, prog, &r));
-            EXPECT(r.value[0] == 2.5f);
-        }
+        struct vm_register r = {0};
+        RUN_PROG(obj, "2.5", &r);
+        EXPECT(r.value[0] == 2.5f);
     }
 }
 
 static void test_runtime_run_string_constant(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
-        WITH(struct token, prog, Token_Create("\"world\""), Token_Release) {
-            EXPECT(prog != NULL);
-            struct vm_register r = {0};
-            EXPECT(OBJ_RunProgram(obj, prog, &r));
-            EXPECT(r.type == kDataTypeString);
-            const char *str = *(const char *const *)r.value;
-            EXPECT_STR_EQ(str, "world");
-        }
+        struct vm_register r = {0};
+        RUN_PROG(obj, "\"world\"", &r);
+        EXPECT(r.type == kDataTypeString);
+        const char *str = *(const char *const *)r.value;
+        EXPECT_STR_EQ(str, "world");
     }
 }
 
 static void test_runtime_run_arithmetic(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
-        WITH(struct token, prog, Token_Create("ADD(10, 5)"), Token_Release) {
-            EXPECT(prog != NULL);
-            struct vm_register r = {0};
-            EXPECT(OBJ_RunProgram(obj, prog, &r));
-            EXPECT((int)r.value[0] == 15);
-        }
+        struct vm_register r = {0};
+        RUN_PROG(obj, "ADD(10, 5)", &r);
+        EXPECT((int)r.value[0] == 15);
     }
 }
 
@@ -807,187 +712,360 @@ static void test_runtime_string_concat_program(void) {
  */
 static void test_runtime_if_true_branch(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
-        WITH(struct token, prog, Token_Create("IF(1, 10, 20)"), Token_Release) {
-            EXPECT(prog != NULL);
-            struct vm_register r = {0};
-            EXPECT(OBJ_RunProgram(obj, prog, &r));
-            EXPECT((int)r.value[0] == 10);
-        }
+        struct vm_register r = {0};
+        RUN_PROG(obj, "IF(1, 10, 20)", &r);
+        EXPECT((int)r.value[0] == 10);
     }
 }
 
 static void test_runtime_if_false_branch(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
-        WITH(struct token, prog, Token_Create("IF(0, 10, 20)"), Token_Release) {
-            EXPECT(prog != NULL);
-            struct vm_register r = {0};
-            EXPECT(OBJ_RunProgram(obj, prog, &r));
-            EXPECT((int)r.value[0] == 20);
-        }
+        struct vm_register r = {0};
+        RUN_PROG(obj, "IF(0, 10, 20)", &r);
+        EXPECT((int)r.value[0] == 20);
     }
 }
 
 static void test_runtime_if_string_branch(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
-        WITH(struct token, prog, Token_Create("IF(0, \"yes\", \"no\")"), Token_Release) {
-            EXPECT(prog != NULL);
-            struct vm_register r = {0};
-            EXPECT(OBJ_RunProgram(obj, prog, &r));
-            EXPECT(r.type == kDataTypeString);
-            const char *str = *(const char *const *)r.value;
-            EXPECT_STR_EQ(str, "no");
-        }
+        struct vm_register r = {0};
+        RUN_PROG(obj, "IF(0, \"yes\", \"no\")", &r);
+        EXPECT(r.type == kDataTypeString);
+        const char *str = *(const char *const *)r.value;
+        EXPECT_STR_EQ(str, "no");
     }
 }
 
 /* ------------------------------------------------------------------ */
-/* Memory-leak tests (active when compiled with -DTEST_MEMORY)         */
-/* Each test takes a snapshot before and checks for leaks after.       */
+/* kDataTypeColor — General property tests                             */
 /* ------------------------------------------------------------------ */
 
-/* Leak test: set a string property then destroy the object — the
- * strdup'd string must be freed by OBJ_ReleaseProperties. */
-static void test_memleak_string_set_release(void) {
-    WITH(struct Object, obj, make_object(), destroy_object) {
+/* Basic: DataType is kDataTypeColor, IsNull before set, set/get. */
+static void test_color_property_basic(void) {
+    WITH(struct Object, obj, make_color_object(), destroy_object) {
         lpProperty_t prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
-        PROP_SetValue(prop, "hello leak test");
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Tint", &prop));
+        EXPECT(PROP_GetType(prop) == kDataTypeColor);
+        EXPECT(PROP_GetSize(prop) == sizeof(struct color));
+        EXPECT(PROP_IsNull(prop));
+
+        struct color c = { .r = 1.0f, .g = 0.5f, .b = 0.25f, .a = 1.0f };
+        PROP_SetValue(prop, &c);
+        EXPECT(!PROP_IsNull(prop));
+
+        struct color *got = (struct color *)PROP_GetValue(prop);
+        EXPECT(got->r == 1.0f);
+        EXPECT(got->g == 0.5f);
+        EXPECT(got->b == 0.25f);
+        EXPECT(got->a == 1.0f);
     }
 }
 
-/* Leak test: reassign a string multiple times — old strings must be freed. */
-static void test_memleak_string_multiple_sets(void) {
-    WITH(struct Object, obj, make_object(), destroy_object) {
+/* Reassignment: setting a color property twice should update in place. */
+static void test_color_property_reassign(void) {
+    WITH(struct Object, obj, make_color_object(), destroy_object) {
         lpProperty_t prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
-        PROP_SetValue(prop, "first");
-        PROP_SetValue(prop, "second");   /* frees "first" */
-        PROP_SetValue(prop, "third");    /* frees "second" */
-    }                                    /* destroy_object frees "third" */
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Tint", &prop));
+
+        struct color c1 = { .r = 1.0f, .g = 0.0f, .b = 0.0f, .a = 1.0f };
+        PROP_SetValue(prop, &c1);
+        EXPECT(((struct color *)PROP_GetValue(prop))->r == 1.0f);
+
+        struct color c2 = { .r = 0.0f, .g = 0.0f, .b = 1.0f, .a = 0.5f };
+        PROP_SetValue(prop, &c2);
+        struct color *got = (struct color *)PROP_GetValue(prop);
+        EXPECT(got->r == 0.0f);
+        EXPECT(got->b == 1.0f);
+        EXPECT(got->a == 0.5f);
+    }
 }
 
-/* Leak test: PROP_Clear must free the heap string and leave no leak. */
-static void test_memleak_prop_clear(void) {
-    WITH(struct Object, obj, make_object(), destroy_object) {
+/* Clear: PROP_Clear resets a color property back to null. */
+static void test_color_property_clear(void) {
+    WITH(struct Object, obj, make_color_object(), destroy_object) {
         lpProperty_t prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
-        PROP_SetValue(prop, "to be cleared");
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Tint", &prop));
+
+        struct color c = { .r = 0.2f, .g = 0.4f, .b = 0.6f, .a = 0.8f };
+        PROP_SetValue(prop, &c);
+        EXPECT(!PROP_IsNull(prop));
+
         PROP_Clear(prop);
+        EXPECT(PROP_IsNull(prop));
+
+        /* Re-set after clear must work without corruption. */
+        PROP_SetValue(prop, &c);
+        EXPECT(!PROP_IsNull(prop));
+        EXPECT(((struct color *)PROP_GetValue(prop))->g == 0.4f);
     }
 }
 
-/* Leak test: PROP_Clear on a never-set string must not crash or leak. */
-static void test_memleak_prop_clear_never_set(void) {
-    WITH(struct Object, obj, make_object(), destroy_object) {
+/* Parsing: COLOR_Parse converts a hex color string to struct color. */
+static void test_color_parse_hex_rgb(void) {
+    for (int _pass = 1; _pass; _pass = 0) {
+        struct color c = COLOR_Parse("#ff8000");
+        EXPECT(c.r == 1.0f);
+        EXPECT(c.g > 0.49f && c.g < 0.51f); /* 0x80/0xff ≈ 0.502 */
+        EXPECT(c.b == 0.0f);
+        EXPECT(c.a == 1.0f); /* default alpha */
+    }
+}
+
+static void test_color_parse_hex_rgba(void) {
+    for (int _pass = 1; _pass; _pass = 0) {
+        struct color c = COLOR_Parse("#ff000080"); /* red, half opacity */
+        EXPECT(c.r == 1.0f);
+        EXPECT(c.g == 0.0f);
+        EXPECT(c.b == 0.0f);
+        EXPECT(c.a > 0.49f && c.a < 0.51f); /* 0x80/0xff ≈ 0.502 */
+    }
+}
+
+/* Parsing: set a color property from a parsed string. */
+static void test_color_property_from_parse(void) {
+    WITH(struct Object, obj, make_color_object(), destroy_object) {
         lpProperty_t prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
-        PROP_Clear(prop);
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Tint", &prop));
+
+        struct color c = COLOR_Parse("#00ff00"); /* green */
+        PROP_SetValue(prop, &c);
+        EXPECT(!PROP_IsNull(prop));
+
+        struct color *got = (struct color *)PROP_GetValue(prop);
+        EXPECT(got->r == 0.0f);
+        EXPECT(got->g == 1.0f);
+        EXPECT(got->b == 0.0f);
+        EXPECT(got->a == 1.0f);
     }
 }
 
-/* Leak test: set/clear/reset one string property and set a second scalar
- * property, then destroy — no heap string or Property struct leaks. */
-static void test_memleak_multiple_string_props(void) {
-    WITH(struct Object, obj, make_object(), destroy_object) {
-        /* String property: set, reassign, clear, set again */
-        EXPECT_OK(OBJ_SetPropertyValue(obj, "Label", "alpha"));
-        lpProperty_t strprop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &strprop));
-        PROP_SetValue(strprop, "alpha2");
-        PROP_Clear(strprop);
-        PROP_SetValue(strprop, "final");
-        /* Scalar property: set (no heap allocation for value) */
-        EXPECT_OK(OBJ_SetPropertyValue(obj, "Count", &(int){7}));
-    }
-}
+/* ------------------------------------------------------------------ */
+/* kDataTypeColor — PROP_Import / PROP_Export (channel bindings)      */
+/* ------------------------------------------------------------------ */
 
-/* Leak test: Token_Create / Token_Release must not leak. */
-static void test_memleak_token_create_release(void) {
-    WITH(struct token, prog, Token_Create("ADD(1, 2)"), Token_Release) {
-        (void)prog;
-    }
-}
-
-/* Leak test: Token_Create for a string literal must not leak. */
-static void test_memleak_token_string_literal(void) {
-    WITH(struct token, prog, Token_Create("\"test string\""), Token_Release) {
-        (void)prog;
-    }
-}
-
-/* Leak test: OBJ_RunProgram with a string must not leak VM temporaries. */
-static void test_memleak_run_string_program(void) {
-    WITH(struct Object, obj, make_rt_object(), destroy_object) {
-        WITH(struct token, prog, Token_Create("\"vm string\""), Token_Release) {
-            struct vm_register r = {0};
-            EXPECT(OBJ_RunProgram(obj, prog, &r));
-        }
-    }
-}
-
-/* Leak test: PROP_AttachProgram + PROP_Update + object destroy, no leak.
- * After PROP_AttachProgram the property owns the token; destroy_object
- * calls OBJ_ReleaseProperties which runs Token_Release + frees code strings. */
-static void test_memleak_attach_update_release(void) {
-    WITH(struct Object, obj, make_rt_object(), destroy_object) {
+/* Import whole color from a float-typed vm_register (4 floats). */
+static void test_color_import_whole(void) {
+    WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
         lpProperty_t prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
-        struct token *prog = Token_Create("\"attached\"");
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Color", &prop));
+
+        struct vm_register r = {0};
+        r.type     = kDataTypeFloat;
+        r.size     = sizeof(struct color);
+        r.value[0] = 0.1f; /* r */
+        r.value[1] = 0.2f; /* g */
+        r.value[2] = 0.3f; /* b */
+        r.value[3] = 0.9f; /* a */
+        EXPECT(PROP_Import(prop, kPropertyAttributeWholeProperty, &r));
+        EXPECT(!PROP_IsNull(prop));
+
+        struct color *got = (struct color *)PROP_GetValue(prop);
+        EXPECT(got->r == 0.1f);
+        EXPECT(got->g == 0.2f);
+        EXPECT(got->b == 0.3f);
+        EXPECT(got->a == 0.9f);
+    }
+}
+
+/* Import individual RGBA channels via PROP_Import with attribute. */
+static void test_color_import_channels(void) {
+    WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
+        lpProperty_t prop;
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Color", &prop));
+
+        /* Initialize the color to known values first. */
+        struct color init = { .r = 0.0f, .g = 0.0f, .b = 0.0f, .a = 1.0f };
+        PROP_SetValue(prop, &init);
+
+        struct vm_register r = {0};
+        r.type = kDataTypeFloat;
+        r.size = sizeof(float);
+
+        r.value[0] = 0.8f;
+        EXPECT(PROP_Import(prop, kPropertyAttributeColorR, &r));
+        EXPECT(((struct color *)PROP_GetValue(prop))->r == 0.8f);
+
+        r.value[0] = 0.6f;
+        EXPECT(PROP_Import(prop, kPropertyAttributeColorG, &r));
+        EXPECT(((struct color *)PROP_GetValue(prop))->g == 0.6f);
+
+        r.value[0] = 0.4f;
+        EXPECT(PROP_Import(prop, kPropertyAttributeColorB, &r));
+        EXPECT(((struct color *)PROP_GetValue(prop))->b == 0.4f);
+
+        r.value[0] = 0.5f;
+        EXPECT(PROP_Import(prop, kPropertyAttributeColorA, &r));
+        EXPECT(((struct color *)PROP_GetValue(prop))->a == 0.5f);
+
+        /* Ensure other channels were not clobbered. */
+        struct color *got = (struct color *)PROP_GetValue(prop);
+        EXPECT(got->r == 0.8f);
+        EXPECT(got->g == 0.6f);
+        EXPECT(got->b == 0.4f);
+        EXPECT(got->a == 0.5f);
+    }
+}
+
+/* Export a color channel via OBJ_RunProgram with {./Color}.COLORR. */
+static void test_color_export_channel_program(void) {
+    WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
+        lpProperty_t prop;
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Color", &prop));
+
+        struct color c = { .r = 0.75f, .g = 0.25f, .b = 0.5f, .a = 1.0f };
+        PROP_SetValue(prop, &c);
+
+        /* {./Color}.COLORR reads the R channel. */
+        struct vm_register r = {0};
+        RUN_PROG(obj, "{./Color}.COLORR", &r);
+        EXPECT(r.type == kDataTypeFloat);
+        EXPECT(r.value[0] == 0.75f);
+
+        /* {./Color}.COLORG reads the G channel. */
+        r = (struct vm_register){0};
+        RUN_PROG(obj, "{./Color}.COLORG", &r);
+        EXPECT(r.value[0] == 0.25f);
+    }
+}
+
+/* COLOR4 function: COLOR4(r, g, b, a) produces a float[4] register. */
+static void test_color_color4_function(void) {
+    WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
+        struct vm_register r = {0};
+        RUN_PROG(obj, "COLOR4(1.0, 0.5, 0.25, 0.75)", &r);
+        EXPECT(r.size == sizeof(struct color));
+        EXPECT(r.value[0] == 1.0f);
+        EXPECT(r.value[1] == 0.5f);
+        EXPECT(r.value[2] == 0.25f);
+        EXPECT(r.value[3] == 0.75f);
+    }
+}
+
+/* Bind COLOR4 to a color property via PROP_AttachProgram + PROP_Update. */
+static void test_color_bind_color4_to_property(void) {
+    WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
+        lpProperty_t prop;
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Color", &prop));
+
+        struct token *prog = Token_Create("COLOR4(0.1, 0.2, 0.3, 1.0)");
         EXPECT(prog != NULL);
-        /* Property takes ownership of prog and strdup's the code. */
         PROP_AttachProgram(prop, kPropertyAttributeWholeProperty,
-                           prog, "\"attached\"");
+                           prog, "COLOR4(0.1, 0.2, 0.3, 1.0)");
+        EXPECT(PROP_HasProgram(prop));
         core.frame++;
-        PROP_Update(prop);
-        /* destroy_object → OBJ_ReleaseProperties → Token_Release +
-           free(programSources) + free(heap string value). */
+        EXPECT(PROP_Update(prop));
+        EXPECT(!PROP_IsNull(prop));
+
+        struct color *got = (struct color *)PROP_GetValue(prop);
+        EXPECT(got->r == 0.1f);
+        EXPECT(got->g == 0.2f);
+        EXPECT(got->b == 0.3f);
+        EXPECT(got->a == 1.0f);
     }
 }
 
-/* Leak test: set int, float, bool properties — no heap allocations expected. */
-static void test_memleak_scalar_properties(void) {
-    WITH(struct Object, obj, make_object(), destroy_object) {
-        lpProperty_t pi, pf, pb;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Count",  &pi));
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Value",  &pf));
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Active", &pb));
-        int    iv = 99;
-        float  fv = 1.5f;
-        bool_t bv = true;
-        PROP_SetValue(pi, &iv);
-        PROP_SetValue(pf, &fv);
-        PROP_SetValue(pb, &bv);
-    }
-}
+/* Bind a color channel to a float property: {./Color}.COLORR → Alpha. */
+static void test_color_bind_channel_to_float(void) {
+    WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
+        /* Set source color. */
+        lpProperty_t colorProp;
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Color", &colorProp));
+        struct color src = { .r = 0.9f, .g = 0.3f, .b = 0.0f, .a = 1.0f };
+        PROP_SetValue(colorProp, &src);
 
-/* Leak test: property reference program (reads one prop, writes another). */
-static void test_memleak_property_reference_program(void) {
-    WITH(struct Object, obj, make_rt_object(), destroy_object) {
-        lpProperty_t propCount, propValue;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Count", &propCount));
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Value", &propValue));
-        float v = 7.0f;
-        PROP_SetValue(propValue, &v);
-        struct token *prog = Token_Create("{./Value}");
+        /* Bind {./Color}.COLORA to Alpha float property. */
+        lpProperty_t alphaProp;
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Alpha", &alphaProp));
+        struct token *prog = Token_Create("{./Color}.COLORA");
         EXPECT(prog != NULL);
-        /* Property owns prog after this call. */
-        PROP_AttachProgram(propCount, kPropertyAttributeWholeProperty,
-                           prog, "{./Value}");
+        PROP_AttachProgram(alphaProp, kPropertyAttributeWholeProperty,
+                           prog, "{./Color}.COLORA");
         core.frame++;
-        PROP_Update(propCount);
-        /* destroy_object will call Token_Release on prog. */
+        EXPECT(PROP_Update(alphaProp));
+        EXPECT(!PROP_IsNull(alphaProp));
+        /* Alpha channel of src is 1.0; float property should be 1.0. */
+        EXPECT(*(float *)PROP_GetValue(alphaProp) == 1.0f);
+    }
+}
+
+/* Bind a color channel write: import from {./Color}.COLORR into colorProp.COLORR. */
+static void test_color_bind_channel_to_channel(void) {
+    WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
+        lpProperty_t prop;
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Color", &prop));
+
+        /* Initialize to a known color. */
+        struct color c = { .r = 0.3f, .g = 0.7f, .b = 0.5f, .a = 1.0f };
+        PROP_SetValue(prop, &c);
+
+        /* Attach {./Color}.COLORG to the R channel of the same property.
+         * After update, R should equal original G (0.7). */
+        struct token *prog = Token_Create("{./Color}.COLORG");
+        EXPECT(prog != NULL);
+        PROP_AttachProgram(prop, kPropertyAttributeColorR,
+                           prog, "{./Color}.COLORG");
+        core.frame++;
+        EXPECT(PROP_Update(prop));
+
+        struct color *got = (struct color *)PROP_GetValue(prop);
+        EXPECT(got->r == 0.7f); /* was 0.3, now updated from G=0.7 */
+        EXPECT(got->g == 0.7f); /* unchanged */
+    }
+}
+
+/* ------------------------------------------------------------------ */
+/* Project-defined (dynamic) property type tests                       */
+/* These simulate property types registered from package.xml via       */
+/* OBJ_RegisterPropertyType, as _InitPropertyTypes() does.             */
+/* ------------------------------------------------------------------ */
+
+/*
+ * A project-defined string property type (e.g. from package.xml
+ * <PropertyType Name="Title" DataType="String" Category="Card"/>)
+ * must have DataSize == sizeof(char*) so that the heap pointer fits
+ * in the property's storage buffer.  Using DataSize=4 on 64-bit
+ * corrupts the pointer and causes crashes in jwPropertyExport.
+ */
+static struct PropertyType s_projStringPropType = {
+    .Name            = "ProjTitle",
+    .Category        = "Card",
+    .DataType        = kDataTypeString,
+    .DataSize        = sizeof(char *),   /* must be pointer-sized, not 4 */
+    /* identifiers computed from "Card.ProjTitle" */
+};
+
+static void register_project_types(void) {
+    s_projStringPropType.ShortIdentifier = fnv1a32("ProjTitle");
+    s_projStringPropType.FullIdentifier  = fnv1a32("Card.ProjTitle");
+    OBJ_RegisterPropertyType(&s_projStringPropType);
+}
+
+static void test_project_string_property_set_get(void) {
+    WITH(struct Object, obj, make_object(), destroy_object) {
+        lpProperty_t prop;
+        /*
+         * Project properties are looked up by full name ("Category.Name"),
+         * which is used as the FullIdentifier.  OBJ_FindShortProperty first
+         * checks component properties (by ShortIdentifier), then falls back
+         * to OBJ_FindLongProperty which calls _CreateProjectProperty with the
+         * same identifier — so we must pass the full "Card.ProjTitle" name.
+         */
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Card.ProjTitle", &prop));
+        EXPECT(PROP_GetType(prop) == kDataTypeString);
+        EXPECT(PROP_IsNull(prop));
+
+        PROP_SetValue(prop, "Hello");
+        EXPECT(!PROP_IsNull(prop));
+        EXPECT_STR_EQ((const char*)PROP_GetValue(prop), "Hello");
+
+        PROP_SetValue(prop, "World");
+        EXPECT_STR_EQ((const char*)PROP_GetValue(prop), "World");
     }
 }
 
 /* ------------------------------------------------------------------ */
 
-#define RUN(func) \
-long snap_##func = MEM_SNAPSHOT(); \
-s_current_test = #func; \
-s_tests_run++; \
-puts("Running " #func "..."); \
-func(); \
-MEM_CHECK_LEAK(snap_##func, #func)
+#define DECL_TEST(func) { #func, func }
 
 int main(void) {
     mem_init(); /* must be first: resolves real malloc/free via RTLD_NEXT */
@@ -997,53 +1075,76 @@ int main(void) {
 
     register_test_class();
     register_runtime_class();
+    register_color_class();
+    register_rt_color_class();
+    register_project_types();
 
-    RUN(test_int_property);
-    RUN(test_float_property);
-    RUN(test_bool_property);
-    RUN(test_string_property_basic);
-    RUN(test_string_property_reassign);
-    RUN(test_string_property_clear);
-    RUN(test_string_property_clear_without_set);
-    RUN(test_release_properties_frees_strings);
-    RUN(test_set_property_value_api);
-    RUN(test_property_state_string);
-    RUN(test_struct_property);
-    RUN(test_find_property_unknown);
-    RUN(test_multiple_properties_independent);
-    RUN(test_string_empty);
-    RUN(test_release_without_string_set);
+    /*
+     * Table-driven test runner.  Each entry is a { "display name", fn } pair.
+     * To add a test: define the function above and add one line here.
+     *
+     * When compiled with -DTEST_MEMORY, mem_tracker.h intercepts malloc/free
+     * so MEM_CHECK_LEAK catches any allocation the functional test leaks —
+     * there is no need for a separate set of "memleak" test functions.
+     */
+    static const struct { const char *name; void (*fn)(void); } tests[] = {
+        DECL_TEST(test_int_property),
+        DECL_TEST(test_float_property),
+        DECL_TEST(test_bool_property),
+        DECL_TEST(test_string_property_basic),
+        DECL_TEST(test_string_property_reassign),
+        DECL_TEST(test_string_property_clear),
+        DECL_TEST(test_string_property_clear_without_set),
+        DECL_TEST(test_release_properties_frees_strings),
+        DECL_TEST(test_set_property_value_api),
+        DECL_TEST(test_property_state_string),
+        DECL_TEST(test_struct_property),
+        DECL_TEST(test_find_property_unknown),
+        DECL_TEST(test_multiple_properties_independent),
+        DECL_TEST(test_string_empty),
+        DECL_TEST(test_release_without_string_set),
+        DECL_TEST(test_runtime_token_create_int),
+        DECL_TEST(test_runtime_token_create_float),
+        DECL_TEST(test_runtime_token_create_string),
+        DECL_TEST(test_runtime_token_create_arithmetic),
+        DECL_TEST(test_runtime_run_int_constant),
+        DECL_TEST(test_runtime_run_float_constant),
+        DECL_TEST(test_runtime_run_string_constant),
+        DECL_TEST(test_runtime_run_arithmetic),
+        DECL_TEST(test_runtime_import_int),
+        DECL_TEST(test_runtime_import_float),
+        DECL_TEST(test_runtime_import_string),
+        DECL_TEST(test_runtime_attach_and_update_int),
+        DECL_TEST(test_runtime_attach_and_update_string),
+        DECL_TEST(test_runtime_property_reference),
+        DECL_TEST(test_runtime_string_concat_program),
+        DECL_TEST(test_runtime_if_true_branch),
+        DECL_TEST(test_runtime_if_false_branch),
+        DECL_TEST(test_runtime_if_string_branch),
+        DECL_TEST(test_project_string_property_set_get),
+        DECL_TEST(test_color_property_basic),
+        DECL_TEST(test_color_property_reassign),
+        DECL_TEST(test_color_property_clear),
+        DECL_TEST(test_color_parse_hex_rgb),
+        DECL_TEST(test_color_parse_hex_rgba),
+        DECL_TEST(test_color_property_from_parse),
+        DECL_TEST(test_color_import_whole),
+        DECL_TEST(test_color_import_channels),
+        DECL_TEST(test_color_export_channel_program),
+        DECL_TEST(test_color_color4_function),
+        DECL_TEST(test_color_bind_color4_to_property),
+        DECL_TEST(test_color_bind_channel_to_float),
+        DECL_TEST(test_color_bind_channel_to_channel),
+    };
 
-    RUN(test_runtime_token_create_int);
-    RUN(test_runtime_token_create_float);
-    RUN(test_runtime_token_create_string);
-    RUN(test_runtime_token_create_arithmetic);
-    RUN(test_runtime_run_int_constant);
-    RUN(test_runtime_run_float_constant);
-    RUN(test_runtime_run_string_constant);
-    RUN(test_runtime_run_arithmetic);
-    RUN(test_runtime_import_int);
-    RUN(test_runtime_import_float);
-    RUN(test_runtime_import_string);
-    RUN(test_runtime_attach_and_update_int);
-    RUN(test_runtime_attach_and_update_string);
-    RUN(test_runtime_property_reference);
-    RUN(test_runtime_string_concat_program);
-    RUN(test_runtime_if_true_branch);
-    RUN(test_runtime_if_false_branch);
-    RUN(test_runtime_if_string_branch);
-
-    RUN(test_memleak_string_set_release);
-    RUN(test_memleak_string_multiple_sets);
-    RUN(test_memleak_prop_clear);
-    RUN(test_memleak_prop_clear_never_set);
-    RUN(test_memleak_multiple_string_props);
-    RUN(test_memleak_token_create_release);
-    RUN(test_memleak_token_string_literal);
-    RUN(test_memleak_run_string_program);
-    RUN(test_memleak_attach_update_release);
-    RUN(test_memleak_scalar_properties);
-    RUN(test_memleak_property_reference_program);
+    for (size_t i = 0; i < sizeof(tests)/sizeof(*tests); i++) {
+        long snap = MEM_SNAPSHOT();
+        s_current_test = tests[i].name;
+        s_tests_run++;
+        printf("Running %s...\n", tests[i].name);
+        tests[i].fn();
+        MEM_CHECK_LEAK(snap, tests[i].name);
+    }
 
 #if TEST_MEMORY
     printf("\nMemory tracking: %ld total allocation(s) made, "

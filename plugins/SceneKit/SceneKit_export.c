@@ -504,7 +504,7 @@ ORCA_API struct ClassDesc _BlitRenderPass = {
 
 
 static struct PropertyType const ClearRenderPassProperties[kClearRenderPassNumProperties] = {
-	DECL(0xeb16b675, ClearRenderPass, ClearColor, ClearColor, kDataTypeStruct, .TypeString = "Color"), // ClearRenderPass.ClearColor
+	DECL(0xeb16b675, ClearRenderPass, ClearColor, ClearColor, kDataTypeColor), // ClearRenderPass.ClearColor
 	DECL(0xa444e35b, ClearRenderPass, ClearDepth, ClearDepth, kDataTypeFloat), // ClearRenderPass.ClearDepth
 	DECL(0x222bca4e, ClearRenderPass, ClearStencil, ClearStencil, kDataTypeInt), // ClearRenderPass.ClearStencil
 };
@@ -660,7 +660,7 @@ ORCA_API struct ClassDesc _TextBlock3D = {
 LRESULT Light3D_Render(struct Object*, struct Light3D*, wParam_t, RenderEventPtr);
 
 static struct PropertyType const Light3DProperties[kLight3DNumProperties] = {
-	DECL(0xe5b43cf8, Light3D, Color, Color, kDataTypeStruct, .TypeString = "Color"), // Light3D.Color
+	DECL(0xe5b43cf8, Light3D, Color, Color, kDataTypeColor), // Light3D.Color
 	DECL(0xe2c2c340, Light3D, SpotAngle, SpotAngle, kDataTypeStruct, .TypeString = "Vector2D"), // Light3D.SpotAngle
 	DECL(0x53b4f9aa, Light3D, Intensity, Intensity, kDataTypeFloat), // Light3D.Intensity
 	DECL(0xa311e772, Light3D, Range, Range, kDataTypeFloat), // Light3D.Range

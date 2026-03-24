@@ -47,7 +47,10 @@ orca.typeconverter = {
 		error(string.format("Cannot convert '%s' to %s(Enum)", value, type.TypeString))
 	end,
   String = function(value) return value end,
-	Fixed = function(value) return value end,
+	Color = function(value)
+		local geom = require "orca.geometry"
+		return geom.Color.parse(value)
+	end,
 	Object = function(path, type)
 		local ok, resource = pcall(require, path)
 		if ok then return resource end

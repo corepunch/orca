@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE StackView SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
+<StackView Name="FeatureCard" Direction="Vertical" Spacing="10" BackgroundColor="#141420" Padding="28">
+	<TextBlock Name="FeatureCardIcon" FontSize="20" Width="44" Height="40"
+		TextHorizontalAlignment="Center" TextVerticalAlignment="Center">
+		<TextRun.Text>{../Card.Icon}</TextRun.Text>
+		<Node2D.ForegroundColor>{../Card.PrimaryColor}</Node2D.ForegroundColor>
+		<Node2D.BackgroundColor>{../Card.IconBackground}</Node2D.BackgroundColor>
+	</TextBlock>
+	<Node2D Name="FeatureCardSpacer" Height="8"/>
+	<TextBlock Name="FeatureCardTitle" FontSize="16" ForegroundColor="#F1F5F9">
+		<TextRun.Text>{../Card.Title}</TextRun.Text>
+	</TextBlock>
+	<TextBlock Name="FeatureCardBody" FontSize="13" ForegroundColor="#4B5563" WordWrap="true">
+		<TextRun.Text>{../Card.Body}</TextRun.Text>
+	</TextBlock>
+</StackView>

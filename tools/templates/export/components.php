@@ -15,11 +15,14 @@ static struct PropertyType const <?= $name ?>Properties[k<?= $name ?>NumProperti
 	<?php foreach ($component->getProperties() as $property):?>
 		<?php $datatype = 'kDataType' . ucfirst($property->type->kind) ?>
 		<?php if ($property->type->kind === 'component') $datatype = 'kDataTypeObject'; ?>
+		<?php if ($property->type->kind === 'struct' && $property->type->type == 'color') $datatype = 'kDataTypeColor'; ?>
 		<?php echo($property->type->array ? "\tARRAY_DECL(" : "\tDECL(") ?>
 		<?php echo("{$property->name->id}, $name, {$property->name}, {$property->name->addr}, $datatype") ?>
 		<?php if ($property->type->kind === 'enum') {
 			echo (", .TypeString = \"" . implode(',', $property->type->data->getValuesNames()) . "\", .EnumValues = _" . $property->type->type . "), // $name.{$property->name}\n");
-		} elseif ($property->type->kind === 'struct' || $property->type->kind === 'component') {
+		} elseif ($property->type->kind === 'struct' && $property->type->type != 'color') {
+			echo (", .TypeString = \"{$property->type->export}\"), // $name.{$property->name}\n");
+		} elseif ($property->type->kind === 'component') {
 			echo (", .TypeString = \"{$property->type->export}\"), // $name.{$property->name}\n");
  		} else {
 			echo ("), // $name.{$property->name}\n");

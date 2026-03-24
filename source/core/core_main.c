@@ -417,6 +417,13 @@ int f_registerPropertyType(lua_State *L) {
   ds->ShortIdentifier = fnv1a32(name);
   ds->FullIdentifier = fnv1a32(name);
   ds->DataType = type;
+  switch (type) {
+    case kDataTypeString: ds->DataSize = sizeof(char*); break;
+    case kDataTypeEvent:  ds->DataSize = sizeof(void*); break;
+    case kDataTypeObject: ds->DataSize = sizeof(void*); break;
+    case kDataTypeFloat:  ds->DataSize = sizeof(float); break;
+    default:              ds->DataSize = sizeof(int);   break;
+  }
   lua_setfield(L, LUA_REGISTRYINDEX, n);
   OBJ_RegisterPropertyType(ds);
   return 0;
