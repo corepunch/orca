@@ -8,6 +8,20 @@
     <ThemeGroup Name="Main" SelectedTheme="Default">
       <Theme Name="Default">
         <Entry Key="panel-background">#1A1A28</Entry>
+        <Entry Key="surface">#0B0B12</Entry>
+        <Entry Key="surface-deep">#09090F</Entry>
+        <Entry Key="card-background">#141420</Entry>
+        <Entry Key="text-primary">#F1F5F9</Entry>
+        <Entry Key="text-secondary">#94A3B8</Entry>
+        <Entry Key="text-muted">#64748B</Entry>
+        <Entry Key="text-dim">#4B5563</Entry>
+        <Entry Key="accent">#8B5CF6</Entry>
+        <Entry Key="accent-green">#10B981</Entry>
+        <Entry Key="accent-blue">#3B82F6</Entry>
+        <Entry Key="accent-amber">#F59E0B</Entry>
+        <Entry Key="white">#FFFFFF</Entry>
+        <Entry Key="icon-bg-purple">#1E1833</Entry>
+        <Entry Key="icon-bg-green">#0D2020</Entry>
       </Theme>
     </ThemeGroup>
   </ThemeLibrary>
