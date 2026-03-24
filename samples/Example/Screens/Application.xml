@@ -3,11 +3,11 @@
 <Screen Name="Application" Width="1280" Height="800" ClearColor="surface">
 	<Grid Name="Root" Rows="64px auto" Spacing="0">
 		<StackView Name="NavBar" BackgroundColor="panel-background" Direction="Horizontal" Spacing="32" AlignItems="Center" HorizontalPadding="40">
-			<TextBlock Name="Brand" Text="ORCA" FontSize="20" ForegroundColor="accent" Width="72"/>
-			<TextBlock Name="NavOverview" Text="Overview" FontSize="14" ForegroundColor="text-secondary"/>
-			<TextBlock Name="NavFeatures" Text="Features" FontSize="14" ForegroundColor="text-secondary"/>
-			<TextBlock Name="NavGallery" Text="Gallery" FontSize="14" ForegroundColor="text-secondary"/>
-			<TextBlock Name="NavDocs" Text="Docs" FontSize="14" ForegroundColor="text-secondary"/>
+			<TextBlock Name="Brand" FontSize="20" ForegroundColor="accent" Width="72">ORCA</TextBlock>
+			<TextBlock Name="NavOverview" FontSize="14" ForegroundColor="text-secondary">Overview</TextBlock>
+			<TextBlock Name="NavFeatures" FontSize="14" ForegroundColor="text-secondary">Features</TextBlock>
+			<TextBlock Name="NavGallery" FontSize="14" ForegroundColor="text-secondary">Gallery</TextBlock>
+			<TextBlock Name="NavDocs" FontSize="14" ForegroundColor="text-secondary">Docs</TextBlock>
 		</StackView>
 		<StackView Name="Body" Direction="Vertical" Spacing="40" OverflowY="Scroll" ClipChildren="true" Padding="40" BackgroundColor="surface-deep">
 			<Node.HorizontalPadding>IF(STEP(640, {../../Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</Node.HorizontalPadding>
