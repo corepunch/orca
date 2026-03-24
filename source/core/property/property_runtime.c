@@ -791,7 +791,7 @@ return_value:
     token->cache.property = p;
     return export_property(p, token->attr, output);
   } else {
-//    Con_Error("Can't find property \"%s\"", token->text);
+    Con_Error("Can't find property \"%s\"", token->text);
     memset(output, 0, sizeof(*output));
     return show_error();
   }
