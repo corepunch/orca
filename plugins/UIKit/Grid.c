@@ -103,6 +103,35 @@ _column_is_flexible(struct column const *col)
   return col->type == column_type_auto || col->type == column_type_fr;
 }
 
+/*
+ * When the primary axis (Columns for H-grids, Rows for V-grids) is defined
+ * but the secondary axis has no explicit definition, auto-generate one "auto"
+ * slot per implicit row (or column) so that children wrap and stack correctly
+ * instead of all landing at position 0 on the secondary axis.
+ */
+static void
+_EnsureImplicitSecondaryAxis(PGRIDVIEW pGrid, lpObject_t hObject)
+{
+  enum Direction secondary = (pGrid->Direction == kDirectionHorizontal)
+    ? kDirectionVertical : kDirectionHorizontal;
+  bool_t secondary_unset = (secondary == kDirectionVertical)
+    ? !pGrid->Rows : !pGrid->Columns;
+  if (!secondary_unset)
+    return;
+  PCOLUMNS primary_cols   = columns_at_axis(pGrid, pGrid->Direction, FALSE);
+  PCOLUMNS secondary_cols = columns_at_axis(pGrid, secondary, FALSE);
+  if (primary_cols->count == 0)
+    return;
+  int child_count = 0;
+  FOR_EACH_LAYOUTABLE(hChild, hObject) child_count++;
+  if (child_count == 0)
+    return;
+  int n = (child_count + (int)primary_cols->count - 1) / (int)primary_cols->count;
+  secondary_cols->count = n < MAX_COLUMNS ? n : MAX_COLUMNS;
+  FOR_LOOP(i, secondary_cols->count)
+    secondary_cols->columns[i] = (struct column){ column_type_auto, 1, 0 };
+}
+
 static void
 _CalculateAutos(float spacing, float avl, PCOLUMNS columns)
 {
@@ -143,6 +172,8 @@ HANDLER(Grid, MeasureOverride)
 
   PCOLUMNS hcols = columns_at_axis(pGrid, 0, TRUE);
   PCOLUMNS vcols = columns_at_axis(pGrid, 1, TRUE);
+
+  _EnsureImplicitSecondaryAxis(pGrid, hObject);
 
   _CalculateAutos(pGrid->Spacing, size.width, hcols);
   _CalculateAutos(pGrid->Spacing, size.height, vcols);
@@ -227,8 +258,11 @@ HANDLER(Grid, MeasureOverride)
 HANDLER(Grid, ArrangeOverride)
 {
   uint32_t cellindex = 0;
-  _CalculateAutos(pGrid->Spacing, pArrangeOverride->width, columns_at_axis(pGrid, 0, TRUE));
-  _CalculateAutos(pGrid->Spacing, pArrangeOverride->height, columns_at_axis(pGrid, 1, TRUE));
+  PCOLUMNS hcols = columns_at_axis(pGrid, 0, TRUE);
+  PCOLUMNS vcols = columns_at_axis(pGrid, 1, TRUE);
+  _EnsureImplicitSecondaryAxis(pGrid, hObject);
+  _CalculateAutos(pGrid->Spacing, pArrangeOverride->width, hcols);
+  _CalculateAutos(pGrid->Spacing, pArrangeOverride->height, vcols);
   FOR_EACH_LAYOUTABLE(hChild, hObject)
   {
     struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
