@@ -104,7 +104,6 @@
 					FontSize="14" ForegroundColor="#64748B"/>
 				<Grid Name="WorkflowSteps" Columns="auto auto auto auto" Spacing="16">
 					<Grid.Columns>IF(STEP(640, {../../../Node.ActualWidth}), "auto auto auto auto", "auto auto")</Grid.Columns>
-					<Grid.Rows>IF(STEP(640, {../../../Node.ActualWidth}), "auto", "auto auto")</Grid.Rows>
 					<StackView Name="Step1" Direction="Vertical" Spacing="12" BackgroundColor="#141420" Padding="24">
 						<TextBlock Name="Step1Number" Text="01" FontSize="32" ForegroundColor="#8B5CF6"/>
 						<TextBlock Name="Step1Title" Text="Define Layout" FontSize="15" ForegroundColor="#F1F5F9"/>

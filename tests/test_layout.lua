@@ -117,6 +117,42 @@ local function test_grid_mixed_px_fr()
 end
 
 -- ---------------------------------------------------------------------------
+-- Grid with no Rows specified: children must wrap into implicit rows instead
+-- of all landing at y=0.
+-- ---------------------------------------------------------------------------
+local function test_grid_implicit_row_wrapping()
+	local cell_h = 40
+	local outer = screen + ui.StackView { Direction = "Vertical" }
+	-- 2 columns, 4 children → must produce 2 rows automatically
+	local grid = outer + ui.Grid { Columns = "auto auto", Spacing = 0 }
+	local cells = {}
+	for i = 1, 4 do
+		cells[i] = grid + ui.Node2D { Height = cell_h }
+	end
+
+	screen:updateLayout(screen.Width, screen.Height)
+
+	-- Row 0: cells 1 & 2 must start at y = 0
+	assert(cells[1].ActualY == 0,
+		string.format("cell1 Y: expected 0, got %d", cells[1].ActualY))
+	assert(cells[2].ActualY == 0,
+		string.format("cell2 Y: expected 0, got %d", cells[2].ActualY))
+
+	-- Row 1: cells 3 & 4 must start at y = cell_h (below the first row)
+	assert(cells[3].ActualY == cell_h,
+		string.format("cell3 Y: expected %d, got %d", cell_h, cells[3].ActualY))
+	assert(cells[4].ActualY == cell_h,
+		string.format("cell4 Y: expected %d, got %d", cell_h, cells[4].ActualY))
+
+	-- Grid total height must be 2 * cell_h
+	assert(grid.ActualHeight == cell_h * 2,
+		string.format("grid height: expected %d, got %d", cell_h * 2, grid.ActualHeight))
+
+	outer:removeFromParent()
+	print("PASS: test_grid_implicit_row_wrapping")
+end
+
+-- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
 test_grid_fr_units()
@@ -124,5 +160,6 @@ test_grid_auto_columns()
 test_grid_in_vstack_height()
 test_node2d_container_height()
 test_grid_mixed_px_fr()
+test_grid_implicit_row_wrapping()
 
 print("All layout tests passed.")
