@@ -207,21 +207,6 @@ ORCA_API int luaopen_orca(lua_State* L)
   lua_newtable(L);
   lua_setfield(L, -2, "theme");
 
-//  if (luaL_dostring(L,
-//                    "return function()\n"
-//                    "\tlocal sys = require 'orca.system'\n"
-//                    "\tlocal no_errors = true\n"
-//                    "\tfor f in sys.list_dir(SHAREDIR..'/plugins') do\n"
-//                    "\t\tlocal ok, err = pcall(require, 'plugins.'..f:gsub('.lua$', ''))\n"
-//                    "\t\tif ok then io.stderr:write(string.format('Loaded plugin %q\\n', f:gsub('.lua$', '')))\n"
-//                    "\t\telse io.stderr:write(err, '\\n') no_errors = false end\n"
-//                    "\tend\n"
-//                    "\treturn no_errors\n"
-//                    "end\n") != LUA_OK)
-//  {
-//    Con_Error("%s\n", lua_tostring(L, -1));
-//  }
-//  assert(lua_type(L, -1) == LUA_TFUNCTION);
   lua_pushcfunction(L, load_plugins);
   lua_setfield(L, -2, "init");
   
