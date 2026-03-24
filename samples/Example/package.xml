@@ -9,7 +9,7 @@
     <PropertyType Name="Body" DataType="String" Category="Card"/>
     <PropertyType Name="Icon" DataType="String" Category="Card"/>
     <PropertyType Name="IconBackground" DataType="Color" Category="Card"/>
-    <PropertyType Name="Image" DataType="String" Category="Card"/>
+    <PropertyType Name="Image" DataType="Object" TypeString="Texture" Category="Card"/>
     <PropertyType Name="PrimaryColor" DataType="Color" Category="Card"/>
   </Project.PropertyTypes>
   <Project.SystemMessages>

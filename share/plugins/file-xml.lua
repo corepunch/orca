@@ -187,7 +187,6 @@ table.insert(package.searchers, function(path)
 		local node = construct_node(doc.root)
 		node:setSourceFile(path)
 		node.instantiate = function()
-			print("Instantiating "..path)
 			local instance = construct_node(doc.root)
 			instance:setSourceFile(path)
 			return instance

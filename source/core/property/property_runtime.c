@@ -475,62 +475,92 @@ PROP_Import(lpProperty_t prop,
     if (PROP_GetType(prop) == kDataTypeNone) {
       PROP_SetTypeSize(prop, r->type, r->size);
     }
-    if (PROP_GetType(prop) == kDataTypeString) {
-      return PrintToProperty(prop, r);
-    } else if (PROP_GetType(prop) == kDataTypeEnum && r->type == kDataTypeString) {
-      lpcString_t const* enum_values = PROP_GetDesc(prop)->EnumValues;
-      int idx = 0;
-      while (enum_values && enum_values[idx] && strcasecmp(enum_values[idx], VM_REG_STR(r)) != 0) {
-        idx++;
-      }
-      PROP_SetValue(prop, &idx);
-      return TRUE;
-    } else if (PROP_GetType(prop) == kDataTypeBool && r->type == kDataTypeFloat) {
-      PROP_SetValue(prop, &(int){ *r->value > 0 });
-      return TRUE;
-    } else if (PROP_GetType(prop) < kDataTypeFloat && r->type < kDataTypeString) {
-      PROP_SetValue(prop, &(int){ *r->value });
-      return TRUE;
-    } else if (PROP_GetType(prop) == kDataTypeFloat && r->type < kDataTypeString) {
-      PROP_SetValue(prop, r->value);
-      return TRUE;
-    } else if (PROP_GetType(prop) == kDataTypeFloat && r->type == kDataTypeString) {
-      assert(PROP_GetSize(prop) == sizeof(float));
-      PROP_SetValue(prop, &(float){ (float)atof(VM_REG_STR(r)) });
-      return TRUE;
-//    } else if (PROP_GetType(prop) == T_HANDLE && r->type == kDataTypeFixed) {
-//      int type = GetPropertyHandleType(PROP_GetUserData(prop));
-//      handle_t handle = HACK_LoadResource(type, (lpcString_t)r->value);
-//      PROP_SetValue(prop, &handle);
-//      return TRUE;
-    } else if ((PROP_GetType(prop) == kDataTypeStruct || PROP_GetType(prop) == kDataTypeColor) && PROP_GetSize(prop) == r->size) {
-      PROP_SetValue(prop, r->value);
-      return TRUE;
-    } else if (r->type == kDataTypeFloat && DATA_IsVector(PROP_GetType(prop))) {
-      PROP_SetValue(prop, r->value);
-      return TRUE;
-    } else if (PROP_GetType(prop) == kDataTypeStruct || PROP_GetType(prop) == kDataTypeColor) {
-//      lpcPropertyType_t pd = PROP_GetDesc(prop);
-      assert(!"Not implemented yet!");
-//      FOR_LOOP(i, pd->NumComponents) {
-//        eDataType_t type = (pd+1+i)->DataType;
-//        if (!DATA_IsVector(type) && type != kDataTypeStruct)
-//          return FALSE;
-//      }
-      PROP_SetValue(prop, r->value);
-      return TRUE;
-    } else {
-      assert(r->type == PROP_GetType(prop));
-      switch (PROP_GetType(prop)) {
-        case kDataTypeInt:
-        case kDataTypeBool:
-          PROP_SetValue(prop, &(int){ *r->value });
+    
+    switch (PROP_GetType(prop)) {
+      case kDataTypeString:
+        return PrintToProperty(prop, r);
+        
+      case kDataTypeEnum:
+        if (r->type == kDataTypeString) {
+          lpcString_t const* enum_values = PROP_GetDesc(prop)->EnumValues;
+          int idx = 0;
+          while (enum_values && enum_values[idx] && strcasecmp(enum_values[idx], VM_REG_STR(r)) != 0)
+            idx++;
+          PROP_SetValue(prop, &idx);
           return TRUE;
-        default:
+        }
+        break;
+        
+      case kDataTypeBool:
+        switch (r->type) {
+          case kDataTypeFloat:
+            PROP_SetValue(prop, &(float){ *r->value > 0 });
+            return TRUE;
+          case kDataTypeInt:
+          case kDataTypeBool:
+          case kDataTypeEnum:
+            PROP_SetValue(prop, &(int){ *r->value > 0 });
+            return TRUE;
+          case kDataTypeString:
+            PROP_SetValue(prop, *r->value > 0 ? "true" : "false");
+            return TRUE;
+          default:
+            return FALSE;
+        }
+        
+      case kDataTypeInt:
+        switch (r->type) {
+          case kDataTypeInt:
+          case kDataTypeBool:
+          case kDataTypeEnum:
+            PROP_SetValue(prop, &(int){ *r->value });
+            return TRUE;
+          case kDataTypeFloat:
+            PROP_SetValue(prop, &(float){ *r->value });
+            return TRUE;
+          default:
+            return FALSE;
+        }
+        
+      case kDataTypeFloat:
+        switch (r->type) {
+          case kDataTypeString:
+            assert(PROP_GetSize(prop) == sizeof(float));
+            PROP_SetValue(prop, &(float){ (float)atof(VM_REG_STR(r)) });
+            return TRUE;
+          case kDataTypeInt:
+          case kDataTypeBool:
+          case kDataTypeEnum:
+            PROP_SetValue(prop, &(int){ *r->value });
+            return TRUE;
+          case kDataTypeFloat:
+            PROP_SetValue(prop, r->value);
+            return TRUE;
+          default:
+            return FALSE;
+        }
+        
+      case kDataTypeColor:
+      case kDataTypeStruct:
+        if (DATA_IsVector(r->type)) {
           PROP_SetValue(prop, r->value);
           return TRUE;
-      }
+        }
+        if (PROP_GetSize(prop) == r->size) {
+          PROP_SetValue(prop, r->value);
+          return TRUE;
+        }
+        assert(!"Not implemented yet!");
+        PROP_SetValue(prop, r->value);
+        return FALSE;
+        
+      default:
+        assert(r->type == PROP_GetType(prop));
+        PROP_SetValue(prop, r->value);
+        return FALSE;
     }
+    return FALSE;
+    
   } else if (type == kDataTypeFloat || type == kDataTypeStruct || type == kDataTypeColor) {
     if (type == kDataTypeColor) {
       struct color color = *(struct color const*)PROP_GetValue(prop);
