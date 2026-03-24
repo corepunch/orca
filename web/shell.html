@@ -229,7 +229,12 @@
       };
 
       // ── fetch() patch (newer Emscripten versions) ────────────────────────
-      if (typeof window.fetch === 'function' && typeof TransformStream !== 'undefined') {
+      // Guard all three Streams API pieces: fetch itself, ReadableStream (for
+      // response.body), and TransformStream (for pipeThrough).  Older Android
+      // browsers and WebViews may expose fetch but lack the Streams API.
+      if (typeof window.fetch === 'function' &&
+          typeof ReadableStream !== 'undefined' &&
+          typeof TransformStream !== 'undefined') {
         var origFetch = window.fetch;
         window.fetch = function (resource, init) {
           var url = typeof resource === 'string' ? resource
@@ -239,7 +244,9 @@
           }
           _dataFileLoading = true;
           return origFetch.apply(this, arguments).then(function (response) {
-            if (!response.body) {
+            // response.body may be null, or pipeThrough may be absent, on
+            // browsers that partially implement the Streams spec.
+            if (!response.body || typeof response.body.pipeThrough !== 'function') {
               _dataFileLoading = false;
               return response;
             }
@@ -319,10 +326,52 @@
 
     // ── Feature checks ──────────────────────────────────────────────────────
     // Show a friendly message if the browser lacks WebAssembly or WebGL.
+    // Also emit a one-liner capability log to help diagnose Android issues.
     (function () {
       var missing = [];
-      if (typeof WebAssembly === 'undefined') missing.push('WebAssembly');
-      if (!window.WebGLRenderingContext) missing.push('WebGL');
+
+      // WebAssembly: check existence AND validate a minimal binary to confirm
+      // the runtime actually works (partial support exists on old Android/WebView).
+      if (typeof WebAssembly === 'undefined') {
+        missing.push('WebAssembly');
+      } else {
+        try {
+          // Minimal valid WASM: magic + version only (8 bytes).
+          var minWasm = new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0]);
+          if (!WebAssembly.validate(minWasm)) missing.push('WebAssembly');
+        } catch (e) {
+          missing.push('WebAssembly');
+        }
+      }
+
+      // WebGL: checking WebGLRenderingContext existence is not enough – some
+      // Android devices expose the interface but fail at context creation
+      // (driver bug, memory pressure, browser flags, etc.).
+      if (!window.WebGLRenderingContext) {
+        missing.push('WebGL');
+      } else {
+        try {
+          var testCanvas = document.createElement('canvas');
+          var ctx = testCanvas.getContext('webgl') ||
+                    testCanvas.getContext('experimental-webgl');
+          if (!ctx) missing.push('WebGL');
+        } catch (e) {
+          missing.push('WebGL');
+        }
+      }
+
+      // Diagnostic one-liner (always logged; visible in corner overlay).
+      console.log(
+        '[orca]' +
+        ' wasm:'  + (typeof WebAssembly !== 'undefined' ? 'y' : 'n') +
+        ' webgl:' + (!!window.WebGLRenderingContext ? 'y' : 'n') +
+        ' webgl2:'+ (!!window.WebGL2RenderingContext ? 'y' : 'n') +
+        ' fetch:' + (typeof window.fetch === 'function' ? 'y' : 'n') +
+        ' rs:'    + (typeof ReadableStream  !== 'undefined' ? 'y' : 'n') +
+        ' ts:'    + (typeof TransformStream !== 'undefined' ? 'y' : 'n') +
+        ' rb:'    + (typeof Response !== 'undefined' && 'body' in Response.prototype ? 'y' : 'n')
+      );
+
       if (missing.length) {
         var msg = 'This page requires ' + missing.join(' and ') +
                   ', which your browser does not support. ' +
