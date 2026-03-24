@@ -513,10 +513,8 @@ PROP_Import(lpProperty_t prop,
           case kDataTypeInt:
           case kDataTypeBool:
           case kDataTypeEnum:
-            PROP_SetValue(prop, &(int){ *r->value });
-            return TRUE;
           case kDataTypeFloat:
-            PROP_SetValue(prop, &(float){ *r->value });
+            PROP_SetValue(prop, &(int){ *r->value });
             return TRUE;
           default:
             return FALSE;

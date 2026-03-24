@@ -674,8 +674,7 @@ static void test_runtime_property_reference(void) {
         EXPECT_OK(OBJ_FindShortProperty(obj, "Value", &propValue));
 
         float v = 5.0f;
-        PROP_SetValue(propValue, &v);
-        EXPECT(!PROP_IsNull(propValue));
+        EXPECT(PROP_SetValue(propValue, &v), !PROP_IsNull(propValue));
 
         struct token *prog = Token_Create("{./Value}");
         EXPECT(prog != NULL);
@@ -1065,6 +1064,8 @@ static void test_project_string_property_set_get(void) {
 
 /* ------------------------------------------------------------------ */
 
+#define DECL_TEST(func) { #func, func }
+
 int main(void) {
     mem_init(); /* must be first: resolves real malloc/free via RTLD_NEXT */
 
@@ -1086,53 +1087,53 @@ int main(void) {
      * there is no need for a separate set of "memleak" test functions.
      */
     static const struct { const char *name; void (*fn)(void); } tests[] = {
-        { "int property",                     test_int_property                     },
-        { "float property",                   test_float_property                   },
-        { "bool property",                    test_bool_property                    },
-        { "string property basic",            test_string_property_basic            },
-        { "string property reassign",         test_string_property_reassign         },
-        { "string property clear",            test_string_property_clear            },
-        { "string property clear without set",test_string_property_clear_without_set},
-        { "release properties frees strings", test_release_properties_frees_strings },
-        { "set property value api",           test_set_property_value_api           },
-        { "property state string",            test_property_state_string            },
-        { "struct property",                  test_struct_property                  },
-        { "find property unknown",            test_find_property_unknown            },
-        { "multiple properties independent",  test_multiple_properties_independent  },
-        { "string empty",                     test_string_empty                     },
-        { "release without string set",       test_release_without_string_set       },
-        { "runtime token create int",         test_runtime_token_create_int         },
-        { "runtime token create float",       test_runtime_token_create_float       },
-        { "runtime token create string",      test_runtime_token_create_string      },
-        { "runtime token create arithmetic",  test_runtime_token_create_arithmetic  },
-        { "runtime run int constant",         test_runtime_run_int_constant         },
-        { "runtime run float constant",       test_runtime_run_float_constant       },
-        { "runtime run string constant",      test_runtime_run_string_constant      },
-        { "runtime run arithmetic",           test_runtime_run_arithmetic           },
-        { "runtime import int",               test_runtime_import_int               },
-        { "runtime import float",             test_runtime_import_float             },
-        { "runtime import string",            test_runtime_import_string            },
-        { "runtime attach and update int",    test_runtime_attach_and_update_int    },
-        { "runtime attach and update string", test_runtime_attach_and_update_string },
-        { "runtime property reference",       test_runtime_property_reference       },
-        { "runtime string concat program",    test_runtime_string_concat_program    },
-        { "runtime if true branch",           test_runtime_if_true_branch           },
-        { "runtime if false branch",          test_runtime_if_false_branch          },
-        { "runtime if string branch",         test_runtime_if_string_branch         },
-        { "project string property set get",  test_project_string_property_set_get  },
-        { "color property basic",             test_color_property_basic             },
-        { "color property reassign",          test_color_property_reassign          },
-        { "color property clear",             test_color_property_clear             },
-        { "color parse hex rgb",              test_color_parse_hex_rgb              },
-        { "color parse hex rgba",             test_color_parse_hex_rgba             },
-        { "color property from parse",        test_color_property_from_parse        },
-        { "color import whole",               test_color_import_whole               },
-        { "color import channels",            test_color_import_channels            },
-        { "color export channel program",     test_color_export_channel_program     },
-        { "color color4 function",            test_color_color4_function            },
-        { "color bind color4 to property",    test_color_bind_color4_to_property    },
-        { "color bind channel to float",      test_color_bind_channel_to_float      },
-        { "color bind channel to channel",    test_color_bind_channel_to_channel    },
+        DECL_TEST(test_int_property),
+        DECL_TEST(test_float_property),
+        DECL_TEST(test_bool_property),
+        DECL_TEST(test_string_property_basic),
+        DECL_TEST(test_string_property_reassign),
+        DECL_TEST(test_string_property_clear),
+        DECL_TEST(test_string_property_clear_without_set),
+        DECL_TEST(test_release_properties_frees_strings),
+        DECL_TEST(test_set_property_value_api),
+        DECL_TEST(test_property_state_string),
+        DECL_TEST(test_struct_property),
+        DECL_TEST(test_find_property_unknown),
+        DECL_TEST(test_multiple_properties_independent),
+        DECL_TEST(test_string_empty),
+        DECL_TEST(test_release_without_string_set),
+        DECL_TEST(test_runtime_token_create_int),
+        DECL_TEST(test_runtime_token_create_float),
+        DECL_TEST(test_runtime_token_create_string),
+        DECL_TEST(test_runtime_token_create_arithmetic),
+        DECL_TEST(test_runtime_run_int_constant),
+        DECL_TEST(test_runtime_run_float_constant),
+        DECL_TEST(test_runtime_run_string_constant),
+        DECL_TEST(test_runtime_run_arithmetic),
+        DECL_TEST(test_runtime_import_int),
+        DECL_TEST(test_runtime_import_float),
+        DECL_TEST(test_runtime_import_string),
+        DECL_TEST(test_runtime_attach_and_update_int),
+        DECL_TEST(test_runtime_attach_and_update_string),
+        DECL_TEST(test_runtime_property_reference),
+        DECL_TEST(test_runtime_string_concat_program),
+        DECL_TEST(test_runtime_if_true_branch),
+        DECL_TEST(test_runtime_if_false_branch),
+        DECL_TEST(test_runtime_if_string_branch),
+        DECL_TEST(test_project_string_property_set_get),
+        DECL_TEST(test_color_property_basic),
+        DECL_TEST(test_color_property_reassign),
+        DECL_TEST(test_color_property_clear),
+        DECL_TEST(test_color_parse_hex_rgb),
+        DECL_TEST(test_color_parse_hex_rgba),
+        DECL_TEST(test_color_property_from_parse),
+        DECL_TEST(test_color_import_whole),
+        DECL_TEST(test_color_import_channels),
+        DECL_TEST(test_color_export_channel_program),
+        DECL_TEST(test_color_color4_function),
+        DECL_TEST(test_color_bind_color4_to_property),
+        DECL_TEST(test_color_bind_channel_to_float),
+        DECL_TEST(test_color_bind_channel_to_channel),
     };
 
     for (size_t i = 0; i < sizeof(tests)/sizeof(*tests); i++) {
