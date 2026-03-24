@@ -325,7 +325,13 @@ static void _InitPropertyTypes(lpProject_t project) {
     type->ShortIdentifier = dot ? fnv1a32(dot + 1) : fnv1a32(type->Name);
     // type->ShortIdentifier = fnv1a32(type->Name);
     type->FullIdentifier = fnv1a32(tmp);
-    type->DataSize = 4; // TODO: properly identify size of a property
+    switch (type->DataType) {
+      case kDataTypeString: type->DataSize = sizeof(char*); break;
+      case kDataTypeEvent:  type->DataSize = sizeof(void*); break;
+      case kDataTypeObject: type->DataSize = sizeof(void*); break;
+      case kDataTypeFloat:  type->DataSize = sizeof(float); break;
+      default:              type->DataSize = sizeof(int);   break;
+    }
     OBJ_RegisterPropertyType(type);
   }
 }
