@@ -23,9 +23,10 @@
 #
 # Size optimisation: WEBGL_CFLAGS uses -Oz -flto; WEBGL_LDFLAGS uses
 # --closure 1 -sASSERTIONS=0 -sELIMINATE_DUPLICATE_FUNCTIONS=1
-# -sENVIRONMENT=web -sMALLOC=emmalloc -sTEXTDECODER=2 and
-# -sSTREAMING_WASM_COMPILATION=1.  For a debug build with C source-level stack
-# traces use `make webgl-debug` (see below).
+# -sENVIRONMENT=web -sMALLOC=emmalloc -sTEXTDECODER=2.
+# Streaming WASM compilation is enabled by default in modern Emscripten
+# (the old -sSTREAMING_WASM_COMPILATION=1 flag was removed in Emscripten 3.x).
+# For a debug build with C source-level stack traces use `make webgl-debug`.
 # ──────────────────────────────────────────────────────────────────────────
 
 WEBGL_DIR      = build/webgl
@@ -67,7 +68,6 @@ WEBGL_LDFLAGS = -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG=1 \
                 -sFETCH=1 \
                 -sENVIRONMENT=web \
                 -sELIMINATE_DUPLICATE_FUNCTIONS=1 \
-                -sSTREAMING_WASM_COMPILATION=1 \
                 -sMALLOC=emmalloc \
                 -sTEXTDECODER=2 \
                 --closure 1

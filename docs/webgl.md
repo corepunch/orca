@@ -169,7 +169,6 @@ especially on Android Chrome (V8):
 |------|--------|
 | `-sENVIRONMENT=web` | Strips Node.js / worker compatibility code from the JS glue — the app only needs to run in a web browser. |
 | `-sELIMINATE_DUPLICATE_FUNCTIONS=1` | Finds identical function bodies in the WASM output and merges them into a single copy.  Typically saves 5–10% of `.wasm` size. |
-| `-sSTREAMING_WASM_COMPILATION=1` | Allows V8/SpiderMonkey to start compiling the WASM module while it is still downloading.  Very effective for large modules (8 MB+): startup on Android Chrome can drop from 10+ seconds to under 5 seconds on mid-tier devices. |
 | `-sMALLOC=emmalloc` | Uses Emscripten's lightweight allocator instead of dlmalloc.  emmalloc is smaller and faster for single-threaded builds (no pthreads are used) and saves ~20 KB of `.wasm` code. |
 | `-sTEXTDECODER=2` | Delegates UTF-8 → JS string decoding to the browser's native `TextDecoder` API instead of emitting Emscripten's own decoder.  Reduces JS glue size and is faster at runtime. |
 | `-sINITIAL_MEMORY=64MB` | Sets the WASM heap to 64 MB (down from a higher default).  Smaller heap means less memory zeroing at startup; raise this if the engine reports out-of-memory at runtime. |

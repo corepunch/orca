@@ -446,7 +446,22 @@ int f_registerPropertyTypes(lua_State *L) {
 void
 on_core_module_registered(lua_State* L)
 {
+  /* In WebGL (single-binary build) other modules (orca.filesystem,
+   * orca.renderer, plugin modules) may be required — and their classes
+   * registered — *before* orca.core loads, because plugin searchers or
+   * tailwind-style config requires can trigger luaopen_orca_filesystem et al.
+   * Preserve the class and property-type registries across the memset so
+   * those early registrations are not wiped out. */
+  lpcClassDesc_t     saved_classes[MAX_CLASSES];
+  lpcPropertyType_t  saved_ptypes[MAX_PROPERTY_TYPES];
+  memcpy(saved_classes, core.classes, sizeof(saved_classes));
+  memcpy(saved_ptypes,  core.ptypes,  sizeof(saved_ptypes));
+
   memset(&core, 0, sizeof(struct game));
+
+  memcpy(core.classes, saved_classes, sizeof(core.classes));
+  memcpy(core.ptypes,  saved_ptypes,  sizeof(core.ptypes));
+
   core.realtime = WI_GetMilliseconds();
   core.L = L;
   //  lua_setfield(L, LUA_REGISTRYINDEX, IID_GAME);
