@@ -45,7 +45,7 @@ OBJ_RegisterClass(lpcClassDesc_t class)
       FOR_LOOP(j, class->NumProperties) {
         OBJ_RegisterPropertyType(&class->Properties[j]);
       }
-      Con_Printf("%s %d", class->ClassName, i);
+//      Con_Printf("%s %d", class->ClassName, i);
       core.classes[i] = class;
       return TRUE;
     } else if (core.classes[i]->ClassID == class->ClassID) {
