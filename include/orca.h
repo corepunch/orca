@@ -323,6 +323,10 @@ PROP_Create(lua_State*,lpObject_t,lpcPropertyType_t);
 ORCA_API uint32_t
 GetPropertyHandleType(lpcString_t szType);
 
+typedef void (*EnumPropertyTypeProc)(lpcString_t, void*);
+typedef void (*EnumAliasProc)(lpcString_t, lpcString_t, void*);
+ORCA_API bool_t UI_EnumObjectAliases(lpObject_t object, EnumAliasProc, void* args);
+
 #define PROP_CopyValue(property, dest) memcpy(dest, PROP_GetValue(property), PROP_GetSize(property))
 #define PROP_FindByFullName(LIST, NAME) PROP_FindByLongID(LIST, fnv1a32(NAME));
 

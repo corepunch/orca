@@ -1931,14 +1931,17 @@ ORCA_API struct ClassDesc _EngineMetaclass = {
 	.NumProperties = kEngineMetaclassNumProperties,
 };
 
+LRESULT ThemeGroup_Attached(struct Object*, struct ThemeGroup*, wParam_t, AttachedEventPtr);
 
 static struct PropertyType const ThemeGroupProperties[kThemeGroupNumProperties] = {
+	DECL(0x75516381, ThemeGroup, SelectedTheme, SelectedTheme, kDataTypeString), // ThemeGroup.SelectedTheme
 	DECL(0x1cf2c938, ThemeGroup, SelectedDictionary, SelectedDictionary, kDataTypeString), // ThemeGroup.SelectedDictionary
 };
 static struct ThemeGroup ThemeGroupDefaults = {
 };
 LRESULT ThemeGroupProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
+		case kEventAttached: return ThemeGroup_Attached(object, cmp, wparm, lparm); // Attached
 	}
 	return FALSE;
 }

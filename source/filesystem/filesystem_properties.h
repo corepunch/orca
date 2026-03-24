@@ -414,8 +414,10 @@ enum EngineMetaclassProperties {
 #define ID_ThemeGroup 0xa8bfcd45
 #define GetThemeGroup(_P) ((struct ThemeGroup*)((_P)?OBJ_GetComponent(_P,ID_ThemeGroup):NULL))
 #define ThemeGroup_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_ThemeGroup,sizeof(struct ThemeGroup),_N)
+#define ID_ThemeGroup_SelectedTheme 0xfdc31565 // ThemeGroup.SelectedTheme
 #define ID_ThemeGroup_SelectedDictionary 0x6de33964 // ThemeGroup.SelectedDictionary
 enum ThemeGroupProperties {
+	kThemeGroupSelectedTheme,
 	kThemeGroupSelectedDictionary,
 	kThemeGroupNumProperties	
 };

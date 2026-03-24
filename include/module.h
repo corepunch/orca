@@ -196,8 +196,6 @@ typedef struct _SHEETCELLDEF {
 
 typedef void (*EnumSpreadheetProc)(LPSPREADSHEETDEF, LPVOID);
 typedef void (*EnumPropertyProc)(LPPROPDEF, LPVOID);
-typedef void (*EnumPropertyTypeProc)(lpcString_t, LPVOID);
-typedef void (*EnumAliasProc)(lpcString_t, lpcString_t, LPVOID);
 
 ORCA_API void    UI_Render(FLOAT stereo, HANDLE rt);
 ORCA_API void    UI_EnumChildObjects(HOBJ, EnumChildProc, LPVOID);

@@ -10,6 +10,17 @@ struct alias
 #endif
 };
 
+
+bool_t
+UI_EnumObjectAliases(lpObject_t object, EnumAliasProc proc, void* args)
+{
+  FOR_EACH_LIST(struct alias, pAlias, _GetAliases(object))
+  {
+    proc(pAlias->name, pAlias->path, args);
+  }
+  return TRUE;
+}
+
 void
 OBJ_AddAlias(lpObject_t object, lpcString_t szName, lpcString_t szPath)
 {

@@ -203,6 +203,9 @@ ORCA_API int luaopen_orca(lua_State* L)
 
   lua_pushcfunction(L, f_async);
   lua_setfield(L, -2, "async");
+  
+  lua_newtable(L);
+  lua_setfield(L, -2, "theme");
 
 //  if (luaL_dostring(L,
 //                    "return function()\n"

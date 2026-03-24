@@ -396,6 +396,16 @@ static void _InitPlugins(lua_State *L, lpcProject_t project) {
   }
 }
 
+static void
+register_theme_value(lpcString_t name, lpcString_t value, void* L)
+{
+  API_CallRequire(L, "orca", 1);
+  lua_getfield(L, -1, "theme");
+  lua_pushstring(L, value);
+  lua_setfield(L, -2, name);
+  lua_pop(L, 2);
+}
+
 struct Object*
 FS_LoadBundle(lua_State* L, lpcString_t szDirname)
 {
@@ -418,6 +428,15 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
   _InitPlugins(L, project);
   _InitPropertyTypes(project);
   _InitProjectRefences(L, project, szDirname);
+  
+  lpObject_t themes = OBJ_FindChild(CMP_GetObject(project), "Themes", FALSE);
+  if (themes) {
+    FOR_EACH_OBJECT(themeGroup, themes) if (GetThemeGroup(themeGroup)) {
+      if (GetThemeGroup(themeGroup)->_selectedTheme) {
+        UI_EnumObjectAliases(GetThemeGroup(themeGroup)->_selectedTheme, register_theme_value, L);
+      }
+    }
+  }
 
   lua_pop(L, 1);
 

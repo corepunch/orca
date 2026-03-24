@@ -481,7 +481,9 @@ ORCA_API struct EngineMetaclass* luaX_checkEngineMetaclass(lua_State *L, int idx
 typedef struct ThemeGroup ThemeGroup_t, *ThemeGroupPtr, *lpThemeGroup_t;
 typedef struct ThemeGroup const *ThemeGroupCPtr, *lpcThemeGroup_t;
 struct ThemeGroup {
+	const char* SelectedTheme;
 	const char* SelectedDictionary;
+	struct Object* _selectedTheme;
 };
 ORCA_API void luaX_pushThemeGroup(lua_State *L, struct ThemeGroup const* ThemeGroup);
 ORCA_API struct ThemeGroup* luaX_checkThemeGroup(lua_State *L, int idx);

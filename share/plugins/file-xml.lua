@@ -33,14 +33,14 @@ function Property.parse(node, name, value)
 	assert(type, string.format("Unknown property: %s for node of type %s", name, node.className))
 	local converter = orca.typeconverter[type.DataType]
 	assert(converter, string.format("No type converter for data type: %s (property %s)", type.DataType, name))
-	node[name] = converter(value, type)
+	node[name] = converter(orca.theme[value] or value, type)
 end
 
 function Property.parse_item(element, item, typename)
-	for k, v in element.attributes do
-		local converter = simple_convertes[type(item[k])]
-		assert(converter, string.format("No simple converter for array item %s property %s", typename, k))
-		item[k] = converter(v, item[k])
+	for key, value in element.attributes do
+		local converter = simple_convertes[type(item[key])]
+		assert(converter, string.format("No simple converter for array item %s property %s", typename, key))
+		item[key] = converter(orca.theme[value] or value, item[key])
 	end
 	return item
 end
@@ -110,7 +110,7 @@ local specials = {
 		print("Adding event listener for event: "..element:get "Event")
 	end,
 	Entry = function(node, element)
-		node:addAlias(element:get("id"), element.text)
+		node:addAlias(element:get("Key"), element.text)
 	end,
 	ResourceDictionaryItem = function(node, element)
 		for entry in element.children do

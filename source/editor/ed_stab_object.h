@@ -4,7 +4,7 @@ void UI_EnumObjectPropertyTypes(HOBJ, EnumPropertyTypeProc, LPVOID);
 void UI_FillOutPropDef(HOBJ object, HPROP p, LPPROPDEF lpPropDef);
 BOOL UI_GetProperty(DWORD dwIndex, LPPROPDEF lpOut);
 void UI_RefreshProperty(DWORD dwIndex);
-BOOL UI_EnumObjectAliases(HOBJ, EnumAliasProc, LPVOID);
+//BOOL UI_EnumObjectAliases(HOBJ, EnumAliasProc, LPVOID);
 BOOL UI_EnumObjectProperties(HOBJ, EnumPropertyProc, LPVOID);
 bool_t OBJ_IsPrefabView(lpcObject_t object);
 

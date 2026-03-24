@@ -1,8 +1,16 @@
 <?xml version="1.0"?>
+<!DOCTYPE Project SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
 <Project Name="Example" StartupScreen="Example/Screens/Application">
   <ScreenLibrary Name="Screens" IsExternal="true"/>
   <ImageLibrary Name="Images" IsExternal="true"/>
   <PrefabLibrary Name="Prefabs" IsExternal="true"/>
+  <ThemeLibrary Name="Themes">
+    <ThemeGroup Name="Main" SelectedTheme="Default">
+      <Theme Name="Default">
+        <Entry Key="panel-background">#1A1A28</Entry>
+      </Theme>
+    </ThemeGroup>
+  </ThemeLibrary>
   <Project.PropertyTypes>
     <PropertyType Name="Title" DataType="String" Category="Card"/>
     <PropertyType Name="Subtitle" DataType="String" Category="Card"/>
