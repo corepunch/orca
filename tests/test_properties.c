@@ -16,6 +16,7 @@
  *   - p_runtime: PROP_Import — importing vm_register values into properties
  *   - p_runtime: PROP_AttachProgram + PROP_Update — expression → property
  *   - p_runtime: property import by name reference (.Property path)
+ *   - project-defined (dynamic) string property type: set/get with correct DataSize
  *   - Memory leak tests (compiled with -DTEST_MEMORY): string property lifecycle,
  *     PROP_Clear, OBJ_ReleaseProperties, Token_Create/Release, and attach+update
  *
@@ -841,6 +842,56 @@ static void test_runtime_if_string_branch(void) {
 }
 
 /* ------------------------------------------------------------------ */
+/* Project-defined (dynamic) property type tests                       */
+/* These simulate property types registered from package.xml via       */
+/* OBJ_RegisterPropertyType, as _InitPropertyTypes() does.             */
+/* ------------------------------------------------------------------ */
+
+/*
+ * A project-defined string property type (e.g. from package.xml
+ * <PropertyType Name="Title" DataType="String" Category="Card"/>)
+ * must have DataSize == sizeof(char*) so that the heap pointer fits
+ * in the property's storage buffer.  Using DataSize=4 on 64-bit
+ * corrupts the pointer and causes crashes in jwPropertyExport.
+ */
+static struct PropertyType s_projStringPropType = {
+    .Name            = "ProjTitle",
+    .Category        = "Card",
+    .DataType        = kDataTypeString,
+    .DataSize        = sizeof(char *),   /* must be pointer-sized, not 4 */
+    /* identifiers computed from "Card.ProjTitle" */
+};
+
+static void register_project_types(void) {
+    s_projStringPropType.ShortIdentifier = fnv1a32("ProjTitle");
+    s_projStringPropType.FullIdentifier  = fnv1a32("Card.ProjTitle");
+    OBJ_RegisterPropertyType(&s_projStringPropType);
+}
+
+static void test_project_string_property_set_get(void) {
+    WITH(struct Object, obj, make_object(), destroy_object) {
+        lpProperty_t prop;
+        /*
+         * Project properties are looked up by full name ("Category.Name"),
+         * which is used as the FullIdentifier.  OBJ_FindShortProperty first
+         * checks component properties (by ShortIdentifier), then falls back
+         * to OBJ_FindLongProperty which calls _CreateProjectProperty with the
+         * same identifier — so we must pass the full "Card.ProjTitle" name.
+         */
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Card.ProjTitle", &prop));
+        EXPECT(PROP_GetType(prop) == kDataTypeString);
+        EXPECT(PROP_IsNull(prop));
+
+        PROP_SetValue(prop, "Hello");
+        EXPECT(!PROP_IsNull(prop));
+        EXPECT_STR_EQ((const char*)PROP_GetValue(prop), "Hello");
+
+        PROP_SetValue(prop, "World");
+        EXPECT_STR_EQ((const char*)PROP_GetValue(prop), "World");
+    }
+}
+
+/* ------------------------------------------------------------------ */
 /* Memory-leak tests (active when compiled with -DTEST_MEMORY)         */
 /* Each test takes a snapshot before and checks for leaks after.       */
 /* ------------------------------------------------------------------ */
@@ -997,6 +1048,7 @@ int main(void) {
 
     register_test_class();
     register_runtime_class();
+    register_project_types();
 
     RUN(test_int_property);
     RUN(test_float_property);
@@ -1032,6 +1084,8 @@ int main(void) {
     RUN(test_runtime_if_true_branch);
     RUN(test_runtime_if_false_branch);
     RUN(test_runtime_if_string_branch);
+
+    RUN(test_project_string_property_set_get);
 
     RUN(test_memleak_string_set_release);
     RUN(test_memleak_string_multiple_sets);
