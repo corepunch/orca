@@ -60,6 +60,7 @@ InitOutput(struct vm_register* output, eDataType_t type, uint32_t size)
 {
   switch (type) {
     case kDataTypeStruct:
+    case kDataTypeColor:
       output->type = kDataTypeFloat;
       break;
     default:
@@ -461,7 +462,7 @@ PrintToProperty(lpProperty_t prop, struct vm_register* r)
 }
 
 static inline bool_t DATA_IsVector(eDataType_t type) {
-  return type == kDataTypeFloat || type == kDataTypeStruct;
+  return type == kDataTypeFloat || type == kDataTypeStruct || type == kDataTypeColor;
 }
 
 bool_t
@@ -502,13 +503,13 @@ PROP_Import(lpProperty_t prop,
 //      handle_t handle = HACK_LoadResource(type, (lpcString_t)r->value);
 //      PROP_SetValue(prop, &handle);
 //      return TRUE;
-    } else if (PROP_GetType(prop) == kDataTypeStruct && PROP_GetSize(prop) == r->size) {
+    } else if ((PROP_GetType(prop) == kDataTypeStruct || PROP_GetType(prop) == kDataTypeColor) && PROP_GetSize(prop) == r->size) {
       PROP_SetValue(prop, r->value);
       return TRUE;
     } else if (r->type == kDataTypeFloat && DATA_IsVector(PROP_GetType(prop))) {
       PROP_SetValue(prop, r->value);
       return TRUE;
-    } else if (PROP_GetType(prop) == kDataTypeStruct) {
+    } else if (PROP_GetType(prop) == kDataTypeStruct || PROP_GetType(prop) == kDataTypeColor) {
 //      lpcPropertyType_t pd = PROP_GetDesc(prop);
       assert(!"Not implemented yet!");
 //      FOR_LOOP(i, pd->NumComponents) {
@@ -530,8 +531,8 @@ PROP_Import(lpProperty_t prop,
           return TRUE;
       }
     }
-  } else if (type == kDataTypeFloat || type == kDataTypeStruct) {
-    if (type == kDataTypeStruct && !strcmp(PROP_GetUserData(prop), "Color")) {
+  } else if (type == kDataTypeFloat || type == kDataTypeStruct || type == kDataTypeColor) {
+    if (type == kDataTypeColor) {
       struct color color = *(struct color const*)PROP_GetValue(prop);
       switch ((uint32_t)attr) {
         case kPropertyAttributeColorR:
@@ -626,21 +627,22 @@ jwPropertyExport(lpProperty_t prop,
         return TRUE;
     }
   }
+  if (PROP_GetType(prop) == kDataTypeColor) {
+    switch ((uint32_t)attr) {
+      case kPropertyAttributeColorR:
+      case kPropertyAttributeColorG:
+      case kPropertyAttributeColorB:
+      case kPropertyAttributeColorA:
+        InitOutput(r, kDataTypeFloat, sizeof(float));
+        r->value[0] = ((float const*)PROP_GetValue(prop))[attr-kPropertyAttributeColorR];
+        return TRUE;
+      default:
+        Con_Error("Unsupported attribute %d for struct color", attr);
+        return show_error();
+    }
+  }
   if (PROP_GetType(prop) == kDataTypeStruct) {
-    if (!strcmp(PROP_GetUserData(prop), "Color")) {
-      switch ((uint32_t)attr) {
-        case kPropertyAttributeColorR:
-        case kPropertyAttributeColorG:
-        case kPropertyAttributeColorB:
-        case kPropertyAttributeColorA:
-          InitOutput(r, kDataTypeFloat, sizeof(float));
-          r->value[0] = ((float const*)PROP_GetValue(prop))[attr-kPropertyAttributeColorR];
-          return TRUE;
-        default:
-          Con_Error("Unsupported attribute %d for struct color", attr);
-          return show_error();
-      }
-    } else if (strstr(PROP_GetUserData(prop), "Vector")) {
+    if (strstr(PROP_GetUserData(prop), "Vector")) {
       switch ((uint32_t)attr) {
         case kPropertyAttributeVectorX:
         case kPropertyAttributeVectorY:

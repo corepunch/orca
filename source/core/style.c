@@ -259,8 +259,7 @@ OBJ_ApplyClass(lpObject_t pobj, struct style_sheet* ss, void* parm)
     assert(PROP_GetDesc(hProperty));
     f_parse_property(g_L, hProperty, ss->value);
 
-    if (PROP_GetType(hProperty) == kDataTypeStruct &&
-        !strcmp(PROP_GetUserData(hProperty), "Color") &&
+    if (PROP_GetType(hProperty) == kDataTypeColor &&
         parm)
     {
       struct color clr;

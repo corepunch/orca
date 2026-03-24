@@ -240,6 +240,7 @@ static void mem_init(void) {}
  */
 extern lpObject_t OBJ_MakeNativeObject(uint32_t class_id);
 extern void OBJ_ReleaseProperties(lpObject_t);
+extern struct color COLOR_Parse(lpcString_t);
 
 /* ------------------------------------------------------------------ */
 /* Minimal test harness                                               */
@@ -357,6 +358,100 @@ static void register_runtime_class(void)
 
 static lpObject_t make_rt_object(void) {
     return OBJ_MakeNativeObject(fnv1a32("RTComp"));
+}
+
+/* ------------------------------------------------------------------ */
+/* Color test component                                                */
+/* Basic set/get/import/export of kDataTypeColor properties.          */
+/* ------------------------------------------------------------------ */
+
+struct ColorComp {
+    struct color Tint; /* kDataTypeColor */
+};
+
+/* fnv1a32("ColorComp")      = 0x1628afcf */
+/* fnv1a32("ColorComp.Tint") = 0x7a0bf43e */
+/* fnv1a32("Tint")           = 0xdedc93ac */
+static struct PropertyType s_colorProps[1] = {
+    { .Name = "Tint", .Key = "Tint", .DataType = kDataTypeColor,
+      .DataSize = sizeof(struct color),
+      .ShortIdentifier = 0xdedc93ac, .FullIdentifier = 0x7a0bf43e,
+      .Offset = offsetof(struct ColorComp, Tint) },
+};
+
+static LRESULT ColorComp_Proc(lpObject_t o, void* cmp, uint32_t msg,
+                              wParam_t w, lParam_t l) {
+    (void)o; (void)cmp; (void)msg; (void)w; (void)l;
+    return 0;
+}
+
+static struct ClassDesc s_colorClass = {
+    .ObjProc       = ColorComp_Proc,
+    .Properties    = s_colorProps,
+    .ClassName     = "ColorComp",
+    .ClassID       = 0x1628afcf, /* fnv1a32("ColorComp") */
+    .ClassSize     = sizeof(struct ColorComp),
+    .NumProperties = 1,
+    .DefaultName   = "colorcomp",
+};
+
+static void register_color_class(void) {
+    OBJ_RegisterClass(&s_colorClass);
+}
+
+static lpObject_t make_color_object(void) {
+    return OBJ_MakeNativeObject(fnv1a32("ColorComp"));
+}
+
+/* ------------------------------------------------------------------ */
+/* Runtime color component                                             */
+/* Used for binding tests: Color (source) + Alpha (float sink).       */
+/* FullIdentifiers are plain fnv1a32(name) so {./Color}.COLORR works. */
+/* ------------------------------------------------------------------ */
+
+struct RTColorComp {
+    struct color Color; /* kDataTypeColor — binding source */
+    float        Alpha; /* kDataTypeFloat — float sink for channel binding */
+};
+
+/* fnv1a32("RTColorComp")       = 0x179ee081                          */
+/* fnv1a32("RTColorComp.Color") = 0xa40d18f0 (not used for binding)  */
+/* fnv1a32("RTColorComp.Alpha") = 0xe4dc94f3 (not used for binding)  */
+/* fnv1a32("Color")             = 0xe5b43cf8  ← FullIdentifier        */
+/* fnv1a32("Alpha")             = 0x0348724b  ← FullIdentifier        */
+static struct PropertyType s_rtColorProps[2] = {
+    { .Name = "Color", .Key = "Color", .DataType = kDataTypeColor,
+      .DataSize = sizeof(struct color),
+      .ShortIdentifier = 0xe5b43cf8, .FullIdentifier = 0xe5b43cf8,
+      .Offset = offsetof(struct RTColorComp, Color) },
+    { .Name = "Alpha", .Key = "Alpha", .DataType = kDataTypeFloat,
+      .DataSize = sizeof(float),
+      .ShortIdentifier = 0x0348724b, .FullIdentifier = 0x0348724b,
+      .Offset = offsetof(struct RTColorComp, Alpha) },
+};
+
+static LRESULT RTColorComp_Proc(lpObject_t o, void* cmp, uint32_t msg,
+                                wParam_t w, lParam_t l) {
+    (void)o; (void)cmp; (void)msg; (void)w; (void)l;
+    return 0;
+}
+
+static struct ClassDesc s_rtColorClass = {
+    .ObjProc       = RTColorComp_Proc,
+    .Properties    = s_rtColorProps,
+    .ClassName     = "RTColorComp",
+    .ClassID       = 0x179ee081, /* fnv1a32("RTColorComp") */
+    .ClassSize     = sizeof(struct RTColorComp),
+    .NumProperties = 2,
+    .DefaultName   = "rtcolorcomp",
+};
+
+static void register_rt_color_class(void) {
+    OBJ_RegisterClass(&s_rtColorClass);
+}
+
+static lpObject_t make_rt_color_object(void) {
+    return OBJ_MakeNativeObject(fnv1a32("RTColorComp"));
 }
 
 /* ------------------------------------------------------------------ */
@@ -842,6 +937,288 @@ static void test_runtime_if_string_branch(void) {
 }
 
 /* ------------------------------------------------------------------ */
+/* kDataTypeColor — General property tests                             */
+/* ------------------------------------------------------------------ */
+
+/* Basic: DataType is kDataTypeColor, IsNull before set, set/get. */
+static void test_color_property_basic(void) {
+    WITH(struct Object, obj, make_color_object(), destroy_object) {
+        lpProperty_t prop;
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Tint", &prop));
+        EXPECT(PROP_GetType(prop) == kDataTypeColor);
+        EXPECT(PROP_GetSize(prop) == sizeof(struct color));
+        EXPECT(PROP_IsNull(prop));
+
+        struct color c = { .r = 1.0f, .g = 0.5f, .b = 0.25f, .a = 1.0f };
+        PROP_SetValue(prop, &c);
+        EXPECT(!PROP_IsNull(prop));
+
+        struct color *got = (struct color *)PROP_GetValue(prop);
+        EXPECT(got->r == 1.0f);
+        EXPECT(got->g == 0.5f);
+        EXPECT(got->b == 0.25f);
+        EXPECT(got->a == 1.0f);
+    }
+}
+
+/* Reassignment: setting a color property twice should update in place. */
+static void test_color_property_reassign(void) {
+    WITH(struct Object, obj, make_color_object(), destroy_object) {
+        lpProperty_t prop;
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Tint", &prop));
+
+        struct color c1 = { .r = 1.0f, .g = 0.0f, .b = 0.0f, .a = 1.0f };
+        PROP_SetValue(prop, &c1);
+        EXPECT(((struct color *)PROP_GetValue(prop))->r == 1.0f);
+
+        struct color c2 = { .r = 0.0f, .g = 0.0f, .b = 1.0f, .a = 0.5f };
+        PROP_SetValue(prop, &c2);
+        struct color *got = (struct color *)PROP_GetValue(prop);
+        EXPECT(got->r == 0.0f);
+        EXPECT(got->b == 1.0f);
+        EXPECT(got->a == 0.5f);
+    }
+}
+
+/* Clear: PROP_Clear resets a color property back to null. */
+static void test_color_property_clear(void) {
+    WITH(struct Object, obj, make_color_object(), destroy_object) {
+        lpProperty_t prop;
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Tint", &prop));
+
+        struct color c = { .r = 0.2f, .g = 0.4f, .b = 0.6f, .a = 0.8f };
+        PROP_SetValue(prop, &c);
+        EXPECT(!PROP_IsNull(prop));
+
+        PROP_Clear(prop);
+        EXPECT(PROP_IsNull(prop));
+
+        /* Re-set after clear must work without corruption. */
+        PROP_SetValue(prop, &c);
+        EXPECT(!PROP_IsNull(prop));
+        EXPECT(((struct color *)PROP_GetValue(prop))->g == 0.4f);
+    }
+}
+
+/* Parsing: COLOR_Parse converts a hex color string to struct color. */
+static void test_color_parse_hex_rgb(void) {
+    for (int _pass = 1; _pass; _pass = 0) {
+        struct color c = COLOR_Parse("#ff8000");
+        EXPECT(c.r == 1.0f);
+        EXPECT(c.g > 0.49f && c.g < 0.51f); /* 0x80/0xff ≈ 0.502 */
+        EXPECT(c.b == 0.0f);
+        EXPECT(c.a == 1.0f); /* default alpha */
+    }
+}
+
+static void test_color_parse_hex_rgba(void) {
+    for (int _pass = 1; _pass; _pass = 0) {
+        struct color c = COLOR_Parse("#ff000080"); /* red, half opacity */
+        EXPECT(c.r == 1.0f);
+        EXPECT(c.g == 0.0f);
+        EXPECT(c.b == 0.0f);
+        EXPECT(c.a > 0.49f && c.a < 0.51f); /* 0x80/0xff ≈ 0.502 */
+    }
+}
+
+/* Parsing: set a color property from a parsed string. */
+static void test_color_property_from_parse(void) {
+    WITH(struct Object, obj, make_color_object(), destroy_object) {
+        lpProperty_t prop;
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Tint", &prop));
+
+        struct color c = COLOR_Parse("#00ff00"); /* green */
+        PROP_SetValue(prop, &c);
+        EXPECT(!PROP_IsNull(prop));
+
+        struct color *got = (struct color *)PROP_GetValue(prop);
+        EXPECT(got->r == 0.0f);
+        EXPECT(got->g == 1.0f);
+        EXPECT(got->b == 0.0f);
+        EXPECT(got->a == 1.0f);
+    }
+}
+
+/* ------------------------------------------------------------------ */
+/* kDataTypeColor — PROP_Import / PROP_Export (channel bindings)      */
+/* ------------------------------------------------------------------ */
+
+/* Import whole color from a float-typed vm_register (4 floats). */
+static void test_color_import_whole(void) {
+    WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
+        lpProperty_t prop;
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Color", &prop));
+
+        struct vm_register r = {0};
+        r.type     = kDataTypeFloat;
+        r.size     = sizeof(struct color);
+        r.value[0] = 0.1f; /* r */
+        r.value[1] = 0.2f; /* g */
+        r.value[2] = 0.3f; /* b */
+        r.value[3] = 0.9f; /* a */
+        EXPECT(PROP_Import(prop, kPropertyAttributeWholeProperty, &r));
+        EXPECT(!PROP_IsNull(prop));
+
+        struct color *got = (struct color *)PROP_GetValue(prop);
+        EXPECT(got->r == 0.1f);
+        EXPECT(got->g == 0.2f);
+        EXPECT(got->b == 0.3f);
+        EXPECT(got->a == 0.9f);
+    }
+}
+
+/* Import individual RGBA channels via PROP_Import with attribute. */
+static void test_color_import_channels(void) {
+    WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
+        lpProperty_t prop;
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Color", &prop));
+
+        /* Initialize the color to known values first. */
+        struct color init = { .r = 0.0f, .g = 0.0f, .b = 0.0f, .a = 1.0f };
+        PROP_SetValue(prop, &init);
+
+        struct vm_register r = {0};
+        r.type = kDataTypeFloat;
+        r.size = sizeof(float);
+
+        r.value[0] = 0.8f;
+        EXPECT(PROP_Import(prop, kPropertyAttributeColorR, &r));
+        EXPECT(((struct color *)PROP_GetValue(prop))->r == 0.8f);
+
+        r.value[0] = 0.6f;
+        EXPECT(PROP_Import(prop, kPropertyAttributeColorG, &r));
+        EXPECT(((struct color *)PROP_GetValue(prop))->g == 0.6f);
+
+        r.value[0] = 0.4f;
+        EXPECT(PROP_Import(prop, kPropertyAttributeColorB, &r));
+        EXPECT(((struct color *)PROP_GetValue(prop))->b == 0.4f);
+
+        r.value[0] = 0.5f;
+        EXPECT(PROP_Import(prop, kPropertyAttributeColorA, &r));
+        EXPECT(((struct color *)PROP_GetValue(prop))->a == 0.5f);
+
+        /* Ensure other channels were not clobbered. */
+        struct color *got = (struct color *)PROP_GetValue(prop);
+        EXPECT(got->r == 0.8f);
+        EXPECT(got->g == 0.6f);
+        EXPECT(got->b == 0.4f);
+        EXPECT(got->a == 0.5f);
+    }
+}
+
+/* Export a color channel via OBJ_RunProgram with {./Color}.COLORR. */
+static void test_color_export_channel_program(void) {
+    WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
+        lpProperty_t prop;
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Color", &prop));
+
+        struct color c = { .r = 0.75f, .g = 0.25f, .b = 0.5f, .a = 1.0f };
+        PROP_SetValue(prop, &c);
+
+        /* {./Color}.COLORR reads the R channel. */
+        WITH(struct token, prog, Token_Create("{./Color}.COLORR"), Token_Release) {
+            EXPECT(prog != NULL);
+            struct vm_register r = {0};
+            EXPECT(OBJ_RunProgram(obj, prog, &r));
+            EXPECT(r.type == kDataTypeFloat);
+            EXPECT(r.value[0] == 0.75f);
+        }
+
+        /* {./Color}.COLORG reads the G channel. */
+        WITH(struct token, prog, Token_Create("{./Color}.COLORG"), Token_Release) {
+            EXPECT(prog != NULL);
+            struct vm_register r = {0};
+            EXPECT(OBJ_RunProgram(obj, prog, &r));
+            EXPECT(r.value[0] == 0.25f);
+        }
+    }
+}
+
+/* COLOR4 function: COLOR4(r, g, b, a) produces a float[4] register. */
+static void test_color_color4_function(void) {
+    WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
+        WITH(struct token, prog, Token_Create("COLOR4(1.0, 0.5, 0.25, 0.75)"), Token_Release) {
+            EXPECT(prog != NULL);
+            struct vm_register r = {0};
+            EXPECT(OBJ_RunProgram(obj, prog, &r));
+            EXPECT(r.size == sizeof(struct color));
+            EXPECT(r.value[0] == 1.0f);
+            EXPECT(r.value[1] == 0.5f);
+            EXPECT(r.value[2] == 0.25f);
+            EXPECT(r.value[3] == 0.75f);
+        }
+    }
+}
+
+/* Bind COLOR4 to a color property via PROP_AttachProgram + PROP_Update. */
+static void test_color_bind_color4_to_property(void) {
+    WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
+        lpProperty_t prop;
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Color", &prop));
+
+        struct token *prog = Token_Create("COLOR4(0.1, 0.2, 0.3, 1.0)");
+        EXPECT(prog != NULL);
+        PROP_AttachProgram(prop, kPropertyAttributeWholeProperty,
+                           prog, "COLOR4(0.1, 0.2, 0.3, 1.0)");
+        EXPECT(PROP_HasProgram(prop));
+        core.frame++;
+        EXPECT(PROP_Update(prop));
+        EXPECT(!PROP_IsNull(prop));
+
+        struct color *got = (struct color *)PROP_GetValue(prop);
+        EXPECT(got->r == 0.1f);
+        EXPECT(got->g == 0.2f);
+        EXPECT(got->b == 0.3f);
+        EXPECT(got->a == 1.0f);
+    }
+}
+
+/* Bind a color channel to a float property: {./Color}.COLORR → Alpha. */
+static void test_color_bind_channel_to_float(void) {
+    WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
+        /* Set source color. */
+        lpProperty_t colorProp;
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Color", &colorProp));
+        struct color src = { .r = 0.9f, .g = 0.3f, .b = 0.0f, .a = 1.0f };
+        PROP_SetValue(colorProp, &src);
+
+        /* Bind {./Color}.COLORA to Alpha float property. */
+        lpProperty_t alphaProp;
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Alpha", &alphaProp));
+        struct token *prog = Token_Create("{./Color}.COLORA");
+        EXPECT(prog != NULL);
+        PROP_AttachProgram(alphaProp, kPropertyAttributeWholeProperty,
+                           prog, "{./Color}.COLORA");
+        core.frame++;
+        EXPECT(PROP_Update(alphaProp));
+        EXPECT(!PROP_IsNull(alphaProp));
+        /* Alpha channel of src is 1.0; float property should be 1.0. */
+        EXPECT(*(float *)PROP_GetValue(alphaProp) == 1.0f);
+    }
+}
+
+/* Bind a color channel write: import from {./Color}.COLORR into colorProp.COLORR. */
+static void test_color_bind_channel_to_channel(void) {
+    WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
+        lpProperty_t prop;
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Color", &prop));
+
+        /* Initialize to a known color. */
+        struct color c = { .r = 0.3f, .g = 0.7f, .b = 0.5f, .a = 1.0f };
+        PROP_SetValue(prop, &c);
+
+        /* Attach {./Color}.COLORG to the R channel of the same property.
+         * After update, R should equal original G (0.7). */
+        struct token *prog = Token_Create("{./Color}.COLORG");
+        EXPECT(prog != NULL);
+        PROP_AttachProgram(prop, kPropertyAttributeColorR,
+                           prog, "{./Color}.COLORG");
+        core.frame++;
+        EXPECT(PROP_Update(prop));
+
+        struct color *got = (struct color *)PROP_GetValue(prop);
+        EXPECT(got->r == 0.7f); /* was 0.3, now updated from G=0.7 */
+        EXPECT(got->g == 0.7f); /* unchanged */
 /* Project-defined (dynamic) property type tests                       */
 /* These simulate property types registered from package.xml via       */
 /* OBJ_RegisterPropertyType, as _InitPropertyTypes() does.             */
@@ -1030,6 +1407,31 @@ static void test_memleak_property_reference_program(void) {
     }
 }
 
+/* Leak test: set a color property then destroy — struct color is inline,
+ * so no heap allocation; still verify no unexpected leaks. */
+static void test_memleak_color_set_release(void) {
+    WITH(struct Object, obj, make_color_object(), destroy_object) {
+        lpProperty_t prop;
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Tint", &prop));
+        struct color c = { .r = 1.0f, .g = 0.0f, .b = 0.0f, .a = 1.0f };
+        PROP_SetValue(prop, &c);
+    }
+}
+
+/* Leak test: PROP_AttachProgram COLOR4 + PROP_Update + destroy — no leak. */
+static void test_memleak_color_attach_update_release(void) {
+    WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
+        lpProperty_t prop;
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Color", &prop));
+        struct token *prog = Token_Create("COLOR4(0.5, 0.5, 0.5, 1.0)");
+        EXPECT(prog != NULL);
+        PROP_AttachProgram(prop, kPropertyAttributeWholeProperty,
+                           prog, "COLOR4(0.5, 0.5, 0.5, 1.0)");
+        core.frame++;
+        PROP_Update(prop);
+    }
+}
+
 /* ------------------------------------------------------------------ */
 
 #define RUN(func) \
@@ -1048,6 +1450,8 @@ int main(void) {
 
     register_test_class();
     register_runtime_class();
+    register_color_class();
+    register_rt_color_class();
     register_project_types();
 
     RUN(test_int_property);
@@ -1098,6 +1502,23 @@ int main(void) {
     RUN(test_memleak_attach_update_release);
     RUN(test_memleak_scalar_properties);
     RUN(test_memleak_property_reference_program);
+
+    /* kDataTypeColor tests */
+    RUN(test_color_property_basic);
+    RUN(test_color_property_reassign);
+    RUN(test_color_property_clear);
+    RUN(test_color_parse_hex_rgb);
+    RUN(test_color_parse_hex_rgba);
+    RUN(test_color_property_from_parse);
+    RUN(test_color_import_whole);
+    RUN(test_color_import_channels);
+    RUN(test_color_export_channel_program);
+    RUN(test_color_color4_function);
+    RUN(test_color_bind_color4_to_property);
+    RUN(test_color_bind_channel_to_float);
+    RUN(test_color_bind_channel_to_channel);
+    RUN(test_memleak_color_set_release);
+    RUN(test_memleak_color_attach_update_release);
 
 #if TEST_MEMORY
     printf("\nMemory tracking: %ld total allocation(s) made, "

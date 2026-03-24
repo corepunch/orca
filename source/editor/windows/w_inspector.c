@@ -181,10 +181,11 @@ ED_PrintProperty(LPPROPDEF pdef, LPVOID parm)
     case kDataTypeFloat:
       PrintNumberProperty(wnd, pdef);
       break;
+    case kDataTypeColor:
+      PrintColorProperty(wnd, pdef);
+      break;
     case kDataTypeStruct:
-      if (!strcmp(pdef->lpEnumValues, "Color")) {
-        PrintColorProperty(wnd, pdef);
-      } else if (!strcmp(pdef->szName, "LayoutTransform") ||
+      if (!strcmp(pdef->szName, "LayoutTransform") ||
                  !strcmp(pdef->szName, "RenderTransform")) {
         switch (pdef->dwSize) {
           case sizeof(struct transform2):

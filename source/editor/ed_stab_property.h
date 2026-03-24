@@ -49,16 +49,16 @@ PDESC_Print(lpcPropertyType_t pdesc, LPSTR buffer, DWORD len, float const* pf)
     case kDataTypeEnum:
       strncpy(buffer, pdesc->EnumValues[*(int*)pf], len);
       break;
-    case kDataTypeStruct:
-      if (!strcmp(pdesc->TypeString, "Color")) {
-        byte_t r = pf[0] * 255, g = pf[1] * 255, b = pf[2] * 255, a = pf[2] * 255;
-        if (pf[3] < 1) {
-          snprintf(buffer, len, "#%02x%02x%02x%02x", a, r, g, b);
-        } else {
-          snprintf(buffer, len, "#%02x%02x%02x", r, g, b);
-        }
-        break;
+    case kDataTypeColor: {
+      byte_t r = pf[0] * 255, g = pf[1] * 255, b = pf[2] * 255, a = pf[3] * 255;
+      if (pf[3] < 1) {
+        snprintf(buffer, len, "#%02x%02x%02x%02x", a, r, g, b);
+      } else {
+        snprintf(buffer, len, "#%02x%02x%02x", r, g, b);
       }
+      break;
+    }
+    case kDataTypeStruct:
     case kDataTypeFloat:
       snprintf(buffer, len, "%g", pf[0]);
       FOR_LOOP(i, (int)pdesc->DataSize/sizeof(float)-1) {
