@@ -22,7 +22,9 @@
 #   make webgl-debug-demo               # debug build bundling WEBGL_DEMO project
 #
 # Size optimisation: WEBGL_CFLAGS uses -Oz -flto; WEBGL_LDFLAGS uses
-# --closure 1 -sASSERTIONS=0.  For a debug build with C source-level stack
+# --closure 1 -sASSERTIONS=0 -sELIMINATE_DUPLICATE_FUNCTIONS=1
+# -sENVIRONMENT=web -sMALLOC=emmalloc -sTEXTDECODER=2 and
+# -sSTREAMING_WASM_COMPILATION=1.  For a debug build with C source-level stack
 # traces use `make webgl-debug` (see below).
 # ──────────────────────────────────────────────────────────────────────────
 
@@ -58,13 +60,19 @@ WEBGL_CFLAGS  = -Oz -flto -I. -I$(CURDIR) -I$(PLATFORM_LIBDIR) \
 
 WEBGL_LDFLAGS = -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG=1 \
                 -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
-                -sINITIAL_MEMORY=96MB \
+                -sINITIAL_MEMORY=64MB \
                 -sEXPORTED_RUNTIME_METHODS='["ccall","cwrap","FS"]' \
                 -sEXIT_RUNTIME=0 \
                 -sASSERTIONS=0 \
                 -sFETCH=1 \
+                -sENVIRONMENT=web \
+                -sELIMINATE_DUPLICATE_FUNCTIONS=1 \
+                -sSTREAMING_WASM_COMPILATION=1 \
+                -sMALLOC=emmalloc \
+                -sTEXTDECODER=2 \
                 --closure 1
-# Uncomment to raise the C stack above the 64 KB Emscripten default (e.g. to avoid stack overflows):
+# The 256 KB stack is active by default; raise it here if deep Lua call stacks
+# or recursive XML parsing triggers stack overflows:
 WEBGL_LDFLAGS += -sSTACK_SIZE=262144
 
 # ─── WASM dependency builds ───────────────────────────────────────────────
@@ -182,7 +190,7 @@ WEBGL_DEBUG_CFLAGS  = -g -O1 -I. -I$(CURDIR) -I$(PLATFORM_LIBDIR) \
 # (ASSERTIONS=1 rather than 2: see comment above for why 2 crashes on iOS touch)
 WEBGL_DEBUG_LDFLAGS = -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG=1 \
                       -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
-                      -sINITIAL_MEMORY=96MB \
+                      -sINITIAL_MEMORY=64MB \
                       -sSTACK_SIZE=1048576 \
                       -sEXPORTED_RUNTIME_METHODS='["ccall","cwrap","FS"]' \
                       -sEXIT_RUNTIME=0 \

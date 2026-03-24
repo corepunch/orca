@@ -41,7 +41,9 @@ This additionally packs the project directory and compiles `PROJECTDIR` into
 the binary so the engine opens the bundled project automatically without
 needing a command-line argument.
 
-The build uses `-Oz --closure 1` for minimum output size.
+The build uses `-Oz --closure 1` together with several additional flags for
+minimum output size (see [Size optimisation flags](#size-optimisation-flags)
+below).
 
 ---
 
@@ -79,7 +81,7 @@ The debug target differs from the production build in the following ways:
 | `-gsource-map --source-map-base ./` | Emit `orca.wasm.map` — maps every WASM byte back to the original C file and line number.  `--source-map-base ./` ensures the browser looks for the map file in the same directory as `orca.wasm` rather than embedding it inline in `orca.js`. Chrome DevTools shows the C source location automatically when the map file is served alongside `orca.wasm`. |
 | `-sASSERTIONS=2` | Enable strict runtime checks: out-of-bounds memory accesses, null-pointer dereferences, type mismatches, and stack overflows all produce descriptive error messages that name the offending C symbol. |
 | `-sSAFE_HEAP=1` | Validate every heap read and write for alignment and bounds.  This catches the class of errors that appear as `"Out of bounds memory access"` in production builds. |
-| `-sSTACK_SIZE=1048576` | Set the C stack size to 1 MB (up from the 64 KB Emscripten default).  The WASM stack grows **downward**: `SP` starts at `STACK_MAX` (high address) and decreases with each function call; `STACK_BASE = STACK_MAX − STACK_SIZE` is the **lower** boundary.  The larger stack gives more headroom when analysing deep call chains under ASYNCIFY instrumentation. |
+| `-sSTACK_SIZE=1048576` | Set the C stack size to 1 MB (up from the 256 KB production default).  The WASM stack grows **downward**: `SP` starts at `STACK_MAX` (high address) and decreases with each function call; `STACK_BASE = STACK_MAX − STACK_SIZE` is the **lower** boundary.  The larger stack gives more headroom when analysing deep call chains. |
 | `-sSTACK_OVERFLOW_CHECK=2` | Detect stack overflows with precise per-call checking.  Reports the offending function when the C stack is exhausted. |
 | `-O1` (not `-Oz`) | Minimal optimisation — code structure is preserved and stack traces are readable. |
 | *(no `--closure 1`)* | JavaScript output is not minified, so DevTools stack traces show real function names instead of single-letter identifiers like `a`, `b`, `c`. |
@@ -143,18 +145,36 @@ The `libs/platform/webgl/` directory contains three source files:
 The platform Makefile detects `EMSCRIPTEN` automatically when invoked with
 `emmake` and selects only the `webgl/` sources.
 
-### Main Loop and ASYNCIFY
+### Main Loop
 
 The engine's main loop is a Lua `while true do … end` that polls for events
 via `WI_PollEvent`.  Browsers cannot run a blocking loop on the main thread;
 the JavaScript event loop must be allowed to yield periodically.
 
-**Solution:** Compile with `-sASYNCIFY=1`.  In
-`source/backend/queue.c::f_peek_iterator`, an `emscripten_sleep(0)` call is
-inserted whenever `WI_PollEvent` returns zero (queue empty).  With ASYNCIFY
-this suspends the C stack, yields control back to the browser (so input
-callbacks fire and `requestAnimationFrame` can schedule a repaint), then
-resumes the Lua loop on the next tick.
+**Solution:** The WebGL platform backend registers the main loop iteration
+function with `emscripten_set_main_loop` so the browser schedules each frame
+via `requestAnimationFrame`.  When the event queue is empty, `WI_PollEvent`
+returns immediately, letting the browser handle input callbacks and repaints
+before the next iteration.
+
+---
+
+## Size Optimisation Flags
+
+The production `webgl` target uses several linker flags beyond `-Oz --closure 1`
+to reduce the size of `orca.js` and `orca.wasm` and to speed up startup,
+especially on Android Chrome (V8):
+
+| Flag | Effect |
+|------|--------|
+| `-sENVIRONMENT=web` | Strips Node.js / worker compatibility code from the JS glue — the app only needs to run in a web browser. |
+| `-sELIMINATE_DUPLICATE_FUNCTIONS=1` | Finds identical function bodies in the WASM output and merges them into a single copy.  Typically saves 5–10% of `.wasm` size. |
+| `-sSTREAMING_WASM_COMPILATION=1` | Allows V8/SpiderMonkey to start compiling the WASM module while it is still downloading.  Very effective for large modules (8 MB+): startup on Android Chrome can drop from 10+ seconds to under 5 seconds on mid-tier devices. |
+| `-sMALLOC=emmalloc` | Uses Emscripten's lightweight allocator instead of dlmalloc.  emmalloc is smaller and faster for single-threaded builds (no pthreads are used) and saves ~20 KB of `.wasm` code. |
+| `-sTEXTDECODER=2` | Delegates UTF-8 → JS string decoding to the browser's native `TextDecoder` API instead of emitting Emscripten's own decoder.  Reduces JS glue size and is faster at runtime. |
+| `-sINITIAL_MEMORY=64MB` | Sets the WASM heap to 64 MB (down from a higher default).  Smaller heap means less memory zeroing at startup; raise this if the engine reports out-of-memory at runtime. |
+
+---
 
 ### GLSL Shader Version
 
