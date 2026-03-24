@@ -555,7 +555,7 @@ PROP_Import(lpProperty_t prop,
       default:
         assert(r->type == PROP_GetType(prop));
         PROP_SetValue(prop, r->value);
-        return FALSE;
+        return TRUE;
     }
     return FALSE;
     
