@@ -674,7 +674,8 @@ static void test_runtime_property_reference(void) {
         EXPECT_OK(OBJ_FindShortProperty(obj, "Value", &propValue));
 
         float v = 5.0f;
-        EXPECT(PROP_SetValue(propValue, &v), !PROP_IsNull(propValue));
+        PROP_SetValue(propValue, &v);
+        EXPECT(!PROP_IsNull(propValue));
 
         struct token *prog = Token_Create("{./Value}");
         EXPECT(prog != NULL);
