@@ -330,6 +330,7 @@ static void _InitPropertyTypes(lpProject_t project) {
       case kDataTypeEvent:  type->DataSize = sizeof(void*); break;
       case kDataTypeObject: type->DataSize = sizeof(void*); break;
       case kDataTypeFloat:  type->DataSize = sizeof(float); break;
+      case kDataTypeColor:  type->DataSize = sizeof(struct color); break;
       default:              type->DataSize = sizeof(int);   break;
     }
     OBJ_RegisterPropertyType(type);

@@ -148,7 +148,7 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
           PROP_SetValue(p, luaL_checkudata(L, idx, PROP_GetUserData(p)));
           break;
         case kDataTypeColor:
-          PROP_SetValue(p, luaL_checkudata(L, idx, "color"));
+          PROP_SetValue(p, luaX_checkcolor(L, idx));
           break;
         default:
           return luaL_error(L, "Incorrect input (lua_type=%d) for (type=%d) %s property\n", lua_type(L, idx), p->type, p->pdesc->Name);
@@ -184,8 +184,7 @@ void _pushproperty(lua_State* L,
       luaL_setmetatable(L, type->TypeString);
       break;
     case kDataTypeColor:
-      memcpy(lua_newuserdata(L, sizeof(struct color)), value, sizeof(struct color));
-      luaL_setmetatable(L, "color");
+      luaX_pushcolor(L, value);
       break;
     case kDataTypeString:
       lua_pushstring(L, *(lpcString_t*)value);

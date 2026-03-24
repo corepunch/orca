@@ -602,7 +602,7 @@ PROP_Import(lpProperty_t prop,
 }
 
 static bool_t
-jwPropertyExport(lpProperty_t prop,
+export_property(lpProperty_t prop,
                  enum PropertyAttribute attr,
                  struct vm_register* r)
 {
@@ -761,7 +761,7 @@ tok_op(argument)
 return_value:
   if (p) {
     token->cache.property = p;
-    return jwPropertyExport(p, token->attr, output);
+    return export_property(p, token->attr, output);
   } else {
 //    Con_Error("Can't find property \"%s\"", token->text);
     memset(output, 0, sizeof(*output));
