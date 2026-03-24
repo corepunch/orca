@@ -69,8 +69,7 @@ WEBGL_LDFLAGS = -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG=1 \
                 -sFETCH=1 \
                 --closure 1
 # Uncomment to raise the C stack above the 64 KB Emscripten default (e.g. to avoid stack overflows):
-# WEBGL_LDFLAGS += -sSTACK_SIZE=262144
-WEBGL_LDFLAGS += -sSTACK_SIZE=1048576
+WEBGL_LDFLAGS += -sSTACK_SIZE=262144
 
 # ─── WASM dependency builds ───────────────────────────────────────────────
 # Builds lua5.4, libxml2, and liblz4 as WASM static libraries and installs
