@@ -18,7 +18,7 @@ PROP_AddToList(lpProperty_t property, lpProperty_t* list)
   return property;
 }
 
-#define DEBUG_PROGRAM
+//#define DEBUG_PROGRAM
 
 #ifdef DEBUG_PROGRAM
 static void
@@ -46,8 +46,8 @@ PROP_Update(lpProperty_t property)
           !PROP_Import(property, i, &r)) {
 #ifdef DEBUG_PROGRAM
         print_name(property->object);
-        Con_Error("%s", property->pdesc->Name);
 #endif
+        Con_Error("Eror in program %s/%s", OBJ_GetName(property->object), property->pdesc->Name);
         Token_Release(property->programs[i]);
         property->programs[i] = NULL;
       } else {
