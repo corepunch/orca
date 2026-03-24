@@ -23,10 +23,7 @@
 						WordWrap="true"/>
 					<Node2D Name="MetricSpacer" Height="40"/>
 					<Grid Name="Metrics" Columns="auto auto auto" Spacing="16">
-						<StackView Name="MetricUsers" Direction="Vertical" Spacing="4" BackgroundColor="#1A1A28" Padding="20" Width="120">
-							<TextBlock Name="MetricUsersValue" Text="2.4 M" FontSize="28" ForegroundColor="#8B5CF6"/>
-							<TextBlock Name="MetricUsersLabel" Text="Active users" FontSize="11" ForegroundColor="#4B5563"/>
-						</StackView>
+						<LayerPrefabPlaceholder Name="MetricUsers" PlaceholderTemplate="Example/Prefabs/Mertic" Card.Title="2.4 M" Card.Subtitle="Active users"/>
 						<StackView Name="MetricUptime" Direction="Vertical" Spacing="4" BackgroundColor="#1A1A28" Padding="20" Width="120">
 							<TextBlock Name="MetricUptimeValue" Text="99.9 %" FontSize="28" ForegroundColor="#10B981"/>
 							<TextBlock Name="MetricUptimeLabel" Text="Uptime SLA" FontSize="11" ForegroundColor="#4B5563"/>

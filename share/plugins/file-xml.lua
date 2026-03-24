@@ -85,7 +85,7 @@ local function try_prefab_placeholder(element)
 	}
 	local placeholder = placeholders[element.tag]
 	if placeholder then
-		return placeholder(element:get "PlaceholderTemplate" or element:get "ClassName")()
+		return placeholder(element:get "PlaceholderTemplate" or element:get "ClassName")
 	else
 		return nil
 	end
@@ -187,6 +187,7 @@ table.insert(package.searchers, function(path)
 		local node = construct_node(doc.root)
 		node:setSourceFile(path)
 		node.instantiate = function()
+			print("Instantiating "..path)
 			local instance = construct_node(doc.root)
 			instance:setSourceFile(path)
 			return instance

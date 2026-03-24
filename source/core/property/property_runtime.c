@@ -616,7 +616,7 @@ jwPropertyExport(lpProperty_t prop,
         *r->value = *(int*)PROP_GetValue(prop);
         return TRUE;
       case kDataTypeString: {
-        const char *str = *(const char **)PROP_GetValue(prop);
+        lpcString_t str = PROP_GetValue(prop);
         InitOutput(r, kDataTypeString, sizeof(const char *));
         VM_REG_SET_STR(r, vm_strtmp(str));
         return TRUE;
