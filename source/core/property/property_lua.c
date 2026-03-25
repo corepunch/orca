@@ -48,8 +48,9 @@ static int read_array(lua_State *L, int idx, lpProperty_t p) {
             lua_pop(L, 1);
             return 0;
           }
-//          return read_array(L, (lua_pushvalue(L, -2), lua_call(L, 1, 1), lua_gettop(L)), p);
-          return read_array(L, lua_gettop(L), p);
+          memcpy((char*)mem + i * p->pdesc->DataSize, luaL_checkudata(L, -1, p->pdesc->TypeString), p->pdesc->DataSize);
+          lua_pop(L, 1);
+          break;
         } else {
           Con_Error("Expected userdata of type %s in array table for property %s", p->pdesc->TypeString, p->pdesc->Name);
           return 0;

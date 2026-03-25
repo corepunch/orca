@@ -63,8 +63,8 @@ enum LibraryProperties {
 #define ID_Project_NumProjectReferences 0x6c9cdb5b // Project.NumProjectReferences
 #define ID_Project_SystemMessages 0xd3829a01 // Project.SystemMessages
 #define ID_Project_NumSystemMessages 0x89eac941 // Project.NumSystemMessages
-#define ID_Project_Plugins 0xf63a7450 // Project.Plugins
-#define ID_Project_NumPlugins 0x2ed36890 // Project.NumPlugins
+#define ID_Project_EnginePlugins 0x77af126a // Project.EnginePlugins
+#define ID_Project_NumEnginePlugins 0x7ee941aa // Project.NumEnginePlugins
 #define ID_Project_AnimationClipLibrary 0x627fe7a3 // Project.AnimationClipLibrary
 #define ID_Project_ScreenLibrary 0x96b5dfdf // Project.ScreenLibrary
 #define ID_Project_MaterialTypeLibrary 0xc8162e4c // Project.MaterialTypeLibrary
@@ -81,7 +81,6 @@ enum LibraryProperties {
 #define ID_Project_SplineLibrary 0xd6e6a60c // Project.SplineLibrary
 #define ID_Project_PrefabLibrary 0xedb47045 // Project.PrefabLibrary
 #define ID_Project_ProfileLibrary 0x77ddc960 // Project.ProfileLibrary
-#define ID_Project_EnginePluginLibrary 0x4af02f28 // Project.EnginePluginLibrary
 #define ID_Project_ShortcutLibrary 0xe90dcf95 // Project.ShortcutLibrary
 #define ID_Project_LayerLibrary 0x9182cf80 // Project.LayerLibrary
 #define ID_Project_AnimationLibrary 0xd329f231 // Project.AnimationLibrary
@@ -139,8 +138,8 @@ enum ProjectProperties {
 	kProjectNumProjectReferences,
 	kProjectSystemMessages,
 	kProjectNumSystemMessages,
-	kProjectPlugins,
-	kProjectNumPlugins,
+	kProjectEnginePlugins,
+	kProjectNumEnginePlugins,
 	kProjectAnimationClipLibrary,
 	kProjectScreenLibrary,
 	kProjectMaterialTypeLibrary,
@@ -157,7 +156,6 @@ enum ProjectProperties {
 	kProjectSplineLibrary,
 	kProjectPrefabLibrary,
 	kProjectProfileLibrary,
-	kProjectEnginePluginLibrary,
 	kProjectShortcutLibrary,
 	kProjectLayerLibrary,
 	kProjectAnimationLibrary,
@@ -211,22 +209,6 @@ enum LocaleReferenceItemProperties {
 enum TagProperties {
 	kTagTagIsInherited,
 	kTagNumProperties	
-};
-// EnginePlugin
-#define ID_EnginePlugin 0xa58ca5d0
-#define GetEnginePlugin(_P) ((struct EnginePlugin*)((_P)?OBJ_GetComponent(_P,ID_EnginePlugin):NULL))
-#define EnginePlugin_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_EnginePlugin,sizeof(struct EnginePlugin),_N)
-enum EnginePluginProperties {
-	kEnginePluginNumProperties	
-};
-// EngineMetaclass
-#define ID_EngineMetaclass 0xc12f7a06
-#define GetEngineMetaclass(_P) ((struct EngineMetaclass*)((_P)?OBJ_GetComponent(_P,ID_EngineMetaclass):NULL))
-#define EngineMetaclass_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_EngineMetaclass,sizeof(struct EngineMetaclass),_N)
-#define ID_EngineMetaclass_BaseClassName 0x03191574 // EngineMetaclass.BaseClassName
-enum EngineMetaclassProperties {
-	kEngineMetaclassBaseClassName,
-	kEngineMetaclassNumProperties	
 };
 // ThemeGroup
 #define ID_ThemeGroup 0xa8bfcd45

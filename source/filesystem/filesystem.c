@@ -270,6 +270,7 @@ FS_LoadFile(lpcString_t szFileName)
   if (!FS_GetWorkspace()) {
     return NULL;
   }
+
   // If that fails, try to find it in loaded packages
   FS_FindPackage(package, szFileName) {
     if ((pFile = (struct file*)OBJ_SendMessageW(package, kEventOpenFile, 0, &(struct OpenFileArgs){
@@ -312,7 +313,9 @@ FS_FreeFile(struct file* pFile)
 //  lua_pop(L, 1);
 //}
 
-static void _InitPropertyTypes(lpProject_t project) {
+static void
+_InitPropertyTypes(lpProject_t project)
+{
   FOR_LOOP(i, project->NumPropertyTypes) {
     lpPropertyType_t type = &project->PropertyTypes[i];
     fixedString_t tmp={0};
@@ -337,14 +340,18 @@ static void _InitPropertyTypes(lpProject_t project) {
   }
 }
 
-static void _InitProjectRefences(lua_State *L, lpProject_t project, lpcString_t szDirname) {
+static void
+_InitProjectRefences(lua_State *L, lpProject_t project, lpcString_t szDirname)
+{
   FOR_LOOP(i, project->NumProjectReferences) {
     path_t joined = {0};
     FS_LoadBundle(L, FS_JoinPaths(joined, sizeof(joined), szDirname, project->ProjectReferences[i].Path));
   }
 }
 
-static bool_t _HasExistingPackages(lpcString_t szDirname, lpcString_t szName) {
+static bool_t
+_HasExistingPackages(lpcString_t szDirname, lpcString_t szName)
+{
   FOR_EACH_OBJECT(package, FS_GetWorkspace()) {
     if (GetDirectory(package) && !strcasecmp(GetDirectory(package)->Path, szDirname)) {
       // skip quietly
@@ -364,7 +371,9 @@ struct package_iterator {
   struct Object* project;
 };
 
-static void _TryLoadBundle(lpcClassDesc_t c, void* args) {
+static void
+_TryLoadBundle(lpcClassDesc_t c, void* args)
+{
   struct package_iterator* it = args;
   if (!it->project) {
     it->project =
@@ -375,16 +384,20 @@ static void _TryLoadBundle(lpcClassDesc_t c, void* args) {
   }
 }
 
-static lpProject_t _InitProject(lua_State *L, lpcString_t szDirname) {
+static lpProject_t
+_InitProject(lua_State *L, lpcString_t szDirname)
+{
   struct package_iterator it={.directory=szDirname,.L=L};
   OBJ_EnumClasses(ID_Project, _TryLoadBundle, &it);
   return GetProject(it.project);
 }
 
-static void _InitPlugins(lua_State *L, lpcProject_t project) {
-  FOR_LOOP(i, project->NumPlugins) {
+static void
+_InitEnginePlugins(lua_State *L, lpcProject_t project)
+{
+  FOR_LOOP(i, project->NumEnginePlugins) {
     lua_getglobal(L, "require");
-    lua_pushstring(L, project->Plugins[i].Name);
+    lua_pushstring(L, project->EnginePlugins[i].Name);
     if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
       Con_Error("%s", lua_tostring(L, -1));
       lua_pop(L, 1);
@@ -400,6 +413,33 @@ register_theme_value(lpcString_t name, lpcString_t value, void* L)
   lua_pushstring(L, value);
   lua_setfield(L, -2, name);
   lua_pop(L, 2);
+}
+
+static void
+_InitTheme(lua_State *L, lpProject_t project)
+{
+  if (project->ThemeLibrary) {
+    lua_geti(L, LUA_REGISTRYINDEX, OBJ_GetLuaObject(CMP_GetObject(project->ThemeLibrary)));
+    lua_pushnil(L);
+    while (lua_next(L, -2)) {
+      if (lua_type(L, -1) == LUA_TTABLE) {
+        lua_rawget(L, ((void)lua_getfield(L, -1, "SelectedTheme"), -2));
+        lua_pushnil(L);
+        while (lua_next(L, -2)) {
+          register_theme_value(luaL_checkstring(L, -2), luaL_checkstring(L, -1), L);
+          lua_pop(L, 1);
+        }
+        lua_pop(L, 1);
+      }
+      lua_pop(L, 1);
+    }
+    lua_pop(L, 1);
+//    FOR_EACH_OBJECT(themeGroup, themes) if (GetThemeGroup(themeGroup)) {
+//      if (GetThemeGroup(themeGroup)->_selectedTheme) {
+//        UI_EnumObjectAliases(GetThemeGroup(themeGroup)->_selectedTheme, register_theme_value, L);
+//      }
+//    }
+  }
 }
 
 struct Object*
@@ -421,18 +461,10 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
 //  OBJ_EnumClasses(ID_Library, _AddLibrary, ((void*[]){ L, CMP_GetObject(project) }));
   OBJ_AddChild(FS_GetWorkspace(), CMP_GetObject(project), FALSE);
 
-  _InitPlugins(L, project);
+  _InitEnginePlugins(L, project);
   _InitPropertyTypes(project);
   _InitProjectRefences(L, project, szDirname);
-  
-  lpObject_t themes = OBJ_FindChild(CMP_GetObject(project), "Themes", FALSE);
-  if (themes) {
-    FOR_EACH_OBJECT(themeGroup, themes) if (GetThemeGroup(themeGroup)) {
-      if (GetThemeGroup(themeGroup)->_selectedTheme) {
-        UI_EnumObjectAliases(GetThemeGroup(themeGroup)->_selectedTheme, register_theme_value, L);
-      }
-    }
-  }
+  _InitTheme(L, project);
 
   lua_pop(L, 1);
 

@@ -347,13 +347,14 @@ int f_init(lua_State* L)
     return luaL_error(L, lua_tostring(L, -1));
   }
   FS_SetWorkspace(luaX_checkObject(L, -1));
-  FS_LoadBundle(L, luaL_checkstring(L, 1));
+  struct Object* object = FS_LoadBundle(L, luaL_checkstring(L, 1));
   lua_getglobal(L, "SERVER");
   if (lua_toboolean(L, -1)) {
     SV_RegisterMessageProc(filesystem_handle_event);
     WI_PostMessageW(NULL, kEventReadCommands, 0, NULL); // launch reader
   }
-  return 0;
+  luaX_pushObject(L, object);
+  return 1;
 }
 
 int f_trackChangedFiles(lua_State* L) {
@@ -373,30 +374,6 @@ static lua_State *global_L;
 
 HANDLER(Project, Start) {
   
-  return TRUE;
-}
-
-HANDLER(EnginePluginLibrary, Attached) {
-  lua_State* L = global_L;
-  FOR_EACH_OBJECT(node, hObject) {
-    lua_getglobal(L, "require");
-    lua_pushstring(L, OBJ_GetName(node));
-    if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
-      if (strstr(luaL_checkstring(L, -1), "not found:")) {
-        static uint8_t current=0;
-        static uint32_t reported[256]={0};
-        const uint32_t hash = OBJ_GetIdentifier(node);
-        FOR_LOOP(i, 256) if (reported[i] == hash) goto skip_reporting;
-        reported[current++] = hash;
-        Con_Warning("Missing plugin '%s'", OBJ_GetName(node));
-      skip_reporting:
-        ;
-      } else {
-        Con_Error("%s", luaL_checkstring(L, -1));
-      }
-      lua_pop(L, 1);
-    }
-  }
   return TRUE;
 }
 

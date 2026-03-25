@@ -15,7 +15,7 @@
     <field name="Path" type="fixed">Path to the project relative to the workspace</field>
   </struct>
 
-  <struct name="ProjectPlugin" sealed="true">
+  <struct name="EnginePlugin" sealed="true">
     <summary>Plugin requirement</summary>
     <details>Would load the plugin and make it's classes available</details>
     <field name="Name" type="fixed">Name of the plugin</field>
@@ -105,7 +105,7 @@
     <property name="PropertyTypes" type="PropertyType" array="true" />
     <property name="ProjectReferences" type="ProjectReference" array="true" />
     <property name="SystemMessages" type="SystemMessage" array="true"/>
-    <property name="Plugins" type="ProjectPlugin" array="true"/>
+    <property name="EnginePlugins" type="EnginePlugin" array="true"/>
 
     <property name="AnimationClipLibrary" type="Library" pointer="true"/> <!-- Animation Clips -->
     <property name="ScreenLibrary" type="Library" pointer="true"/> <!-- Screens -->
@@ -123,7 +123,6 @@
     <property name="SplineLibrary" type="Library" pointer="true"/> <!-- Splines -->
     <property name="PrefabLibrary" type="Library" pointer="true"/> <!-- Prefabs -->
     <property name="ProfileLibrary" type="Library" pointer="true"/> <!-- Profiles -->
-    <property name="EnginePluginLibrary" type="Library" pointer="true"/> <!-- Engine Plugins -->
     <property name="ShortcutLibrary" type="Library" pointer="true"/> <!-- Bookmarks -->
     <property name="LayerLibrary" type="Library" pointer="true"/> <!-- Layers -->
     <property name="AnimationLibrary" type="Library" pointer="true"/> <!-- Animation Data -->
@@ -153,7 +152,6 @@
     <property name="ImageLibrary" type="Library" pointer="true"/> <!-- Images -->
     <property name="FontLibrary" type="Library" pointer="true"/> <!-- Fonts -->
 
-    
     <field name="isPackage" type="bool"/>
   </class>
   
@@ -183,23 +181,22 @@
   </class>
     
   <class name="LocaleReferenceItem"/>
+
   <class name="Tag">
     <property name="TagIsInherited" type="bool"/>
   </class>
-  <class name="EnginePlugin"/>
-  <class name="EngineMetaclass">
-    <property name="BaseClassName" type="string"/>
-    
-  </class>
+
   <class name="ThemeGroup">
     <handles event="Attached"/>
     <property name="SelectedTheme" type="string"/>
     <property name="SelectedDictionary" type="string"/>
     <field name="_selectedTheme" type="Object" pointer="true"/>
   </class>
+
   <class name="Theme">
     <property name="IsThemeVisible" type="bool"/>
   </class>
+
   <class name="Entry"/>
   <class name="ThemeDefaultValuesDictionary"/>
   

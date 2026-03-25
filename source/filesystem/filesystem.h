@@ -22,8 +22,8 @@ typedef struct LoadProjectArgs* LoadProjectEventPtr;
 
 typedef struct ProjectReference ProjectReference_t, *lpProjectReference_t;
 typedef struct ProjectReference const cProjectReference_t, *lpcProjectReference_t;
-typedef struct ProjectPlugin ProjectPlugin_t, *lpProjectPlugin_t;
-typedef struct ProjectPlugin const cProjectPlugin_t, *lpcProjectPlugin_t;
+typedef struct EnginePlugin EnginePlugin_t, *lpEnginePlugin_t;
+typedef struct EnginePlugin const cEnginePlugin_t, *lpcEnginePlugin_t;
 typedef struct SystemMessage SystemMessage_t, *lpSystemMessage_t;
 typedef struct SystemMessage const cSystemMessage_t, *lpcSystemMessage_t;
 typedef struct OpenFileArgs OpenFileArgs_t, *lpOpenFileArgs_t;
@@ -77,12 +77,12 @@ struct ProjectReference {
 ORCA_API void luaX_pushProjectReference(lua_State *L, struct ProjectReference const* ProjectReference);
 ORCA_API struct ProjectReference* luaX_checkProjectReference(lua_State *L, int idx);
 /// @brief Plugin requirement
-/** ProjectPlugin struct */
-struct ProjectPlugin {
+/** EnginePlugin struct */
+struct EnginePlugin {
 	fixedString_t Name; ///< Name of the plugin
 };
-ORCA_API void luaX_pushProjectPlugin(lua_State *L, struct ProjectPlugin const* ProjectPlugin);
-ORCA_API struct ProjectPlugin* luaX_checkProjectPlugin(lua_State *L, int idx);
+ORCA_API void luaX_pushEnginePlugin(lua_State *L, struct EnginePlugin const* EnginePlugin);
+ORCA_API struct EnginePlugin* luaX_checkEnginePlugin(lua_State *L, int idx);
 /// @brief Handler of system messages you can add to your project
 /** SystemMessage struct */
 struct SystemMessage {
@@ -170,8 +170,8 @@ struct Project {
 	int32_t NumProjectReferences;
 	struct SystemMessage* SystemMessages;
 	int32_t NumSystemMessages;
-	struct ProjectPlugin* Plugins;
-	int32_t NumPlugins;
+	struct EnginePlugin* EnginePlugins;
+	int32_t NumEnginePlugins;
 	struct Library* AnimationClipLibrary;
 	struct Library* ScreenLibrary;
 	struct Library* MaterialTypeLibrary;
@@ -188,7 +188,6 @@ struct Project {
 	struct Library* SplineLibrary;
 	struct Library* PrefabLibrary;
 	struct Library* ProfileLibrary;
-	struct Library* EnginePluginLibrary;
 	struct Library* ShortcutLibrary;
 	struct Library* LayerLibrary;
 	struct Library* AnimationLibrary;
@@ -244,21 +243,6 @@ struct Tag {
 };
 ORCA_API void luaX_pushTag(lua_State *L, struct Tag const* Tag);
 ORCA_API struct Tag* luaX_checkTag(lua_State *L, int idx);
-/** EnginePlugin component */
-typedef struct EnginePlugin EnginePlugin_t, *EnginePluginPtr, *lpEnginePlugin_t;
-typedef struct EnginePlugin const *EnginePluginCPtr, *lpcEnginePlugin_t;
-struct EnginePlugin {
-};
-ORCA_API void luaX_pushEnginePlugin(lua_State *L, struct EnginePlugin const* EnginePlugin);
-ORCA_API struct EnginePlugin* luaX_checkEnginePlugin(lua_State *L, int idx);
-/** EngineMetaclass component */
-typedef struct EngineMetaclass EngineMetaclass_t, *EngineMetaclassPtr, *lpEngineMetaclass_t;
-typedef struct EngineMetaclass const *EngineMetaclassCPtr, *lpcEngineMetaclass_t;
-struct EngineMetaclass {
-	const char* BaseClassName;
-};
-ORCA_API void luaX_pushEngineMetaclass(lua_State *L, struct EngineMetaclass const* EngineMetaclass);
-ORCA_API struct EngineMetaclass* luaX_checkEngineMetaclass(lua_State *L, int idx);
 /** ThemeGroup component */
 typedef struct ThemeGroup ThemeGroup_t, *ThemeGroupPtr, *lpThemeGroup_t;
 typedef struct ThemeGroup const *ThemeGroupCPtr, *lpcThemeGroup_t;

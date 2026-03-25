@@ -20,11 +20,11 @@ static int f_new_SpriteFrame(lua_State *L) {
 	memset(self, 0, sizeof(struct SpriteFrame));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Rect"), self->Rect = *luaX_checkrect(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "UvRect"), self->UvRect = *luaX_checkrect(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Rect"), self->Rect = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkrect(L, -1) : (struct rect){0}, 1));
+		lua_pop(L, (lua_getfield(L, 1, "UvRect"), self->UvRect = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkrect(L, -1) : (struct rect){0}, 1));
 	} else {
-		self->Rect = *luaX_checkrect(L, 1);
-		self->UvRect = *luaX_checkrect(L, 2);
+		self->Rect = lua_type(L, 1) == LUA_TUSERDATA ? *luaX_checkrect(L, 1) : (struct rect){0};
+		self->UvRect = lua_type(L, 2) == LUA_TUSERDATA ? *luaX_checkrect(L, 2) : (struct rect){0};
 	}
 	return 1;
 }
@@ -41,8 +41,8 @@ int f_SpriteFrame___index(lua_State *L) {
 int f_SpriteFrame___newindex(lua_State *L) {
 	struct SpriteFrame* self = luaX_checkSpriteFrame(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x6b109927: self->Rect = *luaX_checkrect(L, 3); return 0; // Rect
-	case 0xae3d25c0: self->UvRect = *luaX_checkrect(L, 3); return 0; // UvRect
+	case 0x6b109927: self->Rect = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkrect(L, 3) : (struct rect){0}; return 0; // Rect
+	case 0xae3d25c0: self->UvRect = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkrect(L, 3) : (struct rect){0}; return 0; // UvRect
 	}
 	return luaL_error(L, "Unknown field in SpriteFrame(%p): %s", self, luaL_checkstring(L, 2));
 }

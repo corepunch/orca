@@ -1,5 +1,7 @@
-Name = "Example2"
+Name = "Example"
 StartupScreen = "Example/Screens/Application"
+WindowWidth = 1024
+WindowHeight = 768
 ScreenLibrary = { IsExternal = true }
 ImageLibrary = { IsExternal = true }
 PrefabLibrary = { IsExternal = true }
@@ -43,8 +45,9 @@ PropertyTypes = {
 	{ Name="Image", DataType="Object", TypeString="Texture", Category="Card" },
 	{ Name="PrimaryColor", DataType="Color", Category="Card" },
 }
-SystemMessageLibrary = {
-	KeyDown = { Key="q", Command="return" },
-	WindowClosed = { Command="return" },
-	RequestReload = { Command="window:refresh()" },
+-- SystemMessageLibrary = {
+SystemMessages = {
+	{ Name="KeyDown", Key="q", Command="return" },
+	{ Name="WindowClosed", Command="return" },
+	{ Name="RequestReload", Command="window:refresh()" },
 }
