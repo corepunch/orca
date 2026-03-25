@@ -62,7 +62,7 @@ OBJ_FindClassW(uint32_t class_id)
 {
   FOR_LOOP(i, MAX_CLASSES) {
     lpcClassDesc_t cl = core.classes[i];
-    if (cl->ClassID == class_id) {
+    if (cl && cl->ClassID == class_id) {
       return cl;
     }
   }

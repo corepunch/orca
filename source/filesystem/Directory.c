@@ -108,29 +108,43 @@ HANDLER(Directory, Destroy) {
 
 #include <include/api.h>
 
-ORCA_API lpObject_t _LoadProject(lua_State *L, lpcString_t path, lpcString_t name) {
-  lua_getglobal(L, "require");
-  lua_pushstring(L, path);
-  if (lua_pcall(L, 1, 1, 0)) {
-    API_CallRequire(L, "orca.filesystem", 1);
-    lua_getfield(L, -1, "Project");
-    if (lua_pcall(L, 0, 1, 0)) {
-      Con_Error("%s\n", lua_tostring(L, -1));
-      lua_pop(L, 1);
-      return NULL;
-    } else {
-      OBJ_SetName(luaX_checkObject(L, -1), name);
-    }
+// Loads a Lua file in text mode and assigns a custom environment.
+// Leaves compiled chunk on stack on success.
+ORCA_API int
+lua_loadfile_with_env(lua_State *L, const char *filename, int env_index)
+{
+  env_index = lua_absindex(L, env_index);
+  if (luaL_loadfilex(L, filename, "t") != LUA_OK) {
+    Con_Error("%s", luaL_checkstring(L, -1));
+    lua_pop(L, 1);
+    return LUA_ERRRUN;
   }
-  return luaX_checkObject(L, -1);
+  lua_pushvalue(L, env_index);
+  if (lua_setupvalue(L, -2, 1) == NULL) {
+    Con_Error("chunk has no _ENV upvalue");
+    lua_pop(L, 1);
+//    lua_pushstring(L, "chunk has no _ENV upvalue");
+    return LUA_ERRRUN;
+  }
+  // run chunk
+  if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
+    Con_Error("%s", luaL_checkstring(L, -1));
+    lua_pop(L, 1);
+    return LUA_ERRRUN;
+  }
+  return LUA_OK;
 }
 
 HANDLER(Directory, LoadProject) {
+  lua_State* L = (lua_State*)pDirectory;
+  lua_pcall(L, (luaX_import(L, "orca.filesystem", "Directory"), 0), 1, 0);
   path_t packpath = {0};
-  snprintf(packpath, sizeof(packpath), "%s/package", pLoadProject->Path);
-  lpObject_t project = _LoadProject((lua_State*)pDirectory, packpath, FS_GetBaseName(pLoadProject->Path));
-  OBJ_AddComponent(project, ID_Directory);
-  OBJ_SetPropertyValue(project, "Path", pLoadProject->Path);
-  assert(GetDirectory(project)->Path);
-  return (intptr_t)project;
+  lpObject_t directory = luaX_checkObject(L, -1);
+  OBJ_SetName(directory, FS_GetBaseName(pLoadProject->Path));
+  OBJ_SetPropertyValue(directory, "Path", pLoadProject->Path);
+  snprintf(packpath, sizeof(packpath), "%s/package.lua", pLoadProject->Path);
+  lua_loadfile_with_env(L, packpath, -1);
+  lpProject_t project = GetProject(directory);
+  puts(OBJ_GetName(directory));
+  return (intptr_t)directory;
 }

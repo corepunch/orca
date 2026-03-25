@@ -406,7 +406,7 @@ int main (int argc, LPSTR *argv)
     if (!args.test) {
       const char* bootstrap =
       "local core = require 'orca.core2'\n"
-      "core.init()";
+      "core.init()\n";
 //      lua_getglobal(L, "require");
 //      lua_pushstring(L, "orca.core2");
 //      lua_pcall(L, 1, 1, 0);

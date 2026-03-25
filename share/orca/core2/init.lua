@@ -1,12 +1,16 @@
 local orca = require "orca"
+local core = require "orca.core"
 local system = require "orca.system"
+local filesystem = require "orca.filesystem"
+
 local core = {}
 
 function core.init()
 	require "orca.core2.project"
 	io.stderr:write('Initializing core module\n')
+	filesystem.init(DATADIR)
 	core.projects = {}
-	core.load_project(DATADIR)
+	-- core.load_project(DATADIR)
 	core.load_plugins()
 	-- orca.core = core
 	-- orca.plugins = {}

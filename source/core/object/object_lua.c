@@ -90,20 +90,20 @@ _parse_args(lua_State* L, lpObject_t hobj)
 static void
 _assign_callbacks(lua_State* L, lpObject_t pobj, int idx)
 {
-luaX_pushObject(L, pobj);
-int obj_index = lua_gettop(L);
+  luaX_pushObject(L, pobj);
+  int obj_index = lua_gettop(L);
   lua_pushvalue(L, idx);
   while (lua_type(L, -1) != LUA_TNIL) {
     lua_pushnil(L);
     while (lua_next(L, -2)) {
-shortStr_t _key;
-strncpy(_key, luaL_checkstring(L, -2), sizeof(_key));
-if (strncmp(_key, "__", 2)) {
-lua_settable(L, obj_index);
-lua_pushstring(L, _key);
-} else {
-lua_pop(L, 1);
-}
+      shortStr_t _key;
+      strncpy(_key, luaL_checkstring(L, -2), sizeof(_key));
+      if (strncmp(_key, "__", 2)) {
+        lua_settable(L, obj_index);
+        lua_pushstring(L, _key);
+      } else {
+        lua_pop(L, 1);
+      }
     }
     if (!lua_getmetatable(L, -1)) {
       break;

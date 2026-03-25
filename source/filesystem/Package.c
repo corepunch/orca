@@ -306,59 +306,59 @@ void _FreePack(PPACK pack) {
   free(pack);
 }
 
-static char* _ExtractPackageXmlToTemp(PPACK pack) {
-  struct file* xmlFile = _ReadPakFile(pack, "package.xml");
-  if (!xmlFile) {
+static char* _ExtractFileToTemp(PPACK pack, lpcString_t filename) {
+  struct file* file = _ReadPakFile(pack, filename);
+  if (!file) {
     Con_Error("package.xml not found in pak");
     return NULL;
   }
 
 #if defined(__APPLE__)
   // Use mkstemp on macOS for secure temp file creation
-  char tmpName[] = "/tmp/orca_package_xml_macos_XXXXXX";
-  int fd = mkstemp(tmpName);
+  char name[] = "/tmp/orca_package_xml_macos_XXXXXX";
+  int fd = mkstemp(name);
   if (fd == -1) {
     Con_Error("Failed to generate temp filename");
-    free(xmlFile);
+    free(file);
     return NULL;
   }
   FILE* tmp = fdopen(fd, "wb");
   if (!tmp) {
     Con_Error("Failed to open temp file");
     close(fd);
-    remove(tmpName);
-    free(xmlFile);
+    remove(name);
+    free(file);
     return NULL;
   }
 #else
   // Use tmpnam on non-Apple systems (note: tmpnam is considered unsafe, but used here for compatibility)
-  char tmpName[L_tmpnam];
-  if (!tmpnam(tmpName)) {
+  char name[L_tmpnam];
+  if (!tmpnam(name)) {
     Con_Error("Failed to generate temp filename");
-    free(xmlFile);
+    free(file);
     return NULL;
   }
-  FILE* tmp = fopen(tmpName, "wb");
+  FILE* tmp = fopen(name, "wb");
   if (!tmp) {
     Con_Error("Failed to open temp file");
-    free(xmlFile);
+    free(file);
     return NULL;
   }
 #endif
 
-  if (fwrite(xmlFile->data, 1, xmlFile->size, tmp) != xmlFile->size) {
+  if (fwrite(file->data, 1, file->size, tmp) != file->size) {
     Con_Error("Failed to write to temp file");
     fclose(tmp);
-    remove(tmpName);
-    free(xmlFile);
+    remove(name);
+    free(file);
     return NULL;
   }
 
   fclose(tmp);
-  free(xmlFile);
+  free(file);
 
   // Return a copy of the temp filename
-  return strdup(tmpName);
+  return strdup(name);
 }
 
 
@@ -380,22 +380,23 @@ HANDLER(Package, HasChangedFiles) {
   return FALSE;
 }
 
-lpObject_t _LoadProject(lua_State *L, lpcString_t path, lpcString_t name);
+int lua_loadfile_with_env(lua_State *L, const char *filename, int env_index);
+#include <include/api.h>
 
 HANDLER(Package, LoadProject) {
-  path_t tmp={0}, packpath={0};
+  path_t tmp={0};
+  lpObject_t package = NULL;
   lua_State* L = (lua_State*)pPackage;
-  lpObject_t project = NULL;
   snprintf(tmp, sizeof(tmp), "%s.pz2", pLoadProject->Path);
   WITH(FILE, fp, fopen(tmp, "rb"), fclose) {
+    lua_pcall(L, (luaX_import(L, "orca.filesystem", "Package"), 0), 1, 0);
+    package = luaX_checkObject(L, -1);
     WITH(void, pack, _LoadPackFile(tmp), _FreePack) {
-      WITH(char, path, _ExtractPackageXmlToTemp(pack), free) {
-        strncpy(packpath, path, sizeof(packpath));
+      WITH(char, path, _ExtractFileToTemp(pack, "package.lua"), free) {
+        lua_loadfile_with_env(L, path, -1);
       }
-      project = _LoadProject(L, packpath, FS_GetBaseName(pLoadProject->Path));
-      OBJ_AddComponent(project, ID_Package);
-      GetPackage(project)->_package = _LoadPackFile(tmp);
+      GetPackage(package)->_package = _LoadPackFile(tmp);
     }
   }
-  return (intptr_t)project;
+  return (intptr_t)package;
 }

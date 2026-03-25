@@ -1,4 +1,4 @@
-Name = "Example"
+Name = "Example2"
 StartupScreen = "Example/Screens/Application"
 ScreenLibrary = { IsExternal = true }
 ImageLibrary = { IsExternal = true }
@@ -25,14 +25,23 @@ ThemeLibrary = {
 		},
 	},
 }
-PropertyTypeLibrary = {
-	Title = { DataType="String", Category="Card" },
-	Subtitle = { DataType="String", Category="Card" },
-	Body = { DataType="String", Category="Card" },
-	Icon = { DataType="String", Category="Card" },
-	IconBackground = { DataType="Color", Category="Card" },
-	Image = { DataType="Object", TypeString="Texture", Category="Card" },
-	PrimaryColor = { DataType="Color", Category="Card" },
+-- PropertyTypeLibrary = {
+-- 	Title = { DataType="String", Category="Card" },
+-- 	Subtitle = { DataType="String", Category="Card" },
+-- 	Body = { DataType="String", Category="Card" },
+-- 	Icon = { DataType="String", Category="Card" },
+-- 	IconBackground = { DataType="Color", Category="Card" },
+-- 	Image = { DataType="Object", TypeString="Texture", Category="Card" },
+-- 	PrimaryColor = { DataType="Color", Category="Card" },
+-- }
+PropertyTypes = {
+	{ Name="Title", DataType="String", Category="Card" },
+	{ Name="Subtitle", DataType="String", Category="Card" },
+	{ Name="Body", DataType="String", Category="Card" },
+	{ Name="Icon", DataType="String", Category="Card" },
+	{ Name="IconBackground", DataType="Color", Category="Card" },
+	{ Name="Image", DataType="Object", TypeString="Texture", Category="Card" },
+	{ Name="PrimaryColor", DataType="Color", Category="Card" },
 }
 SystemMessageLibrary = {
 	KeyDown = { Key="q", Command="return" },

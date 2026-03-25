@@ -19,15 +19,15 @@ local libraries = {
   PrefabLibrary = "Prefabs",
   ProfileLibrary = "Profiles",
   EnginePluginLibrary = "Engine Plugins",
-  ShortcutLibrary = "Shortcuts",
+  ShortcutLibrary = "Bookmarks",
   LayerLibrary = "Layers",
-  AnimationLibrary = "Animations",
+  AnimationLibrary = "Animation Data",
   TagLibrary = "Tags",
   ThemeLibrary = "Themes",
   ResourceExportTagLibrary = "Resource Export Tags",
-  LocaleLibrary = "Locales",
+  LocaleLibrary = "Localization",
   DataSourceLibrary = "Data Sources",
-  PageTransitionCollectionLibrary = "Page Transition Collections",
+  PageTransitionCollectionLibrary = "Page Transitions",
   ResourceFilesItem = "Resource Files",
   TextureLibrary = "Textures",
   StyleLibrary = "Styles",
@@ -48,6 +48,7 @@ local libraries = {
 	BrushTypeLibrary = "Brush Types",
 	ProjectReferenceLibrary = "Project References",
 	PropertyTypeLibrary = "Property Types",
+  FontLibrary = "Fonts",
 }
 
 local Project = {}
@@ -89,5 +90,9 @@ function Project.load(path)
 end
 
 function core2.load_project(path)
+	local workspace = filesystem.getWorkspace()
+	if filesystem.fileExists(path..'.pz2') then
+		return Project.load(path)
+	end
 	return Project.load(path)
 end

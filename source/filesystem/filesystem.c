@@ -300,17 +300,17 @@ FS_FreeFile(struct file* pFile)
   return NOERROR;
 }
 
-static void _AddLibrary(lpcClassDesc_t cd, void* param) {
-  lua_State *L = ((void**)param)[0];
-  FOR_EACH_OBJECT(lib, ((void**)param)[1]) {
-    if (OBJ_GetComponent(lib, cd->ClassID))
-      return;
-  }
-  lua_getfield(L, LUA_REGISTRYINDEX, cd->ClassName);
-  lua_call(L, 0, 1);
-  OBJ_AddChild(((void**)param)[1], luaX_checkObject(L, -1), FALSE);
-  lua_pop(L, 1);
-}
+//static void _AddLibrary(lpcClassDesc_t cd, void* param) {
+//  lua_State *L = ((void**)param)[0];
+//  FOR_EACH_OBJECT(lib, ((void**)param)[1]) {
+//    if (OBJ_GetComponent(lib, cd->ClassID))
+//      return;
+//  }
+//  lua_getfield(L, LUA_REGISTRYINDEX, cd->ClassName);
+//  lua_call(L, 0, 1);
+//  OBJ_AddChild(((void**)param)[1], luaX_checkObject(L, -1), FALSE);
+//  lua_pop(L, 1);
+//}
 
 static void _InitPropertyTypes(lpProject_t project) {
   FOR_LOOP(i, project->NumPropertyTypes) {
@@ -368,21 +368,17 @@ static void _TryLoadBundle(lpcClassDesc_t c, void* args) {
   struct package_iterator* it = args;
   if (!it->project) {
     it->project =
-    (struct Object*)c->ObjProc(NULL, it->L, kEventLoadProject, 0, &(struct LoadProjectArgs) { .Path = (void*)it->directory });
+    (struct Object*)c->ObjProc(NULL, it->L, kEventLoadProject, 0,
+                               &(struct LoadProjectArgs) {
+      .Path = (void*)it->directory
+    });
   }
 }
 
 static lpProject_t _InitProject(lua_State *L, lpcString_t szDirname) {
   struct package_iterator it={.directory=szDirname,.L=L};
-  OBJ_EnumClasses(ID_Bundle, _TryLoadBundle, &it);
-  if (!it.project) {
-    extern ClassDesc_t _Directory;
-    struct LoadProjectArgs args = { .Path = (void*)szDirname };
-    LRESULT project = _Directory.ObjProc(NULL, L, kEventLoadProject, 0, &args);
-    return GetProject((struct Object*)project);
-  } else {
-    return GetProject(it.project);
-  }
+  OBJ_EnumClasses(ID_Project, _TryLoadBundle, &it);
+  return GetProject(it.project);
 }
 
 static void _InitPlugins(lua_State *L, lpcProject_t project) {
@@ -422,7 +418,7 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
     return NULL;
   }
 
-  OBJ_EnumClasses(ID_Library, _AddLibrary, ((void*[]){ L, CMP_GetObject(project) }));
+//  OBJ_EnumClasses(ID_Library, _AddLibrary, ((void*[]){ L, CMP_GetObject(project) }));
   OBJ_AddChild(FS_GetWorkspace(), CMP_GetObject(project), FALSE);
 
   _InitPlugins(L, project);

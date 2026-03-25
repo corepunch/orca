@@ -5,37 +5,21 @@
 #define kEventFileExists 0x38dfc973
 #define kEventHasChangedFiles 0x5390a564
 #define kEventLoadProject 0x31b9fee2
-// Bundle
-#define ID_Bundle 0xe6397a25
-#define GetBundle(_P) ((struct Bundle*)((_P)?OBJ_GetComponent(_P,ID_Bundle):NULL))
-#define Bundle_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Bundle,sizeof(struct Bundle),_N)
-enum BundleProperties {
-	kBundleNumProperties	
-};
-// Directory
-#define ID_Directory 0x94226a28
-#define GetDirectory(_P) ((struct Directory*)((_P)?OBJ_GetComponent(_P,ID_Directory):NULL))
-#define Directory_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Directory,sizeof(struct Directory),_N)
-#define ID_Directory_Path 0xe78c5471 // Directory.Path
-enum DirectoryProperties {
-	kDirectoryPath,
-	kDirectoryNumProperties	
-};
-// Package
-#define ID_Package 0xfe8f4b9b
-#define GetPackage(_P) ((struct Package*)((_P)?OBJ_GetComponent(_P,ID_Package):NULL))
-#define Package_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Package,sizeof(struct Package),_N)
-#define ID_Package_FileName 0x389d60fa // Package.FileName
-enum PackageProperties {
-	kPackageFileName,
-	kPackageNumProperties	
-};
 // Workspace
 #define ID_Workspace 0x27419f56
 #define GetWorkspace(_P) ((struct Workspace*)((_P)?OBJ_GetComponent(_P,ID_Workspace):NULL))
 #define Workspace_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Workspace,sizeof(struct Workspace),_N)
 enum WorkspaceProperties {
 	kWorkspaceNumProperties	
+};
+// Library
+#define ID_Library 0xa8532270
+#define GetLibrary(_P) ((struct Library*)((_P)?OBJ_GetComponent(_P,ID_Library):NULL))
+#define Library_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Library,sizeof(struct Library),_N)
+#define ID_Library_IsExternal 0x9363c61d // Library.IsExternal
+enum LibraryProperties {
+	kLibraryIsExternal,
+	kLibraryNumProperties	
 };
 // Project
 #define ID_Project 0x7b5fea5e
@@ -81,6 +65,41 @@ enum WorkspaceProperties {
 #define ID_Project_NumSystemMessages 0x89eac941 // Project.NumSystemMessages
 #define ID_Project_Plugins 0xf63a7450 // Project.Plugins
 #define ID_Project_NumPlugins 0x2ed36890 // Project.NumPlugins
+#define ID_Project_AnimationClipLibrary 0x627fe7a3 // Project.AnimationClipLibrary
+#define ID_Project_ScreenLibrary 0x96b5dfdf // Project.ScreenLibrary
+#define ID_Project_MaterialTypeLibrary 0xc8162e4c // Project.MaterialTypeLibrary
+#define ID_Project_MaterialLibrary 0xe224a5f4 // Project.MaterialLibrary
+#define ID_Project_BrushLibrary 0x71e8c14b // Project.BrushLibrary
+#define ID_Project_MeshLibrary 0xfb24db10 // Project.MeshLibrary
+#define ID_Project_TimelineSequenceLibrary 0x02be7185 // Project.TimelineSequenceLibrary
+#define ID_Project_SceneObjectLibrary 0xa7d7f772 // Project.SceneObjectLibrary
+#define ID_Project_ComposerLibrary 0xb1abe3ad // Project.ComposerLibrary
+#define ID_Project_PipelineItemLibrary 0x01518b58 // Project.PipelineItemLibrary
+#define ID_Project_SceneLibrary 0x81ceeab3 // Project.SceneLibrary
+#define ID_Project_TrajectoryLibrary 0xbe5cb9f4 // Project.TrajectoryLibrary
+#define ID_Project_TransitionLibrary 0x93a3d926 // Project.TransitionLibrary
+#define ID_Project_SplineLibrary 0xd6e6a60c // Project.SplineLibrary
+#define ID_Project_PrefabLibrary 0xedb47045 // Project.PrefabLibrary
+#define ID_Project_ProfileLibrary 0x77ddc960 // Project.ProfileLibrary
+#define ID_Project_EnginePluginLibrary 0x4af02f28 // Project.EnginePluginLibrary
+#define ID_Project_ShortcutLibrary 0xe90dcf95 // Project.ShortcutLibrary
+#define ID_Project_LayerLibrary 0x9182cf80 // Project.LayerLibrary
+#define ID_Project_AnimationLibrary 0xd329f231 // Project.AnimationLibrary
+#define ID_Project_TagLibrary 0xab31a12b // Project.TagLibrary
+#define ID_Project_ThemeLibrary 0xa48d59a0 // Project.ThemeLibrary
+#define ID_Project_ResourceExportTagLibrary 0x604432ed // Project.ResourceExportTagLibrary
+#define ID_Project_LocaleLibrary 0x6c5cabed // Project.LocaleLibrary
+#define ID_Project_DataSourceLibrary 0x925844f8 // Project.DataSourceLibrary
+#define ID_Project_PageTransitionCollectionLibrary 0x2b659913 // Project.PageTransitionCollectionLibrary
+#define ID_Project_TextureLibrary 0x29113c3e // Project.TextureLibrary
+#define ID_Project_StyleLibrary 0x931b9b40 // Project.StyleLibrary
+#define ID_Project_StateManagerLibrary 0x7cb98ef7 // Project.StateManagerLibrary
+#define ID_Project_ConnectServiceLibrary 0x658a1168 // Project.ConnectServiceLibrary
+#define ID_Project_ConnectUserServiceLibrary 0xd2d03423 // Project.ConnectUserServiceLibrary
+#define ID_Project_SpriteLibrary 0x3f9a6f04 // Project.SpriteLibrary
+#define ID_Project_SpriteAnimationLibrary 0x664d619c // Project.SpriteAnimationLibrary
+#define ID_Project_ImageLibrary 0x07fed878 // Project.ImageLibrary
+#define ID_Project_FontLibrary 0x8f87dd48 // Project.FontLibrary
 enum ProjectProperties {
 	kProjectHalfFloatTextureFormat,
 	kProjectHalfFloatTextureFormatLinear,
@@ -122,261 +141,60 @@ enum ProjectProperties {
 	kProjectNumSystemMessages,
 	kProjectPlugins,
 	kProjectNumPlugins,
+	kProjectAnimationClipLibrary,
+	kProjectScreenLibrary,
+	kProjectMaterialTypeLibrary,
+	kProjectMaterialLibrary,
+	kProjectBrushLibrary,
+	kProjectMeshLibrary,
+	kProjectTimelineSequenceLibrary,
+	kProjectSceneObjectLibrary,
+	kProjectComposerLibrary,
+	kProjectPipelineItemLibrary,
+	kProjectSceneLibrary,
+	kProjectTrajectoryLibrary,
+	kProjectTransitionLibrary,
+	kProjectSplineLibrary,
+	kProjectPrefabLibrary,
+	kProjectProfileLibrary,
+	kProjectEnginePluginLibrary,
+	kProjectShortcutLibrary,
+	kProjectLayerLibrary,
+	kProjectAnimationLibrary,
+	kProjectTagLibrary,
+	kProjectThemeLibrary,
+	kProjectResourceExportTagLibrary,
+	kProjectLocaleLibrary,
+	kProjectDataSourceLibrary,
+	kProjectPageTransitionCollectionLibrary,
+	kProjectTextureLibrary,
+	kProjectStyleLibrary,
+	kProjectStateManagerLibrary,
+	kProjectConnectServiceLibrary,
+	kProjectConnectUserServiceLibrary,
+	kProjectSpriteLibrary,
+	kProjectSpriteAnimationLibrary,
+	kProjectImageLibrary,
+	kProjectFontLibrary,
 	kProjectNumProperties	
 };
-// Library
-#define ID_Library 0xa8532270
-#define GetLibrary(_P) ((struct Library*)((_P)?OBJ_GetComponent(_P,ID_Library):NULL))
-#define Library_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Library,sizeof(struct Library),_N)
-#define ID_Library_IsExternal 0x9363c61d // Library.IsExternal
-enum LibraryProperties {
-	kLibraryIsExternal,
-	kLibraryNumProperties	
+// Directory
+#define ID_Directory 0x94226a28
+#define GetDirectory(_P) ((struct Directory*)((_P)?OBJ_GetComponent(_P,ID_Directory):NULL))
+#define Directory_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Directory,sizeof(struct Directory),_N)
+#define ID_Directory_Path 0xe78c5471 // Directory.Path
+enum DirectoryProperties {
+	kDirectoryPath,
+	kDirectoryNumProperties	
 };
-// AnimationClipLibrary
-#define ID_AnimationClipLibrary 0xb18f0186
-#define GetAnimationClipLibrary(_P) ((struct AnimationClipLibrary*)((_P)?OBJ_GetComponent(_P,ID_AnimationClipLibrary):NULL))
-#define AnimationClipLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_AnimationClipLibrary,sizeof(struct AnimationClipLibrary),_N)
-enum AnimationClipLibraryProperties {
-	kAnimationClipLibraryNumProperties	
-};
-// ScreenLibrary
-#define ID_ScreenLibrary 0x33aae09c
-#define GetScreenLibrary(_P) ((struct ScreenLibrary*)((_P)?OBJ_GetComponent(_P,ID_ScreenLibrary):NULL))
-#define ScreenLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_ScreenLibrary,sizeof(struct ScreenLibrary),_N)
-enum ScreenLibraryProperties {
-	kScreenLibraryNumProperties	
-};
-// MaterialTypeLibrary
-#define ID_MaterialTypeLibrary 0xa8705423
-#define GetMaterialTypeLibrary(_P) ((struct MaterialTypeLibrary*)((_P)?OBJ_GetComponent(_P,ID_MaterialTypeLibrary):NULL))
-#define MaterialTypeLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_MaterialTypeLibrary,sizeof(struct MaterialTypeLibrary),_N)
-enum MaterialTypeLibraryProperties {
-	kMaterialTypeLibraryNumProperties	
-};
-// MaterialLibrary
-#define ID_MaterialLibrary 0xa52f6c1b
-#define GetMaterialLibrary(_P) ((struct MaterialLibrary*)((_P)?OBJ_GetComponent(_P,ID_MaterialLibrary):NULL))
-#define MaterialLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_MaterialLibrary,sizeof(struct MaterialLibrary),_N)
-enum MaterialLibraryProperties {
-	kMaterialLibraryNumProperties	
-};
-// BrushLibrary
-#define ID_BrushLibrary 0xaa7539c6
-#define GetBrushLibrary(_P) ((struct BrushLibrary*)((_P)?OBJ_GetComponent(_P,ID_BrushLibrary):NULL))
-#define BrushLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_BrushLibrary,sizeof(struct BrushLibrary),_N)
-enum BrushLibraryProperties {
-	kBrushLibraryNumProperties	
-};
-// MeshLibrary
-#define ID_MeshLibrary 0x11d562a7
-#define GetMeshLibrary(_P) ((struct MeshLibrary*)((_P)?OBJ_GetComponent(_P,ID_MeshLibrary):NULL))
-#define MeshLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_MeshLibrary,sizeof(struct MeshLibrary),_N)
-enum MeshLibraryProperties {
-	kMeshLibraryNumProperties	
-};
-// TimelineSequenceLibrary
-#define ID_TimelineSequenceLibrary 0x6a7a199a
-#define GetTimelineSequenceLibrary(_P) ((struct TimelineSequenceLibrary*)((_P)?OBJ_GetComponent(_P,ID_TimelineSequenceLibrary):NULL))
-#define TimelineSequenceLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_TimelineSequenceLibrary,sizeof(struct TimelineSequenceLibrary),_N)
-enum TimelineSequenceLibraryProperties {
-	kTimelineSequenceLibraryNumProperties	
-};
-// SceneObjectLibrary
-#define ID_SceneObjectLibrary 0x9cebd1a3
-#define GetSceneObjectLibrary(_P) ((struct SceneObjectLibrary*)((_P)?OBJ_GetComponent(_P,ID_SceneObjectLibrary):NULL))
-#define SceneObjectLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_SceneObjectLibrary,sizeof(struct SceneObjectLibrary),_N)
-enum SceneObjectLibraryProperties {
-	kSceneObjectLibraryNumProperties	
-};
-// ComposerLibrary
-#define ID_ComposerLibrary 0x739c88a6
-#define GetComposerLibrary(_P) ((struct ComposerLibrary*)((_P)?OBJ_GetComponent(_P,ID_ComposerLibrary):NULL))
-#define ComposerLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_ComposerLibrary,sizeof(struct ComposerLibrary),_N)
-enum ComposerLibraryProperties {
-	kComposerLibraryNumProperties	
-};
-// PipelineItemLibrary
-#define ID_PipelineItemLibrary 0x9da5b82f
-#define GetPipelineItemLibrary(_P) ((struct PipelineItemLibrary*)((_P)?OBJ_GetComponent(_P,ID_PipelineItemLibrary):NULL))
-#define PipelineItemLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_PipelineItemLibrary,sizeof(struct PipelineItemLibrary),_N)
-enum PipelineItemLibraryProperties {
-	kPipelineItemLibraryNumProperties	
-};
-// SceneLibrary
-#define ID_SceneLibrary 0xfa6e5926
-#define GetSceneLibrary(_P) ((struct SceneLibrary*)((_P)?OBJ_GetComponent(_P,ID_SceneLibrary):NULL))
-#define SceneLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_SceneLibrary,sizeof(struct SceneLibrary),_N)
-enum SceneLibraryProperties {
-	kSceneLibraryNumProperties	
-};
-// TrajectoryLibrary
-#define ID_TrajectoryLibrary 0x081b51d3
-#define GetTrajectoryLibrary(_P) ((struct TrajectoryLibrary*)((_P)?OBJ_GetComponent(_P,ID_TrajectoryLibrary):NULL))
-#define TrajectoryLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_TrajectoryLibrary,sizeof(struct TrajectoryLibrary),_N)
-enum TrajectoryLibraryProperties {
-	kTrajectoryLibraryNumProperties	
-};
-// TransitionLibrary
-#define ID_TransitionLibrary 0xcf1f17a5
-#define GetTransitionLibrary(_P) ((struct TransitionLibrary*)((_P)?OBJ_GetComponent(_P,ID_TransitionLibrary):NULL))
-#define TransitionLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_TransitionLibrary,sizeof(struct TransitionLibrary),_N)
-enum TransitionLibraryProperties {
-	kTransitionLibraryNumProperties	
-};
-// SplineLibrary
-#define ID_SplineLibrary 0xb16c4967
-#define GetSplineLibrary(_P) ((struct SplineLibrary*)((_P)?OBJ_GetComponent(_P,ID_SplineLibrary):NULL))
-#define SplineLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_SplineLibrary,sizeof(struct SplineLibrary),_N)
-enum SplineLibraryProperties {
-	kSplineLibraryNumProperties	
-};
-// PrefabLibrary
-#define ID_PrefabLibrary 0x0b066b16
-#define GetPrefabLibrary(_P) ((struct PrefabLibrary*)((_P)?OBJ_GetComponent(_P,ID_PrefabLibrary):NULL))
-#define PrefabLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_PrefabLibrary,sizeof(struct PrefabLibrary),_N)
-enum PrefabLibraryProperties {
-	kPrefabLibraryNumProperties	
-};
-// ProfileLibrary
-#define ID_ProfileLibrary 0xd4de6821
-#define GetProfileLibrary(_P) ((struct ProfileLibrary*)((_P)?OBJ_GetComponent(_P,ID_ProfileLibrary):NULL))
-#define ProfileLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_ProfileLibrary,sizeof(struct ProfileLibrary),_N)
-enum ProfileLibraryProperties {
-	kProfileLibraryNumProperties	
-};
-// EnginePluginLibrary
-#define ID_EnginePluginLibrary 0x92d1b7eb
-#define GetEnginePluginLibrary(_P) ((struct EnginePluginLibrary*)((_P)?OBJ_GetComponent(_P,ID_EnginePluginLibrary):NULL))
-#define EnginePluginLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_EnginePluginLibrary,sizeof(struct EnginePluginLibrary),_N)
-enum EnginePluginLibraryProperties {
-	kEnginePluginLibraryNumProperties	
-};
-// ShortcutLibrary
-#define ID_ShortcutLibrary 0x425801c6
-#define GetShortcutLibrary(_P) ((struct ShortcutLibrary*)((_P)?OBJ_GetComponent(_P,ID_ShortcutLibrary):NULL))
-#define ShortcutLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_ShortcutLibrary,sizeof(struct ShortcutLibrary),_N)
-enum ShortcutLibraryProperties {
-	kShortcutLibraryNumProperties	
-};
-// LayerLibrary
-#define ID_LayerLibrary 0x309f6b49
-#define GetLayerLibrary(_P) ((struct LayerLibrary*)((_P)?OBJ_GetComponent(_P,ID_LayerLibrary):NULL))
-#define LayerLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_LayerLibrary,sizeof(struct LayerLibrary),_N)
-enum LayerLibraryProperties {
-	kLayerLibraryNumProperties	
-};
-// AnimationLibrary
-#define ID_AnimationLibrary 0x1818e708
-#define GetAnimationLibrary(_P) ((struct AnimationLibrary*)((_P)?OBJ_GetComponent(_P,ID_AnimationLibrary):NULL))
-#define AnimationLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_AnimationLibrary,sizeof(struct AnimationLibrary),_N)
-enum AnimationLibraryProperties {
-	kAnimationLibraryNumProperties	
-};
-// TagLibrary
-#define ID_TagLibrary 0x7e634fa6
-#define GetTagLibrary(_P) ((struct TagLibrary*)((_P)?OBJ_GetComponent(_P,ID_TagLibrary):NULL))
-#define TagLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_TagLibrary,sizeof(struct TagLibrary),_N)
-enum TagLibraryProperties {
-	kTagLibraryNumProperties	
-};
-// ThemeLibrary
-#define ID_ThemeLibrary 0x508975b5
-#define GetThemeLibrary(_P) ((struct ThemeLibrary*)((_P)?OBJ_GetComponent(_P,ID_ThemeLibrary):NULL))
-#define ThemeLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_ThemeLibrary,sizeof(struct ThemeLibrary),_N)
-enum ThemeLibraryProperties {
-	kThemeLibraryNumProperties	
-};
-// ResourceExportTagLibrary
-#define ID_ResourceExportTagLibrary 0x7ca6ddcc
-#define GetResourceExportTagLibrary(_P) ((struct ResourceExportTagLibrary*)((_P)?OBJ_GetComponent(_P,ID_ResourceExportTagLibrary):NULL))
-#define ResourceExportTagLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_ResourceExportTagLibrary,sizeof(struct ResourceExportTagLibrary),_N)
-enum ResourceExportTagLibraryProperties {
-	kResourceExportTagLibraryNumProperties	
-};
-// LocaleLibrary
-#define ID_LocaleLibrary 0xc56f541a
-#define GetLocaleLibrary(_P) ((struct LocaleLibrary*)((_P)?OBJ_GetComponent(_P,ID_LocaleLibrary):NULL))
-#define LocaleLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_LocaleLibrary,sizeof(struct LocaleLibrary),_N)
-enum LocaleLibraryProperties {
-	kLocaleLibraryNumProperties	
-};
-// DataSourceLibrary
-#define ID_DataSourceLibrary 0xe1462dd3
-#define GetDataSourceLibrary(_P) ((struct DataSourceLibrary*)((_P)?OBJ_GetComponent(_P,ID_DataSourceLibrary):NULL))
-#define DataSourceLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_DataSourceLibrary,sizeof(struct DataSourceLibrary),_N)
-enum DataSourceLibraryProperties {
-	kDataSourceLibraryNumProperties	
-};
-// PageTransitionCollectionLibrary
-#define ID_PageTransitionCollectionLibrary 0x29c80844
-#define GetPageTransitionCollectionLibrary(_P) ((struct PageTransitionCollectionLibrary*)((_P)?OBJ_GetComponent(_P,ID_PageTransitionCollectionLibrary):NULL))
-#define PageTransitionCollectionLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_PageTransitionCollectionLibrary,sizeof(struct PageTransitionCollectionLibrary),_N)
-enum PageTransitionCollectionLibraryProperties {
-	kPageTransitionCollectionLibraryNumProperties	
-};
-// TextureLibrary
-#define ID_TextureLibrary 0x99f2a01f
-#define GetTextureLibrary(_P) ((struct TextureLibrary*)((_P)?OBJ_GetComponent(_P,ID_TextureLibrary):NULL))
-#define TextureLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_TextureLibrary,sizeof(struct TextureLibrary),_N)
-enum TextureLibraryProperties {
-	kTextureLibraryNumProperties	
-};
-// StyleLibrary
-#define ID_StyleLibrary 0x5c0ac569
-#define GetStyleLibrary(_P) ((struct StyleLibrary*)((_P)?OBJ_GetComponent(_P,ID_StyleLibrary):NULL))
-#define StyleLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_StyleLibrary,sizeof(struct StyleLibrary),_N)
-enum StyleLibraryProperties {
-	kStyleLibraryNumProperties	
-};
-// StateManagerLibrary
-#define ID_StateManagerLibrary 0x1f8da040
-#define GetStateManagerLibrary(_P) ((struct StateManagerLibrary*)((_P)?OBJ_GetComponent(_P,ID_StateManagerLibrary):NULL))
-#define StateManagerLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_StateManagerLibrary,sizeof(struct StateManagerLibrary),_N)
-enum StateManagerLibraryProperties {
-	kStateManagerLibraryNumProperties	
-};
-// ConnectServiceLibrary
-#define ID_ConnectServiceLibrary 0x66ac9ce3
-#define GetConnectServiceLibrary(_P) ((struct ConnectServiceLibrary*)((_P)?OBJ_GetComponent(_P,ID_ConnectServiceLibrary):NULL))
-#define ConnectServiceLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_ConnectServiceLibrary,sizeof(struct ConnectServiceLibrary),_N)
-enum ConnectServiceLibraryProperties {
-	kConnectServiceLibraryNumProperties	
-};
-// ConnectUserServiceLibrary
-#define ID_ConnectUserServiceLibrary 0x445ea848
-#define GetConnectUserServiceLibrary(_P) ((struct ConnectUserServiceLibrary*)((_P)?OBJ_GetComponent(_P,ID_ConnectUserServiceLibrary):NULL))
-#define ConnectUserServiceLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_ConnectUserServiceLibrary,sizeof(struct ConnectUserServiceLibrary),_N)
-enum ConnectUserServiceLibraryProperties {
-	kConnectUserServiceLibraryNumProperties	
-};
-// SpriteLibrary
-#define ID_SpriteLibrary 0xb1288547
-#define GetSpriteLibrary(_P) ((struct SpriteLibrary*)((_P)?OBJ_GetComponent(_P,ID_SpriteLibrary):NULL))
-#define SpriteLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_SpriteLibrary,sizeof(struct SpriteLibrary),_N)
-enum SpriteLibraryProperties {
-	kSpriteLibraryNumProperties	
-};
-// SpriteAnimationLibrary
-#define ID_SpriteAnimationLibrary 0x9ef864fd
-#define GetSpriteAnimationLibrary(_P) ((struct SpriteAnimationLibrary*)((_P)?OBJ_GetComponent(_P,ID_SpriteAnimationLibrary):NULL))
-#define SpriteAnimationLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_SpriteAnimationLibrary,sizeof(struct SpriteAnimationLibrary),_N)
-enum SpriteAnimationLibraryProperties {
-	kSpriteAnimationLibraryNumProperties	
-};
-// ImageLibrary
-#define ID_ImageLibrary 0x533a469d
-#define GetImageLibrary(_P) ((struct ImageLibrary*)((_P)?OBJ_GetComponent(_P,ID_ImageLibrary):NULL))
-#define ImageLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_ImageLibrary,sizeof(struct ImageLibrary),_N)
-enum ImageLibraryProperties {
-	kImageLibraryNumProperties	
-};
-// FontLibrary
-#define ID_FontLibrary 0xb033dd0b
-#define GetFontLibrary(_P) ((struct FontLibrary*)((_P)?OBJ_GetComponent(_P,ID_FontLibrary):NULL))
-#define FontLibrary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_FontLibrary,sizeof(struct FontLibrary),_N)
-enum FontLibraryProperties {
-	kFontLibraryNumProperties	
+// Package
+#define ID_Package 0xfe8f4b9b
+#define GetPackage(_P) ((struct Package*)((_P)?OBJ_GetComponent(_P,ID_Package):NULL))
+#define Package_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Package,sizeof(struct Package),_N)
+#define ID_Package_FileName 0x389d60fa // Package.FileName
+enum PackageProperties {
+	kPackageFileName,
+	kPackageNumProperties	
 };
 // LocaleReferenceItem
 #define ID_LocaleReferenceItem 0xe30b821b
