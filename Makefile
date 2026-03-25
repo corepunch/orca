@@ -182,7 +182,7 @@ install: all
 	# Install the platform library
 	install -m 0755 $(LIBDIR)/libplatform.so $(INST_LIBDIR)/
 	# Install Lua modules
-	install -m 0644 source/core/behaviour.lua $(INST_LUADIR)/orca/behaviour.lua
+	install -m 0644 share/core/behaviour.lua $(INST_LUADIR)/orca/behaviour.lua
 	install -m 0644 main.lua $(INST_LUADIR)/orca/main.lua
 	# Install shared data files (fonts, icons, Lua plugins)
 	cp -r $(RESOURCEDIR)/* $(INST_SHAREDIR)/

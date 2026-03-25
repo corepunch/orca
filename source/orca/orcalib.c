@@ -125,6 +125,17 @@ int load_plugins(lua_State *L)
   strncpy(sharedir, luaL_checkstring(L, -1), sizeof(sharedir));
   lua_pop(L, 1);
 
+  // load core
+  lua_getglobal(L, "dofile");
+  lua_pushfstring(L, "%s/core/init.lua", sharedir);
+  if (lua_pcall(L, 1, 0, 0) == LUA_OK) {
+    Con_Printf("Loaded core");
+  } else {
+    Con_Error("%s", lua_tostring(L, -1));
+    lua_pop(L, 1);
+    no_errors = 0;
+  }
+
   lua_getglobal(L, "require");
   lua_pushstring(L, "orca.system");
   lua_call(L, 1, 1);                        // sys
