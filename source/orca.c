@@ -188,7 +188,9 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirName) {
       fprintf(mem, "\tprint(err)\n");
 //      fprintf(mem, "screen:addChild(ui.TextBlock(err))\n");
 //      fprintf(mem, "else screen = screen.__userdata and screen or screen()\n");
-      fprintf(mem, "else screen = screen()\n");
+      fprintf(mem, "else\n");
+      fprintf(mem, "screen = screen()\n");
+      fprintf(mem, "for k, v in pairs(orca.styles) do screen:addStyleSheet(k, v) end\n");
       fprintf(mem, "end\n");
   }
 #if defined(ORCA_FEATURE_DEBUG) && !defined(__EMSCRIPTEN__)
@@ -384,7 +386,7 @@ int main (int argc, LPSTR *argv)
     
     if (szProject) {
       lua_pushstring(L, szProject);
-    lua_setglobal(L, "PROJECTDIR");
+      lua_setglobal(L, "PROJECTDIR");
     }
     
     if (args.server) {
@@ -392,7 +394,8 @@ int main (int argc, LPSTR *argv)
       lua_setglobal(L, "SERVER");
     }
     
-    luaL_dostring(L, "package.path = PLUGDIR..'/?.lua;'..SHAREDIR..'/?.lua;'..package.path\n");
+    luaL_dostring(L, "package.path = SHAREDIR..'/?.lua;'..package.path\n");
+    luaL_dostring(L, "package.path = SHAREDIR..'/?/init.lua;'..package.path\n");
 #ifndef __EMSCRIPTEN__
     luaL_dostring(L, "package.cpath = LIBDIR..'/lib?.so;'..package.cpath\n");
 #endif
@@ -401,7 +404,17 @@ int main (int argc, LPSTR *argv)
     lua_setglobal(L, "DATADIR");
     
     if (!args.test) {
-      szProject = RunProject(L, szProject);
+      const char* bootstrap =
+      "local core = require 'orca.core2'\n"
+      "core.init()";
+//      lua_getglobal(L, "require");
+//      lua_pushstring(L, "orca.core2");
+//      lua_pcall(L, 1, 1, 0);
+      if (luaL_dostring(L, bootstrap) != LUA_OK) {
+        fprintf(stderr, "%s", luaL_checkstring(L, -1));
+      }
+//      szProject = RunProject(L, szProject);
+      exit(0);
     } else if (strstr(args.test, ".xml")) {
       RunTest(L, args.test);
     } else if (luaL_dofile(L, args.test) != LUA_OK) {

@@ -13,7 +13,7 @@
 			<Node.HorizontalPadding>IF(STEP(640, {../../Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</Node.HorizontalPadding>
 			<Grid Name="Hero" Columns="auto auto" Spacing="24" BackgroundColor="surface">
 				<StackView Name="HeroContent" Direction="Vertical" Spacing="0" Padding="16">
-					<TextBlock Name="HeadlineLine1" Text="Build stunning" FontSize="48" ForegroundColor="text-primary"/>
+					<TextBlock Name="HeadlineLine1" class="text-5xl text-primary" Text="Build stunning" FontSize="48" ForegroundColor="text-primary"/>
 					<TextBlock Name="HeadlineLine2" Text="UI in real-time." FontSize="48" ForegroundColor="accent"/>
 					<Node2D Name="HeadlineSpacer" Height="20"/>
 					<TextBlock Name="SubHeadline"

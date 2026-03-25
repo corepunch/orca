@@ -116,43 +116,13 @@ static int f_orca_index(lua_State* L) {
 }
 #endif
 
-int load_plugins(lua_State *L)
+static int
+load_core_module(lua_State *L)
 {
-  int no_errors = 1;
-  char sharedir[MAX_OSPATH];
-
-  lua_getglobal(L, "SHAREDIR");
-  strncpy(sharedir, luaL_checkstring(L, -1), sizeof(sharedir));
-  lua_pop(L, 1);
-
-  lua_getglobal(L, "require");
-  lua_pushstring(L, "orca.system");
-  lua_call(L, 1, 1);                        // sys
-    
-  lua_getfield(L, -1, "list_dir");
-  lua_pushfstring(L, "%s/plugins", sharedir);
-  lua_call(L, 1, 1);                        // iterator
-  
-  for (;;) {
-    lua_pushvalue(L, -1);
-    lua_call(L, 0, 1);                    // f
-    if (lua_isnil(L, -1)) break;
-    
-    lua_getglobal(L, "dofile");
-    lua_pushfstring(L, "%s/plugins/%s", sharedir, lua_tostring(L, -2));
-    
-    if (lua_pcall(L, 1, 0, 0) == LUA_OK) {
-      Con_Printf("Loaded plugin \"%s\"", lua_tostring(L, -1));
-    } else {
-      Con_Error("%s", lua_tostring(L, -1));
-      lua_pop(L, 1);
-      no_errors = 0;
-    }
-    
-    lua_pop(L, 1);                        // pop f
-  }
-  
-  return no_errors;
+//  luaL_dostring(L,
+//                "local core = require 'orca.core2'\n"
+//                "core.init()");
+  return 0;
 }
 
 static int f_find_metatable(lua_State* L) {
@@ -186,14 +156,13 @@ ORCA_API int luaopen_orca(lua_State* L)
   lua_setfield(L, ((void)lua_pushstring(L, __DATE__), -2), "build");
   lua_setfield(L, (lua_pushcfunction(L, f_find_metatable), -2), "find_metatable");
   lua_setfield(L, (lua_pushcfunction(L, f_async), -2), "async");
-  lua_setfield(L, (lua_pushcfunction(L, load_plugins), -2), "init");
+  lua_setfield(L, (lua_pushcfunction(L, load_core_module), -2), "init");
   lua_setfield(L, (lua_newtable(L), -2), "theme");
   lua_setfield(L, (lua_newtable(L), -2), "config");
-//  lua_setfield(L, (lua_newtable(L), -2), "plugins");
+  lua_setfield(L, (lua_newtable(L), -2), "styles");
   
   // lua_newtable(L);
   // lua_setfield(L, -2, "config");
-  
   
 #ifdef EASY_MODULE_ACCESS
   // Create a metatable for the orca module

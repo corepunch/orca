@@ -29,6 +29,7 @@ function Property.parse(node, name, value)
 	assert(orca.typeconverter, "Type converter plugin is required for XML support plugin")
 	if name == "ClassName" or name == "PlaceholderTemplate" then return end -- handled separately when constructing the node
 	if name == "Name" or name == "id" then node:setName(value) return end
+	if name == "class" then node:parseClassAttribute(value) return end
 	local type = node:findImplicitProperty(name) or node:findExplicitProperty(name)
 	assert(type, string.format("Unknown property: %s for node of type %s", name, node.className))
 	local converter = orca.typeconverter[type.DataType]

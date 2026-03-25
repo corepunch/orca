@@ -650,4 +650,11 @@ Token_Create(lpcString_t szSourceCode);
 ORCA_API void
 Token_Release(struct token* pToken);
 
+struct IFileSystem {
+  void* (*LoadBundle)(const char* path);
+  bool_t (*HasChangedFiles)(void*);
+  bool_t (*FileExists)(const char* path);
+  bool_t (*OpenFile)(const char* path);
+};
+
 #endif
