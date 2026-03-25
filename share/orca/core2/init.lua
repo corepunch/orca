@@ -3,7 +3,6 @@ local core = require "orca.core"
 local system = require "orca.system"
 local filesystem = require "orca.filesystem"
 local renderer = require "orca.renderer"
-local backend = require "orca.backend"
 
 local core = {}
 
@@ -36,14 +35,22 @@ end
 
 function core.run()
 	while true do
-		for msg in backend.getMessage(core.screen) do
-    	local ok, result = pcall(backend.dispatchMessage, msg)
-    	if not ok then
-				io.stderr:write(tostring(result) .. "\n")
-				-- core.screen:clear() 
-				-- core.screen:addChild(ui.TextBlock(result))
-    	elseif result and not msg:is "WindowPaint" then
-    		core.screen:postMessage "WindowPaint"
+		for msg in system.getMessage(core.screen) do
+			if msg:is "WindowClosed" then
+				return
+			elseif msg:is "KeyDown" and msg.Key == "q" then
+				return
+			elseif msg:is "RequestReload" then
+				return DATADIR
+			else
+				local ok, result = pcall(system.dispatchMessage, msg)
+				if not ok then
+					io.stderr:write(tostring(result) .. "\n")
+					-- core.screen:clear() 
+					-- core.screen:addChild(ui.TextBlock(result))
+				elseif result and not msg:is "WindowPaint" then
+					core.screen:postMessage "WindowPaint"
+				end
 			end
 		end
 	end

@@ -51,3 +51,6 @@ SystemMessages = {
 	{ Name="WindowClosed", Command="return" },
 	{ Name="RequestReload", Command="window:refresh()" },
 }
+EnginePlugins = {
+	{ Name="orca.UIKit" },
+}
