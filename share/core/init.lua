@@ -1,1 +1,1 @@
-require 'orca.behaviour'
+require 'orca.core.behaviour'

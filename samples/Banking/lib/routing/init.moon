@@ -1,5 +1,5 @@
 orca = require "orca"
-behaviour = require "orca.behaviour"
+behaviour = require "orca.core.behaviour"
 
 return {
 	Application: require "routing.Application"

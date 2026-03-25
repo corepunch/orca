@@ -142,8 +142,8 @@ int load_plugins(lua_State *L)
   lua_call(L, 1, 1);                        // sys
   int sys_idx = lua_gettop(L);
 
-  // Register each core/*.lua file in package.preload as "orca.<name>" so
-  // that user code can require them (e.g. require 'orca.behaviour').
+  // Register each core/*.lua file in package.preload as "orca.core.<name>" so
+  // that user code can require them (e.g. require 'orca.core.behaviour').
   lua_getfield(L, sys_idx, "list_dir");
   lua_pushfstring(L, "%s/core", sharedir);
   lua_call(L, 1, 1);                        // core iterator
@@ -157,7 +157,7 @@ int load_plugins(lua_State *L)
     size_t n = strlen(f);
     if (n > 4 && !strcmp(f + n - 4, ".lua") && strcmp(f, "init.lua")) {
       char modname[MAX_OSPATH];
-      snprintf(modname, sizeof(modname), "orca.%.*s", (int)(n - 4), f);
+      snprintf(modname, sizeof(modname), "orca.core.%.*s", (int)(n - 4), f);
       lua_getglobal(L, "package");
       lua_getfield(L, -1, "preload");
       lua_pushfstring(L, "%s/core/%s", sharedir, f);
