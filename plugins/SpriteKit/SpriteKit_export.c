@@ -20,8 +20,8 @@ static int f_new_SpriteFrame(lua_State *L) {
 	memset(self, 0, sizeof(struct SpriteFrame));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Rect"), self->Rect = *luaX_checkrect(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "UvRect"), self->UvRect = *luaX_checkrect(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Rect"), (!lua_isnil(L, -1) ? (self->Rect = *luaX_checkrect(L, -1)) : 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "UvRect"), (!lua_isnil(L, -1) ? (self->UvRect = *luaX_checkrect(L, -1)) : 0), 1));
 	} else {
 		self->Rect = *luaX_checkrect(L, 1);
 		self->UvRect = *luaX_checkrect(L, 2);

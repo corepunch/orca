@@ -279,11 +279,11 @@ static int f_new_RenderScreenEventArgs(lua_State *L) {
 	memset(self, 0, sizeof(struct RenderScreenEventArgs));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "width"), self->width = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "height"), self->height = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "stereo"), self->stereo = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "angle"), self->angle = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "target"), self->target = luaX_checkTexture(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "width"), self->width = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "height"), self->height = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "stereo"), self->stereo = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "angle"), self->angle = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "target"), (!lua_isnil(L, -1) ? (self->target = luaX_checkTexture(L, -1)) : 0), 1));
 	} else {
 		self->width = luaL_checknumber(L, 1);
 		self->height = luaL_checknumber(L, 2);

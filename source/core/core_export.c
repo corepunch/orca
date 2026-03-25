@@ -679,8 +679,8 @@ static int f_new_UpdateMatrixEventArgs(lua_State *L) {
 	memset(self, 0, sizeof(struct UpdateMatrixEventArgs));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "parent"), self->parent = *luaX_checkmat4(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "opacity"), self->opacity = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "parent"), (!lua_isnil(L, -1) ? (self->parent = *luaX_checkmat4(L, -1)) : 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "opacity"), self->opacity = luaL_optnumber(L, -1, 0), 1));
 		lua_pop(L, (lua_getfield(L, 1, "force"), self->force = lua_toboolean(L, -1), 1));
 	} else {
 		self->parent = *luaX_checkmat4(L, 1);
@@ -742,8 +742,8 @@ static int f_new_PropertyEnumValue(lua_State *L) {
 	memset(self, 0, sizeof(struct PropertyEnumValue));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Name"), strncpy(self->Name, luaL_checkstring(L, -1), sizeof(self->Name)), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Value"), self->Value = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Name"), strncpy(self->Name, luaL_optstring(L, -1, ""), sizeof(self->Name)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Value"), self->Value = luaL_optnumber(L, -1, 0), 1));
 	} else {
 		strncpy(self->Name, luaL_checkstring(L, 1), sizeof(self->Name));
 		self->Value = luaL_checknumber(L, 2);
@@ -816,25 +816,25 @@ static int f_new_PropertyType(lua_State *L) {
 	memset(self, 0, sizeof(struct PropertyType));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Name"), strncpy(self->Name, luaL_checkstring(L, -1), sizeof(self->Name)), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Category"), strncpy(self->Category, luaL_checkstring(L, -1), sizeof(self->Category)), 1));
-		lua_pop(L, (lua_getfield(L, 1, "DataType"), self->DataType = luaX_checkDataType(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "DefaultValue"), strncpy(self->DefaultValue, luaL_checkstring(L, -1), sizeof(self->DefaultValue)), 1));
-		lua_pop(L, (lua_getfield(L, 1, "TypeString"), strncpy(self->TypeString, luaL_checkstring(L, -1), sizeof(self->TypeString)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Name"), strncpy(self->Name, luaL_optstring(L, -1, ""), sizeof(self->Name)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Category"), strncpy(self->Category, luaL_optstring(L, -1, ""), sizeof(self->Category)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "DataType"), (!lua_isnil(L, -1) ? (self->DataType = luaX_checkDataType(L, -1)) : 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "DefaultValue"), strncpy(self->DefaultValue, luaL_optstring(L, -1, ""), sizeof(self->DefaultValue)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "TypeString"), strncpy(self->TypeString, luaL_optstring(L, -1, ""), sizeof(self->TypeString)), 1));
 		lua_pop(L, (lua_getfield(L, 1, "AffectLayout"), self->AffectLayout = lua_toboolean(L, -1), 1));
 		lua_pop(L, (lua_getfield(L, 1, "AffectRender"), self->AffectRender = lua_toboolean(L, -1), 1));
 		lua_pop(L, (lua_getfield(L, 1, "IsReadOnly"), self->IsReadOnly = lua_toboolean(L, -1), 1));
 		lua_pop(L, (lua_getfield(L, 1, "IsHidden"), self->IsHidden = lua_toboolean(L, -1), 1));
 		lua_pop(L, (lua_getfield(L, 1, "IsInherited"), self->IsInherited = lua_toboolean(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Key"), strncpy(self->Key, luaL_checkstring(L, -1), sizeof(self->Key)), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Value"), strncpy(self->Value, luaL_checkstring(L, -1), sizeof(self->Value)), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Step"), self->Step = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "UpperBound"), self->UpperBound = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "LowerBound"), self->LowerBound = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "ShortIdentifier"), self->ShortIdentifier = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "FullIdentifier"), self->FullIdentifier = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Offset"), self->Offset = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "DataSize"), self->DataSize = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Key"), strncpy(self->Key, luaL_optstring(L, -1, ""), sizeof(self->Key)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Value"), strncpy(self->Value, luaL_optstring(L, -1, ""), sizeof(self->Value)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Step"), self->Step = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "UpperBound"), self->UpperBound = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "LowerBound"), self->LowerBound = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "ShortIdentifier"), self->ShortIdentifier = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "FullIdentifier"), self->FullIdentifier = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Offset"), self->Offset = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "DataSize"), self->DataSize = luaL_optnumber(L, -1, 0), 1));
 		lua_pop(L, (lua_getfield(L, 1, "IsArray"), self->IsArray = lua_toboolean(L, -1), 1));
 	} else {
 		strncpy(self->Name, luaL_checkstring(L, 1), sizeof(self->Name));

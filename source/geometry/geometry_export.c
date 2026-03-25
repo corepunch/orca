@@ -31,8 +31,8 @@ static int f_new_vec2(lua_State *L) {
 	memset(self, 0, sizeof(struct vec2));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "x"), self->x = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "y"), self->y = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "x"), self->x = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "y"), self->y = luaL_optnumber(L, -1, 0), 1));
 	} else {
 		self->x = luaL_checknumber(L, 1);
 		self->y = luaL_checknumber(L, 2);
@@ -228,9 +228,9 @@ static int f_new_vec3(lua_State *L) {
 	memset(self, 0, sizeof(struct vec3));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "x"), self->x = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "y"), self->y = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "z"), self->z = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "x"), self->x = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "y"), self->y = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "z"), self->z = luaL_optnumber(L, -1, 0), 1));
 	} else {
 		self->x = luaL_checknumber(L, 1);
 		self->y = luaL_checknumber(L, 2);
@@ -463,10 +463,10 @@ static int f_new_vec4(lua_State *L) {
 	memset(self, 0, sizeof(struct vec4));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "x"), self->x = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "y"), self->y = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "z"), self->z = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "w"), self->w = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "x"), self->x = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "y"), self->y = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "z"), self->z = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "w"), self->w = luaL_optnumber(L, -1, 0), 1));
 	} else {
 		self->x = luaL_checknumber(L, 1);
 		self->y = luaL_checknumber(L, 2);
@@ -596,8 +596,8 @@ static int f_new_box2(lua_State *L) {
 	memset(self, 0, sizeof(struct box2));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "min"), self->min = *luaX_checkvec2(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "max"), self->max = *luaX_checkvec2(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "min"), (!lua_isnil(L, -1) ? (self->min = *luaX_checkvec2(L, -1)) : 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "max"), (!lua_isnil(L, -1) ? (self->max = *luaX_checkvec2(L, -1)) : 0), 1));
 	} else {
 		self->min = *luaX_checkvec2(L, 1);
 		self->max = *luaX_checkvec2(L, 2);
@@ -680,8 +680,8 @@ static int f_new_box3(lua_State *L) {
 	memset(self, 0, sizeof(struct box3));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "min"), self->min = *luaX_checkvec3(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "max"), self->max = *luaX_checkvec3(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "min"), (!lua_isnil(L, -1) ? (self->min = *luaX_checkvec3(L, -1)) : 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "max"), (!lua_isnil(L, -1) ? (self->max = *luaX_checkvec3(L, -1)) : 0), 1));
 	} else {
 		self->min = *luaX_checkvec3(L, 1);
 		self->max = *luaX_checkvec3(L, 2);
@@ -747,8 +747,8 @@ static int f_new_Size(lua_State *L) {
 	memset(self, 0, sizeof(struct Size));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "width"), self->width = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "height"), self->height = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "width"), self->width = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "height"), self->height = luaL_optnumber(L, -1, 0), 1));
 	} else {
 		self->width = luaL_checknumber(L, 1);
 		self->height = luaL_checknumber(L, 2);
@@ -821,10 +821,10 @@ static int f_new_rect(lua_State *L) {
 	memset(self, 0, sizeof(struct rect));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "x"), self->x = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "y"), self->y = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "width"), self->width = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "height"), self->height = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "x"), self->x = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "y"), self->y = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "width"), self->width = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "height"), self->height = luaL_optnumber(L, -1, 0), 1));
 	} else {
 		self->x = luaL_checknumber(L, 1);
 		self->y = luaL_checknumber(L, 2);
@@ -951,10 +951,10 @@ static int f_new_quat(lua_State *L) {
 	memset(self, 0, sizeof(struct quat));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "x"), self->x = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "y"), self->y = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "z"), self->z = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "w"), self->w = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "x"), self->x = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "y"), self->y = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "z"), self->z = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "w"), self->w = luaL_optnumber(L, -1, 0), 1));
 	} else {
 		self->x = luaL_checknumber(L, 1);
 		self->y = luaL_checknumber(L, 2);
@@ -1447,8 +1447,8 @@ static int f_new_bounds(lua_State *L) {
 	memset(self, 0, sizeof(struct bounds));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "min"), self->min = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "max"), self->max = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "min"), self->min = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "max"), self->max = luaL_optnumber(L, -1, 0), 1));
 	} else {
 		self->min = luaL_checknumber(L, 1);
 		self->max = luaL_checknumber(L, 2);
@@ -1521,10 +1521,10 @@ static int f_new_plane3(lua_State *L) {
 	memset(self, 0, sizeof(struct plane3));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "a"), self->a = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "b"), self->b = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "c"), self->c = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "d"), self->d = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "a"), self->a = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "b"), self->b = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "c"), self->c = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "d"), self->d = luaL_optnumber(L, -1, 0), 1));
 	} else {
 		self->a = luaL_checknumber(L, 1);
 		self->b = luaL_checknumber(L, 2);
@@ -1623,8 +1623,8 @@ static int f_new_sphere3(lua_State *L) {
 	memset(self, 0, sizeof(struct sphere3));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "center"), self->center = *luaX_checkvec3(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "radius"), self->radius = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "center"), (!lua_isnil(L, -1) ? (self->center = *luaX_checkvec3(L, -1)) : 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "radius"), self->radius = luaL_optnumber(L, -1, 0), 1));
 	} else {
 		self->center = *luaX_checkvec3(L, 1);
 		self->radius = luaL_checknumber(L, 2);
@@ -1682,12 +1682,12 @@ static int f_new_frustum3(lua_State *L) {
 	memset(self, 0, sizeof(struct frustum3));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "left"), self->left = *luaX_checkplane3(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "right"), self->right = *luaX_checkplane3(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "bottom"), self->bottom = *luaX_checkplane3(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "top"), self->top = *luaX_checkplane3(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "front"), self->front = *luaX_checkplane3(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "back"), self->back = *luaX_checkplane3(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "left"), (!lua_isnil(L, -1) ? (self->left = *luaX_checkplane3(L, -1)) : 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "right"), (!lua_isnil(L, -1) ? (self->right = *luaX_checkplane3(L, -1)) : 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "bottom"), (!lua_isnil(L, -1) ? (self->bottom = *luaX_checkplane3(L, -1)) : 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "top"), (!lua_isnil(L, -1) ? (self->top = *luaX_checkplane3(L, -1)) : 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "front"), (!lua_isnil(L, -1) ? (self->front = *luaX_checkplane3(L, -1)) : 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "back"), (!lua_isnil(L, -1) ? (self->back = *luaX_checkplane3(L, -1)) : 0), 1));
 	} else {
 		self->left = *luaX_checkplane3(L, 1);
 		self->right = *luaX_checkplane3(L, 2);
@@ -1801,9 +1801,9 @@ static int f_new_transform2(lua_State *L) {
 	memset(self, 0, sizeof(struct transform2));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "translation"), self->translation = *luaX_checkvec2(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "rotation"), self->rotation = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "scale"), self->scale = *luaX_checkvec2(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "translation"), (!lua_isnil(L, -1) ? (self->translation = *luaX_checkvec2(L, -1)) : 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "rotation"), self->rotation = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "scale"), (!lua_isnil(L, -1) ? (self->scale = *luaX_checkvec2(L, -1)) : 0), 1));
 	} else {
 		self->translation = *luaX_checkvec2(L, 1);
 		self->rotation = luaL_checknumber(L, 2);
@@ -1879,9 +1879,9 @@ static int f_new_transform3(lua_State *L) {
 	memset(self, 0, sizeof(struct transform3));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "translation"), self->translation = *luaX_checkvec3(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "rotation"), self->rotation = *luaX_checkvec3(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "scale"), self->scale = *luaX_checkvec3(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "translation"), (!lua_isnil(L, -1) ? (self->translation = *luaX_checkvec3(L, -1)) : 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "rotation"), (!lua_isnil(L, -1) ? (self->rotation = *luaX_checkvec3(L, -1)) : 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "scale"), (!lua_isnil(L, -1) ? (self->scale = *luaX_checkvec3(L, -1)) : 0), 1));
 	} else {
 		self->translation = *luaX_checkvec3(L, 1);
 		self->rotation = *luaX_checkvec3(L, 2);
@@ -1957,9 +1957,9 @@ static int f_new_triangle3(lua_State *L) {
 	memset(self, 0, sizeof(struct triangle3));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "a"), self->a = *luaX_checkvec3(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "b"), self->b = *luaX_checkvec3(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "c"), self->c = *luaX_checkvec3(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "a"), (!lua_isnil(L, -1) ? (self->a = *luaX_checkvec3(L, -1)) : 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "b"), (!lua_isnil(L, -1) ? (self->b = *luaX_checkvec3(L, -1)) : 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "c"), (!lua_isnil(L, -1) ? (self->c = *luaX_checkvec3(L, -1)) : 0), 1));
 	} else {
 		self->a = *luaX_checkvec3(L, 1);
 		self->b = *luaX_checkvec3(L, 2);
@@ -2028,8 +2028,8 @@ static int f_new_line3(lua_State *L) {
 	memset(self, 0, sizeof(struct line3));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "a"), self->a = *luaX_checkvec3(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "b"), self->b = *luaX_checkvec3(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "a"), (!lua_isnil(L, -1) ? (self->a = *luaX_checkvec3(L, -1)) : 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "b"), (!lua_isnil(L, -1) ? (self->b = *luaX_checkvec3(L, -1)) : 0), 1));
 	} else {
 		self->a = *luaX_checkvec3(L, 1);
 		self->b = *luaX_checkvec3(L, 2);
@@ -2127,10 +2127,10 @@ static int f_new_edges(lua_State *L) {
 	memset(self, 0, sizeof(struct edges));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "left"), self->left = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "top"), self->top = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "right"), self->right = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "bottom"), self->bottom = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "left"), self->left = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "top"), self->top = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "right"), self->right = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "bottom"), self->bottom = luaL_optnumber(L, -1, 0), 1));
 	} else {
 		self->left = luaL_checknumber(L, 1);
 		self->top = luaL_checknumber(L, 2);
@@ -2213,10 +2213,10 @@ static int f_new_color(lua_State *L) {
 	memset(self, 0, sizeof(struct color));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "r"), self->r = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "g"), self->g = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "b"), self->b = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "a"), self->a = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "r"), self->r = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "g"), self->g = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "b"), self->b = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "a"), self->a = luaL_optnumber(L, -1, 0), 1));
 	} else {
 		self->r = luaL_checknumber(L, 1);
 		self->g = luaL_checknumber(L, 2);

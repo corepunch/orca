@@ -169,7 +169,9 @@ class Type extends Base {
 
 	function get($name, $arg = null, $addr = null) {
 		if ($name === 'push' && $this->kind === 'struct' && $this->pointer) $arg = '*'.$arg;
-		$template = config::$TypeInfos[$this->kind][$name];
+		$info = config::$TypeInfos[$this->kind];
+		$key = isset($info[$name]) ? $name : 'pop';
+		$template = $info[$key];
 		return str_replace(['{type}', '{arg}', '{addr}'], [$this->type, $arg, $addr], $template);
 	}
 

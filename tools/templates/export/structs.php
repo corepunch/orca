@@ -17,7 +17,7 @@ static int f_new_<?= $name ?>(lua_State *L) {
 		<?php foreach ($struct->getFields() as $field):?>
 			<?php if ($field->type->fixed_array) continue; ?>
 			<?php if ($field->noexport) continue; ?>
-		lua_pop(L, (lua_getfield(L, 1, "<?= $field->name ?>"), <?= $field->type->get("pop", -1, "self->" . $field->name) ?>, 1));
+		lua_pop(L, (lua_getfield(L, 1, "<?= $field->name ?>"), <?= $field->type->get("optpop", -1, "self->" . $field->name) ?>, 1));
 		<?php endforeach ?>
 	} else {
 		<?php $index = 1 ?>

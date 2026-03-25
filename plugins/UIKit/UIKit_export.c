@@ -325,10 +325,10 @@ static int f_new_BorderRadiusShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct BorderRadiusShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "TopLeftRadius"), self->TopLeftRadius = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "TopRightRadius"), self->TopRightRadius = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "BottomRightRadius"), self->BottomRightRadius = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "BottomLeftRadius"), self->BottomLeftRadius = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "TopLeftRadius"), self->TopLeftRadius = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "TopRightRadius"), self->TopRightRadius = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "BottomRightRadius"), self->BottomRightRadius = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "BottomLeftRadius"), self->BottomLeftRadius = luaL_optnumber(L, -1, 0), 1));
 	} else {
 		self->TopLeftRadius = luaL_checknumber(L, 1);
 		self->TopRightRadius = luaL_checknumber(L, 2);
@@ -415,8 +415,8 @@ static int f_new_EdgeShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct EdgeShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Left"), self->Left = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Right"), self->Right = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Left"), self->Left = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Right"), self->Right = luaL_optnumber(L, -1, 0), 1));
 	} else {
 		self->Left = luaL_checknumber(L, 1);
 		self->Right = luaL_checknumber(L, 2);
@@ -561,10 +561,10 @@ static int f_new_FontShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct FontShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Weight"), self->Weight = luaX_checkFontWeight(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Style"), self->Style = luaX_checkFontStyle(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Size"), self->Size = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Family"), self->Family = luaX_checkFontFamily(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Weight"), (!lua_isnil(L, -1) ? (self->Weight = luaX_checkFontWeight(L, -1)) : 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Style"), (!lua_isnil(L, -1) ? (self->Style = luaX_checkFontStyle(L, -1)) : 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Size"), self->Size = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Family"), (!lua_isnil(L, -1) ? (self->Family = luaX_checkFontFamily(L, -1)) : 0), 1));
 	} else {
 		self->Weight = luaX_checkFontWeight(L, 1);
 		self->Style = luaX_checkFontStyle(L, 2);
@@ -647,9 +647,9 @@ static int f_new_BrushShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct BrushShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = *luaX_checkcolor(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Image"), self->Image = luaX_checkTexture(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Material"), self->Material = luaX_checkMaterial(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Color"), (!lua_isnil(L, -1) ? (self->Color = *luaX_checkcolor(L, -1)) : 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Image"), (!lua_isnil(L, -1) ? (self->Image = luaX_checkTexture(L, -1)) : 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Material"), (!lua_isnil(L, -1) ? (self->Material = luaX_checkMaterial(L, -1)) : 0), 1));
 	} else {
 		self->Color = *luaX_checkcolor(L, 1);
 		self->Image = luaX_checkTexture(L, 2);
@@ -710,10 +710,10 @@ static int f_new_ShadowShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct ShadowShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Offset"), self->Offset = *luaX_checkvec2(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "BlurRadius"), self->BlurRadius = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "SpreadRadius"), self->SpreadRadius = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = *luaX_checkcolor(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Offset"), (!lua_isnil(L, -1) ? (self->Offset = *luaX_checkvec2(L, -1)) : 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "BlurRadius"), self->BlurRadius = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "SpreadRadius"), self->SpreadRadius = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Color"), (!lua_isnil(L, -1) ? (self->Color = *luaX_checkcolor(L, -1)) : 0), 1));
 	} else {
 		self->Offset = *luaX_checkvec2(L, 1);
 		self->BlurRadius = luaL_checknumber(L, 2);
@@ -777,9 +777,9 @@ static int f_new_RingShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct RingShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Offset"), self->Offset = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Width"), self->Width = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = *luaX_checkcolor(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Offset"), self->Offset = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Width"), self->Width = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Color"), (!lua_isnil(L, -1) ? (self->Color = *luaX_checkcolor(L, -1)) : 0), 1));
 	} else {
 		self->Offset = luaL_checknumber(L, 1);
 		self->Width = luaL_checknumber(L, 2);
@@ -840,8 +840,8 @@ static int f_new_OverflowShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct OverflowShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "x"), self->x = luaX_checkOverflow(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "y"), self->y = luaX_checkOverflow(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "x"), (!lua_isnil(L, -1) ? (self->x = luaX_checkOverflow(L, -1)) : 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "y"), (!lua_isnil(L, -1) ? (self->y = luaX_checkOverflow(L, -1)) : 0), 1));
 	} else {
 		self->x = luaX_checkOverflow(L, 1);
 		self->y = luaX_checkOverflow(L, 2);
@@ -914,9 +914,9 @@ static int f_new_UnderlineShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct UnderlineShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Offset"), self->Offset = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Width"), self->Width = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = *luaX_checkcolor(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Offset"), self->Offset = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Width"), self->Width = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Color"), (!lua_isnil(L, -1) ? (self->Color = *luaX_checkcolor(L, -1)) : 0), 1));
 	} else {
 		self->Offset = luaL_checknumber(L, 1);
 		self->Width = luaL_checknumber(L, 2);
@@ -1055,10 +1055,10 @@ static int f_new_BorderShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct BorderShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Width"), self->Width = *luaX_checkMarginShorthand(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = *luaX_checkcolor(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Style"), self->Style = luaX_checkBorderStyle(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Radius"), self->Radius = *luaX_checkBorderRadiusShorthand(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Width"), (!lua_isnil(L, -1) ? (self->Width = *luaX_checkMarginShorthand(L, -1)) : 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Color"), (!lua_isnil(L, -1) ? (self->Color = *luaX_checkcolor(L, -1)) : 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Style"), (!lua_isnil(L, -1) ? (self->Style = luaX_checkBorderStyle(L, -1)) : 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Radius"), (!lua_isnil(L, -1) ? (self->Radius = *luaX_checkBorderRadiusShorthand(L, -1)) : 0), 1));
 	} else {
 		self->Width = *luaX_checkMarginShorthand(L, 1);
 		self->Color = *luaX_checkcolor(L, 2);
@@ -1122,11 +1122,11 @@ static int f_new_SizeAxisShorthand(lua_State *L) {
 	memset(self, 0, sizeof(struct SizeAxisShorthand));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Requested"), self->Requested = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Desired"), self->Desired = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Min"), self->Min = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Actual"), self->Actual = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Scroll"), self->Scroll = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Requested"), self->Requested = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Desired"), self->Desired = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Min"), self->Min = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Actual"), self->Actual = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Scroll"), self->Scroll = luaL_optnumber(L, -1, 0), 1));
 	} else {
 		self->Requested = luaL_checknumber(L, 1);
 		self->Desired = luaL_checknumber(L, 2);
@@ -1265,7 +1265,7 @@ static int f_new_PushPropertyEventArgs(lua_State *L) {
 	memset(self, 0, sizeof(struct PushPropertyEventArgs));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Placeholder"), self->Placeholder = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Placeholder"), self->Placeholder = luaL_optnumber(L, -1, 0), 1));
 	} else {
 		self->Placeholder = luaL_checknumber(L, 1);
 	}
@@ -1333,7 +1333,7 @@ static int f_new_ForegroundContentEventArgs(lua_State *L) {
 	memset(self, 0, sizeof(struct ForegroundContentEventArgs));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "result"), self->result = luaX_checkTexture(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "result"), (!lua_isnil(L, -1) ? (self->result = luaX_checkTexture(L, -1)) : 0), 1));
 	} else {
 		self->result = luaX_checkTexture(L, 1);
 	}
@@ -1401,9 +1401,9 @@ static int f_new_HandleMessageEventArgs(lua_State *L) {
 	memset(self, 0, sizeof(struct HandleMessageEventArgs));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "EventName"), strncpy(self->EventName, luaL_checkstring(L, -1), sizeof(self->EventName)), 1));
-		lua_pop(L, (lua_getfield(L, 1, "FirstArg"), self->FirstArg = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "NumArgs"), self->NumArgs = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "EventName"), strncpy(self->EventName, luaL_optstring(L, -1, ""), sizeof(self->EventName)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "FirstArg"), self->FirstArg = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "NumArgs"), self->NumArgs = luaL_optnumber(L, -1, 0), 1));
 	} else {
 		strncpy(self->EventName, luaL_checkstring(L, 1), sizeof(self->EventName));
 		self->FirstArg = luaL_checknumber(L, 2);
@@ -1482,7 +1482,7 @@ static int f_new_MakeTextEventArgs(lua_State *L) {
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_pop(L, (lua_getfield(L, 1, "text"), self->text = NULL, 1));
-		lua_pop(L, (lua_getfield(L, 1, "availableSpace"), self->availableSpace = luaL_checknumber(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "availableSpace"), self->availableSpace = luaL_optnumber(L, -1, 0), 1));
 	} else {
 		self->text = NULL;
 		self->availableSpace = luaL_checknumber(L, 2);
@@ -1555,11 +1555,11 @@ static int f_new_DrawBrushEventArgs(lua_State *L) {
 	memset(self, 0, sizeof(struct DrawBrushEventArgs));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "projection"), self->projection = *luaX_checkmat4(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "image"), self->image = luaX_checkTexture(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "brush"), self->brush = *luaX_checkBrushShorthand(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "borderOffset"), self->borderOffset = luaL_checknumber(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "borderWidth"), self->borderWidth = *luaX_checkvec4(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "projection"), (!lua_isnil(L, -1) ? (self->projection = *luaX_checkmat4(L, -1)) : 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "image"), (!lua_isnil(L, -1) ? (self->image = luaX_checkTexture(L, -1)) : 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "brush"), (!lua_isnil(L, -1) ? (self->brush = *luaX_checkBrushShorthand(L, -1)) : 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "borderOffset"), self->borderOffset = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "borderWidth"), (!lua_isnil(L, -1) ? (self->borderWidth = *luaX_checkvec4(L, -1)) : 0), 1));
 		lua_pop(L, (lua_getfield(L, 1, "foreground"), self->foreground = lua_toboolean(L, -1), 1));
 		lua_pop(L, (lua_getfield(L, 1, "viewdef"), self->viewdef = NULL, 1));
 	} else {
@@ -1702,8 +1702,8 @@ static int f_new_TriggeredEventArgs(lua_State *L) {
 	memset(self, 0, sizeof(struct TriggeredEventArgs));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Trigger"), self->Trigger = luaX_checkTrigger(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "message"), self->message = *luaX_checkHandleMessageEventArgs(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Trigger"), (!lua_isnil(L, -1) ? (self->Trigger = luaX_checkTrigger(L, -1)) : 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "message"), (!lua_isnil(L, -1) ? (self->message = *luaX_checkHandleMessageEventArgs(L, -1)) : 0), 1));
 	} else {
 		self->Trigger = luaX_checkTrigger(L, 1);
 		self->message = *luaX_checkHandleMessageEventArgs(L, 2);
@@ -1761,8 +1761,8 @@ static int f_new_NavigateToPageArguments(lua_State *L) {
 	memset(self, 0, sizeof(struct NavigateToPageArguments));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "URL"), strncpy(self->URL, luaL_checkstring(L, -1), sizeof(self->URL)), 1));
-		lua_pop(L, (lua_getfield(L, 1, "TransitionType"), self->TransitionType = luaX_checkTransitionType(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "URL"), strncpy(self->URL, luaL_optstring(L, -1, ""), sizeof(self->URL)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "TransitionType"), (!lua_isnil(L, -1) ? (self->TransitionType = luaX_checkTransitionType(L, -1)) : 0), 1));
 	} else {
 		strncpy(self->URL, luaL_checkstring(L, 1), sizeof(self->URL));
 		self->TransitionType = luaX_checkTransitionType(L, 2);
@@ -1835,7 +1835,7 @@ static int f_new_NavigateBackArguments(lua_State *L) {
 	memset(self, 0, sizeof(struct NavigateBackArguments));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "TransitionType"), self->TransitionType = luaX_checkTransitionType(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "TransitionType"), (!lua_isnil(L, -1) ? (self->TransitionType = luaX_checkTransitionType(L, -1)) : 0), 1));
 	} else {
 		self->TransitionType = luaX_checkTransitionType(L, 1);
 	}

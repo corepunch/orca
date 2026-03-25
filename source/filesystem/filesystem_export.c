@@ -25,8 +25,8 @@ static int f_new_ProjectReference(lua_State *L) {
 	memset(self, 0, sizeof(struct ProjectReference));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Name"), strncpy(self->Name, luaL_checkstring(L, -1), sizeof(self->Name)), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Path"), strncpy(self->Path, luaL_checkstring(L, -1), sizeof(self->Path)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Name"), strncpy(self->Name, luaL_optstring(L, -1, ""), sizeof(self->Name)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Path"), strncpy(self->Path, luaL_optstring(L, -1, ""), sizeof(self->Path)), 1));
 	} else {
 		strncpy(self->Name, luaL_checkstring(L, 1), sizeof(self->Name));
 		strncpy(self->Path, luaL_checkstring(L, 2), sizeof(self->Path));
@@ -99,7 +99,7 @@ static int f_new_ProjectPlugin(lua_State *L) {
 	memset(self, 0, sizeof(struct ProjectPlugin));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Name"), strncpy(self->Name, luaL_checkstring(L, -1), sizeof(self->Name)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Name"), strncpy(self->Name, luaL_optstring(L, -1, ""), sizeof(self->Name)), 1));
 	} else {
 		strncpy(self->Name, luaL_checkstring(L, 1), sizeof(self->Name));
 	}
@@ -167,9 +167,9 @@ static int f_new_SystemMessage(lua_State *L) {
 	memset(self, 0, sizeof(struct SystemMessage));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Message"), strncpy(self->Message, luaL_checkstring(L, -1), sizeof(self->Message)), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Key"), strncpy(self->Key, luaL_checkstring(L, -1), sizeof(self->Key)), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Command"), strncpy(self->Command, luaL_checkstring(L, -1), sizeof(self->Command)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Message"), strncpy(self->Message, luaL_optstring(L, -1, ""), sizeof(self->Message)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Key"), strncpy(self->Key, luaL_optstring(L, -1, ""), sizeof(self->Key)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Command"), strncpy(self->Command, luaL_optstring(L, -1, ""), sizeof(self->Command)), 1));
 	} else {
 		strncpy(self->Message, luaL_checkstring(L, 1), sizeof(self->Message));
 		strncpy(self->Key, luaL_checkstring(L, 2), sizeof(self->Key));
@@ -247,7 +247,7 @@ static int f_new_OpenFileArgs(lua_State *L) {
 	memset(self, 0, sizeof(struct OpenFileArgs));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "FileName"), self->FileName = strdup(luaL_checkstring(L, -1)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "FileName"), self->FileName = strdup(luaL_optstring(L, -1, "")), 1));
 	} else {
 		self->FileName = strdup(luaL_checkstring(L, 1));
 	}
@@ -315,7 +315,7 @@ static int f_new_FileExistsArgs(lua_State *L) {
 	memset(self, 0, sizeof(struct FileExistsArgs));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "FileName"), self->FileName = strdup(luaL_checkstring(L, -1)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "FileName"), self->FileName = strdup(luaL_optstring(L, -1, "")), 1));
 	} else {
 		self->FileName = strdup(luaL_checkstring(L, 1));
 	}
@@ -383,7 +383,7 @@ static int f_new_LoadProjectArgs(lua_State *L) {
 	memset(self, 0, sizeof(struct LoadProjectArgs));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Path"), self->Path = strdup(luaL_checkstring(L, -1)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Path"), self->Path = strdup(luaL_optstring(L, -1, "")), 1));
 	} else {
 		self->Path = strdup(luaL_checkstring(L, 1));
 	}
