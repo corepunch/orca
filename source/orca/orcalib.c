@@ -116,6 +116,18 @@ static int f_orca_index(lua_State* L) {
 }
 #endif
 
+// Lua C closure used as a package.preload loader for core Lua files.
+// Upvalue 1: absolute path to the .lua file.
+static int preload_lua_file(lua_State *L) {
+  const char *path = lua_tostring(L, lua_upvalueindex(1));
+  int top = lua_gettop(L);
+  if (luaL_loadfile(L, path) != LUA_OK) {
+    return lua_error(L);
+  }
+  lua_call(L, 0, LUA_MULTRET);
+  return lua_gettop(L) - top;
+}
+
 int load_plugins(lua_State *L)
 {
   int no_errors = 1;
@@ -125,7 +137,39 @@ int load_plugins(lua_State *L)
   strncpy(sharedir, luaL_checkstring(L, -1), sizeof(sharedir));
   lua_pop(L, 1);
 
-  // load core
+  lua_getglobal(L, "require");
+  lua_pushstring(L, "orca.system");
+  lua_call(L, 1, 1);                        // sys
+  int sys_idx = lua_gettop(L);
+
+  // Register each core/*.lua file in package.preload as "orca.<name>" so
+  // that user code can require them (e.g. require 'orca.behaviour').
+  lua_getfield(L, sys_idx, "list_dir");
+  lua_pushfstring(L, "%s/core", sharedir);
+  lua_call(L, 1, 1);                        // core iterator
+
+  for (;;) {
+    lua_pushvalue(L, -1);
+    lua_call(L, 0, 1);                      // f
+    if (lua_isnil(L, -1)) { lua_pop(L, 1); break; }
+
+    const char *f = lua_tostring(L, -1);
+    size_t n = strlen(f);
+    if (n > 4 && !strcmp(f + n - 4, ".lua") && strcmp(f, "init.lua")) {
+      char modname[MAX_OSPATH];
+      snprintf(modname, sizeof(modname), "orca.%.*s", (int)(n - 4), f);
+      lua_getglobal(L, "package");
+      lua_getfield(L, -1, "preload");
+      lua_pushfstring(L, "%s/core/%s", sharedir, f);
+      lua_pushcclosure(L, preload_lua_file, 1);
+      lua_setfield(L, -2, modname);
+      lua_pop(L, 2);                        // pop preload, package
+    }
+    lua_pop(L, 1);                          // pop f
+  }
+  lua_pop(L, 1);                            // pop core iterator
+
+  // Run core/init.lua, which uses require() to load modules in order.
   lua_getglobal(L, "dofile");
   lua_pushfstring(L, "%s/core/init.lua", sharedir);
   if (lua_pcall(L, 1, 0, 0) == LUA_OK) {
@@ -136,13 +180,9 @@ int load_plugins(lua_State *L)
     no_errors = 0;
   }
 
-  lua_getglobal(L, "require");
-  lua_pushstring(L, "orca.system");
-  lua_call(L, 1, 1);                        // sys
-    
-  lua_getfield(L, -1, "list_dir");
+  lua_getfield(L, sys_idx, "list_dir");
   lua_pushfstring(L, "%s/plugins", sharedir);
-  lua_call(L, 1, 1);                        // iterator
+  lua_call(L, 1, 1);                        // plugin iterator
   
   for (;;) {
     lua_pushvalue(L, -1);
@@ -150,11 +190,6 @@ int load_plugins(lua_State *L)
     if (lua_isnil(L, -1)) break;
     
     const char *f = lua_tostring(L, -1);
-//    size_t n = strlen(f);
-//    if (n > 4 && !strcmp(f + n - 4, ".lua")) n -= 4;
-//    
-//    lua_getglobal(L, "require");
-//    lua_pushfstring(L, "plugins.%.*s", (int)n, f);
     
     lua_getglobal(L, "dofile");
     lua_pushfstring(L, "%s/plugins/%s", sharedir, f);

@@ -1,1 +1,1 @@
-dofile(SHAREDIR .. '/core/behaviour.lua')
+require 'orca.behaviour'
