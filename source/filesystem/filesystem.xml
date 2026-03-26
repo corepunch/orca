@@ -271,11 +271,4 @@
     <details>Returns the currently active workspace object for the application. The workspace contains project settings, libraries, and other global configurations. This function allows querying the current workspace context without modifying it.</details>
     <returns type="Object" pointer="true">Pointer to the currently active workspace object</returns>
   </function>
-  
-  <function name="RegisterObject">
-    <summary>Registers object in the workspace tree</summary>
-    <details>Would attach object to the library in the project</details>
-    <arg name="object" type="Object" pointer="true">Pointer to the object to register</arg>
-    <arg name="path" type="string">Path to the object, used for determining where to register it in the workspace tree</arg>
-  </function>
 </module>

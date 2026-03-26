@@ -189,7 +189,14 @@ static int f_set_theme(lua_State* L)
   return 1;
 }
 
+int f_peek_message(lua_State* L);
+int f_dispatch_message(lua_State* L);
+int f_event_index(lua_State* L);
+int f_event_new(lua_State* L);
+
 static luaL_Reg const lib_system[] = {
+  { "getMessage", f_peek_message },
+  { "dispatchMessage", f_dispatch_message },
   { "getTimeSpan", f_get_time_span },
   { "getTime", f_getTime },
   { "sleep", f_sleep },
@@ -212,6 +219,15 @@ ORCA_API int luaopen_orca_system(lua_State* L)
 
   lua_pushstring(L, WI_SettingsDirectory());
   lua_setglobal(L, "SETTINGS");
+
+  luaL_newmetatable(L, "Event");
+  lua_pushcfunction(L, f_event_index);
+  lua_setfield(L, -2, "__index");
+  //  lua_setfield(L, -2, "Event");
+  lua_pop(L, 1);
+  
+  lua_pushcfunction(L, f_event_new);
+  lua_setfield(L, -2, "Event");
 
   return 1;
 }

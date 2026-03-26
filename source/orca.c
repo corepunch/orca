@@ -415,7 +415,6 @@ int main (int argc, LPSTR *argv)
         fprintf(stderr, "%s", luaL_checkstring(L, -1));
       }
 //      szProject = RunProject(L, szProject);
-      exit(0);
     } else if (strstr(args.test, ".xml")) {
       RunTest(L, args.test);
     } else if (luaL_dofile(L, args.test) != LUA_OK) {

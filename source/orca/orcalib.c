@@ -35,7 +35,6 @@ int luaopen_orca_parsers_css(lua_State*);
 int luaopen_orca_parsers_json(lua_State*);
 int luaopen_orca_parsers_xml(lua_State*);
 int luaopen_orca_renderer(lua_State*);
-int luaopen_orca_backend(lua_State*);
 int luaopen_orca_system(lua_State*);
 int luaopen_orca_editor(lua_State*);
 
@@ -52,7 +51,6 @@ static luaL_Reg const orca_modules[] = {
   { "orca.parsers.json", luaopen_orca_parsers_json },
   { "orca.parsers.xml", luaopen_orca_parsers_xml },
   { "orca.renderer", luaopen_orca_renderer },
-  { "orca.backend", luaopen_orca_backend },
   { "orca.system", luaopen_orca_system },
   { NULL, NULL }
 };

@@ -192,7 +192,6 @@ table.insert(package.searchers, function(path)
 			instance:setSourceFile(path)
 			return instance
 		end
-		filesystem.registerObject(node, path)
 		return node
 	end or nil
 end)

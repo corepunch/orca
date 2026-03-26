@@ -944,12 +944,6 @@ int f_FS_GetWorkspace(lua_State *L) {
 	luaX_pushObject(L, result_);
 	return 1;
 }
-int f_FS_RegisterObject(lua_State *L) {
-	struct Object* object = luaX_checkObject(L, 1);
-	const char* path = luaL_checkstring(L, 2);
-	FS_RegisterObject(object, path );
-	return 0;
-}
 
 ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
@@ -963,7 +957,6 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 		{ "loadBundle", f_FS_LoadBundle },
 		{ "setWorkspace", f_FS_SetWorkspace },
 		{ "getWorkspace", f_FS_GetWorkspace },
-		{ "registerObject", f_FS_RegisterObject },
 		{ NULL, NULL } 
 	}));
 	void on_filesystem_module_registered(lua_State *L);

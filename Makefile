@@ -21,7 +21,7 @@ CFLAGS ?= -O2 -g
 # Always add these flags, even if CFLAGS is passed from outside
 CFLAGS += -fpic -I. -I$(CURDIR)
 LDFLAGS = -L$(LIBDIR)
-MODULES = geometry orca platform sysutil console localization parsers debug network renderer filesystem core vsomeip server editor backend
+MODULES = geometry orca platform sysutil console localization parsers debug network renderer filesystem core vsomeip server editor
 PLUGINS = $(notdir $(wildcard $(PLUGINDIR)/*))
 SOURCEMODULES = $(addprefix ${SOURCEDIR}/, $(MODULES))
 OBJECTS = $(patsubst %.c, %.o, $(foreach dir,$(SOURCEMODULES),$(wildcard $(dir)/*.c)))
