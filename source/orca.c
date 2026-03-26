@@ -412,9 +412,15 @@ int main (int argc, LPSTR *argv)
 //      lua_pushstring(L, "orca.core2");
 //      lua_pcall(L, 1, 1, 0);
       if (luaL_dostring(L, bootstrap) != LUA_OK) {
-        fprintf(stderr, "%s", luaL_checkstring(L, -1));
+        fprintf(stderr, "%s\n", luaL_checkstring(L, -1));
       }
-//      szProject = RunProject(L, szProject);
+      if (lua_type(L, -1) == LUA_TSTRING) {
+        static path_t result;
+        strncpy(result, luaL_checkstring(L, -1), sizeof(result));
+        szProject = result;
+      } else {
+        szProject = NULL;
+      }
     } else if (strstr(args.test, ".xml")) {
       RunTest(L, args.test);
     } else if (luaL_dofile(L, args.test) != LUA_OK) {

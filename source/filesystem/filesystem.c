@@ -310,8 +310,9 @@ static void
 _InitProjectRefences(lua_State *L, lpProject_t project, lpcString_t szDirname)
 {
   FOR_LOOP(i, project->NumProjectReferences) {
-    path_t joined = {0};
-    FS_LoadBundle(L, FS_JoinPaths(joined, sizeof(joined), szDirname, project->ProjectReferences[i].Path));
+    path_t path = {0};
+    FS_JoinPaths(path, sizeof(path), szDirname, project->ProjectReferences[i].Path);
+    FS_LoadBundle(L, path);
   }
 }
 

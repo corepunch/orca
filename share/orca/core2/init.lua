@@ -16,11 +16,29 @@ function core.init()
 	local project = filesystem.init(DATADIR)
 	renderer.init(project.WindowWidth, project.WindowHeight, false)
 	-- core.load_project(DATADIR)
-	core.load_plugins()
 	-- orca.core = core
 	-- orca.plugins = {}
-	core.screen = require(project.StartupScreen)
+	core.load_plugins()
+	core.screen = core.load_screen(project.StartupScreen)
+	core.load_editor(core.screen)
+
 	io.stderr:write("Core module initialized\n")
+end
+
+function core.load_screen(path)
+	io.stderr:write("Loading startup screen: "..path.."\n")
+	local ok, class = pcall(require, path)
+	assert(ok, "Failed to load screen: "..path)
+	return class()
+end
+
+function core.load_editor(screen)
+	local ok, editor = pcall(require, "orca.editor")
+	if ok then
+		editor.setScreen(screen)
+	else
+		io.stderr:write("Failed to load editor module\n")
+	end
 end
 
 function core.load_plugins()
@@ -36,6 +54,7 @@ end
 function core.run()
 	while true do
 		for msg in system.getMessage(core.screen) do
+    	filesystem.trackChangedFiles()
 			if msg:is "WindowClosed" then
 				return
 			elseif msg:is "KeyDown" and msg.Key == "q" then
