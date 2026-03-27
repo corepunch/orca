@@ -1,5 +1,4 @@
 local orca = require "orca"
-local has_config = false -- , config = pcall(require, "config.tailwind")
 local extends = { "colors" }
 local spacing = { 0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 16, 20, 24, 32, 40, 48, 56, 64 }
 local tone={50,         100,        200,        300,        400,        500,        600,        700,        800,        900,        950  }
@@ -55,9 +54,9 @@ for k, v in pairs(spreadsheet) do
 	end
 end
 
-if has_config and config.extend then
+if orca.configs.tailwind and orca.configs.tailwind.extend then
 	for _, name in ipairs(extends) do
-		for k, v in pairs(config.extend[name] or {}) do
+		for k, v in pairs(orca.configs.tailwind.extend[name] or {}) do
 			theme[name][k] = v
 		end
 	end
