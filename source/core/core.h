@@ -1,3 +1,5 @@
+// Auto-generated from core.xml by tools/templates/header.php
+// DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __CORE_H__
 #define __CORE_H__
 

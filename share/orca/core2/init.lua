@@ -74,13 +74,10 @@ end
 function core.run()
 	while true do
 		for msg in system.getMessage(core.screen) do
-    	filesystem.trackChangedFiles()
-			if msg:is "WindowClosed" then
-				return
-			elseif msg:is "KeyDown" and msg.Key == "q" then
-				return
-			elseif msg:is "RequestReload" then
-				return DATADIR
+    	if filesystem.hasChangedFiles() then return DATADIR end
+			if msg:is "WindowClosed" then return
+			elseif msg:is "KeyDown" and msg.Key == "q" then return
+			elseif msg:is "RequestReload" then return DATADIR
 			else
 				local ok, result = pcall(system.dispatchMessage, msg)
 				if not ok then

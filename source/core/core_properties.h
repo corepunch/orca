@@ -1,3 +1,5 @@
+// Auto-generated from core.xml by tools/templates/properties.php
+// DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __CORE_PROPERTIES_H__
 #define __CORE_PROPERTIES_H__
 #define kEventLeftMouseDown 0xfac0b5e7

@@ -1,3 +1,5 @@
+// Auto-generated from SpriteKit.xml by tools/templates/properties.php
+// DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __SPRITEKIT_PROPERTIES_H__
 #define __SPRITEKIT_PROPERTIES_H__
 // SpriteAnimation

@@ -1,3 +1,5 @@
+// Auto-generated from DarkReign.xml by tools/templates/properties.php
+// DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __DARKREIGN_PROPERTIES_H__
 #define __DARKREIGN_PROPERTIES_H__
 // FtgPackage

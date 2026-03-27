@@ -355,15 +355,11 @@ int f_init(lua_State* L)
   luaX_pushObject(L, object);
   return 1;
 }
-
-int f_trackChangedFiles(lua_State* L) {
-  static int changes_counter = 0;
-  if (!(changes_counter++ & 0xf) && FS_HasChangedFiles()) {
-    lua_getglobal(L, "PROJECTDIR");
-    lua_setglobal(L, "RELOAD");
-  }
-  return 0;
-}
+//
+//bool_t FS_HasChangedFiles(void) {
+//  static int changes_counter = 0;
+//  return !(changes_counter++ & 0xf) && FS_HasChangedFiles();
+//}
 
 static lua_State *global_L;
 
@@ -406,9 +402,6 @@ void on_filesystem_module_registered(lua_State* L)
   
   lua_pushcfunction(L, f_init);
   lua_setfield(L, -2, "init");
-  
-  lua_pushcfunction(L, f_trackChangedFiles);
-  lua_setfield(L, -2, "trackChangedFiles");
   
   luaopen_orca_pipe(L);
   lua_setfield(L, -2, "pipe");

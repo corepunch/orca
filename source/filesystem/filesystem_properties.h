@@ -1,3 +1,5 @@
+// Auto-generated from filesystem.xml by tools/templates/properties.php
+// DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __FILESYSTEM_PROPERTIES_H__
 #define __FILESYSTEM_PROPERTIES_H__
 #define kEventReadCommands 0x23d83fd3

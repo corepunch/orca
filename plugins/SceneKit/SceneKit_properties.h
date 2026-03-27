@@ -1,3 +1,5 @@
+// Auto-generated from SceneKit.xml by tools/templates/properties.php
+// DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __SCENEKIT_PROPERTIES_H__
 #define __SCENEKIT_PROPERTIES_H__
 // Node3D
