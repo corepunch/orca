@@ -7,20 +7,20 @@ local renderer = require "orca.renderer"
 local core = {}
 
 function core.init()
-	require "orca.core2.project"
 	io.stderr:write("Initializing core module\n")
-	core.projects = {}
 
 	require "orca.UIKit"
 
 	local project = filesystem.init(DATADIR)
 	renderer.init(project.WindowWidth, project.WindowHeight, false)
+
+	core.configs = {}
+	-- require "orca.core2.project"
+	-- core.projects = {}
 	-- core.load_project(DATADIR)
-	-- orca.core = core
-	-- orca.plugins = {}
 	core.load_plugins()
-	core.screen = core.load_screen(project.StartupScreen)
-	core.load_editor(core.screen)
+	core.load_screen(project.StartupScreen)
+	core.load_editor()
 
 	io.stderr:write("Core module initialized\n")
 end
@@ -29,15 +29,32 @@ function core.load_screen(path)
 	io.stderr:write("Loading startup screen: "..path.."\n")
 	local ok, class = pcall(require, path)
 	assert(ok, "Failed to load screen: "..path)
-	return class()
+	core.screen = class()
 end
 
-function core.load_editor(screen)
+function core.load_editor()
+	assert(core.screen, "Screen must be loaded before editor")
 	local ok, editor = pcall(require, "orca.editor")
 	if ok then
-		editor.setScreen(screen)
+		editor.setScreen(core.screen)
 	else
 		io.stderr:write("Failed to load editor module\n")
+	end
+end
+
+function core.load_plugin_config(name)
+	core.configs[name] = {}
+	for node in filesystem.getWorkspace().children do
+		local filename = filesystem.joinPaths(node.Name, 'config/'..name..".lua")
+		print("Checking for plugin config:", filename)
+		local chunk = loadfile(filename, "t", core.configs[name])
+		if chunk then
+			print("Loading plugin config:", filename)
+			local ok, err = pcall(chunk)
+			if not ok then
+				io.stderr:write(string.format("Error loading config '%s': %s\n", filename, err))
+			end
+		end
 	end
 end
 
@@ -45,6 +62,7 @@ function core.load_plugins()
 	for path in system.list_dir(SHAREDIR.."/plugins") do
 		if xpcall(dofile, print, SHAREDIR.."/plugins/"..path) then	
 			io.stderr:write(string.format("Loaded plugin: %s\n", path))
+			core.load_plugin_config(path:match("^(.*)%.lua$"))
 		else
 			io.stderr:write(string.format("Failed to load plugin: %s\n", path))
 		end

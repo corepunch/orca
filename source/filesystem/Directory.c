@@ -144,6 +144,11 @@ HANDLER(Directory, LoadProject) {
   OBJ_SetPropertyValue(directory, "Path", pLoadProject->Path);
   snprintf(packpath, sizeof(packpath), "%s/package.lua", pLoadProject->Path);
   WITH(FILE, fp, fopen(packpath, "r"), fclose) {
+    if (fp) {
+      lua_loadfile_with_env(L, packpath, -1);
+    }
+  }
+  WITH(FILE, fp, fopen(packpath, "r"), fclose) {
     lua_loadfile_with_env(L, packpath, -1);
   }
   return (intptr_t)directory;
