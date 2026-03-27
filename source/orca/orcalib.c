@@ -120,10 +120,12 @@ load_core_module(lua_State *L)
   static const char *code =
     "local sys = require 'orca.system'\n"
     "for path in sys.list_dir(SHAREDIR..'/plugins') do\n"
-    "  local ok, err = xpcall(dofile, function(e) return e end,\n"
-    "                         SHAREDIR..'/plugins/'..path)\n"
-    "  if not ok then\n"
-    "    io.stderr:write('Plugin error ('..path..'): '..tostring(err)..'\\n')\n"
+    "  if not path:find('[/\\\\]') and not path:find('%.%.') then\n"
+    "    local ok, err = xpcall(dofile, function(e) return debug.traceback(e, 2) end,\n"
+    "                           SHAREDIR..'/plugins/'..path)\n"
+    "    if not ok then\n"
+    "      io.stderr:write('Plugin error ('..path..'): '..tostring(err)..'\\n')\n"
+    "    end\n"
     "  end\n"
     "end\n";
   if (luaL_dostring(L, code) != LUA_OK) {
