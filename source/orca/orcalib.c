@@ -117,9 +117,19 @@ static int f_orca_index(lua_State* L) {
 static int
 load_core_module(lua_State *L)
 {
-//  luaL_dostring(L,
-//                "local core = require 'orca.core2'\n"
-//                "core.init()");
+  static const char *code =
+    "local sys = require 'orca.system'\n"
+    "for path in sys.list_dir(SHAREDIR..'/plugins') do\n"
+    "  local ok, err = xpcall(dofile, function(e) return e end,\n"
+    "                         SHAREDIR..'/plugins/'..path)\n"
+    "  if not ok then\n"
+    "    io.stderr:write('Plugin error ('..path..'): '..tostring(err)..'\\n')\n"
+    "  end\n"
+    "end\n";
+  if (luaL_dostring(L, code) != LUA_OK) {
+    fprintf(stderr, "orca.init error: %s\n", lua_tostring(L, -1));
+    lua_pop(L, 1);
+  }
   return 0;
 }
 
