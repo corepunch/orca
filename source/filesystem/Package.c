@@ -309,13 +309,11 @@ void _FreePack(PPACK pack) {
 static char* _ExtractFileToTemp(PPACK pack, lpcString_t filename) {
   struct file* file = _ReadPakFile(pack, filename);
   if (!file) {
-    Con_Error("package.xml not found in pak");
+    Con_Error("%s not found in pak", filename);
     return NULL;
   }
 
-#if defined(__APPLE__)
-  // Use mkstemp on macOS for secure temp file creation
-  char name[] = "/tmp/orca_package_xml_macos_XXXXXX";
+  char name[] = "/tmp/orca_package_XXXXXX";
   int fd = mkstemp(name);
   if (fd == -1) {
     Con_Error("Failed to generate temp filename");
@@ -330,21 +328,6 @@ static char* _ExtractFileToTemp(PPACK pack, lpcString_t filename) {
     free(file);
     return NULL;
   }
-#else
-  // Use tmpnam on non-Apple systems (note: tmpnam is considered unsafe, but used here for compatibility)
-  char name[L_tmpnam];
-  if (!tmpnam(name)) {
-    Con_Error("Failed to generate temp filename");
-    free(file);
-    return NULL;
-  }
-  FILE* tmp = fopen(name, "wb");
-  if (!tmp) {
-    Con_Error("Failed to open temp file");
-    free(file);
-    return NULL;
-  }
-#endif
 
   if (fwrite(file->data, 1, file->size, tmp) != file->size) {
     Con_Error("Failed to write to temp file");

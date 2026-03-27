@@ -148,8 +148,5 @@ HANDLER(Directory, LoadProject) {
       lua_loadfile_with_env(L, packpath, -1);
     }
   }
-  WITH(FILE, fp, fopen(packpath, "r"), fclose) {
-    lua_loadfile_with_env(L, packpath, -1);
-  }
   return (intptr_t)directory;
 }

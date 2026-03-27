@@ -46,6 +46,7 @@ static int read_array(lua_State *L, int idx, lpProperty_t p) {
           if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
             Con_Error("%s", luaL_checkstring(L, -1));
             lua_pop(L, 1);
+            free(mem);
             return 0;
           }
           memcpy((char*)mem + i * p->pdesc->DataSize, luaL_checkudata(L, -1, p->pdesc->TypeString), p->pdesc->DataSize);
@@ -53,6 +54,7 @@ static int read_array(lua_State *L, int idx, lpProperty_t p) {
           break;
         } else {
           Con_Error("Expected userdata of type %s in array table for property %s", p->pdesc->TypeString, p->pdesc->Name);
+          free(mem);
           return 0;
         }
       case LUA_TNUMBER:
@@ -157,8 +159,13 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
         } else if (*p->pdesc->TypeString) {
           lua_getfield(L, LUA_REGISTRYINDEX, p->pdesc->TypeString);
           lua_pushvalue(L, idx);
-          lua_call(L, 1, 1);
+          if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
+            Con_Error("%s", luaL_checkstring(L, -1));
+            lua_pop(L, 1);
+            break;
+          }
           PROP_SetValue(p, &(lpObject_t ){luaX_checkObject(L, -1)});
+          lua_pop(L, 1);
         } else {
           Con_Error("Can't assign a table value to %s", PROP_GetName(p));
         }
