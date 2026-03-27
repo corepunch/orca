@@ -27,6 +27,33 @@ pip install -e tools/pyphp
 
 ---
 
+## Building the Project
+
+**Full build** (requires submodules + pyphp + system libraries):
+```bash
+make
+```
+This runs code generation (`make -C tools`) **then** C compilation. Both pyphp and all system libraries (lua5.4-dev, libxml2-dev, etc.) must be present.
+
+**C-only build** (skips code generation — use when pyphp is unavailable):
+
+The generated files (`*_export.c`, `*.h`, `*_properties.h`) are committed to the repository. If you are only modifying `.c` or `.h` implementation files (not `.xml` API definitions), you do **not** need to regenerate them. The full build will work if you have the system libraries:
+```bash
+make unite   # compile + link; skips 'make -C tools'
+```
+> **Warning:** running `make` or `make -C tools` when pyphp is **not** installed will silently **empty** all generated files (the shell redirect `> file` truncates the file even when the command fails). Always verify pyphp is available before running code generation.
+
+**Sandboxed / CI environments without system libraries:**
+You cannot compile the project. Review code changes manually or push to CI (GitHub Actions) which installs all required packages. Do not attempt `make` if Lua dev headers or `libs/platform` are absent — it will corrupt generated files.
+
+**Running tests (requires a full build):**
+```bash
+make test-headless          # layout tests, no display needed
+xvfb-run make test          # full tests, needs virtual framebuffer
+```
+
+---
+
 ## Repository Layout
 
 ```

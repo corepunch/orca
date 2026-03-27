@@ -1,5 +1,7 @@
 <?php require "model/module.php"; ?>
 <?php $model = new Model($argv[1]); ?>
+// Auto-generated from <?= basename($argv[1]) ?> by tools/templates/header.php
+// DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __<?= strtoupper($model->getModuleName()) ?>_H__
 #define __<?= strtoupper($model->getModuleName()) ?>_H__
 

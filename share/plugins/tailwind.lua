@@ -90,18 +90,12 @@ for _, v1 in ipairs(spacing) do
 	for k2, v2 in pairs {
 			rounded="Node.BorderRadius",
 			text="TextRun.FontSize",
-			gap="StackView.Spacing",
 			w="Node.Width",
 			h="Node.Height"
 		} do
 		style[string.format(".%s-%s", k2, v1)] = { [v2] = v1*rem }
 	end
-end
-
-for _, v1 in ipairs(spacing) do
-	for k2, v2 in pairs { gap="Grid.Spacing" } do
-		style[string.format(".%s-%s", k2, v1)][v2] = v1*rem
-	end
+	style[string.format(".gap-%s", v1)] = { ["StackView.Spacing"] = v1*rem, ["Grid.Spacing"] = v1*rem }
 end
 
 for _, v1 in ipairs(spacing) do
