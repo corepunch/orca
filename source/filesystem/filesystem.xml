@@ -271,4 +271,12 @@
     <details>Returns the currently active workspace object for the application. The workspace contains project settings, libraries, and other global configurations. This function allows querying the current workspace context without modifying it.</details>
     <returns type="Object" pointer="true">Pointer to the currently active workspace object</returns>
   </function>
+  
+  <function name="ReadTextFile" lua="true">
+    <summary>Reads the contents of a text file</summary>
+    <details>Reads the entire contents of the specified text file and returns it as a string. This function is useful for loading scripts, configuration files, or other text-based resources.</details>
+    <arg name="path" type="string">The path of the text file to read</arg>
+    <!-- <returns type="string">The contents of the text file, or nil if the file could not be read</returns> -->
+     <returns type="nresults">The contents of the text file, or nil if the file could not be read</returns>
+  </function>
 </module>

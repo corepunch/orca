@@ -46,8 +46,10 @@ function core.load_plugin_config(name)
 	core.configs[name] = {}
 	for node in filesystem.getWorkspace().children do
 		local filename = filesystem.joinPaths(node.Name, 'config/'..name..".lua")
-		print("Checking for plugin config:", filename)
-		local chunk = loadfile(filename, "t", core.configs[name])
+		-- print("Checking for plugin config:", filename)
+		-- local chunk = loadfile(filename, "t", core.configs[name])
+		local file = filesystem.readTextFile(filename)
+		local chunk = file and load(file, "@"..filename, "t", core.configs[name])
 		if chunk then
 			print("Loading plugin config:", filename)
 			local ok, err = pcall(chunk)

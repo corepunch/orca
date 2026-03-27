@@ -63,6 +63,9 @@ FS_SetWorkspace(struct Object*);
 /// @brief Gets the current workspace
 ORCA_API struct Object*
 FS_GetWorkspace(void);
+/// @brief Reads the contents of a text file
+ORCA_API int
+FS_ReadTextFile(struct lua_State*, const char*);
 
 
 /// @brief External project reference

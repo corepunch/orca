@@ -70,12 +70,11 @@ int f_find_module(lua_State* L)
   return 0;
 }
 
-static int f_loadTextFile(lua_State* L)
+int FS_ReadTextFile(lua_State* L, lpcString_t szFilename)
 {
-  lpcString_t szFilename = luaL_checkstring(L, 1);
   struct file* pFile;
   if ((pFile = FS_LoadFile(szFilename))) {
-    lua_pushstring(L, (lpcString_t)pFile->data);
+    lua_pushlstring(L, (lpcString_t)pFile->data, pFile->size);
     FS_FreeFile(pFile);
     return 1;
   } else {
@@ -397,7 +396,7 @@ void on_filesystem_module_registered(lua_State* L)
   //  luaL_newlib(L, ((luaL_Reg[]){
   //    { "loadBundle", f_loadBundle },
   //    { "file_exists", API_FileExists },
-  //    { "read_file", f_loadTextFile },
+  //    { "readTextFile", f_loadTextFile },
   //    { "trackChangedFiles", f_trackChangedFiles },
   //    { "processClientRequests", f_processClientRequests },
   //    { NULL, NULL }
@@ -407,9 +406,6 @@ void on_filesystem_module_registered(lua_State* L)
   
   lua_pushcfunction(L, f_init);
   lua_setfield(L, -2, "init");
-  
-  lua_pushcfunction(L, f_loadTextFile);
-  lua_setfield(L, -2, "read_file");
   
   lua_pushcfunction(L, f_trackChangedFiles);
   lua_setfield(L, -2, "trackChangedFiles");
@@ -430,7 +426,7 @@ ORCA_API int luaopen_orca_filesystem_native(lua_State* L)
     { "direxists", f_direxists },
     { "fileexists", f_fileexists },
     { "getfileinfo", f_getfileinfo },
-    { "read_file", f_loadNativeTextFile },
+    { "readTextFile", f_loadNativeTextFile },
     
     // path operations
     { "joinpaths", f_joinpaths },
