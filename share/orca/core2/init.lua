@@ -51,7 +51,7 @@ function core.load_plugin_config(name)
 		local file = filesystem.readTextFile(filename)
 		local chunk = file and load(file, "@"..filename, "t", core.configs[name])
 		if chunk then
-			print("Loading plugin config:", filename)
+			print("Loading plugin config", filename)
 			local ok, err = pcall(chunk)
 			if not ok then
 				io.stderr:write(string.format("Error loading config '%s': %s\n", filename, err))
@@ -63,10 +63,10 @@ end
 function core.load_plugins()
 	for path in system.list_dir(SHAREDIR.."/plugins") do
 		if xpcall(dofile, print, SHAREDIR.."/plugins/"..path) then	
-			io.stderr:write(string.format("Loaded plugin: %s\n", path))
+			io.stderr:write(string.format("Loaded plugin %s\n", path))
 			core.load_plugin_config(path:match("^(.*)%.lua$"))
 		else
-			io.stderr:write(string.format("Failed to load plugin: %s\n", path))
+			io.stderr:write(string.format("Failed to load plugin %s\n", path))
 		end
 	end
 end
