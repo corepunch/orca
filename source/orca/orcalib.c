@@ -123,6 +123,20 @@ load_core_module(lua_State *L)
   return 0;
 }
 
+static int f_styles_newindex(lua_State* L) {
+  // Stack: 1=styles table, 2=key (class name), 3=value (properties table)
+  const char* name = luaL_checkstring(L, 2);
+  // Store in the raw table so style[key] reads work (e.g. style[key][prop] = val)
+  lua_pushvalue(L, 2);
+  lua_pushvalue(L, 3);
+  lua_rawset(L, 1);
+  // Register in the global static stylesheet (stack: 1=table, 2=key, 3=value)
+  if (lua_type(L, 3) == LUA_TTABLE) {
+    OBJ_AddStyleSheet(L, NULL, name);
+  }
+  return 0;
+}
+
 static int f_find_metatable(lua_State* L) {
   lpcString_t tname = luaL_checkstring(L, 1);
   if (luaL_getmetatable(L, tname) == 0) {  // returns 0 if metatable not found
@@ -157,7 +171,13 @@ ORCA_API int luaopen_orca(lua_State* L)
   lua_setfield(L, (lua_pushcfunction(L, load_core_module), -2), "init");
   lua_setfield(L, (lua_newtable(L), -2), "theme");
   lua_setfield(L, (lua_newtable(L), -2), "config");
-  lua_setfield(L, (lua_newtable(L), -2), "styles");
+  // Create styles table with __newindex to register global stylesheets
+  lua_newtable(L);
+  lua_newtable(L);
+  lua_pushcfunction(L, f_styles_newindex);
+  lua_setfield(L, -2, "__newindex");
+  lua_setmetatable(L, -2);
+  lua_setfield(L, -2, "styles");
   
   // lua_newtable(L);
   // lua_setfield(L, -2, "config");
