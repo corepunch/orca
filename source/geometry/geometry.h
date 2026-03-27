@@ -1,3 +1,5 @@
+// Auto-generated from geometry.xml by tools/templates/header.php
+// DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __GEOMETRY_H__
 #define __GEOMETRY_H__
 

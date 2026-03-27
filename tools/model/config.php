@@ -6,7 +6,7 @@ class config {
 		"float" => [
 			'decl' => 'float', 
 			'check' => 'luaL_checknumber(L, {arg})', 
-			'pop' => '{addr} = luaL_checknumber(L, {arg})', 
+			'pop' => '{addr} = luaL_optnumber(L, {arg}, 0)', 
 			'push' => 'lua_pushnumber(L, {arg})',  
 			'convert' => '{addr} = {arg}', 
 			'format' => "%f",
@@ -14,18 +14,18 @@ class config {
 		],
 		"int" => [
 			'decl' => 'int32_t', 
-			'check' => 'luaL_checknumber(L, {arg})', 
-			'pop' => '{addr} = luaL_checknumber(L, {arg})', 
-			'push' => 'lua_pushnumber(L, {arg})',  
+			'check' => 'luaL_checkinteger(L, {arg})', 
+			'pop' => '{addr} = (int32_t)luaL_optinteger(L, {arg}, 0)', 
+			'push' => 'lua_pushinteger(L, {arg})',  
 			'convert' => '{addr} = {arg}', 
 			'format' => "%d",
 			'default' => "%s",
 		],
 		"uint" => [
 			'decl' => 'uint32_t', 
-			'check' => 'luaL_checknumber(L, {arg})', 
-			'pop' => '{addr} = luaL_checknumber(L, {arg})', 
-			'push' => 'lua_pushnumber(L, {arg})',  
+			'check' => 'luaL_checkinteger(L, {arg})', 
+			'pop' => '{addr} = (uint32_t)luaL_optinteger(L, {arg}, 0)', 
+			'push' => 'lua_pushinteger(L, {arg})',  
 			'convert' => '{addr} = {arg}', 
 			'format' => "%u",
 			'default' => "%s",
@@ -33,7 +33,7 @@ class config {
 		"long" => [
 			'decl' => 'long', 
 			'check' => 'luaL_checkinteger(L, {arg})',
-			'pop' => '{addr} = luaL_checkinteger(L, {arg})',
+			'pop' => '{addr} = luaL_optinteger(L, {arg}, 0)',
 			'push' => 'lua_pushinteger(L, {arg})', 
 			'convert' => '{addr} = {arg}', 
 			'format' => "%ld",
@@ -51,7 +51,7 @@ class config {
 		"string" => [
 			'decl' => 'const char*', 
 			'check' => 'luaL_checkstring(L, {arg})', 
-			'pop' => '{addr} = strdup(luaL_checkstring(L, {arg}))', 
+			'pop' => '{addr} = lua_type(L, {arg}) == LUA_TSTRING ? strdup(luaL_checkstring(L, {arg})) : NULL', 
 			'push' => 'lua_pushstring(L, {arg})',  
 			'convert' => '{addr} = {arg}', 
 			'format' => "%s",
@@ -60,7 +60,7 @@ class config {
 		"fixed" => [
 			'decl' => '%sString_t', 
 			'check' => 'luaL_checkstring(L, {arg})', 
-			'pop' => 'strncpy({addr}, luaL_checkstring(L, {arg}), sizeof({addr}))', 
+			'pop' => 'strncpy({addr}, luaL_optstring(L, {arg}, ""), sizeof({addr}))', 
 			'push' => 'lua_pushstring(L, {arg})',  
 			'convert' => 'strncpy({addr}, {arg}, sizeof({addr}))', 
 			'format' => "%s",
@@ -69,7 +69,7 @@ class config {
 		"enum" => [
 			'decl' => 'enum %s', 
 			'check' => 'luaX_check{type}(L, {arg})', 
-			'pop' => '{addr} = luaX_check{type}(L, {arg})', 
+			'pop' => '{addr} = lua_type(L, {arg}) == LUA_TSTRING ? luaX_check{type}(L, {arg}) : 0', 
 			'push' => 'luaX_push{type}(L, {arg})', 
 			'convert' => 'lua_pop(L, (lua_pushstring(L, {arg}), {addr} = luaL_checkoption(L, -1, NULL, _{type}), 1));', 
 			'format' => "%s",
@@ -78,7 +78,7 @@ class config {
 		"struct" => [
 			'decl' => 'struct %s', 
 			'check' => 'luaX_check{type}(L, {arg})', 
-			'pop' => '{addr} = *luaX_check{type}(L, {arg})',
+			'pop' => '{addr} = lua_type(L, {arg}) == LUA_TUSERDATA ? *luaX_check{type}(L, {arg}) : (struct {type}){0}',
 			'push' => 'luaX_push{type}(L, &{arg})',
 			'convert' => '{addr} = {arg}', 
 			'format' => "%s",

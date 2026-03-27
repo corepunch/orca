@@ -70,12 +70,11 @@ int f_find_module(lua_State* L)
   return 0;
 }
 
-static int f_loadTextFile(lua_State* L)
+int FS_ReadTextFile(lua_State* L, lpcString_t szFilename)
 {
-  lpcString_t szFilename = luaL_checkstring(L, 1);
   struct file* pFile;
   if ((pFile = FS_LoadFile(szFilename))) {
-    lua_pushstring(L, (lpcString_t)pFile->data);
+    lua_pushlstring(L, (lpcString_t)pFile->data, pFile->size);
     FS_FreeFile(pFile);
     return 1;
   } else {
@@ -347,23 +346,20 @@ int f_init(lua_State* L)
     return luaL_error(L, lua_tostring(L, -1));
   }
   FS_SetWorkspace(luaX_checkObject(L, -1));
-  FS_LoadBundle(L, luaL_checkstring(L, 1));
+  struct Object* object = FS_LoadBundle(L, luaL_checkstring(L, 1));
   lua_getglobal(L, "SERVER");
   if (lua_toboolean(L, -1)) {
     SV_RegisterMessageProc(filesystem_handle_event);
     WI_PostMessageW(NULL, kEventReadCommands, 0, NULL); // launch reader
   }
-  return 0;
+  luaX_pushObject(L, object);
+  return 1;
 }
-
-int f_trackChangedFiles(lua_State* L) {
-  static int changes_counter = 0;
-  if (!(changes_counter++ & 0xf) && FS_HasChangedFiles()) {
-    lua_getglobal(L, "PROJECTDIR");
-    lua_setglobal(L, "RELOAD");
-  }
-  return 0;
-}
+//
+//bool_t FS_HasChangedFiles(void) {
+//  static int changes_counter = 0;
+//  return !(changes_counter++ & 0xf) && FS_HasChangedFiles();
+//}
 
 static lua_State *global_L;
 
@@ -373,30 +369,6 @@ static lua_State *global_L;
 
 HANDLER(Project, Start) {
   
-  return TRUE;
-}
-
-HANDLER(EnginePluginLibrary, Attached) {
-  lua_State* L = global_L;
-  FOR_EACH_OBJECT(node, hObject) {
-    lua_getglobal(L, "require");
-    lua_pushstring(L, OBJ_GetName(node));
-    if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
-      if (strstr(luaL_checkstring(L, -1), "not found:")) {
-        static uint8_t current=0;
-        static uint32_t reported[256]={0};
-        const uint32_t hash = OBJ_GetIdentifier(node);
-        FOR_LOOP(i, 256) if (reported[i] == hash) goto skip_reporting;
-        reported[current++] = hash;
-        Con_Warning("Missing plugin '%s'", OBJ_GetName(node));
-      skip_reporting:
-        ;
-      } else {
-        Con_Error("%s", luaL_checkstring(L, -1));
-      }
-      lua_pop(L, 1);
-    }
-  }
   return TRUE;
 }
 
@@ -420,7 +392,7 @@ void on_filesystem_module_registered(lua_State* L)
   //  luaL_newlib(L, ((luaL_Reg[]){
   //    { "loadBundle", f_loadBundle },
   //    { "file_exists", API_FileExists },
-  //    { "read_file", f_loadTextFile },
+  //    { "readTextFile", f_loadTextFile },
   //    { "trackChangedFiles", f_trackChangedFiles },
   //    { "processClientRequests", f_processClientRequests },
   //    { NULL, NULL }
@@ -430,12 +402,6 @@ void on_filesystem_module_registered(lua_State* L)
   
   lua_pushcfunction(L, f_init);
   lua_setfield(L, -2, "init");
-  
-  lua_pushcfunction(L, f_loadTextFile);
-  lua_setfield(L, -2, "read_file");
-  
-  lua_pushcfunction(L, f_trackChangedFiles);
-  lua_setfield(L, -2, "trackChangedFiles");
   
   luaopen_orca_pipe(L);
   lua_setfield(L, -2, "pipe");
@@ -453,7 +419,7 @@ ORCA_API int luaopen_orca_filesystem_native(lua_State* L)
     { "direxists", f_direxists },
     { "fileexists", f_fileexists },
     { "getfileinfo", f_getfileinfo },
-    { "read_file", f_loadNativeTextFile },
+    { "readTextFile", f_loadNativeTextFile },
     
     // path operations
     { "joinpaths", f_joinpaths },

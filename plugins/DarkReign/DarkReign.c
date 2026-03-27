@@ -32,7 +32,6 @@ f_do_load_spr(lua_State *L)
   if (!GetSpriteAnimation(obj))
     return luaL_error(L, "SpriteAnimation class not found, cannot load '%s'", path);
 
-  FS_RegisterObject(obj, module);
   luaX_pushObject(L, obj);
   return 1;
 }

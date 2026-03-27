@@ -1,7 +1,6 @@
-local has_config = false -- , config = pcall(require, "config.tailwind")
+local orca = require "orca"
 local extends = { "colors" }
 local spacing = { 0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 16, 20, 24, 32, 40, 48, 56, 64 }
-local style = {}
 local tone={50,         100,        200,        300,        400,        500,        600,        700,        800,        900,        950  }
 local rem=4
 local spreadsheet = {
@@ -28,6 +27,9 @@ local spreadsheet = {
 	pink=   {"#fdf2f8","#fce7f3","#fbcfe8","#f9a8d4","#f472b6","#ec4899","#db2777","#be185d","#9d174d","#831843","#500724"},
 	rose=   {"#fff1f2","#ffe4e6","#fecdd3","#fda4af","#fb7185","#f43f5e","#e11d48","#be123c","#9f1239","#881337","#4c0519"},
 }
+local style = orca.styles
+local theme = { colors = {} }
+
 for k1, v1 in pairs {m="Margin",p="Padding"} do
 	for _, v3 in ipairs(spacing) do
 		for k2, v2 in pairs {x="Horizontal",y="Vertical",t="Top",b="Bottom",l="Left",r="Right",} do
@@ -46,19 +48,15 @@ for k1, v1 in pairs {m="Margin",p="Padding"} do
 	end
 end
 
-local theme = {
-	colors = {}
-}
-
 for k, v in pairs(spreadsheet) do
 	for i, color in ipairs(v) do
 		theme.colors[string.format("%s-%s", k, tone[i])] = color
 	end
 end
 
-if has_config and config.extend then
+if orca.configs.tailwind and orca.configs.tailwind.extend then
 	for _, name in ipairs(extends) do
-		for k, v in pairs(config.extend[name] or {}) do
+		for k, v in pairs(orca.configs.tailwind.extend[name] or {}) do
 			theme[name][k] = v
 		end
 	end
@@ -92,18 +90,12 @@ for _, v1 in ipairs(spacing) do
 	for k2, v2 in pairs {
 			rounded="Node.BorderRadius",
 			text="TextRun.FontSize",
-			gap="StackView.Spacing",
 			w="Node.Width",
 			h="Node.Height"
 		} do
 		style[string.format(".%s-%s", k2, v1)] = { [v2] = v1*rem }
 	end
-end
-
-for _, v1 in ipairs(spacing) do
-	for k2, v2 in pairs { gap="Grid.Spacing" } do
-		style[string.format(".%s-%s", k2, v1)][v2] = v1*rem
-	end
+	style[string.format(".gap-%s", v1)] = { ["StackView.Spacing"] = v1*rem, ["Grid.Spacing"] = v1*rem }
 end
 
 for _, v1 in ipairs(spacing) do

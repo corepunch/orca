@@ -35,7 +35,6 @@ int luaopen_orca_parsers_css(lua_State*);
 int luaopen_orca_parsers_json(lua_State*);
 int luaopen_orca_parsers_xml(lua_State*);
 int luaopen_orca_renderer(lua_State*);
-int luaopen_orca_backend(lua_State*);
 int luaopen_orca_system(lua_State*);
 int luaopen_orca_editor(lua_State*);
 
@@ -52,7 +51,6 @@ static luaL_Reg const orca_modules[] = {
   { "orca.parsers.json", luaopen_orca_parsers_json },
   { "orca.parsers.xml", luaopen_orca_parsers_xml },
   { "orca.renderer", luaopen_orca_renderer },
-  { "orca.backend", luaopen_orca_backend },
   { "orca.system", luaopen_orca_system },
   { NULL, NULL }
 };
@@ -116,50 +114,39 @@ static int f_orca_index(lua_State* L) {
 }
 #endif
 
-int load_plugins(lua_State *L)
+static int
+load_core_module(lua_State *L)
 {
-  int no_errors = 1;
-  char sharedir[MAX_OSPATH];
-
-  lua_getglobal(L, "SHAREDIR");
-  strncpy(sharedir, luaL_checkstring(L, -1), sizeof(sharedir));
-  lua_pop(L, 1);
-
-  lua_getglobal(L, "require");
-  lua_pushstring(L, "orca.system");
-  lua_call(L, 1, 1);                        // sys
-    
-  lua_getfield(L, -1, "list_dir");
-  lua_pushfstring(L, "%s/plugins", sharedir);
-  lua_call(L, 1, 1);                        // iterator
-  
-  for (;;) {
-    lua_pushvalue(L, -1);
-    lua_call(L, 0, 1);                    // f
-    if (lua_isnil(L, -1)) break;
-    
-    const char *f = lua_tostring(L, -1);
-//    size_t n = strlen(f);
-//    if (n > 4 && !strcmp(f + n - 4, ".lua")) n -= 4;
-//    
-//    lua_getglobal(L, "require");
-//    lua_pushfstring(L, "plugins.%.*s", (int)n, f);
-    
-    lua_getglobal(L, "dofile");
-    lua_pushfstring(L, "%s/plugins/%s", sharedir, f);
-    
-    if (lua_pcall(L, 1, 0, 0) == LUA_OK) {
-      Con_Printf("Loaded plugin \"%s\"", f);
-    } else {
-      Con_Error("%s", lua_tostring(L, -1));
-      lua_pop(L, 1);
-      no_errors = 0;
-    }
-    
-    lua_pop(L, 1);                        // pop f
+  static const char *code =
+    "local sys = require 'orca.system'\n"
+    "for path in sys.list_dir(SHAREDIR..'/plugins') do\n"
+    "  if not path:find('[/\\\\]') and not path:find('%.%.') then\n"
+    "    local ok, err = xpcall(dofile, function(e) return debug.traceback(e, 2) end,\n"
+    "                           SHAREDIR..'/plugins/'..path)\n"
+    "    if not ok then\n"
+    "      io.stderr:write('Plugin error ('..path..'): '..tostring(err)..'\\n')\n"
+    "    end\n"
+    "  end\n"
+    "end\n";
+  if (luaL_dostring(L, code) != LUA_OK) {
+    fprintf(stderr, "orca.init error: %s\n", lua_tostring(L, -1));
+    lua_pop(L, 1);
   }
-  
-  return no_errors;
+  return 0;
+}
+
+static int f_styles_newindex(lua_State* L) {
+  // Stack: 1=styles table, 2=key (class name), 3=value (properties table)
+  const char* name = luaL_checkstring(L, 2);
+  // Store in the raw table so style[key] reads work (e.g. style[key][prop] = val)
+  lua_pushvalue(L, 2);
+  lua_pushvalue(L, 3);
+  lua_rawset(L, 1);
+  // Register in the global static stylesheet (stack: 1=table, 2=key, 3=value)
+  if (lua_type(L, 3) == LUA_TTABLE) {
+    OBJ_AddStyleSheet(L, NULL, name);
+  }
+  return 0;
 }
 
 static int f_find_metatable(lua_State* L) {
@@ -189,26 +176,23 @@ ORCA_API int luaopen_orca(lua_State* L)
     { NULL, NULL }
   }));
 
+  lua_setfield(L, ((void)lua_pushstring(L, ORCA_VERSION), -2), "version");
+  lua_setfield(L, ((void)lua_pushstring(L, __DATE__), -2), "build");
+  lua_setfield(L, (lua_pushcfunction(L, f_find_metatable), -2), "find_metatable");
+  lua_setfield(L, (lua_pushcfunction(L, f_async), -2), "async");
+  lua_setfield(L, (lua_pushcfunction(L, load_core_module), -2), "init");
+  lua_setfield(L, (lua_newtable(L), -2), "theme");
+  lua_setfield(L, (lua_newtable(L), -2), "config");
+  // Create styles table with __newindex to register global stylesheets
   lua_newtable(L);
-  lua_setfield(L, LUA_REGISTRYINDEX, "LOADERS");
-  
-  lua_pushstring(L, ORCA_VERSION);
-  lua_setfield(L, -2, "version");
-
-  lua_pushstring(L, __DATE__);
-  lua_setfield(L, -2, "build");
-  
-  lua_pushcfunction(L, f_find_metatable);
-  lua_setfield(L, -2, "find_metatable");
-
-  lua_pushcfunction(L, f_async);
-  lua_setfield(L, -2, "async");
-  
   lua_newtable(L);
-  lua_setfield(L, -2, "theme");
-
-  lua_pushcfunction(L, load_plugins);
-  lua_setfield(L, -2, "init");
+  lua_pushcfunction(L, f_styles_newindex);
+  lua_setfield(L, -2, "__newindex");
+  lua_setmetatable(L, -2);
+  lua_setfield(L, -2, "styles");
+  
+  // lua_newtable(L);
+  // lua_setfield(L, -2, "config");
   
 #ifdef EASY_MODULE_ACCESS
   // Create a metatable for the orca module

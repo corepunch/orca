@@ -246,7 +246,8 @@ _LoadSprAnimations(lua_State* L, PFTG ftg, lpObject_t project)
  * class gets a chance.  On success we create a default empty Project and
  * attach the FtgPackage component to it.
  */
-extern lpObject_t _LoadProject(lua_State *L, lpcString_t path, lpcString_t name);
+
+#include <include/api.h>
 
 HANDLER(FtgPackage, LoadProject) {
   path_t tmp = { 0 };
@@ -275,14 +276,8 @@ HANDLER(FtgPackage, LoadProject) {
    * package.lua embedded in an FTG archive this will fail, and it will fall
    * back to creating a bare Project object – which is exactly what we want.
    */
-  lpObject_t project = _LoadProject(L, pLoadProject->Path,
-                                    FS_GetBaseName(pLoadProject->Path));
-  if (!project) {
-    _FreeFtg(ftg);
-    return 0;
-  }
-
-  OBJ_AddComponent(project, ID_FtgPackage);
+  lua_pcall(L, (luaX_import(L, "orca.DarkReign", "FtgPackage"), 0), 1, 0);
+  lpObject_t project = luaX_checkObject(L, -1);
   GetFtgPackage(project)->_ftg = ftg;
 
   // Debug: list all files in the archive

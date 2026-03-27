@@ -21,6 +21,67 @@ _AssignCallback(lua_State* L, lpProperty_t property)
   return TRUE;
 }
 
+static int read_array(lua_State *L, int idx, lpProperty_t p) {
+  if (lua_type(L, idx) != LUA_TTABLE) {
+    Con_Error("Expected a table for array property %s", p->pdesc->Name);
+    return 0;
+  }
+  size_t numitems = lua_rawlen(L, idx);
+  void *mem = malloc(p->pdesc->DataSize * numitems);
+  ((int*)p->value)[sizeof(void*)/sizeof(int)] = (int)numitems;
+  lua_pushnil(L);
+  for (uint32_t i = 0; lua_next(L, idx) != 0; i++, lua_pop(L, 1)) {
+    if (lua_type(L, -2) != LUA_TNUMBER) {
+      Con_Error("Expected numeric keys in array table for property %s", p->pdesc->Name);
+      free(mem);
+      return 0; 
+    }
+    switch (lua_type(L, -1)) {
+      case LUA_TUSERDATA:
+        memcpy((char*)mem + i * p->pdesc->DataSize, luaL_checkudata(L, -1, p->pdesc->TypeString), p->pdesc->DataSize);
+        break;
+      case LUA_TTABLE:
+        if (luaL_getmetatable(L, p->pdesc->TypeString)) {
+          lua_pushvalue(L, -2);
+          if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
+            Con_Error("%s", luaL_checkstring(L, -1));
+            lua_pop(L, 1);
+            free(mem);
+            return 0;
+          }
+          memcpy((char*)mem + i * p->pdesc->DataSize, luaL_checkudata(L, -1, p->pdesc->TypeString), p->pdesc->DataSize);
+          lua_pop(L, 1);
+          break;
+        } else {
+          Con_Error("Expected userdata of type %s in array table for property %s", p->pdesc->TypeString, p->pdesc->Name);
+          free(mem);
+          return 0;
+        }
+      case LUA_TNUMBER:
+        switch (p->pdesc->DataType) {
+          case kDataTypeFloat:
+            ((float*)mem)[i] = luaL_checknumber(L, -1);
+            break;
+          case kDataTypeInt:
+          case kDataTypeEnum:
+            ((int*)mem)[i] = (int)luaL_checkinteger(L, -1);
+            break;
+          default:
+            Con_Error("Unsupported data type in array table for property %s", p->pdesc->Name);
+            free(mem);
+            return 0;
+        }
+        break;
+      default:
+        Con_Error("Unsupported value type %d in array table for property %s", lua_type(L, -1), p->pdesc->Name);
+        free(mem);
+        return 0;
+    }
+  }
+  PROP_SetValue(p, &mem);
+  return 0;
+}
+
 int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
 {
   int luatype = lua_type(L, idx);
@@ -31,50 +92,9 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
     PROP_Clear(p);
     return 0;
   }
-  
   // handle array properties
   if (p->pdesc && p->pdesc->IsArray) {
-    if (lua_type(L, idx) != LUA_TTABLE) {
-      Con_Error("Expected a table for array property %s", p->pdesc->Name);
-      return 0;
-    }
-    size_t numitems = lua_rawlen(L, idx);
-    void *mem = malloc(p->pdesc->DataSize * numitems);
-    ((int*)p->value)[sizeof(void*)/sizeof(int)] = (int)numitems;
-    lua_pushnil(L);
-    for (uint32_t i = 0; lua_next(L, idx) != 0; i++, lua_pop(L, 1)) {
-      if (lua_type(L, -2) != LUA_TNUMBER) {
-        Con_Error("Expected numeric keys in array table for property %s", p->pdesc->Name);
-        free(mem);
-        return 0; 
-      }
-      switch (lua_type(L, -1)) {
-        case LUA_TUSERDATA:
-          memcpy((char*)mem + i * p->pdesc->DataSize, luaL_checkudata(L, -1, p->pdesc->TypeString), p->pdesc->DataSize);
-          break;
-        case LUA_TNUMBER:
-          switch (p->pdesc->DataType) {
-            case kDataTypeFloat:
-              ((float*)mem)[i] = luaL_checknumber(L, -1);
-              break;
-            case kDataTypeInt:
-            case kDataTypeEnum:
-              ((int*)mem)[i] = (int)luaL_checkinteger(L, -1);
-              break;
-            default:
-              Con_Error("Unsupported data type in array table for property %s", p->pdesc->Name);
-              free(mem);
-              return 0;
-          }
-          break;
-        default:
-          Con_Error("Unsupported value type in array table for property %s", p->pdesc->Name);
-          free(mem);
-          return 0;
-      }
-    }
-    PROP_SetValue(p, &mem);
-    return 0;
+    return read_array(L, idx, p);
   }
 
   switch (luatype) {
@@ -106,7 +126,7 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
         p->type = kDataTypeBool;
       assert(p->type == kDataTypeBool);
       number = lua_toboolean(L, idx);
-      PROP_SetValue(p, &number);
+      PROP_SetValue(p, &(int){number});
       break;
     case LUA_TNUMBER:
       switch (p->type) {
@@ -133,7 +153,22 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
       break;
     case LUA_TTABLE:
       if (p->type == kDataTypeObject) {
-        PROP_SetValue(p, &(lpObject_t ){luaX_checkObject(L, idx)});
+        luaX_parsefield(lpObject_t, __userdata, idx, luaL_testudata, API_TYPE_OBJECT);
+        if (__userdata) {
+          PROP_SetValue(p, &__userdata);//(lpObject_t ){luaX_checkObject(L, idx)});
+        } else if (*p->pdesc->TypeString) {
+          lua_getfield(L, LUA_REGISTRYINDEX, p->pdesc->TypeString);
+          lua_pushvalue(L, idx);
+          if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
+            Con_Error("%s", luaL_checkstring(L, -1));
+            lua_pop(L, 1);
+            break;
+          }
+          PROP_SetValue(p, &(lpObject_t ){luaX_checkObject(L, -1)});
+          lua_pop(L, 1);
+        } else {
+          Con_Error("Can't assign a table value to %s", PROP_GetName(p));
+        }
       } else {
         Con_Error("Can't assign a table value to %s", PROP_GetName(p));
       }

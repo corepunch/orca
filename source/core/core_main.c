@@ -14,10 +14,10 @@ bool_t
 OBJ_RegisterPropertyType(lpcPropertyType_t pt)
 {
   FOR_LOOP(i, MAX_PROPERTY_TYPES) {
-    if (!core.ptypes[i]) {
-      core.ptypes[i] = pt;
+    if (!*core.ptypes[i].Name) {
+      memcpy(&core.ptypes[i], pt, sizeof(struct PropertyType));
       return TRUE;
-    } else if (core.ptypes[i]->FullIdentifier == pt->FullIdentifier) {
+    } else if (core.ptypes[i].FullIdentifier == pt->FullIdentifier) {
       return TRUE;
     }
   }
@@ -29,7 +29,7 @@ lpcPropertyType_t
 OBJ_FindPropertyType(uint32_t ident)
 {
   FOR_LOOP(i, MAX_PROPERTY_TYPES) {
-    lpcPropertyType_t pt = core.ptypes[i];
+    lpcPropertyType_t pt = &core.ptypes[i];
     if (pt && pt->FullIdentifier == ident) {
       return pt;
     }
@@ -45,7 +45,7 @@ OBJ_RegisterClass(lpcClassDesc_t class)
       FOR_LOOP(j, class->NumProperties) {
         OBJ_RegisterPropertyType(&class->Properties[j]);
       }
-      Con_Printf("%s %d", class->ClassName, i);
+//      Con_Printf("%s %d", class->ClassName, i);
       core.classes[i] = class;
       return TRUE;
     } else if (core.classes[i]->ClassID == class->ClassID) {
@@ -62,7 +62,7 @@ OBJ_FindClassW(uint32_t class_id)
 {
   FOR_LOOP(i, MAX_CLASSES) {
     lpcClassDesc_t cl = core.classes[i];
-    if (cl->ClassID == class_id) {
+    if (cl && cl->ClassID == class_id) {
       return cl;
     }
   }
@@ -174,10 +174,8 @@ int f_poll(lua_State* L);
 int lua_pushclass(lua_State* L, struct ClassDesc* cl)
 {
   lua_getglobal(L, "require");
-  lua_pushstring(L, "orca");
+  lua_pushstring(L, "orca.core2.behaviour");
   lua_call(L, 1, 1);
-  lua_getfield(L, -1, "Behaviour");
-  lua_remove(L, -2); // remove orca
   lua_getfield(L, -1, "extend");
   lua_pushvalue(L, -2);
   // Create the args table
@@ -404,42 +402,32 @@ int f_addHotKeys(lua_State* L) {
 
 enum DataType luaX_checkDataType(lua_State *L, int idx);
 int f_registerPropertyType(lua_State *L) {
-  char n[MAX_PROPERTY_STRING];
-  lpcString_t name = luaL_checkstring(L, 1);
-  snprintf(n, sizeof(n), "property-%s", name);
-  lua_getfield(L, LUA_REGISTRYINDEX, n);
-  if (!lua_isnil(L, -1)) return 0;
-  lua_pop(L, 1);
-  luaX_parsefield(enum DataType, type, 2, luaX_checkDataType);
-  size_t size = sizeof(PropertyType_t)+MAX_PROPERTY_STRING;
-  lpPropertyType_t ds = lua_newuserdata(L, size);
-  memset(ds, 0, size);
-  strncpy(ds->Name, name, MAX_PROPERTY_STRING);
-  ds->ShortIdentifier = fnv1a32(name);
-  ds->FullIdentifier = fnv1a32(name);
-  ds->DataType = type;
-  switch (type) {
-    case kDataTypeString: ds->DataSize = sizeof(char*); break;
-    case kDataTypeEvent:  ds->DataSize = sizeof(void*); break;
-    case kDataTypeObject: ds->DataSize = sizeof(void*); break;
-    case kDataTypeFloat:  ds->DataSize = sizeof(float); break;
-    default:              ds->DataSize = sizeof(int);   break;
+  luaX_parsefield(lpcString_t, Name, 1, luaL_checkstring);
+  luaX_parsefield(lpcString_t, Category, 1, luaL_optstring, "");
+  luaX_parsefield(enum DataType, DataType, 1, luaX_checkDataType);
+  fixedString_t tmp={0};
+  if (*Category) {
+    snprintf(tmp, sizeof(tmp), "%s.%s", Category, Name);
+  } else {
+    strncpy(tmp, Name, sizeof(tmp));
   }
-  lua_setfield(L, LUA_REGISTRYINDEX, n);
-  OBJ_RegisterPropertyType(ds);
-  return 0;
-}
-
-int f_registerPropertyTypes(lua_State *L) {
-  lua_pushvalue(L, 1);
-  lua_pushnil(L);
-  while (lua_next(L, -2)) {
-    lua_pushcfunction(L, f_registerPropertyType);
-    lua_pushvalue(L, -3);
-    lua_pushvalue(L, -3);
-    lua_call(L, 2, 0);
-    lua_pop(L, 1);
+  lpcString_t dot = strrchr(Name, '.');
+  struct PropertyType type = {0};
+  type.ShortIdentifier = dot ? fnv1a32(dot + 1) : fnv1a32(Name);
+  // type->ShortIdentifier = fnv1a32(type->Name);
+  type.FullIdentifier = fnv1a32(tmp);
+  type.DataType = DataType;
+  switch (DataType) {
+    case kDataTypeString: type.DataSize = sizeof(char*); break;
+    case kDataTypeEvent:  type.DataSize = sizeof(void*); break;
+    case kDataTypeObject: type.DataSize = sizeof(void*); break;
+    case kDataTypeFloat:  type.DataSize = sizeof(float); break;
+    case kDataTypeColor:  type.DataSize = sizeof(struct color); break;
+    default:              type.DataSize = sizeof(int);   break;
   }
+  strncpy(type.Name, Name, sizeof(type.Name));
+  strncpy(type.Category, Category, sizeof(type.Category));
+  OBJ_RegisterPropertyType(&type);
   return 0;
 }
 
@@ -476,7 +464,7 @@ on_core_module_registered(lua_State* L)
   lua_pushcfunction(L, f_addHotKeys);
   lua_setfield(L, -2, "addHotKeys");
   
-  lua_pushcfunction(L, f_registerPropertyTypes);
-  lua_setfield(L, -2, "registerPropertyTypes");
+  lua_pushcfunction(L, f_registerPropertyType);
+  lua_setfield(L, -2, "registerPropertyType");
 }
 

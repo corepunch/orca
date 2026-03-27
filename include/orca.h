@@ -525,7 +525,6 @@ ORCA_API HRESULT FS_FreeFile(struct file*);
 //ORCA_API HRESULT FS_GetImageSize(lpcString_t, struct WI_Size*);
 ORCA_API struct _xmlDoc* FS_LoadXML(lpcString_t);
 ORCA_API lpcString_t FS_ParseArgs(LPSTR s, reqArg_t *args, size_t maxargs);
-//ORCA_API void FS_RegisterObject(lpObject_t object, lpcString_t path);
 
 // Editor stuff
 ORCA_API void FS_InitHash(void);
@@ -649,5 +648,12 @@ Token_Create(lpcString_t szSourceCode);
 
 ORCA_API void
 Token_Release(struct token* pToken);
+
+//struct IFileSystem {
+//  void* (*LoadBundle)(const char* path);
+//  bool_t (*HasChangedFiles)(void*);
+//  bool_t (*FileExists)(const char* path);
+//  bool_t (*OpenFile)(const char* path);
+//};
 
 #endif

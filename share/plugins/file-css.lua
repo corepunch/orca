@@ -59,6 +59,6 @@ end
 
 table.insert(package.searchers, function(path)
 	local filesystem = require "orca.filesystem"
-	local contents = filesystem.read_file(path..'.css')
+	local contents = filesystem.readTextFile(path..'.css')
 	return contents and function() return css_parse(contents) end or nil
 end)

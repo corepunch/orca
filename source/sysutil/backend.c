@@ -1,10 +1,6 @@
 #include <include/api.h>
 #include <include/orca.h>
 
-int f_peek_message(lua_State* L);
-
-int f_dispatch_message(lua_State* L);
-
 //int //f_table_Window(lua_State* L);
 
 int f_event_message(lua_State* L)
@@ -94,24 +90,5 @@ int f_event_new(lua_State* L) {
       lua_pop(L, 1); // remove value, keep key for next iteration
     }
   }
-  return 1;
-}
-
-ORCA_API int luaopen_orca_backend(lua_State* L)
-{
-  luaL_newlib(L,
-              ((luaL_Reg[]){ { "getMessage", f_peek_message },
-                             { "dispatchMessage", f_dispatch_message },
-                             { NULL, NULL } }));
-
-  luaL_newmetatable(L, "Event");
-  lua_pushcfunction(L, f_event_index);
-  lua_setfield(L, -2, "__index");
-//  lua_setfield(L, -2, "Event");
-  lua_pop(L, 1);
-  
-  lua_pushcfunction(L, f_event_new);
-  lua_setfield(L, -2, "Event");
-
   return 1;
 }

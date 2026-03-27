@@ -1,3 +1,5 @@
+// Auto-generated from UIKit.xml by tools/templates/properties.php
+// DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __UIKIT_PROPERTIES_H__
 #define __UIKIT_PROPERTIES_H__
 #define kEventGetSize 0x80d9e0ee

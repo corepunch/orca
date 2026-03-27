@@ -92,7 +92,7 @@ struct vm_register
 };
 
 #define MAX_CLASSES 256
-#define MAX_PROPERTY_TYPES 4096
+#define MAX_PROPERTY_TYPES 1024
 
 struct game
 {
@@ -104,7 +104,7 @@ struct game
   lpObject_t hover2;
   fixedString_t tags[MAX_TAGS];
   lpcClassDesc_t classes[MAX_CLASSES];
-  lpcPropertyType_t ptypes[MAX_PROPERTY_TYPES];
+  struct PropertyType ptypes[MAX_PROPERTY_TYPES];
 };
 
 // stateman.c

@@ -22,6 +22,8 @@ struct style_sheet
   shortStr_t value;
 };
 
+static struct style_sheet* static_sheet = NULL;
+
 struct _ADDCLASSSTRUCT
 {
   lpcString_t name;
@@ -58,7 +60,11 @@ _AddStyleClass(lpObject_t obj, struct style_sheet* other, void* param)
   ss->class_id = inp->id;
   ss->flags = inp->flags;
   ss->next = NULL;
-  ADD_TO_LIST(ss, _GetStyles(obj));
+  if (obj) {
+    ADD_TO_LIST(ss, _GetStyles(obj));
+  } else {
+    ADD_TO_LIST(ss, static_sheet);
+  }
 }
 
 struct style_class*
@@ -169,7 +175,11 @@ void OBJ_AddStyleSheet(lua_State* L, lpObject_t self, lpcString_t name)
         return;
     }
     ss->class_id = fnv1a32(ss->classname + 1);
-    ADD_TO_LIST(ss, _GetStyles(self));
+    if (self) {
+      ADD_TO_LIST(ss, _GetStyles(self));
+    } else {
+      ADD_TO_LIST(ss, static_sheet);
+    }
 //    *pss = ss;
 //    pss = &ss->next;
     lua_pop(L, 1);
@@ -184,6 +194,16 @@ OBJ_EnumStyleClasses(lpObject_t pobj,
                      void* param)
 {
   uint32_t dwClassID = fnv1a32(classname);
+  FOR_EACH_LIST(struct style_sheet, ss, static_sheet) {
+    if (ss->class_id == dwClassID) {
+      if (ss->flags & STYLE_HOVER) {
+        OBJ_SetFlags(pobj, OF_HOVERABLE);
+      }
+      if ((OBJ_GetStyleFlags(pobj) & ss->flags) == ss->flags) {
+        Proc(pobj, ss, param);
+      }
+    }
+  }
   for (lpObject_t p = pobj; p; p = OBJ_GetParent(p)) {
     FOR_EACH_LIST(struct style_sheet, ss, _GetStyles(p)) {
       if (ss->class_id == dwClassID) {

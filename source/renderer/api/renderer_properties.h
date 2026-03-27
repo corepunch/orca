@@ -1,3 +1,5 @@
+// Auto-generated from renderer.xml by tools/templates/properties.php
+// DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __RENDERER_PROPERTIES_H__
 #define __RENDERER_PROPERTIES_H__
 #define kEventRenderScreen 0xd15bdf29
