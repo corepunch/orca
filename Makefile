@@ -198,7 +198,7 @@ test: test-headless test-properties
 	$(TARGET) -test=tests/test1.lua
 	$(TARGET) -test=tests/test.xml
 
-test-headless: test-properties
+test-headless: test-properties copyshare
 	$(TARGET) -test=tests/test_layout.lua
 
 include Makefile.webgl

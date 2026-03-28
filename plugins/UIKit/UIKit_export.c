@@ -2517,6 +2517,8 @@ static struct PropertyType const Node2DProperties[kNode2DNumProperties] = {
 	DECL(0x09dc5114, Node2D, Hovered, Hovered, kDataTypeBool), // Node2D.Hovered
 	DECL(0xfdba6cd0, Node2D, IgnoreHitTest, IgnoreHitTest, kDataTypeBool), // Node2D.IgnoreHitTest
 	DECL(0xf068ff19, Node2D, ForegroundHint, ForegroundHint, kDataTypeEnum, .TypeString = "None,Translucent,Opaque", .EnumValues = _ForegroundHint), // Node2D.ForegroundHint
+	DECL(0x453448dd, Node2D, ActualX, _actual_pos[0], kDataTypeFloat), // Node2D.ActualX
+	DECL(0x4434474a, Node2D, ActualY, _actual_pos[1], kDataTypeFloat), // Node2D.ActualY
 };
 static struct Node2D Node2DDefaults = {
 		
