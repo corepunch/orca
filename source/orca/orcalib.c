@@ -120,7 +120,7 @@ load_core_module(lua_State *L)
   static const char *code =
     "local sys = require 'orca.system'\n"
     "for path in sys.list_dir(SHAREDIR..'/plugins') do\n"
-    "  if not path:find('[/\\\\]') and not path:find('%.%.') then\n"
+    "  if not path:find('[/\\\\]') and not path:find('%.%.') and path:match('%.lua$') then\n"
     "    local ok, err = xpcall(dofile, function(e) return debug.traceback(e, 2) end,\n"
     "                           SHAREDIR..'/plugins/'..path)\n"
     "    if not ok then\n"
