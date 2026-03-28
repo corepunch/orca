@@ -460,6 +460,16 @@ class Event extends Type {
 	function __construct($elem, $model) {
 		parent::__construct($elem, $model);
 	}
+
+	function hasFields() {
+		return count($this->_elem->xpath("field[@name]")) > 0;
+	}
+
+	function getFields() {
+		foreach ($this->_elem->xpath("field[@name]") as $f) {
+			yield new Field($f, $this->_model);
+		}
+	}
 }
 
 // --- Resource ---
@@ -610,6 +620,14 @@ class Model {
 		$r = $this->_has_in($_type, "external_structs");
 		if ($r) {
 			return ["external_struct", $r];
+		}
+		// Check if type is an event-generated args struct (e.g. "HandleMessageEventArgs")
+		if (str_ends_with($_type, "EventArgs")) {
+			$eventName = substr($_type, 0, -strlen("EventArgs"));
+			$ev = $this->_has_in($eventName, "events");
+			if ($ev && $ev->hasFields()) {
+				return ["struct", null];
+			}
 		}
 		return [$_type, null];
 	}

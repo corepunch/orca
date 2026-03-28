@@ -11,22 +11,16 @@
   <external struct="ViewDef"/>
   <external struct="lua_State"/>
   
-  <struct name="RenderScreenEventArgs">
-    <summary>Event arguments for a render screen event</summary>
+  <event name="RenderScreen">
     <field name="width" type="uint">The width of the render screen</field>
     <field name="height" type="uint">The height of the render screen</field>
     <field name="stereo" type="float">The stereo value of the render screen</field>
     <field name="angle" type="float">The angle of the render screen</field>
     <field name="target" type="Texture" pointer="true">The target handle of the render screen</field>
-  </struct>
-  
-  <struct name="RenderEventArgs">
-    <summary>Event arguments for a render event</summary>
+  </event>
+  <event name="Render">
     <field name="ViewDef" type="ViewDef" pointer="true">The view definition for rendering</field>
-  </struct>
-  
-  <event name="RenderScreen" type="RenderScreenEventArgs"/>
-  <event name="Render" type="RenderEventArgs"/>
+  </event>
 
 <!--  <shutdown name="R_Shutdown"/>-->
   <interface name="window" prefix="WI_" export="Window">

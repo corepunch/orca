@@ -40,7 +40,8 @@
 >
 
 <!-- Event Declaration - defines an event that can be handled -->
-<!ELEMENT event EMPTY>
+<!-- Events may contain inline field children (preferred) or reference an external type via the type attribute (workaround) -->
+<!ELEMENT event (summary?, field*)>
 <!ATTLIST event
   name CDATA #REQUIRED
   type CDATA #IMPLIED

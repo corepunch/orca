@@ -4,7 +4,14 @@
 <?php endif ?>
 
 <?php foreach ($events as $name => $event):?>
+<?php if ($event->hasFields()):?>
+struct <?= $name ?>EventArgs {
+<?php include_template("struct_contents", ['list' => $event->getFields()]) ?>
+};
+typedef struct <?= $name ?>EventArgs* <?= $name ?>EventPtr;
+<?php else:?>
 typedef <?= $event ?>* <?= $name ?>EventPtr;
+<?php endif ?>
 <?php endforeach ?>
 <?php foreach ($components as $name => $component):?>
 	<?php foreach ($component->getEventHandlers() as $event): ?>

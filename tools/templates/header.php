@@ -24,7 +24,15 @@ struct <?= $name ?>;
 <?php endforeach ?>
 
 <?php foreach ($model->getEvents() as $name => $event):?>
+<?php if ($event->hasFields()):?>
+/** <?= $name ?>EventArgs struct */
+struct <?= $name ?>EventArgs {
+<?php include_template("struct_contents", ['list' => $event->getFields()]) ?>
+};
+typedef struct <?= $name ?>EventArgs* <?= $name ?>EventPtr;
+<?php else:?>
 typedef <?= $event ?>* <?= $name ?>EventPtr;
+<?php endif ?>
 <?php endforeach ?>
 
 <?php foreach ($model->getEnums() as $name => $enum): ?>

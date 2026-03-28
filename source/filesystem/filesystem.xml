@@ -3,7 +3,7 @@
 <module name="filesystem" namespace="orca" on-luaopen="on_filesystem_module_registered" prefix="FS_">
   <require file="../core/core.xml"/>
   
-  <event name="ReadCommands" type="void"/>
+  <event name="ReadCommands"/>
   
   <external struct="Object"/>
   <external struct="_PACK"/>
@@ -27,22 +27,6 @@
     <field name="Message" type="fixed">Message name, i.e. KeyDown</field>
     <field name="Key" type="fixed">Associated key for the message, if applicable</field>
     <field name="Command" type="fixed">Command to execute when the message is received</field>
-  </struct>
-
-  <struct name="OpenFileArgs">
-    <field name="FileName" type="string"/>
-  </struct>
-
-  <struct name="FileExistsArgs">
-    <summary>Checks if a file exists at the specified path</summary>
-    <details>Returns true if a file exists at the given path, false otherwise.  This function only checks for file existence and does not verify read permissions or whether the path points to a directory.</details>
-    <field name="FileName" type="string">The file path to check for existence</field>
-    <returns type="bool">True if the file exists, false otherwise</returns>
-  </struct>
-  
-  <struct name="LoadProjectArgs">
-    <summary>Loads a bundle from the specified path</summary>
-    <field name="Path" type="string">Directory name to load the bundle</field>
   </struct>
 
   <class name="Workspace" />
@@ -155,10 +139,16 @@
     <field name="isPackage" type="bool"/>
   </class>
   
-  <event name="OpenFile" type="OpenFileArgs"/>
-  <event name="FileExists" type="FileExistsArgs"/>
-  <event name="HasChangedFiles" type="void"/>
-  <event name="LoadProject" type="LoadProjectArgs"/>
+  <event name="OpenFile">
+    <field name="FileName" type="string"/>
+  </event>
+  <event name="FileExists">
+    <field name="FileName" type="string">The file path to check for existence</field>
+  </event>
+  <event name="HasChangedFiles"/>
+  <event name="LoadProject">
+    <field name="Path" type="string">Directory name to load the bundle</field>
+  </event>
   
   <class name="Directory" parent="Project">
     <handles event="LoadProject"/>

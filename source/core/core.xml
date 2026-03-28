@@ -10,18 +10,6 @@
   <external struct="KeyframeAnim"/>
   <external struct="lua_State"/>
   
-  <struct name="PropertyChangedEventArgs">
-    <summary>Event arguments for a property change event</summary>
-    <field name="Property" type="Property" pointer="true">The property that changed</field>
-  </struct>
-
-  <struct name="UpdateMatrixEventArgs">
-    <summary>Event arguments for an update matrix event</summary>
-    <field name="parent" type="mat4">The parent matrix</field>
-    <field name="opacity" type="float">The opacity value</field>
-    <field name="force" type="bool">Indicates if the update is forced</field>
-  </struct>
-
   <event name="LeftMouseDown" type="WI_Message"/>
   <event name="RightMouseDown" type="WI_Message"/>
   <event name="OtherMouseDown" type="WI_Message"/>
@@ -43,25 +31,31 @@
   <event name="Char" type="WI_Message"/>
   <event name="WindowPaint"/>
   <event name="WindowClosed"/>
-  <event name="WindowResized" type="void"/>
+  <event name="WindowResized"/>
   <event name="WindowChangedScreen"/>
-  <event name="KillFocus" type="void"/>
-  <event name="SetFocus" type="void"/>
+  <event name="KillFocus"/>
+  <event name="SetFocus"/>
   <event name="Timer"/>
-  <event name="UpdateMatrix" type="UpdateMatrixEventArgs"/>
+  <event name="UpdateMatrix">
+    <field name="parent" type="mat4">The parent matrix</field>
+    <field name="opacity" type="float">The opacity value</field>
+    <field name="force" type="bool">Indicates if the update is forced</field>
+  </event>
   <event name="HitTest"/>
-  <event name="IsVisible" type="void"/>
-  <event name="Create" type="void"/>
-  <event name="Start" type="void"/>
-  <event name="Awake" type="void"/>
-  <event name="ThemeChanged" type="void"/>
-  <event name="PropertyChanged" type="PropertyChangedEventArgs"/>
-  <event name="Attached" type="void"/>
-  <event name="Release" type="void"/>
-  <event name="Destroy" type="void"/>
+  <event name="IsVisible"/>
+  <event name="Create"/>
+  <event name="Start"/>
+  <event name="Awake"/>
+  <event name="ThemeChanged"/>
+  <event name="PropertyChanged">
+    <field name="Property" type="Property" pointer="true">The property that changed</field>
+  </event>
+  <event name="Attached"/>
+  <event name="Release"/>
+  <event name="Destroy"/>
   <event name="ResumeCoroutine"/>
   <event name="StopCoroutine"/>
-  <event name="ViewDidLoad" type="void"/>
+  <event name="ViewDidLoad"/>
   
   <enums name="PropertyState">
     <summary>Represents the various states a property can be in.</summary>

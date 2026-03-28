@@ -269,29 +269,20 @@
     <field name="Axis" type="SizeAxisShorthand" fixed-array="3">A number value per axis</field>
   </struct>
 
-  <struct name="PushPropertyEventArgs">
-    <field name="Placeholder" type="int"/>
-  </struct>
-
-  <struct name="ForegroundContentEventArgs">
+  <event name="GetSize"/>
+  <event name="Submit"/>
+  <event name="Measure" type="Size"/>
+  <event name="Arrange" type="rect"/>
+  <event name="MeasureOverride" type="Size"/>
+  <event name="ArrangeOverride" type="rect"/>
+  <event name="ForegroundContent">
     <field name="result" type="Texture" pointer="true"/>
-  </struct>
-  
-  <struct name="HandleMessageEventArgs">
-    <field name="EventName" type="fixed"/>
-    <field name="FirstArg" type="uint"/>
-    <field name="NumArgs" type="uint"/>
-  </struct>
-  
-  <struct name="MakeTextEventArgs">
-    <summary>Event data structure for text rendering requests</summary>
-    <field name="text" type="ViewText" pointer="true">Text view to render</field>
-    <field name="availableSpace" type="uint">Available space for text layout</field>
-  </struct>
-  
-  <struct name="DrawBrushEventArgs">
-    <summary>Event data structure for brush drawing operations</summary>
-    <details>Contains information required for rendering a brush, including transformation matrices, target textures, and brush configuration.</details>
+  </event>
+  <event name="PushProperty">
+    <field name="Placeholder" type="int"/>
+  </event>
+  <event name="UpdateGeometry"/>
+  <event name="DrawBrush">
     <field name="projection" type="mat4">Projection matrix for 3D to 2D transformation</field>
     <field name="image" type="Texture" pointer="true">Target image handle for rendering</field>
     <field name="brush" type="BrushShorthand">Brush configuration to draw with</field>
@@ -299,25 +290,19 @@
     <field name="borderWidth" type="vec4">Border width for each edge (top, right, bottom, left)</field>
     <field name="foreground" type="bool">True if drawing foreground, false for background</field>
     <field name="viewdef" type="ViewDef" pointer="true">View definition context for rendering</field>
-  </struct>
-
-
-  <event name="GetSize" type="void"/>
-  <event name="Submit" type="void"/>
-  <event name="Measure" type="Size"/>
-  <event name="Arrange" type="rect"/>
-  <event name="MeasureOverride" type="Size"/>
-  <event name="ArrangeOverride" type="rect"/>
-  <event name="ForegroundContent" type="ForegroundContentEventArgs"/>
-  <event name="PushProperty" type="PushPropertyEventArgs"/>
-  <event name="UpdateGeometry"/>
-  <event name="DrawBrush" type="DrawBrushEventArgs"/>
-  <event name="HandleMessage" type="HandleMessageEventArgs"/>
-  <struct name="LoadViewEventArgs">
+  </event>
+  <event name="HandleMessage">
+    <field name="EventName" type="fixed"/>
+    <field name="FirstArg" type="uint"/>
+    <field name="NumArgs" type="uint"/>
+  </event>
+  <event name="LoadView">
     <field name="lua_state" type="lua_State" pointer="true"/>
-  </struct>
-  <event name="LoadView" type="LoadViewEventArgs"/>
-  <event name="MakeText" type="MakeTextEventArgs"/>
+  </event>
+  <event name="MakeText">
+    <field name="text" type="ViewText" pointer="true">Text view to render</field>
+    <field name="availableSpace" type="uint">Available space for text layout</field>
+  </event>
 
   <class name="DataObject">
     <summary>Base class for data-holding objects within the framework</summary>
@@ -347,12 +332,10 @@
     <property name="Value" type="int">Associated value for the trigger condition </property>
   </class>
 
-  <struct name="TriggeredEventArgs">
+  <event name="Triggered">
     <field name="Trigger" type="Trigger" pointer="true"/>
     <field name="message" type="HandleMessageEventArgs"/>
-  </struct>
-  
-  <event name="Triggered" type="TriggeredEventArgs"/>
+  </event>
 
   <class name="OnPropertyChangedTrigger" parent="Trigger">
     <summary>Responds to property value changes on specified nodes</summary>
@@ -810,20 +793,13 @@
     <enum name="Fade">Fading transition</enum>
   </enums>
 
-  <struct name="NavigateToPageArguments">
-    <summary>Event triggered to navigate to a different page within a PageHost.</summary>
-    <!-- <field name="TargetPage" type="Page" pointer="true">The page to navigate to.</field> -->
+  <event name="NavigateToPage">
     <field name="URL" type="fixed">The URL of the page to navigate to.</field>
     <field name="TransitionType" type="TransitionType">The type of transition animation to use during navigation.</field>
-  </struct>
-
-  <struct name="NavigateBackArguments">
-    <summary>Event triggered to navigate back to the previous page in the navigation history.</summary>
+  </event>
+  <event name="NavigateBack">
     <field name="TransitionType" type="TransitionType">The type of transition animation to use during navigation.</field>
-  </struct>
-
-  <event name="NavigateToPage" type="NavigateToPageArguments"/>
-  <event name="NavigateBack" type="NavigateBackArguments"/>
+  </event>
 
   <class name="Page" parent="Node2D">
     <summary>Represents a single page within a document or UI container.</summary>
