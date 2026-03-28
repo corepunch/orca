@@ -16,7 +16,7 @@ local sys = require 'orca.system'
 local fs = require 'orca.filesystem'
 local loc = require 'orca.localization'
 local ref = require 'orca.renderer'
-local s = require 'orca.backend'
+local s = require 'orca.system'
 
 local M = {}
 

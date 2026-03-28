@@ -387,6 +387,8 @@ enum TextBlockConceptProperties {
 #define ID_Node2D_Hovered 0x982d5e3e // Node2D.Hovered
 #define ID_Node2D_IgnoreHitTest 0x0943bf6a // Node2D.IgnoreHitTest
 #define ID_Node2D_ForegroundHint 0x1a0ea5e3 // Node2D.ForegroundHint
+#define ID_Node2D_ActualX 0x453448dd // Node2D.ActualX
+#define ID_Node2D_ActualY 0x4434474a // Node2D.ActualY
 enum Node2DProperties {
 	kNode2DLayoutTransform,
 	kNode2DLayoutTransformTranslation,
@@ -432,6 +434,8 @@ enum Node2DProperties {
 	kNode2DHovered,
 	kNode2DIgnoreHitTest,
 	kNode2DForegroundHint,
+	kNode2DActualX,
+	kNode2DActualY,
 	kNode2DNumProperties	
 };
 // PrefabView2D

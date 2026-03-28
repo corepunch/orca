@@ -143,7 +143,7 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirName) {
     fprintf(mem, "local fs = require 'orca.filesystem'\n");
     fprintf(mem, "local loc = require 'orca.localization'\n");
     fprintf(mem, "local ref = require 'orca.renderer'\n");
-    fprintf(mem, "local s = require 'orca.backend'\n");
+    fprintf(mem, "local s = require 'orca.system'\n");
     fprintf(mem, "local ui = require 'orca.UIKit'\n");
 
     xmlNodePtr root = xmlDocGetRootElement(doc);

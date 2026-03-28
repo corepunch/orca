@@ -127,7 +127,7 @@ ORCA provides the following modules:
 | `orca.parsers.css` | CSS parsing |
 | `orca.parsers.json` | JSON encoding/decoding |
 | `orca.SceneKit` | 3D scene management |
-| `orca.backend` | Backend messaging system |
+| `orca.system` | Backend messaging system |
 | `orca.system` | System utilities |
 | `orca.editor` | Editor functionality |
 

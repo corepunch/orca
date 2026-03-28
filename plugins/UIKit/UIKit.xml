@@ -531,6 +531,8 @@
     <property name="Hovered" type="bool" private="true">Indicates if the element is currently hovered by pointer/mouse.</property>
     <property name="IgnoreHitTest" type="bool">Marks object as ignored during hit testing (mouse interaction).</property>
     <property name="ForegroundHint" type="ForegroundHint">Hint for how foreground should be rendered. May be used for accessibility, high-contrast, or text rendering optimizations.</property>
+    <property name="ActualX" type="float" read-only="true">Actual X position of the element after layout.</property>
+    <property name="ActualY" type="float" read-only="true">Actual Y position of the element after layout.</property>
     <!-- <property name="MouseDown" type="event">Event fired when mouse button is pressed over element </property>
     <property name="MouseUp" type="event">Event fired when mouse button is released over element </property>
     <property name="MouseDrag" type="event">Event fired during mouse drag operations </property>

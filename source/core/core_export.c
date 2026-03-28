@@ -161,28 +161,28 @@ int f_OBJ_FindByPath(lua_State *L) {
 }
 int f_OBJ_FindChildByID(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	uint32_t id = luaL_checknumber(L, 2);
+	uint32_t id = luaL_checkinteger(L, 2);
 	struct Object* result_ = OBJ_FindChildByID(this_, id);
 	luaX_pushObject(L, result_);
 	return 1;
 }
 int f_OBJ_FindChildByAlias(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	uint32_t id = luaL_checknumber(L, 2);
+	uint32_t id = luaL_checkinteger(L, 2);
 	struct Object* result_ = OBJ_FindChildByAlias(this_, id);
 	luaX_pushObject(L, result_);
 	return 1;
 }
 int f_OBJ_FindChildOfClass(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	uint32_t classID = luaL_checknumber(L, 2);
+	uint32_t classID = luaL_checkinteger(L, 2);
 	struct Object* result_ = OBJ_FindChildOfClass(this_, classID);
 	luaX_pushObject(L, result_);
 	return 1;
 }
 int f_OBJ_FindParentOfClass(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	uint32_t classID = luaL_checknumber(L, 2);
+	uint32_t classID = luaL_checkinteger(L, 2);
 	struct Object* result_ = OBJ_FindParentOfClass(this_, classID);
 	luaX_pushObject(L, result_);
 	return 1;
@@ -208,7 +208,7 @@ int f_OBJ_SendMessage2(lua_State *L) {
 }
 int f_OBJ_FindCallbackForID(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	uint32_t event = luaL_checknumber(L, 2);
+	uint32_t event = luaL_checkinteger(L, 2);
 	const char* result_ = OBJ_FindCallbackForID(this_, event);
 	lua_pushstring(L, result_);
 	return 1;
@@ -275,16 +275,16 @@ int f_OBJ_GetProperties(lua_State *L) {
 }
 int f_OBJ_GetInteger(lua_State *L) {
 	struct Object const* this_ = luaX_checkObject(L, 1);
-	uint32_t ident = luaL_checknumber(L, 2);
-	int32_t fallback = luaL_checknumber(L, 3);
+	uint32_t ident = luaL_checkinteger(L, 2);
+	int32_t fallback = luaL_checkinteger(L, 3);
 	int32_t result_ = OBJ_GetInteger(this_, ident, fallback);
-	lua_pushnumber(L, result_);
+	lua_pushinteger(L, result_);
 	return 1;
 }
 int f_OBJ_UpdateLayout(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	int32_t width = luaL_checknumber(L, 2);
-	int32_t height = luaL_checknumber(L, 3);
+	int32_t width = luaL_checkinteger(L, 2);
+	int32_t height = luaL_checkinteger(L, 3);
 	OBJ_UpdateLayout(this_, width, height );
 	return 0;
 }
@@ -313,12 +313,12 @@ int f_OBJ_AddStyleSheet(lua_State *L) {
 int f_OBJ_GetStyle(lua_State *L) {
 	struct Object const* this_ = luaX_checkObject(L, 1);
 	uint32_t result_ = OBJ_GetStyle(this_);
-	lua_pushnumber(L, result_);
+	lua_pushinteger(L, result_);
 	return 1;
 }
 int f_OBJ_SetStyle(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	uint32_t style = luaL_checknumber(L, 2);
+	uint32_t style = luaL_checkinteger(L, 2);
 	OBJ_SetStyle(this_, style );
 	return 0;
 }
@@ -410,25 +410,25 @@ int f_OBJ_CheckName(lua_State *L) {
 int f_OBJ_GetFlags(lua_State *L) {
 	struct Object const* this_ = luaX_checkObject(L, 1);
 	uint32_t result_ = OBJ_GetFlags(this_);
-	lua_pushnumber(L, result_);
+	lua_pushinteger(L, result_);
 	return 1;
 }
 int f_OBJ_SetFlags(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	uint32_t flags = luaL_checknumber(L, 2);
+	uint32_t flags = luaL_checkinteger(L, 2);
 	OBJ_SetFlags(this_, flags );
 	return 0;
 }
 int f_OBJ_GetIdentifier(lua_State *L) {
 	struct Object const* this_ = luaX_checkObject(L, 1);
 	uint32_t result_ = OBJ_GetIdentifier(this_);
-	lua_pushnumber(L, result_);
+	lua_pushinteger(L, result_);
 	return 1;
 }
 int f_OBJ_GetAlias(lua_State *L) {
 	struct Object const* this_ = luaX_checkObject(L, 1);
 	uint32_t result_ = OBJ_GetAlias(this_);
-	lua_pushnumber(L, result_);
+	lua_pushinteger(L, result_);
 	return 1;
 }
 int f_OBJ_GetSourceFile(lua_State *L) {
@@ -464,7 +464,7 @@ int f_OBJ_GetTimestamp(lua_State *L) {
 int f_OBJ_GetLuaObject(lua_State *L) {
 	struct Object const* this_ = luaX_checkObject(L, 1);
 	uint32_t result_ = OBJ_GetLuaObject(this_);
-	lua_pushnumber(L, result_);
+	lua_pushinteger(L, result_);
 	return 1;
 }
 int f_OBJ_GetDomain(lua_State *L) {
@@ -744,10 +744,10 @@ static int f_new_PropertyEnumValue(lua_State *L) {
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_pop(L, (lua_getfield(L, 1, "Name"), strncpy(self->Name, luaL_optstring(L, -1, ""), sizeof(self->Name)), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Value"), self->Value = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Value"), self->Value = (int32_t)luaL_optinteger(L, -1, 0), 1));
 	} else {
 		strncpy(self->Name, luaL_optstring(L, 1, ""), sizeof(self->Name));
-		self->Value = luaL_optnumber(L, 2, 0);
+		self->Value = (int32_t)luaL_optinteger(L, 2, 0);
 	}
 	return 1;
 }
@@ -757,7 +757,7 @@ int f_PropertyEnumValue___index(lua_State *L) {
 	struct PropertyEnumValue* self = luaX_checkPropertyEnumValue(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x0fe07306: lua_pushstring(L, self->Name); return 1; // Name
-	case 0xd147f96a: lua_pushnumber(L, self->Value); return 1; // Value
+	case 0xd147f96a: lua_pushinteger(L, self->Value); return 1; // Value
 	}
 	return luaL_error(L, "Unknown field in PropertyEnumValue(%p): %s", self, luaL_checkstring(L, 2));
 }
@@ -765,7 +765,7 @@ int f_PropertyEnumValue___newindex(lua_State *L) {
 	struct PropertyEnumValue* self = luaX_checkPropertyEnumValue(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x0fe07306: strncpy(self->Name, luaL_optstring(L, 3, ""), sizeof(self->Name)); return 0; // Name
-	case 0xd147f96a: self->Value = luaL_optnumber(L, 3, 0); return 0; // Value
+	case 0xd147f96a: self->Value = (int32_t)luaL_optinteger(L, 3, 0); return 0; // Value
 	}
 	return luaL_error(L, "Unknown field in PropertyEnumValue(%p): %s", self, luaL_checkstring(L, 2));
 }
@@ -832,10 +832,10 @@ static int f_new_PropertyType(lua_State *L) {
 		lua_pop(L, (lua_getfield(L, 1, "Step"), self->Step = luaL_optnumber(L, -1, 0), 1));
 		lua_pop(L, (lua_getfield(L, 1, "UpperBound"), self->UpperBound = luaL_optnumber(L, -1, 0), 1));
 		lua_pop(L, (lua_getfield(L, 1, "LowerBound"), self->LowerBound = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "ShortIdentifier"), self->ShortIdentifier = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "FullIdentifier"), self->FullIdentifier = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Offset"), self->Offset = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "DataSize"), self->DataSize = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "ShortIdentifier"), self->ShortIdentifier = (uint32_t)luaL_optinteger(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "FullIdentifier"), self->FullIdentifier = (uint32_t)luaL_optinteger(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Offset"), self->Offset = (uint32_t)luaL_optinteger(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "DataSize"), self->DataSize = (uint32_t)luaL_optinteger(L, -1, 0), 1));
 		lua_pop(L, (lua_getfield(L, 1, "IsArray"), self->IsArray = lua_toboolean(L, -1), 1));
 	} else {
 		strncpy(self->Name, luaL_optstring(L, 1, ""), sizeof(self->Name));
@@ -853,10 +853,10 @@ static int f_new_PropertyType(lua_State *L) {
 		self->Step = luaL_optnumber(L, 13, 0);
 		self->UpperBound = luaL_optnumber(L, 14, 0);
 		self->LowerBound = luaL_optnumber(L, 15, 0);
-		self->ShortIdentifier = luaL_optnumber(L, 16, 0);
-		self->FullIdentifier = luaL_optnumber(L, 17, 0);
-		self->Offset = luaL_optnumber(L, 18, 0);
-		self->DataSize = luaL_optnumber(L, 19, 0);
+		self->ShortIdentifier = (uint32_t)luaL_optinteger(L, 16, 0);
+		self->FullIdentifier = (uint32_t)luaL_optinteger(L, 17, 0);
+		self->Offset = (uint32_t)luaL_optinteger(L, 18, 0);
+		self->DataSize = (uint32_t)luaL_optinteger(L, 19, 0);
 		self->IsArray = lua_toboolean(L, 20);
 	}
 	return 1;
@@ -881,10 +881,10 @@ int f_PropertyType___index(lua_State *L) {
 	case 0x4771f92f: lua_pushnumber(L, self->Step); return 1; // Step
 	case 0x48b88645: lua_pushnumber(L, self->UpperBound); return 1; // UpperBound
 	case 0xccc57b3a: lua_pushnumber(L, self->LowerBound); return 1; // LowerBound
-	case 0x0f76864e: lua_pushnumber(L, self->ShortIdentifier); return 1; // ShortIdentifier
-	case 0x429417cf: lua_pushnumber(L, self->FullIdentifier); return 1; // FullIdentifier
-	case 0x8995c7ea: lua_pushnumber(L, self->Offset); return 1; // Offset
-	case 0x58ff2a7c: lua_pushnumber(L, self->DataSize); return 1; // DataSize
+	case 0x0f76864e: lua_pushinteger(L, self->ShortIdentifier); return 1; // ShortIdentifier
+	case 0x429417cf: lua_pushinteger(L, self->FullIdentifier); return 1; // FullIdentifier
+	case 0x8995c7ea: lua_pushinteger(L, self->Offset); return 1; // Offset
+	case 0x58ff2a7c: lua_pushinteger(L, self->DataSize); return 1; // DataSize
 	case 0x660880b6: lua_pushboolean(L, self->IsArray); return 1; // IsArray
 	}
 	return luaL_error(L, "Unknown field in PropertyType(%p): %s", self, luaL_checkstring(L, 2));
@@ -907,10 +907,10 @@ int f_PropertyType___newindex(lua_State *L) {
 	case 0x4771f92f: self->Step = luaL_optnumber(L, 3, 0); return 0; // Step
 	case 0x48b88645: self->UpperBound = luaL_optnumber(L, 3, 0); return 0; // UpperBound
 	case 0xccc57b3a: self->LowerBound = luaL_optnumber(L, 3, 0); return 0; // LowerBound
-	case 0x0f76864e: self->ShortIdentifier = luaL_optnumber(L, 3, 0); return 0; // ShortIdentifier
-	case 0x429417cf: self->FullIdentifier = luaL_optnumber(L, 3, 0); return 0; // FullIdentifier
-	case 0x8995c7ea: self->Offset = luaL_optnumber(L, 3, 0); return 0; // Offset
-	case 0x58ff2a7c: self->DataSize = luaL_optnumber(L, 3, 0); return 0; // DataSize
+	case 0x0f76864e: self->ShortIdentifier = (uint32_t)luaL_optinteger(L, 3, 0); return 0; // ShortIdentifier
+	case 0x429417cf: self->FullIdentifier = (uint32_t)luaL_optinteger(L, 3, 0); return 0; // FullIdentifier
+	case 0x8995c7ea: self->Offset = (uint32_t)luaL_optinteger(L, 3, 0); return 0; // Offset
+	case 0x58ff2a7c: self->DataSize = (uint32_t)luaL_optinteger(L, 3, 0); return 0; // DataSize
 	case 0x660880b6: self->IsArray = lua_toboolean(L, 3); return 0; // IsArray
 	}
 	return luaL_error(L, "Unknown field in PropertyType(%p): %s", self, luaL_checkstring(L, 2));
