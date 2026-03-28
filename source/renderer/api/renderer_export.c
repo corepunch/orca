@@ -280,14 +280,14 @@ static int f_new_RenderScreenEventArgs(lua_State *L) {
 	memset(self, 0, sizeof(struct RenderScreenEventArgs));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "width"), self->width = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "height"), self->height = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "width"), self->width = (uint32_t)luaL_optinteger(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "height"), self->height = (uint32_t)luaL_optinteger(L, -1, 0), 1));
 		lua_pop(L, (lua_getfield(L, 1, "stereo"), self->stereo = luaL_optnumber(L, -1, 0), 1));
 		lua_pop(L, (lua_getfield(L, 1, "angle"), self->angle = luaL_optnumber(L, -1, 0), 1));
 		lua_pop(L, (lua_getfield(L, 1, "target"), self->target = luaX_checkTexture(L, -1), 1));
 	} else {
-		self->width = luaL_optnumber(L, 1, 0);
-		self->height = luaL_optnumber(L, 2, 0);
+		self->width = (uint32_t)luaL_optinteger(L, 1, 0);
+		self->height = (uint32_t)luaL_optinteger(L, 2, 0);
 		self->stereo = luaL_optnumber(L, 3, 0);
 		self->angle = luaL_optnumber(L, 4, 0);
 		self->target = luaX_checkTexture(L, 5);
@@ -299,8 +299,8 @@ static int f_new_RenderScreenEventArgs(lua_State *L) {
 int f_RenderScreenEventArgs___index(lua_State *L) {
 	struct RenderScreenEventArgs* self = luaX_checkRenderScreenEventArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x95876e1f: lua_pushnumber(L, self->width); return 1; // width
-	case 0xd5bdbb42: lua_pushnumber(L, self->height); return 1; // height
+	case 0x95876e1f: lua_pushinteger(L, self->width); return 1; // width
+	case 0xd5bdbb42: lua_pushinteger(L, self->height); return 1; // height
 	case 0xcc87a64d: lua_pushnumber(L, self->stereo); return 1; // stereo
 	case 0xad544418: lua_pushnumber(L, self->angle); return 1; // angle
 	case 0x32608848: luaX_pushTexture(L, self->target); return 1; // target
@@ -310,8 +310,8 @@ int f_RenderScreenEventArgs___index(lua_State *L) {
 int f_RenderScreenEventArgs___newindex(lua_State *L) {
 	struct RenderScreenEventArgs* self = luaX_checkRenderScreenEventArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x95876e1f: self->width = luaL_optnumber(L, 3, 0); return 0; // width
-	case 0xd5bdbb42: self->height = luaL_optnumber(L, 3, 0); return 0; // height
+	case 0x95876e1f: self->width = (uint32_t)luaL_optinteger(L, 3, 0); return 0; // width
+	case 0xd5bdbb42: self->height = (uint32_t)luaL_optinteger(L, 3, 0); return 0; // height
 	case 0xcc87a64d: self->stereo = luaL_optnumber(L, 3, 0); return 0; // stereo
 	case 0xad544418: self->angle = luaL_optnumber(L, 3, 0); return 0; // angle
 	case 0x32608848: self->target = luaX_checkTexture(L, 3); return 0; // target
@@ -926,11 +926,11 @@ ORCA_API struct ClassDesc _Timeline = {
 
 
 int f_renderer_Init(lua_State *L) {
-	uint32_t Width = luaL_checknumber(L, 1);
-	uint32_t Height = luaL_checknumber(L, 2);
+	uint32_t Width = luaL_checkinteger(L, 1);
+	uint32_t Height = luaL_checkinteger(L, 2);
 	bool_t Offscreen = lua_toboolean(L, 3);
 	int32_t result_ = renderer_Init(Width, Height, Offscreen);
-	lua_pushnumber(L, result_);
+	lua_pushinteger(L, result_);
 	return 1;
 }
 int f_renderer_Shutdown(lua_State *L) {

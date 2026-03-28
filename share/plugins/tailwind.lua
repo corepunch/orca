@@ -54,9 +54,9 @@ for k, v in pairs(spreadsheet) do
 	end
 end
 
-if orca.configs.tailwind and orca.configs.tailwind.extend then
+if orca.config.tailwind and orca.config.tailwind.extend then
 	for _, name in ipairs(extends) do
-		for k, v in pairs(orca.configs.tailwind.extend[name] or {}) do
+		for k, v in pairs(orca.config.tailwind.extend[name] or {}) do
 			theme[name][k] = v
 		end
 	end

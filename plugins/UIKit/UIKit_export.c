@@ -1266,9 +1266,9 @@ static int f_new_PushPropertyEventArgs(lua_State *L) {
 	memset(self, 0, sizeof(struct PushPropertyEventArgs));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Placeholder"), self->Placeholder = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Placeholder"), self->Placeholder = (int32_t)luaL_optinteger(L, -1, 0), 1));
 	} else {
-		self->Placeholder = luaL_optnumber(L, 1, 0);
+		self->Placeholder = (int32_t)luaL_optinteger(L, 1, 0);
 	}
 	return 1;
 }
@@ -1277,14 +1277,14 @@ static int f_new_PushPropertyEventArgs(lua_State *L) {
 int f_PushPropertyEventArgs___index(lua_State *L) {
 	struct PushPropertyEventArgs* self = luaX_checkPushPropertyEventArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x8987413a: lua_pushnumber(L, self->Placeholder); return 1; // Placeholder
+	case 0x8987413a: lua_pushinteger(L, self->Placeholder); return 1; // Placeholder
 	}
 	return luaL_error(L, "Unknown field in PushPropertyEventArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
 int f_PushPropertyEventArgs___newindex(lua_State *L) {
 	struct PushPropertyEventArgs* self = luaX_checkPushPropertyEventArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x8987413a: self->Placeholder = luaL_optnumber(L, 3, 0); return 0; // Placeholder
+	case 0x8987413a: self->Placeholder = (int32_t)luaL_optinteger(L, 3, 0); return 0; // Placeholder
 	}
 	return luaL_error(L, "Unknown field in PushPropertyEventArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
@@ -1403,12 +1403,12 @@ static int f_new_HandleMessageEventArgs(lua_State *L) {
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_pop(L, (lua_getfield(L, 1, "EventName"), strncpy(self->EventName, luaL_optstring(L, -1, ""), sizeof(self->EventName)), 1));
-		lua_pop(L, (lua_getfield(L, 1, "FirstArg"), self->FirstArg = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "NumArgs"), self->NumArgs = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "FirstArg"), self->FirstArg = (uint32_t)luaL_optinteger(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "NumArgs"), self->NumArgs = (uint32_t)luaL_optinteger(L, -1, 0), 1));
 	} else {
 		strncpy(self->EventName, luaL_optstring(L, 1, ""), sizeof(self->EventName));
-		self->FirstArg = luaL_optnumber(L, 2, 0);
-		self->NumArgs = luaL_optnumber(L, 3, 0);
+		self->FirstArg = (uint32_t)luaL_optinteger(L, 2, 0);
+		self->NumArgs = (uint32_t)luaL_optinteger(L, 3, 0);
 	}
 	return 1;
 }
@@ -1418,8 +1418,8 @@ int f_HandleMessageEventArgs___index(lua_State *L) {
 	struct HandleMessageEventArgs* self = luaX_checkHandleMessageEventArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x2fc7b71c: lua_pushstring(L, self->EventName); return 1; // EventName
-	case 0xd26deba3: lua_pushnumber(L, self->FirstArg); return 1; // FirstArg
-	case 0x227201c6: lua_pushnumber(L, self->NumArgs); return 1; // NumArgs
+	case 0xd26deba3: lua_pushinteger(L, self->FirstArg); return 1; // FirstArg
+	case 0x227201c6: lua_pushinteger(L, self->NumArgs); return 1; // NumArgs
 	}
 	return luaL_error(L, "Unknown field in HandleMessageEventArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
@@ -1427,8 +1427,8 @@ int f_HandleMessageEventArgs___newindex(lua_State *L) {
 	struct HandleMessageEventArgs* self = luaX_checkHandleMessageEventArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x2fc7b71c: strncpy(self->EventName, luaL_optstring(L, 3, ""), sizeof(self->EventName)); return 0; // EventName
-	case 0xd26deba3: self->FirstArg = luaL_optnumber(L, 3, 0); return 0; // FirstArg
-	case 0x227201c6: self->NumArgs = luaL_optnumber(L, 3, 0); return 0; // NumArgs
+	case 0xd26deba3: self->FirstArg = (uint32_t)luaL_optinteger(L, 3, 0); return 0; // FirstArg
+	case 0x227201c6: self->NumArgs = (uint32_t)luaL_optinteger(L, 3, 0); return 0; // NumArgs
 	}
 	return luaL_error(L, "Unknown field in HandleMessageEventArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
@@ -1483,10 +1483,10 @@ static int f_new_MakeTextEventArgs(lua_State *L) {
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_pop(L, (lua_getfield(L, 1, "text"), self->text = NULL, 1));
-		lua_pop(L, (lua_getfield(L, 1, "availableSpace"), self->availableSpace = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "availableSpace"), self->availableSpace = (uint32_t)luaL_optinteger(L, -1, 0), 1));
 	} else {
 		self->text = NULL;
-		self->availableSpace = luaL_optnumber(L, 2, 0);
+		self->availableSpace = (uint32_t)luaL_optinteger(L, 2, 0);
 	}
 	return 1;
 }
@@ -1496,7 +1496,7 @@ int f_MakeTextEventArgs___index(lua_State *L) {
 	struct MakeTextEventArgs* self = luaX_checkMakeTextEventArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0xbde64e3e: luaX_pushViewText(L, self->text); return 1; // text
-	case 0xa7e2407e: lua_pushnumber(L, self->availableSpace); return 1; // availableSpace
+	case 0xa7e2407e: lua_pushinteger(L, self->availableSpace); return 1; // availableSpace
 	}
 	return luaL_error(L, "Unknown field in MakeTextEventArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
@@ -1504,7 +1504,7 @@ int f_MakeTextEventArgs___newindex(lua_State *L) {
 	struct MakeTextEventArgs* self = luaX_checkMakeTextEventArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0xbde64e3e: self->text = NULL; return 0; // text
-	case 0xa7e2407e: self->availableSpace = luaL_optnumber(L, 3, 0); return 0; // availableSpace
+	case 0xa7e2407e: self->availableSpace = (uint32_t)luaL_optinteger(L, 3, 0); return 0; // availableSpace
 	}
 	return luaL_error(L, "Unknown field in MakeTextEventArgs(%p): %s", self, luaL_checkstring(L, 2));
 }

@@ -138,9 +138,9 @@ project "orca.sysutil"
     links { "orca.platform" }
 
 -- Backend module
-project "orca.backend"
+project "orca.system"
     kind "SharedLib"
-    targetname "orca.backend"
+    targetname "orca.system"
     targetextension ".so"
     targetprefix "lib"
     targetdir "build/lib"
@@ -276,7 +276,7 @@ project "orca.editor"
     links { 
         "orca.filesystem",
         "orca.renderer",
-        "orca.backend",
+        "orca.system",
         "orca.geometry",
         "orca.core",
         "orca.ui",
@@ -304,7 +304,7 @@ project "orca"
         "orca.renderer",
         "orca.ui",
         "orca.scene",
-        "orca.backend",
+        "orca.system",
         "orca.editor",
         "orca.localization",
         "orca.parsers",

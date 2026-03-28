@@ -2,9 +2,10 @@
 -- Tests the UIKit layout system (Grid, StackView, Node2D) using only
 -- fixed-size nodes so that font measurement is never needed.
 
-local orca = require "orca"
-orca.init()
+local core = require "orca.core2"
 local ui = require "orca.UIKit"
+
+core.load_plugins() -- load plugins to ensure all types are registered for type converter tests
 
 local screen = ui.Screen { Width = 1000, Height = 1000 }
 

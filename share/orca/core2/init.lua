@@ -14,7 +14,6 @@ function core.init()
 	local project = filesystem.init(DATADIR)
 	renderer.init(project.WindowWidth, project.WindowHeight, false)
 
-	orca.configs = {}
 	-- require "orca.core2.project"
 	-- core.projects = {}
 	-- core.load_project(DATADIR)
@@ -43,13 +42,14 @@ function core.load_editor()
 end
 
 function core.load_plugin_config(name)
-	orca.configs[name] = {}
+	orca.config[name] = {}
+	if not filesystem.getWorkspace() then return end
 	for node in filesystem.getWorkspace().children do
 		local filename = filesystem.joinPaths(node.Name, 'config/'..name..".lua")
 		-- print("Checking for plugin config:", filename)
-		-- local chunk = loadfile(filename, "t", core.configs[name])
+		-- local chunk = loadfile(filename, "t", core.config[name])
 		local file = filesystem.readTextFile(filename)
-		local chunk = file and load(file, "@"..filename, "t", orca.configs[name])
+		local chunk = file and load(file, "@"..filename, "t", orca.config[name])
 		if chunk then
 			print("Loading plugin config", filename)
 			local ok, err = pcall(chunk)

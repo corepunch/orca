@@ -130,7 +130,7 @@ local function test_button_interaction()
 	local button = screen + ui.Button { Width = 100, Height = 100, onLeftMouseDown = function () clicked = true end }
 	screen:updateLayout(screen.Width, screen.Height)
 	-- Simulate a left mouse down event on the button
-	orca.backend.dispatchMessage {
+	orca.system.dispatchMessage {
 		target = screen,
 		message = "LeftMouseDown",
 		x = 50,
@@ -149,7 +149,7 @@ local function test_input_interaction()
 	screen:updateLayout(screen.Width, screen.Height)
 	-- Simulate a left mouse down event on the button
 	for i = 1, #config.text do
-		orca.backend.dispatchMessage {
+		orca.system.dispatchMessage {
 			target = screen, -- we target the screen here because the input should be focused and receive the key down events
 			message = "KeyDown",
 			key = string.byte(config.text:sub(i, i)),
@@ -344,7 +344,7 @@ local function test_form_populate_inputs()
 	-- Type text into the username input
 	username_input:setFocus()
 	for i = 1, #config.username do
-		orca.backend.dispatchMessage {
+		orca.system.dispatchMessage {
 			target = screen,
 			message = "KeyDown",
 			key = string.byte(config.username:sub(i, i)),
@@ -355,7 +355,7 @@ local function test_form_populate_inputs()
 	-- Type text into the password input
 	password_input:setFocus()
 	for i = 1, #config.password do
-		orca.backend.dispatchMessage {
+		orca.system.dispatchMessage {
 			target = screen,
 			message = "KeyDown",
 			key = string.byte(config.password:sub(i, i)),
