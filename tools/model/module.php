@@ -498,7 +498,7 @@ class Event extends Type {
 
 	// Returns the C type declaration string (without *) for events without inline fields
 	function getEffectiveTypeDecl() {
-		if ($this->hasFields()) return "struct {$this->name}EventArgs";
+		if ($this->hasFields()) return "struct " . $this->name . "EventArgs";
 		$parent = $this->getParentEvent();
 		if ($parent) return $parent->getEffectiveTypeDecl();
 		return strval($this); // delegates to Type::__toString() for kind-based formatting
@@ -507,7 +507,7 @@ class Event extends Type {
 	// Returns the EventArgs struct name to alias when a child has no own fields
 	// but the parent chain does have fields
 	function getEffectiveStructName() {
-		if ($this->hasFields()) return "{$this->name}EventArgs";
+		if ($this->hasFields()) return $this->name . "EventArgs";
 		$parent = $this->getParentEvent();
 		return $parent ? $parent->getEffectiveStructName() : null;
 	}
