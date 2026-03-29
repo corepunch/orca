@@ -20,6 +20,7 @@ struct _FTG;
 
 
 
+
 /// @brief Loader for FTG archives (Dark Reign game format)
 /** FtgPackage component */
 typedef struct FtgPackage FtgPackage_t, *FtgPackagePtr, *lpFtgPackage_t;

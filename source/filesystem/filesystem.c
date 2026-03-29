@@ -213,7 +213,7 @@ bool_t
 FS_FileExists(lpcString_t path)
 {
   FS_FindPackage(search, path) {
-    if (OBJ_SendMessageW(search, kEventFileExists, 0, &(struct FileExistsArgs) {
+    if (OBJ_SendMessageW(search, kEventFileExists, 0, &(struct FileExistsEventArgs) {
       .FileName = path + strlen(OBJ_GetName(search)) + 1
     })) {
       return TRUE;
@@ -239,7 +239,7 @@ FS_LoadFile(lpcString_t szFileName)
 
   // If that fails, try to find it in loaded packages
   FS_FindPackage(package, szFileName) {
-    if ((pFile = (struct file*)OBJ_SendMessageW(package, kEventOpenFile, 0, &(struct OpenFileArgs){
+    if ((pFile = (struct file*)OBJ_SendMessageW(package, kEventOpenFile, 0, &(struct OpenFileEventArgs){
       .FileName = szFileName + strlen(OBJ_GetName(package)) + 1,
     }))) {
       return pFile;
@@ -345,7 +345,7 @@ _TryLoadBundle(lpcClassDesc_t c, void* args)
   if (!it->project) {
     it->project =
     (struct Object*)c->ObjProc(NULL, it->L, kEventLoadProject, 0,
-                               &(struct LoadProjectArgs) {
+                               &(struct LoadProjectEventArgs) {
       .Path = (void*)it->directory
     });
   }
@@ -390,11 +390,14 @@ _InitTheme(lua_State *L, lpProject_t project)
     lua_pushnil(L);
     while (lua_next(L, -2)) {
       if (lua_type(L, -1) == LUA_TTABLE) {
-        lua_rawget(L, ((void)lua_getfield(L, -1, "SelectedTheme"), -2));
-        lua_pushnil(L);
-        while (lua_next(L, -2)) {
-          register_theme_value(luaL_checkstring(L, -2), luaL_checkstring(L, -1), L);
-          lua_pop(L, 1);
+        lua_getfield(L, -1, "SelectedTheme");
+        lua_rawget(L, -2);
+        if (lua_type(L, -1) == LUA_TTABLE) {
+          lua_pushnil(L);
+          while (lua_next(L, -2)) {
+            register_theme_value(luaL_checkstring(L, -2), luaL_checkstring(L, -1), L);
+            lua_pop(L, 1);
+          }
         }
         lua_pop(L, 1);
       }

@@ -40,10 +40,13 @@
 >
 
 <!-- Event Declaration - defines an event that can be handled -->
-<!ELEMENT event EMPTY>
+<!-- Events may contain inline field children (preferred) or reference an external type via the type attribute (workaround) -->
+<!-- Use parent="BaseEvent" to share fields/type with another event (inheritance) -->
+<!ELEMENT event (summary?, details?, field*)>
 <!ATTLIST event
   name CDATA #REQUIRED
   type CDATA #IMPLIED
+  parent CDATA #IMPLIED
 >
 
 <!-- Resource Type Declaration -->

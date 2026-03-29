@@ -34,6 +34,7 @@ extern const char *_<?= $ename ?>[];
 <?php include_template("export/enums", ['enums' => $local_enums]) ?>
 <?php include_template("export/interfaces", ['interfaces' => $model->getInterfaces()]) ?>
 <?php include_template("export/structs", ['structs' => $model->getStructs()]) ?>
+<?php include_template("export/events", ['events' => $model->getEvents()]) ?>
 <?php include_template("export/components", ['components' => $model->getComponents(), 'events' => $model->getEvents()]) ?>
 <?php include_template("export/functions", ['functions' => $model->getFunctions(), 'prefix' => $model->prefix]) ?>
 
@@ -50,6 +51,10 @@ ORCA_API int luaopen_orca_<?= $model->getModuleName() ?>(lua_State *L) {
 <?php endif ?>
 <?php foreach ($model->getStructs() as $name => $struct):?>
 	lua_setfield(L, ((void)luaopen_orca_<?= $name ?>(L), -2), "<?= $struct->export ?>");
+<?php endforeach ?>
+<?php foreach ($model->getEvents() as $name => $event):?>
+<?php if (!$event->hasFields()): continue; endif ?>
+	lua_setfield(L, ((void)luaopen_orca_<?= $name ?>EventArgs(L), -2), "<?= $name ?>EventArgs");
 <?php endforeach ?>
 <?php foreach ($model->getInterfaces() as $name => $interface):?>
 	lua_setfield(L, ((void)luaopen_orca_<?= $name ?>(L), -2), "<?= $interface->export ?>");

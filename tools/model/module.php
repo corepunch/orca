@@ -457,8 +457,59 @@ class Enum extends Base {
 }
 
 class Event extends Type {
+	public $parent_name;
+
 	function __construct($elem, $model) {
 		parent::__construct($elem, $model);
+		$p = $elem["parent"];
+		$this->parent_name = $p ? strval($p) : null;
+	}
+
+	function getParentEvent() {
+		if (!$this->parent_name) return null;
+		return $this->_model->resolveEvent($this->parent_name);
+	}
+
+	function hasFields() {
+		return count($this->_elem->xpath("field[@name]")) > 0;
+	}
+
+	// Returns true if this event or any ancestor has inline fields
+	function hasAnyFields() {
+		if ($this->hasFields()) return true;
+		$parent = $this->getParentEvent();
+		return $parent ? $parent->hasAnyFields() : false;
+	}
+
+	function getFields() {
+		foreach ($this->_elem->xpath("field[@name]") as $f) {
+			yield new Field($f, $this->_model);
+		}
+	}
+
+	// Yields fields from the ancestor chain followed by own fields
+	function getAllFields() {
+		$parent = $this->getParentEvent();
+		if ($parent) {
+			yield from $parent->getAllFields();
+		}
+		yield from $this->getFields();
+	}
+
+	// Returns the C type declaration string (without *) for events without inline fields
+	function getEffectiveTypeDecl() {
+		if ($this->hasFields()) return "struct " . $this->name . "EventArgs";
+		$parent = $this->getParentEvent();
+		if ($parent) return $parent->getEffectiveTypeDecl();
+		return strval($this); // delegates to Type::__toString() for kind-based formatting
+	}
+
+	// Returns the EventArgs struct name to alias when a child has no own fields
+	// but the parent chain does have fields
+	function getEffectiveStructName() {
+		if ($this->hasFields()) return $this->name . "EventArgs";
+		$parent = $this->getParentEvent();
+		return $parent ? $parent->getEffectiveStructName() : null;
 	}
 }
 
@@ -580,6 +631,7 @@ class Model {
 	function getInterface($name) { return $this->interfaces[$name] ?? null; }
 	function getEnum($name) { return $this->enums[$name] ?? null; }
 	function getComponent($name) { return $this->components[$name] ?? null; }
+	function resolveEvent($name) { return $this->_has_in($name, "events"); }
 
 	function getStructs() { return $this->structs; }
 	function getInterfaces() { return $this->interfaces; }
@@ -610,6 +662,14 @@ class Model {
 		$r = $this->_has_in($_type, "external_structs");
 		if ($r) {
 			return ["external_struct", $r];
+		}
+		// Check if type is an event-generated args struct (e.g. "HandleMessageEventArgs")
+		if (str_ends_with($_type, "EventArgs")) {
+			$eventName = substr($_type, 0, -strlen("EventArgs"));
+			$ev = $this->_has_in($eventName, "events");
+			if ($ev && $ev->hasFields()) {
+				return ["struct", null];
+			}
 		}
 		return [$_type, null];
 	}

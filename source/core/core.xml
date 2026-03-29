@@ -10,58 +10,57 @@
   <external struct="KeyframeAnim"/>
   <external struct="lua_State"/>
   
-  <struct name="PropertyChangedEventArgs">
-    <summary>Event arguments for a property change event</summary>
-    <field name="Property" type="Property" pointer="true">The property that changed</field>
-  </struct>
+  <!-- Base event for all pointer/mouse input events -->
+  <event name="MouseMessage" type="WI_Message"/>
+  <!-- Base event for all keyboard input events -->
+  <event name="KeyMessage" type="WI_Message"/>
 
-  <struct name="UpdateMatrixEventArgs">
-    <summary>Event arguments for an update matrix event</summary>
+  <event name="LeftMouseDown" parent="MouseMessage"/>
+  <event name="RightMouseDown" parent="MouseMessage"/>
+  <event name="OtherMouseDown" parent="MouseMessage"/>
+  <event name="LeftMouseUp" parent="MouseMessage"/>
+  <event name="RightMouseUp" parent="MouseMessage"/>
+  <event name="OtherMouseUp" parent="MouseMessage"/>
+  <event name="LeftMouseDragged" parent="MouseMessage"/>
+  <event name="RightMouseDragged" parent="MouseMessage"/>
+  <event name="OtherMouseDragged" parent="MouseMessage"/>
+  <event name="LeftDoubleClick" parent="MouseMessage"/>
+  <event name="RightDoubleClick" parent="MouseMessage"/>
+  <event name="OtherDoubleClick" parent="MouseMessage"/>
+  <event name="MouseMoved" parent="MouseMessage"/>
+  <event name="ScrollWheel" parent="MouseMessage"/>
+  <event name="DragDrop" parent="MouseMessage"/>
+  <event name="DragEnter" parent="MouseMessage"/>
+  <event name="KeyDown" parent="KeyMessage"/>
+  <event name="KeyUp" parent="KeyMessage"/>
+  <event name="Char" parent="KeyMessage"/>
+  <event name="WindowPaint"/>
+  <event name="WindowClosed"/>
+  <event name="WindowResized"/>
+  <event name="WindowChangedScreen"/>
+  <event name="KillFocus"/>
+  <event name="SetFocus"/>
+  <event name="Timer"/>
+  <event name="UpdateMatrix">
     <field name="parent" type="mat4">The parent matrix</field>
     <field name="opacity" type="float">The opacity value</field>
     <field name="force" type="bool">Indicates if the update is forced</field>
-  </struct>
-
-  <event name="LeftMouseDown" type="WI_Message"/>
-  <event name="RightMouseDown" type="WI_Message"/>
-  <event name="OtherMouseDown" type="WI_Message"/>
-  <event name="LeftMouseUp" type="WI_Message"/>
-  <event name="RightMouseUp" type="WI_Message"/>
-  <event name="OtherMouseUp" type="WI_Message"/>
-  <event name="LeftMouseDragged" type="WI_Message"/>
-  <event name="RightMouseDragged" type="WI_Message"/>
-  <event name="OtherMouseDragged" type="WI_Message"/>
-  <event name="LeftDoubleClick" type="WI_Message"/>
-  <event name="RightDoubleClick" type="WI_Message"/>
-  <event name="OtherDoubleClick" type="WI_Message"/>
-  <event name="MouseMoved" type="WI_Message"/>
-  <event name="ScrollWheel" type="WI_Message"/>
-  <event name="DragDrop" type="WI_Message"/>
-  <event name="DragEnter" type="WI_Message"/>
-  <event name="KeyDown" type="WI_Message"/>
-  <event name="KeyUp" type="WI_Message"/>
-  <event name="Char" type="WI_Message"/>
-  <event name="WindowPaint"/>
-  <event name="WindowClosed"/>
-  <event name="WindowResized" type="void"/>
-  <event name="WindowChangedScreen"/>
-  <event name="KillFocus" type="void"/>
-  <event name="SetFocus" type="void"/>
-  <event name="Timer"/>
-  <event name="UpdateMatrix" type="UpdateMatrixEventArgs"/>
+  </event>
   <event name="HitTest"/>
-  <event name="IsVisible" type="void"/>
-  <event name="Create" type="void"/>
-  <event name="Start" type="void"/>
-  <event name="Awake" type="void"/>
-  <event name="ThemeChanged" type="void"/>
-  <event name="PropertyChanged" type="PropertyChangedEventArgs"/>
-  <event name="Attached" type="void"/>
-  <event name="Release" type="void"/>
-  <event name="Destroy" type="void"/>
+  <event name="IsVisible"/>
+  <event name="Create"/>
+  <event name="Start"/>
+  <event name="Awake"/>
+  <event name="ThemeChanged"/>
+  <event name="PropertyChanged">
+    <field name="Property" type="Property" pointer="true">The property that changed</field>
+  </event>
+  <event name="Attached"/>
+  <event name="Release"/>
+  <event name="Destroy"/>
   <event name="ResumeCoroutine"/>
   <event name="StopCoroutine"/>
-  <event name="ViewDidLoad" type="void"/>
+  <event name="ViewDidLoad"/>
   
   <enums name="PropertyState">
     <summary>Represents the various states a property can be in.</summary>

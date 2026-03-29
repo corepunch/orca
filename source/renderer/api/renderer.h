@@ -280,10 +280,6 @@ ORCA_API const char *ShadingToString(enum Shading value);
 ORCA_API enum Shading luaX_checkShading(lua_State *L, int idx);
 ORCA_API void luaX_pushShading(lua_State *L, enum Shading value);
 
-typedef struct RenderScreenEventArgs RenderScreenEventArgs_t, *lpRenderScreenEventArgs_t;
-typedef struct RenderScreenEventArgs const cRenderScreenEventArgs_t, *lpcRenderScreenEventArgs_t;
-typedef struct RenderEventArgs RenderEventArgs_t, *lpRenderEventArgs_t;
-typedef struct RenderEventArgs const cRenderEventArgs_t, *lpcRenderEventArgs_t;
 
 /// @brief Initializes the rendering system and prepares it for drawing operations.
 ORCA_API int32_t
@@ -302,7 +298,7 @@ ORCA_API void
 renderer_DrawImage(struct lua_State*);
 
 
-/// @brief Event arguments for a render screen event
+
 /** RenderScreenEventArgs struct */
 struct RenderScreenEventArgs {
 	uint32_t width; ///< The width of the render screen
@@ -311,14 +307,13 @@ struct RenderScreenEventArgs {
 	float angle; ///< The angle of the render screen
 	struct Texture* target; ///< The target handle of the render screen
 };
-ORCA_API void luaX_pushRenderScreenEventArgs(lua_State *L, struct RenderScreenEventArgs const* RenderScreenEventArgs);
+ORCA_API void luaX_pushRenderScreenEventArgs(lua_State *L, struct RenderScreenEventArgs const* data);
 ORCA_API struct RenderScreenEventArgs* luaX_checkRenderScreenEventArgs(lua_State *L, int idx);
-/// @brief Event arguments for a render event
 /** RenderEventArgs struct */
 struct RenderEventArgs {
 	struct ViewDef* ViewDef; ///< The view definition for rendering
 };
-ORCA_API void luaX_pushRenderEventArgs(lua_State *L, struct RenderEventArgs const* RenderEventArgs);
+ORCA_API void luaX_pushRenderEventArgs(lua_State *L, struct RenderEventArgs const* data);
 ORCA_API struct RenderEventArgs* luaX_checkRenderEventArgs(lua_State *L, int idx);
 
 /// @brief Base class for managing texture resources and their sampling parameters for rendering.

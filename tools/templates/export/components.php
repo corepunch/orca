@@ -3,9 +3,6 @@
 #define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
 <?php endif ?>
 
-<?php foreach ($events as $name => $event):?>
-typedef <?= $event ?>* <?= $name ?>EventPtr;
-<?php endforeach ?>
 <?php foreach ($components as $name => $component):?>
 	<?php foreach ($component->getEventHandlers() as $event): ?>
 LRESULT <?= $name ?>_<?= $event ?>(struct Object*, struct <?= $name ?>*, wParam_t, <?= $event ?>EventPtr);

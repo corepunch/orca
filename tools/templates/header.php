@@ -24,7 +24,11 @@ struct <?= $name ?>;
 <?php endforeach ?>
 
 <?php foreach ($model->getEvents() as $name => $event):?>
-typedef <?= $event ?>* <?= $name ?>EventPtr;
+<?php if ($event->hasAnyFields()):?>
+typedef struct <?= $event->getEffectiveStructName() ?>* <?= $name ?>EventPtr;
+<?php else:?>
+typedef <?= $event->getEffectiveTypeDecl() ?>* <?= $name ?>EventPtr;
+<?php endif ?>
 <?php endforeach ?>
 
 <?php foreach ($model->getEnums() as $name => $enum): ?>
@@ -95,6 +99,17 @@ ORCA_API struct <?= $name ?>* luaX_check<?= $name ?>(lua_State *L, int idx);
 ORCA_API <?= $method->getReturnType() ?>
 <?= $method->full_name ?>(<?= implode(', ', $method->getArgsTypes()) ?>);
 <?php endforeach ?>
+<?php endforeach ?>
+
+<?php foreach ($model->getEvents() as $name => $event):?>
+<?php if ($event->hasFields()):?>
+/** <?= $name ?>EventArgs struct */
+struct <?= $name ?>EventArgs {
+<?php include_template("struct_contents", ['list' => $event->getAllFields()]) ?>
+};
+ORCA_API void luaX_push<?= $name ?>EventArgs(lua_State *L, struct <?= $name ?>EventArgs const* data);
+ORCA_API struct <?= $name ?>EventArgs* luaX_check<?= $name ?>EventArgs(lua_State *L, int idx);
+<?php endif ?>
 <?php endforeach ?>
 
 <?php foreach ($model->getComponents() as $name => $component): ?>
