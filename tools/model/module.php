@@ -501,9 +501,7 @@ class Event extends Type {
 		if ($this->hasFields()) return "struct {$this->name}EventArgs";
 		$parent = $this->getParentEvent();
 		if ($parent) return $parent->getEffectiveTypeDecl();
-		$info = config::$TypeInfos[$this->kind] ?? [];
-		$format = $info["decl"] ?? "%s_t";
-		return sprintf($format, $this->type);
+		return strval($this); // delegates to Type::__toString() for kind-based formatting
 	}
 
 	// Returns the EventArgs struct name to alias when a child has no own fields

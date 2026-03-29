@@ -5,8 +5,7 @@
 
 <?php foreach ($events as $name => $event):?>
 <?php if ($event->hasAnyFields()):?>
-<?php $ownFields = iterator_to_array($event->getFields()) ?>
-<?php if (count($ownFields) > 0):?>
+<?php if ($event->hasFields()):?>
 struct <?= $name ?>EventArgs {
 <?php include_template("struct_contents", ['list' => $event->getAllFields()]) ?>
 };
