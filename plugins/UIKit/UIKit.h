@@ -22,15 +22,15 @@ struct lua_State;
 #include "UIKit_properties.h"
 #include "../../source/renderer/api/renderer.h"
 
-typedef void GetSizeMsg_t,* GetSizeMsgPtr;
-typedef void SubmitMsg_t,* SubmitMsgPtr;
+typedef int GetSizeMsg_t,* GetSizeMsgPtr;
+typedef int SubmitMsg_t,* SubmitMsgPtr;
 typedef struct MeasureMsgArgs MeasureMsg_t,* MeasureMsgPtr;
 typedef struct ArrangeMsgArgs ArrangeMsg_t,* ArrangeMsgPtr;
 typedef struct MeasureMsgArgs MeasureOverrideMsg_t,* MeasureOverrideMsgPtr;
 typedef struct ArrangeMsgArgs ArrangeOverrideMsg_t,* ArrangeOverrideMsgPtr;
 typedef struct ForegroundContentMsgArgs ForegroundContentMsg_t,* ForegroundContentMsgPtr;
 typedef struct PushPropertyMsgArgs PushPropertyMsg_t,* PushPropertyMsgPtr;
-typedef void UpdateGeometryMsg_t,* UpdateGeometryMsgPtr;
+typedef int UpdateGeometryMsg_t,* UpdateGeometryMsgPtr;
 typedef struct DrawBrushMsgArgs DrawBrushMsg_t,* DrawBrushMsgPtr;
 typedef struct HandleMessageMsgArgs HandleMessageMsg_t,* HandleMessageMsgPtr;
 typedef struct LoadViewMsgArgs LoadViewMsg_t,* LoadViewMsgPtr;

@@ -501,6 +501,9 @@ class Event extends Type {
 		if ($this->hasFields()) return "struct " . $this->name . "MsgArgs";
 		$parent = $this->getParentEvent();
 		if ($parent) return $parent->getEffectiveTypeDecl();
+		if strval($this) == "void" {
+			return "int"; // use int for empty events to avoid zero-size struct issues
+		}
 		return strval($this); // delegates to Type::__toString() for kind-based formatting
 	}
 

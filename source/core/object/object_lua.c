@@ -61,6 +61,7 @@ _parse_args(lua_State* L, lpObject_t hobj)
       lua_pushstring(L, _key);
     }
     lua_remove(L, 2);
+    
     OBJ_SendMessageW(hobj, kMsgStart, 0, NULL);
   }
   if (lua_type(L, 2) == LUA_TFUNCTION) {
