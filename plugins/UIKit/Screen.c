@@ -403,8 +403,8 @@ HANDLER(Node2D, Draw2DContent)
 #define kMsgUpdateGeometry 0x12c1a314
 #define kMsgForegroundContent 0x9a7735e5
 
-  OBJ_SendMessageW(hObject, kMsgUpdateGeometry, 0, NULL);
-  foreground = (struct Texture*)OBJ_SendMessageW(hObject, kMsgForegroundContent, 0, NULL);
+  _SendMessage(hObject, UpdateGeometry);
+  foreground = (struct Texture*)_SendMessage(hObject, ForegroundContent);
   
   if (pNode2D->BoxShadow.Color.a) {
     //		struct mat4 mat, offset;
