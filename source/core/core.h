@@ -19,6 +19,8 @@ struct lua_State;
 #include "core_properties.h"
 #include "../geometry/geometry.h"
 
+typedef struct WI_Message* MouseEventEventPtr;
+typedef struct WI_Message* KeyEventEventPtr;
 typedef struct WI_Message* LeftMouseDownEventPtr;
 typedef struct WI_Message* RightMouseDownEventPtr;
 typedef struct WI_Message* OtherMouseDownEventPtr;
@@ -122,10 +124,6 @@ ORCA_API const char *DataTypeToString(enum DataType value);
 ORCA_API enum DataType luaX_checkDataType(lua_State *L, int idx);
 ORCA_API void luaX_pushDataType(lua_State *L, enum DataType value);
 
-typedef struct PropertyChangedEventArgs PropertyChangedEventArgs_t, *lpPropertyChangedEventArgs_t;
-typedef struct PropertyChangedEventArgs const cPropertyChangedEventArgs_t, *lpcPropertyChangedEventArgs_t;
-typedef struct UpdateMatrixEventArgs UpdateMatrixEventArgs_t, *lpUpdateMatrixEventArgs_t;
-typedef struct UpdateMatrixEventArgs const cUpdateMatrixEventArgs_t, *lpcUpdateMatrixEventArgs_t;
 typedef struct PropertyEnumValue PropertyEnumValue_t, *lpPropertyEnumValue_t;
 typedef struct PropertyEnumValue const cPropertyEnumValue_t, *lpcPropertyEnumValue_t;
 typedef struct PropertyType PropertyType_t, *lpPropertyType_t;
@@ -398,22 +396,6 @@ OBJ_AddAlias(struct Object*, const char*, const char*);
 ORCA_API void
 OBJ_AssignAliases(struct Object*, const char*);
 
-/// @brief Event arguments for a property change event
-/** PropertyChangedEventArgs struct */
-struct PropertyChangedEventArgs {
-	struct Property* Property; ///< The property that changed
-};
-ORCA_API void luaX_pushPropertyChangedEventArgs(lua_State *L, struct PropertyChangedEventArgs const* PropertyChangedEventArgs);
-ORCA_API struct PropertyChangedEventArgs* luaX_checkPropertyChangedEventArgs(lua_State *L, int idx);
-/// @brief Event arguments for an update matrix event
-/** UpdateMatrixEventArgs struct */
-struct UpdateMatrixEventArgs {
-	struct mat4 parent; ///< The parent matrix
-	float opacity; ///< The opacity value
-	bool_t force; ///< Indicates if the update is forced
-};
-ORCA_API void luaX_pushUpdateMatrixEventArgs(lua_State *L, struct UpdateMatrixEventArgs const* UpdateMatrixEventArgs);
-ORCA_API struct UpdateMatrixEventArgs* luaX_checkUpdateMatrixEventArgs(lua_State *L, int idx);
 /// @brief Enum value descriptor for a property.
 /** PropertyEnumValue struct */
 struct PropertyEnumValue {
@@ -449,6 +431,17 @@ struct PropertyType {
 };
 ORCA_API void luaX_pushPropertyType(lua_State *L, struct PropertyType const* PropertyType);
 ORCA_API struct PropertyType* luaX_checkPropertyType(lua_State *L, int idx);
+
+/** UpdateMatrixEventArgs struct */
+struct UpdateMatrixEventArgs {
+	struct mat4 parent; ///< The parent matrix
+	float opacity; ///< The opacity value
+	bool_t force; ///< Indicates if the update is forced
+};
+/** PropertyChangedEventArgs struct */
+struct PropertyChangedEventArgs {
+	struct Property* Property; ///< The property that changed
+};
 
 
 #endif

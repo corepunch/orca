@@ -213,7 +213,7 @@ bool_t
 FS_FileExists(lpcString_t path)
 {
   FS_FindPackage(search, path) {
-    if (OBJ_SendMessageW(search, kEventFileExists, 0, &(struct FileExistsArgs) {
+    if (OBJ_SendMessageW(search, kEventFileExists, 0, &(struct FileExistsEventArgs) {
       .FileName = path + strlen(OBJ_GetName(search)) + 1
     })) {
       return TRUE;
@@ -239,7 +239,7 @@ FS_LoadFile(lpcString_t szFileName)
 
   // If that fails, try to find it in loaded packages
   FS_FindPackage(package, szFileName) {
-    if ((pFile = (struct file*)OBJ_SendMessageW(package, kEventOpenFile, 0, &(struct OpenFileArgs){
+    if ((pFile = (struct file*)OBJ_SendMessageW(package, kEventOpenFile, 0, &(struct OpenFileEventArgs){
       .FileName = szFileName + strlen(OBJ_GetName(package)) + 1,
     }))) {
       return pFile;
@@ -345,7 +345,7 @@ _TryLoadBundle(lpcClassDesc_t c, void* args)
   if (!it->project) {
     it->project =
     (struct Object*)c->ObjProc(NULL, it->L, kEventLoadProject, 0,
-                               &(struct LoadProjectArgs) {
+                               &(struct LoadProjectEventArgs) {
       .Path = (void*)it->directory
     });
   }

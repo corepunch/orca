@@ -36,8 +36,8 @@ typedef struct HandleMessageEventArgs* HandleMessageEventPtr;
 typedef struct LoadViewEventArgs* LoadViewEventPtr;
 typedef struct MakeTextEventArgs* MakeTextEventPtr;
 typedef struct TriggeredEventArgs* TriggeredEventPtr;
-typedef struct NavigateToPageArguments* NavigateToPageEventPtr;
-typedef struct NavigateBackArguments* NavigateBackEventPtr;
+typedef struct NavigateToPageEventArgs* NavigateToPageEventPtr;
+typedef struct NavigateBackEventArgs* NavigateBackEventPtr;
 
 /// @brief Defines the primary axis for layout operations
 /** Direction enum */
@@ -349,24 +349,6 @@ typedef struct SizeAxisShorthand SizeAxisShorthand_t, *lpSizeAxisShorthand_t;
 typedef struct SizeAxisShorthand const cSizeAxisShorthand_t, *lpcSizeAxisShorthand_t;
 typedef struct SizeShorthand SizeShorthand_t, *lpSizeShorthand_t;
 typedef struct SizeShorthand const cSizeShorthand_t, *lpcSizeShorthand_t;
-typedef struct PushPropertyEventArgs PushPropertyEventArgs_t, *lpPushPropertyEventArgs_t;
-typedef struct PushPropertyEventArgs const cPushPropertyEventArgs_t, *lpcPushPropertyEventArgs_t;
-typedef struct ForegroundContentEventArgs ForegroundContentEventArgs_t, *lpForegroundContentEventArgs_t;
-typedef struct ForegroundContentEventArgs const cForegroundContentEventArgs_t, *lpcForegroundContentEventArgs_t;
-typedef struct HandleMessageEventArgs HandleMessageEventArgs_t, *lpHandleMessageEventArgs_t;
-typedef struct HandleMessageEventArgs const cHandleMessageEventArgs_t, *lpcHandleMessageEventArgs_t;
-typedef struct MakeTextEventArgs MakeTextEventArgs_t, *lpMakeTextEventArgs_t;
-typedef struct MakeTextEventArgs const cMakeTextEventArgs_t, *lpcMakeTextEventArgs_t;
-typedef struct DrawBrushEventArgs DrawBrushEventArgs_t, *lpDrawBrushEventArgs_t;
-typedef struct DrawBrushEventArgs const cDrawBrushEventArgs_t, *lpcDrawBrushEventArgs_t;
-typedef struct LoadViewEventArgs LoadViewEventArgs_t, *lpLoadViewEventArgs_t;
-typedef struct LoadViewEventArgs const cLoadViewEventArgs_t, *lpcLoadViewEventArgs_t;
-typedef struct TriggeredEventArgs TriggeredEventArgs_t, *lpTriggeredEventArgs_t;
-typedef struct TriggeredEventArgs const cTriggeredEventArgs_t, *lpcTriggeredEventArgs_t;
-typedef struct NavigateToPageArguments NavigateToPageArguments_t, *lpNavigateToPageArguments_t;
-typedef struct NavigateToPageArguments const cNavigateToPageArguments_t, *lpcNavigateToPageArguments_t;
-typedef struct NavigateBackArguments NavigateBackArguments_t, *lpNavigateBackArguments_t;
-typedef struct NavigateBackArguments const cNavigateBackArguments_t, *lpcNavigateBackArguments_t;
 
 
 
@@ -485,35 +467,15 @@ struct SizeShorthand {
 };
 ORCA_API void luaX_pushSizeShorthand(lua_State *L, struct SizeShorthand const* SizeShorthand);
 ORCA_API struct SizeShorthand* luaX_checkSizeShorthand(lua_State *L, int idx);
-/** PushPropertyEventArgs struct */
-struct PushPropertyEventArgs {
-	int32_t Placeholder;
-};
-ORCA_API void luaX_pushPushPropertyEventArgs(lua_State *L, struct PushPropertyEventArgs const* PushPropertyEventArgs);
-ORCA_API struct PushPropertyEventArgs* luaX_checkPushPropertyEventArgs(lua_State *L, int idx);
+
 /** ForegroundContentEventArgs struct */
 struct ForegroundContentEventArgs {
 	struct Texture* result;
 };
-ORCA_API void luaX_pushForegroundContentEventArgs(lua_State *L, struct ForegroundContentEventArgs const* ForegroundContentEventArgs);
-ORCA_API struct ForegroundContentEventArgs* luaX_checkForegroundContentEventArgs(lua_State *L, int idx);
-/** HandleMessageEventArgs struct */
-struct HandleMessageEventArgs {
-	fixedString_t EventName;
-	uint32_t FirstArg;
-	uint32_t NumArgs;
+/** PushPropertyEventArgs struct */
+struct PushPropertyEventArgs {
+	int32_t Placeholder;
 };
-ORCA_API void luaX_pushHandleMessageEventArgs(lua_State *L, struct HandleMessageEventArgs const* HandleMessageEventArgs);
-ORCA_API struct HandleMessageEventArgs* luaX_checkHandleMessageEventArgs(lua_State *L, int idx);
-/// @brief Event data structure for text rendering requests
-/** MakeTextEventArgs struct */
-struct MakeTextEventArgs {
-	struct ViewText* text; ///< Text view to render
-	uint32_t availableSpace; ///< Available space for text layout
-};
-ORCA_API void luaX_pushMakeTextEventArgs(lua_State *L, struct MakeTextEventArgs const* MakeTextEventArgs);
-ORCA_API struct MakeTextEventArgs* luaX_checkMakeTextEventArgs(lua_State *L, int idx);
-/// @brief Event data structure for brush drawing operations
 /** DrawBrushEventArgs struct */
 struct DrawBrushEventArgs {
 	struct mat4 projection; ///< Projection matrix for 3D to 2D transformation
@@ -524,36 +486,35 @@ struct DrawBrushEventArgs {
 	bool_t foreground; ///< True if drawing foreground, false for background
 	struct ViewDef* viewdef; ///< View definition context for rendering
 };
-ORCA_API void luaX_pushDrawBrushEventArgs(lua_State *L, struct DrawBrushEventArgs const* DrawBrushEventArgs);
-ORCA_API struct DrawBrushEventArgs* luaX_checkDrawBrushEventArgs(lua_State *L, int idx);
+/** HandleMessageEventArgs struct */
+struct HandleMessageEventArgs {
+	fixedString_t EventName;
+	uint32_t FirstArg;
+	uint32_t NumArgs;
+};
 /** LoadViewEventArgs struct */
 struct LoadViewEventArgs {
 	struct lua_State* lua_state;
 };
-ORCA_API void luaX_pushLoadViewEventArgs(lua_State *L, struct LoadViewEventArgs const* LoadViewEventArgs);
-ORCA_API struct LoadViewEventArgs* luaX_checkLoadViewEventArgs(lua_State *L, int idx);
+/** MakeTextEventArgs struct */
+struct MakeTextEventArgs {
+	struct ViewText* text; ///< Text view to render
+	uint32_t availableSpace; ///< Available space for text layout
+};
 /** TriggeredEventArgs struct */
 struct TriggeredEventArgs {
 	struct Trigger* Trigger;
 	struct HandleMessageEventArgs message;
 };
-ORCA_API void luaX_pushTriggeredEventArgs(lua_State *L, struct TriggeredEventArgs const* TriggeredEventArgs);
-ORCA_API struct TriggeredEventArgs* luaX_checkTriggeredEventArgs(lua_State *L, int idx);
-/// @brief Event triggered to navigate to a different page within a PageHost.
-/** NavigateToPageArguments struct */
-struct NavigateToPageArguments {
+/** NavigateToPageEventArgs struct */
+struct NavigateToPageEventArgs {
 	fixedString_t URL; ///< The URL of the page to navigate to.
 	enum TransitionType TransitionType; ///< The type of transition animation to use during navigation.
 };
-ORCA_API void luaX_pushNavigateToPageArguments(lua_State *L, struct NavigateToPageArguments const* NavigateToPageArguments);
-ORCA_API struct NavigateToPageArguments* luaX_checkNavigateToPageArguments(lua_State *L, int idx);
-/// @brief Event triggered to navigate back to the previous page in the navigation history.
-/** NavigateBackArguments struct */
-struct NavigateBackArguments {
+/** NavigateBackEventArgs struct */
+struct NavigateBackEventArgs {
 	enum TransitionType TransitionType; ///< The type of transition animation to use during navigation.
 };
-ORCA_API void luaX_pushNavigateBackArguments(lua_State *L, struct NavigateBackArguments const* NavigateBackArguments);
-ORCA_API struct NavigateBackArguments* luaX_checkNavigateBackArguments(lua_State *L, int idx);
 
 /// @brief Base class for data-holding objects within the framework
 /** DataObject component */
@@ -742,6 +703,8 @@ struct Node2D {
 	bool_t Hovered; ///< Indicates if the element is currently hovered by pointer/mouse.
 	bool_t IgnoreHitTest; ///< Marks object as ignored during hit testing (mouse interaction).
 	enum ForegroundHint ForegroundHint; ///< Hint for how foreground should be rendered. May be used for accessibility, high-contrast, or text rendering optimizations.
+	float ActualX; ///< Actual X position of the element after layout.
+	float ActualY; ///< Actual Y position of the element after layout.
 	struct Node* _node; ///< Internal node reference
 	struct Object* _object; ///< Internal object reference
 	int32_t _userdata; ///< User-defined data storage

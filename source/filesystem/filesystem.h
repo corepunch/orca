@@ -16,10 +16,10 @@ struct _PACK;
 #include "../core/core.h"
 
 typedef void* ReadCommandsEventPtr;
-typedef struct OpenFileArgs* OpenFileEventPtr;
-typedef struct FileExistsArgs* FileExistsEventPtr;
+typedef struct OpenFileEventArgs* OpenFileEventPtr;
+typedef struct FileExistsEventArgs* FileExistsEventPtr;
 typedef void* HasChangedFilesEventPtr;
-typedef struct LoadProjectArgs* LoadProjectEventPtr;
+typedef struct LoadProjectEventArgs* LoadProjectEventPtr;
 
 
 typedef struct ProjectReference ProjectReference_t, *lpProjectReference_t;
@@ -28,12 +28,6 @@ typedef struct EnginePlugin EnginePlugin_t, *lpEnginePlugin_t;
 typedef struct EnginePlugin const cEnginePlugin_t, *lpcEnginePlugin_t;
 typedef struct SystemMessage SystemMessage_t, *lpSystemMessage_t;
 typedef struct SystemMessage const cSystemMessage_t, *lpcSystemMessage_t;
-typedef struct OpenFileArgs OpenFileArgs_t, *lpOpenFileArgs_t;
-typedef struct OpenFileArgs const cOpenFileArgs_t, *lpcOpenFileArgs_t;
-typedef struct FileExistsArgs FileExistsArgs_t, *lpFileExistsArgs_t;
-typedef struct FileExistsArgs const cFileExistsArgs_t, *lpcFileExistsArgs_t;
-typedef struct LoadProjectArgs LoadProjectArgs_t, *lpLoadProjectArgs_t;
-typedef struct LoadProjectArgs const cLoadProjectArgs_t, *lpcLoadProjectArgs_t;
 
 /// @brief Gets the base filename from a path
 ORCA_API const char*
@@ -94,26 +88,19 @@ struct SystemMessage {
 };
 ORCA_API void luaX_pushSystemMessage(lua_State *L, struct SystemMessage const* SystemMessage);
 ORCA_API struct SystemMessage* luaX_checkSystemMessage(lua_State *L, int idx);
-/** OpenFileArgs struct */
-struct OpenFileArgs {
+
+/** OpenFileEventArgs struct */
+struct OpenFileEventArgs {
 	const char* FileName;
 };
-ORCA_API void luaX_pushOpenFileArgs(lua_State *L, struct OpenFileArgs const* OpenFileArgs);
-ORCA_API struct OpenFileArgs* luaX_checkOpenFileArgs(lua_State *L, int idx);
-/// @brief Checks if a file exists at the specified path
-/** FileExistsArgs struct */
-struct FileExistsArgs {
+/** FileExistsEventArgs struct */
+struct FileExistsEventArgs {
 	const char* FileName; ///< The file path to check for existence
 };
-ORCA_API void luaX_pushFileExistsArgs(lua_State *L, struct FileExistsArgs const* FileExistsArgs);
-ORCA_API struct FileExistsArgs* luaX_checkFileExistsArgs(lua_State *L, int idx);
-/// @brief Loads a bundle from the specified path
-/** LoadProjectArgs struct */
-struct LoadProjectArgs {
+/** LoadProjectEventArgs struct */
+struct LoadProjectEventArgs {
 	const char* Path; ///< Directory name to load the bundle
 };
-ORCA_API void luaX_pushLoadProjectArgs(lua_State *L, struct LoadProjectArgs const* LoadProjectArgs);
-ORCA_API struct LoadProjectArgs* luaX_checkLoadProjectArgs(lua_State *L, int idx);
 
 /** Workspace component */
 typedef struct Workspace Workspace_t, *WorkspacePtr, *lpWorkspace_t;

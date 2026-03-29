@@ -597,137 +597,6 @@ int luaopen_orca_Object(lua_State *L) {
 	lua_setfield(L, -2, "__index");
 	return 1;
 }
-void luaX_pushPropertyChangedEventArgs(lua_State *L, struct PropertyChangedEventArgs const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct PropertyChangedEventArgs* self = lua_newuserdata(L, sizeof(struct PropertyChangedEventArgs));
-	luaL_setmetatable(L, "PropertyChangedEventArgs");
-	memcpy(self, data, sizeof(struct PropertyChangedEventArgs));
-}
-struct PropertyChangedEventArgs* luaX_checkPropertyChangedEventArgs(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "PropertyChangedEventArgs");
-}
-static int f_new_PropertyChangedEventArgs(lua_State *L) {
-	struct PropertyChangedEventArgs* self = lua_newuserdata(L, sizeof(struct PropertyChangedEventArgs));
-	luaL_setmetatable(L, "PropertyChangedEventArgs");
-	memset(self, 0, sizeof(struct PropertyChangedEventArgs));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Property"), self->Property = NULL, 1));
-	} else {
-		self->Property = NULL;
-	}
-	return 1;
-}
-
-
-int f_PropertyChangedEventArgs___index(lua_State *L) {
-	struct PropertyChangedEventArgs* self = luaX_checkPropertyChangedEventArgs(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x5221f9e8: luaX_pushProperty(L, self->Property); return 1; // Property
-	}
-	return luaL_error(L, "Unknown field in PropertyChangedEventArgs(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_PropertyChangedEventArgs___newindex(lua_State *L) {
-	struct PropertyChangedEventArgs* self = luaX_checkPropertyChangedEventArgs(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x5221f9e8: self->Property = NULL; return 0; // Property
-	}
-	return luaL_error(L, "Unknown field in PropertyChangedEventArgs(%p): %s", self, luaL_checkstring(L, 2));
-}
-extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
-static int f_PropertyChangedEventArgs___fromstring(lua_State *L) {
-	fixedString_t Property;
-	struct PropertyChangedEventArgs self = {0};
-	switch (sscanf(luaL_checkstring(L, 1), "%s", Property)) {
-	case 1: 
-		;
-		return (luaX_pushPropertyChangedEventArgs(L, &self), 1);
-	default:
-		return luaL_error(L, "Invalid format for PropertyChangedEventArgs: %s", luaL_checkstring(L, 1));
-	}
-}
-static int f_PropertyChangedEventArgs___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_PropertyChangedEventArgs(L));  // remove PropertyChangedEventArgs from stack and call constructor
-}
-int luaopen_orca_PropertyChangedEventArgs(lua_State *L) {
-	luaL_newmetatable(L, "PropertyChangedEventArgs");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_PropertyChangedEventArgs },
-		{ "fromstring", f_PropertyChangedEventArgs___fromstring },
-		{ "__newindex", f_PropertyChangedEventArgs___newindex },
-		{ "__index", f_PropertyChangedEventArgs___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make PropertyChangedEventArgs creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_PropertyChangedEventArgs___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushUpdateMatrixEventArgs(lua_State *L, struct UpdateMatrixEventArgs const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct UpdateMatrixEventArgs* self = lua_newuserdata(L, sizeof(struct UpdateMatrixEventArgs));
-	luaL_setmetatable(L, "UpdateMatrixEventArgs");
-	memcpy(self, data, sizeof(struct UpdateMatrixEventArgs));
-}
-struct UpdateMatrixEventArgs* luaX_checkUpdateMatrixEventArgs(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "UpdateMatrixEventArgs");
-}
-static int f_new_UpdateMatrixEventArgs(lua_State *L) {
-	struct UpdateMatrixEventArgs* self = lua_newuserdata(L, sizeof(struct UpdateMatrixEventArgs));
-	luaL_setmetatable(L, "UpdateMatrixEventArgs");
-	memset(self, 0, sizeof(struct UpdateMatrixEventArgs));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "parent"), self->parent = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkmat4(L, -1) : (struct mat4){0}, 1));
-		lua_pop(L, (lua_getfield(L, 1, "opacity"), self->opacity = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "force"), self->force = lua_toboolean(L, -1), 1));
-	} else {
-		self->parent = lua_type(L, 1) == LUA_TUSERDATA ? *luaX_checkmat4(L, 1) : (struct mat4){0};
-		self->opacity = luaL_optnumber(L, 2, 0);
-		self->force = lua_toboolean(L, 3);
-	}
-	return 1;
-}
-
-
-int f_UpdateMatrixEventArgs___index(lua_State *L) {
-	struct UpdateMatrixEventArgs* self = luaX_checkUpdateMatrixEventArgs(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xeacdfcfd: luaX_pushmat4(L, &self->parent); return 1; // parent
-	case 0xc6c2dd66: lua_pushnumber(L, self->opacity); return 1; // opacity
-	case 0x79a98884: lua_pushboolean(L, self->force); return 1; // force
-	}
-	return luaL_error(L, "Unknown field in UpdateMatrixEventArgs(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_UpdateMatrixEventArgs___newindex(lua_State *L) {
-	struct UpdateMatrixEventArgs* self = luaX_checkUpdateMatrixEventArgs(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xeacdfcfd: self->parent = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkmat4(L, 3) : (struct mat4){0}; return 0; // parent
-	case 0xc6c2dd66: self->opacity = luaL_optnumber(L, 3, 0); return 0; // opacity
-	case 0x79a98884: self->force = lua_toboolean(L, 3); return 0; // force
-	}
-	return luaL_error(L, "Unknown field in UpdateMatrixEventArgs(%p): %s", self, luaL_checkstring(L, 2));
-}
-static int f_UpdateMatrixEventArgs___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_UpdateMatrixEventArgs(L));  // remove UpdateMatrixEventArgs from stack and call constructor
-}
-int luaopen_orca_UpdateMatrixEventArgs(lua_State *L) {
-	luaL_newmetatable(L, "UpdateMatrixEventArgs");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_UpdateMatrixEventArgs },
-		{ "__newindex", f_UpdateMatrixEventArgs___newindex },
-		{ "__index", f_UpdateMatrixEventArgs___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make UpdateMatrixEventArgs creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_UpdateMatrixEventArgs___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
 void luaX_pushPropertyEnumValue(lua_State *L, struct PropertyEnumValue const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct PropertyEnumValue* self = lua_newuserdata(L, sizeof(struct PropertyEnumValue));
@@ -985,46 +854,6 @@ int luaopen_orca_PropertyType(lua_State *L) {
 	return 1;
 }
 
-typedef struct WI_Message* LeftMouseDownEventPtr;
-typedef struct WI_Message* RightMouseDownEventPtr;
-typedef struct WI_Message* OtherMouseDownEventPtr;
-typedef struct WI_Message* LeftMouseUpEventPtr;
-typedef struct WI_Message* RightMouseUpEventPtr;
-typedef struct WI_Message* OtherMouseUpEventPtr;
-typedef struct WI_Message* LeftMouseDraggedEventPtr;
-typedef struct WI_Message* RightMouseDraggedEventPtr;
-typedef struct WI_Message* OtherMouseDraggedEventPtr;
-typedef struct WI_Message* LeftDoubleClickEventPtr;
-typedef struct WI_Message* RightDoubleClickEventPtr;
-typedef struct WI_Message* OtherDoubleClickEventPtr;
-typedef struct WI_Message* MouseMovedEventPtr;
-typedef struct WI_Message* ScrollWheelEventPtr;
-typedef struct WI_Message* DragDropEventPtr;
-typedef struct WI_Message* DragEnterEventPtr;
-typedef struct WI_Message* KeyDownEventPtr;
-typedef struct WI_Message* KeyUpEventPtr;
-typedef struct WI_Message* CharEventPtr;
-typedef void* WindowPaintEventPtr;
-typedef void* WindowClosedEventPtr;
-typedef void* WindowResizedEventPtr;
-typedef void* WindowChangedScreenEventPtr;
-typedef void* KillFocusEventPtr;
-typedef void* SetFocusEventPtr;
-typedef void* TimerEventPtr;
-typedef struct UpdateMatrixEventArgs* UpdateMatrixEventPtr;
-typedef void* HitTestEventPtr;
-typedef void* IsVisibleEventPtr;
-typedef void* CreateEventPtr;
-typedef void* StartEventPtr;
-typedef void* AwakeEventPtr;
-typedef void* ThemeChangedEventPtr;
-typedef struct PropertyChangedEventArgs* PropertyChangedEventPtr;
-typedef void* AttachedEventPtr;
-typedef void* ReleaseEventPtr;
-typedef void* DestroyEventPtr;
-typedef void* ResumeCoroutineEventPtr;
-typedef void* StopCoroutineEventPtr;
-typedef void* ViewDidLoadEventPtr;
 
 int f_core_GetFocus(lua_State *L) {
 	struct Object* result_ = core_GetFocus();
@@ -1045,8 +874,6 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	}));
 	void on_core_module_registered(lua_State *L);
 	on_core_module_registered(L);
-	lua_setfield(L, ((void)luaopen_orca_PropertyChangedEventArgs(L), -2), "PropertyChangedEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_UpdateMatrixEventArgs(L), -2), "UpdateMatrixEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_PropertyEnumValue(L), -2), "PropertyEnumValue");
 	lua_setfield(L, ((void)luaopen_orca_PropertyType(L), -2), "PropertyType");
 	lua_setfield(L, ((void)luaopen_orca_Object(L), -2), "Object");

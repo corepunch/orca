@@ -2,6 +2,8 @@
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __CORE_PROPERTIES_H__
 #define __CORE_PROPERTIES_H__
+#define kEventMouseEvent 0x9b4cd77c
+#define kEventKeyEvent 0x81cad504
 #define kEventLeftMouseDown 0xfac0b5e7
 #define kEventRightMouseDown 0x1057ac50
 #define kEventOtherMouseDown 0x9822ca20
