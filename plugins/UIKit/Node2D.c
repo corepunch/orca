@@ -96,6 +96,8 @@ Node2D_SetFrame(Node2DPtr pNode2D, enum Box3Field parm, float value)
       break;
     default:
       pNode2D->_actual_pos[parm] = value;
+      if (parm == kBox3FieldX) pNode2D->ActualX = value;
+      else if (parm == kBox3FieldY) pNode2D->ActualY = value;
       break;
   }
   pNode2D->_bbox_flags |= 1 << parm;
