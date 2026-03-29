@@ -1081,6 +1081,63 @@ int luaopen_orca_PropertyChangedMsgArgs(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
+void luaX_pushHitTestMsgArgs(lua_State *L, struct HitTestMsgArgs const* data) {
+	if (data == NULL) { lua_pushnil(L); return; }
+	struct HitTestMsgArgs* self = lua_newuserdata(L, sizeof(struct HitTestMsgArgs));
+	luaL_setmetatable(L, "HitTestMsgArgs");
+	memcpy(self, data, sizeof(struct HitTestMsgArgs));
+}
+struct HitTestMsgArgs* luaX_checkHitTestMsgArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "HitTestMsgArgs");
+}
+static int f_new_HitTestMsgArgs(lua_State *L) {
+	struct HitTestMsgArgs* self = lua_newuserdata(L, sizeof(struct HitTestMsgArgs));
+	luaL_setmetatable(L, "HitTestMsgArgs");
+	memset(self, 0, sizeof(struct HitTestMsgArgs));
+	if (lua_gettop(L) == 1) return 1;
+	if (lua_istable(L, 1)) {
+		lua_pop(L, (lua_getfield(L, 1, "x"), self->x = (int32_t)luaL_optinteger(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "y"), self->y = (int32_t)luaL_optinteger(L, -1, 0), 1));
+	} else {
+		self->x = (int32_t)luaL_optinteger(L, 1, 0);
+		self->y = (int32_t)luaL_optinteger(L, 2, 0);
+	}
+	return 1;
+}
+int f_HitTestMsgArgs___index(lua_State *L) {
+	struct HitTestMsgArgs* self = luaX_checkHitTestMsgArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0xfd0c5087: lua_pushinteger(L, self->x); return 1; // x
+	case 0xfc0c4ef4: lua_pushinteger(L, self->y); return 1; // y
+	}
+	return luaL_error(L, "Unknown field in HitTestMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+int f_HitTestMsgArgs___newindex(lua_State *L) {
+	struct HitTestMsgArgs* self = luaX_checkHitTestMsgArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0xfd0c5087: self->x = (int32_t)luaL_checkinteger(L, 3); return 0; // x
+	case 0xfc0c4ef4: self->y = (int32_t)luaL_checkinteger(L, 3); return 0; // y
+	}
+	return luaL_error(L, "Unknown field in HitTestMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+static int f_HitTestMsgArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_HitTestMsgArgs(L));  // remove HitTestMsgArgs from stack and call constructor
+}
+int luaopen_orca_HitTestMsgArgs(lua_State *L) {
+	luaL_newmetatable(L, "HitTestMsgArgs");
+	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ "new", f_new_HitTestMsgArgs },
+		{ "__newindex", f_HitTestMsgArgs___newindex },
+		{ "__index", f_HitTestMsgArgs___index },
+		{ NULL, NULL },
+	}), 0);
+	// Make HitTestMsgArgs creatable via constructor-like syntax
+	lua_newtable(L);
+	lua_pushcfunction(L, f_HitTestMsgArgs___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+	return 1;
+}
 
 
 int f_core_GetFocus(lua_State *L) {
@@ -1108,6 +1165,7 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_UpdateMatrixMsgArgs(L), -2), "UpdateMatrixMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_HitTestMsgArgs(L), -2), "HitTestMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_PropertyChangedMsgArgs(L), -2), "PropertyChangedMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_HitTestMsgArgs(L), -2), "HitTestMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object(L), -2), "Object");
 	return 1;
 }
