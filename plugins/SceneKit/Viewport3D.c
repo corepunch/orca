@@ -112,5 +112,5 @@ HANDLER(Viewport3D, ForegroundContent)
     collect_lights(Viewport3D_scene(hObject), &viewdef);
     R_RenderViewport(Viewport3D_scene(hObject), &viewdef);
   }
-  return TRUE;
+  return FALSE;
 }

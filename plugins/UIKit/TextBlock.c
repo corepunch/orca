@@ -169,14 +169,7 @@ HANDLER(TextBlock, MeasureOverride)
 
 HANDLER(TextBlock, ForegroundContent)
 {
-  //    TextBlockConceptPtr label = GetTextBlockConcept(hObject);
-  //    if (is_updated(hObject, STEP_IMAGE))
-  //    {
-  //        struct ViewText text = text_from_label(hObject, label);
-  //        Text_Print(&text, &label->_image, TRUE);
-  //    }
-  //    pForegroundContent->result = label->_image;
-  return TRUE;
+  return FALSE;
 }
 
 HANDLER(TextBlock, UpdateGeometry)
