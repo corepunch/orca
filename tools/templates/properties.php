@@ -5,7 +5,7 @@
 #ifndef __<?= strtoupper($model->getModuleName()) ?>_PROPERTIES_H__
 #define __<?= strtoupper($model->getModuleName()) ?>_PROPERTIES_H__
 <?php foreach ($model->getEvents() as $name => $event):?>
-#define kEvent<?= $name ?> 0x<?= hash('fnv1a32', $name) ?>
+#define kMsg<?= $name ?> 0x<?= hash('fnv1a32', $name) ?>
 <?php endforeach ?>
 <?php foreach ($model->getComponents() as $classname => $class):?>
 // <?= $classname ?>

@@ -226,13 +226,13 @@ DEBUG_Draw(float fps, int bindings)
 //  return ED_DispatchMessage(e->message, e->wParam, e->lParam);
 //#else
 //  struct color32 c;
-//	if (e->message == kEventScrollWheel && FindClick(tr, e->x, e->y, &c)) {
+//	if (e->message == kMsgScrollWheel && FindClick(tr, e->x, e->y, &c)) {
 ////		scroll.x += e->dx;
 //		scroll.y = MIN(0, scroll.y + e->dy);
 //		return TRUE;
 //	}
-//	bool_t button = e->message == kEventLeftMouseDown
-//		|| e->message == kEventRightMouseDown;
+//	bool_t button = e->message == kMsgLeftMouseDown
+//		|| e->message == kMsgRightMouseDown;
 //  if (button && FindClick(tr, e->x, e->y, &c)) {
 //    lpObject_t object = objects[(*(uint32_t*)&c) >> 16];
 //    if (!object) {
@@ -240,7 +240,7 @@ DEBUG_Draw(float fps, int bindings)
 //      OBJ_SetFlags(object, OBJ_GetFlags(object) & ~OF_EXPANDED_IN_DEBUG);
 //    } else if (strchr(EXPAND_BUTTON, c.r)) {
 //      OBJ_SetFlags(object, OBJ_GetFlags(object) | OF_EXPANDED_IN_DEBUG);
-//    } else if (e->message == kEventRightMouseDown && GetNode(object)) {
+//    } else if (e->message == kMsgRightMouseDown && GetNode(object)) {
 //			GetNode(object)->QuickHide = !GetNode(object)->QuickHide;
 //		} else {
 //			selected = object;

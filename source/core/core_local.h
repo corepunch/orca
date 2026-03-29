@@ -189,7 +189,7 @@ PROP_ProcessEvents(lua_State*, lpProperty_t, lpObject_t);
 void
 PROP_ExecuteChangedCallback(lua_State*, lpObject_t, lpProperty_t);
 lpcString_t
-PROP_GetCallbackEvent(lpcProperty_t);
+PROP_GetCallbackMsg(lpcProperty_t);
 bool_t
 PROP_Import(lpProperty_t, enum PropertyAttribute, struct vm_register*);
 void

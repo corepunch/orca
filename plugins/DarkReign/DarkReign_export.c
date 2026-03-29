@@ -11,11 +11,11 @@ extern struct _FTG* luaX_check_FTG(lua_State *L, int index);
 #define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
 #define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
 
-LRESULT FtgPackage_LoadProject(struct Object*, struct FtgPackage*, wParam_t, LoadProjectEventPtr);
-LRESULT FtgPackage_OpenFile(struct Object*, struct FtgPackage*, wParam_t, OpenFileEventPtr);
-LRESULT FtgPackage_FileExists(struct Object*, struct FtgPackage*, wParam_t, FileExistsEventPtr);
-LRESULT FtgPackage_HasChangedFiles(struct Object*, struct FtgPackage*, wParam_t, HasChangedFilesEventPtr);
-LRESULT FtgPackage_Destroy(struct Object*, struct FtgPackage*, wParam_t, DestroyEventPtr);
+LRESULT FtgPackage_LoadProject(struct Object*, struct FtgPackage*, wParam_t, LoadProjectMsgPtr);
+LRESULT FtgPackage_OpenFile(struct Object*, struct FtgPackage*, wParam_t, OpenFileMsgPtr);
+LRESULT FtgPackage_FileExists(struct Object*, struct FtgPackage*, wParam_t, FileExistsMsgPtr);
+LRESULT FtgPackage_HasChangedFiles(struct Object*, struct FtgPackage*, wParam_t, HasChangedFilesMsgPtr);
+LRESULT FtgPackage_Destroy(struct Object*, struct FtgPackage*, wParam_t, DestroyMsgPtr);
 
 static struct PropertyType const FtgPackageProperties[kFtgPackageNumProperties] = {
 	DECL(0x5ffdd888, FtgPackage, FileName, FileName, kDataTypeString), // FtgPackage.FileName
@@ -24,11 +24,11 @@ static struct FtgPackage FtgPackageDefaults = {
 };
 LRESULT FtgPackageProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventLoadProject: return FtgPackage_LoadProject(object, cmp, wparm, lparm); // LoadProject
-		case kEventOpenFile: return FtgPackage_OpenFile(object, cmp, wparm, lparm); // OpenFile
-		case kEventFileExists: return FtgPackage_FileExists(object, cmp, wparm, lparm); // FileExists
-		case kEventHasChangedFiles: return FtgPackage_HasChangedFiles(object, cmp, wparm, lparm); // HasChangedFiles
-		case kEventDestroy: return FtgPackage_Destroy(object, cmp, wparm, lparm); // Destroy
+		case kMsgLoadProject: return FtgPackage_LoadProject(object, cmp, wparm, lparm); // LoadProject
+		case kMsgOpenFile: return FtgPackage_OpenFile(object, cmp, wparm, lparm); // OpenFile
+		case kMsgFileExists: return FtgPackage_FileExists(object, cmp, wparm, lparm); // FileExists
+		case kMsgHasChangedFiles: return FtgPackage_HasChangedFiles(object, cmp, wparm, lparm); // HasChangedFiles
+		case kMsgDestroy: return FtgPackage_Destroy(object, cmp, wparm, lparm); // Destroy
 	}
 	return FALSE;
 }

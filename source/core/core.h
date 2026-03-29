@@ -19,48 +19,48 @@ struct lua_State;
 #include "core_properties.h"
 #include "../geometry/geometry.h"
 
-typedef struct WI_Message* MouseMessageEventPtr;
-typedef struct WI_Message* KeyMessageEventPtr;
-typedef struct WI_Message* LeftMouseDownEventPtr;
-typedef struct WI_Message* RightMouseDownEventPtr;
-typedef struct WI_Message* OtherMouseDownEventPtr;
-typedef struct WI_Message* LeftMouseUpEventPtr;
-typedef struct WI_Message* RightMouseUpEventPtr;
-typedef struct WI_Message* OtherMouseUpEventPtr;
-typedef struct WI_Message* LeftMouseDraggedEventPtr;
-typedef struct WI_Message* RightMouseDraggedEventPtr;
-typedef struct WI_Message* OtherMouseDraggedEventPtr;
-typedef struct WI_Message* LeftDoubleClickEventPtr;
-typedef struct WI_Message* RightDoubleClickEventPtr;
-typedef struct WI_Message* OtherDoubleClickEventPtr;
-typedef struct WI_Message* MouseMovedEventPtr;
-typedef struct WI_Message* ScrollWheelEventPtr;
-typedef struct WI_Message* DragDropEventPtr;
-typedef struct WI_Message* DragEnterEventPtr;
-typedef struct WI_Message* KeyDownEventPtr;
-typedef struct WI_Message* KeyUpEventPtr;
-typedef struct WI_Message* CharEventPtr;
-typedef void* WindowPaintEventPtr;
-typedef void* WindowClosedEventPtr;
-typedef void* WindowResizedEventPtr;
-typedef void* WindowChangedScreenEventPtr;
-typedef void* KillFocusEventPtr;
-typedef void* SetFocusEventPtr;
-typedef void* TimerEventPtr;
-typedef struct UpdateMatrixEventArgs* UpdateMatrixEventPtr;
-typedef void* HitTestEventPtr;
-typedef void* IsVisibleEventPtr;
-typedef void* CreateEventPtr;
-typedef void* StartEventPtr;
-typedef void* AwakeEventPtr;
-typedef void* ThemeChangedEventPtr;
-typedef struct PropertyChangedEventArgs* PropertyChangedEventPtr;
-typedef void* AttachedEventPtr;
-typedef void* ReleaseEventPtr;
-typedef void* DestroyEventPtr;
-typedef void* ResumeCoroutineEventPtr;
-typedef void* StopCoroutineEventPtr;
-typedef void* ViewDidLoadEventPtr;
+typedef struct WI_Message* MouseMessageMsgPtr;
+typedef struct WI_Message* KeyMessageMsgPtr;
+typedef struct WI_Message* LeftMouseDownMsgPtr;
+typedef struct WI_Message* RightMouseDownMsgPtr;
+typedef struct WI_Message* OtherMouseDownMsgPtr;
+typedef struct WI_Message* LeftMouseUpMsgPtr;
+typedef struct WI_Message* RightMouseUpMsgPtr;
+typedef struct WI_Message* OtherMouseUpMsgPtr;
+typedef struct WI_Message* LeftMouseDraggedMsgPtr;
+typedef struct WI_Message* RightMouseDraggedMsgPtr;
+typedef struct WI_Message* OtherMouseDraggedMsgPtr;
+typedef struct WI_Message* LeftDoubleClickMsgPtr;
+typedef struct WI_Message* RightDoubleClickMsgPtr;
+typedef struct WI_Message* OtherDoubleClickMsgPtr;
+typedef struct WI_Message* MouseMovedMsgPtr;
+typedef struct WI_Message* ScrollWheelMsgPtr;
+typedef struct WI_Message* DragDropMsgPtr;
+typedef struct WI_Message* DragEnterMsgPtr;
+typedef struct WI_Message* KeyDownMsgPtr;
+typedef struct WI_Message* KeyUpMsgPtr;
+typedef struct WI_Message* CharMsgPtr;
+typedef void* WindowPaintMsgPtr;
+typedef void* WindowClosedMsgPtr;
+typedef void* WindowResizedMsgPtr;
+typedef void* WindowChangedScreenMsgPtr;
+typedef void* KillFocusMsgPtr;
+typedef void* SetFocusMsgPtr;
+typedef void* TimerMsgPtr;
+typedef struct UpdateMatrixMsgArgs* UpdateMatrixMsgPtr;
+typedef void* HitTestMsgPtr;
+typedef void* IsVisibleMsgPtr;
+typedef void* CreateMsgPtr;
+typedef void* StartMsgPtr;
+typedef void* AwakeMsgPtr;
+typedef void* ThemeChangedMsgPtr;
+typedef struct PropertyChangedMsgArgs* PropertyChangedMsgPtr;
+typedef void* AttachedMsgPtr;
+typedef void* ReleaseMsgPtr;
+typedef void* DestroyMsgPtr;
+typedef void* ResumeCoroutineMsgPtr;
+typedef void* StopCoroutineMsgPtr;
+typedef void* ViewDidLoadMsgPtr;
 
 /// @brief Represents the various states a property can be in.
 /** PropertyState enum */
@@ -432,20 +432,20 @@ struct PropertyType {
 ORCA_API void luaX_pushPropertyType(lua_State *L, struct PropertyType const* PropertyType);
 ORCA_API struct PropertyType* luaX_checkPropertyType(lua_State *L, int idx);
 
-/** UpdateMatrixEventArgs struct */
-struct UpdateMatrixEventArgs {
+/** UpdateMatrixMsgArgs struct */
+struct UpdateMatrixMsgArgs {
 	struct mat4 parent; ///< The parent matrix
 	float opacity; ///< The opacity value
 	bool_t force; ///< Indicates if the update is forced
 };
-ORCA_API void luaX_pushUpdateMatrixEventArgs(lua_State *L, struct UpdateMatrixEventArgs const* data);
-ORCA_API struct UpdateMatrixEventArgs* luaX_checkUpdateMatrixEventArgs(lua_State *L, int idx);
-/** PropertyChangedEventArgs struct */
-struct PropertyChangedEventArgs {
+ORCA_API void luaX_pushUpdateMatrixMsgArgs(lua_State *L, struct UpdateMatrixMsgArgs const* data);
+ORCA_API struct UpdateMatrixMsgArgs* luaX_checkUpdateMatrixMsgArgs(lua_State *L, int idx);
+/** PropertyChangedMsgArgs struct */
+struct PropertyChangedMsgArgs {
 	struct Property* Property; ///< The property that changed
 };
-ORCA_API void luaX_pushPropertyChangedEventArgs(lua_State *L, struct PropertyChangedEventArgs const* data);
-ORCA_API struct PropertyChangedEventArgs* luaX_checkPropertyChangedEventArgs(lua_State *L, int idx);
+ORCA_API void luaX_pushPropertyChangedMsgArgs(lua_State *L, struct PropertyChangedMsgArgs const* data);
+ORCA_API struct PropertyChangedMsgArgs* luaX_checkPropertyChangedMsgArgs(lua_State *L, int idx);
 
 
 #endif

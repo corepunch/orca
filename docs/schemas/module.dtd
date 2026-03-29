@@ -13,7 +13,7 @@
 -->
 
 <!-- Root Element -->
-<!ELEMENT module (require | include | external | event | resource | enums | struct | interface | class | function)*>
+<!ELEMENT module (require | include | external | message | resource | enums | struct | interface | class | function)*>
 <!ATTLIST module
   name CDATA #REQUIRED
   namespace CDATA #REQUIRED
@@ -39,11 +39,11 @@
   struct CDATA #REQUIRED
 >
 
-<!-- Event Declaration - defines an event that can be handled -->
-<!-- Events may contain inline field children (preferred) or reference an external type via the type attribute (workaround) -->
-<!-- Use parent="BaseEvent" to share fields/type with another event (inheritance) -->
-<!ELEMENT event (summary?, details?, field*)>
-<!ATTLIST event
+<!-- Message Declaration - defines a message that can be handled -->
+<!-- Messages may contain inline field children (preferred) or reference an external type via the type attribute (workaround) -->
+<!-- Use parent="BaseMessage" to share fields/type with another message (inheritance) -->
+<!ELEMENT message (summary?, details?, field*)>
+<!ATTLIST message
   name CDATA #REQUIRED
   type CDATA #IMPLIED
   parent CDATA #IMPLIED
@@ -153,10 +153,10 @@
   default CDATA #IMPLIED
 >
 
-<!-- Handles Declaration (events handled by a class) -->
+<!-- Handles Declaration (messages handled by a class) -->
 <!ELEMENT handles EMPTY>
 <!ATTLIST handles
-  event CDATA #REQUIRED
+  message CDATA #REQUIRED
 >
 
 <!-- Initialization Marker -->

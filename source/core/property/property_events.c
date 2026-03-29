@@ -1,6 +1,6 @@
 #include "property_internal.h"
 
-#define kEventPropertyChanged 0x6d47e0cc
+#define kMsgPropertyChanged 0x6d47e0cc
 
 INLINE bool_t
 PROP_HasHandler(lpProperty_t property)
@@ -8,7 +8,7 @@ PROP_HasHandler(lpProperty_t property)
   if (property->flags &
       (PF_HASCHANGECALLBACK | PF_USED_IN_STATE_MANAGER | PF_USED_IN_TRIGGER))
     return TRUE;
-  if (property->callbackEvent)
+  if (property->callbackMsg)
     return TRUE;
   return FALSE;
 }
@@ -42,9 +42,9 @@ PROP_ProcessEvents(lua_State* L,
       luaX_executecallback(L, object, str, 1);
     }
     if (property->flags & PF_USED_IN_TRIGGER) {
-      OBJ_SendMessageW(object, kEventPropertyChanged, 0, &(struct PropertyChangedEventArgs){ .Property = property });
+      OBJ_SendMessageW(object, kMsgPropertyChanged, 0, &(struct PropertyChangedMsgArgs){ .Property = property });
     }
-    if (property->callbackEvent) {
+    if (property->callbackMsg) {
       PROP_ExecuteChangedCallback(L, object, property);
     }
   }

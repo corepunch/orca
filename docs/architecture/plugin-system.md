@@ -56,16 +56,16 @@ LRESULT Button_Proc(lpObject_t obj, uint32_t msg,
                     wParam_t wParam, lParam_t lParam) {
     struct Button *self = GetButton(obj);
     switch (msg) {
-        case kEventCreate:   /* allocate resources */   break;
-        case kEventDestroy:  /* free resources */       break;
-        case kEventDraw:     /* submit draw calls */    break;
+        case kMsgCreate:   /* allocate resources */   break;
+        case kMsgDestroy:  /* free resources */       break;
+        case kMsgDraw:     /* submit draw calls */    break;
         case kMsgMouseUp:    /* fire Lua callback */    break;
     }
     return 0;
 }
 ```
 
-Message IDs are `uint32_t` constants (FNV1a hashes) declared in `source/core/core_properties.h`. Custom events can be added by any module via the `<event>` XML element.
+Message IDs are `uint32_t` constants (FNV1a hashes) declared in `source/core/core_properties.h`. Custom events can be added by any module via the `<message>` XML element.
 
 ### Inheritance via ParentClasses
 

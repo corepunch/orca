@@ -265,19 +265,19 @@ int luaopen_orca_window(lua_State *L) {
 	lua_setfield(L, -2, "__index");
 	return 1;
 }
-void luaX_pushRenderScreenEventArgs(lua_State *L, struct RenderScreenEventArgs const* data) {
+void luaX_pushRenderScreenMsgArgs(lua_State *L, struct RenderScreenMsgArgs const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
-	struct RenderScreenEventArgs* self = lua_newuserdata(L, sizeof(struct RenderScreenEventArgs));
-	luaL_setmetatable(L, "RenderScreenEventArgs");
-	memcpy(self, data, sizeof(struct RenderScreenEventArgs));
+	struct RenderScreenMsgArgs* self = lua_newuserdata(L, sizeof(struct RenderScreenMsgArgs));
+	luaL_setmetatable(L, "RenderScreenMsgArgs");
+	memcpy(self, data, sizeof(struct RenderScreenMsgArgs));
 }
-struct RenderScreenEventArgs* luaX_checkRenderScreenEventArgs(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "RenderScreenEventArgs");
+struct RenderScreenMsgArgs* luaX_checkRenderScreenMsgArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "RenderScreenMsgArgs");
 }
-static int f_new_RenderScreenEventArgs(lua_State *L) {
-	struct RenderScreenEventArgs* self = lua_newuserdata(L, sizeof(struct RenderScreenEventArgs));
-	luaL_setmetatable(L, "RenderScreenEventArgs");
-	memset(self, 0, sizeof(struct RenderScreenEventArgs));
+static int f_new_RenderScreenMsgArgs(lua_State *L) {
+	struct RenderScreenMsgArgs* self = lua_newuserdata(L, sizeof(struct RenderScreenMsgArgs));
+	luaL_setmetatable(L, "RenderScreenMsgArgs");
+	memset(self, 0, sizeof(struct RenderScreenMsgArgs));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_pop(L, (lua_getfield(L, 1, "width"), self->width = (uint32_t)luaL_optinteger(L, -1, 0), 1));
@@ -294,8 +294,8 @@ static int f_new_RenderScreenEventArgs(lua_State *L) {
 	}
 	return 1;
 }
-int f_RenderScreenEventArgs___index(lua_State *L) {
-	struct RenderScreenEventArgs* self = luaX_checkRenderScreenEventArgs(L, 1);
+int f_RenderScreenMsgArgs___index(lua_State *L) {
+	struct RenderScreenMsgArgs* self = luaX_checkRenderScreenMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x95876e1f: lua_pushinteger(L, self->width); return 1; // width
 	case 0xd5bdbb42: lua_pushinteger(L, self->height); return 1; // height
@@ -303,10 +303,10 @@ int f_RenderScreenEventArgs___index(lua_State *L) {
 	case 0xad544418: lua_pushnumber(L, self->angle); return 1; // angle
 	case 0x32608848: luaX_pushTexture(L, self->target); return 1; // target
 	}
-	return luaL_error(L, "Unknown field in RenderScreenEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in RenderScreenMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-int f_RenderScreenEventArgs___newindex(lua_State *L) {
-	struct RenderScreenEventArgs* self = luaX_checkRenderScreenEventArgs(L, 1);
+int f_RenderScreenMsgArgs___newindex(lua_State *L) {
+	struct RenderScreenMsgArgs* self = luaX_checkRenderScreenMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x95876e1f: self->width = (uint32_t)luaL_optinteger(L, 3, 0); return 0; // width
 	case 0xd5bdbb42: self->height = (uint32_t)luaL_optinteger(L, 3, 0); return 0; // height
@@ -314,39 +314,39 @@ int f_RenderScreenEventArgs___newindex(lua_State *L) {
 	case 0xad544418: self->angle = luaL_optnumber(L, 3, 0); return 0; // angle
 	case 0x32608848: self->target = luaX_checkTexture(L, 3); return 0; // target
 	}
-	return luaL_error(L, "Unknown field in RenderScreenEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in RenderScreenMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-static int f_RenderScreenEventArgs___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_RenderScreenEventArgs(L));  // remove RenderScreenEventArgs from stack and call constructor
+static int f_RenderScreenMsgArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_RenderScreenMsgArgs(L));  // remove RenderScreenMsgArgs from stack and call constructor
 }
-int luaopen_orca_RenderScreenEventArgs(lua_State *L) {
-	luaL_newmetatable(L, "RenderScreenEventArgs");
+int luaopen_orca_RenderScreenMsgArgs(lua_State *L) {
+	luaL_newmetatable(L, "RenderScreenMsgArgs");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_RenderScreenEventArgs },
-		{ "__newindex", f_RenderScreenEventArgs___newindex },
-		{ "__index", f_RenderScreenEventArgs___index },
+		{ "new", f_new_RenderScreenMsgArgs },
+		{ "__newindex", f_RenderScreenMsgArgs___newindex },
+		{ "__index", f_RenderScreenMsgArgs___index },
 		{ NULL, NULL },
 	}), 0);
-	// Make RenderScreenEventArgs creatable via constructor-like syntax
+	// Make RenderScreenMsgArgs creatable via constructor-like syntax
 	lua_newtable(L);
-	lua_pushcfunction(L, f_RenderScreenEventArgs___call);
+	lua_pushcfunction(L, f_RenderScreenMsgArgs___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	return 1;
 }
-void luaX_pushRenderEventArgs(lua_State *L, struct RenderEventArgs const* data) {
+void luaX_pushRenderMsgArgs(lua_State *L, struct RenderMsgArgs const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
-	struct RenderEventArgs* self = lua_newuserdata(L, sizeof(struct RenderEventArgs));
-	luaL_setmetatable(L, "RenderEventArgs");
-	memcpy(self, data, sizeof(struct RenderEventArgs));
+	struct RenderMsgArgs* self = lua_newuserdata(L, sizeof(struct RenderMsgArgs));
+	luaL_setmetatable(L, "RenderMsgArgs");
+	memcpy(self, data, sizeof(struct RenderMsgArgs));
 }
-struct RenderEventArgs* luaX_checkRenderEventArgs(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "RenderEventArgs");
+struct RenderMsgArgs* luaX_checkRenderMsgArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "RenderMsgArgs");
 }
-static int f_new_RenderEventArgs(lua_State *L) {
-	struct RenderEventArgs* self = lua_newuserdata(L, sizeof(struct RenderEventArgs));
-	luaL_setmetatable(L, "RenderEventArgs");
-	memset(self, 0, sizeof(struct RenderEventArgs));
+static int f_new_RenderMsgArgs(lua_State *L) {
+	struct RenderMsgArgs* self = lua_newuserdata(L, sizeof(struct RenderMsgArgs));
+	luaL_setmetatable(L, "RenderMsgArgs");
+	memset(self, 0, sizeof(struct RenderMsgArgs));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_pop(L, (lua_getfield(L, 1, "ViewDef"), self->ViewDef = NULL, 1));
@@ -355,34 +355,34 @@ static int f_new_RenderEventArgs(lua_State *L) {
 	}
 	return 1;
 }
-int f_RenderEventArgs___index(lua_State *L) {
-	struct RenderEventArgs* self = luaX_checkRenderEventArgs(L, 1);
+int f_RenderMsgArgs___index(lua_State *L) {
+	struct RenderMsgArgs* self = luaX_checkRenderMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0xce9ab61f: luaX_pushViewDef(L, self->ViewDef); return 1; // ViewDef
 	}
-	return luaL_error(L, "Unknown field in RenderEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in RenderMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-int f_RenderEventArgs___newindex(lua_State *L) {
-	struct RenderEventArgs* self = luaX_checkRenderEventArgs(L, 1);
+int f_RenderMsgArgs___newindex(lua_State *L) {
+	struct RenderMsgArgs* self = luaX_checkRenderMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0xce9ab61f: self->ViewDef = NULL; return 0; // ViewDef
 	}
-	return luaL_error(L, "Unknown field in RenderEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in RenderMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-static int f_RenderEventArgs___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_RenderEventArgs(L));  // remove RenderEventArgs from stack and call constructor
+static int f_RenderMsgArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_RenderMsgArgs(L));  // remove RenderMsgArgs from stack and call constructor
 }
-int luaopen_orca_RenderEventArgs(lua_State *L) {
-	luaL_newmetatable(L, "RenderEventArgs");
+int luaopen_orca_RenderMsgArgs(lua_State *L) {
+	luaL_newmetatable(L, "RenderMsgArgs");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_RenderEventArgs },
-		{ "__newindex", f_RenderEventArgs___newindex },
-		{ "__index", f_RenderEventArgs___index },
+		{ "new", f_new_RenderMsgArgs },
+		{ "__newindex", f_RenderMsgArgs___newindex },
+		{ "__index", f_RenderMsgArgs___index },
 		{ NULL, NULL },
 	}), 0);
-	// Make RenderEventArgs creatable via constructor-like syntax
+	// Make RenderMsgArgs creatable via constructor-like syntax
 	lua_newtable(L);
-	lua_pushcfunction(L, f_RenderEventArgs___call);
+	lua_pushcfunction(L, f_RenderMsgArgs___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	return 1;
@@ -429,7 +429,7 @@ ORCA_API struct ClassDesc _Texture = {
 	.NumProperties = kTextureNumProperties,
 };
 
-LRESULT Image_Start(struct Object*, struct Image*, wParam_t, StartEventPtr);
+LRESULT Image_Start(struct Object*, struct Image*, wParam_t, StartMsgPtr);
 
 static struct PropertyType const ImageProperties[kImageNumProperties] = {
 	DECL(0x61e2a3f8, Image, Source, Source, kDataTypeString), // Image.Source
@@ -461,7 +461,7 @@ static struct Image ImageDefaults = {
 };
 LRESULT ImageProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventStart: return Image_Start(object, cmp, wparm, lparm); // Start
+		case kMsgStart: return Image_Start(object, cmp, wparm, lparm); // Start
 	}
 	return FALSE;
 }
@@ -486,7 +486,7 @@ ORCA_API struct ClassDesc _Image = {
 	.NumProperties = kImageNumProperties,
 };
 
-LRESULT RenderTargetTexture_Start(struct Object*, struct RenderTargetTexture*, wParam_t, StartEventPtr);
+LRESULT RenderTargetTexture_Start(struct Object*, struct RenderTargetTexture*, wParam_t, StartMsgPtr);
 
 static struct PropertyType const RenderTargetTextureProperties[kRenderTargetTextureNumProperties] = {
 	DECL(0x3b42dfbf, RenderTargetTexture, Width, Width, kDataTypeInt), // RenderTargetTexture.Width
@@ -501,7 +501,7 @@ static struct RenderTargetTexture RenderTargetTextureDefaults = {
 };
 LRESULT RenderTargetTextureProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventStart: return RenderTargetTexture_Start(object, cmp, wparm, lparm); // Start
+		case kMsgStart: return RenderTargetTexture_Start(object, cmp, wparm, lparm); // Start
 	}
 	return FALSE;
 }
@@ -526,7 +526,7 @@ ORCA_API struct ClassDesc _RenderTargetTexture = {
 	.NumProperties = kRenderTargetTextureNumProperties,
 };
 
-LRESULT CubeMapTexture_Start(struct Object*, struct CubeMapTexture*, wParam_t, StartEventPtr);
+LRESULT CubeMapTexture_Start(struct Object*, struct CubeMapTexture*, wParam_t, StartMsgPtr);
 
 static struct PropertyType const CubeMapTextureProperties[kCubeMapTextureNumProperties] = {
 	DECL(0x59f82b67, CubeMapTexture, BackImage, BackImage, kDataTypeString), // CubeMapTexture.BackImage
@@ -540,7 +540,7 @@ static struct CubeMapTexture CubeMapTextureDefaults = {
 };
 LRESULT CubeMapTextureProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventStart: return CubeMapTexture_Start(object, cmp, wparm, lparm); // Start
+		case kMsgStart: return CubeMapTexture_Start(object, cmp, wparm, lparm); // Start
 	}
 	return FALSE;
 }
@@ -565,7 +565,7 @@ ORCA_API struct ClassDesc _CubeMapTexture = {
 	.NumProperties = kCubeMapTextureNumProperties,
 };
 
-LRESULT IOSurfaceTexture_Start(struct Object*, struct IOSurfaceTexture*, wParam_t, StartEventPtr);
+LRESULT IOSurfaceTexture_Start(struct Object*, struct IOSurfaceTexture*, wParam_t, StartMsgPtr);
 
 static struct PropertyType const IOSurfaceTextureProperties[kIOSurfaceTextureNumProperties] = {
 	DECL(0xb5fc4968, IOSurfaceTexture, IOSurface, IOSurface, kDataTypeInt), // IOSurfaceTexture.IOSurface
@@ -574,7 +574,7 @@ static struct IOSurfaceTexture IOSurfaceTextureDefaults = {
 };
 LRESULT IOSurfaceTextureProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventStart: return IOSurfaceTexture_Start(object, cmp, wparm, lparm); // Start
+		case kMsgStart: return IOSurfaceTexture_Start(object, cmp, wparm, lparm); // Start
 	}
 	return FALSE;
 }
@@ -665,8 +665,8 @@ ORCA_API struct ClassDesc _FragmentShader = {
 	.NumProperties = kFragmentShaderNumProperties,
 };
 
-LRESULT Shader_Start(struct Object*, struct Shader*, wParam_t, StartEventPtr);
-LRESULT Shader_Destroy(struct Object*, struct Shader*, wParam_t, DestroyEventPtr);
+LRESULT Shader_Start(struct Object*, struct Shader*, wParam_t, StartMsgPtr);
+LRESULT Shader_Destroy(struct Object*, struct Shader*, wParam_t, DestroyMsgPtr);
 
 static struct PropertyType const ShaderProperties[kShaderNumProperties] = {
 	DECL(0x0038792b, Shader, BlendMode, BlendMode, kDataTypeEnum, .TypeString = "AlphaAutomatic,Opaque,Alpha,Additive,PremultipliedAlpha,MixedAlpha", .EnumValues = _BlendMode), // Shader.BlendMode
@@ -679,8 +679,8 @@ static struct Shader ShaderDefaults = {
 };
 LRESULT ShaderProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventStart: return Shader_Start(object, cmp, wparm, lparm); // Start
-		case kEventDestroy: return Shader_Destroy(object, cmp, wparm, lparm); // Destroy
+		case kMsgStart: return Shader_Start(object, cmp, wparm, lparm); // Start
+		case kMsgDestroy: return Shader_Destroy(object, cmp, wparm, lparm); // Destroy
 	}
 	return FALSE;
 }
@@ -749,8 +749,8 @@ ORCA_API struct ClassDesc _Material = {
 	.NumProperties = kMaterialNumProperties,
 };
 
-LRESULT Mesh_Start(struct Object*, struct Mesh*, wParam_t, StartEventPtr);
-LRESULT Mesh_Destroy(struct Object*, struct Mesh*, wParam_t, DestroyEventPtr);
+LRESULT Mesh_Start(struct Object*, struct Mesh*, wParam_t, StartMsgPtr);
+LRESULT Mesh_Destroy(struct Object*, struct Mesh*, wParam_t, DestroyMsgPtr);
 
 static struct PropertyType const MeshProperties[kMeshNumProperties] = {
 	DECL(0x61e2a3f8, Mesh, Source, Source, kDataTypeString), // Mesh.Source
@@ -761,8 +761,8 @@ static struct Mesh MeshDefaults = {
 };
 LRESULT MeshProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventStart: return Mesh_Start(object, cmp, wparm, lparm); // Start
-		case kEventDestroy: return Mesh_Destroy(object, cmp, wparm, lparm); // Destroy
+		case kMsgStart: return Mesh_Start(object, cmp, wparm, lparm); // Start
+		case kMsgDestroy: return Mesh_Destroy(object, cmp, wparm, lparm); // Destroy
 	}
 	return FALSE;
 }
@@ -786,8 +786,8 @@ ORCA_API struct ClassDesc _Mesh = {
 	.NumProperties = kMeshNumProperties,
 };
 
-LRESULT FontFamily_Start(struct Object*, struct FontFamily*, wParam_t, StartEventPtr);
-LRESULT FontFamily_Destroy(struct Object*, struct FontFamily*, wParam_t, DestroyEventPtr);
+LRESULT FontFamily_Start(struct Object*, struct FontFamily*, wParam_t, StartMsgPtr);
+LRESULT FontFamily_Destroy(struct Object*, struct FontFamily*, wParam_t, DestroyMsgPtr);
 
 static struct PropertyType const FontFamilyProperties[kFontFamilyNumProperties] = {
 	DECL(0xe750f2b7, FontFamily, Regular, Regular, kDataTypeString), // FontFamily.Regular
@@ -799,8 +799,8 @@ static struct FontFamily FontFamilyDefaults = {
 };
 LRESULT FontFamilyProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventStart: return FontFamily_Start(object, cmp, wparm, lparm); // Start
-		case kEventDestroy: return FontFamily_Destroy(object, cmp, wparm, lparm); // Destroy
+		case kMsgStart: return FontFamily_Start(object, cmp, wparm, lparm); // Start
+		case kMsgDestroy: return FontFamily_Destroy(object, cmp, wparm, lparm); // Destroy
 	}
 	return FALSE;
 }
@@ -923,8 +923,8 @@ ORCA_API int luaopen_orca_renderer(lua_State *L) {
 	}));
 	void on_renderer_module_registered(lua_State *L);
 	on_renderer_module_registered(L);
-	lua_setfield(L, ((void)luaopen_orca_RenderScreenEventArgs(L), -2), "RenderScreenEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_RenderEventArgs(L), -2), "RenderEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_RenderScreenMsgArgs(L), -2), "RenderScreenMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_RenderMsgArgs(L), -2), "RenderMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_window(L), -2), "Window");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Texture), -2), "Texture");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Image), -2), "Image");

@@ -25,7 +25,7 @@ Each component type is described by a `ClassDesc` struct (`include/orca.h`):
 
 ```c
 struct ClassDesc {
-  objectProc_t ObjProc;         // Message handler — dispatches kMsg* / kEvent* messages
+  objectProc_t ObjProc;         // Message handler — dispatches kMsg* messages
   lpcPropertyType_t Properties; // Sorted array of property descriptors
   lpcString_t ClassName;        // Human-readable name, e.g. "Button"
   uint32_t ParentClasses[16];   // Inherited class IDs (ordered most→least derived)
@@ -46,7 +46,7 @@ Call `OBJ_RegisterClass(&desc)` at module initialisation time to register a `Cla
 OBJ_AddComponent(obj, ID_Button);  // attach by ClassID hash
 ```
 
-The engine allocates `sizeof(struct component) + ClassSize` bytes, copies `Defaults` into the new instance, appends it to the object's component linked list, and then sends `kEventCreate` to the new component.
+The engine allocates `sizeof(struct component) + ClassSize` bytes, copies `Defaults` into the new instance, appends it to the object's component linked list, and then sends `kMsgCreate` to the new component.
 
 ### Inheritance
 
@@ -73,14 +73,14 @@ Messages and events are `uint32_t` constants defined in `source/core/core_proper
 
 | Message | When sent |
 |---|---|
-| `kEventCreate` | Component just attached to an object |
-| `kEventDestroy` | Component about to be detached / object destroyed |
-| `kEventDraw` | Render frame — component should submit draw calls |
-| `kEventUpdate` | Per-frame update tick |
+| `kMsgCreate` | Component just attached to an object |
+| `kMsgDestroy` | Component about to be detached / object destroyed |
+| `kMsgDraw` | Render frame — component should submit draw calls |
+| `kMsgUpdate` | Per-frame update tick |
 | `kMsgMouseUp` | Mouse/touch release over this object |
 | `kMsgMouseDown` | Mouse/touch press over this object |
 
-Custom events can be declared in any module's `.xml` file using the `<event>` element and will be hashed into the same `uint32_t` space.
+Custom messages can be declared in any module's `.xml` file using the `<message>` element and will be hashed into the same `uint32_t` space.
 
 ---
 
@@ -124,11 +124,11 @@ static LRESULT MyComponent_Proc(lpObject_t obj, uint32_t msg,
                                  wParam_t wParam, lParam_t lParam) {
     struct MyComponent *self = GetMyComponent(obj);
     switch (msg) {
-        case kEventCreate:
+        case kMsgCreate:
             self->Speed     = 1.0f;
             self->Direction = (vec3_t){ 0, 0, 1 };
             break;
-        case kEventUpdate:
+        case kMsgUpdate:
             /* move the object each frame */
             break;
     }

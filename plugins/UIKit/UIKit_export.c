@@ -1251,19 +1251,19 @@ int luaopen_orca_SizeShorthand(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
-void luaX_pushForegroundContentEventArgs(lua_State *L, struct ForegroundContentEventArgs const* data) {
+void luaX_pushForegroundContentMsgArgs(lua_State *L, struct ForegroundContentMsgArgs const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
-	struct ForegroundContentEventArgs* self = lua_newuserdata(L, sizeof(struct ForegroundContentEventArgs));
-	luaL_setmetatable(L, "ForegroundContentEventArgs");
-	memcpy(self, data, sizeof(struct ForegroundContentEventArgs));
+	struct ForegroundContentMsgArgs* self = lua_newuserdata(L, sizeof(struct ForegroundContentMsgArgs));
+	luaL_setmetatable(L, "ForegroundContentMsgArgs");
+	memcpy(self, data, sizeof(struct ForegroundContentMsgArgs));
 }
-struct ForegroundContentEventArgs* luaX_checkForegroundContentEventArgs(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "ForegroundContentEventArgs");
+struct ForegroundContentMsgArgs* luaX_checkForegroundContentMsgArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "ForegroundContentMsgArgs");
 }
-static int f_new_ForegroundContentEventArgs(lua_State *L) {
-	struct ForegroundContentEventArgs* self = lua_newuserdata(L, sizeof(struct ForegroundContentEventArgs));
-	luaL_setmetatable(L, "ForegroundContentEventArgs");
-	memset(self, 0, sizeof(struct ForegroundContentEventArgs));
+static int f_new_ForegroundContentMsgArgs(lua_State *L) {
+	struct ForegroundContentMsgArgs* self = lua_newuserdata(L, sizeof(struct ForegroundContentMsgArgs));
+	luaL_setmetatable(L, "ForegroundContentMsgArgs");
+	memset(self, 0, sizeof(struct ForegroundContentMsgArgs));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_pop(L, (lua_getfield(L, 1, "result"), self->result = luaX_checkTexture(L, -1), 1));
@@ -1272,51 +1272,51 @@ static int f_new_ForegroundContentEventArgs(lua_State *L) {
 	}
 	return 1;
 }
-int f_ForegroundContentEventArgs___index(lua_State *L) {
-	struct ForegroundContentEventArgs* self = luaX_checkForegroundContentEventArgs(L, 1);
+int f_ForegroundContentMsgArgs___index(lua_State *L) {
+	struct ForegroundContentMsgArgs* self = luaX_checkForegroundContentMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x0a377624: luaX_pushTexture(L, self->result); return 1; // result
 	}
-	return luaL_error(L, "Unknown field in ForegroundContentEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in ForegroundContentMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-int f_ForegroundContentEventArgs___newindex(lua_State *L) {
-	struct ForegroundContentEventArgs* self = luaX_checkForegroundContentEventArgs(L, 1);
+int f_ForegroundContentMsgArgs___newindex(lua_State *L) {
+	struct ForegroundContentMsgArgs* self = luaX_checkForegroundContentMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x0a377624: self->result = luaX_checkTexture(L, 3); return 0; // result
 	}
-	return luaL_error(L, "Unknown field in ForegroundContentEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in ForegroundContentMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-static int f_ForegroundContentEventArgs___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_ForegroundContentEventArgs(L));  // remove ForegroundContentEventArgs from stack and call constructor
+static int f_ForegroundContentMsgArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_ForegroundContentMsgArgs(L));  // remove ForegroundContentMsgArgs from stack and call constructor
 }
-int luaopen_orca_ForegroundContentEventArgs(lua_State *L) {
-	luaL_newmetatable(L, "ForegroundContentEventArgs");
+int luaopen_orca_ForegroundContentMsgArgs(lua_State *L) {
+	luaL_newmetatable(L, "ForegroundContentMsgArgs");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_ForegroundContentEventArgs },
-		{ "__newindex", f_ForegroundContentEventArgs___newindex },
-		{ "__index", f_ForegroundContentEventArgs___index },
+		{ "new", f_new_ForegroundContentMsgArgs },
+		{ "__newindex", f_ForegroundContentMsgArgs___newindex },
+		{ "__index", f_ForegroundContentMsgArgs___index },
 		{ NULL, NULL },
 	}), 0);
-	// Make ForegroundContentEventArgs creatable via constructor-like syntax
+	// Make ForegroundContentMsgArgs creatable via constructor-like syntax
 	lua_newtable(L);
-	lua_pushcfunction(L, f_ForegroundContentEventArgs___call);
+	lua_pushcfunction(L, f_ForegroundContentMsgArgs___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	return 1;
 }
-void luaX_pushPushPropertyEventArgs(lua_State *L, struct PushPropertyEventArgs const* data) {
+void luaX_pushPushPropertyMsgArgs(lua_State *L, struct PushPropertyMsgArgs const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
-	struct PushPropertyEventArgs* self = lua_newuserdata(L, sizeof(struct PushPropertyEventArgs));
-	luaL_setmetatable(L, "PushPropertyEventArgs");
-	memcpy(self, data, sizeof(struct PushPropertyEventArgs));
+	struct PushPropertyMsgArgs* self = lua_newuserdata(L, sizeof(struct PushPropertyMsgArgs));
+	luaL_setmetatable(L, "PushPropertyMsgArgs");
+	memcpy(self, data, sizeof(struct PushPropertyMsgArgs));
 }
-struct PushPropertyEventArgs* luaX_checkPushPropertyEventArgs(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "PushPropertyEventArgs");
+struct PushPropertyMsgArgs* luaX_checkPushPropertyMsgArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "PushPropertyMsgArgs");
 }
-static int f_new_PushPropertyEventArgs(lua_State *L) {
-	struct PushPropertyEventArgs* self = lua_newuserdata(L, sizeof(struct PushPropertyEventArgs));
-	luaL_setmetatable(L, "PushPropertyEventArgs");
-	memset(self, 0, sizeof(struct PushPropertyEventArgs));
+static int f_new_PushPropertyMsgArgs(lua_State *L) {
+	struct PushPropertyMsgArgs* self = lua_newuserdata(L, sizeof(struct PushPropertyMsgArgs));
+	luaL_setmetatable(L, "PushPropertyMsgArgs");
+	memset(self, 0, sizeof(struct PushPropertyMsgArgs));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_pop(L, (lua_getfield(L, 1, "Placeholder"), self->Placeholder = (int32_t)luaL_optinteger(L, -1, 0), 1));
@@ -1325,51 +1325,51 @@ static int f_new_PushPropertyEventArgs(lua_State *L) {
 	}
 	return 1;
 }
-int f_PushPropertyEventArgs___index(lua_State *L) {
-	struct PushPropertyEventArgs* self = luaX_checkPushPropertyEventArgs(L, 1);
+int f_PushPropertyMsgArgs___index(lua_State *L) {
+	struct PushPropertyMsgArgs* self = luaX_checkPushPropertyMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x8987413a: lua_pushinteger(L, self->Placeholder); return 1; // Placeholder
 	}
-	return luaL_error(L, "Unknown field in PushPropertyEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in PushPropertyMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-int f_PushPropertyEventArgs___newindex(lua_State *L) {
-	struct PushPropertyEventArgs* self = luaX_checkPushPropertyEventArgs(L, 1);
+int f_PushPropertyMsgArgs___newindex(lua_State *L) {
+	struct PushPropertyMsgArgs* self = luaX_checkPushPropertyMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x8987413a: self->Placeholder = (int32_t)luaL_optinteger(L, 3, 0); return 0; // Placeholder
 	}
-	return luaL_error(L, "Unknown field in PushPropertyEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in PushPropertyMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-static int f_PushPropertyEventArgs___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_PushPropertyEventArgs(L));  // remove PushPropertyEventArgs from stack and call constructor
+static int f_PushPropertyMsgArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_PushPropertyMsgArgs(L));  // remove PushPropertyMsgArgs from stack and call constructor
 }
-int luaopen_orca_PushPropertyEventArgs(lua_State *L) {
-	luaL_newmetatable(L, "PushPropertyEventArgs");
+int luaopen_orca_PushPropertyMsgArgs(lua_State *L) {
+	luaL_newmetatable(L, "PushPropertyMsgArgs");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_PushPropertyEventArgs },
-		{ "__newindex", f_PushPropertyEventArgs___newindex },
-		{ "__index", f_PushPropertyEventArgs___index },
+		{ "new", f_new_PushPropertyMsgArgs },
+		{ "__newindex", f_PushPropertyMsgArgs___newindex },
+		{ "__index", f_PushPropertyMsgArgs___index },
 		{ NULL, NULL },
 	}), 0);
-	// Make PushPropertyEventArgs creatable via constructor-like syntax
+	// Make PushPropertyMsgArgs creatable via constructor-like syntax
 	lua_newtable(L);
-	lua_pushcfunction(L, f_PushPropertyEventArgs___call);
+	lua_pushcfunction(L, f_PushPropertyMsgArgs___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	return 1;
 }
-void luaX_pushDrawBrushEventArgs(lua_State *L, struct DrawBrushEventArgs const* data) {
+void luaX_pushDrawBrushMsgArgs(lua_State *L, struct DrawBrushMsgArgs const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
-	struct DrawBrushEventArgs* self = lua_newuserdata(L, sizeof(struct DrawBrushEventArgs));
-	luaL_setmetatable(L, "DrawBrushEventArgs");
-	memcpy(self, data, sizeof(struct DrawBrushEventArgs));
+	struct DrawBrushMsgArgs* self = lua_newuserdata(L, sizeof(struct DrawBrushMsgArgs));
+	luaL_setmetatable(L, "DrawBrushMsgArgs");
+	memcpy(self, data, sizeof(struct DrawBrushMsgArgs));
 }
-struct DrawBrushEventArgs* luaX_checkDrawBrushEventArgs(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "DrawBrushEventArgs");
+struct DrawBrushMsgArgs* luaX_checkDrawBrushMsgArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "DrawBrushMsgArgs");
 }
-static int f_new_DrawBrushEventArgs(lua_State *L) {
-	struct DrawBrushEventArgs* self = lua_newuserdata(L, sizeof(struct DrawBrushEventArgs));
-	luaL_setmetatable(L, "DrawBrushEventArgs");
-	memset(self, 0, sizeof(struct DrawBrushEventArgs));
+static int f_new_DrawBrushMsgArgs(lua_State *L) {
+	struct DrawBrushMsgArgs* self = lua_newuserdata(L, sizeof(struct DrawBrushMsgArgs));
+	luaL_setmetatable(L, "DrawBrushMsgArgs");
+	memset(self, 0, sizeof(struct DrawBrushMsgArgs));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_pop(L, (lua_getfield(L, 1, "projection"), self->projection = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkmat4(L, -1) : (struct mat4){0}, 1));
@@ -1390,8 +1390,8 @@ static int f_new_DrawBrushEventArgs(lua_State *L) {
 	}
 	return 1;
 }
-int f_DrawBrushEventArgs___index(lua_State *L) {
-	struct DrawBrushEventArgs* self = luaX_checkDrawBrushEventArgs(L, 1);
+int f_DrawBrushMsgArgs___index(lua_State *L) {
+	struct DrawBrushMsgArgs* self = luaX_checkDrawBrushMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0xe4497980: luaX_pushmat4(L, &self->projection); return 1; // projection
 	case 0xb35135fa: luaX_pushTexture(L, self->image); return 1; // image
@@ -1401,10 +1401,10 @@ int f_DrawBrushEventArgs___index(lua_State *L) {
 	case 0x083a85c0: lua_pushboolean(L, self->foreground); return 1; // foreground
 	case 0xad6aa1df: luaX_pushViewDef(L, self->viewdef); return 1; // viewdef
 	}
-	return luaL_error(L, "Unknown field in DrawBrushEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in DrawBrushMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-int f_DrawBrushEventArgs___newindex(lua_State *L) {
-	struct DrawBrushEventArgs* self = luaX_checkDrawBrushEventArgs(L, 1);
+int f_DrawBrushMsgArgs___newindex(lua_State *L) {
+	struct DrawBrushMsgArgs* self = luaX_checkDrawBrushMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0xe4497980: self->projection = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkmat4(L, 3) : (struct mat4){0}; return 0; // projection
 	case 0xb35135fa: self->image = luaX_checkTexture(L, 3); return 0; // image
@@ -1414,39 +1414,39 @@ int f_DrawBrushEventArgs___newindex(lua_State *L) {
 	case 0x083a85c0: self->foreground = lua_toboolean(L, 3); return 0; // foreground
 	case 0xad6aa1df: self->viewdef = NULL; return 0; // viewdef
 	}
-	return luaL_error(L, "Unknown field in DrawBrushEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in DrawBrushMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-static int f_DrawBrushEventArgs___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_DrawBrushEventArgs(L));  // remove DrawBrushEventArgs from stack and call constructor
+static int f_DrawBrushMsgArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_DrawBrushMsgArgs(L));  // remove DrawBrushMsgArgs from stack and call constructor
 }
-int luaopen_orca_DrawBrushEventArgs(lua_State *L) {
-	luaL_newmetatable(L, "DrawBrushEventArgs");
+int luaopen_orca_DrawBrushMsgArgs(lua_State *L) {
+	luaL_newmetatable(L, "DrawBrushMsgArgs");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_DrawBrushEventArgs },
-		{ "__newindex", f_DrawBrushEventArgs___newindex },
-		{ "__index", f_DrawBrushEventArgs___index },
+		{ "new", f_new_DrawBrushMsgArgs },
+		{ "__newindex", f_DrawBrushMsgArgs___newindex },
+		{ "__index", f_DrawBrushMsgArgs___index },
 		{ NULL, NULL },
 	}), 0);
-	// Make DrawBrushEventArgs creatable via constructor-like syntax
+	// Make DrawBrushMsgArgs creatable via constructor-like syntax
 	lua_newtable(L);
-	lua_pushcfunction(L, f_DrawBrushEventArgs___call);
+	lua_pushcfunction(L, f_DrawBrushMsgArgs___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	return 1;
 }
-void luaX_pushHandleMessageEventArgs(lua_State *L, struct HandleMessageEventArgs const* data) {
+void luaX_pushHandleMessageMsgArgs(lua_State *L, struct HandleMessageMsgArgs const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
-	struct HandleMessageEventArgs* self = lua_newuserdata(L, sizeof(struct HandleMessageEventArgs));
-	luaL_setmetatable(L, "HandleMessageEventArgs");
-	memcpy(self, data, sizeof(struct HandleMessageEventArgs));
+	struct HandleMessageMsgArgs* self = lua_newuserdata(L, sizeof(struct HandleMessageMsgArgs));
+	luaL_setmetatable(L, "HandleMessageMsgArgs");
+	memcpy(self, data, sizeof(struct HandleMessageMsgArgs));
 }
-struct HandleMessageEventArgs* luaX_checkHandleMessageEventArgs(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "HandleMessageEventArgs");
+struct HandleMessageMsgArgs* luaX_checkHandleMessageMsgArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "HandleMessageMsgArgs");
 }
-static int f_new_HandleMessageEventArgs(lua_State *L) {
-	struct HandleMessageEventArgs* self = lua_newuserdata(L, sizeof(struct HandleMessageEventArgs));
-	luaL_setmetatable(L, "HandleMessageEventArgs");
-	memset(self, 0, sizeof(struct HandleMessageEventArgs));
+static int f_new_HandleMessageMsgArgs(lua_State *L) {
+	struct HandleMessageMsgArgs* self = lua_newuserdata(L, sizeof(struct HandleMessageMsgArgs));
+	luaL_setmetatable(L, "HandleMessageMsgArgs");
+	memset(self, 0, sizeof(struct HandleMessageMsgArgs));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_pop(L, (lua_getfield(L, 1, "EventName"), strncpy(self->EventName, luaL_optstring(L, -1, ""), sizeof(self->EventName)), 1));
@@ -1459,55 +1459,55 @@ static int f_new_HandleMessageEventArgs(lua_State *L) {
 	}
 	return 1;
 }
-int f_HandleMessageEventArgs___index(lua_State *L) {
-	struct HandleMessageEventArgs* self = luaX_checkHandleMessageEventArgs(L, 1);
+int f_HandleMessageMsgArgs___index(lua_State *L) {
+	struct HandleMessageMsgArgs* self = luaX_checkHandleMessageMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x2fc7b71c: lua_pushstring(L, self->EventName); return 1; // EventName
 	case 0xd26deba3: lua_pushinteger(L, self->FirstArg); return 1; // FirstArg
 	case 0x227201c6: lua_pushinteger(L, self->NumArgs); return 1; // NumArgs
 	}
-	return luaL_error(L, "Unknown field in HandleMessageEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in HandleMessageMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-int f_HandleMessageEventArgs___newindex(lua_State *L) {
-	struct HandleMessageEventArgs* self = luaX_checkHandleMessageEventArgs(L, 1);
+int f_HandleMessageMsgArgs___newindex(lua_State *L) {
+	struct HandleMessageMsgArgs* self = luaX_checkHandleMessageMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x2fc7b71c: strncpy(self->EventName, luaL_optstring(L, 3, ""), sizeof(self->EventName)); return 0; // EventName
 	case 0xd26deba3: self->FirstArg = (uint32_t)luaL_optinteger(L, 3, 0); return 0; // FirstArg
 	case 0x227201c6: self->NumArgs = (uint32_t)luaL_optinteger(L, 3, 0); return 0; // NumArgs
 	}
-	return luaL_error(L, "Unknown field in HandleMessageEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in HandleMessageMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-static int f_HandleMessageEventArgs___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_HandleMessageEventArgs(L));  // remove HandleMessageEventArgs from stack and call constructor
+static int f_HandleMessageMsgArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_HandleMessageMsgArgs(L));  // remove HandleMessageMsgArgs from stack and call constructor
 }
-int luaopen_orca_HandleMessageEventArgs(lua_State *L) {
-	luaL_newmetatable(L, "HandleMessageEventArgs");
+int luaopen_orca_HandleMessageMsgArgs(lua_State *L) {
+	luaL_newmetatable(L, "HandleMessageMsgArgs");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_HandleMessageEventArgs },
-		{ "__newindex", f_HandleMessageEventArgs___newindex },
-		{ "__index", f_HandleMessageEventArgs___index },
+		{ "new", f_new_HandleMessageMsgArgs },
+		{ "__newindex", f_HandleMessageMsgArgs___newindex },
+		{ "__index", f_HandleMessageMsgArgs___index },
 		{ NULL, NULL },
 	}), 0);
-	// Make HandleMessageEventArgs creatable via constructor-like syntax
+	// Make HandleMessageMsgArgs creatable via constructor-like syntax
 	lua_newtable(L);
-	lua_pushcfunction(L, f_HandleMessageEventArgs___call);
+	lua_pushcfunction(L, f_HandleMessageMsgArgs___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	return 1;
 }
-void luaX_pushLoadViewEventArgs(lua_State *L, struct LoadViewEventArgs const* data) {
+void luaX_pushLoadViewMsgArgs(lua_State *L, struct LoadViewMsgArgs const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
-	struct LoadViewEventArgs* self = lua_newuserdata(L, sizeof(struct LoadViewEventArgs));
-	luaL_setmetatable(L, "LoadViewEventArgs");
-	memcpy(self, data, sizeof(struct LoadViewEventArgs));
+	struct LoadViewMsgArgs* self = lua_newuserdata(L, sizeof(struct LoadViewMsgArgs));
+	luaL_setmetatable(L, "LoadViewMsgArgs");
+	memcpy(self, data, sizeof(struct LoadViewMsgArgs));
 }
-struct LoadViewEventArgs* luaX_checkLoadViewEventArgs(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "LoadViewEventArgs");
+struct LoadViewMsgArgs* luaX_checkLoadViewMsgArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "LoadViewMsgArgs");
 }
-static int f_new_LoadViewEventArgs(lua_State *L) {
-	struct LoadViewEventArgs* self = lua_newuserdata(L, sizeof(struct LoadViewEventArgs));
-	luaL_setmetatable(L, "LoadViewEventArgs");
-	memset(self, 0, sizeof(struct LoadViewEventArgs));
+static int f_new_LoadViewMsgArgs(lua_State *L) {
+	struct LoadViewMsgArgs* self = lua_newuserdata(L, sizeof(struct LoadViewMsgArgs));
+	luaL_setmetatable(L, "LoadViewMsgArgs");
+	memset(self, 0, sizeof(struct LoadViewMsgArgs));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_pop(L, (lua_getfield(L, 1, "lua_state"), self->lua_state = NULL, 1));
@@ -1516,51 +1516,51 @@ static int f_new_LoadViewEventArgs(lua_State *L) {
 	}
 	return 1;
 }
-int f_LoadViewEventArgs___index(lua_State *L) {
-	struct LoadViewEventArgs* self = luaX_checkLoadViewEventArgs(L, 1);
+int f_LoadViewMsgArgs___index(lua_State *L) {
+	struct LoadViewMsgArgs* self = luaX_checkLoadViewMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x187f5b0f: luaX_pushlua_State(L, self->lua_state); return 1; // lua_state
 	}
-	return luaL_error(L, "Unknown field in LoadViewEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in LoadViewMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-int f_LoadViewEventArgs___newindex(lua_State *L) {
-	struct LoadViewEventArgs* self = luaX_checkLoadViewEventArgs(L, 1);
+int f_LoadViewMsgArgs___newindex(lua_State *L) {
+	struct LoadViewMsgArgs* self = luaX_checkLoadViewMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x187f5b0f: self->lua_state = NULL; return 0; // lua_state
 	}
-	return luaL_error(L, "Unknown field in LoadViewEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in LoadViewMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-static int f_LoadViewEventArgs___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_LoadViewEventArgs(L));  // remove LoadViewEventArgs from stack and call constructor
+static int f_LoadViewMsgArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_LoadViewMsgArgs(L));  // remove LoadViewMsgArgs from stack and call constructor
 }
-int luaopen_orca_LoadViewEventArgs(lua_State *L) {
-	luaL_newmetatable(L, "LoadViewEventArgs");
+int luaopen_orca_LoadViewMsgArgs(lua_State *L) {
+	luaL_newmetatable(L, "LoadViewMsgArgs");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_LoadViewEventArgs },
-		{ "__newindex", f_LoadViewEventArgs___newindex },
-		{ "__index", f_LoadViewEventArgs___index },
+		{ "new", f_new_LoadViewMsgArgs },
+		{ "__newindex", f_LoadViewMsgArgs___newindex },
+		{ "__index", f_LoadViewMsgArgs___index },
 		{ NULL, NULL },
 	}), 0);
-	// Make LoadViewEventArgs creatable via constructor-like syntax
+	// Make LoadViewMsgArgs creatable via constructor-like syntax
 	lua_newtable(L);
-	lua_pushcfunction(L, f_LoadViewEventArgs___call);
+	lua_pushcfunction(L, f_LoadViewMsgArgs___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	return 1;
 }
-void luaX_pushMakeTextEventArgs(lua_State *L, struct MakeTextEventArgs const* data) {
+void luaX_pushMakeTextMsgArgs(lua_State *L, struct MakeTextMsgArgs const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
-	struct MakeTextEventArgs* self = lua_newuserdata(L, sizeof(struct MakeTextEventArgs));
-	luaL_setmetatable(L, "MakeTextEventArgs");
-	memcpy(self, data, sizeof(struct MakeTextEventArgs));
+	struct MakeTextMsgArgs* self = lua_newuserdata(L, sizeof(struct MakeTextMsgArgs));
+	luaL_setmetatable(L, "MakeTextMsgArgs");
+	memcpy(self, data, sizeof(struct MakeTextMsgArgs));
 }
-struct MakeTextEventArgs* luaX_checkMakeTextEventArgs(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "MakeTextEventArgs");
+struct MakeTextMsgArgs* luaX_checkMakeTextMsgArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "MakeTextMsgArgs");
 }
-static int f_new_MakeTextEventArgs(lua_State *L) {
-	struct MakeTextEventArgs* self = lua_newuserdata(L, sizeof(struct MakeTextEventArgs));
-	luaL_setmetatable(L, "MakeTextEventArgs");
-	memset(self, 0, sizeof(struct MakeTextEventArgs));
+static int f_new_MakeTextMsgArgs(lua_State *L) {
+	struct MakeTextMsgArgs* self = lua_newuserdata(L, sizeof(struct MakeTextMsgArgs));
+	luaL_setmetatable(L, "MakeTextMsgArgs");
+	memset(self, 0, sizeof(struct MakeTextMsgArgs));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_pop(L, (lua_getfield(L, 1, "text"), self->text = NULL, 1));
@@ -1571,110 +1571,110 @@ static int f_new_MakeTextEventArgs(lua_State *L) {
 	}
 	return 1;
 }
-int f_MakeTextEventArgs___index(lua_State *L) {
-	struct MakeTextEventArgs* self = luaX_checkMakeTextEventArgs(L, 1);
+int f_MakeTextMsgArgs___index(lua_State *L) {
+	struct MakeTextMsgArgs* self = luaX_checkMakeTextMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0xbde64e3e: luaX_pushViewText(L, self->text); return 1; // text
 	case 0xa7e2407e: lua_pushinteger(L, self->availableSpace); return 1; // availableSpace
 	}
-	return luaL_error(L, "Unknown field in MakeTextEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in MakeTextMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-int f_MakeTextEventArgs___newindex(lua_State *L) {
-	struct MakeTextEventArgs* self = luaX_checkMakeTextEventArgs(L, 1);
+int f_MakeTextMsgArgs___newindex(lua_State *L) {
+	struct MakeTextMsgArgs* self = luaX_checkMakeTextMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0xbde64e3e: self->text = NULL; return 0; // text
 	case 0xa7e2407e: self->availableSpace = (uint32_t)luaL_optinteger(L, 3, 0); return 0; // availableSpace
 	}
-	return luaL_error(L, "Unknown field in MakeTextEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in MakeTextMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-static int f_MakeTextEventArgs___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_MakeTextEventArgs(L));  // remove MakeTextEventArgs from stack and call constructor
+static int f_MakeTextMsgArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_MakeTextMsgArgs(L));  // remove MakeTextMsgArgs from stack and call constructor
 }
-int luaopen_orca_MakeTextEventArgs(lua_State *L) {
-	luaL_newmetatable(L, "MakeTextEventArgs");
+int luaopen_orca_MakeTextMsgArgs(lua_State *L) {
+	luaL_newmetatable(L, "MakeTextMsgArgs");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_MakeTextEventArgs },
-		{ "__newindex", f_MakeTextEventArgs___newindex },
-		{ "__index", f_MakeTextEventArgs___index },
+		{ "new", f_new_MakeTextMsgArgs },
+		{ "__newindex", f_MakeTextMsgArgs___newindex },
+		{ "__index", f_MakeTextMsgArgs___index },
 		{ NULL, NULL },
 	}), 0);
-	// Make MakeTextEventArgs creatable via constructor-like syntax
+	// Make MakeTextMsgArgs creatable via constructor-like syntax
 	lua_newtable(L);
-	lua_pushcfunction(L, f_MakeTextEventArgs___call);
+	lua_pushcfunction(L, f_MakeTextMsgArgs___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	return 1;
 }
-void luaX_pushTriggeredEventArgs(lua_State *L, struct TriggeredEventArgs const* data) {
+void luaX_pushTriggeredMsgArgs(lua_State *L, struct TriggeredMsgArgs const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
-	struct TriggeredEventArgs* self = lua_newuserdata(L, sizeof(struct TriggeredEventArgs));
-	luaL_setmetatable(L, "TriggeredEventArgs");
-	memcpy(self, data, sizeof(struct TriggeredEventArgs));
+	struct TriggeredMsgArgs* self = lua_newuserdata(L, sizeof(struct TriggeredMsgArgs));
+	luaL_setmetatable(L, "TriggeredMsgArgs");
+	memcpy(self, data, sizeof(struct TriggeredMsgArgs));
 }
-struct TriggeredEventArgs* luaX_checkTriggeredEventArgs(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "TriggeredEventArgs");
+struct TriggeredMsgArgs* luaX_checkTriggeredMsgArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "TriggeredMsgArgs");
 }
-static int f_new_TriggeredEventArgs(lua_State *L) {
-	struct TriggeredEventArgs* self = lua_newuserdata(L, sizeof(struct TriggeredEventArgs));
-	luaL_setmetatable(L, "TriggeredEventArgs");
-	memset(self, 0, sizeof(struct TriggeredEventArgs));
+static int f_new_TriggeredMsgArgs(lua_State *L) {
+	struct TriggeredMsgArgs* self = lua_newuserdata(L, sizeof(struct TriggeredMsgArgs));
+	luaL_setmetatable(L, "TriggeredMsgArgs");
+	memset(self, 0, sizeof(struct TriggeredMsgArgs));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_pop(L, (lua_getfield(L, 1, "Trigger"), self->Trigger = luaX_checkTrigger(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "message"), self->message = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkHandleMessageEventArgs(L, -1) : (struct HandleMessageEventArgs){0}, 1));
+		lua_pop(L, (lua_getfield(L, 1, "message"), self->message = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkHandleMessageMsgArgs(L, -1) : (struct HandleMessageMsgArgs){0}, 1));
 	} else {
 		self->Trigger = luaX_checkTrigger(L, 1);
-		self->message = lua_type(L, 2) == LUA_TUSERDATA ? *luaX_checkHandleMessageEventArgs(L, 2) : (struct HandleMessageEventArgs){0};
+		self->message = lua_type(L, 2) == LUA_TUSERDATA ? *luaX_checkHandleMessageMsgArgs(L, 2) : (struct HandleMessageMsgArgs){0};
 	}
 	return 1;
 }
-int f_TriggeredEventArgs___index(lua_State *L) {
-	struct TriggeredEventArgs* self = luaX_checkTriggeredEventArgs(L, 1);
+int f_TriggeredMsgArgs___index(lua_State *L) {
+	struct TriggeredMsgArgs* self = luaX_checkTriggeredMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0xa5ea0da3: luaX_pushTrigger(L, self->Trigger); return 1; // Trigger
-	case 0x24f208e4: luaX_pushHandleMessageEventArgs(L, &self->message); return 1; // message
+	case 0x24f208e4: luaX_pushHandleMessageMsgArgs(L, &self->message); return 1; // message
 	}
-	return luaL_error(L, "Unknown field in TriggeredEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in TriggeredMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-int f_TriggeredEventArgs___newindex(lua_State *L) {
-	struct TriggeredEventArgs* self = luaX_checkTriggeredEventArgs(L, 1);
+int f_TriggeredMsgArgs___newindex(lua_State *L) {
+	struct TriggeredMsgArgs* self = luaX_checkTriggeredMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0xa5ea0da3: self->Trigger = luaX_checkTrigger(L, 3); return 0; // Trigger
-	case 0x24f208e4: self->message = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkHandleMessageEventArgs(L, 3) : (struct HandleMessageEventArgs){0}; return 0; // message
+	case 0x24f208e4: self->message = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkHandleMessageMsgArgs(L, 3) : (struct HandleMessageMsgArgs){0}; return 0; // message
 	}
-	return luaL_error(L, "Unknown field in TriggeredEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in TriggeredMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-static int f_TriggeredEventArgs___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_TriggeredEventArgs(L));  // remove TriggeredEventArgs from stack and call constructor
+static int f_TriggeredMsgArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_TriggeredMsgArgs(L));  // remove TriggeredMsgArgs from stack and call constructor
 }
-int luaopen_orca_TriggeredEventArgs(lua_State *L) {
-	luaL_newmetatable(L, "TriggeredEventArgs");
+int luaopen_orca_TriggeredMsgArgs(lua_State *L) {
+	luaL_newmetatable(L, "TriggeredMsgArgs");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_TriggeredEventArgs },
-		{ "__newindex", f_TriggeredEventArgs___newindex },
-		{ "__index", f_TriggeredEventArgs___index },
+		{ "new", f_new_TriggeredMsgArgs },
+		{ "__newindex", f_TriggeredMsgArgs___newindex },
+		{ "__index", f_TriggeredMsgArgs___index },
 		{ NULL, NULL },
 	}), 0);
-	// Make TriggeredEventArgs creatable via constructor-like syntax
+	// Make TriggeredMsgArgs creatable via constructor-like syntax
 	lua_newtable(L);
-	lua_pushcfunction(L, f_TriggeredEventArgs___call);
+	lua_pushcfunction(L, f_TriggeredMsgArgs___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	return 1;
 }
-void luaX_pushNavigateToPageEventArgs(lua_State *L, struct NavigateToPageEventArgs const* data) {
+void luaX_pushNavigateToPageMsgArgs(lua_State *L, struct NavigateToPageMsgArgs const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
-	struct NavigateToPageEventArgs* self = lua_newuserdata(L, sizeof(struct NavigateToPageEventArgs));
-	luaL_setmetatable(L, "NavigateToPageEventArgs");
-	memcpy(self, data, sizeof(struct NavigateToPageEventArgs));
+	struct NavigateToPageMsgArgs* self = lua_newuserdata(L, sizeof(struct NavigateToPageMsgArgs));
+	luaL_setmetatable(L, "NavigateToPageMsgArgs");
+	memcpy(self, data, sizeof(struct NavigateToPageMsgArgs));
 }
-struct NavigateToPageEventArgs* luaX_checkNavigateToPageEventArgs(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "NavigateToPageEventArgs");
+struct NavigateToPageMsgArgs* luaX_checkNavigateToPageMsgArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "NavigateToPageMsgArgs");
 }
-static int f_new_NavigateToPageEventArgs(lua_State *L) {
-	struct NavigateToPageEventArgs* self = lua_newuserdata(L, sizeof(struct NavigateToPageEventArgs));
-	luaL_setmetatable(L, "NavigateToPageEventArgs");
-	memset(self, 0, sizeof(struct NavigateToPageEventArgs));
+static int f_new_NavigateToPageMsgArgs(lua_State *L) {
+	struct NavigateToPageMsgArgs* self = lua_newuserdata(L, sizeof(struct NavigateToPageMsgArgs));
+	luaL_setmetatable(L, "NavigateToPageMsgArgs");
+	memset(self, 0, sizeof(struct NavigateToPageMsgArgs));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_pop(L, (lua_getfield(L, 1, "URL"), strncpy(self->URL, luaL_optstring(L, -1, ""), sizeof(self->URL)), 1));
@@ -1685,53 +1685,53 @@ static int f_new_NavigateToPageEventArgs(lua_State *L) {
 	}
 	return 1;
 }
-int f_NavigateToPageEventArgs___index(lua_State *L) {
-	struct NavigateToPageEventArgs* self = luaX_checkNavigateToPageEventArgs(L, 1);
+int f_NavigateToPageMsgArgs___index(lua_State *L) {
+	struct NavigateToPageMsgArgs* self = luaX_checkNavigateToPageMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x7569633e: lua_pushstring(L, self->URL); return 1; // URL
 	case 0x84ff7372: luaX_pushTransitionType(L, self->TransitionType); return 1; // TransitionType
 	}
-	return luaL_error(L, "Unknown field in NavigateToPageEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in NavigateToPageMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-int f_NavigateToPageEventArgs___newindex(lua_State *L) {
-	struct NavigateToPageEventArgs* self = luaX_checkNavigateToPageEventArgs(L, 1);
+int f_NavigateToPageMsgArgs___newindex(lua_State *L) {
+	struct NavigateToPageMsgArgs* self = luaX_checkNavigateToPageMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x7569633e: strncpy(self->URL, luaL_optstring(L, 3, ""), sizeof(self->URL)); return 0; // URL
 	case 0x84ff7372: self->TransitionType = lua_type(L, 3) == LUA_TSTRING ? luaX_checkTransitionType(L, 3) : 0; return 0; // TransitionType
 	}
-	return luaL_error(L, "Unknown field in NavigateToPageEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in NavigateToPageMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-static int f_NavigateToPageEventArgs___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_NavigateToPageEventArgs(L));  // remove NavigateToPageEventArgs from stack and call constructor
+static int f_NavigateToPageMsgArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_NavigateToPageMsgArgs(L));  // remove NavigateToPageMsgArgs from stack and call constructor
 }
-int luaopen_orca_NavigateToPageEventArgs(lua_State *L) {
-	luaL_newmetatable(L, "NavigateToPageEventArgs");
+int luaopen_orca_NavigateToPageMsgArgs(lua_State *L) {
+	luaL_newmetatable(L, "NavigateToPageMsgArgs");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_NavigateToPageEventArgs },
-		{ "__newindex", f_NavigateToPageEventArgs___newindex },
-		{ "__index", f_NavigateToPageEventArgs___index },
+		{ "new", f_new_NavigateToPageMsgArgs },
+		{ "__newindex", f_NavigateToPageMsgArgs___newindex },
+		{ "__index", f_NavigateToPageMsgArgs___index },
 		{ NULL, NULL },
 	}), 0);
-	// Make NavigateToPageEventArgs creatable via constructor-like syntax
+	// Make NavigateToPageMsgArgs creatable via constructor-like syntax
 	lua_newtable(L);
-	lua_pushcfunction(L, f_NavigateToPageEventArgs___call);
+	lua_pushcfunction(L, f_NavigateToPageMsgArgs___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	return 1;
 }
-void luaX_pushNavigateBackEventArgs(lua_State *L, struct NavigateBackEventArgs const* data) {
+void luaX_pushNavigateBackMsgArgs(lua_State *L, struct NavigateBackMsgArgs const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
-	struct NavigateBackEventArgs* self = lua_newuserdata(L, sizeof(struct NavigateBackEventArgs));
-	luaL_setmetatable(L, "NavigateBackEventArgs");
-	memcpy(self, data, sizeof(struct NavigateBackEventArgs));
+	struct NavigateBackMsgArgs* self = lua_newuserdata(L, sizeof(struct NavigateBackMsgArgs));
+	luaL_setmetatable(L, "NavigateBackMsgArgs");
+	memcpy(self, data, sizeof(struct NavigateBackMsgArgs));
 }
-struct NavigateBackEventArgs* luaX_checkNavigateBackEventArgs(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "NavigateBackEventArgs");
+struct NavigateBackMsgArgs* luaX_checkNavigateBackMsgArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "NavigateBackMsgArgs");
 }
-static int f_new_NavigateBackEventArgs(lua_State *L) {
-	struct NavigateBackEventArgs* self = lua_newuserdata(L, sizeof(struct NavigateBackEventArgs));
-	luaL_setmetatable(L, "NavigateBackEventArgs");
-	memset(self, 0, sizeof(struct NavigateBackEventArgs));
+static int f_new_NavigateBackMsgArgs(lua_State *L) {
+	struct NavigateBackMsgArgs* self = lua_newuserdata(L, sizeof(struct NavigateBackMsgArgs));
+	luaL_setmetatable(L, "NavigateBackMsgArgs");
+	memset(self, 0, sizeof(struct NavigateBackMsgArgs));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_pop(L, (lua_getfield(L, 1, "TransitionType"), self->TransitionType = lua_type(L, -1) == LUA_TSTRING ? luaX_checkTransitionType(L, -1) : 0, 1));
@@ -1740,34 +1740,34 @@ static int f_new_NavigateBackEventArgs(lua_State *L) {
 	}
 	return 1;
 }
-int f_NavigateBackEventArgs___index(lua_State *L) {
-	struct NavigateBackEventArgs* self = luaX_checkNavigateBackEventArgs(L, 1);
+int f_NavigateBackMsgArgs___index(lua_State *L) {
+	struct NavigateBackMsgArgs* self = luaX_checkNavigateBackMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x84ff7372: luaX_pushTransitionType(L, self->TransitionType); return 1; // TransitionType
 	}
-	return luaL_error(L, "Unknown field in NavigateBackEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in NavigateBackMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-int f_NavigateBackEventArgs___newindex(lua_State *L) {
-	struct NavigateBackEventArgs* self = luaX_checkNavigateBackEventArgs(L, 1);
+int f_NavigateBackMsgArgs___newindex(lua_State *L) {
+	struct NavigateBackMsgArgs* self = luaX_checkNavigateBackMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x84ff7372: self->TransitionType = lua_type(L, 3) == LUA_TSTRING ? luaX_checkTransitionType(L, 3) : 0; return 0; // TransitionType
 	}
-	return luaL_error(L, "Unknown field in NavigateBackEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in NavigateBackMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-static int f_NavigateBackEventArgs___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_NavigateBackEventArgs(L));  // remove NavigateBackEventArgs from stack and call constructor
+static int f_NavigateBackMsgArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_NavigateBackMsgArgs(L));  // remove NavigateBackMsgArgs from stack and call constructor
 }
-int luaopen_orca_NavigateBackEventArgs(lua_State *L) {
-	luaL_newmetatable(L, "NavigateBackEventArgs");
+int luaopen_orca_NavigateBackMsgArgs(lua_State *L) {
+	luaL_newmetatable(L, "NavigateBackMsgArgs");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_NavigateBackEventArgs },
-		{ "__newindex", f_NavigateBackEventArgs___newindex },
-		{ "__index", f_NavigateBackEventArgs___index },
+		{ "new", f_new_NavigateBackMsgArgs },
+		{ "__newindex", f_NavigateBackMsgArgs___newindex },
+		{ "__index", f_NavigateBackMsgArgs___index },
 		{ NULL, NULL },
 	}), 0);
-	// Make NavigateBackEventArgs creatable via constructor-like syntax
+	// Make NavigateBackMsgArgs creatable via constructor-like syntax
 	lua_newtable(L);
-	lua_pushcfunction(L, f_NavigateBackEventArgs___call);
+	lua_pushcfunction(L, f_NavigateBackMsgArgs___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	return 1;
@@ -1842,8 +1842,8 @@ ORCA_API struct ClassDesc _AnimationPlayer = {
 	.NumProperties = kAnimationPlayerNumProperties,
 };
 
-LRESULT Trigger_PropertyChanged(struct Object*, struct Trigger*, wParam_t, PropertyChangedEventPtr);
-LRESULT Trigger_Attached(struct Object*, struct Trigger*, wParam_t, AttachedEventPtr);
+LRESULT Trigger_PropertyChanged(struct Object*, struct Trigger*, wParam_t, PropertyChangedMsgPtr);
+LRESULT Trigger_Attached(struct Object*, struct Trigger*, wParam_t, AttachedMsgPtr);
 
 static struct PropertyType const TriggerProperties[kTriggerNumProperties] = {
 	DECL(0x5221f9e8, Trigger, Property, Property, kDataTypeString), // Trigger.Property
@@ -1853,8 +1853,8 @@ static struct Trigger TriggerDefaults = {
 };
 LRESULT TriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventPropertyChanged: return Trigger_PropertyChanged(object, cmp, wparm, lparm); // PropertyChanged
-		case kEventAttached: return Trigger_Attached(object, cmp, wparm, lparm); // Attached
+		case kMsgPropertyChanged: return Trigger_PropertyChanged(object, cmp, wparm, lparm); // PropertyChanged
+		case kMsgAttached: return Trigger_Attached(object, cmp, wparm, lparm); // Attached
 	}
 	return FALSE;
 }
@@ -1878,7 +1878,7 @@ ORCA_API struct ClassDesc _Trigger = {
 	.NumProperties = kTriggerNumProperties,
 };
 
-LRESULT OnPropertyChangedTrigger_PropertyChanged(struct Object*, struct OnPropertyChangedTrigger*, wParam_t, PropertyChangedEventPtr);
+LRESULT OnPropertyChangedTrigger_PropertyChanged(struct Object*, struct OnPropertyChangedTrigger*, wParam_t, PropertyChangedMsgPtr);
 
 static struct PropertyType const OnPropertyChangedTriggerProperties[kOnPropertyChangedTriggerNumProperties] = {
 	DECL(0x9ff03304, OnPropertyChangedTrigger, SourceNode, SourceNode, kDataTypeString), // OnPropertyChangedTrigger.SourceNode
@@ -1888,7 +1888,7 @@ static struct OnPropertyChangedTrigger OnPropertyChangedTriggerDefaults = {
 };
 LRESULT OnPropertyChangedTriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventPropertyChanged: return OnPropertyChangedTrigger_PropertyChanged(object, cmp, wparm, lparm); // PropertyChanged
+		case kMsgPropertyChanged: return OnPropertyChangedTrigger_PropertyChanged(object, cmp, wparm, lparm); // PropertyChanged
 	}
 	return FALSE;
 }
@@ -1913,7 +1913,7 @@ ORCA_API struct ClassDesc _OnPropertyChangedTrigger = {
 	.NumProperties = kOnPropertyChangedTriggerNumProperties,
 };
 
-LRESULT OnAttachedTrigger_Attached(struct Object*, struct OnAttachedTrigger*, wParam_t, AttachedEventPtr);
+LRESULT OnAttachedTrigger_Attached(struct Object*, struct OnAttachedTrigger*, wParam_t, AttachedMsgPtr);
 
 static struct PropertyType const OnAttachedTriggerProperties[kOnAttachedTriggerNumProperties] = {
 };
@@ -1921,7 +1921,7 @@ static struct OnAttachedTrigger OnAttachedTriggerDefaults = {
 };
 LRESULT OnAttachedTriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventAttached: return OnAttachedTrigger_Attached(object, cmp, wparm, lparm); // Attached
+		case kMsgAttached: return OnAttachedTrigger_Attached(object, cmp, wparm, lparm); // Attached
 	}
 	return FALSE;
 }
@@ -1946,7 +1946,7 @@ ORCA_API struct ClassDesc _OnAttachedTrigger = {
 	.NumProperties = kOnAttachedTriggerNumProperties,
 };
 
-LRESULT EventTrigger_HandleMessage(struct Object*, struct EventTrigger*, wParam_t, HandleMessageEventPtr);
+LRESULT EventTrigger_HandleMessage(struct Object*, struct EventTrigger*, wParam_t, HandleMessageMsgPtr);
 
 static struct PropertyType const EventTriggerProperties[kEventTriggerNumProperties] = {
 	DECL(0x30d77e1a, EventTrigger, RoutedEvent, RoutedEvent, kDataTypeString), // EventTrigger.RoutedEvent
@@ -1955,7 +1955,7 @@ static struct EventTrigger EventTriggerDefaults = {
 };
 LRESULT EventTriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventHandleMessage: return EventTrigger_HandleMessage(object, cmp, wparm, lparm); // HandleMessage
+		case kMsgHandleMessage: return EventTrigger_HandleMessage(object, cmp, wparm, lparm); // HandleMessage
 	}
 	return FALSE;
 }
@@ -1980,7 +1980,7 @@ ORCA_API struct ClassDesc _EventTrigger = {
 	.NumProperties = kEventTriggerNumProperties,
 };
 
-LRESULT Setter_Triggered(struct Object*, struct Setter*, wParam_t, TriggeredEventPtr);
+LRESULT Setter_Triggered(struct Object*, struct Setter*, wParam_t, TriggeredMsgPtr);
 
 static struct PropertyType const SetterProperties[kSetterNumProperties] = {
 	DECL(0xa5ea0da3, Setter, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // Setter.Trigger
@@ -1991,7 +1991,7 @@ static struct Setter SetterDefaults = {
 };
 LRESULT SetterProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventTriggered: return Setter_Triggered(object, cmp, wparm, lparm); // Triggered
+		case kMsgTriggered: return Setter_Triggered(object, cmp, wparm, lparm); // Triggered
 	}
 	return FALSE;
 }
@@ -2015,7 +2015,7 @@ ORCA_API struct ClassDesc _Setter = {
 	.NumProperties = kSetterNumProperties,
 };
 
-LRESULT Handler_Triggered(struct Object*, struct Handler*, wParam_t, TriggeredEventPtr);
+LRESULT Handler_Triggered(struct Object*, struct Handler*, wParam_t, TriggeredMsgPtr);
 
 static struct PropertyType const HandlerProperties[kHandlerNumProperties] = {
 	DECL(0xa5ea0da3, Handler, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // Handler.Trigger
@@ -2026,7 +2026,7 @@ static struct Handler HandlerDefaults = {
 };
 LRESULT HandlerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventTriggered: return Handler_Triggered(object, cmp, wparm, lparm); // Triggered
+		case kMsgTriggered: return Handler_Triggered(object, cmp, wparm, lparm); // Triggered
 	}
 	return FALSE;
 }
@@ -2112,9 +2112,9 @@ ORCA_API struct ClassDesc _ColorBrush = {
 	.NumProperties = kColorBrushNumProperties,
 };
 
-LRESULT Node_ThemeChanged(struct Object*, struct Node*, wParam_t, ThemeChangedEventPtr);
-LRESULT Node_GetSize(struct Object*, struct Node*, wParam_t, GetSizeEventPtr);
-LRESULT Node_IsVisible(struct Object*, struct Node*, wParam_t, IsVisibleEventPtr);
+LRESULT Node_ThemeChanged(struct Object*, struct Node*, wParam_t, ThemeChangedMsgPtr);
+LRESULT Node_GetSize(struct Object*, struct Node*, wParam_t, GetSizeMsgPtr);
+LRESULT Node_IsVisible(struct Object*, struct Node*, wParam_t, IsVisibleMsgPtr);
 
 static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	DECL(0xa6478e7c, Node, Size, Size, kDataTypeStruct, .TypeString = "SizeShorthand"), // Node.Size
@@ -2195,9 +2195,9 @@ static struct Node NodeDefaults = {
 };
 LRESULT NodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventThemeChanged: return Node_ThemeChanged(object, cmp, wparm, lparm); // ThemeChanged
-		case kEventGetSize: return Node_GetSize(object, cmp, wparm, lparm); // GetSize
-		case kEventIsVisible: return Node_IsVisible(object, cmp, wparm, lparm); // IsVisible
+		case kMsgThemeChanged: return Node_ThemeChanged(object, cmp, wparm, lparm); // ThemeChanged
+		case kMsgGetSize: return Node_GetSize(object, cmp, wparm, lparm); // GetSize
+		case kMsgIsVisible: return Node_IsVisible(object, cmp, wparm, lparm); // IsVisible
 	}
 	return FALSE;
 }
@@ -2270,9 +2270,9 @@ ORCA_API struct ClassDesc _TextRun = {
 	.NumProperties = kTextRunNumProperties,
 };
 
-LRESULT TextBlockConcept_Create(struct Object*, struct TextBlockConcept*, wParam_t, CreateEventPtr);
-LRESULT TextBlockConcept_Destroy(struct Object*, struct TextBlockConcept*, wParam_t, DestroyEventPtr);
-LRESULT TextBlockConcept_MakeText(struct Object*, struct TextBlockConcept*, wParam_t, MakeTextEventPtr);
+LRESULT TextBlockConcept_Create(struct Object*, struct TextBlockConcept*, wParam_t, CreateMsgPtr);
+LRESULT TextBlockConcept_Destroy(struct Object*, struct TextBlockConcept*, wParam_t, DestroyMsgPtr);
+LRESULT TextBlockConcept_MakeText(struct Object*, struct TextBlockConcept*, wParam_t, MakeTextMsgPtr);
 
 static struct PropertyType const TextBlockConceptProperties[kTextBlockConceptNumProperties] = {
 	DECL(0x43c114fb, TextBlockConcept, TextResourceID, TextResourceID, kDataTypeString), // TextBlockConcept.TextResourceID
@@ -2298,9 +2298,9 @@ static struct TextBlockConcept TextBlockConceptDefaults = {
 };
 LRESULT TextBlockConceptProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventCreate: return TextBlockConcept_Create(object, cmp, wparm, lparm); // Create
-		case kEventDestroy: return TextBlockConcept_Destroy(object, cmp, wparm, lparm); // Destroy
-		case kEventMakeText: return TextBlockConcept_MakeText(object, cmp, wparm, lparm); // MakeText
+		case kMsgCreate: return TextBlockConcept_Create(object, cmp, wparm, lparm); // Create
+		case kMsgDestroy: return TextBlockConcept_Destroy(object, cmp, wparm, lparm); // Destroy
+		case kMsgMakeText: return TextBlockConcept_MakeText(object, cmp, wparm, lparm); // MakeText
 	}
 	return FALSE;
 }
@@ -2325,19 +2325,19 @@ ORCA_API struct ClassDesc _TextBlockConcept = {
 	.NumProperties = kTextBlockConceptNumProperties,
 };
 
-LRESULT Node2D_UpdateMatrix(struct Object*, struct Node2D*, wParam_t, UpdateMatrixEventPtr);
-LRESULT Node2D_Create(struct Object*, struct Node2D*, wParam_t, CreateEventPtr);
-LRESULT Node2D_Destroy(struct Object*, struct Node2D*, wParam_t, DestroyEventPtr);
-LRESULT Node2D_UpdateGeometry(struct Object*, struct Node2D*, wParam_t, UpdateGeometryEventPtr);
-LRESULT Node2D_DrawBrush(struct Object*, struct Node2D*, wParam_t, DrawBrushEventPtr);
-LRESULT Node2D_HandleMessage(struct Object*, struct Node2D*, wParam_t, HandleMessageEventPtr);
-LRESULT Node2D_ScrollWheel(struct Object*, struct Node2D*, wParam_t, ScrollWheelEventPtr);
-LRESULT Node2D_MouseMoved(struct Object*, struct Node2D*, wParam_t, MouseMovedEventPtr);
-LRESULT Node2D_HitTest(struct Object*, struct Node2D*, wParam_t, HitTestEventPtr);
-LRESULT Node2D_Measure(struct Object*, struct Node2D*, wParam_t, MeasureEventPtr);
-LRESULT Node2D_Arrange(struct Object*, struct Node2D*, wParam_t, ArrangeEventPtr);
-LRESULT Node2D_MeasureOverride(struct Object*, struct Node2D*, wParam_t, MeasureOverrideEventPtr);
-LRESULT Node2D_ArrangeOverride(struct Object*, struct Node2D*, wParam_t, ArrangeOverrideEventPtr);
+LRESULT Node2D_UpdateMatrix(struct Object*, struct Node2D*, wParam_t, UpdateMatrixMsgPtr);
+LRESULT Node2D_Create(struct Object*, struct Node2D*, wParam_t, CreateMsgPtr);
+LRESULT Node2D_Destroy(struct Object*, struct Node2D*, wParam_t, DestroyMsgPtr);
+LRESULT Node2D_UpdateGeometry(struct Object*, struct Node2D*, wParam_t, UpdateGeometryMsgPtr);
+LRESULT Node2D_DrawBrush(struct Object*, struct Node2D*, wParam_t, DrawBrushMsgPtr);
+LRESULT Node2D_HandleMessage(struct Object*, struct Node2D*, wParam_t, HandleMessageMsgPtr);
+LRESULT Node2D_ScrollWheel(struct Object*, struct Node2D*, wParam_t, ScrollWheelMsgPtr);
+LRESULT Node2D_MouseMoved(struct Object*, struct Node2D*, wParam_t, MouseMovedMsgPtr);
+LRESULT Node2D_HitTest(struct Object*, struct Node2D*, wParam_t, HitTestMsgPtr);
+LRESULT Node2D_Measure(struct Object*, struct Node2D*, wParam_t, MeasureMsgPtr);
+LRESULT Node2D_Arrange(struct Object*, struct Node2D*, wParam_t, ArrangeMsgPtr);
+LRESULT Node2D_MeasureOverride(struct Object*, struct Node2D*, wParam_t, MeasureOverrideMsgPtr);
+LRESULT Node2D_ArrangeOverride(struct Object*, struct Node2D*, wParam_t, ArrangeOverrideMsgPtr);
 
 static struct PropertyType const Node2DProperties[kNode2DNumProperties] = {
 	DECL(0x3f19bf01, Node2D, LayoutTransform, LayoutTransform, kDataTypeStruct, .TypeString = "Transform2D"), // Node2D.LayoutTransform
@@ -2393,19 +2393,19 @@ static struct Node2D Node2DDefaults = {
 };
 LRESULT Node2DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventUpdateMatrix: return Node2D_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
-		case kEventCreate: return Node2D_Create(object, cmp, wparm, lparm); // Create
-		case kEventDestroy: return Node2D_Destroy(object, cmp, wparm, lparm); // Destroy
-		case kEventUpdateGeometry: return Node2D_UpdateGeometry(object, cmp, wparm, lparm); // UpdateGeometry
-		case kEventDrawBrush: return Node2D_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
-		case kEventHandleMessage: return Node2D_HandleMessage(object, cmp, wparm, lparm); // HandleMessage
-		case kEventScrollWheel: return Node2D_ScrollWheel(object, cmp, wparm, lparm); // ScrollWheel
-		case kEventMouseMoved: return Node2D_MouseMoved(object, cmp, wparm, lparm); // MouseMoved
-		case kEventHitTest: return Node2D_HitTest(object, cmp, wparm, lparm); // HitTest
-		case kEventMeasure: return Node2D_Measure(object, cmp, wparm, lparm); // Measure
-		case kEventArrange: return Node2D_Arrange(object, cmp, wparm, lparm); // Arrange
-		case kEventMeasureOverride: return Node2D_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
-		case kEventArrangeOverride: return Node2D_ArrangeOverride(object, cmp, wparm, lparm); // ArrangeOverride
+		case kMsgUpdateMatrix: return Node2D_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
+		case kMsgCreate: return Node2D_Create(object, cmp, wparm, lparm); // Create
+		case kMsgDestroy: return Node2D_Destroy(object, cmp, wparm, lparm); // Destroy
+		case kMsgUpdateGeometry: return Node2D_UpdateGeometry(object, cmp, wparm, lparm); // UpdateGeometry
+		case kMsgDrawBrush: return Node2D_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
+		case kMsgHandleMessage: return Node2D_HandleMessage(object, cmp, wparm, lparm); // HandleMessage
+		case kMsgScrollWheel: return Node2D_ScrollWheel(object, cmp, wparm, lparm); // ScrollWheel
+		case kMsgMouseMoved: return Node2D_MouseMoved(object, cmp, wparm, lparm); // MouseMoved
+		case kMsgHitTest: return Node2D_HitTest(object, cmp, wparm, lparm); // HitTest
+		case kMsgMeasure: return Node2D_Measure(object, cmp, wparm, lparm); // Measure
+		case kMsgArrange: return Node2D_Arrange(object, cmp, wparm, lparm); // Arrange
+		case kMsgMeasureOverride: return Node2D_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
+		case kMsgArrangeOverride: return Node2D_ArrangeOverride(object, cmp, wparm, lparm); // ArrangeOverride
 	}
 	return FALSE;
 }
@@ -2430,7 +2430,7 @@ ORCA_API struct ClassDesc _Node2D = {
 	.NumProperties = kNode2DNumProperties,
 };
 
-LRESULT PrefabView2D_LoadView(struct Object*, struct PrefabView2D*, wParam_t, LoadViewEventPtr);
+LRESULT PrefabView2D_LoadView(struct Object*, struct PrefabView2D*, wParam_t, LoadViewMsgPtr);
 
 static struct PropertyType const PrefabView2DProperties[kPrefabView2DNumProperties] = {
 	DECL(0x57f28ff6, PrefabView2D, SCA, SCA, kDataTypeString), // PrefabView2D.SCA
@@ -2440,7 +2440,7 @@ static struct PrefabView2D PrefabView2DDefaults = {
 };
 LRESULT PrefabView2DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventLoadView: return PrefabView2D_LoadView(object, cmp, wparm, lparm); // LoadView
+		case kMsgLoadView: return PrefabView2D_LoadView(object, cmp, wparm, lparm); // LoadView
 	}
 	return FALSE;
 }
@@ -2465,11 +2465,11 @@ ORCA_API struct ClassDesc _PrefabView2D = {
 	.NumProperties = kPrefabView2DNumProperties,
 };
 
-LRESULT TextBlock_MeasureOverride(struct Object*, struct TextBlock*, wParam_t, MeasureOverrideEventPtr);
-LRESULT TextBlock_ForegroundContent(struct Object*, struct TextBlock*, wParam_t, ForegroundContentEventPtr);
-LRESULT TextBlock_UpdateGeometry(struct Object*, struct TextBlock*, wParam_t, UpdateGeometryEventPtr);
-LRESULT TextBlock_Create(struct Object*, struct TextBlock*, wParam_t, CreateEventPtr);
-LRESULT TextBlock_DrawBrush(struct Object*, struct TextBlock*, wParam_t, DrawBrushEventPtr);
+LRESULT TextBlock_MeasureOverride(struct Object*, struct TextBlock*, wParam_t, MeasureOverrideMsgPtr);
+LRESULT TextBlock_ForegroundContent(struct Object*, struct TextBlock*, wParam_t, ForegroundContentMsgPtr);
+LRESULT TextBlock_UpdateGeometry(struct Object*, struct TextBlock*, wParam_t, UpdateGeometryMsgPtr);
+LRESULT TextBlock_Create(struct Object*, struct TextBlock*, wParam_t, CreateMsgPtr);
+LRESULT TextBlock_DrawBrush(struct Object*, struct TextBlock*, wParam_t, DrawBrushMsgPtr);
 
 static struct PropertyType const TextBlockProperties[kTextBlockNumProperties] = {
 };
@@ -2477,11 +2477,11 @@ static struct TextBlock TextBlockDefaults = {
 };
 LRESULT TextBlockProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventMeasureOverride: return TextBlock_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
-		case kEventForegroundContent: return TextBlock_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
-		case kEventUpdateGeometry: return TextBlock_UpdateGeometry(object, cmp, wparm, lparm); // UpdateGeometry
-		case kEventCreate: return TextBlock_Create(object, cmp, wparm, lparm); // Create
-		case kEventDrawBrush: return TextBlock_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
+		case kMsgMeasureOverride: return TextBlock_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
+		case kMsgForegroundContent: return TextBlock_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
+		case kMsgUpdateGeometry: return TextBlock_UpdateGeometry(object, cmp, wparm, lparm); // UpdateGeometry
+		case kMsgCreate: return TextBlock_Create(object, cmp, wparm, lparm); // Create
+		case kMsgDrawBrush: return TextBlock_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
 	}
 	return FALSE;
 }
@@ -2507,13 +2507,13 @@ ORCA_API struct ClassDesc _TextBlock = {
 	.NumProperties = kTextBlockNumProperties,
 };
 
-LRESULT Input_Create(struct Object*, struct Input*, wParam_t, CreateEventPtr);
-LRESULT Input_DrawBrush(struct Object*, struct Input*, wParam_t, DrawBrushEventPtr);
-LRESULT Input_MakeText(struct Object*, struct Input*, wParam_t, MakeTextEventPtr);
-LRESULT Input_KeyDown(struct Object*, struct Input*, wParam_t, KeyDownEventPtr);
-LRESULT Input_KillFocus(struct Object*, struct Input*, wParam_t, KillFocusEventPtr);
-LRESULT Input_LeftMouseUp(struct Object*, struct Input*, wParam_t, LeftMouseUpEventPtr);
-LRESULT Input_MeasureOverride(struct Object*, struct Input*, wParam_t, MeasureOverrideEventPtr);
+LRESULT Input_Create(struct Object*, struct Input*, wParam_t, CreateMsgPtr);
+LRESULT Input_DrawBrush(struct Object*, struct Input*, wParam_t, DrawBrushMsgPtr);
+LRESULT Input_MakeText(struct Object*, struct Input*, wParam_t, MakeTextMsgPtr);
+LRESULT Input_KeyDown(struct Object*, struct Input*, wParam_t, KeyDownMsgPtr);
+LRESULT Input_KillFocus(struct Object*, struct Input*, wParam_t, KillFocusMsgPtr);
+LRESULT Input_LeftMouseUp(struct Object*, struct Input*, wParam_t, LeftMouseUpMsgPtr);
+LRESULT Input_MeasureOverride(struct Object*, struct Input*, wParam_t, MeasureOverrideMsgPtr);
 
 static struct PropertyType const InputProperties[kInputNumProperties] = {
 	DECL(0x0fe07306, Input, Name, Name, kDataTypeString), // Input.Name
@@ -2526,13 +2526,13 @@ static struct Input InputDefaults = {
 };
 LRESULT InputProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventCreate: return Input_Create(object, cmp, wparm, lparm); // Create
-		case kEventDrawBrush: return Input_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
-		case kEventMakeText: return Input_MakeText(object, cmp, wparm, lparm); // MakeText
-		case kEventKeyDown: return Input_KeyDown(object, cmp, wparm, lparm); // KeyDown
-		case kEventKillFocus: return Input_KillFocus(object, cmp, wparm, lparm); // KillFocus
-		case kEventLeftMouseUp: return Input_LeftMouseUp(object, cmp, wparm, lparm); // LeftMouseUp
-		case kEventMeasureOverride: return Input_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
+		case kMsgCreate: return Input_Create(object, cmp, wparm, lparm); // Create
+		case kMsgDrawBrush: return Input_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
+		case kMsgMakeText: return Input_MakeText(object, cmp, wparm, lparm); // MakeText
+		case kMsgKeyDown: return Input_KeyDown(object, cmp, wparm, lparm); // KeyDown
+		case kMsgKillFocus: return Input_KillFocus(object, cmp, wparm, lparm); // KillFocus
+		case kMsgLeftMouseUp: return Input_LeftMouseUp(object, cmp, wparm, lparm); // LeftMouseUp
+		case kMsgMeasureOverride: return Input_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
 	}
 	return FALSE;
 }
@@ -2557,10 +2557,10 @@ ORCA_API struct ClassDesc _Input = {
 	.NumProperties = kInputNumProperties,
 };
 
-LRESULT Button_Create(struct Object*, struct Button*, wParam_t, CreateEventPtr);
-LRESULT Button_LeftMouseUp(struct Object*, struct Button*, wParam_t, LeftMouseUpEventPtr);
-LRESULT Button_KeyDown(struct Object*, struct Button*, wParam_t, KeyDownEventPtr);
-LRESULT Button_DrawBrush(struct Object*, struct Button*, wParam_t, DrawBrushEventPtr);
+LRESULT Button_Create(struct Object*, struct Button*, wParam_t, CreateMsgPtr);
+LRESULT Button_LeftMouseUp(struct Object*, struct Button*, wParam_t, LeftMouseUpMsgPtr);
+LRESULT Button_KeyDown(struct Object*, struct Button*, wParam_t, KeyDownMsgPtr);
+LRESULT Button_DrawBrush(struct Object*, struct Button*, wParam_t, DrawBrushMsgPtr);
 
 static struct PropertyType const ButtonProperties[kButtonNumProperties] = {
 	DECL(0xd155d06d, Button, Type, Type, kDataTypeEnum, .TypeString = "Normal,Submit", .EnumValues = _ButtonType), // Button.Type
@@ -2569,10 +2569,10 @@ static struct Button ButtonDefaults = {
 };
 LRESULT ButtonProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventCreate: return Button_Create(object, cmp, wparm, lparm); // Create
-		case kEventLeftMouseUp: return Button_LeftMouseUp(object, cmp, wparm, lparm); // LeftMouseUp
-		case kEventKeyDown: return Button_KeyDown(object, cmp, wparm, lparm); // KeyDown
-		case kEventDrawBrush: return Button_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
+		case kMsgCreate: return Button_Create(object, cmp, wparm, lparm); // Create
+		case kMsgLeftMouseUp: return Button_LeftMouseUp(object, cmp, wparm, lparm); // LeftMouseUp
+		case kMsgKeyDown: return Button_KeyDown(object, cmp, wparm, lparm); // KeyDown
+		case kMsgDrawBrush: return Button_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
 	}
 	return FALSE;
 }
@@ -2597,7 +2597,7 @@ ORCA_API struct ClassDesc _Button = {
 	.NumProperties = kButtonNumProperties,
 };
 
-LRESULT Label_LeftMouseUp(struct Object*, struct Label*, wParam_t, LeftMouseUpEventPtr);
+LRESULT Label_LeftMouseUp(struct Object*, struct Label*, wParam_t, LeftMouseUpMsgPtr);
 
 static struct PropertyType const LabelProperties[kLabelNumProperties] = {
 	DECL(0x0f7e1b30, Label, For, For, kDataTypeString), // Label.For
@@ -2606,7 +2606,7 @@ static struct Label LabelDefaults = {
 };
 LRESULT LabelProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventLeftMouseUp: return Label_LeftMouseUp(object, cmp, wparm, lparm); // LeftMouseUp
+		case kMsgLeftMouseUp: return Label_LeftMouseUp(object, cmp, wparm, lparm); // LeftMouseUp
 	}
 	return FALSE;
 }
@@ -2631,8 +2631,8 @@ ORCA_API struct ClassDesc _Label = {
 	.NumProperties = kLabelNumProperties,
 };
 
-LRESULT StackView_MeasureOverride(struct Object*, struct StackView*, wParam_t, MeasureOverrideEventPtr);
-LRESULT StackView_ArrangeOverride(struct Object*, struct StackView*, wParam_t, ArrangeOverrideEventPtr);
+LRESULT StackView_MeasureOverride(struct Object*, struct StackView*, wParam_t, MeasureOverrideMsgPtr);
+LRESULT StackView_ArrangeOverride(struct Object*, struct StackView*, wParam_t, ArrangeOverrideMsgPtr);
 
 static struct PropertyType const StackViewProperties[kStackViewNumProperties] = {
 	DECL(0xcee65dd3, StackView, Reversed, Reversed, kDataTypeBool), // StackView.Reversed
@@ -2645,8 +2645,8 @@ static struct StackView StackViewDefaults = {
 };
 LRESULT StackViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventMeasureOverride: return StackView_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
-		case kEventArrangeOverride: return StackView_ArrangeOverride(object, cmp, wparm, lparm); // ArrangeOverride
+		case kMsgMeasureOverride: return StackView_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
+		case kMsgArrangeOverride: return StackView_ArrangeOverride(object, cmp, wparm, lparm); // ArrangeOverride
 	}
 	return FALSE;
 }
@@ -2671,8 +2671,8 @@ ORCA_API struct ClassDesc _StackView = {
 	.NumProperties = kStackViewNumProperties,
 };
 
-LRESULT Form_Create(struct Object*, struct Form*, wParam_t, CreateEventPtr);
-LRESULT Form_Submit(struct Object*, struct Form*, wParam_t, SubmitEventPtr);
+LRESULT Form_Create(struct Object*, struct Form*, wParam_t, CreateMsgPtr);
+LRESULT Form_Submit(struct Object*, struct Form*, wParam_t, SubmitMsgPtr);
 
 static struct PropertyType const FormProperties[kFormNumProperties] = {
 };
@@ -2680,8 +2680,8 @@ static struct Form FormDefaults = {
 };
 LRESULT FormProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventCreate: return Form_Create(object, cmp, wparm, lparm); // Create
-		case kEventSubmit: return Form_Submit(object, cmp, wparm, lparm); // Submit
+		case kMsgCreate: return Form_Create(object, cmp, wparm, lparm); // Create
+		case kMsgSubmit: return Form_Submit(object, cmp, wparm, lparm); // Submit
 	}
 	return FALSE;
 }
@@ -2743,12 +2743,12 @@ ORCA_API struct ClassDesc _Control = {
 	.NumProperties = kControlNumProperties,
 };
 
-LRESULT Screen_RenderScreen(struct Object*, struct Screen*, wParam_t, RenderScreenEventPtr);
-LRESULT Screen_MeasureOverride(struct Object*, struct Screen*, wParam_t, MeasureOverrideEventPtr);
-LRESULT Screen_Create(struct Object*, struct Screen*, wParam_t, CreateEventPtr);
-LRESULT Screen_Destroy(struct Object*, struct Screen*, wParam_t, DestroyEventPtr);
-LRESULT Screen_WindowResized(struct Object*, struct Screen*, wParam_t, WindowResizedEventPtr);
-LRESULT Screen_WindowPaint(struct Object*, struct Screen*, wParam_t, WindowPaintEventPtr);
+LRESULT Screen_RenderScreen(struct Object*, struct Screen*, wParam_t, RenderScreenMsgPtr);
+LRESULT Screen_MeasureOverride(struct Object*, struct Screen*, wParam_t, MeasureOverrideMsgPtr);
+LRESULT Screen_Create(struct Object*, struct Screen*, wParam_t, CreateMsgPtr);
+LRESULT Screen_Destroy(struct Object*, struct Screen*, wParam_t, DestroyMsgPtr);
+LRESULT Screen_WindowResized(struct Object*, struct Screen*, wParam_t, WindowResizedMsgPtr);
+LRESULT Screen_WindowPaint(struct Object*, struct Screen*, wParam_t, WindowPaintMsgPtr);
 
 static struct PropertyType const ScreenProperties[kScreenNumProperties] = {
 	DECL(0xeb16b675, Screen, ClearColor, ClearColor, kDataTypeColor), // Screen.ClearColor
@@ -2761,12 +2761,12 @@ static struct Screen ScreenDefaults = {
 };
 LRESULT ScreenProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventRenderScreen: return Screen_RenderScreen(object, cmp, wparm, lparm); // RenderScreen
-		case kEventMeasureOverride: return Screen_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
-		case kEventCreate: return Screen_Create(object, cmp, wparm, lparm); // Create
-		case kEventDestroy: return Screen_Destroy(object, cmp, wparm, lparm); // Destroy
-		case kEventWindowResized: return Screen_WindowResized(object, cmp, wparm, lparm); // WindowResized
-		case kEventWindowPaint: return Screen_WindowPaint(object, cmp, wparm, lparm); // WindowPaint
+		case kMsgRenderScreen: return Screen_RenderScreen(object, cmp, wparm, lparm); // RenderScreen
+		case kMsgMeasureOverride: return Screen_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
+		case kMsgCreate: return Screen_Create(object, cmp, wparm, lparm); // Create
+		case kMsgDestroy: return Screen_Destroy(object, cmp, wparm, lparm); // Destroy
+		case kMsgWindowResized: return Screen_WindowResized(object, cmp, wparm, lparm); // WindowResized
+		case kMsgWindowPaint: return Screen_WindowPaint(object, cmp, wparm, lparm); // WindowPaint
 	}
 	return FALSE;
 }
@@ -2791,7 +2791,7 @@ ORCA_API struct ClassDesc _Screen = {
 	.NumProperties = kScreenNumProperties,
 };
 
-LRESULT Cinematic_DrawBrush(struct Object*, struct Cinematic*, wParam_t, DrawBrushEventPtr);
+LRESULT Cinematic_DrawBrush(struct Object*, struct Cinematic*, wParam_t, DrawBrushMsgPtr);
 
 static struct PropertyType const CinematicProperties[kCinematicNumProperties] = {
 	DECL(0x5ffdd888, Cinematic, FileName, FileName, kDataTypeString), // Cinematic.FileName
@@ -2803,7 +2803,7 @@ static struct Cinematic CinematicDefaults = {
 };
 LRESULT CinematicProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventDrawBrush: return Cinematic_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
+		case kMsgDrawBrush: return Cinematic_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
 	}
 	return FALSE;
 }
@@ -2828,8 +2828,8 @@ ORCA_API struct ClassDesc _Cinematic = {
 	.NumProperties = kCinematicNumProperties,
 };
 
-LRESULT Grid_MeasureOverride(struct Object*, struct Grid*, wParam_t, MeasureOverrideEventPtr);
-LRESULT Grid_ArrangeOverride(struct Object*, struct Grid*, wParam_t, ArrangeOverrideEventPtr);
+LRESULT Grid_MeasureOverride(struct Object*, struct Grid*, wParam_t, MeasureOverrideMsgPtr);
+LRESULT Grid_ArrangeOverride(struct Object*, struct Grid*, wParam_t, ArrangeOverrideMsgPtr);
 
 static struct PropertyType const GridProperties[kGridNumProperties] = {
 	DECL(0xea156fdc, Grid, Columns, Columns, kDataTypeString), // Grid.Columns
@@ -2843,8 +2843,8 @@ static struct Grid GridDefaults = {
 };
 LRESULT GridProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventMeasureOverride: return Grid_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
-		case kEventArrangeOverride: return Grid_ArrangeOverride(object, cmp, wparm, lparm); // ArrangeOverride
+		case kMsgMeasureOverride: return Grid_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
+		case kMsgArrangeOverride: return Grid_ArrangeOverride(object, cmp, wparm, lparm); // ArrangeOverride
 	}
 	return FALSE;
 }
@@ -2869,11 +2869,11 @@ ORCA_API struct ClassDesc _Grid = {
 	.NumProperties = kGridNumProperties,
 };
 
-LRESULT ImageView_MeasureOverride(struct Object*, struct ImageView*, wParam_t, MeasureOverrideEventPtr);
-LRESULT ImageView_ArrangeOverride(struct Object*, struct ImageView*, wParam_t, ArrangeOverrideEventPtr);
-LRESULT ImageView_ForegroundContent(struct Object*, struct ImageView*, wParam_t, ForegroundContentEventPtr);
-LRESULT ImageView_DrawBrush(struct Object*, struct ImageView*, wParam_t, DrawBrushEventPtr);
-LRESULT ImageView_LoadView(struct Object*, struct ImageView*, wParam_t, LoadViewEventPtr);
+LRESULT ImageView_MeasureOverride(struct Object*, struct ImageView*, wParam_t, MeasureOverrideMsgPtr);
+LRESULT ImageView_ArrangeOverride(struct Object*, struct ImageView*, wParam_t, ArrangeOverrideMsgPtr);
+LRESULT ImageView_ForegroundContent(struct Object*, struct ImageView*, wParam_t, ForegroundContentMsgPtr);
+LRESULT ImageView_DrawBrush(struct Object*, struct ImageView*, wParam_t, DrawBrushMsgPtr);
+LRESULT ImageView_LoadView(struct Object*, struct ImageView*, wParam_t, LoadViewMsgPtr);
 
 static struct PropertyType const ImageViewProperties[kImageViewNumProperties] = {
 	DECL(0x35c77969, ImageView, Src, Src, kDataTypeString), // ImageView.Src
@@ -2889,11 +2889,11 @@ static struct ImageView ImageViewDefaults = {
 };
 LRESULT ImageViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventMeasureOverride: return ImageView_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
-		case kEventArrangeOverride: return ImageView_ArrangeOverride(object, cmp, wparm, lparm); // ArrangeOverride
-		case kEventForegroundContent: return ImageView_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
-		case kEventDrawBrush: return ImageView_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
-		case kEventLoadView: return ImageView_LoadView(object, cmp, wparm, lparm); // LoadView
+		case kMsgMeasureOverride: return ImageView_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
+		case kMsgArrangeOverride: return ImageView_ArrangeOverride(object, cmp, wparm, lparm); // ArrangeOverride
+		case kMsgForegroundContent: return ImageView_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
+		case kMsgDrawBrush: return ImageView_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
+		case kMsgLoadView: return ImageView_LoadView(object, cmp, wparm, lparm); // LoadView
 	}
 	return FALSE;
 }
@@ -2918,9 +2918,9 @@ ORCA_API struct ClassDesc _ImageView = {
 	.NumProperties = kImageViewNumProperties,
 };
 
-LRESULT NinePatchImage_MeasureOverride(struct Object*, struct NinePatchImage*, wParam_t, MeasureOverrideEventPtr);
-LRESULT NinePatchImage_ForegroundContent(struct Object*, struct NinePatchImage*, wParam_t, ForegroundContentEventPtr);
-LRESULT NinePatchImage_DrawBrush(struct Object*, struct NinePatchImage*, wParam_t, DrawBrushEventPtr);
+LRESULT NinePatchImage_MeasureOverride(struct Object*, struct NinePatchImage*, wParam_t, MeasureOverrideMsgPtr);
+LRESULT NinePatchImage_ForegroundContent(struct Object*, struct NinePatchImage*, wParam_t, ForegroundContentMsgPtr);
+LRESULT NinePatchImage_DrawBrush(struct Object*, struct NinePatchImage*, wParam_t, DrawBrushMsgPtr);
 
 static struct PropertyType const NinePatchImageProperties[kNinePatchImageNumProperties] = {
 	DECL(0x9f40b6ad, NinePatchImage, StretchTypeTop, StretchTypeTop, kDataTypeFloat), // NinePatchImage.StretchTypeTop
@@ -2942,9 +2942,9 @@ static struct NinePatchImage NinePatchImageDefaults = {
 };
 LRESULT NinePatchImageProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventMeasureOverride: return NinePatchImage_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
-		case kEventForegroundContent: return NinePatchImage_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
-		case kEventDrawBrush: return NinePatchImage_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
+		case kMsgMeasureOverride: return NinePatchImage_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
+		case kMsgForegroundContent: return NinePatchImage_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
+		case kMsgDrawBrush: return NinePatchImage_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
 	}
 	return FALSE;
 }
@@ -2969,10 +2969,10 @@ ORCA_API struct ClassDesc _NinePatchImage = {
 	.NumProperties = kNinePatchImageNumProperties,
 };
 
-LRESULT TerminalView_Create(struct Object*, struct TerminalView*, wParam_t, CreateEventPtr);
-LRESULT TerminalView_DrawBrush(struct Object*, struct TerminalView*, wParam_t, DrawBrushEventPtr);
-LRESULT TerminalView_PushProperty(struct Object*, struct TerminalView*, wParam_t, PushPropertyEventPtr);
-LRESULT TerminalView_ScrollWheel(struct Object*, struct TerminalView*, wParam_t, ScrollWheelEventPtr);
+LRESULT TerminalView_Create(struct Object*, struct TerminalView*, wParam_t, CreateMsgPtr);
+LRESULT TerminalView_DrawBrush(struct Object*, struct TerminalView*, wParam_t, DrawBrushMsgPtr);
+LRESULT TerminalView_PushProperty(struct Object*, struct TerminalView*, wParam_t, PushPropertyMsgPtr);
+LRESULT TerminalView_ScrollWheel(struct Object*, struct TerminalView*, wParam_t, ScrollWheelMsgPtr);
 
 static struct PropertyType const TerminalViewProperties[kTerminalViewNumProperties] = {
 	DECL(0xdd1f241d, TerminalView, BufferWidth, BufferWidth, kDataTypeInt), // TerminalView.BufferWidth
@@ -2989,10 +2989,10 @@ static struct TerminalView TerminalViewDefaults = {
 };
 LRESULT TerminalViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventCreate: return TerminalView_Create(object, cmp, wparm, lparm); // Create
-		case kEventDrawBrush: return TerminalView_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
-		case kEventPushProperty: return TerminalView_PushProperty(object, cmp, wparm, lparm); // PushProperty
-		case kEventScrollWheel: return TerminalView_ScrollWheel(object, cmp, wparm, lparm); // ScrollWheel
+		case kMsgCreate: return TerminalView_Create(object, cmp, wparm, lparm); // Create
+		case kMsgDrawBrush: return TerminalView_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
+		case kMsgPushProperty: return TerminalView_PushProperty(object, cmp, wparm, lparm); // PushProperty
+		case kMsgScrollWheel: return TerminalView_ScrollWheel(object, cmp, wparm, lparm); // ScrollWheel
 	}
 	return FALSE;
 }
@@ -3017,7 +3017,7 @@ ORCA_API struct ClassDesc _TerminalView = {
 	.NumProperties = kTerminalViewNumProperties,
 };
 
-LRESULT Page_Create(struct Object*, struct Page*, wParam_t, CreateEventPtr);
+LRESULT Page_Create(struct Object*, struct Page*, wParam_t, CreateMsgPtr);
 
 static struct PropertyType const PageProperties[kPageNumProperties] = {
 	DECL(0x24d471a9, Page, Title, Title, kDataTypeString), // Page.Title
@@ -3028,7 +3028,7 @@ static struct Page PageDefaults = {
 };
 LRESULT PageProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventCreate: return Page_Create(object, cmp, wparm, lparm); // Create
+		case kMsgCreate: return Page_Create(object, cmp, wparm, lparm); // Create
 	}
 	return FALSE;
 }
@@ -3053,9 +3053,9 @@ ORCA_API struct ClassDesc _Page = {
 	.NumProperties = kPageNumProperties,
 };
 
-LRESULT PageHost_ViewDidLoad(struct Object*, struct PageHost*, wParam_t, ViewDidLoadEventPtr);
-LRESULT PageHost_NavigateToPage(struct Object*, struct PageHost*, wParam_t, NavigateToPageEventPtr);
-LRESULT PageHost_NavigateBack(struct Object*, struct PageHost*, wParam_t, NavigateBackEventPtr);
+LRESULT PageHost_ViewDidLoad(struct Object*, struct PageHost*, wParam_t, ViewDidLoadMsgPtr);
+LRESULT PageHost_NavigateToPage(struct Object*, struct PageHost*, wParam_t, NavigateToPageMsgPtr);
+LRESULT PageHost_NavigateBack(struct Object*, struct PageHost*, wParam_t, NavigateBackMsgPtr);
 
 static struct PropertyType const PageHostProperties[kPageHostNumProperties] = {
 	DECL(0x2e149db4, PageHost, ActivePage, ActivePage, kDataTypeObject, .TypeString = "Page"), // PageHost.ActivePage
@@ -3064,9 +3064,9 @@ static struct PageHost PageHostDefaults = {
 };
 LRESULT PageHostProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventViewDidLoad: return PageHost_ViewDidLoad(object, cmp, wparm, lparm); // ViewDidLoad
-		case kEventNavigateToPage: return PageHost_NavigateToPage(object, cmp, wparm, lparm); // NavigateToPage
-		case kEventNavigateBack: return PageHost_NavigateBack(object, cmp, wparm, lparm); // NavigateBack
+		case kMsgViewDidLoad: return PageHost_ViewDidLoad(object, cmp, wparm, lparm); // ViewDidLoad
+		case kMsgNavigateToPage: return PageHost_NavigateToPage(object, cmp, wparm, lparm); // NavigateToPage
+		case kMsgNavigateBack: return PageHost_NavigateBack(object, cmp, wparm, lparm); // NavigateBack
 	}
 	return FALSE;
 }
@@ -3175,15 +3175,15 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_BorderShorthand(L), -2), "BorderShorthand");
 	lua_setfield(L, ((void)luaopen_orca_SizeAxisShorthand(L), -2), "SizeAxisShorthand");
 	lua_setfield(L, ((void)luaopen_orca_SizeShorthand(L), -2), "SizeShorthand");
-	lua_setfield(L, ((void)luaopen_orca_ForegroundContentEventArgs(L), -2), "ForegroundContentEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_PushPropertyEventArgs(L), -2), "PushPropertyEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_DrawBrushEventArgs(L), -2), "DrawBrushEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_HandleMessageEventArgs(L), -2), "HandleMessageEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_LoadViewEventArgs(L), -2), "LoadViewEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_MakeTextEventArgs(L), -2), "MakeTextEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_TriggeredEventArgs(L), -2), "TriggeredEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_NavigateToPageEventArgs(L), -2), "NavigateToPageEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_NavigateBackEventArgs(L), -2), "NavigateBackEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_ForegroundContentMsgArgs(L), -2), "ForegroundContentMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_PushPropertyMsgArgs(L), -2), "PushPropertyMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_DrawBrushMsgArgs(L), -2), "DrawBrushMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_HandleMessageMsgArgs(L), -2), "HandleMessageMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_LoadViewMsgArgs(L), -2), "LoadViewMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_MakeTextMsgArgs(L), -2), "MakeTextMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_TriggeredMsgArgs(L), -2), "TriggeredMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_NavigateToPageMsgArgs(L), -2), "NavigateToPageMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_NavigateBackMsgArgs(L), -2), "NavigateBackMsgArgs");
 	lua_setfield(L, ((void)lua_pushclass(L, &_DataObject), -2), "DataObject");
 	lua_setfield(L, ((void)lua_pushclass(L, &_AnimationPlayer), -2), "AnimationPlayer");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Trigger), -2), "Trigger");

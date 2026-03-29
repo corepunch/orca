@@ -1,7 +1,7 @@
 #include <plugins/UIKit/UIKit.h>
 
 
-#define kEventTriggered 0x3b1c3ae2
+#define kMsgTriggered 0x3b1c3ae2
 
 HANDLER(Trigger, Attached)
 {
@@ -60,7 +60,7 @@ HANDLER(Setter, Triggered)
 
 HANDLER(Handler, Triggered)
 {
-  HandleMessageEventPtr msg = &pTriggered->message;
+  HandleMessageMsgPtr msg = &pTriggered->message;
   if (pTriggered->Trigger ==
         CMP_GetUserData((struct component*)pHandler->Trigger) &&
       msg) {
@@ -85,8 +85,8 @@ HANDLER(Handler, Triggered)
 HANDLER(EventTrigger, HandleMessage)
 {
   if (pEventTrigger->RoutedEvent && !strcmp(pHandleMessage->EventName, pEventTrigger->RoutedEvent)) {
-    struct TriggeredEventArgs parm = { GetTrigger(CMP_GetObject(pEventTrigger)), *pHandleMessage };
-    return OBJ_SendMessageW(hObject, kEventTriggered, 0, &parm);
+    struct TriggeredMsgArgs parm = { GetTrigger(CMP_GetObject(pEventTrigger)), *pHandleMessage };
+    return OBJ_SendMessageW(hObject, kMsgTriggered, 0, &parm);
   }
   return FALSE;
 }
@@ -99,11 +99,11 @@ HANDLER(OnPropertyChangedTrigger, PropertyChanged)
     return FALSE;
   lua_State* L = OBJ_GetDomain(hObject);
   luaX_pushProperty(L, pPropertyChanged->Property);
-  struct TriggeredEventArgs parm = {
+  struct TriggeredMsgArgs parm = {
     GetTrigger(CMP_GetObject(pOnPropertyChangedTrigger)),
     { .NumArgs = 1 },
   };
-  return OBJ_SendMessageW(hObject, kEventTriggered, 0, &parm);
+  return OBJ_SendMessageW(hObject, kMsgTriggered, 0, &parm);
 }
 
 HANDLER(OnPropertyChangedTrigger, Attached)

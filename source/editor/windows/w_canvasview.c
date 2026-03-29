@@ -200,12 +200,12 @@ void ED_DrawCanvasView(HEDWND wnd, struct _CANVASVIEW* sv) {
   
   OBJ_UpdateLayout(scene, view.width, view.height);
   
-  OBJ_SendMessageW(scene, kEventUpdateMatrix, 0, &(struct UpdateMatrixEventArgs){
+  OBJ_SendMessageW(scene, kMsgUpdateMatrix, 0, &(struct UpdateMatrixMsgArgs){
     .parent = MAT4_Identity(),
     .opacity = 1,
   });
   
-  OBJ_SendMessageW(scene, kEventRenderScreen, 0, &(struct RenderScreenEventArgs){
+  OBJ_SendMessageW(scene, kMsgRenderScreen, 0, &(struct RenderScreenMsgArgs){
     .width = view.width,
     .height = view.height,
     .stereo = 0,
@@ -303,7 +303,7 @@ LRESULT ED_CanvasView(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm) {
       if (data->scene_texture) Texture_Release(data->scene_texture);
       free(ED_GetUserData(wnd));
       return 0;
-    case kEventLeftMouseDragged:
+    case kMsgLeftMouseDragged:
       if (data->selected && OBJ_GetParent(data->selected)) {
         Node2DPtr node = GetNode2D(data->selected);
         float x = (int16_t)LOWORD((intptr_t)lparm) * LocalScaling(wnd, CanvasView_GetScene(wnd)).x;
@@ -331,7 +331,7 @@ LRESULT ED_CanvasView(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm) {
         data->selection.height = HIWORD(wparm) - data->selection.y;
       }
       return 1;
-    case kEventLeftMouseUp:
+    case kMsgLeftMouseUp:
       if (data->mode == ID_OBJECT_IMAGE && data->selection.width && data->selection.height) {
         HOBJ newobj = UI_NewObject(CanvasView_GetScene(wnd), "Node", ID_OBJECT_IMAGE);
         OBJ_SetPropertyValue(newobj, "LayoutTransformTranslation", &data->selection);
@@ -344,10 +344,10 @@ LRESULT ED_CanvasView(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm) {
       }
       memset(&data->selection, 0, sizeof(RECT));
       return 1;
-    case kEventLeftMouseDown:
+    case kMsgLeftMouseDown:
       ED_SetFocusedPanel(wnd);
       if (OBJ_SendMessageW(CanvasView_GetScene(wnd),
-                           kEventHitTest,
+                           kMsgHitTest,
                            LocalCoords(wnd, CanvasView_GetScene(wnd), wparm),
                            &tmp))
       {

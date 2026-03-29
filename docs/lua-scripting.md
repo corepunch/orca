@@ -125,7 +125,7 @@ orca.async(function()
 end)
 ```
 
-Internally this posts a `kEventResumeCoroutine` message to resume the coroutine on the next event loop tick. Unlike `coroutine.wrap`, `orca.async` coroutines are managed by the engine and resumed automatically.
+Internally this posts a `kMsgResumeCoroutine` message to resume the coroutine on the next event loop tick. Unlike `coroutine.wrap`, `orca.async` coroutines are managed by the engine and resumed automatically.
 
 ---
 
@@ -151,6 +151,6 @@ This means any `.lua` file under `PLUGDIR` or `SHAREDIR` can be loaded with `req
 | Path setup | `package.path` and `package.cpath` extended |
 | Project load | `RunProject(L, projectDir)` locates and `dofile`s the entry point |
 | Main loop | Lua `while true do … end` calls `WI_PollEvent`; ASYNCIFY yields to the browser on WebGL |
-| Shutdown | Lua state closed; `kEventDestroy` sent to all objects |
+| Shutdown | Lua state closed; `kMsgDestroy` sent to all objects |
 
 > **Gotcha — module preloading order:** Modules in `package.preload` are **not** executed at registration time. Each module's `luaopen_*` function runs on the first `require` call. If your module initialization has side effects that depend on another module (e.g. registering classes), make sure to `require` the dependency explicitly rather than relying on registration order.

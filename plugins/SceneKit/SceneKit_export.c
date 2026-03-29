@@ -94,7 +94,7 @@ void luaX_pushLightType(lua_State *L, enum LightType value) {
 #define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
 #define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
 
-LRESULT Node3D_UpdateMatrix(struct Object*, struct Node3D*, wParam_t, UpdateMatrixEventPtr);
+LRESULT Node3D_UpdateMatrix(struct Object*, struct Node3D*, wParam_t, UpdateMatrixMsgPtr);
 
 static struct PropertyType const Node3DProperties[kNode3DNumProperties] = {
 	DECL(0x3f19bf01, Node3D, LayoutTransform, LayoutTransform, kDataTypeStruct, .TypeString = "Transform3D"), // Node3D.LayoutTransform
@@ -118,7 +118,7 @@ static struct Node3D Node3DDefaults = {
 };
 LRESULT Node3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventUpdateMatrix: return Node3D_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
+		case kMsgUpdateMatrix: return Node3D_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
 	}
 	return FALSE;
 }
@@ -143,7 +143,7 @@ ORCA_API struct ClassDesc _Node3D = {
 	.NumProperties = kNode3DNumProperties,
 };
 
-LRESULT Scene_UpdateMatrix(struct Object*, struct Scene*, wParam_t, UpdateMatrixEventPtr);
+LRESULT Scene_UpdateMatrix(struct Object*, struct Scene*, wParam_t, UpdateMatrixMsgPtr);
 
 static struct PropertyType const SceneProperties[kSceneNumProperties] = {
 	DECL(0xe74c7b6e, Scene, Camera, Camera, kDataTypeString), // Scene.Camera
@@ -158,7 +158,7 @@ static struct Scene SceneDefaults = {
 };
 LRESULT SceneProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventUpdateMatrix: return Scene_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
+		case kMsgUpdateMatrix: return Scene_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
 	}
 	return FALSE;
 }
@@ -183,7 +183,7 @@ ORCA_API struct ClassDesc _Scene = {
 	.NumProperties = kSceneNumProperties,
 };
 
-LRESULT Model3D_Render(struct Object*, struct Model3D*, wParam_t, RenderEventPtr);
+LRESULT Model3D_Render(struct Object*, struct Model3D*, wParam_t, RenderMsgPtr);
 
 static struct PropertyType const Model3DProperties[kModel3DNumProperties] = {
 	DECL(0x07e055dc, Model3D, Mesh, Mesh, kDataTypeObject, .TypeString = "Mesh"), // Model3D.Mesh
@@ -193,7 +193,7 @@ static struct Model3D Model3DDefaults = {
 };
 LRESULT Model3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventRender: return Model3D_Render(object, cmp, wparm, lparm); // Render
+		case kMsgRender: return Model3D_Render(object, cmp, wparm, lparm); // Render
 	}
 	return FALSE;
 }
@@ -218,7 +218,7 @@ ORCA_API struct ClassDesc _Model3D = {
 	.NumProperties = kModel3DNumProperties,
 };
 
-LRESULT PlaneMeshNode_Render(struct Object*, struct PlaneMeshNode*, wParam_t, RenderEventPtr);
+LRESULT PlaneMeshNode_Render(struct Object*, struct PlaneMeshNode*, wParam_t, RenderMsgPtr);
 
 static struct PropertyType const PlaneMeshNodeProperties[kPlaneMeshNodeNumProperties] = {
 	DECL(0x8f8d39cf, PlaneMeshNode, PlaneWidth, PlaneWidth, kDataTypeFloat), // PlaneMeshNode.PlaneWidth
@@ -233,7 +233,7 @@ static struct PlaneMeshNode PlaneMeshNodeDefaults = {
 };
 LRESULT PlaneMeshNodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventRender: return PlaneMeshNode_Render(object, cmp, wparm, lparm); // Render
+		case kMsgRender: return PlaneMeshNode_Render(object, cmp, wparm, lparm); // Render
 	}
 	return FALSE;
 }
@@ -298,7 +298,7 @@ ORCA_API struct ClassDesc _Camera = {
 	.NumProperties = kCameraNumProperties,
 };
 
-LRESULT TrajectoryList3D_UpdateMatrix(struct Object*, struct TrajectoryList3D*, wParam_t, UpdateMatrixEventPtr);
+LRESULT TrajectoryList3D_UpdateMatrix(struct Object*, struct TrajectoryList3D*, wParam_t, UpdateMatrixMsgPtr);
 
 static struct PropertyType const TrajectoryList3DProperties[kTrajectoryList3DNumProperties] = {
 	DECL(0x4cf7cbf8, TrajectoryList3D, Trajectory, Trajectory, kDataTypeObject, .TypeString = "Trajectory"), // TrajectoryList3D.Trajectory
@@ -312,7 +312,7 @@ static struct TrajectoryList3D TrajectoryList3DDefaults = {
 };
 LRESULT TrajectoryList3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventUpdateMatrix: return TrajectoryList3D_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
+		case kMsgUpdateMatrix: return TrajectoryList3D_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
 	}
 	return FALSE;
 }
@@ -337,7 +337,7 @@ ORCA_API struct ClassDesc _TrajectoryList3D = {
 	.NumProperties = kTrajectoryList3DNumProperties,
 };
 
-LRESULT Viewport3D_ForegroundContent(struct Object*, struct Viewport3D*, wParam_t, ForegroundContentEventPtr);
+LRESULT Viewport3D_ForegroundContent(struct Object*, struct Viewport3D*, wParam_t, ForegroundContentMsgPtr);
 
 static struct PropertyType const Viewport3DProperties[kViewport3DNumProperties] = {
 	DECL(0xe74c7b6e, Viewport3D, Camera, Camera, kDataTypeString), // Viewport3D.Camera
@@ -350,7 +350,7 @@ static struct Viewport3D Viewport3DDefaults = {
 };
 LRESULT Viewport3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventForegroundContent: return Viewport3D_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
+		case kMsgForegroundContent: return Viewport3D_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
 	}
 	return FALSE;
 }
@@ -375,7 +375,7 @@ ORCA_API struct ClassDesc _Viewport3D = {
 	.NumProperties = kViewport3DNumProperties,
 };
 
-LRESULT PrefabView3D_LoadView(struct Object*, struct PrefabView3D*, wParam_t, LoadViewEventPtr);
+LRESULT PrefabView3D_LoadView(struct Object*, struct PrefabView3D*, wParam_t, LoadViewMsgPtr);
 
 static struct PropertyType const PrefabView3DProperties[kPrefabView3DNumProperties] = {
 	DECL(0x57f28ff6, PrefabView3D, SCA, SCA, kDataTypeString), // PrefabView3D.SCA
@@ -385,7 +385,7 @@ static struct PrefabView3D PrefabView3DDefaults = {
 };
 LRESULT PrefabView3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventLoadView: return PrefabView3D_LoadView(object, cmp, wparm, lparm); // LoadView
+		case kMsgLoadView: return PrefabView3D_LoadView(object, cmp, wparm, lparm); // LoadView
 	}
 	return FALSE;
 }
@@ -622,8 +622,8 @@ ORCA_API struct ClassDesc _PipelineStateRenderPass = {
 	.NumProperties = kPipelineStateRenderPassNumProperties,
 };
 
-LRESULT TextBlock3D_Render(struct Object*, struct TextBlock3D*, wParam_t, RenderEventPtr);
-LRESULT TextBlock3D_Create(struct Object*, struct TextBlock3D*, wParam_t, CreateEventPtr);
+LRESULT TextBlock3D_Render(struct Object*, struct TextBlock3D*, wParam_t, RenderMsgPtr);
+LRESULT TextBlock3D_Create(struct Object*, struct TextBlock3D*, wParam_t, CreateMsgPtr);
 
 static struct PropertyType const TextBlock3DProperties[kTextBlock3DNumProperties] = {
 };
@@ -631,8 +631,8 @@ static struct TextBlock3D TextBlock3DDefaults = {
 };
 LRESULT TextBlock3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventRender: return TextBlock3D_Render(object, cmp, wparm, lparm); // Render
-		case kEventCreate: return TextBlock3D_Create(object, cmp, wparm, lparm); // Create
+		case kMsgRender: return TextBlock3D_Render(object, cmp, wparm, lparm); // Render
+		case kMsgCreate: return TextBlock3D_Create(object, cmp, wparm, lparm); // Create
 	}
 	return FALSE;
 }
@@ -658,7 +658,7 @@ ORCA_API struct ClassDesc _TextBlock3D = {
 	.NumProperties = kTextBlock3DNumProperties,
 };
 
-LRESULT Light3D_Render(struct Object*, struct Light3D*, wParam_t, RenderEventPtr);
+LRESULT Light3D_Render(struct Object*, struct Light3D*, wParam_t, RenderMsgPtr);
 
 static struct PropertyType const Light3DProperties[kLight3DNumProperties] = {
 	DECL(0xe5b43cf8, Light3D, Color, Color, kDataTypeColor), // Light3D.Color
@@ -675,7 +675,7 @@ static struct Light3D Light3DDefaults = {
 };
 LRESULT Light3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventRender: return Light3D_Render(object, cmp, wparm, lparm); // Render
+		case kMsgRender: return Light3D_Render(object, cmp, wparm, lparm); // Render
 	}
 	return FALSE;
 }
@@ -700,7 +700,7 @@ ORCA_API struct ClassDesc _Light3D = {
 	.NumProperties = kLight3DNumProperties,
 };
 
-LRESULT SpriteView_Render(struct Object*, struct SpriteView*, wParam_t, RenderEventPtr);
+LRESULT SpriteView_Render(struct Object*, struct SpriteView*, wParam_t, RenderMsgPtr);
 
 static struct PropertyType const SpriteViewProperties[kSpriteViewNumProperties] = {
 	DECL(0x590ca79a, SpriteView, Image, Image, kDataTypeObject, .TypeString = "Texture"), // SpriteView.Image
@@ -710,7 +710,7 @@ static struct SpriteView SpriteViewDefaults = {
 };
 LRESULT SpriteViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventRender: return SpriteView_Render(object, cmp, wparm, lparm); // Render
+		case kMsgRender: return SpriteView_Render(object, cmp, wparm, lparm); // Render
 	}
 	return FALSE;
 }

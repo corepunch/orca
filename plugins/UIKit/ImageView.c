@@ -43,7 +43,7 @@ HANDLER(ImageView, MeasureOverride)
 }
 
 HANDLER(ImageView, ArrangeOverride) {
-  return OBJ_SendMessageW(hObject, kEventMeasureOverride, 0, &(Size_t){
+  return OBJ_SendMessageW(hObject, kMsgMeasureOverride, 0, &(Size_t){
     pArrangeOverride->width, pArrangeOverride->height
   });
 }

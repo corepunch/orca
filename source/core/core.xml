@@ -11,56 +11,56 @@
   <external struct="lua_State"/>
   
   <!-- Base event for all pointer/mouse input events -->
-  <event name="MouseMessage" type="WI_Message"/>
+  <message name="MouseMessage" type="WI_Message"/>
   <!-- Base event for all keyboard input events -->
-  <event name="KeyMessage" type="WI_Message"/>
+  <message name="KeyMessage" type="WI_Message"/>
 
-  <event name="LeftMouseDown" parent="MouseMessage"/>
-  <event name="RightMouseDown" parent="MouseMessage"/>
-  <event name="OtherMouseDown" parent="MouseMessage"/>
-  <event name="LeftMouseUp" parent="MouseMessage"/>
-  <event name="RightMouseUp" parent="MouseMessage"/>
-  <event name="OtherMouseUp" parent="MouseMessage"/>
-  <event name="LeftMouseDragged" parent="MouseMessage"/>
-  <event name="RightMouseDragged" parent="MouseMessage"/>
-  <event name="OtherMouseDragged" parent="MouseMessage"/>
-  <event name="LeftDoubleClick" parent="MouseMessage"/>
-  <event name="RightDoubleClick" parent="MouseMessage"/>
-  <event name="OtherDoubleClick" parent="MouseMessage"/>
-  <event name="MouseMoved" parent="MouseMessage"/>
-  <event name="ScrollWheel" parent="MouseMessage"/>
-  <event name="DragDrop" parent="MouseMessage"/>
-  <event name="DragEnter" parent="MouseMessage"/>
-  <event name="KeyDown" parent="KeyMessage"/>
-  <event name="KeyUp" parent="KeyMessage"/>
-  <event name="Char" parent="KeyMessage"/>
-  <event name="WindowPaint"/>
-  <event name="WindowClosed"/>
-  <event name="WindowResized"/>
-  <event name="WindowChangedScreen"/>
-  <event name="KillFocus"/>
-  <event name="SetFocus"/>
-  <event name="Timer"/>
-  <event name="UpdateMatrix">
+  <message name="LeftMouseDown" parent="MouseMessage"/>
+  <message name="RightMouseDown" parent="MouseMessage"/>
+  <message name="OtherMouseDown" parent="MouseMessage"/>
+  <message name="LeftMouseUp" parent="MouseMessage"/>
+  <message name="RightMouseUp" parent="MouseMessage"/>
+  <message name="OtherMouseUp" parent="MouseMessage"/>
+  <message name="LeftMouseDragged" parent="MouseMessage"/>
+  <message name="RightMouseDragged" parent="MouseMessage"/>
+  <message name="OtherMouseDragged" parent="MouseMessage"/>
+  <message name="LeftDoubleClick" parent="MouseMessage"/>
+  <message name="RightDoubleClick" parent="MouseMessage"/>
+  <message name="OtherDoubleClick" parent="MouseMessage"/>
+  <message name="MouseMoved" parent="MouseMessage"/>
+  <message name="ScrollWheel" parent="MouseMessage"/>
+  <message name="DragDrop" parent="MouseMessage"/>
+  <message name="DragEnter" parent="MouseMessage"/>
+  <message name="KeyDown" parent="KeyMessage"/>
+  <message name="KeyUp" parent="KeyMessage"/>
+  <message name="Char" parent="KeyMessage"/>
+  <message name="WindowPaint"/>
+  <message name="WindowClosed"/>
+  <message name="WindowResized"/>
+  <message name="WindowChangedScreen"/>
+  <message name="KillFocus"/>
+  <message name="SetFocus"/>
+  <message name="Timer"/>
+  <message name="UpdateMatrix">
     <field name="parent" type="mat4">The parent matrix</field>
     <field name="opacity" type="float">The opacity value</field>
     <field name="force" type="bool">Indicates if the update is forced</field>
-  </event>
-  <event name="HitTest"/>
-  <event name="IsVisible"/>
-  <event name="Create"/>
-  <event name="Start"/>
-  <event name="Awake"/>
-  <event name="ThemeChanged"/>
-  <event name="PropertyChanged">
+  </message>
+  <message name="HitTest"/>
+  <message name="IsVisible"/>
+  <message name="Create"/>
+  <message name="Start"/>
+  <message name="Awake"/>
+  <message name="ThemeChanged"/>
+  <message name="PropertyChanged">
     <field name="Property" type="Property" pointer="true">The property that changed</field>
-  </event>
-  <event name="Attached"/>
-  <event name="Release"/>
-  <event name="Destroy"/>
-  <event name="ResumeCoroutine"/>
-  <event name="StopCoroutine"/>
-  <event name="ViewDidLoad"/>
+  </message>
+  <message name="Attached"/>
+  <message name="Release"/>
+  <message name="Destroy"/>
+  <message name="ResumeCoroutine"/>
+  <message name="StopCoroutine"/>
+  <message name="ViewDidLoad"/>
   
   <enums name="PropertyState">
     <summary>Represents the various states a property can be in.</summary>

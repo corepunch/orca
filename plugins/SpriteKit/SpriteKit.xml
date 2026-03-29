@@ -22,7 +22,7 @@
   <class name="SKNode" parent="Node" children="SKNode">
     <summary>Base 2D sprite node with transform and matrix</summary>
     <details>Provides fundamental 2D transformation properties for sprite scene graph nodes. All sprite objects in the scene inherit from this component.</details>
-    <handles event="UpdateMatrix"/>
+    <handles message="UpdateMatrix"/>
 <!--    <property name="LayoutTransform" type="transform2" default=".scale={1,1}">Layout transform for 2D positioning</property>-->
 <!--    <property name="RenderTransform" type="transform2" default=".scale={1,1}">Render transform for animation effects</property>-->
 <!--    <property name="RenderTransformOrigin" type="vec2">Origin point for render transform operations (rotation, scaling center)</property>-->
@@ -37,13 +37,13 @@
   <class name="SKScene" parent="SKNode">
     <summary>Root container for a 2D sprite scene</summary>
     <details>Represents a complete 2D sprite scene that can be rendered to an SKView. Acts as the root node of the sprite scene hierarchy.</details>
-    <handles event="UpdateMatrix"/>
+    <handles message="UpdateMatrix"/>
   </class>
 
   <class name="SKSpriteNode" parent="SKNode">
     <summary>2D sprite node that renders an image or animation</summary>
     <details>Renders 2D sprite content using either a static image or an animated sprite animation. Supports UV coordinates for sprite atlas sheets and various blend modes.</details>
-    <handles event="Render"/>
+    <handles message="Render"/>
     <property name="Animation" type="SpriteAnimation" pointer="true">Primary sprite animation from a sprite atlas</property>
     <property name="Animation2" type="SpriteAnimation" pointer="true">Secondary sprite animation (e.g., shadow layer)</property>
     <property name="Image" type="Texture" pointer="true">Static image texture to display</property>
@@ -55,8 +55,8 @@
   <class name="SKLabelNode" parent="SKNode" concept="TextBlockConcept">
     <summary>2D text label node for displaying text in sprite space</summary>
     <details>Renders text as a 2D sprite node that participates in the sprite scene hierarchy. Inherits text styling and layout from the TextBlockConcept.</details>
-    <handles event="Render"/>
-    <handles event="Create"/>
+    <handles message="Render"/>
+    <handles message="Create"/>
     <property name="Color" type="color">Color of the text</property>
     <field name="_node" type="SKNode" pointer="true"/>
   </class>
@@ -64,7 +64,7 @@
   <class name="SKView" parent="Node2D" children="SKNode">
     <summary>2D viewport that renders an SKScene into the UI hierarchy</summary>
     <details>Acts as the bridge between the 2D UI system and the sprite scene hierarchy. Renders the attached SKScene using a 2D orthographic projection into its Node2D bounds.</details>
-    <handles event="ForegroundContent"/>
+    <handles message="ForegroundContent"/>
     <property name="ReferenceWidth" type="float">Reference width for the sprite coordinate system</property>
     <property name="ReferenceHeight" type="float">Reference height for the sprite coordinate system</property>
     <property name="Scene" type="string">Name of SKScene to render</property>

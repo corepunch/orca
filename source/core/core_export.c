@@ -853,19 +853,19 @@ int luaopen_orca_PropertyType(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
-void luaX_pushUpdateMatrixEventArgs(lua_State *L, struct UpdateMatrixEventArgs const* data) {
+void luaX_pushUpdateMatrixMsgArgs(lua_State *L, struct UpdateMatrixMsgArgs const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
-	struct UpdateMatrixEventArgs* self = lua_newuserdata(L, sizeof(struct UpdateMatrixEventArgs));
-	luaL_setmetatable(L, "UpdateMatrixEventArgs");
-	memcpy(self, data, sizeof(struct UpdateMatrixEventArgs));
+	struct UpdateMatrixMsgArgs* self = lua_newuserdata(L, sizeof(struct UpdateMatrixMsgArgs));
+	luaL_setmetatable(L, "UpdateMatrixMsgArgs");
+	memcpy(self, data, sizeof(struct UpdateMatrixMsgArgs));
 }
-struct UpdateMatrixEventArgs* luaX_checkUpdateMatrixEventArgs(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "UpdateMatrixEventArgs");
+struct UpdateMatrixMsgArgs* luaX_checkUpdateMatrixMsgArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "UpdateMatrixMsgArgs");
 }
-static int f_new_UpdateMatrixEventArgs(lua_State *L) {
-	struct UpdateMatrixEventArgs* self = lua_newuserdata(L, sizeof(struct UpdateMatrixEventArgs));
-	luaL_setmetatable(L, "UpdateMatrixEventArgs");
-	memset(self, 0, sizeof(struct UpdateMatrixEventArgs));
+static int f_new_UpdateMatrixMsgArgs(lua_State *L) {
+	struct UpdateMatrixMsgArgs* self = lua_newuserdata(L, sizeof(struct UpdateMatrixMsgArgs));
+	luaL_setmetatable(L, "UpdateMatrixMsgArgs");
+	memset(self, 0, sizeof(struct UpdateMatrixMsgArgs));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_pop(L, (lua_getfield(L, 1, "parent"), self->parent = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkmat4(L, -1) : (struct mat4){0}, 1));
@@ -878,55 +878,55 @@ static int f_new_UpdateMatrixEventArgs(lua_State *L) {
 	}
 	return 1;
 }
-int f_UpdateMatrixEventArgs___index(lua_State *L) {
-	struct UpdateMatrixEventArgs* self = luaX_checkUpdateMatrixEventArgs(L, 1);
+int f_UpdateMatrixMsgArgs___index(lua_State *L) {
+	struct UpdateMatrixMsgArgs* self = luaX_checkUpdateMatrixMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0xeacdfcfd: luaX_pushmat4(L, &self->parent); return 1; // parent
 	case 0xc6c2dd66: lua_pushnumber(L, self->opacity); return 1; // opacity
 	case 0x79a98884: lua_pushboolean(L, self->force); return 1; // force
 	}
-	return luaL_error(L, "Unknown field in UpdateMatrixEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in UpdateMatrixMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-int f_UpdateMatrixEventArgs___newindex(lua_State *L) {
-	struct UpdateMatrixEventArgs* self = luaX_checkUpdateMatrixEventArgs(L, 1);
+int f_UpdateMatrixMsgArgs___newindex(lua_State *L) {
+	struct UpdateMatrixMsgArgs* self = luaX_checkUpdateMatrixMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0xeacdfcfd: self->parent = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkmat4(L, 3) : (struct mat4){0}; return 0; // parent
 	case 0xc6c2dd66: self->opacity = luaL_optnumber(L, 3, 0); return 0; // opacity
 	case 0x79a98884: self->force = lua_toboolean(L, 3); return 0; // force
 	}
-	return luaL_error(L, "Unknown field in UpdateMatrixEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in UpdateMatrixMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-static int f_UpdateMatrixEventArgs___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_UpdateMatrixEventArgs(L));  // remove UpdateMatrixEventArgs from stack and call constructor
+static int f_UpdateMatrixMsgArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_UpdateMatrixMsgArgs(L));  // remove UpdateMatrixMsgArgs from stack and call constructor
 }
-int luaopen_orca_UpdateMatrixEventArgs(lua_State *L) {
-	luaL_newmetatable(L, "UpdateMatrixEventArgs");
+int luaopen_orca_UpdateMatrixMsgArgs(lua_State *L) {
+	luaL_newmetatable(L, "UpdateMatrixMsgArgs");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_UpdateMatrixEventArgs },
-		{ "__newindex", f_UpdateMatrixEventArgs___newindex },
-		{ "__index", f_UpdateMatrixEventArgs___index },
+		{ "new", f_new_UpdateMatrixMsgArgs },
+		{ "__newindex", f_UpdateMatrixMsgArgs___newindex },
+		{ "__index", f_UpdateMatrixMsgArgs___index },
 		{ NULL, NULL },
 	}), 0);
-	// Make UpdateMatrixEventArgs creatable via constructor-like syntax
+	// Make UpdateMatrixMsgArgs creatable via constructor-like syntax
 	lua_newtable(L);
-	lua_pushcfunction(L, f_UpdateMatrixEventArgs___call);
+	lua_pushcfunction(L, f_UpdateMatrixMsgArgs___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	return 1;
 }
-void luaX_pushPropertyChangedEventArgs(lua_State *L, struct PropertyChangedEventArgs const* data) {
+void luaX_pushPropertyChangedMsgArgs(lua_State *L, struct PropertyChangedMsgArgs const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
-	struct PropertyChangedEventArgs* self = lua_newuserdata(L, sizeof(struct PropertyChangedEventArgs));
-	luaL_setmetatable(L, "PropertyChangedEventArgs");
-	memcpy(self, data, sizeof(struct PropertyChangedEventArgs));
+	struct PropertyChangedMsgArgs* self = lua_newuserdata(L, sizeof(struct PropertyChangedMsgArgs));
+	luaL_setmetatable(L, "PropertyChangedMsgArgs");
+	memcpy(self, data, sizeof(struct PropertyChangedMsgArgs));
 }
-struct PropertyChangedEventArgs* luaX_checkPropertyChangedEventArgs(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "PropertyChangedEventArgs");
+struct PropertyChangedMsgArgs* luaX_checkPropertyChangedMsgArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "PropertyChangedMsgArgs");
 }
-static int f_new_PropertyChangedEventArgs(lua_State *L) {
-	struct PropertyChangedEventArgs* self = lua_newuserdata(L, sizeof(struct PropertyChangedEventArgs));
-	luaL_setmetatable(L, "PropertyChangedEventArgs");
-	memset(self, 0, sizeof(struct PropertyChangedEventArgs));
+static int f_new_PropertyChangedMsgArgs(lua_State *L) {
+	struct PropertyChangedMsgArgs* self = lua_newuserdata(L, sizeof(struct PropertyChangedMsgArgs));
+	luaL_setmetatable(L, "PropertyChangedMsgArgs");
+	memset(self, 0, sizeof(struct PropertyChangedMsgArgs));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_pop(L, (lua_getfield(L, 1, "Property"), self->Property = NULL, 1));
@@ -935,34 +935,34 @@ static int f_new_PropertyChangedEventArgs(lua_State *L) {
 	}
 	return 1;
 }
-int f_PropertyChangedEventArgs___index(lua_State *L) {
-	struct PropertyChangedEventArgs* self = luaX_checkPropertyChangedEventArgs(L, 1);
+int f_PropertyChangedMsgArgs___index(lua_State *L) {
+	struct PropertyChangedMsgArgs* self = luaX_checkPropertyChangedMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x5221f9e8: luaX_pushProperty(L, self->Property); return 1; // Property
 	}
-	return luaL_error(L, "Unknown field in PropertyChangedEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in PropertyChangedMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-int f_PropertyChangedEventArgs___newindex(lua_State *L) {
-	struct PropertyChangedEventArgs* self = luaX_checkPropertyChangedEventArgs(L, 1);
+int f_PropertyChangedMsgArgs___newindex(lua_State *L) {
+	struct PropertyChangedMsgArgs* self = luaX_checkPropertyChangedMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x5221f9e8: self->Property = NULL; return 0; // Property
 	}
-	return luaL_error(L, "Unknown field in PropertyChangedEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in PropertyChangedMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-static int f_PropertyChangedEventArgs___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_PropertyChangedEventArgs(L));  // remove PropertyChangedEventArgs from stack and call constructor
+static int f_PropertyChangedMsgArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_PropertyChangedMsgArgs(L));  // remove PropertyChangedMsgArgs from stack and call constructor
 }
-int luaopen_orca_PropertyChangedEventArgs(lua_State *L) {
-	luaL_newmetatable(L, "PropertyChangedEventArgs");
+int luaopen_orca_PropertyChangedMsgArgs(lua_State *L) {
+	luaL_newmetatable(L, "PropertyChangedMsgArgs");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_PropertyChangedEventArgs },
-		{ "__newindex", f_PropertyChangedEventArgs___newindex },
-		{ "__index", f_PropertyChangedEventArgs___index },
+		{ "new", f_new_PropertyChangedMsgArgs },
+		{ "__newindex", f_PropertyChangedMsgArgs___newindex },
+		{ "__index", f_PropertyChangedMsgArgs___index },
 		{ NULL, NULL },
 	}), 0);
-	// Make PropertyChangedEventArgs creatable via constructor-like syntax
+	// Make PropertyChangedMsgArgs creatable via constructor-like syntax
 	lua_newtable(L);
-	lua_pushcfunction(L, f_PropertyChangedEventArgs___call);
+	lua_pushcfunction(L, f_PropertyChangedMsgArgs___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	return 1;
@@ -990,8 +990,8 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	on_core_module_registered(L);
 	lua_setfield(L, ((void)luaopen_orca_PropertyEnumValue(L), -2), "PropertyEnumValue");
 	lua_setfield(L, ((void)luaopen_orca_PropertyType(L), -2), "PropertyType");
-	lua_setfield(L, ((void)luaopen_orca_UpdateMatrixEventArgs(L), -2), "UpdateMatrixEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_PropertyChangedEventArgs(L), -2), "PropertyChangedEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_UpdateMatrixMsgArgs(L), -2), "UpdateMatrixMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_PropertyChangedMsgArgs(L), -2), "PropertyChangedMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object(L), -2), "Object");
 	return 1;
 }

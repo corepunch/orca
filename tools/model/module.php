@@ -422,7 +422,7 @@ class Component extends Struct {
 
 	function getEventHandlers() {
 		foreach ($this->_elem->xpath("handles") as $node) {
-			yield $node["event"];
+			yield $node["message"];
 		}
 	}
 
@@ -498,16 +498,16 @@ class Event extends Type {
 
 	// Returns the C type declaration string (without *) for events without inline fields
 	function getEffectiveTypeDecl() {
-		if ($this->hasFields()) return "struct " . $this->name . "EventArgs";
+		if ($this->hasFields()) return "struct " . $this->name . "MsgArgs";
 		$parent = $this->getParentEvent();
 		if ($parent) return $parent->getEffectiveTypeDecl();
 		return strval($this); // delegates to Type::__toString() for kind-based formatting
 	}
 
-	// Returns the EventArgs struct name to alias when a child has no own fields
+	// Returns the MsgArgs struct name to alias when a child has no own fields
 	// but the parent chain does have fields
 	function getEffectiveStructName() {
-		if ($this->hasFields()) return $this->name . "EventArgs";
+		if ($this->hasFields()) return $this->name . "MsgArgs";
 		$parent = $this->getParentEvent();
 		return $parent ? $parent->getEffectiveStructName() : null;
 	}
@@ -599,7 +599,7 @@ class Model {
 		array_map(fn($r) => $r["file"], $rn),
 		array_map(fn($r) => new IncludeFile($r, $this), $rn)
 		);
-		$rn = $xml->xpath(".//event[@name]");
+		$rn = $xml->xpath(".//message[@name]");
 		$this->events = array_combine(
 		array_map(fn($r) => $r["name"], $rn),
 		array_map(fn($r) => new Event($r, $this), $rn)
@@ -663,9 +663,9 @@ class Model {
 		if ($r) {
 			return ["external_struct", $r];
 		}
-		// Check if type is an event-generated args struct (e.g. "HandleMessageEventArgs")
-		if (str_ends_with($_type, "EventArgs")) {
-			$eventName = substr($_type, 0, -strlen("EventArgs"));
+		// Check if type is an event-generated args struct (e.g. "HandleMessageMsgArgs")
+		if (str_ends_with($_type, "MsgArgs")) {
+			$eventName = substr($_type, 0, -strlen("MsgArgs"));
 			$ev = $this->_has_in($eventName, "events");
 			if ($ev && $ev->hasFields()) {
 				return ["struct", null];

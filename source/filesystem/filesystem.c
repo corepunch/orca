@@ -213,7 +213,7 @@ bool_t
 FS_FileExists(lpcString_t path)
 {
   FS_FindPackage(search, path) {
-    if (OBJ_SendMessageW(search, kEventFileExists, 0, &(struct FileExistsEventArgs) {
+    if (OBJ_SendMessageW(search, kMsgFileExists, 0, &(struct FileExistsMsgArgs) {
       .FileName = path + strlen(OBJ_GetName(search)) + 1
     })) {
       return TRUE;
@@ -239,7 +239,7 @@ FS_LoadFile(lpcString_t szFileName)
 
   // If that fails, try to find it in loaded packages
   FS_FindPackage(package, szFileName) {
-    if ((pFile = (struct file*)OBJ_SendMessageW(package, kEventOpenFile, 0, &(struct OpenFileEventArgs){
+    if ((pFile = (struct file*)OBJ_SendMessageW(package, kMsgOpenFile, 0, &(struct OpenFileMsgArgs){
       .FileName = szFileName + strlen(OBJ_GetName(package)) + 1,
     }))) {
       return pFile;
@@ -252,7 +252,7 @@ bool_t
 FS_HasChangedFiles(void)
 {
   FOR_EACH_OBJECT(package, FS_GetWorkspace()) {
-    if (OBJ_SendMessageW(package, kEventHasChangedFiles, 0, NULL)) {
+    if (OBJ_SendMessageW(package, kMsgHasChangedFiles, 0, NULL)) {
       return TRUE;
     }
   }
@@ -344,8 +344,8 @@ _TryLoadBundle(lpcClassDesc_t c, void* args)
   struct package_iterator* it = args;
   if (!it->project) {
     it->project =
-    (struct Object*)c->ObjProc(NULL, it->L, kEventLoadProject, 0,
-                               &(struct LoadProjectEventArgs) {
+    (struct Object*)c->ObjProc(NULL, it->L, kMsgLoadProject, 0,
+                               &(struct LoadProjectMsgArgs) {
       .Path = (void*)it->directory
     });
   }

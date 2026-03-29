@@ -14,7 +14,7 @@ PROP_ExecuteChangedCallback(lua_State* L,
                             lpObject_t pobj,
                             lpProperty_t hProperty)
 {
-  lpcString_t szCallback = PROP_GetCallbackEvent(hProperty);
+  lpcString_t szCallback = PROP_GetCallbackMsg(hProperty);
   lpObject_t hRoot = OBJ_GetRoot(pobj);
   if (hRoot) {
     lua_geti(L, LUA_REGISTRYINDEX, OBJ_GetLuaObject(pobj));
@@ -27,7 +27,7 @@ void
 OBJ_Awake(lua_State* L, lpObject_t object)
 {
   if (!(object->flags & OF_UPDATED_ONCE)) {
-    lpcString_t cb = OBJ_FindCallbackForID(object, kEventAwake);
+    lpcString_t cb = OBJ_FindCallbackForID(object, kMsgAwake);
     if (cb) {
       luaX_pushObject(L, object);
       lua_getfield(L, -1, cb);
@@ -37,7 +37,7 @@ OBJ_Awake(lua_State* L, lpObject_t object)
         lua_pop(L, 1);
       }
     }
-    OBJ_SendMessageW(object, kEventAwake, 0, NULL);
+    OBJ_SendMessageW(object, kMsgAwake, 0, NULL);
     OBJ_ApplyStyles(object, FALSE);
     object->flags |= OF_UPDATED_ONCE;
   }

@@ -11,16 +11,16 @@
   <external struct="ViewDef"/>
   <external struct="lua_State"/>
   
-  <event name="RenderScreen">
+  <message name="RenderScreen">
     <field name="width" type="uint">The width of the render screen</field>
     <field name="height" type="uint">The height of the render screen</field>
     <field name="stereo" type="float">The stereo value of the render screen</field>
     <field name="angle" type="float">The angle of the render screen</field>
     <field name="target" type="Texture" pointer="true">The target handle of the render screen</field>
-  </event>
-  <event name="Render">
+  </message>
+  <message name="Render">
     <field name="ViewDef" type="ViewDef" pointer="true">The view definition for rendering</field>
-  </event>
+  </message>
 
 <!--  <shutdown name="R_Shutdown"/>-->
   <interface name="window" prefix="WI_" export="Window">
@@ -233,7 +233,7 @@
   </enums>
 
   <class name="Image" parent="Texture">
-    <handles event="Start"/>
+    <handles message="Start"/>
     <summary>Represents a single, pre-loaded texture image for use in rendering operations.</summary>
     <details>Extends the base Texture class to load a specific image file, providing a straightforward way to incorporate static textures into scenes without dynamic generation or rendering targets.</details>
     <property name="Source" type="string">Path to the texture image file to be loaded.</property>
@@ -286,7 +286,7 @@
   <class name="RenderTargetTexture" parent="Texture">
     <summary>Texture configured as a render target for off-screen rendering and post-processing effects.</summary>
     <details>Extends the base Texture class to create a dynamic texture that can be bound as a framebuffer for rendering operations. Supports custom dimensions for targeted resolutions, enabling techniques like bloom, depth-of-field, or shadow mapping without affecting the main display output.</details>
-    <handles event="Start"/>
+    <handles message="Start"/>
     <property name="Width" type="int">The desired width in pixels for the render target texture, determining the horizontal resolution of rendered content.</property>
     <property name="Height" type="int">The desired height in pixels for the render target texture, determining the vertical resolution of rendered content.</property>
     <property name="TargetType" type="RenderTargetType">Specifies which kind of render target this texture represents — for example, a color, depth, or stencil attachment.</property>
@@ -299,7 +299,7 @@
   <class name="CubeMapTexture" parent="Texture">
     <summary>Cubemap texture assembled from six individual images, one for each face of a cube, used for environment mapping, reflections, and sky rendering.</summary>
     <details>Extends the base Texture class to support loading separate images for positive and negative axes of a 3D cube. This configuration allows for realistic spherical mapping in shaders, where texture coordinates are projected onto the cube faces for seamless omnidirectional sampling without seams or distortion at cube edges.</details>
-    <handles event="Start"/>
+    <handles message="Start"/>
     <property name="BackImage" type="string">Path to the image file for the back face (negative Z-axis) of the cubemap.</property>
     <property name="FrontImage" type="string">Path to the image file for the front face (positive Z-axis) of the cubemap.</property>
     <property name="LeftImage" type="string">Path to the image file for the left face (negative X-axis) of the cubemap.</property>
@@ -311,7 +311,7 @@
   <class name="IOSurfaceTexture" parent="Texture">
     <summary>Texture created from a shared macOS IOSurface for zero-copy GPU data sharing.</summary>
     <details>Extends the base Texture class to bind an existing IOSurface as an OpenGL texture using GL_TEXTURE_RECTANGLE. Enables efficient inter-process or inter-context sharing of rendered images without CPU copying, suitable for compositing, video, or off-screen rendering pipelines.</details>
-    <handles event="Start"/>
+    <handles message="Start"/>
     <property name="IOSurface" type="int">The IOSurface identifier used to look up and bind the shared surface as a texture.</property>
   </class>
 
@@ -388,8 +388,8 @@
     <summary>Complete shader program definition combining vertex and fragment stages</summary>
     <details>Encapsulates the entire shader pipeline with configurable uniforms, attributes, and shared variables. Uniforms provide per-draw parameters (textures, colors, transforms), attributes supply per-vertex data (positions, UVs, colors), and shared variables pass interpolated data between shader stages.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="Start"/>
-    <handles event="Destroy"/>
+    <handles message="Start"/>
+    <handles message="Destroy"/>
     <property name="BlendMode" type="BlendMode" default="MixedAlpha">The default blending mode for the shader, controlling how rendered output combines with the existing framebuffer content.</property>
     <property name="DepthTestFunction" type="CompareFunc">The default depth comparison function used for depth testing, determining which fragments are visible based on their depth values.</property>
     <property name="DepthWriteEnabled" type="bool">Whether depth buffer writing is enabled by default. When true, rendered fragments update the depth buffer; when false, depth values are not written.</property>
@@ -420,8 +420,8 @@
     <summary>Renderable 3D geometry component with material and model data</summary>
     <details>Represents a 3D mesh object in the scene. Manages the geometry data (vertices, indices, normals, UVs) and associated material for rendering. Responds to lifecycle events for loading and cleanup of mesh resources.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="Start"/>
-    <handles event="Destroy"/>
+    <handles message="Start"/>
+    <handles message="Destroy"/>
     <property name="Source" type="string">Path or identifier to the mesh geometry file or resource. Specifies where to load the 3D model data from.</property>
     <property name="Material" type="Material" pointer="true">Reference to the material that defines the mesh's visual appearance. Controls shaders, textures, colors, and rendering properties applied to the geometry.</property>
     <property name="MeshMorphTargets" type="string">Name of the morph targets in the mesh</property>
@@ -431,8 +431,8 @@
   <class name="FontFamily">
     <summary>TrueType font resource for text rendering</summary>
     <details>Loads and manages a TrueType font file for rendering text in the scene. Provides glyph data and metrics for text layout and rendering. May be extended in the future to support font families with variants (regular, bold, italic).</details>
-    <handles event="Start">Called when the mesh component is initialized. Used to load the mesh geometry from the specified source and set up rendering resources.</handles>
-    <handles event="Destroy">Called when the mesh component is being destroyed. Used to clean up mesh data, release GPU buffers, and free associated resources.</handles>
+    <handles message="Start">Called when the mesh component is initialized. Used to load the mesh geometry from the specified source and set up rendering resources.</handles>
+    <handles message="Destroy">Called when the mesh component is being destroyed. Used to clean up mesh data, release GPU buffers, and free associated resources.</handles>
     <property name="Regular" type="string">Path of the TrueType font file to be used as the regular font variant.</property>
     <property name="Bold" type="string">Path of the TrueType font file to be used as the bold font variant.</property>
     <property name="Italic" type="string">Path of the TrueType font file to be used as the italic font variant.</property>
