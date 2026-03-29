@@ -164,12 +164,11 @@ HANDLER(Node2D, UpdateMatrix)
     });
   }
 
-  FOR_EACH_CHILD(hObject, OBJ_SendMessageW, kMsgUpdateMatrix, 0,
-                 &(struct UpdateMatrixMsgArgs){
+  FOR_EACH_CHILD(hObject, _SendMessage, UpdateMatrix,
                    .parent = Matrix,
                    .opacity = pNode2D->_opacity,
                    .force = bInvalidate,
-                 });
+                 );
 
   return TRUE;
 }
@@ -314,10 +313,10 @@ static float _MeasureAxis(Node2DPtr n, float space, int axis) {
 HANDLER(Node2D, Measure)
 {
   struct Node2D *n = pNode2D;
-  LRESULT size = OBJ_SendMessageW(hObject, kMsgMeasureOverride, 0, &(struct Size) {
-    .width  = _MeasureAxis(n, pMeasure->Width  - TOTAL_MARGIN(n, 0), 0) - TOTAL_PADDING(n, 0),
-    .height = _MeasureAxis(n, pMeasure->Height - TOTAL_MARGIN(n, 1), 1) - TOTAL_PADDING(n, 1),
-  });
+  LRESULT size = _SendMessage(hObject, MeasureOverride,
+    .Width  = _MeasureAxis(n, pMeasure->Width  - TOTAL_MARGIN(n, 0), 0) - TOTAL_PADDING(n, 0),
+    .Height = _MeasureAxis(n, pMeasure->Height - TOTAL_MARGIN(n, 1), 1) - TOTAL_PADDING(n, 1),
+  );
   if (isnan(NODE2D_FRAME(n, Size, 0).Requested)) {
     NODE2D_FRAME(n, Size, 0).Desired = LOWORD(size) + TOTAL_PADDING(n, 0);
   } else {
@@ -367,12 +366,12 @@ HANDLER(Node2D, Arrange)
     .height = s.height,
   };
   
-  LRESULT size = OBJ_SendMessageW(hObject, kMsgArrangeOverride, 0, &(struct rect) {
-    .x      = PADDING_TOP(n, 0),
-    .y      = PADDING_TOP(n, 1),
-    .width  = rect.width  - TOTAL_PADDING(n, 0),
-    .height = rect.height - TOTAL_PADDING(n, 1),
-  });
+  LRESULT size = _SendMessage(hObject, ArrangeOverride,
+    .X      = PADDING_TOP(n, 0),
+    .Y      = PADDING_TOP(n, 1),
+    .Width  = rect.width  - TOTAL_PADDING(n, 0),
+    .Height = rect.height - TOTAL_PADDING(n, 1),
+  );
   
   // Final frame is the outer rect (including padding, excluding margin)
   Node2D_SetFrame(n, kBox3FieldX,      rect.x);
@@ -387,7 +386,9 @@ HANDLER(Node2D, MeasureOverride)
 {
   uint16_t width = 0, height = 0;
   FOR_EACH_OBJECT(hChild, hObject) {
-    uint32_t size = (uint32_t)OBJ_SendMessageW(hChild, kMsgMeasure, 0, pMeasureOverride);
+    uint32_t size = (uint32_t)_SendMessage(hChild, Measure,
+                                           .Width = pMeasureOverride->Width,
+                                           .Height = pMeasureOverride->Height);
     width  = MAX(width,  LOWORD(size));
     height = MAX(height, HIWORD(size));
   }
@@ -397,6 +398,10 @@ HANDLER(Node2D, MeasureOverride)
 
 HANDLER(Node2D, ArrangeOverride)
 {
-  FOR_EACH_CHILD(hObject, OBJ_SendMessageW, kMsgArrange, 0, pArrangeOverride);
+  FOR_EACH_CHILD(hObject, _SendMessage, Arrange,
+                 .X = pArrangeOverride->X,
+                 .Y = pArrangeOverride->Y,
+                 .Width = pArrangeOverride->Width,
+                 .Height = pArrangeOverride->Height);
   return MAKEDWORD(pArrangeOverride->Width, pArrangeOverride->Height);
 }

@@ -29,7 +29,6 @@ SKNode_RenderTree(lpObject_t hObject, struct ViewDef *viewdef)
 {
   if (OBJ_IsHidden(hObject)) return;
   _SendMessage(hObject, Render, .ViewDef = viewdef);
-//  OBJ_SendMessageW(hObject, kMsgRender, 0, &(struct RenderMsgArgs) {viewdef});
   FOR_EACH_OBJECT(child, hObject) {
     SKNode_RenderTree(child, viewdef);
   }
@@ -52,11 +51,10 @@ HANDLER(SKView, ForegroundContent)
   float h = NODE2D_FRAME(GetNode2D(hObject), Size, 1).Actual;
   if (w <= 0 || h <= 0) return FALSE;
 
-  OBJ_SendMessageW(scene, kMsgUpdateMatrix, 0,
-                   &(struct UpdateMatrixMsgArgs){
+  _SendMessage(scene, UpdateMatrix,
     .parent = MAT4_Identity(),
     .opacity = 1.0f
-  });
+  );
 
   struct ViewDef viewdef = {0};
   viewdef.projectionMatrix = MAT4_Ortho(0, w, 0, h, -1, 1);
