@@ -4,13 +4,18 @@
 <?php endif ?>
 
 <?php foreach ($events as $name => $event):?>
-<?php if ($event->hasFields()):?>
+<?php if ($event->hasAnyFields()):?>
+<?php $ownFields = iterator_to_array($event->getFields()) ?>
+<?php if (count($ownFields) > 0):?>
 struct <?= $name ?>EventArgs {
-<?php include_template("struct_contents", ['list' => $event->getFields()]) ?>
+<?php include_template("struct_contents", ['list' => $event->getAllFields()]) ?>
 };
 typedef struct <?= $name ?>EventArgs* <?= $name ?>EventPtr;
 <?php else:?>
-typedef <?= $event ?>* <?= $name ?>EventPtr;
+typedef struct <?= $event->getEffectiveStructName() ?>* <?= $name ?>EventPtr;
+<?php endif ?>
+<?php else:?>
+typedef <?= $event->getEffectiveTypeDecl() ?>* <?= $name ?>EventPtr;
 <?php endif ?>
 <?php endforeach ?>
 <?php foreach ($components as $name => $component):?>
