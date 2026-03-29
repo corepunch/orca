@@ -42,7 +42,7 @@ PROP_ProcessEvents(lua_State* L,
       luaX_executecallback(L, object, str, 1);
     }
     if (property->flags & PF_USED_IN_TRIGGER) {
-      OBJ_SendMessageW(object, kMsgPropertyChanged, 0, &(struct PropertyChangedMsgArgs){ .Property = property });
+      _SendMessage(object, PropertyChanged, .Property = property);
     }
     if (property->callbackMsg) {
       PROP_ExecuteChangedCallback(L, object, property);
