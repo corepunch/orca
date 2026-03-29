@@ -24,10 +24,10 @@ struct lua_State;
 
 typedef void* GetSizeMsgPtr;
 typedef void* SubmitMsgPtr;
-typedef struct Size* MeasureMsgPtr;
-typedef struct rect* ArrangeMsgPtr;
-typedef struct Size* MeasureOverrideMsgPtr;
-typedef struct rect* ArrangeOverrideMsgPtr;
+typedef struct MeasureMsgArgs* MeasureMsgPtr;
+typedef struct ArrangeMsgArgs* ArrangeMsgPtr;
+typedef struct MeasureMsgArgs* MeasureOverrideMsgPtr;
+typedef struct ArrangeMsgArgs* ArrangeOverrideMsgPtr;
 typedef struct ForegroundContentMsgArgs* ForegroundContentMsgPtr;
 typedef struct PushPropertyMsgArgs* PushPropertyMsgPtr;
 typedef void* UpdateGeometryMsgPtr;
@@ -468,6 +468,22 @@ struct SizeShorthand {
 ORCA_API void luaX_pushSizeShorthand(lua_State *L, struct SizeShorthand const* SizeShorthand);
 ORCA_API struct SizeShorthand* luaX_checkSizeShorthand(lua_State *L, int idx);
 
+/** MeasureMsgArgs struct */
+struct MeasureMsgArgs {
+	float Width;
+	float Height;
+};
+ORCA_API void luaX_pushMeasureMsgArgs(lua_State *L, struct MeasureMsgArgs const* data);
+ORCA_API struct MeasureMsgArgs* luaX_checkMeasureMsgArgs(lua_State *L, int idx);
+/** ArrangeMsgArgs struct */
+struct ArrangeMsgArgs {
+	float X;
+	float Y;
+	float Width;
+	float Height;
+};
+ORCA_API void luaX_pushArrangeMsgArgs(lua_State *L, struct ArrangeMsgArgs const* data);
+ORCA_API struct ArrangeMsgArgs* luaX_checkArrangeMsgArgs(lua_State *L, int idx);
 /** ForegroundContentMsgArgs struct */
 struct ForegroundContentMsgArgs {
 	struct Texture* result;

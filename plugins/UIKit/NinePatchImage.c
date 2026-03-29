@@ -40,7 +40,7 @@ HANDLER(NinePatchImage, MeasureOverride)
   //        }
   //        return TRUE;
   //    } else {
-  return MAKEDWORD(pMeasureOverride->width, pMeasureOverride->height);
+  return MAKEDWORD(pMeasureOverride->Width, pMeasureOverride->Height);
   //    }
 }
 

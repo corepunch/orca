@@ -510,18 +510,18 @@ HANDLER(Screen, MeasureOverride) {
 //#endif
 
   if (!isnan(n->Size.Axis[0].Requested)) {
-    pMeasureOverride->width = n->Size.Axis[0].Requested;
+    pMeasureOverride->Width = n->Size.Axis[0].Requested;
   }
   if (!isnan(n->Size.Axis[1].Requested)) {
-    pMeasureOverride->height = n->Size.Axis[1].Requested;
+    pMeasureOverride->Height = n->Size.Axis[1].Requested;
   }
-  uint32_t newsize = MAKEDWORD(pMeasureOverride->width, pMeasureOverride->height);
+  uint32_t newsize = MAKEDWORD(pMeasureOverride->Width, pMeasureOverride->Height);
   if (pScreen->_size != newsize) {
 //    WI_SetSize(pUpdateLayout->Width, pUpdateLayout->Height, TRUE);
     pScreen->_size = newsize;
   }
   FOR_EACH_CHILD(hObject, OBJ_SendMessageW, kMsgMeasure, 0, pMeasureOverride);
-  return MAKEDWORD(pMeasureOverride->width, pMeasureOverride->height);
+  return MAKEDWORD(pMeasureOverride->Width, pMeasureOverride->Height);
 }
 
 //HANDLER(Screen, Create) {

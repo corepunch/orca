@@ -25,27 +25,27 @@ HANDLER(ImageView, MeasureOverride)
     vec2_t size = _GetImageSize(hObject, pImageView);
     lpcedges_t e = (struct edges const*)&pImageView->Insets;
 //    vec2_t calcsize = {
-//      fmin(size.x - e->left - e->right, pMeasureOverride->width),
-//      fmin(size.y - e->top - e->bottom, pMeasureOverride->height),
+//      fmin(size.x - e->left - e->right, pMeasureOverride->Width),
+//      fmin(size.y - e->top - e->bottom, pMeasureOverride->Height),
 //    };
     if (pImageView->Stretch == kStretchNone) {
       return MAKEDWORD(size.x - e->left - e->right, size.y - e->top - e->bottom);
     } else if (pImageView->Stretch == kStretchUniform) {
-      rect_t avail = {0, 0, pMeasureOverride->width, pMeasureOverride->height};
+      rect_t avail = {0, 0, pMeasureOverride->Width, pMeasureOverride->Height};
       rect_t final = RECT_Fit(&avail, &size);
       return MAKEDWORD(final.width, final.height);
     } else {
-      return MAKEDWORD(pMeasureOverride->width, pMeasureOverride->height);
+      return MAKEDWORD(pMeasureOverride->Width, pMeasureOverride->Height);
     }
   } else {
-    return MAKEDWORD(pMeasureOverride->width, pMeasureOverride->height);
+    return MAKEDWORD(pMeasureOverride->Width, pMeasureOverride->Height);
   }
 }
 
 HANDLER(ImageView, ArrangeOverride) {
-  return OBJ_SendMessageW(hObject, kMsgMeasureOverride, 0, &(Size_t){
-    pArrangeOverride->width, pArrangeOverride->height
-  });
+  return _SendMessage(hObject, MeasureOverride,
+                      .Width = pArrangeOverride->Width,
+                      .Height = pArrangeOverride->Height);
 }
 
 #if 0

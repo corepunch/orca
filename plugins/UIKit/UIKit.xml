@@ -271,10 +271,18 @@
 
   <message name="GetSize"/>
   <message name="Submit"/>
-  <message name="Measure" type="Size"/>
-  <message name="Arrange" type="rect"/>
-  <message name="MeasureOverride" type="Size"/>
-  <message name="ArrangeOverride" type="rect"/>
+  <message name="Measure">
+    <field name="Width" type="float"/>
+    <field name="Height" type="float"/>
+  </message>
+  <message name="Arrange">
+    <field name="X" type="float"/>
+    <field name="Y" type="float"/>
+    <field name="Width" type="float"/>
+    <field name="Height" type="float"/>
+  </message>
+  <message name="MeasureOverride" parent="Measure"/>
+  <message name="ArrangeOverride" parent="Arrange"/>
   <message name="ForegroundContent">
     <field name="result" type="Texture" pointer="true"/>
   </message>
@@ -374,14 +382,6 @@
     <property name="Property" type="string">Target property name to set </property>
     <property name="Value" type="string">Value to apply to the property </property>
   </class>
-
-<!--  <class name="Project">-->
-<!--    <summary>Top-level project configuration and settings</summary>-->
-<!--    <details>Defines global project parameters including screen dimensions and project identification. Typically one per application.</details>-->
-<!--    <property name="Name" type="string">Project identifier or display name </property>-->
-<!--    <property name="ScreenWidth" type="int">Target screen width in pixels </property>-->
-<!--    <property name="ScreenHeight" type="int">Target screen height in pixels </property>-->
-<!--  </class>-->
 
   <class name="Handler">
     <summary>Executes custom functions when triggered by specified conditions</summary>

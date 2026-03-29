@@ -391,8 +391,8 @@ HANDLER(Node2D, MeasureOverride)
     width  = MAX(width,  LOWORD(size));
     height = MAX(height, HIWORD(size));
   }
-  return MAKEDWORD(isinf(pMeasureOverride->width)  ? width  : 0,
-                   isinf(pMeasureOverride->height) ? height : 0);
+  return MAKEDWORD(isinf(pMeasureOverride->Width)  ? width  : 0,
+                   isinf(pMeasureOverride->Height) ? height : 0);
 }
 
 HANDLER(Node2D, ArrangeOverride)

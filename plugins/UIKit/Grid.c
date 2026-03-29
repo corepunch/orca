@@ -191,10 +191,10 @@ HANDLER(Grid, MeasureOverride)
       struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
       struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
       if (h && _column_is_flexible(h)) {
-        LRESULT s = OBJ_SendMessageW(hChild, kMsgMeasure, 0, &(struct Size) {
-          .width  = (w ? w->width : size.width),
-          .height = INFINITY,
-        });
+        LRESULT s = _SendMessage(hChild, Measure,
+          .Width  = (w ? w->width : size.width),
+          .Height = INFINITY,
+        );
         float child_h = (float)HIWORD(s);
         if (h->width < child_h) {
           h->width = child_h;
@@ -217,10 +217,10 @@ HANDLER(Grid, MeasureOverride)
       struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
       struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
       if (w && _column_is_flexible(w)) {
-        LRESULT s = OBJ_SendMessageW(hChild, kMsgMeasure, 0, &(struct Size) {
-          .width  = INFINITY,
-          .height = (h ? h->width : size.height),
-        });
+        LRESULT s = _SendMessage(hChild, Measure,
+          .Width  = INFINITY,
+          .Height = (h ? h->width : size.height),
+        );
         float child_w = (float)LOWORD(s);
         if (w->width < child_w) {
           w->width = child_w;
@@ -241,18 +241,18 @@ HANDLER(Grid, MeasureOverride)
     struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
     struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
 
-    LRESULT s = OBJ_SendMessageW(hChild, kMsgMeasure, 0, &(struct Size) {
-      .width  = (w ? w->width : size.width),
-      .height = (h ? h->width : size.height),
-    });
+    LRESULT s = _SendMessage(hChild, Measure,
+      .Width  = (w ? w->width : size.width),
+      .Height = (h ? h->width : size.height),
+    );
     
     if(LOWORD(s)<0xffff)desired.width = fmax((w?w->position:0) + LOWORD(s), desired.width);
     if(HIWORD(s)<0xffff)desired.height = fmax((h?h->position:0) + HIWORD(s), desired.height);
     cellindex++;
   }
   
-  return MAKEDWORD(desired.width?desired.width:pMeasureOverride->width,
-                   desired.height?desired.height:pMeasureOverride->height);
+  return MAKEDWORD(desired.width?desired.width:pMeasureOverride->Width,
+                   desired.height?desired.height:pMeasureOverride->Height);
 }
 
 HANDLER(Grid, ArrangeOverride)
@@ -261,8 +261,8 @@ HANDLER(Grid, ArrangeOverride)
   PCOLUMNS hcols = columns_at_axis(pGrid, 0, TRUE);
   PCOLUMNS vcols = columns_at_axis(pGrid, 1, TRUE);
   _EnsureImplicitSecondaryAxis(pGrid, hObject);
-  _CalculateAutos(pGrid->Spacing, pArrangeOverride->width, hcols);
-  _CalculateAutos(pGrid->Spacing, pArrangeOverride->height, vcols);
+  _CalculateAutos(pGrid->Spacing, pArrangeOverride->Width, hcols);
+  _CalculateAutos(pGrid->Spacing, pArrangeOverride->Height, vcols);
   /*
    * When the arranged height (or width) is 0 and flexible (auto/fr) rows (or
    * columns) exist, their widths are all 0 after _CalculateAutos. Run the
@@ -277,10 +277,10 @@ HANDLER(Grid, ArrangeOverride)
       struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
       struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
       if (h && _column_is_flexible(h)) {
-        LRESULT s = OBJ_SendMessageW(hChild, kEventMeasure, 0, &(struct Size) {
-          .width  = (w ? w->width : pArrangeOverride->width),
-          .height = INFINITY,
-        });
+        LRESULT s = _SendMessage(hChild, Measure,
+          .Width  = (w ? w->width : pArrangeOverride->Width),
+          .Height = INFINITY,
+        );
         float child_h = (float)HIWORD(s);
         if (h->width < child_h) {
           h->width = child_h;
@@ -295,16 +295,16 @@ HANDLER(Grid, ArrangeOverride)
     }
     cellindex = 0;
   }
-  if (pArrangeOverride->width == 0 && hcols->count > 0) {
+  if (pArrangeOverride->Width == 0 && hcols->count > 0) {
     cellindex = 0;
     FOR_EACH_LAYOUTABLE(hChild, hObject) {
       struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
       struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
       if (w && _column_is_flexible(w)) {
-        LRESULT s = OBJ_SendMessageW(hChild, kEventMeasure, 0, &(struct Size) {
-          .width  = INFINITY,
-          .height = (h ? h->width : pArrangeOverride->height),
-        });
+        LRESULT s = _SendMessage(hChild, Measure,
+          .Width  = INFINITY,
+          .Height = (h ? h->width : pArrangeOverride->Height),
+        );
         float child_w = (float)LOWORD(s);
         if (w->width < child_w) {
           w->width = child_w;
@@ -319,18 +319,18 @@ HANDLER(Grid, ArrangeOverride)
     }
     cellindex = 0;
   }
-  float actual_height = pArrangeOverride->height;
-  float actual_width  = pArrangeOverride->width;
+  float actual_height = pArrangeOverride->Height;
+  float actual_width  = pArrangeOverride->Width;
   FOR_EACH_LAYOUTABLE(hChild, hObject)
   {
     struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
     struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
-    OBJ_SendMessageW(hChild, kMsgArrange, 0, &(struct rect) {
-      .x = pArrangeOverride->x + (w ? w->position : 0),
-      .y = pArrangeOverride->y + (h ? h->position : 0),
-      .width = (w ? w->width : pArrangeOverride->width),
-      .height = (h ? h->width : pArrangeOverride->height),
-  });
+    _SendMessage(hChild, Arrange,
+      .X = pArrangeOverride->X + (w ? w->position : 0),
+      .Y = pArrangeOverride->Y + (h ? h->position : 0),
+      .Width = (w ? w->width : pArrangeOverride->Width),
+      .Height = (h ? h->width : pArrangeOverride->Height),
+    );
     if (h) actual_height = fmax(actual_height, h->position + h->width);
     if (w) actual_width  = fmax(actual_width,  w->position + w->width);
     cellindex++;

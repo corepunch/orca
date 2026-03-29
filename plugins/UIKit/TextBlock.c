@@ -162,7 +162,7 @@ HANDLER(TextBlock, MeasureOverride)
   TextBlockConceptPtr textblock = GetTextBlockConcept(hObject);
   _SendMessage(hObject, MakeText,
                    .text = textblock->_text,
-                   .availableSpace = pMeasureOverride->width);
+                   .availableSpace = pMeasureOverride->Width);
   Text_GetInfo(textblock->_text, &output->_textinfo);
   return MAKEDWORD(output->_textinfo.txWidth, output->_textinfo.txHeight);
 }
