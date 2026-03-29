@@ -853,6 +853,63 @@ int luaopen_orca_PropertyType(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
+void luaX_pushWindowPaintMsgArgs(lua_State *L, struct WindowPaintMsgArgs const* data) {
+	if (data == NULL) { lua_pushnil(L); return; }
+	struct WindowPaintMsgArgs* self = lua_newuserdata(L, sizeof(struct WindowPaintMsgArgs));
+	luaL_setmetatable(L, "WindowPaintMsgArgs");
+	memcpy(self, data, sizeof(struct WindowPaintMsgArgs));
+}
+struct WindowPaintMsgArgs* luaX_checkWindowPaintMsgArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "WindowPaintMsgArgs");
+}
+static int f_new_WindowPaintMsgArgs(lua_State *L) {
+	struct WindowPaintMsgArgs* self = lua_newuserdata(L, sizeof(struct WindowPaintMsgArgs));
+	luaL_setmetatable(L, "WindowPaintMsgArgs");
+	memset(self, 0, sizeof(struct WindowPaintMsgArgs));
+	if (lua_gettop(L) == 1) return 1;
+	if (lua_istable(L, 1)) {
+		lua_pop(L, (lua_getfield(L, 1, "WindowWidth"), self->WindowWidth = (uint32_t)luaL_optinteger(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "WindowHeight"), self->WindowHeight = (uint32_t)luaL_optinteger(L, -1, 0), 1));
+	} else {
+		self->WindowWidth = (uint32_t)luaL_optinteger(L, 1, 0);
+		self->WindowHeight = (uint32_t)luaL_optinteger(L, 2, 0);
+	}
+	return 1;
+}
+int f_WindowPaintMsgArgs___index(lua_State *L) {
+	struct WindowPaintMsgArgs* self = luaX_checkWindowPaintMsgArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0xdc5503a7: lua_pushinteger(L, self->WindowWidth); return 1; // WindowWidth
+	case 0xbd75892a: lua_pushinteger(L, self->WindowHeight); return 1; // WindowHeight
+	}
+	return luaL_error(L, "Unknown field in WindowPaintMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+int f_WindowPaintMsgArgs___newindex(lua_State *L) {
+	struct WindowPaintMsgArgs* self = luaX_checkWindowPaintMsgArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0xdc5503a7: self->WindowWidth = (uint32_t)luaL_optinteger(L, 3, 0); return 0; // WindowWidth
+	case 0xbd75892a: self->WindowHeight = (uint32_t)luaL_optinteger(L, 3, 0); return 0; // WindowHeight
+	}
+	return luaL_error(L, "Unknown field in WindowPaintMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+static int f_WindowPaintMsgArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_WindowPaintMsgArgs(L));  // remove WindowPaintMsgArgs from stack and call constructor
+}
+int luaopen_orca_WindowPaintMsgArgs(lua_State *L) {
+	luaL_newmetatable(L, "WindowPaintMsgArgs");
+	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ "new", f_new_WindowPaintMsgArgs },
+		{ "__newindex", f_WindowPaintMsgArgs___newindex },
+		{ "__index", f_WindowPaintMsgArgs___index },
+		{ NULL, NULL },
+	}), 0);
+	// Make WindowPaintMsgArgs creatable via constructor-like syntax
+	lua_newtable(L);
+	lua_pushcfunction(L, f_WindowPaintMsgArgs___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+	return 1;
+}
 void luaX_pushUpdateMatrixMsgArgs(lua_State *L, struct UpdateMatrixMsgArgs const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct UpdateMatrixMsgArgs* self = lua_newuserdata(L, sizeof(struct UpdateMatrixMsgArgs));
@@ -990,6 +1047,7 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	on_core_module_registered(L);
 	lua_setfield(L, ((void)luaopen_orca_PropertyEnumValue(L), -2), "PropertyEnumValue");
 	lua_setfield(L, ((void)luaopen_orca_PropertyType(L), -2), "PropertyType");
+	lua_setfield(L, ((void)luaopen_orca_WindowPaintMsgArgs(L), -2), "WindowPaintMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_UpdateMatrixMsgArgs(L), -2), "UpdateMatrixMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_PropertyChangedMsgArgs(L), -2), "PropertyChangedMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object(L), -2), "Object");

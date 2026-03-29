@@ -34,9 +34,12 @@
   <message name="KeyDown" parent="KeyMessage"/>
   <message name="KeyUp" parent="KeyMessage"/>
   <message name="Char" parent="KeyMessage"/>
-  <message name="WindowPaint"/>
+  <message name="WindowPaint">
+    <field name="WindowWidth" type="uint"/>
+    <field name="WindowHeight" type="uint"/>
+  </message>
+  <message name="WindowResized" parent="WindowPaint"/>
   <message name="WindowClosed"/>
-  <message name="WindowResized"/>
   <message name="WindowChangedScreen"/>
   <message name="KillFocus"/>
   <message name="SetFocus"/>

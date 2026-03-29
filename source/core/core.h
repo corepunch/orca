@@ -40,9 +40,9 @@ typedef struct WI_Message DragEnterMsg_t,* DragEnterMsgPtr;
 typedef struct WI_Message KeyDownMsg_t,* KeyDownMsgPtr;
 typedef struct WI_Message KeyUpMsg_t,* KeyUpMsgPtr;
 typedef struct WI_Message CharMsg_t,* CharMsgPtr;
-typedef void WindowPaintMsg_t,* WindowPaintMsgPtr;
+typedef struct WindowPaintMsgArgs WindowPaintMsg_t,* WindowPaintMsgPtr;
+typedef struct WindowPaintMsgArgs WindowResizedMsg_t,* WindowResizedMsgPtr;
 typedef void WindowClosedMsg_t,* WindowClosedMsgPtr;
-typedef void WindowResizedMsg_t,* WindowResizedMsgPtr;
 typedef void WindowChangedScreenMsg_t,* WindowChangedScreenMsgPtr;
 typedef void KillFocusMsg_t,* KillFocusMsgPtr;
 typedef void SetFocusMsg_t,* SetFocusMsgPtr;
@@ -432,6 +432,13 @@ struct PropertyType {
 ORCA_API void luaX_pushPropertyType(lua_State *L, struct PropertyType const* PropertyType);
 ORCA_API struct PropertyType* luaX_checkPropertyType(lua_State *L, int idx);
 
+/** WindowPaintMsgArgs struct */
+struct WindowPaintMsgArgs {
+	uint32_t WindowWidth;
+	uint32_t WindowHeight;
+};
+ORCA_API void luaX_pushWindowPaintMsgArgs(lua_State *L, struct WindowPaintMsgArgs const* data);
+ORCA_API struct WindowPaintMsgArgs* luaX_checkWindowPaintMsgArgs(lua_State *L, int idx);
 /** UpdateMatrixMsgArgs struct */
 struct UpdateMatrixMsgArgs {
 	struct mat4 parent; ///< The parent matrix

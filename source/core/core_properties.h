@@ -24,8 +24,8 @@
 #define kMsgKeyUp 0xfca37d71
 #define kMsgChar 0x2879e23d
 #define kMsgWindowPaint 0x7ef9e53b
-#define kMsgWindowClosed 0x7268e69d
 #define kMsgWindowResized 0xa216e847
+#define kMsgWindowClosed 0x7268e69d
 #define kMsgWindowChangedScreen 0x5fe6b4bf
 #define kMsgKillFocus 0xa7c0f8d7
 #define kMsgSetFocus 0xc399d265
