@@ -57,10 +57,9 @@ HANDLER(TextBlock3D, Render)
   
   TextRunPtr pTextRun = GetTextRun(hObject);
   TextBlockConceptPtr pTextBlock = GetTextBlockConcept(hObject);
-  OBJ_SendMessageW(hObject, kEventMakeText, 0, &(struct MakeTextEventArgs){
-                     .text = pTextBlock->_text,
-                     .availableSpace = 512
-                   });
+  _SendMessage(hObject, MakeText,
+                   .text = pTextBlock->_text,
+                   .availableSpace = 512);
   Text_GetInfo(pTextBlock->_text, &pTextRun->_textinfo);
   
   float w = pTextRun->_textinfo.txWidth;

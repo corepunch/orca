@@ -160,10 +160,9 @@ HANDLER(TextBlock, MeasureOverride)
 {
   TextRunPtr output = GetTextRun(hObject);
   TextBlockConceptPtr textblock = GetTextBlockConcept(hObject);
-  OBJ_SendMessageW(hObject, kEventMakeText, 0, &(struct MakeTextEventArgs){
-                     .text = textblock->_text,
-                     .availableSpace = pMeasureOverride->width
-                   });
+  _SendMessage(hObject, MakeText,
+                   .text = textblock->_text,
+                   .availableSpace = pMeasureOverride->width);
   Text_GetInfo(textblock->_text, &output->_textinfo);
   return MAKEDWORD(output->_textinfo.txWidth, output->_textinfo.txHeight);
 }

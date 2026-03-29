@@ -432,7 +432,7 @@ HANDLER(Node2D, Draw2DContent)
   }
 
   if (pNode2D->Ring.Width > 0) {
-    OBJ_SendMessageW(hObject, kEventDrawBrush, 0, &(struct DrawBrushEventArgs){
+    _SendMessage(hObject, DrawBrush,
       .projection = pDraw2DContent->ProjectionMatrix,
       .borderOffset = pNode2D->Ring.Offset,
       .borderWidth = {
@@ -445,7 +445,7 @@ HANDLER(Node2D, Draw2DContent)
       .viewdef = &viewdef,
       .brush = {
         .Color = pNode2D->Ring.Color
-      }});
+      });
   }
   
   struct vec4 BorderWidth = {
@@ -456,32 +456,29 @@ HANDLER(Node2D, Draw2DContent)
   }, Zero = {0};
 
   if (memcmp(&BorderWidth, &Zero, sizeof(struct vec4))) {
-    OBJ_SendMessageW(hObject, kEventDrawBrush, 0, &(struct DrawBrushEventArgs){
+    _SendMessage(hObject, DrawBrush,
       .projection = pDraw2DContent->ProjectionMatrix,
       .borderWidth = BorderWidth,
       .foreground = FALSE,
       .viewdef = &viewdef,
       .brush = {
         .Color = pNode2D->_node->Border.Color
-      }
-    });
+      });
   }
 
   if (!pDraw2DContent->OnlyDecorations) {
-    OBJ_SendMessageW(hObject, kEventDrawBrush, 0, &(struct DrawBrushEventArgs){
+    _SendMessage(hObject, DrawBrush,
      .projection = pDraw2DContent->ProjectionMatrix,
      .brush = pNode2D->Background,
      .foreground = FALSE,
-     .viewdef = &viewdef,
-    });
+     .viewdef = &viewdef);
 
-    OBJ_SendMessageW(hObject, kEventDrawBrush, 0, &(struct DrawBrushEventArgs){
+    _SendMessage(hObject, DrawBrush,
       .projection = pDraw2DContent->ProjectionMatrix,
       .image = foreground.result,
       .brush = pNode2D->Foreground,
       .foreground = TRUE,
-      .viewdef = &viewdef,
-    });
+      .viewdef = &viewdef);
 
     if (pNode2D->ClipChildren && pDraw2DContent->StencilRef < 255) {
       uint8_t parentStencilRef = pDraw2DContent->StencilRef;
@@ -583,18 +580,16 @@ HANDLER(Screen, WindowPaint) {
     OBJ_UpdateLayout(hObject, LOWORD(wParam), HIWORD(wParam));
   }
 
-  OBJ_SendMessageW(hObject, kEventUpdateMatrix, 0, &(struct UpdateMatrixEventArgs){
+  _SendMessage(hObject, UpdateMatrix,
     .parent = MAT4_Identity(),
-    .opacity = 1,
-  });
+    .opacity = 1);
   
-  OBJ_SendMessageW(hObject, kEventRenderScreen, 0, &(struct RenderScreenEventArgs) {
+  _SendMessage(hObject, RenderScreen,
     .width = LOWORD(wParam),
     .height = HIWORD(wParam),
     .stereo = 0,
     .target = 0,
-    .angle = 0,
-  });
+    .angle = 0);
     
   //  int tmp = 0;
   //  FOR_LOOP(i, MAX_FPS_CACHE) { tmp += _fps[i]; }

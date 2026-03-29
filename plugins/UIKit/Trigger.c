@@ -20,9 +20,7 @@ HANDLER(Trigger, PropertyChanged)
     case kDataTypeFloat:
       if (fabs(*(float*)PROP_GetValue(pPropertyChanged->Property) -
                pTrigger->Value) < 0.001f) {
-        OBJ_SendMessageW(hObject, kEventTriggered, 0, &(struct TriggeredEventArgs){
-          pTrigger
-        });
+        _SendMessage(hObject, Triggered, pTrigger);
       }
       return FALSE;
     case kDataTypeInt:
@@ -30,9 +28,7 @@ HANDLER(Trigger, PropertyChanged)
     case kDataTypeEnum:
       if (*(int*)PROP_GetValue(pPropertyChanged->Property) ==
           pTrigger->Value) {
-        OBJ_SendMessageW(hObject, kEventTriggered, 0, &(struct TriggeredEventArgs){
-          pTrigger
-        });
+        _SendMessage(hObject, Triggered, pTrigger);
       }
       return FALSE;
     default:
@@ -42,9 +38,7 @@ HANDLER(Trigger, PropertyChanged)
 
 HANDLER(OnAttachedTrigger, Attached)
 {
-  OBJ_SendMessageW(hObject, kEventTriggered, 0, &(struct TriggeredEventArgs){
-    GetTrigger(CMP_GetObject(pOnAttachedTrigger)),
-  });
+  _SendMessage(hObject, Triggered, GetTrigger(CMP_GetObject(pOnAttachedTrigger)));
   return FALSE;
 }
 

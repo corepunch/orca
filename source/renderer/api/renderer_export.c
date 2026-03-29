@@ -294,8 +294,6 @@ static int f_new_RenderScreenEventArgs(lua_State *L) {
 	}
 	return 1;
 }
-
-
 int f_RenderScreenEventArgs___index(lua_State *L) {
 	struct RenderScreenEventArgs* self = luaX_checkRenderScreenEventArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -318,26 +316,6 @@ int f_RenderScreenEventArgs___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in RenderScreenEventArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
-static int f_RenderScreenEventArgs___fromstring(lua_State *L) {
-	unsigned width;
-	unsigned height;
-	float stereo;
-	float angle;
-	fixedString_t target;
-	struct RenderScreenEventArgs self = {0};
-	switch (sscanf(luaL_checkstring(L, 1), "%u %u %f %f %s", &width, &height, &stereo, &angle, target)) {
-	case 5: 
-		self.width = width;
-		self.height = height;
-		self.stereo = stereo;
-		self.angle = angle;
-		lua_pop(L, (f_convert_string(L, &(struct PropertyType) { .DataType = kDataTypeObject, .TypeString = "Texture" }, target, TRUE), self.target = luaX_checkTexture(L, -1), 1));;
-		return (luaX_pushRenderScreenEventArgs(L, &self), 1);
-	default:
-		return luaL_error(L, "Invalid format for RenderScreenEventArgs: %s", luaL_checkstring(L, 1));
-	}
-}
 static int f_RenderScreenEventArgs___call(lua_State *L) {
 	return ((void)lua_remove(L, 1), f_new_RenderScreenEventArgs(L));  // remove RenderScreenEventArgs from stack and call constructor
 }
@@ -345,7 +323,6 @@ int luaopen_orca_RenderScreenEventArgs(lua_State *L) {
 	luaL_newmetatable(L, "RenderScreenEventArgs");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_RenderScreenEventArgs },
-		{ "fromstring", f_RenderScreenEventArgs___fromstring },
 		{ "__newindex", f_RenderScreenEventArgs___newindex },
 		{ "__index", f_RenderScreenEventArgs___index },
 		{ NULL, NULL },
@@ -378,8 +355,6 @@ static int f_new_RenderEventArgs(lua_State *L) {
 	}
 	return 1;
 }
-
-
 int f_RenderEventArgs___index(lua_State *L) {
 	struct RenderEventArgs* self = luaX_checkRenderEventArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
@@ -394,18 +369,6 @@ int f_RenderEventArgs___newindex(lua_State *L) {
 	}
 	return luaL_error(L, "Unknown field in RenderEventArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
-static int f_RenderEventArgs___fromstring(lua_State *L) {
-	fixedString_t ViewDef;
-	struct RenderEventArgs self = {0};
-	switch (sscanf(luaL_checkstring(L, 1), "%s", ViewDef)) {
-	case 1: 
-		;
-		return (luaX_pushRenderEventArgs(L, &self), 1);
-	default:
-		return luaL_error(L, "Invalid format for RenderEventArgs: %s", luaL_checkstring(L, 1));
-	}
-}
 static int f_RenderEventArgs___call(lua_State *L) {
 	return ((void)lua_remove(L, 1), f_new_RenderEventArgs(L));  // remove RenderEventArgs from stack and call constructor
 }
@@ -413,7 +376,6 @@ int luaopen_orca_RenderEventArgs(lua_State *L) {
 	luaL_newmetatable(L, "RenderEventArgs");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_new_RenderEventArgs },
-		{ "fromstring", f_RenderEventArgs___fromstring },
 		{ "__newindex", f_RenderEventArgs___newindex },
 		{ "__index", f_RenderEventArgs___index },
 		{ NULL, NULL },
@@ -428,8 +390,6 @@ int luaopen_orca_RenderEventArgs(lua_State *L) {
 #define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
 #define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
 
-typedef struct RenderScreenEventArgs* RenderScreenEventPtr;
-typedef struct RenderEventArgs* RenderEventPtr;
 
 static struct PropertyType const TextureProperties[kTextureNumProperties] = {
 	DECL(0x47bdcfab, Texture, MinificationFilter, MinificationFilter, kDataTypeEnum, .TypeString = "Nearest,Linear,Trilinear", .EnumValues = _TextureFilter), // Texture.MinificationFilter
