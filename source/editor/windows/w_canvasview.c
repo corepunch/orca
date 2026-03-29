@@ -346,14 +346,15 @@ LRESULT ED_CanvasView(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm) {
       return 1;
     case kMsgLeftMouseDown:
       ED_SetFocusedPanel(wnd);
-      if (OBJ_SendMessageW(CanvasView_GetScene(wnd),
-                           kMsgHitTest,
-                           LocalCoords(wnd, CanvasView_GetScene(wnd), wparm),
-                           &tmp))
       {
-        ED_SendMessage(editor.inspector, EVT_OBJECT_SELECTED, 0, tmp);
-        ED_SendMessage(ED_FindWindowInChildren(ED_GetParent(wnd), ED_HierarchyNavigator), EVT_OBJECT_SELECTED, 0, tmp);
-        ED_SendMessage(wnd, EVT_OBJECT_SELECTED, 0, tmp);
+        wParam_t coords = LocalCoords(wnd, CanvasView_GetScene(wnd), wparm);
+        struct HitTestMsgArgs hitMsg = { .x = LOWORD(coords), .y = HIWORD(coords) };
+        if (OBJ_SendMessageW(CanvasView_GetScene(wnd), kMsgHitTest, 0, &hitMsg)) {
+          tmp = hitMsg.Result;
+          ED_SendMessage(editor.inspector, EVT_OBJECT_SELECTED, 0, tmp);
+          ED_SendMessage(ED_FindWindowInChildren(ED_GetParent(wnd), ED_HierarchyNavigator), EVT_OBJECT_SELECTED, 0, tmp);
+          ED_SendMessage(wnd, EVT_OBJECT_SELECTED, 0, tmp);
+        }
       }
       if (data->mode == ID_SELECT || data->mode == ID_OBJECT_IMAGE) {
         data->selection.x = LOWORD(wparm);

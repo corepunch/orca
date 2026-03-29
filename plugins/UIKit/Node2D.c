@@ -26,22 +26,22 @@ HANDLER(Node2D, HitTest) {
   if (OBJ_IsHidden(hObject) || pNode2D->IgnoreHitTest) {
     return FALSE;
   }
-  int16_t x = LOWORD(wParam);
-  int16_t y = HIWORD(wParam);
+  int16_t x = (int16_t)pHitTest->x;
+  int16_t y = (int16_t)pHitTest->y;
   int16_t lx = x - pNode2D->ContentOffset.x;
   int16_t ly = y - pNode2D->ContentOffset.y;
   bool_t success = FALSE;
   FOR_EACH_OBJECT(hChild, hObject) {
-    lpObject_t hittest = NULL;
-    if (OBJ_SendMessageW(hChild, kMsgHitTest, MAKEDWORD(lx, ly), &hittest)) {
+    struct HitTestMsgArgs childMsg = { .x = lx, .y = ly };
+    if (OBJ_SendMessageW(hChild, kMsgHitTest, 0, &childMsg)) {
       success = TRUE;
-      *(void**)pHitTest = hittest;
+      pHitTest->Result = childMsg.Result;
     }
   }
   if (success) {
     return TRUE;
   } else if (_ContainsPoint(pNode2D, x, y)) {
-    *(void**)pHitTest = hObject;
+    pHitTest->Result = hObject;
     return TRUE;
   } else {
     return FALSE;

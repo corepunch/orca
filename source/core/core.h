@@ -48,7 +48,7 @@ typedef int KillFocusMsg_t,* KillFocusMsgPtr;
 typedef int SetFocusMsg_t,* SetFocusMsgPtr;
 typedef int TimerMsg_t,* TimerMsgPtr;
 typedef struct UpdateMatrixMsgArgs UpdateMatrixMsg_t,* UpdateMatrixMsgPtr;
-typedef int HitTestMsg_t,* HitTestMsgPtr;
+typedef struct HitTestMsgArgs HitTestMsg_t,* HitTestMsgPtr;
 typedef int IsVisibleMsg_t,* IsVisibleMsgPtr;
 typedef int CreateMsg_t,* CreateMsgPtr;
 typedef int StartMsg_t,* StartMsgPtr;
@@ -453,6 +453,14 @@ struct PropertyChangedMsgArgs {
 };
 ORCA_API void luaX_pushPropertyChangedMsgArgs(lua_State *L, struct PropertyChangedMsgArgs const* data);
 ORCA_API struct PropertyChangedMsgArgs* luaX_checkPropertyChangedMsgArgs(lua_State *L, int idx);
+/** HitTestMsgArgs struct */
+struct HitTestMsgArgs {
+	int32_t x; ///< X coordinate of the hit test point
+	int32_t y; ///< Y coordinate of the hit test point
+	struct Object* Result; ///< The topmost object at the given point, or null if no object was hit
+};
+ORCA_API void luaX_pushHitTestMsgArgs(lua_State *L, struct HitTestMsgArgs const* data);
+ORCA_API struct HitTestMsgArgs* luaX_checkHitTestMsgArgs(lua_State *L, int idx);
 
 
 #endif
