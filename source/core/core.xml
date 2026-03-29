@@ -11,29 +11,29 @@
   <external struct="lua_State"/>
   
   <!-- Base event for all pointer/mouse input events -->
-  <event name="MouseEvent" type="WI_Message"/>
+  <event name="MouseMessage" type="WI_Message"/>
   <!-- Base event for all keyboard input events -->
-  <event name="KeyEvent" type="WI_Message"/>
+  <event name="KeyMessage" type="WI_Message"/>
 
-  <event name="LeftMouseDown" parent="MouseEvent"/>
-  <event name="RightMouseDown" parent="MouseEvent"/>
-  <event name="OtherMouseDown" parent="MouseEvent"/>
-  <event name="LeftMouseUp" parent="MouseEvent"/>
-  <event name="RightMouseUp" parent="MouseEvent"/>
-  <event name="OtherMouseUp" parent="MouseEvent"/>
-  <event name="LeftMouseDragged" parent="MouseEvent"/>
-  <event name="RightMouseDragged" parent="MouseEvent"/>
-  <event name="OtherMouseDragged" parent="MouseEvent"/>
-  <event name="LeftDoubleClick" parent="MouseEvent"/>
-  <event name="RightDoubleClick" parent="MouseEvent"/>
-  <event name="OtherDoubleClick" parent="MouseEvent"/>
-  <event name="MouseMoved" parent="MouseEvent"/>
-  <event name="ScrollWheel" parent="MouseEvent"/>
-  <event name="DragDrop" parent="MouseEvent"/>
-  <event name="DragEnter" parent="MouseEvent"/>
-  <event name="KeyDown" parent="KeyEvent"/>
-  <event name="KeyUp" parent="KeyEvent"/>
-  <event name="Char" parent="KeyEvent"/>
+  <event name="LeftMouseDown" parent="MouseMessage"/>
+  <event name="RightMouseDown" parent="MouseMessage"/>
+  <event name="OtherMouseDown" parent="MouseMessage"/>
+  <event name="LeftMouseUp" parent="MouseMessage"/>
+  <event name="RightMouseUp" parent="MouseMessage"/>
+  <event name="OtherMouseUp" parent="MouseMessage"/>
+  <event name="LeftMouseDragged" parent="MouseMessage"/>
+  <event name="RightMouseDragged" parent="MouseMessage"/>
+  <event name="OtherMouseDragged" parent="MouseMessage"/>
+  <event name="LeftDoubleClick" parent="MouseMessage"/>
+  <event name="RightDoubleClick" parent="MouseMessage"/>
+  <event name="OtherDoubleClick" parent="MouseMessage"/>
+  <event name="MouseMoved" parent="MouseMessage"/>
+  <event name="ScrollWheel" parent="MouseMessage"/>
+  <event name="DragDrop" parent="MouseMessage"/>
+  <event name="DragEnter" parent="MouseMessage"/>
+  <event name="KeyDown" parent="KeyMessage"/>
+  <event name="KeyUp" parent="KeyMessage"/>
+  <event name="Char" parent="KeyMessage"/>
   <event name="WindowPaint"/>
   <event name="WindowClosed"/>
   <event name="WindowResized"/>

@@ -19,8 +19,8 @@ struct lua_State;
 #include "core_properties.h"
 #include "../geometry/geometry.h"
 
-typedef struct WI_Message* MouseEventEventPtr;
-typedef struct WI_Message* KeyEventEventPtr;
+typedef struct WI_Message* MouseMessageEventPtr;
+typedef struct WI_Message* KeyMessageEventPtr;
 typedef struct WI_Message* LeftMouseDownEventPtr;
 typedef struct WI_Message* RightMouseDownEventPtr;
 typedef struct WI_Message* OtherMouseDownEventPtr;

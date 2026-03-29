@@ -143,10 +143,12 @@
     <field name="FileName" type="string"/>
   </event>
   <event name="FileExists">
+    <summary>Checks whether the specified file exists.</summary>
     <field name="FileName" type="string">The file path to check for existence</field>
   </event>
   <event name="HasChangedFiles"/>
   <event name="LoadProject">
+    <summary>Loads a project bundle from the given directory.</summary>
     <field name="Path" type="string">Directory name to load the bundle</field>
   </event>
   
