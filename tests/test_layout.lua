@@ -7,7 +7,7 @@ local ui = require "orca.UIKit"
 
 core.load_plugins() -- load plugins to ensure all types are registered for type converter tests
 
-local screen = ui.Screen { Width = 1000, Height = 1000 }
+local screen = ui.Screen { Width = 1000, Height = 1000, ResizeMode = "NoResize" }
 
 -- ---------------------------------------------------------------------------
 -- fr unit support in Grid columns/rows
