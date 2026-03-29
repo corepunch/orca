@@ -520,7 +520,7 @@ HANDLER(Screen, MeasureOverride) {
 //    WI_SetSize(pUpdateLayout->Width, pUpdateLayout->Height, TRUE);
     pScreen->_size = newsize;
   }
-  FOR_EACH_CHILD(hObject, OBJ_SendMessageW, kMsgMeasure, 0, pMeasureOverride);
+  FOR_EACH_CHILD(hObject, _SendMessage, Measure, .Width = pMeasureOverride->Width, .Height = pMeasureOverride->Height);
   return MAKEDWORD(pMeasureOverride->Width, pMeasureOverride->Height);
 }
 

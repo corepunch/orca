@@ -85,8 +85,7 @@ HANDLER(Handler, Triggered)
 HANDLER(EventTrigger, HandleMessage)
 {
   if (pEventTrigger->RoutedEvent && !strcmp(pHandleMessage->EventName, pEventTrigger->RoutedEvent)) {
-    struct TriggeredMsgArgs parm = { GetTrigger(CMP_GetObject(pEventTrigger)), *pHandleMessage };
-    return OBJ_SendMessageW(hObject, kMsgTriggered, 0, &parm);
+    return _SendMessage(hObject, Triggered, .Trigger = GetTrigger(CMP_GetObject(pEventTrigger)), .message = *pHandleMessage);
   }
   return FALSE;
 }
@@ -99,11 +98,7 @@ HANDLER(OnPropertyChangedTrigger, PropertyChanged)
     return FALSE;
   lua_State* L = OBJ_GetDomain(hObject);
   luaX_pushProperty(L, pPropertyChanged->Property);
-  struct TriggeredMsgArgs parm = {
-    GetTrigger(CMP_GetObject(pOnPropertyChangedTrigger)),
-    { .NumArgs = 1 },
-  };
-  return OBJ_SendMessageW(hObject, kMsgTriggered, 0, &parm);
+  return _SendMessage(hObject, Triggered, .Trigger = GetTrigger(CMP_GetObject(pOnPropertyChangedTrigger)), .message = { .NumArgs = 1 });
 }
 
 HANDLER(OnPropertyChangedTrigger, Attached)
