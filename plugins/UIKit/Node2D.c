@@ -315,8 +315,8 @@ HANDLER(Node2D, Measure)
 {
   struct Node2D *n = pNode2D;
   LRESULT size = OBJ_SendMessageW(hObject, kMsgMeasureOverride, 0, &(struct Size) {
-    .width  = _MeasureAxis(n, pMeasure->width  - TOTAL_MARGIN(n, 0), 0) - TOTAL_PADDING(n, 0),
-    .height = _MeasureAxis(n, pMeasure->height - TOTAL_MARGIN(n, 1), 1) - TOTAL_PADDING(n, 1),
+    .width  = _MeasureAxis(n, pMeasure->Width  - TOTAL_MARGIN(n, 0), 0) - TOTAL_PADDING(n, 0),
+    .height = _MeasureAxis(n, pMeasure->Height - TOTAL_MARGIN(n, 1), 1) - TOTAL_PADDING(n, 1),
   });
   if (isnan(NODE2D_FRAME(n, Size, 0).Requested)) {
     NODE2D_FRAME(n, Size, 0).Desired = LOWORD(size) + TOTAL_PADDING(n, 0);
@@ -339,25 +339,25 @@ HANDLER(Node2D, Arrange)
   
   if (!isnan(NODE2D_FRAME(n, Size, 0).Requested)) {
     s.width = NODE2D_FRAME(n, Size, 0).Requested;
-  } else if (NODE2D_FRAME(n, Alignment, 0) || isinf(pArrange->width)) {
+  } else if (NODE2D_FRAME(n, Alignment, 0) || isinf(pArrange->Width)) {
     s.width = NODE2D_FRAME(n, Size, 0).Desired;
   } else {
-    s.width = pArrange->width - TOTAL_MARGIN(n, 0);
+    s.width = pArrange->Width - TOTAL_MARGIN(n, 0);
   }
 
   if (!isnan(NODE2D_FRAME(n, Size, 1).Requested)) {
     s.height = NODE2D_FRAME(n, Size, 1).Requested;
-  } else if (NODE2D_FRAME(n, Alignment, 1) || isinf(pArrange->height)) {
+  } else if (NODE2D_FRAME(n, Alignment, 1) || isinf(pArrange->Height)) {
     s.height = NODE2D_FRAME(n, Size, 1).Desired;
   } else {
-    s.height = pArrange->height - TOTAL_MARGIN(n, 1);
+    s.height = pArrange->Height - TOTAL_MARGIN(n, 1);
   }
   
   struct rect m = {
-    pArrange->x + MARGIN_TOP(n, 0),
-    pArrange->y + MARGIN_TOP(n, 1),
-    pArrange->width - TOTAL_MARGIN(n, 0),
-    pArrange->height - TOTAL_MARGIN(n, 1),
+    pArrange->X + MARGIN_TOP(n, 0),
+    pArrange->Y + MARGIN_TOP(n, 1),
+    pArrange->Width - TOTAL_MARGIN(n, 0),
+    pArrange->Height - TOTAL_MARGIN(n, 1),
   };
 
   struct rect rect = {
@@ -398,5 +398,5 @@ HANDLER(Node2D, MeasureOverride)
 HANDLER(Node2D, ArrangeOverride)
 {
   FOR_EACH_CHILD(hObject, OBJ_SendMessageW, kMsgArrange, 0, pArrangeOverride);
-  return MAKEDWORD(pArrangeOverride->width, pArrangeOverride->height);
+  return MAKEDWORD(pArrangeOverride->Width, pArrangeOverride->Height);
 }

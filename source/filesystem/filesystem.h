@@ -15,11 +15,11 @@ struct _PACK;
 #include "filesystem_properties.h"
 #include "../core/core.h"
 
-typedef void* ReadCommandsMsgPtr;
-typedef struct OpenFileMsgArgs* OpenFileMsgPtr;
-typedef struct FileExistsMsgArgs* FileExistsMsgPtr;
-typedef void* HasChangedFilesMsgPtr;
-typedef struct LoadProjectMsgArgs* LoadProjectMsgPtr;
+typedef void ReadCommandsMsg_t,* ReadCommandsMsgPtr;
+typedef struct OpenFileMsgArgs OpenFileMsg_t,* OpenFileMsgPtr;
+typedef struct FileExistsMsgArgs FileExistsMsg_t,* FileExistsMsgPtr;
+typedef void HasChangedFilesMsg_t,* HasChangedFilesMsgPtr;
+typedef struct LoadProjectMsgArgs LoadProjectMsg_t,* LoadProjectMsgPtr;
 
 
 typedef struct ProjectReference ProjectReference_t, *lpProjectReference_t;

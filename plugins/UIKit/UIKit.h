@@ -22,22 +22,22 @@ struct lua_State;
 #include "UIKit_properties.h"
 #include "../../source/renderer/api/renderer.h"
 
-typedef void* GetSizeMsgPtr;
-typedef void* SubmitMsgPtr;
-typedef struct MeasureMsgArgs* MeasureMsgPtr;
-typedef struct ArrangeMsgArgs* ArrangeMsgPtr;
-typedef struct MeasureMsgArgs* MeasureOverrideMsgPtr;
-typedef struct ArrangeMsgArgs* ArrangeOverrideMsgPtr;
-typedef struct ForegroundContentMsgArgs* ForegroundContentMsgPtr;
-typedef struct PushPropertyMsgArgs* PushPropertyMsgPtr;
-typedef void* UpdateGeometryMsgPtr;
-typedef struct DrawBrushMsgArgs* DrawBrushMsgPtr;
-typedef struct HandleMessageMsgArgs* HandleMessageMsgPtr;
-typedef struct LoadViewMsgArgs* LoadViewMsgPtr;
-typedef struct MakeTextMsgArgs* MakeTextMsgPtr;
-typedef struct TriggeredMsgArgs* TriggeredMsgPtr;
-typedef struct NavigateToPageMsgArgs* NavigateToPageMsgPtr;
-typedef struct NavigateBackMsgArgs* NavigateBackMsgPtr;
+typedef void GetSizeMsg_t,* GetSizeMsgPtr;
+typedef void SubmitMsg_t,* SubmitMsgPtr;
+typedef struct MeasureMsgArgs MeasureMsg_t,* MeasureMsgPtr;
+typedef struct ArrangeMsgArgs ArrangeMsg_t,* ArrangeMsgPtr;
+typedef struct MeasureMsgArgs MeasureOverrideMsg_t,* MeasureOverrideMsgPtr;
+typedef struct ArrangeMsgArgs ArrangeOverrideMsg_t,* ArrangeOverrideMsgPtr;
+typedef struct ForegroundContentMsgArgs ForegroundContentMsg_t,* ForegroundContentMsgPtr;
+typedef struct PushPropertyMsgArgs PushPropertyMsg_t,* PushPropertyMsgPtr;
+typedef void UpdateGeometryMsg_t,* UpdateGeometryMsgPtr;
+typedef struct DrawBrushMsgArgs DrawBrushMsg_t,* DrawBrushMsgPtr;
+typedef struct HandleMessageMsgArgs HandleMessageMsg_t,* HandleMessageMsgPtr;
+typedef struct LoadViewMsgArgs LoadViewMsg_t,* LoadViewMsgPtr;
+typedef struct MakeTextMsgArgs MakeTextMsg_t,* MakeTextMsgPtr;
+typedef struct TriggeredMsgArgs TriggeredMsg_t,* TriggeredMsgPtr;
+typedef struct NavigateToPageMsgArgs NavigateToPageMsg_t,* NavigateToPageMsgPtr;
+typedef struct NavigateBackMsgArgs NavigateBackMsg_t,* NavigateBackMsgPtr;
 
 /// @brief Defines the primary axis for layout operations
 /** Direction enum */

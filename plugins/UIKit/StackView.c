@@ -150,18 +150,18 @@ HANDLER(StackView, MeasureOverride)
 HANDLER(StackView, ArrangeOverride)
 {
   Node2DPtr pNode2D = GetNode2D(hObject);
-  rect_t r = *pArrangeOverride;
+  ArrangeOverrideMsg_t r = *pArrangeOverride;
 
   switch (pStackView->Direction) {
     case kDirectionHorizontal:
       _Arrange(hObject, pStackView,
-               (struct bounds) { r.x, r.x + r.width },
-               (struct bounds) { r.y, r.y + r.height });
+               (struct bounds) { r.X, r.X + r.Width },
+               (struct bounds) { r.Y, r.Y + r.Height });
       break;
     case kDirectionVertical:
       _Arrange(hObject, pStackView,
-               (struct bounds) { r.y, r.y + r.height },
-               (struct bounds) { r.x, r.x + r.width });
+               (struct bounds) { r.Y, r.Y + r.Height },
+               (struct bounds) { r.X, r.X + r.Width });
       break;
     case kDirectionDepth:
       // Not supported
@@ -190,6 +190,6 @@ HANDLER(StackView, ArrangeOverride)
    * triggering unnecessary extra Grid_ArrangeOverride calls.  Using the
    * content size ensures a non-zero return whenever there are children.
    */
-  return MAKEDWORD(scrollSize[0] - pArrangeOverride->x,
-                   scrollSize[1] - pArrangeOverride->y);
+  return MAKEDWORD(scrollSize[0] - pArrangeOverride->X,
+                   scrollSize[1] - pArrangeOverride->Y);
 }

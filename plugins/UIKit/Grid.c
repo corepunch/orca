@@ -167,7 +167,7 @@ _CalculateAutos(float spacing, float avl, PCOLUMNS columns)
 HANDLER(Grid, MeasureOverride)
 {
   uint32_t cellindex = 0;
-  Size_t size = *pMeasureOverride;
+  MeasureOverrideMsg_t size = *pMeasureOverride;
   Size_t desired = {0};
 
   PCOLUMNS hcols = columns_at_axis(pGrid, 0, TRUE);
@@ -175,8 +175,8 @@ HANDLER(Grid, MeasureOverride)
 
   _EnsureImplicitSecondaryAxis(pGrid, hObject);
 
-  _CalculateAutos(pGrid->Spacing, size.width, hcols);
-  _CalculateAutos(pGrid->Spacing, size.height, vcols);
+  _CalculateAutos(pGrid->Spacing, size.Width, hcols);
+  _CalculateAutos(pGrid->Spacing, size.Height, vcols);
   
   /*
    * When the available height is unconstrained (INFINITY) and we have
@@ -185,14 +185,14 @@ HANDLER(Grid, MeasureOverride)
    * Without this, row positions stay at 0 causing rows beyond the first to
    * overlap or produce incorrect (infinite) accumulated heights.
    */
-  if (isinf(size.height) && vcols->count > 0) {
+  if (isinf(size.Height) && vcols->count > 0) {
     cellindex = 0;
     FOR_EACH_LAYOUTABLE(hChild, hObject) {
       struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
       struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
       if (h && _column_is_flexible(h)) {
         LRESULT s = _SendMessage(hChild, Measure,
-          .Width  = (w ? w->width : size.width),
+          .Width  = (w ? w->width : size.Width),
           .Height = INFINITY,
         );
         float child_h = (float)HIWORD(s);
@@ -211,7 +211,7 @@ HANDLER(Grid, MeasureOverride)
   }
 
   /* Symmetric first pass for unconstrained width with flexible columns. */
-  if (isinf(size.width) && hcols->count > 0) {
+  if (isinf(size.Width) && hcols->count > 0) {
     cellindex = 0;
     FOR_EACH_LAYOUTABLE(hChild, hObject) {
       struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
@@ -219,7 +219,7 @@ HANDLER(Grid, MeasureOverride)
       if (w && _column_is_flexible(w)) {
         LRESULT s = _SendMessage(hChild, Measure,
           .Width  = INFINITY,
-          .Height = (h ? h->width : size.height),
+          .Height = (h ? h->width : size.Height),
         );
         float child_w = (float)LOWORD(s);
         if (w->width < child_w) {
@@ -242,8 +242,8 @@ HANDLER(Grid, MeasureOverride)
     struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
 
     LRESULT s = _SendMessage(hChild, Measure,
-      .Width  = (w ? w->width : size.width),
-      .Height = (h ? h->width : size.height),
+      .Width  = (w ? w->width : size.Width),
+      .Height = (h ? h->width : size.Height),
     );
     
     if(LOWORD(s)<0xffff)desired.width = fmax((w?w->position:0) + LOWORD(s), desired.width);
@@ -271,7 +271,7 @@ HANDLER(Grid, ArrangeOverride)
    * isinf(height/width) path in MeasureOverride and prevents children from
    * being arranged with 0 size when the grid has not been given any space.
    */
-  if (pArrangeOverride->height == 0 && vcols->count > 0) {
+  if (pArrangeOverride->Height == 0 && vcols->count > 0) {
     cellindex = 0;
     FOR_EACH_LAYOUTABLE(hChild, hObject) {
       struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);

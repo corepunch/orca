@@ -25,9 +25,9 @@ struct <?= $name ?>;
 
 <?php foreach ($model->getEvents() as $name => $event):?>
 <?php if ($event->hasAnyFields()):?>
-typedef struct <?= $event->getEffectiveStructName() ?>* <?= $name ?>MsgPtr;
+typedef struct <?= $event->getEffectiveStructName() ?> <?= $name ?>Msg_t,* <?= $name ?>MsgPtr;
 <?php else:?>
-typedef <?= $event->getEffectiveTypeDecl() ?>* <?= $name ?>MsgPtr;
+typedef <?= $event->getEffectiveTypeDecl() ?> <?= $name ?>Msg_t,* <?= $name ?>MsgPtr;
 <?php endif ?>
 <?php endforeach ?>
 

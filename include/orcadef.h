@@ -45,7 +45,7 @@
 
 #define _SendMessage(OBJECT, MESSAGE, ...) \
 OBJ_SendMessageW(OBJECT, kMsg##MESSAGE, 0, \
-&(struct MESSAGE##MsgArgs) { __VA_ARGS__ });
+&(MESSAGE##Msg_t) { __VA_ARGS__ });
 
 #define HANDLER(CLASS, EVENT)                                                  \
   LRESULT CLASS##_##EVENT(struct Object* hObject,                              \
