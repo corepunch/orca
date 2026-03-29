@@ -33,7 +33,7 @@ HANDLER(Node2D, HitTest) {
   bool_t success = FALSE;
   FOR_EACH_OBJECT(hChild, hObject) {
     lpObject_t hittest = NULL;
-    if (OBJ_SendMessageW(hChild, kEventHitTest, MAKEDWORD(lx, ly), &hittest)) {
+    if (OBJ_SendMessageW(hChild, kMsgHitTest, MAKEDWORD(lx, ly), &hittest)) {
       success = TRUE;
       *(void**)pHitTest = hittest;
     }
@@ -164,8 +164,8 @@ HANDLER(Node2D, UpdateMatrix)
     });
   }
 
-  FOR_EACH_CHILD(hObject, OBJ_SendMessageW, kEventUpdateMatrix, 0,
-                 &(struct UpdateMatrixEventArgs){
+  FOR_EACH_CHILD(hObject, OBJ_SendMessageW, kMsgUpdateMatrix, 0,
+                 &(struct UpdateMatrixMsgArgs){
                    .parent = Matrix,
                    .opacity = pNode2D->_opacity,
                    .force = bInvalidate,
@@ -314,7 +314,7 @@ static float _MeasureAxis(Node2DPtr n, float space, int axis) {
 HANDLER(Node2D, Measure)
 {
   struct Node2D *n = pNode2D;
-  LRESULT size = OBJ_SendMessageW(hObject, kEventMeasureOverride, 0, &(struct Size) {
+  LRESULT size = OBJ_SendMessageW(hObject, kMsgMeasureOverride, 0, &(struct Size) {
     .width  = _MeasureAxis(n, pMeasure->width  - TOTAL_MARGIN(n, 0), 0) - TOTAL_PADDING(n, 0),
     .height = _MeasureAxis(n, pMeasure->height - TOTAL_MARGIN(n, 1), 1) - TOTAL_PADDING(n, 1),
   });
@@ -367,7 +367,7 @@ HANDLER(Node2D, Arrange)
     .height = s.height,
   };
   
-  LRESULT size = OBJ_SendMessageW(hObject, kEventArrangeOverride, 0, &(struct rect) {
+  LRESULT size = OBJ_SendMessageW(hObject, kMsgArrangeOverride, 0, &(struct rect) {
     .x      = PADDING_TOP(n, 0),
     .y      = PADDING_TOP(n, 1),
     .width  = rect.width  - TOTAL_PADDING(n, 0),
@@ -387,7 +387,7 @@ HANDLER(Node2D, MeasureOverride)
 {
   uint16_t width = 0, height = 0;
   FOR_EACH_OBJECT(hChild, hObject) {
-    uint32_t size = (uint32_t)OBJ_SendMessageW(hChild, kEventMeasure, 0, pMeasureOverride);
+    uint32_t size = (uint32_t)OBJ_SendMessageW(hChild, kMsgMeasure, 0, pMeasureOverride);
     width  = MAX(width,  LOWORD(size));
     height = MAX(height, HIWORD(size));
   }
@@ -397,6 +397,6 @@ HANDLER(Node2D, MeasureOverride)
 
 HANDLER(Node2D, ArrangeOverride)
 {
-  FOR_EACH_CHILD(hObject, OBJ_SendMessageW, kEventArrange, 0, pArrangeOverride);
+  FOR_EACH_CHILD(hObject, OBJ_SendMessageW, kMsgArrange, 0, pArrangeOverride);
   return MAKEDWORD(pArrangeOverride->width, pArrangeOverride->height);
 }

@@ -106,7 +106,7 @@ Every module XML file follows this skeleton:
   </class>
 
   <!-- Declare a custom event -->
-  <event name="OnValueChanged"/>
+  <message name="OnValueChanged"/>
 
 </module>
 ```

@@ -17,27 +17,27 @@ int f_peek_iterator(lua_State* L)
   (void)has_event;  /* suppress -Wunused-but-set-variable on non-Emscripten targets */
 #endif
   switch (msg.message) {
-    case kEventLeftMouseDown:
-    case kEventRightMouseDown:
-    case kEventOtherMouseDown:
-    case kEventLeftMouseUp:
-    case kEventRightMouseUp:
-    case kEventOtherMouseUp:
-    case kEventLeftMouseDragged:
-    case kEventRightMouseDragged:
-    case kEventOtherMouseDragged:
-    case kEventLeftDoubleClick:
-    case kEventRightDoubleClick:
-    case kEventOtherDoubleClick:
-    case kEventMouseMoved:
-    case kEventScrollWheel:
-    case kEventKeyDown:
-    case kEventKeyUp:
-    case kEventWindowClosed:
-    case kEventWindowPaint:
-    case kEventWindowChangedScreen:
-    case kEventWindowResized:
-    case 0x23d83fd3: // kEventReadCommands
+    case kMsgLeftMouseDown:
+    case kMsgRightMouseDown:
+    case kMsgOtherMouseDown:
+    case kMsgLeftMouseUp:
+    case kMsgRightMouseUp:
+    case kMsgOtherMouseUp:
+    case kMsgLeftMouseDragged:
+    case kMsgRightMouseDragged:
+    case kMsgOtherMouseDragged:
+    case kMsgLeftDoubleClick:
+    case kMsgRightDoubleClick:
+    case kMsgOtherDoubleClick:
+    case kMsgMouseMoved:
+    case kMsgScrollWheel:
+    case kMsgKeyDown:
+    case kMsgKeyUp:
+    case kMsgWindowClosed:
+    case kMsgWindowPaint:
+    case kMsgWindowChangedScreen:
+    case kMsgWindowResized:
+    case 0x23d83fd3: // kMsgReadCommands
       msg.target = __userdata;
       break;
   }
@@ -60,9 +60,9 @@ int f_peek_message(lua_State* L) {
 //  static uint32_t message_id = 0;
 //  struct WI_Message data = { hobj, Msg, wParam, lParam, message_id++ };
 //  // HACK: unclear why this happens
-//  if (Msg == kEventWindowPaint) {
+//  if (Msg == kMsgWindowPaint) {
 //    for (uint16_t r = queue.read; r != queue.write; r++) {
-//      if (queue.data[r].message == kEventWindowPaint &&
+//      if (queue.data[r].message == kMsgWindowPaint &&
 //          queue.data[r].hobj == hobj)
 //      {
 //        memset(&queue.data[r], 0, sizeof(queue.data[r]));
@@ -80,12 +80,12 @@ int f_peek_message(lua_State* L) {
 //}
 
 #define MAX_CLIENTS 256
-#define kEventReadCommands 0x23d83fd3
+#define kMsgReadCommands 0x23d83fd3
 typedef LRESULT (*message_proc_t)(lua_State*, struct WI_Message*);
 static message_proc_t clients[MAX_CLIENTS];
 
 bool_t SV_DispatchMessage(lua_State* L, struct WI_Message* msg) {
-  if (!msg->target && msg->message != kEventReadCommands)
+  if (!msg->target && msg->message != kMsgReadCommands)
     return FALSE;
   for (int i = 0; i < MAX_CLIENTS; i++) {
     if (clients[i] && clients[i](L, msg)) {

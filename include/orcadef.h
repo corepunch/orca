@@ -44,14 +44,14 @@
   struct _##SYSNAME
 
 #define _SendMessage(OBJECT, MESSAGE, ...) \
-OBJ_SendMessageW(OBJECT, kEvent##MESSAGE, 0, \
-&(struct MESSAGE##EventArgs) { __VA_ARGS__ });
+OBJ_SendMessageW(OBJECT, kMsg##MESSAGE, 0, \
+&(struct MESSAGE##MsgArgs) { __VA_ARGS__ });
 
 #define HANDLER(CLASS, EVENT)                                                  \
   LRESULT CLASS##_##EVENT(struct Object* hObject,                              \
                           struct CLASS* p##CLASS,                                 \
                           wParam_t wParam,                                       \
-                          EVENT##EventPtr p##EVENT)
+                          EVENT##MsgPtr p##EVENT)
 
 #define MOUSE_EVENTS_USE_LOCAL_SPACE
 #define DEFAULT_FONT_SIZE 16

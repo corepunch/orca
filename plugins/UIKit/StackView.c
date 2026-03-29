@@ -78,7 +78,7 @@ _Arrange(lpObject_t hObject,
     }
     switch (pStackView->Direction) {
       case kDirectionHorizontal:
-        s = OBJ_SendMessageW(child, kEventArrange, 0, &(struct rect) {
+        s = OBJ_SendMessageW(child, kMsgArrange, 0, &(struct rect) {
           counter,
           oppositeBounds.min,
           NODE2D_FRAME(subview, Size, 0).Desired + TOTAL_MARGIN(subview, 0),
@@ -88,7 +88,7 @@ _Arrange(lpObject_t hObject,
         maxsize = fmax(maxsize, HIWORD(s));
         break;
       case kDirectionVertical:
-        s = OBJ_SendMessageW(child, kEventArrange, 0, &(struct rect) {
+        s = OBJ_SendMessageW(child, kMsgArrange, 0, &(struct rect) {
           oppositeBounds.min,
           counter,
           oppositeBounds.max - oppositeBounds.min,
@@ -126,14 +126,14 @@ HANDLER(StackView, MeasureOverride)
     LRESULT s;
     switch (pStackView->Direction) {
       case kDirectionHorizontal:
-        s = OBJ_SendMessageW(hChild, kEventMeasure, 0, &(struct Size) {
+        s = OBJ_SendMessageW(hChild, kMsgMeasure, 0, &(struct Size) {
           INFINITY, pMeasureOverride->height
         });
         size.width += LOWORD(s) + pStackView->Spacing;
         size.height = MAX(size.height, HIWORD(s));
         break;
       case kDirectionVertical:
-        s = OBJ_SendMessageW(hChild, kEventMeasure, 0, &(struct Size) {
+        s = OBJ_SendMessageW(hChild, kMsgMeasure, 0, &(struct Size) {
           pMeasureOverride->width, INFINITY
         });
         size.width = MAX(size.width, LOWORD(s));

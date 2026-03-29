@@ -99,7 +99,7 @@ ED_Menu(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm)
     case EVT_GETTEXT:
       strncpy(lparm, "Menu", wparm);
       return 1;
-    case kEventKillFocus:
+    case kMsgKillFocus:
       for (HEDWND w = lparm; w; w = ED_GetParent(w)) {
         if (w == wnd) {
           return 0;

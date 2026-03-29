@@ -269,20 +269,20 @@
     <field name="Axis" type="SizeAxisShorthand" fixed-array="3">A number value per axis</field>
   </struct>
 
-  <event name="GetSize"/>
-  <event name="Submit"/>
-  <event name="Measure" type="Size"/>
-  <event name="Arrange" type="rect"/>
-  <event name="MeasureOverride" type="Size"/>
-  <event name="ArrangeOverride" type="rect"/>
-  <event name="ForegroundContent">
+  <message name="GetSize"/>
+  <message name="Submit"/>
+  <message name="Measure" type="Size"/>
+  <message name="Arrange" type="rect"/>
+  <message name="MeasureOverride" type="Size"/>
+  <message name="ArrangeOverride" type="rect"/>
+  <message name="ForegroundContent">
     <field name="result" type="Texture" pointer="true"/>
-  </event>
-  <event name="PushProperty">
+  </message>
+  <message name="PushProperty">
     <field name="Placeholder" type="int"/>
-  </event>
-  <event name="UpdateGeometry"/>
-  <event name="DrawBrush">
+  </message>
+  <message name="UpdateGeometry"/>
+  <message name="DrawBrush">
     <summary>Requests rendering of a brush into the component's visual output.</summary>
     <field name="projection" type="mat4">Projection matrix for 3D to 2D transformation</field>
     <field name="image" type="Texture" pointer="true">Target image handle for rendering</field>
@@ -291,22 +291,22 @@
     <field name="borderWidth" type="vec4">Border width for each edge (top, right, bottom, left)</field>
     <field name="foreground" type="bool">True if drawing foreground, false for background</field>
     <field name="viewdef" type="ViewDef" pointer="true">View definition context for rendering</field>
-  </event>
-  <event name="HandleMessage">
+  </message>
+  <message name="HandleMessage">
     <summary>Dispatches a named message with arguments to the component.</summary>
     <field name="EventName" type="fixed"/>
     <field name="FirstArg" type="uint"/>
     <field name="NumArgs" type="uint"/>
-  </event>
-  <event name="LoadView">
+  </message>
+  <message name="LoadView">
     <summary>Initializes the component's Lua view state.</summary>
     <field name="lua_state" type="lua_State" pointer="true"/>
-  </event>
-  <event name="MakeText">
+  </message>
+  <message name="MakeText">
     <summary>Requests the component to lay out and render its text content.</summary>
     <field name="text" type="ViewText" pointer="true">Text view to render</field>
     <field name="availableSpace" type="uint">Available space for text layout</field>
-  </event>
+  </message>
 
   <class name="DataObject">
     <summary>Base class for data-holding objects within the framework</summary>
@@ -330,22 +330,22 @@
     <summary>Base class for event-driven actions within the UI system</summary>
     <details>Triggers respond to various conditions and can execute actions like property changes or method calls. Part of the reactive UI behavior system.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="PropertyChanged"/>
-    <handles event="Attached"/>
+    <handles message="PropertyChanged"/>
+    <handles message="Attached"/>
     <property name="Property" type="string">Target property name to monitor or modify </property>
     <property name="Value" type="int">Associated value for the trigger condition </property>
   </class>
 
-  <event name="Triggered">
+  <message name="Triggered">
     <field name="Trigger" type="Trigger" pointer="true"/>
-    <field name="message" type="HandleMessageEventArgs"/>
-  </event>
+    <field name="message" type="HandleMessageMsgArgs"/>
+  </message>
 
   <class name="OnPropertyChangedTrigger" parent="Trigger">
     <summary>Responds to property value changes on specified nodes</summary>
     <details>Monitors a named property on a source node and triggers actions when the property value changes. Useful for reactive UI updates.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="PropertyChanged"/>
+    <handles message="PropertyChanged"/>
     <property name="SourceNode" type="string">Name or identifier of the node to monitor </property>
     <property name="Property" type="string">Property name to watch for changes </property>
   </class>
@@ -354,14 +354,14 @@
     <summary>Triggers when an element is attached to the visual tree</summary>
     <details>Useful for initialization actions that should occur when an element becomes part of the active UI hierarchy.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="Attached"/>
+    <handles message="Attached"/>
   </class>
 
   <class name="EventTrigger" parent="Trigger">
     <summary>Responds to routed UI events (mouse, keyboard, etc.)</summary>
     <details>Listens for specific routed events and can execute actions in response. Supports the standard UI event bubbling system.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="HandleMessage"/>
+    <handles message="HandleMessage"/>
     <property name="RoutedEvent" type="string">Name of the routed event to handle (e.g., "MouseDown", "KeyPress") </property>
   </class>
 
@@ -369,7 +369,7 @@
     <summary>Applies property values when triggered by specified conditions</summary>
     <details>Part of the trigger system - sets target properties to specific values when the associated trigger condition is met.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="Triggered"/>
+    <handles message="Triggered"/>
     <property name="Trigger" type="Trigger" pointer="true">Triggering condition or state image </property>
     <property name="Property" type="string">Target property name to set </property>
     <property name="Value" type="string">Value to apply to the property </property>
@@ -387,7 +387,7 @@
     <summary>Executes custom functions when triggered by specified conditions</summary>
     <details>More flexible than Setter - can call arbitrary functions on target objects rather than just setting properties.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="Triggered"/>
+    <handles message="Triggered"/>
     <property name="Trigger" type="Trigger" pointer="true">Triggering condition or state image </property>
     <property name="Target" type="Node" pointer="true">Target object to call function on </property>
     <property name="Function" type="string">Function name to execute on target </property>
@@ -420,9 +420,9 @@
     <summary>Base class for all UI engine nodes.</summary>
     <details>Node is the fundamental class for all engine objects (e.g., Node2D, Node3D, RenderPass). It manages shared functionality such as size, layout, visibility, opacity, tags, and data context. You normally work with derived classes rather than creating instances of Node directly.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="ThemeChanged"/>
-    <handles event="GetSize"/>
-    <handles event="IsVisible"/>
+    <handles message="ThemeChanged"/>
+    <handles message="GetSize"/>
+    <handles message="IsVisible"/>
     <property name="Size" type="SizeShorthand">Sizing configuration of this element</property>
     <property name="Margin" type="MarginShorthand">External spacing around the element</property>
     <property name="Padding" type="MarginShorthand">Internal spacing between element border and content</property>
@@ -457,9 +457,9 @@
     <summary>Shared concept for text rendering in 2D and 3D nodes.</summary>
     <details>This class is not instantiated directly. Instead, it provides the common properties and functionality for text rendering, used internally by higher-level components such as 2D and 3D text nodes. The concept encapsulates text content, resources, formatting options, alignment, and font configuration.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="Create"/>
-    <handles event="Destroy"/>
-    <handles event="MakeText"/>
+    <handles message="Create"/>
+    <handles message="Destroy"/>
+    <handles message="MakeText"/>
     <property name="TextResourceID" type="string">Resource identifier for localized text lookup.</property>
     <property name="TextResourceConfiguration" type="string">Configuration key used when resolving text resources.</property>
     <property name="PlaceholderText" type="string">Placeholder text displayed when no main text is set.</property>
@@ -481,19 +481,19 @@
     <summary>Primary class for 2D UI elements with comprehensive rendering capabilities</summary>
     <details>Extends Node with 2D-specific functionality including transforms, visual effects, composition, and event handling. This is the base class for most visible UI elements. \snippet docs/creating_node2d.lua</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="UpdateMatrix"/>
-    <handles event="Create"/>
-    <handles event="Destroy"/>
-    <handles event="UpdateGeometry"/>
-    <handles event="DrawBrush"/>
-    <handles event="HandleMessage"/>
-    <handles event="ScrollWheel"/>
-    <handles event="MouseMoved"/>
-    <handles event="HitTest"/>
-    <handles event="Measure"/>
-    <handles event="Arrange"/>
-    <handles event="MeasureOverride"/>
-    <handles event="ArrangeOverride"/>
+    <handles message="UpdateMatrix"/>
+    <handles message="Create"/>
+    <handles message="Destroy"/>
+    <handles message="UpdateGeometry"/>
+    <handles message="DrawBrush"/>
+    <handles message="HandleMessage"/>
+    <handles message="ScrollWheel"/>
+    <handles message="MouseMoved"/>
+    <handles message="HitTest"/>
+    <handles message="Measure"/>
+    <handles message="Arrange"/>
+    <handles message="MeasureOverride"/>
+    <handles message="ArrangeOverride"/>
     <property name="LayoutTransform" type="transform2" default=".scale={1,1}">Transformation applied during layout calculations. Affects size and positioning but does not influence local rendering.</property>
     <property name="RenderTransform" type="transform2" default=".scale={1,1}">Transformation applied at render time. Affects how the element is drawn (rotation, scale, skew, etc.) without altering layout.</property>
     <property name="RenderTransformOrigin" type="vec2">The origin point for applying RenderTransform. Defines the pivot point relative to the element.</property>
@@ -578,7 +578,7 @@
     <summary>Container for loading and displaying prefabricated UI components</summary>
     <details>Allows loading of pre-designed UI layouts from external resources. Useful for reusable UI components and modular design patterns.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="LoadView"/>
+    <handles message="LoadView"/>
     <property name="SCA" type="string">Scene archive identifier or path </property>
     <property name="Prefab" type="string">Prefab resource name within the archive </property>
     <field name="_loadedSCA" type="int">Hashed value of currently loaded SCA</field>
@@ -589,11 +589,11 @@
     <summary>Concrete implementation of text display combining Node2D and TextBlockConcept</summary>
     <details>Primary class for displaying static text with full typography control. Combines 2D rendering capabilities with comprehensive text formatting options.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="MeasureOverride"/>
-    <handles event="ForegroundContent"/>
-    <handles event="UpdateGeometry"/>
-    <handles event="Create"/>
-    <handles event="DrawBrush"/>
+    <handles message="MeasureOverride"/>
+    <handles message="ForegroundContent"/>
+    <handles message="UpdateGeometry"/>
+    <handles message="Create"/>
+    <handles message="DrawBrush"/>
     <field name="_node2D" type="Node2D" pointer="true">Internal reference to the underlying Node2D instance </field>
   </class>
 
@@ -601,13 +601,13 @@
     <summary>Interactive text input control with multiple input modes</summary>
     <details>Extends TextBlock to provide editable text capabilities. Supports various input types including text, password, numeric, checkbox, and radio button modes.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="Create"/>
-    <handles event="DrawBrush"/>
-    <handles event="MakeText"/>
-    <handles event="KeyDown"/>
-    <handles event="KillFocus"/>
-    <handles event="LeftMouseUp"/>
-    <handles event="MeasureOverride"/>
+    <handles message="Create"/>
+    <handles message="DrawBrush"/>
+    <handles message="MakeText"/>
+    <handles message="KeyDown"/>
+    <handles message="KillFocus"/>
+    <handles message="LeftMouseUp"/>
+    <handles message="MeasureOverride"/>
     <property name="Name" type="string">Input identifier for forms and data binding </property>
     <property name="Type" type="InputType">Input behavior type (text, password, etc.) </property>
     <property name="Cursor" type="int">Current text cursor position </property>
@@ -620,10 +620,10 @@
     <summary>Interactive button control for user actions</summary>
     <details>Extends TextBlock to provide clickable button functionality. Handles mouse and keyboard activation with customizable button types.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="Create"/>
-    <handles event="LeftMouseUp"/>
-    <handles event="KeyDown"/>
-    <handles event="DrawBrush"/>
+    <handles message="Create"/>
+    <handles message="LeftMouseUp"/>
+    <handles message="KeyDown"/>
+    <handles message="DrawBrush"/>
     <property name="Type" type="ButtonType">Button behavior type (normal or submit) </property>
   </class>
 
@@ -631,7 +631,7 @@
     <summary>Text label with optional association to form controls</summary>
     <details>Displays static text that can be associated with input controls for accessibility. Clicking the label can transfer focus to associated control.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="LeftMouseUp"/>
+    <handles message="LeftMouseUp"/>
     <property name="For" type="string">Identifier of associated form control </property>
   </class>
 
@@ -639,8 +639,8 @@
     <summary>Linear layout container arranging children in a single direction</summary>
     <details>Provides flexbox-style linear layout with configurable direction, alignment, spacing, and content justification. Children are arranged sequentially along the specified axis.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="MeasureOverride"/>
-    <handles event="ArrangeOverride"/>
+    <handles message="MeasureOverride"/>
+    <handles message="ArrangeOverride"/>
     <property name="Reversed" type="bool">Reverse the order of child elements </property>
     <property name="Direction" type="Direction">Layout direction (horizontal or vertical) </property>
     <property name="AlignItems" type="AlignItems">Cross-axis alignment of children </property>
@@ -652,8 +652,8 @@
     <summary>Specialized stack view for form input collection and submission</summary>
     <details>Extends StackView with form-specific functionality including automatic input collection and submission handling.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="Create"/>
-    <handles event="Submit"/>
+    <handles message="Create"/>
+    <handles message="Submit"/>
   </class>
 
   <class name="Control" parent="Node2D">
@@ -680,12 +680,12 @@
     <summary>Top-level container representing a display surface or window</summary>
     <details>Provides the root rendering context for UI hierarchies. Manages screen-level operations like clearing and render target management.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="RenderScreen"/>
-    <handles event="MeasureOverride"/>
-    <handles event="Create"/>
-    <handles event="Destroy"/>
-    <handles event="WindowResized"/>
-    <handles event="WindowPaint"/>
+    <handles message="RenderScreen"/>
+    <handles message="MeasureOverride"/>
+    <handles message="Create"/>
+    <handles message="Destroy"/>
+    <handles message="WindowResized"/>
+    <handles message="WindowPaint"/>
     <property name="ClearColor" type="color">Background clear color for the screen </property>
     <property name="ResizeMode" type="ResizeMode">Specifies how the window can be resized or displayed</property>
     <property name="DialogResult" type="float" default="NAN">Result value for dialog interactions</property>
@@ -697,7 +697,7 @@
     <summary>Video or animation playback view for media content</summary>
     <details>Handles playback of video files or frame-based animations with timing control and fade effects.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="DrawBrush"/>
+    <handles message="DrawBrush"/>
     <property name="FileName" type="string">Path to media file for playback </property>
     <property name="FrameRate" type="float">Playback frame rate (frames per second) </property>
     <property name="NumFrames" type="float">Total number of frames in the media </property>
@@ -710,8 +710,8 @@
     <summary>Grid-based layout container with configurable rows and columns</summary>
     <details>Arranges children in a 2D grid pattern with flexible sizing. Supports both fixed and dynamic grid definitions.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="MeasureOverride"/>
-    <handles event="ArrangeOverride"/>
+    <handles message="MeasureOverride"/>
+    <handles message="ArrangeOverride"/>
     <property name="Columns" type="string">Column definition string (e.g., "1fr 2fr 100px") </property>
     <property name="Rows" type="string">Row definition string (e.g., "auto 1fr auto") </property>
     <property name="Direction" type="Direction">Primary fill direction for auto-placement </property>
@@ -733,11 +733,11 @@
     <summary>Displays image content with advanced rendering and scaling options</summary>
     <details>Renders static images with support for nine-patch scaling, blend modes, and viewport control. Handles both loaded images and images loaded from file paths.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="MeasureOverride"/>
-    <handles event="ArrangeOverride"/>
-    <handles event="ForegroundContent"/>
-    <handles event="DrawBrush"/>
-    <handles event="LoadView"/>
+    <handles message="MeasureOverride"/>
+    <handles message="ArrangeOverride"/>
+    <handles message="ForegroundContent"/>
+    <handles message="DrawBrush"/>
+    <handles message="LoadView"/>
     <property name="Src" type="string">Image source path or resource identifier </property>
     <property name="Image" type="Texture" pointer="true">Direct reference to loaded image </property>
     <property name="Edges" type="vec4">Edge inset values for nine-patch rendering </property>
@@ -751,9 +751,9 @@
     <summary>Specialized image view for nine-patch (stretchable) images</summary>
     <details>Renders images that can be stretched while preserving corner and edge regions. Commonly used for UI panels, buttons, and borders that need to scale to different sizes.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="MeasureOverride"/>
-    <handles event="ForegroundContent"/>
-    <handles event="DrawBrush"/>
+    <handles message="MeasureOverride"/>
+    <handles message="ForegroundContent"/>
+    <handles message="DrawBrush"/>
     <property name="StretchTypeTop" type="float">Top edge stretch behavior factor </property>
     <property name="StretchTypeBottom" type="float">Bottom edge stretch behavior factor </property>
     <property name="StretchTypeLeft" type="float">Left edge stretch behavior factor </property>
@@ -774,10 +774,10 @@
     <summary>Displays a fixed-size text grid using a monospace layout</summary>
     <details>Renders a character matrix (e.g., 80×24) where each cell represents a single glyph. Functions like a monospace canvas for text-mode visualization, ideal for console-style output, terminal emulation, or retro graphics where characters act as pixels.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles event="Create"/>
-    <handles event="DrawBrush"/>
-    <handles event="PushProperty"/>
-    <handles event="ScrollWheel"/>
+    <handles message="Create"/>
+    <handles message="DrawBrush"/>
+    <handles message="PushProperty"/>
+    <handles message="ScrollWheel"/>
     <property name="BufferWidth" type="int" default="256">Buffer width</property>
     <property name="BufferHeight" type="int" default="256">Buffer height</property>
     <property name="Cursor" type="int">Cursor position</property>
@@ -797,20 +797,20 @@
     <enum name="Fade">Fading transition</enum>
   </enums>
 
-  <event name="NavigateToPage">
+  <message name="NavigateToPage">
     <summary>Navigates to a new page URL with an optional transition animation.</summary>
     <field name="URL" type="fixed">The URL of the page to navigate to.</field>
     <field name="TransitionType" type="TransitionType">The type of transition animation to use during navigation.</field>
-  </event>
-  <event name="NavigateBack">
+  </message>
+  <message name="NavigateBack">
     <summary>Navigates back to the previous page with an optional transition animation.</summary>
     <field name="TransitionType" type="TransitionType">The type of transition animation to use during navigation.</field>
-  </event>
+  </message>
 
   <class name="Page" parent="Node2D">
     <summary>Represents a single page within a document or UI container.</summary>
     <details>Used to store navigation related data while all the functionality comes from PageHost</details>
-    <handles event="Create"/>
+    <handles message="Create"/>
     <property name="Title" type="string">The title of the page.</property>
     <property name="Path" type="string">The URL path of the page, like "/about".</property>
     <property name="Transition" type="float">The transition progress of the page.</property>
@@ -820,9 +820,9 @@
   <class name="PageHost" parent="Page">
     <summary>Container that manages multiple pages and navigation between them.</summary>
     <details>Provides functionality for navigating between different Page instances, including maintaining a navigation stack, handling back/forward navigation, and managing page transitions.</details>
-    <handles event="ViewDidLoad"/>
-    <handles event="NavigateToPage" />
-    <handles event="NavigateBack" />
+    <handles message="ViewDidLoad"/>
+    <handles message="NavigateToPage" />
+    <handles message="NavigateBack" />
     <property name="ActivePage" type="Page" pointer="true">The currently active page.</property>
     <field name="_historyStack" type="Page" pointer="true" fixed-array="32">Navigation history stack.</field>
     <field name="_historySize" type="int">Number of entries in the navigation history stack.</field>
@@ -831,7 +831,7 @@
   <class name="PageViewport" parent="Node2D">
     <summary>Viewport for rendering the active page within a PageHost.</summary>
     <details>Responsible for displaying the content of the active page managed by a PageHost. Handles rendering and transition effects when switching between pages.</details>
-    <!-- <handles event="DrawBrush"/>
+    <!-- <handles message="DrawBrush"/>
     <property name="PageHost" type="PageHost" pointer="true">Reference to the PageHost that manages the pages being rendered.</property> -->
   </class>
 

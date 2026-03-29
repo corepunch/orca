@@ -21,9 +21,9 @@ PROP_FindByShortID(lpProperty_t list, uint32_t identifier) {
 }
 
 lpcString_t
-PROP_GetCallbackEvent(lpcProperty_t p)
+PROP_GetCallbackMsg(lpcProperty_t p)
 {
-  return p->callbackEvent ? PROP_GetValue(p->callbackEvent) : NULL;
+  return p->callbackMsg ? PROP_GetValue(p->callbackMsg) : NULL;
 }
 
 lpProperty_t

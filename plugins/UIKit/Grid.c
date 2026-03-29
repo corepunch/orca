@@ -191,7 +191,7 @@ HANDLER(Grid, MeasureOverride)
       struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
       struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
       if (h && _column_is_flexible(h)) {
-        LRESULT s = OBJ_SendMessageW(hChild, kEventMeasure, 0, &(struct Size) {
+        LRESULT s = OBJ_SendMessageW(hChild, kMsgMeasure, 0, &(struct Size) {
           .width  = (w ? w->width : size.width),
           .height = INFINITY,
         });
@@ -217,7 +217,7 @@ HANDLER(Grid, MeasureOverride)
       struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
       struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
       if (w && _column_is_flexible(w)) {
-        LRESULT s = OBJ_SendMessageW(hChild, kEventMeasure, 0, &(struct Size) {
+        LRESULT s = OBJ_SendMessageW(hChild, kMsgMeasure, 0, &(struct Size) {
           .width  = INFINITY,
           .height = (h ? h->width : size.height),
         });
@@ -241,7 +241,7 @@ HANDLER(Grid, MeasureOverride)
     struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
     struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
 
-    LRESULT s = OBJ_SendMessageW(hChild, kEventMeasure, 0, &(struct Size) {
+    LRESULT s = OBJ_SendMessageW(hChild, kMsgMeasure, 0, &(struct Size) {
       .width  = (w ? w->width : size.width),
       .height = (h ? h->width : size.height),
     });
@@ -267,7 +267,7 @@ HANDLER(Grid, ArrangeOverride)
   {
     struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
     struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
-    OBJ_SendMessageW(hChild, kEventArrange, 0, &(struct rect) {
+    OBJ_SendMessageW(hChild, kMsgArrange, 0, &(struct rect) {
       .x = pArrangeOverride->x + (w ? w->position : 0),
       .y = pArrangeOverride->y + (h ? h->position : 0),
       .width = (w ? w->width : pArrangeOverride->width),

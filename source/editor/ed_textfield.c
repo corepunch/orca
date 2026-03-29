@@ -60,7 +60,7 @@ void ED_HandleTextInput(wParam_t wparam) {
     _InstertChar(' ');
   } else if (keyName == WI_KEY_TAB) {
     ED_AcceptInput();
-    ED_SendMessage(editor.focus, kEventKeyDown, wparam, NULL);
+    ED_SendMessage(editor.focus, kMsgKeyDown, wparam, NULL);
   } else if (keyName == WI_KEY_LEFTARROW) {
     if (editor.textEditCursor > 0) {
       editor.textEditCursor--;

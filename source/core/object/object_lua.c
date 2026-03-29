@@ -61,7 +61,7 @@ _parse_args(lua_State* L, lpObject_t hobj)
       lua_pushstring(L, _key);
     }
     lua_remove(L, 2);
-    OBJ_SendMessageW(hobj, kEventStart, 0, NULL);
+    OBJ_SendMessageW(hobj, kMsgStart, 0, NULL);
   }
   if (lua_type(L, 2) == LUA_TFUNCTION) {
     lua_pushstring(L, "body");
@@ -137,7 +137,7 @@ int OBJ_CreateFromLuaState(lua_State *L) {
   }
 
   // send "create" message
-  OBJ_SendMessageW(pobj, kEventCreate, 0, L);
+  OBJ_SendMessageW(pobj, kMsgCreate, 0, L);
   
 _assign_callbacks(L, pobj, 1);
   _parse_args(L, pobj);
@@ -183,7 +183,7 @@ static int f_rebuild_finalize(lua_State *L, int status, lua_KContext ctx) {
     lua_setfield(L, 1, "body");
     OBJ_SetFlags(self, OBJ_GetFlags(self) & ~OF_CLEARBODY);
   }
-  WI_PostMessageW(self, kEventViewDidLoad, 0, NULL);
+  WI_PostMessageW(self, kMsgViewDidLoad, 0, NULL);
   return 0;
 }
 
@@ -202,7 +202,7 @@ static int f_rebuild(lua_State *L) {
     OBJ_SetTextContent(self, luaL_checkstring(L, -1));
   }
   lua_pop(L, 1);
-  WI_PostMessageW(self, kEventViewDidLoad, 0, NULL); // TODO: replace with direct call to avoid unnecessary message dispatch
+  WI_PostMessageW(self, kMsgViewDidLoad, 0, NULL); // TODO: replace with direct call to avoid unnecessary message dispatch
   return 0;
 }
 
@@ -213,7 +213,7 @@ void OBJ_Rebuild(lua_State* L, lpObject_t self) {
   int ref = luaL_ref(L, LUA_REGISTRYINDEX);
   lua_pushcfunction(co, f_rebuild);
   lua_xmove(L, co, nargs);
-  WI_PostMessageW(co, kEventResumeCoroutine, MAKEDWORD(nargs, ref), NULL);
+  WI_PostMessageW(co, kMsgResumeCoroutine, MAKEDWORD(nargs, ref), NULL);
 }
 
 lpObject_t OBJ_Instantiate(lua_State* L, lpObject_t prefab) {

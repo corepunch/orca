@@ -8,11 +8,11 @@
   <class name="FtgPackage" parent="Bundle">
     <summary>Loader for FTG archives (Dark Reign game format)</summary>
     <details>Reads FTG archives as used by the Dark Reign game. The FTG format stores files in a flat directory with 28-byte filenames, uncompressed data at fixed offsets. When a .ftg bundle is loaded via FS_LoadBundle, every .spr sprite file found in the archive is automatically parsed and added to the project as a SpriteAnimation child object. Each .spr is converted into a horizontal-strip texture atlas (one GL_RED channel, ignoring the palette) where frames of varying sizes are placed side-by-side. The resulting SpriteAnimation objects can be looked up by name (the .spr filename without extension) and assigned to SKSpriteNode.Animation for rendering.</details>
-    <handles event="LoadProject"/>
-    <handles event="OpenFile"/>
-    <handles event="FileExists"/>
-    <handles event="HasChangedFiles"/>
-    <handles event="Destroy"/>
+    <handles message="LoadProject"/>
+    <handles message="OpenFile"/>
+    <handles message="FileExists"/>
+    <handles message="HasChangedFiles"/>
+    <handles message="Destroy"/>
     <property name="FileName" type="string"/>
     <field name="_ftg" type="_FTG" pointer="true"/>
   </class>

@@ -102,7 +102,7 @@ ORCA_API struct ClassDesc _SpriteAnimation = {
 	.NumProperties = kSpriteAnimationNumProperties,
 };
 
-LRESULT SKNode_UpdateMatrix(struct Object*, struct SKNode*, wParam_t, UpdateMatrixEventPtr);
+LRESULT SKNode_UpdateMatrix(struct Object*, struct SKNode*, wParam_t, UpdateMatrixMsgPtr);
 
 static struct PropertyType const SKNodeProperties[kSKNodeNumProperties] = {
 	DECL(0xe27f342a, SKNode, Position, Position, kDataTypeStruct, .TypeString = "Vector2D"), // SKNode.Position
@@ -113,7 +113,7 @@ static struct SKNode SKNodeDefaults = {
 };
 LRESULT SKNodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventUpdateMatrix: return SKNode_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
+		case kMsgUpdateMatrix: return SKNode_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
 	}
 	return FALSE;
 }
@@ -138,7 +138,7 @@ ORCA_API struct ClassDesc _SKNode = {
 	.NumProperties = kSKNodeNumProperties,
 };
 
-LRESULT SKScene_UpdateMatrix(struct Object*, struct SKScene*, wParam_t, UpdateMatrixEventPtr);
+LRESULT SKScene_UpdateMatrix(struct Object*, struct SKScene*, wParam_t, UpdateMatrixMsgPtr);
 
 static struct PropertyType const SKSceneProperties[kSKSceneNumProperties] = {
 };
@@ -146,7 +146,7 @@ static struct SKScene SKSceneDefaults = {
 };
 LRESULT SKSceneProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventUpdateMatrix: return SKScene_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
+		case kMsgUpdateMatrix: return SKScene_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
 	}
 	return FALSE;
 }
@@ -171,7 +171,7 @@ ORCA_API struct ClassDesc _SKScene = {
 	.NumProperties = kSKSceneNumProperties,
 };
 
-LRESULT SKSpriteNode_Render(struct Object*, struct SKSpriteNode*, wParam_t, RenderEventPtr);
+LRESULT SKSpriteNode_Render(struct Object*, struct SKSpriteNode*, wParam_t, RenderMsgPtr);
 
 static struct PropertyType const SKSpriteNodeProperties[kSKSpriteNodeNumProperties] = {
 	DECL(0x41e389fd, SKSpriteNode, Animation, Animation, kDataTypeObject, .TypeString = "SpriteAnimation"), // SKSpriteNode.Animation
@@ -193,7 +193,7 @@ static struct SKSpriteNode SKSpriteNodeDefaults = {
 };
 LRESULT SKSpriteNodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventRender: return SKSpriteNode_Render(object, cmp, wparm, lparm); // Render
+		case kMsgRender: return SKSpriteNode_Render(object, cmp, wparm, lparm); // Render
 	}
 	return FALSE;
 }
@@ -218,8 +218,8 @@ ORCA_API struct ClassDesc _SKSpriteNode = {
 	.NumProperties = kSKSpriteNodeNumProperties,
 };
 
-LRESULT SKLabelNode_Render(struct Object*, struct SKLabelNode*, wParam_t, RenderEventPtr);
-LRESULT SKLabelNode_Create(struct Object*, struct SKLabelNode*, wParam_t, CreateEventPtr);
+LRESULT SKLabelNode_Render(struct Object*, struct SKLabelNode*, wParam_t, RenderMsgPtr);
+LRESULT SKLabelNode_Create(struct Object*, struct SKLabelNode*, wParam_t, CreateMsgPtr);
 
 static struct PropertyType const SKLabelNodeProperties[kSKLabelNodeNumProperties] = {
 	DECL(0xe5b43cf8, SKLabelNode, Color, Color, kDataTypeColor), // SKLabelNode.Color
@@ -228,8 +228,8 @@ static struct SKLabelNode SKLabelNodeDefaults = {
 };
 LRESULT SKLabelNodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventRender: return SKLabelNode_Render(object, cmp, wparm, lparm); // Render
-		case kEventCreate: return SKLabelNode_Create(object, cmp, wparm, lparm); // Create
+		case kMsgRender: return SKLabelNode_Render(object, cmp, wparm, lparm); // Render
+		case kMsgCreate: return SKLabelNode_Create(object, cmp, wparm, lparm); // Create
 	}
 	return FALSE;
 }
@@ -255,7 +255,7 @@ ORCA_API struct ClassDesc _SKLabelNode = {
 	.NumProperties = kSKLabelNodeNumProperties,
 };
 
-LRESULT SKView_ForegroundContent(struct Object*, struct SKView*, wParam_t, ForegroundContentEventPtr);
+LRESULT SKView_ForegroundContent(struct Object*, struct SKView*, wParam_t, ForegroundContentMsgPtr);
 
 static struct PropertyType const SKViewProperties[kSKViewNumProperties] = {
 	DECL(0x499d2ae6, SKView, ReferenceWidth, ReferenceWidth, kDataTypeFloat), // SKView.ReferenceWidth
@@ -266,7 +266,7 @@ static struct SKView SKViewDefaults = {
 };
 LRESULT SKViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventForegroundContent: return SKView_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
+		case kMsgForegroundContent: return SKView_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
 	}
 	return FALSE;
 }

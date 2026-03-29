@@ -233,19 +233,19 @@ int luaopen_orca_SystemMessage(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
-void luaX_pushOpenFileEventArgs(lua_State *L, struct OpenFileEventArgs const* data) {
+void luaX_pushOpenFileMsgArgs(lua_State *L, struct OpenFileMsgArgs const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
-	struct OpenFileEventArgs* self = lua_newuserdata(L, sizeof(struct OpenFileEventArgs));
-	luaL_setmetatable(L, "OpenFileEventArgs");
-	memcpy(self, data, sizeof(struct OpenFileEventArgs));
+	struct OpenFileMsgArgs* self = lua_newuserdata(L, sizeof(struct OpenFileMsgArgs));
+	luaL_setmetatable(L, "OpenFileMsgArgs");
+	memcpy(self, data, sizeof(struct OpenFileMsgArgs));
 }
-struct OpenFileEventArgs* luaX_checkOpenFileEventArgs(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "OpenFileEventArgs");
+struct OpenFileMsgArgs* luaX_checkOpenFileMsgArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "OpenFileMsgArgs");
 }
-static int f_new_OpenFileEventArgs(lua_State *L) {
-	struct OpenFileEventArgs* self = lua_newuserdata(L, sizeof(struct OpenFileEventArgs));
-	luaL_setmetatable(L, "OpenFileEventArgs");
-	memset(self, 0, sizeof(struct OpenFileEventArgs));
+static int f_new_OpenFileMsgArgs(lua_State *L) {
+	struct OpenFileMsgArgs* self = lua_newuserdata(L, sizeof(struct OpenFileMsgArgs));
+	luaL_setmetatable(L, "OpenFileMsgArgs");
+	memset(self, 0, sizeof(struct OpenFileMsgArgs));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_pop(L, (lua_getfield(L, 1, "FileName"), self->FileName = lua_type(L, -1) == LUA_TSTRING ? strdup(luaL_checkstring(L, -1)) : NULL, 1));
@@ -254,51 +254,51 @@ static int f_new_OpenFileEventArgs(lua_State *L) {
 	}
 	return 1;
 }
-int f_OpenFileEventArgs___index(lua_State *L) {
-	struct OpenFileEventArgs* self = luaX_checkOpenFileEventArgs(L, 1);
+int f_OpenFileMsgArgs___index(lua_State *L) {
+	struct OpenFileMsgArgs* self = luaX_checkOpenFileMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x5ffdd888: lua_pushstring(L, self->FileName); return 1; // FileName
 	}
-	return luaL_error(L, "Unknown field in OpenFileEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in OpenFileMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-int f_OpenFileEventArgs___newindex(lua_State *L) {
-	struct OpenFileEventArgs* self = luaX_checkOpenFileEventArgs(L, 1);
+int f_OpenFileMsgArgs___newindex(lua_State *L) {
+	struct OpenFileMsgArgs* self = luaX_checkOpenFileMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x5ffdd888: self->FileName = lua_type(L, 3) == LUA_TSTRING ? strdup(luaL_checkstring(L, 3)) : NULL; return 0; // FileName
 	}
-	return luaL_error(L, "Unknown field in OpenFileEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in OpenFileMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-static int f_OpenFileEventArgs___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_OpenFileEventArgs(L));  // remove OpenFileEventArgs from stack and call constructor
+static int f_OpenFileMsgArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_OpenFileMsgArgs(L));  // remove OpenFileMsgArgs from stack and call constructor
 }
-int luaopen_orca_OpenFileEventArgs(lua_State *L) {
-	luaL_newmetatable(L, "OpenFileEventArgs");
+int luaopen_orca_OpenFileMsgArgs(lua_State *L) {
+	luaL_newmetatable(L, "OpenFileMsgArgs");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_OpenFileEventArgs },
-		{ "__newindex", f_OpenFileEventArgs___newindex },
-		{ "__index", f_OpenFileEventArgs___index },
+		{ "new", f_new_OpenFileMsgArgs },
+		{ "__newindex", f_OpenFileMsgArgs___newindex },
+		{ "__index", f_OpenFileMsgArgs___index },
 		{ NULL, NULL },
 	}), 0);
-	// Make OpenFileEventArgs creatable via constructor-like syntax
+	// Make OpenFileMsgArgs creatable via constructor-like syntax
 	lua_newtable(L);
-	lua_pushcfunction(L, f_OpenFileEventArgs___call);
+	lua_pushcfunction(L, f_OpenFileMsgArgs___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	return 1;
 }
-void luaX_pushFileExistsEventArgs(lua_State *L, struct FileExistsEventArgs const* data) {
+void luaX_pushFileExistsMsgArgs(lua_State *L, struct FileExistsMsgArgs const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
-	struct FileExistsEventArgs* self = lua_newuserdata(L, sizeof(struct FileExistsEventArgs));
-	luaL_setmetatable(L, "FileExistsEventArgs");
-	memcpy(self, data, sizeof(struct FileExistsEventArgs));
+	struct FileExistsMsgArgs* self = lua_newuserdata(L, sizeof(struct FileExistsMsgArgs));
+	luaL_setmetatable(L, "FileExistsMsgArgs");
+	memcpy(self, data, sizeof(struct FileExistsMsgArgs));
 }
-struct FileExistsEventArgs* luaX_checkFileExistsEventArgs(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "FileExistsEventArgs");
+struct FileExistsMsgArgs* luaX_checkFileExistsMsgArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "FileExistsMsgArgs");
 }
-static int f_new_FileExistsEventArgs(lua_State *L) {
-	struct FileExistsEventArgs* self = lua_newuserdata(L, sizeof(struct FileExistsEventArgs));
-	luaL_setmetatable(L, "FileExistsEventArgs");
-	memset(self, 0, sizeof(struct FileExistsEventArgs));
+static int f_new_FileExistsMsgArgs(lua_State *L) {
+	struct FileExistsMsgArgs* self = lua_newuserdata(L, sizeof(struct FileExistsMsgArgs));
+	luaL_setmetatable(L, "FileExistsMsgArgs");
+	memset(self, 0, sizeof(struct FileExistsMsgArgs));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_pop(L, (lua_getfield(L, 1, "FileName"), self->FileName = lua_type(L, -1) == LUA_TSTRING ? strdup(luaL_checkstring(L, -1)) : NULL, 1));
@@ -307,51 +307,51 @@ static int f_new_FileExistsEventArgs(lua_State *L) {
 	}
 	return 1;
 }
-int f_FileExistsEventArgs___index(lua_State *L) {
-	struct FileExistsEventArgs* self = luaX_checkFileExistsEventArgs(L, 1);
+int f_FileExistsMsgArgs___index(lua_State *L) {
+	struct FileExistsMsgArgs* self = luaX_checkFileExistsMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x5ffdd888: lua_pushstring(L, self->FileName); return 1; // FileName
 	}
-	return luaL_error(L, "Unknown field in FileExistsEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in FileExistsMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-int f_FileExistsEventArgs___newindex(lua_State *L) {
-	struct FileExistsEventArgs* self = luaX_checkFileExistsEventArgs(L, 1);
+int f_FileExistsMsgArgs___newindex(lua_State *L) {
+	struct FileExistsMsgArgs* self = luaX_checkFileExistsMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0x5ffdd888: self->FileName = lua_type(L, 3) == LUA_TSTRING ? strdup(luaL_checkstring(L, 3)) : NULL; return 0; // FileName
 	}
-	return luaL_error(L, "Unknown field in FileExistsEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in FileExistsMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-static int f_FileExistsEventArgs___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_FileExistsEventArgs(L));  // remove FileExistsEventArgs from stack and call constructor
+static int f_FileExistsMsgArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_FileExistsMsgArgs(L));  // remove FileExistsMsgArgs from stack and call constructor
 }
-int luaopen_orca_FileExistsEventArgs(lua_State *L) {
-	luaL_newmetatable(L, "FileExistsEventArgs");
+int luaopen_orca_FileExistsMsgArgs(lua_State *L) {
+	luaL_newmetatable(L, "FileExistsMsgArgs");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_FileExistsEventArgs },
-		{ "__newindex", f_FileExistsEventArgs___newindex },
-		{ "__index", f_FileExistsEventArgs___index },
+		{ "new", f_new_FileExistsMsgArgs },
+		{ "__newindex", f_FileExistsMsgArgs___newindex },
+		{ "__index", f_FileExistsMsgArgs___index },
 		{ NULL, NULL },
 	}), 0);
-	// Make FileExistsEventArgs creatable via constructor-like syntax
+	// Make FileExistsMsgArgs creatable via constructor-like syntax
 	lua_newtable(L);
-	lua_pushcfunction(L, f_FileExistsEventArgs___call);
+	lua_pushcfunction(L, f_FileExistsMsgArgs___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	return 1;
 }
-void luaX_pushLoadProjectEventArgs(lua_State *L, struct LoadProjectEventArgs const* data) {
+void luaX_pushLoadProjectMsgArgs(lua_State *L, struct LoadProjectMsgArgs const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
-	struct LoadProjectEventArgs* self = lua_newuserdata(L, sizeof(struct LoadProjectEventArgs));
-	luaL_setmetatable(L, "LoadProjectEventArgs");
-	memcpy(self, data, sizeof(struct LoadProjectEventArgs));
+	struct LoadProjectMsgArgs* self = lua_newuserdata(L, sizeof(struct LoadProjectMsgArgs));
+	luaL_setmetatable(L, "LoadProjectMsgArgs");
+	memcpy(self, data, sizeof(struct LoadProjectMsgArgs));
 }
-struct LoadProjectEventArgs* luaX_checkLoadProjectEventArgs(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "LoadProjectEventArgs");
+struct LoadProjectMsgArgs* luaX_checkLoadProjectMsgArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "LoadProjectMsgArgs");
 }
-static int f_new_LoadProjectEventArgs(lua_State *L) {
-	struct LoadProjectEventArgs* self = lua_newuserdata(L, sizeof(struct LoadProjectEventArgs));
-	luaL_setmetatable(L, "LoadProjectEventArgs");
-	memset(self, 0, sizeof(struct LoadProjectEventArgs));
+static int f_new_LoadProjectMsgArgs(lua_State *L) {
+	struct LoadProjectMsgArgs* self = lua_newuserdata(L, sizeof(struct LoadProjectMsgArgs));
+	luaL_setmetatable(L, "LoadProjectMsgArgs");
+	memset(self, 0, sizeof(struct LoadProjectMsgArgs));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_pop(L, (lua_getfield(L, 1, "Path"), self->Path = lua_type(L, -1) == LUA_TSTRING ? strdup(luaL_checkstring(L, -1)) : NULL, 1));
@@ -360,34 +360,34 @@ static int f_new_LoadProjectEventArgs(lua_State *L) {
 	}
 	return 1;
 }
-int f_LoadProjectEventArgs___index(lua_State *L) {
-	struct LoadProjectEventArgs* self = luaX_checkLoadProjectEventArgs(L, 1);
+int f_LoadProjectMsgArgs___index(lua_State *L) {
+	struct LoadProjectMsgArgs* self = luaX_checkLoadProjectMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0xeb66e456: lua_pushstring(L, self->Path); return 1; // Path
 	}
-	return luaL_error(L, "Unknown field in LoadProjectEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in LoadProjectMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-int f_LoadProjectEventArgs___newindex(lua_State *L) {
-	struct LoadProjectEventArgs* self = luaX_checkLoadProjectEventArgs(L, 1);
+int f_LoadProjectMsgArgs___newindex(lua_State *L) {
+	struct LoadProjectMsgArgs* self = luaX_checkLoadProjectMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0xeb66e456: self->Path = lua_type(L, 3) == LUA_TSTRING ? strdup(luaL_checkstring(L, 3)) : NULL; return 0; // Path
 	}
-	return luaL_error(L, "Unknown field in LoadProjectEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in LoadProjectMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-static int f_LoadProjectEventArgs___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_LoadProjectEventArgs(L));  // remove LoadProjectEventArgs from stack and call constructor
+static int f_LoadProjectMsgArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_LoadProjectMsgArgs(L));  // remove LoadProjectMsgArgs from stack and call constructor
 }
-int luaopen_orca_LoadProjectEventArgs(lua_State *L) {
-	luaL_newmetatable(L, "LoadProjectEventArgs");
+int luaopen_orca_LoadProjectMsgArgs(lua_State *L) {
+	luaL_newmetatable(L, "LoadProjectMsgArgs");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_LoadProjectEventArgs },
-		{ "__newindex", f_LoadProjectEventArgs___newindex },
-		{ "__index", f_LoadProjectEventArgs___index },
+		{ "new", f_new_LoadProjectMsgArgs },
+		{ "__newindex", f_LoadProjectMsgArgs___newindex },
+		{ "__index", f_LoadProjectMsgArgs___index },
 		{ NULL, NULL },
 	}), 0);
-	// Make LoadProjectEventArgs creatable via constructor-like syntax
+	// Make LoadProjectMsgArgs creatable via constructor-like syntax
 	lua_newtable(L);
-	lua_pushcfunction(L, f_LoadProjectEventArgs___call);
+	lua_pushcfunction(L, f_LoadProjectMsgArgs___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	return 1;
@@ -456,7 +456,7 @@ ORCA_API struct ClassDesc _Library = {
 	.NumProperties = kLibraryNumProperties,
 };
 
-LRESULT Project_Start(struct Object*, struct Project*, wParam_t, StartEventPtr);
+LRESULT Project_Start(struct Object*, struct Project*, wParam_t, StartMsgPtr);
 
 static struct PropertyType const ProjectProperties[kProjectNumProperties] = {
 	DECL(0xbcd19216, Project, HalfFloatTextureFormat, HalfFloatTextureFormat, kDataTypeBool), // Project.HalfFloatTextureFormat
@@ -538,7 +538,7 @@ static struct Project ProjectDefaults = {
 };
 LRESULT ProjectProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventStart: return Project_Start(object, cmp, wparm, lparm); // Start
+		case kMsgStart: return Project_Start(object, cmp, wparm, lparm); // Start
 	}
 	return FALSE;
 }
@@ -562,11 +562,11 @@ ORCA_API struct ClassDesc _Project = {
 	.NumProperties = kProjectNumProperties,
 };
 
-LRESULT Directory_LoadProject(struct Object*, struct Directory*, wParam_t, LoadProjectEventPtr);
-LRESULT Directory_OpenFile(struct Object*, struct Directory*, wParam_t, OpenFileEventPtr);
-LRESULT Directory_FileExists(struct Object*, struct Directory*, wParam_t, FileExistsEventPtr);
-LRESULT Directory_HasChangedFiles(struct Object*, struct Directory*, wParam_t, HasChangedFilesEventPtr);
-LRESULT Directory_Destroy(struct Object*, struct Directory*, wParam_t, DestroyEventPtr);
+LRESULT Directory_LoadProject(struct Object*, struct Directory*, wParam_t, LoadProjectMsgPtr);
+LRESULT Directory_OpenFile(struct Object*, struct Directory*, wParam_t, OpenFileMsgPtr);
+LRESULT Directory_FileExists(struct Object*, struct Directory*, wParam_t, FileExistsMsgPtr);
+LRESULT Directory_HasChangedFiles(struct Object*, struct Directory*, wParam_t, HasChangedFilesMsgPtr);
+LRESULT Directory_Destroy(struct Object*, struct Directory*, wParam_t, DestroyMsgPtr);
 
 static struct PropertyType const DirectoryProperties[kDirectoryNumProperties] = {
 	DECL(0xeb66e456, Directory, Path, Path, kDataTypeString), // Directory.Path
@@ -575,11 +575,11 @@ static struct Directory DirectoryDefaults = {
 };
 LRESULT DirectoryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventLoadProject: return Directory_LoadProject(object, cmp, wparm, lparm); // LoadProject
-		case kEventOpenFile: return Directory_OpenFile(object, cmp, wparm, lparm); // OpenFile
-		case kEventFileExists: return Directory_FileExists(object, cmp, wparm, lparm); // FileExists
-		case kEventHasChangedFiles: return Directory_HasChangedFiles(object, cmp, wparm, lparm); // HasChangedFiles
-		case kEventDestroy: return Directory_Destroy(object, cmp, wparm, lparm); // Destroy
+		case kMsgLoadProject: return Directory_LoadProject(object, cmp, wparm, lparm); // LoadProject
+		case kMsgOpenFile: return Directory_OpenFile(object, cmp, wparm, lparm); // OpenFile
+		case kMsgFileExists: return Directory_FileExists(object, cmp, wparm, lparm); // FileExists
+		case kMsgHasChangedFiles: return Directory_HasChangedFiles(object, cmp, wparm, lparm); // HasChangedFiles
+		case kMsgDestroy: return Directory_Destroy(object, cmp, wparm, lparm); // Destroy
 	}
 	return FALSE;
 }
@@ -604,11 +604,11 @@ ORCA_API struct ClassDesc _Directory = {
 	.NumProperties = kDirectoryNumProperties,
 };
 
-LRESULT Package_LoadProject(struct Object*, struct Package*, wParam_t, LoadProjectEventPtr);
-LRESULT Package_OpenFile(struct Object*, struct Package*, wParam_t, OpenFileEventPtr);
-LRESULT Package_FileExists(struct Object*, struct Package*, wParam_t, FileExistsEventPtr);
-LRESULT Package_HasChangedFiles(struct Object*, struct Package*, wParam_t, HasChangedFilesEventPtr);
-LRESULT Package_Destroy(struct Object*, struct Package*, wParam_t, DestroyEventPtr);
+LRESULT Package_LoadProject(struct Object*, struct Package*, wParam_t, LoadProjectMsgPtr);
+LRESULT Package_OpenFile(struct Object*, struct Package*, wParam_t, OpenFileMsgPtr);
+LRESULT Package_FileExists(struct Object*, struct Package*, wParam_t, FileExistsMsgPtr);
+LRESULT Package_HasChangedFiles(struct Object*, struct Package*, wParam_t, HasChangedFilesMsgPtr);
+LRESULT Package_Destroy(struct Object*, struct Package*, wParam_t, DestroyMsgPtr);
 
 static struct PropertyType const PackageProperties[kPackageNumProperties] = {
 	DECL(0x5ffdd888, Package, FileName, FileName, kDataTypeString), // Package.FileName
@@ -617,11 +617,11 @@ static struct Package PackageDefaults = {
 };
 LRESULT PackageProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventLoadProject: return Package_LoadProject(object, cmp, wparm, lparm); // LoadProject
-		case kEventOpenFile: return Package_OpenFile(object, cmp, wparm, lparm); // OpenFile
-		case kEventFileExists: return Package_FileExists(object, cmp, wparm, lparm); // FileExists
-		case kEventHasChangedFiles: return Package_HasChangedFiles(object, cmp, wparm, lparm); // HasChangedFiles
-		case kEventDestroy: return Package_Destroy(object, cmp, wparm, lparm); // Destroy
+		case kMsgLoadProject: return Package_LoadProject(object, cmp, wparm, lparm); // LoadProject
+		case kMsgOpenFile: return Package_OpenFile(object, cmp, wparm, lparm); // OpenFile
+		case kMsgFileExists: return Package_FileExists(object, cmp, wparm, lparm); // FileExists
+		case kMsgHasChangedFiles: return Package_HasChangedFiles(object, cmp, wparm, lparm); // HasChangedFiles
+		case kMsgDestroy: return Package_Destroy(object, cmp, wparm, lparm); // Destroy
 	}
 	return FALSE;
 }
@@ -707,7 +707,7 @@ ORCA_API struct ClassDesc _Tag = {
 	.NumProperties = kTagNumProperties,
 };
 
-LRESULT ThemeGroup_Attached(struct Object*, struct ThemeGroup*, wParam_t, AttachedEventPtr);
+LRESULT ThemeGroup_Attached(struct Object*, struct ThemeGroup*, wParam_t, AttachedMsgPtr);
 
 static struct PropertyType const ThemeGroupProperties[kThemeGroupNumProperties] = {
 	DECL(0x75516381, ThemeGroup, SelectedTheme, SelectedTheme, kDataTypeString), // ThemeGroup.SelectedTheme
@@ -717,7 +717,7 @@ static struct ThemeGroup ThemeGroupDefaults = {
 };
 LRESULT ThemeGroupProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kEventAttached: return ThemeGroup_Attached(object, cmp, wparm, lparm); // Attached
+		case kMsgAttached: return ThemeGroup_Attached(object, cmp, wparm, lparm); // Attached
 	}
 	return FALSE;
 }
@@ -920,9 +920,9 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_ProjectReference(L), -2), "ProjectReference");
 	lua_setfield(L, ((void)luaopen_orca_EnginePlugin(L), -2), "EnginePlugin");
 	lua_setfield(L, ((void)luaopen_orca_SystemMessage(L), -2), "SystemMessage");
-	lua_setfield(L, ((void)luaopen_orca_OpenFileEventArgs(L), -2), "OpenFileEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_FileExistsEventArgs(L), -2), "FileExistsEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_LoadProjectEventArgs(L), -2), "LoadProjectEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_OpenFileMsgArgs(L), -2), "OpenFileMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_FileExistsMsgArgs(L), -2), "FileExistsMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_LoadProjectMsgArgs(L), -2), "LoadProjectMsgArgs");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Workspace), -2), "Workspace");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Library), -2), "Library");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Project), -2), "Project");

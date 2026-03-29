@@ -15,11 +15,11 @@ struct _PACK;
 #include "filesystem_properties.h"
 #include "../core/core.h"
 
-typedef void* ReadCommandsEventPtr;
-typedef struct OpenFileEventArgs* OpenFileEventPtr;
-typedef struct FileExistsEventArgs* FileExistsEventPtr;
-typedef void* HasChangedFilesEventPtr;
-typedef struct LoadProjectEventArgs* LoadProjectEventPtr;
+typedef void* ReadCommandsMsgPtr;
+typedef struct OpenFileMsgArgs* OpenFileMsgPtr;
+typedef struct FileExistsMsgArgs* FileExistsMsgPtr;
+typedef void* HasChangedFilesMsgPtr;
+typedef struct LoadProjectMsgArgs* LoadProjectMsgPtr;
 
 
 typedef struct ProjectReference ProjectReference_t, *lpProjectReference_t;
@@ -89,24 +89,24 @@ struct SystemMessage {
 ORCA_API void luaX_pushSystemMessage(lua_State *L, struct SystemMessage const* SystemMessage);
 ORCA_API struct SystemMessage* luaX_checkSystemMessage(lua_State *L, int idx);
 
-/** OpenFileEventArgs struct */
-struct OpenFileEventArgs {
+/** OpenFileMsgArgs struct */
+struct OpenFileMsgArgs {
 	const char* FileName;
 };
-ORCA_API void luaX_pushOpenFileEventArgs(lua_State *L, struct OpenFileEventArgs const* data);
-ORCA_API struct OpenFileEventArgs* luaX_checkOpenFileEventArgs(lua_State *L, int idx);
-/** FileExistsEventArgs struct */
-struct FileExistsEventArgs {
+ORCA_API void luaX_pushOpenFileMsgArgs(lua_State *L, struct OpenFileMsgArgs const* data);
+ORCA_API struct OpenFileMsgArgs* luaX_checkOpenFileMsgArgs(lua_State *L, int idx);
+/** FileExistsMsgArgs struct */
+struct FileExistsMsgArgs {
 	const char* FileName; ///< The file path to check for existence
 };
-ORCA_API void luaX_pushFileExistsEventArgs(lua_State *L, struct FileExistsEventArgs const* data);
-ORCA_API struct FileExistsEventArgs* luaX_checkFileExistsEventArgs(lua_State *L, int idx);
-/** LoadProjectEventArgs struct */
-struct LoadProjectEventArgs {
+ORCA_API void luaX_pushFileExistsMsgArgs(lua_State *L, struct FileExistsMsgArgs const* data);
+ORCA_API struct FileExistsMsgArgs* luaX_checkFileExistsMsgArgs(lua_State *L, int idx);
+/** LoadProjectMsgArgs struct */
+struct LoadProjectMsgArgs {
 	const char* Path; ///< Directory name to load the bundle
 };
-ORCA_API void luaX_pushLoadProjectEventArgs(lua_State *L, struct LoadProjectEventArgs const* data);
-ORCA_API struct LoadProjectEventArgs* luaX_checkLoadProjectEventArgs(lua_State *L, int idx);
+ORCA_API void luaX_pushLoadProjectMsgArgs(lua_State *L, struct LoadProjectMsgArgs const* data);
+ORCA_API struct LoadProjectMsgArgs* luaX_checkLoadProjectMsgArgs(lua_State *L, int idx);
 
 /** Workspace component */
 typedef struct Workspace Workspace_t, *WorkspacePtr, *lpWorkspace_t;

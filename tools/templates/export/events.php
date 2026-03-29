@@ -1,6 +1,6 @@
 <?php foreach ($events as $name => $event):?>
 <?php if (!$event->hasFields()): continue; endif ?>
-<?php $struct_name = $name . "EventArgs" ?>
+<?php $struct_name = $name . "MsgArgs" ?>
 void luaX_push<?= $struct_name ?>(lua_State *L, struct <?= $struct_name ?> const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct <?= $struct_name ?>* self = lua_newuserdata(L, sizeof(struct <?= $struct_name ?>));

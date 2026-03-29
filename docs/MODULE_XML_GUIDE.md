@@ -227,18 +227,18 @@ Defines a global function in the module namespace.
 </function>
 ```
 
-### 6. `<event>` - Event Definitions
+### 6. `<message>` - Message Definitions
 
-Declares an event that can be handled by components.
+Declares a message that can be handled by components.
 
 **Attributes:**
-- `name` (required) - Event name
-- `type` (optional) - Event parameter type
+- `name` (required) - Message name
+- `type` (optional) - Message parameter type
 
 **Example:**
 ```xml
-<event name="LeftMouseDown" type="WI_Message"/>
-<event name="WindowPaint"/>
+<message name="LeftMouseDown" type="WI_Message"/>
+<message name="WindowPaint"/>
 ```
 
 ### 7. `<resource>` - Resource Type Definitions
@@ -373,16 +373,16 @@ Defines a property on a component.
 <property name="Category" type="fixed">Organizational category for this property.</property>
 ```
 
-### `<handles>` - Event Handlers
+### `<handles>` - Message Handlers
 
-Declares that a component handles a specific event.
+Declares that a component handles a specific message.
 
 **Attributes:**
-- `event` (required) - Name of event being handled
+- `message` (required) - Name of message being handled
 
 **Example:**
 ```xml
-<handles event="Attached"/>
+<handles message="Attached"/>
 ```
 
 ### Documentation Elements

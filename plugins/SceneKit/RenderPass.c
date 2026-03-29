@@ -160,7 +160,7 @@ R_DrawEntities(lpObject_t object,
   if (OBJ_IsHidden(object) || (excl & get_tags(node, Tags, _tags)))
     return;
   if (!incl || (incl & get_tags(node, Tags, _tags))) {
-    OBJ_SendMessageW(object, kEventRender, 0, &(struct RenderEventArgs) { viewdef });
+    OBJ_SendMessageW(object, kMsgRender, 0, &(struct RenderMsgArgs) { viewdef });
     FOR_EACH_OBJECT(node, object)
     {
       R_DrawEntities(node, 0, excl, viewdef);
@@ -248,7 +248,7 @@ DrawEntities(struct ViewDef* vd, lpObject_t object)
 {
   if (OBJ_IsHidden(object))
     return;
-  OBJ_SendMessageW(object, kEventRender, 0, &(struct RenderEventArgs) {vd});
+  OBJ_SendMessageW(object, kMsgRender, 0, &(struct RenderMsgArgs) {vd});
   FOR_EACH_OBJECT(child, object)
   {
     DrawEntities(vd, child);

@@ -5,7 +5,7 @@
 
 <?php foreach ($components as $name => $component):?>
 	<?php foreach ($component->getEventHandlers() as $event): ?>
-LRESULT <?= $name ?>_<?= $event ?>(struct Object*, struct <?= $name ?>*, wParam_t, <?= $event ?>EventPtr);
+LRESULT <?= $name ?>_<?= $event ?>(struct Object*, struct <?= $name ?>*, wParam_t, <?= $event ?>MsgPtr);
 	<?php endforeach ?>
 
 static struct PropertyType const <?= $name ?>Properties[k<?= $name ?>NumProperties] = {
@@ -34,7 +34,7 @@ static struct <?= $name ?> <?= $name ?>Defaults = {
 LRESULT <?= $name ?>Proc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
 	<?php foreach ($component->getEventHandlers() as $event): ?>
-		case kEvent<?= $event ?>: return <?= $name ?>_<?= $event ?>(object, cmp, wparm, lparm); // <?= $event ?>
+		case kMsg<?= $event ?>: return <?= $name ?>_<?= $event ?>(object, cmp, wparm, lparm); // <?= $event ?>
 	<?php endforeach ?>
 	}
 	return FALSE;

@@ -9,7 +9,7 @@ lpObject_t OBJ_AddChild(lpObject_t self, lpObject_t child, bool_t is_template)
   }
   ADD_TO_LIST_END(struct Object, child, self->children);
   child->parent = self;
-  OBJ_SendMessageW(child, kEventAttached, 0, self);
+  OBJ_SendMessageW(child, kMsgAttached, 0, self);
   if (is_template) {
     OBJ_SetFlags(self, OBJ_GetFlags(self) | OF_TEMPLATE);
   }

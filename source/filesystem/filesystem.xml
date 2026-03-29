@@ -3,7 +3,7 @@
 <module name="filesystem" namespace="orca" on-luaopen="on_filesystem_module_registered" prefix="FS_">
   <require file="../core/core.xml"/>
   
-  <event name="ReadCommands"/>
+  <message name="ReadCommands"/>
   
   <external struct="Object"/>
   <external struct="_PACK"/>
@@ -36,7 +36,7 @@
   </class>
   
   <class name="Project">
-    <handles event="Start"/>
+    <handles message="Start"/>
     <property name="HalfFloatTextureFormat" type="bool"/>
     <property name="HalfFloatTextureFormatLinear" type="bool"/>
     <property name="HalfFloatColorAttachment" type="bool"/>
@@ -139,35 +139,35 @@
     <field name="isPackage" type="bool"/>
   </class>
   
-  <event name="OpenFile">
+  <message name="OpenFile">
     <field name="FileName" type="string"/>
-  </event>
-  <event name="FileExists">
+  </message>
+  <message name="FileExists">
     <summary>Checks whether the specified file exists.</summary>
     <field name="FileName" type="string">The file path to check for existence</field>
-  </event>
-  <event name="HasChangedFiles"/>
-  <event name="LoadProject">
+  </message>
+  <message name="HasChangedFiles"/>
+  <message name="LoadProject">
     <summary>Loads a project bundle from the given directory.</summary>
     <field name="Path" type="string">Directory name to load the bundle</field>
-  </event>
+  </message>
   
   <class name="Directory" parent="Project">
-    <handles event="LoadProject"/>
-    <handles event="OpenFile"/>
-    <handles event="FileExists"/>
-    <handles event="HasChangedFiles"/>
-    <handles event="Destroy"/>
+    <handles message="LoadProject"/>
+    <handles message="OpenFile"/>
+    <handles message="FileExists"/>
+    <handles message="HasChangedFiles"/>
+    <handles message="Destroy"/>
     <property name="Path" type="string"/>
     <field name="_monitoredfiles" type="void" pointer="true"/>
   </class>
   
   <class name="Package" parent="Project">
-    <handles event="LoadProject"/>
-    <handles event="OpenFile"/>
-    <handles event="FileExists"/>
-    <handles event="HasChangedFiles"/>
-    <handles event="Destroy"/>
+    <handles message="LoadProject"/>
+    <handles message="OpenFile"/>
+    <handles message="FileExists"/>
+    <handles message="HasChangedFiles"/>
+    <handles message="Destroy"/>
     <property name="FileName" type="string"/>
     <field name="_package" type="_PACK" pointer="true"/>
   </class>
@@ -179,7 +179,7 @@
   </class>
 
   <class name="ThemeGroup">
-    <handles event="Attached"/>
+    <handles message="Attached"/>
     <property name="SelectedTheme" type="string"/>
     <property name="SelectedDictionary" type="string"/>
     <field name="_selectedTheme" type="Object" pointer="true"/>

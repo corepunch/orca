@@ -555,7 +555,7 @@ int fetch_http(lua_State* L)
   free(header_buf);
 
   /* Yield the Lua coroutine until the XHR callback fires.  Each resume
-     from kEventResumeCoroutine checks state->done via fetch_http_resume. */
+     from kMsgResumeCoroutine checks state->done via fetch_http_resume. */
   if (!state->done) {
     return lua_yieldk(L, 0, (lua_KContext)state, fetch_http_resume);
   }

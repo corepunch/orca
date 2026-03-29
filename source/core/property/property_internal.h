@@ -33,7 +33,7 @@ struct Property
   lpcPropertyType_t      pdesc;
   uint32_t               updateFrame;
   uint32_t               stateflags;
-  lpProperty_t           callbackEvent;
+  lpProperty_t           callbackMsg;
   lpProperty_t           next;
   char                   states[];
 };
