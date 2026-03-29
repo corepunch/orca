@@ -472,10 +472,14 @@ ORCA_API struct SizeShorthand* luaX_checkSizeShorthand(lua_State *L, int idx);
 struct ForegroundContentEventArgs {
 	struct Texture* result;
 };
+ORCA_API void luaX_pushForegroundContentEventArgs(lua_State *L, struct ForegroundContentEventArgs const* data);
+ORCA_API struct ForegroundContentEventArgs* luaX_checkForegroundContentEventArgs(lua_State *L, int idx);
 /** PushPropertyEventArgs struct */
 struct PushPropertyEventArgs {
 	int32_t Placeholder;
 };
+ORCA_API void luaX_pushPushPropertyEventArgs(lua_State *L, struct PushPropertyEventArgs const* data);
+ORCA_API struct PushPropertyEventArgs* luaX_checkPushPropertyEventArgs(lua_State *L, int idx);
 /** DrawBrushEventArgs struct */
 struct DrawBrushEventArgs {
 	struct mat4 projection; ///< Projection matrix for 3D to 2D transformation
@@ -486,35 +490,49 @@ struct DrawBrushEventArgs {
 	bool_t foreground; ///< True if drawing foreground, false for background
 	struct ViewDef* viewdef; ///< View definition context for rendering
 };
+ORCA_API void luaX_pushDrawBrushEventArgs(lua_State *L, struct DrawBrushEventArgs const* data);
+ORCA_API struct DrawBrushEventArgs* luaX_checkDrawBrushEventArgs(lua_State *L, int idx);
 /** HandleMessageEventArgs struct */
 struct HandleMessageEventArgs {
 	fixedString_t EventName;
 	uint32_t FirstArg;
 	uint32_t NumArgs;
 };
+ORCA_API void luaX_pushHandleMessageEventArgs(lua_State *L, struct HandleMessageEventArgs const* data);
+ORCA_API struct HandleMessageEventArgs* luaX_checkHandleMessageEventArgs(lua_State *L, int idx);
 /** LoadViewEventArgs struct */
 struct LoadViewEventArgs {
 	struct lua_State* lua_state;
 };
+ORCA_API void luaX_pushLoadViewEventArgs(lua_State *L, struct LoadViewEventArgs const* data);
+ORCA_API struct LoadViewEventArgs* luaX_checkLoadViewEventArgs(lua_State *L, int idx);
 /** MakeTextEventArgs struct */
 struct MakeTextEventArgs {
 	struct ViewText* text; ///< Text view to render
 	uint32_t availableSpace; ///< Available space for text layout
 };
+ORCA_API void luaX_pushMakeTextEventArgs(lua_State *L, struct MakeTextEventArgs const* data);
+ORCA_API struct MakeTextEventArgs* luaX_checkMakeTextEventArgs(lua_State *L, int idx);
 /** TriggeredEventArgs struct */
 struct TriggeredEventArgs {
 	struct Trigger* Trigger;
 	struct HandleMessageEventArgs message;
 };
+ORCA_API void luaX_pushTriggeredEventArgs(lua_State *L, struct TriggeredEventArgs const* data);
+ORCA_API struct TriggeredEventArgs* luaX_checkTriggeredEventArgs(lua_State *L, int idx);
 /** NavigateToPageEventArgs struct */
 struct NavigateToPageEventArgs {
 	fixedString_t URL; ///< The URL of the page to navigate to.
 	enum TransitionType TransitionType; ///< The type of transition animation to use during navigation.
 };
+ORCA_API void luaX_pushNavigateToPageEventArgs(lua_State *L, struct NavigateToPageEventArgs const* data);
+ORCA_API struct NavigateToPageEventArgs* luaX_checkNavigateToPageEventArgs(lua_State *L, int idx);
 /** NavigateBackEventArgs struct */
 struct NavigateBackEventArgs {
 	enum TransitionType TransitionType; ///< The type of transition animation to use during navigation.
 };
+ORCA_API void luaX_pushNavigateBackEventArgs(lua_State *L, struct NavigateBackEventArgs const* data);
+ORCA_API struct NavigateBackEventArgs* luaX_checkNavigateBackEventArgs(lua_State *L, int idx);
 
 /// @brief Base class for data-holding objects within the framework
 /** DataObject component */

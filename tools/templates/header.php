@@ -107,6 +107,8 @@ ORCA_API <?= $method->getReturnType() ?>
 struct <?= $name ?>EventArgs {
 <?php include_template("struct_contents", ['list' => $event->getAllFields()]) ?>
 };
+ORCA_API void luaX_push<?= $name ?>EventArgs(lua_State *L, struct <?= $name ?>EventArgs const* data);
+ORCA_API struct <?= $name ?>EventArgs* luaX_check<?= $name ?>EventArgs(lua_State *L, int idx);
 <?php endif ?>
 <?php endforeach ?>
 

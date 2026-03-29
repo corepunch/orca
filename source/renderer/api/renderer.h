@@ -307,10 +307,14 @@ struct RenderScreenEventArgs {
 	float angle; ///< The angle of the render screen
 	struct Texture* target; ///< The target handle of the render screen
 };
+ORCA_API void luaX_pushRenderScreenEventArgs(lua_State *L, struct RenderScreenEventArgs const* data);
+ORCA_API struct RenderScreenEventArgs* luaX_checkRenderScreenEventArgs(lua_State *L, int idx);
 /** RenderEventArgs struct */
 struct RenderEventArgs {
 	struct ViewDef* ViewDef; ///< The view definition for rendering
 };
+ORCA_API void luaX_pushRenderEventArgs(lua_State *L, struct RenderEventArgs const* data);
+ORCA_API struct RenderEventArgs* luaX_checkRenderEventArgs(lua_State *L, int idx);
 
 /// @brief Base class for managing texture resources and their sampling parameters for rendering.
 /** Texture component */

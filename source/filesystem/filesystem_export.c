@@ -233,6 +233,165 @@ int luaopen_orca_SystemMessage(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
+void luaX_pushOpenFileEventArgs(lua_State *L, struct OpenFileEventArgs const* data) {
+	if (data == NULL) { lua_pushnil(L); return; }
+	struct OpenFileEventArgs* self = lua_newuserdata(L, sizeof(struct OpenFileEventArgs));
+	luaL_setmetatable(L, "OpenFileEventArgs");
+	memcpy(self, data, sizeof(struct OpenFileEventArgs));
+}
+struct OpenFileEventArgs* luaX_checkOpenFileEventArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "OpenFileEventArgs");
+}
+static int f_new_OpenFileEventArgs(lua_State *L) {
+	struct OpenFileEventArgs* self = lua_newuserdata(L, sizeof(struct OpenFileEventArgs));
+	luaL_setmetatable(L, "OpenFileEventArgs");
+	memset(self, 0, sizeof(struct OpenFileEventArgs));
+	if (lua_gettop(L) == 1) return 1;
+	if (lua_istable(L, 1)) {
+		lua_pop(L, (lua_getfield(L, 1, "FileName"), self->FileName = lua_type(L, -1) == LUA_TSTRING ? strdup(luaL_checkstring(L, -1)) : NULL, 1));
+	} else {
+		self->FileName = lua_type(L, 1) == LUA_TSTRING ? strdup(luaL_checkstring(L, 1)) : NULL;
+	}
+	return 1;
+}
+int f_OpenFileEventArgs___index(lua_State *L) {
+	struct OpenFileEventArgs* self = luaX_checkOpenFileEventArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x5ffdd888: lua_pushstring(L, self->FileName); return 1; // FileName
+	}
+	return luaL_error(L, "Unknown field in OpenFileEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+int f_OpenFileEventArgs___newindex(lua_State *L) {
+	struct OpenFileEventArgs* self = luaX_checkOpenFileEventArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x5ffdd888: self->FileName = lua_type(L, 3) == LUA_TSTRING ? strdup(luaL_checkstring(L, 3)) : NULL; return 0; // FileName
+	}
+	return luaL_error(L, "Unknown field in OpenFileEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+static int f_OpenFileEventArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_OpenFileEventArgs(L));  // remove OpenFileEventArgs from stack and call constructor
+}
+int luaopen_orca_OpenFileEventArgs(lua_State *L) {
+	luaL_newmetatable(L, "OpenFileEventArgs");
+	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ "new", f_new_OpenFileEventArgs },
+		{ "__newindex", f_OpenFileEventArgs___newindex },
+		{ "__index", f_OpenFileEventArgs___index },
+		{ NULL, NULL },
+	}), 0);
+	// Make OpenFileEventArgs creatable via constructor-like syntax
+	lua_newtable(L);
+	lua_pushcfunction(L, f_OpenFileEventArgs___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+	return 1;
+}
+void luaX_pushFileExistsEventArgs(lua_State *L, struct FileExistsEventArgs const* data) {
+	if (data == NULL) { lua_pushnil(L); return; }
+	struct FileExistsEventArgs* self = lua_newuserdata(L, sizeof(struct FileExistsEventArgs));
+	luaL_setmetatable(L, "FileExistsEventArgs");
+	memcpy(self, data, sizeof(struct FileExistsEventArgs));
+}
+struct FileExistsEventArgs* luaX_checkFileExistsEventArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "FileExistsEventArgs");
+}
+static int f_new_FileExistsEventArgs(lua_State *L) {
+	struct FileExistsEventArgs* self = lua_newuserdata(L, sizeof(struct FileExistsEventArgs));
+	luaL_setmetatable(L, "FileExistsEventArgs");
+	memset(self, 0, sizeof(struct FileExistsEventArgs));
+	if (lua_gettop(L) == 1) return 1;
+	if (lua_istable(L, 1)) {
+		lua_pop(L, (lua_getfield(L, 1, "FileName"), self->FileName = lua_type(L, -1) == LUA_TSTRING ? strdup(luaL_checkstring(L, -1)) : NULL, 1));
+	} else {
+		self->FileName = lua_type(L, 1) == LUA_TSTRING ? strdup(luaL_checkstring(L, 1)) : NULL;
+	}
+	return 1;
+}
+int f_FileExistsEventArgs___index(lua_State *L) {
+	struct FileExistsEventArgs* self = luaX_checkFileExistsEventArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x5ffdd888: lua_pushstring(L, self->FileName); return 1; // FileName
+	}
+	return luaL_error(L, "Unknown field in FileExistsEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+int f_FileExistsEventArgs___newindex(lua_State *L) {
+	struct FileExistsEventArgs* self = luaX_checkFileExistsEventArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x5ffdd888: self->FileName = lua_type(L, 3) == LUA_TSTRING ? strdup(luaL_checkstring(L, 3)) : NULL; return 0; // FileName
+	}
+	return luaL_error(L, "Unknown field in FileExistsEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+static int f_FileExistsEventArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_FileExistsEventArgs(L));  // remove FileExistsEventArgs from stack and call constructor
+}
+int luaopen_orca_FileExistsEventArgs(lua_State *L) {
+	luaL_newmetatable(L, "FileExistsEventArgs");
+	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ "new", f_new_FileExistsEventArgs },
+		{ "__newindex", f_FileExistsEventArgs___newindex },
+		{ "__index", f_FileExistsEventArgs___index },
+		{ NULL, NULL },
+	}), 0);
+	// Make FileExistsEventArgs creatable via constructor-like syntax
+	lua_newtable(L);
+	lua_pushcfunction(L, f_FileExistsEventArgs___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+	return 1;
+}
+void luaX_pushLoadProjectEventArgs(lua_State *L, struct LoadProjectEventArgs const* data) {
+	if (data == NULL) { lua_pushnil(L); return; }
+	struct LoadProjectEventArgs* self = lua_newuserdata(L, sizeof(struct LoadProjectEventArgs));
+	luaL_setmetatable(L, "LoadProjectEventArgs");
+	memcpy(self, data, sizeof(struct LoadProjectEventArgs));
+}
+struct LoadProjectEventArgs* luaX_checkLoadProjectEventArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "LoadProjectEventArgs");
+}
+static int f_new_LoadProjectEventArgs(lua_State *L) {
+	struct LoadProjectEventArgs* self = lua_newuserdata(L, sizeof(struct LoadProjectEventArgs));
+	luaL_setmetatable(L, "LoadProjectEventArgs");
+	memset(self, 0, sizeof(struct LoadProjectEventArgs));
+	if (lua_gettop(L) == 1) return 1;
+	if (lua_istable(L, 1)) {
+		lua_pop(L, (lua_getfield(L, 1, "Path"), self->Path = lua_type(L, -1) == LUA_TSTRING ? strdup(luaL_checkstring(L, -1)) : NULL, 1));
+	} else {
+		self->Path = lua_type(L, 1) == LUA_TSTRING ? strdup(luaL_checkstring(L, 1)) : NULL;
+	}
+	return 1;
+}
+int f_LoadProjectEventArgs___index(lua_State *L) {
+	struct LoadProjectEventArgs* self = luaX_checkLoadProjectEventArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0xeb66e456: lua_pushstring(L, self->Path); return 1; // Path
+	}
+	return luaL_error(L, "Unknown field in LoadProjectEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+int f_LoadProjectEventArgs___newindex(lua_State *L) {
+	struct LoadProjectEventArgs* self = luaX_checkLoadProjectEventArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0xeb66e456: self->Path = lua_type(L, 3) == LUA_TSTRING ? strdup(luaL_checkstring(L, 3)) : NULL; return 0; // Path
+	}
+	return luaL_error(L, "Unknown field in LoadProjectEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+static int f_LoadProjectEventArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_LoadProjectEventArgs(L));  // remove LoadProjectEventArgs from stack and call constructor
+}
+int luaopen_orca_LoadProjectEventArgs(lua_State *L) {
+	luaL_newmetatable(L, "LoadProjectEventArgs");
+	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ "new", f_new_LoadProjectEventArgs },
+		{ "__newindex", f_LoadProjectEventArgs___newindex },
+		{ "__index", f_LoadProjectEventArgs___index },
+		{ NULL, NULL },
+	}), 0);
+	// Make LoadProjectEventArgs creatable via constructor-like syntax
+	lua_newtable(L);
+	lua_pushcfunction(L, f_LoadProjectEventArgs___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+	return 1;
+}
 #define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
 #define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
 
@@ -761,6 +920,9 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_ProjectReference(L), -2), "ProjectReference");
 	lua_setfield(L, ((void)luaopen_orca_EnginePlugin(L), -2), "EnginePlugin");
 	lua_setfield(L, ((void)luaopen_orca_SystemMessage(L), -2), "SystemMessage");
+	lua_setfield(L, ((void)luaopen_orca_OpenFileEventArgs(L), -2), "OpenFileEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_FileExistsEventArgs(L), -2), "FileExistsEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_LoadProjectEventArgs(L), -2), "LoadProjectEventArgs");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Workspace), -2), "Workspace");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Library), -2), "Library");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Project), -2), "Project");

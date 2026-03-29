@@ -1251,6 +1251,527 @@ int luaopen_orca_SizeShorthand(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
+void luaX_pushForegroundContentEventArgs(lua_State *L, struct ForegroundContentEventArgs const* data) {
+	if (data == NULL) { lua_pushnil(L); return; }
+	struct ForegroundContentEventArgs* self = lua_newuserdata(L, sizeof(struct ForegroundContentEventArgs));
+	luaL_setmetatable(L, "ForegroundContentEventArgs");
+	memcpy(self, data, sizeof(struct ForegroundContentEventArgs));
+}
+struct ForegroundContentEventArgs* luaX_checkForegroundContentEventArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "ForegroundContentEventArgs");
+}
+static int f_new_ForegroundContentEventArgs(lua_State *L) {
+	struct ForegroundContentEventArgs* self = lua_newuserdata(L, sizeof(struct ForegroundContentEventArgs));
+	luaL_setmetatable(L, "ForegroundContentEventArgs");
+	memset(self, 0, sizeof(struct ForegroundContentEventArgs));
+	if (lua_gettop(L) == 1) return 1;
+	if (lua_istable(L, 1)) {
+		lua_pop(L, (lua_getfield(L, 1, "result"), self->result = luaX_checkTexture(L, -1), 1));
+	} else {
+		self->result = luaX_checkTexture(L, 1);
+	}
+	return 1;
+}
+int f_ForegroundContentEventArgs___index(lua_State *L) {
+	struct ForegroundContentEventArgs* self = luaX_checkForegroundContentEventArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x0a377624: luaX_pushTexture(L, self->result); return 1; // result
+	}
+	return luaL_error(L, "Unknown field in ForegroundContentEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+int f_ForegroundContentEventArgs___newindex(lua_State *L) {
+	struct ForegroundContentEventArgs* self = luaX_checkForegroundContentEventArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x0a377624: self->result = luaX_checkTexture(L, 3); return 0; // result
+	}
+	return luaL_error(L, "Unknown field in ForegroundContentEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+static int f_ForegroundContentEventArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_ForegroundContentEventArgs(L));  // remove ForegroundContentEventArgs from stack and call constructor
+}
+int luaopen_orca_ForegroundContentEventArgs(lua_State *L) {
+	luaL_newmetatable(L, "ForegroundContentEventArgs");
+	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ "new", f_new_ForegroundContentEventArgs },
+		{ "__newindex", f_ForegroundContentEventArgs___newindex },
+		{ "__index", f_ForegroundContentEventArgs___index },
+		{ NULL, NULL },
+	}), 0);
+	// Make ForegroundContentEventArgs creatable via constructor-like syntax
+	lua_newtable(L);
+	lua_pushcfunction(L, f_ForegroundContentEventArgs___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+	return 1;
+}
+void luaX_pushPushPropertyEventArgs(lua_State *L, struct PushPropertyEventArgs const* data) {
+	if (data == NULL) { lua_pushnil(L); return; }
+	struct PushPropertyEventArgs* self = lua_newuserdata(L, sizeof(struct PushPropertyEventArgs));
+	luaL_setmetatable(L, "PushPropertyEventArgs");
+	memcpy(self, data, sizeof(struct PushPropertyEventArgs));
+}
+struct PushPropertyEventArgs* luaX_checkPushPropertyEventArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "PushPropertyEventArgs");
+}
+static int f_new_PushPropertyEventArgs(lua_State *L) {
+	struct PushPropertyEventArgs* self = lua_newuserdata(L, sizeof(struct PushPropertyEventArgs));
+	luaL_setmetatable(L, "PushPropertyEventArgs");
+	memset(self, 0, sizeof(struct PushPropertyEventArgs));
+	if (lua_gettop(L) == 1) return 1;
+	if (lua_istable(L, 1)) {
+		lua_pop(L, (lua_getfield(L, 1, "Placeholder"), self->Placeholder = (int32_t)luaL_optinteger(L, -1, 0), 1));
+	} else {
+		self->Placeholder = (int32_t)luaL_optinteger(L, 1, 0);
+	}
+	return 1;
+}
+int f_PushPropertyEventArgs___index(lua_State *L) {
+	struct PushPropertyEventArgs* self = luaX_checkPushPropertyEventArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x8987413a: lua_pushinteger(L, self->Placeholder); return 1; // Placeholder
+	}
+	return luaL_error(L, "Unknown field in PushPropertyEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+int f_PushPropertyEventArgs___newindex(lua_State *L) {
+	struct PushPropertyEventArgs* self = luaX_checkPushPropertyEventArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x8987413a: self->Placeholder = (int32_t)luaL_optinteger(L, 3, 0); return 0; // Placeholder
+	}
+	return luaL_error(L, "Unknown field in PushPropertyEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+static int f_PushPropertyEventArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_PushPropertyEventArgs(L));  // remove PushPropertyEventArgs from stack and call constructor
+}
+int luaopen_orca_PushPropertyEventArgs(lua_State *L) {
+	luaL_newmetatable(L, "PushPropertyEventArgs");
+	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ "new", f_new_PushPropertyEventArgs },
+		{ "__newindex", f_PushPropertyEventArgs___newindex },
+		{ "__index", f_PushPropertyEventArgs___index },
+		{ NULL, NULL },
+	}), 0);
+	// Make PushPropertyEventArgs creatable via constructor-like syntax
+	lua_newtable(L);
+	lua_pushcfunction(L, f_PushPropertyEventArgs___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+	return 1;
+}
+void luaX_pushDrawBrushEventArgs(lua_State *L, struct DrawBrushEventArgs const* data) {
+	if (data == NULL) { lua_pushnil(L); return; }
+	struct DrawBrushEventArgs* self = lua_newuserdata(L, sizeof(struct DrawBrushEventArgs));
+	luaL_setmetatable(L, "DrawBrushEventArgs");
+	memcpy(self, data, sizeof(struct DrawBrushEventArgs));
+}
+struct DrawBrushEventArgs* luaX_checkDrawBrushEventArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "DrawBrushEventArgs");
+}
+static int f_new_DrawBrushEventArgs(lua_State *L) {
+	struct DrawBrushEventArgs* self = lua_newuserdata(L, sizeof(struct DrawBrushEventArgs));
+	luaL_setmetatable(L, "DrawBrushEventArgs");
+	memset(self, 0, sizeof(struct DrawBrushEventArgs));
+	if (lua_gettop(L) == 1) return 1;
+	if (lua_istable(L, 1)) {
+		lua_pop(L, (lua_getfield(L, 1, "projection"), self->projection = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkmat4(L, -1) : (struct mat4){0}, 1));
+		lua_pop(L, (lua_getfield(L, 1, "image"), self->image = luaX_checkTexture(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "brush"), self->brush = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkBrushShorthand(L, -1) : (struct BrushShorthand){0}, 1));
+		lua_pop(L, (lua_getfield(L, 1, "borderOffset"), self->borderOffset = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "borderWidth"), self->borderWidth = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkvec4(L, -1) : (struct vec4){0}, 1));
+		lua_pop(L, (lua_getfield(L, 1, "foreground"), self->foreground = lua_toboolean(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "viewdef"), self->viewdef = NULL, 1));
+	} else {
+		self->projection = lua_type(L, 1) == LUA_TUSERDATA ? *luaX_checkmat4(L, 1) : (struct mat4){0};
+		self->image = luaX_checkTexture(L, 2);
+		self->brush = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkBrushShorthand(L, 3) : (struct BrushShorthand){0};
+		self->borderOffset = luaL_optnumber(L, 4, 0);
+		self->borderWidth = lua_type(L, 5) == LUA_TUSERDATA ? *luaX_checkvec4(L, 5) : (struct vec4){0};
+		self->foreground = lua_toboolean(L, 6);
+		self->viewdef = NULL;
+	}
+	return 1;
+}
+int f_DrawBrushEventArgs___index(lua_State *L) {
+	struct DrawBrushEventArgs* self = luaX_checkDrawBrushEventArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0xe4497980: luaX_pushmat4(L, &self->projection); return 1; // projection
+	case 0xb35135fa: luaX_pushTexture(L, self->image); return 1; // image
+	case 0xfac46df3: luaX_pushBrushShorthand(L, &self->brush); return 1; // brush
+	case 0x98e5266c: lua_pushnumber(L, self->borderOffset); return 1; // borderOffset
+	case 0x211ec219: luaX_pushvec4(L, &self->borderWidth); return 1; // borderWidth
+	case 0x083a85c0: lua_pushboolean(L, self->foreground); return 1; // foreground
+	case 0xad6aa1df: luaX_pushViewDef(L, self->viewdef); return 1; // viewdef
+	}
+	return luaL_error(L, "Unknown field in DrawBrushEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+int f_DrawBrushEventArgs___newindex(lua_State *L) {
+	struct DrawBrushEventArgs* self = luaX_checkDrawBrushEventArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0xe4497980: self->projection = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkmat4(L, 3) : (struct mat4){0}; return 0; // projection
+	case 0xb35135fa: self->image = luaX_checkTexture(L, 3); return 0; // image
+	case 0xfac46df3: self->brush = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkBrushShorthand(L, 3) : (struct BrushShorthand){0}; return 0; // brush
+	case 0x98e5266c: self->borderOffset = luaL_optnumber(L, 3, 0); return 0; // borderOffset
+	case 0x211ec219: self->borderWidth = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkvec4(L, 3) : (struct vec4){0}; return 0; // borderWidth
+	case 0x083a85c0: self->foreground = lua_toboolean(L, 3); return 0; // foreground
+	case 0xad6aa1df: self->viewdef = NULL; return 0; // viewdef
+	}
+	return luaL_error(L, "Unknown field in DrawBrushEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+static int f_DrawBrushEventArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_DrawBrushEventArgs(L));  // remove DrawBrushEventArgs from stack and call constructor
+}
+int luaopen_orca_DrawBrushEventArgs(lua_State *L) {
+	luaL_newmetatable(L, "DrawBrushEventArgs");
+	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ "new", f_new_DrawBrushEventArgs },
+		{ "__newindex", f_DrawBrushEventArgs___newindex },
+		{ "__index", f_DrawBrushEventArgs___index },
+		{ NULL, NULL },
+	}), 0);
+	// Make DrawBrushEventArgs creatable via constructor-like syntax
+	lua_newtable(L);
+	lua_pushcfunction(L, f_DrawBrushEventArgs___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+	return 1;
+}
+void luaX_pushHandleMessageEventArgs(lua_State *L, struct HandleMessageEventArgs const* data) {
+	if (data == NULL) { lua_pushnil(L); return; }
+	struct HandleMessageEventArgs* self = lua_newuserdata(L, sizeof(struct HandleMessageEventArgs));
+	luaL_setmetatable(L, "HandleMessageEventArgs");
+	memcpy(self, data, sizeof(struct HandleMessageEventArgs));
+}
+struct HandleMessageEventArgs* luaX_checkHandleMessageEventArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "HandleMessageEventArgs");
+}
+static int f_new_HandleMessageEventArgs(lua_State *L) {
+	struct HandleMessageEventArgs* self = lua_newuserdata(L, sizeof(struct HandleMessageEventArgs));
+	luaL_setmetatable(L, "HandleMessageEventArgs");
+	memset(self, 0, sizeof(struct HandleMessageEventArgs));
+	if (lua_gettop(L) == 1) return 1;
+	if (lua_istable(L, 1)) {
+		lua_pop(L, (lua_getfield(L, 1, "EventName"), strncpy(self->EventName, luaL_optstring(L, -1, ""), sizeof(self->EventName)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "FirstArg"), self->FirstArg = (uint32_t)luaL_optinteger(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "NumArgs"), self->NumArgs = (uint32_t)luaL_optinteger(L, -1, 0), 1));
+	} else {
+		strncpy(self->EventName, luaL_optstring(L, 1, ""), sizeof(self->EventName));
+		self->FirstArg = (uint32_t)luaL_optinteger(L, 2, 0);
+		self->NumArgs = (uint32_t)luaL_optinteger(L, 3, 0);
+	}
+	return 1;
+}
+int f_HandleMessageEventArgs___index(lua_State *L) {
+	struct HandleMessageEventArgs* self = luaX_checkHandleMessageEventArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x2fc7b71c: lua_pushstring(L, self->EventName); return 1; // EventName
+	case 0xd26deba3: lua_pushinteger(L, self->FirstArg); return 1; // FirstArg
+	case 0x227201c6: lua_pushinteger(L, self->NumArgs); return 1; // NumArgs
+	}
+	return luaL_error(L, "Unknown field in HandleMessageEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+int f_HandleMessageEventArgs___newindex(lua_State *L) {
+	struct HandleMessageEventArgs* self = luaX_checkHandleMessageEventArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x2fc7b71c: strncpy(self->EventName, luaL_optstring(L, 3, ""), sizeof(self->EventName)); return 0; // EventName
+	case 0xd26deba3: self->FirstArg = (uint32_t)luaL_optinteger(L, 3, 0); return 0; // FirstArg
+	case 0x227201c6: self->NumArgs = (uint32_t)luaL_optinteger(L, 3, 0); return 0; // NumArgs
+	}
+	return luaL_error(L, "Unknown field in HandleMessageEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+static int f_HandleMessageEventArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_HandleMessageEventArgs(L));  // remove HandleMessageEventArgs from stack and call constructor
+}
+int luaopen_orca_HandleMessageEventArgs(lua_State *L) {
+	luaL_newmetatable(L, "HandleMessageEventArgs");
+	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ "new", f_new_HandleMessageEventArgs },
+		{ "__newindex", f_HandleMessageEventArgs___newindex },
+		{ "__index", f_HandleMessageEventArgs___index },
+		{ NULL, NULL },
+	}), 0);
+	// Make HandleMessageEventArgs creatable via constructor-like syntax
+	lua_newtable(L);
+	lua_pushcfunction(L, f_HandleMessageEventArgs___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+	return 1;
+}
+void luaX_pushLoadViewEventArgs(lua_State *L, struct LoadViewEventArgs const* data) {
+	if (data == NULL) { lua_pushnil(L); return; }
+	struct LoadViewEventArgs* self = lua_newuserdata(L, sizeof(struct LoadViewEventArgs));
+	luaL_setmetatable(L, "LoadViewEventArgs");
+	memcpy(self, data, sizeof(struct LoadViewEventArgs));
+}
+struct LoadViewEventArgs* luaX_checkLoadViewEventArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "LoadViewEventArgs");
+}
+static int f_new_LoadViewEventArgs(lua_State *L) {
+	struct LoadViewEventArgs* self = lua_newuserdata(L, sizeof(struct LoadViewEventArgs));
+	luaL_setmetatable(L, "LoadViewEventArgs");
+	memset(self, 0, sizeof(struct LoadViewEventArgs));
+	if (lua_gettop(L) == 1) return 1;
+	if (lua_istable(L, 1)) {
+		lua_pop(L, (lua_getfield(L, 1, "lua_state"), self->lua_state = NULL, 1));
+	} else {
+		self->lua_state = NULL;
+	}
+	return 1;
+}
+int f_LoadViewEventArgs___index(lua_State *L) {
+	struct LoadViewEventArgs* self = luaX_checkLoadViewEventArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x187f5b0f: luaX_pushlua_State(L, self->lua_state); return 1; // lua_state
+	}
+	return luaL_error(L, "Unknown field in LoadViewEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+int f_LoadViewEventArgs___newindex(lua_State *L) {
+	struct LoadViewEventArgs* self = luaX_checkLoadViewEventArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x187f5b0f: self->lua_state = NULL; return 0; // lua_state
+	}
+	return luaL_error(L, "Unknown field in LoadViewEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+static int f_LoadViewEventArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_LoadViewEventArgs(L));  // remove LoadViewEventArgs from stack and call constructor
+}
+int luaopen_orca_LoadViewEventArgs(lua_State *L) {
+	luaL_newmetatable(L, "LoadViewEventArgs");
+	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ "new", f_new_LoadViewEventArgs },
+		{ "__newindex", f_LoadViewEventArgs___newindex },
+		{ "__index", f_LoadViewEventArgs___index },
+		{ NULL, NULL },
+	}), 0);
+	// Make LoadViewEventArgs creatable via constructor-like syntax
+	lua_newtable(L);
+	lua_pushcfunction(L, f_LoadViewEventArgs___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+	return 1;
+}
+void luaX_pushMakeTextEventArgs(lua_State *L, struct MakeTextEventArgs const* data) {
+	if (data == NULL) { lua_pushnil(L); return; }
+	struct MakeTextEventArgs* self = lua_newuserdata(L, sizeof(struct MakeTextEventArgs));
+	luaL_setmetatable(L, "MakeTextEventArgs");
+	memcpy(self, data, sizeof(struct MakeTextEventArgs));
+}
+struct MakeTextEventArgs* luaX_checkMakeTextEventArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "MakeTextEventArgs");
+}
+static int f_new_MakeTextEventArgs(lua_State *L) {
+	struct MakeTextEventArgs* self = lua_newuserdata(L, sizeof(struct MakeTextEventArgs));
+	luaL_setmetatable(L, "MakeTextEventArgs");
+	memset(self, 0, sizeof(struct MakeTextEventArgs));
+	if (lua_gettop(L) == 1) return 1;
+	if (lua_istable(L, 1)) {
+		lua_pop(L, (lua_getfield(L, 1, "text"), self->text = NULL, 1));
+		lua_pop(L, (lua_getfield(L, 1, "availableSpace"), self->availableSpace = (uint32_t)luaL_optinteger(L, -1, 0), 1));
+	} else {
+		self->text = NULL;
+		self->availableSpace = (uint32_t)luaL_optinteger(L, 2, 0);
+	}
+	return 1;
+}
+int f_MakeTextEventArgs___index(lua_State *L) {
+	struct MakeTextEventArgs* self = luaX_checkMakeTextEventArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0xbde64e3e: luaX_pushViewText(L, self->text); return 1; // text
+	case 0xa7e2407e: lua_pushinteger(L, self->availableSpace); return 1; // availableSpace
+	}
+	return luaL_error(L, "Unknown field in MakeTextEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+int f_MakeTextEventArgs___newindex(lua_State *L) {
+	struct MakeTextEventArgs* self = luaX_checkMakeTextEventArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0xbde64e3e: self->text = NULL; return 0; // text
+	case 0xa7e2407e: self->availableSpace = (uint32_t)luaL_optinteger(L, 3, 0); return 0; // availableSpace
+	}
+	return luaL_error(L, "Unknown field in MakeTextEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+static int f_MakeTextEventArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_MakeTextEventArgs(L));  // remove MakeTextEventArgs from stack and call constructor
+}
+int luaopen_orca_MakeTextEventArgs(lua_State *L) {
+	luaL_newmetatable(L, "MakeTextEventArgs");
+	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ "new", f_new_MakeTextEventArgs },
+		{ "__newindex", f_MakeTextEventArgs___newindex },
+		{ "__index", f_MakeTextEventArgs___index },
+		{ NULL, NULL },
+	}), 0);
+	// Make MakeTextEventArgs creatable via constructor-like syntax
+	lua_newtable(L);
+	lua_pushcfunction(L, f_MakeTextEventArgs___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+	return 1;
+}
+void luaX_pushTriggeredEventArgs(lua_State *L, struct TriggeredEventArgs const* data) {
+	if (data == NULL) { lua_pushnil(L); return; }
+	struct TriggeredEventArgs* self = lua_newuserdata(L, sizeof(struct TriggeredEventArgs));
+	luaL_setmetatable(L, "TriggeredEventArgs");
+	memcpy(self, data, sizeof(struct TriggeredEventArgs));
+}
+struct TriggeredEventArgs* luaX_checkTriggeredEventArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "TriggeredEventArgs");
+}
+static int f_new_TriggeredEventArgs(lua_State *L) {
+	struct TriggeredEventArgs* self = lua_newuserdata(L, sizeof(struct TriggeredEventArgs));
+	luaL_setmetatable(L, "TriggeredEventArgs");
+	memset(self, 0, sizeof(struct TriggeredEventArgs));
+	if (lua_gettop(L) == 1) return 1;
+	if (lua_istable(L, 1)) {
+		lua_pop(L, (lua_getfield(L, 1, "Trigger"), self->Trigger = luaX_checkTrigger(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "message"), self->message = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkHandleMessageEventArgs(L, -1) : (struct HandleMessageEventArgs){0}, 1));
+	} else {
+		self->Trigger = luaX_checkTrigger(L, 1);
+		self->message = lua_type(L, 2) == LUA_TUSERDATA ? *luaX_checkHandleMessageEventArgs(L, 2) : (struct HandleMessageEventArgs){0};
+	}
+	return 1;
+}
+int f_TriggeredEventArgs___index(lua_State *L) {
+	struct TriggeredEventArgs* self = luaX_checkTriggeredEventArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0xa5ea0da3: luaX_pushTrigger(L, self->Trigger); return 1; // Trigger
+	case 0x24f208e4: luaX_pushHandleMessageEventArgs(L, &self->message); return 1; // message
+	}
+	return luaL_error(L, "Unknown field in TriggeredEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+int f_TriggeredEventArgs___newindex(lua_State *L) {
+	struct TriggeredEventArgs* self = luaX_checkTriggeredEventArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0xa5ea0da3: self->Trigger = luaX_checkTrigger(L, 3); return 0; // Trigger
+	case 0x24f208e4: self->message = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkHandleMessageEventArgs(L, 3) : (struct HandleMessageEventArgs){0}; return 0; // message
+	}
+	return luaL_error(L, "Unknown field in TriggeredEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+static int f_TriggeredEventArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_TriggeredEventArgs(L));  // remove TriggeredEventArgs from stack and call constructor
+}
+int luaopen_orca_TriggeredEventArgs(lua_State *L) {
+	luaL_newmetatable(L, "TriggeredEventArgs");
+	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ "new", f_new_TriggeredEventArgs },
+		{ "__newindex", f_TriggeredEventArgs___newindex },
+		{ "__index", f_TriggeredEventArgs___index },
+		{ NULL, NULL },
+	}), 0);
+	// Make TriggeredEventArgs creatable via constructor-like syntax
+	lua_newtable(L);
+	lua_pushcfunction(L, f_TriggeredEventArgs___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+	return 1;
+}
+void luaX_pushNavigateToPageEventArgs(lua_State *L, struct NavigateToPageEventArgs const* data) {
+	if (data == NULL) { lua_pushnil(L); return; }
+	struct NavigateToPageEventArgs* self = lua_newuserdata(L, sizeof(struct NavigateToPageEventArgs));
+	luaL_setmetatable(L, "NavigateToPageEventArgs");
+	memcpy(self, data, sizeof(struct NavigateToPageEventArgs));
+}
+struct NavigateToPageEventArgs* luaX_checkNavigateToPageEventArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "NavigateToPageEventArgs");
+}
+static int f_new_NavigateToPageEventArgs(lua_State *L) {
+	struct NavigateToPageEventArgs* self = lua_newuserdata(L, sizeof(struct NavigateToPageEventArgs));
+	luaL_setmetatable(L, "NavigateToPageEventArgs");
+	memset(self, 0, sizeof(struct NavigateToPageEventArgs));
+	if (lua_gettop(L) == 1) return 1;
+	if (lua_istable(L, 1)) {
+		lua_pop(L, (lua_getfield(L, 1, "URL"), strncpy(self->URL, luaL_optstring(L, -1, ""), sizeof(self->URL)), 1));
+		lua_pop(L, (lua_getfield(L, 1, "TransitionType"), self->TransitionType = lua_type(L, -1) == LUA_TSTRING ? luaX_checkTransitionType(L, -1) : 0, 1));
+	} else {
+		strncpy(self->URL, luaL_optstring(L, 1, ""), sizeof(self->URL));
+		self->TransitionType = lua_type(L, 2) == LUA_TSTRING ? luaX_checkTransitionType(L, 2) : 0;
+	}
+	return 1;
+}
+int f_NavigateToPageEventArgs___index(lua_State *L) {
+	struct NavigateToPageEventArgs* self = luaX_checkNavigateToPageEventArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x7569633e: lua_pushstring(L, self->URL); return 1; // URL
+	case 0x84ff7372: luaX_pushTransitionType(L, self->TransitionType); return 1; // TransitionType
+	}
+	return luaL_error(L, "Unknown field in NavigateToPageEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+int f_NavigateToPageEventArgs___newindex(lua_State *L) {
+	struct NavigateToPageEventArgs* self = luaX_checkNavigateToPageEventArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x7569633e: strncpy(self->URL, luaL_optstring(L, 3, ""), sizeof(self->URL)); return 0; // URL
+	case 0x84ff7372: self->TransitionType = lua_type(L, 3) == LUA_TSTRING ? luaX_checkTransitionType(L, 3) : 0; return 0; // TransitionType
+	}
+	return luaL_error(L, "Unknown field in NavigateToPageEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+static int f_NavigateToPageEventArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_NavigateToPageEventArgs(L));  // remove NavigateToPageEventArgs from stack and call constructor
+}
+int luaopen_orca_NavigateToPageEventArgs(lua_State *L) {
+	luaL_newmetatable(L, "NavigateToPageEventArgs");
+	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ "new", f_new_NavigateToPageEventArgs },
+		{ "__newindex", f_NavigateToPageEventArgs___newindex },
+		{ "__index", f_NavigateToPageEventArgs___index },
+		{ NULL, NULL },
+	}), 0);
+	// Make NavigateToPageEventArgs creatable via constructor-like syntax
+	lua_newtable(L);
+	lua_pushcfunction(L, f_NavigateToPageEventArgs___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+	return 1;
+}
+void luaX_pushNavigateBackEventArgs(lua_State *L, struct NavigateBackEventArgs const* data) {
+	if (data == NULL) { lua_pushnil(L); return; }
+	struct NavigateBackEventArgs* self = lua_newuserdata(L, sizeof(struct NavigateBackEventArgs));
+	luaL_setmetatable(L, "NavigateBackEventArgs");
+	memcpy(self, data, sizeof(struct NavigateBackEventArgs));
+}
+struct NavigateBackEventArgs* luaX_checkNavigateBackEventArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "NavigateBackEventArgs");
+}
+static int f_new_NavigateBackEventArgs(lua_State *L) {
+	struct NavigateBackEventArgs* self = lua_newuserdata(L, sizeof(struct NavigateBackEventArgs));
+	luaL_setmetatable(L, "NavigateBackEventArgs");
+	memset(self, 0, sizeof(struct NavigateBackEventArgs));
+	if (lua_gettop(L) == 1) return 1;
+	if (lua_istable(L, 1)) {
+		lua_pop(L, (lua_getfield(L, 1, "TransitionType"), self->TransitionType = lua_type(L, -1) == LUA_TSTRING ? luaX_checkTransitionType(L, -1) : 0, 1));
+	} else {
+		self->TransitionType = lua_type(L, 1) == LUA_TSTRING ? luaX_checkTransitionType(L, 1) : 0;
+	}
+	return 1;
+}
+int f_NavigateBackEventArgs___index(lua_State *L) {
+	struct NavigateBackEventArgs* self = luaX_checkNavigateBackEventArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x84ff7372: luaX_pushTransitionType(L, self->TransitionType); return 1; // TransitionType
+	}
+	return luaL_error(L, "Unknown field in NavigateBackEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+int f_NavigateBackEventArgs___newindex(lua_State *L) {
+	struct NavigateBackEventArgs* self = luaX_checkNavigateBackEventArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x84ff7372: self->TransitionType = lua_type(L, 3) == LUA_TSTRING ? luaX_checkTransitionType(L, 3) : 0; return 0; // TransitionType
+	}
+	return luaL_error(L, "Unknown field in NavigateBackEventArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+static int f_NavigateBackEventArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_NavigateBackEventArgs(L));  // remove NavigateBackEventArgs from stack and call constructor
+}
+int luaopen_orca_NavigateBackEventArgs(lua_State *L) {
+	luaL_newmetatable(L, "NavigateBackEventArgs");
+	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ "new", f_new_NavigateBackEventArgs },
+		{ "__newindex", f_NavigateBackEventArgs___newindex },
+		{ "__index", f_NavigateBackEventArgs___index },
+		{ NULL, NULL },
+	}), 0);
+	// Make NavigateBackEventArgs creatable via constructor-like syntax
+	lua_newtable(L);
+	lua_pushcfunction(L, f_NavigateBackEventArgs___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+	return 1;
+}
 #define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
 #define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
 
@@ -2656,6 +3177,15 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_BorderShorthand(L), -2), "BorderShorthand");
 	lua_setfield(L, ((void)luaopen_orca_SizeAxisShorthand(L), -2), "SizeAxisShorthand");
 	lua_setfield(L, ((void)luaopen_orca_SizeShorthand(L), -2), "SizeShorthand");
+	lua_setfield(L, ((void)luaopen_orca_ForegroundContentEventArgs(L), -2), "ForegroundContentEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_PushPropertyEventArgs(L), -2), "PushPropertyEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_DrawBrushEventArgs(L), -2), "DrawBrushEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_HandleMessageEventArgs(L), -2), "HandleMessageEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_LoadViewEventArgs(L), -2), "LoadViewEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_MakeTextEventArgs(L), -2), "MakeTextEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_TriggeredEventArgs(L), -2), "TriggeredEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_NavigateToPageEventArgs(L), -2), "NavigateToPageEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_NavigateBackEventArgs(L), -2), "NavigateBackEventArgs");
 	lua_setfield(L, ((void)lua_pushclass(L, &_DataObject), -2), "DataObject");
 	lua_setfield(L, ((void)lua_pushclass(L, &_AnimationPlayer), -2), "AnimationPlayer");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Trigger), -2), "Trigger");

@@ -438,10 +438,14 @@ struct UpdateMatrixEventArgs {
 	float opacity; ///< The opacity value
 	bool_t force; ///< Indicates if the update is forced
 };
+ORCA_API void luaX_pushUpdateMatrixEventArgs(lua_State *L, struct UpdateMatrixEventArgs const* data);
+ORCA_API struct UpdateMatrixEventArgs* luaX_checkUpdateMatrixEventArgs(lua_State *L, int idx);
 /** PropertyChangedEventArgs struct */
 struct PropertyChangedEventArgs {
 	struct Property* Property; ///< The property that changed
 };
+ORCA_API void luaX_pushPropertyChangedEventArgs(lua_State *L, struct PropertyChangedEventArgs const* data);
+ORCA_API struct PropertyChangedEventArgs* luaX_checkPropertyChangedEventArgs(lua_State *L, int idx);
 
 
 #endif

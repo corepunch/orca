@@ -93,14 +93,20 @@ ORCA_API struct SystemMessage* luaX_checkSystemMessage(lua_State *L, int idx);
 struct OpenFileEventArgs {
 	const char* FileName;
 };
+ORCA_API void luaX_pushOpenFileEventArgs(lua_State *L, struct OpenFileEventArgs const* data);
+ORCA_API struct OpenFileEventArgs* luaX_checkOpenFileEventArgs(lua_State *L, int idx);
 /** FileExistsEventArgs struct */
 struct FileExistsEventArgs {
 	const char* FileName; ///< The file path to check for existence
 };
+ORCA_API void luaX_pushFileExistsEventArgs(lua_State *L, struct FileExistsEventArgs const* data);
+ORCA_API struct FileExistsEventArgs* luaX_checkFileExistsEventArgs(lua_State *L, int idx);
 /** LoadProjectEventArgs struct */
 struct LoadProjectEventArgs {
 	const char* Path; ///< Directory name to load the bundle
 };
+ORCA_API void luaX_pushLoadProjectEventArgs(lua_State *L, struct LoadProjectEventArgs const* data);
+ORCA_API struct LoadProjectEventArgs* luaX_checkLoadProjectEventArgs(lua_State *L, int idx);
 
 /** Workspace component */
 typedef struct Workspace Workspace_t, *WorkspacePtr, *lpWorkspace_t;
