@@ -263,6 +263,64 @@ HANDLER(Grid, ArrangeOverride)
   _EnsureImplicitSecondaryAxis(pGrid, hObject);
   _CalculateAutos(pGrid->Spacing, pArrangeOverride->width, hcols);
   _CalculateAutos(pGrid->Spacing, pArrangeOverride->height, vcols);
+  /*
+   * When the arranged height (or width) is 0 and flexible (auto/fr) rows (or
+   * columns) exist, their widths are all 0 after _CalculateAutos. Run the
+   * same content-sizing pass used in MeasureOverride so each flexible track
+   * expands to fit its children, then recompute positions. This mirrors the
+   * isinf(height/width) path in MeasureOverride and prevents children from
+   * being arranged with 0 size when the grid has not been given any space.
+   */
+  if (pArrangeOverride->height == 0 && vcols->count > 0) {
+    cellindex = 0;
+    FOR_EACH_LAYOUTABLE(hChild, hObject) {
+      struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
+      struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
+      if (h && _column_is_flexible(h)) {
+        LRESULT s = OBJ_SendMessageW(hChild, kEventMeasure, 0, &(struct Size) {
+          .width  = (w ? w->width : pArrangeOverride->width),
+          .height = INFINITY,
+        });
+        float child_h = (float)HIWORD(s);
+        if (h->width < child_h) {
+          h->width = child_h;
+        }
+      }
+      cellindex++;
+    }
+    float cursor = 0;
+    FOR_LOOP(i, vcols->count) {
+      vcols->columns[i].position = cursor;
+      cursor += vcols->columns[i].width + pGrid->Spacing;
+    }
+    cellindex = 0;
+  }
+  if (pArrangeOverride->width == 0 && hcols->count > 0) {
+    cellindex = 0;
+    FOR_EACH_LAYOUTABLE(hChild, hObject) {
+      struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
+      struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
+      if (w && _column_is_flexible(w)) {
+        LRESULT s = OBJ_SendMessageW(hChild, kEventMeasure, 0, &(struct Size) {
+          .width  = INFINITY,
+          .height = (h ? h->width : pArrangeOverride->height),
+        });
+        float child_w = (float)LOWORD(s);
+        if (w->width < child_w) {
+          w->width = child_w;
+        }
+      }
+      cellindex++;
+    }
+    float cursor = 0;
+    FOR_LOOP(i, hcols->count) {
+      hcols->columns[i].position = cursor;
+      cursor += hcols->columns[i].width + pGrid->Spacing;
+    }
+    cellindex = 0;
+  }
+  float actual_height = pArrangeOverride->height;
+  float actual_width  = pArrangeOverride->width;
   FOR_EACH_LAYOUTABLE(hChild, hObject)
   {
     struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
@@ -273,7 +331,9 @@ HANDLER(Grid, ArrangeOverride)
       .width = (w ? w->width : pArrangeOverride->width),
       .height = (h ? h->width : pArrangeOverride->height),
   });
+    if (h) actual_height = fmax(actual_height, h->position + h->width);
+    if (w) actual_width  = fmax(actual_width,  w->position + w->width);
     cellindex++;
   }
-  return MAKEDWORD(pArrangeOverride->width, pArrangeOverride->height);
+  return MAKEDWORD(actual_width, actual_height);
 }

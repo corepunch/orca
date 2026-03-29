@@ -721,8 +721,6 @@ struct Node2D {
 	bool_t Hovered; ///< Indicates if the element is currently hovered by pointer/mouse.
 	bool_t IgnoreHitTest; ///< Marks object as ignored during hit testing (mouse interaction).
 	enum ForegroundHint ForegroundHint; ///< Hint for how foreground should be rendered. May be used for accessibility, high-contrast, or text rendering optimizations.
-	float ActualX; ///< Actual X position of the element after layout.
-	float ActualY; ///< Actual Y position of the element after layout.
 	struct Node* _node; ///< Internal node reference
 	struct Object* _object; ///< Internal object reference
 	int32_t _userdata; ///< User-defined data storage
