@@ -181,15 +181,6 @@ HANDLER(StackView, ArrangeOverride)
     }
     NODE2D_FRAME(pNode2D, Size, i).Scroll = scrollSize[i];
   }
-  /*
-   * Return the actual content size (scroll extent minus the start offset)
-   * rather than echoing back the allocated rect.  When both components are 0
-   * (e.g. the StackView was given a 0×0 rect), MAKEDWORD would return 0 and
-   * OBJ_SendMessageW would fall through to Node2D_ArrangeOverride, which
-   * re-arranges all children a second time with the same 0-sized rect —
-   * triggering unnecessary extra Grid_ArrangeOverride calls.  Using the
-   * content size ensures a non-zero return whenever there are children.
-   */
-  return MAKEDWORD(scrollSize[0] - pArrangeOverride->X,
-                   scrollSize[1] - pArrangeOverride->Y);
+  
+  return MAKEDWORD(pArrangeOverride->Width, pArrangeOverride->Height);
 }
