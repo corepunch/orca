@@ -126,16 +126,12 @@ HANDLER(StackView, MeasureOverride)
     LRESULT s;
     switch (pStackView->Direction) {
       case kDirectionHorizontal:
-        s = _SendMessage(hChild, Measure,
-          INFINITY, pMeasureOverride->Height
-        );
+        s = _SendMessage(hChild, Measure, INFINITY, pMeasureOverride->Height);
         size.width += LOWORD(s) + pStackView->Spacing;
         size.height = MAX(size.height, HIWORD(s));
         break;
       case kDirectionVertical:
-        s = _SendMessage(hChild, Measure,
-          pMeasureOverride->Width, INFINITY
-        );
+        s = _SendMessage(hChild, Measure, pMeasureOverride->Width, INFINITY);
         size.width = MAX(size.width, LOWORD(s));
         size.height += HIWORD(s) + pStackView->Spacing;
         break;

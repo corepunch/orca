@@ -284,6 +284,15 @@
   <message name="MeasureOverride" parent="Measure"/>
   <message name="ArrangeOverride" parent="Arrange"/>
   <message name="ForegroundContent"/>
+  <message name="Arrange">
+    <field name="X" type="float"/>
+    <field name="Y" type="float"/>
+    <field name="Width" type="float"/>
+    <field name="Height" type="float"/>
+  </message>
+  <message name="MeasureOverride" parent="Measure"/>
+  <message name="ArrangeOverride" parent="Arrange"/>
+  <message name="ForegroundContent"/>
   <message name="PushProperty">
     <field name="Placeholder" type="int"/>
   </message>
