@@ -63,5 +63,5 @@ HANDLER(SKView, ForegroundContent)
 
   SKNode_RenderTree(scene, &viewdef);
 
-  return TRUE;
+  return FALSE;
 }

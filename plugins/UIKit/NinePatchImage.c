@@ -79,7 +79,7 @@ GetImageHeight(handle_t _in)
 
 HANDLER(NinePatchImage, ForegroundContent)
 {
-  return TRUE;
+  return FALSE;
 }
 
 HANDLER(NinePatchImage, DrawBrush)

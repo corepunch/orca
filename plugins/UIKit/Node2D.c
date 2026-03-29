@@ -26,23 +26,19 @@ HANDLER(Node2D, HitTest) {
   if (OBJ_IsHidden(hObject) || pNode2D->IgnoreHitTest) {
     return FALSE;
   }
-  int16_t x = LOWORD(wParam);
-  int16_t y = HIWORD(wParam);
+  int16_t x = (int16_t)pHitTest->x;
+  int16_t y = (int16_t)pHitTest->y;
   int16_t lx = x - pNode2D->ContentOffset.x;
   int16_t ly = y - pNode2D->ContentOffset.y;
-  bool_t success = FALSE;
+  lpObject_t result = NULL;
   FOR_EACH_OBJECT(hChild, hObject) {
-    lpObject_t hittest = NULL;
-    if (OBJ_SendMessageW(hChild, kMsgHitTest, MAKEDWORD(lx, ly), &hittest)) {
-      success = TRUE;
-      *(void**)pHitTest = hittest;
-    }
+    lpObject_t childHit = (lpObject_t)_SendMessage(hChild, HitTest, .x = lx, .y = ly);
+    if (childHit) result = childHit;
   }
-  if (success) {
-    return TRUE;
+  if (result) {
+    return (intptr_t)result;
   } else if (_ContainsPoint(pNode2D, x, y)) {
-    *(void**)pHitTest = hObject;
-    return TRUE;
+    return (intptr_t)hObject;
   } else {
     return FALSE;
   }

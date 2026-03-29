@@ -87,22 +87,23 @@ UI_HandleMouseEvent(lua_State* L, lpObject_t root, struct WI_Message* e)
   while (OBJ_GetNext(root)) {
     root = OBJ_GetNext(root);
   }
+  struct HitTestMsgArgs hitMsg = { .x = LOWORD(e->wParam), .y = HIWORD(e->wParam) };
   if (focused && OBJ_GetFlags(focused)&OF_NOACTIVATE) {
-    if (OBJ_SendMessageW(focused, kMsgHitTest, e->wParam, &sender))
+    if ((sender = (lpObject_t)OBJ_SendMessageW(focused, kMsgHitTest, 0, &hitMsg)))
       goto handle;
     if (e->message == kMsgLeftMouseDown) {
       for (lpObject_t mod = focused, p = OBJ_GetParent(focused);
            mod && (OBJ_GetFlags(mod)&OF_NOACTIVATE);
            mod = p, p = p?OBJ_GetParent(p):NULL)
       {
-        if (OBJ_SendMessageW(mod, kMsgHitTest, e->wParam, &sender))
+        if ((sender = (lpObject_t)OBJ_SendMessageW(mod, kMsgHitTest, 0, &hitMsg)))
           goto handle;
         OBJ_RemoveFromParent(L, mod);
       }
       return TRUE;
     }
   }
-  if (!OBJ_SendMessageW(root, kMsgHitTest, e->wParam, &sender))
+  if (!(sender = (lpObject_t)OBJ_SendMessageW(root, kMsgHitTest, 0, &hitMsg)))
     return FALSE;
 handle:
   switch (e->message) {

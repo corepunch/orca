@@ -397,14 +397,14 @@ HANDLER(Node2D, Draw2DContent)
   if (_IsOutOfBounds(pNode2D, pDraw2DContent))
     return FALSE;
 
-  struct ForegroundContentMsgArgs foreground = { 0 };
+  struct Texture* foreground = NULL;
 
 #define kMsgDrawBrush 0x0875c1d1
 #define kMsgUpdateGeometry 0x12c1a314
 #define kMsgForegroundContent 0x9a7735e5
 
   OBJ_SendMessageW(hObject, kMsgUpdateGeometry, 0, NULL);
-  OBJ_SendMessageW(hObject, kMsgForegroundContent, 0, &foreground);
+  foreground = (struct Texture*)OBJ_SendMessageW(hObject, kMsgForegroundContent, 0, NULL);
   
   if (pNode2D->BoxShadow.Color.a) {
     //		struct mat4 mat, offset;
@@ -475,7 +475,7 @@ HANDLER(Node2D, Draw2DContent)
 
     _SendMessage(hObject, DrawBrush,
       .projection = pDraw2DContent->ProjectionMatrix,
-      .image = foreground.result,
+      .image = foreground,
       .brush = pNode2D->Foreground,
       .foreground = TRUE,
       .viewdef = &viewdef);
