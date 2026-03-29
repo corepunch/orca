@@ -181,6 +181,16 @@ int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
       break;
   }
   
+  
+  if (!strcmp(name, "ActualX") && GetNode2D(self)) {
+    lua_pushnumber(L, GetNode2D(self)->_actual_pos[0]);
+    return 1;
+  }
+  if (!strcmp(name, "ActualY") && GetNode2D(self)) {
+    lua_pushnumber(L, GetNode2D(self)->_actual_pos[1]);
+    return 1;
+  }
+
   if (!strcmp(name, "start")) {
     lua_pushcfunction(L, HACK_Start);
     return 1;
