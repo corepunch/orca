@@ -30,19 +30,15 @@ HANDLER(Node2D, HitTest) {
   int16_t y = (int16_t)pHitTest->y;
   int16_t lx = x - pNode2D->ContentOffset.x;
   int16_t ly = y - pNode2D->ContentOffset.y;
-  bool_t success = FALSE;
+  lpObject_t result = NULL;
   FOR_EACH_OBJECT(hChild, hObject) {
-    struct HitTestMsgArgs childMsg = { .x = lx, .y = ly };
-    if (OBJ_SendMessageW(hChild, kMsgHitTest, 0, &childMsg)) {
-      success = TRUE;
-      pHitTest->Result = childMsg.Result;
-    }
+    lpObject_t childHit = (lpObject_t)_SendMessage(hChild, HitTest, .x = lx, .y = ly);
+    if (childHit) result = childHit;
   }
-  if (success) {
-    return TRUE;
+  if (result) {
+    return (intptr_t)result;
   } else if (_ContainsPoint(pNode2D, x, y)) {
-    pHitTest->Result = hObject;
-    return TRUE;
+    return (intptr_t)hObject;
   } else {
     return FALSE;
   }

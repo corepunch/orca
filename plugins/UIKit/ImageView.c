@@ -149,15 +149,7 @@ HANDLER(ImageView, DrawBrush)
 
 HANDLER(ImageView, ForegroundContent)
 {
-//    if (imageView->image) {
-//        pForegroundContent->result = imageView->image;
-//        return TRUE;
-//    } else {
-//        pForegroundContent->result = imageView->rendition;
-//        return TRUE;
-//    }
-  pForegroundContent->result = pImageView->Image;
-  return pForegroundContent->result != 0;
+  return (intptr_t)pImageView->Image;
 }
 
 HANDLER(ImageView, LoadView)

@@ -1041,11 +1041,9 @@ static int f_new_HitTestMsgArgs(lua_State *L) {
 	if (lua_istable(L, 1)) {
 		lua_pop(L, (lua_getfield(L, 1, "x"), self->x = (int32_t)luaL_optinteger(L, -1, 0), 1));
 		lua_pop(L, (lua_getfield(L, 1, "y"), self->y = (int32_t)luaL_optinteger(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Result"), self->Result = NULL, 1));
 	} else {
 		self->x = (int32_t)luaL_optinteger(L, 1, 0);
 		self->y = (int32_t)luaL_optinteger(L, 2, 0);
-		self->Result = NULL;
 	}
 	return 1;
 }
@@ -1054,7 +1052,6 @@ int f_HitTestMsgArgs___index(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0xfd0c5087: lua_pushinteger(L, self->x); return 1; // x
 	case 0xfc0c4ef4: lua_pushinteger(L, self->y); return 1; // y
-	case 0x504af044: luaX_pushObject(L, self->Result); return 1; // Result
 	}
 	return luaL_error(L, "Unknown field in HitTestMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
@@ -1063,7 +1060,6 @@ int f_HitTestMsgArgs___newindex(lua_State *L) {
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 	case 0xfd0c5087: self->x = (int32_t)luaL_checkinteger(L, 3); return 0; // x
 	case 0xfc0c4ef4: self->y = (int32_t)luaL_checkinteger(L, 3); return 0; // y
-	case 0x504af044: self->Result = NULL; return 0; // Result
 	}
 	return luaL_error(L, "Unknown field in HitTestMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }

@@ -52,7 +52,6 @@
   <message name="HitTest">
     <field name="x" type="int">X coordinate of the hit test point</field>
     <field name="y" type="int">Y coordinate of the hit test point</field>
-    <field name="Result" type="Object" pointer="true">The topmost object at the given point, or null if no object was hit</field>
   </message>
   <message name="IsVisible"/>
   <message name="Create"/>

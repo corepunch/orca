@@ -28,7 +28,7 @@ typedef struct MeasureMsgArgs MeasureMsg_t,* MeasureMsgPtr;
 typedef struct ArrangeMsgArgs ArrangeMsg_t,* ArrangeMsgPtr;
 typedef struct MeasureMsgArgs MeasureOverrideMsg_t,* MeasureOverrideMsgPtr;
 typedef struct ArrangeMsgArgs ArrangeOverrideMsg_t,* ArrangeOverrideMsgPtr;
-typedef struct ForegroundContentMsgArgs ForegroundContentMsg_t,* ForegroundContentMsgPtr;
+typedef int ForegroundContentMsg_t,* ForegroundContentMsgPtr;
 typedef struct PushPropertyMsgArgs PushPropertyMsg_t,* PushPropertyMsgPtr;
 typedef int UpdateGeometryMsg_t,* UpdateGeometryMsgPtr;
 typedef struct DrawBrushMsgArgs DrawBrushMsg_t,* DrawBrushMsgPtr;
@@ -484,12 +484,6 @@ struct ArrangeMsgArgs {
 };
 ORCA_API void luaX_pushArrangeMsgArgs(lua_State *L, struct ArrangeMsgArgs const* data);
 ORCA_API struct ArrangeMsgArgs* luaX_checkArrangeMsgArgs(lua_State *L, int idx);
-/** ForegroundContentMsgArgs struct */
-struct ForegroundContentMsgArgs {
-	struct Texture* result;
-};
-ORCA_API void luaX_pushForegroundContentMsgArgs(lua_State *L, struct ForegroundContentMsgArgs const* data);
-ORCA_API struct ForegroundContentMsgArgs* luaX_checkForegroundContentMsgArgs(lua_State *L, int idx);
 /** PushPropertyMsgArgs struct */
 struct PushPropertyMsgArgs {
 	int32_t Placeholder;

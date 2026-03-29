@@ -283,9 +283,7 @@
   </message>
   <message name="MeasureOverride" parent="Measure"/>
   <message name="ArrangeOverride" parent="Arrange"/>
-  <message name="ForegroundContent">
-    <field name="result" type="Texture" pointer="true"/>
-  </message>
+  <message name="ForegroundContent"/>
   <message name="PushProperty">
     <field name="Placeholder" type="int"/>
   </message>

@@ -457,7 +457,6 @@ ORCA_API struct PropertyChangedMsgArgs* luaX_checkPropertyChangedMsgArgs(lua_Sta
 struct HitTestMsgArgs {
 	int32_t x; ///< X coordinate of the hit test point
 	int32_t y; ///< Y coordinate of the hit test point
-	struct Object* Result; ///< The topmost object at the given point, or null if no object was hit
 };
 ORCA_API void luaX_pushHitTestMsgArgs(lua_State *L, struct HitTestMsgArgs const* data);
 ORCA_API struct HitTestMsgArgs* luaX_checkHitTestMsgArgs(lua_State *L, int idx);

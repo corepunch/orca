@@ -348,9 +348,7 @@ LRESULT ED_CanvasView(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm) {
       ED_SetFocusedPanel(wnd);
       {
         wParam_t coords = LocalCoords(wnd, CanvasView_GetScene(wnd), wparm);
-        struct HitTestMsgArgs hitMsg = { .x = LOWORD(coords), .y = HIWORD(coords) };
-        if (OBJ_SendMessageW(CanvasView_GetScene(wnd), kMsgHitTest, 0, &hitMsg)) {
-          tmp = hitMsg.Result;
+        if ((tmp = (lpObject_t)_SendMessage(CanvasView_GetScene(wnd), HitTest, .x = LOWORD(coords), .y = HIWORD(coords)))) {
           ED_SendMessage(editor.inspector, EVT_OBJECT_SELECTED, 0, tmp);
           ED_SendMessage(ED_FindWindowInChildren(ED_GetParent(wnd), ED_HierarchyNavigator), EVT_OBJECT_SELECTED, 0, tmp);
           ED_SendMessage(wnd, EVT_OBJECT_SELECTED, 0, tmp);
