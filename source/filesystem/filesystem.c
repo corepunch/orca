@@ -390,11 +390,14 @@ _InitTheme(lua_State *L, lpProject_t project)
     lua_pushnil(L);
     while (lua_next(L, -2)) {
       if (lua_type(L, -1) == LUA_TTABLE) {
-        lua_rawget(L, ((void)lua_getfield(L, -1, "SelectedTheme"), -2));
-        lua_pushnil(L);
-        while (lua_next(L, -2)) {
-          register_theme_value(luaL_checkstring(L, -2), luaL_checkstring(L, -1), L);
-          lua_pop(L, 1);
+        lua_getfield(L, -1, "SelectedTheme");
+        lua_rawget(L, -2);
+        if (lua_type(L, -1) == LUA_TTABLE) {
+          lua_pushnil(L);
+          while (lua_next(L, -2)) {
+            register_theme_value(luaL_checkstring(L, -2), luaL_checkstring(L, -1), L);
+            lua_pop(L, 1);
+          }
         }
         lua_pop(L, 1);
       }
