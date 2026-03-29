@@ -14,7 +14,7 @@ class config {
 		],
 		"int" => [
 			'decl' => 'int32_t', 
-			'check' => 'luaL_checkinteger(L, {arg})', 
+			'check' => '(int32_t)luaL_checkinteger(L, {arg})', 
 			'pop' => '{addr} = (int32_t)luaL_optinteger(L, {arg}, 0)', 
 			'push' => 'lua_pushinteger(L, {arg})',  
 			'convert' => '{addr} = {arg}', 
@@ -23,7 +23,7 @@ class config {
 		],
 		"uint" => [
 			'decl' => 'uint32_t', 
-			'check' => 'luaL_checkinteger(L, {arg})', 
+			'check' => '(uint32_t)luaL_checkinteger(L, {arg})', 
 			'pop' => '{addr} = (uint32_t)luaL_optinteger(L, {arg}, 0)', 
 			'push' => 'lua_pushinteger(L, {arg})',  
 			'convert' => '{addr} = {arg}', 

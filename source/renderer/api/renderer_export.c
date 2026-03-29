@@ -926,8 +926,8 @@ ORCA_API struct ClassDesc _Timeline = {
 
 
 int f_renderer_Init(lua_State *L) {
-	uint32_t Width = luaL_checkinteger(L, 1);
-	uint32_t Height = luaL_checkinteger(L, 2);
+	uint32_t Width = (uint32_t)luaL_checkinteger(L, 1);
+	uint32_t Height = (uint32_t)luaL_checkinteger(L, 2);
 	bool_t Offscreen = lua_toboolean(L, 3);
 	int32_t result_ = renderer_Init(Width, Height, Offscreen);
 	lua_pushinteger(L, result_);

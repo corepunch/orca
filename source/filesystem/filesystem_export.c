@@ -892,7 +892,7 @@ int f_FS_GetBaseName(lua_State *L) {
 int f_FS_GetDirName(lua_State *L) {
 	const char* path = luaL_checkstring(L, 1);
 	const char* out = luaL_checkstring(L, 2);
-	int32_t maxlen = luaL_checkinteger(L, 3);
+	int32_t maxlen = (int32_t)luaL_checkinteger(L, 3);
 	const char* result_ = FS_GetDirName(path, out, maxlen);
 	lua_pushstring(L, result_);
 	return 1;

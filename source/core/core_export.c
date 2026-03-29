@@ -161,28 +161,28 @@ int f_OBJ_FindByPath(lua_State *L) {
 }
 int f_OBJ_FindChildByID(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	uint32_t id = luaL_checkinteger(L, 2);
+	uint32_t id = (uint32_t)luaL_checkinteger(L, 2);
 	struct Object* result_ = OBJ_FindChildByID(this_, id);
 	luaX_pushObject(L, result_);
 	return 1;
 }
 int f_OBJ_FindChildByAlias(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	uint32_t id = luaL_checkinteger(L, 2);
+	uint32_t id = (uint32_t)luaL_checkinteger(L, 2);
 	struct Object* result_ = OBJ_FindChildByAlias(this_, id);
 	luaX_pushObject(L, result_);
 	return 1;
 }
 int f_OBJ_FindChildOfClass(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	uint32_t classID = luaL_checkinteger(L, 2);
+	uint32_t classID = (uint32_t)luaL_checkinteger(L, 2);
 	struct Object* result_ = OBJ_FindChildOfClass(this_, classID);
 	luaX_pushObject(L, result_);
 	return 1;
 }
 int f_OBJ_FindParentOfClass(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	uint32_t classID = luaL_checkinteger(L, 2);
+	uint32_t classID = (uint32_t)luaL_checkinteger(L, 2);
 	struct Object* result_ = OBJ_FindParentOfClass(this_, classID);
 	luaX_pushObject(L, result_);
 	return 1;
@@ -208,7 +208,7 @@ int f_OBJ_SendMessage2(lua_State *L) {
 }
 int f_OBJ_FindCallbackForID(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	uint32_t event = luaL_checkinteger(L, 2);
+	uint32_t event = (uint32_t)luaL_checkinteger(L, 2);
 	const char* result_ = OBJ_FindCallbackForID(this_, event);
 	lua_pushstring(L, result_);
 	return 1;
@@ -275,16 +275,16 @@ int f_OBJ_GetProperties(lua_State *L) {
 }
 int f_OBJ_GetInteger(lua_State *L) {
 	struct Object const* this_ = luaX_checkObject(L, 1);
-	uint32_t ident = luaL_checkinteger(L, 2);
-	int32_t fallback = luaL_checkinteger(L, 3);
+	uint32_t ident = (uint32_t)luaL_checkinteger(L, 2);
+	int32_t fallback = (int32_t)luaL_checkinteger(L, 3);
 	int32_t result_ = OBJ_GetInteger(this_, ident, fallback);
 	lua_pushinteger(L, result_);
 	return 1;
 }
 int f_OBJ_UpdateLayout(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	int32_t width = luaL_checkinteger(L, 2);
-	int32_t height = luaL_checkinteger(L, 3);
+	int32_t width = (int32_t)luaL_checkinteger(L, 2);
+	int32_t height = (int32_t)luaL_checkinteger(L, 3);
 	OBJ_UpdateLayout(this_, width, height );
 	return 0;
 }
@@ -318,7 +318,7 @@ int f_OBJ_GetStyle(lua_State *L) {
 }
 int f_OBJ_SetStyle(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	uint32_t style = luaL_checkinteger(L, 2);
+	uint32_t style = (uint32_t)luaL_checkinteger(L, 2);
 	OBJ_SetStyle(this_, style );
 	return 0;
 }
@@ -415,7 +415,7 @@ int f_OBJ_GetFlags(lua_State *L) {
 }
 int f_OBJ_SetFlags(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	uint32_t flags = luaL_checkinteger(L, 2);
+	uint32_t flags = (uint32_t)luaL_checkinteger(L, 2);
 	OBJ_SetFlags(this_, flags );
 	return 0;
 }
