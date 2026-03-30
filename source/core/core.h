@@ -217,9 +217,9 @@ OBJ_FindParentOfClass(struct Object*, uint32_t);
 
 /// Dispatches events and sends messages between objects.
 
-/// @brief Dispatch an event starting from this object and bubbling up parents.
+/// @brief Dispatch an event through the object hierarchy using the specified routing strategy.
 ORCA_API struct Object*
-OBJ_DispatchEvent(struct lua_State*, struct Object*, const char*);
+OBJ_DispatchEvent(struct lua_State*, struct Object*, const char*, enum MessageRouting);
 /// @brief Posts a message to the global message queue.
 ORCA_API void
 OBJ_PostMessage(struct lua_State*, struct Object*, const char*);

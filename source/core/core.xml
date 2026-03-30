@@ -252,9 +252,10 @@
 
     <topic title="Messaging">Dispatches events and sends messages between objects.</topic>
     <method name="DispatchEvent" lua="true">
-      <summary>Dispatch an event starting from this object and bubbling up parents.</summary>
-      <details>Initiates an event that begins at this object and bubbles up through the parent hierarchy. Each object in the chain has the opportunity to handle the event through registered event handlers or callbacks. The bubbling continues until either an object handles the event or the root of the hierarchy is reached. This implements a standard event propagation pattern commonly used in UI systems.</details>
+      <summary>Dispatch an event through the object hierarchy using the specified routing strategy.</summary>
+      <details>Initiates an event that propagates through the object hierarchy according to the specified routing mode. In Bubbling mode (the default), the event starts at this object and travels up through parents. In Tunneling mode, the event starts at the root and travels down to this object. In TunnelingBubbling mode, the event first tunnels down then bubbles up. In Direct mode, the event is sent only to this object. Each object in the chain has the opportunity to handle the event through registered event handlers or callbacks. Propagation stops when an object handles the event.</details>
       <arg name="event" type="string">The name of the event to dispatch through the hierarchy</arg>
+      <arg name="routing" type="MessageRouting" default="Bubbling">The routing strategy that determines how the event propagates through the hierarchy</arg>
       <returns type="Object" pointer="true">Pointer to the object that successfully handled the event, or null if no object in the hierarchy handled it</returns>
     </method>
 

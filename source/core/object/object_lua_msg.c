@@ -56,19 +56,83 @@ void OBJ_SendMessage2(lua_State* L, lpObject_t self, lpcString_t message)
 
 #include <plugins/UIKit/UIKit.h>
 
-lpObject_t OBJ_DispatchEvent(lua_State* L, lpObject_t self, lpcString_t event)
+#define MAX_HIERARCHY_DEPTH 64
+
+lpObject_t OBJ_DispatchEvent(lua_State* L, lpObject_t self, lpcString_t event, enum MessageRouting routing)
 {
   uint32_t dwNumArgs = MAX(0, lua_gettop(L) - 2);
   shortStr_t pszEventName;
   strncpy(pszEventName, event, sizeof(pszEventName));
   lua_remove(L, 2); // clear event name to send object with args to parents
-  for (lpObject_t obj = self; obj; obj = OBJ_GetParent(obj)) {
-    struct HandleMessageMsgArgs event = {
+
+  if (routing == kMessageRoutingDirect) {
+    struct HandleMessageMsgArgs ev = {
       .FirstArg = 1,
       .NumArgs = dwNumArgs + 1,
     };
-    strncpy(event.EventName, pszEventName, sizeof(event.EventName));
-    if (OBJ_SendMessage(obj, "HandleMessage", 0, &event)) {
+    strncpy(ev.EventName, pszEventName, sizeof(ev.EventName));
+    return OBJ_SendMessage(self, "HandleMessage", 0, &ev) ? self : NULL;
+  }
+
+  if (routing == kMessageRoutingBubbling) {
+    for (lpObject_t obj = self; obj; obj = OBJ_GetParent(obj)) {
+      struct HandleMessageMsgArgs ev = {
+        .FirstArg = 1,
+        .NumArgs = dwNumArgs + 1,
+      };
+      strncpy(ev.EventName, pszEventName, sizeof(ev.EventName));
+      if (OBJ_SendMessage(obj, "HandleMessage", 0, &ev)) {
+        return obj;
+      }
+    }
+    return NULL;
+  }
+
+  // For Tunneling and TunnelingBubbling, collect the path from self up to root
+  lpObject_t path[MAX_HIERARCHY_DEPTH];
+  int count = 0;
+  for (lpObject_t obj = self; obj && count < MAX_HIERARCHY_DEPTH; obj = OBJ_GetParent(obj)) {
+    path[count++] = obj;
+  }
+  if (count == MAX_HIERARCHY_DEPTH && OBJ_GetParent(path[count - 1])) {
+    Con_Error("DispatchEvent: hierarchy depth exceeds %d, tunneling will not reach root", MAX_HIERARCHY_DEPTH);
+  }
+
+  if (routing == kMessageRoutingTunneling) {
+    // Dispatch from root down to self
+    for (int i = count - 1; i >= 0; i--) {
+      struct HandleMessageMsgArgs ev = {
+        .FirstArg = 1,
+        .NumArgs = dwNumArgs + 1,
+      };
+      strncpy(ev.EventName, pszEventName, sizeof(ev.EventName));
+      if (OBJ_SendMessage(path[i], "HandleMessage", 0, &ev)) {
+        return path[i];
+      }
+    }
+    return NULL;
+  }
+
+  // kMessageRoutingTunnelingBubbling: first tunnel down (root→self), then bubble up (self→root).
+  // Each object receives the event twice — once during each phase — unless a handler stops
+  // propagation by returning true, which terminates the entire dispatch immediately.
+  for (int i = count - 1; i >= 0; i--) {
+    struct HandleMessageMsgArgs ev = {
+      .FirstArg = 1,
+      .NumArgs = dwNumArgs + 1,
+    };
+    strncpy(ev.EventName, pszEventName, sizeof(ev.EventName));
+    if (OBJ_SendMessage(path[i], "HandleMessage", 0, &ev)) {
+      return path[i];
+    }
+  }
+  for (lpObject_t obj = self; obj; obj = OBJ_GetParent(obj)) {
+    struct HandleMessageMsgArgs ev = {
+      .FirstArg = 1,
+      .NumArgs = dwNumArgs + 1,
+    };
+    strncpy(ev.EventName, pszEventName, sizeof(ev.EventName));
+    if (OBJ_SendMessage(obj, "HandleMessage", 0, &ev)) {
       return obj;
     }
   }

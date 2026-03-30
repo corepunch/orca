@@ -202,7 +202,8 @@ int f_OBJ_FindParentOfClass(lua_State *L) {
 int f_OBJ_DispatchEvent(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	const char* event = luaL_checkstring(L, 2);
-	struct Object* result_ = OBJ_DispatchEvent(L, this_, event);
+	enum MessageRouting routing = lua_isnoneornil(L, 3) ? kMessageRoutingBubbling : luaX_checkMessageRouting(L, 3);
+	struct Object* result_ = OBJ_DispatchEvent(L, this_, event, routing);
 	luaX_pushObject(L, result_);
 	return 1;
 }
