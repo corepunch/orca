@@ -457,19 +457,6 @@ struct PropertyChangedMsgArgs {
 };
 ORCA_API void luaX_pushPropertyChangedMsgArgs(lua_State *L, struct PropertyChangedMsgArgs const* data);
 ORCA_API struct PropertyChangedMsgArgs* luaX_checkPropertyChangedMsgArgs(lua_State *L, int idx);
-/** HitTestMsgArgs struct */
-struct HitTestMsgArgs {
-	int32_t x; ///< X coordinate of the hit test point
-	int32_t y; ///< Y coordinate of the hit test point
-};
-ORCA_API void luaX_pushHitTestMsgArgs(lua_State *L, struct HitTestMsgArgs const* data);
-ORCA_API struct HitTestMsgArgs* luaX_checkHitTestMsgArgs(lua_State *L, int idx);
-/** PropertyChangedMsgArgs struct */
-struct PropertyChangedMsgArgs {
-	struct Property* Property; ///< The property that changed
-};
-ORCA_API void luaX_pushPropertyChangedMsgArgs(lua_State *L, struct PropertyChangedMsgArgs const* data);
-ORCA_API struct PropertyChangedMsgArgs* luaX_checkPropertyChangedMsgArgs(lua_State *L, int idx);
 
 
 #endif

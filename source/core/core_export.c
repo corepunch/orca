@@ -1100,8 +1100,6 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_UpdateMatrixMsgArgs(L), -2), "UpdateMatrixMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_HitTestMsgArgs(L), -2), "HitTestMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_PropertyChangedMsgArgs(L), -2), "PropertyChangedMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_HitTestMsgArgs(L), -2), "HitTestMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_PropertyChangedMsgArgs(L), -2), "PropertyChangedMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object(L), -2), "Object");
 	return 1;
 }
