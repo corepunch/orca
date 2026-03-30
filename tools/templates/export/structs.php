@@ -56,7 +56,7 @@ return 1; \
 <?php foreach ($structs as $name => $struct):?>
 static struct PropertyType _<?= $name ?>[] = {
 <?php foreach ($struct->getFields() as $field): ?>
-<?php if ($field->type->fixed_array) continue; ?>
+<?php if ($field->type->fixed_array) continue; /* fixed arrays (e.g. int foo[3]) require specialised indexing beyond generic PropertyType metadata */ ?>
 <?php if ($field->noexport) continue; ?>
 <?php
 $kind = $field->type->kind;

@@ -278,7 +278,8 @@ luaX_struct_pushfield(lua_State* L, void *base, lpcPropertyType_t field)
         lua_pushinteger(L, *(int32_t*)ptr);
       break;
     case kDataTypeString:
-      /* fixed char arrays have DataSize > sizeof(char*); heap strings are pointers */
+      /* DataSize > sizeof(char*) means an embedded fixed-size char array (fixedString_t);
+       * DataSize == sizeof(char*) means a heap-allocated string pointer (char*). */
       if (field->DataSize > sizeof(char*))
         lua_pushstring(L, (const char*)ptr);
       else
@@ -291,6 +292,8 @@ luaX_struct_pushfield(lua_State* L, void *base, lpcPropertyType_t field)
       break;
     case kDataTypeObject: {
       lpObject_t object = *(lpObject_t*)ptr;
+      /* When TypeString is a component name (not "Object"), the field stores a component
+       * pointer; CMP_GetObject retrieves the owning Object from that component pointer. */
       if (field->TypeString && *field->TypeString && strcmp(field->TypeString, "Object") != 0 && *(void**)ptr)
         object = CMP_GetObject(*(void**)ptr);
       if (object)
@@ -325,7 +328,8 @@ luaX_struct_readfield(lua_State* L, int idx, void *base, lpcPropertyType_t field
         *(int32_t*)ptr = (int32_t)luaL_optinteger(L, idx, 0);
       break;
     case kDataTypeString:
-      /* fixed char arrays have DataSize > sizeof(char*); heap strings are pointers */
+      /* DataSize > sizeof(char*) means an embedded fixed-size char array (fixedString_t)
+       * using strncpy with bounds; DataSize == sizeof(char*) stores the Lua-owned pointer. */
       if (field->DataSize > sizeof(char*))
         strncpy((char*)ptr, luaL_optstring(L, idx, ""), field->DataSize);
       else
@@ -339,6 +343,8 @@ luaX_struct_readfield(lua_State* L, int idx, void *base, lpcPropertyType_t field
     case kDataTypeObject: {
       if (lua_type(L, idx) == LUA_TUSERDATA || lua_type(L, idx) == LUA_TTABLE) {
         lpObject_t obj = luaX_checkObject(L, idx);
+        /* When TypeString names a component (not "Object"), retrieve and store the component
+         * pointer from the Object; otherwise store the Object pointer directly. */
         if (field->TypeString && *field->TypeString && strcmp(field->TypeString, "Object") != 0)
           *(void**)ptr = OBJ_GetComponent(obj, fnv1a32(field->TypeString));
         else
