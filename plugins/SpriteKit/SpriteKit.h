@@ -18,6 +18,7 @@ typedef struct lua_State lua_State;
 
 
 
+
 typedef struct SpriteFrame SpriteFrame_t, *lpSpriteFrame_t;
 typedef struct SpriteFrame const cSpriteFrame_t, *lpcSpriteFrame_t;
 
@@ -44,6 +45,7 @@ struct SpriteAnimation {
 };
 ORCA_API void luaX_pushSpriteAnimation(lua_State *L, struct SpriteAnimation const* SpriteAnimation);
 ORCA_API struct SpriteAnimation* luaX_checkSpriteAnimation(lua_State *L, int idx);
+
 /// @brief Base 2D sprite node with transform and matrix
 /** SKNode component */
 typedef struct SKNode SKNode_t, *SKNodePtr, *lpSKNode_t;
@@ -57,6 +59,7 @@ struct SKNode {
 };
 ORCA_API void luaX_pushSKNode(lua_State *L, struct SKNode const* SKNode);
 ORCA_API struct SKNode* luaX_checkSKNode(lua_State *L, int idx);
+
 /// @brief Root container for a 2D sprite scene
 /** SKScene component */
 typedef struct SKScene SKScene_t, *SKScenePtr, *lpSKScene_t;
@@ -65,6 +68,7 @@ struct SKScene {
 };
 ORCA_API void luaX_pushSKScene(lua_State *L, struct SKScene const* SKScene);
 ORCA_API struct SKScene* luaX_checkSKScene(lua_State *L, int idx);
+
 /// @brief 2D sprite node that renders an image or animation
 /** SKSpriteNode component */
 typedef struct SKSpriteNode SKSpriteNode_t, *SKSpriteNodePtr, *lpSKSpriteNode_t;
@@ -79,6 +83,7 @@ struct SKSpriteNode {
 };
 ORCA_API void luaX_pushSKSpriteNode(lua_State *L, struct SKSpriteNode const* SKSpriteNode);
 ORCA_API struct SKSpriteNode* luaX_checkSKSpriteNode(lua_State *L, int idx);
+
 /// @brief 2D text label node for displaying text in sprite space
 /** SKLabelNode component */
 typedef struct SKLabelNode SKLabelNode_t, *SKLabelNodePtr, *lpSKLabelNode_t;
@@ -89,6 +94,7 @@ struct SKLabelNode {
 };
 ORCA_API void luaX_pushSKLabelNode(lua_State *L, struct SKLabelNode const* SKLabelNode);
 ORCA_API struct SKLabelNode* luaX_checkSKLabelNode(lua_State *L, int idx);
+
 /// @brief 2D viewport that renders an SKScene into the UI hierarchy
 /** SKView component */
 typedef struct SKView SKView_t, *SKViewPtr, *lpSKView_t;

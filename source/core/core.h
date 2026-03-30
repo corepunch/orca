@@ -17,7 +17,47 @@ struct lua_State;
 
 
 #include "core_properties.h"
-#include "../geometry/geometry.h"
+
+ORCA_API extern struct MessageType MouseMessageMessage;
+ORCA_API extern struct MessageType KeyMessageMessage;
+ORCA_API extern struct MessageType LeftMouseDownMessage;
+ORCA_API extern struct MessageType RightMouseDownMessage;
+ORCA_API extern struct MessageType OtherMouseDownMessage;
+ORCA_API extern struct MessageType LeftMouseUpMessage;
+ORCA_API extern struct MessageType RightMouseUpMessage;
+ORCA_API extern struct MessageType OtherMouseUpMessage;
+ORCA_API extern struct MessageType LeftMouseDraggedMessage;
+ORCA_API extern struct MessageType RightMouseDraggedMessage;
+ORCA_API extern struct MessageType OtherMouseDraggedMessage;
+ORCA_API extern struct MessageType LeftDoubleClickMessage;
+ORCA_API extern struct MessageType RightDoubleClickMessage;
+ORCA_API extern struct MessageType OtherDoubleClickMessage;
+ORCA_API extern struct MessageType MouseMovedMessage;
+ORCA_API extern struct MessageType ScrollWheelMessage;
+ORCA_API extern struct MessageType DragDropMessage;
+ORCA_API extern struct MessageType DragEnterMessage;
+ORCA_API extern struct MessageType KeyDownMessage;
+ORCA_API extern struct MessageType KeyUpMessage;
+ORCA_API extern struct MessageType CharMessage;
+ORCA_API extern struct MessageType WindowPaintMessage;
+ORCA_API extern struct MessageType WindowResizedMessage;
+ORCA_API extern struct MessageType WindowClosedMessage;
+ORCA_API extern struct MessageType WindowChangedScreenMessage;
+ORCA_API extern struct MessageType KillFocusMessage;
+ORCA_API extern struct MessageType SetFocusMessage;
+ORCA_API extern struct MessageType TimerMessage;
+ORCA_API extern struct MessageType IsVisibleMessage;
+ORCA_API extern struct MessageType CreateMessage;
+ORCA_API extern struct MessageType StartMessage;
+ORCA_API extern struct MessageType AwakeMessage;
+ORCA_API extern struct MessageType ThemeChangedMessage;
+ORCA_API extern struct MessageType PropertyChangedMessage;
+ORCA_API extern struct MessageType AttachedMessage;
+ORCA_API extern struct MessageType ReleaseMessage;
+ORCA_API extern struct MessageType DestroyMessage;
+ORCA_API extern struct MessageType ResumeCoroutineMessage;
+ORCA_API extern struct MessageType StopCoroutineMessage;
+ORCA_API extern struct MessageType ViewDidLoadMessage;
 
 typedef struct WI_Message MouseMessageMsg_t,* MouseMessageMsgPtr;
 typedef struct WI_Message KeyMessageMsg_t,* KeyMessageMsgPtr;
@@ -47,8 +87,6 @@ typedef int WindowChangedScreenMsg_t,* WindowChangedScreenMsgPtr;
 typedef int KillFocusMsg_t,* KillFocusMsgPtr;
 typedef int SetFocusMsg_t,* SetFocusMsgPtr;
 typedef int TimerMsg_t,* TimerMsgPtr;
-typedef struct UpdateMatrixMsgArgs UpdateMatrixMsg_t,* UpdateMatrixMsgPtr;
-typedef struct HitTestMsgArgs HitTestMsg_t,* HitTestMsgPtr;
 typedef int IsVisibleMsg_t,* IsVisibleMsgPtr;
 typedef int CreateMsg_t,* CreateMsgPtr;
 typedef int StartMsg_t,* StartMsgPtr;
@@ -62,18 +100,20 @@ typedef int ResumeCoroutineMsg_t,* ResumeCoroutineMsgPtr;
 typedef int StopCoroutineMsg_t,* StopCoroutineMsgPtr;
 typedef int ViewDidLoadMsg_t,* ViewDidLoadMsgPtr;
 
+
 /// @brief Defines the routing strategy for messages sent to objects. This determines how messages propagate through the object hierarchy and which handlers are invoked.
 /** MessageRouting enum */
 typedef enum MessageRouting {
+	kMessageRoutingBubbling, ///< Messages are bubbled up the hierarchy.
 	kMessageRoutingTunnelingBubbling, ///< Messages are first tunneled down the hierarchy and then bubbled up.
 	kMessageRoutingTunneling, ///< Messages are tunneled down the hierarchy.
-	kMessageRoutingBubbling, ///< Messages are bubbled up the hierarchy.
 	kMessageRoutingDirect, ///< Messages are sent directly to the target object.
 } eMessageRouting_t;
 #define MessageRouting_Count 4
 ORCA_API const char *MessageRoutingToString(enum MessageRouting value);
 ORCA_API enum MessageRouting luaX_checkMessageRouting(lua_State *L, int idx);
 ORCA_API void luaX_pushMessageRouting(lua_State *L, enum MessageRouting value);
+
 /// @brief Represents the various states a property can be in.
 /** PropertyState enum */
 typedef enum PropertyState {
@@ -88,6 +128,7 @@ typedef enum PropertyState {
 ORCA_API const char *PropertyStateToString(enum PropertyState value);
 ORCA_API enum PropertyState luaX_checkPropertyState(lua_State *L, int idx);
 ORCA_API void luaX_pushPropertyState(lua_State *L, enum PropertyState value);
+
 /// @brief Various modes to bind properties
 /** BindingMode enum */
 typedef enum BindingMode {
@@ -100,6 +141,7 @@ typedef enum BindingMode {
 ORCA_API const char *BindingModeToString(enum BindingMode value);
 ORCA_API enum BindingMode luaX_checkBindingMode(lua_State *L, int idx);
 ORCA_API void luaX_pushBindingMode(lua_State *L, enum BindingMode value);
+
 /// @brief Attributes that can be applied to properties for binding purposes.
 /** PropertyAttribute enum */
 typedef enum PropertyAttribute {
@@ -117,6 +159,7 @@ typedef enum PropertyAttribute {
 ORCA_API const char *PropertyAttributeToString(enum PropertyAttribute value);
 ORCA_API enum PropertyAttribute luaX_checkPropertyAttribute(lua_State *L, int idx);
 ORCA_API void luaX_pushPropertyAttribute(lua_State *L, enum PropertyAttribute value);
+
 /// @brief Specifies the underlying data type of a property.
 /** DataType enum */
 typedef enum DataType {
@@ -136,275 +179,350 @@ ORCA_API const char *DataTypeToString(enum DataType value);
 ORCA_API enum DataType luaX_checkDataType(lua_State *L, int idx);
 ORCA_API void luaX_pushDataType(lua_State *L, enum DataType value);
 
+typedef struct MessageType MessageType_t, *lpMessageType_t;
+typedef struct MessageType const cMessageType_t, *lpcMessageType_t;
 typedef struct PropertyEnumValue PropertyEnumValue_t, *lpPropertyEnumValue_t;
 typedef struct PropertyEnumValue const cPropertyEnumValue_t, *lpcPropertyEnumValue_t;
 typedef struct PropertyType PropertyType_t, *lpPropertyType_t;
 typedef struct PropertyType const cPropertyType_t, *lpcPropertyType_t;
 
+
 /// @brief Retrieves currently active object.
 ORCA_API struct Object*
 core_GetFocus(void);
+
 /// @brief Gets the currently hovered object
 ORCA_API struct Object*
 core_GetHover(void);
 
-/// @name Lifecycle
 
+/// @name Lifecycle
 /// Manages object creation, initialization, update cycles, and destruction.
 
 /// @brief Create new object.
 ORCA_API int
 OBJ_CreateFromLuaState(struct lua_State*);
+
 /// @brief Initializes the core component when it is loaded, an essential lifecycle method.
 ORCA_API void
 OBJ_Awake(struct lua_State*, struct Object*);
+
 /// @brief Runs object animations.
 ORCA_API void
 OBJ_Animate(struct lua_State*, struct Object*);
+
 /// @brief Clear all children of the object.
 ORCA_API void
 OBJ_Clear(struct lua_State*, struct Object*);
+
 /// @brief Garbage-collect an object (clear and release).
 ORCA_API void
 OBJ_Release(struct lua_State*, struct Object*);
+
 /// @brief Compare two objects for equality.
 ORCA_API bool_t
 OBJ_Equals(struct Object const*, struct Object const*);
+
 /// @brief Rebuilds the object's body content asynchronously
 ORCA_API void
 OBJ_Rebuild(struct lua_State*, struct Object*);
-/// @name Hierarchy
 
+/// @name Hierarchy
 /// Navigates and manipulates the parent-child relationship tree.
 
 /// @brief Add a child object.
 ORCA_API struct Object*
 OBJ_AddChild(struct Object*, struct Object*, bool_t);
+
 /// @brief Destroys an object.
 ORCA_API void
 OBJ_RemoveFromParent(struct lua_State*, struct Object*);
+
 /// @brief Gets the parent object in the hierarchy
 ORCA_API struct Object*
 OBJ_GetParent(struct Object const*);
+
 /// @brief Gets the first child object
 ORCA_API struct Object*
 OBJ_GetFirstChild(struct Object const*);
+
 /// @brief Gets the next sibling object
 ORCA_API struct Object*
 OBJ_GetNext(struct Object const*);
+
 /// @brief Gets the root object of the hierarchy
 ORCA_API struct Object*
 OBJ_GetRoot(struct Object*);
+
 /// @brief Find a child object by name.
 ORCA_API struct Object*
 OBJ_FindChild(struct Object*, const char*, bool_t);
+
 /// @brief Finds child object by hierarchical path
 ORCA_API struct Object*
 OBJ_FindByPath(struct Object*, const char*);
+
 /// @brief Finds a child object by its unique identifier
 ORCA_API struct Object*
 OBJ_FindChildByID(struct Object*, uint32_t);
+
 /// @brief Finds a child object by its alias identifier
 ORCA_API struct Object*
 OBJ_FindChildByAlias(struct Object*, uint32_t);
+
 /// @brief Finds a child object of a specific class
 ORCA_API struct Object*
 OBJ_FindChildOfClass(struct Object*, uint32_t);
+
 /// @brief Finds the nearest parent object of a specific class
 ORCA_API struct Object*
 OBJ_FindParentOfClass(struct Object*, uint32_t);
-/// @name Messaging
 
+/// @name Messaging
 /// Dispatches events and sends messages between objects.
 
 /// @brief Dispatch an event starting from this object and bubbling up parents.
 ORCA_API struct Object*
 OBJ_DispatchEvent(struct lua_State*, struct Object*, const char*);
+
 /// @brief Posts a message to the global message queue.
 ORCA_API void
 OBJ_PostMessage(struct lua_State*, struct Object*, const char*);
+
 /// @brief Send a message to directly to the object ignoring queue.
 ORCA_API void
 OBJ_SendMessage2(struct lua_State*, struct Object*, const char*);
+
 /// @brief Retrieves callback function name for event ID
 ORCA_API const char*
 OBJ_FindCallbackForID(struct Object*, uint32_t);
-/// @name Properties
 
+/// @name Properties
 /// Reads and writes typed properties, applying and observing changes.
 
 /// @brief Set a property on the object.
 ORCA_API bool_t
 OBJ_SetProperty(struct lua_State*, struct Object*, const char*);
+
 /// @brief Get a property value from an object.
 ORCA_API int
 OBJ_GetProperty(struct lua_State*, struct Object*, const char*);
+
 /// @brief Updates object properties.
 ORCA_API void
 OBJ_UpdateProperties(struct Object*);
+
 /// @brief Emits onPropertyChanged events by comparing to previous values.
 ORCA_API void
 OBJ_EmitPropertyChangedEvents(struct lua_State*, struct Object*);
+
 /// @brief Looks up a property by context-driven syntax, like "Column" instead of "Grid.Column"
 ORCA_API struct PropertyType const*
 OBJ_FindImplicitProperty(struct Object*, const char*);
+
 /// @brief Looks up a property by full syntax, like "Grid.Column" instead of "Column"
 ORCA_API struct PropertyType const*
 OBJ_FindExplicitProperty(struct Object*, const char*);
+
 /// @brief Attaches a property program to the specified property
 ORCA_API bool_t
 OBJ_AttachPropertyProgram(struct Object*, const char*, const char*, enum PropertyAttribute, enum BindingMode, bool_t);
+
 /// @brief Finds a property by navigating a hierarchical path
 ORCA_API struct Property*
 OBJ_FindPropertyByPath(struct Object*, const char*);
+
 /// @brief Gets the properties collection
 ORCA_API struct Property*
 OBJ_GetProperties(struct Object const*);
+
 /// @brief Gets an integer property value by identifier
 ORCA_API int32_t
 OBJ_GetInteger(struct Object const*, uint32_t, int32_t);
-/// @name Layout
 
+/// @name Layout
 /// Controls position, size, and dirty-flag propagation for layout passes.
 
 /// @brief Sets object dirty and queues it for recalculation
 ORCA_API void
 OBJ_SetDirty(struct Object*);
+
 /// @brief Clears dirty flags, marks object as recalculated
 ORCA_API void
 OBJ_ClearDirtyFlags(struct Object*);
+
 /// @brief Applies style changes to object hierarchy
 ORCA_API void
 OBJ_ApplyStyles(struct Object*, bool_t);
-/// @name Style
 
+/// @name Style
 /// Manages style sheets and resolves computed style values.
 
 /// @brief Add a stylesheet to the object.
 ORCA_API void
 OBJ_AddStyleSheet(struct lua_State*, struct Object*, const char*);
+
 /// @brief Retrieves object style flags
 ORCA_API uint32_t
 OBJ_GetStyle(struct Object const*);
+
 /// @brief Sets object style flags
 ORCA_API void
 OBJ_SetStyle(struct Object*, uint32_t);
-/// @name Animation
 
+/// @name Animation
 /// Attaches, plays, and transitions keyframe animations on this object.
 
 /// @brief Play an animation or resource on the object.
 ORCA_API void
 OBJ_Play(struct Object*, const char*);
+
 /// @brief Tween an object property over time.
 ORCA_API void
 OBJ_DoTween(struct lua_State*, struct Object*);
+
 /// @brief Sets the active animation by name
 ORCA_API void
 OBJ_SetAnimation(struct Object*, const char*);
+
 /// @brief Gets the currently active animation
 ORCA_API struct KeyframeAnim const*
 OBJ_GetAnimation(struct Object const*);
+
 /// @brief Adds a keyframe animation to the object's animation library
 ORCA_API void
 OBJ_AddAnimation(struct Object*, struct KeyframeAnim*);
-/// @name Focus and Input
 
+/// @name Focus and Input
 /// Controls focus state, hover, modal presentation, and timers.
 
 /// @brief Set focus on the object.
 ORCA_API void
 OBJ_SetFocus(struct Object*);
+
 /// @brief Checks if this object currently has focus
 ORCA_API bool_t
 OBJ_IsFocused(struct Object const*);
+
 /// @brief Sets the hover state for an object
 ORCA_API void
 OBJ_SetHover(struct Object*);
+
 /// @brief Sets or clears the modal child object
 ORCA_API int
 OBJ_ShowModal(struct lua_State*, struct Object*, struct Object*);
+
 /// @brief Set a timer on the object.
 ORCA_API int
 OBJ_SetTimer(struct lua_State*, struct Object*);
-/// @name Identity and State
 
+/// @name Identity and State
 /// Accesses name, class, flags, aliases, text content, and Lua state.
 
 /// @brief Retrieves the object's name identifier
 ORCA_API const char*
 OBJ_GetName(struct Object const*);
+
 /// @brief Sets the object's name identifier
 ORCA_API void
 OBJ_SetName(struct Object*, const char*);
+
 /// @brief Returns the object's class type name
 ORCA_API const char*
 OBJ_GetClassName(struct Object const*);
+
 /// @brief Sets the class name of the object
 ORCA_API void
 OBJ_SetClassName(struct Object*, const char*);
+
 /// @brief Checks if object has a specific name
 ORCA_API bool_t
 OBJ_CheckName(struct Object const*, const char*);
+
 /// @brief Gets the object flags
 ORCA_API uint32_t
 OBJ_GetFlags(struct Object const*);
+
 /// @brief Sets the object flags
 ORCA_API void
 OBJ_SetFlags(struct Object*, uint32_t);
+
 /// @brief Gets the identifier of the object
 ORCA_API uint32_t
 OBJ_GetIdentifier(struct Object const*);
+
 /// @brief Gets the alias identifier
 ORCA_API uint32_t
 OBJ_GetAlias(struct Object const*);
+
 /// @brief Gets the source file path
 ORCA_API const char*
 OBJ_GetSourceFile(struct Object const*);
+
 /// @brief Sets the source file path of the object
 ORCA_API void
 OBJ_SetSourceFile(struct Object*, const char*);
+
 /// @brief Gets the text content of the object
 ORCA_API const char*
 OBJ_GetTextContent(struct Object const*);
+
 /// @brief Sets the text content of the object
 ORCA_API void
 OBJ_SetTextContent(struct Object*, const char*);
+
 /// @brief Gets the last modified timestamp
 ORCA_API long
 OBJ_GetTimestamp(struct Object const*);
+
 /// @brief Gets the Lua object reference
 ORCA_API uint32_t
 OBJ_GetLuaObject(struct Object const*);
+
 /// @brief Gets the domain of the object
 ORCA_API struct lua_State*
 OBJ_GetDomain(struct Object*);
+
 /// @brief Set the current context object where newly created objects will be parented.
 ORCA_API void
 OBJ_SetContext(struct lua_State*, struct Object*);
+
 /// @brief Parses and applies multiple class names from a class attribute string
 ORCA_API void
 OBJ_ParseClassAttribute(struct Object*, const char*);
-/// @name Prefabs and Aliases
 
+/// @name Prefabs and Aliases
 /// Loads prefab templates and manages named child aliases.
 
 /// @brief Instantiates a new object from this prefab.
 ORCA_API struct Object*
 OBJ_Instantiate(struct lua_State*, struct Object*);
+
 /// @brief Loads and instantiates prefabs.
 ORCA_API void
 OBJ_LoadPrefabs(struct lua_State*, struct Object*);
+
 /// @brief Checks if this object is a prefab view container
 ORCA_API bool_t
 OBJ_IsPrefabView(struct Object const*);
+
 /// @brief Registers an alias for a child object path
 ORCA_API void
 OBJ_AddAlias(struct Object*, const char*, const char*);
+
 /// @brief Resolves and assigns all registered aliases for an object
 ORCA_API void
 OBJ_AssignAliases(struct Object*, const char*);
 
+/** MessageType struct */
+struct MessageType {
+	const char* name; ///< The name of the message
+	uint32_t id; ///< The unique identifier of the message
+	enum MessageRouting routing; ///< The routing strategy for this message
+	uint32_t size; ///< The size of the message
+};
+ORCA_API void luaX_pushMessageType(lua_State *L, struct MessageType const* MessageType);
+ORCA_API struct MessageType* luaX_checkMessageType(lua_State *L, int idx);
 /// @brief Enum value descriptor for a property.
 /** PropertyEnumValue struct */
 struct PropertyEnumValue {
@@ -448,21 +566,6 @@ struct WindowPaintMsgArgs {
 };
 ORCA_API void luaX_pushWindowPaintMsgArgs(lua_State *L, struct WindowPaintMsgArgs const* data);
 ORCA_API struct WindowPaintMsgArgs* luaX_checkWindowPaintMsgArgs(lua_State *L, int idx);
-/** UpdateMatrixMsgArgs struct */
-struct UpdateMatrixMsgArgs {
-	struct mat4 parent; ///< The parent matrix
-	float opacity; ///< The opacity value
-	bool_t force; ///< Indicates if the update is forced
-};
-ORCA_API void luaX_pushUpdateMatrixMsgArgs(lua_State *L, struct UpdateMatrixMsgArgs const* data);
-ORCA_API struct UpdateMatrixMsgArgs* luaX_checkUpdateMatrixMsgArgs(lua_State *L, int idx);
-/** HitTestMsgArgs struct */
-struct HitTestMsgArgs {
-	int32_t x; ///< X coordinate of the hit test point
-	int32_t y; ///< Y coordinate of the hit test point
-};
-ORCA_API void luaX_pushHitTestMsgArgs(lua_State *L, struct HitTestMsgArgs const* data);
-ORCA_API struct HitTestMsgArgs* luaX_checkHitTestMsgArgs(lua_State *L, int idx);
 /** PropertyChangedMsgArgs struct */
 struct PropertyChangedMsgArgs {
 	struct Property* Property; ///< The property that changed

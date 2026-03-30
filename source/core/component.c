@@ -157,6 +157,30 @@ OBJ_SendMessage(lpObject_t pobj, lpcString_t Msg, wParam_t wParam, lParam_t lPar
   return OBJ_SendMessageW(pobj, fnv1a32(Msg), wParam, lParam);
 }
 
+LRESULT
+OBJ_RaiseEvent(lpObject_t pobj, struct MessageType const *type, void* param)
+{
+  LRESULT result;
+  if (!pobj) return 0;
+  switch (type->routing) {
+    case kMessageRoutingDirect:
+      return OBJ_SendMessageW(pobj, type->id, 0, param);
+    case kMessageRoutingBubbling:
+      result = OBJ_SendMessageW(pobj, type->id, 0, param);
+      return result ? result : OBJ_RaiseEvent(OBJ_GetParent(pobj), type, param);
+    case kMessageRoutingTunneling:
+      result = OBJ_RaiseEvent(OBJ_GetParent(pobj), type, param);
+      return result ? result : OBJ_SendMessageW(pobj, type->id, 0, param);
+    case kMessageRoutingTunnelingBubbling: {
+      struct MessageType tmp = *type;
+      tmp.routing = kMessageRoutingTunneling;
+      result = OBJ_RaiseEvent(pobj, &tmp, param);
+      tmp.routing = kMessageRoutingBubbling;
+      return result ? result : OBJ_RaiseEvent(pobj, &tmp, param);
+    }
+  }
+}
+
 //lpProperty_t
 //OBJ_AddComponentProperty2(lua_State* L, struct component* pcmp, lpcString_t name)
 //{

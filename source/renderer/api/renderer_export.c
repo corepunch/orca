@@ -265,6 +265,12 @@ int luaopen_orca_window(lua_State *L) {
 	lua_setfield(L, -2, "__index");
 	return 1;
 }
+struct MessageType RenderScreenMessage = {
+	.name = "RenderScreen",
+	.id = kMsgRenderScreen,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct RenderScreenMsgArgs),
+};
 void luaX_pushRenderScreenMsgArgs(lua_State *L, struct RenderScreenMsgArgs const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct RenderScreenMsgArgs* self = lua_newuserdata(L, sizeof(struct RenderScreenMsgArgs));
@@ -334,6 +340,12 @@ int luaopen_orca_RenderScreenMsgArgs(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
+struct MessageType RenderMessage = {
+	.name = "Render",
+	.id = kMsgRender,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct RenderMsgArgs),
+};
 void luaX_pushRenderMsgArgs(lua_State *L, struct RenderMsgArgs const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct RenderMsgArgs* self = lua_newuserdata(L, sizeof(struct RenderMsgArgs));

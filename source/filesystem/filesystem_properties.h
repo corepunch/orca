@@ -50,7 +50,6 @@ enum LibraryProperties {
 #define ID_Project_IsLocalizationEnabled 0x1f9a2b02 // Project.IsLocalizationEnabled
 #define ID_Project_FullScreenPreviewLayer 0x44433db4 // Project.FullScreenPreviewLayer
 #define ID_Project_ShowChildrenInLayerThumbnails 0xeff04efb // Project.ShowChildrenInLayerThumbnails
-#define ID_Project_CompositionDesignSize 0x36df81ed // Project.CompositionDesignSize
 #define ID_Project_ProjectUsePremultipliedAlpha 0xc9d6b678 // Project.ProjectUsePremultipliedAlpha
 #define ID_Project_ProjectRemoveICCProfilesOfPngs 0xded57e15 // Project.ProjectRemoveICCProfilesOfPngs
 #define ID_Project_BinaryFileName 0x5a451f18 // Project.BinaryFileName
@@ -125,7 +124,6 @@ enum ProjectProperties {
 	kProjectIsLocalizationEnabled,
 	kProjectFullScreenPreviewLayer,
 	kProjectShowChildrenInLayerThumbnails,
-	kProjectCompositionDesignSize,
 	kProjectProjectUsePremultipliedAlpha,
 	kProjectProjectRemoveICCProfilesOfPngs,
 	kProjectBinaryFileName,

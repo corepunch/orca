@@ -30,8 +30,6 @@
 #define kMsgKillFocus 0xa7c0f8d7
 #define kMsgSetFocus 0xc399d265
 #define kMsgTimer 0xeb53a5c2
-#define kMsgUpdateMatrix 0x5dbe404d
-#define kMsgHitTest 0x898160ea
 #define kMsgIsVisible 0x608d20d1
 #define kMsgCreate 0x990de47d
 #define kMsgStart 0x0ae8097f

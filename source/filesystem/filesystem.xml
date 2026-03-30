@@ -69,7 +69,7 @@
     <!--    <PreviewWorkingDirectory>..\..\..\..\..\..\bin</PreviewWorkingDirectory>-->
     <property name="FullScreenPreviewLayer" type="bool"/> <!-- false -->
     <property name="ShowChildrenInLayerThumbnails" type="bool"/> <!-- true -->
-    <property name="CompositionDesignSize" type="vec2" defaul="-1 -1"/>
+<!--    <property name="CompositionDesignSize" type="vec2" defaul="-1 -1"/>-->
     <property name="ProjectUsePremultipliedAlpha" type="bool"/> <!-- true -->
     <!--    <ProjectPngCompressionLevel>Default</ProjectPngCompressionLevel>-->
     <property name="ProjectRemoveICCProfilesOfPngs" type="bool"/> <!-- true -->

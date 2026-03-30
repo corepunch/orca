@@ -1,4 +1,10 @@
 <?php foreach ($events as $name => $event):?>
+struct MessageType <?= $name ?>Message = {
+	.name = "<?= $name ?>",
+	.id = kMsg<?= $name ?>,
+	.routing = kMessageRouting<?= $event->routing ?>,
+	.size = sizeof(<?= $event->getEffectiveTypeDecl() ?>),
+};
 <?php if (!$event->hasFields()): continue; endif ?>
 <?php $struct_name = $name . "MsgArgs" ?>
 void luaX_push<?= $struct_name ?>(lua_State *L, struct <?= $struct_name ?> const* data) {

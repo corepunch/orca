@@ -233,6 +233,18 @@ int luaopen_orca_SystemMessage(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
+struct MessageType ReadCommandsMessage = {
+	.name = "ReadCommands",
+	.id = kMsgReadCommands,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(int),
+};
+struct MessageType OpenFileMessage = {
+	.name = "OpenFile",
+	.id = kMsgOpenFile,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct OpenFileMsgArgs),
+};
 void luaX_pushOpenFileMsgArgs(lua_State *L, struct OpenFileMsgArgs const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct OpenFileMsgArgs* self = lua_newuserdata(L, sizeof(struct OpenFileMsgArgs));
@@ -286,6 +298,12 @@ int luaopen_orca_OpenFileMsgArgs(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
+struct MessageType FileExistsMessage = {
+	.name = "FileExists",
+	.id = kMsgFileExists,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct FileExistsMsgArgs),
+};
 void luaX_pushFileExistsMsgArgs(lua_State *L, struct FileExistsMsgArgs const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct FileExistsMsgArgs* self = lua_newuserdata(L, sizeof(struct FileExistsMsgArgs));
@@ -339,6 +357,18 @@ int luaopen_orca_FileExistsMsgArgs(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
+struct MessageType HasChangedFilesMessage = {
+	.name = "HasChangedFiles",
+	.id = kMsgHasChangedFiles,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(int),
+};
+struct MessageType LoadProjectMessage = {
+	.name = "LoadProject",
+	.id = kMsgLoadProject,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct LoadProjectMsgArgs),
+};
 void luaX_pushLoadProjectMsgArgs(lua_State *L, struct LoadProjectMsgArgs const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct LoadProjectMsgArgs* self = lua_newuserdata(L, sizeof(struct LoadProjectMsgArgs));
@@ -482,7 +512,6 @@ static struct PropertyType const ProjectProperties[kProjectNumProperties] = {
 	DECL(0x18da08d1, Project, IsLocalizationEnabled, IsLocalizationEnabled, kDataTypeBool), // Project.IsLocalizationEnabled
 	DECL(0xdf498299, Project, FullScreenPreviewLayer, FullScreenPreviewLayer, kDataTypeBool), // Project.FullScreenPreviewLayer
 	DECL(0x76bfa6c4, Project, ShowChildrenInLayerThumbnails, ShowChildrenInLayerThumbnails, kDataTypeBool), // Project.ShowChildrenInLayerThumbnails
-	DECL(0x5488c4f2, Project, CompositionDesignSize, CompositionDesignSize, kDataTypeStruct, .TypeString = "Vector2D"), // Project.CompositionDesignSize
 	DECL(0x5734b5cd, Project, ProjectUsePremultipliedAlpha, ProjectUsePremultipliedAlpha, kDataTypeBool), // Project.ProjectUsePremultipliedAlpha
 	DECL(0xb617d580, Project, ProjectRemoveICCProfilesOfPngs, ProjectRemoveICCProfilesOfPngs, kDataTypeBool), // Project.ProjectRemoveICCProfilesOfPngs
 	DECL(0x0f9ae251, Project, BinaryFileName, BinaryFileName, kDataTypeString), // Project.BinaryFileName
