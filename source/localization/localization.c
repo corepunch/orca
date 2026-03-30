@@ -26,22 +26,18 @@ typedef struct _FORMATARG
     snprintf(szOutput, dwLength, FORMAT, VALUE);                               \
   }
 
-FMTF(data_Name, "%s", "World");
-FMTF(data_Count, "%s", "42");
-FMTF(data_Time, "%s", "12:00");
-FMTF(data_Date, "%s", "2024-01-01");
-FMTF(unit_Distance, "%s", "km");
-FMTF(unit_Speed, "%s", "km/h");
-FMTF(unit_Temperature, "%s", "°C");
+FMTF(data_FirstName, "%s", "John");
+FMTF(data_LastName, "%s", "Doe");
+FMTF(data_Age, "%s", "30");
+FMTF(data_Email, "%s", "john.doe@example.com");
+FMTF(data_Greeting, "%s", "Hello, World!");
 
 static FORMATARG args[] = {
-  VARIABLE(data_Name),
-  VARIABLE(data_Count),
-  VARIABLE(data_Time),
-  VARIABLE(data_Date),
-  VARIABLE(unit_Distance),
-  VARIABLE(unit_Speed),
-  VARIABLE(unit_Temperature),
+  VARIABLE(data_FirstName),
+  VARIABLE(data_LastName),
+  VARIABLE(data_Age),
+  VARIABLE(data_Email),
+  VARIABLE(data_Greeting),
 
   { NULL }
 };
