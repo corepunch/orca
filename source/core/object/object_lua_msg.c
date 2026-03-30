@@ -58,7 +58,17 @@ void OBJ_SendMessage2(lua_State* L, lpObject_t self, lpcString_t message)
 
 #define MAX_HIERARCHY_DEPTH 64
 
-lpObject_t OBJ_DispatchEvent(lua_State* L, lpObject_t self, lpcString_t event, enum MessageRouting routing)
+static bool_t _dispatch_to(lpObject_t obj, lpcString_t eventName, uint32_t firstArg, uint32_t numArgs)
+{
+  struct HandleMessageMsgArgs ev = {
+    .FirstArg = firstArg,
+    .NumArgs  = numArgs,
+  };
+  strncpy(ev.EventName, eventName, sizeof(ev.EventName));
+  return OBJ_SendMessage(obj, "HandleMessage", 0, &ev);
+}
+
+lpObject_t OBJ_DispatchEventWithRouting(lua_State* L, lpObject_t self, lpcString_t event, enum MessageRouting routing)
 {
   uint32_t dwNumArgs = MAX(0, lua_gettop(L) - 2);
   shortStr_t pszEventName;
@@ -66,22 +76,12 @@ lpObject_t OBJ_DispatchEvent(lua_State* L, lpObject_t self, lpcString_t event, e
   lua_remove(L, 2); // clear event name to send object with args to parents
 
   if (routing == kMessageRoutingDirect) {
-    struct HandleMessageMsgArgs ev = {
-      .FirstArg = 1,
-      .NumArgs = dwNumArgs + 1,
-    };
-    strncpy(ev.EventName, pszEventName, sizeof(ev.EventName));
-    return OBJ_SendMessage(self, "HandleMessage", 0, &ev) ? self : NULL;
+    return _dispatch_to(self, pszEventName, 1, dwNumArgs + 1) ? self : NULL;
   }
 
   if (routing == kMessageRoutingBubbling) {
     for (lpObject_t obj = self; obj; obj = OBJ_GetParent(obj)) {
-      struct HandleMessageMsgArgs ev = {
-        .FirstArg = 1,
-        .NumArgs = dwNumArgs + 1,
-      };
-      strncpy(ev.EventName, pszEventName, sizeof(ev.EventName));
-      if (OBJ_SendMessage(obj, "HandleMessage", 0, &ev)) {
+      if (_dispatch_to(obj, pszEventName, 1, dwNumArgs + 1)) {
         return obj;
       }
     }
@@ -95,18 +95,13 @@ lpObject_t OBJ_DispatchEvent(lua_State* L, lpObject_t self, lpcString_t event, e
     path[count++] = obj;
   }
   if (count == MAX_HIERARCHY_DEPTH && OBJ_GetParent(path[count - 1])) {
-    Con_Error("DispatchEvent: hierarchy depth exceeds %d, tunneling will not reach root", MAX_HIERARCHY_DEPTH);
+    Con_Error("DispatchEvent: hierarchy depth exceeds %d, event routing will be incomplete", MAX_HIERARCHY_DEPTH);
   }
 
   if (routing == kMessageRoutingTunneling) {
     // Dispatch from root down to self
     for (int i = count - 1; i >= 0; i--) {
-      struct HandleMessageMsgArgs ev = {
-        .FirstArg = 1,
-        .NumArgs = dwNumArgs + 1,
-      };
-      strncpy(ev.EventName, pszEventName, sizeof(ev.EventName));
-      if (OBJ_SendMessage(path[i], "HandleMessage", 0, &ev)) {
+      if (_dispatch_to(path[i], pszEventName, 1, dwNumArgs + 1)) {
         return path[i];
       }
     }
@@ -117,24 +112,19 @@ lpObject_t OBJ_DispatchEvent(lua_State* L, lpObject_t self, lpcString_t event, e
   // Each object receives the event twice — once during each phase — unless a handler stops
   // propagation by returning true, which terminates the entire dispatch immediately.
   for (int i = count - 1; i >= 0; i--) {
-    struct HandleMessageMsgArgs ev = {
-      .FirstArg = 1,
-      .NumArgs = dwNumArgs + 1,
-    };
-    strncpy(ev.EventName, pszEventName, sizeof(ev.EventName));
-    if (OBJ_SendMessage(path[i], "HandleMessage", 0, &ev)) {
+    if (_dispatch_to(path[i], pszEventName, 1, dwNumArgs + 1)) {
       return path[i];
     }
   }
   for (lpObject_t obj = self; obj; obj = OBJ_GetParent(obj)) {
-    struct HandleMessageMsgArgs ev = {
-      .FirstArg = 1,
-      .NumArgs = dwNumArgs + 1,
-    };
-    strncpy(ev.EventName, pszEventName, sizeof(ev.EventName));
-    if (OBJ_SendMessage(obj, "HandleMessage", 0, &ev)) {
+    if (_dispatch_to(obj, pszEventName, 1, dwNumArgs + 1)) {
       return obj;
     }
   }
   return NULL;
+}
+
+lpObject_t OBJ_DispatchEvent(lua_State* L, lpObject_t self, lpcString_t event)
+{
+  return OBJ_DispatchEventWithRouting(L, self, event, OBJ_GetMessageRouting(fnv1a32(event)));
 }

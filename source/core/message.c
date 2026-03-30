@@ -6,6 +6,42 @@ static bool_t is_printable(int ch) {
   return ch >= 0x20 && ch <= 0x7E;
 }
 
+// --- Message routing registry ---
+
+#define MAX_MESSAGE_ROUTINGS 256
+
+static struct {
+  uint32_t hash;
+  enum MessageRouting routing;
+} g_routing_table[MAX_MESSAGE_ROUTINGS];
+
+static int g_routing_count = 0;
+
+void
+OBJ_RegisterMessageRoutings(lpcString_t const names[], enum MessageRouting const routings[], int count)
+{
+  for (int i = 0; i < count; i++) {
+    if (g_routing_count >= MAX_MESSAGE_ROUTINGS) {
+      Con_Error("OBJ_RegisterMessageRoutings: table full (max %d), cannot register %s", MAX_MESSAGE_ROUTINGS, names[i]);
+      return;
+    }
+    g_routing_table[g_routing_count].hash = fnv1a32(names[i]);
+    g_routing_table[g_routing_count].routing = routings[i];
+    g_routing_count++;
+  }
+}
+
+enum MessageRouting
+OBJ_GetMessageRouting(uint32_t hash)
+{
+  for (int i = 0; i < g_routing_count; i++) {
+    if (g_routing_table[i].hash == hash) {
+      return g_routing_table[i].routing;
+    }
+  }
+  return kMessageRoutingBubbling;
+}
+
 bool_t
 CORE_HandleKeyEvent(lua_State *L, struct WI_Message* e)
 {

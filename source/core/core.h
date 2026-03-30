@@ -217,9 +217,9 @@ OBJ_FindParentOfClass(struct Object*, uint32_t);
 
 /// Dispatches events and sends messages between objects.
 
-/// @brief Dispatch an event through the object hierarchy using the specified routing strategy.
+/// @brief Dispatch an event through the object hierarchy using the routing strategy declared on the event definition.
 ORCA_API struct Object*
-OBJ_DispatchEvent(struct lua_State*, struct Object*, const char*, enum MessageRouting);
+OBJ_DispatchEvent(struct lua_State*, struct Object*, const char*);
 /// @brief Posts a message to the global message queue.
 ORCA_API void
 OBJ_PostMessage(struct lua_State*, struct Object*, const char*);
@@ -470,5 +470,7 @@ struct PropertyChangedMsgArgs {
 ORCA_API void luaX_pushPropertyChangedMsgArgs(lua_State *L, struct PropertyChangedMsgArgs const* data);
 ORCA_API struct PropertyChangedMsgArgs* luaX_checkPropertyChangedMsgArgs(lua_State *L, int idx);
 
+
+#include "core_routing.h"
 
 #endif

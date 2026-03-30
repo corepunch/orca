@@ -27,6 +27,14 @@ foreach ($model->getComponents() as $cname => $comp) {
 		}
 	}
 }
+// Collect events that have an explicit routing declaration
+$routed_events = [];
+foreach ($model->getEvents() as $ename => $event) {
+	$r = $event->routing;
+	if ($r !== null) {
+		$routed_events[$ename] = $r;
+	}
+}
 ?>
 <?php foreach ($extern_enums as $ename => $eobj): ?>
 extern const char *_<?= $ename ?>[];
@@ -38,6 +46,19 @@ extern const char *_<?= $ename ?>[];
 <?php include_template("export/components", ['components' => $model->getComponents(), 'events' => $model->getEvents()]) ?>
 <?php include_template("export/functions", ['functions' => $model->getFunctions(), 'prefix' => $model->prefix]) ?>
 
+<?php if (count($routed_events) > 0): ?>
+static const char* _<?= $model->getModuleName() ?>_routing_names[] = {
+<?php foreach ($routed_events as $ename => $routing): ?>
+	"<?= $ename ?>",
+<?php endforeach ?>
+};
+static const enum MessageRouting _<?= $model->getModuleName() ?>_routing_values[] = {
+<?php foreach ($routed_events as $ename => $routing): ?>
+	kMessageRouting<?= $routing ?>,
+<?php endforeach ?>
+};
+<?php endif ?>
+
 ORCA_API int luaopen_orca_<?= $model->getModuleName() ?>(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
 <?php foreach ($model->getFunctions() as $name => $func):?>
@@ -45,6 +66,9 @@ ORCA_API int luaopen_orca_<?= $model->getModuleName() ?>(lua_State *L) {
 <?php endforeach ?>
 		{ NULL, NULL } 
 	}));
+<?php if (count($routed_events) > 0): ?>
+	OBJ_RegisterMessageRoutings(_<?= $model->getModuleName() ?>_routing_names, _<?= $model->getModuleName() ?>_routing_values, <?= count($routed_events) ?>);
+<?php endif ?>
 <?php if ($model->on_luaopen): ?>
 	void <?= $model->on_luaopen ?>(lua_State *L);
 	<?= $model->on_luaopen ?>(L);

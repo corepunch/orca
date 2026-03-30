@@ -42,11 +42,13 @@
 <!-- Message Declaration - defines a message that can be handled -->
 <!-- Messages may contain inline field children (preferred) or reference an external type via the type attribute (workaround) -->
 <!-- Use parent="BaseMessage" to share fields/type with another message (inheritance) -->
+<!-- Use routing to declare the default propagation strategy for dispatchEvent (WPF-style definition-time routing) -->
 <!ELEMENT message (summary?, details?, field*)>
 <!ATTLIST message
   name CDATA #REQUIRED
   type CDATA #IMPLIED
   parent CDATA #IMPLIED
+  routing (TunnelingBubbling|Tunneling|Bubbling|Direct) #IMPLIED
 >
 
 <!-- Resource Type Declaration -->

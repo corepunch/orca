@@ -23,58 +23,58 @@
   <!-- Base event for all keyboard input events -->
   <message name="KeyMessage" type="WI_Message"/>
 
-  <message name="LeftMouseDown" parent="MouseMessage"/>
-  <message name="RightMouseDown" parent="MouseMessage"/>
-  <message name="OtherMouseDown" parent="MouseMessage"/>
-  <message name="LeftMouseUp" parent="MouseMessage"/>
-  <message name="RightMouseUp" parent="MouseMessage"/>
-  <message name="OtherMouseUp" parent="MouseMessage"/>
-  <message name="LeftMouseDragged" parent="MouseMessage"/>
-  <message name="RightMouseDragged" parent="MouseMessage"/>
-  <message name="OtherMouseDragged" parent="MouseMessage"/>
-  <message name="LeftDoubleClick" parent="MouseMessage"/>
-  <message name="RightDoubleClick" parent="MouseMessage"/>
-  <message name="OtherDoubleClick" parent="MouseMessage"/>
-  <message name="MouseMoved" parent="MouseMessage"/>
-  <message name="ScrollWheel" parent="MouseMessage"/>
-  <message name="DragDrop" parent="MouseMessage"/>
-  <message name="DragEnter" parent="MouseMessage"/>
-  <message name="KeyDown" parent="KeyMessage"/>
-  <message name="KeyUp" parent="KeyMessage"/>
-  <message name="Char" parent="KeyMessage"/>
-  <message name="WindowPaint">
+  <message name="LeftMouseDown" parent="MouseMessage" routing="Bubbling"/>
+  <message name="RightMouseDown" parent="MouseMessage" routing="Bubbling"/>
+  <message name="OtherMouseDown" parent="MouseMessage" routing="Bubbling"/>
+  <message name="LeftMouseUp" parent="MouseMessage" routing="Bubbling"/>
+  <message name="RightMouseUp" parent="MouseMessage" routing="Bubbling"/>
+  <message name="OtherMouseUp" parent="MouseMessage" routing="Bubbling"/>
+  <message name="LeftMouseDragged" parent="MouseMessage" routing="Bubbling"/>
+  <message name="RightMouseDragged" parent="MouseMessage" routing="Bubbling"/>
+  <message name="OtherMouseDragged" parent="MouseMessage" routing="Bubbling"/>
+  <message name="LeftDoubleClick" parent="MouseMessage" routing="Bubbling"/>
+  <message name="RightDoubleClick" parent="MouseMessage" routing="Bubbling"/>
+  <message name="OtherDoubleClick" parent="MouseMessage" routing="Bubbling"/>
+  <message name="MouseMoved" parent="MouseMessage" routing="Bubbling"/>
+  <message name="ScrollWheel" parent="MouseMessage" routing="Bubbling"/>
+  <message name="DragDrop" parent="MouseMessage" routing="Bubbling"/>
+  <message name="DragEnter" parent="MouseMessage" routing="Bubbling"/>
+  <message name="KeyDown" parent="KeyMessage" routing="Bubbling"/>
+  <message name="KeyUp" parent="KeyMessage" routing="Bubbling"/>
+  <message name="Char" parent="KeyMessage" routing="Bubbling"/>
+  <message name="WindowPaint" routing="Direct">
     <field name="WindowWidth" type="uint"/>
     <field name="WindowHeight" type="uint"/>
   </message>
-  <message name="WindowResized" parent="WindowPaint"/>
-  <message name="WindowClosed"/>
-  <message name="WindowChangedScreen"/>
-  <message name="KillFocus"/>
-  <message name="SetFocus"/>
-  <message name="Timer"/>
-  <message name="UpdateMatrix">
+  <message name="WindowResized" parent="WindowPaint" routing="Direct"/>
+  <message name="WindowClosed" routing="Direct"/>
+  <message name="WindowChangedScreen" routing="Direct"/>
+  <message name="KillFocus" routing="Direct"/>
+  <message name="SetFocus" routing="Direct"/>
+  <message name="Timer" routing="Direct"/>
+  <message name="UpdateMatrix" routing="Direct">
     <field name="parent" type="mat4">The parent matrix</field>
     <field name="opacity" type="float">The opacity value</field>
     <field name="force" type="bool">Indicates if the update is forced</field>
   </message>
-  <message name="HitTest">
+  <message name="HitTest" routing="Direct">
     <field name="x" type="int">X coordinate of the hit test point</field>
     <field name="y" type="int">Y coordinate of the hit test point</field>
   </message>
-  <message name="IsVisible"/>
-  <message name="Create"/>
-  <message name="Start"/>
-  <message name="Awake"/>
-  <message name="ThemeChanged"/>
-  <message name="PropertyChanged">
+  <message name="IsVisible" routing="Direct"/>
+  <message name="Create" routing="Direct"/>
+  <message name="Start" routing="Direct"/>
+  <message name="Awake" routing="Direct"/>
+  <message name="ThemeChanged" routing="Bubbling"/>
+  <message name="PropertyChanged" routing="Direct">
     <field name="Property" type="Property" pointer="true">The property that changed</field>
   </message>
-  <message name="Attached"/>
-  <message name="Release"/>
-  <message name="Destroy"/>
-  <message name="ResumeCoroutine"/>
-  <message name="StopCoroutine"/>
-  <message name="ViewDidLoad"/>
+  <message name="Attached" routing="Direct"/>
+  <message name="Release" routing="Direct"/>
+  <message name="Destroy" routing="Direct"/>
+  <message name="ResumeCoroutine" routing="Direct"/>
+  <message name="StopCoroutine" routing="Direct"/>
+  <message name="ViewDidLoad" routing="Direct"/>
   
   <enums name="PropertyState">
     <summary>Represents the various states a property can be in.</summary>
@@ -252,10 +252,9 @@
 
     <topic title="Messaging">Dispatches events and sends messages between objects.</topic>
     <method name="DispatchEvent" lua="true">
-      <summary>Dispatch an event through the object hierarchy using the specified routing strategy.</summary>
-      <details>Initiates an event that propagates through the object hierarchy according to the specified routing mode. In Bubbling mode (the default), the event starts at this object and travels up through parents. In Tunneling mode, the event starts at the root and travels down to this object. In TunnelingBubbling mode, the event first tunnels down then bubbles up. In Direct mode, the event is sent only to this object. Each object in the chain has the opportunity to handle the event through registered event handlers or callbacks. Propagation stops when an object handles the event.</details>
+      <summary>Dispatch an event through the object hierarchy using the routing strategy declared on the event definition.</summary>
+      <details>Initiates an event that propagates through the object hierarchy using the routing strategy registered for that event name (following the WPF-style definition-time routing pattern). Mouse and keyboard input events bubble up by default; lifecycle and window events are sent directly. Each object in the chain has the opportunity to handle the event through registered event handlers or callbacks. Propagation stops when an object handles the event.</details>
       <arg name="event" type="string">The name of the event to dispatch through the hierarchy</arg>
-      <arg name="routing" type="MessageRouting" default="Bubbling">The routing strategy that determines how the event propagates through the hierarchy</arg>
       <returns type="Object" pointer="true">Pointer to the object that successfully handled the event, or null if no object in the hierarchy handled it</returns>
     </method>
 

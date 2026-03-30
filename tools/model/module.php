@@ -458,11 +458,14 @@ class Enum extends Base {
 
 class Event extends Type {
 	public $parent_name;
+	public $routing;
 
 	function __construct($elem, $model) {
 		parent::__construct($elem, $model);
 		$p = $elem["parent"];
 		$this->parent_name = $p ? strval($p) : null;
+		$r = $elem["routing"];
+		$this->routing = $r ? strval($r) : null;
 	}
 
 	function getParentEvent() {

@@ -202,8 +202,7 @@ int f_OBJ_FindParentOfClass(lua_State *L) {
 int f_OBJ_DispatchEvent(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	const char* event = luaL_checkstring(L, 2);
-	enum MessageRouting routing = lua_isnoneornil(L, 3) ? kMessageRoutingBubbling : luaX_checkMessageRouting(L, 3);
-	struct Object* result_ = OBJ_DispatchEvent(L, this_, event, routing);
+	struct Object* result_ = OBJ_DispatchEvent(L, this_, event);
 	luaX_pushObject(L, result_);
 	return 1;
 }
@@ -1099,12 +1098,98 @@ int f_core_GetHover(lua_State *L) {
 	return 1;
 }
 
+static const char* _core_routing_names[] = {
+	"LeftMouseDown",
+	"RightMouseDown",
+	"OtherMouseDown",
+	"LeftMouseUp",
+	"RightMouseUp",
+	"OtherMouseUp",
+	"LeftMouseDragged",
+	"RightMouseDragged",
+	"OtherMouseDragged",
+	"LeftDoubleClick",
+	"RightDoubleClick",
+	"OtherDoubleClick",
+	"MouseMoved",
+	"ScrollWheel",
+	"DragDrop",
+	"DragEnter",
+	"KeyDown",
+	"KeyUp",
+	"Char",
+	"WindowPaint",
+	"WindowResized",
+	"WindowClosed",
+	"WindowChangedScreen",
+	"KillFocus",
+	"SetFocus",
+	"Timer",
+	"UpdateMatrix",
+	"HitTest",
+	"IsVisible",
+	"Create",
+	"Start",
+	"Awake",
+	"ThemeChanged",
+	"PropertyChanged",
+	"Attached",
+	"Release",
+	"Destroy",
+	"ResumeCoroutine",
+	"StopCoroutine",
+	"ViewDidLoad",
+};
+static const enum MessageRouting _core_routing_values[] = {
+	kMessageRoutingBubbling,
+	kMessageRoutingBubbling,
+	kMessageRoutingBubbling,
+	kMessageRoutingBubbling,
+	kMessageRoutingBubbling,
+	kMessageRoutingBubbling,
+	kMessageRoutingBubbling,
+	kMessageRoutingBubbling,
+	kMessageRoutingBubbling,
+	kMessageRoutingBubbling,
+	kMessageRoutingBubbling,
+	kMessageRoutingBubbling,
+	kMessageRoutingBubbling,
+	kMessageRoutingBubbling,
+	kMessageRoutingBubbling,
+	kMessageRoutingBubbling,
+	kMessageRoutingBubbling,
+	kMessageRoutingBubbling,
+	kMessageRoutingBubbling,
+	kMessageRoutingDirect,
+	kMessageRoutingDirect,
+	kMessageRoutingDirect,
+	kMessageRoutingDirect,
+	kMessageRoutingDirect,
+	kMessageRoutingDirect,
+	kMessageRoutingDirect,
+	kMessageRoutingDirect,
+	kMessageRoutingDirect,
+	kMessageRoutingDirect,
+	kMessageRoutingDirect,
+	kMessageRoutingDirect,
+	kMessageRoutingDirect,
+	kMessageRoutingBubbling,
+	kMessageRoutingDirect,
+	kMessageRoutingDirect,
+	kMessageRoutingDirect,
+	kMessageRoutingDirect,
+	kMessageRoutingDirect,
+	kMessageRoutingDirect,
+	kMessageRoutingDirect,
+};
+
 ORCA_API int luaopen_orca_core(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
 		{ "getFocus", f_core_GetFocus },
 		{ "getHover", f_core_GetHover },
 		{ NULL, NULL } 
 	}));
+	OBJ_RegisterMessageRoutings(_core_routing_names, _core_routing_values, 40);
 	void on_core_module_registered(lua_State *L);
 	on_core_module_registered(L);
 	lua_setfield(L, ((void)luaopen_orca_PropertyEnumValue(L), -2), "PropertyEnumValue");

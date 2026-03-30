@@ -134,4 +134,8 @@ ORCA_API <?= $method->getReturnType() ?>
 <?php endforeach ?>
 <?php endforeach ?>
 
+<?php if ($model->getModuleName() === "core"): ?>
+#include "core_routing.h"
+<?php endif ?>
+
 #endif
