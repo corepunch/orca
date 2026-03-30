@@ -59,1017 +59,288 @@ ENUM(Stretch, "Uniform", "None", "Fill", "UniformToFill")
 ENUM(TransitionType, "None", "Slide", "Fade")
 ENUM(StyleType, "Generic", "Named")
 #define FIELD(IDENT, STRUCT, NAME, TYPE, ...) { \
-	.Name = #NAME, \
-	.ShortIdentifier = IDENT, \
-	.DataType = TYPE, \
-	.Offset = offsetof(struct STRUCT, NAME), \
-	.DataSize = sizeof(((struct STRUCT*)NULL)->NAME), \
-	##__VA_ARGS__ \
+.Name = #NAME, \
+.ShortIdentifier = IDENT, \
+.DataType = TYPE, \
+.Offset = offsetof(struct STRUCT, NAME), \
+.DataSize = sizeof(((struct STRUCT*)NULL)->NAME), \
+##__VA_ARGS__ \
+}
+#define STRUCT(NAME, EXPORT, ...) \
+void luaX_push##NAME(lua_State *L, struct NAME const* data) { \
+if (data == NULL) { lua_pushnil(L); return; } \
+struct NAME* self = lua_newuserdata(L, sizeof(struct NAME)); \
+luaL_setmetatable(L, EXPORT); \
+memcpy(self, data, sizeof(struct NAME)); \
+} \
+struct NAME* luaX_check##NAME(lua_State *L, int idx) { \
+return luaL_checkudata(L, idx, EXPORT); \
+} \
+static int f_new_##NAME(lua_State *L) { \
+struct NAME* self = lua_newuserdata(L, sizeof(struct NAME)); \
+luaL_setmetatable(L, EXPORT); \
+memset(self, 0, sizeof(struct NAME)); \
+if (lua_gettop(L) == 1) return 1; \
+luaX_struct_new(L, self, _##NAME, sizeof(_##NAME)/sizeof(*_##NAME)); \
+return 1; \
+} \
+int f_##NAME##___index(lua_State *L) { \
+struct NAME* self = luaX_check##NAME(L, 1); \
+if (luaX_struct_index(L, self, _##NAME, sizeof(_##NAME)/sizeof(*_##NAME))) return 1; \
+lua_getmetatable(L, 1); \
+lua_pushvalue(L, 2); \
+lua_rawget(L, -2); \
+return 1; \
+} \
+int f_##NAME##___newindex(lua_State *L) { \
+return luaX_struct_newindex(L, luaX_check##NAME(L, 1), _##NAME, sizeof(_##NAME)/sizeof(*_##NAME)); \
+} \
+static int f_##NAME##___call(lua_State *L) { \
+return ((void)lua_remove(L, 1), f_new_##NAME(L)); \
+} \
+int luaopen_orca_##NAME(lua_State *L) { \
+luaL_newmetatable(L, EXPORT); \
+luaL_setfuncs(L, ((luaL_Reg[]) { \
+{ "new", f_new_##NAME }, \
+{ "__newindex", f_##NAME##___newindex }, \
+{ "__index", f_##NAME##___index }, \
+__VA_ARGS__ \
+{ NULL, NULL }, \
+}), 0); \
+lua_newtable(L); \
+lua_pushcfunction(L, f_##NAME##___call); \
+lua_setfield(L, -2, "__call"); \
+lua_setmetatable(L, -2); \
+return 1; \
 }
 static struct PropertyType _BorderRadiusShorthand[] = {
-	FIELD(0xd5ac3a0b, BorderRadiusShorthand, TopLeftRadius, kDataTypeFloat),
-	FIELD(0xdbe5a724, BorderRadiusShorthand, TopRightRadius, kDataTypeFloat),
-	FIELD(0xf6ae40ce, BorderRadiusShorthand, BottomRightRadius, kDataTypeFloat),
-	FIELD(0x7f5fe235, BorderRadiusShorthand, BottomLeftRadius, kDataTypeFloat),
+FIELD(0xd5ac3a0b, BorderRadiusShorthand, TopLeftRadius, kDataTypeFloat),
+FIELD(0xdbe5a724, BorderRadiusShorthand, TopRightRadius, kDataTypeFloat),
+FIELD(0xf6ae40ce, BorderRadiusShorthand, BottomRightRadius, kDataTypeFloat),
+FIELD(0x7f5fe235, BorderRadiusShorthand, BottomLeftRadius, kDataTypeFloat),
 };
 static struct PropertyType _EdgeShorthand[] = {
-	FIELD(0x92773890, EdgeShorthand, Left, kDataTypeFloat),
-	FIELD(0x1e9e9f85, EdgeShorthand, Right, kDataTypeFloat),
+FIELD(0x92773890, EdgeShorthand, Left, kDataTypeFloat),
+FIELD(0x1e9e9f85, EdgeShorthand, Right, kDataTypeFloat),
 };
 static struct PropertyType _AlignmentShorthand[] = {
-	FIELD(0xed57fa14, AlignmentShorthand, Axis, kDataTypeInt),
 };
 static struct PropertyType _FontShorthand[] = {
-	FIELD(0x993014d9, FontShorthand, Weight, kDataTypeEnum),
-	FIELD(0x5467ec76, FontShorthand, Style, kDataTypeEnum),
-	FIELD(0xa6478e7c, FontShorthand, Size, kDataTypeFloat),
-	FIELD(0xc46f8f49, FontShorthand, Family, kDataTypeComponent),
+FIELD(0x993014d9, FontShorthand, Weight, kDataTypeEnum, .EnumValues = _FontWeight),
+FIELD(0x5467ec76, FontShorthand, Style, kDataTypeEnum, .EnumValues = _FontStyle),
+FIELD(0xa6478e7c, FontShorthand, Size, kDataTypeFloat),
+FIELD(0xc46f8f49, FontShorthand, Family, kDataTypeObject, .TypeString = "FontFamily"),
 };
 static struct PropertyType _BrushShorthand[] = {
-	FIELD(0xe5b43cf8, BrushShorthand, Color, kDataTypeStruct),
-	FIELD(0x590ca79a, BrushShorthand, Image, kDataTypeComponent),
-	FIELD(0xcbd54f80, BrushShorthand, Material, kDataTypeComponent),
+FIELD(0xe5b43cf8, BrushShorthand, Color, kDataTypeColor, .TypeString = "Color"),
+FIELD(0x590ca79a, BrushShorthand, Image, kDataTypeObject, .TypeString = "Texture"),
+FIELD(0xcbd54f80, BrushShorthand, Material, kDataTypeObject, .TypeString = "Material"),
 };
 static struct PropertyType _ShadowShorthand[] = {
-	FIELD(0x8995c7ea, ShadowShorthand, Offset, kDataTypeStruct),
-	FIELD(0x961749ae, ShadowShorthand, BlurRadius, kDataTypeFloat),
-	FIELD(0x80066a9c, ShadowShorthand, SpreadRadius, kDataTypeFloat),
-	FIELD(0xe5b43cf8, ShadowShorthand, Color, kDataTypeStruct),
+FIELD(0x8995c7ea, ShadowShorthand, Offset, kDataTypeStruct, .TypeString = "Vector2D"),
+FIELD(0x961749ae, ShadowShorthand, BlurRadius, kDataTypeFloat),
+FIELD(0x80066a9c, ShadowShorthand, SpreadRadius, kDataTypeFloat),
+FIELD(0xe5b43cf8, ShadowShorthand, Color, kDataTypeColor, .TypeString = "Color"),
 };
 static struct PropertyType _RingShorthand[] = {
-	FIELD(0x8995c7ea, RingShorthand, Offset, kDataTypeFloat),
-	FIELD(0x3b42dfbf, RingShorthand, Width, kDataTypeFloat),
-	FIELD(0xe5b43cf8, RingShorthand, Color, kDataTypeStruct),
+FIELD(0x8995c7ea, RingShorthand, Offset, kDataTypeFloat),
+FIELD(0x3b42dfbf, RingShorthand, Width, kDataTypeFloat),
+FIELD(0xe5b43cf8, RingShorthand, Color, kDataTypeColor, .TypeString = "Color"),
 };
 static struct PropertyType _OverflowShorthand[] = {
-	FIELD(0xfd0c5087, OverflowShorthand, x, kDataTypeEnum),
-	FIELD(0xfc0c4ef4, OverflowShorthand, y, kDataTypeEnum),
+FIELD(0xfd0c5087, OverflowShorthand, x, kDataTypeEnum, .EnumValues = _Overflow),
+FIELD(0xfc0c4ef4, OverflowShorthand, y, kDataTypeEnum, .EnumValues = _Overflow),
 };
 static struct PropertyType _UnderlineShorthand[] = {
-	FIELD(0x8995c7ea, UnderlineShorthand, Offset, kDataTypeFloat),
-	FIELD(0x3b42dfbf, UnderlineShorthand, Width, kDataTypeFloat),
-	FIELD(0xe5b43cf8, UnderlineShorthand, Color, kDataTypeStruct),
+FIELD(0x8995c7ea, UnderlineShorthand, Offset, kDataTypeFloat),
+FIELD(0x3b42dfbf, UnderlineShorthand, Width, kDataTypeFloat),
+FIELD(0xe5b43cf8, UnderlineShorthand, Color, kDataTypeColor, .TypeString = "Color"),
 };
 static struct PropertyType _MarginShorthand[] = {
-	FIELD(0xed57fa14, MarginShorthand, Axis, kDataTypeStruct),
 };
 static struct PropertyType _BorderShorthand[] = {
-	FIELD(0x3b42dfbf, BorderShorthand, Width, kDataTypeStruct),
-	FIELD(0xe5b43cf8, BorderShorthand, Color, kDataTypeStruct),
-	FIELD(0x5467ec76, BorderShorthand, Style, kDataTypeEnum),
-	FIELD(0x3a8111d3, BorderShorthand, Radius, kDataTypeStruct),
+FIELD(0x3b42dfbf, BorderShorthand, Width, kDataTypeStruct, .TypeString = "MarginShorthand"),
+FIELD(0xe5b43cf8, BorderShorthand, Color, kDataTypeColor, .TypeString = "Color"),
+FIELD(0x5467ec76, BorderShorthand, Style, kDataTypeEnum, .EnumValues = _BorderStyle),
+FIELD(0x3a8111d3, BorderShorthand, Radius, kDataTypeStruct, .TypeString = "BorderRadiusShorthand"),
 };
 static struct PropertyType _SizeAxisShorthand[] = {
-	FIELD(0x77ea8663, SizeAxisShorthand, Requested, kDataTypeFloat),
-	FIELD(0x28adf5d5, SizeAxisShorthand, Desired, kDataTypeFloat),
-	FIELD(0x2e9445f7, SizeAxisShorthand, Min, kDataTypeFloat),
-	FIELD(0xf1aed197, SizeAxisShorthand, Actual, kDataTypeFloat),
-	FIELD(0x25dca54c, SizeAxisShorthand, Scroll, kDataTypeFloat),
+FIELD(0x77ea8663, SizeAxisShorthand, Requested, kDataTypeFloat),
+FIELD(0x28adf5d5, SizeAxisShorthand, Desired, kDataTypeFloat),
+FIELD(0x2e9445f7, SizeAxisShorthand, Min, kDataTypeFloat),
+FIELD(0xf1aed197, SizeAxisShorthand, Actual, kDataTypeFloat),
+FIELD(0x25dca54c, SizeAxisShorthand, Scroll, kDataTypeFloat),
 };
 static struct PropertyType _SizeShorthand[] = {
-	FIELD(0xed57fa14, SizeShorthand, Axis, kDataTypeStruct),
 };
 
-void luaX_pushBorderRadiusShorthand(lua_State *L, struct BorderRadiusShorthand const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct BorderRadiusShorthand* self = lua_newuserdata(L, sizeof(struct BorderRadiusShorthand));
-	luaL_setmetatable(L, "BorderRadiusShorthand");
-	memcpy(self, data, sizeof(struct BorderRadiusShorthand));
-}
-struct BorderRadiusShorthand* luaX_checkBorderRadiusShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "BorderRadiusShorthand");
-}
-static int f_new_BorderRadiusShorthand(lua_State *L) {
-	struct BorderRadiusShorthand* self = lua_newuserdata(L, sizeof(struct BorderRadiusShorthand));
-	luaL_setmetatable(L, "BorderRadiusShorthand");
-	memset(self, 0, sizeof(struct BorderRadiusShorthand));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "TopLeftRadius"), self->TopLeftRadius = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "TopRightRadius"), self->TopRightRadius = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "BottomRightRadius"), self->BottomRightRadius = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "BottomLeftRadius"), self->BottomLeftRadius = luaL_optnumber(L, -1, 0), 1));
-	} else {
-		self->TopLeftRadius = luaL_optnumber(L, 1, 0);
-		self->TopRightRadius = luaL_optnumber(L, 2, 0);
-		self->BottomRightRadius = luaL_optnumber(L, 3, 0);
-		self->BottomLeftRadius = luaL_optnumber(L, 4, 0);
-	}
-	return 1;
-}
-
-
-int f_BorderRadiusShorthand___index(lua_State *L) {
-	struct BorderRadiusShorthand* self = luaX_checkBorderRadiusShorthand(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xd5ac3a0b: lua_pushnumber(L, self->TopLeftRadius); return 1; // TopLeftRadius
-	case 0xdbe5a724: lua_pushnumber(L, self->TopRightRadius); return 1; // TopRightRadius
-	case 0xf6ae40ce: lua_pushnumber(L, self->BottomRightRadius); return 1; // BottomRightRadius
-	case 0x7f5fe235: lua_pushnumber(L, self->BottomLeftRadius); return 1; // BottomLeftRadius
-	}
-	return luaL_error(L, "Unknown field in BorderRadiusShorthand(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_BorderRadiusShorthand___newindex(lua_State *L) {
-	struct BorderRadiusShorthand* self = luaX_checkBorderRadiusShorthand(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xd5ac3a0b: self->TopLeftRadius = luaL_optnumber(L, 3, 0); return 0; // TopLeftRadius
-	case 0xdbe5a724: self->TopRightRadius = luaL_optnumber(L, 3, 0); return 0; // TopRightRadius
-	case 0xf6ae40ce: self->BottomRightRadius = luaL_optnumber(L, 3, 0); return 0; // BottomRightRadius
-	case 0x7f5fe235: self->BottomLeftRadius = luaL_optnumber(L, 3, 0); return 0; // BottomLeftRadius
-	}
-	return luaL_error(L, "Unknown field in BorderRadiusShorthand(%p): %s", self, luaL_checkstring(L, 2));
-}
 extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
 void BorderRadiusShorthand_Convert1(struct BorderRadiusShorthand*, float);
 static int f_BorderRadiusShorthand___fromstring(lua_State *L) {
-	float TopLeftRadius;
-	float TopRightRadius;
-	float BottomRightRadius;
-	float BottomLeftRadius;
-	struct BorderRadiusShorthand self = {0};
-	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &TopLeftRadius, &TopRightRadius, &BottomRightRadius, &BottomLeftRadius)) {
-	case 4: 
-		self.TopLeftRadius = TopLeftRadius;
-		self.TopRightRadius = TopRightRadius;
-		self.BottomRightRadius = BottomRightRadius;
-		self.BottomLeftRadius = BottomLeftRadius;
-		return (luaX_pushBorderRadiusShorthand(L, &self), 1);
-	case 1:
-		BorderRadiusShorthand_Convert1(&self, TopLeftRadius);
-		return (luaX_pushBorderRadiusShorthand(L, &self), 1);
-	default:
-		return luaL_error(L, "Invalid format for BorderRadiusShorthand: %s", luaL_checkstring(L, 1));
-	}
+float TopLeftRadius;
+float TopRightRadius;
+float BottomRightRadius;
+float BottomLeftRadius;
+struct BorderRadiusShorthand self = {0};
+switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &TopLeftRadius, &TopRightRadius, &BottomRightRadius, &BottomLeftRadius)) {
+case 4:
+self.TopLeftRadius = TopLeftRadius;
+self.TopRightRadius = TopRightRadius;
+self.BottomRightRadius = BottomRightRadius;
+self.BottomLeftRadius = BottomLeftRadius;
+return (luaX_pushBorderRadiusShorthand(L, &self), 1);
+case 1:
+BorderRadiusShorthand_Convert1(&self, TopLeftRadius);
+return (luaX_pushBorderRadiusShorthand(L, &self), 1);
+default:
+return luaL_error(L, "Invalid format for BorderRadiusShorthand: %s", luaL_checkstring(L, 1));
 }
-static int f_BorderRadiusShorthand___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_BorderRadiusShorthand(L));  // remove BorderRadiusShorthand from stack and call constructor
 }
-int luaopen_orca_BorderRadiusShorthand(lua_State *L) {
-	luaL_newmetatable(L, "BorderRadiusShorthand");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_BorderRadiusShorthand },
-		{ "fromstring", f_BorderRadiusShorthand___fromstring },
-		{ "__newindex", f_BorderRadiusShorthand___newindex },
-		{ "__index", f_BorderRadiusShorthand___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make BorderRadiusShorthand creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_BorderRadiusShorthand___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushEdgeShorthand(lua_State *L, struct EdgeShorthand const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct EdgeShorthand* self = lua_newuserdata(L, sizeof(struct EdgeShorthand));
-	luaL_setmetatable(L, "EdgeShorthand");
-	memcpy(self, data, sizeof(struct EdgeShorthand));
-}
-struct EdgeShorthand* luaX_checkEdgeShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "EdgeShorthand");
-}
-static int f_new_EdgeShorthand(lua_State *L) {
-	struct EdgeShorthand* self = lua_newuserdata(L, sizeof(struct EdgeShorthand));
-	luaL_setmetatable(L, "EdgeShorthand");
-	memset(self, 0, sizeof(struct EdgeShorthand));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Left"), self->Left = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Right"), self->Right = luaL_optnumber(L, -1, 0), 1));
-	} else {
-		self->Left = luaL_optnumber(L, 1, 0);
-		self->Right = luaL_optnumber(L, 2, 0);
-	}
-	return 1;
-}
-
-
-int f_EdgeShorthand___index(lua_State *L) {
-	struct EdgeShorthand* self = luaX_checkEdgeShorthand(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x92773890: lua_pushnumber(L, self->Left); return 1; // Left
-	case 0x1e9e9f85: lua_pushnumber(L, self->Right); return 1; // Right
-	}
-	return luaL_error(L, "Unknown field in EdgeShorthand(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_EdgeShorthand___newindex(lua_State *L) {
-	struct EdgeShorthand* self = luaX_checkEdgeShorthand(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x92773890: self->Left = luaL_optnumber(L, 3, 0); return 0; // Left
-	case 0x1e9e9f85: self->Right = luaL_optnumber(L, 3, 0); return 0; // Right
-	}
-	return luaL_error(L, "Unknown field in EdgeShorthand(%p): %s", self, luaL_checkstring(L, 2));
-}
+STRUCT(BorderRadiusShorthand, "BorderRadiusShorthand",
+{ "fromstring", f_BorderRadiusShorthand___fromstring },
+)
 extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
 void EdgeShorthand_Convert1(struct EdgeShorthand*, float);
 static int f_EdgeShorthand___fromstring(lua_State *L) {
-	float Left;
-	float Right;
-	struct EdgeShorthand self = {0};
-	switch (sscanf(luaL_checkstring(L, 1), "%f %f", &Left, &Right)) {
-	case 2: 
-		self.Left = Left;
-		self.Right = Right;
-		return (luaX_pushEdgeShorthand(L, &self), 1);
-	case 1:
-		EdgeShorthand_Convert1(&self, Left);
-		return (luaX_pushEdgeShorthand(L, &self), 1);
-	default:
-		return luaL_error(L, "Invalid format for EdgeShorthand: %s", luaL_checkstring(L, 1));
-	}
+float Left;
+float Right;
+struct EdgeShorthand self = {0};
+switch (sscanf(luaL_checkstring(L, 1), "%f %f", &Left, &Right)) {
+case 2:
+self.Left = Left;
+self.Right = Right;
+return (luaX_pushEdgeShorthand(L, &self), 1);
+case 1:
+EdgeShorthand_Convert1(&self, Left);
+return (luaX_pushEdgeShorthand(L, &self), 1);
+default:
+return luaL_error(L, "Invalid format for EdgeShorthand: %s", luaL_checkstring(L, 1));
 }
-static int f_EdgeShorthand___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_EdgeShorthand(L));  // remove EdgeShorthand from stack and call constructor
 }
-int luaopen_orca_EdgeShorthand(lua_State *L) {
-	luaL_newmetatable(L, "EdgeShorthand");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_EdgeShorthand },
-		{ "fromstring", f_EdgeShorthand___fromstring },
-		{ "__newindex", f_EdgeShorthand___newindex },
-		{ "__index", f_EdgeShorthand___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make EdgeShorthand creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_EdgeShorthand___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushAlignmentShorthand(lua_State *L, struct AlignmentShorthand const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct AlignmentShorthand* self = lua_newuserdata(L, sizeof(struct AlignmentShorthand));
-	luaL_setmetatable(L, "AlignmentShorthand");
-	memcpy(self, data, sizeof(struct AlignmentShorthand));
-}
-struct AlignmentShorthand* luaX_checkAlignmentShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "AlignmentShorthand");
-}
-static int f_new_AlignmentShorthand(lua_State *L) {
-	struct AlignmentShorthand* self = lua_newuserdata(L, sizeof(struct AlignmentShorthand));
-	luaL_setmetatable(L, "AlignmentShorthand");
-	memset(self, 0, sizeof(struct AlignmentShorthand));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-	} else {
-	}
-	return 1;
-}
-
-
-int f_AlignmentShorthand___index(lua_State *L) {
-	struct AlignmentShorthand* self = luaX_checkAlignmentShorthand(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	}
-	return luaL_error(L, "Unknown field in AlignmentShorthand(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_AlignmentShorthand___newindex(lua_State *L) {
-	struct AlignmentShorthand* self = luaX_checkAlignmentShorthand(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	}
-	return luaL_error(L, "Unknown field in AlignmentShorthand(%p): %s", self, luaL_checkstring(L, 2));
-}
+STRUCT(EdgeShorthand, "EdgeShorthand",
+{ "fromstring", f_EdgeShorthand___fromstring },
+)
 extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
 static int f_AlignmentShorthand___fromstring(lua_State *L) {
-	int AlignmentShorthand_Axis0;
-	int AlignmentShorthand_Axis1;
-	int AlignmentShorthand_Axis2;
-	struct AlignmentShorthand self = {0};
-	switch (sscanf(luaL_checkstring(L, 1), "%d %d %d", &AlignmentShorthand_Axis0, &AlignmentShorthand_Axis1, &AlignmentShorthand_Axis2)) {
-	case 3: 
-		self.Axis[0] = AlignmentShorthand_Axis0;
-		self.Axis[1] = AlignmentShorthand_Axis1;
-		self.Axis[2] = AlignmentShorthand_Axis2;
-		return (luaX_pushAlignmentShorthand(L, &self), 1);
-	default:
-		return luaL_error(L, "Invalid format for AlignmentShorthand: %s", luaL_checkstring(L, 1));
-	}
+int AlignmentShorthand_Axis0;
+int AlignmentShorthand_Axis1;
+int AlignmentShorthand_Axis2;
+struct AlignmentShorthand self = {0};
+switch (sscanf(luaL_checkstring(L, 1), "%d %d %d", &AlignmentShorthand_Axis0, &AlignmentShorthand_Axis1, &AlignmentShorthand_Axis2)) {
+case 3:
+self.Axis[0] = AlignmentShorthand_Axis0;
+self.Axis[1] = AlignmentShorthand_Axis1;
+self.Axis[2] = AlignmentShorthand_Axis2;
+return (luaX_pushAlignmentShorthand(L, &self), 1);
+default:
+return luaL_error(L, "Invalid format for AlignmentShorthand: %s", luaL_checkstring(L, 1));
 }
-static int f_AlignmentShorthand___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_AlignmentShorthand(L));  // remove AlignmentShorthand from stack and call constructor
 }
-int luaopen_orca_AlignmentShorthand(lua_State *L) {
-	luaL_newmetatable(L, "AlignmentShorthand");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_AlignmentShorthand },
-		{ "fromstring", f_AlignmentShorthand___fromstring },
-		{ "__newindex", f_AlignmentShorthand___newindex },
-		{ "__index", f_AlignmentShorthand___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make AlignmentShorthand creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_AlignmentShorthand___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushFontShorthand(lua_State *L, struct FontShorthand const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct FontShorthand* self = lua_newuserdata(L, sizeof(struct FontShorthand));
-	luaL_setmetatable(L, "FontShorthand");
-	memcpy(self, data, sizeof(struct FontShorthand));
-}
-struct FontShorthand* luaX_checkFontShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "FontShorthand");
-}
-static int f_new_FontShorthand(lua_State *L) {
-	struct FontShorthand* self = lua_newuserdata(L, sizeof(struct FontShorthand));
-	luaL_setmetatable(L, "FontShorthand");
-	memset(self, 0, sizeof(struct FontShorthand));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Weight"), self->Weight = lua_type(L, -1) == LUA_TSTRING ? luaX_checkFontWeight(L, -1) : 0, 1));
-		lua_pop(L, (lua_getfield(L, 1, "Style"), self->Style = lua_type(L, -1) == LUA_TSTRING ? luaX_checkFontStyle(L, -1) : 0, 1));
-		lua_pop(L, (lua_getfield(L, 1, "Size"), self->Size = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Family"), self->Family = luaX_checkFontFamily(L, -1), 1));
-	} else {
-		self->Weight = lua_type(L, 1) == LUA_TSTRING ? luaX_checkFontWeight(L, 1) : 0;
-		self->Style = lua_type(L, 2) == LUA_TSTRING ? luaX_checkFontStyle(L, 2) : 0;
-		self->Size = luaL_optnumber(L, 3, 0);
-		self->Family = luaX_checkFontFamily(L, 4);
-	}
-	return 1;
-}
-
-
-int f_FontShorthand___index(lua_State *L) {
-	struct FontShorthand* self = luaX_checkFontShorthand(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x993014d9: luaX_pushFontWeight(L, self->Weight); return 1; // Weight
-	case 0x5467ec76: luaX_pushFontStyle(L, self->Style); return 1; // Style
-	case 0xa6478e7c: lua_pushnumber(L, self->Size); return 1; // Size
-	case 0xc46f8f49: luaX_pushFontFamily(L, self->Family); return 1; // Family
-	}
-	return luaL_error(L, "Unknown field in FontShorthand(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_FontShorthand___newindex(lua_State *L) {
-	struct FontShorthand* self = luaX_checkFontShorthand(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x993014d9: self->Weight = lua_type(L, 3) == LUA_TSTRING ? luaX_checkFontWeight(L, 3) : 0; return 0; // Weight
-	case 0x5467ec76: self->Style = lua_type(L, 3) == LUA_TSTRING ? luaX_checkFontStyle(L, 3) : 0; return 0; // Style
-	case 0xa6478e7c: self->Size = luaL_optnumber(L, 3, 0); return 0; // Size
-	case 0xc46f8f49: self->Family = luaX_checkFontFamily(L, 3); return 0; // Family
-	}
-	return luaL_error(L, "Unknown field in FontShorthand(%p): %s", self, luaL_checkstring(L, 2));
-}
+STRUCT(AlignmentShorthand, "AlignmentShorthand",
+{ "fromstring", f_AlignmentShorthand___fromstring },
+)
 extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
 static int f_FontShorthand___fromstring(lua_State *L) {
-	fixedString_t Weight;
-	fixedString_t Style;
-	float Size;
-	fixedString_t Family;
-	struct FontShorthand self = {0};
-	switch (sscanf(luaL_checkstring(L, 1), "%s %s %f %s", Weight, Style, &Size, Family)) {
-	case 4: 
-		lua_pop(L, (lua_pushstring(L, Weight), self.Weight = luaL_checkoption(L, -1, NULL, _FontWeight), 1));;
-		lua_pop(L, (lua_pushstring(L, Style), self.Style = luaL_checkoption(L, -1, NULL, _FontStyle), 1));;
-		self.Size = Size;
-		lua_pop(L, (f_convert_string(L, &(struct PropertyType) { .DataType = kDataTypeObject, .TypeString = "FontFamily" }, Family, TRUE), self.Family = luaX_checkFontFamily(L, -1), 1));;
-		return (luaX_pushFontShorthand(L, &self), 1);
-	default:
-		return luaL_error(L, "Invalid format for FontShorthand: %s", luaL_checkstring(L, 1));
-	}
+fixedString_t Weight;
+fixedString_t Style;
+float Size;
+fixedString_t Family;
+struct FontShorthand self = {0};
+switch (sscanf(luaL_checkstring(L, 1), "%s %s %f %s", Weight, Style, &Size, Family)) {
+case 4:
+lua_pop(L, (lua_pushstring(L, Weight), self.Weight = luaL_checkoption(L, -1, NULL, _FontWeight), 1));;
+lua_pop(L, (lua_pushstring(L, Style), self.Style = luaL_checkoption(L, -1, NULL, _FontStyle), 1));;
+self.Size = Size;
+lua_pop(L, (f_convert_string(L, &(struct PropertyType) { .DataType = kDataTypeObject, .TypeString = "FontFamily" }, Family, TRUE), self.Family = luaX_checkFontFamily(L, -1), 1));;
+return (luaX_pushFontShorthand(L, &self), 1);
+default:
+return luaL_error(L, "Invalid format for FontShorthand: %s", luaL_checkstring(L, 1));
 }
-static int f_FontShorthand___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_FontShorthand(L));  // remove FontShorthand from stack and call constructor
 }
-int luaopen_orca_FontShorthand(lua_State *L) {
-	luaL_newmetatable(L, "FontShorthand");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_FontShorthand },
-		{ "fromstring", f_FontShorthand___fromstring },
-		{ "__newindex", f_FontShorthand___newindex },
-		{ "__index", f_FontShorthand___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make FontShorthand creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_FontShorthand___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushBrushShorthand(lua_State *L, struct BrushShorthand const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct BrushShorthand* self = lua_newuserdata(L, sizeof(struct BrushShorthand));
-	luaL_setmetatable(L, "BrushShorthand");
-	memcpy(self, data, sizeof(struct BrushShorthand));
-}
-struct BrushShorthand* luaX_checkBrushShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "BrushShorthand");
-}
-static int f_new_BrushShorthand(lua_State *L) {
-	struct BrushShorthand* self = lua_newuserdata(L, sizeof(struct BrushShorthand));
-	luaL_setmetatable(L, "BrushShorthand");
-	memset(self, 0, sizeof(struct BrushShorthand));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkcolor(L, -1) : (struct color){0}, 1));
-		lua_pop(L, (lua_getfield(L, 1, "Image"), self->Image = luaX_checkTexture(L, -1), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Material"), self->Material = luaX_checkMaterial(L, -1), 1));
-	} else {
-		self->Color = lua_type(L, 1) == LUA_TUSERDATA ? *luaX_checkcolor(L, 1) : (struct color){0};
-		self->Image = luaX_checkTexture(L, 2);
-		self->Material = luaX_checkMaterial(L, 3);
-	}
-	return 1;
-}
-
-
-int f_BrushShorthand___index(lua_State *L) {
-	struct BrushShorthand* self = luaX_checkBrushShorthand(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xe5b43cf8: luaX_pushcolor(L, &self->Color); return 1; // Color
-	case 0x590ca79a: luaX_pushTexture(L, self->Image); return 1; // Image
-	case 0xcbd54f80: luaX_pushMaterial(L, self->Material); return 1; // Material
-	}
-	return luaL_error(L, "Unknown field in BrushShorthand(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_BrushShorthand___newindex(lua_State *L) {
-	struct BrushShorthand* self = luaX_checkBrushShorthand(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xe5b43cf8: self->Color = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkcolor(L, 3) : (struct color){0}; return 0; // Color
-	case 0x590ca79a: self->Image = luaX_checkTexture(L, 3); return 0; // Image
-	case 0xcbd54f80: self->Material = luaX_checkMaterial(L, 3); return 0; // Material
-	}
-	return luaL_error(L, "Unknown field in BrushShorthand(%p): %s", self, luaL_checkstring(L, 2));
-}
-static int f_BrushShorthand___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_BrushShorthand(L));  // remove BrushShorthand from stack and call constructor
-}
-int luaopen_orca_BrushShorthand(lua_State *L) {
-	luaL_newmetatable(L, "BrushShorthand");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_BrushShorthand },
-		{ "__newindex", f_BrushShorthand___newindex },
-		{ "__index", f_BrushShorthand___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make BrushShorthand creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_BrushShorthand___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushShadowShorthand(lua_State *L, struct ShadowShorthand const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct ShadowShorthand* self = lua_newuserdata(L, sizeof(struct ShadowShorthand));
-	luaL_setmetatable(L, "ShadowShorthand");
-	memcpy(self, data, sizeof(struct ShadowShorthand));
-}
-struct ShadowShorthand* luaX_checkShadowShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "ShadowShorthand");
-}
-static int f_new_ShadowShorthand(lua_State *L) {
-	struct ShadowShorthand* self = lua_newuserdata(L, sizeof(struct ShadowShorthand));
-	luaL_setmetatable(L, "ShadowShorthand");
-	memset(self, 0, sizeof(struct ShadowShorthand));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Offset"), self->Offset = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkvec2(L, -1) : (struct vec2){0}, 1));
-		lua_pop(L, (lua_getfield(L, 1, "BlurRadius"), self->BlurRadius = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "SpreadRadius"), self->SpreadRadius = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkcolor(L, -1) : (struct color){0}, 1));
-	} else {
-		self->Offset = lua_type(L, 1) == LUA_TUSERDATA ? *luaX_checkvec2(L, 1) : (struct vec2){0};
-		self->BlurRadius = luaL_optnumber(L, 2, 0);
-		self->SpreadRadius = luaL_optnumber(L, 3, 0);
-		self->Color = lua_type(L, 4) == LUA_TUSERDATA ? *luaX_checkcolor(L, 4) : (struct color){0};
-	}
-	return 1;
-}
-
-
-int f_ShadowShorthand___index(lua_State *L) {
-	struct ShadowShorthand* self = luaX_checkShadowShorthand(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x8995c7ea: luaX_pushvec2(L, &self->Offset); return 1; // Offset
-	case 0x961749ae: lua_pushnumber(L, self->BlurRadius); return 1; // BlurRadius
-	case 0x80066a9c: lua_pushnumber(L, self->SpreadRadius); return 1; // SpreadRadius
-	case 0xe5b43cf8: luaX_pushcolor(L, &self->Color); return 1; // Color
-	}
-	return luaL_error(L, "Unknown field in ShadowShorthand(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_ShadowShorthand___newindex(lua_State *L) {
-	struct ShadowShorthand* self = luaX_checkShadowShorthand(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x8995c7ea: self->Offset = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkvec2(L, 3) : (struct vec2){0}; return 0; // Offset
-	case 0x961749ae: self->BlurRadius = luaL_optnumber(L, 3, 0); return 0; // BlurRadius
-	case 0x80066a9c: self->SpreadRadius = luaL_optnumber(L, 3, 0); return 0; // SpreadRadius
-	case 0xe5b43cf8: self->Color = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkcolor(L, 3) : (struct color){0}; return 0; // Color
-	}
-	return luaL_error(L, "Unknown field in ShadowShorthand(%p): %s", self, luaL_checkstring(L, 2));
-}
-static int f_ShadowShorthand___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_ShadowShorthand(L));  // remove ShadowShorthand from stack and call constructor
-}
-int luaopen_orca_ShadowShorthand(lua_State *L) {
-	luaL_newmetatable(L, "ShadowShorthand");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_ShadowShorthand },
-		{ "__newindex", f_ShadowShorthand___newindex },
-		{ "__index", f_ShadowShorthand___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make ShadowShorthand creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_ShadowShorthand___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushRingShorthand(lua_State *L, struct RingShorthand const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct RingShorthand* self = lua_newuserdata(L, sizeof(struct RingShorthand));
-	luaL_setmetatable(L, "RingShorthand");
-	memcpy(self, data, sizeof(struct RingShorthand));
-}
-struct RingShorthand* luaX_checkRingShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "RingShorthand");
-}
-static int f_new_RingShorthand(lua_State *L) {
-	struct RingShorthand* self = lua_newuserdata(L, sizeof(struct RingShorthand));
-	luaL_setmetatable(L, "RingShorthand");
-	memset(self, 0, sizeof(struct RingShorthand));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Offset"), self->Offset = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Width"), self->Width = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkcolor(L, -1) : (struct color){0}, 1));
-	} else {
-		self->Offset = luaL_optnumber(L, 1, 0);
-		self->Width = luaL_optnumber(L, 2, 0);
-		self->Color = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkcolor(L, 3) : (struct color){0};
-	}
-	return 1;
-}
-
-
-int f_RingShorthand___index(lua_State *L) {
-	struct RingShorthand* self = luaX_checkRingShorthand(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x8995c7ea: lua_pushnumber(L, self->Offset); return 1; // Offset
-	case 0x3b42dfbf: lua_pushnumber(L, self->Width); return 1; // Width
-	case 0xe5b43cf8: luaX_pushcolor(L, &self->Color); return 1; // Color
-	}
-	return luaL_error(L, "Unknown field in RingShorthand(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_RingShorthand___newindex(lua_State *L) {
-	struct RingShorthand* self = luaX_checkRingShorthand(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x8995c7ea: self->Offset = luaL_optnumber(L, 3, 0); return 0; // Offset
-	case 0x3b42dfbf: self->Width = luaL_optnumber(L, 3, 0); return 0; // Width
-	case 0xe5b43cf8: self->Color = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkcolor(L, 3) : (struct color){0}; return 0; // Color
-	}
-	return luaL_error(L, "Unknown field in RingShorthand(%p): %s", self, luaL_checkstring(L, 2));
-}
-static int f_RingShorthand___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_RingShorthand(L));  // remove RingShorthand from stack and call constructor
-}
-int luaopen_orca_RingShorthand(lua_State *L) {
-	luaL_newmetatable(L, "RingShorthand");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_RingShorthand },
-		{ "__newindex", f_RingShorthand___newindex },
-		{ "__index", f_RingShorthand___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make RingShorthand creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_RingShorthand___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushOverflowShorthand(lua_State *L, struct OverflowShorthand const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct OverflowShorthand* self = lua_newuserdata(L, sizeof(struct OverflowShorthand));
-	luaL_setmetatable(L, "OverflowShorthand");
-	memcpy(self, data, sizeof(struct OverflowShorthand));
-}
-struct OverflowShorthand* luaX_checkOverflowShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "OverflowShorthand");
-}
-static int f_new_OverflowShorthand(lua_State *L) {
-	struct OverflowShorthand* self = lua_newuserdata(L, sizeof(struct OverflowShorthand));
-	luaL_setmetatable(L, "OverflowShorthand");
-	memset(self, 0, sizeof(struct OverflowShorthand));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "x"), self->x = lua_type(L, -1) == LUA_TSTRING ? luaX_checkOverflow(L, -1) : 0, 1));
-		lua_pop(L, (lua_getfield(L, 1, "y"), self->y = lua_type(L, -1) == LUA_TSTRING ? luaX_checkOverflow(L, -1) : 0, 1));
-	} else {
-		self->x = lua_type(L, 1) == LUA_TSTRING ? luaX_checkOverflow(L, 1) : 0;
-		self->y = lua_type(L, 2) == LUA_TSTRING ? luaX_checkOverflow(L, 2) : 0;
-	}
-	return 1;
-}
-
-
-int f_OverflowShorthand___index(lua_State *L) {
-	struct OverflowShorthand* self = luaX_checkOverflowShorthand(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: luaX_pushOverflow(L, self->x); return 1; // x
-	case 0xfc0c4ef4: luaX_pushOverflow(L, self->y); return 1; // y
-	}
-	return luaL_error(L, "Unknown field in OverflowShorthand(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_OverflowShorthand___newindex(lua_State *L) {
-	struct OverflowShorthand* self = luaX_checkOverflowShorthand(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: self->x = lua_type(L, 3) == LUA_TSTRING ? luaX_checkOverflow(L, 3) : 0; return 0; // x
-	case 0xfc0c4ef4: self->y = lua_type(L, 3) == LUA_TSTRING ? luaX_checkOverflow(L, 3) : 0; return 0; // y
-	}
-	return luaL_error(L, "Unknown field in OverflowShorthand(%p): %s", self, luaL_checkstring(L, 2));
-}
+STRUCT(FontShorthand, "FontShorthand",
+{ "fromstring", f_FontShorthand___fromstring },
+)
+STRUCT(BrushShorthand, "BrushShorthand",
+)
+STRUCT(ShadowShorthand, "ShadowShorthand",
+)
+STRUCT(RingShorthand, "RingShorthand",
+)
 extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
 static int f_OverflowShorthand___fromstring(lua_State *L) {
-	fixedString_t x;
-	fixedString_t y;
-	struct OverflowShorthand self = {0};
-	switch (sscanf(luaL_checkstring(L, 1), "%s %s", x, y)) {
-	case 2: 
-		lua_pop(L, (lua_pushstring(L, x), self.x = luaL_checkoption(L, -1, NULL, _Overflow), 1));;
-		lua_pop(L, (lua_pushstring(L, y), self.y = luaL_checkoption(L, -1, NULL, _Overflow), 1));;
-		return (luaX_pushOverflowShorthand(L, &self), 1);
-	default:
-		return luaL_error(L, "Invalid format for OverflowShorthand: %s", luaL_checkstring(L, 1));
-	}
+fixedString_t x;
+fixedString_t y;
+struct OverflowShorthand self = {0};
+switch (sscanf(luaL_checkstring(L, 1), "%s %s", x, y)) {
+case 2:
+lua_pop(L, (lua_pushstring(L, x), self.x = luaL_checkoption(L, -1, NULL, _Overflow), 1));;
+lua_pop(L, (lua_pushstring(L, y), self.y = luaL_checkoption(L, -1, NULL, _Overflow), 1));;
+return (luaX_pushOverflowShorthand(L, &self), 1);
+default:
+return luaL_error(L, "Invalid format for OverflowShorthand: %s", luaL_checkstring(L, 1));
 }
-static int f_OverflowShorthand___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_OverflowShorthand(L));  // remove OverflowShorthand from stack and call constructor
 }
-int luaopen_orca_OverflowShorthand(lua_State *L) {
-	luaL_newmetatable(L, "OverflowShorthand");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_OverflowShorthand },
-		{ "fromstring", f_OverflowShorthand___fromstring },
-		{ "__newindex", f_OverflowShorthand___newindex },
-		{ "__index", f_OverflowShorthand___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make OverflowShorthand creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_OverflowShorthand___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushUnderlineShorthand(lua_State *L, struct UnderlineShorthand const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct UnderlineShorthand* self = lua_newuserdata(L, sizeof(struct UnderlineShorthand));
-	luaL_setmetatable(L, "UnderlineShorthand");
-	memcpy(self, data, sizeof(struct UnderlineShorthand));
-}
-struct UnderlineShorthand* luaX_checkUnderlineShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "UnderlineShorthand");
-}
-static int f_new_UnderlineShorthand(lua_State *L) {
-	struct UnderlineShorthand* self = lua_newuserdata(L, sizeof(struct UnderlineShorthand));
-	luaL_setmetatable(L, "UnderlineShorthand");
-	memset(self, 0, sizeof(struct UnderlineShorthand));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Offset"), self->Offset = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Width"), self->Width = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkcolor(L, -1) : (struct color){0}, 1));
-	} else {
-		self->Offset = luaL_optnumber(L, 1, 0);
-		self->Width = luaL_optnumber(L, 2, 0);
-		self->Color = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkcolor(L, 3) : (struct color){0};
-	}
-	return 1;
-}
-
-
-int f_UnderlineShorthand___index(lua_State *L) {
-	struct UnderlineShorthand* self = luaX_checkUnderlineShorthand(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x8995c7ea: lua_pushnumber(L, self->Offset); return 1; // Offset
-	case 0x3b42dfbf: lua_pushnumber(L, self->Width); return 1; // Width
-	case 0xe5b43cf8: luaX_pushcolor(L, &self->Color); return 1; // Color
-	}
-	return luaL_error(L, "Unknown field in UnderlineShorthand(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_UnderlineShorthand___newindex(lua_State *L) {
-	struct UnderlineShorthand* self = luaX_checkUnderlineShorthand(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x8995c7ea: self->Offset = luaL_optnumber(L, 3, 0); return 0; // Offset
-	case 0x3b42dfbf: self->Width = luaL_optnumber(L, 3, 0); return 0; // Width
-	case 0xe5b43cf8: self->Color = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkcolor(L, 3) : (struct color){0}; return 0; // Color
-	}
-	return luaL_error(L, "Unknown field in UnderlineShorthand(%p): %s", self, luaL_checkstring(L, 2));
-}
-static int f_UnderlineShorthand___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_UnderlineShorthand(L));  // remove UnderlineShorthand from stack and call constructor
-}
-int luaopen_orca_UnderlineShorthand(lua_State *L) {
-	luaL_newmetatable(L, "UnderlineShorthand");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_UnderlineShorthand },
-		{ "__newindex", f_UnderlineShorthand___newindex },
-		{ "__index", f_UnderlineShorthand___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make UnderlineShorthand creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_UnderlineShorthand___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushMarginShorthand(lua_State *L, struct MarginShorthand const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct MarginShorthand* self = lua_newuserdata(L, sizeof(struct MarginShorthand));
-	luaL_setmetatable(L, "MarginShorthand");
-	memcpy(self, data, sizeof(struct MarginShorthand));
-}
-struct MarginShorthand* luaX_checkMarginShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "MarginShorthand");
-}
-static int f_new_MarginShorthand(lua_State *L) {
-	struct MarginShorthand* self = lua_newuserdata(L, sizeof(struct MarginShorthand));
-	luaL_setmetatable(L, "MarginShorthand");
-	memset(self, 0, sizeof(struct MarginShorthand));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-	} else {
-	}
-	return 1;
-}
-
-
-int f_MarginShorthand___index(lua_State *L) {
-	struct MarginShorthand* self = luaX_checkMarginShorthand(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	}
-	return luaL_error(L, "Unknown field in MarginShorthand(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_MarginShorthand___newindex(lua_State *L) {
-	struct MarginShorthand* self = luaX_checkMarginShorthand(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	}
-	return luaL_error(L, "Unknown field in MarginShorthand(%p): %s", self, luaL_checkstring(L, 2));
-}
+STRUCT(OverflowShorthand, "OverflowShorthand",
+{ "fromstring", f_OverflowShorthand___fromstring },
+)
+STRUCT(UnderlineShorthand, "UnderlineShorthand",
+)
 extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
 void MarginShorthand_Convert4(struct MarginShorthand*, float, float, float, float);
 void MarginShorthand_Convert2(struct MarginShorthand*, float, float);
 void MarginShorthand_Convert1(struct MarginShorthand*, float);
 static int f_MarginShorthand___fromstring(lua_State *L) {
-	float MarginShorthand_Axis0_Left;
-	float MarginShorthand_Axis0_Right;
-	float MarginShorthand_Axis1_Left;
-	float MarginShorthand_Axis1_Right;
-	float MarginShorthand_Axis2_Left;
-	float MarginShorthand_Axis2_Right;
-	struct MarginShorthand self = {0};
-	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f %f %f", &MarginShorthand_Axis0_Left, &MarginShorthand_Axis0_Right, &MarginShorthand_Axis1_Left, &MarginShorthand_Axis1_Right, &MarginShorthand_Axis2_Left, &MarginShorthand_Axis2_Right)) {
-	case 4:
-		MarginShorthand_Convert4(&self, MarginShorthand_Axis0_Left, MarginShorthand_Axis0_Right, MarginShorthand_Axis1_Left, MarginShorthand_Axis1_Right);
-		return (luaX_pushMarginShorthand(L, &self), 1);
-	case 2:
-		MarginShorthand_Convert2(&self, MarginShorthand_Axis0_Left, MarginShorthand_Axis0_Right);
-		return (luaX_pushMarginShorthand(L, &self), 1);
-	case 1:
-		MarginShorthand_Convert1(&self, MarginShorthand_Axis0_Left);
-		return (luaX_pushMarginShorthand(L, &self), 1);
-	default:
-		return luaL_error(L, "Invalid format for MarginShorthand: %s", luaL_checkstring(L, 1));
-	}
+float MarginShorthand_Axis0_Left;
+float MarginShorthand_Axis0_Right;
+float MarginShorthand_Axis1_Left;
+float MarginShorthand_Axis1_Right;
+float MarginShorthand_Axis2_Left;
+float MarginShorthand_Axis2_Right;
+struct MarginShorthand self = {0};
+switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f %f %f", &MarginShorthand_Axis0_Left, &MarginShorthand_Axis0_Right, &MarginShorthand_Axis1_Left, &MarginShorthand_Axis1_Right, &MarginShorthand_Axis2_Left, &MarginShorthand_Axis2_Right)) {
+case 4:
+MarginShorthand_Convert4(&self, MarginShorthand_Axis0_Left, MarginShorthand_Axis0_Right, MarginShorthand_Axis1_Left, MarginShorthand_Axis1_Right);
+return (luaX_pushMarginShorthand(L, &self), 1);
+case 2:
+MarginShorthand_Convert2(&self, MarginShorthand_Axis0_Left, MarginShorthand_Axis0_Right);
+return (luaX_pushMarginShorthand(L, &self), 1);
+case 1:
+MarginShorthand_Convert1(&self, MarginShorthand_Axis0_Left);
+return (luaX_pushMarginShorthand(L, &self), 1);
+default:
+return luaL_error(L, "Invalid format for MarginShorthand: %s", luaL_checkstring(L, 1));
 }
-static int f_MarginShorthand___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_MarginShorthand(L));  // remove MarginShorthand from stack and call constructor
 }
-int luaopen_orca_MarginShorthand(lua_State *L) {
-	luaL_newmetatable(L, "MarginShorthand");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_MarginShorthand },
-		{ "fromstring", f_MarginShorthand___fromstring },
-		{ "__newindex", f_MarginShorthand___newindex },
-		{ "__index", f_MarginShorthand___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make MarginShorthand creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_MarginShorthand___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushBorderShorthand(lua_State *L, struct BorderShorthand const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct BorderShorthand* self = lua_newuserdata(L, sizeof(struct BorderShorthand));
-	luaL_setmetatable(L, "BorderShorthand");
-	memcpy(self, data, sizeof(struct BorderShorthand));
-}
-struct BorderShorthand* luaX_checkBorderShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "BorderShorthand");
-}
-static int f_new_BorderShorthand(lua_State *L) {
-	struct BorderShorthand* self = lua_newuserdata(L, sizeof(struct BorderShorthand));
-	luaL_setmetatable(L, "BorderShorthand");
-	memset(self, 0, sizeof(struct BorderShorthand));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Width"), self->Width = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkMarginShorthand(L, -1) : (struct MarginShorthand){0}, 1));
-		lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkcolor(L, -1) : (struct color){0}, 1));
-		lua_pop(L, (lua_getfield(L, 1, "Style"), self->Style = lua_type(L, -1) == LUA_TSTRING ? luaX_checkBorderStyle(L, -1) : 0, 1));
-		lua_pop(L, (lua_getfield(L, 1, "Radius"), self->Radius = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkBorderRadiusShorthand(L, -1) : (struct BorderRadiusShorthand){0}, 1));
-	} else {
-		self->Width = lua_type(L, 1) == LUA_TUSERDATA ? *luaX_checkMarginShorthand(L, 1) : (struct MarginShorthand){0};
-		self->Color = lua_type(L, 2) == LUA_TUSERDATA ? *luaX_checkcolor(L, 2) : (struct color){0};
-		self->Style = lua_type(L, 3) == LUA_TSTRING ? luaX_checkBorderStyle(L, 3) : 0;
-		self->Radius = lua_type(L, 4) == LUA_TUSERDATA ? *luaX_checkBorderRadiusShorthand(L, 4) : (struct BorderRadiusShorthand){0};
-	}
-	return 1;
-}
-
-
-int f_BorderShorthand___index(lua_State *L) {
-	struct BorderShorthand* self = luaX_checkBorderShorthand(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x3b42dfbf: luaX_pushMarginShorthand(L, &self->Width); return 1; // Width
-	case 0xe5b43cf8: luaX_pushcolor(L, &self->Color); return 1; // Color
-	case 0x5467ec76: luaX_pushBorderStyle(L, self->Style); return 1; // Style
-	case 0x3a8111d3: luaX_pushBorderRadiusShorthand(L, &self->Radius); return 1; // Radius
-	}
-	return luaL_error(L, "Unknown field in BorderShorthand(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_BorderShorthand___newindex(lua_State *L) {
-	struct BorderShorthand* self = luaX_checkBorderShorthand(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x3b42dfbf: self->Width = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkMarginShorthand(L, 3) : (struct MarginShorthand){0}; return 0; // Width
-	case 0xe5b43cf8: self->Color = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkcolor(L, 3) : (struct color){0}; return 0; // Color
-	case 0x5467ec76: self->Style = lua_type(L, 3) == LUA_TSTRING ? luaX_checkBorderStyle(L, 3) : 0; return 0; // Style
-	case 0x3a8111d3: self->Radius = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkBorderRadiusShorthand(L, 3) : (struct BorderRadiusShorthand){0}; return 0; // Radius
-	}
-	return luaL_error(L, "Unknown field in BorderShorthand(%p): %s", self, luaL_checkstring(L, 2));
-}
-static int f_BorderShorthand___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_BorderShorthand(L));  // remove BorderShorthand from stack and call constructor
-}
-int luaopen_orca_BorderShorthand(lua_State *L) {
-	luaL_newmetatable(L, "BorderShorthand");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_BorderShorthand },
-		{ "__newindex", f_BorderShorthand___newindex },
-		{ "__index", f_BorderShorthand___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make BorderShorthand creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_BorderShorthand___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushSizeAxisShorthand(lua_State *L, struct SizeAxisShorthand const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct SizeAxisShorthand* self = lua_newuserdata(L, sizeof(struct SizeAxisShorthand));
-	luaL_setmetatable(L, "SizeAxisShorthand");
-	memcpy(self, data, sizeof(struct SizeAxisShorthand));
-}
-struct SizeAxisShorthand* luaX_checkSizeAxisShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "SizeAxisShorthand");
-}
-static int f_new_SizeAxisShorthand(lua_State *L) {
-	struct SizeAxisShorthand* self = lua_newuserdata(L, sizeof(struct SizeAxisShorthand));
-	luaL_setmetatable(L, "SizeAxisShorthand");
-	memset(self, 0, sizeof(struct SizeAxisShorthand));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Requested"), self->Requested = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Desired"), self->Desired = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Min"), self->Min = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Actual"), self->Actual = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Scroll"), self->Scroll = luaL_optnumber(L, -1, 0), 1));
-	} else {
-		self->Requested = luaL_optnumber(L, 1, 0);
-		self->Desired = luaL_optnumber(L, 2, 0);
-		self->Min = luaL_optnumber(L, 3, 0);
-		self->Actual = luaL_optnumber(L, 4, 0);
-		self->Scroll = luaL_optnumber(L, 5, 0);
-	}
-	return 1;
-}
-
-
-int f_SizeAxisShorthand___index(lua_State *L) {
-	struct SizeAxisShorthand* self = luaX_checkSizeAxisShorthand(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x77ea8663: lua_pushnumber(L, self->Requested); return 1; // Requested
-	case 0x28adf5d5: lua_pushnumber(L, self->Desired); return 1; // Desired
-	case 0x2e9445f7: lua_pushnumber(L, self->Min); return 1; // Min
-	case 0xf1aed197: lua_pushnumber(L, self->Actual); return 1; // Actual
-	case 0x25dca54c: lua_pushnumber(L, self->Scroll); return 1; // Scroll
-	}
-	return luaL_error(L, "Unknown field in SizeAxisShorthand(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_SizeAxisShorthand___newindex(lua_State *L) {
-	struct SizeAxisShorthand* self = luaX_checkSizeAxisShorthand(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x77ea8663: self->Requested = luaL_optnumber(L, 3, 0); return 0; // Requested
-	case 0x28adf5d5: self->Desired = luaL_optnumber(L, 3, 0); return 0; // Desired
-	case 0x2e9445f7: self->Min = luaL_optnumber(L, 3, 0); return 0; // Min
-	case 0xf1aed197: self->Actual = luaL_optnumber(L, 3, 0); return 0; // Actual
-	case 0x25dca54c: self->Scroll = luaL_optnumber(L, 3, 0); return 0; // Scroll
-	}
-	return luaL_error(L, "Unknown field in SizeAxisShorthand(%p): %s", self, luaL_checkstring(L, 2));
-}
+STRUCT(MarginShorthand, "MarginShorthand",
+{ "fromstring", f_MarginShorthand___fromstring },
+)
+STRUCT(BorderShorthand, "BorderShorthand",
+)
 extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
 static int f_SizeAxisShorthand___fromstring(lua_State *L) {
-	float Requested;
-	float Desired;
-	float Min;
-	float Actual;
-	float Scroll;
-	struct SizeAxisShorthand self = {0};
-	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f %f", &Requested, &Desired, &Min, &Actual, &Scroll)) {
-	case 5: 
-		self.Requested = Requested;
-		self.Desired = Desired;
-		self.Min = Min;
-		self.Actual = Actual;
-		self.Scroll = Scroll;
-		return (luaX_pushSizeAxisShorthand(L, &self), 1);
-	default:
-		return luaL_error(L, "Invalid format for SizeAxisShorthand: %s", luaL_checkstring(L, 1));
-	}
+float Requested;
+float Desired;
+float Min;
+float Actual;
+float Scroll;
+struct SizeAxisShorthand self = {0};
+switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f %f", &Requested, &Desired, &Min, &Actual, &Scroll)) {
+case 5:
+self.Requested = Requested;
+self.Desired = Desired;
+self.Min = Min;
+self.Actual = Actual;
+self.Scroll = Scroll;
+return (luaX_pushSizeAxisShorthand(L, &self), 1);
+default:
+return luaL_error(L, "Invalid format for SizeAxisShorthand: %s", luaL_checkstring(L, 1));
 }
-static int f_SizeAxisShorthand___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_SizeAxisShorthand(L));  // remove SizeAxisShorthand from stack and call constructor
 }
-int luaopen_orca_SizeAxisShorthand(lua_State *L) {
-	luaL_newmetatable(L, "SizeAxisShorthand");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_SizeAxisShorthand },
-		{ "fromstring", f_SizeAxisShorthand___fromstring },
-		{ "__newindex", f_SizeAxisShorthand___newindex },
-		{ "__index", f_SizeAxisShorthand___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make SizeAxisShorthand creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_SizeAxisShorthand___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushSizeShorthand(lua_State *L, struct SizeShorthand const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct SizeShorthand* self = lua_newuserdata(L, sizeof(struct SizeShorthand));
-	luaL_setmetatable(L, "SizeShorthand");
-	memcpy(self, data, sizeof(struct SizeShorthand));
-}
-struct SizeShorthand* luaX_checkSizeShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "SizeShorthand");
-}
-static int f_new_SizeShorthand(lua_State *L) {
-	struct SizeShorthand* self = lua_newuserdata(L, sizeof(struct SizeShorthand));
-	luaL_setmetatable(L, "SizeShorthand");
-	memset(self, 0, sizeof(struct SizeShorthand));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-	} else {
-	}
-	return 1;
-}
-
-
-int f_SizeShorthand___index(lua_State *L) {
-	struct SizeShorthand* self = luaX_checkSizeShorthand(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	}
-	return luaL_error(L, "Unknown field in SizeShorthand(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_SizeShorthand___newindex(lua_State *L) {
-	struct SizeShorthand* self = luaX_checkSizeShorthand(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	}
-	return luaL_error(L, "Unknown field in SizeShorthand(%p): %s", self, luaL_checkstring(L, 2));
-}
-static int f_SizeShorthand___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_SizeShorthand(L));  // remove SizeShorthand from stack and call constructor
-}
-int luaopen_orca_SizeShorthand(lua_State *L) {
-	luaL_newmetatable(L, "SizeShorthand");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_SizeShorthand },
-		{ "__newindex", f_SizeShorthand___newindex },
-		{ "__index", f_SizeShorthand___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make SizeShorthand creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_SizeShorthand___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
+STRUCT(SizeAxisShorthand, "SizeAxisShorthand",
+{ "fromstring", f_SizeAxisShorthand___fromstring },
+)
+STRUCT(SizeShorthand, "SizeShorthand",
+)
 struct MessageType UpdateMatrixMessage = {
 	.name = "UpdateMatrix",
 	.id = kMsgUpdateMatrix,

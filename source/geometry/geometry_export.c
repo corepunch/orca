@@ -18,135 +18,156 @@ void luaX_push##NAME(lua_State *L, enum NAME value) { \
 }
 ENUM(RotationOrder, "XYZ", "XZY", "YZX", "YXZ", "ZXY", "ZYX")
 #define FIELD(IDENT, STRUCT, NAME, TYPE, ...) { \
-	.Name = #NAME, \
-	.ShortIdentifier = IDENT, \
-	.DataType = TYPE, \
-	.Offset = offsetof(struct STRUCT, NAME), \
-	.DataSize = sizeof(((struct STRUCT*)NULL)->NAME), \
-	##__VA_ARGS__ \
+.Name = #NAME, \
+.ShortIdentifier = IDENT, \
+.DataType = TYPE, \
+.Offset = offsetof(struct STRUCT, NAME), \
+.DataSize = sizeof(((struct STRUCT*)NULL)->NAME), \
+##__VA_ARGS__ \
+}
+#define STRUCT(NAME, EXPORT, ...) \
+void luaX_push##NAME(lua_State *L, struct NAME const* data) { \
+if (data == NULL) { lua_pushnil(L); return; } \
+struct NAME* self = lua_newuserdata(L, sizeof(struct NAME)); \
+luaL_setmetatable(L, EXPORT); \
+memcpy(self, data, sizeof(struct NAME)); \
+} \
+struct NAME* luaX_check##NAME(lua_State *L, int idx) { \
+return luaL_checkudata(L, idx, EXPORT); \
+} \
+static int f_new_##NAME(lua_State *L) { \
+struct NAME* self = lua_newuserdata(L, sizeof(struct NAME)); \
+luaL_setmetatable(L, EXPORT); \
+memset(self, 0, sizeof(struct NAME)); \
+if (lua_gettop(L) == 1) return 1; \
+luaX_struct_new(L, self, _##NAME, sizeof(_##NAME)/sizeof(*_##NAME)); \
+return 1; \
+} \
+int f_##NAME##___index(lua_State *L) { \
+struct NAME* self = luaX_check##NAME(L, 1); \
+if (luaX_struct_index(L, self, _##NAME, sizeof(_##NAME)/sizeof(*_##NAME))) return 1; \
+lua_getmetatable(L, 1); \
+lua_pushvalue(L, 2); \
+lua_rawget(L, -2); \
+return 1; \
+} \
+int f_##NAME##___newindex(lua_State *L) { \
+return luaX_struct_newindex(L, luaX_check##NAME(L, 1), _##NAME, sizeof(_##NAME)/sizeof(*_##NAME)); \
+} \
+static int f_##NAME##___call(lua_State *L) { \
+return ((void)lua_remove(L, 1), f_new_##NAME(L)); \
+} \
+int luaopen_orca_##NAME(lua_State *L) { \
+luaL_newmetatable(L, EXPORT); \
+luaL_setfuncs(L, ((luaL_Reg[]) { \
+{ "new", f_new_##NAME }, \
+{ "__newindex", f_##NAME##___newindex }, \
+{ "__index", f_##NAME##___index }, \
+__VA_ARGS__ \
+{ NULL, NULL }, \
+}), 0); \
+lua_newtable(L); \
+lua_pushcfunction(L, f_##NAME##___call); \
+lua_setfield(L, -2, "__call"); \
+lua_setmetatable(L, -2); \
+return 1; \
 }
 static struct PropertyType _vec2[] = {
-	FIELD(0xfd0c5087, vec2, x, kDataTypeFloat),
-	FIELD(0xfc0c4ef4, vec2, y, kDataTypeFloat),
+FIELD(0xfd0c5087, vec2, x, kDataTypeFloat),
+FIELD(0xfc0c4ef4, vec2, y, kDataTypeFloat),
 };
 static struct PropertyType _vec3[] = {
-	FIELD(0xfd0c5087, vec3, x, kDataTypeFloat),
-	FIELD(0xfc0c4ef4, vec3, y, kDataTypeFloat),
-	FIELD(0xff0c53ad, vec3, z, kDataTypeFloat),
+FIELD(0xfd0c5087, vec3, x, kDataTypeFloat),
+FIELD(0xfc0c4ef4, vec3, y, kDataTypeFloat),
+FIELD(0xff0c53ad, vec3, z, kDataTypeFloat),
 };
 static struct PropertyType _vec4[] = {
-	FIELD(0xfd0c5087, vec4, x, kDataTypeFloat),
-	FIELD(0xfc0c4ef4, vec4, y, kDataTypeFloat),
-	FIELD(0xff0c53ad, vec4, z, kDataTypeFloat),
-	FIELD(0xf20c3f36, vec4, w, kDataTypeFloat),
+FIELD(0xfd0c5087, vec4, x, kDataTypeFloat),
+FIELD(0xfc0c4ef4, vec4, y, kDataTypeFloat),
+FIELD(0xff0c53ad, vec4, z, kDataTypeFloat),
+FIELD(0xf20c3f36, vec4, w, kDataTypeFloat),
 };
 static struct PropertyType _box2[] = {
-	FIELD(0xc98f4557, box2, min, kDataTypeStruct),
-	FIELD(0xd7a2e319, box2, max, kDataTypeStruct),
+FIELD(0xc98f4557, box2, min, kDataTypeStruct, .TypeString = "Vector2D"),
+FIELD(0xd7a2e319, box2, max, kDataTypeStruct, .TypeString = "Vector2D"),
 };
 static struct PropertyType _box3[] = {
-	FIELD(0xc98f4557, box3, min, kDataTypeStruct),
-	FIELD(0xd7a2e319, box3, max, kDataTypeStruct),
+FIELD(0xc98f4557, box3, min, kDataTypeStruct, .TypeString = "Vector3D"),
+FIELD(0xd7a2e319, box3, max, kDataTypeStruct, .TypeString = "Vector3D"),
 };
 static struct PropertyType _Size[] = {
-	FIELD(0x95876e1f, Size, width, kDataTypeFloat),
-	FIELD(0xd5bdbb42, Size, height, kDataTypeFloat),
+FIELD(0x95876e1f, Size, width, kDataTypeFloat),
+FIELD(0xd5bdbb42, Size, height, kDataTypeFloat),
 };
 static struct PropertyType _rect[] = {
-	FIELD(0xfd0c5087, rect, x, kDataTypeFloat),
-	FIELD(0xfc0c4ef4, rect, y, kDataTypeFloat),
-	FIELD(0x95876e1f, rect, width, kDataTypeFloat),
-	FIELD(0xd5bdbb42, rect, height, kDataTypeFloat),
+FIELD(0xfd0c5087, rect, x, kDataTypeFloat),
+FIELD(0xfc0c4ef4, rect, y, kDataTypeFloat),
+FIELD(0x95876e1f, rect, width, kDataTypeFloat),
+FIELD(0xd5bdbb42, rect, height, kDataTypeFloat),
 };
 static struct PropertyType _quat[] = {
-	FIELD(0xfd0c5087, quat, x, kDataTypeFloat),
-	FIELD(0xfc0c4ef4, quat, y, kDataTypeFloat),
-	FIELD(0xff0c53ad, quat, z, kDataTypeFloat),
-	FIELD(0xf20c3f36, quat, w, kDataTypeFloat),
+FIELD(0xfd0c5087, quat, x, kDataTypeFloat),
+FIELD(0xfc0c4ef4, quat, y, kDataTypeFloat),
+FIELD(0xff0c53ad, quat, z, kDataTypeFloat),
+FIELD(0xf20c3f36, quat, w, kDataTypeFloat),
 };
 static struct PropertyType _mat3[] = {
-	FIELD(0xf30c40c9, mat3, v, kDataTypeFloat),
 };
 static struct PropertyType _mat4[] = {
-	FIELD(0xf30c40c9, mat4, v, kDataTypeFloat),
 };
 static struct PropertyType _bounds[] = {
-	FIELD(0xc98f4557, bounds, min, kDataTypeFloat),
-	FIELD(0xd7a2e319, bounds, max, kDataTypeFloat),
+FIELD(0xc98f4557, bounds, min, kDataTypeFloat),
+FIELD(0xd7a2e319, bounds, max, kDataTypeFloat),
 };
 static struct PropertyType _plane3[] = {
-	FIELD(0xe40c292c, plane3, a, kDataTypeFloat),
-	FIELD(0xe70c2de5, plane3, b, kDataTypeFloat),
-	FIELD(0xe60c2c52, plane3, c, kDataTypeFloat),
-	FIELD(0xe10c2473, plane3, d, kDataTypeFloat),
+FIELD(0xe40c292c, plane3, a, kDataTypeFloat),
+FIELD(0xe70c2de5, plane3, b, kDataTypeFloat),
+FIELD(0xe60c2c52, plane3, c, kDataTypeFloat),
+FIELD(0xe10c2473, plane3, d, kDataTypeFloat),
 };
 static struct PropertyType _sphere3[] = {
-	FIELD(0x058c4484, sphere3, center, kDataTypeStruct),
-	FIELD(0x0dba4cb3, sphere3, radius, kDataTypeFloat),
+FIELD(0x058c4484, sphere3, center, kDataTypeStruct, .TypeString = "Vector3D"),
+FIELD(0x0dba4cb3, sphere3, radius, kDataTypeFloat),
 };
 static struct PropertyType _frustum3[] = {
-	FIELD(0x124aec70, frustum3, left, kDataTypeStruct),
-	FIELD(0x78e32de5, frustum3, right, kDataTypeStruct),
-	FIELD(0x4ea76b2a, frustum3, bottom, kDataTypeStruct),
-	FIELD(0xa710dc3c, frustum3, top, kDataTypeStruct),
-	FIELD(0xe179dbd8, frustum3, front, kDataTypeStruct),
-	FIELD(0x5bb421a2, frustum3, back, kDataTypeStruct),
+FIELD(0x124aec70, frustum3, left, kDataTypeStruct, .TypeString = "Plane"),
+FIELD(0x78e32de5, frustum3, right, kDataTypeStruct, .TypeString = "Plane"),
+FIELD(0x4ea76b2a, frustum3, bottom, kDataTypeStruct, .TypeString = "Plane"),
+FIELD(0xa710dc3c, frustum3, top, kDataTypeStruct, .TypeString = "Plane"),
+FIELD(0xe179dbd8, frustum3, front, kDataTypeStruct, .TypeString = "Plane"),
+FIELD(0x5bb421a2, frustum3, back, kDataTypeStruct, .TypeString = "Plane"),
 };
 static struct PropertyType _transform2[] = {
-	FIELD(0xcbd2d62c, transform2, translation, kDataTypeStruct),
-	FIELD(0x21ac415f, transform2, rotation, kDataTypeFloat),
-	FIELD(0x82971c71, transform2, scale, kDataTypeStruct),
+FIELD(0xcbd2d62c, transform2, translation, kDataTypeStruct, .TypeString = "Vector2D"),
+FIELD(0x21ac415f, transform2, rotation, kDataTypeFloat),
+FIELD(0x82971c71, transform2, scale, kDataTypeStruct, .TypeString = "Vector2D"),
 };
 static struct PropertyType _transform3[] = {
-	FIELD(0xcbd2d62c, transform3, translation, kDataTypeStruct),
-	FIELD(0x21ac415f, transform3, rotation, kDataTypeStruct),
-	FIELD(0x82971c71, transform3, scale, kDataTypeStruct),
+FIELD(0xcbd2d62c, transform3, translation, kDataTypeStruct, .TypeString = "Vector3D"),
+FIELD(0x21ac415f, transform3, rotation, kDataTypeStruct, .TypeString = "Vector3D"),
+FIELD(0x82971c71, transform3, scale, kDataTypeStruct, .TypeString = "Vector3D"),
 };
 static struct PropertyType _triangle3[] = {
-	FIELD(0xe40c292c, triangle3, a, kDataTypeStruct),
-	FIELD(0xe70c2de5, triangle3, b, kDataTypeStruct),
-	FIELD(0xe60c2c52, triangle3, c, kDataTypeStruct),
+FIELD(0xe40c292c, triangle3, a, kDataTypeStruct, .TypeString = "Vector3D"),
+FIELD(0xe70c2de5, triangle3, b, kDataTypeStruct, .TypeString = "Vector3D"),
+FIELD(0xe60c2c52, triangle3, c, kDataTypeStruct, .TypeString = "Vector3D"),
 };
 static struct PropertyType _line3[] = {
-	FIELD(0xe40c292c, line3, a, kDataTypeStruct),
-	FIELD(0xe70c2de5, line3, b, kDataTypeStruct),
+FIELD(0xe40c292c, line3, a, kDataTypeStruct, .TypeString = "Vector3D"),
+FIELD(0xe70c2de5, line3, b, kDataTypeStruct, .TypeString = "Vector3D"),
 };
 static struct PropertyType _edges[] = {
-	FIELD(0x124aec70, edges, left, kDataTypeFloat),
-	FIELD(0xa710dc3c, edges, top, kDataTypeFloat),
-	FIELD(0x78e32de5, edges, right, kDataTypeFloat),
-	FIELD(0x4ea76b2a, edges, bottom, kDataTypeFloat),
+FIELD(0x124aec70, edges, left, kDataTypeFloat),
+FIELD(0xa710dc3c, edges, top, kDataTypeFloat),
+FIELD(0x78e32de5, edges, right, kDataTypeFloat),
+FIELD(0x4ea76b2a, edges, bottom, kDataTypeFloat),
 };
 static struct PropertyType _color[] = {
-	FIELD(0xf70c4715, color, r, kDataTypeFloat),
-	FIELD(0xe20c2606, color, g, kDataTypeFloat),
-	FIELD(0xe70c2de5, color, b, kDataTypeFloat),
-	FIELD(0xe40c292c, color, a, kDataTypeFloat),
+FIELD(0xf70c4715, color, r, kDataTypeFloat),
+FIELD(0xe20c2606, color, g, kDataTypeFloat),
+FIELD(0xe70c2de5, color, b, kDataTypeFloat),
+FIELD(0xe40c292c, color, a, kDataTypeFloat),
 };
-
-void luaX_pushvec2(lua_State *L, struct vec2 const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct vec2* self = lua_newuserdata(L, sizeof(struct vec2));
-	luaL_setmetatable(L, "Vector2D");
-	memcpy(self, data, sizeof(struct vec2));
-}
-struct vec2* luaX_checkvec2(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "Vector2D");
-}
-static int f_new_vec2(lua_State *L) {
-	struct vec2* self = lua_newuserdata(L, sizeof(struct vec2));
-	luaL_setmetatable(L, "Vector2D");
-	memset(self, 0, sizeof(struct vec2));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "x"), self->x = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "y"), self->y = luaL_optnumber(L, -1, 0), 1));
-	} else {
-		self->x = luaL_optnumber(L, 1, 0);
-		self->y = luaL_optnumber(L, 2, 0);
-	}
-	return 1;
-}
 
 int f_VEC2_Set(lua_State *L) {
 	struct vec2* this_ = luaX_checkvec2(L, 1);
@@ -243,110 +264,37 @@ int f_VEC2_Mad(lua_State *L) {
 	luaX_pushvec2(L, &result_);
 	return 1;
 }
-
-int f_vec2___index(lua_State *L) {
-	struct vec2* self = luaX_checkvec2(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: lua_pushnumber(L, self->x); return 1; // x
-	case 0xfc0c4ef4: lua_pushnumber(L, self->y); return 1; // y
-	case 0xc6270703: lua_pushcfunction(L, f_VEC2_Set); return 1; // set
-	case 0x82971c71: lua_pushcfunction(L, f_VEC2_Scale); return 1; // scale
-	case 0x3b391274: lua_pushcfunction(L, f_VEC2_Add); return 1; // add
-	case 0xeb84ed81: lua_pushcfunction(L, f_VEC2_Mul); return 1; // mul
-	case 0xe562ab48: lua_pushcfunction(L, f_VEC2_Div); return 1; // div
-	case 0xdc4e3915: lua_pushcfunction(L, f_VEC2_Sub); return 1; // sub
-	case 0x53d4a495: lua_pushcfunction(L, f_VEC2_Unm); return 1; // unm
-	case 0xd3689f20: lua_pushcfunction(L, f_VEC2_Dot); return 1; // dot
-	case 0x2c1f6b59: lua_pushcfunction(L, f_VEC2_Lengthsq); return 1; // lengthsq
-	case 0x366adb0c: lua_pushcfunction(L, f_VEC2_Len); return 1; // len
-	case 0x2eb31462: lua_pushcfunction(L, f_VEC2_Distance); return 1; // distance
-	case 0xce79296c: lua_pushcfunction(L, f_VEC2_Normalize); return 1; // normalize
-	case 0x1e691468: lua_pushcfunction(L, f_VEC2_Lerp); return 1; // lerp
-	case 0xf3a30f2d: lua_pushcfunction(L, f_VEC2_Mad); return 1; // mad
-	}
-	return luaL_error(L, "Unknown field in vec2(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_vec2___newindex(lua_State *L) {
-	struct vec2* self = luaX_checkvec2(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: self->x = luaL_optnumber(L, 3, 0); return 0; // x
-	case 0xfc0c4ef4: self->y = luaL_optnumber(L, 3, 0); return 0; // y
-	}
-	return luaL_error(L, "Unknown field in vec2(%p): %s", self, luaL_checkstring(L, 2));
-}
 extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
 static int f_vec2___fromstring(lua_State *L) {
-	float x;
-	float y;
-	struct vec2 self = {0};
-	switch (sscanf(luaL_checkstring(L, 1), "%f %f", &x, &y)) {
-	case 2: 
-		self.x = x;
-		self.y = y;
-		return (luaX_pushvec2(L, &self), 1);
-	default:
-		return luaL_error(L, "Invalid format for vec2: %s", luaL_checkstring(L, 1));
-	}
+float x;
+float y;
+struct vec2 self = {0};
+switch (sscanf(luaL_checkstring(L, 1), "%f %f", &x, &y)) {
+case 2:
+self.x = x;
+self.y = y;
+return (luaX_pushvec2(L, &self), 1);
+default:
+return luaL_error(L, "Invalid format for vec2: %s", luaL_checkstring(L, 1));
 }
-static int f_vec2___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_vec2(L));  // remove vec2 from stack and call constructor
 }
-int luaopen_orca_vec2(lua_State *L) {
-	luaL_newmetatable(L, "Vector2D");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_vec2 },
-		{ "fromstring", f_vec2___fromstring },
-		{ "__newindex", f_vec2___newindex },
-		{ "__index", f_vec2___index },
-		{ "set", f_VEC2_Set },
-		{ "scale", f_VEC2_Scale },
-		{ "__add", f_VEC2_Add },
-		{ "__mul", f_VEC2_Mul },
-		{ "__div", f_VEC2_Div },
-		{ "__sub", f_VEC2_Sub },
-		{ "__unm", f_VEC2_Unm },
-		{ "dot", f_VEC2_Dot },
-		{ "lengthsq", f_VEC2_Lengthsq },
-		{ "len", f_VEC2_Len },
-		{ "distance", f_VEC2_Distance },
-		{ "normalize", f_VEC2_Normalize },
-		{ "lerp", f_VEC2_Lerp },
-		{ "mad", f_VEC2_Mad },
-		{ NULL, NULL },
-	}), 0);
-	// Make vec2 creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_vec2___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushvec3(lua_State *L, struct vec3 const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct vec3* self = lua_newuserdata(L, sizeof(struct vec3));
-	luaL_setmetatable(L, "Vector3D");
-	memcpy(self, data, sizeof(struct vec3));
-}
-struct vec3* luaX_checkvec3(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "Vector3D");
-}
-static int f_new_vec3(lua_State *L) {
-	struct vec3* self = lua_newuserdata(L, sizeof(struct vec3));
-	luaL_setmetatable(L, "Vector3D");
-	memset(self, 0, sizeof(struct vec3));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "x"), self->x = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "y"), self->y = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "z"), self->z = luaL_optnumber(L, -1, 0), 1));
-	} else {
-		self->x = luaL_optnumber(L, 1, 0);
-		self->y = luaL_optnumber(L, 2, 0);
-		self->z = luaL_optnumber(L, 3, 0);
-	}
-	return 1;
-}
-
+STRUCT(vec2, "Vector2D",
+{ "set", f_VEC2_Set },
+{ "scale", f_VEC2_Scale },
+{ "__add", f_VEC2_Add },
+{ "__mul", f_VEC2_Mul },
+{ "__div", f_VEC2_Div },
+{ "__sub", f_VEC2_Sub },
+{ "__unm", f_VEC2_Unm },
+{ "dot", f_VEC2_Dot },
+{ "lengthsq", f_VEC2_Lengthsq },
+{ "len", f_VEC2_Len },
+{ "distance", f_VEC2_Distance },
+{ "normalize", f_VEC2_Normalize },
+{ "lerp", f_VEC2_Lerp },
+{ "mad", f_VEC2_Mad },
+{ "fromstring", f_vec2___fromstring },
+)
 int f_VEC3_Dot(lua_State *L) {
 	struct vec3 const* this_ = luaX_checkvec3(L, 1);
 	struct vec3 const* other = luaX_checkvec3(L, 2);
@@ -468,122 +416,42 @@ int f_VEC3_Distance(lua_State *L) {
 	lua_pushnumber(L, result_);
 	return 1;
 }
-
-int f_vec3___index(lua_State *L) {
-	struct vec3* self = luaX_checkvec3(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: lua_pushnumber(L, self->x); return 1; // x
-	case 0xfc0c4ef4: lua_pushnumber(L, self->y); return 1; // y
-	case 0xff0c53ad: lua_pushnumber(L, self->z); return 1; // z
-	case 0xd3689f20: lua_pushcfunction(L, f_VEC3_Dot); return 1; // dot
-	case 0x2c1f6b59: lua_pushcfunction(L, f_VEC3_Lengthsq); return 1; // lengthsq
-	case 0x366adb0c: lua_pushcfunction(L, f_VEC3_Len); return 1; // len
-	case 0x14f25eb6: lua_pushcfunction(L, f_VEC3_Bezier); return 1; // bezier
-	case 0x9c265311: lua_pushcfunction(L, f_VEC3_Hermite); return 1; // hermite
-	case 0x1e691468: lua_pushcfunction(L, f_VEC3_Lerp); return 1; // lerp
-	case 0x29f5189b: lua_pushcfunction(L, f_VEC3_Cross); return 1; // cross
-	case 0xdc4e3915: lua_pushcfunction(L, f_VEC3_Sub); return 1; // sub
-	case 0x3b391274: lua_pushcfunction(L, f_VEC3_Add); return 1; // add
-	case 0xf3a30f2d: lua_pushcfunction(L, f_VEC3_Mad); return 1; // mad
-	case 0xeb84ed81: lua_pushcfunction(L, f_VEC3_Mul); return 1; // mul
-	case 0x82971c71: lua_pushcfunction(L, f_VEC3_Scale); return 1; // scale
-	case 0xce79296c: lua_pushcfunction(L, f_VEC3_Normalize); return 1; // normalize
-	case 0xc6270703: lua_pushcfunction(L, f_VEC3_Set); return 1; // set
-	case 0x5c6e1222: lua_pushcfunction(L, f_VEC3_Clear); return 1; // clear
-	case 0x53d4a495: lua_pushcfunction(L, f_VEC3_Unm); return 1; // unm
-	case 0x2eb31462: lua_pushcfunction(L, f_VEC3_Distance); return 1; // distance
-	}
-	return luaL_error(L, "Unknown field in vec3(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_vec3___newindex(lua_State *L) {
-	struct vec3* self = luaX_checkvec3(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: self->x = luaL_optnumber(L, 3, 0); return 0; // x
-	case 0xfc0c4ef4: self->y = luaL_optnumber(L, 3, 0); return 0; // y
-	case 0xff0c53ad: self->z = luaL_optnumber(L, 3, 0); return 0; // z
-	}
-	return luaL_error(L, "Unknown field in vec3(%p): %s", self, luaL_checkstring(L, 2));
-}
 extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
 static int f_vec3___fromstring(lua_State *L) {
-	float x;
-	float y;
-	float z;
-	struct vec3 self = {0};
-	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f", &x, &y, &z)) {
-	case 3: 
-		self.x = x;
-		self.y = y;
-		self.z = z;
-		return (luaX_pushvec3(L, &self), 1);
-	default:
-		return luaL_error(L, "Invalid format for vec3: %s", luaL_checkstring(L, 1));
-	}
+float x;
+float y;
+float z;
+struct vec3 self = {0};
+switch (sscanf(luaL_checkstring(L, 1), "%f %f %f", &x, &y, &z)) {
+case 3:
+self.x = x;
+self.y = y;
+self.z = z;
+return (luaX_pushvec3(L, &self), 1);
+default:
+return luaL_error(L, "Invalid format for vec3: %s", luaL_checkstring(L, 1));
 }
-static int f_vec3___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_vec3(L));  // remove vec3 from stack and call constructor
 }
-int luaopen_orca_vec3(lua_State *L) {
-	luaL_newmetatable(L, "Vector3D");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_vec3 },
-		{ "fromstring", f_vec3___fromstring },
-		{ "__newindex", f_vec3___newindex },
-		{ "__index", f_vec3___index },
-		{ "dot", f_VEC3_Dot },
-		{ "lengthsq", f_VEC3_Lengthsq },
-		{ "len", f_VEC3_Len },
-		{ "bezier", f_VEC3_Bezier },
-		{ "hermite", f_VEC3_Hermite },
-		{ "lerp", f_VEC3_Lerp },
-		{ "cross", f_VEC3_Cross },
-		{ "__sub", f_VEC3_Sub },
-		{ "__add", f_VEC3_Add },
-		{ "mad", f_VEC3_Mad },
-		{ "__mul", f_VEC3_Mul },
-		{ "scale", f_VEC3_Scale },
-		{ "normalize", f_VEC3_Normalize },
-		{ "set", f_VEC3_Set },
-		{ "clear", f_VEC3_Clear },
-		{ "__unm", f_VEC3_Unm },
-		{ "distance", f_VEC3_Distance },
-		{ NULL, NULL },
-	}), 0);
-	// Make vec3 creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_vec3___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushvec4(lua_State *L, struct vec4 const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct vec4* self = lua_newuserdata(L, sizeof(struct vec4));
-	luaL_setmetatable(L, "Vector4D");
-	memcpy(self, data, sizeof(struct vec4));
-}
-struct vec4* luaX_checkvec4(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "Vector4D");
-}
-static int f_new_vec4(lua_State *L) {
-	struct vec4* self = lua_newuserdata(L, sizeof(struct vec4));
-	luaL_setmetatable(L, "Vector4D");
-	memset(self, 0, sizeof(struct vec4));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "x"), self->x = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "y"), self->y = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "z"), self->z = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "w"), self->w = luaL_optnumber(L, -1, 0), 1));
-	} else {
-		self->x = luaL_optnumber(L, 1, 0);
-		self->y = luaL_optnumber(L, 2, 0);
-		self->z = luaL_optnumber(L, 3, 0);
-		self->w = luaL_optnumber(L, 4, 0);
-	}
-	return 1;
-}
-
+STRUCT(vec3, "Vector3D",
+{ "dot", f_VEC3_Dot },
+{ "lengthsq", f_VEC3_Lengthsq },
+{ "len", f_VEC3_Len },
+{ "bezier", f_VEC3_Bezier },
+{ "hermite", f_VEC3_Hermite },
+{ "lerp", f_VEC3_Lerp },
+{ "cross", f_VEC3_Cross },
+{ "__sub", f_VEC3_Sub },
+{ "__add", f_VEC3_Add },
+{ "mad", f_VEC3_Mad },
+{ "__mul", f_VEC3_Mul },
+{ "scale", f_VEC3_Scale },
+{ "normalize", f_VEC3_Normalize },
+{ "set", f_VEC3_Set },
+{ "clear", f_VEC3_Clear },
+{ "__unm", f_VEC3_Unm },
+{ "distance", f_VEC3_Distance },
+{ "fromstring", f_vec3___fromstring },
+)
 int f_VEC4_Set(lua_State *L) {
 	struct vec4* this_ = luaX_checkvec4(L, 1);
 	float x = luaL_checknumber(L, 2);
@@ -621,98 +489,32 @@ int f_VEC4_Lerp(lua_State *L) {
 	luaX_pushvec4(L, &result_);
 	return 1;
 }
-
-int f_vec4___index(lua_State *L) {
-	struct vec4* self = luaX_checkvec4(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: lua_pushnumber(L, self->x); return 1; // x
-	case 0xfc0c4ef4: lua_pushnumber(L, self->y); return 1; // y
-	case 0xff0c53ad: lua_pushnumber(L, self->z); return 1; // z
-	case 0xf20c3f36: lua_pushnumber(L, self->w); return 1; // w
-	case 0xc6270703: lua_pushcfunction(L, f_VEC4_Set); return 1; // set
-	case 0x82971c71: lua_pushcfunction(L, f_VEC4_Scale); return 1; // scale
-	case 0x3b391274: lua_pushcfunction(L, f_VEC4_Add); return 1; // add
-	case 0x53d4a495: lua_pushcfunction(L, f_VEC4_Unm); return 1; // unm
-	case 0x1e691468: lua_pushcfunction(L, f_VEC4_Lerp); return 1; // lerp
-	}
-	return luaL_error(L, "Unknown field in vec4(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_vec4___newindex(lua_State *L) {
-	struct vec4* self = luaX_checkvec4(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: self->x = luaL_optnumber(L, 3, 0); return 0; // x
-	case 0xfc0c4ef4: self->y = luaL_optnumber(L, 3, 0); return 0; // y
-	case 0xff0c53ad: self->z = luaL_optnumber(L, 3, 0); return 0; // z
-	case 0xf20c3f36: self->w = luaL_optnumber(L, 3, 0); return 0; // w
-	}
-	return luaL_error(L, "Unknown field in vec4(%p): %s", self, luaL_checkstring(L, 2));
-}
 extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
 static int f_vec4___fromstring(lua_State *L) {
-	float x;
-	float y;
-	float z;
-	float w;
-	struct vec4 self = {0};
-	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &x, &y, &z, &w)) {
-	case 4: 
-		self.x = x;
-		self.y = y;
-		self.z = z;
-		self.w = w;
-		return (luaX_pushvec4(L, &self), 1);
-	default:
-		return luaL_error(L, "Invalid format for vec4: %s", luaL_checkstring(L, 1));
-	}
+float x;
+float y;
+float z;
+float w;
+struct vec4 self = {0};
+switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &x, &y, &z, &w)) {
+case 4:
+self.x = x;
+self.y = y;
+self.z = z;
+self.w = w;
+return (luaX_pushvec4(L, &self), 1);
+default:
+return luaL_error(L, "Invalid format for vec4: %s", luaL_checkstring(L, 1));
 }
-static int f_vec4___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_vec4(L));  // remove vec4 from stack and call constructor
 }
-int luaopen_orca_vec4(lua_State *L) {
-	luaL_newmetatable(L, "Vector4D");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_vec4 },
-		{ "fromstring", f_vec4___fromstring },
-		{ "__newindex", f_vec4___newindex },
-		{ "__index", f_vec4___index },
-		{ "set", f_VEC4_Set },
-		{ "scale", f_VEC4_Scale },
-		{ "__add", f_VEC4_Add },
-		{ "__unm", f_VEC4_Unm },
-		{ "lerp", f_VEC4_Lerp },
-		{ NULL, NULL },
-	}), 0);
-	// Make vec4 creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_vec4___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushbox2(lua_State *L, struct box2 const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct box2* self = lua_newuserdata(L, sizeof(struct box2));
-	luaL_setmetatable(L, "Box2D");
-	memcpy(self, data, sizeof(struct box2));
-}
-struct box2* luaX_checkbox2(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "Box2D");
-}
-static int f_new_box2(lua_State *L) {
-	struct box2* self = lua_newuserdata(L, sizeof(struct box2));
-	luaL_setmetatable(L, "Box2D");
-	memset(self, 0, sizeof(struct box2));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "min"), self->min = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkvec2(L, -1) : (struct vec2){0}, 1));
-		lua_pop(L, (lua_getfield(L, 1, "max"), self->max = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkvec2(L, -1) : (struct vec2){0}, 1));
-	} else {
-		self->min = lua_type(L, 1) == LUA_TUSERDATA ? *luaX_checkvec2(L, 1) : (struct vec2){0};
-		self->max = lua_type(L, 2) == LUA_TUSERDATA ? *luaX_checkvec2(L, 2) : (struct vec2){0};
-	}
-	return 1;
-}
-
+STRUCT(vec4, "Vector4D",
+{ "set", f_VEC4_Set },
+{ "scale", f_VEC4_Scale },
+{ "__add", f_VEC4_Add },
+{ "__unm", f_VEC4_Unm },
+{ "lerp", f_VEC4_Lerp },
+{ "fromstring", f_vec4___fromstring },
+)
 int f_BOX2_Center(lua_State *L) {
 	struct box2 const* this_ = luaX_checkbox2(L, 1);
 	struct vec2 result_ = BOX2_Center(this_);
@@ -732,216 +534,37 @@ int f_BOX2_ContainsPoint(lua_State *L) {
 	lua_pushboolean(L, result_);
 	return 1;
 }
-
-int f_box2___index(lua_State *L) {
-	struct box2* self = luaX_checkbox2(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xc98f4557: luaX_pushvec2(L, &self->min); return 1; // min
-	case 0xd7a2e319: luaX_pushvec2(L, &self->max); return 1; // max
-	case 0x058c4484: lua_pushcfunction(L, f_BOX2_Center); return 1; // center
-	case 0x24617f7d: lua_pushcfunction(L, f_BOX2_MoveTo); return 1; // moveTo
-	case 0x7a86780e: lua_pushcfunction(L, f_BOX2_ContainsPoint); return 1; // containsPoint
-	}
-	return luaL_error(L, "Unknown field in box2(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_box2___newindex(lua_State *L) {
-	struct box2* self = luaX_checkbox2(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xc98f4557: self->min = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkvec2(L, 3) : (struct vec2){0}; return 0; // min
-	case 0xd7a2e319: self->max = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkvec2(L, 3) : (struct vec2){0}; return 0; // max
-	}
-	return luaL_error(L, "Unknown field in box2(%p): %s", self, luaL_checkstring(L, 2));
-}
-static int f_box2___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_box2(L));  // remove box2 from stack and call constructor
-}
-int luaopen_orca_box2(lua_State *L) {
-	luaL_newmetatable(L, "Box2D");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_box2 },
-		{ "__newindex", f_box2___newindex },
-		{ "__index", f_box2___index },
-		{ "center", f_BOX2_Center },
-		{ "moveTo", f_BOX2_MoveTo },
-		{ "containsPoint", f_BOX2_ContainsPoint },
-		{ NULL, NULL },
-	}), 0);
-	// Make box2 creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_box2___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushbox3(lua_State *L, struct box3 const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct box3* self = lua_newuserdata(L, sizeof(struct box3));
-	luaL_setmetatable(L, "Box3D");
-	memcpy(self, data, sizeof(struct box3));
-}
-struct box3* luaX_checkbox3(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "Box3D");
-}
-static int f_new_box3(lua_State *L) {
-	struct box3* self = lua_newuserdata(L, sizeof(struct box3));
-	luaL_setmetatable(L, "Box3D");
-	memset(self, 0, sizeof(struct box3));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "min"), self->min = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkvec3(L, -1) : (struct vec3){0}, 1));
-		lua_pop(L, (lua_getfield(L, 1, "max"), self->max = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkvec3(L, -1) : (struct vec3){0}, 1));
-	} else {
-		self->min = lua_type(L, 1) == LUA_TUSERDATA ? *luaX_checkvec3(L, 1) : (struct vec3){0};
-		self->max = lua_type(L, 2) == LUA_TUSERDATA ? *luaX_checkvec3(L, 2) : (struct vec3){0};
-	}
-	return 1;
-}
-
+STRUCT(box2, "Box2D",
+{ "center", f_BOX2_Center },
+{ "moveTo", f_BOX2_MoveTo },
+{ "containsPoint", f_BOX2_ContainsPoint },
+)
 int f_BOX3_Center(lua_State *L) {
 	struct box3 const* this_ = luaX_checkbox3(L, 1);
 	struct vec3 result_ = BOX3_Center(this_);
 	luaX_pushvec3(L, &result_);
 	return 1;
 }
-
-int f_box3___index(lua_State *L) {
-	struct box3* self = luaX_checkbox3(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xc98f4557: luaX_pushvec3(L, &self->min); return 1; // min
-	case 0xd7a2e319: luaX_pushvec3(L, &self->max); return 1; // max
-	case 0x058c4484: lua_pushcfunction(L, f_BOX3_Center); return 1; // center
-	}
-	return luaL_error(L, "Unknown field in box3(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_box3___newindex(lua_State *L) {
-	struct box3* self = luaX_checkbox3(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xc98f4557: self->min = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkvec3(L, 3) : (struct vec3){0}; return 0; // min
-	case 0xd7a2e319: self->max = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkvec3(L, 3) : (struct vec3){0}; return 0; // max
-	}
-	return luaL_error(L, "Unknown field in box3(%p): %s", self, luaL_checkstring(L, 2));
-}
-static int f_box3___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_box3(L));  // remove box3 from stack and call constructor
-}
-int luaopen_orca_box3(lua_State *L) {
-	luaL_newmetatable(L, "Box3D");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_box3 },
-		{ "__newindex", f_box3___newindex },
-		{ "__index", f_box3___index },
-		{ "center", f_BOX3_Center },
-		{ NULL, NULL },
-	}), 0);
-	// Make box3 creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_box3___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushSize(lua_State *L, struct Size const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct Size* self = lua_newuserdata(L, sizeof(struct Size));
-	luaL_setmetatable(L, "Size");
-	memcpy(self, data, sizeof(struct Size));
-}
-struct Size* luaX_checkSize(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "Size");
-}
-static int f_new_Size(lua_State *L) {
-	struct Size* self = lua_newuserdata(L, sizeof(struct Size));
-	luaL_setmetatable(L, "Size");
-	memset(self, 0, sizeof(struct Size));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "width"), self->width = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "height"), self->height = luaL_optnumber(L, -1, 0), 1));
-	} else {
-		self->width = luaL_optnumber(L, 1, 0);
-		self->height = luaL_optnumber(L, 2, 0);
-	}
-	return 1;
-}
-
-
-int f_Size___index(lua_State *L) {
-	struct Size* self = luaX_checkSize(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x95876e1f: lua_pushnumber(L, self->width); return 1; // width
-	case 0xd5bdbb42: lua_pushnumber(L, self->height); return 1; // height
-	}
-	return luaL_error(L, "Unknown field in Size(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_Size___newindex(lua_State *L) {
-	struct Size* self = luaX_checkSize(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x95876e1f: self->width = luaL_optnumber(L, 3, 0); return 0; // width
-	case 0xd5bdbb42: self->height = luaL_optnumber(L, 3, 0); return 0; // height
-	}
-	return luaL_error(L, "Unknown field in Size(%p): %s", self, luaL_checkstring(L, 2));
-}
+STRUCT(box3, "Box3D",
+{ "center", f_BOX3_Center },
+)
 extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
 static int f_Size___fromstring(lua_State *L) {
-	float width;
-	float height;
-	struct Size self = {0};
-	switch (sscanf(luaL_checkstring(L, 1), "%f %f", &width, &height)) {
-	case 2: 
-		self.width = width;
-		self.height = height;
-		return (luaX_pushSize(L, &self), 1);
-	default:
-		return luaL_error(L, "Invalid format for Size: %s", luaL_checkstring(L, 1));
-	}
+float width;
+float height;
+struct Size self = {0};
+switch (sscanf(luaL_checkstring(L, 1), "%f %f", &width, &height)) {
+case 2:
+self.width = width;
+self.height = height;
+return (luaX_pushSize(L, &self), 1);
+default:
+return luaL_error(L, "Invalid format for Size: %s", luaL_checkstring(L, 1));
 }
-static int f_Size___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_Size(L));  // remove Size from stack and call constructor
 }
-int luaopen_orca_Size(lua_State *L) {
-	luaL_newmetatable(L, "Size");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_Size },
-		{ "fromstring", f_Size___fromstring },
-		{ "__newindex", f_Size___newindex },
-		{ "__index", f_Size___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make Size creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_Size___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushrect(lua_State *L, struct rect const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct rect* self = lua_newuserdata(L, sizeof(struct rect));
-	luaL_setmetatable(L, "Rectangle");
-	memcpy(self, data, sizeof(struct rect));
-}
-struct rect* luaX_checkrect(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "Rectangle");
-}
-static int f_new_rect(lua_State *L) {
-	struct rect* self = lua_newuserdata(L, sizeof(struct rect));
-	luaL_setmetatable(L, "Rectangle");
-	memset(self, 0, sizeof(struct rect));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "x"), self->x = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "y"), self->y = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "width"), self->width = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "height"), self->height = luaL_optnumber(L, -1, 0), 1));
-	} else {
-		self->x = luaL_optnumber(L, 1, 0);
-		self->y = luaL_optnumber(L, 2, 0);
-		self->width = luaL_optnumber(L, 3, 0);
-		self->height = luaL_optnumber(L, 4, 0);
-	}
-	return 1;
-}
-
+STRUCT(Size, "Size",
+{ "fromstring", f_Size___fromstring },
+)
 int f_RECT_Contains(lua_State *L) {
 	struct rect const* this_ = luaX_checkrect(L, 1);
 	struct vec2 const* point = luaX_checkvec2(L, 2);
@@ -976,102 +599,32 @@ int f_RECT_Fit(lua_State *L) {
 	luaX_pushrect(L, &result_);
 	return 1;
 }
-
-int f_rect___index(lua_State *L) {
-	struct rect* self = luaX_checkrect(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: lua_pushnumber(L, self->x); return 1; // x
-	case 0xfc0c4ef4: lua_pushnumber(L, self->y); return 1; // y
-	case 0x95876e1f: lua_pushnumber(L, self->width); return 1; // width
-	case 0xd5bdbb42: lua_pushnumber(L, self->height); return 1; // height
-	case 0x6ccaf138: lua_pushcfunction(L, f_RECT_Contains); return 1; // contains
-	case 0x82971c71: lua_pushcfunction(L, f_RECT_Scale); return 1; // scale
-	case 0xf7faaee1: lua_pushcfunction(L, f_RECT_Expand); return 1; // expand
-	case 0x058c4484: lua_pushcfunction(L, f_RECT_Center); return 1; // center
-	case 0xaee47c2c: lua_pushcfunction(L, f_RECT_Fit); return 1; // fit
-	}
-	return luaL_error(L, "Unknown field in rect(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_rect___newindex(lua_State *L) {
-	struct rect* self = luaX_checkrect(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: self->x = luaL_optnumber(L, 3, 0); return 0; // x
-	case 0xfc0c4ef4: self->y = luaL_optnumber(L, 3, 0); return 0; // y
-	case 0x95876e1f: self->width = luaL_optnumber(L, 3, 0); return 0; // width
-	case 0xd5bdbb42: self->height = luaL_optnumber(L, 3, 0); return 0; // height
-	}
-	return luaL_error(L, "Unknown field in rect(%p): %s", self, luaL_checkstring(L, 2));
-}
 extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
 static int f_rect___fromstring(lua_State *L) {
-	float x;
-	float y;
-	float width;
-	float height;
-	struct rect self = {0};
-	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &x, &y, &width, &height)) {
-	case 4: 
-		self.x = x;
-		self.y = y;
-		self.width = width;
-		self.height = height;
-		return (luaX_pushrect(L, &self), 1);
-	default:
-		return luaL_error(L, "Invalid format for rect: %s", luaL_checkstring(L, 1));
-	}
+float x;
+float y;
+float width;
+float height;
+struct rect self = {0};
+switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &x, &y, &width, &height)) {
+case 4:
+self.x = x;
+self.y = y;
+self.width = width;
+self.height = height;
+return (luaX_pushrect(L, &self), 1);
+default:
+return luaL_error(L, "Invalid format for rect: %s", luaL_checkstring(L, 1));
 }
-static int f_rect___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_rect(L));  // remove rect from stack and call constructor
 }
-int luaopen_orca_rect(lua_State *L) {
-	luaL_newmetatable(L, "Rectangle");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_rect },
-		{ "fromstring", f_rect___fromstring },
-		{ "__newindex", f_rect___newindex },
-		{ "__index", f_rect___index },
-		{ "contains", f_RECT_Contains },
-		{ "scale", f_RECT_Scale },
-		{ "expand", f_RECT_Expand },
-		{ "center", f_RECT_Center },
-		{ "fit", f_RECT_Fit },
-		{ NULL, NULL },
-	}), 0);
-	// Make rect creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_rect___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushquat(lua_State *L, struct quat const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct quat* self = lua_newuserdata(L, sizeof(struct quat));
-	luaL_setmetatable(L, "Quaternion");
-	memcpy(self, data, sizeof(struct quat));
-}
-struct quat* luaX_checkquat(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "Quaternion");
-}
-static int f_new_quat(lua_State *L) {
-	struct quat* self = lua_newuserdata(L, sizeof(struct quat));
-	luaL_setmetatable(L, "Quaternion");
-	memset(self, 0, sizeof(struct quat));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "x"), self->x = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "y"), self->y = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "z"), self->z = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "w"), self->w = luaL_optnumber(L, -1, 0), 1));
-	} else {
-		self->x = luaL_optnumber(L, 1, 0);
-		self->y = luaL_optnumber(L, 2, 0);
-		self->z = luaL_optnumber(L, 3, 0);
-		self->w = luaL_optnumber(L, 4, 0);
-	}
-	return 1;
-}
-
+STRUCT(rect, "Rectangle",
+{ "contains", f_RECT_Contains },
+{ "scale", f_RECT_Scale },
+{ "expand", f_RECT_Expand },
+{ "center", f_RECT_Center },
+{ "fit", f_RECT_Fit },
+{ "fromstring", f_rect___fromstring },
+)
 int f_QUAT_FromEuler(lua_State *L) {
 	struct vec3 const* euler = luaX_checkvec3(L, 1);
 	enum RotationOrder order = luaX_checkRotationOrder(L, 2);
@@ -1128,98 +681,35 @@ int f_QUAT_Sqlerp(lua_State *L) {
 	luaX_pushquat(L, &result_);
 	return 1;
 }
-
-int f_quat___index(lua_State *L) {
-	struct quat* self = luaX_checkquat(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: lua_pushnumber(L, self->x); return 1; // x
-	case 0xfc0c4ef4: lua_pushnumber(L, self->y); return 1; // y
-	case 0xff0c53ad: lua_pushnumber(L, self->z); return 1; // z
-	case 0xf20c3f36: lua_pushnumber(L, self->w); return 1; // w
-	case 0xeefd95cf: lua_pushcfunction(L, f_QUAT_DotProduct); return 1; // dotProduct
-	case 0x83d03615: lua_pushcfunction(L, f_QUAT_Length); return 1; // length
-	case 0x53d4a495: lua_pushcfunction(L, f_QUAT_Unm); return 1; // unm
-	case 0x10bb9798: lua_pushcfunction(L, f_QUAT_Normalized); return 1; // normalized
-	case 0x93d37177: lua_pushcfunction(L, f_QUAT_Slerp); return 1; // slerp
-	case 0x085be2ec: lua_pushcfunction(L, f_QUAT_Sqlerp); return 1; // sqlerp
-	}
-	return luaL_error(L, "Unknown field in quat(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_quat___newindex(lua_State *L) {
-	struct quat* self = luaX_checkquat(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: self->x = luaL_optnumber(L, 3, 0); return 0; // x
-	case 0xfc0c4ef4: self->y = luaL_optnumber(L, 3, 0); return 0; // y
-	case 0xff0c53ad: self->z = luaL_optnumber(L, 3, 0); return 0; // z
-	case 0xf20c3f36: self->w = luaL_optnumber(L, 3, 0); return 0; // w
-	}
-	return luaL_error(L, "Unknown field in quat(%p): %s", self, luaL_checkstring(L, 2));
-}
 extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
 static int f_quat___fromstring(lua_State *L) {
-	float x;
-	float y;
-	float z;
-	float w;
-	struct quat self = {0};
-	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &x, &y, &z, &w)) {
-	case 4: 
-		self.x = x;
-		self.y = y;
-		self.z = z;
-		self.w = w;
-		return (luaX_pushquat(L, &self), 1);
-	default:
-		return luaL_error(L, "Invalid format for quat: %s", luaL_checkstring(L, 1));
-	}
+float x;
+float y;
+float z;
+float w;
+struct quat self = {0};
+switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &x, &y, &z, &w)) {
+case 4:
+self.x = x;
+self.y = y;
+self.z = z;
+self.w = w;
+return (luaX_pushquat(L, &self), 1);
+default:
+return luaL_error(L, "Invalid format for quat: %s", luaL_checkstring(L, 1));
 }
-static int f_quat___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_quat(L));  // remove quat from stack and call constructor
 }
-int luaopen_orca_quat(lua_State *L) {
-	luaL_newmetatable(L, "Quaternion");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_quat },
-		{ "fromstring", f_quat___fromstring },
-		{ "__newindex", f_quat___newindex },
-		{ "__index", f_quat___index },
-		{ "fromEuler", f_QUAT_FromEuler },
-		{ "fromMatrix", f_QUAT_FromMatrix },
-		{ "dotProduct", f_QUAT_DotProduct },
-		{ "length", f_QUAT_Length },
-		{ "unm", f_QUAT_Unm },
-		{ "normalized", f_QUAT_Normalized },
-		{ "slerp", f_QUAT_Slerp },
-		{ "sqlerp", f_QUAT_Sqlerp },
-		{ NULL, NULL },
-	}), 0);
-	// Make quat creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_quat___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushmat3(lua_State *L, struct mat3 const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct mat3* self = lua_newuserdata(L, sizeof(struct mat3));
-	luaL_setmetatable(L, "Matrix2D");
-	memcpy(self, data, sizeof(struct mat3));
-}
-struct mat3* luaX_checkmat3(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "Matrix2D");
-}
-static int f_new_mat3(lua_State *L) {
-	struct mat3* self = lua_newuserdata(L, sizeof(struct mat3));
-	luaL_setmetatable(L, "Matrix2D");
-	memset(self, 0, sizeof(struct mat3));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-	} else {
-	}
-	return 1;
-}
-
+STRUCT(quat, "Quaternion",
+{ "fromEuler", f_QUAT_FromEuler },
+{ "fromMatrix", f_QUAT_FromMatrix },
+{ "dotProduct", f_QUAT_DotProduct },
+{ "length", f_QUAT_Length },
+{ "unm", f_QUAT_Unm },
+{ "normalized", f_QUAT_Normalized },
+{ "slerp", f_QUAT_Slerp },
+{ "sqlerp", f_QUAT_Sqlerp },
+{ "fromstring", f_quat___fromstring },
+)
 int f_MAT3_Identity(lua_State *L) {
 	struct mat3 result_ = MAT3_Identity();
 	luaX_pushmat3(L, &result_);
@@ -1243,92 +733,41 @@ int f_MAT3_Scale(lua_State *L) {
 	MAT3_Scale(this_, scale );
 	return 0;
 }
-
-int f_mat3___index(lua_State *L) {
-	struct mat3* self = luaX_checkmat3(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xad0ecfd5: lua_pushcfunction(L, f_MAT3_Translate); return 1; // translate
-	case 0x82971c71: lua_pushcfunction(L, f_MAT3_Scale); return 1; // scale
-	}
-	return luaL_error(L, "Unknown field in mat3(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_mat3___newindex(lua_State *L) {
-	struct mat3* self = luaX_checkmat3(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	}
-	return luaL_error(L, "Unknown field in mat3(%p): %s", self, luaL_checkstring(L, 2));
-}
 extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
 static int f_mat3___fromstring(lua_State *L) {
-	float mat3_v0;
-	float mat3_v1;
-	float mat3_v2;
-	float mat3_v3;
-	float mat3_v4;
-	float mat3_v5;
-	float mat3_v6;
-	float mat3_v7;
-	float mat3_v8;
-	struct mat3 self = {0};
-	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f %f %f %f %f %f", &mat3_v0, &mat3_v1, &mat3_v2, &mat3_v3, &mat3_v4, &mat3_v5, &mat3_v6, &mat3_v7, &mat3_v8)) {
-	case 9: 
-		self.v[0] = mat3_v0;
-		self.v[1] = mat3_v1;
-		self.v[2] = mat3_v2;
-		self.v[3] = mat3_v3;
-		self.v[4] = mat3_v4;
-		self.v[5] = mat3_v5;
-		self.v[6] = mat3_v6;
-		self.v[7] = mat3_v7;
-		self.v[8] = mat3_v8;
-		return (luaX_pushmat3(L, &self), 1);
-	default:
-		return luaL_error(L, "Invalid format for mat3: %s", luaL_checkstring(L, 1));
-	}
+float mat3_v0;
+float mat3_v1;
+float mat3_v2;
+float mat3_v3;
+float mat3_v4;
+float mat3_v5;
+float mat3_v6;
+float mat3_v7;
+float mat3_v8;
+struct mat3 self = {0};
+switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f %f %f %f %f %f", &mat3_v0, &mat3_v1, &mat3_v2, &mat3_v3, &mat3_v4, &mat3_v5, &mat3_v6, &mat3_v7, &mat3_v8)) {
+case 9:
+self.v[0] = mat3_v0;
+self.v[1] = mat3_v1;
+self.v[2] = mat3_v2;
+self.v[3] = mat3_v3;
+self.v[4] = mat3_v4;
+self.v[5] = mat3_v5;
+self.v[6] = mat3_v6;
+self.v[7] = mat3_v7;
+self.v[8] = mat3_v8;
+return (luaX_pushmat3(L, &self), 1);
+default:
+return luaL_error(L, "Invalid format for mat3: %s", luaL_checkstring(L, 1));
 }
-static int f_mat3___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_mat3(L));  // remove mat3 from stack and call constructor
 }
-int luaopen_orca_mat3(lua_State *L) {
-	luaL_newmetatable(L, "Matrix2D");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_mat3 },
-		{ "fromstring", f_mat3___fromstring },
-		{ "__newindex", f_mat3___newindex },
-		{ "__index", f_mat3___index },
-		{ "identity", f_MAT3_Identity },
-		{ "normal", f_MAT3_Normal },
-		{ "translate", f_MAT3_Translate },
-		{ "scale", f_MAT3_Scale },
-		{ NULL, NULL },
-	}), 0);
-	// Make mat3 creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_mat3___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushmat4(lua_State *L, struct mat4 const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct mat4* self = lua_newuserdata(L, sizeof(struct mat4));
-	luaL_setmetatable(L, "Matrix3D");
-	memcpy(self, data, sizeof(struct mat4));
-}
-struct mat4* luaX_checkmat4(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "Matrix3D");
-}
-static int f_new_mat4(lua_State *L) {
-	struct mat4* self = lua_newuserdata(L, sizeof(struct mat4));
-	luaL_setmetatable(L, "Matrix3D");
-	memset(self, 0, sizeof(struct mat4));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-	} else {
-	}
-	return 1;
-}
-
+STRUCT(mat3, "Matrix2D",
+{ "identity", f_MAT3_Identity },
+{ "normal", f_MAT3_Normal },
+{ "translate", f_MAT3_Translate },
+{ "scale", f_MAT3_Scale },
+{ "fromstring", f_mat3___fromstring },
+)
 int f_MAT4_Identity(lua_State *L) {
 	struct mat4 result_ = MAT4_Identity();
 	luaX_pushmat4(L, &result_);
@@ -1441,207 +880,84 @@ int f_MAT4_RotateQuat(lua_State *L) {
 	MAT4_RotateQuat(this_, rotation );
 	return 0;
 }
-
-int f_mat4___index(lua_State *L) {
-	struct mat4* self = luaX_checkmat4(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xad0ecfd5: lua_pushcfunction(L, f_MAT4_Translate); return 1; // translate
-	case 0xa5f4fd0a: lua_pushcfunction(L, f_MAT4_Rotate); return 1; // rotate
-	case 0x82971c71: lua_pushcfunction(L, f_MAT4_Scale); return 1; // scale
-	case 0xff942445: lua_pushcfunction(L, f_MAT4_Multiply); return 1; // multiply
-	case 0xb201f283: lua_pushcfunction(L, f_MAT4_Inverse); return 1; // inverse
-	case 0xc03183c0: lua_pushcfunction(L, f_MAT4_Transpose); return 1; // transpose
-	case 0x7eaaa89a: lua_pushcfunction(L, f_MAT4_Rotate4); return 1; // rotate4
-	case 0x72848e05: lua_pushcfunction(L, f_MAT4_MultiplyVector3D); return 1; // multiplyVector3D
-	case 0xeb3ef489: lua_pushcfunction(L, f_MAT4_RotateQuat); return 1; // rotateQuat
-	}
-	return luaL_error(L, "Unknown field in mat4(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_mat4___newindex(lua_State *L) {
-	struct mat4* self = luaX_checkmat4(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	}
-	return luaL_error(L, "Unknown field in mat4(%p): %s", self, luaL_checkstring(L, 2));
-}
 extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
 static int f_mat4___fromstring(lua_State *L) {
-	float mat4_v0;
-	float mat4_v1;
-	float mat4_v2;
-	float mat4_v3;
-	float mat4_v4;
-	float mat4_v5;
-	float mat4_v6;
-	float mat4_v7;
-	float mat4_v8;
-	float mat4_v9;
-	float mat4_v10;
-	float mat4_v11;
-	float mat4_v12;
-	float mat4_v13;
-	float mat4_v14;
-	float mat4_v15;
-	struct mat4 self = {0};
-	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &mat4_v0, &mat4_v1, &mat4_v2, &mat4_v3, &mat4_v4, &mat4_v5, &mat4_v6, &mat4_v7, &mat4_v8, &mat4_v9, &mat4_v10, &mat4_v11, &mat4_v12, &mat4_v13, &mat4_v14, &mat4_v15)) {
-	case 16: 
-		self.v[0] = mat4_v0;
-		self.v[1] = mat4_v1;
-		self.v[2] = mat4_v2;
-		self.v[3] = mat4_v3;
-		self.v[4] = mat4_v4;
-		self.v[5] = mat4_v5;
-		self.v[6] = mat4_v6;
-		self.v[7] = mat4_v7;
-		self.v[8] = mat4_v8;
-		self.v[9] = mat4_v9;
-		self.v[10] = mat4_v10;
-		self.v[11] = mat4_v11;
-		self.v[12] = mat4_v12;
-		self.v[13] = mat4_v13;
-		self.v[14] = mat4_v14;
-		self.v[15] = mat4_v15;
-		return (luaX_pushmat4(L, &self), 1);
-	default:
-		return luaL_error(L, "Invalid format for mat4: %s", luaL_checkstring(L, 1));
-	}
+float mat4_v0;
+float mat4_v1;
+float mat4_v2;
+float mat4_v3;
+float mat4_v4;
+float mat4_v5;
+float mat4_v6;
+float mat4_v7;
+float mat4_v8;
+float mat4_v9;
+float mat4_v10;
+float mat4_v11;
+float mat4_v12;
+float mat4_v13;
+float mat4_v14;
+float mat4_v15;
+struct mat4 self = {0};
+switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &mat4_v0, &mat4_v1, &mat4_v2, &mat4_v3, &mat4_v4, &mat4_v5, &mat4_v6, &mat4_v7, &mat4_v8, &mat4_v9, &mat4_v10, &mat4_v11, &mat4_v12, &mat4_v13, &mat4_v14, &mat4_v15)) {
+case 16:
+self.v[0] = mat4_v0;
+self.v[1] = mat4_v1;
+self.v[2] = mat4_v2;
+self.v[3] = mat4_v3;
+self.v[4] = mat4_v4;
+self.v[5] = mat4_v5;
+self.v[6] = mat4_v6;
+self.v[7] = mat4_v7;
+self.v[8] = mat4_v8;
+self.v[9] = mat4_v9;
+self.v[10] = mat4_v10;
+self.v[11] = mat4_v11;
+self.v[12] = mat4_v12;
+self.v[13] = mat4_v13;
+self.v[14] = mat4_v14;
+self.v[15] = mat4_v15;
+return (luaX_pushmat4(L, &self), 1);
+default:
+return luaL_error(L, "Invalid format for mat4: %s", luaL_checkstring(L, 1));
 }
-static int f_mat4___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_mat4(L));  // remove mat4 from stack and call constructor
 }
-int luaopen_orca_mat4(lua_State *L) {
-	luaL_newmetatable(L, "Matrix3D");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_mat4 },
-		{ "fromstring", f_mat4___fromstring },
-		{ "__newindex", f_mat4___newindex },
-		{ "__index", f_mat4___index },
-		{ "identity", f_MAT4_Identity },
-		{ "translate", f_MAT4_Translate },
-		{ "rotate", f_MAT4_Rotate },
-		{ "scale", f_MAT4_Scale },
-		{ "__mul", f_MAT4_Multiply },
-		{ "ortho", f_MAT4_Ortho },
-		{ "perspective", f_MAT4_Perspective },
-		{ "lookAt", f_MAT4_LookAt },
-		{ "inverse", f_MAT4_Inverse },
-		{ "transpose", f_MAT4_Transpose },
-		{ "rotate4", f_MAT4_Rotate4 },
-		{ "multiplyVector3D", f_MAT4_MultiplyVector3D },
-		{ "fromRotationOrigin", f_MAT4_FromRotationOrigin },
-		{ "fromRotationTranslationScaleOrigin", f_MAT4_FromRotationTranslationScaleOrigin },
-		{ "fromTranslation", f_MAT4_FromTranslation },
-		{ "rotateQuat", f_MAT4_RotateQuat },
-		{ NULL, NULL },
-	}), 0);
-	// Make mat4 creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_mat4___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushbounds(lua_State *L, struct bounds const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct bounds* self = lua_newuserdata(L, sizeof(struct bounds));
-	luaL_setmetatable(L, "Bounds");
-	memcpy(self, data, sizeof(struct bounds));
-}
-struct bounds* luaX_checkbounds(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "Bounds");
-}
-static int f_new_bounds(lua_State *L) {
-	struct bounds* self = lua_newuserdata(L, sizeof(struct bounds));
-	luaL_setmetatable(L, "Bounds");
-	memset(self, 0, sizeof(struct bounds));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "min"), self->min = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "max"), self->max = luaL_optnumber(L, -1, 0), 1));
-	} else {
-		self->min = luaL_optnumber(L, 1, 0);
-		self->max = luaL_optnumber(L, 2, 0);
-	}
-	return 1;
-}
-
-
-int f_bounds___index(lua_State *L) {
-	struct bounds* self = luaX_checkbounds(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xc98f4557: lua_pushnumber(L, self->min); return 1; // min
-	case 0xd7a2e319: lua_pushnumber(L, self->max); return 1; // max
-	}
-	return luaL_error(L, "Unknown field in bounds(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_bounds___newindex(lua_State *L) {
-	struct bounds* self = luaX_checkbounds(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xc98f4557: self->min = luaL_optnumber(L, 3, 0); return 0; // min
-	case 0xd7a2e319: self->max = luaL_optnumber(L, 3, 0); return 0; // max
-	}
-	return luaL_error(L, "Unknown field in bounds(%p): %s", self, luaL_checkstring(L, 2));
-}
+STRUCT(mat4, "Matrix3D",
+{ "identity", f_MAT4_Identity },
+{ "translate", f_MAT4_Translate },
+{ "rotate", f_MAT4_Rotate },
+{ "scale", f_MAT4_Scale },
+{ "__mul", f_MAT4_Multiply },
+{ "ortho", f_MAT4_Ortho },
+{ "perspective", f_MAT4_Perspective },
+{ "lookAt", f_MAT4_LookAt },
+{ "inverse", f_MAT4_Inverse },
+{ "transpose", f_MAT4_Transpose },
+{ "rotate4", f_MAT4_Rotate4 },
+{ "multiplyVector3D", f_MAT4_MultiplyVector3D },
+{ "fromRotationOrigin", f_MAT4_FromRotationOrigin },
+{ "fromRotationTranslationScaleOrigin", f_MAT4_FromRotationTranslationScaleOrigin },
+{ "fromTranslation", f_MAT4_FromTranslation },
+{ "rotateQuat", f_MAT4_RotateQuat },
+{ "fromstring", f_mat4___fromstring },
+)
 extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
 static int f_bounds___fromstring(lua_State *L) {
-	float min;
-	float max;
-	struct bounds self = {0};
-	switch (sscanf(luaL_checkstring(L, 1), "%f %f", &min, &max)) {
-	case 2: 
-		self.min = min;
-		self.max = max;
-		return (luaX_pushbounds(L, &self), 1);
-	default:
-		return luaL_error(L, "Invalid format for bounds: %s", luaL_checkstring(L, 1));
-	}
+float min;
+float max;
+struct bounds self = {0};
+switch (sscanf(luaL_checkstring(L, 1), "%f %f", &min, &max)) {
+case 2:
+self.min = min;
+self.max = max;
+return (luaX_pushbounds(L, &self), 1);
+default:
+return luaL_error(L, "Invalid format for bounds: %s", luaL_checkstring(L, 1));
 }
-static int f_bounds___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_bounds(L));  // remove bounds from stack and call constructor
 }
-int luaopen_orca_bounds(lua_State *L) {
-	luaL_newmetatable(L, "Bounds");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_bounds },
-		{ "fromstring", f_bounds___fromstring },
-		{ "__newindex", f_bounds___newindex },
-		{ "__index", f_bounds___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make bounds creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_bounds___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushplane3(lua_State *L, struct plane3 const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct plane3* self = lua_newuserdata(L, sizeof(struct plane3));
-	luaL_setmetatable(L, "Plane");
-	memcpy(self, data, sizeof(struct plane3));
-}
-struct plane3* luaX_checkplane3(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "Plane");
-}
-static int f_new_plane3(lua_State *L) {
-	struct plane3* self = lua_newuserdata(L, sizeof(struct plane3));
-	luaL_setmetatable(L, "Plane");
-	memset(self, 0, sizeof(struct plane3));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "a"), self->a = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "b"), self->b = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "c"), self->c = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "d"), self->d = luaL_optnumber(L, -1, 0), 1));
-	} else {
-		self->a = luaL_optnumber(L, 1, 0);
-		self->b = luaL_optnumber(L, 2, 0);
-		self->c = luaL_optnumber(L, 3, 0);
-		self->d = luaL_optnumber(L, 4, 0);
-	}
-	return 1;
-}
-
+STRUCT(bounds, "Bounds",
+{ "fromstring", f_bounds___fromstring },
+)
 int f_plane3_Normalize(lua_State *L) {
 	struct plane3* this_ = luaX_checkplane3(L, 1);
 	plane3_Normalize(this_ );
@@ -1654,159 +970,31 @@ int f_plane3_MultiplyVector3D(lua_State *L) {
 	lua_pushnumber(L, result_);
 	return 1;
 }
-
-int f_plane3___index(lua_State *L) {
-	struct plane3* self = luaX_checkplane3(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xe40c292c: lua_pushnumber(L, self->a); return 1; // a
-	case 0xe70c2de5: lua_pushnumber(L, self->b); return 1; // b
-	case 0xe60c2c52: lua_pushnumber(L, self->c); return 1; // c
-	case 0xe10c2473: lua_pushnumber(L, self->d); return 1; // d
-	case 0xce79296c: lua_pushcfunction(L, f_plane3_Normalize); return 1; // normalize
-	case 0x72848e05: lua_pushcfunction(L, f_plane3_MultiplyVector3D); return 1; // multiplyVector3D
-	}
-	return luaL_error(L, "Unknown field in plane3(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_plane3___newindex(lua_State *L) {
-	struct plane3* self = luaX_checkplane3(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xe40c292c: self->a = luaL_optnumber(L, 3, 0); return 0; // a
-	case 0xe70c2de5: self->b = luaL_optnumber(L, 3, 0); return 0; // b
-	case 0xe60c2c52: self->c = luaL_optnumber(L, 3, 0); return 0; // c
-	case 0xe10c2473: self->d = luaL_optnumber(L, 3, 0); return 0; // d
-	}
-	return luaL_error(L, "Unknown field in plane3(%p): %s", self, luaL_checkstring(L, 2));
-}
 extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
 static int f_plane3___fromstring(lua_State *L) {
-	float a;
-	float b;
-	float c;
-	float d;
-	struct plane3 self = {0};
-	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &a, &b, &c, &d)) {
-	case 4: 
-		self.a = a;
-		self.b = b;
-		self.c = c;
-		self.d = d;
-		return (luaX_pushplane3(L, &self), 1);
-	default:
-		return luaL_error(L, "Invalid format for plane3: %s", luaL_checkstring(L, 1));
-	}
+float a;
+float b;
+float c;
+float d;
+struct plane3 self = {0};
+switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &a, &b, &c, &d)) {
+case 4:
+self.a = a;
+self.b = b;
+self.c = c;
+self.d = d;
+return (luaX_pushplane3(L, &self), 1);
+default:
+return luaL_error(L, "Invalid format for plane3: %s", luaL_checkstring(L, 1));
 }
-static int f_plane3___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_plane3(L));  // remove plane3 from stack and call constructor
 }
-int luaopen_orca_plane3(lua_State *L) {
-	luaL_newmetatable(L, "Plane");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_plane3 },
-		{ "fromstring", f_plane3___fromstring },
-		{ "__newindex", f_plane3___newindex },
-		{ "__index", f_plane3___index },
-		{ "normalize", f_plane3_Normalize },
-		{ "multiplyVector3D", f_plane3_MultiplyVector3D },
-		{ NULL, NULL },
-	}), 0);
-	// Make plane3 creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_plane3___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushsphere3(lua_State *L, struct sphere3 const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct sphere3* self = lua_newuserdata(L, sizeof(struct sphere3));
-	luaL_setmetatable(L, "Sphere");
-	memcpy(self, data, sizeof(struct sphere3));
-}
-struct sphere3* luaX_checksphere3(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "Sphere");
-}
-static int f_new_sphere3(lua_State *L) {
-	struct sphere3* self = lua_newuserdata(L, sizeof(struct sphere3));
-	luaL_setmetatable(L, "Sphere");
-	memset(self, 0, sizeof(struct sphere3));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "center"), self->center = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkvec3(L, -1) : (struct vec3){0}, 1));
-		lua_pop(L, (lua_getfield(L, 1, "radius"), self->radius = luaL_optnumber(L, -1, 0), 1));
-	} else {
-		self->center = lua_type(L, 1) == LUA_TUSERDATA ? *luaX_checkvec3(L, 1) : (struct vec3){0};
-		self->radius = luaL_optnumber(L, 2, 0);
-	}
-	return 1;
-}
-
-
-int f_sphere3___index(lua_State *L) {
-	struct sphere3* self = luaX_checksphere3(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x058c4484: luaX_pushvec3(L, &self->center); return 1; // center
-	case 0x0dba4cb3: lua_pushnumber(L, self->radius); return 1; // radius
-	}
-	return luaL_error(L, "Unknown field in sphere3(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_sphere3___newindex(lua_State *L) {
-	struct sphere3* self = luaX_checksphere3(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x058c4484: self->center = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkvec3(L, 3) : (struct vec3){0}; return 0; // center
-	case 0x0dba4cb3: self->radius = luaL_optnumber(L, 3, 0); return 0; // radius
-	}
-	return luaL_error(L, "Unknown field in sphere3(%p): %s", self, luaL_checkstring(L, 2));
-}
-static int f_sphere3___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_sphere3(L));  // remove sphere3 from stack and call constructor
-}
-int luaopen_orca_sphere3(lua_State *L) {
-	luaL_newmetatable(L, "Sphere");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_sphere3 },
-		{ "__newindex", f_sphere3___newindex },
-		{ "__index", f_sphere3___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make sphere3 creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_sphere3___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushfrustum3(lua_State *L, struct frustum3 const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct frustum3* self = lua_newuserdata(L, sizeof(struct frustum3));
-	luaL_setmetatable(L, "Frustum");
-	memcpy(self, data, sizeof(struct frustum3));
-}
-struct frustum3* luaX_checkfrustum3(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "Frustum");
-}
-static int f_new_frustum3(lua_State *L) {
-	struct frustum3* self = lua_newuserdata(L, sizeof(struct frustum3));
-	luaL_setmetatable(L, "Frustum");
-	memset(self, 0, sizeof(struct frustum3));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "left"), self->left = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkplane3(L, -1) : (struct plane3){0}, 1));
-		lua_pop(L, (lua_getfield(L, 1, "right"), self->right = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkplane3(L, -1) : (struct plane3){0}, 1));
-		lua_pop(L, (lua_getfield(L, 1, "bottom"), self->bottom = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkplane3(L, -1) : (struct plane3){0}, 1));
-		lua_pop(L, (lua_getfield(L, 1, "top"), self->top = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkplane3(L, -1) : (struct plane3){0}, 1));
-		lua_pop(L, (lua_getfield(L, 1, "front"), self->front = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkplane3(L, -1) : (struct plane3){0}, 1));
-		lua_pop(L, (lua_getfield(L, 1, "back"), self->back = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkplane3(L, -1) : (struct plane3){0}, 1));
-	} else {
-		self->left = lua_type(L, 1) == LUA_TUSERDATA ? *luaX_checkplane3(L, 1) : (struct plane3){0};
-		self->right = lua_type(L, 2) == LUA_TUSERDATA ? *luaX_checkplane3(L, 2) : (struct plane3){0};
-		self->bottom = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkplane3(L, 3) : (struct plane3){0};
-		self->top = lua_type(L, 4) == LUA_TUSERDATA ? *luaX_checkplane3(L, 4) : (struct plane3){0};
-		self->front = lua_type(L, 5) == LUA_TUSERDATA ? *luaX_checkplane3(L, 5) : (struct plane3){0};
-		self->back = lua_type(L, 6) == LUA_TUSERDATA ? *luaX_checkplane3(L, 6) : (struct plane3){0};
-	}
-	return 1;
-}
-
+STRUCT(plane3, "Plane",
+{ "normalize", f_plane3_Normalize },
+{ "multiplyVector3D", f_plane3_MultiplyVector3D },
+{ "fromstring", f_plane3___fromstring },
+)
+STRUCT(sphere3, "Sphere",
+)
 int f_frustum_Calculate(lua_State *L) {
 	struct mat4 const* matrix = luaX_checkmat4(L, 1);
 	struct frustum3 result_ = frustum_Calculate(matrix);
@@ -1842,84 +1030,13 @@ int f_frustum_ContainsAABox(lua_State *L) {
 	lua_pushboolean(L, result_);
 	return 1;
 }
-
-int f_frustum3___index(lua_State *L) {
-	struct frustum3* self = luaX_checkfrustum3(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x124aec70: luaX_pushplane3(L, &self->left); return 1; // left
-	case 0x78e32de5: luaX_pushplane3(L, &self->right); return 1; // right
-	case 0x4ea76b2a: luaX_pushplane3(L, &self->bottom); return 1; // bottom
-	case 0xa710dc3c: luaX_pushplane3(L, &self->top); return 1; // top
-	case 0xe179dbd8: luaX_pushplane3(L, &self->front); return 1; // front
-	case 0x5bb421a2: luaX_pushplane3(L, &self->back); return 1; // back
-	case 0x7a86780e: lua_pushcfunction(L, f_frustum_ContainsPoint); return 1; // containsPoint
-	case 0x3149232d: lua_pushcfunction(L, f_frustum_ContainsSphere); return 1; // containsSphere
-	case 0xb0b6e291: lua_pushcfunction(L, f_frustum_ContainsBox); return 1; // containsBox
-	case 0xd1ea740b: lua_pushcfunction(L, f_frustum_ContainsAABox); return 1; // containsAABox
-	}
-	return luaL_error(L, "Unknown field in frustum3(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_frustum3___newindex(lua_State *L) {
-	struct frustum3* self = luaX_checkfrustum3(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x124aec70: self->left = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkplane3(L, 3) : (struct plane3){0}; return 0; // left
-	case 0x78e32de5: self->right = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkplane3(L, 3) : (struct plane3){0}; return 0; // right
-	case 0x4ea76b2a: self->bottom = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkplane3(L, 3) : (struct plane3){0}; return 0; // bottom
-	case 0xa710dc3c: self->top = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkplane3(L, 3) : (struct plane3){0}; return 0; // top
-	case 0xe179dbd8: self->front = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkplane3(L, 3) : (struct plane3){0}; return 0; // front
-	case 0x5bb421a2: self->back = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkplane3(L, 3) : (struct plane3){0}; return 0; // back
-	}
-	return luaL_error(L, "Unknown field in frustum3(%p): %s", self, luaL_checkstring(L, 2));
-}
-static int f_frustum3___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_frustum3(L));  // remove frustum3 from stack and call constructor
-}
-int luaopen_orca_frustum3(lua_State *L) {
-	luaL_newmetatable(L, "Frustum");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_frustum3 },
-		{ "__newindex", f_frustum3___newindex },
-		{ "__index", f_frustum3___index },
-		{ "calculate", f_frustum_Calculate },
-		{ "containsPoint", f_frustum_ContainsPoint },
-		{ "containsSphere", f_frustum_ContainsSphere },
-		{ "containsBox", f_frustum_ContainsBox },
-		{ "containsAABox", f_frustum_ContainsAABox },
-		{ NULL, NULL },
-	}), 0);
-	// Make frustum3 creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_frustum3___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushtransform2(lua_State *L, struct transform2 const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct transform2* self = lua_newuserdata(L, sizeof(struct transform2));
-	luaL_setmetatable(L, "Transform2D");
-	memcpy(self, data, sizeof(struct transform2));
-}
-struct transform2* luaX_checktransform2(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "Transform2D");
-}
-static int f_new_transform2(lua_State *L) {
-	struct transform2* self = lua_newuserdata(L, sizeof(struct transform2));
-	luaL_setmetatable(L, "Transform2D");
-	memset(self, 0, sizeof(struct transform2));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "translation"), self->translation = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkvec2(L, -1) : (struct vec2){0}, 1));
-		lua_pop(L, (lua_getfield(L, 1, "rotation"), self->rotation = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "scale"), self->scale = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkvec2(L, -1) : (struct vec2){0}, 1));
-	} else {
-		self->translation = lua_type(L, 1) == LUA_TUSERDATA ? *luaX_checkvec2(L, 1) : (struct vec2){0};
-		self->rotation = luaL_optnumber(L, 2, 0);
-		self->scale = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkvec2(L, 3) : (struct vec2){0};
-	}
-	return 1;
-}
-
+STRUCT(frustum3, "Frustum",
+{ "calculate", f_frustum_Calculate },
+{ "containsPoint", f_frustum_ContainsPoint },
+{ "containsSphere", f_frustum_ContainsSphere },
+{ "containsBox", f_frustum_ContainsBox },
+{ "containsAABox", f_frustum_ContainsAABox },
+)
 int f_transform2_Identity(lua_State *L) {
 	struct transform2 result_ = transform2_Identity();
 	luaX_pushtransform2(L, &result_);
@@ -1932,72 +1049,10 @@ int f_transform2_ToMatrix3D(lua_State *L) {
 	luaX_pushmat4(L, &result_);
 	return 1;
 }
-
-int f_transform2___index(lua_State *L) {
-	struct transform2* self = luaX_checktransform2(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xcbd2d62c: luaX_pushvec2(L, &self->translation); return 1; // translation
-	case 0x21ac415f: lua_pushnumber(L, self->rotation); return 1; // rotation
-	case 0x82971c71: luaX_pushvec2(L, &self->scale); return 1; // scale
-	case 0xf4f4640a: lua_pushcfunction(L, f_transform2_ToMatrix3D); return 1; // toMatrix3D
-	}
-	return luaL_error(L, "Unknown field in transform2(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_transform2___newindex(lua_State *L) {
-	struct transform2* self = luaX_checktransform2(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xcbd2d62c: self->translation = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkvec2(L, 3) : (struct vec2){0}; return 0; // translation
-	case 0x21ac415f: self->rotation = luaL_optnumber(L, 3, 0); return 0; // rotation
-	case 0x82971c71: self->scale = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkvec2(L, 3) : (struct vec2){0}; return 0; // scale
-	}
-	return luaL_error(L, "Unknown field in transform2(%p): %s", self, luaL_checkstring(L, 2));
-}
-static int f_transform2___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_transform2(L));  // remove transform2 from stack and call constructor
-}
-int luaopen_orca_transform2(lua_State *L) {
-	luaL_newmetatable(L, "Transform2D");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_transform2 },
-		{ "__newindex", f_transform2___newindex },
-		{ "__index", f_transform2___index },
-		{ "identity", f_transform2_Identity },
-		{ "toMatrix3D", f_transform2_ToMatrix3D },
-		{ NULL, NULL },
-	}), 0);
-	// Make transform2 creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_transform2___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushtransform3(lua_State *L, struct transform3 const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct transform3* self = lua_newuserdata(L, sizeof(struct transform3));
-	luaL_setmetatable(L, "Transform3D");
-	memcpy(self, data, sizeof(struct transform3));
-}
-struct transform3* luaX_checktransform3(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "Transform3D");
-}
-static int f_new_transform3(lua_State *L) {
-	struct transform3* self = lua_newuserdata(L, sizeof(struct transform3));
-	luaL_setmetatable(L, "Transform3D");
-	memset(self, 0, sizeof(struct transform3));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "translation"), self->translation = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkvec3(L, -1) : (struct vec3){0}, 1));
-		lua_pop(L, (lua_getfield(L, 1, "rotation"), self->rotation = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkvec3(L, -1) : (struct vec3){0}, 1));
-		lua_pop(L, (lua_getfield(L, 1, "scale"), self->scale = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkvec3(L, -1) : (struct vec3){0}, 1));
-	} else {
-		self->translation = lua_type(L, 1) == LUA_TUSERDATA ? *luaX_checkvec3(L, 1) : (struct vec3){0};
-		self->rotation = lua_type(L, 2) == LUA_TUSERDATA ? *luaX_checkvec3(L, 2) : (struct vec3){0};
-		self->scale = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkvec3(L, 3) : (struct vec3){0};
-	}
-	return 1;
-}
-
+STRUCT(transform2, "Transform2D",
+{ "identity", f_transform2_Identity },
+{ "toMatrix3D", f_transform2_ToMatrix3D },
+)
 int f_transform3_Identity(lua_State *L) {
 	struct transform3 result_ = transform3_Identity();
 	luaX_pushtransform3(L, &result_);
@@ -2010,141 +1065,19 @@ int f_transform3_ToMatrix3D(lua_State *L) {
 	luaX_pushmat4(L, &result_);
 	return 1;
 }
-
-int f_transform3___index(lua_State *L) {
-	struct transform3* self = luaX_checktransform3(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xcbd2d62c: luaX_pushvec3(L, &self->translation); return 1; // translation
-	case 0x21ac415f: luaX_pushvec3(L, &self->rotation); return 1; // rotation
-	case 0x82971c71: luaX_pushvec3(L, &self->scale); return 1; // scale
-	case 0xf4f4640a: lua_pushcfunction(L, f_transform3_ToMatrix3D); return 1; // toMatrix3D
-	}
-	return luaL_error(L, "Unknown field in transform3(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_transform3___newindex(lua_State *L) {
-	struct transform3* self = luaX_checktransform3(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xcbd2d62c: self->translation = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkvec3(L, 3) : (struct vec3){0}; return 0; // translation
-	case 0x21ac415f: self->rotation = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkvec3(L, 3) : (struct vec3){0}; return 0; // rotation
-	case 0x82971c71: self->scale = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkvec3(L, 3) : (struct vec3){0}; return 0; // scale
-	}
-	return luaL_error(L, "Unknown field in transform3(%p): %s", self, luaL_checkstring(L, 2));
-}
-static int f_transform3___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_transform3(L));  // remove transform3 from stack and call constructor
-}
-int luaopen_orca_transform3(lua_State *L) {
-	luaL_newmetatable(L, "Transform3D");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_transform3 },
-		{ "__newindex", f_transform3___newindex },
-		{ "__index", f_transform3___index },
-		{ "identity", f_transform3_Identity },
-		{ "toMatrix3D", f_transform3_ToMatrix3D },
-		{ NULL, NULL },
-	}), 0);
-	// Make transform3 creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_transform3___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushtriangle3(lua_State *L, struct triangle3 const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct triangle3* self = lua_newuserdata(L, sizeof(struct triangle3));
-	luaL_setmetatable(L, "Triangle3D");
-	memcpy(self, data, sizeof(struct triangle3));
-}
-struct triangle3* luaX_checktriangle3(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "Triangle3D");
-}
-static int f_new_triangle3(lua_State *L) {
-	struct triangle3* self = lua_newuserdata(L, sizeof(struct triangle3));
-	luaL_setmetatable(L, "Triangle3D");
-	memset(self, 0, sizeof(struct triangle3));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "a"), self->a = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkvec3(L, -1) : (struct vec3){0}, 1));
-		lua_pop(L, (lua_getfield(L, 1, "b"), self->b = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkvec3(L, -1) : (struct vec3){0}, 1));
-		lua_pop(L, (lua_getfield(L, 1, "c"), self->c = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkvec3(L, -1) : (struct vec3){0}, 1));
-	} else {
-		self->a = lua_type(L, 1) == LUA_TUSERDATA ? *luaX_checkvec3(L, 1) : (struct vec3){0};
-		self->b = lua_type(L, 2) == LUA_TUSERDATA ? *luaX_checkvec3(L, 2) : (struct vec3){0};
-		self->c = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkvec3(L, 3) : (struct vec3){0};
-	}
-	return 1;
-}
-
+STRUCT(transform3, "Transform3D",
+{ "identity", f_transform3_Identity },
+{ "toMatrix3D", f_transform3_ToMatrix3D },
+)
 int f_triangle3_normal(lua_State *L) {
 	struct triangle3 const* this_ = luaX_checktriangle3(L, 1);
 	struct vec3 result_ = triangle3_normal(this_);
 	luaX_pushvec3(L, &result_);
 	return 1;
 }
-
-int f_triangle3___index(lua_State *L) {
-	struct triangle3* self = luaX_checktriangle3(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xe40c292c: luaX_pushvec3(L, &self->a); return 1; // a
-	case 0xe70c2de5: luaX_pushvec3(L, &self->b); return 1; // b
-	case 0xe60c2c52: luaX_pushvec3(L, &self->c); return 1; // c
-	case 0xe68b9c52: lua_pushcfunction(L, f_triangle3_normal); return 1; // normal
-	}
-	return luaL_error(L, "Unknown field in triangle3(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_triangle3___newindex(lua_State *L) {
-	struct triangle3* self = luaX_checktriangle3(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xe40c292c: self->a = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkvec3(L, 3) : (struct vec3){0}; return 0; // a
-	case 0xe70c2de5: self->b = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkvec3(L, 3) : (struct vec3){0}; return 0; // b
-	case 0xe60c2c52: self->c = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkvec3(L, 3) : (struct vec3){0}; return 0; // c
-	}
-	return luaL_error(L, "Unknown field in triangle3(%p): %s", self, luaL_checkstring(L, 2));
-}
-static int f_triangle3___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_triangle3(L));  // remove triangle3 from stack and call constructor
-}
-int luaopen_orca_triangle3(lua_State *L) {
-	luaL_newmetatable(L, "Triangle3D");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_triangle3 },
-		{ "__newindex", f_triangle3___newindex },
-		{ "__index", f_triangle3___index },
-		{ "normal", f_triangle3_normal },
-		{ NULL, NULL },
-	}), 0);
-	// Make triangle3 creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_triangle3___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushline3(lua_State *L, struct line3 const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct line3* self = lua_newuserdata(L, sizeof(struct line3));
-	luaL_setmetatable(L, "Line3D");
-	memcpy(self, data, sizeof(struct line3));
-}
-struct line3* luaX_checkline3(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "Line3D");
-}
-static int f_new_line3(lua_State *L) {
-	struct line3* self = lua_newuserdata(L, sizeof(struct line3));
-	luaL_setmetatable(L, "Line3D");
-	memset(self, 0, sizeof(struct line3));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "a"), self->a = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkvec3(L, -1) : (struct vec3){0}, 1));
-		lua_pop(L, (lua_getfield(L, 1, "b"), self->b = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkvec3(L, -1) : (struct vec3){0}, 1));
-	} else {
-		self->a = lua_type(L, 1) == LUA_TUSERDATA ? *luaX_checkvec3(L, 1) : (struct vec3){0};
-		self->b = lua_type(L, 2) == LUA_TUSERDATA ? *luaX_checkvec3(L, 2) : (struct vec3){0};
-	}
-	return 1;
-}
-
+STRUCT(triangle3, "Triangle3D",
+{ "normal", f_triangle3_normal },
+)
 int f_line3_intersect_sphere3(lua_State *L) {
 	struct line3 const* this_ = luaX_checkline3(L, 1);
 	struct sphere3 const* sphere = luaX_checksphere3(L, 2);
@@ -2177,163 +1110,33 @@ int f_line3_intersect_box3(lua_State *L) {
 	lua_pushboolean(L, result_);
 	return 1;
 }
-
-int f_line3___index(lua_State *L) {
-	struct line3* self = luaX_checkline3(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xe40c292c: luaX_pushvec3(L, &self->a); return 1; // a
-	case 0xe70c2de5: luaX_pushvec3(L, &self->b); return 1; // b
-	case 0x82c7ab2f: lua_pushcfunction(L, f_line3_intersect_sphere3); return 1; // intersect_sphere3
-	case 0xcf43ebd0: lua_pushcfunction(L, f_line3_intersect_plane3); return 1; // intersect_plane3
-	case 0xf2168947: lua_pushcfunction(L, f_line3_intersect_triangle); return 1; // intersect_triangle
-	case 0x5b454c0d: lua_pushcfunction(L, f_line3_intersect_box3); return 1; // intersect_box3
-	}
-	return luaL_error(L, "Unknown field in line3(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_line3___newindex(lua_State *L) {
-	struct line3* self = luaX_checkline3(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xe40c292c: self->a = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkvec3(L, 3) : (struct vec3){0}; return 0; // a
-	case 0xe70c2de5: self->b = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkvec3(L, 3) : (struct vec3){0}; return 0; // b
-	}
-	return luaL_error(L, "Unknown field in line3(%p): %s", self, luaL_checkstring(L, 2));
-}
-static int f_line3___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_line3(L));  // remove line3 from stack and call constructor
-}
-int luaopen_orca_line3(lua_State *L) {
-	luaL_newmetatable(L, "Line3D");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_line3 },
-		{ "__newindex", f_line3___newindex },
-		{ "__index", f_line3___index },
-		{ "intersect_sphere3", f_line3_intersect_sphere3 },
-		{ "intersect_plane3", f_line3_intersect_plane3 },
-		{ "intersect_triangle", f_line3_intersect_triangle },
-		{ "intersect_box3", f_line3_intersect_box3 },
-		{ NULL, NULL },
-	}), 0);
-	// Make line3 creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_line3___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushedges(lua_State *L, struct edges const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct edges* self = lua_newuserdata(L, sizeof(struct edges));
-	luaL_setmetatable(L, "Edges");
-	memcpy(self, data, sizeof(struct edges));
-}
-struct edges* luaX_checkedges(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "Edges");
-}
-static int f_new_edges(lua_State *L) {
-	struct edges* self = lua_newuserdata(L, sizeof(struct edges));
-	luaL_setmetatable(L, "Edges");
-	memset(self, 0, sizeof(struct edges));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "left"), self->left = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "top"), self->top = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "right"), self->right = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "bottom"), self->bottom = luaL_optnumber(L, -1, 0), 1));
-	} else {
-		self->left = luaL_optnumber(L, 1, 0);
-		self->top = luaL_optnumber(L, 2, 0);
-		self->right = luaL_optnumber(L, 3, 0);
-		self->bottom = luaL_optnumber(L, 4, 0);
-	}
-	return 1;
-}
-
-
-int f_edges___index(lua_State *L) {
-	struct edges* self = luaX_checkedges(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x124aec70: lua_pushnumber(L, self->left); return 1; // left
-	case 0xa710dc3c: lua_pushnumber(L, self->top); return 1; // top
-	case 0x78e32de5: lua_pushnumber(L, self->right); return 1; // right
-	case 0x4ea76b2a: lua_pushnumber(L, self->bottom); return 1; // bottom
-	}
-	return luaL_error(L, "Unknown field in edges(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_edges___newindex(lua_State *L) {
-	struct edges* self = luaX_checkedges(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x124aec70: self->left = luaL_optnumber(L, 3, 0); return 0; // left
-	case 0xa710dc3c: self->top = luaL_optnumber(L, 3, 0); return 0; // top
-	case 0x78e32de5: self->right = luaL_optnumber(L, 3, 0); return 0; // right
-	case 0x4ea76b2a: self->bottom = luaL_optnumber(L, 3, 0); return 0; // bottom
-	}
-	return luaL_error(L, "Unknown field in edges(%p): %s", self, luaL_checkstring(L, 2));
-}
+STRUCT(line3, "Line3D",
+{ "intersect_sphere3", f_line3_intersect_sphere3 },
+{ "intersect_plane3", f_line3_intersect_plane3 },
+{ "intersect_triangle", f_line3_intersect_triangle },
+{ "intersect_box3", f_line3_intersect_box3 },
+)
 extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
 static int f_edges___fromstring(lua_State *L) {
-	float left;
-	float top;
-	float right;
-	float bottom;
-	struct edges self = {0};
-	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &left, &top, &right, &bottom)) {
-	case 4: 
-		self.left = left;
-		self.top = top;
-		self.right = right;
-		self.bottom = bottom;
-		return (luaX_pushedges(L, &self), 1);
-	default:
-		return luaL_error(L, "Invalid format for edges: %s", luaL_checkstring(L, 1));
-	}
+float left;
+float top;
+float right;
+float bottom;
+struct edges self = {0};
+switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &left, &top, &right, &bottom)) {
+case 4:
+self.left = left;
+self.top = top;
+self.right = right;
+self.bottom = bottom;
+return (luaX_pushedges(L, &self), 1);
+default:
+return luaL_error(L, "Invalid format for edges: %s", luaL_checkstring(L, 1));
 }
-static int f_edges___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_edges(L));  // remove edges from stack and call constructor
 }
-int luaopen_orca_edges(lua_State *L) {
-	luaL_newmetatable(L, "Edges");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_edges },
-		{ "fromstring", f_edges___fromstring },
-		{ "__newindex", f_edges___newindex },
-		{ "__index", f_edges___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make edges creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_edges___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushcolor(lua_State *L, struct color const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct color* self = lua_newuserdata(L, sizeof(struct color));
-	luaL_setmetatable(L, "Color");
-	memcpy(self, data, sizeof(struct color));
-}
-struct color* luaX_checkcolor(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "Color");
-}
-static int f_new_color(lua_State *L) {
-	struct color* self = lua_newuserdata(L, sizeof(struct color));
-	luaL_setmetatable(L, "Color");
-	memset(self, 0, sizeof(struct color));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "r"), self->r = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "g"), self->g = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "b"), self->b = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "a"), self->a = luaL_optnumber(L, -1, 0), 1));
-	} else {
-		self->r = luaL_optnumber(L, 1, 0);
-		self->g = luaL_optnumber(L, 2, 0);
-		self->b = luaL_optnumber(L, 3, 0);
-		self->a = luaL_optnumber(L, 4, 0);
-	}
-	return 1;
-}
-
+STRUCT(edges, "Edges",
+{ "fromstring", f_edges___fromstring },
+)
 int f_COLOR_Lerp(lua_State *L) {
 	struct color const* this_ = luaX_checkcolor(L, 1);
 	struct color const* other = luaX_checkcolor(L, 2);
@@ -2348,67 +1151,29 @@ int f_COLOR_Parse(lua_State *L) {
 	luaX_pushcolor(L, &result_);
 	return 1;
 }
-
-int f_color___index(lua_State *L) {
-	struct color* self = luaX_checkcolor(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xf70c4715: lua_pushnumber(L, self->r); return 1; // r
-	case 0xe20c2606: lua_pushnumber(L, self->g); return 1; // g
-	case 0xe70c2de5: lua_pushnumber(L, self->b); return 1; // b
-	case 0xe40c292c: lua_pushnumber(L, self->a); return 1; // a
-	case 0x1e691468: lua_pushcfunction(L, f_COLOR_Lerp); return 1; // lerp
-	}
-	return luaL_error(L, "Unknown field in color(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_color___newindex(lua_State *L) {
-	struct color* self = luaX_checkcolor(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xf70c4715: self->r = luaL_optnumber(L, 3, 0); return 0; // r
-	case 0xe20c2606: self->g = luaL_optnumber(L, 3, 0); return 0; // g
-	case 0xe70c2de5: self->b = luaL_optnumber(L, 3, 0); return 0; // b
-	case 0xe40c292c: self->a = luaL_optnumber(L, 3, 0); return 0; // a
-	}
-	return luaL_error(L, "Unknown field in color(%p): %s", self, luaL_checkstring(L, 2));
-}
 extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
 static int f_color___fromstring(lua_State *L) {
-	float r;
-	float g;
-	float b;
-	float a;
-	struct color self = {0};
-	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &r, &g, &b, &a)) {
-	case 4: 
-		self.r = r;
-		self.g = g;
-		self.b = b;
-		self.a = a;
-		return (luaX_pushcolor(L, &self), 1);
-	default:
-		return luaL_error(L, "Invalid format for color: %s", luaL_checkstring(L, 1));
-	}
+float r;
+float g;
+float b;
+float a;
+struct color self = {0};
+switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &r, &g, &b, &a)) {
+case 4:
+self.r = r;
+self.g = g;
+self.b = b;
+self.a = a;
+return (luaX_pushcolor(L, &self), 1);
+default:
+return luaL_error(L, "Invalid format for color: %s", luaL_checkstring(L, 1));
 }
-static int f_color___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_color(L));  // remove color from stack and call constructor
 }
-int luaopen_orca_color(lua_State *L) {
-	luaL_newmetatable(L, "Color");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_color },
-		{ "fromstring", f_color___fromstring },
-		{ "__newindex", f_color___newindex },
-		{ "__index", f_color___index },
-		{ "lerp", f_COLOR_Lerp },
-		{ "parse", f_COLOR_Parse },
-		{ NULL, NULL },
-	}), 0);
-	// Make color creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_color___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
+STRUCT(color, "Color",
+{ "lerp", f_COLOR_Lerp },
+{ "parse", f_COLOR_Parse },
+{ "fromstring", f_color___fromstring },
+)
 
 
 

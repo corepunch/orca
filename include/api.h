@@ -40,6 +40,12 @@ int f_find_module(lua_State* L);
 ORCA_API void luaX_pushProperty(lua_State*, lpcProperty_t);
 ORCA_API int luaX_readProperty(lua_State*, int, lpProperty_t);
 
+ORCA_API void luaX_struct_pushfield(lua_State *L, void *base, lpcPropertyType_t field);
+ORCA_API void luaX_struct_readfield(lua_State *L, int idx, void *base, lpcPropertyType_t field);
+ORCA_API int luaX_struct_index(lua_State *L, void *self, lpcPropertyType_t fields, int nfields);
+ORCA_API int luaX_struct_newindex(lua_State *L, void *self, lpcPropertyType_t fields, int nfields);
+ORCA_API void luaX_struct_new(lua_State *L, void *self, lpcPropertyType_t fields, int nfields);
+
 ORCA_API void luaX_pushKeyframeAnim(lua_State*, lpcKeyframeAnim_t);
 ORCA_API lpKeyframeAnim_t luaX_checkKeyframeAnim(lua_State*, int);
 

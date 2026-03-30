@@ -256,3 +256,139 @@ void luaX_pushProperty(lua_State* L, lpcProperty_t property)
   }
   _pushproperty(L, property->value, property->pdesc);
 }
+
+ORCA_API void
+luaX_struct_pushfield(lua_State* L, void *base, lpcPropertyType_t field)
+{
+  void *ptr = (uint8_t*)base + field->Offset;
+  switch (field->DataType) {
+    case kDataTypeFloat:
+      lua_pushnumber(L, *(float*)ptr);
+      break;
+    case kDataTypeInt:
+      lua_pushinteger(L, *(int32_t*)ptr);
+      break;
+    case kDataTypeBool:
+      lua_pushboolean(L, *(bool_t*)ptr != FALSE);
+      break;
+    case kDataTypeEnum:
+      if (field->EnumValues)
+        lua_pushstring(L, field->EnumValues[*(int32_t*)ptr]);
+      else
+        lua_pushinteger(L, *(int32_t*)ptr);
+      break;
+    case kDataTypeString:
+      /* fixed char arrays have DataSize > sizeof(char*); heap strings are pointers */
+      if (field->DataSize > sizeof(char*))
+        lua_pushstring(L, (const char*)ptr);
+      else
+        lua_pushstring(L, *(const char**)ptr);
+      break;
+    case kDataTypeColor:
+    case kDataTypeStruct:
+      memcpy(lua_newuserdata(L, field->DataSize), ptr, field->DataSize);
+      luaL_setmetatable(L, field->TypeString);
+      break;
+    case kDataTypeObject: {
+      lpObject_t object = *(lpObject_t*)ptr;
+      if (field->TypeString && *field->TypeString && strcmp(field->TypeString, "Object") != 0 && *(void**)ptr)
+        object = CMP_GetObject(*(void**)ptr);
+      if (object)
+        lua_geti(L, LUA_REGISTRYINDEX, OBJ_GetLuaObject(object));
+      else
+        lua_pushnil(L);
+      break;
+    }
+    default:
+      lua_pushnil(L);
+      break;
+  }
+}
+
+ORCA_API void
+luaX_struct_readfield(lua_State* L, int idx, void *base, lpcPropertyType_t field)
+{
+  void *ptr = (uint8_t*)base + field->Offset;
+  if (lua_isnoneornil(L, idx)) return;
+  switch (field->DataType) {
+    case kDataTypeFloat:
+      *(float*)ptr = (float)luaL_optnumber(L, idx, 0);
+      break;
+    case kDataTypeInt:
+    case kDataTypeBool:
+      *(int32_t*)ptr = (int32_t)luaL_optinteger(L, idx, 0);
+      break;
+    case kDataTypeEnum:
+      if (field->EnumValues && lua_type(L, idx) == LUA_TSTRING)
+        *(int32_t*)ptr = luaL_checkoption(L, idx, NULL, field->EnumValues);
+      else
+        *(int32_t*)ptr = (int32_t)luaL_optinteger(L, idx, 0);
+      break;
+    case kDataTypeString:
+      /* fixed char arrays have DataSize > sizeof(char*); heap strings are pointers */
+      if (field->DataSize > sizeof(char*))
+        strncpy((char*)ptr, luaL_optstring(L, idx, ""), field->DataSize);
+      else
+        *(lpcString_t*)ptr = luaL_optstring(L, idx, NULL);
+      break;
+    case kDataTypeColor:
+    case kDataTypeStruct:
+      if (lua_type(L, idx) == LUA_TUSERDATA)
+        memcpy(ptr, luaL_checkudata(L, idx, field->TypeString), field->DataSize);
+      break;
+    case kDataTypeObject: {
+      if (lua_type(L, idx) == LUA_TUSERDATA || lua_type(L, idx) == LUA_TTABLE) {
+        lpObject_t obj = luaX_checkObject(L, idx);
+        if (field->TypeString && *field->TypeString && strcmp(field->TypeString, "Object") != 0)
+          *(void**)ptr = OBJ_GetComponent(obj, fnv1a32(field->TypeString));
+        else
+          *(lpObject_t*)ptr = obj;
+      }
+      break;
+    }
+    default:
+      break;
+  }
+}
+
+ORCA_API int
+luaX_struct_index(lua_State* L, void *self, lpcPropertyType_t fields, int nfields)
+{
+  uint32_t hash = fnv1a32(luaL_checkstring(L, 2));
+  for (int i = 0; i < nfields; i++) {
+    if (fields[i].ShortIdentifier == hash) {
+      luaX_struct_pushfield(L, self, &fields[i]);
+      return 1;
+    }
+  }
+  return 0;
+}
+
+ORCA_API int
+luaX_struct_newindex(lua_State* L, void *self, lpcPropertyType_t fields, int nfields)
+{
+  uint32_t hash = fnv1a32(luaL_checkstring(L, 2));
+  for (int i = 0; i < nfields; i++) {
+    if (fields[i].ShortIdentifier == hash) {
+      luaX_struct_readfield(L, 3, self, &fields[i]);
+      return 0;
+    }
+  }
+  return luaL_error(L, "Unknown field: %s", luaL_checkstring(L, 2));
+}
+
+ORCA_API void
+luaX_struct_new(lua_State* L, void *self, lpcPropertyType_t fields, int nfields)
+{
+  if (lua_istable(L, 1)) {
+    for (int i = 0; i < nfields; i++) {
+      lua_getfield(L, 1, fields[i].Name);
+      luaX_struct_readfield(L, -1, self, &fields[i]);
+      lua_pop(L, 1);
+    }
+  } else {
+    for (int i = 0; i < nfields; i++) {
+      luaX_struct_readfield(L, i + 1, self, &fields[i]);
+    }
+  }
+}

@@ -18,77 +18,67 @@ void luaX_push##NAME(lua_State *L, enum NAME value) { \
 	lua_pushstring(L, (assert(value >= 0 && value < sizeof(_##NAME) / sizeof(*_##NAME) - 1), _##NAME[value])); \
 }
 #define FIELD(IDENT, STRUCT, NAME, TYPE, ...) { \
-	.Name = #NAME, \
-	.ShortIdentifier = IDENT, \
-	.DataType = TYPE, \
-	.Offset = offsetof(struct STRUCT, NAME), \
-	.DataSize = sizeof(((struct STRUCT*)NULL)->NAME), \
-	##__VA_ARGS__ \
+.Name = #NAME, \
+.ShortIdentifier = IDENT, \
+.DataType = TYPE, \
+.Offset = offsetof(struct STRUCT, NAME), \
+.DataSize = sizeof(((struct STRUCT*)NULL)->NAME), \
+##__VA_ARGS__ \
+}
+#define STRUCT(NAME, EXPORT, ...) \
+void luaX_push##NAME(lua_State *L, struct NAME const* data) { \
+if (data == NULL) { lua_pushnil(L); return; } \
+struct NAME* self = lua_newuserdata(L, sizeof(struct NAME)); \
+luaL_setmetatable(L, EXPORT); \
+memcpy(self, data, sizeof(struct NAME)); \
+} \
+struct NAME* luaX_check##NAME(lua_State *L, int idx) { \
+return luaL_checkudata(L, idx, EXPORT); \
+} \
+static int f_new_##NAME(lua_State *L) { \
+struct NAME* self = lua_newuserdata(L, sizeof(struct NAME)); \
+luaL_setmetatable(L, EXPORT); \
+memset(self, 0, sizeof(struct NAME)); \
+if (lua_gettop(L) == 1) return 1; \
+luaX_struct_new(L, self, _##NAME, sizeof(_##NAME)/sizeof(*_##NAME)); \
+return 1; \
+} \
+int f_##NAME##___index(lua_State *L) { \
+struct NAME* self = luaX_check##NAME(L, 1); \
+if (luaX_struct_index(L, self, _##NAME, sizeof(_##NAME)/sizeof(*_##NAME))) return 1; \
+lua_getmetatable(L, 1); \
+lua_pushvalue(L, 2); \
+lua_rawget(L, -2); \
+return 1; \
+} \
+int f_##NAME##___newindex(lua_State *L) { \
+return luaX_struct_newindex(L, luaX_check##NAME(L, 1), _##NAME, sizeof(_##NAME)/sizeof(*_##NAME)); \
+} \
+static int f_##NAME##___call(lua_State *L) { \
+return ((void)lua_remove(L, 1), f_new_##NAME(L)); \
+} \
+int luaopen_orca_##NAME(lua_State *L) { \
+luaL_newmetatable(L, EXPORT); \
+luaL_setfuncs(L, ((luaL_Reg[]) { \
+{ "new", f_new_##NAME }, \
+{ "__newindex", f_##NAME##___newindex }, \
+{ "__index", f_##NAME##___index }, \
+__VA_ARGS__ \
+{ NULL, NULL }, \
+}), 0); \
+lua_newtable(L); \
+lua_pushcfunction(L, f_##NAME##___call); \
+lua_setfield(L, -2, "__call"); \
+lua_setmetatable(L, -2); \
+return 1; \
 }
 static struct PropertyType _SpriteFrame[] = {
-	FIELD(0x6b109927, SpriteFrame, Rect, kDataTypeStruct),
-	FIELD(0xae3d25c0, SpriteFrame, UvRect, kDataTypeStruct),
+FIELD(0x6b109927, SpriteFrame, Rect, kDataTypeStruct, .TypeString = "Rectangle"),
+FIELD(0xae3d25c0, SpriteFrame, UvRect, kDataTypeStruct, .TypeString = "Rectangle"),
 };
 
-void luaX_pushSpriteFrame(lua_State *L, struct SpriteFrame const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct SpriteFrame* self = lua_newuserdata(L, sizeof(struct SpriteFrame));
-	luaL_setmetatable(L, "SpriteFrame");
-	memcpy(self, data, sizeof(struct SpriteFrame));
-}
-struct SpriteFrame* luaX_checkSpriteFrame(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "SpriteFrame");
-}
-static int f_new_SpriteFrame(lua_State *L) {
-	struct SpriteFrame* self = lua_newuserdata(L, sizeof(struct SpriteFrame));
-	luaL_setmetatable(L, "SpriteFrame");
-	memset(self, 0, sizeof(struct SpriteFrame));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Rect"), self->Rect = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkrect(L, -1) : (struct rect){0}, 1));
-		lua_pop(L, (lua_getfield(L, 1, "UvRect"), self->UvRect = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkrect(L, -1) : (struct rect){0}, 1));
-	} else {
-		self->Rect = lua_type(L, 1) == LUA_TUSERDATA ? *luaX_checkrect(L, 1) : (struct rect){0};
-		self->UvRect = lua_type(L, 2) == LUA_TUSERDATA ? *luaX_checkrect(L, 2) : (struct rect){0};
-	}
-	return 1;
-}
-
-
-int f_SpriteFrame___index(lua_State *L) {
-	struct SpriteFrame* self = luaX_checkSpriteFrame(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x6b109927: luaX_pushrect(L, &self->Rect); return 1; // Rect
-	case 0xae3d25c0: luaX_pushrect(L, &self->UvRect); return 1; // UvRect
-	}
-	return luaL_error(L, "Unknown field in SpriteFrame(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_SpriteFrame___newindex(lua_State *L) {
-	struct SpriteFrame* self = luaX_checkSpriteFrame(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x6b109927: self->Rect = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkrect(L, 3) : (struct rect){0}; return 0; // Rect
-	case 0xae3d25c0: self->UvRect = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkrect(L, 3) : (struct rect){0}; return 0; // UvRect
-	}
-	return luaL_error(L, "Unknown field in SpriteFrame(%p): %s", self, luaL_checkstring(L, 2));
-}
-static int f_SpriteFrame___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_SpriteFrame(L));  // remove SpriteFrame from stack and call constructor
-}
-int luaopen_orca_SpriteFrame(lua_State *L) {
-	luaL_newmetatable(L, "SpriteFrame");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_SpriteFrame },
-		{ "__newindex", f_SpriteFrame___newindex },
-		{ "__index", f_SpriteFrame___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make SpriteFrame creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_SpriteFrame___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
+STRUCT(SpriteFrame, "SpriteFrame",
+)
 #define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
 #define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
 
