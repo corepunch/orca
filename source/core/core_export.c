@@ -23,7 +23,7 @@ extern struct KeyframeAnim* luaX_checkKeyframeAnim(lua_State *L, int index);
 extern void luaX_pushlua_State(lua_State *L, struct lua_State const* value);
 extern struct lua_State* luaX_checklua_State(lua_State *L, int index);
 
-ORCA_API const char *_MessageRouting[] = {"TunnelingBubbling","Tunneling","Bubbling","Direct",NULL};
+ORCA_API const char *_MessageRouting[] = {"Bubbling","TunnelingBubbling","Tunneling","Direct",NULL};
 const char *MessageRoutingToString(enum MessageRouting value) {
 	assert(value >= 0 && value < 4);
 	return _MessageRouting[value];
@@ -601,6 +601,92 @@ int luaopen_orca_Object(lua_State *L) {
 	lua_setfield(L, -2, "__index");
 	return 1;
 }
+void luaX_pushMessageType(lua_State *L, struct MessageType const* data) {
+	if (data == NULL) { lua_pushnil(L); return; }
+	struct MessageType* self = lua_newuserdata(L, sizeof(struct MessageType));
+	luaL_setmetatable(L, "MessageType");
+	memcpy(self, data, sizeof(struct MessageType));
+}
+struct MessageType* luaX_checkMessageType(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "MessageType");
+}
+static int f_new_MessageType(lua_State *L) {
+	struct MessageType* self = lua_newuserdata(L, sizeof(struct MessageType));
+	luaL_setmetatable(L, "MessageType");
+	memset(self, 0, sizeof(struct MessageType));
+	if (lua_gettop(L) == 1) return 1;
+	if (lua_istable(L, 1)) {
+		lua_pop(L, (lua_getfield(L, 1, "name"), self->name = lua_type(L, -1) == LUA_TSTRING ? strdup(luaL_checkstring(L, -1)) : NULL, 1));
+		lua_pop(L, (lua_getfield(L, 1, "id"), self->id = (uint32_t)luaL_optinteger(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "routing"), self->routing = lua_type(L, -1) == LUA_TSTRING ? luaX_checkMessageRouting(L, -1) : 0, 1));
+		lua_pop(L, (lua_getfield(L, 1, "size"), self->size = (uint32_t)luaL_optinteger(L, -1, 0), 1));
+	} else {
+		self->name = lua_type(L, 1) == LUA_TSTRING ? strdup(luaL_checkstring(L, 1)) : NULL;
+		self->id = (uint32_t)luaL_optinteger(L, 2, 0);
+		self->routing = lua_type(L, 3) == LUA_TSTRING ? luaX_checkMessageRouting(L, 3) : 0;
+		self->size = (uint32_t)luaL_optinteger(L, 4, 0);
+	}
+	return 1;
+}
+
+
+int f_MessageType___index(lua_State *L) {
+	struct MessageType* self = luaX_checkMessageType(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x8d39bde6: lua_pushstring(L, self->name); return 1; // name
+	case 0x37386ae0: lua_pushinteger(L, self->id); return 1; // id
+	case 0x9d76c469: luaX_pushMessageRouting(L, self->routing); return 1; // routing
+	case 0x23a0d95c: lua_pushinteger(L, self->size); return 1; // size
+	}
+	return luaL_error(L, "Unknown field in MessageType(%p): %s", self, luaL_checkstring(L, 2));
+}
+int f_MessageType___newindex(lua_State *L) {
+	struct MessageType* self = luaX_checkMessageType(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x8d39bde6: self->name = lua_type(L, 3) == LUA_TSTRING ? strdup(luaL_checkstring(L, 3)) : NULL; return 0; // name
+	case 0x37386ae0: self->id = (uint32_t)luaL_optinteger(L, 3, 0); return 0; // id
+	case 0x9d76c469: self->routing = lua_type(L, 3) == LUA_TSTRING ? luaX_checkMessageRouting(L, 3) : 0; return 0; // routing
+	case 0x23a0d95c: self->size = (uint32_t)luaL_optinteger(L, 3, 0); return 0; // size
+	}
+	return luaL_error(L, "Unknown field in MessageType(%p): %s", self, luaL_checkstring(L, 2));
+}
+extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
+static int f_MessageType___fromstring(lua_State *L) {
+	fixedString_t name;
+	unsigned id;
+	fixedString_t routing;
+	unsigned size;
+	struct MessageType self = {0};
+	switch (sscanf(luaL_checkstring(L, 1), "%s %u %s %u", name, &id, routing, &size)) {
+	case 4: 
+		self.name = name;
+		self.id = id;
+		lua_pop(L, (lua_pushstring(L, routing), self.routing = luaL_checkoption(L, -1, NULL, _MessageRouting), 1));;
+		self.size = size;
+		return (luaX_pushMessageType(L, &self), 1);
+	default:
+		return luaL_error(L, "Invalid format for MessageType: %s", luaL_checkstring(L, 1));
+	}
+}
+static int f_MessageType___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_MessageType(L));  // remove MessageType from stack and call constructor
+}
+int luaopen_orca_MessageType(lua_State *L) {
+	luaL_newmetatable(L, "MessageType");
+	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ "new", f_new_MessageType },
+		{ "fromstring", f_MessageType___fromstring },
+		{ "__newindex", f_MessageType___newindex },
+		{ "__index", f_MessageType___index },
+		{ NULL, NULL },
+	}), 0);
+	// Make MessageType creatable via constructor-like syntax
+	lua_newtable(L);
+	lua_pushcfunction(L, f_MessageType___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+	return 1;
+}
 void luaX_pushPropertyEnumValue(lua_State *L, struct PropertyEnumValue const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct PropertyEnumValue* self = lua_newuserdata(L, sizeof(struct PropertyEnumValue));
@@ -857,6 +943,138 @@ int luaopen_orca_PropertyType(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
+struct MessageType MouseMessageMessage = {
+	.name = "MouseMessage",
+	.id = kMsgMouseMessage,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WI_Message),
+};
+struct MessageType KeyMessageMessage = {
+	.name = "KeyMessage",
+	.id = kMsgKeyMessage,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WI_Message),
+};
+struct MessageType LeftMouseDownMessage = {
+	.name = "LeftMouseDown",
+	.id = kMsgLeftMouseDown,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WI_Message),
+};
+struct MessageType RightMouseDownMessage = {
+	.name = "RightMouseDown",
+	.id = kMsgRightMouseDown,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WI_Message),
+};
+struct MessageType OtherMouseDownMessage = {
+	.name = "OtherMouseDown",
+	.id = kMsgOtherMouseDown,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WI_Message),
+};
+struct MessageType LeftMouseUpMessage = {
+	.name = "LeftMouseUp",
+	.id = kMsgLeftMouseUp,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WI_Message),
+};
+struct MessageType RightMouseUpMessage = {
+	.name = "RightMouseUp",
+	.id = kMsgRightMouseUp,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WI_Message),
+};
+struct MessageType OtherMouseUpMessage = {
+	.name = "OtherMouseUp",
+	.id = kMsgOtherMouseUp,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WI_Message),
+};
+struct MessageType LeftMouseDraggedMessage = {
+	.name = "LeftMouseDragged",
+	.id = kMsgLeftMouseDragged,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WI_Message),
+};
+struct MessageType RightMouseDraggedMessage = {
+	.name = "RightMouseDragged",
+	.id = kMsgRightMouseDragged,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WI_Message),
+};
+struct MessageType OtherMouseDraggedMessage = {
+	.name = "OtherMouseDragged",
+	.id = kMsgOtherMouseDragged,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WI_Message),
+};
+struct MessageType LeftDoubleClickMessage = {
+	.name = "LeftDoubleClick",
+	.id = kMsgLeftDoubleClick,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WI_Message),
+};
+struct MessageType RightDoubleClickMessage = {
+	.name = "RightDoubleClick",
+	.id = kMsgRightDoubleClick,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WI_Message),
+};
+struct MessageType OtherDoubleClickMessage = {
+	.name = "OtherDoubleClick",
+	.id = kMsgOtherDoubleClick,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WI_Message),
+};
+struct MessageType MouseMovedMessage = {
+	.name = "MouseMoved",
+	.id = kMsgMouseMoved,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WI_Message),
+};
+struct MessageType ScrollWheelMessage = {
+	.name = "ScrollWheel",
+	.id = kMsgScrollWheel,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WI_Message),
+};
+struct MessageType DragDropMessage = {
+	.name = "DragDrop",
+	.id = kMsgDragDrop,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WI_Message),
+};
+struct MessageType DragEnterMessage = {
+	.name = "DragEnter",
+	.id = kMsgDragEnter,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WI_Message),
+};
+struct MessageType KeyDownMessage = {
+	.name = "KeyDown",
+	.id = kMsgKeyDown,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WI_Message),
+};
+struct MessageType KeyUpMessage = {
+	.name = "KeyUp",
+	.id = kMsgKeyUp,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WI_Message),
+};
+struct MessageType CharMessage = {
+	.name = "Char",
+	.id = kMsgChar,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WI_Message),
+};
+struct MessageType WindowPaintMessage = {
+	.name = "WindowPaint",
+	.id = kMsgWindowPaint,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WindowPaintMsgArgs),
+};
 void luaX_pushWindowPaintMsgArgs(lua_State *L, struct WindowPaintMsgArgs const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct WindowPaintMsgArgs* self = lua_newuserdata(L, sizeof(struct WindowPaintMsgArgs));
@@ -914,124 +1132,78 @@ int luaopen_orca_WindowPaintMsgArgs(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
-void luaX_pushUpdateMatrixMsgArgs(lua_State *L, struct UpdateMatrixMsgArgs const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct UpdateMatrixMsgArgs* self = lua_newuserdata(L, sizeof(struct UpdateMatrixMsgArgs));
-	luaL_setmetatable(L, "UpdateMatrixMsgArgs");
-	memcpy(self, data, sizeof(struct UpdateMatrixMsgArgs));
-}
-struct UpdateMatrixMsgArgs* luaX_checkUpdateMatrixMsgArgs(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "UpdateMatrixMsgArgs");
-}
-static int f_new_UpdateMatrixMsgArgs(lua_State *L) {
-	struct UpdateMatrixMsgArgs* self = lua_newuserdata(L, sizeof(struct UpdateMatrixMsgArgs));
-	luaL_setmetatable(L, "UpdateMatrixMsgArgs");
-	memset(self, 0, sizeof(struct UpdateMatrixMsgArgs));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "parent"), self->parent = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkmat4(L, -1) : (struct mat4){0}, 1));
-		lua_pop(L, (lua_getfield(L, 1, "opacity"), self->opacity = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "force"), self->force = lua_toboolean(L, -1), 1));
-	} else {
-		self->parent = lua_type(L, 1) == LUA_TUSERDATA ? *luaX_checkmat4(L, 1) : (struct mat4){0};
-		self->opacity = luaL_optnumber(L, 2, 0);
-		self->force = lua_toboolean(L, 3);
-	}
-	return 1;
-}
-int f_UpdateMatrixMsgArgs___index(lua_State *L) {
-	struct UpdateMatrixMsgArgs* self = luaX_checkUpdateMatrixMsgArgs(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xeacdfcfd: luaX_pushmat4(L, &self->parent); return 1; // parent
-	case 0xc6c2dd66: lua_pushnumber(L, self->opacity); return 1; // opacity
-	case 0x79a98884: lua_pushboolean(L, self->force); return 1; // force
-	}
-	return luaL_error(L, "Unknown field in UpdateMatrixMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_UpdateMatrixMsgArgs___newindex(lua_State *L) {
-	struct UpdateMatrixMsgArgs* self = luaX_checkUpdateMatrixMsgArgs(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xeacdfcfd: self->parent = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkmat4(L, 3) : (struct mat4){0}; return 0; // parent
-	case 0xc6c2dd66: self->opacity = luaL_optnumber(L, 3, 0); return 0; // opacity
-	case 0x79a98884: self->force = lua_toboolean(L, 3); return 0; // force
-	}
-	return luaL_error(L, "Unknown field in UpdateMatrixMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
-}
-static int f_UpdateMatrixMsgArgs___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_UpdateMatrixMsgArgs(L));  // remove UpdateMatrixMsgArgs from stack and call constructor
-}
-int luaopen_orca_UpdateMatrixMsgArgs(lua_State *L) {
-	luaL_newmetatable(L, "UpdateMatrixMsgArgs");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_UpdateMatrixMsgArgs },
-		{ "__newindex", f_UpdateMatrixMsgArgs___newindex },
-		{ "__index", f_UpdateMatrixMsgArgs___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make UpdateMatrixMsgArgs creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_UpdateMatrixMsgArgs___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushHitTestMsgArgs(lua_State *L, struct HitTestMsgArgs const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct HitTestMsgArgs* self = lua_newuserdata(L, sizeof(struct HitTestMsgArgs));
-	luaL_setmetatable(L, "HitTestMsgArgs");
-	memcpy(self, data, sizeof(struct HitTestMsgArgs));
-}
-struct HitTestMsgArgs* luaX_checkHitTestMsgArgs(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "HitTestMsgArgs");
-}
-static int f_new_HitTestMsgArgs(lua_State *L) {
-	struct HitTestMsgArgs* self = lua_newuserdata(L, sizeof(struct HitTestMsgArgs));
-	luaL_setmetatable(L, "HitTestMsgArgs");
-	memset(self, 0, sizeof(struct HitTestMsgArgs));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "x"), self->x = (int32_t)luaL_optinteger(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "y"), self->y = (int32_t)luaL_optinteger(L, -1, 0), 1));
-	} else {
-		self->x = (int32_t)luaL_optinteger(L, 1, 0);
-		self->y = (int32_t)luaL_optinteger(L, 2, 0);
-	}
-	return 1;
-}
-int f_HitTestMsgArgs___index(lua_State *L) {
-	struct HitTestMsgArgs* self = luaX_checkHitTestMsgArgs(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: lua_pushinteger(L, self->x); return 1; // x
-	case 0xfc0c4ef4: lua_pushinteger(L, self->y); return 1; // y
-	}
-	return luaL_error(L, "Unknown field in HitTestMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_HitTestMsgArgs___newindex(lua_State *L) {
-	struct HitTestMsgArgs* self = luaX_checkHitTestMsgArgs(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xfd0c5087: self->x = (int32_t)luaL_optinteger(L, 3, 0); return 0; // x
-	case 0xfc0c4ef4: self->y = (int32_t)luaL_optinteger(L, 3, 0); return 0; // y
-	}
-	return luaL_error(L, "Unknown field in HitTestMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
-}
-static int f_HitTestMsgArgs___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_HitTestMsgArgs(L));  // remove HitTestMsgArgs from stack and call constructor
-}
-int luaopen_orca_HitTestMsgArgs(lua_State *L) {
-	luaL_newmetatable(L, "HitTestMsgArgs");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_HitTestMsgArgs },
-		{ "__newindex", f_HitTestMsgArgs___newindex },
-		{ "__index", f_HitTestMsgArgs___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make HitTestMsgArgs creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_HitTestMsgArgs___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
+struct MessageType WindowResizedMessage = {
+	.name = "WindowResized",
+	.id = kMsgWindowResized,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WindowPaintMsgArgs),
+};
+struct MessageType WindowClosedMessage = {
+	.name = "WindowClosed",
+	.id = kMsgWindowClosed,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(int),
+};
+struct MessageType WindowChangedScreenMessage = {
+	.name = "WindowChangedScreen",
+	.id = kMsgWindowChangedScreen,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(int),
+};
+struct MessageType KillFocusMessage = {
+	.name = "KillFocus",
+	.id = kMsgKillFocus,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(int),
+};
+struct MessageType SetFocusMessage = {
+	.name = "SetFocus",
+	.id = kMsgSetFocus,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(int),
+};
+struct MessageType TimerMessage = {
+	.name = "Timer",
+	.id = kMsgTimer,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(int),
+};
+struct MessageType IsVisibleMessage = {
+	.name = "IsVisible",
+	.id = kMsgIsVisible,
+	.routing = kMessageRoutingDirect,
+	.size = sizeof(int),
+};
+struct MessageType CreateMessage = {
+	.name = "Create",
+	.id = kMsgCreate,
+	.routing = kMessageRoutingDirect,
+	.size = sizeof(int),
+};
+struct MessageType StartMessage = {
+	.name = "Start",
+	.id = kMsgStart,
+	.routing = kMessageRoutingDirect,
+	.size = sizeof(int),
+};
+struct MessageType AwakeMessage = {
+	.name = "Awake",
+	.id = kMsgAwake,
+	.routing = kMessageRoutingDirect,
+	.size = sizeof(int),
+};
+struct MessageType ThemeChangedMessage = {
+	.name = "ThemeChanged",
+	.id = kMsgThemeChanged,
+	.routing = kMessageRoutingDirect,
+	.size = sizeof(int),
+};
+struct MessageType PropertyChangedMessage = {
+	.name = "PropertyChanged",
+	.id = kMsgPropertyChanged,
+	.routing = kMessageRoutingDirect,
+	.size = sizeof(struct PropertyChangedMsgArgs),
+};
 void luaX_pushPropertyChangedMsgArgs(lua_State *L, struct PropertyChangedMsgArgs const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct PropertyChangedMsgArgs* self = lua_newuserdata(L, sizeof(struct PropertyChangedMsgArgs));
@@ -1085,6 +1257,42 @@ int luaopen_orca_PropertyChangedMsgArgs(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
+struct MessageType AttachedMessage = {
+	.name = "Attached",
+	.id = kMsgAttached,
+	.routing = kMessageRoutingDirect,
+	.size = sizeof(int),
+};
+struct MessageType ReleaseMessage = {
+	.name = "Release",
+	.id = kMsgRelease,
+	.routing = kMessageRoutingDirect,
+	.size = sizeof(int),
+};
+struct MessageType DestroyMessage = {
+	.name = "Destroy",
+	.id = kMsgDestroy,
+	.routing = kMessageRoutingDirect,
+	.size = sizeof(int),
+};
+struct MessageType ResumeCoroutineMessage = {
+	.name = "ResumeCoroutine",
+	.id = kMsgResumeCoroutine,
+	.routing = kMessageRoutingDirect,
+	.size = sizeof(int),
+};
+struct MessageType StopCoroutineMessage = {
+	.name = "StopCoroutine",
+	.id = kMsgStopCoroutine,
+	.routing = kMessageRoutingDirect,
+	.size = sizeof(int),
+};
+struct MessageType ViewDidLoadMessage = {
+	.name = "ViewDidLoad",
+	.id = kMsgViewDidLoad,
+	.routing = kMessageRoutingDirect,
+	.size = sizeof(int),
+};
 
 
 int f_core_GetFocus(lua_State *L) {
@@ -1106,11 +1314,10 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	}));
 	void on_core_module_registered(lua_State *L);
 	on_core_module_registered(L);
+	lua_setfield(L, ((void)luaopen_orca_MessageType(L), -2), "MessageType");
 	lua_setfield(L, ((void)luaopen_orca_PropertyEnumValue(L), -2), "PropertyEnumValue");
 	lua_setfield(L, ((void)luaopen_orca_PropertyType(L), -2), "PropertyType");
 	lua_setfield(L, ((void)luaopen_orca_WindowPaintMsgArgs(L), -2), "WindowPaintMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_UpdateMatrixMsgArgs(L), -2), "UpdateMatrixMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_HitTestMsgArgs(L), -2), "HitTestMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_PropertyChangedMsgArgs(L), -2), "PropertyChangedMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object(L), -2), "Object");
 	return 1;

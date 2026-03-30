@@ -24,6 +24,10 @@ struct <?= $name ?>;
 <?php endforeach ?>
 
 <?php foreach ($model->getEvents() as $name => $event):?>
+ORCA_API extern struct MessageType <?= $name ?>Message;
+<?php endforeach ?>
+
+<?php foreach ($model->getEvents() as $name => $event):?>
 <?php if ($event->hasAnyFields()):?>
 typedef struct <?= $event->getEffectiveStructName() ?> <?= $name ?>Msg_t,* <?= $name ?>MsgPtr;
 <?php else:?>
@@ -33,6 +37,7 @@ typedef <?= $event->getEffectiveTypeDecl() ?> <?= $name ?>Msg_t,* <?= $name ?>Ms
 
 <?php foreach ($model->getEnums() as $name => $enum): ?>
 <?php if ($enum->doc): ?>
+
 /// @brief <?= $enum->doc ?>
 <?php endif ?>
 /** <?= $name ?> enum */
@@ -54,6 +59,7 @@ typedef struct <?= $name ?> const c<?= $name ?>_t, *lpc<?= $name ?>_t;
 
 <?php foreach ($model->getFunctions() as $name => $func):?>
 <?php if ($func->doc): ?>
+
 /// @brief <?= $func->doc ?>
 <?php endif ?>
 ORCA_API <?= $func->getReturnType() ?>
@@ -65,15 +71,15 @@ ORCA_API <?= $func->getReturnType() ?>
 <?php $topicMethods = isset($topicData["methods"]) ? $topicData["methods"] : []; ?>
 <?php $topicDesc = isset($topicData["desc"]) ? $topicData["desc"] : ''; ?>
 <?php if ($topicTitle): ?>
-/// @name <?= $topicTitle ?>
 
+/// @name <?= $topicTitle ?>
 <?php if ($topicDesc): ?>
 /// <?= $topicDesc ?>
-
 <?php endif ?>
 <?php endif ?>
 <?php foreach ($topicMethods as $method_name => $method): ?>
 <?php if ($method->doc): ?>
+
 /// @brief <?= $method->doc ?>
 <?php endif ?>
 ORCA_API <?= $method->getReturnType() ?>
@@ -94,6 +100,7 @@ ORCA_API void luaX_push<?= $name ?>(lua_State *L, struct <?= $name ?> const* <?=
 ORCA_API struct <?= $name ?>* luaX_check<?= $name ?>(lua_State *L, int idx);
 <?php foreach ($struct->getMethods() as $method_name => $method): ?>
 <?php if ($method->doc): ?>
+
 /// @brief <?= $method->doc ?>
 <?php endif ?>
 ORCA_API <?= $method->getReturnType() ?>
@@ -114,6 +121,7 @@ ORCA_API struct <?= $name ?>MsgArgs* luaX_check<?= $name ?>MsgArgs(lua_State *L,
 
 <?php foreach ($model->getComponents() as $name => $component): ?>
 <?php if ($component->doc): ?>
+
 /// @brief <?= $component->doc ?>
 <?php endif ?>
 /** <?= $name ?> component */
@@ -127,6 +135,7 @@ ORCA_API void luaX_push<?= $name ?>(lua_State *L, struct <?= $name ?> const* <?=
 ORCA_API struct <?= $name ?>* luaX_check<?= $name ?>(lua_State *L, int idx);
 <?php foreach ($component->getMethods() as $method_name => $method): ?>
 <?php if ($method->doc): ?>
+
 /// @brief <?= $method->doc ?>
 <?php endif ?>
 ORCA_API <?= $method->getReturnType() ?>

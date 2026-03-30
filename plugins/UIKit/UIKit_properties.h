@@ -2,6 +2,8 @@
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __UIKIT_PROPERTIES_H__
 #define __UIKIT_PROPERTIES_H__
+#define kMsgUpdateMatrix 0x5dbe404d
+#define kMsgHitTest 0x898160ea
 #define kMsgGetSize 0x80d9e0ee
 #define kMsgSubmit 0x4078e545
 #define kMsgMeasure 0x97619c7f

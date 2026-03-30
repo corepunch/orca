@@ -15,6 +15,12 @@ struct _PACK;
 #include "filesystem_properties.h"
 #include "../core/core.h"
 
+ORCA_API extern struct MessageType ReadCommandsMessage;
+ORCA_API extern struct MessageType OpenFileMessage;
+ORCA_API extern struct MessageType FileExistsMessage;
+ORCA_API extern struct MessageType HasChangedFilesMessage;
+ORCA_API extern struct MessageType LoadProjectMessage;
+
 typedef int ReadCommandsMsg_t,* ReadCommandsMsgPtr;
 typedef struct OpenFileMsgArgs OpenFileMsg_t,* OpenFileMsgPtr;
 typedef struct FileExistsMsgArgs FileExistsMsg_t,* FileExistsMsgPtr;
@@ -29,36 +35,47 @@ typedef struct EnginePlugin const cEnginePlugin_t, *lpcEnginePlugin_t;
 typedef struct SystemMessage SystemMessage_t, *lpSystemMessage_t;
 typedef struct SystemMessage const cSystemMessage_t, *lpcSystemMessage_t;
 
+
 /// @brief Gets the base filename from a path
 ORCA_API const char*
 FS_GetBaseName(const char*);
+
 /// @brief Extracts the directory path from a full file path
 ORCA_API const char*
 FS_GetDirName(const char*, const char*, int32_t);
+
 /// @brief Joins two path segments into a complete path
 ORCA_API const char*
 FS_JoinPaths(const char*, int32_t, const char*, const char*);
+
 /// @brief Converts a module name to a file path
 ORCA_API const char*
 FS_PathFromModule(const char*);
+
 /// @brief Checks if any tracked files have been modified
 ORCA_API bool_t
 FS_HasChangedFiles(void);
+
 /// @brief Creates a directory at the specified path
 ORCA_API bool_t
 FS_MakeDirectory(const char*);
+
 /// @brief Checks if a file exists at the specified path
 ORCA_API bool_t
 FS_FileExists(const char*);
+
 /// @brief Adds a package to the resource search path
 ORCA_API struct Object*
 FS_LoadBundle(struct lua_State*, const char*);
+
 /// @brief Sets the current workspace
 ORCA_API void
 FS_SetWorkspace(struct Object*);
+
 /// @brief Gets the current workspace
 ORCA_API struct Object*
 FS_GetWorkspace(void);
+
 /// @brief Reads the contents of a text file
 ORCA_API int
 FS_ReadTextFile(struct lua_State*, const char*);
@@ -133,7 +150,7 @@ struct Project {
 	bool_t RenderToMipmapLevels;
 	bool_t ExternalTexture;
 	const char* StartupScreen;
-	struct color PreviewWindowBackgroundColor;
+	color_t PreviewWindowBackgroundColor;
 	int32_t MessageLimitPerFrame;
 	int32_t GlobalTimelineStartTime;
 	int32_t GlobalTimelineEndTime;
@@ -150,7 +167,6 @@ struct Project {
 	bool_t IsLocalizationEnabled;
 	bool_t FullScreenPreviewLayer;
 	bool_t ShowChildrenInLayerThumbnails;
-	struct vec2 CompositionDesignSize;
 	bool_t ProjectUsePremultipliedAlpha;
 	bool_t ProjectRemoveICCProfilesOfPngs;
 	const char* BinaryFileName;

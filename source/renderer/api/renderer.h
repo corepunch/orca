@@ -20,8 +20,12 @@ struct lua_State;
 #include "renderer_properties.h"
 #include "../../geometry/geometry.h"
 
+ORCA_API extern struct MessageType RenderScreenMessage;
+ORCA_API extern struct MessageType RenderMessage;
+
 typedef struct RenderScreenMsgArgs RenderScreenMsg_t,* RenderScreenMsgPtr;
 typedef struct RenderMsgArgs RenderMsg_t,* RenderMsgPtr;
+
 
 /// @brief Rendering blend modes for compositing operations
 /** BlendMode enum */
@@ -37,6 +41,7 @@ typedef enum BlendMode {
 ORCA_API const char *BlendModeToString(enum BlendMode value);
 ORCA_API enum BlendMode luaX_checkBlendMode(lua_State *L, int idx);
 ORCA_API void luaX_pushBlendMode(lua_State *L, enum BlendMode value);
+
 /// @brief Comparison functions for depth and stencil testing
 /** CompareFunc enum */
 typedef enum CompareFunc {
@@ -54,6 +59,7 @@ typedef enum CompareFunc {
 ORCA_API const char *CompareFuncToString(enum CompareFunc value);
 ORCA_API enum CompareFunc luaX_checkCompareFunc(lua_State *L, int idx);
 ORCA_API void luaX_pushCompareFunc(lua_State *L, enum CompareFunc value);
+
 /// @brief Defines texture filtering methods for magnification and minification.
 /** TextureFilter enum */
 typedef enum TextureFilter {
@@ -65,6 +71,7 @@ typedef enum TextureFilter {
 ORCA_API const char *TextureFilterToString(enum TextureFilter value);
 ORCA_API enum TextureFilter luaX_checkTextureFilter(lua_State *L, int idx);
 ORCA_API void luaX_pushTextureFilter(lua_State *L, enum TextureFilter value);
+
 /// @brief Defines texture coordinate wrapping behavior at texture boundaries.
 /** TextureWrap enum */
 typedef enum TextureWrap {
@@ -76,6 +83,7 @@ typedef enum TextureWrap {
 ORCA_API const char *TextureWrapToString(enum TextureWrap value);
 ORCA_API enum TextureWrap luaX_checkTextureWrap(lua_State *L, int idx);
 ORCA_API void luaX_pushTextureWrap(lua_State *L, enum TextureWrap value);
+
 /// @brief Defines the internal pixel format for texture storage.
 /** TextureFormat enum */
 typedef enum TextureFormat {
@@ -256,6 +264,7 @@ typedef enum RenderTargetTextureAttachment {
 ORCA_API const char *RenderTargetTextureAttachmentToString(enum RenderTargetTextureAttachment value);
 ORCA_API enum RenderTargetTextureAttachment luaX_checkRenderTargetTextureAttachment(lua_State *L, int idx);
 ORCA_API void luaX_pushRenderTargetTextureAttachment(lua_State *L, enum RenderTargetTextureAttachment value);
+
 /// @brief Defines precision levels for floating-point operations in shader variables
 /** FloatPrecision enum */
 typedef enum FloatPrecision {
@@ -268,6 +277,7 @@ typedef enum FloatPrecision {
 ORCA_API const char *FloatPrecisionToString(enum FloatPrecision value);
 ORCA_API enum FloatPrecision luaX_checkFloatPrecision(lua_State *L, int idx);
 ORCA_API void luaX_pushFloatPrecision(lua_State *L, enum FloatPrecision value);
+
 /// @brief Defines shading models for lighting calculations in shaders
 /** Shading enum */
 typedef enum Shading {
@@ -281,18 +291,23 @@ ORCA_API enum Shading luaX_checkShading(lua_State *L, int idx);
 ORCA_API void luaX_pushShading(lua_State *L, enum Shading value);
 
 
+
 /// @brief Initializes the rendering system and prepares it for drawing operations.
 ORCA_API int32_t
 renderer_Init(uint32_t, uint32_t, bool_t);
+
 /// @brief Shuts down the rendering system and releases all associated resources.
 ORCA_API void
 renderer_Shutdown(void);
+
 /// @brief Creates a shader program from source code.
 ORCA_API struct Shader*
 renderer_CreateShader(struct lua_State*, const char*, const char*);
+
 /// @brief Retrieves the size of the current window.
 ORCA_API int
 renderer_GetSize(struct lua_State*);
+
 /// @brief Draws the current image to the active render target.
 ORCA_API void
 renderer_DrawImage(struct lua_State*);
@@ -316,6 +331,7 @@ struct RenderMsgArgs {
 ORCA_API void luaX_pushRenderMsgArgs(lua_State *L, struct RenderMsgArgs const* data);
 ORCA_API struct RenderMsgArgs* luaX_checkRenderMsgArgs(lua_State *L, int idx);
 
+
 /// @brief Base class for managing texture resources and their sampling parameters for rendering.
 /** Texture component */
 typedef struct Texture Texture_t, *TexturePtr, *lpTexture_t;
@@ -338,6 +354,7 @@ struct Texture {
 };
 ORCA_API void luaX_pushTexture(lua_State *L, struct Texture const* Texture);
 ORCA_API struct Texture* luaX_checkTexture(lua_State *L, int idx);
+
 /// @brief Represents a single, pre-loaded texture image for use in rendering operations.
 /** Image component */
 typedef struct Image Image_t, *ImagePtr, *lpImage_t;
@@ -370,6 +387,7 @@ struct Image {
 };
 ORCA_API void luaX_pushImage(lua_State *L, struct Image const* Image);
 ORCA_API struct Image* luaX_checkImage(lua_State *L, int idx);
+
 /// @brief Texture configured as a render target for off-screen rendering and post-processing effects.
 /** RenderTargetTexture component */
 typedef struct RenderTargetTexture RenderTargetTexture_t, *RenderTargetTexturePtr, *lpRenderTargetTexture_t;
@@ -385,6 +403,7 @@ struct RenderTargetTexture {
 };
 ORCA_API void luaX_pushRenderTargetTexture(lua_State *L, struct RenderTargetTexture const* RenderTargetTexture);
 ORCA_API struct RenderTargetTexture* luaX_checkRenderTargetTexture(lua_State *L, int idx);
+
 /// @brief Cubemap texture assembled from six individual images, one for each face of a cube, used for environment mapping, reflections, and sky rendering.
 /** CubeMapTexture component */
 typedef struct CubeMapTexture CubeMapTexture_t, *CubeMapTexturePtr, *lpCubeMapTexture_t;
@@ -399,6 +418,7 @@ struct CubeMapTexture {
 };
 ORCA_API void luaX_pushCubeMapTexture(lua_State *L, struct CubeMapTexture const* CubeMapTexture);
 ORCA_API struct CubeMapTexture* luaX_checkCubeMapTexture(lua_State *L, int idx);
+
 /// @brief Texture created from a shared macOS IOSurface for zero-copy GPU data sharing.
 /** IOSurfaceTexture component */
 typedef struct IOSurfaceTexture IOSurfaceTexture_t, *IOSurfaceTexturePtr, *lpIOSurfaceTexture_t;
@@ -408,6 +428,7 @@ struct IOSurfaceTexture {
 };
 ORCA_API void luaX_pushIOSurfaceTexture(lua_State *L, struct IOSurfaceTexture const* IOSurfaceTexture);
 ORCA_API struct IOSurfaceTexture* luaX_checkIOSurfaceTexture(lua_State *L, int idx);
+
 /// @brief Vertex processing stage of the shader pipeline
 /** VertexShader component */
 typedef struct VertexShader VertexShader_t, *VertexShaderPtr, *lpVertexShader_t;
@@ -419,6 +440,7 @@ struct VertexShader {
 };
 ORCA_API void luaX_pushVertexShader(lua_State *L, struct VertexShader const* VertexShader);
 ORCA_API struct VertexShader* luaX_checkVertexShader(lua_State *L, int idx);
+
 /// @brief Fragment (pixel) processing stage of the shader pipeline
 /** FragmentShader component */
 typedef struct FragmentShader FragmentShader_t, *FragmentShaderPtr, *lpFragmentShader_t;
@@ -430,6 +452,7 @@ struct FragmentShader {
 };
 ORCA_API void luaX_pushFragmentShader(lua_State *L, struct FragmentShader const* FragmentShader);
 ORCA_API struct FragmentShader* luaX_checkFragmentShader(lua_State *L, int idx);
+
 /// @brief Complete shader program definition combining vertex and fragment stages
 /** Shader component */
 typedef struct Shader Shader_t, *ShaderPtr, *lpShader_t;
@@ -442,6 +465,7 @@ struct Shader {
 };
 ORCA_API void luaX_pushShader(lua_State *L, struct Shader const* Shader);
 ORCA_API struct Shader* luaX_checkShader(lua_State *L, int idx);
+
 /// @brief Shader-based rendering material for advanced visual effects
 /** Material component */
 typedef struct Material Material_t, *MaterialPtr, *lpMaterial_t;
@@ -463,6 +487,7 @@ struct Material {
 };
 ORCA_API void luaX_pushMaterial(lua_State *L, struct Material const* Material);
 ORCA_API struct Material* luaX_checkMaterial(lua_State *L, int idx);
+
 /// @brief Renderable 3D geometry component with material and model data
 /** Mesh component */
 typedef struct Mesh Mesh_t, *MeshPtr, *lpMesh_t;
@@ -475,6 +500,7 @@ struct Mesh {
 };
 ORCA_API void luaX_pushMesh(lua_State *L, struct Mesh const* Mesh);
 ORCA_API struct Mesh* luaX_checkMesh(lua_State *L, int idx);
+
 /// @brief TrueType font resource for text rendering
 /** FontFamily component */
 typedef struct FontFamily FontFamily_t, *FontFamilyPtr, *lpFontFamily_t;

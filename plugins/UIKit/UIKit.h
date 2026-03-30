@@ -22,6 +22,28 @@ struct lua_State;
 #include "UIKit_properties.h"
 #include "../../source/renderer/api/renderer.h"
 
+ORCA_API extern struct MessageType UpdateMatrixMessage;
+ORCA_API extern struct MessageType HitTestMessage;
+ORCA_API extern struct MessageType GetSizeMessage;
+ORCA_API extern struct MessageType SubmitMessage;
+ORCA_API extern struct MessageType MeasureMessage;
+ORCA_API extern struct MessageType ArrangeMessage;
+ORCA_API extern struct MessageType MeasureOverrideMessage;
+ORCA_API extern struct MessageType ArrangeOverrideMessage;
+ORCA_API extern struct MessageType ForegroundContentMessage;
+ORCA_API extern struct MessageType PushPropertyMessage;
+ORCA_API extern struct MessageType UpdateGeometryMessage;
+ORCA_API extern struct MessageType DrawBrushMessage;
+ORCA_API extern struct MessageType HandleMessageMessage;
+ORCA_API extern struct MessageType LoadViewMessage;
+ORCA_API extern struct MessageType MakeTextMessage;
+ORCA_API extern struct MessageType TriggeredMessage;
+ORCA_API extern struct MessageType UpdateLayoutMessage;
+ORCA_API extern struct MessageType NavigateToPageMessage;
+ORCA_API extern struct MessageType NavigateBackMessage;
+
+typedef struct UpdateMatrixMsgArgs UpdateMatrixMsg_t,* UpdateMatrixMsgPtr;
+typedef struct HitTestMsgArgs HitTestMsg_t,* HitTestMsgPtr;
 typedef int GetSizeMsg_t,* GetSizeMsgPtr;
 typedef int SubmitMsg_t,* SubmitMsgPtr;
 typedef struct MeasureMsgArgs MeasureMsg_t,* MeasureMsgPtr;
@@ -40,6 +62,7 @@ typedef struct UpdateLayoutMsgArgs UpdateLayoutMsg_t,* UpdateLayoutMsgPtr;
 typedef struct NavigateToPageMsgArgs NavigateToPageMsg_t,* NavigateToPageMsgPtr;
 typedef struct NavigateBackMsgArgs NavigateBackMsg_t,* NavigateBackMsgPtr;
 
+
 /// @brief Defines the primary axis for layout operations
 /** Direction enum */
 typedef enum Direction {
@@ -51,6 +74,7 @@ typedef enum Direction {
 ORCA_API const char *DirectionToString(enum Direction value);
 ORCA_API enum Direction luaX_checkDirection(lua_State *L, int idx);
 ORCA_API void luaX_pushDirection(lua_State *L, enum Direction value);
+
 /// @brief Fields of a 3D box, used to describe position and size components
 /** Box3Field enum */
 typedef enum Box3Field {
@@ -65,6 +89,7 @@ typedef enum Box3Field {
 ORCA_API const char *Box3FieldToString(enum Box3Field value);
 ORCA_API enum Box3Field luaX_checkBox3Field(lua_State *L, int idx);
 ORCA_API void luaX_pushBox3Field(lua_State *L, enum Box3Field value);
+
 /// @brief Controls how overflowing text is displayed, similar to the CSS text-overflow property
 /** TextOverflow enum */
 typedef enum TextOverflow {
@@ -75,6 +100,7 @@ typedef enum TextOverflow {
 ORCA_API const char *TextOverflowToString(enum TextOverflow value);
 ORCA_API enum TextOverflow luaX_checkTextOverflow(lua_State *L, int idx);
 ORCA_API void luaX_pushTextOverflow(lua_State *L, enum TextOverflow value);
+
 /// @brief Controls text wrapping behavior
 /** TextWrapping enum */
 typedef enum TextWrapping {
@@ -86,6 +112,7 @@ typedef enum TextWrapping {
 ORCA_API const char *TextWrappingToString(enum TextWrapping value);
 ORCA_API enum TextWrapping luaX_checkTextWrapping(lua_State *L, int idx);
 ORCA_API void luaX_pushTextWrapping(lua_State *L, enum TextWrapping value);
+
 /// @brief Horizontal text alignment options within text bounds
 /** TextHorizontalAlignment enum */
 typedef enum TextHorizontalAlignment {
@@ -97,6 +124,7 @@ typedef enum TextHorizontalAlignment {
 ORCA_API const char *TextHorizontalAlignmentToString(enum TextHorizontalAlignment value);
 ORCA_API enum TextHorizontalAlignment luaX_checkTextHorizontalAlignment(lua_State *L, int idx);
 ORCA_API void luaX_pushTextHorizontalAlignment(lua_State *L, enum TextHorizontalAlignment value);
+
 /// @brief Vertical text alignment options within text bounds
 /** TextVerticalAlignment enum */
 typedef enum TextVerticalAlignment {
@@ -109,6 +137,7 @@ typedef enum TextVerticalAlignment {
 ORCA_API const char *TextVerticalAlignmentToString(enum TextVerticalAlignment value);
 ORCA_API enum TextVerticalAlignment luaX_checkTextVerticalAlignment(lua_State *L, int idx);
 ORCA_API void luaX_pushTextVerticalAlignment(lua_State *L, enum TextVerticalAlignment value);
+
 /// @brief Horizontal alignment of elements within their parent container
 /** HorizontalAlignment enum */
 typedef enum HorizontalAlignment {
@@ -121,6 +150,7 @@ typedef enum HorizontalAlignment {
 ORCA_API const char *HorizontalAlignmentToString(enum HorizontalAlignment value);
 ORCA_API enum HorizontalAlignment luaX_checkHorizontalAlignment(lua_State *L, int idx);
 ORCA_API void luaX_pushHorizontalAlignment(lua_State *L, enum HorizontalAlignment value);
+
 /// @brief Vertical alignment of elements within their parent container
 /** VerticalAlignment enum */
 typedef enum VerticalAlignment {
@@ -133,6 +163,7 @@ typedef enum VerticalAlignment {
 ORCA_API const char *VerticalAlignmentToString(enum VerticalAlignment value);
 ORCA_API enum VerticalAlignment luaX_checkVerticalAlignment(lua_State *L, int idx);
 ORCA_API void luaX_pushVerticalAlignment(lua_State *L, enum VerticalAlignment value);
+
 /// @brief Cross-axis alignment in flexbox-style layout containers
 /** AlignItems enum */
 typedef enum AlignItems {
@@ -146,6 +177,7 @@ typedef enum AlignItems {
 ORCA_API const char *AlignItemsToString(enum AlignItems value);
 ORCA_API enum AlignItems luaX_checkAlignItems(lua_State *L, int idx);
 ORCA_API void luaX_pushAlignItems(lua_State *L, enum AlignItems value);
+
 /// @brief 3D depth alignment options for positioning along Z-axis
 /** DepthAlignment enum */
 typedef enum DepthAlignment {
@@ -158,6 +190,7 @@ typedef enum DepthAlignment {
 ORCA_API const char *DepthAlignmentToString(enum DepthAlignment value);
 ORCA_API enum DepthAlignment luaX_checkDepthAlignment(lua_State *L, int idx);
 ORCA_API void luaX_pushDepthAlignment(lua_State *L, enum DepthAlignment value);
+
 /// @brief Content overflow handling strategies
 /** Overflow enum */
 typedef enum Overflow {
@@ -181,6 +214,7 @@ typedef enum ForegroundHint {
 ORCA_API const char *ForegroundHintToString(enum ForegroundHint value);
 ORCA_API enum ForegroundHint luaX_checkForegroundHint(lua_State *L, int idx);
 ORCA_API void luaX_pushForegroundHint(lua_State *L, enum ForegroundHint value);
+
 /// @brief Main-axis content distribution in flexbox-style layouts
 /** JustifyContent enum */
 typedef enum JustifyContent {
@@ -195,6 +229,7 @@ typedef enum JustifyContent {
 ORCA_API const char *JustifyContentToString(enum JustifyContent value);
 ORCA_API enum JustifyContent luaX_checkJustifyContent(lua_State *L, int idx);
 ORCA_API void luaX_pushJustifyContent(lua_State *L, enum JustifyContent value);
+
 /// @brief Font weight options for typography
 /** FontWeight enum */
 typedef enum FontWeight {
@@ -205,6 +240,7 @@ typedef enum FontWeight {
 ORCA_API const char *FontWeightToString(enum FontWeight value);
 ORCA_API enum FontWeight luaX_checkFontWeight(lua_State *L, int idx);
 ORCA_API void luaX_pushFontWeight(lua_State *L, enum FontWeight value);
+
 /// @brief Font style options for typography
 /** FontStyle enum */
 typedef enum FontStyle {
@@ -215,6 +251,7 @@ typedef enum FontStyle {
 ORCA_API const char *FontStyleToString(enum FontStyle value);
 ORCA_API enum FontStyle luaX_checkFontStyle(lua_State *L, int idx);
 ORCA_API void luaX_pushFontStyle(lua_State *L, enum FontStyle value);
+
 /// @brief Visual styles for element borders
 /** BorderStyle enum */
 typedef enum BorderStyle {
@@ -233,6 +270,7 @@ typedef enum BorderStyle {
 ORCA_API const char *BorderStyleToString(enum BorderStyle value);
 ORCA_API enum BorderStyle luaX_checkBorderStyle(lua_State *L, int idx);
 ORCA_API void luaX_pushBorderStyle(lua_State *L, enum BorderStyle value);
+
 /// @brief Animation playback behavior modes
 /** PlaybackMode enum */
 typedef enum PlaybackMode {
@@ -244,6 +282,7 @@ typedef enum PlaybackMode {
 ORCA_API const char *PlaybackModeToString(enum PlaybackMode value);
 ORCA_API enum PlaybackMode luaX_checkPlaybackMode(lua_State *L, int idx);
 ORCA_API void luaX_pushPlaybackMode(lua_State *L, enum PlaybackMode value);
+
 /// @brief Button behavior types for different interaction patterns
 /** ButtonType enum */
 typedef enum ButtonType {
@@ -254,6 +293,7 @@ typedef enum ButtonType {
 ORCA_API const char *ButtonTypeToString(enum ButtonType value);
 ORCA_API enum ButtonType luaX_checkButtonType(lua_State *L, int idx);
 ORCA_API void luaX_pushButtonType(lua_State *L, enum ButtonType value);
+
 /// @brief Input control behavior types for different data entry needs
 /** InputType enum */
 typedef enum InputType {
@@ -267,6 +307,7 @@ typedef enum InputType {
 ORCA_API const char *InputTypeToString(enum InputType value);
 ORCA_API enum InputType luaX_checkInputType(lua_State *L, int idx);
 ORCA_API void luaX_pushInputType(lua_State *L, enum InputType value);
+
 /// @brief Size calculation modes for layout operations
 /** Sizing enum */
 typedef enum Sizing {
@@ -278,6 +319,7 @@ typedef enum Sizing {
 ORCA_API const char *SizingToString(enum Sizing value);
 ORCA_API enum Sizing luaX_checkSizing(lua_State *L, int idx);
 ORCA_API void luaX_pushSizing(lua_State *L, enum Sizing value);
+
 /// @brief Defines how the window can be resized by the user or system.
 /** ResizeMode enum */
 typedef enum ResizeMode {
@@ -290,6 +332,7 @@ typedef enum ResizeMode {
 ORCA_API const char *ResizeModeToString(enum ResizeMode value);
 ORCA_API enum ResizeMode luaX_checkResizeMode(lua_State *L, int idx);
 ORCA_API void luaX_pushResizeMode(lua_State *L, enum ResizeMode value);
+
 /// @brief Specifies how the content of an element is resized to fill its layout area
 /** Stretch enum */
 typedef enum Stretch {
@@ -302,6 +345,7 @@ typedef enum Stretch {
 ORCA_API const char *StretchToString(enum Stretch value);
 ORCA_API enum Stretch luaX_checkStretch(lua_State *L, int idx);
 ORCA_API void luaX_pushStretch(lua_State *L, enum Stretch value);
+
 /// @brief Specifies the type of transition animation to use when navigating between pages.
 /** TransitionType enum */
 typedef enum TransitionType {
@@ -313,6 +357,7 @@ typedef enum TransitionType {
 ORCA_API const char *TransitionTypeToString(enum TransitionType value);
 ORCA_API enum TransitionType luaX_checkTransitionType(lua_State *L, int idx);
 ORCA_API void luaX_pushTransitionType(lua_State *L, enum TransitionType value);
+
 /// @brief Specifies the classification of a style and how it is applied to components.
 /** StyleType enum */
 typedef enum StyleType {
@@ -469,6 +514,21 @@ struct SizeShorthand {
 ORCA_API void luaX_pushSizeShorthand(lua_State *L, struct SizeShorthand const* SizeShorthand);
 ORCA_API struct SizeShorthand* luaX_checkSizeShorthand(lua_State *L, int idx);
 
+/** UpdateMatrixMsgArgs struct */
+struct UpdateMatrixMsgArgs {
+	struct mat4 parent; ///< The parent matrix
+	float opacity; ///< The opacity value
+	bool_t force; ///< Indicates if the update is forced
+};
+ORCA_API void luaX_pushUpdateMatrixMsgArgs(lua_State *L, struct UpdateMatrixMsgArgs const* data);
+ORCA_API struct UpdateMatrixMsgArgs* luaX_checkUpdateMatrixMsgArgs(lua_State *L, int idx);
+/** HitTestMsgArgs struct */
+struct HitTestMsgArgs {
+	int32_t x; ///< X coordinate of the hit test point
+	int32_t y; ///< Y coordinate of the hit test point
+};
+ORCA_API void luaX_pushHitTestMsgArgs(lua_State *L, struct HitTestMsgArgs const* data);
+ORCA_API struct HitTestMsgArgs* luaX_checkHitTestMsgArgs(lua_State *L, int idx);
 /** MeasureMsgArgs struct */
 struct MeasureMsgArgs {
 	float Width;
@@ -552,6 +612,7 @@ struct NavigateBackMsgArgs {
 ORCA_API void luaX_pushNavigateBackMsgArgs(lua_State *L, struct NavigateBackMsgArgs const* data);
 ORCA_API struct NavigateBackMsgArgs* luaX_checkNavigateBackMsgArgs(lua_State *L, int idx);
 
+
 /// @brief Base class for data-holding objects within the framework
 /** DataObject component */
 typedef struct DataObject DataObject_t, *DataObjectPtr, *lpDataObject_t;
@@ -560,6 +621,7 @@ struct DataObject {
 };
 ORCA_API void luaX_pushDataObject(lua_State *L, struct DataObject const* DataObject);
 ORCA_API struct DataObject* luaX_checkDataObject(lua_State *L, int idx);
+
 /// @brief Controls playback of animations within the UI engine.
 /** AnimationPlayer component */
 typedef struct AnimationPlayer AnimationPlayer_t, *AnimationPlayerPtr, *lpAnimationPlayer_t;
@@ -575,6 +637,7 @@ struct AnimationPlayer {
 };
 ORCA_API void luaX_pushAnimationPlayer(lua_State *L, struct AnimationPlayer const* AnimationPlayer);
 ORCA_API struct AnimationPlayer* luaX_checkAnimationPlayer(lua_State *L, int idx);
+
 /// @brief Base class for event-driven actions within the UI system
 /** Trigger component */
 typedef struct Trigger Trigger_t, *TriggerPtr, *lpTrigger_t;
@@ -585,6 +648,7 @@ struct Trigger {
 };
 ORCA_API void luaX_pushTrigger(lua_State *L, struct Trigger const* Trigger);
 ORCA_API struct Trigger* luaX_checkTrigger(lua_State *L, int idx);
+
 /// @brief Responds to property value changes on specified nodes
 /** OnPropertyChangedTrigger component */
 typedef struct OnPropertyChangedTrigger OnPropertyChangedTrigger_t, *OnPropertyChangedTriggerPtr, *lpOnPropertyChangedTrigger_t;
@@ -595,6 +659,7 @@ struct OnPropertyChangedTrigger {
 };
 ORCA_API void luaX_pushOnPropertyChangedTrigger(lua_State *L, struct OnPropertyChangedTrigger const* OnPropertyChangedTrigger);
 ORCA_API struct OnPropertyChangedTrigger* luaX_checkOnPropertyChangedTrigger(lua_State *L, int idx);
+
 /// @brief Triggers when an element is attached to the visual tree
 /** OnAttachedTrigger component */
 typedef struct OnAttachedTrigger OnAttachedTrigger_t, *OnAttachedTriggerPtr, *lpOnAttachedTrigger_t;
@@ -603,6 +668,7 @@ struct OnAttachedTrigger {
 };
 ORCA_API void luaX_pushOnAttachedTrigger(lua_State *L, struct OnAttachedTrigger const* OnAttachedTrigger);
 ORCA_API struct OnAttachedTrigger* luaX_checkOnAttachedTrigger(lua_State *L, int idx);
+
 /// @brief Responds to routed UI events (mouse, keyboard, etc.)
 /** EventTrigger component */
 typedef struct EventTrigger EventTrigger_t, *EventTriggerPtr, *lpEventTrigger_t;
@@ -612,6 +678,7 @@ struct EventTrigger {
 };
 ORCA_API void luaX_pushEventTrigger(lua_State *L, struct EventTrigger const* EventTrigger);
 ORCA_API struct EventTrigger* luaX_checkEventTrigger(lua_State *L, int idx);
+
 /// @brief Applies property values when triggered by specified conditions
 /** Setter component */
 typedef struct Setter Setter_t, *SetterPtr, *lpSetter_t;
@@ -623,6 +690,7 @@ struct Setter {
 };
 ORCA_API void luaX_pushSetter(lua_State *L, struct Setter const* Setter);
 ORCA_API struct Setter* luaX_checkSetter(lua_State *L, int idx);
+
 /// @brief Executes custom functions when triggered by specified conditions
 /** Handler component */
 typedef struct Handler Handler_t, *HandlerPtr, *lpHandler_t;
@@ -634,6 +702,7 @@ struct Handler {
 };
 ORCA_API void luaX_pushHandler(lua_State *L, struct Handler const* Handler);
 ORCA_API struct Handler* luaX_checkHandler(lua_State *L, int idx);
+
 /// @brief Base class for all brush types used in rendering.
 /** Brush component */
 typedef struct Brush Brush_t, *BrushPtr, *lpBrush_t;
@@ -642,6 +711,7 @@ struct Brush {
 };
 ORCA_API void luaX_pushBrush(lua_State *L, struct Brush const* Brush);
 ORCA_API struct Brush* luaX_checkBrush(lua_State *L, int idx);
+
 /// @brief Brush that fills an area with a solid color.
 /** ColorBrush component */
 typedef struct ColorBrush ColorBrush_t, *ColorBrushPtr, *lpColorBrush_t;
@@ -651,6 +721,7 @@ struct ColorBrush {
 };
 ORCA_API void luaX_pushColorBrush(lua_State *L, struct ColorBrush const* ColorBrush);
 ORCA_API struct ColorBrush* luaX_checkColorBrush(lua_State *L, int idx);
+
 /// @brief Base class for all UI engine nodes.
 /** Node component */
 typedef struct Node Node_t, *NodePtr, *lpNode_t;
@@ -671,6 +742,7 @@ struct Node {
 };
 ORCA_API void luaX_pushNode(lua_State *L, struct Node const* Node);
 ORCA_API struct Node* luaX_checkNode(lua_State *L, int idx);
+
 /// @brief Shared concept for text rendering in 2D and 3D nodes.
 /** TextRun component */
 typedef struct TextRun TextRun_t, *TextRunPtr, *lpTextRun_t;
@@ -689,6 +761,7 @@ struct TextRun {
 };
 ORCA_API void luaX_pushTextRun(lua_State *L, struct TextRun const* TextRun);
 ORCA_API struct TextRun* luaX_checkTextRun(lua_State *L, int idx);
+
 /// @brief Shared concept for text rendering in 2D and 3D nodes.
 /** TextBlockConcept component */
 typedef struct TextBlockConcept TextBlockConcept_t, *TextBlockConceptPtr, *lpTextBlockConcept_t;
@@ -711,6 +784,7 @@ struct TextBlockConcept {
 };
 ORCA_API void luaX_pushTextBlockConcept(lua_State *L, struct TextBlockConcept const* TextBlockConcept);
 ORCA_API struct TextBlockConcept* luaX_checkTextBlockConcept(lua_State *L, int idx);
+
 /// @brief Primary class for 2D UI elements with comprehensive rendering capabilities
 /** Node2D component */
 typedef struct Node2D Node2D_t, *Node2DPtr, *lpNode2D_t;
@@ -749,27 +823,35 @@ struct Node2D {
 };
 ORCA_API void luaX_pushNode2D(lua_State *L, struct Node2D const* Node2D);
 ORCA_API struct Node2D* luaX_checkNode2D(lua_State *L, int idx);
+
 /// @brief Set a frame property value on a Node2D
 ORCA_API void
 Node2D_SetFrame(struct Node2D*, enum Box3Field, float);
+
 /// @brief Get a frame property value from a Node2D
 ORCA_API float
 Node2D_GetFrame(struct Node2D*, enum Box3Field);
+
 /// @brief Get the layout bounds of a Node2D along a specific axis
 ORCA_API struct bounds
 Node2D_GetBounds(struct Node2D*, enum Direction);
+
 /// @brief Get the rectangle bounds of a Node2D including padding and margin
 ORCA_API struct rect
 Node2D_GetRect(struct Node2D*);
+
 /// @brief Get the background rendering rectangle for a Node2D
 ORCA_API struct rect
 Node2D_GetBackgroundRect(struct Node2D*);
+
 /// @brief Utility function for calculating node dimensions with different sizing modes
 ORCA_API float
 Node2D_GetSize(struct Node2D*, enum Direction, enum Sizing);
+
 /// @brief Create a view entity for rendering operations
 ORCA_API void
 Node2D_GetViewEntity(struct Node2D*, struct ViewEntity*, struct Texture const*, struct BrushShorthand const*);
+
 /// @brief Container for loading and displaying prefabricated UI components
 /** PrefabView2D component */
 typedef struct PrefabView2D PrefabView2D_t, *PrefabView2DPtr, *lpPrefabView2D_t;
@@ -782,6 +864,7 @@ struct PrefabView2D {
 };
 ORCA_API void luaX_pushPrefabView2D(lua_State *L, struct PrefabView2D const* PrefabView2D);
 ORCA_API struct PrefabView2D* luaX_checkPrefabView2D(lua_State *L, int idx);
+
 /// @brief Concrete implementation of text display combining Node2D and TextBlockConcept
 /** TextBlock component */
 typedef struct TextBlock TextBlock_t, *TextBlockPtr, *lpTextBlock_t;
@@ -791,6 +874,7 @@ struct TextBlock {
 };
 ORCA_API void luaX_pushTextBlock(lua_State *L, struct TextBlock const* TextBlock);
 ORCA_API struct TextBlock* luaX_checkTextBlock(lua_State *L, int idx);
+
 /// @brief Interactive text input control with multiple input modes
 /** Input component */
 typedef struct Input Input_t, *InputPtr, *lpInput_t;
@@ -805,6 +889,7 @@ struct Input {
 };
 ORCA_API void luaX_pushInput(lua_State *L, struct Input const* Input);
 ORCA_API struct Input* luaX_checkInput(lua_State *L, int idx);
+
 /// @brief Interactive button control for user actions
 /** Button component */
 typedef struct Button Button_t, *ButtonPtr, *lpButton_t;
@@ -814,6 +899,7 @@ struct Button {
 };
 ORCA_API void luaX_pushButton(lua_State *L, struct Button const* Button);
 ORCA_API struct Button* luaX_checkButton(lua_State *L, int idx);
+
 /// @brief Text label with optional association to form controls
 /** Label component */
 typedef struct Label Label_t, *LabelPtr, *lpLabel_t;
@@ -823,6 +909,7 @@ struct Label {
 };
 ORCA_API void luaX_pushLabel(lua_State *L, struct Label const* Label);
 ORCA_API struct Label* luaX_checkLabel(lua_State *L, int idx);
+
 /// @brief Linear layout container arranging children in a single direction
 /** StackView component */
 typedef struct StackView StackView_t, *StackViewPtr, *lpStackView_t;
@@ -836,6 +923,7 @@ struct StackView {
 };
 ORCA_API void luaX_pushStackView(lua_State *L, struct StackView const* StackView);
 ORCA_API struct StackView* luaX_checkStackView(lua_State *L, int idx);
+
 /// @brief Specialized stack view for form input collection and submission
 /** Form component */
 typedef struct Form Form_t, *FormPtr, *lpForm_t;
@@ -844,6 +932,7 @@ struct Form {
 };
 ORCA_API void luaX_pushForm(lua_State *L, struct Form const* Form);
 ORCA_API struct Form* luaX_checkForm(lua_State *L, int idx);
+
 /// @brief Base class for interactive UI controls with state management
 /** Control component */
 typedef struct Control Control_t, *ControlPtr, *lpControl_t;
@@ -858,6 +947,7 @@ struct Control {
 };
 ORCA_API void luaX_pushControl(lua_State *L, struct Control const* Control);
 ORCA_API struct Control* luaX_checkControl(lua_State *L, int idx);
+
 /// @brief Top-level container representing a display surface or window
 /** Screen component */
 typedef struct Screen Screen_t, *ScreenPtr, *lpScreen_t;
@@ -871,6 +961,7 @@ struct Screen {
 };
 ORCA_API void luaX_pushScreen(lua_State *L, struct Screen const* Screen);
 ORCA_API struct Screen* luaX_checkScreen(lua_State *L, int idx);
+
 /// @brief Video or animation playback view for media content
 /** Cinematic component */
 typedef struct Cinematic Cinematic_t, *CinematicPtr, *lpCinematic_t;
@@ -885,6 +976,7 @@ struct Cinematic {
 };
 ORCA_API void luaX_pushCinematic(lua_State *L, struct Cinematic const* Cinematic);
 ORCA_API struct Cinematic* luaX_checkCinematic(lua_State *L, int idx);
+
 /// @brief Grid-based layout container with configurable rows and columns
 /** Grid component */
 typedef struct Grid Grid_t, *GridPtr, *lpGrid_t;
@@ -900,6 +992,7 @@ struct Grid {
 };
 ORCA_API void luaX_pushGrid(lua_State *L, struct Grid const* Grid);
 ORCA_API struct Grid* luaX_checkGrid(lua_State *L, int idx);
+
 /// @brief Displays image content with advanced rendering and scaling options
 /** ImageView component */
 typedef struct ImageView ImageView_t, *ImageViewPtr, *lpImageView_t;
@@ -915,6 +1008,7 @@ struct ImageView {
 };
 ORCA_API void luaX_pushImageView(lua_State *L, struct ImageView const* ImageView);
 ORCA_API struct ImageView* luaX_checkImageView(lua_State *L, int idx);
+
 /// @brief Specialized image view for nine-patch (stretchable) images
 /** NinePatchImage component */
 typedef struct NinePatchImage NinePatchImage_t, *NinePatchImagePtr, *lpNinePatchImage_t;
@@ -937,6 +1031,7 @@ struct NinePatchImage {
 };
 ORCA_API void luaX_pushNinePatchImage(lua_State *L, struct NinePatchImage const* NinePatchImage);
 ORCA_API struct NinePatchImage* luaX_checkNinePatchImage(lua_State *L, int idx);
+
 /// @brief Displays a fixed-size text grid using a monospace layout
 /** TerminalView component */
 typedef struct TerminalView TerminalView_t, *TerminalViewPtr, *lpTerminalView_t;
@@ -953,6 +1048,7 @@ struct TerminalView {
 };
 ORCA_API void luaX_pushTerminalView(lua_State *L, struct TerminalView const* TerminalView);
 ORCA_API struct TerminalView* luaX_checkTerminalView(lua_State *L, int idx);
+
 /// @brief Represents a single page within a document or UI container.
 /** Page component */
 typedef struct Page Page_t, *PagePtr, *lpPage_t;
@@ -965,6 +1061,7 @@ struct Page {
 };
 ORCA_API void luaX_pushPage(lua_State *L, struct Page const* Page);
 ORCA_API struct Page* luaX_checkPage(lua_State *L, int idx);
+
 /// @brief Container that manages multiple pages and navigation between them.
 /** PageHost component */
 typedef struct PageHost PageHost_t, *PageHostPtr, *lpPageHost_t;
@@ -976,6 +1073,7 @@ struct PageHost {
 };
 ORCA_API void luaX_pushPageHost(lua_State *L, struct PageHost const* PageHost);
 ORCA_API struct PageHost* luaX_checkPageHost(lua_State *L, int idx);
+
 /// @brief Viewport for rendering the active page within a PageHost.
 /** PageViewport component */
 typedef struct PageViewport PageViewport_t, *PageViewportPtr, *lpPageViewport_t;
@@ -984,6 +1082,7 @@ struct PageViewport {
 };
 ORCA_API void luaX_pushPageViewport(lua_State *L, struct PageViewport const* PageViewport);
 ORCA_API struct PageViewport* luaX_checkPageViewport(lua_State *L, int idx);
+
 /// @brief Defines a reusable set of property values and visual configurations for a target component type.
 /** Style component */
 typedef struct Style Style_t, *StylePtr, *lpStyle_t;

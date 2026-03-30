@@ -462,7 +462,9 @@ class Event extends Type {
 	function __construct($elem, $model) {
 		parent::__construct($elem, $model);
 		$p = $elem["parent"];
+		$routing = $elem["routing"] ?? "TunnelingBubbling";
 		$this->parent_name = $p ? strval($p) : null;
+		$this->routing = strval($routing);
 	}
 
 	function getParentEvent() {
@@ -501,7 +503,7 @@ class Event extends Type {
 		if ($this->hasFields()) return "struct " . $this->name . "MsgArgs";
 		$parent = $this->getParentEvent();
 		if ($parent) return $parent->getEffectiveTypeDecl();
-		if strval($this) == "void" {
+		if (strval($this) == "void") {
 			return "int"; // use int for empty events to avoid zero-size struct issues
 		}
 		return strval($this); // delegates to Type::__toString() for kind-based formatting

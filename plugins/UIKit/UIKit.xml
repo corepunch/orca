@@ -269,6 +269,15 @@
     <field name="Axis" type="SizeAxisShorthand" fixed-array="3">A number value per axis</field>
   </struct>
 
+  <message name="UpdateMatrix" routing="Direct">
+    <field name="parent" type="mat4">The parent matrix</field>
+    <field name="opacity" type="float">The opacity value</field>
+    <field name="force" type="bool">Indicates if the update is forced</field>
+  </message>
+  <message name="HitTest" routing="Direct">
+    <field name="x" type="int">X coordinate of the hit test point</field>
+    <field name="y" type="int">Y coordinate of the hit test point</field>
+  </message>
   <message name="GetSize"/>
   <message name="Submit"/>
   <message name="Measure">
