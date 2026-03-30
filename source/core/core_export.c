@@ -23,6 +23,18 @@ extern struct KeyframeAnim* luaX_checkKeyframeAnim(lua_State *L, int index);
 extern void luaX_pushlua_State(lua_State *L, struct lua_State const* value);
 extern struct lua_State* luaX_checklua_State(lua_State *L, int index);
 
+ORCA_API const char *_MessageRouting[] = {"TunnelingBubbling","Tunneling","Bubbling","Direct",NULL};
+const char *MessageRoutingToString(enum MessageRouting value) {
+	assert(value >= 0 && value < 4);
+	return _MessageRouting[value];
+}
+enum MessageRouting luaX_checkMessageRouting(lua_State *L, int idx) {
+	return luaL_checkoption(L, idx, NULL, _MessageRouting);
+}
+void luaX_pushMessageRouting(lua_State *L, enum MessageRouting value) {
+	assert(value >= 0 && value < 4);
+	lua_pushstring(L, _MessageRouting[value]);
+}
 ORCA_API const char *_PropertyState[] = {"Normal","Hover","Focus","Select","Disable","OldValue",NULL};
 const char *PropertyStateToString(enum PropertyState value) {
 	assert(value >= 0 && value < 6);

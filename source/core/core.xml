@@ -9,6 +9,14 @@
   <external struct="Property"/>
   <external struct="KeyframeAnim"/>
   <external struct="lua_State"/>
+
+  <enums name="MessageRouting">
+    <summary>Defines the routing strategy for messages sent to objects. This determines how messages propagate through the object hierarchy and which handlers are invoked.</summary>
+    <enum name="TunnelingBubbling">Messages are first tunneled down the hierarchy and then bubbled up.</enum>
+    <enum name="Tunneling">Messages are tunneled down the hierarchy.</enum>
+    <enum name="Bubbling">Messages are bubbled up the hierarchy.</enum>
+    <enum name="Direct">Messages are sent directly to the target object.</enum>
+  </enums>
   
   <!-- Base event for all pointer/mouse input events -->
   <message name="MouseMessage" type="WI_Message"/>
