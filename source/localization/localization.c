@@ -26,95 +26,18 @@ typedef struct _FORMATARG
     snprintf(szOutput, dwLength, FORMAT, VALUE);                               \
   }
 
-FMTF(data_FrontRightTireTemperature, "%s", "52");
-FMTF(data_FrontRightTirePressure, "%s", "0.0");
-FMTF(data_RearRightTirePressure, "%s", "0.0");
-FMTF(data_RearRightTireTemperature, "%s", "52");
-FMTF(data_RearLeftTirePressure, "%s", "0.0");
-FMTF(data_RearLeftTireTemperature, "%s", "52");
-FMTF(data_FrontLeftTirePressure, "%s", "0.0");
-FMTF(data_FrontLeftTireTemperature, "%s", "52");
-FMTF(data_ElectricRatio, "%s", "24");
-FMTF(data_ElectricRatioSinceReset, "%s", "24");
-FMTF(data_ElectricRatioSinceStart, "%s", "24");
-FMTF(unit_Percent, "%s", "%");
-FMTF(data_remainingHADDistance, "%s", "120");
-FMTF(unit_Consumption, "%s", "1/100 km");
-FMTF(unit_ConsumptionElectric, "%s", "kWh/100 km");
-FMTF(unit_SwitchingConsumption, "%s", "1/100 km");
-FMTF(unit_SwitchingConsumptionElectric, "%s", "kWh/100 km");
-FMTF(unit_Distance, "%s", "km");
-FMTF(unit_Duration, "%s", "min");
-FMTF(unit_DurationTimeSinceLastBreak, "%s", "min");
-FMTF(unit_DurationSinceStart, "%s", "min");
-FMTF(unit_DurationSinceReset, "%s", "min");
-FMTF(unit_DurationZeroEmissionSinceStart, "%s", "min");
-FMTF(unit_DurationZeroEmissionSinceReset, "%s", "min");
-FMTF(data_OutsideTemperature, "%s", "13");
-FMTF(data_CurrentTime, "%s", "12:30");
-FMTF(unit_MeridianUnitCurrentTime, "%s", "");
-FMTF(unit_Speed, "%s", "km/h");
-FMTF(unit_Temperature, "%s", "°C");
-FMTF(unit_RevMeter, "%s", "x1000/min");
-FMTF(data_DigitalSpeedoAdditional, "%s", "222");
-FMTF(data_ConventionalRange, "%s", "- - - -");
-FMTF(data_SetSpeed, "%s", "150");
-
-FMTF(data_electricRatioSinceStart, "%s", "000");
-FMTF(data_AverageSpeedSinceStart, "%s", "53");
-FMTF(data_ConsumptionAverageConventionalSinceStart, "%s", "12.6");
-FMTF(data_ConsumptionAverageElectricSinceStart, "%s", "123");
-FMTF(data_DurationSinceStart, "%s", "24:53");
-FMTF(data_OdometerSinceStart, "%s", "978");
-FMTF(data_OdometerZeroEmissionSinceStart, "%s", "35");
-FMTF(data_DurationZeroEmissionSinceStart, "%s", "3:16");
+FMTF(data_FirstName, "%s", "John");
+FMTF(data_LastName, "%s", "Doe");
+FMTF(data_Age, "%s", "30");
+FMTF(data_Email, "%s", "john.doe@example.com");
+FMTF(data_Greeting, "%s", "Hello, World!");
 
 static FORMATARG args[] = {
-  //    TireMonitoring_Var2
-  VARIABLE(data_FrontRightTireTemperature),
-  VARIABLE(data_FrontRightTirePressure),
-  VARIABLE(data_RearRightTirePressure),
-  VARIABLE(data_RearRightTireTemperature),
-  VARIABLE(data_RearLeftTirePressure),
-  VARIABLE(data_RearLeftTireTemperature),
-  VARIABLE(data_FrontLeftTirePressure),
-  VARIABLE(data_FrontLeftTireTemperature),
-  //    ElectricRatio_Var1
-  VARIABLE(data_ElectricRatio),
-  VARIABLE(data_ElectricRatioSinceReset),
-  VARIABLE(data_ElectricRatioSinceStart),
-  //    Misc
-  VARIABLE(unit_Percent),
-  VARIABLE(data_remainingHADDistance),
-  VARIABLE(unit_Consumption),
-  VARIABLE(unit_ConsumptionElectric),
-  VARIABLE(unit_SwitchingConsumption),
-  VARIABLE(unit_SwitchingConsumptionElectric),
-  VARIABLE(unit_Distance),
-  VARIABLE(unit_Duration),
-  VARIABLE(unit_DurationTimeSinceLastBreak),
-  VARIABLE(unit_DurationSinceStart),
-  VARIABLE(unit_DurationSinceReset),
-  VARIABLE(unit_DurationZeroEmissionSinceStart),
-  VARIABLE(unit_DurationZeroEmissionSinceReset),
-  VARIABLE(data_OutsideTemperature),
-  VARIABLE(data_CurrentTime),
-  VARIABLE(unit_MeridianUnitCurrentTime),
-  VARIABLE(unit_Speed),
-  VARIABLE(unit_Temperature),
-  VARIABLE(data_DigitalSpeedoAdditional),
-  VARIABLE(data_ConventionalRange),
-  VARIABLE(data_SetSpeed),
-  VARIABLE(unit_RevMeter),
-  //    SinceStart_Var9
-  VARIABLE(data_electricRatioSinceStart),
-  VARIABLE(data_AverageSpeedSinceStart),
-  VARIABLE(data_ConsumptionAverageConventionalSinceStart),
-  VARIABLE(data_ConsumptionAverageElectricSinceStart),
-  VARIABLE(data_DurationSinceStart),
-  VARIABLE(data_OdometerSinceStart),
-  VARIABLE(data_OdometerZeroEmissionSinceStart),
-  VARIABLE(data_DurationZeroEmissionSinceStart),
+  VARIABLE(data_FirstName),
+  VARIABLE(data_LastName),
+  VARIABLE(data_Age),
+  VARIABLE(data_Email),
+  VARIABLE(data_Greeting),
 
   { NULL }
 };
