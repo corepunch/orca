@@ -38,6 +38,7 @@ ORCA_API extern struct MessageType HandleMessageMessage;
 ORCA_API extern struct MessageType LoadViewMessage;
 ORCA_API extern struct MessageType MakeTextMessage;
 ORCA_API extern struct MessageType TriggeredMessage;
+ORCA_API extern struct MessageType UpdateShmatrixMessage;
 ORCA_API extern struct MessageType UpdateLayoutMessage;
 ORCA_API extern struct MessageType NavigateToPageMessage;
 ORCA_API extern struct MessageType NavigateBackMessage;
@@ -58,6 +59,7 @@ typedef struct HandleMessageMsgArgs HandleMessageMsg_t,* HandleMessageMsgPtr;
 typedef struct LoadViewMsgArgs LoadViewMsg_t,* LoadViewMsgPtr;
 typedef struct MakeTextMsgArgs MakeTextMsg_t,* MakeTextMsgPtr;
 typedef struct TriggeredMsgArgs TriggeredMsg_t,* TriggeredMsgPtr;
+typedef struct UpdateShmatrixMsgArgs UpdateShmatrixMsg_t,* UpdateShmatrixMsgPtr;
 typedef struct UpdateLayoutMsgArgs UpdateLayoutMsg_t,* UpdateLayoutMsgPtr;
 typedef struct NavigateToPageMsgArgs NavigateToPageMsg_t,* NavigateToPageMsgPtr;
 typedef struct NavigateBackMsgArgs NavigateBackMsg_t,* NavigateBackMsgPtr;
@@ -591,6 +593,14 @@ struct TriggeredMsgArgs {
 };
 ORCA_API void luaX_pushTriggeredMsgArgs(lua_State *L, struct TriggeredMsgArgs const* data);
 ORCA_API struct TriggeredMsgArgs* luaX_checkTriggeredMsgArgs(lua_State *L, int idx);
+/** UpdateShmatrixMsgArgs struct */
+struct UpdateShmatrixMsgArgs {
+	struct mat4 parent; ///< The parent matrix
+	float opacity; ///< The opacity value
+	bool_t force; ///< Indicates if the update is forced
+};
+ORCA_API void luaX_pushUpdateShmatrixMsgArgs(lua_State *L, struct UpdateShmatrixMsgArgs const* data);
+ORCA_API struct UpdateShmatrixMsgArgs* luaX_checkUpdateShmatrixMsgArgs(lua_State *L, int idx);
 /** UpdateLayoutMsgArgs struct */
 struct UpdateLayoutMsgArgs {
 	float Width;
@@ -813,6 +823,9 @@ struct Node2D {
 	bool_t Hovered; ///< Indicates if the element is currently hovered by pointer/mouse.
 	bool_t IgnoreHitTest; ///< Marks object as ignored during hit testing (mouse interaction).
 	enum ForegroundHint ForegroundHint; ///< Hint for how foreground should be rendered. May be used for accessibility, high-contrast, or text rendering optimizations.
+	struct mat4 parent; ///< The parent matrix
+	float opacity; ///< The opacity value
+	bool_t force; ///< Indicates if the update is forced
 	struct Node* _node; ///< Internal node reference
 	struct Object* _object; ///< Internal object reference
 	int32_t _userdata; ///< User-defined data storage

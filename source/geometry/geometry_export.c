@@ -5,18 +5,125 @@
 #include "geometry.h"
 
 
-ORCA_API const char *_RotationOrder[] = {"XYZ","XZY","YZX","YXZ","ZXY","ZYX",NULL};
-const char *RotationOrderToString(enum RotationOrder value) {
-	assert(value >= 0 && value < 6);
-	return _RotationOrder[value];
+#define ENUM(NAME, ...) \
+ORCA_API const char *_##NAME[] = {__VA_ARGS__, NULL}; \
+const char *NAME##ToString(enum NAME value) { \
+	return (assert(value >= 0 && value < sizeof(_##NAME) / sizeof(*_##NAME) - 1), _##NAME[value]); \
+} \
+enum NAME luaX_check##NAME(lua_State *L, int idx) { \
+	return luaL_checkoption(L, idx, NULL, _##NAME); \
+} \
+void luaX_push##NAME(lua_State *L, enum NAME value) { \
+	lua_pushstring(L, (assert(value >= 0 && value < sizeof(_##NAME) / sizeof(*_##NAME) - 1), _##NAME[value])); \
 }
-enum RotationOrder luaX_checkRotationOrder(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _RotationOrder);
+ENUM(RotationOrder, "XYZ", "XZY", "YZX", "YXZ", "ZXY", "ZYX")
+#define FIELD(IDENT, STRUCT, NAME, TYPE, ...) { \
+	.Name = #NAME, \
+	.ShortIdentifier = IDENT, \
+	.DataType = TYPE, \
+	.Offset = offsetof(struct STRUCT, NAME), \
+	.DataSize = sizeof(((struct STRUCT*)NULL)->NAME), \
+	##__VA_ARGS__ \
 }
-void luaX_pushRotationOrder(lua_State *L, enum RotationOrder value) {
-	assert(value >= 0 && value < 6);
-	lua_pushstring(L, _RotationOrder[value]);
-}
+static struct PropertyType _vec2[] = {
+	FIELD(0xfd0c5087, vec2, x, kDataTypeFloat),
+	FIELD(0xfc0c4ef4, vec2, y, kDataTypeFloat),
+};
+static struct PropertyType _vec3[] = {
+	FIELD(0xfd0c5087, vec3, x, kDataTypeFloat),
+	FIELD(0xfc0c4ef4, vec3, y, kDataTypeFloat),
+	FIELD(0xff0c53ad, vec3, z, kDataTypeFloat),
+};
+static struct PropertyType _vec4[] = {
+	FIELD(0xfd0c5087, vec4, x, kDataTypeFloat),
+	FIELD(0xfc0c4ef4, vec4, y, kDataTypeFloat),
+	FIELD(0xff0c53ad, vec4, z, kDataTypeFloat),
+	FIELD(0xf20c3f36, vec4, w, kDataTypeFloat),
+};
+static struct PropertyType _box2[] = {
+	FIELD(0xc98f4557, box2, min, kDataTypeStruct),
+	FIELD(0xd7a2e319, box2, max, kDataTypeStruct),
+};
+static struct PropertyType _box3[] = {
+	FIELD(0xc98f4557, box3, min, kDataTypeStruct),
+	FIELD(0xd7a2e319, box3, max, kDataTypeStruct),
+};
+static struct PropertyType _Size[] = {
+	FIELD(0x95876e1f, Size, width, kDataTypeFloat),
+	FIELD(0xd5bdbb42, Size, height, kDataTypeFloat),
+};
+static struct PropertyType _rect[] = {
+	FIELD(0xfd0c5087, rect, x, kDataTypeFloat),
+	FIELD(0xfc0c4ef4, rect, y, kDataTypeFloat),
+	FIELD(0x95876e1f, rect, width, kDataTypeFloat),
+	FIELD(0xd5bdbb42, rect, height, kDataTypeFloat),
+};
+static struct PropertyType _quat[] = {
+	FIELD(0xfd0c5087, quat, x, kDataTypeFloat),
+	FIELD(0xfc0c4ef4, quat, y, kDataTypeFloat),
+	FIELD(0xff0c53ad, quat, z, kDataTypeFloat),
+	FIELD(0xf20c3f36, quat, w, kDataTypeFloat),
+};
+static struct PropertyType _mat3[] = {
+	FIELD(0xf30c40c9, mat3, v, kDataTypeFloat),
+};
+static struct PropertyType _mat4[] = {
+	FIELD(0xf30c40c9, mat4, v, kDataTypeFloat),
+};
+static struct PropertyType _bounds[] = {
+	FIELD(0xc98f4557, bounds, min, kDataTypeFloat),
+	FIELD(0xd7a2e319, bounds, max, kDataTypeFloat),
+};
+static struct PropertyType _plane3[] = {
+	FIELD(0xe40c292c, plane3, a, kDataTypeFloat),
+	FIELD(0xe70c2de5, plane3, b, kDataTypeFloat),
+	FIELD(0xe60c2c52, plane3, c, kDataTypeFloat),
+	FIELD(0xe10c2473, plane3, d, kDataTypeFloat),
+};
+static struct PropertyType _sphere3[] = {
+	FIELD(0x058c4484, sphere3, center, kDataTypeStruct),
+	FIELD(0x0dba4cb3, sphere3, radius, kDataTypeFloat),
+};
+static struct PropertyType _frustum3[] = {
+	FIELD(0x124aec70, frustum3, left, kDataTypeStruct),
+	FIELD(0x78e32de5, frustum3, right, kDataTypeStruct),
+	FIELD(0x4ea76b2a, frustum3, bottom, kDataTypeStruct),
+	FIELD(0xa710dc3c, frustum3, top, kDataTypeStruct),
+	FIELD(0xe179dbd8, frustum3, front, kDataTypeStruct),
+	FIELD(0x5bb421a2, frustum3, back, kDataTypeStruct),
+};
+static struct PropertyType _transform2[] = {
+	FIELD(0xcbd2d62c, transform2, translation, kDataTypeStruct),
+	FIELD(0x21ac415f, transform2, rotation, kDataTypeFloat),
+	FIELD(0x82971c71, transform2, scale, kDataTypeStruct),
+};
+static struct PropertyType _transform3[] = {
+	FIELD(0xcbd2d62c, transform3, translation, kDataTypeStruct),
+	FIELD(0x21ac415f, transform3, rotation, kDataTypeStruct),
+	FIELD(0x82971c71, transform3, scale, kDataTypeStruct),
+};
+static struct PropertyType _triangle3[] = {
+	FIELD(0xe40c292c, triangle3, a, kDataTypeStruct),
+	FIELD(0xe70c2de5, triangle3, b, kDataTypeStruct),
+	FIELD(0xe60c2c52, triangle3, c, kDataTypeStruct),
+};
+static struct PropertyType _line3[] = {
+	FIELD(0xe40c292c, line3, a, kDataTypeStruct),
+	FIELD(0xe70c2de5, line3, b, kDataTypeStruct),
+};
+static struct PropertyType _edges[] = {
+	FIELD(0x124aec70, edges, left, kDataTypeFloat),
+	FIELD(0xa710dc3c, edges, top, kDataTypeFloat),
+	FIELD(0x78e32de5, edges, right, kDataTypeFloat),
+	FIELD(0x4ea76b2a, edges, bottom, kDataTypeFloat),
+};
+static struct PropertyType _color[] = {
+	FIELD(0xf70c4715, color, r, kDataTypeFloat),
+	FIELD(0xe20c2606, color, g, kDataTypeFloat),
+	FIELD(0xe70c2de5, color, b, kDataTypeFloat),
+	FIELD(0xe40c292c, color, a, kDataTypeFloat),
+};
+
 void luaX_pushvec2(lua_State *L, struct vec2 const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct vec2* self = lua_newuserdata(L, sizeof(struct vec2));

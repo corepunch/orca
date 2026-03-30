@@ -394,12 +394,14 @@ struct ClassDesc
 {
   objectProc_t ObjProc; // pointer to the main message handling function for this class, used for dispatching messages to objects of this class
   lpcPropertyType_t Properties; // pointer to an array of property descriptors, should be sorted by long identifier for efficient lookup
+  lpcMessageType_t MessageTypes; // pointer to an array of message descriptors, should be sorted by message ID for efficient lookup
   lpcString_t ClassName; // human-readable name of the class, used for debugging and editor display, should be unique across all classes
   lpcString_t DefaultName; // string used for naming objects of this class when no name is provided, should be unique across all classes
   lpcString_t ContentType; // optional string describing the type of content this class represents, used for auto-detecting packages and for editor filtering
   lpcString_t Xmlns; // optional XML namespace associated with this class, used for auto-detecting packages
   uint32_t ParentClasses[16]; // array of class IDs of parent classes, used for inheritance and type checking, should be ordered from most derived to least derived
   uint32_t NumProperties; // number of properties defined directly on this class, used for iterating over properties and for calculating offsets of properties in the object struct
+  uint32_t NumMessageTypes; // number of messages defined directly on this class, used for iterating over messages and for calculating offsets of message handlers in the object struct
   uint32_t ClassID; // hash of the class name, used for quick comparisons and lookups, should be unique across all classes
   uint32_t ClassSize; // size of the class itself excluding components, used for calculating offsets of components and properties
   uint32_t MemorySize; // total size of an instance of this class including components, used for memory allocation
@@ -444,6 +446,9 @@ OBJ_GetComponent(lpObject_t pobj, uint32_t class_id);
 ORCA_API lpProperty_t
 OBJ_GetPropertyAtIndex(lpObject_t object, uint32_t classid,
                        size_t classsize, uint32_t index);
+
+ORCA_API lpcMessageType_t
+OBJ_GetMessageTypeAtIndex(lpObject_t pobj, uint32_t classid, uint32_t index);
 
 ORCA_API lpObject_t
 CMP_GetObject(void const*);

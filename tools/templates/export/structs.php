@@ -1,3 +1,19 @@
+#define FIELD(IDENT, STRUCT, NAME, TYPE, ...) { \
+	.Name = #NAME, \
+	.ShortIdentifier = IDENT, \
+	.DataType = TYPE, \
+	.Offset = offsetof(struct STRUCT, NAME), \
+	.DataSize = sizeof(((struct STRUCT*)NULL)->NAME), \
+	##__VA_ARGS__ \
+}
+<?php foreach ($structs as $name => $struct):?>
+static struct PropertyType _<?= $name ?>[] = {
+<?php foreach ($struct->getFields() as $field): ?>
+	FIELD(0x<?= hash("fnv1a32", $field->name) ?>, <?= $name ?>, <?= $field->name ?>, kDataType<?= ucfirst($field->type->kind) ?>),
+<?php endforeach ?>
+};
+<?php endforeach ?>
+
 <?php foreach ($structs as $name => $struct):?>
 void luaX_push<?= $name ?>(lua_State *L, struct <?= $name ?> const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }

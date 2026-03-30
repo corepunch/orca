@@ -290,8 +290,8 @@
     <field name="Width" type="float"/>
     <field name="Height" type="float"/>
   </message>
-  <message name="MeasureOverride" parent="Measure"/>
-  <message name="ArrangeOverride" parent="Arrange"/>
+  <message name="MeasureOverride" same-as="Measure"/>
+  <message name="ArrangeOverride" same-as="Arrange"/>
   <message name="ForegroundContent"/>
   <message name="PushProperty">
     <field name="Placeholder" type="int"/>
@@ -501,6 +501,11 @@
     <handles message="Arrange"/>
     <handles message="MeasureOverride"/>
     <handles message="ArrangeOverride"/>
+    <message name="UpdateShmatrix" routing="Direct">
+      <field name="parent" type="mat4">The parent matrix</field>
+      <field name="opacity" type="float">The opacity value</field>
+      <field name="force" type="bool">Indicates if the update is forced</field>
+    </message>
     <property name="LayoutTransform" type="transform2" default=".scale={1,1}">Transformation applied during layout calculations. Affects size and positioning but does not influence local rendering.</property>
     <property name="RenderTransform" type="transform2" default=".scale={1,1}">Transformation applied at render time. Affects how the element is drawn (rotation, scale, skew, etc.) without altering layout.</property>
     <property name="RenderTransformOrigin" type="vec2">The origin point for applying RenderTransform. Defines the pivot point relative to the element.</property>

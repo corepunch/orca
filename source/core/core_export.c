@@ -23,66 +23,22 @@ extern struct KeyframeAnim* luaX_checkKeyframeAnim(lua_State *L, int index);
 extern void luaX_pushlua_State(lua_State *L, struct lua_State const* value);
 extern struct lua_State* luaX_checklua_State(lua_State *L, int index);
 
-ORCA_API const char *_MessageRouting[] = {"Bubbling","TunnelingBubbling","Tunneling","Direct",NULL};
-const char *MessageRoutingToString(enum MessageRouting value) {
-	assert(value >= 0 && value < 4);
-	return _MessageRouting[value];
+#define ENUM(NAME, ...) \
+ORCA_API const char *_##NAME[] = {__VA_ARGS__, NULL}; \
+const char *NAME##ToString(enum NAME value) { \
+	return (assert(value >= 0 && value < sizeof(_##NAME) / sizeof(*_##NAME) - 1), _##NAME[value]); \
+} \
+enum NAME luaX_check##NAME(lua_State *L, int idx) { \
+	return luaL_checkoption(L, idx, NULL, _##NAME); \
+} \
+void luaX_push##NAME(lua_State *L, enum NAME value) { \
+	lua_pushstring(L, (assert(value >= 0 && value < sizeof(_##NAME) / sizeof(*_##NAME) - 1), _##NAME[value])); \
 }
-enum MessageRouting luaX_checkMessageRouting(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _MessageRouting);
-}
-void luaX_pushMessageRouting(lua_State *L, enum MessageRouting value) {
-	assert(value >= 0 && value < 4);
-	lua_pushstring(L, _MessageRouting[value]);
-}
-ORCA_API const char *_PropertyState[] = {"Normal","Hover","Focus","Select","Disable","OldValue",NULL};
-const char *PropertyStateToString(enum PropertyState value) {
-	assert(value >= 0 && value < 6);
-	return _PropertyState[value];
-}
-enum PropertyState luaX_checkPropertyState(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _PropertyState);
-}
-void luaX_pushPropertyState(lua_State *L, enum PropertyState value) {
-	assert(value >= 0 && value < 6);
-	lua_pushstring(L, _PropertyState[value]);
-}
-ORCA_API const char *_BindingMode[] = {"OneWay","TwoWay","OneWayToSource","Expression",NULL};
-const char *BindingModeToString(enum BindingMode value) {
-	assert(value >= 0 && value < 4);
-	return _BindingMode[value];
-}
-enum BindingMode luaX_checkBindingMode(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _BindingMode);
-}
-void luaX_pushBindingMode(lua_State *L, enum BindingMode value) {
-	assert(value >= 0 && value < 4);
-	lua_pushstring(L, _BindingMode[value]);
-}
-ORCA_API const char *_PropertyAttribute[] = {"WholeProperty","ColorR","ColorG","ColorB","ColorA","VectorX","VectorY","VectorZ","VectorW",NULL};
-const char *PropertyAttributeToString(enum PropertyAttribute value) {
-	assert(value >= 0 && value < 9);
-	return _PropertyAttribute[value];
-}
-enum PropertyAttribute luaX_checkPropertyAttribute(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _PropertyAttribute);
-}
-void luaX_pushPropertyAttribute(lua_State *L, enum PropertyAttribute value) {
-	assert(value >= 0 && value < 9);
-	lua_pushstring(L, _PropertyAttribute[value]);
-}
-ORCA_API const char *_DataType[] = {"None","Bool","Int","Enum","Float","String","Event","Struct","Color","Object",NULL};
-const char *DataTypeToString(enum DataType value) {
-	assert(value >= 0 && value < 10);
-	return _DataType[value];
-}
-enum DataType luaX_checkDataType(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _DataType);
-}
-void luaX_pushDataType(lua_State *L, enum DataType value) {
-	assert(value >= 0 && value < 10);
-	lua_pushstring(L, _DataType[value]);
-}
+ENUM(MessageRouting, "Bubbling", "TunnelingBubbling", "Tunneling", "Direct")
+ENUM(PropertyState, "Normal", "Hover", "Focus", "Select", "Disable", "OldValue")
+ENUM(BindingMode, "OneWay", "TwoWay", "OneWayToSource", "Expression")
+ENUM(PropertyAttribute, "WholeProperty", "ColorR", "ColorG", "ColorB", "ColorA", "VectorX", "VectorY", "VectorZ", "VectorW")
+ENUM(DataType, "None", "Bool", "Int", "Enum", "Float", "String", "Event", "Struct", "Color", "Object")
 
 int f_OBJ_CreateFromLuaState(lua_State *L) {
 	return OBJ_CreateFromLuaState(L);
@@ -601,6 +557,48 @@ int luaopen_orca_Object(lua_State *L) {
 	lua_setfield(L, -2, "__index");
 	return 1;
 }
+#define FIELD(IDENT, STRUCT, NAME, TYPE, ...) { \
+	.Name = #NAME, \
+	.ShortIdentifier = IDENT, \
+	.DataType = TYPE, \
+	.Offset = offsetof(struct STRUCT, NAME), \
+	.DataSize = sizeof(((struct STRUCT*)NULL)->NAME), \
+	##__VA_ARGS__ \
+}
+static struct PropertyType _MessageType[] = {
+	FIELD(0x8d39bde6, MessageType, name, kDataTypeString),
+	FIELD(0x37386ae0, MessageType, id, kDataTypeUint),
+	FIELD(0x9d76c469, MessageType, routing, kDataTypeEnum),
+	FIELD(0x23a0d95c, MessageType, size, kDataTypeUint),
+};
+static struct PropertyType _PropertyEnumValue[] = {
+	FIELD(0x0fe07306, PropertyEnumValue, Name, kDataTypeFixed),
+	FIELD(0xd147f96a, PropertyEnumValue, Value, kDataTypeInt),
+};
+static struct PropertyType _PropertyType[] = {
+	FIELD(0x0fe07306, PropertyType, Name, kDataTypeFixed),
+	FIELD(0xafb3e591, PropertyType, Category, kDataTypeFixed),
+	FIELD(0x840d6c6d, PropertyType, DataType, kDataTypeEnum),
+	FIELD(0xcd093f9f, PropertyType, DefaultValue, kDataTypeFixed),
+	FIELD(0xdf6c0780, PropertyType, TypeString, kDataTypeFixed),
+	FIELD(0x345ccb46, PropertyType, EnumValues, kDataTypeStrarray),
+	FIELD(0xd2d3694e, PropertyType, AffectLayout, kDataTypeBool),
+	FIELD(0xcae7b378, PropertyType, AffectRender, kDataTypeBool),
+	FIELD(0xd9ee91e7, PropertyType, IsReadOnly, kDataTypeBool),
+	FIELD(0x3bf0d5c9, PropertyType, IsHidden, kDataTypeBool),
+	FIELD(0x26e59151, PropertyType, IsInherited, kDataTypeBool),
+	FIELD(0xcd1ac90c, PropertyType, Key, kDataTypeFixed),
+	FIELD(0xd147f96a, PropertyType, Value, kDataTypeFixed),
+	FIELD(0x4771f92f, PropertyType, Step, kDataTypeFloat),
+	FIELD(0x48b88645, PropertyType, UpperBound, kDataTypeFloat),
+	FIELD(0xccc57b3a, PropertyType, LowerBound, kDataTypeFloat),
+	FIELD(0x0f76864e, PropertyType, ShortIdentifier, kDataTypeUint),
+	FIELD(0x429417cf, PropertyType, FullIdentifier, kDataTypeUint),
+	FIELD(0x8995c7ea, PropertyType, Offset, kDataTypeUint),
+	FIELD(0x58ff2a7c, PropertyType, DataSize, kDataTypeUint),
+	FIELD(0x660880b6, PropertyType, IsArray, kDataTypeBool),
+};
+
 void luaX_pushMessageType(lua_State *L, struct MessageType const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct MessageType* self = lua_newuserdata(L, sizeof(struct MessageType));

@@ -420,6 +420,12 @@ class Component extends Struct {
 		}
 	}
 
+	function getMessages() {
+		foreach ($this->_elem->xpath(".//message[@name]") as $f) {
+			yield new Event($f, $this->_model);
+		}
+	}
+
 	function getEventHandlers() {
 		foreach ($this->_elem->xpath("handles") as $node) {
 			yield $node["message"];
@@ -461,7 +467,7 @@ class Event extends Type {
 
 	function __construct($elem, $model) {
 		parent::__construct($elem, $model);
-		$p = $elem["parent"];
+		$p = $elem["same-as"];
 		$routing = $elem["routing"] ?? "TunnelingBubbling";
 		$this->parent_name = $p ? strval($p) : null;
 		$this->routing = strval($routing);
