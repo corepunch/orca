@@ -62,6 +62,18 @@ typedef int ResumeCoroutineMsg_t,* ResumeCoroutineMsgPtr;
 typedef int StopCoroutineMsg_t,* StopCoroutineMsgPtr;
 typedef int ViewDidLoadMsg_t,* ViewDidLoadMsgPtr;
 
+/// @brief Defines the routing strategy for messages sent to objects. This determines how messages propagate through the object hierarchy and which handlers are invoked.
+/** MessageRouting enum */
+typedef enum MessageRouting {
+	kMessageRoutingTunnelingBubbling, ///< Messages are first tunneled down the hierarchy and then bubbled up.
+	kMessageRoutingTunneling, ///< Messages are tunneled down the hierarchy.
+	kMessageRoutingBubbling, ///< Messages are bubbled up the hierarchy.
+	kMessageRoutingDirect, ///< Messages are sent directly to the target object.
+} eMessageRouting_t;
+#define MessageRouting_Count 4
+ORCA_API const char *MessageRoutingToString(enum MessageRouting value);
+ORCA_API enum MessageRouting luaX_checkMessageRouting(lua_State *L, int idx);
+ORCA_API void luaX_pushMessageRouting(lua_State *L, enum MessageRouting value);
 /// @brief Represents the various states a property can be in.
 /** PropertyState enum */
 typedef enum PropertyState {
