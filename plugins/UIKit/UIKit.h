@@ -36,6 +36,7 @@ typedef struct HandleMessageMsgArgs HandleMessageMsg_t,* HandleMessageMsgPtr;
 typedef struct LoadViewMsgArgs LoadViewMsg_t,* LoadViewMsgPtr;
 typedef struct MakeTextMsgArgs MakeTextMsg_t,* MakeTextMsgPtr;
 typedef struct TriggeredMsgArgs TriggeredMsg_t,* TriggeredMsgPtr;
+typedef struct UpdateLayoutMsgArgs UpdateLayoutMsg_t,* UpdateLayoutMsgPtr;
 typedef struct NavigateToPageMsgArgs NavigateToPageMsg_t,* NavigateToPageMsgPtr;
 typedef struct NavigateBackMsgArgs NavigateBackMsg_t,* NavigateBackMsgPtr;
 
@@ -530,6 +531,13 @@ struct TriggeredMsgArgs {
 };
 ORCA_API void luaX_pushTriggeredMsgArgs(lua_State *L, struct TriggeredMsgArgs const* data);
 ORCA_API struct TriggeredMsgArgs* luaX_checkTriggeredMsgArgs(lua_State *L, int idx);
+/** UpdateLayoutMsgArgs struct */
+struct UpdateLayoutMsgArgs {
+	float Width;
+	float Height;
+};
+ORCA_API void luaX_pushUpdateLayoutMsgArgs(lua_State *L, struct UpdateLayoutMsgArgs const* data);
+ORCA_API struct UpdateLayoutMsgArgs* luaX_checkUpdateLayoutMsgArgs(lua_State *L, int idx);
 /** NavigateToPageMsgArgs struct */
 struct NavigateToPageMsgArgs {
 	fixedString_t URL; ///< The URL of the page to navigate to.

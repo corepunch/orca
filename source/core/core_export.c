@@ -281,13 +281,6 @@ int f_OBJ_GetInteger(lua_State *L) {
 	lua_pushinteger(L, result_);
 	return 1;
 }
-int f_OBJ_UpdateLayout(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	int32_t width = (int32_t)luaL_checkinteger(L, 2);
-	int32_t height = (int32_t)luaL_checkinteger(L, 3);
-	OBJ_UpdateLayout(this_, width, height );
-	return 0;
-}
 int f_OBJ_SetDirty(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	OBJ_SetDirty(this_ );
@@ -551,7 +544,6 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "findPropertyByPath", f_OBJ_FindPropertyByPath },
 		{ "getProperties", f_OBJ_GetProperties },
 		{ "getInteger", f_OBJ_GetInteger },
-		{ "updateLayout", f_OBJ_UpdateLayout },
 		{ "setDirty", f_OBJ_SetDirty },
 		{ "clearDirtyFlags", f_OBJ_ClearDirtyFlags },
 		{ "applyStyles", f_OBJ_ApplyStyles },

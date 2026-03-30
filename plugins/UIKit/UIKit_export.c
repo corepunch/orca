@@ -1731,6 +1731,63 @@ int luaopen_orca_TriggeredMsgArgs(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
+void luaX_pushUpdateLayoutMsgArgs(lua_State *L, struct UpdateLayoutMsgArgs const* data) {
+	if (data == NULL) { lua_pushnil(L); return; }
+	struct UpdateLayoutMsgArgs* self = lua_newuserdata(L, sizeof(struct UpdateLayoutMsgArgs));
+	luaL_setmetatable(L, "UpdateLayoutMsgArgs");
+	memcpy(self, data, sizeof(struct UpdateLayoutMsgArgs));
+}
+struct UpdateLayoutMsgArgs* luaX_checkUpdateLayoutMsgArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "UpdateLayoutMsgArgs");
+}
+static int f_new_UpdateLayoutMsgArgs(lua_State *L) {
+	struct UpdateLayoutMsgArgs* self = lua_newuserdata(L, sizeof(struct UpdateLayoutMsgArgs));
+	luaL_setmetatable(L, "UpdateLayoutMsgArgs");
+	memset(self, 0, sizeof(struct UpdateLayoutMsgArgs));
+	if (lua_gettop(L) == 1) return 1;
+	if (lua_istable(L, 1)) {
+		lua_pop(L, (lua_getfield(L, 1, "Width"), self->Width = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Height"), self->Height = luaL_optnumber(L, -1, 0), 1));
+	} else {
+		self->Width = luaL_optnumber(L, 1, 0);
+		self->Height = luaL_optnumber(L, 2, 0);
+	}
+	return 1;
+}
+int f_UpdateLayoutMsgArgs___index(lua_State *L) {
+	struct UpdateLayoutMsgArgs* self = luaX_checkUpdateLayoutMsgArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x3b42dfbf: lua_pushnumber(L, self->Width); return 1; // Width
+	case 0x1bd13562: lua_pushnumber(L, self->Height); return 1; // Height
+	}
+	return luaL_error(L, "Unknown field in UpdateLayoutMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+int f_UpdateLayoutMsgArgs___newindex(lua_State *L) {
+	struct UpdateLayoutMsgArgs* self = luaX_checkUpdateLayoutMsgArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0x3b42dfbf: self->Width = luaL_optnumber(L, 3, 0); return 0; // Width
+	case 0x1bd13562: self->Height = luaL_optnumber(L, 3, 0); return 0; // Height
+	}
+	return luaL_error(L, "Unknown field in UpdateLayoutMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+static int f_UpdateLayoutMsgArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_UpdateLayoutMsgArgs(L));  // remove UpdateLayoutMsgArgs from stack and call constructor
+}
+int luaopen_orca_UpdateLayoutMsgArgs(lua_State *L) {
+	luaL_newmetatable(L, "UpdateLayoutMsgArgs");
+	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ "new", f_new_UpdateLayoutMsgArgs },
+		{ "__newindex", f_UpdateLayoutMsgArgs___newindex },
+		{ "__index", f_UpdateLayoutMsgArgs___index },
+		{ NULL, NULL },
+	}), 0);
+	// Make UpdateLayoutMsgArgs creatable via constructor-like syntax
+	lua_newtable(L);
+	lua_pushcfunction(L, f_UpdateLayoutMsgArgs___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+	return 1;
+}
 void luaX_pushNavigateToPageMsgArgs(lua_State *L, struct NavigateToPageMsgArgs const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct NavigateToPageMsgArgs* self = lua_newuserdata(L, sizeof(struct NavigateToPageMsgArgs));
@@ -2812,6 +2869,7 @@ ORCA_API struct ClassDesc _Control = {
 	.NumProperties = kControlNumProperties,
 };
 
+LRESULT Screen_UpdateLayout(struct Object*, struct Screen*, wParam_t, UpdateLayoutMsgPtr);
 LRESULT Screen_RenderScreen(struct Object*, struct Screen*, wParam_t, RenderScreenMsgPtr);
 LRESULT Screen_MeasureOverride(struct Object*, struct Screen*, wParam_t, MeasureOverrideMsgPtr);
 LRESULT Screen_Create(struct Object*, struct Screen*, wParam_t, CreateMsgPtr);
@@ -2830,6 +2888,7 @@ static struct Screen ScreenDefaults = {
 };
 LRESULT ScreenProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
+		case kMsgUpdateLayout: return Screen_UpdateLayout(object, cmp, wparm, lparm); // UpdateLayout
 		case kMsgRenderScreen: return Screen_RenderScreen(object, cmp, wparm, lparm); // RenderScreen
 		case kMsgMeasureOverride: return Screen_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
 		case kMsgCreate: return Screen_Create(object, cmp, wparm, lparm); // Create
@@ -3252,6 +3311,7 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_LoadViewMsgArgs(L), -2), "LoadViewMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_MakeTextMsgArgs(L), -2), "MakeTextMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_TriggeredMsgArgs(L), -2), "TriggeredMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_UpdateLayoutMsgArgs(L), -2), "UpdateLayoutMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_NavigateToPageMsgArgs(L), -2), "NavigateToPageMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_NavigateBackMsgArgs(L), -2), "NavigateBackMsgArgs");
 	lua_setfield(L, ((void)lua_pushclass(L, &_DataObject), -2), "DataObject");

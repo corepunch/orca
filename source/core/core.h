@@ -255,9 +255,6 @@ OBJ_GetInteger(struct Object const*, uint32_t, int32_t);
 
 /// Controls position, size, and dirty-flag propagation for layout passes.
 
-/// @brief Updates object layout.
-ORCA_API void
-OBJ_UpdateLayout(struct Object*, int32_t, int32_t);
 /// @brief Sets object dirty and queues it for recalculation
 ORCA_API void
 OBJ_SetDirty(struct Object*);

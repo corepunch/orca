@@ -35,12 +35,20 @@ void OBJ_PostMessage(lua_State* L, lpObject_t self, lpcString_t message)
 // HACK: hacked in quickly
 void OBJ_SendMessage2(lua_State* L, lpObject_t self, lpcString_t message)
 {
-  if (lua_type(L, 3) == LUA_TUSERDATA) {
+  const int nargs = MAX(lua_gettop(L) - 2, 0);
+  fixedString_t argtype={0};
+  snprintf(argtype, sizeof(argtype), "%sMsgArgs", message);
+  if (luaL_testudata(L, 3, argtype)) {
     OBJ_SendMessage(self, message, 0, lua_touserdata(L, 3));
   } else if (!strcmp(message, "WindowPaint")) {
     struct WI_Size size;
     WI_GetSize(&size);
     OBJ_SendMessage(self, message, MAKEDWORD(size.width, size.height), NULL);
+  } else if (luaL_getmetatable(L, argtype)) {
+    lua_insert(L, 3);
+    lua_call(L, nargs, 1);
+    OBJ_SendMessage(self, message, 0, lua_touserdata(L, -1));
+    lua_pop(L, 1);
   } else {
     OBJ_SendMessage(self, message, 0, NULL);
   }
