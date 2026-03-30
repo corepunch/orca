@@ -8,6 +8,26 @@
 extern void luaX_push_FTG(lua_State *L, struct _FTG const* value);
 extern struct _FTG* luaX_check_FTG(lua_State *L, int index);
 
+#define ENUM(NAME, ...) \
+ORCA_API const char *_##NAME[] = {__VA_ARGS__, NULL}; \
+const char *NAME##ToString(enum NAME value) { \
+	return (assert(value >= 0 && value < sizeof(_##NAME) / sizeof(*_##NAME) - 1), _##NAME[value]); \
+} \
+enum NAME luaX_check##NAME(lua_State *L, int idx) { \
+	return luaL_checkoption(L, idx, NULL, _##NAME); \
+} \
+void luaX_push##NAME(lua_State *L, enum NAME value) { \
+	lua_pushstring(L, (assert(value >= 0 && value < sizeof(_##NAME) / sizeof(*_##NAME) - 1), _##NAME[value])); \
+}
+#define FIELD(IDENT, STRUCT, NAME, TYPE, ...) { \
+	.Name = #NAME, \
+	.ShortIdentifier = IDENT, \
+	.DataType = TYPE, \
+	.Offset = offsetof(struct STRUCT, NAME), \
+	.DataSize = sizeof(((struct STRUCT*)NULL)->NAME), \
+	##__VA_ARGS__ \
+}
+
 #define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
 #define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
 
@@ -16,6 +36,9 @@ LRESULT FtgPackage_OpenFile(struct Object*, struct FtgPackage*, wParam_t, OpenFi
 LRESULT FtgPackage_FileExists(struct Object*, struct FtgPackage*, wParam_t, FileExistsMsgPtr);
 LRESULT FtgPackage_HasChangedFiles(struct Object*, struct FtgPackage*, wParam_t, HasChangedFilesMsgPtr);
 LRESULT FtgPackage_Destroy(struct Object*, struct FtgPackage*, wParam_t, DestroyMsgPtr);
+
+static struct MessageType FtgPackageMessageTypes[kFtgPackageNumMessageTypes] = {	
+};
 
 static struct PropertyType const FtgPackageProperties[kFtgPackageNumProperties] = {
 	DECL(0x5ffdd888, FtgPackage, FileName, FileName, kDataTypeString), // FtgPackage.FileName
@@ -48,9 +71,11 @@ ORCA_API struct ClassDesc _FtgPackage = {
 	.ClassID = ID_FtgPackage,
 	.ClassSize = sizeof(struct FtgPackage),
 	.Properties = FtgPackageProperties,
+	.MessageTypes = FtgPackageMessageTypes,
 	.ObjProc = FtgPackageProc,
 	.Defaults = &FtgPackageDefaults,
 	.NumProperties = kFtgPackageNumProperties,
+	.NumMessageTypes = kFtgPackageNumMessageTypes,
 };
 
 

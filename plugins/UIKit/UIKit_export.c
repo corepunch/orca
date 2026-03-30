@@ -23,294 +23,113 @@ extern struct text_info* luaX_checktext_info(lua_State *L, int index);
 extern void luaX_pushlua_State(lua_State *L, struct lua_State const* value);
 extern struct lua_State* luaX_checklua_State(lua_State *L, int index);
 
-ORCA_API const char *_Direction[] = {"Horizontal","Vertical","Depth",NULL};
-const char *DirectionToString(enum Direction value) {
-	assert(value >= 0 && value < 3);
-	return _Direction[value];
-}
-enum Direction luaX_checkDirection(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _Direction);
-}
-void luaX_pushDirection(lua_State *L, enum Direction value) {
-	assert(value >= 0 && value < 3);
-	lua_pushstring(L, _Direction[value]);
-}
-ORCA_API const char *_Box3Field[] = {"X","Y","Z","Width","Height","Depth",NULL};
-const char *Box3FieldToString(enum Box3Field value) {
-	assert(value >= 0 && value < 6);
-	return _Box3Field[value];
-}
-enum Box3Field luaX_checkBox3Field(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _Box3Field);
-}
-void luaX_pushBox3Field(lua_State *L, enum Box3Field value) {
-	assert(value >= 0 && value < 6);
-	lua_pushstring(L, _Box3Field[value]);
-}
-ORCA_API const char *_TextOverflow[] = {"Clip","Ellipsis",NULL};
-const char *TextOverflowToString(enum TextOverflow value) {
-	assert(value >= 0 && value < 2);
-	return _TextOverflow[value];
-}
-enum TextOverflow luaX_checkTextOverflow(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _TextOverflow);
-}
-void luaX_pushTextOverflow(lua_State *L, enum TextOverflow value) {
-	assert(value >= 0 && value < 2);
-	lua_pushstring(L, _TextOverflow[value]);
-}
-ORCA_API const char *_TextWrapping[] = {"WrapWithOverflow","NoWrap","Wrap",NULL};
-const char *TextWrappingToString(enum TextWrapping value) {
-	assert(value >= 0 && value < 3);
-	return _TextWrapping[value];
-}
-enum TextWrapping luaX_checkTextWrapping(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _TextWrapping);
-}
-void luaX_pushTextWrapping(lua_State *L, enum TextWrapping value) {
-	assert(value >= 0 && value < 3);
-	lua_pushstring(L, _TextWrapping[value]);
-}
-ORCA_API const char *_TextHorizontalAlignment[] = {"Left","Center","Right",NULL};
-const char *TextHorizontalAlignmentToString(enum TextHorizontalAlignment value) {
-	assert(value >= 0 && value < 3);
-	return _TextHorizontalAlignment[value];
-}
-enum TextHorizontalAlignment luaX_checkTextHorizontalAlignment(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _TextHorizontalAlignment);
-}
-void luaX_pushTextHorizontalAlignment(lua_State *L, enum TextHorizontalAlignment value) {
-	assert(value >= 0 && value < 3);
-	lua_pushstring(L, _TextHorizontalAlignment[value]);
-}
-ORCA_API const char *_TextVerticalAlignment[] = {"Top","Center","Bottom","Baseline",NULL};
-const char *TextVerticalAlignmentToString(enum TextVerticalAlignment value) {
-	assert(value >= 0 && value < 4);
-	return _TextVerticalAlignment[value];
-}
-enum TextVerticalAlignment luaX_checkTextVerticalAlignment(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _TextVerticalAlignment);
-}
-void luaX_pushTextVerticalAlignment(lua_State *L, enum TextVerticalAlignment value) {
-	assert(value >= 0 && value < 4);
-	lua_pushstring(L, _TextVerticalAlignment[value]);
-}
-ORCA_API const char *_HorizontalAlignment[] = {"Stretch","Left","Center","Right",NULL};
-const char *HorizontalAlignmentToString(enum HorizontalAlignment value) {
-	assert(value >= 0 && value < 4);
-	return _HorizontalAlignment[value];
-}
-enum HorizontalAlignment luaX_checkHorizontalAlignment(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _HorizontalAlignment);
-}
-void luaX_pushHorizontalAlignment(lua_State *L, enum HorizontalAlignment value) {
-	assert(value >= 0 && value < 4);
-	lua_pushstring(L, _HorizontalAlignment[value]);
-}
-ORCA_API const char *_VerticalAlignment[] = {"Stretch","Top","Center","Bottom",NULL};
-const char *VerticalAlignmentToString(enum VerticalAlignment value) {
-	assert(value >= 0 && value < 4);
-	return _VerticalAlignment[value];
-}
-enum VerticalAlignment luaX_checkVerticalAlignment(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _VerticalAlignment);
-}
-void luaX_pushVerticalAlignment(lua_State *L, enum VerticalAlignment value) {
-	assert(value >= 0 && value < 4);
-	lua_pushstring(L, _VerticalAlignment[value]);
-}
-ORCA_API const char *_AlignItems[] = {"Start","Center","End","Stretch","Baseline",NULL};
-const char *AlignItemsToString(enum AlignItems value) {
-	assert(value >= 0 && value < 5);
-	return _AlignItems[value];
-}
-enum AlignItems luaX_checkAlignItems(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _AlignItems);
-}
-void luaX_pushAlignItems(lua_State *L, enum AlignItems value) {
-	assert(value >= 0 && value < 5);
-	lua_pushstring(L, _AlignItems[value]);
-}
-ORCA_API const char *_DepthAlignment[] = {"Near","Center","Far","Stretch",NULL};
-const char *DepthAlignmentToString(enum DepthAlignment value) {
-	assert(value >= 0 && value < 4);
-	return _DepthAlignment[value];
-}
-enum DepthAlignment luaX_checkDepthAlignment(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _DepthAlignment);
-}
-void luaX_pushDepthAlignment(lua_State *L, enum DepthAlignment value) {
-	assert(value >= 0 && value < 4);
-	lua_pushstring(L, _DepthAlignment[value]);
-}
-ORCA_API const char *_Overflow[] = {"Visible","Hidden","Clip","Scroll","Auto",NULL};
-const char *OverflowToString(enum Overflow value) {
-	assert(value >= 0 && value < 5);
-	return _Overflow[value];
-}
-enum Overflow luaX_checkOverflow(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _Overflow);
-}
-void luaX_pushOverflow(lua_State *L, enum Overflow value) {
-	assert(value >= 0 && value < 5);
-	lua_pushstring(L, _Overflow[value]);
-}
-ORCA_API const char *_ForegroundHint[] = {"None","Translucent","Opaque",NULL};
-const char *ForegroundHintToString(enum ForegroundHint value) {
-	assert(value >= 0 && value < 3);
-	return _ForegroundHint[value];
-}
-enum ForegroundHint luaX_checkForegroundHint(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _ForegroundHint);
-}
-void luaX_pushForegroundHint(lua_State *L, enum ForegroundHint value) {
-	assert(value >= 0 && value < 3);
-	lua_pushstring(L, _ForegroundHint[value]);
-}
-ORCA_API const char *_JustifyContent[] = {"Start","End","Center","SpaceBetween","SpaceAround","SpaceEvenly",NULL};
-const char *JustifyContentToString(enum JustifyContent value) {
-	assert(value >= 0 && value < 6);
-	return _JustifyContent[value];
-}
-enum JustifyContent luaX_checkJustifyContent(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _JustifyContent);
-}
-void luaX_pushJustifyContent(lua_State *L, enum JustifyContent value) {
-	assert(value >= 0 && value < 6);
-	lua_pushstring(L, _JustifyContent[value]);
-}
-ORCA_API const char *_FontWeight[] = {"Normal","Bold",NULL};
-const char *FontWeightToString(enum FontWeight value) {
-	assert(value >= 0 && value < 2);
-	return _FontWeight[value];
-}
-enum FontWeight luaX_checkFontWeight(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _FontWeight);
-}
-void luaX_pushFontWeight(lua_State *L, enum FontWeight value) {
-	assert(value >= 0 && value < 2);
-	lua_pushstring(L, _FontWeight[value]);
-}
-ORCA_API const char *_FontStyle[] = {"Normal","Italic",NULL};
-const char *FontStyleToString(enum FontStyle value) {
-	assert(value >= 0 && value < 2);
-	return _FontStyle[value];
-}
-enum FontStyle luaX_checkFontStyle(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _FontStyle);
-}
-void luaX_pushFontStyle(lua_State *L, enum FontStyle value) {
-	assert(value >= 0 && value < 2);
-	lua_pushstring(L, _FontStyle[value]);
-}
-ORCA_API const char *_BorderStyle[] = {"None","Hidden","Dotted","Dashed","Solid","Double","Groove","Ridge","Inset","Outset",NULL};
-const char *BorderStyleToString(enum BorderStyle value) {
-	assert(value >= 0 && value < 10);
-	return _BorderStyle[value];
-}
-enum BorderStyle luaX_checkBorderStyle(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _BorderStyle);
-}
-void luaX_pushBorderStyle(lua_State *L, enum BorderStyle value) {
-	assert(value >= 0 && value < 10);
-	lua_pushstring(L, _BorderStyle[value]);
-}
-ORCA_API const char *_PlaybackMode[] = {"Normal","Reverse","Pingpong",NULL};
-const char *PlaybackModeToString(enum PlaybackMode value) {
-	assert(value >= 0 && value < 3);
-	return _PlaybackMode[value];
-}
-enum PlaybackMode luaX_checkPlaybackMode(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _PlaybackMode);
-}
-void luaX_pushPlaybackMode(lua_State *L, enum PlaybackMode value) {
-	assert(value >= 0 && value < 3);
-	lua_pushstring(L, _PlaybackMode[value]);
-}
-ORCA_API const char *_ButtonType[] = {"Normal","Submit",NULL};
-const char *ButtonTypeToString(enum ButtonType value) {
-	assert(value >= 0 && value < 2);
-	return _ButtonType[value];
-}
-enum ButtonType luaX_checkButtonType(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _ButtonType);
-}
-void luaX_pushButtonType(lua_State *L, enum ButtonType value) {
-	assert(value >= 0 && value < 2);
-	lua_pushstring(L, _ButtonType[value]);
-}
-ORCA_API const char *_InputType[] = {"Text","Password","Number","Checkbox","Radio",NULL};
-const char *InputTypeToString(enum InputType value) {
-	assert(value >= 0 && value < 5);
-	return _InputType[value];
-}
-enum InputType luaX_checkInputType(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _InputType);
-}
-void luaX_pushInputType(lua_State *L, enum InputType value) {
-	assert(value >= 0 && value < 5);
-	lua_pushstring(L, _InputType[value]);
-}
-ORCA_API const char *_Sizing[] = {"PlusMargin","SizeOnly","MinusPadding",NULL};
-const char *SizingToString(enum Sizing value) {
-	assert(value >= 0 && value < 3);
-	return _Sizing[value];
-}
-enum Sizing luaX_checkSizing(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _Sizing);
-}
-void luaX_pushSizing(lua_State *L, enum Sizing value) {
-	assert(value >= 0 && value < 3);
-	lua_pushstring(L, _Sizing[value]);
-}
-ORCA_API const char *_ResizeMode[] = {"CanResize","CanMinimize","CanResizeWithGrip","NoResize",NULL};
-const char *ResizeModeToString(enum ResizeMode value) {
-	assert(value >= 0 && value < 4);
-	return _ResizeMode[value];
-}
-enum ResizeMode luaX_checkResizeMode(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _ResizeMode);
-}
-void luaX_pushResizeMode(lua_State *L, enum ResizeMode value) {
-	assert(value >= 0 && value < 4);
-	lua_pushstring(L, _ResizeMode[value]);
-}
-ORCA_API const char *_Stretch[] = {"Uniform","None","Fill","UniformToFill",NULL};
-const char *StretchToString(enum Stretch value) {
-	assert(value >= 0 && value < 4);
-	return _Stretch[value];
-}
-enum Stretch luaX_checkStretch(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _Stretch);
-}
-void luaX_pushStretch(lua_State *L, enum Stretch value) {
-	assert(value >= 0 && value < 4);
-	lua_pushstring(L, _Stretch[value]);
-}
-ORCA_API const char *_TransitionType[] = {"None","Slide","Fade",NULL};
-const char *TransitionTypeToString(enum TransitionType value) {
-	assert(value >= 0 && value < 3);
-	return _TransitionType[value];
-}
-enum TransitionType luaX_checkTransitionType(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _TransitionType);
-}
-void luaX_pushTransitionType(lua_State *L, enum TransitionType value) {
-	assert(value >= 0 && value < 3);
-	lua_pushstring(L, _TransitionType[value]);
-}
-ORCA_API const char *_StyleType[] = {"Generic","Named",NULL};
-const char *StyleTypeToString(enum StyleType value) {
-	assert(value >= 0 && value < 2);
-	return _StyleType[value];
-}
-enum StyleType luaX_checkStyleType(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _StyleType);
-}
-void luaX_pushStyleType(lua_State *L, enum StyleType value) {
-	assert(value >= 0 && value < 2);
-	lua_pushstring(L, _StyleType[value]);
-}
+#define ENUM(NAME, ...) \
+ORCA_API const char *_##NAME[] = {__VA_ARGS__, NULL}; \
+const char *NAME##ToString(enum NAME value) { \
+	return (assert(value >= 0 && value < sizeof(_##NAME) / sizeof(*_##NAME) - 1), _##NAME[value]); \
+} \
+enum NAME luaX_check##NAME(lua_State *L, int idx) { \
+	return luaL_checkoption(L, idx, NULL, _##NAME); \
+} \
+void luaX_push##NAME(lua_State *L, enum NAME value) { \
+	lua_pushstring(L, (assert(value >= 0 && value < sizeof(_##NAME) / sizeof(*_##NAME) - 1), _##NAME[value])); \
+}
+ENUM(Direction, "Horizontal", "Vertical", "Depth")
+ENUM(Box3Field, "X", "Y", "Z", "Width", "Height", "Depth")
+ENUM(TextOverflow, "Clip", "Ellipsis")
+ENUM(TextWrapping, "WrapWithOverflow", "NoWrap", "Wrap")
+ENUM(TextHorizontalAlignment, "Left", "Center", "Right")
+ENUM(TextVerticalAlignment, "Top", "Center", "Bottom", "Baseline")
+ENUM(HorizontalAlignment, "Stretch", "Left", "Center", "Right")
+ENUM(VerticalAlignment, "Stretch", "Top", "Center", "Bottom")
+ENUM(AlignItems, "Start", "Center", "End", "Stretch", "Baseline")
+ENUM(DepthAlignment, "Near", "Center", "Far", "Stretch")
+ENUM(Overflow, "Visible", "Hidden", "Clip", "Scroll", "Auto")
+ENUM(ForegroundHint, "None", "Translucent", "Opaque")
+ENUM(JustifyContent, "Start", "End", "Center", "SpaceBetween", "SpaceAround", "SpaceEvenly")
+ENUM(FontWeight, "Normal", "Bold")
+ENUM(FontStyle, "Normal", "Italic")
+ENUM(BorderStyle, "None", "Hidden", "Dotted", "Dashed", "Solid", "Double", "Groove", "Ridge", "Inset", "Outset")
+ENUM(PlaybackMode, "Normal", "Reverse", "Pingpong")
+ENUM(ButtonType, "Normal", "Submit")
+ENUM(InputType, "Text", "Password", "Number", "Checkbox", "Radio")
+ENUM(Sizing, "PlusMargin", "SizeOnly", "MinusPadding")
+ENUM(ResizeMode, "CanResize", "CanMinimize", "CanResizeWithGrip", "NoResize")
+ENUM(Stretch, "Uniform", "None", "Fill", "UniformToFill")
+ENUM(TransitionType, "None", "Slide", "Fade")
+ENUM(StyleType, "Generic", "Named")
+#define FIELD(IDENT, STRUCT, NAME, TYPE, ...) { \
+	.Name = #NAME, \
+	.ShortIdentifier = IDENT, \
+	.DataType = TYPE, \
+	.Offset = offsetof(struct STRUCT, NAME), \
+	.DataSize = sizeof(((struct STRUCT*)NULL)->NAME), \
+	##__VA_ARGS__ \
+}
+static struct PropertyType _BorderRadiusShorthand[] = {
+	FIELD(0xd5ac3a0b, BorderRadiusShorthand, TopLeftRadius, kDataTypeFloat),
+	FIELD(0xdbe5a724, BorderRadiusShorthand, TopRightRadius, kDataTypeFloat),
+	FIELD(0xf6ae40ce, BorderRadiusShorthand, BottomRightRadius, kDataTypeFloat),
+	FIELD(0x7f5fe235, BorderRadiusShorthand, BottomLeftRadius, kDataTypeFloat),
+};
+static struct PropertyType _EdgeShorthand[] = {
+	FIELD(0x92773890, EdgeShorthand, Left, kDataTypeFloat),
+	FIELD(0x1e9e9f85, EdgeShorthand, Right, kDataTypeFloat),
+};
+static struct PropertyType _AlignmentShorthand[] = {
+	FIELD(0xed57fa14, AlignmentShorthand, Axis, kDataTypeInt),
+};
+static struct PropertyType _FontShorthand[] = {
+	FIELD(0x993014d9, FontShorthand, Weight, kDataTypeEnum),
+	FIELD(0x5467ec76, FontShorthand, Style, kDataTypeEnum),
+	FIELD(0xa6478e7c, FontShorthand, Size, kDataTypeFloat),
+	FIELD(0xc46f8f49, FontShorthand, Family, kDataTypeComponent),
+};
+static struct PropertyType _BrushShorthand[] = {
+	FIELD(0xe5b43cf8, BrushShorthand, Color, kDataTypeStruct),
+	FIELD(0x590ca79a, BrushShorthand, Image, kDataTypeComponent),
+	FIELD(0xcbd54f80, BrushShorthand, Material, kDataTypeComponent),
+};
+static struct PropertyType _ShadowShorthand[] = {
+	FIELD(0x8995c7ea, ShadowShorthand, Offset, kDataTypeStruct),
+	FIELD(0x961749ae, ShadowShorthand, BlurRadius, kDataTypeFloat),
+	FIELD(0x80066a9c, ShadowShorthand, SpreadRadius, kDataTypeFloat),
+	FIELD(0xe5b43cf8, ShadowShorthand, Color, kDataTypeStruct),
+};
+static struct PropertyType _RingShorthand[] = {
+	FIELD(0x8995c7ea, RingShorthand, Offset, kDataTypeFloat),
+	FIELD(0x3b42dfbf, RingShorthand, Width, kDataTypeFloat),
+	FIELD(0xe5b43cf8, RingShorthand, Color, kDataTypeStruct),
+};
+static struct PropertyType _OverflowShorthand[] = {
+	FIELD(0xfd0c5087, OverflowShorthand, x, kDataTypeEnum),
+	FIELD(0xfc0c4ef4, OverflowShorthand, y, kDataTypeEnum),
+};
+static struct PropertyType _UnderlineShorthand[] = {
+	FIELD(0x8995c7ea, UnderlineShorthand, Offset, kDataTypeFloat),
+	FIELD(0x3b42dfbf, UnderlineShorthand, Width, kDataTypeFloat),
+	FIELD(0xe5b43cf8, UnderlineShorthand, Color, kDataTypeStruct),
+};
+static struct PropertyType _MarginShorthand[] = {
+	FIELD(0xed57fa14, MarginShorthand, Axis, kDataTypeStruct),
+};
+static struct PropertyType _BorderShorthand[] = {
+	FIELD(0x3b42dfbf, BorderShorthand, Width, kDataTypeStruct),
+	FIELD(0xe5b43cf8, BorderShorthand, Color, kDataTypeStruct),
+	FIELD(0x5467ec76, BorderShorthand, Style, kDataTypeEnum),
+	FIELD(0x3a8111d3, BorderShorthand, Radius, kDataTypeStruct),
+};
+static struct PropertyType _SizeAxisShorthand[] = {
+	FIELD(0x77ea8663, SizeAxisShorthand, Requested, kDataTypeFloat),
+	FIELD(0x28adf5d5, SizeAxisShorthand, Desired, kDataTypeFloat),
+	FIELD(0x2e9445f7, SizeAxisShorthand, Min, kDataTypeFloat),
+	FIELD(0xf1aed197, SizeAxisShorthand, Actual, kDataTypeFloat),
+	FIELD(0x25dca54c, SizeAxisShorthand, Scroll, kDataTypeFloat),
+};
+static struct PropertyType _SizeShorthand[] = {
+	FIELD(0xed57fa14, SizeShorthand, Axis, kDataTypeStruct),
+};
+
 void luaX_pushBorderRadiusShorthand(lua_State *L, struct BorderRadiusShorthand const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct BorderRadiusShorthand* self = lua_newuserdata(L, sizeof(struct BorderRadiusShorthand));
@@ -1945,6 +1764,73 @@ int luaopen_orca_TriggeredMsgArgs(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
+struct MessageType UpdateShmatrixMessage = {
+	.name = "UpdateShmatrix",
+	.id = kMsgUpdateShmatrix,
+	.routing = kMessageRoutingDirect,
+	.size = sizeof(struct UpdateShmatrixMsgArgs),
+};
+void luaX_pushUpdateShmatrixMsgArgs(lua_State *L, struct UpdateShmatrixMsgArgs const* data) {
+	if (data == NULL) { lua_pushnil(L); return; }
+	struct UpdateShmatrixMsgArgs* self = lua_newuserdata(L, sizeof(struct UpdateShmatrixMsgArgs));
+	luaL_setmetatable(L, "UpdateShmatrixMsgArgs");
+	memcpy(self, data, sizeof(struct UpdateShmatrixMsgArgs));
+}
+struct UpdateShmatrixMsgArgs* luaX_checkUpdateShmatrixMsgArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "UpdateShmatrixMsgArgs");
+}
+static int f_new_UpdateShmatrixMsgArgs(lua_State *L) {
+	struct UpdateShmatrixMsgArgs* self = lua_newuserdata(L, sizeof(struct UpdateShmatrixMsgArgs));
+	luaL_setmetatable(L, "UpdateShmatrixMsgArgs");
+	memset(self, 0, sizeof(struct UpdateShmatrixMsgArgs));
+	if (lua_gettop(L) == 1) return 1;
+	if (lua_istable(L, 1)) {
+		lua_pop(L, (lua_getfield(L, 1, "parent"), self->parent = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkmat4(L, -1) : (struct mat4){0}, 1));
+		lua_pop(L, (lua_getfield(L, 1, "opacity"), self->opacity = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "force"), self->force = lua_toboolean(L, -1), 1));
+	} else {
+		self->parent = lua_type(L, 1) == LUA_TUSERDATA ? *luaX_checkmat4(L, 1) : (struct mat4){0};
+		self->opacity = luaL_optnumber(L, 2, 0);
+		self->force = lua_toboolean(L, 3);
+	}
+	return 1;
+}
+int f_UpdateShmatrixMsgArgs___index(lua_State *L) {
+	struct UpdateShmatrixMsgArgs* self = luaX_checkUpdateShmatrixMsgArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0xeacdfcfd: luaX_pushmat4(L, &self->parent); return 1; // parent
+	case 0xc6c2dd66: lua_pushnumber(L, self->opacity); return 1; // opacity
+	case 0x79a98884: lua_pushboolean(L, self->force); return 1; // force
+	}
+	return luaL_error(L, "Unknown field in UpdateShmatrixMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+int f_UpdateShmatrixMsgArgs___newindex(lua_State *L) {
+	struct UpdateShmatrixMsgArgs* self = luaX_checkUpdateShmatrixMsgArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0xeacdfcfd: self->parent = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkmat4(L, 3) : (struct mat4){0}; return 0; // parent
+	case 0xc6c2dd66: self->opacity = luaL_optnumber(L, 3, 0); return 0; // opacity
+	case 0x79a98884: self->force = lua_toboolean(L, 3); return 0; // force
+	}
+	return luaL_error(L, "Unknown field in UpdateShmatrixMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+static int f_UpdateShmatrixMsgArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_UpdateShmatrixMsgArgs(L));  // remove UpdateShmatrixMsgArgs from stack and call constructor
+}
+int luaopen_orca_UpdateShmatrixMsgArgs(lua_State *L) {
+	luaL_newmetatable(L, "UpdateShmatrixMsgArgs");
+	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ "new", f_new_UpdateShmatrixMsgArgs },
+		{ "__newindex", f_UpdateShmatrixMsgArgs___newindex },
+		{ "__index", f_UpdateShmatrixMsgArgs___index },
+		{ NULL, NULL },
+	}), 0);
+	// Make UpdateShmatrixMsgArgs creatable via constructor-like syntax
+	lua_newtable(L);
+	lua_pushcfunction(L, f_UpdateShmatrixMsgArgs___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+	return 1;
+}
 struct MessageType UpdateLayoutMessage = {
 	.name = "UpdateLayout",
 	.id = kMsgUpdateLayout,
@@ -2134,6 +2020,9 @@ int luaopen_orca_NavigateBackMsgArgs(lua_State *L) {
 #define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
 
 
+static struct MessageType DataObjectMessageTypes[kDataObjectNumMessageTypes] = {	
+};
+
 static struct PropertyType const DataObjectProperties[kDataObjectNumProperties] = {
 };
 static struct DataObject DataObjectDefaults = {
@@ -2158,11 +2047,16 @@ ORCA_API struct ClassDesc _DataObject = {
 	.ClassID = ID_DataObject,
 	.ClassSize = sizeof(struct DataObject),
 	.Properties = DataObjectProperties,
+	.MessageTypes = DataObjectMessageTypes,
 	.ObjProc = DataObjectProc,
 	.Defaults = &DataObjectDefaults,
 	.NumProperties = kDataObjectNumProperties,
+	.NumMessageTypes = kDataObjectNumMessageTypes,
 };
 
+
+static struct MessageType AnimationPlayerMessageTypes[kAnimationPlayerNumMessageTypes] = {	
+};
 
 static struct PropertyType const AnimationPlayerProperties[kAnimationPlayerNumProperties] = {
 	DECL(0x706b62d9, AnimationPlayer, AutoplayEnabled, AutoplayEnabled, kDataTypeBool), // AnimationPlayer.AutoplayEnabled
@@ -2195,13 +2089,18 @@ ORCA_API struct ClassDesc _AnimationPlayer = {
 	.ClassID = ID_AnimationPlayer,
 	.ClassSize = sizeof(struct AnimationPlayer),
 	.Properties = AnimationPlayerProperties,
+	.MessageTypes = AnimationPlayerMessageTypes,
 	.ObjProc = AnimationPlayerProc,
 	.Defaults = &AnimationPlayerDefaults,
 	.NumProperties = kAnimationPlayerNumProperties,
+	.NumMessageTypes = kAnimationPlayerNumMessageTypes,
 };
 
 LRESULT Trigger_PropertyChanged(struct Object*, struct Trigger*, wParam_t, PropertyChangedMsgPtr);
 LRESULT Trigger_Attached(struct Object*, struct Trigger*, wParam_t, AttachedMsgPtr);
+
+static struct MessageType TriggerMessageTypes[kTriggerNumMessageTypes] = {	
+};
 
 static struct PropertyType const TriggerProperties[kTriggerNumProperties] = {
 	DECL(0x5221f9e8, Trigger, Property, Property, kDataTypeString), // Trigger.Property
@@ -2231,12 +2130,17 @@ ORCA_API struct ClassDesc _Trigger = {
 	.ClassID = ID_Trigger,
 	.ClassSize = sizeof(struct Trigger),
 	.Properties = TriggerProperties,
+	.MessageTypes = TriggerMessageTypes,
 	.ObjProc = TriggerProc,
 	.Defaults = &TriggerDefaults,
 	.NumProperties = kTriggerNumProperties,
+	.NumMessageTypes = kTriggerNumMessageTypes,
 };
 
 LRESULT OnPropertyChangedTrigger_PropertyChanged(struct Object*, struct OnPropertyChangedTrigger*, wParam_t, PropertyChangedMsgPtr);
+
+static struct MessageType OnPropertyChangedTriggerMessageTypes[kOnPropertyChangedTriggerNumMessageTypes] = {	
+};
 
 static struct PropertyType const OnPropertyChangedTriggerProperties[kOnPropertyChangedTriggerNumProperties] = {
 	DECL(0x9ff03304, OnPropertyChangedTrigger, SourceNode, SourceNode, kDataTypeString), // OnPropertyChangedTrigger.SourceNode
@@ -2266,12 +2170,17 @@ ORCA_API struct ClassDesc _OnPropertyChangedTrigger = {
 	.ClassID = ID_OnPropertyChangedTrigger,
 	.ClassSize = sizeof(struct OnPropertyChangedTrigger),
 	.Properties = OnPropertyChangedTriggerProperties,
+	.MessageTypes = OnPropertyChangedTriggerMessageTypes,
 	.ObjProc = OnPropertyChangedTriggerProc,
 	.Defaults = &OnPropertyChangedTriggerDefaults,
 	.NumProperties = kOnPropertyChangedTriggerNumProperties,
+	.NumMessageTypes = kOnPropertyChangedTriggerNumMessageTypes,
 };
 
 LRESULT OnAttachedTrigger_Attached(struct Object*, struct OnAttachedTrigger*, wParam_t, AttachedMsgPtr);
+
+static struct MessageType OnAttachedTriggerMessageTypes[kOnAttachedTriggerNumMessageTypes] = {	
+};
 
 static struct PropertyType const OnAttachedTriggerProperties[kOnAttachedTriggerNumProperties] = {
 };
@@ -2299,12 +2208,17 @@ ORCA_API struct ClassDesc _OnAttachedTrigger = {
 	.ClassID = ID_OnAttachedTrigger,
 	.ClassSize = sizeof(struct OnAttachedTrigger),
 	.Properties = OnAttachedTriggerProperties,
+	.MessageTypes = OnAttachedTriggerMessageTypes,
 	.ObjProc = OnAttachedTriggerProc,
 	.Defaults = &OnAttachedTriggerDefaults,
 	.NumProperties = kOnAttachedTriggerNumProperties,
+	.NumMessageTypes = kOnAttachedTriggerNumMessageTypes,
 };
 
 LRESULT EventTrigger_HandleMessage(struct Object*, struct EventTrigger*, wParam_t, HandleMessageMsgPtr);
+
+static struct MessageType EventTriggerMessageTypes[kEventTriggerNumMessageTypes] = {	
+};
 
 static struct PropertyType const EventTriggerProperties[kEventTriggerNumProperties] = {
 	DECL(0x30d77e1a, EventTrigger, RoutedEvent, RoutedEvent, kDataTypeString), // EventTrigger.RoutedEvent
@@ -2333,12 +2247,17 @@ ORCA_API struct ClassDesc _EventTrigger = {
 	.ClassID = ID_EventTrigger,
 	.ClassSize = sizeof(struct EventTrigger),
 	.Properties = EventTriggerProperties,
+	.MessageTypes = EventTriggerMessageTypes,
 	.ObjProc = EventTriggerProc,
 	.Defaults = &EventTriggerDefaults,
 	.NumProperties = kEventTriggerNumProperties,
+	.NumMessageTypes = kEventTriggerNumMessageTypes,
 };
 
 LRESULT Setter_Triggered(struct Object*, struct Setter*, wParam_t, TriggeredMsgPtr);
+
+static struct MessageType SetterMessageTypes[kSetterNumMessageTypes] = {	
+};
 
 static struct PropertyType const SetterProperties[kSetterNumProperties] = {
 	DECL(0xa5ea0da3, Setter, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // Setter.Trigger
@@ -2368,12 +2287,17 @@ ORCA_API struct ClassDesc _Setter = {
 	.ClassID = ID_Setter,
 	.ClassSize = sizeof(struct Setter),
 	.Properties = SetterProperties,
+	.MessageTypes = SetterMessageTypes,
 	.ObjProc = SetterProc,
 	.Defaults = &SetterDefaults,
 	.NumProperties = kSetterNumProperties,
+	.NumMessageTypes = kSetterNumMessageTypes,
 };
 
 LRESULT Handler_Triggered(struct Object*, struct Handler*, wParam_t, TriggeredMsgPtr);
+
+static struct MessageType HandlerMessageTypes[kHandlerNumMessageTypes] = {	
+};
 
 static struct PropertyType const HandlerProperties[kHandlerNumProperties] = {
 	DECL(0xa5ea0da3, Handler, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // Handler.Trigger
@@ -2403,11 +2327,16 @@ ORCA_API struct ClassDesc _Handler = {
 	.ClassID = ID_Handler,
 	.ClassSize = sizeof(struct Handler),
 	.Properties = HandlerProperties,
+	.MessageTypes = HandlerMessageTypes,
 	.ObjProc = HandlerProc,
 	.Defaults = &HandlerDefaults,
 	.NumProperties = kHandlerNumProperties,
+	.NumMessageTypes = kHandlerNumMessageTypes,
 };
 
+
+static struct MessageType BrushMessageTypes[kBrushNumMessageTypes] = {	
+};
 
 static struct PropertyType const BrushProperties[kBrushNumProperties] = {
 };
@@ -2433,11 +2362,16 @@ ORCA_API struct ClassDesc _Brush = {
 	.ClassID = ID_Brush,
 	.ClassSize = sizeof(struct Brush),
 	.Properties = BrushProperties,
+	.MessageTypes = BrushMessageTypes,
 	.ObjProc = BrushProc,
 	.Defaults = &BrushDefaults,
 	.NumProperties = kBrushNumProperties,
+	.NumMessageTypes = kBrushNumMessageTypes,
 };
 
+
+static struct MessageType ColorBrushMessageTypes[kColorBrushNumMessageTypes] = {	
+};
 
 static struct PropertyType const ColorBrushProperties[kColorBrushNumProperties] = {
 	DECL(0xe5b43cf8, ColorBrush, Color, Color, kDataTypeColor), // ColorBrush.Color
@@ -2465,14 +2399,19 @@ ORCA_API struct ClassDesc _ColorBrush = {
 	.ClassID = ID_ColorBrush,
 	.ClassSize = sizeof(struct ColorBrush),
 	.Properties = ColorBrushProperties,
+	.MessageTypes = ColorBrushMessageTypes,
 	.ObjProc = ColorBrushProc,
 	.Defaults = &ColorBrushDefaults,
 	.NumProperties = kColorBrushNumProperties,
+	.NumMessageTypes = kColorBrushNumMessageTypes,
 };
 
 LRESULT Node_ThemeChanged(struct Object*, struct Node*, wParam_t, ThemeChangedMsgPtr);
 LRESULT Node_GetSize(struct Object*, struct Node*, wParam_t, GetSizeMsgPtr);
 LRESULT Node_IsVisible(struct Object*, struct Node*, wParam_t, IsVisibleMsgPtr);
+
+static struct MessageType NodeMessageTypes[kNodeNumMessageTypes] = {	
+};
 
 static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	DECL(0xa6478e7c, Node, Size, Size, kDataTypeStruct, .TypeString = "SizeShorthand"), // Node.Size
@@ -2574,11 +2513,16 @@ ORCA_API struct ClassDesc _Node = {
 	.ClassID = ID_Node,
 	.ClassSize = sizeof(struct Node),
 	.Properties = NodeProperties,
+	.MessageTypes = NodeMessageTypes,
 	.ObjProc = NodeProc,
 	.Defaults = &NodeDefaults,
 	.NumProperties = kNodeNumProperties,
+	.NumMessageTypes = kNodeNumMessageTypes,
 };
 
+
+static struct MessageType TextRunMessageTypes[kTextRunNumMessageTypes] = {	
+};
 
 static struct PropertyType const TextRunProperties[kTextRunNumProperties] = {
 	DECL(0x3e142d5e, TextRun, Text, Text, kDataTypeString), // TextRun.Text
@@ -2623,14 +2567,19 @@ ORCA_API struct ClassDesc _TextRun = {
 	.ClassID = ID_TextRun,
 	.ClassSize = sizeof(struct TextRun),
 	.Properties = TextRunProperties,
+	.MessageTypes = TextRunMessageTypes,
 	.ObjProc = TextRunProc,
 	.Defaults = &TextRunDefaults,
 	.NumProperties = kTextRunNumProperties,
+	.NumMessageTypes = kTextRunNumMessageTypes,
 };
 
 LRESULT TextBlockConcept_Create(struct Object*, struct TextBlockConcept*, wParam_t, CreateMsgPtr);
 LRESULT TextBlockConcept_Destroy(struct Object*, struct TextBlockConcept*, wParam_t, DestroyMsgPtr);
 LRESULT TextBlockConcept_MakeText(struct Object*, struct TextBlockConcept*, wParam_t, MakeTextMsgPtr);
+
+static struct MessageType TextBlockConceptMessageTypes[kTextBlockConceptNumMessageTypes] = {	
+};
 
 static struct PropertyType const TextBlockConceptProperties[kTextBlockConceptNumProperties] = {
 	DECL(0x43c114fb, TextBlockConcept, TextResourceID, TextResourceID, kDataTypeString), // TextBlockConcept.TextResourceID
@@ -2678,9 +2627,11 @@ ORCA_API struct ClassDesc _TextBlockConcept = {
 	.ClassID = ID_TextBlockConcept,
 	.ClassSize = sizeof(struct TextBlockConcept),
 	.Properties = TextBlockConceptProperties,
+	.MessageTypes = TextBlockConceptMessageTypes,
 	.ObjProc = TextBlockConceptProc,
 	.Defaults = &TextBlockConceptDefaults,
 	.NumProperties = kTextBlockConceptNumProperties,
+	.NumMessageTypes = kTextBlockConceptNumMessageTypes,
 };
 
 LRESULT Node2D_UpdateMatrix(struct Object*, struct Node2D*, wParam_t, UpdateMatrixMsgPtr);
@@ -2696,6 +2647,10 @@ LRESULT Node2D_Measure(struct Object*, struct Node2D*, wParam_t, MeasureMsgPtr);
 LRESULT Node2D_Arrange(struct Object*, struct Node2D*, wParam_t, ArrangeMsgPtr);
 LRESULT Node2D_MeasureOverride(struct Object*, struct Node2D*, wParam_t, MeasureOverrideMsgPtr);
 LRESULT Node2D_ArrangeOverride(struct Object*, struct Node2D*, wParam_t, ArrangeOverrideMsgPtr);
+
+static struct MessageType Node2DMessageTypes[kNode2DNumMessageTypes] = {	
+		{ "Node2D.UpdateShmatrix", kMsgUpdateShmatrix, kMessageRoutingDirect, sizeof(struct UpdateShmatrixMsgArgs) },
+};
 
 static struct PropertyType const Node2DProperties[kNode2DNumProperties] = {
 	DECL(0x3f19bf01, Node2D, LayoutTransform, LayoutTransform, kDataTypeStruct, .TypeString = "Transform2D"), // Node2D.LayoutTransform
@@ -2783,12 +2738,17 @@ ORCA_API struct ClassDesc _Node2D = {
 	.ClassID = ID_Node2D,
 	.ClassSize = sizeof(struct Node2D),
 	.Properties = Node2DProperties,
+	.MessageTypes = Node2DMessageTypes,
 	.ObjProc = Node2DProc,
 	.Defaults = &Node2DDefaults,
 	.NumProperties = kNode2DNumProperties,
+	.NumMessageTypes = kNode2DNumMessageTypes,
 };
 
 LRESULT PrefabView2D_LoadView(struct Object*, struct PrefabView2D*, wParam_t, LoadViewMsgPtr);
+
+static struct MessageType PrefabView2DMessageTypes[kPrefabView2DNumMessageTypes] = {	
+};
 
 static struct PropertyType const PrefabView2DProperties[kPrefabView2DNumProperties] = {
 	DECL(0x57f28ff6, PrefabView2D, SCA, SCA, kDataTypeString), // PrefabView2D.SCA
@@ -2818,9 +2778,11 @@ ORCA_API struct ClassDesc _PrefabView2D = {
 	.ClassID = ID_PrefabView2D,
 	.ClassSize = sizeof(struct PrefabView2D),
 	.Properties = PrefabView2DProperties,
+	.MessageTypes = PrefabView2DMessageTypes,
 	.ObjProc = PrefabView2DProc,
 	.Defaults = &PrefabView2DDefaults,
 	.NumProperties = kPrefabView2DNumProperties,
+	.NumMessageTypes = kPrefabView2DNumMessageTypes,
 };
 
 LRESULT TextBlock_MeasureOverride(struct Object*, struct TextBlock*, wParam_t, MeasureOverrideMsgPtr);
@@ -2828,6 +2790,9 @@ LRESULT TextBlock_ForegroundContent(struct Object*, struct TextBlock*, wParam_t,
 LRESULT TextBlock_UpdateGeometry(struct Object*, struct TextBlock*, wParam_t, UpdateGeometryMsgPtr);
 LRESULT TextBlock_Create(struct Object*, struct TextBlock*, wParam_t, CreateMsgPtr);
 LRESULT TextBlock_DrawBrush(struct Object*, struct TextBlock*, wParam_t, DrawBrushMsgPtr);
+
+static struct MessageType TextBlockMessageTypes[kTextBlockNumMessageTypes] = {	
+};
 
 static struct PropertyType const TextBlockProperties[kTextBlockNumProperties] = {
 };
@@ -2860,9 +2825,11 @@ ORCA_API struct ClassDesc _TextBlock = {
 	.ClassID = ID_TextBlock,
 	.ClassSize = sizeof(struct TextBlock),
 	.Properties = TextBlockProperties,
+	.MessageTypes = TextBlockMessageTypes,
 	.ObjProc = TextBlockProc,
 	.Defaults = &TextBlockDefaults,
 	.NumProperties = kTextBlockNumProperties,
+	.NumMessageTypes = kTextBlockNumMessageTypes,
 };
 
 LRESULT Input_Create(struct Object*, struct Input*, wParam_t, CreateMsgPtr);
@@ -2872,6 +2839,9 @@ LRESULT Input_KeyDown(struct Object*, struct Input*, wParam_t, KeyDownMsgPtr);
 LRESULT Input_KillFocus(struct Object*, struct Input*, wParam_t, KillFocusMsgPtr);
 LRESULT Input_LeftMouseUp(struct Object*, struct Input*, wParam_t, LeftMouseUpMsgPtr);
 LRESULT Input_MeasureOverride(struct Object*, struct Input*, wParam_t, MeasureOverrideMsgPtr);
+
+static struct MessageType InputMessageTypes[kInputNumMessageTypes] = {	
+};
 
 static struct PropertyType const InputProperties[kInputNumProperties] = {
 	DECL(0x0fe07306, Input, Name, Name, kDataTypeString), // Input.Name
@@ -2910,15 +2880,20 @@ ORCA_API struct ClassDesc _Input = {
 	.ClassID = ID_Input,
 	.ClassSize = sizeof(struct Input),
 	.Properties = InputProperties,
+	.MessageTypes = InputMessageTypes,
 	.ObjProc = InputProc,
 	.Defaults = &InputDefaults,
 	.NumProperties = kInputNumProperties,
+	.NumMessageTypes = kInputNumMessageTypes,
 };
 
 LRESULT Button_Create(struct Object*, struct Button*, wParam_t, CreateMsgPtr);
 LRESULT Button_LeftMouseUp(struct Object*, struct Button*, wParam_t, LeftMouseUpMsgPtr);
 LRESULT Button_KeyDown(struct Object*, struct Button*, wParam_t, KeyDownMsgPtr);
 LRESULT Button_DrawBrush(struct Object*, struct Button*, wParam_t, DrawBrushMsgPtr);
+
+static struct MessageType ButtonMessageTypes[kButtonNumMessageTypes] = {	
+};
 
 static struct PropertyType const ButtonProperties[kButtonNumProperties] = {
 	DECL(0xd155d06d, Button, Type, Type, kDataTypeEnum, .TypeString = "Normal,Submit", .EnumValues = _ButtonType), // Button.Type
@@ -2950,12 +2925,17 @@ ORCA_API struct ClassDesc _Button = {
 	.ClassID = ID_Button,
 	.ClassSize = sizeof(struct Button),
 	.Properties = ButtonProperties,
+	.MessageTypes = ButtonMessageTypes,
 	.ObjProc = ButtonProc,
 	.Defaults = &ButtonDefaults,
 	.NumProperties = kButtonNumProperties,
+	.NumMessageTypes = kButtonNumMessageTypes,
 };
 
 LRESULT Label_LeftMouseUp(struct Object*, struct Label*, wParam_t, LeftMouseUpMsgPtr);
+
+static struct MessageType LabelMessageTypes[kLabelNumMessageTypes] = {	
+};
 
 static struct PropertyType const LabelProperties[kLabelNumProperties] = {
 	DECL(0x0f7e1b30, Label, For, For, kDataTypeString), // Label.For
@@ -2984,13 +2964,18 @@ ORCA_API struct ClassDesc _Label = {
 	.ClassID = ID_Label,
 	.ClassSize = sizeof(struct Label),
 	.Properties = LabelProperties,
+	.MessageTypes = LabelMessageTypes,
 	.ObjProc = LabelProc,
 	.Defaults = &LabelDefaults,
 	.NumProperties = kLabelNumProperties,
+	.NumMessageTypes = kLabelNumMessageTypes,
 };
 
 LRESULT StackView_MeasureOverride(struct Object*, struct StackView*, wParam_t, MeasureOverrideMsgPtr);
 LRESULT StackView_ArrangeOverride(struct Object*, struct StackView*, wParam_t, ArrangeOverrideMsgPtr);
+
+static struct MessageType StackViewMessageTypes[kStackViewNumMessageTypes] = {	
+};
 
 static struct PropertyType const StackViewProperties[kStackViewNumProperties] = {
 	DECL(0xcee65dd3, StackView, Reversed, Reversed, kDataTypeBool), // StackView.Reversed
@@ -3024,13 +3009,18 @@ ORCA_API struct ClassDesc _StackView = {
 	.ClassID = ID_StackView,
 	.ClassSize = sizeof(struct StackView),
 	.Properties = StackViewProperties,
+	.MessageTypes = StackViewMessageTypes,
 	.ObjProc = StackViewProc,
 	.Defaults = &StackViewDefaults,
 	.NumProperties = kStackViewNumProperties,
+	.NumMessageTypes = kStackViewNumMessageTypes,
 };
 
 LRESULT Form_Create(struct Object*, struct Form*, wParam_t, CreateMsgPtr);
 LRESULT Form_Submit(struct Object*, struct Form*, wParam_t, SubmitMsgPtr);
+
+static struct MessageType FormMessageTypes[kFormNumMessageTypes] = {	
+};
 
 static struct PropertyType const FormProperties[kFormNumProperties] = {
 };
@@ -3059,11 +3049,16 @@ ORCA_API struct ClassDesc _Form = {
 	.ClassID = ID_Form,
 	.ClassSize = sizeof(struct Form),
 	.Properties = FormProperties,
+	.MessageTypes = FormMessageTypes,
 	.ObjProc = FormProc,
 	.Defaults = &FormDefaults,
 	.NumProperties = kFormNumProperties,
+	.NumMessageTypes = kFormNumMessageTypes,
 };
 
+
+static struct MessageType ControlMessageTypes[kControlNumMessageTypes] = {	
+};
 
 static struct PropertyType const ControlProperties[kControlNumProperties] = {
 	DECL(0x705293c5, Control, Pressed, Pressed, kDataTypeBool), // Control.Pressed
@@ -3096,9 +3091,11 @@ ORCA_API struct ClassDesc _Control = {
 	.ClassID = ID_Control,
 	.ClassSize = sizeof(struct Control),
 	.Properties = ControlProperties,
+	.MessageTypes = ControlMessageTypes,
 	.ObjProc = ControlProc,
 	.Defaults = &ControlDefaults,
 	.NumProperties = kControlNumProperties,
+	.NumMessageTypes = kControlNumMessageTypes,
 };
 
 LRESULT Screen_UpdateLayout(struct Object*, struct Screen*, wParam_t, UpdateLayoutMsgPtr);
@@ -3108,6 +3105,9 @@ LRESULT Screen_Create(struct Object*, struct Screen*, wParam_t, CreateMsgPtr);
 LRESULT Screen_Destroy(struct Object*, struct Screen*, wParam_t, DestroyMsgPtr);
 LRESULT Screen_WindowResized(struct Object*, struct Screen*, wParam_t, WindowResizedMsgPtr);
 LRESULT Screen_WindowPaint(struct Object*, struct Screen*, wParam_t, WindowPaintMsgPtr);
+
+static struct MessageType ScreenMessageTypes[kScreenNumMessageTypes] = {	
+};
 
 static struct PropertyType const ScreenProperties[kScreenNumProperties] = {
 	DECL(0xeb16b675, Screen, ClearColor, ClearColor, kDataTypeColor), // Screen.ClearColor
@@ -3146,12 +3146,17 @@ ORCA_API struct ClassDesc _Screen = {
 	.ClassID = ID_Screen,
 	.ClassSize = sizeof(struct Screen),
 	.Properties = ScreenProperties,
+	.MessageTypes = ScreenMessageTypes,
 	.ObjProc = ScreenProc,
 	.Defaults = &ScreenDefaults,
 	.NumProperties = kScreenNumProperties,
+	.NumMessageTypes = kScreenNumMessageTypes,
 };
 
 LRESULT Cinematic_DrawBrush(struct Object*, struct Cinematic*, wParam_t, DrawBrushMsgPtr);
+
+static struct MessageType CinematicMessageTypes[kCinematicNumMessageTypes] = {	
+};
 
 static struct PropertyType const CinematicProperties[kCinematicNumProperties] = {
 	DECL(0x5ffdd888, Cinematic, FileName, FileName, kDataTypeString), // Cinematic.FileName
@@ -3183,13 +3188,18 @@ ORCA_API struct ClassDesc _Cinematic = {
 	.ClassID = ID_Cinematic,
 	.ClassSize = sizeof(struct Cinematic),
 	.Properties = CinematicProperties,
+	.MessageTypes = CinematicMessageTypes,
 	.ObjProc = CinematicProc,
 	.Defaults = &CinematicDefaults,
 	.NumProperties = kCinematicNumProperties,
+	.NumMessageTypes = kCinematicNumMessageTypes,
 };
 
 LRESULT Grid_MeasureOverride(struct Object*, struct Grid*, wParam_t, MeasureOverrideMsgPtr);
 LRESULT Grid_ArrangeOverride(struct Object*, struct Grid*, wParam_t, ArrangeOverrideMsgPtr);
+
+static struct MessageType GridMessageTypes[kGridNumMessageTypes] = {	
+};
 
 static struct PropertyType const GridProperties[kGridNumProperties] = {
 	DECL(0xea156fdc, Grid, Columns, Columns, kDataTypeString), // Grid.Columns
@@ -3224,9 +3234,11 @@ ORCA_API struct ClassDesc _Grid = {
 	.ClassID = ID_Grid,
 	.ClassSize = sizeof(struct Grid),
 	.Properties = GridProperties,
+	.MessageTypes = GridMessageTypes,
 	.ObjProc = GridProc,
 	.Defaults = &GridDefaults,
 	.NumProperties = kGridNumProperties,
+	.NumMessageTypes = kGridNumMessageTypes,
 };
 
 LRESULT ImageView_MeasureOverride(struct Object*, struct ImageView*, wParam_t, MeasureOverrideMsgPtr);
@@ -3234,6 +3246,9 @@ LRESULT ImageView_ArrangeOverride(struct Object*, struct ImageView*, wParam_t, A
 LRESULT ImageView_ForegroundContent(struct Object*, struct ImageView*, wParam_t, ForegroundContentMsgPtr);
 LRESULT ImageView_DrawBrush(struct Object*, struct ImageView*, wParam_t, DrawBrushMsgPtr);
 LRESULT ImageView_LoadView(struct Object*, struct ImageView*, wParam_t, LoadViewMsgPtr);
+
+static struct MessageType ImageViewMessageTypes[kImageViewNumMessageTypes] = {	
+};
 
 static struct PropertyType const ImageViewProperties[kImageViewNumProperties] = {
 	DECL(0x35c77969, ImageView, Src, Src, kDataTypeString), // ImageView.Src
@@ -3273,14 +3288,19 @@ ORCA_API struct ClassDesc _ImageView = {
 	.ClassID = ID_ImageView,
 	.ClassSize = sizeof(struct ImageView),
 	.Properties = ImageViewProperties,
+	.MessageTypes = ImageViewMessageTypes,
 	.ObjProc = ImageViewProc,
 	.Defaults = &ImageViewDefaults,
 	.NumProperties = kImageViewNumProperties,
+	.NumMessageTypes = kImageViewNumMessageTypes,
 };
 
 LRESULT NinePatchImage_MeasureOverride(struct Object*, struct NinePatchImage*, wParam_t, MeasureOverrideMsgPtr);
 LRESULT NinePatchImage_ForegroundContent(struct Object*, struct NinePatchImage*, wParam_t, ForegroundContentMsgPtr);
 LRESULT NinePatchImage_DrawBrush(struct Object*, struct NinePatchImage*, wParam_t, DrawBrushMsgPtr);
+
+static struct MessageType NinePatchImageMessageTypes[kNinePatchImageNumMessageTypes] = {	
+};
 
 static struct PropertyType const NinePatchImageProperties[kNinePatchImageNumProperties] = {
 	DECL(0x9f40b6ad, NinePatchImage, StretchTypeTop, StretchTypeTop, kDataTypeFloat), // NinePatchImage.StretchTypeTop
@@ -3324,15 +3344,20 @@ ORCA_API struct ClassDesc _NinePatchImage = {
 	.ClassID = ID_NinePatchImage,
 	.ClassSize = sizeof(struct NinePatchImage),
 	.Properties = NinePatchImageProperties,
+	.MessageTypes = NinePatchImageMessageTypes,
 	.ObjProc = NinePatchImageProc,
 	.Defaults = &NinePatchImageDefaults,
 	.NumProperties = kNinePatchImageNumProperties,
+	.NumMessageTypes = kNinePatchImageNumMessageTypes,
 };
 
 LRESULT TerminalView_Create(struct Object*, struct TerminalView*, wParam_t, CreateMsgPtr);
 LRESULT TerminalView_DrawBrush(struct Object*, struct TerminalView*, wParam_t, DrawBrushMsgPtr);
 LRESULT TerminalView_PushProperty(struct Object*, struct TerminalView*, wParam_t, PushPropertyMsgPtr);
 LRESULT TerminalView_ScrollWheel(struct Object*, struct TerminalView*, wParam_t, ScrollWheelMsgPtr);
+
+static struct MessageType TerminalViewMessageTypes[kTerminalViewNumMessageTypes] = {	
+};
 
 static struct PropertyType const TerminalViewProperties[kTerminalViewNumProperties] = {
 	DECL(0xdd1f241d, TerminalView, BufferWidth, BufferWidth, kDataTypeInt), // TerminalView.BufferWidth
@@ -3372,12 +3397,17 @@ ORCA_API struct ClassDesc _TerminalView = {
 	.ClassID = ID_TerminalView,
 	.ClassSize = sizeof(struct TerminalView),
 	.Properties = TerminalViewProperties,
+	.MessageTypes = TerminalViewMessageTypes,
 	.ObjProc = TerminalViewProc,
 	.Defaults = &TerminalViewDefaults,
 	.NumProperties = kTerminalViewNumProperties,
+	.NumMessageTypes = kTerminalViewNumMessageTypes,
 };
 
 LRESULT Page_Create(struct Object*, struct Page*, wParam_t, CreateMsgPtr);
+
+static struct MessageType PageMessageTypes[kPageNumMessageTypes] = {	
+};
 
 static struct PropertyType const PageProperties[kPageNumProperties] = {
 	DECL(0x24d471a9, Page, Title, Title, kDataTypeString), // Page.Title
@@ -3408,14 +3438,19 @@ ORCA_API struct ClassDesc _Page = {
 	.ClassID = ID_Page,
 	.ClassSize = sizeof(struct Page),
 	.Properties = PageProperties,
+	.MessageTypes = PageMessageTypes,
 	.ObjProc = PageProc,
 	.Defaults = &PageDefaults,
 	.NumProperties = kPageNumProperties,
+	.NumMessageTypes = kPageNumMessageTypes,
 };
 
 LRESULT PageHost_ViewDidLoad(struct Object*, struct PageHost*, wParam_t, ViewDidLoadMsgPtr);
 LRESULT PageHost_NavigateToPage(struct Object*, struct PageHost*, wParam_t, NavigateToPageMsgPtr);
 LRESULT PageHost_NavigateBack(struct Object*, struct PageHost*, wParam_t, NavigateBackMsgPtr);
+
+static struct MessageType PageHostMessageTypes[kPageHostNumMessageTypes] = {	
+};
 
 static struct PropertyType const PageHostProperties[kPageHostNumProperties] = {
 	DECL(0x2e149db4, PageHost, ActivePage, ActivePage, kDataTypeObject, .TypeString = "Page"), // PageHost.ActivePage
@@ -3446,11 +3481,16 @@ ORCA_API struct ClassDesc _PageHost = {
 	.ClassID = ID_PageHost,
 	.ClassSize = sizeof(struct PageHost),
 	.Properties = PageHostProperties,
+	.MessageTypes = PageHostMessageTypes,
 	.ObjProc = PageHostProc,
 	.Defaults = &PageHostDefaults,
 	.NumProperties = kPageHostNumProperties,
+	.NumMessageTypes = kPageHostNumMessageTypes,
 };
 
+
+static struct MessageType PageViewportMessageTypes[kPageViewportNumMessageTypes] = {	
+};
 
 static struct PropertyType const PageViewportProperties[kPageViewportNumProperties] = {
 };
@@ -3477,11 +3517,16 @@ ORCA_API struct ClassDesc _PageViewport = {
 	.ClassID = ID_PageViewport,
 	.ClassSize = sizeof(struct PageViewport),
 	.Properties = PageViewportProperties,
+	.MessageTypes = PageViewportMessageTypes,
 	.ObjProc = PageViewportProc,
 	.Defaults = &PageViewportDefaults,
 	.NumProperties = kPageViewportNumProperties,
+	.NumMessageTypes = kPageViewportNumMessageTypes,
 };
 
+
+static struct MessageType StyleMessageTypes[kStyleNumMessageTypes] = {	
+};
 
 static struct PropertyType const StyleProperties[kStyleNumProperties] = {
 	DECL(0x77ada720, Style, TargetType, TargetType, kDataTypeString), // Style.TargetType
@@ -3509,9 +3554,11 @@ ORCA_API struct ClassDesc _Style = {
 	.ClassID = ID_Style,
 	.ClassSize = sizeof(struct Style),
 	.Properties = StyleProperties,
+	.MessageTypes = StyleMessageTypes,
 	.ObjProc = StyleProc,
 	.Defaults = &StyleDefaults,
 	.NumProperties = kStyleNumProperties,
+	.NumMessageTypes = kStyleNumMessageTypes,
 };
 
 
@@ -3545,6 +3592,7 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_LoadViewMsgArgs(L), -2), "LoadViewMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_MakeTextMsgArgs(L), -2), "MakeTextMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_TriggeredMsgArgs(L), -2), "TriggeredMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_UpdateShmatrixMsgArgs(L), -2), "UpdateShmatrixMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_UpdateLayoutMsgArgs(L), -2), "UpdateLayoutMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_NavigateToPageMsgArgs(L), -2), "NavigateToPageMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_NavigateBackMsgArgs(L), -2), "NavigateBackMsgArgs");

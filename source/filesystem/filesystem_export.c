@@ -11,6 +11,38 @@ extern struct Object* luaX_checkObject(lua_State *L, int index);
 extern void luaX_push_PACK(lua_State *L, struct _PACK const* value);
 extern struct _PACK* luaX_check_PACK(lua_State *L, int index);
 
+#define ENUM(NAME, ...) \
+ORCA_API const char *_##NAME[] = {__VA_ARGS__, NULL}; \
+const char *NAME##ToString(enum NAME value) { \
+	return (assert(value >= 0 && value < sizeof(_##NAME) / sizeof(*_##NAME) - 1), _##NAME[value]); \
+} \
+enum NAME luaX_check##NAME(lua_State *L, int idx) { \
+	return luaL_checkoption(L, idx, NULL, _##NAME); \
+} \
+void luaX_push##NAME(lua_State *L, enum NAME value) { \
+	lua_pushstring(L, (assert(value >= 0 && value < sizeof(_##NAME) / sizeof(*_##NAME) - 1), _##NAME[value])); \
+}
+#define FIELD(IDENT, STRUCT, NAME, TYPE, ...) { \
+	.Name = #NAME, \
+	.ShortIdentifier = IDENT, \
+	.DataType = TYPE, \
+	.Offset = offsetof(struct STRUCT, NAME), \
+	.DataSize = sizeof(((struct STRUCT*)NULL)->NAME), \
+	##__VA_ARGS__ \
+}
+static struct PropertyType _ProjectReference[] = {
+	FIELD(0x0fe07306, ProjectReference, Name, kDataTypeFixed),
+	FIELD(0xeb66e456, ProjectReference, Path, kDataTypeFixed),
+};
+static struct PropertyType _EnginePlugin[] = {
+	FIELD(0x0fe07306, EnginePlugin, Name, kDataTypeFixed),
+};
+static struct PropertyType _SystemMessage[] = {
+	FIELD(0xae0ed984, SystemMessage, Message, kDataTypeFixed),
+	FIELD(0xcd1ac90c, SystemMessage, Key, kDataTypeFixed),
+	FIELD(0xc67c8f52, SystemMessage, Command, kDataTypeFixed),
+};
+
 void luaX_pushProjectReference(lua_State *L, struct ProjectReference const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct ProjectReference* self = lua_newuserdata(L, sizeof(struct ProjectReference));
@@ -426,6 +458,9 @@ int luaopen_orca_LoadProjectMsgArgs(lua_State *L) {
 #define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
 
 
+static struct MessageType WorkspaceMessageTypes[kWorkspaceNumMessageTypes] = {	
+};
+
 static struct PropertyType const WorkspaceProperties[kWorkspaceNumProperties] = {
 };
 static struct Workspace WorkspaceDefaults = {
@@ -450,11 +485,16 @@ ORCA_API struct ClassDesc _Workspace = {
 	.ClassID = ID_Workspace,
 	.ClassSize = sizeof(struct Workspace),
 	.Properties = WorkspaceProperties,
+	.MessageTypes = WorkspaceMessageTypes,
 	.ObjProc = WorkspaceProc,
 	.Defaults = &WorkspaceDefaults,
 	.NumProperties = kWorkspaceNumProperties,
+	.NumMessageTypes = kWorkspaceNumMessageTypes,
 };
 
+
+static struct MessageType LibraryMessageTypes[kLibraryNumMessageTypes] = {	
+};
 
 static struct PropertyType const LibraryProperties[kLibraryNumProperties] = {
 	DECL(0x1cb8f23a, Library, IsExternal, IsExternal, kDataTypeBool), // Library.IsExternal
@@ -481,12 +521,17 @@ ORCA_API struct ClassDesc _Library = {
 	.ClassID = ID_Library,
 	.ClassSize = sizeof(struct Library),
 	.Properties = LibraryProperties,
+	.MessageTypes = LibraryMessageTypes,
 	.ObjProc = LibraryProc,
 	.Defaults = &LibraryDefaults,
 	.NumProperties = kLibraryNumProperties,
+	.NumMessageTypes = kLibraryNumMessageTypes,
 };
 
 LRESULT Project_Start(struct Object*, struct Project*, wParam_t, StartMsgPtr);
+
+static struct MessageType ProjectMessageTypes[kProjectNumMessageTypes] = {	
+};
 
 static struct PropertyType const ProjectProperties[kProjectNumProperties] = {
 	DECL(0xbcd19216, Project, HalfFloatTextureFormat, HalfFloatTextureFormat, kDataTypeBool), // Project.HalfFloatTextureFormat
@@ -586,9 +631,11 @@ ORCA_API struct ClassDesc _Project = {
 	.ClassID = ID_Project,
 	.ClassSize = sizeof(struct Project),
 	.Properties = ProjectProperties,
+	.MessageTypes = ProjectMessageTypes,
 	.ObjProc = ProjectProc,
 	.Defaults = &ProjectDefaults,
 	.NumProperties = kProjectNumProperties,
+	.NumMessageTypes = kProjectNumMessageTypes,
 };
 
 LRESULT Directory_LoadProject(struct Object*, struct Directory*, wParam_t, LoadProjectMsgPtr);
@@ -596,6 +643,9 @@ LRESULT Directory_OpenFile(struct Object*, struct Directory*, wParam_t, OpenFile
 LRESULT Directory_FileExists(struct Object*, struct Directory*, wParam_t, FileExistsMsgPtr);
 LRESULT Directory_HasChangedFiles(struct Object*, struct Directory*, wParam_t, HasChangedFilesMsgPtr);
 LRESULT Directory_Destroy(struct Object*, struct Directory*, wParam_t, DestroyMsgPtr);
+
+static struct MessageType DirectoryMessageTypes[kDirectoryNumMessageTypes] = {	
+};
 
 static struct PropertyType const DirectoryProperties[kDirectoryNumProperties] = {
 	DECL(0xeb66e456, Directory, Path, Path, kDataTypeString), // Directory.Path
@@ -628,9 +678,11 @@ ORCA_API struct ClassDesc _Directory = {
 	.ClassID = ID_Directory,
 	.ClassSize = sizeof(struct Directory),
 	.Properties = DirectoryProperties,
+	.MessageTypes = DirectoryMessageTypes,
 	.ObjProc = DirectoryProc,
 	.Defaults = &DirectoryDefaults,
 	.NumProperties = kDirectoryNumProperties,
+	.NumMessageTypes = kDirectoryNumMessageTypes,
 };
 
 LRESULT Package_LoadProject(struct Object*, struct Package*, wParam_t, LoadProjectMsgPtr);
@@ -638,6 +690,9 @@ LRESULT Package_OpenFile(struct Object*, struct Package*, wParam_t, OpenFileMsgP
 LRESULT Package_FileExists(struct Object*, struct Package*, wParam_t, FileExistsMsgPtr);
 LRESULT Package_HasChangedFiles(struct Object*, struct Package*, wParam_t, HasChangedFilesMsgPtr);
 LRESULT Package_Destroy(struct Object*, struct Package*, wParam_t, DestroyMsgPtr);
+
+static struct MessageType PackageMessageTypes[kPackageNumMessageTypes] = {	
+};
 
 static struct PropertyType const PackageProperties[kPackageNumProperties] = {
 	DECL(0x5ffdd888, Package, FileName, FileName, kDataTypeString), // Package.FileName
@@ -670,11 +725,16 @@ ORCA_API struct ClassDesc _Package = {
 	.ClassID = ID_Package,
 	.ClassSize = sizeof(struct Package),
 	.Properties = PackageProperties,
+	.MessageTypes = PackageMessageTypes,
 	.ObjProc = PackageProc,
 	.Defaults = &PackageDefaults,
 	.NumProperties = kPackageNumProperties,
+	.NumMessageTypes = kPackageNumMessageTypes,
 };
 
+
+static struct MessageType LocaleReferenceItemMessageTypes[kLocaleReferenceItemNumMessageTypes] = {	
+};
 
 static struct PropertyType const LocaleReferenceItemProperties[kLocaleReferenceItemNumProperties] = {
 };
@@ -700,11 +760,16 @@ ORCA_API struct ClassDesc _LocaleReferenceItem = {
 	.ClassID = ID_LocaleReferenceItem,
 	.ClassSize = sizeof(struct LocaleReferenceItem),
 	.Properties = LocaleReferenceItemProperties,
+	.MessageTypes = LocaleReferenceItemMessageTypes,
 	.ObjProc = LocaleReferenceItemProc,
 	.Defaults = &LocaleReferenceItemDefaults,
 	.NumProperties = kLocaleReferenceItemNumProperties,
+	.NumMessageTypes = kLocaleReferenceItemNumMessageTypes,
 };
 
+
+static struct MessageType TagMessageTypes[kTagNumMessageTypes] = {	
+};
 
 static struct PropertyType const TagProperties[kTagNumProperties] = {
 	DECL(0xc35a8c07, Tag, TagIsInherited, TagIsInherited, kDataTypeBool), // Tag.TagIsInherited
@@ -731,12 +796,17 @@ ORCA_API struct ClassDesc _Tag = {
 	.ClassID = ID_Tag,
 	.ClassSize = sizeof(struct Tag),
 	.Properties = TagProperties,
+	.MessageTypes = TagMessageTypes,
 	.ObjProc = TagProc,
 	.Defaults = &TagDefaults,
 	.NumProperties = kTagNumProperties,
+	.NumMessageTypes = kTagNumMessageTypes,
 };
 
 LRESULT ThemeGroup_Attached(struct Object*, struct ThemeGroup*, wParam_t, AttachedMsgPtr);
+
+static struct MessageType ThemeGroupMessageTypes[kThemeGroupNumMessageTypes] = {	
+};
 
 static struct PropertyType const ThemeGroupProperties[kThemeGroupNumProperties] = {
 	DECL(0x75516381, ThemeGroup, SelectedTheme, SelectedTheme, kDataTypeString), // ThemeGroup.SelectedTheme
@@ -765,11 +835,16 @@ ORCA_API struct ClassDesc _ThemeGroup = {
 	.ClassID = ID_ThemeGroup,
 	.ClassSize = sizeof(struct ThemeGroup),
 	.Properties = ThemeGroupProperties,
+	.MessageTypes = ThemeGroupMessageTypes,
 	.ObjProc = ThemeGroupProc,
 	.Defaults = &ThemeGroupDefaults,
 	.NumProperties = kThemeGroupNumProperties,
+	.NumMessageTypes = kThemeGroupNumMessageTypes,
 };
 
+
+static struct MessageType ThemeMessageTypes[kThemeNumMessageTypes] = {	
+};
 
 static struct PropertyType const ThemeProperties[kThemeNumProperties] = {
 	DECL(0x1ed11084, Theme, IsThemeVisible, IsThemeVisible, kDataTypeBool), // Theme.IsThemeVisible
@@ -796,11 +871,16 @@ ORCA_API struct ClassDesc _Theme = {
 	.ClassID = ID_Theme,
 	.ClassSize = sizeof(struct Theme),
 	.Properties = ThemeProperties,
+	.MessageTypes = ThemeMessageTypes,
 	.ObjProc = ThemeProc,
 	.Defaults = &ThemeDefaults,
 	.NumProperties = kThemeNumProperties,
+	.NumMessageTypes = kThemeNumMessageTypes,
 };
 
+
+static struct MessageType EntryMessageTypes[kEntryNumMessageTypes] = {	
+};
 
 static struct PropertyType const EntryProperties[kEntryNumProperties] = {
 };
@@ -826,11 +906,16 @@ ORCA_API struct ClassDesc _Entry = {
 	.ClassID = ID_Entry,
 	.ClassSize = sizeof(struct Entry),
 	.Properties = EntryProperties,
+	.MessageTypes = EntryMessageTypes,
 	.ObjProc = EntryProc,
 	.Defaults = &EntryDefaults,
 	.NumProperties = kEntryNumProperties,
+	.NumMessageTypes = kEntryNumMessageTypes,
 };
 
+
+static struct MessageType ThemeDefaultValuesDictionaryMessageTypes[kThemeDefaultValuesDictionaryNumMessageTypes] = {	
+};
 
 static struct PropertyType const ThemeDefaultValuesDictionaryProperties[kThemeDefaultValuesDictionaryNumProperties] = {
 };
@@ -856,9 +941,11 @@ ORCA_API struct ClassDesc _ThemeDefaultValuesDictionary = {
 	.ClassID = ID_ThemeDefaultValuesDictionary,
 	.ClassSize = sizeof(struct ThemeDefaultValuesDictionary),
 	.Properties = ThemeDefaultValuesDictionaryProperties,
+	.MessageTypes = ThemeDefaultValuesDictionaryMessageTypes,
 	.ObjProc = ThemeDefaultValuesDictionaryProc,
 	.Defaults = &ThemeDefaultValuesDictionaryDefaults,
 	.NumProperties = kThemeDefaultValuesDictionaryNumProperties,
+	.NumMessageTypes = kThemeDefaultValuesDictionaryNumMessageTypes,
 };
 
 

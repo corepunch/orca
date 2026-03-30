@@ -8,6 +8,7 @@
 #define ID_Texture 0x994c5594
 #define GetTexture(_P) ((struct Texture*)((_P)?OBJ_GetComponent(_P,ID_Texture):NULL))
 #define Texture_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Texture,sizeof(struct Texture),_N)
+#define Texture_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Texture,_N)
 #define ID_Texture_MinificationFilter 0x7754ff10 // Texture.MinificationFilter
 #define ID_Texture_MagnificationFilter 0xa67f8f51 // Texture.MagnificationFilter
 #define ID_Texture_WrapMode 0x9e74e991 // Texture.WrapMode
@@ -17,6 +18,8 @@
 #define ID_Texture_AnisotropyType 0x71b18c0a // Texture.AnisotropyType
 #define ID_Texture_Width 0xeaf7b06a // Texture.Width
 #define ID_Texture_Height 0xa4615985 // Texture.Height
+#define kTextureNumMessageTypes 0
+#define kTextureNumProperties 9
 enum TextureProperties {
 	kTextureMinificationFilter,
 	kTextureMagnificationFilter,
@@ -27,12 +30,12 @@ enum TextureProperties {
 	kTextureAnisotropyType,
 	kTextureWidth,
 	kTextureHeight,
-	kTextureNumProperties	
 };
 // Image
 #define ID_Image 0x590ca79a
 #define GetImage(_P) ((struct Image*)((_P)?OBJ_GetComponent(_P,ID_Image):NULL))
 #define Image_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Image,sizeof(struct Image),_N)
+#define Image_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Image,_N)
 #define ID_Image_Source 0x166867e9 // Image.Source
 #define ID_Image_PremultiplyAlpha 0x31148dcb // Image.PremultiplyAlpha
 #define ID_Image_Type 0x99fe2d14 // Image.Type
@@ -57,6 +60,8 @@ enum TextureProperties {
 #define ID_Image_FileExportAlways 0xf92536f5 // Image.FileExportAlways
 #define ID_Image_FileExportEmptyWhenFileIsMissing 0x68f7ba95 // Image.FileExportEmptyWhenFileIsMissing
 #define ID_Image_FileExportSourceImage 0x5a4a8dc2 // Image.FileExportSourceImage
+#define kImageNumMessageTypes 0
+#define kImageNumProperties 24
 enum ImageProperties {
 	kImageSource,
 	kImagePremultiplyAlpha,
@@ -82,12 +87,12 @@ enum ImageProperties {
 	kImageFileExportAlways,
 	kImageFileExportEmptyWhenFileIsMissing,
 	kImageFileExportSourceImage,
-	kImageNumProperties	
 };
 // RenderTargetTexture
 #define ID_RenderTargetTexture 0xa3f9f34b
 #define GetRenderTargetTexture(_P) ((struct RenderTargetTexture*)((_P)?OBJ_GetComponent(_P,ID_RenderTargetTexture):NULL))
 #define RenderTargetTexture_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_RenderTargetTexture,sizeof(struct RenderTargetTexture),_N)
+#define RenderTargetTexture_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_RenderTargetTexture,_N)
 #define ID_RenderTargetTexture_Width 0x2dca80b1 // RenderTargetTexture.Width
 #define ID_RenderTargetTexture_Height 0xf6e2f600 // RenderTargetTexture.Height
 #define ID_RenderTargetTexture_TargetType 0xb4a182b2 // RenderTargetTexture.TargetType
@@ -95,6 +100,8 @@ enum ImageProperties {
 #define ID_RenderTargetTexture_Attachment 0x0744e91a // RenderTargetTexture.Attachment
 #define ID_RenderTargetTexture_AllowDepthFallback 0x3e197723 // RenderTargetTexture.AllowDepthFallback
 #define ID_RenderTargetTexture_SampleCount 0x03d063ec // RenderTargetTexture.SampleCount
+#define kRenderTargetTextureNumMessageTypes 0
+#define kRenderTargetTextureNumProperties 7
 enum RenderTargetTextureProperties {
 	kRenderTargetTextureWidth,
 	kRenderTargetTextureHeight,
@@ -103,18 +110,20 @@ enum RenderTargetTextureProperties {
 	kRenderTargetTextureAttachment,
 	kRenderTargetTextureAllowDepthFallback,
 	kRenderTargetTextureSampleCount,
-	kRenderTargetTextureNumProperties	
 };
 // CubeMapTexture
 #define ID_CubeMapTexture 0xbbe811b9
 #define GetCubeMapTexture(_P) ((struct CubeMapTexture*)((_P)?OBJ_GetComponent(_P,ID_CubeMapTexture):NULL))
 #define CubeMapTexture_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_CubeMapTexture,sizeof(struct CubeMapTexture),_N)
+#define CubeMapTexture_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_CubeMapTexture,_N)
 #define ID_CubeMapTexture_BackImage 0xd189d077 // CubeMapTexture.BackImage
 #define ID_CubeMapTexture_FrontImage 0xa6452b75 // CubeMapTexture.FrontImage
 #define ID_CubeMapTexture_LeftImage 0xe2e29d5d // CubeMapTexture.LeftImage
 #define ID_CubeMapTexture_RightImage 0xb9fcef0a // CubeMapTexture.RightImage
 #define ID_CubeMapTexture_BottomImage 0x92854acf // CubeMapTexture.BottomImage
 #define ID_CubeMapTexture_TopImage 0x5899f7e9 // CubeMapTexture.TopImage
+#define kCubeMapTextureNumMessageTypes 0
+#define kCubeMapTextureNumProperties 6
 enum CubeMapTextureProperties {
 	kCubeMapTextureBackImage,
 	kCubeMapTextureFrontImage,
@@ -122,60 +131,68 @@ enum CubeMapTextureProperties {
 	kCubeMapTextureRightImage,
 	kCubeMapTextureBottomImage,
 	kCubeMapTextureTopImage,
-	kCubeMapTextureNumProperties	
 };
 // IOSurfaceTexture
 #define ID_IOSurfaceTexture 0xbe7b3883
 #define GetIOSurfaceTexture(_P) ((struct IOSurfaceTexture*)((_P)?OBJ_GetComponent(_P,ID_IOSurfaceTexture):NULL))
 #define IOSurfaceTexture_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_IOSurfaceTexture,sizeof(struct IOSurfaceTexture),_N)
+#define IOSurfaceTexture_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_IOSurfaceTexture,_N)
 #define ID_IOSurfaceTexture_IOSurface 0xc182dd0a // IOSurfaceTexture.IOSurface
+#define kIOSurfaceTextureNumMessageTypes 0
+#define kIOSurfaceTextureNumProperties 1
 enum IOSurfaceTextureProperties {
 	kIOSurfaceTextureIOSurface,
-	kIOSurfaceTextureNumProperties	
 };
 // VertexShader
 #define ID_VertexShader 0x8d2d4692
 #define GetVertexShader(_P) ((struct VertexShader*)((_P)?OBJ_GetComponent(_P,ID_VertexShader):NULL))
 #define VertexShader_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_VertexShader,sizeof(struct VertexShader),_N)
+#define VertexShader_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_VertexShader,_N)
 #define ID_VertexShader_Version 0x82819cc8 // VertexShader.Version
 #define ID_VertexShader_FloatPrecision 0xfce1e8ba // VertexShader.FloatPrecision
 #define ID_VertexShader_Shading 0x22b3da6e // VertexShader.Shading
+#define kVertexShaderNumMessageTypes 0
+#define kVertexShaderNumProperties 3
 enum VertexShaderProperties {
 	kVertexShaderVersion,
 	kVertexShaderFloatPrecision,
 	kVertexShaderShading,
-	kVertexShaderNumProperties	
 };
 // FragmentShader
 #define ID_FragmentShader 0xa9d8cdf0
 #define GetFragmentShader(_P) ((struct FragmentShader*)((_P)?OBJ_GetComponent(_P,ID_FragmentShader):NULL))
 #define FragmentShader_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_FragmentShader,sizeof(struct FragmentShader),_N)
+#define FragmentShader_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_FragmentShader,_N)
 #define ID_FragmentShader_Version 0xd376e806 // FragmentShader.Version
 #define ID_FragmentShader_FloatPrecision 0x56221774 // FragmentShader.FloatPrecision
 #define ID_FragmentShader_Out 0x7d35d16e // FragmentShader.Out
+#define kFragmentShaderNumMessageTypes 0
+#define kFragmentShaderNumProperties 3
 enum FragmentShaderProperties {
 	kFragmentShaderVersion,
 	kFragmentShaderFloatPrecision,
 	kFragmentShaderOut,
-	kFragmentShaderNumProperties	
 };
 // Shader
 #define ID_Shader 0x7deb3888
 #define GetShader(_P) ((struct Shader*)((_P)?OBJ_GetComponent(_P,ID_Shader):NULL))
 #define Shader_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Shader,sizeof(struct Shader),_N)
+#define Shader_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Shader,_N)
 #define ID_Shader_BlendMode 0xf81788a6 // Shader.BlendMode
 #define ID_Shader_DepthTestFunction 0xca9708bf // Shader.DepthTestFunction
 #define ID_Shader_DepthWriteEnabled 0xec8378fb // Shader.DepthWriteEnabled
+#define kShaderNumMessageTypes 0
+#define kShaderNumProperties 3
 enum ShaderProperties {
 	kShaderBlendMode,
 	kShaderDepthTestFunction,
 	kShaderDepthWriteEnabled,
-	kShaderNumProperties	
 };
 // Material
 #define ID_Material 0xcbd54f80
 #define GetMaterial(_P) ((struct Material*)((_P)?OBJ_GetComponent(_P,ID_Material):NULL))
 #define Material_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Material,sizeof(struct Material),_N)
+#define Material_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Material,_N)
 #define ID_Material_Shader 0xb1f27f23 // Material.Shader
 #define ID_Material_GlobalAmbient 0x4c3b3e9b // Material.GlobalAmbient
 #define ID_Material_Ambient 0x2722ee06 // Material.Ambient
@@ -189,6 +206,8 @@ enum ShaderProperties {
 #define ID_Material_TextureTiling 0xa7a60572 // Material.TextureTiling
 #define ID_Material_BlendIntensity 0x7f786186 // Material.BlendIntensity
 #define ID_Material_BlendMode 0x4a26ef0e // Material.BlendMode
+#define kMaterialNumMessageTypes 0
+#define kMaterialNumProperties 13
 enum MaterialProperties {
 	kMaterialShader,
 	kMaterialGlobalAmbient,
@@ -203,48 +222,51 @@ enum MaterialProperties {
 	kMaterialTextureTiling,
 	kMaterialBlendIntensity,
 	kMaterialBlendMode,
-	kMaterialNumProperties	
 };
 // Mesh
 #define ID_Mesh 0x07e055dc
 #define GetMesh(_P) ((struct Mesh*)((_P)?OBJ_GetComponent(_P,ID_Mesh):NULL))
 #define Mesh_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Mesh,sizeof(struct Mesh),_N)
+#define Mesh_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Mesh,_N)
 #define ID_Mesh_Source 0xc235363b // Mesh.Source
 #define ID_Mesh_Material 0xfc82924b // Mesh.Material
 #define ID_Mesh_MeshMorphTargets 0x6984d367 // Mesh.MeshMorphTargets
+#define kMeshNumMessageTypes 0
+#define kMeshNumProperties 3
 enum MeshProperties {
 	kMeshSource,
 	kMeshMaterial,
 	kMeshMeshMorphTargets,
-	kMeshNumProperties	
 };
 // FontFamily
 #define ID_FontFamily 0xf6319880
 #define GetFontFamily(_P) ((struct FontFamily*)((_P)?OBJ_GetComponent(_P,ID_FontFamily):NULL))
 #define FontFamily_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_FontFamily,sizeof(struct FontFamily),_N)
+#define FontFamily_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_FontFamily,_N)
 #define ID_FontFamily_Regular 0xb39a4ebe // FontFamily.Regular
 #define ID_FontFamily_Bold 0xb22930ed // FontFamily.Bold
 #define ID_FontFamily_Italic 0x1eb759ae // FontFamily.Italic
 #define ID_FontFamily_BoldItalic 0xb7a86f05 // FontFamily.BoldItalic
+#define kFontFamilyNumMessageTypes 0
+#define kFontFamilyNumProperties 4
 enum FontFamilyProperties {
 	kFontFamilyRegular,
 	kFontFamilyBold,
 	kFontFamilyItalic,
 	kFontFamilyBoldItalic,
-	kFontFamilyNumProperties	
 };
 // Trajectory
 #define ID_Trajectory 0x4cf7cbf8
 #define GetTrajectory(_P) ((struct Trajectory*)((_P)?OBJ_GetComponent(_P,ID_Trajectory):NULL))
 #define Trajectory_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Trajectory,sizeof(struct Trajectory),_N)
-enum TrajectoryProperties {
-	kTrajectoryNumProperties	
-};
+#define Trajectory_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Trajectory,_N)
+#define kTrajectoryNumMessageTypes 0
+#define kTrajectoryNumProperties 0
 // Timeline
 #define ID_Timeline 0x30d783f6
 #define GetTimeline(_P) ((struct Timeline*)((_P)?OBJ_GetComponent(_P,ID_Timeline):NULL))
 #define Timeline_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Timeline,sizeof(struct Timeline),_N)
-enum TimelineProperties {
-	kTimelineNumProperties	
-};
+#define Timeline_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Timeline,_N)
+#define kTimelineNumMessageTypes 0
+#define kTimelineNumProperties 0
 #endif

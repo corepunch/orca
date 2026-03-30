@@ -6,6 +6,30 @@
 
 
 extern const char *_BlendMode[];
+#define ENUM(NAME, ...) \
+ORCA_API const char *_##NAME[] = {__VA_ARGS__, NULL}; \
+const char *NAME##ToString(enum NAME value) { \
+	return (assert(value >= 0 && value < sizeof(_##NAME) / sizeof(*_##NAME) - 1), _##NAME[value]); \
+} \
+enum NAME luaX_check##NAME(lua_State *L, int idx) { \
+	return luaL_checkoption(L, idx, NULL, _##NAME); \
+} \
+void luaX_push##NAME(lua_State *L, enum NAME value) { \
+	lua_pushstring(L, (assert(value >= 0 && value < sizeof(_##NAME) / sizeof(*_##NAME) - 1), _##NAME[value])); \
+}
+#define FIELD(IDENT, STRUCT, NAME, TYPE, ...) { \
+	.Name = #NAME, \
+	.ShortIdentifier = IDENT, \
+	.DataType = TYPE, \
+	.Offset = offsetof(struct STRUCT, NAME), \
+	.DataSize = sizeof(((struct STRUCT*)NULL)->NAME), \
+	##__VA_ARGS__ \
+}
+static struct PropertyType _SpriteFrame[] = {
+	FIELD(0x6b109927, SpriteFrame, Rect, kDataTypeStruct),
+	FIELD(0xae3d25c0, SpriteFrame, UvRect, kDataTypeStruct),
+};
+
 void luaX_pushSpriteFrame(lua_State *L, struct SpriteFrame const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
 	struct SpriteFrame* self = lua_newuserdata(L, sizeof(struct SpriteFrame));
@@ -69,6 +93,9 @@ int luaopen_orca_SpriteFrame(lua_State *L) {
 #define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
 
 
+static struct MessageType SpriteAnimationMessageTypes[kSpriteAnimationNumMessageTypes] = {	
+};
+
 static struct PropertyType const SpriteAnimationProperties[kSpriteAnimationNumProperties] = {
 	DECL(0x590ca79a, SpriteAnimation, Image, Image, kDataTypeObject, .TypeString = "Texture"), // SpriteAnimation.Image
 	DECL(0xbebf2a84, SpriteAnimation, Framerate, Framerate, kDataTypeFloat), // SpriteAnimation.Framerate
@@ -97,12 +124,17 @@ ORCA_API struct ClassDesc _SpriteAnimation = {
 	.ClassID = ID_SpriteAnimation,
 	.ClassSize = sizeof(struct SpriteAnimation),
 	.Properties = SpriteAnimationProperties,
+	.MessageTypes = SpriteAnimationMessageTypes,
 	.ObjProc = SpriteAnimationProc,
 	.Defaults = &SpriteAnimationDefaults,
 	.NumProperties = kSpriteAnimationNumProperties,
+	.NumMessageTypes = kSpriteAnimationNumMessageTypes,
 };
 
 LRESULT SKNode_UpdateMatrix(struct Object*, struct SKNode*, wParam_t, UpdateMatrixMsgPtr);
+
+static struct MessageType SKNodeMessageTypes[kSKNodeNumMessageTypes] = {	
+};
 
 static struct PropertyType const SKNodeProperties[kSKNodeNumProperties] = {
 	DECL(0xe27f342a, SKNode, Position, Position, kDataTypeStruct, .TypeString = "Vector2D"), // SKNode.Position
@@ -133,12 +165,17 @@ ORCA_API struct ClassDesc _SKNode = {
 	.ClassID = ID_SKNode,
 	.ClassSize = sizeof(struct SKNode),
 	.Properties = SKNodeProperties,
+	.MessageTypes = SKNodeMessageTypes,
 	.ObjProc = SKNodeProc,
 	.Defaults = &SKNodeDefaults,
 	.NumProperties = kSKNodeNumProperties,
+	.NumMessageTypes = kSKNodeNumMessageTypes,
 };
 
 LRESULT SKScene_UpdateMatrix(struct Object*, struct SKScene*, wParam_t, UpdateMatrixMsgPtr);
+
+static struct MessageType SKSceneMessageTypes[kSKSceneNumMessageTypes] = {	
+};
 
 static struct PropertyType const SKSceneProperties[kSKSceneNumProperties] = {
 };
@@ -166,12 +203,17 @@ ORCA_API struct ClassDesc _SKScene = {
 	.ClassID = ID_SKScene,
 	.ClassSize = sizeof(struct SKScene),
 	.Properties = SKSceneProperties,
+	.MessageTypes = SKSceneMessageTypes,
 	.ObjProc = SKSceneProc,
 	.Defaults = &SKSceneDefaults,
 	.NumProperties = kSKSceneNumProperties,
+	.NumMessageTypes = kSKSceneNumMessageTypes,
 };
 
 LRESULT SKSpriteNode_Render(struct Object*, struct SKSpriteNode*, wParam_t, RenderMsgPtr);
+
+static struct MessageType SKSpriteNodeMessageTypes[kSKSpriteNodeNumMessageTypes] = {	
+};
 
 static struct PropertyType const SKSpriteNodeProperties[kSKSpriteNodeNumProperties] = {
 	DECL(0x41e389fd, SKSpriteNode, Animation, Animation, kDataTypeObject, .TypeString = "SpriteAnimation"), // SKSpriteNode.Animation
@@ -213,13 +255,18 @@ ORCA_API struct ClassDesc _SKSpriteNode = {
 	.ClassID = ID_SKSpriteNode,
 	.ClassSize = sizeof(struct SKSpriteNode),
 	.Properties = SKSpriteNodeProperties,
+	.MessageTypes = SKSpriteNodeMessageTypes,
 	.ObjProc = SKSpriteNodeProc,
 	.Defaults = &SKSpriteNodeDefaults,
 	.NumProperties = kSKSpriteNodeNumProperties,
+	.NumMessageTypes = kSKSpriteNodeNumMessageTypes,
 };
 
 LRESULT SKLabelNode_Render(struct Object*, struct SKLabelNode*, wParam_t, RenderMsgPtr);
 LRESULT SKLabelNode_Create(struct Object*, struct SKLabelNode*, wParam_t, CreateMsgPtr);
+
+static struct MessageType SKLabelNodeMessageTypes[kSKLabelNodeNumMessageTypes] = {	
+};
 
 static struct PropertyType const SKLabelNodeProperties[kSKLabelNodeNumProperties] = {
 	DECL(0xe5b43cf8, SKLabelNode, Color, Color, kDataTypeColor), // SKLabelNode.Color
@@ -250,12 +297,17 @@ ORCA_API struct ClassDesc _SKLabelNode = {
 	.ClassID = ID_SKLabelNode,
 	.ClassSize = sizeof(struct SKLabelNode),
 	.Properties = SKLabelNodeProperties,
+	.MessageTypes = SKLabelNodeMessageTypes,
 	.ObjProc = SKLabelNodeProc,
 	.Defaults = &SKLabelNodeDefaults,
 	.NumProperties = kSKLabelNodeNumProperties,
+	.NumMessageTypes = kSKLabelNodeNumMessageTypes,
 };
 
 LRESULT SKView_ForegroundContent(struct Object*, struct SKView*, wParam_t, ForegroundContentMsgPtr);
+
+static struct MessageType SKViewMessageTypes[kSKViewNumMessageTypes] = {	
+};
 
 static struct PropertyType const SKViewProperties[kSKViewNumProperties] = {
 	DECL(0x499d2ae6, SKView, ReferenceWidth, ReferenceWidth, kDataTypeFloat), // SKView.ReferenceWidth
@@ -286,9 +338,11 @@ ORCA_API struct ClassDesc _SKView = {
 	.ClassID = ID_SKView,
 	.ClassSize = sizeof(struct SKView),
 	.Properties = SKViewProperties,
+	.MessageTypes = SKViewMessageTypes,
 	.ObjProc = SKViewProc,
 	.Defaults = &SKViewDefaults,
 	.NumProperties = kSKViewNumProperties,
+	.NumMessageTypes = kSKViewNumMessageTypes,
 };
 
 

@@ -8,6 +8,12 @@
 LRESULT <?= $name ?>_<?= $event ?>(struct Object*, struct <?= $name ?>*, wParam_t, <?= $event ?>MsgPtr);
 	<?php endforeach ?>
 
+static struct MessageType <?= $name ?>MessageTypes[k<?= $name ?>NumMessageTypes] = {	
+	<?php foreach ($component->getMessages() as $event): ?>
+		{ "<?= $name ?>.<?= $event->name ?>", kMsg<?= $event->name ?>, kMessageRouting<?= $event->routing ?>, sizeof(<?= $event->getEffectiveTypeDecl() ?>) },
+	<?php endforeach ?>
+};
+
 static struct PropertyType const <?= $name ?>Properties[k<?= $name ?>NumProperties] = {
 	<?php foreach ($component->getProperties() as $property):?>
 		<?php $datatype = 'kDataType' . ucfirst($property->type->kind) ?>
@@ -55,9 +61,11 @@ ORCA_API struct ClassDesc _<?= $name ?> = {
 	.ClassID = ID_<?= $name ?>,
 	.ClassSize = sizeof(struct <?= $name ?>),
 	.Properties = <?= $name ?>Properties,
+	.MessageTypes = <?= $name ?>MessageTypes,
 	.ObjProc = <?= $name ?>Proc,
 	.Defaults = &<?= $name ?>Defaults,
 	.NumProperties = k<?= $name ?>NumProperties,
+	.NumMessageTypes = k<?= $name ?>NumMessageTypes,
 <?php if ($component->extension) {
 	echo "\t.Extension = \"{$component->extension}\",\n";
 } ?>

@@ -28,30 +28,30 @@
   <!-- Base event for all keyboard input events -->
   <message name="KeyMessage" type="WI_Message"/>
 
-  <message name="LeftMouseDown" parent="MouseMessage"/>
-  <message name="RightMouseDown" parent="MouseMessage"/>
-  <message name="OtherMouseDown" parent="MouseMessage"/>
-  <message name="LeftMouseUp" parent="MouseMessage"/>
-  <message name="RightMouseUp" parent="MouseMessage"/>
-  <message name="OtherMouseUp" parent="MouseMessage"/>
-  <message name="LeftMouseDragged" parent="MouseMessage"/>
-  <message name="RightMouseDragged" parent="MouseMessage"/>
-  <message name="OtherMouseDragged" parent="MouseMessage"/>
-  <message name="LeftDoubleClick" parent="MouseMessage"/>
-  <message name="RightDoubleClick" parent="MouseMessage"/>
-  <message name="OtherDoubleClick" parent="MouseMessage"/>
-  <message name="MouseMoved" parent="MouseMessage"/>
-  <message name="ScrollWheel" parent="MouseMessage"/>
-  <message name="DragDrop" parent="MouseMessage"/>
-  <message name="DragEnter" parent="MouseMessage"/>
-  <message name="KeyDown" parent="KeyMessage"/>
-  <message name="KeyUp" parent="KeyMessage"/>
-  <message name="Char" parent="KeyMessage"/>
+  <message name="LeftMouseDown" same-as="MouseMessage"/>
+  <message name="RightMouseDown" same-as="MouseMessage"/>
+  <message name="OtherMouseDown" same-as="MouseMessage"/>
+  <message name="LeftMouseUp" same-as="MouseMessage"/>
+  <message name="RightMouseUp" same-as="MouseMessage"/>
+  <message name="OtherMouseUp" same-as="MouseMessage"/>
+  <message name="LeftMouseDragged" same-as="MouseMessage"/>
+  <message name="RightMouseDragged" same-as="MouseMessage"/>
+  <message name="OtherMouseDragged" same-as="MouseMessage"/>
+  <message name="LeftDoubleClick" same-as="MouseMessage"/>
+  <message name="RightDoubleClick" same-as="MouseMessage"/>
+  <message name="OtherDoubleClick" same-as="MouseMessage"/>
+  <message name="MouseMoved" same-as="MouseMessage"/>
+  <message name="ScrollWheel" same-as="MouseMessage"/>
+  <message name="DragDrop" same-as="MouseMessage"/>
+  <message name="DragEnter" same-as="MouseMessage"/>
+  <message name="KeyDown" same-as="KeyMessage"/>
+  <message name="KeyUp" same-as="KeyMessage"/>
+  <message name="Char" same-as="KeyMessage"/>
   <message name="WindowPaint">
     <field name="WindowWidth" type="uint"/>
     <field name="WindowHeight" type="uint"/>
   </message>
-  <message name="WindowResized" parent="WindowPaint"/>
+  <message name="WindowResized" same-as="WindowPaint"/>
   <message name="WindowClosed"/>
   <message name="WindowChangedScreen"/>
   <message name="KillFocus"/>

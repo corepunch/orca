@@ -213,6 +213,21 @@ OBJ_GetComponent(lpObject_t pobj, uint32_t id)
   return NULL;
 }
 
+struct MessageType const*
+OBJ_GetMessageTypeAtIndex(lpObject_t pobj, uint32_t classid, uint32_t index)
+{
+  FOR_EACH_LIST(struct component, cmp, _GetComponents(pobj)) {
+    if (cmp->pcls->ClassID == classid) {
+      if (cmp->pcls->NumMessageTypes > index) {
+        return &cmp->pcls->MessageTypes[index];
+      } else {
+        Con_Error("Message index out of range: %u (class %s has %u messages)\n", index, cmp->pcls->ClassName, cmp->pcls->NumMessageTypes);
+      }
+    }
+  }
+  return NULL;
+}
+
 void
 OBJ_ReleaseComponents(lpObject_t pobj)
 {
