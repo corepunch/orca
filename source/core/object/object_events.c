@@ -37,7 +37,7 @@ OBJ_Awake(lua_State* L, lpObject_t object)
         lua_pop(L, 1);
       }
     }
-    OBJ_SendMessageW(object, kMsgAwake, 0, NULL);
+    _SendMessage(object, Awake);
     OBJ_ApplyStyles(object, FALSE);
     object->flags |= OF_UPDATED_ONCE;
   }

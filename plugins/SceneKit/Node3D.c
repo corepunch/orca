@@ -22,11 +22,10 @@ HANDLER(Node3D, UpdateMatrix)
 
   MAT4_Translate(&matrix, &contentOffset);
 
-  FOR_EACH_CHILD(hObject, OBJ_SendMessageW, kMsgUpdateMatrix, 0,
-                 &(struct UpdateMatrixMsgArgs){
+  FOR_EACH_CHILD(hObject, _SendMessage, UpdateMatrix,
                    .parent = pNode3D->Matrix,
                    .opacity = pNode3D->_opacity,
-                 });
+                 );
 
   return TRUE;
 }

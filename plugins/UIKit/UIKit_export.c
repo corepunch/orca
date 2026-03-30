@@ -1251,55 +1251,124 @@ int luaopen_orca_SizeShorthand(lua_State *L) {
 	lua_setmetatable(L, -2);
 	return 1;
 }
-void luaX_pushForegroundContentMsgArgs(lua_State *L, struct ForegroundContentMsgArgs const* data) {
+void luaX_pushMeasureMsgArgs(lua_State *L, struct MeasureMsgArgs const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
-	struct ForegroundContentMsgArgs* self = lua_newuserdata(L, sizeof(struct ForegroundContentMsgArgs));
-	luaL_setmetatable(L, "ForegroundContentMsgArgs");
-	memcpy(self, data, sizeof(struct ForegroundContentMsgArgs));
+	struct MeasureMsgArgs* self = lua_newuserdata(L, sizeof(struct MeasureMsgArgs));
+	luaL_setmetatable(L, "MeasureMsgArgs");
+	memcpy(self, data, sizeof(struct MeasureMsgArgs));
 }
-struct ForegroundContentMsgArgs* luaX_checkForegroundContentMsgArgs(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "ForegroundContentMsgArgs");
+struct MeasureMsgArgs* luaX_checkMeasureMsgArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "MeasureMsgArgs");
 }
-static int f_new_ForegroundContentMsgArgs(lua_State *L) {
-	struct ForegroundContentMsgArgs* self = lua_newuserdata(L, sizeof(struct ForegroundContentMsgArgs));
-	luaL_setmetatable(L, "ForegroundContentMsgArgs");
-	memset(self, 0, sizeof(struct ForegroundContentMsgArgs));
+static int f_new_MeasureMsgArgs(lua_State *L) {
+	struct MeasureMsgArgs* self = lua_newuserdata(L, sizeof(struct MeasureMsgArgs));
+	luaL_setmetatable(L, "MeasureMsgArgs");
+	memset(self, 0, sizeof(struct MeasureMsgArgs));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "result"), self->result = luaX_checkTexture(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Width"), self->Width = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Height"), self->Height = luaL_optnumber(L, -1, 0), 1));
 	} else {
-		self->result = luaX_checkTexture(L, 1);
+		self->Width = luaL_optnumber(L, 1, 0);
+		self->Height = luaL_optnumber(L, 2, 0);
 	}
 	return 1;
 }
-int f_ForegroundContentMsgArgs___index(lua_State *L) {
-	struct ForegroundContentMsgArgs* self = luaX_checkForegroundContentMsgArgs(L, 1);
+int f_MeasureMsgArgs___index(lua_State *L) {
+	struct MeasureMsgArgs* self = luaX_checkMeasureMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x0a377624: luaX_pushTexture(L, self->result); return 1; // result
+	case 0x3b42dfbf: lua_pushnumber(L, self->Width); return 1; // Width
+	case 0x1bd13562: lua_pushnumber(L, self->Height); return 1; // Height
 	}
-	return luaL_error(L, "Unknown field in ForegroundContentMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in MeasureMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-int f_ForegroundContentMsgArgs___newindex(lua_State *L) {
-	struct ForegroundContentMsgArgs* self = luaX_checkForegroundContentMsgArgs(L, 1);
+int f_MeasureMsgArgs___newindex(lua_State *L) {
+	struct MeasureMsgArgs* self = luaX_checkMeasureMsgArgs(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x0a377624: self->result = luaX_checkTexture(L, 3); return 0; // result
+	case 0x3b42dfbf: self->Width = luaL_optnumber(L, 3, 0); return 0; // Width
+	case 0x1bd13562: self->Height = luaL_optnumber(L, 3, 0); return 0; // Height
 	}
-	return luaL_error(L, "Unknown field in ForegroundContentMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in MeasureMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
 }
-static int f_ForegroundContentMsgArgs___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_ForegroundContentMsgArgs(L));  // remove ForegroundContentMsgArgs from stack and call constructor
+static int f_MeasureMsgArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_MeasureMsgArgs(L));  // remove MeasureMsgArgs from stack and call constructor
 }
-int luaopen_orca_ForegroundContentMsgArgs(lua_State *L) {
-	luaL_newmetatable(L, "ForegroundContentMsgArgs");
+int luaopen_orca_MeasureMsgArgs(lua_State *L) {
+	luaL_newmetatable(L, "MeasureMsgArgs");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_ForegroundContentMsgArgs },
-		{ "__newindex", f_ForegroundContentMsgArgs___newindex },
-		{ "__index", f_ForegroundContentMsgArgs___index },
+		{ "new", f_new_MeasureMsgArgs },
+		{ "__newindex", f_MeasureMsgArgs___newindex },
+		{ "__index", f_MeasureMsgArgs___index },
 		{ NULL, NULL },
 	}), 0);
-	// Make ForegroundContentMsgArgs creatable via constructor-like syntax
+	// Make MeasureMsgArgs creatable via constructor-like syntax
 	lua_newtable(L);
-	lua_pushcfunction(L, f_ForegroundContentMsgArgs___call);
+	lua_pushcfunction(L, f_MeasureMsgArgs___call);
+	lua_setfield(L, -2, "__call");
+	lua_setmetatable(L, -2);
+	return 1;
+}
+void luaX_pushArrangeMsgArgs(lua_State *L, struct ArrangeMsgArgs const* data) {
+	if (data == NULL) { lua_pushnil(L); return; }
+	struct ArrangeMsgArgs* self = lua_newuserdata(L, sizeof(struct ArrangeMsgArgs));
+	luaL_setmetatable(L, "ArrangeMsgArgs");
+	memcpy(self, data, sizeof(struct ArrangeMsgArgs));
+}
+struct ArrangeMsgArgs* luaX_checkArrangeMsgArgs(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "ArrangeMsgArgs");
+}
+static int f_new_ArrangeMsgArgs(lua_State *L) {
+	struct ArrangeMsgArgs* self = lua_newuserdata(L, sizeof(struct ArrangeMsgArgs));
+	luaL_setmetatable(L, "ArrangeMsgArgs");
+	memset(self, 0, sizeof(struct ArrangeMsgArgs));
+	if (lua_gettop(L) == 1) return 1;
+	if (lua_istable(L, 1)) {
+		lua_pop(L, (lua_getfield(L, 1, "X"), self->X = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Y"), self->Y = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Width"), self->Width = luaL_optnumber(L, -1, 0), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Height"), self->Height = luaL_optnumber(L, -1, 0), 1));
+	} else {
+		self->X = luaL_optnumber(L, 1, 0);
+		self->Y = luaL_optnumber(L, 2, 0);
+		self->Width = luaL_optnumber(L, 3, 0);
+		self->Height = luaL_optnumber(L, 4, 0);
+	}
+	return 1;
+}
+int f_ArrangeMsgArgs___index(lua_State *L) {
+	struct ArrangeMsgArgs* self = luaX_checkArrangeMsgArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0xdd0c1e27: lua_pushnumber(L, self->X); return 1; // X
+	case 0xdc0c1c94: lua_pushnumber(L, self->Y); return 1; // Y
+	case 0x3b42dfbf: lua_pushnumber(L, self->Width); return 1; // Width
+	case 0x1bd13562: lua_pushnumber(L, self->Height); return 1; // Height
+	}
+	return luaL_error(L, "Unknown field in ArrangeMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+int f_ArrangeMsgArgs___newindex(lua_State *L) {
+	struct ArrangeMsgArgs* self = luaX_checkArrangeMsgArgs(L, 1);
+	switch(fnv1a32(luaL_checkstring(L, 2))) {
+	case 0xdd0c1e27: self->X = luaL_optnumber(L, 3, 0); return 0; // X
+	case 0xdc0c1c94: self->Y = luaL_optnumber(L, 3, 0); return 0; // Y
+	case 0x3b42dfbf: self->Width = luaL_optnumber(L, 3, 0); return 0; // Width
+	case 0x1bd13562: self->Height = luaL_optnumber(L, 3, 0); return 0; // Height
+	}
+	return luaL_error(L, "Unknown field in ArrangeMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
+}
+static int f_ArrangeMsgArgs___call(lua_State *L) {
+	return ((void)lua_remove(L, 1), f_new_ArrangeMsgArgs(L));  // remove ArrangeMsgArgs from stack and call constructor
+}
+int luaopen_orca_ArrangeMsgArgs(lua_State *L) {
+	luaL_newmetatable(L, "ArrangeMsgArgs");
+	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ "new", f_new_ArrangeMsgArgs },
+		{ "__newindex", f_ArrangeMsgArgs___newindex },
+		{ "__index", f_ArrangeMsgArgs___index },
+		{ NULL, NULL },
+	}), 0);
+	// Make ArrangeMsgArgs creatable via constructor-like syntax
+	lua_newtable(L);
+	lua_pushcfunction(L, f_ArrangeMsgArgs___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	return 1;
@@ -3175,7 +3244,8 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_BorderShorthand(L), -2), "BorderShorthand");
 	lua_setfield(L, ((void)luaopen_orca_SizeAxisShorthand(L), -2), "SizeAxisShorthand");
 	lua_setfield(L, ((void)luaopen_orca_SizeShorthand(L), -2), "SizeShorthand");
-	lua_setfield(L, ((void)luaopen_orca_ForegroundContentMsgArgs(L), -2), "ForegroundContentMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_MeasureMsgArgs(L), -2), "MeasureMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_ArrangeMsgArgs(L), -2), "ArrangeMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_PushPropertyMsgArgs(L), -2), "PushPropertyMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_DrawBrushMsgArgs(L), -2), "DrawBrushMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_HandleMessageMsgArgs(L), -2), "HandleMessageMsgArgs");

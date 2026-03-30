@@ -78,22 +78,22 @@ _Arrange(lpObject_t hObject,
     }
     switch (pStackView->Direction) {
       case kDirectionHorizontal:
-        s = OBJ_SendMessageW(child, kMsgArrange, 0, &(struct rect) {
+        s = _SendMessage(child, Arrange,
           counter,
           oppositeBounds.min,
           NODE2D_FRAME(subview, Size, 0).Desired + TOTAL_MARGIN(subview, 0),
           oppositeBounds.max - oppositeBounds.min,
-        });
+        );
         counter += LOWORD(s) + pStackView->Spacing + distributed;
         maxsize = fmax(maxsize, HIWORD(s));
         break;
       case kDirectionVertical:
-        s = OBJ_SendMessageW(child, kMsgArrange, 0, &(struct rect) {
+        s = _SendMessage(child, Arrange,
           oppositeBounds.min,
           counter,
           oppositeBounds.max - oppositeBounds.min,
           NODE2D_FRAME(subview, Size, 1).Desired + TOTAL_MARGIN(subview, 1),
-        });
+        );
         counter += HIWORD(s) + pStackView->Spacing + distributed;
         maxsize = fmax(maxsize, LOWORD(s));
         break;
@@ -126,16 +126,16 @@ HANDLER(StackView, MeasureOverride)
     LRESULT s;
     switch (pStackView->Direction) {
       case kDirectionHorizontal:
-        s = OBJ_SendMessageW(hChild, kMsgMeasure, 0, &(struct Size) {
-          INFINITY, pMeasureOverride->height
-        });
+        s = _SendMessage(hChild, Measure,
+          INFINITY, pMeasureOverride->Height
+        );
         size.width += LOWORD(s) + pStackView->Spacing;
         size.height = MAX(size.height, HIWORD(s));
         break;
       case kDirectionVertical:
-        s = OBJ_SendMessageW(hChild, kMsgMeasure, 0, &(struct Size) {
-          pMeasureOverride->width, INFINITY
-        });
+        s = _SendMessage(hChild, Measure,
+          pMeasureOverride->Width, INFINITY
+        );
         size.width = MAX(size.width, LOWORD(s));
         size.height += HIWORD(s) + pStackView->Spacing;
         break;
@@ -150,18 +150,18 @@ HANDLER(StackView, MeasureOverride)
 HANDLER(StackView, ArrangeOverride)
 {
   Node2DPtr pNode2D = GetNode2D(hObject);
-  rect_t r = *pArrangeOverride;
+  ArrangeOverrideMsg_t r = *pArrangeOverride;
 
   switch (pStackView->Direction) {
     case kDirectionHorizontal:
       _Arrange(hObject, pStackView,
-               (struct bounds) { r.x, r.x + r.width },
-               (struct bounds) { r.y, r.y + r.height });
+               (struct bounds) { r.X, r.X + r.Width },
+               (struct bounds) { r.Y, r.Y + r.Height });
       break;
     case kDirectionVertical:
       _Arrange(hObject, pStackView,
-               (struct bounds) { r.y, r.y + r.height },
-               (struct bounds) { r.x, r.x + r.width });
+               (struct bounds) { r.Y, r.Y + r.Height },
+               (struct bounds) { r.X, r.X + r.Width });
       break;
     case kDirectionDepth:
       // Not supported
@@ -181,15 +181,6 @@ HANDLER(StackView, ArrangeOverride)
     }
     NODE2D_FRAME(pNode2D, Size, i).Scroll = scrollSize[i];
   }
-  /*
-   * Return the actual content size (scroll extent minus the start offset)
-   * rather than echoing back the allocated rect.  When both components are 0
-   * (e.g. the StackView was given a 0×0 rect), MAKEDWORD would return 0 and
-   * OBJ_SendMessageW would fall through to Node2D_ArrangeOverride, which
-   * re-arranges all children a second time with the same 0-sized rect —
-   * triggering unnecessary extra Grid_ArrangeOverride calls.  Using the
-   * content size ensures a non-zero return whenever there are children.
-   */
-  return MAKEDWORD(scrollSize[0] - pArrangeOverride->x,
-                   scrollSize[1] - pArrangeOverride->y);
+  
+  return MAKEDWORD(pArrangeOverride->Width, pArrangeOverride->Height);
 }

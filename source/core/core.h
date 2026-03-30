@@ -19,48 +19,48 @@ struct lua_State;
 #include "core_properties.h"
 #include "../geometry/geometry.h"
 
-typedef struct WI_Message* MouseMessageMsgPtr;
-typedef struct WI_Message* KeyMessageMsgPtr;
-typedef struct WI_Message* LeftMouseDownMsgPtr;
-typedef struct WI_Message* RightMouseDownMsgPtr;
-typedef struct WI_Message* OtherMouseDownMsgPtr;
-typedef struct WI_Message* LeftMouseUpMsgPtr;
-typedef struct WI_Message* RightMouseUpMsgPtr;
-typedef struct WI_Message* OtherMouseUpMsgPtr;
-typedef struct WI_Message* LeftMouseDraggedMsgPtr;
-typedef struct WI_Message* RightMouseDraggedMsgPtr;
-typedef struct WI_Message* OtherMouseDraggedMsgPtr;
-typedef struct WI_Message* LeftDoubleClickMsgPtr;
-typedef struct WI_Message* RightDoubleClickMsgPtr;
-typedef struct WI_Message* OtherDoubleClickMsgPtr;
-typedef struct WI_Message* MouseMovedMsgPtr;
-typedef struct WI_Message* ScrollWheelMsgPtr;
-typedef struct WI_Message* DragDropMsgPtr;
-typedef struct WI_Message* DragEnterMsgPtr;
-typedef struct WI_Message* KeyDownMsgPtr;
-typedef struct WI_Message* KeyUpMsgPtr;
-typedef struct WI_Message* CharMsgPtr;
-typedef void* WindowPaintMsgPtr;
-typedef void* WindowClosedMsgPtr;
-typedef void* WindowResizedMsgPtr;
-typedef void* WindowChangedScreenMsgPtr;
-typedef void* KillFocusMsgPtr;
-typedef void* SetFocusMsgPtr;
-typedef void* TimerMsgPtr;
-typedef struct UpdateMatrixMsgArgs* UpdateMatrixMsgPtr;
-typedef void* HitTestMsgPtr;
-typedef void* IsVisibleMsgPtr;
-typedef void* CreateMsgPtr;
-typedef void* StartMsgPtr;
-typedef void* AwakeMsgPtr;
-typedef void* ThemeChangedMsgPtr;
-typedef struct PropertyChangedMsgArgs* PropertyChangedMsgPtr;
-typedef void* AttachedMsgPtr;
-typedef void* ReleaseMsgPtr;
-typedef void* DestroyMsgPtr;
-typedef void* ResumeCoroutineMsgPtr;
-typedef void* StopCoroutineMsgPtr;
-typedef void* ViewDidLoadMsgPtr;
+typedef struct WI_Message MouseMessageMsg_t,* MouseMessageMsgPtr;
+typedef struct WI_Message KeyMessageMsg_t,* KeyMessageMsgPtr;
+typedef struct WI_Message LeftMouseDownMsg_t,* LeftMouseDownMsgPtr;
+typedef struct WI_Message RightMouseDownMsg_t,* RightMouseDownMsgPtr;
+typedef struct WI_Message OtherMouseDownMsg_t,* OtherMouseDownMsgPtr;
+typedef struct WI_Message LeftMouseUpMsg_t,* LeftMouseUpMsgPtr;
+typedef struct WI_Message RightMouseUpMsg_t,* RightMouseUpMsgPtr;
+typedef struct WI_Message OtherMouseUpMsg_t,* OtherMouseUpMsgPtr;
+typedef struct WI_Message LeftMouseDraggedMsg_t,* LeftMouseDraggedMsgPtr;
+typedef struct WI_Message RightMouseDraggedMsg_t,* RightMouseDraggedMsgPtr;
+typedef struct WI_Message OtherMouseDraggedMsg_t,* OtherMouseDraggedMsgPtr;
+typedef struct WI_Message LeftDoubleClickMsg_t,* LeftDoubleClickMsgPtr;
+typedef struct WI_Message RightDoubleClickMsg_t,* RightDoubleClickMsgPtr;
+typedef struct WI_Message OtherDoubleClickMsg_t,* OtherDoubleClickMsgPtr;
+typedef struct WI_Message MouseMovedMsg_t,* MouseMovedMsgPtr;
+typedef struct WI_Message ScrollWheelMsg_t,* ScrollWheelMsgPtr;
+typedef struct WI_Message DragDropMsg_t,* DragDropMsgPtr;
+typedef struct WI_Message DragEnterMsg_t,* DragEnterMsgPtr;
+typedef struct WI_Message KeyDownMsg_t,* KeyDownMsgPtr;
+typedef struct WI_Message KeyUpMsg_t,* KeyUpMsgPtr;
+typedef struct WI_Message CharMsg_t,* CharMsgPtr;
+typedef struct WindowPaintMsgArgs WindowPaintMsg_t,* WindowPaintMsgPtr;
+typedef struct WindowPaintMsgArgs WindowResizedMsg_t,* WindowResizedMsgPtr;
+typedef int WindowClosedMsg_t,* WindowClosedMsgPtr;
+typedef int WindowChangedScreenMsg_t,* WindowChangedScreenMsgPtr;
+typedef int KillFocusMsg_t,* KillFocusMsgPtr;
+typedef int SetFocusMsg_t,* SetFocusMsgPtr;
+typedef int TimerMsg_t,* TimerMsgPtr;
+typedef struct UpdateMatrixMsgArgs UpdateMatrixMsg_t,* UpdateMatrixMsgPtr;
+typedef struct HitTestMsgArgs HitTestMsg_t,* HitTestMsgPtr;
+typedef int IsVisibleMsg_t,* IsVisibleMsgPtr;
+typedef int CreateMsg_t,* CreateMsgPtr;
+typedef int StartMsg_t,* StartMsgPtr;
+typedef int AwakeMsg_t,* AwakeMsgPtr;
+typedef int ThemeChangedMsg_t,* ThemeChangedMsgPtr;
+typedef struct PropertyChangedMsgArgs PropertyChangedMsg_t,* PropertyChangedMsgPtr;
+typedef int AttachedMsg_t,* AttachedMsgPtr;
+typedef int ReleaseMsg_t,* ReleaseMsgPtr;
+typedef int DestroyMsg_t,* DestroyMsgPtr;
+typedef int ResumeCoroutineMsg_t,* ResumeCoroutineMsgPtr;
+typedef int StopCoroutineMsg_t,* StopCoroutineMsgPtr;
+typedef int ViewDidLoadMsg_t,* ViewDidLoadMsgPtr;
 
 /// @brief Represents the various states a property can be in.
 /** PropertyState enum */
@@ -432,6 +432,13 @@ struct PropertyType {
 ORCA_API void luaX_pushPropertyType(lua_State *L, struct PropertyType const* PropertyType);
 ORCA_API struct PropertyType* luaX_checkPropertyType(lua_State *L, int idx);
 
+/** WindowPaintMsgArgs struct */
+struct WindowPaintMsgArgs {
+	uint32_t WindowWidth;
+	uint32_t WindowHeight;
+};
+ORCA_API void luaX_pushWindowPaintMsgArgs(lua_State *L, struct WindowPaintMsgArgs const* data);
+ORCA_API struct WindowPaintMsgArgs* luaX_checkWindowPaintMsgArgs(lua_State *L, int idx);
 /** UpdateMatrixMsgArgs struct */
 struct UpdateMatrixMsgArgs {
 	struct mat4 parent; ///< The parent matrix
@@ -440,6 +447,13 @@ struct UpdateMatrixMsgArgs {
 };
 ORCA_API void luaX_pushUpdateMatrixMsgArgs(lua_State *L, struct UpdateMatrixMsgArgs const* data);
 ORCA_API struct UpdateMatrixMsgArgs* luaX_checkUpdateMatrixMsgArgs(lua_State *L, int idx);
+/** HitTestMsgArgs struct */
+struct HitTestMsgArgs {
+	int32_t x; ///< X coordinate of the hit test point
+	int32_t y; ///< Y coordinate of the hit test point
+};
+ORCA_API void luaX_pushHitTestMsgArgs(lua_State *L, struct HitTestMsgArgs const* data);
+ORCA_API struct HitTestMsgArgs* luaX_checkHitTestMsgArgs(lua_State *L, int idx);
 /** PropertyChangedMsgArgs struct */
 struct PropertyChangedMsgArgs {
 	struct Property* Property; ///< The property that changed

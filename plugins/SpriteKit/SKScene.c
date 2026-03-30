@@ -7,11 +7,10 @@ HANDLER(SKScene, UpdateMatrix)
   node->_opacity = GetNode(hObject)->Opacity;
   node->Matrix = MAT4_Identity();
 
-  FOR_EACH_CHILD(hObject, OBJ_SendMessageW, kMsgUpdateMatrix, 0,
-                 &(struct UpdateMatrixMsgArgs){
+  FOR_EACH_CHILD(hObject, _SendMessage, UpdateMatrix,
                    .parent = node->Matrix,
                    .opacity = node->_opacity,
-                 });
+                 );
 
   return TRUE;
 }

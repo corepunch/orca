@@ -34,9 +34,12 @@
   <message name="KeyDown" parent="KeyMessage"/>
   <message name="KeyUp" parent="KeyMessage"/>
   <message name="Char" parent="KeyMessage"/>
-  <message name="WindowPaint"/>
+  <message name="WindowPaint">
+    <field name="WindowWidth" type="uint"/>
+    <field name="WindowHeight" type="uint"/>
+  </message>
+  <message name="WindowResized" parent="WindowPaint"/>
   <message name="WindowClosed"/>
-  <message name="WindowResized"/>
   <message name="WindowChangedScreen"/>
   <message name="KillFocus"/>
   <message name="SetFocus"/>
@@ -46,7 +49,10 @@
     <field name="opacity" type="float">The opacity value</field>
     <field name="force" type="bool">Indicates if the update is forced</field>
   </message>
-  <message name="HitTest"/>
+  <message name="HitTest">
+    <field name="x" type="int">X coordinate of the hit test point</field>
+    <field name="y" type="int">Y coordinate of the hit test point</field>
+  </message>
   <message name="IsVisible"/>
   <message name="Create"/>
   <message name="Start"/>

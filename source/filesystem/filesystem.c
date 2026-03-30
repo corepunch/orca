@@ -213,9 +213,7 @@ bool_t
 FS_FileExists(lpcString_t path)
 {
   FS_FindPackage(search, path) {
-    if (OBJ_SendMessageW(search, kMsgFileExists, 0, &(struct FileExistsMsgArgs) {
-      .FileName = path + strlen(OBJ_GetName(search)) + 1
-    })) {
+    if (_SendMessage(search, FileExists, path + strlen(OBJ_GetName(search)) + 1)) {
       return TRUE;
     }
   }
@@ -239,9 +237,7 @@ FS_LoadFile(lpcString_t szFileName)
 
   // If that fails, try to find it in loaded packages
   FS_FindPackage(package, szFileName) {
-    if ((pFile = (struct file*)OBJ_SendMessageW(package, kMsgOpenFile, 0, &(struct OpenFileMsgArgs){
-      .FileName = szFileName + strlen(OBJ_GetName(package)) + 1,
-    }))) {
+    if ((pFile = (struct file*)_SendMessage(package, OpenFile, szFileName + strlen(OBJ_GetName(package)) + 1))) {
       return pFile;
     }
   }
@@ -252,7 +248,7 @@ bool_t
 FS_HasChangedFiles(void)
 {
   FOR_EACH_OBJECT(package, FS_GetWorkspace()) {
-    if (OBJ_SendMessageW(package, kMsgHasChangedFiles, 0, NULL)) {
+    if (_SendMessage(package, HasChangedFiles)) {
       return TRUE;
     }
   }

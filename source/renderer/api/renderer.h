@@ -20,8 +20,8 @@ struct lua_State;
 #include "renderer_properties.h"
 #include "../../geometry/geometry.h"
 
-typedef struct RenderScreenMsgArgs* RenderScreenMsgPtr;
-typedef struct RenderMsgArgs* RenderMsgPtr;
+typedef struct RenderScreenMsgArgs RenderScreenMsg_t,* RenderScreenMsgPtr;
+typedef struct RenderMsgArgs RenderMsg_t,* RenderMsgPtr;
 
 /// @brief Rendering blend modes for compositing operations
 /** BlendMode enum */

@@ -200,17 +200,17 @@ void ED_DrawCanvasView(HEDWND wnd, struct _CANVASVIEW* sv) {
   
   OBJ_UpdateLayout(scene, view.width, view.height);
   
-  OBJ_SendMessageW(scene, kMsgUpdateMatrix, 0, &(struct UpdateMatrixMsgArgs){
+  _SendMessage(scene, UpdateMatrix,
     .parent = MAT4_Identity(),
     .opacity = 1,
-  });
+  );
   
-  OBJ_SendMessageW(scene, kMsgRenderScreen, 0, &(struct RenderScreenMsgArgs){
+  _SendMessage(scene, RenderScreen,
     .width = view.width,
     .height = view.height,
     .stereo = 0,
     .target = sv->scene_texture,
-  });
+  );
     
   R_DrawImage(&(DRAWIMAGESTRUCT) {
     .img = sv->scene_texture,
@@ -346,14 +346,13 @@ LRESULT ED_CanvasView(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm) {
       return 1;
     case kMsgLeftMouseDown:
       ED_SetFocusedPanel(wnd);
-      if (OBJ_SendMessageW(CanvasView_GetScene(wnd),
-                           kMsgHitTest,
-                           LocalCoords(wnd, CanvasView_GetScene(wnd), wparm),
-                           &tmp))
       {
-        ED_SendMessage(editor.inspector, EVT_OBJECT_SELECTED, 0, tmp);
-        ED_SendMessage(ED_FindWindowInChildren(ED_GetParent(wnd), ED_HierarchyNavigator), EVT_OBJECT_SELECTED, 0, tmp);
-        ED_SendMessage(wnd, EVT_OBJECT_SELECTED, 0, tmp);
+        wParam_t coords = LocalCoords(wnd, CanvasView_GetScene(wnd), wparm);
+        if ((tmp = (lpObject_t)_SendMessage(CanvasView_GetScene(wnd), HitTest, .x = LOWORD(coords), .y = HIWORD(coords)))) {
+          ED_SendMessage(editor.inspector, EVT_OBJECT_SELECTED, 0, tmp);
+          ED_SendMessage(ED_FindWindowInChildren(ED_GetParent(wnd), ED_HierarchyNavigator), EVT_OBJECT_SELECTED, 0, tmp);
+          ED_SendMessage(wnd, EVT_OBJECT_SELECTED, 0, tmp);
+        }
       }
       if (data->mode == ID_SELECT || data->mode == ID_OBJECT_IMAGE) {
         data->selection.x = LOWORD(wparm);

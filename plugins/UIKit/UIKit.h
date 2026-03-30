@@ -22,22 +22,22 @@ struct lua_State;
 #include "UIKit_properties.h"
 #include "../../source/renderer/api/renderer.h"
 
-typedef void* GetSizeMsgPtr;
-typedef void* SubmitMsgPtr;
-typedef struct Size* MeasureMsgPtr;
-typedef struct rect* ArrangeMsgPtr;
-typedef struct Size* MeasureOverrideMsgPtr;
-typedef struct rect* ArrangeOverrideMsgPtr;
-typedef struct ForegroundContentMsgArgs* ForegroundContentMsgPtr;
-typedef struct PushPropertyMsgArgs* PushPropertyMsgPtr;
-typedef void* UpdateGeometryMsgPtr;
-typedef struct DrawBrushMsgArgs* DrawBrushMsgPtr;
-typedef struct HandleMessageMsgArgs* HandleMessageMsgPtr;
-typedef struct LoadViewMsgArgs* LoadViewMsgPtr;
-typedef struct MakeTextMsgArgs* MakeTextMsgPtr;
-typedef struct TriggeredMsgArgs* TriggeredMsgPtr;
-typedef struct NavigateToPageMsgArgs* NavigateToPageMsgPtr;
-typedef struct NavigateBackMsgArgs* NavigateBackMsgPtr;
+typedef int GetSizeMsg_t,* GetSizeMsgPtr;
+typedef int SubmitMsg_t,* SubmitMsgPtr;
+typedef struct MeasureMsgArgs MeasureMsg_t,* MeasureMsgPtr;
+typedef struct ArrangeMsgArgs ArrangeMsg_t,* ArrangeMsgPtr;
+typedef struct MeasureMsgArgs MeasureOverrideMsg_t,* MeasureOverrideMsgPtr;
+typedef struct ArrangeMsgArgs ArrangeOverrideMsg_t,* ArrangeOverrideMsgPtr;
+typedef int ForegroundContentMsg_t,* ForegroundContentMsgPtr;
+typedef struct PushPropertyMsgArgs PushPropertyMsg_t,* PushPropertyMsgPtr;
+typedef int UpdateGeometryMsg_t,* UpdateGeometryMsgPtr;
+typedef struct DrawBrushMsgArgs DrawBrushMsg_t,* DrawBrushMsgPtr;
+typedef struct HandleMessageMsgArgs HandleMessageMsg_t,* HandleMessageMsgPtr;
+typedef struct LoadViewMsgArgs LoadViewMsg_t,* LoadViewMsgPtr;
+typedef struct MakeTextMsgArgs MakeTextMsg_t,* MakeTextMsgPtr;
+typedef struct TriggeredMsgArgs TriggeredMsg_t,* TriggeredMsgPtr;
+typedef struct NavigateToPageMsgArgs NavigateToPageMsg_t,* NavigateToPageMsgPtr;
+typedef struct NavigateBackMsgArgs NavigateBackMsg_t,* NavigateBackMsgPtr;
 
 /// @brief Defines the primary axis for layout operations
 /** Direction enum */
@@ -468,12 +468,22 @@ struct SizeShorthand {
 ORCA_API void luaX_pushSizeShorthand(lua_State *L, struct SizeShorthand const* SizeShorthand);
 ORCA_API struct SizeShorthand* luaX_checkSizeShorthand(lua_State *L, int idx);
 
-/** ForegroundContentMsgArgs struct */
-struct ForegroundContentMsgArgs {
-	struct Texture* result;
+/** MeasureMsgArgs struct */
+struct MeasureMsgArgs {
+	float Width;
+	float Height;
 };
-ORCA_API void luaX_pushForegroundContentMsgArgs(lua_State *L, struct ForegroundContentMsgArgs const* data);
-ORCA_API struct ForegroundContentMsgArgs* luaX_checkForegroundContentMsgArgs(lua_State *L, int idx);
+ORCA_API void luaX_pushMeasureMsgArgs(lua_State *L, struct MeasureMsgArgs const* data);
+ORCA_API struct MeasureMsgArgs* luaX_checkMeasureMsgArgs(lua_State *L, int idx);
+/** ArrangeMsgArgs struct */
+struct ArrangeMsgArgs {
+	float X;
+	float Y;
+	float Width;
+	float Height;
+};
+ORCA_API void luaX_pushArrangeMsgArgs(lua_State *L, struct ArrangeMsgArgs const* data);
+ORCA_API struct ArrangeMsgArgs* luaX_checkArrangeMsgArgs(lua_State *L, int idx);
 /** PushPropertyMsgArgs struct */
 struct PushPropertyMsgArgs {
 	int32_t Placeholder;

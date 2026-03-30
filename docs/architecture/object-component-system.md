@@ -79,6 +79,19 @@ Messages and events are `uint32_t` constants defined in `source/core/core_proper
 | `kMsgUpdate` | Per-frame update tick |
 | `kMsgMouseUp` | Mouse/touch release over this object |
 | `kMsgMouseDown` | Mouse/touch press over this object |
+| `kMsgHitTest` | Pointer-event hit test — lParam is `HitTestMsgArgs*` with `x`/`y` inputs; returns the hit object as `LRESULT` |
+
+Use `_SendMessage` with named field initializers to dispatch messages that carry input parameters. When the result is returned via `LRESULT` (like `OpenFile`, `HitTest`), cast the return value to the expected pointer type:
+
+```c
+// Simple containment check — result discarded
+if (_SendMessage(view, HitTest, .x = px, .y = py)) {
+    /* some object was hit */
+}
+
+// Full hit test — retrieve which object was hit via LRESULT cast
+lpObject_t hit = (lpObject_t)_SendMessage(root, HitTest, .x = px, .y = py);
+```
 
 Custom messages can be declared in any module's `.xml` file using the `<message>` element and will be hashed into the same `uint32_t` space.
 
