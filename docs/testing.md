@@ -47,7 +47,7 @@ local ui = require "orca.UIKit"
 -- IMPORTANT: Always set ResizeMode = "NoResize" for test screens
 local screen = ui.Screen { Width = 1000, Height = 1000, ResizeMode = "NoResize" }
 
-screen:updateLayout(screen.Width, screen.Height)
+screen:sendMessage2("UpdateLayout", screen.Width, screen.Height)
 
 assert(screen.Width == 1000, "Width should be 1000")
 ```

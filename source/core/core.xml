@@ -352,15 +352,7 @@
       <returns type="int">The property value if found and compatible, otherwise the fallback value</returns>
     </method>
 
-    <topic title="Layout">Controls position, size, and dirty-flag propagation for layout passes.</topic>
-    <method name="UpdateLayout">
-      <summary>Updates object layout.</summary>
-      <details>Recalculates layout based on current properties and hierarchy.</details>
-      <arg name="width" type="int">Available width for layout calculations</arg>
-      <arg name="height" type="int">Available height for layout calculations</arg>
-    </method>
-
-    
+    <topic title="Layout">Controls position, size, and dirty-flag propagation for layout passes.</topic>    
     <method name="SetDirty">
       <summary>Sets object dirty and queues it for recalculation</summary>
       <details>Marks the object as needing recalculation and updates the timestamp. Dirty objects are processed during the next update cycle to ensure consistent state.</details>

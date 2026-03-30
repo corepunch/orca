@@ -571,7 +571,8 @@ HANDLER(Screen, WindowPaint) {
   OBJ_LoadPrefabs(L, hObject);
   OBJ_EmitPropertyChangedEvents(L, hObject);
   OBJ_UpdateProperties(hObject);
-  OBJ_UpdateLayout(hObject, LOWORD(wParam), HIWORD(wParam));
+
+  _SendMessage(hObject, UpdateLayout, LOWORD(wParam), HIWORD(wParam));
   
   // If screen size has changed, we need to make sure all properties
   // are recalculated with the new size
@@ -579,7 +580,7 @@ HANDLER(Screen, WindowPaint) {
     ORCA_API void CORE_AdvanceFrame(void);
     CORE_AdvanceFrame();
     OBJ_UpdateProperties(hObject);
-    OBJ_UpdateLayout(hObject, LOWORD(wParam), HIWORD(wParam));
+    _SendMessage(hObject, UpdateLayout, LOWORD(wParam), HIWORD(wParam));
   }
 
   _SendMessage(hObject, UpdateMatrix,
@@ -628,4 +629,11 @@ HANDLER(Screen, WindowResized) {
   OBJ_SetTreeDirty(hObject);
   OBJ_SendMessageW(hObject, kMsgWindowPaint, wParam, NULL);
   return FALSE;
+}
+
+
+HANDLER(Screen, UpdateLayout) {
+  _SendMessage(hObject, Measure, .Width = pUpdateLayout->Width, .Height = pUpdateLayout->Height);
+  _SendMessage(hObject, Arrange, .Width = pUpdateLayout->Width, .Height = pUpdateLayout->Height);
+  return TRUE;
 }

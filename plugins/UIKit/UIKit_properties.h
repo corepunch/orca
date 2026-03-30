@@ -16,6 +16,7 @@
 #define kMsgLoadView 0xa3650e54
 #define kMsgMakeText 0x73a47798
 #define kMsgTriggered 0x3b1c3ae2
+#define kMsgUpdateLayout 0x928c657a
 #define kMsgNavigateToPage 0x6475c790
 #define kMsgNavigateBack 0x36bc88b5
 // DataObject

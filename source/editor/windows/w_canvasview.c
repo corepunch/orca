@@ -198,19 +198,19 @@ void ED_DrawCanvasView(HEDWND wnd, struct _CANVASVIEW* sv) {
   
   UI_StepTime(scene);
   
-  OBJ_UpdateLayout(scene, view.width, view.height);
+  _SendMessage(scene, UpdateLayout,
+               .Width = view.width,
+               .Height = view.height);
   
   _SendMessage(scene, UpdateMatrix,
-    .parent = MAT4_Identity(),
-    .opacity = 1,
-  );
+               .parent = MAT4_Identity(),
+               .opacity = 1);
   
   _SendMessage(scene, RenderScreen,
-    .width = view.width,
-    .height = view.height,
-    .stereo = 0,
-    .target = sv->scene_texture,
-  );
+               .width = view.width,
+               .height = view.height,
+               .stereo = 0,
+               .target = sv->scene_texture);
     
   R_DrawImage(&(DRAWIMAGESTRUCT) {
     .img = sv->scene_texture,

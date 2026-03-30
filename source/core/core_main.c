@@ -142,11 +142,6 @@ void UI_Shutdown(void) {
 static int _fps[MAX_FPS_CACHE]={0};
 static int _counter=0;
 
-void OBJ_UpdateLayout(lpObject_t obj, int width, int height) {
-  OBJ_SendMessage(obj, "Measure", 0, &(struct Size){ .width = width, .height = height });
-  OBJ_SendMessage(obj, "Arrange", 0, &(struct rect){ .width = width, .height = height });
-}
-
 ORCA_API longTime_t
 UI_GetTime(void)
 {
