@@ -394,11 +394,24 @@ class Struct extends Interface {
 
 	function getProperties() {
 		foreach ($this->_elem->xpath(".//field[@name]") as $f) {
-			$field = new Field($f, $this->_model);
-			if ($field->type->kind === 'int' && $this->_model->_has_in(strval($field->name), "enums")) {
-				$field->type = new Type(simplexml_load_string("<arg type='" . strval($field->name) . "'/>"), $this->_model);
+			$field_name = strval($f["name"]);
+			$type_ = new Type($f, $this->_model);
+			$text = trim((string)$f);
+			$doc = strlen($text) > 0 ? $text : null;
+			if ($type_->fixed_array && $type_->kind === "struct" && $field_name === ucfirst($field_name)) {
+				for ($i = 0; $i < $type_->fixed_array; $i++) {
+					$new_seg = $field_name . '[' . $i . ']';
+					yield from $this->_walkProperties($type_, [$this->name, $new_seg], $doc);
+				}
+			} elseif (!$type_->fixed_array && $type_->kind === "struct" && $type_->data && !$type_->data->sealed && $field_name === ucfirst($field_name)) {
+				yield from $this->_walkProperties($type_, [$this->name, $field_name], $doc);
+			} else {
+				$field = new Field($f, $this->_model);
+				if ($field->type->kind === 'int' && $this->_model->_has_in($field_name, "enums")) {
+					$field->type = new Type(simplexml_load_string("<arg type='" . $field_name . "'/>"), $this->_model);
+				}
+				yield $field;
 			}
-			yield $field;
 		}
 	}
 }
