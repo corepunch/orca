@@ -4,6 +4,9 @@
 
 #include "renderer.h"
 
+#define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
+#define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
+
 // fontface
 extern void luaX_pushfontface(lua_State *L, struct fontface const* value);
 extern struct fontface* luaX_checkfontface(lua_State *L, int index);
@@ -67,13 +70,66 @@ int luaopen_orca_window(lua_State *L) {
 	lua_setfield(L, -2, "__index");
 	return 1;
 }
-#define FIELD(IDENT, STRUCT, NAME, TYPE, ...) { \
-	.Name = #NAME, \
-	.ShortIdentifier = IDENT, \
-	.DataType = TYPE, \
-	.Offset = offsetof(struct STRUCT, NAME), \
-	.DataSize = sizeof(((struct STRUCT*)NULL)->NAME), \
-	##__VA_ARGS__ \
+extern void read_property(lua_State *L, int idx, struct PropertyType const* prop, void* struct_ptr);
+extern int write_property(lua_State *L, int idx, struct PropertyType const* prop, void const* struct_ptr);
+extern int parse_property(const char* str, struct PropertyType const* prop, void const* struct_ptr);
+
+#define STRUCT(NAME, EXPORT) \
+void luaX_push##NAME(lua_State *L, struct NAME const* data) { \
+	if (data == NULL) { lua_pushnil(L); return; } \
+	memcpy((luaL_setmetatable(L, #EXPORT), lua_newuserdata(L, sizeof(struct NAME))), data, sizeof(struct NAME)); \
+} \
+struct NAME* luaX_check##NAME(lua_State *L, int idx) { return luaL_checkudata(L, idx, #EXPORT); } \
+static int f_new_##NAME(lua_State *L) { \
+	struct NAME* self = lua_newuserdata(L, sizeof(struct NAME)); \
+	memset((luaL_setmetatable(L, #EXPORT), self), 0, sizeof(struct NAME)); \
+	if (lua_istable(L, 1)) \
+    for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
+			lua_pop(L, (lua_getfield(L, 1, _##NAME[i].Name), read_property(L, -1, &_##NAME[i], self), 1)); \
+	else for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
+		read_property(L, i + 1, &_##NAME[i], self); \
+	return 1; \
+} \
+static int f_##NAME##___index(lua_State *L) { \
+	for (uint32_t i = 0, j = fnv1a32(luaL_checkstring(L, 2)); i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
+		if (_##NAME[i].ShortIdentifier == j) \
+			return (write_property(L, -1, &_##NAME[i], luaX_check##NAME(L, 1)), 1); \
+	return luaL_error(L, "Unknown field in " #NAME ": %s", luaL_checkstring(L, 2)); \
+} \
+static int f_##NAME##___newindex(lua_State *L) { \
+	for (uint32_t i = 0, j = fnv1a32(luaL_checkstring(L, 2)); i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
+		if (_##NAME[i].ShortIdentifier == j) \
+			return (read_property(L, 3, &_##NAME[i], luaX_check##NAME(L, 1)), 0); \
+	return luaL_error(L, "Unknown field in " #NAME ": %s", luaL_checkstring(L, 2)); \
+} \
+static int f_##NAME##___call(lua_State *L) { \
+	return ((void)lua_remove(L, 1), f_new_##NAME(L)); \
+} \
+static int f_##NAME##___fromstring(lua_State *L) { \
+	char* tmp = strdup(luaL_checkstring(L, 1)),* tok = strtok(tmp, " "); \
+	struct NAME self; \
+	memset(&self, 0, sizeof(struct NAME)); \
+	for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++, tok = strtok(NULL, " ")) \
+		parse_property(tok, &_##NAME[i], &self); \
+	free(tmp); \
+	return (luaX_push##NAME(L, &self), 1); \
+} \
+int luaopen_orca_##NAME(lua_State *L) { \
+	luaL_newmetatable(L, #EXPORT); \
+	luaL_setfuncs(L, ((luaL_Reg[]) { \
+		{ "new", f_new_##NAME }, \
+		{ "fromstring", f_##NAME##___fromstring }, \
+		{ "__newindex", f_##NAME##___newindex }, \
+		{ "__index", f_##NAME##___index }, \
+		{ NULL, NULL }, \
+	}), 0); \
+	luaL_setfuncs(L, _##NAME##_Methods, 0); \
+	/* Make struct creatable via constructor-like syntax */ \
+	lua_newtable(L); \
+	lua_pushcfunction(L, f_##NAME##___call); \
+	lua_setfield(L, -2, "__call"); \
+	lua_setmetatable(L, -2); \
+	return 1; \
 }
 
 struct MessageType RenderScreenMessage = {
@@ -82,149 +138,38 @@ struct MessageType RenderScreenMessage = {
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct RenderScreenMsgArgs),
 };
-void luaX_pushRenderScreenMsgArgs(lua_State *L, struct RenderScreenMsgArgs const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct RenderScreenMsgArgs* self = lua_newuserdata(L, sizeof(struct RenderScreenMsgArgs));
-	luaL_setmetatable(L, "RenderScreenMsgArgs");
-	memcpy(self, data, sizeof(struct RenderScreenMsgArgs));
-}
-struct RenderScreenMsgArgs* luaX_checkRenderScreenMsgArgs(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "RenderScreenMsgArgs");
-}
-static int f_new_RenderScreenMsgArgs(lua_State *L) {
-	struct RenderScreenMsgArgs* self = lua_newuserdata(L, sizeof(struct RenderScreenMsgArgs));
-	luaL_setmetatable(L, "RenderScreenMsgArgs");
-	memset(self, 0, sizeof(struct RenderScreenMsgArgs));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "width"), self->width = (uint32_t)luaL_optinteger(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "height"), self->height = (uint32_t)luaL_optinteger(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "stereo"), self->stereo = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "angle"), self->angle = luaL_optnumber(L, -1, 0), 1));
-		lua_pop(L, (lua_getfield(L, 1, "target"), self->target = luaX_checkTexture(L, -1), 1));
-	} else {
-		self->width = (uint32_t)luaL_optinteger(L, 1, 0);
-		self->height = (uint32_t)luaL_optinteger(L, 2, 0);
-		self->stereo = luaL_optnumber(L, 3, 0);
-		self->angle = luaL_optnumber(L, 4, 0);
-		self->target = luaX_checkTexture(L, 5);
-	}
-	return 1;
-}
-int f_RenderScreenMsgArgs___index(lua_State *L) {
-	struct RenderScreenMsgArgs* self = luaX_checkRenderScreenMsgArgs(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x95876e1f: lua_pushinteger(L, self->width); return 1; // width
-	case 0xd5bdbb42: lua_pushinteger(L, self->height); return 1; // height
-	case 0xcc87a64d: lua_pushnumber(L, self->stereo); return 1; // stereo
-	case 0xad544418: lua_pushnumber(L, self->angle); return 1; // angle
-	case 0x32608848: luaX_pushTexture(L, self->target); return 1; // target
-	}
-	return luaL_error(L, "Unknown field in RenderScreenMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_RenderScreenMsgArgs___newindex(lua_State *L) {
-	struct RenderScreenMsgArgs* self = luaX_checkRenderScreenMsgArgs(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x95876e1f: self->width = (uint32_t)luaL_optinteger(L, 3, 0); return 0; // width
-	case 0xd5bdbb42: self->height = (uint32_t)luaL_optinteger(L, 3, 0); return 0; // height
-	case 0xcc87a64d: self->stereo = luaL_optnumber(L, 3, 0); return 0; // stereo
-	case 0xad544418: self->angle = luaL_optnumber(L, 3, 0); return 0; // angle
-	case 0x32608848: self->target = luaX_checkTexture(L, 3); return 0; // target
-	}
-	return luaL_error(L, "Unknown field in RenderScreenMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
-}
-static int f_RenderScreenMsgArgs___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_RenderScreenMsgArgs(L));  // remove RenderScreenMsgArgs from stack and call constructor
-}
-int luaopen_orca_RenderScreenMsgArgs(lua_State *L) {
-	luaL_newmetatable(L, "RenderScreenMsgArgs");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_RenderScreenMsgArgs },
-		{ "__newindex", f_RenderScreenMsgArgs___newindex },
-		{ "__index", f_RenderScreenMsgArgs___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make RenderScreenMsgArgs creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_RenderScreenMsgArgs___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
 struct MessageType RenderMessage = {
 	.name = "Render",
 	.id = kMsgRender,
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct RenderMsgArgs),
 };
-void luaX_pushRenderMsgArgs(lua_State *L, struct RenderMsgArgs const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct RenderMsgArgs* self = lua_newuserdata(L, sizeof(struct RenderMsgArgs));
-	luaL_setmetatable(L, "RenderMsgArgs");
-	memcpy(self, data, sizeof(struct RenderMsgArgs));
-}
-struct RenderMsgArgs* luaX_checkRenderMsgArgs(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "RenderMsgArgs");
-}
-static int f_new_RenderMsgArgs(lua_State *L) {
-	struct RenderMsgArgs* self = lua_newuserdata(L, sizeof(struct RenderMsgArgs));
-	luaL_setmetatable(L, "RenderMsgArgs");
-	memset(self, 0, sizeof(struct RenderMsgArgs));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "ViewDef"), self->ViewDef = NULL, 1));
-	} else {
-		self->ViewDef = NULL;
-	}
-	return 1;
-}
-int f_RenderMsgArgs___index(lua_State *L) {
-	struct RenderMsgArgs* self = luaX_checkRenderMsgArgs(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xce9ab61f: luaX_pushViewDef(L, self->ViewDef); return 1; // ViewDef
-	}
-	return luaL_error(L, "Unknown field in RenderMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_RenderMsgArgs___newindex(lua_State *L) {
-	struct RenderMsgArgs* self = luaX_checkRenderMsgArgs(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xce9ab61f: self->ViewDef = NULL; return 0; // ViewDef
-	}
-	return luaL_error(L, "Unknown field in RenderMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
-}
-static int f_RenderMsgArgs___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_RenderMsgArgs(L));  // remove RenderMsgArgs from stack and call constructor
-}
-int luaopen_orca_RenderMsgArgs(lua_State *L) {
-	luaL_newmetatable(L, "RenderMsgArgs");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_RenderMsgArgs },
-		{ "__newindex", f_RenderMsgArgs___newindex },
-		{ "__index", f_RenderMsgArgs___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make RenderMsgArgs creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_RenderMsgArgs___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-#define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
-#define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
 
-
-static struct MessageType TextureMessageTypes[kTextureNumMessageTypes] = {	
+static luaL_Reg _RenderScreenMsgArgs_Methods[] = {};
+static struct PropertyType _RenderScreenMsgArgs[] = {
+	DECL(0x95876e1f, RenderScreenMsgArgs, width, width, kDataTypeInt), // RenderScreenMsgArgs.width
+	DECL(0xd5bdbb42, RenderScreenMsgArgs, height, height, kDataTypeInt), // RenderScreenMsgArgs.height
+	DECL(0xcc87a64d, RenderScreenMsgArgs, stereo, stereo, kDataTypeFloat), // RenderScreenMsgArgs.stereo
+	DECL(0xad544418, RenderScreenMsgArgs, angle, angle, kDataTypeFloat), // RenderScreenMsgArgs.angle
+	DECL(0x32608848, RenderScreenMsgArgs, target, target, kDataTypeObject, .TypeString = "Texture"), // RenderScreenMsgArgs.target
+};
+static luaL_Reg _RenderMsgArgs_Methods[] = {};
+static struct PropertyType _RenderMsgArgs[] = {
+	DECL(0xce9ab61f, RenderMsgArgs, ViewDef, ViewDef, kDataTypeStruct, .TypeString = "ViewDef"), // RenderMsgArgs.ViewDef
 };
 
+STRUCT(RenderScreenMsgArgs, RenderScreenMsgArgs);
+STRUCT(RenderMsgArgs, RenderMsgArgs);
+static struct MessageType TextureMessageTypes[kTextureNumMessageTypes] = {	
+};
 static struct PropertyType const TextureProperties[kTextureNumProperties] = {
-	DECL(0x47bdcfab, Texture, MinificationFilter, MinificationFilter, kDataTypeEnum, .TypeString = "Nearest,Linear,Trilinear", .EnumValues = _TextureFilter), // Texture.MinificationFilter
-	DECL(0xf5ff802c, Texture, MagnificationFilter, MagnificationFilter, kDataTypeEnum, .TypeString = "Nearest,Linear,Trilinear", .EnumValues = _TextureFilter), // Texture.MagnificationFilter
-	DECL(0xc2114a32, Texture, WrapMode, WrapMode, kDataTypeEnum, .TypeString = "Clamp,Repeat,Base", .EnumValues = _TextureWrap), // Texture.WrapMode
-	DECL(0xffb0ff72, Texture, Format, Format, kDataTypeEnum, .TypeString = "Automatic,Rgba8,Rgb8,Alpha8,DepthComponent,DepthStencil", .EnumValues = _TextureFormat), // Texture.Format
+	DECL(0x47bdcfab, Texture, MinificationFilter, MinificationFilter, kDataTypeEnum, .EnumValues = _TextureFilter), // Texture.MinificationFilter
+	DECL(0xf5ff802c, Texture, MagnificationFilter, MagnificationFilter, kDataTypeEnum, .EnumValues = _TextureFilter), // Texture.MagnificationFilter
+	DECL(0xc2114a32, Texture, WrapMode, WrapMode, kDataTypeEnum, .EnumValues = _TextureWrap), // Texture.WrapMode
+	DECL(0xffb0ff72, Texture, Format, Format, kDataTypeEnum, .EnumValues = _TextureFormat), // Texture.Format
 	DECL(0x28528e11, Texture, Scale, Scale, kDataTypeInt), // Texture.Scale
-	DECL(0xb3ad7612, Texture, MipmapMode, MipmapMode, kDataTypeEnum, .TypeString = "Base,Nearest,Linear,Trilinear", .EnumValues = _MipmapMode), // Texture.MipmapMode
-	DECL(0x78736795, Texture, AnisotropyType, AnisotropyType, kDataTypeEnum, .TypeString = "None,X2,X4,X8,X16", .EnumValues = _AnisotropyType), // Texture.AnisotropyType
+	DECL(0xb3ad7612, Texture, MipmapMode, MipmapMode, kDataTypeEnum, .EnumValues = _MipmapMode), // Texture.MipmapMode
+	DECL(0x78736795, Texture, AnisotropyType, AnisotropyType, kDataTypeEnum, .EnumValues = _AnisotropyType), // Texture.AnisotropyType
 	DECL(0x3b42dfbf, Texture, Width, Width, kDataTypeInt), // Texture.Width
 	DECL(0x1bd13562, Texture, Height, Height, kDataTypeInt), // Texture.Height
 };
@@ -258,30 +203,28 @@ ORCA_API struct ClassDesc _Texture = {
 };
 
 LRESULT Image_Start(struct Object*, struct Image*, wParam_t, StartMsgPtr);
-
 static struct MessageType ImageMessageTypes[kImageNumMessageTypes] = {	
 };
-
 static struct PropertyType const ImageProperties[kImageNumProperties] = {
 	DECL(0x61e2a3f8, Image, Source, Source, kDataTypeString), // Image.Source
 	DECL(0xa3c8af46, Image, PremultiplyAlpha, PremultiplyAlpha, kDataTypeBool), // Image.PremultiplyAlpha
-	DECL(0xd155d06d, Image, Type, Type, kDataTypeEnum, .TypeString = "Normal,Mask", .EnumValues = _ImageType), // Image.Type
+	DECL(0xd155d06d, Image, Type, Type, kDataTypeEnum, .EnumValues = _ImageType), // Image.Type
 	DECL(0xdb9ccf58, Image, HasMipmaps, HasMipmaps, kDataTypeBool), // Image.HasMipmaps
 	DECL(0xa6478e7c, Image, Size, Size, kDataTypeString), // Image.Size
 	DECL(0x7588b4d5, Image, BitDepth, BitDepth, kDataTypeInt), // Image.BitDepth
 	DECL(0x94ab250b, Image, FileHasTransparency, FileHasTransparency, kDataTypeBool), // Image.FileHasTransparency
 	DECL(0xb5f815c3, Image, FileHasICCProfile, FileHasICCProfile, kDataTypeBool), // Image.FileHasICCProfile
-	DECL(0x86ff7dab, Image, TargetFormat, TargetFormat, kDataTypeEnum, .TypeString = "Png,Jpeg,Svg,Astc,Pvrtc", .EnumValues = _ImageFormat), // Image.TargetFormat
-	DECL(0x79fe08b6, Image, AtcCompressionScheme, AtcCompressionScheme, kDataTypeEnum, .TypeString = "ExplicitAlpha,InterpolatedAlpha,Rgb", .EnumValues = _AtcCompressionScheme), // Image.AtcCompressionScheme
+	DECL(0x86ff7dab, Image, TargetFormat, TargetFormat, kDataTypeEnum, .EnumValues = _ImageFormat), // Image.TargetFormat
+	DECL(0x79fe08b6, Image, AtcCompressionScheme, AtcCompressionScheme, kDataTypeEnum, .EnumValues = _AtcCompressionScheme), // Image.AtcCompressionScheme
 	DECL(0x18e754ba, Image, PvrtcBitDepth, PvrtcBitDepth, kDataTypeInt), // Image.PvrtcBitDepth
 	DECL(0x022a53d7, Image, PvrtcQuality, PvrtcQuality, kDataTypeInt), // Image.PvrtcQuality
 	DECL(0x55e09913, Image, PvrtcCompressionScheme, PvrtcCompressionScheme, kDataTypeInt), // Image.PvrtcCompressionScheme
-	DECL(0x8bceff48, Image, AstcBlockSize, AstcBlockSize, kDataTypeEnum, .TypeString = "UnormBlock4x4,UnormBlock5x4,UnormBlock5x5,UnormBlock6x5,UnormBlock6x6,UnormBlock8x5,UnormBlock8x6,UnormBlock8x8,UnormBlock10x5,UnormBlock10x6,UnormBlock10x8,UnormBlock10x10,UnormBlock12x10,UnormBlock12x12,SrgbBlock4x4,SrgbBlock5x4,SrgbBlock5x5,SrgbBlock6x5,SrgbBlock6x6,SrgbBlock8x5,SrgbBlock8x6,SrgbBlock8x8,SrgbBlock10x5,SrgbBlock10x6,SrgbBlock10x8,SrgbBlock10x10,SrgbBlock12x10,SrgbBlock12x12", .EnumValues = _AstcFormat), // Image.AstcBlockSize
-	DECL(0x52120f05, Image, AstcCompressionSpeed, AstcCompressionSpeed, kDataTypeEnum, .TypeString = "VeryFast,Fast,Medium,Thorough,Exhaustive", .EnumValues = _AstcCompressionSpeed), // Image.AstcCompressionSpeed
+	DECL(0x8bceff48, Image, AstcBlockSize, AstcBlockSize, kDataTypeEnum, .EnumValues = _AstcFormat), // Image.AstcBlockSize
+	DECL(0x52120f05, Image, AstcCompressionSpeed, AstcCompressionSpeed, kDataTypeEnum, .EnumValues = _AstcCompressionSpeed), // Image.AstcCompressionSpeed
 	DECL(0x0ccdd5f0, Image, AstcIsSRGB, AstcIsSRGB, kDataTypeBool), // Image.AstcIsSRGB
-	DECL(0xfe76304d, Image, RawColorByteFormat, RawColorByteFormat, kDataTypeEnum, .TypeString = "Rgba8,Rgb8,Bgra8,Rgba16f,Rgb10a2,R11g11b10f,Rgba32f", .EnumValues = _RawColorByteFormat), // Image.RawColorByteFormat
-	DECL(0x66001361, Image, SpansionCompressionScheme, SpansionCompressionScheme, kDataTypeEnum, .TypeString = "None,Standard,Enhanced", .EnumValues = _SpansionCompressionScheme), // Image.SpansionCompressionScheme
-	DECL(0x28b08476, Image, FilePngCompressionLevel, FilePngCompressionLevel, kDataTypeEnum, .TypeString = "None,Fast,Normal,Maximum,ProjectDefault", .EnumValues = _FilePngCompressionLevel), // Image.FilePngCompressionLevel
+	DECL(0xfe76304d, Image, RawColorByteFormat, RawColorByteFormat, kDataTypeEnum, .EnumValues = _RawColorByteFormat), // Image.RawColorByteFormat
+	DECL(0x66001361, Image, SpansionCompressionScheme, SpansionCompressionScheme, kDataTypeEnum, .EnumValues = _SpansionCompressionScheme), // Image.SpansionCompressionScheme
+	DECL(0x28b08476, Image, FilePngCompressionLevel, FilePngCompressionLevel, kDataTypeEnum, .EnumValues = _FilePngCompressionLevel), // Image.FilePngCompressionLevel
 	DECL(0xd96ef887, Image, Etc2Effort, Etc2Effort, kDataTypeInt), // Image.Etc2Effort
 	DECL(0x84841aff, Image, FileExportSourceTexture, FileExportSourceTexture, kDataTypeBool), // Image.FileExportSourceTexture
 	DECL(0xc1e7dbf8, Image, FileExportAlways, FileExportAlways, kDataTypeBool), // Image.FileExportAlways
@@ -320,16 +263,14 @@ ORCA_API struct ClassDesc _Image = {
 };
 
 LRESULT RenderTargetTexture_Start(struct Object*, struct RenderTargetTexture*, wParam_t, StartMsgPtr);
-
 static struct MessageType RenderTargetTextureMessageTypes[kRenderTargetTextureNumMessageTypes] = {	
 };
-
 static struct PropertyType const RenderTargetTextureProperties[kRenderTargetTextureNumProperties] = {
 	DECL(0x3b42dfbf, RenderTargetTexture, Width, Width, kDataTypeInt), // RenderTargetTexture.Width
 	DECL(0x1bd13562, RenderTargetTexture, Height, Height, kDataTypeInt), // RenderTargetTexture.Height
-	DECL(0x77ada720, RenderTargetTexture, TargetType, TargetType, kDataTypeEnum, .TypeString = "Color,Depth,Stencil,DepthStencil,Normal,Specular,Emission", .EnumValues = _RenderTargetType), // RenderTargetTexture.TargetType
+	DECL(0x77ada720, RenderTargetTexture, TargetType, TargetType, kDataTypeEnum, .EnumValues = _RenderTargetType), // RenderTargetTexture.TargetType
 	DECL(0xdb3b9d57, RenderTargetTexture, SupportSimpleRenderTarget, SupportSimpleRenderTarget, kDataTypeBool), // RenderTargetTexture.SupportSimpleRenderTarget
-	DECL(0x9048e288, RenderTargetTexture, Attachment, Attachment, kDataTypeEnum, .TypeString = "None,Color0,Color1,Color2,Color3,Depth,Stencil,DepthStencil", .EnumValues = _RenderTargetTextureAttachment), // RenderTargetTexture.Attachment
+	DECL(0x9048e288, RenderTargetTexture, Attachment, Attachment, kDataTypeEnum, .EnumValues = _RenderTargetTextureAttachment), // RenderTargetTexture.Attachment
 	DECL(0x337c9af1, RenderTargetTexture, AllowDepthFallback, AllowDepthFallback, kDataTypeBool), // RenderTargetTexture.AllowDepthFallback
 	DECL(0x76f1691e, RenderTargetTexture, SampleCount, SampleCount, kDataTypeInt), // RenderTargetTexture.SampleCount
 };
@@ -365,10 +306,8 @@ ORCA_API struct ClassDesc _RenderTargetTexture = {
 };
 
 LRESULT CubeMapTexture_Start(struct Object*, struct CubeMapTexture*, wParam_t, StartMsgPtr);
-
 static struct MessageType CubeMapTextureMessageTypes[kCubeMapTextureNumMessageTypes] = {	
 };
-
 static struct PropertyType const CubeMapTextureProperties[kCubeMapTextureNumProperties] = {
 	DECL(0x59f82b67, CubeMapTexture, BackImage, BackImage, kDataTypeString), // CubeMapTexture.BackImage
 	DECL(0xe5328805, CubeMapTexture, FrontImage, FrontImage, kDataTypeString), // CubeMapTexture.FrontImage
@@ -409,10 +348,8 @@ ORCA_API struct ClassDesc _CubeMapTexture = {
 };
 
 LRESULT IOSurfaceTexture_Start(struct Object*, struct IOSurfaceTexture*, wParam_t, StartMsgPtr);
-
 static struct MessageType IOSurfaceTextureMessageTypes[kIOSurfaceTextureNumMessageTypes] = {	
 };
-
 static struct PropertyType const IOSurfaceTextureProperties[kIOSurfaceTextureNumProperties] = {
 	DECL(0xb5fc4968, IOSurfaceTexture, IOSurface, IOSurface, kDataTypeInt), // IOSurfaceTexture.IOSurface
 };
@@ -447,14 +384,12 @@ ORCA_API struct ClassDesc _IOSurfaceTexture = {
 	.NumMessageTypes = kIOSurfaceTextureNumMessageTypes,
 };
 
-
 static struct MessageType VertexShaderMessageTypes[kVertexShaderNumMessageTypes] = {	
 };
-
 static struct PropertyType const VertexShaderProperties[kVertexShaderNumProperties] = {
 	DECL(0x5dcdd537, VertexShader, Version, Version, kDataTypeInt), // VertexShader.Version
-	DECL(0x1ecae757, VertexShader, FloatPrecision, FloatPrecision, kDataTypeEnum, .TypeString = "Unset,Low,Medium,High", .EnumValues = _FloatPrecision), // VertexShader.FloatPrecision
-	DECL(0x2cbcb34d, VertexShader, Shading, Shading, kDataTypeEnum, .TypeString = "Unlit,Phong,Standard", .EnumValues = _Shading), // VertexShader.Shading
+	DECL(0x1ecae757, VertexShader, FloatPrecision, FloatPrecision, kDataTypeEnum, .EnumValues = _FloatPrecision), // VertexShader.FloatPrecision
+	DECL(0x2cbcb34d, VertexShader, Shading, Shading, kDataTypeEnum, .EnumValues = _Shading), // VertexShader.Shading
 };
 static struct VertexShader VertexShaderDefaults = {
 };
@@ -485,13 +420,11 @@ ORCA_API struct ClassDesc _VertexShader = {
 	.NumMessageTypes = kVertexShaderNumMessageTypes,
 };
 
-
 static struct MessageType FragmentShaderMessageTypes[kFragmentShaderNumMessageTypes] = {	
 };
-
 static struct PropertyType const FragmentShaderProperties[kFragmentShaderNumProperties] = {
 	DECL(0x5dcdd537, FragmentShader, Version, Version, kDataTypeInt), // FragmentShader.Version
-	DECL(0x1ecae757, FragmentShader, FloatPrecision, FloatPrecision, kDataTypeEnum, .TypeString = "Unset,Low,Medium,High", .EnumValues = _FloatPrecision), // FragmentShader.FloatPrecision
+	DECL(0x1ecae757, FragmentShader, FloatPrecision, FloatPrecision, kDataTypeEnum, .EnumValues = _FloatPrecision), // FragmentShader.FloatPrecision
 	DECL(0x0da660ff, FragmentShader, Out, Out, kDataTypeString), // FragmentShader.Out
 };
 static struct FragmentShader FragmentShaderDefaults = {
@@ -525,13 +458,11 @@ ORCA_API struct ClassDesc _FragmentShader = {
 
 LRESULT Shader_Start(struct Object*, struct Shader*, wParam_t, StartMsgPtr);
 LRESULT Shader_Destroy(struct Object*, struct Shader*, wParam_t, DestroyMsgPtr);
-
 static struct MessageType ShaderMessageTypes[kShaderNumMessageTypes] = {	
 };
-
 static struct PropertyType const ShaderProperties[kShaderNumProperties] = {
-	DECL(0x0038792b, Shader, BlendMode, BlendMode, kDataTypeEnum, .TypeString = "AlphaAutomatic,Opaque,Alpha,Additive,PremultipliedAlpha,MixedAlpha", .EnumValues = _BlendMode), // Shader.BlendMode
-	DECL(0xb7e582be, Shader, DepthTestFunction, DepthTestFunction, kDataTypeEnum, .TypeString = "Never,Always,Less,LessOrEqual,Greater,GreaterOrEqual,Equal,NotEqual,Disabled", .EnumValues = _CompareFunc), // Shader.DepthTestFunction
+	DECL(0x0038792b, Shader, BlendMode, BlendMode, kDataTypeEnum, .EnumValues = _BlendMode), // Shader.BlendMode
+	DECL(0xb7e582be, Shader, DepthTestFunction, DepthTestFunction, kDataTypeEnum, .EnumValues = _CompareFunc), // Shader.DepthTestFunction
 	DECL(0x8ec3072e, Shader, DepthWriteEnabled, DepthWriteEnabled, kDataTypeBool), // Shader.DepthWriteEnabled
 };
 static struct Shader ShaderDefaults = {
@@ -567,10 +498,8 @@ ORCA_API struct ClassDesc _Shader = {
 	.NumMessageTypes = kShaderNumMessageTypes,
 };
 
-
 static struct MessageType MaterialMessageTypes[kMaterialNumMessageTypes] = {	
 };
-
 static struct PropertyType const MaterialProperties[kMaterialNumProperties] = {
 	DECL(0x7deb3888, Material, Shader, Shader, kDataTypeObject, .TypeString = "Shader"), // Material.Shader
 	DECL(0x63792322, Material, GlobalAmbient, GlobalAmbient, kDataTypeColor), // Material.GlobalAmbient
@@ -584,7 +513,7 @@ static struct PropertyType const MaterialProperties[kMaterialNumProperties] = {
 	DECL(0xe83ca8af, Material, TextureOffset, TextureOffset, kDataTypeStruct, .TypeString = "Vector2D"), // Material.TextureOffset
 	DECL(0x861dbc5b, Material, TextureTiling, TextureTiling, kDataTypeStruct, .TypeString = "Vector2D"), // Material.TextureTiling
 	DECL(0x5df90df9, Material, BlendIntensity, BlendIntensity, kDataTypeFloat), // Material.BlendIntensity
-	DECL(0x0038792b, Material, BlendMode, BlendMode, kDataTypeEnum, .TypeString = "AlphaAutomatic,Opaque,Alpha,Additive,PremultipliedAlpha,MixedAlpha", .EnumValues = _BlendMode), // Material.BlendMode
+	DECL(0x0038792b, Material, BlendMode, BlendMode, kDataTypeEnum, .EnumValues = _BlendMode), // Material.BlendMode
 };
 static struct Material MaterialDefaults = {
 		
@@ -619,10 +548,8 @@ ORCA_API struct ClassDesc _Material = {
 
 LRESULT Mesh_Start(struct Object*, struct Mesh*, wParam_t, StartMsgPtr);
 LRESULT Mesh_Destroy(struct Object*, struct Mesh*, wParam_t, DestroyMsgPtr);
-
 static struct MessageType MeshMessageTypes[kMeshNumMessageTypes] = {	
 };
-
 static struct PropertyType const MeshProperties[kMeshNumProperties] = {
 	DECL(0x61e2a3f8, Mesh, Source, Source, kDataTypeString), // Mesh.Source
 	DECL(0xcbd54f80, Mesh, Material, Material, kDataTypeObject, .TypeString = "Material"), // Mesh.Material
@@ -661,10 +588,8 @@ ORCA_API struct ClassDesc _Mesh = {
 
 LRESULT FontFamily_Start(struct Object*, struct FontFamily*, wParam_t, StartMsgPtr);
 LRESULT FontFamily_Destroy(struct Object*, struct FontFamily*, wParam_t, DestroyMsgPtr);
-
 static struct MessageType FontFamilyMessageTypes[kFontFamilyNumMessageTypes] = {	
 };
-
 static struct PropertyType const FontFamilyProperties[kFontFamilyNumProperties] = {
 	DECL(0xe750f2b7, FontFamily, Regular, Regular, kDataTypeString), // FontFamily.Regular
 	DECL(0x45768d96, FontFamily, Bold, Bold, kDataTypeString), // FontFamily.Bold
@@ -702,10 +627,8 @@ ORCA_API struct ClassDesc _FontFamily = {
 	.NumMessageTypes = kFontFamilyNumMessageTypes,
 };
 
-
 static struct MessageType TrajectoryMessageTypes[kTrajectoryNumMessageTypes] = {	
 };
-
 static struct PropertyType const TrajectoryProperties[kTrajectoryNumProperties] = {
 };
 static struct Trajectory TrajectoryDefaults = {
@@ -737,10 +660,8 @@ ORCA_API struct ClassDesc _Trajectory = {
 	.NumMessageTypes = kTrajectoryNumMessageTypes,
 };
 
-
 static struct MessageType TimelineMessageTypes[kTimelineNumMessageTypes] = {	
 };
-
 static struct PropertyType const TimelineProperties[kTimelineNumProperties] = {
 };
 static struct Timeline TimelineDefaults = {

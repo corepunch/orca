@@ -4,6 +4,9 @@
 
 #include "SceneKit.h"
 
+#define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
+#define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
+
 
 extern const char *_BlendMode[];
 extern const char *_CompareFunc[];
@@ -25,23 +28,73 @@ ENUM(ColorWriteMode, "None", "RGB", "RGBA", "R", "G", "B", "GB", "A")
 ENUM(FovType, "Xfov", "Yfov")
 ENUM(ProjectionType, "Perspective", "Orthographic")
 ENUM(LightType, "Point", "Spot")
-#define FIELD(IDENT, STRUCT, NAME, TYPE, ...) { \
-	.Name = #NAME, \
-	.ShortIdentifier = IDENT, \
-	.DataType = TYPE, \
-	.Offset = offsetof(struct STRUCT, NAME), \
-	.DataSize = sizeof(((struct STRUCT*)NULL)->NAME), \
-	##__VA_ARGS__ \
+extern void read_property(lua_State *L, int idx, struct PropertyType const* prop, void* struct_ptr);
+extern int write_property(lua_State *L, int idx, struct PropertyType const* prop, void const* struct_ptr);
+extern int parse_property(const char* str, struct PropertyType const* prop, void const* struct_ptr);
+
+#define STRUCT(NAME, EXPORT) \
+void luaX_push##NAME(lua_State *L, struct NAME const* data) { \
+	if (data == NULL) { lua_pushnil(L); return; } \
+	memcpy((luaL_setmetatable(L, #EXPORT), lua_newuserdata(L, sizeof(struct NAME))), data, sizeof(struct NAME)); \
+} \
+struct NAME* luaX_check##NAME(lua_State *L, int idx) { return luaL_checkudata(L, idx, #EXPORT); } \
+static int f_new_##NAME(lua_State *L) { \
+	struct NAME* self = lua_newuserdata(L, sizeof(struct NAME)); \
+	memset((luaL_setmetatable(L, #EXPORT), self), 0, sizeof(struct NAME)); \
+	if (lua_istable(L, 1)) \
+    for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
+			lua_pop(L, (lua_getfield(L, 1, _##NAME[i].Name), read_property(L, -1, &_##NAME[i], self), 1)); \
+	else for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
+		read_property(L, i + 1, &_##NAME[i], self); \
+	return 1; \
+} \
+static int f_##NAME##___index(lua_State *L) { \
+	for (uint32_t i = 0, j = fnv1a32(luaL_checkstring(L, 2)); i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
+		if (_##NAME[i].ShortIdentifier == j) \
+			return (write_property(L, -1, &_##NAME[i], luaX_check##NAME(L, 1)), 1); \
+	return luaL_error(L, "Unknown field in " #NAME ": %s", luaL_checkstring(L, 2)); \
+} \
+static int f_##NAME##___newindex(lua_State *L) { \
+	for (uint32_t i = 0, j = fnv1a32(luaL_checkstring(L, 2)); i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
+		if (_##NAME[i].ShortIdentifier == j) \
+			return (read_property(L, 3, &_##NAME[i], luaX_check##NAME(L, 1)), 0); \
+	return luaL_error(L, "Unknown field in " #NAME ": %s", luaL_checkstring(L, 2)); \
+} \
+static int f_##NAME##___call(lua_State *L) { \
+	return ((void)lua_remove(L, 1), f_new_##NAME(L)); \
+} \
+static int f_##NAME##___fromstring(lua_State *L) { \
+	char* tmp = strdup(luaL_checkstring(L, 1)),* tok = strtok(tmp, " "); \
+	struct NAME self; \
+	memset(&self, 0, sizeof(struct NAME)); \
+	for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++, tok = strtok(NULL, " ")) \
+		parse_property(tok, &_##NAME[i], &self); \
+	free(tmp); \
+	return (luaX_push##NAME(L, &self), 1); \
+} \
+int luaopen_orca_##NAME(lua_State *L) { \
+	luaL_newmetatable(L, #EXPORT); \
+	luaL_setfuncs(L, ((luaL_Reg[]) { \
+		{ "new", f_new_##NAME }, \
+		{ "fromstring", f_##NAME##___fromstring }, \
+		{ "__newindex", f_##NAME##___newindex }, \
+		{ "__index", f_##NAME##___index }, \
+		{ NULL, NULL }, \
+	}), 0); \
+	luaL_setfuncs(L, _##NAME##_Methods, 0); \
+	/* Make struct creatable via constructor-like syntax */ \
+	lua_newtable(L); \
+	lua_pushcfunction(L, f_##NAME##___call); \
+	lua_setfield(L, -2, "__call"); \
+	lua_setmetatable(L, -2); \
+	return 1; \
 }
 
-#define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
-#define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
+
 
 LRESULT Node3D_UpdateMatrix(struct Object*, struct Node3D*, wParam_t, UpdateMatrixMsgPtr);
-
 static struct MessageType Node3DMessageTypes[kNode3DNumMessageTypes] = {	
 };
-
 static struct PropertyType const Node3DProperties[kNode3DNumProperties] = {
 	DECL(0x3f19bf01, Node3D, LayoutTransform, LayoutTransform, kDataTypeStruct, .TypeString = "Transform3D"), // Node3D.LayoutTransform
 	DECL(0xfc7e27e0, Node3D, LayoutTransformTranslation, LayoutTransform.translation, kDataTypeStruct, .TypeString = "Vector3D"), // Node3D.LayoutTransformTranslation
@@ -92,10 +145,8 @@ ORCA_API struct ClassDesc _Node3D = {
 };
 
 LRESULT Scene_UpdateMatrix(struct Object*, struct Scene*, wParam_t, UpdateMatrixMsgPtr);
-
 static struct MessageType SceneMessageTypes[kSceneNumMessageTypes] = {	
 };
-
 static struct PropertyType const SceneProperties[kSceneNumProperties] = {
 	DECL(0xe74c7b6e, Scene, Camera, Camera, kDataTypeString), // Scene.Camera
 	DECL(0x14a89218, Scene, PreviewCamera, PreviewCamera, kDataTypeString), // Scene.PreviewCamera
@@ -137,10 +188,8 @@ ORCA_API struct ClassDesc _Scene = {
 };
 
 LRESULT Model3D_Render(struct Object*, struct Model3D*, wParam_t, RenderMsgPtr);
-
 static struct MessageType Model3DMessageTypes[kModel3DNumMessageTypes] = {	
 };
-
 static struct PropertyType const Model3DProperties[kModel3DNumProperties] = {
 	DECL(0x07e055dc, Model3D, Mesh, Mesh, kDataTypeObject, .TypeString = "Mesh"), // Model3D.Mesh
 	DECL(0xcbd54f80, Model3D, Material, Material, kDataTypeObject, .TypeString = "Material"), // Model3D.Material
@@ -177,10 +226,8 @@ ORCA_API struct ClassDesc _Model3D = {
 };
 
 LRESULT PlaneMeshNode_Render(struct Object*, struct PlaneMeshNode*, wParam_t, RenderMsgPtr);
-
 static struct MessageType PlaneMeshNodeMessageTypes[kPlaneMeshNodeNumMessageTypes] = {	
 };
-
 static struct PropertyType const PlaneMeshNodeProperties[kPlaneMeshNodeNumProperties] = {
 	DECL(0x8f8d39cf, PlaneMeshNode, PlaneWidth, PlaneWidth, kDataTypeFloat), // PlaneMeshNode.PlaneWidth
 	DECL(0x2d44a1f2, PlaneMeshNode, PlaneHeight, PlaneHeight, kDataTypeFloat), // PlaneMeshNode.PlaneHeight
@@ -221,14 +268,12 @@ ORCA_API struct ClassDesc _PlaneMeshNode = {
 	.NumMessageTypes = kPlaneMeshNodeNumMessageTypes,
 };
 
-
 static struct MessageType CameraMessageTypes[kCameraNumMessageTypes] = {	
 };
-
 static struct PropertyType const CameraProperties[kCameraNumProperties] = {
 	DECL(0x137e217c, Camera, Fov, Fov, kDataTypeFloat), // Camera.Fov
-	DECL(0x0ef1c6f4, Camera, FovType, FovType, kDataTypeEnum, .TypeString = "Xfov,Yfov", .EnumValues = _FovType), // Camera.FovType
-	DECL(0x87320ce8, Camera, ProjectionType, ProjectionType, kDataTypeEnum, .TypeString = "Perspective,Orthographic", .EnumValues = _ProjectionType), // Camera.ProjectionType
+	DECL(0x0ef1c6f4, Camera, FovType, FovType, kDataTypeEnum, .EnumValues = _FovType), // Camera.FovType
+	DECL(0x87320ce8, Camera, ProjectionType, ProjectionType, kDataTypeEnum, .EnumValues = _ProjectionType), // Camera.ProjectionType
 	DECL(0x15af1da7, Camera, ZNear, ZNear, kDataTypeFloat), // Camera.ZNear
 	DECL(0x993918c6, Camera, ZFar, ZFar, kDataTypeFloat), // Camera.ZFar
 	DECL(0xd6d304c6, Camera, EyeSeparation, EyeSeparation, kDataTypeFloat), // Camera.EyeSeparation
@@ -267,10 +312,8 @@ ORCA_API struct ClassDesc _Camera = {
 };
 
 LRESULT TrajectoryList3D_UpdateMatrix(struct Object*, struct TrajectoryList3D*, wParam_t, UpdateMatrixMsgPtr);
-
 static struct MessageType TrajectoryList3DMessageTypes[kTrajectoryList3DNumMessageTypes] = {	
 };
-
 static struct PropertyType const TrajectoryList3DProperties[kTrajectoryList3DNumProperties] = {
 	DECL(0x4cf7cbf8, TrajectoryList3D, Trajectory, Trajectory, kDataTypeObject, .TypeString = "Trajectory"), // TrajectoryList3D.Trajectory
 	DECL(0xeea06ebd, TrajectoryList3D, ScrollAxis, ScrollAxis, kDataTypeStruct, .TypeString = "Vector2D"), // TrajectoryList3D.ScrollAxis
@@ -311,10 +354,8 @@ ORCA_API struct ClassDesc _TrajectoryList3D = {
 };
 
 LRESULT Viewport3D_ForegroundContent(struct Object*, struct Viewport3D*, wParam_t, ForegroundContentMsgPtr);
-
 static struct MessageType Viewport3DMessageTypes[kViewport3DNumMessageTypes] = {	
 };
-
 static struct PropertyType const Viewport3DProperties[kViewport3DNumProperties] = {
 	DECL(0xe74c7b6e, Viewport3D, Camera, Camera, kDataTypeString), // Viewport3D.Camera
 	DECL(0x14a89218, Viewport3D, PreviewCamera, PreviewCamera, kDataTypeString), // Viewport3D.PreviewCamera
@@ -354,10 +395,8 @@ ORCA_API struct ClassDesc _Viewport3D = {
 };
 
 LRESULT PrefabView3D_LoadView(struct Object*, struct PrefabView3D*, wParam_t, LoadViewMsgPtr);
-
 static struct MessageType PrefabView3DMessageTypes[kPrefabView3DNumMessageTypes] = {	
 };
-
 static struct PropertyType const PrefabView3DProperties[kPrefabView3DNumProperties] = {
 	DECL(0x57f28ff6, PrefabView3D, SCA, SCA, kDataTypeString), // PrefabView3D.SCA
 	DECL(0xd6415ba3, PrefabView3D, Prefab, Prefab, kDataTypeString), // PrefabView3D.Prefab
@@ -393,10 +432,8 @@ ORCA_API struct ClassDesc _PrefabView3D = {
 	.NumMessageTypes = kPrefabView3DNumMessageTypes,
 };
 
-
 static struct MessageType RenderPassMessageTypes[kRenderPassNumMessageTypes] = {	
 };
-
 static struct PropertyType const RenderPassProperties[kRenderPassNumProperties] = {
 };
 static struct RenderPass RenderPassDefaults = {
@@ -429,10 +466,8 @@ ORCA_API struct ClassDesc _RenderPass = {
 	.NumMessageTypes = kRenderPassNumMessageTypes,
 };
 
-
 static struct MessageType CompositionTargetRenderPassMessageTypes[kCompositionTargetRenderPassNumMessageTypes] = {	
 };
-
 static struct PropertyType const CompositionTargetRenderPassProperties[kCompositionTargetRenderPassNumProperties] = {
 };
 static struct CompositionTargetRenderPass CompositionTargetRenderPassDefaults = {
@@ -465,10 +500,8 @@ ORCA_API struct ClassDesc _CompositionTargetRenderPass = {
 	.NumMessageTypes = kCompositionTargetRenderPassNumMessageTypes,
 };
 
-
 static struct MessageType BlitRenderPassMessageTypes[kBlitRenderPassNumMessageTypes] = {	
 };
-
 static struct PropertyType const BlitRenderPassProperties[kBlitRenderPassNumProperties] = {
 };
 static struct BlitRenderPass BlitRenderPassDefaults = {
@@ -501,10 +534,8 @@ ORCA_API struct ClassDesc _BlitRenderPass = {
 	.NumMessageTypes = kBlitRenderPassNumMessageTypes,
 };
 
-
 static struct MessageType ClearRenderPassMessageTypes[kClearRenderPassNumMessageTypes] = {	
 };
-
 static struct PropertyType const ClearRenderPassProperties[kClearRenderPassNumProperties] = {
 	DECL(0xeb16b675, ClearRenderPass, ClearColor, ClearColor, kDataTypeColor), // ClearRenderPass.ClearColor
 	DECL(0xa444e35b, ClearRenderPass, ClearDepth, ClearDepth, kDataTypeFloat), // ClearRenderPass.ClearDepth
@@ -540,10 +571,8 @@ ORCA_API struct ClassDesc _ClearRenderPass = {
 	.NumMessageTypes = kClearRenderPassNumMessageTypes,
 };
 
-
 static struct MessageType DrawObjectsRenderPassMessageTypes[kDrawObjectsRenderPassNumMessageTypes] = {	
 };
-
 static struct PropertyType const DrawObjectsRenderPassProperties[kDrawObjectsRenderPassNumProperties] = {
 	DECL(0xe74c7b6e, DrawObjectsRenderPass, Camera, Camera, kDataTypeString), // DrawObjectsRenderPass.Camera
 	DECL(0x785c377a, DrawObjectsRenderPass, IncludeTags, IncludeTags, kDataTypeString), // DrawObjectsRenderPass.IncludeTags
@@ -579,26 +608,24 @@ ORCA_API struct ClassDesc _DrawObjectsRenderPass = {
 	.NumMessageTypes = kDrawObjectsRenderPassNumMessageTypes,
 };
 
-
 static struct MessageType PipelineStateRenderPassMessageTypes[kPipelineStateRenderPassNumMessageTypes] = {	
 };
-
 static struct PropertyType const PipelineStateRenderPassProperties[kPipelineStateRenderPassNumProperties] = {
-	DECL(0x0038792b, PipelineStateRenderPass, BlendMode, BlendMode, kDataTypeEnum, .TypeString = "AlphaAutomatic,Opaque,Alpha,Additive,PremultipliedAlpha,MixedAlpha", .EnumValues = _BlendMode), // PipelineStateRenderPass.BlendMode
-	DECL(0x9d0d3c20, PipelineStateRenderPass, ColorWriteMode, ColorWriteMode, kDataTypeEnum, .TypeString = "None,RGB,RGBA,R,G,B,GB,A", .EnumValues = _ColorWriteMode), // PipelineStateRenderPass.ColorWriteMode
-	DECL(0xfe9cfa12, PipelineStateRenderPass, CullMode, CullMode, kDataTypeEnum, .TypeString = "None,Back,Front", .EnumValues = _CullMode), // PipelineStateRenderPass.CullMode
-	DECL(0xb7e582be, PipelineStateRenderPass, DepthTestFunction, DepthTestFunction, kDataTypeEnum, .TypeString = "Never,Always,Less,LessOrEqual,Greater,GreaterOrEqual,Equal,NotEqual,Disabled", .EnumValues = _CompareFunc), // PipelineStateRenderPass.DepthTestFunction
+	DECL(0x0038792b, PipelineStateRenderPass, BlendMode, BlendMode, kDataTypeEnum, .EnumValues = _BlendMode), // PipelineStateRenderPass.BlendMode
+	DECL(0x9d0d3c20, PipelineStateRenderPass, ColorWriteMode, ColorWriteMode, kDataTypeEnum, .EnumValues = _ColorWriteMode), // PipelineStateRenderPass.ColorWriteMode
+	DECL(0xfe9cfa12, PipelineStateRenderPass, CullMode, CullMode, kDataTypeEnum, .EnumValues = _CullMode), // PipelineStateRenderPass.CullMode
+	DECL(0xb7e582be, PipelineStateRenderPass, DepthTestFunction, DepthTestFunction, kDataTypeEnum, .EnumValues = _CompareFunc), // PipelineStateRenderPass.DepthTestFunction
 	DECL(0x8ec3072e, PipelineStateRenderPass, DepthWriteEnabled, DepthWriteEnabled, kDataTypeBool), // PipelineStateRenderPass.DepthWriteEnabled
-	DECL(0x2dd5f6cc, PipelineStateRenderPass, ViewportMode, ViewportMode, kDataTypeEnum, .TypeString = "Relative,Absolute", .EnumValues = _ViewportMode), // PipelineStateRenderPass.ViewportMode
-	DECL(0x8c6862de, PipelineStateRenderPass, ScissorMode, ScissorMode, kDataTypeEnum, .TypeString = "Relative,Absolute", .EnumValues = _ViewportMode), // PipelineStateRenderPass.ScissorMode
+	DECL(0x2dd5f6cc, PipelineStateRenderPass, ViewportMode, ViewportMode, kDataTypeEnum, .EnumValues = _ViewportMode), // PipelineStateRenderPass.ViewportMode
+	DECL(0x8c6862de, PipelineStateRenderPass, ScissorMode, ScissorMode, kDataTypeEnum, .EnumValues = _ViewportMode), // PipelineStateRenderPass.ScissorMode
 	DECL(0x60b5afe3, PipelineStateRenderPass, Viewport, Viewport, kDataTypeStruct, .TypeString = "Vector4D"), // PipelineStateRenderPass.Viewport
 	DECL(0x24b3e321, PipelineStateRenderPass, Scissor, Scissor, kDataTypeStruct, .TypeString = "Vector4D"), // PipelineStateRenderPass.Scissor
-	DECL(0xc770fa47, PipelineStateRenderPass, StencilTestFunction, StencilTestFunction, kDataTypeEnum, .TypeString = "Never,Always,Less,LessOrEqual,Greater,GreaterOrEqual,Equal,NotEqual,Disabled", .EnumValues = _CompareFunc), // PipelineStateRenderPass.StencilTestFunction
+	DECL(0xc770fa47, PipelineStateRenderPass, StencilTestFunction, StencilTestFunction, kDataTypeEnum, .EnumValues = _CompareFunc), // PipelineStateRenderPass.StencilTestFunction
 	DECL(0x2ddc4e49, PipelineStateRenderPass, StencilReferenceValue, StencilReferenceValue, kDataTypeInt), // PipelineStateRenderPass.StencilReferenceValue
 	DECL(0x82336fe7, PipelineStateRenderPass, StencilMask, StencilMask, kDataTypeInt), // PipelineStateRenderPass.StencilMask
-	DECL(0x8785338c, PipelineStateRenderPass, StencilFailOperation, StencilFailOperation, kDataTypeEnum, .TypeString = "Keep,Zero,Replace,Increment,IncrementWrap,Decrement,DecrementWrap,Invert", .EnumValues = _StencilOp), // PipelineStateRenderPass.StencilFailOperation
-	DECL(0xfc4e75c8, PipelineStateRenderPass, StencilPassDepthFailOperation, StencilPassDepthFailOperation, kDataTypeEnum, .TypeString = "Keep,Zero,Replace,Increment,IncrementWrap,Decrement,DecrementWrap,Invert", .EnumValues = _StencilOp), // PipelineStateRenderPass.StencilPassDepthFailOperation
-	DECL(0x6452d1b7, PipelineStateRenderPass, StencilPassDepthPassOperation, StencilPassDepthPassOperation, kDataTypeEnum, .TypeString = "Keep,Zero,Replace,Increment,IncrementWrap,Decrement,DecrementWrap,Invert", .EnumValues = _StencilOp), // PipelineStateRenderPass.StencilPassDepthPassOperation
+	DECL(0x8785338c, PipelineStateRenderPass, StencilFailOperation, StencilFailOperation, kDataTypeEnum, .EnumValues = _StencilOp), // PipelineStateRenderPass.StencilFailOperation
+	DECL(0xfc4e75c8, PipelineStateRenderPass, StencilPassDepthFailOperation, StencilPassDepthFailOperation, kDataTypeEnum, .EnumValues = _StencilOp), // PipelineStateRenderPass.StencilPassDepthFailOperation
+	DECL(0x6452d1b7, PipelineStateRenderPass, StencilPassDepthPassOperation, StencilPassDepthPassOperation, kDataTypeEnum, .EnumValues = _StencilOp), // PipelineStateRenderPass.StencilPassDepthPassOperation
 	DECL(0xb0b1cdf3, PipelineStateRenderPass, StencilWriteEnabled, StencilWriteEnabled, kDataTypeBool), // PipelineStateRenderPass.StencilWriteEnabled
 };
 static struct PipelineStateRenderPass PipelineStateRenderPassDefaults = {
@@ -637,10 +664,8 @@ ORCA_API struct ClassDesc _PipelineStateRenderPass = {
 
 LRESULT TextBlock3D_Render(struct Object*, struct TextBlock3D*, wParam_t, RenderMsgPtr);
 LRESULT TextBlock3D_Create(struct Object*, struct TextBlock3D*, wParam_t, CreateMsgPtr);
-
 static struct MessageType TextBlock3DMessageTypes[kTextBlock3DNumMessageTypes] = {	
 };
-
 static struct PropertyType const TextBlock3DProperties[kTextBlock3DNumProperties] = {
 };
 static struct TextBlock3D TextBlock3DDefaults = {
@@ -677,16 +702,14 @@ ORCA_API struct ClassDesc _TextBlock3D = {
 };
 
 LRESULT Light3D_Render(struct Object*, struct Light3D*, wParam_t, RenderMsgPtr);
-
 static struct MessageType Light3DMessageTypes[kLight3DNumMessageTypes] = {	
 };
-
 static struct PropertyType const Light3DProperties[kLight3DNumProperties] = {
 	DECL(0xe5b43cf8, Light3D, Color, Color, kDataTypeColor), // Light3D.Color
 	DECL(0xe2c2c340, Light3D, SpotAngle, SpotAngle, kDataTypeStruct, .TypeString = "Vector2D"), // Light3D.SpotAngle
 	DECL(0x53b4f9aa, Light3D, Intensity, Intensity, kDataTypeFloat), // Light3D.Intensity
 	DECL(0xa311e772, Light3D, Range, Range, kDataTypeFloat), // Light3D.Range
-	DECL(0xd155d06d, Light3D, Type, Type, kDataTypeEnum, .TypeString = "Point,Spot", .EnumValues = _LightType), // Light3D.Type
+	DECL(0xd155d06d, Light3D, Type, Type, kDataTypeEnum, .EnumValues = _LightType), // Light3D.Type
 };
 static struct Light3D Light3DDefaults = {
 		
@@ -724,10 +747,8 @@ ORCA_API struct ClassDesc _Light3D = {
 };
 
 LRESULT SpriteView_Render(struct Object*, struct SpriteView*, wParam_t, RenderMsgPtr);
-
 static struct MessageType SpriteViewMessageTypes[kSpriteViewNumMessageTypes] = {	
 };
-
 static struct PropertyType const SpriteViewProperties[kSpriteViewNumProperties] = {
 	DECL(0x590ca79a, SpriteView, Image, Image, kDataTypeObject, .TypeString = "Texture"), // SpriteView.Image
 	DECL(0x2d2c5028, SpriteView, Bounds, Bounds, kDataTypeStruct, .TypeString = "Vector4D"), // SpriteView.Bounds

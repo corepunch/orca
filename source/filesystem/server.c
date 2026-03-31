@@ -200,13 +200,11 @@ SV_CMD(GET, node)
       group = _xmlNewChild(response, "group", "name", CUSTOM_GROUP, "data-compound", "true");
     }
     struct PropertyType ptype = {
-//      .Name = PROP_GetName(p),
+      .Name = PROP_GetName(p),
       .DataType = PROP_GetType(p),
       .DataSize = PROP_GetSize(p),
-//      .TypeString = PROP_GetUserData(p),
+      .TypeString = PROP_GetUserData(p),
     };
-    strncpy(ptype.Name, PROP_GetName(p), sizeof(fixedString_t));
-    strncpy(ptype.TypeString, PROP_GetName(p), sizeof(fixedString_t));
     add_subproperty(group, object, &ptype, PROP_GetValue(p));
   }
 

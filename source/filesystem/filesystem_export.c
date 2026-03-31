@@ -4,6 +4,9 @@
 
 #include "filesystem.h"
 
+#define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
+#define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
+
 // Object
 extern void luaX_pushObject(lua_State *L, struct Object const* value);
 extern struct Object* luaX_checkObject(lua_State *L, int index);
@@ -22,254 +25,94 @@ enum NAME luaX_check##NAME(lua_State *L, int idx) { \
 void luaX_push##NAME(lua_State *L, enum NAME value) { \
 	lua_pushstring(L, (assert(value >= 0 && value < sizeof(_##NAME) / sizeof(*_##NAME) - 1), _##NAME[value])); \
 }
-#define FIELD(IDENT, STRUCT, NAME, TYPE, ...) { \
-	.Name = #NAME, \
-	.ShortIdentifier = IDENT, \
-	.DataType = TYPE, \
-	.Offset = offsetof(struct STRUCT, NAME), \
-	.DataSize = sizeof(((struct STRUCT*)NULL)->NAME), \
-	##__VA_ARGS__ \
+extern void read_property(lua_State *L, int idx, struct PropertyType const* prop, void* struct_ptr);
+extern int write_property(lua_State *L, int idx, struct PropertyType const* prop, void const* struct_ptr);
+extern int parse_property(const char* str, struct PropertyType const* prop, void const* struct_ptr);
+
+#define STRUCT(NAME, EXPORT) \
+void luaX_push##NAME(lua_State *L, struct NAME const* data) { \
+	if (data == NULL) { lua_pushnil(L); return; } \
+	memcpy((luaL_setmetatable(L, #EXPORT), lua_newuserdata(L, sizeof(struct NAME))), data, sizeof(struct NAME)); \
+} \
+struct NAME* luaX_check##NAME(lua_State *L, int idx) { return luaL_checkudata(L, idx, #EXPORT); } \
+static int f_new_##NAME(lua_State *L) { \
+	struct NAME* self = lua_newuserdata(L, sizeof(struct NAME)); \
+	memset((luaL_setmetatable(L, #EXPORT), self), 0, sizeof(struct NAME)); \
+	if (lua_istable(L, 1)) \
+    for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
+			lua_pop(L, (lua_getfield(L, 1, _##NAME[i].Name), read_property(L, -1, &_##NAME[i], self), 1)); \
+	else for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
+		read_property(L, i + 1, &_##NAME[i], self); \
+	return 1; \
+} \
+static int f_##NAME##___index(lua_State *L) { \
+	for (uint32_t i = 0, j = fnv1a32(luaL_checkstring(L, 2)); i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
+		if (_##NAME[i].ShortIdentifier == j) \
+			return (write_property(L, -1, &_##NAME[i], luaX_check##NAME(L, 1)), 1); \
+	return luaL_error(L, "Unknown field in " #NAME ": %s", luaL_checkstring(L, 2)); \
+} \
+static int f_##NAME##___newindex(lua_State *L) { \
+	for (uint32_t i = 0, j = fnv1a32(luaL_checkstring(L, 2)); i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
+		if (_##NAME[i].ShortIdentifier == j) \
+			return (read_property(L, 3, &_##NAME[i], luaX_check##NAME(L, 1)), 0); \
+	return luaL_error(L, "Unknown field in " #NAME ": %s", luaL_checkstring(L, 2)); \
+} \
+static int f_##NAME##___call(lua_State *L) { \
+	return ((void)lua_remove(L, 1), f_new_##NAME(L)); \
+} \
+static int f_##NAME##___fromstring(lua_State *L) { \
+	char* tmp = strdup(luaL_checkstring(L, 1)),* tok = strtok(tmp, " "); \
+	struct NAME self; \
+	memset(&self, 0, sizeof(struct NAME)); \
+	for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++, tok = strtok(NULL, " ")) \
+		parse_property(tok, &_##NAME[i], &self); \
+	free(tmp); \
+	return (luaX_push##NAME(L, &self), 1); \
+} \
+int luaopen_orca_##NAME(lua_State *L) { \
+	luaL_newmetatable(L, #EXPORT); \
+	luaL_setfuncs(L, ((luaL_Reg[]) { \
+		{ "new", f_new_##NAME }, \
+		{ "fromstring", f_##NAME##___fromstring }, \
+		{ "__newindex", f_##NAME##___newindex }, \
+		{ "__index", f_##NAME##___index }, \
+		{ NULL, NULL }, \
+	}), 0); \
+	luaL_setfuncs(L, _##NAME##_Methods, 0); \
+	/* Make struct creatable via constructor-like syntax */ \
+	lua_newtable(L); \
+	lua_pushcfunction(L, f_##NAME##___call); \
+	lua_setfield(L, -2, "__call"); \
+	lua_setmetatable(L, -2); \
+	return 1; \
 }
 static struct PropertyType _ProjectReference[] = {
-	FIELD(0x0fe07306, ProjectReference, Name, kDataTypeFixed),
-	FIELD(0xeb66e456, ProjectReference, Path, kDataTypeFixed),
+	DECL(0x0fe07306, ProjectReference, Name, Name, kDataTypeString), // ProjectReference.Name
+	DECL(0xeb66e456, ProjectReference, Path, Path, kDataTypeString), // ProjectReference.Path
+};
+static luaL_Reg _ProjectReference_Methods[] = {
 };
 static struct PropertyType _EnginePlugin[] = {
-	FIELD(0x0fe07306, EnginePlugin, Name, kDataTypeFixed),
+	DECL(0x0fe07306, EnginePlugin, Name, Name, kDataTypeString), // EnginePlugin.Name
+};
+static luaL_Reg _EnginePlugin_Methods[] = {
 };
 static struct PropertyType _SystemMessage[] = {
-	FIELD(0xae0ed984, SystemMessage, Message, kDataTypeFixed),
-	FIELD(0xcd1ac90c, SystemMessage, Key, kDataTypeFixed),
-	FIELD(0xc67c8f52, SystemMessage, Command, kDataTypeFixed),
+	DECL(0xae0ed984, SystemMessage, Message, Message, kDataTypeString), // SystemMessage.Message
+	DECL(0xcd1ac90c, SystemMessage, Key, Key, kDataTypeString), // SystemMessage.Key
+	DECL(0xc67c8f52, SystemMessage, Command, Command, kDataTypeString), // SystemMessage.Command
+};
+static luaL_Reg _SystemMessage_Methods[] = {
 };
 
-void luaX_pushProjectReference(lua_State *L, struct ProjectReference const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct ProjectReference* self = lua_newuserdata(L, sizeof(struct ProjectReference));
-	luaL_setmetatable(L, "ProjectReference");
-	memcpy(self, data, sizeof(struct ProjectReference));
-}
-struct ProjectReference* luaX_checkProjectReference(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "ProjectReference");
-}
-static int f_new_ProjectReference(lua_State *L) {
-	struct ProjectReference* self = lua_newuserdata(L, sizeof(struct ProjectReference));
-	luaL_setmetatable(L, "ProjectReference");
-	memset(self, 0, sizeof(struct ProjectReference));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Name"), strncpy(self->Name, luaL_optstring(L, -1, ""), sizeof(self->Name)), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Path"), strncpy(self->Path, luaL_optstring(L, -1, ""), sizeof(self->Path)), 1));
-	} else {
-		strncpy(self->Name, luaL_optstring(L, 1, ""), sizeof(self->Name));
-		strncpy(self->Path, luaL_optstring(L, 2, ""), sizeof(self->Path));
-	}
-	return 1;
-}
-
-
-int f_ProjectReference___index(lua_State *L) {
-	struct ProjectReference* self = luaX_checkProjectReference(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x0fe07306: lua_pushstring(L, self->Name); return 1; // Name
-	case 0xeb66e456: lua_pushstring(L, self->Path); return 1; // Path
-	}
-	return luaL_error(L, "Unknown field in ProjectReference(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_ProjectReference___newindex(lua_State *L) {
-	struct ProjectReference* self = luaX_checkProjectReference(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x0fe07306: strncpy(self->Name, luaL_optstring(L, 3, ""), sizeof(self->Name)); return 0; // Name
-	case 0xeb66e456: strncpy(self->Path, luaL_optstring(L, 3, ""), sizeof(self->Path)); return 0; // Path
-	}
-	return luaL_error(L, "Unknown field in ProjectReference(%p): %s", self, luaL_checkstring(L, 2));
-}
-extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
-static int f_ProjectReference___fromstring(lua_State *L) {
-	fixedString_t Name;
-	fixedString_t Path;
-	struct ProjectReference self = {0};
-	switch (sscanf(luaL_checkstring(L, 1), "%s %s", Name, Path)) {
-	case 2: 
-		strncpy(self.Name, Name, sizeof(self.Name));
-		strncpy(self.Path, Path, sizeof(self.Path));
-		return (luaX_pushProjectReference(L, &self), 1);
-	default:
-		return luaL_error(L, "Invalid format for ProjectReference: %s", luaL_checkstring(L, 1));
-	}
-}
-static int f_ProjectReference___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_ProjectReference(L));  // remove ProjectReference from stack and call constructor
-}
-int luaopen_orca_ProjectReference(lua_State *L) {
-	luaL_newmetatable(L, "ProjectReference");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_ProjectReference },
-		{ "fromstring", f_ProjectReference___fromstring },
-		{ "__newindex", f_ProjectReference___newindex },
-		{ "__index", f_ProjectReference___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make ProjectReference creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_ProjectReference___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushEnginePlugin(lua_State *L, struct EnginePlugin const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct EnginePlugin* self = lua_newuserdata(L, sizeof(struct EnginePlugin));
-	luaL_setmetatable(L, "EnginePlugin");
-	memcpy(self, data, sizeof(struct EnginePlugin));
-}
-struct EnginePlugin* luaX_checkEnginePlugin(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "EnginePlugin");
-}
-static int f_new_EnginePlugin(lua_State *L) {
-	struct EnginePlugin* self = lua_newuserdata(L, sizeof(struct EnginePlugin));
-	luaL_setmetatable(L, "EnginePlugin");
-	memset(self, 0, sizeof(struct EnginePlugin));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Name"), strncpy(self->Name, luaL_optstring(L, -1, ""), sizeof(self->Name)), 1));
-	} else {
-		strncpy(self->Name, luaL_optstring(L, 1, ""), sizeof(self->Name));
-	}
-	return 1;
-}
-
-
-int f_EnginePlugin___index(lua_State *L) {
-	struct EnginePlugin* self = luaX_checkEnginePlugin(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x0fe07306: lua_pushstring(L, self->Name); return 1; // Name
-	}
-	return luaL_error(L, "Unknown field in EnginePlugin(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_EnginePlugin___newindex(lua_State *L) {
-	struct EnginePlugin* self = luaX_checkEnginePlugin(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x0fe07306: strncpy(self->Name, luaL_optstring(L, 3, ""), sizeof(self->Name)); return 0; // Name
-	}
-	return luaL_error(L, "Unknown field in EnginePlugin(%p): %s", self, luaL_checkstring(L, 2));
-}
-extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
-static int f_EnginePlugin___fromstring(lua_State *L) {
-	fixedString_t Name;
-	struct EnginePlugin self = {0};
-	switch (sscanf(luaL_checkstring(L, 1), "%s", Name)) {
-	case 1: 
-		strncpy(self.Name, Name, sizeof(self.Name));
-		return (luaX_pushEnginePlugin(L, &self), 1);
-	default:
-		return luaL_error(L, "Invalid format for EnginePlugin: %s", luaL_checkstring(L, 1));
-	}
-}
-static int f_EnginePlugin___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_EnginePlugin(L));  // remove EnginePlugin from stack and call constructor
-}
-int luaopen_orca_EnginePlugin(lua_State *L) {
-	luaL_newmetatable(L, "EnginePlugin");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_EnginePlugin },
-		{ "fromstring", f_EnginePlugin___fromstring },
-		{ "__newindex", f_EnginePlugin___newindex },
-		{ "__index", f_EnginePlugin___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make EnginePlugin creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_EnginePlugin___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-void luaX_pushSystemMessage(lua_State *L, struct SystemMessage const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct SystemMessage* self = lua_newuserdata(L, sizeof(struct SystemMessage));
-	luaL_setmetatable(L, "SystemMessage");
-	memcpy(self, data, sizeof(struct SystemMessage));
-}
-struct SystemMessage* luaX_checkSystemMessage(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "SystemMessage");
-}
-static int f_new_SystemMessage(lua_State *L) {
-	struct SystemMessage* self = lua_newuserdata(L, sizeof(struct SystemMessage));
-	luaL_setmetatable(L, "SystemMessage");
-	memset(self, 0, sizeof(struct SystemMessage));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Message"), strncpy(self->Message, luaL_optstring(L, -1, ""), sizeof(self->Message)), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Key"), strncpy(self->Key, luaL_optstring(L, -1, ""), sizeof(self->Key)), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Command"), strncpy(self->Command, luaL_optstring(L, -1, ""), sizeof(self->Command)), 1));
-	} else {
-		strncpy(self->Message, luaL_optstring(L, 1, ""), sizeof(self->Message));
-		strncpy(self->Key, luaL_optstring(L, 2, ""), sizeof(self->Key));
-		strncpy(self->Command, luaL_optstring(L, 3, ""), sizeof(self->Command));
-	}
-	return 1;
-}
-
-
-int f_SystemMessage___index(lua_State *L) {
-	struct SystemMessage* self = luaX_checkSystemMessage(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xae0ed984: lua_pushstring(L, self->Message); return 1; // Message
-	case 0xcd1ac90c: lua_pushstring(L, self->Key); return 1; // Key
-	case 0xc67c8f52: lua_pushstring(L, self->Command); return 1; // Command
-	}
-	return luaL_error(L, "Unknown field in SystemMessage(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_SystemMessage___newindex(lua_State *L) {
-	struct SystemMessage* self = luaX_checkSystemMessage(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xae0ed984: strncpy(self->Message, luaL_optstring(L, 3, ""), sizeof(self->Message)); return 0; // Message
-	case 0xcd1ac90c: strncpy(self->Key, luaL_optstring(L, 3, ""), sizeof(self->Key)); return 0; // Key
-	case 0xc67c8f52: strncpy(self->Command, luaL_optstring(L, 3, ""), sizeof(self->Command)); return 0; // Command
-	}
-	return luaL_error(L, "Unknown field in SystemMessage(%p): %s", self, luaL_checkstring(L, 2));
-}
-extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
-static int f_SystemMessage___fromstring(lua_State *L) {
-	fixedString_t Message;
-	fixedString_t Key;
-	fixedString_t Command;
-	struct SystemMessage self = {0};
-	switch (sscanf(luaL_checkstring(L, 1), "%s %s %s", Message, Key, Command)) {
-	case 3: 
-		strncpy(self.Message, Message, sizeof(self.Message));
-		strncpy(self.Key, Key, sizeof(self.Key));
-		strncpy(self.Command, Command, sizeof(self.Command));
-		return (luaX_pushSystemMessage(L, &self), 1);
-	default:
-		return luaL_error(L, "Invalid format for SystemMessage: %s", luaL_checkstring(L, 1));
-	}
-}
-static int f_SystemMessage___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_SystemMessage(L));  // remove SystemMessage from stack and call constructor
-}
-int luaopen_orca_SystemMessage(lua_State *L) {
-	luaL_newmetatable(L, "SystemMessage");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_SystemMessage },
-		{ "fromstring", f_SystemMessage___fromstring },
-		{ "__newindex", f_SystemMessage___newindex },
-		{ "__index", f_SystemMessage___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make SystemMessage creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_SystemMessage___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
+STRUCT(ProjectReference, ProjectReference);
+STRUCT(EnginePlugin, EnginePlugin);
+STRUCT(SystemMessage, SystemMessage);
 struct MessageType ReadCommandsMessage = {
 	.name = "ReadCommands",
 	.id = kMsgReadCommands,
 	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(int),
+	.size = sizeof(struct ReadCommandsMsgArgs),
 };
 struct MessageType OpenFileMessage = {
 	.name = "OpenFile",
@@ -277,123 +120,17 @@ struct MessageType OpenFileMessage = {
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct OpenFileMsgArgs),
 };
-void luaX_pushOpenFileMsgArgs(lua_State *L, struct OpenFileMsgArgs const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct OpenFileMsgArgs* self = lua_newuserdata(L, sizeof(struct OpenFileMsgArgs));
-	luaL_setmetatable(L, "OpenFileMsgArgs");
-	memcpy(self, data, sizeof(struct OpenFileMsgArgs));
-}
-struct OpenFileMsgArgs* luaX_checkOpenFileMsgArgs(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "OpenFileMsgArgs");
-}
-static int f_new_OpenFileMsgArgs(lua_State *L) {
-	struct OpenFileMsgArgs* self = lua_newuserdata(L, sizeof(struct OpenFileMsgArgs));
-	luaL_setmetatable(L, "OpenFileMsgArgs");
-	memset(self, 0, sizeof(struct OpenFileMsgArgs));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "FileName"), self->FileName = lua_type(L, -1) == LUA_TSTRING ? strdup(luaL_checkstring(L, -1)) : NULL, 1));
-	} else {
-		self->FileName = lua_type(L, 1) == LUA_TSTRING ? strdup(luaL_checkstring(L, 1)) : NULL;
-	}
-	return 1;
-}
-int f_OpenFileMsgArgs___index(lua_State *L) {
-	struct OpenFileMsgArgs* self = luaX_checkOpenFileMsgArgs(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x5ffdd888: lua_pushstring(L, self->FileName); return 1; // FileName
-	}
-	return luaL_error(L, "Unknown field in OpenFileMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_OpenFileMsgArgs___newindex(lua_State *L) {
-	struct OpenFileMsgArgs* self = luaX_checkOpenFileMsgArgs(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x5ffdd888: self->FileName = lua_type(L, 3) == LUA_TSTRING ? strdup(luaL_checkstring(L, 3)) : NULL; return 0; // FileName
-	}
-	return luaL_error(L, "Unknown field in OpenFileMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
-}
-static int f_OpenFileMsgArgs___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_OpenFileMsgArgs(L));  // remove OpenFileMsgArgs from stack and call constructor
-}
-int luaopen_orca_OpenFileMsgArgs(lua_State *L) {
-	luaL_newmetatable(L, "OpenFileMsgArgs");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_OpenFileMsgArgs },
-		{ "__newindex", f_OpenFileMsgArgs___newindex },
-		{ "__index", f_OpenFileMsgArgs___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make OpenFileMsgArgs creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_OpenFileMsgArgs___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
 struct MessageType FileExistsMessage = {
 	.name = "FileExists",
 	.id = kMsgFileExists,
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct FileExistsMsgArgs),
 };
-void luaX_pushFileExistsMsgArgs(lua_State *L, struct FileExistsMsgArgs const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct FileExistsMsgArgs* self = lua_newuserdata(L, sizeof(struct FileExistsMsgArgs));
-	luaL_setmetatable(L, "FileExistsMsgArgs");
-	memcpy(self, data, sizeof(struct FileExistsMsgArgs));
-}
-struct FileExistsMsgArgs* luaX_checkFileExistsMsgArgs(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "FileExistsMsgArgs");
-}
-static int f_new_FileExistsMsgArgs(lua_State *L) {
-	struct FileExistsMsgArgs* self = lua_newuserdata(L, sizeof(struct FileExistsMsgArgs));
-	luaL_setmetatable(L, "FileExistsMsgArgs");
-	memset(self, 0, sizeof(struct FileExistsMsgArgs));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "FileName"), self->FileName = lua_type(L, -1) == LUA_TSTRING ? strdup(luaL_checkstring(L, -1)) : NULL, 1));
-	} else {
-		self->FileName = lua_type(L, 1) == LUA_TSTRING ? strdup(luaL_checkstring(L, 1)) : NULL;
-	}
-	return 1;
-}
-int f_FileExistsMsgArgs___index(lua_State *L) {
-	struct FileExistsMsgArgs* self = luaX_checkFileExistsMsgArgs(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x5ffdd888: lua_pushstring(L, self->FileName); return 1; // FileName
-	}
-	return luaL_error(L, "Unknown field in FileExistsMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_FileExistsMsgArgs___newindex(lua_State *L) {
-	struct FileExistsMsgArgs* self = luaX_checkFileExistsMsgArgs(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x5ffdd888: self->FileName = lua_type(L, 3) == LUA_TSTRING ? strdup(luaL_checkstring(L, 3)) : NULL; return 0; // FileName
-	}
-	return luaL_error(L, "Unknown field in FileExistsMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
-}
-static int f_FileExistsMsgArgs___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_FileExistsMsgArgs(L));  // remove FileExistsMsgArgs from stack and call constructor
-}
-int luaopen_orca_FileExistsMsgArgs(lua_State *L) {
-	luaL_newmetatable(L, "FileExistsMsgArgs");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_FileExistsMsgArgs },
-		{ "__newindex", f_FileExistsMsgArgs___newindex },
-		{ "__index", f_FileExistsMsgArgs___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make FileExistsMsgArgs creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_FileExistsMsgArgs___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
 struct MessageType HasChangedFilesMessage = {
 	.name = "HasChangedFiles",
 	.id = kMsgHasChangedFiles,
 	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(int),
+	.size = sizeof(struct HasChangedFilesMsgArgs),
 };
 struct MessageType LoadProjectMessage = {
 	.name = "LoadProject",
@@ -401,66 +138,33 @@ struct MessageType LoadProjectMessage = {
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct LoadProjectMsgArgs),
 };
-void luaX_pushLoadProjectMsgArgs(lua_State *L, struct LoadProjectMsgArgs const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct LoadProjectMsgArgs* self = lua_newuserdata(L, sizeof(struct LoadProjectMsgArgs));
-	luaL_setmetatable(L, "LoadProjectMsgArgs");
-	memcpy(self, data, sizeof(struct LoadProjectMsgArgs));
-}
-struct LoadProjectMsgArgs* luaX_checkLoadProjectMsgArgs(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "LoadProjectMsgArgs");
-}
-static int f_new_LoadProjectMsgArgs(lua_State *L) {
-	struct LoadProjectMsgArgs* self = lua_newuserdata(L, sizeof(struct LoadProjectMsgArgs));
-	luaL_setmetatable(L, "LoadProjectMsgArgs");
-	memset(self, 0, sizeof(struct LoadProjectMsgArgs));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Path"), self->Path = lua_type(L, -1) == LUA_TSTRING ? strdup(luaL_checkstring(L, -1)) : NULL, 1));
-	} else {
-		self->Path = lua_type(L, 1) == LUA_TSTRING ? strdup(luaL_checkstring(L, 1)) : NULL;
-	}
-	return 1;
-}
-int f_LoadProjectMsgArgs___index(lua_State *L) {
-	struct LoadProjectMsgArgs* self = luaX_checkLoadProjectMsgArgs(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xeb66e456: lua_pushstring(L, self->Path); return 1; // Path
-	}
-	return luaL_error(L, "Unknown field in LoadProjectMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_LoadProjectMsgArgs___newindex(lua_State *L) {
-	struct LoadProjectMsgArgs* self = luaX_checkLoadProjectMsgArgs(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0xeb66e456: self->Path = lua_type(L, 3) == LUA_TSTRING ? strdup(luaL_checkstring(L, 3)) : NULL; return 0; // Path
-	}
-	return luaL_error(L, "Unknown field in LoadProjectMsgArgs(%p): %s", self, luaL_checkstring(L, 2));
-}
-static int f_LoadProjectMsgArgs___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_LoadProjectMsgArgs(L));  // remove LoadProjectMsgArgs from stack and call constructor
-}
-int luaopen_orca_LoadProjectMsgArgs(lua_State *L) {
-	luaL_newmetatable(L, "LoadProjectMsgArgs");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_LoadProjectMsgArgs },
-		{ "__newindex", f_LoadProjectMsgArgs___newindex },
-		{ "__index", f_LoadProjectMsgArgs___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make LoadProjectMsgArgs creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_LoadProjectMsgArgs___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-#define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
-#define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
 
-
-static struct MessageType WorkspaceMessageTypes[kWorkspaceNumMessageTypes] = {	
+static luaL_Reg _ReadCommandsMsgArgs_Methods[] = {};
+static struct PropertyType _ReadCommandsMsgArgs[] = {
+};
+static luaL_Reg _OpenFileMsgArgs_Methods[] = {};
+static struct PropertyType _OpenFileMsgArgs[] = {
+	DECL(0x5ffdd888, OpenFileMsgArgs, FileName, FileName, kDataTypeString), // OpenFileMsgArgs.FileName
+};
+static luaL_Reg _FileExistsMsgArgs_Methods[] = {};
+static struct PropertyType _FileExistsMsgArgs[] = {
+	DECL(0x5ffdd888, FileExistsMsgArgs, FileName, FileName, kDataTypeString), // FileExistsMsgArgs.FileName
+};
+static luaL_Reg _HasChangedFilesMsgArgs_Methods[] = {};
+static struct PropertyType _HasChangedFilesMsgArgs[] = {
+};
+static luaL_Reg _LoadProjectMsgArgs_Methods[] = {};
+static struct PropertyType _LoadProjectMsgArgs[] = {
+	DECL(0xeb66e456, LoadProjectMsgArgs, Path, Path, kDataTypeString), // LoadProjectMsgArgs.Path
 };
 
+STRUCT(ReadCommandsMsgArgs, ReadCommandsMsgArgs);
+STRUCT(OpenFileMsgArgs, OpenFileMsgArgs);
+STRUCT(FileExistsMsgArgs, FileExistsMsgArgs);
+STRUCT(HasChangedFilesMsgArgs, HasChangedFilesMsgArgs);
+STRUCT(LoadProjectMsgArgs, LoadProjectMsgArgs);
+static struct MessageType WorkspaceMessageTypes[kWorkspaceNumMessageTypes] = {	
+};
 static struct PropertyType const WorkspaceProperties[kWorkspaceNumProperties] = {
 };
 static struct Workspace WorkspaceDefaults = {
@@ -492,10 +196,8 @@ ORCA_API struct ClassDesc _Workspace = {
 	.NumMessageTypes = kWorkspaceNumMessageTypes,
 };
 
-
 static struct MessageType LibraryMessageTypes[kLibraryNumMessageTypes] = {	
 };
-
 static struct PropertyType const LibraryProperties[kLibraryNumProperties] = {
 	DECL(0x1cb8f23a, Library, IsExternal, IsExternal, kDataTypeBool), // Library.IsExternal
 };
@@ -529,10 +231,8 @@ ORCA_API struct ClassDesc _Library = {
 };
 
 LRESULT Project_Start(struct Object*, struct Project*, wParam_t, StartMsgPtr);
-
 static struct MessageType ProjectMessageTypes[kProjectNumMessageTypes] = {	
 };
-
 static struct PropertyType const ProjectProperties[kProjectNumProperties] = {
 	DECL(0xbcd19216, Project, HalfFloatTextureFormat, HalfFloatTextureFormat, kDataTypeBool), // Project.HalfFloatTextureFormat
 	DECL(0xfba1938f, Project, HalfFloatTextureFormatLinear, HalfFloatTextureFormatLinear, kDataTypeBool), // Project.HalfFloatTextureFormatLinear
@@ -643,10 +343,8 @@ LRESULT Directory_OpenFile(struct Object*, struct Directory*, wParam_t, OpenFile
 LRESULT Directory_FileExists(struct Object*, struct Directory*, wParam_t, FileExistsMsgPtr);
 LRESULT Directory_HasChangedFiles(struct Object*, struct Directory*, wParam_t, HasChangedFilesMsgPtr);
 LRESULT Directory_Destroy(struct Object*, struct Directory*, wParam_t, DestroyMsgPtr);
-
 static struct MessageType DirectoryMessageTypes[kDirectoryNumMessageTypes] = {	
 };
-
 static struct PropertyType const DirectoryProperties[kDirectoryNumProperties] = {
 	DECL(0xeb66e456, Directory, Path, Path, kDataTypeString), // Directory.Path
 };
@@ -690,10 +388,8 @@ LRESULT Package_OpenFile(struct Object*, struct Package*, wParam_t, OpenFileMsgP
 LRESULT Package_FileExists(struct Object*, struct Package*, wParam_t, FileExistsMsgPtr);
 LRESULT Package_HasChangedFiles(struct Object*, struct Package*, wParam_t, HasChangedFilesMsgPtr);
 LRESULT Package_Destroy(struct Object*, struct Package*, wParam_t, DestroyMsgPtr);
-
 static struct MessageType PackageMessageTypes[kPackageNumMessageTypes] = {	
 };
-
 static struct PropertyType const PackageProperties[kPackageNumProperties] = {
 	DECL(0x5ffdd888, Package, FileName, FileName, kDataTypeString), // Package.FileName
 };
@@ -732,10 +428,8 @@ ORCA_API struct ClassDesc _Package = {
 	.NumMessageTypes = kPackageNumMessageTypes,
 };
 
-
 static struct MessageType LocaleReferenceItemMessageTypes[kLocaleReferenceItemNumMessageTypes] = {	
 };
-
 static struct PropertyType const LocaleReferenceItemProperties[kLocaleReferenceItemNumProperties] = {
 };
 static struct LocaleReferenceItem LocaleReferenceItemDefaults = {
@@ -767,10 +461,8 @@ ORCA_API struct ClassDesc _LocaleReferenceItem = {
 	.NumMessageTypes = kLocaleReferenceItemNumMessageTypes,
 };
 
-
 static struct MessageType TagMessageTypes[kTagNumMessageTypes] = {	
 };
-
 static struct PropertyType const TagProperties[kTagNumProperties] = {
 	DECL(0xc35a8c07, Tag, TagIsInherited, TagIsInherited, kDataTypeBool), // Tag.TagIsInherited
 };
@@ -804,10 +496,8 @@ ORCA_API struct ClassDesc _Tag = {
 };
 
 LRESULT ThemeGroup_Attached(struct Object*, struct ThemeGroup*, wParam_t, AttachedMsgPtr);
-
 static struct MessageType ThemeGroupMessageTypes[kThemeGroupNumMessageTypes] = {	
 };
-
 static struct PropertyType const ThemeGroupProperties[kThemeGroupNumProperties] = {
 	DECL(0x75516381, ThemeGroup, SelectedTheme, SelectedTheme, kDataTypeString), // ThemeGroup.SelectedTheme
 	DECL(0x1cf2c938, ThemeGroup, SelectedDictionary, SelectedDictionary, kDataTypeString), // ThemeGroup.SelectedDictionary
@@ -842,10 +532,8 @@ ORCA_API struct ClassDesc _ThemeGroup = {
 	.NumMessageTypes = kThemeGroupNumMessageTypes,
 };
 
-
 static struct MessageType ThemeMessageTypes[kThemeNumMessageTypes] = {	
 };
-
 static struct PropertyType const ThemeProperties[kThemeNumProperties] = {
 	DECL(0x1ed11084, Theme, IsThemeVisible, IsThemeVisible, kDataTypeBool), // Theme.IsThemeVisible
 };
@@ -878,10 +566,8 @@ ORCA_API struct ClassDesc _Theme = {
 	.NumMessageTypes = kThemeNumMessageTypes,
 };
 
-
 static struct MessageType EntryMessageTypes[kEntryNumMessageTypes] = {	
 };
-
 static struct PropertyType const EntryProperties[kEntryNumProperties] = {
 };
 static struct Entry EntryDefaults = {
@@ -913,10 +599,8 @@ ORCA_API struct ClassDesc _Entry = {
 	.NumMessageTypes = kEntryNumMessageTypes,
 };
 
-
 static struct MessageType ThemeDefaultValuesDictionaryMessageTypes[kThemeDefaultValuesDictionaryNumMessageTypes] = {	
 };
-
 static struct PropertyType const ThemeDefaultValuesDictionaryProperties[kThemeDefaultValuesDictionaryNumProperties] = {
 };
 static struct ThemeDefaultValuesDictionary ThemeDefaultValuesDictionaryDefaults = {

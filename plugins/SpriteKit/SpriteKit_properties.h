@@ -2,6 +2,7 @@
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __SPRITEKIT_PROPERTIES_H__
 #define __SPRITEKIT_PROPERTIES_H__
+
 // SpriteAnimation
 #define ID_SpriteAnimation 0x261d60ba
 #define GetSpriteAnimation(_P) ((struct SpriteAnimation*)((_P)?OBJ_GetComponent(_P,ID_SpriteAnimation):NULL))
@@ -96,4 +97,12 @@ enum SKViewProperties {
 	kSKViewReferenceHeight,
 	kSKViewScene,
 };
+
+#define ID_SpriteFrame 0xad475fd9
+#define ID_SpriteFrame_Rect 0xa1f930f7 // SpriteFrame.Rect
+#define ID_SpriteFrame_UvRect 0x85675610 // SpriteFrame.UvRect
+	
+
+	
+
 #endif

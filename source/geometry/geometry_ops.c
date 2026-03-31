@@ -1559,3 +1559,16 @@ lpcString_t stristr(lpcString_t haystack, lpcString_t needle) {
   }
   return NULL; // No match
 }
+
+ORCA_API void parse_property(const char* str, struct PropertyType const* prop, void* struct_ptr) {
+  
+}
+
+ORCA_API void read_property(lua_State *L, int idx, struct PropertyType const* prop, void* struct_ptr) {
+  
+}
+
+ORCA_API int write_property(lua_State *L, int idx, struct PropertyType const* prop, void const* struct_ptr) {
+  
+  return 1;
+}

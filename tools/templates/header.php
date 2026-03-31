@@ -109,14 +109,13 @@ ORCA_API <?= $method->getReturnType() ?>
 <?php endforeach ?>
 
 <?php foreach ($model->getEvents() as $name => $event):?>
-<?php if ($event->hasFields()):?>
+<?php if ($event->getParentEvent()) continue; ?>
 /** <?= $name ?>MsgArgs struct */
 struct <?= $name ?>MsgArgs {
 <?php include_template("struct_contents", ['list' => $event->getAllFields()]) ?>
 };
 ORCA_API void luaX_push<?= $name ?>MsgArgs(lua_State *L, struct <?= $name ?>MsgArgs const* data);
 ORCA_API struct <?= $name ?>MsgArgs* luaX_check<?= $name ?>MsgArgs(lua_State *L, int idx);
-<?php endif ?>
 <?php endforeach ?>
 
 <?php foreach ($model->getComponents() as $name => $component): ?>

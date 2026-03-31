@@ -4,6 +4,9 @@
 
 #include "SpriteKit.h"
 
+#define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
+#define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
+
 
 extern const char *_BlendMode[];
 #define ENUM(NAME, ...) \
@@ -17,85 +20,79 @@ enum NAME luaX_check##NAME(lua_State *L, int idx) { \
 void luaX_push##NAME(lua_State *L, enum NAME value) { \
 	lua_pushstring(L, (assert(value >= 0 && value < sizeof(_##NAME) / sizeof(*_##NAME) - 1), _##NAME[value])); \
 }
-#define FIELD(IDENT, STRUCT, NAME, TYPE, ...) { \
-	.Name = #NAME, \
-	.ShortIdentifier = IDENT, \
-	.DataType = TYPE, \
-	.Offset = offsetof(struct STRUCT, NAME), \
-	.DataSize = sizeof(((struct STRUCT*)NULL)->NAME), \
-	##__VA_ARGS__ \
+extern void read_property(lua_State *L, int idx, struct PropertyType const* prop, void* struct_ptr);
+extern int write_property(lua_State *L, int idx, struct PropertyType const* prop, void const* struct_ptr);
+extern int parse_property(const char* str, struct PropertyType const* prop, void const* struct_ptr);
+
+#define STRUCT(NAME, EXPORT) \
+void luaX_push##NAME(lua_State *L, struct NAME const* data) { \
+	if (data == NULL) { lua_pushnil(L); return; } \
+	memcpy((luaL_setmetatable(L, #EXPORT), lua_newuserdata(L, sizeof(struct NAME))), data, sizeof(struct NAME)); \
+} \
+struct NAME* luaX_check##NAME(lua_State *L, int idx) { return luaL_checkudata(L, idx, #EXPORT); } \
+static int f_new_##NAME(lua_State *L) { \
+	struct NAME* self = lua_newuserdata(L, sizeof(struct NAME)); \
+	memset((luaL_setmetatable(L, #EXPORT), self), 0, sizeof(struct NAME)); \
+	if (lua_istable(L, 1)) \
+    for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
+			lua_pop(L, (lua_getfield(L, 1, _##NAME[i].Name), read_property(L, -1, &_##NAME[i], self), 1)); \
+	else for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
+		read_property(L, i + 1, &_##NAME[i], self); \
+	return 1; \
+} \
+static int f_##NAME##___index(lua_State *L) { \
+	for (uint32_t i = 0, j = fnv1a32(luaL_checkstring(L, 2)); i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
+		if (_##NAME[i].ShortIdentifier == j) \
+			return (write_property(L, -1, &_##NAME[i], luaX_check##NAME(L, 1)), 1); \
+	return luaL_error(L, "Unknown field in " #NAME ": %s", luaL_checkstring(L, 2)); \
+} \
+static int f_##NAME##___newindex(lua_State *L) { \
+	for (uint32_t i = 0, j = fnv1a32(luaL_checkstring(L, 2)); i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
+		if (_##NAME[i].ShortIdentifier == j) \
+			return (read_property(L, 3, &_##NAME[i], luaX_check##NAME(L, 1)), 0); \
+	return luaL_error(L, "Unknown field in " #NAME ": %s", luaL_checkstring(L, 2)); \
+} \
+static int f_##NAME##___call(lua_State *L) { \
+	return ((void)lua_remove(L, 1), f_new_##NAME(L)); \
+} \
+static int f_##NAME##___fromstring(lua_State *L) { \
+	char* tmp = strdup(luaL_checkstring(L, 1)),* tok = strtok(tmp, " "); \
+	struct NAME self; \
+	memset(&self, 0, sizeof(struct NAME)); \
+	for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++, tok = strtok(NULL, " ")) \
+		parse_property(tok, &_##NAME[i], &self); \
+	free(tmp); \
+	return (luaX_push##NAME(L, &self), 1); \
+} \
+int luaopen_orca_##NAME(lua_State *L) { \
+	luaL_newmetatable(L, #EXPORT); \
+	luaL_setfuncs(L, ((luaL_Reg[]) { \
+		{ "new", f_new_##NAME }, \
+		{ "fromstring", f_##NAME##___fromstring }, \
+		{ "__newindex", f_##NAME##___newindex }, \
+		{ "__index", f_##NAME##___index }, \
+		{ NULL, NULL }, \
+	}), 0); \
+	luaL_setfuncs(L, _##NAME##_Methods, 0); \
+	/* Make struct creatable via constructor-like syntax */ \
+	lua_newtable(L); \
+	lua_pushcfunction(L, f_##NAME##___call); \
+	lua_setfield(L, -2, "__call"); \
+	lua_setmetatable(L, -2); \
+	return 1; \
 }
 static struct PropertyType _SpriteFrame[] = {
-	FIELD(0x6b109927, SpriteFrame, Rect, kDataTypeStruct),
-	FIELD(0xae3d25c0, SpriteFrame, UvRect, kDataTypeStruct),
+	DECL(0x6b109927, SpriteFrame, Rect, Rect, kDataTypeStruct, .TypeString = "Rectangle"), // SpriteFrame.Rect
+	DECL(0xae3d25c0, SpriteFrame, UvRect, UvRect, kDataTypeStruct, .TypeString = "Rectangle"), // SpriteFrame.UvRect
+};
+static luaL_Reg _SpriteFrame_Methods[] = {
 };
 
-void luaX_pushSpriteFrame(lua_State *L, struct SpriteFrame const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct SpriteFrame* self = lua_newuserdata(L, sizeof(struct SpriteFrame));
-	luaL_setmetatable(L, "SpriteFrame");
-	memcpy(self, data, sizeof(struct SpriteFrame));
-}
-struct SpriteFrame* luaX_checkSpriteFrame(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "SpriteFrame");
-}
-static int f_new_SpriteFrame(lua_State *L) {
-	struct SpriteFrame* self = lua_newuserdata(L, sizeof(struct SpriteFrame));
-	luaL_setmetatable(L, "SpriteFrame");
-	memset(self, 0, sizeof(struct SpriteFrame));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		lua_pop(L, (lua_getfield(L, 1, "Rect"), self->Rect = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkrect(L, -1) : (struct rect){0}, 1));
-		lua_pop(L, (lua_getfield(L, 1, "UvRect"), self->UvRect = lua_type(L, -1) == LUA_TUSERDATA ? *luaX_checkrect(L, -1) : (struct rect){0}, 1));
-	} else {
-		self->Rect = lua_type(L, 1) == LUA_TUSERDATA ? *luaX_checkrect(L, 1) : (struct rect){0};
-		self->UvRect = lua_type(L, 2) == LUA_TUSERDATA ? *luaX_checkrect(L, 2) : (struct rect){0};
-	}
-	return 1;
-}
-
-
-int f_SpriteFrame___index(lua_State *L) {
-	struct SpriteFrame* self = luaX_checkSpriteFrame(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x6b109927: luaX_pushrect(L, &self->Rect); return 1; // Rect
-	case 0xae3d25c0: luaX_pushrect(L, &self->UvRect); return 1; // UvRect
-	}
-	return luaL_error(L, "Unknown field in SpriteFrame(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_SpriteFrame___newindex(lua_State *L) {
-	struct SpriteFrame* self = luaX_checkSpriteFrame(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	case 0x6b109927: self->Rect = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkrect(L, 3) : (struct rect){0}; return 0; // Rect
-	case 0xae3d25c0: self->UvRect = lua_type(L, 3) == LUA_TUSERDATA ? *luaX_checkrect(L, 3) : (struct rect){0}; return 0; // UvRect
-	}
-	return luaL_error(L, "Unknown field in SpriteFrame(%p): %s", self, luaL_checkstring(L, 2));
-}
-static int f_SpriteFrame___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_SpriteFrame(L));  // remove SpriteFrame from stack and call constructor
-}
-int luaopen_orca_SpriteFrame(lua_State *L) {
-	luaL_newmetatable(L, "SpriteFrame");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_SpriteFrame },
-		{ "__newindex", f_SpriteFrame___newindex },
-		{ "__index", f_SpriteFrame___index },
-		{ NULL, NULL },
-	}), 0);
-	// Make SpriteFrame creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_SpriteFrame___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
-#define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
-#define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
+STRUCT(SpriteFrame, SpriteFrame);
 
 
 static struct MessageType SpriteAnimationMessageTypes[kSpriteAnimationNumMessageTypes] = {	
 };
-
 static struct PropertyType const SpriteAnimationProperties[kSpriteAnimationNumProperties] = {
 	DECL(0x590ca79a, SpriteAnimation, Image, Image, kDataTypeObject, .TypeString = "Texture"), // SpriteAnimation.Image
 	DECL(0xbebf2a84, SpriteAnimation, Framerate, Framerate, kDataTypeFloat), // SpriteAnimation.Framerate
@@ -132,10 +129,8 @@ ORCA_API struct ClassDesc _SpriteAnimation = {
 };
 
 LRESULT SKNode_UpdateMatrix(struct Object*, struct SKNode*, wParam_t, UpdateMatrixMsgPtr);
-
 static struct MessageType SKNodeMessageTypes[kSKNodeNumMessageTypes] = {	
 };
-
 static struct PropertyType const SKNodeProperties[kSKNodeNumProperties] = {
 	DECL(0xe27f342a, SKNode, Position, Position, kDataTypeStruct, .TypeString = "Vector2D"), // SKNode.Position
 	DECL(0xa6478e7c, SKNode, Size, Size, kDataTypeStruct, .TypeString = "Vector2D"), // SKNode.Size
@@ -173,10 +168,8 @@ ORCA_API struct ClassDesc _SKNode = {
 };
 
 LRESULT SKScene_UpdateMatrix(struct Object*, struct SKScene*, wParam_t, UpdateMatrixMsgPtr);
-
 static struct MessageType SKSceneMessageTypes[kSKSceneNumMessageTypes] = {	
 };
-
 static struct PropertyType const SKSceneProperties[kSKSceneNumProperties] = {
 };
 static struct SKScene SKSceneDefaults = {
@@ -211,16 +204,14 @@ ORCA_API struct ClassDesc _SKScene = {
 };
 
 LRESULT SKSpriteNode_Render(struct Object*, struct SKSpriteNode*, wParam_t, RenderMsgPtr);
-
 static struct MessageType SKSpriteNodeMessageTypes[kSKSpriteNodeNumMessageTypes] = {	
 };
-
 static struct PropertyType const SKSpriteNodeProperties[kSKSpriteNodeNumProperties] = {
 	DECL(0x41e389fd, SKSpriteNode, Animation, Animation, kDataTypeObject, .TypeString = "SpriteAnimation"), // SKSpriteNode.Animation
 	DECL(0x8831f0dd, SKSpriteNode, Animation2, Animation2, kDataTypeObject, .TypeString = "SpriteAnimation"), // SKSpriteNode.Animation2
 	DECL(0x590ca79a, SKSpriteNode, Image, Image, kDataTypeObject, .TypeString = "Texture"), // SKSpriteNode.Image
 	DECL(0xa9f98a53, SKSpriteNode, FreezeFrame, FreezeFrame, kDataTypeInt), // SKSpriteNode.FreezeFrame
-	DECL(0x0038792b, SKSpriteNode, BlendMode, BlendMode, kDataTypeEnum, .TypeString = "AlphaAutomatic,Opaque,Alpha,Additive,PremultipliedAlpha,MixedAlpha", .EnumValues = _BlendMode), // SKSpriteNode.BlendMode
+	DECL(0x0038792b, SKSpriteNode, BlendMode, BlendMode, kDataTypeEnum, .EnumValues = _BlendMode), // SKSpriteNode.BlendMode
 	DECL(0xae3d25c0, SKSpriteNode, UvRect, UvRect, kDataTypeStruct, .TypeString = "Rectangle"), // SKSpriteNode.UvRect
 	DECL(0xe2422e48, SKSpriteNode, UvRectX, UvRect.x, kDataTypeFloat), // SKSpriteNode.UvRectX
 	DECL(0xe3422fdb, SKSpriteNode, UvRectY, UvRect.y, kDataTypeFloat), // SKSpriteNode.UvRectY
@@ -264,10 +255,8 @@ ORCA_API struct ClassDesc _SKSpriteNode = {
 
 LRESULT SKLabelNode_Render(struct Object*, struct SKLabelNode*, wParam_t, RenderMsgPtr);
 LRESULT SKLabelNode_Create(struct Object*, struct SKLabelNode*, wParam_t, CreateMsgPtr);
-
 static struct MessageType SKLabelNodeMessageTypes[kSKLabelNodeNumMessageTypes] = {	
 };
-
 static struct PropertyType const SKLabelNodeProperties[kSKLabelNodeNumProperties] = {
 	DECL(0xe5b43cf8, SKLabelNode, Color, Color, kDataTypeColor), // SKLabelNode.Color
 };
@@ -305,10 +294,8 @@ ORCA_API struct ClassDesc _SKLabelNode = {
 };
 
 LRESULT SKView_ForegroundContent(struct Object*, struct SKView*, wParam_t, ForegroundContentMsgPtr);
-
 static struct MessageType SKViewMessageTypes[kSKViewNumMessageTypes] = {	
 };
-
 static struct PropertyType const SKViewProperties[kSKViewNumProperties] = {
 	DECL(0x499d2ae6, SKView, ReferenceWidth, ReferenceWidth, kDataTypeFloat), // SKView.ReferenceWidth
 	DECL(0xf011cff9, SKView, ReferenceHeight, ReferenceHeight, kDataTypeFloat), // SKView.ReferenceHeight

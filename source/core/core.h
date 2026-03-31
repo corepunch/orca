@@ -17,6 +17,7 @@ struct lua_State;
 
 
 #include "core_properties.h"
+#include "../geometry/geometry.h"
 
 ORCA_API extern struct MessageType MouseMessageMessage;
 ORCA_API extern struct MessageType KeyMessageMessage;
@@ -82,23 +83,23 @@ typedef struct WI_Message KeyUpMsg_t,* KeyUpMsgPtr;
 typedef struct WI_Message CharMsg_t,* CharMsgPtr;
 typedef struct WindowPaintMsgArgs WindowPaintMsg_t,* WindowPaintMsgPtr;
 typedef struct WindowPaintMsgArgs WindowResizedMsg_t,* WindowResizedMsgPtr;
-typedef int WindowClosedMsg_t,* WindowClosedMsgPtr;
-typedef int WindowChangedScreenMsg_t,* WindowChangedScreenMsgPtr;
-typedef int KillFocusMsg_t,* KillFocusMsgPtr;
-typedef int SetFocusMsg_t,* SetFocusMsgPtr;
-typedef int TimerMsg_t,* TimerMsgPtr;
-typedef int IsVisibleMsg_t,* IsVisibleMsgPtr;
-typedef int CreateMsg_t,* CreateMsgPtr;
-typedef int StartMsg_t,* StartMsgPtr;
-typedef int AwakeMsg_t,* AwakeMsgPtr;
-typedef int ThemeChangedMsg_t,* ThemeChangedMsgPtr;
+typedef struct WindowClosedMsgArgs WindowClosedMsg_t,* WindowClosedMsgPtr;
+typedef struct WindowChangedScreenMsgArgs WindowChangedScreenMsg_t,* WindowChangedScreenMsgPtr;
+typedef struct KillFocusMsgArgs KillFocusMsg_t,* KillFocusMsgPtr;
+typedef struct SetFocusMsgArgs SetFocusMsg_t,* SetFocusMsgPtr;
+typedef struct TimerMsgArgs TimerMsg_t,* TimerMsgPtr;
+typedef struct IsVisibleMsgArgs IsVisibleMsg_t,* IsVisibleMsgPtr;
+typedef struct CreateMsgArgs CreateMsg_t,* CreateMsgPtr;
+typedef struct StartMsgArgs StartMsg_t,* StartMsgPtr;
+typedef struct AwakeMsgArgs AwakeMsg_t,* AwakeMsgPtr;
+typedef struct ThemeChangedMsgArgs ThemeChangedMsg_t,* ThemeChangedMsgPtr;
 typedef struct PropertyChangedMsgArgs PropertyChangedMsg_t,* PropertyChangedMsgPtr;
-typedef int AttachedMsg_t,* AttachedMsgPtr;
-typedef int ReleaseMsg_t,* ReleaseMsgPtr;
-typedef int DestroyMsg_t,* DestroyMsgPtr;
-typedef int ResumeCoroutineMsg_t,* ResumeCoroutineMsgPtr;
-typedef int StopCoroutineMsg_t,* StopCoroutineMsgPtr;
-typedef int ViewDidLoadMsg_t,* ViewDidLoadMsgPtr;
+typedef struct AttachedMsgArgs AttachedMsg_t,* AttachedMsgPtr;
+typedef struct ReleaseMsgArgs ReleaseMsg_t,* ReleaseMsgPtr;
+typedef struct DestroyMsgArgs DestroyMsg_t,* DestroyMsgPtr;
+typedef struct ResumeCoroutineMsgArgs ResumeCoroutineMsg_t,* ResumeCoroutineMsgPtr;
+typedef struct StopCoroutineMsgArgs StopCoroutineMsg_t,* StopCoroutineMsgPtr;
+typedef struct ViewDidLoadMsgArgs ViewDidLoadMsg_t,* ViewDidLoadMsgPtr;
 
 
 /// @brief Defines the routing strategy for messages sent to objects. This determines how messages propagate through the object hierarchy and which handlers are invoked.
@@ -160,31 +161,8 @@ ORCA_API const char *PropertyAttributeToString(enum PropertyAttribute value);
 ORCA_API enum PropertyAttribute luaX_checkPropertyAttribute(lua_State *L, int idx);
 ORCA_API void luaX_pushPropertyAttribute(lua_State *L, enum PropertyAttribute value);
 
-/// @brief Specifies the underlying data type of a property.
-/** DataType enum */
-typedef enum DataType {
-	kDataTypeNone, ///< No data type specified.
-	kDataTypeBool, ///< Boolean value representing true or false.
-	kDataTypeInt, ///< Signed integer value.
-	kDataTypeEnum, ///< Enumeration type represented by integer values mapped to named constants.
-	kDataTypeFloat, ///< Floating-point numeric value.
-	kDataTypeString, ///< String data, heap-allocated to support arbitrary length content.
-	kDataTypeEvent, ///< Event reference used to bind triggers or callbacks.
-	kDataTypeStruct, ///< Composite data structure containing multiple fields used for packaging related geometric, visual, and layout properties together.
-	kDataTypeColor, ///< RGBA color value represented as four floating-point components (red, green, blue, alpha) in the range 0.0 to 1.0.
-	kDataTypeObject, ///< Reference to a complex object instance.
-} eDataType_t;
-#define DataType_Count 10
-ORCA_API const char *DataTypeToString(enum DataType value);
-ORCA_API enum DataType luaX_checkDataType(lua_State *L, int idx);
-ORCA_API void luaX_pushDataType(lua_State *L, enum DataType value);
-
 typedef struct MessageType MessageType_t, *lpMessageType_t;
 typedef struct MessageType const cMessageType_t, *lpcMessageType_t;
-typedef struct PropertyEnumValue PropertyEnumValue_t, *lpPropertyEnumValue_t;
-typedef struct PropertyEnumValue const cPropertyEnumValue_t, *lpcPropertyEnumValue_t;
-typedef struct PropertyType PropertyType_t, *lpPropertyType_t;
-typedef struct PropertyType const cPropertyType_t, *lpcPropertyType_t;
 
 
 /// @brief Retrieves currently active object.
@@ -523,42 +501,17 @@ struct MessageType {
 };
 ORCA_API void luaX_pushMessageType(lua_State *L, struct MessageType const* MessageType);
 ORCA_API struct MessageType* luaX_checkMessageType(lua_State *L, int idx);
-/// @brief Enum value descriptor for a property.
-/** PropertyEnumValue struct */
-struct PropertyEnumValue {
-	fixedString_t Name; ///< Unique name identifier for the value.
-	int32_t Value; ///< Integer value representing the enum.
-};
-ORCA_API void luaX_pushPropertyEnumValue(lua_State *L, struct PropertyEnumValue const* PropertyEnumValue);
-ORCA_API struct PropertyEnumValue* luaX_checkPropertyEnumValue(lua_State *L, int idx);
-/// @brief Defines a custom property type that can be attached to engine objects.
-/** PropertyType struct */
-struct PropertyType {
-	fixedString_t Name; ///< Unique name identifier for the property type.
-	fixedString_t Category; ///< Organizational category for this property, used for grouping in editors and UIs.
-	enum DataType DataType; ///< Underlying data type that determines how the property value is interpreted and stored.
-	fixedString_t DefaultValue; ///< Default value assigned when the property is not explicitly set.
-	fixedString_t TypeString; ///< String representation of the property type, used to store struct/object type names.
-	lpcString_t const* EnumValues; ///< Null-terminated array of enum value name strings for kDataTypeEnum properties.
-	bool_t AffectLayout; ///< Indicates whether this property affects element layout (e.g., size or alignment).
-	bool_t AffectRender; ///< Indicates whether this property influences the rendering output.
-	bool_t IsReadOnly; ///< If true, the property value cannot be modified at runtime or through the editor.
-	bool_t IsHidden; ///< If true, the property is excluded from the UI or inspector views.
-	bool_t IsInherited; ///< Specifies whether the property value can be inherited from parent components.
-	fixedString_t Key; ///< Internal key name used for property identification and lookup.
-	fixedString_t Value; ///< Runtime value stored in this property instance.
-	float Step; ///< Increment step used for numeric adjustments in UI controls.
-	float UpperBound; ///< Maximum allowed value for numeric properties.
-	float LowerBound; ///< Minimum allowed value for numeric properties.
-	uint32_t ShortIdentifier; ///< Unique short identifier for the property type, automatically generated from implicit property name.
-	uint32_t FullIdentifier; ///< Unique full identifier for the property type, automatically generated from explicit (ie. Grid.Columns) property name.
-	uint32_t Offset; ///< Byte offset of the property within the structure.
-	uint32_t DataSize; ///< Size of the property data in bytes.
-	bool_t IsArray; ///< Indicates whether the property is an array type, will generate Num* property to indicate the number of elements.
-};
-ORCA_API void luaX_pushPropertyType(lua_State *L, struct PropertyType const* PropertyType);
-ORCA_API struct PropertyType* luaX_checkPropertyType(lua_State *L, int idx);
 
+/** MouseMessageMsgArgs struct */
+struct MouseMessageMsgArgs {
+};
+ORCA_API void luaX_pushMouseMessageMsgArgs(lua_State *L, struct MouseMessageMsgArgs const* data);
+ORCA_API struct MouseMessageMsgArgs* luaX_checkMouseMessageMsgArgs(lua_State *L, int idx);
+/** KeyMessageMsgArgs struct */
+struct KeyMessageMsgArgs {
+};
+ORCA_API void luaX_pushKeyMessageMsgArgs(lua_State *L, struct KeyMessageMsgArgs const* data);
+ORCA_API struct KeyMessageMsgArgs* luaX_checkKeyMessageMsgArgs(lua_State *L, int idx);
 /** WindowPaintMsgArgs struct */
 struct WindowPaintMsgArgs {
 	uint32_t WindowWidth;
@@ -566,12 +519,92 @@ struct WindowPaintMsgArgs {
 };
 ORCA_API void luaX_pushWindowPaintMsgArgs(lua_State *L, struct WindowPaintMsgArgs const* data);
 ORCA_API struct WindowPaintMsgArgs* luaX_checkWindowPaintMsgArgs(lua_State *L, int idx);
+/** WindowClosedMsgArgs struct */
+struct WindowClosedMsgArgs {
+};
+ORCA_API void luaX_pushWindowClosedMsgArgs(lua_State *L, struct WindowClosedMsgArgs const* data);
+ORCA_API struct WindowClosedMsgArgs* luaX_checkWindowClosedMsgArgs(lua_State *L, int idx);
+/** WindowChangedScreenMsgArgs struct */
+struct WindowChangedScreenMsgArgs {
+};
+ORCA_API void luaX_pushWindowChangedScreenMsgArgs(lua_State *L, struct WindowChangedScreenMsgArgs const* data);
+ORCA_API struct WindowChangedScreenMsgArgs* luaX_checkWindowChangedScreenMsgArgs(lua_State *L, int idx);
+/** KillFocusMsgArgs struct */
+struct KillFocusMsgArgs {
+};
+ORCA_API void luaX_pushKillFocusMsgArgs(lua_State *L, struct KillFocusMsgArgs const* data);
+ORCA_API struct KillFocusMsgArgs* luaX_checkKillFocusMsgArgs(lua_State *L, int idx);
+/** SetFocusMsgArgs struct */
+struct SetFocusMsgArgs {
+};
+ORCA_API void luaX_pushSetFocusMsgArgs(lua_State *L, struct SetFocusMsgArgs const* data);
+ORCA_API struct SetFocusMsgArgs* luaX_checkSetFocusMsgArgs(lua_State *L, int idx);
+/** TimerMsgArgs struct */
+struct TimerMsgArgs {
+};
+ORCA_API void luaX_pushTimerMsgArgs(lua_State *L, struct TimerMsgArgs const* data);
+ORCA_API struct TimerMsgArgs* luaX_checkTimerMsgArgs(lua_State *L, int idx);
+/** IsVisibleMsgArgs struct */
+struct IsVisibleMsgArgs {
+};
+ORCA_API void luaX_pushIsVisibleMsgArgs(lua_State *L, struct IsVisibleMsgArgs const* data);
+ORCA_API struct IsVisibleMsgArgs* luaX_checkIsVisibleMsgArgs(lua_State *L, int idx);
+/** CreateMsgArgs struct */
+struct CreateMsgArgs {
+};
+ORCA_API void luaX_pushCreateMsgArgs(lua_State *L, struct CreateMsgArgs const* data);
+ORCA_API struct CreateMsgArgs* luaX_checkCreateMsgArgs(lua_State *L, int idx);
+/** StartMsgArgs struct */
+struct StartMsgArgs {
+};
+ORCA_API void luaX_pushStartMsgArgs(lua_State *L, struct StartMsgArgs const* data);
+ORCA_API struct StartMsgArgs* luaX_checkStartMsgArgs(lua_State *L, int idx);
+/** AwakeMsgArgs struct */
+struct AwakeMsgArgs {
+};
+ORCA_API void luaX_pushAwakeMsgArgs(lua_State *L, struct AwakeMsgArgs const* data);
+ORCA_API struct AwakeMsgArgs* luaX_checkAwakeMsgArgs(lua_State *L, int idx);
+/** ThemeChangedMsgArgs struct */
+struct ThemeChangedMsgArgs {
+};
+ORCA_API void luaX_pushThemeChangedMsgArgs(lua_State *L, struct ThemeChangedMsgArgs const* data);
+ORCA_API struct ThemeChangedMsgArgs* luaX_checkThemeChangedMsgArgs(lua_State *L, int idx);
 /** PropertyChangedMsgArgs struct */
 struct PropertyChangedMsgArgs {
 	struct Property* Property; ///< The property that changed
 };
 ORCA_API void luaX_pushPropertyChangedMsgArgs(lua_State *L, struct PropertyChangedMsgArgs const* data);
 ORCA_API struct PropertyChangedMsgArgs* luaX_checkPropertyChangedMsgArgs(lua_State *L, int idx);
+/** AttachedMsgArgs struct */
+struct AttachedMsgArgs {
+};
+ORCA_API void luaX_pushAttachedMsgArgs(lua_State *L, struct AttachedMsgArgs const* data);
+ORCA_API struct AttachedMsgArgs* luaX_checkAttachedMsgArgs(lua_State *L, int idx);
+/** ReleaseMsgArgs struct */
+struct ReleaseMsgArgs {
+};
+ORCA_API void luaX_pushReleaseMsgArgs(lua_State *L, struct ReleaseMsgArgs const* data);
+ORCA_API struct ReleaseMsgArgs* luaX_checkReleaseMsgArgs(lua_State *L, int idx);
+/** DestroyMsgArgs struct */
+struct DestroyMsgArgs {
+};
+ORCA_API void luaX_pushDestroyMsgArgs(lua_State *L, struct DestroyMsgArgs const* data);
+ORCA_API struct DestroyMsgArgs* luaX_checkDestroyMsgArgs(lua_State *L, int idx);
+/** ResumeCoroutineMsgArgs struct */
+struct ResumeCoroutineMsgArgs {
+};
+ORCA_API void luaX_pushResumeCoroutineMsgArgs(lua_State *L, struct ResumeCoroutineMsgArgs const* data);
+ORCA_API struct ResumeCoroutineMsgArgs* luaX_checkResumeCoroutineMsgArgs(lua_State *L, int idx);
+/** StopCoroutineMsgArgs struct */
+struct StopCoroutineMsgArgs {
+};
+ORCA_API void luaX_pushStopCoroutineMsgArgs(lua_State *L, struct StopCoroutineMsgArgs const* data);
+ORCA_API struct StopCoroutineMsgArgs* luaX_checkStopCoroutineMsgArgs(lua_State *L, int idx);
+/** ViewDidLoadMsgArgs struct */
+struct ViewDidLoadMsgArgs {
+};
+ORCA_API void luaX_pushViewDidLoadMsgArgs(lua_State *L, struct ViewDidLoadMsgArgs const* data);
+ORCA_API struct ViewDidLoadMsgArgs* luaX_checkViewDidLoadMsgArgs(lua_State *L, int idx);
 
 
 #endif

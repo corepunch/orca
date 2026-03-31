@@ -7,6 +7,7 @@
 #define kMsgFileExists 0x38dfc973
 #define kMsgHasChangedFiles 0x5390a564
 #define kMsgLoadProject 0x31b9fee2
+
 // Workspace
 #define ID_Workspace 0x27419f56
 #define GetWorkspace(_P) ((struct Workspace*)((_P)?OBJ_GetComponent(_P,ID_Workspace):NULL))
@@ -258,4 +259,26 @@ enum ThemeProperties {
 #define ThemeDefaultValuesDictionary_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_ThemeDefaultValuesDictionary,_N)
 #define kThemeDefaultValuesDictionaryNumMessageTypes 0
 #define kThemeDefaultValuesDictionaryNumProperties 0
+
+#define ID_ProjectReference 0x72a074eb
+#define ID_ProjectReference_Name 0xfc1cbd3c // ProjectReference.Name
+#define ID_ProjectReference_Path 0xf68e77b8 // ProjectReference.Path
+#define ID_EnginePlugin 0xa58ca5d0
+#define ID_EnginePlugin_Name 0x647e3b81 // EnginePlugin.Name
+#define ID_SystemMessage 0xea063cbb
+#define ID_SystemMessage_Message 0x6e02048e // SystemMessage.Message
+#define ID_SystemMessage_Key 0xc8982036 // SystemMessage.Key
+#define ID_SystemMessage_Command 0x40e61c0c // SystemMessage.Command
+	
+
+#define ID_ReadCommands 0x23d83fd3
+#define ID_OpenFile 0xa2c038cf
+#define ID_OpenFileMsgArgs_FileName 0x87a0bb04 // OpenFileMsgArgs.FileName
+#define ID_FileExists 0x38dfc973
+#define ID_FileExistsMsgArgs_FileName 0xbf70afd8 // FileExistsMsgArgs.FileName
+#define ID_HasChangedFiles 0x5390a564
+#define ID_LoadProject 0x31b9fee2
+#define ID_LoadProjectMsgArgs_Path 0x574df4e3 // LoadProjectMsgArgs.Path
+	
+
 #endif

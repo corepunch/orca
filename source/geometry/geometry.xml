@@ -2,7 +2,7 @@
 <!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
 <module name="geometry" namespace="orca">
   <include file="include/orcadef.h"/>
-
+  
   <enums name="RotationOrder">
     <summary>Euler angle rotation order enumeration</summary>
     <details>Specifies the order in which rotations are applied around the X, Y, and Z axes. Different orders produce different final orientations for the same euler angles.</details>
@@ -13,7 +13,7 @@
     <enum name="ZXY">Rotate around Z axis first, then X, then Y</enum>
     <enum name="ZYX">Rotate around Z axis first, then Y, then X</enum>
   </enums>
-
+  
   <struct name="vec2" prefix="VEC2_" export="Vector2D" sealed="true">
     <summary>2D vector structure</summary>
     <details>Represents a point or direction in 2D space with x and y components. Supports common vector operations like addition, scaling, and distance calculations.</details>
@@ -89,7 +89,7 @@
       <returns type="vec2">Result of multiply-add operation</returns>
     </method>
   </struct>
-
+  
   <struct name="vec3" prefix="VEC3_" export="Vector3D" sealed="true">
     <summary>3D vector structure</summary>
     <details>Represents a point or direction in 3D space with x, y, and z components. Supports vector math operations, interpolation, and curve calculations.</details>
@@ -182,14 +182,14 @@
     <method name="Unm" export="__unm" const="true">
       <summary>Returns the negated vector</summary>
       <returns type="vec3">Vector with negated components</returns>
-    </method> 
+    </method>
     <method name="Distance" const="true">
       <summary>Calculates distance to another vector</summary>
       <arg type="vec3" name="other" pointer="true" const="true">Target vector to measure distance to</arg>
       <returns type="float">Distance between the two vectors</returns>
     </method>
   </struct>
-
+  
   <struct name="vec4" prefix="VEC4_" export="Vector4D" sealed="true">
     <summary>4D vector structure</summary>
     <details>Represents a 4-component vector with x, y, z, and w components. Commonly used for homogeneous coordinates, quaternions, or RGBA colors.</details>
@@ -225,7 +225,7 @@
       <returns type="vec4">Interpolated vector</returns>
     </method>
   </struct>
-
+  
   <struct name="box2" prefix="BOX2_" export="Box2D">
     <summary>2D axis-aligned bounding box</summary>
     <details>Represents a rectangular region in 2D space defined by minimum and maximum corner points. Used for collision detection and spatial queries.</details>
@@ -245,7 +245,7 @@
       <returns type="bool">True if point is inside the box</returns>
     </method>
   </struct>
-
+  
   <struct name="box3" prefix="BOX3_" export="Box3D">
     <summary>3D axis-aligned bounding box</summary>
     <details>Represents a rectangular volume in 3D space defined by minimum and maximum corner points. Used for 3D collision detection and spatial culling.</details>
@@ -263,7 +263,7 @@
     <field name="width" type="float">Width of the object</field>
     <field name="height" type="float">Height of the object</field>
   </struct>
-
+  
   <struct name="rect" prefix="RECT_" export="Rectangle">
     <summary>2D rectangle structure</summary>
     <details>Represents a rectangle using position (x, y) and dimensions (width, height). Provides utility methods for containment tests and transformations.</details>
@@ -296,7 +296,7 @@
       <returns type="rect">Fitted rectangle</returns>
     </method>
   </struct>
-
+  
   <struct name="quat" prefix="QUAT_" export="Quaternion">
     <summary>Quaternion for 3D rotations</summary>
     <details>Represents a rotation in 3D space using quaternion mathematics. Provides smooth interpolation and avoids gimbal lock issues common with Euler angles.</details>
@@ -351,7 +351,7 @@
       <returns type="quat">Interpolated quaternion</returns>
     </method>
   </struct>
-
+  
   <struct name="mat3" prefix="MAT3_" export="Matrix2D">
     <summary>3x3 transformation matrix</summary>
     <details>Represents 2D transformations and 3D normal transformations. Stored in column-major order as a 9-element float array.</details>
@@ -375,7 +375,7 @@
       <arg name="scale" type="vec2" pointer="true" const="true">Scale factors for X and Y axes</arg>
     </method>
   </struct>
-
+  
   <struct name="mat4" prefix="MAT4_" export="Matrix3D" sealed="true">
     <summary>4x4 transformation matrix</summary>
     <details>Represents 3D transformations including translation, rotation, and scaling. Stored in column-major order as a 16-element float array. Used for camera projections and object transformations.</details>
@@ -406,21 +406,21 @@
     <method name="Ortho" static="true">
       <summary>Creates orthographic projection matrix</summary>
       <details>Used for 2D rendering or 3D scenes without perspective distortion.</details>
-      <arg name="left" type="float">Left clipping plane</arg>  
-      <arg name="right" type="float">Right clipping plane</arg>  
-      <arg name="bottom" type="float">Bottom clipping plane</arg> 
-      <arg name="top" type="float">Top clipping plane</arg> 
-      <arg name="znear" type="float">Near clipping plane distance</arg> 
-      <arg name="zfar" type="float">Far clipping plane distance</arg> 
+      <arg name="left" type="float">Left clipping plane</arg>
+      <arg name="right" type="float">Right clipping plane</arg>
+      <arg name="bottom" type="float">Bottom clipping plane</arg>
+      <arg name="top" type="float">Top clipping plane</arg>
+      <arg name="znear" type="float">Near clipping plane distance</arg>
+      <arg name="zfar" type="float">Far clipping plane distance</arg>
       <returns type="mat4">Orthographic projection matrix</returns>
     </method>
     <method name="Perspective" static="true">
       <summary>Creates perspective projection matrix</summary>
       <details>Used for 3D rendering with realistic perspective distortion.</details>
-      <arg name="radians" type="float">Field of view angle in radians</arg> 
-      <arg name="aspect" type="float">Aspect ratio (width/height)</arg> 
-      <arg name="znear" type="float">Near clipping plane distance</arg> 
-      <arg name="zfar" type="float">Far clipping plane distance</arg> 
+      <arg name="radians" type="float">Field of view angle in radians</arg>
+      <arg name="aspect" type="float">Aspect ratio (width/height)</arg>
+      <arg name="znear" type="float">Near clipping plane distance</arg>
+      <arg name="zfar" type="float">Far clipping plane distance</arg>
       <returns type="mat4">Perspective projection matrix</returns>
     </method>
     <method name="LookAt" static="true">
@@ -476,14 +476,14 @@
       <arg name="rotation" type="quat" pointer="true" const="true">Rotation quaternion</arg>
     </method>
   </struct>
-
+  
   <struct name="bounds" export="Bounds">
     <summary>1D range bounds</summary>
     <details>Represents a range with minimum and maximum values. Used for clamping values or defining valid ranges.</details>
     <field name="min" type="float">Minimum value of the range</field>
     <field name="max" type="float">Maximum value of the range</field>
   </struct>
-
+  
   <struct name="plane3" prefix="plane3_" export="Plane">
     <summary>3D plane representation</summary>
     <details>Represents an infinite plane in 3D space using the equation ax + by + cz + d = 0. Used for clipping, collision detection, and spatial partitioning.</details>
@@ -502,14 +502,14 @@
       <returns type="float">Signed distance from point to plane</returns>
     </method>
   </struct>
-
+  
   <struct name="sphere3" export="Sphere">
     <summary>3D sphere representation</summary>
     <details>Represents a sphere in 3D space defined by center point and radius. Used for collision detection, bounding volumes, and spatial queries.</details>
     <field name="center" type="vec3">Center point of the sphere</field>
     <field name="radius" type="float">Radius of the sphere</field>
   </struct>
-
+  
   <struct name="frustum3" prefix="frustum_" export="Frustum">
     <summary>3D viewing frustum</summary>
     <details>Represents a truncated pyramid used for camera view volumes and culling. Defined by six planes that bound the visible region.</details>
@@ -547,7 +547,7 @@
       <returns type="bool">True if box intersects frustum</returns>
     </method>
   </struct>
-
+  
   <struct name="transform2" prefix="transform2_" export="Transform2D">
     <summary>2D transformation structure</summary>
     <details>Encapsulates 2D translation, rotation, and scaling. Provides convenient interface for common 2D transformations and matrix conversion.</details>
@@ -565,8 +565,8 @@
       <arg name="pivot" type="vec2" pointer="true" const="true">Pivot point for rotation and scaling</arg>
       <returns type="mat4">4x4 transformation matrix</returns>
     </method>
-  </struct> 
-
+  </struct>
+  
   <struct name="transform3" prefix="transform3_" export="Transform3D">
     <summary>3D transformation structure</summary>
     <details>Encapsulates 3D translation, rotation (as Euler angles), and scaling. Provides convenient interface for common 3D transformations.</details>
@@ -584,8 +584,8 @@
       <arg name="pivot" type="vec3" pointer="true" const="true">Pivot point for rotation and scaling</arg>
       <returns type="mat4">4x4 transformation matrix</returns>
     </method>
-  </struct> 
-
+  </struct>
+  
   <struct name="triangle3" prefix="triangle3_" export="Triangle3D">
     <summary>3D triangle primitive</summary>
     <details>Represents a triangle in 3D space defined by three vertices. Used for mesh geometry, collision detection, and ray casting.</details>
@@ -598,7 +598,7 @@
       <returns type="vec3">Unit normal vector</returns>
     </method>
   </struct>
-
+  
   <struct name="line3" prefix="line3_" export="Line3D">
     <summary>3D line segment</summary>
     <details>Represents a line segment in 3D space defined by two endpoints. Provides intersection testing with various geometric primitives.</details>
@@ -629,8 +629,8 @@
       <arg name="out" type="vec3" pointer="true">Output parameter for intersection point</arg>
       <returns type="bool">True if intersection occurs, false otherwise</returns>
     </method>
-  </struct> 
-
+  </struct>
+  
   <struct name="edges" export="Edges">
     <summary>Edge insets structure</summary>
     <details>Represents spacing or padding values for all four edges of a rectangular region. Commonly used for UI layout and margin calculations.</details>
@@ -639,7 +639,7 @@
     <field name="right" type="float">Right edge spacing</field>
     <field name="bottom" type="float">Bottom edge spacing</field>
   </struct>
-
+  
   <struct name="color" prefix="COLOR_" export="Color" sealed="true" unwrap="true">
     <summary>RGBA color representation</summary>
     <details>Represents a color with red, green, blue, and alpha (transparency) components. Values typically range from 0.0 to 1.0.</details>
@@ -647,7 +647,7 @@
     <field name="g" type="float">Green component (0.0 to 1.0)</field>
     <field name="b" type="float">Blue component (0.0 to 1.0)</field>
     <field name="a" type="float">Alpha (transparency) component (0.0 = transparent, 1.0 = opaque)</field>
-
+    
     <method name="Lerp" const="true">
       <summary>Linear interpolation between colors</summary>
       <details>Blends between this color and another, interpolating each component separately.</details>
@@ -661,5 +661,53 @@
       <arg name="code" type="string">Color string to parse</arg>
       <returns type="color">Parsed color value</returns>
     </method>
+  </struct>
+  
+  <enums name="DataType">
+    <summary>Specifies the underlying data type of a property.</summary>
+    <details>DataType defines the fundamental type of value a property can hold, ranging from basic primitives like Bool and Float to complex structures such as Transform3D or custom Objects. It helps the engine interpret, validate, and serialize property values appropriately.</details>
+    <enum name="None">No data type specified.</enum>
+    <enum name="Bool">Boolean value representing true or false.</enum>
+    <enum name="Int">Signed integer value.</enum>
+    <enum name="Enum">Enumeration type represented by integer values mapped to named constants.</enum>
+    <enum name="Float">Floating-point numeric value.</enum>
+    <enum name="String">String data, heap-allocated to support arbitrary length content.</enum>
+    <enum name="Event">Event reference used to bind triggers or callbacks.</enum>
+    <enum name="Struct">Composite data structure containing multiple fields used for packaging related geometric, visual, and layout properties together.</enum>
+    <enum name="Color">RGBA color value represented as four floating-point components (red, green, blue, alpha) in the range 0.0 to 1.0.</enum>
+    <enum name="Object">Reference to a complex object instance.</enum>
+  </enums>
+  
+  <struct name="PropertyEnumValue" sealed="true" export="PropertyEnumValue">
+    <summary>Enum value descriptor for a property.</summary>
+    <field name="Name" type="string">Unique name identifier for the value.</field>
+    <field name="Value" type="int">Integer value representing the enum.</field>
+  </struct>
+  
+  <struct name="PropertyType" sealed="true" export="PropertyType">
+    <summary>Defines a custom property type that can be attached to engine objects.</summary>
+    <details>PropertyType allows defining additional data fields beyond built-in engine properties. Each PropertyType specifies its data category, default value, and behavioral attributes such as layout and render impact. It serves as a flexible mechanism for extending object metadata in projects.</details>
+    <field name="Name" type="string">Unique name identifier for the property type.</field>
+    <field name="Category" type="string">Organizational category for this property, used for grouping in editors and UIs.</field>
+    <field name="DataType" type="DataType">Underlying data type that determines how the property value is interpreted and stored.</field>
+    <field name="DefaultValue" type="string">Default value assigned when the property is not explicitly set.</field>
+    <field name="TypeString" type="string">String representation of the property type, used to store struct/object type names.</field>
+    <field name="EnumValues" type="string" array="true" noexport="true">Null-terminated array of enum value name strings for kDataTypeEnum properties.</field>
+    <field name="AffectLayout" type="bool">Indicates whether this property affects element layout (e.g., size or alignment).</field>
+    <field name="AffectRender" type="bool">Indicates whether this property influences the rendering output.</field>
+    <field name="IsReadOnly" type="bool">If true, the property value cannot be modified at runtime or through the editor.</field>
+    <field name="IsHidden" type="bool">If true, the property is excluded from the UI or inspector views.</field>
+    <field name="IsInherited" type="bool">Specifies whether the property value can be inherited from parent components.</field>
+    <field name="Key" type="string">Internal key name used for property identification and lookup.</field>
+    <field name="Value" type="string">Runtime value stored in this property instance.</field>
+    <field name="Step" type="float">Increment step used for numeric adjustments in UI controls.</field>
+    <field name="UpperBound" type="float">Maximum allowed value for numeric properties.</field>
+    <field name="LowerBound" type="float">Minimum allowed value for numeric properties.</field>
+    <!-- Additional internal fields for property metadata -->
+    <field name="ShortIdentifier" type="uint">Unique short identifier for the property type, automatically generated from implicit property name.</field>
+    <field name="FullIdentifier" type="uint">Unique full identifier for the property type, automatically generated from explicit (ie. Grid.Columns) property name.</field>
+    <field name="Offset" type="uint">Byte offset of the property within the structure.</field>
+    <field name="DataSize" type="uint">Size of the property data in bytes.</field>
+    <field name="IsArray" type="bool">Indicates whether the property is an array type, will generate Num* property to indicate the number of elements.</field>
   </struct>
 </module>
