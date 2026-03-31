@@ -3,9 +3,10 @@
 ORCA_API int
 parse_property(const char* str,
                struct PropertyType const* prop,
-               void* struct_ptr)
+//               void* struct_ptr)
+               void* valueptr)
 {
-  void* valueptr = ((char*)struct_ptr + prop->Offset);
+//  void* valueptr = ((char*)struct_ptr + prop->Offset);
   switch (prop->DataType) {
     case kDataTypeBool:
       *(bool*)valueptr = strcasecmp(str, "true") == 0 || strcmp(str, "1") == 0;
@@ -43,9 +44,10 @@ ORCA_API void
 read_property(lua_State *L,
               int idx,
               struct PropertyType const* prop,
-              void* struct_ptr)
+              // void* struct_ptr)
+              void* valueptr)
 {
-  void* valueptr = ((char*)struct_ptr + prop->Offset);
+  // void* valueptr = ((char*)struct_ptr + prop->Offset);
   switch (prop->DataType) {
     case kDataTypeBool:
       *(bool*)valueptr = lua_toboolean(L, idx) != 0;
@@ -60,7 +62,7 @@ read_property(lua_State *L,
       *(float*)valueptr = (float)luaL_checknumber(L, idx);
       break;
     case kDataTypeString:
-      if (*(char**)valueptr) free(*(char**)valueptr); // Free existing string if necessary
+      if (*(char**)valueptr && *(intptr_t*)valueptr != -1) free(*(char**)valueptr); // Free existing string if necessary
       *(char**)valueptr = strdup(luaL_checkstring(L, idx));
       break;
     case kDataTypeColor:
@@ -106,9 +108,10 @@ ORCA_API int
 write_property(lua_State *L,
                int idx,
                struct PropertyType const* prop,
-               void const* struct_ptr)
+              //  void const* struct_ptr)
+               void const* valueptr)
 {
-    void const* valueptr = ((char const*)struct_ptr + prop->Offset);
+    // void const* valueptr = ((char const*)struct_ptr + prop->Offset);
     switch (prop->DataType) {
       case kDataTypeBool:
         lua_pushboolean(L, *(bool*)valueptr);

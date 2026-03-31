@@ -85,6 +85,18 @@ PROP_GetValue(lpcProperty_t property)
   }
 }
 
+void
+PROP_SetDirty(lpProperty_t property, enum PropertyState state)
+{
+  property->stateflags |= 1 << state;
+  property->flags |= PF_MODIFIED;
+  if (property->pdesc->FullIdentifier != ID_ContentOffset) {
+    OBJ_SetDirty(property->object);
+  } else {
+    OBJ_SetFlags(property->object, OBJ_GetFlags(property->object) | OF_SCROLL);
+  }
+}
+
 void*
 PROP_SetStateValue(lpProperty_t property,
                    void const* source,
@@ -115,13 +127,7 @@ PROP_SetStateValue(lpProperty_t property,
   } else {
     memcpy(ptr, source, PROP_GetSize(property));
   }
-  property->stateflags |= 1 << state;
-  property->flags |= PF_MODIFIED;
-  if (property->pdesc->FullIdentifier != ID_ContentOffset) {
-    OBJ_SetDirty(property->object);
-  } else {
-    OBJ_SetFlags(property->object, OBJ_GetFlags(property->object) | OF_SCROLL);
-  }
+  PROP_SetDirty(property, kPropertyStateNormal);
   return ptr;
 }
 

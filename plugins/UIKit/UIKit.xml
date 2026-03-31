@@ -240,7 +240,7 @@
     <field name="Color" type="color">Color of the underline.</field>
   </struct>
   
-  <struct name="MarginShorthand">
+  <struct name="Thickness">
     <summary>External spacing configuration for rectangular elements</summary>
     <details>Allows independent control of the external spacing applied to each edge of an element.</details>
     <field name="Axis" type="EdgeShorthand" fixed-array="3">External spacing per axis</field>
@@ -248,7 +248,7 @@
 
   <struct name="BorderShorthand">
     <summary>Complete border definition for rectangular element</summary>
-    <field name="Width" type="MarginShorthand">Border thickness in pixels, specified for each edge</field>
+    <field name="Width" type="Thickness">Border thickness in pixels, specified for each edge</field>
     <field name="Color" type="color">Border color</field>
     <field name="Style" type="BorderStyle">Visual style of the border</field>
     <field name="Radius" type="BorderRadiusShorthand">Border radius definition per corner</field>
@@ -431,8 +431,8 @@
     <handles message="GetSize"/>
     <handles message="IsVisible"/>
     <property name="Size" type="SizeShorthand">Sizing configuration of this element</property>
-    <property name="Margin" type="MarginShorthand">External spacing around the element</property>
-    <property name="Padding" type="MarginShorthand">Internal spacing between element border and content</property>
+    <property name="Margin" type="Thickness">External spacing around the element</property>
+    <property name="Padding" type="Thickness">Internal spacing between element border and content</property>
     <property name="Border" type="BorderShorthand">Border definition along each axis</property>
     <property name="Alignment" type="AlignmentShorthand">Alignment definition for each axis.</property>
     <property name="Visible" type="bool" default="TRUE">Whether this node is visible in the scene.</property>

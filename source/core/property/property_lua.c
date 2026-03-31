@@ -98,8 +98,11 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
   if (p->pdesc && p->pdesc->IsArray) {
     return read_array(L, idx, p);
   }
+  
+  read_property(L, idx, p->pdesc, &p->states[kPropertyStateNormal]);
+  memcpy(p->value, &p->states[kPropertyStateNormal], PROP_GetSize(p));
+  PROP_SetDirty(p, kPropertyStateNormal);
 
-  read_property(L, idx, p->pdesc, p->value);
 #if 0
   switch (luatype) {
     case LUA_TSTRING:

@@ -389,8 +389,8 @@ typedef struct OverflowShorthand OverflowShorthand_t, *lpOverflowShorthand_t;
 typedef struct OverflowShorthand const cOverflowShorthand_t, *lpcOverflowShorthand_t;
 typedef struct UnderlineShorthand UnderlineShorthand_t, *lpUnderlineShorthand_t;
 typedef struct UnderlineShorthand const cUnderlineShorthand_t, *lpcUnderlineShorthand_t;
-typedef struct MarginShorthand MarginShorthand_t, *lpMarginShorthand_t;
-typedef struct MarginShorthand const cMarginShorthand_t, *lpcMarginShorthand_t;
+typedef struct Thickness Thickness_t, *lpThickness_t;
+typedef struct Thickness const cThickness_t, *lpcThickness_t;
 typedef struct BorderShorthand BorderShorthand_t, *lpBorderShorthand_t;
 typedef struct BorderShorthand const cBorderShorthand_t, *lpcBorderShorthand_t;
 typedef struct SizeAxisShorthand SizeAxisShorthand_t, *lpSizeAxisShorthand_t;
@@ -481,16 +481,16 @@ struct UnderlineShorthand {
 ORCA_API void luaX_pushUnderlineShorthand(lua_State *L, struct UnderlineShorthand const* UnderlineShorthand);
 ORCA_API struct UnderlineShorthand* luaX_checkUnderlineShorthand(lua_State *L, int idx);
 /// @brief External spacing configuration for rectangular elements
-/** MarginShorthand struct */
-struct MarginShorthand {
+/** Thickness struct */
+struct Thickness {
 	struct EdgeShorthand Axis[3]; ///< External spacing per axis
 };
-ORCA_API void luaX_pushMarginShorthand(lua_State *L, struct MarginShorthand const* MarginShorthand);
-ORCA_API struct MarginShorthand* luaX_checkMarginShorthand(lua_State *L, int idx);
+ORCA_API void luaX_pushThickness(lua_State *L, struct Thickness const* Thickness);
+ORCA_API struct Thickness* luaX_checkThickness(lua_State *L, int idx);
 /// @brief Complete border definition for rectangular element
 /** BorderShorthand struct */
 struct BorderShorthand {
-	struct MarginShorthand Width; ///< Border thickness in pixels, specified for each edge
+	struct Thickness Width; ///< Border thickness in pixels, specified for each edge
 	struct color Color; ///< Border color
 	enum BorderStyle Style; ///< Visual style of the border
 	struct BorderRadiusShorthand Radius; ///< Border radius definition per corner
@@ -758,8 +758,8 @@ typedef struct Node Node_t, *NodePtr, *lpNode_t;
 typedef struct Node const *NodeCPtr, *lpcNode_t;
 struct Node {
 	struct SizeShorthand Size; ///< Sizing configuration of this element
-	struct MarginShorthand Margin; ///< External spacing around the element
-	struct MarginShorthand Padding; ///< Internal spacing between element border and content
+	struct Thickness Margin; ///< External spacing around the element
+	struct Thickness Padding; ///< Internal spacing between element border and content
 	struct BorderShorthand Border; ///< Border definition along each axis
 	struct AlignmentShorthand Alignment; ///< Alignment definition for each axis.
 	bool_t Visible; ///< Whether this node is visible in the scene.

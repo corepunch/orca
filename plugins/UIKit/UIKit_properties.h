@@ -786,16 +786,16 @@ enum StyleProperties {
 #define ID_UnderlineShorthand_Offset 0xa54f0483 // UnderlineShorthand.Offset
 #define ID_UnderlineShorthand_Width 0xa5db78cc // UnderlineShorthand.Width
 #define ID_UnderlineShorthand_Color 0x33df11f7 // UnderlineShorthand.Color
-#define ID_MarginShorthand 0x5df8de92
-#define ID_MarginShorthand_Horizontal 0xcce44a3c // MarginShorthand.Horizontal
-#define ID_MarginShorthand_Left 0xec361455 // MarginShorthand.Left
-#define ID_MarginShorthand_Right 0x0e962cee // MarginShorthand.Right
-#define ID_MarginShorthand_Vertical 0xa2f58bce // MarginShorthand.Vertical
-#define ID_MarginShorthand_Top 0x2a2bfc97 // MarginShorthand.Top
-#define ID_MarginShorthand_Bottom 0xa2c2259f // MarginShorthand.Bottom
-#define ID_MarginShorthand_Depth 0xd3b67969 // MarginShorthand.Depth
-#define ID_MarginShorthand_Front 0x55c21fb3 // MarginShorthand.Front
-#define ID_MarginShorthand_Back 0xf661633f // MarginShorthand.Back
+#define ID_Thickness 0xce483eb5
+#define ID_Thickness_Horizontal 0x0f36bd4d // Thickness.Horizontal
+#define ID_Thickness_Left 0x03d812ac // Thickness.Left
+#define ID_Thickness_Right 0xe24fcbb9 // Thickness.Right
+#define ID_Thickness_Vertical 0x55c6bb67 // Thickness.Vertical
+#define ID_Thickness_Top 0x06162ab0 // Thickness.Top
+#define ID_Thickness_Bottom 0x5a2f9fae // Thickness.Bottom
+#define ID_Thickness_Depth 0x8ecdafa6 // Thickness.Depth
+#define ID_Thickness_Front 0xd745e23c // Thickness.Front
+#define ID_Thickness_Back 0x143862ae // Thickness.Back
 #define ID_BorderShorthand 0x317c0db6
 #define ID_BorderShorthand_Width 0x0f2cb544 // BorderShorthand.Width
 #define ID_BorderShorthand_HorizontalWidth 0xd6fbc4b4 // BorderShorthand.HorizontalWidth

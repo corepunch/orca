@@ -79,15 +79,15 @@ static int f_new_##NAME(lua_State *L) { \
 	memset(self, 0, sizeof(struct NAME)); \
 	if (lua_istable(L, 1)) \
     for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
-			lua_pop(L, (lua_getfield(L, 1, _##NAME[i].Name), read_property(L, -1, &_##NAME[i], self), 1)); \
+			lua_pop(L, (lua_getfield(L, 1, _##NAME[i].Name), read_property(L, -1, &_##NAME[i], ((char*)self)+_##NAME[i].Offset), 1)); \
 	else for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
-		read_property(L, i + 1, &_##NAME[i], self); \
+		read_property(L, i + 1, &_##NAME[i], ((char*)self)+_##NAME[i].Offset); \
 	return 1; \
 } \
 static int f_##NAME##___index(lua_State *L) { \
 	for (uint32_t i = 0, j = fnv1a32(luaL_checkstring(L, 2)); i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
 		if (_##NAME[i].ShortIdentifier == j) \
-			return (write_property(L, -1, &_##NAME[i], luaX_check##NAME(L, 1)), 1); \
+			return (write_property(L, -1, &_##NAME[i], ((char*)luaX_check##NAME(L, 1))+_##NAME[i].Offset), 1); \
 	for (uint32_t i = 0; i < sizeof(_##NAME##_Methods) / sizeof(*_##NAME##_Methods); i++) { \
 		if (strcmp(_##NAME##_Methods[i].name, luaL_checkstring(L, 2)) == 0) { \
 			lua_pushcfunction(L, _##NAME##_Methods[i].func); \
@@ -99,11 +99,13 @@ static int f_##NAME##___index(lua_State *L) { \
 static int f_##NAME##___newindex(lua_State *L) { \
 	for (uint32_t i = 0, j = fnv1a32(luaL_checkstring(L, 2)); i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
 		if (_##NAME[i].ShortIdentifier == j) \
-			return (read_property(L, 3, &_##NAME[i], luaX_check##NAME(L, 1)), 0); \
+			return (read_property(L, 3, &_##NAME[i], ((char*)luaX_check##NAME(L, 1))+_##NAME[i].Offset), 0); \
 	return luaL_error(L, "Unknown field in " #NAME ": %s", luaL_checkstring(L, 2)); \
 } \
 static int f_##NAME##___call(lua_State *L) { \
-	return ((void)lua_remove(L, 1), f_new_##NAME(L)); \
+  lua_insert(L, (lua_getfield(L, 1, "new"), 2)); \
+  lua_call(L, lua_gettop(L) - 2, 1); \
+	return 1; \
 } \
 static int f_##NAME##___fromstring(lua_State *L) { \
 	char* tmp = strdup(luaL_checkstring(L, 1)),* tok = strtok(tmp, " "); \
@@ -111,7 +113,7 @@ static int f_##NAME##___fromstring(lua_State *L) { \
 	memset(&self, 0, sizeof(struct NAME)); \
 	for (uint32_t i = 0; tok && i < sizeof(_##NAME) / sizeof(*_##NAME); i++, tok = strtok(NULL, " ")) \
 		if (_##NAME[i].DataType != kDataTypeStruct) \
-			parse_property(tok, &_##NAME[i], &self); \
+			parse_property(tok, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); \
 	free(tmp); \
 	return (luaX_push##NAME(L, &self), 1); \
 } \
@@ -205,22 +207,22 @@ static struct PropertyType _UnderlineShorthand[] = {
 static luaL_Reg _UnderlineShorthand_Methods[] = {
 	{ NULL, NULL }
 };
-static struct PropertyType _MarginShorthand[] = {
-	DECL(0x6bf39489, MarginShorthand, Horizontal, Axis[0], kDataTypeStruct, .TypeString = "EdgeShorthand"), // MarginShorthand.Horizontal
-	DECL(0x92773890, MarginShorthand, Left, Axis[0].Left, kDataTypeFloat), // MarginShorthand.Left
-	DECL(0x1e9e9f85, MarginShorthand, Right, Axis[0].Right, kDataTypeFloat), // MarginShorthand.Right
-	DECL(0x80fb2d5b, MarginShorthand, Vertical, Axis[1], kDataTypeStruct, .TypeString = "EdgeShorthand"), // MarginShorthand.Vertical
-	DECL(0x099b73dc, MarginShorthand, Top, Axis[1].Left, kDataTypeFloat), // MarginShorthand.Top
-	DECL(0x22b5f34a, MarginShorthand, Bottom, Axis[1].Right, kDataTypeFloat), // MarginShorthand.Bottom
-	DECL(0xd070218a, MarginShorthand, Depth, Axis[2], kDataTypeStruct, .TypeString = "EdgeShorthand"), // MarginShorthand.Depth
-	DECL(0x6de89878, MarginShorthand, Front, Axis[2].Left, kDataTypeFloat), // MarginShorthand.Front
-	DECL(0xc2954bc2, MarginShorthand, Back, Axis[2].Right, kDataTypeFloat), // MarginShorthand.Back
+static struct PropertyType _Thickness[] = {
+	DECL(0x6bf39489, Thickness, Horizontal, Axis[0], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Thickness.Horizontal
+	DECL(0x92773890, Thickness, Left, Axis[0].Left, kDataTypeFloat), // Thickness.Left
+	DECL(0x1e9e9f85, Thickness, Right, Axis[0].Right, kDataTypeFloat), // Thickness.Right
+	DECL(0x80fb2d5b, Thickness, Vertical, Axis[1], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Thickness.Vertical
+	DECL(0x099b73dc, Thickness, Top, Axis[1].Left, kDataTypeFloat), // Thickness.Top
+	DECL(0x22b5f34a, Thickness, Bottom, Axis[1].Right, kDataTypeFloat), // Thickness.Bottom
+	DECL(0xd070218a, Thickness, Depth, Axis[2], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Thickness.Depth
+	DECL(0x6de89878, Thickness, Front, Axis[2].Left, kDataTypeFloat), // Thickness.Front
+	DECL(0xc2954bc2, Thickness, Back, Axis[2].Right, kDataTypeFloat), // Thickness.Back
 };
-static luaL_Reg _MarginShorthand_Methods[] = {
+static luaL_Reg _Thickness_Methods[] = {
 	{ NULL, NULL }
 };
 static struct PropertyType _BorderShorthand[] = {
-	DECL(0x3b42dfbf, BorderShorthand, Width, Width, kDataTypeStruct, .TypeString = "MarginShorthand"), // BorderShorthand.Width
+	DECL(0x3b42dfbf, BorderShorthand, Width, Width, kDataTypeStruct, .TypeString = "Thickness"), // BorderShorthand.Width
 	DECL(0x9bd0d683, BorderShorthand, HorizontalWidth, Width.Axis[0], kDataTypeStruct, .TypeString = "EdgeShorthand"), // BorderShorthand.HorizontalWidth
 	DECL(0x0671d536, BorderShorthand, WidthLeft, Width.Axis[0].Left, kDataTypeFloat), // BorderShorthand.WidthLeft
 	DECL(0x30532a6b, BorderShorthand, WidthRight, Width.Axis[0].Right, kDataTypeFloat), // BorderShorthand.WidthRight
@@ -284,7 +286,7 @@ STRUCT(ShadowShorthand, ShadowShorthand);
 STRUCT(RingShorthand, RingShorthand);
 STRUCT(OverflowShorthand, OverflowShorthand);
 STRUCT(UnderlineShorthand, UnderlineShorthand);
-STRUCT(MarginShorthand, MarginShorthand);
+STRUCT(Thickness, Thickness);
 STRUCT(BorderShorthand, BorderShorthand);
 STRUCT(SizeAxisShorthand, SizeAxisShorthand);
 STRUCT(SizeShorthand, SizeShorthand);
@@ -791,7 +793,7 @@ static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	DECL(0xe01ae1b0, Node, MinDepth, Size.Axis[2].Min, kDataTypeFloat), // Node.MinDepth
 	DECL(0x886c1410, Node, ActualDepth, Size.Axis[2].Actual, kDataTypeFloat), // Node.ActualDepth
 	DECL(0x04d53041, Node, ScrollDepth, Size.Axis[2].Scroll, kDataTypeFloat), // Node.ScrollDepth
-	DECL(0xc4cc799b, Node, Margin, Margin, kDataTypeStruct, .TypeString = "MarginShorthand"), // Node.Margin
+	DECL(0xc4cc799b, Node, Margin, Margin, kDataTypeStruct, .TypeString = "Thickness"), // Node.Margin
 	DECL(0x1d32e627, Node, HorizontalMargin, Margin.Axis[0], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.HorizontalMargin
 	DECL(0x0bdcf7a2, Node, MarginLeft, Margin.Axis[0].Left, kDataTypeFloat), // Node.MarginLeft
 	DECL(0xe9999c8f, Node, MarginRight, Margin.Axis[0].Right, kDataTypeFloat), // Node.MarginRight
@@ -801,7 +803,7 @@ static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	DECL(0x606034ac, Node, DepthMargin, Margin.Axis[2], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.DepthMargin
 	DECL(0x8bfc919a, Node, MarginFront, Margin.Axis[2].Left, kDataTypeFloat), // Node.MarginFront
 	DECL(0xfc651334, Node, MarginBack, Margin.Axis[2].Right, kDataTypeFloat), // Node.MarginBack
-	DECL(0x0736dd56, Node, Padding, Padding, kDataTypeStruct, .TypeString = "MarginShorthand"), // Node.Padding
+	DECL(0x0736dd56, Node, Padding, Padding, kDataTypeStruct, .TypeString = "Thickness"), // Node.Padding
 	DECL(0x96255a02, Node, HorizontalPadding, Padding.Axis[0], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.HorizontalPadding
 	DECL(0x380ec7b3, Node, PaddingLeft, Padding.Axis[0].Left, kDataTypeFloat), // Node.PaddingLeft
 	DECL(0x2e56c2bc, Node, PaddingRight, Padding.Axis[0].Right, kDataTypeFloat), // Node.PaddingRight
@@ -812,7 +814,7 @@ static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	DECL(0x3d180671, Node, PaddingFront, Padding.Axis[2].Left, kDataTypeFloat), // Node.PaddingFront
 	DECL(0x8c287ea5, Node, PaddingBack, Padding.Axis[2].Right, kDataTypeFloat), // Node.PaddingBack
 	DECL(0x0cad6f57, Node, Border, Border, kDataTypeStruct, .TypeString = "BorderShorthand"), // Node.Border
-	DECL(0x0aaf7cf9, Node, BorderWidth, Border.Width, kDataTypeStruct, .TypeString = "MarginShorthand"), // Node.BorderWidth
+	DECL(0x0aaf7cf9, Node, BorderWidth, Border.Width, kDataTypeStruct, .TypeString = "Thickness"), // Node.BorderWidth
 	DECL(0x19c21815, Node, HorizontalBorderWidth, Border.Width.Axis[0], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.HorizontalBorderWidth
 	DECL(0x63b03bb4, Node, BorderWidthLeft, Border.Width.Axis[0].Left, kDataTypeFloat), // Node.BorderWidthLeft
 	DECL(0xe6977c61, Node, BorderWidthRight, Border.Width.Axis[0].Right, kDataTypeFloat), // Node.BorderWidthRight
@@ -1562,7 +1564,7 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_RingShorthand(L), -2), "RingShorthand");
 	lua_setfield(L, ((void)luaopen_orca_OverflowShorthand(L), -2), "OverflowShorthand");
 	lua_setfield(L, ((void)luaopen_orca_UnderlineShorthand(L), -2), "UnderlineShorthand");
-	lua_setfield(L, ((void)luaopen_orca_MarginShorthand(L), -2), "MarginShorthand");
+	lua_setfield(L, ((void)luaopen_orca_Thickness(L), -2), "Thickness");
 	lua_setfield(L, ((void)luaopen_orca_BorderShorthand(L), -2), "BorderShorthand");
 	lua_setfield(L, ((void)luaopen_orca_SizeAxisShorthand(L), -2), "SizeAxisShorthand");
 	lua_setfield(L, ((void)luaopen_orca_SizeShorthand(L), -2), "SizeShorthand");
