@@ -33,7 +33,7 @@ void OBJ_PostMessage(lua_State* L, lpObject_t self, lpcString_t message)
 }
 
 // HACK: hacked in quickly
-void OBJ_SendMessage2(lua_State* L, lpObject_t self, lpcString_t message)
+void OBJ_MsgSend(lua_State* L, lpObject_t self, lpcString_t message)
 {
   const int nargs = MAX(lua_gettop(L) - 2, 0);
   fixedString_t argtype={0};
@@ -66,8 +66,8 @@ lpObject_t OBJ_DispatchEvent(lua_State* L, lpObject_t self, lpcString_t event)
     struct HandleMessageMsgArgs event = {
       .FirstArg = 1,
       .NumArgs = dwNumArgs + 1,
+      .EventName = pszEventName,
     };
-    strncpy(event.EventName, pszEventName, sizeof(event.EventName));
     if (OBJ_SendMessage(obj, "HandleMessage", 0, &event)) {
       return obj;
     }

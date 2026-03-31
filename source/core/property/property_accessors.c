@@ -75,9 +75,25 @@ PROP_GetValue(lpcProperty_t property)
     case kDataTypeString:
       return *(lpcString_t*)property->value;
     case kDataTypeObject:
-      return &property->intermediate;
+      if (property->pdesc->TypeString) {
+        return CMP_GetObject(*(void **)property->value);
+      } else {
+        return *(void **)property->value;
+      }
     default:
       return property->value;
+  }
+}
+
+void
+PROP_SetDirty(lpProperty_t property, enum PropertyState state)
+{
+  property->stateflags |= 1 << state;
+  property->flags |= PF_MODIFIED;
+  if (property->pdesc->FullIdentifier != ID_ContentOffset) {
+    OBJ_SetDirty(property->object);
+  } else {
+    OBJ_SetFlags(property->object, OBJ_GetFlags(property->object) | OF_SCROLL);
   }
 }
 
@@ -95,7 +111,6 @@ PROP_SetStateValue(lpProperty_t property,
   } else if (property->type == kDataTypeObject) {
     int ident = fnv1a32(property->pdesc->TypeString);
     lpObject_t object = *(lpObject_t *)source;
-    property->intermediate = object;
     if (!object) {
       memset(ptr, 0, PROP_GetSize(property));
       property->stateflags &= ~(1<<state);
@@ -112,13 +127,7 @@ PROP_SetStateValue(lpProperty_t property,
   } else {
     memcpy(ptr, source, PROP_GetSize(property));
   }
-  property->stateflags |= 1 << state;
-  property->flags |= PF_MODIFIED;
-  if (property->pdesc->FullIdentifier != ID_ContentOffset) {
-    OBJ_SetDirty(property->object);
-  } else {
-    OBJ_SetFlags(property->object, OBJ_GetFlags(property->object) | OF_SCROLL);
-  }
+  PROP_SetDirty(property, kPropertyStateNormal);
   return ptr;
 }
 

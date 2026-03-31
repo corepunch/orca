@@ -14,7 +14,7 @@ bool_t
 OBJ_RegisterPropertyType(lpcPropertyType_t pt)
 {
   FOR_LOOP(i, MAX_PROPERTY_TYPES) {
-    if (!*core.ptypes[i].Name) {
+    if (!core.ptypes[i].Name) {
       memcpy(&core.ptypes[i], pt, sizeof(struct PropertyType));
       return TRUE;
     } else if (core.ptypes[i].FullIdentifier == pt->FullIdentifier) {
@@ -407,11 +407,14 @@ int f_registerPropertyType(lua_State *L) {
     strncpy(tmp, Name, sizeof(tmp));
   }
   lpcString_t dot = strrchr(Name, '.');
-  struct PropertyType type = {0};
-  type.ShortIdentifier = dot ? fnv1a32(dot + 1) : fnv1a32(Name);
-  // type->ShortIdentifier = fnv1a32(type->Name);
-  type.FullIdentifier = fnv1a32(tmp);
-  type.DataType = DataType;
+  struct PropertyType type = {
+    .ShortIdentifier = dot ? fnv1a32(dot + 1) : fnv1a32(Name),
+    //    .ShortIdentifier = fnv1a32(type->Name),
+    .FullIdentifier = fnv1a32(tmp),
+    .DataType = DataType,
+    .Name = Name,
+    .Category =  Category,
+  };
   switch (DataType) {
     case kDataTypeString: type.DataSize = sizeof(char*); break;
     case kDataTypeEvent:  type.DataSize = sizeof(void*); break;
@@ -420,10 +423,30 @@ int f_registerPropertyType(lua_State *L) {
     case kDataTypeColor:  type.DataSize = sizeof(struct color); break;
     default:              type.DataSize = sizeof(int);   break;
   }
-  strncpy(type.Name, Name, sizeof(type.Name));
-  strncpy(type.Category, Category, sizeof(type.Category));
   OBJ_RegisterPropertyType(&type);
   return 0;
+}
+
+extern int
+parse_property(const char* str,
+               struct PropertyType const* prop,
+               void* valueptr);
+
+extern int
+write_property(lua_State *L,
+               struct PropertyType const* prop,
+               void const* valueptr);
+
+static int f_parse_property(lua_State* L) {
+  const char* str = luaL_checkstring(L, 1);
+  struct PropertyType const* pt = luaX_checkPropertyType(L, 2);
+  char buf[MAX_PROPERTY_STRING] = {0};
+  if (parse_property(str, pt, buf)) {
+    write_property(L, pt, buf);
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
 void
@@ -461,5 +484,12 @@ on_core_module_registered(lua_State* L)
   
   lua_pushcfunction(L, f_registerPropertyType);
   lua_setfield(L, -2, "registerPropertyType");
+  
+  lua_pushcfunction(L, f_parse_property);
+  lua_setfield(L, -2, "parseProperty");
+  
+  lua_getglobal(L, "require");
+  lua_pushstring(L, "orca.geometry");
+  lua_call(L, 1, 0);
 }
 

@@ -2,6 +2,8 @@
 #include <include/orca.h>
 #include <include/renderer.h>
 
+#define kMsgReadCommands 0x23d83fd3
+
 int f_peek_iterator(lua_State* L)
 {
   struct WI_Message msg = {0};
@@ -37,7 +39,7 @@ int f_peek_iterator(lua_State* L)
     case kMsgWindowPaint:
     case kMsgWindowChangedScreen:
     case kMsgWindowResized:
-    case 0x23d83fd3: // kMsgReadCommands
+    case kMsgReadCommands:
       msg.target = __userdata;
       break;
   }

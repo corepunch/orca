@@ -211,6 +211,7 @@
 		7870442A2F7481BA00A84406 /* liborca.system.so in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 78E4A9C62E941ECD00E3A503 /* liborca.system.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		7870442D2F7481BF00A84406 /* liborca.system.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 78E4A9C62E941ECD00E3A503 /* liborca.system.so */; };
 		7870442E2F7481BF00A84406 /* liborca.system.so in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 78E4A9C62E941ECD00E3A503 /* liborca.system.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		7870448F2F7BCA5800A84406 /* flow.c in Sources */ = {isa = PBXBuildFile; fileRef = 7870448E2F7BCA5400A84406 /* flow.c */; };
 		788483222E867CA000DB9C1F /* w_plugins.c in Sources */ = {isa = PBXBuildFile; fileRef = 788483212E867C9C00DB9C1F /* w_plugins.c */; };
 		78932BF62F38D6D5007C59CC /* liborca.platform.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; };
 		78932BF72F38D6D5007C59CC /* liborca.platform.so in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -611,6 +612,7 @@
 		787041752F6FDDD800A84406 /* object_lua_msg.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = object_lua_msg.c; sourceTree = "<group>"; };
 		787041762F6FDDD800A84406 /* object_lua_props.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = object_lua_props.c; sourceTree = "<group>"; };
 		787041772F6FDDD800A84406 /* object_properties.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = object_properties.c; sourceTree = "<group>"; };
+		7870448E2F7BCA5400A84406 /* flow.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = flow.c; sourceTree = "<group>"; };
 		78766BBE2C93208400A2DF11 /* Node3D.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Node3D.c; sourceTree = "<group>"; };
 		787C7BA42BB33679006FD937 /* r_builtin_charset2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = r_builtin_charset2.c; sourceTree = "<group>"; };
 		788483212E867C9C00DB9C1F /* w_plugins.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = w_plugins.c; sourceTree = "<group>"; };
@@ -1143,6 +1145,7 @@
 		789A97D32F65490800FD32A9 /* geometry */ = {
 			isa = PBXGroup;
 			children = (
+				7870448E2F7BCA5400A84406 /* flow.c */,
 				789A97CE2F65490800FD32A9 /* geometry.h */,
 				789A97CF2F65490800FD32A9 /* geometry.xml */,
 				789A97D02F65490800FD32A9 /* geometry_export.c */,
@@ -2048,6 +2051,7 @@
 			files = (
 				789A97D62F65490800FD32A9 /* geometry_export.c in Sources */,
 				789A97D72F65490800FD32A9 /* geometry_ops.c in Sources */,
+				7870448F2F7BCA5800A84406 /* flow.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

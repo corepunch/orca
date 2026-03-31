@@ -293,19 +293,19 @@ void luaX_pushStyleType(lua_State *L, enum StyleType value) {
 	assert(value >= 0 && value < 2);
 	lua_pushstring(L, _StyleType[value]);
 }
-void luaX_pushBorderRadiusShorthand(lua_State *L, BorderRadiusShorthand const* data) {
+void luaX_pushCornerRadius(lua_State *L, CornerRadius const* data) {
 	if (data == NULL) { lua_pushnil(L); return; }
-	struct BorderRadiusShorthand* self = lua_newuserdata(L, sizeof(struct BorderRadiusShorthand));
-	luaL_setmetatable(L, "BorderRadiusShorthand");
-	memcpy(self, data, sizeof(struct BorderRadiusShorthand));
+	struct CornerRadius* self = lua_newuserdata(L, sizeof(struct CornerRadius));
+	luaL_setmetatable(L, "CornerRadius");
+	memcpy(self, data, sizeof(struct CornerRadius));
 }
-struct BorderRadiusShorthand* luaX_checkBorderRadiusShorthand(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "BorderRadiusShorthand");
+struct CornerRadius* luaX_checkCornerRadius(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, "CornerRadius");
 }
-static int f_new_BorderRadiusShorthand(lua_State *L) {
-	struct BorderRadiusShorthand* self = lua_newuserdata(L, sizeof(struct BorderRadiusShorthand));
-	luaL_setmetatable(L, "BorderRadiusShorthand");
-	memset(self, 0, sizeof(struct BorderRadiusShorthand));
+static int f_new_CornerRadius(lua_State *L) {
+	struct CornerRadius* self = lua_newuserdata(L, sizeof(struct CornerRadius));
+	luaL_setmetatable(L, "CornerRadius");
+	memset(self, 0, sizeof(struct CornerRadius));
 	if (lua_gettop(L) == 1) return 1;
 	if (lua_istable(L, 1)) {
 		lua_pop(L, (lua_getfield(L, 1, "TopLeftRadius"), self->TopLeftRadius = luaL_checknumber(L, -1), 1));
@@ -320,58 +320,58 @@ static int f_new_BorderRadiusShorthand(lua_State *L) {
 	}
 	return 1;
 }
-static int f_fromstring_BorderRadiusShorthand(lua_State *L) {
+static int f_fromstring_CornerRadius(lua_State *L) {
 	float TopLeftRadius;
 	float TopRightRadius;
 	float BottomRightRadius;
 	float BottomLeftRadius;
-	struct BorderRadiusShorthand self = {0};
+	struct CornerRadius self = {0};
 	switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &TopLeftRadius, &TopRightRadius, &BottomRightRadius, &BottomLeftRadius)) {
 		case 4: 
 			self.TopLeftRadius = TopLeftRadius;
 			self.TopRightRadius = TopRightRadius;
 			self.BottomRightRadius = BottomRightRadius;
 			self.BottomLeftRadius = BottomLeftRadius;
-			return (luaX_pushBorderRadiusShorthand(L, &self), 1);
+			return (luaX_pushCornerRadius(L, &self), 1);
 		default:
-			return luaL_error(L, "Invalid format for BorderRadiusShorthand: %s", luaL_checkstring(L, 1));
+			return luaL_error(L, "Invalid format for CornerRadius: %s", luaL_checkstring(L, 1));
 	}
 }
-int f_BorderRadiusShorthand___index(lua_State *L) {
-	stuct BorderRadiusShorthand* self = luaX_checkBorderRadiusShorthand(L, 1);
+int f_CornerRadius___index(lua_State *L) {
+	stuct CornerRadius* self = luaX_checkCornerRadius(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 		case 0xd5ac3a0b: lua_pushnumber(L, self->TopLeftRadius); return 1; // TopLeftRadius
 		case 0xdbe5a724: lua_pushnumber(L, self->TopRightRadius); return 1; // TopRightRadius
 		case 0xf6ae40ce: lua_pushnumber(L, self->BottomRightRadius); return 1; // BottomRightRadius
 		case 0x7f5fe235: lua_pushnumber(L, self->BottomLeftRadius); return 1; // BottomLeftRadius
 	}
-	return luaL_error(L, "Unknown field in BorderRadiusShorthand: %s", luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in CornerRadius: %s", luaL_checkstring(L, 2));
 }
-int f_BorderRadiusShorthand___newindex(lua_State *L) {
-	stuct BorderRadiusShorthand* self = luaX_checkBorderRadiusShorthand(L, 1);
+int f_CornerRadius___newindex(lua_State *L) {
+	stuct CornerRadius* self = luaX_checkCornerRadius(L, 1);
 	switch(fnv1a32(luaL_checkstring(L, 2))) {
 		case 0xd5ac3a0b: self->TopLeftRadius = luaL_checknumber(L, 3); return 0; // TopLeftRadius
 		case 0xdbe5a724: self->TopRightRadius = luaL_checknumber(L, 3); return 0; // TopRightRadius
 		case 0xf6ae40ce: self->BottomRightRadius = luaL_checknumber(L, 3); return 0; // BottomRightRadius
 		case 0x7f5fe235: self->BottomLeftRadius = luaL_checknumber(L, 3); return 0; // BottomLeftRadius
 	}
-	return luaL_error(L, "Unknown field in BorderRadiusShorthand: %s", luaL_checkstring(L, 2));
+	return luaL_error(L, "Unknown field in CornerRadius: %s", luaL_checkstring(L, 2));
 }
-static int f_BorderRadiusShorthand___call(lua_State *L) {
-	return (lua_remove(L, 1), f_new_BorderRadiusShorthand(L));  // remove BorderRadiusShorthand from stack and call constructor
+static int f_CornerRadius___call(lua_State *L) {
+	return (lua_remove(L, 1), f_new_CornerRadius(L));  // remove CornerRadius from stack and call constructor
 }
-int luaopen_orca_BorderRadiusShorthand(lua_State *L) {
-	luaL_newmetatable(L, "BorderRadiusShorthand");
+int luaopen_orca_CornerRadius(lua_State *L) {
+	luaL_newmetatable(L, "CornerRadius");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_BorderRadiusShorthand },
-		{ "fromstring", f_fromstring_BorderRadiusShorthand },
-		{ "__newindex", f_BorderRadiusShorthand___newindex },
-		{ "__index", f_BorderRadiusShorthand___index },
+		{ "new", f_new_CornerRadius },
+		{ "fromstring", f_fromstring_CornerRadius },
+		{ "__newindex", f_CornerRadius___newindex },
+		{ "__index", f_CornerRadius___index },
 		{ NULL, NULL },
 	}), 0);
-	// Make BorderRadiusShorthand creatable like via constructor-like syntax
+	// Make CornerRadius creatable like via constructor-like syntax
 	lua_newtable(L);
-	lua_pushcfunction(L, f_BorderRadiusShorthand___call);
+	lua_pushcfunction(L, f_CornerRadius___call);
 	lua_setfield(L, -2, "__call");
 	lua_setmetatable(L, -2);
 	return 1;
@@ -1093,12 +1093,12 @@ static int f_new_BorderShorthand(lua_State *L) {
 		lua_pop(L, (lua_getfield(L, 1, "Width"), self->Width = luaX_checkMarginShorthand(L, -1), 1));
 		lua_pop(L, (lua_getfield(L, 1, "Color"), self->Color = luaX_checkcolor(L, -1), 1));
 		lua_pop(L, (lua_getfield(L, 1, "Style"), self->Style = luaL_checkoption(L, -1, NULL, _BorderStyle), 1));
-		lua_pop(L, (lua_getfield(L, 1, "Radius"), self->Radius = luaX_checkBorderRadiusShorthand(L, -1), 1));
+		lua_pop(L, (lua_getfield(L, 1, "Radius"), self->Radius = luaX_checkCornerRadius(L, -1), 1));
 	} else {
 		self->Width = luaX_checkMarginShorthand(L, 1);
 		self->Color = luaX_checkcolor(L, 2);
 		self->Style = luaL_checkoption(L, 3, NULL, _BorderStyle);
-		self->Radius = luaX_checkBorderRadiusShorthand(L, 4);
+		self->Radius = luaX_checkCornerRadius(L, 4);
 	}
 	return 1;
 }
@@ -1106,7 +1106,7 @@ static int f_fromstring_BorderShorthand(lua_State *L) {
 	struct MarginShorthand Width;
 	struct color Color;
 	enum BorderStyle Style;
-	struct BorderRadiusShorthand Radius;
+	struct CornerRadius Radius;
 	struct BorderShorthand self = {0};
 	switch (sscanf(luaL_checkstring(L, 1), "%s %s %s %s", Width, Color, Style, Radius)) {
 		case 4: 
@@ -1125,7 +1125,7 @@ int f_BorderShorthand___index(lua_State *L) {
 		case 0x3b42dfbf: luaX_pushMarginShorthand(L, self->Width); return 1; // Width
 		case 0xe5b43cf8: luaX_pushcolor(L, self->Color); return 1; // Color
 		case 0x5467ec76: lua_pushstring(L, BorderStyleToString(self->Style)); return 1; // Style
-		case 0x3a8111d3: luaX_pushBorderRadiusShorthand(L, self->Radius); return 1; // Radius
+		case 0x3a8111d3: luaX_pushCornerRadius(L, self->Radius); return 1; // Radius
 	}
 	return luaL_error(L, "Unknown field in BorderShorthand: %s", luaL_checkstring(L, 2));
 }
@@ -1135,7 +1135,7 @@ int f_BorderShorthand___newindex(lua_State *L) {
 		case 0x3b42dfbf: self->Width = luaX_checkMarginShorthand(L, 3); return 0; // Width
 		case 0xe5b43cf8: self->Color = luaX_checkcolor(L, 3); return 0; // Color
 		case 0x5467ec76: self->Style = luaL_checkoption(L, 3, NULL, _BorderStyle); return 0; // Style
-		case 0x3a8111d3: self->Radius = luaX_checkBorderRadiusShorthand(L, 3); return 0; // Radius
+		case 0x3a8111d3: self->Radius = luaX_checkCornerRadius(L, 3); return 0; // Radius
 	}
 	return luaL_error(L, "Unknown field in BorderShorthand: %s", luaL_checkstring(L, 2));
 }
@@ -1609,7 +1609,7 @@ static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	DECL(0xd481189e, Node, BorderWidthBack, Border.Width.Axis[2].Right, kDataTypeFloat), // Node.BorderWidthBack
 	DECL(0x933e48c6, Node, BorderColor, Border.Color, kDataTypeStruct, .TypeString = "Color"), // Node.BorderColor
 	DECL(0x390b4488, Node, BorderStyle, Border.Style, kDataTypeEnum, .Enums = _Style), // Node.BorderStyle
-	DECL(0xb8e9fe05, Node, BorderRadius, Border.Radius, kDataTypeStruct, .TypeString = "BorderRadiusShorthand"), // Node.BorderRadius
+	DECL(0xb8e9fe05, Node, BorderRadius, Border.Radius, kDataTypeStruct, .TypeString = "CornerRadius"), // Node.BorderRadius
 	DECL(0x319ccd4b, Node, BorderTopLeftRadius, Border.Radius.TopLeftRadius, kDataTypeFloat), // Node.BorderTopLeftRadius
 	DECL(0x579cab64, Node, BorderTopRightRadius, Border.Radius.TopRightRadius, kDataTypeFloat), // Node.BorderTopRightRadius
 	DECL(0xcd47000e, Node, BorderBottomRightRadius, Border.Radius.BottomRightRadius, kDataTypeFloat), // Node.BorderBottomRightRadius
@@ -1972,7 +1972,7 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	void on_ui_module_registered(lua_State *L);
 	on_ui_module_registered(L);
 	// Structs
-	lua_setfield(L, (luaopen_orca_BorderRadiusShorthand(L), -2), "BorderRadiusShorthand");
+	lua_setfield(L, (luaopen_orca_CornerRadius(L), -2), "CornerRadius");
 	lua_setfield(L, (luaopen_orca_EdgeShorthand(L), -2), "EdgeShorthand");
 	lua_setfield(L, (luaopen_orca_AlignmentShorthand(L), -2), "AlignmentShorthand");
 	lua_setfield(L, (luaopen_orca_FontShorthand(L), -2), "FontShorthand");

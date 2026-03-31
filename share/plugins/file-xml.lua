@@ -26,15 +26,12 @@ local simple_convertes = {
 local Property = {}
 
 function Property.parse(node, name, value)
-	assert(orca.typeconverter, "Type converter plugin is required for XML support plugin")
 	if name == "ClassName" or name == "PlaceholderTemplate" then return end -- handled separately when constructing the node
 	if name == "Name" or name == "id" then node:setName(value) return end
 	if name == "class" then node:parseClassAttribute(value) return end
 	local type = node:findImplicitProperty(name) or node:findExplicitProperty(name)
 	assert(type, string.format("Unknown property: %s for node of type %s", name, node.className))
-	local converter = orca.typeconverter[type.DataType]
-	assert(converter, string.format("No type converter for data type: %s (property %s)", type.DataType, name))
-	node[name] = converter(orca.theme[value] or value, type)
+	node[name] = orca.core.parseProperty(orca.theme[value] or value, type)
 end
 
 function Property.parse_item(element, item, typename)
@@ -161,7 +158,7 @@ local function construct_node(element)
 			xpcall(node.addChild, print, node, construct_node(sub))
 		end
 	end
-	node:sendMessage2("Start")
+	node:msgSend("Start")
 	return node
 end
 

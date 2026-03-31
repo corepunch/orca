@@ -1,118 +1,89 @@
+extern void read_property(lua_State *L, int idx, struct PropertyType const* prop, void* struct_ptr);
+extern int write_property(lua_State *L, struct PropertyType const* prop, void const* struct_ptr);
+extern int parse_property(const char* str, struct PropertyType const* prop, void* struct_ptr);
+
+#define STRUCT(NAME, EXPORT) \
+void luaX_push##NAME(lua_State *L, struct NAME const* data) { \
+	if (data == NULL) { lua_pushnil(L); return; } \
+	struct NAME* ud = lua_newuserdata(L, sizeof(struct NAME)); \
+	luaL_setmetatable(L, #EXPORT); \
+	memcpy(ud, data, sizeof(struct NAME)); \
+} \
+struct NAME* luaX_check##NAME(lua_State *L, int idx) { return luaL_checkudata(L, idx, #EXPORT); } \
+static int f_new_##NAME(lua_State *L) { \
+	struct NAME* self = lua_newuserdata(L, sizeof(struct NAME)); \
+	luaL_setmetatable(L, #EXPORT); \
+	memset(self, 0, sizeof(struct NAME)); \
+	if (lua_istable(L, 1)) \
+    for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
+			lua_pop(L, (lua_getfield(L, 1, _##NAME[i].Name), read_property(L, -1, &_##NAME[i], ((char*)self)+_##NAME[i].Offset), 1)); \
+	else for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
+		read_property(L, i + 1, &_##NAME[i], ((char*)self)+_##NAME[i].Offset); \
+	return 1; \
+} \
+static int f_##NAME##___index(lua_State *L) { \
+	for (uint32_t i = 0, j = fnv1a32(luaL_checkstring(L, 2)); i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
+		if (_##NAME[i].ShortIdentifier == j) \
+			return (write_property(L, &_##NAME[i], ((char*)luaX_check##NAME(L, 1))+_##NAME[i].Offset), 1); \
+	for (uint32_t i = 0; i < sizeof(_##NAME##_Methods) / sizeof(*_##NAME##_Methods); i++) { \
+		if (strcmp(_##NAME##_Methods[i].name, luaL_checkstring(L, 2)) == 0) { \
+			lua_pushcfunction(L, _##NAME##_Methods[i].func); \
+			return 1; \
+		} \
+	} \
+	return luaL_error(L, "Unknown field in " #NAME ": %s", luaL_checkstring(L, 2)); \
+} \
+static int f_##NAME##___newindex(lua_State *L) { \
+	for (uint32_t i = 0, j = fnv1a32(luaL_checkstring(L, 2)); i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
+		if (_##NAME[i].ShortIdentifier == j) \
+			return (read_property(L, 3, &_##NAME[i], ((char*)luaX_check##NAME(L, 1))+_##NAME[i].Offset), 0); \
+	return luaL_error(L, "Unknown field in " #NAME ": %s", luaL_checkstring(L, 2)); \
+} \
+static int f_##NAME##___call(lua_State *L) { \
+  lua_insert(L, (lua_getfield(L, 1, "new"), 2)); \
+  lua_call(L, lua_gettop(L) - 2, 1); \
+	return 1; \
+} \
+static int f_##NAME##___fromstring(lua_State *L) { \
+	char* tmp = strdup(luaL_checkstring(L, 1)),* tok = strtok(tmp, " "); \
+	struct NAME self; \
+	memset(&self, 0, sizeof(struct NAME)); \
+	for (uint32_t i = 0; tok && i < sizeof(_##NAME) / sizeof(*_##NAME); i++, tok = strtok(NULL, " ")) \
+		if (_##NAME[i].DataType != kDataTypeStruct) \
+			parse_property(tok, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); \
+	free(tmp); \
+	return (luaX_push##NAME(L, &self), 1); \
+} \
+int luaopen_orca_##NAME(lua_State *L) { \
+	luaL_newmetatable(L, #EXPORT); \
+	luaL_setfuncs(L, ((luaL_Reg[]) { \
+		{ "new", f_new_##NAME }, \
+		{ "fromstring", f_##NAME##___fromstring }, \
+		{ "__newindex", f_##NAME##___newindex }, \
+		{ "__index", f_##NAME##___index }, \
+		{ NULL, NULL }, \
+	}), 0); \
+	luaL_setfuncs(L, _##NAME##_Methods, 0); \
+	/* Make struct creatable via constructor-like syntax */ \
+	lua_newtable(L); \
+	lua_pushcfunction(L, f_##NAME##___call); \
+	lua_setfield(L, -2, "__call"); \
+	lua_setmetatable(L, -2); \
+	return 1; \
+}
 <?php foreach ($structs as $name => $struct):?>
-void luaX_push<?= $name ?>(lua_State *L, struct <?= $name ?> const* data) {
-	if (data == NULL) { lua_pushnil(L); return; }
-	struct <?= $name ?>* self = lua_newuserdata(L, sizeof(struct <?= $name ?>));
-	luaL_setmetatable(L, "<?= $struct->export ?>");
-	memcpy(self, data, sizeof(struct <?= $name ?>));
-}
-struct <?= $name ?>* luaX_check<?= $name ?>(lua_State *L, int idx) {
-	return luaL_checkudata(L, idx, "<?= $struct->export ?>");
-}
-static int f_new_<?= $name ?>(lua_State *L) {
-	struct <?= $name ?>* self = lua_newuserdata(L, sizeof(struct <?= $name ?>));
-	luaL_setmetatable(L, "<?= $struct->export ?>");
-	memset(self, 0, sizeof(struct <?= $name ?>));
-	if (lua_gettop(L) == 1) return 1;
-	if (lua_istable(L, 1)) {
-		<?php foreach ($struct->getFields() as $field):?>
-			<?php if ($field->type->fixed_array) continue; ?>
-			<?php if ($field->noexport) continue; ?>
-		lua_pop(L, (lua_getfield(L, 1, "<?= $field->name ?>"), <?= $field->type->get("pop", -1, "self->" . $field->name) ?>, 1));
-		<?php endforeach ?>
-	} else {
-		<?php $index = 1 ?>
-		<?php foreach ($struct->getFields() as $field):?>
-			<?php if ($field->type->fixed_array) continue; ?>
-			<?php if ($field->noexport) continue; ?>
-		<?= $field->type->get("pop", $index, "self->" . $field->name) ?>;
-		<?php $index = $index + 1 ?>
-		<?php endforeach ?>
-	}
-	return 1;
-}
-
 <?php include_template("export/functions", ['functions' => $struct->getMethods(), 'prefix' => $struct->prefix]) ?>
+static struct PropertyType _<?= $name ?>[] = {
+	<?php include_template("export/properties", ['properties' => $struct->getFields(true), 'name' => $name]) ?>
+};
+static luaL_Reg _<?= $name ?>_Methods[] = {
+<?php foreach ($struct->getMethods() as $method_name => $method):?>
+	{ "<?= $method->export ?>", f_<?= $struct->prefix.$method_name ?> },
+<?php endforeach ?>
+	{ NULL, NULL }
+};
+<?php endforeach ?>
 
-int f_<?= $name ?>___index(lua_State *L) {
-	struct <?= $name ?>* self = luaX_check<?= $name ?>(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	<?php foreach ($struct->getFields() as $field):?>
-		<?php if ($field->type->fixed_array) continue; ?>
-		<?php if ($field->noexport) continue; ?>
-	case <?= $field->name->id ?>: <?= $field->type->get('push', "self->" . $field->name) ?>; return 1; // <?= $field->name ?>
-	<?php endforeach ?>
-	<?php foreach ($struct->getMethods() as $method_name => $method):?>
-		<?php if ($method->static) continue; ?>
-	case <?= $method->id ?>: lua_pushcfunction(L, f_<?= $struct->prefix.$method_name ?>); return 1; // <?= lcfirst($method_name) ?>
-	<?php endforeach ?>
-	}
-	return luaL_error(L, "Unknown field in <?= $name ?>(%p): %s", self, luaL_checkstring(L, 2));
-}
-int f_<?= $name ?>___newindex(lua_State *L) {
-	struct <?= $name ?>* self = luaX_check<?= $name ?>(L, 1);
-	switch(fnv1a32(luaL_checkstring(L, 2))) {
-	<?php foreach ($struct->getFields() as $field):?>
-		<?php if ($field->type->fixed_array) continue; ?>
-		<?php if ($field->noexport) continue; ?>
-	case <?= $field->name->id ?>: <?= $field->type->get("pop", 3, "self->" . $field->name) ?>; return 0; // <?= $field->name ?>
-	<?php endforeach ?>
-	}
-	return luaL_error(L, "Unknown field in <?= $name ?>(%p): %s", self, luaL_checkstring(L, 2));
-}
-<?php if ($struct->hasFromString() || count($struct->getConstructors()) > 0):?>
-extern bool_t f_convert_string(lua_State*, struct PropertyType const*, char const*, bool_t);
-	<?php foreach ($struct->getConstructors() as $numargs):?>
-void <?= $name ?>_Convert<?= $numargs ?>(struct <?= $name ?>*, <?= implode(", ", array_slice(array_values($struct->getParsers()), 0, $numargs)) ?>);
-	<?php endforeach ?>
-static int f_<?= $name ?>___fromstring(lua_State *L) {
-		<?php foreach ($struct->getParsers() as $field => $type):?>
-	<?= $type->getContainer() ?> <?= $field ?>;
-		<?php endforeach ?>
-		<?php 
-	$format = implode(" ", array_map(fn($v) => $v->get('format'), $struct->getParsers()));
-	$targets = implode(", ", array_map(fn($k) => $k->pointer, array_keys($struct->getParsers())));
-		?>
-	struct <?= $name ?> self = {0};
-	switch (sscanf(luaL_checkstring(L, 1), "<?= $format ?>", <?= $targets ?>)) {
-	<?php if ($struct->hasFromString()):?>
-	case <?= count($struct->getParsers()) ?>: 
-		<?php foreach ($struct->getParsers() as $field => $type):?>
-		<?= $type->get('convert', $field, "self.".$field->addr) ?>;
-		<?php endforeach ?>
-		return (luaX_push<?= $name ?>(L, &self), 1);
-	<?php endif ?>
-	<?php foreach ($struct->getConstructors() as $numargs):?>
-	case <?= $numargs ?>:
-		<?= $name ?>_Convert<?= $numargs ?>(&self, <?= implode(", ", array_slice(array_keys($struct->getParsers()), 0, $numargs)) ?>);
-		return (luaX_push<?= $name ?>(L, &self), 1);
-	<?php endforeach ?>
-	default:
-		return luaL_error(L, "Invalid format for <?= $name ?>: %s", luaL_checkstring(L, 1));
-	}
-}
-<?php endif ?>
-static int f_<?= $name ?>___call(lua_State *L) {
-	return ((void)lua_remove(L, 1), f_new_<?= $name ?>(L));  // remove <?= $name ?> from stack and call constructor
-}
-int luaopen_orca_<?= $name ?>(lua_State *L) {
-	luaL_newmetatable(L, "<?= $struct->export ?>");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ "new", f_new_<?= $name ?> },
-<?php if ($struct->hasFromString() || count($struct->getConstructors()) > 0):?>
-		{ "fromstring", f_<?= $name ?>___fromstring },
-<?php endif ?>
-		{ "__newindex", f_<?= $name ?>___newindex },
-		{ "__index", f_<?= $name ?>___index },
-	<?php foreach ($struct->getMethods() as $method_name => $method):?>
-		{ "<?= $method->export ?>", f_<?= $struct->prefix.$method_name ?> },
-	<?php endforeach ?>
-		{ NULL, NULL },
-	}), 0);
-	// Make <?= $name ?> creatable via constructor-like syntax
-	lua_newtable(L);
-	lua_pushcfunction(L, f_<?= $name ?>___call);
-	lua_setfield(L, -2, "__call");
-	lua_setmetatable(L, -2);
-	return 1;
-}
+<?php foreach ($structs as $name => $struct):?>
+STRUCT(<?= $name ?>, <?= $struct->export ?>);
 <?php endforeach ?>

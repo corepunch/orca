@@ -218,50 +218,8 @@ OBJ_EnumStyleClasses(lpObject_t pobj,
   }
 }
 
-ORCA_API bool_t
-f_convert_string(lua_State* L,
-                 lpcPropertyType_t pt,
-                 lpcString_t value,
-                 bool_t throw_error)
-{
-  lua_getglobal(L, "require");
-  lua_pushstring(L, "orca");
-  lua_call(L, 1, 1);
-  lua_getfield(L, -1, "typeconverter");
-  assert(lua_type(L, -1) == LUA_TTABLE);
-  lua_remove(L, -2); // remove orca table
-  lua_getfield(L, -1, DataTypeToString(pt->DataType));
-  assert(lua_type(L, -1) == LUA_TFUNCTION);
-  lua_remove(L, -2); // remove typeconverter table
-  lua_pushstring(L, value);
-  luaX_pushPropertyType(L, pt);
-  if (lua_pcall(L, 2, 1, 0) != LUA_OK) { // TODO: Should it be here?
-    if (throw_error) {
-      return luaL_error(L, luaL_checkstring(L, -1));
-    } else {
-      Con_Error("%s", luaL_checkstring(L, -1));
-      lua_pop(L, 1);
-      return FALSE;
-    }
-  } else {
-    assert(lua_type(L, -1) != LUA_TNIL);
-    return TRUE;
-  }
-}
-
-bool_t f_parse_property(lua_State* L,
-                        lpProperty_t hProperty,
-                        lpcString_t value)
-{
-  assert(PROP_GetDesc(hProperty));
-  if (f_convert_string(L, PROP_GetDesc(hProperty), value, FALSE)) {
-    luaX_readProperty(L, -1, hProperty);
-    lua_pop(L, 1); // pop converted value
-    return TRUE;
-  } else {
-    return FALSE;
-  }
-}
+ORCA_API int
+parse_property(const char* str, struct PropertyType const* prop, void* valueptr);
 
 static void
 OBJ_ApplyClass(lpObject_t pobj, struct style_sheet* ss, void* parm)
@@ -275,12 +233,11 @@ OBJ_ApplyClass(lpObject_t pobj, struct style_sheet* ss, void* parm)
       return;
     }
 
-    assert(g_L);
-    assert(PROP_GetDesc(hProperty));
-    f_parse_property(g_L, hProperty, ss->value);
+    char buf[MAX_PROPERTY_STRING]={0};
+    parse_property(ss->value, PROP_GetDesc(hProperty), buf);
+    PROP_SetValue(hProperty, buf);
 
-    if (PROP_GetType(hProperty) == kDataTypeColor &&
-        parm)
+    if (PROP_GetType(hProperty) == kDataTypeColor && parm)
     {
       struct color clr;
       PROP_CopyValue(hProperty, &clr);

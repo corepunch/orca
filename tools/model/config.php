@@ -57,15 +57,6 @@ class config {
 			'format' => "%s",
 			'default' => "\"%s\"",
 		],
-		"fixed" => [
-			'decl' => '%sString_t', 
-			'check' => 'luaL_checkstring(L, {arg})', 
-			'pop' => 'strncpy({addr}, luaL_optstring(L, {arg}, ""), sizeof({addr}))', 
-			'push' => 'lua_pushstring(L, {arg})',  
-			'convert' => 'strncpy({addr}, {arg}, sizeof({addr}))', 
-			'format' => "%s",
-			'default' => "\"%s\"",
-		],
 		"enum" => [
 			'decl' => 'enum %s', 
 			'check' => 'luaX_check{type}(L, {arg})', 
@@ -141,5 +132,15 @@ class config {
 		["(.+)\\.Axis\\[1\\]",                    "Vertical\\1"],
 		["(.+)\\.Axis\\[2\\]",                    "Depth\\1"],
 		["Border\\.Radius\\.(.+)Radius",          "Border\\1Radius"],
+		// for structs that have an "Axis[3]" property but no "Size.Axis[3]", to avoid accidentally matching the latter
+		["Axis\\[0\\]\\.Left(.*)",         				"Left\\1"],
+		["Axis\\[0\\]\\.Right(.*)",        				"Right\\1"],
+		["Axis\\[1\\]\\.Left(.*)",         				"Top\\1"],
+		["Axis\\[1\\]\\.Right(.*)",        				"Bottom\\1"],
+		["Axis\\[2\\]\\.Left(.*)",         				"Front\\1"],
+		["Axis\\[2\\]\\.Right(.*)",        				"Back\\1"],
+		["Axis\\[0\\]",                    				"Horizontal"],
+		["Axis\\[1\\]",                    				"Vertical"],
+		["Axis\\[2\\]",                    				"Depth"],
 	];
 }

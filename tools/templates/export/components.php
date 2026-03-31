@@ -1,30 +1,30 @@
-<?php if (count($components) > 0):?>
-#define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
-#define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
-<?php endif ?>
-
+#define REGISTER_CLASS(NAME, ...) \
+ORCA_API struct ClassDesc _##NAME = { \
+	.ClassName = #NAME, \
+	.DefaultName = #NAME, \
+	.ContentType = #NAME, \
+	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation", \
+	.ParentClasses = { __VA_ARGS__ }, \
+	.ClassID = ID_##NAME, \
+	.ClassSize = sizeof(struct NAME), \
+	.Properties = NAME##Properties, \
+	.MessageTypes = NAME##MessageTypes, \
+	.ObjProc = NAME##Proc, \
+	.Defaults = &NAME##Defaults, \
+	.NumProperties = k##NAME##NumProperties, \
+	.NumMessageTypes = k##NAME##NumMessageTypes, \
+};
 <?php foreach ($components as $name => $component):?>
 	<?php foreach ($component->getEventHandlers() as $event): ?>
 LRESULT <?= $name ?>_<?= $event ?>(struct Object*, struct <?= $name ?>*, wParam_t, <?= $event ?>MsgPtr);
 	<?php endforeach ?>
-
-static struct PropertyType const <?= $name ?>Properties[k<?= $name ?>NumProperties] = {
-	<?php foreach ($component->getProperties() as $property):?>
-		<?php $datatype = 'kDataType' . ucfirst($property->type->kind) ?>
-		<?php if ($property->type->kind === 'component') $datatype = 'kDataTypeObject'; ?>
-		<?php if ($property->type->kind === 'struct' && $property->type->type == 'color') $datatype = 'kDataTypeColor'; ?>
-		<?php echo($property->type->array ? "\tARRAY_DECL(" : "\tDECL(") ?>
-		<?php echo("{$property->name->id}, $name, {$property->name}, {$property->name->addr}, $datatype") ?>
-		<?php if ($property->type->kind === 'enum') {
-			echo (", .TypeString = \"" . implode(',', $property->type->data->getValuesNames()) . "\", .EnumValues = _" . $property->type->type . "), // $name.{$property->name}\n");
-		} elseif ($property->type->kind === 'struct' && $property->type->type != 'color') {
-			echo (", .TypeString = \"{$property->type->export}\"), // $name.{$property->name}\n");
-		} elseif ($property->type->kind === 'component') {
-			echo (", .TypeString = \"{$property->type->export}\"), // $name.{$property->name}\n");
- 		} else {
-			echo ("), // $name.{$property->name}\n");
- 		} ?>
+static struct MessageType <?= $name ?>MessageTypes[k<?= $name ?>NumMessageTypes] = {	
+	<?php foreach ($component->getMessages() as $event): ?>
+		{ "<?= $name ?>.<?= $event->name ?>", kMsg<?= $event->name ?>, kMessageRouting<?= $event->routing ?>, sizeof(<?= $event->getEffectiveTypeDecl() ?>) },
 	<?php endforeach ?>
+};
+static struct PropertyType const <?= $name ?>Properties[k<?= $name ?>NumProperties] = {
+	<?php include_template("export/properties", ['properties' => $component->getProperties(), 'name' => $name]) ?>
 };
 static struct <?= $name ?> <?= $name ?>Defaults = {
 	<?php foreach (array_filter($component->getProperties(), fn($prop) => $prop->type->default) as $property): ?>		
@@ -46,22 +46,6 @@ struct <?= $name ?>* luaX_check<?= $name ?>(lua_State *L, int idx) {
 	return Get<?= $name ?>(luaX_checkObject(L, idx));
 }
 <?php foreach ($component->getParents() as $parent) echo "#define ID_$parent 0x" . hash('fnv1a32', $parent) . "\n"; ?>
-ORCA_API struct ClassDesc _<?= $name ?> = {
-	.ClassName = "<?= $name ?>",
-	.DefaultName = "<?= $name ?>",
-	.ContentType = "<?= $name ?>",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { <?= implode(', ', array_merge(array_map(fn($p) => "ID_$p", $component->getParents()), ['0'])) ?> },
-	.ClassID = ID_<?= $name ?>,
-	.ClassSize = sizeof(struct <?= $name ?>),
-	.Properties = <?= $name ?>Properties,
-	.ObjProc = <?= $name ?>Proc,
-	.Defaults = &<?= $name ?>Defaults,
-	.NumProperties = k<?= $name ?>NumProperties,
-<?php if ($component->extension) {
-	echo "\t.Extension = \"{$component->extension}\",\n";
-} ?>
-};
-
+REGISTER_CLASS(<?= $name ?>, <?= implode(', ', array_merge(array_map(fn($p) => "ID_$p", $component->getParents()), ['0'])) ?>);
 <?php endforeach ?>
 

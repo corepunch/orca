@@ -4,98 +4,125 @@
 
 #include "SceneKit.h"
 
-
-extern const char *_BlendMode[];
-extern const char *_CompareFunc[];
-ORCA_API const char *_StencilOp[] = {"Keep","Zero","Replace","Increment","IncrementWrap","Decrement","DecrementWrap","Invert",NULL};
-const char *StencilOpToString(enum StencilOp value) {
-	assert(value >= 0 && value < 8);
-	return _StencilOp[value];
-}
-enum StencilOp luaX_checkStencilOp(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _StencilOp);
-}
-void luaX_pushStencilOp(lua_State *L, enum StencilOp value) {
-	assert(value >= 0 && value < 8);
-	lua_pushstring(L, _StencilOp[value]);
-}
-ORCA_API const char *_ViewportMode[] = {"Relative","Absolute",NULL};
-const char *ViewportModeToString(enum ViewportMode value) {
-	assert(value >= 0 && value < 2);
-	return _ViewportMode[value];
-}
-enum ViewportMode luaX_checkViewportMode(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _ViewportMode);
-}
-void luaX_pushViewportMode(lua_State *L, enum ViewportMode value) {
-	assert(value >= 0 && value < 2);
-	lua_pushstring(L, _ViewportMode[value]);
-}
-ORCA_API const char *_CullMode[] = {"None","Back","Front",NULL};
-const char *CullModeToString(enum CullMode value) {
-	assert(value >= 0 && value < 3);
-	return _CullMode[value];
-}
-enum CullMode luaX_checkCullMode(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _CullMode);
-}
-void luaX_pushCullMode(lua_State *L, enum CullMode value) {
-	assert(value >= 0 && value < 3);
-	lua_pushstring(L, _CullMode[value]);
-}
-ORCA_API const char *_ColorWriteMode[] = {"None","RGB","RGBA","R","G","B","GB","A",NULL};
-const char *ColorWriteModeToString(enum ColorWriteMode value) {
-	assert(value >= 0 && value < 8);
-	return _ColorWriteMode[value];
-}
-enum ColorWriteMode luaX_checkColorWriteMode(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _ColorWriteMode);
-}
-void luaX_pushColorWriteMode(lua_State *L, enum ColorWriteMode value) {
-	assert(value >= 0 && value < 8);
-	lua_pushstring(L, _ColorWriteMode[value]);
-}
-ORCA_API const char *_FovType[] = {"Xfov","Yfov",NULL};
-const char *FovTypeToString(enum FovType value) {
-	assert(value >= 0 && value < 2);
-	return _FovType[value];
-}
-enum FovType luaX_checkFovType(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _FovType);
-}
-void luaX_pushFovType(lua_State *L, enum FovType value) {
-	assert(value >= 0 && value < 2);
-	lua_pushstring(L, _FovType[value]);
-}
-ORCA_API const char *_ProjectionType[] = {"Perspective","Orthographic",NULL};
-const char *ProjectionTypeToString(enum ProjectionType value) {
-	assert(value >= 0 && value < 2);
-	return _ProjectionType[value];
-}
-enum ProjectionType luaX_checkProjectionType(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _ProjectionType);
-}
-void luaX_pushProjectionType(lua_State *L, enum ProjectionType value) {
-	assert(value >= 0 && value < 2);
-	lua_pushstring(L, _ProjectionType[value]);
-}
-ORCA_API const char *_LightType[] = {"Point","Spot",NULL};
-const char *LightTypeToString(enum LightType value) {
-	assert(value >= 0 && value < 2);
-	return _LightType[value];
-}
-enum LightType luaX_checkLightType(lua_State *L, int idx) {
-	return luaL_checkoption(L, idx, NULL, _LightType);
-}
-void luaX_pushLightType(lua_State *L, enum LightType value) {
-	assert(value >= 0 && value < 2);
-	lua_pushstring(L, _LightType[value]);
-}
 #define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
 #define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
 
-LRESULT Node3D_UpdateMatrix(struct Object*, struct Node3D*, wParam_t, UpdateMatrixMsgPtr);
 
+extern const char *_BlendMode[];
+extern const char *_CompareFunc[];
+#define ENUM(NAME, ...) \
+ORCA_API const char *_##NAME[] = {__VA_ARGS__, NULL}; \
+const char *NAME##ToString(enum NAME value) { \
+	return (assert(value >= 0 && value < sizeof(_##NAME) / sizeof(*_##NAME) - 1), _##NAME[value]); \
+} \
+enum NAME luaX_check##NAME(lua_State *L, int idx) { \
+	return luaL_checkoption(L, idx, NULL, _##NAME); \
+} \
+void luaX_push##NAME(lua_State *L, enum NAME value) { \
+	lua_pushstring(L, (assert(value >= 0 && value < sizeof(_##NAME) / sizeof(*_##NAME) - 1), _##NAME[value])); \
+}
+ENUM(StencilOp, "Keep", "Zero", "Replace", "Increment", "IncrementWrap", "Decrement", "DecrementWrap", "Invert")
+ENUM(ViewportMode, "Relative", "Absolute")
+ENUM(CullMode, "None", "Back", "Front")
+ENUM(ColorWriteMode, "None", "RGB", "RGBA", "R", "G", "B", "GB", "A")
+ENUM(FovType, "Xfov", "Yfov")
+ENUM(ProjectionType, "Perspective", "Orthographic")
+ENUM(LightType, "Point", "Spot")
+extern void read_property(lua_State *L, int idx, struct PropertyType const* prop, void* struct_ptr);
+extern int write_property(lua_State *L, struct PropertyType const* prop, void const* struct_ptr);
+extern int parse_property(const char* str, struct PropertyType const* prop, void* struct_ptr);
+
+#define STRUCT(NAME, EXPORT) \
+void luaX_push##NAME(lua_State *L, struct NAME const* data) { \
+	if (data == NULL) { lua_pushnil(L); return; } \
+	struct NAME* ud = lua_newuserdata(L, sizeof(struct NAME)); \
+	luaL_setmetatable(L, #EXPORT); \
+	memcpy(ud, data, sizeof(struct NAME)); \
+} \
+struct NAME* luaX_check##NAME(lua_State *L, int idx) { return luaL_checkudata(L, idx, #EXPORT); } \
+static int f_new_##NAME(lua_State *L) { \
+	struct NAME* self = lua_newuserdata(L, sizeof(struct NAME)); \
+	luaL_setmetatable(L, #EXPORT); \
+	memset(self, 0, sizeof(struct NAME)); \
+	if (lua_istable(L, 1)) \
+    for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
+			lua_pop(L, (lua_getfield(L, 1, _##NAME[i].Name), read_property(L, -1, &_##NAME[i], ((char*)self)+_##NAME[i].Offset), 1)); \
+	else for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
+		read_property(L, i + 1, &_##NAME[i], ((char*)self)+_##NAME[i].Offset); \
+	return 1; \
+} \
+static int f_##NAME##___index(lua_State *L) { \
+	for (uint32_t i = 0, j = fnv1a32(luaL_checkstring(L, 2)); i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
+		if (_##NAME[i].ShortIdentifier == j) \
+			return (write_property(L, &_##NAME[i], ((char*)luaX_check##NAME(L, 1))+_##NAME[i].Offset), 1); \
+	for (uint32_t i = 0; i < sizeof(_##NAME##_Methods) / sizeof(*_##NAME##_Methods); i++) { \
+		if (strcmp(_##NAME##_Methods[i].name, luaL_checkstring(L, 2)) == 0) { \
+			lua_pushcfunction(L, _##NAME##_Methods[i].func); \
+			return 1; \
+		} \
+	} \
+	return luaL_error(L, "Unknown field in " #NAME ": %s", luaL_checkstring(L, 2)); \
+} \
+static int f_##NAME##___newindex(lua_State *L) { \
+	for (uint32_t i = 0, j = fnv1a32(luaL_checkstring(L, 2)); i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
+		if (_##NAME[i].ShortIdentifier == j) \
+			return (read_property(L, 3, &_##NAME[i], ((char*)luaX_check##NAME(L, 1))+_##NAME[i].Offset), 0); \
+	return luaL_error(L, "Unknown field in " #NAME ": %s", luaL_checkstring(L, 2)); \
+} \
+static int f_##NAME##___call(lua_State *L) { \
+  lua_insert(L, (lua_getfield(L, 1, "new"), 2)); \
+  lua_call(L, lua_gettop(L) - 2, 1); \
+	return 1; \
+} \
+static int f_##NAME##___fromstring(lua_State *L) { \
+	char* tmp = strdup(luaL_checkstring(L, 1)),* tok = strtok(tmp, " "); \
+	struct NAME self; \
+	memset(&self, 0, sizeof(struct NAME)); \
+	for (uint32_t i = 0; tok && i < sizeof(_##NAME) / sizeof(*_##NAME); i++, tok = strtok(NULL, " ")) \
+		if (_##NAME[i].DataType != kDataTypeStruct) \
+			parse_property(tok, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); \
+	free(tmp); \
+	return (luaX_push##NAME(L, &self), 1); \
+} \
+int luaopen_orca_##NAME(lua_State *L) { \
+	luaL_newmetatable(L, #EXPORT); \
+	luaL_setfuncs(L, ((luaL_Reg[]) { \
+		{ "new", f_new_##NAME }, \
+		{ "fromstring", f_##NAME##___fromstring }, \
+		{ "__newindex", f_##NAME##___newindex }, \
+		{ "__index", f_##NAME##___index }, \
+		{ NULL, NULL }, \
+	}), 0); \
+	luaL_setfuncs(L, _##NAME##_Methods, 0); \
+	/* Make struct creatable via constructor-like syntax */ \
+	lua_newtable(L); \
+	lua_pushcfunction(L, f_##NAME##___call); \
+	lua_setfield(L, -2, "__call"); \
+	lua_setmetatable(L, -2); \
+	return 1; \
+}
+
+
+
+#define REGISTER_CLASS(NAME, ...) \
+ORCA_API struct ClassDesc _##NAME = { \
+	.ClassName = #NAME, \
+	.DefaultName = #NAME, \
+	.ContentType = #NAME, \
+	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation", \
+	.ParentClasses = { __VA_ARGS__ }, \
+	.ClassID = ID_##NAME, \
+	.ClassSize = sizeof(struct NAME), \
+	.Properties = NAME##Properties, \
+	.MessageTypes = NAME##MessageTypes, \
+	.ObjProc = NAME##Proc, \
+	.Defaults = &NAME##Defaults, \
+	.NumProperties = k##NAME##NumProperties, \
+	.NumMessageTypes = k##NAME##NumMessageTypes, \
+};
+LRESULT Node3D_UpdateMatrix(struct Object*, struct Node3D*, wParam_t, UpdateMatrixMsgPtr);
+static struct MessageType Node3DMessageTypes[kNode3DNumMessageTypes] = {	
+};
 static struct PropertyType const Node3DProperties[kNode3DNumProperties] = {
 	DECL(0x3f19bf01, Node3D, LayoutTransform, LayoutTransform, kDataTypeStruct, .TypeString = "Transform3D"), // Node3D.LayoutTransform
 	DECL(0xfc7e27e0, Node3D, LayoutTransformTranslation, LayoutTransform.translation, kDataTypeStruct, .TypeString = "Vector3D"), // Node3D.LayoutTransformTranslation
@@ -129,22 +156,10 @@ struct Node3D* luaX_checkNode3D(lua_State *L, int idx) {
 	return GetNode3D(luaX_checkObject(L, idx));
 }
 #define ID_Node 0x3468032d
-ORCA_API struct ClassDesc _Node3D = {
-	.ClassName = "Node3D",
-	.DefaultName = "Node3D",
-	.ContentType = "Node3D",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node, 0 },
-	.ClassID = ID_Node3D,
-	.ClassSize = sizeof(struct Node3D),
-	.Properties = Node3DProperties,
-	.ObjProc = Node3DProc,
-	.Defaults = &Node3DDefaults,
-	.NumProperties = kNode3DNumProperties,
-};
-
+REGISTER_CLASS(Node3D, ID_Node, 0);
 LRESULT Scene_UpdateMatrix(struct Object*, struct Scene*, wParam_t, UpdateMatrixMsgPtr);
-
+static struct MessageType SceneMessageTypes[kSceneNumMessageTypes] = {	
+};
 static struct PropertyType const SceneProperties[kSceneNumProperties] = {
 	DECL(0xe74c7b6e, Scene, Camera, Camera, kDataTypeString), // Scene.Camera
 	DECL(0x14a89218, Scene, PreviewCamera, PreviewCamera, kDataTypeString), // Scene.PreviewCamera
@@ -169,22 +184,10 @@ struct Scene* luaX_checkScene(lua_State *L, int idx) {
 	return GetScene(luaX_checkObject(L, idx));
 }
 #define ID_Node3D 0xce61fe5a
-ORCA_API struct ClassDesc _Scene = {
-	.ClassName = "Scene",
-	.DefaultName = "Scene",
-	.ContentType = "Scene",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node3D, 0 },
-	.ClassID = ID_Scene,
-	.ClassSize = sizeof(struct Scene),
-	.Properties = SceneProperties,
-	.ObjProc = SceneProc,
-	.Defaults = &SceneDefaults,
-	.NumProperties = kSceneNumProperties,
-};
-
+REGISTER_CLASS(Scene, ID_Node3D, 0);
 LRESULT Model3D_Render(struct Object*, struct Model3D*, wParam_t, RenderMsgPtr);
-
+static struct MessageType Model3DMessageTypes[kModel3DNumMessageTypes] = {	
+};
 static struct PropertyType const Model3DProperties[kModel3DNumProperties] = {
 	DECL(0x07e055dc, Model3D, Mesh, Mesh, kDataTypeObject, .TypeString = "Mesh"), // Model3D.Mesh
 	DECL(0xcbd54f80, Model3D, Material, Material, kDataTypeObject, .TypeString = "Material"), // Model3D.Material
@@ -204,22 +207,10 @@ struct Model3D* luaX_checkModel3D(lua_State *L, int idx) {
 	return GetModel3D(luaX_checkObject(L, idx));
 }
 #define ID_Node3D 0xce61fe5a
-ORCA_API struct ClassDesc _Model3D = {
-	.ClassName = "Model3D",
-	.DefaultName = "Model3D",
-	.ContentType = "Model3D",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node3D, 0 },
-	.ClassID = ID_Model3D,
-	.ClassSize = sizeof(struct Model3D),
-	.Properties = Model3DProperties,
-	.ObjProc = Model3DProc,
-	.Defaults = &Model3DDefaults,
-	.NumProperties = kModel3DNumProperties,
-};
-
+REGISTER_CLASS(Model3D, ID_Node3D, 0);
 LRESULT PlaneMeshNode_Render(struct Object*, struct PlaneMeshNode*, wParam_t, RenderMsgPtr);
-
+static struct MessageType PlaneMeshNodeMessageTypes[kPlaneMeshNodeNumMessageTypes] = {	
+};
 static struct PropertyType const PlaneMeshNodeProperties[kPlaneMeshNodeNumProperties] = {
 	DECL(0x8f8d39cf, PlaneMeshNode, PlaneWidth, PlaneWidth, kDataTypeFloat), // PlaneMeshNode.PlaneWidth
 	DECL(0x2d44a1f2, PlaneMeshNode, PlaneHeight, PlaneHeight, kDataTypeFloat), // PlaneMeshNode.PlaneHeight
@@ -244,25 +235,13 @@ struct PlaneMeshNode* luaX_checkPlaneMeshNode(lua_State *L, int idx) {
 	return GetPlaneMeshNode(luaX_checkObject(L, idx));
 }
 #define ID_Model3D 0xc56de5fd
-ORCA_API struct ClassDesc _PlaneMeshNode = {
-	.ClassName = "PlaneMeshNode",
-	.DefaultName = "PlaneMeshNode",
-	.ContentType = "PlaneMeshNode",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Model3D, 0 },
-	.ClassID = ID_PlaneMeshNode,
-	.ClassSize = sizeof(struct PlaneMeshNode),
-	.Properties = PlaneMeshNodeProperties,
-	.ObjProc = PlaneMeshNodeProc,
-	.Defaults = &PlaneMeshNodeDefaults,
-	.NumProperties = kPlaneMeshNodeNumProperties,
+REGISTER_CLASS(PlaneMeshNode, ID_Model3D, 0);
+static struct MessageType CameraMessageTypes[kCameraNumMessageTypes] = {	
 };
-
-
 static struct PropertyType const CameraProperties[kCameraNumProperties] = {
 	DECL(0x137e217c, Camera, Fov, Fov, kDataTypeFloat), // Camera.Fov
-	DECL(0x0ef1c6f4, Camera, FovType, FovType, kDataTypeEnum, .TypeString = "Xfov,Yfov", .EnumValues = _FovType), // Camera.FovType
-	DECL(0x87320ce8, Camera, ProjectionType, ProjectionType, kDataTypeEnum, .TypeString = "Perspective,Orthographic", .EnumValues = _ProjectionType), // Camera.ProjectionType
+	DECL(0x0ef1c6f4, Camera, FovType, FovType, kDataTypeEnum, .EnumValues = _FovType), // Camera.FovType
+	DECL(0x87320ce8, Camera, ProjectionType, ProjectionType, kDataTypeEnum, .EnumValues = _ProjectionType), // Camera.ProjectionType
 	DECL(0x15af1da7, Camera, ZNear, ZNear, kDataTypeFloat), // Camera.ZNear
 	DECL(0x993918c6, Camera, ZFar, ZFar, kDataTypeFloat), // Camera.ZFar
 	DECL(0xd6d304c6, Camera, EyeSeparation, EyeSeparation, kDataTypeFloat), // Camera.EyeSeparation
@@ -284,22 +263,10 @@ struct Camera* luaX_checkCamera(lua_State *L, int idx) {
 	return GetCamera(luaX_checkObject(L, idx));
 }
 #define ID_Node3D 0xce61fe5a
-ORCA_API struct ClassDesc _Camera = {
-	.ClassName = "Camera",
-	.DefaultName = "Camera",
-	.ContentType = "Camera",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node3D, 0 },
-	.ClassID = ID_Camera,
-	.ClassSize = sizeof(struct Camera),
-	.Properties = CameraProperties,
-	.ObjProc = CameraProc,
-	.Defaults = &CameraDefaults,
-	.NumProperties = kCameraNumProperties,
-};
-
+REGISTER_CLASS(Camera, ID_Node3D, 0);
 LRESULT TrajectoryList3D_UpdateMatrix(struct Object*, struct TrajectoryList3D*, wParam_t, UpdateMatrixMsgPtr);
-
+static struct MessageType TrajectoryList3DMessageTypes[kTrajectoryList3DNumMessageTypes] = {	
+};
 static struct PropertyType const TrajectoryList3DProperties[kTrajectoryList3DNumProperties] = {
 	DECL(0x4cf7cbf8, TrajectoryList3D, Trajectory, Trajectory, kDataTypeObject, .TypeString = "Trajectory"), // TrajectoryList3D.Trajectory
 	DECL(0xeea06ebd, TrajectoryList3D, ScrollAxis, ScrollAxis, kDataTypeStruct, .TypeString = "Vector2D"), // TrajectoryList3D.ScrollAxis
@@ -323,22 +290,10 @@ struct TrajectoryList3D* luaX_checkTrajectoryList3D(lua_State *L, int idx) {
 	return GetTrajectoryList3D(luaX_checkObject(L, idx));
 }
 #define ID_Node3D 0xce61fe5a
-ORCA_API struct ClassDesc _TrajectoryList3D = {
-	.ClassName = "TrajectoryList3D",
-	.DefaultName = "TrajectoryList3D",
-	.ContentType = "TrajectoryList3D",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node3D, 0 },
-	.ClassID = ID_TrajectoryList3D,
-	.ClassSize = sizeof(struct TrajectoryList3D),
-	.Properties = TrajectoryList3DProperties,
-	.ObjProc = TrajectoryList3DProc,
-	.Defaults = &TrajectoryList3DDefaults,
-	.NumProperties = kTrajectoryList3DNumProperties,
-};
-
+REGISTER_CLASS(TrajectoryList3D, ID_Node3D, 0);
 LRESULT Viewport3D_ForegroundContent(struct Object*, struct Viewport3D*, wParam_t, ForegroundContentMsgPtr);
-
+static struct MessageType Viewport3DMessageTypes[kViewport3DNumMessageTypes] = {	
+};
 static struct PropertyType const Viewport3DProperties[kViewport3DNumProperties] = {
 	DECL(0xe74c7b6e, Viewport3D, Camera, Camera, kDataTypeString), // Viewport3D.Camera
 	DECL(0x14a89218, Viewport3D, PreviewCamera, PreviewCamera, kDataTypeString), // Viewport3D.PreviewCamera
@@ -361,22 +316,10 @@ struct Viewport3D* luaX_checkViewport3D(lua_State *L, int idx) {
 	return GetViewport3D(luaX_checkObject(L, idx));
 }
 #define ID_Node2D 0x6c63a2ab
-ORCA_API struct ClassDesc _Viewport3D = {
-	.ClassName = "Viewport3D",
-	.DefaultName = "Viewport3D",
-	.ContentType = "Viewport3D",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node2D, 0 },
-	.ClassID = ID_Viewport3D,
-	.ClassSize = sizeof(struct Viewport3D),
-	.Properties = Viewport3DProperties,
-	.ObjProc = Viewport3DProc,
-	.Defaults = &Viewport3DDefaults,
-	.NumProperties = kViewport3DNumProperties,
-};
-
+REGISTER_CLASS(Viewport3D, ID_Node2D, 0);
 LRESULT PrefabView3D_LoadView(struct Object*, struct PrefabView3D*, wParam_t, LoadViewMsgPtr);
-
+static struct MessageType PrefabView3DMessageTypes[kPrefabView3DNumMessageTypes] = {	
+};
 static struct PropertyType const PrefabView3DProperties[kPrefabView3DNumProperties] = {
 	DECL(0x57f28ff6, PrefabView3D, SCA, SCA, kDataTypeString), // PrefabView3D.SCA
 	DECL(0xd6415ba3, PrefabView3D, Prefab, Prefab, kDataTypeString), // PrefabView3D.Prefab
@@ -396,21 +339,9 @@ struct PrefabView3D* luaX_checkPrefabView3D(lua_State *L, int idx) {
 	return GetPrefabView3D(luaX_checkObject(L, idx));
 }
 #define ID_Node3D 0xce61fe5a
-ORCA_API struct ClassDesc _PrefabView3D = {
-	.ClassName = "PrefabView3D",
-	.DefaultName = "PrefabView3D",
-	.ContentType = "PrefabView3D",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node3D, 0 },
-	.ClassID = ID_PrefabView3D,
-	.ClassSize = sizeof(struct PrefabView3D),
-	.Properties = PrefabView3DProperties,
-	.ObjProc = PrefabView3DProc,
-	.Defaults = &PrefabView3DDefaults,
-	.NumProperties = kPrefabView3DNumProperties,
+REGISTER_CLASS(PrefabView3D, ID_Node3D, 0);
+static struct MessageType RenderPassMessageTypes[kRenderPassNumMessageTypes] = {	
 };
-
-
 static struct PropertyType const RenderPassProperties[kRenderPassNumProperties] = {
 };
 static struct RenderPass RenderPassDefaults = {
@@ -427,21 +358,9 @@ struct RenderPass* luaX_checkRenderPass(lua_State *L, int idx) {
 	return GetRenderPass(luaX_checkObject(L, idx));
 }
 #define ID_Node 0x3468032d
-ORCA_API struct ClassDesc _RenderPass = {
-	.ClassName = "RenderPass",
-	.DefaultName = "RenderPass",
-	.ContentType = "RenderPass",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node, 0 },
-	.ClassID = ID_RenderPass,
-	.ClassSize = sizeof(struct RenderPass),
-	.Properties = RenderPassProperties,
-	.ObjProc = RenderPassProc,
-	.Defaults = &RenderPassDefaults,
-	.NumProperties = kRenderPassNumProperties,
+REGISTER_CLASS(RenderPass, ID_Node, 0);
+static struct MessageType CompositionTargetRenderPassMessageTypes[kCompositionTargetRenderPassNumMessageTypes] = {	
 };
-
-
 static struct PropertyType const CompositionTargetRenderPassProperties[kCompositionTargetRenderPassNumProperties] = {
 };
 static struct CompositionTargetRenderPass CompositionTargetRenderPassDefaults = {
@@ -458,21 +377,9 @@ struct CompositionTargetRenderPass* luaX_checkCompositionTargetRenderPass(lua_St
 	return GetCompositionTargetRenderPass(luaX_checkObject(L, idx));
 }
 #define ID_RenderPass 0xf64bbf80
-ORCA_API struct ClassDesc _CompositionTargetRenderPass = {
-	.ClassName = "CompositionTargetRenderPass",
-	.DefaultName = "CompositionTargetRenderPass",
-	.ContentType = "CompositionTargetRenderPass",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_RenderPass, 0 },
-	.ClassID = ID_CompositionTargetRenderPass,
-	.ClassSize = sizeof(struct CompositionTargetRenderPass),
-	.Properties = CompositionTargetRenderPassProperties,
-	.ObjProc = CompositionTargetRenderPassProc,
-	.Defaults = &CompositionTargetRenderPassDefaults,
-	.NumProperties = kCompositionTargetRenderPassNumProperties,
+REGISTER_CLASS(CompositionTargetRenderPass, ID_RenderPass, 0);
+static struct MessageType BlitRenderPassMessageTypes[kBlitRenderPassNumMessageTypes] = {	
 };
-
-
 static struct PropertyType const BlitRenderPassProperties[kBlitRenderPassNumProperties] = {
 };
 static struct BlitRenderPass BlitRenderPassDefaults = {
@@ -489,21 +396,9 @@ struct BlitRenderPass* luaX_checkBlitRenderPass(lua_State *L, int idx) {
 	return GetBlitRenderPass(luaX_checkObject(L, idx));
 }
 #define ID_RenderPass 0xf64bbf80
-ORCA_API struct ClassDesc _BlitRenderPass = {
-	.ClassName = "BlitRenderPass",
-	.DefaultName = "BlitRenderPass",
-	.ContentType = "BlitRenderPass",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_RenderPass, 0 },
-	.ClassID = ID_BlitRenderPass,
-	.ClassSize = sizeof(struct BlitRenderPass),
-	.Properties = BlitRenderPassProperties,
-	.ObjProc = BlitRenderPassProc,
-	.Defaults = &BlitRenderPassDefaults,
-	.NumProperties = kBlitRenderPassNumProperties,
+REGISTER_CLASS(BlitRenderPass, ID_RenderPass, 0);
+static struct MessageType ClearRenderPassMessageTypes[kClearRenderPassNumMessageTypes] = {	
 };
-
-
 static struct PropertyType const ClearRenderPassProperties[kClearRenderPassNumProperties] = {
 	DECL(0xeb16b675, ClearRenderPass, ClearColor, ClearColor, kDataTypeColor), // ClearRenderPass.ClearColor
 	DECL(0xa444e35b, ClearRenderPass, ClearDepth, ClearDepth, kDataTypeFloat), // ClearRenderPass.ClearDepth
@@ -523,21 +418,9 @@ struct ClearRenderPass* luaX_checkClearRenderPass(lua_State *L, int idx) {
 	return GetClearRenderPass(luaX_checkObject(L, idx));
 }
 #define ID_RenderPass 0xf64bbf80
-ORCA_API struct ClassDesc _ClearRenderPass = {
-	.ClassName = "ClearRenderPass",
-	.DefaultName = "ClearRenderPass",
-	.ContentType = "ClearRenderPass",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_RenderPass, 0 },
-	.ClassID = ID_ClearRenderPass,
-	.ClassSize = sizeof(struct ClearRenderPass),
-	.Properties = ClearRenderPassProperties,
-	.ObjProc = ClearRenderPassProc,
-	.Defaults = &ClearRenderPassDefaults,
-	.NumProperties = kClearRenderPassNumProperties,
+REGISTER_CLASS(ClearRenderPass, ID_RenderPass, 0);
+static struct MessageType DrawObjectsRenderPassMessageTypes[kDrawObjectsRenderPassNumMessageTypes] = {	
 };
-
-
 static struct PropertyType const DrawObjectsRenderPassProperties[kDrawObjectsRenderPassNumProperties] = {
 	DECL(0xe74c7b6e, DrawObjectsRenderPass, Camera, Camera, kDataTypeString), // DrawObjectsRenderPass.Camera
 	DECL(0x785c377a, DrawObjectsRenderPass, IncludeTags, IncludeTags, kDataTypeString), // DrawObjectsRenderPass.IncludeTags
@@ -557,37 +440,25 @@ struct DrawObjectsRenderPass* luaX_checkDrawObjectsRenderPass(lua_State *L, int 
 	return GetDrawObjectsRenderPass(luaX_checkObject(L, idx));
 }
 #define ID_RenderPass 0xf64bbf80
-ORCA_API struct ClassDesc _DrawObjectsRenderPass = {
-	.ClassName = "DrawObjectsRenderPass",
-	.DefaultName = "DrawObjectsRenderPass",
-	.ContentType = "DrawObjectsRenderPass",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_RenderPass, 0 },
-	.ClassID = ID_DrawObjectsRenderPass,
-	.ClassSize = sizeof(struct DrawObjectsRenderPass),
-	.Properties = DrawObjectsRenderPassProperties,
-	.ObjProc = DrawObjectsRenderPassProc,
-	.Defaults = &DrawObjectsRenderPassDefaults,
-	.NumProperties = kDrawObjectsRenderPassNumProperties,
+REGISTER_CLASS(DrawObjectsRenderPass, ID_RenderPass, 0);
+static struct MessageType PipelineStateRenderPassMessageTypes[kPipelineStateRenderPassNumMessageTypes] = {	
 };
-
-
 static struct PropertyType const PipelineStateRenderPassProperties[kPipelineStateRenderPassNumProperties] = {
-	DECL(0x0038792b, PipelineStateRenderPass, BlendMode, BlendMode, kDataTypeEnum, .TypeString = "AlphaAutomatic,Opaque,Alpha,Additive,PremultipliedAlpha,MixedAlpha", .EnumValues = _BlendMode), // PipelineStateRenderPass.BlendMode
-	DECL(0x9d0d3c20, PipelineStateRenderPass, ColorWriteMode, ColorWriteMode, kDataTypeEnum, .TypeString = "None,RGB,RGBA,R,G,B,GB,A", .EnumValues = _ColorWriteMode), // PipelineStateRenderPass.ColorWriteMode
-	DECL(0xfe9cfa12, PipelineStateRenderPass, CullMode, CullMode, kDataTypeEnum, .TypeString = "None,Back,Front", .EnumValues = _CullMode), // PipelineStateRenderPass.CullMode
-	DECL(0xb7e582be, PipelineStateRenderPass, DepthTestFunction, DepthTestFunction, kDataTypeEnum, .TypeString = "Never,Always,Less,LessOrEqual,Greater,GreaterOrEqual,Equal,NotEqual,Disabled", .EnumValues = _CompareFunc), // PipelineStateRenderPass.DepthTestFunction
+	DECL(0x0038792b, PipelineStateRenderPass, BlendMode, BlendMode, kDataTypeEnum, .EnumValues = _BlendMode), // PipelineStateRenderPass.BlendMode
+	DECL(0x9d0d3c20, PipelineStateRenderPass, ColorWriteMode, ColorWriteMode, kDataTypeEnum, .EnumValues = _ColorWriteMode), // PipelineStateRenderPass.ColorWriteMode
+	DECL(0xfe9cfa12, PipelineStateRenderPass, CullMode, CullMode, kDataTypeEnum, .EnumValues = _CullMode), // PipelineStateRenderPass.CullMode
+	DECL(0xb7e582be, PipelineStateRenderPass, DepthTestFunction, DepthTestFunction, kDataTypeEnum, .EnumValues = _CompareFunc), // PipelineStateRenderPass.DepthTestFunction
 	DECL(0x8ec3072e, PipelineStateRenderPass, DepthWriteEnabled, DepthWriteEnabled, kDataTypeBool), // PipelineStateRenderPass.DepthWriteEnabled
-	DECL(0x2dd5f6cc, PipelineStateRenderPass, ViewportMode, ViewportMode, kDataTypeEnum, .TypeString = "Relative,Absolute", .EnumValues = _ViewportMode), // PipelineStateRenderPass.ViewportMode
-	DECL(0x8c6862de, PipelineStateRenderPass, ScissorMode, ScissorMode, kDataTypeEnum, .TypeString = "Relative,Absolute", .EnumValues = _ViewportMode), // PipelineStateRenderPass.ScissorMode
+	DECL(0x2dd5f6cc, PipelineStateRenderPass, ViewportMode, ViewportMode, kDataTypeEnum, .EnumValues = _ViewportMode), // PipelineStateRenderPass.ViewportMode
+	DECL(0x8c6862de, PipelineStateRenderPass, ScissorMode, ScissorMode, kDataTypeEnum, .EnumValues = _ViewportMode), // PipelineStateRenderPass.ScissorMode
 	DECL(0x60b5afe3, PipelineStateRenderPass, Viewport, Viewport, kDataTypeStruct, .TypeString = "Vector4D"), // PipelineStateRenderPass.Viewport
 	DECL(0x24b3e321, PipelineStateRenderPass, Scissor, Scissor, kDataTypeStruct, .TypeString = "Vector4D"), // PipelineStateRenderPass.Scissor
-	DECL(0xc770fa47, PipelineStateRenderPass, StencilTestFunction, StencilTestFunction, kDataTypeEnum, .TypeString = "Never,Always,Less,LessOrEqual,Greater,GreaterOrEqual,Equal,NotEqual,Disabled", .EnumValues = _CompareFunc), // PipelineStateRenderPass.StencilTestFunction
+	DECL(0xc770fa47, PipelineStateRenderPass, StencilTestFunction, StencilTestFunction, kDataTypeEnum, .EnumValues = _CompareFunc), // PipelineStateRenderPass.StencilTestFunction
 	DECL(0x2ddc4e49, PipelineStateRenderPass, StencilReferenceValue, StencilReferenceValue, kDataTypeInt), // PipelineStateRenderPass.StencilReferenceValue
 	DECL(0x82336fe7, PipelineStateRenderPass, StencilMask, StencilMask, kDataTypeInt), // PipelineStateRenderPass.StencilMask
-	DECL(0x8785338c, PipelineStateRenderPass, StencilFailOperation, StencilFailOperation, kDataTypeEnum, .TypeString = "Keep,Zero,Replace,Increment,IncrementWrap,Decrement,DecrementWrap,Invert", .EnumValues = _StencilOp), // PipelineStateRenderPass.StencilFailOperation
-	DECL(0xfc4e75c8, PipelineStateRenderPass, StencilPassDepthFailOperation, StencilPassDepthFailOperation, kDataTypeEnum, .TypeString = "Keep,Zero,Replace,Increment,IncrementWrap,Decrement,DecrementWrap,Invert", .EnumValues = _StencilOp), // PipelineStateRenderPass.StencilPassDepthFailOperation
-	DECL(0x6452d1b7, PipelineStateRenderPass, StencilPassDepthPassOperation, StencilPassDepthPassOperation, kDataTypeEnum, .TypeString = "Keep,Zero,Replace,Increment,IncrementWrap,Decrement,DecrementWrap,Invert", .EnumValues = _StencilOp), // PipelineStateRenderPass.StencilPassDepthPassOperation
+	DECL(0x8785338c, PipelineStateRenderPass, StencilFailOperation, StencilFailOperation, kDataTypeEnum, .EnumValues = _StencilOp), // PipelineStateRenderPass.StencilFailOperation
+	DECL(0xfc4e75c8, PipelineStateRenderPass, StencilPassDepthFailOperation, StencilPassDepthFailOperation, kDataTypeEnum, .EnumValues = _StencilOp), // PipelineStateRenderPass.StencilPassDepthFailOperation
+	DECL(0x6452d1b7, PipelineStateRenderPass, StencilPassDepthPassOperation, StencilPassDepthPassOperation, kDataTypeEnum, .EnumValues = _StencilOp), // PipelineStateRenderPass.StencilPassDepthPassOperation
 	DECL(0xb0b1cdf3, PipelineStateRenderPass, StencilWriteEnabled, StencilWriteEnabled, kDataTypeBool), // PipelineStateRenderPass.StencilWriteEnabled
 };
 static struct PipelineStateRenderPass PipelineStateRenderPassDefaults = {
@@ -608,23 +479,11 @@ struct PipelineStateRenderPass* luaX_checkPipelineStateRenderPass(lua_State *L, 
 	return GetPipelineStateRenderPass(luaX_checkObject(L, idx));
 }
 #define ID_RenderPass 0xf64bbf80
-ORCA_API struct ClassDesc _PipelineStateRenderPass = {
-	.ClassName = "PipelineStateRenderPass",
-	.DefaultName = "PipelineStateRenderPass",
-	.ContentType = "PipelineStateRenderPass",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_RenderPass, 0 },
-	.ClassID = ID_PipelineStateRenderPass,
-	.ClassSize = sizeof(struct PipelineStateRenderPass),
-	.Properties = PipelineStateRenderPassProperties,
-	.ObjProc = PipelineStateRenderPassProc,
-	.Defaults = &PipelineStateRenderPassDefaults,
-	.NumProperties = kPipelineStateRenderPassNumProperties,
-};
-
+REGISTER_CLASS(PipelineStateRenderPass, ID_RenderPass, 0);
 LRESULT TextBlock3D_Render(struct Object*, struct TextBlock3D*, wParam_t, RenderMsgPtr);
 LRESULT TextBlock3D_Create(struct Object*, struct TextBlock3D*, wParam_t, CreateMsgPtr);
-
+static struct MessageType TextBlock3DMessageTypes[kTextBlock3DNumMessageTypes] = {	
+};
 static struct PropertyType const TextBlock3DProperties[kTextBlock3DNumProperties] = {
 };
 static struct TextBlock3D TextBlock3DDefaults = {
@@ -644,28 +503,16 @@ struct TextBlock3D* luaX_checkTextBlock3D(lua_State *L, int idx) {
 }
 #define ID_Node3D 0xce61fe5a
 #define ID_TextBlockConcept 0x4903089d
-ORCA_API struct ClassDesc _TextBlock3D = {
-	.ClassName = "TextBlock3D",
-	.DefaultName = "TextBlock3D",
-	.ContentType = "TextBlock3D",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node3D, ID_TextBlockConcept, 0 },
-	.ClassID = ID_TextBlock3D,
-	.ClassSize = sizeof(struct TextBlock3D),
-	.Properties = TextBlock3DProperties,
-	.ObjProc = TextBlock3DProc,
-	.Defaults = &TextBlock3DDefaults,
-	.NumProperties = kTextBlock3DNumProperties,
-};
-
+REGISTER_CLASS(TextBlock3D, ID_Node3D, ID_TextBlockConcept, 0);
 LRESULT Light3D_Render(struct Object*, struct Light3D*, wParam_t, RenderMsgPtr);
-
+static struct MessageType Light3DMessageTypes[kLight3DNumMessageTypes] = {	
+};
 static struct PropertyType const Light3DProperties[kLight3DNumProperties] = {
 	DECL(0xe5b43cf8, Light3D, Color, Color, kDataTypeColor), // Light3D.Color
 	DECL(0xe2c2c340, Light3D, SpotAngle, SpotAngle, kDataTypeStruct, .TypeString = "Vector2D"), // Light3D.SpotAngle
 	DECL(0x53b4f9aa, Light3D, Intensity, Intensity, kDataTypeFloat), // Light3D.Intensity
 	DECL(0xa311e772, Light3D, Range, Range, kDataTypeFloat), // Light3D.Range
-	DECL(0xd155d06d, Light3D, Type, Type, kDataTypeEnum, .TypeString = "Point,Spot", .EnumValues = _LightType), // Light3D.Type
+	DECL(0xd155d06d, Light3D, Type, Type, kDataTypeEnum, .EnumValues = _LightType), // Light3D.Type
 };
 static struct Light3D Light3DDefaults = {
 		
@@ -686,22 +533,10 @@ struct Light3D* luaX_checkLight3D(lua_State *L, int idx) {
 	return GetLight3D(luaX_checkObject(L, idx));
 }
 #define ID_Node3D 0xce61fe5a
-ORCA_API struct ClassDesc _Light3D = {
-	.ClassName = "Light3D",
-	.DefaultName = "Light3D",
-	.ContentType = "Light3D",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node3D, 0 },
-	.ClassID = ID_Light3D,
-	.ClassSize = sizeof(struct Light3D),
-	.Properties = Light3DProperties,
-	.ObjProc = Light3DProc,
-	.Defaults = &Light3DDefaults,
-	.NumProperties = kLight3DNumProperties,
-};
-
+REGISTER_CLASS(Light3D, ID_Node3D, 0);
 LRESULT SpriteView_Render(struct Object*, struct SpriteView*, wParam_t, RenderMsgPtr);
-
+static struct MessageType SpriteViewMessageTypes[kSpriteViewNumMessageTypes] = {	
+};
 static struct PropertyType const SpriteViewProperties[kSpriteViewNumProperties] = {
 	DECL(0x590ca79a, SpriteView, Image, Image, kDataTypeObject, .TypeString = "Texture"), // SpriteView.Image
 	DECL(0x2d2c5028, SpriteView, Bounds, Bounds, kDataTypeStruct, .TypeString = "Vector4D"), // SpriteView.Bounds
@@ -721,20 +556,7 @@ struct SpriteView* luaX_checkSpriteView(lua_State *L, int idx) {
 	return GetSpriteView(luaX_checkObject(L, idx));
 }
 #define ID_Node3D 0xce61fe5a
-ORCA_API struct ClassDesc _SpriteView = {
-	.ClassName = "SpriteView",
-	.DefaultName = "SpriteView",
-	.ContentType = "SpriteView",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node3D, 0 },
-	.ClassID = ID_SpriteView,
-	.ClassSize = sizeof(struct SpriteView),
-	.Properties = SpriteViewProperties,
-	.ObjProc = SpriteViewProc,
-	.Defaults = &SpriteViewDefaults,
-	.NumProperties = kSpriteViewNumProperties,
-};
-
+REGISTER_CLASS(SpriteView, ID_Node3D, 0);
 
 
 ORCA_API int luaopen_orca_SceneKit(lua_State *L) {

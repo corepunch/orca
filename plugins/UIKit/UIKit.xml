@@ -172,7 +172,7 @@
     <enum name="MinusPadding">Subtract padding from size</enum>
   </enums>
 
-  <struct name="BorderRadiusShorthand" constructor="1">
+  <struct name="CornerRadius">
     <summary>Corner rounding configuration for rectangular elements</summary>
     <details>Allows independent control of each corner's rounding radius.</details>
     <field name="TopLeftRadius" type="float">Top-left corner radius</field>
@@ -181,7 +181,7 @@
     <field name="BottomLeftRadius" type="float">Bottom-left corner radius</field>
   </struct>
 
-  <struct name="EdgeShorthand" constructor="1" unwrap="true">
+  <struct name="EdgeShorthand" unwrap="true">
     <summary>Spacing values for opposite edges of an axis</summary>
     <field name="Left" type="float">Leading edge value (left for horizontal, top for vertical, near for depth)</field>
     <field name="Right" type="float">Trailing edge value (right for horizontal, bottom for vertical, far for depth)</field>
@@ -240,7 +240,7 @@
     <field name="Color" type="color">Color of the underline.</field>
   </struct>
   
-  <struct name="MarginShorthand" constructor="4,2,1">
+  <struct name="Thickness">
     <summary>External spacing configuration for rectangular elements</summary>
     <details>Allows independent control of the external spacing applied to each edge of an element.</details>
     <field name="Axis" type="EdgeShorthand" fixed-array="3">External spacing per axis</field>
@@ -248,10 +248,10 @@
 
   <struct name="BorderShorthand">
     <summary>Complete border definition for rectangular element</summary>
-    <field name="Width" type="MarginShorthand">Border thickness in pixels, specified for each edge</field>
+    <field name="Width" type="Thickness">Border thickness in pixels, specified for each edge</field>
     <field name="Color" type="color">Border color</field>
     <field name="Style" type="BorderStyle">Visual style of the border</field>
-    <field name="Radius" type="BorderRadiusShorthand">Border radius definition per corner</field>
+    <field name="Radius" type="CornerRadius">Border radius definition per corner</field>
   </struct>
 
   <struct name="SizeAxisShorthand">
@@ -269,6 +269,15 @@
     <field name="Axis" type="SizeAxisShorthand" fixed-array="3">A number value per axis</field>
   </struct>
 
+  <message name="UpdateMatrix" routing="Direct">
+    <field name="parent" type="mat4">The parent matrix</field>
+    <field name="opacity" type="float">The opacity value</field>
+    <field name="force" type="bool">Indicates if the update is forced</field>
+  </message>
+  <message name="HitTest" routing="Direct">
+    <field name="x" type="int">X coordinate of the hit test point</field>
+    <field name="y" type="int">Y coordinate of the hit test point</field>
+  </message>
   <message name="GetSize"/>
   <message name="Submit"/>
   <message name="Measure">
@@ -281,8 +290,8 @@
     <field name="Width" type="float"/>
     <field name="Height" type="float"/>
   </message>
-  <message name="MeasureOverride" parent="Measure"/>
-  <message name="ArrangeOverride" parent="Arrange"/>
+  <message name="MeasureOverride" same-as="Measure"/>
+  <message name="ArrangeOverride" same-as="Arrange"/>
   <message name="ForegroundContent"/>
   <message name="PushProperty">
     <field name="Placeholder" type="int"/>
@@ -300,7 +309,7 @@
   </message>
   <message name="HandleMessage">
     <summary>Dispatches a named message with arguments to the component.</summary>
-    <field name="EventName" type="fixed"/>
+    <field name="EventName" type="string"/>
     <field name="FirstArg" type="uint"/>
     <field name="NumArgs" type="uint"/>
   </message>
@@ -422,8 +431,8 @@
     <handles message="GetSize"/>
     <handles message="IsVisible"/>
     <property name="Size" type="SizeShorthand">Sizing configuration of this element</property>
-    <property name="Margin" type="MarginShorthand">External spacing around the element</property>
-    <property name="Padding" type="MarginShorthand">Internal spacing between element border and content</property>
+    <property name="Margin" type="Thickness">External spacing around the element</property>
+    <property name="Padding" type="Thickness">Internal spacing between element border and content</property>
     <property name="Border" type="BorderShorthand">Border definition along each axis</property>
     <property name="Alignment" type="AlignmentShorthand">Alignment definition for each axis.</property>
     <property name="Visible" type="bool" default="TRUE">Whether this node is visible in the scene.</property>
@@ -492,6 +501,11 @@
     <handles message="Arrange"/>
     <handles message="MeasureOverride"/>
     <handles message="ArrangeOverride"/>
+    <message name="UpdateShmatrix" routing="Direct">
+      <field name="parent" type="mat4">The parent matrix</field>
+      <field name="opacity" type="float">The opacity value</field>
+      <field name="force" type="bool">Indicates if the update is forced</field>
+    </message>
     <property name="LayoutTransform" type="transform2" default=".scale={1,1}">Transformation applied during layout calculations. Affects size and positioning but does not influence local rendering.</property>
     <property name="RenderTransform" type="transform2" default=".scale={1,1}">Transformation applied at render time. Affects how the element is drawn (rotation, scale, skew, etc.) without altering layout.</property>
     <property name="RenderTransformOrigin" type="vec2">The origin point for applying RenderTransform. Defines the pivot point relative to the element.</property>
@@ -503,7 +517,7 @@
     <property name="BoxShadow" type="ShadowShorthand">Shadow applied to the element's box.</property>
     <property name="Overflow" type="OverflowShorthand">Defines overflow behavior for child content. Controls clipping and scroll behavior.</property>
     <property name="Ring" type="RingShorthand">Decorative ring effect applied around the element.</property>
-    <!-- <property name="BorderRadius" type="BorderRadiusShorthand">Border radius for rounding corners.</property> -->
+    <!-- <property name="BorderRadius" type="CornerRadius">Border radius for rounding corners.</property> -->
     <property name="CompositionBrush" type="Material" pointer="true">Custom composition brush for advanced rendering. Equivalent to UWP `CompositionBrush`. Can be used for effects or visuals beyond standard brushes.</property>
     <property name="CompositionDesignSize" type="vec2">Virtual design size when using composition rendering. Defines the expected size for the composition surface.</property>
     <property name="SizeToContent" type="bool">Whether the element resizes itself to fit its content.</property>
@@ -801,7 +815,7 @@
 
   <message name="NavigateToPage">
     <summary>Navigates to a new page URL with an optional transition animation.</summary>
-    <field name="URL" type="fixed">The URL of the page to navigate to.</field>
+    <field name="URL" type="string">The URL of the page to navigate to.</field>
     <field name="TransitionType" type="TransitionType">The type of transition animation to use during navigation.</field>
   </message>
   <message name="NavigateBack">

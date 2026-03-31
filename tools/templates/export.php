@@ -6,6 +6,9 @@
 
 #include "<?= $model->getModuleName() ?>.h"
 
+#define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
+#define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
+
 <?php foreach ($model->getExternalStructs() as $name => $module): ?>
 // <?= $name ?>
 extern void luaX_push<?= $name ?>(lua_State *L, struct <?= $name ?> const* value);
@@ -45,15 +48,10 @@ ORCA_API int luaopen_orca_<?= $model->getModuleName() ?>(lua_State *L) {
 <?php endforeach ?>
 		{ NULL, NULL } 
 	}));
-<?php if ($model->on_luaopen): ?>
-	void <?= $model->on_luaopen ?>(lua_State *L);
-	<?= $model->on_luaopen ?>(L);
-<?php endif ?>
 <?php foreach ($model->getStructs() as $name => $struct):?>
 	lua_setfield(L, ((void)luaopen_orca_<?= $name ?>(L), -2), "<?= $struct->export ?>");
 <?php endforeach ?>
 <?php foreach ($model->getEvents() as $name => $event):?>
-<?php if (!$event->hasFields()): continue; endif ?>
 	lua_setfield(L, ((void)luaopen_orca_<?= $name ?>MsgArgs(L), -2), "<?= $name ?>MsgArgs");
 <?php endforeach ?>
 <?php foreach ($model->getInterfaces() as $name => $interface):?>
@@ -62,5 +60,9 @@ ORCA_API int luaopen_orca_<?= $model->getModuleName() ?>(lua_State *L) {
 <?php foreach ($model->getComponents() as $name => $component):?>
 	lua_setfield(L, ((void)lua_pushclass(L, &_<?= $name ?>), -2), "<?= $component->export ?>");
 <?php endforeach ?>
+<?php if ($model->on_luaopen): ?>
+	void <?= $model->on_luaopen ?>(lua_State *L);
+	<?= $model->on_luaopen ?>(L);
+<?php endif ?>
 	return 1;
 }
