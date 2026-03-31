@@ -45,10 +45,10 @@
 
 
 #define ID_MessageType 0x5afb49ac
-#define ID_MessageType_name 0x2dcd1005 // MessageType.name
-#define ID_MessageType_id 0xd535d13b // MessageType.id
-#define ID_MessageType_routing 0xc12e3ce8 // MessageType.routing
-#define ID_MessageType_size 0x8c5e44a7 // MessageType.size
+#define ID_MessageType_Name 0xada0c3e5 // MessageType.Name
+#define ID_MessageType_Id 0xd585831b // MessageType.Id
+#define ID_MessageType_Routing 0x9083ce48 // MessageType.Routing
+#define ID_MessageType_Size 0x0c31f887 // MessageType.Size
 	
 
 #define ID_MouseMessage 0x0d589383

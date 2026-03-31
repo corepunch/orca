@@ -44,7 +44,8 @@ static int f_##NAME##___fromstring(lua_State *L) { \
 	struct NAME self; \
 	memset(&self, 0, sizeof(struct NAME)); \
 	for (uint32_t i = 0; tok && i < sizeof(_##NAME) / sizeof(*_##NAME); i++, tok = strtok(NULL, " ")) \
-		parse_property(tok, &_##NAME[i], &self); \
+		if (_##NAME[i].DataType != kDataTypeStruct) \
+			parse_property(tok, &_##NAME[i], &self); \
 	free(tmp); \
 	return (luaX_push##NAME(L, &self), 1); \
 } \
@@ -68,7 +69,7 @@ int luaopen_orca_##NAME(lua_State *L) { \
 <?php foreach ($structs as $name => $struct):?>
 <?php include_template("export/functions", ['functions' => $struct->getMethods(), 'prefix' => $struct->prefix]) ?>
 static struct PropertyType _<?= $name ?>[] = {
-	<?php include_template("export/properties", ['properties' => $struct->getFields(), 'name' => $name]) ?>
+	<?php include_template("export/properties", ['properties' => $struct->getFields(true), 'name' => $name]) ?>
 };
 static luaL_Reg _<?= $name ?>_Methods[] = {
 <?php foreach ($struct->getMethods() as $method_name => $method):?>

@@ -73,8 +73,9 @@ static int f_##NAME##___fromstring(lua_State *L) { \
 	char* tmp = strdup(luaL_checkstring(L, 1)),* tok = strtok(tmp, " "); \
 	struct NAME self; \
 	memset(&self, 0, sizeof(struct NAME)); \
-	for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++, tok = strtok(NULL, " ")) \
-		parse_property(tok, &_##NAME[i], &self); \
+	for (uint32_t i = 0; tok && i < sizeof(_##NAME) / sizeof(*_##NAME); i++, tok = strtok(NULL, " ")) \
+		if (_##NAME[i].DataType != kDataTypeStruct) \
+			parse_property(tok, &_##NAME[i], &self); \
 	free(tmp); \
 	return (luaX_push##NAME(L, &self), 1); \
 } \

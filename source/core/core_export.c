@@ -604,8 +604,9 @@ static int f_##NAME##___fromstring(lua_State *L) { \
 	char* tmp = strdup(luaL_checkstring(L, 1)),* tok = strtok(tmp, " "); \
 	struct NAME self; \
 	memset(&self, 0, sizeof(struct NAME)); \
-	for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++, tok = strtok(NULL, " ")) \
-		parse_property(tok, &_##NAME[i], &self); \
+	for (uint32_t i = 0; tok && i < sizeof(_##NAME) / sizeof(*_##NAME); i++, tok = strtok(NULL, " ")) \
+		if (_##NAME[i].DataType != kDataTypeStruct) \
+			parse_property(tok, &_##NAME[i], &self); \
 	free(tmp); \
 	return (luaX_push##NAME(L, &self), 1); \
 } \
@@ -627,10 +628,10 @@ int luaopen_orca_##NAME(lua_State *L) { \
 	return 1; \
 }
 static struct PropertyType _MessageType[] = {
-	DECL(0x8d39bde6, MessageType, name, name, kDataTypeString), // MessageType.name
-	DECL(0x37386ae0, MessageType, id, id, kDataTypeInt), // MessageType.id
-	DECL(0x9d76c469, MessageType, routing, routing, kDataTypeEnum, .EnumValues = _MessageRouting), // MessageType.routing
-	DECL(0x23a0d95c, MessageType, size, size, kDataTypeInt), // MessageType.size
+	DECL(0x0fe07306, MessageType, Name, name, kDataTypeString), // MessageType.Name
+	DECL(0x36e8b900, MessageType, Id, id, kDataTypeInt), // MessageType.Id
+	DECL(0xce213309, MessageType, Routing, routing, kDataTypeEnum, .EnumValues = _MessageRouting), // MessageType.Routing
+	DECL(0xa6478e7c, MessageType, Size, size, kDataTypeInt), // MessageType.Size
 };
 static luaL_Reg _MessageType_Methods[] = {
 	{ NULL, NULL }
@@ -1082,8 +1083,6 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 		{ "getHover", f_core_GetHover },
 		{ NULL, NULL } 
 	}));
-	void on_core_module_registered(lua_State *L);
-	on_core_module_registered(L);
 	lua_setfield(L, ((void)luaopen_orca_MessageType(L), -2), "MessageType");
 	lua_setfield(L, ((void)luaopen_orca_MouseMessageMsgArgs(L), -2), "MouseMessageMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_KeyMessageMsgArgs(L), -2), "KeyMessageMsgArgs");
@@ -1126,5 +1125,7 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_StopCoroutineMsgArgs(L), -2), "StopCoroutineMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_ViewDidLoadMsgArgs(L), -2), "ViewDidLoadMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object(L), -2), "Object");
+	void on_core_module_registered(lua_State *L);
+	on_core_module_registered(L);
 	return 1;
 }

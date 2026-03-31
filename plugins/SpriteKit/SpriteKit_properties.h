@@ -100,7 +100,15 @@ enum SKViewProperties {
 
 #define ID_SpriteFrame 0xad475fd9
 #define ID_SpriteFrame_Rect 0xa1f930f7 // SpriteFrame.Rect
+#define ID_SpriteFrame_RectX 0xaa47a37d // SpriteFrame.RectX
+#define ID_SpriteFrame_RectY 0xa947a1ea // SpriteFrame.RectY
+#define ID_SpriteFrame_RectWidth 0x2e93ded9 // SpriteFrame.RectWidth
+#define ID_SpriteFrame_RectHeight 0x42515548 // SpriteFrame.RectHeight
 #define ID_SpriteFrame_UvRect 0x85675610 // SpriteFrame.UvRect
+#define ID_SpriteFrame_UvRectX 0x49acd358 // SpriteFrame.UvRectX
+#define ID_SpriteFrame_UvRectY 0x4aacd4eb // SpriteFrame.UvRectY
+#define ID_SpriteFrame_UvRectWidth 0x9b750efc // SpriteFrame.UvRectWidth
+#define ID_SpriteFrame_UvRectHeight 0x3fb6116b // SpriteFrame.UvRectHeight
 	
 
 	

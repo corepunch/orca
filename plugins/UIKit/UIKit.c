@@ -4,35 +4,53 @@
 #define DRAG_SESSION "__DRAG_SESSION__"
 #define DRAG_THRESHOLD 4
 
-void EdgeShorthand_Convert1(struct EdgeShorthand* self, float value) {
-  self->Left = value;
-  self->Right = value;
+int f_MarginShorthand_TextConvert(lua_State* L) {
+  float a, b, c, d;
+  struct MarginShorthand self={0};
+  switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &a, &b, &c, &d)) {
+    case 4:
+      self.Axis[0] = (struct EdgeShorthand){a, c};
+      self.Axis[1] = (struct EdgeShorthand){b, d};
+      return (luaX_pushMarginShorthand(L, &self), 1);
+    case 3:
+      self.Axis[0] = (struct EdgeShorthand){a, c};
+      self.Axis[1] = (struct EdgeShorthand){b, b};
+      return (luaX_pushMarginShorthand(L, &self), 1);
+    case 2:
+      self.Axis[0] = (struct EdgeShorthand){a, a};
+      self.Axis[1] = (struct EdgeShorthand){b, b};
+      return (luaX_pushMarginShorthand(L, &self), 1);
+    case 1:
+      self.Axis[0] = (struct EdgeShorthand){a, a};
+      self.Axis[1] = (struct EdgeShorthand){a, a};
+      return (luaX_pushMarginShorthand(L, &self), 1);
+    default:
+      return 0;
+  }
 }
 
-void BorderRadiusShorthand_Convert1(struct  BorderRadiusShorthand* self, float value) {
-  self->BottomLeftRadius = value;
-  self->BottomRightRadius = value;
-  self->TopLeftRadius = value;
-  self->TopRightRadius = value;
+int f_EdgeShorthand_TextConvert(lua_State* L) {
+  float a, b;
+  switch (sscanf(luaL_checkstring(L, 1), "%f %f", &a, &b)) {
+    case 2:
+      return (luaX_pushEdgeShorthand(L, &(struct EdgeShorthand){a, b}), 1);
+    case 1:
+      return (luaX_pushEdgeShorthand(L, &(struct EdgeShorthand){a, a}), 1);
+    default:
+      return 0;
+  }
 }
 
-void MarginShorthand_Convert4(struct MarginShorthand* self, float left, float top, float right, float bottom) {
-  self->Axis[0].Left = left;
-  self->Axis[0].Right = right;
-  self->Axis[1].Left = top;
-  self->Axis[1].Right = bottom;
-}
-void MarginShorthand_Convert2(struct MarginShorthand* self, float horizontal, float vertical) {
-  self->Axis[0].Left = horizontal;
-  self->Axis[0].Right = horizontal;
-  self->Axis[1].Left = vertical;
-  self->Axis[1].Right = vertical;
-}
-void MarginShorthand_Convert1(struct MarginShorthand* self, float uniform) {
-  self->Axis[0].Left = uniform;
-  self->Axis[0].Right = uniform;
-  self->Axis[1].Left = uniform;
-  self->Axis[1].Right = uniform;
+int f_BorderRadiusShorthand_TextConvert(lua_State* L) {
+  float a, b, c, d;
+  switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &a, &b, &c, &d)) {
+    case 4:
+      return (luaX_pushBorderRadiusShorthand(L, &(struct BorderRadiusShorthand){a, b, c, d}), 1);
+    case 1:
+      return (luaX_pushBorderRadiusShorthand(L, &(struct BorderRadiusShorthand){a, a, a, a}), 1);
+    default:
+      return 0;
+  }
 }
 
 static int lua_pushmousevent(lua_State* L,
@@ -230,5 +248,16 @@ void on_ui_module_registered(lua_State* L) {
   SV_RegisterMessageProc(ui_handle_event);
   lua_pushcfunction(L, f_beginDraggingSession);
   lua_setfield(L, -2, "beginDraggingSession");
+  
+#define OVERRIDE_FROMSTRING(NAME) \
+  int f_##NAME##_TextConvert(lua_State* L); \
+  lua_getfield(L, -1, #NAME); \
+  lua_pushcfunction(L, f_##NAME##_TextConvert); \
+  lua_setfield(L, -2, "fromstring"); \
+  lua_pop(L, 1);
+  OVERRIDE_FROMSTRING(MarginShorthand)
+  OVERRIDE_FROMSTRING(EdgeShorthand)
+  OVERRIDE_FROMSTRING(BorderRadiusShorthand)
+#undef OVERRIDE_FROMSTRING
 }
 

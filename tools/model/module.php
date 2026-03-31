@@ -308,9 +308,16 @@ class Struct extends Interface {
 		$this->prefix = $elem["prefix"] ?? $elem["name"];
 	}
 
-	function getFields() {
+	function getFields($recursive = false) {
 		foreach ($this->_elem->xpath(".//field[@name]") as $f) {
-			yield new Field($f, $this->_model);
+			$type_ = new Type($f, $this->_model);
+			$text = trim((string)$f);
+			$doc = strlen($text) > 0 ? $text : null;
+			if ($recursive) {
+				yield from $this->_walkProperties($type_, [$this->name, (string)$f["name"]], $doc);
+			} else {
+				yield new Field($f, $this->_model);
+			}
 		}
 	}
 
@@ -364,17 +371,15 @@ class Struct extends Interface {
 			}
 		}
 	}
-}
 
-// --- Component ---
-
-class Component extends Struct {
-	function __construct($elem, $model) {
-		parent::__construct($elem, $model);
-		$this->extension = $elem["extension"] ?? null;
-	}
-
-	private function _walkProperties($type_, $args, $doc = null) {
+	function _walkProperties($type_, $args, $doc = null, $unwrapped = false) {
+		if ($type_->fixed_array && !$unwrapped) {
+			for ($i = 0; $i < $type_->fixed_array; $i++) {
+				$new_seg = strval($args[count($args) - 1]) . "[$i]";
+				yield from $this->_walkProperties($type_, array_merge(array_slice($args, 0, -1), [$new_seg]), $doc, true);
+			}
+			return;
+		}
 		$path = array_slice($args, 1);
 		$p = new Property(null, null, null);
 		$p->name = new PropertyName($args[0], $path);
@@ -387,18 +392,18 @@ class Component extends Struct {
 		yield $p;
 		if ($type_->kind === "struct" && !$type_->data->sealed) {
 			foreach ($type_->data->getFields() as $f) {
-				$k = $f->name;
-				$v = $f->type;
-				if ($v->fixed_array) {
-					for ($i = 0; $i < $v->fixed_array; $i++) {
-						$new_seg = strval($k) . "[$i]";
-						yield from $this->_walkProperties($v, array_merge($args, [$new_seg]));
-					}
-				} else {
-					yield from $this->_walkProperties($v, array_merge($args, [strval($k)]));
-				}
+				yield from $this->_walkProperties($f->type, array_merge($args, [strval($f->name)]));
 			}
 		}
+	}
+}
+
+// --- Component ---
+
+class Component extends Struct {
+	function __construct($elem, $model) {
+		parent::__construct($elem, $model);
+		$this->extension = $elem["extension"] ?? null;
 	}
 
 	function getProperties($recursive = true) {

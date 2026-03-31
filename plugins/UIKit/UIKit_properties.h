@@ -758,7 +758,9 @@ enum StyleProperties {
 #define ID_EdgeShorthand_Left 0xb21cdbb6 // EdgeShorthand.Left
 #define ID_EdgeShorthand_Right 0xee8e65eb // EdgeShorthand.Right
 #define ID_AlignmentShorthand 0x5d30eea9
-#define ID_AlignmentShorthand_Axis 0xbef752d4 // AlignmentShorthand.Axis
+#define ID_AlignmentShorthand_Horizontal 0xfa3ad949 // AlignmentShorthand.Horizontal
+#define ID_AlignmentShorthand_Vertical 0x455c521b // AlignmentShorthand.Vertical
+#define ID_AlignmentShorthand_Depth 0xdf90274a // AlignmentShorthand.Depth
 #define ID_FontShorthand 0x23a65347
 #define ID_FontShorthand_Weight 0x5eb4d5c7 // FontShorthand.Weight
 #define ID_FontShorthand_Style 0xcb02aa6c // FontShorthand.Style
@@ -778,19 +780,40 @@ enum StyleProperties {
 #define ID_RingShorthand_Width 0x04fa90e0 // RingShorthand.Width
 #define ID_RingShorthand_Color 0xf820b9cb // RingShorthand.Color
 #define ID_OverflowShorthand 0x05e8dc82
-#define ID_OverflowShorthand_x 0x9f046df4 // OverflowShorthand.x
-#define ID_OverflowShorthand_y 0xa0046f87 // OverflowShorthand.y
+#define ID_OverflowShorthand_X 0x7f043b94 // OverflowShorthand.X
+#define ID_OverflowShorthand_Y 0x80043d27 // OverflowShorthand.Y
 #define ID_UnderlineShorthand 0x2fc1b56e
 #define ID_UnderlineShorthand_Offset 0xa54f0483 // UnderlineShorthand.Offset
 #define ID_UnderlineShorthand_Width 0xa5db78cc // UnderlineShorthand.Width
 #define ID_UnderlineShorthand_Color 0x33df11f7 // UnderlineShorthand.Color
 #define ID_MarginShorthand 0x5df8de92
-#define ID_MarginShorthand_Axis 0x922b0565 // MarginShorthand.Axis
+#define ID_MarginShorthand_Horizontal 0xcce44a3c // MarginShorthand.Horizontal
+#define ID_MarginShorthand_Left 0xec361455 // MarginShorthand.Left
+#define ID_MarginShorthand_Right 0x0e962cee // MarginShorthand.Right
+#define ID_MarginShorthand_Vertical 0xa2f58bce // MarginShorthand.Vertical
+#define ID_MarginShorthand_Top 0x2a2bfc97 // MarginShorthand.Top
+#define ID_MarginShorthand_Bottom 0xa2c2259f // MarginShorthand.Bottom
+#define ID_MarginShorthand_Depth 0xd3b67969 // MarginShorthand.Depth
+#define ID_MarginShorthand_Front 0x55c21fb3 // MarginShorthand.Front
+#define ID_MarginShorthand_Back 0xf661633f // MarginShorthand.Back
 #define ID_BorderShorthand 0x317c0db6
 #define ID_BorderShorthand_Width 0x0f2cb544 // BorderShorthand.Width
+#define ID_BorderShorthand_HorizontalWidth 0xd6fbc4b4 // BorderShorthand.HorizontalWidth
+#define ID_BorderShorthand_WidthLeft 0x608ae485 // BorderShorthand.WidthLeft
+#define ID_BorderShorthand_WidthRight 0x7e80ddde // BorderShorthand.WidthRight
+#define ID_BorderShorthand_VerticalWidth 0x96d0e7ee // BorderShorthand.VerticalWidth
+#define ID_BorderShorthand_WidthTop 0xab886547 // BorderShorthand.WidthTop
+#define ID_BorderShorthand_WidthBottom 0x432470af // BorderShorthand.WidthBottom
+#define ID_BorderShorthand_DepthWidth 0xc868f077 // BorderShorthand.DepthWidth
+#define ID_BorderShorthand_WidthFront 0x04871823 // BorderShorthand.WidthFront
+#define ID_BorderShorthand_WidthBack 0xa404adcf // BorderShorthand.WidthBack
 #define ID_BorderShorthand_Color 0x77ce2ebf // BorderShorthand.Color
 #define ID_BorderShorthand_Style 0x60399c3d // BorderShorthand.Style
 #define ID_BorderShorthand_Radius 0xaf3f00de // BorderShorthand.Radius
+#define ID_BorderShorthand_RadiusTopLeftRadius 0xaa72a01a // BorderShorthand.RadiusTopLeftRadius
+#define ID_BorderShorthand_RadiusTopRightRadius 0xc38f432f // BorderShorthand.RadiusTopRightRadius
+#define ID_BorderShorthand_RadiusBottomRightRadius 0x8e31b4f3 // BorderShorthand.RadiusBottomRightRadius
+#define ID_BorderShorthand_RadiusBottomLeftRadius 0x00bb0796 // BorderShorthand.RadiusBottomLeftRadius
 #define ID_SizeAxisShorthand 0xa05ccb28
 #define ID_SizeAxisShorthand_Requested 0xf9a8147e // SizeAxisShorthand.Requested
 #define ID_SizeAxisShorthand_Desired 0x48f908f0 // SizeAxisShorthand.Desired
@@ -798,7 +821,24 @@ enum StyleProperties {
 #define ID_SizeAxisShorthand_Actual 0x18fecf94 // SizeAxisShorthand.Actual
 #define ID_SizeAxisShorthand_Scroll 0xe09d850b // SizeAxisShorthand.Scroll
 #define ID_SizeShorthand 0x02bfd76b
-#define ID_SizeShorthand_Axis 0xbefce76a // SizeShorthand.Axis
+#define ID_SizeShorthand_Horizontal 0xa8ee570f // SizeShorthand.Horizontal
+#define ID_SizeShorthand_HorizontalRequested 0x17543bb1 // SizeShorthand.HorizontalRequested
+#define ID_SizeShorthand_HorizontalDesired 0x385f735b // SizeShorthand.HorizontalDesired
+#define ID_SizeShorthand_HorizontalMin 0xf14ba409 // SizeShorthand.HorizontalMin
+#define ID_SizeShorthand_HorizontalActual 0x228bb6a5 // SizeShorthand.HorizontalActual
+#define ID_SizeShorthand_HorizontalScroll 0x772de84e // SizeShorthand.HorizontalScroll
+#define ID_SizeShorthand_Vertical 0x032084c1 // SizeShorthand.Vertical
+#define ID_SizeShorthand_VerticalRequested 0xe6ff1c17 // SizeShorthand.VerticalRequested
+#define ID_SizeShorthand_VerticalDesired 0x855e9309 // SizeShorthand.VerticalDesired
+#define ID_SizeShorthand_VerticalMin 0x5c248b5b // SizeShorthand.VerticalMin
+#define ID_SizeShorthand_VerticalActual 0x793bc5eb // SizeShorthand.VerticalActual
+#define ID_SizeShorthand_VerticalScroll 0xf4aafd10 // SizeShorthand.VerticalScroll
+#define ID_SizeShorthand_Depth 0x6026d818 // SizeShorthand.Depth
+#define ID_SizeShorthand_DepthRequested 0x4cfbea00 // SizeShorthand.DepthRequested
+#define ID_SizeShorthand_DepthDesired 0xfce7044a // SizeShorthand.DepthDesired
+#define ID_SizeShorthand_DepthMin 0x1a9d1274 // SizeShorthand.DepthMin
+#define ID_SizeShorthand_DepthActual 0x3967040e // SizeShorthand.DepthActual
+#define ID_SizeShorthand_DepthScroll 0x60ff3f79 // SizeShorthand.DepthScroll
 	
 
 #define ID_UpdateMatrix 0x5dbe404d

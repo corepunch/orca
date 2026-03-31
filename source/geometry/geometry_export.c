@@ -66,8 +66,9 @@ static int f_##NAME##___fromstring(lua_State *L) { \
 	char* tmp = strdup(luaL_checkstring(L, 1)),* tok = strtok(tmp, " "); \
 	struct NAME self; \
 	memset(&self, 0, sizeof(struct NAME)); \
-	for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++, tok = strtok(NULL, " ")) \
-		parse_property(tok, &_##NAME[i], &self); \
+	for (uint32_t i = 0; tok && i < sizeof(_##NAME) / sizeof(*_##NAME); i++, tok = strtok(NULL, " ")) \
+		if (_##NAME[i].DataType != kDataTypeStruct) \
+			parse_property(tok, &_##NAME[i], &self); \
 	free(tmp); \
 	return (luaX_push##NAME(L, &self), 1); \
 } \
@@ -184,8 +185,8 @@ int f_VEC2_Mad(lua_State *L) {
 	return 1;
 }
 static struct PropertyType _vec2[] = {
-	DECL(0xfd0c5087, vec2, x, x, kDataTypeFloat), // vec2.x
-	DECL(0xfc0c4ef4, vec2, y, y, kDataTypeFloat), // vec2.y
+	DECL(0xdd0c1e27, vec2, X, x, kDataTypeFloat), // vec2.X
+	DECL(0xdc0c1c94, vec2, Y, y, kDataTypeFloat), // vec2.Y
 };
 static luaL_Reg _vec2_Methods[] = {
 	{ "set", f_VEC2_Set },
@@ -326,9 +327,9 @@ int f_VEC3_Distance(lua_State *L) {
 	return 1;
 }
 static struct PropertyType _vec3[] = {
-	DECL(0xfd0c5087, vec3, x, x, kDataTypeFloat), // vec3.x
-	DECL(0xfc0c4ef4, vec3, y, y, kDataTypeFloat), // vec3.y
-	DECL(0xff0c53ad, vec3, z, z, kDataTypeFloat), // vec3.z
+	DECL(0xdd0c1e27, vec3, X, x, kDataTypeFloat), // vec3.X
+	DECL(0xdc0c1c94, vec3, Y, y, kDataTypeFloat), // vec3.Y
+	DECL(0xdf0c214d, vec3, Z, z, kDataTypeFloat), // vec3.Z
 };
 static luaL_Reg _vec3_Methods[] = {
 	{ "dot", f_VEC3_Dot },
@@ -388,10 +389,10 @@ int f_VEC4_Lerp(lua_State *L) {
 	return 1;
 }
 static struct PropertyType _vec4[] = {
-	DECL(0xfd0c5087, vec4, x, x, kDataTypeFloat), // vec4.x
-	DECL(0xfc0c4ef4, vec4, y, y, kDataTypeFloat), // vec4.y
-	DECL(0xff0c53ad, vec4, z, z, kDataTypeFloat), // vec4.z
-	DECL(0xf20c3f36, vec4, w, w, kDataTypeFloat), // vec4.w
+	DECL(0xdd0c1e27, vec4, X, x, kDataTypeFloat), // vec4.X
+	DECL(0xdc0c1c94, vec4, Y, y, kDataTypeFloat), // vec4.Y
+	DECL(0xdf0c214d, vec4, Z, z, kDataTypeFloat), // vec4.Z
+	DECL(0xd20c0cd6, vec4, W, w, kDataTypeFloat), // vec4.W
 };
 static luaL_Reg _vec4_Methods[] = {
 	{ "set", f_VEC4_Set },
@@ -421,8 +422,8 @@ int f_BOX2_ContainsPoint(lua_State *L) {
 	return 1;
 }
 static struct PropertyType _box2[] = {
-	DECL(0xc98f4557, box2, min, min, kDataTypeStruct, .TypeString = "Vector2D"), // box2.min
-	DECL(0xd7a2e319, box2, max, max, kDataTypeStruct, .TypeString = "Vector2D"), // box2.max
+	DECL(0x2e9445f7, box2, Min, min, kDataTypeStruct, .TypeString = "Vector2D"), // box2.Min
+	DECL(0x3ca7e3b9, box2, Max, max, kDataTypeStruct, .TypeString = "Vector2D"), // box2.Max
 };
 static luaL_Reg _box2_Methods[] = {
 	{ "center", f_BOX2_Center },
@@ -437,16 +438,16 @@ int f_BOX3_Center(lua_State *L) {
 	return 1;
 }
 static struct PropertyType _box3[] = {
-	DECL(0xc98f4557, box3, min, min, kDataTypeStruct, .TypeString = "Vector3D"), // box3.min
-	DECL(0xd7a2e319, box3, max, max, kDataTypeStruct, .TypeString = "Vector3D"), // box3.max
+	DECL(0x2e9445f7, box3, Min, min, kDataTypeStruct, .TypeString = "Vector3D"), // box3.Min
+	DECL(0x3ca7e3b9, box3, Max, max, kDataTypeStruct, .TypeString = "Vector3D"), // box3.Max
 };
 static luaL_Reg _box3_Methods[] = {
 	{ "center", f_BOX3_Center },
 	{ NULL, NULL }
 };
 static struct PropertyType _Size[] = {
-	DECL(0x95876e1f, Size, width, width, kDataTypeFloat), // Size.width
-	DECL(0xd5bdbb42, Size, height, height, kDataTypeFloat), // Size.height
+	DECL(0x3b42dfbf, Size, Width, width, kDataTypeFloat), // Size.Width
+	DECL(0x1bd13562, Size, Height, height, kDataTypeFloat), // Size.Height
 };
 static luaL_Reg _Size_Methods[] = {
 	{ NULL, NULL }
@@ -486,10 +487,10 @@ int f_RECT_Fit(lua_State *L) {
 	return 1;
 }
 static struct PropertyType _rect[] = {
-	DECL(0xfd0c5087, rect, x, x, kDataTypeFloat), // rect.x
-	DECL(0xfc0c4ef4, rect, y, y, kDataTypeFloat), // rect.y
-	DECL(0x95876e1f, rect, width, width, kDataTypeFloat), // rect.width
-	DECL(0xd5bdbb42, rect, height, height, kDataTypeFloat), // rect.height
+	DECL(0xdd0c1e27, rect, X, x, kDataTypeFloat), // rect.X
+	DECL(0xdc0c1c94, rect, Y, y, kDataTypeFloat), // rect.Y
+	DECL(0x3b42dfbf, rect, Width, width, kDataTypeFloat), // rect.Width
+	DECL(0x1bd13562, rect, Height, height, kDataTypeFloat), // rect.Height
 };
 static luaL_Reg _rect_Methods[] = {
 	{ "contains", f_RECT_Contains },
@@ -556,10 +557,10 @@ int f_QUAT_Sqlerp(lua_State *L) {
 	return 1;
 }
 static struct PropertyType _quat[] = {
-	DECL(0xfd0c5087, quat, x, x, kDataTypeFloat), // quat.x
-	DECL(0xfc0c4ef4, quat, y, y, kDataTypeFloat), // quat.y
-	DECL(0xff0c53ad, quat, z, z, kDataTypeFloat), // quat.z
-	DECL(0xf20c3f36, quat, w, w, kDataTypeFloat), // quat.w
+	DECL(0xdd0c1e27, quat, X, x, kDataTypeFloat), // quat.X
+	DECL(0xdc0c1c94, quat, Y, y, kDataTypeFloat), // quat.Y
+	DECL(0xdf0c214d, quat, Z, z, kDataTypeFloat), // quat.Z
+	DECL(0xd20c0cd6, quat, W, w, kDataTypeFloat), // quat.W
 };
 static luaL_Reg _quat_Methods[] = {
 	{ "fromEuler", f_QUAT_FromEuler },
@@ -596,7 +597,15 @@ int f_MAT3_Scale(lua_State *L) {
 	return 0;
 }
 static struct PropertyType _mat3[] = {
-	DECL(0xf30c40c9, mat3, v, v, kDataTypeFloat), // mat3.v
+	DECL(0xbbe9c17d, mat3, V[0], v[0], kDataTypeFloat), // mat3.V[0]
+	DECL(0x77ed2808, mat3, V[1], v[1], kDataTypeFloat), // mat3.V[1]
+	DECL(0x77e4d943, mat3, V[2], v[2], kDataTypeFloat), // mat3.V[2]
+	DECL(0x7be71e26, mat3, V[3], v[3], kDataTypeFloat), // mat3.V[3]
+	DECL(0xbbe0c721, mat3, V[4], v[4], kDataTypeFloat), // mat3.V[4]
+	DECL(0xb7e2ff6c, mat3, V[5], v[5], kDataTypeFloat), // mat3.V[5]
+	DECL(0x77dbdee7, mat3, V[6], v[6], kDataTypeFloat), // mat3.V[6]
+	DECL(0x7bde23ca, mat3, V[7], v[7], kDataTypeFloat), // mat3.V[7]
+	DECL(0x7bfe7775, mat3, V[8], v[8], kDataTypeFloat), // mat3.V[8]
 };
 static luaL_Reg _mat3_Methods[] = {
 	{ "identity", f_MAT3_Identity },
@@ -718,7 +727,22 @@ int f_MAT4_RotateQuat(lua_State *L) {
 	return 0;
 }
 static struct PropertyType _mat4[] = {
-	DECL(0xf30c40c9, mat4, v, v, kDataTypeFloat), // mat4.v
+	DECL(0xbbe9c17d, mat4, V[0], v[0], kDataTypeFloat), // mat4.V[0]
+	DECL(0x77ed2808, mat4, V[1], v[1], kDataTypeFloat), // mat4.V[1]
+	DECL(0x77e4d943, mat4, V[2], v[2], kDataTypeFloat), // mat4.V[2]
+	DECL(0x7be71e26, mat4, V[3], v[3], kDataTypeFloat), // mat4.V[3]
+	DECL(0xbbe0c721, mat4, V[4], v[4], kDataTypeFloat), // mat4.V[4]
+	DECL(0xb7e2ff6c, mat4, V[5], v[5], kDataTypeFloat), // mat4.V[5]
+	DECL(0x77dbdee7, mat4, V[6], v[6], kDataTypeFloat), // mat4.V[6]
+	DECL(0x7bde23ca, mat4, V[7], v[7], kDataTypeFloat), // mat4.V[7]
+	DECL(0x7bfe7775, mat4, V[8], v[8], kDataTypeFloat), // mat4.V[8]
+	DECL(0x7800afc0, mat4, V[9], v[9], kDataTypeFloat), // mat4.V[9]
+	DECL(0x62fee836, mat4, V[10], v[10], kDataTypeFloat), // mat4.V[10]
+	DECL(0x1efc3e93, mat4, V[11], v[11], kDataTypeFloat), // mat4.V[11]
+	DECL(0x1f048d58, mat4, V[12], v[12], kDataTypeFloat), // mat4.V[12]
+	DECL(0x2302550d, mat4, V[13], v[13], kDataTypeFloat), // mat4.V[13]
+	DECL(0x62f5edda, mat4, V[14], v[14], kDataTypeFloat), // mat4.V[14]
+	DECL(0x1ef34437, mat4, V[15], v[15], kDataTypeFloat), // mat4.V[15]
 };
 static luaL_Reg _mat4_Methods[] = {
 	{ "identity", f_MAT4_Identity },
@@ -740,8 +764,8 @@ static luaL_Reg _mat4_Methods[] = {
 	{ NULL, NULL }
 };
 static struct PropertyType _bounds[] = {
-	DECL(0xc98f4557, bounds, min, min, kDataTypeFloat), // bounds.min
-	DECL(0xd7a2e319, bounds, max, max, kDataTypeFloat), // bounds.max
+	DECL(0x2e9445f7, bounds, Min, min, kDataTypeFloat), // bounds.Min
+	DECL(0x3ca7e3b9, bounds, Max, max, kDataTypeFloat), // bounds.Max
 };
 static luaL_Reg _bounds_Methods[] = {
 	{ NULL, NULL }
@@ -759,10 +783,10 @@ int f_plane3_MultiplyVector3D(lua_State *L) {
 	return 1;
 }
 static struct PropertyType _plane3[] = {
-	DECL(0xe40c292c, plane3, a, a, kDataTypeFloat), // plane3.a
-	DECL(0xe70c2de5, plane3, b, b, kDataTypeFloat), // plane3.b
-	DECL(0xe60c2c52, plane3, c, c, kDataTypeFloat), // plane3.c
-	DECL(0xe10c2473, plane3, d, d, kDataTypeFloat), // plane3.d
+	DECL(0xc40bf6cc, plane3, A, a, kDataTypeFloat), // plane3.A
+	DECL(0xc70bfb85, plane3, B, b, kDataTypeFloat), // plane3.B
+	DECL(0xc60bf9f2, plane3, C, c, kDataTypeFloat), // plane3.C
+	DECL(0xc10bf213, plane3, D, d, kDataTypeFloat), // plane3.D
 };
 static luaL_Reg _plane3_Methods[] = {
 	{ "normalize", f_plane3_Normalize },
@@ -770,8 +794,8 @@ static luaL_Reg _plane3_Methods[] = {
 	{ NULL, NULL }
 };
 static struct PropertyType _sphere3[] = {
-	DECL(0x058c4484, sphere3, center, center, kDataTypeStruct, .TypeString = "Vector3D"), // sphere3.center
-	DECL(0x0dba4cb3, sphere3, radius, radius, kDataTypeFloat), // sphere3.radius
+	DECL(0x4b9fbea4, sphere3, Center, center, kDataTypeStruct, .TypeString = "Vector3D"), // sphere3.Center
+	DECL(0x3a8111d3, sphere3, Radius, radius, kDataTypeFloat), // sphere3.Radius
 };
 static luaL_Reg _sphere3_Methods[] = {
 	{ NULL, NULL }
@@ -812,12 +836,36 @@ int f_frustum_ContainsAABox(lua_State *L) {
 	return 1;
 }
 static struct PropertyType _frustum3[] = {
-	DECL(0x124aec70, frustum3, left, left, kDataTypeStruct, .TypeString = "Plane"), // frustum3.left
-	DECL(0x78e32de5, frustum3, right, right, kDataTypeStruct, .TypeString = "Plane"), // frustum3.right
-	DECL(0x4ea76b2a, frustum3, bottom, bottom, kDataTypeStruct, .TypeString = "Plane"), // frustum3.bottom
-	DECL(0xa710dc3c, frustum3, top, top, kDataTypeStruct, .TypeString = "Plane"), // frustum3.top
-	DECL(0xe179dbd8, frustum3, front, front, kDataTypeStruct, .TypeString = "Plane"), // frustum3.front
-	DECL(0x5bb421a2, frustum3, back, back, kDataTypeStruct, .TypeString = "Plane"), // frustum3.back
+	DECL(0x92773890, frustum3, Left, left, kDataTypeStruct, .TypeString = "Plane"), // frustum3.Left
+	DECL(0x62ae7103, frustum3, LeftA, left.a, kDataTypeFloat), // frustum3.LeftA
+	DECL(0x63ae7296, frustum3, LeftB, left.b, kDataTypeFloat), // frustum3.LeftB
+	DECL(0x64ae7429, frustum3, LeftC, left.c, kDataTypeFloat), // frustum3.LeftC
+	DECL(0x65ae75bc, frustum3, LeftD, left.d, kDataTypeFloat), // frustum3.LeftD
+	DECL(0x1e9e9f85, frustum3, Right, right, kDataTypeStruct, .TypeString = "Plane"), // frustum3.Right
+	DECL(0xf7b5818c, frustum3, RightA, right.a, kDataTypeFloat), // frustum3.RightA
+	DECL(0xfab58645, frustum3, RightB, right.b, kDataTypeFloat), // frustum3.RightB
+	DECL(0xf9b584b2, frustum3, RightC, right.c, kDataTypeFloat), // frustum3.RightC
+	DECL(0xf4b57cd3, frustum3, RightD, right.d, kDataTypeFloat), // frustum3.RightD
+	DECL(0x22b5f34a, frustum3, Bottom, bottom, kDataTypeStruct, .TypeString = "Plane"), // frustum3.Bottom
+	DECL(0xaf6d9a51, frustum3, BottomA, bottom.a, kDataTypeFloat), // frustum3.BottomA
+	DECL(0xac6d9598, frustum3, BottomB, bottom.b, kDataTypeFloat), // frustum3.BottomB
+	DECL(0xad6d972b, frustum3, BottomC, bottom.c, kDataTypeFloat), // frustum3.BottomC
+	DECL(0xb26d9f0a, frustum3, BottomD, bottom.d, kDataTypeFloat), // frustum3.BottomD
+	DECL(0x099b73dc, frustum3, Top, top, kDataTypeStruct, .TypeString = "Plane"), // frustum3.Top
+	DECL(0xbcb70027, frustum3, TopA, top.a, kDataTypeFloat), // frustum3.TopA
+	DECL(0xbdb701ba, frustum3, TopB, top.b, kDataTypeFloat), // frustum3.TopB
+	DECL(0xbeb7034d, frustum3, TopC, top.c, kDataTypeFloat), // frustum3.TopC
+	DECL(0xb7b6f848, frustum3, TopD, top.d, kDataTypeFloat), // frustum3.TopD
+	DECL(0x6de89878, frustum3, Front, front, kDataTypeStruct, .TypeString = "Plane"), // frustum3.Front
+	DECL(0x3e27a1bb, frustum3, FrontA, front.a, kDataTypeFloat), // frustum3.FrontA
+	DECL(0x3f27a34e, frustum3, FrontB, front.b, kDataTypeFloat), // frustum3.FrontB
+	DECL(0x4027a4e1, frustum3, FrontC, front.c, kDataTypeFloat), // frustum3.FrontC
+	DECL(0x4127a674, frustum3, FrontD, front.d, kDataTypeFloat), // frustum3.FrontD
+	DECL(0xc2954bc2, frustum3, Back, back, kDataTypeStruct, .TypeString = "Plane"), // frustum3.Back
+	DECL(0xd405df39, frustum3, BackA, back.a, kDataTypeFloat), // frustum3.BackA
+	DECL(0xd105da80, frustum3, BackB, back.b, kDataTypeFloat), // frustum3.BackB
+	DECL(0xd205dc13, frustum3, BackC, back.c, kDataTypeFloat), // frustum3.BackC
+	DECL(0xd705e3f2, frustum3, BackD, back.d, kDataTypeFloat), // frustum3.BackD
 };
 static luaL_Reg _frustum3_Methods[] = {
 	{ "calculate", f_frustum_Calculate },
@@ -840,9 +888,9 @@ int f_transform2_ToMatrix3D(lua_State *L) {
 	return 1;
 }
 static struct PropertyType _transform2[] = {
-	DECL(0xcbd2d62c, transform2, translation, translation, kDataTypeStruct, .TypeString = "Vector2D"), // transform2.translation
-	DECL(0x21ac415f, transform2, rotation, rotation, kDataTypeFloat), // transform2.rotation
-	DECL(0x82971c71, transform2, scale, scale, kDataTypeStruct, .TypeString = "Vector2D"), // transform2.scale
+	DECL(0x249730cc, transform2, Translation, translation, kDataTypeStruct, .TypeString = "Vector2D"), // transform2.Translation
+	DECL(0x0232777f, transform2, Rotation, rotation, kDataTypeFloat), // transform2.Rotation
+	DECL(0x28528e11, transform2, Scale, scale, kDataTypeStruct, .TypeString = "Vector2D"), // transform2.Scale
 };
 static luaL_Reg _transform2_Methods[] = {
 	{ "identity", f_transform2_Identity },
@@ -862,9 +910,9 @@ int f_transform3_ToMatrix3D(lua_State *L) {
 	return 1;
 }
 static struct PropertyType _transform3[] = {
-	DECL(0xcbd2d62c, transform3, translation, translation, kDataTypeStruct, .TypeString = "Vector3D"), // transform3.translation
-	DECL(0x21ac415f, transform3, rotation, rotation, kDataTypeStruct, .TypeString = "Vector3D"), // transform3.rotation
-	DECL(0x82971c71, transform3, scale, scale, kDataTypeStruct, .TypeString = "Vector3D"), // transform3.scale
+	DECL(0x249730cc, transform3, Translation, translation, kDataTypeStruct, .TypeString = "Vector3D"), // transform3.Translation
+	DECL(0x0232777f, transform3, Rotation, rotation, kDataTypeStruct, .TypeString = "Vector3D"), // transform3.Rotation
+	DECL(0x28528e11, transform3, Scale, scale, kDataTypeStruct, .TypeString = "Vector3D"), // transform3.Scale
 };
 static luaL_Reg _transform3_Methods[] = {
 	{ "identity", f_transform3_Identity },
@@ -878,9 +926,9 @@ int f_triangle3_normal(lua_State *L) {
 	return 1;
 }
 static struct PropertyType _triangle3[] = {
-	DECL(0xe40c292c, triangle3, a, a, kDataTypeStruct, .TypeString = "Vector3D"), // triangle3.a
-	DECL(0xe70c2de5, triangle3, b, b, kDataTypeStruct, .TypeString = "Vector3D"), // triangle3.b
-	DECL(0xe60c2c52, triangle3, c, c, kDataTypeStruct, .TypeString = "Vector3D"), // triangle3.c
+	DECL(0xc40bf6cc, triangle3, A, a, kDataTypeStruct, .TypeString = "Vector3D"), // triangle3.A
+	DECL(0xc70bfb85, triangle3, B, b, kDataTypeStruct, .TypeString = "Vector3D"), // triangle3.B
+	DECL(0xc60bf9f2, triangle3, C, c, kDataTypeStruct, .TypeString = "Vector3D"), // triangle3.C
 };
 static luaL_Reg _triangle3_Methods[] = {
 	{ "normal", f_triangle3_normal },
@@ -919,8 +967,8 @@ int f_line3_intersect_box3(lua_State *L) {
 	return 1;
 }
 static struct PropertyType _line3[] = {
-	DECL(0xe40c292c, line3, a, a, kDataTypeStruct, .TypeString = "Vector3D"), // line3.a
-	DECL(0xe70c2de5, line3, b, b, kDataTypeStruct, .TypeString = "Vector3D"), // line3.b
+	DECL(0xc40bf6cc, line3, A, a, kDataTypeStruct, .TypeString = "Vector3D"), // line3.A
+	DECL(0xc70bfb85, line3, B, b, kDataTypeStruct, .TypeString = "Vector3D"), // line3.B
 };
 static luaL_Reg _line3_Methods[] = {
 	{ "intersect_sphere3", f_line3_intersect_sphere3 },
@@ -930,10 +978,10 @@ static luaL_Reg _line3_Methods[] = {
 	{ NULL, NULL }
 };
 static struct PropertyType _edges[] = {
-	DECL(0x124aec70, edges, left, left, kDataTypeFloat), // edges.left
-	DECL(0xa710dc3c, edges, top, top, kDataTypeFloat), // edges.top
-	DECL(0x78e32de5, edges, right, right, kDataTypeFloat), // edges.right
-	DECL(0x4ea76b2a, edges, bottom, bottom, kDataTypeFloat), // edges.bottom
+	DECL(0x92773890, edges, Left, left, kDataTypeFloat), // edges.Left
+	DECL(0x099b73dc, edges, Top, top, kDataTypeFloat), // edges.Top
+	DECL(0x1e9e9f85, edges, Right, right, kDataTypeFloat), // edges.Right
+	DECL(0x22b5f34a, edges, Bottom, bottom, kDataTypeFloat), // edges.Bottom
 };
 static luaL_Reg _edges_Methods[] = {
 	{ NULL, NULL }
@@ -953,10 +1001,10 @@ int f_COLOR_Parse(lua_State *L) {
 	return 1;
 }
 static struct PropertyType _color[] = {
-	DECL(0xf70c4715, color, r, r, kDataTypeFloat), // color.r
-	DECL(0xe20c2606, color, g, g, kDataTypeFloat), // color.g
-	DECL(0xe70c2de5, color, b, b, kDataTypeFloat), // color.b
-	DECL(0xe40c292c, color, a, a, kDataTypeFloat), // color.a
+	DECL(0xd70c14b5, color, R, r, kDataTypeFloat), // color.R
+	DECL(0xc20bf3a6, color, G, g, kDataTypeFloat), // color.G
+	DECL(0xc70bfb85, color, B, b, kDataTypeFloat), // color.B
+	DECL(0xc40bf6cc, color, A, a, kDataTypeFloat), // color.A
 };
 static luaL_Reg _color_Methods[] = {
 	{ "lerp", f_COLOR_Lerp },

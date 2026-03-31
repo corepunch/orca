@@ -39,7 +39,7 @@ enum <?= $classname ?>Properties {
 
 <?php foreach ($model->getStructs() as $name => $struct):?>
 #define ID_<?= $name ?> 0x<?= hash('fnv1a32', $name) ?>
-<?php foreach ($struct->getFields() as $field) {
+<?php foreach ($struct->getFields(true) as $field) {
 	$fieldName = $field->name;
 	echo("#define ID_{$name}_{$fieldName} 0x" . hash('fnv1a32', "$name.$fieldName") . " // {$name}.{$fieldName}\n");
 }?>

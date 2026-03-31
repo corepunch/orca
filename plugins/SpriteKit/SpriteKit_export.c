@@ -65,8 +65,9 @@ static int f_##NAME##___fromstring(lua_State *L) { \
 	char* tmp = strdup(luaL_checkstring(L, 1)),* tok = strtok(tmp, " "); \
 	struct NAME self; \
 	memset(&self, 0, sizeof(struct NAME)); \
-	for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++, tok = strtok(NULL, " ")) \
-		parse_property(tok, &_##NAME[i], &self); \
+	for (uint32_t i = 0; tok && i < sizeof(_##NAME) / sizeof(*_##NAME); i++, tok = strtok(NULL, " ")) \
+		if (_##NAME[i].DataType != kDataTypeStruct) \
+			parse_property(tok, &_##NAME[i], &self); \
 	free(tmp); \
 	return (luaX_push##NAME(L, &self), 1); \
 } \
@@ -89,7 +90,15 @@ int luaopen_orca_##NAME(lua_State *L) { \
 }
 static struct PropertyType _SpriteFrame[] = {
 	DECL(0x6b109927, SpriteFrame, Rect, Rect, kDataTypeStruct, .TypeString = "Rectangle"), // SpriteFrame.Rect
+	DECL(0x0a21a2ed, SpriteFrame, RectX, Rect.x, kDataTypeFloat), // SpriteFrame.RectX
+	DECL(0x0921a15a, SpriteFrame, RectY, Rect.y, kDataTypeFloat), // SpriteFrame.RectY
+	DECL(0x25c57ce9, SpriteFrame, RectWidth, Rect.width, kDataTypeFloat), // SpriteFrame.RectWidth
+	DECL(0x68097dd8, SpriteFrame, RectHeight, Rect.height, kDataTypeFloat), // SpriteFrame.RectHeight
 	DECL(0xae3d25c0, SpriteFrame, UvRect, UvRect, kDataTypeStruct, .TypeString = "Rectangle"), // SpriteFrame.UvRect
+	DECL(0xe2422e48, SpriteFrame, UvRectX, UvRect.x, kDataTypeFloat), // SpriteFrame.UvRectX
+	DECL(0xe3422fdb, SpriteFrame, UvRectY, UvRect.y, kDataTypeFloat), // SpriteFrame.UvRectY
+	DECL(0xec9d6ecc, SpriteFrame, UvRectWidth, UvRect.width, kDataTypeFloat), // SpriteFrame.UvRectWidth
+	DECL(0xdbdb8abb, SpriteFrame, UvRectHeight, UvRect.height, kDataTypeFloat), // SpriteFrame.UvRectHeight
 };
 static luaL_Reg _SpriteFrame_Methods[] = {
 	{ NULL, NULL }
@@ -345,8 +354,6 @@ ORCA_API int luaopen_orca_SpriteKit(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
 		{ NULL, NULL } 
 	}));
-	void on_spritekit_module_registered(lua_State *L);
-	on_spritekit_module_registered(L);
 	lua_setfield(L, ((void)luaopen_orca_SpriteFrame(L), -2), "SpriteFrame");
 	lua_setfield(L, ((void)lua_pushclass(L, &_SpriteAnimation), -2), "SpriteAnimation");
 	lua_setfield(L, ((void)lua_pushclass(L, &_SKNode), -2), "SKNode");
@@ -354,5 +361,7 @@ ORCA_API int luaopen_orca_SpriteKit(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_SKSpriteNode), -2), "SKSpriteNode");
 	lua_setfield(L, ((void)lua_pushclass(L, &_SKLabelNode), -2), "SKLabelNode");
 	lua_setfield(L, ((void)lua_pushclass(L, &_SKView), -2), "SKView");
+	void on_spritekit_module_registered(lua_State *L);
+	on_spritekit_module_registered(L);
 	return 1;
 }

@@ -115,8 +115,9 @@ static int f_##NAME##___fromstring(lua_State *L) { \
 	char* tmp = strdup(luaL_checkstring(L, 1)),* tok = strtok(tmp, " "); \
 	struct NAME self; \
 	memset(&self, 0, sizeof(struct NAME)); \
-	for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++, tok = strtok(NULL, " ")) \
-		parse_property(tok, &_##NAME[i], &self); \
+	for (uint32_t i = 0; tok && i < sizeof(_##NAME) / sizeof(*_##NAME); i++, tok = strtok(NULL, " ")) \
+		if (_##NAME[i].DataType != kDataTypeStruct) \
+			parse_property(tok, &_##NAME[i], &self); \
 	free(tmp); \
 	return (luaX_push##NAME(L, &self), 1); \
 } \
@@ -736,8 +737,6 @@ ORCA_API int luaopen_orca_renderer(lua_State *L) {
 		{ "drawImage", f_renderer_DrawImage },
 		{ NULL, NULL } 
 	}));
-	void on_renderer_module_registered(lua_State *L);
-	on_renderer_module_registered(L);
 	lua_setfield(L, ((void)luaopen_orca_RenderScreenMsgArgs(L), -2), "RenderScreenMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_RenderMsgArgs(L), -2), "RenderMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_window(L), -2), "Window");
@@ -754,5 +753,7 @@ ORCA_API int luaopen_orca_renderer(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_FontFamily), -2), "FontFamily");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Trajectory), -2), "Trajectory");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Timeline), -2), "Timeline");
+	void on_renderer_module_registered(lua_State *L);
+	on_renderer_module_registered(L);
 	return 1;
 }
