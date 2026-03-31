@@ -1,6 +1,6 @@
 #include <include/api.h>
 
-ORCA_API void
+ORCA_API int
 parse_property(const char* str,
                struct PropertyType const* prop,
                void* struct_ptr)
@@ -9,33 +9,34 @@ parse_property(const char* str,
   switch (prop->DataType) {
     case kDataTypeBool:
       *(bool*)valueptr = strcasecmp(str, "true") == 0 || strcmp(str, "1") == 0;
-      break;
+      return TRUE;
     case kDataTypeInt:
       *(int*)valueptr = atoi(str);
-      break;
+      return TRUE;
     case kDataTypeEnum:
       for (int i = 0; prop->EnumValues[i] != NULL; i++) {
         if (strcmp(str, prop->EnumValues[i]) == 0) {
           *(int*)valueptr = i;
-          return;
+          return TRUE;
         }
       }
       fprintf(stderr, "Invalid enum value '%s' for property '%s'\n", str, prop->Name);
-      break;
+      return FALSE;
     case kDataTypeFloat:
       *(float*)valueptr = atof(str);
-      break;
+      return TRUE;
     case kDataTypeString:
       if (*(char**)valueptr) free(*(char**)valueptr); // Free existing string if necessary
       *(char**)valueptr = strdup(str);
-      break;
+      return TRUE;
     case kDataTypeColor:
       *(struct color*)valueptr = COLOR_Parse(str);
-      break;
+      return TRUE;
     default:
       fprintf(stderr, "Unsupported property type for parsing\n");
-      break;
+      return FALSE;
   }
+  return TRUE;
 }
 
 ORCA_API void
