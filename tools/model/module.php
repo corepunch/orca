@@ -364,22 +364,13 @@ class Struct extends Interface {
 			}
 		}
 	}
-}
 
-// --- Component ---
-
-class Component extends Struct {
-	function __construct($elem, $model) {
-		parent::__construct($elem, $model);
-		$this->extension = $elem["extension"] ?? null;
-	}
-
-	private function _walkProperties($type_, $args, $doc = null) {
+	protected function _walkProperties($type_, $args, $doc = null) {
 		$path = array_slice($args, 1);
 		$p = new Property(null, null, null);
 		$p->name = new PropertyName($args[0], $path);
 		if ($type_->kind === 'int' && $this->_model->_has_in((string)$p->name, "enums")) {
-			$p->type = new Type(simplexml_load_string("<arg type='{$p->name}'/>"), $this->_model);
+			$p->type = new Type(simplexml_load_string("<arg type='" . strval($p->name) . "'/>"), $this->_model);
 		} else {
 			$p->type = $type_;
 		}
@@ -399,6 +390,25 @@ class Component extends Struct {
 				}
 			}
 		}
+	}
+
+	function getProperties() {
+		foreach ($this->_elem->xpath(".//field[@name]") as $f) {
+			$field = new Field($f, $this->_model);
+			if ($field->type->kind === 'int' && $this->_model->_has_in(strval($field->name), "enums")) {
+				$field->type = new Type(simplexml_load_string("<arg type='" . strval($field->name) . "'/>"), $this->_model);
+			}
+			yield $field;
+		}
+	}
+}
+
+// --- Component ---
+
+class Component extends Struct {
+	function __construct($elem, $model) {
+		parent::__construct($elem, $model);
+		$this->extension = $elem["extension"] ?? null;
 	}
 
 	function getProperties($recursive = true) {

@@ -68,7 +68,7 @@ int luaopen_orca_##NAME(lua_State *L) { \
 <?php foreach ($structs as $name => $struct):?>
 <?php include_template("export/functions", ['functions' => $struct->getMethods(), 'prefix' => $struct->prefix]) ?>
 static struct PropertyType _<?= $name ?>[] = {
-	<?php include_template("export/properties", ['properties' => $struct->getFields(), 'name' => $name]) ?>
+	<?php include_template("export/properties", ['properties' => $struct->getProperties(), 'name' => $name]) ?>
 };
 static luaL_Reg _<?= $name ?>_Methods[] = {
 <?php foreach ($struct->getMethods() as $method_name => $method):?>
