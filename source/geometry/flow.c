@@ -73,17 +73,32 @@ read_property(lua_State *L,
     case kDataTypeStruct:
       memcpy(valueptr, luaL_checkudata(L, idx, prop->TypeString), prop->DataSize);
       break;
-    case kDataTypeObject: {
-      lua_getfield(L, idx, "__userdata");
-      if (lua_isnil(L, -1)) {
-        luaL_error(L, "Expected an table with __userdata field");
+    case kDataTypeObject:
+      if (lua_type(L, idx) == LUA_TTABLE) {
+        lua_getfield(L, idx, "__userdata");
+        if (lua_isnil(L, -1)) {
+          luaL_error(L, "Expected an table with __userdata field");
+        }
+        *(void**)valueptr = *(void**)lua_touserdata(L, -1);
+        lua_pop(L, 1); // Remove the __userdata field from the stack
+        break;
+//      } else if (lua_type(L, idx) == LUA_TSTRING) {
+//        lua_getglobal(L, "require");
+//        lua_insert(L, -2);
+//        lua_call(L, 1, 1);
+//        struct Object* object = luaX_checkObject(L, -1);
+//        if (prop->TypeString) {
+//          *(void**)valueptr = OBJ_GetComponent(object, fnv1a32(prop->TypeString));
+//        } else {
+//          *(void**)valueptr = object;
+//        }
+      } else {
+        luaL_error(L, "Unsupported input type for property of type object");
+        break;
       }
-      *(void**)valueptr = *(void**)lua_touserdata(L, -1);
-      lua_pop(L, 1); // Remove the __userdata field from the stack
-      break;
-    }
     default:
       luaL_error(L, "Unsupported property type");
+      break;
     }
   }
   
