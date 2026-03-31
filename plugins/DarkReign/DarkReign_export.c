@@ -93,6 +93,22 @@ int luaopen_orca_##NAME(lua_State *L) { \
 
 
 
+#define REGISTER_CLASS(NAME, ...) \
+ORCA_API struct ClassDesc _##NAME = { \
+	.ClassName = #NAME, \
+	.DefaultName = #NAME, \
+	.ContentType = #NAME, \
+	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation", \
+	.ParentClasses = { __VA_ARGS__ }, \
+	.ClassID = ID_##NAME, \
+	.ClassSize = sizeof(struct NAME), \
+	.Properties = NAME##Properties, \
+	.MessageTypes = NAME##MessageTypes, \
+	.ObjProc = NAME##Proc, \
+	.Defaults = &NAME##Defaults, \
+	.NumProperties = k##NAME##NumProperties, \
+	.NumMessageTypes = k##NAME##NumMessageTypes, \
+};
 LRESULT FtgPackage_LoadProject(struct Object*, struct FtgPackage*, wParam_t, LoadProjectMsgPtr);
 LRESULT FtgPackage_OpenFile(struct Object*, struct FtgPackage*, wParam_t, OpenFileMsgPtr);
 LRESULT FtgPackage_FileExists(struct Object*, struct FtgPackage*, wParam_t, FileExistsMsgPtr);
@@ -122,22 +138,7 @@ struct FtgPackage* luaX_checkFtgPackage(lua_State *L, int idx) {
 	return GetFtgPackage(luaX_checkObject(L, idx));
 }
 #define ID_Bundle 0xe6397a25
-ORCA_API struct ClassDesc _FtgPackage = {
-	.ClassName = "FtgPackage",
-	.DefaultName = "FtgPackage",
-	.ContentType = "FtgPackage",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Bundle, 0 },
-	.ClassID = ID_FtgPackage,
-	.ClassSize = sizeof(struct FtgPackage),
-	.Properties = FtgPackageProperties,
-	.MessageTypes = FtgPackageMessageTypes,
-	.ObjProc = FtgPackageProc,
-	.Defaults = &FtgPackageDefaults,
-	.NumProperties = kFtgPackageNumProperties,
-	.NumMessageTypes = kFtgPackageNumMessageTypes,
-};
-
+REGISTER_CLASS(FtgPackage, ID_Bundle, 0);
 
 
 ORCA_API int luaopen_orca_DarkReign(lua_State *L) {

@@ -530,6 +530,22 @@ STRUCT(UpdateShmatrixMsgArgs, UpdateShmatrixMsgArgs);
 STRUCT(UpdateLayoutMsgArgs, UpdateLayoutMsgArgs);
 STRUCT(NavigateToPageMsgArgs, NavigateToPageMsgArgs);
 STRUCT(NavigateBackMsgArgs, NavigateBackMsgArgs);
+#define REGISTER_CLASS(NAME, ...) \
+ORCA_API struct ClassDesc _##NAME = { \
+	.ClassName = #NAME, \
+	.DefaultName = #NAME, \
+	.ContentType = #NAME, \
+	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation", \
+	.ParentClasses = { __VA_ARGS__ }, \
+	.ClassID = ID_##NAME, \
+	.ClassSize = sizeof(struct NAME), \
+	.Properties = NAME##Properties, \
+	.MessageTypes = NAME##MessageTypes, \
+	.ObjProc = NAME##Proc, \
+	.Defaults = &NAME##Defaults, \
+	.NumProperties = k##NAME##NumProperties, \
+	.NumMessageTypes = k##NAME##NumMessageTypes, \
+};
 static struct MessageType DataObjectMessageTypes[kDataObjectNumMessageTypes] = {	
 };
 static struct PropertyType const DataObjectProperties[kDataObjectNumProperties] = {
@@ -547,22 +563,7 @@ void luaX_pushDataObject(lua_State *L, struct DataObject const* DataObject) {
 struct DataObject* luaX_checkDataObject(lua_State *L, int idx) {
 	return GetDataObject(luaX_checkObject(L, idx));
 }
-ORCA_API struct ClassDesc _DataObject = {
-	.ClassName = "DataObject",
-	.DefaultName = "DataObject",
-	.ContentType = "DataObject",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { 0 },
-	.ClassID = ID_DataObject,
-	.ClassSize = sizeof(struct DataObject),
-	.Properties = DataObjectProperties,
-	.MessageTypes = DataObjectMessageTypes,
-	.ObjProc = DataObjectProc,
-	.Defaults = &DataObjectDefaults,
-	.NumProperties = kDataObjectNumProperties,
-	.NumMessageTypes = kDataObjectNumMessageTypes,
-};
-
+REGISTER_CLASS(DataObject, 0);
 static struct MessageType AnimationPlayerMessageTypes[kAnimationPlayerNumMessageTypes] = {	
 };
 static struct PropertyType const AnimationPlayerProperties[kAnimationPlayerNumProperties] = {
@@ -587,22 +588,7 @@ void luaX_pushAnimationPlayer(lua_State *L, struct AnimationPlayer const* Animat
 struct AnimationPlayer* luaX_checkAnimationPlayer(lua_State *L, int idx) {
 	return GetAnimationPlayer(luaX_checkObject(L, idx));
 }
-ORCA_API struct ClassDesc _AnimationPlayer = {
-	.ClassName = "AnimationPlayer",
-	.DefaultName = "AnimationPlayer",
-	.ContentType = "AnimationPlayer",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { 0 },
-	.ClassID = ID_AnimationPlayer,
-	.ClassSize = sizeof(struct AnimationPlayer),
-	.Properties = AnimationPlayerProperties,
-	.MessageTypes = AnimationPlayerMessageTypes,
-	.ObjProc = AnimationPlayerProc,
-	.Defaults = &AnimationPlayerDefaults,
-	.NumProperties = kAnimationPlayerNumProperties,
-	.NumMessageTypes = kAnimationPlayerNumMessageTypes,
-};
-
+REGISTER_CLASS(AnimationPlayer, 0);
 LRESULT Trigger_PropertyChanged(struct Object*, struct Trigger*, wParam_t, PropertyChangedMsgPtr);
 LRESULT Trigger_Attached(struct Object*, struct Trigger*, wParam_t, AttachedMsgPtr);
 static struct MessageType TriggerMessageTypes[kTriggerNumMessageTypes] = {	
@@ -626,22 +612,7 @@ void luaX_pushTrigger(lua_State *L, struct Trigger const* Trigger) {
 struct Trigger* luaX_checkTrigger(lua_State *L, int idx) {
 	return GetTrigger(luaX_checkObject(L, idx));
 }
-ORCA_API struct ClassDesc _Trigger = {
-	.ClassName = "Trigger",
-	.DefaultName = "Trigger",
-	.ContentType = "Trigger",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { 0 },
-	.ClassID = ID_Trigger,
-	.ClassSize = sizeof(struct Trigger),
-	.Properties = TriggerProperties,
-	.MessageTypes = TriggerMessageTypes,
-	.ObjProc = TriggerProc,
-	.Defaults = &TriggerDefaults,
-	.NumProperties = kTriggerNumProperties,
-	.NumMessageTypes = kTriggerNumMessageTypes,
-};
-
+REGISTER_CLASS(Trigger, 0);
 LRESULT OnPropertyChangedTrigger_PropertyChanged(struct Object*, struct OnPropertyChangedTrigger*, wParam_t, PropertyChangedMsgPtr);
 static struct MessageType OnPropertyChangedTriggerMessageTypes[kOnPropertyChangedTriggerNumMessageTypes] = {	
 };
@@ -664,22 +635,7 @@ struct OnPropertyChangedTrigger* luaX_checkOnPropertyChangedTrigger(lua_State *L
 	return GetOnPropertyChangedTrigger(luaX_checkObject(L, idx));
 }
 #define ID_Trigger 0xa5ea0da3
-ORCA_API struct ClassDesc _OnPropertyChangedTrigger = {
-	.ClassName = "OnPropertyChangedTrigger",
-	.DefaultName = "OnPropertyChangedTrigger",
-	.ContentType = "OnPropertyChangedTrigger",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Trigger, 0 },
-	.ClassID = ID_OnPropertyChangedTrigger,
-	.ClassSize = sizeof(struct OnPropertyChangedTrigger),
-	.Properties = OnPropertyChangedTriggerProperties,
-	.MessageTypes = OnPropertyChangedTriggerMessageTypes,
-	.ObjProc = OnPropertyChangedTriggerProc,
-	.Defaults = &OnPropertyChangedTriggerDefaults,
-	.NumProperties = kOnPropertyChangedTriggerNumProperties,
-	.NumMessageTypes = kOnPropertyChangedTriggerNumMessageTypes,
-};
-
+REGISTER_CLASS(OnPropertyChangedTrigger, ID_Trigger, 0);
 LRESULT OnAttachedTrigger_Attached(struct Object*, struct OnAttachedTrigger*, wParam_t, AttachedMsgPtr);
 static struct MessageType OnAttachedTriggerMessageTypes[kOnAttachedTriggerNumMessageTypes] = {	
 };
@@ -700,22 +656,7 @@ struct OnAttachedTrigger* luaX_checkOnAttachedTrigger(lua_State *L, int idx) {
 	return GetOnAttachedTrigger(luaX_checkObject(L, idx));
 }
 #define ID_Trigger 0xa5ea0da3
-ORCA_API struct ClassDesc _OnAttachedTrigger = {
-	.ClassName = "OnAttachedTrigger",
-	.DefaultName = "OnAttachedTrigger",
-	.ContentType = "OnAttachedTrigger",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Trigger, 0 },
-	.ClassID = ID_OnAttachedTrigger,
-	.ClassSize = sizeof(struct OnAttachedTrigger),
-	.Properties = OnAttachedTriggerProperties,
-	.MessageTypes = OnAttachedTriggerMessageTypes,
-	.ObjProc = OnAttachedTriggerProc,
-	.Defaults = &OnAttachedTriggerDefaults,
-	.NumProperties = kOnAttachedTriggerNumProperties,
-	.NumMessageTypes = kOnAttachedTriggerNumMessageTypes,
-};
-
+REGISTER_CLASS(OnAttachedTrigger, ID_Trigger, 0);
 LRESULT EventTrigger_HandleMessage(struct Object*, struct EventTrigger*, wParam_t, HandleMessageMsgPtr);
 static struct MessageType EventTriggerMessageTypes[kEventTriggerNumMessageTypes] = {	
 };
@@ -737,22 +678,7 @@ struct EventTrigger* luaX_checkEventTrigger(lua_State *L, int idx) {
 	return GetEventTrigger(luaX_checkObject(L, idx));
 }
 #define ID_Trigger 0xa5ea0da3
-ORCA_API struct ClassDesc _EventTrigger = {
-	.ClassName = "EventTrigger",
-	.DefaultName = "EventTrigger",
-	.ContentType = "EventTrigger",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Trigger, 0 },
-	.ClassID = ID_EventTrigger,
-	.ClassSize = sizeof(struct EventTrigger),
-	.Properties = EventTriggerProperties,
-	.MessageTypes = EventTriggerMessageTypes,
-	.ObjProc = EventTriggerProc,
-	.Defaults = &EventTriggerDefaults,
-	.NumProperties = kEventTriggerNumProperties,
-	.NumMessageTypes = kEventTriggerNumMessageTypes,
-};
-
+REGISTER_CLASS(EventTrigger, ID_Trigger, 0);
 LRESULT Setter_Triggered(struct Object*, struct Setter*, wParam_t, TriggeredMsgPtr);
 static struct MessageType SetterMessageTypes[kSetterNumMessageTypes] = {	
 };
@@ -775,22 +701,7 @@ void luaX_pushSetter(lua_State *L, struct Setter const* Setter) {
 struct Setter* luaX_checkSetter(lua_State *L, int idx) {
 	return GetSetter(luaX_checkObject(L, idx));
 }
-ORCA_API struct ClassDesc _Setter = {
-	.ClassName = "Setter",
-	.DefaultName = "Setter",
-	.ContentType = "Setter",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { 0 },
-	.ClassID = ID_Setter,
-	.ClassSize = sizeof(struct Setter),
-	.Properties = SetterProperties,
-	.MessageTypes = SetterMessageTypes,
-	.ObjProc = SetterProc,
-	.Defaults = &SetterDefaults,
-	.NumProperties = kSetterNumProperties,
-	.NumMessageTypes = kSetterNumMessageTypes,
-};
-
+REGISTER_CLASS(Setter, 0);
 LRESULT Handler_Triggered(struct Object*, struct Handler*, wParam_t, TriggeredMsgPtr);
 static struct MessageType HandlerMessageTypes[kHandlerNumMessageTypes] = {	
 };
@@ -813,22 +724,7 @@ void luaX_pushHandler(lua_State *L, struct Handler const* Handler) {
 struct Handler* luaX_checkHandler(lua_State *L, int idx) {
 	return GetHandler(luaX_checkObject(L, idx));
 }
-ORCA_API struct ClassDesc _Handler = {
-	.ClassName = "Handler",
-	.DefaultName = "Handler",
-	.ContentType = "Handler",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { 0 },
-	.ClassID = ID_Handler,
-	.ClassSize = sizeof(struct Handler),
-	.Properties = HandlerProperties,
-	.MessageTypes = HandlerMessageTypes,
-	.ObjProc = HandlerProc,
-	.Defaults = &HandlerDefaults,
-	.NumProperties = kHandlerNumProperties,
-	.NumMessageTypes = kHandlerNumMessageTypes,
-};
-
+REGISTER_CLASS(Handler, 0);
 static struct MessageType BrushMessageTypes[kBrushNumMessageTypes] = {	
 };
 static struct PropertyType const BrushProperties[kBrushNumProperties] = {
@@ -846,22 +742,7 @@ void luaX_pushBrush(lua_State *L, struct Brush const* Brush) {
 struct Brush* luaX_checkBrush(lua_State *L, int idx) {
 	return GetBrush(luaX_checkObject(L, idx));
 }
-ORCA_API struct ClassDesc _Brush = {
-	.ClassName = "Brush",
-	.DefaultName = "Brush",
-	.ContentType = "Brush",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { 0 },
-	.ClassID = ID_Brush,
-	.ClassSize = sizeof(struct Brush),
-	.Properties = BrushProperties,
-	.MessageTypes = BrushMessageTypes,
-	.ObjProc = BrushProc,
-	.Defaults = &BrushDefaults,
-	.NumProperties = kBrushNumProperties,
-	.NumMessageTypes = kBrushNumMessageTypes,
-};
-
+REGISTER_CLASS(Brush, 0);
 static struct MessageType ColorBrushMessageTypes[kColorBrushNumMessageTypes] = {	
 };
 static struct PropertyType const ColorBrushProperties[kColorBrushNumProperties] = {
@@ -881,22 +762,7 @@ struct ColorBrush* luaX_checkColorBrush(lua_State *L, int idx) {
 	return GetColorBrush(luaX_checkObject(L, idx));
 }
 #define ID_Brush 0xccbef093
-ORCA_API struct ClassDesc _ColorBrush = {
-	.ClassName = "ColorBrush",
-	.DefaultName = "ColorBrush",
-	.ContentType = "ColorBrush",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Brush, 0 },
-	.ClassID = ID_ColorBrush,
-	.ClassSize = sizeof(struct ColorBrush),
-	.Properties = ColorBrushProperties,
-	.MessageTypes = ColorBrushMessageTypes,
-	.ObjProc = ColorBrushProc,
-	.Defaults = &ColorBrushDefaults,
-	.NumProperties = kColorBrushNumProperties,
-	.NumMessageTypes = kColorBrushNumMessageTypes,
-};
-
+REGISTER_CLASS(ColorBrush, ID_Brush, 0);
 LRESULT Node_ThemeChanged(struct Object*, struct Node*, wParam_t, ThemeChangedMsgPtr);
 LRESULT Node_GetSize(struct Object*, struct Node*, wParam_t, GetSizeMsgPtr);
 LRESULT Node_IsVisible(struct Object*, struct Node*, wParam_t, IsVisibleMsgPtr);
@@ -993,22 +859,7 @@ void luaX_pushNode(lua_State *L, struct Node const* Node) {
 struct Node* luaX_checkNode(lua_State *L, int idx) {
 	return GetNode(luaX_checkObject(L, idx));
 }
-ORCA_API struct ClassDesc _Node = {
-	.ClassName = "Node",
-	.DefaultName = "Node",
-	.ContentType = "Node",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { 0 },
-	.ClassID = ID_Node,
-	.ClassSize = sizeof(struct Node),
-	.Properties = NodeProperties,
-	.MessageTypes = NodeMessageTypes,
-	.ObjProc = NodeProc,
-	.Defaults = &NodeDefaults,
-	.NumProperties = kNodeNumProperties,
-	.NumMessageTypes = kNodeNumMessageTypes,
-};
-
+REGISTER_CLASS(Node, 0);
 static struct MessageType TextRunMessageTypes[kTextRunNumMessageTypes] = {	
 };
 static struct PropertyType const TextRunProperties[kTextRunNumProperties] = {
@@ -1045,22 +896,7 @@ void luaX_pushTextRun(lua_State *L, struct TextRun const* TextRun) {
 struct TextRun* luaX_checkTextRun(lua_State *L, int idx) {
 	return GetTextRun(luaX_checkObject(L, idx));
 }
-ORCA_API struct ClassDesc _TextRun = {
-	.ClassName = "TextRun",
-	.DefaultName = "TextRun",
-	.ContentType = "TextRun",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { 0 },
-	.ClassID = ID_TextRun,
-	.ClassSize = sizeof(struct TextRun),
-	.Properties = TextRunProperties,
-	.MessageTypes = TextRunMessageTypes,
-	.ObjProc = TextRunProc,
-	.Defaults = &TextRunDefaults,
-	.NumProperties = kTextRunNumProperties,
-	.NumMessageTypes = kTextRunNumMessageTypes,
-};
-
+REGISTER_CLASS(TextRun, 0);
 LRESULT TextBlockConcept_Create(struct Object*, struct TextBlockConcept*, wParam_t, CreateMsgPtr);
 LRESULT TextBlockConcept_Destroy(struct Object*, struct TextBlockConcept*, wParam_t, DestroyMsgPtr);
 LRESULT TextBlockConcept_MakeText(struct Object*, struct TextBlockConcept*, wParam_t, MakeTextMsgPtr);
@@ -1103,22 +939,7 @@ struct TextBlockConcept* luaX_checkTextBlockConcept(lua_State *L, int idx) {
 	return GetTextBlockConcept(luaX_checkObject(L, idx));
 }
 #define ID_TextRun 0x4362c3d7
-ORCA_API struct ClassDesc _TextBlockConcept = {
-	.ClassName = "TextBlockConcept",
-	.DefaultName = "TextBlockConcept",
-	.ContentType = "TextBlockConcept",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_TextRun, 0 },
-	.ClassID = ID_TextBlockConcept,
-	.ClassSize = sizeof(struct TextBlockConcept),
-	.Properties = TextBlockConceptProperties,
-	.MessageTypes = TextBlockConceptMessageTypes,
-	.ObjProc = TextBlockConceptProc,
-	.Defaults = &TextBlockConceptDefaults,
-	.NumProperties = kTextBlockConceptNumProperties,
-	.NumMessageTypes = kTextBlockConceptNumMessageTypes,
-};
-
+REGISTER_CLASS(TextBlockConcept, ID_TextRun, 0);
 LRESULT Node2D_UpdateMatrix(struct Object*, struct Node2D*, wParam_t, UpdateMatrixMsgPtr);
 LRESULT Node2D_Create(struct Object*, struct Node2D*, wParam_t, CreateMsgPtr);
 LRESULT Node2D_Destroy(struct Object*, struct Node2D*, wParam_t, DestroyMsgPtr);
@@ -1212,22 +1033,7 @@ struct Node2D* luaX_checkNode2D(lua_State *L, int idx) {
 	return GetNode2D(luaX_checkObject(L, idx));
 }
 #define ID_Node 0x3468032d
-ORCA_API struct ClassDesc _Node2D = {
-	.ClassName = "Node2D",
-	.DefaultName = "Node2D",
-	.ContentType = "Node2D",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node, 0 },
-	.ClassID = ID_Node2D,
-	.ClassSize = sizeof(struct Node2D),
-	.Properties = Node2DProperties,
-	.MessageTypes = Node2DMessageTypes,
-	.ObjProc = Node2DProc,
-	.Defaults = &Node2DDefaults,
-	.NumProperties = kNode2DNumProperties,
-	.NumMessageTypes = kNode2DNumMessageTypes,
-};
-
+REGISTER_CLASS(Node2D, ID_Node, 0);
 LRESULT PrefabView2D_LoadView(struct Object*, struct PrefabView2D*, wParam_t, LoadViewMsgPtr);
 static struct MessageType PrefabView2DMessageTypes[kPrefabView2DNumMessageTypes] = {	
 };
@@ -1250,22 +1056,7 @@ struct PrefabView2D* luaX_checkPrefabView2D(lua_State *L, int idx) {
 	return GetPrefabView2D(luaX_checkObject(L, idx));
 }
 #define ID_Node2D 0x6c63a2ab
-ORCA_API struct ClassDesc _PrefabView2D = {
-	.ClassName = "PrefabView2D",
-	.DefaultName = "PrefabView2D",
-	.ContentType = "PrefabView2D",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node2D, 0 },
-	.ClassID = ID_PrefabView2D,
-	.ClassSize = sizeof(struct PrefabView2D),
-	.Properties = PrefabView2DProperties,
-	.MessageTypes = PrefabView2DMessageTypes,
-	.ObjProc = PrefabView2DProc,
-	.Defaults = &PrefabView2DDefaults,
-	.NumProperties = kPrefabView2DNumProperties,
-	.NumMessageTypes = kPrefabView2DNumMessageTypes,
-};
-
+REGISTER_CLASS(PrefabView2D, ID_Node2D, 0);
 LRESULT TextBlock_MeasureOverride(struct Object*, struct TextBlock*, wParam_t, MeasureOverrideMsgPtr);
 LRESULT TextBlock_ForegroundContent(struct Object*, struct TextBlock*, wParam_t, ForegroundContentMsgPtr);
 LRESULT TextBlock_UpdateGeometry(struct Object*, struct TextBlock*, wParam_t, UpdateGeometryMsgPtr);
@@ -1295,22 +1086,7 @@ struct TextBlock* luaX_checkTextBlock(lua_State *L, int idx) {
 }
 #define ID_Node2D 0x6c63a2ab
 #define ID_TextBlockConcept 0x4903089d
-ORCA_API struct ClassDesc _TextBlock = {
-	.ClassName = "TextBlock",
-	.DefaultName = "TextBlock",
-	.ContentType = "TextBlock",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node2D, ID_TextBlockConcept, 0 },
-	.ClassID = ID_TextBlock,
-	.ClassSize = sizeof(struct TextBlock),
-	.Properties = TextBlockProperties,
-	.MessageTypes = TextBlockMessageTypes,
-	.ObjProc = TextBlockProc,
-	.Defaults = &TextBlockDefaults,
-	.NumProperties = kTextBlockNumProperties,
-	.NumMessageTypes = kTextBlockNumMessageTypes,
-};
-
+REGISTER_CLASS(TextBlock, ID_Node2D, ID_TextBlockConcept, 0);
 LRESULT Input_Create(struct Object*, struct Input*, wParam_t, CreateMsgPtr);
 LRESULT Input_DrawBrush(struct Object*, struct Input*, wParam_t, DrawBrushMsgPtr);
 LRESULT Input_MakeText(struct Object*, struct Input*, wParam_t, MakeTextMsgPtr);
@@ -1348,22 +1124,7 @@ struct Input* luaX_checkInput(lua_State *L, int idx) {
 	return GetInput(luaX_checkObject(L, idx));
 }
 #define ID_TextBlock 0x40f4d77b
-ORCA_API struct ClassDesc _Input = {
-	.ClassName = "Input",
-	.DefaultName = "Input",
-	.ContentType = "Input",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_TextBlock, 0 },
-	.ClassID = ID_Input,
-	.ClassSize = sizeof(struct Input),
-	.Properties = InputProperties,
-	.MessageTypes = InputMessageTypes,
-	.ObjProc = InputProc,
-	.Defaults = &InputDefaults,
-	.NumProperties = kInputNumProperties,
-	.NumMessageTypes = kInputNumMessageTypes,
-};
-
+REGISTER_CLASS(Input, ID_TextBlock, 0);
 LRESULT Button_Create(struct Object*, struct Button*, wParam_t, CreateMsgPtr);
 LRESULT Button_LeftMouseUp(struct Object*, struct Button*, wParam_t, LeftMouseUpMsgPtr);
 LRESULT Button_KeyDown(struct Object*, struct Button*, wParam_t, KeyDownMsgPtr);
@@ -1391,22 +1152,7 @@ struct Button* luaX_checkButton(lua_State *L, int idx) {
 	return GetButton(luaX_checkObject(L, idx));
 }
 #define ID_TextBlock 0x40f4d77b
-ORCA_API struct ClassDesc _Button = {
-	.ClassName = "Button",
-	.DefaultName = "Button",
-	.ContentType = "Button",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_TextBlock, 0 },
-	.ClassID = ID_Button,
-	.ClassSize = sizeof(struct Button),
-	.Properties = ButtonProperties,
-	.MessageTypes = ButtonMessageTypes,
-	.ObjProc = ButtonProc,
-	.Defaults = &ButtonDefaults,
-	.NumProperties = kButtonNumProperties,
-	.NumMessageTypes = kButtonNumMessageTypes,
-};
-
+REGISTER_CLASS(Button, ID_TextBlock, 0);
 LRESULT Label_LeftMouseUp(struct Object*, struct Label*, wParam_t, LeftMouseUpMsgPtr);
 static struct MessageType LabelMessageTypes[kLabelNumMessageTypes] = {	
 };
@@ -1428,22 +1174,7 @@ struct Label* luaX_checkLabel(lua_State *L, int idx) {
 	return GetLabel(luaX_checkObject(L, idx));
 }
 #define ID_TextBlock 0x40f4d77b
-ORCA_API struct ClassDesc _Label = {
-	.ClassName = "Label",
-	.DefaultName = "Label",
-	.ContentType = "Label",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_TextBlock, 0 },
-	.ClassID = ID_Label,
-	.ClassSize = sizeof(struct Label),
-	.Properties = LabelProperties,
-	.MessageTypes = LabelMessageTypes,
-	.ObjProc = LabelProc,
-	.Defaults = &LabelDefaults,
-	.NumProperties = kLabelNumProperties,
-	.NumMessageTypes = kLabelNumMessageTypes,
-};
-
+REGISTER_CLASS(Label, ID_TextBlock, 0);
 LRESULT StackView_MeasureOverride(struct Object*, struct StackView*, wParam_t, MeasureOverrideMsgPtr);
 LRESULT StackView_ArrangeOverride(struct Object*, struct StackView*, wParam_t, ArrangeOverrideMsgPtr);
 static struct MessageType StackViewMessageTypes[kStackViewNumMessageTypes] = {	
@@ -1471,22 +1202,7 @@ struct StackView* luaX_checkStackView(lua_State *L, int idx) {
 	return GetStackView(luaX_checkObject(L, idx));
 }
 #define ID_Node2D 0x6c63a2ab
-ORCA_API struct ClassDesc _StackView = {
-	.ClassName = "StackView",
-	.DefaultName = "StackView",
-	.ContentType = "StackView",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node2D, 0 },
-	.ClassID = ID_StackView,
-	.ClassSize = sizeof(struct StackView),
-	.Properties = StackViewProperties,
-	.MessageTypes = StackViewMessageTypes,
-	.ObjProc = StackViewProc,
-	.Defaults = &StackViewDefaults,
-	.NumProperties = kStackViewNumProperties,
-	.NumMessageTypes = kStackViewNumMessageTypes,
-};
-
+REGISTER_CLASS(StackView, ID_Node2D, 0);
 LRESULT Form_Create(struct Object*, struct Form*, wParam_t, CreateMsgPtr);
 LRESULT Form_Submit(struct Object*, struct Form*, wParam_t, SubmitMsgPtr);
 static struct MessageType FormMessageTypes[kFormNumMessageTypes] = {	
@@ -1509,22 +1225,7 @@ struct Form* luaX_checkForm(lua_State *L, int idx) {
 	return GetForm(luaX_checkObject(L, idx));
 }
 #define ID_StackView 0x56aa550a
-ORCA_API struct ClassDesc _Form = {
-	.ClassName = "Form",
-	.DefaultName = "Form",
-	.ContentType = "Form",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_StackView, 0 },
-	.ClassID = ID_Form,
-	.ClassSize = sizeof(struct Form),
-	.Properties = FormProperties,
-	.MessageTypes = FormMessageTypes,
-	.ObjProc = FormProc,
-	.Defaults = &FormDefaults,
-	.NumProperties = kFormNumProperties,
-	.NumMessageTypes = kFormNumMessageTypes,
-};
-
+REGISTER_CLASS(Form, ID_StackView, 0);
 static struct MessageType ControlMessageTypes[kControlNumMessageTypes] = {	
 };
 static struct PropertyType const ControlProperties[kControlNumProperties] = {
@@ -1549,22 +1250,7 @@ struct Control* luaX_checkControl(lua_State *L, int idx) {
 	return GetControl(luaX_checkObject(L, idx));
 }
 #define ID_Node2D 0x6c63a2ab
-ORCA_API struct ClassDesc _Control = {
-	.ClassName = "Control",
-	.DefaultName = "Control",
-	.ContentType = "Control",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node2D, 0 },
-	.ClassID = ID_Control,
-	.ClassSize = sizeof(struct Control),
-	.Properties = ControlProperties,
-	.MessageTypes = ControlMessageTypes,
-	.ObjProc = ControlProc,
-	.Defaults = &ControlDefaults,
-	.NumProperties = kControlNumProperties,
-	.NumMessageTypes = kControlNumMessageTypes,
-};
-
+REGISTER_CLASS(Control, ID_Node2D, 0);
 LRESULT Screen_UpdateLayout(struct Object*, struct Screen*, wParam_t, UpdateLayoutMsgPtr);
 LRESULT Screen_RenderScreen(struct Object*, struct Screen*, wParam_t, RenderScreenMsgPtr);
 LRESULT Screen_MeasureOverride(struct Object*, struct Screen*, wParam_t, MeasureOverrideMsgPtr);
@@ -1602,22 +1288,7 @@ struct Screen* luaX_checkScreen(lua_State *L, int idx) {
 	return GetScreen(luaX_checkObject(L, idx));
 }
 #define ID_Node2D 0x6c63a2ab
-ORCA_API struct ClassDesc _Screen = {
-	.ClassName = "Screen",
-	.DefaultName = "Screen",
-	.ContentType = "Screen",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node2D, 0 },
-	.ClassID = ID_Screen,
-	.ClassSize = sizeof(struct Screen),
-	.Properties = ScreenProperties,
-	.MessageTypes = ScreenMessageTypes,
-	.ObjProc = ScreenProc,
-	.Defaults = &ScreenDefaults,
-	.NumProperties = kScreenNumProperties,
-	.NumMessageTypes = kScreenNumMessageTypes,
-};
-
+REGISTER_CLASS(Screen, ID_Node2D, 0);
 LRESULT Cinematic_DrawBrush(struct Object*, struct Cinematic*, wParam_t, DrawBrushMsgPtr);
 static struct MessageType CinematicMessageTypes[kCinematicNumMessageTypes] = {	
 };
@@ -1642,22 +1313,7 @@ struct Cinematic* luaX_checkCinematic(lua_State *L, int idx) {
 	return GetCinematic(luaX_checkObject(L, idx));
 }
 #define ID_Node2D 0x6c63a2ab
-ORCA_API struct ClassDesc _Cinematic = {
-	.ClassName = "Cinematic",
-	.DefaultName = "Cinematic",
-	.ContentType = "Cinematic",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node2D, 0 },
-	.ClassID = ID_Cinematic,
-	.ClassSize = sizeof(struct Cinematic),
-	.Properties = CinematicProperties,
-	.MessageTypes = CinematicMessageTypes,
-	.ObjProc = CinematicProc,
-	.Defaults = &CinematicDefaults,
-	.NumProperties = kCinematicNumProperties,
-	.NumMessageTypes = kCinematicNumMessageTypes,
-};
-
+REGISTER_CLASS(Cinematic, ID_Node2D, 0);
 LRESULT Grid_MeasureOverride(struct Object*, struct Grid*, wParam_t, MeasureOverrideMsgPtr);
 LRESULT Grid_ArrangeOverride(struct Object*, struct Grid*, wParam_t, ArrangeOverrideMsgPtr);
 static struct MessageType GridMessageTypes[kGridNumMessageTypes] = {	
@@ -1686,22 +1342,7 @@ struct Grid* luaX_checkGrid(lua_State *L, int idx) {
 	return GetGrid(luaX_checkObject(L, idx));
 }
 #define ID_Node2D 0x6c63a2ab
-ORCA_API struct ClassDesc _Grid = {
-	.ClassName = "Grid",
-	.DefaultName = "Grid",
-	.ContentType = "Grid",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node2D, 0 },
-	.ClassID = ID_Grid,
-	.ClassSize = sizeof(struct Grid),
-	.Properties = GridProperties,
-	.MessageTypes = GridMessageTypes,
-	.ObjProc = GridProc,
-	.Defaults = &GridDefaults,
-	.NumProperties = kGridNumProperties,
-	.NumMessageTypes = kGridNumMessageTypes,
-};
-
+REGISTER_CLASS(Grid, ID_Node2D, 0);
 LRESULT ImageView_MeasureOverride(struct Object*, struct ImageView*, wParam_t, MeasureOverrideMsgPtr);
 LRESULT ImageView_ArrangeOverride(struct Object*, struct ImageView*, wParam_t, ArrangeOverrideMsgPtr);
 LRESULT ImageView_ForegroundContent(struct Object*, struct ImageView*, wParam_t, ForegroundContentMsgPtr);
@@ -1738,22 +1379,7 @@ struct ImageView* luaX_checkImageView(lua_State *L, int idx) {
 	return GetImageView(luaX_checkObject(L, idx));
 }
 #define ID_Node2D 0x6c63a2ab
-ORCA_API struct ClassDesc _ImageView = {
-	.ClassName = "ImageView",
-	.DefaultName = "ImageView",
-	.ContentType = "ImageView",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node2D, 0 },
-	.ClassID = ID_ImageView,
-	.ClassSize = sizeof(struct ImageView),
-	.Properties = ImageViewProperties,
-	.MessageTypes = ImageViewMessageTypes,
-	.ObjProc = ImageViewProc,
-	.Defaults = &ImageViewDefaults,
-	.NumProperties = kImageViewNumProperties,
-	.NumMessageTypes = kImageViewNumMessageTypes,
-};
-
+REGISTER_CLASS(ImageView, ID_Node2D, 0);
 LRESULT NinePatchImage_MeasureOverride(struct Object*, struct NinePatchImage*, wParam_t, MeasureOverrideMsgPtr);
 LRESULT NinePatchImage_ForegroundContent(struct Object*, struct NinePatchImage*, wParam_t, ForegroundContentMsgPtr);
 LRESULT NinePatchImage_DrawBrush(struct Object*, struct NinePatchImage*, wParam_t, DrawBrushMsgPtr);
@@ -1792,22 +1418,7 @@ struct NinePatchImage* luaX_checkNinePatchImage(lua_State *L, int idx) {
 	return GetNinePatchImage(luaX_checkObject(L, idx));
 }
 #define ID_Node2D 0x6c63a2ab
-ORCA_API struct ClassDesc _NinePatchImage = {
-	.ClassName = "NinePatchImage",
-	.DefaultName = "NinePatchImage",
-	.ContentType = "NinePatchImage",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node2D, 0 },
-	.ClassID = ID_NinePatchImage,
-	.ClassSize = sizeof(struct NinePatchImage),
-	.Properties = NinePatchImageProperties,
-	.MessageTypes = NinePatchImageMessageTypes,
-	.ObjProc = NinePatchImageProc,
-	.Defaults = &NinePatchImageDefaults,
-	.NumProperties = kNinePatchImageNumProperties,
-	.NumMessageTypes = kNinePatchImageNumMessageTypes,
-};
-
+REGISTER_CLASS(NinePatchImage, ID_Node2D, 0);
 LRESULT TerminalView_Create(struct Object*, struct TerminalView*, wParam_t, CreateMsgPtr);
 LRESULT TerminalView_DrawBrush(struct Object*, struct TerminalView*, wParam_t, DrawBrushMsgPtr);
 LRESULT TerminalView_PushProperty(struct Object*, struct TerminalView*, wParam_t, PushPropertyMsgPtr);
@@ -1843,22 +1454,7 @@ struct TerminalView* luaX_checkTerminalView(lua_State *L, int idx) {
 	return GetTerminalView(luaX_checkObject(L, idx));
 }
 #define ID_Node2D 0x6c63a2ab
-ORCA_API struct ClassDesc _TerminalView = {
-	.ClassName = "TerminalView",
-	.DefaultName = "TerminalView",
-	.ContentType = "TerminalView",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node2D, 0 },
-	.ClassID = ID_TerminalView,
-	.ClassSize = sizeof(struct TerminalView),
-	.Properties = TerminalViewProperties,
-	.MessageTypes = TerminalViewMessageTypes,
-	.ObjProc = TerminalViewProc,
-	.Defaults = &TerminalViewDefaults,
-	.NumProperties = kTerminalViewNumProperties,
-	.NumMessageTypes = kTerminalViewNumMessageTypes,
-};
-
+REGISTER_CLASS(TerminalView, ID_Node2D, 0);
 LRESULT Page_Create(struct Object*, struct Page*, wParam_t, CreateMsgPtr);
 static struct MessageType PageMessageTypes[kPageNumMessageTypes] = {	
 };
@@ -1882,22 +1478,7 @@ struct Page* luaX_checkPage(lua_State *L, int idx) {
 	return GetPage(luaX_checkObject(L, idx));
 }
 #define ID_Node2D 0x6c63a2ab
-ORCA_API struct ClassDesc _Page = {
-	.ClassName = "Page",
-	.DefaultName = "Page",
-	.ContentType = "Page",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node2D, 0 },
-	.ClassID = ID_Page,
-	.ClassSize = sizeof(struct Page),
-	.Properties = PageProperties,
-	.MessageTypes = PageMessageTypes,
-	.ObjProc = PageProc,
-	.Defaults = &PageDefaults,
-	.NumProperties = kPageNumProperties,
-	.NumMessageTypes = kPageNumMessageTypes,
-};
-
+REGISTER_CLASS(Page, ID_Node2D, 0);
 LRESULT PageHost_ViewDidLoad(struct Object*, struct PageHost*, wParam_t, ViewDidLoadMsgPtr);
 LRESULT PageHost_NavigateToPage(struct Object*, struct PageHost*, wParam_t, NavigateToPageMsgPtr);
 LRESULT PageHost_NavigateBack(struct Object*, struct PageHost*, wParam_t, NavigateBackMsgPtr);
@@ -1923,22 +1504,7 @@ struct PageHost* luaX_checkPageHost(lua_State *L, int idx) {
 	return GetPageHost(luaX_checkObject(L, idx));
 }
 #define ID_Page 0xe83d9196
-ORCA_API struct ClassDesc _PageHost = {
-	.ClassName = "PageHost",
-	.DefaultName = "PageHost",
-	.ContentType = "PageHost",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Page, 0 },
-	.ClassID = ID_PageHost,
-	.ClassSize = sizeof(struct PageHost),
-	.Properties = PageHostProperties,
-	.MessageTypes = PageHostMessageTypes,
-	.ObjProc = PageHostProc,
-	.Defaults = &PageHostDefaults,
-	.NumProperties = kPageHostNumProperties,
-	.NumMessageTypes = kPageHostNumMessageTypes,
-};
-
+REGISTER_CLASS(PageHost, ID_Page, 0);
 static struct MessageType PageViewportMessageTypes[kPageViewportNumMessageTypes] = {	
 };
 static struct PropertyType const PageViewportProperties[kPageViewportNumProperties] = {
@@ -1957,22 +1523,7 @@ struct PageViewport* luaX_checkPageViewport(lua_State *L, int idx) {
 	return GetPageViewport(luaX_checkObject(L, idx));
 }
 #define ID_Node2D 0x6c63a2ab
-ORCA_API struct ClassDesc _PageViewport = {
-	.ClassName = "PageViewport",
-	.DefaultName = "PageViewport",
-	.ContentType = "PageViewport",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node2D, 0 },
-	.ClassID = ID_PageViewport,
-	.ClassSize = sizeof(struct PageViewport),
-	.Properties = PageViewportProperties,
-	.MessageTypes = PageViewportMessageTypes,
-	.ObjProc = PageViewportProc,
-	.Defaults = &PageViewportDefaults,
-	.NumProperties = kPageViewportNumProperties,
-	.NumMessageTypes = kPageViewportNumMessageTypes,
-};
-
+REGISTER_CLASS(PageViewport, ID_Node2D, 0);
 static struct MessageType StyleMessageTypes[kStyleNumMessageTypes] = {	
 };
 static struct PropertyType const StyleProperties[kStyleNumProperties] = {
@@ -1992,22 +1543,7 @@ void luaX_pushStyle(lua_State *L, struct Style const* Style) {
 struct Style* luaX_checkStyle(lua_State *L, int idx) {
 	return GetStyle(luaX_checkObject(L, idx));
 }
-ORCA_API struct ClassDesc _Style = {
-	.ClassName = "Style",
-	.DefaultName = "Style",
-	.ContentType = "Style",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { 0 },
-	.ClassID = ID_Style,
-	.ClassSize = sizeof(struct Style),
-	.Properties = StyleProperties,
-	.MessageTypes = StyleMessageTypes,
-	.ObjProc = StyleProc,
-	.Defaults = &StyleDefaults,
-	.NumProperties = kStyleNumProperties,
-	.NumMessageTypes = kStyleNumMessageTypes,
-};
-
+REGISTER_CLASS(Style, 0);
 
 
 ORCA_API int luaopen_orca_UIKit(lua_State *L) {

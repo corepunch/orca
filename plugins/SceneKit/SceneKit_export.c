@@ -99,6 +99,22 @@ int luaopen_orca_##NAME(lua_State *L) { \
 
 
 
+#define REGISTER_CLASS(NAME, ...) \
+ORCA_API struct ClassDesc _##NAME = { \
+	.ClassName = #NAME, \
+	.DefaultName = #NAME, \
+	.ContentType = #NAME, \
+	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation", \
+	.ParentClasses = { __VA_ARGS__ }, \
+	.ClassID = ID_##NAME, \
+	.ClassSize = sizeof(struct NAME), \
+	.Properties = NAME##Properties, \
+	.MessageTypes = NAME##MessageTypes, \
+	.ObjProc = NAME##Proc, \
+	.Defaults = &NAME##Defaults, \
+	.NumProperties = k##NAME##NumProperties, \
+	.NumMessageTypes = k##NAME##NumMessageTypes, \
+};
 LRESULT Node3D_UpdateMatrix(struct Object*, struct Node3D*, wParam_t, UpdateMatrixMsgPtr);
 static struct MessageType Node3DMessageTypes[kNode3DNumMessageTypes] = {	
 };
@@ -135,22 +151,7 @@ struct Node3D* luaX_checkNode3D(lua_State *L, int idx) {
 	return GetNode3D(luaX_checkObject(L, idx));
 }
 #define ID_Node 0x3468032d
-ORCA_API struct ClassDesc _Node3D = {
-	.ClassName = "Node3D",
-	.DefaultName = "Node3D",
-	.ContentType = "Node3D",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node, 0 },
-	.ClassID = ID_Node3D,
-	.ClassSize = sizeof(struct Node3D),
-	.Properties = Node3DProperties,
-	.MessageTypes = Node3DMessageTypes,
-	.ObjProc = Node3DProc,
-	.Defaults = &Node3DDefaults,
-	.NumProperties = kNode3DNumProperties,
-	.NumMessageTypes = kNode3DNumMessageTypes,
-};
-
+REGISTER_CLASS(Node3D, ID_Node, 0);
 LRESULT Scene_UpdateMatrix(struct Object*, struct Scene*, wParam_t, UpdateMatrixMsgPtr);
 static struct MessageType SceneMessageTypes[kSceneNumMessageTypes] = {	
 };
@@ -178,22 +179,7 @@ struct Scene* luaX_checkScene(lua_State *L, int idx) {
 	return GetScene(luaX_checkObject(L, idx));
 }
 #define ID_Node3D 0xce61fe5a
-ORCA_API struct ClassDesc _Scene = {
-	.ClassName = "Scene",
-	.DefaultName = "Scene",
-	.ContentType = "Scene",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node3D, 0 },
-	.ClassID = ID_Scene,
-	.ClassSize = sizeof(struct Scene),
-	.Properties = SceneProperties,
-	.MessageTypes = SceneMessageTypes,
-	.ObjProc = SceneProc,
-	.Defaults = &SceneDefaults,
-	.NumProperties = kSceneNumProperties,
-	.NumMessageTypes = kSceneNumMessageTypes,
-};
-
+REGISTER_CLASS(Scene, ID_Node3D, 0);
 LRESULT Model3D_Render(struct Object*, struct Model3D*, wParam_t, RenderMsgPtr);
 static struct MessageType Model3DMessageTypes[kModel3DNumMessageTypes] = {	
 };
@@ -216,22 +202,7 @@ struct Model3D* luaX_checkModel3D(lua_State *L, int idx) {
 	return GetModel3D(luaX_checkObject(L, idx));
 }
 #define ID_Node3D 0xce61fe5a
-ORCA_API struct ClassDesc _Model3D = {
-	.ClassName = "Model3D",
-	.DefaultName = "Model3D",
-	.ContentType = "Model3D",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node3D, 0 },
-	.ClassID = ID_Model3D,
-	.ClassSize = sizeof(struct Model3D),
-	.Properties = Model3DProperties,
-	.MessageTypes = Model3DMessageTypes,
-	.ObjProc = Model3DProc,
-	.Defaults = &Model3DDefaults,
-	.NumProperties = kModel3DNumProperties,
-	.NumMessageTypes = kModel3DNumMessageTypes,
-};
-
+REGISTER_CLASS(Model3D, ID_Node3D, 0);
 LRESULT PlaneMeshNode_Render(struct Object*, struct PlaneMeshNode*, wParam_t, RenderMsgPtr);
 static struct MessageType PlaneMeshNodeMessageTypes[kPlaneMeshNodeNumMessageTypes] = {	
 };
@@ -259,22 +230,7 @@ struct PlaneMeshNode* luaX_checkPlaneMeshNode(lua_State *L, int idx) {
 	return GetPlaneMeshNode(luaX_checkObject(L, idx));
 }
 #define ID_Model3D 0xc56de5fd
-ORCA_API struct ClassDesc _PlaneMeshNode = {
-	.ClassName = "PlaneMeshNode",
-	.DefaultName = "PlaneMeshNode",
-	.ContentType = "PlaneMeshNode",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Model3D, 0 },
-	.ClassID = ID_PlaneMeshNode,
-	.ClassSize = sizeof(struct PlaneMeshNode),
-	.Properties = PlaneMeshNodeProperties,
-	.MessageTypes = PlaneMeshNodeMessageTypes,
-	.ObjProc = PlaneMeshNodeProc,
-	.Defaults = &PlaneMeshNodeDefaults,
-	.NumProperties = kPlaneMeshNodeNumProperties,
-	.NumMessageTypes = kPlaneMeshNodeNumMessageTypes,
-};
-
+REGISTER_CLASS(PlaneMeshNode, ID_Model3D, 0);
 static struct MessageType CameraMessageTypes[kCameraNumMessageTypes] = {	
 };
 static struct PropertyType const CameraProperties[kCameraNumProperties] = {
@@ -302,22 +258,7 @@ struct Camera* luaX_checkCamera(lua_State *L, int idx) {
 	return GetCamera(luaX_checkObject(L, idx));
 }
 #define ID_Node3D 0xce61fe5a
-ORCA_API struct ClassDesc _Camera = {
-	.ClassName = "Camera",
-	.DefaultName = "Camera",
-	.ContentType = "Camera",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node3D, 0 },
-	.ClassID = ID_Camera,
-	.ClassSize = sizeof(struct Camera),
-	.Properties = CameraProperties,
-	.MessageTypes = CameraMessageTypes,
-	.ObjProc = CameraProc,
-	.Defaults = &CameraDefaults,
-	.NumProperties = kCameraNumProperties,
-	.NumMessageTypes = kCameraNumMessageTypes,
-};
-
+REGISTER_CLASS(Camera, ID_Node3D, 0);
 LRESULT TrajectoryList3D_UpdateMatrix(struct Object*, struct TrajectoryList3D*, wParam_t, UpdateMatrixMsgPtr);
 static struct MessageType TrajectoryList3DMessageTypes[kTrajectoryList3DNumMessageTypes] = {	
 };
@@ -344,22 +285,7 @@ struct TrajectoryList3D* luaX_checkTrajectoryList3D(lua_State *L, int idx) {
 	return GetTrajectoryList3D(luaX_checkObject(L, idx));
 }
 #define ID_Node3D 0xce61fe5a
-ORCA_API struct ClassDesc _TrajectoryList3D = {
-	.ClassName = "TrajectoryList3D",
-	.DefaultName = "TrajectoryList3D",
-	.ContentType = "TrajectoryList3D",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node3D, 0 },
-	.ClassID = ID_TrajectoryList3D,
-	.ClassSize = sizeof(struct TrajectoryList3D),
-	.Properties = TrajectoryList3DProperties,
-	.MessageTypes = TrajectoryList3DMessageTypes,
-	.ObjProc = TrajectoryList3DProc,
-	.Defaults = &TrajectoryList3DDefaults,
-	.NumProperties = kTrajectoryList3DNumProperties,
-	.NumMessageTypes = kTrajectoryList3DNumMessageTypes,
-};
-
+REGISTER_CLASS(TrajectoryList3D, ID_Node3D, 0);
 LRESULT Viewport3D_ForegroundContent(struct Object*, struct Viewport3D*, wParam_t, ForegroundContentMsgPtr);
 static struct MessageType Viewport3DMessageTypes[kViewport3DNumMessageTypes] = {	
 };
@@ -385,22 +311,7 @@ struct Viewport3D* luaX_checkViewport3D(lua_State *L, int idx) {
 	return GetViewport3D(luaX_checkObject(L, idx));
 }
 #define ID_Node2D 0x6c63a2ab
-ORCA_API struct ClassDesc _Viewport3D = {
-	.ClassName = "Viewport3D",
-	.DefaultName = "Viewport3D",
-	.ContentType = "Viewport3D",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node2D, 0 },
-	.ClassID = ID_Viewport3D,
-	.ClassSize = sizeof(struct Viewport3D),
-	.Properties = Viewport3DProperties,
-	.MessageTypes = Viewport3DMessageTypes,
-	.ObjProc = Viewport3DProc,
-	.Defaults = &Viewport3DDefaults,
-	.NumProperties = kViewport3DNumProperties,
-	.NumMessageTypes = kViewport3DNumMessageTypes,
-};
-
+REGISTER_CLASS(Viewport3D, ID_Node2D, 0);
 LRESULT PrefabView3D_LoadView(struct Object*, struct PrefabView3D*, wParam_t, LoadViewMsgPtr);
 static struct MessageType PrefabView3DMessageTypes[kPrefabView3DNumMessageTypes] = {	
 };
@@ -423,22 +334,7 @@ struct PrefabView3D* luaX_checkPrefabView3D(lua_State *L, int idx) {
 	return GetPrefabView3D(luaX_checkObject(L, idx));
 }
 #define ID_Node3D 0xce61fe5a
-ORCA_API struct ClassDesc _PrefabView3D = {
-	.ClassName = "PrefabView3D",
-	.DefaultName = "PrefabView3D",
-	.ContentType = "PrefabView3D",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node3D, 0 },
-	.ClassID = ID_PrefabView3D,
-	.ClassSize = sizeof(struct PrefabView3D),
-	.Properties = PrefabView3DProperties,
-	.MessageTypes = PrefabView3DMessageTypes,
-	.ObjProc = PrefabView3DProc,
-	.Defaults = &PrefabView3DDefaults,
-	.NumProperties = kPrefabView3DNumProperties,
-	.NumMessageTypes = kPrefabView3DNumMessageTypes,
-};
-
+REGISTER_CLASS(PrefabView3D, ID_Node3D, 0);
 static struct MessageType RenderPassMessageTypes[kRenderPassNumMessageTypes] = {	
 };
 static struct PropertyType const RenderPassProperties[kRenderPassNumProperties] = {
@@ -457,22 +353,7 @@ struct RenderPass* luaX_checkRenderPass(lua_State *L, int idx) {
 	return GetRenderPass(luaX_checkObject(L, idx));
 }
 #define ID_Node 0x3468032d
-ORCA_API struct ClassDesc _RenderPass = {
-	.ClassName = "RenderPass",
-	.DefaultName = "RenderPass",
-	.ContentType = "RenderPass",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node, 0 },
-	.ClassID = ID_RenderPass,
-	.ClassSize = sizeof(struct RenderPass),
-	.Properties = RenderPassProperties,
-	.MessageTypes = RenderPassMessageTypes,
-	.ObjProc = RenderPassProc,
-	.Defaults = &RenderPassDefaults,
-	.NumProperties = kRenderPassNumProperties,
-	.NumMessageTypes = kRenderPassNumMessageTypes,
-};
-
+REGISTER_CLASS(RenderPass, ID_Node, 0);
 static struct MessageType CompositionTargetRenderPassMessageTypes[kCompositionTargetRenderPassNumMessageTypes] = {	
 };
 static struct PropertyType const CompositionTargetRenderPassProperties[kCompositionTargetRenderPassNumProperties] = {
@@ -491,22 +372,7 @@ struct CompositionTargetRenderPass* luaX_checkCompositionTargetRenderPass(lua_St
 	return GetCompositionTargetRenderPass(luaX_checkObject(L, idx));
 }
 #define ID_RenderPass 0xf64bbf80
-ORCA_API struct ClassDesc _CompositionTargetRenderPass = {
-	.ClassName = "CompositionTargetRenderPass",
-	.DefaultName = "CompositionTargetRenderPass",
-	.ContentType = "CompositionTargetRenderPass",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_RenderPass, 0 },
-	.ClassID = ID_CompositionTargetRenderPass,
-	.ClassSize = sizeof(struct CompositionTargetRenderPass),
-	.Properties = CompositionTargetRenderPassProperties,
-	.MessageTypes = CompositionTargetRenderPassMessageTypes,
-	.ObjProc = CompositionTargetRenderPassProc,
-	.Defaults = &CompositionTargetRenderPassDefaults,
-	.NumProperties = kCompositionTargetRenderPassNumProperties,
-	.NumMessageTypes = kCompositionTargetRenderPassNumMessageTypes,
-};
-
+REGISTER_CLASS(CompositionTargetRenderPass, ID_RenderPass, 0);
 static struct MessageType BlitRenderPassMessageTypes[kBlitRenderPassNumMessageTypes] = {	
 };
 static struct PropertyType const BlitRenderPassProperties[kBlitRenderPassNumProperties] = {
@@ -525,22 +391,7 @@ struct BlitRenderPass* luaX_checkBlitRenderPass(lua_State *L, int idx) {
 	return GetBlitRenderPass(luaX_checkObject(L, idx));
 }
 #define ID_RenderPass 0xf64bbf80
-ORCA_API struct ClassDesc _BlitRenderPass = {
-	.ClassName = "BlitRenderPass",
-	.DefaultName = "BlitRenderPass",
-	.ContentType = "BlitRenderPass",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_RenderPass, 0 },
-	.ClassID = ID_BlitRenderPass,
-	.ClassSize = sizeof(struct BlitRenderPass),
-	.Properties = BlitRenderPassProperties,
-	.MessageTypes = BlitRenderPassMessageTypes,
-	.ObjProc = BlitRenderPassProc,
-	.Defaults = &BlitRenderPassDefaults,
-	.NumProperties = kBlitRenderPassNumProperties,
-	.NumMessageTypes = kBlitRenderPassNumMessageTypes,
-};
-
+REGISTER_CLASS(BlitRenderPass, ID_RenderPass, 0);
 static struct MessageType ClearRenderPassMessageTypes[kClearRenderPassNumMessageTypes] = {	
 };
 static struct PropertyType const ClearRenderPassProperties[kClearRenderPassNumProperties] = {
@@ -562,22 +413,7 @@ struct ClearRenderPass* luaX_checkClearRenderPass(lua_State *L, int idx) {
 	return GetClearRenderPass(luaX_checkObject(L, idx));
 }
 #define ID_RenderPass 0xf64bbf80
-ORCA_API struct ClassDesc _ClearRenderPass = {
-	.ClassName = "ClearRenderPass",
-	.DefaultName = "ClearRenderPass",
-	.ContentType = "ClearRenderPass",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_RenderPass, 0 },
-	.ClassID = ID_ClearRenderPass,
-	.ClassSize = sizeof(struct ClearRenderPass),
-	.Properties = ClearRenderPassProperties,
-	.MessageTypes = ClearRenderPassMessageTypes,
-	.ObjProc = ClearRenderPassProc,
-	.Defaults = &ClearRenderPassDefaults,
-	.NumProperties = kClearRenderPassNumProperties,
-	.NumMessageTypes = kClearRenderPassNumMessageTypes,
-};
-
+REGISTER_CLASS(ClearRenderPass, ID_RenderPass, 0);
 static struct MessageType DrawObjectsRenderPassMessageTypes[kDrawObjectsRenderPassNumMessageTypes] = {	
 };
 static struct PropertyType const DrawObjectsRenderPassProperties[kDrawObjectsRenderPassNumProperties] = {
@@ -599,22 +435,7 @@ struct DrawObjectsRenderPass* luaX_checkDrawObjectsRenderPass(lua_State *L, int 
 	return GetDrawObjectsRenderPass(luaX_checkObject(L, idx));
 }
 #define ID_RenderPass 0xf64bbf80
-ORCA_API struct ClassDesc _DrawObjectsRenderPass = {
-	.ClassName = "DrawObjectsRenderPass",
-	.DefaultName = "DrawObjectsRenderPass",
-	.ContentType = "DrawObjectsRenderPass",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_RenderPass, 0 },
-	.ClassID = ID_DrawObjectsRenderPass,
-	.ClassSize = sizeof(struct DrawObjectsRenderPass),
-	.Properties = DrawObjectsRenderPassProperties,
-	.MessageTypes = DrawObjectsRenderPassMessageTypes,
-	.ObjProc = DrawObjectsRenderPassProc,
-	.Defaults = &DrawObjectsRenderPassDefaults,
-	.NumProperties = kDrawObjectsRenderPassNumProperties,
-	.NumMessageTypes = kDrawObjectsRenderPassNumMessageTypes,
-};
-
+REGISTER_CLASS(DrawObjectsRenderPass, ID_RenderPass, 0);
 static struct MessageType PipelineStateRenderPassMessageTypes[kPipelineStateRenderPassNumMessageTypes] = {	
 };
 static struct PropertyType const PipelineStateRenderPassProperties[kPipelineStateRenderPassNumProperties] = {
@@ -653,22 +474,7 @@ struct PipelineStateRenderPass* luaX_checkPipelineStateRenderPass(lua_State *L, 
 	return GetPipelineStateRenderPass(luaX_checkObject(L, idx));
 }
 #define ID_RenderPass 0xf64bbf80
-ORCA_API struct ClassDesc _PipelineStateRenderPass = {
-	.ClassName = "PipelineStateRenderPass",
-	.DefaultName = "PipelineStateRenderPass",
-	.ContentType = "PipelineStateRenderPass",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_RenderPass, 0 },
-	.ClassID = ID_PipelineStateRenderPass,
-	.ClassSize = sizeof(struct PipelineStateRenderPass),
-	.Properties = PipelineStateRenderPassProperties,
-	.MessageTypes = PipelineStateRenderPassMessageTypes,
-	.ObjProc = PipelineStateRenderPassProc,
-	.Defaults = &PipelineStateRenderPassDefaults,
-	.NumProperties = kPipelineStateRenderPassNumProperties,
-	.NumMessageTypes = kPipelineStateRenderPassNumMessageTypes,
-};
-
+REGISTER_CLASS(PipelineStateRenderPass, ID_RenderPass, 0);
 LRESULT TextBlock3D_Render(struct Object*, struct TextBlock3D*, wParam_t, RenderMsgPtr);
 LRESULT TextBlock3D_Create(struct Object*, struct TextBlock3D*, wParam_t, CreateMsgPtr);
 static struct MessageType TextBlock3DMessageTypes[kTextBlock3DNumMessageTypes] = {	
@@ -692,22 +498,7 @@ struct TextBlock3D* luaX_checkTextBlock3D(lua_State *L, int idx) {
 }
 #define ID_Node3D 0xce61fe5a
 #define ID_TextBlockConcept 0x4903089d
-ORCA_API struct ClassDesc _TextBlock3D = {
-	.ClassName = "TextBlock3D",
-	.DefaultName = "TextBlock3D",
-	.ContentType = "TextBlock3D",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node3D, ID_TextBlockConcept, 0 },
-	.ClassID = ID_TextBlock3D,
-	.ClassSize = sizeof(struct TextBlock3D),
-	.Properties = TextBlock3DProperties,
-	.MessageTypes = TextBlock3DMessageTypes,
-	.ObjProc = TextBlock3DProc,
-	.Defaults = &TextBlock3DDefaults,
-	.NumProperties = kTextBlock3DNumProperties,
-	.NumMessageTypes = kTextBlock3DNumMessageTypes,
-};
-
+REGISTER_CLASS(TextBlock3D, ID_Node3D, ID_TextBlockConcept, 0);
 LRESULT Light3D_Render(struct Object*, struct Light3D*, wParam_t, RenderMsgPtr);
 static struct MessageType Light3DMessageTypes[kLight3DNumMessageTypes] = {	
 };
@@ -737,22 +528,7 @@ struct Light3D* luaX_checkLight3D(lua_State *L, int idx) {
 	return GetLight3D(luaX_checkObject(L, idx));
 }
 #define ID_Node3D 0xce61fe5a
-ORCA_API struct ClassDesc _Light3D = {
-	.ClassName = "Light3D",
-	.DefaultName = "Light3D",
-	.ContentType = "Light3D",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node3D, 0 },
-	.ClassID = ID_Light3D,
-	.ClassSize = sizeof(struct Light3D),
-	.Properties = Light3DProperties,
-	.MessageTypes = Light3DMessageTypes,
-	.ObjProc = Light3DProc,
-	.Defaults = &Light3DDefaults,
-	.NumProperties = kLight3DNumProperties,
-	.NumMessageTypes = kLight3DNumMessageTypes,
-};
-
+REGISTER_CLASS(Light3D, ID_Node3D, 0);
 LRESULT SpriteView_Render(struct Object*, struct SpriteView*, wParam_t, RenderMsgPtr);
 static struct MessageType SpriteViewMessageTypes[kSpriteViewNumMessageTypes] = {	
 };
@@ -775,22 +551,7 @@ struct SpriteView* luaX_checkSpriteView(lua_State *L, int idx) {
 	return GetSpriteView(luaX_checkObject(L, idx));
 }
 #define ID_Node3D 0xce61fe5a
-ORCA_API struct ClassDesc _SpriteView = {
-	.ClassName = "SpriteView",
-	.DefaultName = "SpriteView",
-	.ContentType = "SpriteView",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node3D, 0 },
-	.ClassID = ID_SpriteView,
-	.ClassSize = sizeof(struct SpriteView),
-	.Properties = SpriteViewProperties,
-	.MessageTypes = SpriteViewMessageTypes,
-	.ObjProc = SpriteViewProc,
-	.Defaults = &SpriteViewDefaults,
-	.NumProperties = kSpriteViewNumProperties,
-	.NumMessageTypes = kSpriteViewNumMessageTypes,
-};
-
+REGISTER_CLASS(SpriteView, ID_Node3D, 0);
 
 
 ORCA_API int luaopen_orca_SceneKit(lua_State *L) {

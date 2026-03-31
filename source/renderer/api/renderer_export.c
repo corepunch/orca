@@ -167,6 +167,22 @@ static struct PropertyType _RenderMsgArgs[] = {
 
 STRUCT(RenderScreenMsgArgs, RenderScreenMsgArgs);
 STRUCT(RenderMsgArgs, RenderMsgArgs);
+#define REGISTER_CLASS(NAME, ...) \
+ORCA_API struct ClassDesc _##NAME = { \
+	.ClassName = #NAME, \
+	.DefaultName = #NAME, \
+	.ContentType = #NAME, \
+	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation", \
+	.ParentClasses = { __VA_ARGS__ }, \
+	.ClassID = ID_##NAME, \
+	.ClassSize = sizeof(struct NAME), \
+	.Properties = NAME##Properties, \
+	.MessageTypes = NAME##MessageTypes, \
+	.ObjProc = NAME##Proc, \
+	.Defaults = &NAME##Defaults, \
+	.NumProperties = k##NAME##NumProperties, \
+	.NumMessageTypes = k##NAME##NumMessageTypes, \
+};
 static struct MessageType TextureMessageTypes[kTextureNumMessageTypes] = {	
 };
 static struct PropertyType const TextureProperties[kTextureNumProperties] = {
@@ -193,22 +209,7 @@ void luaX_pushTexture(lua_State *L, struct Texture const* Texture) {
 struct Texture* luaX_checkTexture(lua_State *L, int idx) {
 	return GetTexture(luaX_checkObject(L, idx));
 }
-ORCA_API struct ClassDesc _Texture = {
-	.ClassName = "Texture",
-	.DefaultName = "Texture",
-	.ContentType = "Texture",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { 0 },
-	.ClassID = ID_Texture,
-	.ClassSize = sizeof(struct Texture),
-	.Properties = TextureProperties,
-	.MessageTypes = TextureMessageTypes,
-	.ObjProc = TextureProc,
-	.Defaults = &TextureDefaults,
-	.NumProperties = kTextureNumProperties,
-	.NumMessageTypes = kTextureNumMessageTypes,
-};
-
+REGISTER_CLASS(Texture, 0);
 LRESULT Image_Start(struct Object*, struct Image*, wParam_t, StartMsgPtr);
 static struct MessageType ImageMessageTypes[kImageNumMessageTypes] = {	
 };
@@ -253,22 +254,7 @@ struct Image* luaX_checkImage(lua_State *L, int idx) {
 	return GetImage(luaX_checkObject(L, idx));
 }
 #define ID_Texture 0x994c5594
-ORCA_API struct ClassDesc _Image = {
-	.ClassName = "Image",
-	.DefaultName = "Image",
-	.ContentType = "Image",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Texture, 0 },
-	.ClassID = ID_Image,
-	.ClassSize = sizeof(struct Image),
-	.Properties = ImageProperties,
-	.MessageTypes = ImageMessageTypes,
-	.ObjProc = ImageProc,
-	.Defaults = &ImageDefaults,
-	.NumProperties = kImageNumProperties,
-	.NumMessageTypes = kImageNumMessageTypes,
-};
-
+REGISTER_CLASS(Image, ID_Texture, 0);
 LRESULT RenderTargetTexture_Start(struct Object*, struct RenderTargetTexture*, wParam_t, StartMsgPtr);
 static struct MessageType RenderTargetTextureMessageTypes[kRenderTargetTextureNumMessageTypes] = {	
 };
@@ -296,22 +282,7 @@ struct RenderTargetTexture* luaX_checkRenderTargetTexture(lua_State *L, int idx)
 	return GetRenderTargetTexture(luaX_checkObject(L, idx));
 }
 #define ID_Texture 0x994c5594
-ORCA_API struct ClassDesc _RenderTargetTexture = {
-	.ClassName = "RenderTargetTexture",
-	.DefaultName = "RenderTargetTexture",
-	.ContentType = "RenderTargetTexture",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Texture, 0 },
-	.ClassID = ID_RenderTargetTexture,
-	.ClassSize = sizeof(struct RenderTargetTexture),
-	.Properties = RenderTargetTextureProperties,
-	.MessageTypes = RenderTargetTextureMessageTypes,
-	.ObjProc = RenderTargetTextureProc,
-	.Defaults = &RenderTargetTextureDefaults,
-	.NumProperties = kRenderTargetTextureNumProperties,
-	.NumMessageTypes = kRenderTargetTextureNumMessageTypes,
-};
-
+REGISTER_CLASS(RenderTargetTexture, ID_Texture, 0);
 LRESULT CubeMapTexture_Start(struct Object*, struct CubeMapTexture*, wParam_t, StartMsgPtr);
 static struct MessageType CubeMapTextureMessageTypes[kCubeMapTextureNumMessageTypes] = {	
 };
@@ -338,22 +309,7 @@ struct CubeMapTexture* luaX_checkCubeMapTexture(lua_State *L, int idx) {
 	return GetCubeMapTexture(luaX_checkObject(L, idx));
 }
 #define ID_Texture 0x994c5594
-ORCA_API struct ClassDesc _CubeMapTexture = {
-	.ClassName = "CubeMapTexture",
-	.DefaultName = "CubeMapTexture",
-	.ContentType = "CubeMapTexture",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Texture, 0 },
-	.ClassID = ID_CubeMapTexture,
-	.ClassSize = sizeof(struct CubeMapTexture),
-	.Properties = CubeMapTextureProperties,
-	.MessageTypes = CubeMapTextureMessageTypes,
-	.ObjProc = CubeMapTextureProc,
-	.Defaults = &CubeMapTextureDefaults,
-	.NumProperties = kCubeMapTextureNumProperties,
-	.NumMessageTypes = kCubeMapTextureNumMessageTypes,
-};
-
+REGISTER_CLASS(CubeMapTexture, ID_Texture, 0);
 LRESULT IOSurfaceTexture_Start(struct Object*, struct IOSurfaceTexture*, wParam_t, StartMsgPtr);
 static struct MessageType IOSurfaceTextureMessageTypes[kIOSurfaceTextureNumMessageTypes] = {	
 };
@@ -375,22 +331,7 @@ struct IOSurfaceTexture* luaX_checkIOSurfaceTexture(lua_State *L, int idx) {
 	return GetIOSurfaceTexture(luaX_checkObject(L, idx));
 }
 #define ID_Texture 0x994c5594
-ORCA_API struct ClassDesc _IOSurfaceTexture = {
-	.ClassName = "IOSurfaceTexture",
-	.DefaultName = "IOSurfaceTexture",
-	.ContentType = "IOSurfaceTexture",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Texture, 0 },
-	.ClassID = ID_IOSurfaceTexture,
-	.ClassSize = sizeof(struct IOSurfaceTexture),
-	.Properties = IOSurfaceTextureProperties,
-	.MessageTypes = IOSurfaceTextureMessageTypes,
-	.ObjProc = IOSurfaceTextureProc,
-	.Defaults = &IOSurfaceTextureDefaults,
-	.NumProperties = kIOSurfaceTextureNumProperties,
-	.NumMessageTypes = kIOSurfaceTextureNumMessageTypes,
-};
-
+REGISTER_CLASS(IOSurfaceTexture, ID_Texture, 0);
 static struct MessageType VertexShaderMessageTypes[kVertexShaderNumMessageTypes] = {	
 };
 static struct PropertyType const VertexShaderProperties[kVertexShaderNumProperties] = {
@@ -411,22 +352,7 @@ void luaX_pushVertexShader(lua_State *L, struct VertexShader const* VertexShader
 struct VertexShader* luaX_checkVertexShader(lua_State *L, int idx) {
 	return GetVertexShader(luaX_checkObject(L, idx));
 }
-ORCA_API struct ClassDesc _VertexShader = {
-	.ClassName = "VertexShader",
-	.DefaultName = "VertexShader",
-	.ContentType = "VertexShader",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { 0 },
-	.ClassID = ID_VertexShader,
-	.ClassSize = sizeof(struct VertexShader),
-	.Properties = VertexShaderProperties,
-	.MessageTypes = VertexShaderMessageTypes,
-	.ObjProc = VertexShaderProc,
-	.Defaults = &VertexShaderDefaults,
-	.NumProperties = kVertexShaderNumProperties,
-	.NumMessageTypes = kVertexShaderNumMessageTypes,
-};
-
+REGISTER_CLASS(VertexShader, 0);
 static struct MessageType FragmentShaderMessageTypes[kFragmentShaderNumMessageTypes] = {	
 };
 static struct PropertyType const FragmentShaderProperties[kFragmentShaderNumProperties] = {
@@ -447,22 +373,7 @@ void luaX_pushFragmentShader(lua_State *L, struct FragmentShader const* Fragment
 struct FragmentShader* luaX_checkFragmentShader(lua_State *L, int idx) {
 	return GetFragmentShader(luaX_checkObject(L, idx));
 }
-ORCA_API struct ClassDesc _FragmentShader = {
-	.ClassName = "FragmentShader",
-	.DefaultName = "FragmentShader",
-	.ContentType = "FragmentShader",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { 0 },
-	.ClassID = ID_FragmentShader,
-	.ClassSize = sizeof(struct FragmentShader),
-	.Properties = FragmentShaderProperties,
-	.MessageTypes = FragmentShaderMessageTypes,
-	.ObjProc = FragmentShaderProc,
-	.Defaults = &FragmentShaderDefaults,
-	.NumProperties = kFragmentShaderNumProperties,
-	.NumMessageTypes = kFragmentShaderNumMessageTypes,
-};
-
+REGISTER_CLASS(FragmentShader, 0);
 LRESULT Shader_Start(struct Object*, struct Shader*, wParam_t, StartMsgPtr);
 LRESULT Shader_Destroy(struct Object*, struct Shader*, wParam_t, DestroyMsgPtr);
 static struct MessageType ShaderMessageTypes[kShaderNumMessageTypes] = {	
@@ -489,22 +400,7 @@ void luaX_pushShader(lua_State *L, struct Shader const* Shader) {
 struct Shader* luaX_checkShader(lua_State *L, int idx) {
 	return GetShader(luaX_checkObject(L, idx));
 }
-ORCA_API struct ClassDesc _Shader = {
-	.ClassName = "Shader",
-	.DefaultName = "Shader",
-	.ContentType = "Shader",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { 0 },
-	.ClassID = ID_Shader,
-	.ClassSize = sizeof(struct Shader),
-	.Properties = ShaderProperties,
-	.MessageTypes = ShaderMessageTypes,
-	.ObjProc = ShaderProc,
-	.Defaults = &ShaderDefaults,
-	.NumProperties = kShaderNumProperties,
-	.NumMessageTypes = kShaderNumMessageTypes,
-};
-
+REGISTER_CLASS(Shader, 0);
 static struct MessageType MaterialMessageTypes[kMaterialNumMessageTypes] = {	
 };
 static struct PropertyType const MaterialProperties[kMaterialNumProperties] = {
@@ -537,22 +433,7 @@ void luaX_pushMaterial(lua_State *L, struct Material const* Material) {
 struct Material* luaX_checkMaterial(lua_State *L, int idx) {
 	return GetMaterial(luaX_checkObject(L, idx));
 }
-ORCA_API struct ClassDesc _Material = {
-	.ClassName = "Material",
-	.DefaultName = "Material",
-	.ContentType = "Material",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { 0 },
-	.ClassID = ID_Material,
-	.ClassSize = sizeof(struct Material),
-	.Properties = MaterialProperties,
-	.MessageTypes = MaterialMessageTypes,
-	.ObjProc = MaterialProc,
-	.Defaults = &MaterialDefaults,
-	.NumProperties = kMaterialNumProperties,
-	.NumMessageTypes = kMaterialNumMessageTypes,
-};
-
+REGISTER_CLASS(Material, 0);
 LRESULT Mesh_Start(struct Object*, struct Mesh*, wParam_t, StartMsgPtr);
 LRESULT Mesh_Destroy(struct Object*, struct Mesh*, wParam_t, DestroyMsgPtr);
 static struct MessageType MeshMessageTypes[kMeshNumMessageTypes] = {	
@@ -577,22 +458,7 @@ void luaX_pushMesh(lua_State *L, struct Mesh const* Mesh) {
 struct Mesh* luaX_checkMesh(lua_State *L, int idx) {
 	return GetMesh(luaX_checkObject(L, idx));
 }
-ORCA_API struct ClassDesc _Mesh = {
-	.ClassName = "Mesh",
-	.DefaultName = "Mesh",
-	.ContentType = "Mesh",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { 0 },
-	.ClassID = ID_Mesh,
-	.ClassSize = sizeof(struct Mesh),
-	.Properties = MeshProperties,
-	.MessageTypes = MeshMessageTypes,
-	.ObjProc = MeshProc,
-	.Defaults = &MeshDefaults,
-	.NumProperties = kMeshNumProperties,
-	.NumMessageTypes = kMeshNumMessageTypes,
-};
-
+REGISTER_CLASS(Mesh, 0);
 LRESULT FontFamily_Start(struct Object*, struct FontFamily*, wParam_t, StartMsgPtr);
 LRESULT FontFamily_Destroy(struct Object*, struct FontFamily*, wParam_t, DestroyMsgPtr);
 static struct MessageType FontFamilyMessageTypes[kFontFamilyNumMessageTypes] = {	
@@ -618,22 +484,7 @@ void luaX_pushFontFamily(lua_State *L, struct FontFamily const* FontFamily) {
 struct FontFamily* luaX_checkFontFamily(lua_State *L, int idx) {
 	return GetFontFamily(luaX_checkObject(L, idx));
 }
-ORCA_API struct ClassDesc _FontFamily = {
-	.ClassName = "FontFamily",
-	.DefaultName = "FontFamily",
-	.ContentType = "FontFamily",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { 0 },
-	.ClassID = ID_FontFamily,
-	.ClassSize = sizeof(struct FontFamily),
-	.Properties = FontFamilyProperties,
-	.MessageTypes = FontFamilyMessageTypes,
-	.ObjProc = FontFamilyProc,
-	.Defaults = &FontFamilyDefaults,
-	.NumProperties = kFontFamilyNumProperties,
-	.NumMessageTypes = kFontFamilyNumMessageTypes,
-};
-
+REGISTER_CLASS(FontFamily, 0);
 static struct MessageType TrajectoryMessageTypes[kTrajectoryNumMessageTypes] = {	
 };
 static struct PropertyType const TrajectoryProperties[kTrajectoryNumProperties] = {
@@ -651,22 +502,7 @@ void luaX_pushTrajectory(lua_State *L, struct Trajectory const* Trajectory) {
 struct Trajectory* luaX_checkTrajectory(lua_State *L, int idx) {
 	return GetTrajectory(luaX_checkObject(L, idx));
 }
-ORCA_API struct ClassDesc _Trajectory = {
-	.ClassName = "Trajectory",
-	.DefaultName = "Trajectory",
-	.ContentType = "Trajectory",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { 0 },
-	.ClassID = ID_Trajectory,
-	.ClassSize = sizeof(struct Trajectory),
-	.Properties = TrajectoryProperties,
-	.MessageTypes = TrajectoryMessageTypes,
-	.ObjProc = TrajectoryProc,
-	.Defaults = &TrajectoryDefaults,
-	.NumProperties = kTrajectoryNumProperties,
-	.NumMessageTypes = kTrajectoryNumMessageTypes,
-};
-
+REGISTER_CLASS(Trajectory, 0);
 static struct MessageType TimelineMessageTypes[kTimelineNumMessageTypes] = {	
 };
 static struct PropertyType const TimelineProperties[kTimelineNumProperties] = {
@@ -684,22 +520,7 @@ void luaX_pushTimeline(lua_State *L, struct Timeline const* Timeline) {
 struct Timeline* luaX_checkTimeline(lua_State *L, int idx) {
 	return GetTimeline(luaX_checkObject(L, idx));
 }
-ORCA_API struct ClassDesc _Timeline = {
-	.ClassName = "Timeline",
-	.DefaultName = "Timeline",
-	.ContentType = "Timeline",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { 0 },
-	.ClassID = ID_Timeline,
-	.ClassSize = sizeof(struct Timeline),
-	.Properties = TimelineProperties,
-	.MessageTypes = TimelineMessageTypes,
-	.ObjProc = TimelineProc,
-	.Defaults = &TimelineDefaults,
-	.NumProperties = kTimelineNumProperties,
-	.NumMessageTypes = kTimelineNumMessageTypes,
-};
-
+REGISTER_CLASS(Timeline, 0);
 
 int f_renderer_Init(lua_State *L) {
 	uint32_t Width = (uint32_t)luaL_checkinteger(L, 1);

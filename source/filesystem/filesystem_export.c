@@ -173,6 +173,22 @@ STRUCT(OpenFileMsgArgs, OpenFileMsgArgs);
 STRUCT(FileExistsMsgArgs, FileExistsMsgArgs);
 STRUCT(HasChangedFilesMsgArgs, HasChangedFilesMsgArgs);
 STRUCT(LoadProjectMsgArgs, LoadProjectMsgArgs);
+#define REGISTER_CLASS(NAME, ...) \
+ORCA_API struct ClassDesc _##NAME = { \
+	.ClassName = #NAME, \
+	.DefaultName = #NAME, \
+	.ContentType = #NAME, \
+	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation", \
+	.ParentClasses = { __VA_ARGS__ }, \
+	.ClassID = ID_##NAME, \
+	.ClassSize = sizeof(struct NAME), \
+	.Properties = NAME##Properties, \
+	.MessageTypes = NAME##MessageTypes, \
+	.ObjProc = NAME##Proc, \
+	.Defaults = &NAME##Defaults, \
+	.NumProperties = k##NAME##NumProperties, \
+	.NumMessageTypes = k##NAME##NumMessageTypes, \
+};
 static struct MessageType WorkspaceMessageTypes[kWorkspaceNumMessageTypes] = {	
 };
 static struct PropertyType const WorkspaceProperties[kWorkspaceNumProperties] = {
@@ -190,22 +206,7 @@ void luaX_pushWorkspace(lua_State *L, struct Workspace const* Workspace) {
 struct Workspace* luaX_checkWorkspace(lua_State *L, int idx) {
 	return GetWorkspace(luaX_checkObject(L, idx));
 }
-ORCA_API struct ClassDesc _Workspace = {
-	.ClassName = "Workspace",
-	.DefaultName = "Workspace",
-	.ContentType = "Workspace",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { 0 },
-	.ClassID = ID_Workspace,
-	.ClassSize = sizeof(struct Workspace),
-	.Properties = WorkspaceProperties,
-	.MessageTypes = WorkspaceMessageTypes,
-	.ObjProc = WorkspaceProc,
-	.Defaults = &WorkspaceDefaults,
-	.NumProperties = kWorkspaceNumProperties,
-	.NumMessageTypes = kWorkspaceNumMessageTypes,
-};
-
+REGISTER_CLASS(Workspace, 0);
 static struct MessageType LibraryMessageTypes[kLibraryNumMessageTypes] = {	
 };
 static struct PropertyType const LibraryProperties[kLibraryNumProperties] = {
@@ -224,22 +225,7 @@ void luaX_pushLibrary(lua_State *L, struct Library const* Library) {
 struct Library* luaX_checkLibrary(lua_State *L, int idx) {
 	return GetLibrary(luaX_checkObject(L, idx));
 }
-ORCA_API struct ClassDesc _Library = {
-	.ClassName = "Library",
-	.DefaultName = "Library",
-	.ContentType = "Library",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { 0 },
-	.ClassID = ID_Library,
-	.ClassSize = sizeof(struct Library),
-	.Properties = LibraryProperties,
-	.MessageTypes = LibraryMessageTypes,
-	.ObjProc = LibraryProc,
-	.Defaults = &LibraryDefaults,
-	.NumProperties = kLibraryNumProperties,
-	.NumMessageTypes = kLibraryNumMessageTypes,
-};
-
+REGISTER_CLASS(Library, 0);
 LRESULT Project_Start(struct Object*, struct Project*, wParam_t, StartMsgPtr);
 static struct MessageType ProjectMessageTypes[kProjectNumMessageTypes] = {	
 };
@@ -332,22 +318,7 @@ void luaX_pushProject(lua_State *L, struct Project const* Project) {
 struct Project* luaX_checkProject(lua_State *L, int idx) {
 	return GetProject(luaX_checkObject(L, idx));
 }
-ORCA_API struct ClassDesc _Project = {
-	.ClassName = "Project",
-	.DefaultName = "Project",
-	.ContentType = "Project",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { 0 },
-	.ClassID = ID_Project,
-	.ClassSize = sizeof(struct Project),
-	.Properties = ProjectProperties,
-	.MessageTypes = ProjectMessageTypes,
-	.ObjProc = ProjectProc,
-	.Defaults = &ProjectDefaults,
-	.NumProperties = kProjectNumProperties,
-	.NumMessageTypes = kProjectNumMessageTypes,
-};
-
+REGISTER_CLASS(Project, 0);
 LRESULT Directory_LoadProject(struct Object*, struct Directory*, wParam_t, LoadProjectMsgPtr);
 LRESULT Directory_OpenFile(struct Object*, struct Directory*, wParam_t, OpenFileMsgPtr);
 LRESULT Directory_FileExists(struct Object*, struct Directory*, wParam_t, FileExistsMsgPtr);
@@ -377,22 +348,7 @@ struct Directory* luaX_checkDirectory(lua_State *L, int idx) {
 	return GetDirectory(luaX_checkObject(L, idx));
 }
 #define ID_Project 0x7b5fea5e
-ORCA_API struct ClassDesc _Directory = {
-	.ClassName = "Directory",
-	.DefaultName = "Directory",
-	.ContentType = "Directory",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Project, 0 },
-	.ClassID = ID_Directory,
-	.ClassSize = sizeof(struct Directory),
-	.Properties = DirectoryProperties,
-	.MessageTypes = DirectoryMessageTypes,
-	.ObjProc = DirectoryProc,
-	.Defaults = &DirectoryDefaults,
-	.NumProperties = kDirectoryNumProperties,
-	.NumMessageTypes = kDirectoryNumMessageTypes,
-};
-
+REGISTER_CLASS(Directory, ID_Project, 0);
 LRESULT Package_LoadProject(struct Object*, struct Package*, wParam_t, LoadProjectMsgPtr);
 LRESULT Package_OpenFile(struct Object*, struct Package*, wParam_t, OpenFileMsgPtr);
 LRESULT Package_FileExists(struct Object*, struct Package*, wParam_t, FileExistsMsgPtr);
@@ -422,22 +378,7 @@ struct Package* luaX_checkPackage(lua_State *L, int idx) {
 	return GetPackage(luaX_checkObject(L, idx));
 }
 #define ID_Project 0x7b5fea5e
-ORCA_API struct ClassDesc _Package = {
-	.ClassName = "Package",
-	.DefaultName = "Package",
-	.ContentType = "Package",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Project, 0 },
-	.ClassID = ID_Package,
-	.ClassSize = sizeof(struct Package),
-	.Properties = PackageProperties,
-	.MessageTypes = PackageMessageTypes,
-	.ObjProc = PackageProc,
-	.Defaults = &PackageDefaults,
-	.NumProperties = kPackageNumProperties,
-	.NumMessageTypes = kPackageNumMessageTypes,
-};
-
+REGISTER_CLASS(Package, ID_Project, 0);
 static struct MessageType LocaleReferenceItemMessageTypes[kLocaleReferenceItemNumMessageTypes] = {	
 };
 static struct PropertyType const LocaleReferenceItemProperties[kLocaleReferenceItemNumProperties] = {
@@ -455,22 +396,7 @@ void luaX_pushLocaleReferenceItem(lua_State *L, struct LocaleReferenceItem const
 struct LocaleReferenceItem* luaX_checkLocaleReferenceItem(lua_State *L, int idx) {
 	return GetLocaleReferenceItem(luaX_checkObject(L, idx));
 }
-ORCA_API struct ClassDesc _LocaleReferenceItem = {
-	.ClassName = "LocaleReferenceItem",
-	.DefaultName = "LocaleReferenceItem",
-	.ContentType = "LocaleReferenceItem",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { 0 },
-	.ClassID = ID_LocaleReferenceItem,
-	.ClassSize = sizeof(struct LocaleReferenceItem),
-	.Properties = LocaleReferenceItemProperties,
-	.MessageTypes = LocaleReferenceItemMessageTypes,
-	.ObjProc = LocaleReferenceItemProc,
-	.Defaults = &LocaleReferenceItemDefaults,
-	.NumProperties = kLocaleReferenceItemNumProperties,
-	.NumMessageTypes = kLocaleReferenceItemNumMessageTypes,
-};
-
+REGISTER_CLASS(LocaleReferenceItem, 0);
 static struct MessageType TagMessageTypes[kTagNumMessageTypes] = {	
 };
 static struct PropertyType const TagProperties[kTagNumProperties] = {
@@ -489,22 +415,7 @@ void luaX_pushTag(lua_State *L, struct Tag const* Tag) {
 struct Tag* luaX_checkTag(lua_State *L, int idx) {
 	return GetTag(luaX_checkObject(L, idx));
 }
-ORCA_API struct ClassDesc _Tag = {
-	.ClassName = "Tag",
-	.DefaultName = "Tag",
-	.ContentType = "Tag",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { 0 },
-	.ClassID = ID_Tag,
-	.ClassSize = sizeof(struct Tag),
-	.Properties = TagProperties,
-	.MessageTypes = TagMessageTypes,
-	.ObjProc = TagProc,
-	.Defaults = &TagDefaults,
-	.NumProperties = kTagNumProperties,
-	.NumMessageTypes = kTagNumMessageTypes,
-};
-
+REGISTER_CLASS(Tag, 0);
 LRESULT ThemeGroup_Attached(struct Object*, struct ThemeGroup*, wParam_t, AttachedMsgPtr);
 static struct MessageType ThemeGroupMessageTypes[kThemeGroupNumMessageTypes] = {	
 };
@@ -526,22 +437,7 @@ void luaX_pushThemeGroup(lua_State *L, struct ThemeGroup const* ThemeGroup) {
 struct ThemeGroup* luaX_checkThemeGroup(lua_State *L, int idx) {
 	return GetThemeGroup(luaX_checkObject(L, idx));
 }
-ORCA_API struct ClassDesc _ThemeGroup = {
-	.ClassName = "ThemeGroup",
-	.DefaultName = "ThemeGroup",
-	.ContentType = "ThemeGroup",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { 0 },
-	.ClassID = ID_ThemeGroup,
-	.ClassSize = sizeof(struct ThemeGroup),
-	.Properties = ThemeGroupProperties,
-	.MessageTypes = ThemeGroupMessageTypes,
-	.ObjProc = ThemeGroupProc,
-	.Defaults = &ThemeGroupDefaults,
-	.NumProperties = kThemeGroupNumProperties,
-	.NumMessageTypes = kThemeGroupNumMessageTypes,
-};
-
+REGISTER_CLASS(ThemeGroup, 0);
 static struct MessageType ThemeMessageTypes[kThemeNumMessageTypes] = {	
 };
 static struct PropertyType const ThemeProperties[kThemeNumProperties] = {
@@ -560,22 +456,7 @@ void luaX_pushTheme(lua_State *L, struct Theme const* Theme) {
 struct Theme* luaX_checkTheme(lua_State *L, int idx) {
 	return GetTheme(luaX_checkObject(L, idx));
 }
-ORCA_API struct ClassDesc _Theme = {
-	.ClassName = "Theme",
-	.DefaultName = "Theme",
-	.ContentType = "Theme",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { 0 },
-	.ClassID = ID_Theme,
-	.ClassSize = sizeof(struct Theme),
-	.Properties = ThemeProperties,
-	.MessageTypes = ThemeMessageTypes,
-	.ObjProc = ThemeProc,
-	.Defaults = &ThemeDefaults,
-	.NumProperties = kThemeNumProperties,
-	.NumMessageTypes = kThemeNumMessageTypes,
-};
-
+REGISTER_CLASS(Theme, 0);
 static struct MessageType EntryMessageTypes[kEntryNumMessageTypes] = {	
 };
 static struct PropertyType const EntryProperties[kEntryNumProperties] = {
@@ -593,22 +474,7 @@ void luaX_pushEntry(lua_State *L, struct Entry const* Entry) {
 struct Entry* luaX_checkEntry(lua_State *L, int idx) {
 	return GetEntry(luaX_checkObject(L, idx));
 }
-ORCA_API struct ClassDesc _Entry = {
-	.ClassName = "Entry",
-	.DefaultName = "Entry",
-	.ContentType = "Entry",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { 0 },
-	.ClassID = ID_Entry,
-	.ClassSize = sizeof(struct Entry),
-	.Properties = EntryProperties,
-	.MessageTypes = EntryMessageTypes,
-	.ObjProc = EntryProc,
-	.Defaults = &EntryDefaults,
-	.NumProperties = kEntryNumProperties,
-	.NumMessageTypes = kEntryNumMessageTypes,
-};
-
+REGISTER_CLASS(Entry, 0);
 static struct MessageType ThemeDefaultValuesDictionaryMessageTypes[kThemeDefaultValuesDictionaryNumMessageTypes] = {	
 };
 static struct PropertyType const ThemeDefaultValuesDictionaryProperties[kThemeDefaultValuesDictionaryNumProperties] = {
@@ -626,22 +492,7 @@ void luaX_pushThemeDefaultValuesDictionary(lua_State *L, struct ThemeDefaultValu
 struct ThemeDefaultValuesDictionary* luaX_checkThemeDefaultValuesDictionary(lua_State *L, int idx) {
 	return GetThemeDefaultValuesDictionary(luaX_checkObject(L, idx));
 }
-ORCA_API struct ClassDesc _ThemeDefaultValuesDictionary = {
-	.ClassName = "ThemeDefaultValuesDictionary",
-	.DefaultName = "ThemeDefaultValuesDictionary",
-	.ContentType = "ThemeDefaultValuesDictionary",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { 0 },
-	.ClassID = ID_ThemeDefaultValuesDictionary,
-	.ClassSize = sizeof(struct ThemeDefaultValuesDictionary),
-	.Properties = ThemeDefaultValuesDictionaryProperties,
-	.MessageTypes = ThemeDefaultValuesDictionaryMessageTypes,
-	.ObjProc = ThemeDefaultValuesDictionaryProc,
-	.Defaults = &ThemeDefaultValuesDictionaryDefaults,
-	.NumProperties = kThemeDefaultValuesDictionaryNumProperties,
-	.NumMessageTypes = kThemeDefaultValuesDictionaryNumMessageTypes,
-};
-
+REGISTER_CLASS(ThemeDefaultValuesDictionary, 0);
 
 int f_FS_GetBaseName(lua_State *L) {
 	const char* path = luaL_checkstring(L, 1);

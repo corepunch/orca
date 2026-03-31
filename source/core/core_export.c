@@ -1065,6 +1065,22 @@ STRUCT(DestroyMsgArgs, DestroyMsgArgs);
 STRUCT(ResumeCoroutineMsgArgs, ResumeCoroutineMsgArgs);
 STRUCT(StopCoroutineMsgArgs, StopCoroutineMsgArgs);
 STRUCT(ViewDidLoadMsgArgs, ViewDidLoadMsgArgs);
+#define REGISTER_CLASS(NAME, ...) \
+ORCA_API struct ClassDesc _##NAME = { \
+	.ClassName = #NAME, \
+	.DefaultName = #NAME, \
+	.ContentType = #NAME, \
+	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation", \
+	.ParentClasses = { __VA_ARGS__ }, \
+	.ClassID = ID_##NAME, \
+	.ClassSize = sizeof(struct NAME), \
+	.Properties = NAME##Properties, \
+	.MessageTypes = NAME##MessageTypes, \
+	.ObjProc = NAME##Proc, \
+	.Defaults = &NAME##Defaults, \
+	.NumProperties = k##NAME##NumProperties, \
+	.NumMessageTypes = k##NAME##NumMessageTypes, \
+};
 
 int f_core_GetFocus(lua_State *L) {
 	struct Object* result_ = core_GetFocus();

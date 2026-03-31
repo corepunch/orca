@@ -107,6 +107,22 @@ static luaL_Reg _SpriteFrame_Methods[] = {
 STRUCT(SpriteFrame, SpriteFrame);
 
 
+#define REGISTER_CLASS(NAME, ...) \
+ORCA_API struct ClassDesc _##NAME = { \
+	.ClassName = #NAME, \
+	.DefaultName = #NAME, \
+	.ContentType = #NAME, \
+	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation", \
+	.ParentClasses = { __VA_ARGS__ }, \
+	.ClassID = ID_##NAME, \
+	.ClassSize = sizeof(struct NAME), \
+	.Properties = NAME##Properties, \
+	.MessageTypes = NAME##MessageTypes, \
+	.ObjProc = NAME##Proc, \
+	.Defaults = &NAME##Defaults, \
+	.NumProperties = k##NAME##NumProperties, \
+	.NumMessageTypes = k##NAME##NumMessageTypes, \
+};
 static struct MessageType SpriteAnimationMessageTypes[kSpriteAnimationNumMessageTypes] = {	
 };
 static struct PropertyType const SpriteAnimationProperties[kSpriteAnimationNumProperties] = {
@@ -128,22 +144,7 @@ void luaX_pushSpriteAnimation(lua_State *L, struct SpriteAnimation const* Sprite
 struct SpriteAnimation* luaX_checkSpriteAnimation(lua_State *L, int idx) {
 	return GetSpriteAnimation(luaX_checkObject(L, idx));
 }
-ORCA_API struct ClassDesc _SpriteAnimation = {
-	.ClassName = "SpriteAnimation",
-	.DefaultName = "SpriteAnimation",
-	.ContentType = "SpriteAnimation",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { 0 },
-	.ClassID = ID_SpriteAnimation,
-	.ClassSize = sizeof(struct SpriteAnimation),
-	.Properties = SpriteAnimationProperties,
-	.MessageTypes = SpriteAnimationMessageTypes,
-	.ObjProc = SpriteAnimationProc,
-	.Defaults = &SpriteAnimationDefaults,
-	.NumProperties = kSpriteAnimationNumProperties,
-	.NumMessageTypes = kSpriteAnimationNumMessageTypes,
-};
-
+REGISTER_CLASS(SpriteAnimation, 0);
 LRESULT SKNode_UpdateMatrix(struct Object*, struct SKNode*, wParam_t, UpdateMatrixMsgPtr);
 static struct MessageType SKNodeMessageTypes[kSKNodeNumMessageTypes] = {	
 };
@@ -167,22 +168,7 @@ struct SKNode* luaX_checkSKNode(lua_State *L, int idx) {
 	return GetSKNode(luaX_checkObject(L, idx));
 }
 #define ID_Node 0x3468032d
-ORCA_API struct ClassDesc _SKNode = {
-	.ClassName = "SKNode",
-	.DefaultName = "SKNode",
-	.ContentType = "SKNode",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node, 0 },
-	.ClassID = ID_SKNode,
-	.ClassSize = sizeof(struct SKNode),
-	.Properties = SKNodeProperties,
-	.MessageTypes = SKNodeMessageTypes,
-	.ObjProc = SKNodeProc,
-	.Defaults = &SKNodeDefaults,
-	.NumProperties = kSKNodeNumProperties,
-	.NumMessageTypes = kSKNodeNumMessageTypes,
-};
-
+REGISTER_CLASS(SKNode, ID_Node, 0);
 LRESULT SKScene_UpdateMatrix(struct Object*, struct SKScene*, wParam_t, UpdateMatrixMsgPtr);
 static struct MessageType SKSceneMessageTypes[kSKSceneNumMessageTypes] = {	
 };
@@ -203,22 +189,7 @@ struct SKScene* luaX_checkSKScene(lua_State *L, int idx) {
 	return GetSKScene(luaX_checkObject(L, idx));
 }
 #define ID_SKNode 0x819821fb
-ORCA_API struct ClassDesc _SKScene = {
-	.ClassName = "SKScene",
-	.DefaultName = "SKScene",
-	.ContentType = "SKScene",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_SKNode, 0 },
-	.ClassID = ID_SKScene,
-	.ClassSize = sizeof(struct SKScene),
-	.Properties = SKSceneProperties,
-	.MessageTypes = SKSceneMessageTypes,
-	.ObjProc = SKSceneProc,
-	.Defaults = &SKSceneDefaults,
-	.NumProperties = kSKSceneNumProperties,
-	.NumMessageTypes = kSKSceneNumMessageTypes,
-};
-
+REGISTER_CLASS(SKScene, ID_SKNode, 0);
 LRESULT SKSpriteNode_Render(struct Object*, struct SKSpriteNode*, wParam_t, RenderMsgPtr);
 static struct MessageType SKSpriteNodeMessageTypes[kSKSpriteNodeNumMessageTypes] = {	
 };
@@ -253,22 +224,7 @@ struct SKSpriteNode* luaX_checkSKSpriteNode(lua_State *L, int idx) {
 	return GetSKSpriteNode(luaX_checkObject(L, idx));
 }
 #define ID_SKNode 0x819821fb
-ORCA_API struct ClassDesc _SKSpriteNode = {
-	.ClassName = "SKSpriteNode",
-	.DefaultName = "SKSpriteNode",
-	.ContentType = "SKSpriteNode",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_SKNode, 0 },
-	.ClassID = ID_SKSpriteNode,
-	.ClassSize = sizeof(struct SKSpriteNode),
-	.Properties = SKSpriteNodeProperties,
-	.MessageTypes = SKSpriteNodeMessageTypes,
-	.ObjProc = SKSpriteNodeProc,
-	.Defaults = &SKSpriteNodeDefaults,
-	.NumProperties = kSKSpriteNodeNumProperties,
-	.NumMessageTypes = kSKSpriteNodeNumMessageTypes,
-};
-
+REGISTER_CLASS(SKSpriteNode, ID_SKNode, 0);
 LRESULT SKLabelNode_Render(struct Object*, struct SKLabelNode*, wParam_t, RenderMsgPtr);
 LRESULT SKLabelNode_Create(struct Object*, struct SKLabelNode*, wParam_t, CreateMsgPtr);
 static struct MessageType SKLabelNodeMessageTypes[kSKLabelNodeNumMessageTypes] = {	
@@ -293,22 +249,7 @@ struct SKLabelNode* luaX_checkSKLabelNode(lua_State *L, int idx) {
 }
 #define ID_SKNode 0x819821fb
 #define ID_TextBlockConcept 0x4903089d
-ORCA_API struct ClassDesc _SKLabelNode = {
-	.ClassName = "SKLabelNode",
-	.DefaultName = "SKLabelNode",
-	.ContentType = "SKLabelNode",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_SKNode, ID_TextBlockConcept, 0 },
-	.ClassID = ID_SKLabelNode,
-	.ClassSize = sizeof(struct SKLabelNode),
-	.Properties = SKLabelNodeProperties,
-	.MessageTypes = SKLabelNodeMessageTypes,
-	.ObjProc = SKLabelNodeProc,
-	.Defaults = &SKLabelNodeDefaults,
-	.NumProperties = kSKLabelNodeNumProperties,
-	.NumMessageTypes = kSKLabelNodeNumMessageTypes,
-};
-
+REGISTER_CLASS(SKLabelNode, ID_SKNode, ID_TextBlockConcept, 0);
 LRESULT SKView_ForegroundContent(struct Object*, struct SKView*, wParam_t, ForegroundContentMsgPtr);
 static struct MessageType SKViewMessageTypes[kSKViewNumMessageTypes] = {	
 };
@@ -332,22 +273,7 @@ struct SKView* luaX_checkSKView(lua_State *L, int idx) {
 	return GetSKView(luaX_checkObject(L, idx));
 }
 #define ID_Node2D 0x6c63a2ab
-ORCA_API struct ClassDesc _SKView = {
-	.ClassName = "SKView",
-	.DefaultName = "SKView",
-	.ContentType = "SKView",
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation",
-	.ParentClasses = { ID_Node2D, 0 },
-	.ClassID = ID_SKView,
-	.ClassSize = sizeof(struct SKView),
-	.Properties = SKViewProperties,
-	.MessageTypes = SKViewMessageTypes,
-	.ObjProc = SKViewProc,
-	.Defaults = &SKViewDefaults,
-	.NumProperties = kSKViewNumProperties,
-	.NumMessageTypes = kSKViewNumMessageTypes,
-};
-
+REGISTER_CLASS(SKView, ID_Node2D, 0);
 
 
 ORCA_API int luaopen_orca_SpriteKit(lua_State *L) {
