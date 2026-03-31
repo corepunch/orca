@@ -62,7 +62,7 @@ ENUM(Stretch, "Uniform", "None", "Fill", "UniformToFill")
 ENUM(TransitionType, "None", "Slide", "Fade")
 ENUM(StyleType, "Generic", "Named")
 extern void read_property(lua_State *L, int idx, struct PropertyType const* prop, void* struct_ptr);
-extern int write_property(lua_State *L, int idx, struct PropertyType const* prop, void const* struct_ptr);
+extern int write_property(lua_State *L, struct PropertyType const* prop, void const* struct_ptr);
 extern int parse_property(const char* str, struct PropertyType const* prop, void* struct_ptr);
 
 #define STRUCT(NAME, EXPORT) \
@@ -87,7 +87,7 @@ static int f_new_##NAME(lua_State *L) { \
 static int f_##NAME##___index(lua_State *L) { \
 	for (uint32_t i = 0, j = fnv1a32(luaL_checkstring(L, 2)); i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
 		if (_##NAME[i].ShortIdentifier == j) \
-			return (write_property(L, -1, &_##NAME[i], ((char*)luaX_check##NAME(L, 1))+_##NAME[i].Offset), 1); \
+			return (write_property(L, &_##NAME[i], ((char*)luaX_check##NAME(L, 1))+_##NAME[i].Offset), 1); \
 	for (uint32_t i = 0; i < sizeof(_##NAME##_Methods) / sizeof(*_##NAME##_Methods); i++) { \
 		if (strcmp(_##NAME##_Methods[i].name, luaL_checkstring(L, 2)) == 0) { \
 			lua_pushcfunction(L, _##NAME##_Methods[i].func); \
@@ -134,13 +134,13 @@ int luaopen_orca_##NAME(lua_State *L) { \
 	lua_setmetatable(L, -2); \
 	return 1; \
 }
-static struct PropertyType _BorderRadiusShorthand[] = {
-	DECL(0xd5ac3a0b, BorderRadiusShorthand, TopLeftRadius, TopLeftRadius, kDataTypeFloat), // BorderRadiusShorthand.TopLeftRadius
-	DECL(0xdbe5a724, BorderRadiusShorthand, TopRightRadius, TopRightRadius, kDataTypeFloat), // BorderRadiusShorthand.TopRightRadius
-	DECL(0xf6ae40ce, BorderRadiusShorthand, BottomRightRadius, BottomRightRadius, kDataTypeFloat), // BorderRadiusShorthand.BottomRightRadius
-	DECL(0x7f5fe235, BorderRadiusShorthand, BottomLeftRadius, BottomLeftRadius, kDataTypeFloat), // BorderRadiusShorthand.BottomLeftRadius
+static struct PropertyType _CornerRadius[] = {
+	DECL(0xd5ac3a0b, CornerRadius, TopLeftRadius, TopLeftRadius, kDataTypeFloat), // CornerRadius.TopLeftRadius
+	DECL(0xdbe5a724, CornerRadius, TopRightRadius, TopRightRadius, kDataTypeFloat), // CornerRadius.TopRightRadius
+	DECL(0xf6ae40ce, CornerRadius, BottomRightRadius, BottomRightRadius, kDataTypeFloat), // CornerRadius.BottomRightRadius
+	DECL(0x7f5fe235, CornerRadius, BottomLeftRadius, BottomLeftRadius, kDataTypeFloat), // CornerRadius.BottomLeftRadius
 };
-static luaL_Reg _BorderRadiusShorthand_Methods[] = {
+static luaL_Reg _CornerRadius_Methods[] = {
 	{ NULL, NULL }
 };
 static struct PropertyType _EdgeShorthand[] = {
@@ -234,7 +234,7 @@ static struct PropertyType _BorderShorthand[] = {
 	DECL(0x16fd78d8, BorderShorthand, WidthBack, Width.Axis[2].Right, kDataTypeFloat), // BorderShorthand.WidthBack
 	DECL(0xe5b43cf8, BorderShorthand, Color, Color, kDataTypeColor), // BorderShorthand.Color
 	DECL(0x5467ec76, BorderShorthand, Style, Style, kDataTypeEnum, .EnumValues = _BorderStyle), // BorderShorthand.Style
-	DECL(0x3a8111d3, BorderShorthand, Radius, Radius, kDataTypeStruct, .TypeString = "BorderRadiusShorthand"), // BorderShorthand.Radius
+	DECL(0x3a8111d3, BorderShorthand, Radius, Radius, kDataTypeStruct, .TypeString = "CornerRadius"), // BorderShorthand.Radius
 	DECL(0x1c0b6355, BorderShorthand, RadiusTopLeftRadius, Radius.TopLeftRadius, kDataTypeFloat), // BorderShorthand.RadiusTopLeftRadius
 	DECL(0xe0a577ee, BorderShorthand, RadiusTopRightRadius, Radius.TopRightRadius, kDataTypeFloat), // BorderShorthand.RadiusTopRightRadius
 	DECL(0x494aff04, BorderShorthand, RadiusBottomRightRadius, Radius.BottomRightRadius, kDataTypeFloat), // BorderShorthand.RadiusBottomRightRadius
@@ -277,7 +277,7 @@ static luaL_Reg _SizeShorthand_Methods[] = {
 	{ NULL, NULL }
 };
 
-STRUCT(BorderRadiusShorthand, BorderRadiusShorthand);
+STRUCT(CornerRadius, CornerRadius);
 STRUCT(EdgeShorthand, EdgeShorthand);
 STRUCT(AlignmentShorthand, AlignmentShorthand);
 STRUCT(FontShorthand, FontShorthand);
@@ -826,7 +826,7 @@ static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	DECL(0x7c087736, Node, BorderWidthBack, Border.Width.Axis[2].Right, kDataTypeFloat), // Node.BorderWidthBack
 	DECL(0x933e48c6, Node, BorderColor, Border.Color, kDataTypeColor), // Node.BorderColor
 	DECL(0x390b4488, Node, BorderStyle, Border.Style, kDataTypeEnum, .EnumValues = _BorderStyle), // Node.BorderStyle
-	DECL(0xb8e9fe05, Node, BorderRadius, Border.Radius, kDataTypeStruct, .TypeString = "BorderRadiusShorthand"), // Node.BorderRadius
+	DECL(0xb8e9fe05, Node, BorderRadius, Border.Radius, kDataTypeStruct, .TypeString = "CornerRadius"), // Node.BorderRadius
 	DECL(0x22252041, Node, BorderTopLeftRadius, Border.Radius.TopLeftRadius, kDataTypeFloat), // Node.BorderTopLeftRadius
 	DECL(0x789f0d82, Node, BorderTopRightRadius, Border.Radius.TopRightRadius, kDataTypeFloat), // Node.BorderTopRightRadius
 	DECL(0xc321a1f8, Node, BorderBottomRightRadius, Border.Radius.BottomRightRadius, kDataTypeFloat), // Node.BorderBottomRightRadius
@@ -1555,7 +1555,7 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
 		{ NULL, NULL } 
 	}));
-	lua_setfield(L, ((void)luaopen_orca_BorderRadiusShorthand(L), -2), "BorderRadiusShorthand");
+	lua_setfield(L, ((void)luaopen_orca_CornerRadius(L), -2), "CornerRadius");
 	lua_setfield(L, ((void)luaopen_orca_EdgeShorthand(L), -2), "EdgeShorthand");
 	lua_setfield(L, ((void)luaopen_orca_AlignmentShorthand(L), -2), "AlignmentShorthand");
 	lua_setfield(L, ((void)luaopen_orca_FontShorthand(L), -2), "FontShorthand");

@@ -127,6 +127,9 @@ static int HACK_Start(lua_State* L) {
 
 int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
 {
+  if (!strcmp(name, "Checked")) {
+    int a=0;
+  }
   uint32_t ident = fnv1a32(name);
   switch (ident) {
     case p_id:

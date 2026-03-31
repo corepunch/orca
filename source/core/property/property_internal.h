@@ -54,6 +54,5 @@ PROP_HasChanged(lpProperty_t property)
 }
 
 bool_t _AssignCallback(lua_State* L, lpProperty_t property);
-bool_t f_parse_property(lua_State*, lpProperty_t, lpcString_t);
 
 #endif /* __PROPERTY_INTERNAL_H__ */

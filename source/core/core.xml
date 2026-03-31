@@ -248,7 +248,7 @@
       <arg name="message" type="string">The name of the message to post</arg>
     </method>
 
-    <method name="SendMessage2" lua="true">
+    <method name="MsgSend" lua="true">
       <summary>Send a message to directly to the object ignoring queue.</summary>
       <details>Messge sent will be immediately processed without using coroutines.</details>
       <arg name="message" type="string">The name of the message to send</arg>

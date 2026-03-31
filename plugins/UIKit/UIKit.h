@@ -371,8 +371,8 @@ ORCA_API const char *StyleTypeToString(enum StyleType value);
 ORCA_API enum StyleType luaX_checkStyleType(lua_State *L, int idx);
 ORCA_API void luaX_pushStyleType(lua_State *L, enum StyleType value);
 
-typedef struct BorderRadiusShorthand BorderRadiusShorthand_t, *lpBorderRadiusShorthand_t;
-typedef struct BorderRadiusShorthand const cBorderRadiusShorthand_t, *lpcBorderRadiusShorthand_t;
+typedef struct CornerRadius CornerRadius_t, *lpCornerRadius_t;
+typedef struct CornerRadius const cCornerRadius_t, *lpcCornerRadius_t;
 typedef struct EdgeShorthand EdgeShorthand_t, *lpEdgeShorthand_t;
 typedef struct EdgeShorthand const cEdgeShorthand_t, *lpcEdgeShorthand_t;
 typedef struct AlignmentShorthand AlignmentShorthand_t, *lpAlignmentShorthand_t;
@@ -401,15 +401,15 @@ typedef struct SizeShorthand const cSizeShorthand_t, *lpcSizeShorthand_t;
 
 
 /// @brief Corner rounding configuration for rectangular elements
-/** BorderRadiusShorthand struct */
-struct BorderRadiusShorthand {
+/** CornerRadius struct */
+struct CornerRadius {
 	float TopLeftRadius; ///< Top-left corner radius
 	float TopRightRadius; ///< Top-right corner radius
 	float BottomRightRadius; ///< Bottom-right corner radius
 	float BottomLeftRadius; ///< Bottom-left corner radius
 };
-ORCA_API void luaX_pushBorderRadiusShorthand(lua_State *L, struct BorderRadiusShorthand const* BorderRadiusShorthand);
-ORCA_API struct BorderRadiusShorthand* luaX_checkBorderRadiusShorthand(lua_State *L, int idx);
+ORCA_API void luaX_pushCornerRadius(lua_State *L, struct CornerRadius const* CornerRadius);
+ORCA_API struct CornerRadius* luaX_checkCornerRadius(lua_State *L, int idx);
 /// @brief Spacing values for opposite edges of an axis
 /** EdgeShorthand struct */
 struct EdgeShorthand {
@@ -493,7 +493,7 @@ struct BorderShorthand {
 	struct Thickness Width; ///< Border thickness in pixels, specified for each edge
 	struct color Color; ///< Border color
 	enum BorderStyle Style; ///< Visual style of the border
-	struct BorderRadiusShorthand Radius; ///< Border radius definition per corner
+	struct CornerRadius Radius; ///< Border radius definition per corner
 };
 ORCA_API void luaX_pushBorderShorthand(lua_State *L, struct BorderShorthand const* BorderShorthand);
 ORCA_API struct BorderShorthand* luaX_checkBorderShorthand(lua_State *L, int idx);

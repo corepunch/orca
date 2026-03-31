@@ -269,7 +269,7 @@ OBJ_PostMessage(struct lua_State*, struct Object*, const char*);
 
 /// @brief Send a message to directly to the object ignoring queue.
 ORCA_API void
-OBJ_SendMessage2(struct lua_State*, struct Object*, const char*);
+OBJ_MsgSend(struct lua_State*, struct Object*, const char*);
 
 /// @brief Retrieves callback function name for event ID
 ORCA_API const char*

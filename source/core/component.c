@@ -14,6 +14,7 @@ OBJ_AddComponent(lpObject_t pobj, uint32_t class_id)
   lpcClassDesc_t cls = OBJ_FindClassW(class_id);
   if (!cls) {
     Con_Error("Class ID 0x%08x not found\n", class_id);
+    lpcClassDesc_t cls = OBJ_FindClassW(class_id);
     return NULL;
   }
   uint32_t clsSize = sizeof(struct component) + cls->ClassSize;

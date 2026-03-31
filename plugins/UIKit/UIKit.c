@@ -40,12 +40,12 @@ int f_EdgeShorthand_New(lua_State* L) {
   }
 }
 
-int f_BorderRadiusShorthand_New(lua_State* L) {
+int f_CornerRadius_New(lua_State* L) {
   switch (lua_gettop(L)) {
     case 4:
-      return (luaX_pushBorderRadiusShorthand(L, &(struct BorderRadiusShorthand){luaL_checknumber(L, 1), luaL_checknumber(L, 2), luaL_checknumber(L, 3), luaL_checknumber(L, 4)}), 1);
+      return (luaX_pushCornerRadius(L, &(struct CornerRadius){luaL_checknumber(L, 1), luaL_checknumber(L, 2), luaL_checknumber(L, 3), luaL_checknumber(L, 4)}), 1);
     case 1:
-      return (luaX_pushBorderRadiusShorthand(L, &(struct BorderRadiusShorthand){luaL_checknumber(L, 1), luaL_checknumber(L, 1), luaL_checknumber(L, 1), luaL_checknumber(L, 1)}), 1);
+      return (luaX_pushCornerRadius(L, &(struct CornerRadius){luaL_checknumber(L, 1), luaL_checknumber(L, 1), luaL_checknumber(L, 1), luaL_checknumber(L, 1)}), 1);
     default:
       return 0;
   }
@@ -88,13 +88,13 @@ int f_EdgeShorthand_TextConvert(lua_State* L) {
   }
 }
 
-int f_BorderRadiusShorthand_TextConvert(lua_State* L) {
+int f_CornerRadius_TextConvert(lua_State* L) {
   float a, b, c, d;
   switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &a, &b, &c, &d)) {
     case 4:
-      return (luaX_pushBorderRadiusShorthand(L, &(struct BorderRadiusShorthand){a, b, c, d}), 1);
+      return (luaX_pushCornerRadius(L, &(struct CornerRadius){a, b, c, d}), 1);
     case 1:
-      return (luaX_pushBorderRadiusShorthand(L, &(struct BorderRadiusShorthand){a, a, a, a}), 1);
+      return (luaX_pushCornerRadius(L, &(struct CornerRadius){a, a, a, a}), 1);
     default:
       return 0;
   }
@@ -307,7 +307,7 @@ void on_ui_module_registered(lua_State* L) {
   lua_pop(L, 1);
   OVERRIDE_FROMSTRING(Thickness)
   OVERRIDE_FROMSTRING(EdgeShorthand)
-  OVERRIDE_FROMSTRING(BorderRadiusShorthand)
+  OVERRIDE_FROMSTRING(CornerRadius)
 #undef OVERRIDE_FROMSTRING
 }
 

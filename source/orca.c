@@ -116,6 +116,7 @@ lpcString_t RunTest(lua_State *L, lpcString_t szFileName) {
     fprintf(stderr, "Uncaught exception: %s\n", lua_tostring(L, -1));
     lua_pop(L, 1);
     free(buf);
+    exit(1);
     return NULL;
   }
   free(buf);
@@ -425,6 +426,7 @@ int main (int argc, LPSTR *argv)
       RunTest(L, args.test);
     } else if (luaL_dofile(L, args.test) != LUA_OK) {
       fprintf(stderr, "%s\n", lua_tostring(L, -1));
+      exit(1);
       szProject = NULL;
     } else {
       szProject = NULL;

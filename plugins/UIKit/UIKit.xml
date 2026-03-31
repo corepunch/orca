@@ -172,7 +172,7 @@
     <enum name="MinusPadding">Subtract padding from size</enum>
   </enums>
 
-  <struct name="BorderRadiusShorthand">
+  <struct name="CornerRadius">
     <summary>Corner rounding configuration for rectangular elements</summary>
     <details>Allows independent control of each corner's rounding radius.</details>
     <field name="TopLeftRadius" type="float">Top-left corner radius</field>
@@ -251,7 +251,7 @@
     <field name="Width" type="Thickness">Border thickness in pixels, specified for each edge</field>
     <field name="Color" type="color">Border color</field>
     <field name="Style" type="BorderStyle">Visual style of the border</field>
-    <field name="Radius" type="BorderRadiusShorthand">Border radius definition per corner</field>
+    <field name="Radius" type="CornerRadius">Border radius definition per corner</field>
   </struct>
 
   <struct name="SizeAxisShorthand">
@@ -517,7 +517,7 @@
     <property name="BoxShadow" type="ShadowShorthand">Shadow applied to the element's box.</property>
     <property name="Overflow" type="OverflowShorthand">Defines overflow behavior for child content. Controls clipping and scroll behavior.</property>
     <property name="Ring" type="RingShorthand">Decorative ring effect applied around the element.</property>
-    <!-- <property name="BorderRadius" type="BorderRadiusShorthand">Border radius for rounding corners.</property> -->
+    <!-- <property name="BorderRadius" type="CornerRadius">Border radius for rounding corners.</property> -->
     <property name="CompositionBrush" type="Material" pointer="true">Custom composition brush for advanced rendering. Equivalent to UWP `CompositionBrush`. Can be used for effects or visuals beyond standard brushes.</property>
     <property name="CompositionDesignSize" type="vec2">Virtual design size when using composition rendering. Defines the expected size for the composition surface.</property>
     <property name="SizeToContent" type="bool">Whether the element resizes itself to fit its content.</property>

@@ -749,11 +749,11 @@ enum StyleProperties {
 	kStyleType,
 };
 
-#define ID_BorderRadiusShorthand 0x27dcbad0
-#define ID_BorderRadiusShorthand_TopLeftRadius 0xe23849ae // BorderRadiusShorthand.TopLeftRadius
-#define ID_BorderRadiusShorthand_TopRightRadius 0x1300c2eb // BorderRadiusShorthand.TopRightRadius
-#define ID_BorderRadiusShorthand_BottomRightRadius 0x4a08afff // BorderRadiusShorthand.BottomRightRadius
-#define ID_BorderRadiusShorthand_BottomLeftRadius 0xac3a3a6a // BorderRadiusShorthand.BottomLeftRadius
+#define ID_CornerRadius 0x0485b456
+#define ID_CornerRadius_TopLeftRadius 0xd5413658 // CornerRadius.TopLeftRadius
+#define ID_CornerRadius_TopRightRadius 0x6387c115 // CornerRadius.TopRightRadius
+#define ID_CornerRadius_BottomRightRadius 0x3b94d08d // CornerRadius.BottomRightRadius
+#define ID_CornerRadius_BottomLeftRadius 0x8ca4dfb0 // CornerRadius.BottomLeftRadius
 #define ID_EdgeShorthand 0x3cbf2c0b
 #define ID_EdgeShorthand_Left 0xb21cdbb6 // EdgeShorthand.Left
 #define ID_EdgeShorthand_Right 0xee8e65eb // EdgeShorthand.Right

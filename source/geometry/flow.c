@@ -50,7 +50,7 @@ read_property(lua_State *L,
   // void* valueptr = ((char*)struct_ptr + prop->Offset);
   switch (prop->DataType) {
     case kDataTypeBool:
-      *(bool*)valueptr = lua_toboolean(L, idx) != 0;
+      *(int*)valueptr = lua_toboolean(L, idx) != 0;
       break;
     case kDataTypeInt:
       *(int*)valueptr = (int)luaL_checkinteger(L, idx);
@@ -106,7 +106,6 @@ read_property(lua_State *L,
   
 ORCA_API int
 write_property(lua_State *L,
-               int idx,
                struct PropertyType const* prop,
               //  void const* struct_ptr)
                void const* valueptr)

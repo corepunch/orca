@@ -170,10 +170,10 @@ int f_OBJ_PostMessage(lua_State *L) {
 	OBJ_PostMessage(L, this_, message );
 	return 0;
 }
-int f_OBJ_SendMessage2(lua_State *L) {
+int f_OBJ_MsgSend(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	const char* message = luaL_checkstring(L, 2);
-	OBJ_SendMessage2(L, this_, message );
+	OBJ_MsgSend(L, this_, message );
 	return 0;
 }
 int f_OBJ_FindCallbackForID(lua_State *L) {
@@ -502,7 +502,7 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "findParentOfClass", f_OBJ_FindParentOfClass },
 		{ "dispatchEvent", f_OBJ_DispatchEvent },
 		{ "postMessage", f_OBJ_PostMessage },
-		{ "sendMessage2", f_OBJ_SendMessage2 },
+		{ "msgSend", f_OBJ_MsgSend },
 		{ "findCallbackForID", f_OBJ_FindCallbackForID },
 		{ "__setproperty", f_OBJ_SetProperty },
 		{ "__getproperty", f_OBJ_GetProperty },
@@ -560,7 +560,7 @@ int luaopen_orca_Object(lua_State *L) {
 	return 1;
 }
 extern void read_property(lua_State *L, int idx, struct PropertyType const* prop, void* struct_ptr);
-extern int write_property(lua_State *L, int idx, struct PropertyType const* prop, void const* struct_ptr);
+extern int write_property(lua_State *L, struct PropertyType const* prop, void const* struct_ptr);
 extern int parse_property(const char* str, struct PropertyType const* prop, void* struct_ptr);
 
 #define STRUCT(NAME, EXPORT) \
@@ -585,7 +585,7 @@ static int f_new_##NAME(lua_State *L) { \
 static int f_##NAME##___index(lua_State *L) { \
 	for (uint32_t i = 0, j = fnv1a32(luaL_checkstring(L, 2)); i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
 		if (_##NAME[i].ShortIdentifier == j) \
-			return (write_property(L, -1, &_##NAME[i], ((char*)luaX_check##NAME(L, 1))+_##NAME[i].Offset), 1); \
+			return (write_property(L, &_##NAME[i], ((char*)luaX_check##NAME(L, 1))+_##NAME[i].Offset), 1); \
 	for (uint32_t i = 0; i < sizeof(_##NAME##_Methods) / sizeof(*_##NAME##_Methods); i++) { \
 		if (strcmp(_##NAME##_Methods[i].name, luaL_checkstring(L, 2)) == 0) { \
 			lua_pushcfunction(L, _##NAME##_Methods[i].func); \
