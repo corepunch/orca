@@ -292,123 +292,117 @@ STRUCT(SizeAxisShorthand, SizeAxisShorthand);
 STRUCT(SizeShorthand, SizeShorthand);
 struct MessageType UpdateMatrixMessage = {
 	.name = "UpdateMatrix",
-	.id = kMsgUpdateMatrix,
+	.id = ID_UpdateMatrix,
 	.routing = kMessageRoutingDirect,
 	.size = sizeof(struct UpdateMatrixMsgArgs),
 };
 struct MessageType HitTestMessage = {
 	.name = "HitTest",
-	.id = kMsgHitTest,
+	.id = ID_HitTest,
 	.routing = kMessageRoutingDirect,
 	.size = sizeof(struct HitTestMsgArgs),
 };
 struct MessageType GetSizeMessage = {
 	.name = "GetSize",
-	.id = kMsgGetSize,
+	.id = ID_GetSize,
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct GetSizeMsgArgs),
 };
 struct MessageType SubmitMessage = {
 	.name = "Submit",
-	.id = kMsgSubmit,
+	.id = ID_Submit,
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct SubmitMsgArgs),
 };
 struct MessageType MeasureMessage = {
 	.name = "Measure",
-	.id = kMsgMeasure,
+	.id = ID_Measure,
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct MeasureMsgArgs),
 };
 struct MessageType ArrangeMessage = {
 	.name = "Arrange",
-	.id = kMsgArrange,
+	.id = ID_Arrange,
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct ArrangeMsgArgs),
 };
 #define MeasureOverrideMsgArgs MeasureMsgArgs
 struct MessageType MeasureOverrideMessage = {
 	.name = "MeasureOverride",
-	.id = kMsgMeasureOverride,
+	.id = ID_MeasureOverride,
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct MeasureMsgArgs),
 };
 #define ArrangeOverrideMsgArgs ArrangeMsgArgs
 struct MessageType ArrangeOverrideMessage = {
 	.name = "ArrangeOverride",
-	.id = kMsgArrangeOverride,
+	.id = ID_ArrangeOverride,
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct ArrangeMsgArgs),
 };
-struct MessageType ForegroundContentMessage = {
-	.name = "ForegroundContent",
-	.id = kMsgForegroundContent,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct ForegroundContentMsgArgs),
-};
 struct MessageType PushPropertyMessage = {
 	.name = "PushProperty",
-	.id = kMsgPushProperty,
+	.id = ID_PushProperty,
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct PushPropertyMsgArgs),
 };
 struct MessageType UpdateGeometryMessage = {
 	.name = "UpdateGeometry",
-	.id = kMsgUpdateGeometry,
+	.id = ID_UpdateGeometry,
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct UpdateGeometryMsgArgs),
 };
 struct MessageType DrawBrushMessage = {
 	.name = "DrawBrush",
-	.id = kMsgDrawBrush,
+	.id = ID_DrawBrush,
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct DrawBrushMsgArgs),
 };
 struct MessageType HandleMessageMessage = {
 	.name = "HandleMessage",
-	.id = kMsgHandleMessage,
+	.id = ID_HandleMessage,
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct HandleMessageMsgArgs),
 };
 struct MessageType LoadViewMessage = {
 	.name = "LoadView",
-	.id = kMsgLoadView,
+	.id = ID_LoadView,
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct LoadViewMsgArgs),
 };
 struct MessageType MakeTextMessage = {
 	.name = "MakeText",
-	.id = kMsgMakeText,
+	.id = ID_MakeText,
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct MakeTextMsgArgs),
 };
 struct MessageType TriggeredMessage = {
 	.name = "Triggered",
-	.id = kMsgTriggered,
+	.id = ID_Triggered,
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct TriggeredMsgArgs),
 };
-struct MessageType UpdateShmatrixMessage = {
-	.name = "UpdateShmatrix",
-	.id = kMsgUpdateShmatrix,
-	.routing = kMessageRoutingDirect,
-	.size = sizeof(struct UpdateShmatrixMsgArgs),
+struct MessageType ForegroundContentMessage = {
+	.name = "ForegroundContent",
+	.id = ID_ForegroundContent,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct ForegroundContentMsgArgs),
 };
 struct MessageType UpdateLayoutMessage = {
 	.name = "UpdateLayout",
-	.id = kMsgUpdateLayout,
+	.id = ID_UpdateLayout,
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct UpdateLayoutMsgArgs),
 };
 struct MessageType NavigateToPageMessage = {
 	.name = "NavigateToPage",
-	.id = kMsgNavigateToPage,
+	.id = ID_NavigateToPage,
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct NavigateToPageMsgArgs),
 };
 struct MessageType NavigateBackMessage = {
 	.name = "NavigateBack",
-	.id = kMsgNavigateBack,
+	.id = ID_NavigateBack,
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct NavigateBackMsgArgs),
 };
@@ -454,9 +448,6 @@ static struct PropertyType _ArrangeOverrideMsgArgs[] = {
 	DECL(0x3b42dfbf, ArrangeOverrideMsgArgs, Width, Width, kDataTypeFloat), // ArrangeOverrideMsgArgs.Width
 	DECL(0x1bd13562, ArrangeOverrideMsgArgs, Height, Height, kDataTypeFloat), // ArrangeOverrideMsgArgs.Height
 };
-static luaL_Reg _ForegroundContentMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _ForegroundContentMsgArgs[] = {
-};
 static luaL_Reg _PushPropertyMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _PushPropertyMsgArgs[] = {
 	DECL(0x8987413a, PushPropertyMsgArgs, Placeholder, Placeholder, kDataTypeInt), // PushPropertyMsgArgs.Placeholder
@@ -494,11 +485,8 @@ static struct PropertyType _TriggeredMsgArgs[] = {
 	DECL(0xa5ea0da3, TriggeredMsgArgs, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // TriggeredMsgArgs.Trigger
 	DECL(0x24f208e4, TriggeredMsgArgs, message, message, kDataTypeStruct, .TypeString = "HandleMessageMsgArgs"), // TriggeredMsgArgs.message
 };
-static luaL_Reg _UpdateShmatrixMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _UpdateShmatrixMsgArgs[] = {
-	DECL(0xeacdfcfd, UpdateShmatrixMsgArgs, parent, parent, kDataTypeStruct, .TypeString = "Matrix3D"), // UpdateShmatrixMsgArgs.parent
-	DECL(0xc6c2dd66, UpdateShmatrixMsgArgs, opacity, opacity, kDataTypeFloat), // UpdateShmatrixMsgArgs.opacity
-	DECL(0x79a98884, UpdateShmatrixMsgArgs, force, force, kDataTypeBool), // UpdateShmatrixMsgArgs.force
+static luaL_Reg _ForegroundContentMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _ForegroundContentMsgArgs[] = {
 };
 static luaL_Reg _UpdateLayoutMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _UpdateLayoutMsgArgs[] = {
@@ -523,7 +511,6 @@ STRUCT(MeasureMsgArgs, MeasureMsgArgs);
 STRUCT(ArrangeMsgArgs, ArrangeMsgArgs);
 STRUCT(MeasureOverrideMsgArgs, MeasureOverrideMsgArgs);
 STRUCT(ArrangeOverrideMsgArgs, ArrangeOverrideMsgArgs);
-STRUCT(ForegroundContentMsgArgs, ForegroundContentMsgArgs);
 STRUCT(PushPropertyMsgArgs, PushPropertyMsgArgs);
 STRUCT(UpdateGeometryMsgArgs, UpdateGeometryMsgArgs);
 STRUCT(DrawBrushMsgArgs, DrawBrushMsgArgs);
@@ -531,7 +518,7 @@ STRUCT(HandleMessageMsgArgs, HandleMessageMsgArgs);
 STRUCT(LoadViewMsgArgs, LoadViewMsgArgs);
 STRUCT(MakeTextMsgArgs, MakeTextMsgArgs);
 STRUCT(TriggeredMsgArgs, TriggeredMsgArgs);
-STRUCT(UpdateShmatrixMsgArgs, UpdateShmatrixMsgArgs);
+STRUCT(ForegroundContentMsgArgs, ForegroundContentMsgArgs);
 STRUCT(UpdateLayoutMsgArgs, UpdateLayoutMsgArgs);
 STRUCT(NavigateToPageMsgArgs, NavigateToPageMsgArgs);
 STRUCT(NavigateBackMsgArgs, NavigateBackMsgArgs);
@@ -959,7 +946,7 @@ LRESULT Node2D_Arrange(struct Object*, struct Node2D*, wParam_t, ArrangeMsgPtr);
 LRESULT Node2D_MeasureOverride(struct Object*, struct Node2D*, wParam_t, MeasureOverrideMsgPtr);
 LRESULT Node2D_ArrangeOverride(struct Object*, struct Node2D*, wParam_t, ArrangeOverrideMsgPtr);
 static struct MessageType Node2DMessageTypes[kNode2DNumMessageTypes] = {	
-		{ "Node2D.UpdateShmatrix", kMsgUpdateShmatrix, kMessageRoutingDirect, sizeof(struct UpdateShmatrixMsgArgs) },
+		{ "Node2D.ForegroundContent", ID_ForegroundContent, kMessageRoutingTunnelingBubbling, sizeof(struct ForegroundContentMsgArgs) },
 };
 static struct PropertyType const Node2DProperties[kNode2DNumProperties] = {
 	DECL(0x3f19bf01, Node2D, LayoutTransform, LayoutTransform, kDataTypeStruct, .TypeString = "Transform2D"), // Node2D.LayoutTransform
@@ -1576,7 +1563,6 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_ArrangeMsgArgs(L), -2), "ArrangeMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_MeasureOverrideMsgArgs(L), -2), "MeasureOverrideMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_ArrangeOverrideMsgArgs(L), -2), "ArrangeOverrideMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_ForegroundContentMsgArgs(L), -2), "ForegroundContentMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_PushPropertyMsgArgs(L), -2), "PushPropertyMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_UpdateGeometryMsgArgs(L), -2), "UpdateGeometryMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_DrawBrushMsgArgs(L), -2), "DrawBrushMsgArgs");
@@ -1584,7 +1570,7 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_LoadViewMsgArgs(L), -2), "LoadViewMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_MakeTextMsgArgs(L), -2), "MakeTextMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_TriggeredMsgArgs(L), -2), "TriggeredMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_UpdateShmatrixMsgArgs(L), -2), "UpdateShmatrixMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_ForegroundContentMsgArgs(L), -2), "ForegroundContentMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_UpdateLayoutMsgArgs(L), -2), "UpdateLayoutMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_NavigateToPageMsgArgs(L), -2), "NavigateToPageMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_NavigateBackMsgArgs(L), -2), "NavigateBackMsgArgs");

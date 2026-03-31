@@ -125,31 +125,31 @@ STRUCT(EnginePlugin, EnginePlugin);
 STRUCT(SystemMessage, SystemMessage);
 struct MessageType ReadCommandsMessage = {
 	.name = "ReadCommands",
-	.id = kMsgReadCommands,
+	.id = ID_ReadCommands,
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct ReadCommandsMsgArgs),
 };
 struct MessageType OpenFileMessage = {
 	.name = "OpenFile",
-	.id = kMsgOpenFile,
+	.id = ID_OpenFile,
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct OpenFileMsgArgs),
 };
 struct MessageType FileExistsMessage = {
 	.name = "FileExists",
-	.id = kMsgFileExists,
+	.id = ID_FileExists,
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct FileExistsMsgArgs),
 };
 struct MessageType HasChangedFilesMessage = {
 	.name = "HasChangedFiles",
-	.id = kMsgHasChangedFiles,
+	.id = ID_HasChangedFiles,
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct HasChangedFilesMsgArgs),
 };
 struct MessageType LoadProjectMessage = {
 	.name = "LoadProject",
-	.id = kMsgLoadProject,
+	.id = ID_LoadProject,
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct LoadProjectMsgArgs),
 };

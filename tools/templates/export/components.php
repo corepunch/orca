@@ -20,7 +20,7 @@ LRESULT <?= $name ?>_<?= $event ?>(struct Object*, struct <?= $name ?>*, wParam_
 	<?php endforeach ?>
 static struct MessageType <?= $name ?>MessageTypes[k<?= $name ?>NumMessageTypes] = {	
 	<?php foreach ($component->getMessages() as $event): ?>
-		{ "<?= $name ?>.<?= $event->name ?>", kMsg<?= $event->name ?>, kMessageRouting<?= $event->routing ?>, sizeof(<?= $event->getEffectiveTypeDecl() ?>) },
+		{ "<?= $name ?>.<?= $event->name ?>", ID_<?= $event->name ?>, kMessageRouting<?= $event->routing ?>, sizeof(<?= $event->getEffectiveTypeDecl() ?>) },
 	<?php endforeach ?>
 };
 static struct PropertyType const <?= $name ?>Properties[k<?= $name ?>NumProperties] = {

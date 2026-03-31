@@ -146,13 +146,13 @@ int luaopen_orca_##NAME(lua_State *L) { \
 
 struct MessageType RenderScreenMessage = {
 	.name = "RenderScreen",
-	.id = kMsgRenderScreen,
+	.id = ID_RenderScreen,
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct RenderScreenMsgArgs),
 };
 struct MessageType RenderMessage = {
 	.name = "Render",
-	.id = kMsgRender,
+	.id = ID_Render,
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct RenderMsgArgs),
 };

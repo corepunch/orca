@@ -40,13 +40,13 @@ ORCA_API extern struct MessageType DragEnterMessage;
 ORCA_API extern struct MessageType KeyDownMessage;
 ORCA_API extern struct MessageType KeyUpMessage;
 ORCA_API extern struct MessageType CharMessage;
+ORCA_API extern struct MessageType KillFocusMessage;
+ORCA_API extern struct MessageType SetFocusMessage;
+ORCA_API extern struct MessageType TimerMessage;
 ORCA_API extern struct MessageType WindowPaintMessage;
 ORCA_API extern struct MessageType WindowResizedMessage;
 ORCA_API extern struct MessageType WindowClosedMessage;
 ORCA_API extern struct MessageType WindowChangedScreenMessage;
-ORCA_API extern struct MessageType KillFocusMessage;
-ORCA_API extern struct MessageType SetFocusMessage;
-ORCA_API extern struct MessageType TimerMessage;
 ORCA_API extern struct MessageType IsVisibleMessage;
 ORCA_API extern struct MessageType CreateMessage;
 ORCA_API extern struct MessageType StartMessage;
@@ -81,13 +81,13 @@ typedef struct WI_Message DragEnterMsg_t,* DragEnterMsgPtr;
 typedef struct WI_Message KeyDownMsg_t,* KeyDownMsgPtr;
 typedef struct WI_Message KeyUpMsg_t,* KeyUpMsgPtr;
 typedef struct WI_Message CharMsg_t,* CharMsgPtr;
+typedef struct KillFocusMsgArgs KillFocusMsg_t,* KillFocusMsgPtr;
+typedef struct SetFocusMsgArgs SetFocusMsg_t,* SetFocusMsgPtr;
+typedef struct TimerMsgArgs TimerMsg_t,* TimerMsgPtr;
 typedef struct WindowPaintMsgArgs WindowPaintMsg_t,* WindowPaintMsgPtr;
 typedef struct WindowPaintMsgArgs WindowResizedMsg_t,* WindowResizedMsgPtr;
 typedef struct WindowClosedMsgArgs WindowClosedMsg_t,* WindowClosedMsgPtr;
 typedef struct WindowChangedScreenMsgArgs WindowChangedScreenMsg_t,* WindowChangedScreenMsgPtr;
-typedef struct KillFocusMsgArgs KillFocusMsg_t,* KillFocusMsgPtr;
-typedef struct SetFocusMsgArgs SetFocusMsg_t,* SetFocusMsgPtr;
-typedef struct TimerMsgArgs TimerMsg_t,* TimerMsgPtr;
 typedef struct IsVisibleMsgArgs IsVisibleMsg_t,* IsVisibleMsgPtr;
 typedef struct CreateMsgArgs CreateMsg_t,* CreateMsgPtr;
 typedef struct StartMsgArgs StartMsg_t,* StartMsgPtr;
@@ -512,6 +512,21 @@ struct KeyMessageMsgArgs {
 };
 ORCA_API void luaX_pushKeyMessageMsgArgs(lua_State *L, struct KeyMessageMsgArgs const* data);
 ORCA_API struct KeyMessageMsgArgs* luaX_checkKeyMessageMsgArgs(lua_State *L, int idx);
+/** KillFocusMsgArgs struct */
+struct KillFocusMsgArgs {
+};
+ORCA_API void luaX_pushKillFocusMsgArgs(lua_State *L, struct KillFocusMsgArgs const* data);
+ORCA_API struct KillFocusMsgArgs* luaX_checkKillFocusMsgArgs(lua_State *L, int idx);
+/** SetFocusMsgArgs struct */
+struct SetFocusMsgArgs {
+};
+ORCA_API void luaX_pushSetFocusMsgArgs(lua_State *L, struct SetFocusMsgArgs const* data);
+ORCA_API struct SetFocusMsgArgs* luaX_checkSetFocusMsgArgs(lua_State *L, int idx);
+/** TimerMsgArgs struct */
+struct TimerMsgArgs {
+};
+ORCA_API void luaX_pushTimerMsgArgs(lua_State *L, struct TimerMsgArgs const* data);
+ORCA_API struct TimerMsgArgs* luaX_checkTimerMsgArgs(lua_State *L, int idx);
 /** WindowPaintMsgArgs struct */
 struct WindowPaintMsgArgs {
 	uint32_t WindowWidth;
@@ -529,21 +544,6 @@ struct WindowChangedScreenMsgArgs {
 };
 ORCA_API void luaX_pushWindowChangedScreenMsgArgs(lua_State *L, struct WindowChangedScreenMsgArgs const* data);
 ORCA_API struct WindowChangedScreenMsgArgs* luaX_checkWindowChangedScreenMsgArgs(lua_State *L, int idx);
-/** KillFocusMsgArgs struct */
-struct KillFocusMsgArgs {
-};
-ORCA_API void luaX_pushKillFocusMsgArgs(lua_State *L, struct KillFocusMsgArgs const* data);
-ORCA_API struct KillFocusMsgArgs* luaX_checkKillFocusMsgArgs(lua_State *L, int idx);
-/** SetFocusMsgArgs struct */
-struct SetFocusMsgArgs {
-};
-ORCA_API void luaX_pushSetFocusMsgArgs(lua_State *L, struct SetFocusMsgArgs const* data);
-ORCA_API struct SetFocusMsgArgs* luaX_checkSetFocusMsgArgs(lua_State *L, int idx);
-/** TimerMsgArgs struct */
-struct TimerMsgArgs {
-};
-ORCA_API void luaX_pushTimerMsgArgs(lua_State *L, struct TimerMsgArgs const* data);
-ORCA_API struct TimerMsgArgs* luaX_checkTimerMsgArgs(lua_State *L, int idx);
 /** IsVisibleMsgArgs struct */
 struct IsVisibleMsgArgs {
 };

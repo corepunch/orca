@@ -10,7 +10,6 @@
 #define kMsgArrange 0xc4cf2187
 #define kMsgMeasureOverride 0xff95a02f
 #define kMsgArrangeOverride 0x66d9e437
-#define kMsgForegroundContent 0x9a7735e5
 #define kMsgPushProperty 0xc5ebaf40
 #define kMsgUpdateGeometry 0x12c1a314
 #define kMsgDrawBrush 0x0875c1d1
@@ -18,7 +17,7 @@
 #define kMsgLoadView 0xa3650e54
 #define kMsgMakeText 0x73a47798
 #define kMsgTriggered 0x3b1c3ae2
-#define kMsgUpdateShmatrix 0x89a6db0a
+#define kMsgForegroundContent 0x9a7735e5
 #define kMsgUpdateLayout 0x928c657a
 #define kMsgNavigateToPage 0x6475c790
 #define kMsgNavigateBack 0x36bc88b5
@@ -415,7 +414,7 @@ enum TextBlockConceptProperties {
 #define ID_Node2D_ForegroundHint 0x1a0ea5e3 // Node2D.ForegroundHint
 #define kNode2DNumMessageTypes 1
 enum Node2DMessages {
-	kNode2DUpdateShmatrix,
+	kNode2DForegroundContent,
 };
 #define kNode2DNumProperties 44
 enum Node2DProperties {
@@ -866,7 +865,6 @@ enum StyleProperties {
 #define ID_ArrangeOverrideMsgArgs_Y 0x4d381190 // ArrangeOverrideMsgArgs.Y
 #define ID_ArrangeOverrideMsgArgs_Width 0x612d95a3 // ArrangeOverrideMsgArgs.Width
 #define ID_ArrangeOverrideMsgArgs_Height 0x23958b5e // ArrangeOverrideMsgArgs.Height
-#define ID_ForegroundContent 0x9a7735e5
 #define ID_PushProperty 0xc5ebaf40
 #define ID_PushPropertyMsgArgs_Placeholder 0x82d7b55f // PushPropertyMsgArgs.Placeholder
 #define ID_UpdateGeometry 0x12c1a314
@@ -890,10 +888,7 @@ enum StyleProperties {
 #define ID_Triggered 0x3b1c3ae2
 #define ID_TriggeredMsgArgs_Trigger 0x68010858 // TriggeredMsgArgs.Trigger
 #define ID_TriggeredMsgArgs_message 0x8e532df3 // TriggeredMsgArgs.message
-#define ID_UpdateShmatrix 0x89a6db0a
-#define ID_UpdateShmatrixMsgArgs_parent 0x90360554 // UpdateShmatrixMsgArgs.parent
-#define ID_UpdateShmatrixMsgArgs_opacity 0x2bbb7249 // UpdateShmatrixMsgArgs.opacity
-#define ID_UpdateShmatrixMsgArgs_force 0x8b08062f // UpdateShmatrixMsgArgs.force
+#define ID_ForegroundContent 0x9a7735e5
 #define ID_UpdateLayout 0x928c657a
 #define ID_UpdateLayoutMsgArgs_Width 0x5050aef8 // UpdateLayoutMsgArgs.Width
 #define ID_UpdateLayoutMsgArgs_Height 0x7c7ac60f // UpdateLayoutMsgArgs.Height

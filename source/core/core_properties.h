@@ -23,13 +23,13 @@
 #define kMsgKeyDown 0x83b19b78
 #define kMsgKeyUp 0xfca37d71
 #define kMsgChar 0x2879e23d
+#define kMsgKillFocus 0xa7c0f8d7
+#define kMsgSetFocus 0xc399d265
+#define kMsgTimer 0xeb53a5c2
 #define kMsgWindowPaint 0x7ef9e53b
 #define kMsgWindowResized 0xa216e847
 #define kMsgWindowClosed 0x7268e69d
 #define kMsgWindowChangedScreen 0x5fe6b4bf
-#define kMsgKillFocus 0xa7c0f8d7
-#define kMsgSetFocus 0xc399d265
-#define kMsgTimer 0xeb53a5c2
 #define kMsgIsVisible 0x608d20d1
 #define kMsgCreate 0x990de47d
 #define kMsgStart 0x0ae8097f
@@ -72,6 +72,9 @@
 #define ID_KeyDown 0x83b19b78
 #define ID_KeyUp 0xfca37d71
 #define ID_Char 0x2879e23d
+#define ID_KillFocus 0xa7c0f8d7
+#define ID_SetFocus 0xc399d265
+#define ID_Timer 0xeb53a5c2
 #define ID_WindowPaint 0x7ef9e53b
 #define ID_WindowPaintMsgArgs_WindowWidth 0x51861d5f // WindowPaintMsgArgs.WindowWidth
 #define ID_WindowPaintMsgArgs_WindowHeight 0x4ab9b482 // WindowPaintMsgArgs.WindowHeight
@@ -80,9 +83,6 @@
 #define ID_WindowResizedMsgArgs_WindowHeight 0x93d8b25e // WindowResizedMsgArgs.WindowHeight
 #define ID_WindowClosed 0x7268e69d
 #define ID_WindowChangedScreen 0x5fe6b4bf
-#define ID_KillFocus 0xa7c0f8d7
-#define ID_SetFocus 0xc399d265
-#define ID_Timer 0xeb53a5c2
 #define ID_IsVisible 0x608d20d1
 #define ID_Create 0x990de47d
 #define ID_Start 0x0ae8097f

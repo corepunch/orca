@@ -2,7 +2,7 @@
 <?php if ($event->getParentEvent()) echo("#define {$name}MsgArgs {$event->getParentEvent()->name}MsgArgs\n") ?>
 struct MessageType <?= $name ?>Message = {
 	.name = "<?= $name ?>",
-	.id = kMsg<?= $name ?>,
+	.id = ID_<?= $name ?>,
 	.routing = kMessageRouting<?= $event->routing ?>,
 	.size = sizeof(<?= $event->getEffectiveTypeDecl() ?>),
 };

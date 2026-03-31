@@ -25,56 +25,59 @@
     <field name="size" type="uint">The size of the message</field>
   </struct>
   
-  <!-- Base event for all pointer/mouse input events -->
-  <message name="MouseMessage" type="WI_Message"/>
-  <!-- Base event for all keyboard input events -->
-  <message name="KeyMessage" type="WI_Message"/>
+  <!-- Input interface groups all mouse, keyboard, and focus events -->
+  <interface name="Input" export="Input">
+    <summary>Input event interface for mouse, keyboard, and focus events.</summary>
+    <details>
+      <p>The `Input` interface groups all pointer, keyboard, drag-and-drop, and focus-related messages. These messages are dispatched by the platform layer and routed through the object hierarchy according to each message's routing strategy.</p>
+    </details>
 
-  <message name="LeftMouseDown" same-as="MouseMessage"/>
-  <message name="RightMouseDown" same-as="MouseMessage"/>
-  <message name="OtherMouseDown" same-as="MouseMessage"/>
-  <message name="LeftMouseUp" same-as="MouseMessage"/>
-  <message name="RightMouseUp" same-as="MouseMessage"/>
-  <message name="OtherMouseUp" same-as="MouseMessage"/>
-  <message name="LeftMouseDragged" same-as="MouseMessage"/>
-  <message name="RightMouseDragged" same-as="MouseMessage"/>
-  <message name="OtherMouseDragged" same-as="MouseMessage"/>
-  <message name="LeftDoubleClick" same-as="MouseMessage"/>
-  <message name="RightDoubleClick" same-as="MouseMessage"/>
-  <message name="OtherDoubleClick" same-as="MouseMessage"/>
-  <message name="MouseMoved" same-as="MouseMessage"/>
-  <message name="ScrollWheel" same-as="MouseMessage"/>
-  <message name="DragDrop" same-as="MouseMessage"/>
-  <message name="DragEnter" same-as="MouseMessage"/>
-  <message name="KeyDown" same-as="KeyMessage"/>
-  <message name="KeyUp" same-as="KeyMessage"/>
-  <message name="Char" same-as="KeyMessage"/>
-  <message name="WindowPaint">
-    <field name="WindowWidth" type="uint"/>
-    <field name="WindowHeight" type="uint"/>
-  </message>
-  <message name="WindowResized" same-as="WindowPaint"/>
-  <message name="WindowClosed"/>
-  <message name="WindowChangedScreen"/>
-  <message name="KillFocus"/>
-  <message name="SetFocus"/>
-  <message name="Timer"/>
-  
-  <message name="IsVisible" routing="Direct"/>
-  <message name="Create" routing="Direct"/>
-  <message name="Start" routing="Direct"/>
-  <message name="Awake" routing="Direct"/>
-  <message name="ThemeChanged" routing="Direct"/>
-  <message name="PropertyChanged" routing="Direct">
-    <field name="Property" type="Property" pointer="true">The property that changed</field>
-  </message>
-  <message name="Attached" routing="Direct"/>
-  <message name="Release" routing="Direct"/>
-  <message name="Destroy" routing="Direct"/>
-  <message name="ResumeCoroutine" routing="Direct"/>
-  <message name="StopCoroutine" routing="Direct"/>
-  <message name="ViewDidLoad" routing="Direct"/>
-  
+    <!-- Base event for all pointer/mouse input events -->
+    <message name="MouseMessage" type="WI_Message"/>
+    <!-- Base event for all keyboard input events -->
+    <message name="KeyMessage" type="WI_Message"/>
+
+    <message name="LeftMouseDown" same-as="MouseMessage"/>
+    <message name="RightMouseDown" same-as="MouseMessage"/>
+    <message name="OtherMouseDown" same-as="MouseMessage"/>
+    <message name="LeftMouseUp" same-as="MouseMessage"/>
+    <message name="RightMouseUp" same-as="MouseMessage"/>
+    <message name="OtherMouseUp" same-as="MouseMessage"/>
+    <message name="LeftMouseDragged" same-as="MouseMessage"/>
+    <message name="RightMouseDragged" same-as="MouseMessage"/>
+    <message name="OtherMouseDragged" same-as="MouseMessage"/>
+    <message name="LeftDoubleClick" same-as="MouseMessage"/>
+    <message name="RightDoubleClick" same-as="MouseMessage"/>
+    <message name="OtherDoubleClick" same-as="MouseMessage"/>
+    <message name="MouseMoved" same-as="MouseMessage"/>
+    <message name="ScrollWheel" same-as="MouseMessage"/>
+    <message name="DragDrop" same-as="MouseMessage"/>
+    <message name="DragEnter" same-as="MouseMessage"/>
+    <message name="KeyDown" same-as="KeyMessage"/>
+    <message name="KeyUp" same-as="KeyMessage"/>
+    <message name="Char" same-as="KeyMessage"/>
+    <message name="KillFocus"/>
+    <message name="SetFocus"/>
+    <message name="Timer"/>
+  </interface>
+
+  <!-- Window interface groups all window lifecycle and state events -->
+  <interface name="Window" export="Window">
+    <summary>Window event interface for window lifecycle and state change events.</summary>
+    <details>
+      <p>The `Window` interface groups all messages that relate to the platform window lifecycle, including paint requests, resize notifications, screen changes, and close events.</p>
+    </details>
+
+    <message name="WindowPaint">
+      <field name="WindowWidth" type="uint"/>
+      <field name="WindowHeight" type="uint"/>
+    </message>
+    <message name="WindowResized" same-as="WindowPaint"/>
+    <message name="WindowClosed"/>
+    <message name="WindowChangedScreen"/>
+  </interface>
+
+
   <enums name="PropertyState">
     <summary>Represents the various states a property can be in.</summary>
     <enum name="Normal">Normal property state when no triggers are active</enum>
@@ -112,6 +115,22 @@
       <p>The `Object` type is the root of the runtime type system. Every element that can appear in a scene, be manipulated through scripts, or participate in rendering and logic derives its basic functionality from Object. It establishes the fundamental contract that all other types extend, providing common lifecycle methods, hierarchy management, and component composition.</p>
       <p>An `Object` is not tied to a specific visual or logical role by itself. Instead, it serves as a container for components, and these components define the actual capabilities of the instance. Higher-level types such as `Node`, `Node2D`, or `ImageView` are constructed by layering specialized components on top of the base `Object`.</p>
     </details>
+
+    <!-- Object lifecycle messages -->
+    <message name="IsVisible" routing="Direct"/>
+    <message name="Create" routing="Direct"/>
+    <message name="Start" routing="Direct"/>
+    <message name="Awake" routing="Direct"/>
+    <message name="ThemeChanged" routing="Direct"/>
+    <message name="PropertyChanged" routing="Direct">
+      <field name="Property" type="Property" pointer="true">The property that changed</field>
+    </message>
+    <message name="Attached" routing="Direct"/>
+    <message name="Release" routing="Direct"/>
+    <message name="Destroy" routing="Direct"/>
+    <message name="ResumeCoroutine" routing="Direct"/>
+    <message name="StopCoroutine" routing="Direct"/>
+    <message name="ViewDidLoad" routing="Direct"/>
 
     <topic title="Lifecycle">Manages object creation, initialization, update cycles, and destruction.</topic>
     <method name="CreateFromLuaState" export="new" lua="true" static="true">

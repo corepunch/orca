@@ -256,13 +256,24 @@ class Method extends Base {
 // --- Interface ---
 
 class Interface extends Base {
+	public $export;
+	public $prefix;
+
 	function __construct($elem, $model) {
 		parent::__construct($elem, $model);
+		$this->export = $elem["export"] ?? $elem["name"];
+		$this->prefix = $elem["prefix"] ?? "";
 	}
 
 	function getMethods() {
 		foreach ($this->_elem->xpath(".//method[@name]") as $m) {
 			yield $m["name"] => new Method($m, $this->_model, $this->_elem);
+		}
+	}
+
+	function getMessages() {
+		foreach ($this->_elem->xpath("message[@name]") as $f) {
+			yield new Event($f, $this->_model);
 		}
 	}
 

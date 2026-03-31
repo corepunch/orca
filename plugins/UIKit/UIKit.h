@@ -30,7 +30,6 @@ ORCA_API extern struct MessageType MeasureMessage;
 ORCA_API extern struct MessageType ArrangeMessage;
 ORCA_API extern struct MessageType MeasureOverrideMessage;
 ORCA_API extern struct MessageType ArrangeOverrideMessage;
-ORCA_API extern struct MessageType ForegroundContentMessage;
 ORCA_API extern struct MessageType PushPropertyMessage;
 ORCA_API extern struct MessageType UpdateGeometryMessage;
 ORCA_API extern struct MessageType DrawBrushMessage;
@@ -38,7 +37,7 @@ ORCA_API extern struct MessageType HandleMessageMessage;
 ORCA_API extern struct MessageType LoadViewMessage;
 ORCA_API extern struct MessageType MakeTextMessage;
 ORCA_API extern struct MessageType TriggeredMessage;
-ORCA_API extern struct MessageType UpdateShmatrixMessage;
+ORCA_API extern struct MessageType ForegroundContentMessage;
 ORCA_API extern struct MessageType UpdateLayoutMessage;
 ORCA_API extern struct MessageType NavigateToPageMessage;
 ORCA_API extern struct MessageType NavigateBackMessage;
@@ -51,7 +50,6 @@ typedef struct MeasureMsgArgs MeasureMsg_t,* MeasureMsgPtr;
 typedef struct ArrangeMsgArgs ArrangeMsg_t,* ArrangeMsgPtr;
 typedef struct MeasureMsgArgs MeasureOverrideMsg_t,* MeasureOverrideMsgPtr;
 typedef struct ArrangeMsgArgs ArrangeOverrideMsg_t,* ArrangeOverrideMsgPtr;
-typedef struct ForegroundContentMsgArgs ForegroundContentMsg_t,* ForegroundContentMsgPtr;
 typedef struct PushPropertyMsgArgs PushPropertyMsg_t,* PushPropertyMsgPtr;
 typedef struct UpdateGeometryMsgArgs UpdateGeometryMsg_t,* UpdateGeometryMsgPtr;
 typedef struct DrawBrushMsgArgs DrawBrushMsg_t,* DrawBrushMsgPtr;
@@ -59,7 +57,7 @@ typedef struct HandleMessageMsgArgs HandleMessageMsg_t,* HandleMessageMsgPtr;
 typedef struct LoadViewMsgArgs LoadViewMsg_t,* LoadViewMsgPtr;
 typedef struct MakeTextMsgArgs MakeTextMsg_t,* MakeTextMsgPtr;
 typedef struct TriggeredMsgArgs TriggeredMsg_t,* TriggeredMsgPtr;
-typedef struct UpdateShmatrixMsgArgs UpdateShmatrixMsg_t,* UpdateShmatrixMsgPtr;
+typedef struct ForegroundContentMsgArgs ForegroundContentMsg_t,* ForegroundContentMsgPtr;
 typedef struct UpdateLayoutMsgArgs UpdateLayoutMsg_t,* UpdateLayoutMsgPtr;
 typedef struct NavigateToPageMsgArgs NavigateToPageMsg_t,* NavigateToPageMsgPtr;
 typedef struct NavigateBackMsgArgs NavigateBackMsg_t,* NavigateBackMsgPtr;
@@ -557,11 +555,6 @@ struct ArrangeMsgArgs {
 };
 ORCA_API void luaX_pushArrangeMsgArgs(lua_State *L, struct ArrangeMsgArgs const* data);
 ORCA_API struct ArrangeMsgArgs* luaX_checkArrangeMsgArgs(lua_State *L, int idx);
-/** ForegroundContentMsgArgs struct */
-struct ForegroundContentMsgArgs {
-};
-ORCA_API void luaX_pushForegroundContentMsgArgs(lua_State *L, struct ForegroundContentMsgArgs const* data);
-ORCA_API struct ForegroundContentMsgArgs* luaX_checkForegroundContentMsgArgs(lua_State *L, int idx);
 /** PushPropertyMsgArgs struct */
 struct PushPropertyMsgArgs {
 	int32_t Placeholder;
@@ -613,14 +606,11 @@ struct TriggeredMsgArgs {
 };
 ORCA_API void luaX_pushTriggeredMsgArgs(lua_State *L, struct TriggeredMsgArgs const* data);
 ORCA_API struct TriggeredMsgArgs* luaX_checkTriggeredMsgArgs(lua_State *L, int idx);
-/** UpdateShmatrixMsgArgs struct */
-struct UpdateShmatrixMsgArgs {
-	struct mat4 parent; ///< The parent matrix
-	float opacity; ///< The opacity value
-	bool_t force; ///< Indicates if the update is forced
+/** ForegroundContentMsgArgs struct */
+struct ForegroundContentMsgArgs {
 };
-ORCA_API void luaX_pushUpdateShmatrixMsgArgs(lua_State *L, struct UpdateShmatrixMsgArgs const* data);
-ORCA_API struct UpdateShmatrixMsgArgs* luaX_checkUpdateShmatrixMsgArgs(lua_State *L, int idx);
+ORCA_API void luaX_pushForegroundContentMsgArgs(lua_State *L, struct ForegroundContentMsgArgs const* data);
+ORCA_API struct ForegroundContentMsgArgs* luaX_checkForegroundContentMsgArgs(lua_State *L, int idx);
 /** UpdateLayoutMsgArgs struct */
 struct UpdateLayoutMsgArgs {
 	float Width;
@@ -843,9 +833,6 @@ struct Node2D {
 	bool_t Hovered; ///< Indicates if the element is currently hovered by pointer/mouse.
 	bool_t IgnoreHitTest; ///< Marks object as ignored during hit testing (mouse interaction).
 	enum ForegroundHint ForegroundHint; ///< Hint for how foreground should be rendered. May be used for accessibility, high-contrast, or text rendering optimizations.
-	struct mat4 parent; ///< The parent matrix
-	float opacity; ///< The opacity value
-	bool_t force; ///< Indicates if the update is forced
 	struct Node* _node; ///< Internal node reference
 	struct Object* _object; ///< Internal object reference
 	int32_t _userdata; ///< User-defined data storage

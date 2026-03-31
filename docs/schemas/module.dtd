@@ -80,7 +80,7 @@
 >
 
 <!-- Interface Definition (similar to struct but for abstract types) -->
-<!ELEMENT interface (summary?, details?, init?, (method | topic)*)>
+<!ELEMENT interface (summary?, details?, init?, (method | topic | message)*)>
 <!ATTLIST interface
   name CDATA #REQUIRED
   prefix CDATA #IMPLIED
@@ -96,7 +96,7 @@
 >
 
 <!-- Component Definition -->
-<!ELEMENT class (summary?, details?, xmlns?, handles*, property*, field*, method*)>
+<!ELEMENT class (summary?, details?, xmlns?, handles*, message*, property*, field*, method*)>
 <!ATTLIST class
   name CDATA #REQUIRED
   parent CDATA #IMPLIED
