@@ -462,5 +462,9 @@ on_core_module_registered(lua_State* L)
   
   lua_pushcfunction(L, f_registerPropertyType);
   lua_setfield(L, -2, "registerPropertyType");
+  
+  lua_getglobal(L, "require");
+  lua_pushstring(L, "orca.geometry");
+  lua_call(L, 1, 0);
 }
 

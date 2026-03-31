@@ -82,11 +82,13 @@ static int read_array(lua_State *L, int idx, lpProperty_t p) {
   return 0;
 }
 
+extern void read_property(lua_State *, int, struct PropertyType const*, void*);
+
 int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
 {
-  int luatype = lua_type(L, idx);
-  float number;
-  void* udata = NULL;
+//  int luatype = lua_type(L, idx);
+//  float number;
+//  void* udata = NULL;
 
   if (lua_isnil(L, idx)) {
     PROP_Clear(p);
@@ -97,6 +99,8 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
     return read_array(L, idx, p);
   }
 
+  read_property(L, idx, p->pdesc, p->value);
+#if 0
   switch (luatype) {
     case LUA_TSTRING:
 			p->type = p->type == kDataTypeNone ? kDataTypeString : p->type;
@@ -194,6 +198,7 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
       PROP_SetValue(p, &(handle_t){ lua_touserdata(L, idx) });
       break;
   }
+#endif
   return 0;
 }
 

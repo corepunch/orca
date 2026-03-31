@@ -235,6 +235,7 @@ f_convert_string(lua_State* L,
   lua_remove(L, -2); // remove typeconverter table
   lua_pushstring(L, value);
   luaX_pushPropertyType(L, pt);
+  lua_getfield(L, -1, "TypeString");
   if (lua_pcall(L, 2, 1, 0) != LUA_OK) { // TODO: Should it be here?
     if (throw_error) {
       return luaL_error(L, luaL_checkstring(L, -1));
