@@ -125,6 +125,23 @@ BOOL UI_EnumObjectProperties(HOBJ             object,
   return hasProperties;
 }
 
+#include <ctype.h>
+#include <assert.h>
+
+lpcString_t stristr(lpcString_t haystack, lpcString_t needle) {
+  size_t needle_len = strlen(needle);
+  if (needle_len == 0) {
+    return haystack; // Empty needle matches everything
+  }
+  while (*haystack) {
+    if (strncasecmp(haystack, needle, needle_len) == 0) {
+      return haystack; // Match found
+    }
+    haystack++;
+  }
+  return NULL; // No match
+}
+
 static void _FilterObjects(HOBJ obj, lpcString_t filter, EnumChildProc proc, LPVOID parm) {
   if (stristr(obj->Name, filter)) {
     struct _OBJDEF ov;

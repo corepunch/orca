@@ -583,6 +583,12 @@ static int f_##NAME##___index(lua_State *L) { \
 	for (uint32_t i = 0, j = fnv1a32(luaL_checkstring(L, 2)); i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
 		if (_##NAME[i].ShortIdentifier == j) \
 			return (write_property(L, -1, &_##NAME[i], luaX_check##NAME(L, 1)), 1); \
+	for (uint32_t i = 0; i < sizeof(_##NAME##_Methods) / sizeof(*_##NAME##_Methods); i++) { \
+		if (strcmp(_##NAME##_Methods[i].name, luaL_checkstring(L, 2)) == 0) { \
+			lua_pushcfunction(L, _##NAME##_Methods[i].func); \
+			return 1; \
+		} \
+	} \
 	return luaL_error(L, "Unknown field in " #NAME ": %s", luaL_checkstring(L, 2)); \
 } \
 static int f_##NAME##___newindex(lua_State *L) { \
@@ -627,6 +633,7 @@ static struct PropertyType _MessageType[] = {
 	DECL(0x23a0d95c, MessageType, size, size, kDataTypeInt), // MessageType.size
 };
 static luaL_Reg _MessageType_Methods[] = {
+	{ NULL, NULL }
 };
 
 STRUCT(MessageType, MessageType);
@@ -891,129 +898,129 @@ struct MessageType ViewDidLoadMessage = {
 	.size = sizeof(struct ViewDidLoadMsgArgs),
 };
 
-static luaL_Reg _MouseMessageMsgArgs_Methods[] = {};
+static luaL_Reg _MouseMessageMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _MouseMessageMsgArgs[] = {
 };
-static luaL_Reg _KeyMessageMsgArgs_Methods[] = {};
+static luaL_Reg _KeyMessageMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _KeyMessageMsgArgs[] = {
 };
-static luaL_Reg _LeftMouseDownMsgArgs_Methods[] = {};
+static luaL_Reg _LeftMouseDownMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _LeftMouseDownMsgArgs[] = {
 };
-static luaL_Reg _RightMouseDownMsgArgs_Methods[] = {};
+static luaL_Reg _RightMouseDownMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _RightMouseDownMsgArgs[] = {
 };
-static luaL_Reg _OtherMouseDownMsgArgs_Methods[] = {};
+static luaL_Reg _OtherMouseDownMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _OtherMouseDownMsgArgs[] = {
 };
-static luaL_Reg _LeftMouseUpMsgArgs_Methods[] = {};
+static luaL_Reg _LeftMouseUpMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _LeftMouseUpMsgArgs[] = {
 };
-static luaL_Reg _RightMouseUpMsgArgs_Methods[] = {};
+static luaL_Reg _RightMouseUpMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _RightMouseUpMsgArgs[] = {
 };
-static luaL_Reg _OtherMouseUpMsgArgs_Methods[] = {};
+static luaL_Reg _OtherMouseUpMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _OtherMouseUpMsgArgs[] = {
 };
-static luaL_Reg _LeftMouseDraggedMsgArgs_Methods[] = {};
+static luaL_Reg _LeftMouseDraggedMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _LeftMouseDraggedMsgArgs[] = {
 };
-static luaL_Reg _RightMouseDraggedMsgArgs_Methods[] = {};
+static luaL_Reg _RightMouseDraggedMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _RightMouseDraggedMsgArgs[] = {
 };
-static luaL_Reg _OtherMouseDraggedMsgArgs_Methods[] = {};
+static luaL_Reg _OtherMouseDraggedMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _OtherMouseDraggedMsgArgs[] = {
 };
-static luaL_Reg _LeftDoubleClickMsgArgs_Methods[] = {};
+static luaL_Reg _LeftDoubleClickMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _LeftDoubleClickMsgArgs[] = {
 };
-static luaL_Reg _RightDoubleClickMsgArgs_Methods[] = {};
+static luaL_Reg _RightDoubleClickMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _RightDoubleClickMsgArgs[] = {
 };
-static luaL_Reg _OtherDoubleClickMsgArgs_Methods[] = {};
+static luaL_Reg _OtherDoubleClickMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _OtherDoubleClickMsgArgs[] = {
 };
-static luaL_Reg _MouseMovedMsgArgs_Methods[] = {};
+static luaL_Reg _MouseMovedMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _MouseMovedMsgArgs[] = {
 };
-static luaL_Reg _ScrollWheelMsgArgs_Methods[] = {};
+static luaL_Reg _ScrollWheelMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _ScrollWheelMsgArgs[] = {
 };
-static luaL_Reg _DragDropMsgArgs_Methods[] = {};
+static luaL_Reg _DragDropMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _DragDropMsgArgs[] = {
 };
-static luaL_Reg _DragEnterMsgArgs_Methods[] = {};
+static luaL_Reg _DragEnterMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _DragEnterMsgArgs[] = {
 };
-static luaL_Reg _KeyDownMsgArgs_Methods[] = {};
+static luaL_Reg _KeyDownMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _KeyDownMsgArgs[] = {
 };
-static luaL_Reg _KeyUpMsgArgs_Methods[] = {};
+static luaL_Reg _KeyUpMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _KeyUpMsgArgs[] = {
 };
-static luaL_Reg _CharMsgArgs_Methods[] = {};
+static luaL_Reg _CharMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _CharMsgArgs[] = {
 };
-static luaL_Reg _WindowPaintMsgArgs_Methods[] = {};
+static luaL_Reg _WindowPaintMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _WindowPaintMsgArgs[] = {
 	DECL(0xdc5503a7, WindowPaintMsgArgs, WindowWidth, WindowWidth, kDataTypeInt), // WindowPaintMsgArgs.WindowWidth
 	DECL(0xbd75892a, WindowPaintMsgArgs, WindowHeight, WindowHeight, kDataTypeInt), // WindowPaintMsgArgs.WindowHeight
 };
-static luaL_Reg _WindowResizedMsgArgs_Methods[] = {};
+static luaL_Reg _WindowResizedMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _WindowResizedMsgArgs[] = {
 	DECL(0xdc5503a7, WindowResizedMsgArgs, WindowWidth, WindowWidth, kDataTypeInt), // WindowResizedMsgArgs.WindowWidth
 	DECL(0xbd75892a, WindowResizedMsgArgs, WindowHeight, WindowHeight, kDataTypeInt), // WindowResizedMsgArgs.WindowHeight
 };
-static luaL_Reg _WindowClosedMsgArgs_Methods[] = {};
+static luaL_Reg _WindowClosedMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _WindowClosedMsgArgs[] = {
 };
-static luaL_Reg _WindowChangedScreenMsgArgs_Methods[] = {};
+static luaL_Reg _WindowChangedScreenMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _WindowChangedScreenMsgArgs[] = {
 };
-static luaL_Reg _KillFocusMsgArgs_Methods[] = {};
+static luaL_Reg _KillFocusMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _KillFocusMsgArgs[] = {
 };
-static luaL_Reg _SetFocusMsgArgs_Methods[] = {};
+static luaL_Reg _SetFocusMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _SetFocusMsgArgs[] = {
 };
-static luaL_Reg _TimerMsgArgs_Methods[] = {};
+static luaL_Reg _TimerMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _TimerMsgArgs[] = {
 };
-static luaL_Reg _IsVisibleMsgArgs_Methods[] = {};
+static luaL_Reg _IsVisibleMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _IsVisibleMsgArgs[] = {
 };
-static luaL_Reg _CreateMsgArgs_Methods[] = {};
+static luaL_Reg _CreateMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _CreateMsgArgs[] = {
 };
-static luaL_Reg _StartMsgArgs_Methods[] = {};
+static luaL_Reg _StartMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _StartMsgArgs[] = {
 };
-static luaL_Reg _AwakeMsgArgs_Methods[] = {};
+static luaL_Reg _AwakeMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _AwakeMsgArgs[] = {
 };
-static luaL_Reg _ThemeChangedMsgArgs_Methods[] = {};
+static luaL_Reg _ThemeChangedMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _ThemeChangedMsgArgs[] = {
 };
-static luaL_Reg _PropertyChangedMsgArgs_Methods[] = {};
+static luaL_Reg _PropertyChangedMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _PropertyChangedMsgArgs[] = {
 	DECL(0x5221f9e8, PropertyChangedMsgArgs, Property, Property, kDataTypeStruct, .TypeString = "Property"), // PropertyChangedMsgArgs.Property
 };
-static luaL_Reg _AttachedMsgArgs_Methods[] = {};
+static luaL_Reg _AttachedMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _AttachedMsgArgs[] = {
 };
-static luaL_Reg _ReleaseMsgArgs_Methods[] = {};
+static luaL_Reg _ReleaseMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _ReleaseMsgArgs[] = {
 };
-static luaL_Reg _DestroyMsgArgs_Methods[] = {};
+static luaL_Reg _DestroyMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _DestroyMsgArgs[] = {
 };
-static luaL_Reg _ResumeCoroutineMsgArgs_Methods[] = {};
+static luaL_Reg _ResumeCoroutineMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _ResumeCoroutineMsgArgs[] = {
 };
-static luaL_Reg _StopCoroutineMsgArgs_Methods[] = {};
+static luaL_Reg _StopCoroutineMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _StopCoroutineMsgArgs[] = {
 };
-static luaL_Reg _ViewDidLoadMsgArgs_Methods[] = {};
+static luaL_Reg _ViewDidLoadMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _ViewDidLoadMsgArgs[] = {
 };
 

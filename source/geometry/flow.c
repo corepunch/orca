@@ -1,0 +1,130 @@
+#include <include/api.h>
+
+ORCA_API void
+parse_property(const char* str,
+               struct PropertyType const* prop,
+               void* struct_ptr)
+{
+  void* valueptr = ((char*)struct_ptr + prop->Offset);
+  switch (prop->DataType) {
+    case kDataTypeBool:
+      *(bool*)valueptr = strcasecmp(str, "true") == 0 || strcmp(str, "1") == 0;
+      break;
+    case kDataTypeInt:
+      *(int*)valueptr = atoi(str);
+      break;
+    case kDataTypeEnum:
+      for (int i = 0; prop->EnumValues[i] != NULL; i++) {
+        if (strcmp(str, prop->EnumValues[i]) == 0) {
+          *(int*)valueptr = i;
+          return;
+        }
+      }
+      fprintf(stderr, "Invalid enum value '%s' for property '%s'\n", str, prop->Name);
+      break;
+    case kDataTypeFloat:
+      *(float*)valueptr = atof(str);
+      break;
+    case kDataTypeString:
+      if (*(char**)valueptr) free(*(char**)valueptr); // Free existing string if necessary
+      *(char**)valueptr = strdup(str);
+      break;
+    case kDataTypeColor:
+      *(struct color*)valueptr = COLOR_Parse(str);
+      break;
+    default:
+      fprintf(stderr, "Unsupported property type for parsing\n");
+      break;
+  }
+}
+
+ORCA_API void
+read_property(lua_State *L,
+              int idx,
+              struct PropertyType const* prop,
+              void* struct_ptr)
+{
+  void* valueptr = ((char*)struct_ptr + prop->Offset);
+  switch (prop->DataType) {
+    case kDataTypeBool:
+      *(bool*)valueptr = lua_toboolean(L, idx) != 0;
+      break;
+    case kDataTypeInt:
+      *(int*)valueptr = (int)luaL_checkinteger(L, idx);
+      break;
+    case kDataTypeEnum:
+      *(int*)valueptr = (int)luaL_checkoption(L, idx, NULL, prop->EnumValues);
+      break;
+    case kDataTypeFloat:
+      *(float*)valueptr = (float)luaL_checknumber(L, idx);
+      break;
+    case kDataTypeString:
+      if (*(char**)valueptr) free(*(char**)valueptr); // Free existing string if necessary
+      *(char**)valueptr = strdup(luaL_checkstring(L, idx));
+      break;
+    case kDataTypeColor:
+      if (lua_isstring(L, idx)) {
+        *(struct color*)valueptr = COLOR_Parse(luaL_checkstring(L, idx));
+      } else {
+        memcpy(valueptr, luaL_checkudata(L, idx, "Color"), prop->DataSize);
+      }
+      break;
+    case kDataTypeStruct:
+      memcpy(valueptr, luaL_checkudata(L, idx, prop->TypeString), prop->DataSize);
+      break;
+    case kDataTypeObject: {
+      lua_getfield(L, idx, "__userdata");
+      if (lua_isnil(L, -1)) {
+        luaL_error(L, "Expected an table with __userdata field");
+      }
+      *(void**)valueptr = *(void**)lua_touserdata(L, -1);
+      lua_pop(L, 1); // Remove the __userdata field from the stack
+      break;
+    }
+    default:
+      luaL_error(L, "Unsupported property type");
+    }
+  }
+  
+ORCA_API int
+write_property(lua_State *L,
+               int idx,
+               struct PropertyType const* prop,
+               void const* struct_ptr)
+{
+    void const* valueptr = ((char const*)struct_ptr + prop->Offset);
+    switch (prop->DataType) {
+      case kDataTypeBool:
+        lua_pushboolean(L, *(bool*)valueptr);
+        break;
+      case kDataTypeInt:
+        lua_pushinteger(L, *(int*)valueptr);
+        break;
+      case kDataTypeEnum:
+        lua_pushstring(L, prop->EnumValues[*(int*)valueptr]);
+        break;
+      case kDataTypeFloat:
+        lua_pushnumber(L, *(float*)valueptr);
+        break;
+      case kDataTypeString:
+        lua_pushstring(L, *(char**)valueptr);
+        break;
+      case kDataTypeColor:
+        lua_newuserdata(L, sizeof(struct color));
+        luaL_setmetatable(L, "Color");
+        memcpy(lua_touserdata(L, -1), valueptr, sizeof(struct color));
+        break;
+      case kDataTypeStruct:
+        lua_pushlightuserdata(L, (void*)valueptr);
+        luaL_setmetatable(L, prop->TypeString);
+        break;
+      case kDataTypeObject:
+        lua_pushlightuserdata(L, *(void**)valueptr);
+        luaL_setmetatable(L, prop->TypeString);
+        break;
+      default:
+        break;
+    }
+    return 1;
+  }
+  

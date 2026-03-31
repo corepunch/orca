@@ -49,6 +49,12 @@ static int f_##NAME##___index(lua_State *L) { \
 	for (uint32_t i = 0, j = fnv1a32(luaL_checkstring(L, 2)); i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
 		if (_##NAME[i].ShortIdentifier == j) \
 			return (write_property(L, -1, &_##NAME[i], luaX_check##NAME(L, 1)), 1); \
+	for (uint32_t i = 0; i < sizeof(_##NAME##_Methods) / sizeof(*_##NAME##_Methods); i++) { \
+		if (strcmp(_##NAME##_Methods[i].name, luaL_checkstring(L, 2)) == 0) { \
+			lua_pushcfunction(L, _##NAME##_Methods[i].func); \
+			return 1; \
+		} \
+	} \
 	return luaL_error(L, "Unknown field in " #NAME ": %s", luaL_checkstring(L, 2)); \
 } \
 static int f_##NAME##___newindex(lua_State *L) { \
@@ -91,11 +97,13 @@ static struct PropertyType _ProjectReference[] = {
 	DECL(0xeb66e456, ProjectReference, Path, Path, kDataTypeString), // ProjectReference.Path
 };
 static luaL_Reg _ProjectReference_Methods[] = {
+	{ NULL, NULL }
 };
 static struct PropertyType _EnginePlugin[] = {
 	DECL(0x0fe07306, EnginePlugin, Name, Name, kDataTypeString), // EnginePlugin.Name
 };
 static luaL_Reg _EnginePlugin_Methods[] = {
+	{ NULL, NULL }
 };
 static struct PropertyType _SystemMessage[] = {
 	DECL(0xae0ed984, SystemMessage, Message, Message, kDataTypeString), // SystemMessage.Message
@@ -103,6 +111,7 @@ static struct PropertyType _SystemMessage[] = {
 	DECL(0xc67c8f52, SystemMessage, Command, Command, kDataTypeString), // SystemMessage.Command
 };
 static luaL_Reg _SystemMessage_Methods[] = {
+	{ NULL, NULL }
 };
 
 STRUCT(ProjectReference, ProjectReference);
@@ -139,21 +148,21 @@ struct MessageType LoadProjectMessage = {
 	.size = sizeof(struct LoadProjectMsgArgs),
 };
 
-static luaL_Reg _ReadCommandsMsgArgs_Methods[] = {};
+static luaL_Reg _ReadCommandsMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _ReadCommandsMsgArgs[] = {
 };
-static luaL_Reg _OpenFileMsgArgs_Methods[] = {};
+static luaL_Reg _OpenFileMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _OpenFileMsgArgs[] = {
 	DECL(0x5ffdd888, OpenFileMsgArgs, FileName, FileName, kDataTypeString), // OpenFileMsgArgs.FileName
 };
-static luaL_Reg _FileExistsMsgArgs_Methods[] = {};
+static luaL_Reg _FileExistsMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _FileExistsMsgArgs[] = {
 	DECL(0x5ffdd888, FileExistsMsgArgs, FileName, FileName, kDataTypeString), // FileExistsMsgArgs.FileName
 };
-static luaL_Reg _HasChangedFilesMsgArgs_Methods[] = {};
+static luaL_Reg _HasChangedFilesMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _HasChangedFilesMsgArgs[] = {
 };
-static luaL_Reg _LoadProjectMsgArgs_Methods[] = {};
+static luaL_Reg _LoadProjectMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _LoadProjectMsgArgs[] = {
 	DECL(0xeb66e456, LoadProjectMsgArgs, Path, Path, kDataTypeString), // LoadProjectMsgArgs.Path
 };

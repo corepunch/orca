@@ -45,6 +45,12 @@ static int f_##NAME##___index(lua_State *L) { \
 	for (uint32_t i = 0, j = fnv1a32(luaL_checkstring(L, 2)); i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
 		if (_##NAME[i].ShortIdentifier == j) \
 			return (write_property(L, -1, &_##NAME[i], luaX_check##NAME(L, 1)), 1); \
+	for (uint32_t i = 0; i < sizeof(_##NAME##_Methods) / sizeof(*_##NAME##_Methods); i++) { \
+		if (strcmp(_##NAME##_Methods[i].name, luaL_checkstring(L, 2)) == 0) { \
+			lua_pushcfunction(L, _##NAME##_Methods[i].func); \
+			return 1; \
+		} \
+	} \
 	return luaL_error(L, "Unknown field in " #NAME ": %s", luaL_checkstring(L, 2)); \
 } \
 static int f_##NAME##___newindex(lua_State *L) { \
@@ -196,6 +202,7 @@ static luaL_Reg _vec2_Methods[] = {
 	{ "normalize", f_VEC2_Normalize },
 	{ "lerp", f_VEC2_Lerp },
 	{ "mad", f_VEC2_Mad },
+	{ NULL, NULL }
 };
 int f_VEC3_Dot(lua_State *L) {
 	struct vec3 const* this_ = luaX_checkvec3(L, 1);
@@ -341,6 +348,7 @@ static luaL_Reg _vec3_Methods[] = {
 	{ "clear", f_VEC3_Clear },
 	{ "__unm", f_VEC3_Unm },
 	{ "distance", f_VEC3_Distance },
+	{ NULL, NULL }
 };
 int f_VEC4_Set(lua_State *L) {
 	struct vec4* this_ = luaX_checkvec4(L, 1);
@@ -391,6 +399,7 @@ static luaL_Reg _vec4_Methods[] = {
 	{ "__add", f_VEC4_Add },
 	{ "__unm", f_VEC4_Unm },
 	{ "lerp", f_VEC4_Lerp },
+	{ NULL, NULL }
 };
 int f_BOX2_Center(lua_State *L) {
 	struct box2 const* this_ = luaX_checkbox2(L, 1);
@@ -419,6 +428,7 @@ static luaL_Reg _box2_Methods[] = {
 	{ "center", f_BOX2_Center },
 	{ "moveTo", f_BOX2_MoveTo },
 	{ "containsPoint", f_BOX2_ContainsPoint },
+	{ NULL, NULL }
 };
 int f_BOX3_Center(lua_State *L) {
 	struct box3 const* this_ = luaX_checkbox3(L, 1);
@@ -432,12 +442,14 @@ static struct PropertyType _box3[] = {
 };
 static luaL_Reg _box3_Methods[] = {
 	{ "center", f_BOX3_Center },
+	{ NULL, NULL }
 };
 static struct PropertyType _Size[] = {
 	DECL(0x95876e1f, Size, width, width, kDataTypeFloat), // Size.width
 	DECL(0xd5bdbb42, Size, height, height, kDataTypeFloat), // Size.height
 };
 static luaL_Reg _Size_Methods[] = {
+	{ NULL, NULL }
 };
 int f_RECT_Contains(lua_State *L) {
 	struct rect const* this_ = luaX_checkrect(L, 1);
@@ -485,6 +497,7 @@ static luaL_Reg _rect_Methods[] = {
 	{ "expand", f_RECT_Expand },
 	{ "center", f_RECT_Center },
 	{ "fit", f_RECT_Fit },
+	{ NULL, NULL }
 };
 int f_QUAT_FromEuler(lua_State *L) {
 	struct vec3 const* euler = luaX_checkvec3(L, 1);
@@ -557,6 +570,7 @@ static luaL_Reg _quat_Methods[] = {
 	{ "normalized", f_QUAT_Normalized },
 	{ "slerp", f_QUAT_Slerp },
 	{ "sqlerp", f_QUAT_Sqlerp },
+	{ NULL, NULL }
 };
 int f_MAT3_Identity(lua_State *L) {
 	struct mat3 result_ = MAT3_Identity();
@@ -589,6 +603,7 @@ static luaL_Reg _mat3_Methods[] = {
 	{ "normal", f_MAT3_Normal },
 	{ "translate", f_MAT3_Translate },
 	{ "scale", f_MAT3_Scale },
+	{ NULL, NULL }
 };
 int f_MAT4_Identity(lua_State *L) {
 	struct mat4 result_ = MAT4_Identity();
@@ -722,12 +737,14 @@ static luaL_Reg _mat4_Methods[] = {
 	{ "fromRotationTranslationScaleOrigin", f_MAT4_FromRotationTranslationScaleOrigin },
 	{ "fromTranslation", f_MAT4_FromTranslation },
 	{ "rotateQuat", f_MAT4_RotateQuat },
+	{ NULL, NULL }
 };
 static struct PropertyType _bounds[] = {
 	DECL(0xc98f4557, bounds, min, min, kDataTypeFloat), // bounds.min
 	DECL(0xd7a2e319, bounds, max, max, kDataTypeFloat), // bounds.max
 };
 static luaL_Reg _bounds_Methods[] = {
+	{ NULL, NULL }
 };
 int f_plane3_Normalize(lua_State *L) {
 	struct plane3* this_ = luaX_checkplane3(L, 1);
@@ -750,12 +767,14 @@ static struct PropertyType _plane3[] = {
 static luaL_Reg _plane3_Methods[] = {
 	{ "normalize", f_plane3_Normalize },
 	{ "multiplyVector3D", f_plane3_MultiplyVector3D },
+	{ NULL, NULL }
 };
 static struct PropertyType _sphere3[] = {
 	DECL(0x058c4484, sphere3, center, center, kDataTypeStruct, .TypeString = "Vector3D"), // sphere3.center
 	DECL(0x0dba4cb3, sphere3, radius, radius, kDataTypeFloat), // sphere3.radius
 };
 static luaL_Reg _sphere3_Methods[] = {
+	{ NULL, NULL }
 };
 int f_frustum_Calculate(lua_State *L) {
 	struct mat4 const* matrix = luaX_checkmat4(L, 1);
@@ -806,6 +825,7 @@ static luaL_Reg _frustum3_Methods[] = {
 	{ "containsSphere", f_frustum_ContainsSphere },
 	{ "containsBox", f_frustum_ContainsBox },
 	{ "containsAABox", f_frustum_ContainsAABox },
+	{ NULL, NULL }
 };
 int f_transform2_Identity(lua_State *L) {
 	struct transform2 result_ = transform2_Identity();
@@ -827,6 +847,7 @@ static struct PropertyType _transform2[] = {
 static luaL_Reg _transform2_Methods[] = {
 	{ "identity", f_transform2_Identity },
 	{ "toMatrix3D", f_transform2_ToMatrix3D },
+	{ NULL, NULL }
 };
 int f_transform3_Identity(lua_State *L) {
 	struct transform3 result_ = transform3_Identity();
@@ -848,6 +869,7 @@ static struct PropertyType _transform3[] = {
 static luaL_Reg _transform3_Methods[] = {
 	{ "identity", f_transform3_Identity },
 	{ "toMatrix3D", f_transform3_ToMatrix3D },
+	{ NULL, NULL }
 };
 int f_triangle3_normal(lua_State *L) {
 	struct triangle3 const* this_ = luaX_checktriangle3(L, 1);
@@ -862,6 +884,7 @@ static struct PropertyType _triangle3[] = {
 };
 static luaL_Reg _triangle3_Methods[] = {
 	{ "normal", f_triangle3_normal },
+	{ NULL, NULL }
 };
 int f_line3_intersect_sphere3(lua_State *L) {
 	struct line3 const* this_ = luaX_checkline3(L, 1);
@@ -904,6 +927,7 @@ static luaL_Reg _line3_Methods[] = {
 	{ "intersect_plane3", f_line3_intersect_plane3 },
 	{ "intersect_triangle", f_line3_intersect_triangle },
 	{ "intersect_box3", f_line3_intersect_box3 },
+	{ NULL, NULL }
 };
 static struct PropertyType _edges[] = {
 	DECL(0x124aec70, edges, left, left, kDataTypeFloat), // edges.left
@@ -912,6 +936,7 @@ static struct PropertyType _edges[] = {
 	DECL(0x4ea76b2a, edges, bottom, bottom, kDataTypeFloat), // edges.bottom
 };
 static luaL_Reg _edges_Methods[] = {
+	{ NULL, NULL }
 };
 int f_COLOR_Lerp(lua_State *L) {
 	struct color const* this_ = luaX_checkcolor(L, 1);
@@ -936,12 +961,14 @@ static struct PropertyType _color[] = {
 static luaL_Reg _color_Methods[] = {
 	{ "lerp", f_COLOR_Lerp },
 	{ "parse", f_COLOR_Parse },
+	{ NULL, NULL }
 };
 static struct PropertyType _PropertyEnumValue[] = {
 	DECL(0x0fe07306, PropertyEnumValue, Name, Name, kDataTypeString), // PropertyEnumValue.Name
 	DECL(0xd147f96a, PropertyEnumValue, Value, Value, kDataTypeInt), // PropertyEnumValue.Value
 };
 static luaL_Reg _PropertyEnumValue_Methods[] = {
+	{ NULL, NULL }
 };
 static struct PropertyType _PropertyType[] = {
 	DECL(0x0fe07306, PropertyType, Name, Name, kDataTypeString), // PropertyType.Name
@@ -967,6 +994,7 @@ static struct PropertyType _PropertyType[] = {
 	DECL(0x660880b6, PropertyType, IsArray, IsArray, kDataTypeBool), // PropertyType.IsArray
 };
 static luaL_Reg _PropertyType_Methods[] = {
+	{ NULL, NULL }
 };
 
 STRUCT(vec2, Vector2D);
