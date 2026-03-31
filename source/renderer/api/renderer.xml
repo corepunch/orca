@@ -352,7 +352,7 @@
   
 <!--  <struct name="ShaderVariableInfo">-->
 <!--    <summary>Contains metadata and configuration for a shader variable (uniform or attribute)</summary>-->
-<!--    <field name="Name" type="fixed">The identifier name of the shader variable as it appears in the shader code. Must match the variable name declared in GLSL.</field>-->
+<!--    <field name="Name" type="string">The identifier name of the shader variable as it appears in the shader code. Must match the variable name declared in GLSL.</field>-->
 <!--    <field name="Type" type="UniformType">The data type of the shader variable, determining its structure and how data is interpreted.</field>-->
 <!--    <field name="Precision" type="FloatPrecision">The floating-point precision level for the variable. Controls the balance between numerical accuracy and performance.</field>-->
 <!--    <field name="SourceType" type="SourceType">Specifies where the variable's value originates from.</field>-->

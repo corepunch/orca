@@ -1,2 +1,0 @@
-# WASM libraries are built into build/wasm-deps/ (a build artifact directory)
-# and are not stored in this repository directory.

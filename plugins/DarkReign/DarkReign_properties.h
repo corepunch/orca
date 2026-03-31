@@ -2,6 +2,7 @@
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __DARKREIGN_PROPERTIES_H__
 #define __DARKREIGN_PROPERTIES_H__
+
 // FtgPackage
 #define ID_FtgPackage 0xcea32f40
 #define GetFtgPackage(_P) ((struct FtgPackage*)((_P)?OBJ_GetComponent(_P,ID_FtgPackage):NULL))
@@ -13,4 +14,9 @@
 enum FtgPackageProperties {
 	kFtgPackageFileName,
 };
+
+	
+
+	
+
 #endif

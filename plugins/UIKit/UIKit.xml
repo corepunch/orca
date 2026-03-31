@@ -309,7 +309,7 @@
   </message>
   <message name="HandleMessage">
     <summary>Dispatches a named message with arguments to the component.</summary>
-    <field name="EventName" type="fixed"/>
+    <field name="EventName" type="string"/>
     <field name="FirstArg" type="uint"/>
     <field name="NumArgs" type="uint"/>
   </message>
@@ -815,7 +815,7 @@
 
   <message name="NavigateToPage">
     <summary>Navigates to a new page URL with an optional transition animation.</summary>
-    <field name="URL" type="fixed">The URL of the page to navigate to.</field>
+    <field name="URL" type="string">The URL of the page to navigate to.</field>
     <field name="TransitionType" type="TransitionType">The type of transition animation to use during navigation.</field>
   </message>
   <message name="NavigateBack">

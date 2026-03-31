@@ -11,22 +11,22 @@
   <struct name="ProjectReference" sealed="true">
     <summary>External project reference</summary>
     <details>Consists of a name and a relative path to the project</details>
-    <field name="Name" type="fixed">Name of the project, will be used as Project/Library/Resource when referencing it's resources</field>
-    <field name="Path" type="fixed">Path to the project relative to the workspace</field>
+    <field name="Name" type="string">Name of the project, will be used as Project/Library/Resource when referencing it's resources</field>
+    <field name="Path" type="string">Path to the project relative to the workspace</field>
   </struct>
 
   <struct name="EnginePlugin" sealed="true">
     <summary>Plugin requirement</summary>
     <details>Would load the plugin and make it's classes available</details>
-    <field name="Name" type="fixed">Name of the plugin</field>
+    <field name="Name" type="string">Name of the plugin</field>
   </struct>
   
   <struct name="SystemMessage" sealed="true">
     <summary>Handler of system messages you can add to your project</summary>
     <details>Handles system messages sent to the application. Each system message defines a message type, an associated key, and a command to execute when the message is received. This allows the application to respond to system events and user interactions through a configurable message dispatch system.</details>
-    <field name="Message" type="fixed">Message name, i.e. KeyDown</field>
-    <field name="Key" type="fixed">Associated key for the message, if applicable</field>
-    <field name="Command" type="fixed">Command to execute when the message is received</field>
+    <field name="Message" type="string">Message name, i.e. KeyDown</field>
+    <field name="Key" type="string">Associated key for the message, if applicable</field>
+    <field name="Command" type="string">Command to execute when the message is received</field>
   </struct>
 
   <class name="Workspace" />

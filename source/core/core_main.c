@@ -407,11 +407,14 @@ int f_registerPropertyType(lua_State *L) {
     strncpy(tmp, Name, sizeof(tmp));
   }
   lpcString_t dot = strrchr(Name, '.');
-  struct PropertyType type = {0};
-  type.ShortIdentifier = dot ? fnv1a32(dot + 1) : fnv1a32(Name);
-  // type->ShortIdentifier = fnv1a32(type->Name);
-  type.FullIdentifier = fnv1a32(tmp);
-  type.DataType = DataType;
+  struct PropertyType type = {
+    .ShortIdentifier = dot ? fnv1a32(dot + 1) : fnv1a32(Name),
+    //    .ShortIdentifier = fnv1a32(type->Name),
+    .FullIdentifier = fnv1a32(tmp),
+    .DataType = DataType,
+    .Name = Name,
+    .Category =  Category,
+  };
   switch (DataType) {
     case kDataTypeString: type.DataSize = sizeof(char*); break;
     case kDataTypeEvent:  type.DataSize = sizeof(void*); break;
@@ -420,8 +423,6 @@ int f_registerPropertyType(lua_State *L) {
     case kDataTypeColor:  type.DataSize = sizeof(struct color); break;
     default:              type.DataSize = sizeof(int);   break;
   }
-  strncpy(type.Name, Name, sizeof(type.Name));
-  strncpy(type.Category, Category, sizeof(type.Category));
   OBJ_RegisterPropertyType(&type);
   return 0;
 }

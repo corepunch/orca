@@ -1,36 +1,14 @@
-<?php if (count($components) > 0):?>
-#define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
-#define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
-<?php endif ?>
-
 <?php foreach ($components as $name => $component):?>
 	<?php foreach ($component->getEventHandlers() as $event): ?>
 LRESULT <?= $name ?>_<?= $event ?>(struct Object*, struct <?= $name ?>*, wParam_t, <?= $event ?>MsgPtr);
 	<?php endforeach ?>
-
 static struct MessageType <?= $name ?>MessageTypes[k<?= $name ?>NumMessageTypes] = {	
 	<?php foreach ($component->getMessages() as $event): ?>
 		{ "<?= $name ?>.<?= $event->name ?>", kMsg<?= $event->name ?>, kMessageRouting<?= $event->routing ?>, sizeof(<?= $event->getEffectiveTypeDecl() ?>) },
 	<?php endforeach ?>
 };
-
 static struct PropertyType const <?= $name ?>Properties[k<?= $name ?>NumProperties] = {
-	<?php foreach ($component->getProperties() as $property):?>
-		<?php $datatype = 'kDataType' . ucfirst($property->type->kind) ?>
-		<?php if ($property->type->kind === 'component') $datatype = 'kDataTypeObject'; ?>
-		<?php if ($property->type->kind === 'struct' && $property->type->type == 'color') $datatype = 'kDataTypeColor'; ?>
-		<?php echo($property->type->array ? "\tARRAY_DECL(" : "\tDECL(") ?>
-		<?php echo("{$property->name->id}, $name, {$property->name}, {$property->name->addr}, $datatype") ?>
-		<?php if ($property->type->kind === 'enum') {
-			echo (", .TypeString = \"" . implode(',', $property->type->data->getValuesNames()) . "\", .EnumValues = _" . $property->type->type . "), // $name.{$property->name}\n");
-		} elseif ($property->type->kind === 'struct' && $property->type->type != 'color') {
-			echo (", .TypeString = \"{$property->type->export}\"), // $name.{$property->name}\n");
-		} elseif ($property->type->kind === 'component') {
-			echo (", .TypeString = \"{$property->type->export}\"), // $name.{$property->name}\n");
- 		} else {
-			echo ("), // $name.{$property->name}\n");
- 		} ?>
-	<?php endforeach ?>
+	<?php include_template("export/properties", ['properties' => $component->getProperties(), 'name' => $name]) ?>
 };
 static struct <?= $name ?> <?= $name ?>Defaults = {
 	<?php foreach (array_filter($component->getProperties(), fn($prop) => $prop->type->default) as $property): ?>		

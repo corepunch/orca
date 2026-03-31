@@ -45,15 +45,15 @@ ORCA_API extern struct MessageType NavigateBackMessage;
 
 typedef struct UpdateMatrixMsgArgs UpdateMatrixMsg_t,* UpdateMatrixMsgPtr;
 typedef struct HitTestMsgArgs HitTestMsg_t,* HitTestMsgPtr;
-typedef int GetSizeMsg_t,* GetSizeMsgPtr;
-typedef int SubmitMsg_t,* SubmitMsgPtr;
+typedef struct GetSizeMsgArgs GetSizeMsg_t,* GetSizeMsgPtr;
+typedef struct SubmitMsgArgs SubmitMsg_t,* SubmitMsgPtr;
 typedef struct MeasureMsgArgs MeasureMsg_t,* MeasureMsgPtr;
 typedef struct ArrangeMsgArgs ArrangeMsg_t,* ArrangeMsgPtr;
 typedef struct MeasureMsgArgs MeasureOverrideMsg_t,* MeasureOverrideMsgPtr;
 typedef struct ArrangeMsgArgs ArrangeOverrideMsg_t,* ArrangeOverrideMsgPtr;
-typedef int ForegroundContentMsg_t,* ForegroundContentMsgPtr;
+typedef struct ForegroundContentMsgArgs ForegroundContentMsg_t,* ForegroundContentMsgPtr;
 typedef struct PushPropertyMsgArgs PushPropertyMsg_t,* PushPropertyMsgPtr;
-typedef int UpdateGeometryMsg_t,* UpdateGeometryMsgPtr;
+typedef struct UpdateGeometryMsgArgs UpdateGeometryMsg_t,* UpdateGeometryMsgPtr;
 typedef struct DrawBrushMsgArgs DrawBrushMsg_t,* DrawBrushMsgPtr;
 typedef struct HandleMessageMsgArgs HandleMessageMsg_t,* HandleMessageMsgPtr;
 typedef struct LoadViewMsgArgs LoadViewMsg_t,* LoadViewMsgPtr;
@@ -531,6 +531,16 @@ struct HitTestMsgArgs {
 };
 ORCA_API void luaX_pushHitTestMsgArgs(lua_State *L, struct HitTestMsgArgs const* data);
 ORCA_API struct HitTestMsgArgs* luaX_checkHitTestMsgArgs(lua_State *L, int idx);
+/** GetSizeMsgArgs struct */
+struct GetSizeMsgArgs {
+};
+ORCA_API void luaX_pushGetSizeMsgArgs(lua_State *L, struct GetSizeMsgArgs const* data);
+ORCA_API struct GetSizeMsgArgs* luaX_checkGetSizeMsgArgs(lua_State *L, int idx);
+/** SubmitMsgArgs struct */
+struct SubmitMsgArgs {
+};
+ORCA_API void luaX_pushSubmitMsgArgs(lua_State *L, struct SubmitMsgArgs const* data);
+ORCA_API struct SubmitMsgArgs* luaX_checkSubmitMsgArgs(lua_State *L, int idx);
 /** MeasureMsgArgs struct */
 struct MeasureMsgArgs {
 	float Width;
@@ -547,12 +557,22 @@ struct ArrangeMsgArgs {
 };
 ORCA_API void luaX_pushArrangeMsgArgs(lua_State *L, struct ArrangeMsgArgs const* data);
 ORCA_API struct ArrangeMsgArgs* luaX_checkArrangeMsgArgs(lua_State *L, int idx);
+/** ForegroundContentMsgArgs struct */
+struct ForegroundContentMsgArgs {
+};
+ORCA_API void luaX_pushForegroundContentMsgArgs(lua_State *L, struct ForegroundContentMsgArgs const* data);
+ORCA_API struct ForegroundContentMsgArgs* luaX_checkForegroundContentMsgArgs(lua_State *L, int idx);
 /** PushPropertyMsgArgs struct */
 struct PushPropertyMsgArgs {
 	int32_t Placeholder;
 };
 ORCA_API void luaX_pushPushPropertyMsgArgs(lua_State *L, struct PushPropertyMsgArgs const* data);
 ORCA_API struct PushPropertyMsgArgs* luaX_checkPushPropertyMsgArgs(lua_State *L, int idx);
+/** UpdateGeometryMsgArgs struct */
+struct UpdateGeometryMsgArgs {
+};
+ORCA_API void luaX_pushUpdateGeometryMsgArgs(lua_State *L, struct UpdateGeometryMsgArgs const* data);
+ORCA_API struct UpdateGeometryMsgArgs* luaX_checkUpdateGeometryMsgArgs(lua_State *L, int idx);
 /** DrawBrushMsgArgs struct */
 struct DrawBrushMsgArgs {
 	struct mat4 projection; ///< Projection matrix for 3D to 2D transformation
@@ -567,7 +587,7 @@ ORCA_API void luaX_pushDrawBrushMsgArgs(lua_State *L, struct DrawBrushMsgArgs co
 ORCA_API struct DrawBrushMsgArgs* luaX_checkDrawBrushMsgArgs(lua_State *L, int idx);
 /** HandleMessageMsgArgs struct */
 struct HandleMessageMsgArgs {
-	fixedString_t EventName;
+	const char* EventName;
 	uint32_t FirstArg;
 	uint32_t NumArgs;
 };
@@ -610,7 +630,7 @@ ORCA_API void luaX_pushUpdateLayoutMsgArgs(lua_State *L, struct UpdateLayoutMsgA
 ORCA_API struct UpdateLayoutMsgArgs* luaX_checkUpdateLayoutMsgArgs(lua_State *L, int idx);
 /** NavigateToPageMsgArgs struct */
 struct NavigateToPageMsgArgs {
-	fixedString_t URL; ///< The URL of the page to navigate to.
+	const char* URL; ///< The URL of the page to navigate to.
 	enum TransitionType TransitionType; ///< The type of transition animation to use during navigation.
 };
 ORCA_API void luaX_pushNavigateToPageMsgArgs(lua_State *L, struct NavigateToPageMsgArgs const* data);

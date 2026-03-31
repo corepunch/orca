@@ -31,6 +31,25 @@ ORCA_API const char *RotationOrderToString(enum RotationOrder value);
 ORCA_API enum RotationOrder luaX_checkRotationOrder(lua_State *L, int idx);
 ORCA_API void luaX_pushRotationOrder(lua_State *L, enum RotationOrder value);
 
+/// @brief Specifies the underlying data type of a property.
+/** DataType enum */
+typedef enum DataType {
+	kDataTypeNone, ///< No data type specified.
+	kDataTypeBool, ///< Boolean value representing true or false.
+	kDataTypeInt, ///< Signed integer value.
+	kDataTypeEnum, ///< Enumeration type represented by integer values mapped to named constants.
+	kDataTypeFloat, ///< Floating-point numeric value.
+	kDataTypeString, ///< String data, heap-allocated to support arbitrary length content.
+	kDataTypeEvent, ///< Event reference used to bind triggers or callbacks.
+	kDataTypeStruct, ///< Composite data structure containing multiple fields used for packaging related geometric, visual, and layout properties together.
+	kDataTypeColor, ///< RGBA color value represented as four floating-point components (red, green, blue, alpha) in the range 0.0 to 1.0.
+	kDataTypeObject, ///< Reference to a complex object instance.
+} eDataType_t;
+#define DataType_Count 10
+ORCA_API const char *DataTypeToString(enum DataType value);
+ORCA_API enum DataType luaX_checkDataType(lua_State *L, int idx);
+ORCA_API void luaX_pushDataType(lua_State *L, enum DataType value);
+
 typedef struct vec2 vec2_t, *lpvec2_t;
 typedef struct vec2 const cvec2_t, *lpcvec2_t;
 typedef struct vec3 vec3_t, *lpvec3_t;
@@ -71,6 +90,10 @@ typedef struct edges edges_t, *lpedges_t;
 typedef struct edges const cedges_t, *lpcedges_t;
 typedef struct color color_t, *lpcolor_t;
 typedef struct color const ccolor_t, *lpccolor_t;
+typedef struct PropertyEnumValue PropertyEnumValue_t, *lpPropertyEnumValue_t;
+typedef struct PropertyEnumValue const cPropertyEnumValue_t, *lpcPropertyEnumValue_t;
+typedef struct PropertyType PropertyType_t, *lpPropertyType_t;
+typedef struct PropertyType const cPropertyType_t, *lpcPropertyType_t;
 
 
 
@@ -616,6 +639,41 @@ COLOR_Lerp(struct color const*, struct color const*, float);
 /// @brief Parses color from string representation
 ORCA_API struct color
 COLOR_Parse(const char*);
+/// @brief Enum value descriptor for a property.
+/** PropertyEnumValue struct */
+struct PropertyEnumValue {
+	const char* Name; ///< Unique name identifier for the value.
+	int32_t Value; ///< Integer value representing the enum.
+};
+ORCA_API void luaX_pushPropertyEnumValue(lua_State *L, struct PropertyEnumValue const* PropertyEnumValue);
+ORCA_API struct PropertyEnumValue* luaX_checkPropertyEnumValue(lua_State *L, int idx);
+/// @brief Defines a custom property type that can be attached to engine objects.
+/** PropertyType struct */
+struct PropertyType {
+	const char* Name; ///< Unique name identifier for the property type.
+	const char* Category; ///< Organizational category for this property, used for grouping in editors and UIs.
+	enum DataType DataType; ///< Underlying data type that determines how the property value is interpreted and stored.
+	const char* DefaultValue; ///< Default value assigned when the property is not explicitly set.
+	const char* TypeString; ///< String representation of the property type, used to store struct/object type names.
+	const char** EnumValues; ///< Null-terminated array of enum value name strings for kDataTypeEnum properties.
+	bool_t AffectLayout; ///< Indicates whether this property affects element layout (e.g., size or alignment).
+	bool_t AffectRender; ///< Indicates whether this property influences the rendering output.
+	bool_t IsReadOnly; ///< If true, the property value cannot be modified at runtime or through the editor.
+	bool_t IsHidden; ///< If true, the property is excluded from the UI or inspector views.
+	bool_t IsInherited; ///< Specifies whether the property value can be inherited from parent components.
+	const char* Key; ///< Internal key name used for property identification and lookup.
+	const char* Value; ///< Runtime value stored in this property instance.
+	float Step; ///< Increment step used for numeric adjustments in UI controls.
+	float UpperBound; ///< Maximum allowed value for numeric properties.
+	float LowerBound; ///< Minimum allowed value for numeric properties.
+	uint32_t ShortIdentifier; ///< Unique short identifier for the property type, automatically generated from implicit property name.
+	uint32_t FullIdentifier; ///< Unique full identifier for the property type, automatically generated from explicit (ie. Grid.Columns) property name.
+	uint32_t Offset; ///< Byte offset of the property within the structure.
+	uint32_t DataSize; ///< Size of the property data in bytes.
+	bool_t IsArray; ///< Indicates whether the property is an array type, will generate Num* property to indicate the number of elements.
+};
+ORCA_API void luaX_pushPropertyType(lua_State *L, struct PropertyType const* PropertyType);
+ORCA_API struct PropertyType* luaX_checkPropertyType(lua_State *L, int idx);
 
 
 

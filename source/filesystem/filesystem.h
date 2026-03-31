@@ -21,10 +21,10 @@ ORCA_API extern struct MessageType FileExistsMessage;
 ORCA_API extern struct MessageType HasChangedFilesMessage;
 ORCA_API extern struct MessageType LoadProjectMessage;
 
-typedef int ReadCommandsMsg_t,* ReadCommandsMsgPtr;
+typedef struct ReadCommandsMsgArgs ReadCommandsMsg_t,* ReadCommandsMsgPtr;
 typedef struct OpenFileMsgArgs OpenFileMsg_t,* OpenFileMsgPtr;
 typedef struct FileExistsMsgArgs FileExistsMsg_t,* FileExistsMsgPtr;
-typedef int HasChangedFilesMsg_t,* HasChangedFilesMsgPtr;
+typedef struct HasChangedFilesMsgArgs HasChangedFilesMsg_t,* HasChangedFilesMsgPtr;
 typedef struct LoadProjectMsgArgs LoadProjectMsg_t,* LoadProjectMsgPtr;
 
 
@@ -84,28 +84,33 @@ FS_ReadTextFile(struct lua_State*, const char*);
 /// @brief External project reference
 /** ProjectReference struct */
 struct ProjectReference {
-	fixedString_t Name; ///< Name of the project, will be used as Project/Library/Resource when referencing it's resources
-	fixedString_t Path; ///< Path to the project relative to the workspace
+	const char* Name; ///< Name of the project, will be used as Project/Library/Resource when referencing it's resources
+	const char* Path; ///< Path to the project relative to the workspace
 };
 ORCA_API void luaX_pushProjectReference(lua_State *L, struct ProjectReference const* ProjectReference);
 ORCA_API struct ProjectReference* luaX_checkProjectReference(lua_State *L, int idx);
 /// @brief Plugin requirement
 /** EnginePlugin struct */
 struct EnginePlugin {
-	fixedString_t Name; ///< Name of the plugin
+	const char* Name; ///< Name of the plugin
 };
 ORCA_API void luaX_pushEnginePlugin(lua_State *L, struct EnginePlugin const* EnginePlugin);
 ORCA_API struct EnginePlugin* luaX_checkEnginePlugin(lua_State *L, int idx);
 /// @brief Handler of system messages you can add to your project
 /** SystemMessage struct */
 struct SystemMessage {
-	fixedString_t Message; ///< Message name, i.e. KeyDown
-	fixedString_t Key; ///< Associated key for the message, if applicable
-	fixedString_t Command; ///< Command to execute when the message is received
+	const char* Message; ///< Message name, i.e. KeyDown
+	const char* Key; ///< Associated key for the message, if applicable
+	const char* Command; ///< Command to execute when the message is received
 };
 ORCA_API void luaX_pushSystemMessage(lua_State *L, struct SystemMessage const* SystemMessage);
 ORCA_API struct SystemMessage* luaX_checkSystemMessage(lua_State *L, int idx);
 
+/** ReadCommandsMsgArgs struct */
+struct ReadCommandsMsgArgs {
+};
+ORCA_API void luaX_pushReadCommandsMsgArgs(lua_State *L, struct ReadCommandsMsgArgs const* data);
+ORCA_API struct ReadCommandsMsgArgs* luaX_checkReadCommandsMsgArgs(lua_State *L, int idx);
 /** OpenFileMsgArgs struct */
 struct OpenFileMsgArgs {
 	const char* FileName;
@@ -118,6 +123,11 @@ struct FileExistsMsgArgs {
 };
 ORCA_API void luaX_pushFileExistsMsgArgs(lua_State *L, struct FileExistsMsgArgs const* data);
 ORCA_API struct FileExistsMsgArgs* luaX_checkFileExistsMsgArgs(lua_State *L, int idx);
+/** HasChangedFilesMsgArgs struct */
+struct HasChangedFilesMsgArgs {
+};
+ORCA_API void luaX_pushHasChangedFilesMsgArgs(lua_State *L, struct HasChangedFilesMsgArgs const* data);
+ORCA_API struct HasChangedFilesMsgArgs* luaX_checkHasChangedFilesMsgArgs(lua_State *L, int idx);
 /** LoadProjectMsgArgs struct */
 struct LoadProjectMsgArgs {
 	const char* Path; ///< Directory name to load the bundle
@@ -150,7 +160,7 @@ struct Project {
 	bool_t RenderToMipmapLevels;
 	bool_t ExternalTexture;
 	const char* StartupScreen;
-	color_t PreviewWindowBackgroundColor;
+	struct color PreviewWindowBackgroundColor;
 	int32_t MessageLimitPerFrame;
 	int32_t GlobalTimelineStartTime;
 	int32_t GlobalTimelineEndTime;

@@ -4,6 +4,7 @@
 #define __RENDERER_PROPERTIES_H__
 #define kMsgRenderScreen 0xd15bdf29
 #define kMsgRender 0x350cf42d
+
 // Texture
 #define ID_Texture 0x994c5594
 #define GetTexture(_P) ((struct Texture*)((_P)?OBJ_GetComponent(_P,ID_Texture):NULL))
@@ -269,4 +270,17 @@ enum FontFamilyProperties {
 #define Timeline_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Timeline,_N)
 #define kTimelineNumMessageTypes 0
 #define kTimelineNumProperties 0
+
+	
+
+#define ID_RenderScreen 0xd15bdf29
+#define ID_RenderScreenMsgArgs_width 0x05d5d53d // RenderScreenMsgArgs.width
+#define ID_RenderScreenMsgArgs_height 0xcef69b94 // RenderScreenMsgArgs.height
+#define ID_RenderScreenMsgArgs_stereo 0xd447fa77 // RenderScreenMsgArgs.stereo
+#define ID_RenderScreenMsgArgs_angle 0xc553b56a // RenderScreenMsgArgs.angle
+#define ID_RenderScreenMsgArgs_target 0x4cf31fbe // RenderScreenMsgArgs.target
+#define ID_Render 0x350cf42d
+#define ID_RenderMsgArgs_ViewDef 0xbebba0a1 // RenderMsgArgs.ViewDef
+	
+
 #endif

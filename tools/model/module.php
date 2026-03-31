@@ -7,10 +7,12 @@ require "model/config.php";
 class FieldName {
 	public $name;
 	public $id;
+	public $addr;
 
 	function __construct($name) {
 		$this->name = $name;
 		$this->id = "0x" . hash("fnv1a32", $name);
+		$this->addr = $name;
 	}
 
 	function __toString() {
@@ -510,7 +512,7 @@ class Event extends Type {
 		$parent = $this->getParentEvent();
 		if ($parent) return $parent->getEffectiveTypeDecl();
 		if (strval($this) == "void") {
-			return "int"; // use int for empty events to avoid zero-size struct issues
+			return "struct " . $this->name . "MsgArgs";
 		}
 		return strval($this); // delegates to Type::__toString() for kind-based formatting
 	}

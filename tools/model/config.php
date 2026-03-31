@@ -57,15 +57,6 @@ class config {
 			'format' => "%s",
 			'default' => "\"%s\"",
 		],
-		"fixed" => [
-			'decl' => '%sString_t', 
-			'check' => 'luaL_checkstring(L, {arg})', 
-			'pop' => 'strncpy({addr}, luaL_optstring(L, {arg}, ""), sizeof({addr}))', 
-			'push' => 'lua_pushstring(L, {arg})',  
-			'convert' => 'strncpy({addr}, {arg}, sizeof({addr}))', 
-			'format' => "%s",
-			'default' => "\"%s\"",
-		],
 		"enum" => [
 			'decl' => 'enum %s', 
 			'check' => 'luaX_check{type}(L, {arg})', 

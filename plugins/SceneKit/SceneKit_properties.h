@@ -2,6 +2,7 @@
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __SCENEKIT_PROPERTIES_H__
 #define __SCENEKIT_PROPERTIES_H__
+
 // Node3D
 #define ID_Node3D 0xce61fe5a
 #define GetNode3D(_P) ((struct Node3D*)((_P)?OBJ_GetComponent(_P,ID_Node3D):NULL))
@@ -305,4 +306,9 @@ enum SpriteViewProperties {
 	kSpriteViewImage,
 	kSpriteViewBounds,
 };
+
+	
+
+	
+
 #endif

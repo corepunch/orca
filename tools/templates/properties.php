@@ -7,6 +7,7 @@
 <?php foreach ($model->getEvents() as $name => $event):?>
 #define kMsg<?= $name ?> 0x<?= hash('fnv1a32', $name) ?>
 <?php endforeach ?>
+
 <?php foreach ($model->getComponents() as $classname => $class):?>
 // <?= $classname ?>
 #define ID_<?= $classname ?> 0x<?= hash('fnv1a32', $classname) ?>
@@ -35,4 +36,21 @@ enum <?= $classname ?>Properties {
 	}?>};
 <?php endif ?>
 <?php endforeach ?>
+
+<?php foreach ($model->getStructs() as $name => $struct):?>
+#define ID_<?= $name ?> 0x<?= hash('fnv1a32', $name) ?>
+<?php foreach ($struct->getFields() as $field) {
+	$fieldName = $field->name;
+	echo("#define ID_{$name}_{$fieldName} 0x" . hash('fnv1a32', "$name.$fieldName") . " // {$name}.{$fieldName}\n");
+}?>
+<?php endforeach ?>	
+
+<?php foreach ($model->getEvents() as $name => $event):?>
+#define ID_<?= $name ?> 0x<?= hash('fnv1a32', $name) ?>
+<?php foreach ($event->getAllFields() as $field) {
+	$fieldName = $field->name;
+	echo("#define ID_{$name}MsgArgs_{$fieldName} 0x" . hash('fnv1a32', "{$name}MsgArgs.$fieldName") . " // {$name}MsgArgs.{$fieldName}\n");
+}?>
+<?php endforeach ?>	
+
 #endif

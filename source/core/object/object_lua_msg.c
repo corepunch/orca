@@ -66,8 +66,8 @@ lpObject_t OBJ_DispatchEvent(lua_State* L, lpObject_t self, lpcString_t event)
     struct HandleMessageMsgArgs event = {
       .FirstArg = 1,
       .NumArgs = dwNumArgs + 1,
+      .EventName = pszEventName,
     };
-    strncpy(event.EventName, pszEventName, sizeof(event.EventName));
     if (OBJ_SendMessage(obj, "HandleMessage", 0, &event)) {
       return obj;
     }
