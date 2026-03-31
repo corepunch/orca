@@ -14,7 +14,7 @@ bool_t
 OBJ_RegisterPropertyType(lpcPropertyType_t pt)
 {
   FOR_LOOP(i, MAX_PROPERTY_TYPES) {
-    if (!*core.ptypes[i].Name) {
+    if (!core.ptypes[i].Name) {
       memcpy(&core.ptypes[i], pt, sizeof(struct PropertyType));
       return TRUE;
     } else if (core.ptypes[i].FullIdentifier == pt->FullIdentifier) {
