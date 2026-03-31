@@ -597,15 +597,15 @@ int f_MAT3_Scale(lua_State *L) {
 	return 0;
 }
 static struct PropertyType _mat3[] = {
-	DECL(0xbbe9c17d, mat3, V[0], v[0], kDataTypeFloat), // mat3.V[0]
-	DECL(0x77ed2808, mat3, V[1], v[1], kDataTypeFloat), // mat3.V[1]
-	DECL(0x77e4d943, mat3, V[2], v[2], kDataTypeFloat), // mat3.V[2]
-	DECL(0x7be71e26, mat3, V[3], v[3], kDataTypeFloat), // mat3.V[3]
-	DECL(0xbbe0c721, mat3, V[4], v[4], kDataTypeFloat), // mat3.V[4]
-	DECL(0xb7e2ff6c, mat3, V[5], v[5], kDataTypeFloat), // mat3.V[5]
-	DECL(0x77dbdee7, mat3, V[6], v[6], kDataTypeFloat), // mat3.V[6]
-	DECL(0x7bde23ca, mat3, V[7], v[7], kDataTypeFloat), // mat3.V[7]
-	DECL(0x7bfe7775, mat3, V[8], v[8], kDataTypeFloat), // mat3.V[8]
+	DECL(0x94fa961b, mat3, V0, v[0], kDataTypeFloat), // mat3.V0
+	DECL(0x93fa9488, mat3, V1, v[1], kDataTypeFloat), // mat3.V1
+	DECL(0x96fa9941, mat3, V2, v[2], kDataTypeFloat), // mat3.V2
+	DECL(0x95fa97ae, mat3, V3, v[3], kDataTypeFloat), // mat3.V3
+	DECL(0x98fa9c67, mat3, V4, v[4], kDataTypeFloat), // mat3.V4
+	DECL(0x97fa9ad4, mat3, V5, v[5], kDataTypeFloat), // mat3.V5
+	DECL(0x9afa9f8d, mat3, V6, v[6], kDataTypeFloat), // mat3.V6
+	DECL(0x99fa9dfa, mat3, V7, v[7], kDataTypeFloat), // mat3.V7
+	DECL(0x8cfa8983, mat3, V8, v[8], kDataTypeFloat), // mat3.V8
 };
 static luaL_Reg _mat3_Methods[] = {
 	{ "identity", f_MAT3_Identity },
@@ -727,22 +727,22 @@ int f_MAT4_RotateQuat(lua_State *L) {
 	return 0;
 }
 static struct PropertyType _mat4[] = {
-	DECL(0xbbe9c17d, mat4, V[0], v[0], kDataTypeFloat), // mat4.V[0]
-	DECL(0x77ed2808, mat4, V[1], v[1], kDataTypeFloat), // mat4.V[1]
-	DECL(0x77e4d943, mat4, V[2], v[2], kDataTypeFloat), // mat4.V[2]
-	DECL(0x7be71e26, mat4, V[3], v[3], kDataTypeFloat), // mat4.V[3]
-	DECL(0xbbe0c721, mat4, V[4], v[4], kDataTypeFloat), // mat4.V[4]
-	DECL(0xb7e2ff6c, mat4, V[5], v[5], kDataTypeFloat), // mat4.V[5]
-	DECL(0x77dbdee7, mat4, V[6], v[6], kDataTypeFloat), // mat4.V[6]
-	DECL(0x7bde23ca, mat4, V[7], v[7], kDataTypeFloat), // mat4.V[7]
-	DECL(0x7bfe7775, mat4, V[8], v[8], kDataTypeFloat), // mat4.V[8]
-	DECL(0x7800afc0, mat4, V[9], v[9], kDataTypeFloat), // mat4.V[9]
-	DECL(0x62fee836, mat4, V[10], v[10], kDataTypeFloat), // mat4.V[10]
-	DECL(0x1efc3e93, mat4, V[11], v[11], kDataTypeFloat), // mat4.V[11]
-	DECL(0x1f048d58, mat4, V[12], v[12], kDataTypeFloat), // mat4.V[12]
-	DECL(0x2302550d, mat4, V[13], v[13], kDataTypeFloat), // mat4.V[13]
-	DECL(0x62f5edda, mat4, V[14], v[14], kDataTypeFloat), // mat4.V[14]
-	DECL(0x1ef34437, mat4, V[15], v[15], kDataTypeFloat), // mat4.V[15]
+	DECL(0x94fa961b, mat4, V0, v[0], kDataTypeFloat), // mat4.V0
+	DECL(0x93fa9488, mat4, V1, v[1], kDataTypeFloat), // mat4.V1
+	DECL(0x96fa9941, mat4, V2, v[2], kDataTypeFloat), // mat4.V2
+	DECL(0x95fa97ae, mat4, V3, v[3], kDataTypeFloat), // mat4.V3
+	DECL(0x98fa9c67, mat4, V4, v[4], kDataTypeFloat), // mat4.V4
+	DECL(0x97fa9ad4, mat4, V5, v[5], kDataTypeFloat), // mat4.V5
+	DECL(0x9afa9f8d, mat4, V6, v[6], kDataTypeFloat), // mat4.V6
+	DECL(0x99fa9dfa, mat4, V7, v[7], kDataTypeFloat), // mat4.V7
+	DECL(0x8cfa8983, mat4, V8, v[8], kDataTypeFloat), // mat4.V8
+	DECL(0x8bfa87f0, mat4, V9, v[9], kDataTypeFloat), // mat4.V9
+	DECL(0xab781da8, mat4, V10, v[10], kDataTypeFloat), // mat4.V10
+	DECL(0xac781f3b, mat4, V11, v[11], kDataTypeFloat), // mat4.V11
+	DECL(0xad7820ce, mat4, V12, v[12], kDataTypeFloat), // mat4.V12
+	DECL(0xae782261, mat4, V13, v[13], kDataTypeFloat), // mat4.V13
+	DECL(0xaf7823f4, mat4, V14, v[14], kDataTypeFloat), // mat4.V14
+	DECL(0xb0782587, mat4, V15, v[15], kDataTypeFloat), // mat4.V15
 };
 static luaL_Reg _mat4_Methods[] = {
 	{ "identity", f_MAT4_Identity },

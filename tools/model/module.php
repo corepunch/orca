@@ -43,10 +43,10 @@ class PropertyName {
 			$repl = $pair[1];
 			$pattern = '/' . $pat . '/';
 			if (preg_match($pattern, $name)) {
-				return str_replace('.', '', preg_replace($pattern, $repl, $name, 1));
+				return str_replace(['[',']','.'], '', preg_replace($pattern, $repl, $name, 1));
 			}
 		}
-		return str_replace('.', '', $name);
+		return str_replace(['[',']','.'], '', $name);
 	}
 
 	function getPath() {
