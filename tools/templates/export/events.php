@@ -9,7 +9,7 @@ struct MessageType <?= $name ?>Message = {
 <?php endforeach ?>
 
 <?php foreach ($events as $name => $event):?>
-static luaL_Reg _<?= $name ?>MsgArgs_Methods[] = {};
+static luaL_Reg _<?= $name ?>MsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _<?= $name ?>MsgArgs[] = {
 	<?php include_template("export/properties", ['properties' => $event->getAllFields(), 'name' => "{$name}MsgArgs"]) ?>
 };

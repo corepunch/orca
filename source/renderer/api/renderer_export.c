@@ -94,6 +94,12 @@ static int f_##NAME##___index(lua_State *L) { \
 	for (uint32_t i = 0, j = fnv1a32(luaL_checkstring(L, 2)); i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
 		if (_##NAME[i].ShortIdentifier == j) \
 			return (write_property(L, -1, &_##NAME[i], luaX_check##NAME(L, 1)), 1); \
+	for (uint32_t i = 0; i < sizeof(_##NAME##_Methods) / sizeof(*_##NAME##_Methods); i++) { \
+		if (strcmp(_##NAME##_Methods[i].name, luaL_checkstring(L, 2)) == 0) { \
+			lua_pushcfunction(L, _##NAME##_Methods[i].func); \
+			return 1; \
+		} \
+	} \
 	return luaL_error(L, "Unknown field in " #NAME ": %s", luaL_checkstring(L, 2)); \
 } \
 static int f_##NAME##___newindex(lua_State *L) { \
@@ -145,7 +151,7 @@ struct MessageType RenderMessage = {
 	.size = sizeof(struct RenderMsgArgs),
 };
 
-static luaL_Reg _RenderScreenMsgArgs_Methods[] = {};
+static luaL_Reg _RenderScreenMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _RenderScreenMsgArgs[] = {
 	DECL(0x95876e1f, RenderScreenMsgArgs, width, width, kDataTypeInt), // RenderScreenMsgArgs.width
 	DECL(0xd5bdbb42, RenderScreenMsgArgs, height, height, kDataTypeInt), // RenderScreenMsgArgs.height
@@ -153,7 +159,7 @@ static struct PropertyType _RenderScreenMsgArgs[] = {
 	DECL(0xad544418, RenderScreenMsgArgs, angle, angle, kDataTypeFloat), // RenderScreenMsgArgs.angle
 	DECL(0x32608848, RenderScreenMsgArgs, target, target, kDataTypeObject, .TypeString = "Texture"), // RenderScreenMsgArgs.target
 };
-static luaL_Reg _RenderMsgArgs_Methods[] = {};
+static luaL_Reg _RenderMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _RenderMsgArgs[] = {
 	DECL(0xce9ab61f, RenderMsgArgs, ViewDef, ViewDef, kDataTypeStruct, .TypeString = "ViewDef"), // RenderMsgArgs.ViewDef
 };

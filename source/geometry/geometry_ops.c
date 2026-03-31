@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include <include/orcadef.h>
 #include <include/shared.h>
@@ -1541,34 +1542,4 @@ calculate_ninepatch(struct vec2 const* framesize,
   memcpy(&output->v[4], _y, sizeof(struct vec4));
   memcpy(&output->v[8], _u, sizeof(struct vec4));
   memcpy(&output->v[12], _v, sizeof(struct vec4));
-}
-
-#include <ctype.h>
-#include <assert.h>
-
-lpcString_t stristr(lpcString_t haystack, lpcString_t needle) {
-  size_t needle_len = strlen(needle);
-  if (needle_len == 0) {
-    return haystack; // Empty needle matches everything
-  }
-  while (*haystack) {
-    if (strncasecmp(haystack, needle, needle_len) == 0) {
-      return haystack; // Match found
-    }
-    haystack++;
-  }
-  return NULL; // No match
-}
-
-ORCA_API void parse_property(const char* str, struct PropertyType const* prop, void* struct_ptr) {
-  
-}
-
-ORCA_API void read_property(lua_State *L, int idx, struct PropertyType const* prop, void* struct_ptr) {
-  
-}
-
-ORCA_API int write_property(lua_State *L, int idx, struct PropertyType const* prop, void const* struct_ptr) {
-  
-  return 1;
 }

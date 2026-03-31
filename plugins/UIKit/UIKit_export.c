@@ -85,6 +85,12 @@ static int f_##NAME##___index(lua_State *L) { \
 	for (uint32_t i = 0, j = fnv1a32(luaL_checkstring(L, 2)); i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
 		if (_##NAME[i].ShortIdentifier == j) \
 			return (write_property(L, -1, &_##NAME[i], luaX_check##NAME(L, 1)), 1); \
+	for (uint32_t i = 0; i < sizeof(_##NAME##_Methods) / sizeof(*_##NAME##_Methods); i++) { \
+		if (strcmp(_##NAME##_Methods[i].name, luaL_checkstring(L, 2)) == 0) { \
+			lua_pushcfunction(L, _##NAME##_Methods[i].func); \
+			return 1; \
+		} \
+	} \
 	return luaL_error(L, "Unknown field in " #NAME ": %s", luaL_checkstring(L, 2)); \
 } \
 static int f_##NAME##___newindex(lua_State *L) { \
@@ -129,17 +135,20 @@ static struct PropertyType _BorderRadiusShorthand[] = {
 	DECL(0x7f5fe235, BorderRadiusShorthand, BottomLeftRadius, BottomLeftRadius, kDataTypeFloat), // BorderRadiusShorthand.BottomLeftRadius
 };
 static luaL_Reg _BorderRadiusShorthand_Methods[] = {
+	{ NULL, NULL }
 };
 static struct PropertyType _EdgeShorthand[] = {
 	DECL(0x92773890, EdgeShorthand, Left, Left, kDataTypeFloat), // EdgeShorthand.Left
 	DECL(0x1e9e9f85, EdgeShorthand, Right, Right, kDataTypeFloat), // EdgeShorthand.Right
 };
 static luaL_Reg _EdgeShorthand_Methods[] = {
+	{ NULL, NULL }
 };
 static struct PropertyType _AlignmentShorthand[] = {
 	DECL(0xed57fa14, AlignmentShorthand, Axis, Axis, kDataTypeInt), // AlignmentShorthand.Axis
 };
 static luaL_Reg _AlignmentShorthand_Methods[] = {
+	{ NULL, NULL }
 };
 static struct PropertyType _FontShorthand[] = {
 	DECL(0x993014d9, FontShorthand, Weight, Weight, kDataTypeEnum, .EnumValues = _FontWeight), // FontShorthand.Weight
@@ -148,6 +157,7 @@ static struct PropertyType _FontShorthand[] = {
 	DECL(0xc46f8f49, FontShorthand, Family, Family, kDataTypeObject, .TypeString = "FontFamily"), // FontShorthand.Family
 };
 static luaL_Reg _FontShorthand_Methods[] = {
+	{ NULL, NULL }
 };
 static struct PropertyType _BrushShorthand[] = {
 	DECL(0xe5b43cf8, BrushShorthand, Color, Color, kDataTypeColor), // BrushShorthand.Color
@@ -155,6 +165,7 @@ static struct PropertyType _BrushShorthand[] = {
 	DECL(0xcbd54f80, BrushShorthand, Material, Material, kDataTypeObject, .TypeString = "Material"), // BrushShorthand.Material
 };
 static luaL_Reg _BrushShorthand_Methods[] = {
+	{ NULL, NULL }
 };
 static struct PropertyType _ShadowShorthand[] = {
 	DECL(0x8995c7ea, ShadowShorthand, Offset, Offset, kDataTypeStruct, .TypeString = "Vector2D"), // ShadowShorthand.Offset
@@ -163,6 +174,7 @@ static struct PropertyType _ShadowShorthand[] = {
 	DECL(0xe5b43cf8, ShadowShorthand, Color, Color, kDataTypeColor), // ShadowShorthand.Color
 };
 static luaL_Reg _ShadowShorthand_Methods[] = {
+	{ NULL, NULL }
 };
 static struct PropertyType _RingShorthand[] = {
 	DECL(0x8995c7ea, RingShorthand, Offset, Offset, kDataTypeFloat), // RingShorthand.Offset
@@ -170,12 +182,14 @@ static struct PropertyType _RingShorthand[] = {
 	DECL(0xe5b43cf8, RingShorthand, Color, Color, kDataTypeColor), // RingShorthand.Color
 };
 static luaL_Reg _RingShorthand_Methods[] = {
+	{ NULL, NULL }
 };
 static struct PropertyType _OverflowShorthand[] = {
 	DECL(0xfd0c5087, OverflowShorthand, x, x, kDataTypeEnum, .EnumValues = _Overflow), // OverflowShorthand.x
 	DECL(0xfc0c4ef4, OverflowShorthand, y, y, kDataTypeEnum, .EnumValues = _Overflow), // OverflowShorthand.y
 };
 static luaL_Reg _OverflowShorthand_Methods[] = {
+	{ NULL, NULL }
 };
 static struct PropertyType _UnderlineShorthand[] = {
 	DECL(0x8995c7ea, UnderlineShorthand, Offset, Offset, kDataTypeFloat), // UnderlineShorthand.Offset
@@ -183,11 +197,13 @@ static struct PropertyType _UnderlineShorthand[] = {
 	DECL(0xe5b43cf8, UnderlineShorthand, Color, Color, kDataTypeColor), // UnderlineShorthand.Color
 };
 static luaL_Reg _UnderlineShorthand_Methods[] = {
+	{ NULL, NULL }
 };
 static struct PropertyType _MarginShorthand[] = {
 	DECL(0xed57fa14, MarginShorthand, Axis, Axis, kDataTypeStruct, .TypeString = "EdgeShorthand"), // MarginShorthand.Axis
 };
 static luaL_Reg _MarginShorthand_Methods[] = {
+	{ NULL, NULL }
 };
 static struct PropertyType _BorderShorthand[] = {
 	DECL(0x3b42dfbf, BorderShorthand, Width, Width, kDataTypeStruct, .TypeString = "MarginShorthand"), // BorderShorthand.Width
@@ -196,6 +212,7 @@ static struct PropertyType _BorderShorthand[] = {
 	DECL(0x3a8111d3, BorderShorthand, Radius, Radius, kDataTypeStruct, .TypeString = "BorderRadiusShorthand"), // BorderShorthand.Radius
 };
 static luaL_Reg _BorderShorthand_Methods[] = {
+	{ NULL, NULL }
 };
 static struct PropertyType _SizeAxisShorthand[] = {
 	DECL(0x77ea8663, SizeAxisShorthand, Requested, Requested, kDataTypeFloat), // SizeAxisShorthand.Requested
@@ -205,11 +222,13 @@ static struct PropertyType _SizeAxisShorthand[] = {
 	DECL(0x25dca54c, SizeAxisShorthand, Scroll, Scroll, kDataTypeFloat), // SizeAxisShorthand.Scroll
 };
 static luaL_Reg _SizeAxisShorthand_Methods[] = {
+	{ NULL, NULL }
 };
 static struct PropertyType _SizeShorthand[] = {
 	DECL(0xed57fa14, SizeShorthand, Axis, Axis, kDataTypeStruct, .TypeString = "SizeAxisShorthand"), // SizeShorthand.Axis
 };
 static luaL_Reg _SizeShorthand_Methods[] = {
+	{ NULL, NULL }
 };
 
 STRUCT(BorderRadiusShorthand, BorderRadiusShorthand);
@@ -348,58 +367,58 @@ struct MessageType NavigateBackMessage = {
 	.size = sizeof(struct NavigateBackMsgArgs),
 };
 
-static luaL_Reg _UpdateMatrixMsgArgs_Methods[] = {};
+static luaL_Reg _UpdateMatrixMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _UpdateMatrixMsgArgs[] = {
 	DECL(0xeacdfcfd, UpdateMatrixMsgArgs, parent, parent, kDataTypeStruct, .TypeString = "Matrix3D"), // UpdateMatrixMsgArgs.parent
 	DECL(0xc6c2dd66, UpdateMatrixMsgArgs, opacity, opacity, kDataTypeFloat), // UpdateMatrixMsgArgs.opacity
 	DECL(0x79a98884, UpdateMatrixMsgArgs, force, force, kDataTypeBool), // UpdateMatrixMsgArgs.force
 };
-static luaL_Reg _HitTestMsgArgs_Methods[] = {};
+static luaL_Reg _HitTestMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _HitTestMsgArgs[] = {
 	DECL(0xfd0c5087, HitTestMsgArgs, x, x, kDataTypeInt), // HitTestMsgArgs.x
 	DECL(0xfc0c4ef4, HitTestMsgArgs, y, y, kDataTypeInt), // HitTestMsgArgs.y
 };
-static luaL_Reg _GetSizeMsgArgs_Methods[] = {};
+static luaL_Reg _GetSizeMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _GetSizeMsgArgs[] = {
 };
-static luaL_Reg _SubmitMsgArgs_Methods[] = {};
+static luaL_Reg _SubmitMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _SubmitMsgArgs[] = {
 };
-static luaL_Reg _MeasureMsgArgs_Methods[] = {};
+static luaL_Reg _MeasureMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _MeasureMsgArgs[] = {
 	DECL(0x3b42dfbf, MeasureMsgArgs, Width, Width, kDataTypeFloat), // MeasureMsgArgs.Width
 	DECL(0x1bd13562, MeasureMsgArgs, Height, Height, kDataTypeFloat), // MeasureMsgArgs.Height
 };
-static luaL_Reg _ArrangeMsgArgs_Methods[] = {};
+static luaL_Reg _ArrangeMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _ArrangeMsgArgs[] = {
 	DECL(0xdd0c1e27, ArrangeMsgArgs, X, X, kDataTypeFloat), // ArrangeMsgArgs.X
 	DECL(0xdc0c1c94, ArrangeMsgArgs, Y, Y, kDataTypeFloat), // ArrangeMsgArgs.Y
 	DECL(0x3b42dfbf, ArrangeMsgArgs, Width, Width, kDataTypeFloat), // ArrangeMsgArgs.Width
 	DECL(0x1bd13562, ArrangeMsgArgs, Height, Height, kDataTypeFloat), // ArrangeMsgArgs.Height
 };
-static luaL_Reg _MeasureOverrideMsgArgs_Methods[] = {};
+static luaL_Reg _MeasureOverrideMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _MeasureOverrideMsgArgs[] = {
 	DECL(0x3b42dfbf, MeasureOverrideMsgArgs, Width, Width, kDataTypeFloat), // MeasureOverrideMsgArgs.Width
 	DECL(0x1bd13562, MeasureOverrideMsgArgs, Height, Height, kDataTypeFloat), // MeasureOverrideMsgArgs.Height
 };
-static luaL_Reg _ArrangeOverrideMsgArgs_Methods[] = {};
+static luaL_Reg _ArrangeOverrideMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _ArrangeOverrideMsgArgs[] = {
 	DECL(0xdd0c1e27, ArrangeOverrideMsgArgs, X, X, kDataTypeFloat), // ArrangeOverrideMsgArgs.X
 	DECL(0xdc0c1c94, ArrangeOverrideMsgArgs, Y, Y, kDataTypeFloat), // ArrangeOverrideMsgArgs.Y
 	DECL(0x3b42dfbf, ArrangeOverrideMsgArgs, Width, Width, kDataTypeFloat), // ArrangeOverrideMsgArgs.Width
 	DECL(0x1bd13562, ArrangeOverrideMsgArgs, Height, Height, kDataTypeFloat), // ArrangeOverrideMsgArgs.Height
 };
-static luaL_Reg _ForegroundContentMsgArgs_Methods[] = {};
+static luaL_Reg _ForegroundContentMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _ForegroundContentMsgArgs[] = {
 };
-static luaL_Reg _PushPropertyMsgArgs_Methods[] = {};
+static luaL_Reg _PushPropertyMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _PushPropertyMsgArgs[] = {
 	DECL(0x8987413a, PushPropertyMsgArgs, Placeholder, Placeholder, kDataTypeInt), // PushPropertyMsgArgs.Placeholder
 };
-static luaL_Reg _UpdateGeometryMsgArgs_Methods[] = {};
+static luaL_Reg _UpdateGeometryMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _UpdateGeometryMsgArgs[] = {
 };
-static luaL_Reg _DrawBrushMsgArgs_Methods[] = {};
+static luaL_Reg _DrawBrushMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _DrawBrushMsgArgs[] = {
 	DECL(0xe4497980, DrawBrushMsgArgs, projection, projection, kDataTypeStruct, .TypeString = "Matrix3D"), // DrawBrushMsgArgs.projection
 	DECL(0xb35135fa, DrawBrushMsgArgs, image, image, kDataTypeObject, .TypeString = "Texture"), // DrawBrushMsgArgs.image
@@ -409,43 +428,43 @@ static struct PropertyType _DrawBrushMsgArgs[] = {
 	DECL(0x083a85c0, DrawBrushMsgArgs, foreground, foreground, kDataTypeBool), // DrawBrushMsgArgs.foreground
 	DECL(0xad6aa1df, DrawBrushMsgArgs, viewdef, viewdef, kDataTypeStruct, .TypeString = "ViewDef"), // DrawBrushMsgArgs.viewdef
 };
-static luaL_Reg _HandleMessageMsgArgs_Methods[] = {};
+static luaL_Reg _HandleMessageMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _HandleMessageMsgArgs[] = {
 	DECL(0x2fc7b71c, HandleMessageMsgArgs, EventName, EventName, kDataTypeString), // HandleMessageMsgArgs.EventName
 	DECL(0xd26deba3, HandleMessageMsgArgs, FirstArg, FirstArg, kDataTypeInt), // HandleMessageMsgArgs.FirstArg
 	DECL(0x227201c6, HandleMessageMsgArgs, NumArgs, NumArgs, kDataTypeInt), // HandleMessageMsgArgs.NumArgs
 };
-static luaL_Reg _LoadViewMsgArgs_Methods[] = {};
+static luaL_Reg _LoadViewMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _LoadViewMsgArgs[] = {
 	DECL(0x187f5b0f, LoadViewMsgArgs, lua_state, lua_state, kDataTypeStruct, .TypeString = "lua_State"), // LoadViewMsgArgs.lua_state
 };
-static luaL_Reg _MakeTextMsgArgs_Methods[] = {};
+static luaL_Reg _MakeTextMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _MakeTextMsgArgs[] = {
 	DECL(0xbde64e3e, MakeTextMsgArgs, text, text, kDataTypeStruct, .TypeString = "ViewText"), // MakeTextMsgArgs.text
 	DECL(0xa7e2407e, MakeTextMsgArgs, availableSpace, availableSpace, kDataTypeInt), // MakeTextMsgArgs.availableSpace
 };
-static luaL_Reg _TriggeredMsgArgs_Methods[] = {};
+static luaL_Reg _TriggeredMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _TriggeredMsgArgs[] = {
 	DECL(0xa5ea0da3, TriggeredMsgArgs, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // TriggeredMsgArgs.Trigger
 	DECL(0x24f208e4, TriggeredMsgArgs, message, message, kDataTypeStruct, .TypeString = "HandleMessageMsgArgs"), // TriggeredMsgArgs.message
 };
-static luaL_Reg _UpdateShmatrixMsgArgs_Methods[] = {};
+static luaL_Reg _UpdateShmatrixMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _UpdateShmatrixMsgArgs[] = {
 	DECL(0xeacdfcfd, UpdateShmatrixMsgArgs, parent, parent, kDataTypeStruct, .TypeString = "Matrix3D"), // UpdateShmatrixMsgArgs.parent
 	DECL(0xc6c2dd66, UpdateShmatrixMsgArgs, opacity, opacity, kDataTypeFloat), // UpdateShmatrixMsgArgs.opacity
 	DECL(0x79a98884, UpdateShmatrixMsgArgs, force, force, kDataTypeBool), // UpdateShmatrixMsgArgs.force
 };
-static luaL_Reg _UpdateLayoutMsgArgs_Methods[] = {};
+static luaL_Reg _UpdateLayoutMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _UpdateLayoutMsgArgs[] = {
 	DECL(0x3b42dfbf, UpdateLayoutMsgArgs, Width, Width, kDataTypeFloat), // UpdateLayoutMsgArgs.Width
 	DECL(0x1bd13562, UpdateLayoutMsgArgs, Height, Height, kDataTypeFloat), // UpdateLayoutMsgArgs.Height
 };
-static luaL_Reg _NavigateToPageMsgArgs_Methods[] = {};
+static luaL_Reg _NavigateToPageMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _NavigateToPageMsgArgs[] = {
 	DECL(0x7569633e, NavigateToPageMsgArgs, URL, URL, kDataTypeString), // NavigateToPageMsgArgs.URL
 	DECL(0x84ff7372, NavigateToPageMsgArgs, TransitionType, TransitionType, kDataTypeEnum, .EnumValues = _TransitionType), // NavigateToPageMsgArgs.TransitionType
 };
-static luaL_Reg _NavigateBackMsgArgs_Methods[] = {};
+static luaL_Reg _NavigateBackMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _NavigateBackMsgArgs[] = {
 	DECL(0x84ff7372, NavigateBackMsgArgs, TransitionType, TransitionType, kDataTypeEnum, .EnumValues = _TransitionType), // NavigateBackMsgArgs.TransitionType
 };
