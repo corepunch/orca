@@ -56,7 +56,6 @@ ORCA_API int luaopen_orca_<?= $model->getModuleName() ?>(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_<?= $name ?>(L), -2), "<?= $struct->export ?>");
 <?php endforeach ?>
 <?php foreach ($model->getEvents() as $name => $event):?>
-<?php if (!$event->hasFields()): continue; endif ?>
 	lua_setfield(L, ((void)luaopen_orca_<?= $name ?>MsgArgs(L), -2), "<?= $name ?>MsgArgs");
 <?php endforeach ?>
 <?php foreach ($model->getInterfaces() as $name => $interface):?>

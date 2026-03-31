@@ -1990,9 +1990,15 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_SizeShorthand(L), -2), "SizeShorthand");
 	lua_setfield(L, ((void)luaopen_orca_UpdateMatrixMsgArgs(L), -2), "UpdateMatrixMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_HitTestMsgArgs(L), -2), "HitTestMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_GetSizeMsgArgs(L), -2), "GetSizeMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_SubmitMsgArgs(L), -2), "SubmitMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_MeasureMsgArgs(L), -2), "MeasureMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_ArrangeMsgArgs(L), -2), "ArrangeMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_MeasureOverrideMsgArgs(L), -2), "MeasureOverrideMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_ArrangeOverrideMsgArgs(L), -2), "ArrangeOverrideMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_ForegroundContentMsgArgs(L), -2), "ForegroundContentMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_PushPropertyMsgArgs(L), -2), "PushPropertyMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_UpdateGeometryMsgArgs(L), -2), "UpdateGeometryMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_DrawBrushMsgArgs(L), -2), "DrawBrushMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_HandleMessageMsgArgs(L), -2), "HandleMessageMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_LoadViewMsgArgs(L), -2), "LoadViewMsgArgs");
