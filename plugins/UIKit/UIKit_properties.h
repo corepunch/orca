@@ -2,7 +2,6 @@
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __UIKIT_PROPERTIES_H__
 #define __UIKIT_PROPERTIES_H__
-#define kMsgUpdateMatrix 0x5dbe404d
 #define kMsgHitTest 0x898160ea
 #define kMsgGetSize 0x80d9e0ee
 #define kMsgSubmit 0x4078e545
@@ -18,6 +17,7 @@
 #define kMsgLoadView 0xa3650e54
 #define kMsgMakeText 0x73a47798
 #define kMsgTriggered 0x3b1c3ae2
+#define kMsgUpdateMatrix 0x5dbe404d
 #define kMsgUpdateShmatrix 0x89a6db0a
 #define kMsgUpdateLayout 0x928c657a
 #define kMsgNavigateToPage 0x6475c790
@@ -217,7 +217,11 @@ enum ColorBrushProperties {
 #define ID_Node_Opacity 0xb6882472 // Node.Opacity
 #define ID_Node_Tags 0xec56af24 // Node.Tags
 #define ID_Node_DataContext 0x80b43db0 // Node.DataContext
-#define kNodeNumMessageTypes 0
+#define kNodeNumMessageTypes 1
+enum NodeMessages {
+	kNodeUpdateMatrix,
+};
+#define ID_Node_UpdateMatrix 0x35cdb821 // Node.UpdateMatrix
 #define kNodeNumProperties 67
 enum NodeProperties {
 	kNodeSize,
@@ -417,6 +421,7 @@ enum TextBlockConceptProperties {
 enum Node2DMessages {
 	kNode2DUpdateShmatrix,
 };
+#define ID_Node2D_UpdateShmatrix 0x73f8cf94 // Node2D.UpdateShmatrix
 #define kNode2DNumProperties 44
 enum Node2DProperties {
 	kNode2DLayoutTransform,
@@ -841,10 +846,6 @@ enum StyleProperties {
 #define ID_SizeShorthand_DepthScroll 0x60ff3f79 // SizeShorthand.DepthScroll
 	
 
-#define ID_UpdateMatrix 0x5dbe404d
-#define ID_UpdateMatrixMsgArgs_parent 0x94a50a0f // UpdateMatrixMsgArgs.parent
-#define ID_UpdateMatrixMsgArgs_opacity 0x53cd4a6c // UpdateMatrixMsgArgs.opacity
-#define ID_UpdateMatrixMsgArgs_force 0xe863ce2a // UpdateMatrixMsgArgs.force
 #define ID_HitTest 0x898160ea
 #define ID_HitTestMsgArgs_x 0xf9ca8e4c // HitTestMsgArgs.x
 #define ID_HitTestMsgArgs_y 0xfaca8fdf // HitTestMsgArgs.y
@@ -890,6 +891,10 @@ enum StyleProperties {
 #define ID_Triggered 0x3b1c3ae2
 #define ID_TriggeredMsgArgs_Trigger 0x68010858 // TriggeredMsgArgs.Trigger
 #define ID_TriggeredMsgArgs_message 0x8e532df3 // TriggeredMsgArgs.message
+#define ID_UpdateMatrix 0x5dbe404d
+#define ID_UpdateMatrixMsgArgs_parent 0x94a50a0f // UpdateMatrixMsgArgs.parent
+#define ID_UpdateMatrixMsgArgs_opacity 0x53cd4a6c // UpdateMatrixMsgArgs.opacity
+#define ID_UpdateMatrixMsgArgs_force 0xe863ce2a // UpdateMatrixMsgArgs.force
 #define ID_UpdateShmatrix 0x89a6db0a
 #define ID_UpdateShmatrixMsgArgs_parent 0x90360554 // UpdateShmatrixMsgArgs.parent
 #define ID_UpdateShmatrixMsgArgs_opacity 0x2bbb7249 // UpdateShmatrixMsgArgs.opacity

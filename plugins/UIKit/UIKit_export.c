@@ -290,12 +290,6 @@ STRUCT(Thickness, Thickness);
 STRUCT(BorderShorthand, BorderShorthand);
 STRUCT(SizeAxisShorthand, SizeAxisShorthand);
 STRUCT(SizeShorthand, SizeShorthand);
-struct MessageType UpdateMatrixMessage = {
-	.name = "UpdateMatrix",
-	.id = kMsgUpdateMatrix,
-	.routing = kMessageRoutingDirect,
-	.size = sizeof(struct UpdateMatrixMsgArgs),
-};
 struct MessageType HitTestMessage = {
 	.name = "HitTest",
 	.id = kMsgHitTest,
@@ -388,6 +382,12 @@ struct MessageType TriggeredMessage = {
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct TriggeredMsgArgs),
 };
+struct MessageType UpdateMatrixMessage = {
+	.name = "UpdateMatrix",
+	.id = kMsgUpdateMatrix,
+	.routing = kMessageRoutingDirect,
+	.size = sizeof(struct UpdateMatrixMsgArgs),
+};
 struct MessageType UpdateShmatrixMessage = {
 	.name = "UpdateShmatrix",
 	.id = kMsgUpdateShmatrix,
@@ -413,12 +413,6 @@ struct MessageType NavigateBackMessage = {
 	.size = sizeof(struct NavigateBackMsgArgs),
 };
 
-static luaL_Reg _UpdateMatrixMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _UpdateMatrixMsgArgs[] = {
-	DECL(0xeacdfcfd, UpdateMatrixMsgArgs, parent, parent, kDataTypeStruct, .TypeString = "Matrix3D"), // UpdateMatrixMsgArgs.parent
-	DECL(0xc6c2dd66, UpdateMatrixMsgArgs, opacity, opacity, kDataTypeFloat), // UpdateMatrixMsgArgs.opacity
-	DECL(0x79a98884, UpdateMatrixMsgArgs, force, force, kDataTypeBool), // UpdateMatrixMsgArgs.force
-};
 static luaL_Reg _HitTestMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _HitTestMsgArgs[] = {
 	DECL(0xfd0c5087, HitTestMsgArgs, x, x, kDataTypeInt), // HitTestMsgArgs.x
@@ -494,6 +488,12 @@ static struct PropertyType _TriggeredMsgArgs[] = {
 	DECL(0xa5ea0da3, TriggeredMsgArgs, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // TriggeredMsgArgs.Trigger
 	DECL(0x24f208e4, TriggeredMsgArgs, message, message, kDataTypeStruct, .TypeString = "HandleMessageMsgArgs"), // TriggeredMsgArgs.message
 };
+static luaL_Reg _UpdateMatrixMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _UpdateMatrixMsgArgs[] = {
+	DECL(0xeacdfcfd, UpdateMatrixMsgArgs, parent, parent, kDataTypeStruct, .TypeString = "Matrix3D"), // UpdateMatrixMsgArgs.parent
+	DECL(0xc6c2dd66, UpdateMatrixMsgArgs, opacity, opacity, kDataTypeFloat), // UpdateMatrixMsgArgs.opacity
+	DECL(0x79a98884, UpdateMatrixMsgArgs, force, force, kDataTypeBool), // UpdateMatrixMsgArgs.force
+};
 static luaL_Reg _UpdateShmatrixMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _UpdateShmatrixMsgArgs[] = {
 	DECL(0xeacdfcfd, UpdateShmatrixMsgArgs, parent, parent, kDataTypeStruct, .TypeString = "Matrix3D"), // UpdateShmatrixMsgArgs.parent
@@ -515,7 +515,6 @@ static struct PropertyType _NavigateBackMsgArgs[] = {
 	DECL(0x84ff7372, NavigateBackMsgArgs, TransitionType, TransitionType, kDataTypeEnum, .EnumValues = _TransitionType), // NavigateBackMsgArgs.TransitionType
 };
 
-STRUCT(UpdateMatrixMsgArgs, UpdateMatrixMsgArgs);
 STRUCT(HitTestMsgArgs, HitTestMsgArgs);
 STRUCT(GetSizeMsgArgs, GetSizeMsgArgs);
 STRUCT(SubmitMsgArgs, SubmitMsgArgs);
@@ -531,6 +530,7 @@ STRUCT(HandleMessageMsgArgs, HandleMessageMsgArgs);
 STRUCT(LoadViewMsgArgs, LoadViewMsgArgs);
 STRUCT(MakeTextMsgArgs, MakeTextMsgArgs);
 STRUCT(TriggeredMsgArgs, TriggeredMsgArgs);
+STRUCT(UpdateMatrixMsgArgs, UpdateMatrixMsgArgs);
 STRUCT(UpdateShmatrixMsgArgs, UpdateShmatrixMsgArgs);
 STRUCT(UpdateLayoutMsgArgs, UpdateLayoutMsgArgs);
 STRUCT(NavigateToPageMsgArgs, NavigateToPageMsgArgs);
@@ -772,6 +772,7 @@ LRESULT Node_ThemeChanged(struct Object*, struct Node*, wParam_t, ThemeChangedMs
 LRESULT Node_GetSize(struct Object*, struct Node*, wParam_t, GetSizeMsgPtr);
 LRESULT Node_IsVisible(struct Object*, struct Node*, wParam_t, IsVisibleMsgPtr);
 static struct MessageType NodeMessageTypes[kNodeNumMessageTypes] = {	
+		{ "Node.UpdateMatrix", ID_Node_UpdateMatrix, kMessageRoutingDirect, sizeof(struct UpdateMatrixMsgArgs) },
 };
 static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	DECL(0xa6478e7c, Node, Size, Size, kDataTypeStruct, .TypeString = "SizeShorthand"), // Node.Size
@@ -959,7 +960,7 @@ LRESULT Node2D_Arrange(struct Object*, struct Node2D*, wParam_t, ArrangeMsgPtr);
 LRESULT Node2D_MeasureOverride(struct Object*, struct Node2D*, wParam_t, MeasureOverrideMsgPtr);
 LRESULT Node2D_ArrangeOverride(struct Object*, struct Node2D*, wParam_t, ArrangeOverrideMsgPtr);
 static struct MessageType Node2DMessageTypes[kNode2DNumMessageTypes] = {	
-		{ "Node2D.UpdateShmatrix", kMsgUpdateShmatrix, kMessageRoutingDirect, sizeof(struct UpdateShmatrixMsgArgs) },
+		{ "Node2D.UpdateShmatrix", ID_Node2D_UpdateShmatrix, kMessageRoutingDirect, sizeof(struct UpdateShmatrixMsgArgs) },
 };
 static struct PropertyType const Node2DProperties[kNode2DNumProperties] = {
 	DECL(0x3f19bf01, Node2D, LayoutTransform, LayoutTransform, kDataTypeStruct, .TypeString = "Transform2D"), // Node2D.LayoutTransform
@@ -1568,7 +1569,6 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_BorderShorthand(L), -2), "BorderShorthand");
 	lua_setfield(L, ((void)luaopen_orca_SizeAxisShorthand(L), -2), "SizeAxisShorthand");
 	lua_setfield(L, ((void)luaopen_orca_SizeShorthand(L), -2), "SizeShorthand");
-	lua_setfield(L, ((void)luaopen_orca_UpdateMatrixMsgArgs(L), -2), "UpdateMatrixMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_HitTestMsgArgs(L), -2), "HitTestMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_GetSizeMsgArgs(L), -2), "GetSizeMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_SubmitMsgArgs(L), -2), "SubmitMsgArgs");
@@ -1584,6 +1584,7 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_LoadViewMsgArgs(L), -2), "LoadViewMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_MakeTextMsgArgs(L), -2), "MakeTextMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_TriggeredMsgArgs(L), -2), "TriggeredMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_UpdateMatrixMsgArgs(L), -2), "UpdateMatrixMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_UpdateShmatrixMsgArgs(L), -2), "UpdateShmatrixMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_UpdateLayoutMsgArgs(L), -2), "UpdateLayoutMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_NavigateToPageMsgArgs(L), -2), "NavigateToPageMsgArgs");

@@ -22,7 +22,6 @@ struct lua_State;
 #include "UIKit_properties.h"
 #include "../../source/renderer/api/renderer.h"
 
-ORCA_API extern struct MessageType UpdateMatrixMessage;
 ORCA_API extern struct MessageType HitTestMessage;
 ORCA_API extern struct MessageType GetSizeMessage;
 ORCA_API extern struct MessageType SubmitMessage;
@@ -38,12 +37,12 @@ ORCA_API extern struct MessageType HandleMessageMessage;
 ORCA_API extern struct MessageType LoadViewMessage;
 ORCA_API extern struct MessageType MakeTextMessage;
 ORCA_API extern struct MessageType TriggeredMessage;
+ORCA_API extern struct MessageType UpdateMatrixMessage;
 ORCA_API extern struct MessageType UpdateShmatrixMessage;
 ORCA_API extern struct MessageType UpdateLayoutMessage;
 ORCA_API extern struct MessageType NavigateToPageMessage;
 ORCA_API extern struct MessageType NavigateBackMessage;
 
-typedef struct UpdateMatrixMsgArgs UpdateMatrixMsg_t,* UpdateMatrixMsgPtr;
 typedef struct HitTestMsgArgs HitTestMsg_t,* HitTestMsgPtr;
 typedef struct GetSizeMsgArgs GetSizeMsg_t,* GetSizeMsgPtr;
 typedef struct SubmitMsgArgs SubmitMsg_t,* SubmitMsgPtr;
@@ -59,6 +58,7 @@ typedef struct HandleMessageMsgArgs HandleMessageMsg_t,* HandleMessageMsgPtr;
 typedef struct LoadViewMsgArgs LoadViewMsg_t,* LoadViewMsgPtr;
 typedef struct MakeTextMsgArgs MakeTextMsg_t,* MakeTextMsgPtr;
 typedef struct TriggeredMsgArgs TriggeredMsg_t,* TriggeredMsgPtr;
+typedef struct UpdateMatrixMsgArgs UpdateMatrixMsg_t,* UpdateMatrixMsgPtr;
 typedef struct UpdateShmatrixMsgArgs UpdateShmatrixMsg_t,* UpdateShmatrixMsgPtr;
 typedef struct UpdateLayoutMsgArgs UpdateLayoutMsg_t,* UpdateLayoutMsgPtr;
 typedef struct NavigateToPageMsgArgs NavigateToPageMsg_t,* NavigateToPageMsgPtr;
@@ -516,14 +516,6 @@ struct SizeShorthand {
 ORCA_API void luaX_pushSizeShorthand(lua_State *L, struct SizeShorthand const* SizeShorthand);
 ORCA_API struct SizeShorthand* luaX_checkSizeShorthand(lua_State *L, int idx);
 
-/** UpdateMatrixMsgArgs struct */
-struct UpdateMatrixMsgArgs {
-	struct mat4 parent; ///< The parent matrix
-	float opacity; ///< The opacity value
-	bool_t force; ///< Indicates if the update is forced
-};
-ORCA_API void luaX_pushUpdateMatrixMsgArgs(lua_State *L, struct UpdateMatrixMsgArgs const* data);
-ORCA_API struct UpdateMatrixMsgArgs* luaX_checkUpdateMatrixMsgArgs(lua_State *L, int idx);
 /** HitTestMsgArgs struct */
 struct HitTestMsgArgs {
 	int32_t x; ///< X coordinate of the hit test point
@@ -613,6 +605,14 @@ struct TriggeredMsgArgs {
 };
 ORCA_API void luaX_pushTriggeredMsgArgs(lua_State *L, struct TriggeredMsgArgs const* data);
 ORCA_API struct TriggeredMsgArgs* luaX_checkTriggeredMsgArgs(lua_State *L, int idx);
+/** UpdateMatrixMsgArgs struct */
+struct UpdateMatrixMsgArgs {
+	struct mat4 parent; ///< The parent matrix
+	float opacity; ///< The opacity value
+	bool_t force; ///< Indicates if the update is forced
+};
+ORCA_API void luaX_pushUpdateMatrixMsgArgs(lua_State *L, struct UpdateMatrixMsgArgs const* data);
+ORCA_API struct UpdateMatrixMsgArgs* luaX_checkUpdateMatrixMsgArgs(lua_State *L, int idx);
 /** UpdateShmatrixMsgArgs struct */
 struct UpdateShmatrixMsgArgs {
 	struct mat4 parent; ///< The parent matrix
@@ -769,6 +769,9 @@ struct Node {
 	const char* Tags; ///< Tag collection for categorizing or querying nodes.
 	struct DataObject* DataContext; ///< Data context (used for data binding, similar to XAML's DataContext).
 	long _tags; ///< Calculated tags value
+	struct mat4 parent; ///< The parent matrix
+	float opacity; ///< The opacity value
+	bool_t force; ///< Indicates if the update is forced
 };
 ORCA_API void luaX_pushNode(lua_State *L, struct Node const* Node);
 ORCA_API struct Node* luaX_checkNode(lua_State *L, int idx);

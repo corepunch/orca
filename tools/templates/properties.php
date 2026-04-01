@@ -27,6 +27,9 @@ enum <?= $classname ?>Messages {
 		echo("\tk{$classname}{$name},\n");
 	}?>};
 <?php endif ?>
+<?php foreach ($class->getMessages() as $event) ?>
+#define ID_<?= $classname ?>_<?= $event->name ?> 0x<?= hash('fnv1a32', "$classname.{$event->name}") ?> // <?= $classname ?>.<?= $event->name ?>
+<?php endforeach ?>
 #define k<?= $classname ?>NumProperties <?= count($class->getProperties()) ?>
 <?php if (count($class->getProperties()) > 0): ?>
 enum <?= $classname ?>Properties {
