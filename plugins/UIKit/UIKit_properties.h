@@ -60,7 +60,11 @@ enum AnimationPlayerProperties {
 #define Trigger_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Trigger,_N)
 #define ID_Trigger_Property 0x7a6c1a46 // Trigger.Property
 #define ID_Trigger_Value 0x5229f3cc // Trigger.Value
-#define kTriggerNumMessageTypes 0
+#define kTriggerNumMessageTypes 1
+enum TriggerMessages {
+	kTriggerTriggered,
+};
+#define ID_Trigger_Triggered 0x729dabf0 // Trigger.Triggered
 #define kTriggerNumProperties 2
 enum TriggerProperties {
 	kTriggerProperty,
@@ -217,11 +221,13 @@ enum ColorBrushProperties {
 #define ID_Node_Opacity 0xb6882472 // Node.Opacity
 #define ID_Node_Tags 0xec56af24 // Node.Tags
 #define ID_Node_DataContext 0x80b43db0 // Node.DataContext
-#define kNodeNumMessageTypes 1
+#define kNodeNumMessageTypes 2
 enum NodeMessages {
 	kNodeUpdateMatrix,
+	kNodeGetSize,
 };
 #define ID_Node_UpdateMatrix 0x35cdb821 // Node.UpdateMatrix
+#define ID_Node_GetSize 0x2282f1da // Node.GetSize
 #define kNodeNumProperties 67
 enum NodeProperties {
 	kNodeSize,
@@ -417,11 +423,25 @@ enum TextBlockConceptProperties {
 #define ID_Node2D_Hovered 0x982d5e3e // Node2D.Hovered
 #define ID_Node2D_IgnoreHitTest 0x0943bf6a // Node2D.IgnoreHitTest
 #define ID_Node2D_ForegroundHint 0x1a0ea5e3 // Node2D.ForegroundHint
-#define kNode2DNumMessageTypes 1
+#define kNode2DNumMessageTypes 8
 enum Node2DMessages {
 	kNode2DUpdateShmatrix,
+	kNode2DHitTest,
+	kNode2DForegroundContent,
+	kNode2DUpdateGeometry,
+	kNode2DDrawBrush,
+	kNode2DPushProperty,
+	kNode2DHandleMessage,
+	kNode2DLoadView,
 };
 #define ID_Node2D_UpdateShmatrix 0x73f8cf94 // Node2D.UpdateShmatrix
+#define ID_Node2D_HitTest 0x97a2f2c4 // Node2D.HitTest
+#define ID_Node2D_ForegroundContent 0x61bfb2f7 // Node2D.ForegroundContent
+#define ID_Node2D_UpdateGeometry 0x0cc412c2 // Node2D.UpdateGeometry
+#define ID_Node2D_DrawBrush 0x8272196b // Node2D.DrawBrush
+#define ID_Node2D_PushProperty 0xaf44e302 // Node2D.PushProperty
+#define ID_Node2D_HandleMessage 0x067ef2c8 // Node2D.HandleMessage
+#define ID_Node2D_LoadView 0xcde7e2d2 // Node2D.LoadView
 #define kNode2DNumProperties 44
 enum Node2DProperties {
 	kNode2DLayoutTransform,
@@ -585,7 +605,11 @@ enum ControlProperties {
 #define ID_Screen_ClearColor 0x1bfc36dd // Screen.ClearColor
 #define ID_Screen_ResizeMode 0xc3203446 // Screen.ResizeMode
 #define ID_Screen_DialogResult 0x2f02ab20 // Screen.DialogResult
-#define kScreenNumMessageTypes 0
+#define kScreenNumMessageTypes 1
+enum ScreenMessages {
+	kScreenUpdateLayout,
+};
+#define ID_Screen_UpdateLayout 0x7d9d5a12 // Screen.UpdateLayout
 #define kScreenNumProperties 3
 enum ScreenProperties {
 	kScreenClearColor,
@@ -728,7 +752,13 @@ enum PageProperties {
 #define PageHost_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_PageHost,sizeof(struct PageHost),_N)
 #define PageHost_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_PageHost,_N)
 #define ID_PageHost_ActivePage 0xb276c4f7 // PageHost.ActivePage
-#define kPageHostNumMessageTypes 0
+#define kPageHostNumMessageTypes 2
+enum PageHostMessages {
+	kPageHostNavigateToPage,
+	kPageHostNavigateBack,
+};
+#define ID_PageHost_NavigateToPage 0x3e8b196b // PageHost.NavigateToPage
+#define ID_PageHost_NavigateBack 0x94f6fcce // PageHost.NavigateBack
 #define kPageHostNumProperties 1
 enum PageHostProperties {
 	kPageHostActivePage,

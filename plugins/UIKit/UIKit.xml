@@ -269,12 +269,6 @@
     <field name="Axis" type="SizeAxisShorthand" fixed-array="3">A number value per axis</field>
   </struct>
 
-  <message name="HitTest" routing="Direct">
-    <field name="x" type="int">X coordinate of the hit test point</field>
-    <field name="y" type="int">Y coordinate of the hit test point</field>
-  </message>
-  <message name="GetSize"/>
- 
   <class name="DataObject">
     <summary>Base class for data-holding objects within the framework</summary>
     <details>Provides fundamental data management capabilities and serves as the base for objects that participate in data binding operations.</details>
@@ -301,12 +295,11 @@
     <handles message="Attached"/>
     <property name="Property" type="string">Target property name to monitor or modify </property>
     <property name="Value" type="int">Associated value for the trigger condition </property>
+    <message name="Triggered">
+      <field name="Trigger" type="Trigger" pointer="true"/>
+      <field name="message" type="HandleMessageMsgArgs"/>
+    </message>
   </class>
-
-  <message name="Triggered">
-    <field name="Trigger" type="Trigger" pointer="true"/>
-    <field name="message" type="HandleMessageMsgArgs"/>
-  </message>
 
   <class name="OnPropertyChangedTrigger" parent="Trigger">
     <summary>Responds to property value changes on specified nodes</summary>
@@ -411,31 +404,7 @@
     </message>
     <message name="MeasureOverride" same-as="Measure"/>
     <message name="ArrangeOverride" same-as="Arrange"/>
-    <message name="ForegroundContent"/>
-    <message name="PushProperty">
-      <field name="Placeholder" type="int"/>
-    </message>
-    <message name="UpdateGeometry"/>
-    <message name="DrawBrush">
-      <summary>Requests rendering of a brush into the component's visual output.</summary>
-      <field name="projection" type="mat4">Projection matrix for 3D to 2D transformation</field>
-      <field name="image" type="Texture" pointer="true">Target image handle for rendering</field>
-      <field name="brush" type="BrushShorthand">Brush configuration to draw with</field>
-      <field name="borderOffset" type="float">Border offset adjustment for rendering</field>
-      <field name="borderWidth" type="vec4">Border width for each edge (top, right, bottom, left)</field>
-      <field name="foreground" type="bool">True if drawing foreground, false for background</field>
-      <field name="viewdef" type="ViewDef" pointer="true">View definition context for rendering</field>
-    </message>
-    <message name="HandleMessage">
-      <summary>Dispatches a named message with arguments to the component.</summary>
-      <field name="EventName" type="string"/>
-      <field name="FirstArg" type="uint"/>
-      <field name="NumArgs" type="uint"/>
-    </message>
-    <message name="LoadView">
-      <summary>Initializes the component's Lua view state.</summary>
-      <field name="lua_state" type="lua_State" pointer="true"/>
-    </message>
+    <message name="GetSize"/>
   </class>
 
   <class name="TextRun">
@@ -504,6 +473,35 @@
       <field name="parent" type="mat4">The parent matrix</field>
       <field name="opacity" type="float">The opacity value</field>
       <field name="force" type="bool">Indicates if the update is forced</field>
+    </message>
+    <message name="HitTest" routing="Direct">
+      <field name="x" type="int">X coordinate of the hit test point</field>
+      <field name="y" type="int">Y coordinate of the hit test point</field>
+    </message>
+    <message name="ForegroundContent"/>
+    <message name="UpdateGeometry"/>
+    <message name="DrawBrush">
+      <summary>Requests rendering of a brush into the component's visual output.</summary>
+      <field name="projection" type="mat4">Projection matrix for 3D to 2D transformation</field>
+      <field name="image" type="Texture" pointer="true">Target image handle for rendering</field>
+      <field name="brush" type="BrushShorthand">Brush configuration to draw with</field>
+      <field name="borderOffset" type="float">Border offset adjustment for rendering</field>
+      <field name="borderWidth" type="vec4">Border width for each edge (top, right, bottom, left)</field>
+      <field name="foreground" type="bool">True if drawing foreground, false for background</field>
+      <field name="viewdef" type="ViewDef" pointer="true">View definition context for rendering</field>
+    </message>
+    <message name="PushProperty">
+      <field name="Placeholder" type="int"/>
+    </message>
+    <message name="HandleMessage">
+      <summary>Dispatches a named message with arguments to the component.</summary>
+      <field name="EventName" type="string"/>
+      <field name="FirstArg" type="uint"/>
+      <field name="NumArgs" type="uint"/>
+    </message>
+    <message name="LoadView">
+      <summary>Initializes the component's Lua view state.</summary>
+      <field name="lua_state" type="lua_State" pointer="true"/>
     </message>
     <property name="LayoutTransform" type="transform2" default=".scale={1,1}">Transformation applied during layout calculations. Affects size and positioning but does not influence local rendering.</property>
     <property name="RenderTransform" type="transform2" default=".scale={1,1}">Transformation applied at render time. Affects how the element is drawn (rotation, scale, skew, etc.) without altering layout.</property>
@@ -686,11 +684,6 @@
     <enum name="NoResize">The window size is fixed. The user cannot resize or maximize the window.</enum>
   </enums>
   
-  <message name="UpdateLayout">
-    <field name="Width" type="float"/>
-    <field name="Height" type="float"/>
-  </message>
-
   <class name="Screen" parent="Node2D">
     <summary>Top-level container representing a display surface or window</summary>
     <details>Provides the root rendering context for UI hierarchies. Manages screen-level operations like clearing and render target management.</details>
@@ -707,6 +700,10 @@
     <property name="DialogResult" type="float" default="NAN">Result value for dialog interactions</property>
     <field name="_rt" type="Texture" pointer="true">Internal render target for the screen</field>
     <field name="_size" type="uint">Currently set size (to resize window when changed).</field>
+    <message name="UpdateLayout">
+      <field name="Width" type="float"/>
+      <field name="Height" type="float"/>
+    </message>
   </class>
 
   <class name="Cinematic" parent="Node2D">
@@ -813,16 +810,6 @@
     <enum name="Fade">Fading transition</enum>
   </enums>
 
-  <message name="NavigateToPage">
-    <summary>Navigates to a new page URL with an optional transition animation.</summary>
-    <field name="URL" type="string">The URL of the page to navigate to.</field>
-    <field name="TransitionType" type="TransitionType">The type of transition animation to use during navigation.</field>
-  </message>
-  <message name="NavigateBack">
-    <summary>Navigates back to the previous page with an optional transition animation.</summary>
-    <field name="TransitionType" type="TransitionType">The type of transition animation to use during navigation.</field>
-  </message>
-
   <class name="Page" parent="Node2D">
     <summary>Represents a single page within a document or UI container.</summary>
     <details>Used to store navigation related data while all the functionality comes from PageHost</details>
@@ -842,6 +829,15 @@
     <property name="ActivePage" type="Page" pointer="true">The currently active page.</property>
     <field name="_historyStack" type="Page" pointer="true" fixed-array="32">Navigation history stack.</field>
     <field name="_historySize" type="int">Number of entries in the navigation history stack.</field>
+    <message name="NavigateToPage">
+      <summary>Navigates to a new page URL with an optional transition animation.</summary>
+      <field name="URL" type="string">The URL of the page to navigate to.</field>
+      <field name="TransitionType" type="TransitionType">The type of transition animation to use during navigation.</field>
+    </message>
+    <message name="NavigateBack">
+      <summary>Navigates back to the previous page with an optional transition animation.</summary>
+      <field name="TransitionType" type="TransitionType">The type of transition animation to use during navigation.</field>
+    </message>
   </class>
 
   <class name="PageViewport" parent="Node2D">

@@ -597,6 +597,7 @@ REGISTER_CLASS(AnimationPlayer, 0);
 LRESULT Trigger_PropertyChanged(struct Object*, struct Trigger*, wParam_t, PropertyChangedMsgPtr);
 LRESULT Trigger_Attached(struct Object*, struct Trigger*, wParam_t, AttachedMsgPtr);
 static struct MessageType TriggerMessageTypes[kTriggerNumMessageTypes] = {	
+		{ "Trigger.Triggered", ID_Trigger_Triggered, kMessageRoutingTunnelingBubbling, sizeof(struct TriggeredMsgArgs) },
 };
 static struct PropertyType const TriggerProperties[kTriggerNumProperties] = {
 	DECL(0x5221f9e8, Trigger, Property, Property, kDataTypeString), // Trigger.Property
@@ -773,6 +774,7 @@ LRESULT Node_GetSize(struct Object*, struct Node*, wParam_t, GetSizeMsgPtr);
 LRESULT Node_IsVisible(struct Object*, struct Node*, wParam_t, IsVisibleMsgPtr);
 static struct MessageType NodeMessageTypes[kNodeNumMessageTypes] = {	
 		{ "Node.UpdateMatrix", ID_Node_UpdateMatrix, kMessageRoutingDirect, sizeof(struct UpdateMatrixMsgArgs) },
+		{ "Node.GetSize", ID_Node_GetSize, kMessageRoutingTunnelingBubbling, sizeof(struct GetSizeMsgArgs) },
 };
 static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	DECL(0xa6478e7c, Node, Size, Size, kDataTypeStruct, .TypeString = "SizeShorthand"), // Node.Size
@@ -961,6 +963,13 @@ LRESULT Node2D_MeasureOverride(struct Object*, struct Node2D*, wParam_t, Measure
 LRESULT Node2D_ArrangeOverride(struct Object*, struct Node2D*, wParam_t, ArrangeOverrideMsgPtr);
 static struct MessageType Node2DMessageTypes[kNode2DNumMessageTypes] = {	
 		{ "Node2D.UpdateShmatrix", ID_Node2D_UpdateShmatrix, kMessageRoutingDirect, sizeof(struct UpdateShmatrixMsgArgs) },
+		{ "Node2D.HitTest", ID_Node2D_HitTest, kMessageRoutingDirect, sizeof(struct HitTestMsgArgs) },
+		{ "Node2D.ForegroundContent", ID_Node2D_ForegroundContent, kMessageRoutingTunnelingBubbling, sizeof(struct ForegroundContentMsgArgs) },
+		{ "Node2D.UpdateGeometry", ID_Node2D_UpdateGeometry, kMessageRoutingTunnelingBubbling, sizeof(struct UpdateGeometryMsgArgs) },
+		{ "Node2D.DrawBrush", ID_Node2D_DrawBrush, kMessageRoutingTunnelingBubbling, sizeof(struct DrawBrushMsgArgs) },
+		{ "Node2D.PushProperty", ID_Node2D_PushProperty, kMessageRoutingTunnelingBubbling, sizeof(struct PushPropertyMsgArgs) },
+		{ "Node2D.HandleMessage", ID_Node2D_HandleMessage, kMessageRoutingTunnelingBubbling, sizeof(struct HandleMessageMsgArgs) },
+		{ "Node2D.LoadView", ID_Node2D_LoadView, kMessageRoutingTunnelingBubbling, sizeof(struct LoadViewMsgArgs) },
 };
 static struct PropertyType const Node2DProperties[kNode2DNumProperties] = {
 	DECL(0x3f19bf01, Node2D, LayoutTransform, LayoutTransform, kDataTypeStruct, .TypeString = "Transform2D"), // Node2D.LayoutTransform
@@ -1265,6 +1274,7 @@ LRESULT Screen_Destroy(struct Object*, struct Screen*, wParam_t, DestroyMsgPtr);
 LRESULT Screen_WindowResized(struct Object*, struct Screen*, wParam_t, WindowResizedMsgPtr);
 LRESULT Screen_WindowPaint(struct Object*, struct Screen*, wParam_t, WindowPaintMsgPtr);
 static struct MessageType ScreenMessageTypes[kScreenNumMessageTypes] = {	
+		{ "Screen.UpdateLayout", ID_Screen_UpdateLayout, kMessageRoutingTunnelingBubbling, sizeof(struct UpdateLayoutMsgArgs) },
 };
 static struct PropertyType const ScreenProperties[kScreenNumProperties] = {
 	DECL(0xeb16b675, Screen, ClearColor, ClearColor, kDataTypeColor), // Screen.ClearColor
@@ -1489,6 +1499,8 @@ LRESULT PageHost_ViewDidLoad(struct Object*, struct PageHost*, wParam_t, ViewDid
 LRESULT PageHost_NavigateToPage(struct Object*, struct PageHost*, wParam_t, NavigateToPageMsgPtr);
 LRESULT PageHost_NavigateBack(struct Object*, struct PageHost*, wParam_t, NavigateBackMsgPtr);
 static struct MessageType PageHostMessageTypes[kPageHostNumMessageTypes] = {	
+		{ "PageHost.NavigateToPage", ID_PageHost_NavigateToPage, kMessageRoutingTunnelingBubbling, sizeof(struct NavigateToPageMsgArgs) },
+		{ "PageHost.NavigateBack", ID_PageHost_NavigateBack, kMessageRoutingTunnelingBubbling, sizeof(struct NavigateBackMsgArgs) },
 };
 static struct PropertyType const PageHostProperties[kPageHostNumProperties] = {
 	DECL(0x2e149db4, PageHost, ActivePage, ActivePage, kDataTypeObject, .TypeString = "Page"), // PageHost.ActivePage
