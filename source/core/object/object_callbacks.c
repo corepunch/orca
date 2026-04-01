@@ -13,7 +13,7 @@ struct script_callback
 void
 OBJ_RegisterCallback(lpObject_t object, lpcString_t name)
 {
-  if (strncmp(name, "on", 2))
+  if (strncmp(name, "on", 2) || !isupper(name[2]))
     return;
   // Add regular callback
   struct script_callback* cb = ZeroAlloc(sizeof(struct script_callback));
