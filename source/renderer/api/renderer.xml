@@ -19,37 +19,6 @@
       <p>The main application script `main.lua` is responsible for creating and managing windows. Once created, each window runs independently, maintaining its own Lua environment and bindings.</p>
       <p>The event loop for windows is cooperative and integrated with the core runtime. Events are dispatched and processed in a manner similar to how native windowing systems propagate events, while remaining script-driven and cross-platform within the engine.</p>
     </details>
-<!--    <method name="Release" export="__gc">-->
-<!--      <summary>Garbage collection handler for the window object.</summary>-->
-<!--    </method>-->
-<!--      <arg name="y" type="int"/>-->
-<!--    </method>-->
-<!--    <method name="LoadPage">-->
-<!--      <summary>Loads a UI page into the window.</summary>-->
-<!--      <arg name="path" type="string"/>-->
-<!--      <returns type="bool"/>-->
-<!--    </method>-->
-<!--    <method name="Refresh" lua="true">-->
-<!--      <summary>Refreshes loaded page in the window to reflect changes done to the files.</summary>-->
-<!--      <returns type="bool"/>-->
-<!--    </method>-->
-<!--    <method name="Mount">-->
-<!--      <summary>Registers an additional filesystem path as a source of asset for this window.</summary>-->
-<!--      <arg name="path" type="string"/>-->
-<!--    </method>  -->
-<!--    <method name="AddProjectReference">-->
-<!--      <summary>Adds reference to a project to access resources and scripts from.</summary>-->
-<!--      <arg name="name" type="string"/>-->
-<!--      <arg name="path" type="string"/>-->
-<!--    </method>-->
-<!--    <method name="AddLocalization">-->
-<!--      <summary>Adds a localization file for UI text within this window only.</summary>-->
-<!--      <arg name="path" type="string"/>-->
-<!--    </method>-->
-<!--    <method name="AddPlugin">-->
-<!--      <summary>Registers a plugin module with all it's components into LUA_REGISTRYINDEX.</summary>-->
-<!--      <arg name="module" type="string"/>-->
-<!--    </method>-->
     <message name="WindowPaint">
       <field name="WindowWidth" type="uint" />
       <field name="WindowHeight" type="uint" />
