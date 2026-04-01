@@ -1,175 +1,204 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <module name="filesystem" namespace="orca" on-luaopen="on_filesystem_module_registered" prefix="FS_">
-  <require file="../core/core.xml" />
-    
-  <external struct="Object" />
-  <external struct="_PACK" />
-
+  <require file="../core/core.xml"/>
+  <externals>
+    <external struct="Object"/>
+    <external struct="_PACK"/>
+  </externals>
   <struct name="ProjectReference" sealed="true">
     <summary>External project reference</summary>
     <details>Consists of a name and a relative path to the project</details>
-    <field name="Name" type="string">Name of the project, will be used as Project/Library/Resource when referencing it's resources</field>
-    <field name="Path" type="string">Path to the project relative to the workspace</field>
+    <fields>
+      <field name="Name" type="string">Name of the project, will be used as Project/Library/Resource when referencing it's resources</field>
+      <field name="Path" type="string">Path to the project relative to the workspace</field>
+    </fields>
   </struct>
-
   <struct name="EnginePlugin" sealed="true">
     <summary>Plugin requirement</summary>
     <details>Would load the plugin and make it's classes available</details>
-    <field name="Name" type="string">Name of the plugin</field>
+    <fields>
+      <field name="Name" type="string">Name of the plugin</field>
+    </fields>
   </struct>
-  
   <struct name="SystemMessage" sealed="true">
     <summary>Handler of system messages you can add to your project</summary>
     <details>Handles system messages sent to the application. Each system message defines a message type, an associated key, and a command to execute when the message is received. This allows the application to respond to system events and user interactions through a configurable message dispatch system.</details>
-    <field name="Message" type="string">Message name, i.e. KeyDown</field>
-    <field name="Key" type="string">Associated key for the message, if applicable</field>
-    <field name="Command" type="string">Command to execute when the message is received</field>
+    <fields>
+      <field name="Message" type="string">Message name, i.e. KeyDown</field>
+      <field name="Key" type="string">Associated key for the message, if applicable</field>
+      <field name="Command" type="string">Command to execute when the message is received</field>
+    </fields>
   </struct>
-
   <class name="Workspace">
-    <message name="ReadCommands" />
+    <messages>
+      <message name="ReadCommands"/>
+    </messages>
   </class>
-  
   <class name="Library">
-    <property name="IsExternal" type="bool" />
+    <properties>
+      <property name="IsExternal" type="bool"/>
+    </properties>
   </class>
-  
   <class name="Project">
-    <handles message="Object.Start" />
-    <property name="HalfFloatTextureFormat" type="bool" />
-    <property name="HalfFloatTextureFormatLinear" type="bool" />
-    <property name="HalfFloatColorAttachment" type="bool" />
-    <property name="RenderToMipmapLevels" type="bool" />
-    <property name="ExternalTexture" type="bool" />    
-    <property name="StartupScreen" type="string" />
-    <property name="PreviewWindowBackgroundColor" type="color" />
-    <property name="MessageLimitPerFrame" type="int" />
-    <property name="GlobalTimelineStartTime" type="int" />
-    <property name="GlobalTimelineEndTime" type="int" />
-    <property name="BinaryExportDirectory" type="string" />
-    <property name="ApplicationExportDirectory" type="string" />
-    <property name="IsMasterProject" type="bool" /> 
-    <property name="OptimizeMeshes" type="bool" /> 
-    <property name="TargetPlatformVertexCacheSize" type="int" /> 
-    <property name="PlotAnimations" type="bool" /> 
-    <property name="RoundImagesToNearestPowerOf2" type="bool" /> 
-    <property name="ProjectExportShaderSourceCode" type="bool" /> 
-    <property name="ProjectExportMainKzbWithBakedThemes" type="bool" /> 
-    <property name="ProjectGroupByThemeNameInBakedThemeExport" type="bool" /> 
-    <property name="IsLocalizationEnabled" type="bool" /> 
-    <property name="FullScreenPreviewLayer" type="bool" /> 
-    <property name="ShowChildrenInLayerThumbnails" type="bool" /> 
-    <property name="ProjectUsePremultipliedAlpha" type="bool" />     
-    <property name="ProjectRemoveICCProfilesOfPngs" type="bool" /> 
-    <property name="BinaryFileName" type="string" /> 
-    <property name="IsAssetPackage" type="bool" /> 
-    <property name="KanziConnectEnabled" type="bool" /> 
-    <property name="DefaultMaterial" type="string" />
-    <property name="WindowWidth" type="int" />
-    <property name="WindowHeight" type="int" />
-    <property name="PropertyTypes" type="PropertyType" array="true" />
-    <property name="ProjectReferences" type="ProjectReference" array="true" />
-    <property name="SystemMessages" type="SystemMessage" array="true" />
-    <property name="EnginePlugins" type="EnginePlugin" array="true" />
-    <property name="AnimationClipLibrary" type="Library" pointer="true" /> 
-    <property name="ScreenLibrary" type="Library" pointer="true" /> 
-    <property name="MaterialTypeLibrary" type="Library" pointer="true" /> 
-    <property name="MaterialLibrary" type="Library" pointer="true" /> 
-    <property name="BrushLibrary" type="Library" pointer="true" /> 
-    <property name="MeshLibrary" type="Library" pointer="true" /> 
-    <property name="TimelineSequenceLibrary" type="Library" pointer="true" /> 
-    <property name="SceneObjectLibrary" type="Library" pointer="true" /> 
-    <property name="ComposerLibrary" type="Library" pointer="true" /> 
-    <property name="PipelineItemLibrary" type="Library" pointer="true" /> 
-    <property name="SceneLibrary" type="Library" pointer="true" /> 
-    <property name="TrajectoryLibrary" type="Library" pointer="true" /> 
-    <property name="TransitionLibrary" type="Library" pointer="true" /> 
-    <property name="SplineLibrary" type="Library" pointer="true" /> 
-    <property name="PrefabLibrary" type="Library" pointer="true" /> 
-    <property name="ProfileLibrary" type="Library" pointer="true" /> 
-    <property name="ShortcutLibrary" type="Library" pointer="true" /> 
-    <property name="LayerLibrary" type="Library" pointer="true" /> 
-    <property name="AnimationLibrary" type="Library" pointer="true" /> 
-    <property name="TagLibrary" type="Library" pointer="true" /> 
-    <property name="ThemeLibrary" type="Library" pointer="true" /> 
-    <property name="ResourceExportTagLibrary" type="Library" pointer="true" /> 
-    <property name="LocaleLibrary" type="Library" pointer="true" /> 
-    <property name="DataSourceLibrary" type="Library" pointer="true" /> 
-    <property name="PageTransitionCollectionLibrary" type="Library" pointer="true" /> 
-    <property name="TextureLibrary" type="Library" pointer="true" /> 
-    <property name="StyleLibrary" type="Library" pointer="true" /> 
-    <property name="StateManagerLibrary" type="Library" pointer="true" /> 
-    <property name="ConnectServiceLibrary" type="Library" pointer="true" /> 
-    <property name="ConnectUserServiceLibrary" type="Library" pointer="true" />     
-    <property name="SpriteLibrary" type="Library" pointer="true" /> 
-    <property name="SpriteAnimationLibrary" type="Library" pointer="true" /> 
-    <property name="ImageLibrary" type="Library" pointer="true" /> 
-    <property name="FontLibrary" type="Library" pointer="true" /> 
-
-    <field name="isPackage" type="bool" />
-
-    <message name="OpenFile">
-      <field name="FileName" type="string" />
-    </message>
-    <message name="FileExists">
-      <summary>Checks whether the specified file exists.</summary>
-      <field name="FileName" type="string">The file path to check for existence</field>
-    </message>
-    <message name="HasChangedFiles" />
-    <message name="LoadProject">
-      <summary>Loads a project bundle from the given directory.</summary>
-      <field name="Path" type="string">Directory name to load the bundle</field>
-    </message>
-
+    <handles>
+      <handle message="Object.Start"/>
+    </handles>
+    <properties>
+      <property name="HalfFloatTextureFormat" type="bool"/>
+      <property name="HalfFloatTextureFormatLinear" type="bool"/>
+      <property name="HalfFloatColorAttachment" type="bool"/>
+      <property name="RenderToMipmapLevels" type="bool"/>
+      <property name="ExternalTexture" type="bool"/>
+      <property name="StartupScreen" type="string"/>
+      <property name="PreviewWindowBackgroundColor" type="color"/>
+      <property name="MessageLimitPerFrame" type="int"/>
+      <property name="GlobalTimelineStartTime" type="int"/>
+      <property name="GlobalTimelineEndTime" type="int"/>
+      <property name="BinaryExportDirectory" type="string"/>
+      <property name="ApplicationExportDirectory" type="string"/>
+      <property name="IsMasterProject" type="bool"/>
+      <property name="OptimizeMeshes" type="bool"/>
+      <property name="TargetPlatformVertexCacheSize" type="int"/>
+      <property name="PlotAnimations" type="bool"/>
+      <property name="RoundImagesToNearestPowerOf2" type="bool"/>
+      <property name="ProjectExportShaderSourceCode" type="bool"/>
+      <property name="ProjectExportMainKzbWithBakedThemes" type="bool"/>
+      <property name="ProjectGroupByThemeNameInBakedThemeExport" type="bool"/>
+      <property name="IsLocalizationEnabled" type="bool"/>
+      <property name="FullScreenPreviewLayer" type="bool"/>
+      <property name="ShowChildrenInLayerThumbnails" type="bool"/>
+      <property name="ProjectUsePremultipliedAlpha" type="bool"/>
+      <property name="ProjectRemoveICCProfilesOfPngs" type="bool"/>
+      <property name="BinaryFileName" type="string"/>
+      <property name="IsAssetPackage" type="bool"/>
+      <property name="KanziConnectEnabled" type="bool"/>
+      <property name="DefaultMaterial" type="string"/>
+      <property name="WindowWidth" type="int"/>
+      <property name="WindowHeight" type="int"/>
+      <property name="PropertyTypes" type="PropertyType" array="true"/>
+      <property name="ProjectReferences" type="ProjectReference" array="true"/>
+      <property name="SystemMessages" type="SystemMessage" array="true"/>
+      <property name="EnginePlugins" type="EnginePlugin" array="true"/>
+      <property name="AnimationClipLibrary" type="Library" pointer="true"/>
+      <property name="ScreenLibrary" type="Library" pointer="true"/>
+      <property name="MaterialTypeLibrary" type="Library" pointer="true"/>
+      <property name="MaterialLibrary" type="Library" pointer="true"/>
+      <property name="BrushLibrary" type="Library" pointer="true"/>
+      <property name="MeshLibrary" type="Library" pointer="true"/>
+      <property name="TimelineSequenceLibrary" type="Library" pointer="true"/>
+      <property name="SceneObjectLibrary" type="Library" pointer="true"/>
+      <property name="ComposerLibrary" type="Library" pointer="true"/>
+      <property name="PipelineItemLibrary" type="Library" pointer="true"/>
+      <property name="SceneLibrary" type="Library" pointer="true"/>
+      <property name="TrajectoryLibrary" type="Library" pointer="true"/>
+      <property name="TransitionLibrary" type="Library" pointer="true"/>
+      <property name="SplineLibrary" type="Library" pointer="true"/>
+      <property name="PrefabLibrary" type="Library" pointer="true"/>
+      <property name="ProfileLibrary" type="Library" pointer="true"/>
+      <property name="ShortcutLibrary" type="Library" pointer="true"/>
+      <property name="LayerLibrary" type="Library" pointer="true"/>
+      <property name="AnimationLibrary" type="Library" pointer="true"/>
+      <property name="TagLibrary" type="Library" pointer="true"/>
+      <property name="ThemeLibrary" type="Library" pointer="true"/>
+      <property name="ResourceExportTagLibrary" type="Library" pointer="true"/>
+      <property name="LocaleLibrary" type="Library" pointer="true"/>
+      <property name="DataSourceLibrary" type="Library" pointer="true"/>
+      <property name="PageTransitionCollectionLibrary" type="Library" pointer="true"/>
+      <property name="TextureLibrary" type="Library" pointer="true"/>
+      <property name="StyleLibrary" type="Library" pointer="true"/>
+      <property name="StateManagerLibrary" type="Library" pointer="true"/>
+      <property name="ConnectServiceLibrary" type="Library" pointer="true"/>
+      <property name="ConnectUserServiceLibrary" type="Library" pointer="true"/>
+      <property name="SpriteLibrary" type="Library" pointer="true"/>
+      <property name="SpriteAnimationLibrary" type="Library" pointer="true"/>
+      <property name="ImageLibrary" type="Library" pointer="true"/>
+      <property name="FontLibrary" type="Library" pointer="true"/>
+    </properties>
+    <fields>
+      <field name="isPackage" type="bool"/>
+    </fields>
+    <messages>
+      <message name="OpenFile">
+        <fields>
+          <field name="FileName" type="string"/>
+        </fields>
+      </message>
+      <message name="FileExists">
+        <summary>Checks whether the specified file exists.</summary>
+        <fields>
+          <field name="FileName" type="string">The file path to check for existence</field>
+        </fields>
+      </message>
+      <message name="HasChangedFiles"/>
+      <message name="LoadProject">
+        <summary>Loads a project bundle from the given directory.</summary>
+        <fields>
+          <field name="Path" type="string">Directory name to load the bundle</field>
+        </fields>
+      </message>
+    </messages>
   </class>
-  
   <class name="Directory" parent="Project">
-    <handles message="Project.LoadProject" />
-    <handles message="Project.OpenFile" />
-    <handles message="Project.FileExists" />
-    <handles message="Project.HasChangedFiles" />
-    <handles message="Object.Destroy" />
-    <property name="Path" type="string" />
-    <field name="_monitoredfiles" type="void" pointer="true" />
+    <handles>
+      <handle message="Project.LoadProject"/>
+      <handle message="Project.OpenFile"/>
+      <handle message="Project.FileExists"/>
+      <handle message="Project.HasChangedFiles"/>
+      <handle message="Object.Destroy"/>
+    </handles>
+    <properties>
+      <property name="Path" type="string"/>
+    </properties>
+    <fields>
+      <field name="_monitoredfiles" type="void" pointer="true"/>
+    </fields>
   </class>
-  
   <class name="Package" parent="Project">
-    <handles message="Project.LoadProject" />
-    <handles message="Project.OpenFile" />
-    <handles message="Project.FileExists" />
-    <handles message="Project.HasChangedFiles" />
-    <handles message="Object.Destroy" />
-    <property name="FileName" type="string" />
-    <field name="_package" type="_PACK" pointer="true" />
+    <handles>
+      <handle message="Project.LoadProject"/>
+      <handle message="Project.OpenFile"/>
+      <handle message="Project.FileExists"/>
+      <handle message="Project.HasChangedFiles"/>
+      <handle message="Object.Destroy"/>
+    </handles>
+    <properties>
+      <property name="FileName" type="string"/>
+    </properties>
+    <fields>
+      <field name="_package" type="_PACK" pointer="true"/>
+    </fields>
   </class>
-    
-  <class name="LocaleReferenceItem" />
-
+  <class name="LocaleReferenceItem"/>
   <class name="Tag">
-    <property name="TagIsInherited" type="bool" />
+    <properties>
+      <property name="TagIsInherited" type="bool"/>
+    </properties>
   </class>
-
   <class name="ThemeGroup">
-    <handles message="Object.Attached" />
-    <property name="SelectedTheme" type="string" />
-    <property name="SelectedDictionary" type="string" />
-    <field name="_selectedTheme" type="Object" pointer="true" />
+    <handles>
+      <handle message="Object.Attached"/>
+    </handles>
+    <properties>
+      <property name="SelectedTheme" type="string"/>
+      <property name="SelectedDictionary" type="string"/>
+    </properties>
+    <fields>
+      <field name="_selectedTheme" type="Object" pointer="true"/>
+    </fields>
   </class>
-
   <class name="Theme">
-    <property name="IsThemeVisible" type="bool" />
+    <properties>
+      <property name="IsThemeVisible" type="bool"/>
+    </properties>
   </class>
-
-  <class name="Entry" />
-  <class name="ThemeDefaultValuesDictionary" />
-  
+  <class name="Entry"/>
+  <class name="ThemeDefaultValuesDictionary"/>
   <function name="GetBaseName">
     <summary>Gets the base filename from a path</summary>
     <details>Extracts the filename component from a file path, including the extension. For example, given "/path/to/file. txt", returns "file.txt".  This is useful for displaying filenames or logging without the full directory path.</details>
     <arg name="path" type="string">The file path to extract the basename from</arg>
     <returns type="string">Pointer to the base filename within the original path string</returns>
   </function>
-  
   <function name="GetDirName">
     <summary>Extracts the directory path from a full file path</summary>
     <details>Copies the directory component from a file path into the provided buffer.   For example, given "/path/to/file.txt", writes "/path/to" to the output buffer. The result does not include a trailing slash.  Returns null if the buffer size is insufficient.</details>
@@ -178,7 +207,6 @@
     <arg name="maxlen" type="int">Size of the output buffer</arg>
     <returns type="string">Pointer to the output buffer containing the directory path, or null on failure</returns>
   </function>
-  
   <function name="JoinPaths">
     <summary>Joins two path segments into a complete path</summary>
     <details>Combines two path components into a single path string, automatically handling path separators. For example, joining "/path/to" and "file.txt" produces "/path/to/file.txt". The function handles cases where the first path may or may not end with a separator. Returns the buffer pointer to allow call chaining.</details>
@@ -188,58 +216,49 @@
     <arg name="path2" type="string">The second path component (typically a filename or subdirectory)</arg>
     <returns type="string">Pointer to the output buffer containing the joined path</returns>
   </function>
-  
   <function name="PathFromModule">
     <summary>Converts a module name to a file path</summary>
     <details>Translates a module identifier or name into its corresponding file system path. This is useful for locating resource files, scripts, or other assets associated with a particular module. The exact conversion depends on the module naming convention and directory structure.</details>
     <arg name="module" type="string">The module name to convert</arg>
     <returns type="string">File path corresponding to the module</returns>
   </function>
-  
   <function name="HasChangedFiles">
     <summary>Checks if any tracked files have been modified</summary>
     <details>Returns true if any of the currently opened and tracked files (such as scripts, shaders, or other resources) have been modified on disk since they were last loaded.  This is typically used for hot-reloading functionality, allowing the application to detect when files need to be reloaded during development or runtime.</details>
     <returns type="bool">True if any tracked files have been modified, false otherwise</returns>
   </function>
-  
   <function name="MakeDirectory">
     <summary>Creates a directory at the specified path</summary>
     <details>Creates a new directory at the given path. Returns true if the directory was successfully created or already exists, false if creation failed (e.g., due to permission issues or invalid path). May create intermediate directories if needed, depending on the implementation. </details>
     <arg name="path" type="string">The path of the directory to create</arg>
     <returns type="bool">True if the directory was created or already exists, false on failure</returns>
   </function>
-  
   <function name="FileExists">
     <summary>Checks if a file exists at the specified path</summary>
     <details>Returns true if a file exists at the given path, false otherwise.  This function only checks for file existence and does not verify read permissions or whether the path points to a directory.</details>
     <arg name="path" type="string">The file path to check for existence</arg>
     <returns type="bool">True if the file exists, false otherwise</returns>
   </function>
-  
   <function name="LoadBundle" lua="true">
     <summary>Adds a package to the resource search path</summary>
     <details>Creates a package from the specified directory path and adds it to the global resource search path. When loading resources (such as UI files, scripts, textures, or other assets), the system will search through all added packages in order to locate the requested file. The Lua state is used to maintain the list of active packages for script integration.  The function returns the created package for further reference or manipulation.</details>
     <arg name="path" type="string">The directory of the package to add to the search path</arg>
     <returns type="Object" pointer="true">Pointer to the created and registered package</returns>
   </function>
-
   <function name="SetWorkspace">
     <summary>Sets the current workspace</summary>
     <details>Assigns the provided workspace object as the active workspace for the application. The workspace contains project settings, libraries, and other global configurations. Setting the workspace may trigger events or updates in the application to reflect the new context.</details>
     <arg name="workspace" type="Object" pointer="true">Pointer to the workspace object to set as active</arg>
   </function>
-
   <function name="GetWorkspace">
     <summary>Gets the current workspace</summary>
     <details>Returns the currently active workspace object for the application. The workspace contains project settings, libraries, and other global configurations. This function allows querying the current workspace context without modifying it.</details>
     <returns type="Object" pointer="true">Pointer to the currently active workspace object</returns>
   </function>
-  
   <function name="ReadTextFile" lua="true">
     <summary>Reads the contents of a text file</summary>
     <details>Reads the entire contents of the specified text file and returns it as a string. This function is useful for loading scripts, configuration files, or other text-based resources.</details>
     <arg name="path" type="string">The path of the text file to read</arg>
-    
-     <returns type="nresults">The contents of the text file, or nil if the file could not be read</returns>
+    <returns type="nresults">The contents of the text file, or nil if the file could not be read</returns>
   </function>
 </module>

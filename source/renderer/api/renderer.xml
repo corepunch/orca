@@ -1,33 +1,35 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <module name="renderer" namespace="orca" on-luaopen="on_renderer_module_registered" test-prefix="R_">
-  <require file="../../geometry/geometry.xml" />
-
-  <external struct="fontface" />
-  <external struct="timeline" />
-  <external struct="shader" />
-  <external struct="model" />
-  <external struct="shape" />
-  <external struct="ViewDef" />
-  <external struct="lua_State" />
-  
-
+  <require file="../../geometry/geometry.xml"/>
+  <externals>
+    <external struct="fontface"/>
+    <external struct="timeline"/>
+    <external struct="shader"/>
+    <external struct="model"/>
+    <external struct="shape"/>
+    <external struct="ViewDef"/>
+    <external struct="lua_State"/>
+  </externals>
   <interface name="window" prefix="WI_" export="Window">
     <summary>Window interface abstraction.</summary>
     <details>
-      <p>The `Window` interface defines the contract for window creation and management inside the framework. Each window instance operates in isolation, backed by its own `lua_State`, similar in spirit to Electron processes. This ensures complete separation of state and scripts across windows, avoiding unintended side effects between them.</p>    
-      <snippet src="docs/creating_window.lua" />
+      <p>The `Window` interface defines the contract for window creation and management inside the framework. Each window instance operates in isolation, backed by its own `lua_State`, similar in spirit to Electron processes. This ensures complete separation of state and scripts across windows, avoiding unintended side effects between them.</p>
+      <snippet src="docs/creating_window.lua"/>
       <p>The main application script `main.lua` is responsible for creating and managing windows. Once created, each window runs independently, maintaining its own Lua environment and bindings.</p>
       <p>The event loop for windows is cooperative and integrated with the core runtime. Events are dispatched and processed in a manner similar to how native windowing systems propagate events, while remaining script-driven and cross-platform within the engine.</p>
     </details>
-    <message name="WindowPaint">
-      <field name="WindowWidth" type="uint" />
-      <field name="WindowHeight" type="uint" />
-    </message>
-    <message name="WindowResized" same-as="WindowPaint" />
-    <message name="WindowClosed" />
-    <message name="WindowChangedScreen" />
+    <messages>
+      <message name="WindowPaint">
+        <fields>
+          <field name="WindowWidth" type="uint"/>
+          <field name="WindowHeight" type="uint"/>
+        </fields>
+      </message>
+      <message name="WindowResized" same-as="WindowPaint"/>
+      <message name="WindowClosed"/>
+      <message name="WindowChangedScreen"/>
+    </messages>
   </interface>
-
   <enums name="BlendMode">
     <summary>Rendering blend modes for compositing operations</summary>
     <enum name="AlphaAutomatic">Automatic alpha mode selection</enum>
@@ -37,7 +39,6 @@
     <enum name="PremultipliedAlpha">Alpha-premultiplied blending</enum>
     <enum name="MixedAlpha">Mixed alpha composition</enum>
   </enums>
-  
   <enums name="CompareFunc">
     <summary>Comparison functions for depth and stencil testing</summary>
     <enum name="Never">Test never passes - all fragments are rejected</enum>
@@ -50,21 +51,18 @@
     <enum name="NotEqual">Test passes if new value does not equal stored value</enum>
     <enum name="Disabled">Testing is disabled - equivalent to Always but may have performance benefits</enum>
   </enums>
-  
   <enums name="TextureFilter">
     <summary>Defines texture filtering methods for magnification and minification.</summary>
     <enum name="Nearest">Uses nearest-neighbor sampling for sharp, pixelated appearance.</enum>
     <enum name="Linear">Uses bilinear interpolation for smooth texture sampling.</enum>
     <enum name="Trilinear">Uses trilinear interpolation with mipmap blending for high-quality filtered textures.</enum>
   </enums>
-  
   <enums name="TextureWrap">
     <summary>Defines texture coordinate wrapping behavior at texture boundaries.</summary>
     <enum name="Clamp">Clamps texture coordinates to [0, 1] range, repeating edge pixels beyond boundaries.</enum>
     <enum name="Repeat">Repeats the texture pattern when coordinates exceed [0, 1] range.</enum>
     <enum name="Base">Uses base texture addressing mode (platform-specific default behavior).</enum>
   </enums>
-  
   <enums name="TextureFormat">
     <summary>Defines the internal pixel format for texture storage.</summary>
     <enum name="Automatic">Uses default format from project settings, typically Rgba8 for standard color textures.</enum>
@@ -74,14 +72,12 @@
     <enum name="DepthComponent">Single-channel depth format for depth buffer rendering and shadow mapping.</enum>
     <enum name="DepthStencil">Combined depth and stencil format for advanced rendering techniques requiring both depth testing and stencil operations.</enum>
   </enums>
-  
   <enums name="MipmapMode">
     <enum name="Base">Only the base (highest-resolution) mip level is used. Fastest, but can cause aliasing when textures are minified.</enum>
     <enum name="Nearest">Selects the nearest mip level based on the distance, without blending between levels. Produces sharper but less smooth transitions.</enum>
     <enum name="Linear">Interpolates between two nearest mip levels for smoother transitions. Common default for high-quality rendering.</enum>
     <enum name="Trilinear">Performs linear filtering across both texel and mip levels, providing the smoothest possible texture transitions (slightly slower).</enum>
   </enums>
-
   <enums name="AnisotropyType">
     <enum name="None">Disables anisotropic filtering. Texture detail will degrade at oblique viewing angles.</enum>
     <enum name="X2">Applies 2x anisotropic filtering, modestly improving texture clarity at shallow angles.</enum>
@@ -89,27 +85,29 @@
     <enum name="X8">Applies 8x anisotropic filtering for high-quality rendering with moderate cost.</enum>
     <enum name="X16">Applies 16x anisotropic filtering for the sharpest textures at glancing angles, at higher GPU cost.</enum>
   </enums>
-  
   <class name="Texture">
     <summary>Base class for managing texture resources and their sampling parameters for rendering.</summary>
     <details>Controls texture image loading, filtering modes, and coordinate wrapping behavior. Supports texture preprocessing options like premultiplication and scaling for optimized rendering performance. Serves as the foundation for specialized texture types such as SingleTexture and RenderTargetTexture.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <property name="MinificationFilter" type="TextureFilter">Filtering method used when texture is rendered smaller than its original size.</property>
-    <property name="MagnificationFilter" type="TextureFilter">Filtering method used when texture is rendered larger than its original size.</property>
-    <property name="WrapMode" type="TextureWrap">Defines how texture coordinates outside [0, 1] range are handled.</property>
-    <property name="Format" type="TextureFormat">Specifies the internal pixel format and channel layout used for texture storage in GPU memory.</property>
-    <property name="Scale" type="int">Scale factor for high-DPI display support. Indicates the pixel density multiplier (e.g., 1 for standard displays, 2 for Retina/2x displays, 3 for 3x displays). The texture is loaded at higher resolution and scaled down for rendering on high-DPI screens.</property>
-    <property name="MipmapMode" type="MipmapMode">Controls how mipmaps are sampled when rendering the texture. Higher modes like `Linear` and `Trilinear` yield smoother transitions at the cost of performance.</property>
-    <property name="AnisotropyType" type="AnisotropyType">Defines the anisotropic filtering level applied to the texture. Improves clarity at shallow view angles; higher values offer better quality with greater GPU cost.</property>
-    <field name="IOSurface" type="uint">macOS-specific handle to an IOSurface object for zero-copy texture sharing between processes and frameworks.</field>
-    <field name="texnum" type="uint">OpenGL texture object identifier assigned by the GPU driver.</field>
-    <field name="framebuffer" type="uint">OpenGL framebuffer object identifier for render-to-texture operations.</field>
-    <field name="depthbuffer" type="uint">OpenGL depth buffer (renderbuffer) object identifier for depth testing when rendering to this texture.</field>
-    <property name="Width" type="int">Actual width of the texture in pixels.</property>
-    <property name="Height" type="int">Actual height of the texture in pixels.</property>
-    <field name="loaded" type="bool">Used for on-demand texture loading.</field>
+    <properties>
+      <property name="MinificationFilter" type="TextureFilter">Filtering method used when texture is rendered smaller than its original size.</property>
+      <property name="MagnificationFilter" type="TextureFilter">Filtering method used when texture is rendered larger than its original size.</property>
+      <property name="WrapMode" type="TextureWrap">Defines how texture coordinates outside [0, 1] range are handled.</property>
+      <property name="Format" type="TextureFormat">Specifies the internal pixel format and channel layout used for texture storage in GPU memory.</property>
+      <property name="Scale" type="int">Scale factor for high-DPI display support. Indicates the pixel density multiplier (e.g., 1 for standard displays, 2 for Retina/2x displays, 3 for 3x displays). The texture is loaded at higher resolution and scaled down for rendering on high-DPI screens.</property>
+      <property name="MipmapMode" type="MipmapMode">Controls how mipmaps are sampled when rendering the texture. Higher modes like `Linear` and `Trilinear` yield smoother transitions at the cost of performance.</property>
+      <property name="AnisotropyType" type="AnisotropyType">Defines the anisotropic filtering level applied to the texture. Improves clarity at shallow view angles; higher values offer better quality with greater GPU cost.</property>
+      <property name="Width" type="int">Actual width of the texture in pixels.</property>
+      <property name="Height" type="int">Actual height of the texture in pixels.</property>
+    </properties>
+    <fields>
+      <field name="IOSurface" type="uint">macOS-specific handle to an IOSurface object for zero-copy texture sharing between processes and frameworks.</field>
+      <field name="texnum" type="uint">OpenGL texture object identifier assigned by the GPU driver.</field>
+      <field name="framebuffer" type="uint">OpenGL framebuffer object identifier for render-to-texture operations.</field>
+      <field name="depthbuffer" type="uint">OpenGL depth buffer (renderbuffer) object identifier for depth testing when rendering to this texture.</field>
+      <field name="loaded" type="bool">Used for on-demand texture loading.</field>
+    </fields>
   </class>
-  
   <enums name="ImageFormat">
     <enum name="Png">Portable Network Graphics — lossless compression, supports alpha channel, widely used for UI textures and screenshots</enum>
     <enum name="Jpeg">Joint Photographic Experts Group — lossy compression, smaller file sizes, no full alpha support, suitable for photos</enum>
@@ -117,7 +115,6 @@
     <enum name="Astc">Adaptive Scalable Texture Compression — block-based GPU texture compression format supporting lossy and near-lossless modes, with alpha channel support. Optimized for real-time rendering and mobile/embedded GPUs.</enum>
     <enum name="Pvrtc">PowerVR Texture Compression — hardware texture compression format optimized for PowerVR GPUs (common in iOS devices). Provides efficient storage with optional alpha support, suitable for mobile real-time graphics.</enum>
   </enums>
-
   <enums name="AstcFormat">
     <enum name="UnormBlock4x4">4x4 block, unsigned normalized RGBA — highest quality, 8 bits per channel</enum>
     <enum name="UnormBlock5x4">5x4 block, unsigned normalized RGBA — slightly higher compression, good quality</enum>
@@ -133,7 +130,6 @@
     <enum name="UnormBlock10x10">10x10 block, unsigned normalized RGBA — large blocks, lower quality</enum>
     <enum name="UnormBlock12x10">12x10 block, unsigned normalized RGBA — high compression, lower quality</enum>
     <enum name="UnormBlock12x12">12x12 block, unsigned normalized RGBA — maximum compression, lowest quality</enum>
-
     <enum name="SrgbBlock4x4">4x4 block, sRGB color space — highest quality for gamma-corrected textures</enum>
     <enum name="SrgbBlock5x4">5x4 block, sRGB color space — slightly higher compression</enum>
     <enum name="SrgbBlock5x5">5x5 block, sRGB color space — balanced quality and size</enum>
@@ -149,13 +145,11 @@
     <enum name="SrgbBlock12x10">12x10 block, sRGB color space — extreme compression, low visual fidelity</enum>
     <enum name="SrgbBlock12x12">12x12 block, sRGB color space — maximum compression, lowest quality</enum>
   </enums>
-
   <enums name="AtcCompressionScheme">
     <enum name="ExplicitAlpha">RGB + separate alpha block (8 bits) — better alpha quality, slightly larger size</enum>
     <enum name="InterpolatedAlpha">RGB + interpolated alpha values — smaller size, lower alpha precision</enum>
     <enum name="Rgb">RGB only, no alpha channel — smallest size and fastest decoding</enum>
   </enums>
-
   <enums name="AstcCompressionSpeed">
     <enum name="VeryFast">lowest quality, fastest encode — for real-time or previews</enum>
     <enum name="Fast">slightly better quality, still quite fast</enum>
@@ -163,7 +157,6 @@
     <enum name="Thorough">slower, higher quality (offline textures)</enum>
     <enum name="Exhaustive">best possible quality, extremely slow — for final offline baking</enum>
   </enums>
-  
   <enums name="RawColorByteFormat">
     <enum name="Rgba8">8 bits per channel, unsigned normalized RGBA — the standard format for general use</enum>
     <enum name="Rgb8">8 bits per channel, unsigned normalized RGB — no alpha channel</enum>
@@ -173,7 +166,6 @@
     <enum name="R11g11b10f">11/11/10-bit floating point RGB, no alpha — optimized for HDR rendering</enum>
     <enum name="Rgba32f">32-bit floating point per channel RGBA — maximum precision, used in offline or scientific rendering</enum>
   </enums>
-  
   <enums name="FilePngCompressionLevel">
     <enum name="None">no compression — largest files, fastest save</enum>
     <enum name="Fast">light compression — minimal size reduction, quick encode</enum>
@@ -181,48 +173,48 @@
     <enum name="Maximum">highest compression — smallest files, slower encode</enum>
     <enum name="ProjectDefault">use compression level defined by project settings</enum>
   </enums>
-  
   <enums name="SpansionCompressionScheme">
     <enum name="None">No compression applied to the data — used when maximum speed is required or when compression is handled elsewhere in the system</enum>
     <enum name="Standard">Standard compression applied — balances between compression ratio and speed</enum>
     <enum name="Enhanced">Enhanced compression applied — achieves higher compression ratios at the cost of increased processing time</enum>
   </enums>
-
   <enums name="ImageType">
-    <enum name="Normal" />
-    <enum name="Mask" />
+    <enum name="Normal"/>
+    <enum name="Mask"/>
   </enums>
-
   <class name="Image" parent="Texture">
-    <handles message="Object.Start" />
+    <handles>
+      <handle message="Object.Start"/>
+    </handles>
     <summary>Represents a single, pre-loaded texture image for use in rendering operations.</summary>
     <details>Extends the base Texture class to load a specific image file, providing a straightforward way to incorporate static textures into scenes without dynamic generation or rendering targets.</details>
-    <property name="Source" type="string">Path to the texture image file to be loaded.</property>
-    <property name="PremultiplyAlpha" type="bool">When `true`, multiplies RGB channels by alpha during loading for correct alpha blending.</property>
-    <property name="Type" type="ImageType">When set to `Mask`, treats the texture as an alpha mask, ignoring RGB components and using only the alpha channel for masking operations.</property>
-    <property name="HasMipmaps" type="bool">When `true`, automatically generates mipmap levels for improved texture quality at varying distances and reduced aliasing artifacts.</property>
-    <property name="Size" type="string">Texture dimensions in the format "Width x Height", e.g., "256 x 256".</property>
-    <property name="BitDepth" type="int">Number of bits per pixel, including all channels.</property>
-    <property name="FileHasTransparency" type="bool">Indicates whether the source file contains any transparent pixels.</property>
-    <property name="FileHasICCProfile" type="bool">Indicates whether the source file includes an embedded ICC color profile.</property>
-    <property name="TargetFormat" type="ImageFormat">The format to use when exporting or processing the texture (e.g., PNG, JPEG, SVG).</property>
-    <property name="AtcCompressionScheme" type="AtcCompressionScheme">Compression scheme to use for ATC textures.</property>
-    <property name="PvrtcBitDepth" type="int">Bit depth for PVRTC-compressed textures.</property>
-    <property name="PvrtcQuality" type="int">Compression quality setting for PVRTC textures.</property>
-    <property name="PvrtcCompressionScheme" type="int">Compression scheme used for PVRTC textures.</property>
-    <property name="AstcBlockSize" type="AstcFormat">ASTC block size to use when compressing the texture.</property>
-    <property name="AstcCompressionSpeed" type="AstcCompressionSpeed">Speed/quality preset for ASTC compression.</property>
-    <property name="AstcIsSRGB" type="bool">Indicates whether ASTC texture uses sRGB color space.</property>
-    <property name="RawColorByteFormat" type="RawColorByteFormat">Format used for raw uncompressed color data.</property>
-    <property name="SpansionCompressionScheme" type="SpansionCompressionScheme">Compression scheme for Spansion flash memory, if applicable.</property>
-    <property name="FilePngCompressionLevel" type="FilePngCompressionLevel">Compression level used when saving PNG files.</property>
-    <property name="Etc2Effort" type="int">Effort/quality parameter for ETC2 compression.</property>
-    <property name="FileExportSourceTexture" type="bool">When `true`, exports the original source texture file alongside processed versions.</property>
-    <property name="FileExportAlways" type="bool">When `true`, ensures the texture is exported regardless of other conditions.</property>
-    <property name="FileExportEmptyWhenFileIsMissing" type="bool">When `true`, exports an empty placeholder if the source file is missing.</property>
-    <property name="FileExportSourceImage" type="string" />
+    <properties>
+      <property name="Source" type="string">Path to the texture image file to be loaded.</property>
+      <property name="PremultiplyAlpha" type="bool">When `true`, multiplies RGB channels by alpha during loading for correct alpha blending.</property>
+      <property name="Type" type="ImageType">When set to `Mask`, treats the texture as an alpha mask, ignoring RGB components and using only the alpha channel for masking operations.</property>
+      <property name="HasMipmaps" type="bool">When `true`, automatically generates mipmap levels for improved texture quality at varying distances and reduced aliasing artifacts.</property>
+      <property name="Size" type="string">Texture dimensions in the format "Width x Height", e.g., "256 x 256".</property>
+      <property name="BitDepth" type="int">Number of bits per pixel, including all channels.</property>
+      <property name="FileHasTransparency" type="bool">Indicates whether the source file contains any transparent pixels.</property>
+      <property name="FileHasICCProfile" type="bool">Indicates whether the source file includes an embedded ICC color profile.</property>
+      <property name="TargetFormat" type="ImageFormat">The format to use when exporting or processing the texture (e.g., PNG, JPEG, SVG).</property>
+      <property name="AtcCompressionScheme" type="AtcCompressionScheme">Compression scheme to use for ATC textures.</property>
+      <property name="PvrtcBitDepth" type="int">Bit depth for PVRTC-compressed textures.</property>
+      <property name="PvrtcQuality" type="int">Compression quality setting for PVRTC textures.</property>
+      <property name="PvrtcCompressionScheme" type="int">Compression scheme used for PVRTC textures.</property>
+      <property name="AstcBlockSize" type="AstcFormat">ASTC block size to use when compressing the texture.</property>
+      <property name="AstcCompressionSpeed" type="AstcCompressionSpeed">Speed/quality preset for ASTC compression.</property>
+      <property name="AstcIsSRGB" type="bool">Indicates whether ASTC texture uses sRGB color space.</property>
+      <property name="RawColorByteFormat" type="RawColorByteFormat">Format used for raw uncompressed color data.</property>
+      <property name="SpansionCompressionScheme" type="SpansionCompressionScheme">Compression scheme for Spansion flash memory, if applicable.</property>
+      <property name="FilePngCompressionLevel" type="FilePngCompressionLevel">Compression level used when saving PNG files.</property>
+      <property name="Etc2Effort" type="int">Effort/quality parameter for ETC2 compression.</property>
+      <property name="FileExportSourceTexture" type="bool">When `true`, exports the original source texture file alongside processed versions.</property>
+      <property name="FileExportAlways" type="bool">When `true`, ensures the texture is exported regardless of other conditions.</property>
+      <property name="FileExportEmptyWhenFileIsMissing" type="bool">When `true`, exports an empty placeholder if the source file is missing.</property>
+      <property name="FileExportSourceImage" type="string"/>
+    </properties>
   </class>
-
   <enums name="RenderTargetType">
     <enum name="Color">Standard color attachment used for rendering the final image or intermediate color buffers</enum>
     <enum name="Depth">Depth buffer attachment — stores depth information used for depth testing during rendering</enum>
@@ -232,7 +224,6 @@
     <enum name="Specular">Optional attachment for storing specular intensity or color in deferred shading pipelines</enum>
     <enum name="Emission">Optional attachment storing emissive light information for glow or lighting accumulation passes</enum>
   </enums>
-  
   <enums name="RenderTargetTextureAttachment">
     <enum name="None">No attachment — the texture is not bound to any framebuffer slot</enum>
     <enum name="Color0">First color attachment (default target for most rendering)</enum>
@@ -243,39 +234,47 @@
     <enum name="Stencil">Stencil attachment — used for stencil operations</enum>
     <enum name="DepthStencil">Combined depth-stencil attachment</enum>
   </enums>
-
   <class name="RenderTargetTexture" parent="Texture">
     <summary>Texture configured as a render target for off-screen rendering and post-processing effects.</summary>
     <details>Extends the base Texture class to create a dynamic texture that can be bound as a framebuffer for rendering operations. Supports custom dimensions for targeted resolutions, enabling techniques like bloom, depth-of-field, or shadow mapping without affecting the main display output.</details>
-    <handles message="Object.Start" />
-    <property name="Width" type="int">The desired width in pixels for the render target texture, determining the horizontal resolution of rendered content.</property>
-    <property name="Height" type="int">The desired height in pixels for the render target texture, determining the vertical resolution of rendered content.</property>
-    <property name="TargetType" type="RenderTargetType">Specifies which kind of render target this texture represents — for example, a color, depth, or stencil attachment.</property>
-    <property name="SupportSimpleRenderTarget" type="bool">Enables use of a simplified render target setup — typically a single color buffer without depth or stencil attachments, used for lightweight or offscreen rendering tasks.</property>
-    <property name="Attachment" type="RenderTargetTextureAttachment">Defines the framebuffer slot or channel this texture is attached to.</property>
-    <property name="AllowDepthFallback" type="bool">Allows using a depth-only buffer as a fallback when a full depth-stencil attachment is unavailable, ensuring rendering can proceed with reduced functionality.</property>
-    <property name="SampleCount" type="int">Specifies the number of multisample samples used when rendering to this texture, controlling the level of anti-aliasing applied.</property>
+    <handles>
+      <handle message="Object.Start"/>
+    </handles>
+    <properties>
+      <property name="Width" type="int">The desired width in pixels for the render target texture, determining the horizontal resolution of rendered content.</property>
+      <property name="Height" type="int">The desired height in pixels for the render target texture, determining the vertical resolution of rendered content.</property>
+      <property name="TargetType" type="RenderTargetType">Specifies which kind of render target this texture represents — for example, a color, depth, or stencil attachment.</property>
+      <property name="SupportSimpleRenderTarget" type="bool">Enables use of a simplified render target setup — typically a single color buffer without depth or stencil attachments, used for lightweight or offscreen rendering tasks.</property>
+      <property name="Attachment" type="RenderTargetTextureAttachment">Defines the framebuffer slot or channel this texture is attached to.</property>
+      <property name="AllowDepthFallback" type="bool">Allows using a depth-only buffer as a fallback when a full depth-stencil attachment is unavailable, ensuring rendering can proceed with reduced functionality.</property>
+      <property name="SampleCount" type="int">Specifies the number of multisample samples used when rendering to this texture, controlling the level of anti-aliasing applied.</property>
+    </properties>
   </class>
-  
   <class name="CubeMapTexture" parent="Texture">
     <summary>Cubemap texture assembled from six individual images, one for each face of a cube, used for environment mapping, reflections, and sky rendering.</summary>
     <details>Extends the base Texture class to support loading separate images for positive and negative axes of a 3D cube. This configuration allows for realistic spherical mapping in shaders, where texture coordinates are projected onto the cube faces for seamless omnidirectional sampling without seams or distortion at cube edges.</details>
-    <handles message="Object.Start" />
-    <property name="BackImage" type="string">Path to the image file for the back face (negative Z-axis) of the cubemap.</property>
-    <property name="FrontImage" type="string">Path to the image file for the front face (positive Z-axis) of the cubemap.</property>
-    <property name="LeftImage" type="string">Path to the image file for the left face (negative X-axis) of the cubemap.</property>
-    <property name="RightImage" type="string">Path to the image file for the right face (positive X-axis) of the cubemap.</property>
-    <property name="BottomImage" type="string">Path to the image file for the bottom face (negative Y-axis) of the cubemap.</property>
-    <property name="TopImage" type="string">Path to the image file for the top face (positive Y-axis) of the cubemap.</property>
+    <handles>
+      <handle message="Object.Start"/>
+    </handles>
+    <properties>
+      <property name="BackImage" type="string">Path to the image file for the back face (negative Z-axis) of the cubemap.</property>
+      <property name="FrontImage" type="string">Path to the image file for the front face (positive Z-axis) of the cubemap.</property>
+      <property name="LeftImage" type="string">Path to the image file for the left face (negative X-axis) of the cubemap.</property>
+      <property name="RightImage" type="string">Path to the image file for the right face (positive X-axis) of the cubemap.</property>
+      <property name="BottomImage" type="string">Path to the image file for the bottom face (negative Y-axis) of the cubemap.</property>
+      <property name="TopImage" type="string">Path to the image file for the top face (positive Y-axis) of the cubemap.</property>
+    </properties>
   </class>
-
   <class name="IOSurfaceTexture" parent="Texture">
     <summary>Texture created from a shared macOS IOSurface for zero-copy GPU data sharing.</summary>
     <details>Extends the base Texture class to bind an existing IOSurface as an OpenGL texture using GL_TEXTURE_RECTANGLE. Enables efficient inter-process or inter-context sharing of rendered images without CPU copying, suitable for compositing, video, or off-screen rendering pipelines.</details>
-    <handles message="Object.Start" />
-    <property name="IOSurface" type="int">The IOSurface identifier used to look up and bind the shared surface as a texture.</property>
+    <handles>
+      <handle message="Object.Start"/>
+    </handles>
+    <properties>
+      <property name="IOSurface" type="int">The IOSurface identifier used to look up and bind the shared surface as a texture.</property>
+    </properties>
   </class>
-
   <enums name="FloatPrecision">
     <summary>Defines precision levels for floating-point operations in shader variables</summary>
     <details>Controls the numerical precision of shader calculations. Higher precision improves accuracy but may reduce performance. Low precision is suitable for color values, Medium for texture coordinates, and High for positions and transformations.</details>
@@ -284,7 +283,6 @@
     <enum name="Medium">Medium precision, typically 16-24 bits. Ideal for texture coordinates and general-purpose calculations.</enum>
     <enum name="High">Highest precision, typically 32 bits. Required for vertex positions, matrices, and critical transformations.</enum>
   </enums>
-  
   <enums name="Shading">
     <summary>Defines shading models for lighting calculations in shaders</summary>
     <details>Specifies the lighting algorithm used to calculate surface appearance. Each model offers different visual quality and performance characteristics. Unlit provides no lighting for flat colors or pre-lit textures, Phong offers classic specular highlights, and Standard implements physically-based rendering for realistic materials.</details>
@@ -292,90 +290,101 @@
     <enum name="Phong">Classic Phong lighting model with ambient, diffuse, and specular components. Provides good performance with convincing highlights and shading for general-purpose 3D rendering.</enum>
     <enum name="Standard">Physically-based rendering (PBR) model. Provides realistic material appearance based on physical light interaction principles, supporting metallic and roughness workflows.</enum>
   </enums>
-  
   <class name="VertexShader">
     <summary>Vertex processing stage of the shader pipeline</summary>
     <details>Processes each vertex of the geometry, transforming positions from model space to screen space. Handles per-vertex attributes and passes interpolated values to the fragment shader through shared variables.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <property name="Version" type="int">GLSL shader language version number (e.g., 150 for GLSL 1.50, 330 for GLSL 3.30)</property>
-    <property name="FloatPrecision" type="FloatPrecision">Default floating-point precision for vertex shader calculations</property>
-    <property name="Shading" type="Shading">The lighting/shading model to use for vertex processing. Determines which lighting calculations are performed and how surface appearance is computed.</property>
+    <properties>
+      <property name="Version" type="int">GLSL shader language version number (e.g., 150 for GLSL 1.50, 330 for GLSL 3.30)</property>
+      <property name="FloatPrecision" type="FloatPrecision">Default floating-point precision for vertex shader calculations</property>
+      <property name="Shading" type="Shading">The lighting/shading model to use for vertex processing. Determines which lighting calculations are performed and how surface appearance is computed.</property>
+    </properties>
   </class>
-
   <class name="FragmentShader">
     <summary>Fragment (pixel) processing stage of the shader pipeline</summary>
     <details>Executes for each pixel fragment, determining final color output. Samples textures, performs lighting calculations, and writes to the specified output variable. Receives interpolated values from the vertex shader.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <property name="Version" type="int">GLSL shader language version number (e.g., 150 for GLSL 1.50, 330 for GLSL 3.30)</property>
-    <property name="FloatPrecision" type="FloatPrecision">Default floating-point precision for fragment shader calculations</property>
-    <property name="Out" type="string">Name of the output variable for fragment color (e.g., "FragColor", "gl_FragColor")</property>
+    <properties>
+      <property name="Version" type="int">GLSL shader language version number (e.g., 150 for GLSL 1.50, 330 for GLSL 3.30)</property>
+      <property name="FloatPrecision" type="FloatPrecision">Default floating-point precision for fragment shader calculations</property>
+      <property name="Out" type="string">Name of the output variable for fragment color (e.g., "FragColor", "gl_FragColor")</property>
+    </properties>
   </class>
-
   <class name="Shader">
     <summary>Complete shader program definition combining vertex and fragment stages</summary>
     <details>Encapsulates the entire shader pipeline with configurable uniforms, attributes, and shared variables. Uniforms provide per-draw parameters (textures, colors, transforms), attributes supply per-vertex data (positions, UVs, colors), and shared variables pass interpolated data between shader stages.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles message="Object.Start" />
-    <handles message="Object.Destroy" />
-    <property name="BlendMode" type="BlendMode" default="MixedAlpha">The default blending mode for the shader, controlling how rendered output combines with the existing framebuffer content.</property>
-    <property name="DepthTestFunction" type="CompareFunc">The default depth comparison function used for depth testing, determining which fragments are visible based on their depth values.</property>
-    <property name="DepthWriteEnabled" type="bool">Whether depth buffer writing is enabled by default. When true, rendered fragments update the depth buffer; when false, depth values are not written.</property>
+    <handles>
+      <handle message="Object.Start"/>
+      <handle message="Object.Destroy"/>
+    </handles>
+    <properties><property name="BlendMode" type="BlendMode" default="MixedAlpha">The default blending mode for the shader, controlling how rendered output combines with the existing framebuffer content.</property><property name="DepthTestFunction" type="CompareFunc">The default depth comparison function used for depth testing, determining which fragments are visible based on their depth values.</property><property name="DepthWriteEnabled" type="bool">Whether depth buffer writing is enabled by default. When true, rendered fragments update the depth buffer; when false, depth values are not written.</property>
     BlendMode
-    <field name="shader" type="shader" pointer="true">Compiled shader for runtime use</field>
+    </properties>
+    <fields><field name="shader" type="shader" pointer="true">Compiled shader for runtime use</field>
+  </fields>
   </class>
-  
   <class name="Material">
     <summary>Shader-based rendering material for advanced visual effects</summary>
     <details>Encapsulates shader programs and their parameters for custom rendering effects. Supports standard uniforms for color and texture.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <property name="Shader" type="Shader" pointer="true">Shader program for custom rendering </property>
-    <property name="GlobalAmbient" type="color">Defines the global illumination color affecting all surfaces equally. Used to simulate indirect light in a scene.</property>
-    <property name="Ambient" type="color"> Base color of the material under ambient lighting conditions, representing its response to non-directional light.</property>
-    <property name="Diffuse" type="color"> Main reflective color of the material when illuminated by direct light sources.</property>
-    <property name="Emissive" type="color"> Color emitted by the material itself, giving the appearance of self-illumination regardless of scene lighting.</property>
-    <property name="SpecularColor" type="color"> Tint and intensity of the material’s reflective highlights when exposed to light sources.</property>
-    <property name="SpecularExponent" type="float"> Controls the sharpness of specular highlights; higher values result in a glossier surface appearance.</property>
-    <property name="Texture" type="Texture">Primary texture applied to the material surface</property>
-    <property name="Texture2" type="Texture">Secondary texture applied to the material surface</property>
-    <property name="TextureOffset" type="vec2">UV offset for the base texture mapping</property>
-    <property name="TextureTiling" type="vec2">UV tiling (repetition) for the base texture mapping</property>
-    <property name="BlendIntensity" type="float">Adjusts the opacity or blending strength of the material</property>
-    <property name="BlendMode" type="BlendMode" default="AlphaAutomatic">Blending mode for material rendering </property>
+    <properties>
+      <property name="Shader" type="Shader" pointer="true">Shader program for custom rendering </property>
+      <property name="GlobalAmbient" type="color">Defines the global illumination color affecting all surfaces equally. Used to simulate indirect light in a scene.</property>
+      <property name="Ambient" type="color"> Base color of the material under ambient lighting conditions, representing its response to non-directional light.</property>
+      <property name="Diffuse" type="color"> Main reflective color of the material when illuminated by direct light sources.</property>
+      <property name="Emissive" type="color"> Color emitted by the material itself, giving the appearance of self-illumination regardless of scene lighting.</property>
+      <property name="SpecularColor" type="color"> Tint and intensity of the material’s reflective highlights when exposed to light sources.</property>
+      <property name="SpecularExponent" type="float"> Controls the sharpness of specular highlights; higher values result in a glossier surface appearance.</property>
+      <property name="Texture" type="Texture">Primary texture applied to the material surface</property>
+      <property name="Texture2" type="Texture">Secondary texture applied to the material surface</property>
+      <property name="TextureOffset" type="vec2">UV offset for the base texture mapping</property>
+      <property name="TextureTiling" type="vec2">UV tiling (repetition) for the base texture mapping</property>
+      <property name="BlendIntensity" type="float">Adjusts the opacity or blending strength of the material</property>
+      <property name="BlendMode" type="BlendMode" default="AlphaAutomatic">Blending mode for material rendering </property>
+    </properties>
   </class>
-  
   <class name="Mesh">
     <summary>Renderable 3D geometry component with material and model data</summary>
     <details>Represents a 3D mesh object in the scene. Manages the geometry data (vertices, indices, normals, UVs) and associated material for rendering. Responds to lifecycle events for loading and cleanup of mesh resources.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles message="Object.Start" />
-    <handles message="Object.Destroy" />
-    <property name="Source" type="string">Path or identifier to the mesh geometry file or resource. Specifies where to load the 3D model data from.</property>
-    <property name="Material" type="Material" pointer="true">Reference to the material that defines the mesh's visual appearance. Controls shaders, textures, colors, and rendering properties applied to the geometry.</property>
-    <property name="MeshMorphTargets" type="string">Name of the morph targets in the mesh</property>
-    <field name="model" type="model" pointer="true">Internal pointer to the loaded model data structure containing the mesh geometry.</field>
+    <handles>
+      <handle message="Object.Start"/>
+      <handle message="Object.Destroy"/>
+    </handles>
+    <properties>
+      <property name="Source" type="string">Path or identifier to the mesh geometry file or resource. Specifies where to load the 3D model data from.</property>
+      <property name="Material" type="Material" pointer="true">Reference to the material that defines the mesh's visual appearance. Controls shaders, textures, colors, and rendering properties applied to the geometry.</property>
+      <property name="MeshMorphTargets" type="string">Name of the morph targets in the mesh</property>
+    </properties>
+    <fields>
+      <field name="model" type="model" pointer="true">Internal pointer to the loaded model data structure containing the mesh geometry.</field>
+    </fields>
   </class>
-  
   <class name="FontFamily">
     <summary>TrueType font resource for text rendering</summary>
     <details>Loads and manages a TrueType font file for rendering text in the scene. Provides glyph data and metrics for text layout and rendering. May be extended in the future to support font families with variants (regular, bold, italic).</details>
-    <handles message="Object.Start">Called when the mesh component is initialized. Used to load the mesh geometry from the specified source and set up rendering resources.</handles>
-    <handles message="Object.Destroy">Called when the mesh component is being destroyed. Used to clean up mesh data, release GPU buffers, and free associated resources.</handles>
-    <property name="Regular" type="string">Path of the TrueType font file to be used as the regular font variant.</property>
-    <property name="Bold" type="string">Path of the TrueType font file to be used as the bold font variant.</property>
-    <property name="Italic" type="string">Path of the TrueType font file to be used as the italic font variant.</property>
-    <property name="BoldItalic" type="string">Path of the TrueType font file to be used as the bold italic font variant.</property>
-    <field name="regular" type="fontface" pointer="true">Internal pointer to the loaded font data.</field>
-    <field name="bold" type="fontface" pointer="true">Internal pointer to the loaded font data.</field>
-    <field name="italic" type="fontface" pointer="true">Internal pointer to the loaded font data.</field>
-    <field name="bolditalic" type="fontface" pointer="true">Internal pointer to the loaded font data.</field>
+    <handles>
+      <handle message="Object.Start"/>
+      <handle message="Object.Destroy"/>
+    </handles>
+    <properties>
+      <property name="Regular" type="string">Path of the TrueType font file to be used as the regular font variant.</property>
+      <property name="Bold" type="string">Path of the TrueType font file to be used as the bold font variant.</property>
+      <property name="Italic" type="string">Path of the TrueType font file to be used as the italic font variant.</property>
+      <property name="BoldItalic" type="string">Path of the TrueType font file to be used as the bold italic font variant.</property>
+    </properties>
+    <fields>
+      <field name="regular" type="fontface" pointer="true">Internal pointer to the loaded font data.</field>
+      <field name="bold" type="fontface" pointer="true">Internal pointer to the loaded font data.</field>
+      <field name="italic" type="fontface" pointer="true">Internal pointer to the loaded font data.</field>
+      <field name="bolditalic" type="fontface" pointer="true">Internal pointer to the loaded font data.</field>
+    </fields>
   </class>
-
   <class name="Trajectory">
   </class>
-
   <class name="Timeline">
   </class>
-
   <function name="Init">
     <summary>Initializes the rendering system and prepares it for drawing operations.</summary>
     <arg name="Width" type="uint">The width of the rendering viewport.</arg>
@@ -388,13 +397,13 @@
   </function>
   <function name="CreateShader" lua="true">
     <summary>Creates a shader program from source code.</summary>
-    <arg name="vertex" type="string" />
-    <arg name="fragment" type="string" />
-    <returns type="Shader" pointer="true" />
+    <arg name="vertex" type="string"/>
+    <arg name="fragment" type="string"/>
+    <returns type="Shader" pointer="true"/>
   </function>
   <function name="GetSize" lua="true">
     <summary>Retrieves the size of the current window.</summary>
-    <returns type="nresults" />
+    <returns type="nresults"/>
   </function>
   <function name="DrawImage" lua="true">
     <summary>Draws the current image to the active render target.</summary>

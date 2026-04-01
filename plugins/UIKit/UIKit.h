@@ -715,8 +715,6 @@ typedef struct Trigger const *TriggerCPtr, *lpcTrigger_t;
 struct Trigger {
 	const char* Property; ///< Target property name to monitor or modify
 	int32_t Value; ///< Associated value for the trigger condition
-	struct Trigger* Trigger;
-	struct HandleMessageMsgArgs message;
 };
 ORCA_API void luaX_pushTrigger(lua_State *L, struct Trigger const* Trigger);
 ORCA_API struct Trigger* luaX_checkTrigger(lua_State *L, int idx);
@@ -811,29 +809,6 @@ struct Node {
 	const char* Tags; ///< Tag collection for categorizing or querying nodes.
 	struct DataObject* DataContext; ///< Data context (used for data binding, similar to XAML's DataContext).
 	long _tags; ///< Calculated tags value
-	struct mat4 parent; ///< The parent matrix
-	float opacity; ///< The opacity value
-	bool_t force; ///< Indicates if the update is forced
-	float Width;
-	float Height;
-	float X;
-	float Y;
-	float Width;
-	float Height;
-	int32_t Placeholder;
-	struct mat4 projection; ///< Projection matrix for 3D to 2D transformation
-	struct Texture* image; ///< Target image handle for rendering
-	struct BrushShorthand brush; ///< Brush configuration to draw with
-	float borderOffset; ///< Border offset adjustment for rendering
-	struct vec4 borderWidth; ///< Border width for each edge (top, right, bottom, left)
-	bool_t foreground; ///< True if drawing foreground, false for background
-	struct ViewDef* viewdef; ///< View definition context for rendering
-	const char* EventName;
-	uint32_t FirstArg;
-	uint32_t NumArgs;
-	struct lua_State* lua_state;
-	int32_t x; ///< X coordinate of the hit test point
-	int32_t y; ///< Y coordinate of the hit test point
 };
 ORCA_API void luaX_pushNode(lua_State *L, struct Node const* Node);
 ORCA_API struct Node* luaX_checkNode(lua_State *L, int idx);
@@ -876,8 +851,6 @@ struct TextBlockConcept {
 	uiLabelSteps_t _steps; ///< Internal step-based rendering parameters.
 	struct Node* _node; ///< Reference to the owning node using this concept.
 	struct ViewText* _text; ///< Internal view representation of the text.
-	struct ViewText* text; ///< Text view to render
-	uint32_t availableSpace; ///< Available space for text layout
 };
 ORCA_API void luaX_pushTextBlockConcept(lua_State *L, struct TextBlockConcept const* TextBlockConcept);
 ORCA_API struct TextBlockConcept* luaX_checkTextBlockConcept(lua_State *L, int idx);
@@ -910,9 +883,6 @@ struct Node2D {
 	bool_t Hovered; ///< Indicates if the element is currently hovered by pointer/mouse.
 	bool_t IgnoreHitTest; ///< Marks object as ignored during hit testing (mouse interaction).
 	enum ForegroundHint ForegroundHint; ///< Hint for how foreground should be rendered. May be used for accessibility, high-contrast, or text rendering optimizations.
-	struct mat4 parent; ///< The parent matrix
-	float opacity; ///< The opacity value
-	bool_t force; ///< Indicates if the update is forced
 	struct Node* _node; ///< Internal node reference
 	struct Object* _object; ///< Internal object reference
 	int32_t _userdata; ///< User-defined data storage
@@ -1058,13 +1028,6 @@ struct Screen {
 	float DialogResult; ///< Result value for dialog interactions
 	struct Texture* _rt; ///< Internal render target for the screen
 	uint32_t _size; ///< Currently set size (to resize window when changed).
-	float Width;
-	float Height;
-	uint32_t width; ///< The width of the render screen
-	uint32_t height; ///< The height of the render screen
-	float stereo; ///< The stereo value of the render screen
-	float angle; ///< The angle of the render screen
-	struct Texture* target; ///< The target handle of the render screen
 };
 ORCA_API void luaX_pushScreen(lua_State *L, struct Screen const* Screen);
 ORCA_API struct Screen* luaX_checkScreen(lua_State *L, int idx);
@@ -1177,9 +1140,6 @@ struct PageHost {
 	struct Page* ActivePage; ///< The currently active page.
 	struct Page* _historyStack[32]; ///< Navigation history stack.
 	int32_t _historySize; ///< Number of entries in the navigation history stack.
-	const char* URL; ///< The URL of the page to navigate to.
-	enum TransitionType TransitionType; ///< The type of transition animation to use during navigation.
-	enum TransitionType TransitionType; ///< The type of transition animation to use during navigation.
 };
 ORCA_API void luaX_pushPageHost(lua_State *L, struct PageHost const* PageHost);
 ORCA_API struct PageHost* luaX_checkPageHost(lua_State *L, int idx);
