@@ -340,7 +340,7 @@ _TryLoadBundle(lpcClassDesc_t c, void* args)
   struct package_iterator* it = args;
   if (!it->project) {
     it->project =
-    (struct Object*)c->ObjProc(NULL, it->L, kMsgLoadProject, 0,
+    (struct Object*)c->ObjProc(NULL, it->L, ID_LoadProject, 0,
                                &(struct LoadProjectMsgArgs) {
       .Path = (void*)it->directory
     });

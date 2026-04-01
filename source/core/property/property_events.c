@@ -1,6 +1,6 @@
 #include "property_internal.h"
 
-#define kMsgPropertyChanged 0x6d47e0cc
+#define ID_PropertyChanged 0x6d47e0cc
 
 INLINE bool_t
 PROP_HasHandler(lpProperty_t property)

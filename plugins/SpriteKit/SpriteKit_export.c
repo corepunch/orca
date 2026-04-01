@@ -162,7 +162,7 @@ static struct SKNode SKNodeDefaults = {
 };
 LRESULT SKNodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgUpdateMatrix: return SKNode_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
+		case ID_UpdateMatrix: return SKNode_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
 	}
 	return FALSE;
 }
@@ -183,7 +183,7 @@ static struct SKScene SKSceneDefaults = {
 };
 LRESULT SKSceneProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgUpdateMatrix: return SKScene_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
+		case ID_UpdateMatrix: return SKScene_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
 	}
 	return FALSE;
 }
@@ -218,7 +218,7 @@ static struct SKSpriteNode SKSpriteNodeDefaults = {
 };
 LRESULT SKSpriteNodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgRender: return SKSpriteNode_Render(object, cmp, wparm, lparm); // Render
+		case ID_Render: return SKSpriteNode_Render(object, cmp, wparm, lparm); // Render
 	}
 	return FALSE;
 }
@@ -241,8 +241,8 @@ static struct SKLabelNode SKLabelNodeDefaults = {
 };
 LRESULT SKLabelNodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgRender: return SKLabelNode_Render(object, cmp, wparm, lparm); // Render
-		case kMsgCreate: return SKLabelNode_Create(object, cmp, wparm, lparm); // Create
+		case ID_Render: return SKLabelNode_Render(object, cmp, wparm, lparm); // Render
+		case ID_Create: return SKLabelNode_Create(object, cmp, wparm, lparm); // Create
 	}
 	return FALSE;
 }
@@ -267,7 +267,7 @@ static struct SKView SKViewDefaults = {
 };
 LRESULT SKViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgForegroundContent: return SKView_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
+		case ID_ForegroundContent: return SKView_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
 	}
 	return FALSE;
 }

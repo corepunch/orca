@@ -44,7 +44,7 @@
   struct _##SYSNAME
 
 #define _SendMessage(OBJECT, MESSAGE, ...) \
-OBJ_SendMessageW(OBJECT, kMsg##MESSAGE, 0, &(MESSAGE##Msg_t) { __VA_ARGS__ })
+OBJ_SendMessageW(OBJECT, ID_##MESSAGE, 0, &(MESSAGE##Msg_t) { __VA_ARGS__ })
 
 #define HANDLER(CLASS, EVENT)                                                  \
   LRESULT CLASS##_##EVENT(struct Object* hObject,                              \

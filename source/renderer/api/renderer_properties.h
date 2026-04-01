@@ -2,8 +2,6 @@
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __RENDERER_PROPERTIES_H__
 #define __RENDERER_PROPERTIES_H__
-#define kMsgRenderScreen 0xd15bdf29
-#define kMsgRender 0x350cf42d
 
 // Texture
 #define ID_Texture 0x994c5594

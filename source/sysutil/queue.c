@@ -2,7 +2,7 @@
 #include <include/orca.h>
 #include <include/renderer.h>
 
-#define kMsgReadCommands 0x23d83fd3
+#define ID_ReadCommands 0x23d83fd3
 
 int f_peek_iterator(lua_State* L)
 {
@@ -19,27 +19,27 @@ int f_peek_iterator(lua_State* L)
   (void)has_event;  /* suppress -Wunused-but-set-variable on non-Emscripten targets */
 #endif
   switch (msg.message) {
-    case kMsgLeftMouseDown:
-    case kMsgRightMouseDown:
-    case kMsgOtherMouseDown:
-    case kMsgLeftMouseUp:
-    case kMsgRightMouseUp:
-    case kMsgOtherMouseUp:
-    case kMsgLeftMouseDragged:
-    case kMsgRightMouseDragged:
-    case kMsgOtherMouseDragged:
-    case kMsgLeftDoubleClick:
-    case kMsgRightDoubleClick:
-    case kMsgOtherDoubleClick:
-    case kMsgMouseMoved:
-    case kMsgScrollWheel:
-    case kMsgKeyDown:
-    case kMsgKeyUp:
-    case kMsgWindowClosed:
-    case kMsgWindowPaint:
-    case kMsgWindowChangedScreen:
-    case kMsgWindowResized:
-    case kMsgReadCommands:
+    case ID_LeftMouseDown:
+    case ID_RightMouseDown:
+    case ID_OtherMouseDown:
+    case ID_LeftMouseUp:
+    case ID_RightMouseUp:
+    case ID_OtherMouseUp:
+    case ID_LeftMouseDragged:
+    case ID_RightMouseDragged:
+    case ID_OtherMouseDragged:
+    case ID_LeftDoubleClick:
+    case ID_RightDoubleClick:
+    case ID_OtherDoubleClick:
+    case ID_MouseMoved:
+    case ID_ScrollWheel:
+    case ID_KeyDown:
+    case ID_KeyUp:
+    case ID_WindowClosed:
+    case ID_WindowPaint:
+    case ID_WindowChangedScreen:
+    case ID_WindowResized:
+    case ID_ReadCommands:
       msg.target = __userdata;
       break;
   }
@@ -62,9 +62,9 @@ int f_peek_message(lua_State* L) {
 //  static uint32_t message_id = 0;
 //  struct WI_Message data = { hobj, Msg, wParam, lParam, message_id++ };
 //  // HACK: unclear why this happens
-//  if (Msg == kMsgWindowPaint) {
+//  if (Msg == ID_WindowPaint) {
 //    for (uint16_t r = queue.read; r != queue.write; r++) {
-//      if (queue.data[r].message == kMsgWindowPaint &&
+//      if (queue.data[r].message == ID_WindowPaint &&
 //          queue.data[r].hobj == hobj)
 //      {
 //        memset(&queue.data[r], 0, sizeof(queue.data[r]));
@@ -82,12 +82,12 @@ int f_peek_message(lua_State* L) {
 //}
 
 #define MAX_CLIENTS 256
-#define kMsgReadCommands 0x23d83fd3
+#define ID_ReadCommands 0x23d83fd3
 typedef LRESULT (*message_proc_t)(lua_State*, struct WI_Message*);
 static message_proc_t clients[MAX_CLIENTS];
 
 bool_t SV_DispatchMessage(lua_State* L, struct WI_Message* msg) {
-  if (!msg->target && msg->message != kMsgReadCommands)
+  if (!msg->target && msg->message != ID_ReadCommands)
     return FALSE;
   for (int i = 0; i < MAX_CLIENTS; i++) {
     if (clients[i] && clients[i](L, msg)) {

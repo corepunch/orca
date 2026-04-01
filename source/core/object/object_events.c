@@ -27,7 +27,7 @@ void
 OBJ_Awake(lua_State* L, lpObject_t object)
 {
   if (!(object->flags & OF_UPDATED_ONCE)) {
-    lpcString_t cb = OBJ_FindCallbackForID(object, kMsgAwake);
+    lpcString_t cb = OBJ_FindCallbackForID(object, ID_Awake);
     if (cb) {
       luaX_pushObject(L, object);
       lua_getfield(L, -1, cb);

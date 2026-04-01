@@ -1,7 +1,7 @@
 #include <plugins/UIKit/UIKit.h>
 
 
-#define kMsgTriggered 0x3b1c3ae2
+#define ID_Triggered 0x3b1c3ae2
 
 HANDLER(Trigger, Attached)
 {

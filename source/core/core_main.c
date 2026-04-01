@@ -197,8 +197,8 @@ bool_t CORE_HandleKeyEvent(lua_State *L, struct WI_Message* msg);
 LRESULT CORE_ProcessMessage(lua_State *L, struct WI_Message* msg) {
   int tmp;
   switch (msg->message) {
-    case kMsgWindowPaint:
-    case kMsgWindowResized:
+    case ID_WindowPaint:
+    case ID_WindowResized:
       _fps[_counter++%MAX_FPS_CACHE] = (int)(WI_GetMilliseconds() - core.realtime);
       core.realtime = WI_GetMilliseconds();
       core.frame++;
@@ -207,31 +207,31 @@ LRESULT CORE_ProcessMessage(lua_State *L, struct WI_Message* msg) {
       } else {
         return FALSE;
       }
-    case kMsgLeftMouseDown:
-    case kMsgRightMouseDown:
-    case kMsgOtherMouseDown:
-    case kMsgLeftMouseUp:
-    case kMsgRightMouseUp:
-    case kMsgOtherMouseUp:
-    case kMsgLeftMouseDragged:
-    case kMsgRightMouseDragged:
-    case kMsgOtherMouseDragged:
-    case kMsgMouseMoved:
-    case kMsgScrollWheel:
+    case ID_LeftMouseDown:
+    case ID_RightMouseDown:
+    case ID_OtherMouseDown:
+    case ID_LeftMouseUp:
+    case ID_RightMouseUp:
+    case ID_OtherMouseUp:
+    case ID_LeftMouseDragged:
+    case ID_RightMouseDragged:
+    case ID_OtherMouseDragged:
+    case ID_MouseMoved:
+    case ID_ScrollWheel:
       return FALSE;
-    case kMsgKeyDown:
-    case kMsgKeyUp:
+    case ID_KeyDown:
+    case ID_KeyUp:
       return CORE_HandleKeyEvent(L, msg);
-    case kMsgResumeCoroutine:
+    case ID_ResumeCoroutine:
       switch (lua_resume(msg->target, L, LOWORD(msg->wParam), &tmp)) {
         case LUA_OK:
-          WI_PostMessageW(msg->target, kMsgStopCoroutine, msg->wParam, NULL);
+          WI_PostMessageW(msg->target, ID_StopCoroutine, msg->wParam, NULL);
           break;
         case LUA_YIELD:
-          WI_PostMessageW(msg->target, kMsgResumeCoroutine, MAKEDWORD(0, HIWORD(msg->wParam)), NULL);
+          WI_PostMessageW(msg->target, ID_ResumeCoroutine, MAKEDWORD(0, HIWORD(msg->wParam)), NULL);
           break;
         default:
-          WI_PostMessageW(msg->target, kMsgStopCoroutine, msg->wParam, NULL);
+          WI_PostMessageW(msg->target, ID_StopCoroutine, msg->wParam, NULL);
           if (!lua_isnil(msg->target, -1)) {
             lpcString_t err = lua_tostring(msg->target, -1);
             if (err) fprintf(stderr, "co.resume(): %s\n", err);
@@ -240,10 +240,10 @@ LRESULT CORE_ProcessMessage(lua_State *L, struct WI_Message* msg) {
       }
       lua_pop(L, 1);
       return FALSE;
-    case kMsgStopCoroutine:
+    case ID_StopCoroutine:
       luaL_unref(L, LUA_REGISTRYINDEX, HIWORD(msg->wParam));
       WI_RemoveFromQueue(msg->target);
-      WI_PostMessageW(NULL, kMsgWindowPaint, WI_GetSize(NULL), 0);
+      WI_PostMessageW(NULL, ID_WindowPaint, WI_GetSize(NULL), 0);
       return FALSE;
     default:
       return CORE_HandleObjectMessage(L, msg);

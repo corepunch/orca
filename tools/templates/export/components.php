@@ -34,7 +34,7 @@ static struct <?= $name ?> <?= $name ?>Defaults = {
 LRESULT <?= $name ?>Proc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
 	<?php foreach ($component->getEventHandlers() as $event): ?>
-		case kMsg<?= $event ?>: return <?= $name ?>_<?= $event ?>(object, cmp, wparm, lparm); // <?= $event ?>
+		case ID_<?= $event ?>: return <?= $name ?>_<?= $event ?>(object, cmp, wparm, lparm); // <?= $event ?>
 	<?php endforeach ?>
 	}
 	return FALSE;

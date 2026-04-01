@@ -399,9 +399,9 @@ HANDLER(Node2D, Draw2DContent)
 
   struct Texture* foreground = NULL;
 
-#define kMsgDrawBrush 0x0875c1d1
-#define kMsgUpdateGeometry 0x12c1a314
-#define kMsgForegroundContent 0x9a7735e5
+#define ID_DrawBrush 0x0875c1d1
+#define ID_UpdateGeometry 0x12c1a314
+#define ID_ForegroundContent 0x9a7735e5
 
   _SendMessage(hObject, UpdateGeometry);
   foreground = (struct Texture*)_SendMessage(hObject, ForegroundContent);
@@ -412,7 +412,7 @@ HANDLER(Node2D, Draw2DContent)
     //		MAT4_Translate(&offset, &(struct
     // vec3){pNode2D->Shadow.Offset.x,
     // pNode2D->Shadow.Offset.y}); 		MAT4_Multiply(pDraw2DContent,
-    // &offset, &mat); 		OBJ_SendMessage(hObject, kMsgDrawBrush, 0,
+    // &offset, &mat); 		OBJ_SendMessage(hObject, ID_DrawBrush, 0,
     //&(DRAWBRUSHSTRUCT){ 			.projection = &mat,
     //.image      = foreground.result, 			.brush      =
     // pNode2D->Shadow.Color, 			.foreground = FALSE });
@@ -530,7 +530,7 @@ HANDLER(Screen, MeasureOverride) {
 //  extern bool_t is_server;
 //  pScreen->_size = WI_GetSize(NULL);
 //  R_Init(LOWORD(pScreen->_size), HIWORD(pScreen->_size), is_server);
-//  WI_PostMessageW(hObject, kMsgWindowPaint, pScreen->_size, NULL);
+//  WI_PostMessageW(hObject, ID_WindowPaint, pScreen->_size, NULL);
 //  return FALSE;
 //}
 
@@ -602,7 +602,7 @@ HANDLER(Screen, WindowPaint) {
   OBJ_ClearDirtyFlags(hObject);
   
   if (OBJ_GetNext(hObject)) { // Render modal screens
-    OBJ_SendMessageW(OBJ_GetNext(hObject), kMsgWindowPaint, wParam, hObject);
+    OBJ_SendMessageW(OBJ_GetNext(hObject), ID_WindowPaint, wParam, hObject);
   }
   
   if (!pWindowPaint) {
@@ -627,7 +627,7 @@ HANDLER(Screen, WindowResized) {
   }
   R_ClearTextCache();
   OBJ_SetTreeDirty(hObject);
-  OBJ_SendMessageW(hObject, kMsgWindowPaint, wParam, NULL);
+  OBJ_SendMessageW(hObject, ID_WindowPaint, wParam, NULL);
   return FALSE;
 }
 

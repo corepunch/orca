@@ -313,7 +313,7 @@ static struct Project ProjectDefaults = {
 };
 LRESULT ProjectProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgStart: return Project_Start(object, cmp, wparm, lparm); // Start
+		case ID_Start: return Project_Start(object, cmp, wparm, lparm); // Start
 	}
 	return FALSE;
 }
@@ -338,11 +338,11 @@ static struct Directory DirectoryDefaults = {
 };
 LRESULT DirectoryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgLoadProject: return Directory_LoadProject(object, cmp, wparm, lparm); // LoadProject
-		case kMsgOpenFile: return Directory_OpenFile(object, cmp, wparm, lparm); // OpenFile
-		case kMsgFileExists: return Directory_FileExists(object, cmp, wparm, lparm); // FileExists
-		case kMsgHasChangedFiles: return Directory_HasChangedFiles(object, cmp, wparm, lparm); // HasChangedFiles
-		case kMsgDestroy: return Directory_Destroy(object, cmp, wparm, lparm); // Destroy
+		case ID_LoadProject: return Directory_LoadProject(object, cmp, wparm, lparm); // LoadProject
+		case ID_OpenFile: return Directory_OpenFile(object, cmp, wparm, lparm); // OpenFile
+		case ID_FileExists: return Directory_FileExists(object, cmp, wparm, lparm); // FileExists
+		case ID_HasChangedFiles: return Directory_HasChangedFiles(object, cmp, wparm, lparm); // HasChangedFiles
+		case ID_Destroy: return Directory_Destroy(object, cmp, wparm, lparm); // Destroy
 	}
 	return FALSE;
 }
@@ -368,11 +368,11 @@ static struct Package PackageDefaults = {
 };
 LRESULT PackageProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgLoadProject: return Package_LoadProject(object, cmp, wparm, lparm); // LoadProject
-		case kMsgOpenFile: return Package_OpenFile(object, cmp, wparm, lparm); // OpenFile
-		case kMsgFileExists: return Package_FileExists(object, cmp, wparm, lparm); // FileExists
-		case kMsgHasChangedFiles: return Package_HasChangedFiles(object, cmp, wparm, lparm); // HasChangedFiles
-		case kMsgDestroy: return Package_Destroy(object, cmp, wparm, lparm); // Destroy
+		case ID_LoadProject: return Package_LoadProject(object, cmp, wparm, lparm); // LoadProject
+		case ID_OpenFile: return Package_OpenFile(object, cmp, wparm, lparm); // OpenFile
+		case ID_FileExists: return Package_FileExists(object, cmp, wparm, lparm); // FileExists
+		case ID_HasChangedFiles: return Package_HasChangedFiles(object, cmp, wparm, lparm); // HasChangedFiles
+		case ID_Destroy: return Package_Destroy(object, cmp, wparm, lparm); // Destroy
 	}
 	return FALSE;
 }
@@ -432,7 +432,7 @@ static struct ThemeGroup ThemeGroupDefaults = {
 };
 LRESULT ThemeGroupProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgAttached: return ThemeGroup_Attached(object, cmp, wparm, lparm); // Attached
+		case ID_Attached: return ThemeGroup_Attached(object, cmp, wparm, lparm); // Attached
 	}
 	return FALSE;
 }

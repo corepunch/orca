@@ -2,25 +2,6 @@
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __UIKIT_PROPERTIES_H__
 #define __UIKIT_PROPERTIES_H__
-#define kMsgUpdateMatrix 0x5dbe404d
-#define kMsgHitTest 0x898160ea
-#define kMsgGetSize 0x80d9e0ee
-#define kMsgSubmit 0x4078e545
-#define kMsgMeasure 0x97619c7f
-#define kMsgArrange 0xc4cf2187
-#define kMsgMeasureOverride 0xff95a02f
-#define kMsgArrangeOverride 0x66d9e437
-#define kMsgPushProperty 0xc5ebaf40
-#define kMsgUpdateGeometry 0x12c1a314
-#define kMsgDrawBrush 0x0875c1d1
-#define kMsgHandleMessage 0xfc48a0da
-#define kMsgLoadView 0xa3650e54
-#define kMsgMakeText 0x73a47798
-#define kMsgTriggered 0x3b1c3ae2
-#define kMsgForegroundContent 0x9a7735e5
-#define kMsgUpdateLayout 0x928c657a
-#define kMsgNavigateToPage 0x6475c790
-#define kMsgNavigateBack 0x36bc88b5
 
 // DataObject
 #define ID_DataObject 0xeb3560da

@@ -137,7 +137,7 @@ LRESULT
 OBJ_SendMessageW(lpObject_t pobj, uint32_t MsgID, wParam_t wParam, lParam_t lParam)
 {
 //#ifndef KANZI_SUPPORT
-//	if (MsgID == kMsgUpdateLayout && !(OBJ_GetFlags(pobj) & OF_DIRTY))
+//	if (MsgID == ID_UpdateLayout && !(OBJ_GetFlags(pobj) & OF_DIRTY))
 //		return FALSE;
 //#endif
   FOR_EACH_LIST(struct component, cmp, _GetComponents(pobj))

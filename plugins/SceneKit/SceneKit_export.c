@@ -145,7 +145,7 @@ static struct Node3D Node3DDefaults = {
 };
 LRESULT Node3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgUpdateMatrix: return Node3D_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
+		case ID_UpdateMatrix: return Node3D_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
 	}
 	return FALSE;
 }
@@ -173,7 +173,7 @@ static struct Scene SceneDefaults = {
 };
 LRESULT SceneProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgUpdateMatrix: return Scene_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
+		case ID_UpdateMatrix: return Scene_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
 	}
 	return FALSE;
 }
@@ -196,7 +196,7 @@ static struct Model3D Model3DDefaults = {
 };
 LRESULT Model3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgRender: return Model3D_Render(object, cmp, wparm, lparm); // Render
+		case ID_Render: return Model3D_Render(object, cmp, wparm, lparm); // Render
 	}
 	return FALSE;
 }
@@ -224,7 +224,7 @@ static struct PlaneMeshNode PlaneMeshNodeDefaults = {
 };
 LRESULT PlaneMeshNodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgRender: return PlaneMeshNode_Render(object, cmp, wparm, lparm); // Render
+		case ID_Render: return PlaneMeshNode_Render(object, cmp, wparm, lparm); // Render
 	}
 	return FALSE;
 }
@@ -279,7 +279,7 @@ static struct TrajectoryList3D TrajectoryList3DDefaults = {
 };
 LRESULT TrajectoryList3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgUpdateMatrix: return TrajectoryList3D_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
+		case ID_UpdateMatrix: return TrajectoryList3D_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
 	}
 	return FALSE;
 }
@@ -305,7 +305,7 @@ static struct Viewport3D Viewport3DDefaults = {
 };
 LRESULT Viewport3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgForegroundContent: return Viewport3D_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
+		case ID_ForegroundContent: return Viewport3D_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
 	}
 	return FALSE;
 }
@@ -328,7 +328,7 @@ static struct PrefabView3D PrefabView3DDefaults = {
 };
 LRESULT PrefabView3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgLoadView: return PrefabView3D_LoadView(object, cmp, wparm, lparm); // LoadView
+		case ID_LoadView: return PrefabView3D_LoadView(object, cmp, wparm, lparm); // LoadView
 	}
 	return FALSE;
 }
@@ -490,8 +490,8 @@ static struct TextBlock3D TextBlock3DDefaults = {
 };
 LRESULT TextBlock3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgRender: return TextBlock3D_Render(object, cmp, wparm, lparm); // Render
-		case kMsgCreate: return TextBlock3D_Create(object, cmp, wparm, lparm); // Create
+		case ID_Render: return TextBlock3D_Render(object, cmp, wparm, lparm); // Render
+		case ID_Create: return TextBlock3D_Create(object, cmp, wparm, lparm); // Create
 	}
 	return FALSE;
 }
@@ -522,7 +522,7 @@ static struct Light3D Light3DDefaults = {
 };
 LRESULT Light3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgRender: return Light3D_Render(object, cmp, wparm, lparm); // Render
+		case ID_Render: return Light3D_Render(object, cmp, wparm, lparm); // Render
 	}
 	return FALSE;
 }
@@ -545,7 +545,7 @@ static struct SpriteView SpriteViewDefaults = {
 };
 LRESULT SpriteViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgRender: return SpriteView_Render(object, cmp, wparm, lparm); // Render
+		case ID_Render: return SpriteView_Render(object, cmp, wparm, lparm); // Render
 	}
 	return FALSE;
 }

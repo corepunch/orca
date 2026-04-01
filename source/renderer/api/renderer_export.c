@@ -248,7 +248,7 @@ static struct Image ImageDefaults = {
 };
 LRESULT ImageProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgStart: return Image_Start(object, cmp, wparm, lparm); // Start
+		case ID_Start: return Image_Start(object, cmp, wparm, lparm); // Start
 	}
 	return FALSE;
 }
@@ -276,7 +276,7 @@ static struct RenderTargetTexture RenderTargetTextureDefaults = {
 };
 LRESULT RenderTargetTextureProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgStart: return RenderTargetTexture_Start(object, cmp, wparm, lparm); // Start
+		case ID_Start: return RenderTargetTexture_Start(object, cmp, wparm, lparm); // Start
 	}
 	return FALSE;
 }
@@ -303,7 +303,7 @@ static struct CubeMapTexture CubeMapTextureDefaults = {
 };
 LRESULT CubeMapTextureProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgStart: return CubeMapTexture_Start(object, cmp, wparm, lparm); // Start
+		case ID_Start: return CubeMapTexture_Start(object, cmp, wparm, lparm); // Start
 	}
 	return FALSE;
 }
@@ -325,7 +325,7 @@ static struct IOSurfaceTexture IOSurfaceTextureDefaults = {
 };
 LRESULT IOSurfaceTextureProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgStart: return IOSurfaceTexture_Start(object, cmp, wparm, lparm); // Start
+		case ID_Start: return IOSurfaceTexture_Start(object, cmp, wparm, lparm); // Start
 	}
 	return FALSE;
 }
@@ -394,8 +394,8 @@ static struct Shader ShaderDefaults = {
 };
 LRESULT ShaderProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgStart: return Shader_Start(object, cmp, wparm, lparm); // Start
-		case kMsgDestroy: return Shader_Destroy(object, cmp, wparm, lparm); // Destroy
+		case ID_Start: return Shader_Start(object, cmp, wparm, lparm); // Start
+		case ID_Destroy: return Shader_Destroy(object, cmp, wparm, lparm); // Destroy
 	}
 	return FALSE;
 }
@@ -452,8 +452,8 @@ static struct Mesh MeshDefaults = {
 };
 LRESULT MeshProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgStart: return Mesh_Start(object, cmp, wparm, lparm); // Start
-		case kMsgDestroy: return Mesh_Destroy(object, cmp, wparm, lparm); // Destroy
+		case ID_Start: return Mesh_Start(object, cmp, wparm, lparm); // Start
+		case ID_Destroy: return Mesh_Destroy(object, cmp, wparm, lparm); // Destroy
 	}
 	return FALSE;
 }
@@ -478,8 +478,8 @@ static struct FontFamily FontFamilyDefaults = {
 };
 LRESULT FontFamilyProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgStart: return FontFamily_Start(object, cmp, wparm, lparm); // Start
-		case kMsgDestroy: return FontFamily_Destroy(object, cmp, wparm, lparm); // Destroy
+		case ID_Start: return FontFamily_Start(object, cmp, wparm, lparm); // Start
+		case ID_Destroy: return FontFamily_Destroy(object, cmp, wparm, lparm); // Destroy
 	}
 	return FALSE;
 }

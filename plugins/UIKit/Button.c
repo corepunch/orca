@@ -56,7 +56,7 @@ HANDLER(Button, LeftMouseUp)
 {
   SV_PostMessage(hObject, "Click", 0, hObject);
   if (pButton->Type == kButtonTypeSubmit) {
-    WI_PostMessageW(hObject, kMsgSubmit, 0, hObject);
+    WI_PostMessageW(hObject, ID_Submit, 0, hObject);
   }
   return FALSE;
 }

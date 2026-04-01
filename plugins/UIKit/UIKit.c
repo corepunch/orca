@@ -112,17 +112,17 @@ static int lua_pushmousevent(lua_State* L,
   }
 #endif
   switch (e->message) {
-    case kMsgMouseMoved:
-    case kMsgLeftMouseDown:
-    case kMsgRightMouseDown:
-    case kMsgOtherMouseDown:
-    case kMsgLeftMouseUp:
-    case kMsgRightMouseUp:
-    case kMsgOtherMouseUp:
-    case kMsgScrollWheel:
-    case kMsgLeftMouseDragged:
-    case kMsgRightMouseDragged:
-    case kMsgOtherMouseDragged:
+    case ID_MouseMoved:
+    case ID_LeftMouseDown:
+    case ID_RightMouseDown:
+    case ID_OtherMouseDown:
+    case ID_LeftMouseUp:
+    case ID_RightMouseUp:
+    case ID_OtherMouseUp:
+    case ID_ScrollWheel:
+    case ID_LeftMouseDragged:
+    case ID_RightMouseDragged:
+    case ID_OtherMouseDragged:
       // lua_pushnumber(L, LOWORD(e->wParam));
       // lua_pushnumber(L, HIWORD(e->wParam));
       lua_pushnumber(L, point.x);
@@ -130,8 +130,8 @@ static int lua_pushmousevent(lua_State* L,
       lua_pushnumber(L, LOWORD((intptr_t)e->lParam));
       lua_pushnumber(L, HIWORD((intptr_t)e->lParam));
       return 4;
-    case kMsgDragDrop:
-    case kMsgDragEnter:
+    case ID_DragDrop:
+    case ID_DragEnter:
       lua_getfield(L, LUA_REGISTRYINDEX, DRAG_SESSION);
       // lua_pushnumber(L, LOWORD(e->wParam));
       // lua_pushnumber(L, HIWORD(e->wParam));
@@ -156,7 +156,7 @@ UI_HandleMouseEvent(lua_State* L, lpObject_t root, struct WI_Message* e)
   if (focused && OBJ_GetFlags(focused)&OF_NOACTIVATE) {
     if ((sender = (lpObject_t)_SendMessage(focused, HitTest, x, y)))
       goto handle;
-    if (e->message == kMsgLeftMouseDown) {
+    if (e->message == ID_LeftMouseDown) {
       for (lpObject_t mod = focused, p = OBJ_GetParent(focused);
            mod && (OBJ_GetFlags(mod)&OF_NOACTIVATE);
            mod = p, p = p?OBJ_GetParent(p):NULL)
@@ -172,12 +172,12 @@ UI_HandleMouseEvent(lua_State* L, lpObject_t root, struct WI_Message* e)
     return FALSE;
 handle:
   switch (e->message) {
-    case kMsgLeftMouseDown:
-    case kMsgRightMouseDown:
-    case kMsgOtherMouseDown:
+    case ID_LeftMouseDown:
+    case ID_RightMouseDown:
+    case ID_OtherMouseDown:
       OBJ_SetFocus(sender);
       break;
-    case kMsgLeftMouseUp:
+    case ID_LeftMouseUp:
       OBJ_SetFocus(sender);
       if (lua_getfield(L, LUA_REGISTRYINDEX, DRAG_SESSION) == LUA_TTABLE) {
         luaX_parsefield(bool_t, active, -1, lua_toboolean);
@@ -186,12 +186,12 @@ handle:
           if (GetNode(view)) {
             GetNode(view)->Visible = FALSE;
           }
-          e->message = kMsgDragDrop;
+          e->message = ID_DragDrop;
         }
       }
       lua_pop(L, 1);
       break;
-    case kMsgLeftMouseDragged:
+    case ID_LeftMouseDragged:
       if (lua_getfield(L, LUA_REGISTRYINDEX, DRAG_SESSION) == LUA_TTABLE) {
         luaX_parsefield(bool_t, active, -1, lua_toboolean);
         luaX_parsefield(uint32_t, startloc, -1, (uint32_t)luaL_optinteger, -1);
@@ -206,7 +206,7 @@ handle:
           active = TRUE;
         }
         if (active) {
-          e->message = kMsgDragEnter;
+          e->message = ID_DragEnter;
           if (view && GetNode(view)) {
             GetNode(view)->Visible = TRUE;
           }
@@ -243,34 +243,34 @@ handle:
   
   void CORE_UpdateHover(void);
   switch (e->message) {
-    case kMsgMouseMoved:
+    case ID_MouseMoved:
       CORE_UpdateHover();
       break;
-    case kMsgDragDrop:
+    case ID_DragDrop:
       lua_pushnil(L);
       lua_setfield(L, LUA_REGISTRYINDEX, DRAG_SESSION);
       break;
-    case kMsgLeftMouseUp:
+    case ID_LeftMouseUp:
       lua_pushnil(L);
       lua_setfield(L, LUA_REGISTRYINDEX, DRAG_SESSION);
       break;
   }
-  return success || e->message == kMsgDragEnter;
+  return success || e->message == ID_DragEnter;
 }
 
 LRESULT ui_handle_event(lua_State* L, struct WI_Message *msg) {
   switch (msg->message) {
-    case kMsgLeftMouseUp:
-    case kMsgRightMouseUp:
-    case kMsgOtherMouseUp:
-    case kMsgLeftMouseDown:
-    case kMsgRightMouseDown:
-    case kMsgOtherMouseDown:
-    case kMsgLeftMouseDragged:
-    case kMsgRightMouseDragged:
-    case kMsgOtherMouseDragged:
-    case kMsgMouseMoved:
-    case kMsgScrollWheel:
+    case ID_LeftMouseUp:
+    case ID_RightMouseUp:
+    case ID_OtherMouseUp:
+    case ID_LeftMouseDown:
+    case ID_RightMouseDown:
+    case ID_OtherMouseDown:
+    case ID_LeftMouseDragged:
+    case ID_RightMouseDragged:
+    case ID_OtherMouseDragged:
+    case ID_MouseMoved:
+    case ID_ScrollWheel:
       return UI_HandleMouseEvent(L, msg->target, msg);
     default:
       return FALSE;

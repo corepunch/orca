@@ -11,7 +11,7 @@
 #define TAB_SIZE 4
 #define MEMSIZE(T) (T->BufferWidth*T->BufferHeight*4)
 
-#define kMsgPaint 0x36b37bd3
+#define ID_Paint 0x36b37bd3
 
 static uint32_t
 PointToData(TerminalViewCPtr t, int mx, int my, uint32_t *cursor)
@@ -152,7 +152,7 @@ static int f_erase(lua_State *L) {
 }
 
 static int f_invalidate(lua_State *L) {
-  WI_PostMessageW(luaX_checkObject(L, 1), kMsgPaint, 0, NULL);
+  WI_PostMessageW(luaX_checkObject(L, 1), ID_Paint, 0, NULL);
   return 0;
 }
 
@@ -186,7 +186,7 @@ static int f_getIndexPosition(lua_State *L) {
 
 HANDLER(TerminalView, Create) {
   pTerminalView->_buffer = ZeroAlloc(MEMSIZE(pTerminalView));
-  WI_PostMessageW(hObject, kMsgPaint, 0, NULL);
+  WI_PostMessageW(hObject, ID_Paint, 0, NULL);
   return FALSE;
 }
 

@@ -252,7 +252,7 @@ _LoadSprAnimations(lua_State* L, PFTG ftg, lpObject_t project)
 HANDLER(FtgPackage, LoadProject) {
   path_t tmp = { 0 };
   /*
-   * When kMsgLoadProject is dispatched from _TryLoadBundle() in filesystem.c,
+   * When ID_LoadProject is dispatched from _TryLoadBundle() in filesystem.c,
    * the object does not yet have a component attached.  The engine passes the
    * lua_State pointer as the second ObjProc argument instead of a real
    * component pointer – the same convention used by Package.c.
