@@ -457,13 +457,13 @@ class Enum extends Base {
 	}
 
 	function getValues() {
-		foreach ($this->_elem->xpath(".//enum[@name]") as $e) {
+		foreach ($this->_elem->xpath("./value[@name]") as $e) {
 			yield $e["name"] => (string)$e;
 		}
 	}
 
 	function getValuesNames() {
-		foreach ($this->_elem->xpath(".//enum[@name]") as $e) {
+		foreach ($this->_elem->xpath("./value[@name]") as $e) {
 			yield $e["name"];
 		}
 	}
@@ -602,7 +602,7 @@ class Model {
 		array_map(fn($s) => $s["name"], $sn),
 		array_map(fn($s) => new Interface($s, $this), $sn)
 		);
-		$en = $xml->xpath("./types/enums[@name]");
+		$en = $xml->xpath("./enums/enum[@name]");
 		$this->enums = array_combine(
 		array_map(fn($e) => $e["name"], $en),
 		array_map(fn($e) => new Enum($e, $this), $en)

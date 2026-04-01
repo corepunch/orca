@@ -10,43 +10,43 @@
     <external struct="KeyframeAnim"/>
     <external struct="lua_State"/>
   </externals>
-  <types>
-    <enums name="MessageRouting">
+  <enums>
+    <enum name="MessageRouting">
       <summary>Defines the routing strategy for messages sent to objects. This determines how messages propagate through the object hierarchy and which handlers are invoked.</summary>
-      <enum name="Bubbling">Messages are bubbled up the hierarchy.</enum>
-      <enum name="TunnelingBubbling">Messages are first tunneled down the hierarchy and then bubbled up.</enum>
-      <enum name="Tunneling">Messages are tunneled down the hierarchy.</enum>
-      <enum name="Direct">Messages are sent directly to the target object.</enum>
-    </enums>
-    <enums name="PropertyState">
+      <value name="Bubbling">Messages are bubbled up the hierarchy.</value>
+      <value name="TunnelingBubbling">Messages are first tunneled down the hierarchy and then bubbled up.</value>
+      <value name="Tunneling">Messages are tunneled down the hierarchy.</value>
+      <value name="Direct">Messages are sent directly to the target object.</value>
+    </enum>
+    <enum name="PropertyState">
       <summary>Represents the various states a property can be in.</summary>
-      <enum name="Normal">Normal property state when no triggers are active</enum>
-      <enum name="Hover">Property state when the mouse is hovering over it</enum>
-      <enum name="Focus">Property state when it has focus</enum>
-      <enum name="Select">Property state when it is selected</enum>
-      <enum name="Disable">Property state when it is disabled</enum>
-      <enum name="OldValue">Property state representing the previous value</enum>
-    </enums>
-    <enums name="BindingMode">
+      <value name="Normal">Normal property state when no triggers are active</value>
+      <value name="Hover">Property state when the mouse is hovering over it</value>
+      <value name="Focus">Property state when it has focus</value>
+      <value name="Select">Property state when it is selected</value>
+      <value name="Disable">Property state when it is disabled</value>
+      <value name="OldValue">Property state representing the previous value</value>
+    </enum>
+    <enum name="BindingMode">
       <summary>Various modes to bind properties</summary>
-      <enum name="OneWay">Default mode, updates target property when source changes</enum>
-      <enum name="TwoWay">Updates target property when source changes and updates source when target changes</enum>
-      <enum name="OneWayToSource">Updates source property when target changes, but not the other way around</enum>
-      <enum name="Expression">Allows binding to a custom expression</enum>
-    </enums>
-    <enums name="PropertyAttribute">
+      <value name="OneWay">Default mode, updates target property when source changes</value>
+      <value name="TwoWay">Updates target property when source changes and updates source when target changes</value>
+      <value name="OneWayToSource">Updates source property when target changes, but not the other way around</value>
+      <value name="Expression">Allows binding to a custom expression</value>
+    </enum>
+    <enum name="PropertyAttribute">
       <summary>Attributes that can be applied to properties for binding purposes.</summary>
-      <enum name="WholeProperty">Default binding to the whole property</enum>
-      <enum name="ColorR">Bind to the red channel of a color property</enum>
-      <enum name="ColorG">Bind to the green channel of a color property</enum>
-      <enum name="ColorB">Bind to the blue channel of a color property</enum>
-      <enum name="ColorA">Bind to the alpha channel of a color property</enum>
-      <enum name="VectorX">Bind to the X component of a vector property</enum>
-      <enum name="VectorY">Bind to the Y component of a vector property</enum>
-      <enum name="VectorZ">Bind to the Z component of a vector property</enum>
-      <enum name="VectorW">Bind to the W component of a vector property</enum>
-    </enums>
-  </types>
+      <value name="WholeProperty">Default binding to the whole property</value>
+      <value name="ColorR">Bind to the red channel of a color property</value>
+      <value name="ColorG">Bind to the green channel of a color property</value>
+      <value name="ColorB">Bind to the blue channel of a color property</value>
+      <value name="ColorA">Bind to the alpha channel of a color property</value>
+      <value name="VectorX">Bind to the X component of a vector property</value>
+      <value name="VectorY">Bind to the Y component of a vector property</value>
+      <value name="VectorZ">Bind to the Z component of a vector property</value>
+      <value name="VectorW">Bind to the W component of a vector property</value>
+    </enum>
+  </enums>
   <structs>
     <struct name="MessageType">
       <fields>

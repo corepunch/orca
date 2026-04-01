@@ -4,32 +4,32 @@
   <includes>
     <include file="include/orcadef.h"/>
   </includes>
-  <types>
-    <enums name="RotationOrder">
+  <enums>
+    <enum name="RotationOrder">
       <summary>Euler angle rotation order enumeration</summary>
       <details>Specifies the order in which rotations are applied around the X, Y, and Z axes. Different orders produce different final orientations for the same euler angles.</details>
-      <enum name="XYZ">Rotate around X axis first, then Y, then Z</enum>
-      <enum name="XZY">Rotate around X axis first, then Z, then Y</enum>
-      <enum name="YZX">Rotate around Y axis first, then Z, then X</enum>
-      <enum name="YXZ">Rotate around Y axis first, then X, then Z</enum>
-      <enum name="ZXY">Rotate around Z axis first, then X, then Y</enum>
-      <enum name="ZYX">Rotate around Z axis first, then Y, then X</enum>
-    </enums>
-    <enums name="DataType">
+      <value name="XYZ">Rotate around X axis first, then Y, then Z</value>
+      <value name="XZY">Rotate around X axis first, then Z, then Y</value>
+      <value name="YZX">Rotate around Y axis first, then Z, then X</value>
+      <value name="YXZ">Rotate around Y axis first, then X, then Z</value>
+      <value name="ZXY">Rotate around Z axis first, then X, then Y</value>
+      <value name="ZYX">Rotate around Z axis first, then Y, then X</value>
+    </enum>
+    <enum name="DataType">
       <summary>Specifies the underlying data type of a property.</summary>
       <details>DataType defines the fundamental type of value a property can hold, ranging from basic primitives like Bool and Float to complex structures such as Transform3D or custom Objects. It helps the engine interpret, validate, and serialize property values appropriately.</details>
-      <enum name="None">No data type specified.</enum>
-      <enum name="Bool">Boolean value representing true or false.</enum>
-      <enum name="Int">Signed integer value.</enum>
-      <enum name="Enum">Enumeration type represented by integer values mapped to named constants.</enum>
-      <enum name="Float">Floating-point numeric value.</enum>
-      <enum name="String">String data, heap-allocated to support arbitrary length content.</enum>
-      <enum name="Event">Event reference used to bind triggers or callbacks.</enum>
-      <enum name="Struct">Composite data structure containing multiple fields used for packaging related geometric, visual, and layout properties together.</enum>
-      <enum name="Color">RGBA color value represented as four floating-point components (red, green, blue, alpha) in the range 0.0 to 1.0.</enum>
-      <enum name="Object">Reference to a complex object instance.</enum>
-    </enums>
-  </types>
+      <value name="None">No data type specified.</value>
+      <value name="Bool">Boolean value representing true or false.</value>
+      <value name="Int">Signed integer value.</value>
+      <value name="Enum">Enumeration type represented by integer values mapped to named constants.</value>
+      <value name="Float">Floating-point numeric value.</value>
+      <value name="String">String data, heap-allocated to support arbitrary length content.</value>
+      <value name="Event">Event reference used to bind triggers or callbacks.</value>
+      <value name="Struct">Composite data structure containing multiple fields used for packaging related geometric, visual, and layout properties together.</value>
+      <value name="Color">RGBA color value represented as four floating-point components (red, green, blue, alpha) in the range 0.0 to 1.0.</value>
+      <value name="Object">Reference to a complex object instance.</value>
+    </enum>
+  </enums>
   <structs>
     <struct name="vec2" prefix="VEC2_" export="Vector2D" sealed="true">
       <summary>2D vector structure</summary>

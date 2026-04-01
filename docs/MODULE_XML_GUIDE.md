@@ -46,9 +46,9 @@ Every module XML file must have this basic structure:
   <externals>
     <external struct="ExternalType"/>
   </externals>
-  <types>
-    <enums name="MyEnum">...</enums>
-  </types>
+  <enums>
+    <enum name="MyEnum">...</enum>
+  </enums>
   <structs>
     <struct name="MyStruct">...</struct>
   </structs>
@@ -64,7 +64,7 @@ Every module XML file must have this basic structure:
 </module>
 ```
 
-Type definitions are grouped into typed container elements at the module root. This keeps all enumerations in `<types>`, all structs in `<structs>`, all interfaces in `<interfaces>`, all components in `<classes>`, and all global functions in `<functions>`.
+Type definitions are grouped into typed container elements at the module root. This keeps all enumerations in `<enums>`, all structs in `<structs>`, all interfaces in `<interfaces>`, all components in `<classes>`, and all global functions in `<functions>`.
 
 ### Root Element: `<module>`
 
@@ -82,7 +82,7 @@ Type definitions at the module level are always wrapped in a typed container:
 
 | Container | Contents | Element type |
 |-----------|----------|--------------|
-| `<types>` | Enumeration definitions | `<enums>` |
+| `<enums>` | Enumeration definitions | `<enum>` |
 | `<structs>` | C struct definitions | `<struct>` |
 | `<interfaces>` | Abstract interface definitions | `<interface>` |
 | `<classes>` | Component (class) definitions | `<class>` |
@@ -90,7 +90,7 @@ Type definitions at the module level are always wrapped in a typed container:
 
 ## Type Definition Elements
 
-### 1. `<enums>` — Enumeration Definitions
+### 1. `<enum>` — Enumeration Definitions
 
 Defines an enumeration type with named constants.
 
@@ -100,17 +100,17 @@ Defines an enumeration type with named constants.
 **Child Elements:**
 - `<summary>` - Brief description
 - `<details>` - Detailed explanation
-- `<enum>` - Individual enumeration value
+- `<value>` - Individual enumeration value
 
 **Example:**
 ```xml
-<types>
-  <enums name="RotationOrder">
+<enums>
+  <enum name="RotationOrder">
     <summary>Euler angle rotation order enumeration</summary>
-    <enum name="XYZ">Rotate around X axis first, then Y, then Z</enum>
-    <enum name="XZY">Rotate around X axis first, then Z, then Y</enum>
-  </enums>
-</types>
+    <value name="XYZ">Rotate around X axis first, then Y, then Z</value>
+    <value name="XZY">Rotate around X axis first, then Z, then Y</value>
+  </enum>
+</enums>
 ```
 
 ### 2. `<struct>` — Structure Definitions

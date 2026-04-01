@@ -6,56 +6,56 @@
     <include file="source/core/core.h"/>
     <include file="plugins/UIKit/UIKit.h"/>
   </includes>
-  <types>
-    <enums name="StencilOp">
+  <enums>
+    <enum name="StencilOp">
       <summary>Operations performed on stencil buffer values when stencil tests pass or fail</summary>
-      <enum name="Keep">Keep the current stencil buffer value unchanged</enum>
-      <enum name="Zero">Set the stencil buffer value to zero</enum>
-      <enum name="Replace">Replace stencil buffer value with the reference value</enum>
-      <enum name="Increment">Increment stencil buffer value, clamping to maximum</enum>
-      <enum name="IncrementWrap">Increment stencil buffer value, wrapping to zero at maximum</enum>
-      <enum name="Decrement">Decrement stencil buffer value, clamping to zero</enum>
-      <enum name="DecrementWrap">Decrement stencil buffer value, wrapping to maximum at zero</enum>
-      <enum name="Invert">Bitwise invert the stencil buffer value</enum>
-    </enums>
-    <enums name="ViewportMode">
+      <value name="Keep">Keep the current stencil buffer value unchanged</value>
+      <value name="Zero">Set the stencil buffer value to zero</value>
+      <value name="Replace">Replace stencil buffer value with the reference value</value>
+      <value name="Increment">Increment stencil buffer value, clamping to maximum</value>
+      <value name="IncrementWrap">Increment stencil buffer value, wrapping to zero at maximum</value>
+      <value name="Decrement">Decrement stencil buffer value, clamping to zero</value>
+      <value name="DecrementWrap">Decrement stencil buffer value, wrapping to maximum at zero</value>
+      <value name="Invert">Bitwise invert the stencil buffer value</value>
+    </enum>
+    <enum name="ViewportMode">
       <summary>Coordinate systems for viewport and scissor rectangle specification</summary>
-      <enum name="Relative">Coordinates specified as normalized values (0.0 to 1.0) relative to render target size</enum>
-      <enum name="Absolute">Coordinates specified in absolute pixels</enum>
-    </enums>
-    <enums name="CullMode">
+      <value name="Relative">Coordinates specified as normalized values (0.0 to 1.0) relative to render target size</value>
+      <value name="Absolute">Coordinates specified in absolute pixels</value>
+    </enum>
+    <enum name="CullMode">
       <summary>Face culling modes to optimize rendering by discarding non-visible triangle faces</summary>
-      <enum name="None">No face culling - render both front and back faces</enum>
-      <enum name="Back">Cull back-facing triangles (standard for solid objects)</enum>
-      <enum name="Front">Cull front-facing triangles (useful for interior views or special effects)</enum>
-    </enums>
-    <enums name="ColorWriteMode">
+      <value name="None">No face culling - render both front and back faces</value>
+      <value name="Back">Cull back-facing triangles (standard for solid objects)</value>
+      <value name="Front">Cull front-facing triangles (useful for interior views or special effects)</value>
+    </enum>
+    <enum name="ColorWriteMode">
       <summary>Control which color channels are written to the framebuffer during rendering</summary>
-      <enum name="None">Disable all color channel writes (useful for depth-only or stencil-only passes)</enum>
-      <enum name="RGB">Write to red, green, and blue channels only</enum>
-      <enum name="RGBA">Write to all four color channels including alpha</enum>
-      <enum name="R">Write to red channel only</enum>
-      <enum name="G">Write to green channel only</enum>
-      <enum name="B">Write to blue channel only</enum>
-      <enum name="GB">Write to green and blue channels only</enum>
-      <enum name="A">Write to alpha channel only</enum>
-    </enums>
-    <enums name="FovType">
+      <value name="None">Disable all color channel writes (useful for depth-only or stencil-only passes)</value>
+      <value name="RGB">Write to red, green, and blue channels only</value>
+      <value name="RGBA">Write to all four color channels including alpha</value>
+      <value name="R">Write to red channel only</value>
+      <value name="G">Write to green channel only</value>
+      <value name="B">Write to blue channel only</value>
+      <value name="GB">Write to green and blue channels only</value>
+      <value name="A">Write to alpha channel only</value>
+    </enum>
+    <enum name="FovType">
       <summary>Field of view calculation methods for camera projection</summary>
-      <enum name="Xfov">Field of view specified as horizontal angle in degrees</enum>
-      <enum name="Yfov">Field of view specified as vertical angle in degrees (most common)</enum>
-    </enums>
-    <enums name="ProjectionType">
+      <value name="Xfov">Field of view specified as horizontal angle in degrees</value>
+      <value name="Yfov">Field of view specified as vertical angle in degrees (most common)</value>
+    </enum>
+    <enum name="ProjectionType">
       <summary>Camera projection modes for 3D to 2D transformation</summary>
-      <enum name="Perspective">Perspective projection with realistic depth foreshortening</enum>
-      <enum name="Orthographic">Orthographic projection with parallel lines (no perspective distortion)</enum>
-    </enums>
-    <enums name="LightType">
+      <value name="Perspective">Perspective projection with realistic depth foreshortening</value>
+      <value name="Orthographic">Orthographic projection with parallel lines (no perspective distortion)</value>
+    </enum>
+    <enum name="LightType">
       <summary>Types of light sources for scene illumination</summary>
-      <enum name="Point">Omnidirectional point light source (like a light bulb)</enum>
-      <enum name="Spot">Directional spot light with cone-shaped illumination area</enum>
-    </enums>
-  </types>
+      <value name="Point">Omnidirectional point light source (like a light bulb)</value>
+      <value name="Spot">Directional spot light with cone-shaped illumination area</value>
+    </enum>
+  </enums>
   <classes>
     <class name="Node3D" parent="Node" children="Node3D">
       <summary>Base class for all 3D scene graph nodes with transform and positioning capabilities</summary>

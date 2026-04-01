@@ -13,7 +13,7 @@
 -->
 
 <!-- Root Element -->
-<!ELEMENT module (require* | includes? | externals? | resource | types? | structs? | interfaces? | classes? | functions?)*>
+<!ELEMENT module (require* | includes? | externals? | resource | enums? | structs? | interfaces? | classes? | functions?)*>
 <!ATTLIST module
   name CDATA #REQUIRED
   namespace CDATA #REQUIRED
@@ -46,7 +46,7 @@
 <!ELEMENT externals (external*)>
 
 <!-- Grouped enumeration type definitions -->
-<!ELEMENT types (enums*)>
+<!ELEMENT enums (enum*)>
 
 <!-- Grouped struct definitions -->
 <!ELEMENT structs (struct*)>
@@ -82,13 +82,13 @@
 >
 
 <!-- Enumeration Definition -->
-<!ELEMENT enums (summary?, details?, enum+)>
-<!ATTLIST enums
+<!ELEMENT enum (summary?, details?, value+)>
+<!ATTLIST enum
   name CDATA #REQUIRED
 >
 
-<!ELEMENT enum (#PCDATA)>
-<!ATTLIST enum
+<!ELEMENT value (#PCDATA)>
+<!ATTLIST value
   name CDATA #REQUIRED
 >
 
