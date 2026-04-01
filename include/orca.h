@@ -379,6 +379,31 @@ typedef LRESULT (*objectProc_t)(lpObject_t, void*, uint32_t, wParam_t, lParam_t)
 #define kEventStopCoroutine 0xf13ac065
 #define kEventReadCommands 0x23d83fd3
 
+// Platform event aliases — values match the unqualified IDs sent by the platform layer
+#define kEventWindowPaint         0x7ef9e53b // fnv1a32("WindowPaint")
+#define kEventWindowResized       0xa216e847 // fnv1a32("WindowResized")
+#define kEventWindowClosed        0x7268e69d // fnv1a32("WindowClosed")
+#define kEventWindowChangedScreen 0x5fe6b4bf // fnv1a32("WindowChangedScreen")
+#define kEventKeyDown             0x83b19b78 // fnv1a32("KeyDown")
+#define kEventKeyUp               0xfca37d71 // fnv1a32("KeyUp")
+#define kEventChar                0x2879e23d // fnv1a32("Char")
+#define kEventLeftMouseDown       0xfac0b5e7 // fnv1a32("LeftMouseDown")
+#define kEventRightMouseDown      0x1057ac50 // fnv1a32("RightMouseDown")
+#define kEventOtherMouseDown      0x9822ca20 // fnv1a32("OtherMouseDown")
+#define kEventLeftMouseUp         0xf73e019e // fnv1a32("LeftMouseUp")
+#define kEventRightMouseUp        0x9160ff69 // fnv1a32("RightMouseUp")
+#define kEventOtherMouseUp        0x567302d9 // fnv1a32("OtherMouseUp")
+#define kEventLeftMouseDragged    0x088e1f1b // fnv1a32("LeftMouseDragged")
+#define kEventRightMouseDragged   0x29d4da42 // fnv1a32("RightMouseDragged")
+#define kEventOtherMouseDragged   0x0ae3dd32 // fnv1a32("OtherMouseDragged")
+#define kEventLeftDoubleClick     0x5a92bc67 // fnv1a32("LeftDoubleClick")
+#define kEventRightDoubleClick    0xeeebbe60 // fnv1a32("RightDoubleClick")
+#define kEventOtherDoubleClick    0xf6c60630 // fnv1a32("OtherDoubleClick")
+#define kEventMouseMoved          0x65db8b6f // fnv1a32("MouseMoved")
+#define kEventScrollWheel         0x626f90e3 // fnv1a32("ScrollWheel")
+#define kEventDragDrop            0x25989e7a // fnv1a32("DragDrop")
+#define kEventDragEnter           0xc0e97a77 // fnv1a32("DragEnter")
+
 #define EVENT_PTR(NAME) NAME##MsgPtr
 
 //typedef lpObject_t* EVENT_PTR(HitTest);

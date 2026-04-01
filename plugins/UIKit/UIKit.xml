@@ -500,8 +500,8 @@
       <handle message="Node2D.UpdateGeometry"/>
       <handle message="Node2D.DrawBrush"/>
       <handle message="Node.HandleMessage"/>
-      <handle message="Input.ScrollWheel"/>
-      <handle message="Input.MouseMoved"/>
+      <handle message="ScrollWheel"/>
+      <handle message="MouseMoved"/>
       <handle message="Node.HitTest"/>
       <handle message="Node2D.Measure"/>
       <handle message="Node2D.Arrange"/>
@@ -654,9 +654,9 @@
       <handle message="Object.Create"/>
       <handle message="Node2D.DrawBrush"/>
       <handle message="TextBlockConcept.MakeText"/>
-      <handle message="Input.KeyDown"/>
+      <handle message="KeyDown"/>
       <handle message="Node.KillFocus"/>
-      <handle message="Input.LeftMouseUp"/>
+      <handle message="LeftMouseUp"/>
       <handle message="Node2D.MeasureOverride"/>
     </handles>
     <properties>
@@ -676,8 +676,8 @@
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <handles>
       <handle message="Object.Create"/>
-      <handle message="Input.LeftMouseUp"/>
-      <handle message="Input.KeyDown"/>
+      <handle message="LeftMouseUp"/>
+      <handle message="KeyDown"/>
       <handle message="Node2D.DrawBrush"/>
     </handles>
     <properties>
@@ -689,7 +689,7 @@
     <details>Displays static text that can be associated with input controls for accessibility. Clicking the label can transfer focus to associated control.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     <handles>
-      <handle message="Input.LeftMouseUp"/>
+      <handle message="LeftMouseUp"/>
     </handles>
     <properties>
       <property name="For" type="string">Identifier of associated form control </property>
@@ -753,8 +753,8 @@
       <handle message="Node2D.MeasureOverride"/>
       <handle message="Object.Create"/>
       <handle message="Object.Destroy"/>
-      <handle message="window.WindowResized"/>
-      <handle message="window.WindowPaint"/>
+      <handle message="WindowResized"/>
+      <handle message="WindowPaint"/>
     </handles>
     <properties>
       <property name="ClearColor" type="color">Background clear color for the screen </property>
@@ -885,7 +885,7 @@
       <handle message="Object.Create"/>
       <handle message="Node2D.DrawBrush"/>
       <handle message="Node.PushProperty"/>
-      <handle message="Input.ScrollWheel"/>
+      <handle message="ScrollWheel"/>
     </handles>
     <properties>
       <property name="BufferWidth" type="int" default="256">Buffer width</property>

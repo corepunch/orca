@@ -17,7 +17,7 @@ ORCA_API struct ClassDesc _##NAME = { \
 <?php foreach ($components as $name => $component):?>
 	<?php foreach ($component->getEventHandlers() as $event): ?>
 		<?php $pos = strrpos($event, '.');
-					$after = ($pos !== false) ? substr($event, $pos + 1) : ''; 
+					$after = ($pos !== false) ? substr($event, $pos + 1) : $event; 
 					$ident = str_replace('.', '_', $event); ?>
 LRESULT <?= $name ?>_<?= $after ?>(struct Object*, struct <?= $name ?>*, wParam_t, <?= $after ?>MsgPtr);
 	<?php endforeach ?>
@@ -38,7 +38,7 @@ LRESULT <?= $name ?>Proc(struct Object* object, void* cmp, uint32_t message, wPa
 	switch (message) {
 	<?php foreach ($component->getEventHandlers() as $event): ?>
 		<?php $pos = strrpos($event, '.');
-					$after = ($pos !== false) ? substr($event, $pos + 1) : ''; 
+					$after = ($pos !== false) ? substr($event, $pos + 1) : $event; 
 					$ident = str_replace('.', '_', $event); ?>
 		case ID_<?= $ident ?>: return <?= $name ?>_<?= $after ?>(object, cmp, wparm, lparm); // <?= $event ?>
 	<?php endforeach ?>
