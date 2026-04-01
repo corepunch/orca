@@ -112,17 +112,17 @@ static int lua_pushmousevent(lua_State* L,
   }
 #endif
   switch (e->message) {
-    case kMsgMouseMoved:
-    case kMsgLeftMouseDown:
-    case kMsgRightMouseDown:
-    case kMsgOtherMouseDown:
-    case kMsgLeftMouseUp:
-    case kMsgRightMouseUp:
-    case kMsgOtherMouseUp:
-    case kMsgScrollWheel:
-    case kMsgLeftMouseDragged:
-    case kMsgRightMouseDragged:
-    case kMsgOtherMouseDragged:
+    case kEventMouseMoved:
+    case kEventLeftMouseDown:
+    case kEventRightMouseDown:
+    case kEventOtherMouseDown:
+    case kEventLeftMouseUp:
+    case kEventRightMouseUp:
+    case kEventOtherMouseUp:
+    case kEventScrollWheel:
+    case kEventLeftMouseDragged:
+    case kEventRightMouseDragged:
+    case kEventOtherMouseDragged:
       // lua_pushnumber(L, LOWORD(e->wParam));
       // lua_pushnumber(L, HIWORD(e->wParam));
       lua_pushnumber(L, point.x);
@@ -130,8 +130,8 @@ static int lua_pushmousevent(lua_State* L,
       lua_pushnumber(L, LOWORD((intptr_t)e->lParam));
       lua_pushnumber(L, HIWORD((intptr_t)e->lParam));
       return 4;
-    case kMsgDragDrop:
-    case kMsgDragEnter:
+    case kEventDragDrop:
+    case kEventDragEnter:
       lua_getfield(L, LUA_REGISTRYINDEX, DRAG_SESSION);
       // lua_pushnumber(L, LOWORD(e->wParam));
       // lua_pushnumber(L, HIWORD(e->wParam));
@@ -154,30 +154,30 @@ UI_HandleMouseEvent(lua_State* L, lpObject_t root, struct WI_Message* e)
   }
   uint16_t x = LOWORD(e->wParam), y = HIWORD(e->wParam);
   if (focused && OBJ_GetFlags(focused)&OF_NOACTIVATE) {
-    if ((sender = (lpObject_t)_SendMessage(focused, HitTest, x, y)))
+    if ((sender = (lpObject_t)_SendMessage(focused, Node, HitTest, x, y)))
       goto handle;
-    if (e->message == kMsgLeftMouseDown) {
+    if (e->message == kEventLeftMouseDown) {
       for (lpObject_t mod = focused, p = OBJ_GetParent(focused);
            mod && (OBJ_GetFlags(mod)&OF_NOACTIVATE);
            mod = p, p = p?OBJ_GetParent(p):NULL)
       {
-        if ((sender = (lpObject_t)_SendMessage(mod, HitTest, x, y)))
+        if ((sender = (lpObject_t)_SendMessage(mod, Node, HitTest, x, y)))
           goto handle;
         OBJ_RemoveFromParent(L, mod);
       }
       return TRUE;
     }
   }
-  if (!(sender = (lpObject_t)_SendMessage(root, HitTest, x, y)))
+  if (!(sender = (lpObject_t)_SendMessage(root, Node, HitTest, x, y)))
     return FALSE;
 handle:
   switch (e->message) {
-    case kMsgLeftMouseDown:
-    case kMsgRightMouseDown:
-    case kMsgOtherMouseDown:
+    case kEventLeftMouseDown:
+    case kEventRightMouseDown:
+    case kEventOtherMouseDown:
       OBJ_SetFocus(sender);
       break;
-    case kMsgLeftMouseUp:
+    case kEventLeftMouseUp:
       OBJ_SetFocus(sender);
       if (lua_getfield(L, LUA_REGISTRYINDEX, DRAG_SESSION) == LUA_TTABLE) {
         luaX_parsefield(bool_t, active, -1, lua_toboolean);
@@ -186,12 +186,12 @@ handle:
           if (GetNode(view)) {
             GetNode(view)->Visible = FALSE;
           }
-          e->message = kMsgDragDrop;
+          e->message = ID_Input_DragDrop;
         }
       }
       lua_pop(L, 1);
       break;
-    case kMsgLeftMouseDragged:
+    case kEventLeftMouseDragged:
       if (lua_getfield(L, LUA_REGISTRYINDEX, DRAG_SESSION) == LUA_TTABLE) {
         luaX_parsefield(bool_t, active, -1, lua_toboolean);
         luaX_parsefield(uint32_t, startloc, -1, (uint32_t)luaL_optinteger, -1);
@@ -206,7 +206,7 @@ handle:
           active = TRUE;
         }
         if (active) {
-          e->message = kMsgDragEnter;
+          e->message = ID_Input_DragEnter;
           if (view && GetNode(view)) {
             GetNode(view)->Visible = TRUE;
           }
@@ -243,34 +243,34 @@ handle:
   
   void CORE_UpdateHover(void);
   switch (e->message) {
-    case kMsgMouseMoved:
+    case kEventMouseMoved:
       CORE_UpdateHover();
       break;
-    case kMsgDragDrop:
+    case kEventDragDrop:
       lua_pushnil(L);
       lua_setfield(L, LUA_REGISTRYINDEX, DRAG_SESSION);
       break;
-    case kMsgLeftMouseUp:
+    case kEventLeftMouseUp:
       lua_pushnil(L);
       lua_setfield(L, LUA_REGISTRYINDEX, DRAG_SESSION);
       break;
   }
-  return success || e->message == kMsgDragEnter;
+  return success || e->message == ID_Input_DragEnter;
 }
 
 LRESULT ui_handle_event(lua_State* L, struct WI_Message *msg) {
   switch (msg->message) {
-    case kMsgLeftMouseUp:
-    case kMsgRightMouseUp:
-    case kMsgOtherMouseUp:
-    case kMsgLeftMouseDown:
-    case kMsgRightMouseDown:
-    case kMsgOtherMouseDown:
-    case kMsgLeftMouseDragged:
-    case kMsgRightMouseDragged:
-    case kMsgOtherMouseDragged:
-    case kMsgMouseMoved:
-    case kMsgScrollWheel:
+    case kEventLeftMouseUp:
+    case kEventRightMouseUp:
+    case kEventOtherMouseUp:
+    case kEventLeftMouseDown:
+    case kEventRightMouseDown:
+    case kEventOtherMouseDown:
+    case kEventLeftMouseDragged:
+    case kEventRightMouseDragged:
+    case kEventOtherMouseDragged:
+    case kEventMouseMoved:
+    case kEventScrollWheel:
       return UI_HandleMouseEvent(L, msg->target, msg);
     default:
       return FALSE;

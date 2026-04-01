@@ -18,7 +18,7 @@ HANDLER(SKNode, UpdateMatrix)
   pSKNode->Matrix = MAT4_Multiply(&pUpdateMatrix->parent, &matrix);
   pSKNode->_opacity = GetNode(hObject)->Opacity * pUpdateMatrix->opacity;
 
-  FOR_EACH_CHILD(hObject, _SendMessage, UpdateMatrix,
+  FOR_EACH_CHILD(hObject, _SendMessage, Node, UpdateMatrix,
                    .parent = pSKNode->Matrix,
                    .opacity = pSKNode->_opacity,
                  );

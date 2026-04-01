@@ -85,7 +85,7 @@
     <summary>2D viewport that renders an SKScene into the UI hierarchy</summary>
     <details>Acts as the bridge between the 2D UI system and the sprite scene hierarchy. Renders the attached SKScene using a 2D orthographic projection into its Node2D bounds.</details>
     <handles>
-      <handle message="Node.ForegroundContent"/>
+      <handle message="Node2D.ForegroundContent"/>
     </handles>
     <properties>
       <property name="ReferenceWidth" type="float">Reference width for the sprite coordinate system</property>

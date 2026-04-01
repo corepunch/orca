@@ -43,7 +43,7 @@ HANDLER(ImageView, MeasureOverride)
 }
 
 HANDLER(ImageView, ArrangeOverride) {
-  return _SendMessage(hObject, MeasureOverride,
+  return _SendMessage(hObject, Node2D, MeasureOverride,
                       .Width = pArrangeOverride->Width,
                       .Height = pArrangeOverride->Height);
 }

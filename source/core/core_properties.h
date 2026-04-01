@@ -34,8 +34,6 @@
 #define ID_Object_Release 0x10360cb1 // Object.Release
 #define ID_Object_Destroy 0x8ef01bbe // Object.Destroy
 #define ID_Object_Timer 0x6e6ade9d // Object.Timer
-#define ID_Object_ResumeCoroutine 0x8c03e4af // Object.ResumeCoroutine
-#define ID_Object_StopCoroutine 0x56984d16 // Object.StopCoroutine
 
 #define ID_MessageType 0x5afb49ac
 #define ID_MessageType_Name 0xada0c3e5 // MessageType.Name
@@ -75,8 +73,6 @@
 #define ID_Release 0x6d1e9b1e
 #define ID_Destroy 0x4d76a4e5
 #define ID_Timer 0xeb53a5c2
-#define ID_ResumeCoroutine 0x3cc3febc
-#define ID_StopCoroutine 0xf13ac065
 	
 
 #endif

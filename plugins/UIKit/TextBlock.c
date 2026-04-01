@@ -160,7 +160,7 @@ HANDLER(TextBlock, MeasureOverride)
 {
   TextRunPtr output = GetTextRun(hObject);
   TextBlockConceptPtr textblock = GetTextBlockConcept(hObject);
-  _SendMessage(hObject, MakeText,
+  _SendMessage(hObject, TextBlockConcept, MakeText,
                    .text = textblock->_text,
                    .availableSpace = pMeasureOverride->Width);
   Text_GetInfo(textblock->_text, &output->_textinfo);

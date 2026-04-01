@@ -403,8 +403,8 @@ HANDLER(Node2D, Draw2DContent)
 #define kMsgUpdateGeometry 0x12c1a314
 #define kMsgForegroundContent 0x9a7735e5
 
-  _SendMessage(hObject, UpdateGeometry);
-  foreground = (struct Texture*)_SendMessage(hObject, ForegroundContent);
+  _SendMessage(hObject, Node2D, UpdateGeometry);
+  foreground = (struct Texture*)_SendMessage(hObject, Node2D, ForegroundContent);
   
   if (pNode2D->BoxShadow.Color.a) {
     //		struct mat4 mat, offset;
@@ -412,7 +412,7 @@ HANDLER(Node2D, Draw2DContent)
     //		MAT4_Translate(&offset, &(struct
     // vec3){pNode2D->Shadow.Offset.x,
     // pNode2D->Shadow.Offset.y}); 		MAT4_Multiply(pDraw2DContent,
-    // &offset, &mat); 		OBJ_SendMessage(hObject, kMsgDrawBrush, 0,
+    // &offset, &mat); 		OBJ_SendMessage(hObject, ID_Node2D_DrawBrush, 0,
     //&(DRAWBRUSHSTRUCT){ 			.projection = &mat,
     //.image      = foreground.result, 			.brush      =
     // pNode2D->Shadow.Color, 			.foreground = FALSE });
@@ -432,7 +432,7 @@ HANDLER(Node2D, Draw2DContent)
   }
 
   if (pNode2D->Ring.Width > 0) {
-    _SendMessage(hObject, DrawBrush,
+    _SendMessage(hObject, Node2D, DrawBrush,
       .projection = pDraw2DContent->ProjectionMatrix,
       .borderOffset = pNode2D->Ring.Offset,
       .borderWidth = {
@@ -456,7 +456,7 @@ HANDLER(Node2D, Draw2DContent)
   }, Zero = {0};
 
   if (memcmp(&BorderWidth, &Zero, sizeof(struct vec4))) {
-    _SendMessage(hObject, DrawBrush,
+    _SendMessage(hObject, Node2D, DrawBrush,
       .projection = pDraw2DContent->ProjectionMatrix,
       .borderWidth = BorderWidth,
       .foreground = FALSE,
@@ -467,13 +467,13 @@ HANDLER(Node2D, Draw2DContent)
   }
 
   if (!pDraw2DContent->OnlyDecorations) {
-    _SendMessage(hObject, DrawBrush,
+    _SendMessage(hObject, Node2D, DrawBrush,
      .projection = pDraw2DContent->ProjectionMatrix,
      .brush = pNode2D->Background,
      .foreground = FALSE,
      .viewdef = &viewdef);
 
-    _SendMessage(hObject, DrawBrush,
+    _SendMessage(hObject, Node2D, DrawBrush,
       .projection = pDraw2DContent->ProjectionMatrix,
       .image = foreground,
       .brush = pNode2D->Foreground,
@@ -520,7 +520,7 @@ HANDLER(Screen, MeasureOverride) {
 //    WI_SetSize(pUpdateLayout->Width, pUpdateLayout->Height, TRUE);
     pScreen->_size = newsize;
   }
-  FOR_EACH_CHILD(hObject, _SendMessage, Measure,
+  FOR_EACH_CHILD(hObject, _SendMessage, Node2D, Measure,
     .Width = pMeasureOverride->Width,
     .Height = pMeasureOverride->Height);
   return MAKEDWORD(pMeasureOverride->Width, pMeasureOverride->Height);
@@ -530,7 +530,7 @@ HANDLER(Screen, MeasureOverride) {
 //  extern bool_t is_server;
 //  pScreen->_size = WI_GetSize(NULL);
 //  R_Init(LOWORD(pScreen->_size), HIWORD(pScreen->_size), is_server);
-//  WI_PostMessageW(hObject, kMsgWindowPaint, pScreen->_size, NULL);
+//  WI_PostMessageW(hObject, ID_window_WindowPaint, pScreen->_size, NULL);
 //  return FALSE;
 //}
 
@@ -572,7 +572,7 @@ HANDLER(Screen, WindowPaint) {
   OBJ_EmitPropertyChangedEvents(L, hObject);
   OBJ_UpdateProperties(hObject);
 
-  _SendMessage(hObject, UpdateLayout, LOWORD(wParam), HIWORD(wParam));
+  _SendMessage(hObject, Screen, UpdateLayout, LOWORD(wParam), HIWORD(wParam));
   
   // If screen size has changed, we need to make sure all properties
   // are recalculated with the new size
@@ -580,14 +580,14 @@ HANDLER(Screen, WindowPaint) {
     ORCA_API void CORE_AdvanceFrame(void);
     CORE_AdvanceFrame();
     OBJ_UpdateProperties(hObject);
-    _SendMessage(hObject, UpdateLayout, LOWORD(wParam), HIWORD(wParam));
+    _SendMessage(hObject, Screen, UpdateLayout, LOWORD(wParam), HIWORD(wParam));
   }
 
-  _SendMessage(hObject, UpdateMatrix,
+  _SendMessage(hObject, Node, UpdateMatrix,
     .parent = MAT4_Identity(),
     .opacity = 1);
   
-  _SendMessage(hObject, RenderScreen,
+  _SendMessage(hObject, Screen, RenderScreen,
     .width = LOWORD(wParam),
     .height = HIWORD(wParam),
     .stereo = 0,
@@ -602,7 +602,7 @@ HANDLER(Screen, WindowPaint) {
   OBJ_ClearDirtyFlags(hObject);
   
   if (OBJ_GetNext(hObject)) { // Render modal screens
-    OBJ_SendMessageW(OBJ_GetNext(hObject), kMsgWindowPaint, wParam, hObject);
+    OBJ_SendMessageW(OBJ_GetNext(hObject), ID_window_WindowPaint, wParam, hObject);
   }
   
   if (!pWindowPaint) {
@@ -627,13 +627,13 @@ HANDLER(Screen, WindowResized) {
   }
   R_ClearTextCache();
   OBJ_SetTreeDirty(hObject);
-  OBJ_SendMessageW(hObject, kMsgWindowPaint, wParam, NULL);
+  OBJ_SendMessageW(hObject, ID_window_WindowPaint, wParam, NULL);
   return FALSE;
 }
 
 
 HANDLER(Screen, UpdateLayout) {
-  _SendMessage(hObject, Measure, .Width = pUpdateLayout->Width, .Height = pUpdateLayout->Height);
-  _SendMessage(hObject, Arrange, .Width = pUpdateLayout->Width, .Height = pUpdateLayout->Height);
+  _SendMessage(hObject, Node2D, Measure, .Width = pUpdateLayout->Width, .Height = pUpdateLayout->Height);
+  _SendMessage(hObject, Node2D, Arrange, .Width = pUpdateLayout->Width, .Height = pUpdateLayout->Height);
   return TRUE;
 }

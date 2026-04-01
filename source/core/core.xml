@@ -484,8 +484,6 @@
       <message name="Release" routing="Direct"/>
       <message name="Destroy" routing="Direct"/>
       <message name="Timer"/>
-      <message name="ResumeCoroutine" routing="Direct"/>
-      <message name="StopCoroutine" routing="Direct"/>
     </messages>
   </interface>
   <function name="GetFocus">

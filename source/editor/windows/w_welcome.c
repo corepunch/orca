@@ -68,7 +68,7 @@ LRESULT ED_WelcomeView(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm) {
       ED_Echo(wnd, STYLE_LABEL "\n");
       ED_Echo(wnd, PADDING "Recent\n");
       return 1;
-    case kMsgKeyDown:
+    case ID_Input_KeyDown:
       if ((wparm&0xffff) == WI_KEY_ENTER && ED_GetSelectedItem(wnd) > 0) {
         cmds[ED_GetSelectedItem(wnd)-1].lpProc(wnd);
         return 1;

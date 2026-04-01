@@ -2,8 +2,6 @@
 #include <include/orca.h>
 #include <include/renderer.h>
 
-#define kMsgReadCommands 0x23d83fd3
-
 int f_peek_iterator(lua_State* L)
 {
   struct WI_Message msg = {0};
@@ -19,27 +17,27 @@ int f_peek_iterator(lua_State* L)
   (void)has_event;  /* suppress -Wunused-but-set-variable on non-Emscripten targets */
 #endif
   switch (msg.message) {
-    case kMsgLeftMouseDown:
-    case kMsgRightMouseDown:
-    case kMsgOtherMouseDown:
-    case kMsgLeftMouseUp:
-    case kMsgRightMouseUp:
-    case kMsgOtherMouseUp:
-    case kMsgLeftMouseDragged:
-    case kMsgRightMouseDragged:
-    case kMsgOtherMouseDragged:
-    case kMsgLeftDoubleClick:
-    case kMsgRightDoubleClick:
-    case kMsgOtherDoubleClick:
-    case kMsgMouseMoved:
-    case kMsgScrollWheel:
-    case kMsgKeyDown:
-    case kMsgKeyUp:
-    case kMsgWindowClosed:
-    case kMsgWindowPaint:
-    case kMsgWindowChangedScreen:
-    case kMsgWindowResized:
-    case kMsgReadCommands:
+    case kEventLeftMouseDown:
+    case kEventRightMouseDown:
+    case kEventOtherMouseDown:
+    case kEventLeftMouseUp:
+    case kEventRightMouseUp:
+    case kEventOtherMouseUp:
+    case kEventLeftMouseDragged:
+    case kEventRightMouseDragged:
+    case kEventOtherMouseDragged:
+    case kEventLeftDoubleClick:
+    case kEventRightDoubleClick:
+    case kEventOtherDoubleClick:
+    case kEventMouseMoved:
+    case kEventScrollWheel:
+    case kEventKeyDown:
+    case kEventKeyUp:
+    case kEventWindowClosed:
+    case kEventWindowPaint:
+    case kEventWindowChangedScreen:
+    case kEventWindowResized:
+    case kEventReadCommands:
       msg.target = __userdata;
       break;
   }

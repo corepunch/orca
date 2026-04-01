@@ -198,15 +198,15 @@ void ED_DrawCanvasView(HEDWND wnd, struct _CANVASVIEW* sv) {
   
   UI_StepTime(scene);
   
-  _SendMessage(scene, UpdateLayout,
+  _SendMessage(scene, Screen, UpdateLayout,
                .Width = view.width,
                .Height = view.height);
   
-  _SendMessage(scene, UpdateMatrix,
+  _SendMessage(scene, Node, UpdateMatrix,
                .parent = MAT4_Identity(),
                .opacity = 1);
   
-  _SendMessage(scene, RenderScreen,
+  _SendMessage(scene, Screen, RenderScreen,
                .width = view.width,
                .height = view.height,
                .stereo = 0,
@@ -303,7 +303,7 @@ LRESULT ED_CanvasView(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm) {
       if (data->scene_texture) Texture_Release(data->scene_texture);
       free(ED_GetUserData(wnd));
       return 0;
-    case kMsgLeftMouseDragged:
+    case ID_Input_LeftMouseDragged:
       if (data->selected && OBJ_GetParent(data->selected)) {
         Node2DPtr node = GetNode2D(data->selected);
         float x = (int16_t)LOWORD((intptr_t)lparm) * LocalScaling(wnd, CanvasView_GetScene(wnd)).x;
@@ -331,7 +331,7 @@ LRESULT ED_CanvasView(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm) {
         data->selection.height = HIWORD(wparm) - data->selection.y;
       }
       return 1;
-    case kMsgLeftMouseUp:
+    case ID_Input_LeftMouseUp:
       if (data->mode == ID_OBJECT_IMAGE && data->selection.width && data->selection.height) {
         HOBJ newobj = UI_NewObject(CanvasView_GetScene(wnd), "Node", ID_OBJECT_IMAGE);
         OBJ_SetPropertyValue(newobj, "LayoutTransformTranslation", &data->selection);
@@ -344,11 +344,11 @@ LRESULT ED_CanvasView(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm) {
       }
       memset(&data->selection, 0, sizeof(RECT));
       return 1;
-    case kMsgLeftMouseDown:
+    case ID_Input_LeftMouseDown:
       ED_SetFocusedPanel(wnd);
       {
         wParam_t coords = LocalCoords(wnd, CanvasView_GetScene(wnd), wparm);
-        if ((tmp = (lpObject_t)_SendMessage(CanvasView_GetScene(wnd), HitTest, .x = LOWORD(coords), .y = HIWORD(coords)))) {
+        if ((tmp = (lpObject_t)_SendMessage(CanvasView_GetScene(wnd), Node, HitTest, .x = LOWORD(coords), .y = HIWORD(coords)))) {
           ED_SendMessage(editor.inspector, EVT_OBJECT_SELECTED, 0, tmp);
           ED_SendMessage(ED_FindWindowInChildren(ED_GetParent(wnd), ED_HierarchyNavigator), EVT_OBJECT_SELECTED, 0, tmp);
           ED_SendMessage(wnd, EVT_OBJECT_SELECTED, 0, tmp);

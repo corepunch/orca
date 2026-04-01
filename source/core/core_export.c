@@ -853,18 +853,6 @@ STRUCT(MessageType, MessageType);
 //	.routing = kMessageRoutingTunnelingBubbling,
 //	.size = sizeof(struct TimerMsgArgs),
 //};
-//struct MessageType ResumeCoroutineMessage = {
-//	.name = "ResumeCoroutine",
-//	.id = kMsgResumeCoroutine,
-//	.routing = kMessageRoutingDirect,
-//	.size = sizeof(struct ResumeCoroutineMsgArgs),
-//};
-//struct MessageType StopCoroutineMessage = {
-//	.name = "StopCoroutine",
-//	.id = kMsgStopCoroutine,
-//	.routing = kMessageRoutingDirect,
-//	.size = sizeof(struct StopCoroutineMsgArgs),
-//};
 
 static luaL_Reg _MouseMessageMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _MouseMessageMsgArgs[] = {
@@ -957,12 +945,6 @@ static struct PropertyType _DestroyMsgArgs[] = {
 static luaL_Reg _TimerMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _TimerMsgArgs[] = {
 };
-static luaL_Reg _ResumeCoroutineMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _ResumeCoroutineMsgArgs[] = {
-};
-static luaL_Reg _StopCoroutineMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _StopCoroutineMsgArgs[] = {
-};
 
 STRUCT(MouseMessageMsgArgs, MouseMessageMsgArgs);
 STRUCT(KeyMessageMsgArgs, KeyMessageMsgArgs);
@@ -994,8 +976,6 @@ STRUCT(AttachedMsgArgs, AttachedMsgArgs);
 STRUCT(ReleaseMsgArgs, ReleaseMsgArgs);
 STRUCT(DestroyMsgArgs, DestroyMsgArgs);
 STRUCT(TimerMsgArgs, TimerMsgArgs);
-STRUCT(ResumeCoroutineMsgArgs, ResumeCoroutineMsgArgs);
-STRUCT(StopCoroutineMsgArgs, StopCoroutineMsgArgs);
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -1061,8 +1041,6 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_ReleaseMsgArgs(L), -2), "ReleaseMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_DestroyMsgArgs(L), -2), "DestroyMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_TimerMsgArgs(L), -2), "TimerMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_ResumeCoroutineMsgArgs(L), -2), "ResumeCoroutineMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_StopCoroutineMsgArgs(L), -2), "StopCoroutineMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_Input(L), -2), "Input");
 	lua_setfield(L, ((void)luaopen_orca_Object(L), -2), "Object");
 	void on_core_module_registered(lua_State *L);

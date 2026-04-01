@@ -32,7 +32,7 @@ HANDLER(Node2D, HitTest) {
   int16_t ly = y - pNode2D->ContentOffset.y;
   lpObject_t result = NULL;
   FOR_EACH_OBJECT(hChild, hObject) {
-    lpObject_t childHit = (lpObject_t)_SendMessage(hChild, HitTest, .x = lx, .y = ly);
+    lpObject_t childHit = (lpObject_t)_SendMessage(hChild, Node, HitTest, .x = lx, .y = ly);
     if (childHit) result = childHit;
   }
   if (result) {
@@ -160,7 +160,7 @@ HANDLER(Node2D, UpdateMatrix)
     });
   }
 
-  FOR_EACH_CHILD(hObject, _SendMessage, UpdateMatrix,
+  FOR_EACH_CHILD(hObject, _SendMessage, Node, UpdateMatrix,
                    .parent = Matrix,
                    .opacity = pNode2D->_opacity,
                    .force = bInvalidate,
@@ -309,7 +309,7 @@ static float _MeasureAxis(Node2DPtr n, float space, int axis) {
 HANDLER(Node2D, Measure)
 {
   struct Node2D *n = pNode2D;
-  LRESULT size = _SendMessage(hObject, MeasureOverride,
+  LRESULT size = _SendMessage(hObject, Node2D, MeasureOverride,
     .Width  = _MeasureAxis(n, pMeasure->Width  - TOTAL_MARGIN(n, 0), 0) - TOTAL_PADDING(n, 0),
     .Height = _MeasureAxis(n, pMeasure->Height - TOTAL_MARGIN(n, 1), 1) - TOTAL_PADDING(n, 1),
   );
@@ -362,7 +362,7 @@ HANDLER(Node2D, Arrange)
     .height = s.height,
   };
   
-  LRESULT size = _SendMessage(hObject, ArrangeOverride,
+  LRESULT size = _SendMessage(hObject, Node2D, ArrangeOverride,
     .X      = PADDING_TOP(n, 0),
     .Y      = PADDING_TOP(n, 1),
     .Width  = rect.width  - TOTAL_PADDING(n, 0),
@@ -382,7 +382,7 @@ HANDLER(Node2D, MeasureOverride)
 {
   uint16_t width = 0, height = 0;
   FOR_EACH_OBJECT(hChild, hObject) {
-    uint32_t size = (uint32_t)_SendMessage(hChild, Measure,
+    uint32_t size = (uint32_t)_SendMessage(hChild, Node2D, Measure,
                                            .Width = pMeasureOverride->Width,
                                            .Height = pMeasureOverride->Height);
     width  = MAX(width,  LOWORD(size));
@@ -394,7 +394,7 @@ HANDLER(Node2D, MeasureOverride)
 
 HANDLER(Node2D, ArrangeOverride)
 {
-  FOR_EACH_CHILD(hObject, _SendMessage, Arrange,
+  FOR_EACH_CHILD(hObject, _SendMessage, Node2D, Arrange,
                  .X = pArrangeOverride->X,
                  .Y = pArrangeOverride->Y,
                  .Width = pArrangeOverride->Width,

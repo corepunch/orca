@@ -57,7 +57,7 @@ HANDLER(TextBlock3D, Render)
   
   TextRunPtr pTextRun = GetTextRun(hObject);
   TextBlockConceptPtr pTextBlock = GetTextBlockConcept(hObject);
-  _SendMessage(hObject, MakeText,
+  _SendMessage(hObject, TextBlockConcept, MakeText,
                    .text = pTextBlock->_text,
                    .availableSpace = 512);
   Text_GetInfo(pTextBlock->_text, &pTextRun->_textinfo);

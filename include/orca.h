@@ -342,7 +342,9 @@ ORCA_API bool_t UI_EnumObjectAliases(lpObject_t object, EnumAliasProc, void* arg
 // clang-format off
 
 #define OBJ_GetScriptHandle(OBJECT) (*(uint32_t *)OBJ_GetPointer(OBJECT, GNP_SCRIPTHANLDE, 0))
-#define OBJ_IsHidden(OBJECT) (OBJ_SendMessageW(OBJECT, kMsgIsVisible, 0, NULL) == FALSE)
+
+#define ID_Node_IsVisible 0xa03cfb85 // Node.IsVisible
+#define OBJ_IsHidden(OBJECT) (OBJ_SendMessageW(OBJECT, ID_Node_IsVisible, 0, NULL) == FALSE)
 
 // clang-format on
 
@@ -373,6 +375,9 @@ ORCA_API bool_t UI_EnumObjectAliases(lpObject_t object, EnumAliasProc, void* arg
 typedef LRESULT (*objectProc_t)(lpObject_t, void*, uint32_t, wParam_t, lParam_t);
 
 #define kMsgAwake 0x7f460f7c
+#define kEventResumeCoroutine 0x3cc3febc
+#define kEventStopCoroutine 0xf13ac065
+#define kEventReadCommands 0x23d83fd3
 
 #define EVENT_PTR(NAME) NAME##MsgPtr
 

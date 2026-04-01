@@ -49,8 +49,6 @@ ORCA_API extern struct MessageType AttachedMessage;
 ORCA_API extern struct MessageType ReleaseMessage;
 ORCA_API extern struct MessageType DestroyMessage;
 ORCA_API extern struct MessageType TimerMessage;
-ORCA_API extern struct MessageType ResumeCoroutineMessage;
-ORCA_API extern struct MessageType StopCoroutineMessage;
 
 typedef struct WI_Message MouseMessageMsg_t,* MouseMessageMsgPtr;
 typedef struct WI_Message KeyMessageMsg_t,* KeyMessageMsgPtr;
@@ -82,8 +80,6 @@ typedef struct AttachedMsgArgs AttachedMsg_t,* AttachedMsgPtr;
 typedef struct ReleaseMsgArgs ReleaseMsg_t,* ReleaseMsgPtr;
 typedef struct DestroyMsgArgs DestroyMsg_t,* DestroyMsgPtr;
 typedef struct TimerMsgArgs TimerMsg_t,* TimerMsgPtr;
-typedef struct ResumeCoroutineMsgArgs ResumeCoroutineMsg_t,* ResumeCoroutineMsgPtr;
-typedef struct StopCoroutineMsgArgs StopCoroutineMsg_t,* StopCoroutineMsgPtr;
 
 
 /// @brief Defines the routing strategy for messages sent to objects. This determines how messages propagate through the object hierarchy and which handlers are invoked.
@@ -542,16 +538,6 @@ struct TimerMsgArgs {
 };
 ORCA_API void luaX_pushTimerMsgArgs(lua_State *L, struct TimerMsgArgs const* data);
 ORCA_API struct TimerMsgArgs* luaX_checkTimerMsgArgs(lua_State *L, int idx);
-/** ResumeCoroutineMsgArgs struct */
-struct ResumeCoroutineMsgArgs {
-};
-ORCA_API void luaX_pushResumeCoroutineMsgArgs(lua_State *L, struct ResumeCoroutineMsgArgs const* data);
-ORCA_API struct ResumeCoroutineMsgArgs* luaX_checkResumeCoroutineMsgArgs(lua_State *L, int idx);
-/** StopCoroutineMsgArgs struct */
-struct StopCoroutineMsgArgs {
-};
-ORCA_API void luaX_pushStopCoroutineMsgArgs(lua_State *L, struct StopCoroutineMsgArgs const* data);
-ORCA_API struct StopCoroutineMsgArgs* luaX_checkStopCoroutineMsgArgs(lua_State *L, int idx);
 
 
 #endif

@@ -72,7 +72,7 @@ ED_DropDown(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm)
         strncpy(lparm, "DropDown", wparm);
       }
       return 1;
-    case kMsgKillFocus:
+    case EVT_KILL_FOCUS:
       ED_DestroyWindow(wnd);
       return 0;
   }

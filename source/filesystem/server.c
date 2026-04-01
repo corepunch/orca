@@ -439,7 +439,7 @@ LPSTR UI_ReadClientCommands(void) {
 }
 
 LRESULT filesystem_handle_event(lua_State *L, struct WI_Message *msg) {
-  if (msg->message == kMsgReadCommands) {
+  if (msg->message == kEventReadCommands) {
     LPSTR url = UI_ReadClientCommands();
     if (!url) exit(0);
     WITH(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFreeDoc) {
@@ -477,7 +477,7 @@ LRESULT filesystem_handle_event(lua_State *L, struct WI_Message *msg) {
       xmlDocDump(stdout, doc);
       //      xmlDocDump(stderr, doc);
     }
-    WI_PostMessageW(msg->target, kMsgReadCommands, 0, NULL);
+    WI_PostMessageW(msg->target, kEventReadCommands, 0, NULL);
     return TRUE;
   } else {
     return FALSE;

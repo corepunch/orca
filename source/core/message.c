@@ -19,7 +19,7 @@ CORE_HandleKeyEvent(lua_State *L, struct WI_Message* e)
   if (e->wParam & WI_MOD_CMD) strcat(comp, "cmd+");
   strcat(comp, WI_KeynumToString(e->wParam));
   
-  if (e->message == kMsgKeyDown) {
+  if (e->message == kEventKeyDown) {
     lua_getfield(L, LUA_REGISTRYINDEX, CORE_KEMAP);
     lua_getfield(L, -1, comp);
     if (lua_isstring(L, -1)) {
@@ -46,9 +46,9 @@ CORE_HandleKeyEvent(lua_State *L, struct WI_Message* e)
     lua_pop(L, 2);
   }
   
-  if (e->message == kMsgKeyDown && is_printable(e->wParam&0xff)) {
+  if (e->message == kEventKeyDown && is_printable(e->wParam&0xff)) {
     struct WI_Message tmp = *e;
-    tmp.message = kMsgChar;
+    tmp.message = kEventChar;
     CORE_HandleKeyEvent(L, &tmp);
   }
   for (lpObject_t obj = core_GetFocus(); obj; obj = OBJ_GetParent(obj)) {
@@ -61,7 +61,7 @@ CORE_HandleKeyEvent(lua_State *L, struct WI_Message* e)
       lua_insert(L, -2); // Move callback before obj
 			lua_pushstring(L, szCallback);
       luaX_pushObject(L, core_GetFocus());
-      if (e->message == kMsgChar) {
+      if (e->message == kEventChar) {
         char ch = e->wParam&0xff;
         if (e->wParam & WI_MOD_SHIFT) {
           if (ch >= '0' && ch <= '9') {
@@ -108,7 +108,7 @@ CORE_HandleObjectMessage(lua_State *L, struct WI_Message* msg)
   {
     if (OBJ_FindCallbackForID(hobj, msg->message))
     {
-//      if (type == kMsgAwake) {
+//      if (type == ID_Object_Awake) {
 //        luaX_pushObject(L, hobj);
 //        lua_getfield(L, -1, OBJ_FindCallbackForID(hobj, type));
 //        lua_insert(L, -2); // Move callback before obj
@@ -123,7 +123,7 @@ CORE_HandleObjectMessage(lua_State *L, struct WI_Message* msg)
       lua_insert(L, -2); // Move callback before obj
       luaX_pushObject(L, hobj);
       uint32_t numargs = 3;
-      if (msg->message == kMsgTimer && msg->lParam) {
+      if (msg->message == ID_Object_Timer && msg->lParam) {
         lua_pushstring(L, msg->lParam);
         numargs++;
       }
@@ -136,7 +136,7 @@ CORE_HandleObjectMessage(lua_State *L, struct WI_Message* msg)
     if (OBJ_SendMessageW(hobj, msg->message, msg->wParam, msg->lParam))
       return TRUE;
     switch (msg->message) {
-      case kMsgViewDidLoad:
+      case 0x71bab7e1: // ID_Node_ViewDidLoad
         return TRUE;
     }
   }

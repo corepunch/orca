@@ -156,7 +156,7 @@
     <summary>2D viewport component that renders 3D scene content</summary>
     <details>Bridge between 2D UI layout and 3D scene rendering. Allows embedding 3D scenes within 2D user interfaces with independent camera and rendering configuration.</details>
     <handles>
-      <handle message="Node.ForegroundContent"/>
+      <handle message="Node2D.ForegroundContent"/>
     </handles>
     <properties>
       <property name="Camera" type="string">Name of camera to use for 3D scene rendering within this viewport</property>

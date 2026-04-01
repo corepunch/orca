@@ -279,7 +279,7 @@ static struct SKView SKViewDefaults = {
 };
 LRESULT SKViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case ID_Node_ForegroundContent: return SKView_ForegroundContent(object, cmp, wparm, lparm); // Node.ForegroundContent
+		case ID_Node2D_ForegroundContent: return SKView_ForegroundContent(object, cmp, wparm, lparm); // Node2D.ForegroundContent
 	}
 	return FALSE;
 }

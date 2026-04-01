@@ -7,7 +7,7 @@ HANDLER(SKScene, UpdateMatrix)
   node->_opacity = GetNode(hObject)->Opacity;
   node->Matrix = MAT4_Identity();
 
-  FOR_EACH_CHILD(hObject, _SendMessage, UpdateMatrix,
+  FOR_EACH_CHILD(hObject, _SendMessage, Node, UpdateMatrix,
                    .parent = node->Matrix,
                    .opacity = node->_opacity,
                  );
