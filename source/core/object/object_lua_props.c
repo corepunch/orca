@@ -112,7 +112,7 @@ OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name)
     luaX_readProperty(L, 3, property);
     return TRUE;
   } else if (lua_type(L, 3) == LUA_TFUNCTION) {
-    OBJ_ProcessFunctions(self, name);
+    OBJ_RegisterCallback(self, name);
     return FALSE;
   } else {
     return FALSE;

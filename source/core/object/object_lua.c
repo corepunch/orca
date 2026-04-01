@@ -140,7 +140,7 @@ int OBJ_CreateFromLuaState(lua_State *L) {
   // send "create" message
   OBJ_SendMessageW(pobj, ID_Object_Create, 0, L);
   
-_assign_callbacks(L, pobj, 1);
+  _assign_callbacks(L, pobj, 1);
   _parse_args(L, pobj);
 
   // TODO: is there a better way to add class-default style?

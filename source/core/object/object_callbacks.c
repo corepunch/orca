@@ -11,7 +11,7 @@ struct script_callback
 };
 
 void
-OBJ_ProcessFunctions(lpObject_t object, lpcString_t name)
+OBJ_RegisterCallback(lpObject_t object, lpcString_t name)
 {
   if (strncmp(name, "on", 2))
     return;
@@ -29,9 +29,8 @@ OBJ_ProcessFunctions(lpObject_t object, lpcString_t name)
     strncpy(pname, name + 2, property_len - 2);
     if (SUCCEEDED(OBJ_FindShortProperty(object, pname, &pProp))) {
       PROP_SetFlag(pProp, PF_HASCHANGECALLBACK);
-      //      } else {
-      //        Con_Error("Could not find property for
-      //%s", name);
+    } else {
+      Con_Error("Could not find property for %s", name);
     }
   }
 }

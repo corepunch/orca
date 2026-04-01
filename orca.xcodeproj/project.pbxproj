@@ -80,7 +80,7 @@
 		781CA76A2E1557A900FFCFD9 /* alias.c in Sources */ = {isa = PBXBuildFile; fileRef = 78FD532B2D90746900122823 /* alias.c */; };
 		781CA76B2E1557A900FFCFD9 /* animation.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C737672B8F60C600FD598E /* animation.c */; };
 		781CA76C2E1557A900FFCFD9 /* animation2.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C737AB2B8F616A00FD598E /* animation2.c */; };
-		781CA76D2E1557A900FFCFD9 /* callbacks.c in Sources */ = {isa = PBXBuildFile; fileRef = 7808CD932DA1B42D00D484F9 /* callbacks.c */; };
+		781CA76D2E1557A900FFCFD9 /* object_callbacks.c in Sources */ = {isa = PBXBuildFile; fileRef = 7808CD932DA1B42D00D484F9 /* object_callbacks.c */; };
 		781CA76E2E1557A900FFCFD9 /* component.c in Sources */ = {isa = PBXBuildFile; fileRef = 78FD53242D8F405600122823 /* component.c */; };
 		781CA76F2E1557A900FFCFD9 /* easing.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C737AA2B8F616A00FD598E /* easing.c */; };
 		781CA7702E1557A900FFCFD9 /* message.c in Sources */ = {isa = PBXBuildFile; fileRef = 7808CD912D9ECE9A00D484F9 /* message.c */; };
@@ -491,7 +491,7 @@
 		7808CD8D2D9EC93A00D484F9 /* backend.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = backend.c; sourceTree = "<group>"; };
 		7808CD8F2D9ECB2400D484F9 /* queue.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = queue.c; sourceTree = "<group>"; };
 		7808CD912D9ECE9A00D484F9 /* message.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = message.c; sourceTree = "<group>"; };
-		7808CD932DA1B42D00D484F9 /* callbacks.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = callbacks.c; sourceTree = "<group>"; };
+		7808CD932DA1B42D00D484F9 /* object_callbacks.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = object_callbacks.c; sourceTree = "<group>"; };
 		780C82682E01EE7100228DEC /* Light3D.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Light3D.c; sourceTree = "<group>"; };
 		7810D25E2D58A81100DB632F /* liborca.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		7810D30F2D58F7FA00DB632F /* fs_local.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = fs_local.h; sourceTree = "<group>"; };
@@ -1120,6 +1120,7 @@
 			isa = PBXGroup;
 			children = (
 				787041702F6FDDD800A84406 /* object_accessors.c */,
+				7808CD932DA1B42D00D484F9 /* object_callbacks.c */,
 				787041712F6FDDD800A84406 /* object_core.c */,
 				787041722F6FDDD800A84406 /* object_events.c */,
 				787041732F6FDDD800A84406 /* object_hierarchy.c */,
@@ -1297,7 +1298,6 @@
 				78FD532B2D90746900122823 /* alias.c */,
 				78C737672B8F60C600FD598E /* animation.c */,
 				78C737AB2B8F616A00FD598E /* animation2.c */,
-				7808CD932DA1B42D00D484F9 /* callbacks.c */,
 				78FD53242D8F405600122823 /* component.c */,
 				7839770D2E60A5AB00DCFC0F /* core_export.c */,
 				78C737C42B8F620100FD598E /* core_main.c */,
@@ -2158,7 +2158,7 @@
 				781CA76A2E1557A900FFCFD9 /* alias.c in Sources */,
 				781CA76B2E1557A900FFCFD9 /* animation.c in Sources */,
 				781CA76C2E1557A900FFCFD9 /* animation2.c in Sources */,
-				781CA76D2E1557A900FFCFD9 /* callbacks.c in Sources */,
+				781CA76D2E1557A900FFCFD9 /* object_callbacks.c in Sources */,
 				781CA76E2E1557A900FFCFD9 /* component.c in Sources */,
 				781CA76F2E1557A900FFCFD9 /* easing.c in Sources */,
 				781CA7702E1557A900FFCFD9 /* message.c in Sources */,
