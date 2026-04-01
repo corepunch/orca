@@ -56,16 +56,6 @@
     <enum name="VectorW">Bind to the W component of a vector property</enum>
   </enums>
 
-  <interface name="Window" export="Window" no-check="true">
-    <message name="WindowPaint">
-      <field name="WindowWidth" type="uint"/>
-      <field name="WindowHeight" type="uint"/>
-    </message>
-    <message name="WindowResized" same-as="WindowPaint"/>
-    <message name="WindowClosed"/>
-    <message name="WindowChangedScreen"/>
-  </interface>
-
   <interface name="Input" export="Input" no-check="true">
     <!-- Base event for all pointer/mouse input events -->
     <message name="MouseMessage" type="WI_Message"/>

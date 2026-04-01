@@ -2,11 +2,6 @@
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __FILESYSTEM_PROPERTIES_H__
 #define __FILESYSTEM_PROPERTIES_H__
-#define kMsgReadCommands 0x23d83fd3
-#define kMsgOpenFile 0xa2c038cf
-#define kMsgFileExists 0x38dfc973
-#define kMsgHasChangedFiles 0x5390a564
-#define kMsgLoadProject 0x31b9fee2
 
 // Workspace
 #define ID_Workspace 0x27419f56

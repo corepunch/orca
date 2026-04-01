@@ -2,7 +2,6 @@
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __SCENEKIT_PROPERTIES_H__
 #define __SCENEKIT_PROPERTIES_H__
-#define kMsgRender 0x350cf42d
 
 // Node3D
 #define ID_Node3D 0xce61fe5a

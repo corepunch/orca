@@ -54,6 +54,13 @@
 <!--      <summary>Registers a plugin module with all it's components into LUA_REGISTRYINDEX.</summary>-->
 <!--      <arg name="module" type="string"/>-->
 <!--    </method>-->
+    <message name="WindowPaint">
+      <field name="WindowWidth" type="uint"/>
+      <field name="WindowHeight" type="uint"/>
+    </message>
+    <message name="WindowResized" same-as="WindowPaint"/>
+    <message name="WindowClosed"/>
+    <message name="WindowChangedScreen"/>
   </interface>
 
   <enums name="BlendMode">

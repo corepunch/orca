@@ -2,7 +2,6 @@
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __SPRITEKIT_PROPERTIES_H__
 #define __SPRITEKIT_PROPERTIES_H__
-#define kMsgRender 0x350cf42d
 
 // SpriteAnimation
 #define ID_SpriteAnimation 0x261d60ba
