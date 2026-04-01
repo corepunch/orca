@@ -135,7 +135,6 @@ struct Node3D {
 	struct mat4 Matrix; ///< Final combined transformation matrix (computed automatically)
 	float CalculatedOffset; ///< Computed offset value used for trajectory list positioning
 	float _opacity;
-	struct ViewDef* ViewDef; ///< The view definition for rendering
 };
 ORCA_API void luaX_pushNode3D(lua_State *L, struct Node3D const* Node3D);
 ORCA_API struct Node3D* luaX_checkNode3D(lua_State *L, int idx);

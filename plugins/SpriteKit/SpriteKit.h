@@ -64,7 +64,6 @@ struct SKNode {
 	struct vec2 Anchor; ///< Anchor point for positioning
 	struct mat4 Matrix; ///< Final combined transformation matrix (computed automatically)
 	float _opacity;
-	struct ViewDef* ViewDef; ///< The view definition for rendering
 };
 ORCA_API void luaX_pushSKNode(lua_State *L, struct SKNode const* SKNode);
 ORCA_API struct SKNode* luaX_checkSKNode(lua_State *L, int idx);

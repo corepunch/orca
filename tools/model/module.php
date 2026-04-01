@@ -262,7 +262,7 @@ class Interface extends Base {
 	}
 
 	function getMethods() {
-		foreach ($this->_elem->xpath(".//method[@name]") as $m) {
+		foreach ($this->_elem->xpath("./methods/method[@name]") as $m) {
 			yield $m["name"] => new Method($m, $this->_model, $this->_elem);
 		}
 	}
@@ -271,7 +271,7 @@ class Interface extends Base {
 		$currentTitle = '';
 		$currentDesc = '';
 		$currentMethods = [];
-		foreach ($this->_elem->children() as $child) {
+		foreach ($this->_elem->xpath("methods/*") as $child) {
 			$tag = $child->getName();
 			if ($tag === "topic") {
 				if (count($currentMethods) > 0) {
@@ -291,11 +291,11 @@ class Interface extends Base {
 	}
 
 	function hasTopics() {
-		return count($this->_elem->xpath("topic")) > 0;
+		return count($this->_elem->xpath("methods/topic")) > 0;
 	}
 
 	function getMessages() {
-		foreach ($this->_elem->xpath(".//message[@name]") as $f) {
+		foreach ($this->_elem->xpath("./messages/message[@name]") as $f) {
 			yield new Event($f, $this->_model);
 		}
 	}
@@ -315,7 +315,7 @@ class Struct extends Interface {
 	}
 
 	function getFields($recursive = false) {
-		foreach ($this->_elem->xpath(".//field[@name]") as $f) {
+		foreach ($this->_elem->xpath("./fields/field[@name]") as $f) {
 			$type_ = new Type($f, $this->_model);
 			$text = trim((string)$f);
 			$doc = strlen($text) > 0 ? $text : null;
@@ -413,7 +413,7 @@ class Component extends Struct {
 	}
 
 	function getProperties($recursive = true) {
-		foreach ($this->_elem->xpath(".//property[@name]") as $f) {
+		foreach ($this->_elem->xpath("./properties/property[@name]") as $f) {
 			$type_ = new Type($f, $this->_model);
 			$text = trim((string)$f);
 			$doc = strlen($text) > 0 ? $text : null;
@@ -434,7 +434,7 @@ class Component extends Struct {
 	}
 
 	function getEventHandlers() {
-		foreach ($this->_elem->xpath("handles") as $node) {
+		foreach ($this->_elem->xpath("handles/handle") as $node) {
 			yield $node["message"];
 		}
 	}
@@ -486,7 +486,7 @@ class Event extends Type {
 	}
 
 	function hasFields() {
-		return count($this->_elem->xpath("field[@name]")) > 0;
+		return count($this->_elem->xpath("fields/field[@name]")) > 0;
 	}
 
 	// Returns true if this event or any ancestor has inline fields
@@ -497,7 +497,7 @@ class Event extends Type {
 	}
 
 	function getFields() {
-		foreach ($this->_elem->xpath("field[@name]") as $f) {
+		foreach ($this->_elem->xpath("fields/field[@name]") as $f) {
 			yield new Field($f, $this->_model);
 		}
 	}

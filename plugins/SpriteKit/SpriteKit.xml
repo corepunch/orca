@@ -1,72 +1,96 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <module name="SpriteKit" namespace="orca" on-luaopen="on_spritekit_module_registered">
-  <require file="../../source/renderer/api/renderer.xml" />
-
-  <include file="include/renderer.h" />
-  <include file="source/core/core.h" />
-  <include file="plugins/UIKit/UIKit.h" />
-
+  <require file="../../source/renderer/api/renderer.xml"/>
+  <includes>
+    <include file="include/renderer.h"/>
+    <include file="source/core/core.h"/>
+    <include file="plugins/UIKit/UIKit.h"/>
+  </includes>
   <struct name="SpriteFrame" export="SpriteFrame" sealed="true">
-    <field name="Rect" type="rect" />
-    <field name="UvRect" type="rect" />
+    <fields>
+      <field name="Rect" type="rect"/>
+      <field name="UvRect" type="rect"/>
+    </fields>
   </struct>
-  
   <class name="SpriteAnimation">
-    <property name="Image" type="Texture" pointer="true">Spritesheet texture</property>
-    <property name="Framerate" type="float">Frames per second</property>
-    <property name="Frames" type="SpriteFrame" array="true">Variable-length frame data array</property>
-    <field name="Palette" type="uint" pointer="true" const="true" />
+    <properties>
+      <property name="Image" type="Texture" pointer="true">Spritesheet texture</property>
+      <property name="Framerate" type="float">Frames per second</property>
+      <property name="Frames" type="SpriteFrame" array="true">Variable-length frame data array</property>
+    </properties>
+    <fields>
+      <field name="Palette" type="uint" pointer="true" const="true"/>
+    </fields>
   </class>
-  
   <class name="SKNode" parent="Node" children="SKNode">
     <summary>Base 2D sprite node with transform and matrix</summary>
     <details>Provides fundamental 2D transformation properties for sprite scene graph nodes. All sprite objects in the scene inherit from this component.</details>
-    <handles message="Node.UpdateMatrix" />
-
-    <property name="Position" type="vec2">Position of SKNode in space of SKScene</property>
-    <property name="Size" type="vec2">Size of SKNode. If not specified, defaults to the size of the associated sprite or animation frame</property>
-    <property name="Anchor" type="vec2">Anchor point for positioning</property>
-    <field name="Matrix" type="mat4">Final combined transformation matrix (computed automatically)</field>
-    <field name="_opacity" type="float" />
-    <message name="Render">
-      <field name="ViewDef" type="ViewDef" pointer="true">The view definition for rendering</field>
-    </message>
+    <handles>
+      <handle message="Node.UpdateMatrix"/>
+    </handles>
+    <properties>
+      <property name="Position" type="vec2">Position of SKNode in space of SKScene</property>
+      <property name="Size" type="vec2">Size of SKNode. If not specified, defaults to the size of the associated sprite or animation frame</property>
+      <property name="Anchor" type="vec2">Anchor point for positioning</property>
+    </properties>
+    <fields>
+      <field name="Matrix" type="mat4">Final combined transformation matrix (computed automatically)</field>
+      <field name="_opacity" type="float"/>
+    </fields>
+    <messages>
+      <message name="Render">
+        <fields>
+          <field name="ViewDef" type="ViewDef" pointer="true">The view definition for rendering</field>
+        </fields>
+      </message>
+    </messages>
   </class>
-
   <class name="SKScene" parent="SKNode">
     <summary>Root container for a 2D sprite scene</summary>
     <details>Represents a complete 2D sprite scene that can be rendered to an SKView. Acts as the root node of the sprite scene hierarchy.</details>
-    <handles message="Node.UpdateMatrix" />
+    <handles>
+      <handle message="Node.UpdateMatrix"/>
+    </handles>
   </class>
-
   <class name="SKSpriteNode" parent="SKNode">
     <summary>2D sprite node that renders an image or animation</summary>
     <details>Renders 2D sprite content using either a static image or an animated sprite animation. Supports UV coordinates for sprite atlas sheets and various blend modes.</details>
-    <handles message="SKNode.Render" />
-    <property name="Animation" type="SpriteAnimation" pointer="true">Primary sprite animation from a sprite atlas</property>
-    <property name="Animation2" type="SpriteAnimation" pointer="true">Secondary sprite animation (e.g., shadow layer)</property>
-    <property name="Image" type="Texture" pointer="true">Static image texture to display</property>
-    <property name="FreezeFrame" type="int" default="-1">Freeze animation at a specific frame index (-1 for normal playback)</property>
-    <property name="BlendMode" type="BlendMode" default="AlphaAutomatic">Blend mode for rendering</property>
-    <property name="UvRect" type="rect">UV texture coordinates for sprite atlas sampling</property>
+    <handles>
+      <handle message="SKNode.Render"/>
+    </handles>
+    <properties>
+      <property name="Animation" type="SpriteAnimation" pointer="true">Primary sprite animation from a sprite atlas</property>
+      <property name="Animation2" type="SpriteAnimation" pointer="true">Secondary sprite animation (e.g., shadow layer)</property>
+      <property name="Image" type="Texture" pointer="true">Static image texture to display</property>
+      <property name="FreezeFrame" type="int" default="-1">Freeze animation at a specific frame index (-1 for normal playback)</property>
+      <property name="BlendMode" type="BlendMode" default="AlphaAutomatic">Blend mode for rendering</property>
+      <property name="UvRect" type="rect">UV texture coordinates for sprite atlas sampling</property>
+    </properties>
   </class>
-
   <class name="SKLabelNode" parent="SKNode" concept="TextBlockConcept">
     <summary>2D text label node for displaying text in sprite space</summary>
     <details>Renders text as a 2D sprite node that participates in the sprite scene hierarchy. Inherits text styling and layout from the TextBlockConcept.</details>
-    <handles message="SKNode.Render" />
-    <handles message="Object.Create" />
-    <property name="Color" type="color">Color of the text</property>
-    <field name="_node" type="SKNode" pointer="true" />
+    <handles>
+      <handle message="SKNode.Render"/>
+      <handle message="Object.Create"/>
+    </handles>
+    <properties>
+      <property name="Color" type="color">Color of the text</property>
+    </properties>
+    <fields>
+      <field name="_node" type="SKNode" pointer="true"/>
+    </fields>
   </class>
-
   <class name="SKView" parent="Node2D" children="SKNode">
     <summary>2D viewport that renders an SKScene into the UI hierarchy</summary>
     <details>Acts as the bridge between the 2D UI system and the sprite scene hierarchy. Renders the attached SKScene using a 2D orthographic projection into its Node2D bounds.</details>
-    <handles message="Node.ForegroundContent" />
-    <property name="ReferenceWidth" type="float">Reference width for the sprite coordinate system</property>
-    <property name="ReferenceHeight" type="float">Reference height for the sprite coordinate system</property>
-    <property name="Scene" type="string">Name of SKScene to render</property>
+    <handles>
+      <handle message="Node.ForegroundContent"/>
+    </handles>
+    <properties>
+      <property name="ReferenceWidth" type="float">Reference width for the sprite coordinate system</property>
+      <property name="ReferenceHeight" type="float">Reference height for the sprite coordinate system</property>
+      <property name="Scene" type="string">Name of SKScene to render</property>
+    </properties>
   </class>
-
 </module>

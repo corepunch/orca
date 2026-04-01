@@ -228,9 +228,6 @@ struct Project {
 	struct Library* ImageLibrary;
 	struct Library* FontLibrary;
 	bool_t isPackage;
-	const char* FileName;
-	const char* FileName; ///< The file path to check for existence
-	const char* Path; ///< Directory name to load the bundle
 };
 ORCA_API void luaX_pushProject(lua_State *L, struct Project const* Project);
 ORCA_API struct Project* luaX_checkProject(lua_State *L, int idx);

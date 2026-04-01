@@ -13,7 +13,7 @@
 -->
 
 <!-- Root Element -->
-<!ELEMENT module (require | include | external | message | resource | enums | struct | interface | class | function)*>
+<!ELEMENT module (require* | includes? | externals? | resource | messages? | enums | struct | interface | class | function)*>
 <!ATTLIST module
   name CDATA #REQUIRED
   namespace CDATA #REQUIRED
@@ -27,6 +27,9 @@
   file CDATA #REQUIRED
 >
 
+<!-- Grouped include directives -->
+<!ELEMENT includes (include*)>
+
 <!-- Include Directive - specifies C header files to include -->
 <!ELEMENT require EMPTY>
 <!ATTLIST require
@@ -39,16 +42,22 @@
   struct CDATA #REQUIRED
 >
 
+<!-- Grouped external type references -->
+<!ELEMENT externals (external*)>
+
 <!-- Message Declaration - defines a message that can be handled -->
 <!-- Messages may contain inline field children (preferred) or reference an external type via the type attribute (workaround) -->
 <!-- Use same-as="BaseMessage" to share fields/type with another message (inheritance) -->
-<!ELEMENT message (summary?, details?, field*)>
+<!ELEMENT message (summary?, details?, fields?)>
 <!ATTLIST message
   name CDATA #REQUIRED
   type CDATA #IMPLIED
   same-as CDATA #IMPLIED
   routing (Bubbling|TunnelingBubbling|Tunneling|Direct) #IMPLIED
 >
+
+<!-- Grouped message declarations -->
+<!ELEMENT messages (message*)>
 
 <!-- Resource Type Declaration -->
 <!ELEMENT resource EMPTY>
@@ -69,7 +78,7 @@
 >
 
 <!-- Structure Definition -->
-<!ELEMENT struct (summary?, details?, shorthand*, field*, method*)>
+<!ELEMENT struct (summary?, details?, shorthand*, fields?, methods?)>
 <!ATTLIST struct
   name CDATA #REQUIRED
   prefix CDATA #IMPLIED
@@ -80,7 +89,7 @@
 >
 
 <!-- Interface Definition (similar to struct but for abstract types) -->
-<!ELEMENT interface (summary?, details?, init?, (method | topic)*)>
+<!ELEMENT interface (summary?, details?, init?, methods?, messages?)>
 <!ATTLIST interface
   name CDATA #REQUIRED
   prefix CDATA #IMPLIED
@@ -96,7 +105,7 @@
 >
 
 <!-- Component Definition -->
-<!ELEMENT class (summary?, details?, xmlns?, handles*, property*, field*, method*)>
+<!ELEMENT class (summary?, details?, xmlns?, handles?, properties?, fields?, methods?, messages?)>
 <!ATTLIST class
   name CDATA #REQUIRED
   parent CDATA #IMPLIED
@@ -123,6 +132,9 @@
   const (true|false) #IMPLIED
 >
 
+<!-- Grouped field definitions -->
+<!ELEMENT fields (field*)>
+
 <!-- Shorthand Definition (for struct/interface members) -->
 <!ELEMENT shorthand (#PCDATA)>
 <!ATTLIST shorthand
@@ -142,6 +154,9 @@
   static (true|false) #IMPLIED
 >
 
+<!-- Grouped method definitions (may also contain topic separators) -->
+<!ELEMENT methods ((method | topic)*)>
+
 <!-- Property Definition (for classes) -->
 <!ELEMENT property (#PCDATA)>
 <!ATTLIST property
@@ -154,9 +169,15 @@
   default CDATA #IMPLIED
 >
 
-<!-- Handles Declaration (messages handled by a class) -->
-<!ELEMENT handles EMPTY>
-<!ATTLIST handles
+<!-- Grouped property definitions -->
+<!ELEMENT properties (property*)>
+
+<!-- Handles container (messages handled by a class) -->
+<!ELEMENT handles (handle*)>
+
+<!-- Individual handle declaration inside a handles container -->
+<!ELEMENT handle EMPTY>
+<!ATTLIST handle
   message CDATA #REQUIRED
 >
 
