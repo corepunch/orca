@@ -10,491 +10,499 @@
     <external struct="KeyframeAnim"/>
     <external struct="lua_State"/>
   </externals>
-  <enums name="MessageRouting">
-    <summary>Defines the routing strategy for messages sent to objects. This determines how messages propagate through the object hierarchy and which handlers are invoked.</summary>
-    <enum name="Bubbling">Messages are bubbled up the hierarchy.</enum>
-    <enum name="TunnelingBubbling">Messages are first tunneled down the hierarchy and then bubbled up.</enum>
-    <enum name="Tunneling">Messages are tunneled down the hierarchy.</enum>
-    <enum name="Direct">Messages are sent directly to the target object.</enum>
-  </enums>
-  <struct name="MessageType">
-    <fields>
-      <field name="name" type="string">The name of the message</field>
-      <field name="id" type="uint">The unique identifier of the message</field>
-      <field name="routing" type="MessageRouting">The routing strategy for this message</field>
-      <field name="size" type="uint">The size of the message</field>
-    </fields>
-  </struct>
-  <enums name="PropertyState">
-    <summary>Represents the various states a property can be in.</summary>
-    <enum name="Normal">Normal property state when no triggers are active</enum>
-    <enum name="Hover">Property state when the mouse is hovering over it</enum>
-    <enum name="Focus">Property state when it has focus</enum>
-    <enum name="Select">Property state when it is selected</enum>
-    <enum name="Disable">Property state when it is disabled</enum>
-    <enum name="OldValue">Property state representing the previous value</enum>
-  </enums>
-  <enums name="BindingMode">
-    <summary>Various modes to bind properties</summary>
-    <enum name="OneWay">Default mode, updates target property when source changes</enum>
-    <enum name="TwoWay">Updates target property when source changes and updates source when target changes</enum>
-    <enum name="OneWayToSource">Updates source property when target changes, but not the other way around</enum>
-    <enum name="Expression">Allows binding to a custom expression</enum>
-  </enums>
-  <enums name="PropertyAttribute">
-    <summary>Attributes that can be applied to properties for binding purposes.</summary>
-    <enum name="WholeProperty">Default binding to the whole property</enum>
-    <enum name="ColorR">Bind to the red channel of a color property</enum>
-    <enum name="ColorG">Bind to the green channel of a color property</enum>
-    <enum name="ColorB">Bind to the blue channel of a color property</enum>
-    <enum name="ColorA">Bind to the alpha channel of a color property</enum>
-    <enum name="VectorX">Bind to the X component of a vector property</enum>
-    <enum name="VectorY">Bind to the Y component of a vector property</enum>
-    <enum name="VectorZ">Bind to the Z component of a vector property</enum>
-    <enum name="VectorW">Bind to the W component of a vector property</enum>
-  </enums>
-  <interface name="Input" export="Input" no-check="true">
-    <!-- Base event for all pointer/mouse input events -->
-    <messages>
-      <message name="MouseMessage" type="WI_Message"/>
-      <message name="KeyMessage" type="WI_Message"/>
-      <message name="LeftMouseDown" same-as="MouseMessage"/>
-      <message name="RightMouseDown" same-as="MouseMessage"/>
-      <message name="OtherMouseDown" same-as="MouseMessage"/>
-      <message name="LeftMouseUp" same-as="MouseMessage"/>
-      <message name="RightMouseUp" same-as="MouseMessage"/>
-      <message name="OtherMouseUp" same-as="MouseMessage"/>
-      <message name="LeftMouseDragged" same-as="MouseMessage"/>
-      <message name="RightMouseDragged" same-as="MouseMessage"/>
-      <message name="OtherMouseDragged" same-as="MouseMessage"/>
-      <message name="LeftDoubleClick" same-as="MouseMessage"/>
-      <message name="RightDoubleClick" same-as="MouseMessage"/>
-      <message name="OtherDoubleClick" same-as="MouseMessage"/>
-      <message name="MouseMoved" same-as="MouseMessage"/>
-      <message name="ScrollWheel" same-as="MouseMessage"/>
-      <message name="DragDrop" same-as="MouseMessage"/>
-      <message name="DragEnter" same-as="MouseMessage"/>
-      <message name="KeyDown" same-as="KeyMessage"/>
-      <message name="KeyUp" same-as="KeyMessage"/>
-      <message name="Char" same-as="KeyMessage"/>
-    </messages>
-    <!-- Base event for all keyboard input events -->
-  </interface>
-  <interface name="Object" prefix="OBJ_" export="Object" no-check="true">
-    <summary>Core engine host object.</summary>
-    <details>
-      <p>The `Object` type is the root of the runtime type system. Every element that can appear in a scene, be manipulated through scripts, or participate in rendering and logic derives its basic functionality from Object. It establishes the fundamental contract that all other types extend, providing common lifecycle methods, hierarchy management, and component composition.</p>
-      <p>An `Object` is not tied to a specific visual or logical role by itself. Instead, it serves as a container for components, and these components define the actual capabilities of the instance. Higher-level types such as `Node`, `Node2D`, or `ImageView` are constructed by layering specialized components on top of the base `Object`.</p>
-    </details>
-    <methods>
-      <topic title="Lifecycle">Manages object creation, initialization, update cycles, and destruction.</topic>
-      <method name="CreateFromLuaState" export="new" lua="true" static="true">
-        <summary>Create new object.</summary>
-        <details>This is a fall through constructor, that you can pass a table of properties to</details>
-        <returns type="nresults"/>
-      </method>
-      <method name="Awake" lua="true">
-        <summary>Initializes the core component when it is loaded, an essential lifecycle method.</summary>
-        <details>Perform setup and dependency wiring here before other logic runs.</details>
-      </method>
-      <method name="Animate" lua="true">
-        <summary>Runs object animations.</summary>
-        <details>Invokes the animation pipeline for this object and its hierarchy.</details>
-      </method>
-      <method name="Clear" export="clear" lua="true">
-        <summary>Clear all children of the object.</summary>
-        <details>Removes and properly releases all child objects from this object's hierarchy. This operation recursively clears each child object, removes them from the parent-child relationship, unreferences their Lua objects, and sets their parent pointer to NULL. The children list is then cleared. This is a destructive operation that completely empties the object's child hierarchy.</details>
-      </method>
-      <method name="Release" export="__gc" lua="true">
-        <summary>Garbage-collect an object (clear and release).</summary>
-        <details>Performs complete cleanup and destruction of the object. This includes: clearing all children recursively, removing the object from its parent's children list, clearing game focus/hover references if this object holds them, sending a "Destroy" message, releasing animation libraries, timers, animations, style classes, components, properties, and aliases. Finally frees all allocated memory including SourceFile, TextContent, Name, ClassName, and Xmlns strings. This is the final cleanup method called during garbage collection.</details>
-      </method>
-      <method name="Equals" const="true" export="__eq">
-        <summary>Compare two objects for equality.</summary>
-        <details>Compares this object with another object to determine if they represent the same instance. Typically implemented as pointer comparison or unique identifier matching to determine object identity rather than content equality.</details>
-        <arg name="other" type="Object" pointer="true" const="true">The second object to compare against this object for equality</arg>
-        <returns type="bool">True if the objects are the same instance, false if they are different objects</returns>
-      </method>
-      <method name="Rebuild" lua="true">
-        <summary>Rebuilds the object's body content asynchronously</summary>
-        <details>This method triggers a rebuild of the behavior by either executing a function body, adding a child from a string, and then posting a 'ViewDidLoad' message.</details>
-      </method>
-      <topic title="Hierarchy">Navigates and manipulates the parent-child relationship tree.</topic>
-      <method name="AddChild">
-        <summary>Add a child object.</summary>
-        <details>Adds the specified object as a child of this object in the hierarchy. If the child already has a parent, it is first removed from that parent's children list using REMOVE_FROM_LIST. The child is then added to the end of this object's children list and its parent pointer is set to this object. An "Attached" message is sent to the newly added child. If is_template is true, the OF_TEMPLATE flag is set on this object to indicate it contains template children.</details>
-        <arg name="child" type="Object" pointer="true">The child object to add to this object's hierarchy</arg>
-        <arg name="is_template" type="bool">If true, marks this object with the OF_TEMPLATE flag to indicate it contains template children</arg>
-        <returns type="Object" pointer="true">Returns added child object, for chaining calls</returns>
-      </method>
-      <method name="RemoveFromParent" lua="true">
-        <summary>Destroys an object.</summary>
-        <details>Detaches object form it's parent that causes the object to be garbage collected.</details>
-      </method>
-      <method name="GetParent" const="true">
-        <summary>Gets the parent object in the hierarchy</summary>
-        <details>Returns a pointer to the parent object, or null if this is the root object.</details>
-        <returns type="Object" pointer="true">Pointer to parent object, or null if no parent</returns>
-      </method>
-      <method name="GetFirstChild" const="true">
-        <summary>Gets the first child object</summary>
-        <details>Returns a pointer to the first child in the object hierarchy, or null if no children exist.</details>
-        <returns type="Object" pointer="true">Pointer to first child object, or null if no children</returns>
-      </method>
-      <method name="GetNext" const="true">
-        <summary>Gets the next sibling object</summary>
-        <details>Returns a pointer to the next sibling object at the same hierarchy level, or null if this is the last sibling.</details>
-        <returns type="Object" pointer="true">Pointer to next sibling object, or null if no next sibling</returns>
-      </method>
-      <method name="GetRoot">
-        <summary>Gets the root object of the hierarchy</summary>
-        <details>Traverses up the parent chain to find and return the topmost object in the hierarchy.</details>
-        <returns type="Object" pointer="true">Pointer to root object</returns>
-      </method>
-      <method name="FindChild">
-        <summary>Find a child object by name.</summary>
-        <details>Searches for a child object with the specified name. When recursive is false, only searches immediate children. When recursive is true, performs a depth-first search through the entire subtree to find the first object with a matching name. The search compares against the object's Name property using string comparison.</details>
-        <arg name="name" type="string">The exact name of the child object to locate</arg>
-        <arg name="recursive" type="bool">If true, searches recursively through all descendants; if false, searches only immediate children</arg>
-        <returns type="Object" pointer="true">Pointer to the first child object found with the matching name, or null if no match is found</returns>
-      </method>
-      <method name="FindByPath">
-        <summary>Finds child object by hierarchical path</summary>
-        <details>Searches through object hierarchy using a path string (e.g., "parent/child/grandchild") to locate nested objects.</details>
-        <arg name="name" type="string">Hierarchical path to the target object</arg>
-        <returns type="Object" pointer="true">Pointer to found object, or null if not found</returns>
-      </method>
-      <method name="FindChildByID">
-        <summary>Finds a child object by its unique identifier</summary>
-        <details>Searches through child objects to find one matching the specified ID.</details>
-        <arg name="id" type="uint">Unique identifier of the child object to find</arg>
-        <returns type="Object" pointer="true">Pointer to child object with matching ID, or null if not found</returns>
-      </method>
-      <method name="FindChildByAlias">
-        <summary>Finds a child object by its alias identifier</summary>
-        <details>Searches through child objects to find one matching the specified alias ID.</details>
-        <arg name="id" type="uint">Alias identifier of the child object to find</arg>
-        <returns type="Object" pointer="true">Pointer to child object with matching alias, or null if not found</returns>
-      </method>
-      <method name="FindChildOfClass">
-        <summary>Finds a child object of a specific class</summary>
-        <details>Searches the children of this object to find the first child that matches the specified class identifier. The search can be recursive depending on implementation.  This is useful for locating specific UI elements within a container, such as finding a button within a panel.  Returns null if no matching child is found.</details>
-        <arg name="classID" type="uint">The hashed identifier of the class to search for</arg>
-        <returns type="Object" pointer="true">Pointer to the matching child object, or null if not found</returns>
-      </method>
-      <method name="FindParentOfClass">
-        <summary>Finds the nearest parent object of a specific class</summary>
-        <details>Traverses up the object hierarchy starting from this object to find the first parent that matches the specified class identifier. This is useful for finding containing elements, such as finding the parent window or panel that contains a button.  Returns null if no matching parent is found.</details>
-        <arg name="classID" type="uint">The hashed identifier of the class to search for</arg>
-        <returns type="Object" pointer="true">Pointer to the matching parent object, or null if not found</returns>
-      </method>
-      <topic title="Messaging">Dispatches events and sends messages between objects.</topic>
-      <method name="DispatchEvent" lua="true">
-        <summary>Dispatch an event starting from this object and bubbling up parents.</summary>
-        <details>Initiates an event that begins at this object and bubbles up through the parent hierarchy. Each object in the chain has the opportunity to handle the event through registered event handlers or callbacks. The bubbling continues until either an object handles the event or the root of the hierarchy is reached. This implements a standard event propagation pattern commonly used in UI systems.</details>
-        <arg name="event" type="string">The name of the event to dispatch through the hierarchy</arg>
-        <returns type="Object" pointer="true">Pointer to the object that successfully handled the event, or null if no object in the hierarchy handled it</returns>
-      </method>
-      <method name="PostMessage" lua="true">
-        <summary>Posts a message to the global message queue.</summary>
-        <details>Places a message on the global queue for asynchronous processing without waiting for the receiver to process it.</details>
-        <arg name="message" type="string">The name of the message to post</arg>
-      </method>
-      <method name="MsgSend" lua="true">
-        <summary>Send a message to directly to the object ignoring queue.</summary>
-        <details>Messge sent will be immediately processed without using coroutines.</details>
-        <arg name="message" type="string">The name of the message to send</arg>
-      </method>
-      <method name="FindCallbackForID">
-        <summary>Retrieves callback function name for event ID</summary>
-        <details>Looks up the registered callback function associated with a specific event identifier for event handling.</details>
-        <arg name="event" type="uint">Event ID to find callback for</arg>
-        <returns type="string">Name of callback function, or empty if none registered</returns>
-      </method>
-      <topic title="Properties">Reads and writes typed properties, applying and observing changes.</topic>
-      <method name="SetProperty" export="__setproperty" lua="true">
-        <summary>Set a property on the object.</summary>
-        <details>Sets or updates a named property on this object. If the property doesn't exist, it may be created. If it exists, its value is updated. This method integrates with the Lua property system and may trigger property change callbacks and validation. The property system supports various data types including primitives, vectors, colors, and custom types.</details>
-        <arg name="Property" type="string">The name of the property to set or update</arg>
-        <returns type="bool">True if the property was successfully set, false if the operation failed due to invalid property name, type mismatch, or other constraints</returns>
-      </method>
-      <method name="GetProperty" export="__getproperty" lua="true">
-        <summary>Get a property value from an object.</summary>
-        <details>Retrieves the current value of the specified property from this object. The method searches through the object's property collection and returns the value if found. If the property doesn't exist, returns nil. This integrates with Lua's property access system and supports all property data types including handles, floats, vectors, colors, integers, booleans, and enumerations.</details>
-        <arg name="Property" type="string">The name of the property whose value to retrieve</arg>
-        <returns type="nresults">The current value of the property, or nil if the property doesn't exist. Return type varies based on property data type</returns>
-      </method>
-      <method name="UpdateProperties">
-        <summary>Updates object properties.</summary>
-        <details>Applies property changes and recalculates dependent state.</details>
-      </method>
-      <method name="EmitPropertyChangedEvents" lua="true">
-        <summary>Emits onPropertyChanged events by comparing to previous values.</summary>
-        <details>Ensures attached state manager (if any) is initialized and goes through properties seeking for changes to fire on-changed events. Recursively goes through children.</details>
-      </method>
-      <method name="FindImplicitProperty">
-        <summary>Looks up a property by context-driven syntax, like "Column" instead of "Grid.Column"</summary>
-        <details>Searches for a property using a context-driven approach, allowing shorthand notation for commonly used properties. This method simplifies property access by inferring the full property path based on the current context.</details>
-        <arg name="name" type="string">The name of the property to find</arg>
-        <returns type="PropertyType" pointer="true" const="true">Pointer to a property type, null if not found</returns>
-      </method>
-      <method name="FindExplicitProperty">
-        <summary>Looks up a property by full syntax, like "Grid.Column" instead of "Column"</summary>
-        <details>Searches for a property using the full property path, requiring the complete syntax for accurate identification. This method ensures precise property access by using the explicit path provided.</details>
-        <arg name="name" type="string">The full name of the property to find</arg>
-        <returns type="PropertyType" pointer="true" const="true">Pointer to a property type, null if not found</returns>
-      </method>
-      <method name="AttachPropertyProgram">
-        <summary>Attaches a property program to the specified property</summary>
-        <details>Enables attaching custom programs to bindings to perform calculations and transformations on bound data. For example, multiplying a DataSource value: DataSource.Speed * 20. The attached program is evaluated whenever the source data changes, allowing for dynamic property updates based on complex expressions. This allows for complex binding expressions and dynamic property computation without requiring explicit code-behind logic.</details>
-        <arg name="name" type="string">The full name of the property to attach the program to</arg>
-        <arg name="program" type="string">The program or expression to attach to the property</arg>
-        <arg name="attribute" type="PropertyAttribute">The attribute of the property to attach the program to (e.g., Value, Color, etc.)</arg>
-        <arg name="mode" type="BindingMode">The binding mode for the property program (e.g., OneWay, TwoWay, OneWayToSource)</arg>
-        <arg name="enabled" type="bool">Whether the property program is enabled</arg>
-        <returns type="bool">True if the property program was successfully attached, false otherwise</returns>
-      </method>
-      <method name="FindPropertyByPath">
-        <summary>Finds a property by navigating a hierarchical path</summary>
-        <details>Traverses the object hierarchy following the specified path and returns the property at the end.  The path uses forward slashes to navigate through child objects, ending with a property name (e.g., "Child1/Child2/PropertyName"). This allows accessing properties on descendant objects without manually traversing each level.  Returns null if any part of the path is not found or if the final element is not a valid property. </details>
-        <arg name="path" type="string">Slash-separated path to the property (e.g., "Child1/Child2/PropertyName")</arg>
-        <returns type="Property" pointer="true">Pointer to the property if found, or null if the path is invalid</returns>
-      </method>
-      <method name="GetProperties" const="true" private="true">
-        <summary>Gets the properties collection</summary>
-        <details>Returns a pointer to the property collection containing configuration and state data for this object.</details>
-        <returns type="Property" pointer="true">Pointer to properties collection</returns>
-      </method>
-      <method name="GetInteger" const="true">
-        <summary>Gets an integer property value by identifier</summary>
-        <details>Searches the object's properties for a property matching the specified long identifier and returns its value as an integer. The long identifier is a fully qualified property identifier in the form ObjectClass.PropertyName (e.g., Button.Content, TextBlock.Text). The property must be of type Int, Enum, or Bool to be successfully retrieved.   If no matching property is found, or if the property type is incompatible, the fallback value is returned instead. </details>
-        <arg name="ident" type="uint">The hashed long identifier "ObjectClass.PropertyName" of the property to retrieve</arg>
-        <arg name="fallback" type="int">The value to return if the property is not found or incompatible</arg>
-        <returns type="int">The property value if found and compatible, otherwise the fallback value</returns>
-      </method>
-      <topic title="Layout">Controls position, size, and dirty-flag propagation for layout passes.</topic>
-      <method name="SetDirty">
-        <summary>Sets object dirty and queues it for recalculation</summary>
-        <details>Marks the object as needing recalculation and updates the timestamp. Dirty objects are processed during the next update cycle to ensure consistent state.</details>
-      </method>
-      <method name="ClearDirtyFlags">
-        <summary>Clears dirty flags, marks object as recalculated</summary>
-        <details>Resets the dirty state of the object, indicating that it has been recalculated and no further updates are needed until it becomes dirty again.</details>
-      </method>
-      <method name="ApplyStyles">
-        <summary>Applies style changes to object hierarchy</summary>
-        <details>Forces style recalculation and application, optionally propagating changes to child objects in the hierarchy.</details>
-        <arg name="recursive" type="bool">Whether to apply styles to child objects recursively</arg>
-      </method>
-      <topic title="Style">Manages style sheets and resolves computed style values.</topic>
-      <method name="AddStyleSheet" lua="true">
-        <summary>Add a stylesheet to the object.</summary>
-        <details>Attaches a stylesheet resource to this object, enabling rule-based styling capabilities. The stylesheet contains rules that can modify the appearance and behavior of this object and potentially its children. Stylesheets support selectors, property assignments, and cascading rules. Multiple stylesheets can be applied to the same object, with later sheets taking precedence for conflicting rules.</details>
-        <arg name="source" type="string">Name or path of the stylesheet resource to load and apply to this object</arg>
-      </method>
-      <method name="GetStyle" const="true">
-        <summary>Retrieves object style flags</summary>
-        <details>Returns a bitmask of style flags similar to WinAPI style constants. Each bit represents different visual or behavioral properties.</details>
-        <returns type="uint">Current style flags as bitmask</returns>
-      </method>
-      <method name="SetStyle">
-        <summary>Sets object style flags</summary>
-        <details>Applies a bitmask of style flags to control object appearance and behavior. Flags can be combined using bitwise OR operations like WinAPI styles.</details>
-        <arg name="style" type="uint">Style flags bitmask to apply</arg>
-      </method>
-      <topic title="Animation">Attaches, plays, and transitions keyframe animations on this object.</topic>
-      <method name="Play">
-        <summary>Play an animation or resource on the object.</summary>
-        <details>Initiates playback of the specified animation or media resource on this object. The animation name is resolved against the object's animation library or external animation resources. This triggers the animation system to begin updating the object's properties over time according to the animation's keyframes and timeline.</details>
-        <arg name="animation" type="string">Name or identifier of the animation to play, resolved from the object's animation library</arg>
-      </method>
-      <method name="DoTween" lua="true">
-        <summary>Tween an object property over time.</summary>
-        <details>Creates and initiates a smooth animation transition (tween) that interpolates an object property from its current value to a target value over a specified duration. Supports various easing functions and animation curves. The tween system handles different property types including scalars, vectors, and colors. Multiple tweens can run simultaneously on different properties of the same object.</details>
-      </method>
-      <method name="SetAnimation">
-        <summary>Sets the active animation by name</summary>
-        <details>Looks up an animation by name in the object's animation library and sets it as the current active animation. The animation must have been previously added to the object's library using AddAnimation. If the animation name is not found, the active animation will be set to null.</details>
-        <arg name="name" type="string">The name of the animation to activate</arg>
-      </method>
-      <method name="GetAnimation" const="true">
-        <summary>Gets the currently active animation</summary>
-        <details>Returns a pointer to the keyframe animation that is currently set as active for this object, or null if no animation is active.  The active animation is set via SetAnimation and selected from the object's animation library.</details>
-        <returns type="KeyframeAnim" pointer="true" const="true">Pointer to the active keyframe animation, or null if none is set</returns>
-      </method>
-      <method name="AddAnimation">
-        <summary>Adds a keyframe animation to the object's animation library</summary>
-        <details>Registers a keyframe animation in the object's animation library, making it available for activation via SetAnimation. Multiple animations can be added to an object's library and switched between at runtime. The animation is added to a linked list of animations maintained by the object.</details>
-        <arg name="animation" type="KeyframeAnim" pointer="true">The keyframe animation to add to the library</arg>
-      </method>
-      <topic title="Focus and Input">Controls focus state, hover, modal presentation, and timers.</topic>
-      <method name="SetFocus">
-        <summary>Set focus on the object.</summary>
-        <details>Makes this object the currently focused object in the game interface. This triggers focus change events: sends "KillFocus" to the previously focused object (if any) and "SetFocus" to this object. Also posts "ThemeChanged" messages to both objects to update their visual appearance. Updates the game's global focus reference to point to this object.</details>
-      </method>
-      <method name="IsFocused" const="true">
-        <summary>Checks if this object currently has focus</summary>
-        <details>Returns true if this object is currently the focused object in the game interface, false otherwise. The focused object typically receives keyboard input and visual focus indicators.</details>
-        <returns type="bool">True if this object has focus, false otherwise</returns>
-      </method>
-      <method name="SetHover">
-        <summary>Sets the hover state for an object</summary>
-        <details>Marks this object as the currently hovered object. This is typically called by the input system when the mouse cursor moves over an object.</details>
-      </method>
-      <method name="ShowModal" lua="true">
-        <summary>Sets or clears the modal child object</summary>
-        <details>Sets a child object as modal, or clears the existing modal by passing null. When set, the previous modal is removed from the parent and the new modal object is attached. The modal object has the OF_NOACTIVATE flag set and its parent pointer is updated. Modal objects are typically used for popups, menus, or dialogs that should capture input.</details>
-        <arg name="modal" type="Object" pointer="true">The object to set as modal, or null to clear the current modal</arg>
-        <returns type="nresults">Starts a coroutine</returns>
-      </method>
-      <method name="SetTimer" lua="true">
-        <summary>Set a timer on the object.</summary>
-        <details>Creates and starts a timer associated with this object. Timers can be one-shot or repeating, and execute callback functions after specified delays or intervals. The timer is automatically cleaned up when the object is destroyed. Multiple timers can be active on the same object simultaneously. Timers integrate with the game's update loop and respect pause states.</details>
-        <returns type="nresults">Handle or identifier for the created timer, which can be used to control or cancel the timer before it expires</returns>
-      </method>
-      <topic title="Identity and State">Accesses name, class, flags, aliases, text content, and Lua state.</topic>
-      <method name="GetName" const="true">
-        <summary>Retrieves the object's name identifier</summary>
-        <details>Returns the string name assigned to this object instance for identification and lookup purposes.</details>
-        <returns type="string">Current name of the object</returns>
-      </method>
-      <method name="SetName">
-        <summary>Sets the object's name identifier</summary>
-        <details>Assigns a new name to this object for identification. Names are typically used for hierarchical lookups and debugging.</details>
-        <arg name="name" type="string">New name to assign to the object</arg>
-      </method>
-      <method name="GetClassName" const="true">
-        <summary>Returns the object's class type name</summary>
-        <details>Retrieves the runtime type information for this object, useful for type checking and reflection.</details>
-        <returns type="string">Class name of the object type</returns>
-      </method>
-      <method name="SetClassName">
-        <summary>Sets the class name of the object</summary>
-        <details>Assigns a class name to this object. The class name can be used for styling, identification, or querying objects with similar characteristics. This enables flexible categorization and styling of UI elements without relying solely on object types.</details>
-        <arg name="classID" type="string">The class name to assign to the object</arg>
-      </method>
-      <method name="CheckName" const="true">
-        <summary>Checks if object has a specific name</summary>
-        <details>Performs name comparison to determine if this object matches the given identifier.</details>
-        <arg name="name" type="string">Name to check against</arg>
-        <returns type="bool">True if object name matches the provided string</returns>
-      </method>
-      <method name="GetFlags" const="true">
-        <summary>Gets the object flags</summary>
-        <details>Returns the bitfield representing the current state of the object.</details>
-        <returns type="uint">Bitfield of object flags</returns>
-      </method>
-      <method name="SetFlags">
-        <summary>Sets the object flags</summary>
-        <details>Updates the bitfield representing the object's state. Only the flags marked as user-settable in the documentation should be modified directly.</details>
-        <arg name="flags" type="uint">New bitfield value for the object flags</arg>
-      </method>
-      <method name="GetIdentifier" const="true">
-        <summary>Gets the identifier of the object</summary>
-        <details>Returns the unique identifier of this object. The identifier is a hash of the object's name and remains stable across sessions for consistent reference.</details>
-        <returns type="uint">Hashed identifier of the object</returns>
-      </method>
-      <method name="GetAlias" const="true">
-        <summary>Gets the alias identifier</summary>
-        <details>Returns the alias ID of the object if one is defined.</details>
-        <returns type="uint">Alias identifier</returns>
-      </method>
-      <method name="GetSourceFile" const="true">
-        <summary>Gets the source file path</summary>
-        <details>Returns the file path of the source file from which this object was created or loaded.</details>
-        <returns type="string">Path to the source file</returns>
-      </method>
-      <method name="SetSourceFile">
-        <summary>Sets the source file path of the object</summary>
-        <details>Associates a source file path with this object, typically used for debugging purposes or to track which file defined the object. This is useful when loading UI elements from external files or templates to maintain a reference to the original source location.</details>
-        <arg name="path" type="string">The file path to associate with the object</arg>
-      </method>
-      <method name="GetTextContent" const="true">
-        <summary>Gets the text content of the object</summary>
-        <details>Returns the textual content contained within this object, if applicable.</details>
-        <returns type="string">Text content of the object</returns>
-      </method>
-      <method name="SetTextContent">
-        <summary>Sets the text content of the object</summary>
-        <details>Updates the text content displayed by this object. This is typically used for text labels, buttons, or other UI elements that display text.  The text content is copied internally and can be modified at any time to update the displayed text.</details>
-        <arg name="text" type="string">The text content to display</arg>
-      </method>
-      <method name="GetTimestamp" const="true">
-        <summary>Gets the last modified timestamp</summary>
-        <details>Returns the timestamp of when this object was last marked dirty, indicating the last time it required recalculation.</details>
-        <returns type="long">Timestamp of last dirty marking</returns>
-      </method>
-      <method name="GetLuaObject" const="true" private="true">
-        <summary>Gets the Lua object reference</summary>
-        <details>Returns the Lua registry index associated with this object.</details>
-        <returns type="uint">Lua registry index for the object</returns>
-      </method>
-      <method name="GetDomain">
-        <summary>Gets the domain of the object</summary>
-        <details>Returns the domain to which this object belongs, which can be used for organizational or scoping purposes within the engine.</details>
-        <returns type="lua_State" pointer="true">The domain of the object</returns>
-      </method>
-      <method name="SetContext" export="__setcontext" lua="true">
-        <summary>Set the current context object where newly created objects will be parented.</summary>
-        <details>Establishes this object as the current creation context in the Lua environment. When new objects are created through Lua scripts without explicitly specifying a parent, they will automatically be added as children of this context object. This provides a convenient way to control object hierarchy during scripted object creation and helps maintain organized scene structures.</details>
-      </method>
-      <method name="ParseClassAttribute">
-        <summary>Parses and applies multiple class names from a class attribute string</summary>
-        <details>Parses a space-separated class attribute string (e.g., class="button primary large"). The function splits the string by spaces and adds each class name to the object.  This is typically called during XML/markup parsing when processing class="..." attributes, allowing UI elements to be assigned multiple class names for styling and identification purposes.  Empty strings are ignored.</details>
-        <arg name="classString" type="string">Space-separated class names, as from a class="..." attribute</arg>
-      </method>
-      <topic title="Prefabs and Aliases">Loads prefab templates and manages named child aliases.</topic>
-      <method name="Instantiate" lua="true">
-        <summary>Instantiates a new object from this prefab.</summary>
-        <details>Will load from the source, not adding it to the static workspace hierarchy</details>
-        <returns type="Object" pointer="true">Returns the instantiated object</returns>
-      </method>
-      <method name="LoadPrefabs" lua="true">
-        <summary>Loads and instantiates prefabs.</summary>
-        <details>Resolves and loads prefab resources for this object tree.</details>
-      </method>
-      <method name="IsPrefabView" const="true">
-        <summary>Checks if this object is a prefab view container</summary>
-        <details>Returns true if this object is a PrefabView, which is a special container that can dynamically load and instantiate different prefab templates based on its source property. Similar to Kanzi's PrefabView, this allows for runtime loading of reusable UI component templates by changing the source string, making it useful for dynamic UI composition and template-based layouts.</details>
-        <returns type="bool">True if this object is a PrefabView, false otherwise</returns>
-      </method>
-      <method name="AddAlias">
-        <summary>Registers an alias for a child object path</summary>
-        <details>Adds a named alias that provides a shorthand reference to a child object path. This is called during the loading phase to register aliases.  Once registered, the aliased path can be referenced using the syntax #AliasName/Child/Property instead of the full path Full/Path/Child/Property.  Aliases simplify references to frequently accessed objects and make UI definitions more maintainable.</details>
-        <arg name="name" type="string">The alias name (used as #name in references)</arg>
-        <arg name="path" type="string">The full path to the object being aliased</arg>
-      </method>
-      <method name="AssignAliases">
-        <summary>Resolves and assigns all registered aliases for an object</summary>
-        <details>Called after the loading phase to resolve alias references and assign aliased children to internal structures. This compilation step processes all aliases registered via AddAlias and updates internal pointers to the actual objects referenced by the given path. This ensures that alias references like #AliasName/Child/Property are properly resolved and ready for use at runtime.</details>
-        <arg name="pathToObject" type="string">The path to the object being processed for alias resolution</arg>
-      </method>
-    </methods>
-    <messages>
-      <message name="Create" routing="Direct"/>
-      <message name="Start" routing="Direct"/>
-      <message name="Awake" routing="Direct"/>
-      <message name="ThemeChanged" routing="Direct"/>
-      <message name="PropertyChanged" routing="Direct">
-        <fields>
-          <field name="Property" type="Property" pointer="true">The property that changed</field>
-        </fields>
-      </message>
-      <message name="Attached" routing="Direct"/>
-      <message name="Release" routing="Direct"/>
-      <message name="Destroy" routing="Direct"/>
-      <message name="Timer"/>
-    </messages>
-  </interface>
-  <function name="GetFocus">
-    <summary>Retrieves currently active object.</summary>
-    <returns type="Object" pointer="true">Pointer to the currently focused object, or null if no object has focus</returns>
-  </function>
-  <function name="GetHover">
-    <summary>Gets the currently hovered object</summary>
-    <details>Returns a pointer to the object that is currently being hovered over by the mouse cursor. Returns null if no object is being hovered.</details>
-    <returns type="Object" pointer="true">Pointer to the object under the mouse cursor, or null if no object is being hovered</returns>
-  </function>
+  <types>
+    <enums name="MessageRouting">
+      <summary>Defines the routing strategy for messages sent to objects. This determines how messages propagate through the object hierarchy and which handlers are invoked.</summary>
+      <enum name="Bubbling">Messages are bubbled up the hierarchy.</enum>
+      <enum name="TunnelingBubbling">Messages are first tunneled down the hierarchy and then bubbled up.</enum>
+      <enum name="Tunneling">Messages are tunneled down the hierarchy.</enum>
+      <enum name="Direct">Messages are sent directly to the target object.</enum>
+    </enums>
+    <enums name="PropertyState">
+      <summary>Represents the various states a property can be in.</summary>
+      <enum name="Normal">Normal property state when no triggers are active</enum>
+      <enum name="Hover">Property state when the mouse is hovering over it</enum>
+      <enum name="Focus">Property state when it has focus</enum>
+      <enum name="Select">Property state when it is selected</enum>
+      <enum name="Disable">Property state when it is disabled</enum>
+      <enum name="OldValue">Property state representing the previous value</enum>
+    </enums>
+    <enums name="BindingMode">
+      <summary>Various modes to bind properties</summary>
+      <enum name="OneWay">Default mode, updates target property when source changes</enum>
+      <enum name="TwoWay">Updates target property when source changes and updates source when target changes</enum>
+      <enum name="OneWayToSource">Updates source property when target changes, but not the other way around</enum>
+      <enum name="Expression">Allows binding to a custom expression</enum>
+    </enums>
+    <enums name="PropertyAttribute">
+      <summary>Attributes that can be applied to properties for binding purposes.</summary>
+      <enum name="WholeProperty">Default binding to the whole property</enum>
+      <enum name="ColorR">Bind to the red channel of a color property</enum>
+      <enum name="ColorG">Bind to the green channel of a color property</enum>
+      <enum name="ColorB">Bind to the blue channel of a color property</enum>
+      <enum name="ColorA">Bind to the alpha channel of a color property</enum>
+      <enum name="VectorX">Bind to the X component of a vector property</enum>
+      <enum name="VectorY">Bind to the Y component of a vector property</enum>
+      <enum name="VectorZ">Bind to the Z component of a vector property</enum>
+      <enum name="VectorW">Bind to the W component of a vector property</enum>
+    </enums>
+  </types>
+  <structs>
+    <struct name="MessageType">
+      <fields>
+        <field name="name" type="string">The name of the message</field>
+        <field name="id" type="uint">The unique identifier of the message</field>
+        <field name="routing" type="MessageRouting">The routing strategy for this message</field>
+        <field name="size" type="uint">The size of the message</field>
+      </fields>
+    </struct>
+  </structs>
+  <interfaces>
+    <interface name="Input" export="Input" no-check="true">
+      <!-- Base event for all pointer/mouse input events -->
+      <messages>
+        <message name="MouseMessage" type="WI_Message"/>
+        <message name="KeyMessage" type="WI_Message"/>
+        <message name="LeftMouseDown" same-as="MouseMessage"/>
+        <message name="RightMouseDown" same-as="MouseMessage"/>
+        <message name="OtherMouseDown" same-as="MouseMessage"/>
+        <message name="LeftMouseUp" same-as="MouseMessage"/>
+        <message name="RightMouseUp" same-as="MouseMessage"/>
+        <message name="OtherMouseUp" same-as="MouseMessage"/>
+        <message name="LeftMouseDragged" same-as="MouseMessage"/>
+        <message name="RightMouseDragged" same-as="MouseMessage"/>
+        <message name="OtherMouseDragged" same-as="MouseMessage"/>
+        <message name="LeftDoubleClick" same-as="MouseMessage"/>
+        <message name="RightDoubleClick" same-as="MouseMessage"/>
+        <message name="OtherDoubleClick" same-as="MouseMessage"/>
+        <message name="MouseMoved" same-as="MouseMessage"/>
+        <message name="ScrollWheel" same-as="MouseMessage"/>
+        <message name="DragDrop" same-as="MouseMessage"/>
+        <message name="DragEnter" same-as="MouseMessage"/>
+        <message name="KeyDown" same-as="KeyMessage"/>
+        <message name="KeyUp" same-as="KeyMessage"/>
+        <message name="Char" same-as="KeyMessage"/>
+      </messages>
+      <!-- Base event for all keyboard input events -->
+    </interface>
+    <interface name="Object" prefix="OBJ_" export="Object" no-check="true">
+      <summary>Core engine host object.</summary>
+      <details>
+        <p>The `Object` type is the root of the runtime type system. Every element that can appear in a scene, be manipulated through scripts, or participate in rendering and logic derives its basic functionality from Object. It establishes the fundamental contract that all other types extend, providing common lifecycle methods, hierarchy management, and component composition.</p>
+        <p>An `Object` is not tied to a specific visual or logical role by itself. Instead, it serves as a container for components, and these components define the actual capabilities of the instance. Higher-level types such as `Node`, `Node2D`, or `ImageView` are constructed by layering specialized components on top of the base `Object`.</p>
+      </details>
+      <methods>
+        <topic title="Lifecycle">Manages object creation, initialization, update cycles, and destruction.</topic>
+        <method name="CreateFromLuaState" export="new" lua="true" static="true">
+          <summary>Create new object.</summary>
+          <details>This is a fall through constructor, that you can pass a table of properties to</details>
+          <returns type="nresults"/>
+        </method>
+        <method name="Awake" lua="true">
+          <summary>Initializes the core component when it is loaded, an essential lifecycle method.</summary>
+          <details>Perform setup and dependency wiring here before other logic runs.</details>
+        </method>
+        <method name="Animate" lua="true">
+          <summary>Runs object animations.</summary>
+          <details>Invokes the animation pipeline for this object and its hierarchy.</details>
+        </method>
+        <method name="Clear" export="clear" lua="true">
+          <summary>Clear all children of the object.</summary>
+          <details>Removes and properly releases all child objects from this object's hierarchy. This operation recursively clears each child object, removes them from the parent-child relationship, unreferences their Lua objects, and sets their parent pointer to NULL. The children list is then cleared. This is a destructive operation that completely empties the object's child hierarchy.</details>
+        </method>
+        <method name="Release" export="__gc" lua="true">
+          <summary>Garbage-collect an object (clear and release).</summary>
+          <details>Performs complete cleanup and destruction of the object. This includes: clearing all children recursively, removing the object from its parent's children list, clearing game focus/hover references if this object holds them, sending a "Destroy" message, releasing animation libraries, timers, animations, style classes, components, properties, and aliases. Finally frees all allocated memory including SourceFile, TextContent, Name, ClassName, and Xmlns strings. This is the final cleanup method called during garbage collection.</details>
+        </method>
+        <method name="Equals" const="true" export="__eq">
+          <summary>Compare two objects for equality.</summary>
+          <details>Compares this object with another object to determine if they represent the same instance. Typically implemented as pointer comparison or unique identifier matching to determine object identity rather than content equality.</details>
+          <arg name="other" type="Object" pointer="true" const="true">The second object to compare against this object for equality</arg>
+          <returns type="bool">True if the objects are the same instance, false if they are different objects</returns>
+        </method>
+        <method name="Rebuild" lua="true">
+          <summary>Rebuilds the object's body content asynchronously</summary>
+          <details>This method triggers a rebuild of the behavior by either executing a function body, adding a child from a string, and then posting a 'ViewDidLoad' message.</details>
+        </method>
+        <topic title="Hierarchy">Navigates and manipulates the parent-child relationship tree.</topic>
+        <method name="AddChild">
+          <summary>Add a child object.</summary>
+          <details>Adds the specified object as a child of this object in the hierarchy. If the child already has a parent, it is first removed from that parent's children list using REMOVE_FROM_LIST. The child is then added to the end of this object's children list and its parent pointer is set to this object. An "Attached" message is sent to the newly added child. If is_template is true, the OF_TEMPLATE flag is set on this object to indicate it contains template children.</details>
+          <arg name="child" type="Object" pointer="true">The child object to add to this object's hierarchy</arg>
+          <arg name="is_template" type="bool">If true, marks this object with the OF_TEMPLATE flag to indicate it contains template children</arg>
+          <returns type="Object" pointer="true">Returns added child object, for chaining calls</returns>
+        </method>
+        <method name="RemoveFromParent" lua="true">
+          <summary>Destroys an object.</summary>
+          <details>Detaches object form it's parent that causes the object to be garbage collected.</details>
+        </method>
+        <method name="GetParent" const="true">
+          <summary>Gets the parent object in the hierarchy</summary>
+          <details>Returns a pointer to the parent object, or null if this is the root object.</details>
+          <returns type="Object" pointer="true">Pointer to parent object, or null if no parent</returns>
+        </method>
+        <method name="GetFirstChild" const="true">
+          <summary>Gets the first child object</summary>
+          <details>Returns a pointer to the first child in the object hierarchy, or null if no children exist.</details>
+          <returns type="Object" pointer="true">Pointer to first child object, or null if no children</returns>
+        </method>
+        <method name="GetNext" const="true">
+          <summary>Gets the next sibling object</summary>
+          <details>Returns a pointer to the next sibling object at the same hierarchy level, or null if this is the last sibling.</details>
+          <returns type="Object" pointer="true">Pointer to next sibling object, or null if no next sibling</returns>
+        </method>
+        <method name="GetRoot">
+          <summary>Gets the root object of the hierarchy</summary>
+          <details>Traverses up the parent chain to find and return the topmost object in the hierarchy.</details>
+          <returns type="Object" pointer="true">Pointer to root object</returns>
+        </method>
+        <method name="FindChild">
+          <summary>Find a child object by name.</summary>
+          <details>Searches for a child object with the specified name. When recursive is false, only searches immediate children. When recursive is true, performs a depth-first search through the entire subtree to find the first object with a matching name. The search compares against the object's Name property using string comparison.</details>
+          <arg name="name" type="string">The exact name of the child object to locate</arg>
+          <arg name="recursive" type="bool">If true, searches recursively through all descendants; if false, searches only immediate children</arg>
+          <returns type="Object" pointer="true">Pointer to the first child object found with the matching name, or null if no match is found</returns>
+        </method>
+        <method name="FindByPath">
+          <summary>Finds child object by hierarchical path</summary>
+          <details>Searches through object hierarchy using a path string (e.g., "parent/child/grandchild") to locate nested objects.</details>
+          <arg name="name" type="string">Hierarchical path to the target object</arg>
+          <returns type="Object" pointer="true">Pointer to found object, or null if not found</returns>
+        </method>
+        <method name="FindChildByID">
+          <summary>Finds a child object by its unique identifier</summary>
+          <details>Searches through child objects to find one matching the specified ID.</details>
+          <arg name="id" type="uint">Unique identifier of the child object to find</arg>
+          <returns type="Object" pointer="true">Pointer to child object with matching ID, or null if not found</returns>
+        </method>
+        <method name="FindChildByAlias">
+          <summary>Finds a child object by its alias identifier</summary>
+          <details>Searches through child objects to find one matching the specified alias ID.</details>
+          <arg name="id" type="uint">Alias identifier of the child object to find</arg>
+          <returns type="Object" pointer="true">Pointer to child object with matching alias, or null if not found</returns>
+        </method>
+        <method name="FindChildOfClass">
+          <summary>Finds a child object of a specific class</summary>
+          <details>Searches the children of this object to find the first child that matches the specified class identifier. The search can be recursive depending on implementation.  This is useful for locating specific UI elements within a container, such as finding a button within a panel.  Returns null if no matching child is found.</details>
+          <arg name="classID" type="uint">The hashed identifier of the class to search for</arg>
+          <returns type="Object" pointer="true">Pointer to the matching child object, or null if not found</returns>
+        </method>
+        <method name="FindParentOfClass">
+          <summary>Finds the nearest parent object of a specific class</summary>
+          <details>Traverses up the object hierarchy starting from this object to find the first parent that matches the specified class identifier. This is useful for finding containing elements, such as finding the parent window or panel that contains a button.  Returns null if no matching parent is found.</details>
+          <arg name="classID" type="uint">The hashed identifier of the class to search for</arg>
+          <returns type="Object" pointer="true">Pointer to the matching parent object, or null if not found</returns>
+        </method>
+        <topic title="Messaging">Dispatches events and sends messages between objects.</topic>
+        <method name="DispatchEvent" lua="true">
+          <summary>Dispatch an event starting from this object and bubbling up parents.</summary>
+          <details>Initiates an event that begins at this object and bubbles up through the parent hierarchy. Each object in the chain has the opportunity to handle the event through registered event handlers or callbacks. The bubbling continues until either an object handles the event or the root of the hierarchy is reached. This implements a standard event propagation pattern commonly used in UI systems.</details>
+          <arg name="event" type="string">The name of the event to dispatch through the hierarchy</arg>
+          <returns type="Object" pointer="true">Pointer to the object that successfully handled the event, or null if no object in the hierarchy handled it</returns>
+        </method>
+        <method name="PostMessage" lua="true">
+          <summary>Posts a message to the global message queue.</summary>
+          <details>Places a message on the global queue for asynchronous processing without waiting for the receiver to process it.</details>
+          <arg name="message" type="string">The name of the message to post</arg>
+        </method>
+        <method name="MsgSend" lua="true">
+          <summary>Send a message to directly to the object ignoring queue.</summary>
+          <details>Messge sent will be immediately processed without using coroutines.</details>
+          <arg name="message" type="string">The name of the message to send</arg>
+        </method>
+        <method name="FindCallbackForID">
+          <summary>Retrieves callback function name for event ID</summary>
+          <details>Looks up the registered callback function associated with a specific event identifier for event handling.</details>
+          <arg name="event" type="uint">Event ID to find callback for</arg>
+          <returns type="string">Name of callback function, or empty if none registered</returns>
+        </method>
+        <topic title="Properties">Reads and writes typed properties, applying and observing changes.</topic>
+        <method name="SetProperty" export="__setproperty" lua="true">
+          <summary>Set a property on the object.</summary>
+          <details>Sets or updates a named property on this object. If the property doesn't exist, it may be created. If it exists, its value is updated. This method integrates with the Lua property system and may trigger property change callbacks and validation. The property system supports various data types including primitives, vectors, colors, and custom types.</details>
+          <arg name="Property" type="string">The name of the property to set or update</arg>
+          <returns type="bool">True if the property was successfully set, false if the operation failed due to invalid property name, type mismatch, or other constraints</returns>
+        </method>
+        <method name="GetProperty" export="__getproperty" lua="true">
+          <summary>Get a property value from an object.</summary>
+          <details>Retrieves the current value of the specified property from this object. The method searches through the object's property collection and returns the value if found. If the property doesn't exist, returns nil. This integrates with Lua's property access system and supports all property data types including handles, floats, vectors, colors, integers, booleans, and enumerations.</details>
+          <arg name="Property" type="string">The name of the property whose value to retrieve</arg>
+          <returns type="nresults">The current value of the property, or nil if the property doesn't exist. Return type varies based on property data type</returns>
+        </method>
+        <method name="UpdateProperties">
+          <summary>Updates object properties.</summary>
+          <details>Applies property changes and recalculates dependent state.</details>
+        </method>
+        <method name="EmitPropertyChangedEvents" lua="true">
+          <summary>Emits onPropertyChanged events by comparing to previous values.</summary>
+          <details>Ensures attached state manager (if any) is initialized and goes through properties seeking for changes to fire on-changed events. Recursively goes through children.</details>
+        </method>
+        <method name="FindImplicitProperty">
+          <summary>Looks up a property by context-driven syntax, like "Column" instead of "Grid.Column"</summary>
+          <details>Searches for a property using a context-driven approach, allowing shorthand notation for commonly used properties. This method simplifies property access by inferring the full property path based on the current context.</details>
+          <arg name="name" type="string">The name of the property to find</arg>
+          <returns type="PropertyType" pointer="true" const="true">Pointer to a property type, null if not found</returns>
+        </method>
+        <method name="FindExplicitProperty">
+          <summary>Looks up a property by full syntax, like "Grid.Column" instead of "Column"</summary>
+          <details>Searches for a property using the full property path, requiring the complete syntax for accurate identification. This method ensures precise property access by using the explicit path provided.</details>
+          <arg name="name" type="string">The full name of the property to find</arg>
+          <returns type="PropertyType" pointer="true" const="true">Pointer to a property type, null if not found</returns>
+        </method>
+        <method name="AttachPropertyProgram">
+          <summary>Attaches a property program to the specified property</summary>
+          <details>Enables attaching custom programs to bindings to perform calculations and transformations on bound data. For example, multiplying a DataSource value: DataSource.Speed * 20. The attached program is evaluated whenever the source data changes, allowing for dynamic property updates based on complex expressions. This allows for complex binding expressions and dynamic property computation without requiring explicit code-behind logic.</details>
+          <arg name="name" type="string">The full name of the property to attach the program to</arg>
+          <arg name="program" type="string">The program or expression to attach to the property</arg>
+          <arg name="attribute" type="PropertyAttribute">The attribute of the property to attach the program to (e.g., Value, Color, etc.)</arg>
+          <arg name="mode" type="BindingMode">The binding mode for the property program (e.g., OneWay, TwoWay, OneWayToSource)</arg>
+          <arg name="enabled" type="bool">Whether the property program is enabled</arg>
+          <returns type="bool">True if the property program was successfully attached, false otherwise</returns>
+        </method>
+        <method name="FindPropertyByPath">
+          <summary>Finds a property by navigating a hierarchical path</summary>
+          <details>Traverses the object hierarchy following the specified path and returns the property at the end.  The path uses forward slashes to navigate through child objects, ending with a property name (e.g., "Child1/Child2/PropertyName"). This allows accessing properties on descendant objects without manually traversing each level.  Returns null if any part of the path is not found or if the final element is not a valid property. </details>
+          <arg name="path" type="string">Slash-separated path to the property (e.g., "Child1/Child2/PropertyName")</arg>
+          <returns type="Property" pointer="true">Pointer to the property if found, or null if the path is invalid</returns>
+        </method>
+        <method name="GetProperties" const="true" private="true">
+          <summary>Gets the properties collection</summary>
+          <details>Returns a pointer to the property collection containing configuration and state data for this object.</details>
+          <returns type="Property" pointer="true">Pointer to properties collection</returns>
+        </method>
+        <method name="GetInteger" const="true">
+          <summary>Gets an integer property value by identifier</summary>
+          <details>Searches the object's properties for a property matching the specified long identifier and returns its value as an integer. The long identifier is a fully qualified property identifier in the form ObjectClass.PropertyName (e.g., Button.Content, TextBlock.Text). The property must be of type Int, Enum, or Bool to be successfully retrieved.   If no matching property is found, or if the property type is incompatible, the fallback value is returned instead. </details>
+          <arg name="ident" type="uint">The hashed long identifier "ObjectClass.PropertyName" of the property to retrieve</arg>
+          <arg name="fallback" type="int">The value to return if the property is not found or incompatible</arg>
+          <returns type="int">The property value if found and compatible, otherwise the fallback value</returns>
+        </method>
+        <topic title="Layout">Controls position, size, and dirty-flag propagation for layout passes.</topic>
+        <method name="SetDirty">
+          <summary>Sets object dirty and queues it for recalculation</summary>
+          <details>Marks the object as needing recalculation and updates the timestamp. Dirty objects are processed during the next update cycle to ensure consistent state.</details>
+        </method>
+        <method name="ClearDirtyFlags">
+          <summary>Clears dirty flags, marks object as recalculated</summary>
+          <details>Resets the dirty state of the object, indicating that it has been recalculated and no further updates are needed until it becomes dirty again.</details>
+        </method>
+        <method name="ApplyStyles">
+          <summary>Applies style changes to object hierarchy</summary>
+          <details>Forces style recalculation and application, optionally propagating changes to child objects in the hierarchy.</details>
+          <arg name="recursive" type="bool">Whether to apply styles to child objects recursively</arg>
+        </method>
+        <topic title="Style">Manages style sheets and resolves computed style values.</topic>
+        <method name="AddStyleSheet" lua="true">
+          <summary>Add a stylesheet to the object.</summary>
+          <details>Attaches a stylesheet resource to this object, enabling rule-based styling capabilities. The stylesheet contains rules that can modify the appearance and behavior of this object and potentially its children. Stylesheets support selectors, property assignments, and cascading rules. Multiple stylesheets can be applied to the same object, with later sheets taking precedence for conflicting rules.</details>
+          <arg name="source" type="string">Name or path of the stylesheet resource to load and apply to this object</arg>
+        </method>
+        <method name="GetStyle" const="true">
+          <summary>Retrieves object style flags</summary>
+          <details>Returns a bitmask of style flags similar to WinAPI style constants. Each bit represents different visual or behavioral properties.</details>
+          <returns type="uint">Current style flags as bitmask</returns>
+        </method>
+        <method name="SetStyle">
+          <summary>Sets object style flags</summary>
+          <details>Applies a bitmask of style flags to control object appearance and behavior. Flags can be combined using bitwise OR operations like WinAPI styles.</details>
+          <arg name="style" type="uint">Style flags bitmask to apply</arg>
+        </method>
+        <topic title="Animation">Attaches, plays, and transitions keyframe animations on this object.</topic>
+        <method name="Play">
+          <summary>Play an animation or resource on the object.</summary>
+          <details>Initiates playback of the specified animation or media resource on this object. The animation name is resolved against the object's animation library or external animation resources. This triggers the animation system to begin updating the object's properties over time according to the animation's keyframes and timeline.</details>
+          <arg name="animation" type="string">Name or identifier of the animation to play, resolved from the object's animation library</arg>
+        </method>
+        <method name="DoTween" lua="true">
+          <summary>Tween an object property over time.</summary>
+          <details>Creates and initiates a smooth animation transition (tween) that interpolates an object property from its current value to a target value over a specified duration. Supports various easing functions and animation curves. The tween system handles different property types including scalars, vectors, and colors. Multiple tweens can run simultaneously on different properties of the same object.</details>
+        </method>
+        <method name="SetAnimation">
+          <summary>Sets the active animation by name</summary>
+          <details>Looks up an animation by name in the object's animation library and sets it as the current active animation. The animation must have been previously added to the object's library using AddAnimation. If the animation name is not found, the active animation will be set to null.</details>
+          <arg name="name" type="string">The name of the animation to activate</arg>
+        </method>
+        <method name="GetAnimation" const="true">
+          <summary>Gets the currently active animation</summary>
+          <details>Returns a pointer to the keyframe animation that is currently set as active for this object, or null if no animation is active.  The active animation is set via SetAnimation and selected from the object's animation library.</details>
+          <returns type="KeyframeAnim" pointer="true" const="true">Pointer to the active keyframe animation, or null if none is set</returns>
+        </method>
+        <method name="AddAnimation">
+          <summary>Adds a keyframe animation to the object's animation library</summary>
+          <details>Registers a keyframe animation in the object's animation library, making it available for activation via SetAnimation. Multiple animations can be added to an object's library and switched between at runtime. The animation is added to a linked list of animations maintained by the object.</details>
+          <arg name="animation" type="KeyframeAnim" pointer="true">The keyframe animation to add to the library</arg>
+        </method>
+        <topic title="Focus and Input">Controls focus state, hover, modal presentation, and timers.</topic>
+        <method name="SetFocus">
+          <summary>Set focus on the object.</summary>
+          <details>Makes this object the currently focused object in the game interface. This triggers focus change events: sends "KillFocus" to the previously focused object (if any) and "SetFocus" to this object. Also posts "ThemeChanged" messages to both objects to update their visual appearance. Updates the game's global focus reference to point to this object.</details>
+        </method>
+        <method name="IsFocused" const="true">
+          <summary>Checks if this object currently has focus</summary>
+          <details>Returns true if this object is currently the focused object in the game interface, false otherwise. The focused object typically receives keyboard input and visual focus indicators.</details>
+          <returns type="bool">True if this object has focus, false otherwise</returns>
+        </method>
+        <method name="SetHover">
+          <summary>Sets the hover state for an object</summary>
+          <details>Marks this object as the currently hovered object. This is typically called by the input system when the mouse cursor moves over an object.</details>
+        </method>
+        <method name="ShowModal" lua="true">
+          <summary>Sets or clears the modal child object</summary>
+          <details>Sets a child object as modal, or clears the existing modal by passing null. When set, the previous modal is removed from the parent and the new modal object is attached. The modal object has the OF_NOACTIVATE flag set and its parent pointer is updated. Modal objects are typically used for popups, menus, or dialogs that should capture input.</details>
+          <arg name="modal" type="Object" pointer="true">The object to set as modal, or null to clear the current modal</arg>
+          <returns type="nresults">Starts a coroutine</returns>
+        </method>
+        <method name="SetTimer" lua="true">
+          <summary>Set a timer on the object.</summary>
+          <details>Creates and starts a timer associated with this object. Timers can be one-shot or repeating, and execute callback functions after specified delays or intervals. The timer is automatically cleaned up when the object is destroyed. Multiple timers can be active on the same object simultaneously. Timers integrate with the game's update loop and respect pause states.</details>
+          <returns type="nresults">Handle or identifier for the created timer, which can be used to control or cancel the timer before it expires</returns>
+        </method>
+        <topic title="Identity and State">Accesses name, class, flags, aliases, text content, and Lua state.</topic>
+        <method name="GetName" const="true">
+          <summary>Retrieves the object's name identifier</summary>
+          <details>Returns the string name assigned to this object instance for identification and lookup purposes.</details>
+          <returns type="string">Current name of the object</returns>
+        </method>
+        <method name="SetName">
+          <summary>Sets the object's name identifier</summary>
+          <details>Assigns a new name to this object for identification. Names are typically used for hierarchical lookups and debugging.</details>
+          <arg name="name" type="string">New name to assign to the object</arg>
+        </method>
+        <method name="GetClassName" const="true">
+          <summary>Returns the object's class type name</summary>
+          <details>Retrieves the runtime type information for this object, useful for type checking and reflection.</details>
+          <returns type="string">Class name of the object type</returns>
+        </method>
+        <method name="SetClassName">
+          <summary>Sets the class name of the object</summary>
+          <details>Assigns a class name to this object. The class name can be used for styling, identification, or querying objects with similar characteristics. This enables flexible categorization and styling of UI elements without relying solely on object types.</details>
+          <arg name="classID" type="string">The class name to assign to the object</arg>
+        </method>
+        <method name="CheckName" const="true">
+          <summary>Checks if object has a specific name</summary>
+          <details>Performs name comparison to determine if this object matches the given identifier.</details>
+          <arg name="name" type="string">Name to check against</arg>
+          <returns type="bool">True if object name matches the provided string</returns>
+        </method>
+        <method name="GetFlags" const="true">
+          <summary>Gets the object flags</summary>
+          <details>Returns the bitfield representing the current state of the object.</details>
+          <returns type="uint">Bitfield of object flags</returns>
+        </method>
+        <method name="SetFlags">
+          <summary>Sets the object flags</summary>
+          <details>Updates the bitfield representing the object's state. Only the flags marked as user-settable in the documentation should be modified directly.</details>
+          <arg name="flags" type="uint">New bitfield value for the object flags</arg>
+        </method>
+        <method name="GetIdentifier" const="true">
+          <summary>Gets the identifier of the object</summary>
+          <details>Returns the unique identifier of this object. The identifier is a hash of the object's name and remains stable across sessions for consistent reference.</details>
+          <returns type="uint">Hashed identifier of the object</returns>
+        </method>
+        <method name="GetAlias" const="true">
+          <summary>Gets the alias identifier</summary>
+          <details>Returns the alias ID of the object if one is defined.</details>
+          <returns type="uint">Alias identifier</returns>
+        </method>
+        <method name="GetSourceFile" const="true">
+          <summary>Gets the source file path</summary>
+          <details>Returns the file path of the source file from which this object was created or loaded.</details>
+          <returns type="string">Path to the source file</returns>
+        </method>
+        <method name="SetSourceFile">
+          <summary>Sets the source file path of the object</summary>
+          <details>Associates a source file path with this object, typically used for debugging purposes or to track which file defined the object. This is useful when loading UI elements from external files or templates to maintain a reference to the original source location.</details>
+          <arg name="path" type="string">The file path to associate with the object</arg>
+        </method>
+        <method name="GetTextContent" const="true">
+          <summary>Gets the text content of the object</summary>
+          <details>Returns the textual content contained within this object, if applicable.</details>
+          <returns type="string">Text content of the object</returns>
+        </method>
+        <method name="SetTextContent">
+          <summary>Sets the text content of the object</summary>
+          <details>Updates the text content displayed by this object. This is typically used for text labels, buttons, or other UI elements that display text.  The text content is copied internally and can be modified at any time to update the displayed text.</details>
+          <arg name="text" type="string">The text content to display</arg>
+        </method>
+        <method name="GetTimestamp" const="true">
+          <summary>Gets the last modified timestamp</summary>
+          <details>Returns the timestamp of when this object was last marked dirty, indicating the last time it required recalculation.</details>
+          <returns type="long">Timestamp of last dirty marking</returns>
+        </method>
+        <method name="GetLuaObject" const="true" private="true">
+          <summary>Gets the Lua object reference</summary>
+          <details>Returns the Lua registry index associated with this object.</details>
+          <returns type="uint">Lua registry index for the object</returns>
+        </method>
+        <method name="GetDomain">
+          <summary>Gets the domain of the object</summary>
+          <details>Returns the domain to which this object belongs, which can be used for organizational or scoping purposes within the engine.</details>
+          <returns type="lua_State" pointer="true">The domain of the object</returns>
+        </method>
+        <method name="SetContext" export="__setcontext" lua="true">
+          <summary>Set the current context object where newly created objects will be parented.</summary>
+          <details>Establishes this object as the current creation context in the Lua environment. When new objects are created through Lua scripts without explicitly specifying a parent, they will automatically be added as children of this context object. This provides a convenient way to control object hierarchy during scripted object creation and helps maintain organized scene structures.</details>
+        </method>
+        <method name="ParseClassAttribute">
+          <summary>Parses and applies multiple class names from a class attribute string</summary>
+          <details>Parses a space-separated class attribute string (e.g., class="button primary large"). The function splits the string by spaces and adds each class name to the object.  This is typically called during XML/markup parsing when processing class="..." attributes, allowing UI elements to be assigned multiple class names for styling and identification purposes.  Empty strings are ignored.</details>
+          <arg name="classString" type="string">Space-separated class names, as from a class="..." attribute</arg>
+        </method>
+        <topic title="Prefabs and Aliases">Loads prefab templates and manages named child aliases.</topic>
+        <method name="Instantiate" lua="true">
+          <summary>Instantiates a new object from this prefab.</summary>
+          <details>Will load from the source, not adding it to the static workspace hierarchy</details>
+          <returns type="Object" pointer="true">Returns the instantiated object</returns>
+        </method>
+        <method name="LoadPrefabs" lua="true">
+          <summary>Loads and instantiates prefabs.</summary>
+          <details>Resolves and loads prefab resources for this object tree.</details>
+        </method>
+        <method name="IsPrefabView" const="true">
+          <summary>Checks if this object is a prefab view container</summary>
+          <details>Returns true if this object is a PrefabView, which is a special container that can dynamically load and instantiate different prefab templates based on its source property. Similar to Kanzi's PrefabView, this allows for runtime loading of reusable UI component templates by changing the source string, making it useful for dynamic UI composition and template-based layouts.</details>
+          <returns type="bool">True if this object is a PrefabView, false otherwise</returns>
+        </method>
+        <method name="AddAlias">
+          <summary>Registers an alias for a child object path</summary>
+          <details>Adds a named alias that provides a shorthand reference to a child object path. This is called during the loading phase to register aliases.  Once registered, the aliased path can be referenced using the syntax #AliasName/Child/Property instead of the full path Full/Path/Child/Property.  Aliases simplify references to frequently accessed objects and make UI definitions more maintainable.</details>
+          <arg name="name" type="string">The alias name (used as #name in references)</arg>
+          <arg name="path" type="string">The full path to the object being aliased</arg>
+        </method>
+        <method name="AssignAliases">
+          <summary>Resolves and assigns all registered aliases for an object</summary>
+          <details>Called after the loading phase to resolve alias references and assign aliased children to internal structures. This compilation step processes all aliases registered via AddAlias and updates internal pointers to the actual objects referenced by the given path. This ensures that alias references like #AliasName/Child/Property are properly resolved and ready for use at runtime.</details>
+          <arg name="pathToObject" type="string">The path to the object being processed for alias resolution</arg>
+        </method>
+      </methods>
+      <messages>
+        <message name="Create" routing="Direct"/>
+        <message name="Start" routing="Direct"/>
+        <message name="Awake" routing="Direct"/>
+        <message name="ThemeChanged" routing="Direct"/>
+        <message name="PropertyChanged" routing="Direct">
+          <fields>
+            <field name="Property" type="Property" pointer="true">The property that changed</field>
+          </fields>
+        </message>
+        <message name="Attached" routing="Direct"/>
+        <message name="Release" routing="Direct"/>
+        <message name="Destroy" routing="Direct"/>
+        <message name="Timer"/>
+      </messages>
+    </interface>
+  </interfaces>
+  <functions>
+    <function name="GetFocus">
+      <summary>Retrieves currently active object.</summary>
+      <returns type="Object" pointer="true">Pointer to the currently focused object, or null if no object has focus</returns>
+    </function>
+    <function name="GetHover">
+      <summary>Gets the currently hovered object</summary>
+      <details>Returns a pointer to the object that is currently being hovered over by the mouse cursor. Returns null if no object is being hovered.</details>
+      <returns type="Object" pointer="true">Pointer to the object under the mouse cursor, or null if no object is being hovered</returns>
+    </function>
+  </functions>
   <!--  <function name="AddCommands" lua="true">-->
   <!--    <summary>Retrieves currently active object.</summary>-->
   <!--    <arg name="command" type="string"/>-->

@@ -592,22 +592,22 @@ class Model {
 		array_map(fn($r) => $r["struct"], $rn),
 		array_map(fn($r) => new ExternalStruct($r, $this), $rn)
 		);
-		$sn = $xml->xpath(".//struct[@name]");
+		$sn = $xml->xpath("./structs/struct[@name]");
 		$this->structs = array_combine(
 		array_map(fn($s) => $s["name"], $sn),
 		array_map(fn($s) => new Struct($s, $this), $sn)
 		);
-		$sn = $xml->xpath(".//interface[@name]");
+		$sn = $xml->xpath("./interfaces/interface[@name]");
 		$this->interfaces = array_combine(
 		array_map(fn($s) => $s["name"], $sn),
 		array_map(fn($s) => new Interface($s, $this), $sn)
 		);
-		$en = $xml->xpath(".//enums[@name]");
+		$en = $xml->xpath("./types/enums[@name]");
 		$this->enums = array_combine(
 		array_map(fn($e) => $e["name"], $en),
 		array_map(fn($e) => new Enum($e, $this), $en)
 		);
-		$cn = $xml->xpath(".//class[@name]");
+		$cn = $xml->xpath("./classes/class[@name]");
 		$this->components = array_combine(
 		array_map(fn($c) => $c["name"], $cn),
 		array_map(fn($c) => new Component($c, $this), $cn)
@@ -622,7 +622,7 @@ class Model {
 		array_map(fn($r) => $r["name"], $rn),
 		array_map(fn($r) => new Event($r, $this), $rn)
 		);
-		$rn = $xml->xpath(".//function[@name]");
+		$rn = $xml->xpath("./functions/function[@name]");
 		$this->functions = array_combine(
 		array_map(fn($r) => $r["name"], $rn),
 		array_map(fn($r) => new Method($r, $this), $rn)
