@@ -19,6 +19,10 @@ struct lua_State;
 #include "core_properties.h"
 #include "../geometry/geometry.h"
 
+ORCA_API extern struct MessageType WindowPaintMessage;
+ORCA_API extern struct MessageType WindowResizedMessage;
+ORCA_API extern struct MessageType WindowClosedMessage;
+ORCA_API extern struct MessageType WindowChangedScreenMessage;
 ORCA_API extern struct MessageType MouseMessageMessage;
 ORCA_API extern struct MessageType KeyMessageMessage;
 ORCA_API extern struct MessageType LeftMouseDownMessage;
@@ -40,14 +44,6 @@ ORCA_API extern struct MessageType DragEnterMessage;
 ORCA_API extern struct MessageType KeyDownMessage;
 ORCA_API extern struct MessageType KeyUpMessage;
 ORCA_API extern struct MessageType CharMessage;
-ORCA_API extern struct MessageType WindowPaintMessage;
-ORCA_API extern struct MessageType WindowResizedMessage;
-ORCA_API extern struct MessageType WindowClosedMessage;
-ORCA_API extern struct MessageType WindowChangedScreenMessage;
-ORCA_API extern struct MessageType KillFocusMessage;
-ORCA_API extern struct MessageType SetFocusMessage;
-ORCA_API extern struct MessageType TimerMessage;
-ORCA_API extern struct MessageType IsVisibleMessage;
 ORCA_API extern struct MessageType CreateMessage;
 ORCA_API extern struct MessageType StartMessage;
 ORCA_API extern struct MessageType AwakeMessage;
@@ -56,10 +52,14 @@ ORCA_API extern struct MessageType PropertyChangedMessage;
 ORCA_API extern struct MessageType AttachedMessage;
 ORCA_API extern struct MessageType ReleaseMessage;
 ORCA_API extern struct MessageType DestroyMessage;
+ORCA_API extern struct MessageType TimerMessage;
 ORCA_API extern struct MessageType ResumeCoroutineMessage;
 ORCA_API extern struct MessageType StopCoroutineMessage;
-ORCA_API extern struct MessageType ViewDidLoadMessage;
 
+typedef struct WindowPaintMsgArgs WindowPaintMsg_t,* WindowPaintMsgPtr;
+typedef struct WindowPaintMsgArgs WindowResizedMsg_t,* WindowResizedMsgPtr;
+typedef struct WindowClosedMsgArgs WindowClosedMsg_t,* WindowClosedMsgPtr;
+typedef struct WindowChangedScreenMsgArgs WindowChangedScreenMsg_t,* WindowChangedScreenMsgPtr;
 typedef struct WI_Message MouseMessageMsg_t,* MouseMessageMsgPtr;
 typedef struct WI_Message KeyMessageMsg_t,* KeyMessageMsgPtr;
 typedef struct WI_Message LeftMouseDownMsg_t,* LeftMouseDownMsgPtr;
@@ -81,14 +81,6 @@ typedef struct WI_Message DragEnterMsg_t,* DragEnterMsgPtr;
 typedef struct WI_Message KeyDownMsg_t,* KeyDownMsgPtr;
 typedef struct WI_Message KeyUpMsg_t,* KeyUpMsgPtr;
 typedef struct WI_Message CharMsg_t,* CharMsgPtr;
-typedef struct WindowPaintMsgArgs WindowPaintMsg_t,* WindowPaintMsgPtr;
-typedef struct WindowPaintMsgArgs WindowResizedMsg_t,* WindowResizedMsgPtr;
-typedef struct WindowClosedMsgArgs WindowClosedMsg_t,* WindowClosedMsgPtr;
-typedef struct WindowChangedScreenMsgArgs WindowChangedScreenMsg_t,* WindowChangedScreenMsgPtr;
-typedef struct KillFocusMsgArgs KillFocusMsg_t,* KillFocusMsgPtr;
-typedef struct SetFocusMsgArgs SetFocusMsg_t,* SetFocusMsgPtr;
-typedef struct TimerMsgArgs TimerMsg_t,* TimerMsgPtr;
-typedef struct IsVisibleMsgArgs IsVisibleMsg_t,* IsVisibleMsgPtr;
 typedef struct CreateMsgArgs CreateMsg_t,* CreateMsgPtr;
 typedef struct StartMsgArgs StartMsg_t,* StartMsgPtr;
 typedef struct AwakeMsgArgs AwakeMsg_t,* AwakeMsgPtr;
@@ -97,9 +89,9 @@ typedef struct PropertyChangedMsgArgs PropertyChangedMsg_t,* PropertyChangedMsgP
 typedef struct AttachedMsgArgs AttachedMsg_t,* AttachedMsgPtr;
 typedef struct ReleaseMsgArgs ReleaseMsg_t,* ReleaseMsgPtr;
 typedef struct DestroyMsgArgs DestroyMsg_t,* DestroyMsgPtr;
+typedef struct TimerMsgArgs TimerMsg_t,* TimerMsgPtr;
 typedef struct ResumeCoroutineMsgArgs ResumeCoroutineMsg_t,* ResumeCoroutineMsgPtr;
 typedef struct StopCoroutineMsgArgs StopCoroutineMsg_t,* StopCoroutineMsgPtr;
-typedef struct ViewDidLoadMsgArgs ViewDidLoadMsg_t,* ViewDidLoadMsgPtr;
 
 
 /// @brief Defines the routing strategy for messages sent to objects. This determines how messages propagate through the object hierarchy and which handlers are invoked.
@@ -502,16 +494,6 @@ struct MessageType {
 ORCA_API void luaX_pushMessageType(lua_State *L, struct MessageType const* MessageType);
 ORCA_API struct MessageType* luaX_checkMessageType(lua_State *L, int idx);
 
-/** MouseMessageMsgArgs struct */
-struct MouseMessageMsgArgs {
-};
-ORCA_API void luaX_pushMouseMessageMsgArgs(lua_State *L, struct MouseMessageMsgArgs const* data);
-ORCA_API struct MouseMessageMsgArgs* luaX_checkMouseMessageMsgArgs(lua_State *L, int idx);
-/** KeyMessageMsgArgs struct */
-struct KeyMessageMsgArgs {
-};
-ORCA_API void luaX_pushKeyMessageMsgArgs(lua_State *L, struct KeyMessageMsgArgs const* data);
-ORCA_API struct KeyMessageMsgArgs* luaX_checkKeyMessageMsgArgs(lua_State *L, int idx);
 /** WindowPaintMsgArgs struct */
 struct WindowPaintMsgArgs {
 	uint32_t WindowWidth;
@@ -529,26 +511,16 @@ struct WindowChangedScreenMsgArgs {
 };
 ORCA_API void luaX_pushWindowChangedScreenMsgArgs(lua_State *L, struct WindowChangedScreenMsgArgs const* data);
 ORCA_API struct WindowChangedScreenMsgArgs* luaX_checkWindowChangedScreenMsgArgs(lua_State *L, int idx);
-/** KillFocusMsgArgs struct */
-struct KillFocusMsgArgs {
+/** MouseMessageMsgArgs struct */
+struct MouseMessageMsgArgs {
 };
-ORCA_API void luaX_pushKillFocusMsgArgs(lua_State *L, struct KillFocusMsgArgs const* data);
-ORCA_API struct KillFocusMsgArgs* luaX_checkKillFocusMsgArgs(lua_State *L, int idx);
-/** SetFocusMsgArgs struct */
-struct SetFocusMsgArgs {
+ORCA_API void luaX_pushMouseMessageMsgArgs(lua_State *L, struct MouseMessageMsgArgs const* data);
+ORCA_API struct MouseMessageMsgArgs* luaX_checkMouseMessageMsgArgs(lua_State *L, int idx);
+/** KeyMessageMsgArgs struct */
+struct KeyMessageMsgArgs {
 };
-ORCA_API void luaX_pushSetFocusMsgArgs(lua_State *L, struct SetFocusMsgArgs const* data);
-ORCA_API struct SetFocusMsgArgs* luaX_checkSetFocusMsgArgs(lua_State *L, int idx);
-/** TimerMsgArgs struct */
-struct TimerMsgArgs {
-};
-ORCA_API void luaX_pushTimerMsgArgs(lua_State *L, struct TimerMsgArgs const* data);
-ORCA_API struct TimerMsgArgs* luaX_checkTimerMsgArgs(lua_State *L, int idx);
-/** IsVisibleMsgArgs struct */
-struct IsVisibleMsgArgs {
-};
-ORCA_API void luaX_pushIsVisibleMsgArgs(lua_State *L, struct IsVisibleMsgArgs const* data);
-ORCA_API struct IsVisibleMsgArgs* luaX_checkIsVisibleMsgArgs(lua_State *L, int idx);
+ORCA_API void luaX_pushKeyMessageMsgArgs(lua_State *L, struct KeyMessageMsgArgs const* data);
+ORCA_API struct KeyMessageMsgArgs* luaX_checkKeyMessageMsgArgs(lua_State *L, int idx);
 /** CreateMsgArgs struct */
 struct CreateMsgArgs {
 };
@@ -590,6 +562,11 @@ struct DestroyMsgArgs {
 };
 ORCA_API void luaX_pushDestroyMsgArgs(lua_State *L, struct DestroyMsgArgs const* data);
 ORCA_API struct DestroyMsgArgs* luaX_checkDestroyMsgArgs(lua_State *L, int idx);
+/** TimerMsgArgs struct */
+struct TimerMsgArgs {
+};
+ORCA_API void luaX_pushTimerMsgArgs(lua_State *L, struct TimerMsgArgs const* data);
+ORCA_API struct TimerMsgArgs* luaX_checkTimerMsgArgs(lua_State *L, int idx);
 /** ResumeCoroutineMsgArgs struct */
 struct ResumeCoroutineMsgArgs {
 };
@@ -600,11 +577,6 @@ struct StopCoroutineMsgArgs {
 };
 ORCA_API void luaX_pushStopCoroutineMsgArgs(lua_State *L, struct StopCoroutineMsgArgs const* data);
 ORCA_API struct StopCoroutineMsgArgs* luaX_checkStopCoroutineMsgArgs(lua_State *L, int idx);
-/** ViewDidLoadMsgArgs struct */
-struct ViewDidLoadMsgArgs {
-};
-ORCA_API void luaX_pushViewDidLoadMsgArgs(lua_State *L, struct ViewDidLoadMsgArgs const* data);
-ORCA_API struct ViewDidLoadMsgArgs* luaX_checkViewDidLoadMsgArgs(lua_State *L, int idx);
 
 
 #endif

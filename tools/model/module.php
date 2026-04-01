@@ -258,6 +258,7 @@ class Method extends Base {
 class Interface extends Base {
 	function __construct($elem, $model) {
 		parent::__construct($elem, $model);
+		$this->prefix = $elem["prefix"] ?? $elem["name"];
 	}
 
 	function getMethods() {
@@ -292,6 +293,12 @@ class Interface extends Base {
 	function hasTopics() {
 		return count($this->_elem->xpath("topic")) > 0;
 	}
+
+	function getMessages() {
+		foreach ($this->_elem->xpath(".//message[@name]") as $f) {
+			yield new Event($f, $this->_model);
+		}
+	}
 }
 
 // --- Struct ---
@@ -305,7 +312,6 @@ class Struct extends Interface {
 		parent::__construct($elem, $model);
 		$this->sealed = $elem["sealed"] === "true";
 		$this->export = $elem["export"] ?? $elem["name"];
-		$this->prefix = $elem["prefix"] ?? $elem["name"];
 	}
 
 	function getFields($recursive = false) {
@@ -320,7 +326,7 @@ class Struct extends Interface {
 			}
 		}
 	}
-
+	
 	function getParsers() {
 		$result = dict();
 		foreach ($this->getFields() as $field_obj) {
@@ -424,12 +430,6 @@ class Component extends Struct {
 				$p->doc = null;
 				yield $p;
 			}
-		}
-	}
-
-	function getMessages() {
-		foreach ($this->_elem->xpath(".//message[@name]") as $f) {
-			yield new Event($f, $this->_model);
 		}
 	}
 

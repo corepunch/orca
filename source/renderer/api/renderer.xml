@@ -11,17 +11,6 @@
   <external struct="ViewDef"/>
   <external struct="lua_State"/>
   
-  <message name="RenderScreen">
-    <field name="width" type="uint">The width of the render screen</field>
-    <field name="height" type="uint">The height of the render screen</field>
-    <field name="stereo" type="float">The stereo value of the render screen</field>
-    <field name="angle" type="float">The angle of the render screen</field>
-    <field name="target" type="Texture" pointer="true">The target handle of the render screen</field>
-  </message>
-  <message name="Render">
-    <field name="ViewDef" type="ViewDef" pointer="true">The view definition for rendering</field>
-  </message>
-
 <!--  <shutdown name="R_Shutdown"/>-->
   <interface name="window" prefix="WI_" export="Window">
     <summary>Window interface abstraction.</summary>

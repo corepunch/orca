@@ -73,6 +73,9 @@
     <property name="Matrix" type="mat4">Final combined transformation matrix (computed automatically)</property>
     <property name="CalculatedOffset" type="float">Computed offset value used for trajectory list positioning</property>
     <field name="_opacity" type="float"/>
+    <message name="Render">
+      <field name="ViewDef" type="ViewDef" pointer="true">The view definition for rendering</field>
+    </message>
   </class>
 
   <class name="Scene" parent="Node3D">

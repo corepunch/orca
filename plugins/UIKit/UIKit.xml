@@ -269,12 +269,6 @@
     <field name="Axis" type="SizeAxisShorthand" fixed-array="3">A number value per axis</field>
   </struct>
 
-  <message name="HitTest" routing="Direct">
-    <field name="x" type="int">X coordinate of the hit test point</field>
-    <field name="y" type="int">Y coordinate of the hit test point</field>
-  </message>
-  <message name="GetSize"/>
- 
   <class name="DataObject">
     <summary>Base class for data-holding objects within the framework</summary>
     <details>Provides fundamental data management capabilities and serves as the base for objects that participate in data binding operations.</details>
@@ -301,12 +295,11 @@
     <handles message="Attached"/>
     <property name="Property" type="string">Target property name to monitor or modify </property>
     <property name="Value" type="int">Associated value for the trigger condition </property>
+    <message name="Triggered">
+      <field name="Trigger" type="Trigger" pointer="true"/>
+      <field name="message" type="HandleMessageMsgArgs"/>
+    </message>
   </class>
-
-  <message name="Triggered">
-    <field name="Trigger" type="Trigger" pointer="true"/>
-    <field name="message" type="HandleMessageMsgArgs"/>
-  </message>
 
   <class name="OnPropertyChangedTrigger" parent="Trigger">
     <summary>Responds to property value changes on specified nodes</summary>
@@ -436,6 +429,15 @@
       <summary>Initializes the component's Lua view state.</summary>
       <field name="lua_state" type="lua_State" pointer="true"/>
     </message>
+    <message name="HitTest" routing="Direct">
+      <field name="x" type="int">X coordinate of the hit test point</field>
+      <field name="y" type="int">Y coordinate of the hit test point</field>
+    </message>
+    <message name="GetSize"/>
+    <message name="IsVisible" routing="Direct"/>
+    <message name="ViewDidLoad" routing="Direct"/>
+    <message name="KillFocus"/>
+    <message name="SetFocus"/>
   </class>
 
   <class name="TextRun">
@@ -686,11 +688,6 @@
     <enum name="NoResize">The window size is fixed. The user cannot resize or maximize the window.</enum>
   </enums>
   
-  <message name="UpdateLayout">
-    <field name="Width" type="float"/>
-    <field name="Height" type="float"/>
-  </message>
-
   <class name="Screen" parent="Node2D">
     <summary>Top-level container representing a display surface or window</summary>
     <details>Provides the root rendering context for UI hierarchies. Manages screen-level operations like clearing and render target management.</details>
@@ -707,6 +704,17 @@
     <property name="DialogResult" type="float" default="NAN">Result value for dialog interactions</property>
     <field name="_rt" type="Texture" pointer="true">Internal render target for the screen</field>
     <field name="_size" type="uint">Currently set size (to resize window when changed).</field>
+    <message name="UpdateLayout">
+      <field name="Width" type="float"/>
+      <field name="Height" type="float"/>
+    </message>
+    <message name="RenderScreen">
+      <field name="width" type="uint">The width of the render screen</field>
+      <field name="height" type="uint">The height of the render screen</field>
+      <field name="stereo" type="float">The stereo value of the render screen</field>
+      <field name="angle" type="float">The angle of the render screen</field>
+      <field name="target" type="Texture" pointer="true">The target handle of the render screen</field>
+    </message>
   </class>
 
   <class name="Cinematic" parent="Node2D">
@@ -813,16 +821,6 @@
     <enum name="Fade">Fading transition</enum>
   </enums>
 
-  <message name="NavigateToPage">
-    <summary>Navigates to a new page URL with an optional transition animation.</summary>
-    <field name="URL" type="string">The URL of the page to navigate to.</field>
-    <field name="TransitionType" type="TransitionType">The type of transition animation to use during navigation.</field>
-  </message>
-  <message name="NavigateBack">
-    <summary>Navigates back to the previous page with an optional transition animation.</summary>
-    <field name="TransitionType" type="TransitionType">The type of transition animation to use during navigation.</field>
-  </message>
-
   <class name="Page" parent="Node2D">
     <summary>Represents a single page within a document or UI container.</summary>
     <details>Used to store navigation related data while all the functionality comes from PageHost</details>
@@ -842,6 +840,15 @@
     <property name="ActivePage" type="Page" pointer="true">The currently active page.</property>
     <field name="_historyStack" type="Page" pointer="true" fixed-array="32">Navigation history stack.</field>
     <field name="_historySize" type="int">Number of entries in the navigation history stack.</field>
+    <message name="NavigateToPage">
+      <summary>Navigates to a new page URL with an optional transition animation.</summary>
+      <field name="URL" type="string">The URL of the page to navigate to.</field>
+      <field name="TransitionType" type="TransitionType">The type of transition animation to use during navigation.</field>
+    </message>
+    <message name="NavigateBack">
+      <summary>Navigates back to the previous page with an optional transition animation.</summary>
+      <field name="TransitionType" type="TransitionType">The type of transition animation to use during navigation.</field>
+    </message>
   </class>
 
   <class name="PageViewport" parent="Node2D">

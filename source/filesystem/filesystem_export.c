@@ -195,6 +195,7 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.NumMessageTypes = k##NAME##NumMessageTypes, \
 };
 static struct MessageType WorkspaceMessageTypes[kWorkspaceNumMessageTypes] = {	
+		{ "Workspace.ReadCommands", ID_Workspace_ReadCommands, kMessageRoutingTunnelingBubbling, sizeof(struct ReadCommandsMsgArgs) },
 };
 static struct PropertyType const WorkspaceProperties[kWorkspaceNumProperties] = {
 };
@@ -233,6 +234,10 @@ struct Library* luaX_checkLibrary(lua_State *L, int idx) {
 REGISTER_CLASS(Library, 0);
 LRESULT Project_Start(struct Object*, struct Project*, wParam_t, StartMsgPtr);
 static struct MessageType ProjectMessageTypes[kProjectNumMessageTypes] = {	
+		{ "Project.OpenFile", ID_Project_OpenFile, kMessageRoutingTunnelingBubbling, sizeof(struct OpenFileMsgArgs) },
+		{ "Project.FileExists", ID_Project_FileExists, kMessageRoutingTunnelingBubbling, sizeof(struct FileExistsMsgArgs) },
+		{ "Project.HasChangedFiles", ID_Project_HasChangedFiles, kMessageRoutingTunnelingBubbling, sizeof(struct HasChangedFilesMsgArgs) },
+		{ "Project.LoadProject", ID_Project_LoadProject, kMessageRoutingTunnelingBubbling, sizeof(struct LoadProjectMsgArgs) },
 };
 static struct PropertyType const ProjectProperties[kProjectNumProperties] = {
 	DECL(0xbcd19216, Project, HalfFloatTextureFormat, HalfFloatTextureFormat, kDataTypeBool), // Project.HalfFloatTextureFormat

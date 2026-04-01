@@ -32,6 +32,9 @@
     <property name="Anchor" type="vec2">Anchor point for positioning</property>
     <field name="Matrix" type="mat4">Final combined transformation matrix (computed automatically)</field>
     <field name="_opacity" type="float"/>
+    <message name="Render">
+      <field name="ViewDef" type="ViewDef" pointer="true">The view definition for rendering</field>
+    </message>
   </class>
 
   <class name="SKScene" parent="SKNode">

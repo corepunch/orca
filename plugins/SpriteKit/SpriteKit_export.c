@@ -110,8 +110,19 @@ static luaL_Reg _SpriteFrame_Methods[] = {
 };
 
 STRUCT(SpriteFrame, SpriteFrame);
+struct MessageType RenderMessage = {
+	.name = "Render",
+	.id = kMsgRender,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct RenderMsgArgs),
+};
 
+static luaL_Reg _RenderMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _RenderMsgArgs[] = {
+	DECL(0xce9ab61f, RenderMsgArgs, ViewDef, ViewDef, kDataTypeStruct, .TypeString = "ViewDef"), // RenderMsgArgs.ViewDef
+};
 
+STRUCT(RenderMsgArgs, RenderMsgArgs);
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -152,6 +163,7 @@ struct SpriteAnimation* luaX_checkSpriteAnimation(lua_State *L, int idx) {
 REGISTER_CLASS(SpriteAnimation, 0);
 LRESULT SKNode_UpdateMatrix(struct Object*, struct SKNode*, wParam_t, UpdateMatrixMsgPtr);
 static struct MessageType SKNodeMessageTypes[kSKNodeNumMessageTypes] = {	
+		{ "SKNode.Render", ID_SKNode_Render, kMessageRoutingTunnelingBubbling, sizeof(struct RenderMsgArgs) },
 };
 static struct PropertyType const SKNodeProperties[kSKNodeNumProperties] = {
 	DECL(0xe27f342a, SKNode, Position, Position, kDataTypeStruct, .TypeString = "Vector2D"), // SKNode.Position
@@ -286,6 +298,7 @@ ORCA_API int luaopen_orca_SpriteKit(lua_State *L) {
 		{ NULL, NULL } 
 	}));
 	lua_setfield(L, ((void)luaopen_orca_SpriteFrame(L), -2), "SpriteFrame");
+	lua_setfield(L, ((void)luaopen_orca_RenderMsgArgs(L), -2), "RenderMsgArgs");
 	lua_setfield(L, ((void)lua_pushclass(L, &_SpriteAnimation), -2), "SpriteAnimation");
 	lua_setfield(L, ((void)lua_pushclass(L, &_SKNode), -2), "SKNode");
 	lua_setfield(L, ((void)lua_pushclass(L, &_SKScene), -2), "SKScene");

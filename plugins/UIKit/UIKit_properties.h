@@ -2,9 +2,8 @@
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __UIKIT_PROPERTIES_H__
 #define __UIKIT_PROPERTIES_H__
-#define kMsgHitTest 0x898160ea
-#define kMsgGetSize 0x80d9e0ee
-#define kMsgSubmit 0x4078e545
+#define kMsgTriggered 0x3b1c3ae2
+#define kMsgUpdateMatrix 0x5dbe404d
 #define kMsgMeasure 0x97619c7f
 #define kMsgArrange 0xc4cf2187
 #define kMsgMeasureOverride 0xff95a02f
@@ -15,11 +14,17 @@
 #define kMsgDrawBrush 0x0875c1d1
 #define kMsgHandleMessage 0xfc48a0da
 #define kMsgLoadView 0xa3650e54
+#define kMsgHitTest 0x898160ea
+#define kMsgGetSize 0x80d9e0ee
+#define kMsgIsVisible 0x608d20d1
+#define kMsgViewDidLoad 0x03e93095
+#define kMsgKillFocus 0xa7c0f8d7
+#define kMsgSetFocus 0xc399d265
 #define kMsgMakeText 0x73a47798
-#define kMsgTriggered 0x3b1c3ae2
-#define kMsgUpdateMatrix 0x5dbe404d
 #define kMsgUpdateShmatrix 0x89a6db0a
+#define kMsgSubmit 0x4078e545
 #define kMsgUpdateLayout 0x928c657a
+#define kMsgRenderScreen 0xd15bdf29
 #define kMsgNavigateToPage 0x6475c790
 #define kMsgNavigateBack 0x36bc88b5
 
@@ -60,7 +65,11 @@ enum AnimationPlayerProperties {
 #define Trigger_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Trigger,_N)
 #define ID_Trigger_Property 0x7a6c1a46 // Trigger.Property
 #define ID_Trigger_Value 0x5229f3cc // Trigger.Value
-#define kTriggerNumMessageTypes 0
+#define kTriggerNumMessageTypes 1
+enum TriggerMessages {
+	kTriggerTriggered,
+};
+#define ID_Trigger_Triggered 0x729dabf0 // Trigger.Triggered
 #define kTriggerNumProperties 2
 enum TriggerProperties {
 	kTriggerProperty,
@@ -217,11 +226,43 @@ enum ColorBrushProperties {
 #define ID_Node_Opacity 0xb6882472 // Node.Opacity
 #define ID_Node_Tags 0xec56af24 // Node.Tags
 #define ID_Node_DataContext 0x80b43db0 // Node.DataContext
-#define kNodeNumMessageTypes 1
+#define kNodeNumMessageTypes 17
 enum NodeMessages {
 	kNodeUpdateMatrix,
+	kNodeMeasure,
+	kNodeArrange,
+	kNodeMeasureOverride,
+	kNodeArrangeOverride,
+	kNodeForegroundContent,
+	kNodePushProperty,
+	kNodeUpdateGeometry,
+	kNodeDrawBrush,
+	kNodeHandleMessage,
+	kNodeLoadView,
+	kNodeHitTest,
+	kNodeGetSize,
+	kNodeIsVisible,
+	kNodeViewDidLoad,
+	kNodeKillFocus,
+	kNodeSetFocus,
 };
 #define ID_Node_UpdateMatrix 0x35cdb821 // Node.UpdateMatrix
+#define ID_Node_Measure 0xefafac2b // Node.Measure
+#define ID_Node_Arrange 0x02944ebb // Node.Arrange
+#define ID_Node_MeasureOverride 0x368f05f3 // Node.MeasureOverride
+#define ID_Node_ArrangeOverride 0xeed83523 // Node.ArrangeOverride
+#define ID_Node_ForegroundContent 0xce639791 // Node.ForegroundContent
+#define ID_Node_PushProperty 0xaca786d4 // Node.PushProperty
+#define ID_Node_UpdateGeometry 0xc5de2378 // Node.UpdateGeometry
+#define ID_Node_DrawBrush 0x56c6d9c5 // Node.DrawBrush
+#define ID_Node_HandleMessage 0x22afe0b6 // Node.HandleMessage
+#define ID_Node_LoadView 0xe3c6ed08 // Node.LoadView
+#define ID_Node_HitTest 0xbc0e5546 // Node.HitTest
+#define ID_Node_GetSize 0x2282f1da // Node.GetSize
+#define ID_Node_IsVisible 0xa03cfb85 // Node.IsVisible
+#define ID_Node_ViewDidLoad 0x71bab7e1 // Node.ViewDidLoad
+#define ID_Node_KillFocus 0x2bdb09fb // Node.KillFocus
+#define ID_Node_SetFocus 0x5f1c2071 // Node.SetFocus
 #define kNodeNumProperties 67
 enum NodeProperties {
 	kNodeSize,
@@ -350,7 +391,11 @@ enum TextRunProperties {
 #define ID_TextBlockConcept_TextWrapping 0x709f2f06 // TextBlockConcept.TextWrapping
 #define ID_TextBlockConcept_TextHorizontalAlignment 0xe480096b // TextBlockConcept.TextHorizontalAlignment
 #define ID_TextBlockConcept_TextVerticalAlignment 0xbf0260e5 // TextBlockConcept.TextVerticalAlignment
-#define kTextBlockConceptNumMessageTypes 0
+#define kTextBlockConceptNumMessageTypes 1
+enum TextBlockConceptMessages {
+	kTextBlockConceptMakeText,
+};
+#define ID_TextBlockConcept_MakeText 0x66218f84 // TextBlockConcept.MakeText
 #define kTextBlockConceptNumProperties 14
 enum TextBlockConceptProperties {
 	kTextBlockConceptTextResourceID,
@@ -554,7 +599,11 @@ enum StackViewProperties {
 #define GetForm(_P) ((struct Form*)((_P)?OBJ_GetComponent(_P,ID_Form):NULL))
 #define Form_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Form,sizeof(struct Form),_N)
 #define Form_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Form,_N)
-#define kFormNumMessageTypes 0
+#define kFormNumMessageTypes 1
+enum FormMessages {
+	kFormSubmit,
+};
+#define ID_Form_Submit 0xef0f357b // Form.Submit
 #define kFormNumProperties 0
 // Control
 #define ID_Control 0x8347bf3e
@@ -585,7 +634,13 @@ enum ControlProperties {
 #define ID_Screen_ClearColor 0x1bfc36dd // Screen.ClearColor
 #define ID_Screen_ResizeMode 0xc3203446 // Screen.ResizeMode
 #define ID_Screen_DialogResult 0x2f02ab20 // Screen.DialogResult
-#define kScreenNumMessageTypes 0
+#define kScreenNumMessageTypes 2
+enum ScreenMessages {
+	kScreenUpdateLayout,
+	kScreenRenderScreen,
+};
+#define ID_Screen_UpdateLayout 0x7d9d5a12 // Screen.UpdateLayout
+#define ID_Screen_RenderScreen 0xd1601cf1 // Screen.RenderScreen
 #define kScreenNumProperties 3
 enum ScreenProperties {
 	kScreenClearColor,
@@ -728,7 +783,13 @@ enum PageProperties {
 #define PageHost_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_PageHost,sizeof(struct PageHost),_N)
 #define PageHost_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_PageHost,_N)
 #define ID_PageHost_ActivePage 0xb276c4f7 // PageHost.ActivePage
-#define kPageHostNumMessageTypes 0
+#define kPageHostNumMessageTypes 2
+enum PageHostMessages {
+	kPageHostNavigateToPage,
+	kPageHostNavigateBack,
+};
+#define ID_PageHost_NavigateToPage 0x3e8b196b // PageHost.NavigateToPage
+#define ID_PageHost_NavigateBack 0x94f6fcce // PageHost.NavigateBack
 #define kPageHostNumProperties 1
 enum PageHostProperties {
 	kPageHostActivePage,
@@ -753,6 +814,7 @@ enum StyleProperties {
 	kStyleTargetType,
 	kStyleType,
 };
+
 
 #define ID_CornerRadius 0x0485b456
 #define ID_CornerRadius_TopLeftRadius 0xd5413658 // CornerRadius.TopLeftRadius
@@ -846,11 +908,13 @@ enum StyleProperties {
 #define ID_SizeShorthand_DepthScroll 0x60ff3f79 // SizeShorthand.DepthScroll
 	
 
-#define ID_HitTest 0x898160ea
-#define ID_HitTestMsgArgs_x 0xf9ca8e4c // HitTestMsgArgs.x
-#define ID_HitTestMsgArgs_y 0xfaca8fdf // HitTestMsgArgs.y
-#define ID_GetSize 0x80d9e0ee
-#define ID_Submit 0x4078e545
+#define ID_Triggered 0x3b1c3ae2
+#define ID_TriggeredMsgArgs_Trigger 0x68010858 // TriggeredMsgArgs.Trigger
+#define ID_TriggeredMsgArgs_message 0x8e532df3 // TriggeredMsgArgs.message
+#define ID_UpdateMatrix 0x5dbe404d
+#define ID_UpdateMatrixMsgArgs_parent 0x94a50a0f // UpdateMatrixMsgArgs.parent
+#define ID_UpdateMatrixMsgArgs_opacity 0x53cd4a6c // UpdateMatrixMsgArgs.opacity
+#define ID_UpdateMatrixMsgArgs_force 0xe863ce2a // UpdateMatrixMsgArgs.force
 #define ID_Measure 0x97619c7f
 #define ID_MeasureMsgArgs_Width 0x9c6740bb // MeasureMsgArgs.Width
 #define ID_MeasureMsgArgs_Height 0x59f04456 // MeasureMsgArgs.Height
@@ -885,23 +949,31 @@ enum StyleProperties {
 #define ID_HandleMessageMsgArgs_NumArgs 0x5a238201 // HandleMessageMsgArgs.NumArgs
 #define ID_LoadView 0xa3650e54
 #define ID_LoadViewMsgArgs_lua_state 0x3f62aae6 // LoadViewMsgArgs.lua_state
+#define ID_HitTest 0x898160ea
+#define ID_HitTestMsgArgs_x 0xf9ca8e4c // HitTestMsgArgs.x
+#define ID_HitTestMsgArgs_y 0xfaca8fdf // HitTestMsgArgs.y
+#define ID_GetSize 0x80d9e0ee
+#define ID_IsVisible 0x608d20d1
+#define ID_ViewDidLoad 0x03e93095
+#define ID_KillFocus 0xa7c0f8d7
+#define ID_SetFocus 0xc399d265
 #define ID_MakeText 0x73a47798
 #define ID_MakeTextMsgArgs_text 0xa34c5249 // MakeTextMsgArgs.text
 #define ID_MakeTextMsgArgs_availableSpace 0xb0a98411 // MakeTextMsgArgs.availableSpace
-#define ID_Triggered 0x3b1c3ae2
-#define ID_TriggeredMsgArgs_Trigger 0x68010858 // TriggeredMsgArgs.Trigger
-#define ID_TriggeredMsgArgs_message 0x8e532df3 // TriggeredMsgArgs.message
-#define ID_UpdateMatrix 0x5dbe404d
-#define ID_UpdateMatrixMsgArgs_parent 0x94a50a0f // UpdateMatrixMsgArgs.parent
-#define ID_UpdateMatrixMsgArgs_opacity 0x53cd4a6c // UpdateMatrixMsgArgs.opacity
-#define ID_UpdateMatrixMsgArgs_force 0xe863ce2a // UpdateMatrixMsgArgs.force
 #define ID_UpdateShmatrix 0x89a6db0a
 #define ID_UpdateShmatrixMsgArgs_parent 0x90360554 // UpdateShmatrixMsgArgs.parent
 #define ID_UpdateShmatrixMsgArgs_opacity 0x2bbb7249 // UpdateShmatrixMsgArgs.opacity
 #define ID_UpdateShmatrixMsgArgs_force 0x8b08062f // UpdateShmatrixMsgArgs.force
+#define ID_Submit 0x4078e545
 #define ID_UpdateLayout 0x928c657a
 #define ID_UpdateLayoutMsgArgs_Width 0x5050aef8 // UpdateLayoutMsgArgs.Width
 #define ID_UpdateLayoutMsgArgs_Height 0x7c7ac60f // UpdateLayoutMsgArgs.Height
+#define ID_RenderScreen 0xd15bdf29
+#define ID_RenderScreenMsgArgs_width 0x05d5d53d // RenderScreenMsgArgs.width
+#define ID_RenderScreenMsgArgs_height 0xcef69b94 // RenderScreenMsgArgs.height
+#define ID_RenderScreenMsgArgs_stereo 0xd447fa77 // RenderScreenMsgArgs.stereo
+#define ID_RenderScreenMsgArgs_angle 0xc553b56a // RenderScreenMsgArgs.angle
+#define ID_RenderScreenMsgArgs_target 0x4cf31fbe // RenderScreenMsgArgs.target
 #define ID_NavigateToPage 0x6475c790
 #define ID_NavigateToPageMsgArgs_URL 0x8c9df2c3 // NavigateToPageMsgArgs.URL
 #define ID_NavigateToPageMsgArgs_TransitionType 0x2fcde311 // NavigateToPageMsgArgs.TransitionType

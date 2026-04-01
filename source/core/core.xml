@@ -24,57 +24,7 @@
     <field name="routing" type="MessageRouting">The routing strategy for this message</field>
     <field name="size" type="uint">The size of the message</field>
   </struct>
-  
-  <!-- Base event for all pointer/mouse input events -->
-  <message name="MouseMessage" type="WI_Message"/>
-  <!-- Base event for all keyboard input events -->
-  <message name="KeyMessage" type="WI_Message"/>
-
-  <message name="LeftMouseDown" same-as="MouseMessage"/>
-  <message name="RightMouseDown" same-as="MouseMessage"/>
-  <message name="OtherMouseDown" same-as="MouseMessage"/>
-  <message name="LeftMouseUp" same-as="MouseMessage"/>
-  <message name="RightMouseUp" same-as="MouseMessage"/>
-  <message name="OtherMouseUp" same-as="MouseMessage"/>
-  <message name="LeftMouseDragged" same-as="MouseMessage"/>
-  <message name="RightMouseDragged" same-as="MouseMessage"/>
-  <message name="OtherMouseDragged" same-as="MouseMessage"/>
-  <message name="LeftDoubleClick" same-as="MouseMessage"/>
-  <message name="RightDoubleClick" same-as="MouseMessage"/>
-  <message name="OtherDoubleClick" same-as="MouseMessage"/>
-  <message name="MouseMoved" same-as="MouseMessage"/>
-  <message name="ScrollWheel" same-as="MouseMessage"/>
-  <message name="DragDrop" same-as="MouseMessage"/>
-  <message name="DragEnter" same-as="MouseMessage"/>
-  <message name="KeyDown" same-as="KeyMessage"/>
-  <message name="KeyUp" same-as="KeyMessage"/>
-  <message name="Char" same-as="KeyMessage"/>
-  <message name="WindowPaint">
-    <field name="WindowWidth" type="uint"/>
-    <field name="WindowHeight" type="uint"/>
-  </message>
-  <message name="WindowResized" same-as="WindowPaint"/>
-  <message name="WindowClosed"/>
-  <message name="WindowChangedScreen"/>
-  <message name="KillFocus"/>
-  <message name="SetFocus"/>
-  <message name="Timer"/>
-  
-  <message name="IsVisible" routing="Direct"/>
-  <message name="Create" routing="Direct"/>
-  <message name="Start" routing="Direct"/>
-  <message name="Awake" routing="Direct"/>
-  <message name="ThemeChanged" routing="Direct"/>
-  <message name="PropertyChanged" routing="Direct">
-    <field name="Property" type="Property" pointer="true">The property that changed</field>
-  </message>
-  <message name="Attached" routing="Direct"/>
-  <message name="Release" routing="Direct"/>
-  <message name="Destroy" routing="Direct"/>
-  <message name="ResumeCoroutine" routing="Direct"/>
-  <message name="StopCoroutine" routing="Direct"/>
-  <message name="ViewDidLoad" routing="Direct"/>
-  
+    
   <enums name="PropertyState">
     <summary>Represents the various states a property can be in.</summary>
     <enum name="Normal">Normal property state when no triggers are active</enum>
@@ -105,6 +55,42 @@
     <enum name="VectorZ">Bind to the Z component of a vector property</enum>
     <enum name="VectorW">Bind to the W component of a vector property</enum>
   </enums>
+
+  <interface name="Window" export="Window" no-check="true">
+    <message name="WindowPaint">
+      <field name="WindowWidth" type="uint"/>
+      <field name="WindowHeight" type="uint"/>
+    </message>
+    <message name="WindowResized" same-as="WindowPaint"/>
+    <message name="WindowClosed"/>
+    <message name="WindowChangedScreen"/>
+  </interface>
+
+  <interface name="Input" export="Input" no-check="true">
+    <!-- Base event for all pointer/mouse input events -->
+    <message name="MouseMessage" type="WI_Message"/>
+    <!-- Base event for all keyboard input events -->
+    <message name="KeyMessage" type="WI_Message"/>
+    <message name="LeftMouseDown" same-as="MouseMessage"/>
+    <message name="RightMouseDown" same-as="MouseMessage"/>
+    <message name="OtherMouseDown" same-as="MouseMessage"/>
+    <message name="LeftMouseUp" same-as="MouseMessage"/>
+    <message name="RightMouseUp" same-as="MouseMessage"/>
+    <message name="OtherMouseUp" same-as="MouseMessage"/>
+    <message name="LeftMouseDragged" same-as="MouseMessage"/>
+    <message name="RightMouseDragged" same-as="MouseMessage"/>
+    <message name="OtherMouseDragged" same-as="MouseMessage"/>
+    <message name="LeftDoubleClick" same-as="MouseMessage"/>
+    <message name="RightDoubleClick" same-as="MouseMessage"/>
+    <message name="OtherDoubleClick" same-as="MouseMessage"/>
+    <message name="MouseMoved" same-as="MouseMessage"/>
+    <message name="ScrollWheel" same-as="MouseMessage"/>
+    <message name="DragDrop" same-as="MouseMessage"/>
+    <message name="DragEnter" same-as="MouseMessage"/>
+    <message name="KeyDown" same-as="KeyMessage"/>
+    <message name="KeyUp" same-as="KeyMessage"/>
+    <message name="Char" same-as="KeyMessage"/>
+  </interface>
 
   <interface name="Object" prefix="OBJ_" export="Object" no-check="true">
     <summary>Core engine host object.</summary>
@@ -567,6 +553,20 @@
       <details>Called after the loading phase to resolve alias references and assign aliased children to internal structures. This compilation step processes all aliases registered via AddAlias and updates internal pointers to the actual objects referenced by the given path. This ensures that alias references like #AliasName/Child/Property are properly resolved and ready for use at runtime.</details>
       <arg name="pathToObject" type="string">The path to the object being processed for alias resolution</arg>
     </method>
+
+    <message name="Create" routing="Direct"/>
+    <message name="Start" routing="Direct"/>
+    <message name="Awake" routing="Direct"/>
+    <message name="ThemeChanged" routing="Direct"/>
+    <message name="PropertyChanged" routing="Direct">
+      <field name="Property" type="Property" pointer="true">The property that changed</field>
+    </message>
+    <message name="Attached" routing="Direct"/>
+    <message name="Release" routing="Direct"/>
+    <message name="Destroy" routing="Direct"/>
+    <message name="Timer"/>  
+    <message name="ResumeCoroutine" routing="Direct"/>
+    <message name="StopCoroutine" routing="Direct"/>
   </interface>
   
   <function name="GetFocus">

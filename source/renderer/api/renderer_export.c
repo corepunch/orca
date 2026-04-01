@@ -144,34 +144,8 @@ int luaopen_orca_##NAME(lua_State *L) { \
 	return 1; \
 }
 
-struct MessageType RenderScreenMessage = {
-	.name = "RenderScreen",
-	.id = kMsgRenderScreen,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct RenderScreenMsgArgs),
-};
-struct MessageType RenderMessage = {
-	.name = "Render",
-	.id = kMsgRender,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct RenderMsgArgs),
-};
 
-static luaL_Reg _RenderScreenMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _RenderScreenMsgArgs[] = {
-	DECL(0x95876e1f, RenderScreenMsgArgs, width, width, kDataTypeInt), // RenderScreenMsgArgs.width
-	DECL(0xd5bdbb42, RenderScreenMsgArgs, height, height, kDataTypeInt), // RenderScreenMsgArgs.height
-	DECL(0xcc87a64d, RenderScreenMsgArgs, stereo, stereo, kDataTypeFloat), // RenderScreenMsgArgs.stereo
-	DECL(0xad544418, RenderScreenMsgArgs, angle, angle, kDataTypeFloat), // RenderScreenMsgArgs.angle
-	DECL(0x32608848, RenderScreenMsgArgs, target, target, kDataTypeObject, .TypeString = "Texture"), // RenderScreenMsgArgs.target
-};
-static luaL_Reg _RenderMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _RenderMsgArgs[] = {
-	DECL(0xce9ab61f, RenderMsgArgs, ViewDef, ViewDef, kDataTypeStruct, .TypeString = "ViewDef"), // RenderMsgArgs.ViewDef
-};
 
-STRUCT(RenderScreenMsgArgs, RenderScreenMsgArgs);
-STRUCT(RenderMsgArgs, RenderMsgArgs);
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -563,8 +537,6 @@ ORCA_API int luaopen_orca_renderer(lua_State *L) {
 		{ "drawImage", f_renderer_DrawImage },
 		{ NULL, NULL } 
 	}));
-	lua_setfield(L, ((void)luaopen_orca_RenderScreenMsgArgs(L), -2), "RenderScreenMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_RenderMsgArgs(L), -2), "RenderMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_window(L), -2), "Window");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Texture), -2), "Texture");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Image), -2), "Image");

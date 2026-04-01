@@ -2,9 +2,7 @@
 <!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
 <module name="filesystem" namespace="orca" on-luaopen="on_filesystem_module_registered" prefix="FS_">
   <require file="../core/core.xml"/>
-  
-  <message name="ReadCommands"/>
-  
+    
   <external struct="Object"/>
   <external struct="_PACK"/>
 
@@ -29,7 +27,9 @@
     <field name="Command" type="string">Command to execute when the message is received</field>
   </struct>
 
-  <class name="Workspace" />
+  <class name="Workspace">
+    <message name="ReadCommands"/>
+  </class>
   
   <class name="Library">
     <property name="IsExternal" type="bool"/>
@@ -137,20 +137,21 @@
     <property name="FontLibrary" type="Library" pointer="true"/> <!-- Fonts -->
 
     <field name="isPackage" type="bool"/>
+
+    <message name="OpenFile">
+      <field name="FileName" type="string"/>
+    </message>
+    <message name="FileExists">
+      <summary>Checks whether the specified file exists.</summary>
+      <field name="FileName" type="string">The file path to check for existence</field>
+    </message>
+    <message name="HasChangedFiles"/>
+    <message name="LoadProject">
+      <summary>Loads a project bundle from the given directory.</summary>
+      <field name="Path" type="string">Directory name to load the bundle</field>
+    </message>
+
   </class>
-  
-  <message name="OpenFile">
-    <field name="FileName" type="string"/>
-  </message>
-  <message name="FileExists">
-    <summary>Checks whether the specified file exists.</summary>
-    <field name="FileName" type="string">The file path to check for existence</field>
-  </message>
-  <message name="HasChangedFiles"/>
-  <message name="LoadProject">
-    <summary>Loads a project bundle from the given directory.</summary>
-    <field name="Path" type="string">Directory name to load the bundle</field>
-  </message>
   
   <class name="Directory" parent="Project">
     <handles message="LoadProject"/>

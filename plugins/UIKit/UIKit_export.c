@@ -290,23 +290,17 @@ STRUCT(Thickness, Thickness);
 STRUCT(BorderShorthand, BorderShorthand);
 STRUCT(SizeAxisShorthand, SizeAxisShorthand);
 STRUCT(SizeShorthand, SizeShorthand);
-struct MessageType HitTestMessage = {
-	.name = "HitTest",
-	.id = kMsgHitTest,
+struct MessageType TriggeredMessage = {
+	.name = "Triggered",
+	.id = kMsgTriggered,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct TriggeredMsgArgs),
+};
+struct MessageType UpdateMatrixMessage = {
+	.name = "UpdateMatrix",
+	.id = kMsgUpdateMatrix,
 	.routing = kMessageRoutingDirect,
-	.size = sizeof(struct HitTestMsgArgs),
-};
-struct MessageType GetSizeMessage = {
-	.name = "GetSize",
-	.id = kMsgGetSize,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct GetSizeMsgArgs),
-};
-struct MessageType SubmitMessage = {
-	.name = "Submit",
-	.id = kMsgSubmit,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct SubmitMsgArgs),
+	.size = sizeof(struct UpdateMatrixMsgArgs),
 };
 struct MessageType MeasureMessage = {
 	.name = "Measure",
@@ -370,23 +364,47 @@ struct MessageType LoadViewMessage = {
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct LoadViewMsgArgs),
 };
+struct MessageType HitTestMessage = {
+	.name = "HitTest",
+	.id = kMsgHitTest,
+	.routing = kMessageRoutingDirect,
+	.size = sizeof(struct HitTestMsgArgs),
+};
+struct MessageType GetSizeMessage = {
+	.name = "GetSize",
+	.id = kMsgGetSize,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct GetSizeMsgArgs),
+};
+struct MessageType IsVisibleMessage = {
+	.name = "IsVisible",
+	.id = kMsgIsVisible,
+	.routing = kMessageRoutingDirect,
+	.size = sizeof(struct IsVisibleMsgArgs),
+};
+struct MessageType ViewDidLoadMessage = {
+	.name = "ViewDidLoad",
+	.id = kMsgViewDidLoad,
+	.routing = kMessageRoutingDirect,
+	.size = sizeof(struct ViewDidLoadMsgArgs),
+};
+struct MessageType KillFocusMessage = {
+	.name = "KillFocus",
+	.id = kMsgKillFocus,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct KillFocusMsgArgs),
+};
+struct MessageType SetFocusMessage = {
+	.name = "SetFocus",
+	.id = kMsgSetFocus,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct SetFocusMsgArgs),
+};
 struct MessageType MakeTextMessage = {
 	.name = "MakeText",
 	.id = kMsgMakeText,
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct MakeTextMsgArgs),
-};
-struct MessageType TriggeredMessage = {
-	.name = "Triggered",
-	.id = kMsgTriggered,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct TriggeredMsgArgs),
-};
-struct MessageType UpdateMatrixMessage = {
-	.name = "UpdateMatrix",
-	.id = kMsgUpdateMatrix,
-	.routing = kMessageRoutingDirect,
-	.size = sizeof(struct UpdateMatrixMsgArgs),
 };
 struct MessageType UpdateShmatrixMessage = {
 	.name = "UpdateShmatrix",
@@ -394,11 +412,23 @@ struct MessageType UpdateShmatrixMessage = {
 	.routing = kMessageRoutingDirect,
 	.size = sizeof(struct UpdateShmatrixMsgArgs),
 };
+struct MessageType SubmitMessage = {
+	.name = "Submit",
+	.id = kMsgSubmit,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct SubmitMsgArgs),
+};
 struct MessageType UpdateLayoutMessage = {
 	.name = "UpdateLayout",
 	.id = kMsgUpdateLayout,
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct UpdateLayoutMsgArgs),
+};
+struct MessageType RenderScreenMessage = {
+	.name = "RenderScreen",
+	.id = kMsgRenderScreen,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct RenderScreenMsgArgs),
 };
 struct MessageType NavigateToPageMessage = {
 	.name = "NavigateToPage",
@@ -413,16 +443,16 @@ struct MessageType NavigateBackMessage = {
 	.size = sizeof(struct NavigateBackMsgArgs),
 };
 
-static luaL_Reg _HitTestMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _HitTestMsgArgs[] = {
-	DECL(0xfd0c5087, HitTestMsgArgs, x, x, kDataTypeInt), // HitTestMsgArgs.x
-	DECL(0xfc0c4ef4, HitTestMsgArgs, y, y, kDataTypeInt), // HitTestMsgArgs.y
+static luaL_Reg _TriggeredMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _TriggeredMsgArgs[] = {
+	DECL(0xa5ea0da3, TriggeredMsgArgs, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // TriggeredMsgArgs.Trigger
+	DECL(0x24f208e4, TriggeredMsgArgs, message, message, kDataTypeStruct, .TypeString = "HandleMessageMsgArgs"), // TriggeredMsgArgs.message
 };
-static luaL_Reg _GetSizeMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _GetSizeMsgArgs[] = {
-};
-static luaL_Reg _SubmitMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _SubmitMsgArgs[] = {
+static luaL_Reg _UpdateMatrixMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _UpdateMatrixMsgArgs[] = {
+	DECL(0xeacdfcfd, UpdateMatrixMsgArgs, parent, parent, kDataTypeStruct, .TypeString = "Matrix3D"), // UpdateMatrixMsgArgs.parent
+	DECL(0xc6c2dd66, UpdateMatrixMsgArgs, opacity, opacity, kDataTypeFloat), // UpdateMatrixMsgArgs.opacity
+	DECL(0x79a98884, UpdateMatrixMsgArgs, force, force, kDataTypeBool), // UpdateMatrixMsgArgs.force
 };
 static luaL_Reg _MeasureMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _MeasureMsgArgs[] = {
@@ -478,21 +508,30 @@ static luaL_Reg _LoadViewMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _LoadViewMsgArgs[] = {
 	DECL(0x187f5b0f, LoadViewMsgArgs, lua_state, lua_state, kDataTypeStruct, .TypeString = "lua_State"), // LoadViewMsgArgs.lua_state
 };
+static luaL_Reg _HitTestMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _HitTestMsgArgs[] = {
+	DECL(0xfd0c5087, HitTestMsgArgs, x, x, kDataTypeInt), // HitTestMsgArgs.x
+	DECL(0xfc0c4ef4, HitTestMsgArgs, y, y, kDataTypeInt), // HitTestMsgArgs.y
+};
+static luaL_Reg _GetSizeMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _GetSizeMsgArgs[] = {
+};
+static luaL_Reg _IsVisibleMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _IsVisibleMsgArgs[] = {
+};
+static luaL_Reg _ViewDidLoadMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _ViewDidLoadMsgArgs[] = {
+};
+static luaL_Reg _KillFocusMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _KillFocusMsgArgs[] = {
+};
+static luaL_Reg _SetFocusMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _SetFocusMsgArgs[] = {
+};
 static luaL_Reg _MakeTextMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _MakeTextMsgArgs[] = {
 	DECL(0xbde64e3e, MakeTextMsgArgs, text, text, kDataTypeStruct, .TypeString = "ViewText"), // MakeTextMsgArgs.text
 	DECL(0xa7e2407e, MakeTextMsgArgs, availableSpace, availableSpace, kDataTypeInt), // MakeTextMsgArgs.availableSpace
-};
-static luaL_Reg _TriggeredMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _TriggeredMsgArgs[] = {
-	DECL(0xa5ea0da3, TriggeredMsgArgs, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // TriggeredMsgArgs.Trigger
-	DECL(0x24f208e4, TriggeredMsgArgs, message, message, kDataTypeStruct, .TypeString = "HandleMessageMsgArgs"), // TriggeredMsgArgs.message
-};
-static luaL_Reg _UpdateMatrixMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _UpdateMatrixMsgArgs[] = {
-	DECL(0xeacdfcfd, UpdateMatrixMsgArgs, parent, parent, kDataTypeStruct, .TypeString = "Matrix3D"), // UpdateMatrixMsgArgs.parent
-	DECL(0xc6c2dd66, UpdateMatrixMsgArgs, opacity, opacity, kDataTypeFloat), // UpdateMatrixMsgArgs.opacity
-	DECL(0x79a98884, UpdateMatrixMsgArgs, force, force, kDataTypeBool), // UpdateMatrixMsgArgs.force
 };
 static luaL_Reg _UpdateShmatrixMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _UpdateShmatrixMsgArgs[] = {
@@ -500,10 +539,21 @@ static struct PropertyType _UpdateShmatrixMsgArgs[] = {
 	DECL(0xc6c2dd66, UpdateShmatrixMsgArgs, opacity, opacity, kDataTypeFloat), // UpdateShmatrixMsgArgs.opacity
 	DECL(0x79a98884, UpdateShmatrixMsgArgs, force, force, kDataTypeBool), // UpdateShmatrixMsgArgs.force
 };
+static luaL_Reg _SubmitMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _SubmitMsgArgs[] = {
+};
 static luaL_Reg _UpdateLayoutMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _UpdateLayoutMsgArgs[] = {
 	DECL(0x3b42dfbf, UpdateLayoutMsgArgs, Width, Width, kDataTypeFloat), // UpdateLayoutMsgArgs.Width
 	DECL(0x1bd13562, UpdateLayoutMsgArgs, Height, Height, kDataTypeFloat), // UpdateLayoutMsgArgs.Height
+};
+static luaL_Reg _RenderScreenMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _RenderScreenMsgArgs[] = {
+	DECL(0x95876e1f, RenderScreenMsgArgs, width, width, kDataTypeInt), // RenderScreenMsgArgs.width
+	DECL(0xd5bdbb42, RenderScreenMsgArgs, height, height, kDataTypeInt), // RenderScreenMsgArgs.height
+	DECL(0xcc87a64d, RenderScreenMsgArgs, stereo, stereo, kDataTypeFloat), // RenderScreenMsgArgs.stereo
+	DECL(0xad544418, RenderScreenMsgArgs, angle, angle, kDataTypeFloat), // RenderScreenMsgArgs.angle
+	DECL(0x32608848, RenderScreenMsgArgs, target, target, kDataTypeObject, .TypeString = "Texture"), // RenderScreenMsgArgs.target
 };
 static luaL_Reg _NavigateToPageMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _NavigateToPageMsgArgs[] = {
@@ -515,9 +565,8 @@ static struct PropertyType _NavigateBackMsgArgs[] = {
 	DECL(0x84ff7372, NavigateBackMsgArgs, TransitionType, TransitionType, kDataTypeEnum, .EnumValues = _TransitionType), // NavigateBackMsgArgs.TransitionType
 };
 
-STRUCT(HitTestMsgArgs, HitTestMsgArgs);
-STRUCT(GetSizeMsgArgs, GetSizeMsgArgs);
-STRUCT(SubmitMsgArgs, SubmitMsgArgs);
+STRUCT(TriggeredMsgArgs, TriggeredMsgArgs);
+STRUCT(UpdateMatrixMsgArgs, UpdateMatrixMsgArgs);
 STRUCT(MeasureMsgArgs, MeasureMsgArgs);
 STRUCT(ArrangeMsgArgs, ArrangeMsgArgs);
 STRUCT(MeasureOverrideMsgArgs, MeasureOverrideMsgArgs);
@@ -528,11 +577,17 @@ STRUCT(UpdateGeometryMsgArgs, UpdateGeometryMsgArgs);
 STRUCT(DrawBrushMsgArgs, DrawBrushMsgArgs);
 STRUCT(HandleMessageMsgArgs, HandleMessageMsgArgs);
 STRUCT(LoadViewMsgArgs, LoadViewMsgArgs);
+STRUCT(HitTestMsgArgs, HitTestMsgArgs);
+STRUCT(GetSizeMsgArgs, GetSizeMsgArgs);
+STRUCT(IsVisibleMsgArgs, IsVisibleMsgArgs);
+STRUCT(ViewDidLoadMsgArgs, ViewDidLoadMsgArgs);
+STRUCT(KillFocusMsgArgs, KillFocusMsgArgs);
+STRUCT(SetFocusMsgArgs, SetFocusMsgArgs);
 STRUCT(MakeTextMsgArgs, MakeTextMsgArgs);
-STRUCT(TriggeredMsgArgs, TriggeredMsgArgs);
-STRUCT(UpdateMatrixMsgArgs, UpdateMatrixMsgArgs);
 STRUCT(UpdateShmatrixMsgArgs, UpdateShmatrixMsgArgs);
+STRUCT(SubmitMsgArgs, SubmitMsgArgs);
 STRUCT(UpdateLayoutMsgArgs, UpdateLayoutMsgArgs);
+STRUCT(RenderScreenMsgArgs, RenderScreenMsgArgs);
 STRUCT(NavigateToPageMsgArgs, NavigateToPageMsgArgs);
 STRUCT(NavigateBackMsgArgs, NavigateBackMsgArgs);
 #define REGISTER_CLASS(NAME, ...) \
@@ -597,6 +652,7 @@ REGISTER_CLASS(AnimationPlayer, 0);
 LRESULT Trigger_PropertyChanged(struct Object*, struct Trigger*, wParam_t, PropertyChangedMsgPtr);
 LRESULT Trigger_Attached(struct Object*, struct Trigger*, wParam_t, AttachedMsgPtr);
 static struct MessageType TriggerMessageTypes[kTriggerNumMessageTypes] = {	
+		{ "Trigger.Triggered", ID_Trigger_Triggered, kMessageRoutingTunnelingBubbling, sizeof(struct TriggeredMsgArgs) },
 };
 static struct PropertyType const TriggerProperties[kTriggerNumProperties] = {
 	DECL(0x5221f9e8, Trigger, Property, Property, kDataTypeString), // Trigger.Property
@@ -773,6 +829,22 @@ LRESULT Node_GetSize(struct Object*, struct Node*, wParam_t, GetSizeMsgPtr);
 LRESULT Node_IsVisible(struct Object*, struct Node*, wParam_t, IsVisibleMsgPtr);
 static struct MessageType NodeMessageTypes[kNodeNumMessageTypes] = {	
 		{ "Node.UpdateMatrix", ID_Node_UpdateMatrix, kMessageRoutingDirect, sizeof(struct UpdateMatrixMsgArgs) },
+		{ "Node.Measure", ID_Node_Measure, kMessageRoutingTunnelingBubbling, sizeof(struct MeasureMsgArgs) },
+		{ "Node.Arrange", ID_Node_Arrange, kMessageRoutingTunnelingBubbling, sizeof(struct ArrangeMsgArgs) },
+		{ "Node.MeasureOverride", ID_Node_MeasureOverride, kMessageRoutingTunnelingBubbling, sizeof(struct MeasureMsgArgs) },
+		{ "Node.ArrangeOverride", ID_Node_ArrangeOverride, kMessageRoutingTunnelingBubbling, sizeof(struct ArrangeMsgArgs) },
+		{ "Node.ForegroundContent", ID_Node_ForegroundContent, kMessageRoutingTunnelingBubbling, sizeof(struct ForegroundContentMsgArgs) },
+		{ "Node.PushProperty", ID_Node_PushProperty, kMessageRoutingTunnelingBubbling, sizeof(struct PushPropertyMsgArgs) },
+		{ "Node.UpdateGeometry", ID_Node_UpdateGeometry, kMessageRoutingTunnelingBubbling, sizeof(struct UpdateGeometryMsgArgs) },
+		{ "Node.DrawBrush", ID_Node_DrawBrush, kMessageRoutingTunnelingBubbling, sizeof(struct DrawBrushMsgArgs) },
+		{ "Node.HandleMessage", ID_Node_HandleMessage, kMessageRoutingTunnelingBubbling, sizeof(struct HandleMessageMsgArgs) },
+		{ "Node.LoadView", ID_Node_LoadView, kMessageRoutingTunnelingBubbling, sizeof(struct LoadViewMsgArgs) },
+		{ "Node.HitTest", ID_Node_HitTest, kMessageRoutingDirect, sizeof(struct HitTestMsgArgs) },
+		{ "Node.GetSize", ID_Node_GetSize, kMessageRoutingTunnelingBubbling, sizeof(struct GetSizeMsgArgs) },
+		{ "Node.IsVisible", ID_Node_IsVisible, kMessageRoutingDirect, sizeof(struct IsVisibleMsgArgs) },
+		{ "Node.ViewDidLoad", ID_Node_ViewDidLoad, kMessageRoutingDirect, sizeof(struct ViewDidLoadMsgArgs) },
+		{ "Node.KillFocus", ID_Node_KillFocus, kMessageRoutingTunnelingBubbling, sizeof(struct KillFocusMsgArgs) },
+		{ "Node.SetFocus", ID_Node_SetFocus, kMessageRoutingTunnelingBubbling, sizeof(struct SetFocusMsgArgs) },
 };
 static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	DECL(0xa6478e7c, Node, Size, Size, kDataTypeStruct, .TypeString = "SizeShorthand"), // Node.Size
@@ -907,6 +979,7 @@ LRESULT TextBlockConcept_Create(struct Object*, struct TextBlockConcept*, wParam
 LRESULT TextBlockConcept_Destroy(struct Object*, struct TextBlockConcept*, wParam_t, DestroyMsgPtr);
 LRESULT TextBlockConcept_MakeText(struct Object*, struct TextBlockConcept*, wParam_t, MakeTextMsgPtr);
 static struct MessageType TextBlockConceptMessageTypes[kTextBlockConceptNumMessageTypes] = {	
+		{ "TextBlockConcept.MakeText", ID_TextBlockConcept_MakeText, kMessageRoutingTunnelingBubbling, sizeof(struct MakeTextMsgArgs) },
 };
 static struct PropertyType const TextBlockConceptProperties[kTextBlockConceptNumProperties] = {
 	DECL(0x43c114fb, TextBlockConcept, TextResourceID, TextResourceID, kDataTypeString), // TextBlockConcept.TextResourceID
@@ -1212,6 +1285,7 @@ REGISTER_CLASS(StackView, ID_Node2D, 0);
 LRESULT Form_Create(struct Object*, struct Form*, wParam_t, CreateMsgPtr);
 LRESULT Form_Submit(struct Object*, struct Form*, wParam_t, SubmitMsgPtr);
 static struct MessageType FormMessageTypes[kFormNumMessageTypes] = {	
+		{ "Form.Submit", ID_Form_Submit, kMessageRoutingTunnelingBubbling, sizeof(struct SubmitMsgArgs) },
 };
 static struct PropertyType const FormProperties[kFormNumProperties] = {
 };
@@ -1265,6 +1339,8 @@ LRESULT Screen_Destroy(struct Object*, struct Screen*, wParam_t, DestroyMsgPtr);
 LRESULT Screen_WindowResized(struct Object*, struct Screen*, wParam_t, WindowResizedMsgPtr);
 LRESULT Screen_WindowPaint(struct Object*, struct Screen*, wParam_t, WindowPaintMsgPtr);
 static struct MessageType ScreenMessageTypes[kScreenNumMessageTypes] = {	
+		{ "Screen.UpdateLayout", ID_Screen_UpdateLayout, kMessageRoutingTunnelingBubbling, sizeof(struct UpdateLayoutMsgArgs) },
+		{ "Screen.RenderScreen", ID_Screen_RenderScreen, kMessageRoutingTunnelingBubbling, sizeof(struct RenderScreenMsgArgs) },
 };
 static struct PropertyType const ScreenProperties[kScreenNumProperties] = {
 	DECL(0xeb16b675, Screen, ClearColor, ClearColor, kDataTypeColor), // Screen.ClearColor
@@ -1489,6 +1565,8 @@ LRESULT PageHost_ViewDidLoad(struct Object*, struct PageHost*, wParam_t, ViewDid
 LRESULT PageHost_NavigateToPage(struct Object*, struct PageHost*, wParam_t, NavigateToPageMsgPtr);
 LRESULT PageHost_NavigateBack(struct Object*, struct PageHost*, wParam_t, NavigateBackMsgPtr);
 static struct MessageType PageHostMessageTypes[kPageHostNumMessageTypes] = {	
+		{ "PageHost.NavigateToPage", ID_PageHost_NavigateToPage, kMessageRoutingTunnelingBubbling, sizeof(struct NavigateToPageMsgArgs) },
+		{ "PageHost.NavigateBack", ID_PageHost_NavigateBack, kMessageRoutingTunnelingBubbling, sizeof(struct NavigateBackMsgArgs) },
 };
 static struct PropertyType const PageHostProperties[kPageHostNumProperties] = {
 	DECL(0x2e149db4, PageHost, ActivePage, ActivePage, kDataTypeObject, .TypeString = "Page"), // PageHost.ActivePage
@@ -1569,9 +1647,8 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_BorderShorthand(L), -2), "BorderShorthand");
 	lua_setfield(L, ((void)luaopen_orca_SizeAxisShorthand(L), -2), "SizeAxisShorthand");
 	lua_setfield(L, ((void)luaopen_orca_SizeShorthand(L), -2), "SizeShorthand");
-	lua_setfield(L, ((void)luaopen_orca_HitTestMsgArgs(L), -2), "HitTestMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_GetSizeMsgArgs(L), -2), "GetSizeMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_SubmitMsgArgs(L), -2), "SubmitMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_TriggeredMsgArgs(L), -2), "TriggeredMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_UpdateMatrixMsgArgs(L), -2), "UpdateMatrixMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_MeasureMsgArgs(L), -2), "MeasureMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_ArrangeMsgArgs(L), -2), "ArrangeMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_MeasureOverrideMsgArgs(L), -2), "MeasureOverrideMsgArgs");
@@ -1582,11 +1659,17 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_DrawBrushMsgArgs(L), -2), "DrawBrushMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_HandleMessageMsgArgs(L), -2), "HandleMessageMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_LoadViewMsgArgs(L), -2), "LoadViewMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_HitTestMsgArgs(L), -2), "HitTestMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_GetSizeMsgArgs(L), -2), "GetSizeMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_IsVisibleMsgArgs(L), -2), "IsVisibleMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_ViewDidLoadMsgArgs(L), -2), "ViewDidLoadMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_KillFocusMsgArgs(L), -2), "KillFocusMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_SetFocusMsgArgs(L), -2), "SetFocusMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_MakeTextMsgArgs(L), -2), "MakeTextMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_TriggeredMsgArgs(L), -2), "TriggeredMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_UpdateMatrixMsgArgs(L), -2), "UpdateMatrixMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_UpdateShmatrixMsgArgs(L), -2), "UpdateShmatrixMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_SubmitMsgArgs(L), -2), "SubmitMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_UpdateLayoutMsgArgs(L), -2), "UpdateLayoutMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_RenderScreenMsgArgs(L), -2), "RenderScreenMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_NavigateToPageMsgArgs(L), -2), "NavigateToPageMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_NavigateBackMsgArgs(L), -2), "NavigateBackMsgArgs");
 	lua_setfield(L, ((void)lua_pushclass(L, &_DataObject), -2), "DataObject");

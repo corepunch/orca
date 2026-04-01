@@ -13,7 +13,11 @@
 #define GetWorkspace(_P) ((struct Workspace*)((_P)?OBJ_GetComponent(_P,ID_Workspace):NULL))
 #define Workspace_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Workspace,sizeof(struct Workspace),_N)
 #define Workspace_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Workspace,_N)
-#define kWorkspaceNumMessageTypes 0
+#define kWorkspaceNumMessageTypes 1
+enum WorkspaceMessages {
+	kWorkspaceReadCommands,
+};
+#define ID_Workspace_ReadCommands 0xea5a6972 // Workspace.ReadCommands
 #define kWorkspaceNumProperties 0
 // Library
 #define ID_Library 0xa8532270
@@ -104,7 +108,17 @@ enum LibraryProperties {
 #define ID_Project_SpriteAnimationLibrary 0x664d619c // Project.SpriteAnimationLibrary
 #define ID_Project_ImageLibrary 0x07fed878 // Project.ImageLibrary
 #define ID_Project_FontLibrary 0x8f87dd48 // Project.FontLibrary
-#define kProjectNumMessageTypes 0
+#define kProjectNumMessageTypes 4
+enum ProjectMessages {
+	kProjectOpenFile,
+	kProjectFileExists,
+	kProjectHasChangedFiles,
+	kProjectLoadProject,
+};
+#define ID_Project_OpenFile 0xa96ca9ee // Project.OpenFile
+#define ID_Project_FileExists 0x1f1e5ece // Project.FileExists
+#define ID_Project_HasChangedFiles 0x8e1eef4b // Project.HasChangedFiles
+#define ID_Project_LoadProject 0x68eebf01 // Project.LoadProject
 #define kProjectNumProperties 73
 enum ProjectProperties {
 	kProjectHalfFloatTextureFormat,
@@ -259,6 +273,7 @@ enum ThemeProperties {
 #define ThemeDefaultValuesDictionary_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_ThemeDefaultValuesDictionary,_N)
 #define kThemeDefaultValuesDictionaryNumMessageTypes 0
 #define kThemeDefaultValuesDictionaryNumProperties 0
+
 
 #define ID_ProjectReference 0x72a074eb
 #define ID_ProjectReference_Name 0xfc1cbd3c // ProjectReference.Name

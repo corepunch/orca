@@ -102,8 +102,19 @@ int luaopen_orca_##NAME(lua_State *L) { \
 	return 1; \
 }
 
+struct MessageType RenderMessage = {
+	.name = "Render",
+	.id = kMsgRender,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct RenderMsgArgs),
+};
 
+static luaL_Reg _RenderMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _RenderMsgArgs[] = {
+	DECL(0xce9ab61f, RenderMsgArgs, ViewDef, ViewDef, kDataTypeStruct, .TypeString = "ViewDef"), // RenderMsgArgs.ViewDef
+};
 
+STRUCT(RenderMsgArgs, RenderMsgArgs);
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -122,6 +133,7 @@ ORCA_API struct ClassDesc _##NAME = { \
 };
 LRESULT Node3D_UpdateMatrix(struct Object*, struct Node3D*, wParam_t, UpdateMatrixMsgPtr);
 static struct MessageType Node3DMessageTypes[kNode3DNumMessageTypes] = {	
+		{ "Node3D.Render", ID_Node3D_Render, kMessageRoutingTunnelingBubbling, sizeof(struct RenderMsgArgs) },
 };
 static struct PropertyType const Node3DProperties[kNode3DNumProperties] = {
 	DECL(0x3f19bf01, Node3D, LayoutTransform, LayoutTransform, kDataTypeStruct, .TypeString = "Transform3D"), // Node3D.LayoutTransform
@@ -563,6 +575,7 @@ ORCA_API int luaopen_orca_SceneKit(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
 		{ NULL, NULL } 
 	}));
+	lua_setfield(L, ((void)luaopen_orca_RenderMsgArgs(L), -2), "RenderMsgArgs");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Node3D), -2), "Node3D");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Scene), -2), "Scene");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Model3D), -2), "Model3D");

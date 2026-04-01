@@ -40,6 +40,12 @@ enum <?= $classname ?>Properties {
 <?php endif ?>
 <?php endforeach ?>
 
+<?php foreach ($model->getInterfaces() as $intname => $interface):?>
+<?php foreach ($interface->getMessages() as $event) ?>
+#define ID_<?= $intname ?>_<?= $event->name ?> 0x<?= hash('fnv1a32', "$intname.{$event->name}") ?> // <?= $intname ?>.<?= $event->name ?>
+<?php endforeach ?>
+<?php endforeach ?>
+
 <?php foreach ($model->getStructs() as $name => $struct):?>
 #define ID_<?= $name ?> 0x<?= hash('fnv1a32', $name) ?>
 <?php foreach ($struct->getFields(true) as $field) {

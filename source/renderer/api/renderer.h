@@ -20,11 +20,7 @@ struct lua_State;
 #include "renderer_properties.h"
 #include "../../geometry/geometry.h"
 
-ORCA_API extern struct MessageType RenderScreenMessage;
-ORCA_API extern struct MessageType RenderMessage;
 
-typedef struct RenderScreenMsgArgs RenderScreenMsg_t,* RenderScreenMsgPtr;
-typedef struct RenderMsgArgs RenderMsg_t,* RenderMsgPtr;
 
 
 /// @brief Rendering blend modes for compositing operations
@@ -314,22 +310,6 @@ renderer_DrawImage(struct lua_State*);
 
 
 
-/** RenderScreenMsgArgs struct */
-struct RenderScreenMsgArgs {
-	uint32_t width; ///< The width of the render screen
-	uint32_t height; ///< The height of the render screen
-	float stereo; ///< The stereo value of the render screen
-	float angle; ///< The angle of the render screen
-	struct Texture* target; ///< The target handle of the render screen
-};
-ORCA_API void luaX_pushRenderScreenMsgArgs(lua_State *L, struct RenderScreenMsgArgs const* data);
-ORCA_API struct RenderScreenMsgArgs* luaX_checkRenderScreenMsgArgs(lua_State *L, int idx);
-/** RenderMsgArgs struct */
-struct RenderMsgArgs {
-	struct ViewDef* ViewDef; ///< The view definition for rendering
-};
-ORCA_API void luaX_pushRenderMsgArgs(lua_State *L, struct RenderMsgArgs const* data);
-ORCA_API struct RenderMsgArgs* luaX_checkRenderMsgArgs(lua_State *L, int idx);
 
 
 /// @brief Base class for managing texture resources and their sampling parameters for rendering.

@@ -42,6 +42,28 @@ ENUM(PropertyState, "Normal", "Hover", "Focus", "Select", "Disable", "OldValue")
 ENUM(BindingMode, "OneWay", "TwoWay", "OneWayToSource", "Expression")
 ENUM(PropertyAttribute, "WholeProperty", "ColorR", "ColorG", "ColorB", "ColorA", "VectorX", "VectorY", "VectorZ", "VectorW")
 
+
+int luaopen_orca_Window(lua_State *L) {
+	luaL_newmetatable(L, "Window");
+	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ NULL, NULL },
+	}), 0);
+	lua_pushvalue(L, -1);
+	lua_setfield(L, -2, "__index");
+	return 1;
+}
+
+
+int luaopen_orca_Input(lua_State *L) {
+	luaL_newmetatable(L, "Input");
+	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ NULL, NULL },
+	}), 0);
+	lua_pushvalue(L, -1);
+	lua_setfield(L, -2, "__index");
+	return 1;
+}
+
 int f_OBJ_CreateFromLuaState(lua_State *L) {
 	return OBJ_CreateFromLuaState(L);
 }
@@ -643,6 +665,31 @@ static luaL_Reg _MessageType_Methods[] = {
 };
 
 STRUCT(MessageType, MessageType);
+struct MessageType WindowPaintMessage = {
+	.name = "WindowPaint",
+	.id = kMsgWindowPaint,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WindowPaintMsgArgs),
+};
+#define WindowResizedMsgArgs WindowPaintMsgArgs
+struct MessageType WindowResizedMessage = {
+	.name = "WindowResized",
+	.id = kMsgWindowResized,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WindowPaintMsgArgs),
+};
+struct MessageType WindowClosedMessage = {
+	.name = "WindowClosed",
+	.id = kMsgWindowClosed,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WindowClosedMsgArgs),
+};
+struct MessageType WindowChangedScreenMessage = {
+	.name = "WindowChangedScreen",
+	.id = kMsgWindowChangedScreen,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WindowChangedScreenMsgArgs),
+};
 struct MessageType MouseMessageMessage = {
 	.name = "MouseMessage",
 	.id = kMsgMouseMessage,
@@ -788,55 +835,6 @@ struct MessageType CharMessage = {
 	.routing = kMessageRoutingTunnelingBubbling,
 	.size = sizeof(struct WI_Message),
 };
-struct MessageType WindowPaintMessage = {
-	.name = "WindowPaint",
-	.id = kMsgWindowPaint,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct WindowPaintMsgArgs),
-};
-#define WindowResizedMsgArgs WindowPaintMsgArgs
-struct MessageType WindowResizedMessage = {
-	.name = "WindowResized",
-	.id = kMsgWindowResized,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct WindowPaintMsgArgs),
-};
-struct MessageType WindowClosedMessage = {
-	.name = "WindowClosed",
-	.id = kMsgWindowClosed,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct WindowClosedMsgArgs),
-};
-struct MessageType WindowChangedScreenMessage = {
-	.name = "WindowChangedScreen",
-	.id = kMsgWindowChangedScreen,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct WindowChangedScreenMsgArgs),
-};
-struct MessageType KillFocusMessage = {
-	.name = "KillFocus",
-	.id = kMsgKillFocus,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct KillFocusMsgArgs),
-};
-struct MessageType SetFocusMessage = {
-	.name = "SetFocus",
-	.id = kMsgSetFocus,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct SetFocusMsgArgs),
-};
-struct MessageType TimerMessage = {
-	.name = "Timer",
-	.id = kMsgTimer,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct TimerMsgArgs),
-};
-struct MessageType IsVisibleMessage = {
-	.name = "IsVisible",
-	.id = kMsgIsVisible,
-	.routing = kMessageRoutingDirect,
-	.size = sizeof(struct IsVisibleMsgArgs),
-};
 struct MessageType CreateMessage = {
 	.name = "Create",
 	.id = kMsgCreate,
@@ -885,6 +883,12 @@ struct MessageType DestroyMessage = {
 	.routing = kMessageRoutingDirect,
 	.size = sizeof(struct DestroyMsgArgs),
 };
+struct MessageType TimerMessage = {
+	.name = "Timer",
+	.id = kMsgTimer,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct TimerMsgArgs),
+};
 struct MessageType ResumeCoroutineMessage = {
 	.name = "ResumeCoroutine",
 	.id = kMsgResumeCoroutine,
@@ -897,13 +901,23 @@ struct MessageType StopCoroutineMessage = {
 	.routing = kMessageRoutingDirect,
 	.size = sizeof(struct StopCoroutineMsgArgs),
 };
-struct MessageType ViewDidLoadMessage = {
-	.name = "ViewDidLoad",
-	.id = kMsgViewDidLoad,
-	.routing = kMessageRoutingDirect,
-	.size = sizeof(struct ViewDidLoadMsgArgs),
-};
 
+static luaL_Reg _WindowPaintMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _WindowPaintMsgArgs[] = {
+	DECL(0xdc5503a7, WindowPaintMsgArgs, WindowWidth, WindowWidth, kDataTypeInt), // WindowPaintMsgArgs.WindowWidth
+	DECL(0xbd75892a, WindowPaintMsgArgs, WindowHeight, WindowHeight, kDataTypeInt), // WindowPaintMsgArgs.WindowHeight
+};
+static luaL_Reg _WindowResizedMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _WindowResizedMsgArgs[] = {
+	DECL(0xdc5503a7, WindowResizedMsgArgs, WindowWidth, WindowWidth, kDataTypeInt), // WindowResizedMsgArgs.WindowWidth
+	DECL(0xbd75892a, WindowResizedMsgArgs, WindowHeight, WindowHeight, kDataTypeInt), // WindowResizedMsgArgs.WindowHeight
+};
+static luaL_Reg _WindowClosedMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _WindowClosedMsgArgs[] = {
+};
+static luaL_Reg _WindowChangedScreenMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _WindowChangedScreenMsgArgs[] = {
+};
 static luaL_Reg _MouseMessageMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _MouseMessageMsgArgs[] = {
 };
@@ -967,34 +981,6 @@ static struct PropertyType _KeyUpMsgArgs[] = {
 static luaL_Reg _CharMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _CharMsgArgs[] = {
 };
-static luaL_Reg _WindowPaintMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _WindowPaintMsgArgs[] = {
-	DECL(0xdc5503a7, WindowPaintMsgArgs, WindowWidth, WindowWidth, kDataTypeInt), // WindowPaintMsgArgs.WindowWidth
-	DECL(0xbd75892a, WindowPaintMsgArgs, WindowHeight, WindowHeight, kDataTypeInt), // WindowPaintMsgArgs.WindowHeight
-};
-static luaL_Reg _WindowResizedMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _WindowResizedMsgArgs[] = {
-	DECL(0xdc5503a7, WindowResizedMsgArgs, WindowWidth, WindowWidth, kDataTypeInt), // WindowResizedMsgArgs.WindowWidth
-	DECL(0xbd75892a, WindowResizedMsgArgs, WindowHeight, WindowHeight, kDataTypeInt), // WindowResizedMsgArgs.WindowHeight
-};
-static luaL_Reg _WindowClosedMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _WindowClosedMsgArgs[] = {
-};
-static luaL_Reg _WindowChangedScreenMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _WindowChangedScreenMsgArgs[] = {
-};
-static luaL_Reg _KillFocusMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _KillFocusMsgArgs[] = {
-};
-static luaL_Reg _SetFocusMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _SetFocusMsgArgs[] = {
-};
-static luaL_Reg _TimerMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _TimerMsgArgs[] = {
-};
-static luaL_Reg _IsVisibleMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _IsVisibleMsgArgs[] = {
-};
 static luaL_Reg _CreateMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _CreateMsgArgs[] = {
 };
@@ -1020,16 +1006,20 @@ static struct PropertyType _ReleaseMsgArgs[] = {
 static luaL_Reg _DestroyMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _DestroyMsgArgs[] = {
 };
+static luaL_Reg _TimerMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _TimerMsgArgs[] = {
+};
 static luaL_Reg _ResumeCoroutineMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _ResumeCoroutineMsgArgs[] = {
 };
 static luaL_Reg _StopCoroutineMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _StopCoroutineMsgArgs[] = {
 };
-static luaL_Reg _ViewDidLoadMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _ViewDidLoadMsgArgs[] = {
-};
 
+STRUCT(WindowPaintMsgArgs, WindowPaintMsgArgs);
+STRUCT(WindowResizedMsgArgs, WindowResizedMsgArgs);
+STRUCT(WindowClosedMsgArgs, WindowClosedMsgArgs);
+STRUCT(WindowChangedScreenMsgArgs, WindowChangedScreenMsgArgs);
 STRUCT(MouseMessageMsgArgs, MouseMessageMsgArgs);
 STRUCT(KeyMessageMsgArgs, KeyMessageMsgArgs);
 STRUCT(LeftMouseDownMsgArgs, LeftMouseDownMsgArgs);
@@ -1051,14 +1041,6 @@ STRUCT(DragEnterMsgArgs, DragEnterMsgArgs);
 STRUCT(KeyDownMsgArgs, KeyDownMsgArgs);
 STRUCT(KeyUpMsgArgs, KeyUpMsgArgs);
 STRUCT(CharMsgArgs, CharMsgArgs);
-STRUCT(WindowPaintMsgArgs, WindowPaintMsgArgs);
-STRUCT(WindowResizedMsgArgs, WindowResizedMsgArgs);
-STRUCT(WindowClosedMsgArgs, WindowClosedMsgArgs);
-STRUCT(WindowChangedScreenMsgArgs, WindowChangedScreenMsgArgs);
-STRUCT(KillFocusMsgArgs, KillFocusMsgArgs);
-STRUCT(SetFocusMsgArgs, SetFocusMsgArgs);
-STRUCT(TimerMsgArgs, TimerMsgArgs);
-STRUCT(IsVisibleMsgArgs, IsVisibleMsgArgs);
 STRUCT(CreateMsgArgs, CreateMsgArgs);
 STRUCT(StartMsgArgs, StartMsgArgs);
 STRUCT(AwakeMsgArgs, AwakeMsgArgs);
@@ -1067,9 +1049,9 @@ STRUCT(PropertyChangedMsgArgs, PropertyChangedMsgArgs);
 STRUCT(AttachedMsgArgs, AttachedMsgArgs);
 STRUCT(ReleaseMsgArgs, ReleaseMsgArgs);
 STRUCT(DestroyMsgArgs, DestroyMsgArgs);
+STRUCT(TimerMsgArgs, TimerMsgArgs);
 STRUCT(ResumeCoroutineMsgArgs, ResumeCoroutineMsgArgs);
 STRUCT(StopCoroutineMsgArgs, StopCoroutineMsgArgs);
-STRUCT(ViewDidLoadMsgArgs, ViewDidLoadMsgArgs);
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -1105,6 +1087,10 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 		{ NULL, NULL } 
 	}));
 	lua_setfield(L, ((void)luaopen_orca_MessageType(L), -2), "MessageType");
+	lua_setfield(L, ((void)luaopen_orca_WindowPaintMsgArgs(L), -2), "WindowPaintMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_WindowResizedMsgArgs(L), -2), "WindowResizedMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_WindowClosedMsgArgs(L), -2), "WindowClosedMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_WindowChangedScreenMsgArgs(L), -2), "WindowChangedScreenMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_MouseMessageMsgArgs(L), -2), "MouseMessageMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_KeyMessageMsgArgs(L), -2), "KeyMessageMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_LeftMouseDownMsgArgs(L), -2), "LeftMouseDownMsgArgs");
@@ -1126,14 +1112,6 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_KeyDownMsgArgs(L), -2), "KeyDownMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_KeyUpMsgArgs(L), -2), "KeyUpMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_CharMsgArgs(L), -2), "CharMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_WindowPaintMsgArgs(L), -2), "WindowPaintMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_WindowResizedMsgArgs(L), -2), "WindowResizedMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_WindowClosedMsgArgs(L), -2), "WindowClosedMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_WindowChangedScreenMsgArgs(L), -2), "WindowChangedScreenMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_KillFocusMsgArgs(L), -2), "KillFocusMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_SetFocusMsgArgs(L), -2), "SetFocusMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_TimerMsgArgs(L), -2), "TimerMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_IsVisibleMsgArgs(L), -2), "IsVisibleMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_CreateMsgArgs(L), -2), "CreateMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_StartMsgArgs(L), -2), "StartMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_AwakeMsgArgs(L), -2), "AwakeMsgArgs");
@@ -1142,9 +1120,11 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_AttachedMsgArgs(L), -2), "AttachedMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_ReleaseMsgArgs(L), -2), "ReleaseMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_DestroyMsgArgs(L), -2), "DestroyMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_TimerMsgArgs(L), -2), "TimerMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_ResumeCoroutineMsgArgs(L), -2), "ResumeCoroutineMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_StopCoroutineMsgArgs(L), -2), "StopCoroutineMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_ViewDidLoadMsgArgs(L), -2), "ViewDidLoadMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Window(L), -2), "Window");
+	lua_setfield(L, ((void)luaopen_orca_Input(L), -2), "Input");
 	lua_setfield(L, ((void)luaopen_orca_Object(L), -2), "Object");
 	void on_core_module_registered(lua_State *L);
 	on_core_module_registered(L);
