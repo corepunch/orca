@@ -19,10 +19,6 @@ struct lua_State;
 #include "core_properties.h"
 #include "../geometry/geometry.h"
 
-ORCA_API extern struct MessageType WindowPaintMessage;
-ORCA_API extern struct MessageType WindowResizedMessage;
-ORCA_API extern struct MessageType WindowClosedMessage;
-ORCA_API extern struct MessageType WindowChangedScreenMessage;
 ORCA_API extern struct MessageType MouseMessageMessage;
 ORCA_API extern struct MessageType KeyMessageMessage;
 ORCA_API extern struct MessageType LeftMouseDownMessage;
@@ -56,10 +52,6 @@ ORCA_API extern struct MessageType TimerMessage;
 ORCA_API extern struct MessageType ResumeCoroutineMessage;
 ORCA_API extern struct MessageType StopCoroutineMessage;
 
-typedef struct WindowPaintMsgArgs WindowPaintMsg_t,* WindowPaintMsgPtr;
-typedef struct WindowPaintMsgArgs WindowResizedMsg_t,* WindowResizedMsgPtr;
-typedef struct WindowClosedMsgArgs WindowClosedMsg_t,* WindowClosedMsgPtr;
-typedef struct WindowChangedScreenMsgArgs WindowChangedScreenMsg_t,* WindowChangedScreenMsgPtr;
 typedef struct WI_Message MouseMessageMsg_t,* MouseMessageMsgPtr;
 typedef struct WI_Message KeyMessageMsg_t,* KeyMessageMsgPtr;
 typedef struct WI_Message LeftMouseDownMsg_t,* LeftMouseDownMsgPtr;
@@ -494,23 +486,6 @@ struct MessageType {
 ORCA_API void luaX_pushMessageType(lua_State *L, struct MessageType const* MessageType);
 ORCA_API struct MessageType* luaX_checkMessageType(lua_State *L, int idx);
 
-/** WindowPaintMsgArgs struct */
-struct WindowPaintMsgArgs {
-	uint32_t WindowWidth;
-	uint32_t WindowHeight;
-};
-ORCA_API void luaX_pushWindowPaintMsgArgs(lua_State *L, struct WindowPaintMsgArgs const* data);
-ORCA_API struct WindowPaintMsgArgs* luaX_checkWindowPaintMsgArgs(lua_State *L, int idx);
-/** WindowClosedMsgArgs struct */
-struct WindowClosedMsgArgs {
-};
-ORCA_API void luaX_pushWindowClosedMsgArgs(lua_State *L, struct WindowClosedMsgArgs const* data);
-ORCA_API struct WindowClosedMsgArgs* luaX_checkWindowClosedMsgArgs(lua_State *L, int idx);
-/** WindowChangedScreenMsgArgs struct */
-struct WindowChangedScreenMsgArgs {
-};
-ORCA_API void luaX_pushWindowChangedScreenMsgArgs(lua_State *L, struct WindowChangedScreenMsgArgs const* data);
-ORCA_API struct WindowChangedScreenMsgArgs* luaX_checkWindowChangedScreenMsgArgs(lua_State *L, int idx);
 /** MouseMessageMsgArgs struct */
 struct MouseMessageMsgArgs {
 };

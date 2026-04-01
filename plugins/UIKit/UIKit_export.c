@@ -290,158 +290,158 @@ STRUCT(Thickness, Thickness);
 STRUCT(BorderShorthand, BorderShorthand);
 STRUCT(SizeAxisShorthand, SizeAxisShorthand);
 STRUCT(SizeShorthand, SizeShorthand);
-struct MessageType TriggeredMessage = {
-	.name = "Triggered",
-	.id = kMsgTriggered,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct TriggeredMsgArgs),
-};
-struct MessageType UpdateMatrixMessage = {
-	.name = "UpdateMatrix",
-	.id = kMsgUpdateMatrix,
-	.routing = kMessageRoutingDirect,
-	.size = sizeof(struct UpdateMatrixMsgArgs),
-};
-struct MessageType MeasureMessage = {
-	.name = "Measure",
-	.id = kMsgMeasure,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct MeasureMsgArgs),
-};
-struct MessageType ArrangeMessage = {
-	.name = "Arrange",
-	.id = kMsgArrange,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct ArrangeMsgArgs),
-};
+//struct MessageType TriggeredMessage = {
+//	.name = "Triggered",
+//	.id = kMsgTriggered,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct TriggeredMsgArgs),
+//};
+//struct MessageType UpdateMatrixMessage = {
+//	.name = "UpdateMatrix",
+//	.id = kMsgUpdateMatrix,
+//	.routing = kMessageRoutingDirect,
+//	.size = sizeof(struct UpdateMatrixMsgArgs),
+//};
+//struct MessageType MeasureMessage = {
+//	.name = "Measure",
+//	.id = kMsgMeasure,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct MeasureMsgArgs),
+//};
+//struct MessageType ArrangeMessage = {
+//	.name = "Arrange",
+//	.id = kMsgArrange,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct ArrangeMsgArgs),
+//};
 #define MeasureOverrideMsgArgs MeasureMsgArgs
-struct MessageType MeasureOverrideMessage = {
-	.name = "MeasureOverride",
-	.id = kMsgMeasureOverride,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct MeasureMsgArgs),
-};
+//struct MessageType MeasureOverrideMessage = {
+//	.name = "MeasureOverride",
+//	.id = kMsgMeasureOverride,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct MeasureMsgArgs),
+//};
 #define ArrangeOverrideMsgArgs ArrangeMsgArgs
-struct MessageType ArrangeOverrideMessage = {
-	.name = "ArrangeOverride",
-	.id = kMsgArrangeOverride,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct ArrangeMsgArgs),
-};
-struct MessageType ForegroundContentMessage = {
-	.name = "ForegroundContent",
-	.id = kMsgForegroundContent,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct ForegroundContentMsgArgs),
-};
-struct MessageType PushPropertyMessage = {
-	.name = "PushProperty",
-	.id = kMsgPushProperty,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct PushPropertyMsgArgs),
-};
-struct MessageType UpdateGeometryMessage = {
-	.name = "UpdateGeometry",
-	.id = kMsgUpdateGeometry,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct UpdateGeometryMsgArgs),
-};
-struct MessageType DrawBrushMessage = {
-	.name = "DrawBrush",
-	.id = kMsgDrawBrush,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct DrawBrushMsgArgs),
-};
-struct MessageType HandleMessageMessage = {
-	.name = "HandleMessage",
-	.id = kMsgHandleMessage,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct HandleMessageMsgArgs),
-};
-struct MessageType LoadViewMessage = {
-	.name = "LoadView",
-	.id = kMsgLoadView,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct LoadViewMsgArgs),
-};
-struct MessageType HitTestMessage = {
-	.name = "HitTest",
-	.id = kMsgHitTest,
-	.routing = kMessageRoutingDirect,
-	.size = sizeof(struct HitTestMsgArgs),
-};
-struct MessageType GetSizeMessage = {
-	.name = "GetSize",
-	.id = kMsgGetSize,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct GetSizeMsgArgs),
-};
-struct MessageType IsVisibleMessage = {
-	.name = "IsVisible",
-	.id = kMsgIsVisible,
-	.routing = kMessageRoutingDirect,
-	.size = sizeof(struct IsVisibleMsgArgs),
-};
-struct MessageType ViewDidLoadMessage = {
-	.name = "ViewDidLoad",
-	.id = kMsgViewDidLoad,
-	.routing = kMessageRoutingDirect,
-	.size = sizeof(struct ViewDidLoadMsgArgs),
-};
-struct MessageType KillFocusMessage = {
-	.name = "KillFocus",
-	.id = kMsgKillFocus,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct KillFocusMsgArgs),
-};
-struct MessageType SetFocusMessage = {
-	.name = "SetFocus",
-	.id = kMsgSetFocus,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct SetFocusMsgArgs),
-};
-struct MessageType MakeTextMessage = {
-	.name = "MakeText",
-	.id = kMsgMakeText,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct MakeTextMsgArgs),
-};
-struct MessageType UpdateShmatrixMessage = {
-	.name = "UpdateShmatrix",
-	.id = kMsgUpdateShmatrix,
-	.routing = kMessageRoutingDirect,
-	.size = sizeof(struct UpdateShmatrixMsgArgs),
-};
-struct MessageType SubmitMessage = {
-	.name = "Submit",
-	.id = kMsgSubmit,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct SubmitMsgArgs),
-};
-struct MessageType UpdateLayoutMessage = {
-	.name = "UpdateLayout",
-	.id = kMsgUpdateLayout,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct UpdateLayoutMsgArgs),
-};
-struct MessageType RenderScreenMessage = {
-	.name = "RenderScreen",
-	.id = kMsgRenderScreen,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct RenderScreenMsgArgs),
-};
-struct MessageType NavigateToPageMessage = {
-	.name = "NavigateToPage",
-	.id = kMsgNavigateToPage,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct NavigateToPageMsgArgs),
-};
-struct MessageType NavigateBackMessage = {
-	.name = "NavigateBack",
-	.id = kMsgNavigateBack,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct NavigateBackMsgArgs),
-};
+//struct MessageType ArrangeOverrideMessage = {
+//	.name = "ArrangeOverride",
+//	.id = kMsgArrangeOverride,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct ArrangeMsgArgs),
+//};
+//struct MessageType ForegroundContentMessage = {
+//	.name = "ForegroundContent",
+//	.id = kMsgForegroundContent,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct ForegroundContentMsgArgs),
+//};
+//struct MessageType PushPropertyMessage = {
+//	.name = "PushProperty",
+//	.id = kMsgPushProperty,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct PushPropertyMsgArgs),
+//};
+//struct MessageType UpdateGeometryMessage = {
+//	.name = "UpdateGeometry",
+//	.id = kMsgUpdateGeometry,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct UpdateGeometryMsgArgs),
+//};
+//struct MessageType DrawBrushMessage = {
+//	.name = "DrawBrush",
+//	.id = kMsgDrawBrush,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct DrawBrushMsgArgs),
+//};
+//struct MessageType HandleMessageMessage = {
+//	.name = "HandleMessage",
+//	.id = kMsgHandleMessage,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct HandleMessageMsgArgs),
+//};
+//struct MessageType LoadViewMessage = {
+//	.name = "LoadView",
+//	.id = kMsgLoadView,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct LoadViewMsgArgs),
+//};
+//struct MessageType HitTestMessage = {
+//	.name = "HitTest",
+//	.id = kMsgHitTest,
+//	.routing = kMessageRoutingDirect,
+//	.size = sizeof(struct HitTestMsgArgs),
+//};
+//struct MessageType GetSizeMessage = {
+//	.name = "GetSize",
+//	.id = kMsgGetSize,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct GetSizeMsgArgs),
+//};
+//struct MessageType IsVisibleMessage = {
+//	.name = "IsVisible",
+//	.id = kMsgIsVisible,
+//	.routing = kMessageRoutingDirect,
+//	.size = sizeof(struct IsVisibleMsgArgs),
+//};
+//struct MessageType ViewDidLoadMessage = {
+//	.name = "ViewDidLoad",
+//	.id = kMsgViewDidLoad,
+//	.routing = kMessageRoutingDirect,
+//	.size = sizeof(struct ViewDidLoadMsgArgs),
+//};
+//struct MessageType KillFocusMessage = {
+//	.name = "KillFocus",
+//	.id = kMsgKillFocus,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct KillFocusMsgArgs),
+//};
+//struct MessageType SetFocusMessage = {
+//	.name = "SetFocus",
+//	.id = kMsgSetFocus,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct SetFocusMsgArgs),
+//};
+//struct MessageType MakeTextMessage = {
+//	.name = "MakeText",
+//	.id = kMsgMakeText,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct MakeTextMsgArgs),
+//};
+//struct MessageType UpdateShmatrixMessage = {
+//	.name = "UpdateShmatrix",
+//	.id = kMsgUpdateShmatrix,
+//	.routing = kMessageRoutingDirect,
+//	.size = sizeof(struct UpdateShmatrixMsgArgs),
+//};
+//struct MessageType SubmitMessage = {
+//	.name = "Submit",
+//	.id = kMsgSubmit,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct SubmitMsgArgs),
+//};
+//struct MessageType UpdateLayoutMessage = {
+//	.name = "UpdateLayout",
+//	.id = kMsgUpdateLayout,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct UpdateLayoutMsgArgs),
+//};
+//struct MessageType RenderScreenMessage = {
+//	.name = "RenderScreen",
+//	.id = kMsgRenderScreen,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct RenderScreenMsgArgs),
+//};
+//struct MessageType NavigateToPageMessage = {
+//	.name = "NavigateToPage",
+//	.id = kMsgNavigateToPage,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct NavigateToPageMsgArgs),
+//};
+//struct MessageType NavigateBackMessage = {
+//	.name = "NavigateBack",
+//	.id = kMsgNavigateBack,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct NavigateBackMsgArgs),
+//};
 
 static luaL_Reg _TriggeredMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _TriggeredMsgArgs[] = {
@@ -662,8 +662,8 @@ static struct Trigger TriggerDefaults = {
 };
 LRESULT TriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgPropertyChanged: return Trigger_PropertyChanged(object, cmp, wparm, lparm); // PropertyChanged
-		case kMsgAttached: return Trigger_Attached(object, cmp, wparm, lparm); // Attached
+		case ID_Object_PropertyChanged: return Trigger_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
+		case ID_Object_Attached: return Trigger_Attached(object, cmp, wparm, lparm); // Object.Attached
 	}
 	return FALSE;
 }
@@ -685,7 +685,7 @@ static struct OnPropertyChangedTrigger OnPropertyChangedTriggerDefaults = {
 };
 LRESULT OnPropertyChangedTriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgPropertyChanged: return OnPropertyChangedTrigger_PropertyChanged(object, cmp, wparm, lparm); // PropertyChanged
+		case ID_Object_PropertyChanged: return OnPropertyChangedTrigger_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
 	}
 	return FALSE;
 }
@@ -706,7 +706,7 @@ static struct OnAttachedTrigger OnAttachedTriggerDefaults = {
 };
 LRESULT OnAttachedTriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgAttached: return OnAttachedTrigger_Attached(object, cmp, wparm, lparm); // Attached
+		case ID_Object_Attached: return OnAttachedTrigger_Attached(object, cmp, wparm, lparm); // Object.Attached
 	}
 	return FALSE;
 }
@@ -728,7 +728,7 @@ static struct EventTrigger EventTriggerDefaults = {
 };
 LRESULT EventTriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgHandleMessage: return EventTrigger_HandleMessage(object, cmp, wparm, lparm); // HandleMessage
+		case ID_Node_HandleMessage: return EventTrigger_HandleMessage(object, cmp, wparm, lparm); // Node.HandleMessage
 	}
 	return FALSE;
 }
@@ -752,7 +752,7 @@ static struct Setter SetterDefaults = {
 };
 LRESULT SetterProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgTriggered: return Setter_Triggered(object, cmp, wparm, lparm); // Triggered
+		case ID_Trigger_Triggered: return Setter_Triggered(object, cmp, wparm, lparm); // Trigger.Triggered
 	}
 	return FALSE;
 }
@@ -775,7 +775,7 @@ static struct Handler HandlerDefaults = {
 };
 LRESULT HandlerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgTriggered: return Handler_Triggered(object, cmp, wparm, lparm); // Triggered
+		case ID_Trigger_Triggered: return Handler_Triggered(object, cmp, wparm, lparm); // Trigger.Triggered
 	}
 	return FALSE;
 }
@@ -925,9 +925,9 @@ static struct Node NodeDefaults = {
 };
 LRESULT NodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgThemeChanged: return Node_ThemeChanged(object, cmp, wparm, lparm); // ThemeChanged
-		case kMsgGetSize: return Node_GetSize(object, cmp, wparm, lparm); // GetSize
-		case kMsgIsVisible: return Node_IsVisible(object, cmp, wparm, lparm); // IsVisible
+		case ID_Object_ThemeChanged: return Node_ThemeChanged(object, cmp, wparm, lparm); // Object.ThemeChanged
+		case ID_Node_GetSize: return Node_GetSize(object, cmp, wparm, lparm); // Node.GetSize
+		case ID_Node_IsVisible: return Node_IsVisible(object, cmp, wparm, lparm); // Node.IsVisible
 	}
 	return FALSE;
 }
@@ -1005,9 +1005,9 @@ static struct TextBlockConcept TextBlockConceptDefaults = {
 };
 LRESULT TextBlockConceptProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgCreate: return TextBlockConcept_Create(object, cmp, wparm, lparm); // Create
-		case kMsgDestroy: return TextBlockConcept_Destroy(object, cmp, wparm, lparm); // Destroy
-		case kMsgMakeText: return TextBlockConcept_MakeText(object, cmp, wparm, lparm); // MakeText
+		case ID_Object_Create: return TextBlockConcept_Create(object, cmp, wparm, lparm); // Object.Create
+		case ID_Object_Destroy: return TextBlockConcept_Destroy(object, cmp, wparm, lparm); // Object.Destroy
+		case ID_TextBlockConcept_MakeText: return TextBlockConcept_MakeText(object, cmp, wparm, lparm); // TextBlockConcept.MakeText
 	}
 	return FALSE;
 }
@@ -1089,19 +1089,19 @@ static struct Node2D Node2DDefaults = {
 };
 LRESULT Node2DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgUpdateMatrix: return Node2D_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
-		case kMsgCreate: return Node2D_Create(object, cmp, wparm, lparm); // Create
-		case kMsgDestroy: return Node2D_Destroy(object, cmp, wparm, lparm); // Destroy
-		case kMsgUpdateGeometry: return Node2D_UpdateGeometry(object, cmp, wparm, lparm); // UpdateGeometry
-		case kMsgDrawBrush: return Node2D_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
-		case kMsgHandleMessage: return Node2D_HandleMessage(object, cmp, wparm, lparm); // HandleMessage
-		case kMsgScrollWheel: return Node2D_ScrollWheel(object, cmp, wparm, lparm); // ScrollWheel
-		case kMsgMouseMoved: return Node2D_MouseMoved(object, cmp, wparm, lparm); // MouseMoved
-		case kMsgHitTest: return Node2D_HitTest(object, cmp, wparm, lparm); // HitTest
-		case kMsgMeasure: return Node2D_Measure(object, cmp, wparm, lparm); // Measure
-		case kMsgArrange: return Node2D_Arrange(object, cmp, wparm, lparm); // Arrange
-		case kMsgMeasureOverride: return Node2D_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
-		case kMsgArrangeOverride: return Node2D_ArrangeOverride(object, cmp, wparm, lparm); // ArrangeOverride
+		case ID_Node_UpdateMatrix: return Node2D_UpdateMatrix(object, cmp, wparm, lparm); // Node.UpdateMatrix
+		case ID_Object_Create: return Node2D_Create(object, cmp, wparm, lparm); // Object.Create
+		case ID_Object_Destroy: return Node2D_Destroy(object, cmp, wparm, lparm); // Object.Destroy
+		case ID_Node_UpdateGeometry: return Node2D_UpdateGeometry(object, cmp, wparm, lparm); // Node.UpdateGeometry
+		case ID_Node_DrawBrush: return Node2D_DrawBrush(object, cmp, wparm, lparm); // Node.DrawBrush
+		case ID_Node_HandleMessage: return Node2D_HandleMessage(object, cmp, wparm, lparm); // Node.HandleMessage
+		case ID_Input_ScrollWheel: return Node2D_ScrollWheel(object, cmp, wparm, lparm); // Input.ScrollWheel
+		case ID_Input_MouseMoved: return Node2D_MouseMoved(object, cmp, wparm, lparm); // Input.MouseMoved
+		case ID_Node_HitTest: return Node2D_HitTest(object, cmp, wparm, lparm); // Node.HitTest
+		case ID_Node_Measure: return Node2D_Measure(object, cmp, wparm, lparm); // Node.Measure
+		case ID_Node_Arrange: return Node2D_Arrange(object, cmp, wparm, lparm); // Node.Arrange
+		case ID_Node_MeasureOverride: return Node2D_MeasureOverride(object, cmp, wparm, lparm); // Node.MeasureOverride
+		case ID_Node_ArrangeOverride: return Node2D_ArrangeOverride(object, cmp, wparm, lparm); // Node.ArrangeOverride
 	}
 	return FALSE;
 }
@@ -1124,7 +1124,7 @@ static struct PrefabView2D PrefabView2DDefaults = {
 };
 LRESULT PrefabView2DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgLoadView: return PrefabView2D_LoadView(object, cmp, wparm, lparm); // LoadView
+		case ID_Node_LoadView: return PrefabView2D_LoadView(object, cmp, wparm, lparm); // Node.LoadView
 	}
 	return FALSE;
 }
@@ -1149,11 +1149,11 @@ static struct TextBlock TextBlockDefaults = {
 };
 LRESULT TextBlockProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgMeasureOverride: return TextBlock_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
-		case kMsgForegroundContent: return TextBlock_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
-		case kMsgUpdateGeometry: return TextBlock_UpdateGeometry(object, cmp, wparm, lparm); // UpdateGeometry
-		case kMsgCreate: return TextBlock_Create(object, cmp, wparm, lparm); // Create
-		case kMsgDrawBrush: return TextBlock_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
+		case ID_Node_MeasureOverride: return TextBlock_MeasureOverride(object, cmp, wparm, lparm); // Node.MeasureOverride
+		case ID_Node_ForegroundContent: return TextBlock_ForegroundContent(object, cmp, wparm, lparm); // Node.ForegroundContent
+		case ID_Node_UpdateGeometry: return TextBlock_UpdateGeometry(object, cmp, wparm, lparm); // Node.UpdateGeometry
+		case ID_Object_Create: return TextBlock_Create(object, cmp, wparm, lparm); // Object.Create
+		case ID_Node_DrawBrush: return TextBlock_DrawBrush(object, cmp, wparm, lparm); // Node.DrawBrush
 	}
 	return FALSE;
 }
@@ -1186,13 +1186,13 @@ static struct Input InputDefaults = {
 };
 LRESULT InputProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgCreate: return Input_Create(object, cmp, wparm, lparm); // Create
-		case kMsgDrawBrush: return Input_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
-		case kMsgMakeText: return Input_MakeText(object, cmp, wparm, lparm); // MakeText
-		case kMsgKeyDown: return Input_KeyDown(object, cmp, wparm, lparm); // KeyDown
-		case kMsgKillFocus: return Input_KillFocus(object, cmp, wparm, lparm); // KillFocus
-		case kMsgLeftMouseUp: return Input_LeftMouseUp(object, cmp, wparm, lparm); // LeftMouseUp
-		case kMsgMeasureOverride: return Input_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
+		case ID_Object_Create: return Input_Create(object, cmp, wparm, lparm); // Object.Create
+		case ID_Node_DrawBrush: return Input_DrawBrush(object, cmp, wparm, lparm); // Node.DrawBrush
+		case ID_TextBlockConcept_MakeText: return Input_MakeText(object, cmp, wparm, lparm); // TextBlockConcept.MakeText
+		case ID_Input_KeyDown: return Input_KeyDown(object, cmp, wparm, lparm); // Input.KeyDown
+		case ID_Node_KillFocus: return Input_KillFocus(object, cmp, wparm, lparm); // Node.KillFocus
+		case ID_Input_LeftMouseUp: return Input_LeftMouseUp(object, cmp, wparm, lparm); // Input.LeftMouseUp
+		case ID_Node_MeasureOverride: return Input_MeasureOverride(object, cmp, wparm, lparm); // Node.MeasureOverride
 	}
 	return FALSE;
 }
@@ -1217,10 +1217,10 @@ static struct Button ButtonDefaults = {
 };
 LRESULT ButtonProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgCreate: return Button_Create(object, cmp, wparm, lparm); // Create
-		case kMsgLeftMouseUp: return Button_LeftMouseUp(object, cmp, wparm, lparm); // LeftMouseUp
-		case kMsgKeyDown: return Button_KeyDown(object, cmp, wparm, lparm); // KeyDown
-		case kMsgDrawBrush: return Button_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
+		case ID_Object_Create: return Button_Create(object, cmp, wparm, lparm); // Object.Create
+		case ID_Input_LeftMouseUp: return Button_LeftMouseUp(object, cmp, wparm, lparm); // Input.LeftMouseUp
+		case ID_Input_KeyDown: return Button_KeyDown(object, cmp, wparm, lparm); // Input.KeyDown
+		case ID_Node_DrawBrush: return Button_DrawBrush(object, cmp, wparm, lparm); // Node.DrawBrush
 	}
 	return FALSE;
 }
@@ -1242,7 +1242,7 @@ static struct Label LabelDefaults = {
 };
 LRESULT LabelProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgLeftMouseUp: return Label_LeftMouseUp(object, cmp, wparm, lparm); // LeftMouseUp
+		case ID_Input_LeftMouseUp: return Label_LeftMouseUp(object, cmp, wparm, lparm); // Input.LeftMouseUp
 	}
 	return FALSE;
 }
@@ -1269,8 +1269,8 @@ static struct StackView StackViewDefaults = {
 };
 LRESULT StackViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgMeasureOverride: return StackView_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
-		case kMsgArrangeOverride: return StackView_ArrangeOverride(object, cmp, wparm, lparm); // ArrangeOverride
+		case ID_Node_MeasureOverride: return StackView_MeasureOverride(object, cmp, wparm, lparm); // Node.MeasureOverride
+		case ID_Node_ArrangeOverride: return StackView_ArrangeOverride(object, cmp, wparm, lparm); // Node.ArrangeOverride
 	}
 	return FALSE;
 }
@@ -1293,8 +1293,8 @@ static struct Form FormDefaults = {
 };
 LRESULT FormProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgCreate: return Form_Create(object, cmp, wparm, lparm); // Create
-		case kMsgSubmit: return Form_Submit(object, cmp, wparm, lparm); // Submit
+		case ID_Object_Create: return Form_Create(object, cmp, wparm, lparm); // Object.Create
+		case ID_Form_Submit: return Form_Submit(object, cmp, wparm, lparm); // Form.Submit
 	}
 	return FALSE;
 }
@@ -1353,13 +1353,13 @@ static struct Screen ScreenDefaults = {
 };
 LRESULT ScreenProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgUpdateLayout: return Screen_UpdateLayout(object, cmp, wparm, lparm); // UpdateLayout
-		case kMsgRenderScreen: return Screen_RenderScreen(object, cmp, wparm, lparm); // RenderScreen
-		case kMsgMeasureOverride: return Screen_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
-		case kMsgCreate: return Screen_Create(object, cmp, wparm, lparm); // Create
-		case kMsgDestroy: return Screen_Destroy(object, cmp, wparm, lparm); // Destroy
-		case kMsgWindowResized: return Screen_WindowResized(object, cmp, wparm, lparm); // WindowResized
-		case kMsgWindowPaint: return Screen_WindowPaint(object, cmp, wparm, lparm); // WindowPaint
+		case ID_Screen_UpdateLayout: return Screen_UpdateLayout(object, cmp, wparm, lparm); // Screen.UpdateLayout
+		case ID_Screen_RenderScreen: return Screen_RenderScreen(object, cmp, wparm, lparm); // Screen.RenderScreen
+		case ID_Node_MeasureOverride: return Screen_MeasureOverride(object, cmp, wparm, lparm); // Node.MeasureOverride
+		case ID_Object_Create: return Screen_Create(object, cmp, wparm, lparm); // Object.Create
+		case ID_Object_Destroy: return Screen_Destroy(object, cmp, wparm, lparm); // Object.Destroy
+		case ID_window_WindowResized: return Screen_WindowResized(object, cmp, wparm, lparm); // window.WindowResized
+		case ID_window_WindowPaint: return Screen_WindowPaint(object, cmp, wparm, lparm); // window.WindowPaint
 	}
 	return FALSE;
 }
@@ -1384,7 +1384,7 @@ static struct Cinematic CinematicDefaults = {
 };
 LRESULT CinematicProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgDrawBrush: return Cinematic_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
+		case ID_Node_DrawBrush: return Cinematic_DrawBrush(object, cmp, wparm, lparm); // Node.DrawBrush
 	}
 	return FALSE;
 }
@@ -1412,8 +1412,8 @@ static struct Grid GridDefaults = {
 };
 LRESULT GridProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgMeasureOverride: return Grid_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
-		case kMsgArrangeOverride: return Grid_ArrangeOverride(object, cmp, wparm, lparm); // ArrangeOverride
+		case ID_Node_MeasureOverride: return Grid_MeasureOverride(object, cmp, wparm, lparm); // Node.MeasureOverride
+		case ID_Node_ArrangeOverride: return Grid_ArrangeOverride(object, cmp, wparm, lparm); // Node.ArrangeOverride
 	}
 	return FALSE;
 }
@@ -1446,11 +1446,11 @@ static struct ImageView ImageViewDefaults = {
 };
 LRESULT ImageViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgMeasureOverride: return ImageView_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
-		case kMsgArrangeOverride: return ImageView_ArrangeOverride(object, cmp, wparm, lparm); // ArrangeOverride
-		case kMsgForegroundContent: return ImageView_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
-		case kMsgDrawBrush: return ImageView_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
-		case kMsgLoadView: return ImageView_LoadView(object, cmp, wparm, lparm); // LoadView
+		case ID_Node_MeasureOverride: return ImageView_MeasureOverride(object, cmp, wparm, lparm); // Node.MeasureOverride
+		case ID_Node_ArrangeOverride: return ImageView_ArrangeOverride(object, cmp, wparm, lparm); // Node.ArrangeOverride
+		case ID_Node_ForegroundContent: return ImageView_ForegroundContent(object, cmp, wparm, lparm); // Node.ForegroundContent
+		case ID_Node_DrawBrush: return ImageView_DrawBrush(object, cmp, wparm, lparm); // Node.DrawBrush
+		case ID_Node_LoadView: return ImageView_LoadView(object, cmp, wparm, lparm); // Node.LoadView
 	}
 	return FALSE;
 }
@@ -1487,9 +1487,9 @@ static struct NinePatchImage NinePatchImageDefaults = {
 };
 LRESULT NinePatchImageProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgMeasureOverride: return NinePatchImage_MeasureOverride(object, cmp, wparm, lparm); // MeasureOverride
-		case kMsgForegroundContent: return NinePatchImage_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
-		case kMsgDrawBrush: return NinePatchImage_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
+		case ID_Node_MeasureOverride: return NinePatchImage_MeasureOverride(object, cmp, wparm, lparm); // Node.MeasureOverride
+		case ID_Node_ForegroundContent: return NinePatchImage_ForegroundContent(object, cmp, wparm, lparm); // Node.ForegroundContent
+		case ID_Node_DrawBrush: return NinePatchImage_DrawBrush(object, cmp, wparm, lparm); // Node.DrawBrush
 	}
 	return FALSE;
 }
@@ -1522,10 +1522,10 @@ static struct TerminalView TerminalViewDefaults = {
 };
 LRESULT TerminalViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgCreate: return TerminalView_Create(object, cmp, wparm, lparm); // Create
-		case kMsgDrawBrush: return TerminalView_DrawBrush(object, cmp, wparm, lparm); // DrawBrush
-		case kMsgPushProperty: return TerminalView_PushProperty(object, cmp, wparm, lparm); // PushProperty
-		case kMsgScrollWheel: return TerminalView_ScrollWheel(object, cmp, wparm, lparm); // ScrollWheel
+		case ID_Object_Create: return TerminalView_Create(object, cmp, wparm, lparm); // Object.Create
+		case ID_Node_DrawBrush: return TerminalView_DrawBrush(object, cmp, wparm, lparm); // Node.DrawBrush
+		case ID_Node_PushProperty: return TerminalView_PushProperty(object, cmp, wparm, lparm); // Node.PushProperty
+		case ID_Input_ScrollWheel: return TerminalView_ScrollWheel(object, cmp, wparm, lparm); // Input.ScrollWheel
 	}
 	return FALSE;
 }
@@ -1549,7 +1549,7 @@ static struct Page PageDefaults = {
 };
 LRESULT PageProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgCreate: return Page_Create(object, cmp, wparm, lparm); // Create
+		case ID_Object_Create: return Page_Create(object, cmp, wparm, lparm); // Object.Create
 	}
 	return FALSE;
 }
@@ -1575,9 +1575,9 @@ static struct PageHost PageHostDefaults = {
 };
 LRESULT PageHostProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgViewDidLoad: return PageHost_ViewDidLoad(object, cmp, wparm, lparm); // ViewDidLoad
-		case kMsgNavigateToPage: return PageHost_NavigateToPage(object, cmp, wparm, lparm); // NavigateToPage
-		case kMsgNavigateBack: return PageHost_NavigateBack(object, cmp, wparm, lparm); // NavigateBack
+		case ID_Node_ViewDidLoad: return PageHost_ViewDidLoad(object, cmp, wparm, lparm); // Node.ViewDidLoad
+		case ID_PageHost_NavigateToPage: return PageHost_NavigateToPage(object, cmp, wparm, lparm); // PageHost.NavigateToPage
+		case ID_PageHost_NavigateBack: return PageHost_NavigateBack(object, cmp, wparm, lparm); // PageHost.NavigateBack
 	}
 	return FALSE;
 }

@@ -102,12 +102,12 @@ int luaopen_orca_##NAME(lua_State *L) { \
 	return 1; \
 }
 
-struct MessageType RenderMessage = {
-	.name = "Render",
-	.id = kMsgRender,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct RenderMsgArgs),
-};
+//struct MessageType RenderMessage = {
+//	.name = "Render",
+//	.id = kMsgRender,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct RenderMsgArgs),
+//};
 
 static luaL_Reg _RenderMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _RenderMsgArgs[] = {
@@ -157,7 +157,7 @@ static struct Node3D Node3DDefaults = {
 };
 LRESULT Node3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgUpdateMatrix: return Node3D_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
+		case ID_Node_UpdateMatrix: return Node3D_UpdateMatrix(object, cmp, wparm, lparm); // Node.UpdateMatrix
 	}
 	return FALSE;
 }
@@ -185,7 +185,7 @@ static struct Scene SceneDefaults = {
 };
 LRESULT SceneProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgUpdateMatrix: return Scene_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
+		case ID_Node_UpdateMatrix: return Scene_UpdateMatrix(object, cmp, wparm, lparm); // Node.UpdateMatrix
 	}
 	return FALSE;
 }
@@ -208,7 +208,7 @@ static struct Model3D Model3DDefaults = {
 };
 LRESULT Model3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgRender: return Model3D_Render(object, cmp, wparm, lparm); // Render
+		case ID_Node3D_Render: return Model3D_Render(object, cmp, wparm, lparm); // Node3D.Render
 	}
 	return FALSE;
 }
@@ -236,7 +236,7 @@ static struct PlaneMeshNode PlaneMeshNodeDefaults = {
 };
 LRESULT PlaneMeshNodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgRender: return PlaneMeshNode_Render(object, cmp, wparm, lparm); // Render
+		case ID_Node3D_Render: return PlaneMeshNode_Render(object, cmp, wparm, lparm); // Node3D.Render
 	}
 	return FALSE;
 }
@@ -291,7 +291,7 @@ static struct TrajectoryList3D TrajectoryList3DDefaults = {
 };
 LRESULT TrajectoryList3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgUpdateMatrix: return TrajectoryList3D_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
+		case ID_Node_UpdateMatrix: return TrajectoryList3D_UpdateMatrix(object, cmp, wparm, lparm); // Node.UpdateMatrix
 	}
 	return FALSE;
 }
@@ -317,7 +317,7 @@ static struct Viewport3D Viewport3DDefaults = {
 };
 LRESULT Viewport3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgForegroundContent: return Viewport3D_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
+		case ID_Node_ForegroundContent: return Viewport3D_ForegroundContent(object, cmp, wparm, lparm); // Node.ForegroundContent
 	}
 	return FALSE;
 }
@@ -340,7 +340,7 @@ static struct PrefabView3D PrefabView3DDefaults = {
 };
 LRESULT PrefabView3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgLoadView: return PrefabView3D_LoadView(object, cmp, wparm, lparm); // LoadView
+		case ID_Node_LoadView: return PrefabView3D_LoadView(object, cmp, wparm, lparm); // Node.LoadView
 	}
 	return FALSE;
 }
@@ -502,8 +502,8 @@ static struct TextBlock3D TextBlock3DDefaults = {
 };
 LRESULT TextBlock3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgRender: return TextBlock3D_Render(object, cmp, wparm, lparm); // Render
-		case kMsgCreate: return TextBlock3D_Create(object, cmp, wparm, lparm); // Create
+		case ID_Node3D_Render: return TextBlock3D_Render(object, cmp, wparm, lparm); // Node3D.Render
+		case ID_Object_Create: return TextBlock3D_Create(object, cmp, wparm, lparm); // Object.Create
 	}
 	return FALSE;
 }
@@ -534,7 +534,7 @@ static struct Light3D Light3DDefaults = {
 };
 LRESULT Light3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgRender: return Light3D_Render(object, cmp, wparm, lparm); // Render
+		case ID_Node3D_Render: return Light3D_Render(object, cmp, wparm, lparm); // Node3D.Render
 	}
 	return FALSE;
 }
@@ -557,7 +557,7 @@ static struct SpriteView SpriteViewDefaults = {
 };
 LRESULT SpriteViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgRender: return SpriteView_Render(object, cmp, wparm, lparm); // Render
+		case ID_Node3D_Render: return SpriteView_Render(object, cmp, wparm, lparm); // Node3D.Render
 	}
 	return FALSE;
 }

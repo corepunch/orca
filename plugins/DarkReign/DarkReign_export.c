@@ -128,11 +128,11 @@ static struct FtgPackage FtgPackageDefaults = {
 };
 LRESULT FtgPackageProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgLoadProject: return FtgPackage_LoadProject(object, cmp, wparm, lparm); // LoadProject
-		case kMsgOpenFile: return FtgPackage_OpenFile(object, cmp, wparm, lparm); // OpenFile
-		case kMsgFileExists: return FtgPackage_FileExists(object, cmp, wparm, lparm); // FileExists
-		case kMsgHasChangedFiles: return FtgPackage_HasChangedFiles(object, cmp, wparm, lparm); // HasChangedFiles
-		case kMsgDestroy: return FtgPackage_Destroy(object, cmp, wparm, lparm); // Destroy
+		case ID_Project_LoadProject: return FtgPackage_LoadProject(object, cmp, wparm, lparm); // Project.LoadProject
+		case ID_Project_OpenFile: return FtgPackage_OpenFile(object, cmp, wparm, lparm); // Project.OpenFile
+		case ID_Project_FileExists: return FtgPackage_FileExists(object, cmp, wparm, lparm); // Project.FileExists
+		case ID_Project_HasChangedFiles: return FtgPackage_HasChangedFiles(object, cmp, wparm, lparm); // Project.HasChangedFiles
+		case ID_Object_Destroy: return FtgPackage_Destroy(object, cmp, wparm, lparm); // Object.Destroy
 	}
 	return FALSE;
 }

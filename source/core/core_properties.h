@@ -4,10 +4,6 @@
 #define __CORE_PROPERTIES_H__
 
 
-#define ID_Window_WindowPaint 0x1548b34f // Window.WindowPaint
-#define ID_Window_WindowResized 0x4cce3f63 // Window.WindowResized
-#define ID_Window_WindowClosed 0x93fe06a9 // Window.WindowClosed
-#define ID_Window_WindowChangedScreen 0x19da7ceb // Window.WindowChangedScreen
 #define ID_Input_MouseMessage 0x664cfc11 // Input.MouseMessage
 #define ID_Input_KeyMessage 0xab4954f5 // Input.KeyMessage
 #define ID_Input_LeftMouseDown 0x2081ec6d // Input.LeftMouseDown
@@ -48,14 +44,6 @@
 #define ID_MessageType_Size 0x0c31f887 // MessageType.Size
 	
 
-#define ID_WindowPaint 0x7ef9e53b
-#define ID_WindowPaintMsgArgs_WindowWidth 0x51861d5f // WindowPaintMsgArgs.WindowWidth
-#define ID_WindowPaintMsgArgs_WindowHeight 0x4ab9b482 // WindowPaintMsgArgs.WindowHeight
-#define ID_WindowResized 0xa216e847
-#define ID_WindowResizedMsgArgs_WindowWidth 0xf43232a3 // WindowResizedMsgArgs.WindowWidth
-#define ID_WindowResizedMsgArgs_WindowHeight 0x93d8b25e // WindowResizedMsgArgs.WindowHeight
-#define ID_WindowClosed 0x7268e69d
-#define ID_WindowChangedScreen 0x5fe6b4bf
 #define ID_MouseMessage 0x0d589383
 #define ID_KeyMessage 0xee4b252b
 #define ID_LeftMouseDown 0xfac0b5e7

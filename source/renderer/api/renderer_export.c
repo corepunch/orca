@@ -144,8 +144,53 @@ int luaopen_orca_##NAME(lua_State *L) { \
 	return 1; \
 }
 
+//struct MessageType WindowPaintMessage = {
+//	.name = "WindowPaint",
+//	.id = kMsgWindowPaint,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct WindowPaintMsgArgs),
+//};
+#define WindowResizedMsgArgs WindowPaintMsgArgs
+//struct MessageType WindowResizedMessage = {
+//	.name = "WindowResized",
+//	.id = kMsgWindowResized,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct WindowPaintMsgArgs),
+//};
+//struct MessageType WindowClosedMessage = {
+//	.name = "WindowClosed",
+//	.id = kMsgWindowClosed,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct WindowClosedMsgArgs),
+//};
+//struct MessageType WindowChangedScreenMessage = {
+//	.name = "WindowChangedScreen",
+//	.id = kMsgWindowChangedScreen,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct WindowChangedScreenMsgArgs),
+//};
 
+static luaL_Reg _WindowPaintMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _WindowPaintMsgArgs[] = {
+	DECL(0xdc5503a7, WindowPaintMsgArgs, WindowWidth, WindowWidth, kDataTypeInt), // WindowPaintMsgArgs.WindowWidth
+	DECL(0xbd75892a, WindowPaintMsgArgs, WindowHeight, WindowHeight, kDataTypeInt), // WindowPaintMsgArgs.WindowHeight
+};
+static luaL_Reg _WindowResizedMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _WindowResizedMsgArgs[] = {
+	DECL(0xdc5503a7, WindowResizedMsgArgs, WindowWidth, WindowWidth, kDataTypeInt), // WindowResizedMsgArgs.WindowWidth
+	DECL(0xbd75892a, WindowResizedMsgArgs, WindowHeight, WindowHeight, kDataTypeInt), // WindowResizedMsgArgs.WindowHeight
+};
+static luaL_Reg _WindowClosedMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _WindowClosedMsgArgs[] = {
+};
+static luaL_Reg _WindowChangedScreenMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _WindowChangedScreenMsgArgs[] = {
+};
 
+STRUCT(WindowPaintMsgArgs, WindowPaintMsgArgs);
+STRUCT(WindowResizedMsgArgs, WindowResizedMsgArgs);
+STRUCT(WindowClosedMsgArgs, WindowClosedMsgArgs);
+STRUCT(WindowChangedScreenMsgArgs, WindowChangedScreenMsgArgs);
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -222,7 +267,7 @@ static struct Image ImageDefaults = {
 };
 LRESULT ImageProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgStart: return Image_Start(object, cmp, wparm, lparm); // Start
+		case ID_Object_Start: return Image_Start(object, cmp, wparm, lparm); // Object.Start
 	}
 	return FALSE;
 }
@@ -250,7 +295,7 @@ static struct RenderTargetTexture RenderTargetTextureDefaults = {
 };
 LRESULT RenderTargetTextureProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgStart: return RenderTargetTexture_Start(object, cmp, wparm, lparm); // Start
+		case ID_Object_Start: return RenderTargetTexture_Start(object, cmp, wparm, lparm); // Object.Start
 	}
 	return FALSE;
 }
@@ -277,7 +322,7 @@ static struct CubeMapTexture CubeMapTextureDefaults = {
 };
 LRESULT CubeMapTextureProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgStart: return CubeMapTexture_Start(object, cmp, wparm, lparm); // Start
+		case ID_Object_Start: return CubeMapTexture_Start(object, cmp, wparm, lparm); // Object.Start
 	}
 	return FALSE;
 }
@@ -299,7 +344,7 @@ static struct IOSurfaceTexture IOSurfaceTextureDefaults = {
 };
 LRESULT IOSurfaceTextureProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgStart: return IOSurfaceTexture_Start(object, cmp, wparm, lparm); // Start
+		case ID_Object_Start: return IOSurfaceTexture_Start(object, cmp, wparm, lparm); // Object.Start
 	}
 	return FALSE;
 }
@@ -368,8 +413,8 @@ static struct Shader ShaderDefaults = {
 };
 LRESULT ShaderProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgStart: return Shader_Start(object, cmp, wparm, lparm); // Start
-		case kMsgDestroy: return Shader_Destroy(object, cmp, wparm, lparm); // Destroy
+		case ID_Object_Start: return Shader_Start(object, cmp, wparm, lparm); // Object.Start
+		case ID_Object_Destroy: return Shader_Destroy(object, cmp, wparm, lparm); // Object.Destroy
 	}
 	return FALSE;
 }
@@ -426,8 +471,8 @@ static struct Mesh MeshDefaults = {
 };
 LRESULT MeshProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgStart: return Mesh_Start(object, cmp, wparm, lparm); // Start
-		case kMsgDestroy: return Mesh_Destroy(object, cmp, wparm, lparm); // Destroy
+		case ID_Object_Start: return Mesh_Start(object, cmp, wparm, lparm); // Object.Start
+		case ID_Object_Destroy: return Mesh_Destroy(object, cmp, wparm, lparm); // Object.Destroy
 	}
 	return FALSE;
 }
@@ -452,8 +497,8 @@ static struct FontFamily FontFamilyDefaults = {
 };
 LRESULT FontFamilyProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgStart: return FontFamily_Start(object, cmp, wparm, lparm); // Start
-		case kMsgDestroy: return FontFamily_Destroy(object, cmp, wparm, lparm); // Destroy
+		case ID_Object_Start: return FontFamily_Start(object, cmp, wparm, lparm); // Object.Start
+		case ID_Object_Destroy: return FontFamily_Destroy(object, cmp, wparm, lparm); // Object.Destroy
 	}
 	return FALSE;
 }
@@ -537,6 +582,10 @@ ORCA_API int luaopen_orca_renderer(lua_State *L) {
 		{ "drawImage", f_renderer_DrawImage },
 		{ NULL, NULL } 
 	}));
+	lua_setfield(L, ((void)luaopen_orca_WindowPaintMsgArgs(L), -2), "WindowPaintMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_WindowResizedMsgArgs(L), -2), "WindowResizedMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_WindowClosedMsgArgs(L), -2), "WindowClosedMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_WindowChangedScreenMsgArgs(L), -2), "WindowChangedScreenMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_window(L), -2), "Window");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Texture), -2), "Texture");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Image), -2), "Image");

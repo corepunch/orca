@@ -1,19 +1,18 @@
-<?xml version="1.0"?>
-<!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
+<?xml version='1.0' encoding='utf-8'?>
 <module name="DarkReign" namespace="orca" on-luaopen="on_darkreign_module_registered">
-  <require file="../../source/filesystem/filesystem.xml"/>
+  <require file="../../source/filesystem/filesystem.xml" />
 
-  <external struct="_FTG"/>
+  <external struct="_FTG" />
 
   <class name="FtgPackage" parent="Bundle">
     <summary>Loader for FTG archives (Dark Reign game format)</summary>
     <details>Reads FTG archives as used by the Dark Reign game. The FTG format stores files in a flat directory with 28-byte filenames, uncompressed data at fixed offsets. When a .ftg bundle is loaded via FS_LoadBundle, every .spr sprite file found in the archive is automatically parsed and added to the project as a SpriteAnimation child object. Each .spr is converted into a horizontal-strip texture atlas (one GL_RED channel, ignoring the palette) where frames of varying sizes are placed side-by-side. The resulting SpriteAnimation objects can be looked up by name (the .spr filename without extension) and assigned to SKSpriteNode.Animation for rendering.</details>
-    <handles message="LoadProject"/>
-    <handles message="OpenFile"/>
-    <handles message="FileExists"/>
-    <handles message="HasChangedFiles"/>
-    <handles message="Destroy"/>
-    <property name="FileName" type="string"/>
-    <field name="_ftg" type="_FTG" pointer="true"/>
+    <handles message="Project.LoadProject" />
+    <handles message="Project.OpenFile" />
+    <handles message="Project.FileExists" />
+    <handles message="Project.HasChangedFiles" />
+    <handles message="Object.Destroy" />
+    <property name="FileName" type="string" />
+    <field name="_ftg" type="_FTG" pointer="true" />
   </class>
 </module>

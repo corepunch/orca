@@ -1,10 +1,9 @@
-<?xml version="1.0"?>
-<!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
+<?xml version='1.0' encoding='utf-8'?>
 <module name="filesystem" namespace="orca" on-luaopen="on_filesystem_module_registered" prefix="FS_">
-  <require file="../core/core.xml"/>
+  <require file="../core/core.xml" />
     
-  <external struct="Object"/>
-  <external struct="_PACK"/>
+  <external struct="Object" />
+  <external struct="_PACK" />
 
   <struct name="ProjectReference" sealed="true">
     <summary>External project reference</summary>
@@ -28,124 +27,95 @@
   </struct>
 
   <class name="Workspace">
-    <message name="ReadCommands"/>
+    <message name="ReadCommands" />
   </class>
   
   <class name="Library">
-    <property name="IsExternal" type="bool"/>
+    <property name="IsExternal" type="bool" />
   </class>
   
   <class name="Project">
-    <handles message="Start"/>
-    <property name="HalfFloatTextureFormat" type="bool"/>
-    <property name="HalfFloatTextureFormatLinear" type="bool"/>
-    <property name="HalfFloatColorAttachment" type="bool"/>
-    <property name="RenderToMipmapLevels" type="bool"/>
-    <property name="ExternalTexture" type="bool"/>
-    <!--    <property name="StartupScreen" type="Screen" pointer="true"/>-->
-    <property name="StartupScreen" type="string"/>
-    <property name="PreviewWindowBackgroundColor" type="color"/>
-    <property name="MessageLimitPerFrame" type="int"/>
-    <property name="GlobalTimelineStartTime" type="int"/>
-    <property name="GlobalTimelineEndTime" type="int"/>
-    <property name="BinaryExportDirectory" type="string"/>
-    <property name="ApplicationExportDirectory" type="string"/>
-    <!--    <ProjectResourceKeepAliveBehavior>DEFAULT</ProjectResourceKeepAliveBehavior>-->
-    <!--    <ProjectShaderKeepAliveBehavior>KEEP_ALIVE</ProjectShaderKeepAliveBehavior>-->
-    <property name="IsMasterProject" type="bool"/> <!-- false -->
-    <!--    <KZBEndianness>LITTLE_ENDIAN</KZBEndianness>-->
-    <property name="OptimizeMeshes" type="bool"/> <!-- false -->
-    <property name="TargetPlatformVertexCacheSize" type="int"/> <!-- 24 -->
-    <property name="PlotAnimations" type="bool"/> <!-- false -->
-    <!--    <ProjectDefaultVertexAttributeDataType>FLOAT_16</ProjectDefaultVertexAttributeDataType>-->
-    <property name="RoundImagesToNearestPowerOf2" type="bool"/> <!-- false -->
-    <property name="ProjectExportShaderSourceCode" type="bool"/> <!-- true -->
-    <property name="ProjectExportMainKzbWithBakedThemes" type="bool"/> <!-- false -->
-    <property name="ProjectGroupByThemeNameInBakedThemeExport" type="bool"/> <!-- true -->
-    <property name="IsLocalizationEnabled" type="bool"/> <!-- false -->
-    <!--    <PreviewOpenGLESWrapper>NONE</PreviewOpenGLESWrapper>-->
-    <!--    <PreviewDebugReleaseConfiguration>RELEASE</PreviewDebugReleaseConfiguration>-->
-    <!--    <PreviewVisualStudioVersion>VS2015</PreviewVisualStudioVersion>-->
-    <!--    <PreviewWorkingDirectory>..\..\..\..\..\..\bin</PreviewWorkingDirectory>-->
-    <property name="FullScreenPreviewLayer" type="bool"/> <!-- false -->
-    <property name="ShowChildrenInLayerThumbnails" type="bool"/> <!-- true -->
-<!--    <property name="CompositionDesignSize" type="vec2" defaul="-1 -1"/>-->
-    <property name="ProjectUsePremultipliedAlpha" type="bool"/> <!-- true -->
-    <!--    <ProjectPngCompressionLevel>Default</ProjectPngCompressionLevel>-->
-    <property name="ProjectRemoveICCProfilesOfPngs" type="bool"/> <!-- true -->
-    <property name="BinaryFileName" type="string"/> <!-- &lt;Project_Name&gt;.kzb -->
-    <!--    <TargetGraphicsApi>ES20</TargetGraphicsApi>-->
-    <!--    <ProfileExportType>PATCH</ProfileExportType>-->
-    <property name="IsAssetPackage" type="bool"/> <!-- false -->
-    <!--    <ExportedKzbFormat>Kzb</ExportedKzbFormat>-->
-    <property name="KanziConnectEnabled" type="bool"/> <!-- false -->
-    <!--    <ProjectDescriptionsFileName>&lt;project_name&gt;_descriptions.txt</ProjectDescriptionsFileName>-->
-    <property name="DefaultMaterial" type="string"/>
-
-    <!-- These probably don't belong in Project? -->
-    <property name="WindowWidth" type="int"/>
-    <property name="WindowHeight" type="int"/>
-    
+    <handles message="Object.Start" />
+    <property name="HalfFloatTextureFormat" type="bool" />
+    <property name="HalfFloatTextureFormatLinear" type="bool" />
+    <property name="HalfFloatColorAttachment" type="bool" />
+    <property name="RenderToMipmapLevels" type="bool" />
+    <property name="ExternalTexture" type="bool" />    
+    <property name="StartupScreen" type="string" />
+    <property name="PreviewWindowBackgroundColor" type="color" />
+    <property name="MessageLimitPerFrame" type="int" />
+    <property name="GlobalTimelineStartTime" type="int" />
+    <property name="GlobalTimelineEndTime" type="int" />
+    <property name="BinaryExportDirectory" type="string" />
+    <property name="ApplicationExportDirectory" type="string" />
+    <property name="IsMasterProject" type="bool" /> 
+    <property name="OptimizeMeshes" type="bool" /> 
+    <property name="TargetPlatformVertexCacheSize" type="int" /> 
+    <property name="PlotAnimations" type="bool" /> 
+    <property name="RoundImagesToNearestPowerOf2" type="bool" /> 
+    <property name="ProjectExportShaderSourceCode" type="bool" /> 
+    <property name="ProjectExportMainKzbWithBakedThemes" type="bool" /> 
+    <property name="ProjectGroupByThemeNameInBakedThemeExport" type="bool" /> 
+    <property name="IsLocalizationEnabled" type="bool" /> 
+    <property name="FullScreenPreviewLayer" type="bool" /> 
+    <property name="ShowChildrenInLayerThumbnails" type="bool" /> 
+    <property name="ProjectUsePremultipliedAlpha" type="bool" />     
+    <property name="ProjectRemoveICCProfilesOfPngs" type="bool" /> 
+    <property name="BinaryFileName" type="string" /> 
+    <property name="IsAssetPackage" type="bool" /> 
+    <property name="KanziConnectEnabled" type="bool" /> 
+    <property name="DefaultMaterial" type="string" />
+    <property name="WindowWidth" type="int" />
+    <property name="WindowHeight" type="int" />
     <property name="PropertyTypes" type="PropertyType" array="true" />
     <property name="ProjectReferences" type="ProjectReference" array="true" />
-    <property name="SystemMessages" type="SystemMessage" array="true"/>
-    <property name="EnginePlugins" type="EnginePlugin" array="true"/>
+    <property name="SystemMessages" type="SystemMessage" array="true" />
+    <property name="EnginePlugins" type="EnginePlugin" array="true" />
+    <property name="AnimationClipLibrary" type="Library" pointer="true" /> 
+    <property name="ScreenLibrary" type="Library" pointer="true" /> 
+    <property name="MaterialTypeLibrary" type="Library" pointer="true" /> 
+    <property name="MaterialLibrary" type="Library" pointer="true" /> 
+    <property name="BrushLibrary" type="Library" pointer="true" /> 
+    <property name="MeshLibrary" type="Library" pointer="true" /> 
+    <property name="TimelineSequenceLibrary" type="Library" pointer="true" /> 
+    <property name="SceneObjectLibrary" type="Library" pointer="true" /> 
+    <property name="ComposerLibrary" type="Library" pointer="true" /> 
+    <property name="PipelineItemLibrary" type="Library" pointer="true" /> 
+    <property name="SceneLibrary" type="Library" pointer="true" /> 
+    <property name="TrajectoryLibrary" type="Library" pointer="true" /> 
+    <property name="TransitionLibrary" type="Library" pointer="true" /> 
+    <property name="SplineLibrary" type="Library" pointer="true" /> 
+    <property name="PrefabLibrary" type="Library" pointer="true" /> 
+    <property name="ProfileLibrary" type="Library" pointer="true" /> 
+    <property name="ShortcutLibrary" type="Library" pointer="true" /> 
+    <property name="LayerLibrary" type="Library" pointer="true" /> 
+    <property name="AnimationLibrary" type="Library" pointer="true" /> 
+    <property name="TagLibrary" type="Library" pointer="true" /> 
+    <property name="ThemeLibrary" type="Library" pointer="true" /> 
+    <property name="ResourceExportTagLibrary" type="Library" pointer="true" /> 
+    <property name="LocaleLibrary" type="Library" pointer="true" /> 
+    <property name="DataSourceLibrary" type="Library" pointer="true" /> 
+    <property name="PageTransitionCollectionLibrary" type="Library" pointer="true" /> 
+    <property name="TextureLibrary" type="Library" pointer="true" /> 
+    <property name="StyleLibrary" type="Library" pointer="true" /> 
+    <property name="StateManagerLibrary" type="Library" pointer="true" /> 
+    <property name="ConnectServiceLibrary" type="Library" pointer="true" /> 
+    <property name="ConnectUserServiceLibrary" type="Library" pointer="true" />     
+    <property name="SpriteLibrary" type="Library" pointer="true" /> 
+    <property name="SpriteAnimationLibrary" type="Library" pointer="true" /> 
+    <property name="ImageLibrary" type="Library" pointer="true" /> 
+    <property name="FontLibrary" type="Library" pointer="true" /> 
 
-    <property name="AnimationClipLibrary" type="Library" pointer="true"/> <!-- Animation Clips -->
-    <property name="ScreenLibrary" type="Library" pointer="true"/> <!-- Screens -->
-    <property name="MaterialTypeLibrary" type="Library" pointer="true"/> <!-- Shaders -->
-    <property name="MaterialLibrary" type="Library" pointer="true"/> <!-- Materials -->
-    <property name="BrushLibrary" type="Library" pointer="true"/> <!-- Brushes -->
-    <property name="MeshLibrary" type="Library" pointer="true"/> <!-- Mesh Data -->
-    <property name="TimelineSequenceLibrary" type="Library" pointer="true"/> <!-- Timeline Sequences -->
-    <property name="SceneObjectLibrary" type="Library" pointer="true"/> <!-- Objects -->
-    <property name="ComposerLibrary" type="Library" pointer="true"/> <!-- Render Passes -->
-    <property name="PipelineItemLibrary" type="Library" pointer="true"/> <!-- Pipeline Items -->
-    <property name="SceneLibrary" type="Library" pointer="true"/> <!-- Scenes -->
-    <property name="TrajectoryLibrary" type="Library" pointer="true"/> <!-- Trajectories -->
-    <property name="TransitionLibrary" type="Library" pointer="true"/> <!-- Transitions -->
-    <property name="SplineLibrary" type="Library" pointer="true"/> <!-- Splines -->
-    <property name="PrefabLibrary" type="Library" pointer="true"/> <!-- Prefabs -->
-    <property name="ProfileLibrary" type="Library" pointer="true"/> <!-- Profiles -->
-    <property name="ShortcutLibrary" type="Library" pointer="true"/> <!-- Bookmarks -->
-    <property name="LayerLibrary" type="Library" pointer="true"/> <!-- Layers -->
-    <property name="AnimationLibrary" type="Library" pointer="true"/> <!-- Animation Data -->
-    <property name="TagLibrary" type="Library" pointer="true"/> <!-- Tags -->
-    <property name="ThemeLibrary" type="Library" pointer="true"/> <!-- Themes -->
-    <property name="ResourceExportTagLibrary" type="Library" pointer="true"/> <!-- Resource Export Tags -->
-    <property name="LocaleLibrary" type="Library" pointer="true"/> <!-- Localization -->
-    <property name="DataSourceLibrary" type="Library" pointer="true"/> <!-- Data Sources -->
-    <property name="PageTransitionCollectionLibrary" type="Library" pointer="true"/> <!-- Page Transitions -->
-    <!--  <property name="ResourceFilesItem"/>-->
-    <property name="TextureLibrary" type="Library" pointer="true"/> <!-- Textures -->
-    <property name="StyleLibrary" type="Library" pointer="true"/> <!-- Styles -->
-    <property name="StateManagerLibrary" type="Library" pointer="true"/> <!-- State Managers -->
-    <property name="ConnectServiceLibrary" type="Library" pointer="true"/> <!-- Connect Services -->
-    <property name="ConnectUserServiceLibrary" type="Library" pointer="true"/> <!-- Connect User Services -->
-    
-    <!--  <property name="ComponentTypeLibrary" "Components", "Component", FALSE },-->
-    <!--  <property name="DataSourceTypeLibrary" "DataSourceTypes", "DataSourceType", FALSE },-->
-    <!--  <property name="RenderPassTypeLibrary" "RenderPassTypes", "RenderPassType", FALSE },-->
-    <!--  <property name="NodeComponentTypeLibrary" "NodeComponentTypes", "NodeComponentType", FALSE },-->
-    <!--  <property name="TriggerActionTypeLibrary" "TriggerActionTypes", "TriggerActionType", FALSE },-->
-    <!--  <property name="MessageTypeLibrary" "MessageTypes", "MessageType", FALSE },-->
-    <!--  <property name="BrushTypeLibrary" "BrushTypes", "BrushType", FALSE },-->
-    
-    <property name="SpriteLibrary" type="Library" pointer="true"/> <!-- Sprites -->
-    <property name="SpriteAnimationLibrary" type="Library" pointer="true"/> <!-- Sprite Animations -->
-    <property name="ImageLibrary" type="Library" pointer="true"/> <!-- Images -->
-    <property name="FontLibrary" type="Library" pointer="true"/> <!-- Fonts -->
-
-    <field name="isPackage" type="bool"/>
+    <field name="isPackage" type="bool" />
 
     <message name="OpenFile">
-      <field name="FileName" type="string"/>
+      <field name="FileName" type="string" />
     </message>
     <message name="FileExists">
       <summary>Checks whether the specified file exists.</summary>
       <field name="FileName" type="string">The file path to check for existence</field>
     </message>
-    <message name="HasChangedFiles"/>
+    <message name="HasChangedFiles" />
     <message name="LoadProject">
       <summary>Loads a project bundle from the given directory.</summary>
       <field name="Path" type="string">Directory name to load the bundle</field>
@@ -154,44 +124,44 @@
   </class>
   
   <class name="Directory" parent="Project">
-    <handles message="LoadProject"/>
-    <handles message="OpenFile"/>
-    <handles message="FileExists"/>
-    <handles message="HasChangedFiles"/>
-    <handles message="Destroy"/>
-    <property name="Path" type="string"/>
-    <field name="_monitoredfiles" type="void" pointer="true"/>
+    <handles message="Project.LoadProject" />
+    <handles message="Project.OpenFile" />
+    <handles message="Project.FileExists" />
+    <handles message="Project.HasChangedFiles" />
+    <handles message="Object.Destroy" />
+    <property name="Path" type="string" />
+    <field name="_monitoredfiles" type="void" pointer="true" />
   </class>
   
   <class name="Package" parent="Project">
-    <handles message="LoadProject"/>
-    <handles message="OpenFile"/>
-    <handles message="FileExists"/>
-    <handles message="HasChangedFiles"/>
-    <handles message="Destroy"/>
-    <property name="FileName" type="string"/>
-    <field name="_package" type="_PACK" pointer="true"/>
+    <handles message="Project.LoadProject" />
+    <handles message="Project.OpenFile" />
+    <handles message="Project.FileExists" />
+    <handles message="Project.HasChangedFiles" />
+    <handles message="Object.Destroy" />
+    <property name="FileName" type="string" />
+    <field name="_package" type="_PACK" pointer="true" />
   </class>
     
-  <class name="LocaleReferenceItem"/>
+  <class name="LocaleReferenceItem" />
 
   <class name="Tag">
-    <property name="TagIsInherited" type="bool"/>
+    <property name="TagIsInherited" type="bool" />
   </class>
 
   <class name="ThemeGroup">
-    <handles message="Attached"/>
-    <property name="SelectedTheme" type="string"/>
-    <property name="SelectedDictionary" type="string"/>
-    <field name="_selectedTheme" type="Object" pointer="true"/>
+    <handles message="Object.Attached" />
+    <property name="SelectedTheme" type="string" />
+    <property name="SelectedDictionary" type="string" />
+    <field name="_selectedTheme" type="Object" pointer="true" />
   </class>
 
   <class name="Theme">
-    <property name="IsThemeVisible" type="bool"/>
+    <property name="IsThemeVisible" type="bool" />
   </class>
 
-  <class name="Entry"/>
-  <class name="ThemeDefaultValuesDictionary"/>
+  <class name="Entry" />
+  <class name="ThemeDefaultValuesDictionary" />
   
   <function name="GetBaseName">
     <summary>Gets the base filename from a path</summary>
@@ -269,7 +239,7 @@
     <summary>Reads the contents of a text file</summary>
     <details>Reads the entire contents of the specified text file and returns it as a string. This function is useful for loading scripts, configuration files, or other text-based resources.</details>
     <arg name="path" type="string">The path of the text file to read</arg>
-    <!-- <returns type="string">The contents of the text file, or nil if the file could not be read</returns> -->
+    
      <returns type="nresults">The contents of the text file, or nil if the file could not be read</returns>
   </function>
 </module>

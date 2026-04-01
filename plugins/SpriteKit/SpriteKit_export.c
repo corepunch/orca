@@ -110,12 +110,12 @@ static luaL_Reg _SpriteFrame_Methods[] = {
 };
 
 STRUCT(SpriteFrame, SpriteFrame);
-struct MessageType RenderMessage = {
-	.name = "Render",
-	.id = kMsgRender,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct RenderMsgArgs),
-};
+//struct MessageType RenderMessage = {
+//	.name = "Render",
+//	.id = kMsgRender,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct RenderMsgArgs),
+//};
 
 static luaL_Reg _RenderMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _RenderMsgArgs[] = {
@@ -174,7 +174,7 @@ static struct SKNode SKNodeDefaults = {
 };
 LRESULT SKNodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgUpdateMatrix: return SKNode_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
+		case ID_Node_UpdateMatrix: return SKNode_UpdateMatrix(object, cmp, wparm, lparm); // Node.UpdateMatrix
 	}
 	return FALSE;
 }
@@ -195,7 +195,7 @@ static struct SKScene SKSceneDefaults = {
 };
 LRESULT SKSceneProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgUpdateMatrix: return SKScene_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
+		case ID_Node_UpdateMatrix: return SKScene_UpdateMatrix(object, cmp, wparm, lparm); // Node.UpdateMatrix
 	}
 	return FALSE;
 }
@@ -230,7 +230,7 @@ static struct SKSpriteNode SKSpriteNodeDefaults = {
 };
 LRESULT SKSpriteNodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgRender: return SKSpriteNode_Render(object, cmp, wparm, lparm); // Render
+		case ID_SKNode_Render: return SKSpriteNode_Render(object, cmp, wparm, lparm); // SKNode.Render
 	}
 	return FALSE;
 }
@@ -253,8 +253,8 @@ static struct SKLabelNode SKLabelNodeDefaults = {
 };
 LRESULT SKLabelNodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgRender: return SKLabelNode_Render(object, cmp, wparm, lparm); // Render
-		case kMsgCreate: return SKLabelNode_Create(object, cmp, wparm, lparm); // Create
+		case ID_SKNode_Render: return SKLabelNode_Render(object, cmp, wparm, lparm); // SKNode.Render
+		case ID_Object_Create: return SKLabelNode_Create(object, cmp, wparm, lparm); // Object.Create
 	}
 	return FALSE;
 }
@@ -279,7 +279,7 @@ static struct SKView SKViewDefaults = {
 };
 LRESULT SKViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgForegroundContent: return SKView_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
+		case ID_Node_ForegroundContent: return SKView_ForegroundContent(object, cmp, wparm, lparm); // Node.ForegroundContent
 	}
 	return FALSE;
 }

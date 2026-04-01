@@ -1,11 +1,10 @@
-<?xml version="1.0"?>
-<!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
+<?xml version='1.0' encoding='utf-8'?>
 <module name="SceneKit" namespace="orca">
-  <require file="../../source/renderer/api/renderer.xml"/>
+  <require file="../../source/renderer/api/renderer.xml" />
 
-  <include file="include/renderer.h"/>
-  <include file="source/core/core.h"/>
-  <include file="plugins/UIKit/UIKit.h"/>
+  <include file="include/renderer.h" />
+  <include file="source/core/core.h" />
+  <include file="plugins/UIKit/UIKit.h" />
 
   <enums name="StencilOp">
     <summary>Operations performed on stencil buffer values when stencil tests pass or fail</summary>
@@ -65,14 +64,14 @@
   <class name="Node3D" parent="Node" children="Node3D">
     <summary>Base class for all 3D scene graph nodes with transform and positioning capabilities</summary>
     <details>Provides fundamental 3D transformation properties including layout transforms, render transforms, and matrix calculations. All 3D objects in the scene inherit from this component.</details>
-    <handles message="UpdateMatrix"/>
+    <handles message="Node.UpdateMatrix" />
     <property name="LayoutTransform" type="transform3" default=".scale={1,1,1}">Transform applied during layout phase for positioning within parent containers</property>
     <property name="RenderTransform" type="transform3" default=".scale={1,1,1}">Additional transform applied during rendering for animations and effects</property>
     <property name="RenderTransformOrigin" type="vec3">Origin point for render transform operations (rotation, scaling center)</property>
     <property name="ContentOffset" type="vec3">Offset applied to child content within this node's local coordinate system</property>
     <property name="Matrix" type="mat4">Final combined transformation matrix (computed automatically)</property>
     <property name="CalculatedOffset" type="float">Computed offset value used for trajectory list positioning</property>
-    <field name="_opacity" type="float"/>
+    <field name="_opacity" type="float" />
     <message name="Render">
       <field name="ViewDef" type="ViewDef" pointer="true">The view definition for rendering</field>
     </message>
@@ -81,7 +80,7 @@
   <class name="Scene" parent="Node3D">
     <summary>Root container for 3D scene content with camera and rendering configuration</summary>
     <details>Represents a complete 3D scene that can be rendered to a viewport. Manages cameras, render passes, and global scene properties like environment lighting.</details>
-    <handles message="UpdateMatrix"/>
+    <handles message="Node.UpdateMatrix" />
     <property name="Camera" type="string">Name of the primary camera used for scene rendering</property>
     <property name="PreviewCamera" type="string">Name of camera used for preview rendering in design tools</property>
     <property name="HitTestCamera" type="string">Name of camera used for 3D hit testing and mouse interaction</property>
@@ -94,7 +93,7 @@
   <class name="Model3D" parent="Node3D">
     <summary>3D model renderer that displays mesh geometry with materials</summary>
     <details>Core component for rendering 3D models. Combines a mesh (geometry) with a material (shading) to create visible 3D objects in the scene.</details>
-    <handles message="Render"/>
+    <handles message="Node3D.Render" />
     <property name="Mesh" type="Mesh" pointer="true">3D mesh geometry defining the shape of the model</property>
     <property name="Material" type="Material" pointer="true">Material defining surface appearance, textures, and shading properties</property>
   </class>
@@ -102,7 +101,7 @@
   <class name="PlaneMeshNode" parent="Model3D">
     <summary>Procedural plane mesh generator for creating rectangular surfaces</summary>
     <details>Automatically generates plane geometry with configurable dimensions and texture coordinates. Useful for ground planes, UI surfaces, and simple rectangular objects.</details>
-    <handles message="Render"/>
+    <handles message="Node3D.Render" />
     <property name="PlaneWidth" type="float">Width of the generated plane in world units</property>
     <property name="PlaneHeight" type="float">Height of the generated plane in world units</property>
     <property name="PlaneInvertU" type="bool">Invert horizontal texture coordinates (flip texture horizontally)</property>
@@ -129,7 +128,7 @@
   <class name="TrajectoryList3D" parent="Node3D">
     <summary>Layout container that arranges child nodes along a 3D trajectory path</summary>
     <details>Positions child elements along a curved or linear trajectory in 3D space. Supports scrolling, looping, and selection behaviors for creating carousels, paths, and animated sequences.</details>
-    <handles message="UpdateMatrix"/>
+    <handles message="Node.UpdateMatrix" />
     <property name="Trajectory" type="Trajectory" pointer="true">3D path shape defining the trajectory curve for child positioning</property>
     <property name="ScrollAxis" type="vec2">Primary and secondary scroll directions for trajectory navigation</property>
     <property name="Looping" type="bool">Whether trajectory wraps around at the ends (creates infinite loop)</property>
@@ -141,7 +140,7 @@
   <class name="Viewport3D" parent="Node2D" children="Node3D">
     <summary>2D viewport component that renders 3D scene content</summary>
     <details>Bridge between 2D UI layout and 3D scene rendering. Allows embedding 3D scenes within 2D user interfaces with independent camera and rendering configuration.</details>
-    <handles message="ForegroundContent"/>
+    <handles message="Node.ForegroundContent" />
     <property name="Camera" type="string">Name of camera to use for 3D scene rendering within this viewport</property>
     <property name="PreviewCamera" type="string">Name of camera used for design-time preview rendering</property>
     <property name="HitTestCamera" type="string">Name of camera used for 3D hit testing within the viewport area</property>
@@ -152,11 +151,11 @@
   <class name="PrefabView3D" parent="Node3D">
     <summary>Dynamic loader for 3D prefab assets and scene files</summary>
     <details>Loads and instantiates 3D content from external files. Supports both SCA (Scene Archive) and prefab formats for modular scene composition and asset reuse.</details>
-    <handles message="LoadView"/>
+    <handles message="Node.LoadView" />
     <property name="SCA" type="string">Adds "hmi_plugins/{{SCA}}" to search paths and loads from "prefabs/{{SCA}}"</property>
     <property name="Prefab" type="string">Path to prefab asset file to instantiate</property>
-    <field name="_loadedSCA" type="int"/>
-    <field name="_loadedPrefab" type="int"/>
+    <field name="_loadedSCA" type="int" />
+    <field name="_loadedPrefab" type="int" />
   </class>
 
   <class name="RenderPass" parent="Node">
@@ -216,15 +215,15 @@
   <class name="TextBlock3D" parent="Node3D" concept="TextBlockConcept">
     <summary>3D text renderer for displaying typography in 3D space</summary>
     <details>Renders text as 3D geometry that can be positioned, rotated, and scaled in 3D space. Supports font styling and integrates with the 3D lighting and material system.</details>
-    <handles message="Render"/>
-    <handles message="Create"/>
-    <field name="_node3D" type="Node3D" pointer="true"/>
+    <handles message="Node3D.Render" />
+    <handles message="Object.Create" />
+    <field name="_node3D" type="Node3D" pointer="true" />
   </class>
 
   <class name="Light3D" parent="Node3D">
     <summary>3D light source for scene illumination and shadow casting</summary>
     <details>Provides dynamic lighting for 3D scenes with support for point and spot light types. Affects material shading, shadow casting, and overall scene atmosphere.</details>
-    <handles message="Render"/>
+    <handles message="Node3D.Render" />
     <property name="Color" type="color">RGB color and intensity of the light emission</property>
     <property name="SpotAngle" type="vec2">Inner and outer cone angles for spot lights (X=inner, Y=outer in degrees)</property>
     <property name="Intensity" type="float" default="1">Brightness multiplier for light output (1.0 = normal intensity)</property>
@@ -235,7 +234,7 @@
   <class name="SpriteView" parent="Node3D">
     <summary>Billboard sprite renderer for 2D images in 3D space</summary>
     <details>Displays 2D images as billboards that automatically face the camera. Useful for particle effects, UI elements in 3D, icons, and other 2D content that needs 3D positioning.</details>
-    <handles message="Render"/>
+    <handles message="Node3D.Render" />
     <property name="Image" type="Texture" pointer="true">2D image texture to display on the billboard sprite</property>
     <property name="Bounds" type="vec4">Texture coordinates and sizing (X=U, Y=V, Z=width, W=height)</property>
   </class>

@@ -43,17 +43,6 @@ ENUM(BindingMode, "OneWay", "TwoWay", "OneWayToSource", "Expression")
 ENUM(PropertyAttribute, "WholeProperty", "ColorR", "ColorG", "ColorB", "ColorA", "VectorX", "VectorY", "VectorZ", "VectorW")
 
 
-int luaopen_orca_Window(lua_State *L) {
-	luaL_newmetatable(L, "Window");
-	luaL_setfuncs(L, ((luaL_Reg[]) {
-		{ NULL, NULL },
-	}), 0);
-	lua_pushvalue(L, -1);
-	lua_setfield(L, -2, "__index");
-	return 1;
-}
-
-
 int luaopen_orca_Input(lua_State *L) {
 	luaL_newmetatable(L, "Input");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
@@ -665,259 +654,218 @@ static luaL_Reg _MessageType_Methods[] = {
 };
 
 STRUCT(MessageType, MessageType);
-struct MessageType WindowPaintMessage = {
-	.name = "WindowPaint",
-	.id = kMsgWindowPaint,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct WindowPaintMsgArgs),
-};
-#define WindowResizedMsgArgs WindowPaintMsgArgs
-struct MessageType WindowResizedMessage = {
-	.name = "WindowResized",
-	.id = kMsgWindowResized,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct WindowPaintMsgArgs),
-};
-struct MessageType WindowClosedMessage = {
-	.name = "WindowClosed",
-	.id = kMsgWindowClosed,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct WindowClosedMsgArgs),
-};
-struct MessageType WindowChangedScreenMessage = {
-	.name = "WindowChangedScreen",
-	.id = kMsgWindowChangedScreen,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct WindowChangedScreenMsgArgs),
-};
-struct MessageType MouseMessageMessage = {
-	.name = "MouseMessage",
-	.id = kMsgMouseMessage,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct WI_Message),
-};
-struct MessageType KeyMessageMessage = {
-	.name = "KeyMessage",
-	.id = kMsgKeyMessage,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct WI_Message),
-};
+//struct MessageType MouseMessageMessage = {
+//	.name = "MouseMessage",
+//	.id = kMsgMouseMessage,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct WI_Message),
+//};
+//struct MessageType KeyMessageMessage = {
+//	.name = "KeyMessage",
+//	.id = kMsgKeyMessage,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct WI_Message),
+//};
 #define LeftMouseDownMsgArgs MouseMessageMsgArgs
-struct MessageType LeftMouseDownMessage = {
-	.name = "LeftMouseDown",
-	.id = kMsgLeftMouseDown,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct WI_Message),
-};
+//struct MessageType LeftMouseDownMessage = {
+//	.name = "LeftMouseDown",
+//	.id = kMsgLeftMouseDown,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct WI_Message),
+//};
 #define RightMouseDownMsgArgs MouseMessageMsgArgs
-struct MessageType RightMouseDownMessage = {
-	.name = "RightMouseDown",
-	.id = kMsgRightMouseDown,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct WI_Message),
-};
+//struct MessageType RightMouseDownMessage = {
+//	.name = "RightMouseDown",
+//	.id = kMsgRightMouseDown,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct WI_Message),
+//};
 #define OtherMouseDownMsgArgs MouseMessageMsgArgs
-struct MessageType OtherMouseDownMessage = {
-	.name = "OtherMouseDown",
-	.id = kMsgOtherMouseDown,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct WI_Message),
-};
+//struct MessageType OtherMouseDownMessage = {
+//	.name = "OtherMouseDown",
+//	.id = kMsgOtherMouseDown,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct WI_Message),
+//};
 #define LeftMouseUpMsgArgs MouseMessageMsgArgs
-struct MessageType LeftMouseUpMessage = {
-	.name = "LeftMouseUp",
-	.id = kMsgLeftMouseUp,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct WI_Message),
-};
+//struct MessageType LeftMouseUpMessage = {
+//	.name = "LeftMouseUp",
+//	.id = kMsgLeftMouseUp,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct WI_Message),
+//};
 #define RightMouseUpMsgArgs MouseMessageMsgArgs
-struct MessageType RightMouseUpMessage = {
-	.name = "RightMouseUp",
-	.id = kMsgRightMouseUp,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct WI_Message),
-};
+//struct MessageType RightMouseUpMessage = {
+//	.name = "RightMouseUp",
+//	.id = kMsgRightMouseUp,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct WI_Message),
+//};
 #define OtherMouseUpMsgArgs MouseMessageMsgArgs
-struct MessageType OtherMouseUpMessage = {
-	.name = "OtherMouseUp",
-	.id = kMsgOtherMouseUp,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct WI_Message),
-};
+//struct MessageType OtherMouseUpMessage = {
+//	.name = "OtherMouseUp",
+//	.id = kMsgOtherMouseUp,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct WI_Message),
+//};
 #define LeftMouseDraggedMsgArgs MouseMessageMsgArgs
-struct MessageType LeftMouseDraggedMessage = {
-	.name = "LeftMouseDragged",
-	.id = kMsgLeftMouseDragged,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct WI_Message),
-};
+//struct MessageType LeftMouseDraggedMessage = {
+//	.name = "LeftMouseDragged",
+//	.id = kMsgLeftMouseDragged,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct WI_Message),
+//};
 #define RightMouseDraggedMsgArgs MouseMessageMsgArgs
-struct MessageType RightMouseDraggedMessage = {
-	.name = "RightMouseDragged",
-	.id = kMsgRightMouseDragged,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct WI_Message),
-};
+//struct MessageType RightMouseDraggedMessage = {
+//	.name = "RightMouseDragged",
+//	.id = kMsgRightMouseDragged,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct WI_Message),
+//};
 #define OtherMouseDraggedMsgArgs MouseMessageMsgArgs
-struct MessageType OtherMouseDraggedMessage = {
-	.name = "OtherMouseDragged",
-	.id = kMsgOtherMouseDragged,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct WI_Message),
-};
+//struct MessageType OtherMouseDraggedMessage = {
+//	.name = "OtherMouseDragged",
+//	.id = kMsgOtherMouseDragged,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct WI_Message),
+//};
 #define LeftDoubleClickMsgArgs MouseMessageMsgArgs
-struct MessageType LeftDoubleClickMessage = {
-	.name = "LeftDoubleClick",
-	.id = kMsgLeftDoubleClick,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct WI_Message),
-};
+//struct MessageType LeftDoubleClickMessage = {
+//	.name = "LeftDoubleClick",
+//	.id = kMsgLeftDoubleClick,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct WI_Message),
+//};
 #define RightDoubleClickMsgArgs MouseMessageMsgArgs
-struct MessageType RightDoubleClickMessage = {
-	.name = "RightDoubleClick",
-	.id = kMsgRightDoubleClick,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct WI_Message),
-};
+//struct MessageType RightDoubleClickMessage = {
+//	.name = "RightDoubleClick",
+//	.id = kMsgRightDoubleClick,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct WI_Message),
+//};
 #define OtherDoubleClickMsgArgs MouseMessageMsgArgs
-struct MessageType OtherDoubleClickMessage = {
-	.name = "OtherDoubleClick",
-	.id = kMsgOtherDoubleClick,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct WI_Message),
-};
+//struct MessageType OtherDoubleClickMessage = {
+//	.name = "OtherDoubleClick",
+//	.id = kMsgOtherDoubleClick,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct WI_Message),
+//};
 #define MouseMovedMsgArgs MouseMessageMsgArgs
-struct MessageType MouseMovedMessage = {
-	.name = "MouseMoved",
-	.id = kMsgMouseMoved,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct WI_Message),
-};
+//struct MessageType MouseMovedMessage = {
+//	.name = "MouseMoved",
+//	.id = kMsgMouseMoved,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct WI_Message),
+//};
 #define ScrollWheelMsgArgs MouseMessageMsgArgs
-struct MessageType ScrollWheelMessage = {
-	.name = "ScrollWheel",
-	.id = kMsgScrollWheel,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct WI_Message),
-};
+//struct MessageType ScrollWheelMessage = {
+//	.name = "ScrollWheel",
+//	.id = kMsgScrollWheel,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct WI_Message),
+//};
 #define DragDropMsgArgs MouseMessageMsgArgs
-struct MessageType DragDropMessage = {
-	.name = "DragDrop",
-	.id = kMsgDragDrop,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct WI_Message),
-};
+//struct MessageType DragDropMessage = {
+//	.name = "DragDrop",
+//	.id = kMsgDragDrop,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct WI_Message),
+//};
 #define DragEnterMsgArgs MouseMessageMsgArgs
-struct MessageType DragEnterMessage = {
-	.name = "DragEnter",
-	.id = kMsgDragEnter,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct WI_Message),
-};
+//struct MessageType DragEnterMessage = {
+//	.name = "DragEnter",
+//	.id = kMsgDragEnter,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct WI_Message),
+//};
 #define KeyDownMsgArgs KeyMessageMsgArgs
-struct MessageType KeyDownMessage = {
-	.name = "KeyDown",
-	.id = kMsgKeyDown,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct WI_Message),
-};
+//struct MessageType KeyDownMessage = {
+//	.name = "KeyDown",
+//	.id = kMsgKeyDown,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct WI_Message),
+//};
 #define KeyUpMsgArgs KeyMessageMsgArgs
-struct MessageType KeyUpMessage = {
-	.name = "KeyUp",
-	.id = kMsgKeyUp,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct WI_Message),
-};
+//struct MessageType KeyUpMessage = {
+//	.name = "KeyUp",
+//	.id = kMsgKeyUp,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct WI_Message),
+//};
 #define CharMsgArgs KeyMessageMsgArgs
-struct MessageType CharMessage = {
-	.name = "Char",
-	.id = kMsgChar,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct WI_Message),
-};
-struct MessageType CreateMessage = {
-	.name = "Create",
-	.id = kMsgCreate,
-	.routing = kMessageRoutingDirect,
-	.size = sizeof(struct CreateMsgArgs),
-};
-struct MessageType StartMessage = {
-	.name = "Start",
-	.id = kMsgStart,
-	.routing = kMessageRoutingDirect,
-	.size = sizeof(struct StartMsgArgs),
-};
-struct MessageType AwakeMessage = {
-	.name = "Awake",
-	.id = kMsgAwake,
-	.routing = kMessageRoutingDirect,
-	.size = sizeof(struct AwakeMsgArgs),
-};
-struct MessageType ThemeChangedMessage = {
-	.name = "ThemeChanged",
-	.id = kMsgThemeChanged,
-	.routing = kMessageRoutingDirect,
-	.size = sizeof(struct ThemeChangedMsgArgs),
-};
-struct MessageType PropertyChangedMessage = {
-	.name = "PropertyChanged",
-	.id = kMsgPropertyChanged,
-	.routing = kMessageRoutingDirect,
-	.size = sizeof(struct PropertyChangedMsgArgs),
-};
-struct MessageType AttachedMessage = {
-	.name = "Attached",
-	.id = kMsgAttached,
-	.routing = kMessageRoutingDirect,
-	.size = sizeof(struct AttachedMsgArgs),
-};
-struct MessageType ReleaseMessage = {
-	.name = "Release",
-	.id = kMsgRelease,
-	.routing = kMessageRoutingDirect,
-	.size = sizeof(struct ReleaseMsgArgs),
-};
-struct MessageType DestroyMessage = {
-	.name = "Destroy",
-	.id = kMsgDestroy,
-	.routing = kMessageRoutingDirect,
-	.size = sizeof(struct DestroyMsgArgs),
-};
-struct MessageType TimerMessage = {
-	.name = "Timer",
-	.id = kMsgTimer,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct TimerMsgArgs),
-};
-struct MessageType ResumeCoroutineMessage = {
-	.name = "ResumeCoroutine",
-	.id = kMsgResumeCoroutine,
-	.routing = kMessageRoutingDirect,
-	.size = sizeof(struct ResumeCoroutineMsgArgs),
-};
-struct MessageType StopCoroutineMessage = {
-	.name = "StopCoroutine",
-	.id = kMsgStopCoroutine,
-	.routing = kMessageRoutingDirect,
-	.size = sizeof(struct StopCoroutineMsgArgs),
-};
+//struct MessageType CharMessage = {
+//	.name = "Char",
+//	.id = kMsgChar,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct WI_Message),
+//};
+//struct MessageType CreateMessage = {
+//	.name = "Create",
+//	.id = kMsgCreate,
+//	.routing = kMessageRoutingDirect,
+//	.size = sizeof(struct CreateMsgArgs),
+//};
+//struct MessageType StartMessage = {
+//	.name = "Start",
+//	.id = kMsgStart,
+//	.routing = kMessageRoutingDirect,
+//	.size = sizeof(struct StartMsgArgs),
+//};
+//struct MessageType AwakeMessage = {
+//	.name = "Awake",
+//	.id = kMsgAwake,
+//	.routing = kMessageRoutingDirect,
+//	.size = sizeof(struct AwakeMsgArgs),
+//};
+//struct MessageType ThemeChangedMessage = {
+//	.name = "ThemeChanged",
+//	.id = kMsgThemeChanged,
+//	.routing = kMessageRoutingDirect,
+//	.size = sizeof(struct ThemeChangedMsgArgs),
+//};
+//struct MessageType PropertyChangedMessage = {
+//	.name = "PropertyChanged",
+//	.id = kMsgPropertyChanged,
+//	.routing = kMessageRoutingDirect,
+//	.size = sizeof(struct PropertyChangedMsgArgs),
+//};
+//struct MessageType AttachedMessage = {
+//	.name = "Attached",
+//	.id = kMsgAttached,
+//	.routing = kMessageRoutingDirect,
+//	.size = sizeof(struct AttachedMsgArgs),
+//};
+//struct MessageType ReleaseMessage = {
+//	.name = "Release",
+//	.id = kMsgRelease,
+//	.routing = kMessageRoutingDirect,
+//	.size = sizeof(struct ReleaseMsgArgs),
+//};
+//struct MessageType DestroyMessage = {
+//	.name = "Destroy",
+//	.id = kMsgDestroy,
+//	.routing = kMessageRoutingDirect,
+//	.size = sizeof(struct DestroyMsgArgs),
+//};
+//struct MessageType TimerMessage = {
+//	.name = "Timer",
+//	.id = kMsgTimer,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct TimerMsgArgs),
+//};
+//struct MessageType ResumeCoroutineMessage = {
+//	.name = "ResumeCoroutine",
+//	.id = kMsgResumeCoroutine,
+//	.routing = kMessageRoutingDirect,
+//	.size = sizeof(struct ResumeCoroutineMsgArgs),
+//};
+//struct MessageType StopCoroutineMessage = {
+//	.name = "StopCoroutine",
+//	.id = kMsgStopCoroutine,
+//	.routing = kMessageRoutingDirect,
+//	.size = sizeof(struct StopCoroutineMsgArgs),
+//};
 
-static luaL_Reg _WindowPaintMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _WindowPaintMsgArgs[] = {
-	DECL(0xdc5503a7, WindowPaintMsgArgs, WindowWidth, WindowWidth, kDataTypeInt), // WindowPaintMsgArgs.WindowWidth
-	DECL(0xbd75892a, WindowPaintMsgArgs, WindowHeight, WindowHeight, kDataTypeInt), // WindowPaintMsgArgs.WindowHeight
-};
-static luaL_Reg _WindowResizedMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _WindowResizedMsgArgs[] = {
-	DECL(0xdc5503a7, WindowResizedMsgArgs, WindowWidth, WindowWidth, kDataTypeInt), // WindowResizedMsgArgs.WindowWidth
-	DECL(0xbd75892a, WindowResizedMsgArgs, WindowHeight, WindowHeight, kDataTypeInt), // WindowResizedMsgArgs.WindowHeight
-};
-static luaL_Reg _WindowClosedMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _WindowClosedMsgArgs[] = {
-};
-static luaL_Reg _WindowChangedScreenMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _WindowChangedScreenMsgArgs[] = {
-};
 static luaL_Reg _MouseMessageMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _MouseMessageMsgArgs[] = {
 };
@@ -1016,10 +964,6 @@ static luaL_Reg _StopCoroutineMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _StopCoroutineMsgArgs[] = {
 };
 
-STRUCT(WindowPaintMsgArgs, WindowPaintMsgArgs);
-STRUCT(WindowResizedMsgArgs, WindowResizedMsgArgs);
-STRUCT(WindowClosedMsgArgs, WindowClosedMsgArgs);
-STRUCT(WindowChangedScreenMsgArgs, WindowChangedScreenMsgArgs);
 STRUCT(MouseMessageMsgArgs, MouseMessageMsgArgs);
 STRUCT(KeyMessageMsgArgs, KeyMessageMsgArgs);
 STRUCT(LeftMouseDownMsgArgs, LeftMouseDownMsgArgs);
@@ -1087,10 +1031,6 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 		{ NULL, NULL } 
 	}));
 	lua_setfield(L, ((void)luaopen_orca_MessageType(L), -2), "MessageType");
-	lua_setfield(L, ((void)luaopen_orca_WindowPaintMsgArgs(L), -2), "WindowPaintMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_WindowResizedMsgArgs(L), -2), "WindowResizedMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_WindowClosedMsgArgs(L), -2), "WindowClosedMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_WindowChangedScreenMsgArgs(L), -2), "WindowChangedScreenMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_MouseMessageMsgArgs(L), -2), "MouseMessageMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_KeyMessageMsgArgs(L), -2), "KeyMessageMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_LeftMouseDownMsgArgs(L), -2), "LeftMouseDownMsgArgs");
@@ -1123,7 +1063,6 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_TimerMsgArgs(L), -2), "TimerMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_ResumeCoroutineMsgArgs(L), -2), "ResumeCoroutineMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_StopCoroutineMsgArgs(L), -2), "StopCoroutineMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_Window(L), -2), "Window");
 	lua_setfield(L, ((void)luaopen_orca_Input(L), -2), "Input");
 	lua_setfield(L, ((void)luaopen_orca_Object(L), -2), "Object");
 	void on_core_module_registered(lua_State *L);

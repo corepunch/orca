@@ -1,31 +1,27 @@
-<?xml version="1.0"?>
-<!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
+<?xml version='1.0' encoding='utf-8'?>
 <module name="renderer" namespace="orca" on-luaopen="on_renderer_module_registered" test-prefix="R_">
-  <require file="../../geometry/geometry.xml"/>
+  <require file="../../geometry/geometry.xml" />
 
-  <external struct="fontface"/>
-  <external struct="timeline"/>
-  <external struct="shader"/>
-  <external struct="model"/>
-  <external struct="shape"/>
-  <external struct="ViewDef"/>
-  <external struct="lua_State"/>
+  <external struct="fontface" />
+  <external struct="timeline" />
+  <external struct="shader" />
+  <external struct="model" />
+  <external struct="shape" />
+  <external struct="ViewDef" />
+  <external struct="lua_State" />
   
-<!--  <shutdown name="R_Shutdown"/>-->
+
   <interface name="window" prefix="WI_" export="Window">
     <summary>Window interface abstraction.</summary>
     <details>
       <p>The `Window` interface defines the contract for window creation and management inside the framework. Each window instance operates in isolation, backed by its own `lua_State`, similar in spirit to Electron processes. This ensures complete separation of state and scripts across windows, avoiding unintended side effects between them.</p>    
-      <snippet src="docs/creating_window.lua"/>
+      <snippet src="docs/creating_window.lua" />
       <p>The main application script `main.lua` is responsible for creating and managing windows. Once created, each window runs independently, maintaining its own Lua environment and bindings.</p>
       <p>The event loop for windows is cooperative and integrated with the core runtime. Events are dispatched and processed in a manner similar to how native windowing systems propagate events, while remaining script-driven and cross-platform within the engine.</p>
     </details>
 <!--    <method name="Release" export="__gc">-->
 <!--      <summary>Garbage collection handler for the window object.</summary>-->
 <!--    </method>-->
-<!--    <method name="SetPosition">-->
-<!--      <summary>Sets the position of the window on screen.</summary>-->
-<!--      <arg name="x" type="int"/>-->
 <!--      <arg name="y" type="int"/>-->
 <!--    </method>-->
 <!--    <method name="LoadPage">-->
@@ -55,12 +51,12 @@
 <!--      <arg name="module" type="string"/>-->
 <!--    </method>-->
     <message name="WindowPaint">
-      <field name="WindowWidth" type="uint"/>
-      <field name="WindowHeight" type="uint"/>
+      <field name="WindowWidth" type="uint" />
+      <field name="WindowHeight" type="uint" />
     </message>
-    <message name="WindowResized" same-as="WindowPaint"/>
-    <message name="WindowClosed"/>
-    <message name="WindowChangedScreen"/>
+    <message name="WindowResized" same-as="WindowPaint" />
+    <message name="WindowClosed" />
+    <message name="WindowChangedScreen" />
   </interface>
 
   <enums name="BlendMode">
@@ -154,35 +150,35 @@
   </enums>
 
   <enums name="AstcFormat">
-    <enum name="UnormBlock4x4">4×4 block, unsigned normalized RGBA — highest quality, 8 bits per channel</enum>
-    <enum name="UnormBlock5x4">5×4 block, unsigned normalized RGBA — slightly higher compression, good quality</enum>
-    <enum name="UnormBlock5x5">5×5 block, unsigned normalized RGBA — balance between quality and size</enum>
-    <enum name="UnormBlock6x5">6×5 block, unsigned normalized RGBA — higher compression, lower quality than smaller blocks</enum>
-    <enum name="UnormBlock6x6">6×6 block, unsigned normalized RGBA — good compression for large textures</enum>
-    <enum name="UnormBlock8x5">8×5 block, unsigned normalized RGBA — moderate quality, smaller size</enum>
-    <enum name="UnormBlock8x6">8×6 block, unsigned normalized RGBA — further reduced size</enum>
-    <enum name="UnormBlock8x8">8×8 block, unsigned normalized RGBA — high compression, lower visual quality</enum>
-    <enum name="UnormBlock10x5">10×5 block, unsigned normalized RGBA — increased compression ratio</enum>
-    <enum name="UnormBlock10x6">10×6 block, unsigned normalized RGBA — high compression</enum>
-    <enum name="UnormBlock10x8">10×8 block, unsigned normalized RGBA — smaller file size</enum>
-    <enum name="UnormBlock10x10">10×10 block, unsigned normalized RGBA — large blocks, lower quality</enum>
-    <enum name="UnormBlock12x10">12×10 block, unsigned normalized RGBA — high compression, lower quality</enum>
-    <enum name="UnormBlock12x12">12×12 block, unsigned normalized RGBA — maximum compression, lowest quality</enum>
+    <enum name="UnormBlock4x4">4x4 block, unsigned normalized RGBA — highest quality, 8 bits per channel</enum>
+    <enum name="UnormBlock5x4">5x4 block, unsigned normalized RGBA — slightly higher compression, good quality</enum>
+    <enum name="UnormBlock5x5">5x5 block, unsigned normalized RGBA — balance between quality and size</enum>
+    <enum name="UnormBlock6x5">6x5 block, unsigned normalized RGBA — higher compression, lower quality than smaller blocks</enum>
+    <enum name="UnormBlock6x6">6x6 block, unsigned normalized RGBA — good compression for large textures</enum>
+    <enum name="UnormBlock8x5">8x5 block, unsigned normalized RGBA — moderate quality, smaller size</enum>
+    <enum name="UnormBlock8x6">8x6 block, unsigned normalized RGBA — further reduced size</enum>
+    <enum name="UnormBlock8x8">8x8 block, unsigned normalized RGBA — high compression, lower visual quality</enum>
+    <enum name="UnormBlock10x5">10x5 block, unsigned normalized RGBA — increased compression ratio</enum>
+    <enum name="UnormBlock10x6">10x6 block, unsigned normalized RGBA — high compression</enum>
+    <enum name="UnormBlock10x8">10x8 block, unsigned normalized RGBA — smaller file size</enum>
+    <enum name="UnormBlock10x10">10x10 block, unsigned normalized RGBA — large blocks, lower quality</enum>
+    <enum name="UnormBlock12x10">12x10 block, unsigned normalized RGBA — high compression, lower quality</enum>
+    <enum name="UnormBlock12x12">12x12 block, unsigned normalized RGBA — maximum compression, lowest quality</enum>
 
-    <enum name="SrgbBlock4x4">4×4 block, sRGB color space — highest quality for gamma-corrected textures</enum>
-    <enum name="SrgbBlock5x4">5×4 block, sRGB color space — slightly higher compression</enum>
-    <enum name="SrgbBlock5x5">5×5 block, sRGB color space — balanced quality and size</enum>
-    <enum name="SrgbBlock6x5">6×5 block, sRGB color space — higher compression</enum>
-    <enum name="SrgbBlock6x6">6×6 block, sRGB color space — moderate quality</enum>
-    <enum name="SrgbBlock8x5">8×5 block, sRGB color space — good compression for large textures</enum>
-    <enum name="SrgbBlock8x6">8×6 block, sRGB color space — higher compression</enum>
-    <enum name="SrgbBlock8x8">8×8 block, sRGB color space — large blocks, reduced quality</enum>
-    <enum name="SrgbBlock10x5">10×5 block, sRGB color space — high compression</enum>
-    <enum name="SrgbBlock10x6">10×6 block, sRGB color space — smaller size, lower quality</enum>
-    <enum name="SrgbBlock10x8">10×8 block, sRGB color space — more compression, lower quality</enum>
-    <enum name="SrgbBlock10x10">10×10 block, sRGB color space — very high compression, low quality</enum>
-    <enum name="SrgbBlock12x10">12×10 block, sRGB color space — extreme compression, low visual fidelity</enum>
-    <enum name="SrgbBlock12x12">12×12 block, sRGB color space — maximum compression, lowest quality</enum>
+    <enum name="SrgbBlock4x4">4x4 block, sRGB color space — highest quality for gamma-corrected textures</enum>
+    <enum name="SrgbBlock5x4">5x4 block, sRGB color space — slightly higher compression</enum>
+    <enum name="SrgbBlock5x5">5x5 block, sRGB color space — balanced quality and size</enum>
+    <enum name="SrgbBlock6x5">6x5 block, sRGB color space — higher compression</enum>
+    <enum name="SrgbBlock6x6">6x6 block, sRGB color space — moderate quality</enum>
+    <enum name="SrgbBlock8x5">8x5 block, sRGB color space — good compression for large textures</enum>
+    <enum name="SrgbBlock8x6">8x6 block, sRGB color space — higher compression</enum>
+    <enum name="SrgbBlock8x8">8x8 block, sRGB color space — large blocks, reduced quality</enum>
+    <enum name="SrgbBlock10x5">10x5 block, sRGB color space — high compression</enum>
+    <enum name="SrgbBlock10x6">10x6 block, sRGB color space — smaller size, lower quality</enum>
+    <enum name="SrgbBlock10x8">10x8 block, sRGB color space — more compression, lower quality</enum>
+    <enum name="SrgbBlock10x10">10x10 block, sRGB color space — very high compression, low quality</enum>
+    <enum name="SrgbBlock12x10">12x10 block, sRGB color space — extreme compression, low visual fidelity</enum>
+    <enum name="SrgbBlock12x12">12x12 block, sRGB color space — maximum compression, lowest quality</enum>
   </enums>
 
   <enums name="AtcCompressionScheme">
@@ -224,12 +220,12 @@
   </enums>
 
   <enums name="ImageType">
-    <enum name="Normal"></enum>
-    <enum name="Mask"></enum>
+    <enum name="Normal" />
+    <enum name="Mask" />
   </enums>
 
   <class name="Image" parent="Texture">
-    <handles message="Start"/>
+    <handles message="Object.Start" />
     <summary>Represents a single, pre-loaded texture image for use in rendering operations.</summary>
     <details>Extends the base Texture class to load a specific image file, providing a straightforward way to incorporate static textures into scenes without dynamic generation or rendering targets.</details>
     <property name="Source" type="string">Path to the texture image file to be loaded.</property>
@@ -255,7 +251,7 @@
     <property name="FileExportSourceTexture" type="bool">When `true`, exports the original source texture file alongside processed versions.</property>
     <property name="FileExportAlways" type="bool">When `true`, ensures the texture is exported regardless of other conditions.</property>
     <property name="FileExportEmptyWhenFileIsMissing" type="bool">When `true`, exports an empty placeholder if the source file is missing.</property>
-    <property name="FileExportSourceImage" type="string"/>
+    <property name="FileExportSourceImage" type="string" />
   </class>
 
   <enums name="RenderTargetType">
@@ -282,7 +278,7 @@
   <class name="RenderTargetTexture" parent="Texture">
     <summary>Texture configured as a render target for off-screen rendering and post-processing effects.</summary>
     <details>Extends the base Texture class to create a dynamic texture that can be bound as a framebuffer for rendering operations. Supports custom dimensions for targeted resolutions, enabling techniques like bloom, depth-of-field, or shadow mapping without affecting the main display output.</details>
-    <handles message="Start"/>
+    <handles message="Object.Start" />
     <property name="Width" type="int">The desired width in pixels for the render target texture, determining the horizontal resolution of rendered content.</property>
     <property name="Height" type="int">The desired height in pixels for the render target texture, determining the vertical resolution of rendered content.</property>
     <property name="TargetType" type="RenderTargetType">Specifies which kind of render target this texture represents — for example, a color, depth, or stencil attachment.</property>
@@ -295,7 +291,7 @@
   <class name="CubeMapTexture" parent="Texture">
     <summary>Cubemap texture assembled from six individual images, one for each face of a cube, used for environment mapping, reflections, and sky rendering.</summary>
     <details>Extends the base Texture class to support loading separate images for positive and negative axes of a 3D cube. This configuration allows for realistic spherical mapping in shaders, where texture coordinates are projected onto the cube faces for seamless omnidirectional sampling without seams or distortion at cube edges.</details>
-    <handles message="Start"/>
+    <handles message="Object.Start" />
     <property name="BackImage" type="string">Path to the image file for the back face (negative Z-axis) of the cubemap.</property>
     <property name="FrontImage" type="string">Path to the image file for the front face (positive Z-axis) of the cubemap.</property>
     <property name="LeftImage" type="string">Path to the image file for the left face (negative X-axis) of the cubemap.</property>
@@ -307,16 +303,9 @@
   <class name="IOSurfaceTexture" parent="Texture">
     <summary>Texture created from a shared macOS IOSurface for zero-copy GPU data sharing.</summary>
     <details>Extends the base Texture class to bind an existing IOSurface as an OpenGL texture using GL_TEXTURE_RECTANGLE. Enables efficient inter-process or inter-context sharing of rendered images without CPU copying, suitable for compositing, video, or off-screen rendering pipelines.</details>
-    <handles message="Start"/>
+    <handles message="Object.Start" />
     <property name="IOSurface" type="int">The IOSurface identifier used to look up and bind the shared surface as a texture.</property>
   </class>
-
-<!--  <enums name="SourceType">-->
-<!--    <summary> Specifies how a shader uniform value is determined — whether it comes from a predefined uniform, a linked property, or is manually assigned.</summary>-->
-<!--    <enum name="FixedUniform">Uses a predefined shader uniform identified by its name.</enum>-->
-<!--    <enum name="PropertyType">Retrieves the uniform value dynamically from a matching property.</enum>-->
-<!--    <enum name="Manual">The uniform value is set explicitly by the user or external code.</enum>-->
-<!--  </enums>-->
 
   <enums name="FloatPrecision">
     <summary>Defines precision levels for floating-point operations in shader variables</summary>
@@ -326,33 +315,6 @@
     <enum name="Medium">Medium precision, typically 16-24 bits. Ideal for texture coordinates and general-purpose calculations.</enum>
     <enum name="High">Highest precision, typically 32 bits. Required for vertex positions, matrices, and critical transformations.</enum>
   </enums>
-  
-<!--  <enums name="UniformType">-->
-<!--    <summary>Defines the data types for shader uniform variables</summary>-->
-<!--    <details>Specifies the type of data that can be passed to shader uniforms. These types correspond to WebGL/OpenGL uniform types and determine how the data is interpreted and used in shader programs. Scalar types (Float, Int, Bool, UnsignedInt) represent single values, vector types represent grouped values, matrix types represent transformation matrices, and sampler types represent texture references.</details>-->
-<!--    <enum name="None">No uniform type specified. Used as a default or placeholder value.</enum>-->
-<!--    <enum name="Float">Single floating-point value. Used for scalar values like time, opacity, or single numeric parameters.</enum>-->
-<!--    <enum name="Vector2D">Two-component floating-point vector. Commonly used for 2D coordinates, texture coordinates, or paired values.</enum>-->
-<!--    <enum name="Vector3D">Three-component floating-point vector. Used for 3D positions, RGB colors, or directional vectors.</enum>-->
-<!--    <enum name="Vector4D">Four-component floating-point vector. Used for RGBA colors, homogeneous coordinates, or quaternions.</enum>-->
-<!--    <enum name="Matrix2D">3x3 floating-point matrix. Used for 2D transformations, normal matrix calculations, or texture coordinate transformations.</enum>-->
-<!--    <enum name="Matrix3D">4x4 floating-point matrix. Used for 3D transformations, view matrices, projection matrices, or model-view-projection matrices.</enum>-->
-<!--    <enum name="Int">Single integer value. Used for array indices, iteration counts, or discrete numeric parameters.</enum>-->
-<!--    <enum name="Bool">Boolean value (true/false). Used for feature toggles, conditional rendering flags, or binary states.</enum>-->
-<!--    <enum name="Unsigned">Single unsigned integer value. Used for non-negative counts, IDs, or bit flags.</enum>-->
-<!--    <enum name="Sampler2D">2D texture sampler. References standard rectangular textures for image data, sprites, or texture mapping.</enum>-->
-<!--    <enum name="Sampler2DRect">Rectangular texture sampler. References non-power-of-two textures with pixel coordinates instead of normalized coordinates.</enum>-->
-<!--    <enum name="SamplerCube">Cube map texture sampler. References cube map textures used for environment mapping, reflections, or skyboxes.</enum>-->
-<!--    <enum name="Color">Color value. Specialized type for color data, typically representing RGBA values with normalized 0-1 range.</enum>-->
-<!--  </enums>-->
-  
-<!--  <struct name="ShaderVariableInfo">-->
-<!--    <summary>Contains metadata and configuration for a shader variable (uniform or attribute)</summary>-->
-<!--    <field name="Name" type="string">The identifier name of the shader variable as it appears in the shader code. Must match the variable name declared in GLSL.</field>-->
-<!--    <field name="Type" type="UniformType">The data type of the shader variable, determining its structure and how data is interpreted.</field>-->
-<!--    <field name="Precision" type="FloatPrecision">The floating-point precision level for the variable. Controls the balance between numerical accuracy and performance.</field>-->
-<!--    <field name="SourceType" type="SourceType">Specifies where the variable's value originates from.</field>-->
-<!--  </struct>-->
   
   <enums name="Shading">
     <summary>Defines shading models for lighting calculations in shaders</summary>
@@ -384,8 +346,8 @@
     <summary>Complete shader program definition combining vertex and fragment stages</summary>
     <details>Encapsulates the entire shader pipeline with configurable uniforms, attributes, and shared variables. Uniforms provide per-draw parameters (textures, colors, transforms), attributes supply per-vertex data (positions, UVs, colors), and shared variables pass interpolated data between shader stages.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles message="Start"/>
-    <handles message="Destroy"/>
+    <handles message="Object.Start" />
+    <handles message="Object.Destroy" />
     <property name="BlendMode" type="BlendMode" default="MixedAlpha">The default blending mode for the shader, controlling how rendered output combines with the existing framebuffer content.</property>
     <property name="DepthTestFunction" type="CompareFunc">The default depth comparison function used for depth testing, determining which fragments are visible based on their depth values.</property>
     <property name="DepthWriteEnabled" type="bool">Whether depth buffer writing is enabled by default. When true, rendered fragments update the depth buffer; when false, depth values are not written.</property>
@@ -416,8 +378,8 @@
     <summary>Renderable 3D geometry component with material and model data</summary>
     <details>Represents a 3D mesh object in the scene. Manages the geometry data (vertices, indices, normals, UVs) and associated material for rendering. Responds to lifecycle events for loading and cleanup of mesh resources.</details>
     <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-    <handles message="Start"/>
-    <handles message="Destroy"/>
+    <handles message="Object.Start" />
+    <handles message="Object.Destroy" />
     <property name="Source" type="string">Path or identifier to the mesh geometry file or resource. Specifies where to load the 3D model data from.</property>
     <property name="Material" type="Material" pointer="true">Reference to the material that defines the mesh's visual appearance. Controls shaders, textures, colors, and rendering properties applied to the geometry.</property>
     <property name="MeshMorphTargets" type="string">Name of the morph targets in the mesh</property>
@@ -427,8 +389,8 @@
   <class name="FontFamily">
     <summary>TrueType font resource for text rendering</summary>
     <details>Loads and manages a TrueType font file for rendering text in the scene. Provides glyph data and metrics for text layout and rendering. May be extended in the future to support font families with variants (regular, bold, italic).</details>
-    <handles message="Start">Called when the mesh component is initialized. Used to load the mesh geometry from the specified source and set up rendering resources.</handles>
-    <handles message="Destroy">Called when the mesh component is being destroyed. Used to clean up mesh data, release GPU buffers, and free associated resources.</handles>
+    <handles message="Object.Start">Called when the mesh component is initialized. Used to load the mesh geometry from the specified source and set up rendering resources.</handles>
+    <handles message="Object.Destroy">Called when the mesh component is being destroyed. Used to clean up mesh data, release GPU buffers, and free associated resources.</handles>
     <property name="Regular" type="string">Path of the TrueType font file to be used as the regular font variant.</property>
     <property name="Bold" type="string">Path of the TrueType font file to be used as the bold font variant.</property>
     <property name="Italic" type="string">Path of the TrueType font file to be used as the italic font variant.</property>
@@ -445,18 +407,6 @@
   <class name="Timeline">
   </class>
 
-<!--  <function name="CreateRenderTarget" lua="true">-->
-<!--    <summary>Creates a GPU render target.</summary>-->
-<!--    <arg name="width" type="int"/>-->
-<!--    <arg name="height" type="int"/>-->
-<!--    <returns type="Texture" pointer="true"/>-->
-<!--  </function>-->
-<!--  <function name="LoadImage" lua="true">-->
-<!--    <summary>Loads an image into GPU memory.</summary>-->
-<!--    <arg name="path" type="string"/>-->
-<!--    <returns type="Texture" pointer="true"/>-->
-<!--  </function>-->
-
   <function name="Init">
     <summary>Initializes the rendering system and prepares it for drawing operations.</summary>
     <arg name="Width" type="uint">The width of the rendering viewport.</arg>
@@ -469,13 +419,13 @@
   </function>
   <function name="CreateShader" lua="true">
     <summary>Creates a shader program from source code.</summary>
-    <arg name="vertex" type="string"/>
-    <arg name="fragment" type="string"/>
-    <returns type="Shader" pointer="true"/>
+    <arg name="vertex" type="string" />
+    <arg name="fragment" type="string" />
+    <returns type="Shader" pointer="true" />
   </function>
   <function name="GetSize" lua="true">
     <summary>Retrieves the size of the current window.</summary>
-    <returns type="nresults"/>
+    <returns type="nresults" />
   </function>
   <function name="DrawImage" lua="true">
     <summary>Draws the current image to the active render target.</summary>

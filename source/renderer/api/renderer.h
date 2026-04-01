@@ -20,7 +20,15 @@ struct lua_State;
 #include "renderer_properties.h"
 #include "../../geometry/geometry.h"
 
+ORCA_API extern struct MessageType WindowPaintMessage;
+ORCA_API extern struct MessageType WindowResizedMessage;
+ORCA_API extern struct MessageType WindowClosedMessage;
+ORCA_API extern struct MessageType WindowChangedScreenMessage;
 
+typedef struct WindowPaintMsgArgs WindowPaintMsg_t,* WindowPaintMsgPtr;
+typedef struct WindowPaintMsgArgs WindowResizedMsg_t,* WindowResizedMsgPtr;
+typedef struct WindowClosedMsgArgs WindowClosedMsg_t,* WindowClosedMsgPtr;
+typedef struct WindowChangedScreenMsgArgs WindowChangedScreenMsg_t,* WindowChangedScreenMsgPtr;
 
 
 /// @brief Rendering blend modes for compositing operations
@@ -131,34 +139,34 @@ ORCA_API enum ImageFormat luaX_checkImageFormat(lua_State *L, int idx);
 ORCA_API void luaX_pushImageFormat(lua_State *L, enum ImageFormat value);
 /** AstcFormat enum */
 typedef enum AstcFormat {
-	kAstcFormatUnormBlock4x4, ///< 4×4 block, unsigned normalized RGBA — highest quality, 8 bits per channel
-	kAstcFormatUnormBlock5x4, ///< 5×4 block, unsigned normalized RGBA — slightly higher compression, good quality
-	kAstcFormatUnormBlock5x5, ///< 5×5 block, unsigned normalized RGBA — balance between quality and size
-	kAstcFormatUnormBlock6x5, ///< 6×5 block, unsigned normalized RGBA — higher compression, lower quality than smaller blocks
-	kAstcFormatUnormBlock6x6, ///< 6×6 block, unsigned normalized RGBA — good compression for large textures
-	kAstcFormatUnormBlock8x5, ///< 8×5 block, unsigned normalized RGBA — moderate quality, smaller size
-	kAstcFormatUnormBlock8x6, ///< 8×6 block, unsigned normalized RGBA — further reduced size
-	kAstcFormatUnormBlock8x8, ///< 8×8 block, unsigned normalized RGBA — high compression, lower visual quality
-	kAstcFormatUnormBlock10x5, ///< 10×5 block, unsigned normalized RGBA — increased compression ratio
-	kAstcFormatUnormBlock10x6, ///< 10×6 block, unsigned normalized RGBA — high compression
-	kAstcFormatUnormBlock10x8, ///< 10×8 block, unsigned normalized RGBA — smaller file size
-	kAstcFormatUnormBlock10x10, ///< 10×10 block, unsigned normalized RGBA — large blocks, lower quality
-	kAstcFormatUnormBlock12x10, ///< 12×10 block, unsigned normalized RGBA — high compression, lower quality
-	kAstcFormatUnormBlock12x12, ///< 12×12 block, unsigned normalized RGBA — maximum compression, lowest quality
-	kAstcFormatSrgbBlock4x4, ///< 4×4 block, sRGB color space — highest quality for gamma-corrected textures
-	kAstcFormatSrgbBlock5x4, ///< 5×4 block, sRGB color space — slightly higher compression
-	kAstcFormatSrgbBlock5x5, ///< 5×5 block, sRGB color space — balanced quality and size
-	kAstcFormatSrgbBlock6x5, ///< 6×5 block, sRGB color space — higher compression
-	kAstcFormatSrgbBlock6x6, ///< 6×6 block, sRGB color space — moderate quality
-	kAstcFormatSrgbBlock8x5, ///< 8×5 block, sRGB color space — good compression for large textures
-	kAstcFormatSrgbBlock8x6, ///< 8×6 block, sRGB color space — higher compression
-	kAstcFormatSrgbBlock8x8, ///< 8×8 block, sRGB color space — large blocks, reduced quality
-	kAstcFormatSrgbBlock10x5, ///< 10×5 block, sRGB color space — high compression
-	kAstcFormatSrgbBlock10x6, ///< 10×6 block, sRGB color space — smaller size, lower quality
-	kAstcFormatSrgbBlock10x8, ///< 10×8 block, sRGB color space — more compression, lower quality
-	kAstcFormatSrgbBlock10x10, ///< 10×10 block, sRGB color space — very high compression, low quality
-	kAstcFormatSrgbBlock12x10, ///< 12×10 block, sRGB color space — extreme compression, low visual fidelity
-	kAstcFormatSrgbBlock12x12, ///< 12×12 block, sRGB color space — maximum compression, lowest quality
+	kAstcFormatUnormBlock4x4, ///< 4x4 block, unsigned normalized RGBA — highest quality, 8 bits per channel
+	kAstcFormatUnormBlock5x4, ///< 5x4 block, unsigned normalized RGBA — slightly higher compression, good quality
+	kAstcFormatUnormBlock5x5, ///< 5x5 block, unsigned normalized RGBA — balance between quality and size
+	kAstcFormatUnormBlock6x5, ///< 6x5 block, unsigned normalized RGBA — higher compression, lower quality than smaller blocks
+	kAstcFormatUnormBlock6x6, ///< 6x6 block, unsigned normalized RGBA — good compression for large textures
+	kAstcFormatUnormBlock8x5, ///< 8x5 block, unsigned normalized RGBA — moderate quality, smaller size
+	kAstcFormatUnormBlock8x6, ///< 8x6 block, unsigned normalized RGBA — further reduced size
+	kAstcFormatUnormBlock8x8, ///< 8x8 block, unsigned normalized RGBA — high compression, lower visual quality
+	kAstcFormatUnormBlock10x5, ///< 10x5 block, unsigned normalized RGBA — increased compression ratio
+	kAstcFormatUnormBlock10x6, ///< 10x6 block, unsigned normalized RGBA — high compression
+	kAstcFormatUnormBlock10x8, ///< 10x8 block, unsigned normalized RGBA — smaller file size
+	kAstcFormatUnormBlock10x10, ///< 10x10 block, unsigned normalized RGBA — large blocks, lower quality
+	kAstcFormatUnormBlock12x10, ///< 12x10 block, unsigned normalized RGBA — high compression, lower quality
+	kAstcFormatUnormBlock12x12, ///< 12x12 block, unsigned normalized RGBA — maximum compression, lowest quality
+	kAstcFormatSrgbBlock4x4, ///< 4x4 block, sRGB color space — highest quality for gamma-corrected textures
+	kAstcFormatSrgbBlock5x4, ///< 5x4 block, sRGB color space — slightly higher compression
+	kAstcFormatSrgbBlock5x5, ///< 5x5 block, sRGB color space — balanced quality and size
+	kAstcFormatSrgbBlock6x5, ///< 6x5 block, sRGB color space — higher compression
+	kAstcFormatSrgbBlock6x6, ///< 6x6 block, sRGB color space — moderate quality
+	kAstcFormatSrgbBlock8x5, ///< 8x5 block, sRGB color space — good compression for large textures
+	kAstcFormatSrgbBlock8x6, ///< 8x6 block, sRGB color space — higher compression
+	kAstcFormatSrgbBlock8x8, ///< 8x8 block, sRGB color space — large blocks, reduced quality
+	kAstcFormatSrgbBlock10x5, ///< 10x5 block, sRGB color space — high compression
+	kAstcFormatSrgbBlock10x6, ///< 10x6 block, sRGB color space — smaller size, lower quality
+	kAstcFormatSrgbBlock10x8, ///< 10x8 block, sRGB color space — more compression, lower quality
+	kAstcFormatSrgbBlock10x10, ///< 10x10 block, sRGB color space — very high compression, low quality
+	kAstcFormatSrgbBlock12x10, ///< 12x10 block, sRGB color space — extreme compression, low visual fidelity
+	kAstcFormatSrgbBlock12x12, ///< 12x12 block, sRGB color space — maximum compression, lowest quality
 } eAstcFormat_t;
 #define AstcFormat_Count 28
 ORCA_API const char *AstcFormatToString(enum AstcFormat value);
@@ -310,6 +318,23 @@ renderer_DrawImage(struct lua_State*);
 
 
 
+/** WindowPaintMsgArgs struct */
+struct WindowPaintMsgArgs {
+	uint32_t WindowWidth;
+	uint32_t WindowHeight;
+};
+ORCA_API void luaX_pushWindowPaintMsgArgs(lua_State *L, struct WindowPaintMsgArgs const* data);
+ORCA_API struct WindowPaintMsgArgs* luaX_checkWindowPaintMsgArgs(lua_State *L, int idx);
+/** WindowClosedMsgArgs struct */
+struct WindowClosedMsgArgs {
+};
+ORCA_API void luaX_pushWindowClosedMsgArgs(lua_State *L, struct WindowClosedMsgArgs const* data);
+ORCA_API struct WindowClosedMsgArgs* luaX_checkWindowClosedMsgArgs(lua_State *L, int idx);
+/** WindowChangedScreenMsgArgs struct */
+struct WindowChangedScreenMsgArgs {
+};
+ORCA_API void luaX_pushWindowChangedScreenMsgArgs(lua_State *L, struct WindowChangedScreenMsgArgs const* data);
+ORCA_API struct WindowChangedScreenMsgArgs* luaX_checkWindowChangedScreenMsgArgs(lua_State *L, int idx);
 
 
 /// @brief Base class for managing texture resources and their sampling parameters for rendering.
