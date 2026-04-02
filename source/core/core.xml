@@ -502,9 +502,9 @@
       <details>Returns a pointer to the object that is currently being hovered over by the mouse cursor. Returns null if no object is being hovered.</details>
       <returns type="Object" pointer="true">Pointer to the object under the mouse cursor, or null if no object is being hovered</returns>
     </function>
+<!--  <function name="AddCommands" lua="true">-->
+<!--    <summary>Retrieves currently active object.</summary>-->
+<!--    <arg name="command" type="string"/>-->
+<!--  </function>-->
   </functions>
-  <!--  <function name="AddCommands" lua="true">-->
-  <!--    <summary>Retrieves currently active object.</summary>-->
-  <!--    <arg name="command" type="string"/>-->
-  <!--  </function>-->
 </module>
