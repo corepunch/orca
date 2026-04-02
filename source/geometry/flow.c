@@ -1,7 +1,17 @@
 #include <include/api.h>
 
+lpObject_t luaX_checkObject(lua_State* L, int arg) {
+  if (lua_type(L, arg) == LUA_TTABLE) {
+    luaX_parsefield(lpObject_t, __userdata, arg, luaL_checkudata, API_TYPE_OBJECT);
+    return __userdata;
+  } else {
+    return luaL_checkudata(L, arg, API_TYPE_OBJECT);
+  }
+}
+
 ORCA_API int
-parse_property(const char* str,
+parse_property(lua_State* L,
+               const char* str,
                struct PropertyType const* prop,
 //               void* struct_ptr)
                void* valueptr)
@@ -21,8 +31,7 @@ parse_property(const char* str,
           return TRUE;
         }
       }
-      fprintf(stderr, "Invalid enum value '%s' for property '%s'\n", str, prop->Name);
-      return FALSE;
+      return luaL_error(L, "parse_property(%s): Invalid enum value for property '%s'\n", str, prop->Name);
     case kDataTypeFloat:
       *(float*)valueptr = atof(str);
       return TRUE;
@@ -33,9 +42,34 @@ parse_property(const char* str,
     case kDataTypeColor:
       *(struct color*)valueptr = COLOR_Parse(str);
       return TRUE;
+    case kDataTypeStruct:
+      if (luaL_getmetatable(L, prop->TypeString) && lua_getfield(L, -1, "fromstring")) {
+        lua_pushstring(L, str);
+        lua_call(L, 1, 1);
+        memcpy(valueptr, lua_touserdata(L, -1), prop->DataSize);
+        lua_pop(L, 2); // Pop the result and the metatable
+        return TRUE;
+      } else {
+        return luaL_error(L, "parse_property(%s): Can't find struct '%s'\n", prop->Name, prop->TypeString);
+      }
+      return TRUE;
+    case kDataTypeObject:
+      lua_getglobal(L, "require");
+      lua_pushstring(L, str);
+      lua_call(L, 1, 1);
+      if (lua_getfield(L, -1, "__userdata") == LUA_TNIL) {
+        return luaL_error(L, "parse_property(%s): The module '%s' does not return a valid object for property '%s'\n", str, str, prop->Name);
+      }
+      *(void**)valueptr = lua_touserdata(L, -1);
+      // struct Object* object = luaX_checkObject(L, -1);
+//      if (prop->TypeString) {
+//        *(void**)valueptr = OBJ_GetComponent(object, fnv1a32(prop->TypeString));
+//      } else {
+        // *(void**)valueptr = object;
+//      }
+      return TRUE;
     default:
-      fprintf(stderr, "Unsupported property type for parsing\n");
-      return FALSE;
+      return luaL_error(L, "parse_property(%s): Unsupported property type %d for parsing\n", prop->Name, prop->DataType);
   }
   return TRUE;
 }
@@ -76,26 +110,21 @@ read_property(lua_State *L,
       memcpy(valueptr, luaL_checkudata(L, idx, prop->TypeString), prop->DataSize);
       break;
     case kDataTypeObject:
-      if (lua_type(L, idx) == LUA_TTABLE) {
-        lua_getfield(L, idx, "__userdata");
-        if (lua_isnil(L, -1)) {
-          luaL_error(L, "Expected an table with __userdata field");
+      if (lua_type(L, (idx = lua_absindex(L, idx))) == LUA_TTABLE) {
+        if (lua_getfield(L, idx, "__userdata") == LUA_TNIL) {
+          lua_pop(L, 1);
+          luaL_getmetatable(L, prop->TypeString);
+          lua_pushvalue(L, idx);
+          lua_call(L, 1, 1);
+          if (lua_getfield(L, -1, "__userdata") == LUA_TNIL) {
+            luaL_error(L, "Expected an object of type '%s' for property '%s'", prop->TypeString, prop->Name);
+          }
         }
-        *(void**)valueptr = *(void**)lua_touserdata(L, -1);
+        *(void**)valueptr = lua_touserdata(L, -1);
         lua_pop(L, 1); // Remove the __userdata field from the stack
         break;
-//      } else if (lua_type(L, idx) == LUA_TSTRING) {
-//        lua_getglobal(L, "require");
-//        lua_insert(L, -2);
-//        lua_call(L, 1, 1);
-//        struct Object* object = luaX_checkObject(L, -1);
-//        if (prop->TypeString) {
-//          *(void**)valueptr = OBJ_GetComponent(object, fnv1a32(prop->TypeString));
-//        } else {
-//          *(void**)valueptr = object;
-//        }
       } else {
-        luaL_error(L, "Unsupported input type for property of type object");
+        luaL_error(L, "Unsupported input type %d for property %s of type object", lua_type(L, idx), prop->Name);
         break;
       }
     default:
@@ -137,8 +166,11 @@ write_property(lua_State *L,
         luaL_setmetatable(L, prop->TypeString);
         break;
       case kDataTypeObject:
-        lua_pushlightuserdata(L, *(void**)valueptr);
-        luaL_setmetatable(L, prop->TypeString);
+        if (*(char**)valueptr) {
+          lua_geti(L, LUA_REGISTRYINDEX, *(int*)(*(char**)valueptr+LUASTATE_IN_OBJECT));
+        } else {
+          lua_pushnil(L);
+        }
         break;
       default:
         break;

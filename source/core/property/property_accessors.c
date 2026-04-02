@@ -107,7 +107,7 @@ PROP_SetStateValue(lpProperty_t property,
     if (property->stateflags & (1 << state)) {
       free(*(LPSTR*)PROP_GetState(property, state));
     }
-    *(LPSTR*)ptr = strdup(source);
+    *(LPSTR*)ptr = strdup(*(LPSTR*)source);
   } else if (property->type == kDataTypeObject) {
     int ident = fnv1a32(property->pdesc->TypeString);
     lpObject_t object = *(lpObject_t *)source;

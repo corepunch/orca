@@ -141,7 +141,7 @@ HANDLER(Directory, LoadProject) {
   path_t packpath = {0};
   lpObject_t directory = luaX_checkObject(L, -1);
   OBJ_SetName(directory, FS_GetBaseName(pLoadProject->Path));
-  OBJ_SetPropertyValue(directory, "Path", pLoadProject->Path);
+  OBJ_SetPropertyValue(directory, "Path", &pLoadProject->Path);
   snprintf(packpath, sizeof(packpath), "%s/package.lua", pLoadProject->Path);
   WITH(FILE, fp, fopen(packpath, "r"), fclose) {
     if (fp) {
