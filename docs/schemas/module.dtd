@@ -13,7 +13,7 @@
 -->
 
 <!-- Root Element -->
-<!ELEMENT module (require* | includes? | externals? | resource | messages? | enums | struct | interface | class | function)*>
+<!ELEMENT module (require* | includes? | externals? | resource | enums? | structs? | interfaces? | classes? | functions?)*>
 <!ATTLIST module
   name CDATA #REQUIRED
   namespace CDATA #REQUIRED
@@ -45,6 +45,21 @@
 <!-- Grouped external type references -->
 <!ELEMENT externals (external*)>
 
+<!-- Grouped enumeration type definitions -->
+<!ELEMENT enums (enum*)>
+
+<!-- Grouped struct definitions -->
+<!ELEMENT structs (struct*)>
+
+<!-- Grouped interface definitions -->
+<!ELEMENT interfaces (interface*)>
+
+<!-- Grouped class definitions -->
+<!ELEMENT classes (class*)>
+
+<!-- Grouped function definitions -->
+<!ELEMENT functions (function*)>
+
 <!-- Message Declaration - defines a message that can be handled -->
 <!-- Messages may contain inline field children (preferred) or reference an external type via the type attribute (workaround) -->
 <!-- Use same-as="BaseMessage" to share fields/type with another message (inheritance) -->
@@ -67,13 +82,13 @@
 >
 
 <!-- Enumeration Definition -->
-<!ELEMENT enums (summary?, details?, enum+)>
-<!ATTLIST enums
+<!ELEMENT enum (summary?, details?, value+)>
+<!ATTLIST enum
   name CDATA #REQUIRED
 >
 
-<!ELEMENT enum (#PCDATA)>
-<!ATTLIST enum
+<!ELEMENT value (#PCDATA)>
+<!ATTLIST value
   name CDATA #REQUIRED
 >
 

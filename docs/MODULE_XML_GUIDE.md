@@ -40,9 +40,31 @@ Every module XML file must have this basic structure:
 <?xml version="1.0"?>
 <!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
 <module name="modulename" namespace="orca">
-  <!-- Module content goes here -->
+  <includes>
+    <include file="path/to/header.h"/>
+  </includes>
+  <externals>
+    <external struct="ExternalType"/>
+  </externals>
+  <enums>
+    <enum name="MyEnum">...</enum>
+  </enums>
+  <structs>
+    <struct name="MyStruct">...</struct>
+  </structs>
+  <interfaces>
+    <interface name="MyInterface">...</interface>
+  </interfaces>
+  <classes>
+    <class name="MyClass">...</class>
+  </classes>
+  <functions>
+    <function name="MyFunction">...</function>
+  </functions>
 </module>
 ```
+
+Type definitions are grouped into typed container elements at the module root. This keeps all enumerations in `<enums>`, all structs in `<structs>`, all interfaces in `<interfaces>`, all components in `<classes>`, and all global functions in `<functions>`.
 
 ### Root Element: `<module>`
 
@@ -54,9 +76,21 @@ The root element defines the module's identity and namespace.
 - `on-luaopen` (optional) - Callback function name to execute when module loads
 - `prefix` (optional) - Prefix for generated C identifiers
 
-## Top-Level Elements
+## Top-Level Container Elements
 
-### 1. `<enums>` — Enumeration Definitions
+Type definitions at the module level are always wrapped in a typed container:
+
+| Container | Contents | Element type |
+|-----------|----------|--------------|
+| `<enums>` | Enumeration definitions | `<enum>` |
+| `<structs>` | C struct definitions | `<struct>` |
+| `<interfaces>` | Abstract interface definitions | `<interface>` |
+| `<classes>` | Component (class) definitions | `<class>` |
+| `<functions>` | Global function definitions | `<function>` |
+
+## Type Definition Elements
+
+### 1. `<enum>` — Enumeration Definitions
 
 Defines an enumeration type with named constants.
 
@@ -66,14 +100,16 @@ Defines an enumeration type with named constants.
 **Child Elements:**
 - `<summary>` - Brief description
 - `<details>` - Detailed explanation
-- `<enum>` - Individual enumeration value
+- `<value>` - Individual enumeration value
 
 **Example:**
 ```xml
-<enums name="RotationOrder">
-  <summary>Euler angle rotation order enumeration</summary>
-  <enum name="XYZ">Rotate around X axis first, then Y, then Z</enum>
-  <enum name="XZY">Rotate around X axis first, then Z, then Y</enum>
+<enums>
+  <enum name="RotationOrder">
+    <summary>Euler angle rotation order enumeration</summary>
+    <value name="XYZ">Rotate around X axis first, then Y, then Z</value>
+    <value name="XZY">Rotate around X axis first, then Z, then Y</value>
+  </enum>
 </enums>
 ```
 
@@ -95,21 +131,23 @@ Defines a C struct with fields and methods. Child elements are grouped into cont
 
 **Example:**
 ```xml
-<struct name="vec2" prefix="VEC2_" export="Vector2D" sealed="true">
-  <summary>2D vector structure</summary>
-  <details>Represents a point or direction in 2D space.</details>
-  <fields>
-    <field type="float" name="x">X coordinate component</field>
-    <field type="float" name="y">Y coordinate component</field>
-  </fields>
-  <methods>
-    <method name="Add" export="__add" const="true">
-      <summary>Adds two vectors component-wise</summary>
-      <arg type="vec2" name="other" pointer="true" const="true">Vector to add</arg>
-      <returns type="vec2">Sum of the two vectors</returns>
-    </method>
-  </methods>
-</struct>
+<structs>
+  <struct name="vec2" prefix="VEC2_" export="Vector2D" sealed="true">
+    <summary>2D vector structure</summary>
+    <details>Represents a point or direction in 2D space.</details>
+    <fields>
+      <field type="float" name="x">X coordinate component</field>
+      <field type="float" name="y">Y coordinate component</field>
+    </fields>
+    <methods>
+      <method name="Add" export="__add" const="true">
+        <summary>Adds two vectors component-wise</summary>
+        <arg type="vec2" name="other" pointer="true" const="true">Vector to add</arg>
+        <returns type="vec2">Sum of the two vectors</returns>
+      </method>
+    </methods>
+  </struct>
+</structs>
 ```
 
 ### 3. `<interface>` — Interface Definitions
@@ -129,39 +167,43 @@ Similar to `<struct>`, but defines an abstract interface. Methods and topics are
 
 **Example (simple):**
 ```xml
-<interface name="Object" prefix="OBJ_" export="Object" no-check="true">
-  <summary>Core engine host object.</summary>
-  <methods>
-    <method name="Clear" export="clear" lua="true">
-      <summary>Clear all children of the object.</summary>
-    </method>
-  </methods>
-</interface>
+<interfaces>
+  <interface name="Object" prefix="OBJ_" export="Object" no-check="true">
+    <summary>Core engine host object.</summary>
+    <methods>
+      <method name="Clear" export="clear" lua="true">
+        <summary>Clear all children of the object.</summary>
+      </method>
+    </methods>
+  </interface>
+</interfaces>
 ```
 
 **Example (with topic separators):**
 ```xml
-<interface name="Object" prefix="OBJ_" export="Object" no-check="true">
-  <summary>Core engine host object.</summary>
-  <methods>
-    <topic title="Lifecycle">Manages object creation, initialization, and destruction.</topic>
-    <method name="Awake" lua="true">
-      <summary>Initializes the object when loaded.</summary>
-    </method>
-    <method name="Clear" export="clear" lua="true">
-      <summary>Clear all children of the object.</summary>
-    </method>
-    <topic title="Hierarchy">Navigates and manipulates the parent-child relationship tree.</topic>
-    <method name="AddChild">
-      <summary>Add a child object.</summary>
-      <arg name="child" type="Object" pointer="true">The object to add as a child</arg>
-    </method>
-  </methods>
-  <messages>
-    <message name="Create" routing="Direct"/>
-    <message name="Destroy" routing="Direct"/>
-  </messages>
-</interface>
+<interfaces>
+  <interface name="Object" prefix="OBJ_" export="Object" no-check="true">
+    <summary>Core engine host object.</summary>
+    <methods>
+      <topic title="Lifecycle">Manages object creation, initialization, and destruction.</topic>
+      <method name="Awake" lua="true">
+        <summary>Initializes the object when loaded.</summary>
+      </method>
+      <method name="Clear" export="clear" lua="true">
+        <summary>Clear all children of the object.</summary>
+      </method>
+      <topic title="Hierarchy">Navigates and manipulates the parent-child relationship tree.</topic>
+      <method name="AddChild">
+        <summary>Add a child object.</summary>
+        <arg name="child" type="Object" pointer="true">The object to add as a child</arg>
+      </method>
+    </methods>
+    <messages>
+      <message name="Create" routing="Direct"/>
+      <message name="Destroy" routing="Direct"/>
+    </messages>
+  </interface>
+</interfaces>
 ```
 
 #### `<topic>` — Inline Section Separator
@@ -203,28 +245,30 @@ Defines a component that can be attached to objects. All child element types are
 
 **Example:**
 ```xml
-<class name="SKNode" parent="Node" children="SKNode">
-  <summary>Base 2D sprite node with transform and matrix</summary>
-  <details>Provides fundamental 2D transformation properties.</details>
-  <handles>
-    <handle message="Node.UpdateMatrix"/>
-  </handles>
-  <properties>
-    <property name="Position" type="vec2">Position of SKNode in space</property>
-    <property name="Size" type="vec2">Size of SKNode</property>
-  </properties>
-  <fields>
-    <field name="Matrix" type="mat4">Final combined transformation matrix</field>
-    <field name="_opacity" type="float"/>
-  </fields>
-  <messages>
-    <message name="Render">
-      <fields>
-        <field name="ViewDef" type="ViewDef" pointer="true">The view definition for rendering</field>
-      </fields>
-    </message>
-  </messages>
-</class>
+<classes>
+  <class name="SKNode" parent="Node" children="SKNode">
+    <summary>Base 2D sprite node with transform and matrix</summary>
+    <details>Provides fundamental 2D transformation properties.</details>
+    <handles>
+      <handle message="Node.UpdateMatrix"/>
+    </handles>
+    <properties>
+      <property name="Position" type="vec2">Position of SKNode in space</property>
+      <property name="Size" type="vec2">Size of SKNode</property>
+    </properties>
+    <fields>
+      <field name="Matrix" type="mat4">Final combined transformation matrix</field>
+      <field name="_opacity" type="float"/>
+    </fields>
+    <messages>
+      <message name="Render">
+        <fields>
+          <field name="ViewDef" type="ViewDef" pointer="true">The view definition for rendering</field>
+        </fields>
+      </message>
+    </messages>
+  </class>
+</classes>
 ```
 
 ### 5. `<function>` — Global Function Definitions
@@ -239,10 +283,12 @@ Defines a global function in the module namespace.
 
 **Example:**
 ```xml
-<function name="GetFocus">
-  <summary>Retrieves currently active object.</summary>
-  <returns type="Object" pointer="true">Pointer to the focused object</returns>
-</function>
+<functions>
+  <function name="GetFocus">
+    <summary>Retrieves currently active object.</summary>
+    <returns type="Object" pointer="true">Pointer to the focused object</returns>
+  </function>
+</functions>
 ```
 
 ### 6. `<message>` — Message Definitions
