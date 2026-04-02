@@ -107,6 +107,8 @@ read_property(lua_State *L,
       }
       break;
     case kDataTypeStruct:
+      float* a = luaL_checkudata(L, idx, prop->TypeString);
+      int* b = luaL_checkudata(L, idx, prop->TypeString);
       memcpy(valueptr, luaL_checkudata(L, idx, prop->TypeString), prop->DataSize);
       break;
     case kDataTypeObject:

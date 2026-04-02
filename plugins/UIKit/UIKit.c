@@ -77,7 +77,7 @@ int f_Thickness_TextConvert(lua_State* L) {
 }
 
 int f_EdgeShorthand_TextConvert(lua_State* L) {
-  float a, b;
+  float a = 0, b = 0;
   switch (sscanf(luaL_checkstring(L, 1), "%f %f", &a, &b)) {
     case 2:
       return (luaX_pushEdgeShorthand(L, &(struct EdgeShorthand){a, b}), 1);
