@@ -123,6 +123,29 @@ luaX_executecallback(lua_State* L,
   return ret;
 }
 
+INLINE bool_t
+luaX_executecallback_async(lua_State* L,
+                           lpObject_t object,
+                           lpcString_t name,
+                           int num_args)
+{
+  // Expects num_args args already on the stack.
+  // Calls: orca.async(object[name], object, args...)
+  luaX_import(L, "orca", "async");
+  lua_geti(L, LUA_REGISTRYINDEX, OBJ_GetLuaObject(object));
+  assert(lua_type(L, -1) == LUA_TTABLE && "Object has no Lua representation");
+  lua_getfield(L, -1, name);
+  lua_remove(L, -2);
+  lua_geti(L, LUA_REGISTRYINDEX, OBJ_GetLuaObject(object));
+  lua_rotate(L, -(num_args + 3), 3);
+  if (lua_pcall(L, num_args + 2, 0, 0) != LUA_OK) {
+    Con_Error("%s(): %s", name, lua_tostring(L, -1));
+    lua_pop(L, 1);
+    return FALSE;
+  }
+  return TRUE;
+}
+
 // INLINE int luaX_callfunction(lua_State *L, lpcString_t  mod, lpcString_t 
 // func, uint32_t num_args, uint32_t num_returns) {
 //     // Load the module using require

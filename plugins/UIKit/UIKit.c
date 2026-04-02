@@ -220,21 +220,15 @@ handle:
   }
   
   for (lpObject_t obj = sender; !success && obj; obj = OBJ_GetParent(obj)) {
-    if (OBJ_FindCallbackForID(obj, e->message)) {
-      lpcString_t szCallback = OBJ_FindCallbackForID(obj, e->message);
-      luaX_import(L, "orca", "async");
-      if (luaX_pushObject(L, obj), lua_isnil(L, -1)) {
+    lpcString_t szCallback = OBJ_FindCallbackForID(obj, e->message);
+    if (szCallback) {
+      if (!OBJ_GetLuaObject(obj)) {
         Con_Warning("Object has no Lua representation: %p", obj);
-        lua_pop(L, 2);
         continue;
       }
-      lua_getfield(L, -1, szCallback);
-      lua_insert(L, -2); // Move callback before obj
       luaX_pushObject(L, sender);
-      if (lua_pcall(L, lua_pushmousevent(L, obj, e) + 3, 0, 0) != LUA_OK) {
-        Con_Error("%s(): %s", szCallback, lua_tostring(L, -1));
-        lua_pop(L, 1);
-      }
+      int n = lua_pushmousevent(L, obj, e);
+      luaX_executecallback_async(L, obj, szCallback, n + 1);
       success = TRUE;
     } else if (OBJ_SendMessageW(obj, e->message, 0, e)) {
       success = TRUE;

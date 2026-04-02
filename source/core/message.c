@@ -54,12 +54,6 @@ CORE_HandleKeyEvent(lua_State *L, struct WI_Message* e)
   for (lpObject_t obj = core_GetFocus(); obj; obj = OBJ_GetParent(obj)) {
     lpcString_t szCallback = OBJ_FindCallbackForID(obj, e->message);
     if (szCallback) {
-      luaX_import(L, "orca", "async");
-      luaX_pushObject(L, obj);
-//      lua_getfield(L, -1, OBJ_FindCallbackForID(obj, e->message));
-			lua_getfield(L, -1, "handleEvent");
-      lua_insert(L, -2); // Move callback before obj
-			lua_pushstring(L, szCallback);
       luaX_pushObject(L, core_GetFocus());
       if (e->message == kEventChar) {
         char ch = e->wParam&0xff;
@@ -72,10 +66,6 @@ CORE_HandleKeyEvent(lua_State *L, struct WI_Message* e)
           }
         }
         lua_pushlstring(L, &ch, 1);
-//        uint32_t len = 0;
-//        while (len < sizeof(e->lParam) && ((lpcString_t)&e->lParam)[len])
-//          len++;
-//        lua_pushlstring(L, (lpcString_t)&e->lParam, len);
       } else {
 #if __linux__
         uint32_t len = 0;
@@ -87,12 +77,8 @@ CORE_HandleKeyEvent(lua_State *L, struct WI_Message* e)
 #endif
       }
       lua_pushstring(L, comp);
-//			lua_pcall(L, 4, 1, 0);
-			if (lua_pcall(L, 6, 1, 0) != LUA_OK) {
-				Con_Error("%s(): %s", szCallback, luaL_checkstring(L, -1));
-				lua_pop(L, 1);
-			}
-			return TRUE;
+      luaX_executecallback_async(L, obj, szCallback, 3);
+      return TRUE;
     }
     if (OBJ_SendMessageW(obj, e->message, 0, e)) {
       return TRUE;
@@ -106,31 +92,16 @@ CORE_HandleObjectMessage(lua_State *L, struct WI_Message* msg)
 {
   for (lpObject_t hobj = msg->target; hobj; hobj = OBJ_GetParent(hobj))
   {
-    if (OBJ_FindCallbackForID(hobj, msg->message))
+    lpcString_t szCallback = OBJ_FindCallbackForID(hobj, msg->message);
+    if (szCallback)
     {
-//      if (type == ID_Object_Awake) {
-//        luaX_pushObject(L, hobj);
-//        lua_getfield(L, -1, OBJ_FindCallbackForID(hobj, type));
-//        lua_insert(L, -2); // Move callback before obj
-//        lua_pcall(L, 1, 0, 0);
-//        break;
-//      }
-      lpcString_t szCallback = OBJ_FindCallbackForID(hobj, msg->message);
-      luaX_import(L, "orca", "async");
       luaX_pushObject(L, hobj);
-      assert(!lua_isnil(L, -1));
-      lua_getfield(L, -1, szCallback);
-      lua_insert(L, -2); // Move callback before obj
-      luaX_pushObject(L, hobj);
-      uint32_t numargs = 3;
+      int nargs = 1;
       if (msg->message == ID_Object_Timer && msg->lParam) {
         lua_pushstring(L, msg->lParam);
-        numargs++;
+        nargs = 2;
       }
-      if (lua_pcall(L, numargs, 0, 0) != LUA_OK) {
-        Con_Error("%s(): %s", szCallback, luaL_checkstring(L, -1));
-        lua_pop(L, 1);
-      }
+      luaX_executecallback_async(L, hobj, szCallback, nargs);
       return TRUE;
     }
     if (OBJ_SendMessageW(hobj, msg->message, msg->wParam, msg->lParam))
