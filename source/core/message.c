@@ -142,3 +142,71 @@ CORE_HandleObjectMessage(lua_State *L, struct WI_Message* msg)
   }
   return FALSE;
 }
+
+#define MAX_FPS_CACHE 64
+static int _fps[MAX_FPS_CACHE]={0};
+static int _counter=0;
+
+LRESULT CORE_ProcessMessage(lua_State *L, struct WI_Message* msg) {
+  int tmp;
+  switch (msg->message) {
+    case kEventWindowPaint:
+    case kEventWindowResized:
+      _fps[_counter++%MAX_FPS_CACHE] = (int)(WI_GetMilliseconds() - core.realtime);
+      core.realtime = WI_GetMilliseconds();
+      core.frame++;
+      if (CORE_HandleObjectMessage(L, &(struct WI_Message) {
+        .target = msg->target,
+        .message = msg->message = kEventWindowPaint ? ID_window_WindowPaint : ID_window_WindowResized,
+        .lParam = &(struct WindowPaintMsgArgs) {
+          .WindowWidth = LOWORD(msg->wParam),
+          .WindowHeight = HIWORD(msg->wParam),
+        }
+      })) {
+        return TRUE;
+      } else {
+        return FALSE;
+      }
+    case kEventLeftMouseDown:
+    case kEventRightMouseDown:
+    case kEventOtherMouseDown:
+    case kEventLeftMouseUp:
+    case kEventRightMouseUp:
+    case kEventOtherMouseUp:
+    case kEventLeftMouseDragged:
+    case kEventRightMouseDragged:
+    case kEventOtherMouseDragged:
+    case kEventMouseMoved:
+    case kEventScrollWheel:
+      return FALSE;
+    case kEventKeyDown:
+    case kEventKeyUp:
+      return CORE_HandleKeyEvent(L, msg);
+    case kEventResumeCoroutine:
+      switch (lua_resume(msg->target, L, LOWORD(msg->wParam), &tmp)) {
+        case LUA_OK:
+          WI_PostMessageW(msg->target, kEventStopCoroutine, msg->wParam, NULL);
+          break;
+        case LUA_YIELD:
+          WI_PostMessageW(msg->target, kEventResumeCoroutine, MAKEDWORD(0, HIWORD(msg->wParam)), NULL);
+          break;
+        default:
+          WI_PostMessageW(msg->target, kEventStopCoroutine, msg->wParam, NULL);
+          if (!lua_isnil(msg->target, -1)) {
+            lpcString_t err = lua_tostring(msg->target, -1);
+            if (err) fprintf(stderr, "co.resume(): %s\n", err);
+          }
+          break;
+      }
+      lua_pop(L, 1);
+      return FALSE;
+    case kEventStopCoroutine:
+      luaL_unref(L, LUA_REGISTRYINDEX, HIWORD(msg->wParam));
+      WI_RemoveFromQueue(msg->target);
+      WI_PostMessageW(NULL, kEventWindowPaint, WI_GetSize(NULL), 0);
+      return FALSE;
+    default:
+      return CORE_HandleObjectMessage(L, msg);
+  }
+  return FALSE;
+}
