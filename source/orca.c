@@ -84,7 +84,7 @@ static int g_co_ref = LUA_NOREF;
 
 static void orca_main_loop_iter(void) {
   /* Drive rendering: inject a WindowPaint event every rAF tick. */
-  WI_PostMessageW(NULL, ID_window_WindowPaint, WI_GetSize(NULL), 0);
+  WI_PostMessageW(NULL, kEventWindowPaint, WI_GetSize(NULL), 0);
   int nres = 0;
   int status = lua_resume(g_co, g_L, 0, &nres);
   lua_pop(g_co, nres);

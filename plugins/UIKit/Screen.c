@@ -557,13 +557,13 @@ static uint32_t get_size(lpObject_t obj) {
                    NODE2D_FRAME(GetNode2D(obj), Size, 1).Actual);
 }
 
-HANDLER(Screen, WindowPaint) {
-  lua_State *L = OBJ_GetDomain(hObject);
-  
-  if (!pWindowPaint) {
-    R_BeginFrame(pScreen->ClearColor);
-  }
-
+static void
+draw_screen(lua_State* L,
+            struct Object* hObject,
+            struct Screen* pScreen,
+            uint32_t WindowWidth,
+            uint32_t WindowHeight)
+{
   uint32_t const _size = get_size(hObject);
   
   OBJ_Awake(L, hObject);
@@ -571,8 +571,8 @@ HANDLER(Screen, WindowPaint) {
   OBJ_LoadPrefabs(L, hObject);
   OBJ_EmitPropertyChangedEvents(L, hObject);
   OBJ_UpdateProperties(hObject);
-
-  _SendMessage(hObject, Screen, UpdateLayout, pWindowPaint->WindowWidth, pWindowPaint->WindowHeight);
+  
+  _SendMessage(hObject, Screen, UpdateLayout, WindowWidth, WindowHeight);
   
   // If screen size has changed, we need to make sure all properties
   // are recalculated with the new size
@@ -580,20 +580,20 @@ HANDLER(Screen, WindowPaint) {
     ORCA_API void CORE_AdvanceFrame(void);
     CORE_AdvanceFrame();
     OBJ_UpdateProperties(hObject);
-    _SendMessage(hObject, Screen, UpdateLayout, pWindowPaint->WindowWidth, pWindowPaint->WindowHeight);
+    _SendMessage(hObject, Screen, UpdateLayout, WindowWidth, WindowHeight);
   }
-
+  
   _SendMessage(hObject, Node, UpdateMatrix,
-    .parent = MAT4_Identity(),
-    .opacity = 1);
+               .parent = MAT4_Identity(),
+               .opacity = 1);
   
   _SendMessage(hObject, Screen, RenderScreen,
-    .width = pWindowPaint->WindowWidth,
-    .height = pWindowPaint->WindowHeight,
-    .stereo = 0,
-    .target = 0,
-    .angle = 0);
-    
+               .width = WindowWidth,
+               .height = WindowHeight,
+               .stereo = 0,
+               .target = 0,
+               .angle = 0);
+  
   //  int tmp = 0;
   //  FOR_LOOP(i, MAX_FPS_CACHE) { tmp += _fps[i]; }
   //  void DEBUG_Draw(float fps, int bindings);
@@ -602,12 +602,17 @@ HANDLER(Screen, WindowPaint) {
   OBJ_ClearDirtyFlags(hObject);
   
   if (OBJ_GetNext(hObject)) { // Render modal screens
-    OBJ_SendMessageW(OBJ_GetNext(hObject), ID_window_WindowPaint, wParam, hObject);
+    draw_screen(L, OBJ_GetNext(hObject), GetScreen(OBJ_GetNext(hObject)), WindowWidth, WindowHeight);
   }
+
+}
+
+HANDLER(Screen, WindowPaint) {
+  R_BeginFrame(pScreen->ClearColor);
+
+  draw_screen(OBJ_GetDomain(hObject), hObject, pScreen, pWindowPaint->WindowWidth, pWindowPaint->WindowHeight);
   
-  if (!pWindowPaint) {
-    R_EndFrame();
-  }
+  R_EndFrame();
 
   return TRUE;
 }
@@ -627,7 +632,7 @@ HANDLER(Screen, WindowResized) {
   }
   R_ClearTextCache();
   OBJ_SetTreeDirty(hObject);
-  OBJ_SendMessageW(hObject, ID_window_WindowPaint, wParam, NULL);
+  OBJ_SendMessageW(hObject, ID_window_WindowPaint, wParam, pWindowResized);
   return FALSE;
 }
 
