@@ -881,32 +881,32 @@ enum StyleProperties {
 #define ID_SizeShorthand_DepthScroll 0x60ff3f79 // SizeShorthand.DepthScroll
 	
 
-#define ID_Triggered 0x3b1c3ae2
+#define ID_TriggeredMsgArgs 0x4a7ce754
 #define ID_TriggeredMsgArgs_Trigger 0x68010858 // TriggeredMsgArgs.Trigger
-#define ID_UpdateMatrix 0x5dbe404d
+#define ID_UpdateMatrixMsgArgs 0x34e86ca7
 #define ID_UpdateMatrixMsgArgs_parent 0x94a50a0f // UpdateMatrixMsgArgs.parent
 #define ID_UpdateMatrixMsgArgs_opacity 0x53cd4a6c // UpdateMatrixMsgArgs.opacity
 #define ID_UpdateMatrixMsgArgs_force 0xe863ce2a // UpdateMatrixMsgArgs.force
-#define ID_PushProperty 0xc5ebaf40
+#define ID_PushPropertyMsgArgs 0x12541f7a
 #define ID_PushPropertyMsgArgs_Placeholder 0x82d7b55f // PushPropertyMsgArgs.Placeholder
-#define ID_LoadView 0xa3650e54
+#define ID_LoadViewMsgArgs 0x51b04dce
 #define ID_LoadViewMsgArgs_lua_state 0x3f62aae6 // LoadViewMsgArgs.lua_state
-#define ID_HitTest 0x898160ea
+#define ID_HitTestMsgArgs 0x7796461c
 #define ID_HitTestMsgArgs_x 0xf9ca8e4c // HitTestMsgArgs.x
 #define ID_HitTestMsgArgs_y 0xfaca8fdf // HitTestMsgArgs.y
-#define ID_HandleMessage 0xfc48a0da
+#define ID_HandleMessageMsgArgs 0x1f5010ac
 #define ID_HandleMessageMsgArgs_EventName 0x84f3e59f // HandleMessageMsgArgs.EventName
 #define ID_HandleMessageMsgArgs_FirstArg 0xe52ff482 // HandleMessageMsgArgs.FirstArg
 #define ID_HandleMessageMsgArgs_NumArgs 0x5a238201 // HandleMessageMsgArgs.NumArgs
-#define ID_IsVisible 0x608d20d1
-#define ID_ViewDidLoad 0x03e93095
-#define ID_KillFocus 0xa7c0f8d7
-#define ID_SetFocus 0xc399d265
-#define ID_GetSize 0x80d9e0ee
-#define ID_MakeText 0x73a47798
+#define ID_IsVisibleMsgArgs 0x01eed6cb
+#define ID_ViewDidLoadMsgArgs 0xdd042e8f
+#define ID_KillFocusMsgArgs 0xc8cea0c1
+#define ID_SetFocusMsgArgs 0xa0d33b3f
+#define ID_GetSizeMsgArgs 0x795df340
+#define ID_MakeTextMsgArgs 0x705ce992
 #define ID_MakeTextMsgArgs_text 0xa34c5249 // MakeTextMsgArgs.text
 #define ID_MakeTextMsgArgs_availableSpace 0xb0a98411 // MakeTextMsgArgs.availableSpace
-#define ID_DrawBrush 0x0875c1d1
+#define ID_DrawBrushMsgArgs 0xfbaa97cb
 #define ID_DrawBrushMsgArgs_projection 0x923213e6 // DrawBrushMsgArgs.projection
 #define ID_DrawBrushMsgArgs_image 0xb0398278 // DrawBrushMsgArgs.image
 #define ID_DrawBrushMsgArgs_brush 0xd8c47001 // DrawBrushMsgArgs.brush
@@ -914,38 +914,38 @@ enum StyleProperties {
 #define ID_DrawBrushMsgArgs_borderWidth 0xc141a74f // DrawBrushMsgArgs.borderWidth
 #define ID_DrawBrushMsgArgs_foreground 0x84956baa // DrawBrushMsgArgs.foreground
 #define ID_DrawBrushMsgArgs_viewdef 0x6b66430d // DrawBrushMsgArgs.viewdef
-#define ID_Measure 0x97619c7f
+#define ID_MeasureMsgArgs 0x4801a169
 #define ID_MeasureMsgArgs_Width 0x9c6740bb // MeasureMsgArgs.Width
 #define ID_MeasureMsgArgs_Height 0x59f04456 // MeasureMsgArgs.Height
-#define ID_Arrange 0xc4cf2187
+#define ID_ArrangeMsgArgs 0x07ddb351
 #define ID_ArrangeMsgArgs_X 0x1d80fed3 // ArrangeMsgArgs.X
 #define ID_ArrangeMsgArgs_Y 0x1c80fd40 // ArrangeMsgArgs.Y
 #define ID_ArrangeMsgArgs_Width 0x42381c73 // ArrangeMsgArgs.Width
 #define ID_ArrangeMsgArgs_Height 0x5b850d2e // ArrangeMsgArgs.Height
-#define ID_MeasureOverride 0xff95a02f
+#define ID_MeasureOverrideMsgArgs 0xa52c1179
 #define ID_MeasureOverrideMsgArgs_Width 0x236958eb // MeasureOverrideMsgArgs.Width
 #define ID_MeasureOverrideMsgArgs_Height 0xdc49f846 // MeasureOverrideMsgArgs.Height
-#define ID_ArrangeOverride 0x66d9e437
+#define ID_ArrangeOverrideMsgArgs 0xc3a975a1
 #define ID_ArrangeOverrideMsgArgs_X 0x4e381323 // ArrangeOverrideMsgArgs.X
 #define ID_ArrangeOverrideMsgArgs_Y 0x4d381190 // ArrangeOverrideMsgArgs.Y
 #define ID_ArrangeOverrideMsgArgs_Width 0x612d95a3 // ArrangeOverrideMsgArgs.Width
 #define ID_ArrangeOverrideMsgArgs_Height 0x23958b5e // ArrangeOverrideMsgArgs.Height
-#define ID_ForegroundContent 0x9a7735e5
-#define ID_UpdateGeometry 0x12c1a314
-#define ID_Submit 0x4078e545
-#define ID_UpdateLayout 0x928c657a
+#define ID_ForegroundContentMsgArgs 0xaec98ebf
+#define ID_UpdateGeometryMsgArgs 0xc901280e
+#define ID_SubmitMsgArgs 0x8243321f
+#define ID_UpdateLayoutMsgArgs 0xc5389ccc
 #define ID_UpdateLayoutMsgArgs_Width 0x5050aef8 // UpdateLayoutMsgArgs.Width
 #define ID_UpdateLayoutMsgArgs_Height 0x7c7ac60f // UpdateLayoutMsgArgs.Height
-#define ID_RenderScreen 0xd15bdf29
+#define ID_RenderScreenMsgArgs 0xc5cb2683
 #define ID_RenderScreenMsgArgs_width 0x05d5d53d // RenderScreenMsgArgs.width
 #define ID_RenderScreenMsgArgs_height 0xcef69b94 // RenderScreenMsgArgs.height
 #define ID_RenderScreenMsgArgs_stereo 0xd447fa77 // RenderScreenMsgArgs.stereo
 #define ID_RenderScreenMsgArgs_angle 0xc553b56a // RenderScreenMsgArgs.angle
 #define ID_RenderScreenMsgArgs_target 0x4cf31fbe // RenderScreenMsgArgs.target
-#define ID_NavigateToPage 0x6475c790
+#define ID_NavigateToPageMsgArgs 0xaba3186a
 #define ID_NavigateToPageMsgArgs_URL 0x8c9df2c3 // NavigateToPageMsgArgs.URL
 #define ID_NavigateToPageMsgArgs_TransitionType 0x2fcde311 // NavigateToPageMsgArgs.TransitionType
-#define ID_NavigateBack 0x36bc88b5
+#define ID_NavigateBackMsgArgs 0x4c2b0d2f
 #define ID_NavigateBackMsgArgs_TransitionType 0x8d27e400 // NavigateBackMsgArgs.TransitionType
 	
 

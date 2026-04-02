@@ -276,14 +276,14 @@ enum FontFamilyProperties {
 
 	
 
-#define ID_WindowPaint 0x7ef9e53b
+#define ID_WindowPaintMsgArgs 0x1ff69975
 #define ID_WindowPaintMsgArgs_WindowWidth 0x51861d5f // WindowPaintMsgArgs.WindowWidth
 #define ID_WindowPaintMsgArgs_WindowHeight 0x4ab9b482 // WindowPaintMsgArgs.WindowHeight
-#define ID_WindowResized 0xa216e847
+#define ID_WindowResizedMsgArgs 0x619cda91
 #define ID_WindowResizedMsgArgs_WindowWidth 0xf43232a3 // WindowResizedMsgArgs.WindowWidth
 #define ID_WindowResizedMsgArgs_WindowHeight 0x93d8b25e // WindowResizedMsgArgs.WindowHeight
-#define ID_WindowClosed 0x7268e69d
-#define ID_WindowChangedScreen 0x5fe6b4bf
+#define ID_WindowClosedMsgArgs 0x5f9a4e57
+#define ID_WindowChangedScreenMsgArgs 0xc6170029
 	
 
 #endif

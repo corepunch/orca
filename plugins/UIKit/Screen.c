@@ -572,7 +572,7 @@ HANDLER(Screen, WindowPaint) {
   OBJ_EmitPropertyChangedEvents(L, hObject);
   OBJ_UpdateProperties(hObject);
 
-  _SendMessage(hObject, Screen, UpdateLayout, LOWORD(wParam), HIWORD(wParam));
+  _SendMessage(hObject, Screen, UpdateLayout, pWindowPaint->WindowWidth, pWindowPaint->WindowHeight);
   
   // If screen size has changed, we need to make sure all properties
   // are recalculated with the new size
@@ -580,7 +580,7 @@ HANDLER(Screen, WindowPaint) {
     ORCA_API void CORE_AdvanceFrame(void);
     CORE_AdvanceFrame();
     OBJ_UpdateProperties(hObject);
-    _SendMessage(hObject, Screen, UpdateLayout, LOWORD(wParam), HIWORD(wParam));
+    _SendMessage(hObject, Screen, UpdateLayout, pWindowPaint->WindowWidth, pWindowPaint->WindowHeight);
   }
 
   _SendMessage(hObject, Node, UpdateMatrix,
@@ -588,8 +588,8 @@ HANDLER(Screen, WindowPaint) {
     .opacity = 1);
   
   _SendMessage(hObject, Screen, RenderScreen,
-    .width = LOWORD(wParam),
-    .height = HIWORD(wParam),
+    .width = pWindowPaint->WindowWidth,
+    .height = pWindowPaint->WindowHeight,
     .stereo = 0,
     .target = 0,
     .angle = 0);
@@ -622,8 +622,8 @@ HANDLER(Screen, WindowResized) {
   if (pScreen->ResizeMode == kResizeModeCanResize ||
       isnan(node->Size.Axis[0].Requested) ||
       isnan(node->Size.Axis[1].Requested)) {
-    node->Size.Axis[0].Requested = LOWORD(wParam);
-    node->Size.Axis[1].Requested = HIWORD(wParam);
+    node->Size.Axis[0].Requested = pWindowResized->WindowWidth;
+    node->Size.Axis[1].Requested = pWindowResized->WindowHeight;
   }
   R_ClearTextCache();
   OBJ_SetTreeDirty(hObject);

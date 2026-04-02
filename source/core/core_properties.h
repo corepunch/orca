@@ -42,37 +42,37 @@
 #define ID_MessageType_Size 0x0c31f887 // MessageType.Size
 	
 
-#define ID_MouseMessage 0x0d589383
-#define ID_KeyMessage 0xee4b252b
-#define ID_LeftMouseDown 0xfac0b5e7
-#define ID_RightMouseDown 0x1057ac50
-#define ID_OtherMouseDown 0x9822ca20
-#define ID_LeftMouseUp 0xf73e019e
-#define ID_RightMouseUp 0x9160ff69
-#define ID_OtherMouseUp 0x567302d9
-#define ID_LeftMouseDragged 0x088e1f1b
-#define ID_RightMouseDragged 0x29d4da42
-#define ID_OtherMouseDragged 0x0ae3dd32
-#define ID_LeftDoubleClick 0x5a92bc67
-#define ID_RightDoubleClick 0xeeebbe60
-#define ID_OtherDoubleClick 0xf6c60630
-#define ID_MouseMoved 0x65db8b6f
-#define ID_ScrollWheel 0x626f90e3
-#define ID_DragDrop 0x25989e7a
-#define ID_DragEnter 0xc0e97a77
-#define ID_KeyDown 0x83b19b78
-#define ID_KeyUp 0xfca37d71
-#define ID_Char 0x2879e23d
-#define ID_Create 0x990de47d
-#define ID_Start 0x0ae8097f
-#define ID_Awake 0x7f460f7c
-#define ID_ThemeChanged 0x064087a6
-#define ID_PropertyChanged 0x6d47e0cc
+#define ID_MouseMessageMsgArgs 0x6449a1dd
+#define ID_KeyMessageMsgArgs 0x7c8f4b85
+#define ID_LeftMouseDownMsgArgs 0xf26710b1
+#define ID_RightMouseDownMsgArgs 0x4453e7aa
+#define ID_OtherMouseDownMsgArgs 0x373393da
+#define ID_LeftMouseUpMsgArgs 0x57433450
+#define ID_RightMouseUpMsgArgs 0xb657fa43
+#define ID_OtherMouseUpMsgArgs 0x27f54093
+#define ID_LeftMouseDraggedMsgArgs 0x53e9cd55
+#define ID_RightMouseDraggedMsgArgs 0x00f409b4
+#define ID_OtherMouseDraggedMsgArgs 0xb06e3a44
+#define ID_LeftDoubleClickMsgArgs 0x33636731
+#define ID_RightDoubleClickMsgArgs 0x9430529a
+#define ID_OtherDoubleClickMsgArgs 0x0065578a
+#define ID_MouseMovedMsgArgs 0xb4dc4a39
+#define ID_ScrollWheelMsgArgs 0xc23e313d
+#define ID_DragDropMsgArgs 0xdbf2f5cc
+#define ID_DragEnterMsgArgs 0x0af76361
+#define ID_KeyDownMsgArgs 0x68e6b3f2
+#define ID_KeyUpMsgArgs 0xa70b716b
+#define ID_CharMsgArgs 0x897772f7
+#define ID_CreateMsgArgs 0xc7ecdfb7
+#define ID_StartMsgArgs 0x5bc8ae69
+#define ID_AwakeMsgArgs 0x6474e876
+#define ID_ThemeChangedMsgArgs 0x689ed4b8
+#define ID_PropertyChangedMsgArgs 0xaf3169e6
 #define ID_PropertyChangedMsgArgs_Property 0x3e6a1603 // PropertyChangedMsgArgs.Property
-#define ID_Attached 0x9352f5d5
-#define ID_Release 0x6d1e9b1e
-#define ID_Destroy 0x4d76a4e5
-#define ID_Timer 0xeb53a5c2
+#define ID_AttachedMsgArgs 0xbaa96c4f
+#define ID_ReleaseMsgArgs 0x8bad7dd0
+#define ID_DestroyMsgArgs 0x9ae7ddbf
+#define ID_TimerMsgArgs 0x9b50c534
 	
 
 #endif

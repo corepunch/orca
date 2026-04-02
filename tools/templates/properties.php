@@ -52,7 +52,7 @@ enum <?= $classname ?>Properties {
 <?php endforeach ?>	
 
 <?php foreach ($model->getEvents() as $name => $event):?>
-#define ID_<?= $name ?> 0x<?= hash('fnv1a32', $name) ?>
+#define ID_<?= $name ?>MsgArgs 0x<?= hash('fnv1a32', "$name.MsgArgs") ?>
 <?php foreach ($event->getAllFields() as $field) {
 	$fieldName = $field->name;
 	echo("#define ID_{$name}MsgArgs_{$fieldName} 0x" . hash('fnv1a32', "{$name}MsgArgs.$fieldName") . " // {$name}MsgArgs.{$fieldName}\n");

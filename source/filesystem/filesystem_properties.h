@@ -281,13 +281,13 @@ enum ThemeProperties {
 #define ID_SystemMessage_Command 0x40e61c0c // SystemMessage.Command
 	
 
-#define ID_ReadCommands 0x23d83fd3
-#define ID_OpenFile 0xa2c038cf
+#define ID_ReadCommandsMsgArgs 0xea051f4d
+#define ID_OpenFileMsgArgs 0xf776b799
 #define ID_OpenFileMsgArgs_FileName 0x87a0bb04 // OpenFileMsgArgs.FileName
-#define ID_FileExists 0x38dfc973
+#define ID_FileExistsMsgArgs 0x9e5e24ed
 #define ID_FileExistsMsgArgs_FileName 0xbf70afd8 // FileExistsMsgArgs.FileName
-#define ID_HasChangedFiles 0x5390a564
-#define ID_LoadProject 0x31b9fee2
+#define ID_HasChangedFilesMsgArgs 0x040406fe
+#define ID_LoadProjectMsgArgs 0xe48f2b54
 #define ID_LoadProjectMsgArgs_Path 0x574df4e3 // LoadProjectMsgArgs.Path
 	
 

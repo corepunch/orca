@@ -202,7 +202,14 @@ LRESULT CORE_ProcessMessage(lua_State *L, struct WI_Message* msg) {
       _fps[_counter++%MAX_FPS_CACHE] = (int)(WI_GetMilliseconds() - core.realtime);
       core.realtime = WI_GetMilliseconds();
       core.frame++;
-      if (CORE_HandleObjectMessage(L, msg)) {
+      if (CORE_HandleObjectMessage(L, &(struct WI_Message) {
+        .target = msg->target,
+        .message = msg->message = kEventWindowPaint ? ID_window_WindowPaint : ID_window_WindowResized,
+        .lParam = &(struct WindowPaintMsgArgs) {
+          .WindowWidth = LOWORD(msg->wParam),
+          .WindowHeight = HIWORD(msg->wParam),
+        }
+      })) {
         return TRUE;
       } else {
         return FALSE;
