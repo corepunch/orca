@@ -71,17 +71,13 @@ PROP_GetUserData(lpcProperty_t property)
 void const*
 PROP_GetValue(lpcProperty_t property)
 {
-  switch (property->type) {
-    case kDataTypeString:
-      return *(lpcString_t*)property->value;
-    case kDataTypeObject:
-      if (property->pdesc->TypeString) {
-        return CMP_GetObject(*(void **)property->value);
-      } else {
-        return *(void **)property->value;
-      }
-    default:
-      return property->value;
+  if (property->type == kDataTypeObject && property->pdesc->TypeString) {
+    static lpObject_t obj[256];
+    static uint8_t i = 0;
+    obj[i] = CMP_GetObject(*(void **)property->value);
+    return &obj[i++];
+  } else {
+    return property->value;
   }
 }
 

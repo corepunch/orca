@@ -454,7 +454,7 @@ PrintToProperty(lpProperty_t prop, struct vm_register* r)
       PROP_SetValue(prop, dest);
       return TRUE;
     case kDataTypeString:
-      PROP_SetValue(prop, VM_REG_STR(r));
+      PROP_SetValue(prop, &VM_REG_STR(r));
       return TRUE;
     default:
       return show_error();
