@@ -162,7 +162,7 @@ write_property(lua_State *L,
         memcpy(lua_touserdata(L, -1), valueptr, sizeof(struct color));
         break;
       case kDataTypeStruct:
-        lua_pushlightuserdata(L, (void*)valueptr);
+        memcpy(lua_newuserdata(L, prop->DataSize), valueptr, prop->DataSize);
         luaL_setmetatable(L, prop->TypeString);
         break;
       case kDataTypeObject:
