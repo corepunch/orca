@@ -445,6 +445,19 @@ SV_RegisterMessageProc(LRESULT (*proc)(lua_State*, struct WI_Message*));
 ORCA_API bool_t
 SV_UnregisterMessageProc(LRESULT (*proc)(lua_State*, struct WI_Message*));
 
+// Pluggable callbacks for input routing — registered by UIKit (or any
+// scene plugin that provides spatial layout and hit-testing).
+
+/** Called to find the deepest object under (x, y) within @p obj's subtree. */
+typedef lpObject_t (*CORE_HitTestProc)(lpObject_t obj, int x, int y);
+
+/** Called to show (visible=TRUE, positioned at x/y) or hide (visible=FALSE)
+ *  the drag-ghost view associated with an active drag session. */
+typedef void (*CORE_DragGhostProc)(lua_State* L, lpObject_t view, bool_t visible, int x, int y);
+
+ORCA_API void CORE_RegisterHitTestProc(CORE_HitTestProc proc);
+ORCA_API void CORE_RegisterDragGhostProc(CORE_DragGhostProc proc);
+
 ORCA_API void
 OBJ_Release(lua_State *L, lpObject_t);
 

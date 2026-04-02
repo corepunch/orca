@@ -191,8 +191,9 @@ ORCA_API void CORE_AdvanceFrame(void) {
   core.frame++;
 }
 
-bool_t CORE_HandleObjectMessage(lua_State *L, struct WI_Message* msg);
-bool_t CORE_HandleKeyEvent(lua_State *L, struct WI_Message* msg);
+// Forward declarations for functions defined in event_router.c.
+bool_t  CORE_HandleObjectMessage(lua_State *L, struct WI_Message* msg);
+LRESULT CORE_RouteEvent(lua_State *L, struct WI_Message* msg);
 
 LRESULT CORE_ProcessMessage(lua_State *L, struct WI_Message* msg) {
   int tmp;
@@ -202,33 +203,14 @@ LRESULT CORE_ProcessMessage(lua_State *L, struct WI_Message* msg) {
       _fps[_counter++%MAX_FPS_CACHE] = (int)(WI_GetMilliseconds() - core.realtime);
       core.realtime = WI_GetMilliseconds();
       core.frame++;
-      if (CORE_HandleObjectMessage(L, &(struct WI_Message) {
+      return CORE_HandleObjectMessage(L, &(struct WI_Message) {
         .target = msg->target,
-        .message = msg->message = kEventWindowPaint ? ID_window_WindowPaint : ID_window_WindowResized,
+        .message = msg->message == kEventWindowPaint ? ID_window_WindowPaint : ID_window_WindowResized,
         .lParam = &(struct WindowPaintMsgArgs) {
           .WindowWidth = LOWORD(msg->wParam),
           .WindowHeight = HIWORD(msg->wParam),
         }
-      })) {
-        return TRUE;
-      } else {
-        return FALSE;
-      }
-    case kEventLeftMouseDown:
-    case kEventRightMouseDown:
-    case kEventOtherMouseDown:
-    case kEventLeftMouseUp:
-    case kEventRightMouseUp:
-    case kEventOtherMouseUp:
-    case kEventLeftMouseDragged:
-    case kEventRightMouseDragged:
-    case kEventOtherMouseDragged:
-    case kEventMouseMoved:
-    case kEventScrollWheel:
-      return FALSE;
-    case kEventKeyDown:
-    case kEventKeyUp:
-      return CORE_HandleKeyEvent(L, msg);
+      });
     case kEventResumeCoroutine:
       switch (lua_resume(msg->target, L, LOWORD(msg->wParam), &tmp)) {
         case LUA_OK:
@@ -253,7 +235,7 @@ LRESULT CORE_ProcessMessage(lua_State *L, struct WI_Message* msg) {
       WI_PostMessageW(NULL, kEventWindowPaint, WI_GetSize(NULL), 0);
       return FALSE;
     default:
-      return CORE_HandleObjectMessage(L, msg);
+      return CORE_RouteEvent(L, msg);
   }
   return FALSE;
 }
