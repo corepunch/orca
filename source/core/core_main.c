@@ -386,6 +386,54 @@ static int f_parse_property(lua_State* L) {
   }
 }
 
+#define MAX_FPS_CACHE 64
+static int _fps[MAX_FPS_CACHE]={0};
+static int _counter=0;
+
+LRESULT CORE_ProcessMessage(lua_State *L, struct WI_Message* e) {
+  shortStr_t comp={0};
+  if (e->wParam & WI_MOD_CTRL) strcat(comp, "ctrl+");
+  if (e->wParam & WI_MOD_ALT) strcat(comp, "alt+");
+  if (e->wParam & WI_MOD_SHIFT) strcat(comp, "shift+");
+  if (e->wParam & WI_MOD_CMD) strcat(comp, "cmd+");
+  strcat(comp, WI_KeynumToString(e->wParam));
+  switch (e->message) {
+    case kEventWindowPaint:
+    case kEventWindowResized:
+      _fps[_counter++%MAX_FPS_CACHE] = (int)(WI_GetMilliseconds() - core.realtime);
+      core.realtime = WI_GetMilliseconds();
+      core.frame++;
+      return FALSE;
+    case kEventKeyDown:
+      lua_getfield(L, LUA_REGISTRYINDEX, CORE_KEMAP);
+      lua_getfield(L, -1, comp);
+      if (lua_isstring(L, -1)) {
+        LPSTR buf = strdup(luaL_checkstring(L, -1));
+        for (lpcString_t tok = strtok(buf, ";"); tok; tok = strtok(NULL, ";")) {
+          int f_executeCommand(lua_State* L);
+          lua_pushcfunction(L, f_executeCommand);
+          lua_pushstring(L, tok);
+          if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
+            Con_Error("%s", luaL_checkstring(L, -1));
+            lua_pop(L, 1); // error message
+            continue;
+          }
+          if (lua_toboolean(L, -1)) {
+            free(buf);
+            lua_pop(L, 3);
+            return TRUE;
+          } else {
+            lua_pop(L, 1);
+          }
+        }
+        free(buf);
+      }
+      lua_pop(L, 2);
+      return FALSE;
+  }
+  return FALSE;
+}
+
 void
 on_core_module_registered(lua_State* L)
 {
@@ -399,8 +447,6 @@ on_core_module_registered(lua_State* L)
   
   lua_pushcfunction(L, MakeLocalizedString);
   lua_setglobal(L, "L");
-  
-  LRESULT CORE_ProcessMessage(lua_State *L, struct WI_Message* msg);
   
   SV_Init();
   SV_RegisterMessageProc(CORE_ProcessMessage);
