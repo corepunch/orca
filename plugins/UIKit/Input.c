@@ -174,6 +174,8 @@ HANDLER(Input, Char)
 
   char ch = (char)pChar->KeyCode;
   if (ch && pInput->Cursor < (int)sizeof(szText) - 1) {
+    // Only shift existing characters when there is room; at max capacity the
+    // character at the cursor position is simply overwritten.
     if (dwLength + 1 < sizeof(szText) - 1) {
       szText[dwLength + 1] = 0;
       for (uint32_t s = dwLength; s > pInput->Cursor; s--) {

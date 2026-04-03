@@ -77,7 +77,9 @@ push_string_arg(lua_State* L, lpObject_t obj, lParam_t lParam)
 
 // Unified event dispatch. Walks the parent chain from start, looking for either
 // a Lua callback registered under luaId or a native C handler registered under
-// nativeId. push_args (optional) pushes extra arguments for the Lua callback.
+// nativeId. push_args (optional) pushes one extra Lua argument from lParam.
+// NOTE: lParam may point to a stack-allocated MsgArgs struct. Native handlers
+// (called via OBJ_SendMessageW) must not store this pointer beyond the call.
 static LRESULT
 UIKit_send_message(lua_State* L,
                    lpObject_t sender, lpObject_t start,
