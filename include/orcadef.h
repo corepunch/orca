@@ -52,6 +52,7 @@ OBJ_SendMessageW(OBJECT, ID_##CLASS##_##MESSAGE, 0, &(MESSAGE##Msg_t) { __VA_ARG
                           wParam_t wParam,                                       \
                           EVENT##MsgPtr p##EVENT)
 
+#define ARRAY_SIZE(x) (sizeof(x)/sizeof(*x))
 #define MOUSE_EVENTS_USE_LOCAL_SPACE
 #define DEFAULT_FONT_SIZE 16
 #define MAX_TAGS 64 // to fit into uint64_t
