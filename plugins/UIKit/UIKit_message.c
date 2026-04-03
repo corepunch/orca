@@ -112,34 +112,32 @@ static LRESULT
 send_mouse_message(lpObject_t obj, struct WI_Message* e)
 {
   uint32_t msg;
-  enum MouseButton button = kMouseButtonLeft;
-  int32_t clickCount = 1;
-  switch (e->message) {
-    case kEventLeftMouseUp:        msg = ID_Input_LeftMouseUp;        break;
-    case kEventRightMouseUp:       msg = ID_Input_RightMouseUp;       button = kMouseButtonRight;  break;
-    case kEventOtherMouseUp:       msg = ID_Input_OtherMouseUp;       button = kMouseButtonMiddle; break;
-    case kEventLeftMouseDown:      msg = ID_Input_LeftMouseDown;      break;
-    case kEventRightMouseDown:     msg = ID_Input_RightMouseDown;     button = kMouseButtonRight;  break;
-    case kEventOtherMouseDown:     msg = ID_Input_OtherMouseDown;     button = kMouseButtonMiddle; break;
-    case kEventLeftMouseDragged:   msg = ID_Input_LeftMouseDragged;   break;
-    case kEventRightMouseDragged:  msg = ID_Input_RightMouseDragged;  button = kMouseButtonRight;  break;
-    case kEventOtherMouseDragged:  msg = ID_Input_OtherMouseDragged;  button = kMouseButtonMiddle; break;
-    case kEventLeftDoubleClick:    msg = ID_Input_LeftDoubleClick;    clickCount = 2; break;
-    case kEventRightDoubleClick:   msg = ID_Input_RightDoubleClick;   button = kMouseButtonRight;  clickCount = 2; break;
-    case kEventOtherDoubleClick:   msg = ID_Input_OtherDoubleClick;   button = kMouseButtonMiddle; clickCount = 2; break;
-    case kEventMouseMoved:         msg = ID_Input_MouseMoved;         break;
-    case kEventScrollWheel:        msg = ID_Input_ScrollWheel;        break;
-    default:
-      return FALSE;
-  }
   MouseMessageMsg_t mouse = {
     .x = e->x,
     .y = e->y,
     .deltaX = e->dx,
     .deltaY = e->dy,
-    .button = button,
-    .clickCount = clickCount,
+    .button = kMouseButtonLeft,
+    .clickCount = 1,
   };
+  switch (e->message) {
+    case kEventLeftMouseUp:        msg = ID_Input_LeftMouseUp;        break;
+    case kEventRightMouseUp:       msg = ID_Input_RightMouseUp;       button = kMouseButtonRight;  break;
+    case kEventOtherMouseUp:       msg = ID_Input_OtherMouseUp;       button = kMouseButtonMiddle; break;
+    case kEventLeftMouseDown:      msg = ID_Input_LeftMouseDown;      break;
+    case kEventRightMouseDown:     msg = ID_Input_RightMouseDown;     mouse.button = kMouseButtonRight;  break;
+    case kEventOtherMouseDown:     msg = ID_Input_OtherMouseDown;     mouse.button = kMouseButtonMiddle; break;
+    case kEventLeftMouseDragged:   msg = ID_Input_LeftMouseDragged;   break;
+    case kEventRightMouseDragged:  msg = ID_Input_RightMouseDragged;  mouse.button = kMouseButtonRight;  break;
+    case kEventOtherMouseDragged:  msg = ID_Input_OtherMouseDragged;  mouse.button = kMouseButtonMiddle; break;
+    case kEventLeftDoubleClick:    msg = ID_Input_LeftDoubleClick;    mouse.clickCount = 2; break;
+    case kEventRightDoubleClick:   msg = ID_Input_RightDoubleClick;   mouse.button = kMouseButtonRight;  mouse.clickCount = 2; break;
+    case kEventOtherDoubleClick:   msg = ID_Input_OtherDoubleClick;   mouse.button = kMouseButtonMiddle; mouse.clickCount = 2; break;
+    case kEventMouseMoved:         msg = ID_Input_MouseMoved;         break;
+    case kEventScrollWheel:        msg = ID_Input_ScrollWheel;        break;
+    default:
+      return FALSE;
+  }
   return OBJ_SendMessageW(obj, msg, 0, &mouse);
 }
 
