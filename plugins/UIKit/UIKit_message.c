@@ -14,6 +14,38 @@ f_beginDraggingSession(lua_State *L)
   return 0;
 }
 
+static bool
+convert_mouse_message(struct WI_Message* e, uint32_t* out_msg, MouseMessageMsg_t* out_mouse)
+{
+  *out_mouse = (MouseMessageMsg_t){
+    .x = e->x,
+    .y = e->y,
+    .deltaX = e->dx,
+    .deltaY = e->dy,
+    .button = kMouseButtonLeft,
+    .clickCount = 1,
+  };
+  switch (e->message) {
+    case kEventLeftMouseUp:        *out_msg = ID_Input_LeftMouseUp;        break;
+    case kEventRightMouseUp:       *out_msg = ID_Input_RightMouseUp;       out_mouse->button = kMouseButtonRight;  break;
+    case kEventOtherMouseUp:       *out_msg = ID_Input_OtherMouseUp;       out_mouse->button = kMouseButtonMiddle; break;
+    case kEventLeftMouseDown:      *out_msg = ID_Input_LeftMouseDown;      break;
+    case kEventRightMouseDown:     *out_msg = ID_Input_RightMouseDown;     out_mouse->button = kMouseButtonRight;  break;
+    case kEventOtherMouseDown:     *out_msg = ID_Input_OtherMouseDown;     out_mouse->button = kMouseButtonMiddle; break;
+    case kEventLeftMouseDragged:   *out_msg = ID_Input_LeftMouseDragged;   break;
+    case kEventRightMouseDragged:  *out_msg = ID_Input_RightMouseDragged;  out_mouse->button = kMouseButtonRight;  break;
+    case kEventOtherMouseDragged:  *out_msg = ID_Input_OtherMouseDragged;  out_mouse->button = kMouseButtonMiddle; break;
+    case kEventLeftDoubleClick:    *out_msg = ID_Input_LeftDoubleClick;    out_mouse->clickCount = 2; break;
+    case kEventRightDoubleClick:   *out_msg = ID_Input_RightDoubleClick;   out_mouse->button = kMouseButtonRight;  out_mouse->clickCount = 2; break;
+    case kEventOtherDoubleClick:   *out_msg = ID_Input_OtherDoubleClick;   out_mouse->button = kMouseButtonMiddle; out_mouse->clickCount = 2; break;
+    case kEventMouseMoved:         *out_msg = ID_Input_MouseMoved;         break;
+    case kEventScrollWheel:        *out_msg = ID_Input_ScrollWheel;        break;
+    default:
+      return false;
+  }
+  return true;
+}
+
 static int
 lua_pushmousevent(lua_State* L, lpObject_t obj, struct WI_Message* e)
 {
@@ -24,6 +56,11 @@ lua_pushmousevent(lua_State* L, lpObject_t obj, struct WI_Message* e)
     point = MAT4_MultiplyVector3D(&inv, &point);
   }
 #endif
+  uint32_t msg;
+  MouseMessageMsg_t mouse;
+  if (!convert_mouse_message(e, &msg, &mouse)) {
+    return 0;
+  }
   switch (e->message) {
     case kEventMouseMoved:
     case kEventLeftMouseDown:
@@ -36,13 +73,8 @@ lua_pushmousevent(lua_State* L, lpObject_t obj, struct WI_Message* e)
     case kEventLeftMouseDragged:
     case kEventRightMouseDragged:
     case kEventOtherMouseDragged:
-      // lua_pushnumber(L, LOWORD(e->wParam));
-      // lua_pushnumber(L, HIWORD(e->wParam));
-      lua_pushnumber(L, point.x);
-      lua_pushnumber(L, point.y);
-      lua_pushnumber(L, LOWORD((intptr_t)e->lParam));
-      lua_pushnumber(L, HIWORD((intptr_t)e->lParam));
-      return 4;
+      luaX_pushMouseMessageMsgArgs(L, &mouse);
+      return 1;
     case kEventDragDrop:
     case kEventDragEnter:
       lua_getfield(L, LUA_REGISTRYINDEX, DRAG_SESSION);
@@ -112,32 +144,8 @@ static LRESULT
 send_mouse_message(lpObject_t obj, struct WI_Message* e)
 {
   uint32_t msg;
-  MouseMessageMsg_t mouse = {
-    .x = e->x,
-    .y = e->y,
-    .deltaX = e->dx,
-    .deltaY = e->dy,
-    .button = kMouseButtonLeft,
-    .clickCount = 1,
-  };
-  switch (e->message) {
-    case kEventLeftMouseUp:        msg = ID_Input_LeftMouseUp;        break;
-    case kEventRightMouseUp:       msg = ID_Input_RightMouseUp;       mouse.button = kMouseButtonRight;  break;
-    case kEventOtherMouseUp:       msg = ID_Input_OtherMouseUp;       mouse.button = kMouseButtonMiddle; break;
-    case kEventLeftMouseDown:      msg = ID_Input_LeftMouseDown;      break;
-    case kEventRightMouseDown:     msg = ID_Input_RightMouseDown;     mouse.button = kMouseButtonRight;  break;
-    case kEventOtherMouseDown:     msg = ID_Input_OtherMouseDown;     mouse.button = kMouseButtonMiddle; break;
-    case kEventLeftMouseDragged:   msg = ID_Input_LeftMouseDragged;   break;
-    case kEventRightMouseDragged:  msg = ID_Input_RightMouseDragged;  mouse.button = kMouseButtonRight;  break;
-    case kEventOtherMouseDragged:  msg = ID_Input_OtherMouseDragged;  mouse.button = kMouseButtonMiddle; break;
-    case kEventLeftDoubleClick:    msg = ID_Input_LeftDoubleClick;    mouse.clickCount = 2; break;
-    case kEventRightDoubleClick:   msg = ID_Input_RightDoubleClick;   mouse.button = kMouseButtonRight;  mouse.clickCount = 2; break;
-    case kEventOtherDoubleClick:   msg = ID_Input_OtherDoubleClick;   mouse.button = kMouseButtonMiddle; mouse.clickCount = 2; break;
-    case kEventMouseMoved:         msg = ID_Input_MouseMoved;         break;
-    case kEventScrollWheel:        msg = ID_Input_ScrollWheel;        break;
-    default:
-      return FALSE;
-  }
+  MouseMessageMsg_t mouse;
+  convert_mouse_message(e, &msg, &mouse);
   return OBJ_SendMessageW(obj, msg, 0, &mouse);
 }
 

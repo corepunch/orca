@@ -1,4 +1,4 @@
-#include "core_local.h"
+#include "../core_local.h"
 
 #define SUFFIX "Changed"
 #define SUFFIX_LEN 7

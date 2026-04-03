@@ -219,7 +219,7 @@ OBJ_EnumStyleClasses(lpObject_t pobj,
 }
 
 ORCA_API int
-parse_property(const char* str, struct PropertyType const* prop, void* valueptr);
+parse_property(lua_State* L, const char* str, struct PropertyType const* prop, void* valueptr);
 
 static void
 OBJ_ApplyClass(lpObject_t pobj, struct style_sheet* ss, void* parm)
@@ -234,7 +234,7 @@ OBJ_ApplyClass(lpObject_t pobj, struct style_sheet* ss, void* parm)
     }
 
     char buf[MAX_PROPERTY_STRING]={0};
-    parse_property(ss->value, PROP_GetDesc(hProperty), buf);
+    parse_property(g_L, ss->value, PROP_GetDesc(hProperty), buf);
     PROP_SetValue(hProperty, buf);
 
     if (PROP_GetType(hProperty) == kDataTypeColor && parm)

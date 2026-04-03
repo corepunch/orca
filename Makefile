@@ -161,7 +161,7 @@ move_pz2:
 	done
 
 modules:
-	$(MAKE) -j8 -C tools
+# 	$(MAKE) -j8 -C tools
 
 fonts:
 	python3 cd tools && \

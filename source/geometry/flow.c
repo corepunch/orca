@@ -1,14 +1,5 @@
 #include <include/api.h>
 
-lpObject_t luaX_checkObject(lua_State* L, int arg) {
-  if (lua_type(L, arg) == LUA_TTABLE) {
-    luaX_parsefield(lpObject_t, __userdata, arg, luaL_checkudata, API_TYPE_OBJECT);
-    return __userdata;
-  } else {
-    return luaL_checkudata(L, arg, API_TYPE_OBJECT);
-  }
-}
-
 ORCA_API int
 parse_property(lua_State* L,
                const char* str,
@@ -61,7 +52,6 @@ parse_property(lua_State* L,
         return luaL_error(L, "parse_property(%s): The module '%s' does not return a valid object for property '%s'\n", str, str, prop->Name);
       }
       *(void**)valueptr = lua_touserdata(L, -1);
-      // struct Object* object = luaX_checkObject(L, -1);
 //      if (prop->TypeString) {
 //        *(void**)valueptr = OBJ_GetComponent(object, fnv1a32(prop->TypeString));
 //      } else {
