@@ -95,6 +95,18 @@ bool_t SV_DispatchMessage(lua_State* L, struct WI_Message* msg) {
   return FALSE;
 }
 
+static bool_t is_printable_char(int ch) {
+  return ch >= 0x20 && ch <= 0x7E;
+}
+
+int f_translate_message(lua_State* L) {
+  struct WI_Message const* msg = luaL_checkudata(L, 1, "Event");
+  if (msg->message == kEventKeyDown && is_printable_char(msg->wParam & 0xff)) {
+    WI_PostMessageW(msg->target, kEventChar, msg->wParam, msg->lParam);
+  }
+  return 0;
+}
+
 int f_event_new(lua_State* L);
 int f_dispatch_message(lua_State* L) {
   if (lua_istable(L, 1)) {

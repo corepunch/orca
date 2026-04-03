@@ -271,21 +271,12 @@ handle:
 
 lpcString_t WI_KeynumToString(uint32_t keynum);
 
-static bool_t is_printable(int ch) {
-  return ch >= 0x20 && ch <= 0x7E;
-}
-
 bool_t
 UI_HandleKeyEvent(lua_State *L, struct WI_Message* e)
 {
   if (!core_GetFocus())
     return FALSE;
   
-  if (e->message == kEventKeyDown && is_printable(e->wParam&0xff)) {
-    struct WI_Message tmp = *e;
-    tmp.message = kEventChar;
-    UI_HandleKeyEvent(L, &tmp);
-  }
   for (lpObject_t obj = core_GetFocus(); obj; obj = OBJ_GetParent(obj)) {
     lpcString_t szCallback = OBJ_FindCallbackForID(obj, e->message);
     if (szCallback) {
@@ -410,6 +401,7 @@ LRESULT ui_handle_event(lua_State *L, struct WI_Message* msg) {
       return UI_HandleMouseEvent(L, msg->target, msg);
     case kEventKeyDown:
     case kEventKeyUp:
+    case kEventChar:
       return UI_HandleKeyEvent(L, msg);
     case kEventResumeCoroutine:
       switch (lua_resume(msg->target, L, LOWORD(msg->wParam), &tmp)) {

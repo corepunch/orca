@@ -81,6 +81,7 @@ function core.run()
 			elseif msg:is "KeyDown" and msg.key == "q" then return
 			elseif msg:is "RequestReload" then return DATADIR
 			else
+				system.translateMessage(msg)
 				local ok, result = pcall(system.dispatchMessage, msg)
 				if not ok then
 					io.stderr:write(tostring(result) .. "\n")
