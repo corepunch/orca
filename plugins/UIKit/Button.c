@@ -69,7 +69,7 @@ HANDLER(Button, Create)
 
 HANDLER(Button, KeyDown)
 {
-  if (pKeyDown->keyCode == WI_KEY_TAB) {
+  if (pKeyDown->KeyCode == WI_KEY_TAB) {
     _NextTabStop(hObject);
     return TRUE;
   } else {

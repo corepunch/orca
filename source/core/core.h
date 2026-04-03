@@ -50,27 +50,27 @@ ORCA_API extern struct MessageType ReleaseMessage;
 ORCA_API extern struct MessageType DestroyMessage;
 ORCA_API extern struct MessageType TimerMessage;
 
-typedef struct WI_Message MouseMessageMsg_t,* MouseMessageMsgPtr;
-typedef struct WI_Message KeyMessageMsg_t,* KeyMessageMsgPtr;
-typedef struct WI_Message LeftMouseDownMsg_t,* LeftMouseDownMsgPtr;
-typedef struct WI_Message RightMouseDownMsg_t,* RightMouseDownMsgPtr;
-typedef struct WI_Message OtherMouseDownMsg_t,* OtherMouseDownMsgPtr;
-typedef struct WI_Message LeftMouseUpMsg_t,* LeftMouseUpMsgPtr;
-typedef struct WI_Message RightMouseUpMsg_t,* RightMouseUpMsgPtr;
-typedef struct WI_Message OtherMouseUpMsg_t,* OtherMouseUpMsgPtr;
-typedef struct WI_Message LeftMouseDraggedMsg_t,* LeftMouseDraggedMsgPtr;
-typedef struct WI_Message RightMouseDraggedMsg_t,* RightMouseDraggedMsgPtr;
-typedef struct WI_Message OtherMouseDraggedMsg_t,* OtherMouseDraggedMsgPtr;
-typedef struct WI_Message LeftDoubleClickMsg_t,* LeftDoubleClickMsgPtr;
-typedef struct WI_Message RightDoubleClickMsg_t,* RightDoubleClickMsgPtr;
-typedef struct WI_Message OtherDoubleClickMsg_t,* OtherDoubleClickMsgPtr;
-typedef struct WI_Message MouseMovedMsg_t,* MouseMovedMsgPtr;
-typedef struct WI_Message ScrollWheelMsg_t,* ScrollWheelMsgPtr;
-typedef struct WI_Message DragDropMsg_t,* DragDropMsgPtr;
-typedef struct WI_Message DragEnterMsg_t,* DragEnterMsgPtr;
-typedef struct WI_Message KeyDownMsg_t,* KeyDownMsgPtr;
-typedef struct WI_Message KeyUpMsg_t,* KeyUpMsgPtr;
-typedef struct WI_Message CharMsg_t,* CharMsgPtr;
+typedef struct MouseMessageMsgArgs MouseMessageMsg_t,* MouseMessageMsgPtr;
+typedef struct KeyMessageMsgArgs KeyMessageMsg_t,* KeyMessageMsgPtr;
+typedef struct MouseMessageMsgArgs LeftMouseDownMsg_t,* LeftMouseDownMsgPtr;
+typedef struct MouseMessageMsgArgs RightMouseDownMsg_t,* RightMouseDownMsgPtr;
+typedef struct MouseMessageMsgArgs OtherMouseDownMsg_t,* OtherMouseDownMsgPtr;
+typedef struct MouseMessageMsgArgs LeftMouseUpMsg_t,* LeftMouseUpMsgPtr;
+typedef struct MouseMessageMsgArgs RightMouseUpMsg_t,* RightMouseUpMsgPtr;
+typedef struct MouseMessageMsgArgs OtherMouseUpMsg_t,* OtherMouseUpMsgPtr;
+typedef struct MouseMessageMsgArgs LeftMouseDraggedMsg_t,* LeftMouseDraggedMsgPtr;
+typedef struct MouseMessageMsgArgs RightMouseDraggedMsg_t,* RightMouseDraggedMsgPtr;
+typedef struct MouseMessageMsgArgs OtherMouseDraggedMsg_t,* OtherMouseDraggedMsgPtr;
+typedef struct MouseMessageMsgArgs LeftDoubleClickMsg_t,* LeftDoubleClickMsgPtr;
+typedef struct MouseMessageMsgArgs RightDoubleClickMsg_t,* RightDoubleClickMsgPtr;
+typedef struct MouseMessageMsgArgs OtherDoubleClickMsg_t,* OtherDoubleClickMsgPtr;
+typedef struct MouseMessageMsgArgs MouseMovedMsg_t,* MouseMovedMsgPtr;
+typedef struct MouseMessageMsgArgs ScrollWheelMsg_t,* ScrollWheelMsgPtr;
+typedef struct MouseMessageMsgArgs DragDropMsg_t,* DragDropMsgPtr;
+typedef struct MouseMessageMsgArgs DragEnterMsg_t,* DragEnterMsgPtr;
+typedef struct KeyMessageMsgArgs KeyDownMsg_t,* KeyDownMsgPtr;
+typedef struct KeyMessageMsgArgs KeyUpMsg_t,* KeyUpMsgPtr;
+typedef struct KeyMessageMsgArgs CharMsg_t,* CharMsgPtr;
 typedef struct CreateMsgArgs CreateMsg_t,* CreateMsgPtr;
 typedef struct StartMsgArgs StartMsg_t,* StartMsgPtr;
 typedef struct AwakeMsgArgs AwakeMsg_t,* AwakeMsgPtr;
@@ -484,11 +484,19 @@ ORCA_API struct MessageType* luaX_checkMessageType(lua_State *L, int idx);
 
 /** MouseMessageMsgArgs struct */
 struct MouseMessageMsgArgs {
+	struct vec2 Position; ///< Mouse pointer position in element-local coordinates
+	struct vec2 Delta; ///< Scroll or drag delta
+	uint32_t ModifierKeys; ///< Modifier key flags (Shift, Ctrl, Alt, Cmd)
+	struct Object* Source; ///< Original element that received the event before bubbling
 };
 ORCA_API void luaX_pushMouseMessageMsgArgs(lua_State *L, struct MouseMessageMsgArgs const* data);
 ORCA_API struct MouseMessageMsgArgs* luaX_checkMouseMessageMsgArgs(lua_State *L, int idx);
 /** KeyMessageMsgArgs struct */
 struct KeyMessageMsgArgs {
+	uint32_t KeyCode; ///< Numeric key code (WI_KEY_* constants)
+	const char* Key; ///< Key name string (e.g. "Return", "Tab", "a")
+	uint32_t ModifierKeys; ///< Modifier key flags (Shift, Ctrl, Alt, Cmd)
+	struct Object* Source; ///< Element that has keyboard focus
 };
 ORCA_API void luaX_pushKeyMessageMsgArgs(lua_State *L, struct KeyMessageMsgArgs const* data);
 ORCA_API struct KeyMessageMsgArgs* luaX_checkKeyMessageMsgArgs(lua_State *L, int idx);

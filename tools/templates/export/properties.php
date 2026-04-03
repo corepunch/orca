@@ -1,6 +1,7 @@
 	<?php foreach ($properties as $property):?>
 		<?php $datatype = 'kDataType' . ucfirst($property->type->kind) ?>
 		<?php if ($property->type->kind === 'component') $datatype = 'kDataTypeObject'; ?>
+		<?php if ($property->type->kind === 'interface') $datatype = 'kDataTypeObject'; ?>
 		<?php if ($property->type->kind === 'struct' && $property->type->type == 'color') $datatype = 'kDataTypeColor'; ?>
 		<?php if ($property->type->type == 'uint') $datatype = 'kDataTypeInt'; ?>
 		<?php if ($property->type->kind == 'external_struct') $datatype = 'kDataTypeStruct'; ?>
@@ -12,7 +13,7 @@
 			echo (", .TypeString = \"{$property->type->export}\"), // $name.{$property->name}\n");
 		} elseif ($property->type->kind === 'struct' && $property->type->type != 'color') {
 			echo (", .TypeString = \"{$property->type->export}\"), // $name.{$property->name}\n");
-		} elseif ($property->type->kind === 'component') {
+		} elseif ($property->type->kind === 'component' || $property->type->kind === 'interface') {
 			echo (", .TypeString = \"{$property->type->export}\"), // $name.{$property->name}\n");
  		} else {
 			echo ("), // $name.{$property->name}\n");

@@ -1155,6 +1155,7 @@ LRESULT Input_Create(struct Object*, struct Input*, wParam_t, CreateMsgPtr);
 LRESULT Input_DrawBrush(struct Object*, struct Input*, wParam_t, DrawBrushMsgPtr);
 LRESULT Input_MakeText(struct Object*, struct Input*, wParam_t, MakeTextMsgPtr);
 LRESULT Input_KeyDown(struct Object*, struct Input*, wParam_t, KeyDownMsgPtr);
+LRESULT Input_Char(struct Object*, struct Input*, wParam_t, CharMsgPtr);
 LRESULT Input_KillFocus(struct Object*, struct Input*, wParam_t, KillFocusMsgPtr);
 LRESULT Input_LeftMouseUp(struct Object*, struct Input*, wParam_t, LeftMouseUpMsgPtr);
 LRESULT Input_MeasureOverride(struct Object*, struct Input*, wParam_t, MeasureOverrideMsgPtr);
@@ -1175,6 +1176,7 @@ LRESULT InputProc(struct Object* object, void* cmp, uint32_t message, wParam_t w
 		case ID_Node2D_DrawBrush: return Input_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
 		case ID_TextBlockConcept_MakeText: return Input_MakeText(object, cmp, wparm, lparm); // TextBlockConcept.MakeText
 		case ID_Input_KeyDown: return Input_KeyDown(object, cmp, wparm, lparm); // Input.KeyDown
+		case ID_Input_Char: return Input_Char(object, cmp, wparm, lparm); // Input.Char
 		case ID_Node_KillFocus: return Input_KillFocus(object, cmp, wparm, lparm); // Node.KillFocus
 		case ID_Input_LeftMouseUp: return Input_LeftMouseUp(object, cmp, wparm, lparm); // Input.LeftMouseUp
 		case ID_Node2D_MeasureOverride: return Input_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride

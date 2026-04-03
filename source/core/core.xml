@@ -61,8 +61,22 @@
     <interface name="Input" export="Input" no-check="true">
       <!-- Base event for all pointer/mouse input events -->
       <messages>
-        <message name="MouseMessage" type="WI_Message"/>
-        <message name="KeyMessage" type="WI_Message"/>
+        <message name="MouseMessage">
+          <fields>
+            <field name="Position" type="vec2">Mouse pointer position in element-local coordinates</field>
+            <field name="Delta" type="vec2">Scroll or drag delta</field>
+            <field name="ModifierKeys" type="uint">Modifier key flags (Shift, Ctrl, Alt, Cmd)</field>
+            <field name="Source" type="Object" pointer="true">Original element that received the event before bubbling</field>
+          </fields>
+        </message>
+        <message name="KeyMessage">
+          <fields>
+            <field name="KeyCode" type="uint">Numeric key code (WI_KEY_* constants)</field>
+            <field name="Key" type="string">Key name string (e.g. "Return", "Tab", "a")</field>
+            <field name="ModifierKeys" type="uint">Modifier key flags (Shift, Ctrl, Alt, Cmd)</field>
+            <field name="Source" type="Object" pointer="true">Element that has keyboard focus</field>
+          </fields>
+        </message>
         <message name="LeftMouseDown" same-as="MouseMessage"/>
         <message name="RightMouseDown" same-as="MouseMessage"/>
         <message name="OtherMouseDown" same-as="MouseMessage"/>

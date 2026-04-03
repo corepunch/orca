@@ -686,6 +686,7 @@
         <handle message="Node2D.DrawBrush"/>
         <handle message="TextBlockConcept.MakeText"/>
         <handle message="Input.KeyDown"/>
+        <handle message="Input.Char"/>
         <handle message="Node.KillFocus"/>
         <handle message="Input.LeftMouseUp"/>
         <handle message="Node2D.MeasureOverride"/>

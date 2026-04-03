@@ -236,7 +236,7 @@ HANDLER(Node2D, ScrollWheel)
     struct vec2 Offset = pNode2D->ContentOffset;
     float Scroll = MIN(0, node->Size.Axis[1].Actual - node->Size.Axis[1].Scroll);
     Offset.y =
-      MAX(MIN(Offset.y + (int16_t)HIWORD((intptr_t)pScrollWheel->lParam), 0),
+      MAX(MIN(Offset.y + pScrollWheel->Delta.y, 0),
           Scroll);
     pNode2D->ContentOffset = Offset;
     OBJ_SetDirty(hObject);

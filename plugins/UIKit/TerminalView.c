@@ -244,7 +244,7 @@ HANDLER(TerminalView, DrawBrush) {
 HANDLER(TerminalView, ScrollWheel) {
   int const h = (pTerminalView->_contentHeight) * CONSOLE_CHAR_HEIGHT;
   float const space = GetNode(hObject)->Size.Axis[1].Actual - h;
-  pTerminalView->_scroll.y += pScrollWheel->dy / SCROLL_SENSIVITY;
+  pTerminalView->_scroll.y += pScrollWheel->Delta.y / SCROLL_SENSIVITY;
   pTerminalView->_scroll.y = MAX(space, pTerminalView->_scroll.y);
   pTerminalView->_scroll.y = MIN(0, pTerminalView->_scroll.y);
   return TRUE;

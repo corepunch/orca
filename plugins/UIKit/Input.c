@@ -110,7 +110,7 @@ HANDLER(Input, KeyDown)
   szText[sizeof(szText) - 1] = 0;
   uint32_t dwLength = (uint32_t)strlen(szText);
 
-  switch (pKeyDown->keyCode) {
+  switch (pKeyDown->KeyCode) {
     case WI_KEY_BACKSPACE:
       if (pInput->Cursor > 0) {
         pInput->Cursor--;
@@ -154,23 +154,40 @@ HANDLER(Input, KeyDown)
       pInput->Cursor = MIN(pInput->Cursor + 1, dwLength);
       break;
     default:
-      if (pInput->Cursor < (int)sizeof(szText) - 1) {
-        if (dwLength + 1 < sizeof(szText) - 1) {
-          szText[dwLength + 1] = 0;
-          for (uint32_t s = dwLength; s > pInput->Cursor; s--) {
-            szText[s] = szText[s - 1];
-          }
-        }
-        szText[pInput->Cursor++] = *(char*)&pKeyDown->lParam;
-      }
-      SV_PostMessage(hObject, "Char", 0, 0);
-      break;
+      return FALSE;
   }
   lpProperty_t prop = TextRun_GetProperty(hObject, kTextRunText);
   if (prop) {
     PROP_SetValue(prop, szText);
   }
   OBJ_SetDirty(hObject);
+  return TRUE;
+}
+
+HANDLER(Input, Char)
+{
+  char szText[MAX_PROPERTY_STRING];
+  const char* currentText = GetTextRun(hObject)->Text;
+  strncpy(szText, currentText ? currentText : "", sizeof(szText) - 1);
+  szText[sizeof(szText) - 1] = 0;
+  uint32_t dwLength = (uint32_t)strlen(szText);
+
+  char ch = (char)pChar->KeyCode;
+  if (ch && pInput->Cursor < (int)sizeof(szText) - 1) {
+    if (dwLength + 1 < sizeof(szText) - 1) {
+      szText[dwLength + 1] = 0;
+      for (uint32_t s = dwLength; s > pInput->Cursor; s--) {
+        szText[s] = szText[s - 1];
+      }
+    }
+    szText[pInput->Cursor++] = ch;
+    lpProperty_t prop = TextRun_GetProperty(hObject, kTextRunText);
+    if (prop) {
+      PROP_SetValue(prop, szText);
+    }
+    OBJ_SetDirty(hObject);
+    SV_PostMessage(hObject, "Char", 0, 0);
+  }
   return TRUE;
 }
 
