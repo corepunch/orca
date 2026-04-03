@@ -235,9 +235,7 @@ HANDLER(Node2D, ScrollWheel)
   if (pNode2D->Overflow.y == kOverflowScroll) {
     struct vec2 Offset = pNode2D->ContentOffset;
     float Scroll = MIN(0, node->Size.Axis[1].Actual - node->Size.Axis[1].Scroll);
-    Offset.y =
-      MAX(MIN(Offset.y + (int16_t)HIWORD((intptr_t)pScrollWheel->lParam), 0),
-          Scroll);
+    Offset.y = MAX(MIN(Offset.y + pScrollWheel->deltaY, 0), Scroll);
     pNode2D->ContentOffset = Offset;
     OBJ_SetDirty(hObject);
     return TRUE;

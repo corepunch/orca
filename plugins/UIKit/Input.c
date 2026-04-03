@@ -161,7 +161,8 @@ HANDLER(Input, KeyDown)
             szText[s] = szText[s - 1];
           }
         }
-        szText[pInput->Cursor++] = *(char*)&pKeyDown->lParam;
+//        szText[pInput->Cursor++] = *(char*)&pKeyDown->lParam;
+        szText[pInput->Cursor++] = pKeyDown->character;
       }
       SV_PostMessage(hObject, "Char", 0, 0);
       break;

@@ -46,6 +46,12 @@
       <value name="VectorZ">Bind to the Z component of a vector property</value>
       <value name="VectorW">Bind to the W component of a vector property</value>
     </enum>
+    <enum name="MouseButton">
+      <summary>Identifies which mouse button was involved in a mouse button event.</summary>
+      <value name="Left">The left (primary) mouse button</value>
+      <value name="Right">The right (secondary) mouse button</value>
+      <value name="Middle">The middle mouse button</value>
+    </enum>
   </enums>
   <structs>
     <struct name="MessageType">
@@ -61,8 +67,25 @@
     <interface name="Input" export="Input" no-check="true">
       <!-- Base event for all pointer/mouse input events -->
       <messages>
-        <message name="MouseMessage" type="WI_Message"/>
-        <message name="KeyMessage" type="WI_Message"/>
+        <message name="MouseMessage">
+          <summary>Base mouse event providing pointer position.</summary>
+          <fields>
+            <field name="x" type="float">Horizontal pointer position in local space</field>
+            <field name="y" type="float">Vertical pointer position in local space</field>
+            <field name="deltaX" type="int">Scroll wheel rotation amount along the X axis; positive values scroll right/forward</field>
+            <field name="deltaY" type="int">Scroll wheel rotation amount along the Y axis; positive values scroll up/forward</field>
+            <field name="button" type="MouseButton">The mouse button involved in this event</field>
+            <field name="clickCount" type="int">Number of consecutive clicks (1 for single click, 2 for double click)</field>
+          </fields>
+        </message>
+        <message name="KeyMessage">
+          <summary>Base keyboard event providing key information.</summary>
+          <fields>
+            <field name="keyCode" type="int">The key involved in this event</field>
+            <field name="character" type="int">The character produced by this key event</field>
+            <field name="modifiers" type="int">Active modifier keys during the event</field>
+          </fields>
+        </message>
         <message name="LeftMouseDown" same-as="MouseMessage"/>
         <message name="RightMouseDown" same-as="MouseMessage"/>
         <message name="OtherMouseDown" same-as="MouseMessage"/>
