@@ -122,8 +122,8 @@ send_mouse_message(lpObject_t obj, struct WI_Message* e)
   };
   switch (e->message) {
     case kEventLeftMouseUp:        msg = ID_Input_LeftMouseUp;        break;
-    case kEventRightMouseUp:       msg = ID_Input_RightMouseUp;       button = kMouseButtonRight;  break;
-    case kEventOtherMouseUp:       msg = ID_Input_OtherMouseUp;       button = kMouseButtonMiddle; break;
+    case kEventRightMouseUp:       msg = ID_Input_RightMouseUp;       mouse.button = kMouseButtonRight;  break;
+    case kEventOtherMouseUp:       msg = ID_Input_OtherMouseUp;       mouse.button = kMouseButtonMiddle; break;
     case kEventLeftMouseDown:      msg = ID_Input_LeftMouseDown;      break;
     case kEventRightMouseDown:     msg = ID_Input_RightMouseDown;     mouse.button = kMouseButtonRight;  break;
     case kEventOtherMouseDown:     msg = ID_Input_OtherMouseDown;     mouse.button = kMouseButtonMiddle; break;
