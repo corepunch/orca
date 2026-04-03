@@ -149,7 +149,7 @@ typedef enum MouseButton {
 	kMouseButtonMiddle, ///< The middle mouse button
 	kMouseButtonNone, ///< No mouse button used for mouse move and scroll events
 } eMouseButton_t;
-#define MouseButton_Count 3
+#define MouseButton_Count 4
 ORCA_API const char *MouseButtonToString(enum MouseButton value);
 ORCA_API enum MouseButton luaX_checkMouseButton(lua_State *L, int idx);
 ORCA_API void luaX_pushMouseButton(lua_State *L, enum MouseButton value);
