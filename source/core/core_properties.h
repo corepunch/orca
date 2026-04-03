@@ -4,29 +4,29 @@
 #define __CORE_PROPERTIES_H__
 
 
-#define ID_Input_MouseMessage 0x664cfc11 // Input.MouseMessage
-#define ID_Input_MouseButtonMessage 0x73292e79 // Input.MouseButtonMessage
-#define ID_Input_MouseWheelMessage 0xe8f2b3f8 // Input.MouseWheelMessage
-#define ID_Input_KeyMessage 0xab4954f5 // Input.KeyMessage
-#define ID_Input_LeftMouseDown 0x2081ec6d // Input.LeftMouseDown
-#define ID_Input_RightMouseDown 0x36b3ff46 // Input.RightMouseDown
-#define ID_Input_OtherMouseDown 0xd7a57596 // Input.OtherMouseDown
-#define ID_Input_LeftMouseUp 0xc27c0618 // Input.LeftMouseUp
-#define ID_Input_RightMouseUp 0xdaa67513 // Input.RightMouseUp
-#define ID_Input_OtherMouseUp 0x8a7c8803 // Input.OtherMouseUp
-#define ID_Input_LeftMouseDragged 0xf6c76625 // Input.LeftMouseDragged
-#define ID_Input_RightMouseDragged 0x5877fc94 // Input.RightMouseDragged
-#define ID_Input_OtherMouseDragged 0x7b1b7704 // Input.OtherMouseDragged
-#define ID_Input_LeftDoubleClick 0x223b6efd // Input.LeftDoubleClick
-#define ID_Input_RightDoubleClick 0x97468596 // Input.RightDoubleClick
-#define ID_Input_OtherDoubleClick 0xa4a41aa6 // Input.OtherDoubleClick
-#define ID_Input_MouseMoved 0x236fdd59 // Input.MouseMoved
-#define ID_Input_ScrollWheel 0xa98d2bad // Input.ScrollWheel
-#define ID_Input_DragDrop 0xb54686f4 // Input.DragDrop
-#define ID_Input_DragEnter 0xb77deb05 // Input.DragEnter
-#define ID_Input_KeyDown 0xf991e67e // Input.KeyDown
-#define ID_Input_KeyUp 0x18b8626b // Input.KeyUp
-#define ID_Input_Char 0x8b2b3137 // Input.Char
+#define ID_Mouse_MouseMessage 0x53714584 // Mouse.MouseMessage
+#define ID_Mouse_MouseButtonMessage 0x86d36e88 // Mouse.MouseButtonMessage
+#define ID_Mouse_MouseWheelMessage 0x605da05b // Mouse.MouseWheelMessage
+#define ID_Mouse_LeftMouseDown 0x60e51396 // Mouse.LeftMouseDown
+#define ID_Mouse_RightMouseDown 0x5c38f0c3 // Mouse.RightMouseDown
+#define ID_Mouse_OtherMouseDown 0x2d4e60db // Mouse.OtherMouseDown
+#define ID_Mouse_LeftMouseUp 0x881f7603 // Mouse.LeftMouseUp
+#define ID_Mouse_RightMouseUp 0x73d6a202 // Mouse.RightMouseUp
+#define ID_Mouse_OtherMouseUp 0x8cbeee1a // Mouse.OtherMouseUp
+#define ID_Mouse_LeftMouseDragged 0x2038c104 // Mouse.LeftMouseDragged
+#define ID_Mouse_RightMouseDragged 0xf50c8da7 // Mouse.RightMouseDragged
+#define ID_Mouse_OtherMouseDragged 0x4ef7ddef // Mouse.OtherMouseDragged
+#define ID_Mouse_LeftDoubleClick 0x7d07e8a6 // Mouse.LeftDoubleClick
+#define ID_Mouse_RightDoubleClick 0x79513d33 // Mouse.RightDoubleClick
+#define ID_Mouse_OtherDoubleClick 0x3b99045b // Mouse.OtherDoubleClick
+#define ID_Mouse_MouseMoved 0x815027f0 // Mouse.MouseMoved
+#define ID_Mouse_ScrollWheel 0x891771b6 // Mouse.ScrollWheel
+#define ID_Mouse_DragDrop 0x932873b5 // Mouse.DragDrop
+#define ID_Mouse_DragEnter 0xbf9f315e // Mouse.DragEnter
+#define ID_Keyboard_KeyMessage 0x5d9509b4 // Keyboard.KeyMessage
+#define ID_Keyboard_KeyDown 0x105540a5 // Keyboard.KeyDown
+#define ID_Keyboard_KeyUp 0x911e6410 // Keyboard.KeyUp
+#define ID_Keyboard_Char 0x7e0df482 // Keyboard.Char
 #define ID_Object_Create 0x5ad07ee8 // Object.Create
 #define ID_Object_Start 0x01629a90 // Object.Start
 #define ID_Object_Awake 0x51130967 // Object.Awake
@@ -56,9 +56,6 @@
 #define ID_MouseWheelMessageMsgArgs_x 0xf48aaad4 // MouseWheelMessageMsgArgs.x
 #define ID_MouseWheelMessageMsgArgs_y 0xf58aac67 // MouseWheelMessageMsgArgs.y
 #define ID_MouseWheelMessageMsgArgs_delta 0x0c3f4a72 // MouseWheelMessageMsgArgs.delta
-#define ID_KeyMessageMsgArgs 0x7c8f4b85
-#define ID_KeyMessageMsgArgs_keyCode 0x409e6231 // KeyMessageMsgArgs.keyCode
-#define ID_KeyMessageMsgArgs_modflags 0x6f7a7552 // KeyMessageMsgArgs.modflags
 #define ID_LeftMouseDownMsgArgs 0xf26710b1
 #define ID_LeftMouseDownMsgArgs_x 0x63b86693 // LeftMouseDownMsgArgs.x
 #define ID_LeftMouseDownMsgArgs_y 0x62b86500 // LeftMouseDownMsgArgs.y
@@ -132,6 +129,9 @@
 #define ID_DragEnterMsgArgs 0x0af76361
 #define ID_DragEnterMsgArgs_x 0x28796c83 // DragEnterMsgArgs.x
 #define ID_DragEnterMsgArgs_y 0x27796af0 // DragEnterMsgArgs.y
+#define ID_KeyMessageMsgArgs 0x7c8f4b85
+#define ID_KeyMessageMsgArgs_keyCode 0x409e6231 // KeyMessageMsgArgs.keyCode
+#define ID_KeyMessageMsgArgs_modflags 0x6f7a7552 // KeyMessageMsgArgs.modflags
 #define ID_KeyDownMsgArgs 0x68e6b3f2
 #define ID_KeyDownMsgArgs_keyCode 0x596a4da0 // KeyDownMsgArgs.keyCode
 #define ID_KeyDownMsgArgs_modflags 0xc347e771 // KeyDownMsgArgs.modflags

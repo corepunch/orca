@@ -63,7 +63,8 @@
     </struct>
   </structs>
   <interfaces>
-    <interface name="Input" export="Input" no-check="true">
+    <interface name="Mouse" export="Mouse" no-check="true">
+      <summary>Mouse and pointer input events.</summary>
       <messages>
         <!-- Base mouse event: pointer position -->
         <message name="MouseMessage">
@@ -88,14 +89,6 @@
             <field name="delta" type="int">Scroll wheel rotation amount; positive values scroll up/forward</field>
           </fields>
         </message>
-        <!-- Base keyboard event: key code and modifier state -->
-        <message name="KeyMessage">
-          <summary>Base keyboard event providing key code and modifier flags.</summary>
-          <fields>
-            <field name="keyCode" type="int">Platform virtual key code of the key involved</field>
-            <field name="modflags" type="int">Bitmask of active modifier keys (Ctrl, Alt, Shift, Cmd)</field>
-          </fields>
-        </message>
         <!-- Mouse button press events -->
         <message name="LeftMouseDown" parent="MouseButtonMessage"/>
         <message name="RightMouseDown" parent="MouseButtonMessage"/>
@@ -118,6 +111,19 @@
         <!-- Drag-and-drop events -->
         <message name="DragDrop" parent="MouseMessage"/>
         <message name="DragEnter" parent="MouseMessage"/>
+      </messages>
+    </interface>
+    <interface name="Keyboard" export="Keyboard" no-check="true">
+      <summary>Keyboard input events.</summary>
+      <messages>
+        <!-- Base keyboard event: key code and modifier state -->
+        <message name="KeyMessage">
+          <summary>Base keyboard event providing key code and modifier flags.</summary>
+          <fields>
+            <field name="keyCode" type="int">Platform virtual key code of the key involved</field>
+            <field name="modflags" type="int">Bitmask of active modifier keys (Ctrl, Alt, Shift, Cmd)</field>
+          </fields>
+        </message>
         <!-- Keyboard events -->
         <message name="KeyDown" parent="KeyMessage"/>
         <message name="KeyUp" parent="KeyMessage"/>
