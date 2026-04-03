@@ -108,26 +108,58 @@ process_dragndrop(lua_State *L, struct WI_Message *e, lpObject_t sender)
   }
 }
 
-LRESULT
-send_mouse_message(lua_State* L, lpObject_t obj, struct WI_Message* e)
+static LRESULT
+send_mouse_message(lpObject_t obj, struct WI_Message* e)
 {
-  uint32_t msg = -1;
+  uint32_t msg;
+  enum MouseButton button = kMouseButtonLeft;
+  int32_t clickCount = 1;
   switch (e->message) {
-    case kEventLeftMouseUp: msg = ID_Input_LeftMouseUp; break;
-    case kEventRightMouseUp: msg = ID_Input_RightMouseUp; break;
-    case kEventOtherMouseUp: msg = ID_Input_OtherMouseUp; break;
-    case kEventLeftMouseDown: msg = ID_Input_LeftMouseDown; break;
-    case kEventRightMouseDown: msg = ID_Input_RightMouseDown; break;
-    case kEventOtherMouseDown: msg = ID_Input_OtherMouseDown; break;
-    case kEventLeftMouseDragged: msg = ID_Input_LeftMouseDragged; break;
-    case kEventRightMouseDragged: msg = ID_Input_RightMouseDragged; break;
-    case kEventOtherMouseDragged: msg = ID_Input_OtherMouseDragged; break;
-    case kEventMouseMoved: msg = ID_Input_MouseMoved; break;
-    case kEventScrollWheel: msg = ID_Input_ScrollWheel; break;
+    case kEventLeftMouseUp:        msg = ID_Input_LeftMouseUp;        break;
+    case kEventRightMouseUp:       msg = ID_Input_RightMouseUp;       button = kMouseButtonRight;  break;
+    case kEventOtherMouseUp:       msg = ID_Input_OtherMouseUp;       button = kMouseButtonMiddle; break;
+    case kEventLeftMouseDown:      msg = ID_Input_LeftMouseDown;      break;
+    case kEventRightMouseDown:     msg = ID_Input_RightMouseDown;     button = kMouseButtonRight;  break;
+    case kEventOtherMouseDown:     msg = ID_Input_OtherMouseDown;     button = kMouseButtonMiddle; break;
+    case kEventLeftMouseDragged:   msg = ID_Input_LeftMouseDragged;   break;
+    case kEventRightMouseDragged:  msg = ID_Input_RightMouseDragged;  button = kMouseButtonRight;  break;
+    case kEventOtherMouseDragged:  msg = ID_Input_OtherMouseDragged;  button = kMouseButtonMiddle; break;
+    case kEventLeftDoubleClick:    msg = ID_Input_LeftDoubleClick;    clickCount = 2; break;
+    case kEventRightDoubleClick:   msg = ID_Input_RightDoubleClick;   button = kMouseButtonRight;  clickCount = 2; break;
+    case kEventOtherDoubleClick:   msg = ID_Input_OtherDoubleClick;   button = kMouseButtonMiddle; clickCount = 2; break;
+    case kEventMouseMoved:         msg = ID_Input_MouseMoved;         break;
+    case kEventScrollWheel:        msg = ID_Input_ScrollWheel;        break;
     default:
       return FALSE;
   }
-  return OBJ_SendMessageW(obj, msg, 0, e);
+  MouseMessageMsg_t mouse = {
+    .x = e->x,
+    .y = e->y,
+    .deltaX = e->dx,
+    .deltaY = e->dy,
+    .button = button,
+    .clickCount = clickCount,
+  };
+  return OBJ_SendMessageW(obj, msg, 0, &mouse);
+}
+
+static LRESULT
+send_key_message(lpObject_t obj, struct WI_Message* e)
+{
+  uint32_t msg;
+  switch (e->message) {
+    case kEventKeyDown: msg = ID_Input_KeyDown; break;
+    case kEventKeyUp:   msg = ID_Input_KeyUp;   break;
+    case kEventChar:    msg = ID_Input_Char;    break;
+    default:
+      return FALSE;
+  }
+  KeyMessageMsg_t key = {
+    .keyCode = e->keyCode,
+    .character = *(unsigned char*)&e->lParam,
+    .modifiers = e->wParam & (WI_MOD_SHIFT|WI_MOD_CTRL|WI_MOD_ALT|WI_MOD_CMD),
+  };
+  return OBJ_SendMessageW(obj, msg, 0, &key);
 }
 
 LRESULT
@@ -180,8 +212,8 @@ handle:
   // handle events for its children. For example, a list item could delegate
   // mouse events to its parent list for handling selection.
   for (lpObject_t obj = sender; !success && obj; obj = OBJ_GetParent(obj)) {
-    if (OBJ_FindCallbackForID(obj, e->message)) {
-      lpcString_t szCallback = OBJ_FindCallbackForID(obj, e->message);
+    lpcString_t szCallback = OBJ_FindCallbackForID(obj, e->message);
+    if (szCallback) {
       luaX_import(L, "orca", "async");
       if (luaX_pushObject(L, obj), lua_isnil(L, -1)) {
         Con_Warning("Object has no Lua representation: %p", obj);
@@ -196,7 +228,7 @@ handle:
         lua_pop(L, 1);
       }
       success = TRUE;
-    } else if (send_mouse_message(L, obj, e)) {
+    } else if (send_mouse_message(obj, e)) {
       success = TRUE;
     }
   }
@@ -289,7 +321,7 @@ UI_HandleKeyEvent(lua_State *L, struct WI_Message* e)
       }
       return TRUE;
     }
-    if (OBJ_SendMessageW(obj, e->message, 0, e)) {
+    if (send_key_message(obj, e)) {
       return TRUE;
     }
   }
@@ -301,16 +333,9 @@ CORE_HandleObjectMessage(lua_State *L, struct WI_Message* msg)
 {
   for (lpObject_t hobj = msg->target; hobj; hobj = OBJ_GetParent(hobj))
   {
-    if (OBJ_FindCallbackForID(hobj, msg->message))
+    lpcString_t szCallback = OBJ_FindCallbackForID(hobj, msg->message);
+    if (szCallback)
     {
-      //      if (type == ID_Object_Awake) {
-      //        luaX_pushObject(L, hobj);
-      //        lua_getfield(L, -1, OBJ_FindCallbackForID(hobj, type));
-      //        lua_insert(L, -2); // Move callback before obj
-      //        lua_pcall(L, 1, 0, 0);
-      //        break;
-      //      }
-      lpcString_t szCallback = OBJ_FindCallbackForID(hobj, msg->message);
       luaX_import(L, "orca", "async");
       luaX_pushObject(L, hobj);
       assert(!lua_isnil(L, -1));
@@ -364,6 +389,9 @@ LRESULT ui_handle_event(lua_State *L, struct WI_Message* msg) {
     case kEventLeftMouseDragged:
     case kEventRightMouseDragged:
     case kEventOtherMouseDragged:
+    case kEventLeftDoubleClick:
+    case kEventRightDoubleClick:
+    case kEventOtherDoubleClick:
     case kEventMouseMoved:
     case kEventScrollWheel:
       return UI_HandleMouseEvent(L, msg->target, msg);
