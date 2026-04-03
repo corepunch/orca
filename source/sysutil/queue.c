@@ -95,6 +95,8 @@ bool_t SV_DispatchMessage(lua_State* L, struct WI_Message* msg) {
   return FALSE;
 }
 
+/* Only ASCII printable range: translating extended/Unicode characters requires
+   UTF-8 decoding, which is left to higher-level key handlers. */
 static bool_t is_printable_char(int ch) {
   return ch >= 0x20 && ch <= 0x7E;
 }
