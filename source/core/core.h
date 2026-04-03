@@ -147,7 +147,6 @@ typedef enum MouseButton {
 	kMouseButtonLeft, ///< The left (primary) mouse button
 	kMouseButtonRight, ///< The right (secondary) mouse button
 	kMouseButtonMiddle, ///< The middle mouse button
-	kMouseButtonNone, ///< No mouse button used for mouse move and scroll events
 } eMouseButton_t;
 #define MouseButton_Count 3
 ORCA_API const char *MouseButtonToString(enum MouseButton value);
