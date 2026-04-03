@@ -109,7 +109,8 @@ ORCA_API <?= $method->getReturnType() ?>
 <?php endforeach ?>
 
 <?php foreach ($model->getEvents() as $name => $event):?>
-<?php if ($event->getParentEvent()) continue; ?>
+<?php if ($event->getParentEvent() && !$event->hasFields()) continue; ?>
+<?php if (!$event->hasAnyFields()) continue; ?>
 /** <?= $name ?>MsgArgs struct */
 struct <?= $name ?>MsgArgs {
 <?php include_template("struct_contents", ['list' => $event->getAllFields()]) ?>

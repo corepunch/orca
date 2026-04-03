@@ -474,7 +474,9 @@ class Event extends Type {
 
 	function __construct($elem, $model) {
 		parent::__construct($elem, $model);
-		$p = $elem["same-as"];
+		$same_as = $elem["same-as"];
+		$parent = $elem["parent"];
+		$p = $same_as ? $same_as : $parent;
 		$routing = $elem["routing"] ?? "TunnelingBubbling";
 		$this->parent_name = $p ? strval($p) : null;
 		$this->routing = strval($routing);

@@ -3,7 +3,6 @@
 <module name="core" namespace="orca" on-luaopen="on_core_module_registered">
   <require file="../geometry/geometry.xml"/>
   <externals>
-    <external struct="WI_Message"/>
     <external struct="localization"/>
     <external struct="game"/>
     <external struct="Property"/>
@@ -46,6 +45,12 @@
       <value name="VectorZ">Bind to the Z component of a vector property</value>
       <value name="VectorW">Bind to the W component of a vector property</value>
     </enum>
+    <enum name="MouseButton">
+      <summary>Identifies which mouse button was involved in a mouse button event.</summary>
+      <value name="Left">The left (primary) mouse button</value>
+      <value name="Right">The right (secondary) mouse button</value>
+      <value name="Middle">The middle mouse button</value>
+    </enum>
   </enums>
   <structs>
     <struct name="MessageType">
@@ -59,31 +64,65 @@
   </structs>
   <interfaces>
     <interface name="Input" export="Input" no-check="true">
-      <!-- Base event for all pointer/mouse input events -->
       <messages>
-        <message name="MouseMessage" type="WI_Message"/>
-        <message name="KeyMessage" type="WI_Message"/>
-        <message name="LeftMouseDown" same-as="MouseMessage"/>
-        <message name="RightMouseDown" same-as="MouseMessage"/>
-        <message name="OtherMouseDown" same-as="MouseMessage"/>
-        <message name="LeftMouseUp" same-as="MouseMessage"/>
-        <message name="RightMouseUp" same-as="MouseMessage"/>
-        <message name="OtherMouseUp" same-as="MouseMessage"/>
-        <message name="LeftMouseDragged" same-as="MouseMessage"/>
-        <message name="RightMouseDragged" same-as="MouseMessage"/>
-        <message name="OtherMouseDragged" same-as="MouseMessage"/>
-        <message name="LeftDoubleClick" same-as="MouseMessage"/>
-        <message name="RightDoubleClick" same-as="MouseMessage"/>
-        <message name="OtherDoubleClick" same-as="MouseMessage"/>
-        <message name="MouseMoved" same-as="MouseMessage"/>
-        <message name="ScrollWheel" same-as="MouseMessage"/>
-        <message name="DragDrop" same-as="MouseMessage"/>
-        <message name="DragEnter" same-as="MouseMessage"/>
-        <message name="KeyDown" same-as="KeyMessage"/>
-        <message name="KeyUp" same-as="KeyMessage"/>
-        <message name="Char" same-as="KeyMessage"/>
+        <!-- Base mouse event: pointer position -->
+        <message name="MouseMessage">
+          <summary>Base mouse event providing pointer position.</summary>
+          <fields>
+            <field name="x" type="float">Horizontal pointer position in local space</field>
+            <field name="y" type="float">Vertical pointer position in local space</field>
+          </fields>
+        </message>
+        <!-- Mouse button event: extends MouseMessage with button and click info -->
+        <message name="MouseButtonMessage" parent="MouseMessage">
+          <summary>Mouse button event providing position and button identity.</summary>
+          <fields>
+            <field name="button" type="MouseButton">The mouse button involved in this event</field>
+            <field name="clickCount" type="int">Number of consecutive clicks (1 for single click, 2 for double click)</field>
+          </fields>
+        </message>
+        <!-- Mouse wheel event: extends MouseMessage with scroll delta -->
+        <message name="MouseWheelMessage" parent="MouseMessage">
+          <summary>Mouse wheel scroll event providing position and scroll amount.</summary>
+          <fields>
+            <field name="delta" type="int">Scroll wheel rotation amount; positive values scroll up/forward</field>
+          </fields>
+        </message>
+        <!-- Base keyboard event: key code and modifier state -->
+        <message name="KeyMessage">
+          <summary>Base keyboard event providing key code and modifier flags.</summary>
+          <fields>
+            <field name="keyCode" type="int">Platform virtual key code of the key involved</field>
+            <field name="modflags" type="int">Bitmask of active modifier keys (Ctrl, Alt, Shift, Cmd)</field>
+          </fields>
+        </message>
+        <!-- Mouse button press events -->
+        <message name="LeftMouseDown" parent="MouseButtonMessage"/>
+        <message name="RightMouseDown" parent="MouseButtonMessage"/>
+        <message name="OtherMouseDown" parent="MouseButtonMessage"/>
+        <!-- Mouse button release events -->
+        <message name="LeftMouseUp" parent="MouseButtonMessage"/>
+        <message name="RightMouseUp" parent="MouseButtonMessage"/>
+        <message name="OtherMouseUp" parent="MouseButtonMessage"/>
+        <!-- Mouse drag events (button held while moving) -->
+        <message name="LeftMouseDragged" parent="MouseButtonMessage"/>
+        <message name="RightMouseDragged" parent="MouseButtonMessage"/>
+        <message name="OtherMouseDragged" parent="MouseButtonMessage"/>
+        <!-- Mouse double-click events -->
+        <message name="LeftDoubleClick" parent="MouseButtonMessage"/>
+        <message name="RightDoubleClick" parent="MouseButtonMessage"/>
+        <message name="OtherDoubleClick" parent="MouseButtonMessage"/>
+        <!-- Mouse move (no button) and scroll wheel -->
+        <message name="MouseMoved" parent="MouseMessage"/>
+        <message name="ScrollWheel" parent="MouseWheelMessage"/>
+        <!-- Drag-and-drop events -->
+        <message name="DragDrop" parent="MouseMessage"/>
+        <message name="DragEnter" parent="MouseMessage"/>
+        <!-- Keyboard events -->
+        <message name="KeyDown" parent="KeyMessage"/>
+        <message name="KeyUp" parent="KeyMessage"/>
+        <message name="Char" parent="KeyMessage"/>
       </messages>
-      <!-- Base event for all keyboard input events -->
     </interface>
     <interface name="Object" prefix="OBJ_" export="Object" no-check="true">
       <summary>Core engine host object.</summary>

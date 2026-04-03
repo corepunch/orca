@@ -62,12 +62,14 @@
 
 <!-- Message Declaration - defines a message that can be handled -->
 <!-- Messages may contain inline field children (preferred) or reference an external type via the type attribute (workaround) -->
-<!-- Use same-as="BaseMessage" to share fields/type with another message (inheritance) -->
+<!-- Use same-as="BaseMessage" to alias fields/type with another message -->
+<!-- Use parent="BaseMessage" to inherit fields from a base message (fields are copied field-by-field) -->
 <!ELEMENT message (summary?, details?, fields?)>
 <!ATTLIST message
   name CDATA #REQUIRED
   type CDATA #IMPLIED
   same-as CDATA #IMPLIED
+  parent CDATA #IMPLIED
   routing (Bubbling|TunnelingBubbling|Tunneling|Direct) #IMPLIED
 >
 

@@ -325,16 +325,6 @@ struct WindowPaintMsgArgs {
 };
 ORCA_API void luaX_pushWindowPaintMsgArgs(lua_State *L, struct WindowPaintMsgArgs const* data);
 ORCA_API struct WindowPaintMsgArgs* luaX_checkWindowPaintMsgArgs(lua_State *L, int idx);
-/** WindowClosedMsgArgs struct */
-struct WindowClosedMsgArgs {
-};
-ORCA_API void luaX_pushWindowClosedMsgArgs(lua_State *L, struct WindowClosedMsgArgs const* data);
-ORCA_API struct WindowClosedMsgArgs* luaX_checkWindowClosedMsgArgs(lua_State *L, int idx);
-/** WindowChangedScreenMsgArgs struct */
-struct WindowChangedScreenMsgArgs {
-};
-ORCA_API void luaX_pushWindowChangedScreenMsgArgs(lua_State *L, struct WindowChangedScreenMsgArgs const* data);
-ORCA_API struct WindowChangedScreenMsgArgs* luaX_checkWindowChangedScreenMsgArgs(lua_State *L, int idx);
 
 
 /// @brief Base class for managing texture resources and their sampling parameters for rendering.

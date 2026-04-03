@@ -106,11 +106,6 @@ struct SystemMessage {
 ORCA_API void luaX_pushSystemMessage(lua_State *L, struct SystemMessage const* SystemMessage);
 ORCA_API struct SystemMessage* luaX_checkSystemMessage(lua_State *L, int idx);
 
-/** ReadCommandsMsgArgs struct */
-struct ReadCommandsMsgArgs {
-};
-ORCA_API void luaX_pushReadCommandsMsgArgs(lua_State *L, struct ReadCommandsMsgArgs const* data);
-ORCA_API struct ReadCommandsMsgArgs* luaX_checkReadCommandsMsgArgs(lua_State *L, int idx);
 /** OpenFileMsgArgs struct */
 struct OpenFileMsgArgs {
 	const char* FileName;
@@ -123,11 +118,6 @@ struct FileExistsMsgArgs {
 };
 ORCA_API void luaX_pushFileExistsMsgArgs(lua_State *L, struct FileExistsMsgArgs const* data);
 ORCA_API struct FileExistsMsgArgs* luaX_checkFileExistsMsgArgs(lua_State *L, int idx);
-/** HasChangedFilesMsgArgs struct */
-struct HasChangedFilesMsgArgs {
-};
-ORCA_API void luaX_pushHasChangedFilesMsgArgs(lua_State *L, struct HasChangedFilesMsgArgs const* data);
-ORCA_API struct HasChangedFilesMsgArgs* luaX_checkHasChangedFilesMsgArgs(lua_State *L, int idx);
 /** LoadProjectMsgArgs struct */
 struct LoadProjectMsgArgs {
 	const char* Path; ///< Directory name to load the bundle

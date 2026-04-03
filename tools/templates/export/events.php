@@ -1,5 +1,5 @@
 <?php foreach ($events as $name => $event):?>
-<?php if ($event->getParentEvent()) echo("#define {$name}MsgArgs {$event->getParentEvent()->name}MsgArgs\n") ?>
+<?php if ($event->getParentEvent() && !$event->hasFields()) echo("#define {$name}MsgArgs {$event->getEffectiveStructName()}\n") ?>
 //struct MessageType <?= $name ?>Message = {
 //	.name = "<?= $name ?>",
 //	.id = kMsg<?= $name ?>,

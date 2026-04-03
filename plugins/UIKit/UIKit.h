@@ -565,31 +565,6 @@ struct HandleMessageMsgArgs {
 };
 ORCA_API void luaX_pushHandleMessageMsgArgs(lua_State *L, struct HandleMessageMsgArgs const* data);
 ORCA_API struct HandleMessageMsgArgs* luaX_checkHandleMessageMsgArgs(lua_State *L, int idx);
-/** IsVisibleMsgArgs struct */
-struct IsVisibleMsgArgs {
-};
-ORCA_API void luaX_pushIsVisibleMsgArgs(lua_State *L, struct IsVisibleMsgArgs const* data);
-ORCA_API struct IsVisibleMsgArgs* luaX_checkIsVisibleMsgArgs(lua_State *L, int idx);
-/** ViewDidLoadMsgArgs struct */
-struct ViewDidLoadMsgArgs {
-};
-ORCA_API void luaX_pushViewDidLoadMsgArgs(lua_State *L, struct ViewDidLoadMsgArgs const* data);
-ORCA_API struct ViewDidLoadMsgArgs* luaX_checkViewDidLoadMsgArgs(lua_State *L, int idx);
-/** KillFocusMsgArgs struct */
-struct KillFocusMsgArgs {
-};
-ORCA_API void luaX_pushKillFocusMsgArgs(lua_State *L, struct KillFocusMsgArgs const* data);
-ORCA_API struct KillFocusMsgArgs* luaX_checkKillFocusMsgArgs(lua_State *L, int idx);
-/** SetFocusMsgArgs struct */
-struct SetFocusMsgArgs {
-};
-ORCA_API void luaX_pushSetFocusMsgArgs(lua_State *L, struct SetFocusMsgArgs const* data);
-ORCA_API struct SetFocusMsgArgs* luaX_checkSetFocusMsgArgs(lua_State *L, int idx);
-/** GetSizeMsgArgs struct */
-struct GetSizeMsgArgs {
-};
-ORCA_API void luaX_pushGetSizeMsgArgs(lua_State *L, struct GetSizeMsgArgs const* data);
-ORCA_API struct GetSizeMsgArgs* luaX_checkGetSizeMsgArgs(lua_State *L, int idx);
 /** MakeTextMsgArgs struct */
 struct MakeTextMsgArgs {
 	struct ViewText* text; ///< Text view to render
@@ -625,21 +600,6 @@ struct ArrangeMsgArgs {
 };
 ORCA_API void luaX_pushArrangeMsgArgs(lua_State *L, struct ArrangeMsgArgs const* data);
 ORCA_API struct ArrangeMsgArgs* luaX_checkArrangeMsgArgs(lua_State *L, int idx);
-/** ForegroundContentMsgArgs struct */
-struct ForegroundContentMsgArgs {
-};
-ORCA_API void luaX_pushForegroundContentMsgArgs(lua_State *L, struct ForegroundContentMsgArgs const* data);
-ORCA_API struct ForegroundContentMsgArgs* luaX_checkForegroundContentMsgArgs(lua_State *L, int idx);
-/** UpdateGeometryMsgArgs struct */
-struct UpdateGeometryMsgArgs {
-};
-ORCA_API void luaX_pushUpdateGeometryMsgArgs(lua_State *L, struct UpdateGeometryMsgArgs const* data);
-ORCA_API struct UpdateGeometryMsgArgs* luaX_checkUpdateGeometryMsgArgs(lua_State *L, int idx);
-/** SubmitMsgArgs struct */
-struct SubmitMsgArgs {
-};
-ORCA_API void luaX_pushSubmitMsgArgs(lua_State *L, struct SubmitMsgArgs const* data);
-ORCA_API struct SubmitMsgArgs* luaX_checkSubmitMsgArgs(lua_State *L, int idx);
 /** UpdateLayoutMsgArgs struct */
 struct UpdateLayoutMsgArgs {
 	float Width;
