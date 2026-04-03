@@ -74,14 +74,11 @@ lua_pushmousevent(lua_State* L, lpObject_t obj, struct WI_Message* e)
     case kEventRightMouseDragged:
     case kEventOtherMouseDragged:
       {
-        void* data = lua_newuserdata(L, sizeof(MouseMessageMsg_t));
-        *(MouseMessageMsg_t*)data = mouse;
         lua_pushlightuserdata(L, (void*)(intptr_t)msg);
-        if (lua_gettable(L, LUA_REGISTRYINDEX) == LUA_TTABLE) {
-          lua_setmetatable(L, -2);
-        } else {
-          luaL_error(L, "Invalid message type: %u", msg);
-        }
+        lua_gettable(L, LUA_REGISTRYINDEX);
+        // luaL_checktype(L, -1, LUA_TTABLE);
+        lua_pushlightuserdata(L, &mouse);
+        lua_call(L, 1, 1);
       }
       // luaX_pushMouseMessageMsgArgs(L, &mouse);
       return 1;

@@ -12,7 +12,9 @@ struct NAME* luaX_check##NAME(lua_State *L, int idx) { return luaL_checkudata(L,
 static int f_new_##NAME(lua_State *L) { \
 	struct NAME self; \
 	memset(&self, 0, sizeof(struct NAME)); \
-	if (lua_istable(L, 1)) \
+	if (lua_islightuserdata(L, 1)) { \
+		memcpy(&self, lua_touserdata(L, 1), sizeof(struct NAME)); \
+	} else if (lua_istable(L, 1)) \
 		for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); lua_pop(L, 1), i++) { \
 			if (lua_getfield(L, 1, _##NAME[i].Name)) \
 				read_property(L, -1, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); } \
