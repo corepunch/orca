@@ -491,6 +491,11 @@ class Event extends Type {
 		return count($this->_elem->xpath("fields/field[@name]")) > 0;
 	}
 
+	// Returns true if this event has a parent but no own fields (pure type alias)
+	function isPureAlias() {
+		return $this->getParentEvent() && !$this->hasFields();
+	}
+
 	// Returns true if this event or any ancestor has inline fields
 	function hasAnyFields() {
 		if ($this->hasFields()) return true;
