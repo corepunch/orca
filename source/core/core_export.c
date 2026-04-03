@@ -41,7 +41,7 @@ ENUM(MessageRouting, "Bubbling", "TunnelingBubbling", "Tunneling", "Direct")
 ENUM(PropertyState, "Normal", "Hover", "Focus", "Select", "Disable", "OldValue")
 ENUM(BindingMode, "OneWay", "TwoWay", "OneWayToSource", "Expression")
 ENUM(PropertyAttribute, "WholeProperty", "ColorR", "ColorG", "ColorB", "ColorA", "VectorX", "VectorY", "VectorZ", "VectorW")
-ENUM(MouseButton, "Left", "Right", "Middle")
+ENUM(MouseButton, "Left", "Right", "Middle", "None")
 
 
 int luaopen_orca_Input(lua_State *L) {
