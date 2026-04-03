@@ -24,7 +24,7 @@ DOC_MODULES := \
 DOCS_DIR   := ../docs
 TEMPLATES  := templates
 
-PYPHP := python3 -m pyphp.pyphp
+PYPHP := python3 -m pyphp
 
 # Top-level targets
 .PHONY: all dtd docs docs-index $(MODULES)
