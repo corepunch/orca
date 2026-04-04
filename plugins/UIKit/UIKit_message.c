@@ -156,6 +156,20 @@ send_mouse_message(lpObject_t obj, struct WI_Message* e)
   return OBJ_SendMessageW(obj, msg, 0, &mouse);
 }
 
+void WI_BuildModifiersString(wParam_t wParam, char* buf, size_t size);
+void WI_KeyEventToText(struct WI_Message const* e, char* buf, size_t size);
+
+static void
+build_key_msg(struct WI_Message const* e, KeyMessageMsg_t* key)
+{
+  key->keyCode = e->keyCode;
+  key->character = *(unsigned char*)&e->lParam;
+  key->modifiers = e->wParam & (WI_MOD_SHIFT|WI_MOD_CTRL|WI_MOD_ALT|WI_MOD_CMD);
+  WI_KeyEventToText(e, key->text, sizeof(key->text));
+  WI_BuildModifiersString(e->wParam, key->modifiersString, sizeof(key->modifiersString));
+  snprintf(key->hotKey, sizeof(key->hotKey), "%s%s", key->modifiersString, key->text);
+}
+
 static LRESULT
 send_key_message(lpObject_t obj, struct WI_Message* e)
 {
@@ -167,11 +181,8 @@ send_key_message(lpObject_t obj, struct WI_Message* e)
     default:
       return FALSE;
   }
-  KeyMessageMsg_t key = {
-    .keyCode = e->keyCode,
-    .character = *(unsigned char*)&e->lParam,
-    .modifiers = e->wParam & (WI_MOD_SHIFT|WI_MOD_CTRL|WI_MOD_ALT|WI_MOD_CMD),
-  };
+  KeyMessageMsg_t key = {0};
+  build_key_msg(e, &key);
   return OBJ_SendMessageW(obj, msg, 0, &key);
 }
 
@@ -269,23 +280,12 @@ handle:
   return success || e->message == ID_Input_DragEnter;
 }
 
-lpcString_t WI_KeynumToString(uint32_t keynum);
-
-static bool_t is_printable(int ch) {
-  return ch >= 0x20 && ch <= 0x7E;
-}
-
 bool_t
 UI_HandleKeyEvent(lua_State *L, struct WI_Message* e)
 {
   if (!core_GetFocus())
     return FALSE;
   
-  if (e->message == kEventKeyDown && is_printable(e->wParam&0xff)) {
-    struct WI_Message tmp = *e;
-    tmp.message = kEventChar;
-    UI_HandleKeyEvent(L, &tmp);
-  }
   for (lpObject_t obj = core_GetFocus(); obj; obj = OBJ_GetParent(obj)) {
     lpcString_t szCallback = OBJ_FindCallbackForID(obj, e->message);
     if (szCallback) {
@@ -296,39 +296,12 @@ UI_HandleKeyEvent(lua_State *L, struct WI_Message* e)
       lua_insert(L, -2); // Move callback before obj
       lua_pushstring(L, szCallback);
       luaX_pushObject(L, core_GetFocus());
-      if (e->message == kEventChar) {
-        char ch = e->wParam&0xff;
-        if (e->wParam & WI_MOD_SHIFT) {
-          if (ch >= '0' && ch <= '9') {
-            lpcString_t sym = ")!@#$%^&*(";
-            ch = sym[ch-'0'];
-          } else {
-            ch = toupper(ch);
-          }
-        }
-        lua_pushlstring(L, &ch, 1);
-        //        uint32_t len = 0;
-        //        while (len < sizeof(e->lParam) && ((lpcString_t)&e->lParam)[len])
-        //          len++;
-        //        lua_pushlstring(L, (lpcString_t)&e->lParam, len);
-      } else {
-#if __linux__
-        uint32_t len = 0;
-        while (len < sizeof(e->lParam) && ((lpcString_t)&e->lParam)[len])
-          len++;
-        lua_pushlstring(L, (lpcString_t)&e->lParam, len);
-#else
-        lua_pushstring(L, WI_KeynumToString(e->wParam));
-#endif
-      }
-      shortStr_t comp={0};
-      if (e->wParam & WI_MOD_CTRL) strcat(comp, "ctrl+");
-      if (e->wParam & WI_MOD_ALT) strcat(comp, "alt+");
-      if (e->wParam & WI_MOD_SHIFT) strcat(comp, "shift+");
-      if (e->wParam & WI_MOD_CMD) strcat(comp, "cmd+");
-      lua_pushstring(L, comp);
-      //      lua_pcall(L, 4, 1, 0);
-      if (lua_pcall(L, 6, 1, 0) != LUA_OK) {
+      KeyMessageMsg_t key = {0};
+      build_key_msg(e, &key);
+      luaX_pushKeyMessageMsgArgs(L, &key);
+      /* Stack: [orca.async, obj.handleEvent, obj, szCallback, focusedObj, keyMsg]
+       * Calls: obj.handleEvent(obj, szCallback, focusedObj, keyMsg) */
+      if (lua_pcall(L, 5, 1, 0) != LUA_OK) {
         Con_Error("%s(): %s", szCallback, luaL_checkstring(L, -1));
         lua_pop(L, 1);
       }
@@ -410,6 +383,7 @@ LRESULT ui_handle_event(lua_State *L, struct WI_Message* msg) {
       return UI_HandleMouseEvent(L, msg->target, msg);
     case kEventKeyDown:
     case kEventKeyUp:
+    case kEventChar:
       return UI_HandleKeyEvent(L, msg);
     case kEventResumeCoroutine:
       switch (lua_resume(msg->target, L, LOWORD(msg->wParam), &tmp)) {
