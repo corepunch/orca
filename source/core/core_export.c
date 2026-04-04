@@ -640,7 +640,7 @@ int luaopen_orca_##NAME(lua_State *L) { \
 	}), 0); \
 	luaL_setfuncs(L, _##NAME##_Methods, 0); \
 	/* Register the struct in the Lua registry */ \
-	lua_pushlightuserdata(L, (void*)(intptr_t)ID_#x#NAME); \
+	lua_pushlightuserdata(L, (void*)(intptr_t)ID_##NAME); \
 	lua_pushvalue(L, -2); \
 	lua_settable(L, LUA_REGISTRYINDEX); \
 	/* Make struct creatable via constructor-like syntax */ \
