@@ -191,12 +191,14 @@ static int f_set_theme(lua_State* L)
 
 int f_peek_message(lua_State* L);
 int f_dispatch_message(lua_State* L);
+int f_translate_message(lua_State* L);
 int f_event_index(lua_State* L);
 int f_event_new(lua_State* L);
 
 static luaL_Reg const lib_system[] = {
   { "getMessage", f_peek_message },
   { "dispatchMessage", f_dispatch_message },
+  { "translateMessage", f_translate_message },
   { "getTimeSpan", f_get_time_span },
   { "getTime", f_getTime },
   { "sleep", f_sleep },
