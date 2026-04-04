@@ -270,6 +270,7 @@ handle:
 }
 
 lpcString_t WI_KeynumToString(uint32_t keynum);
+void WI_BuildModifiersString(wParam_t wParam, char* buf, size_t size);
 
 bool_t
 UI_HandleKeyEvent(lua_State *L, struct WI_Message* e)
@@ -313,10 +314,7 @@ UI_HandleKeyEvent(lua_State *L, struct WI_Message* e)
 #endif
       }
       shortStr_t comp={0};
-      if (e->wParam & WI_MOD_CTRL) strcat(comp, "ctrl+");
-      if (e->wParam & WI_MOD_ALT) strcat(comp, "alt+");
-      if (e->wParam & WI_MOD_SHIFT) strcat(comp, "shift+");
-      if (e->wParam & WI_MOD_CMD) strcat(comp, "cmd+");
+      WI_BuildModifiersString(e->wParam, comp, sizeof(comp));
       lua_pushstring(L, comp);
       //      lua_pcall(L, 4, 1, 0);
       if (lua_pcall(L, 6, 1, 0) != LUA_OK) {
