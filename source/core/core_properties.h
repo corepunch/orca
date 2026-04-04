@@ -53,6 +53,9 @@
 #define ID_KeyMessageMsgArgs_keyCode 0x409e6231 // KeyMessageMsgArgs.keyCode
 #define ID_KeyMessageMsgArgs_character 0x8eaf7678 // KeyMessageMsgArgs.character
 #define ID_KeyMessageMsgArgs_modifiers 0xffcf5cf1 // KeyMessageMsgArgs.modifiers
+#define ID_KeyMessageMsgArgs_text 0x1df3f256 // KeyMessageMsgArgs.text
+#define ID_KeyMessageMsgArgs_modifiersString 0xafc17bec // KeyMessageMsgArgs.modifiersString
+#define ID_KeyMessageMsgArgs_hotKey 0xa451f0db // KeyMessageMsgArgs.hotKey
 #define ID_LeftMouseDownMsgArgs 0xf26710b1
 #define ID_LeftMouseDownMsgArgs_x 0x63b86693 // LeftMouseDownMsgArgs.x
 #define ID_LeftMouseDownMsgArgs_y 0x62b86500 // LeftMouseDownMsgArgs.y
@@ -169,14 +172,23 @@
 #define ID_KeyDownMsgArgs_keyCode 0x596a4da0 // KeyDownMsgArgs.keyCode
 #define ID_KeyDownMsgArgs_character 0xaf1dd9f5 // KeyDownMsgArgs.character
 #define ID_KeyDownMsgArgs_modifiers 0xf8260664 // KeyDownMsgArgs.modifiers
+#define ID_KeyDownMsgArgs_text 0xa5a53729 // KeyDownMsgArgs.text
+#define ID_KeyDownMsgArgs_modifiersString 0x4b58d005 // KeyDownMsgArgs.modifiersString
+#define ID_KeyDownMsgArgs_hotKey 0x8dc573fc // KeyDownMsgArgs.hotKey
 #define ID_KeyUpMsgArgs 0xa70b716b
 #define ID_KeyUpMsgArgs_keyCode 0x6c828db7 // KeyUpMsgArgs.keyCode
 #define ID_KeyUpMsgArgs_character 0x99154ac2 // KeyUpMsgArgs.character
 #define ID_KeyUpMsgArgs_modifiers 0x986693c3 // KeyUpMsgArgs.modifiers
+#define ID_KeyUpMsgArgs_text 0x9ca78fc4 // KeyUpMsgArgs.text
+#define ID_KeyUpMsgArgs_modifiersString 0x2740f9a6 // KeyUpMsgArgs.modifiersString
+#define ID_KeyUpMsgArgs_hotKey 0x722d6f41 // KeyUpMsgArgs.hotKey
 #define ID_CharMsgArgs 0x897772f7
 #define ID_CharMsgArgs_keyCode 0x5aaa362b // CharMsgArgs.keyCode
 #define ID_CharMsgArgs_character 0x871376d6 // CharMsgArgs.character
 #define ID_CharMsgArgs_modifiers 0x6a82059f // CharMsgArgs.modifiers
+#define ID_CharMsgArgs_text 0xa2d94298 // CharMsgArgs.text
+#define ID_CharMsgArgs_modifiersString 0x36132aea // CharMsgArgs.modifiersString
+#define ID_CharMsgArgs_hotKey 0x559753a5 // CharMsgArgs.hotKey
 #define ID_CreateMsgArgs 0xc7ecdfb7
 #define ID_StartMsgArgs 0x5bc8ae69
 #define ID_AwakeMsgArgs 0x6474e876

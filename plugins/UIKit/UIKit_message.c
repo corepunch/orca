@@ -150,9 +150,6 @@ process_dragndrop(lua_State *L, struct WI_Message *e, lpObject_t sender)
 static LRESULT
 send_mouse_message(lpObject_t obj, struct WI_Message* e)
 {
-  uint32_t msg;
-  MouseMessageMsg_t mouse;
-  convert_mouse_message(e, &msg, &mouse);
   return OBJ_SendMessageW(obj, msg, 0, &mouse);
 }
 
@@ -160,12 +157,19 @@ void WI_BuildModifiersString(wParam_t wParam, char* buf, size_t size);
 void WI_KeyEventToText(struct WI_Message const* e, char* buf, size_t size);
 
 static void
-build_key_msg(struct WI_Message const* e, KeyMessageMsg_t* key)
+build_key_msg(struct WI_Message const* e, KeyMessageMsg_t* key, uint32_t *msg)
 {
+  switch (e->message) {
+    case kEventKeyDown: *msg = ID_Input_KeyDown; break;
+    case kEventKeyUp:   *msg = ID_Input_KeyUp;   break;
+    case kEventChar:    *msg = ID_Input_Char;    break;
+    default:
+      return FALSE;
+  }
   key->keyCode = e->keyCode;
   key->character = *(unsigned char*)&e->lParam;
   key->modifiers = e->wParam & (WI_MOD_SHIFT|WI_MOD_CTRL|WI_MOD_ALT|WI_MOD_CMD);
-  WI_KeyEventToText(e, key->text, sizeof(key->text));
+  WI_KeyEventToText(e, (char*)key->text, sizeof(key->text));
   WI_BuildModifiersString(e->wParam, key->modifiersString, sizeof(key->modifiersString));
   snprintf(key->hotKey, sizeof(key->hotKey), "%s%s", key->modifiersString, key->text);
 }
@@ -174,15 +178,8 @@ static LRESULT
 send_key_message(lpObject_t obj, struct WI_Message* e)
 {
   uint32_t msg;
-  switch (e->message) {
-    case kEventKeyDown: msg = ID_Input_KeyDown; break;
-    case kEventKeyUp:   msg = ID_Input_KeyUp;   break;
-    case kEventChar:    msg = ID_Input_Char;    break;
-    default:
-      return FALSE;
-  }
   KeyMessageMsg_t key = {0};
-  build_key_msg(e, &key);
+  build_key_msg(e, &key, &msg);
   return OBJ_SendMessageW(obj, msg, 0, &key);
 }
 
@@ -231,31 +228,41 @@ handle:
   // hit testing and routing process.
   process_dragndrop(L, e, sender);
   
+  uint32_t msg;
+  MouseMessageMsg_t mouse;
+  convert_mouse_message(e, &msg, &mouse);
+
   // Route the event up the parent chain until it's handled.
+  CORE_HandleObjectMessage(L, &(struct WI_Message) {
+    .target = sender,
+    .message = msg,
+    .wParam = 0,
+    .lParam = &mouse,
+  });
   // This allows for event delegation, where a parent object can choose to
   // handle events for its children. For example, a list item could delegate
   // mouse events to its parent list for handling selection.
-  for (lpObject_t obj = sender; !success && obj; obj = OBJ_GetParent(obj)) {
-    lpcString_t szCallback = OBJ_FindCallbackForID(obj, e->message);
-    if (szCallback) {
-      luaX_import(L, "orca", "async");
-      if (luaX_pushObject(L, obj), lua_isnil(L, -1)) {
-        Con_Warning("Object has no Lua representation: %p", obj);
-        lua_pop(L, 2);
-        continue;
-      }
-      lua_getfield(L, -1, szCallback);
-      lua_insert(L, -2); // Move callback before obj
-      luaX_pushObject(L, sender);
-      if (lua_pcall(L, lua_pushmousevent(L, obj, e) + 3, 0, 0) != LUA_OK) {
-        Con_Error("%s(): %s", szCallback, lua_tostring(L, -1));
-        lua_pop(L, 1);
-      }
-      success = TRUE;
-    } else if (send_mouse_message(obj, e)) {
-      success = TRUE;
-    }
-  }
+  // for (lpObject_t obj = sender; !success && obj; obj = OBJ_GetParent(obj)) {
+  //   lpcString_t szCallback = OBJ_FindCallbackForID(obj, e->message);
+  //   if (szCallback) {
+  //     luaX_import(L, "orca", "async");
+  //     if (luaX_pushObject(L, obj), lua_isnil(L, -1)) {
+  //       Con_Warning("Object has no Lua representation: %p", obj);
+  //       lua_pop(L, 2);
+  //       continue;
+  //     }
+  //     lua_getfield(L, -1, szCallback);
+  //     lua_insert(L, -2); // Move callback before obj
+  //     luaX_pushObject(L, sender);
+  //     if (lua_pcall(L, lua_pushmousevent(L, obj, e) + 3, 0, 0) != LUA_OK) {
+  //       Con_Error("%s(): %s", szCallback, lua_tostring(L, -1));
+  //       lua_pop(L, 1);
+  //     }
+  //     success = TRUE;
+  //   } else if (send_mouse_message(obj, e)) {
+  //     success = TRUE;
+  //   }
+  // }
   
   // If the event wasn't handled by any object in the hierarchy, we still
   // need to process drag and drop events in order to properly update the
@@ -283,35 +290,41 @@ handle:
 bool_t
 UI_HandleKeyEvent(lua_State *L, struct WI_Message* e)
 {
-  if (!core_GetFocus())
-    return FALSE;
-  
-  for (lpObject_t obj = core_GetFocus(); obj; obj = OBJ_GetParent(obj)) {
-    lpcString_t szCallback = OBJ_FindCallbackForID(obj, e->message);
-    if (szCallback) {
-      luaX_import(L, "orca", "async");
-      luaX_pushObject(L, obj);
-      //      lua_getfield(L, -1, OBJ_FindCallbackForID(obj, e->message));
-      lua_getfield(L, -1, "handleEvent");
-      lua_insert(L, -2); // Move callback before obj
-      lua_pushstring(L, szCallback);
-      luaX_pushObject(L, core_GetFocus());
-      KeyMessageMsg_t key = {0};
-      build_key_msg(e, &key);
-      luaX_pushKeyMessageMsgArgs(L, &key);
-      /* Stack: [orca.async, obj.handleEvent, obj, szCallback, focusedObj, keyMsg]
-       * Calls: obj.handleEvent(obj, szCallback, focusedObj, keyMsg) */
-      if (lua_pcall(L, 5, 1, 0) != LUA_OK) {
-        Con_Error("%s(): %s", szCallback, luaL_checkstring(L, -1));
-        lua_pop(L, 1);
-      }
-      return TRUE;
-    }
-    if (send_key_message(obj, e)) {
-      return TRUE;
-    }
-  }
-  return FALSE;
+  uint32_t msg;
+  sturct KeyMessageMessage key = {0};
+  build_key_msg(e, &key, &msg);
+  return core_GetFocus() && CORE_HandleObjectMessage(L, &(struct WI_Message) {
+    .target = core_GetFocus(),
+    .message = msg,
+    .wParam = 0,
+    .lParam = &key,
+  });  
+  // for (lpObject_t obj = core_GetFocus(); obj; obj = OBJ_GetParent(obj)) {
+  //   lpcString_t szCallback = OBJ_FindCallbackForID(obj, e->message);
+  //   if (szCallback) {
+  //     luaX_import(L, "orca", "async");
+  //     luaX_pushObject(L, obj);
+  //     //      lua_getfield(L, -1, OBJ_FindCallbackForID(obj, e->message));
+  //     lua_getfield(L, -1, "handleEvent");
+  //     lua_insert(L, -2); // Move callback before obj
+  //     lua_pushstring(L, szCallback);
+  //     luaX_pushObject(L, core_GetFocus());
+  //     KeyMessageMsg_t key = {0};
+  //     build_key_msg(e, &key);
+  //     luaX_pushKeyMessageMsgArgs(L, &key);
+  //     /* Stack: [orca.async, obj.handleEvent, obj, szCallback, focusedObj, keyMsg]
+  //      * Calls: obj.handleEvent(obj, szCallback, focusedObj, keyMsg) */
+  //     if (lua_pcall(L, 5, 1, 0) != LUA_OK) {
+  //       Con_Error("%s(): %s", szCallback, luaL_checkstring(L, -1));
+  //       lua_pop(L, 1);
+  //     }
+  //     return TRUE;
+  //   }
+  //   if (send_key_message(obj, e)) {
+  //     return TRUE;
+  //   }
+  // }
+  // return FALSE;
 }
 
 bool_t
@@ -325,6 +338,8 @@ CORE_HandleObjectMessage(lua_State *L, struct WI_Message* msg)
       luaX_import(L, "orca", "async");
       luaX_pushObject(L, hobj);
       assert(!lua_isnil(L, -1));
+      // lua_getfield(L, -1, "handleEvent");
+      // lua_insert(L, -2); // Move callback before obj
       lua_getfield(L, -1, szCallback);
       lua_insert(L, -2); // Move callback before obj
       luaX_pushObject(L, hobj);
