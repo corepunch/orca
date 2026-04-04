@@ -513,6 +513,7 @@ struct KeyMessageMsgArgs {
 	int32_t modifiers; ///< Active modifier keys during the event (bitmask of WI_MOD_* flags)
 	char text[32]; ///< The text produced by this key event as a UTF-8 string (empty for non-printable keys). Must be >sizeof(char*) for kDataTypeString fixed-array dispatch.
 	char modifiersString[32]; ///< Active modifier keys as a human-readable prefix string (e.g. "ctrl+shift+"). Must be >sizeof(char*) for kDataTypeString fixed-array dispatch.
+	char hotKey[64]; ///< Combined modifier+key string suitable for hotkey matching (e.g. "ctrl+alt+w"). Must be >sizeof(char*) for kDataTypeString fixed-array dispatch.
 };
 ORCA_API void luaX_pushKeyMessageMsgArgs(lua_State *L, struct KeyMessageMsgArgs const* data);
 ORCA_API struct KeyMessageMsgArgs* luaX_checkKeyMessageMsgArgs(lua_State *L, int idx);

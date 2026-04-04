@@ -877,6 +877,7 @@ static struct PropertyType _KeyMessageMsgArgs[] = {
 	DECL(0x411b1019, KeyMessageMsgArgs, modifiers, modifiers, kDataTypeInt), // KeyMessageMsgArgs.modifiers
 	DECL(0xbde64e3e, KeyMessageMsgArgs, text, text, kDataTypeString), // KeyMessageMsgArgs.text
 	DECL(0x8f82be34, KeyMessageMsgArgs, modifiersString, modifiersString, kDataTypeString), // KeyMessageMsgArgs.modifiersString
+	DECL(0x9703dc13, KeyMessageMsgArgs, hotKey, hotKey, kDataTypeString), // KeyMessageMsgArgs.hotKey
 };
 static luaL_Reg _LeftMouseDownMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _LeftMouseDownMsgArgs[] = {
@@ -1029,6 +1030,7 @@ static struct PropertyType _KeyDownMsgArgs[] = {
 	DECL(0x411b1019, KeyDownMsgArgs, modifiers, modifiers, kDataTypeInt), // KeyDownMsgArgs.modifiers
 	DECL(0xbde64e3e, KeyDownMsgArgs, text, text, kDataTypeString), // KeyDownMsgArgs.text
 	DECL(0x8f82be34, KeyDownMsgArgs, modifiersString, modifiersString, kDataTypeString), // KeyDownMsgArgs.modifiersString
+	DECL(0x9703dc13, KeyDownMsgArgs, hotKey, hotKey, kDataTypeString), // KeyDownMsgArgs.hotKey
 };
 static luaL_Reg _KeyUpMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _KeyUpMsgArgs[] = {
@@ -1037,6 +1039,7 @@ static struct PropertyType _KeyUpMsgArgs[] = {
 	DECL(0x411b1019, KeyUpMsgArgs, modifiers, modifiers, kDataTypeInt), // KeyUpMsgArgs.modifiers
 	DECL(0xbde64e3e, KeyUpMsgArgs, text, text, kDataTypeString), // KeyUpMsgArgs.text
 	DECL(0x8f82be34, KeyUpMsgArgs, modifiersString, modifiersString, kDataTypeString), // KeyUpMsgArgs.modifiersString
+	DECL(0x9703dc13, KeyUpMsgArgs, hotKey, hotKey, kDataTypeString), // KeyUpMsgArgs.hotKey
 };
 static luaL_Reg _CharMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _CharMsgArgs[] = {
@@ -1045,6 +1048,7 @@ static struct PropertyType _CharMsgArgs[] = {
 	DECL(0x411b1019, CharMsgArgs, modifiers, modifiers, kDataTypeInt), // CharMsgArgs.modifiers
 	DECL(0xbde64e3e, CharMsgArgs, text, text, kDataTypeString), // CharMsgArgs.text
 	DECL(0x8f82be34, CharMsgArgs, modifiersString, modifiersString, kDataTypeString), // CharMsgArgs.modifiersString
+	DECL(0x9703dc13, CharMsgArgs, hotKey, hotKey, kDataTypeString), // CharMsgArgs.hotKey
 };
 static luaL_Reg _CreateMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _CreateMsgArgs[] = {

@@ -167,6 +167,7 @@ build_key_msg(struct WI_Message const* e, KeyMessageMsg_t* key)
   key->modifiers = e->wParam & (WI_MOD_SHIFT|WI_MOD_CTRL|WI_MOD_ALT|WI_MOD_CMD);
   WI_KeyEventToText(e, key->text, sizeof(key->text));
   WI_BuildModifiersString(e->wParam, key->modifiersString, sizeof(key->modifiersString));
+  snprintf(key->hotKey, sizeof(key->hotKey), "%s%s", key->modifiersString, key->text);
 }
 
 static LRESULT
