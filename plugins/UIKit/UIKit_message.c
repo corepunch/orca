@@ -156,6 +156,19 @@ send_mouse_message(lpObject_t obj, struct WI_Message* e)
   return OBJ_SendMessageW(obj, msg, 0, &mouse);
 }
 
+void WI_BuildModifiersString(wParam_t wParam, char* buf, size_t size);
+void WI_KeyEventToText(struct WI_Message const* e, char* buf, size_t size);
+
+static void
+build_key_msg(struct WI_Message const* e, KeyMessageMsg_t* key)
+{
+  key->keyCode = e->keyCode;
+  key->character = *(unsigned char*)&e->lParam;
+  key->modifiers = e->wParam & (WI_MOD_SHIFT|WI_MOD_CTRL|WI_MOD_ALT|WI_MOD_CMD);
+  WI_KeyEventToText(e, key->text, sizeof(key->text));
+  WI_BuildModifiersString(e->wParam, key->modifiersString, sizeof(key->modifiersString));
+}
+
 static LRESULT
 send_key_message(lpObject_t obj, struct WI_Message* e)
 {
@@ -167,11 +180,8 @@ send_key_message(lpObject_t obj, struct WI_Message* e)
     default:
       return FALSE;
   }
-  KeyMessageMsg_t key = {
-    .keyCode = e->keyCode,
-    .character = *(unsigned char*)&e->lParam,
-    .modifiers = e->wParam & (WI_MOD_SHIFT|WI_MOD_CTRL|WI_MOD_ALT|WI_MOD_CMD),
-  };
+  KeyMessageMsg_t key = {0};
+  build_key_msg(e, &key);
   return OBJ_SendMessageW(obj, msg, 0, &key);
 }
 
@@ -269,9 +279,6 @@ handle:
   return success || e->message == ID_Input_DragEnter;
 }
 
-void WI_BuildModifiersString(wParam_t wParam, char* buf, size_t size);
-void WI_KeyEventToText(struct WI_Message const* e, char* buf, size_t size);
-
 bool_t
 UI_HandleKeyEvent(lua_State *L, struct WI_Message* e)
 {
@@ -288,14 +295,12 @@ UI_HandleKeyEvent(lua_State *L, struct WI_Message* e)
       lua_insert(L, -2); // Move callback before obj
       lua_pushstring(L, szCallback);
       luaX_pushObject(L, core_GetFocus());
-      char text[MAX_NAMELEN] = {0};
-      WI_KeyEventToText(e, text, sizeof(text));
-      lua_pushstring(L, text);
-      shortStr_t comp={0};
-      WI_BuildModifiersString(e->wParam, comp, sizeof(comp));
-      lua_pushstring(L, comp);
-      //      lua_pcall(L, 4, 1, 0);
-      if (lua_pcall(L, 6, 1, 0) != LUA_OK) {
+      KeyMessageMsg_t key = {0};
+      build_key_msg(e, &key);
+      luaX_pushKeyMessageMsgArgs(L, &key);
+      /* Stack: [orca.async, obj.handleEvent, obj, szCallback, focusedObj, keyMsg]
+       * Calls: obj.handleEvent(obj, szCallback, focusedObj, keyMsg) */
+      if (lua_pcall(L, 5, 1, 0) != LUA_OK) {
         Con_Error("%s(): %s", szCallback, luaL_checkstring(L, -1));
         lua_pop(L, 1);
       }

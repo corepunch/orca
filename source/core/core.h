@@ -510,7 +510,9 @@ ORCA_API struct MouseMessageMsgArgs* luaX_checkMouseMessageMsgArgs(lua_State *L,
 struct KeyMessageMsgArgs {
 	int32_t keyCode; ///< The key involved in this event
 	int32_t character; ///< The character produced by this key event
-	int32_t modifiers; ///< Active modifier keys during the event
+	int32_t modifiers; ///< Active modifier keys during the event (bitmask of WI_MOD_* flags)
+	char text[32]; ///< The text produced by this key event as a UTF-8 string (empty for non-printable keys). Must be >sizeof(char*) for kDataTypeString fixed-array dispatch.
+	char modifiersString[32]; ///< Active modifier keys as a human-readable prefix string (e.g. "ctrl+shift+"). Must be >sizeof(char*) for kDataTypeString fixed-array dispatch.
 };
 ORCA_API void luaX_pushKeyMessageMsgArgs(lua_State *L, struct KeyMessageMsgArgs const* data);
 ORCA_API struct KeyMessageMsgArgs* luaX_checkKeyMessageMsgArgs(lua_State *L, int idx);

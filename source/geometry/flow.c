@@ -27,8 +27,13 @@ parse_property(lua_State* L,
       *(float*)valueptr = atof(str);
       return TRUE;
     case kDataTypeString:
-      if (*(char**)valueptr) free(*(char**)valueptr); // Free existing string if necessary
-      *(char**)valueptr = strdup(str);
+      if (prop->DataSize > sizeof(char*)) {
+        strncpy((char*)valueptr, str, prop->DataSize - 1);
+        ((char*)valueptr)[prop->DataSize - 1] = '\0';
+      } else {
+        if (*(char**)valueptr) free(*(char**)valueptr); // Free existing string if necessary
+        *(char**)valueptr = strdup(str);
+      }
       return TRUE;
     case kDataTypeColor:
       *(struct color*)valueptr = COLOR_Parse(str);
@@ -86,8 +91,13 @@ read_property(lua_State *L,
       *(float*)valueptr = (float)luaL_checknumber(L, idx);
       break;
     case kDataTypeString:
-      if (*(char**)valueptr && *(intptr_t*)valueptr != -1) free(*(char**)valueptr); // Free existing string if necessary
-      *(char**)valueptr = strdup(luaL_checkstring(L, idx));
+      if (prop->DataSize > sizeof(char*)) {
+        strncpy((char*)valueptr, luaL_checkstring(L, idx), prop->DataSize - 1);
+        ((char*)valueptr)[prop->DataSize - 1] = '\0';
+      } else {
+        if (*(char**)valueptr && *(intptr_t*)valueptr != -1) free(*(char**)valueptr); // Free existing string if necessary
+        *(char**)valueptr = strdup(luaL_checkstring(L, idx));
+      }
       break;
     case kDataTypeColor:
       if (lua_isstring(L, idx)) {
@@ -144,7 +154,16 @@ write_property(lua_State *L,
         lua_pushnumber(L, *(float*)valueptr);
         break;
       case kDataTypeString:
-        lua_pushstring(L, *(char**)valueptr);
+        /* Distinguish pointer fields (lpcString_t) from fixed-size char arrays:
+         * pointer fields have DataSize == sizeof(char*); fixed-size char arrays
+         * must have DataSize > sizeof(char*) (e.g. char text[32]).
+         * Using a char[8] on a 64-bit platform would be ambiguous — use at
+         * least char[sizeof(char*)+1] for fixed-size string fields. */
+        if (prop->DataSize > sizeof(char*)) {
+          lua_pushstring(L, (char*)valueptr);
+        } else {
+          lua_pushstring(L, *(char**)valueptr);
+        }
         break;
       case kDataTypeColor:
         lua_newuserdata(L, sizeof(struct color));

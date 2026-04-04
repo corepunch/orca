@@ -25,9 +25,9 @@ local DropDown = ui.TerminalView:extend {
 		self.DropShadow = true
 		-- print(self.doc)
 	end,
-	onKeyDown = function (self, _, key)
+	onKeyDown = function (self, _, event)
 		local t, c = self.text, self.caret
-		if key == 'escape' then
+		if event.text == 'escape' then
 			self:removeFromParent()
 			return
 		end
