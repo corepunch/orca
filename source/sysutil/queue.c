@@ -105,18 +105,59 @@ WI_BuildModifiersString(wParam_t wParam, char* buf, size_t size)
   if (wParam & WI_MOD_CMD)   strncat(buf, "cmd+",   size - strlen(buf) - 1);
 }
 
+lpcString_t WI_KeynumToString(uint32_t keynum);
+
 /* Only ASCII printable range: translating extended/Unicode characters requires
    UTF-8 decoding, which is left to higher-level key handlers. */
 static bool_t is_printable_char(int ch) {
   return ch >= 0x20 && ch <= 0x7E;
 }
 
+/* Apply shift-key transformation to a printable ASCII character. */
+static char apply_shift(char ch) {
+  if (ch >= '0' && ch <= '9') {
+    lpcString_t sym = ")!@#$%^&*(";
+    return sym[ch - '0'];
+  }
+  return toupper(ch);
+}
+
 int f_translate_message(lua_State* L) {
   struct WI_Message const* msg = luaL_checkudata(L, 1, "Event");
   if (msg->message == kEventKeyDown && is_printable_char(msg->wParam & 0xff)) {
-    WI_PostMessageW(msg->target, kEventChar, msg->wParam, msg->lParam);
+    char ch = msg->wParam & 0xff;
+    if (msg->wParam & WI_MOD_SHIFT)
+      ch = apply_shift(ch);
+    lParam_t lp = 0;
+    *(char*)&lp = ch;
+    WI_PostMessageW(msg->target, kEventChar, msg->wParam, lp);
   }
   return 0;
+}
+
+void
+WI_KeyEventToText(struct WI_Message const* e, char* buf, size_t size)
+{
+  if (e->message == kEventChar) {
+    /* lParam stores the computed character written by f_translate_message. */
+    uint32_t len = 0;
+    while (len < sizeof(e->lParam) && ((lpcString_t)&e->lParam)[len])
+      len++;
+    if (len >= size) len = (uint32_t)size - 1;
+    memcpy(buf, &e->lParam, len);
+    buf[len] = '\0';
+  } else {
+#if __linux__
+    uint32_t len = 0;
+    while (len < sizeof(e->lParam) && ((lpcString_t)&e->lParam)[len])
+      len++;
+    if (len >= size) len = (uint32_t)size - 1;
+    memcpy(buf, &e->lParam, len);
+    buf[len] = '\0';
+#else
+    snprintf(buf, size, "%s", WI_KeynumToString(e->wParam));
+#endif
+  }
 }
 
 int f_event_new(lua_State* L);

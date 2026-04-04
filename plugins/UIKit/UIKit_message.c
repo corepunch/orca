@@ -269,8 +269,8 @@ handle:
   return success || e->message == ID_Input_DragEnter;
 }
 
-lpcString_t WI_KeynumToString(uint32_t keynum);
 void WI_BuildModifiersString(wParam_t wParam, char* buf, size_t size);
+void WI_KeyEventToText(struct WI_Message const* e, char* buf, size_t size);
 
 bool_t
 UI_HandleKeyEvent(lua_State *L, struct WI_Message* e)
@@ -288,31 +288,9 @@ UI_HandleKeyEvent(lua_State *L, struct WI_Message* e)
       lua_insert(L, -2); // Move callback before obj
       lua_pushstring(L, szCallback);
       luaX_pushObject(L, core_GetFocus());
-      if (e->message == kEventChar) {
-        char ch = e->wParam&0xff;
-        if (e->wParam & WI_MOD_SHIFT) {
-          if (ch >= '0' && ch <= '9') {
-            lpcString_t sym = ")!@#$%^&*(";
-            ch = sym[ch-'0'];
-          } else {
-            ch = toupper(ch);
-          }
-        }
-        lua_pushlstring(L, &ch, 1);
-        //        uint32_t len = 0;
-        //        while (len < sizeof(e->lParam) && ((lpcString_t)&e->lParam)[len])
-        //          len++;
-        //        lua_pushlstring(L, (lpcString_t)&e->lParam, len);
-      } else {
-#if __linux__
-        uint32_t len = 0;
-        while (len < sizeof(e->lParam) && ((lpcString_t)&e->lParam)[len])
-          len++;
-        lua_pushlstring(L, (lpcString_t)&e->lParam, len);
-#else
-        lua_pushstring(L, WI_KeynumToString(e->wParam));
-#endif
-      }
+      char text[MAX_NAMELEN] = {0};
+      WI_KeyEventToText(e, text, sizeof(text));
+      lua_pushstring(L, text);
       shortStr_t comp={0};
       WI_BuildModifiersString(e->wParam, comp, sizeof(comp));
       lua_pushstring(L, comp);
