@@ -1086,8 +1086,8 @@ LRESULT Node2DProc(struct Object* object, void* cmp, uint32_t message, wParam_t 
 		case ID_Node2D_UpdateGeometry: return Node2D_UpdateGeometry(object, cmp, wparm, lparm); // Node2D.UpdateGeometry
 		case ID_Node2D_DrawBrush: return Node2D_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
 		case ID_Node_HandleMessage: return Node2D_HandleMessage(object, cmp, wparm, lparm); // Node.HandleMessage
-		case ID_Input_ScrollWheel: return Node2D_ScrollWheel(object, cmp, wparm, lparm); // Input.ScrollWheel
-		case ID_Input_MouseMoved: return Node2D_MouseMoved(object, cmp, wparm, lparm); // Input.MouseMoved
+		case ID_Mouse_ScrollWheel: return Node2D_ScrollWheel(object, cmp, wparm, lparm); // Mouse.ScrollWheel
+		case ID_Mouse_MouseMoved: return Node2D_MouseMoved(object, cmp, wparm, lparm); // Mouse.MouseMoved
 		case ID_Node_HitTest: return Node2D_HitTest(object, cmp, wparm, lparm); // Node.HitTest
 		case ID_Node2D_Measure: return Node2D_Measure(object, cmp, wparm, lparm); // Node2D.Measure
 		case ID_Node2D_Arrange: return Node2D_Arrange(object, cmp, wparm, lparm); // Node2D.Arrange
@@ -1180,9 +1180,9 @@ LRESULT InputProc(struct Object* object, void* cmp, uint32_t message, wParam_t w
 		case ID_Object_Create: return Input_Create(object, cmp, wparm, lparm); // Object.Create
 		case ID_Node2D_DrawBrush: return Input_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
 		case ID_TextBlockConcept_MakeText: return Input_MakeText(object, cmp, wparm, lparm); // TextBlockConcept.MakeText
-		case ID_Input_KeyDown: return Input_KeyDown(object, cmp, wparm, lparm); // Input.KeyDown
+		case ID_Keyboard_KeyDown: return Input_KeyDown(object, cmp, wparm, lparm); // Keyboard.KeyDown
 		case ID_Node_KillFocus: return Input_KillFocus(object, cmp, wparm, lparm); // Node.KillFocus
-		case ID_Input_LeftMouseUp: return Input_LeftMouseUp(object, cmp, wparm, lparm); // Input.LeftMouseUp
+		case ID_Mouse_LeftMouseUp: return Input_LeftMouseUp(object, cmp, wparm, lparm); // Mouse.LeftMouseUp
 		case ID_Node2D_MeasureOverride: return Input_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
 	}
 	return FALSE;
@@ -1209,8 +1209,8 @@ static struct Button ButtonDefaults = {
 LRESULT ButtonProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
 		case ID_Object_Create: return Button_Create(object, cmp, wparm, lparm); // Object.Create
-		case ID_Input_LeftMouseUp: return Button_LeftMouseUp(object, cmp, wparm, lparm); // Input.LeftMouseUp
-		case ID_Input_KeyDown: return Button_KeyDown(object, cmp, wparm, lparm); // Input.KeyDown
+		case ID_Mouse_LeftMouseUp: return Button_LeftMouseUp(object, cmp, wparm, lparm); // Mouse.LeftMouseUp
+		case ID_Keyboard_KeyDown: return Button_KeyDown(object, cmp, wparm, lparm); // Keyboard.KeyDown
 		case ID_Node2D_DrawBrush: return Button_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
 	}
 	return FALSE;
@@ -1233,7 +1233,7 @@ static struct Label LabelDefaults = {
 };
 LRESULT LabelProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case ID_Input_LeftMouseUp: return Label_LeftMouseUp(object, cmp, wparm, lparm); // Input.LeftMouseUp
+		case ID_Mouse_LeftMouseUp: return Label_LeftMouseUp(object, cmp, wparm, lparm); // Mouse.LeftMouseUp
 	}
 	return FALSE;
 }
@@ -1516,7 +1516,7 @@ LRESULT TerminalViewProc(struct Object* object, void* cmp, uint32_t message, wPa
 		case ID_Object_Create: return TerminalView_Create(object, cmp, wparm, lparm); // Object.Create
 		case ID_Node2D_DrawBrush: return TerminalView_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
 		case ID_Node_PushProperty: return TerminalView_PushProperty(object, cmp, wparm, lparm); // Node.PushProperty
-		case ID_Input_ScrollWheel: return TerminalView_ScrollWheel(object, cmp, wparm, lparm); // Input.ScrollWheel
+		case ID_Mouse_ScrollWheel: return TerminalView_ScrollWheel(object, cmp, wparm, lparm); // Mouse.ScrollWheel
 	}
 	return FALSE;
 }

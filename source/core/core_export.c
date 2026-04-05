@@ -44,7 +44,18 @@ ENUM(PropertyAttribute, "WholeProperty", "ColorR", "ColorG", "ColorB", "ColorA",
 ENUM(MouseButton, "None", "Left", "Right", "Middle")
 
 
-int luaopen_orca_Input(lua_State *L) {
+int luaopen_orca_Mouse(lua_State *L) {
+	luaL_newmetatable(L, "Input");
+	luaL_setfuncs(L, ((luaL_Reg[]) {
+		{ NULL, NULL },
+	}), 0);
+	lua_pushvalue(L, -1);
+	lua_setfield(L, -2, "__index");
+	return 1;
+}
+
+
+int luaopen_orca_Keyboard(lua_State *L) {
 	luaL_newmetatable(L, "Input");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ NULL, NULL },
@@ -667,12 +678,6 @@ STRUCT(MessageType, MessageType);
 //	.routing = kMessageRoutingTunnelingBubbling,
 //	.size = sizeof(struct MouseMessageMsgArgs),
 //};
-//struct MessageType KeyMessageMessage = {
-//	.name = "KeyMessage",
-//	.id = kMsgKeyMessage,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct KeyMessageMsgArgs),
-//};
 #define LeftMouseDownMsgArgs MouseMessageMsgArgs
 //struct MessageType LeftMouseDownMessage = {
 //	.name = "LeftMouseDown",
@@ -785,6 +790,12 @@ STRUCT(MessageType, MessageType);
 //	.routing = kMessageRoutingTunnelingBubbling,
 //	.size = sizeof(struct MouseMessageMsgArgs),
 //};
+//struct MessageType KeyMessageMessage = {
+//	.name = "KeyMessage",
+//	.id = kMsgKeyMessage,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct KeyMessageMsgArgs),
+//};
 #define KeyDownMsgArgs KeyMessageMsgArgs
 //struct MessageType KeyDownMessage = {
 //	.name = "KeyDown",
@@ -799,10 +810,10 @@ STRUCT(MessageType, MessageType);
 //	.routing = kMessageRoutingTunnelingBubbling,
 //	.size = sizeof(struct KeyMessageMsgArgs),
 //};
-#define CharMsgArgs KeyMessageMsgArgs
-//struct MessageType CharMessage = {
-//	.name = "Char",
-//	.id = kMsgChar,
+#define TextInputMsgArgs KeyMessageMsgArgs
+//struct MessageType TextInputMessage = {
+//	.name = "TextInput",
+//	.id = kMsgTextInput,
 //	.routing = kMessageRoutingTunnelingBubbling,
 //	.size = sizeof(struct KeyMessageMsgArgs),
 //};
@@ -869,15 +880,6 @@ static struct PropertyType _MouseMessageMsgArgs[] = {
 	DECL(0xeb56f0e8, MouseMessageMsgArgs, deltaY, deltaY, kDataTypeInt), // MouseMessageMsgArgs.deltaY
 	DECL(0x43b27471, MouseMessageMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // MouseMessageMsgArgs.button
 	DECL(0xd9747336, MouseMessageMsgArgs, clickCount, clickCount, kDataTypeInt), // MouseMessageMsgArgs.clickCount
-};
-static luaL_Reg _KeyMessageMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _KeyMessageMsgArgs[] = {
-	DECL(0xd803e2a9, KeyMessageMsgArgs, keyCode, keyCode, kDataTypeInt), // KeyMessageMsgArgs.keyCode
-	DECL(0x8b3aa710, KeyMessageMsgArgs, character, character, kDataTypeInt), // KeyMessageMsgArgs.character
-	DECL(0x411b1019, KeyMessageMsgArgs, modifiers, modifiers, kDataTypeInt), // KeyMessageMsgArgs.modifiers
-	DECL(0xbde64e3e, KeyMessageMsgArgs, text, text, kDataTypeString), // KeyMessageMsgArgs.text
-	DECL(0x8f82be34, KeyMessageMsgArgs, modifiersString, modifiersString, kDataTypeString), // KeyMessageMsgArgs.modifiersString
-	DECL(0x9703dc13, KeyMessageMsgArgs, hotKey, hotKey, kDataTypeString), // KeyMessageMsgArgs.hotKey
 };
 static luaL_Reg _LeftMouseDownMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _LeftMouseDownMsgArgs[] = {
@@ -1023,6 +1025,15 @@ static struct PropertyType _DragEnterMsgArgs[] = {
 	DECL(0x43b27471, DragEnterMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // DragEnterMsgArgs.button
 	DECL(0xd9747336, DragEnterMsgArgs, clickCount, clickCount, kDataTypeInt), // DragEnterMsgArgs.clickCount
 };
+static luaL_Reg _KeyMessageMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _KeyMessageMsgArgs[] = {
+	DECL(0xd803e2a9, KeyMessageMsgArgs, keyCode, keyCode, kDataTypeInt), // KeyMessageMsgArgs.keyCode
+	DECL(0x8b3aa710, KeyMessageMsgArgs, character, character, kDataTypeInt), // KeyMessageMsgArgs.character
+	DECL(0x411b1019, KeyMessageMsgArgs, modifiers, modifiers, kDataTypeInt), // KeyMessageMsgArgs.modifiers
+	DECL(0xbde64e3e, KeyMessageMsgArgs, text, text, kDataTypeString), // KeyMessageMsgArgs.text
+	DECL(0x8f82be34, KeyMessageMsgArgs, modifiersString, modifiersString, kDataTypeString), // KeyMessageMsgArgs.modifiersString
+	DECL(0x9703dc13, KeyMessageMsgArgs, hotKey, hotKey, kDataTypeString), // KeyMessageMsgArgs.hotKey
+};
 static luaL_Reg _KeyDownMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _KeyDownMsgArgs[] = {
 	DECL(0xd803e2a9, KeyDownMsgArgs, keyCode, keyCode, kDataTypeInt), // KeyDownMsgArgs.keyCode
@@ -1041,14 +1052,14 @@ static struct PropertyType _KeyUpMsgArgs[] = {
 	DECL(0x8f82be34, KeyUpMsgArgs, modifiersString, modifiersString, kDataTypeString), // KeyUpMsgArgs.modifiersString
 	DECL(0x9703dc13, KeyUpMsgArgs, hotKey, hotKey, kDataTypeString), // KeyUpMsgArgs.hotKey
 };
-static luaL_Reg _CharMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _CharMsgArgs[] = {
-	DECL(0xd803e2a9, CharMsgArgs, keyCode, keyCode, kDataTypeInt), // CharMsgArgs.keyCode
-	DECL(0x8b3aa710, CharMsgArgs, character, character, kDataTypeInt), // CharMsgArgs.character
-	DECL(0x411b1019, CharMsgArgs, modifiers, modifiers, kDataTypeInt), // CharMsgArgs.modifiers
-	DECL(0xbde64e3e, CharMsgArgs, text, text, kDataTypeString), // CharMsgArgs.text
-	DECL(0x8f82be34, CharMsgArgs, modifiersString, modifiersString, kDataTypeString), // CharMsgArgs.modifiersString
-	DECL(0x9703dc13, CharMsgArgs, hotKey, hotKey, kDataTypeString), // CharMsgArgs.hotKey
+static luaL_Reg _TextInputMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _TextInputMsgArgs[] = {
+	DECL(0xd803e2a9, TextInputMsgArgs, keyCode, keyCode, kDataTypeInt), // TextInputMsgArgs.keyCode
+	DECL(0x8b3aa710, TextInputMsgArgs, character, character, kDataTypeInt), // TextInputMsgArgs.character
+	DECL(0x411b1019, TextInputMsgArgs, modifiers, modifiers, kDataTypeInt), // TextInputMsgArgs.modifiers
+	DECL(0xbde64e3e, TextInputMsgArgs, text, text, kDataTypeString), // TextInputMsgArgs.text
+	DECL(0x8f82be34, TextInputMsgArgs, modifiersString, modifiersString, kDataTypeString), // TextInputMsgArgs.modifiersString
+	DECL(0x9703dc13, TextInputMsgArgs, hotKey, hotKey, kDataTypeString), // TextInputMsgArgs.hotKey
 };
 static luaL_Reg _CreateMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _CreateMsgArgs[] = {
@@ -1080,7 +1091,6 @@ static struct PropertyType _TimerMsgArgs[] = {
 };
 
 STRUCT(MouseMessageMsgArgs, MouseMessageMsgArgs);
-STRUCT(KeyMessageMsgArgs, KeyMessageMsgArgs);
 STRUCT(LeftMouseDownMsgArgs, LeftMouseDownMsgArgs);
 STRUCT(RightMouseDownMsgArgs, RightMouseDownMsgArgs);
 STRUCT(OtherMouseDownMsgArgs, OtherMouseDownMsgArgs);
@@ -1097,9 +1107,10 @@ STRUCT(MouseMovedMsgArgs, MouseMovedMsgArgs);
 STRUCT(ScrollWheelMsgArgs, ScrollWheelMsgArgs);
 STRUCT(DragDropMsgArgs, DragDropMsgArgs);
 STRUCT(DragEnterMsgArgs, DragEnterMsgArgs);
+STRUCT(KeyMessageMsgArgs, KeyMessageMsgArgs);
 STRUCT(KeyDownMsgArgs, KeyDownMsgArgs);
 STRUCT(KeyUpMsgArgs, KeyUpMsgArgs);
-STRUCT(CharMsgArgs, CharMsgArgs);
+STRUCT(TextInputMsgArgs, TextInputMsgArgs);
 STRUCT(CreateMsgArgs, CreateMsgArgs);
 STRUCT(StartMsgArgs, StartMsgArgs);
 STRUCT(AwakeMsgArgs, AwakeMsgArgs);
@@ -1145,7 +1156,6 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	}));
 	lua_setfield(L, ((void)luaopen_orca_MessageType(L), -2), "MessageType");
 	lua_setfield(L, ((void)luaopen_orca_MouseMessageMsgArgs(L), -2), "MouseMessageMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_KeyMessageMsgArgs(L), -2), "KeyMessageMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_LeftMouseDownMsgArgs(L), -2), "LeftMouseDownMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_RightMouseDownMsgArgs(L), -2), "RightMouseDownMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_OtherMouseDownMsgArgs(L), -2), "OtherMouseDownMsgArgs");
@@ -1162,9 +1172,10 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_ScrollWheelMsgArgs(L), -2), "ScrollWheelMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_DragDropMsgArgs(L), -2), "DragDropMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_DragEnterMsgArgs(L), -2), "DragEnterMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_KeyMessageMsgArgs(L), -2), "KeyMessageMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_KeyDownMsgArgs(L), -2), "KeyDownMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_KeyUpMsgArgs(L), -2), "KeyUpMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_CharMsgArgs(L), -2), "CharMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_TextInputMsgArgs(L), -2), "TextInputMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_CreateMsgArgs(L), -2), "CreateMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_StartMsgArgs(L), -2), "StartMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_AwakeMsgArgs(L), -2), "AwakeMsgArgs");
@@ -1174,7 +1185,8 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_ReleaseMsgArgs(L), -2), "ReleaseMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_DestroyMsgArgs(L), -2), "DestroyMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_TimerMsgArgs(L), -2), "TimerMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_Input(L), -2), "Input");
+	lua_setfield(L, ((void)luaopen_orca_Mouse(L), -2), "Input");
+	lua_setfield(L, ((void)luaopen_orca_Keyboard(L), -2), "Input");
 	lua_setfield(L, ((void)luaopen_orca_Object(L), -2), "Object");
 	void on_core_module_registered(lua_State *L);
 	on_core_module_registered(L);

@@ -65,7 +65,7 @@
     </struct>
   </structs>
   <interfaces>
-    <interface name="Input" export="Input" no-check="true">
+    <interface name="Mouse" export="Input" no-check="true">
       <!-- Base event for all pointer/mouse input events -->
       <messages>
         <message name="MouseMessage">
@@ -77,17 +77,6 @@
             <field name="deltaY" type="int">Scroll wheel rotation amount along the Y axis; positive values scroll up/forward</field>
             <field name="button" type="MouseButton">The mouse button involved in this event</field>
             <field name="clickCount" type="int">Number of consecutive clicks (1 for single click, 2 for double click)</field>
-          </fields>
-        </message>
-        <message name="KeyMessage">
-          <summary>Base keyboard event providing key information.</summary>
-          <fields>
-            <field name="keyCode" type="int">The key involved in this event</field>
-            <field name="character" type="int">The character produced by this key event</field>
-            <field name="modifiers" type="int">Active modifier keys during the event (bitmask of WI_MOD_* flags)</field>
-            <field name="text" type="string">The text produced by this key event as a UTF-8 string (empty for non-printable keys)</field>
-            <field name="modifiersString" type="string">Active modifier keys as a human-readable prefix string (e.g. "ctrl+shift+")</field>
-            <field name="hotKey" type="string">Combined modifier+key string for hotkey matching (e.g. "ctrl+alt+w")</field>
           </fields>
         </message>
         <message name="LeftMouseDown" same-as="MouseMessage"/>
@@ -106,11 +95,26 @@
         <message name="ScrollWheel" same-as="MouseMessage"/>
         <message name="DragDrop" same-as="MouseMessage"/>
         <message name="DragEnter" same-as="MouseMessage"/>
+      </messages>
+    </interface>
+    <interface name="Keyboard" export="Input" no-check="true">
+      <!-- Base event for all keyboard input events -->
+      <messages>
+        <message name="KeyMessage">
+          <summary>Base keyboard event providing key information.</summary>
+          <fields>
+            <field name="keyCode" type="int">The key involved in this event</field>
+            <field name="character" type="int">The character produced by this key event</field>
+            <field name="modifiers" type="int">Active modifier keys during the event (bitmask of WI_MOD_* flags)</field>
+            <field name="text" type="string">The text produced by this key event as a UTF-8 string (empty for non-printable keys)</field>
+            <field name="modifiersString" type="string">Active modifier keys as a human-readable prefix string (e.g. "ctrl+shift+")</field>
+            <field name="hotKey" type="string">Combined modifier+key string for hotkey matching (e.g. "ctrl+alt+w")</field>
+          </fields>
+        </message>
         <message name="KeyDown" same-as="KeyMessage"/>
         <message name="KeyUp" same-as="KeyMessage"/>
-        <message name="Char" same-as="KeyMessage"/>
+        <message name="TextInput" same-as="KeyMessage"/>
       </messages>
-      <!-- Base event for all keyboard input events -->
     </interface>
     <interface name="Object" prefix="OBJ_" export="Object" no-check="true">
       <summary>Core engine host object.</summary>
