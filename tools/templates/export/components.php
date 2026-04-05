@@ -19,7 +19,7 @@ ORCA_API struct ClassDesc _##NAME = { \
 		<?php $pos = strrpos($event, '.');
 					$after = ($pos !== false) ? substr($event, $pos + 1) : ''; 
 					$ident = str_replace('.', '_', $event); ?>
-LRESULT <?= $name ?>_<?= $after ?>(struct Object*, struct <?= $name ?>*, wParam_t, <?= $after ?>MsgPtr);
+LRESULT <?= $name ?>_<?= $after ?>(struct Object*, struct <?= $name ?>*, wParam_t, <?= $ident ?>MsgPtr);
 	<?php endforeach ?>
 static struct MessageType <?= $name ?>MessageTypes[k<?= $name ?>NumMessageTypes] = {	
 	<?php foreach ($component->getMessages() as $event): ?>

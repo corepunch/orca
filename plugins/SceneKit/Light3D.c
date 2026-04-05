@@ -3,7 +3,7 @@
 
 #include "SceneKit.h"
 
-HANDLER(Light3D, Render)
+HANDLER(Light3D, Node3D, Render)
 {
 //  struct ViewEntity entity = {
 //    .model = pModel3D->Mesh,

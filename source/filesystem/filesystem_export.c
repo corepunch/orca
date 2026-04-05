@@ -133,57 +133,57 @@ STRUCT(SystemMessage, SystemMessage);
 //	.name = "ReadCommands",
 //	.id = kMsgReadCommands,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct ReadCommandsMsgArgs),
+//	.size = sizeof(struct Workspace_ReadCommandsMsgArgs),
 //};
 //struct MessageType OpenFileMessage = {
 //	.name = "OpenFile",
 //	.id = kMsgOpenFile,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct OpenFileMsgArgs),
+//	.size = sizeof(struct Project_OpenFileMsgArgs),
 //};
 //struct MessageType FileExistsMessage = {
 //	.name = "FileExists",
 //	.id = kMsgFileExists,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct FileExistsMsgArgs),
+//	.size = sizeof(struct Project_FileExistsMsgArgs),
 //};
 //struct MessageType HasChangedFilesMessage = {
 //	.name = "HasChangedFiles",
 //	.id = kMsgHasChangedFiles,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct HasChangedFilesMsgArgs),
+//	.size = sizeof(struct Project_HasChangedFilesMsgArgs),
 //};
 //struct MessageType LoadProjectMessage = {
 //	.name = "LoadProject",
 //	.id = kMsgLoadProject,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct LoadProjectMsgArgs),
+//	.size = sizeof(struct Project_LoadProjectMsgArgs),
 //};
 
-static luaL_Reg _ReadCommandsMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _ReadCommandsMsgArgs[] = {
+static luaL_Reg _Workspace_ReadCommandsMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Workspace_ReadCommandsMsgArgs[] = {
 };
-static luaL_Reg _OpenFileMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _OpenFileMsgArgs[] = {
-	DECL(0x5ffdd888, OpenFileMsgArgs, FileName, FileName, kDataTypeString), // OpenFileMsgArgs.FileName
+static luaL_Reg _Project_OpenFileMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Project_OpenFileMsgArgs[] = {
+	DECL(0x5ffdd888, Project_OpenFileMsgArgs, FileName, FileName, kDataTypeString), // Project_OpenFileMsgArgs.FileName
 };
-static luaL_Reg _FileExistsMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _FileExistsMsgArgs[] = {
-	DECL(0x5ffdd888, FileExistsMsgArgs, FileName, FileName, kDataTypeString), // FileExistsMsgArgs.FileName
+static luaL_Reg _Project_FileExistsMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Project_FileExistsMsgArgs[] = {
+	DECL(0x5ffdd888, Project_FileExistsMsgArgs, FileName, FileName, kDataTypeString), // Project_FileExistsMsgArgs.FileName
 };
-static luaL_Reg _HasChangedFilesMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _HasChangedFilesMsgArgs[] = {
+static luaL_Reg _Project_HasChangedFilesMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Project_HasChangedFilesMsgArgs[] = {
 };
-static luaL_Reg _LoadProjectMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _LoadProjectMsgArgs[] = {
-	DECL(0xeb66e456, LoadProjectMsgArgs, Path, Path, kDataTypeString), // LoadProjectMsgArgs.Path
+static luaL_Reg _Project_LoadProjectMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Project_LoadProjectMsgArgs[] = {
+	DECL(0xeb66e456, Project_LoadProjectMsgArgs, Path, Path, kDataTypeString), // Project_LoadProjectMsgArgs.Path
 };
 
-STRUCT(ReadCommandsMsgArgs, ReadCommandsMsgArgs);
-STRUCT(OpenFileMsgArgs, OpenFileMsgArgs);
-STRUCT(FileExistsMsgArgs, FileExistsMsgArgs);
-STRUCT(HasChangedFilesMsgArgs, HasChangedFilesMsgArgs);
-STRUCT(LoadProjectMsgArgs, LoadProjectMsgArgs);
+STRUCT(Workspace_ReadCommandsMsgArgs, Workspace_ReadCommandsMsgArgs);
+STRUCT(Project_OpenFileMsgArgs, Project_OpenFileMsgArgs);
+STRUCT(Project_FileExistsMsgArgs, Project_FileExistsMsgArgs);
+STRUCT(Project_HasChangedFilesMsgArgs, Project_HasChangedFilesMsgArgs);
+STRUCT(Project_LoadProjectMsgArgs, Project_LoadProjectMsgArgs);
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -201,7 +201,7 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.NumMessageTypes = k##NAME##NumMessageTypes, \
 };
 static struct MessageType WorkspaceMessageTypes[kWorkspaceNumMessageTypes] = {	
-		{ "Workspace.ReadCommands", ID_Workspace_ReadCommands, kMessageRoutingTunnelingBubbling, sizeof(struct ReadCommandsMsgArgs) },
+		{ "Workspace.ReadCommands", ID_Workspace_ReadCommands, kMessageRoutingTunnelingBubbling, sizeof(struct Workspace_ReadCommandsMsgArgs) },
 };
 static struct PropertyType const WorkspaceProperties[kWorkspaceNumProperties] = {
 };
@@ -238,12 +238,12 @@ struct Library* luaX_checkLibrary(lua_State *L, int idx) {
 	return GetLibrary(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(Library, 0);
-LRESULT Project_Start(struct Object*, struct Project*, wParam_t, StartMsgPtr);
+LRESULT Project_Start(struct Object*, struct Project*, wParam_t, Object_StartMsgPtr);
 static struct MessageType ProjectMessageTypes[kProjectNumMessageTypes] = {	
-		{ "Project.OpenFile", ID_Project_OpenFile, kMessageRoutingTunnelingBubbling, sizeof(struct OpenFileMsgArgs) },
-		{ "Project.FileExists", ID_Project_FileExists, kMessageRoutingTunnelingBubbling, sizeof(struct FileExistsMsgArgs) },
-		{ "Project.HasChangedFiles", ID_Project_HasChangedFiles, kMessageRoutingTunnelingBubbling, sizeof(struct HasChangedFilesMsgArgs) },
-		{ "Project.LoadProject", ID_Project_LoadProject, kMessageRoutingTunnelingBubbling, sizeof(struct LoadProjectMsgArgs) },
+		{ "Project.OpenFile", ID_Project_OpenFile, kMessageRoutingTunnelingBubbling, sizeof(struct Project_OpenFileMsgArgs) },
+		{ "Project.FileExists", ID_Project_FileExists, kMessageRoutingTunnelingBubbling, sizeof(struct Project_FileExistsMsgArgs) },
+		{ "Project.HasChangedFiles", ID_Project_HasChangedFiles, kMessageRoutingTunnelingBubbling, sizeof(struct Project_HasChangedFilesMsgArgs) },
+		{ "Project.LoadProject", ID_Project_LoadProject, kMessageRoutingTunnelingBubbling, sizeof(struct Project_LoadProjectMsgArgs) },
 };
 static struct PropertyType const ProjectProperties[kProjectNumProperties] = {
 	DECL(0xbcd19216, Project, HalfFloatTextureFormat, HalfFloatTextureFormat, kDataTypeBool), // Project.HalfFloatTextureFormat
@@ -335,11 +335,11 @@ struct Project* luaX_checkProject(lua_State *L, int idx) {
 	return GetProject(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(Project, 0);
-LRESULT Directory_LoadProject(struct Object*, struct Directory*, wParam_t, LoadProjectMsgPtr);
-LRESULT Directory_OpenFile(struct Object*, struct Directory*, wParam_t, OpenFileMsgPtr);
-LRESULT Directory_FileExists(struct Object*, struct Directory*, wParam_t, FileExistsMsgPtr);
-LRESULT Directory_HasChangedFiles(struct Object*, struct Directory*, wParam_t, HasChangedFilesMsgPtr);
-LRESULT Directory_Destroy(struct Object*, struct Directory*, wParam_t, DestroyMsgPtr);
+LRESULT Directory_LoadProject(struct Object*, struct Directory*, wParam_t, Project_LoadProjectMsgPtr);
+LRESULT Directory_OpenFile(struct Object*, struct Directory*, wParam_t, Project_OpenFileMsgPtr);
+LRESULT Directory_FileExists(struct Object*, struct Directory*, wParam_t, Project_FileExistsMsgPtr);
+LRESULT Directory_HasChangedFiles(struct Object*, struct Directory*, wParam_t, Project_HasChangedFilesMsgPtr);
+LRESULT Directory_Destroy(struct Object*, struct Directory*, wParam_t, Object_DestroyMsgPtr);
 static struct MessageType DirectoryMessageTypes[kDirectoryNumMessageTypes] = {	
 };
 static struct PropertyType const DirectoryProperties[kDirectoryNumProperties] = {
@@ -365,11 +365,11 @@ struct Directory* luaX_checkDirectory(lua_State *L, int idx) {
 }
 #define ID_Project 0x7b5fea5e
 REGISTER_CLASS(Directory, ID_Project, 0);
-LRESULT Package_LoadProject(struct Object*, struct Package*, wParam_t, LoadProjectMsgPtr);
-LRESULT Package_OpenFile(struct Object*, struct Package*, wParam_t, OpenFileMsgPtr);
-LRESULT Package_FileExists(struct Object*, struct Package*, wParam_t, FileExistsMsgPtr);
-LRESULT Package_HasChangedFiles(struct Object*, struct Package*, wParam_t, HasChangedFilesMsgPtr);
-LRESULT Package_Destroy(struct Object*, struct Package*, wParam_t, DestroyMsgPtr);
+LRESULT Package_LoadProject(struct Object*, struct Package*, wParam_t, Project_LoadProjectMsgPtr);
+LRESULT Package_OpenFile(struct Object*, struct Package*, wParam_t, Project_OpenFileMsgPtr);
+LRESULT Package_FileExists(struct Object*, struct Package*, wParam_t, Project_FileExistsMsgPtr);
+LRESULT Package_HasChangedFiles(struct Object*, struct Package*, wParam_t, Project_HasChangedFilesMsgPtr);
+LRESULT Package_Destroy(struct Object*, struct Package*, wParam_t, Object_DestroyMsgPtr);
 static struct MessageType PackageMessageTypes[kPackageNumMessageTypes] = {	
 };
 static struct PropertyType const PackageProperties[kPackageNumProperties] = {
@@ -432,7 +432,7 @@ struct Tag* luaX_checkTag(lua_State *L, int idx) {
 	return GetTag(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(Tag, 0);
-LRESULT ThemeGroup_Attached(struct Object*, struct ThemeGroup*, wParam_t, AttachedMsgPtr);
+LRESULT ThemeGroup_Attached(struct Object*, struct ThemeGroup*, wParam_t, Object_AttachedMsgPtr);
 static struct MessageType ThemeGroupMessageTypes[kThemeGroupNumMessageTypes] = {	
 };
 static struct PropertyType const ThemeGroupProperties[kThemeGroupNumProperties] = {

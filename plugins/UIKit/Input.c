@@ -5,7 +5,7 @@
 float
 text_pos(EdgeShorthand_t padding, uint32_t align, float size, float space);
 
-HANDLER(Input, DrawBrush)
+HANDLER(Input, Node2D, DrawBrush)
 {
   TextRunPtr pTextRun = GetTextRun(hObject);
   Node2DPtr pNode2D = GetNode2D(hObject);
@@ -66,7 +66,7 @@ HANDLER(Input, DrawBrush)
   return FALSE;
 }
 
-HANDLER(Input, MakeText)
+HANDLER(Input, TextBlockConcept, MakeText)
 {
   const char* text = GetTextRun(hObject)->Text;
   pInput->Cursor = MIN((int)strlen(text ? text : ""), pInput->Cursor);
@@ -102,7 +102,7 @@ _NextTabStop(lpObject_t hObject)
   return NULL;
 }
 
-HANDLER(Input, KeyDown)
+HANDLER(Input, Keyboard, KeyDown)
 {
   char szText[MAX_PROPERTY_STRING];
   const char* currentText = GetTextRun(hObject)->Text;
@@ -175,7 +175,7 @@ HANDLER(Input, KeyDown)
   return TRUE;
 }
 
-HANDLER(Input, MeasureOverride)
+HANDLER(Input, Node2D, MeasureOverride)
 {
   if (pInput->Type == kInputTypeCheckbox) {
     return MAKEDWORD(16, 16);
@@ -184,13 +184,13 @@ HANDLER(Input, MeasureOverride)
   }
 }
 
-HANDLER(Input, KillFocus)
+HANDLER(Input, Node, KillFocus)
 {
   SV_PostMessage(hObject, "Input", 0, 0);
   return FALSE;
 }
 
-HANDLER(Input, LeftMouseUp)
+HANDLER(Input, Mouse, LeftMouseUp)
 {
   OBJ_SetFocus(hObject);
   if (pInput->Type == kInputTypeCheckbox) {
@@ -200,7 +200,7 @@ HANDLER(Input, LeftMouseUp)
   return TRUE;
 }
 
-HANDLER(Input, Create)
+HANDLER(Input, Object, Create)
 {
 //  pInput->_checkmark = Texture_Load("#checkmark");
   OBJ_SetStyle(hObject, OBJ_GetStyle(hObject) | OF_TABSTOP);

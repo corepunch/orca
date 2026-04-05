@@ -276,14 +276,18 @@ enum FontFamilyProperties {
 
 	
 
-#define ID_PaintMsgArgs 0x6f8bdb4d
-#define ID_PaintMsgArgs_WindowWidth 0x417dc977 // PaintMsgArgs.WindowWidth
-#define ID_PaintMsgArgs_WindowHeight 0x443f5c3a // PaintMsgArgs.WindowHeight
-#define ID_ResizedMsgArgs 0x3cec9829
-#define ID_ResizedMsgArgs_WindowWidth 0x37c75a5b // ResizedMsgArgs.WindowWidth
-#define ID_ResizedMsgArgs_WindowHeight 0xc43ebb76 // ResizedMsgArgs.WindowHeight
-#define ID_ClosedMsgArgs 0x19f1c3bf
-#define ID_ChangedScreenMsgArgs 0xbf562cf1
+#define ID_Window_PaintMsgArgs 0x93ca1b9a
+
+#define ID_Window_PaintMsgArgs_WindowWidth 0x3edcd50c // Window_PaintMsgArgs.WindowWidth
+#define ID_Window_PaintMsgArgs_WindowHeight 0xfc5d95fb // Window_PaintMsgArgs.WindowHeight
+#define ID_Window_ResizedMsgArgs 0x832e6b4a
+
+#define ID_Window_ResizedMsgArgs_WindowWidth 0x6054b03c // Window_ResizedMsgArgs.WindowWidth
+#define ID_Window_ResizedMsgArgs_WindowHeight 0x15bee2ab // Window_ResizedMsgArgs.WindowHeight
+#define ID_Window_ClosedMsgArgs 0xc99e2c82
+
+#define ID_Window_ChangedScreenMsgArgs 0x0b7a829e
+
 	
 
 #endif

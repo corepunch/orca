@@ -81,7 +81,7 @@ _Node2D_GetRect(Node2DPtr pNode2D)
   };
 }
 
-HANDLER(Viewport3D, ForegroundContent)
+HANDLER(Viewport3D, Node2D, ForegroundContent)
 {
   lpObject_t screen = OBJ_FindParentOfClass(hObject, ID_Screen);
   lpcString_t camera = Viewport3D_camera(hObject);

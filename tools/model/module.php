@@ -295,8 +295,11 @@ class Interface extends Base {
 	}
 
 	function getMessages() {
+		$ns = strval($this->_elem["name"]);
 		foreach ($this->_elem->xpath("./messages/message[@name]") as $f) {
-			yield new Event($f, $this->_model);
+			$ev = new Event($f, $this->_model);
+			$ev->msgns = $ns;
+			yield $ev;
 		}
 	}
 }
@@ -471,6 +474,8 @@ class Enum extends Base {
 
 class Event extends Type {
 	public $parent_name;
+	// namespace (parent interface/class name)
+	public $msgns;
 
 	function __construct($elem, $model) {
 		parent::__construct($elem, $model);
@@ -478,6 +483,8 @@ class Event extends Type {
 		$routing = $elem["routing"] ?? "TunnelingBubbling";
 		$this->parent_name = $p ? strval($p) : null;
 		$this->routing = strval($routing);
+		// Derive namespace from grandparent element (<message> -> <messages> -> <interface|class>)
+		$this->msgns = "";
 	}
 
 	function getParentEvent() {
@@ -513,11 +520,11 @@ class Event extends Type {
 
 	// Returns the C type declaration string (without *) for events without inline fields
 	function getEffectiveTypeDecl() {
-		if ($this->hasFields()) return "struct " . $this->name . "MsgArgs";
+		if ($this->hasFields()) return "struct " . $this->msgns . "_" . $this->name . "MsgArgs";
 		$parent = $this->getParentEvent();
 		if ($parent) return $parent->getEffectiveTypeDecl();
 		if (strval($this) == "void") {
-			return "struct " . $this->name . "MsgArgs";
+			return "struct " . $this->msgns . "_" . $this->name . "MsgArgs";
 		}
 		return strval($this); // delegates to Type::__toString() for kind-based formatting
 	}
@@ -525,7 +532,7 @@ class Event extends Type {
 	// Returns the MsgArgs struct name to alias when a child has no own fields
 	// but the parent chain does have fields
 	function getEffectiveStructName() {
-		if ($this->hasFields()) return $this->name . "MsgArgs";
+		if ($this->hasFields()) return $this->msgns . "_" . $this->name . "MsgArgs";
 		$parent = $this->getParentEvent();
 		return $parent ? $parent->getEffectiveStructName() : null;
 	}
@@ -617,11 +624,25 @@ class Model {
 		array_map(fn($r) => $r["file"], $rn),
 		array_map(fn($r) => new IncludeFile($r, $this), $rn)
 		);
-		$rn = $xml->xpath(".//message[@name]");
-		$this->events = array_combine(
-		array_map(fn($r) => $r["name"], $rn),
-		array_map(fn($r) => new Event($r, $this), $rn)
-		);
+		$this->events = [];
+		foreach ($xml->xpath(".//interface[@name]") as $iface) {
+			$ns = strval($iface["name"]);
+			foreach ($iface->xpath("./messages/message[@name]") as $msg) {
+				$evname = strval($msg["name"]);
+				$ev = new Event($msg, $this);
+				$ev->msgns = $ns;
+				$this->events[$evname] = $ev;
+			}
+		}
+		foreach ($xml->xpath(".//class[@name]") as $cls) {
+			$ns = strval($cls["name"]);
+			foreach ($cls->xpath("./messages/message[@name]") as $msg) {
+				$evname = strval($msg["name"]);
+				$ev = new Event($msg, $this);
+				$ev->msgns = $ns;
+				$this->events[$evname] = $ev;
+			}
+		}
 		$rn = $xml->xpath("./functions/function[@name]");
 		$this->functions = array_combine(
 		array_map(fn($r) => $r["name"], $rn),
@@ -681,12 +702,16 @@ class Model {
 		if ($r) {
 			return ["external_struct", $r];
 		}
-		// Check if type is an event-generated args struct (e.g. "HandleMessageMsgArgs")
+		// Check if type is an event-generated args struct (e.g. "Node_HandleMessageMsgArgs")
 		if (str_ends_with($_type, "MsgArgs")) {
-			$eventName = substr($_type, 0, -strlen("MsgArgs"));
-			$ev = $this->_has_in($eventName, "events");
-			if ($ev && $ev->hasFields()) {
-				return ["struct", null];
+			foreach ($this->events as $evname => $ev) {
+				if ($ev->hasFields() && ($ev->msgns . "_" . $evname . "MsgArgs") === $_type) {
+					return ["struct", null];
+				}
+			}
+			foreach ($this->requires as $req) {
+				$k = $req->getKind($_type);
+				if ($k[0] !== $_type) return $k;
 			}
 		}
 		return [$_type, null];

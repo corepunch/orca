@@ -300,288 +300,288 @@ STRUCT(SizeShorthand, SizeShorthand);
 //	.name = "Triggered",
 //	.id = kMsgTriggered,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct TriggeredMsgArgs),
+//	.size = sizeof(struct Trigger_TriggeredMsgArgs),
 //};
 //struct MessageType UpdateMatrixMessage = {
 //	.name = "UpdateMatrix",
 //	.id = kMsgUpdateMatrix,
 //	.routing = kMessageRoutingDirect,
-//	.size = sizeof(struct UpdateMatrixMsgArgs),
+//	.size = sizeof(struct Node_UpdateMatrixMsgArgs),
 //};
 //struct MessageType PushPropertyMessage = {
 //	.name = "PushProperty",
 //	.id = kMsgPushProperty,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct PushPropertyMsgArgs),
+//	.size = sizeof(struct Node_PushPropertyMsgArgs),
 //};
 //struct MessageType LoadViewMessage = {
 //	.name = "LoadView",
 //	.id = kMsgLoadView,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct LoadViewMsgArgs),
+//	.size = sizeof(struct Node_LoadViewMsgArgs),
 //};
 //struct MessageType HitTestMessage = {
 //	.name = "HitTest",
 //	.id = kMsgHitTest,
 //	.routing = kMessageRoutingDirect,
-//	.size = sizeof(struct HitTestMsgArgs),
+//	.size = sizeof(struct Node_HitTestMsgArgs),
 //};
 //struct MessageType HandleMessageMessage = {
 //	.name = "HandleMessage",
 //	.id = kMsgHandleMessage,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct HandleMessageMsgArgs),
+//	.size = sizeof(struct Node_HandleMessageMsgArgs),
 //};
 //struct MessageType IsVisibleMessage = {
 //	.name = "IsVisible",
 //	.id = kMsgIsVisible,
 //	.routing = kMessageRoutingDirect,
-//	.size = sizeof(struct IsVisibleMsgArgs),
+//	.size = sizeof(struct Node_IsVisibleMsgArgs),
 //};
 //struct MessageType ViewDidLoadMessage = {
 //	.name = "ViewDidLoad",
 //	.id = kMsgViewDidLoad,
 //	.routing = kMessageRoutingDirect,
-//	.size = sizeof(struct ViewDidLoadMsgArgs),
+//	.size = sizeof(struct Node_ViewDidLoadMsgArgs),
 //};
 //struct MessageType KillFocusMessage = {
 //	.name = "KillFocus",
 //	.id = kMsgKillFocus,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct KillFocusMsgArgs),
+//	.size = sizeof(struct Node_KillFocusMsgArgs),
 //};
 //struct MessageType SetFocusMessage = {
 //	.name = "SetFocus",
 //	.id = kMsgSetFocus,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct SetFocusMsgArgs),
+//	.size = sizeof(struct Node_SetFocusMsgArgs),
 //};
 //struct MessageType GetSizeMessage = {
 //	.name = "GetSize",
 //	.id = kMsgGetSize,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct GetSizeMsgArgs),
+//	.size = sizeof(struct Node_GetSizeMsgArgs),
 //};
 //struct MessageType MakeTextMessage = {
 //	.name = "MakeText",
 //	.id = kMsgMakeText,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct MakeTextMsgArgs),
+//	.size = sizeof(struct TextBlockConcept_MakeTextMsgArgs),
 //};
 //struct MessageType DrawBrushMessage = {
 //	.name = "DrawBrush",
 //	.id = kMsgDrawBrush,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct DrawBrushMsgArgs),
+//	.size = sizeof(struct Node2D_DrawBrushMsgArgs),
 //};
 //struct MessageType MeasureMessage = {
 //	.name = "Measure",
 //	.id = kMsgMeasure,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct MeasureMsgArgs),
+//	.size = sizeof(struct Node2D_MeasureMsgArgs),
 //};
 //struct MessageType ArrangeMessage = {
 //	.name = "Arrange",
 //	.id = kMsgArrange,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct ArrangeMsgArgs),
+//	.size = sizeof(struct Node2D_ArrangeMsgArgs),
 //};
-#define MeasureOverrideMsgArgs MeasureMsgArgs
+#define Node2D_MeasureOverrideMsgArgs Node2D_MeasureMsgArgs
 //struct MessageType MeasureOverrideMessage = {
 //	.name = "MeasureOverride",
 //	.id = kMsgMeasureOverride,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct MeasureMsgArgs),
+//	.size = sizeof(struct Node2D_MeasureMsgArgs),
 //};
-#define ArrangeOverrideMsgArgs ArrangeMsgArgs
+#define Node2D_ArrangeOverrideMsgArgs Node2D_ArrangeMsgArgs
 //struct MessageType ArrangeOverrideMessage = {
 //	.name = "ArrangeOverride",
 //	.id = kMsgArrangeOverride,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct ArrangeMsgArgs),
+//	.size = sizeof(struct Node2D_ArrangeMsgArgs),
 //};
 //struct MessageType ForegroundContentMessage = {
 //	.name = "ForegroundContent",
 //	.id = kMsgForegroundContent,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct ForegroundContentMsgArgs),
+//	.size = sizeof(struct Node2D_ForegroundContentMsgArgs),
 //};
 //struct MessageType UpdateGeometryMessage = {
 //	.name = "UpdateGeometry",
 //	.id = kMsgUpdateGeometry,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct UpdateGeometryMsgArgs),
+//	.size = sizeof(struct Node2D_UpdateGeometryMsgArgs),
 //};
 //struct MessageType SubmitMessage = {
 //	.name = "Submit",
 //	.id = kMsgSubmit,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct SubmitMsgArgs),
+//	.size = sizeof(struct Form_SubmitMsgArgs),
 //};
 //struct MessageType UpdateLayoutMessage = {
 //	.name = "UpdateLayout",
 //	.id = kMsgUpdateLayout,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct UpdateLayoutMsgArgs),
+//	.size = sizeof(struct Screen_UpdateLayoutMsgArgs),
 //};
 //struct MessageType RenderScreenMessage = {
 //	.name = "RenderScreen",
 //	.id = kMsgRenderScreen,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct RenderScreenMsgArgs),
+//	.size = sizeof(struct Screen_RenderScreenMsgArgs),
 //};
 //struct MessageType NavigateToPageMessage = {
 //	.name = "NavigateToPage",
 //	.id = kMsgNavigateToPage,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct NavigateToPageMsgArgs),
+//	.size = sizeof(struct PageHost_NavigateToPageMsgArgs),
 //};
 //struct MessageType NavigateBackMessage = {
 //	.name = "NavigateBack",
 //	.id = kMsgNavigateBack,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct NavigateBackMsgArgs),
+//	.size = sizeof(struct PageHost_NavigateBackMsgArgs),
 //};
 
-static luaL_Reg _TriggeredMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _TriggeredMsgArgs[] = {
-	DECL(0xa5ea0da3, TriggeredMsgArgs, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // TriggeredMsgArgs.Trigger
+static luaL_Reg _Trigger_TriggeredMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Trigger_TriggeredMsgArgs[] = {
+	DECL(0xa5ea0da3, Trigger_TriggeredMsgArgs, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // Trigger_TriggeredMsgArgs.Trigger
 };
-static luaL_Reg _UpdateMatrixMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _UpdateMatrixMsgArgs[] = {
-	DECL(0xeacdfcfd, UpdateMatrixMsgArgs, parent, parent, kDataTypeStruct, .TypeString = "Matrix3D"), // UpdateMatrixMsgArgs.parent
-	DECL(0xc6c2dd66, UpdateMatrixMsgArgs, opacity, opacity, kDataTypeFloat), // UpdateMatrixMsgArgs.opacity
-	DECL(0x79a98884, UpdateMatrixMsgArgs, force, force, kDataTypeBool), // UpdateMatrixMsgArgs.force
+static luaL_Reg _Node_UpdateMatrixMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Node_UpdateMatrixMsgArgs[] = {
+	DECL(0xeacdfcfd, Node_UpdateMatrixMsgArgs, parent, parent, kDataTypeStruct, .TypeString = "Matrix3D"), // Node_UpdateMatrixMsgArgs.parent
+	DECL(0xc6c2dd66, Node_UpdateMatrixMsgArgs, opacity, opacity, kDataTypeFloat), // Node_UpdateMatrixMsgArgs.opacity
+	DECL(0x79a98884, Node_UpdateMatrixMsgArgs, force, force, kDataTypeBool), // Node_UpdateMatrixMsgArgs.force
 };
-static luaL_Reg _PushPropertyMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _PushPropertyMsgArgs[] = {
-	DECL(0x8987413a, PushPropertyMsgArgs, Placeholder, Placeholder, kDataTypeInt), // PushPropertyMsgArgs.Placeholder
+static luaL_Reg _Node_PushPropertyMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Node_PushPropertyMsgArgs[] = {
+	DECL(0x8987413a, Node_PushPropertyMsgArgs, Placeholder, Placeholder, kDataTypeInt), // Node_PushPropertyMsgArgs.Placeholder
 };
-static luaL_Reg _LoadViewMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _LoadViewMsgArgs[] = {
-	DECL(0x187f5b0f, LoadViewMsgArgs, lua_state, lua_state, kDataTypeStruct, .TypeString = "lua_State"), // LoadViewMsgArgs.lua_state
+static luaL_Reg _Node_LoadViewMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Node_LoadViewMsgArgs[] = {
+	DECL(0x187f5b0f, Node_LoadViewMsgArgs, lua_state, lua_state, kDataTypeStruct, .TypeString = "lua_State"), // Node_LoadViewMsgArgs.lua_state
 };
-static luaL_Reg _HitTestMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _HitTestMsgArgs[] = {
-	DECL(0xfd0c5087, HitTestMsgArgs, x, x, kDataTypeInt), // HitTestMsgArgs.x
-	DECL(0xfc0c4ef4, HitTestMsgArgs, y, y, kDataTypeInt), // HitTestMsgArgs.y
+static luaL_Reg _Node_HitTestMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Node_HitTestMsgArgs[] = {
+	DECL(0xfd0c5087, Node_HitTestMsgArgs, x, x, kDataTypeInt), // Node_HitTestMsgArgs.x
+	DECL(0xfc0c4ef4, Node_HitTestMsgArgs, y, y, kDataTypeInt), // Node_HitTestMsgArgs.y
 };
-static luaL_Reg _HandleMessageMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _HandleMessageMsgArgs[] = {
-	DECL(0x2fc7b71c, HandleMessageMsgArgs, EventName, EventName, kDataTypeString), // HandleMessageMsgArgs.EventName
-	DECL(0xd26deba3, HandleMessageMsgArgs, FirstArg, FirstArg, kDataTypeInt), // HandleMessageMsgArgs.FirstArg
-	DECL(0x227201c6, HandleMessageMsgArgs, NumArgs, NumArgs, kDataTypeInt), // HandleMessageMsgArgs.NumArgs
+static luaL_Reg _Node_HandleMessageMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Node_HandleMessageMsgArgs[] = {
+	DECL(0x2fc7b71c, Node_HandleMessageMsgArgs, EventName, EventName, kDataTypeString), // Node_HandleMessageMsgArgs.EventName
+	DECL(0xd26deba3, Node_HandleMessageMsgArgs, FirstArg, FirstArg, kDataTypeInt), // Node_HandleMessageMsgArgs.FirstArg
+	DECL(0x227201c6, Node_HandleMessageMsgArgs, NumArgs, NumArgs, kDataTypeInt), // Node_HandleMessageMsgArgs.NumArgs
 };
-static luaL_Reg _IsVisibleMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _IsVisibleMsgArgs[] = {
+static luaL_Reg _Node_IsVisibleMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Node_IsVisibleMsgArgs[] = {
 };
-static luaL_Reg _ViewDidLoadMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _ViewDidLoadMsgArgs[] = {
+static luaL_Reg _Node_ViewDidLoadMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Node_ViewDidLoadMsgArgs[] = {
 };
-static luaL_Reg _KillFocusMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _KillFocusMsgArgs[] = {
+static luaL_Reg _Node_KillFocusMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Node_KillFocusMsgArgs[] = {
 };
-static luaL_Reg _SetFocusMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _SetFocusMsgArgs[] = {
+static luaL_Reg _Node_SetFocusMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Node_SetFocusMsgArgs[] = {
 };
-static luaL_Reg _GetSizeMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _GetSizeMsgArgs[] = {
+static luaL_Reg _Node_GetSizeMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Node_GetSizeMsgArgs[] = {
 };
-static luaL_Reg _MakeTextMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _MakeTextMsgArgs[] = {
-	DECL(0xbde64e3e, MakeTextMsgArgs, text, text, kDataTypeStruct, .TypeString = "ViewText"), // MakeTextMsgArgs.text
-	DECL(0xa7e2407e, MakeTextMsgArgs, availableSpace, availableSpace, kDataTypeInt), // MakeTextMsgArgs.availableSpace
+static luaL_Reg _TextBlockConcept_MakeTextMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _TextBlockConcept_MakeTextMsgArgs[] = {
+	DECL(0xbde64e3e, TextBlockConcept_MakeTextMsgArgs, text, text, kDataTypeStruct, .TypeString = "ViewText"), // TextBlockConcept_MakeTextMsgArgs.text
+	DECL(0xa7e2407e, TextBlockConcept_MakeTextMsgArgs, availableSpace, availableSpace, kDataTypeInt), // TextBlockConcept_MakeTextMsgArgs.availableSpace
 };
-static luaL_Reg _DrawBrushMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _DrawBrushMsgArgs[] = {
-	DECL(0xe4497980, DrawBrushMsgArgs, projection, projection, kDataTypeStruct, .TypeString = "Matrix3D"), // DrawBrushMsgArgs.projection
-	DECL(0xb35135fa, DrawBrushMsgArgs, image, image, kDataTypeObject, .TypeString = "Texture"), // DrawBrushMsgArgs.image
-	DECL(0xfac46df3, DrawBrushMsgArgs, brush, brush, kDataTypeStruct, .TypeString = "BrushShorthand"), // DrawBrushMsgArgs.brush
-	DECL(0x98e5266c, DrawBrushMsgArgs, borderOffset, borderOffset, kDataTypeFloat), // DrawBrushMsgArgs.borderOffset
-	DECL(0x211ec219, DrawBrushMsgArgs, borderWidth, borderWidth, kDataTypeStruct, .TypeString = "Vector4D"), // DrawBrushMsgArgs.borderWidth
-	DECL(0x083a85c0, DrawBrushMsgArgs, foreground, foreground, kDataTypeBool), // DrawBrushMsgArgs.foreground
-	DECL(0xad6aa1df, DrawBrushMsgArgs, viewdef, viewdef, kDataTypeStruct, .TypeString = "ViewDef"), // DrawBrushMsgArgs.viewdef
+static luaL_Reg _Node2D_DrawBrushMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Node2D_DrawBrushMsgArgs[] = {
+	DECL(0xe4497980, Node2D_DrawBrushMsgArgs, projection, projection, kDataTypeStruct, .TypeString = "Matrix3D"), // Node2D_DrawBrushMsgArgs.projection
+	DECL(0xb35135fa, Node2D_DrawBrushMsgArgs, image, image, kDataTypeObject, .TypeString = "Texture"), // Node2D_DrawBrushMsgArgs.image
+	DECL(0xfac46df3, Node2D_DrawBrushMsgArgs, brush, brush, kDataTypeStruct, .TypeString = "BrushShorthand"), // Node2D_DrawBrushMsgArgs.brush
+	DECL(0x98e5266c, Node2D_DrawBrushMsgArgs, borderOffset, borderOffset, kDataTypeFloat), // Node2D_DrawBrushMsgArgs.borderOffset
+	DECL(0x211ec219, Node2D_DrawBrushMsgArgs, borderWidth, borderWidth, kDataTypeStruct, .TypeString = "Vector4D"), // Node2D_DrawBrushMsgArgs.borderWidth
+	DECL(0x083a85c0, Node2D_DrawBrushMsgArgs, foreground, foreground, kDataTypeBool), // Node2D_DrawBrushMsgArgs.foreground
+	DECL(0xad6aa1df, Node2D_DrawBrushMsgArgs, viewdef, viewdef, kDataTypeStruct, .TypeString = "ViewDef"), // Node2D_DrawBrushMsgArgs.viewdef
 };
-static luaL_Reg _MeasureMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _MeasureMsgArgs[] = {
-	DECL(0x3b42dfbf, MeasureMsgArgs, Width, Width, kDataTypeFloat), // MeasureMsgArgs.Width
-	DECL(0x1bd13562, MeasureMsgArgs, Height, Height, kDataTypeFloat), // MeasureMsgArgs.Height
+static luaL_Reg _Node2D_MeasureMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Node2D_MeasureMsgArgs[] = {
+	DECL(0x3b42dfbf, Node2D_MeasureMsgArgs, Width, Width, kDataTypeFloat), // Node2D_MeasureMsgArgs.Width
+	DECL(0x1bd13562, Node2D_MeasureMsgArgs, Height, Height, kDataTypeFloat), // Node2D_MeasureMsgArgs.Height
 };
-static luaL_Reg _ArrangeMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _ArrangeMsgArgs[] = {
-	DECL(0xdd0c1e27, ArrangeMsgArgs, X, X, kDataTypeFloat), // ArrangeMsgArgs.X
-	DECL(0xdc0c1c94, ArrangeMsgArgs, Y, Y, kDataTypeFloat), // ArrangeMsgArgs.Y
-	DECL(0x3b42dfbf, ArrangeMsgArgs, Width, Width, kDataTypeFloat), // ArrangeMsgArgs.Width
-	DECL(0x1bd13562, ArrangeMsgArgs, Height, Height, kDataTypeFloat), // ArrangeMsgArgs.Height
+static luaL_Reg _Node2D_ArrangeMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Node2D_ArrangeMsgArgs[] = {
+	DECL(0xdd0c1e27, Node2D_ArrangeMsgArgs, X, X, kDataTypeFloat), // Node2D_ArrangeMsgArgs.X
+	DECL(0xdc0c1c94, Node2D_ArrangeMsgArgs, Y, Y, kDataTypeFloat), // Node2D_ArrangeMsgArgs.Y
+	DECL(0x3b42dfbf, Node2D_ArrangeMsgArgs, Width, Width, kDataTypeFloat), // Node2D_ArrangeMsgArgs.Width
+	DECL(0x1bd13562, Node2D_ArrangeMsgArgs, Height, Height, kDataTypeFloat), // Node2D_ArrangeMsgArgs.Height
 };
-static luaL_Reg _MeasureOverrideMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _MeasureOverrideMsgArgs[] = {
-	DECL(0x3b42dfbf, MeasureOverrideMsgArgs, Width, Width, kDataTypeFloat), // MeasureOverrideMsgArgs.Width
-	DECL(0x1bd13562, MeasureOverrideMsgArgs, Height, Height, kDataTypeFloat), // MeasureOverrideMsgArgs.Height
+static luaL_Reg _Node2D_MeasureOverrideMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Node2D_MeasureOverrideMsgArgs[] = {
+	DECL(0x3b42dfbf, Node2D_MeasureOverrideMsgArgs, Width, Width, kDataTypeFloat), // Node2D_MeasureOverrideMsgArgs.Width
+	DECL(0x1bd13562, Node2D_MeasureOverrideMsgArgs, Height, Height, kDataTypeFloat), // Node2D_MeasureOverrideMsgArgs.Height
 };
-static luaL_Reg _ArrangeOverrideMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _ArrangeOverrideMsgArgs[] = {
-	DECL(0xdd0c1e27, ArrangeOverrideMsgArgs, X, X, kDataTypeFloat), // ArrangeOverrideMsgArgs.X
-	DECL(0xdc0c1c94, ArrangeOverrideMsgArgs, Y, Y, kDataTypeFloat), // ArrangeOverrideMsgArgs.Y
-	DECL(0x3b42dfbf, ArrangeOverrideMsgArgs, Width, Width, kDataTypeFloat), // ArrangeOverrideMsgArgs.Width
-	DECL(0x1bd13562, ArrangeOverrideMsgArgs, Height, Height, kDataTypeFloat), // ArrangeOverrideMsgArgs.Height
+static luaL_Reg _Node2D_ArrangeOverrideMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Node2D_ArrangeOverrideMsgArgs[] = {
+	DECL(0xdd0c1e27, Node2D_ArrangeOverrideMsgArgs, X, X, kDataTypeFloat), // Node2D_ArrangeOverrideMsgArgs.X
+	DECL(0xdc0c1c94, Node2D_ArrangeOverrideMsgArgs, Y, Y, kDataTypeFloat), // Node2D_ArrangeOverrideMsgArgs.Y
+	DECL(0x3b42dfbf, Node2D_ArrangeOverrideMsgArgs, Width, Width, kDataTypeFloat), // Node2D_ArrangeOverrideMsgArgs.Width
+	DECL(0x1bd13562, Node2D_ArrangeOverrideMsgArgs, Height, Height, kDataTypeFloat), // Node2D_ArrangeOverrideMsgArgs.Height
 };
-static luaL_Reg _ForegroundContentMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _ForegroundContentMsgArgs[] = {
+static luaL_Reg _Node2D_ForegroundContentMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Node2D_ForegroundContentMsgArgs[] = {
 };
-static luaL_Reg _UpdateGeometryMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _UpdateGeometryMsgArgs[] = {
+static luaL_Reg _Node2D_UpdateGeometryMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Node2D_UpdateGeometryMsgArgs[] = {
 };
-static luaL_Reg _SubmitMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _SubmitMsgArgs[] = {
+static luaL_Reg _Form_SubmitMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Form_SubmitMsgArgs[] = {
 };
-static luaL_Reg _UpdateLayoutMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _UpdateLayoutMsgArgs[] = {
-	DECL(0x3b42dfbf, UpdateLayoutMsgArgs, Width, Width, kDataTypeFloat), // UpdateLayoutMsgArgs.Width
-	DECL(0x1bd13562, UpdateLayoutMsgArgs, Height, Height, kDataTypeFloat), // UpdateLayoutMsgArgs.Height
+static luaL_Reg _Screen_UpdateLayoutMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Screen_UpdateLayoutMsgArgs[] = {
+	DECL(0x3b42dfbf, Screen_UpdateLayoutMsgArgs, Width, Width, kDataTypeFloat), // Screen_UpdateLayoutMsgArgs.Width
+	DECL(0x1bd13562, Screen_UpdateLayoutMsgArgs, Height, Height, kDataTypeFloat), // Screen_UpdateLayoutMsgArgs.Height
 };
-static luaL_Reg _RenderScreenMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _RenderScreenMsgArgs[] = {
-	DECL(0x95876e1f, RenderScreenMsgArgs, width, width, kDataTypeInt), // RenderScreenMsgArgs.width
-	DECL(0xd5bdbb42, RenderScreenMsgArgs, height, height, kDataTypeInt), // RenderScreenMsgArgs.height
-	DECL(0xcc87a64d, RenderScreenMsgArgs, stereo, stereo, kDataTypeFloat), // RenderScreenMsgArgs.stereo
-	DECL(0xad544418, RenderScreenMsgArgs, angle, angle, kDataTypeFloat), // RenderScreenMsgArgs.angle
-	DECL(0x32608848, RenderScreenMsgArgs, target, target, kDataTypeObject, .TypeString = "Texture"), // RenderScreenMsgArgs.target
+static luaL_Reg _Screen_RenderScreenMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Screen_RenderScreenMsgArgs[] = {
+	DECL(0x95876e1f, Screen_RenderScreenMsgArgs, width, width, kDataTypeInt), // Screen_RenderScreenMsgArgs.width
+	DECL(0xd5bdbb42, Screen_RenderScreenMsgArgs, height, height, kDataTypeInt), // Screen_RenderScreenMsgArgs.height
+	DECL(0xcc87a64d, Screen_RenderScreenMsgArgs, stereo, stereo, kDataTypeFloat), // Screen_RenderScreenMsgArgs.stereo
+	DECL(0xad544418, Screen_RenderScreenMsgArgs, angle, angle, kDataTypeFloat), // Screen_RenderScreenMsgArgs.angle
+	DECL(0x32608848, Screen_RenderScreenMsgArgs, target, target, kDataTypeObject, .TypeString = "Texture"), // Screen_RenderScreenMsgArgs.target
 };
-static luaL_Reg _NavigateToPageMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _NavigateToPageMsgArgs[] = {
-	DECL(0x7569633e, NavigateToPageMsgArgs, URL, URL, kDataTypeString), // NavigateToPageMsgArgs.URL
-	DECL(0x84ff7372, NavigateToPageMsgArgs, TransitionType, TransitionType, kDataTypeEnum, .EnumValues = _TransitionType), // NavigateToPageMsgArgs.TransitionType
+static luaL_Reg _PageHost_NavigateToPageMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _PageHost_NavigateToPageMsgArgs[] = {
+	DECL(0x7569633e, PageHost_NavigateToPageMsgArgs, URL, URL, kDataTypeString), // PageHost_NavigateToPageMsgArgs.URL
+	DECL(0x84ff7372, PageHost_NavigateToPageMsgArgs, TransitionType, TransitionType, kDataTypeEnum, .EnumValues = _TransitionType), // PageHost_NavigateToPageMsgArgs.TransitionType
 };
-static luaL_Reg _NavigateBackMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _NavigateBackMsgArgs[] = {
-	DECL(0x84ff7372, NavigateBackMsgArgs, TransitionType, TransitionType, kDataTypeEnum, .EnumValues = _TransitionType), // NavigateBackMsgArgs.TransitionType
+static luaL_Reg _PageHost_NavigateBackMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _PageHost_NavigateBackMsgArgs[] = {
+	DECL(0x84ff7372, PageHost_NavigateBackMsgArgs, TransitionType, TransitionType, kDataTypeEnum, .EnumValues = _TransitionType), // PageHost_NavigateBackMsgArgs.TransitionType
 };
 
-STRUCT(TriggeredMsgArgs, TriggeredMsgArgs);
-STRUCT(UpdateMatrixMsgArgs, UpdateMatrixMsgArgs);
-STRUCT(PushPropertyMsgArgs, PushPropertyMsgArgs);
-STRUCT(LoadViewMsgArgs, LoadViewMsgArgs);
-STRUCT(HitTestMsgArgs, HitTestMsgArgs);
-STRUCT(HandleMessageMsgArgs, HandleMessageMsgArgs);
-STRUCT(IsVisibleMsgArgs, IsVisibleMsgArgs);
-STRUCT(ViewDidLoadMsgArgs, ViewDidLoadMsgArgs);
-STRUCT(KillFocusMsgArgs, KillFocusMsgArgs);
-STRUCT(SetFocusMsgArgs, SetFocusMsgArgs);
-STRUCT(GetSizeMsgArgs, GetSizeMsgArgs);
-STRUCT(MakeTextMsgArgs, MakeTextMsgArgs);
-STRUCT(DrawBrushMsgArgs, DrawBrushMsgArgs);
-STRUCT(MeasureMsgArgs, MeasureMsgArgs);
-STRUCT(ArrangeMsgArgs, ArrangeMsgArgs);
-STRUCT(MeasureOverrideMsgArgs, MeasureOverrideMsgArgs);
-STRUCT(ArrangeOverrideMsgArgs, ArrangeOverrideMsgArgs);
-STRUCT(ForegroundContentMsgArgs, ForegroundContentMsgArgs);
-STRUCT(UpdateGeometryMsgArgs, UpdateGeometryMsgArgs);
-STRUCT(SubmitMsgArgs, SubmitMsgArgs);
-STRUCT(UpdateLayoutMsgArgs, UpdateLayoutMsgArgs);
-STRUCT(RenderScreenMsgArgs, RenderScreenMsgArgs);
-STRUCT(NavigateToPageMsgArgs, NavigateToPageMsgArgs);
-STRUCT(NavigateBackMsgArgs, NavigateBackMsgArgs);
+STRUCT(Trigger_TriggeredMsgArgs, Trigger_TriggeredMsgArgs);
+STRUCT(Node_UpdateMatrixMsgArgs, Node_UpdateMatrixMsgArgs);
+STRUCT(Node_PushPropertyMsgArgs, Node_PushPropertyMsgArgs);
+STRUCT(Node_LoadViewMsgArgs, Node_LoadViewMsgArgs);
+STRUCT(Node_HitTestMsgArgs, Node_HitTestMsgArgs);
+STRUCT(Node_HandleMessageMsgArgs, Node_HandleMessageMsgArgs);
+STRUCT(Node_IsVisibleMsgArgs, Node_IsVisibleMsgArgs);
+STRUCT(Node_ViewDidLoadMsgArgs, Node_ViewDidLoadMsgArgs);
+STRUCT(Node_KillFocusMsgArgs, Node_KillFocusMsgArgs);
+STRUCT(Node_SetFocusMsgArgs, Node_SetFocusMsgArgs);
+STRUCT(Node_GetSizeMsgArgs, Node_GetSizeMsgArgs);
+STRUCT(TextBlockConcept_MakeTextMsgArgs, TextBlockConcept_MakeTextMsgArgs);
+STRUCT(Node2D_DrawBrushMsgArgs, Node2D_DrawBrushMsgArgs);
+STRUCT(Node2D_MeasureMsgArgs, Node2D_MeasureMsgArgs);
+STRUCT(Node2D_ArrangeMsgArgs, Node2D_ArrangeMsgArgs);
+STRUCT(Node2D_MeasureOverrideMsgArgs, Node2D_MeasureOverrideMsgArgs);
+STRUCT(Node2D_ArrangeOverrideMsgArgs, Node2D_ArrangeOverrideMsgArgs);
+STRUCT(Node2D_ForegroundContentMsgArgs, Node2D_ForegroundContentMsgArgs);
+STRUCT(Node2D_UpdateGeometryMsgArgs, Node2D_UpdateGeometryMsgArgs);
+STRUCT(Form_SubmitMsgArgs, Form_SubmitMsgArgs);
+STRUCT(Screen_UpdateLayoutMsgArgs, Screen_UpdateLayoutMsgArgs);
+STRUCT(Screen_RenderScreenMsgArgs, Screen_RenderScreenMsgArgs);
+STRUCT(PageHost_NavigateToPageMsgArgs, PageHost_NavigateToPageMsgArgs);
+STRUCT(PageHost_NavigateBackMsgArgs, PageHost_NavigateBackMsgArgs);
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -641,10 +641,10 @@ struct AnimationPlayer* luaX_checkAnimationPlayer(lua_State *L, int idx) {
 	return GetAnimationPlayer(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(AnimationPlayer, 0);
-LRESULT Trigger_PropertyChanged(struct Object*, struct Trigger*, wParam_t, PropertyChangedMsgPtr);
-LRESULT Trigger_Attached(struct Object*, struct Trigger*, wParam_t, AttachedMsgPtr);
+LRESULT Trigger_PropertyChanged(struct Object*, struct Trigger*, wParam_t, Object_PropertyChangedMsgPtr);
+LRESULT Trigger_Attached(struct Object*, struct Trigger*, wParam_t, Object_AttachedMsgPtr);
 static struct MessageType TriggerMessageTypes[kTriggerNumMessageTypes] = {	
-		{ "Trigger.Triggered", ID_Trigger_Triggered, kMessageRoutingTunnelingBubbling, sizeof(struct TriggeredMsgArgs) },
+		{ "Trigger.Triggered", ID_Trigger_Triggered, kMessageRoutingTunnelingBubbling, sizeof(struct Trigger_TriggeredMsgArgs) },
 };
 static struct PropertyType const TriggerProperties[kTriggerNumProperties] = {
 	DECL(0x5221f9e8, Trigger, Property, Property, kDataTypeString), // Trigger.Property
@@ -666,7 +666,7 @@ struct Trigger* luaX_checkTrigger(lua_State *L, int idx) {
 	return GetTrigger(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(Trigger, 0);
-LRESULT OnPropertyChangedTrigger_PropertyChanged(struct Object*, struct OnPropertyChangedTrigger*, wParam_t, PropertyChangedMsgPtr);
+LRESULT OnPropertyChangedTrigger_PropertyChanged(struct Object*, struct OnPropertyChangedTrigger*, wParam_t, Object_PropertyChangedMsgPtr);
 static struct MessageType OnPropertyChangedTriggerMessageTypes[kOnPropertyChangedTriggerNumMessageTypes] = {	
 };
 static struct PropertyType const OnPropertyChangedTriggerProperties[kOnPropertyChangedTriggerNumProperties] = {
@@ -689,7 +689,7 @@ struct OnPropertyChangedTrigger* luaX_checkOnPropertyChangedTrigger(lua_State *L
 }
 #define ID_Trigger 0xa5ea0da3
 REGISTER_CLASS(OnPropertyChangedTrigger, ID_Trigger, 0);
-LRESULT OnAttachedTrigger_Attached(struct Object*, struct OnAttachedTrigger*, wParam_t, AttachedMsgPtr);
+LRESULT OnAttachedTrigger_Attached(struct Object*, struct OnAttachedTrigger*, wParam_t, Object_AttachedMsgPtr);
 static struct MessageType OnAttachedTriggerMessageTypes[kOnAttachedTriggerNumMessageTypes] = {	
 };
 static struct PropertyType const OnAttachedTriggerProperties[kOnAttachedTriggerNumProperties] = {
@@ -710,7 +710,7 @@ struct OnAttachedTrigger* luaX_checkOnAttachedTrigger(lua_State *L, int idx) {
 }
 #define ID_Trigger 0xa5ea0da3
 REGISTER_CLASS(OnAttachedTrigger, ID_Trigger, 0);
-LRESULT EventTrigger_HandleMessage(struct Object*, struct EventTrigger*, wParam_t, HandleMessageMsgPtr);
+LRESULT EventTrigger_HandleMessage(struct Object*, struct EventTrigger*, wParam_t, Node_HandleMessageMsgPtr);
 static struct MessageType EventTriggerMessageTypes[kEventTriggerNumMessageTypes] = {	
 };
 static struct PropertyType const EventTriggerProperties[kEventTriggerNumProperties] = {
@@ -732,7 +732,7 @@ struct EventTrigger* luaX_checkEventTrigger(lua_State *L, int idx) {
 }
 #define ID_Trigger 0xa5ea0da3
 REGISTER_CLASS(EventTrigger, ID_Trigger, 0);
-LRESULT Setter_Triggered(struct Object*, struct Setter*, wParam_t, TriggeredMsgPtr);
+LRESULT Setter_Triggered(struct Object*, struct Setter*, wParam_t, Trigger_TriggeredMsgPtr);
 static struct MessageType SetterMessageTypes[kSetterNumMessageTypes] = {	
 };
 static struct PropertyType const SetterProperties[kSetterNumProperties] = {
@@ -755,7 +755,7 @@ struct Setter* luaX_checkSetter(lua_State *L, int idx) {
 	return GetSetter(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(Setter, 0);
-LRESULT Handler_Triggered(struct Object*, struct Handler*, wParam_t, TriggeredMsgPtr);
+LRESULT Handler_Triggered(struct Object*, struct Handler*, wParam_t, Trigger_TriggeredMsgPtr);
 static struct MessageType HandlerMessageTypes[kHandlerNumMessageTypes] = {	
 };
 static struct PropertyType const HandlerProperties[kHandlerNumProperties] = {
@@ -816,20 +816,20 @@ struct ColorBrush* luaX_checkColorBrush(lua_State *L, int idx) {
 }
 #define ID_Brush 0xccbef093
 REGISTER_CLASS(ColorBrush, ID_Brush, 0);
-LRESULT Node_ThemeChanged(struct Object*, struct Node*, wParam_t, ThemeChangedMsgPtr);
-LRESULT Node_GetSize(struct Object*, struct Node*, wParam_t, GetSizeMsgPtr);
-LRESULT Node_IsVisible(struct Object*, struct Node*, wParam_t, IsVisibleMsgPtr);
+LRESULT Node_ThemeChanged(struct Object*, struct Node*, wParam_t, Object_ThemeChangedMsgPtr);
+LRESULT Node_GetSize(struct Object*, struct Node*, wParam_t, Node_GetSizeMsgPtr);
+LRESULT Node_IsVisible(struct Object*, struct Node*, wParam_t, Node_IsVisibleMsgPtr);
 static struct MessageType NodeMessageTypes[kNodeNumMessageTypes] = {	
-		{ "Node.UpdateMatrix", ID_Node_UpdateMatrix, kMessageRoutingDirect, sizeof(struct UpdateMatrixMsgArgs) },
-		{ "Node.PushProperty", ID_Node_PushProperty, kMessageRoutingTunnelingBubbling, sizeof(struct PushPropertyMsgArgs) },
-		{ "Node.LoadView", ID_Node_LoadView, kMessageRoutingTunnelingBubbling, sizeof(struct LoadViewMsgArgs) },
-		{ "Node.HitTest", ID_Node_HitTest, kMessageRoutingDirect, sizeof(struct HitTestMsgArgs) },
-		{ "Node.HandleMessage", ID_Node_HandleMessage, kMessageRoutingTunnelingBubbling, sizeof(struct HandleMessageMsgArgs) },
-		{ "Node.IsVisible", ID_Node_IsVisible, kMessageRoutingDirect, sizeof(struct IsVisibleMsgArgs) },
-		{ "Node.ViewDidLoad", ID_Node_ViewDidLoad, kMessageRoutingDirect, sizeof(struct ViewDidLoadMsgArgs) },
-		{ "Node.KillFocus", ID_Node_KillFocus, kMessageRoutingTunnelingBubbling, sizeof(struct KillFocusMsgArgs) },
-		{ "Node.SetFocus", ID_Node_SetFocus, kMessageRoutingTunnelingBubbling, sizeof(struct SetFocusMsgArgs) },
-		{ "Node.GetSize", ID_Node_GetSize, kMessageRoutingTunnelingBubbling, sizeof(struct GetSizeMsgArgs) },
+		{ "Node.UpdateMatrix", ID_Node_UpdateMatrix, kMessageRoutingDirect, sizeof(struct Node_UpdateMatrixMsgArgs) },
+		{ "Node.PushProperty", ID_Node_PushProperty, kMessageRoutingTunnelingBubbling, sizeof(struct Node_PushPropertyMsgArgs) },
+		{ "Node.LoadView", ID_Node_LoadView, kMessageRoutingTunnelingBubbling, sizeof(struct Node_LoadViewMsgArgs) },
+		{ "Node.HitTest", ID_Node_HitTest, kMessageRoutingDirect, sizeof(struct Node_HitTestMsgArgs) },
+		{ "Node.HandleMessage", ID_Node_HandleMessage, kMessageRoutingTunnelingBubbling, sizeof(struct Node_HandleMessageMsgArgs) },
+		{ "Node.IsVisible", ID_Node_IsVisible, kMessageRoutingDirect, sizeof(struct Node_IsVisibleMsgArgs) },
+		{ "Node.ViewDidLoad", ID_Node_ViewDidLoad, kMessageRoutingDirect, sizeof(struct Node_ViewDidLoadMsgArgs) },
+		{ "Node.KillFocus", ID_Node_KillFocus, kMessageRoutingTunnelingBubbling, sizeof(struct Node_KillFocusMsgArgs) },
+		{ "Node.SetFocus", ID_Node_SetFocus, kMessageRoutingTunnelingBubbling, sizeof(struct Node_SetFocusMsgArgs) },
+		{ "Node.GetSize", ID_Node_GetSize, kMessageRoutingTunnelingBubbling, sizeof(struct Node_GetSizeMsgArgs) },
 };
 static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	DECL(0xa6478e7c, Node, Size, Size, kDataTypeStruct, .TypeString = "SizeShorthand"), // Node.Size
@@ -960,11 +960,11 @@ struct TextRun* luaX_checkTextRun(lua_State *L, int idx) {
 	return GetTextRun(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(TextRun, 0);
-LRESULT TextBlockConcept_Create(struct Object*, struct TextBlockConcept*, wParam_t, CreateMsgPtr);
-LRESULT TextBlockConcept_Destroy(struct Object*, struct TextBlockConcept*, wParam_t, DestroyMsgPtr);
-LRESULT TextBlockConcept_MakeText(struct Object*, struct TextBlockConcept*, wParam_t, MakeTextMsgPtr);
+LRESULT TextBlockConcept_Create(struct Object*, struct TextBlockConcept*, wParam_t, Object_CreateMsgPtr);
+LRESULT TextBlockConcept_Destroy(struct Object*, struct TextBlockConcept*, wParam_t, Object_DestroyMsgPtr);
+LRESULT TextBlockConcept_MakeText(struct Object*, struct TextBlockConcept*, wParam_t, TextBlockConcept_MakeTextMsgPtr);
 static struct MessageType TextBlockConceptMessageTypes[kTextBlockConceptNumMessageTypes] = {	
-		{ "TextBlockConcept.MakeText", ID_TextBlockConcept_MakeText, kMessageRoutingTunnelingBubbling, sizeof(struct MakeTextMsgArgs) },
+		{ "TextBlockConcept.MakeText", ID_TextBlockConcept_MakeText, kMessageRoutingTunnelingBubbling, sizeof(struct TextBlockConcept_MakeTextMsgArgs) },
 };
 static struct PropertyType const TextBlockConceptProperties[kTextBlockConceptNumProperties] = {
 	DECL(0x43c114fb, TextBlockConcept, TextResourceID, TextResourceID, kDataTypeString), // TextBlockConcept.TextResourceID
@@ -1004,27 +1004,27 @@ struct TextBlockConcept* luaX_checkTextBlockConcept(lua_State *L, int idx) {
 }
 #define ID_TextRun 0x4362c3d7
 REGISTER_CLASS(TextBlockConcept, ID_TextRun, 0);
-LRESULT Node2D_UpdateMatrix(struct Object*, struct Node2D*, wParam_t, UpdateMatrixMsgPtr);
-LRESULT Node2D_Create(struct Object*, struct Node2D*, wParam_t, CreateMsgPtr);
-LRESULT Node2D_Destroy(struct Object*, struct Node2D*, wParam_t, DestroyMsgPtr);
-LRESULT Node2D_UpdateGeometry(struct Object*, struct Node2D*, wParam_t, UpdateGeometryMsgPtr);
-LRESULT Node2D_DrawBrush(struct Object*, struct Node2D*, wParam_t, DrawBrushMsgPtr);
-LRESULT Node2D_HandleMessage(struct Object*, struct Node2D*, wParam_t, HandleMessageMsgPtr);
-LRESULT Node2D_ScrollWheel(struct Object*, struct Node2D*, wParam_t, ScrollWheelMsgPtr);
-LRESULT Node2D_MouseMoved(struct Object*, struct Node2D*, wParam_t, MouseMovedMsgPtr);
-LRESULT Node2D_HitTest(struct Object*, struct Node2D*, wParam_t, HitTestMsgPtr);
-LRESULT Node2D_Measure(struct Object*, struct Node2D*, wParam_t, MeasureMsgPtr);
-LRESULT Node2D_Arrange(struct Object*, struct Node2D*, wParam_t, ArrangeMsgPtr);
-LRESULT Node2D_MeasureOverride(struct Object*, struct Node2D*, wParam_t, MeasureOverrideMsgPtr);
-LRESULT Node2D_ArrangeOverride(struct Object*, struct Node2D*, wParam_t, ArrangeOverrideMsgPtr);
+LRESULT Node2D_UpdateMatrix(struct Object*, struct Node2D*, wParam_t, Node_UpdateMatrixMsgPtr);
+LRESULT Node2D_Create(struct Object*, struct Node2D*, wParam_t, Object_CreateMsgPtr);
+LRESULT Node2D_Destroy(struct Object*, struct Node2D*, wParam_t, Object_DestroyMsgPtr);
+LRESULT Node2D_UpdateGeometry(struct Object*, struct Node2D*, wParam_t, Node2D_UpdateGeometryMsgPtr);
+LRESULT Node2D_DrawBrush(struct Object*, struct Node2D*, wParam_t, Node2D_DrawBrushMsgPtr);
+LRESULT Node2D_HandleMessage(struct Object*, struct Node2D*, wParam_t, Node_HandleMessageMsgPtr);
+LRESULT Node2D_ScrollWheel(struct Object*, struct Node2D*, wParam_t, Mouse_ScrollWheelMsgPtr);
+LRESULT Node2D_MouseMoved(struct Object*, struct Node2D*, wParam_t, Mouse_MouseMovedMsgPtr);
+LRESULT Node2D_HitTest(struct Object*, struct Node2D*, wParam_t, Node_HitTestMsgPtr);
+LRESULT Node2D_Measure(struct Object*, struct Node2D*, wParam_t, Node2D_MeasureMsgPtr);
+LRESULT Node2D_Arrange(struct Object*, struct Node2D*, wParam_t, Node2D_ArrangeMsgPtr);
+LRESULT Node2D_MeasureOverride(struct Object*, struct Node2D*, wParam_t, Node2D_MeasureOverrideMsgPtr);
+LRESULT Node2D_ArrangeOverride(struct Object*, struct Node2D*, wParam_t, Node2D_ArrangeOverrideMsgPtr);
 static struct MessageType Node2DMessageTypes[kNode2DNumMessageTypes] = {	
-		{ "Node2D.DrawBrush", ID_Node2D_DrawBrush, kMessageRoutingTunnelingBubbling, sizeof(struct DrawBrushMsgArgs) },
-		{ "Node2D.Measure", ID_Node2D_Measure, kMessageRoutingTunnelingBubbling, sizeof(struct MeasureMsgArgs) },
-		{ "Node2D.Arrange", ID_Node2D_Arrange, kMessageRoutingTunnelingBubbling, sizeof(struct ArrangeMsgArgs) },
-		{ "Node2D.MeasureOverride", ID_Node2D_MeasureOverride, kMessageRoutingTunnelingBubbling, sizeof(struct MeasureMsgArgs) },
-		{ "Node2D.ArrangeOverride", ID_Node2D_ArrangeOverride, kMessageRoutingTunnelingBubbling, sizeof(struct ArrangeMsgArgs) },
-		{ "Node2D.ForegroundContent", ID_Node2D_ForegroundContent, kMessageRoutingTunnelingBubbling, sizeof(struct ForegroundContentMsgArgs) },
-		{ "Node2D.UpdateGeometry", ID_Node2D_UpdateGeometry, kMessageRoutingTunnelingBubbling, sizeof(struct UpdateGeometryMsgArgs) },
+		{ "Node2D.DrawBrush", ID_Node2D_DrawBrush, kMessageRoutingTunnelingBubbling, sizeof(struct Node2D_DrawBrushMsgArgs) },
+		{ "Node2D.Measure", ID_Node2D_Measure, kMessageRoutingTunnelingBubbling, sizeof(struct Node2D_MeasureMsgArgs) },
+		{ "Node2D.Arrange", ID_Node2D_Arrange, kMessageRoutingTunnelingBubbling, sizeof(struct Node2D_ArrangeMsgArgs) },
+		{ "Node2D.MeasureOverride", ID_Node2D_MeasureOverride, kMessageRoutingTunnelingBubbling, sizeof(struct Node2D_MeasureMsgArgs) },
+		{ "Node2D.ArrangeOverride", ID_Node2D_ArrangeOverride, kMessageRoutingTunnelingBubbling, sizeof(struct Node2D_ArrangeMsgArgs) },
+		{ "Node2D.ForegroundContent", ID_Node2D_ForegroundContent, kMessageRoutingTunnelingBubbling, sizeof(struct Node2D_ForegroundContentMsgArgs) },
+		{ "Node2D.UpdateGeometry", ID_Node2D_UpdateGeometry, kMessageRoutingTunnelingBubbling, sizeof(struct Node2D_UpdateGeometryMsgArgs) },
 };
 static struct PropertyType const Node2DProperties[kNode2DNumProperties] = {
 	DECL(0x3f19bf01, Node2D, LayoutTransform, LayoutTransform, kDataTypeStruct, .TypeString = "Transform2D"), // Node2D.LayoutTransform
@@ -1104,7 +1104,7 @@ struct Node2D* luaX_checkNode2D(lua_State *L, int idx) {
 }
 #define ID_Node 0x3468032d
 REGISTER_CLASS(Node2D, ID_Node, 0);
-LRESULT PrefabView2D_LoadView(struct Object*, struct PrefabView2D*, wParam_t, LoadViewMsgPtr);
+LRESULT PrefabView2D_LoadView(struct Object*, struct PrefabView2D*, wParam_t, Node_LoadViewMsgPtr);
 static struct MessageType PrefabView2DMessageTypes[kPrefabView2DNumMessageTypes] = {	
 };
 static struct PropertyType const PrefabView2DProperties[kPrefabView2DNumProperties] = {
@@ -1127,11 +1127,11 @@ struct PrefabView2D* luaX_checkPrefabView2D(lua_State *L, int idx) {
 }
 #define ID_Node2D 0x6c63a2ab
 REGISTER_CLASS(PrefabView2D, ID_Node2D, 0);
-LRESULT TextBlock_MeasureOverride(struct Object*, struct TextBlock*, wParam_t, MeasureOverrideMsgPtr);
-LRESULT TextBlock_ForegroundContent(struct Object*, struct TextBlock*, wParam_t, ForegroundContentMsgPtr);
-LRESULT TextBlock_UpdateGeometry(struct Object*, struct TextBlock*, wParam_t, UpdateGeometryMsgPtr);
-LRESULT TextBlock_Create(struct Object*, struct TextBlock*, wParam_t, CreateMsgPtr);
-LRESULT TextBlock_DrawBrush(struct Object*, struct TextBlock*, wParam_t, DrawBrushMsgPtr);
+LRESULT TextBlock_MeasureOverride(struct Object*, struct TextBlock*, wParam_t, Node2D_MeasureOverrideMsgPtr);
+LRESULT TextBlock_ForegroundContent(struct Object*, struct TextBlock*, wParam_t, Node2D_ForegroundContentMsgPtr);
+LRESULT TextBlock_UpdateGeometry(struct Object*, struct TextBlock*, wParam_t, Node2D_UpdateGeometryMsgPtr);
+LRESULT TextBlock_Create(struct Object*, struct TextBlock*, wParam_t, Object_CreateMsgPtr);
+LRESULT TextBlock_DrawBrush(struct Object*, struct TextBlock*, wParam_t, Node2D_DrawBrushMsgPtr);
 static struct MessageType TextBlockMessageTypes[kTextBlockNumMessageTypes] = {	
 };
 static struct PropertyType const TextBlockProperties[kTextBlockNumProperties] = {
@@ -1157,13 +1157,13 @@ struct TextBlock* luaX_checkTextBlock(lua_State *L, int idx) {
 #define ID_Node2D 0x6c63a2ab
 #define ID_TextBlockConcept 0x4903089d
 REGISTER_CLASS(TextBlock, ID_Node2D, ID_TextBlockConcept, 0);
-LRESULT Input_Create(struct Object*, struct Input*, wParam_t, CreateMsgPtr);
-LRESULT Input_DrawBrush(struct Object*, struct Input*, wParam_t, DrawBrushMsgPtr);
-LRESULT Input_MakeText(struct Object*, struct Input*, wParam_t, MakeTextMsgPtr);
-LRESULT Input_KeyDown(struct Object*, struct Input*, wParam_t, KeyDownMsgPtr);
-LRESULT Input_KillFocus(struct Object*, struct Input*, wParam_t, KillFocusMsgPtr);
-LRESULT Input_LeftMouseUp(struct Object*, struct Input*, wParam_t, LeftMouseUpMsgPtr);
-LRESULT Input_MeasureOverride(struct Object*, struct Input*, wParam_t, MeasureOverrideMsgPtr);
+LRESULT Input_Create(struct Object*, struct Input*, wParam_t, Object_CreateMsgPtr);
+LRESULT Input_DrawBrush(struct Object*, struct Input*, wParam_t, Node2D_DrawBrushMsgPtr);
+LRESULT Input_MakeText(struct Object*, struct Input*, wParam_t, TextBlockConcept_MakeTextMsgPtr);
+LRESULT Input_KeyDown(struct Object*, struct Input*, wParam_t, Keyboard_KeyDownMsgPtr);
+LRESULT Input_KillFocus(struct Object*, struct Input*, wParam_t, Node_KillFocusMsgPtr);
+LRESULT Input_LeftMouseUp(struct Object*, struct Input*, wParam_t, Mouse_LeftMouseUpMsgPtr);
+LRESULT Input_MeasureOverride(struct Object*, struct Input*, wParam_t, Node2D_MeasureOverrideMsgPtr);
 static struct MessageType InputMessageTypes[kInputNumMessageTypes] = {	
 };
 static struct PropertyType const InputProperties[kInputNumProperties] = {
@@ -1195,10 +1195,10 @@ struct Input* luaX_checkInput(lua_State *L, int idx) {
 }
 #define ID_TextBlock 0x40f4d77b
 REGISTER_CLASS(Input, ID_TextBlock, 0);
-LRESULT Button_Create(struct Object*, struct Button*, wParam_t, CreateMsgPtr);
-LRESULT Button_LeftMouseUp(struct Object*, struct Button*, wParam_t, LeftMouseUpMsgPtr);
-LRESULT Button_KeyDown(struct Object*, struct Button*, wParam_t, KeyDownMsgPtr);
-LRESULT Button_DrawBrush(struct Object*, struct Button*, wParam_t, DrawBrushMsgPtr);
+LRESULT Button_Create(struct Object*, struct Button*, wParam_t, Object_CreateMsgPtr);
+LRESULT Button_LeftMouseUp(struct Object*, struct Button*, wParam_t, Mouse_LeftMouseUpMsgPtr);
+LRESULT Button_KeyDown(struct Object*, struct Button*, wParam_t, Keyboard_KeyDownMsgPtr);
+LRESULT Button_DrawBrush(struct Object*, struct Button*, wParam_t, Node2D_DrawBrushMsgPtr);
 static struct MessageType ButtonMessageTypes[kButtonNumMessageTypes] = {	
 };
 static struct PropertyType const ButtonProperties[kButtonNumProperties] = {
@@ -1223,7 +1223,7 @@ struct Button* luaX_checkButton(lua_State *L, int idx) {
 }
 #define ID_TextBlock 0x40f4d77b
 REGISTER_CLASS(Button, ID_TextBlock, 0);
-LRESULT Label_LeftMouseUp(struct Object*, struct Label*, wParam_t, LeftMouseUpMsgPtr);
+LRESULT Label_LeftMouseUp(struct Object*, struct Label*, wParam_t, Mouse_LeftMouseUpMsgPtr);
 static struct MessageType LabelMessageTypes[kLabelNumMessageTypes] = {	
 };
 static struct PropertyType const LabelProperties[kLabelNumProperties] = {
@@ -1245,8 +1245,8 @@ struct Label* luaX_checkLabel(lua_State *L, int idx) {
 }
 #define ID_TextBlock 0x40f4d77b
 REGISTER_CLASS(Label, ID_TextBlock, 0);
-LRESULT StackView_MeasureOverride(struct Object*, struct StackView*, wParam_t, MeasureOverrideMsgPtr);
-LRESULT StackView_ArrangeOverride(struct Object*, struct StackView*, wParam_t, ArrangeOverrideMsgPtr);
+LRESULT StackView_MeasureOverride(struct Object*, struct StackView*, wParam_t, Node2D_MeasureOverrideMsgPtr);
+LRESULT StackView_ArrangeOverride(struct Object*, struct StackView*, wParam_t, Node2D_ArrangeOverrideMsgPtr);
 static struct MessageType StackViewMessageTypes[kStackViewNumMessageTypes] = {	
 };
 static struct PropertyType const StackViewProperties[kStackViewNumProperties] = {
@@ -1273,10 +1273,10 @@ struct StackView* luaX_checkStackView(lua_State *L, int idx) {
 }
 #define ID_Node2D 0x6c63a2ab
 REGISTER_CLASS(StackView, ID_Node2D, 0);
-LRESULT Form_Create(struct Object*, struct Form*, wParam_t, CreateMsgPtr);
-LRESULT Form_Submit(struct Object*, struct Form*, wParam_t, SubmitMsgPtr);
+LRESULT Form_Create(struct Object*, struct Form*, wParam_t, Object_CreateMsgPtr);
+LRESULT Form_Submit(struct Object*, struct Form*, wParam_t, Form_SubmitMsgPtr);
 static struct MessageType FormMessageTypes[kFormNumMessageTypes] = {	
-		{ "Form.Submit", ID_Form_Submit, kMessageRoutingTunnelingBubbling, sizeof(struct SubmitMsgArgs) },
+		{ "Form.Submit", ID_Form_Submit, kMessageRoutingTunnelingBubbling, sizeof(struct Form_SubmitMsgArgs) },
 };
 static struct PropertyType const FormProperties[kFormNumProperties] = {
 };
@@ -1322,16 +1322,16 @@ struct Control* luaX_checkControl(lua_State *L, int idx) {
 }
 #define ID_Node2D 0x6c63a2ab
 REGISTER_CLASS(Control, ID_Node2D, 0);
-LRESULT Screen_UpdateLayout(struct Object*, struct Screen*, wParam_t, UpdateLayoutMsgPtr);
-LRESULT Screen_RenderScreen(struct Object*, struct Screen*, wParam_t, RenderScreenMsgPtr);
-LRESULT Screen_MeasureOverride(struct Object*, struct Screen*, wParam_t, MeasureOverrideMsgPtr);
-LRESULT Screen_Create(struct Object*, struct Screen*, wParam_t, CreateMsgPtr);
-LRESULT Screen_Destroy(struct Object*, struct Screen*, wParam_t, DestroyMsgPtr);
-LRESULT Screen_Resized(struct Object*, struct Screen*, wParam_t, ResizedMsgPtr);
-LRESULT Screen_Paint(struct Object*, struct Screen*, wParam_t, PaintMsgPtr);
+LRESULT Screen_UpdateLayout(struct Object*, struct Screen*, wParam_t, Screen_UpdateLayoutMsgPtr);
+LRESULT Screen_RenderScreen(struct Object*, struct Screen*, wParam_t, Screen_RenderScreenMsgPtr);
+LRESULT Screen_MeasureOverride(struct Object*, struct Screen*, wParam_t, Node2D_MeasureOverrideMsgPtr);
+LRESULT Screen_Create(struct Object*, struct Screen*, wParam_t, Object_CreateMsgPtr);
+LRESULT Screen_Destroy(struct Object*, struct Screen*, wParam_t, Object_DestroyMsgPtr);
+LRESULT Screen_Resized(struct Object*, struct Screen*, wParam_t, Window_ResizedMsgPtr);
+LRESULT Screen_Paint(struct Object*, struct Screen*, wParam_t, Window_PaintMsgPtr);
 static struct MessageType ScreenMessageTypes[kScreenNumMessageTypes] = {	
-		{ "Screen.UpdateLayout", ID_Screen_UpdateLayout, kMessageRoutingTunnelingBubbling, sizeof(struct UpdateLayoutMsgArgs) },
-		{ "Screen.RenderScreen", ID_Screen_RenderScreen, kMessageRoutingTunnelingBubbling, sizeof(struct RenderScreenMsgArgs) },
+		{ "Screen.UpdateLayout", ID_Screen_UpdateLayout, kMessageRoutingTunnelingBubbling, sizeof(struct Screen_UpdateLayoutMsgArgs) },
+		{ "Screen.RenderScreen", ID_Screen_RenderScreen, kMessageRoutingTunnelingBubbling, sizeof(struct Screen_RenderScreenMsgArgs) },
 };
 static struct PropertyType const ScreenProperties[kScreenNumProperties] = {
 	DECL(0xeb16b675, Screen, ClearColor, ClearColor, kDataTypeColor), // Screen.ClearColor
@@ -1362,7 +1362,7 @@ struct Screen* luaX_checkScreen(lua_State *L, int idx) {
 }
 #define ID_Node2D 0x6c63a2ab
 REGISTER_CLASS(Screen, ID_Node2D, 0);
-LRESULT Cinematic_DrawBrush(struct Object*, struct Cinematic*, wParam_t, DrawBrushMsgPtr);
+LRESULT Cinematic_DrawBrush(struct Object*, struct Cinematic*, wParam_t, Node2D_DrawBrushMsgPtr);
 static struct MessageType CinematicMessageTypes[kCinematicNumMessageTypes] = {	
 };
 static struct PropertyType const CinematicProperties[kCinematicNumProperties] = {
@@ -1387,8 +1387,8 @@ struct Cinematic* luaX_checkCinematic(lua_State *L, int idx) {
 }
 #define ID_Node2D 0x6c63a2ab
 REGISTER_CLASS(Cinematic, ID_Node2D, 0);
-LRESULT Grid_MeasureOverride(struct Object*, struct Grid*, wParam_t, MeasureOverrideMsgPtr);
-LRESULT Grid_ArrangeOverride(struct Object*, struct Grid*, wParam_t, ArrangeOverrideMsgPtr);
+LRESULT Grid_MeasureOverride(struct Object*, struct Grid*, wParam_t, Node2D_MeasureOverrideMsgPtr);
+LRESULT Grid_ArrangeOverride(struct Object*, struct Grid*, wParam_t, Node2D_ArrangeOverrideMsgPtr);
 static struct MessageType GridMessageTypes[kGridNumMessageTypes] = {	
 };
 static struct PropertyType const GridProperties[kGridNumProperties] = {
@@ -1416,11 +1416,11 @@ struct Grid* luaX_checkGrid(lua_State *L, int idx) {
 }
 #define ID_Node2D 0x6c63a2ab
 REGISTER_CLASS(Grid, ID_Node2D, 0);
-LRESULT ImageView_MeasureOverride(struct Object*, struct ImageView*, wParam_t, MeasureOverrideMsgPtr);
-LRESULT ImageView_ArrangeOverride(struct Object*, struct ImageView*, wParam_t, ArrangeOverrideMsgPtr);
-LRESULT ImageView_ForegroundContent(struct Object*, struct ImageView*, wParam_t, ForegroundContentMsgPtr);
-LRESULT ImageView_DrawBrush(struct Object*, struct ImageView*, wParam_t, DrawBrushMsgPtr);
-LRESULT ImageView_LoadView(struct Object*, struct ImageView*, wParam_t, LoadViewMsgPtr);
+LRESULT ImageView_MeasureOverride(struct Object*, struct ImageView*, wParam_t, Node2D_MeasureOverrideMsgPtr);
+LRESULT ImageView_ArrangeOverride(struct Object*, struct ImageView*, wParam_t, Node2D_ArrangeOverrideMsgPtr);
+LRESULT ImageView_ForegroundContent(struct Object*, struct ImageView*, wParam_t, Node2D_ForegroundContentMsgPtr);
+LRESULT ImageView_DrawBrush(struct Object*, struct ImageView*, wParam_t, Node2D_DrawBrushMsgPtr);
+LRESULT ImageView_LoadView(struct Object*, struct ImageView*, wParam_t, Node_LoadViewMsgPtr);
 static struct MessageType ImageViewMessageTypes[kImageViewNumMessageTypes] = {	
 };
 static struct PropertyType const ImageViewProperties[kImageViewNumProperties] = {
@@ -1453,9 +1453,9 @@ struct ImageView* luaX_checkImageView(lua_State *L, int idx) {
 }
 #define ID_Node2D 0x6c63a2ab
 REGISTER_CLASS(ImageView, ID_Node2D, 0);
-LRESULT NinePatchImage_MeasureOverride(struct Object*, struct NinePatchImage*, wParam_t, MeasureOverrideMsgPtr);
-LRESULT NinePatchImage_ForegroundContent(struct Object*, struct NinePatchImage*, wParam_t, ForegroundContentMsgPtr);
-LRESULT NinePatchImage_DrawBrush(struct Object*, struct NinePatchImage*, wParam_t, DrawBrushMsgPtr);
+LRESULT NinePatchImage_MeasureOverride(struct Object*, struct NinePatchImage*, wParam_t, Node2D_MeasureOverrideMsgPtr);
+LRESULT NinePatchImage_ForegroundContent(struct Object*, struct NinePatchImage*, wParam_t, Node2D_ForegroundContentMsgPtr);
+LRESULT NinePatchImage_DrawBrush(struct Object*, struct NinePatchImage*, wParam_t, Node2D_DrawBrushMsgPtr);
 static struct MessageType NinePatchImageMessageTypes[kNinePatchImageNumMessageTypes] = {	
 };
 static struct PropertyType const NinePatchImageProperties[kNinePatchImageNumProperties] = {
@@ -1492,10 +1492,10 @@ struct NinePatchImage* luaX_checkNinePatchImage(lua_State *L, int idx) {
 }
 #define ID_Node2D 0x6c63a2ab
 REGISTER_CLASS(NinePatchImage, ID_Node2D, 0);
-LRESULT TerminalView_Create(struct Object*, struct TerminalView*, wParam_t, CreateMsgPtr);
-LRESULT TerminalView_DrawBrush(struct Object*, struct TerminalView*, wParam_t, DrawBrushMsgPtr);
-LRESULT TerminalView_PushProperty(struct Object*, struct TerminalView*, wParam_t, PushPropertyMsgPtr);
-LRESULT TerminalView_ScrollWheel(struct Object*, struct TerminalView*, wParam_t, ScrollWheelMsgPtr);
+LRESULT TerminalView_Create(struct Object*, struct TerminalView*, wParam_t, Object_CreateMsgPtr);
+LRESULT TerminalView_DrawBrush(struct Object*, struct TerminalView*, wParam_t, Node2D_DrawBrushMsgPtr);
+LRESULT TerminalView_PushProperty(struct Object*, struct TerminalView*, wParam_t, Node_PushPropertyMsgPtr);
+LRESULT TerminalView_ScrollWheel(struct Object*, struct TerminalView*, wParam_t, Mouse_ScrollWheelMsgPtr);
 static struct MessageType TerminalViewMessageTypes[kTerminalViewNumMessageTypes] = {	
 };
 static struct PropertyType const TerminalViewProperties[kTerminalViewNumProperties] = {
@@ -1528,7 +1528,7 @@ struct TerminalView* luaX_checkTerminalView(lua_State *L, int idx) {
 }
 #define ID_Node2D 0x6c63a2ab
 REGISTER_CLASS(TerminalView, ID_Node2D, 0);
-LRESULT Page_Create(struct Object*, struct Page*, wParam_t, CreateMsgPtr);
+LRESULT Page_Create(struct Object*, struct Page*, wParam_t, Object_CreateMsgPtr);
 static struct MessageType PageMessageTypes[kPageNumMessageTypes] = {	
 };
 static struct PropertyType const PageProperties[kPageNumProperties] = {
@@ -1552,12 +1552,12 @@ struct Page* luaX_checkPage(lua_State *L, int idx) {
 }
 #define ID_Node2D 0x6c63a2ab
 REGISTER_CLASS(Page, ID_Node2D, 0);
-LRESULT PageHost_ViewDidLoad(struct Object*, struct PageHost*, wParam_t, ViewDidLoadMsgPtr);
-LRESULT PageHost_NavigateToPage(struct Object*, struct PageHost*, wParam_t, NavigateToPageMsgPtr);
-LRESULT PageHost_NavigateBack(struct Object*, struct PageHost*, wParam_t, NavigateBackMsgPtr);
+LRESULT PageHost_ViewDidLoad(struct Object*, struct PageHost*, wParam_t, Node_ViewDidLoadMsgPtr);
+LRESULT PageHost_NavigateToPage(struct Object*, struct PageHost*, wParam_t, PageHost_NavigateToPageMsgPtr);
+LRESULT PageHost_NavigateBack(struct Object*, struct PageHost*, wParam_t, PageHost_NavigateBackMsgPtr);
 static struct MessageType PageHostMessageTypes[kPageHostNumMessageTypes] = {	
-		{ "PageHost.NavigateToPage", ID_PageHost_NavigateToPage, kMessageRoutingTunnelingBubbling, sizeof(struct NavigateToPageMsgArgs) },
-		{ "PageHost.NavigateBack", ID_PageHost_NavigateBack, kMessageRoutingTunnelingBubbling, sizeof(struct NavigateBackMsgArgs) },
+		{ "PageHost.NavigateToPage", ID_PageHost_NavigateToPage, kMessageRoutingTunnelingBubbling, sizeof(struct PageHost_NavigateToPageMsgArgs) },
+		{ "PageHost.NavigateBack", ID_PageHost_NavigateBack, kMessageRoutingTunnelingBubbling, sizeof(struct PageHost_NavigateBackMsgArgs) },
 };
 static struct PropertyType const PageHostProperties[kPageHostNumProperties] = {
 	DECL(0x2e149db4, PageHost, ActivePage, ActivePage, kDataTypeObject, .TypeString = "Page"), // PageHost.ActivePage

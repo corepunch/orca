@@ -345,28 +345,28 @@ static char* _ExtractFileToTemp(PPACK pack, lpcString_t filename) {
 }
 
 
-HANDLER(Package, OpenFile) {
+HANDLER(Package, Project, OpenFile) {
   return (intptr_t)_ReadPakFile(pPackage->_package, pOpenFile->FileName);
 }
 
 
-HANDLER(Package, Destroy) {
+HANDLER(Package, Object, Destroy) {
   _FreePack(pPackage->_package);
   return FALSE;
 }
 
-HANDLER(Package, FileExists) {
+HANDLER(Package, Project, FileExists) {
   return _FindPackFile(pPackage->_package, pFileExists->FileName);
 }
 
-HANDLER(Package, HasChangedFiles) {
+HANDLER(Package, Project, HasChangedFiles) {
   return FALSE;
 }
 
 int lua_loadfile_with_env(lua_State *L, const char *filename, int env_index);
 #include <include/api.h>
 
-HANDLER(Package, LoadProject) {
+HANDLER(Package, Project, LoadProject) {
   path_t tmp={0};
   lpObject_t package = NULL;
   lua_State* L = (lua_State*)pPackage;

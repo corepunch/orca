@@ -50,36 +50,36 @@ ORCA_API extern struct MessageType ReleaseMessage;
 ORCA_API extern struct MessageType DestroyMessage;
 ORCA_API extern struct MessageType TimerMessage;
 
-typedef struct MouseMessageMsgArgs MouseMessageMsg_t,* MouseMessageMsgPtr;
-typedef struct MouseMessageMsgArgs LeftMouseDownMsg_t,* LeftMouseDownMsgPtr;
-typedef struct MouseMessageMsgArgs RightMouseDownMsg_t,* RightMouseDownMsgPtr;
-typedef struct MouseMessageMsgArgs OtherMouseDownMsg_t,* OtherMouseDownMsgPtr;
-typedef struct MouseMessageMsgArgs LeftMouseUpMsg_t,* LeftMouseUpMsgPtr;
-typedef struct MouseMessageMsgArgs RightMouseUpMsg_t,* RightMouseUpMsgPtr;
-typedef struct MouseMessageMsgArgs OtherMouseUpMsg_t,* OtherMouseUpMsgPtr;
-typedef struct MouseMessageMsgArgs LeftMouseDraggedMsg_t,* LeftMouseDraggedMsgPtr;
-typedef struct MouseMessageMsgArgs RightMouseDraggedMsg_t,* RightMouseDraggedMsgPtr;
-typedef struct MouseMessageMsgArgs OtherMouseDraggedMsg_t,* OtherMouseDraggedMsgPtr;
-typedef struct MouseMessageMsgArgs LeftDoubleClickMsg_t,* LeftDoubleClickMsgPtr;
-typedef struct MouseMessageMsgArgs RightDoubleClickMsg_t,* RightDoubleClickMsgPtr;
-typedef struct MouseMessageMsgArgs OtherDoubleClickMsg_t,* OtherDoubleClickMsgPtr;
-typedef struct MouseMessageMsgArgs MouseMovedMsg_t,* MouseMovedMsgPtr;
-typedef struct MouseMessageMsgArgs ScrollWheelMsg_t,* ScrollWheelMsgPtr;
-typedef struct MouseMessageMsgArgs DragDropMsg_t,* DragDropMsgPtr;
-typedef struct MouseMessageMsgArgs DragEnterMsg_t,* DragEnterMsgPtr;
-typedef struct KeyMessageMsgArgs KeyMessageMsg_t,* KeyMessageMsgPtr;
-typedef struct KeyMessageMsgArgs KeyDownMsg_t,* KeyDownMsgPtr;
-typedef struct KeyMessageMsgArgs KeyUpMsg_t,* KeyUpMsgPtr;
-typedef struct KeyMessageMsgArgs TextInputMsg_t,* TextInputMsgPtr;
-typedef struct CreateMsgArgs CreateMsg_t,* CreateMsgPtr;
-typedef struct StartMsgArgs StartMsg_t,* StartMsgPtr;
-typedef struct AwakeMsgArgs AwakeMsg_t,* AwakeMsgPtr;
-typedef struct ThemeChangedMsgArgs ThemeChangedMsg_t,* ThemeChangedMsgPtr;
-typedef struct PropertyChangedMsgArgs PropertyChangedMsg_t,* PropertyChangedMsgPtr;
-typedef struct AttachedMsgArgs AttachedMsg_t,* AttachedMsgPtr;
-typedef struct ReleaseMsgArgs ReleaseMsg_t,* ReleaseMsgPtr;
-typedef struct DestroyMsgArgs DestroyMsg_t,* DestroyMsgPtr;
-typedef struct TimerMsgArgs TimerMsg_t,* TimerMsgPtr;
+typedef struct Mouse_MouseMessageMsgArgs Mouse_MouseMessageMsg_t,* Mouse_MouseMessageMsgPtr;
+typedef struct Mouse_MouseMessageMsgArgs Mouse_LeftMouseDownMsg_t,* Mouse_LeftMouseDownMsgPtr;
+typedef struct Mouse_MouseMessageMsgArgs Mouse_RightMouseDownMsg_t,* Mouse_RightMouseDownMsgPtr;
+typedef struct Mouse_MouseMessageMsgArgs Mouse_OtherMouseDownMsg_t,* Mouse_OtherMouseDownMsgPtr;
+typedef struct Mouse_MouseMessageMsgArgs Mouse_LeftMouseUpMsg_t,* Mouse_LeftMouseUpMsgPtr;
+typedef struct Mouse_MouseMessageMsgArgs Mouse_RightMouseUpMsg_t,* Mouse_RightMouseUpMsgPtr;
+typedef struct Mouse_MouseMessageMsgArgs Mouse_OtherMouseUpMsg_t,* Mouse_OtherMouseUpMsgPtr;
+typedef struct Mouse_MouseMessageMsgArgs Mouse_LeftMouseDraggedMsg_t,* Mouse_LeftMouseDraggedMsgPtr;
+typedef struct Mouse_MouseMessageMsgArgs Mouse_RightMouseDraggedMsg_t,* Mouse_RightMouseDraggedMsgPtr;
+typedef struct Mouse_MouseMessageMsgArgs Mouse_OtherMouseDraggedMsg_t,* Mouse_OtherMouseDraggedMsgPtr;
+typedef struct Mouse_MouseMessageMsgArgs Mouse_LeftDoubleClickMsg_t,* Mouse_LeftDoubleClickMsgPtr;
+typedef struct Mouse_MouseMessageMsgArgs Mouse_RightDoubleClickMsg_t,* Mouse_RightDoubleClickMsgPtr;
+typedef struct Mouse_MouseMessageMsgArgs Mouse_OtherDoubleClickMsg_t,* Mouse_OtherDoubleClickMsgPtr;
+typedef struct Mouse_MouseMessageMsgArgs Mouse_MouseMovedMsg_t,* Mouse_MouseMovedMsgPtr;
+typedef struct Mouse_MouseMessageMsgArgs Mouse_ScrollWheelMsg_t,* Mouse_ScrollWheelMsgPtr;
+typedef struct Mouse_MouseMessageMsgArgs Mouse_DragDropMsg_t,* Mouse_DragDropMsgPtr;
+typedef struct Mouse_MouseMessageMsgArgs Mouse_DragEnterMsg_t,* Mouse_DragEnterMsgPtr;
+typedef struct Keyboard_KeyMessageMsgArgs Keyboard_KeyMessageMsg_t,* Keyboard_KeyMessageMsgPtr;
+typedef struct Keyboard_KeyMessageMsgArgs Keyboard_KeyDownMsg_t,* Keyboard_KeyDownMsgPtr;
+typedef struct Keyboard_KeyMessageMsgArgs Keyboard_KeyUpMsg_t,* Keyboard_KeyUpMsgPtr;
+typedef struct Keyboard_KeyMessageMsgArgs Keyboard_TextInputMsg_t,* Keyboard_TextInputMsgPtr;
+typedef struct Object_CreateMsgArgs Object_CreateMsg_t,* Object_CreateMsgPtr;
+typedef struct Object_StartMsgArgs Object_StartMsg_t,* Object_StartMsgPtr;
+typedef struct Object_AwakeMsgArgs Object_AwakeMsg_t,* Object_AwakeMsgPtr;
+typedef struct Object_ThemeChangedMsgArgs Object_ThemeChangedMsg_t,* Object_ThemeChangedMsgPtr;
+typedef struct Object_PropertyChangedMsgArgs Object_PropertyChangedMsg_t,* Object_PropertyChangedMsgPtr;
+typedef struct Object_AttachedMsgArgs Object_AttachedMsg_t,* Object_AttachedMsgPtr;
+typedef struct Object_ReleaseMsgArgs Object_ReleaseMsg_t,* Object_ReleaseMsgPtr;
+typedef struct Object_DestroyMsgArgs Object_DestroyMsg_t,* Object_DestroyMsgPtr;
+typedef struct Object_TimerMsgArgs Object_TimerMsg_t,* Object_TimerMsgPtr;
 
 
 /// @brief Defines the routing strategy for messages sent to objects. This determines how messages propagate through the object hierarchy and which handlers are invoked.
@@ -495,8 +495,8 @@ struct MessageType {
 ORCA_API void luaX_pushMessageType(lua_State *L, struct MessageType const* MessageType);
 ORCA_API struct MessageType* luaX_checkMessageType(lua_State *L, int idx);
 
-/** MouseMessageMsgArgs struct */
-struct MouseMessageMsgArgs {
+/** Mouse_MouseMessageMsgArgs struct */
+struct Mouse_MouseMessageMsgArgs {
 	float x; ///< Horizontal pointer position in local space
 	float y; ///< Vertical pointer position in local space
 	int32_t deltaX; ///< Scroll wheel rotation amount along the X axis; positive values scroll right/forward
@@ -504,10 +504,10 @@ struct MouseMessageMsgArgs {
 	enum MouseButton button; ///< The mouse button involved in this event
 	int32_t clickCount; ///< Number of consecutive clicks (1 for single click, 2 for double click)
 };
-ORCA_API void luaX_pushMouseMessageMsgArgs(lua_State *L, struct MouseMessageMsgArgs const* data);
-ORCA_API struct MouseMessageMsgArgs* luaX_checkMouseMessageMsgArgs(lua_State *L, int idx);
-/** KeyMessageMsgArgs struct */
-struct KeyMessageMsgArgs {
+ORCA_API void luaX_pushMouse_MouseMessageMsgArgs(lua_State *L, struct Mouse_MouseMessageMsgArgs const* data);
+ORCA_API struct Mouse_MouseMessageMsgArgs* luaX_checkMouse_MouseMessageMsgArgs(lua_State *L, int idx);
+/** Keyboard_KeyMessageMsgArgs struct */
+struct Keyboard_KeyMessageMsgArgs {
 	int32_t keyCode; ///< The key involved in this event
 	int32_t character; ///< The character produced by this key event
 	int32_t modifiers; ///< Active modifier keys during the event (bitmask of WI_MOD_* flags)
@@ -515,54 +515,54 @@ struct KeyMessageMsgArgs {
 	const char* modifiersString; ///< Active modifier keys as a human-readable prefix string (e.g. "ctrl+shift+")
 	const char* hotKey; ///< Combined modifier+key string for hotkey matching (e.g. "ctrl+alt+w")
 };
-ORCA_API void luaX_pushKeyMessageMsgArgs(lua_State *L, struct KeyMessageMsgArgs const* data);
-ORCA_API struct KeyMessageMsgArgs* luaX_checkKeyMessageMsgArgs(lua_State *L, int idx);
-/** CreateMsgArgs struct */
-struct CreateMsgArgs {
+ORCA_API void luaX_pushKeyboard_KeyMessageMsgArgs(lua_State *L, struct Keyboard_KeyMessageMsgArgs const* data);
+ORCA_API struct Keyboard_KeyMessageMsgArgs* luaX_checkKeyboard_KeyMessageMsgArgs(lua_State *L, int idx);
+/** Object_CreateMsgArgs struct */
+struct Object_CreateMsgArgs {
 };
-ORCA_API void luaX_pushCreateMsgArgs(lua_State *L, struct CreateMsgArgs const* data);
-ORCA_API struct CreateMsgArgs* luaX_checkCreateMsgArgs(lua_State *L, int idx);
-/** StartMsgArgs struct */
-struct StartMsgArgs {
+ORCA_API void luaX_pushObject_CreateMsgArgs(lua_State *L, struct Object_CreateMsgArgs const* data);
+ORCA_API struct Object_CreateMsgArgs* luaX_checkObject_CreateMsgArgs(lua_State *L, int idx);
+/** Object_StartMsgArgs struct */
+struct Object_StartMsgArgs {
 };
-ORCA_API void luaX_pushStartMsgArgs(lua_State *L, struct StartMsgArgs const* data);
-ORCA_API struct StartMsgArgs* luaX_checkStartMsgArgs(lua_State *L, int idx);
-/** AwakeMsgArgs struct */
-struct AwakeMsgArgs {
+ORCA_API void luaX_pushObject_StartMsgArgs(lua_State *L, struct Object_StartMsgArgs const* data);
+ORCA_API struct Object_StartMsgArgs* luaX_checkObject_StartMsgArgs(lua_State *L, int idx);
+/** Object_AwakeMsgArgs struct */
+struct Object_AwakeMsgArgs {
 };
-ORCA_API void luaX_pushAwakeMsgArgs(lua_State *L, struct AwakeMsgArgs const* data);
-ORCA_API struct AwakeMsgArgs* luaX_checkAwakeMsgArgs(lua_State *L, int idx);
-/** ThemeChangedMsgArgs struct */
-struct ThemeChangedMsgArgs {
+ORCA_API void luaX_pushObject_AwakeMsgArgs(lua_State *L, struct Object_AwakeMsgArgs const* data);
+ORCA_API struct Object_AwakeMsgArgs* luaX_checkObject_AwakeMsgArgs(lua_State *L, int idx);
+/** Object_ThemeChangedMsgArgs struct */
+struct Object_ThemeChangedMsgArgs {
 };
-ORCA_API void luaX_pushThemeChangedMsgArgs(lua_State *L, struct ThemeChangedMsgArgs const* data);
-ORCA_API struct ThemeChangedMsgArgs* luaX_checkThemeChangedMsgArgs(lua_State *L, int idx);
-/** PropertyChangedMsgArgs struct */
-struct PropertyChangedMsgArgs {
+ORCA_API void luaX_pushObject_ThemeChangedMsgArgs(lua_State *L, struct Object_ThemeChangedMsgArgs const* data);
+ORCA_API struct Object_ThemeChangedMsgArgs* luaX_checkObject_ThemeChangedMsgArgs(lua_State *L, int idx);
+/** Object_PropertyChangedMsgArgs struct */
+struct Object_PropertyChangedMsgArgs {
 	struct Property* Property; ///< The property that changed
 };
-ORCA_API void luaX_pushPropertyChangedMsgArgs(lua_State *L, struct PropertyChangedMsgArgs const* data);
-ORCA_API struct PropertyChangedMsgArgs* luaX_checkPropertyChangedMsgArgs(lua_State *L, int idx);
-/** AttachedMsgArgs struct */
-struct AttachedMsgArgs {
+ORCA_API void luaX_pushObject_PropertyChangedMsgArgs(lua_State *L, struct Object_PropertyChangedMsgArgs const* data);
+ORCA_API struct Object_PropertyChangedMsgArgs* luaX_checkObject_PropertyChangedMsgArgs(lua_State *L, int idx);
+/** Object_AttachedMsgArgs struct */
+struct Object_AttachedMsgArgs {
 };
-ORCA_API void luaX_pushAttachedMsgArgs(lua_State *L, struct AttachedMsgArgs const* data);
-ORCA_API struct AttachedMsgArgs* luaX_checkAttachedMsgArgs(lua_State *L, int idx);
-/** ReleaseMsgArgs struct */
-struct ReleaseMsgArgs {
+ORCA_API void luaX_pushObject_AttachedMsgArgs(lua_State *L, struct Object_AttachedMsgArgs const* data);
+ORCA_API struct Object_AttachedMsgArgs* luaX_checkObject_AttachedMsgArgs(lua_State *L, int idx);
+/** Object_ReleaseMsgArgs struct */
+struct Object_ReleaseMsgArgs {
 };
-ORCA_API void luaX_pushReleaseMsgArgs(lua_State *L, struct ReleaseMsgArgs const* data);
-ORCA_API struct ReleaseMsgArgs* luaX_checkReleaseMsgArgs(lua_State *L, int idx);
-/** DestroyMsgArgs struct */
-struct DestroyMsgArgs {
+ORCA_API void luaX_pushObject_ReleaseMsgArgs(lua_State *L, struct Object_ReleaseMsgArgs const* data);
+ORCA_API struct Object_ReleaseMsgArgs* luaX_checkObject_ReleaseMsgArgs(lua_State *L, int idx);
+/** Object_DestroyMsgArgs struct */
+struct Object_DestroyMsgArgs {
 };
-ORCA_API void luaX_pushDestroyMsgArgs(lua_State *L, struct DestroyMsgArgs const* data);
-ORCA_API struct DestroyMsgArgs* luaX_checkDestroyMsgArgs(lua_State *L, int idx);
-/** TimerMsgArgs struct */
-struct TimerMsgArgs {
+ORCA_API void luaX_pushObject_DestroyMsgArgs(lua_State *L, struct Object_DestroyMsgArgs const* data);
+ORCA_API struct Object_DestroyMsgArgs* luaX_checkObject_DestroyMsgArgs(lua_State *L, int idx);
+/** Object_TimerMsgArgs struct */
+struct Object_TimerMsgArgs {
 };
-ORCA_API void luaX_pushTimerMsgArgs(lua_State *L, struct TimerMsgArgs const* data);
-ORCA_API struct TimerMsgArgs* luaX_checkTimerMsgArgs(lua_State *L, int idx);
+ORCA_API void luaX_pushObject_TimerMsgArgs(lua_State *L, struct Object_TimerMsgArgs const* data);
+ORCA_API struct Object_TimerMsgArgs* luaX_checkObject_TimerMsgArgs(lua_State *L, int idx);
 
 
 #endif

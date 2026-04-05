@@ -1,7 +1,7 @@
 #include "SceneKit.h"
 #include <include/api.h>
 
-HANDLER(PrefabView3D, LoadView)
+HANDLER(PrefabView3D, Node, LoadView)
 {
   lua_State* L = pLoadView->lua_state;
   if (pPrefabView3D->SCA && *pPrefabView3D->SCA &&

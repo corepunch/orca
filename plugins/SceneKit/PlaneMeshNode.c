@@ -11,7 +11,7 @@ _CollectUniforms(lpObject_t,
                  struct uniform*,
                  uint32_t);
 
-HANDLER(PlaneMeshNode, Render)
+HANDLER(PlaneMeshNode, Node3D, Render)
 {
   struct Model3D* mod = GetModel3D(hObject);
   // HACK: update with proper ignition animation

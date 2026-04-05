@@ -170,12 +170,12 @@ Model_Load(lpcString_t filename)
   return model;
 }
 
-HANDLER(Mesh, Start) {
+HANDLER(Mesh, Object, Start) {
   pMesh->model = Model_Load(pMesh->Source);
   return TRUE;
 }
 
-HANDLER(Mesh, Destroy) {
+HANDLER(Mesh, Object, Destroy) {
   Model_Release(pMesh->model);
   return TRUE;
 }

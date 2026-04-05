@@ -162,7 +162,7 @@ _ReadFtgEntry(PFTG ftg, struct _FTGFILE const *entry)
 
 /* ---- event handlers ---- */
 
-HANDLER(FtgPackage, OpenFile) {
+HANDLER(FtgPackage, Project, OpenFile) {
   struct _FTGFILE *entry = _FindFtgEntry(pFtgPackage->_ftg, pOpenFile->FileName);
   if (!entry)
     return 0;
@@ -170,15 +170,15 @@ HANDLER(FtgPackage, OpenFile) {
   return (LRESULT)_ReadFtgEntry(pFtgPackage->_ftg, entry);
 }
 
-HANDLER(FtgPackage, FileExists) {
+HANDLER(FtgPackage, Project, FileExists) {
   return _FindFtgEntry(pFtgPackage->_ftg, pFileExists->FileName) != NULL;
 }
 
-HANDLER(FtgPackage, HasChangedFiles) {
+HANDLER(FtgPackage, Project, HasChangedFiles) {
   return FALSE;
 }
 
-HANDLER(FtgPackage, Destroy) {
+HANDLER(FtgPackage, Object, Destroy) {
   _FreeFtg(pFtgPackage->_ftg);
   return FALSE;
 }
@@ -249,7 +249,7 @@ _LoadSprAnimations(lua_State* L, PFTG ftg, lpObject_t project)
 
 #include <include/api.h>
 
-HANDLER(FtgPackage, LoadProject) {
+HANDLER(FtgPackage, Project, LoadProject) {
   path_t tmp = { 0 };
   /*
    * When kMsgLoadProject is dispatched from _TryLoadBundle() in filesystem.c,
