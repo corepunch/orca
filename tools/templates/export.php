@@ -64,5 +64,6 @@ ORCA_API int luaopen_orca_<?= $model->getModuleName() ?>(lua_State *L) {
 	void <?= $model->on_luaopen ?>(lua_State *L);
 	<?= $model->on_luaopen ?>(L);
 <?php endif ?>
+	OBJ_RegisterMessageTypes(_<?= $model->getModuleName() ?>_messages, _<?= $model->getModuleName() ?>_messages_count);
 	return 1;
 }

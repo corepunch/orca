@@ -458,6 +458,12 @@ OBJ_GetPropertyAtIndex(lpObject_t object, uint32_t classid,
 ORCA_API lpcMessageType_t
 OBJ_GetMessageTypeAtIndex(lpObject_t pobj, uint32_t classid, uint32_t index);
 
+ORCA_API void
+OBJ_RegisterMessageTypes(lpcMessageType_t const* table, uint32_t count);
+
+ORCA_API lpcMessageType_t
+OBJ_FindMessageType(uint32_t id);
+
 ORCA_API lpObject_t
 CMP_GetObject(void const*);
 

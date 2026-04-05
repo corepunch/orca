@@ -116,6 +116,15 @@ class config {
 			'return' => '{arg};\n\treturn 0;' 
 		],
 		"lua_State" => [],
+		"ptr" => [
+			'decl' => 'void*',
+			'check' => 'lua_touserdata(L, {arg})',
+			'pop' => '{addr} = lua_touserdata(L, {arg})',
+			'push' => 'lua_pushlightuserdata(L, {arg})',
+			'convert' => '{addr} = {arg}',
+			'format' => "%p",
+			'default' => "NULL",
+		],
 	];
 
 	public static $Axis = [

@@ -341,7 +341,11 @@ CORE_HandleObjectMessage(lua_State *L, struct WI_Message* msg)
       lua_insert(L, -2); // Move callback before obj
       luaX_pushObject(L, hobj);
       uint32_t numargs = 3;
-      if (msg->message == ID_Object_Timer && msg->lParam) {
+      lpcMessageType_t type = OBJ_FindMessageType(msg->message);
+      if (type && type->push && msg->lParam) {
+        ((void(*)(lua_State*, void const*))type->push)(L, msg->lParam);
+        numargs++;
+      } else if (msg->message == ID_Object_Timer && msg->lParam) {
         lua_pushstring(L, msg->lParam);
         numargs++;
       }

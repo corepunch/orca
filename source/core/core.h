@@ -490,6 +490,7 @@ struct MessageType {
 	uint32_t id; ///< The unique identifier of the message
 	enum MessageRouting routing; ///< The routing strategy for this message
 	uint32_t size; ///< The size of the message
+	void* push; ///< Push function for pushing message args onto the Lua stack
 };
 ORCA_API void luaX_pushMessageType(lua_State *L, struct MessageType const* MessageType);
 ORCA_API struct MessageType* luaX_checkMessageType(lua_State *L, int idx);

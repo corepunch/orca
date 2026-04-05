@@ -60,6 +60,7 @@
         <field name="id" type="uint">The unique identifier of the message</field>
         <field name="routing" type="MessageRouting">The routing strategy for this message</field>
         <field name="size" type="uint">The size of the message</field>
+        <field name="push" type="ptr" noexport="true">Push function for pushing message args onto the Lua stack</field>
       </fields>
     </struct>
   </structs>

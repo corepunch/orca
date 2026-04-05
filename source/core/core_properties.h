@@ -40,6 +40,7 @@
 #define ID_MessageType_Id 0xd585831b // MessageType.Id
 #define ID_MessageType_Routing 0x9083ce48 // MessageType.Routing
 #define ID_MessageType_Size 0x0c31f887 // MessageType.Size
+#define ID_MessageType_Push 0xc779b82e // MessageType.push
 	
 
 #define ID_MouseMessageMsgArgs 0x6449a1dd

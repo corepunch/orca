@@ -123,36 +123,41 @@ static luaL_Reg _SystemMessage_Methods[] = {
 STRUCT(ProjectReference, ProjectReference);
 STRUCT(EnginePlugin, EnginePlugin);
 STRUCT(SystemMessage, SystemMessage);
-//struct MessageType ReadCommandsMessage = {
-//	.name = "ReadCommands",
-//	.id = kMsgReadCommands,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct ReadCommandsMsgArgs),
-//};
-//struct MessageType OpenFileMessage = {
-//	.name = "OpenFile",
-//	.id = kMsgOpenFile,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct OpenFileMsgArgs),
-//};
-//struct MessageType FileExistsMessage = {
-//	.name = "FileExists",
-//	.id = kMsgFileExists,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct FileExistsMsgArgs),
-//};
-//struct MessageType HasChangedFilesMessage = {
-//	.name = "HasChangedFiles",
-//	.id = kMsgHasChangedFiles,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct HasChangedFilesMsgArgs),
-//};
-//struct MessageType LoadProjectMessage = {
-//	.name = "LoadProject",
-//	.id = kMsgLoadProject,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct LoadProjectMsgArgs),
-//};
+struct MessageType ReadCommandsMessage = {
+	.name = "ReadCommands",
+	.id = ID_Workspace_ReadCommands,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct ReadCommandsMsgArgs),
+	.push = NULL,
+};
+struct MessageType OpenFileMessage = {
+	.name = "OpenFile",
+	.id = ID_Project_OpenFile,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct OpenFileMsgArgs),
+	.push = (void*)luaX_pushOpenFileMsgArgs,
+};
+struct MessageType FileExistsMessage = {
+	.name = "FileExists",
+	.id = ID_Project_FileExists,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct FileExistsMsgArgs),
+	.push = (void*)luaX_pushFileExistsMsgArgs,
+};
+struct MessageType HasChangedFilesMessage = {
+	.name = "HasChangedFiles",
+	.id = ID_Project_HasChangedFiles,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct HasChangedFilesMsgArgs),
+	.push = NULL,
+};
+struct MessageType LoadProjectMessage = {
+	.name = "LoadProject",
+	.id = ID_Project_LoadProject,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct LoadProjectMsgArgs),
+	.push = (void*)luaX_pushLoadProjectMsgArgs,
+};
 
 static luaL_Reg _ReadCommandsMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _ReadCommandsMsgArgs[] = {
@@ -178,6 +183,15 @@ STRUCT(OpenFileMsgArgs, OpenFileMsgArgs);
 STRUCT(FileExistsMsgArgs, FileExistsMsgArgs);
 STRUCT(HasChangedFilesMsgArgs, HasChangedFilesMsgArgs);
 STRUCT(LoadProjectMsgArgs, LoadProjectMsgArgs);
+
+static lpcMessageType_t _filesystem_messages[] = {
+	&ReadCommandsMessage,
+	&OpenFileMessage,
+	&FileExistsMessage,
+	&HasChangedFilesMessage,
+	&LoadProjectMessage,
+};
+static uint32_t _filesystem_messages_count = 5;
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -607,5 +621,6 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_ThemeDefaultValuesDictionary), -2), "ThemeDefaultValuesDictionary");
 	void on_filesystem_module_registered(lua_State *L);
 	on_filesystem_module_registered(L);
+	OBJ_RegisterMessageTypes(_filesystem_messages, _filesystem_messages_count);
 	return 1;
 }

@@ -123,6 +123,19 @@ static struct PropertyType _RenderMsgArgs[] = {
 };
 
 STRUCT(RenderMsgArgs, RenderMsgArgs);
+
+struct MessageType SpriteKit_RenderMessage = {
+	.name = "Render",
+	.id = ID_SKNode_Render,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct RenderMsgArgs),
+	.push = (void*)luaX_pushRenderMsgArgs,
+};
+
+static lpcMessageType_t _SpriteKit_messages[] = {
+	&SpriteKit_RenderMessage,
+};
+static uint32_t _SpriteKit_messages_count = 1;
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -307,5 +320,6 @@ ORCA_API int luaopen_orca_SpriteKit(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_SKView), -2), "SKView");
 	void on_spritekit_module_registered(lua_State *L);
 	on_spritekit_module_registered(L);
+	OBJ_RegisterMessageTypes(_SpriteKit_messages, _SpriteKit_messages_count);
 	return 1;
 }

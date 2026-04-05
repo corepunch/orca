@@ -115,6 +115,19 @@ static struct PropertyType _RenderMsgArgs[] = {
 };
 
 STRUCT(RenderMsgArgs, RenderMsgArgs);
+
+struct MessageType RenderMessage = {
+	.name = "Render",
+	.id = ID_Node3D_Render,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct RenderMsgArgs),
+	.push = (void*)luaX_pushRenderMsgArgs,
+};
+
+static lpcMessageType_t _SceneKit_messages[] = {
+	&RenderMessage,
+};
+static uint32_t _SceneKit_messages_count = 1;
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -593,5 +606,6 @@ ORCA_API int luaopen_orca_SceneKit(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_TextBlock3D), -2), "TextBlock3D");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Light3D), -2), "Light3D");
 	lua_setfield(L, ((void)lua_pushclass(L, &_SpriteView), -2), "SpriteView");
+	OBJ_RegisterMessageTypes(_SceneKit_messages, _SceneKit_messages_count);
 	return 1;
 }

@@ -576,6 +576,203 @@ STRUCT(UpdateLayoutMsgArgs, UpdateLayoutMsgArgs);
 STRUCT(RenderScreenMsgArgs, RenderScreenMsgArgs);
 STRUCT(NavigateToPageMsgArgs, NavigateToPageMsgArgs);
 STRUCT(NavigateBackMsgArgs, NavigateBackMsgArgs);
+
+struct MessageType TriggeredMessage = {
+	.name = "Triggered",
+	.id = ID_Trigger_Triggered,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct TriggeredMsgArgs),
+	.push = (void*)luaX_pushTriggeredMsgArgs,
+};
+struct MessageType UpdateMatrixMessage = {
+	.name = "UpdateMatrix",
+	.id = ID_Node_UpdateMatrix,
+	.routing = kMessageRoutingDirect,
+	.size = sizeof(struct UpdateMatrixMsgArgs),
+	.push = (void*)luaX_pushUpdateMatrixMsgArgs,
+};
+struct MessageType PushPropertyMessage = {
+	.name = "PushProperty",
+	.id = ID_Node_PushProperty,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct PushPropertyMsgArgs),
+	.push = (void*)luaX_pushPushPropertyMsgArgs,
+};
+struct MessageType LoadViewMessage = {
+	.name = "LoadView",
+	.id = ID_Node_LoadView,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct LoadViewMsgArgs),
+	.push = (void*)luaX_pushLoadViewMsgArgs,
+};
+struct MessageType HitTestMessage = {
+	.name = "HitTest",
+	.id = ID_Node_HitTest,
+	.routing = kMessageRoutingDirect,
+	.size = sizeof(struct HitTestMsgArgs),
+	.push = (void*)luaX_pushHitTestMsgArgs,
+};
+struct MessageType HandleMessageMessage = {
+	.name = "HandleMessage",
+	.id = ID_Node_HandleMessage,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct HandleMessageMsgArgs),
+	.push = (void*)luaX_pushHandleMessageMsgArgs,
+};
+struct MessageType IsVisibleMessage = {
+	.name = "IsVisible",
+	.id = ID_Node_IsVisible,
+	.routing = kMessageRoutingDirect,
+	.size = sizeof(struct IsVisibleMsgArgs),
+	.push = NULL,
+};
+struct MessageType ViewDidLoadMessage = {
+	.name = "ViewDidLoad",
+	.id = ID_Node_ViewDidLoad,
+	.routing = kMessageRoutingDirect,
+	.size = sizeof(struct ViewDidLoadMsgArgs),
+	.push = NULL,
+};
+struct MessageType KillFocusMessage = {
+	.name = "KillFocus",
+	.id = ID_Node_KillFocus,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct KillFocusMsgArgs),
+	.push = NULL,
+};
+struct MessageType SetFocusMessage = {
+	.name = "SetFocus",
+	.id = ID_Node_SetFocus,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct SetFocusMsgArgs),
+	.push = NULL,
+};
+struct MessageType GetSizeMessage = {
+	.name = "GetSize",
+	.id = ID_Node_GetSize,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct GetSizeMsgArgs),
+	.push = NULL,
+};
+struct MessageType MakeTextMessage = {
+	.name = "MakeText",
+	.id = ID_TextBlockConcept_MakeText,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct MakeTextMsgArgs),
+	.push = (void*)luaX_pushMakeTextMsgArgs,
+};
+struct MessageType DrawBrushMessage = {
+	.name = "DrawBrush",
+	.id = ID_Node2D_DrawBrush,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct DrawBrushMsgArgs),
+	.push = (void*)luaX_pushDrawBrushMsgArgs,
+};
+struct MessageType MeasureMessage = {
+	.name = "Measure",
+	.id = ID_Node2D_Measure,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct MeasureMsgArgs),
+	.push = (void*)luaX_pushMeasureMsgArgs,
+};
+struct MessageType ArrangeMessage = {
+	.name = "Arrange",
+	.id = ID_Node2D_Arrange,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct ArrangeMsgArgs),
+	.push = (void*)luaX_pushArrangeMsgArgs,
+};
+struct MessageType MeasureOverrideMessage = {
+	.name = "MeasureOverride",
+	.id = ID_Node2D_MeasureOverride,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct MeasureMsgArgs),
+	.push = (void*)luaX_pushMeasureMsgArgs,
+};
+struct MessageType ArrangeOverrideMessage = {
+	.name = "ArrangeOverride",
+	.id = ID_Node2D_ArrangeOverride,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct ArrangeMsgArgs),
+	.push = (void*)luaX_pushArrangeMsgArgs,
+};
+struct MessageType ForegroundContentMessage = {
+	.name = "ForegroundContent",
+	.id = ID_Node2D_ForegroundContent,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct ForegroundContentMsgArgs),
+	.push = NULL,
+};
+struct MessageType UpdateGeometryMessage = {
+	.name = "UpdateGeometry",
+	.id = ID_Node2D_UpdateGeometry,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct UpdateGeometryMsgArgs),
+	.push = NULL,
+};
+struct MessageType SubmitMessage = {
+	.name = "Submit",
+	.id = ID_Form_Submit,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct SubmitMsgArgs),
+	.push = NULL,
+};
+struct MessageType UpdateLayoutMessage = {
+	.name = "UpdateLayout",
+	.id = ID_Screen_UpdateLayout,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct UpdateLayoutMsgArgs),
+	.push = (void*)luaX_pushUpdateLayoutMsgArgs,
+};
+struct MessageType RenderScreenMessage = {
+	.name = "RenderScreen",
+	.id = ID_Screen_RenderScreen,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct RenderScreenMsgArgs),
+	.push = (void*)luaX_pushRenderScreenMsgArgs,
+};
+struct MessageType NavigateToPageMessage = {
+	.name = "NavigateToPage",
+	.id = ID_PageHost_NavigateToPage,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct NavigateToPageMsgArgs),
+	.push = (void*)luaX_pushNavigateToPageMsgArgs,
+};
+struct MessageType NavigateBackMessage = {
+	.name = "NavigateBack",
+	.id = ID_PageHost_NavigateBack,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct NavigateBackMsgArgs),
+	.push = (void*)luaX_pushNavigateBackMsgArgs,
+};
+
+static lpcMessageType_t _UIKit_messages[] = {
+	&TriggeredMessage,
+	&UpdateMatrixMessage,
+	&PushPropertyMessage,
+	&LoadViewMessage,
+	&HitTestMessage,
+	&HandleMessageMessage,
+	&IsVisibleMessage,
+	&ViewDidLoadMessage,
+	&KillFocusMessage,
+	&SetFocusMessage,
+	&GetSizeMessage,
+	&MakeTextMessage,
+	&DrawBrushMessage,
+	&MeasureMessage,
+	&ArrangeMessage,
+	&MeasureOverrideMessage,
+	&ArrangeOverrideMessage,
+	&ForegroundContentMessage,
+	&UpdateGeometryMessage,
+	&SubmitMessage,
+	&UpdateLayoutMessage,
+	&RenderScreenMessage,
+	&NavigateToPageMessage,
+	&NavigateBackMessage,
+};
+static uint32_t _UIKit_messages_count = 24;
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -1690,5 +1887,6 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_Style), -2), "Style");
 	void on_ui_module_registered(lua_State *L);
 	on_ui_module_registered(L);
+	OBJ_RegisterMessageTypes(_UIKit_messages, _UIKit_messages_count);
 	return 1;
 }

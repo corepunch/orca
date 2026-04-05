@@ -471,6 +471,7 @@ class Enum extends Base {
 
 class Event extends Type {
 	public $parent_name;
+	public $container_name;
 
 	function __construct($elem, $model) {
 		parent::__construct($elem, $model);
@@ -478,6 +479,8 @@ class Event extends Type {
 		$routing = $elem["routing"] ?? "TunnelingBubbling";
 		$this->parent_name = $p ? strval($p) : null;
 		$this->routing = strval($routing);
+		$parents = $elem->xpath('..');
+		$this->container_name = ($parents && isset($parents[0]["name"])) ? strval($parents[0]["name"]) : null;
 	}
 
 	function getParentEvent() {

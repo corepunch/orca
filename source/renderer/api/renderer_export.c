@@ -144,31 +144,35 @@ int luaopen_orca_##NAME(lua_State *L) { \
 	return 1; \
 }
 
-//struct MessageType WindowPaintMessage = {
-//	.name = "WindowPaint",
-//	.id = kMsgWindowPaint,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct WindowPaintMsgArgs),
-//};
+struct MessageType WindowPaintMessage = {
+	.name = "WindowPaint",
+	.id = ID_window_WindowPaint,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WindowPaintMsgArgs),
+	.push = (void*)luaX_pushWindowPaintMsgArgs,
+};
 #define WindowResizedMsgArgs WindowPaintMsgArgs
-//struct MessageType WindowResizedMessage = {
-//	.name = "WindowResized",
-//	.id = kMsgWindowResized,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct WindowPaintMsgArgs),
-//};
-//struct MessageType WindowClosedMessage = {
-//	.name = "WindowClosed",
-//	.id = kMsgWindowClosed,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct WindowClosedMsgArgs),
-//};
-//struct MessageType WindowChangedScreenMessage = {
-//	.name = "WindowChangedScreen",
-//	.id = kMsgWindowChangedScreen,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct WindowChangedScreenMsgArgs),
-//};
+struct MessageType WindowResizedMessage = {
+	.name = "WindowResized",
+	.id = ID_window_WindowResized,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WindowPaintMsgArgs),
+	.push = (void*)luaX_pushWindowPaintMsgArgs,
+};
+struct MessageType WindowClosedMessage = {
+	.name = "WindowClosed",
+	.id = ID_window_WindowClosed,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WindowClosedMsgArgs),
+	.push = NULL,
+};
+struct MessageType WindowChangedScreenMessage = {
+	.name = "WindowChangedScreen",
+	.id = ID_window_WindowChangedScreen,
+	.routing = kMessageRoutingTunnelingBubbling,
+	.size = sizeof(struct WindowChangedScreenMsgArgs),
+	.push = NULL,
+};
 
 static luaL_Reg _WindowPaintMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _WindowPaintMsgArgs[] = {
@@ -191,6 +195,14 @@ STRUCT(WindowPaintMsgArgs, WindowPaintMsgArgs);
 STRUCT(WindowResizedMsgArgs, WindowResizedMsgArgs);
 STRUCT(WindowClosedMsgArgs, WindowClosedMsgArgs);
 STRUCT(WindowChangedScreenMsgArgs, WindowChangedScreenMsgArgs);
+
+static lpcMessageType_t _renderer_messages[] = {
+	&WindowPaintMessage,
+	&WindowResizedMessage,
+	&WindowClosedMessage,
+	&WindowChangedScreenMessage,
+};
+static uint32_t _renderer_messages_count = 4;
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -602,5 +614,6 @@ ORCA_API int luaopen_orca_renderer(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_Timeline), -2), "Timeline");
 	void on_renderer_module_registered(lua_State *L);
 	on_renderer_module_registered(L);
+	OBJ_RegisterMessageTypes(_renderer_messages, _renderer_messages_count);
 	return 1;
 }
