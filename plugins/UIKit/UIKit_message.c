@@ -4,6 +4,43 @@
 #define DRAG_SESSION "__DRAG_SESSION__"
 #define DRAG_THRESHOLD 4
 
+bool_t
+CORE_HandleObjectMessage(lua_State *L, struct WI_Message* msg)
+{
+  for (lpObject_t hobj = msg->target; hobj; hobj = OBJ_GetParent(hobj))
+  {
+    lpcString_t szCallback = OBJ_FindCallbackForID(hobj, msg->message);
+    if (szCallback)
+    {
+      luaX_import(L, "orca", "async");
+      luaX_pushObject(L, hobj);
+      assert(!lua_isnil(L, -1));
+      // lua_getfield(L, -1, "handleEvent");
+      // lua_insert(L, -2); // Move callback before obj
+      lua_getfield(L, -1, szCallback);
+      lua_insert(L, -2); // Move callback before obj
+      luaX_pushObject(L, hobj);
+      uint32_t numargs = 3;
+      if (msg->message == ID_Object_Timer && msg->lParam) {
+        lua_pushstring(L, msg->lParam);
+        numargs++;
+      }
+      if (lua_pcall(L, numargs, 0, 0) != LUA_OK) {
+        Con_Error("%s(): %s", szCallback, luaL_checkstring(L, -1));
+        lua_pop(L, 1);
+      }
+      return TRUE;
+    }
+    if (OBJ_SendMessageW(hobj, msg->message, msg->wParam, msg->lParam))
+      return TRUE;
+    switch (msg->message) {
+      case 0x71bab7e1: // ID_Node_ViewDidLoad
+        return TRUE;
+    }
+  }
+  return FALSE;
+}
+
 int
 f_beginDraggingSession(lua_State *L)
 {
@@ -147,40 +184,30 @@ process_dragndrop(lua_State *L, struct WI_Message *e, lpObject_t sender)
   }
 }
 
-static LRESULT
-send_mouse_message(lpObject_t obj, struct WI_Message* e)
-{
-  return OBJ_SendMessageW(obj, msg, 0, &mouse);
-}
-
 void WI_BuildModifiersString(wParam_t wParam, char* buf, size_t size);
 void WI_KeyEventToText(struct WI_Message const* e, char* buf, size_t size);
 
-static void
+static bool
 build_key_msg(struct WI_Message const* e, KeyMessageMsg_t* key, uint32_t *msg)
 {
+  static char modifiersString[MAX_PROPERTY_STRING];
+  static char hotKey[MAX_PROPERTY_STRING];
   switch (e->message) {
     case kEventKeyDown: *msg = ID_Input_KeyDown; break;
     case kEventKeyUp:   *msg = ID_Input_KeyUp;   break;
     case kEventChar:    *msg = ID_Input_Char;    break;
     default:
-      return FALSE;
+      return false;
   }
   key->keyCode = e->keyCode;
   key->character = *(unsigned char*)&e->lParam;
   key->modifiers = e->wParam & (WI_MOD_SHIFT|WI_MOD_CTRL|WI_MOD_ALT|WI_MOD_CMD);
+  key->modifiersString = modifiersString;
+  key->hotKey = hotKey;
   WI_KeyEventToText(e, (char*)key->text, sizeof(key->text));
-  WI_BuildModifiersString(e->wParam, key->modifiersString, sizeof(key->modifiersString));
-  snprintf(key->hotKey, sizeof(key->hotKey), "%s%s", key->modifiersString, key->text);
-}
-
-static LRESULT
-send_key_message(lpObject_t obj, struct WI_Message* e)
-{
-  uint32_t msg;
-  KeyMessageMsg_t key = {0};
-  build_key_msg(e, &key, &msg);
-  return OBJ_SendMessageW(obj, msg, 0, &key);
+  WI_BuildModifiersString(e->wParam, modifiersString, sizeof(modifiersString));
+  snprintf(hotKey, sizeof(hotKey), "%s%s", key->modifiersString, key->text);
+  return true;
 }
 
 LRESULT
@@ -291,7 +318,7 @@ bool_t
 UI_HandleKeyEvent(lua_State *L, struct WI_Message* e)
 {
   uint32_t msg;
-  sturct KeyMessageMessage key = {0};
+  struct KeyMessageMsgArgs key = {0};
   build_key_msg(e, &key, &msg);
   return core_GetFocus() && CORE_HandleObjectMessage(L, &(struct WI_Message) {
     .target = core_GetFocus(),
@@ -327,42 +354,6 @@ UI_HandleKeyEvent(lua_State *L, struct WI_Message* e)
   // return FALSE;
 }
 
-bool_t
-CORE_HandleObjectMessage(lua_State *L, struct WI_Message* msg)
-{
-  for (lpObject_t hobj = msg->target; hobj; hobj = OBJ_GetParent(hobj))
-  {
-    lpcString_t szCallback = OBJ_FindCallbackForID(hobj, msg->message);
-    if (szCallback)
-    {
-      luaX_import(L, "orca", "async");
-      luaX_pushObject(L, hobj);
-      assert(!lua_isnil(L, -1));
-      // lua_getfield(L, -1, "handleEvent");
-      // lua_insert(L, -2); // Move callback before obj
-      lua_getfield(L, -1, szCallback);
-      lua_insert(L, -2); // Move callback before obj
-      luaX_pushObject(L, hobj);
-      uint32_t numargs = 3;
-      if (msg->message == ID_Object_Timer && msg->lParam) {
-        lua_pushstring(L, msg->lParam);
-        numargs++;
-      }
-      if (lua_pcall(L, numargs, 0, 0) != LUA_OK) {
-        Con_Error("%s(): %s", szCallback, luaL_checkstring(L, -1));
-        lua_pop(L, 1);
-      }
-      return TRUE;
-    }
-    if (OBJ_SendMessageW(hobj, msg->message, msg->wParam, msg->lParam))
-      return TRUE;
-    switch (msg->message) {
-      case 0x71bab7e1: // ID_Node_ViewDidLoad
-        return TRUE;
-    }
-  }
-  return FALSE;
-}
 
 LRESULT ui_handle_event(lua_State *L, struct WI_Message* msg) {
   int tmp;

@@ -95,7 +95,7 @@ bool_t SV_DispatchMessage(lua_State* L, struct WI_Message* msg) {
   return FALSE;
 }
 
-void
+ORCA_API void
 WI_BuildModifiersString(wParam_t wParam, char* buf, size_t size)
 {
   buf[0] = '\0';
@@ -135,7 +135,7 @@ int f_translate_message(lua_State* L) {
   return 0;
 }
 
-void
+ORCA_API void
 WI_KeyEventToText(struct WI_Message const* e, char* buf, size_t size)
 {
   if (e->message == kEventChar) {
