@@ -137,7 +137,7 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.NumProperties = k##NAME##NumProperties, \
 	.NumMessageTypes = k##NAME##NumMessageTypes, \
 };
-LRESULT Node3D_UpdateMatrix(struct Object*, struct Node3D*, wParam_t, Node_UpdateMatrixMsgPtr);
+HANDLER(Node3D, Node, UpdateMatrix);
 static struct MessageType Node3DMessageTypes[kNode3DNumMessageTypes] = {	
 		{ "Node3D.Render", ID_Node3D_Render, kMessageRoutingTunnelingBubbling, sizeof(struct Node3D_RenderMsgArgs) },
 };
@@ -175,7 +175,7 @@ struct Node3D* luaX_checkNode3D(lua_State *L, int idx) {
 }
 #define ID_Node 0x3468032d
 REGISTER_CLASS(Node3D, ID_Node, 0);
-LRESULT Scene_UpdateMatrix(struct Object*, struct Scene*, wParam_t, Node_UpdateMatrixMsgPtr);
+HANDLER(Scene, Node, UpdateMatrix);
 static struct MessageType SceneMessageTypes[kSceneNumMessageTypes] = {	
 };
 static struct PropertyType const SceneProperties[kSceneNumProperties] = {
@@ -203,7 +203,7 @@ struct Scene* luaX_checkScene(lua_State *L, int idx) {
 }
 #define ID_Node3D 0xce61fe5a
 REGISTER_CLASS(Scene, ID_Node3D, 0);
-LRESULT Model3D_Render(struct Object*, struct Model3D*, wParam_t, Node3D_RenderMsgPtr);
+HANDLER(Model3D, Node3D, Render);
 static struct MessageType Model3DMessageTypes[kModel3DNumMessageTypes] = {	
 };
 static struct PropertyType const Model3DProperties[kModel3DNumProperties] = {
@@ -226,7 +226,7 @@ struct Model3D* luaX_checkModel3D(lua_State *L, int idx) {
 }
 #define ID_Node3D 0xce61fe5a
 REGISTER_CLASS(Model3D, ID_Node3D, 0);
-LRESULT PlaneMeshNode_Render(struct Object*, struct PlaneMeshNode*, wParam_t, Node3D_RenderMsgPtr);
+HANDLER(PlaneMeshNode, Node3D, Render);
 static struct MessageType PlaneMeshNodeMessageTypes[kPlaneMeshNodeNumMessageTypes] = {	
 };
 static struct PropertyType const PlaneMeshNodeProperties[kPlaneMeshNodeNumProperties] = {
@@ -282,7 +282,7 @@ struct Camera* luaX_checkCamera(lua_State *L, int idx) {
 }
 #define ID_Node3D 0xce61fe5a
 REGISTER_CLASS(Camera, ID_Node3D, 0);
-LRESULT TrajectoryList3D_UpdateMatrix(struct Object*, struct TrajectoryList3D*, wParam_t, Node_UpdateMatrixMsgPtr);
+HANDLER(TrajectoryList3D, Node, UpdateMatrix);
 static struct MessageType TrajectoryList3DMessageTypes[kTrajectoryList3DNumMessageTypes] = {	
 };
 static struct PropertyType const TrajectoryList3DProperties[kTrajectoryList3DNumProperties] = {
@@ -309,7 +309,7 @@ struct TrajectoryList3D* luaX_checkTrajectoryList3D(lua_State *L, int idx) {
 }
 #define ID_Node3D 0xce61fe5a
 REGISTER_CLASS(TrajectoryList3D, ID_Node3D, 0);
-LRESULT Viewport3D_ForegroundContent(struct Object*, struct Viewport3D*, wParam_t, Node2D_ForegroundContentMsgPtr);
+HANDLER(Viewport3D, Node2D, ForegroundContent);
 static struct MessageType Viewport3DMessageTypes[kViewport3DNumMessageTypes] = {	
 };
 static struct PropertyType const Viewport3DProperties[kViewport3DNumProperties] = {
@@ -335,7 +335,7 @@ struct Viewport3D* luaX_checkViewport3D(lua_State *L, int idx) {
 }
 #define ID_Node2D 0x6c63a2ab
 REGISTER_CLASS(Viewport3D, ID_Node2D, 0);
-LRESULT PrefabView3D_LoadView(struct Object*, struct PrefabView3D*, wParam_t, Node_LoadViewMsgPtr);
+HANDLER(PrefabView3D, Node, LoadView);
 static struct MessageType PrefabView3DMessageTypes[kPrefabView3DNumMessageTypes] = {	
 };
 static struct PropertyType const PrefabView3DProperties[kPrefabView3DNumProperties] = {
@@ -498,8 +498,8 @@ struct PipelineStateRenderPass* luaX_checkPipelineStateRenderPass(lua_State *L, 
 }
 #define ID_RenderPass 0xf64bbf80
 REGISTER_CLASS(PipelineStateRenderPass, ID_RenderPass, 0);
-LRESULT TextBlock3D_Render(struct Object*, struct TextBlock3D*, wParam_t, Node3D_RenderMsgPtr);
-LRESULT TextBlock3D_Create(struct Object*, struct TextBlock3D*, wParam_t, Object_CreateMsgPtr);
+HANDLER(TextBlock3D, Node3D, Render);
+HANDLER(TextBlock3D, Object, Create);
 static struct MessageType TextBlock3DMessageTypes[kTextBlock3DNumMessageTypes] = {	
 };
 static struct PropertyType const TextBlock3DProperties[kTextBlock3DNumProperties] = {
@@ -522,7 +522,7 @@ struct TextBlock3D* luaX_checkTextBlock3D(lua_State *L, int idx) {
 #define ID_Node3D 0xce61fe5a
 #define ID_TextBlockConcept 0x4903089d
 REGISTER_CLASS(TextBlock3D, ID_Node3D, ID_TextBlockConcept, 0);
-LRESULT Light3D_Render(struct Object*, struct Light3D*, wParam_t, Node3D_RenderMsgPtr);
+HANDLER(Light3D, Node3D, Render);
 static struct MessageType Light3DMessageTypes[kLight3DNumMessageTypes] = {	
 };
 static struct PropertyType const Light3DProperties[kLight3DNumProperties] = {
@@ -552,7 +552,7 @@ struct Light3D* luaX_checkLight3D(lua_State *L, int idx) {
 }
 #define ID_Node3D 0xce61fe5a
 REGISTER_CLASS(Light3D, ID_Node3D, 0);
-LRESULT SpriteView_Render(struct Object*, struct SpriteView*, wParam_t, Node3D_RenderMsgPtr);
+HANDLER(SpriteView, Node3D, Render);
 static struct MessageType SpriteViewMessageTypes[kSpriteViewNumMessageTypes] = {	
 };
 static struct PropertyType const SpriteViewProperties[kSpriteViewNumProperties] = {

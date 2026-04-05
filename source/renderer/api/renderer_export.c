@@ -240,7 +240,7 @@ struct Texture* luaX_checkTexture(lua_State *L, int idx) {
 	return GetTexture(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(Texture, 0);
-LRESULT Image_Start(struct Object*, struct Image*, wParam_t, Object_StartMsgPtr);
+HANDLER(Image, Object, Start);
 static struct MessageType ImageMessageTypes[kImageNumMessageTypes] = {	
 };
 static struct PropertyType const ImageProperties[kImageNumProperties] = {
@@ -285,7 +285,7 @@ struct Image* luaX_checkImage(lua_State *L, int idx) {
 }
 #define ID_Texture 0x994c5594
 REGISTER_CLASS(Image, ID_Texture, 0);
-LRESULT RenderTargetTexture_Start(struct Object*, struct RenderTargetTexture*, wParam_t, Object_StartMsgPtr);
+HANDLER(RenderTargetTexture, Object, Start);
 static struct MessageType RenderTargetTextureMessageTypes[kRenderTargetTextureNumMessageTypes] = {	
 };
 static struct PropertyType const RenderTargetTextureProperties[kRenderTargetTextureNumProperties] = {
@@ -313,7 +313,7 @@ struct RenderTargetTexture* luaX_checkRenderTargetTexture(lua_State *L, int idx)
 }
 #define ID_Texture 0x994c5594
 REGISTER_CLASS(RenderTargetTexture, ID_Texture, 0);
-LRESULT CubeMapTexture_Start(struct Object*, struct CubeMapTexture*, wParam_t, Object_StartMsgPtr);
+HANDLER(CubeMapTexture, Object, Start);
 static struct MessageType CubeMapTextureMessageTypes[kCubeMapTextureNumMessageTypes] = {	
 };
 static struct PropertyType const CubeMapTextureProperties[kCubeMapTextureNumProperties] = {
@@ -340,7 +340,7 @@ struct CubeMapTexture* luaX_checkCubeMapTexture(lua_State *L, int idx) {
 }
 #define ID_Texture 0x994c5594
 REGISTER_CLASS(CubeMapTexture, ID_Texture, 0);
-LRESULT IOSurfaceTexture_Start(struct Object*, struct IOSurfaceTexture*, wParam_t, Object_StartMsgPtr);
+HANDLER(IOSurfaceTexture, Object, Start);
 static struct MessageType IOSurfaceTextureMessageTypes[kIOSurfaceTextureNumMessageTypes] = {	
 };
 static struct PropertyType const IOSurfaceTextureProperties[kIOSurfaceTextureNumProperties] = {
@@ -404,8 +404,8 @@ struct FragmentShader* luaX_checkFragmentShader(lua_State *L, int idx) {
 	return GetFragmentShader(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(FragmentShader, 0);
-LRESULT Shader_Start(struct Object*, struct Shader*, wParam_t, Object_StartMsgPtr);
-LRESULT Shader_Destroy(struct Object*, struct Shader*, wParam_t, Object_DestroyMsgPtr);
+HANDLER(Shader, Object, Start);
+HANDLER(Shader, Object, Destroy);
 static struct MessageType ShaderMessageTypes[kShaderNumMessageTypes] = {	
 };
 static struct PropertyType const ShaderProperties[kShaderNumProperties] = {
@@ -464,8 +464,8 @@ struct Material* luaX_checkMaterial(lua_State *L, int idx) {
 	return GetMaterial(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(Material, 0);
-LRESULT Mesh_Start(struct Object*, struct Mesh*, wParam_t, Object_StartMsgPtr);
-LRESULT Mesh_Destroy(struct Object*, struct Mesh*, wParam_t, Object_DestroyMsgPtr);
+HANDLER(Mesh, Object, Start);
+HANDLER(Mesh, Object, Destroy);
 static struct MessageType MeshMessageTypes[kMeshNumMessageTypes] = {	
 };
 static struct PropertyType const MeshProperties[kMeshNumProperties] = {
@@ -489,8 +489,8 @@ struct Mesh* luaX_checkMesh(lua_State *L, int idx) {
 	return GetMesh(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(Mesh, 0);
-LRESULT FontFamily_Start(struct Object*, struct FontFamily*, wParam_t, Object_StartMsgPtr);
-LRESULT FontFamily_Destroy(struct Object*, struct FontFamily*, wParam_t, Object_DestroyMsgPtr);
+HANDLER(FontFamily, Object, Start);
+HANDLER(FontFamily, Object, Destroy);
 static struct MessageType FontFamilyMessageTypes[kFontFamilyNumMessageTypes] = {	
 };
 static struct PropertyType const FontFamilyProperties[kFontFamilyNumProperties] = {

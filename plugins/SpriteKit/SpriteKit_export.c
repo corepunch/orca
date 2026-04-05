@@ -167,7 +167,7 @@ struct SpriteAnimation* luaX_checkSpriteAnimation(lua_State *L, int idx) {
 	return GetSpriteAnimation(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(SpriteAnimation, 0);
-LRESULT SKNode_UpdateMatrix(struct Object*, struct SKNode*, wParam_t, Node_UpdateMatrixMsgPtr);
+HANDLER(SKNode, Node, UpdateMatrix);
 static struct MessageType SKNodeMessageTypes[kSKNodeNumMessageTypes] = {	
 		{ "SKNode.Render", ID_SKNode_Render, kMessageRoutingTunnelingBubbling, sizeof(struct SKNode_RenderMsgArgs) },
 };
@@ -192,7 +192,7 @@ struct SKNode* luaX_checkSKNode(lua_State *L, int idx) {
 }
 #define ID_Node 0x3468032d
 REGISTER_CLASS(SKNode, ID_Node, 0);
-LRESULT SKScene_UpdateMatrix(struct Object*, struct SKScene*, wParam_t, Node_UpdateMatrixMsgPtr);
+HANDLER(SKScene, Node, UpdateMatrix);
 static struct MessageType SKSceneMessageTypes[kSKSceneNumMessageTypes] = {	
 };
 static struct PropertyType const SKSceneProperties[kSKSceneNumProperties] = {
@@ -213,7 +213,7 @@ struct SKScene* luaX_checkSKScene(lua_State *L, int idx) {
 }
 #define ID_SKNode 0x819821fb
 REGISTER_CLASS(SKScene, ID_SKNode, 0);
-LRESULT SKSpriteNode_Render(struct Object*, struct SKSpriteNode*, wParam_t, SKNode_RenderMsgPtr);
+HANDLER(SKSpriteNode, SKNode, Render);
 static struct MessageType SKSpriteNodeMessageTypes[kSKSpriteNodeNumMessageTypes] = {	
 };
 static struct PropertyType const SKSpriteNodeProperties[kSKSpriteNodeNumProperties] = {
@@ -248,8 +248,8 @@ struct SKSpriteNode* luaX_checkSKSpriteNode(lua_State *L, int idx) {
 }
 #define ID_SKNode 0x819821fb
 REGISTER_CLASS(SKSpriteNode, ID_SKNode, 0);
-LRESULT SKLabelNode_Render(struct Object*, struct SKLabelNode*, wParam_t, SKNode_RenderMsgPtr);
-LRESULT SKLabelNode_Create(struct Object*, struct SKLabelNode*, wParam_t, Object_CreateMsgPtr);
+HANDLER(SKLabelNode, SKNode, Render);
+HANDLER(SKLabelNode, Object, Create);
 static struct MessageType SKLabelNodeMessageTypes[kSKLabelNodeNumMessageTypes] = {	
 };
 static struct PropertyType const SKLabelNodeProperties[kSKLabelNodeNumProperties] = {
@@ -273,7 +273,7 @@ struct SKLabelNode* luaX_checkSKLabelNode(lua_State *L, int idx) {
 #define ID_SKNode 0x819821fb
 #define ID_TextBlockConcept 0x4903089d
 REGISTER_CLASS(SKLabelNode, ID_SKNode, ID_TextBlockConcept, 0);
-LRESULT SKView_ForegroundContent(struct Object*, struct SKView*, wParam_t, Node2D_ForegroundContentMsgPtr);
+HANDLER(SKView, Node2D, ForegroundContent);
 static struct MessageType SKViewMessageTypes[kSKViewNumMessageTypes] = {	
 };
 static struct PropertyType const SKViewProperties[kSKViewNumProperties] = {
