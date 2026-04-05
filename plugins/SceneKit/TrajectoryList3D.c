@@ -4,7 +4,7 @@
 
 #include "SceneKit.h"
 
-HANDLER(TrajectoryList3D, UpdateMatrix)
+HANDLER(TrajectoryList3D, Node, UpdateMatrix)
 {
   float index = -pTrajectoryList3D->SelectedItemIndex;
   FOR_EACH_OBJECT(child, hObject)

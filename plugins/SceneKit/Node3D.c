@@ -1,6 +1,6 @@
 #include "SceneKit.h"
 
-HANDLER(Node3D, UpdateMatrix)
+HANDLER(Node3D, Node, UpdateMatrix)
 {
   struct mat4 renderMatrix;
   struct mat4 layoutMatrix;

@@ -2,7 +2,7 @@
 
 #include <include/api.h>
 
-HANDLER(PrefabView2D, LoadView)
+HANDLER(PrefabView2D, Node, LoadView)
 {
   lua_State* L = pLoadView->lua_state;
   if (pPrefabView2D->SCA && *pPrefabView2D->SCA &&

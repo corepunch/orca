@@ -367,12 +367,12 @@ static lua_State *global_L;
 //  return OBJ_FindChild(FS_GetWorkspace(), szName, FALSE);
 //}
 
-HANDLER(Project, Start) {
+HANDLER(Project, Object, Start) {
   
   return TRUE;
 }
 
-HANDLER(ThemeGroup, Attached) {
+HANDLER(ThemeGroup, Object, Attached) {
   pThemeGroup->_selectedTheme = pThemeGroup->SelectedTheme ?
     OBJ_FindChild(hObject, pThemeGroup->SelectedTheme, FALSE) : NULL;
   return TRUE;

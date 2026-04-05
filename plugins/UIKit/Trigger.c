@@ -3,7 +3,7 @@
 
 #define kMsgTriggered 0x3b1c3ae2
 
-HANDLER(Trigger, Attached)
+HANDLER(Trigger, Object, Attached)
 {
   lpProperty_t prop;
   if (pTrigger->Property && SUCCEEDED(OBJ_FindShortProperty(hObject, pTrigger->Property, &prop))) {
@@ -12,7 +12,7 @@ HANDLER(Trigger, Attached)
   return FALSE;
 }
 
-HANDLER(Trigger, PropertyChanged)
+HANDLER(Trigger, Object, PropertyChanged)
 {
   if (!pTrigger->Property || strcmp(PROP_GetName(pPropertyChanged->Property), pTrigger->Property))
     return FALSE;
@@ -36,13 +36,13 @@ HANDLER(Trigger, PropertyChanged)
   }
 }
 
-HANDLER(OnAttachedTrigger, Attached)
+HANDLER(OnAttachedTrigger, Object, Attached)
 {
   _SendMessage(hObject, Trigger, Triggered, GetTrigger(CMP_GetObject(pOnAttachedTrigger)));
   return FALSE;
 }
 
-HANDLER(Setter, Triggered)
+HANDLER(Setter, Trigger, Triggered)
 {
   if (pTriggered->Trigger ==
       CMP_GetUserData((struct component*)pSetter->Trigger)) {
@@ -58,7 +58,7 @@ HANDLER(Setter, Triggered)
 
 #include <include/api.h>
 
-HANDLER(Handler, Triggered)
+HANDLER(Handler, Trigger, Triggered)
 {
 //  HandleMessageMsgPtr msg = &pTriggered->message;
 //  if (pTriggered->Trigger ==
@@ -82,7 +82,7 @@ HANDLER(Handler, Triggered)
   return FALSE;
 }
 
-HANDLER(EventTrigger, HandleMessage)
+HANDLER(EventTrigger, Node, HandleMessage)
 {
   if (pEventTrigger->RoutedEvent && !strcmp(pHandleMessage->EventName, pEventTrigger->RoutedEvent)) {
 //    return _SendMessage(hObject, Trigger, Triggered,
@@ -92,7 +92,7 @@ HANDLER(EventTrigger, HandleMessage)
   return FALSE;
 }
 
-HANDLER(OnPropertyChangedTrigger, PropertyChanged)
+HANDLER(OnPropertyChangedTrigger, Object, PropertyChanged)
 {
   if (!pOnPropertyChangedTrigger->Property ||
       strcmp(PROP_GetName(pPropertyChanged->Property),
@@ -105,7 +105,7 @@ HANDLER(OnPropertyChangedTrigger, PropertyChanged)
     /*.message = { .NumArgs = 1 }*/);
 }
 
-HANDLER(OnPropertyChangedTrigger, Attached)
+HANDLER(OnPropertyChangedTrigger, Object, Attached)
 {
   lpProperty_t pProp;
   lpcString_t szName = pOnPropertyChangedTrigger->Property;

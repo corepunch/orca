@@ -37,7 +37,11 @@ void OBJ_MsgSend(lua_State* L, lpObject_t self, lpcString_t message)
 {
   const int nargs = MAX(lua_gettop(L) - 2, 0);
   fixedString_t argtype={0};
-  snprintf(argtype, sizeof(argtype), "%sMsgArgs", message);
+  // Support qualified message names like "Object.Create" -> "Object_CreateMsgArgs"
+  fixedString_t qualified={0};
+  strncpy(qualified, message, sizeof(qualified) - 1);
+  for (char *p = qualified; *p; p++) if (*p == '.') *p = '_';
+  snprintf(argtype, sizeof(argtype), "%sMsgArgs", qualified);
   if (luaL_testudata(L, 3, argtype)) {
     OBJ_SendMessage(self, message, 0, lua_touserdata(L, 3));
   } else if (!strcmp(message, "WindowPaint")) {
@@ -63,7 +67,7 @@ lpObject_t OBJ_DispatchEvent(lua_State* L, lpObject_t self, lpcString_t event)
   strncpy(pszEventName, event, sizeof(pszEventName));
   lua_remove(L, 2); // clear event name to send object with args to parents
   for (lpObject_t obj = self; obj; obj = OBJ_GetParent(obj)) {
-    struct HandleMessageMsgArgs event = {
+    struct Node_HandleMessageMsgArgs event = {
       .FirstArg = 1,
       .NumArgs = dwNumArgs + 1,
       .EventName = pszEventName,

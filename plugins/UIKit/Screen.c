@@ -15,12 +15,12 @@ typedef struct _DRAW2DCONTENTSTRUCT
   bool_t OnlyDecorations;
   float FontSize;
   uint8_t StencilRef;
-} DRAW2DCONTENTSTRUCT, *EVENT_PTR(Draw2DContent);
+} DRAW2DCONTENTSTRUCT, *Node2D_Draw2DContentMsgPtr;
 
-HANDLER(Node2D, Draw2DContent);
+HANDLER(Node2D, Node2D, Draw2DContent);
 
 static struct ViewDef*
-Init_ViewDef(struct ViewDef* view, Draw2DContentMsgPtr parms)
+Init_ViewDef(struct ViewDef* view, Node2D_Draw2DContentMsgPtr parms)
 {
   memset(view, 0, sizeof(struct ViewDef));
 
@@ -69,7 +69,7 @@ _GetContentsMatrix(Node2DPtr pNode2D,
 }
 
 static bool_t
-_IsOutOfBounds(Node2DPtr node, Draw2DContentMsgPtr param)
+_IsOutOfBounds(Node2DPtr node, Node2D_Draw2DContentMsgPtr param)
 {
   if (param->ForceRender)
     return FALSE;
@@ -145,7 +145,7 @@ _ExitStencilClip(uint8_t parentRef)
 
 static void
 draw_children(lpObject_t hObject,
-              Draw2DContentMsgPtr pDraw2DContent,
+              Node2D_Draw2DContentMsgPtr pDraw2DContent,
               struct color fg)
 {
   Node2DPtr node2D = GetNode2D(hObject);
@@ -172,7 +172,7 @@ draw_children(lpObject_t hObject,
   }
 }
 
-HANDLER(Node2D, DrawBrush)
+HANDLER(Node2D, Node2D, DrawBrush)
 {
   // #define ID_Material_Texture 0x0789ca7d
 	if (!memcmp(&pDrawBrush->brush,
@@ -249,7 +249,7 @@ static void _RenderSubViews(lpObject_t hObject) {
 // float __angle = 0;
 //
 static bool_t
-_FallThrough(ScreenCPtr s, NodeCPtr n, RenderScreenMsgPtr r)
+_FallThrough(ScreenCPtr s, NodeCPtr n, Screen_RenderScreenMsgPtr r)
 {
   if (s->ResizeMode==kResizeModeCanResize)
     return TRUE;
@@ -260,7 +260,7 @@ _FallThrough(ScreenCPtr s, NodeCPtr n, RenderScreenMsgPtr r)
   return TRUE;
 }
 
-HANDLER(Screen, RenderScreen) {
+HANDLER(Screen, Screen, RenderScreen) {
   NodePtr node = GetNode(hObject);
   float width = pRenderScreen->width;
   float height = pRenderScreen->height;
@@ -389,7 +389,7 @@ Node2D_GetBackgroundRect(Node2DPtr pNode2D)
   //	};
 }
 
-HANDLER(Node2D, Draw2DContent)
+HANDLER(Node2D, Node2D, Draw2DContent)
 {
   if (OBJ_IsHidden(hObject))
     return FALSE;
@@ -495,7 +495,7 @@ HANDLER(Node2D, Draw2DContent)
   return TRUE;
 }
 
-HANDLER(Screen, MeasureOverride) {
+HANDLER(Screen, Node2D, MeasureOverride) {
   NodeCPtr n = GetNode(hObject);
   
 //#if defined(__EMSCRIPTEN__) || defined(__QNX__)
@@ -526,7 +526,7 @@ HANDLER(Screen, MeasureOverride) {
   return MAKEDWORD(pMeasureOverride->Width, pMeasureOverride->Height);
 }
 
-//HANDLER(Screen, Create) {
+//HANDLER(Screen, Object, Create) {
 //  extern bool_t is_server;
 //  pScreen->_size = WI_GetSize(NULL);
 //  R_Init(LOWORD(pScreen->_size), HIWORD(pScreen->_size), is_server);
@@ -535,7 +535,7 @@ HANDLER(Screen, MeasureOverride) {
 //}
 
 
-HANDLER(Screen, Create) {
+HANDLER(Screen, Object, Create) {
 //  struct WI_Size size;
 //  if (pScreen->ResizeMode == kResizeModeCanResize) {
 //    if (WI_GetSize(&size)) {
@@ -547,7 +547,7 @@ HANDLER(Screen, Create) {
   return FALSE;
 }
 
-HANDLER(Screen, Destroy) {
+HANDLER(Screen, Object, Destroy) {
   SafeDelete(pScreen->_rt, Texture_Release);
   return FALSE;
 }
@@ -607,7 +607,7 @@ draw_screen(lua_State* L,
 
 }
 
-HANDLER(Screen, Paint) {
+HANDLER(Screen, Window, Paint) {
   R_BeginFrame(pScreen->ClearColor);
 
   draw_screen(OBJ_GetDomain(hObject), hObject, pScreen, pPaint->WindowWidth, pPaint->WindowHeight);
@@ -622,7 +622,7 @@ static void OBJ_SetTreeDirty(lpObject_t obj) {
   FOR_EACH_CHILD(obj, OBJ_SetTreeDirty);
 }
 
-HANDLER(Screen, Resized) {
+HANDLER(Screen, Window, Resized) {
   NodePtr node = GetNode(hObject);
   if (pScreen->ResizeMode == kResizeModeCanResize ||
       isnan(node->Size.Axis[0].Requested) ||
@@ -637,7 +637,7 @@ HANDLER(Screen, Resized) {
 }
 
 
-HANDLER(Screen, UpdateLayout) {
+HANDLER(Screen, Screen, UpdateLayout) {
   _SendMessage(hObject, Node2D, Measure, .Width = pUpdateLayout->Width, .Height = pUpdateLayout->Height);
   _SendMessage(hObject, Node2D, Arrange, .Width = pUpdateLayout->Width, .Height = pUpdateLayout->Height);
   return TRUE;

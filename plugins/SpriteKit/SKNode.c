@@ -1,6 +1,6 @@
 #include "SpriteKit.h"
 
-HANDLER(SKNode, UpdateMatrix)
+HANDLER(SKNode, Node, UpdateMatrix)
 {
 //  struct mat4 renderMatrix;
 //  struct mat4 layoutMatrix;

@@ -52,10 +52,12 @@ enum <?= $classname ?>Properties {
 <?php endforeach ?>	
 
 <?php foreach ($model->getEvents() as $name => $event):?>
-#define ID_<?= $name ?>MsgArgs 0x<?= hash('fnv1a32', "$name.MsgArgs") ?>
+<?php $struct_id_name = $event->msgns . "_" . $name . "MsgArgs"; ?>
+#define ID_<?= $struct_id_name ?> 0x<?= hash('fnv1a32', $struct_id_name) ?>
+
 <?php foreach ($event->getAllFields() as $field) {
 	$fieldName = $field->name;
-	echo("#define ID_{$name}MsgArgs_{$fieldName} 0x" . hash('fnv1a32', "{$name}MsgArgs.$fieldName") . " // {$name}MsgArgs.{$fieldName}\n");
+	echo("#define ID_{$struct_id_name}_{$fieldName} 0x" . hash('fnv1a32', "{$struct_id_name}.{$fieldName}") . " // {$struct_id_name}.{$fieldName}\n");
 }?>
 <?php endforeach ?>	
 

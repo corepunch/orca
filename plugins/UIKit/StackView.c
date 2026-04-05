@@ -115,7 +115,7 @@ _Arrange(lpObject_t hObject,
   }
 }
 
-HANDLER(StackView, MeasureOverride)
+HANDLER(StackView, Node2D, MeasureOverride)
 {
   Node2DPtr pNode2D = GetNode2D(hObject);
   Size_t size = {
@@ -143,10 +143,10 @@ HANDLER(StackView, MeasureOverride)
   return MAKEDWORD(fmax(0,size.width), fmax(0,size.height));
 }
 
-HANDLER(StackView, ArrangeOverride)
+HANDLER(StackView, Node2D, ArrangeOverride)
 {
   Node2DPtr pNode2D = GetNode2D(hObject);
-  ArrangeOverrideMsg_t r = *pArrangeOverride;
+  Node2D_ArrangeOverrideMsg_t r = *pArrangeOverride;
 
   switch (pStackView->Direction) {
     case kDirectionHorizontal:

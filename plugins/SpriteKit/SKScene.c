@@ -1,6 +1,6 @@
 #include "SpriteKit.h"
 
-HANDLER(SKScene, UpdateMatrix)
+HANDLER(SKScene, Node, UpdateMatrix)
 {
   SKNodePtr node = GetSKNode(hObject);
 

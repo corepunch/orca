@@ -44,13 +44,13 @@
   struct _##SYSNAME
 
 #define _SendMessage(OBJECT, CLASS, MESSAGE, ...) \
-OBJ_SendMessageW(OBJECT, ID_##CLASS##_##MESSAGE, 0, &(MESSAGE##Msg_t) { __VA_ARGS__ })
+OBJ_SendMessageW(OBJECT, ID_##CLASS##_##MESSAGE, 0, &(CLASS##_##MESSAGE##Msg_t) { __VA_ARGS__ })
 
-#define HANDLER(CLASS, EVENT)                                                  \
+#define HANDLER(CLASS, NS, EVENT)                                              \
   LRESULT CLASS##_##EVENT(struct Object* hObject,                              \
                           struct CLASS* p##CLASS,                                 \
                           wParam_t wParam,                                       \
-                          EVENT##MsgPtr p##EVENT)
+                          NS##_##EVENT##MsgPtr p##EVENT)
 
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(*x))
 #define MOUSE_EVENTS_USE_LOCAL_SPACE

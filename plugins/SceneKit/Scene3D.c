@@ -1,6 +1,6 @@
 #include "SceneKit.h"
 
-HANDLER(Scene, UpdateMatrix)
+HANDLER(Scene, Node, UpdateMatrix)
 {
   struct Node3D* view = GetNode3D(hObject);
 

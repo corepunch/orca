@@ -881,72 +881,96 @@ enum StyleProperties {
 #define ID_SizeShorthand_DepthScroll 0x60ff3f79 // SizeShorthand.DepthScroll
 	
 
-#define ID_TriggeredMsgArgs 0x4a7ce754
-#define ID_TriggeredMsgArgs_Trigger 0x68010858 // TriggeredMsgArgs.Trigger
-#define ID_UpdateMatrixMsgArgs 0x34e86ca7
-#define ID_UpdateMatrixMsgArgs_parent 0x94a50a0f // UpdateMatrixMsgArgs.parent
-#define ID_UpdateMatrixMsgArgs_opacity 0x53cd4a6c // UpdateMatrixMsgArgs.opacity
-#define ID_UpdateMatrixMsgArgs_force 0xe863ce2a // UpdateMatrixMsgArgs.force
-#define ID_PushPropertyMsgArgs 0x12541f7a
-#define ID_PushPropertyMsgArgs_Placeholder 0x82d7b55f // PushPropertyMsgArgs.Placeholder
-#define ID_LoadViewMsgArgs 0x51b04dce
-#define ID_LoadViewMsgArgs_lua_state 0x3f62aae6 // LoadViewMsgArgs.lua_state
-#define ID_HitTestMsgArgs 0x7796461c
-#define ID_HitTestMsgArgs_x 0xf9ca8e4c // HitTestMsgArgs.x
-#define ID_HitTestMsgArgs_y 0xfaca8fdf // HitTestMsgArgs.y
-#define ID_HandleMessageMsgArgs 0x1f5010ac
-#define ID_HandleMessageMsgArgs_EventName 0x84f3e59f // HandleMessageMsgArgs.EventName
-#define ID_HandleMessageMsgArgs_FirstArg 0xe52ff482 // HandleMessageMsgArgs.FirstArg
-#define ID_HandleMessageMsgArgs_NumArgs 0x5a238201 // HandleMessageMsgArgs.NumArgs
-#define ID_IsVisibleMsgArgs 0x01eed6cb
-#define ID_ViewDidLoadMsgArgs 0xdd042e8f
-#define ID_KillFocusMsgArgs 0xc8cea0c1
-#define ID_SetFocusMsgArgs 0xa0d33b3f
-#define ID_GetSizeMsgArgs 0x795df340
-#define ID_MakeTextMsgArgs 0x705ce992
-#define ID_MakeTextMsgArgs_text 0xa34c5249 // MakeTextMsgArgs.text
-#define ID_MakeTextMsgArgs_availableSpace 0xb0a98411 // MakeTextMsgArgs.availableSpace
-#define ID_DrawBrushMsgArgs 0xfbaa97cb
-#define ID_DrawBrushMsgArgs_projection 0x923213e6 // DrawBrushMsgArgs.projection
-#define ID_DrawBrushMsgArgs_image 0xb0398278 // DrawBrushMsgArgs.image
-#define ID_DrawBrushMsgArgs_brush 0xd8c47001 // DrawBrushMsgArgs.brush
-#define ID_DrawBrushMsgArgs_borderOffset 0xe643ea5a // DrawBrushMsgArgs.borderOffset
-#define ID_DrawBrushMsgArgs_borderWidth 0xc141a74f // DrawBrushMsgArgs.borderWidth
-#define ID_DrawBrushMsgArgs_foreground 0x84956baa // DrawBrushMsgArgs.foreground
-#define ID_DrawBrushMsgArgs_viewdef 0x6b66430d // DrawBrushMsgArgs.viewdef
-#define ID_MeasureMsgArgs 0x4801a169
-#define ID_MeasureMsgArgs_Width 0x9c6740bb // MeasureMsgArgs.Width
-#define ID_MeasureMsgArgs_Height 0x59f04456 // MeasureMsgArgs.Height
-#define ID_ArrangeMsgArgs 0x07ddb351
-#define ID_ArrangeMsgArgs_X 0x1d80fed3 // ArrangeMsgArgs.X
-#define ID_ArrangeMsgArgs_Y 0x1c80fd40 // ArrangeMsgArgs.Y
-#define ID_ArrangeMsgArgs_Width 0x42381c73 // ArrangeMsgArgs.Width
-#define ID_ArrangeMsgArgs_Height 0x5b850d2e // ArrangeMsgArgs.Height
-#define ID_MeasureOverrideMsgArgs 0xa52c1179
-#define ID_MeasureOverrideMsgArgs_Width 0x236958eb // MeasureOverrideMsgArgs.Width
-#define ID_MeasureOverrideMsgArgs_Height 0xdc49f846 // MeasureOverrideMsgArgs.Height
-#define ID_ArrangeOverrideMsgArgs 0xc3a975a1
-#define ID_ArrangeOverrideMsgArgs_X 0x4e381323 // ArrangeOverrideMsgArgs.X
-#define ID_ArrangeOverrideMsgArgs_Y 0x4d381190 // ArrangeOverrideMsgArgs.Y
-#define ID_ArrangeOverrideMsgArgs_Width 0x612d95a3 // ArrangeOverrideMsgArgs.Width
-#define ID_ArrangeOverrideMsgArgs_Height 0x23958b5e // ArrangeOverrideMsgArgs.Height
-#define ID_ForegroundContentMsgArgs 0xaec98ebf
-#define ID_UpdateGeometryMsgArgs 0xc901280e
-#define ID_SubmitMsgArgs 0x8243321f
-#define ID_UpdateLayoutMsgArgs 0xc5389ccc
-#define ID_UpdateLayoutMsgArgs_Width 0x5050aef8 // UpdateLayoutMsgArgs.Width
-#define ID_UpdateLayoutMsgArgs_Height 0x7c7ac60f // UpdateLayoutMsgArgs.Height
-#define ID_RenderScreenMsgArgs 0xc5cb2683
-#define ID_RenderScreenMsgArgs_width 0x05d5d53d // RenderScreenMsgArgs.width
-#define ID_RenderScreenMsgArgs_height 0xcef69b94 // RenderScreenMsgArgs.height
-#define ID_RenderScreenMsgArgs_stereo 0xd447fa77 // RenderScreenMsgArgs.stereo
-#define ID_RenderScreenMsgArgs_angle 0xc553b56a // RenderScreenMsgArgs.angle
-#define ID_RenderScreenMsgArgs_target 0x4cf31fbe // RenderScreenMsgArgs.target
-#define ID_NavigateToPageMsgArgs 0xaba3186a
-#define ID_NavigateToPageMsgArgs_URL 0x8c9df2c3 // NavigateToPageMsgArgs.URL
-#define ID_NavigateToPageMsgArgs_TransitionType 0x2fcde311 // NavigateToPageMsgArgs.TransitionType
-#define ID_NavigateBackMsgArgs 0x4c2b0d2f
-#define ID_NavigateBackMsgArgs_TransitionType 0x8d27e400 // NavigateBackMsgArgs.TransitionType
+#define ID_Trigger_TriggeredMsgArgs 0x88ad28c7
+
+#define ID_Trigger_TriggeredMsgArgs_Trigger 0x6836eb95 // Trigger_TriggeredMsgArgs.Trigger
+#define ID_Node_UpdateMatrixMsgArgs 0x4eaaa2d2
+
+#define ID_Node_UpdateMatrixMsgArgs_parent 0x07b4a59c // Node_UpdateMatrixMsgArgs.parent
+#define ID_Node_UpdateMatrixMsgArgs_opacity 0x4442b1e1 // Node_UpdateMatrixMsgArgs.opacity
+#define ID_Node_UpdateMatrixMsgArgs_force 0xce285387 // Node_UpdateMatrixMsgArgs.force
+#define ID_Node_PushPropertyMsgArgs 0xe755d911
+
+#define ID_Node_PushPropertyMsgArgs_Placeholder 0x6043a0f2 // Node_PushPropertyMsgArgs.Placeholder
+#define ID_Node_LoadViewMsgArgs 0x4fa1e14d
+
+#define ID_Node_LoadViewMsgArgs_lua_state 0x2ddc5e3b // Node_LoadViewMsgArgs.lua_state
+#define ID_Node_HitTestMsgArgs 0x2d942339
+
+#define ID_Node_HitTestMsgArgs_x 0x12a98037 // Node_HitTestMsgArgs.x
+#define ID_Node_HitTestMsgArgs_y 0x11a97ea4 // Node_HitTestMsgArgs.y
+#define ID_Node_HandleMessageMsgArgs 0x5824aacd
+
+#define ID_Node_HandleMessageMsgArgs_EventName 0x6bbd6e18 // Node_HandleMessageMsgArgs.EventName
+#define ID_Node_HandleMessageMsgArgs_FirstArg 0xe0470a5f // Node_HandleMessageMsgArgs.FirstArg
+#define ID_Node_HandleMessageMsgArgs_NumArgs 0x16c86032 // Node_HandleMessageMsgArgs.NumArgs
+#define ID_Node_IsVisibleMsgArgs 0xe9b990cc
+
+#define ID_Node_ViewDidLoadMsgArgs 0xf85c5ec0
+
+#define ID_Node_KillFocusMsgArgs 0xaf6be20e
+
+#define ID_Node_SetFocusMsgArgs 0x24a06502
+
+#define ID_Node_GetSizeMsgArgs 0x5dc43561
+
+#define ID_TextBlockConcept_MakeTextMsgArgs 0x9ac28551
+
+#define ID_TextBlockConcept_MakeTextMsgArgs_text 0xd31635b6 // TextBlockConcept_MakeTextMsgArgs.text
+#define ID_TextBlockConcept_MakeTextMsgArgs_availableSpace 0x1e49e1b6 // TextBlockConcept_MakeTextMsgArgs.availableSpace
+#define ID_Node2D_DrawBrushMsgArgs 0xda392a9e
+
+#define ID_Node2D_DrawBrushMsgArgs_projection 0xdcca635d // Node2D_DrawBrushMsgArgs.projection
+#define ID_Node2D_DrawBrushMsgArgs_image 0xed3db60d // Node2D_DrawBrushMsgArgs.image
+#define ID_Node2D_DrawBrushMsgArgs_brush 0x49906210 // Node2D_DrawBrushMsgArgs.brush
+#define ID_Node2D_DrawBrushMsgArgs_borderOffset 0x7ad7aa59 // Node2D_DrawBrushMsgArgs.borderOffset
+#define ID_Node2D_DrawBrushMsgArgs_borderWidth 0x42d45e2a // Node2D_DrawBrushMsgArgs.borderWidth
+#define ID_Node2D_DrawBrushMsgArgs_foreground 0x1720c701 // Node2D_DrawBrushMsgArgs.foreground
+#define ID_Node2D_DrawBrushMsgArgs_viewdef 0xaa3731b8 // Node2D_DrawBrushMsgArgs.viewdef
+#define ID_Node2D_MeasureMsgArgs 0x254a3fd4
+
+#define ID_Node2D_MeasureMsgArgs_Width 0x4e61a22a // Node2D_MeasureMsgArgs.Width
+#define ID_Node2D_MeasureMsgArgs_Height 0x4adcff45 // Node2D_MeasureMsgArgs.Height
+#define ID_Node2D_ArrangeMsgArgs 0x399c1494
+
+#define ID_Node2D_ArrangeMsgArgs_X 0x9058cc22 // Node2D_ArrangeMsgArgs.X
+#define ID_Node2D_ArrangeMsgArgs_Y 0x9158cdb5 // Node2D_ArrangeMsgArgs.Y
+#define ID_Node2D_ArrangeMsgArgs_Width 0x34d1776a // Node2D_ArrangeMsgArgs.Width
+#define ID_Node2D_ArrangeMsgArgs_Height 0xe6359e85 // Node2D_ArrangeMsgArgs.Height
+#define ID_Node2D_MeasureOverrideMsgArgs 0x240d735c
+
+#define ID_Node2D_MeasureOverrideMsgArgs_Width 0x11649722 // Node2D_MeasureOverrideMsgArgs.Width
+#define ID_Node2D_MeasureOverrideMsgArgs_Height 0x9f38e43d // Node2D_MeasureOverrideMsgArgs.Height
+#define ID_Node2D_ArrangeOverrideMsgArgs 0x26575e1c
+
+#define ID_Node2D_ArrangeOverrideMsgArgs_X 0xbd1dceaa // Node2D_ArrangeOverrideMsgArgs.X
+#define ID_Node2D_ArrangeOverrideMsgArgs_Y 0xbe1dd03d // Node2D_ArrangeOverrideMsgArgs.Y
+#define ID_Node2D_ArrangeOverrideMsgArgs_Width 0xea69d062 // Node2D_ArrangeOverrideMsgArgs.Width
+#define ID_Node2D_ArrangeOverrideMsgArgs_Height 0x3f62597d // Node2D_ArrangeOverrideMsgArgs.Height
+#define ID_Node2D_ForegroundContentMsgArgs 0x3b4334aa
+
+#define ID_Node2D_UpdateGeometryMsgArgs 0xb9a3b927
+
+#define ID_Form_SubmitMsgArgs 0x6d531060
+
+#define ID_Screen_UpdateLayoutMsgArgs 0xa55e3957
+
+#define ID_Screen_UpdateLayoutMsgArgs_Width 0xb91f863d // Screen_UpdateLayoutMsgArgs.Width
+#define ID_Screen_UpdateLayoutMsgArgs_Height 0x0bf83e94 // Screen_UpdateLayoutMsgArgs.Height
+#define ID_Screen_RenderScreenMsgArgs 0x20c6aa62
+
+#define ID_Screen_RenderScreenMsgArgs_width 0x16a8c7a0 // Screen_RenderScreenMsgArgs.width
+#define ID_Screen_RenderScreenMsgArgs_height 0xeac9e4d7 // Screen_RenderScreenMsgArgs.height
+#define ID_Screen_RenderScreenMsgArgs_stereo 0x696a5940 // Screen_RenderScreenMsgArgs.stereo
+#define ID_Screen_RenderScreenMsgArgs_angle 0x7979495f // Screen_RenderScreenMsgArgs.angle
+#define ID_Screen_RenderScreenMsgArgs_target 0xe57258ad // Screen_RenderScreenMsgArgs.target
+#define ID_PageHost_NavigateToPageMsgArgs 0x2ac87988
+
+#define ID_PageHost_NavigateToPageMsgArgs_URL 0x78fc3e3b // PageHost_NavigateToPageMsgArgs.URL
+#define ID_PageHost_NavigateToPageMsgArgs_TransitionType 0x68d1f249 // PageHost_NavigateToPageMsgArgs.TransitionType
+#define ID_PageHost_NavigateBackMsgArgs 0xd00ab34b
+
+#define ID_PageHost_NavigateBackMsgArgs_TransitionType 0x0c1dfab8 // PageHost_NavigateBackMsgArgs.TransitionType
 	
 
 #endif

@@ -52,9 +52,9 @@ f_beginDraggingSession(lua_State *L)
 }
 
 static bool
-convert_mouse_message(struct WI_Message* e, uint32_t* out_msg, MouseMessageMsg_t* out_mouse)
+convert_mouse_message(struct WI_Message* e, uint32_t* out_msg, Mouse_MouseMessageMsg_t* out_mouse)
 {
-  *out_mouse = (MouseMessageMsg_t){
+  *out_mouse = (Mouse_MouseMessageMsg_t){
     .x = e->x,
     .y = e->y,
     .deltaX = e->dx,
@@ -94,7 +94,7 @@ lua_pushmousevent(lua_State* L, lpObject_t obj, struct WI_Message* e)
   }
 #endif
   uint32_t msg;
-  MouseMessageMsg_t mouse;
+  Mouse_MouseMessageMsg_t mouse;
   if (!convert_mouse_message(e, &msg, &mouse)) {
     return 0;
   }
@@ -117,7 +117,7 @@ lua_pushmousevent(lua_State* L, lpObject_t obj, struct WI_Message* e)
         lua_pushlightuserdata(L, &mouse);
         lua_call(L, 1, 1);
       }
-      // luaX_pushMouseMessageMsgArgs(L, &mouse);
+      // luaX_pushMouse_MouseMessageMsgArgs(L, &mouse);
       return 1;
     case kEventDragDrop:
     case kEventDragEnter:
@@ -188,7 +188,7 @@ void WI_BuildModifiersString(wParam_t wParam, char* buf, size_t size);
 void WI_KeyEventToText(struct WI_Message const* e, char* buf, size_t size);
 
 static bool
-build_key_msg(struct WI_Message const* e, KeyMessageMsg_t* key, uint32_t *msg)
+build_key_msg(struct WI_Message const* e, Keyboard_KeyMessageMsg_t* key, uint32_t *msg)
 {
   static char modifiersString[MAX_PROPERTY_STRING];
   static char hotKey[MAX_PROPERTY_STRING];
@@ -256,7 +256,7 @@ handle:
   process_dragndrop(L, e, sender);
   
   uint32_t msg;
-  MouseMessageMsg_t mouse;
+  Mouse_MouseMessageMsg_t mouse;
   convert_mouse_message(e, &msg, &mouse);
 
   // Route the event up the parent chain until it's handled.
@@ -318,7 +318,7 @@ bool_t
 UI_HandleKeyEvent(lua_State *L, struct WI_Message* e)
 {
   uint32_t msg;
-  struct KeyMessageMsgArgs key = {0};
+  struct Keyboard_KeyMessageMsgArgs key = {0};
   build_key_msg(e, &key, &msg);
   return core_GetFocus() && CORE_HandleObjectMessage(L, &(struct WI_Message) {
     .target = core_GetFocus(),
@@ -336,9 +336,9 @@ UI_HandleKeyEvent(lua_State *L, struct WI_Message* e)
   //     lua_insert(L, -2); // Move callback before obj
   //     lua_pushstring(L, szCallback);
   //     luaX_pushObject(L, core_GetFocus());
-  //     KeyMessageMsg_t key = {0};
+  //     Keyboard_KeyMessageMsg_t key = {0};
   //     build_key_msg(e, &key);
-  //     luaX_pushKeyMessageMsgArgs(L, &key);
+  //     luaX_pushKeyboard_KeyMessageMsgArgs(L, &key);
   //     /* Stack: [orca.async, obj.handleEvent, obj, szCallback, focusedObj, keyMsg]
   //      * Calls: obj.handleEvent(obj, szCallback, focusedObj, keyMsg) */
   //     if (lua_pcall(L, 5, 1, 0) != LUA_OK) {
@@ -363,7 +363,7 @@ LRESULT ui_handle_event(lua_State *L, struct WI_Message* msg) {
       if (CORE_HandleObjectMessage(L, &(struct WI_Message) {
         .target = msg->target,
         .message = msg->message = kEventWindowPaint ? ID_Window_Paint : ID_Window_Resized,
-        .lParam = &(struct PaintMsgArgs) {
+        .lParam = &(struct Window_PaintMsgArgs) {
           .WindowWidth = LOWORD(msg->wParam),
           .WindowHeight = HIWORD(msg->wParam),
         }

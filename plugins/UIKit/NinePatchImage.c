@@ -20,7 +20,7 @@ enum
   kImageCount,
 };
 
-HANDLER(NinePatchImage, MeasureOverride)
+HANDLER(NinePatchImage, Node2D, MeasureOverride)
 {
   //    struct image_format format;
   //    if (ImageView_compile(object->subclass->data, &format)) {
@@ -77,12 +77,12 @@ GetImageHeight(handle_t _in)
   return img.bmHeight;
 }
 
-HANDLER(NinePatchImage, ForegroundContent)
+HANDLER(NinePatchImage, Node2D, ForegroundContent)
 {
   return FALSE;
 }
 
-HANDLER(NinePatchImage, DrawBrush)
+HANDLER(NinePatchImage, Node2D, DrawBrush)
 {
 	if (!memcmp(&pDrawBrush->brush,
 							&(struct BrushShorthand){0},

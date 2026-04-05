@@ -5,14 +5,14 @@
 #include <plugins/UIKit/UIKit.h>
 
 
-HANDLER(Form, Create)
+HANDLER(Form, Object, Create)
 {
   StackViewPtr stackview = GetStackView(hObject);
   stackview->Direction = kDirectionVertical;
   return FALSE;
 }
 
-HANDLER(Form, Submit)
+HANDLER(Form, Form, Submit)
 {
   return TRUE;
 }

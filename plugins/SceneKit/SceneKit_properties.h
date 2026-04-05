@@ -314,8 +314,9 @@ enum SpriteViewProperties {
 
 	
 
-#define ID_RenderMsgArgs 0x95f84d87
-#define ID_RenderMsgArgs_ViewDef 0xbebba0a1 // RenderMsgArgs.ViewDef
+#define ID_Node3D_RenderMsgArgs 0x4deeb459
+
+#define ID_Node3D_RenderMsgArgs_ViewDef 0x9b7bf10f // Node3D_RenderMsgArgs.ViewDef
 	
 
 #endif

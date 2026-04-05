@@ -18,7 +18,7 @@ typedef struct lua_State lua_State;
 
 ORCA_API extern struct MessageType RenderMessage;
 
-typedef struct RenderMsgArgs RenderMsg_t,* RenderMsgPtr;
+typedef struct SKNode_RenderMsgArgs SKNode_RenderMsg_t,* SKNode_RenderMsgPtr;
 
 
 typedef struct SpriteFrame SpriteFrame_t, *lpSpriteFrame_t;
@@ -34,12 +34,12 @@ struct SpriteFrame {
 ORCA_API void luaX_pushSpriteFrame(lua_State *L, struct SpriteFrame const* SpriteFrame);
 ORCA_API struct SpriteFrame* luaX_checkSpriteFrame(lua_State *L, int idx);
 
-/** RenderMsgArgs struct */
-struct RenderMsgArgs {
+/** SKNode_RenderMsgArgs struct */
+struct SKNode_RenderMsgArgs {
 	struct ViewDef* ViewDef; ///< The view definition for rendering
 };
-ORCA_API void luaX_pushRenderMsgArgs(lua_State *L, struct RenderMsgArgs const* data);
-ORCA_API struct RenderMsgArgs* luaX_checkRenderMsgArgs(lua_State *L, int idx);
+ORCA_API void luaX_pushSKNode_RenderMsgArgs(lua_State *L, struct SKNode_RenderMsgArgs const* data);
+ORCA_API struct SKNode_RenderMsgArgs* luaX_checkSKNode_RenderMsgArgs(lua_State *L, int idx);
 
 /** SpriteAnimation component */
 typedef struct SpriteAnimation SpriteAnimation_t, *SpriteAnimationPtr, *lpSpriteAnimation_t;
