@@ -777,8 +777,8 @@
         <handle message="Node2D.MeasureOverride"/>
         <handle message="Object.Create"/>
         <handle message="Object.Destroy"/>
-        <handle message="window.WindowResized"/>
-        <handle message="window.WindowPaint"/>
+        <handle message="Window.Resized"/>
+        <handle message="Window.Paint"/>
       </handles>
       <properties>
         <property name="ClearColor" type="color">Background clear color for the screen </property>

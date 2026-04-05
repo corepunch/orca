@@ -530,7 +530,7 @@ HANDLER(Screen, MeasureOverride) {
 //  extern bool_t is_server;
 //  pScreen->_size = WI_GetSize(NULL);
 //  R_Init(LOWORD(pScreen->_size), HIWORD(pScreen->_size), is_server);
-//  WI_PostMessageW(hObject, ID_window_WindowPaint, pScreen->_size, NULL);
+//  WI_PostMessageW(hObject, ID_Window_Paint, pScreen->_size, NULL);
 //  return FALSE;
 //}
 
@@ -607,10 +607,10 @@ draw_screen(lua_State* L,
 
 }
 
-HANDLER(Screen, WindowPaint) {
+HANDLER(Screen, Paint) {
   R_BeginFrame(pScreen->ClearColor);
 
-  draw_screen(OBJ_GetDomain(hObject), hObject, pScreen, pWindowPaint->WindowWidth, pWindowPaint->WindowHeight);
+  draw_screen(OBJ_GetDomain(hObject), hObject, pScreen, pPaint->WindowWidth, pPaint->WindowHeight);
   
   R_EndFrame();
 
@@ -622,17 +622,17 @@ static void OBJ_SetTreeDirty(lpObject_t obj) {
   FOR_EACH_CHILD(obj, OBJ_SetTreeDirty);
 }
 
-HANDLER(Screen, WindowResized) {
+HANDLER(Screen, Resized) {
   NodePtr node = GetNode(hObject);
   if (pScreen->ResizeMode == kResizeModeCanResize ||
       isnan(node->Size.Axis[0].Requested) ||
       isnan(node->Size.Axis[1].Requested)) {
-    node->Size.Axis[0].Requested = pWindowResized->WindowWidth;
-    node->Size.Axis[1].Requested = pWindowResized->WindowHeight;
+    node->Size.Axis[0].Requested = pResized->WindowWidth;
+    node->Size.Axis[1].Requested = pResized->WindowHeight;
   }
   R_ClearTextCache();
   OBJ_SetTreeDirty(hObject);
-  OBJ_SendMessageW(hObject, ID_window_WindowPaint, wParam, pWindowResized);
+  OBJ_SendMessageW(hObject, ID_Window_Paint, wParam, pResized);
   return FALSE;
 }
 

@@ -176,7 +176,7 @@
     </enum>
   </enums>
   <interfaces>
-    <interface name="window" prefix="WI_" export="Window">
+    <interface name="Window" prefix="WI_" export="Window">
       <summary>Window interface abstraction.</summary>
       <details>
         <p>The `Window` interface defines the contract for window creation and management inside the framework. Each window instance operates in isolation, backed by its own `lua_State`, similar in spirit to Electron processes. This ensures complete separation of state and scripts across windows, avoiding unintended side effects between them.</p>
@@ -185,15 +185,15 @@
         <p>The event loop for windows is cooperative and integrated with the core runtime. Events are dispatched and processed in a manner similar to how native windowing systems propagate events, while remaining script-driven and cross-platform within the engine.</p>
       </details>
       <messages>
-        <message name="WindowPaint">
+        <message name="Paint">
           <fields>
             <field name="WindowWidth" type="uint"/>
             <field name="WindowHeight" type="uint"/>
           </fields>
         </message>
-        <message name="WindowResized" same-as="WindowPaint"/>
-        <message name="WindowClosed"/>
-        <message name="WindowChangedScreen"/>
+        <message name="Resized" same-as="Paint"/>
+        <message name="Closed"/>
+        <message name="ChangedScreen"/>
       </messages>
     </interface>
   </interfaces>

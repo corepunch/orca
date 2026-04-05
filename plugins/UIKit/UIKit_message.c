@@ -362,8 +362,8 @@ LRESULT ui_handle_event(lua_State *L, struct WI_Message* msg) {
     case kEventWindowResized:
       if (CORE_HandleObjectMessage(L, &(struct WI_Message) {
         .target = msg->target,
-        .message = msg->message = kEventWindowPaint ? ID_window_WindowPaint : ID_window_WindowResized,
-        .lParam = &(struct WindowPaintMsgArgs) {
+        .message = msg->message = kEventWindowPaint ? ID_Window_Paint : ID_Window_Resized,
+        .lParam = &(struct PaintMsgArgs) {
           .WindowWidth = LOWORD(msg->wParam),
           .WindowHeight = HIWORD(msg->wParam),
         }

@@ -61,7 +61,7 @@ ENUM(FloatPrecision, "Unset", "Low", "Medium", "High")
 ENUM(Shading, "Unlit", "Phong", "Standard")
 
 
-int luaopen_orca_window(lua_State *L) {
+int luaopen_orca_Window(lua_State *L) {
 	luaL_newmetatable(L, "Window");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ NULL, NULL },
@@ -150,53 +150,53 @@ int luaopen_orca_##NAME(lua_State *L) { \
 	return 1; \
 }
 
-//struct MessageType WindowPaintMessage = {
-//	.name = "WindowPaint",
-//	.id = kMsgWindowPaint,
+//struct MessageType PaintMessage = {
+//	.name = "Paint",
+//	.id = kMsgPaint,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct WindowPaintMsgArgs),
+//	.size = sizeof(struct PaintMsgArgs),
 //};
-#define WindowResizedMsgArgs WindowPaintMsgArgs
-//struct MessageType WindowResizedMessage = {
-//	.name = "WindowResized",
-//	.id = kMsgWindowResized,
+#define ResizedMsgArgs PaintMsgArgs
+//struct MessageType ResizedMessage = {
+//	.name = "Resized",
+//	.id = kMsgResized,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct WindowPaintMsgArgs),
+//	.size = sizeof(struct PaintMsgArgs),
 //};
-//struct MessageType WindowClosedMessage = {
-//	.name = "WindowClosed",
-//	.id = kMsgWindowClosed,
+//struct MessageType ClosedMessage = {
+//	.name = "Closed",
+//	.id = kMsgClosed,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct WindowClosedMsgArgs),
+//	.size = sizeof(struct ClosedMsgArgs),
 //};
-//struct MessageType WindowChangedScreenMessage = {
-//	.name = "WindowChangedScreen",
-//	.id = kMsgWindowChangedScreen,
+//struct MessageType ChangedScreenMessage = {
+//	.name = "ChangedScreen",
+//	.id = kMsgChangedScreen,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct WindowChangedScreenMsgArgs),
+//	.size = sizeof(struct ChangedScreenMsgArgs),
 //};
 
-static luaL_Reg _WindowPaintMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _WindowPaintMsgArgs[] = {
-	DECL(0xdc5503a7, WindowPaintMsgArgs, WindowWidth, WindowWidth, kDataTypeInt), // WindowPaintMsgArgs.WindowWidth
-	DECL(0xbd75892a, WindowPaintMsgArgs, WindowHeight, WindowHeight, kDataTypeInt), // WindowPaintMsgArgs.WindowHeight
+static luaL_Reg _PaintMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _PaintMsgArgs[] = {
+	DECL(0xdc5503a7, PaintMsgArgs, WindowWidth, WindowWidth, kDataTypeInt), // PaintMsgArgs.WindowWidth
+	DECL(0xbd75892a, PaintMsgArgs, WindowHeight, WindowHeight, kDataTypeInt), // PaintMsgArgs.WindowHeight
 };
-static luaL_Reg _WindowResizedMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _WindowResizedMsgArgs[] = {
-	DECL(0xdc5503a7, WindowResizedMsgArgs, WindowWidth, WindowWidth, kDataTypeInt), // WindowResizedMsgArgs.WindowWidth
-	DECL(0xbd75892a, WindowResizedMsgArgs, WindowHeight, WindowHeight, kDataTypeInt), // WindowResizedMsgArgs.WindowHeight
+static luaL_Reg _ResizedMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _ResizedMsgArgs[] = {
+	DECL(0xdc5503a7, ResizedMsgArgs, WindowWidth, WindowWidth, kDataTypeInt), // ResizedMsgArgs.WindowWidth
+	DECL(0xbd75892a, ResizedMsgArgs, WindowHeight, WindowHeight, kDataTypeInt), // ResizedMsgArgs.WindowHeight
 };
-static luaL_Reg _WindowClosedMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _WindowClosedMsgArgs[] = {
+static luaL_Reg _ClosedMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _ClosedMsgArgs[] = {
 };
-static luaL_Reg _WindowChangedScreenMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _WindowChangedScreenMsgArgs[] = {
+static luaL_Reg _ChangedScreenMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _ChangedScreenMsgArgs[] = {
 };
 
-STRUCT(WindowPaintMsgArgs, WindowPaintMsgArgs);
-STRUCT(WindowResizedMsgArgs, WindowResizedMsgArgs);
-STRUCT(WindowClosedMsgArgs, WindowClosedMsgArgs);
-STRUCT(WindowChangedScreenMsgArgs, WindowChangedScreenMsgArgs);
+STRUCT(PaintMsgArgs, PaintMsgArgs);
+STRUCT(ResizedMsgArgs, ResizedMsgArgs);
+STRUCT(ClosedMsgArgs, ClosedMsgArgs);
+STRUCT(ChangedScreenMsgArgs, ChangedScreenMsgArgs);
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -588,11 +588,11 @@ ORCA_API int luaopen_orca_renderer(lua_State *L) {
 		{ "drawImage", f_renderer_DrawImage },
 		{ NULL, NULL } 
 	}));
-	lua_setfield(L, ((void)luaopen_orca_WindowPaintMsgArgs(L), -2), "WindowPaintMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_WindowResizedMsgArgs(L), -2), "WindowResizedMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_WindowClosedMsgArgs(L), -2), "WindowClosedMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_WindowChangedScreenMsgArgs(L), -2), "WindowChangedScreenMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_window(L), -2), "Window");
+	lua_setfield(L, ((void)luaopen_orca_PaintMsgArgs(L), -2), "PaintMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_ResizedMsgArgs(L), -2), "ResizedMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_ClosedMsgArgs(L), -2), "ClosedMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_ChangedScreenMsgArgs(L), -2), "ChangedScreenMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Window(L), -2), "Window");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Texture), -2), "Texture");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Image), -2), "Image");
 	lua_setfield(L, ((void)lua_pushclass(L, &_RenderTargetTexture), -2), "RenderTargetTexture");

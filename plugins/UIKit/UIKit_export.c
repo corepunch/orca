@@ -1327,8 +1327,8 @@ LRESULT Screen_RenderScreen(struct Object*, struct Screen*, wParam_t, RenderScre
 LRESULT Screen_MeasureOverride(struct Object*, struct Screen*, wParam_t, MeasureOverrideMsgPtr);
 LRESULT Screen_Create(struct Object*, struct Screen*, wParam_t, CreateMsgPtr);
 LRESULT Screen_Destroy(struct Object*, struct Screen*, wParam_t, DestroyMsgPtr);
-LRESULT Screen_WindowResized(struct Object*, struct Screen*, wParam_t, WindowResizedMsgPtr);
-LRESULT Screen_WindowPaint(struct Object*, struct Screen*, wParam_t, WindowPaintMsgPtr);
+LRESULT Screen_Resized(struct Object*, struct Screen*, wParam_t, ResizedMsgPtr);
+LRESULT Screen_Paint(struct Object*, struct Screen*, wParam_t, PaintMsgPtr);
 static struct MessageType ScreenMessageTypes[kScreenNumMessageTypes] = {	
 		{ "Screen.UpdateLayout", ID_Screen_UpdateLayout, kMessageRoutingTunnelingBubbling, sizeof(struct UpdateLayoutMsgArgs) },
 		{ "Screen.RenderScreen", ID_Screen_RenderScreen, kMessageRoutingTunnelingBubbling, sizeof(struct RenderScreenMsgArgs) },
@@ -1349,8 +1349,8 @@ LRESULT ScreenProc(struct Object* object, void* cmp, uint32_t message, wParam_t 
 		case ID_Node2D_MeasureOverride: return Screen_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
 		case ID_Object_Create: return Screen_Create(object, cmp, wparm, lparm); // Object.Create
 		case ID_Object_Destroy: return Screen_Destroy(object, cmp, wparm, lparm); // Object.Destroy
-		case ID_window_WindowResized: return Screen_WindowResized(object, cmp, wparm, lparm); // window.WindowResized
-		case ID_window_WindowPaint: return Screen_WindowPaint(object, cmp, wparm, lparm); // window.WindowPaint
+		case ID_Window_Resized: return Screen_Resized(object, cmp, wparm, lparm); // Window.Resized
+		case ID_Window_Paint: return Screen_Paint(object, cmp, wparm, lparm); // Window.Paint
 	}
 	return FALSE;
 }
