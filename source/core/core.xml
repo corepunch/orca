@@ -48,10 +48,10 @@
     </enum>
     <enum name="MouseButton">
       <summary>Identifies which mouse button was involved in a mouse button event.</summary>
+      <value name="None">No mouse button used for mouse move and scroll events</value>
       <value name="Left">The left (primary) mouse button</value>
       <value name="Right">The right (secondary) mouse button</value>
       <value name="Middle">The middle mouse button</value>
-      <value name="None">No mouse button used for mouse move and scroll events</value>
     </enum>
   </enums>
   <structs>
