@@ -119,8 +119,7 @@ read_property(lua_State *L,
         lua_pop(L, 1); // Remove the __userdata field from the stack
         break;
       } else if (lua_type(L, idx) == LUA_TSTRING) {
-        char* buf = NULL;
-        parse_property(L, luaL_checkstring(L, idx), prop, &buf);
+        parse_property(L, luaL_checkstring(L, idx), prop, valueptr);
         break;
       } else {
         luaL_error(L, "Unsupported input type %d for property %s of type object", lua_type(L, idx), prop->Name);

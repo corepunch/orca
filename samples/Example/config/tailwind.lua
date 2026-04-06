@@ -98,4 +98,6 @@ local DarkTheme = {
 -- 	extend:
 -- 		colors: if system.get_theme() then DarkTheme else LightTheme
 
-_ENV['extend'] = DarkTheme
+_ENV.extend = {
+	colors = DarkTheme,
+}

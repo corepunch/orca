@@ -63,9 +63,9 @@ end
 function core.load_plugins()
 	for path in system.list_dir(SHAREDIR.."/plugins") do
 		if path:match("%.lua$") then
+			core.load_plugin_config(path:match("^(.+)%.lua$"))
 			if xpcall(dofile, print, SHAREDIR.."/plugins/"..path) then
 				io.stderr:write(string.format("Loaded plugin %s\n", path))
-				core.load_plugin_config(path:match("^(.+)%.lua$"))
 			else
 				io.stderr:write(string.format("Failed to load plugin %s\n", path))
 			end
