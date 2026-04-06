@@ -595,11 +595,11 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_ProjectReference(L), -2), "ProjectReference");
 	lua_setfield(L, ((void)luaopen_orca_EnginePlugin(L), -2), "EnginePlugin");
 	lua_setfield(L, ((void)luaopen_orca_SystemMessage(L), -2), "SystemMessage");
-	lua_setfield(L, ((void)luaopen_orca_ReadCommandsMsgArgs(L), -2), "ReadCommandsMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_OpenFileMsgArgs(L), -2), "OpenFileMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_FileExistsMsgArgs(L), -2), "FileExistsMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_HasChangedFilesMsgArgs(L), -2), "HasChangedFilesMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_LoadProjectMsgArgs(L), -2), "LoadProjectMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Workspace_ReadCommandsMsgArgs(L), -2), "Workspace_ReadCommandsMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Project_OpenFileMsgArgs(L), -2), "Project_OpenFileMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Project_FileExistsMsgArgs(L), -2), "Project_FileExistsMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Project_HasChangedFilesMsgArgs(L), -2), "Project_HasChangedFilesMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Project_LoadProjectMsgArgs(L), -2), "Project_LoadProjectMsgArgs");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Workspace), -2), "Workspace");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Library), -2), "Library");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Project), -2), "Project");

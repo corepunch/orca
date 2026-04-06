@@ -304,7 +304,7 @@ ORCA_API int luaopen_orca_SpriteKit(lua_State *L) {
 		{ NULL, NULL } 
 	}));
 	lua_setfield(L, ((void)luaopen_orca_SpriteFrame(L), -2), "SpriteFrame");
-	lua_setfield(L, ((void)luaopen_orca_RenderMsgArgs(L), -2), "RenderMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_SKNode_RenderMsgArgs(L), -2), "SKNode_RenderMsgArgs");
 	lua_setfield(L, ((void)lua_pushclass(L, &_SpriteAnimation), -2), "SpriteAnimation");
 	lua_setfield(L, ((void)lua_pushclass(L, &_SKNode), -2), "SKNode");
 	lua_setfield(L, ((void)lua_pushclass(L, &_SKScene), -2), "SKScene");
