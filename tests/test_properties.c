@@ -68,6 +68,14 @@ static const char* s_current_test = NULL;
 #define EXPECT_STR_EQ(a, b) EXPECT((a) && (b) && !strcmp(a, b))
 
 /*
+ * PROP_STR — wrap a string literal as a char** suitable for PROP_SetValue.
+ * String properties store a char* internally, so the API expects void const*
+ * pointing to a char* (i.e. char**).  Use PROP_STR("literal") wherever a
+ * string literal would otherwise be passed directly.
+ */
+#define PROP_STR(s) (&(const char*){(s)})
+
+/*
  * PROP_TEST — shorthand for the common find→type→null→set→not-null→value
  * pattern shared by simple scalar/string property tests.  _p names the
  * lpProperty_t used inside cmpval so callers can write e.g.
@@ -366,7 +374,7 @@ static void test_bool_property(void) {
 
 static void test_string_property_basic(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
-        PROP_TEST(obj, "Label", kDataTypeString, &(const char*){"hello"},
+        PROP_TEST(obj, "Label", kDataTypeString, PROP_STR("hello"),
                   !strcmp(*(const char**)PROP_GetValue(_p), "hello"));
     }
 }
@@ -376,17 +384,17 @@ static void test_string_property_reassign(void) {
         lpProperty_t prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
 
-        PROP_SetValue(prop, &(const char*){"first"});
+        PROP_SetValue(prop, PROP_STR("first"));
         EXPECT_STR_EQ(*(const char**)PROP_GetValue(prop), "first");
 
-        PROP_SetValue(prop, &(const char*){"second"});
+        PROP_SetValue(prop, PROP_STR("second"));
         EXPECT_STR_EQ(*(const char**)PROP_GetValue(prop), "second");
 
-        PROP_SetValue(prop, &(const char*){"third"});
+        PROP_SetValue(prop, PROP_STR("third"));
         EXPECT_STR_EQ(*(const char**)PROP_GetValue(prop), "third");
 
         /* Value pointer changes each time (new strdup), but content is correct */
-        PROP_SetValue(prop, &(const char*){""});
+        PROP_SetValue(prop, PROP_STR(""));
         EXPECT_STR_EQ(*(const char**)PROP_GetValue(prop), "");
     }
 }
@@ -396,14 +404,14 @@ static void test_string_property_clear(void) {
         lpProperty_t prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
 
-        PROP_SetValue(prop, &(const char*){"some string"});
+        PROP_SetValue(prop, PROP_STR("some string"));
         EXPECT(!PROP_IsNull(prop));
 
         /* After clear the property should be null/reset */
         EXPECT(PROP_Clear(prop), PROP_IsNull(prop));
 
         /* Setting after clear must not double-free */
-        PROP_SetValue(prop, &(const char*){"after clear"});
+        PROP_SetValue(prop, PROP_STR("after clear"));
         EXPECT_STR_EQ(*(const char**)PROP_GetValue(prop), "after clear");
     }
 }
@@ -422,7 +430,7 @@ static void test_release_properties_frees_strings(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         lpProperty_t prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
-        PROP_SetValue(prop, &(const char*){"will be freed"});
+        PROP_SetValue(prop, PROP_STR("will be freed"));
         /* destroy_object (called by WITH) calls OBJ_ReleaseProperties which must
            free the strdup'd string without crashing. */
     }
@@ -437,7 +445,7 @@ static void test_set_property_value_api(void) {
         EXPECT_OK(OBJ_FindShortProperty(obj, "Count", &prop));
         EXPECT(*(int*)PROP_GetValue(prop) == 99);
 
-        EXPECT_OK(OBJ_SetPropertyValue(obj, "Label", &(const char*){"via api"}));
+        EXPECT_OK(OBJ_SetPropertyValue(obj, "Label", PROP_STR("via api")));
         EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
         EXPECT_STR_EQ(*(const char**)PROP_GetValue(prop), "via api");
     }
@@ -449,14 +457,14 @@ static void test_property_state_string(void) {
         EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
 
         /* Set the hover state value */
-        PROP_SetValue(prop, &(const char*){"normal"});
+        PROP_SetValue(prop, PROP_STR("normal"));
         EXPECT_STR_EQ(*(const char**)PROP_GetValue(prop), "normal");
 
         /* Clear all states — should free heap strings without crashing */
         EXPECT(PROP_Clear(prop), PROP_IsNull(prop));
 
         /* Re-set after full clear */
-        PROP_SetValue(prop, &(const char*){"reset"});
+        PROP_SetValue(prop, PROP_STR("reset"));
         EXPECT_STR_EQ(*(const char**)PROP_GetValue(prop), "reset");
     }
 }
@@ -491,13 +499,13 @@ static void test_multiple_properties_independent(void) {
 
         int val = 5;
         PROP_SetValue(pCount, &val);
-        PROP_SetValue(pLabel, &(const char*){"hello"});
+        PROP_SetValue(pLabel, PROP_STR("hello"));
 
         /* Verify they don't alias each other */
         EXPECT(*(int*)PROP_GetValue(pCount) == 5);
         EXPECT_STR_EQ(*(const char**)PROP_GetValue(pLabel), "hello");
 
-        PROP_SetValue(pLabel, &(const char*){"world"});
+        PROP_SetValue(pLabel, PROP_STR("world"));
         EXPECT(*(int*)PROP_GetValue(pCount) == 5); /* Count unchanged */
         EXPECT_STR_EQ(*(const char**)PROP_GetValue(pLabel), "world");
     }
@@ -508,7 +516,7 @@ static void test_string_empty(void) {
         lpProperty_t prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
 
-        PROP_SetValue(prop, &(const char*){""});
+        PROP_SetValue(prop, PROP_STR(""));
         EXPECT(!PROP_IsNull(prop));
         EXPECT_STR_EQ(*(const char**)PROP_GetValue(prop), "");
     }
@@ -1054,11 +1062,11 @@ static void test_project_string_property_set_get(void) {
         EXPECT(PROP_GetType(prop) == kDataTypeString);
         EXPECT(PROP_IsNull(prop));
 
-        PROP_SetValue(prop, &(const char*){"Hello"});
+        PROP_SetValue(prop, PROP_STR("Hello"));
         EXPECT(!PROP_IsNull(prop));
         EXPECT_STR_EQ(*(const char**)PROP_GetValue(prop), "Hello");
 
-        PROP_SetValue(prop, &(const char*){"World"});
+        PROP_SetValue(prop, PROP_STR("World"));
         EXPECT_STR_EQ(*(const char**)PROP_GetValue(prop), "World");
     }
 }
