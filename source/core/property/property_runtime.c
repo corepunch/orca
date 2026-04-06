@@ -508,9 +508,11 @@ PROP_Import(lpProperty_t prop,
           case kDataTypeEnum:
             PROP_SetValue(prop, &(int){ *r->value > 0 });
             return TRUE;
-          case kDataTypeString:
-            PROP_SetValue(prop, *r->value > 0 ? "true" : "false");
+          case kDataTypeString: {
+            const char *boolstr = *r->value > 0 ? "true" : "false";
+            PROP_SetValue(prop, &boolstr);
             return TRUE;
+          }
           default:
             return FALSE;
         }
