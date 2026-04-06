@@ -45,7 +45,7 @@ PrintStringProperty(HEDWND wnd, LPPROPDEF pdef)
 {
   DWORD item = ED_AddInspectorItem(wnd, pdef, pdef->lpEditorValue, pdef->Type);
   ED_Echo(wnd, FMT_COMMAND, item);
-  ED_StringField(ED_GetClient(wnd), pdef->lpEditorValue, DROPDOWN_WIDTH);
+  ED_StringField(ED_GetClient(wnd), *(char**)pdef->lpEditorValue, DROPDOWN_WIDTH);
 }
 
 static void

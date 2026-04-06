@@ -4,8 +4,8 @@
 
 #include "filesystem.h"
 
-#define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
-#define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
+#define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
+#define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
 
 // Object
 extern void luaX_pushObject(lua_State *L, struct Object const* value);
@@ -27,25 +27,27 @@ void luaX_push##NAME(lua_State *L, enum NAME value) { \
 }
 extern void read_property(lua_State *L, int idx, struct PropertyType const* prop, void* struct_ptr);
 extern int write_property(lua_State *L, struct PropertyType const* prop, void const* struct_ptr);
-extern int parse_property(const char* str, struct PropertyType const* prop, void* struct_ptr);
+extern int parse_property(lua_State *L, const char* str, struct PropertyType const* prop, void* struct_ptr);
 
 #define STRUCT(NAME, EXPORT) \
 void luaX_push##NAME(lua_State *L, struct NAME const* data) { \
 	if (data == NULL) { lua_pushnil(L); return; } \
-	struct NAME* ud = lua_newuserdata(L, sizeof(struct NAME)); \
+	memcpy(lua_newuserdata(L, sizeof(struct NAME)), data, sizeof(struct NAME)); \
 	luaL_setmetatable(L, #EXPORT); \
-	memcpy(ud, data, sizeof(struct NAME)); \
 } \
 struct NAME* luaX_check##NAME(lua_State *L, int idx) { return luaL_checkudata(L, idx, #EXPORT); } \
 static int f_new_##NAME(lua_State *L) { \
-	struct NAME* self = lua_newuserdata(L, sizeof(struct NAME)); \
-	luaL_setmetatable(L, #EXPORT); \
-	memset(self, 0, sizeof(struct NAME)); \
-	if (lua_istable(L, 1)) \
-    for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
-			lua_pop(L, (lua_getfield(L, 1, _##NAME[i].Name), read_property(L, -1, &_##NAME[i], ((char*)self)+_##NAME[i].Offset), 1)); \
+	struct NAME self; \
+	memset(&self, 0, sizeof(struct NAME)); \
+	if (lua_islightuserdata(L, 1)) { \
+		memcpy(&self, lua_touserdata(L, 1), sizeof(struct NAME)); \
+	} else if (lua_istable(L, 1)) \
+		for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); lua_pop(L, 1), i++) { \
+			if (lua_getfield(L, 1, _##NAME[i].Name)) \
+				read_property(L, -1, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); } \
 	else for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
-		read_property(L, i + 1, &_##NAME[i], ((char*)self)+_##NAME[i].Offset); \
+		read_property(L, i + 1, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); \
+	luaX_push##NAME(L, &self); \
 	return 1; \
 } \
 static int f_##NAME##___index(lua_State *L) { \
@@ -53,7 +55,7 @@ static int f_##NAME##___index(lua_State *L) { \
 		if (_##NAME[i].ShortIdentifier == j) \
 			return (write_property(L, &_##NAME[i], ((char*)luaX_check##NAME(L, 1))+_##NAME[i].Offset), 1); \
 	for (uint32_t i = 0; i < sizeof(_##NAME##_Methods) / sizeof(*_##NAME##_Methods); i++) { \
-		if (strcmp(_##NAME##_Methods[i].name, luaL_checkstring(L, 2)) == 0) { \
+		if (_##NAME##_Methods[i].name && strcmp(_##NAME##_Methods[i].name, luaL_checkstring(L, 2)) == 0) { \
 			lua_pushcfunction(L, _##NAME##_Methods[i].func); \
 			return 1; \
 		} \
@@ -77,7 +79,7 @@ static int f_##NAME##___fromstring(lua_State *L) { \
 	memset(&self, 0, sizeof(struct NAME)); \
 	for (uint32_t i = 0; tok && i < sizeof(_##NAME) / sizeof(*_##NAME); i++, tok = strtok(NULL, " ")) \
 		if (_##NAME[i].DataType != kDataTypeStruct) \
-			parse_property(tok, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); \
+			parse_property(L, tok, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); \
 	free(tmp); \
 	return (luaX_push##NAME(L, &self), 1); \
 } \
@@ -91,6 +93,10 @@ int luaopen_orca_##NAME(lua_State *L) { \
 		{ NULL, NULL }, \
 	}), 0); \
 	luaL_setfuncs(L, _##NAME##_Methods, 0); \
+	/* Register the struct in the Lua registry */ \
+	lua_pushlightuserdata(L, (void*)(intptr_t)ID_##NAME); \
+	lua_pushvalue(L, -2); \
+	lua_settable(L, LUA_REGISTRYINDEX); \
 	/* Make struct creatable via constructor-like syntax */ \
 	lua_newtable(L); \
 	lua_pushcfunction(L, f_##NAME##___call); \
@@ -123,61 +129,61 @@ static luaL_Reg _SystemMessage_Methods[] = {
 STRUCT(ProjectReference, ProjectReference);
 STRUCT(EnginePlugin, EnginePlugin);
 STRUCT(SystemMessage, SystemMessage);
-struct MessageType ReadCommandsMessage = {
-	.name = "ReadCommands",
-	.id = kMsgReadCommands,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct ReadCommandsMsgArgs),
+//struct MessageType ReadCommandsMessage = {
+//	.name = "ReadCommands",
+//	.id = kMsgReadCommands,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct Workspace_ReadCommandsMsgArgs),
+//};
+//struct MessageType OpenFileMessage = {
+//	.name = "OpenFile",
+//	.id = kMsgOpenFile,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct Project_OpenFileMsgArgs),
+//};
+//struct MessageType FileExistsMessage = {
+//	.name = "FileExists",
+//	.id = kMsgFileExists,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct Project_FileExistsMsgArgs),
+//};
+//struct MessageType HasChangedFilesMessage = {
+//	.name = "HasChangedFiles",
+//	.id = kMsgHasChangedFiles,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct Project_HasChangedFilesMsgArgs),
+//};
+//struct MessageType LoadProjectMessage = {
+//	.name = "LoadProject",
+//	.id = kMsgLoadProject,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct Project_LoadProjectMsgArgs),
+//};
+
+static luaL_Reg _Workspace_ReadCommandsMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Workspace_ReadCommandsMsgArgs[] = {
 };
-struct MessageType OpenFileMessage = {
-	.name = "OpenFile",
-	.id = kMsgOpenFile,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct OpenFileMsgArgs),
+static luaL_Reg _Project_OpenFileMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Project_OpenFileMsgArgs[] = {
+	DECL(0x5ffdd888, Project_OpenFileMsgArgs, FileName, FileName, kDataTypeString), // Project_OpenFileMsgArgs.FileName
 };
-struct MessageType FileExistsMessage = {
-	.name = "FileExists",
-	.id = kMsgFileExists,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct FileExistsMsgArgs),
+static luaL_Reg _Project_FileExistsMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Project_FileExistsMsgArgs[] = {
+	DECL(0x5ffdd888, Project_FileExistsMsgArgs, FileName, FileName, kDataTypeString), // Project_FileExistsMsgArgs.FileName
 };
-struct MessageType HasChangedFilesMessage = {
-	.name = "HasChangedFiles",
-	.id = kMsgHasChangedFiles,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct HasChangedFilesMsgArgs),
+static luaL_Reg _Project_HasChangedFilesMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Project_HasChangedFilesMsgArgs[] = {
 };
-struct MessageType LoadProjectMessage = {
-	.name = "LoadProject",
-	.id = kMsgLoadProject,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct LoadProjectMsgArgs),
+static luaL_Reg _Project_LoadProjectMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Project_LoadProjectMsgArgs[] = {
+	DECL(0xeb66e456, Project_LoadProjectMsgArgs, Path, Path, kDataTypeString), // Project_LoadProjectMsgArgs.Path
 };
 
-static luaL_Reg _ReadCommandsMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _ReadCommandsMsgArgs[] = {
-};
-static luaL_Reg _OpenFileMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _OpenFileMsgArgs[] = {
-	DECL(0x5ffdd888, OpenFileMsgArgs, FileName, FileName, kDataTypeString), // OpenFileMsgArgs.FileName
-};
-static luaL_Reg _FileExistsMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _FileExistsMsgArgs[] = {
-	DECL(0x5ffdd888, FileExistsMsgArgs, FileName, FileName, kDataTypeString), // FileExistsMsgArgs.FileName
-};
-static luaL_Reg _HasChangedFilesMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _HasChangedFilesMsgArgs[] = {
-};
-static luaL_Reg _LoadProjectMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _LoadProjectMsgArgs[] = {
-	DECL(0xeb66e456, LoadProjectMsgArgs, Path, Path, kDataTypeString), // LoadProjectMsgArgs.Path
-};
-
-STRUCT(ReadCommandsMsgArgs, ReadCommandsMsgArgs);
-STRUCT(OpenFileMsgArgs, OpenFileMsgArgs);
-STRUCT(FileExistsMsgArgs, FileExistsMsgArgs);
-STRUCT(HasChangedFilesMsgArgs, HasChangedFilesMsgArgs);
-STRUCT(LoadProjectMsgArgs, LoadProjectMsgArgs);
+STRUCT(Workspace_ReadCommandsMsgArgs, Workspace_ReadCommandsMsgArgs);
+STRUCT(Project_OpenFileMsgArgs, Project_OpenFileMsgArgs);
+STRUCT(Project_FileExistsMsgArgs, Project_FileExistsMsgArgs);
+STRUCT(Project_HasChangedFilesMsgArgs, Project_HasChangedFilesMsgArgs);
+STRUCT(Project_LoadProjectMsgArgs, Project_LoadProjectMsgArgs);
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -195,6 +201,7 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.NumMessageTypes = k##NAME##NumMessageTypes, \
 };
 static struct MessageType WorkspaceMessageTypes[kWorkspaceNumMessageTypes] = {	
+		{ "Workspace.ReadCommands", ID_Workspace_ReadCommands, kMessageRoutingTunnelingBubbling, sizeof(struct Workspace_ReadCommandsMsgArgs) },
 };
 static struct PropertyType const WorkspaceProperties[kWorkspaceNumProperties] = {
 };
@@ -231,8 +238,12 @@ struct Library* luaX_checkLibrary(lua_State *L, int idx) {
 	return GetLibrary(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(Library, 0);
-LRESULT Project_Start(struct Object*, struct Project*, wParam_t, StartMsgPtr);
+HANDLER(Project, Object, Start);
 static struct MessageType ProjectMessageTypes[kProjectNumMessageTypes] = {	
+		{ "Project.OpenFile", ID_Project_OpenFile, kMessageRoutingTunnelingBubbling, sizeof(struct Project_OpenFileMsgArgs) },
+		{ "Project.FileExists", ID_Project_FileExists, kMessageRoutingTunnelingBubbling, sizeof(struct Project_FileExistsMsgArgs) },
+		{ "Project.HasChangedFiles", ID_Project_HasChangedFiles, kMessageRoutingTunnelingBubbling, sizeof(struct Project_HasChangedFilesMsgArgs) },
+		{ "Project.LoadProject", ID_Project_LoadProject, kMessageRoutingTunnelingBubbling, sizeof(struct Project_LoadProjectMsgArgs) },
 };
 static struct PropertyType const ProjectProperties[kProjectNumProperties] = {
 	DECL(0xbcd19216, Project, HalfFloatTextureFormat, HalfFloatTextureFormat, kDataTypeBool), // Project.HalfFloatTextureFormat
@@ -313,7 +324,7 @@ static struct Project ProjectDefaults = {
 };
 LRESULT ProjectProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgStart: return Project_Start(object, cmp, wparm, lparm); // Start
+		case ID_Object_Start: return Project_Start(object, cmp, wparm, lparm); // Object.Start
 	}
 	return FALSE;
 }
@@ -324,11 +335,11 @@ struct Project* luaX_checkProject(lua_State *L, int idx) {
 	return GetProject(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(Project, 0);
-LRESULT Directory_LoadProject(struct Object*, struct Directory*, wParam_t, LoadProjectMsgPtr);
-LRESULT Directory_OpenFile(struct Object*, struct Directory*, wParam_t, OpenFileMsgPtr);
-LRESULT Directory_FileExists(struct Object*, struct Directory*, wParam_t, FileExistsMsgPtr);
-LRESULT Directory_HasChangedFiles(struct Object*, struct Directory*, wParam_t, HasChangedFilesMsgPtr);
-LRESULT Directory_Destroy(struct Object*, struct Directory*, wParam_t, DestroyMsgPtr);
+HANDLER(Directory, Project, LoadProject);
+HANDLER(Directory, Project, OpenFile);
+HANDLER(Directory, Project, FileExists);
+HANDLER(Directory, Project, HasChangedFiles);
+HANDLER(Directory, Object, Destroy);
 static struct MessageType DirectoryMessageTypes[kDirectoryNumMessageTypes] = {	
 };
 static struct PropertyType const DirectoryProperties[kDirectoryNumProperties] = {
@@ -338,11 +349,11 @@ static struct Directory DirectoryDefaults = {
 };
 LRESULT DirectoryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgLoadProject: return Directory_LoadProject(object, cmp, wparm, lparm); // LoadProject
-		case kMsgOpenFile: return Directory_OpenFile(object, cmp, wparm, lparm); // OpenFile
-		case kMsgFileExists: return Directory_FileExists(object, cmp, wparm, lparm); // FileExists
-		case kMsgHasChangedFiles: return Directory_HasChangedFiles(object, cmp, wparm, lparm); // HasChangedFiles
-		case kMsgDestroy: return Directory_Destroy(object, cmp, wparm, lparm); // Destroy
+		case ID_Project_LoadProject: return Directory_LoadProject(object, cmp, wparm, lparm); // Project.LoadProject
+		case ID_Project_OpenFile: return Directory_OpenFile(object, cmp, wparm, lparm); // Project.OpenFile
+		case ID_Project_FileExists: return Directory_FileExists(object, cmp, wparm, lparm); // Project.FileExists
+		case ID_Project_HasChangedFiles: return Directory_HasChangedFiles(object, cmp, wparm, lparm); // Project.HasChangedFiles
+		case ID_Object_Destroy: return Directory_Destroy(object, cmp, wparm, lparm); // Object.Destroy
 	}
 	return FALSE;
 }
@@ -354,11 +365,11 @@ struct Directory* luaX_checkDirectory(lua_State *L, int idx) {
 }
 #define ID_Project 0x7b5fea5e
 REGISTER_CLASS(Directory, ID_Project, 0);
-LRESULT Package_LoadProject(struct Object*, struct Package*, wParam_t, LoadProjectMsgPtr);
-LRESULT Package_OpenFile(struct Object*, struct Package*, wParam_t, OpenFileMsgPtr);
-LRESULT Package_FileExists(struct Object*, struct Package*, wParam_t, FileExistsMsgPtr);
-LRESULT Package_HasChangedFiles(struct Object*, struct Package*, wParam_t, HasChangedFilesMsgPtr);
-LRESULT Package_Destroy(struct Object*, struct Package*, wParam_t, DestroyMsgPtr);
+HANDLER(Package, Project, LoadProject);
+HANDLER(Package, Project, OpenFile);
+HANDLER(Package, Project, FileExists);
+HANDLER(Package, Project, HasChangedFiles);
+HANDLER(Package, Object, Destroy);
 static struct MessageType PackageMessageTypes[kPackageNumMessageTypes] = {	
 };
 static struct PropertyType const PackageProperties[kPackageNumProperties] = {
@@ -368,11 +379,11 @@ static struct Package PackageDefaults = {
 };
 LRESULT PackageProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgLoadProject: return Package_LoadProject(object, cmp, wparm, lparm); // LoadProject
-		case kMsgOpenFile: return Package_OpenFile(object, cmp, wparm, lparm); // OpenFile
-		case kMsgFileExists: return Package_FileExists(object, cmp, wparm, lparm); // FileExists
-		case kMsgHasChangedFiles: return Package_HasChangedFiles(object, cmp, wparm, lparm); // HasChangedFiles
-		case kMsgDestroy: return Package_Destroy(object, cmp, wparm, lparm); // Destroy
+		case ID_Project_LoadProject: return Package_LoadProject(object, cmp, wparm, lparm); // Project.LoadProject
+		case ID_Project_OpenFile: return Package_OpenFile(object, cmp, wparm, lparm); // Project.OpenFile
+		case ID_Project_FileExists: return Package_FileExists(object, cmp, wparm, lparm); // Project.FileExists
+		case ID_Project_HasChangedFiles: return Package_HasChangedFiles(object, cmp, wparm, lparm); // Project.HasChangedFiles
+		case ID_Object_Destroy: return Package_Destroy(object, cmp, wparm, lparm); // Object.Destroy
 	}
 	return FALSE;
 }
@@ -421,7 +432,7 @@ struct Tag* luaX_checkTag(lua_State *L, int idx) {
 	return GetTag(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(Tag, 0);
-LRESULT ThemeGroup_Attached(struct Object*, struct ThemeGroup*, wParam_t, AttachedMsgPtr);
+HANDLER(ThemeGroup, Object, Attached);
 static struct MessageType ThemeGroupMessageTypes[kThemeGroupNumMessageTypes] = {	
 };
 static struct PropertyType const ThemeGroupProperties[kThemeGroupNumProperties] = {
@@ -432,7 +443,7 @@ static struct ThemeGroup ThemeGroupDefaults = {
 };
 LRESULT ThemeGroupProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgAttached: return ThemeGroup_Attached(object, cmp, wparm, lparm); // Attached
+		case ID_Object_Attached: return ThemeGroup_Attached(object, cmp, wparm, lparm); // Object.Attached
 	}
 	return FALSE;
 }
@@ -584,11 +595,11 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_ProjectReference(L), -2), "ProjectReference");
 	lua_setfield(L, ((void)luaopen_orca_EnginePlugin(L), -2), "EnginePlugin");
 	lua_setfield(L, ((void)luaopen_orca_SystemMessage(L), -2), "SystemMessage");
-	lua_setfield(L, ((void)luaopen_orca_ReadCommandsMsgArgs(L), -2), "ReadCommandsMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_OpenFileMsgArgs(L), -2), "OpenFileMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_FileExistsMsgArgs(L), -2), "FileExistsMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_HasChangedFilesMsgArgs(L), -2), "HasChangedFilesMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_LoadProjectMsgArgs(L), -2), "LoadProjectMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Workspace_ReadCommandsMsgArgs(L), -2), "Workspace_ReadCommandsMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Project_OpenFileMsgArgs(L), -2), "Project_OpenFileMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Project_FileExistsMsgArgs(L), -2), "Project_FileExistsMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Project_HasChangedFilesMsgArgs(L), -2), "Project_HasChangedFilesMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Project_LoadProjectMsgArgs(L), -2), "Project_LoadProjectMsgArgs");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Workspace), -2), "Workspace");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Library), -2), "Library");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Project), -2), "Project");

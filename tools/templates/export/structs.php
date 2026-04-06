@@ -1,24 +1,26 @@
 extern void read_property(lua_State *L, int idx, struct PropertyType const* prop, void* struct_ptr);
 extern int write_property(lua_State *L, struct PropertyType const* prop, void const* struct_ptr);
-extern int parse_property(const char* str, struct PropertyType const* prop, void* struct_ptr);
+extern int parse_property(lua_State *L, const char* str, struct PropertyType const* prop, void* struct_ptr);
 
 #define STRUCT(NAME, EXPORT) \
 void luaX_push##NAME(lua_State *L, struct NAME const* data) { \
 	if (data == NULL) { lua_pushnil(L); return; } \
-	struct NAME* ud = lua_newuserdata(L, sizeof(struct NAME)); \
+	memcpy(lua_newuserdata(L, sizeof(struct NAME)), data, sizeof(struct NAME)); \
 	luaL_setmetatable(L, #EXPORT); \
-	memcpy(ud, data, sizeof(struct NAME)); \
 } \
 struct NAME* luaX_check##NAME(lua_State *L, int idx) { return luaL_checkudata(L, idx, #EXPORT); } \
 static int f_new_##NAME(lua_State *L) { \
-	struct NAME* self = lua_newuserdata(L, sizeof(struct NAME)); \
-	luaL_setmetatable(L, #EXPORT); \
-	memset(self, 0, sizeof(struct NAME)); \
-	if (lua_istable(L, 1)) \
-    for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
-			lua_pop(L, (lua_getfield(L, 1, _##NAME[i].Name), read_property(L, -1, &_##NAME[i], ((char*)self)+_##NAME[i].Offset), 1)); \
+	struct NAME self; \
+	memset(&self, 0, sizeof(struct NAME)); \
+	if (lua_islightuserdata(L, 1)) { \
+		memcpy(&self, lua_touserdata(L, 1), sizeof(struct NAME)); \
+	} else if (lua_istable(L, 1)) \
+		for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); lua_pop(L, 1), i++) { \
+			if (lua_getfield(L, 1, _##NAME[i].Name)) \
+				read_property(L, -1, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); } \
 	else for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
-		read_property(L, i + 1, &_##NAME[i], ((char*)self)+_##NAME[i].Offset); \
+		read_property(L, i + 1, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); \
+	luaX_push##NAME(L, &self); \
 	return 1; \
 } \
 static int f_##NAME##___index(lua_State *L) { \
@@ -26,7 +28,7 @@ static int f_##NAME##___index(lua_State *L) { \
 		if (_##NAME[i].ShortIdentifier == j) \
 			return (write_property(L, &_##NAME[i], ((char*)luaX_check##NAME(L, 1))+_##NAME[i].Offset), 1); \
 	for (uint32_t i = 0; i < sizeof(_##NAME##_Methods) / sizeof(*_##NAME##_Methods); i++) { \
-		if (strcmp(_##NAME##_Methods[i].name, luaL_checkstring(L, 2)) == 0) { \
+		if (_##NAME##_Methods[i].name && strcmp(_##NAME##_Methods[i].name, luaL_checkstring(L, 2)) == 0) { \
 			lua_pushcfunction(L, _##NAME##_Methods[i].func); \
 			return 1; \
 		} \
@@ -50,7 +52,7 @@ static int f_##NAME##___fromstring(lua_State *L) { \
 	memset(&self, 0, sizeof(struct NAME)); \
 	for (uint32_t i = 0; tok && i < sizeof(_##NAME) / sizeof(*_##NAME); i++, tok = strtok(NULL, " ")) \
 		if (_##NAME[i].DataType != kDataTypeStruct) \
-			parse_property(tok, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); \
+			parse_property(L, tok, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); \
 	free(tmp); \
 	return (luaX_push##NAME(L, &self), 1); \
 } \
@@ -64,6 +66,10 @@ int luaopen_orca_##NAME(lua_State *L) { \
 		{ NULL, NULL }, \
 	}), 0); \
 	luaL_setfuncs(L, _##NAME##_Methods, 0); \
+	/* Register the struct in the Lua registry */ \
+	lua_pushlightuserdata(L, (void*)(intptr_t)ID_##NAME); \
+	lua_pushvalue(L, -2); \
+	lua_settable(L, LUA_REGISTRYINDEX); \
 	/* Make struct creatable via constructor-like syntax */ \
 	lua_newtable(L); \
 	lua_pushcfunction(L, f_##NAME##___call); \

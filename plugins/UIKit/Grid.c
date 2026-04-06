@@ -164,10 +164,10 @@ _CalculateAutos(float spacing, float avl, PCOLUMNS columns)
   }
 }
 
-HANDLER(Grid, MeasureOverride)
+HANDLER(Grid, Node2D, MeasureOverride)
 {
   uint32_t cellindex = 0;
-  MeasureOverrideMsg_t size = *pMeasureOverride;
+  Node2D_MeasureOverrideMsg_t size = *pMeasureOverride;
   Size_t desired = {0};
 
   PCOLUMNS hcols = columns_at_axis(pGrid, 0, TRUE);
@@ -191,7 +191,7 @@ HANDLER(Grid, MeasureOverride)
       struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
       struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
       if (h && _column_is_flexible(h)) {
-        LRESULT s = _SendMessage(hChild, Measure,
+        LRESULT s = _SendMessage(hChild, Node2D, Measure,
           .Width  = (w ? w->width : size.Width),
           .Height = INFINITY,
         );
@@ -217,7 +217,7 @@ HANDLER(Grid, MeasureOverride)
       struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
       struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
       if (w && _column_is_flexible(w)) {
-        LRESULT s = _SendMessage(hChild, Measure,
+        LRESULT s = _SendMessage(hChild, Node2D, Measure,
           .Width  = INFINITY,
           .Height = (h ? h->width : size.Height),
         );
@@ -241,7 +241,7 @@ HANDLER(Grid, MeasureOverride)
     struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
     struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
 
-    LRESULT s = _SendMessage(hChild, Measure,
+    LRESULT s = _SendMessage(hChild, Node2D, Measure,
       .Width  = (w ? w->width : size.Width),
       .Height = (h ? h->width : size.Height),
     );
@@ -255,7 +255,7 @@ HANDLER(Grid, MeasureOverride)
                    desired.height?desired.height:pMeasureOverride->Height);
 }
 
-HANDLER(Grid, ArrangeOverride)
+HANDLER(Grid, Node2D, ArrangeOverride)
 {
   uint32_t cellindex = 0;
   PCOLUMNS hcols = columns_at_axis(pGrid, 0, TRUE);
@@ -277,7 +277,7 @@ HANDLER(Grid, ArrangeOverride)
       struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
       struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
       if (h && _column_is_flexible(h)) {
-        LRESULT s = _SendMessage(hChild, Measure,
+        LRESULT s = _SendMessage(hChild, Node2D, Measure,
           .Width  = (w ? w->width : pArrangeOverride->Width),
           .Height = INFINITY,
         );
@@ -301,7 +301,7 @@ HANDLER(Grid, ArrangeOverride)
       struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
       struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
       if (w && _column_is_flexible(w)) {
-        LRESULT s = _SendMessage(hChild, Measure,
+        LRESULT s = _SendMessage(hChild, Node2D, Measure,
           .Width  = INFINITY,
           .Height = (h ? h->width : pArrangeOverride->Height),
         );
@@ -325,7 +325,7 @@ HANDLER(Grid, ArrangeOverride)
   {
     struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
     struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
-    _SendMessage(hChild, Arrange,
+    _SendMessage(hChild, Node2D, Arrange,
       .X = pArrangeOverride->X + (w ? w->position : 0),
       .Y = pArrangeOverride->Y + (h ? h->position : 0),
       .Width = (w ? w->width : pArrangeOverride->Width),

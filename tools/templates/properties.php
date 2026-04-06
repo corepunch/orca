@@ -4,9 +4,6 @@
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __<?= strtoupper($model->getModuleName()) ?>_PROPERTIES_H__
 #define __<?= strtoupper($model->getModuleName()) ?>_PROPERTIES_H__
-<?php foreach ($model->getEvents() as $name => $event):?>
-#define kMsg<?= $name ?> 0x<?= hash('fnv1a32', $name) ?>
-<?php endforeach ?>
 
 <?php foreach ($model->getComponents() as $classname => $class):?>
 // <?= $classname ?>
@@ -27,6 +24,9 @@ enum <?= $classname ?>Messages {
 		echo("\tk{$classname}{$name},\n");
 	}?>};
 <?php endif ?>
+<?php foreach ($class->getMessages() as $event) ?>
+#define ID_<?= $classname ?>_<?= $event->name ?> 0x<?= hash('fnv1a32', "$classname.{$event->name}") ?> // <?= $classname ?>.<?= $event->name ?>
+<?php endforeach ?>
 #define k<?= $classname ?>NumProperties <?= count($class->getProperties()) ?>
 <?php if (count($class->getProperties()) > 0): ?>
 enum <?= $classname ?>Properties {
@@ -35,6 +35,12 @@ enum <?= $classname ?>Properties {
 		echo("\tk{$classname}{$name},\n");
 	}?>};
 <?php endif ?>
+<?php endforeach ?>
+
+<?php foreach ($model->getInterfaces() as $intname => $interface):?>
+<?php foreach ($interface->getMessages() as $event) ?>
+#define ID_<?= $intname ?>_<?= $event->name ?> 0x<?= hash('fnv1a32', "$intname.{$event->name}") ?> // <?= $intname ?>.<?= $event->name ?>
+<?php endforeach ?>
 <?php endforeach ?>
 
 <?php foreach ($model->getStructs() as $name => $struct):?>
@@ -46,10 +52,12 @@ enum <?= $classname ?>Properties {
 <?php endforeach ?>	
 
 <?php foreach ($model->getEvents() as $name => $event):?>
-#define ID_<?= $name ?> 0x<?= hash('fnv1a32', $name) ?>
+<?php $struct_id_name = $event->msgns . "_" . $name . "MsgArgs"; ?>
+#define ID_<?= $struct_id_name ?> 0x<?= hash('fnv1a32', $struct_id_name) ?>
+
 <?php foreach ($event->getAllFields() as $field) {
 	$fieldName = $field->name;
-	echo("#define ID_{$name}MsgArgs_{$fieldName} 0x" . hash('fnv1a32', "{$name}MsgArgs.$fieldName") . " // {$name}MsgArgs.{$fieldName}\n");
+	echo("#define ID_{$struct_id_name}_{$fieldName} 0x" . hash('fnv1a32', "{$struct_id_name}.{$fieldName}") . " // {$struct_id_name}.{$fieldName}\n");
 }?>
 <?php endforeach ?>	
 

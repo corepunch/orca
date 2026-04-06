@@ -18,6 +18,9 @@ int f_event_is(lua_State* L)
   return 1;
 }
 
+void WI_BuildModifiersString(wParam_t wParam, char* buf, size_t size);
+void WI_KeyEventToText(struct WI_Message const* e, char* buf, size_t size);
+
 int f_event_index(lua_State* L)
 {
   struct WI_Message const* msg = luaL_checkudata(L, 1, "Event");
@@ -56,6 +59,18 @@ int f_event_index(lua_State* L)
   }
   if (!strcmp(name, "modflags")) {
     lua_pushinteger(L, HIWORD(msg->wParam));
+    return 1;
+  }
+  if (!strcmp(name, "modifiers")) {
+    char comp[32] = {0};
+    WI_BuildModifiersString(msg->wParam, comp, sizeof(comp));
+    lua_pushstring(L, comp);
+    return 1;
+  }
+  if (!strcmp(name, "text")) {
+    char text[MAX_NAMELEN] = {0};
+    WI_KeyEventToText(msg, text, sizeof(text));
+    lua_pushstring(L, text);
     return 1;
   }
   return luaL_error(L, "No field %s in Event", name);

@@ -28,7 +28,11 @@ enum SpriteAnimationProperties {
 #define ID_SKNode_Position 0xa99d4e4c // SKNode.Position
 #define ID_SKNode_Size 0xeaed98c6 // SKNode.Size
 #define ID_SKNode_Anchor 0xf86abfb6 // SKNode.Anchor
-#define kSKNodeNumMessageTypes 0
+#define kSKNodeNumMessageTypes 1
+enum SKNodeMessages {
+	kSKNodeRender,
+};
+#define ID_SKNode_Render 0x450c46e3 // SKNode.Render
 #define kSKNodeNumProperties 3
 enum SKNodeProperties {
 	kSKNodePosition,
@@ -98,6 +102,7 @@ enum SKViewProperties {
 	kSKViewScene,
 };
 
+
 #define ID_SpriteFrame 0xad475fd9
 #define ID_SpriteFrame_Rect 0xa1f930f7 // SpriteFrame.Rect
 #define ID_SpriteFrame_RectX 0xaa47a37d // SpriteFrame.RectX
@@ -111,6 +116,9 @@ enum SKViewProperties {
 #define ID_SpriteFrame_UvRectHeight 0x3fb6116b // SpriteFrame.UvRectHeight
 	
 
+#define ID_SKNode_RenderMsgArgs 0x87a6580c
+
+#define ID_SKNode_RenderMsgArgs_ViewDef 0x614bd7e6 // SKNode_RenderMsgArgs.ViewDef
 	
 
 #endif

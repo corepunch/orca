@@ -2,18 +2,17 @@
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __FILESYSTEM_PROPERTIES_H__
 #define __FILESYSTEM_PROPERTIES_H__
-#define kMsgReadCommands 0x23d83fd3
-#define kMsgOpenFile 0xa2c038cf
-#define kMsgFileExists 0x38dfc973
-#define kMsgHasChangedFiles 0x5390a564
-#define kMsgLoadProject 0x31b9fee2
 
 // Workspace
 #define ID_Workspace 0x27419f56
 #define GetWorkspace(_P) ((struct Workspace*)((_P)?OBJ_GetComponent(_P,ID_Workspace):NULL))
 #define Workspace_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Workspace,sizeof(struct Workspace),_N)
 #define Workspace_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Workspace,_N)
-#define kWorkspaceNumMessageTypes 0
+#define kWorkspaceNumMessageTypes 1
+enum WorkspaceMessages {
+	kWorkspaceReadCommands,
+};
+#define ID_Workspace_ReadCommands 0xea5a6972 // Workspace.ReadCommands
 #define kWorkspaceNumProperties 0
 // Library
 #define ID_Library 0xa8532270
@@ -104,7 +103,17 @@ enum LibraryProperties {
 #define ID_Project_SpriteAnimationLibrary 0x664d619c // Project.SpriteAnimationLibrary
 #define ID_Project_ImageLibrary 0x07fed878 // Project.ImageLibrary
 #define ID_Project_FontLibrary 0x8f87dd48 // Project.FontLibrary
-#define kProjectNumMessageTypes 0
+#define kProjectNumMessageTypes 4
+enum ProjectMessages {
+	kProjectOpenFile,
+	kProjectFileExists,
+	kProjectHasChangedFiles,
+	kProjectLoadProject,
+};
+#define ID_Project_OpenFile 0xa96ca9ee // Project.OpenFile
+#define ID_Project_FileExists 0x1f1e5ece // Project.FileExists
+#define ID_Project_HasChangedFiles 0x8e1eef4b // Project.HasChangedFiles
+#define ID_Project_LoadProject 0x68eebf01 // Project.LoadProject
 #define kProjectNumProperties 73
 enum ProjectProperties {
 	kProjectHalfFloatTextureFormat,
@@ -260,6 +269,7 @@ enum ThemeProperties {
 #define kThemeDefaultValuesDictionaryNumMessageTypes 0
 #define kThemeDefaultValuesDictionaryNumProperties 0
 
+
 #define ID_ProjectReference 0x72a074eb
 #define ID_ProjectReference_Name 0xfc1cbd3c // ProjectReference.Name
 #define ID_ProjectReference_Path 0xf68e77b8 // ProjectReference.Path
@@ -271,14 +281,19 @@ enum ThemeProperties {
 #define ID_SystemMessage_Command 0x40e61c0c // SystemMessage.Command
 	
 
-#define ID_ReadCommands 0x23d83fd3
-#define ID_OpenFile 0xa2c038cf
-#define ID_OpenFileMsgArgs_FileName 0x87a0bb04 // OpenFileMsgArgs.FileName
-#define ID_FileExists 0x38dfc973
-#define ID_FileExistsMsgArgs_FileName 0xbf70afd8 // FileExistsMsgArgs.FileName
-#define ID_HasChangedFiles 0x5390a564
-#define ID_LoadProject 0x31b9fee2
-#define ID_LoadProjectMsgArgs_Path 0x574df4e3 // LoadProjectMsgArgs.Path
+#define ID_Workspace_ReadCommandsMsgArgs 0x5bb5151b
+
+#define ID_Project_OpenFileMsgArgs 0x62c57ebf
+
+#define ID_Project_OpenFileMsgArgs_FileName 0xbd0f69fe // Project_OpenFileMsgArgs.FileName
+#define ID_Project_FileExistsMsgArgs 0x8ee8a8e3
+
+#define ID_Project_FileExistsMsgArgs_FileName 0xb426ac82 // Project_FileExistsMsgArgs.FileName
+#define ID_Project_HasChangedFilesMsgArgs 0xb4af7c4e
+
+#define ID_Project_LoadProjectMsgArgs 0xe72bbdf0
+
+#define ID_Project_LoadProjectMsgArgs_Path 0xee9202c9 // Project_LoadProjectMsgArgs.Path
 	
 
 #endif

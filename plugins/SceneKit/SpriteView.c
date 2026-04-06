@@ -3,7 +3,7 @@
 
 #include "SceneKit.h"
 
-HANDLER(SpriteView, Render)
+HANDLER(SpriteView, Node3D, Render)
 {
   struct rect viewbox = {0};
   struct mat3 texmat;

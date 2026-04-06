@@ -16,7 +16,9 @@ typedef struct lua_State lua_State;
 #include "SceneKit_properties.h"
 #include "../../source/renderer/api/renderer.h"
 
+ORCA_API extern struct MessageType RenderMessage;
 
+typedef struct Node3D_RenderMsgArgs Node3D_RenderMsg_t,* Node3D_RenderMsgPtr;
 
 
 /// @brief Operations performed on stencil buffer values when stencil tests pass or fail
@@ -113,6 +115,12 @@ ORCA_API void luaX_pushLightType(lua_State *L, enum LightType value);
 
 
 
+/** Node3D_RenderMsgArgs struct */
+struct Node3D_RenderMsgArgs {
+	struct ViewDef* ViewDef; ///< The view definition for rendering
+};
+ORCA_API void luaX_pushNode3D_RenderMsgArgs(lua_State *L, struct Node3D_RenderMsgArgs const* data);
+ORCA_API struct Node3D_RenderMsgArgs* luaX_checkNode3D_RenderMsgArgs(lua_State *L, int idx);
 
 
 /// @brief Base class for all 3D scene graph nodes with transform and positioning capabilities

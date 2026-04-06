@@ -184,13 +184,13 @@ static int f_getIndexPosition(lua_State *L) {
   return 0;
 }
 
-HANDLER(TerminalView, Create) {
+HANDLER(TerminalView, Object, Create) {
   pTerminalView->_buffer = ZeroAlloc(MEMSIZE(pTerminalView));
   WI_PostMessageW(hObject, kMsgPaint, 0, NULL);
   return FALSE;
 }
 
-HANDLER(TerminalView, PushProperty) {
+HANDLER(TerminalView, Node, PushProperty) {
   lua_State* L = (lua_State*)pPushProperty;
   switch (wParam) {
     case 0x18bff8a6: // println
@@ -220,7 +220,7 @@ HANDLER(TerminalView, PushProperty) {
   return 0;
 }
 
-HANDLER(TerminalView, DrawBrush) {
+HANDLER(TerminalView, Node2D, DrawBrush) {
   bool_t bFocused = OBJ_IsFocused(hObject)||OBJ_GetFlags(hObject)&OF_NOACTIVATE;
   R_DrawConsole(&(DRAWCONSOLESTRUCT){
     .Buffer = pTerminalView->_buffer,
@@ -241,10 +241,10 @@ HANDLER(TerminalView, DrawBrush) {
   return TRUE;
 }
 
-HANDLER(TerminalView, ScrollWheel) {
+HANDLER(TerminalView, Mouse, ScrollWheel) {
   int const h = (pTerminalView->_contentHeight) * CONSOLE_CHAR_HEIGHT;
   float const space = GetNode(hObject)->Size.Axis[1].Actual - h;
-  pTerminalView->_scroll.y += pScrollWheel->dy / SCROLL_SENSIVITY;
+  pTerminalView->_scroll.y += pScrollWheel->deltaY / SCROLL_SENSIVITY;
   pTerminalView->_scroll.y = MAX(space, pTerminalView->_scroll.y);
   pTerminalView->_scroll.y = MIN(0, pTerminalView->_scroll.y);
   return TRUE;

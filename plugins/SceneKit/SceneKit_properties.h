@@ -20,7 +20,11 @@
 #define ID_Node3D_ContentOffset 0x660ce5d6 // Node3D.ContentOffset
 #define ID_Node3D_Matrix 0xffeed605 // Node3D.Matrix
 #define ID_Node3D_CalculatedOffset 0x7f8022a7 // Node3D.CalculatedOffset
-#define kNode3DNumMessageTypes 0
+#define kNode3DNumMessageTypes 1
+enum Node3DMessages {
+	kNode3DRender,
+};
+#define ID_Node3D_Render 0x74fae2ac // Node3D.Render
 #define kNode3DNumProperties 12
 enum Node3DProperties {
 	kNode3DLayoutTransform,
@@ -307,8 +311,12 @@ enum SpriteViewProperties {
 	kSpriteViewBounds,
 };
 
+
 	
 
+#define ID_Node3D_RenderMsgArgs 0x4deeb459
+
+#define ID_Node3D_RenderMsgArgs_ViewDef 0x9b7bf10f // Node3D_RenderMsgArgs.ViewDef
 	
 
 #endif

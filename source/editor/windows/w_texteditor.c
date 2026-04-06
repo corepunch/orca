@@ -529,7 +529,7 @@ LRESULT ED_TextEditor(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm) {
       TE_AddUndo(ED_GetClient(wnd), te, TA_SETCURSOR, wparm);
       ED_SetFocusedPanel(wnd);
       return 1;
-    case kMsgKeyDown:
+    case ID_Keyboard_KeyDown:
       if ((wparm&WI_MOD_SHIFT)|(wparm&WI_MOD_ALT)|(wparm&WI_MOD_CMD)) {
         return 0;
       } else {

@@ -2,8 +2,6 @@
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __RENDERER_PROPERTIES_H__
 #define __RENDERER_PROPERTIES_H__
-#define kMsgRenderScreen 0xd15bdf29
-#define kMsgRender 0x350cf42d
 
 // Texture
 #define ID_Texture 0x994c5594
@@ -271,16 +269,25 @@ enum FontFamilyProperties {
 #define kTimelineNumMessageTypes 0
 #define kTimelineNumProperties 0
 
+#define ID_Window_Paint 0x08548b5f // Window.Paint
+#define ID_Window_Resized 0xfdfbd653 // Window.Resized
+#define ID_Window_Closed 0x8a68ef39 // Window.Closed
+#define ID_Window_ChangedScreen 0x8d5b1dbb // Window.ChangedScreen
+
 	
 
-#define ID_RenderScreen 0xd15bdf29
-#define ID_RenderScreenMsgArgs_width 0x05d5d53d // RenderScreenMsgArgs.width
-#define ID_RenderScreenMsgArgs_height 0xcef69b94 // RenderScreenMsgArgs.height
-#define ID_RenderScreenMsgArgs_stereo 0xd447fa77 // RenderScreenMsgArgs.stereo
-#define ID_RenderScreenMsgArgs_angle 0xc553b56a // RenderScreenMsgArgs.angle
-#define ID_RenderScreenMsgArgs_target 0x4cf31fbe // RenderScreenMsgArgs.target
-#define ID_Render 0x350cf42d
-#define ID_RenderMsgArgs_ViewDef 0xbebba0a1 // RenderMsgArgs.ViewDef
+#define ID_Window_PaintMsgArgs 0x93ca1b9a
+
+#define ID_Window_PaintMsgArgs_WindowWidth 0x3edcd50c // Window_PaintMsgArgs.WindowWidth
+#define ID_Window_PaintMsgArgs_WindowHeight 0xfc5d95fb // Window_PaintMsgArgs.WindowHeight
+#define ID_Window_ResizedMsgArgs 0x832e6b4a
+
+#define ID_Window_ResizedMsgArgs_WindowWidth 0x6054b03c // Window_ResizedMsgArgs.WindowWidth
+#define ID_Window_ResizedMsgArgs_WindowHeight 0x15bee2ab // Window_ResizedMsgArgs.WindowHeight
+#define ID_Window_ClosedMsgArgs 0xc99e2c82
+
+#define ID_Window_ChangedScreenMsgArgs 0x0b7a829e
+
 	
 
 #endif

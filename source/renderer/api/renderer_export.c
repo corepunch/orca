@@ -4,8 +4,8 @@
 
 #include "renderer.h"
 
-#define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
-#define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
+#define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
+#define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
 
 // fontface
 extern void luaX_pushfontface(lua_State *L, struct fontface const* value);
@@ -61,7 +61,7 @@ ENUM(FloatPrecision, "Unset", "Low", "Medium", "High")
 ENUM(Shading, "Unlit", "Phong", "Standard")
 
 
-int luaopen_orca_window(lua_State *L) {
+int luaopen_orca_Window(lua_State *L) {
 	luaL_newmetatable(L, "Window");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ NULL, NULL },
@@ -72,25 +72,27 @@ int luaopen_orca_window(lua_State *L) {
 }
 extern void read_property(lua_State *L, int idx, struct PropertyType const* prop, void* struct_ptr);
 extern int write_property(lua_State *L, struct PropertyType const* prop, void const* struct_ptr);
-extern int parse_property(const char* str, struct PropertyType const* prop, void* struct_ptr);
+extern int parse_property(lua_State *L, const char* str, struct PropertyType const* prop, void* struct_ptr);
 
 #define STRUCT(NAME, EXPORT) \
 void luaX_push##NAME(lua_State *L, struct NAME const* data) { \
 	if (data == NULL) { lua_pushnil(L); return; } \
-	struct NAME* ud = lua_newuserdata(L, sizeof(struct NAME)); \
+	memcpy(lua_newuserdata(L, sizeof(struct NAME)), data, sizeof(struct NAME)); \
 	luaL_setmetatable(L, #EXPORT); \
-	memcpy(ud, data, sizeof(struct NAME)); \
 } \
 struct NAME* luaX_check##NAME(lua_State *L, int idx) { return luaL_checkudata(L, idx, #EXPORT); } \
 static int f_new_##NAME(lua_State *L) { \
-	struct NAME* self = lua_newuserdata(L, sizeof(struct NAME)); \
-	luaL_setmetatable(L, #EXPORT); \
-	memset(self, 0, sizeof(struct NAME)); \
-	if (lua_istable(L, 1)) \
-    for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
-			lua_pop(L, (lua_getfield(L, 1, _##NAME[i].Name), read_property(L, -1, &_##NAME[i], ((char*)self)+_##NAME[i].Offset), 1)); \
+	struct NAME self; \
+	memset(&self, 0, sizeof(struct NAME)); \
+	if (lua_islightuserdata(L, 1)) { \
+		memcpy(&self, lua_touserdata(L, 1), sizeof(struct NAME)); \
+	} else if (lua_istable(L, 1)) \
+		for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); lua_pop(L, 1), i++) { \
+			if (lua_getfield(L, 1, _##NAME[i].Name)) \
+				read_property(L, -1, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); } \
 	else for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
-		read_property(L, i + 1, &_##NAME[i], ((char*)self)+_##NAME[i].Offset); \
+		read_property(L, i + 1, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); \
+	luaX_push##NAME(L, &self); \
 	return 1; \
 } \
 static int f_##NAME##___index(lua_State *L) { \
@@ -98,7 +100,7 @@ static int f_##NAME##___index(lua_State *L) { \
 		if (_##NAME[i].ShortIdentifier == j) \
 			return (write_property(L, &_##NAME[i], ((char*)luaX_check##NAME(L, 1))+_##NAME[i].Offset), 1); \
 	for (uint32_t i = 0; i < sizeof(_##NAME##_Methods) / sizeof(*_##NAME##_Methods); i++) { \
-		if (strcmp(_##NAME##_Methods[i].name, luaL_checkstring(L, 2)) == 0) { \
+		if (_##NAME##_Methods[i].name && strcmp(_##NAME##_Methods[i].name, luaL_checkstring(L, 2)) == 0) { \
 			lua_pushcfunction(L, _##NAME##_Methods[i].func); \
 			return 1; \
 		} \
@@ -122,7 +124,7 @@ static int f_##NAME##___fromstring(lua_State *L) { \
 	memset(&self, 0, sizeof(struct NAME)); \
 	for (uint32_t i = 0; tok && i < sizeof(_##NAME) / sizeof(*_##NAME); i++, tok = strtok(NULL, " ")) \
 		if (_##NAME[i].DataType != kDataTypeStruct) \
-			parse_property(tok, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); \
+			parse_property(L, tok, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); \
 	free(tmp); \
 	return (luaX_push##NAME(L, &self), 1); \
 } \
@@ -136,6 +138,10 @@ int luaopen_orca_##NAME(lua_State *L) { \
 		{ NULL, NULL }, \
 	}), 0); \
 	luaL_setfuncs(L, _##NAME##_Methods, 0); \
+	/* Register the struct in the Lua registry */ \
+	lua_pushlightuserdata(L, (void*)(intptr_t)ID_##NAME); \
+	lua_pushvalue(L, -2); \
+	lua_settable(L, LUA_REGISTRYINDEX); \
 	/* Make struct creatable via constructor-like syntax */ \
 	lua_newtable(L); \
 	lua_pushcfunction(L, f_##NAME##___call); \
@@ -144,34 +150,53 @@ int luaopen_orca_##NAME(lua_State *L) { \
 	return 1; \
 }
 
-struct MessageType RenderScreenMessage = {
-	.name = "RenderScreen",
-	.id = kMsgRenderScreen,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct RenderScreenMsgArgs),
+//struct MessageType PaintMessage = {
+//	.name = "Paint",
+//	.id = kMsgPaint,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct Window_PaintMsgArgs),
+//};
+#define Window_ResizedMsgArgs Window_PaintMsgArgs
+//struct MessageType ResizedMessage = {
+//	.name = "Resized",
+//	.id = kMsgResized,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct Window_PaintMsgArgs),
+//};
+//struct MessageType ClosedMessage = {
+//	.name = "Closed",
+//	.id = kMsgClosed,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct Window_ClosedMsgArgs),
+//};
+//struct MessageType ChangedScreenMessage = {
+//	.name = "ChangedScreen",
+//	.id = kMsgChangedScreen,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct Window_ChangedScreenMsgArgs),
+//};
+
+static luaL_Reg _Window_PaintMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Window_PaintMsgArgs[] = {
+	DECL(0xdc5503a7, Window_PaintMsgArgs, WindowWidth, WindowWidth, kDataTypeInt), // Window_PaintMsgArgs.WindowWidth
+	DECL(0xbd75892a, Window_PaintMsgArgs, WindowHeight, WindowHeight, kDataTypeInt), // Window_PaintMsgArgs.WindowHeight
 };
-struct MessageType RenderMessage = {
-	.name = "Render",
-	.id = kMsgRender,
-	.routing = kMessageRoutingTunnelingBubbling,
-	.size = sizeof(struct RenderMsgArgs),
+static luaL_Reg _Window_ResizedMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Window_ResizedMsgArgs[] = {
+	DECL(0xdc5503a7, Window_ResizedMsgArgs, WindowWidth, WindowWidth, kDataTypeInt), // Window_ResizedMsgArgs.WindowWidth
+	DECL(0xbd75892a, Window_ResizedMsgArgs, WindowHeight, WindowHeight, kDataTypeInt), // Window_ResizedMsgArgs.WindowHeight
+};
+static luaL_Reg _Window_ClosedMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Window_ClosedMsgArgs[] = {
+};
+static luaL_Reg _Window_ChangedScreenMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Window_ChangedScreenMsgArgs[] = {
 };
 
-static luaL_Reg _RenderScreenMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _RenderScreenMsgArgs[] = {
-	DECL(0x95876e1f, RenderScreenMsgArgs, width, width, kDataTypeInt), // RenderScreenMsgArgs.width
-	DECL(0xd5bdbb42, RenderScreenMsgArgs, height, height, kDataTypeInt), // RenderScreenMsgArgs.height
-	DECL(0xcc87a64d, RenderScreenMsgArgs, stereo, stereo, kDataTypeFloat), // RenderScreenMsgArgs.stereo
-	DECL(0xad544418, RenderScreenMsgArgs, angle, angle, kDataTypeFloat), // RenderScreenMsgArgs.angle
-	DECL(0x32608848, RenderScreenMsgArgs, target, target, kDataTypeObject, .TypeString = "Texture"), // RenderScreenMsgArgs.target
-};
-static luaL_Reg _RenderMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _RenderMsgArgs[] = {
-	DECL(0xce9ab61f, RenderMsgArgs, ViewDef, ViewDef, kDataTypeStruct, .TypeString = "ViewDef"), // RenderMsgArgs.ViewDef
-};
-
-STRUCT(RenderScreenMsgArgs, RenderScreenMsgArgs);
-STRUCT(RenderMsgArgs, RenderMsgArgs);
+STRUCT(Window_PaintMsgArgs, Window_PaintMsgArgs);
+STRUCT(Window_ResizedMsgArgs, Window_ResizedMsgArgs);
+STRUCT(Window_ClosedMsgArgs, Window_ClosedMsgArgs);
+STRUCT(Window_ChangedScreenMsgArgs, Window_ChangedScreenMsgArgs);
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -215,7 +240,7 @@ struct Texture* luaX_checkTexture(lua_State *L, int idx) {
 	return GetTexture(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(Texture, 0);
-LRESULT Image_Start(struct Object*, struct Image*, wParam_t, StartMsgPtr);
+HANDLER(Image, Object, Start);
 static struct MessageType ImageMessageTypes[kImageNumMessageTypes] = {	
 };
 static struct PropertyType const ImageProperties[kImageNumProperties] = {
@@ -248,7 +273,7 @@ static struct Image ImageDefaults = {
 };
 LRESULT ImageProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgStart: return Image_Start(object, cmp, wparm, lparm); // Start
+		case ID_Object_Start: return Image_Start(object, cmp, wparm, lparm); // Object.Start
 	}
 	return FALSE;
 }
@@ -260,7 +285,7 @@ struct Image* luaX_checkImage(lua_State *L, int idx) {
 }
 #define ID_Texture 0x994c5594
 REGISTER_CLASS(Image, ID_Texture, 0);
-LRESULT RenderTargetTexture_Start(struct Object*, struct RenderTargetTexture*, wParam_t, StartMsgPtr);
+HANDLER(RenderTargetTexture, Object, Start);
 static struct MessageType RenderTargetTextureMessageTypes[kRenderTargetTextureNumMessageTypes] = {	
 };
 static struct PropertyType const RenderTargetTextureProperties[kRenderTargetTextureNumProperties] = {
@@ -276,7 +301,7 @@ static struct RenderTargetTexture RenderTargetTextureDefaults = {
 };
 LRESULT RenderTargetTextureProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgStart: return RenderTargetTexture_Start(object, cmp, wparm, lparm); // Start
+		case ID_Object_Start: return RenderTargetTexture_Start(object, cmp, wparm, lparm); // Object.Start
 	}
 	return FALSE;
 }
@@ -288,7 +313,7 @@ struct RenderTargetTexture* luaX_checkRenderTargetTexture(lua_State *L, int idx)
 }
 #define ID_Texture 0x994c5594
 REGISTER_CLASS(RenderTargetTexture, ID_Texture, 0);
-LRESULT CubeMapTexture_Start(struct Object*, struct CubeMapTexture*, wParam_t, StartMsgPtr);
+HANDLER(CubeMapTexture, Object, Start);
 static struct MessageType CubeMapTextureMessageTypes[kCubeMapTextureNumMessageTypes] = {	
 };
 static struct PropertyType const CubeMapTextureProperties[kCubeMapTextureNumProperties] = {
@@ -303,7 +328,7 @@ static struct CubeMapTexture CubeMapTextureDefaults = {
 };
 LRESULT CubeMapTextureProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgStart: return CubeMapTexture_Start(object, cmp, wparm, lparm); // Start
+		case ID_Object_Start: return CubeMapTexture_Start(object, cmp, wparm, lparm); // Object.Start
 	}
 	return FALSE;
 }
@@ -315,7 +340,7 @@ struct CubeMapTexture* luaX_checkCubeMapTexture(lua_State *L, int idx) {
 }
 #define ID_Texture 0x994c5594
 REGISTER_CLASS(CubeMapTexture, ID_Texture, 0);
-LRESULT IOSurfaceTexture_Start(struct Object*, struct IOSurfaceTexture*, wParam_t, StartMsgPtr);
+HANDLER(IOSurfaceTexture, Object, Start);
 static struct MessageType IOSurfaceTextureMessageTypes[kIOSurfaceTextureNumMessageTypes] = {	
 };
 static struct PropertyType const IOSurfaceTextureProperties[kIOSurfaceTextureNumProperties] = {
@@ -325,7 +350,7 @@ static struct IOSurfaceTexture IOSurfaceTextureDefaults = {
 };
 LRESULT IOSurfaceTextureProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgStart: return IOSurfaceTexture_Start(object, cmp, wparm, lparm); // Start
+		case ID_Object_Start: return IOSurfaceTexture_Start(object, cmp, wparm, lparm); // Object.Start
 	}
 	return FALSE;
 }
@@ -379,8 +404,8 @@ struct FragmentShader* luaX_checkFragmentShader(lua_State *L, int idx) {
 	return GetFragmentShader(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(FragmentShader, 0);
-LRESULT Shader_Start(struct Object*, struct Shader*, wParam_t, StartMsgPtr);
-LRESULT Shader_Destroy(struct Object*, struct Shader*, wParam_t, DestroyMsgPtr);
+HANDLER(Shader, Object, Start);
+HANDLER(Shader, Object, Destroy);
 static struct MessageType ShaderMessageTypes[kShaderNumMessageTypes] = {	
 };
 static struct PropertyType const ShaderProperties[kShaderNumProperties] = {
@@ -394,8 +419,8 @@ static struct Shader ShaderDefaults = {
 };
 LRESULT ShaderProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgStart: return Shader_Start(object, cmp, wparm, lparm); // Start
-		case kMsgDestroy: return Shader_Destroy(object, cmp, wparm, lparm); // Destroy
+		case ID_Object_Start: return Shader_Start(object, cmp, wparm, lparm); // Object.Start
+		case ID_Object_Destroy: return Shader_Destroy(object, cmp, wparm, lparm); // Object.Destroy
 	}
 	return FALSE;
 }
@@ -439,8 +464,8 @@ struct Material* luaX_checkMaterial(lua_State *L, int idx) {
 	return GetMaterial(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(Material, 0);
-LRESULT Mesh_Start(struct Object*, struct Mesh*, wParam_t, StartMsgPtr);
-LRESULT Mesh_Destroy(struct Object*, struct Mesh*, wParam_t, DestroyMsgPtr);
+HANDLER(Mesh, Object, Start);
+HANDLER(Mesh, Object, Destroy);
 static struct MessageType MeshMessageTypes[kMeshNumMessageTypes] = {	
 };
 static struct PropertyType const MeshProperties[kMeshNumProperties] = {
@@ -452,8 +477,8 @@ static struct Mesh MeshDefaults = {
 };
 LRESULT MeshProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgStart: return Mesh_Start(object, cmp, wparm, lparm); // Start
-		case kMsgDestroy: return Mesh_Destroy(object, cmp, wparm, lparm); // Destroy
+		case ID_Object_Start: return Mesh_Start(object, cmp, wparm, lparm); // Object.Start
+		case ID_Object_Destroy: return Mesh_Destroy(object, cmp, wparm, lparm); // Object.Destroy
 	}
 	return FALSE;
 }
@@ -464,8 +489,8 @@ struct Mesh* luaX_checkMesh(lua_State *L, int idx) {
 	return GetMesh(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(Mesh, 0);
-LRESULT FontFamily_Start(struct Object*, struct FontFamily*, wParam_t, StartMsgPtr);
-LRESULT FontFamily_Destroy(struct Object*, struct FontFamily*, wParam_t, DestroyMsgPtr);
+HANDLER(FontFamily, Object, Start);
+HANDLER(FontFamily, Object, Destroy);
 static struct MessageType FontFamilyMessageTypes[kFontFamilyNumMessageTypes] = {	
 };
 static struct PropertyType const FontFamilyProperties[kFontFamilyNumProperties] = {
@@ -478,8 +503,8 @@ static struct FontFamily FontFamilyDefaults = {
 };
 LRESULT FontFamilyProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgStart: return FontFamily_Start(object, cmp, wparm, lparm); // Start
-		case kMsgDestroy: return FontFamily_Destroy(object, cmp, wparm, lparm); // Destroy
+		case ID_Object_Start: return FontFamily_Start(object, cmp, wparm, lparm); // Object.Start
+		case ID_Object_Destroy: return FontFamily_Destroy(object, cmp, wparm, lparm); // Object.Destroy
 	}
 	return FALSE;
 }
@@ -563,9 +588,11 @@ ORCA_API int luaopen_orca_renderer(lua_State *L) {
 		{ "drawImage", f_renderer_DrawImage },
 		{ NULL, NULL } 
 	}));
-	lua_setfield(L, ((void)luaopen_orca_RenderScreenMsgArgs(L), -2), "RenderScreenMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_RenderMsgArgs(L), -2), "RenderMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_window(L), -2), "Window");
+	lua_setfield(L, ((void)luaopen_orca_Window_PaintMsgArgs(L), -2), "Window_PaintMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Window_ResizedMsgArgs(L), -2), "Window_ResizedMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Window_ClosedMsgArgs(L), -2), "Window_ClosedMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Window_ChangedScreenMsgArgs(L), -2), "Window_ChangedScreenMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Window(L), -2), "Window");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Texture), -2), "Texture");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Image), -2), "Image");
 	lua_setfield(L, ((void)lua_pushclass(L, &_RenderTargetTexture), -2), "RenderTargetTexture");

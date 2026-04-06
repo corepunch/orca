@@ -2,6 +2,8 @@
 
 // #define DEBUG_COUNT_OBJECTS
 
+
+
 #ifdef DEBUG_COUNT_OBJECTS
 static int counter = 0;
 #endif
@@ -24,6 +26,8 @@ lpcClassDesc_t cls = OBJ_FindClassW(class_id);
 lpObject_t
 OBJ_Create(lua_State* L, lpcClassDesc_t cls)
 {
+  assert(offsetof(struct Object, luaObject) == LUASTATE_IN_OBJECT);
+
 #ifdef DEBUG_COUNT_OBJECTS
   Con_Error("number objects: %d", counter++);
 #endif

@@ -4,8 +4,8 @@
 
 #include "SpriteKit.h"
 
-#define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
-#define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
+#define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
+#define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
 
 
 extern const char *_BlendMode[];
@@ -22,25 +22,27 @@ void luaX_push##NAME(lua_State *L, enum NAME value) { \
 }
 extern void read_property(lua_State *L, int idx, struct PropertyType const* prop, void* struct_ptr);
 extern int write_property(lua_State *L, struct PropertyType const* prop, void const* struct_ptr);
-extern int parse_property(const char* str, struct PropertyType const* prop, void* struct_ptr);
+extern int parse_property(lua_State *L, const char* str, struct PropertyType const* prop, void* struct_ptr);
 
 #define STRUCT(NAME, EXPORT) \
 void luaX_push##NAME(lua_State *L, struct NAME const* data) { \
 	if (data == NULL) { lua_pushnil(L); return; } \
-	struct NAME* ud = lua_newuserdata(L, sizeof(struct NAME)); \
+	memcpy(lua_newuserdata(L, sizeof(struct NAME)), data, sizeof(struct NAME)); \
 	luaL_setmetatable(L, #EXPORT); \
-	memcpy(ud, data, sizeof(struct NAME)); \
 } \
 struct NAME* luaX_check##NAME(lua_State *L, int idx) { return luaL_checkudata(L, idx, #EXPORT); } \
 static int f_new_##NAME(lua_State *L) { \
-	struct NAME* self = lua_newuserdata(L, sizeof(struct NAME)); \
-	luaL_setmetatable(L, #EXPORT); \
-	memset(self, 0, sizeof(struct NAME)); \
-	if (lua_istable(L, 1)) \
-    for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
-			lua_pop(L, (lua_getfield(L, 1, _##NAME[i].Name), read_property(L, -1, &_##NAME[i], ((char*)self)+_##NAME[i].Offset), 1)); \
+	struct NAME self; \
+	memset(&self, 0, sizeof(struct NAME)); \
+	if (lua_islightuserdata(L, 1)) { \
+		memcpy(&self, lua_touserdata(L, 1), sizeof(struct NAME)); \
+	} else if (lua_istable(L, 1)) \
+		for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); lua_pop(L, 1), i++) { \
+			if (lua_getfield(L, 1, _##NAME[i].Name)) \
+				read_property(L, -1, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); } \
 	else for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
-		read_property(L, i + 1, &_##NAME[i], ((char*)self)+_##NAME[i].Offset); \
+		read_property(L, i + 1, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); \
+	luaX_push##NAME(L, &self); \
 	return 1; \
 } \
 static int f_##NAME##___index(lua_State *L) { \
@@ -48,7 +50,7 @@ static int f_##NAME##___index(lua_State *L) { \
 		if (_##NAME[i].ShortIdentifier == j) \
 			return (write_property(L, &_##NAME[i], ((char*)luaX_check##NAME(L, 1))+_##NAME[i].Offset), 1); \
 	for (uint32_t i = 0; i < sizeof(_##NAME##_Methods) / sizeof(*_##NAME##_Methods); i++) { \
-		if (strcmp(_##NAME##_Methods[i].name, luaL_checkstring(L, 2)) == 0) { \
+		if (_##NAME##_Methods[i].name && strcmp(_##NAME##_Methods[i].name, luaL_checkstring(L, 2)) == 0) { \
 			lua_pushcfunction(L, _##NAME##_Methods[i].func); \
 			return 1; \
 		} \
@@ -72,7 +74,7 @@ static int f_##NAME##___fromstring(lua_State *L) { \
 	memset(&self, 0, sizeof(struct NAME)); \
 	for (uint32_t i = 0; tok && i < sizeof(_##NAME) / sizeof(*_##NAME); i++, tok = strtok(NULL, " ")) \
 		if (_##NAME[i].DataType != kDataTypeStruct) \
-			parse_property(tok, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); \
+			parse_property(L, tok, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); \
 	free(tmp); \
 	return (luaX_push##NAME(L, &self), 1); \
 } \
@@ -86,6 +88,10 @@ int luaopen_orca_##NAME(lua_State *L) { \
 		{ NULL, NULL }, \
 	}), 0); \
 	luaL_setfuncs(L, _##NAME##_Methods, 0); \
+	/* Register the struct in the Lua registry */ \
+	lua_pushlightuserdata(L, (void*)(intptr_t)ID_##NAME); \
+	lua_pushvalue(L, -2); \
+	lua_settable(L, LUA_REGISTRYINDEX); \
 	/* Make struct creatable via constructor-like syntax */ \
 	lua_newtable(L); \
 	lua_pushcfunction(L, f_##NAME##___call); \
@@ -110,8 +116,19 @@ static luaL_Reg _SpriteFrame_Methods[] = {
 };
 
 STRUCT(SpriteFrame, SpriteFrame);
+//struct MessageType RenderMessage = {
+//	.name = "Render",
+//	.id = kMsgRender,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct SKNode_RenderMsgArgs),
+//};
 
+static luaL_Reg _SKNode_RenderMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _SKNode_RenderMsgArgs[] = {
+	DECL(0xce9ab61f, SKNode_RenderMsgArgs, ViewDef, ViewDef, kDataTypeStruct, .TypeString = "ViewDef"), // SKNode_RenderMsgArgs.ViewDef
+};
 
+STRUCT(SKNode_RenderMsgArgs, SKNode_RenderMsgArgs);
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -150,8 +167,9 @@ struct SpriteAnimation* luaX_checkSpriteAnimation(lua_State *L, int idx) {
 	return GetSpriteAnimation(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(SpriteAnimation, 0);
-LRESULT SKNode_UpdateMatrix(struct Object*, struct SKNode*, wParam_t, UpdateMatrixMsgPtr);
+HANDLER(SKNode, Node, UpdateMatrix);
 static struct MessageType SKNodeMessageTypes[kSKNodeNumMessageTypes] = {	
+		{ "SKNode.Render", ID_SKNode_Render, kMessageRoutingTunnelingBubbling, sizeof(struct SKNode_RenderMsgArgs) },
 };
 static struct PropertyType const SKNodeProperties[kSKNodeNumProperties] = {
 	DECL(0xe27f342a, SKNode, Position, Position, kDataTypeStruct, .TypeString = "Vector2D"), // SKNode.Position
@@ -162,7 +180,7 @@ static struct SKNode SKNodeDefaults = {
 };
 LRESULT SKNodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgUpdateMatrix: return SKNode_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
+		case ID_Node_UpdateMatrix: return SKNode_UpdateMatrix(object, cmp, wparm, lparm); // Node.UpdateMatrix
 	}
 	return FALSE;
 }
@@ -174,7 +192,7 @@ struct SKNode* luaX_checkSKNode(lua_State *L, int idx) {
 }
 #define ID_Node 0x3468032d
 REGISTER_CLASS(SKNode, ID_Node, 0);
-LRESULT SKScene_UpdateMatrix(struct Object*, struct SKScene*, wParam_t, UpdateMatrixMsgPtr);
+HANDLER(SKScene, Node, UpdateMatrix);
 static struct MessageType SKSceneMessageTypes[kSKSceneNumMessageTypes] = {	
 };
 static struct PropertyType const SKSceneProperties[kSKSceneNumProperties] = {
@@ -183,7 +201,7 @@ static struct SKScene SKSceneDefaults = {
 };
 LRESULT SKSceneProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgUpdateMatrix: return SKScene_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
+		case ID_Node_UpdateMatrix: return SKScene_UpdateMatrix(object, cmp, wparm, lparm); // Node.UpdateMatrix
 	}
 	return FALSE;
 }
@@ -195,7 +213,7 @@ struct SKScene* luaX_checkSKScene(lua_State *L, int idx) {
 }
 #define ID_SKNode 0x819821fb
 REGISTER_CLASS(SKScene, ID_SKNode, 0);
-LRESULT SKSpriteNode_Render(struct Object*, struct SKSpriteNode*, wParam_t, RenderMsgPtr);
+HANDLER(SKSpriteNode, SKNode, Render);
 static struct MessageType SKSpriteNodeMessageTypes[kSKSpriteNodeNumMessageTypes] = {	
 };
 static struct PropertyType const SKSpriteNodeProperties[kSKSpriteNodeNumProperties] = {
@@ -218,7 +236,7 @@ static struct SKSpriteNode SKSpriteNodeDefaults = {
 };
 LRESULT SKSpriteNodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgRender: return SKSpriteNode_Render(object, cmp, wparm, lparm); // Render
+		case ID_SKNode_Render: return SKSpriteNode_Render(object, cmp, wparm, lparm); // SKNode.Render
 	}
 	return FALSE;
 }
@@ -230,8 +248,8 @@ struct SKSpriteNode* luaX_checkSKSpriteNode(lua_State *L, int idx) {
 }
 #define ID_SKNode 0x819821fb
 REGISTER_CLASS(SKSpriteNode, ID_SKNode, 0);
-LRESULT SKLabelNode_Render(struct Object*, struct SKLabelNode*, wParam_t, RenderMsgPtr);
-LRESULT SKLabelNode_Create(struct Object*, struct SKLabelNode*, wParam_t, CreateMsgPtr);
+HANDLER(SKLabelNode, SKNode, Render);
+HANDLER(SKLabelNode, Object, Create);
 static struct MessageType SKLabelNodeMessageTypes[kSKLabelNodeNumMessageTypes] = {	
 };
 static struct PropertyType const SKLabelNodeProperties[kSKLabelNodeNumProperties] = {
@@ -241,8 +259,8 @@ static struct SKLabelNode SKLabelNodeDefaults = {
 };
 LRESULT SKLabelNodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgRender: return SKLabelNode_Render(object, cmp, wparm, lparm); // Render
-		case kMsgCreate: return SKLabelNode_Create(object, cmp, wparm, lparm); // Create
+		case ID_SKNode_Render: return SKLabelNode_Render(object, cmp, wparm, lparm); // SKNode.Render
+		case ID_Object_Create: return SKLabelNode_Create(object, cmp, wparm, lparm); // Object.Create
 	}
 	return FALSE;
 }
@@ -255,7 +273,7 @@ struct SKLabelNode* luaX_checkSKLabelNode(lua_State *L, int idx) {
 #define ID_SKNode 0x819821fb
 #define ID_TextBlockConcept 0x4903089d
 REGISTER_CLASS(SKLabelNode, ID_SKNode, ID_TextBlockConcept, 0);
-LRESULT SKView_ForegroundContent(struct Object*, struct SKView*, wParam_t, ForegroundContentMsgPtr);
+HANDLER(SKView, Node2D, ForegroundContent);
 static struct MessageType SKViewMessageTypes[kSKViewNumMessageTypes] = {	
 };
 static struct PropertyType const SKViewProperties[kSKViewNumProperties] = {
@@ -267,7 +285,7 @@ static struct SKView SKViewDefaults = {
 };
 LRESULT SKViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgForegroundContent: return SKView_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
+		case ID_Node2D_ForegroundContent: return SKView_ForegroundContent(object, cmp, wparm, lparm); // Node2D.ForegroundContent
 	}
 	return FALSE;
 }
@@ -286,6 +304,7 @@ ORCA_API int luaopen_orca_SpriteKit(lua_State *L) {
 		{ NULL, NULL } 
 	}));
 	lua_setfield(L, ((void)luaopen_orca_SpriteFrame(L), -2), "SpriteFrame");
+	lua_setfield(L, ((void)luaopen_orca_SKNode_RenderMsgArgs(L), -2), "SKNode_RenderMsgArgs");
 	lua_setfield(L, ((void)lua_pushclass(L, &_SpriteAnimation), -2), "SpriteAnimation");
 	lua_setfield(L, ((void)lua_pushclass(L, &_SKNode), -2), "SKNode");
 	lua_setfield(L, ((void)lua_pushclass(L, &_SKScene), -2), "SKScene");

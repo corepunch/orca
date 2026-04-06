@@ -296,47 +296,85 @@ See `docs/MODULE_XML_GUIDE.md` for full reference. Quick summary:
 |---|---|
 | `<module>` | Root element |
 | `<enums>` | C enum definition |
-| `<struct>` | C struct with fields and methods |
-| `<interface>` | Abstract interface (like a base class) |
-| `<class>` | Component (attaches to Objects) |
+| `<struct>` | C struct — contains `<fields>` and `<methods>` containers |
+| `<interface>` | Abstract interface — contains `<methods>` and `<messages>` containers |
+| `<class>` | Component — contains `<handles>`, `<properties>`, `<fields>`, `<methods>`, `<messages>` containers |
 | `<function>` | Global function |
-| `<event>` | Event declaration |
-| `<method>` | Method on a struct/interface/class |
-| `<topic>` | Inline section separator **inside an `<interface>`** — has `title` attr and description text (docs only) |
-| `<field>` | Struct data member |
-| `<property>` | Component property (exposed to Lua) |
+| `<message>` | Message declaration — contains `<fields>` container |
+| `<method>` | Method on a struct/interface/class (inside `<methods>`) |
+| `<topic>` | Section separator **inside `<methods>`** in an `<interface>` — has `title` attr (docs only) |
+| `<field>` | Data member (inside `<fields>`) |
+| `<property>` | Component property (inside `<properties>`, exposed to Lua) |
+| `<handle>` | Message handler declaration (inside `<handles>`) |
 | `<arg>` | Function/method argument |
 | `<returns>` | Return value description |
+| `<includes>` | Container for `<include>` directives at module level |
+| `<externals>` | Container for `<external>` type references at module level |
 
-### `<topic>` — inline section separator inside interfaces
+### `<topic>` — inline section separator inside `<methods>`
 
-`<topic>` is a **sibling separator** placed between `<method>` elements, not a container wrapping them. It marks the start of a named section in generated documentation, with optional prose description as its text content.
+`<topic>` is a **sibling separator** placed between `<method>` elements **inside a `<methods>` container** within an `<interface>`. It marks the start of a named section in generated documentation.
 
 ```xml
 <interface name="Object" prefix="OBJ_" export="Object" no-check="true">
   <summary>Core engine host object.</summary>
+  <methods>
+    <topic title="Lifecycle">Manages object creation, initialization, and destruction.</topic>
+    <method name="Awake" lua="true">
+      <summary>Initializes the object when loaded.</summary>
+    </method>
 
-  <topic title="Lifecycle">Manages object creation, initialization, and destruction.</topic>
-  <method name="Awake" lua="true">
-    <summary>Initializes the object when loaded.</summary>
-  </method>
-
-  <topic title="Hierarchy">Navigates and manipulates the parent-child relationship tree.</topic>
-  <method name="AddChild">
-    <summary>Add a child object.</summary>
-    <arg name="child" type="Object" pointer="true">Child to add</arg>
-  </method>
+    <topic title="Hierarchy">Navigates and manipulates the parent-child relationship tree.</topic>
+    <method name="AddChild">
+      <summary>Add a child object.</summary>
+      <arg name="child" type="Object" pointer="true">Child to add</arg>
+    </method>
+  </methods>
+  <messages>
+    <message name="Create" routing="Direct"/>
+  </messages>
 </interface>
 ```
 
 - `title` attribute (required) — the section heading in generated docs
 - Text content (optional) — description paragraph rendered below the heading
-- Methods **after** a `<topic>` belong to that section until the next `<topic>` or end of interface
-- `<topic>` is invisible to code generation: `getMethods()` (XPath `.//method[@name]`) traverses all sibling methods regardless of intervening topic separators
+- Methods **after** a `<topic>` belong to that section until the next `<topic>` or end of `<methods>`
+- `<topic>` is invisible to code generation: `getMethods()` (XPath `./methods/method[@name]`) traverses all methods in the container regardless of intervening topic separators
 
 Use topics when an interface has more than ~10 methods. See `source/core/core.xml` for a full example with 10 topic separators covering 73 methods.
 
-The DTD allows `(method | topic)*` as the `interface` content model. `struct` and `class` elements do **not** support topics.
+The DTD allows `(method | topic)*` as the `<methods>` content model. `struct` and `class` elements do **not** support topics.
+
+### `<class>` grouped structure
+
+A `<class>` element uses grouped container children:
+
+```xml
+<class name="SKNode" parent="Node">
+  <summary>...</summary>
+  <details>...</details>
+  <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+  <handles>
+    <handle message="Node.UpdateMatrix"/>
+  </handles>
+  <properties>
+    <property name="Position" type="vec2">Position</property>
+  </properties>
+  <fields>
+    <field name="_matrix" type="mat4"/>
+  </fields>
+  <methods>
+    <method name="DoSomething" lua="true">...</method>
+  </methods>
+  <messages>
+    <message name="Render">
+      <fields>
+        <field name="ViewDef" type="ViewDef" pointer="true"/>
+      </fields>
+    </message>
+  </messages>
+</class>
+```
 
 ---
 
@@ -384,9 +422,9 @@ $model->getEvents();      // array of Event objects
 ```
 
 `Interface` class key methods:
-- `getMethods()` — yields all methods (uses `.//method[@name]`); topic separators are transparent
-- `getTopics()` — yields `[topicTitle => ["desc" => $desc, "methods" => $methods]]`; falls back to a single unnamed group if no topics defined
-- `hasTopics()` — returns true if the interface has `<topic>` children
+- `getMethods()` — yields all methods (uses `./methods/method[@name]`); topic separators are transparent
+- `getTopics()` — yields `[topicTitle => ["desc" => $desc, "methods" => $methods]]`; iterates `methods/*` children; falls back to single unnamed group if no topics
+- `hasTopics()` — returns true if the interface has `<topic>` children inside `<methods>`
 
 ### pyphp limitations
 
@@ -426,15 +464,17 @@ The `pyphp` Python-PHP bridge has several quirks:
 ### Add a new method to an interface in XML
 
 ```xml
-<method name="MyMethod" export="myMethod" lua="true">
-  <summary>One-line description.</summary>
-  <details>Detailed explanation.</details>
-  <arg name="value" type="int">The value to pass</arg>
-  <returns type="bool">True on success</returns>
-</method>
+<methods>
+  <method name="MyMethod" export="myMethod" lua="true">
+    <summary>One-line description.</summary>
+    <details>Detailed explanation.</details>
+    <arg name="value" type="int">The value to pass</arg>
+    <returns type="bool">True on success</returns>
+  </method>
+</methods>
 ```
 
-If the interface uses `<topic>` separators, place the method after the appropriate `<topic title="...">` separator.
+If the interface uses `<topic>` separators, place the method inside `<methods>` after the appropriate `<topic title="...">` separator.
 
 ### Run code generation
 
@@ -504,9 +544,21 @@ Use `OBJ_EnumClasses(superclassID, callback, param)` to iterate all registered c
 - On WebGL, `package.cpath` is not extended (no `.so` loading). Plugin modules are compiled into the WASM binary and pre-registered via an auto-generated `plugins_luaopen.h`.
 - **Gotcha — init order:** `luaopen_*` runs on the first `require`, not at registration. If your module init has side effects depending on another module, call `require` explicitly — don't assume registration order.
 
-### Module XML — Topics Are Siblings, Not Containers
+### Module XML — Grouped Container Structure
 
-`<topic>` elements are **sibling separators** between `<method>` elements inside an `<interface>` — they are NOT containers. Methods follow a `<topic>` as siblings until the next `<topic>` or end of interface. `getMethods()` uses `.//method[@name]` and traverses all methods regardless of intervening topics. Topics are invisible to code generation; they only affect generated documentation.
+All child elements in `<class>`, `<struct>`, `<interface>`, and `<message>` are grouped into container elements:
+- `<class>`: `<handles>` (with `<handle message="..."/>` children), `<properties>`, `<fields>`, `<methods>`, `<messages>`
+- `<struct>`: `<fields>`, `<methods>`
+- `<interface>`: `<methods>` (may also contain `<topic>` separators), `<messages>`
+- `<message>`: `<fields>`
+- `<module>` top-level: `<includes>`, `<externals>`
+
+The PHP parser (`tools/model/module.php`) uses direct-child XPath queries:
+- `./properties/property[@name]` (not `.//property[@name]`)
+- `./fields/field[@name]` (not `.//field[@name]`)
+- `./methods/method[@name]` (not `.//method[@name]`)
+- `./messages/message[@name]` (not `.//message[@name]`)
+- `handles/handle` (not `handles` with `message` attribute)
 
 ### pyphp Template Limitations
 

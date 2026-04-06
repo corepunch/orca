@@ -6,31 +6,31 @@ This guide explains how to create and maintain module XML files in the ORCA fram
 
 ## What Are Module XML Files?
 
-Module XML files describe the public API of C modules in a declarative format. The `conv-module.py` script processes these XML files to generate:
+Module XML files describe the public API of C modules in a declarative format. The toolchain in `tools/` processes these XML files to generate:
 
 1. **C Header Files** (`.h`) - Type definitions and function declarations
-2. **C Implementation Files** (`.c`) - Lua bindings and registration code
-3. **HTML Documentation** - Formatted API reference at `docs/index.html`
-4. **DTD Schema** - XML validation schema at `tools/schemas/orca.dtd` (for UI components, generated from module files)
+2. **C Export Files** (`_export.c`) - Lua bindings and registration code
+3. **Properties Headers** (`_properties.h`) - Property hash constants
+4. **API Documentation** - Markdown docs at `docs/api/`
+5. **DTD Schema** - UI component XML schema (generated from module files)
 
 ## Location and Usage
 
-Module XML files are located in the `source/` directory alongside their corresponding C source code:
+Module XML files are located alongside their corresponding C source code:
 
-- `source/geometry/geom.xml` - Geometry types (vectors, matrices, etc.)
+- `source/geometry/geometry.xml` - Geometry types (vectors, matrices, etc.)
 - `source/core/core.xml` - Core engine objects and components
 - `source/renderer/api/renderer.xml` - Rendering interfaces
-- `source/UIKit/UIKit.xml` - UI components
-- `source/SceneKit/SceneKit.xml` - 3D scene graph components
+- `plugins/UIKit/UIKit.xml` - UI components
+- `plugins/SceneKit/SceneKit.xml` - 3D scene graph components
+- `plugins/SpriteKit/SpriteKit.xml` - 2D sprite components
 - `source/filesystem/filesystem.xml` - File system access
 
 To generate code from these XML files, run:
 
 ```bash
-make modules
+cd tools && make
 ```
-
-This executes `tools/conv-module.py` which processes all module XML files.
 
 ## XML File Structure
 
@@ -40,13 +40,35 @@ Every module XML file must have this basic structure:
 <?xml version="1.0"?>
 <!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
 <module name="modulename" namespace="orca">
-  <!-- Module content goes here -->
+  <includes>
+    <include file="path/to/header.h"/>
+  </includes>
+  <externals>
+    <external struct="ExternalType"/>
+  </externals>
+  <enums>
+    <enum name="MyEnum">...</enum>
+  </enums>
+  <structs>
+    <struct name="MyStruct">...</struct>
+  </structs>
+  <interfaces>
+    <interface name="MyInterface">...</interface>
+  </interfaces>
+  <classes>
+    <class name="MyClass">...</class>
+  </classes>
+  <functions>
+    <function name="MyFunction">...</function>
+  </functions>
 </module>
 ```
 
+Type definitions are grouped into typed container elements at the module root. This keeps all enumerations in `<enums>`, all structs in `<structs>`, all interfaces in `<interfaces>`, all components in `<classes>`, and all global functions in `<functions>`.
+
 ### Root Element: `<module>`
 
-The root element defines the module's identity and namespace:
+The root element defines the module's identity and namespace.
 
 **Attributes:**
 - `name` (required) - The module name (e.g., "geometry", "core")
@@ -54,18 +76,21 @@ The root element defines the module's identity and namespace:
 - `on-luaopen` (optional) - Callback function name to execute when module loads
 - `prefix` (optional) - Prefix for generated C identifiers
 
-**Example:**
-```xml
-<module name="geometry" namespace="orca">
-  <!-- ... -->
-</module>
-```
+## Top-Level Container Elements
 
-## Top-Level Elements
+Type definitions at the module level are always wrapped in a typed container:
 
-Module XML files can contain the following top-level elements:
+| Container | Contents | Element type |
+|-----------|----------|--------------|
+| `<enums>` | Enumeration definitions | `<enum>` |
+| `<structs>` | C struct definitions | `<struct>` |
+| `<interfaces>` | Abstract interface definitions | `<interface>` |
+| `<classes>` | Component (class) definitions | `<class>` |
+| `<functions>` | Global function definitions | `<function>` |
 
-### 1. `<enums>` - Enumeration Definitions
+## Type Definition Elements
+
+### 1. `<enum>` — Enumeration Definitions
 
 Defines an enumeration type with named constants.
 
@@ -75,138 +100,178 @@ Defines an enumeration type with named constants.
 **Child Elements:**
 - `<summary>` - Brief description
 - `<details>` - Detailed explanation
-- `<enum>` - Individual enumeration value
+- `<value>` - Individual enumeration value
 
 **Example:**
 ```xml
-<enums name="RotationOrder">
-  <summary>Euler angle rotation order enumeration</summary>
-  <details>Specifies the order in which rotations are applied around the X, Y, and Z axes.</details>
-  <enum name="XYZ">Rotate around X axis first, then Y, then Z</enum>
-  <enum name="XZY">Rotate around X axis first, then Z, then Y</enum>
-  <enum name="YZX">Rotate around Y axis first, then Z, then X</enum>
+<enums>
+  <enum name="RotationOrder">
+    <summary>Euler angle rotation order enumeration</summary>
+    <value name="XYZ">Rotate around X axis first, then Y, then Z</value>
+    <value name="XZY">Rotate around X axis first, then Z, then Y</value>
+  </enum>
 </enums>
 ```
 
-### 2. `<struct>` - Structure Definitions
+### 2. `<struct>` — Structure Definitions
 
-Defines a C struct with fields and methods.
+Defines a C struct with fields and methods. Child elements are grouped into container elements.
 
 **Attributes:**
 - `name` (required) - Name of the struct
 - `prefix` (optional) - Prefix for C constants (e.g., "VEC2_")
 - `export` (optional) - Name exported to Lua (defaults to struct name)
-- `sealed` (optional) - If "true", prevents field access from Lua
+- `sealed` (optional) - If "true", prevents recursive field access from Lua
 
-**Child Elements:**
+**Child Elements (in order):**
 - `<summary>` - Brief description
 - `<details>` - Detailed explanation
-- `<field>` - Data field definition
-- `<method>` - Method definition
+- `<fields>` - Container for `<field>` elements
+- `<methods>` - Container for `<method>` elements
 
 **Example:**
 ```xml
-<struct name="vec2" prefix="VEC2_" export="Vector2D" sealed="true">
-  <summary>2D vector structure</summary>
-  <details>Represents a point or direction in 2D space.</details>
-  <field type="float" name="x">X coordinate component</field>
-  <field type="float" name="y">Y coordinate component</field>
-  <method name="Add" export="__add" const="true">
-    <summary>Adds two vectors component-wise</summary>
-    <arg type="vec2" name="other" pointer="true" const="true">Vector to add</arg>
-    <returns type="vec2">Sum of the two vectors</returns>
-  </method>
-</struct>
+<structs>
+  <struct name="vec2" prefix="VEC2_" export="Vector2D" sealed="true">
+    <summary>2D vector structure</summary>
+    <details>Represents a point or direction in 2D space.</details>
+    <fields>
+      <field type="float" name="x">X coordinate component</field>
+      <field type="float" name="y">Y coordinate component</field>
+    </fields>
+    <methods>
+      <method name="Add" export="__add" const="true">
+        <summary>Adds two vectors component-wise</summary>
+        <arg type="vec2" name="other" pointer="true" const="true">Vector to add</arg>
+        <returns type="vec2">Sum of the two vectors</returns>
+      </method>
+    </methods>
+  </struct>
+</structs>
 ```
 
-### 3. `<interface>` - Interface Definitions
+### 3. `<interface>` — Interface Definitions
 
-Similar to `<struct>`, but defines an abstract interface or base class.
+Similar to `<struct>`, but defines an abstract interface. Methods and topics are grouped in `<methods>`, messages in `<messages>`.
 
 **Attributes:** Same as `<struct>`, plus:
 - `no-check` (optional) - If "true", skips type checking in generated code
+- `parent` (optional) - Parent interface name
 
-**Child Elements:**
+**Child Elements (in order):**
 - `<summary>` - Brief description
 - `<details>` - Detailed explanation
-- `<method>` - Method definition
-- `<topic>` - Inline section separator with a title and optional description text (see below)
+- `<init>` - Initialization marker
+- `<methods>` - Container for `<method>` and `<topic>` elements
+- `<messages>` - Container for `<message>` elements
 
-**Example (flat):**
+**Example (simple):**
 ```xml
-<interface name="Object" prefix="OBJ_" export="Object" no-check="true">
-  <summary>Core engine host object.</summary>
-  <method name="Clear" export="clear" lua="true">
-    <summary>Clear all children of the object.</summary>
-  </method>
-</interface>
+<interfaces>
+  <interface name="Object" prefix="OBJ_" export="Object" no-check="true">
+    <summary>Core engine host object.</summary>
+    <methods>
+      <method name="Clear" export="clear" lua="true">
+        <summary>Clear all children of the object.</summary>
+      </method>
+    </methods>
+  </interface>
+</interfaces>
 ```
 
 **Example (with topic separators):**
 ```xml
-<interface name="Object" prefix="OBJ_" export="Object" no-check="true">
-  <summary>Core engine host object.</summary>
-  <topic title="Lifecycle">Manages object creation, initialization, and destruction.</topic>
-  <method name="Awake" lua="true">
-    <summary>Initializes the object when loaded.</summary>
-  </method>
-  <method name="Clear" export="clear" lua="true">
-    <summary>Clear all children of the object.</summary>
-  </method>
-  <topic title="Hierarchy">Navigates and manipulates the parent-child relationship tree.</topic>
-  <method name="AddChild">
-    <summary>Add a child object.</summary>
-    <arg name="child" type="Object" pointer="true">The object to add as a child</arg>
-  </method>
-  <method name="RemoveFromParent" lua="true">
-    <summary>Removes the object from its parent.</summary>
-  </method>
-</interface>
+<interfaces>
+  <interface name="Object" prefix="OBJ_" export="Object" no-check="true">
+    <summary>Core engine host object.</summary>
+    <methods>
+      <topic title="Lifecycle">Manages object creation, initialization, and destruction.</topic>
+      <method name="Awake" lua="true">
+        <summary>Initializes the object when loaded.</summary>
+      </method>
+      <method name="Clear" export="clear" lua="true">
+        <summary>Clear all children of the object.</summary>
+      </method>
+      <topic title="Hierarchy">Navigates and manipulates the parent-child relationship tree.</topic>
+      <method name="AddChild">
+        <summary>Add a child object.</summary>
+        <arg name="child" type="Object" pointer="true">The object to add as a child</arg>
+      </method>
+    </methods>
+    <messages>
+      <message name="Create" routing="Direct"/>
+      <message name="Destroy" routing="Direct"/>
+    </messages>
+  </interface>
+</interfaces>
 ```
 
-#### `<topic>` - Inline Section Separator
+#### `<topic>` — Inline Section Separator
 
-A `<topic>` is a self-closing separator placed **between** methods (not wrapping them). It marks the start of a new named section in the generated documentation. Its text content is an optional prose description of that section, rendered as a paragraph beneath the section heading.
+A `<topic>` is a separator placed **inside** the `<methods>` container between method elements. It marks the start of a new named section in the generated documentation.
 
 **Attributes:**
 - `title` (required) - The section heading used in generated documentation
 
 **Rules:**
-- A `<topic>` may only appear directly inside an `<interface>` element, as a sibling of `<method>` elements.
-- Methods following a `<topic>` belong to that section until the next `<topic>` or the end of the interface.
-- `<topic>` is invisible to code generation: `getMethods()` (XPath `.//method[@name]`) traverses all sibling methods regardless of intervening topic separators.
-- Only `docs.php` renders topics as `##` headings followed by their description text.
+- A `<topic>` may only appear directly inside a `<methods>` element within an `<interface>`.
+- Methods following a `<topic>` belong to that section until the next `<topic>` or the end of `<methods>`.
+- `<topic>` is invisible to code generation; only `docs.php` renders topics as section headings.
 
 **When to use topics:**
-- Use topics when an interface has more than ~10 methods and the methods fall into clear functional groups (lifecycle, hierarchy, input, etc.).
-- See `source/core/core.xml` for a real-world example with 10 topic separators covering 73 methods.
+- Use topics when an interface has more than ~10 methods with clear functional groups.
+- See `source/core/core.xml` for a real-world example with 10 topic separators.
 
-### 4. `<component>` - Component Definitions
+### 4. `<class>` — Component Definitions
 
-Defines a component that can be attached to objects. Components extend the object system.
+Defines a component that can be attached to objects. All child element types are grouped into containers.
 
 **Attributes:**
 - `name` (required) - Component name
 - `parent` (optional) - Parent component to inherit from
 - `concept` (optional) - Interface this component implements
+- `children` (optional) - Type of child nodes this component accepts
+- `prefix` (optional) - Prefix for generated C identifiers
 
-**Child Elements:**
+**Child Elements (in order):**
 - `<summary>` - Brief description
 - `<details>` - Detailed explanation
-- `<property>` - Component property
-- `<handles>` - Event handler declaration
+- `<xmlns>` - XML namespace declaration for this component
+- `<handles>` - Container for `<handle>` elements (messages handled by this class)
+- `<properties>` - Container for `<property>` elements
+- `<fields>` - Container for `<field>` elements (internal/private data)
+- `<methods>` - Container for `<method>` elements
+- `<messages>` - Container for `<message>` elements
 
 **Example:**
 ```xml
-<component name="PropertyType">
-  <summary>Defines a custom property type.</summary>
-  <handles event="Attached"/>
-  <property name="Category" type="fixed">Property category.</property>
-  <property name="DataType" type="DataType">Underlying data type.</property>
-</component>
+<classes>
+  <class name="SKNode" parent="Node" children="SKNode">
+    <summary>Base 2D sprite node with transform and matrix</summary>
+    <details>Provides fundamental 2D transformation properties.</details>
+    <handles>
+      <handle message="Node.UpdateMatrix"/>
+    </handles>
+    <properties>
+      <property name="Position" type="vec2">Position of SKNode in space</property>
+      <property name="Size" type="vec2">Size of SKNode</property>
+    </properties>
+    <fields>
+      <field name="Matrix" type="mat4">Final combined transformation matrix</field>
+      <field name="_opacity" type="float"/>
+    </fields>
+    <messages>
+      <message name="Render">
+        <fields>
+          <field name="ViewDef" type="ViewDef" pointer="true">The view definition for rendering</field>
+        </fields>
+      </message>
+    </messages>
+  </class>
+</classes>
 ```
 
-### 5. `<function>` - Global Function Definitions
+### 5. `<function>` — Global Function Definitions
 
 Defines a global function in the module namespace.
 
@@ -214,34 +279,60 @@ Defines a global function in the module namespace.
 - `name` (required) - Function name
 
 **Child Elements:**
-- `<summary>` - Brief description
-- `<details>` - Detailed explanation
-- `<arg>` - Function argument
-- `<returns>` - Return value description
+- `<summary>`, `<details>`, `<arg>`, `<returns>`
 
 **Example:**
 ```xml
-<function name="GetFocus">
-  <summary>Retrieves currently active object.</summary>
-  <returns type="Object" pointer="true">Pointer to the focused object</returns>
-</function>
+<functions>
+  <function name="GetFocus">
+    <summary>Retrieves currently active object.</summary>
+    <returns type="Object" pointer="true">Pointer to the focused object</returns>
+  </function>
+</functions>
 ```
 
-### 6. `<message>` - Message Definitions
+### 6. `<message>` — Message Definitions
 
-Declares a message that can be handled by components.
+Declares a message that can be handled by components. Fields inside messages are grouped in a `<fields>` container.
 
 **Attributes:**
 - `name` (required) - Message name
-- `type` (optional) - Message parameter type
+- `type` (optional) - Message parameter type (external struct)
+- `same-as` (optional) - Inherit fields from another message
+- `routing` (optional) - Routing strategy: `Bubbling`, `TunnelingBubbling`, `Tunneling`, or `Direct`
+
+**Child Elements:**
+- `<summary>`, `<details>`
+- `<fields>` - Container for `<field>` elements
 
 **Example:**
 ```xml
-<message name="LeftMouseDown" type="WI_Message"/>
-<message name="WindowPaint"/>
+<message name="PropertyChanged" routing="Direct">
+  <fields>
+    <field name="Property" type="Property" pointer="true">The property that changed</field>
+  </fields>
+</message>
 ```
 
-### 7. `<resource>` - Resource Type Definitions
+### 7. `<includes>` and `<externals>` — Include and External Directives
+
+C header includes and external type references are grouped into container elements at the module level.
+
+```xml
+<module name="UIKit" namespace="orca">
+  <includes>
+    <include file="include/renderer.h"/>
+    <include file="source/core/core.h"/>
+  </includes>
+  <externals>
+    <external struct="Object"/>
+    <external struct="ViewDef"/>
+  </externals>
+  <!-- ... -->
+</module>
+```
+
+### 8. `<resource>` — Resource Type Definitions
 
 Declares a resource type that can be loaded by the engine.
 
@@ -252,203 +343,165 @@ Declares a resource type that can be loaded by the engine.
 **Example:**
 ```xml
 <resource type="localization"/>
-<resource type="Property" no-lua="true"/>
-```
-
-### 8. `<include>` - C Header Includes
-
-Specifies additional C header files to include in generated code.
-
-**Attributes:**
-- `file` (required) - Path to header file
-
-**Example:**
-```xml
-<include file="source/renderer/api/renderer.h"/>
-```
-
-### 9. `<external>` - External Type References
-
-Declares types defined elsewhere that are referenced in this module.
-
-**Attributes:**
-- `struct` (required) - Name of external struct
-
-**Example:**
-```xml
-<external struct="Object"/>
 ```
 
 ## Child Element Details
 
-### `<field>` - Struct/Interface Fields
+### `<field>` — Struct/Class Fields
 
-Defines a data member in a struct or interface.
+Defines a data member. Fields are always inside a `<fields>` container.
 
 **Attributes:**
 - `name` (required) - Field name
 - `type` (required) - Data type
-- `array` (optional) - If present, field is an array
+- `fixed-array` (optional) - Array size (if a fixed-size array)
 - `pointer` (optional) - If "true", field is a pointer
 - `const` (optional) - If "true", field is const
 
-**Content:** Description text
-
 **Example:**
 ```xml
-<field type="float" name="x">X coordinate component</field>
-<field name="children" type="Object" array="true" pointer="true">Child objects</field>
+<fields>
+  <field type="float" name="x">X coordinate component</field>
+  <field name="children" type="Object" array="true" pointer="true">Child objects</field>
+</fields>
 ```
 
-### `<method>` - Struct/Interface/Component Methods
+### `<method>` — Methods
 
-Defines a method or member function.
+Defines a method or member function. Methods are always inside a `<methods>` container.
 
 **Attributes:**
 - `name` (required) - Method name
 - `export` (optional) - Name exported to Lua (e.g., "__add" for operator overloading)
-- `const` (optional) - If "true", method is const
-- `lua` (optional) - If "true", method is Lua-only
+- `const` (optional) - If "true", method does not modify the object
+- `lua` (optional) - If "true", method is Lua-accessible
+- `static` (optional) - If "true", method is static (no `this` parameter)
+- `private` (optional) - If "true", method is excluded from public bindings
 
-**Child Elements:**
-- `<summary>` - Brief description
-- `<details>` - Detailed explanation
-- `<arg>` - Method argument
-- `<returns>` - Return value description
+**Child Elements:** `<summary>`, `<details>`, `<arg>`, `<returns>`
 
 **Example:**
 ```xml
-<method name="Add" export="__add" const="true">
-  <summary>Adds two vectors component-wise</summary>
-  <arg type="vec2" name="other" pointer="true" const="true">Vector to add</arg>
-  <returns type="vec2">Sum of the two vectors</returns>
-</method>
+<methods>
+  <method name="Add" export="__add" const="true">
+    <summary>Adds two vectors component-wise</summary>
+    <arg type="vec2" name="other" pointer="true" const="true">Vector to add</arg>
+    <returns type="vec2">Sum of the two vectors</returns>
+  </method>
+</methods>
 ```
 
-### `<arg>` - Function/Method Arguments
+### `<property>` — Component Properties
 
-Defines a function or method parameter.
-
-**Attributes:**
-- `name` (required) - Parameter name
-- `type` (required) - Parameter type
-- `pointer` (optional) - If "true", parameter is a pointer
-- `const` (optional) - If "true", parameter is const
-
-**Content:** Description text
-
-**Example:**
-```xml
-<arg type="float" name="s">Scale factor to apply</arg>
-```
-
-### `<returns>` - Return Value
-
-Describes what a function or method returns.
-
-**Attributes:**
-- `type` (required) - Return type
-- `pointer` (optional) - If "true", returns a pointer
-- `const` (optional) - If "true", returns const value
-
-**Content:** Description text
-
-**Example:**
-```xml
-<returns type="vec2">New scaled vector</returns>
-```
-
-### `<property>` - Component Properties
-
-Defines a property on a component.
+Defines a property on a component. Properties are always inside a `<properties>` container.
 
 **Attributes:**
 - `name` (required) - Property name
 - `type` (required) - Property data type
-
-**Content:** Description text
-
-**Example:**
-```xml
-<property name="Category" type="fixed">Organizational category for this property.</property>
-```
-
-### `<handles>` - Message Handlers
-
-Declares that a component handles a specific message.
-
-**Attributes:**
-- `message` (required) - Name of message being handled
+- `readonly` (optional) - If "true", property is read-only
+- `pointer` (optional) - If "true", property holds a pointer
+- `default` (optional) - Default value for the property
 
 **Example:**
 ```xml
-<handles message="Attached"/>
+<properties>
+  <property name="Opacity" type="float" default="1">Opacity of the node.</property>
+  <property name="Image" type="Texture" pointer="true">Texture to display.</property>
+</properties>
 ```
+
+### `<handles>` and `<handle>` — Message Handlers
+
+Declares which messages a component handles. The `<handles>` container holds one or more `<handle>` children.
+
+**`<handle>` Attributes:**
+- `message` (required) - Name of message to handle (format: `ClassName.MessageName`)
+
+**Example:**
+```xml
+<handles>
+  <handle message="Node.UpdateMatrix"/>
+  <handle message="Object.Create"/>
+</handles>
+```
+
+### `<arg>` — Function/Method Arguments
+
+**Attributes:** `name` (required), `type` (required), `pointer` (optional), `const` (optional)
+
+### `<returns>` — Return Value
+
+**Attributes:** `type` (required), `pointer` (optional), `const` (optional)
 
 ### Documentation Elements
 
-- `<summary>` - Single-line description (plain text)
-- `<details>` - Multi-paragraph description (can contain HTML `<p>` tags and inline code)
-- `<snippet>` - Code example inclusion
-
-**Example:**
-```xml
-<summary>2D vector structure</summary>
-<details>
-  <p>Represents a point or direction in 2D space with x and y components.</p>
-  <p>Supports common vector operations like addition, scaling, and distance calculations.</p>
-</details>
-<snippet src="docs/examples/vector_usage.lua"/>
-```
+- `<summary>` - Single-line description
+- `<details>` - Multi-paragraph description (can contain `<p>` tags and `<snippet>` refs)
+- `<xmlns>` - XML namespace for the component in UI XML files
 
 ## Common Data Types
 
-Module XML files use these common type names:
+**Primitive Types:** `bool`, `int`, `uint`, `float`, `string`, `void`
 
-**Primitive Types:**
-- `bool` - Boolean value
-- `int` - Integer number
-- `float` - Floating-point number
-- `string` - String (const char*)
-- `void` - No value
+**Geometry Types:** `vec2`, `vec3`, `vec4`, `rect`, `mat2`, `mat3`, `mat4`, `color`
 
-**Geometry Types:**
-- `vec2`, `vec3`, `vec4` - 2D/3D/4D vectors
-- `box2`, `box3` - 2D/3D bounding boxes
-- `rect` - 2D rectangle
-- `mat2`, `mat3`, `mat4` - 2D/3D/4D matrices
-- `transform2d`, `transform3d` - Transformation matrices
-
-**Engine Types:**
-- `Object` - Base object type
-- Custom types defined in other modules
+**Engine Types:** `Object`, `Texture`, `Material`, and custom types defined in other modules
 
 ## Example: Complete Module
-
-Here's a minimal complete example:
 
 ```xml
 <?xml version="1.0"?>
 <!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
 <module name="example" namespace="orca">
+  <includes>
+    <include file="source/core/core.h"/>
+  </includes>
+  <externals>
+    <external struct="lua_State"/>
+  </externals>
+
   <enums name="Direction">
     <summary>Cardinal directions</summary>
     <enum name="North">Northward direction</enum>
     <enum name="South">Southward direction</enum>
-    <enum name="East">Eastward direction</enum>
-    <enum name="West">Westward direction</enum>
   </enums>
 
   <struct name="point" export="Point">
     <summary>2D point</summary>
-    <field type="int" name="x">X coordinate</field>
-    <field type="int" name="y">Y coordinate</field>
-    <method name="Move">
-      <summary>Move point in a direction</summary>
-      <arg type="Direction" name="dir">Direction to move</arg>
-      <arg type="int" name="distance">Distance to move</arg>
-    </method>
+    <fields>
+      <field type="int" name="x">X coordinate</field>
+      <field type="int" name="y">Y coordinate</field>
+    </fields>
+    <methods>
+      <method name="Move">
+        <summary>Move point in a direction</summary>
+        <arg type="Direction" name="dir">Direction to move</arg>
+        <arg type="int" name="distance">Distance to move</arg>
+      </method>
+    </methods>
   </struct>
+
+  <class name="Marker" parent="Node2D">
+    <summary>A visual marker placed in 2D space</summary>
+    <handles>
+      <handle message="Object.Create"/>
+    </handles>
+    <properties>
+      <property name="Color" type="color">Marker color</property>
+      <property name="Radius" type="float" default="5">Marker radius in pixels</property>
+    </properties>
+    <fields>
+      <field name="_mesh" type="mesh" pointer="true"/>
+    </fields>
+    <messages>
+      <message name="Clicked">
+        <fields>
+          <field name="X" type="int">Click X coordinate</field>
+          <field name="Y" type="int">Click Y coordinate</field>
+        </fields>
+      </message>
+    </messages>
+  </class>
 
   <function name="CreatePoint">
     <summary>Create a new point</summary>
@@ -468,37 +521,35 @@ Module XML files should reference the DTD schema for validation:
 <!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
 ```
 
-The DTD schema is published at `https://corepunch.github.io/orca/schemas/module.dtd` via GitHub Pages, ensuring it's always accessible for validation.
-
 ## Best Practices
 
-1. **Always include documentation** - Every element should have at least a `<summary>`
-2. **Use consistent naming** - Follow C naming conventions for elements
-3. **Group related items** - Place related structs, enums, and functions together
-4. **Use `<topic>` for large interfaces** - If an `<interface>` has more than ~10 methods, add `<topic title="...">Description.</topic>` separators between method groups (e.g., Lifecycle, Hierarchy, Messaging). Topics appear as `##` sections in generated documentation but are invisible to code generation.
-5. **Keep it simple** - XML should describe the API, not implementation details
-6. **Test generation** - Run `make modules` after changes to verify XML is valid
-7. **Check generated code** - Review the generated `.h` and `.c` files to ensure correctness
+1. **Always include documentation** — Every element should have at least a `<summary>`
+2. **Use container elements** — Group `<property>`, `<field>`, `<method>`, `<message>` and `<handle>` elements inside their respective container elements (`<properties>`, `<fields>`, `<methods>`, `<messages>`, `<handles>`)
+3. **Use `<topic>` for large interfaces** — If a `<methods>` block has more than ~10 methods, add `<topic title="...">` separators between method groups (Lifecycle, Hierarchy, etc.)
+4. **Follow element order** — For `<class>`: summary, details, xmlns, handles, properties, fields, methods, messages. For `<struct>`: summary, details, fields, methods
+5. **Test generation** — Run `cd tools && make` after changes to verify XML is valid
+6. **Check generated code** — Review generated `.h` and `_export.c` files to ensure correctness
 
 ## Troubleshooting
 
 **Error: "Expected 'module' tag"**
-- Ensure your root element is `<module>`, not something else
-
-**Error: "File not found"**
-- Check that the XML file path in the Makefile is correct
+- Ensure your root element is `<module>`
 
 **Missing functions in Lua**
-- Ensure the `export` attribute is set correctly
-- Check that the function/method is properly defined in the XML
+- Ensure the `export` attribute is set correctly on the method/function
+- Verify `lua="true"` is set for Lua-accessible methods
 
-**Type errors**
-- Verify all referenced types are defined (in this module or via `<external>`)
-- Ensure `<include>` directives are present for external headers
+**Type errors in generation**
+- Verify all referenced types are defined (in this module or via `<externals>`)
+- Ensure `<includes>` directives are present for external headers
+
+**Fields not appearing in struct**
+- Ensure `<field>` elements are inside a `<fields>` container directly in the struct or class
+- Fields inside `<message>` elements are message parameters, not struct members
 
 ## Further Reading
 
-- See `tools/conv-module.py` for the complete implementation
-- Check existing module XML files in `source/` for real-world examples
-- Review generated files in `source/*/` to understand the output
-- See `docs/index.html` for the generated API documentation
+- See existing module XML files in `source/` and `plugins/` for real-world examples
+- Check `docs/schemas/module.dtd` for the complete schema definition
+- See `tools/model/module.php` for the PHP data model that parses XML files
+- See `tools/templates/` for the code generation templates

@@ -4,8 +4,8 @@
 
 #include "SceneKit.h"
 
-#define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
-#define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#CLASS"."#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
+#define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
+#define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
 
 
 extern const char *_BlendMode[];
@@ -30,25 +30,27 @@ ENUM(ProjectionType, "Perspective", "Orthographic")
 ENUM(LightType, "Point", "Spot")
 extern void read_property(lua_State *L, int idx, struct PropertyType const* prop, void* struct_ptr);
 extern int write_property(lua_State *L, struct PropertyType const* prop, void const* struct_ptr);
-extern int parse_property(const char* str, struct PropertyType const* prop, void* struct_ptr);
+extern int parse_property(lua_State *L, const char* str, struct PropertyType const* prop, void* struct_ptr);
 
 #define STRUCT(NAME, EXPORT) \
 void luaX_push##NAME(lua_State *L, struct NAME const* data) { \
 	if (data == NULL) { lua_pushnil(L); return; } \
-	struct NAME* ud = lua_newuserdata(L, sizeof(struct NAME)); \
+	memcpy(lua_newuserdata(L, sizeof(struct NAME)), data, sizeof(struct NAME)); \
 	luaL_setmetatable(L, #EXPORT); \
-	memcpy(ud, data, sizeof(struct NAME)); \
 } \
 struct NAME* luaX_check##NAME(lua_State *L, int idx) { return luaL_checkudata(L, idx, #EXPORT); } \
 static int f_new_##NAME(lua_State *L) { \
-	struct NAME* self = lua_newuserdata(L, sizeof(struct NAME)); \
-	luaL_setmetatable(L, #EXPORT); \
-	memset(self, 0, sizeof(struct NAME)); \
-	if (lua_istable(L, 1)) \
-    for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
-			lua_pop(L, (lua_getfield(L, 1, _##NAME[i].Name), read_property(L, -1, &_##NAME[i], ((char*)self)+_##NAME[i].Offset), 1)); \
+	struct NAME self; \
+	memset(&self, 0, sizeof(struct NAME)); \
+	if (lua_islightuserdata(L, 1)) { \
+		memcpy(&self, lua_touserdata(L, 1), sizeof(struct NAME)); \
+	} else if (lua_istable(L, 1)) \
+		for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); lua_pop(L, 1), i++) { \
+			if (lua_getfield(L, 1, _##NAME[i].Name)) \
+				read_property(L, -1, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); } \
 	else for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
-		read_property(L, i + 1, &_##NAME[i], ((char*)self)+_##NAME[i].Offset); \
+		read_property(L, i + 1, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); \
+	luaX_push##NAME(L, &self); \
 	return 1; \
 } \
 static int f_##NAME##___index(lua_State *L) { \
@@ -56,7 +58,7 @@ static int f_##NAME##___index(lua_State *L) { \
 		if (_##NAME[i].ShortIdentifier == j) \
 			return (write_property(L, &_##NAME[i], ((char*)luaX_check##NAME(L, 1))+_##NAME[i].Offset), 1); \
 	for (uint32_t i = 0; i < sizeof(_##NAME##_Methods) / sizeof(*_##NAME##_Methods); i++) { \
-		if (strcmp(_##NAME##_Methods[i].name, luaL_checkstring(L, 2)) == 0) { \
+		if (_##NAME##_Methods[i].name && strcmp(_##NAME##_Methods[i].name, luaL_checkstring(L, 2)) == 0) { \
 			lua_pushcfunction(L, _##NAME##_Methods[i].func); \
 			return 1; \
 		} \
@@ -80,7 +82,7 @@ static int f_##NAME##___fromstring(lua_State *L) { \
 	memset(&self, 0, sizeof(struct NAME)); \
 	for (uint32_t i = 0; tok && i < sizeof(_##NAME) / sizeof(*_##NAME); i++, tok = strtok(NULL, " ")) \
 		if (_##NAME[i].DataType != kDataTypeStruct) \
-			parse_property(tok, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); \
+			parse_property(L, tok, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); \
 	free(tmp); \
 	return (luaX_push##NAME(L, &self), 1); \
 } \
@@ -94,6 +96,10 @@ int luaopen_orca_##NAME(lua_State *L) { \
 		{ NULL, NULL }, \
 	}), 0); \
 	luaL_setfuncs(L, _##NAME##_Methods, 0); \
+	/* Register the struct in the Lua registry */ \
+	lua_pushlightuserdata(L, (void*)(intptr_t)ID_##NAME); \
+	lua_pushvalue(L, -2); \
+	lua_settable(L, LUA_REGISTRYINDEX); \
 	/* Make struct creatable via constructor-like syntax */ \
 	lua_newtable(L); \
 	lua_pushcfunction(L, f_##NAME##___call); \
@@ -102,8 +108,19 @@ int luaopen_orca_##NAME(lua_State *L) { \
 	return 1; \
 }
 
+//struct MessageType RenderMessage = {
+//	.name = "Render",
+//	.id = kMsgRender,
+//	.routing = kMessageRoutingTunnelingBubbling,
+//	.size = sizeof(struct Node3D_RenderMsgArgs),
+//};
 
+static luaL_Reg _Node3D_RenderMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Node3D_RenderMsgArgs[] = {
+	DECL(0xce9ab61f, Node3D_RenderMsgArgs, ViewDef, ViewDef, kDataTypeStruct, .TypeString = "ViewDef"), // Node3D_RenderMsgArgs.ViewDef
+};
 
+STRUCT(Node3D_RenderMsgArgs, Node3D_RenderMsgArgs);
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -120,8 +137,9 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.NumProperties = k##NAME##NumProperties, \
 	.NumMessageTypes = k##NAME##NumMessageTypes, \
 };
-LRESULT Node3D_UpdateMatrix(struct Object*, struct Node3D*, wParam_t, UpdateMatrixMsgPtr);
+HANDLER(Node3D, Node, UpdateMatrix);
 static struct MessageType Node3DMessageTypes[kNode3DNumMessageTypes] = {	
+		{ "Node3D.Render", ID_Node3D_Render, kMessageRoutingTunnelingBubbling, sizeof(struct Node3D_RenderMsgArgs) },
 };
 static struct PropertyType const Node3DProperties[kNode3DNumProperties] = {
 	DECL(0x3f19bf01, Node3D, LayoutTransform, LayoutTransform, kDataTypeStruct, .TypeString = "Transform3D"), // Node3D.LayoutTransform
@@ -145,7 +163,7 @@ static struct Node3D Node3DDefaults = {
 };
 LRESULT Node3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgUpdateMatrix: return Node3D_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
+		case ID_Node_UpdateMatrix: return Node3D_UpdateMatrix(object, cmp, wparm, lparm); // Node.UpdateMatrix
 	}
 	return FALSE;
 }
@@ -157,7 +175,7 @@ struct Node3D* luaX_checkNode3D(lua_State *L, int idx) {
 }
 #define ID_Node 0x3468032d
 REGISTER_CLASS(Node3D, ID_Node, 0);
-LRESULT Scene_UpdateMatrix(struct Object*, struct Scene*, wParam_t, UpdateMatrixMsgPtr);
+HANDLER(Scene, Node, UpdateMatrix);
 static struct MessageType SceneMessageTypes[kSceneNumMessageTypes] = {	
 };
 static struct PropertyType const SceneProperties[kSceneNumProperties] = {
@@ -173,7 +191,7 @@ static struct Scene SceneDefaults = {
 };
 LRESULT SceneProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgUpdateMatrix: return Scene_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
+		case ID_Node_UpdateMatrix: return Scene_UpdateMatrix(object, cmp, wparm, lparm); // Node.UpdateMatrix
 	}
 	return FALSE;
 }
@@ -185,7 +203,7 @@ struct Scene* luaX_checkScene(lua_State *L, int idx) {
 }
 #define ID_Node3D 0xce61fe5a
 REGISTER_CLASS(Scene, ID_Node3D, 0);
-LRESULT Model3D_Render(struct Object*, struct Model3D*, wParam_t, RenderMsgPtr);
+HANDLER(Model3D, Node3D, Render);
 static struct MessageType Model3DMessageTypes[kModel3DNumMessageTypes] = {	
 };
 static struct PropertyType const Model3DProperties[kModel3DNumProperties] = {
@@ -196,7 +214,7 @@ static struct Model3D Model3DDefaults = {
 };
 LRESULT Model3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgRender: return Model3D_Render(object, cmp, wparm, lparm); // Render
+		case ID_Node3D_Render: return Model3D_Render(object, cmp, wparm, lparm); // Node3D.Render
 	}
 	return FALSE;
 }
@@ -208,7 +226,7 @@ struct Model3D* luaX_checkModel3D(lua_State *L, int idx) {
 }
 #define ID_Node3D 0xce61fe5a
 REGISTER_CLASS(Model3D, ID_Node3D, 0);
-LRESULT PlaneMeshNode_Render(struct Object*, struct PlaneMeshNode*, wParam_t, RenderMsgPtr);
+HANDLER(PlaneMeshNode, Node3D, Render);
 static struct MessageType PlaneMeshNodeMessageTypes[kPlaneMeshNodeNumMessageTypes] = {	
 };
 static struct PropertyType const PlaneMeshNodeProperties[kPlaneMeshNodeNumProperties] = {
@@ -224,7 +242,7 @@ static struct PlaneMeshNode PlaneMeshNodeDefaults = {
 };
 LRESULT PlaneMeshNodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgRender: return PlaneMeshNode_Render(object, cmp, wparm, lparm); // Render
+		case ID_Node3D_Render: return PlaneMeshNode_Render(object, cmp, wparm, lparm); // Node3D.Render
 	}
 	return FALSE;
 }
@@ -264,7 +282,7 @@ struct Camera* luaX_checkCamera(lua_State *L, int idx) {
 }
 #define ID_Node3D 0xce61fe5a
 REGISTER_CLASS(Camera, ID_Node3D, 0);
-LRESULT TrajectoryList3D_UpdateMatrix(struct Object*, struct TrajectoryList3D*, wParam_t, UpdateMatrixMsgPtr);
+HANDLER(TrajectoryList3D, Node, UpdateMatrix);
 static struct MessageType TrajectoryList3DMessageTypes[kTrajectoryList3DNumMessageTypes] = {	
 };
 static struct PropertyType const TrajectoryList3DProperties[kTrajectoryList3DNumProperties] = {
@@ -279,7 +297,7 @@ static struct TrajectoryList3D TrajectoryList3DDefaults = {
 };
 LRESULT TrajectoryList3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgUpdateMatrix: return TrajectoryList3D_UpdateMatrix(object, cmp, wparm, lparm); // UpdateMatrix
+		case ID_Node_UpdateMatrix: return TrajectoryList3D_UpdateMatrix(object, cmp, wparm, lparm); // Node.UpdateMatrix
 	}
 	return FALSE;
 }
@@ -291,7 +309,7 @@ struct TrajectoryList3D* luaX_checkTrajectoryList3D(lua_State *L, int idx) {
 }
 #define ID_Node3D 0xce61fe5a
 REGISTER_CLASS(TrajectoryList3D, ID_Node3D, 0);
-LRESULT Viewport3D_ForegroundContent(struct Object*, struct Viewport3D*, wParam_t, ForegroundContentMsgPtr);
+HANDLER(Viewport3D, Node2D, ForegroundContent);
 static struct MessageType Viewport3DMessageTypes[kViewport3DNumMessageTypes] = {	
 };
 static struct PropertyType const Viewport3DProperties[kViewport3DNumProperties] = {
@@ -305,7 +323,7 @@ static struct Viewport3D Viewport3DDefaults = {
 };
 LRESULT Viewport3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgForegroundContent: return Viewport3D_ForegroundContent(object, cmp, wparm, lparm); // ForegroundContent
+		case ID_Node2D_ForegroundContent: return Viewport3D_ForegroundContent(object, cmp, wparm, lparm); // Node2D.ForegroundContent
 	}
 	return FALSE;
 }
@@ -317,7 +335,7 @@ struct Viewport3D* luaX_checkViewport3D(lua_State *L, int idx) {
 }
 #define ID_Node2D 0x6c63a2ab
 REGISTER_CLASS(Viewport3D, ID_Node2D, 0);
-LRESULT PrefabView3D_LoadView(struct Object*, struct PrefabView3D*, wParam_t, LoadViewMsgPtr);
+HANDLER(PrefabView3D, Node, LoadView);
 static struct MessageType PrefabView3DMessageTypes[kPrefabView3DNumMessageTypes] = {	
 };
 static struct PropertyType const PrefabView3DProperties[kPrefabView3DNumProperties] = {
@@ -328,7 +346,7 @@ static struct PrefabView3D PrefabView3DDefaults = {
 };
 LRESULT PrefabView3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgLoadView: return PrefabView3D_LoadView(object, cmp, wparm, lparm); // LoadView
+		case ID_Node_LoadView: return PrefabView3D_LoadView(object, cmp, wparm, lparm); // Node.LoadView
 	}
 	return FALSE;
 }
@@ -480,8 +498,8 @@ struct PipelineStateRenderPass* luaX_checkPipelineStateRenderPass(lua_State *L, 
 }
 #define ID_RenderPass 0xf64bbf80
 REGISTER_CLASS(PipelineStateRenderPass, ID_RenderPass, 0);
-LRESULT TextBlock3D_Render(struct Object*, struct TextBlock3D*, wParam_t, RenderMsgPtr);
-LRESULT TextBlock3D_Create(struct Object*, struct TextBlock3D*, wParam_t, CreateMsgPtr);
+HANDLER(TextBlock3D, Node3D, Render);
+HANDLER(TextBlock3D, Object, Create);
 static struct MessageType TextBlock3DMessageTypes[kTextBlock3DNumMessageTypes] = {	
 };
 static struct PropertyType const TextBlock3DProperties[kTextBlock3DNumProperties] = {
@@ -490,8 +508,8 @@ static struct TextBlock3D TextBlock3DDefaults = {
 };
 LRESULT TextBlock3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgRender: return TextBlock3D_Render(object, cmp, wparm, lparm); // Render
-		case kMsgCreate: return TextBlock3D_Create(object, cmp, wparm, lparm); // Create
+		case ID_Node3D_Render: return TextBlock3D_Render(object, cmp, wparm, lparm); // Node3D.Render
+		case ID_Object_Create: return TextBlock3D_Create(object, cmp, wparm, lparm); // Object.Create
 	}
 	return FALSE;
 }
@@ -504,7 +522,7 @@ struct TextBlock3D* luaX_checkTextBlock3D(lua_State *L, int idx) {
 #define ID_Node3D 0xce61fe5a
 #define ID_TextBlockConcept 0x4903089d
 REGISTER_CLASS(TextBlock3D, ID_Node3D, ID_TextBlockConcept, 0);
-LRESULT Light3D_Render(struct Object*, struct Light3D*, wParam_t, RenderMsgPtr);
+HANDLER(Light3D, Node3D, Render);
 static struct MessageType Light3DMessageTypes[kLight3DNumMessageTypes] = {	
 };
 static struct PropertyType const Light3DProperties[kLight3DNumProperties] = {
@@ -522,7 +540,7 @@ static struct Light3D Light3DDefaults = {
 };
 LRESULT Light3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgRender: return Light3D_Render(object, cmp, wparm, lparm); // Render
+		case ID_Node3D_Render: return Light3D_Render(object, cmp, wparm, lparm); // Node3D.Render
 	}
 	return FALSE;
 }
@@ -534,7 +552,7 @@ struct Light3D* luaX_checkLight3D(lua_State *L, int idx) {
 }
 #define ID_Node3D 0xce61fe5a
 REGISTER_CLASS(Light3D, ID_Node3D, 0);
-LRESULT SpriteView_Render(struct Object*, struct SpriteView*, wParam_t, RenderMsgPtr);
+HANDLER(SpriteView, Node3D, Render);
 static struct MessageType SpriteViewMessageTypes[kSpriteViewNumMessageTypes] = {	
 };
 static struct PropertyType const SpriteViewProperties[kSpriteViewNumProperties] = {
@@ -545,7 +563,7 @@ static struct SpriteView SpriteViewDefaults = {
 };
 LRESULT SpriteViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case kMsgRender: return SpriteView_Render(object, cmp, wparm, lparm); // Render
+		case ID_Node3D_Render: return SpriteView_Render(object, cmp, wparm, lparm); // Node3D.Render
 	}
 	return FALSE;
 }
@@ -563,6 +581,7 @@ ORCA_API int luaopen_orca_SceneKit(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
 		{ NULL, NULL } 
 	}));
+	lua_setfield(L, ((void)luaopen_orca_Node3D_RenderMsgArgs(L), -2), "Node3D_RenderMsgArgs");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Node3D), -2), "Node3D");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Scene), -2), "Scene");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Model3D), -2), "Model3D");

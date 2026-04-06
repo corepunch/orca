@@ -53,7 +53,7 @@ _WatchFile(struct Directory* psrch, lpcString_t filename)
 }
 #endif
 
-HANDLER(Directory, OpenFile) {
+HANDLER(Directory, Project, OpenFile) {
   assert(pDirectory->Path);
   assert(pOpenFile->FileName);
   path_t joined = {0};
@@ -72,7 +72,7 @@ HANDLER(Directory, OpenFile) {
   return (LRESULT)pFile;
 }
 
-HANDLER(Directory, FileExists) {
+HANDLER(Directory, Project, FileExists) {
   path_t joined = {0};
   FILE* file = fopen(FS_JoinPaths(joined, sizeof(joined), pDirectory->Path, pFileExists->FileName), "rb");
   if (file) {
@@ -83,7 +83,7 @@ HANDLER(Directory, FileExists) {
   }
 }
 
-HANDLER(Directory, HasChangedFiles) {
+HANDLER(Directory, Project, HasChangedFiles) {
 #ifdef MONITOR_FILES
   longTime_t time;
   struct _MONITOREDFILE* files = pDirectory->_monitoredfiles;
@@ -99,7 +99,7 @@ HANDLER(Directory, HasChangedFiles) {
 #endif
 }
 
-HANDLER(Directory, Destroy) {
+HANDLER(Directory, Object, Destroy) {
 #ifdef MONITOR_FILES
   FOR_EACH_LIST(struct _MONITOREDFILE, mf, (struct _MONITOREDFILE*)pDirectory->_monitoredfiles) free(mf);
 #endif
@@ -135,13 +135,13 @@ lua_loadfile_with_env(lua_State *L, const char *filename, int env_index)
   return LUA_OK;
 }
 
-HANDLER(Directory, LoadProject) {
+HANDLER(Directory, Project, LoadProject) {
   lua_State* L = (lua_State*)pDirectory;
   lua_pcall(L, (luaX_import(L, "orca.filesystem", "Directory"), 0), 1, 0);
   path_t packpath = {0};
   lpObject_t directory = luaX_checkObject(L, -1);
   OBJ_SetName(directory, FS_GetBaseName(pLoadProject->Path));
-  OBJ_SetPropertyValue(directory, "Path", pLoadProject->Path);
+  OBJ_SetPropertyValue(directory, "Path", &pLoadProject->Path);
   snprintf(packpath, sizeof(packpath), "%s/package.lua", pLoadProject->Path);
   WITH(FILE, fp, fopen(packpath, "r"), fclose) {
     if (fp) {

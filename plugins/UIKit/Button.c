@@ -7,7 +7,7 @@ _NextTabStop(lpObject_t hObject);
 
 //#define USE_STANDARD_BUTTON
 
-HANDLER(Button, DrawBrush) {
+HANDLER(Button, Node2D, DrawBrush) {
 #ifdef USE_STANDARD_BUTTON
   if (pDrawBrush->foreground) return FALSE;
   
@@ -52,22 +52,22 @@ HANDLER(Button, DrawBrush) {
 #endif
 }
 
-HANDLER(Button, LeftMouseUp)
+HANDLER(Button, Mouse, LeftMouseUp)
 {
   SV_PostMessage(hObject, "Click", 0, hObject);
   if (pButton->Type == kButtonTypeSubmit) {
-    WI_PostMessageW(hObject, kMsgSubmit, 0, hObject);
+    WI_PostMessageW(hObject, ID_Form_Submit, 0, hObject);
   }
   return FALSE;
 }
 
-HANDLER(Button, Create)
+HANDLER(Button, Object, Create)
 {
   OBJ_SetStyle(hObject, OBJ_GetStyle(hObject) | OF_TABSTOP);
   return FALSE;
 }
 
-HANDLER(Button, KeyDown)
+HANDLER(Button, Keyboard, KeyDown)
 {
   if (pKeyDown->keyCode == WI_KEY_TAB) {
     _NextTabStop(hObject);

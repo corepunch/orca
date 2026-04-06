@@ -16,11 +16,14 @@ ORCA_API struct ClassDesc _##NAME = { \
 };
 <?php foreach ($components as $name => $component):?>
 	<?php foreach ($component->getEventHandlers() as $event): ?>
-LRESULT <?= $name ?>_<?= $event ?>(struct Object*, struct <?= $name ?>*, wParam_t, <?= $event ?>MsgPtr);
+		<?php $pos = strrpos($event, '.');
+					$after = ($pos !== false) ? substr($event, $pos + 1) : ''; 
+					$ident = str_replace('.', ', ', $event); ?>
+HANDLER(<?= $name ?>, <?= $ident ?>);
 	<?php endforeach ?>
 static struct MessageType <?= $name ?>MessageTypes[k<?= $name ?>NumMessageTypes] = {	
 	<?php foreach ($component->getMessages() as $event): ?>
-		{ "<?= $name ?>.<?= $event->name ?>", kMsg<?= $event->name ?>, kMessageRouting<?= $event->routing ?>, sizeof(<?= $event->getEffectiveTypeDecl() ?>) },
+		{ "<?= $name ?>.<?= $event->name ?>", ID_<?= $name ?>_<?= $event->name ?>, kMessageRouting<?= $event->routing ?>, sizeof(<?= $event->getEffectiveTypeDecl() ?>) },
 	<?php endforeach ?>
 };
 static struct PropertyType const <?= $name ?>Properties[k<?= $name ?>NumProperties] = {
@@ -34,7 +37,10 @@ static struct <?= $name ?> <?= $name ?>Defaults = {
 LRESULT <?= $name ?>Proc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
 	<?php foreach ($component->getEventHandlers() as $event): ?>
-		case kMsg<?= $event ?>: return <?= $name ?>_<?= $event ?>(object, cmp, wparm, lparm); // <?= $event ?>
+		<?php $pos = strrpos($event, '.');
+					$after = ($pos !== false) ? substr($event, $pos + 1) : ''; 
+					$ident = str_replace('.', '_', $event); ?>
+		case ID_<?= $ident ?>: return <?= $name ?>_<?= $after ?>(object, cmp, wparm, lparm); // <?= $event ?>
 	<?php endforeach ?>
 	}
 	return FALSE;

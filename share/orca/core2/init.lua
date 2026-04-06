@@ -77,17 +77,18 @@ function core.run()
 	while true do
 		for msg in system.getMessage(core.screen) do
     	if filesystem.hasChangedFiles() then return DATADIR end
-			if msg:is "WindowClosed" then return
-			elseif msg:is "KeyDown" and msg.Key == "q" then return
+			if msg:is "Window.Closed" then return
+			elseif msg:is "Keyboard.KeyDown" and msg.key == "q" then return
 			elseif msg:is "RequestReload" then return DATADIR
 			else
+				system.translateMessage(msg)
 				local ok, result = pcall(system.dispatchMessage, msg)
 				if not ok then
 					io.stderr:write(tostring(result) .. "\n")
 					-- core.screen:clear() 
 					-- core.screen:addChild(ui.TextBlock(result))
-				elseif result and not msg:is "WindowPaint" then
-					core.screen:postMessage "WindowPaint"
+				elseif result and not msg:is "Window.Paint" then
+					core.screen:postMessage("Window.Paint", renderer.getSize())
 				end
 			end
 		end

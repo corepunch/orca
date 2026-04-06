@@ -35,7 +35,7 @@ get_frame_index(uint32_t num_frames, float framerate, int32_t freeze_frame)
   return (uint32_t)((double)ms * framerate / 1000.0) % num_frames;
 }
 
-HANDLER(SKSpriteNode, Render)
+HANDLER(SKSpriteNode, SKNode, Render)
 {
   SKNodePtr node = GetSKNode(hObject);
   if (!node) return FALSE;

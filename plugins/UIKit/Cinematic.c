@@ -8,7 +8,7 @@ typedef struct Cinematic* PCINEMATIC;
 longTime_t
 UI_GetTime(void);
 
-HANDLER(Cinematic, DrawBrush)
+HANDLER(Cinematic, Node2D, DrawBrush)
 {
 	if (!memcmp(&pDrawBrush->brush,
 							&(struct BrushShorthand){0},

@@ -19,7 +19,7 @@ local function test_text_block_layout()
 		BorderRadius = ui.CornerRadius(config.radius), -- this should apply the same radius to all corners
 	}
 
-	screen:msgSend("UpdateLayout", screen.Width, screen.Height)
+	screen:msgSend("Screen.UpdateLayout", screen.Width, screen.Height)
 	
 	screen.testFunction = function (self) return self.Name end
 	screen.testNumber = 150
@@ -70,7 +70,7 @@ local function test_text_block_layout()
 	assert(text.BorderBottomLeftRadius == config.radius, "BorderBottomLeftRadius should be set to the specified value")
 	assert(text.BorderBottomRightRadius == config.radius, "BorderBottomRightRadius should be set to the specified value")
 
-	screen:msgSend("UpdateLayout", screen.Width, screen.Height)
+	screen:msgSend("Screen.UpdateLayout", screen.Width, screen.Height)
 	
 	-- Verify that the ActualWidth of the text block has increased after adding padding
 	assert(text.ActualWidth == text_width + config.padding * 2, "Text block ActualWidth should increase after adding padding")
@@ -106,7 +106,7 @@ local function test_stack_view_layout()
 		Margin = ui.Thickness(config.node_margin)
 	}
 
-	screen:msgSend("UpdateLayout", screen.Width, screen.Height)
+	screen:msgSend("Screen.UpdateLayout", screen.Width, screen.Height)
 
 	-- Verify stack view properties and layout
 	assert(stack.HorizontalAlignment == "Stretch", "StackView HorizontalAlignment should be 'Stretch'")
@@ -122,8 +122,8 @@ end
 
 local function test_button_interaction()
 	local clicked = false
-	local button = screen + ui.Button { Width = 100, Height = 100, onLeftMouseDown = function () clicked = true end }
-	screen:msgSend("UpdateLayout", screen.Width, screen.Height)
+	local button = screen + ui.Button { Width = 100, Height = 100, ["onMouse.LeftMouseDown"] = function () clicked = true end }
+	screen:msgSend("Screen.UpdateLayout", screen.Width, screen.Height)
 	-- Simulate a left mouse down event on the button
 	orca.system.dispatchMessage {
 		target = screen,
@@ -141,7 +141,7 @@ local function test_input_interaction()
 	local config = { text = "Hello World!" }
 	local input = screen + ui.Input { Width = 100, Height = 100 }
 	input:setFocus()
-	screen:msgSend("UpdateLayout", screen.Width, screen.Height)
+	screen:msgSend("Screen.UpdateLayout", screen.Width, screen.Height)
 	-- Simulate a left mouse down event on the button
 	for i = 1, #config.text do
 		orca.system.dispatchMessage {
@@ -167,7 +167,7 @@ local function test_grid_view_layout()
 	local header = grid + ui.Node2D { Margin = ui.Thickness(config.margin) }
 	local content = grid + ui.Node2D { Margin = ui.Thickness(config.margin) }
 	local footer = grid + ui.Node2D { Margin = ui.Thickness(config.margin) }
-	screen:msgSend("UpdateLayout", screen.Width, screen.Height)
+	screen:msgSend("Screen.UpdateLayout", screen.Width, screen.Height)
 	assert(grid.ActualWidth == screen.Width, "GridView ActualWidth should match screen width when horizontal alignment is 'Stretch'")
 	assert(grid.ActualHeight == screen.Height, "GridView ActualHeight should match screen height when vertical alignment is 'Stretch'")
 	assert(header.ActualWidth == screen.Width - config.margin * 2, "Header row should have the specified height minus vertical margins")
@@ -181,7 +181,7 @@ local function test_text_single_line_layout()
 	local single_word = screen + ui.TextBlock { HorizontalAlignment = "Left", Text = "Hello" }
 	local two_words = screen + ui.TextBlock { HorizontalAlignment = "Left", Text = "Hello World" }
 
-	screen:msgSend("UpdateLayout", screen.Width, screen.Height)
+	screen:msgSend("Screen.UpdateLayout", screen.Width, screen.Height)
 
 	-- "Hello World" should be wider than "Hello"
 	assert(two_words.ActualWidth > single_word.ActualWidth, "Two-word text should be wider than single-word text")
@@ -209,7 +209,7 @@ local function test_grid_view_in_stack_layout()
 	
 	assert(row1.ActualHeight == 0, "Row 1 should have zero height before layout update")
 
-	screen:msgSend("UpdateLayout", screen.Width, screen.Height)
+	screen:msgSend("Screen.UpdateLayout", screen.Width, screen.Height)
 
 	-- Each row should have height equal to the tallest cell in that row (since columns are auto-sized)
 	
@@ -242,7 +242,7 @@ local function test_horizontal_stack_view_layout()
 		Margin = ui.Thickness(config.node_margin),
 	}
 
-	screen:msgSend("UpdateLayout", screen.Width, screen.Height)
+	screen:msgSend("Screen.UpdateLayout", screen.Width, screen.Height)
 
 	-- Verify stack direction and default vertical alignment (cross-axis should stretch)
 	assert(stack.Direction == "Horizontal", "StackView direction should be 'Horizontal'")
@@ -277,7 +277,7 @@ local function test_node_alignment()
 		Width = fixed_width,
 	}
 
-	screen:msgSend("UpdateLayout", screen.Width, screen.Height)
+	screen:msgSend("Screen.UpdateLayout", screen.Width, screen.Height)
 
 	-- Stretch node should fill the screen width
 	assert(stretch_node.ActualWidth == screen.Width,
@@ -302,7 +302,7 @@ local function test_input_checkbox()
 		Height = 24,
 	}
 
-	screen:msgSend("UpdateLayout", screen.Width, screen.Height)
+	screen:msgSend("Screen.UpdateLayout", screen.Width, screen.Height)
 
 	-- The input type should be "Checkbox"
 	assert(checkbox.Type == "Checkbox", "Input type should be 'Checkbox'")
@@ -334,7 +334,7 @@ local function test_form_populate_inputs()
 		Height = 30,
 	}
 
-	screen:msgSend("UpdateLayout", screen.Width, screen.Height)
+	screen:msgSend("Screen.UpdateLayout", screen.Width, screen.Height)
 
 	-- Type text into the username input
 	username_input:setFocus()
@@ -377,7 +377,7 @@ local function test_node_visibility()
 		Height = 50,
 	}
 
-	screen:msgSend("UpdateLayout", screen.Width, screen.Height)
+	screen:msgSend("Screen.UpdateLayout", screen.Width, screen.Height)
 
 	-- Default visibility should be true
 	assert(node.Visible, "Node should be visible by default")
@@ -427,7 +427,7 @@ local function test_grid_fr_units()
 	local cell1 = grid + ui.Node2D {}
 	local cell2 = grid + ui.Node2D {}
 
-	screen:msgSend("UpdateLayout", screen.Width, screen.Height)
+	screen:msgSend("Screen.UpdateLayout", screen.Width, screen.Height)
 
 	-- Total width is screen.Width; 1fr + 2fr = 3 parts.
 	local expected1 = math.floor(screen.Width / 3)
@@ -459,7 +459,7 @@ local function test_node2d_container_height()
 		FontSize = 28,
 	}
 
-	screen:msgSend("UpdateLayout", screen.Width, screen.Height)
+	screen:msgSend("Screen.UpdateLayout", screen.Width, screen.Height)
 
 	assert(label.ActualHeight > 0,
 		"TextBlock inside Node2D should have positive height after layout")
@@ -480,7 +480,7 @@ local function test_grid_in_vstack_height()
 	local node1 = inner_stack + ui.Node2D { Height = node_height }
 	local node2 = inner_stack + ui.Node2D { Height = node_height }
 
-	screen:msgSend("UpdateLayout", screen.Width, screen.Height)
+	screen:msgSend("Screen.UpdateLayout", screen.Width, screen.Height)
 
 	local expected_inner_height = node_height * 2
 	assert(inner_stack.ActualHeight == expected_inner_height,

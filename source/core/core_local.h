@@ -148,7 +148,7 @@ void
 OBJ_ClearStyleClasses(lpObject_t);
 
 void
-OBJ_ProcessFunctions(lpObject_t, lpcString_t);
+OBJ_RegisterCallback(lpObject_t, lpcString_t);
 
 void
 OBJ_SetLuaObject(lpObject_t , uint32_t);

@@ -41,7 +41,7 @@ PageHost_FindPageByPath(lpObject_t hObject, const char* path)
   return NULL;
 }
 
-HANDLER(PageHost, NavigateToPage) {
+HANDLER(PageHost, PageHost, NavigateToPage) {
   PagePtr pTarget = PageHost_FindPageByPath(hObject, pNavigateToPage->URL);
   if (!pTarget) {
     Con_Error("Page not found: %s", pNavigateToPage->URL);
@@ -58,7 +58,7 @@ HANDLER(PageHost, NavigateToPage) {
   return TRUE;
 }
 
-HANDLER(PageHost, NavigateBack) {
+HANDLER(PageHost, PageHost, NavigateBack) {
   if (pPageHost->_historySize <= 0) return FALSE;
 
   PagePtr pPrev = pPageHost->_historyStack[--pPageHost->_historySize];
@@ -67,7 +67,7 @@ HANDLER(PageHost, NavigateBack) {
   return TRUE;
 }
 
-HANDLER(PageHost, ViewDidLoad) {
+HANDLER(PageHost, Node, ViewDidLoad) {
   FOR_EACH_OBJECT(hChild, hObject) {
     if (pPageHost->ActivePage == NULL) {
       pPageHost->ActivePage = GetPage(hChild);
@@ -81,7 +81,7 @@ HANDLER(PageHost, ViewDidLoad) {
   return TRUE;
 }
 
-HANDLER(Page, Create) {
+HANDLER(Page, Object, Create) {
   pPage->_node = GetNode(hObject);
   return FALSE;
 }

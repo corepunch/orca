@@ -344,7 +344,7 @@ R_MakeGradientTexture(float angle, struct color a, struct color b);
 //  return S_OK;
 //}
 
-HANDLER(Image, Start) {
+HANDLER(Image, Object, Start) {
   struct WI_Size tex = MAKE_TEX_SIZE(0, 0);
   struct file* pFile;
   struct Texture* pTexture = GetTexture(hObject);
@@ -506,7 +506,7 @@ IOSurface_CreateTextureFrom(uint32_t surfaceID, struct Texture* img)
   }
 }
 
-HANDLER(IOSurfaceTexture, Start) {
+HANDLER(IOSurfaceTexture, Object, Start) {
   lpTexture_t img = GetTexture(hObject);
   if (!IOSurface_CreateTextureFrom(pIOSurfaceTexture->IOSurface, img)) {
     const GLsizei w = 2, h = 2;
@@ -528,7 +528,7 @@ HANDLER(IOSurfaceTexture, Start) {
   return TRUE;
 }
 #else
-HANDLER(IOSurfaceTexture, Start) {
+HANDLER(IOSurfaceTexture, Object, Start) {
   return TRUE;
 }
 #endif

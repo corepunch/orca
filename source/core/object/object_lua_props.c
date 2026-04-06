@@ -112,7 +112,7 @@ OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name)
     luaX_readProperty(L, 3, property);
     return TRUE;
   } else if (lua_type(L, 3) == LUA_TFUNCTION) {
-    OBJ_ProcessFunctions(self, name);
+    OBJ_RegisterCallback(self, name);
     return FALSE;
   } else {
     return FALSE;
@@ -121,15 +121,12 @@ OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name)
 
 static int HACK_Start(lua_State* L) {
   struct Object* hobj = luaX_checkObject(L, 1);
-  OBJ_SendMessageW(hobj, kMsgStart, 0, NULL);
+  OBJ_SendMessageW(hobj, ID_Object_Start, 0, NULL);
   return 0;
 }
 
 int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
 {
-  if (!strcmp(name, "Checked")) {
-    int a=0;
-  }
   uint32_t ident = fnv1a32(name);
   switch (ident) {
     case p_id:
@@ -199,8 +196,8 @@ int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
     return 1;
   }
 
-#define kMsgPushProperty 0xc5ebaf40
-  LRESULT found = OBJ_SendMessageW(self, kMsgPushProperty, ident, L);
+#define ID_Node_PushProperty 0xaca786d4 // Node.PushProperty
+  LRESULT found = OBJ_SendMessageW(self, ID_Node_PushProperty, ident, L);
   if (found) {
     return (int)found;
   }

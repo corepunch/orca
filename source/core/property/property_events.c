@@ -16,11 +16,7 @@ PROP_HasHandler(lpProperty_t property)
 static lpcString_t
 PROP_GetShortName(lpcProperty_t property)
 {
-  if (property->pdesc->FullIdentifier != property->pdesc->ShortIdentifier) {
-    return strrchr(property->pdesc->Name, '.') + 1;
-  } else {
-    return property->pdesc->Name;
-  }
+  return property->pdesc->Name;
 }
 
 void
@@ -42,7 +38,7 @@ PROP_ProcessEvents(lua_State* L,
       luaX_executecallback(L, object, str, 1);
     }
     if (property->flags & PF_USED_IN_TRIGGER) {
-      _SendMessage(object, PropertyChanged, .Property = property);
+      _SendMessage(object, Object, PropertyChanged, .Property = property);
     }
     if (property->callbackMsg) {
       PROP_ExecuteChangedCallback(L, object, property);

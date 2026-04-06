@@ -158,7 +158,7 @@ local function construct_node(element)
 			xpcall(node.addChild, print, node, construct_node(sub))
 		end
 	end
-	node:msgSend("Start")
+	node:msgSend("Object.Start")
 	return node
 end
 
@@ -181,7 +181,6 @@ table.insert(package.searchers, function(path)
 	local xml = require "orca.parsers.xml"
 	local ok, doc = pcall(xml.load, path..'.xml')
 	return ok and doc and function()
-		local filesystem = require "orca.filesystem"
 		local node = construct_node(doc.root)
 		node:setSourceFile(path)
 		node.instantiate = function()

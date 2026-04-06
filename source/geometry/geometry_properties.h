@@ -4,6 +4,7 @@
 #define __GEOMETRY_PROPERTIES_H__
 
 
+
 #define ID_vec2 0x2c0f4275
 #define ID_vec2_X 0x3697565b // vec2.X
 #define ID_vec2_Y 0x359754c8 // vec2.Y

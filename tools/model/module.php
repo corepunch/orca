@@ -258,10 +258,11 @@ class Method extends Base {
 class Interface extends Base {
 	function __construct($elem, $model) {
 		parent::__construct($elem, $model);
+		$this->prefix = $elem["prefix"] ?? $elem["name"];
 	}
 
 	function getMethods() {
-		foreach ($this->_elem->xpath(".//method[@name]") as $m) {
+		foreach ($this->_elem->xpath("./methods/method[@name]") as $m) {
 			yield $m["name"] => new Method($m, $this->_model, $this->_elem);
 		}
 	}
@@ -270,7 +271,7 @@ class Interface extends Base {
 		$currentTitle = '';
 		$currentDesc = '';
 		$currentMethods = [];
-		foreach ($this->_elem->children() as $child) {
+		foreach ($this->_elem->xpath("methods/*") as $child) {
 			$tag = $child->getName();
 			if ($tag === "topic") {
 				if (count($currentMethods) > 0) {
@@ -290,7 +291,16 @@ class Interface extends Base {
 	}
 
 	function hasTopics() {
-		return count($this->_elem->xpath("topic")) > 0;
+		return count($this->_elem->xpath("methods/topic")) > 0;
+	}
+
+	function getMessages() {
+		$ns = strval($this->_elem["name"]);
+		foreach ($this->_elem->xpath("./messages/message[@name]") as $f) {
+			$ev = new Event($f, $this->_model);
+			$ev->msgns = $ns;
+			yield $ev;
+		}
 	}
 }
 
@@ -305,11 +315,10 @@ class Struct extends Interface {
 		parent::__construct($elem, $model);
 		$this->sealed = $elem["sealed"] === "true";
 		$this->export = $elem["export"] ?? $elem["name"];
-		$this->prefix = $elem["prefix"] ?? $elem["name"];
 	}
 
 	function getFields($recursive = false) {
-		foreach ($this->_elem->xpath(".//field[@name]") as $f) {
+		foreach ($this->_elem->xpath("./fields/field[@name]") as $f) {
 			$type_ = new Type($f, $this->_model);
 			$text = trim((string)$f);
 			$doc = strlen($text) > 0 ? $text : null;
@@ -320,7 +329,7 @@ class Struct extends Interface {
 			}
 		}
 	}
-
+	
 	function getParsers() {
 		$result = dict();
 		foreach ($this->getFields() as $field_obj) {
@@ -407,7 +416,7 @@ class Component extends Struct {
 	}
 
 	function getProperties($recursive = true) {
-		foreach ($this->_elem->xpath(".//property[@name]") as $f) {
+		foreach ($this->_elem->xpath("./properties/property[@name]") as $f) {
 			$type_ = new Type($f, $this->_model);
 			$text = trim((string)$f);
 			$doc = strlen($text) > 0 ? $text : null;
@@ -427,14 +436,8 @@ class Component extends Struct {
 		}
 	}
 
-	function getMessages() {
-		foreach ($this->_elem->xpath(".//message[@name]") as $f) {
-			yield new Event($f, $this->_model);
-		}
-	}
-
 	function getEventHandlers() {
-		foreach ($this->_elem->xpath("handles") as $node) {
+		foreach ($this->_elem->xpath("handles/handle") as $node) {
 			yield $node["message"];
 		}
 	}
@@ -457,13 +460,13 @@ class Enum extends Base {
 	}
 
 	function getValues() {
-		foreach ($this->_elem->xpath(".//enum[@name]") as $e) {
+		foreach ($this->_elem->xpath("./value[@name]") as $e) {
 			yield $e["name"] => (string)$e;
 		}
 	}
 
 	function getValuesNames() {
-		foreach ($this->_elem->xpath(".//enum[@name]") as $e) {
+		foreach ($this->_elem->xpath("./value[@name]") as $e) {
 			yield $e["name"];
 		}
 	}
@@ -471,6 +474,8 @@ class Enum extends Base {
 
 class Event extends Type {
 	public $parent_name;
+	// namespace (parent interface/class name)
+	public $msgns;
 
 	function __construct($elem, $model) {
 		parent::__construct($elem, $model);
@@ -478,6 +483,8 @@ class Event extends Type {
 		$routing = $elem["routing"] ?? "TunnelingBubbling";
 		$this->parent_name = $p ? strval($p) : null;
 		$this->routing = strval($routing);
+		// Derive namespace from grandparent element (<message> -> <messages> -> <interface|class>)
+		$this->msgns = "";
 	}
 
 	function getParentEvent() {
@@ -486,7 +493,7 @@ class Event extends Type {
 	}
 
 	function hasFields() {
-		return count($this->_elem->xpath("field[@name]")) > 0;
+		return count($this->_elem->xpath("fields/field[@name]")) > 0;
 	}
 
 	// Returns true if this event or any ancestor has inline fields
@@ -497,7 +504,7 @@ class Event extends Type {
 	}
 
 	function getFields() {
-		foreach ($this->_elem->xpath("field[@name]") as $f) {
+		foreach ($this->_elem->xpath("fields/field[@name]") as $f) {
 			yield new Field($f, $this->_model);
 		}
 	}
@@ -513,11 +520,11 @@ class Event extends Type {
 
 	// Returns the C type declaration string (without *) for events without inline fields
 	function getEffectiveTypeDecl() {
-		if ($this->hasFields()) return "struct " . $this->name . "MsgArgs";
+		if ($this->hasFields()) return "struct " . $this->msgns . "_" . $this->name . "MsgArgs";
 		$parent = $this->getParentEvent();
 		if ($parent) return $parent->getEffectiveTypeDecl();
 		if (strval($this) == "void") {
-			return "struct " . $this->name . "MsgArgs";
+			return "struct " . $this->msgns . "_" . $this->name . "MsgArgs";
 		}
 		return strval($this); // delegates to Type::__toString() for kind-based formatting
 	}
@@ -525,7 +532,7 @@ class Event extends Type {
 	// Returns the MsgArgs struct name to alias when a child has no own fields
 	// but the parent chain does have fields
 	function getEffectiveStructName() {
-		if ($this->hasFields()) return $this->name . "MsgArgs";
+		if ($this->hasFields()) return $this->msgns . "_" . $this->name . "MsgArgs";
 		$parent = $this->getParentEvent();
 		return $parent ? $parent->getEffectiveStructName() : null;
 	}
@@ -592,22 +599,22 @@ class Model {
 		array_map(fn($r) => $r["struct"], $rn),
 		array_map(fn($r) => new ExternalStruct($r, $this), $rn)
 		);
-		$sn = $xml->xpath(".//struct[@name]");
+		$sn = $xml->xpath("./structs/struct[@name]");
 		$this->structs = array_combine(
 		array_map(fn($s) => $s["name"], $sn),
 		array_map(fn($s) => new Struct($s, $this), $sn)
 		);
-		$sn = $xml->xpath(".//interface[@name]");
+		$sn = $xml->xpath("./interfaces/interface[@name]");
 		$this->interfaces = array_combine(
 		array_map(fn($s) => $s["name"], $sn),
 		array_map(fn($s) => new Interface($s, $this), $sn)
 		);
-		$en = $xml->xpath(".//enums[@name]");
+		$en = $xml->xpath("./enums/enum[@name]");
 		$this->enums = array_combine(
 		array_map(fn($e) => $e["name"], $en),
 		array_map(fn($e) => new Enum($e, $this), $en)
 		);
-		$cn = $xml->xpath(".//class[@name]");
+		$cn = $xml->xpath("./classes/class[@name]");
 		$this->components = array_combine(
 		array_map(fn($c) => $c["name"], $cn),
 		array_map(fn($c) => new Component($c, $this), $cn)
@@ -617,12 +624,26 @@ class Model {
 		array_map(fn($r) => $r["file"], $rn),
 		array_map(fn($r) => new IncludeFile($r, $this), $rn)
 		);
-		$rn = $xml->xpath(".//message[@name]");
-		$this->events = array_combine(
-		array_map(fn($r) => $r["name"], $rn),
-		array_map(fn($r) => new Event($r, $this), $rn)
-		);
-		$rn = $xml->xpath(".//function[@name]");
+		$this->events = [];
+		foreach ($xml->xpath(".//interface[@name]") as $iface) {
+			$ns = strval($iface["name"]);
+			foreach ($iface->xpath("./messages/message[@name]") as $msg) {
+				$evname = strval($msg["name"]);
+				$ev = new Event($msg, $this);
+				$ev->msgns = $ns;
+				$this->events[$evname] = $ev;
+			}
+		}
+		foreach ($xml->xpath(".//class[@name]") as $cls) {
+			$ns = strval($cls["name"]);
+			foreach ($cls->xpath("./messages/message[@name]") as $msg) {
+				$evname = strval($msg["name"]);
+				$ev = new Event($msg, $this);
+				$ev->msgns = $ns;
+				$this->events[$evname] = $ev;
+			}
+		}
+		$rn = $xml->xpath("./functions/function[@name]");
 		$this->functions = array_combine(
 		array_map(fn($r) => $r["name"], $rn),
 		array_map(fn($r) => new Method($r, $this), $rn)
@@ -681,12 +702,16 @@ class Model {
 		if ($r) {
 			return ["external_struct", $r];
 		}
-		// Check if type is an event-generated args struct (e.g. "HandleMessageMsgArgs")
+		// Check if type is an event-generated args struct (e.g. "Node_HandleMessageMsgArgs")
 		if (str_ends_with($_type, "MsgArgs")) {
-			$eventName = substr($_type, 0, -strlen("MsgArgs"));
-			$ev = $this->_has_in($eventName, "events");
-			if ($ev && $ev->hasFields()) {
-				return ["struct", null];
+			foreach ($this->events as $evname => $ev) {
+				if ($ev->hasFields() && ($ev->msgns . "_" . $evname . "MsgArgs") === $_type) {
+					return ["struct", null];
+				}
+			}
+			foreach ($this->requires as $req) {
+				$k = $req->getKind($_type);
+				if ($k[0] !== $_type) return $k;
 			}
 		}
 		return [$_type, null];

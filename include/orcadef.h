@@ -43,15 +43,16 @@
   }                                                                            \
   struct _##SYSNAME
 
-#define _SendMessage(OBJECT, MESSAGE, ...) \
-OBJ_SendMessageW(OBJECT, kMsg##MESSAGE, 0, &(MESSAGE##Msg_t) { __VA_ARGS__ })
+#define _SendMessage(OBJECT, CLASS, MESSAGE, ...) \
+OBJ_SendMessageW(OBJECT, ID_##CLASS##_##MESSAGE, 0, &(CLASS##_##MESSAGE##Msg_t) { __VA_ARGS__ })
 
-#define HANDLER(CLASS, EVENT)                                                  \
+#define HANDLER(CLASS, NS, EVENT)                                              \
   LRESULT CLASS##_##EVENT(struct Object* hObject,                              \
                           struct CLASS* p##CLASS,                                 \
                           wParam_t wParam,                                       \
-                          EVENT##MsgPtr p##EVENT)
+                          NS##_##EVENT##MsgPtr p##EVENT)
 
+#define ARRAY_SIZE(x) (sizeof(x)/sizeof(*x))
 #define MOUSE_EVENTS_USE_LOCAL_SPACE
 #define DEFAULT_FONT_SIZE 16
 #define MAX_TAGS 64 // to fit into uint64_t

@@ -71,17 +71,13 @@ PROP_GetUserData(lpcProperty_t property)
 void const*
 PROP_GetValue(lpcProperty_t property)
 {
-  switch (property->type) {
-    case kDataTypeString:
-      return *(lpcString_t*)property->value;
-    case kDataTypeObject:
-      if (property->pdesc->TypeString) {
-        return CMP_GetObject(*(void **)property->value);
-      } else {
-        return *(void **)property->value;
-      }
-    default:
-      return property->value;
+  if (property->type == kDataTypeObject && property->pdesc->TypeString) {
+    static lpObject_t obj[256];
+    static uint8_t i = 0;
+    obj[i] = CMP_GetObject(*(void **)property->value);
+    return &obj[i++];
+  } else {
+    return property->value;
   }
 }
 
@@ -107,7 +103,7 @@ PROP_SetStateValue(lpProperty_t property,
     if (property->stateflags & (1 << state)) {
       free(*(LPSTR*)PROP_GetState(property, state));
     }
-    *(LPSTR*)ptr = strdup(source);
+    *(LPSTR*)ptr = strdup(*(LPSTR*)source);
   } else if (property->type == kDataTypeObject) {
     int ident = fnv1a32(property->pdesc->TypeString);
     lpObject_t object = *(lpObject_t *)source;
@@ -137,6 +133,12 @@ PROP_SetValue(lpProperty_t property, void const* source)
   memcpy(property->value,
          PROP_SetStateValue(property, source, kPropertyStateNormal),
          PROP_GetSize(property));
+}
+
+void
+PROP_SetStringValue(lpProperty_t property, char const* source) {
+  assert(property->pdesc->DataType == kDataTypeString);
+  PROP_SetValue(property, &source);
 }
 
 lpcString_t

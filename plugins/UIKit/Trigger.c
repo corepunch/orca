@@ -3,7 +3,7 @@
 
 #define kMsgTriggered 0x3b1c3ae2
 
-HANDLER(Trigger, Attached)
+HANDLER(Trigger, Object, Attached)
 {
   lpProperty_t prop;
   if (pTrigger->Property && SUCCEEDED(OBJ_FindShortProperty(hObject, pTrigger->Property, &prop))) {
@@ -12,7 +12,7 @@ HANDLER(Trigger, Attached)
   return FALSE;
 }
 
-HANDLER(Trigger, PropertyChanged)
+HANDLER(Trigger, Object, PropertyChanged)
 {
   if (!pTrigger->Property || strcmp(PROP_GetName(pPropertyChanged->Property), pTrigger->Property))
     return FALSE;
@@ -20,7 +20,7 @@ HANDLER(Trigger, PropertyChanged)
     case kDataTypeFloat:
       if (fabs(*(float*)PROP_GetValue(pPropertyChanged->Property) -
                pTrigger->Value) < 0.001f) {
-        _SendMessage(hObject, Triggered, pTrigger);
+        _SendMessage(hObject, Trigger, Triggered, pTrigger);
       }
       return FALSE;
     case kDataTypeInt:
@@ -28,7 +28,7 @@ HANDLER(Trigger, PropertyChanged)
     case kDataTypeEnum:
       if (*(int*)PROP_GetValue(pPropertyChanged->Property) ==
           pTrigger->Value) {
-        _SendMessage(hObject, Triggered, pTrigger);
+        _SendMessage(hObject, Trigger, Triggered, pTrigger);
       }
       return FALSE;
     default:
@@ -36,13 +36,13 @@ HANDLER(Trigger, PropertyChanged)
   }
 }
 
-HANDLER(OnAttachedTrigger, Attached)
+HANDLER(OnAttachedTrigger, Object, Attached)
 {
-  _SendMessage(hObject, Triggered, GetTrigger(CMP_GetObject(pOnAttachedTrigger)));
+  _SendMessage(hObject, Trigger, Triggered, GetTrigger(CMP_GetObject(pOnAttachedTrigger)));
   return FALSE;
 }
 
-HANDLER(Setter, Triggered)
+HANDLER(Setter, Trigger, Triggered)
 {
   if (pTriggered->Trigger ==
       CMP_GetUserData((struct component*)pSetter->Trigger)) {
@@ -58,41 +58,41 @@ HANDLER(Setter, Triggered)
 
 #include <include/api.h>
 
-HANDLER(Handler, Triggered)
+HANDLER(Handler, Trigger, Triggered)
 {
-  HandleMessageMsgPtr msg = &pTriggered->message;
-  if (pTriggered->Trigger ==
-        CMP_GetUserData((struct component*)pHandler->Trigger) &&
-      msg) {
-    lpObject_t pTarget = pHandler->Target ? CMP_GetObject(pHandler->Target) : hObject;
-    lua_State* L = OBJ_GetDomain(hObject);
-    lua_geti(L, LUA_REGISTRYINDEX, OBJ_GetLuaObject(pTarget));
-    lua_getfield(L, -1, pHandler->Function ? pHandler->Function : "");
-    if (lua_type(L, -1) == LUA_TFUNCTION) {
-      lua_pop(L, 2);
-      lua_geti(L, LUA_REGISTRYINDEX, OBJ_GetLuaObject(hObject));
-      for (int i = 0; i < msg->NumArgs; i++) {
-        lua_pushvalue(L, -(1 + msg->NumArgs));
-      }
-      return luaX_executecallback(L, pTarget, pHandler->Function ? pHandler->Function : "", msg->NumArgs + 1);
-    } else {
-      lua_pop(L, 2);
-    }
-  }
+//  HandleMessageMsgPtr msg = &pTriggered->message;
+//  if (pTriggered->Trigger ==
+//        CMP_GetUserData((struct component*)pHandler->Trigger) &&
+//      msg) {
+//    lpObject_t pTarget = pHandler->Target ? CMP_GetObject(pHandler->Target) : hObject;
+//    lua_State* L = OBJ_GetDomain(hObject);
+//    lua_geti(L, LUA_REGISTRYINDEX, OBJ_GetLuaObject(pTarget));
+//    lua_getfield(L, -1, pHandler->Function ? pHandler->Function : "");
+//    if (lua_type(L, -1) == LUA_TFUNCTION) {
+//      lua_pop(L, 2);
+//      lua_geti(L, LUA_REGISTRYINDEX, OBJ_GetLuaObject(hObject));
+//      for (int i = 0; i < msg->NumArgs; i++) {
+//        lua_pushvalue(L, -(1 + msg->NumArgs));
+//      }
+//      return luaX_executecallback(L, pTarget, pHandler->Function ? pHandler->Function : "", msg->NumArgs + 1);
+//    } else {
+//      lua_pop(L, 2);
+//    }
+//  }
   return FALSE;
 }
 
-HANDLER(EventTrigger, HandleMessage)
+HANDLER(EventTrigger, Node, HandleMessage)
 {
   if (pEventTrigger->RoutedEvent && !strcmp(pHandleMessage->EventName, pEventTrigger->RoutedEvent)) {
-    return _SendMessage(hObject, Triggered,
-      .Trigger = GetTrigger(CMP_GetObject(pEventTrigger)),
-      .message = *pHandleMessage);
+//    return _SendMessage(hObject, Trigger, Triggered,
+//      .Trigger = GetTrigger(CMP_GetObject(pEventTrigger)),
+//      .message = *pHandleMessage);
   }
   return FALSE;
 }
 
-HANDLER(OnPropertyChangedTrigger, PropertyChanged)
+HANDLER(OnPropertyChangedTrigger, Object, PropertyChanged)
 {
   if (!pOnPropertyChangedTrigger->Property ||
       strcmp(PROP_GetName(pPropertyChanged->Property),
@@ -100,12 +100,12 @@ HANDLER(OnPropertyChangedTrigger, PropertyChanged)
     return FALSE;
   lua_State* L = OBJ_GetDomain(hObject);
   luaX_pushProperty(L, pPropertyChanged->Property);
-  return _SendMessage(hObject, Triggered,
+  return _SendMessage(hObject, Trigger, Triggered,
     .Trigger = GetTrigger(CMP_GetObject(pOnPropertyChangedTrigger)),
-    .message = { .NumArgs = 1 });
+    /*.message = { .NumArgs = 1 }*/);
 }
 
-HANDLER(OnPropertyChangedTrigger, Attached)
+HANDLER(OnPropertyChangedTrigger, Object, Attached)
 {
   lpProperty_t pProp;
   lpcString_t szName = pOnPropertyChangedTrigger->Property;

@@ -350,7 +350,7 @@ int f_init(lua_State* L)
   lua_getglobal(L, "SERVER");
   if (lua_toboolean(L, -1)) {
     SV_RegisterMessageProc(filesystem_handle_event);
-    WI_PostMessageW(NULL, kMsgReadCommands, 0, NULL); // launch reader
+    WI_PostMessageW(NULL, kEventReadCommands, 0, NULL); // launch reader
   }
   luaX_pushObject(L, object);
   return 1;
@@ -367,12 +367,12 @@ static lua_State *global_L;
 //  return OBJ_FindChild(FS_GetWorkspace(), szName, FALSE);
 //}
 
-HANDLER(Project, Start) {
+HANDLER(Project, Object, Start) {
   
   return TRUE;
 }
 
-HANDLER(ThemeGroup, Attached) {
+HANDLER(ThemeGroup, Object, Attached) {
   pThemeGroup->_selectedTheme = pThemeGroup->SelectedTheme ?
     OBJ_FindChild(hObject, pThemeGroup->SelectedTheme, FALSE) : NULL;
   return TRUE;

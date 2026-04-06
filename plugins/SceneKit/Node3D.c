@@ -1,6 +1,6 @@
 #include "SceneKit.h"
 
-HANDLER(Node3D, UpdateMatrix)
+HANDLER(Node3D, Node, UpdateMatrix)
 {
   struct mat4 renderMatrix;
   struct mat4 layoutMatrix;
@@ -22,7 +22,7 @@ HANDLER(Node3D, UpdateMatrix)
 
   MAT4_Translate(&matrix, &contentOffset);
 
-  FOR_EACH_CHILD(hObject, _SendMessage, UpdateMatrix,
+  FOR_EACH_CHILD(hObject, _SendMessage, Node, UpdateMatrix,
                    .parent = pNode3D->Matrix,
                    .opacity = pNode3D->_opacity,
                  );

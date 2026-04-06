@@ -28,13 +28,13 @@ static void
 SKNode_RenderTree(lpObject_t hObject, struct ViewDef *viewdef)
 {
   if (OBJ_IsHidden(hObject)) return;
-  _SendMessage(hObject, Render, .ViewDef = viewdef);
+  _SendMessage(hObject, SKNode, Render, .ViewDef = viewdef);
   FOR_EACH_OBJECT(child, hObject) {
     SKNode_RenderTree(child, viewdef);
   }
 }
 
-HANDLER(SKView, ForegroundContent)
+HANDLER(SKView, Node2D, ForegroundContent)
 {
   lpObject_t scene = NULL;
 
@@ -51,7 +51,7 @@ HANDLER(SKView, ForegroundContent)
   float h = NODE2D_FRAME(GetNode2D(hObject), Size, 1).Actual;
   if (w <= 0 || h <= 0) return FALSE;
 
-  _SendMessage(scene, UpdateMatrix,
+  _SendMessage(scene, Node, UpdateMatrix,
     .parent = MAT4_Identity(),
     .opacity = 1.0f
   );

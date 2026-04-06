@@ -436,6 +436,13 @@ ftostr(LPSTR buffer, size_t buffer_size, float value)
   return NULL;
 }
 
+static void set_string(lpProperty_t prop, char const* str) {
+  char** value = (char**)PROP_GetValue(prop);
+  if (!*value || strcmp(*value, str)) {
+    PROP_SetValue(prop, &str);
+  }
+}
+
 static bool_t
 PrintToProperty(lpProperty_t prop, struct vm_register* r)
 {
@@ -447,14 +454,14 @@ PrintToProperty(lpProperty_t prop, struct vm_register* r)
     case kDataTypeBool:
     case kDataTypeInt:
       snprintf(dest, MAX_PROPERTY_STRING, "%.0g", r->value[0]);
-      PROP_SetValue(prop, dest);
+      set_string(prop, dest);
       return TRUE;
     case kDataTypeFloat:
       snprintf(dest, MAX_PROPERTY_STRING, "%g", r->value[0]);
-      PROP_SetValue(prop, dest);
+      set_string(prop, dest);
       return TRUE;
     case kDataTypeString:
-      PROP_SetValue(prop, VM_REG_STR(r));
+      set_string(prop, VM_REG_STR(r));
       return TRUE;
     default:
       return show_error();
@@ -501,9 +508,11 @@ PROP_Import(lpProperty_t prop,
           case kDataTypeEnum:
             PROP_SetValue(prop, &(int){ *r->value > 0 });
             return TRUE;
-          case kDataTypeString:
-            PROP_SetValue(prop, *r->value > 0 ? "true" : "false");
+          case kDataTypeString: {
+            const char *boolstr = *r->value > 0 ? "true" : "false";
+            PROP_SetValue(prop, &boolstr);
             return TRUE;
+          }
           default:
             return FALSE;
         }
@@ -630,7 +639,7 @@ PROP_Import(lpProperty_t prop,
 }
 
 static bool_t
-export_property(lpProperty_t prop,
+PROP_Export(lpProperty_t prop,
                  enum PropertyAttribute attr,
                  struct vm_register* r)
 {
@@ -645,9 +654,9 @@ export_property(lpProperty_t prop,
         *r->value = *(int*)PROP_GetValue(prop);
         return TRUE;
       case kDataTypeString: {
-        lpcString_t str = PROP_GetValue(prop);
+        lpcString_t *str = (lpcString_t*)PROP_GetValue(prop);
         InitOutput(r, kDataTypeString, sizeof(const char *));
-        VM_REG_SET_STR(r, vm_strtmp(str));
+        VM_REG_SET_STR(r, vm_strtmp(*str));
         return TRUE;
       }
       default:
@@ -789,7 +798,7 @@ tok_op(argument)
 return_value:
   if (p) {
     token->cache.property = p;
-    return export_property(p, token->attr, output);
+    return PROP_Export(p, token->attr, output);
   } else {
     Con_Error("Can't find property \"%s\"", token->text);
     memset(output, 0, sizeof(*output));

@@ -78,7 +78,7 @@ _Arrange(lpObject_t hObject,
     }
     switch (pStackView->Direction) {
       case kDirectionHorizontal:
-        s = _SendMessage(child, Arrange,
+        s = _SendMessage(child, Node2D, Arrange,
           counter,
           oppositeBounds.min,
           NODE2D_FRAME(subview, Size, 0).Desired + TOTAL_MARGIN(subview, 0),
@@ -88,7 +88,7 @@ _Arrange(lpObject_t hObject,
         maxsize = fmax(maxsize, HIWORD(s));
         break;
       case kDirectionVertical:
-        s = _SendMessage(child, Arrange,
+        s = _SendMessage(child, Node2D, Arrange,
           oppositeBounds.min,
           counter,
           oppositeBounds.max - oppositeBounds.min,
@@ -115,7 +115,7 @@ _Arrange(lpObject_t hObject,
   }
 }
 
-HANDLER(StackView, MeasureOverride)
+HANDLER(StackView, Node2D, MeasureOverride)
 {
   Node2DPtr pNode2D = GetNode2D(hObject);
   Size_t size = {
@@ -126,12 +126,12 @@ HANDLER(StackView, MeasureOverride)
     LRESULT s;
     switch (pStackView->Direction) {
       case kDirectionHorizontal:
-        s = _SendMessage(hChild, Measure, INFINITY, pMeasureOverride->Height);
+        s = _SendMessage(hChild, Node2D, Measure, INFINITY, pMeasureOverride->Height);
         size.width += LOWORD(s) + pStackView->Spacing;
         size.height = MAX(size.height, HIWORD(s));
         break;
       case kDirectionVertical:
-        s = _SendMessage(hChild, Measure, pMeasureOverride->Width, INFINITY);
+        s = _SendMessage(hChild, Node2D, Measure, pMeasureOverride->Width, INFINITY);
         size.width = MAX(size.width, LOWORD(s));
         size.height += HIWORD(s) + pStackView->Spacing;
         break;
@@ -143,10 +143,10 @@ HANDLER(StackView, MeasureOverride)
   return MAKEDWORD(fmax(0,size.width), fmax(0,size.height));
 }
 
-HANDLER(StackView, ArrangeOverride)
+HANDLER(StackView, Node2D, ArrangeOverride)
 {
   Node2DPtr pNode2D = GetNode2D(hObject);
-  ArrangeOverrideMsg_t r = *pArrangeOverride;
+  Node2D_ArrangeOverrideMsg_t r = *pArrangeOverride;
 
   switch (pStackView->Direction) {
     case kDirectionHorizontal:

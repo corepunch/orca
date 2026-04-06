@@ -33,7 +33,7 @@ OBJ_UpdateTimers(lpObject_t hobj)
   {
     if (timer->nextExecution <= core.realtime) {
       timer->nextExecution += timer->duration;
-      WI_PostMessageW(hobj, kMsgTimer, timer->id, timer->callbackName);
+      WI_PostMessageW(hobj, ID_Object_Timer, timer->id, timer->callbackName);
     }
   }
 }

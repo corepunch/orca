@@ -1,10 +1,10 @@
 #include <plugins/SpriteKit/SpriteKit.h>
 
-HANDLER(SKLabelNode, Render) {
+HANDLER(SKLabelNode, SKNode, Render) {
   return FALSE;
 }
 
-HANDLER(SKLabelNode, Create) {
+HANDLER(SKLabelNode, Object, Create) {
   pSKLabelNode->_node = GetSKNode(hObject);
   return FALSE;
 }

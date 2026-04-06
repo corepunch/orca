@@ -14,7 +14,7 @@ local function test_grid_fr_units()
 	local cell1 = grid + ui.Node2D {}
 	local cell2 = grid + ui.Node2D {}
 
-	screen:msgSend("UpdateLayout", screen.Width, screen.Height)
+	screen:msgSend("Screen.UpdateLayout", screen.Width, screen.Height)
 
 	local expected1 = math.floor(screen.Width / 3)         -- 1/(1+2)
 	local expected2 = screen.Width - expected1             -- 2/(1+2)
@@ -35,7 +35,7 @@ local function test_grid_auto_columns()
 	local cells = {}
 	for i = 1, 3 do cells[i] = grid + ui.Node2D {} end
 
-	screen:msgSend("UpdateLayout", screen.Width, screen.Height)
+	screen:msgSend("Screen.UpdateLayout", screen.Width, screen.Height)
 
 	local expected = math.floor(screen.Width / 3)
 	for i = 1, 3 do
@@ -58,7 +58,7 @@ local function test_grid_in_vstack_height()
 	local n1    = inner  + ui.Node2D { Height = node_h }
 	local n2    = inner  + ui.Node2D { Height = node_h }
 
-	screen:msgSend("UpdateLayout", screen.Width, screen.Height)
+	screen:msgSend("Screen.UpdateLayout", screen.Width, screen.Height)
 
 	assert(inner.ActualHeight == node_h * 2,
 		string.format("inner stack height: expected %d, got %d", node_h * 2, inner.ActualHeight))
@@ -82,7 +82,7 @@ local function test_node2d_container_height()
 	local container = outer  + ui.Node2D { Width = 140, Padding = ui.Thickness(padding) }
 	local inner     = container + ui.Node2D { Height = child_h }
 
-	screen:msgSend("UpdateLayout", screen.Width, screen.Height)
+	screen:msgSend("Screen.UpdateLayout", screen.Width, screen.Height)
 
 	assert(inner.ActualHeight == child_h,
 		string.format("inner height: expected %d, got %d", child_h, inner.ActualHeight))
@@ -103,7 +103,7 @@ local function test_grid_mixed_px_fr()
 	local cell1 = grid + ui.Node2D {}
 	local cell2 = grid + ui.Node2D {}
 
-	screen:msgSend("UpdateLayout", screen.Width, screen.Height)
+	screen:msgSend("Screen.UpdateLayout", screen.Width, screen.Height)
 
 	assert(cell1.ActualWidth == fixed,
 		string.format("px column: expected %d, got %d", fixed, cell1.ActualWidth))
@@ -128,7 +128,7 @@ local function test_grid_implicit_row_wrapping()
 		cells[i] = grid + ui.Node2D { Height = cell_h }
 	end
 
-	screen:msgSend("UpdateLayout", screen.Width, screen.Height)
+	screen:msgSend("Screen.UpdateLayout", screen.Width, screen.Height)
 
 	-- Row 0: cells 1 & 2 must start at y = 0
 	assert(cells[1].ActualY == 0,

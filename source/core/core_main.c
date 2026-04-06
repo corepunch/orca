@@ -138,10 +138,6 @@ void UI_Shutdown(void) {
 
 // bool_t UI_GetProperty(uint32_t, PPROPDEF);
 
-#define MAX_FPS_CACHE 64
-static int _fps[MAX_FPS_CACHE]={0};
-static int _counter=0;
-
 ORCA_API longTime_t
 UI_GetTime(void)
 {
@@ -189,66 +185,6 @@ int lua_pushclass(lua_State* L, struct ClassDesc* cl)
 
 ORCA_API void CORE_AdvanceFrame(void) {
   core.frame++;
-}
-
-bool_t CORE_HandleObjectMessage(lua_State *L, struct WI_Message* msg);
-bool_t CORE_HandleKeyEvent(lua_State *L, struct WI_Message* msg);
-
-LRESULT CORE_ProcessMessage(lua_State *L, struct WI_Message* msg) {
-  int tmp;
-  switch (msg->message) {
-    case kMsgWindowPaint:
-    case kMsgWindowResized:
-      _fps[_counter++%MAX_FPS_CACHE] = (int)(WI_GetMilliseconds() - core.realtime);
-      core.realtime = WI_GetMilliseconds();
-      core.frame++;
-      if (CORE_HandleObjectMessage(L, msg)) {
-        return TRUE;
-      } else {
-        return FALSE;
-      }
-    case kMsgLeftMouseDown:
-    case kMsgRightMouseDown:
-    case kMsgOtherMouseDown:
-    case kMsgLeftMouseUp:
-    case kMsgRightMouseUp:
-    case kMsgOtherMouseUp:
-    case kMsgLeftMouseDragged:
-    case kMsgRightMouseDragged:
-    case kMsgOtherMouseDragged:
-    case kMsgMouseMoved:
-    case kMsgScrollWheel:
-      return FALSE;
-    case kMsgKeyDown:
-    case kMsgKeyUp:
-      return CORE_HandleKeyEvent(L, msg);
-    case kMsgResumeCoroutine:
-      switch (lua_resume(msg->target, L, LOWORD(msg->wParam), &tmp)) {
-        case LUA_OK:
-          WI_PostMessageW(msg->target, kMsgStopCoroutine, msg->wParam, NULL);
-          break;
-        case LUA_YIELD:
-          WI_PostMessageW(msg->target, kMsgResumeCoroutine, MAKEDWORD(0, HIWORD(msg->wParam)), NULL);
-          break;
-        default:
-          WI_PostMessageW(msg->target, kMsgStopCoroutine, msg->wParam, NULL);
-          if (!lua_isnil(msg->target, -1)) {
-            lpcString_t err = lua_tostring(msg->target, -1);
-            if (err) fprintf(stderr, "co.resume(): %s\n", err);
-          }
-          break;
-      }
-      lua_pop(L, 1);
-      return FALSE;
-    case kMsgStopCoroutine:
-      luaL_unref(L, LUA_REGISTRYINDEX, HIWORD(msg->wParam));
-      WI_RemoveFromQueue(msg->target);
-      WI_PostMessageW(NULL, kMsgWindowPaint, WI_GetSize(NULL), 0);
-      return FALSE;
-    default:
-      return CORE_HandleObjectMessage(L, msg);
-  }
-  return FALSE;
 }
 
 ORCA_API void luaX_pushlua_State(lua_State* L, lua_State const* other) {
@@ -428,7 +364,8 @@ int f_registerPropertyType(lua_State *L) {
 }
 
 extern int
-parse_property(const char* str,
+parse_property(lua_State* L,
+               const char* str,
                struct PropertyType const* prop,
                void* valueptr);
 
@@ -441,12 +378,60 @@ static int f_parse_property(lua_State* L) {
   const char* str = luaL_checkstring(L, 1);
   struct PropertyType const* pt = luaX_checkPropertyType(L, 2);
   char buf[MAX_PROPERTY_STRING] = {0};
-  if (parse_property(str, pt, buf)) {
+  if (parse_property(L, str, pt, buf)) {
     write_property(L, pt, buf);
     return 1;
   } else {
     return 0;
   }
+}
+
+#define MAX_FPS_CACHE 64
+static int _fps[MAX_FPS_CACHE]={0};
+static int _counter=0;
+
+LRESULT CORE_ProcessMessage(lua_State *L, struct WI_Message* e) {
+  shortStr_t comp={0};
+  if (e->wParam & WI_MOD_CTRL) strcat(comp, "ctrl+");
+  if (e->wParam & WI_MOD_ALT) strcat(comp, "alt+");
+  if (e->wParam & WI_MOD_SHIFT) strcat(comp, "shift+");
+  if (e->wParam & WI_MOD_CMD) strcat(comp, "cmd+");
+  strcat(comp, WI_KeynumToString(e->wParam));
+  switch (e->message) {
+    case kEventWindowPaint:
+    case kEventWindowResized:
+      _fps[_counter++%MAX_FPS_CACHE] = (int)(WI_GetMilliseconds() - core.realtime);
+      core.realtime = WI_GetMilliseconds();
+      core.frame++;
+      return FALSE;
+    case kEventKeyDown:
+      lua_getfield(L, LUA_REGISTRYINDEX, CORE_KEMAP);
+      lua_getfield(L, -1, comp);
+      if (lua_isstring(L, -1)) {
+        LPSTR buf = strdup(luaL_checkstring(L, -1));
+        for (lpcString_t tok = strtok(buf, ";"); tok; tok = strtok(NULL, ";")) {
+          int f_executeCommand(lua_State* L);
+          lua_pushcfunction(L, f_executeCommand);
+          lua_pushstring(L, tok);
+          if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
+            Con_Error("%s", luaL_checkstring(L, -1));
+            lua_pop(L, 1); // error message
+            continue;
+          }
+          if (lua_toboolean(L, -1)) {
+            free(buf);
+            lua_pop(L, 3);
+            return TRUE;
+          } else {
+            lua_pop(L, 1);
+          }
+        }
+        free(buf);
+      }
+      lua_pop(L, 2);
+      return FALSE;
+  }
+  return FALSE;
 }
 
 void

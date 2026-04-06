@@ -16,8 +16,9 @@ local TextInput = ui.TerminalView:extend {
 		self.Width = chars * config.char_width
 		self.Cursor = self.caret+#padding
 	end,
-	onKeyDown = function (self, _, key)
+	onKeyDown = function (self, _, event)
 		local t, c = self.text, self.caret
+		local key = event.text
 		if key == 'left' then 
 			c = math.max(0, c-1)
 		elseif key == 'right' then
@@ -41,7 +42,8 @@ local TextInput = ui.TerminalView:extend {
 		self.text, self.caret = t, c
 		self:invalidate()
 	end,
-	onChar = function (self, _, char)
+	onChar = function (self, _, event)
+		local char = event.text
 		local t, c = self.text, self.caret
 		self.text, self.caret = t:sub(1, c)..char..t:sub(c+1), c+1
 		self:invalidate()

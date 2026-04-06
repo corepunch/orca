@@ -38,7 +38,7 @@ mesh_rect(lpObject_t  hObject, struct TextBlock3D *frame)
 }
 #endif
 
-HANDLER(TextBlock3D, Render)
+HANDLER(TextBlock3D, Node3D, Render)
 {
 #if 0
 	struct ViewText text;
@@ -57,7 +57,7 @@ HANDLER(TextBlock3D, Render)
   
   TextRunPtr pTextRun = GetTextRun(hObject);
   TextBlockConceptPtr pTextBlock = GetTextBlockConcept(hObject);
-  _SendMessage(hObject, MakeText,
+  _SendMessage(hObject, TextBlockConcept, MakeText,
                    .text = pTextBlock->_text,
                    .availableSpace = 512);
   Text_GetInfo(pTextBlock->_text, &pTextRun->_textinfo);
@@ -98,7 +98,7 @@ HANDLER(TextBlock3D, Render)
   return TRUE;
 }
 
-HANDLER(TextBlock3D, Create)
+HANDLER(TextBlock3D, Object, Create)
 {
   pTextBlock3D->_node3D = GetNode3D(hObject);
   return FALSE;

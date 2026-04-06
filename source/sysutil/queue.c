@@ -2,8 +2,6 @@
 #include <include/orca.h>
 #include <include/renderer.h>
 
-#define kMsgReadCommands 0x23d83fd3
-
 int f_peek_iterator(lua_State* L)
 {
   struct WI_Message msg = {0};
@@ -18,28 +16,45 @@ int f_peek_iterator(lua_State* L)
 #else
   (void)has_event;  /* suppress -Wunused-but-set-variable on non-Emscripten targets */
 #endif
+  static Window_PaintMsg_t wnd;
+  wnd.WindowWidth = LOWORD(msg.wParam);
+  wnd.WindowHeight = HIWORD(msg.wParam);
   switch (msg.message) {
-    case kMsgLeftMouseDown:
-    case kMsgRightMouseDown:
-    case kMsgOtherMouseDown:
-    case kMsgLeftMouseUp:
-    case kMsgRightMouseUp:
-    case kMsgOtherMouseUp:
-    case kMsgLeftMouseDragged:
-    case kMsgRightMouseDragged:
-    case kMsgOtherMouseDragged:
-    case kMsgLeftDoubleClick:
-    case kMsgRightDoubleClick:
-    case kMsgOtherDoubleClick:
-    case kMsgMouseMoved:
-    case kMsgScrollWheel:
-    case kMsgKeyDown:
-    case kMsgKeyUp:
-    case kMsgWindowClosed:
-    case kMsgWindowPaint:
-    case kMsgWindowChangedScreen:
-    case kMsgWindowResized:
-    case kMsgReadCommands:
+    case kEventLeftMouseDown:
+    case kEventRightMouseDown:
+    case kEventOtherMouseDown:
+    case kEventLeftMouseUp:
+    case kEventRightMouseUp:
+    case kEventOtherMouseUp:
+    case kEventLeftMouseDragged:
+    case kEventRightMouseDragged:
+    case kEventOtherMouseDragged:
+    case kEventLeftDoubleClick:
+    case kEventRightDoubleClick:
+    case kEventOtherDoubleClick:
+    case kEventMouseMoved:
+    case kEventScrollWheel:
+    case kEventKeyDown:
+    case kEventKeyUp:
+    case kEventReadCommands:
+      msg.target = __userdata;
+      break;
+    case kEventWindowPaint:
+      msg.message = ID_Window_Paint;
+      msg.target = __userdata;
+      msg.lParam = &wnd;
+      break;
+    case kEventWindowResized:
+      msg.message = ID_Window_Resized;
+      msg.target = __userdata;
+      msg.lParam = &wnd;
+      break;
+    case kEventWindowChangedScreen:
+      msg.message = ID_Window_ChangedScreen;
+      msg.target = __userdata;
+      break;
+    case kEventWindowClosed:
+      msg.message = ID_Window_Closed;
       msg.target = __userdata;
       break;
   }
@@ -95,6 +110,71 @@ bool_t SV_DispatchMessage(lua_State* L, struct WI_Message* msg) {
     }
   }
   return FALSE;
+}
+
+ORCA_API void
+WI_BuildModifiersString(wParam_t wParam, char* buf, size_t size)
+{
+  buf[0] = '\0';
+  if (wParam & WI_MOD_CTRL)  strncat(buf, "ctrl+",  size - strlen(buf) - 1);
+  if (wParam & WI_MOD_ALT)   strncat(buf, "alt+",   size - strlen(buf) - 1);
+  if (wParam & WI_MOD_SHIFT) strncat(buf, "shift+", size - strlen(buf) - 1);
+  if (wParam & WI_MOD_CMD)   strncat(buf, "cmd+",   size - strlen(buf) - 1);
+}
+
+lpcString_t WI_KeynumToString(uint32_t keynum);
+
+/* Only ASCII printable range: translating extended/Unicode characters requires
+   UTF-8 decoding, which is left to higher-level key handlers. */
+static bool_t is_printable_char(int ch) {
+  return ch >= 0x20 && ch <= 0x7E;
+}
+
+/* Apply shift-key transformation to a printable ASCII character. */
+static char apply_shift(char ch) {
+  if (ch >= '0' && ch <= '9') {
+    lpcString_t sym = ")!@#$%^&*(";
+    return sym[ch - '0'];
+  }
+  return toupper(ch);
+}
+
+int f_translate_message(lua_State* L) {
+  struct WI_Message const* msg = luaL_checkudata(L, 1, "Event");
+  if (msg->message == kEventKeyDown && is_printable_char(msg->wParam & 0xff)) {
+    char ch = msg->wParam & 0xff;
+    if (msg->wParam & WI_MOD_SHIFT)
+      ch = apply_shift(ch);
+    lParam_t lp = 0;
+    *(char*)&lp = ch;
+    WI_PostMessageW(msg->target, kEventChar, msg->wParam, lp);
+  }
+  return 0;
+}
+
+ORCA_API void
+WI_KeyEventToText(struct WI_Message const* e, char* buf, size_t size)
+{
+  if (e->message == kEventChar) {
+    /* lParam stores the computed character written by f_translate_message. */
+    uint32_t len = 0;
+    while (len < sizeof(e->lParam) && ((lpcString_t)&e->lParam)[len])
+      len++;
+    if (len >= size) len = (uint32_t)size - 1;
+    memcpy(buf, &e->lParam, len);
+    buf[len] = '\0';
+  } else {
+#if __linux__
+    uint32_t len = 0;
+    while (len < sizeof(e->lParam) && ((lpcString_t)&e->lParam)[len])
+      len++;
+    if (len >= size) len = (uint32_t)size - 1;
+    memcpy(buf, &e->lParam, len);
+    buf[len] = '\0';
+#else
+    snprintf(buf, size, "%s", WI_KeynumToString(e->wParam));
+#endif
+  }
 }
 
 int f_event_new(lua_State* L);

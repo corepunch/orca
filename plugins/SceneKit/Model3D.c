@@ -30,7 +30,7 @@ _CollectUniforms(lpObject_t hObject,
 
 //#include "../renderer/r_local.h"
 
-HANDLER(Model3D, Render)
+HANDLER(Model3D, Node3D, Render)
 {
   static struct uniform u[MAX_UNIFORMS];
 

@@ -2,7 +2,7 @@
 
 #include <plugins/UIKit/UIKit.h>
 
-HANDLER(Label, LeftMouseUp)
+HANDLER(Label, Mouse, LeftMouseUp)
 {
   return FALSE;
 }
