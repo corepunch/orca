@@ -458,7 +458,9 @@
           </fields>
         </message>
         <message name="IsVisible" routing="Direct"/>
-        <message name="ViewDidLoad" routing="Direct">Careful with this one, preferably remove it</message>
+        <message name="ViewDidLoad" routing="Direct">
+          <summary>Notifies the component that its view has finished loading.</summary>
+        </message>
         <message name="KillFocus"/>
         <message name="SetFocus"/>
         <message name="GetSize"/>
@@ -539,38 +541,6 @@
         <handle message="Node2D.MeasureOverride"/>
         <handle message="Node2D.ArrangeOverride"/>
       </handles>
-      <messages>
-        <message name="DrawBrush">
-          <summary>Requests rendering of a brush into the component's visual output.</summary>
-          <fields>
-            <field name="projection" type="mat4">Projection matrix for 3D to 2D transformation</field>
-            <field name="image" type="Texture" pointer="true">Target image handle for rendering</field>
-            <field name="brush" type="BrushShorthand">Brush configuration to draw with</field>
-            <field name="borderOffset" type="float">Border offset adjustment for rendering</field>
-            <field name="borderWidth" type="vec4">Border width for each edge (top, right, bottom, left)</field>
-            <field name="foreground" type="bool">True if drawing foreground, false for background</field>
-            <field name="viewdef" type="ViewDef" pointer="true">View definition context for rendering</field>
-          </fields>
-        </message>
-        <message name="Measure">
-          <fields>
-            <field name="Width" type="float"/>
-            <field name="Height" type="float"/>
-          </fields>
-        </message>
-        <message name="Arrange">
-          <fields>
-            <field name="X" type="float"/>
-            <field name="Y" type="float"/>
-            <field name="Width" type="float"/>
-            <field name="Height" type="float"/>
-          </fields>
-        </message>
-        <message name="MeasureOverride" same-as="Measure"/>
-        <message name="ArrangeOverride" same-as="Arrange"/>
-        <message name="ForegroundContent"/>
-        <message name="UpdateGeometry"/>
-      </messages>
       <properties>
         <property name="LayoutTransform" type="transform2" default=".scale={1,1}">Transformation applied during layout calculations. Affects size and positioning but does not influence local rendering.</property>
         <property name="RenderTransform" type="transform2" default=".scale={1,1}">Transformation applied at render time. Affects how the element is drawn (rotation, scale, skew, etc.) without altering layout.</property>
@@ -645,6 +615,38 @@
           <arg name="brush" type="BrushShorthand" const="true" pointer="true"/>
         </method>
       </methods>
+      <messages>
+        <message name="DrawBrush">
+          <summary>Requests rendering of a brush into the component's visual output.</summary>
+          <fields>
+            <field name="projection" type="mat4">Projection matrix for 3D to 2D transformation</field>
+            <field name="image" type="Texture" pointer="true">Target image handle for rendering</field>
+            <field name="brush" type="BrushShorthand">Brush configuration to draw with</field>
+            <field name="borderOffset" type="float">Border offset adjustment for rendering</field>
+            <field name="borderWidth" type="vec4">Border width for each edge (top, right, bottom, left)</field>
+            <field name="foreground" type="bool">True if drawing foreground, false for background</field>
+            <field name="viewdef" type="ViewDef" pointer="true">View definition context for rendering</field>
+          </fields>
+        </message>
+        <message name="Measure">
+          <fields>
+            <field name="Width" type="float"/>
+            <field name="Height" type="float"/>
+          </fields>
+        </message>
+        <message name="Arrange">
+          <fields>
+            <field name="X" type="float"/>
+            <field name="Y" type="float"/>
+            <field name="Width" type="float"/>
+            <field name="Height" type="float"/>
+          </fields>
+        </message>
+        <message name="MeasureOverride" same-as="Measure"/>
+        <message name="ArrangeOverride" same-as="Arrange"/>
+        <message name="ForegroundContent"/>
+        <message name="UpdateGeometry"/>
+      </messages>
     </class>
     <class name="PrefabView2D" parent="Node2D">
       <summary>Container for loading and displaying prefabricated UI components</summary>
