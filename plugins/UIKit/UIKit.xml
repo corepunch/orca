@@ -459,7 +459,7 @@
         </message>
         <message name="IsVisible" routing="Direct"/>
         <message name="ViewDidLoad" routing="Direct">
-          <summary>Careful with this one, preferably remove it</summary>
+          <summary>Notifies the component that its view has finished loading.</summary>
         </message>
         <message name="KillFocus"/>
         <message name="SetFocus"/>
