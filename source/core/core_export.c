@@ -180,13 +180,6 @@ int f_OBJ_FindParentOfClass(lua_State *L) {
 	luaX_pushObject(L, result_);
 	return 1;
 }
-int f_OBJ_DispatchEvent(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	const char* event = luaL_checkstring(L, 2);
-	struct Object* result_ = OBJ_DispatchEvent(L, this_, event);
-	luaX_pushObject(L, result_);
-	return 1;
-}
 int f_OBJ_PostMessage(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	const char* message = luaL_checkstring(L, 2);
@@ -523,7 +516,6 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "findChildByAlias", f_OBJ_FindChildByAlias },
 		{ "findChildOfClass", f_OBJ_FindChildOfClass },
 		{ "findParentOfClass", f_OBJ_FindParentOfClass },
-		{ "dispatchEvent", f_OBJ_DispatchEvent },
 		{ "postMessage", f_OBJ_PostMessage },
 		{ "msgSend", f_OBJ_MsgSend },
 		{ "findCallbackForID", f_OBJ_FindCallbackForID },

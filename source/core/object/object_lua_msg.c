@@ -69,23 +69,3 @@ void OBJ_MsgSend(lua_State* L, lpObject_t self, lpcString_t message)
   }
 }
 
-#include <plugins/UIKit/UIKit.h>
-
-lpObject_t OBJ_DispatchEvent(lua_State* L, lpObject_t self, lpcString_t event)
-{
-  uint32_t dwNumArgs = MAX(0, lua_gettop(L) - 2);
-  shortStr_t pszEventName;
-  strncpy(pszEventName, event, sizeof(pszEventName));
-  lua_remove(L, 2); // clear event name to send object with args to parents
-  for (lpObject_t obj = self; obj; obj = OBJ_GetParent(obj)) {
-    struct Node_HandleMessageMsgArgs event = {
-      .FirstArg = 1,
-      .NumArgs = dwNumArgs + 1,
-      .EventName = pszEventName,
-    };
-    if (OBJ_SendMessage(obj, "HandleMessage", 0, &event)) {
-      return obj;
-    }
-  }
-  return NULL;
-}
