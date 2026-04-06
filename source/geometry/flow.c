@@ -27,13 +27,8 @@ parse_property(lua_State* L,
       *(float*)valueptr = atof(str);
       return TRUE;
     case kDataTypeString:
-      if (prop->DataSize > sizeof(char*)) {
-        strncpy((char*)valueptr, str, prop->DataSize - 1);
-        ((char*)valueptr)[prop->DataSize - 1] = '\0';
-      } else {
-        if (*(char**)valueptr) free(*(char**)valueptr); // Free existing string if necessary
-        *(char**)valueptr = strdup(str);
-      }
+      if (*(char**)valueptr) free(*(char**)valueptr); // Free existing string if necessary
+      *(char**)valueptr = strdup(str);
       return TRUE;
     case kDataTypeColor:
       *(struct color*)valueptr = COLOR_Parse(str);
@@ -122,6 +117,10 @@ read_property(lua_State *L,
         }
         *(void**)valueptr = lua_touserdata(L, -1);
         lua_pop(L, 1); // Remove the __userdata field from the stack
+        break;
+      } else if (lua_type(L, idx) == LUA_TSTRING) {
+        char* buf = NULL;
+        parse_property(L, luaL_checkstring(L, idx), prop, &buf);
         break;
       } else {
         luaL_error(L, "Unsupported input type %d for property %s of type object", lua_type(L, idx), prop->Name);
