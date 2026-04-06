@@ -16,6 +16,9 @@ int f_peek_iterator(lua_State* L)
 #else
   (void)has_event;  /* suppress -Wunused-but-set-variable on non-Emscripten targets */
 #endif
+  static Window_PaintMsg_t wnd;
+  wnd.WindowWidth = LOWORD(msg.wParam);
+  wnd.WindowHeight = HIWORD(msg.wParam);
   switch (msg.message) {
     case kEventLeftMouseDown:
     case kEventRightMouseDown:
@@ -33,11 +36,25 @@ int f_peek_iterator(lua_State* L)
     case kEventScrollWheel:
     case kEventKeyDown:
     case kEventKeyUp:
-    case kEventWindowClosed:
-    case kEventWindowPaint:
-    case kEventWindowChangedScreen:
-    case kEventWindowResized:
     case kEventReadCommands:
+      msg.target = __userdata;
+      break;
+    case kEventWindowPaint:
+      msg.message = ID_Window_Paint;
+      msg.target = __userdata;
+      msg.lParam = &wnd;
+      break;
+    case kEventWindowResized:
+      msg.message = ID_Window_Resized;
+      msg.target = __userdata;
+      msg.lParam = &wnd;
+      break;
+    case kEventWindowChangedScreen:
+      msg.message = ID_Window_ChangedScreen;
+      msg.target = __userdata;
+      break;
+    case kEventWindowClosed:
+      msg.message = ID_Window_Closed;
       msg.target = __userdata;
       break;
   }

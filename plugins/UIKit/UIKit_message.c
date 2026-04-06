@@ -260,7 +260,7 @@ handle:
   convert_mouse_message(e, &msg, &mouse);
 
   // Route the event up the parent chain until it's handled.
-  CORE_HandleObjectMessage(L, &(struct WI_Message) {
+  success = CORE_HandleObjectMessage(L, &(struct WI_Message) {
     .target = sender,
     .message = msg,
     .wParam = 0,
@@ -358,20 +358,6 @@ UI_HandleKeyEvent(lua_State *L, struct WI_Message* e)
 LRESULT ui_handle_event(lua_State *L, struct WI_Message* msg) {
   int tmp;
   switch (msg->message) {
-    case kEventWindowPaint:
-    case kEventWindowResized:
-      if (CORE_HandleObjectMessage(L, &(struct WI_Message) {
-        .target = msg->target,
-        .message = msg->message = kEventWindowPaint ? ID_Window_Paint : ID_Window_Resized,
-        .lParam = &(struct Window_PaintMsgArgs) {
-          .WindowWidth = LOWORD(msg->wParam),
-          .WindowHeight = HIWORD(msg->wParam),
-        }
-      })) {
-        return TRUE;
-      } else {
-        return FALSE;
-      }
     case kEventLeftMouseDown:
     case kEventRightMouseDown:
     case kEventOtherMouseDown:
