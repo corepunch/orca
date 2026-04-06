@@ -135,6 +135,12 @@ PROP_SetValue(lpProperty_t property, void const* source)
          PROP_GetSize(property));
 }
 
+void
+PROP_SetStringValue(lpProperty_t property, char const* source) {
+  assert(property->pdesc->DataType == kDataTypeString);
+  PROP_SetValue(property, &source);
+}
+
 lpcString_t
 PROP_GetName(lpcProperty_t property)
 {

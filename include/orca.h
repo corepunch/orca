@@ -264,6 +264,9 @@ ORCA_API void
 PROP_SetValue(lpProperty_t, void const* source);
 
 ORCA_API void
+PROP_SetStringValue(lpProperty_t, char const* source);
+
+ORCA_API void
 PROP_SetDirty(lpProperty_t property, enum PropertyState state);
 
 ORCA_API bool_t

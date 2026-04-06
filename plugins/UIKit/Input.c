@@ -169,7 +169,7 @@ HANDLER(Input, Keyboard, KeyDown)
   }
   lpProperty_t prop = TextRun_GetProperty(hObject, kTextRunText);
   if (prop) {
-    PROP_SetValue(prop, szText);
+    PROP_SetStringValue(prop, szText);
   }
   OBJ_SetDirty(hObject);
   return TRUE;

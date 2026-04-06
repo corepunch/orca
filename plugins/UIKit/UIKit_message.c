@@ -192,6 +192,7 @@ build_key_msg(struct WI_Message const* e, Keyboard_KeyMessageMsg_t* key, uint32_
 {
   static char modifiersString[MAX_PROPERTY_STRING];
   static char hotKey[MAX_PROPERTY_STRING];
+  static char text[MAX_PROPERTY_STRING];
   switch (e->message) {
     case kEventKeyDown: *msg = ID_Keyboard_KeyDown; break;
     case kEventKeyUp:   *msg = ID_Keyboard_KeyUp; break;
@@ -204,7 +205,8 @@ build_key_msg(struct WI_Message const* e, Keyboard_KeyMessageMsg_t* key, uint32_
   key->modifiers = e->wParam & (WI_MOD_SHIFT|WI_MOD_CTRL|WI_MOD_ALT|WI_MOD_CMD);
   key->modifiersString = modifiersString;
   key->hotKey = hotKey;
-  WI_KeyEventToText(e, (char*)key->text, sizeof(key->text));
+  key->text = text;
+  WI_KeyEventToText(e, text, sizeof(text));
   WI_BuildModifiersString(e->wParam, modifiersString, sizeof(modifiersString));
   snprintf(hotKey, sizeof(hotKey), "%s%s", key->modifiersString, key->text);
   return true;
