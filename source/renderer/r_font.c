@@ -641,7 +641,7 @@ Text_GetInfo(struct ViewText const* pViewText,
   return NOERROR;
 }
 
-HANDLER(FontFamily, Start) {
+HANDLER(FontFamily, Object, Start) {
   if (*pFontFamily->Regular) {
     /*pFontFamily->regular = */
     Font_Load(pFontFamily->Regular, pFontFamily);
@@ -661,7 +661,7 @@ HANDLER(FontFamily, Start) {
   return TRUE;
 }
 
-HANDLER(FontFamily, Destroy) {
+HANDLER(FontFamily, Object, Destroy) {
   SafeDelete(pFontFamily->regular, Font_Release);
   SafeDelete(pFontFamily->bold, Font_Release);
   SafeDelete(pFontFamily->italic, Font_Release);

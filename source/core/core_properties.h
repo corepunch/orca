@@ -42,163 +42,193 @@
 #define ID_MessageType_Size 0x0c31f887 // MessageType.Size
 	
 
-#define ID_MouseMessageMsgArgs 0x6449a1dd
-#define ID_MouseMessageMsgArgs_x 0xd1ab6f87 // MouseMessageMsgArgs.x
-#define ID_MouseMessageMsgArgs_y 0xd0ab6df4 // MouseMessageMsgArgs.y
-#define ID_MouseMessageMsgArgs_deltaX 0x3c248f7b // MouseMessageMsgArgs.deltaX
-#define ID_MouseMessageMsgArgs_deltaY 0x3b248de8 // MouseMessageMsgArgs.deltaY
-#define ID_MouseMessageMsgArgs_button 0x93801171 // MouseMessageMsgArgs.button
-#define ID_MouseMessageMsgArgs_clickCount 0xbbbee036 // MouseMessageMsgArgs.clickCount
-#define ID_LeftMouseDownMsgArgs 0xf26710b1
-#define ID_LeftMouseDownMsgArgs_x 0x63b86693 // LeftMouseDownMsgArgs.x
-#define ID_LeftMouseDownMsgArgs_y 0x62b86500 // LeftMouseDownMsgArgs.y
-#define ID_LeftMouseDownMsgArgs_deltaX 0x12d7900f // LeftMouseDownMsgArgs.deltaX
-#define ID_LeftMouseDownMsgArgs_deltaY 0x11d78e7c // LeftMouseDownMsgArgs.deltaY
-#define ID_LeftMouseDownMsgArgs_button 0x833860ed // LeftMouseDownMsgArgs.button
-#define ID_LeftMouseDownMsgArgs_clickCount 0x7571bd22 // LeftMouseDownMsgArgs.clickCount
-#define ID_RightMouseDownMsgArgs 0x4453e7aa
-#define ID_RightMouseDownMsgArgs_x 0x5e725946 // RightMouseDownMsgArgs.x
-#define ID_RightMouseDownMsgArgs_y 0x5f725ad9 // RightMouseDownMsgArgs.y
-#define ID_RightMouseDownMsgArgs_deltaX 0x03265a7c // RightMouseDownMsgArgs.deltaX
-#define ID_RightMouseDownMsgArgs_deltaY 0x04265c0f // RightMouseDownMsgArgs.deltaY
-#define ID_RightMouseDownMsgArgs_button 0xd6741cc2 // RightMouseDownMsgArgs.button
-#define ID_RightMouseDownMsgArgs_clickCount 0x84146dd1 // RightMouseDownMsgArgs.clickCount
-#define ID_OtherMouseDownMsgArgs 0x373393da
-#define ID_OtherMouseDownMsgArgs_x 0xaa2370f6 // OtherMouseDownMsgArgs.x
-#define ID_OtherMouseDownMsgArgs_y 0xab237289 // OtherMouseDownMsgArgs.y
-#define ID_OtherMouseDownMsgArgs_deltaX 0xe6f36cac // OtherMouseDownMsgArgs.deltaX
-#define ID_OtherMouseDownMsgArgs_deltaY 0xe7f36e3f // OtherMouseDownMsgArgs.deltaY
-#define ID_OtherMouseDownMsgArgs_button 0x4dfe2752 // OtherMouseDownMsgArgs.button
-#define ID_OtherMouseDownMsgArgs_clickCount 0x8dcb9fc1 // OtherMouseDownMsgArgs.clickCount
-#define ID_LeftMouseUpMsgArgs 0x57433450
-#define ID_LeftMouseUpMsgArgs_x 0xf99788b8 // LeftMouseUpMsgArgs.x
-#define ID_LeftMouseUpMsgArgs_y 0xfa978a4b // LeftMouseUpMsgArgs.y
-#define ID_LeftMouseUpMsgArgs_deltaX 0x1763332a // LeftMouseUpMsgArgs.deltaX
-#define ID_LeftMouseUpMsgArgs_deltaY 0x186334bd // LeftMouseUpMsgArgs.deltaY
-#define ID_LeftMouseUpMsgArgs_button 0x70e6dfa4 // LeftMouseUpMsgArgs.button
-#define ID_LeftMouseUpMsgArgs_clickCount 0x4d644707 // LeftMouseUpMsgArgs.clickCount
-#define ID_RightMouseUpMsgArgs 0xb657fa43
-#define ID_RightMouseUpMsgArgs_x 0xf08c10d9 // RightMouseUpMsgArgs.x
-#define ID_RightMouseUpMsgArgs_y 0xef8c0f46 // RightMouseUpMsgArgs.y
-#define ID_RightMouseUpMsgArgs_deltaX 0xab09be79 // RightMouseUpMsgArgs.deltaX
-#define ID_RightMouseUpMsgArgs_deltaY 0xaa09bce6 // RightMouseUpMsgArgs.deltaY
-#define ID_RightMouseUpMsgArgs_button 0x5880f4a3 // RightMouseUpMsgArgs.button
-#define ID_RightMouseUpMsgArgs_clickCount 0xad679eec // RightMouseUpMsgArgs.clickCount
-#define ID_OtherMouseUpMsgArgs 0x27f54093
-#define ID_OtherMouseUpMsgArgs_x 0x8aa79229 // OtherMouseUpMsgArgs.x
-#define ID_OtherMouseUpMsgArgs_y 0x89a79096 // OtherMouseUpMsgArgs.y
-#define ID_OtherMouseUpMsgArgs_deltaX 0xf9a70309 // OtherMouseUpMsgArgs.deltaX
-#define ID_OtherMouseUpMsgArgs_deltaY 0xf8a70176 // OtherMouseUpMsgArgs.deltaY
-#define ID_OtherMouseUpMsgArgs_button 0x6fc69453 // OtherMouseUpMsgArgs.button
-#define ID_OtherMouseUpMsgArgs_clickCount 0xedff30bc // OtherMouseUpMsgArgs.clickCount
-#define ID_LeftMouseDraggedMsgArgs 0x53e9cd55
-#define ID_LeftMouseDraggedMsgArgs_x 0xfb8d483f // LeftMouseDraggedMsgArgs.x
-#define ID_LeftMouseDraggedMsgArgs_y 0xfa8d46ac // LeftMouseDraggedMsgArgs.y
-#define ID_LeftMouseDraggedMsgArgs_deltaX 0x08ff4ab3 // LeftMouseDraggedMsgArgs.deltaX
-#define ID_LeftMouseDraggedMsgArgs_deltaY 0x07ff4920 // LeftMouseDraggedMsgArgs.deltaY
-#define ID_LeftMouseDraggedMsgArgs_button 0xfc46f169 // LeftMouseDraggedMsgArgs.button
-#define ID_LeftMouseDraggedMsgArgs_clickCount 0xac2caf9e // LeftMouseDraggedMsgArgs.clickCount
-#define ID_RightMouseDraggedMsgArgs 0x00f409b4
-#define ID_RightMouseDraggedMsgArgs_x 0x7a88b6a4 // RightMouseDraggedMsgArgs.x
-#define ID_RightMouseDraggedMsgArgs_y 0x7b88b837 // RightMouseDraggedMsgArgs.y
-#define ID_RightMouseDraggedMsgArgs_deltaX 0x02349c2e // RightMouseDraggedMsgArgs.deltaX
-#define ID_RightMouseDraggedMsgArgs_deltaY 0x03349dc1 // RightMouseDraggedMsgArgs.deltaY
-#define ID_RightMouseDraggedMsgArgs_button 0xe7ab0170 // RightMouseDraggedMsgArgs.button
-#define ID_RightMouseDraggedMsgArgs_clickCount 0x6e56ad33 // RightMouseDraggedMsgArgs.clickCount
-#define ID_OtherMouseDraggedMsgArgs 0xb06e3a44
-#define ID_OtherMouseDraggedMsgArgs_x 0xf81de9b4 // OtherMouseDraggedMsgArgs.x
-#define ID_OtherMouseDraggedMsgArgs_y 0xf91deb47 // OtherMouseDraggedMsgArgs.y
-#define ID_OtherMouseDraggedMsgArgs_deltaX 0x3487e6be // OtherMouseDraggedMsgArgs.deltaX
-#define ID_OtherMouseDraggedMsgArgs_deltaY 0x3587e851 // OtherMouseDraggedMsgArgs.deltaY
-#define ID_OtherMouseDraggedMsgArgs_button 0xd50e57e0 // OtherMouseDraggedMsgArgs.button
-#define ID_OtherMouseDraggedMsgArgs_clickCount 0x305a8e43 // OtherMouseDraggedMsgArgs.clickCount
-#define ID_LeftDoubleClickMsgArgs 0x33636731
-#define ID_LeftDoubleClickMsgArgs_x 0x30f49213 // LeftDoubleClickMsgArgs.x
-#define ID_LeftDoubleClickMsgArgs_y 0x2ff49080 // LeftDoubleClickMsgArgs.y
-#define ID_LeftDoubleClickMsgArgs_deltaX 0x783d328f // LeftDoubleClickMsgArgs.deltaX
-#define ID_LeftDoubleClickMsgArgs_deltaY 0x773d30fc // LeftDoubleClickMsgArgs.deltaY
-#define ID_LeftDoubleClickMsgArgs_button 0xe89e036d // LeftDoubleClickMsgArgs.button
-#define ID_LeftDoubleClickMsgArgs_clickCount 0x222f07a2 // LeftDoubleClickMsgArgs.clickCount
-#define ID_RightDoubleClickMsgArgs 0x9430529a
-#define ID_RightDoubleClickMsgArgs_x 0x83cef1b6 // RightDoubleClickMsgArgs.x
-#define ID_RightDoubleClickMsgArgs_y 0x84cef349 // RightDoubleClickMsgArgs.y
-#define ID_RightDoubleClickMsgArgs_deltaX 0x92ebbe6c // RightDoubleClickMsgArgs.deltaX
-#define ID_RightDoubleClickMsgArgs_deltaY 0x93ebbfff // RightDoubleClickMsgArgs.deltaY
-#define ID_RightDoubleClickMsgArgs_button 0xb46ab312 // RightDoubleClickMsgArgs.button
-#define ID_RightDoubleClickMsgArgs_clickCount 0xe4cd6481 // RightDoubleClickMsgArgs.clickCount
-#define ID_OtherDoubleClickMsgArgs 0x0065578a
-#define ID_OtherDoubleClickMsgArgs_x 0xc0f217a6 // OtherDoubleClickMsgArgs.x
-#define ID_OtherDoubleClickMsgArgs_y 0xc1f21939 // OtherDoubleClickMsgArgs.y
-#define ID_OtherDoubleClickMsgArgs_deltaX 0x580ee91c // OtherDoubleClickMsgArgs.deltaX
-#define ID_OtherDoubleClickMsgArgs_deltaY 0x590eeaaf // OtherDoubleClickMsgArgs.deltaY
-#define ID_OtherDoubleClickMsgArgs_button 0xeb5ab3a2 // OtherDoubleClickMsgArgs.button
-#define ID_OtherDoubleClickMsgArgs_clickCount 0x0acd4a71 // OtherDoubleClickMsgArgs.clickCount
-#define ID_MouseMovedMsgArgs 0xb4dc4a39
-#define ID_MouseMovedMsgArgs_x 0x0dcdce9b // MouseMovedMsgArgs.x
-#define ID_MouseMovedMsgArgs_y 0x0ccdcd08 // MouseMovedMsgArgs.y
-#define ID_MouseMovedMsgArgs_deltaX 0x2abd85d7 // MouseMovedMsgArgs.deltaX
-#define ID_MouseMovedMsgArgs_deltaY 0x29bd8444 // MouseMovedMsgArgs.deltaY
-#define ID_MouseMovedMsgArgs_button 0x60ea3415 // MouseMovedMsgArgs.button
-#define ID_MouseMovedMsgArgs_clickCount 0xa2ae6b3a // MouseMovedMsgArgs.clickCount
-#define ID_ScrollWheelMsgArgs 0xc23e313d
-#define ID_ScrollWheelMsgArgs_x 0xed5c34e7 // ScrollWheelMsgArgs.x
-#define ID_ScrollWheelMsgArgs_y 0xec5c3354 // ScrollWheelMsgArgs.y
-#define ID_ScrollWheelMsgArgs_deltaX 0x48db409b // ScrollWheelMsgArgs.deltaX
-#define ID_ScrollWheelMsgArgs_deltaY 0x47db3f08 // ScrollWheelMsgArgs.deltaY
-#define ID_ScrollWheelMsgArgs_button 0xfbfcb251 // ScrollWheelMsgArgs.button
-#define ID_ScrollWheelMsgArgs_clickCount 0x14d7ca56 // ScrollWheelMsgArgs.clickCount
-#define ID_DragDropMsgArgs 0xdbf2f5cc
-#define ID_DragDropMsgArgs_x 0x446793fc // DragDropMsgArgs.x
-#define ID_DragDropMsgArgs_y 0x4567958f // DragDropMsgArgs.y
-#define ID_DragDropMsgArgs_deltaX 0x3a664ba6 // DragDropMsgArgs.deltaX
-#define ID_DragDropMsgArgs_deltaY 0x3b664d39 // DragDropMsgArgs.deltaY
-#define ID_DragDropMsgArgs_button 0x878fbda8 // DragDropMsgArgs.button
-#define ID_DragDropMsgArgs_clickCount 0xf384c4db // DragDropMsgArgs.clickCount
-#define ID_DragEnterMsgArgs 0x0af76361
-#define ID_DragEnterMsgArgs_x 0x28796c83 // DragEnterMsgArgs.x
-#define ID_DragEnterMsgArgs_y 0x27796af0 // DragEnterMsgArgs.y
-#define ID_DragEnterMsgArgs_deltaX 0x08e4957f // DragEnterMsgArgs.deltaX
-#define ID_DragEnterMsgArgs_deltaY 0x07e493ec // DragEnterMsgArgs.deltaY
-#define ID_DragEnterMsgArgs_button 0x111276bd // DragEnterMsgArgs.button
-#define ID_DragEnterMsgArgs_clickCount 0x8a0aded2 // DragEnterMsgArgs.clickCount
-#define ID_KeyMessageMsgArgs 0x7c8f4b85
-#define ID_KeyMessageMsgArgs_keyCode 0x409e6231 // KeyMessageMsgArgs.keyCode
-#define ID_KeyMessageMsgArgs_character 0x8eaf7678 // KeyMessageMsgArgs.character
-#define ID_KeyMessageMsgArgs_modifiers 0xffcf5cf1 // KeyMessageMsgArgs.modifiers
-#define ID_KeyMessageMsgArgs_text 0x1df3f256 // KeyMessageMsgArgs.text
-#define ID_KeyMessageMsgArgs_modifiersString 0xafc17bec // KeyMessageMsgArgs.modifiersString
-#define ID_KeyMessageMsgArgs_hotKey 0xa451f0db // KeyMessageMsgArgs.hotKey
-#define ID_KeyDownMsgArgs 0x68e6b3f2
-#define ID_KeyDownMsgArgs_keyCode 0x596a4da0 // KeyDownMsgArgs.keyCode
-#define ID_KeyDownMsgArgs_character 0xaf1dd9f5 // KeyDownMsgArgs.character
-#define ID_KeyDownMsgArgs_modifiers 0xf8260664 // KeyDownMsgArgs.modifiers
-#define ID_KeyDownMsgArgs_text 0xa5a53729 // KeyDownMsgArgs.text
-#define ID_KeyDownMsgArgs_modifiersString 0x4b58d005 // KeyDownMsgArgs.modifiersString
-#define ID_KeyDownMsgArgs_hotKey 0x8dc573fc // KeyDownMsgArgs.hotKey
-#define ID_KeyUpMsgArgs 0xa70b716b
-#define ID_KeyUpMsgArgs_keyCode 0x6c828db7 // KeyUpMsgArgs.keyCode
-#define ID_KeyUpMsgArgs_character 0x99154ac2 // KeyUpMsgArgs.character
-#define ID_KeyUpMsgArgs_modifiers 0x986693c3 // KeyUpMsgArgs.modifiers
-#define ID_KeyUpMsgArgs_text 0x9ca78fc4 // KeyUpMsgArgs.text
-#define ID_KeyUpMsgArgs_modifiersString 0x2740f9a6 // KeyUpMsgArgs.modifiersString
-#define ID_KeyUpMsgArgs_hotKey 0x722d6f41 // KeyUpMsgArgs.hotKey
-#define ID_TextInputMsgArgs 0xa6ff7394
-#define ID_TextInputMsgArgs_keyCode 0x99e2df0a // TextInputMsgArgs.keyCode
-#define ID_TextInputMsgArgs_character 0xcdd0b11b // TextInputMsgArgs.character
-#define ID_TextInputMsgArgs_modifiers 0xc5f39f22 // TextInputMsgArgs.modifiers
-#define ID_TextInputMsgArgs_text 0xb402aa03 // TextInputMsgArgs.text
-#define ID_TextInputMsgArgs_modifiersString 0xc8fcdb7b // TextInputMsgArgs.modifiersString
-#define ID_TextInputMsgArgs_hotKey 0x705e2056 // TextInputMsgArgs.hotKey
-#define ID_CreateMsgArgs 0xc7ecdfb7
-#define ID_StartMsgArgs 0x5bc8ae69
-#define ID_AwakeMsgArgs 0x6474e876
-#define ID_ThemeChangedMsgArgs 0x689ed4b8
-#define ID_PropertyChangedMsgArgs 0xaf3169e6
-#define ID_PropertyChangedMsgArgs_Property 0x3e6a1603 // PropertyChangedMsgArgs.Property
-#define ID_AttachedMsgArgs 0xbaa96c4f
-#define ID_ReleaseMsgArgs 0x8bad7dd0
-#define ID_DestroyMsgArgs 0x9ae7ddbf
-#define ID_TimerMsgArgs 0x9b50c534
+#define ID_Mouse_MouseMessageMsgArgs 0x36588635
+
+#define ID_Mouse_MouseMessageMsgArgs_x 0x006e9bfb // Mouse_MouseMessageMsgArgs.x
+#define ID_Mouse_MouseMessageMsgArgs_y 0xff6e9a68 // Mouse_MouseMessageMsgArgs.y
+#define ID_Mouse_MouseMessageMsgArgs_deltaX 0xe975e3f7 // Mouse_MouseMessageMsgArgs.deltaX
+#define ID_Mouse_MouseMessageMsgArgs_deltaY 0xe875e264 // Mouse_MouseMessageMsgArgs.deltaY
+#define ID_Mouse_MouseMessageMsgArgs_button 0x30af61f5 // Mouse_MouseMessageMsgArgs.button
+#define ID_Mouse_MouseMessageMsgArgs_clickCount 0x2a9bad5a // Mouse_MouseMessageMsgArgs.clickCount
+#define ID_Mouse_LeftMouseDownMsgArgs 0x6ded3df1
+
+#define ID_Mouse_LeftMouseDownMsgArgs_x 0x23894a2f // Mouse_LeftMouseDownMsgArgs.x
+#define ID_Mouse_LeftMouseDownMsgArgs_y 0x2289489c // Mouse_LeftMouseDownMsgArgs.y
+#define ID_Mouse_LeftMouseDownMsgArgs_deltaX 0x614cbea3 // Mouse_LeftMouseDownMsgArgs.deltaX
+#define ID_Mouse_LeftMouseDownMsgArgs_deltaY 0x604cbd10 // Mouse_LeftMouseDownMsgArgs.deltaY
+#define ID_Mouse_LeftMouseDownMsgArgs_button 0xe26d6439 // Mouse_LeftMouseDownMsgArgs.button
+#define ID_Mouse_LeftMouseDownMsgArgs_clickCount 0x9dcf3c4e // Mouse_LeftMouseDownMsgArgs.clickCount
+#define ID_Mouse_RightMouseDownMsgArgs 0x6323431c
+
+#define ID_Mouse_RightMouseDownMsgArgs_x 0x81e0894a // Mouse_RightMouseDownMsgArgs.x
+#define ID_Mouse_RightMouseDownMsgArgs_y 0x82e08add // Mouse_RightMouseDownMsgArgs.y
+#define ID_Mouse_RightMouseDownMsgArgs_deltaX 0x3c8b07d8 // Mouse_RightMouseDownMsgArgs.deltaX
+#define ID_Mouse_RightMouseDownMsgArgs_deltaY 0x3d8b096b // Mouse_RightMouseDownMsgArgs.deltaY
+#define ID_Mouse_RightMouseDownMsgArgs_button 0x94f9ea16 // Mouse_RightMouseDownMsgArgs.button
+#define ID_Mouse_RightMouseDownMsgArgs_clickCount 0x3709b3d5 // Mouse_RightMouseDownMsgArgs.clickCount
+#define ID_Mouse_OtherMouseDownMsgArgs 0x5814eb94
+
+#define ID_Mouse_OtherMouseDownMsgArgs_x 0x745f2d82 // Mouse_OtherMouseDownMsgArgs.x
+#define ID_Mouse_OtherMouseDownMsgArgs_y 0x755f2f15 // Mouse_OtherMouseDownMsgArgs.y
+#define ID_Mouse_OtherMouseDownMsgArgs_deltaX 0x3824aeb0 // Mouse_OtherMouseDownMsgArgs.deltaX
+#define ID_Mouse_OtherMouseDownMsgArgs_deltaY 0x3924b043 // Mouse_OtherMouseDownMsgArgs.deltaY
+#define ID_Mouse_OtherMouseDownMsgArgs_button 0xb19eb72e // Mouse_OtherMouseDownMsgArgs.button
+#define ID_Mouse_OtherMouseDownMsgArgs_clickCount 0xcfc8a6bd // Mouse_OtherMouseDownMsgArgs.clickCount
+#define ID_Mouse_LeftMouseUpMsgArgs 0xba4c941a
+
+#define ID_Mouse_LeftMouseUpMsgArgs_x 0x9071392c // Mouse_LeftMouseUpMsgArgs.x
+#define ID_Mouse_LeftMouseUpMsgArgs_y 0x91713abf // Mouse_LeftMouseUpMsgArgs.y
+#define ID_Mouse_LeftMouseUpMsgArgs_deltaX 0xe22b0596 // Mouse_LeftMouseUpMsgArgs.deltaX
+#define ID_Mouse_LeftMouseUpMsgArgs_deltaY 0xe32b0729 // Mouse_LeftMouseUpMsgArgs.deltaY
+#define ID_Mouse_LeftMouseUpMsgArgs_button 0xec3f88b8 // Mouse_LeftMouseUpMsgArgs.button
+#define ID_Mouse_LeftMouseUpMsgArgs_clickCount 0x706ace8b // Mouse_LeftMouseUpMsgArgs.clickCount
+#define ID_Mouse_RightMouseUpMsgArgs 0x307f40cb
+
+#define ID_Mouse_RightMouseUpMsgArgs_x 0x90e80305 // Mouse_RightMouseUpMsgArgs.x
+#define ID_Mouse_RightMouseUpMsgArgs_y 0x8fe80172 // Mouse_RightMouseUpMsgArgs.y
+#define ID_Mouse_RightMouseUpMsgArgs_deltaX 0x060a954d // Mouse_RightMouseUpMsgArgs.deltaX
+#define ID_Mouse_RightMouseUpMsgArgs_deltaY 0x050a93ba // Mouse_RightMouseUpMsgArgs.deltaY
+#define ID_Mouse_RightMouseUpMsgArgs_button 0x0cc40e2f // Mouse_RightMouseUpMsgArgs.button
+#define ID_Mouse_RightMouseUpMsgArgs_clickCount 0x2356e7b8 // Mouse_RightMouseUpMsgArgs.clickCount
+#define ID_Mouse_OtherMouseUpMsgArgs 0xbdc06883
+
+#define ID_Mouse_OtherMouseUpMsgArgs_x 0xdd2721fd // Mouse_OtherMouseUpMsgArgs.x
+#define ID_Mouse_OtherMouseUpMsgArgs_y 0xdc27206a // Mouse_OtherMouseUpMsgArgs.y
+#define ID_Mouse_OtherMouseUpMsgArgs_deltaX 0xd8954c85 // Mouse_OtherMouseUpMsgArgs.deltaX
+#define ID_Mouse_OtherMouseUpMsgArgs_deltaY 0xd7954af2 // Mouse_OtherMouseUpMsgArgs.deltaY
+#define ID_Mouse_OtherMouseUpMsgArgs_button 0x667b0cc7 // Mouse_OtherMouseUpMsgArgs.button
+#define ID_Mouse_OtherMouseUpMsgArgs_clickCount 0x286df180 // Mouse_OtherMouseUpMsgArgs.clickCount
+#define ID_Mouse_LeftMouseDraggedMsgArgs 0xa9766b05
+
+#define ID_Mouse_LeftMouseDraggedMsgArgs_x 0x40fa986b // Mouse_LeftMouseDraggedMsgArgs.x
+#define ID_Mouse_LeftMouseDraggedMsgArgs_y 0x3ffa96d8 // Mouse_LeftMouseDraggedMsgArgs.y
+#define ID_Mouse_LeftMouseDraggedMsgArgs_deltaX 0xd91c0327 // Mouse_LeftMouseDraggedMsgArgs.deltaX
+#define ID_Mouse_LeftMouseDraggedMsgArgs_deltaY 0xd81c0194 // Mouse_LeftMouseDraggedMsgArgs.deltaY
+#define ID_Mouse_LeftMouseDraggedMsgArgs_button 0xaf24e905 // Mouse_LeftMouseDraggedMsgArgs.button
+#define ID_Mouse_LeftMouseDraggedMsgArgs_clickCount 0x1ba85d4a // Mouse_LeftMouseDraggedMsgArgs.clickCount
+#define ID_Mouse_RightMouseDraggedMsgArgs 0x99ef00ce
+
+#define ID_Mouse_RightMouseDraggedMsgArgs_x 0x83327408 // Mouse_RightMouseDraggedMsgArgs.x
+#define ID_Mouse_RightMouseDraggedMsgArgs_y 0x8432759b // Mouse_RightMouseDraggedMsgArgs.y
+#define ID_Mouse_RightMouseDraggedMsgArgs_deltaX 0x4aa55c7a // Mouse_RightMouseDraggedMsgArgs.deltaX
+#define ID_Mouse_RightMouseDraggedMsgArgs_deltaY 0x4ba55e0d // Mouse_RightMouseDraggedMsgArgs.deltaY
+#define ID_Mouse_RightMouseDraggedMsgArgs_button 0xb2013e54 // Mouse_RightMouseDraggedMsgArgs.button
+#define ID_Mouse_RightMouseDraggedMsgArgs_clickCount 0x7052d517 // Mouse_RightMouseDraggedMsgArgs.clickCount
+#define ID_Mouse_OtherMouseDraggedMsgArgs 0x919a6b56
+
+#define ID_Mouse_OtherMouseDraggedMsgArgs_x 0x9e7cb9b0 // Mouse_OtherMouseDraggedMsgArgs.x
+#define ID_Mouse_OtherMouseDraggedMsgArgs_y 0x9f7cbb43 // Mouse_OtherMouseDraggedMsgArgs.y
+#define ID_Mouse_OtherMouseDraggedMsgArgs_deltaX 0x5eee47a2 // Mouse_OtherMouseDraggedMsgArgs.deltaX
+#define ID_Mouse_OtherMouseDraggedMsgArgs_deltaY 0x5fee4935 // Mouse_OtherMouseDraggedMsgArgs.deltaY
+#define ID_Mouse_OtherMouseDraggedMsgArgs_button 0x9499019c // Mouse_OtherMouseDraggedMsgArgs.button
+#define ID_Mouse_OtherMouseDraggedMsgArgs_clickCount 0x9af78aaf // Mouse_OtherMouseDraggedMsgArgs.clickCount
+#define ID_Mouse_LeftDoubleClickMsgArgs 0x9abbcb31
+
+#define ID_Mouse_LeftDoubleClickMsgArgs_x 0x0e10efef // Mouse_LeftDoubleClickMsgArgs.x
+#define ID_Mouse_LeftDoubleClickMsgArgs_y 0x0d10ee5c // Mouse_LeftDoubleClickMsgArgs.y
+#define ID_Mouse_LeftDoubleClickMsgArgs_deltaX 0xa4334d63 // Mouse_LeftDoubleClickMsgArgs.deltaX
+#define ID_Mouse_LeftDoubleClickMsgArgs_deltaY 0xa3334bd0 // Mouse_LeftDoubleClickMsgArgs.deltaY
+#define ID_Mouse_LeftDoubleClickMsgArgs_button 0x7b91c6f9 // Mouse_LeftDoubleClickMsgArgs.button
+#define ID_Mouse_LeftDoubleClickMsgArgs_clickCount 0xa5a4f70e // Mouse_LeftDoubleClickMsgArgs.clickCount
+#define ID_Mouse_RightDoubleClickMsgArgs 0xfb733b7c
+
+#define ID_Mouse_RightDoubleClickMsgArgs_x 0x072cf32a // Mouse_RightDoubleClickMsgArgs.x
+#define ID_Mouse_RightDoubleClickMsgArgs_y 0x082cf4bd // Mouse_RightDoubleClickMsgArgs.y
+#define ID_Mouse_RightDoubleClickMsgArgs_deltaX 0xe3e251f8 // Mouse_RightDoubleClickMsgArgs.deltaX
+#define ID_Mouse_RightDoubleClickMsgArgs_deltaY 0xe4e2538b // Mouse_RightDoubleClickMsgArgs.deltaY
+#define ID_Mouse_RightDoubleClickMsgArgs_button 0xcfd93676 // Mouse_RightDoubleClickMsgArgs.button
+#define ID_Mouse_RightDoubleClickMsgArgs_clickCount 0x4ff8dcf5 // Mouse_RightDoubleClickMsgArgs.clickCount
+#define ID_Mouse_OtherDoubleClickMsgArgs 0xbf900de4
+
+#define ID_Mouse_OtherDoubleClickMsgArgs_x 0xd83b2ef2 // Mouse_OtherDoubleClickMsgArgs.x
+#define ID_Mouse_OtherDoubleClickMsgArgs_y 0xd93b3085 // Mouse_OtherDoubleClickMsgArgs.y
+#define ID_Mouse_OtherDoubleClickMsgArgs_deltaX 0xd7c8e1a0 // Mouse_OtherDoubleClickMsgArgs.deltaX
+#define ID_Mouse_OtherDoubleClickMsgArgs_deltaY 0xd8c8e333 // Mouse_OtherDoubleClickMsgArgs.deltaY
+#define ID_Mouse_OtherDoubleClickMsgArgs_button 0x7080877e // Mouse_OtherDoubleClickMsgArgs.button
+#define ID_Mouse_OtherDoubleClickMsgArgs_clickCount 0xab75fd2d // Mouse_OtherDoubleClickMsgArgs.clickCount
+#define ID_Mouse_MouseMovedMsgArgs 0xb96d2ad9
+
+#define ID_Mouse_MouseMovedMsgArgs_x 0xec2e1657 // Mouse_MouseMovedMsgArgs.x
+#define ID_Mouse_MouseMovedMsgArgs_y 0xeb2e14c4 // Mouse_MouseMovedMsgArgs.y
+#define ID_Mouse_MouseMovedMsgArgs_deltaX 0x037bf88b // Mouse_MouseMovedMsgArgs.deltaX
+#define ID_Mouse_MouseMovedMsgArgs_deltaY 0x027bf6f8 // Mouse_MouseMovedMsgArgs.deltaY
+#define ID_Mouse_MouseMovedMsgArgs_button 0x55e7eb21 // Mouse_MouseMovedMsgArgs.button
+#define ID_Mouse_MouseMovedMsgArgs_clickCount 0x7733ee46 // Mouse_MouseMovedMsgArgs.clickCount
+#define ID_Mouse_ScrollWheelMsgArgs 0xdaef5d65
+
+#define ID_Mouse_ScrollWheelMsgArgs_x 0x13398c4b // Mouse_ScrollWheelMsgArgs.x
+#define ID_Mouse_ScrollWheelMsgArgs_y 0x12398ab8 // Mouse_ScrollWheelMsgArgs.y
+#define ID_Mouse_ScrollWheelMsgArgs_deltaX 0x0ec1c147 // Mouse_ScrollWheelMsgArgs.deltaX
+#define ID_Mouse_ScrollWheelMsgArgs_deltaY 0x0dc1bfb4 // Mouse_ScrollWheelMsgArgs.deltaY
+#define ID_Mouse_ScrollWheelMsgArgs_button 0xd1095365 // Mouse_ScrollWheelMsgArgs.button
+#define ID_Mouse_ScrollWheelMsgArgs_clickCount 0xb009fa6a // Mouse_ScrollWheelMsgArgs.clickCount
+#define ID_Mouse_DragDropMsgArgs 0x886d0266
+
+#define ID_Mouse_DragDropMsgArgs_x 0x645be760 // Mouse_DragDropMsgArgs.x
+#define ID_Mouse_DragDropMsgArgs_y 0x655be8f3 // Mouse_DragDropMsgArgs.y
+#define ID_Mouse_DragDropMsgArgs_deltaX 0xe3d159d2 // Mouse_DragDropMsgArgs.deltaX
+#define ID_Mouse_DragDropMsgArgs_deltaY 0xe4d15b65 // Mouse_DragDropMsgArgs.deltaY
+#define ID_Mouse_DragDropMsgArgs_button 0xc5bded2c // Mouse_DragDropMsgArgs.button
+#define ID_Mouse_DragDropMsgArgs_clickCount 0x4dd49cdf // Mouse_DragDropMsgArgs.clickCount
+#define ID_Mouse_DragEnterMsgArgs 0xe0358e71
+
+#define ID_Mouse_DragEnterMsgArgs_x 0x1a8f4eaf // Mouse_DragEnterMsgArgs.x
+#define ID_Mouse_DragEnterMsgArgs_y 0x198f4d1c // Mouse_DragEnterMsgArgs.y
+#define ID_Mouse_DragEnterMsgArgs_deltaX 0x25a1ac23 // Mouse_DragEnterMsgArgs.deltaX
+#define ID_Mouse_DragEnterMsgArgs_deltaY 0x24a1aa90 // Mouse_DragEnterMsgArgs.deltaY
+#define ID_Mouse_DragEnterMsgArgs_button 0xa6c251b9 // Mouse_DragEnterMsgArgs.button
+#define ID_Mouse_DragEnterMsgArgs_clickCount 0x5fe581ce // Mouse_DragEnterMsgArgs.clickCount
+#define ID_Keyboard_KeyMessageMsgArgs 0xc5a0d315
+
+#define ID_Keyboard_KeyMessageMsgArgs_keyCode 0x85731f4d // Keyboard_KeyMessageMsgArgs.keyCode
+#define ID_Keyboard_KeyMessageMsgArgs_character 0x71632134 // Keyboard_KeyMessageMsgArgs.character
+#define ID_Keyboard_KeyMessageMsgArgs_modifiers 0xbea4d615 // Keyboard_KeyMessageMsgArgs.modifiers
+#define ID_Keyboard_KeyMessageMsgArgs_text 0x23e73952 // Keyboard_KeyMessageMsgArgs.text
+#define ID_Keyboard_KeyMessageMsgArgs_modifiersString 0xbcf14d48 // Keyboard_KeyMessageMsgArgs.modifiersString
+#define ID_Keyboard_KeyMessageMsgArgs_hotKey 0x8269d937 // Keyboard_KeyMessageMsgArgs.hotKey
+#define ID_Keyboard_KeyDownMsgArgs 0xf47504b4
+
+#define ID_Keyboard_KeyDownMsgArgs_keyCode 0x9a576964 // Keyboard_KeyDownMsgArgs.keyCode
+#define ID_Keyboard_KeyDownMsgArgs_character 0xcd2b52f9 // Keyboard_KeyDownMsgArgs.character
+#define ID_Keyboard_KeyDownMsgArgs_modifiers 0xc2041900 // Keyboard_KeyDownMsgArgs.modifiers
+#define ID_Keyboard_KeyDownMsgArgs_text 0xa7c0c5ed // Keyboard_KeyDownMsgArgs.text
+#define ID_Keyboard_KeyDownMsgArgs_modifiersString 0xaf36e5a9 // Keyboard_KeyDownMsgArgs.modifiersString
+#define ID_Keyboard_KeyDownMsgArgs_hotKey 0x70afc020 // Keyboard_KeyDownMsgArgs.hotKey
+#define ID_Keyboard_KeyUpMsgArgs 0xbddcfda3
+
+#define ID_Keyboard_KeyUpMsgArgs_keyCode 0x2e5e3ed3 // Keyboard_KeyUpMsgArgs.keyCode
+#define ID_Keyboard_KeyUpMsgArgs_character 0xc94b05fe // Keyboard_KeyUpMsgArgs.character
+#define ID_Keyboard_KeyUpMsgArgs_modifiers 0x9cbd1b17 // Keyboard_KeyUpMsgArgs.modifiers
+#define ID_Keyboard_KeyUpMsgArgs_text 0x1fbced10 // Keyboard_KeyUpMsgArgs.text
+#define ID_Keyboard_KeyUpMsgArgs_modifiersString 0xc31343a2 // Keyboard_KeyUpMsgArgs.modifiersString
+#define ID_Keyboard_KeyUpMsgArgs_hotKey 0x182421ad // Keyboard_KeyUpMsgArgs.hotKey
+#define ID_Keyboard_TextInputMsgArgs 0x8de36e66
+
+#define ID_Keyboard_TextInputMsgArgs_keyCode 0x3a8c92c6 // Keyboard_TextInputMsgArgs.keyCode
+#define ID_Keyboard_TextInputMsgArgs_character 0x9a2ed477 // Keyboard_TextInputMsgArgs.character
+#define ID_Keyboard_TextInputMsgArgs_modifiers 0x322d5696 // Keyboard_TextInputMsgArgs.modifiers
+#define ID_Keyboard_TextInputMsgArgs_text 0xcaa39ebf // Keyboard_TextInputMsgArgs.text
+#define ID_Keyboard_TextInputMsgArgs_modifiersString 0x6bcfca67 // Keyboard_TextInputMsgArgs.modifiersString
+#define ID_Keyboard_TextInputMsgArgs_hotKey 0xf5e0b082 // Keyboard_TextInputMsgArgs.hotKey
+#define ID_Object_CreateMsgArgs 0xeeeab9ad
+
+#define ID_Object_StartMsgArgs 0xf646bef3
+
+#define ID_Object_AwakeMsgArgs 0x510f9a9a
+
+#define ID_Object_ThemeChangedMsgArgs 0xc24cddd4
+
+#define ID_Object_PropertyChangedMsgArgs 0xea347aca
+
+#define ID_Object_PropertyChangedMsgArgs_Property 0x42f14cfd // Object_PropertyChangedMsgArgs.Property
+#define ID_Object_AttachedMsgArgs 0xd415dce1
+
+#define ID_Object_ReleaseMsgArgs 0x70222484
+
+#define ID_Object_DestroyMsgArgs 0x66bc6055
+
+#define ID_Object_TimerMsgArgs 0xd0054be4
+
 	
 
 #endif

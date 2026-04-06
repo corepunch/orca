@@ -120,15 +120,15 @@ STRUCT(SpriteFrame, SpriteFrame);
 //	.name = "Render",
 //	.id = kMsgRender,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct RenderMsgArgs),
+//	.size = sizeof(struct SKNode_RenderMsgArgs),
 //};
 
-static luaL_Reg _RenderMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _RenderMsgArgs[] = {
-	DECL(0xce9ab61f, RenderMsgArgs, ViewDef, ViewDef, kDataTypeStruct, .TypeString = "ViewDef"), // RenderMsgArgs.ViewDef
+static luaL_Reg _SKNode_RenderMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _SKNode_RenderMsgArgs[] = {
+	DECL(0xce9ab61f, SKNode_RenderMsgArgs, ViewDef, ViewDef, kDataTypeStruct, .TypeString = "ViewDef"), // SKNode_RenderMsgArgs.ViewDef
 };
 
-STRUCT(RenderMsgArgs, RenderMsgArgs);
+STRUCT(SKNode_RenderMsgArgs, SKNode_RenderMsgArgs);
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -167,9 +167,9 @@ struct SpriteAnimation* luaX_checkSpriteAnimation(lua_State *L, int idx) {
 	return GetSpriteAnimation(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(SpriteAnimation, 0);
-LRESULT SKNode_UpdateMatrix(struct Object*, struct SKNode*, wParam_t, UpdateMatrixMsgPtr);
+HANDLER(SKNode, Node, UpdateMatrix);
 static struct MessageType SKNodeMessageTypes[kSKNodeNumMessageTypes] = {	
-		{ "SKNode.Render", ID_SKNode_Render, kMessageRoutingTunnelingBubbling, sizeof(struct RenderMsgArgs) },
+		{ "SKNode.Render", ID_SKNode_Render, kMessageRoutingTunnelingBubbling, sizeof(struct SKNode_RenderMsgArgs) },
 };
 static struct PropertyType const SKNodeProperties[kSKNodeNumProperties] = {
 	DECL(0xe27f342a, SKNode, Position, Position, kDataTypeStruct, .TypeString = "Vector2D"), // SKNode.Position
@@ -192,7 +192,7 @@ struct SKNode* luaX_checkSKNode(lua_State *L, int idx) {
 }
 #define ID_Node 0x3468032d
 REGISTER_CLASS(SKNode, ID_Node, 0);
-LRESULT SKScene_UpdateMatrix(struct Object*, struct SKScene*, wParam_t, UpdateMatrixMsgPtr);
+HANDLER(SKScene, Node, UpdateMatrix);
 static struct MessageType SKSceneMessageTypes[kSKSceneNumMessageTypes] = {	
 };
 static struct PropertyType const SKSceneProperties[kSKSceneNumProperties] = {
@@ -213,7 +213,7 @@ struct SKScene* luaX_checkSKScene(lua_State *L, int idx) {
 }
 #define ID_SKNode 0x819821fb
 REGISTER_CLASS(SKScene, ID_SKNode, 0);
-LRESULT SKSpriteNode_Render(struct Object*, struct SKSpriteNode*, wParam_t, RenderMsgPtr);
+HANDLER(SKSpriteNode, SKNode, Render);
 static struct MessageType SKSpriteNodeMessageTypes[kSKSpriteNodeNumMessageTypes] = {	
 };
 static struct PropertyType const SKSpriteNodeProperties[kSKSpriteNodeNumProperties] = {
@@ -248,8 +248,8 @@ struct SKSpriteNode* luaX_checkSKSpriteNode(lua_State *L, int idx) {
 }
 #define ID_SKNode 0x819821fb
 REGISTER_CLASS(SKSpriteNode, ID_SKNode, 0);
-LRESULT SKLabelNode_Render(struct Object*, struct SKLabelNode*, wParam_t, RenderMsgPtr);
-LRESULT SKLabelNode_Create(struct Object*, struct SKLabelNode*, wParam_t, CreateMsgPtr);
+HANDLER(SKLabelNode, SKNode, Render);
+HANDLER(SKLabelNode, Object, Create);
 static struct MessageType SKLabelNodeMessageTypes[kSKLabelNodeNumMessageTypes] = {	
 };
 static struct PropertyType const SKLabelNodeProperties[kSKLabelNodeNumProperties] = {
@@ -273,7 +273,7 @@ struct SKLabelNode* luaX_checkSKLabelNode(lua_State *L, int idx) {
 #define ID_SKNode 0x819821fb
 #define ID_TextBlockConcept 0x4903089d
 REGISTER_CLASS(SKLabelNode, ID_SKNode, ID_TextBlockConcept, 0);
-LRESULT SKView_ForegroundContent(struct Object*, struct SKView*, wParam_t, ForegroundContentMsgPtr);
+HANDLER(SKView, Node2D, ForegroundContent);
 static struct MessageType SKViewMessageTypes[kSKViewNumMessageTypes] = {	
 };
 static struct PropertyType const SKViewProperties[kSKViewNumProperties] = {
@@ -304,7 +304,7 @@ ORCA_API int luaopen_orca_SpriteKit(lua_State *L) {
 		{ NULL, NULL } 
 	}));
 	lua_setfield(L, ((void)luaopen_orca_SpriteFrame(L), -2), "SpriteFrame");
-	lua_setfield(L, ((void)luaopen_orca_RenderMsgArgs(L), -2), "RenderMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_SKNode_RenderMsgArgs(L), -2), "SKNode_RenderMsgArgs");
 	lua_setfield(L, ((void)lua_pushclass(L, &_SpriteAnimation), -2), "SpriteAnimation");
 	lua_setfield(L, ((void)lua_pushclass(L, &_SKNode), -2), "SKNode");
 	lua_setfield(L, ((void)lua_pushclass(L, &_SKScene), -2), "SKScene");

@@ -118,7 +118,7 @@ _MakeViewTextRun(lpObject_t hObject, TextRun_t text, lpcString_t szText)
   return view;
 }
 
-HANDLER(TextBlockConcept, MakeText)
+HANDLER(TextBlockConcept, TextBlockConcept, MakeText)
 {
   TextRunPtr pTextRun = GetTextRun(hObject);
   struct ViewText* pViewText = pMakeText->text;
@@ -156,7 +156,7 @@ HANDLER(TextBlockConcept, MakeText)
   return TRUE;
 }
 
-HANDLER(TextBlock, MeasureOverride)
+HANDLER(TextBlock, Node2D, MeasureOverride)
 {
   TextRunPtr output = GetTextRun(hObject);
   TextBlockConceptPtr textblock = GetTextBlockConcept(hObject);
@@ -167,12 +167,12 @@ HANDLER(TextBlock, MeasureOverride)
   return MAKEDWORD(output->_textinfo.txWidth, output->_textinfo.txHeight);
 }
 
-HANDLER(TextBlock, ForegroundContent)
+HANDLER(TextBlock, Node2D, ForegroundContent)
 {
   return FALSE;
 }
 
-HANDLER(TextBlock, UpdateGeometry)
+HANDLER(TextBlock, Node2D, UpdateGeometry)
 {
   if (is_updated(hObject, STEP_GEOMETRY)) {
     TextRunPtr run = GetTextRun(hObject);
@@ -189,7 +189,7 @@ HANDLER(TextBlock, UpdateGeometry)
   return TRUE;
 }
 
-HANDLER(TextBlock, DrawBrush)
+HANDLER(TextBlock, Node2D, DrawBrush)
 {
 	if (!memcmp(&pDrawBrush->brush,
 							&(struct BrushShorthand){0},
@@ -241,7 +241,7 @@ HANDLER(TextBlock, DrawBrush)
   return TRUE;
 }
 
-HANDLER(TextBlock, Create)
+HANDLER(TextBlock, Object, Create)
 {
   lpProperty_t p;
   OBJ_FindShortProperty(hObject, "Text", &p);
@@ -249,14 +249,14 @@ HANDLER(TextBlock, Create)
   return FALSE;
 }
 
-HANDLER(TextBlockConcept, Create)
+HANDLER(TextBlockConcept, Object, Create)
 {
   pTextBlockConcept->_node = GetNode(hObject);
   pTextBlockConcept->_text = ZeroAlloc(sizeof(struct ViewText) + sizeof(struct ViewTextRun) * MAX_TEXT_RUNS);
   return FALSE;
 }
 
-HANDLER(TextBlockConcept, Destroy)
+HANDLER(TextBlockConcept, Object, Destroy)
 {
   SafeDelete(pTextBlockConcept->_text, free);
   return FALSE;

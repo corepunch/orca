@@ -34,7 +34,7 @@ SKNode_RenderTree(lpObject_t hObject, struct ViewDef *viewdef)
   }
 }
 
-HANDLER(SKView, ForegroundContent)
+HANDLER(SKView, Node2D, ForegroundContent)
 {
   lpObject_t scene = NULL;
 

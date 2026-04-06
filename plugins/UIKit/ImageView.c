@@ -19,7 +19,7 @@ _GetImageSize(lpObject_t hObject, ImageViewPtr imageView)
   return size;
 }
 
-HANDLER(ImageView, MeasureOverride)
+HANDLER(ImageView, Node2D, MeasureOverride)
 {
   if (pImageView->Image) {
     vec2_t size = _GetImageSize(hObject, pImageView);
@@ -42,7 +42,7 @@ HANDLER(ImageView, MeasureOverride)
   }
 }
 
-HANDLER(ImageView, ArrangeOverride) {
+HANDLER(ImageView, Node2D, ArrangeOverride) {
   return _SendMessage(hObject, Node2D, MeasureOverride,
                       .Width = pArrangeOverride->Width,
                       .Height = pArrangeOverride->Height);
@@ -70,7 +70,7 @@ check_images(struct _SHADERCONST *u, void* pVoid)
 }
 #endif
 
-HANDLER(ImageView, DrawBrush)
+HANDLER(ImageView, Node2D, DrawBrush)
 {
   Node2DPtr pNode2D = GetNode2D(hObject);
   uint32_t width = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
@@ -147,12 +147,12 @@ HANDLER(ImageView, DrawBrush)
   return TRUE;
 }
 
-HANDLER(ImageView, ForegroundContent)
+HANDLER(ImageView, Node2D, ForegroundContent)
 {
   return (intptr_t)pImageView->Image;
 }
 
-HANDLER(ImageView, LoadView)
+HANDLER(ImageView, Node, LoadView)
 {
   lua_State* L = pLoadView->lua_state;
   if (!(OBJ_GetFlags(hObject) & OF_ACTIVATED)) {

@@ -158,7 +158,7 @@ local function construct_node(element)
 			xpcall(node.addChild, print, node, construct_node(sub))
 		end
 	end
-	node:msgSend("Start")
+	node:msgSend("Object.Start")
 	return node
 end
 

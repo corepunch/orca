@@ -676,450 +676,450 @@ STRUCT(MessageType, MessageType);
 //	.name = "MouseMessage",
 //	.id = kMsgMouseMessage,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct MouseMessageMsgArgs),
+//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
 //};
-#define LeftMouseDownMsgArgs MouseMessageMsgArgs
+#define Mouse_LeftMouseDownMsgArgs Mouse_MouseMessageMsgArgs
 //struct MessageType LeftMouseDownMessage = {
 //	.name = "LeftMouseDown",
 //	.id = kMsgLeftMouseDown,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct MouseMessageMsgArgs),
+//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
 //};
-#define RightMouseDownMsgArgs MouseMessageMsgArgs
+#define Mouse_RightMouseDownMsgArgs Mouse_MouseMessageMsgArgs
 //struct MessageType RightMouseDownMessage = {
 //	.name = "RightMouseDown",
 //	.id = kMsgRightMouseDown,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct MouseMessageMsgArgs),
+//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
 //};
-#define OtherMouseDownMsgArgs MouseMessageMsgArgs
+#define Mouse_OtherMouseDownMsgArgs Mouse_MouseMessageMsgArgs
 //struct MessageType OtherMouseDownMessage = {
 //	.name = "OtherMouseDown",
 //	.id = kMsgOtherMouseDown,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct MouseMessageMsgArgs),
+//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
 //};
-#define LeftMouseUpMsgArgs MouseMessageMsgArgs
+#define Mouse_LeftMouseUpMsgArgs Mouse_MouseMessageMsgArgs
 //struct MessageType LeftMouseUpMessage = {
 //	.name = "LeftMouseUp",
 //	.id = kMsgLeftMouseUp,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct MouseMessageMsgArgs),
+//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
 //};
-#define RightMouseUpMsgArgs MouseMessageMsgArgs
+#define Mouse_RightMouseUpMsgArgs Mouse_MouseMessageMsgArgs
 //struct MessageType RightMouseUpMessage = {
 //	.name = "RightMouseUp",
 //	.id = kMsgRightMouseUp,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct MouseMessageMsgArgs),
+//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
 //};
-#define OtherMouseUpMsgArgs MouseMessageMsgArgs
+#define Mouse_OtherMouseUpMsgArgs Mouse_MouseMessageMsgArgs
 //struct MessageType OtherMouseUpMessage = {
 //	.name = "OtherMouseUp",
 //	.id = kMsgOtherMouseUp,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct MouseMessageMsgArgs),
+//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
 //};
-#define LeftMouseDraggedMsgArgs MouseMessageMsgArgs
+#define Mouse_LeftMouseDraggedMsgArgs Mouse_MouseMessageMsgArgs
 //struct MessageType LeftMouseDraggedMessage = {
 //	.name = "LeftMouseDragged",
 //	.id = kMsgLeftMouseDragged,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct MouseMessageMsgArgs),
+//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
 //};
-#define RightMouseDraggedMsgArgs MouseMessageMsgArgs
+#define Mouse_RightMouseDraggedMsgArgs Mouse_MouseMessageMsgArgs
 //struct MessageType RightMouseDraggedMessage = {
 //	.name = "RightMouseDragged",
 //	.id = kMsgRightMouseDragged,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct MouseMessageMsgArgs),
+//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
 //};
-#define OtherMouseDraggedMsgArgs MouseMessageMsgArgs
+#define Mouse_OtherMouseDraggedMsgArgs Mouse_MouseMessageMsgArgs
 //struct MessageType OtherMouseDraggedMessage = {
 //	.name = "OtherMouseDragged",
 //	.id = kMsgOtherMouseDragged,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct MouseMessageMsgArgs),
+//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
 //};
-#define LeftDoubleClickMsgArgs MouseMessageMsgArgs
+#define Mouse_LeftDoubleClickMsgArgs Mouse_MouseMessageMsgArgs
 //struct MessageType LeftDoubleClickMessage = {
 //	.name = "LeftDoubleClick",
 //	.id = kMsgLeftDoubleClick,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct MouseMessageMsgArgs),
+//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
 //};
-#define RightDoubleClickMsgArgs MouseMessageMsgArgs
+#define Mouse_RightDoubleClickMsgArgs Mouse_MouseMessageMsgArgs
 //struct MessageType RightDoubleClickMessage = {
 //	.name = "RightDoubleClick",
 //	.id = kMsgRightDoubleClick,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct MouseMessageMsgArgs),
+//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
 //};
-#define OtherDoubleClickMsgArgs MouseMessageMsgArgs
+#define Mouse_OtherDoubleClickMsgArgs Mouse_MouseMessageMsgArgs
 //struct MessageType OtherDoubleClickMessage = {
 //	.name = "OtherDoubleClick",
 //	.id = kMsgOtherDoubleClick,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct MouseMessageMsgArgs),
+//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
 //};
-#define MouseMovedMsgArgs MouseMessageMsgArgs
+#define Mouse_MouseMovedMsgArgs Mouse_MouseMessageMsgArgs
 //struct MessageType MouseMovedMessage = {
 //	.name = "MouseMoved",
 //	.id = kMsgMouseMoved,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct MouseMessageMsgArgs),
+//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
 //};
-#define ScrollWheelMsgArgs MouseMessageMsgArgs
+#define Mouse_ScrollWheelMsgArgs Mouse_MouseMessageMsgArgs
 //struct MessageType ScrollWheelMessage = {
 //	.name = "ScrollWheel",
 //	.id = kMsgScrollWheel,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct MouseMessageMsgArgs),
+//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
 //};
-#define DragDropMsgArgs MouseMessageMsgArgs
+#define Mouse_DragDropMsgArgs Mouse_MouseMessageMsgArgs
 //struct MessageType DragDropMessage = {
 //	.name = "DragDrop",
 //	.id = kMsgDragDrop,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct MouseMessageMsgArgs),
+//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
 //};
-#define DragEnterMsgArgs MouseMessageMsgArgs
+#define Mouse_DragEnterMsgArgs Mouse_MouseMessageMsgArgs
 //struct MessageType DragEnterMessage = {
 //	.name = "DragEnter",
 //	.id = kMsgDragEnter,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct MouseMessageMsgArgs),
+//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
 //};
 //struct MessageType KeyMessageMessage = {
 //	.name = "KeyMessage",
 //	.id = kMsgKeyMessage,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct KeyMessageMsgArgs),
+//	.size = sizeof(struct Keyboard_KeyMessageMsgArgs),
 //};
-#define KeyDownMsgArgs KeyMessageMsgArgs
+#define Keyboard_KeyDownMsgArgs Keyboard_KeyMessageMsgArgs
 //struct MessageType KeyDownMessage = {
 //	.name = "KeyDown",
 //	.id = kMsgKeyDown,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct KeyMessageMsgArgs),
+//	.size = sizeof(struct Keyboard_KeyMessageMsgArgs),
 //};
-#define KeyUpMsgArgs KeyMessageMsgArgs
+#define Keyboard_KeyUpMsgArgs Keyboard_KeyMessageMsgArgs
 //struct MessageType KeyUpMessage = {
 //	.name = "KeyUp",
 //	.id = kMsgKeyUp,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct KeyMessageMsgArgs),
+//	.size = sizeof(struct Keyboard_KeyMessageMsgArgs),
 //};
-#define TextInputMsgArgs KeyMessageMsgArgs
+#define Keyboard_TextInputMsgArgs Keyboard_KeyMessageMsgArgs
 //struct MessageType TextInputMessage = {
 //	.name = "TextInput",
 //	.id = kMsgTextInput,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct KeyMessageMsgArgs),
+//	.size = sizeof(struct Keyboard_KeyMessageMsgArgs),
 //};
 //struct MessageType CreateMessage = {
 //	.name = "Create",
 //	.id = kMsgCreate,
 //	.routing = kMessageRoutingDirect,
-//	.size = sizeof(struct CreateMsgArgs),
+//	.size = sizeof(struct Object_CreateMsgArgs),
 //};
 //struct MessageType StartMessage = {
 //	.name = "Start",
 //	.id = kMsgStart,
 //	.routing = kMessageRoutingDirect,
-//	.size = sizeof(struct StartMsgArgs),
+//	.size = sizeof(struct Object_StartMsgArgs),
 //};
 //struct MessageType AwakeMessage = {
 //	.name = "Awake",
 //	.id = kMsgAwake,
 //	.routing = kMessageRoutingDirect,
-//	.size = sizeof(struct AwakeMsgArgs),
+//	.size = sizeof(struct Object_AwakeMsgArgs),
 //};
 //struct MessageType ThemeChangedMessage = {
 //	.name = "ThemeChanged",
 //	.id = kMsgThemeChanged,
 //	.routing = kMessageRoutingDirect,
-//	.size = sizeof(struct ThemeChangedMsgArgs),
+//	.size = sizeof(struct Object_ThemeChangedMsgArgs),
 //};
 //struct MessageType PropertyChangedMessage = {
 //	.name = "PropertyChanged",
 //	.id = kMsgPropertyChanged,
 //	.routing = kMessageRoutingDirect,
-//	.size = sizeof(struct PropertyChangedMsgArgs),
+//	.size = sizeof(struct Object_PropertyChangedMsgArgs),
 //};
 //struct MessageType AttachedMessage = {
 //	.name = "Attached",
 //	.id = kMsgAttached,
 //	.routing = kMessageRoutingDirect,
-//	.size = sizeof(struct AttachedMsgArgs),
+//	.size = sizeof(struct Object_AttachedMsgArgs),
 //};
 //struct MessageType ReleaseMessage = {
 //	.name = "Release",
 //	.id = kMsgRelease,
 //	.routing = kMessageRoutingDirect,
-//	.size = sizeof(struct ReleaseMsgArgs),
+//	.size = sizeof(struct Object_ReleaseMsgArgs),
 //};
 //struct MessageType DestroyMessage = {
 //	.name = "Destroy",
 //	.id = kMsgDestroy,
 //	.routing = kMessageRoutingDirect,
-//	.size = sizeof(struct DestroyMsgArgs),
+//	.size = sizeof(struct Object_DestroyMsgArgs),
 //};
 //struct MessageType TimerMessage = {
 //	.name = "Timer",
 //	.id = kMsgTimer,
 //	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct TimerMsgArgs),
+//	.size = sizeof(struct Object_TimerMsgArgs),
 //};
 
-static luaL_Reg _MouseMessageMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _MouseMessageMsgArgs[] = {
-	DECL(0xfd0c5087, MouseMessageMsgArgs, x, x, kDataTypeFloat), // MouseMessageMsgArgs.x
-	DECL(0xfc0c4ef4, MouseMessageMsgArgs, y, y, kDataTypeFloat), // MouseMessageMsgArgs.y
-	DECL(0xec56f27b, MouseMessageMsgArgs, deltaX, deltaX, kDataTypeInt), // MouseMessageMsgArgs.deltaX
-	DECL(0xeb56f0e8, MouseMessageMsgArgs, deltaY, deltaY, kDataTypeInt), // MouseMessageMsgArgs.deltaY
-	DECL(0x43b27471, MouseMessageMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // MouseMessageMsgArgs.button
-	DECL(0xd9747336, MouseMessageMsgArgs, clickCount, clickCount, kDataTypeInt), // MouseMessageMsgArgs.clickCount
+static luaL_Reg _Mouse_MouseMessageMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Mouse_MouseMessageMsgArgs[] = {
+	DECL(0xfd0c5087, Mouse_MouseMessageMsgArgs, x, x, kDataTypeFloat), // Mouse_MouseMessageMsgArgs.x
+	DECL(0xfc0c4ef4, Mouse_MouseMessageMsgArgs, y, y, kDataTypeFloat), // Mouse_MouseMessageMsgArgs.y
+	DECL(0xec56f27b, Mouse_MouseMessageMsgArgs, deltaX, deltaX, kDataTypeInt), // Mouse_MouseMessageMsgArgs.deltaX
+	DECL(0xeb56f0e8, Mouse_MouseMessageMsgArgs, deltaY, deltaY, kDataTypeInt), // Mouse_MouseMessageMsgArgs.deltaY
+	DECL(0x43b27471, Mouse_MouseMessageMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Mouse_MouseMessageMsgArgs.button
+	DECL(0xd9747336, Mouse_MouseMessageMsgArgs, clickCount, clickCount, kDataTypeInt), // Mouse_MouseMessageMsgArgs.clickCount
 };
-static luaL_Reg _LeftMouseDownMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _LeftMouseDownMsgArgs[] = {
-	DECL(0xfd0c5087, LeftMouseDownMsgArgs, x, x, kDataTypeFloat), // LeftMouseDownMsgArgs.x
-	DECL(0xfc0c4ef4, LeftMouseDownMsgArgs, y, y, kDataTypeFloat), // LeftMouseDownMsgArgs.y
-	DECL(0xec56f27b, LeftMouseDownMsgArgs, deltaX, deltaX, kDataTypeInt), // LeftMouseDownMsgArgs.deltaX
-	DECL(0xeb56f0e8, LeftMouseDownMsgArgs, deltaY, deltaY, kDataTypeInt), // LeftMouseDownMsgArgs.deltaY
-	DECL(0x43b27471, LeftMouseDownMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // LeftMouseDownMsgArgs.button
-	DECL(0xd9747336, LeftMouseDownMsgArgs, clickCount, clickCount, kDataTypeInt), // LeftMouseDownMsgArgs.clickCount
+static luaL_Reg _Mouse_LeftMouseDownMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Mouse_LeftMouseDownMsgArgs[] = {
+	DECL(0xfd0c5087, Mouse_LeftMouseDownMsgArgs, x, x, kDataTypeFloat), // Mouse_LeftMouseDownMsgArgs.x
+	DECL(0xfc0c4ef4, Mouse_LeftMouseDownMsgArgs, y, y, kDataTypeFloat), // Mouse_LeftMouseDownMsgArgs.y
+	DECL(0xec56f27b, Mouse_LeftMouseDownMsgArgs, deltaX, deltaX, kDataTypeInt), // Mouse_LeftMouseDownMsgArgs.deltaX
+	DECL(0xeb56f0e8, Mouse_LeftMouseDownMsgArgs, deltaY, deltaY, kDataTypeInt), // Mouse_LeftMouseDownMsgArgs.deltaY
+	DECL(0x43b27471, Mouse_LeftMouseDownMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Mouse_LeftMouseDownMsgArgs.button
+	DECL(0xd9747336, Mouse_LeftMouseDownMsgArgs, clickCount, clickCount, kDataTypeInt), // Mouse_LeftMouseDownMsgArgs.clickCount
 };
-static luaL_Reg _RightMouseDownMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _RightMouseDownMsgArgs[] = {
-	DECL(0xfd0c5087, RightMouseDownMsgArgs, x, x, kDataTypeFloat), // RightMouseDownMsgArgs.x
-	DECL(0xfc0c4ef4, RightMouseDownMsgArgs, y, y, kDataTypeFloat), // RightMouseDownMsgArgs.y
-	DECL(0xec56f27b, RightMouseDownMsgArgs, deltaX, deltaX, kDataTypeInt), // RightMouseDownMsgArgs.deltaX
-	DECL(0xeb56f0e8, RightMouseDownMsgArgs, deltaY, deltaY, kDataTypeInt), // RightMouseDownMsgArgs.deltaY
-	DECL(0x43b27471, RightMouseDownMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // RightMouseDownMsgArgs.button
-	DECL(0xd9747336, RightMouseDownMsgArgs, clickCount, clickCount, kDataTypeInt), // RightMouseDownMsgArgs.clickCount
+static luaL_Reg _Mouse_RightMouseDownMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Mouse_RightMouseDownMsgArgs[] = {
+	DECL(0xfd0c5087, Mouse_RightMouseDownMsgArgs, x, x, kDataTypeFloat), // Mouse_RightMouseDownMsgArgs.x
+	DECL(0xfc0c4ef4, Mouse_RightMouseDownMsgArgs, y, y, kDataTypeFloat), // Mouse_RightMouseDownMsgArgs.y
+	DECL(0xec56f27b, Mouse_RightMouseDownMsgArgs, deltaX, deltaX, kDataTypeInt), // Mouse_RightMouseDownMsgArgs.deltaX
+	DECL(0xeb56f0e8, Mouse_RightMouseDownMsgArgs, deltaY, deltaY, kDataTypeInt), // Mouse_RightMouseDownMsgArgs.deltaY
+	DECL(0x43b27471, Mouse_RightMouseDownMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Mouse_RightMouseDownMsgArgs.button
+	DECL(0xd9747336, Mouse_RightMouseDownMsgArgs, clickCount, clickCount, kDataTypeInt), // Mouse_RightMouseDownMsgArgs.clickCount
 };
-static luaL_Reg _OtherMouseDownMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _OtherMouseDownMsgArgs[] = {
-	DECL(0xfd0c5087, OtherMouseDownMsgArgs, x, x, kDataTypeFloat), // OtherMouseDownMsgArgs.x
-	DECL(0xfc0c4ef4, OtherMouseDownMsgArgs, y, y, kDataTypeFloat), // OtherMouseDownMsgArgs.y
-	DECL(0xec56f27b, OtherMouseDownMsgArgs, deltaX, deltaX, kDataTypeInt), // OtherMouseDownMsgArgs.deltaX
-	DECL(0xeb56f0e8, OtherMouseDownMsgArgs, deltaY, deltaY, kDataTypeInt), // OtherMouseDownMsgArgs.deltaY
-	DECL(0x43b27471, OtherMouseDownMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // OtherMouseDownMsgArgs.button
-	DECL(0xd9747336, OtherMouseDownMsgArgs, clickCount, clickCount, kDataTypeInt), // OtherMouseDownMsgArgs.clickCount
+static luaL_Reg _Mouse_OtherMouseDownMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Mouse_OtherMouseDownMsgArgs[] = {
+	DECL(0xfd0c5087, Mouse_OtherMouseDownMsgArgs, x, x, kDataTypeFloat), // Mouse_OtherMouseDownMsgArgs.x
+	DECL(0xfc0c4ef4, Mouse_OtherMouseDownMsgArgs, y, y, kDataTypeFloat), // Mouse_OtherMouseDownMsgArgs.y
+	DECL(0xec56f27b, Mouse_OtherMouseDownMsgArgs, deltaX, deltaX, kDataTypeInt), // Mouse_OtherMouseDownMsgArgs.deltaX
+	DECL(0xeb56f0e8, Mouse_OtherMouseDownMsgArgs, deltaY, deltaY, kDataTypeInt), // Mouse_OtherMouseDownMsgArgs.deltaY
+	DECL(0x43b27471, Mouse_OtherMouseDownMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Mouse_OtherMouseDownMsgArgs.button
+	DECL(0xd9747336, Mouse_OtherMouseDownMsgArgs, clickCount, clickCount, kDataTypeInt), // Mouse_OtherMouseDownMsgArgs.clickCount
 };
-static luaL_Reg _LeftMouseUpMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _LeftMouseUpMsgArgs[] = {
-	DECL(0xfd0c5087, LeftMouseUpMsgArgs, x, x, kDataTypeFloat), // LeftMouseUpMsgArgs.x
-	DECL(0xfc0c4ef4, LeftMouseUpMsgArgs, y, y, kDataTypeFloat), // LeftMouseUpMsgArgs.y
-	DECL(0xec56f27b, LeftMouseUpMsgArgs, deltaX, deltaX, kDataTypeInt), // LeftMouseUpMsgArgs.deltaX
-	DECL(0xeb56f0e8, LeftMouseUpMsgArgs, deltaY, deltaY, kDataTypeInt), // LeftMouseUpMsgArgs.deltaY
-	DECL(0x43b27471, LeftMouseUpMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // LeftMouseUpMsgArgs.button
-	DECL(0xd9747336, LeftMouseUpMsgArgs, clickCount, clickCount, kDataTypeInt), // LeftMouseUpMsgArgs.clickCount
+static luaL_Reg _Mouse_LeftMouseUpMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Mouse_LeftMouseUpMsgArgs[] = {
+	DECL(0xfd0c5087, Mouse_LeftMouseUpMsgArgs, x, x, kDataTypeFloat), // Mouse_LeftMouseUpMsgArgs.x
+	DECL(0xfc0c4ef4, Mouse_LeftMouseUpMsgArgs, y, y, kDataTypeFloat), // Mouse_LeftMouseUpMsgArgs.y
+	DECL(0xec56f27b, Mouse_LeftMouseUpMsgArgs, deltaX, deltaX, kDataTypeInt), // Mouse_LeftMouseUpMsgArgs.deltaX
+	DECL(0xeb56f0e8, Mouse_LeftMouseUpMsgArgs, deltaY, deltaY, kDataTypeInt), // Mouse_LeftMouseUpMsgArgs.deltaY
+	DECL(0x43b27471, Mouse_LeftMouseUpMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Mouse_LeftMouseUpMsgArgs.button
+	DECL(0xd9747336, Mouse_LeftMouseUpMsgArgs, clickCount, clickCount, kDataTypeInt), // Mouse_LeftMouseUpMsgArgs.clickCount
 };
-static luaL_Reg _RightMouseUpMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _RightMouseUpMsgArgs[] = {
-	DECL(0xfd0c5087, RightMouseUpMsgArgs, x, x, kDataTypeFloat), // RightMouseUpMsgArgs.x
-	DECL(0xfc0c4ef4, RightMouseUpMsgArgs, y, y, kDataTypeFloat), // RightMouseUpMsgArgs.y
-	DECL(0xec56f27b, RightMouseUpMsgArgs, deltaX, deltaX, kDataTypeInt), // RightMouseUpMsgArgs.deltaX
-	DECL(0xeb56f0e8, RightMouseUpMsgArgs, deltaY, deltaY, kDataTypeInt), // RightMouseUpMsgArgs.deltaY
-	DECL(0x43b27471, RightMouseUpMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // RightMouseUpMsgArgs.button
-	DECL(0xd9747336, RightMouseUpMsgArgs, clickCount, clickCount, kDataTypeInt), // RightMouseUpMsgArgs.clickCount
+static luaL_Reg _Mouse_RightMouseUpMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Mouse_RightMouseUpMsgArgs[] = {
+	DECL(0xfd0c5087, Mouse_RightMouseUpMsgArgs, x, x, kDataTypeFloat), // Mouse_RightMouseUpMsgArgs.x
+	DECL(0xfc0c4ef4, Mouse_RightMouseUpMsgArgs, y, y, kDataTypeFloat), // Mouse_RightMouseUpMsgArgs.y
+	DECL(0xec56f27b, Mouse_RightMouseUpMsgArgs, deltaX, deltaX, kDataTypeInt), // Mouse_RightMouseUpMsgArgs.deltaX
+	DECL(0xeb56f0e8, Mouse_RightMouseUpMsgArgs, deltaY, deltaY, kDataTypeInt), // Mouse_RightMouseUpMsgArgs.deltaY
+	DECL(0x43b27471, Mouse_RightMouseUpMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Mouse_RightMouseUpMsgArgs.button
+	DECL(0xd9747336, Mouse_RightMouseUpMsgArgs, clickCount, clickCount, kDataTypeInt), // Mouse_RightMouseUpMsgArgs.clickCount
 };
-static luaL_Reg _OtherMouseUpMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _OtherMouseUpMsgArgs[] = {
-	DECL(0xfd0c5087, OtherMouseUpMsgArgs, x, x, kDataTypeFloat), // OtherMouseUpMsgArgs.x
-	DECL(0xfc0c4ef4, OtherMouseUpMsgArgs, y, y, kDataTypeFloat), // OtherMouseUpMsgArgs.y
-	DECL(0xec56f27b, OtherMouseUpMsgArgs, deltaX, deltaX, kDataTypeInt), // OtherMouseUpMsgArgs.deltaX
-	DECL(0xeb56f0e8, OtherMouseUpMsgArgs, deltaY, deltaY, kDataTypeInt), // OtherMouseUpMsgArgs.deltaY
-	DECL(0x43b27471, OtherMouseUpMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // OtherMouseUpMsgArgs.button
-	DECL(0xd9747336, OtherMouseUpMsgArgs, clickCount, clickCount, kDataTypeInt), // OtherMouseUpMsgArgs.clickCount
+static luaL_Reg _Mouse_OtherMouseUpMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Mouse_OtherMouseUpMsgArgs[] = {
+	DECL(0xfd0c5087, Mouse_OtherMouseUpMsgArgs, x, x, kDataTypeFloat), // Mouse_OtherMouseUpMsgArgs.x
+	DECL(0xfc0c4ef4, Mouse_OtherMouseUpMsgArgs, y, y, kDataTypeFloat), // Mouse_OtherMouseUpMsgArgs.y
+	DECL(0xec56f27b, Mouse_OtherMouseUpMsgArgs, deltaX, deltaX, kDataTypeInt), // Mouse_OtherMouseUpMsgArgs.deltaX
+	DECL(0xeb56f0e8, Mouse_OtherMouseUpMsgArgs, deltaY, deltaY, kDataTypeInt), // Mouse_OtherMouseUpMsgArgs.deltaY
+	DECL(0x43b27471, Mouse_OtherMouseUpMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Mouse_OtherMouseUpMsgArgs.button
+	DECL(0xd9747336, Mouse_OtherMouseUpMsgArgs, clickCount, clickCount, kDataTypeInt), // Mouse_OtherMouseUpMsgArgs.clickCount
 };
-static luaL_Reg _LeftMouseDraggedMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _LeftMouseDraggedMsgArgs[] = {
-	DECL(0xfd0c5087, LeftMouseDraggedMsgArgs, x, x, kDataTypeFloat), // LeftMouseDraggedMsgArgs.x
-	DECL(0xfc0c4ef4, LeftMouseDraggedMsgArgs, y, y, kDataTypeFloat), // LeftMouseDraggedMsgArgs.y
-	DECL(0xec56f27b, LeftMouseDraggedMsgArgs, deltaX, deltaX, kDataTypeInt), // LeftMouseDraggedMsgArgs.deltaX
-	DECL(0xeb56f0e8, LeftMouseDraggedMsgArgs, deltaY, deltaY, kDataTypeInt), // LeftMouseDraggedMsgArgs.deltaY
-	DECL(0x43b27471, LeftMouseDraggedMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // LeftMouseDraggedMsgArgs.button
-	DECL(0xd9747336, LeftMouseDraggedMsgArgs, clickCount, clickCount, kDataTypeInt), // LeftMouseDraggedMsgArgs.clickCount
+static luaL_Reg _Mouse_LeftMouseDraggedMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Mouse_LeftMouseDraggedMsgArgs[] = {
+	DECL(0xfd0c5087, Mouse_LeftMouseDraggedMsgArgs, x, x, kDataTypeFloat), // Mouse_LeftMouseDraggedMsgArgs.x
+	DECL(0xfc0c4ef4, Mouse_LeftMouseDraggedMsgArgs, y, y, kDataTypeFloat), // Mouse_LeftMouseDraggedMsgArgs.y
+	DECL(0xec56f27b, Mouse_LeftMouseDraggedMsgArgs, deltaX, deltaX, kDataTypeInt), // Mouse_LeftMouseDraggedMsgArgs.deltaX
+	DECL(0xeb56f0e8, Mouse_LeftMouseDraggedMsgArgs, deltaY, deltaY, kDataTypeInt), // Mouse_LeftMouseDraggedMsgArgs.deltaY
+	DECL(0x43b27471, Mouse_LeftMouseDraggedMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Mouse_LeftMouseDraggedMsgArgs.button
+	DECL(0xd9747336, Mouse_LeftMouseDraggedMsgArgs, clickCount, clickCount, kDataTypeInt), // Mouse_LeftMouseDraggedMsgArgs.clickCount
 };
-static luaL_Reg _RightMouseDraggedMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _RightMouseDraggedMsgArgs[] = {
-	DECL(0xfd0c5087, RightMouseDraggedMsgArgs, x, x, kDataTypeFloat), // RightMouseDraggedMsgArgs.x
-	DECL(0xfc0c4ef4, RightMouseDraggedMsgArgs, y, y, kDataTypeFloat), // RightMouseDraggedMsgArgs.y
-	DECL(0xec56f27b, RightMouseDraggedMsgArgs, deltaX, deltaX, kDataTypeInt), // RightMouseDraggedMsgArgs.deltaX
-	DECL(0xeb56f0e8, RightMouseDraggedMsgArgs, deltaY, deltaY, kDataTypeInt), // RightMouseDraggedMsgArgs.deltaY
-	DECL(0x43b27471, RightMouseDraggedMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // RightMouseDraggedMsgArgs.button
-	DECL(0xd9747336, RightMouseDraggedMsgArgs, clickCount, clickCount, kDataTypeInt), // RightMouseDraggedMsgArgs.clickCount
+static luaL_Reg _Mouse_RightMouseDraggedMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Mouse_RightMouseDraggedMsgArgs[] = {
+	DECL(0xfd0c5087, Mouse_RightMouseDraggedMsgArgs, x, x, kDataTypeFloat), // Mouse_RightMouseDraggedMsgArgs.x
+	DECL(0xfc0c4ef4, Mouse_RightMouseDraggedMsgArgs, y, y, kDataTypeFloat), // Mouse_RightMouseDraggedMsgArgs.y
+	DECL(0xec56f27b, Mouse_RightMouseDraggedMsgArgs, deltaX, deltaX, kDataTypeInt), // Mouse_RightMouseDraggedMsgArgs.deltaX
+	DECL(0xeb56f0e8, Mouse_RightMouseDraggedMsgArgs, deltaY, deltaY, kDataTypeInt), // Mouse_RightMouseDraggedMsgArgs.deltaY
+	DECL(0x43b27471, Mouse_RightMouseDraggedMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Mouse_RightMouseDraggedMsgArgs.button
+	DECL(0xd9747336, Mouse_RightMouseDraggedMsgArgs, clickCount, clickCount, kDataTypeInt), // Mouse_RightMouseDraggedMsgArgs.clickCount
 };
-static luaL_Reg _OtherMouseDraggedMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _OtherMouseDraggedMsgArgs[] = {
-	DECL(0xfd0c5087, OtherMouseDraggedMsgArgs, x, x, kDataTypeFloat), // OtherMouseDraggedMsgArgs.x
-	DECL(0xfc0c4ef4, OtherMouseDraggedMsgArgs, y, y, kDataTypeFloat), // OtherMouseDraggedMsgArgs.y
-	DECL(0xec56f27b, OtherMouseDraggedMsgArgs, deltaX, deltaX, kDataTypeInt), // OtherMouseDraggedMsgArgs.deltaX
-	DECL(0xeb56f0e8, OtherMouseDraggedMsgArgs, deltaY, deltaY, kDataTypeInt), // OtherMouseDraggedMsgArgs.deltaY
-	DECL(0x43b27471, OtherMouseDraggedMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // OtherMouseDraggedMsgArgs.button
-	DECL(0xd9747336, OtherMouseDraggedMsgArgs, clickCount, clickCount, kDataTypeInt), // OtherMouseDraggedMsgArgs.clickCount
+static luaL_Reg _Mouse_OtherMouseDraggedMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Mouse_OtherMouseDraggedMsgArgs[] = {
+	DECL(0xfd0c5087, Mouse_OtherMouseDraggedMsgArgs, x, x, kDataTypeFloat), // Mouse_OtherMouseDraggedMsgArgs.x
+	DECL(0xfc0c4ef4, Mouse_OtherMouseDraggedMsgArgs, y, y, kDataTypeFloat), // Mouse_OtherMouseDraggedMsgArgs.y
+	DECL(0xec56f27b, Mouse_OtherMouseDraggedMsgArgs, deltaX, deltaX, kDataTypeInt), // Mouse_OtherMouseDraggedMsgArgs.deltaX
+	DECL(0xeb56f0e8, Mouse_OtherMouseDraggedMsgArgs, deltaY, deltaY, kDataTypeInt), // Mouse_OtherMouseDraggedMsgArgs.deltaY
+	DECL(0x43b27471, Mouse_OtherMouseDraggedMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Mouse_OtherMouseDraggedMsgArgs.button
+	DECL(0xd9747336, Mouse_OtherMouseDraggedMsgArgs, clickCount, clickCount, kDataTypeInt), // Mouse_OtherMouseDraggedMsgArgs.clickCount
 };
-static luaL_Reg _LeftDoubleClickMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _LeftDoubleClickMsgArgs[] = {
-	DECL(0xfd0c5087, LeftDoubleClickMsgArgs, x, x, kDataTypeFloat), // LeftDoubleClickMsgArgs.x
-	DECL(0xfc0c4ef4, LeftDoubleClickMsgArgs, y, y, kDataTypeFloat), // LeftDoubleClickMsgArgs.y
-	DECL(0xec56f27b, LeftDoubleClickMsgArgs, deltaX, deltaX, kDataTypeInt), // LeftDoubleClickMsgArgs.deltaX
-	DECL(0xeb56f0e8, LeftDoubleClickMsgArgs, deltaY, deltaY, kDataTypeInt), // LeftDoubleClickMsgArgs.deltaY
-	DECL(0x43b27471, LeftDoubleClickMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // LeftDoubleClickMsgArgs.button
-	DECL(0xd9747336, LeftDoubleClickMsgArgs, clickCount, clickCount, kDataTypeInt), // LeftDoubleClickMsgArgs.clickCount
+static luaL_Reg _Mouse_LeftDoubleClickMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Mouse_LeftDoubleClickMsgArgs[] = {
+	DECL(0xfd0c5087, Mouse_LeftDoubleClickMsgArgs, x, x, kDataTypeFloat), // Mouse_LeftDoubleClickMsgArgs.x
+	DECL(0xfc0c4ef4, Mouse_LeftDoubleClickMsgArgs, y, y, kDataTypeFloat), // Mouse_LeftDoubleClickMsgArgs.y
+	DECL(0xec56f27b, Mouse_LeftDoubleClickMsgArgs, deltaX, deltaX, kDataTypeInt), // Mouse_LeftDoubleClickMsgArgs.deltaX
+	DECL(0xeb56f0e8, Mouse_LeftDoubleClickMsgArgs, deltaY, deltaY, kDataTypeInt), // Mouse_LeftDoubleClickMsgArgs.deltaY
+	DECL(0x43b27471, Mouse_LeftDoubleClickMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Mouse_LeftDoubleClickMsgArgs.button
+	DECL(0xd9747336, Mouse_LeftDoubleClickMsgArgs, clickCount, clickCount, kDataTypeInt), // Mouse_LeftDoubleClickMsgArgs.clickCount
 };
-static luaL_Reg _RightDoubleClickMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _RightDoubleClickMsgArgs[] = {
-	DECL(0xfd0c5087, RightDoubleClickMsgArgs, x, x, kDataTypeFloat), // RightDoubleClickMsgArgs.x
-	DECL(0xfc0c4ef4, RightDoubleClickMsgArgs, y, y, kDataTypeFloat), // RightDoubleClickMsgArgs.y
-	DECL(0xec56f27b, RightDoubleClickMsgArgs, deltaX, deltaX, kDataTypeInt), // RightDoubleClickMsgArgs.deltaX
-	DECL(0xeb56f0e8, RightDoubleClickMsgArgs, deltaY, deltaY, kDataTypeInt), // RightDoubleClickMsgArgs.deltaY
-	DECL(0x43b27471, RightDoubleClickMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // RightDoubleClickMsgArgs.button
-	DECL(0xd9747336, RightDoubleClickMsgArgs, clickCount, clickCount, kDataTypeInt), // RightDoubleClickMsgArgs.clickCount
+static luaL_Reg _Mouse_RightDoubleClickMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Mouse_RightDoubleClickMsgArgs[] = {
+	DECL(0xfd0c5087, Mouse_RightDoubleClickMsgArgs, x, x, kDataTypeFloat), // Mouse_RightDoubleClickMsgArgs.x
+	DECL(0xfc0c4ef4, Mouse_RightDoubleClickMsgArgs, y, y, kDataTypeFloat), // Mouse_RightDoubleClickMsgArgs.y
+	DECL(0xec56f27b, Mouse_RightDoubleClickMsgArgs, deltaX, deltaX, kDataTypeInt), // Mouse_RightDoubleClickMsgArgs.deltaX
+	DECL(0xeb56f0e8, Mouse_RightDoubleClickMsgArgs, deltaY, deltaY, kDataTypeInt), // Mouse_RightDoubleClickMsgArgs.deltaY
+	DECL(0x43b27471, Mouse_RightDoubleClickMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Mouse_RightDoubleClickMsgArgs.button
+	DECL(0xd9747336, Mouse_RightDoubleClickMsgArgs, clickCount, clickCount, kDataTypeInt), // Mouse_RightDoubleClickMsgArgs.clickCount
 };
-static luaL_Reg _OtherDoubleClickMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _OtherDoubleClickMsgArgs[] = {
-	DECL(0xfd0c5087, OtherDoubleClickMsgArgs, x, x, kDataTypeFloat), // OtherDoubleClickMsgArgs.x
-	DECL(0xfc0c4ef4, OtherDoubleClickMsgArgs, y, y, kDataTypeFloat), // OtherDoubleClickMsgArgs.y
-	DECL(0xec56f27b, OtherDoubleClickMsgArgs, deltaX, deltaX, kDataTypeInt), // OtherDoubleClickMsgArgs.deltaX
-	DECL(0xeb56f0e8, OtherDoubleClickMsgArgs, deltaY, deltaY, kDataTypeInt), // OtherDoubleClickMsgArgs.deltaY
-	DECL(0x43b27471, OtherDoubleClickMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // OtherDoubleClickMsgArgs.button
-	DECL(0xd9747336, OtherDoubleClickMsgArgs, clickCount, clickCount, kDataTypeInt), // OtherDoubleClickMsgArgs.clickCount
+static luaL_Reg _Mouse_OtherDoubleClickMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Mouse_OtherDoubleClickMsgArgs[] = {
+	DECL(0xfd0c5087, Mouse_OtherDoubleClickMsgArgs, x, x, kDataTypeFloat), // Mouse_OtherDoubleClickMsgArgs.x
+	DECL(0xfc0c4ef4, Mouse_OtherDoubleClickMsgArgs, y, y, kDataTypeFloat), // Mouse_OtherDoubleClickMsgArgs.y
+	DECL(0xec56f27b, Mouse_OtherDoubleClickMsgArgs, deltaX, deltaX, kDataTypeInt), // Mouse_OtherDoubleClickMsgArgs.deltaX
+	DECL(0xeb56f0e8, Mouse_OtherDoubleClickMsgArgs, deltaY, deltaY, kDataTypeInt), // Mouse_OtherDoubleClickMsgArgs.deltaY
+	DECL(0x43b27471, Mouse_OtherDoubleClickMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Mouse_OtherDoubleClickMsgArgs.button
+	DECL(0xd9747336, Mouse_OtherDoubleClickMsgArgs, clickCount, clickCount, kDataTypeInt), // Mouse_OtherDoubleClickMsgArgs.clickCount
 };
-static luaL_Reg _MouseMovedMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _MouseMovedMsgArgs[] = {
-	DECL(0xfd0c5087, MouseMovedMsgArgs, x, x, kDataTypeFloat), // MouseMovedMsgArgs.x
-	DECL(0xfc0c4ef4, MouseMovedMsgArgs, y, y, kDataTypeFloat), // MouseMovedMsgArgs.y
-	DECL(0xec56f27b, MouseMovedMsgArgs, deltaX, deltaX, kDataTypeInt), // MouseMovedMsgArgs.deltaX
-	DECL(0xeb56f0e8, MouseMovedMsgArgs, deltaY, deltaY, kDataTypeInt), // MouseMovedMsgArgs.deltaY
-	DECL(0x43b27471, MouseMovedMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // MouseMovedMsgArgs.button
-	DECL(0xd9747336, MouseMovedMsgArgs, clickCount, clickCount, kDataTypeInt), // MouseMovedMsgArgs.clickCount
+static luaL_Reg _Mouse_MouseMovedMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Mouse_MouseMovedMsgArgs[] = {
+	DECL(0xfd0c5087, Mouse_MouseMovedMsgArgs, x, x, kDataTypeFloat), // Mouse_MouseMovedMsgArgs.x
+	DECL(0xfc0c4ef4, Mouse_MouseMovedMsgArgs, y, y, kDataTypeFloat), // Mouse_MouseMovedMsgArgs.y
+	DECL(0xec56f27b, Mouse_MouseMovedMsgArgs, deltaX, deltaX, kDataTypeInt), // Mouse_MouseMovedMsgArgs.deltaX
+	DECL(0xeb56f0e8, Mouse_MouseMovedMsgArgs, deltaY, deltaY, kDataTypeInt), // Mouse_MouseMovedMsgArgs.deltaY
+	DECL(0x43b27471, Mouse_MouseMovedMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Mouse_MouseMovedMsgArgs.button
+	DECL(0xd9747336, Mouse_MouseMovedMsgArgs, clickCount, clickCount, kDataTypeInt), // Mouse_MouseMovedMsgArgs.clickCount
 };
-static luaL_Reg _ScrollWheelMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _ScrollWheelMsgArgs[] = {
-	DECL(0xfd0c5087, ScrollWheelMsgArgs, x, x, kDataTypeFloat), // ScrollWheelMsgArgs.x
-	DECL(0xfc0c4ef4, ScrollWheelMsgArgs, y, y, kDataTypeFloat), // ScrollWheelMsgArgs.y
-	DECL(0xec56f27b, ScrollWheelMsgArgs, deltaX, deltaX, kDataTypeInt), // ScrollWheelMsgArgs.deltaX
-	DECL(0xeb56f0e8, ScrollWheelMsgArgs, deltaY, deltaY, kDataTypeInt), // ScrollWheelMsgArgs.deltaY
-	DECL(0x43b27471, ScrollWheelMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // ScrollWheelMsgArgs.button
-	DECL(0xd9747336, ScrollWheelMsgArgs, clickCount, clickCount, kDataTypeInt), // ScrollWheelMsgArgs.clickCount
+static luaL_Reg _Mouse_ScrollWheelMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Mouse_ScrollWheelMsgArgs[] = {
+	DECL(0xfd0c5087, Mouse_ScrollWheelMsgArgs, x, x, kDataTypeFloat), // Mouse_ScrollWheelMsgArgs.x
+	DECL(0xfc0c4ef4, Mouse_ScrollWheelMsgArgs, y, y, kDataTypeFloat), // Mouse_ScrollWheelMsgArgs.y
+	DECL(0xec56f27b, Mouse_ScrollWheelMsgArgs, deltaX, deltaX, kDataTypeInt), // Mouse_ScrollWheelMsgArgs.deltaX
+	DECL(0xeb56f0e8, Mouse_ScrollWheelMsgArgs, deltaY, deltaY, kDataTypeInt), // Mouse_ScrollWheelMsgArgs.deltaY
+	DECL(0x43b27471, Mouse_ScrollWheelMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Mouse_ScrollWheelMsgArgs.button
+	DECL(0xd9747336, Mouse_ScrollWheelMsgArgs, clickCount, clickCount, kDataTypeInt), // Mouse_ScrollWheelMsgArgs.clickCount
 };
-static luaL_Reg _DragDropMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _DragDropMsgArgs[] = {
-	DECL(0xfd0c5087, DragDropMsgArgs, x, x, kDataTypeFloat), // DragDropMsgArgs.x
-	DECL(0xfc0c4ef4, DragDropMsgArgs, y, y, kDataTypeFloat), // DragDropMsgArgs.y
-	DECL(0xec56f27b, DragDropMsgArgs, deltaX, deltaX, kDataTypeInt), // DragDropMsgArgs.deltaX
-	DECL(0xeb56f0e8, DragDropMsgArgs, deltaY, deltaY, kDataTypeInt), // DragDropMsgArgs.deltaY
-	DECL(0x43b27471, DragDropMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // DragDropMsgArgs.button
-	DECL(0xd9747336, DragDropMsgArgs, clickCount, clickCount, kDataTypeInt), // DragDropMsgArgs.clickCount
+static luaL_Reg _Mouse_DragDropMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Mouse_DragDropMsgArgs[] = {
+	DECL(0xfd0c5087, Mouse_DragDropMsgArgs, x, x, kDataTypeFloat), // Mouse_DragDropMsgArgs.x
+	DECL(0xfc0c4ef4, Mouse_DragDropMsgArgs, y, y, kDataTypeFloat), // Mouse_DragDropMsgArgs.y
+	DECL(0xec56f27b, Mouse_DragDropMsgArgs, deltaX, deltaX, kDataTypeInt), // Mouse_DragDropMsgArgs.deltaX
+	DECL(0xeb56f0e8, Mouse_DragDropMsgArgs, deltaY, deltaY, kDataTypeInt), // Mouse_DragDropMsgArgs.deltaY
+	DECL(0x43b27471, Mouse_DragDropMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Mouse_DragDropMsgArgs.button
+	DECL(0xd9747336, Mouse_DragDropMsgArgs, clickCount, clickCount, kDataTypeInt), // Mouse_DragDropMsgArgs.clickCount
 };
-static luaL_Reg _DragEnterMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _DragEnterMsgArgs[] = {
-	DECL(0xfd0c5087, DragEnterMsgArgs, x, x, kDataTypeFloat), // DragEnterMsgArgs.x
-	DECL(0xfc0c4ef4, DragEnterMsgArgs, y, y, kDataTypeFloat), // DragEnterMsgArgs.y
-	DECL(0xec56f27b, DragEnterMsgArgs, deltaX, deltaX, kDataTypeInt), // DragEnterMsgArgs.deltaX
-	DECL(0xeb56f0e8, DragEnterMsgArgs, deltaY, deltaY, kDataTypeInt), // DragEnterMsgArgs.deltaY
-	DECL(0x43b27471, DragEnterMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // DragEnterMsgArgs.button
-	DECL(0xd9747336, DragEnterMsgArgs, clickCount, clickCount, kDataTypeInt), // DragEnterMsgArgs.clickCount
+static luaL_Reg _Mouse_DragEnterMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Mouse_DragEnterMsgArgs[] = {
+	DECL(0xfd0c5087, Mouse_DragEnterMsgArgs, x, x, kDataTypeFloat), // Mouse_DragEnterMsgArgs.x
+	DECL(0xfc0c4ef4, Mouse_DragEnterMsgArgs, y, y, kDataTypeFloat), // Mouse_DragEnterMsgArgs.y
+	DECL(0xec56f27b, Mouse_DragEnterMsgArgs, deltaX, deltaX, kDataTypeInt), // Mouse_DragEnterMsgArgs.deltaX
+	DECL(0xeb56f0e8, Mouse_DragEnterMsgArgs, deltaY, deltaY, kDataTypeInt), // Mouse_DragEnterMsgArgs.deltaY
+	DECL(0x43b27471, Mouse_DragEnterMsgArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Mouse_DragEnterMsgArgs.button
+	DECL(0xd9747336, Mouse_DragEnterMsgArgs, clickCount, clickCount, kDataTypeInt), // Mouse_DragEnterMsgArgs.clickCount
 };
-static luaL_Reg _KeyMessageMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _KeyMessageMsgArgs[] = {
-	DECL(0xd803e2a9, KeyMessageMsgArgs, keyCode, keyCode, kDataTypeInt), // KeyMessageMsgArgs.keyCode
-	DECL(0x8b3aa710, KeyMessageMsgArgs, character, character, kDataTypeInt), // KeyMessageMsgArgs.character
-	DECL(0x411b1019, KeyMessageMsgArgs, modifiers, modifiers, kDataTypeInt), // KeyMessageMsgArgs.modifiers
-	DECL(0xbde64e3e, KeyMessageMsgArgs, text, text, kDataTypeString), // KeyMessageMsgArgs.text
-	DECL(0x8f82be34, KeyMessageMsgArgs, modifiersString, modifiersString, kDataTypeString), // KeyMessageMsgArgs.modifiersString
-	DECL(0x9703dc13, KeyMessageMsgArgs, hotKey, hotKey, kDataTypeString), // KeyMessageMsgArgs.hotKey
+static luaL_Reg _Keyboard_KeyMessageMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Keyboard_KeyMessageMsgArgs[] = {
+	DECL(0xd803e2a9, Keyboard_KeyMessageMsgArgs, keyCode, keyCode, kDataTypeInt), // Keyboard_KeyMessageMsgArgs.keyCode
+	DECL(0x8b3aa710, Keyboard_KeyMessageMsgArgs, character, character, kDataTypeInt), // Keyboard_KeyMessageMsgArgs.character
+	DECL(0x411b1019, Keyboard_KeyMessageMsgArgs, modifiers, modifiers, kDataTypeInt), // Keyboard_KeyMessageMsgArgs.modifiers
+	DECL(0xbde64e3e, Keyboard_KeyMessageMsgArgs, text, text, kDataTypeString), // Keyboard_KeyMessageMsgArgs.text
+	DECL(0x8f82be34, Keyboard_KeyMessageMsgArgs, modifiersString, modifiersString, kDataTypeString), // Keyboard_KeyMessageMsgArgs.modifiersString
+	DECL(0x9703dc13, Keyboard_KeyMessageMsgArgs, hotKey, hotKey, kDataTypeString), // Keyboard_KeyMessageMsgArgs.hotKey
 };
-static luaL_Reg _KeyDownMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _KeyDownMsgArgs[] = {
-	DECL(0xd803e2a9, KeyDownMsgArgs, keyCode, keyCode, kDataTypeInt), // KeyDownMsgArgs.keyCode
-	DECL(0x8b3aa710, KeyDownMsgArgs, character, character, kDataTypeInt), // KeyDownMsgArgs.character
-	DECL(0x411b1019, KeyDownMsgArgs, modifiers, modifiers, kDataTypeInt), // KeyDownMsgArgs.modifiers
-	DECL(0xbde64e3e, KeyDownMsgArgs, text, text, kDataTypeString), // KeyDownMsgArgs.text
-	DECL(0x8f82be34, KeyDownMsgArgs, modifiersString, modifiersString, kDataTypeString), // KeyDownMsgArgs.modifiersString
-	DECL(0x9703dc13, KeyDownMsgArgs, hotKey, hotKey, kDataTypeString), // KeyDownMsgArgs.hotKey
+static luaL_Reg _Keyboard_KeyDownMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Keyboard_KeyDownMsgArgs[] = {
+	DECL(0xd803e2a9, Keyboard_KeyDownMsgArgs, keyCode, keyCode, kDataTypeInt), // Keyboard_KeyDownMsgArgs.keyCode
+	DECL(0x8b3aa710, Keyboard_KeyDownMsgArgs, character, character, kDataTypeInt), // Keyboard_KeyDownMsgArgs.character
+	DECL(0x411b1019, Keyboard_KeyDownMsgArgs, modifiers, modifiers, kDataTypeInt), // Keyboard_KeyDownMsgArgs.modifiers
+	DECL(0xbde64e3e, Keyboard_KeyDownMsgArgs, text, text, kDataTypeString), // Keyboard_KeyDownMsgArgs.text
+	DECL(0x8f82be34, Keyboard_KeyDownMsgArgs, modifiersString, modifiersString, kDataTypeString), // Keyboard_KeyDownMsgArgs.modifiersString
+	DECL(0x9703dc13, Keyboard_KeyDownMsgArgs, hotKey, hotKey, kDataTypeString), // Keyboard_KeyDownMsgArgs.hotKey
 };
-static luaL_Reg _KeyUpMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _KeyUpMsgArgs[] = {
-	DECL(0xd803e2a9, KeyUpMsgArgs, keyCode, keyCode, kDataTypeInt), // KeyUpMsgArgs.keyCode
-	DECL(0x8b3aa710, KeyUpMsgArgs, character, character, kDataTypeInt), // KeyUpMsgArgs.character
-	DECL(0x411b1019, KeyUpMsgArgs, modifiers, modifiers, kDataTypeInt), // KeyUpMsgArgs.modifiers
-	DECL(0xbde64e3e, KeyUpMsgArgs, text, text, kDataTypeString), // KeyUpMsgArgs.text
-	DECL(0x8f82be34, KeyUpMsgArgs, modifiersString, modifiersString, kDataTypeString), // KeyUpMsgArgs.modifiersString
-	DECL(0x9703dc13, KeyUpMsgArgs, hotKey, hotKey, kDataTypeString), // KeyUpMsgArgs.hotKey
+static luaL_Reg _Keyboard_KeyUpMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Keyboard_KeyUpMsgArgs[] = {
+	DECL(0xd803e2a9, Keyboard_KeyUpMsgArgs, keyCode, keyCode, kDataTypeInt), // Keyboard_KeyUpMsgArgs.keyCode
+	DECL(0x8b3aa710, Keyboard_KeyUpMsgArgs, character, character, kDataTypeInt), // Keyboard_KeyUpMsgArgs.character
+	DECL(0x411b1019, Keyboard_KeyUpMsgArgs, modifiers, modifiers, kDataTypeInt), // Keyboard_KeyUpMsgArgs.modifiers
+	DECL(0xbde64e3e, Keyboard_KeyUpMsgArgs, text, text, kDataTypeString), // Keyboard_KeyUpMsgArgs.text
+	DECL(0x8f82be34, Keyboard_KeyUpMsgArgs, modifiersString, modifiersString, kDataTypeString), // Keyboard_KeyUpMsgArgs.modifiersString
+	DECL(0x9703dc13, Keyboard_KeyUpMsgArgs, hotKey, hotKey, kDataTypeString), // Keyboard_KeyUpMsgArgs.hotKey
 };
-static luaL_Reg _TextInputMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _TextInputMsgArgs[] = {
-	DECL(0xd803e2a9, TextInputMsgArgs, keyCode, keyCode, kDataTypeInt), // TextInputMsgArgs.keyCode
-	DECL(0x8b3aa710, TextInputMsgArgs, character, character, kDataTypeInt), // TextInputMsgArgs.character
-	DECL(0x411b1019, TextInputMsgArgs, modifiers, modifiers, kDataTypeInt), // TextInputMsgArgs.modifiers
-	DECL(0xbde64e3e, TextInputMsgArgs, text, text, kDataTypeString), // TextInputMsgArgs.text
-	DECL(0x8f82be34, TextInputMsgArgs, modifiersString, modifiersString, kDataTypeString), // TextInputMsgArgs.modifiersString
-	DECL(0x9703dc13, TextInputMsgArgs, hotKey, hotKey, kDataTypeString), // TextInputMsgArgs.hotKey
+static luaL_Reg _Keyboard_TextInputMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Keyboard_TextInputMsgArgs[] = {
+	DECL(0xd803e2a9, Keyboard_TextInputMsgArgs, keyCode, keyCode, kDataTypeInt), // Keyboard_TextInputMsgArgs.keyCode
+	DECL(0x8b3aa710, Keyboard_TextInputMsgArgs, character, character, kDataTypeInt), // Keyboard_TextInputMsgArgs.character
+	DECL(0x411b1019, Keyboard_TextInputMsgArgs, modifiers, modifiers, kDataTypeInt), // Keyboard_TextInputMsgArgs.modifiers
+	DECL(0xbde64e3e, Keyboard_TextInputMsgArgs, text, text, kDataTypeString), // Keyboard_TextInputMsgArgs.text
+	DECL(0x8f82be34, Keyboard_TextInputMsgArgs, modifiersString, modifiersString, kDataTypeString), // Keyboard_TextInputMsgArgs.modifiersString
+	DECL(0x9703dc13, Keyboard_TextInputMsgArgs, hotKey, hotKey, kDataTypeString), // Keyboard_TextInputMsgArgs.hotKey
 };
-static luaL_Reg _CreateMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _CreateMsgArgs[] = {
+static luaL_Reg _Object_CreateMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Object_CreateMsgArgs[] = {
 };
-static luaL_Reg _StartMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _StartMsgArgs[] = {
+static luaL_Reg _Object_StartMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Object_StartMsgArgs[] = {
 };
-static luaL_Reg _AwakeMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _AwakeMsgArgs[] = {
+static luaL_Reg _Object_AwakeMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Object_AwakeMsgArgs[] = {
 };
-static luaL_Reg _ThemeChangedMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _ThemeChangedMsgArgs[] = {
+static luaL_Reg _Object_ThemeChangedMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Object_ThemeChangedMsgArgs[] = {
 };
-static luaL_Reg _PropertyChangedMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _PropertyChangedMsgArgs[] = {
-	DECL(0x5221f9e8, PropertyChangedMsgArgs, Property, Property, kDataTypeStruct, .TypeString = "Property"), // PropertyChangedMsgArgs.Property
+static luaL_Reg _Object_PropertyChangedMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Object_PropertyChangedMsgArgs[] = {
+	DECL(0x5221f9e8, Object_PropertyChangedMsgArgs, Property, Property, kDataTypeStruct, .TypeString = "Property"), // Object_PropertyChangedMsgArgs.Property
 };
-static luaL_Reg _AttachedMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _AttachedMsgArgs[] = {
+static luaL_Reg _Object_AttachedMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Object_AttachedMsgArgs[] = {
 };
-static luaL_Reg _ReleaseMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _ReleaseMsgArgs[] = {
+static luaL_Reg _Object_ReleaseMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Object_ReleaseMsgArgs[] = {
 };
-static luaL_Reg _DestroyMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _DestroyMsgArgs[] = {
+static luaL_Reg _Object_DestroyMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Object_DestroyMsgArgs[] = {
 };
-static luaL_Reg _TimerMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _TimerMsgArgs[] = {
+static luaL_Reg _Object_TimerMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Object_TimerMsgArgs[] = {
 };
 
-STRUCT(MouseMessageMsgArgs, MouseMessageMsgArgs);
-STRUCT(LeftMouseDownMsgArgs, LeftMouseDownMsgArgs);
-STRUCT(RightMouseDownMsgArgs, RightMouseDownMsgArgs);
-STRUCT(OtherMouseDownMsgArgs, OtherMouseDownMsgArgs);
-STRUCT(LeftMouseUpMsgArgs, LeftMouseUpMsgArgs);
-STRUCT(RightMouseUpMsgArgs, RightMouseUpMsgArgs);
-STRUCT(OtherMouseUpMsgArgs, OtherMouseUpMsgArgs);
-STRUCT(LeftMouseDraggedMsgArgs, LeftMouseDraggedMsgArgs);
-STRUCT(RightMouseDraggedMsgArgs, RightMouseDraggedMsgArgs);
-STRUCT(OtherMouseDraggedMsgArgs, OtherMouseDraggedMsgArgs);
-STRUCT(LeftDoubleClickMsgArgs, LeftDoubleClickMsgArgs);
-STRUCT(RightDoubleClickMsgArgs, RightDoubleClickMsgArgs);
-STRUCT(OtherDoubleClickMsgArgs, OtherDoubleClickMsgArgs);
-STRUCT(MouseMovedMsgArgs, MouseMovedMsgArgs);
-STRUCT(ScrollWheelMsgArgs, ScrollWheelMsgArgs);
-STRUCT(DragDropMsgArgs, DragDropMsgArgs);
-STRUCT(DragEnterMsgArgs, DragEnterMsgArgs);
-STRUCT(KeyMessageMsgArgs, KeyMessageMsgArgs);
-STRUCT(KeyDownMsgArgs, KeyDownMsgArgs);
-STRUCT(KeyUpMsgArgs, KeyUpMsgArgs);
-STRUCT(TextInputMsgArgs, TextInputMsgArgs);
-STRUCT(CreateMsgArgs, CreateMsgArgs);
-STRUCT(StartMsgArgs, StartMsgArgs);
-STRUCT(AwakeMsgArgs, AwakeMsgArgs);
-STRUCT(ThemeChangedMsgArgs, ThemeChangedMsgArgs);
-STRUCT(PropertyChangedMsgArgs, PropertyChangedMsgArgs);
-STRUCT(AttachedMsgArgs, AttachedMsgArgs);
-STRUCT(ReleaseMsgArgs, ReleaseMsgArgs);
-STRUCT(DestroyMsgArgs, DestroyMsgArgs);
-STRUCT(TimerMsgArgs, TimerMsgArgs);
+STRUCT(Mouse_MouseMessageMsgArgs, Mouse_MouseMessageMsgArgs);
+STRUCT(Mouse_LeftMouseDownMsgArgs, Mouse_LeftMouseDownMsgArgs);
+STRUCT(Mouse_RightMouseDownMsgArgs, Mouse_RightMouseDownMsgArgs);
+STRUCT(Mouse_OtherMouseDownMsgArgs, Mouse_OtherMouseDownMsgArgs);
+STRUCT(Mouse_LeftMouseUpMsgArgs, Mouse_LeftMouseUpMsgArgs);
+STRUCT(Mouse_RightMouseUpMsgArgs, Mouse_RightMouseUpMsgArgs);
+STRUCT(Mouse_OtherMouseUpMsgArgs, Mouse_OtherMouseUpMsgArgs);
+STRUCT(Mouse_LeftMouseDraggedMsgArgs, Mouse_LeftMouseDraggedMsgArgs);
+STRUCT(Mouse_RightMouseDraggedMsgArgs, Mouse_RightMouseDraggedMsgArgs);
+STRUCT(Mouse_OtherMouseDraggedMsgArgs, Mouse_OtherMouseDraggedMsgArgs);
+STRUCT(Mouse_LeftDoubleClickMsgArgs, Mouse_LeftDoubleClickMsgArgs);
+STRUCT(Mouse_RightDoubleClickMsgArgs, Mouse_RightDoubleClickMsgArgs);
+STRUCT(Mouse_OtherDoubleClickMsgArgs, Mouse_OtherDoubleClickMsgArgs);
+STRUCT(Mouse_MouseMovedMsgArgs, Mouse_MouseMovedMsgArgs);
+STRUCT(Mouse_ScrollWheelMsgArgs, Mouse_ScrollWheelMsgArgs);
+STRUCT(Mouse_DragDropMsgArgs, Mouse_DragDropMsgArgs);
+STRUCT(Mouse_DragEnterMsgArgs, Mouse_DragEnterMsgArgs);
+STRUCT(Keyboard_KeyMessageMsgArgs, Keyboard_KeyMessageMsgArgs);
+STRUCT(Keyboard_KeyDownMsgArgs, Keyboard_KeyDownMsgArgs);
+STRUCT(Keyboard_KeyUpMsgArgs, Keyboard_KeyUpMsgArgs);
+STRUCT(Keyboard_TextInputMsgArgs, Keyboard_TextInputMsgArgs);
+STRUCT(Object_CreateMsgArgs, Object_CreateMsgArgs);
+STRUCT(Object_StartMsgArgs, Object_StartMsgArgs);
+STRUCT(Object_AwakeMsgArgs, Object_AwakeMsgArgs);
+STRUCT(Object_ThemeChangedMsgArgs, Object_ThemeChangedMsgArgs);
+STRUCT(Object_PropertyChangedMsgArgs, Object_PropertyChangedMsgArgs);
+STRUCT(Object_AttachedMsgArgs, Object_AttachedMsgArgs);
+STRUCT(Object_ReleaseMsgArgs, Object_ReleaseMsgArgs);
+STRUCT(Object_DestroyMsgArgs, Object_DestroyMsgArgs);
+STRUCT(Object_TimerMsgArgs, Object_TimerMsgArgs);
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -1155,36 +1155,36 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 		{ NULL, NULL } 
 	}));
 	lua_setfield(L, ((void)luaopen_orca_MessageType(L), -2), "MessageType");
-	lua_setfield(L, ((void)luaopen_orca_MouseMessageMsgArgs(L), -2), "MouseMessageMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_LeftMouseDownMsgArgs(L), -2), "LeftMouseDownMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_RightMouseDownMsgArgs(L), -2), "RightMouseDownMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_OtherMouseDownMsgArgs(L), -2), "OtherMouseDownMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_LeftMouseUpMsgArgs(L), -2), "LeftMouseUpMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_RightMouseUpMsgArgs(L), -2), "RightMouseUpMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_OtherMouseUpMsgArgs(L), -2), "OtherMouseUpMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_LeftMouseDraggedMsgArgs(L), -2), "LeftMouseDraggedMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_RightMouseDraggedMsgArgs(L), -2), "RightMouseDraggedMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_OtherMouseDraggedMsgArgs(L), -2), "OtherMouseDraggedMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_LeftDoubleClickMsgArgs(L), -2), "LeftDoubleClickMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_RightDoubleClickMsgArgs(L), -2), "RightDoubleClickMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_OtherDoubleClickMsgArgs(L), -2), "OtherDoubleClickMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_MouseMovedMsgArgs(L), -2), "MouseMovedMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_ScrollWheelMsgArgs(L), -2), "ScrollWheelMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_DragDropMsgArgs(L), -2), "DragDropMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_DragEnterMsgArgs(L), -2), "DragEnterMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_KeyMessageMsgArgs(L), -2), "KeyMessageMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_KeyDownMsgArgs(L), -2), "KeyDownMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_KeyUpMsgArgs(L), -2), "KeyUpMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_TextInputMsgArgs(L), -2), "TextInputMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_CreateMsgArgs(L), -2), "CreateMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_StartMsgArgs(L), -2), "StartMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_AwakeMsgArgs(L), -2), "AwakeMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_ThemeChangedMsgArgs(L), -2), "ThemeChangedMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_PropertyChangedMsgArgs(L), -2), "PropertyChangedMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_AttachedMsgArgs(L), -2), "AttachedMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_ReleaseMsgArgs(L), -2), "ReleaseMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_DestroyMsgArgs(L), -2), "DestroyMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_TimerMsgArgs(L), -2), "TimerMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Mouse_MouseMessageMsgArgs(L), -2), "Mouse_MouseMessageMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Mouse_LeftMouseDownMsgArgs(L), -2), "Mouse_LeftMouseDownMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Mouse_RightMouseDownMsgArgs(L), -2), "Mouse_RightMouseDownMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Mouse_OtherMouseDownMsgArgs(L), -2), "Mouse_OtherMouseDownMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Mouse_LeftMouseUpMsgArgs(L), -2), "Mouse_LeftMouseUpMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Mouse_RightMouseUpMsgArgs(L), -2), "Mouse_RightMouseUpMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Mouse_OtherMouseUpMsgArgs(L), -2), "Mouse_OtherMouseUpMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Mouse_LeftMouseDraggedMsgArgs(L), -2), "Mouse_LeftMouseDraggedMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Mouse_RightMouseDraggedMsgArgs(L), -2), "Mouse_RightMouseDraggedMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Mouse_OtherMouseDraggedMsgArgs(L), -2), "Mouse_OtherMouseDraggedMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Mouse_LeftDoubleClickMsgArgs(L), -2), "Mouse_LeftDoubleClickMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Mouse_RightDoubleClickMsgArgs(L), -2), "Mouse_RightDoubleClickMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Mouse_OtherDoubleClickMsgArgs(L), -2), "Mouse_OtherDoubleClickMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Mouse_MouseMovedMsgArgs(L), -2), "Mouse_MouseMovedMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Mouse_ScrollWheelMsgArgs(L), -2), "Mouse_ScrollWheelMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Mouse_DragDropMsgArgs(L), -2), "Mouse_DragDropMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Mouse_DragEnterMsgArgs(L), -2), "Mouse_DragEnterMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Keyboard_KeyMessageMsgArgs(L), -2), "Keyboard_KeyMessageMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Keyboard_KeyDownMsgArgs(L), -2), "Keyboard_KeyDownMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Keyboard_KeyUpMsgArgs(L), -2), "Keyboard_KeyUpMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Keyboard_TextInputMsgArgs(L), -2), "Keyboard_TextInputMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Object_CreateMsgArgs(L), -2), "Object_CreateMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Object_StartMsgArgs(L), -2), "Object_StartMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Object_AwakeMsgArgs(L), -2), "Object_AwakeMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Object_ThemeChangedMsgArgs(L), -2), "Object_ThemeChangedMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Object_PropertyChangedMsgArgs(L), -2), "Object_PropertyChangedMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Object_AttachedMsgArgs(L), -2), "Object_AttachedMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Object_ReleaseMsgArgs(L), -2), "Object_ReleaseMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Object_DestroyMsgArgs(L), -2), "Object_DestroyMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Object_TimerMsgArgs(L), -2), "Object_TimerMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_Mouse(L), -2), "Input");
 	lua_setfield(L, ((void)luaopen_orca_Keyboard(L), -2), "Input");
 	lua_setfield(L, ((void)luaopen_orca_Object(L), -2), "Object");

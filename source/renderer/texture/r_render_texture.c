@@ -60,7 +60,7 @@ RenderTexture_Create(PCREATERTSTRUCT _in, struct Texture** img)
   return _RenderTexture_Create(_in, *img);
 }
 
-HANDLER(RenderTargetTexture, Start) {
+HANDLER(RenderTargetTexture, Object, Start) {
   _RenderTexture_Create(&(CREATERTSTRUCT) {
     .Width = pRenderTargetTexture->Width,
     .Height = pRenderTargetTexture->Height,

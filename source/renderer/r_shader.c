@@ -793,7 +793,7 @@ static lpcString_t _PBRPointLight =
 "  return att * intensity * (diffuse + specular);\n"
 "}\n";
 
-HANDLER(Shader, Start) {
+HANDLER(Shader, Object, Start) {
   uint32_t NumUniforms = 0;
   struct shader_desc desc = { .Name = OBJ_GetName(hObject) };
   for (lpProperty_t p=OBJ_GetProperties(hObject);p;p=PROP_GetNext(p)){
@@ -866,7 +866,7 @@ HANDLER(Shader, Start) {
   return TRUE;
 }
 
-HANDLER(Shader, Destroy) {
+HANDLER(Shader, Object, Destroy) {
   Shader_Release(pShader->shader);
   return TRUE;
 }

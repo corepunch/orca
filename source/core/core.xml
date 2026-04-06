@@ -225,12 +225,6 @@
           <returns type="Object" pointer="true">Pointer to the matching parent object, or null if not found</returns>
         </method>
         <topic title="Messaging">Dispatches events and sends messages between objects.</topic>
-        <method name="DispatchEvent" lua="true">
-          <summary>Dispatch an event starting from this object and bubbling up parents.</summary>
-          <details>Initiates an event that begins at this object and bubbles up through the parent hierarchy. Each object in the chain has the opportunity to handle the event through registered event handlers or callbacks. The bubbling continues until either an object handles the event or the root of the hierarchy is reached. This implements a standard event propagation pattern commonly used in UI systems.</details>
-          <arg name="event" type="string">The name of the event to dispatch through the hierarchy</arg>
-          <returns type="Object" pointer="true">Pointer to the object that successfully handled the event, or null if no object in the hierarchy handled it</returns>
-        </method>
         <method name="PostMessage" lua="true">
           <summary>Posts a message to the global message queue.</summary>
           <details>Places a message on the global queue for asynchronous processing without waiting for the receiver to process it.</details>

@@ -4,7 +4,7 @@
 
 #include <plugins/UIKit/UIKit.h>
 
-HANDLER(Node2D, UpdateGeometry) {
+HANDLER(Node2D, Node2D, UpdateGeometry) {
   float const w = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
   float const h = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
   int const data = ((int)w << 16) | (int)h;
@@ -22,7 +22,7 @@ static bool_t _ContainsPoint(Node2DPtr pNode2D, float x, float y) {
   return RECT_Contains(&(struct rect){0,0,w,h}, (struct vec2 const*)&out);
 }
 
-HANDLER(Node2D, HitTest) {
+HANDLER(Node2D, Node, HitTest) {
   if (OBJ_IsHidden(hObject) || pNode2D->IgnoreHitTest) {
     return FALSE;
   }
@@ -45,7 +45,7 @@ HANDLER(Node2D, HitTest) {
 }
 
 
-HANDLER(Node2D, Create) {
+HANDLER(Node2D, Object, Create) {
   pNode2D->_object = hObject;
   pNode2D->_node = GetNode(hObject);
   pNode2D->_node->Size.Axis[0].Requested = NAN;
@@ -112,7 +112,7 @@ Node2D_SetFrame(Node2DPtr pNode2D, enum Box3Field parm, float value)
 //	return dwCounter;
 // }
 
-HANDLER(Node2D, UpdateMatrix)
+HANDLER(Node2D, Node, UpdateMatrix)
 {
   struct mat4 Matrix;
   struct vec2 ContentOffset = pNode2D->ContentOffset;
@@ -185,22 +185,22 @@ HANDLER(Node2D, UpdateMatrix)
 
 // HACK: Move?
 
-HANDLER(Node, ThemeChanged)
+HANDLER(Node, Object, ThemeChanged)
 {
 	OBJ_ApplyStyles(hObject, FALSE);
   return TRUE;
 }
 
-HANDLER(Node, GetSize)
+HANDLER(Node, Node, GetSize)
 {
   return MAKEDWORD(pNode->Size.Axis[0].Actual, pNode->Size.Axis[1].Actual);
 }
-HANDLER(Node, IsVisible)
+HANDLER(Node, Node, IsVisible)
 {
   PROP_Update(Node_GetProperty(hObject, kNodeVisible));
   return pNode->Visible && !GetNode(hObject)->QuickHide;
 }
-HANDLER(Node2D, Destroy)
+HANDLER(Node2D, Object, Destroy)
 {
   if (!pNode2D->OffscreenRendering) {
     SafeDelete(pNode2D->RenderTarget, Texture_Release);
@@ -208,7 +208,7 @@ HANDLER(Node2D, Destroy)
   return FALSE;
 }
 
-HANDLER(Node2D, HandleMessage)
+HANDLER(Node2D, Node, HandleMessage)
 {
   if (!OBJ_GetLuaObject(hObject))
     return FALSE;
@@ -229,7 +229,7 @@ HANDLER(Node2D, HandleMessage)
   return FALSE;
 }
 
-HANDLER(Node2D, ScrollWheel)
+HANDLER(Node2D, Mouse, ScrollWheel)
 {
   NodePtr node = pNode2D->_node;
   if (pNode2D->Overflow.y == kOverflowScroll) {
@@ -243,7 +243,7 @@ HANDLER(Node2D, ScrollWheel)
   return FALSE;
 }
 
-HANDLER(Node2D, MouseMoved)
+HANDLER(Node2D, Mouse, MouseMoved)
 {
   if (OBJ_GetFlags(hObject) & OF_HOVERABLE) {
     OBJ_SetHover(hObject);
@@ -304,7 +304,7 @@ static float _MeasureAxis(Node2DPtr n, float space, int axis) {
   }
 }
 
-HANDLER(Node2D, Measure)
+HANDLER(Node2D, Node2D, Measure)
 {
   struct Node2D *n = pNode2D;
   LRESULT size = _SendMessage(hObject, Node2D, MeasureOverride,
@@ -325,7 +325,7 @@ HANDLER(Node2D, Measure)
                    NODE2D_FRAME(n, Size, 1).Desired + TOTAL_MARGIN(n, 1));
 }
 
-HANDLER(Node2D, Arrange)
+HANDLER(Node2D, Node2D, Arrange)
 {
   struct Node2D *n = pNode2D;
   struct Size s = {0};
@@ -376,7 +376,7 @@ HANDLER(Node2D, Arrange)
   return MAKEDWORD(rect.width + TOTAL_MARGIN(n, 0), rect.height + TOTAL_MARGIN(n, 1));
 }
 
-HANDLER(Node2D, MeasureOverride)
+HANDLER(Node2D, Node2D, MeasureOverride)
 {
   uint16_t width = 0, height = 0;
   FOR_EACH_OBJECT(hChild, hObject) {
@@ -390,7 +390,7 @@ HANDLER(Node2D, MeasureOverride)
                    isinf(pMeasureOverride->Height) ? height : 0);
 }
 
-HANDLER(Node2D, ArrangeOverride)
+HANDLER(Node2D, Node2D, ArrangeOverride)
 {
   FOR_EACH_CHILD(hObject, _SendMessage, Node2D, Arrange,
                  .X = pArrangeOverride->X,

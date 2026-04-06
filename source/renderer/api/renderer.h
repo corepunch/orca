@@ -25,10 +25,10 @@ ORCA_API extern struct MessageType ResizedMessage;
 ORCA_API extern struct MessageType ClosedMessage;
 ORCA_API extern struct MessageType ChangedScreenMessage;
 
-typedef struct PaintMsgArgs PaintMsg_t,* PaintMsgPtr;
-typedef struct PaintMsgArgs ResizedMsg_t,* ResizedMsgPtr;
-typedef struct ClosedMsgArgs ClosedMsg_t,* ClosedMsgPtr;
-typedef struct ChangedScreenMsgArgs ChangedScreenMsg_t,* ChangedScreenMsgPtr;
+typedef struct Window_PaintMsgArgs Window_PaintMsg_t,* Window_PaintMsgPtr;
+typedef struct Window_PaintMsgArgs Window_ResizedMsg_t,* Window_ResizedMsgPtr;
+typedef struct Window_ClosedMsgArgs Window_ClosedMsg_t,* Window_ClosedMsgPtr;
+typedef struct Window_ChangedScreenMsgArgs Window_ChangedScreenMsg_t,* Window_ChangedScreenMsgPtr;
 
 
 /// @brief Rendering blend modes for compositing operations
@@ -318,23 +318,23 @@ renderer_DrawImage(struct lua_State*);
 
 
 
-/** PaintMsgArgs struct */
-struct PaintMsgArgs {
+/** Window_PaintMsgArgs struct */
+struct Window_PaintMsgArgs {
 	uint32_t WindowWidth;
 	uint32_t WindowHeight;
 };
-ORCA_API void luaX_pushPaintMsgArgs(lua_State *L, struct PaintMsgArgs const* data);
-ORCA_API struct PaintMsgArgs* luaX_checkPaintMsgArgs(lua_State *L, int idx);
-/** ClosedMsgArgs struct */
-struct ClosedMsgArgs {
+ORCA_API void luaX_pushWindow_PaintMsgArgs(lua_State *L, struct Window_PaintMsgArgs const* data);
+ORCA_API struct Window_PaintMsgArgs* luaX_checkWindow_PaintMsgArgs(lua_State *L, int idx);
+/** Window_ClosedMsgArgs struct */
+struct Window_ClosedMsgArgs {
 };
-ORCA_API void luaX_pushClosedMsgArgs(lua_State *L, struct ClosedMsgArgs const* data);
-ORCA_API struct ClosedMsgArgs* luaX_checkClosedMsgArgs(lua_State *L, int idx);
-/** ChangedScreenMsgArgs struct */
-struct ChangedScreenMsgArgs {
+ORCA_API void luaX_pushWindow_ClosedMsgArgs(lua_State *L, struct Window_ClosedMsgArgs const* data);
+ORCA_API struct Window_ClosedMsgArgs* luaX_checkWindow_ClosedMsgArgs(lua_State *L, int idx);
+/** Window_ChangedScreenMsgArgs struct */
+struct Window_ChangedScreenMsgArgs {
 };
-ORCA_API void luaX_pushChangedScreenMsgArgs(lua_State *L, struct ChangedScreenMsgArgs const* data);
-ORCA_API struct ChangedScreenMsgArgs* luaX_checkChangedScreenMsgArgs(lua_State *L, int idx);
+ORCA_API void luaX_pushWindow_ChangedScreenMsgArgs(lua_State *L, struct Window_ChangedScreenMsgArgs const* data);
+ORCA_API struct Window_ChangedScreenMsgArgs* luaX_checkWindow_ChangedScreenMsgArgs(lua_State *L, int idx);
 
 
 /// @brief Base class for managing texture resources and their sampling parameters for rendering.

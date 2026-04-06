@@ -164,10 +164,10 @@ _CalculateAutos(float spacing, float avl, PCOLUMNS columns)
   }
 }
 
-HANDLER(Grid, MeasureOverride)
+HANDLER(Grid, Node2D, MeasureOverride)
 {
   uint32_t cellindex = 0;
-  MeasureOverrideMsg_t size = *pMeasureOverride;
+  Node2D_MeasureOverrideMsg_t size = *pMeasureOverride;
   Size_t desired = {0};
 
   PCOLUMNS hcols = columns_at_axis(pGrid, 0, TRUE);
@@ -255,7 +255,7 @@ HANDLER(Grid, MeasureOverride)
                    desired.height?desired.height:pMeasureOverride->Height);
 }
 
-HANDLER(Grid, ArrangeOverride)
+HANDLER(Grid, Node2D, ArrangeOverride)
 {
   uint32_t cellindex = 0;
   PCOLUMNS hcols = columns_at_axis(pGrid, 0, TRUE);

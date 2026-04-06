@@ -120,11 +120,11 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.NumProperties = k##NAME##NumProperties, \
 	.NumMessageTypes = k##NAME##NumMessageTypes, \
 };
-LRESULT FtgPackage_LoadProject(struct Object*, struct FtgPackage*, wParam_t, LoadProjectMsgPtr);
-LRESULT FtgPackage_OpenFile(struct Object*, struct FtgPackage*, wParam_t, OpenFileMsgPtr);
-LRESULT FtgPackage_FileExists(struct Object*, struct FtgPackage*, wParam_t, FileExistsMsgPtr);
-LRESULT FtgPackage_HasChangedFiles(struct Object*, struct FtgPackage*, wParam_t, HasChangedFilesMsgPtr);
-LRESULT FtgPackage_Destroy(struct Object*, struct FtgPackage*, wParam_t, DestroyMsgPtr);
+HANDLER(FtgPackage, Project, LoadProject);
+HANDLER(FtgPackage, Project, OpenFile);
+HANDLER(FtgPackage, Project, FileExists);
+HANDLER(FtgPackage, Project, HasChangedFiles);
+HANDLER(FtgPackage, Object, Destroy);
 static struct MessageType FtgPackageMessageTypes[kFtgPackageNumMessageTypes] = {	
 };
 static struct PropertyType const FtgPackageProperties[kFtgPackageNumProperties] = {
