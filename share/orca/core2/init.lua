@@ -88,7 +88,6 @@ function core.run()
 					-- core.screen:clear() 
 					-- core.screen:addChild(ui.TextBlock(result))
 				elseif result and not msg:is "Window.Paint" then
-					local renderer = require "orca.renderer"
 					core.screen:postMessage("Window.Paint", renderer.getSize())
 				end
 			end
