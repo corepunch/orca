@@ -27,7 +27,8 @@ enum <?= $classname ?>Messages {
 <?php endif ?>
 <?php foreach ($class->getMessages() as $event) {
 	$_h = hash('fnv1a32', $classname . "." . $event->name);
-	$_rc = $_routing_const[strval($event->routing)];
+	$_rk = strval($event->routing);
+	$_rc = isset($_routing_const[$_rk]) ? $_routing_const[$_rk] : 'ROUTING_BUBBLE';
 	echo "#define ID_{$classname}_{$event->name} ((0x{$_h}&MSG_ROUTING_MASK)|{$_rc}) // {$classname}.{$event->name}\n";
 } ?>
 #define k<?= $classname ?>NumProperties <?= count($class->getProperties()) ?>
@@ -43,7 +44,8 @@ enum <?= $classname ?>Properties {
 <?php foreach ($model->getInterfaces() as $intname => $interface):?>
 <?php foreach ($interface->getMessages() as $event) {
 	$_h = hash('fnv1a32', $intname . "." . $event->name);
-	$_rc = $_routing_const[strval($event->routing)];
+	$_rk = strval($event->routing);
+	$_rc = isset($_routing_const[$_rk]) ? $_routing_const[$_rk] : 'ROUTING_BUBBLE';
 	echo "#define ID_{$intname}_{$event->name} ((0x{$_h}&MSG_ROUTING_MASK)|{$_rc}) // {$intname}.{$event->name}\n";
 } ?>
 <?php endforeach ?>
