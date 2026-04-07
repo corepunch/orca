@@ -24,10 +24,6 @@ struct <?= $name ?>;
 <?php endforeach ?>
 
 <?php foreach ($model->getEvents() as $name => $event):?>
-ORCA_API extern struct MessageType <?= $name ?>Message;
-<?php endforeach ?>
-
-<?php foreach ($model->getEvents() as $name => $event):?>
 <?php if ($event->hasAnyFields()):?>
 typedef struct <?= $event->getEffectiveStructName() ?> <?= $event->msgns ?>_<?= $name ?>Msg_t,* <?= $event->msgns ?>_<?= $name ?>MsgPtr;
 <?php else:?>
