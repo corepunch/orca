@@ -19,6 +19,7 @@
   namespace CDATA #REQUIRED
   on-luaopen CDATA #IMPLIED
   prefix CDATA #IMPLIED
+  test-prefix CDATA #IMPLIED
 >
 
 <!-- Include Directive - specifies C header files to include -->
@@ -135,6 +136,7 @@
 <!ATTLIST function
   name CDATA #REQUIRED
   export CDATA #IMPLIED
+  lua (true|false) #IMPLIED
 >
 
 <!-- Field Definition (for struct/interface members) -->
@@ -143,8 +145,10 @@
   name CDATA #REQUIRED
   type CDATA #REQUIRED
   fixed-array CDATA #IMPLIED
+  array (true|false) #IMPLIED
   pointer (true|false) #IMPLIED
   const (true|false) #IMPLIED
+  noexport (true|false) #IMPLIED
 >
 
 <!-- Grouped field definitions -->
@@ -181,6 +185,7 @@
   pointer (true|false) #IMPLIED
   const (true|false) #IMPLIED
   readonly (true|false) #IMPLIED
+  array (true|false) #IMPLIED
   default CDATA #IMPLIED
 >
 
@@ -206,6 +211,8 @@
   type CDATA #REQUIRED
   pointer (true|false) #IMPLIED
   const (true|false) #IMPLIED
+  output CDATA #IMPLIED
+  bufsize CDATA #IMPLIED
 >
 
 <!-- Return Value Description -->

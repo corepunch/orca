@@ -222,11 +222,11 @@
       </fields>
     </class>
     <class name="Image" parent="Texture">
+      <summary>Represents a single, pre-loaded texture image for use in rendering operations.</summary>
+      <details>Extends the base Texture class to load a specific image file, providing a straightforward way to incorporate static textures into scenes without dynamic generation or rendering targets.</details>
       <handles>
         <handle message="Object.Start"/>
       </handles>
-      <summary>Represents a single, pre-loaded texture image for use in rendering operations.</summary>
-      <details>Extends the base Texture class to load a specific image file, providing a straightforward way to incorporate static textures into scenes without dynamic generation or rendering targets.</details>
       <properties>
         <property name="Source" type="string">Path to the texture image file to be loaded.</property>
         <property name="PremultiplyAlpha" type="bool">When `true`, multiplies RGB channels by alpha during loading for correct alpha blending.</property>
@@ -323,8 +323,10 @@
         <handle message="Object.Start"/>
         <handle message="Object.Destroy"/>
       </handles>
-      <properties><property name="BlendMode" type="BlendMode" default="MixedAlpha">The default blending mode for the shader, controlling how rendered output combines with the existing framebuffer content.</property><property name="DepthTestFunction" type="CompareFunc">The default depth comparison function used for depth testing, determining which fragments are visible based on their depth values.</property><property name="DepthWriteEnabled" type="bool">Whether depth buffer writing is enabled by default. When true, rendered fragments update the depth buffer; when false, depth values are not written.</property>
-      BlendMode
+      <properties>
+        <property name="BlendMode" type="BlendMode" default="MixedAlpha">The default blending mode for the shader, controlling how rendered output combines with the existing framebuffer content.</property>
+        <property name="DepthTestFunction" type="CompareFunc">The default depth comparison function used for depth testing, determining which fragments are visible based on their depth values.</property>
+        <property name="DepthWriteEnabled" type="bool">Whether depth buffer writing is enabled by default. When true, rendered fragments update the depth buffer; when false, depth values are not written.</property>
       </properties>
       <fields><field name="shader" type="shader" pointer="true">Compiled shader for runtime use</field>
     </fields>
