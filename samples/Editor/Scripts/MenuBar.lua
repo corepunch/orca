@@ -4,7 +4,7 @@ local workspace = require "Editor.Scripts.Workspace"
 
 local keymap = {
 	up = function (self) self.SelectedIndex = math.max(1, self.SelectedIndex - 1) end,
-	down = function (self) self.SelectedIndex = math.min(self.numItems, self.SelectedIndex + 1) end,
+	down = function (self) self.SelectedIndex = math.min(self:numItems(), self.SelectedIndex + 1) end,
 -- 	right = function (self, name) self.expanded[name] = true return true end,
 -- 	left = function (self, name) self.expanded[name] = nil return true end,
 }
@@ -51,9 +51,9 @@ local MenuBar = ui.TerminalView:extend {
 	-- 	self.owner:invalidate()
 	-- end,
 	-- onKeyDown = function (self, _, key)
-	-- 	if not self.selectedItem then return end
+	-- 	if not self:selectedItem() then return end
 	-- 	local action = keymap[key]
-	-- 	if action and action(self, self.selectedItem:get'name') then
+	-- 	if action and action(self, self:selectedItem():get'name') then
 	-- 		self:invalidate()
 	-- 	end
 	-- end,

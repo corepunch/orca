@@ -130,8 +130,7 @@ static int f_msgSend(lua_State *L) {
   const char* message = lua_tostring(L, lua_upvalueindex(1));
   lua_pushstring(L, message);
   lua_insert(L, 2);
-  OBJ_MsgSend(L, this_, message); // your function handles the args internally
-  return 0;
+  return OBJ_MsgSend(L, this_, message);
 }
 
 int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
@@ -204,12 +203,6 @@ int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
     return 1;
   }
 
-#define ID_Node_PushProperty ((0xaca786d4&MSG_DATA_MASK)|ROUTING_TUNNELING_BUBBLING) // Node.PushProperty
-  LRESULT found = OBJ_SendMessageW(self, ID_Node_PushProperty, ident, L);
-  if (found) {
-    return (int)found;
-  }
-  
   lpcProperty_t property = NULL;
   lpcMessageType_t message = NULL;
   bool_t OBJ_PushClassProperty(lua_State *, lpObject_t, uint32_t);

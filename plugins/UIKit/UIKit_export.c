@@ -309,10 +309,6 @@ static struct PropertyType _Node_UpdateMatrixMsgArgs[] = {
 	DECL(0xc6c2dd66, Node_UpdateMatrixMsgArgs, opacity, opacity, kDataTypeFloat), // Node_UpdateMatrixMsgArgs.opacity
 	DECL(0x79a98884, Node_UpdateMatrixMsgArgs, force, force, kDataTypeBool), // Node_UpdateMatrixMsgArgs.force
 };
-static luaL_Reg _Node_PushPropertyMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_PushPropertyMsgArgs[] = {
-	DECL(0x8987413a, Node_PushPropertyMsgArgs, Placeholder, Placeholder, kDataTypeInt), // Node_PushPropertyMsgArgs.Placeholder
-};
 static luaL_Reg _Node_LoadViewMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_LoadViewMsgArgs[] = {
 	DECL(0x187f5b0f, Node_LoadViewMsgArgs, lua_state, lua_state, kDataTypeStruct, .TypeString = "lua_State"), // Node_LoadViewMsgArgs.lua_state
@@ -402,6 +398,27 @@ static struct PropertyType _Screen_RenderScreenMsgArgs[] = {
 	DECL(0xad544418, Screen_RenderScreenMsgArgs, angle, angle, kDataTypeFloat), // Screen_RenderScreenMsgArgs.angle
 	DECL(0x32608848, Screen_RenderScreenMsgArgs, target, target, kDataTypeObject, .TypeString = "Texture"), // Screen_RenderScreenMsgArgs.target
 };
+static luaL_Reg _TerminalView_printlnMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _TerminalView_printlnMsgArgs[] = {
+};
+static luaL_Reg _TerminalView_unpackMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _TerminalView_unpackMsgArgs[] = {
+};
+static luaL_Reg _TerminalView_eraseMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _TerminalView_eraseMsgArgs[] = {
+};
+static luaL_Reg _TerminalView_invalidateMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _TerminalView_invalidateMsgArgs[] = {
+};
+static luaL_Reg _TerminalView_getIndexPositionMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _TerminalView_getIndexPositionMsgArgs[] = {
+};
+static luaL_Reg _TerminalView_selectedItemMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _TerminalView_selectedItemMsgArgs[] = {
+};
+static luaL_Reg _TerminalView_numItemsMsgArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _TerminalView_numItemsMsgArgs[] = {
+};
 static luaL_Reg _PageHost_NavigateToPageMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _PageHost_NavigateToPageMsgArgs[] = {
 	DECL(0x7569633e, PageHost_NavigateToPageMsgArgs, URL, URL, kDataTypeString), // PageHost_NavigateToPageMsgArgs.URL
@@ -414,7 +431,6 @@ static struct PropertyType _PageHost_NavigateBackMsgArgs[] = {
 
 STRUCT(Trigger_TriggeredMsgArgs, Trigger_TriggeredMsgArgs);
 STRUCT(Node_UpdateMatrixMsgArgs, Node_UpdateMatrixMsgArgs);
-STRUCT(Node_PushPropertyMsgArgs, Node_PushPropertyMsgArgs);
 STRUCT(Node_LoadViewMsgArgs, Node_LoadViewMsgArgs);
 STRUCT(Node_HitTestMsgArgs, Node_HitTestMsgArgs);
 STRUCT(Node_IsVisibleMsgArgs, Node_IsVisibleMsgArgs);
@@ -434,6 +450,13 @@ STRUCT(Node2D_SetScrollTopMsgArgs, Node2D_SetScrollTopMsgArgs);
 STRUCT(Form_SubmitMsgArgs, Form_SubmitMsgArgs);
 STRUCT(Screen_UpdateLayoutMsgArgs, Screen_UpdateLayoutMsgArgs);
 STRUCT(Screen_RenderScreenMsgArgs, Screen_RenderScreenMsgArgs);
+STRUCT(TerminalView_printlnMsgArgs, TerminalView_printlnMsgArgs);
+STRUCT(TerminalView_unpackMsgArgs, TerminalView_unpackMsgArgs);
+STRUCT(TerminalView_eraseMsgArgs, TerminalView_eraseMsgArgs);
+STRUCT(TerminalView_invalidateMsgArgs, TerminalView_invalidateMsgArgs);
+STRUCT(TerminalView_getIndexPositionMsgArgs, TerminalView_getIndexPositionMsgArgs);
+STRUCT(TerminalView_selectedItemMsgArgs, TerminalView_selectedItemMsgArgs);
+STRUCT(TerminalView_numItemsMsgArgs, TerminalView_numItemsMsgArgs);
 STRUCT(PageHost_NavigateToPageMsgArgs, PageHost_NavigateToPageMsgArgs);
 STRUCT(PageHost_NavigateBackMsgArgs, PageHost_NavigateBackMsgArgs);
 #define REGISTER_CLASS(NAME, ...) \
@@ -673,7 +696,6 @@ HANDLER(Node, Node, GetSize);
 HANDLER(Node, Node, IsVisible);
 static struct MessageType NodeMessageTypes[kNodeNumMessageTypes] = {	
 	{ "Node.UpdateMatrix", ID_Node_UpdateMatrix, 0x5dbe404d, kMessageRoutingDirect, sizeof(struct Node_UpdateMatrixMsgArgs) },
-	{ "Node.PushProperty", ID_Node_PushProperty, 0xc5ebaf40, kMessageRoutingTunnelingBubbling, sizeof(struct Node_PushPropertyMsgArgs) },
 	{ "Node.LoadView", ID_Node_LoadView, 0xa3650e54, kMessageRoutingDirect, sizeof(struct Node_LoadViewMsgArgs) },
 	{ "Node.HitTest", ID_Node_HitTest, 0x898160ea, kMessageRoutingDirect, sizeof(struct Node_HitTestMsgArgs) },
 	{ "Node.IsVisible", ID_Node_IsVisible, 0x608d20d1, kMessageRoutingDirect, sizeof(struct Node_IsVisibleMsgArgs) },
@@ -1346,9 +1368,22 @@ struct NinePatchImage* luaX_checkNinePatchImage(lua_State *L, int idx) {
 REGISTER_CLASS(NinePatchImage, ID_Node2D, 0);
 HANDLER(TerminalView, Object, Create);
 HANDLER(TerminalView, Node2D, DrawBrush);
-HANDLER(TerminalView, Node, PushProperty);
+HANDLER(TerminalView, TerminalView, println);
+HANDLER(TerminalView, TerminalView, unpack);
+HANDLER(TerminalView, TerminalView, erase);
+HANDLER(TerminalView, TerminalView, invalidate);
+HANDLER(TerminalView, TerminalView, getIndexPosition);
+HANDLER(TerminalView, TerminalView, selectedItem);
+HANDLER(TerminalView, TerminalView, numItems);
 HANDLER(TerminalView, Mouse, ScrollWheel);
 static struct MessageType TerminalViewMessageTypes[kTerminalViewNumMessageTypes] = {	
+	{ "TerminalView.println", ID_TerminalView_println, 0x18bff8a6, kMessageRoutingDirect, sizeof(struct TerminalView_printlnMsgArgs) },
+	{ "TerminalView.unpack", ID_TerminalView_unpack, 0x317e3e33, kMessageRoutingDirect, sizeof(struct TerminalView_unpackMsgArgs) },
+	{ "TerminalView.erase", ID_TerminalView_erase, 0x3c41ddd5, kMessageRoutingDirect, sizeof(struct TerminalView_eraseMsgArgs) },
+	{ "TerminalView.invalidate", ID_TerminalView_invalidate, 0x9defbf10, kMessageRoutingDirect, sizeof(struct TerminalView_invalidateMsgArgs) },
+	{ "TerminalView.getIndexPosition", ID_TerminalView_getIndexPosition, 0x4f84ed12, kMessageRoutingDirect, sizeof(struct TerminalView_getIndexPositionMsgArgs) },
+	{ "TerminalView.selectedItem", ID_TerminalView_selectedItem, 0x5a29274b, kMessageRoutingDirect, sizeof(struct TerminalView_selectedItemMsgArgs) },
+	{ "TerminalView.numItems", ID_TerminalView_numItems, 0xc3eb86a5, kMessageRoutingDirect, sizeof(struct TerminalView_numItemsMsgArgs) },
 };
 static struct PropertyType const TerminalViewProperties[kTerminalViewNumProperties] = {
 	DECL(0xdd1f241d, TerminalView, BufferWidth, BufferWidth, kDataTypeInt), // TerminalView.BufferWidth
@@ -1367,7 +1402,13 @@ LRESULT TerminalViewProc(struct Object* object, void* cmp, uint32_t message, wPa
 	switch (message) {
 		case ID_Object_Create: return TerminalView_Create(object, cmp, wparm, lparm); // Object.Create
 		case ID_Node2D_DrawBrush: return TerminalView_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
-		case ID_Node_PushProperty: return TerminalView_PushProperty(object, cmp, wparm, lparm); // Node.PushProperty
+		case ID_TerminalView_println: return TerminalView_println(object, cmp, wparm, lparm); // TerminalView.println
+		case ID_TerminalView_unpack: return TerminalView_unpack(object, cmp, wparm, lparm); // TerminalView.unpack
+		case ID_TerminalView_erase: return TerminalView_erase(object, cmp, wparm, lparm); // TerminalView.erase
+		case ID_TerminalView_invalidate: return TerminalView_invalidate(object, cmp, wparm, lparm); // TerminalView.invalidate
+		case ID_TerminalView_getIndexPosition: return TerminalView_getIndexPosition(object, cmp, wparm, lparm); // TerminalView.getIndexPosition
+		case ID_TerminalView_selectedItem: return TerminalView_selectedItem(object, cmp, wparm, lparm); // TerminalView.selectedItem
+		case ID_TerminalView_numItems: return TerminalView_numItems(object, cmp, wparm, lparm); // TerminalView.numItems
 		case ID_Mouse_ScrollWheel: return TerminalView_ScrollWheel(object, cmp, wparm, lparm); // Mouse.ScrollWheel
 	}
 	return FALSE;
@@ -1492,7 +1533,6 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_SizeShorthand(L), -2), "SizeShorthand");
 	lua_setfield(L, ((void)luaopen_orca_Trigger_TriggeredMsgArgs(L), -2), "Trigger_TriggeredMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_Node_UpdateMatrixMsgArgs(L), -2), "Node_UpdateMatrixMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_PushPropertyMsgArgs(L), -2), "Node_PushPropertyMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_Node_LoadViewMsgArgs(L), -2), "Node_LoadViewMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_Node_HitTestMsgArgs(L), -2), "Node_HitTestMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_Node_IsVisibleMsgArgs(L), -2), "Node_IsVisibleMsgArgs");
@@ -1512,6 +1552,13 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_Form_SubmitMsgArgs(L), -2), "Form_SubmitMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_Screen_UpdateLayoutMsgArgs(L), -2), "Screen_UpdateLayoutMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_Screen_RenderScreenMsgArgs(L), -2), "Screen_RenderScreenMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_TerminalView_printlnMsgArgs(L), -2), "TerminalView_printlnMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_TerminalView_unpackMsgArgs(L), -2), "TerminalView_unpackMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_TerminalView_eraseMsgArgs(L), -2), "TerminalView_eraseMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_TerminalView_invalidateMsgArgs(L), -2), "TerminalView_invalidateMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_TerminalView_getIndexPositionMsgArgs(L), -2), "TerminalView_getIndexPositionMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_TerminalView_selectedItemMsgArgs(L), -2), "TerminalView_selectedItemMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_TerminalView_numItemsMsgArgs(L), -2), "TerminalView_numItemsMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_PageHost_NavigateToPageMsgArgs(L), -2), "PageHost_NavigateToPageMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_PageHost_NavigateBackMsgArgs(L), -2), "PageHost_NavigateBackMsgArgs");
 	lua_setfield(L, ((void)lua_pushclass(L, &_DataObject), -2), "DataObject");

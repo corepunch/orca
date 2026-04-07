@@ -46,7 +46,7 @@ void OBJ_PostMessage(lua_State* L, lpObject_t self, lpcString_t message)
 }
 
 // HACK: hacked in quickly
-void OBJ_MsgSend(lua_State* L, lpObject_t self, lpcString_t message)
+int OBJ_MsgSend(lua_State* L, lpObject_t self, lpcString_t message)
 {
   const int nargs = MAX(lua_gettop(L) - 2, 0);
   fixedString_t argtype={0};
@@ -58,14 +58,17 @@ void OBJ_MsgSend(lua_State* L, lpObject_t self, lpcString_t message)
   
   if (luaL_testudata(L, 3, argtype)) {
     OBJ_SendMessage(self, message, 0, lua_touserdata(L, 3));
+    return 0;
   } else if (luaL_getmetatable(L, argtype)) { // Check if a constructor exists for this message args type
     lua_insert(L, 3); // Move the constructor below the message args on the stack
     lua_call(L, nargs, 1); // Call the constructor to create the message args struct
     OBJ_SendMessage(self, message, 0, lua_touserdata(L, -1)); // Send the message with the constructed args
     lua_pop(L, 1); // Pop the result of the message args constructor
+    return 0;
   } else {
     lua_pop(L, 1); // Pop the metatable result
-    OBJ_SendMessage(self, message, 0, NULL);
+    // No args struct: pass Lua state directly so handlers can read args and push results
+    return (int)OBJ_SendMessage(self, message, 0, (lParam_t)L);
   }
 }
 

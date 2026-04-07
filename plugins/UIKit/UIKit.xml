@@ -432,11 +432,6 @@
             <field name="force" type="bool">Indicates if the update is forced</field>
           </fields>
         </message>
-        <message name="PushProperty" routing="TunnelingBubbling">
-          <fields>
-            <field name="Placeholder" type="int"/>
-          </fields>
-        </message>
         <message name="LoadView" routing="Direct">
           <summary>Initializes the component's Lua view state.</summary>
           <fields>
@@ -900,7 +895,13 @@
       <handles>
         <handle message="Object.Create"/>
         <handle message="Node2D.DrawBrush"/>
-        <handle message="Node.PushProperty"/>
+        <handle message="TerminalView.println"/>
+        <handle message="TerminalView.unpack"/>
+        <handle message="TerminalView.erase"/>
+        <handle message="TerminalView.invalidate"/>
+        <handle message="TerminalView.getIndexPosition"/>
+        <handle message="TerminalView.selectedItem"/>
+        <handle message="TerminalView.numItems"/>
         <handle message="Mouse.ScrollWheel"/>
       </handles>
       <properties>
@@ -915,6 +916,29 @@
         <field name="_scroll" type="vec2">Scroll position</field>
         <field name="_contentHeight" type="int">Current page length</field>
       </fields>
+      <messages>
+        <message name="println" routing="Direct">
+          <summary>Appends text to the terminal buffer and returns the item index.</summary>
+        </message>
+        <message name="unpack" routing="Direct">
+          <summary>Returns the item, item index, and character at the given screen position.</summary>
+        </message>
+        <message name="erase" routing="Direct">
+          <summary>Clears the terminal buffer and resets the cursor.</summary>
+        </message>
+        <message name="invalidate" routing="Direct">
+          <summary>Requests a repaint of the terminal view.</summary>
+        </message>
+        <message name="getIndexPosition" routing="Direct">
+          <summary>Returns the screen position of the first cell belonging to the given item index.</summary>
+        </message>
+        <message name="selectedItem" routing="Direct">
+          <summary>Returns the item at the current SelectedIndex.</summary>
+        </message>
+        <message name="numItems" routing="Direct">
+          <summary>Returns the number of items in the terminal buffer.</summary>
+        </message>
+      </messages>
     </class>
     <class name="Page" parent="Node2D">
       <summary>Represents a single page within a document or UI container.</summary>

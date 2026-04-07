@@ -24,7 +24,6 @@ struct lua_State;
 
 typedef struct Trigger_TriggeredMsgArgs Trigger_TriggeredMsg_t,* Trigger_TriggeredMsgPtr;
 typedef struct Node_UpdateMatrixMsgArgs Node_UpdateMatrixMsg_t,* Node_UpdateMatrixMsgPtr;
-typedef struct Node_PushPropertyMsgArgs Node_PushPropertyMsg_t,* Node_PushPropertyMsgPtr;
 typedef struct Node_LoadViewMsgArgs Node_LoadViewMsg_t,* Node_LoadViewMsgPtr;
 typedef struct Node_HitTestMsgArgs Node_HitTestMsg_t,* Node_HitTestMsgPtr;
 typedef struct Node_IsVisibleMsgArgs Node_IsVisibleMsg_t,* Node_IsVisibleMsgPtr;
@@ -44,6 +43,13 @@ typedef struct Node2D_SetScrollTopMsgArgs Node2D_SetScrollTopMsg_t,* Node2D_SetS
 typedef struct Form_SubmitMsgArgs Form_SubmitMsg_t,* Form_SubmitMsgPtr;
 typedef struct Screen_UpdateLayoutMsgArgs Screen_UpdateLayoutMsg_t,* Screen_UpdateLayoutMsgPtr;
 typedef struct Screen_RenderScreenMsgArgs Screen_RenderScreenMsg_t,* Screen_RenderScreenMsgPtr;
+typedef struct TerminalView_printlnMsgArgs TerminalView_printlnMsg_t,* TerminalView_printlnMsgPtr;
+typedef struct TerminalView_unpackMsgArgs TerminalView_unpackMsg_t,* TerminalView_unpackMsgPtr;
+typedef struct TerminalView_eraseMsgArgs TerminalView_eraseMsg_t,* TerminalView_eraseMsgPtr;
+typedef struct TerminalView_invalidateMsgArgs TerminalView_invalidateMsg_t,* TerminalView_invalidateMsgPtr;
+typedef struct TerminalView_getIndexPositionMsgArgs TerminalView_getIndexPositionMsg_t,* TerminalView_getIndexPositionMsgPtr;
+typedef struct TerminalView_selectedItemMsgArgs TerminalView_selectedItemMsg_t,* TerminalView_selectedItemMsgPtr;
+typedef struct TerminalView_numItemsMsgArgs TerminalView_numItemsMsg_t,* TerminalView_numItemsMsgPtr;
 typedef struct PageHost_NavigateToPageMsgArgs PageHost_NavigateToPageMsg_t,* PageHost_NavigateToPageMsgPtr;
 typedef struct PageHost_NavigateBackMsgArgs PageHost_NavigateBackMsg_t,* PageHost_NavigateBackMsgPtr;
 
@@ -513,12 +519,6 @@ struct Node_UpdateMatrixMsgArgs {
 };
 ORCA_API void luaX_pushNode_UpdateMatrixMsgArgs(lua_State *L, struct Node_UpdateMatrixMsgArgs const* data);
 ORCA_API struct Node_UpdateMatrixMsgArgs* luaX_checkNode_UpdateMatrixMsgArgs(lua_State *L, int idx);
-/** Node_PushPropertyMsgArgs struct */
-struct Node_PushPropertyMsgArgs {
-	int32_t Placeholder;
-};
-ORCA_API void luaX_pushNode_PushPropertyMsgArgs(lua_State *L, struct Node_PushPropertyMsgArgs const* data);
-ORCA_API struct Node_PushPropertyMsgArgs* luaX_checkNode_PushPropertyMsgArgs(lua_State *L, int idx);
 /** Node_LoadViewMsgArgs struct */
 struct Node_LoadViewMsgArgs {
 	struct lua_State* lua_state;
@@ -630,6 +630,41 @@ struct Screen_RenderScreenMsgArgs {
 };
 ORCA_API void luaX_pushScreen_RenderScreenMsgArgs(lua_State *L, struct Screen_RenderScreenMsgArgs const* data);
 ORCA_API struct Screen_RenderScreenMsgArgs* luaX_checkScreen_RenderScreenMsgArgs(lua_State *L, int idx);
+/** TerminalView_printlnMsgArgs struct */
+struct TerminalView_printlnMsgArgs {
+};
+ORCA_API void luaX_pushTerminalView_printlnMsgArgs(lua_State *L, struct TerminalView_printlnMsgArgs const* data);
+ORCA_API struct TerminalView_printlnMsgArgs* luaX_checkTerminalView_printlnMsgArgs(lua_State *L, int idx);
+/** TerminalView_unpackMsgArgs struct */
+struct TerminalView_unpackMsgArgs {
+};
+ORCA_API void luaX_pushTerminalView_unpackMsgArgs(lua_State *L, struct TerminalView_unpackMsgArgs const* data);
+ORCA_API struct TerminalView_unpackMsgArgs* luaX_checkTerminalView_unpackMsgArgs(lua_State *L, int idx);
+/** TerminalView_eraseMsgArgs struct */
+struct TerminalView_eraseMsgArgs {
+};
+ORCA_API void luaX_pushTerminalView_eraseMsgArgs(lua_State *L, struct TerminalView_eraseMsgArgs const* data);
+ORCA_API struct TerminalView_eraseMsgArgs* luaX_checkTerminalView_eraseMsgArgs(lua_State *L, int idx);
+/** TerminalView_invalidateMsgArgs struct */
+struct TerminalView_invalidateMsgArgs {
+};
+ORCA_API void luaX_pushTerminalView_invalidateMsgArgs(lua_State *L, struct TerminalView_invalidateMsgArgs const* data);
+ORCA_API struct TerminalView_invalidateMsgArgs* luaX_checkTerminalView_invalidateMsgArgs(lua_State *L, int idx);
+/** TerminalView_getIndexPositionMsgArgs struct */
+struct TerminalView_getIndexPositionMsgArgs {
+};
+ORCA_API void luaX_pushTerminalView_getIndexPositionMsgArgs(lua_State *L, struct TerminalView_getIndexPositionMsgArgs const* data);
+ORCA_API struct TerminalView_getIndexPositionMsgArgs* luaX_checkTerminalView_getIndexPositionMsgArgs(lua_State *L, int idx);
+/** TerminalView_selectedItemMsgArgs struct */
+struct TerminalView_selectedItemMsgArgs {
+};
+ORCA_API void luaX_pushTerminalView_selectedItemMsgArgs(lua_State *L, struct TerminalView_selectedItemMsgArgs const* data);
+ORCA_API struct TerminalView_selectedItemMsgArgs* luaX_checkTerminalView_selectedItemMsgArgs(lua_State *L, int idx);
+/** TerminalView_numItemsMsgArgs struct */
+struct TerminalView_numItemsMsgArgs {
+};
+ORCA_API void luaX_pushTerminalView_numItemsMsgArgs(lua_State *L, struct TerminalView_numItemsMsgArgs const* data);
+ORCA_API struct TerminalView_numItemsMsgArgs* luaX_checkTerminalView_numItemsMsgArgs(lua_State *L, int idx);
 /** PageHost_NavigateToPageMsgArgs struct */
 struct PageHost_NavigateToPageMsgArgs {
 	const char* URL; ///< The URL of the page to navigate to.

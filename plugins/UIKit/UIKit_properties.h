@@ -201,10 +201,9 @@ enum ColorBrushProperties {
 #define ID_Node_Opacity 0xb6882472 // Node.Opacity
 #define ID_Node_Tags 0xec56af24 // Node.Tags
 #define ID_Node_DataContext 0x80b43db0 // Node.DataContext
-#define kNodeNumMessageTypes 9
+#define kNodeNumMessageTypes 8
 enum NodeMessages {
 	kNodeUpdateMatrix,
-	kNodePushProperty,
 	kNodeLoadView,
 	kNodeHitTest,
 	kNodeIsVisible,
@@ -214,7 +213,6 @@ enum NodeMessages {
 	kNodeGetSize,
 };
 #define ID_Node_UpdateMatrix ((0x35cdb821&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.UpdateMatrix
-#define ID_Node_PushProperty ((0xaca786d4&MSG_DATA_MASK)|ROUTING_TUNNELING_BUBBLING) // Node.PushProperty
 #define ID_Node_LoadView ((0xe3c6ed08&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.LoadView
 #define ID_Node_HitTest ((0xbc0e5546&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.HitTest
 #define ID_Node_IsVisible ((0xa03cfb85&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.IsVisible
@@ -726,7 +724,23 @@ enum NinePatchImageProperties {
 #define ID_TerminalView_Cursor 0x550c9034 // TerminalView.Cursor
 #define ID_TerminalView_SelectedIndex 0xc6c048a5 // TerminalView.SelectedIndex
 #define ID_TerminalView_DropShadow 0x8c72c3cb // TerminalView.DropShadow
-#define kTerminalViewNumMessageTypes 0
+#define kTerminalViewNumMessageTypes 7
+enum TerminalViewMessages {
+	kTerminalViewprintln,
+	kTerminalViewunpack,
+	kTerminalViewerase,
+	kTerminalViewinvalidate,
+	kTerminalViewgetIndexPosition,
+	kTerminalViewselectedItem,
+	kTerminalViewnumItems,
+};
+#define ID_TerminalView_println ((0x6574cc1b&MSG_DATA_MASK)|ROUTING_DIRECT) // TerminalView.println
+#define ID_TerminalView_unpack ((0xf2e85bc0&MSG_DATA_MASK)|ROUTING_DIRECT) // TerminalView.unpack
+#define ID_TerminalView_erase ((0x3f5a2454&MSG_DATA_MASK)|ROUTING_DIRECT) // TerminalView.erase
+#define ID_TerminalView_invalidate ((0x976c30f7&MSG_DATA_MASK)|ROUTING_DIRECT) // TerminalView.invalidate
+#define ID_TerminalView_getIndexPosition ((0x154eca21&MSG_DATA_MASK)|ROUTING_DIRECT) // TerminalView.getIndexPosition
+#define ID_TerminalView_selectedItem ((0x34b7d838&MSG_DATA_MASK)|ROUTING_DIRECT) // TerminalView.selectedItem
+#define ID_TerminalView_numItems ((0xde292a3a&MSG_DATA_MASK)|ROUTING_DIRECT) // TerminalView.numItems
 #define kTerminalViewNumProperties 5
 enum TerminalViewProperties {
 	kTerminalViewBufferWidth,
@@ -889,9 +903,6 @@ enum StyleProperties {
 #define ID_Node_UpdateMatrixMsgArgs_parent 0x07b4a59c // Node_UpdateMatrixMsgArgs.parent
 #define ID_Node_UpdateMatrixMsgArgs_opacity 0x4442b1e1 // Node_UpdateMatrixMsgArgs.opacity
 #define ID_Node_UpdateMatrixMsgArgs_force 0xce285387 // Node_UpdateMatrixMsgArgs.force
-#define ID_Node_PushPropertyMsgArgs 0xe755d911
-
-#define ID_Node_PushPropertyMsgArgs_Placeholder 0x6043a0f2 // Node_PushPropertyMsgArgs.Placeholder
 #define ID_Node_LoadViewMsgArgs 0x4fa1e14d
 
 #define ID_Node_LoadViewMsgArgs_lua_state 0x2ddc5e3b // Node_LoadViewMsgArgs.lua_state
@@ -962,6 +973,20 @@ enum StyleProperties {
 #define ID_Screen_RenderScreenMsgArgs_stereo 0x696a5940 // Screen_RenderScreenMsgArgs.stereo
 #define ID_Screen_RenderScreenMsgArgs_angle 0x7979495f // Screen_RenderScreenMsgArgs.angle
 #define ID_Screen_RenderScreenMsgArgs_target 0xe57258ad // Screen_RenderScreenMsgArgs.target
+#define ID_TerminalView_printlnMsgArgs 0xa5ea9312
+
+#define ID_TerminalView_unpackMsgArgs 0x5595447d
+
+#define ID_TerminalView_eraseMsgArgs 0xe547682f
+
+#define ID_TerminalView_invalidateMsgArgs 0x44105494
+
+#define ID_TerminalView_getIndexPositionMsgArgs 0x53909886
+
+#define ID_TerminalView_selectedItemMsgArgs 0x72e03dfd
+
+#define ID_TerminalView_numItemsMsgArgs 0x93305d57
+
 #define ID_PageHost_NavigateToPageMsgArgs 0x2ac87988
 
 #define ID_PageHost_NavigateToPageMsgArgs_URL 0x78fc3e3b // PageHost_NavigateToPageMsgArgs.URL
