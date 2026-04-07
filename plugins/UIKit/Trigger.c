@@ -82,15 +82,15 @@ HANDLER(Handler, Trigger, Triggered)
   return FALSE;
 }
 
-HANDLER(EventTrigger, Node, HandleMessage)
-{
-  if (pEventTrigger->RoutedEvent && !strcmp(pHandleMessage->EventName, pEventTrigger->RoutedEvent)) {
+//HANDLER(EventTrigger, Node, HandleMessage)
+//{
+//  if (pEventTrigger->RoutedEvent && !strcmp(pHandleMessage->EventName, pEventTrigger->RoutedEvent)) {
 //    return _SendMessage(hObject, Trigger, Triggered,
 //      .Trigger = GetTrigger(CMP_GetObject(pEventTrigger)),
 //      .message = *pHandleMessage);
-  }
-  return FALSE;
-}
+//  }
+//  return FALSE;
+//}
 
 HANDLER(OnPropertyChangedTrigger, Object, PropertyChanged)
 {

@@ -356,7 +356,7 @@
       <details>Listens for specific routed events and can execute actions in response. Supports the standard UI event bubbling system.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
-        <handle message="Node.HandleMessage"/>
+        <!-- <handle message="Node.HandleMessage"/> -->
       </handles>
       <properties>
         <property name="RoutedEvent" type="string">Name of the routed event to handle (e.g., "MouseDown", "KeyPress") </property>
@@ -449,14 +449,6 @@
             <field name="y" type="int">Y coordinate of the hit test point</field>
           </fields>
         </message>
-        <message name="HandleMessage" routing="Bubbling">
-          <summary>Dispatches a named message with arguments to the component.</summary>
-          <fields>
-            <field name="EventName" type="string"/>
-            <field name="FirstArg" type="uint"/>
-            <field name="NumArgs" type="uint"/>
-          </fields>
-        </message>
         <message name="IsVisible" routing="Direct"/>
         <message name="ViewDidLoad" routing="Direct">
           <summary>Notifies the component that its view has finished loading.</summary>
@@ -532,7 +524,6 @@
         <handle message="Object.Destroy"/>
         <handle message="Node2D.UpdateGeometry"/>
         <handle message="Node2D.DrawBrush"/>
-        <handle message="Node.HandleMessage"/>
         <handle message="Mouse.ScrollWheel"/>
         <handle message="Mouse.MouseMoved"/>
         <handle message="Node.HitTest"/>

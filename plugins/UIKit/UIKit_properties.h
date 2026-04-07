@@ -201,13 +201,12 @@ enum ColorBrushProperties {
 #define ID_Node_Opacity 0xb6882472 // Node.Opacity
 #define ID_Node_Tags 0xec56af24 // Node.Tags
 #define ID_Node_DataContext 0x80b43db0 // Node.DataContext
-#define kNodeNumMessageTypes 10
+#define kNodeNumMessageTypes 9
 enum NodeMessages {
 	kNodeUpdateMatrix,
 	kNodePushProperty,
 	kNodeLoadView,
 	kNodeHitTest,
-	kNodeHandleMessage,
 	kNodeIsVisible,
 	kNodeViewDidLoad,
 	kNodeKillFocus,
@@ -218,7 +217,6 @@ enum NodeMessages {
 #define ID_Node_PushProperty ((0xaca786d4&MSG_DATA_MASK)|ROUTING_TUNNELING_BUBBLING) // Node.PushProperty
 #define ID_Node_LoadView ((0xe3c6ed08&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.LoadView
 #define ID_Node_HitTest ((0xbc0e5546&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.HitTest
-#define ID_Node_HandleMessage ((0x22afe0b6&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.HandleMessage
 #define ID_Node_IsVisible ((0xa03cfb85&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.IsVisible
 #define ID_Node_ViewDidLoad ((0x71bab7e1&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.ViewDidLoad
 #define ID_Node_KillFocus ((0x2bdb09fb&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.KillFocus
@@ -901,11 +899,6 @@ enum StyleProperties {
 
 #define ID_Node_HitTestMsgArgs_x 0x12a98037 // Node_HitTestMsgArgs.x
 #define ID_Node_HitTestMsgArgs_y 0x11a97ea4 // Node_HitTestMsgArgs.y
-#define ID_Node_HandleMessageMsgArgs 0x5824aacd
-
-#define ID_Node_HandleMessageMsgArgs_EventName 0x6bbd6e18 // Node_HandleMessageMsgArgs.EventName
-#define ID_Node_HandleMessageMsgArgs_FirstArg 0xe0470a5f // Node_HandleMessageMsgArgs.FirstArg
-#define ID_Node_HandleMessageMsgArgs_NumArgs 0x16c86032 // Node_HandleMessageMsgArgs.NumArgs
 #define ID_Node_IsVisibleMsgArgs 0xe9b990cc
 
 #define ID_Node_ViewDidLoadMsgArgs 0xf85c5ec0

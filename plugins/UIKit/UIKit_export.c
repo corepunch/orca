@@ -322,12 +322,6 @@ static struct PropertyType _Node_HitTestMsgArgs[] = {
 	DECL(0xfd0c5087, Node_HitTestMsgArgs, x, x, kDataTypeInt), // Node_HitTestMsgArgs.x
 	DECL(0xfc0c4ef4, Node_HitTestMsgArgs, y, y, kDataTypeInt), // Node_HitTestMsgArgs.y
 };
-static luaL_Reg _Node_HandleMessageMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_HandleMessageMsgArgs[] = {
-	DECL(0x2fc7b71c, Node_HandleMessageMsgArgs, EventName, EventName, kDataTypeString), // Node_HandleMessageMsgArgs.EventName
-	DECL(0xd26deba3, Node_HandleMessageMsgArgs, FirstArg, FirstArg, kDataTypeInt), // Node_HandleMessageMsgArgs.FirstArg
-	DECL(0x227201c6, Node_HandleMessageMsgArgs, NumArgs, NumArgs, kDataTypeInt), // Node_HandleMessageMsgArgs.NumArgs
-};
 static luaL_Reg _Node_IsVisibleMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_IsVisibleMsgArgs[] = {
 };
@@ -423,7 +417,6 @@ STRUCT(Node_UpdateMatrixMsgArgs, Node_UpdateMatrixMsgArgs);
 STRUCT(Node_PushPropertyMsgArgs, Node_PushPropertyMsgArgs);
 STRUCT(Node_LoadViewMsgArgs, Node_LoadViewMsgArgs);
 STRUCT(Node_HitTestMsgArgs, Node_HitTestMsgArgs);
-STRUCT(Node_HandleMessageMsgArgs, Node_HandleMessageMsgArgs);
 STRUCT(Node_IsVisibleMsgArgs, Node_IsVisibleMsgArgs);
 STRUCT(Node_ViewDidLoadMsgArgs, Node_ViewDidLoadMsgArgs);
 STRUCT(Node_KillFocusMsgArgs, Node_KillFocusMsgArgs);
@@ -571,7 +564,6 @@ struct OnAttachedTrigger* luaX_checkOnAttachedTrigger(lua_State *L, int idx) {
 }
 #define ID_Trigger 0xa5ea0da3
 REGISTER_CLASS(OnAttachedTrigger, ID_Trigger, 0);
-HANDLER(EventTrigger, Node, HandleMessage);
 static struct MessageType EventTriggerMessageTypes[kEventTriggerNumMessageTypes] = {	
 };
 static struct PropertyType const EventTriggerProperties[kEventTriggerNumProperties] = {
@@ -581,7 +573,6 @@ static struct EventTrigger EventTriggerDefaults = {
 };
 LRESULT EventTriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case (ID_Node_HandleMessage & MSG_DATA_MASK): return EventTrigger_HandleMessage(object, cmp, wparm, lparm); // Node.HandleMessage
 	}
 	return FALSE;
 }
@@ -685,7 +676,6 @@ static struct MessageType NodeMessageTypes[kNodeNumMessageTypes] = {
 		{ "Node.PushProperty", ID_Node_PushProperty, 0xc5ebaf40, kMessageRoutingTunnelingBubbling, sizeof(struct Node_PushPropertyMsgArgs) },
 		{ "Node.LoadView", ID_Node_LoadView, 0xa3650e54, kMessageRoutingDirect, sizeof(struct Node_LoadViewMsgArgs) },
 		{ "Node.HitTest", ID_Node_HitTest, 0x898160ea, kMessageRoutingDirect, sizeof(struct Node_HitTestMsgArgs) },
-		{ "Node.HandleMessage", ID_Node_HandleMessage, 0xfc48a0da, kMessageRoutingBubbling, sizeof(struct Node_HandleMessageMsgArgs) },
 		{ "Node.IsVisible", ID_Node_IsVisible, 0x608d20d1, kMessageRoutingDirect, sizeof(struct Node_IsVisibleMsgArgs) },
 		{ "Node.ViewDidLoad", ID_Node_ViewDidLoad, 0x03e93095, kMessageRoutingDirect, sizeof(struct Node_ViewDidLoadMsgArgs) },
 		{ "Node.KillFocus", ID_Node_KillFocus, 0xa7c0f8d7, kMessageRoutingDirect, sizeof(struct Node_KillFocusMsgArgs) },
@@ -870,7 +860,6 @@ HANDLER(Node2D, Object, Create);
 HANDLER(Node2D, Object, Destroy);
 HANDLER(Node2D, Node2D, UpdateGeometry);
 HANDLER(Node2D, Node2D, DrawBrush);
-HANDLER(Node2D, Node, HandleMessage);
 HANDLER(Node2D, Mouse, ScrollWheel);
 HANDLER(Node2D, Mouse, MouseMoved);
 HANDLER(Node2D, Node, HitTest);
@@ -948,7 +937,6 @@ LRESULT Node2DProc(struct Object* object, void* cmp, uint32_t message, wParam_t 
 		case (ID_Object_Destroy & MSG_DATA_MASK): return Node2D_Destroy(object, cmp, wparm, lparm); // Object.Destroy
 		case (ID_Node2D_UpdateGeometry & MSG_DATA_MASK): return Node2D_UpdateGeometry(object, cmp, wparm, lparm); // Node2D.UpdateGeometry
 		case (ID_Node2D_DrawBrush & MSG_DATA_MASK): return Node2D_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
-		case (ID_Node_HandleMessage & MSG_DATA_MASK): return Node2D_HandleMessage(object, cmp, wparm, lparm); // Node.HandleMessage
 		case (ID_Mouse_ScrollWheel & MSG_DATA_MASK): return Node2D_ScrollWheel(object, cmp, wparm, lparm); // Mouse.ScrollWheel
 		case (ID_Mouse_MouseMoved & MSG_DATA_MASK): return Node2D_MouseMoved(object, cmp, wparm, lparm); // Mouse.MouseMoved
 		case (ID_Node_HitTest & MSG_DATA_MASK): return Node2D_HitTest(object, cmp, wparm, lparm); // Node.HitTest
@@ -1507,7 +1495,6 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_Node_PushPropertyMsgArgs(L), -2), "Node_PushPropertyMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_Node_LoadViewMsgArgs(L), -2), "Node_LoadViewMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_Node_HitTestMsgArgs(L), -2), "Node_HitTestMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_HandleMessageMsgArgs(L), -2), "Node_HandleMessageMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_Node_IsVisibleMsgArgs(L), -2), "Node_IsVisibleMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_Node_ViewDidLoadMsgArgs(L), -2), "Node_ViewDidLoadMsgArgs");
 	lua_setfield(L, ((void)luaopen_orca_Node_KillFocusMsgArgs(L), -2), "Node_KillFocusMsgArgs");

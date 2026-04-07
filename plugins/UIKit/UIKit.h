@@ -27,7 +27,6 @@ typedef struct Node_UpdateMatrixMsgArgs Node_UpdateMatrixMsg_t,* Node_UpdateMatr
 typedef struct Node_PushPropertyMsgArgs Node_PushPropertyMsg_t,* Node_PushPropertyMsgPtr;
 typedef struct Node_LoadViewMsgArgs Node_LoadViewMsg_t,* Node_LoadViewMsgPtr;
 typedef struct Node_HitTestMsgArgs Node_HitTestMsg_t,* Node_HitTestMsgPtr;
-typedef struct Node_HandleMessageMsgArgs Node_HandleMessageMsg_t,* Node_HandleMessageMsgPtr;
 typedef struct Node_IsVisibleMsgArgs Node_IsVisibleMsg_t,* Node_IsVisibleMsgPtr;
 typedef struct Node_ViewDidLoadMsgArgs Node_ViewDidLoadMsg_t,* Node_ViewDidLoadMsgPtr;
 typedef struct Node_KillFocusMsgArgs Node_KillFocusMsg_t,* Node_KillFocusMsgPtr;
@@ -533,14 +532,6 @@ struct Node_HitTestMsgArgs {
 };
 ORCA_API void luaX_pushNode_HitTestMsgArgs(lua_State *L, struct Node_HitTestMsgArgs const* data);
 ORCA_API struct Node_HitTestMsgArgs* luaX_checkNode_HitTestMsgArgs(lua_State *L, int idx);
-/** Node_HandleMessageMsgArgs struct */
-struct Node_HandleMessageMsgArgs {
-	const char* EventName;
-	uint32_t FirstArg;
-	uint32_t NumArgs;
-};
-ORCA_API void luaX_pushNode_HandleMessageMsgArgs(lua_State *L, struct Node_HandleMessageMsgArgs const* data);
-ORCA_API struct Node_HandleMessageMsgArgs* luaX_checkNode_HandleMessageMsgArgs(lua_State *L, int idx);
 /** Node_IsVisibleMsgArgs struct */
 struct Node_IsVisibleMsgArgs {
 };
