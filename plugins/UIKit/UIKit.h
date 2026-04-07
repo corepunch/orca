@@ -22,32 +22,6 @@ struct lua_State;
 #include "UIKit_properties.h"
 #include "../../source/renderer/api/renderer.h"
 
-ORCA_API extern struct MessageType TriggeredMessage;
-ORCA_API extern struct MessageType UpdateMatrixMessage;
-ORCA_API extern struct MessageType PushPropertyMessage;
-ORCA_API extern struct MessageType LoadViewMessage;
-ORCA_API extern struct MessageType HitTestMessage;
-ORCA_API extern struct MessageType HandleMessageMessage;
-ORCA_API extern struct MessageType IsVisibleMessage;
-ORCA_API extern struct MessageType ViewDidLoadMessage;
-ORCA_API extern struct MessageType KillFocusMessage;
-ORCA_API extern struct MessageType SetFocusMessage;
-ORCA_API extern struct MessageType GetSizeMessage;
-ORCA_API extern struct MessageType MakeTextMessage;
-ORCA_API extern struct MessageType DrawBrushMessage;
-ORCA_API extern struct MessageType MeasureMessage;
-ORCA_API extern struct MessageType ArrangeMessage;
-ORCA_API extern struct MessageType MeasureOverrideMessage;
-ORCA_API extern struct MessageType ArrangeOverrideMessage;
-ORCA_API extern struct MessageType ForegroundContentMessage;
-ORCA_API extern struct MessageType UpdateGeometryMessage;
-ORCA_API extern struct MessageType SetScrollTopMessage;
-ORCA_API extern struct MessageType SubmitMessage;
-ORCA_API extern struct MessageType UpdateLayoutMessage;
-ORCA_API extern struct MessageType RenderScreenMessage;
-ORCA_API extern struct MessageType NavigateToPageMessage;
-ORCA_API extern struct MessageType NavigateBackMessage;
-
 typedef struct Trigger_TriggeredMsgArgs Trigger_TriggeredMsg_t,* Trigger_TriggeredMsgPtr;
 typedef struct Node_UpdateMatrixMsgArgs Node_UpdateMatrixMsg_t,* Node_UpdateMatrixMsgPtr;
 typedef struct Node_PushPropertyMsgArgs Node_PushPropertyMsg_t,* Node_PushPropertyMsgPtr;

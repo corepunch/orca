@@ -129,36 +129,6 @@ static luaL_Reg _SystemMessage_Methods[] = {
 STRUCT(ProjectReference, ProjectReference);
 STRUCT(EnginePlugin, EnginePlugin);
 STRUCT(SystemMessage, SystemMessage);
-//struct MessageType ReadCommandsMessage = {
-//	.name = "ReadCommands",
-//	.id = kMsgReadCommands,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Workspace_ReadCommandsMsgArgs),
-//};
-//struct MessageType OpenFileMessage = {
-//	.name = "OpenFile",
-//	.id = kMsgOpenFile,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Project_OpenFileMsgArgs),
-//};
-//struct MessageType FileExistsMessage = {
-//	.name = "FileExists",
-//	.id = kMsgFileExists,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Project_FileExistsMsgArgs),
-//};
-//struct MessageType HasChangedFilesMessage = {
-//	.name = "HasChangedFiles",
-//	.id = kMsgHasChangedFiles,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Project_HasChangedFilesMsgArgs),
-//};
-//struct MessageType LoadProjectMessage = {
-//	.name = "LoadProject",
-//	.id = kMsgLoadProject,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Project_LoadProjectMsgArgs),
-//};
 
 static luaL_Reg _Workspace_ReadCommandsMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Workspace_ReadCommandsMsgArgs[] = {
@@ -201,7 +171,7 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.NumMessageTypes = k##NAME##NumMessageTypes, \
 };
 static struct MessageType WorkspaceMessageTypes[kWorkspaceNumMessageTypes] = {	
-		{ "Workspace.ReadCommands", ID_Workspace_ReadCommands, 0x23d83fd3, kMessageRoutingTunnelingBubbling, sizeof(struct Workspace_ReadCommandsMsgArgs) },
+		{ "Workspace.ReadCommands", ID_Workspace_ReadCommands, 0x23d83fd3, kMessageRoutingDirect, sizeof(struct Workspace_ReadCommandsMsgArgs) },
 };
 static struct PropertyType const WorkspaceProperties[kWorkspaceNumProperties] = {
 };
@@ -240,10 +210,10 @@ struct Library* luaX_checkLibrary(lua_State *L, int idx) {
 REGISTER_CLASS(Library, 0);
 HANDLER(Project, Object, Start);
 static struct MessageType ProjectMessageTypes[kProjectNumMessageTypes] = {	
-		{ "Project.OpenFile", ID_Project_OpenFile, 0xa2c038cf, kMessageRoutingTunnelingBubbling, sizeof(struct Project_OpenFileMsgArgs) },
-		{ "Project.FileExists", ID_Project_FileExists, 0x38dfc973, kMessageRoutingTunnelingBubbling, sizeof(struct Project_FileExistsMsgArgs) },
-		{ "Project.HasChangedFiles", ID_Project_HasChangedFiles, 0x5390a564, kMessageRoutingTunnelingBubbling, sizeof(struct Project_HasChangedFilesMsgArgs) },
-		{ "Project.LoadProject", ID_Project_LoadProject, 0x31b9fee2, kMessageRoutingTunnelingBubbling, sizeof(struct Project_LoadProjectMsgArgs) },
+		{ "Project.OpenFile", ID_Project_OpenFile, 0xa2c038cf, kMessageRoutingDirect, sizeof(struct Project_OpenFileMsgArgs) },
+		{ "Project.FileExists", ID_Project_FileExists, 0x38dfc973, kMessageRoutingDirect, sizeof(struct Project_FileExistsMsgArgs) },
+		{ "Project.HasChangedFiles", ID_Project_HasChangedFiles, 0x5390a564, kMessageRoutingDirect, sizeof(struct Project_HasChangedFilesMsgArgs) },
+		{ "Project.LoadProject", ID_Project_LoadProject, 0x31b9fee2, kMessageRoutingDirect, sizeof(struct Project_LoadProjectMsgArgs) },
 };
 static struct PropertyType const ProjectProperties[kProjectNumProperties] = {
 	DECL(0xbcd19216, Project, HalfFloatTextureFormat, HalfFloatTextureFormat, kDataTypeBool), // Project.HalfFloatTextureFormat

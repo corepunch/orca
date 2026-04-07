@@ -41,7 +41,7 @@ OBJ_FindCallbackForID(lpObject_t object, uint32_t id)
 {
   FOR_EACH_LIST(struct script_callback, cb, _GetCallbacks(object))
   {
-    if ((cb->value & MSG_ROUTING_MASK) == (id & MSG_ROUTING_MASK)) {
+    if ((cb->value & MSG_DATA_MASK) == (id & MSG_DATA_MASK)) {
       return cb->name;
     }
   }

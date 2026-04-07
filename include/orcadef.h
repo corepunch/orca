@@ -62,7 +62,8 @@ OBJ_SendMessageW(OBJECT, ID_##CLASS##_##MESSAGE, 0, &(CLASS##_##MESSAGE##Msg_t) 
 #define bounds_size(bounds) ((bounds).max - (bounds).min)
 
 // Message routing bits (lower 2 bits of every message ID)
-#define MSG_ROUTING_MASK           (~0x3u)
+#define MSG_ROUTING_MASK           3u
+#define MSG_DATA_MASK              (~MSG_ROUTING_MASK)
 #define ROUTING_BUBBLE             0u
 #define ROUTING_TUNNELING_BUBBLING 1u
 #define ROUTING_TUNNELING          2u

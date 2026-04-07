@@ -108,12 +108,6 @@ int luaopen_orca_##NAME(lua_State *L) { \
 	return 1; \
 }
 
-//struct MessageType RenderMessage = {
-//	.name = "Render",
-//	.id = kMsgRender,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Node3D_RenderMsgArgs),
-//};
 
 static luaL_Reg _Node3D_RenderMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node3D_RenderMsgArgs[] = {
@@ -139,7 +133,7 @@ ORCA_API struct ClassDesc _##NAME = { \
 };
 HANDLER(Node3D, Node, UpdateMatrix);
 static struct MessageType Node3DMessageTypes[kNode3DNumMessageTypes] = {	
-		{ "Node3D.Render", ID_Node3D_Render, 0x350cf42d, kMessageRoutingTunnelingBubbling, sizeof(struct Node3D_RenderMsgArgs) },
+		{ "Node3D.Render", ID_Node3D_Render, 0x350cf42d, kMessageRoutingDirect, sizeof(struct Node3D_RenderMsgArgs) },
 };
 static struct PropertyType const Node3DProperties[kNode3DNumProperties] = {
 	DECL(0x3f19bf01, Node3D, LayoutTransform, LayoutTransform, kDataTypeStruct, .TypeString = "Transform3D"), // Node3D.LayoutTransform

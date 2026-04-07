@@ -29,7 +29,7 @@ enum <?= $classname ?>Messages {
 	$_h = hash('fnv1a32', $classname . "." . $event->name);
 	$_rk = strval($event->routing);
 	$_rc = isset($_routing_const[$_rk]) ? $_routing_const[$_rk] : 'ROUTING_BUBBLE';
-	echo "#define ID_{$classname}_{$event->name} ((0x{$_h}&MSG_ROUTING_MASK)|{$_rc}) // {$classname}.{$event->name}\n";
+	echo "#define ID_{$classname}_{$event->name} ((0x{$_h}&MSG_DATA_MASK)|{$_rc}) // {$classname}.{$event->name}\n";
 } ?>
 #define k<?= $classname ?>NumProperties <?= count($class->getProperties()) ?>
 <?php if (count($class->getProperties()) > 0): ?>
@@ -46,7 +46,7 @@ enum <?= $classname ?>Properties {
 	$_h = hash('fnv1a32', $intname . "." . $event->name);
 	$_rk = strval($event->routing);
 	$_rc = isset($_routing_const[$_rk]) ? $_routing_const[$_rk] : 'ROUTING_BUBBLE';
-	echo "#define ID_{$intname}_{$event->name} ((0x{$_h}&MSG_ROUTING_MASK)|{$_rc}) // {$intname}.{$event->name}\n";
+	echo "#define ID_{$intname}_{$event->name} ((0x{$_h}&MSG_DATA_MASK)|{$_rc}) // {$intname}.{$event->name}\n";
 } ?>
 <?php endforeach ?>
 

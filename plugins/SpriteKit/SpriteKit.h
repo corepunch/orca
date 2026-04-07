@@ -16,8 +16,6 @@ typedef struct lua_State lua_State;
 #include "SpriteKit_properties.h"
 #include "../../source/renderer/api/renderer.h"
 
-ORCA_API extern struct MessageType RenderMessage;
-
 typedef struct SKNode_RenderMsgArgs SKNode_RenderMsg_t,* SKNode_RenderMsgPtr;
 
 

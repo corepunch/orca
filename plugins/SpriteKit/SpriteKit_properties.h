@@ -32,7 +32,7 @@ enum SpriteAnimationProperties {
 enum SKNodeMessages {
 	kSKNodeRender,
 };
-#define ID_SKNode_Render ((0x450c46e3&MSG_ROUTING_MASK)|ROUTING_DIRECT) // SKNode.Render
+#define ID_SKNode_Render ((0x450c46e3&MSG_DATA_MASK)|ROUTING_DIRECT) // SKNode.Render
 #define kSKNodeNumProperties 3
 enum SKNodeProperties {
 	kSKNodePosition,

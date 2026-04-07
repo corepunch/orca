@@ -12,7 +12,7 @@
 enum WorkspaceMessages {
 	kWorkspaceReadCommands,
 };
-#define ID_Workspace_ReadCommands ((0xea5a6972&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Workspace.ReadCommands
+#define ID_Workspace_ReadCommands ((0xea5a6972&MSG_DATA_MASK)|ROUTING_DIRECT) // Workspace.ReadCommands
 #define kWorkspaceNumProperties 0
 // Library
 #define ID_Library 0xa8532270
@@ -110,10 +110,10 @@ enum ProjectMessages {
 	kProjectHasChangedFiles,
 	kProjectLoadProject,
 };
-#define ID_Project_OpenFile ((0xa96ca9ee&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Project.OpenFile
-#define ID_Project_FileExists ((0x1f1e5ece&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Project.FileExists
-#define ID_Project_HasChangedFiles ((0x8e1eef4b&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Project.HasChangedFiles
-#define ID_Project_LoadProject ((0x68eebf01&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Project.LoadProject
+#define ID_Project_OpenFile ((0xa96ca9ee&MSG_DATA_MASK)|ROUTING_DIRECT) // Project.OpenFile
+#define ID_Project_FileExists ((0x1f1e5ece&MSG_DATA_MASK)|ROUTING_DIRECT) // Project.FileExists
+#define ID_Project_HasChangedFiles ((0x8e1eef4b&MSG_DATA_MASK)|ROUTING_DIRECT) // Project.HasChangedFiles
+#define ID_Project_LoadProject ((0x68eebf01&MSG_DATA_MASK)|ROUTING_DIRECT) // Project.LoadProject
 #define kProjectNumProperties 73
 enum ProjectProperties {
 	kProjectHalfFloatTextureFormat,

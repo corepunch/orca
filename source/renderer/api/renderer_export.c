@@ -150,31 +150,7 @@ int luaopen_orca_##NAME(lua_State *L) { \
 	return 1; \
 }
 
-//struct MessageType PaintMessage = {
-//	.name = "Paint",
-//	.id = kMsgPaint,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Window_PaintMsgArgs),
-//};
 #define Window_ResizedMsgArgs Window_PaintMsgArgs
-//struct MessageType ResizedMessage = {
-//	.name = "Resized",
-//	.id = kMsgResized,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Window_PaintMsgArgs),
-//};
-//struct MessageType ClosedMessage = {
-//	.name = "Closed",
-//	.id = kMsgClosed,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Window_ClosedMsgArgs),
-//};
-//struct MessageType ChangedScreenMessage = {
-//	.name = "ChangedScreen",
-//	.id = kMsgChangedScreen,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Window_ChangedScreenMsgArgs),
-//};
 
 static luaL_Reg _Window_PaintMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Window_PaintMsgArgs[] = {

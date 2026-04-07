@@ -19,37 +19,6 @@ struct lua_State;
 #include "core_properties.h"
 #include "../geometry/geometry.h"
 
-ORCA_API extern struct MessageType MouseMessageMessage;
-ORCA_API extern struct MessageType LeftMouseDownMessage;
-ORCA_API extern struct MessageType RightMouseDownMessage;
-ORCA_API extern struct MessageType OtherMouseDownMessage;
-ORCA_API extern struct MessageType LeftMouseUpMessage;
-ORCA_API extern struct MessageType RightMouseUpMessage;
-ORCA_API extern struct MessageType OtherMouseUpMessage;
-ORCA_API extern struct MessageType LeftMouseDraggedMessage;
-ORCA_API extern struct MessageType RightMouseDraggedMessage;
-ORCA_API extern struct MessageType OtherMouseDraggedMessage;
-ORCA_API extern struct MessageType LeftDoubleClickMessage;
-ORCA_API extern struct MessageType RightDoubleClickMessage;
-ORCA_API extern struct MessageType OtherDoubleClickMessage;
-ORCA_API extern struct MessageType MouseMovedMessage;
-ORCA_API extern struct MessageType ScrollWheelMessage;
-ORCA_API extern struct MessageType DragDropMessage;
-ORCA_API extern struct MessageType DragEnterMessage;
-ORCA_API extern struct MessageType KeyMessageMessage;
-ORCA_API extern struct MessageType KeyDownMessage;
-ORCA_API extern struct MessageType KeyUpMessage;
-ORCA_API extern struct MessageType TextInputMessage;
-ORCA_API extern struct MessageType CreateMessage;
-ORCA_API extern struct MessageType StartMessage;
-ORCA_API extern struct MessageType AwakeMessage;
-ORCA_API extern struct MessageType ThemeChangedMessage;
-ORCA_API extern struct MessageType PropertyChangedMessage;
-ORCA_API extern struct MessageType AttachedMessage;
-ORCA_API extern struct MessageType ReleaseMessage;
-ORCA_API extern struct MessageType DestroyMessage;
-ORCA_API extern struct MessageType TimerMessage;
-
 typedef struct Mouse_MouseMessageMsgArgs Mouse_MouseMessageMsg_t,* Mouse_MouseMessageMsgPtr;
 typedef struct Mouse_MouseMessageMsgArgs Mouse_LeftMouseDownMsg_t,* Mouse_LeftMouseDownMsgPtr;
 typedef struct Mouse_MouseMessageMsgArgs Mouse_RightMouseDownMsg_t,* Mouse_RightMouseDownMsgPtr;

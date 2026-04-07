@@ -16,8 +16,6 @@ typedef struct lua_State lua_State;
 #include "SceneKit_properties.h"
 #include "../../source/renderer/api/renderer.h"
 
-ORCA_API extern struct MessageType RenderMessage;
-
 typedef struct Node3D_RenderMsgArgs Node3D_RenderMsg_t,* Node3D_RenderMsgPtr;
 
 

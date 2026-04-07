@@ -269,10 +269,10 @@ enum FontFamilyProperties {
 #define kTimelineNumMessageTypes 0
 #define kTimelineNumProperties 0
 
-#define ID_Window_Paint ((0x08548b5f&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Window.Paint
-#define ID_Window_Resized ((0xfdfbd653&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Window.Resized
-#define ID_Window_Closed ((0x8a68ef39&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Window.Closed
-#define ID_Window_ChangedScreen ((0x8d5b1dbb&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Window.ChangedScreen
+#define ID_Window_Paint ((0x08548b5f&MSG_DATA_MASK)|ROUTING_DIRECT) // Window.Paint
+#define ID_Window_Resized ((0xfdfbd653&MSG_DATA_MASK)|ROUTING_DIRECT) // Window.Resized
+#define ID_Window_Closed ((0x8a68ef39&MSG_DATA_MASK)|ROUTING_DIRECT) // Window.Closed
+#define ID_Window_ChangedScreen ((0x8d5b1dbb&MSG_DATA_MASK)|ROUTING_DIRECT) // Window.ChangedScreen
 
 	
 

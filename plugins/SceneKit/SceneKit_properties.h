@@ -24,7 +24,7 @@
 enum Node3DMessages {
 	kNode3DRender,
 };
-#define ID_Node3D_Render ((0x74fae2ac&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Node3D.Render
+#define ID_Node3D_Render ((0x74fae2ac&MSG_DATA_MASK)|ROUTING_DIRECT) // Node3D.Render
 #define kNode3DNumProperties 12
 enum Node3DProperties {
 	kNode3DLayoutTransform,

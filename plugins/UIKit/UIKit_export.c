@@ -296,158 +296,8 @@ STRUCT(Thickness, Thickness);
 STRUCT(BorderShorthand, BorderShorthand);
 STRUCT(SizeAxisShorthand, SizeAxisShorthand);
 STRUCT(SizeShorthand, SizeShorthand);
-//struct MessageType TriggeredMessage = {
-//	.name = "Triggered",
-//	.id = kMsgTriggered,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Trigger_TriggeredMsgArgs),
-//};
-//struct MessageType UpdateMatrixMessage = {
-//	.name = "UpdateMatrix",
-//	.id = kMsgUpdateMatrix,
-//	.routing = kMessageRoutingDirect,
-//	.size = sizeof(struct Node_UpdateMatrixMsgArgs),
-//};
-//struct MessageType PushPropertyMessage = {
-//	.name = "PushProperty",
-//	.id = kMsgPushProperty,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Node_PushPropertyMsgArgs),
-//};
-//struct MessageType LoadViewMessage = {
-//	.name = "LoadView",
-//	.id = kMsgLoadView,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Node_LoadViewMsgArgs),
-//};
-//struct MessageType HitTestMessage = {
-//	.name = "HitTest",
-//	.id = kMsgHitTest,
-//	.routing = kMessageRoutingDirect,
-//	.size = sizeof(struct Node_HitTestMsgArgs),
-//};
-//struct MessageType HandleMessageMessage = {
-//	.name = "HandleMessage",
-//	.id = kMsgHandleMessage,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Node_HandleMessageMsgArgs),
-//};
-//struct MessageType IsVisibleMessage = {
-//	.name = "IsVisible",
-//	.id = kMsgIsVisible,
-//	.routing = kMessageRoutingDirect,
-//	.size = sizeof(struct Node_IsVisibleMsgArgs),
-//};
-//struct MessageType ViewDidLoadMessage = {
-//	.name = "ViewDidLoad",
-//	.id = kMsgViewDidLoad,
-//	.routing = kMessageRoutingDirect,
-//	.size = sizeof(struct Node_ViewDidLoadMsgArgs),
-//};
-//struct MessageType KillFocusMessage = {
-//	.name = "KillFocus",
-//	.id = kMsgKillFocus,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Node_KillFocusMsgArgs),
-//};
-//struct MessageType SetFocusMessage = {
-//	.name = "SetFocus",
-//	.id = kMsgSetFocus,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Node_SetFocusMsgArgs),
-//};
-//struct MessageType GetSizeMessage = {
-//	.name = "GetSize",
-//	.id = kMsgGetSize,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Node_GetSizeMsgArgs),
-//};
-//struct MessageType MakeTextMessage = {
-//	.name = "MakeText",
-//	.id = kMsgMakeText,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct TextBlockConcept_MakeTextMsgArgs),
-//};
-//struct MessageType DrawBrushMessage = {
-//	.name = "DrawBrush",
-//	.id = kMsgDrawBrush,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Node2D_DrawBrushMsgArgs),
-//};
-//struct MessageType MeasureMessage = {
-//	.name = "Measure",
-//	.id = kMsgMeasure,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Node2D_MeasureMsgArgs),
-//};
-//struct MessageType ArrangeMessage = {
-//	.name = "Arrange",
-//	.id = kMsgArrange,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Node2D_ArrangeMsgArgs),
-//};
 #define Node2D_MeasureOverrideMsgArgs Node2D_MeasureMsgArgs
-//struct MessageType MeasureOverrideMessage = {
-//	.name = "MeasureOverride",
-//	.id = kMsgMeasureOverride,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Node2D_MeasureMsgArgs),
-//};
 #define Node2D_ArrangeOverrideMsgArgs Node2D_ArrangeMsgArgs
-//struct MessageType ArrangeOverrideMessage = {
-//	.name = "ArrangeOverride",
-//	.id = kMsgArrangeOverride,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Node2D_ArrangeMsgArgs),
-//};
-//struct MessageType ForegroundContentMessage = {
-//	.name = "ForegroundContent",
-//	.id = kMsgForegroundContent,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Node2D_ForegroundContentMsgArgs),
-//};
-//struct MessageType UpdateGeometryMessage = {
-//	.name = "UpdateGeometry",
-//	.id = kMsgUpdateGeometry,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Node2D_UpdateGeometryMsgArgs),
-//};
-//struct MessageType SetScrollTopMessage = {
-//	.name = "SetScrollTop",
-//	.id = kMsgSetScrollTop,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Node2D_SetScrollTopMsgArgs),
-//};
-//struct MessageType SubmitMessage = {
-//	.name = "Submit",
-//	.id = kMsgSubmit,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Form_SubmitMsgArgs),
-//};
-//struct MessageType UpdateLayoutMessage = {
-//	.name = "UpdateLayout",
-//	.id = kMsgUpdateLayout,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Screen_UpdateLayoutMsgArgs),
-//};
-//struct MessageType RenderScreenMessage = {
-//	.name = "RenderScreen",
-//	.id = kMsgRenderScreen,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Screen_RenderScreenMsgArgs),
-//};
-//struct MessageType NavigateToPageMessage = {
-//	.name = "NavigateToPage",
-//	.id = kMsgNavigateToPage,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct PageHost_NavigateToPageMsgArgs),
-//};
-//struct MessageType NavigateBackMessage = {
-//	.name = "NavigateBack",
-//	.id = kMsgNavigateBack,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct PageHost_NavigateBackMsgArgs),
-//};
 
 static luaL_Reg _Trigger_TriggeredMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Trigger_TriggeredMsgArgs[] = {
@@ -655,7 +505,7 @@ REGISTER_CLASS(AnimationPlayer, 0);
 HANDLER(Trigger, Object, PropertyChanged);
 HANDLER(Trigger, Object, Attached);
 static struct MessageType TriggerMessageTypes[kTriggerNumMessageTypes] = {	
-		{ "Trigger.Triggered", ID_Trigger_Triggered, 0x3b1c3ae2, kMessageRoutingTunnelingBubbling, sizeof(struct Trigger_TriggeredMsgArgs) },
+		{ "Trigger.Triggered", ID_Trigger_Triggered, 0x3b1c3ae2, kMessageRoutingBubbling, sizeof(struct Trigger_TriggeredMsgArgs) },
 };
 static struct PropertyType const TriggerProperties[kTriggerNumProperties] = {
 	DECL(0x5221f9e8, Trigger, Property, Property, kDataTypeString), // Trigger.Property
@@ -833,14 +683,14 @@ HANDLER(Node, Node, IsVisible);
 static struct MessageType NodeMessageTypes[kNodeNumMessageTypes] = {	
 		{ "Node.UpdateMatrix", ID_Node_UpdateMatrix, 0x5dbe404d, kMessageRoutingDirect, sizeof(struct Node_UpdateMatrixMsgArgs) },
 		{ "Node.PushProperty", ID_Node_PushProperty, 0xc5ebaf40, kMessageRoutingTunnelingBubbling, sizeof(struct Node_PushPropertyMsgArgs) },
-		{ "Node.LoadView", ID_Node_LoadView, 0xa3650e54, kMessageRoutingTunnelingBubbling, sizeof(struct Node_LoadViewMsgArgs) },
+		{ "Node.LoadView", ID_Node_LoadView, 0xa3650e54, kMessageRoutingDirect, sizeof(struct Node_LoadViewMsgArgs) },
 		{ "Node.HitTest", ID_Node_HitTest, 0x898160ea, kMessageRoutingDirect, sizeof(struct Node_HitTestMsgArgs) },
-		{ "Node.HandleMessage", ID_Node_HandleMessage, 0xfc48a0da, kMessageRoutingTunnelingBubbling, sizeof(struct Node_HandleMessageMsgArgs) },
+		{ "Node.HandleMessage", ID_Node_HandleMessage, 0xfc48a0da, kMessageRoutingBubbling, sizeof(struct Node_HandleMessageMsgArgs) },
 		{ "Node.IsVisible", ID_Node_IsVisible, 0x608d20d1, kMessageRoutingDirect, sizeof(struct Node_IsVisibleMsgArgs) },
 		{ "Node.ViewDidLoad", ID_Node_ViewDidLoad, 0x03e93095, kMessageRoutingDirect, sizeof(struct Node_ViewDidLoadMsgArgs) },
-		{ "Node.KillFocus", ID_Node_KillFocus, 0xa7c0f8d7, kMessageRoutingTunnelingBubbling, sizeof(struct Node_KillFocusMsgArgs) },
-		{ "Node.SetFocus", ID_Node_SetFocus, 0xc399d265, kMessageRoutingTunnelingBubbling, sizeof(struct Node_SetFocusMsgArgs) },
-		{ "Node.GetSize", ID_Node_GetSize, 0x80d9e0ee, kMessageRoutingTunnelingBubbling, sizeof(struct Node_GetSizeMsgArgs) },
+		{ "Node.KillFocus", ID_Node_KillFocus, 0xa7c0f8d7, kMessageRoutingDirect, sizeof(struct Node_KillFocusMsgArgs) },
+		{ "Node.SetFocus", ID_Node_SetFocus, 0xc399d265, kMessageRoutingDirect, sizeof(struct Node_SetFocusMsgArgs) },
+		{ "Node.GetSize", ID_Node_GetSize, 0x80d9e0ee, kMessageRoutingDirect, sizeof(struct Node_GetSizeMsgArgs) },
 };
 static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	DECL(0xa6478e7c, Node, Size, Size, kDataTypeStruct, .TypeString = "SizeShorthand"), // Node.Size
@@ -975,7 +825,7 @@ HANDLER(TextBlockConcept, Object, Create);
 HANDLER(TextBlockConcept, Object, Destroy);
 HANDLER(TextBlockConcept, TextBlockConcept, MakeText);
 static struct MessageType TextBlockConceptMessageTypes[kTextBlockConceptNumMessageTypes] = {	
-		{ "TextBlockConcept.MakeText", ID_TextBlockConcept_MakeText, 0x73a47798, kMessageRoutingTunnelingBubbling, sizeof(struct TextBlockConcept_MakeTextMsgArgs) },
+		{ "TextBlockConcept.MakeText", ID_TextBlockConcept_MakeText, 0x73a47798, kMessageRoutingDirect, sizeof(struct TextBlockConcept_MakeTextMsgArgs) },
 };
 static struct PropertyType const TextBlockConceptProperties[kTextBlockConceptNumProperties] = {
 	DECL(0x43c114fb, TextBlockConcept, TextResourceID, TextResourceID, kDataTypeString), // TextBlockConcept.TextResourceID
@@ -1030,14 +880,14 @@ HANDLER(Node2D, Node2D, MeasureOverride);
 HANDLER(Node2D, Node2D, ArrangeOverride);
 HANDLER(Node2D, Node2D, SetScrollTop);
 static struct MessageType Node2DMessageTypes[kNode2DNumMessageTypes] = {	
-		{ "Node2D.DrawBrush", ID_Node2D_DrawBrush, 0x0875c1d1, kMessageRoutingTunnelingBubbling, sizeof(struct Node2D_DrawBrushMsgArgs) },
-		{ "Node2D.Measure", ID_Node2D_Measure, 0x97619c7f, kMessageRoutingTunnelingBubbling, sizeof(struct Node2D_MeasureMsgArgs) },
-		{ "Node2D.Arrange", ID_Node2D_Arrange, 0xc4cf2187, kMessageRoutingTunnelingBubbling, sizeof(struct Node2D_ArrangeMsgArgs) },
-		{ "Node2D.MeasureOverride", ID_Node2D_MeasureOverride, 0xff95a02f, kMessageRoutingTunnelingBubbling, sizeof(struct Node2D_MeasureMsgArgs) },
-		{ "Node2D.ArrangeOverride", ID_Node2D_ArrangeOverride, 0x66d9e437, kMessageRoutingTunnelingBubbling, sizeof(struct Node2D_ArrangeMsgArgs) },
-		{ "Node2D.ForegroundContent", ID_Node2D_ForegroundContent, 0x9a7735e5, kMessageRoutingTunnelingBubbling, sizeof(struct Node2D_ForegroundContentMsgArgs) },
-		{ "Node2D.UpdateGeometry", ID_Node2D_UpdateGeometry, 0x12c1a314, kMessageRoutingTunnelingBubbling, sizeof(struct Node2D_UpdateGeometryMsgArgs) },
-		{ "Node2D.SetScrollTop", ID_Node2D_SetScrollTop, 0xd7e7999d, kMessageRoutingTunnelingBubbling, sizeof(struct Node2D_SetScrollTopMsgArgs) },
+		{ "Node2D.DrawBrush", ID_Node2D_DrawBrush, 0x0875c1d1, kMessageRoutingDirect, sizeof(struct Node2D_DrawBrushMsgArgs) },
+		{ "Node2D.Measure", ID_Node2D_Measure, 0x97619c7f, kMessageRoutingDirect, sizeof(struct Node2D_MeasureMsgArgs) },
+		{ "Node2D.Arrange", ID_Node2D_Arrange, 0xc4cf2187, kMessageRoutingDirect, sizeof(struct Node2D_ArrangeMsgArgs) },
+		{ "Node2D.MeasureOverride", ID_Node2D_MeasureOverride, 0xff95a02f, kMessageRoutingDirect, sizeof(struct Node2D_MeasureMsgArgs) },
+		{ "Node2D.ArrangeOverride", ID_Node2D_ArrangeOverride, 0x66d9e437, kMessageRoutingDirect, sizeof(struct Node2D_ArrangeMsgArgs) },
+		{ "Node2D.ForegroundContent", ID_Node2D_ForegroundContent, 0x9a7735e5, kMessageRoutingDirect, sizeof(struct Node2D_ForegroundContentMsgArgs) },
+		{ "Node2D.UpdateGeometry", ID_Node2D_UpdateGeometry, 0x12c1a314, kMessageRoutingDirect, sizeof(struct Node2D_UpdateGeometryMsgArgs) },
+		{ "Node2D.SetScrollTop", ID_Node2D_SetScrollTop, 0xd7e7999d, kMessageRoutingDirect, sizeof(struct Node2D_SetScrollTopMsgArgs) },
 };
 static struct PropertyType const Node2DProperties[kNode2DNumProperties] = {
 	DECL(0x3f19bf01, Node2D, LayoutTransform, LayoutTransform, kDataTypeStruct, .TypeString = "Transform2D"), // Node2D.LayoutTransform
@@ -1290,7 +1140,7 @@ REGISTER_CLASS(StackView, ID_Node2D, 0);
 HANDLER(Form, Object, Create);
 HANDLER(Form, Form, Submit);
 static struct MessageType FormMessageTypes[kFormNumMessageTypes] = {	
-		{ "Form.Submit", ID_Form_Submit, 0x4078e545, kMessageRoutingTunnelingBubbling, sizeof(struct Form_SubmitMsgArgs) },
+		{ "Form.Submit", ID_Form_Submit, 0x4078e545, kMessageRoutingBubbling, sizeof(struct Form_SubmitMsgArgs) },
 };
 static struct PropertyType const FormProperties[kFormNumProperties] = {
 };
@@ -1344,8 +1194,8 @@ HANDLER(Screen, Object, Destroy);
 HANDLER(Screen, Window, Resized);
 HANDLER(Screen, Window, Paint);
 static struct MessageType ScreenMessageTypes[kScreenNumMessageTypes] = {	
-		{ "Screen.UpdateLayout", ID_Screen_UpdateLayout, 0x928c657a, kMessageRoutingTunnelingBubbling, sizeof(struct Screen_UpdateLayoutMsgArgs) },
-		{ "Screen.RenderScreen", ID_Screen_RenderScreen, 0xd15bdf29, kMessageRoutingTunnelingBubbling, sizeof(struct Screen_RenderScreenMsgArgs) },
+		{ "Screen.UpdateLayout", ID_Screen_UpdateLayout, 0x928c657a, kMessageRoutingDirect, sizeof(struct Screen_UpdateLayoutMsgArgs) },
+		{ "Screen.RenderScreen", ID_Screen_RenderScreen, 0xd15bdf29, kMessageRoutingDirect, sizeof(struct Screen_RenderScreenMsgArgs) },
 };
 static struct PropertyType const ScreenProperties[kScreenNumProperties] = {
 	DECL(0xeb16b675, Screen, ClearColor, ClearColor, kDataTypeColor), // Screen.ClearColor
@@ -1570,8 +1420,8 @@ HANDLER(PageHost, Node, ViewDidLoad);
 HANDLER(PageHost, PageHost, NavigateToPage);
 HANDLER(PageHost, PageHost, NavigateBack);
 static struct MessageType PageHostMessageTypes[kPageHostNumMessageTypes] = {	
-		{ "PageHost.NavigateToPage", ID_PageHost_NavigateToPage, 0x6475c790, kMessageRoutingTunnelingBubbling, sizeof(struct PageHost_NavigateToPageMsgArgs) },
-		{ "PageHost.NavigateBack", ID_PageHost_NavigateBack, 0x36bc88b5, kMessageRoutingTunnelingBubbling, sizeof(struct PageHost_NavigateBackMsgArgs) },
+		{ "PageHost.NavigateToPage", ID_PageHost_NavigateToPage, 0x6475c790, kMessageRoutingDirect, sizeof(struct PageHost_NavigateToPageMsgArgs) },
+		{ "PageHost.NavigateBack", ID_PageHost_NavigateBack, 0x36bc88b5, kMessageRoutingDirect, sizeof(struct PageHost_NavigateBackMsgArgs) },
 };
 static struct PropertyType const PageHostProperties[kPageHostNumProperties] = {
 	DECL(0x2e149db4, PageHost, ActivePage, ActivePage, kDataTypeObject, .TypeString = "Page"), // PageHost.ActivePage

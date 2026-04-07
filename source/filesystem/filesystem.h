@@ -15,12 +15,6 @@ struct _PACK;
 #include "filesystem_properties.h"
 #include "../core/core.h"
 
-ORCA_API extern struct MessageType ReadCommandsMessage;
-ORCA_API extern struct MessageType OpenFileMessage;
-ORCA_API extern struct MessageType FileExistsMessage;
-ORCA_API extern struct MessageType HasChangedFilesMessage;
-ORCA_API extern struct MessageType LoadProjectMessage;
-
 typedef struct Workspace_ReadCommandsMsgArgs Workspace_ReadCommandsMsg_t,* Workspace_ReadCommandsMsgPtr;
 typedef struct Project_OpenFileMsgArgs Project_OpenFileMsg_t,* Project_OpenFileMsgPtr;
 typedef struct Project_FileExistsMsgArgs Project_FileExistsMsg_t,* Project_FileExistsMsgPtr;

@@ -116,12 +116,6 @@ static luaL_Reg _SpriteFrame_Methods[] = {
 };
 
 STRUCT(SpriteFrame, SpriteFrame);
-//struct MessageType RenderMessage = {
-//	.name = "Render",
-//	.id = kMsgRender,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct SKNode_RenderMsgArgs),
-//};
 
 static luaL_Reg _SKNode_RenderMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _SKNode_RenderMsgArgs[] = {
@@ -169,7 +163,7 @@ struct SpriteAnimation* luaX_checkSpriteAnimation(lua_State *L, int idx) {
 REGISTER_CLASS(SpriteAnimation, 0);
 HANDLER(SKNode, Node, UpdateMatrix);
 static struct MessageType SKNodeMessageTypes[kSKNodeNumMessageTypes] = {	
-		{ "SKNode.Render", ID_SKNode_Render, 0x350cf42d, kMessageRoutingTunnelingBubbling, sizeof(struct SKNode_RenderMsgArgs) },
+		{ "SKNode.Render", ID_SKNode_Render, 0x350cf42d, kMessageRoutingDirect, sizeof(struct SKNode_RenderMsgArgs) },
 };
 static struct PropertyType const SKNodeProperties[kSKNodeNumProperties] = {
 	DECL(0xe27f342a, SKNode, Position, Position, kDataTypeStruct, .TypeString = "Vector2D"), // SKNode.Position
