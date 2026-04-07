@@ -140,6 +140,7 @@ OBJ_SendMessageW(lpObject_t pobj, uint32_t MsgID, wParam_t wParam, lParam_t lPar
 //	if (MsgID == kMsgUpdateLayout && !(OBJ_GetFlags(pobj) & OF_DIRTY))
 //		return FALSE;
 //#endif
+  MsgID &= MSG_DATA_MASK; // strip routing bits — routing is handled by OBJ_RaiseEvent
   FOR_EACH_LIST(struct component, cmp, _GetComponents(pobj))
   {
     if (cmp->pcls->ObjProc) {
