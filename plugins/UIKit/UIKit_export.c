@@ -498,7 +498,7 @@ REGISTER_CLASS(AnimationPlayer, 0);
 HANDLER(Trigger, Object, PropertyChanged);
 HANDLER(Trigger, Object, Attached);
 static struct MessageType TriggerMessageTypes[kTriggerNumMessageTypes] = {	
-		{ "Trigger.Triggered", ID_Trigger_Triggered, 0x3b1c3ae2, kMessageRoutingBubbling, sizeof(struct Trigger_TriggeredMsgArgs) },
+	{ "Trigger.Triggered", ID_Trigger_Triggered, 0x3b1c3ae2, kMessageRoutingBubbling, sizeof(struct Trigger_TriggeredMsgArgs) },
 };
 static struct PropertyType const TriggerProperties[kTriggerNumProperties] = {
 	DECL(0x5221f9e8, Trigger, Property, Property, kDataTypeString), // Trigger.Property
@@ -508,8 +508,8 @@ static struct Trigger TriggerDefaults = {
 };
 LRESULT TriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case (ID_Object_PropertyChanged & MSG_DATA_MASK): return Trigger_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
-		case (ID_Object_Attached & MSG_DATA_MASK): return Trigger_Attached(object, cmp, wparm, lparm); // Object.Attached
+		case ID_Object_PropertyChanged: return Trigger_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
+		case ID_Object_Attached: return Trigger_Attached(object, cmp, wparm, lparm); // Object.Attached
 	}
 	return FALSE;
 }
@@ -531,7 +531,7 @@ static struct OnPropertyChangedTrigger OnPropertyChangedTriggerDefaults = {
 };
 LRESULT OnPropertyChangedTriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case (ID_Object_PropertyChanged & MSG_DATA_MASK): return OnPropertyChangedTrigger_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
+		case ID_Object_PropertyChanged: return OnPropertyChangedTrigger_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
 	}
 	return FALSE;
 }
@@ -552,7 +552,7 @@ static struct OnAttachedTrigger OnAttachedTriggerDefaults = {
 };
 LRESULT OnAttachedTriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case (ID_Object_Attached & MSG_DATA_MASK): return OnAttachedTrigger_Attached(object, cmp, wparm, lparm); // Object.Attached
+		case ID_Object_Attached: return OnAttachedTrigger_Attached(object, cmp, wparm, lparm); // Object.Attached
 	}
 	return FALSE;
 }
@@ -596,7 +596,7 @@ static struct Setter SetterDefaults = {
 };
 LRESULT SetterProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case (ID_Trigger_Triggered & MSG_DATA_MASK): return Setter_Triggered(object, cmp, wparm, lparm); // Trigger.Triggered
+		case ID_Trigger_Triggered: return Setter_Triggered(object, cmp, wparm, lparm); // Trigger.Triggered
 	}
 	return FALSE;
 }
@@ -619,7 +619,7 @@ static struct Handler HandlerDefaults = {
 };
 LRESULT HandlerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case (ID_Trigger_Triggered & MSG_DATA_MASK): return Handler_Triggered(object, cmp, wparm, lparm); // Trigger.Triggered
+		case ID_Trigger_Triggered: return Handler_Triggered(object, cmp, wparm, lparm); // Trigger.Triggered
 	}
 	return FALSE;
 }
@@ -672,15 +672,15 @@ HANDLER(Node, Object, ThemeChanged);
 HANDLER(Node, Node, GetSize);
 HANDLER(Node, Node, IsVisible);
 static struct MessageType NodeMessageTypes[kNodeNumMessageTypes] = {	
-		{ "Node.UpdateMatrix", ID_Node_UpdateMatrix, 0x5dbe404d, kMessageRoutingDirect, sizeof(struct Node_UpdateMatrixMsgArgs) },
-		{ "Node.PushProperty", ID_Node_PushProperty, 0xc5ebaf40, kMessageRoutingTunnelingBubbling, sizeof(struct Node_PushPropertyMsgArgs) },
-		{ "Node.LoadView", ID_Node_LoadView, 0xa3650e54, kMessageRoutingDirect, sizeof(struct Node_LoadViewMsgArgs) },
-		{ "Node.HitTest", ID_Node_HitTest, 0x898160ea, kMessageRoutingDirect, sizeof(struct Node_HitTestMsgArgs) },
-		{ "Node.IsVisible", ID_Node_IsVisible, 0x608d20d1, kMessageRoutingDirect, sizeof(struct Node_IsVisibleMsgArgs) },
-		{ "Node.ViewDidLoad", ID_Node_ViewDidLoad, 0x03e93095, kMessageRoutingDirect, sizeof(struct Node_ViewDidLoadMsgArgs) },
-		{ "Node.KillFocus", ID_Node_KillFocus, 0xa7c0f8d7, kMessageRoutingDirect, sizeof(struct Node_KillFocusMsgArgs) },
-		{ "Node.SetFocus", ID_Node_SetFocus, 0xc399d265, kMessageRoutingDirect, sizeof(struct Node_SetFocusMsgArgs) },
-		{ "Node.GetSize", ID_Node_GetSize, 0x80d9e0ee, kMessageRoutingDirect, sizeof(struct Node_GetSizeMsgArgs) },
+	{ "Node.UpdateMatrix", ID_Node_UpdateMatrix, 0x5dbe404d, kMessageRoutingDirect, sizeof(struct Node_UpdateMatrixMsgArgs) },
+	{ "Node.PushProperty", ID_Node_PushProperty, 0xc5ebaf40, kMessageRoutingTunnelingBubbling, sizeof(struct Node_PushPropertyMsgArgs) },
+	{ "Node.LoadView", ID_Node_LoadView, 0xa3650e54, kMessageRoutingDirect, sizeof(struct Node_LoadViewMsgArgs) },
+	{ "Node.HitTest", ID_Node_HitTest, 0x898160ea, kMessageRoutingDirect, sizeof(struct Node_HitTestMsgArgs) },
+	{ "Node.IsVisible", ID_Node_IsVisible, 0x608d20d1, kMessageRoutingDirect, sizeof(struct Node_IsVisibleMsgArgs) },
+	{ "Node.ViewDidLoad", ID_Node_ViewDidLoad, 0x03e93095, kMessageRoutingDirect, sizeof(struct Node_ViewDidLoadMsgArgs) },
+	{ "Node.KillFocus", ID_Node_KillFocus, 0xa7c0f8d7, kMessageRoutingDirect, sizeof(struct Node_KillFocusMsgArgs) },
+	{ "Node.SetFocus", ID_Node_SetFocus, 0xc399d265, kMessageRoutingDirect, sizeof(struct Node_SetFocusMsgArgs) },
+	{ "Node.GetSize", ID_Node_GetSize, 0x80d9e0ee, kMessageRoutingDirect, sizeof(struct Node_GetSizeMsgArgs) },
 };
 static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	DECL(0xa6478e7c, Node, Size, Size, kDataTypeStruct, .TypeString = "SizeShorthand"), // Node.Size
@@ -761,9 +761,9 @@ static struct Node NodeDefaults = {
 };
 LRESULT NodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case (ID_Object_ThemeChanged & MSG_DATA_MASK): return Node_ThemeChanged(object, cmp, wparm, lparm); // Object.ThemeChanged
-		case (ID_Node_GetSize & MSG_DATA_MASK): return Node_GetSize(object, cmp, wparm, lparm); // Node.GetSize
-		case (ID_Node_IsVisible & MSG_DATA_MASK): return Node_IsVisible(object, cmp, wparm, lparm); // Node.IsVisible
+		case ID_Object_ThemeChanged: return Node_ThemeChanged(object, cmp, wparm, lparm); // Object.ThemeChanged
+		case ID_Node_GetSize: return Node_GetSize(object, cmp, wparm, lparm); // Node.GetSize
+		case ID_Node_IsVisible: return Node_IsVisible(object, cmp, wparm, lparm); // Node.IsVisible
 	}
 	return FALSE;
 }
@@ -815,7 +815,7 @@ HANDLER(TextBlockConcept, Object, Create);
 HANDLER(TextBlockConcept, Object, Destroy);
 HANDLER(TextBlockConcept, TextBlockConcept, MakeText);
 static struct MessageType TextBlockConceptMessageTypes[kTextBlockConceptNumMessageTypes] = {	
-		{ "TextBlockConcept.MakeText", ID_TextBlockConcept_MakeText, 0x73a47798, kMessageRoutingDirect, sizeof(struct TextBlockConcept_MakeTextMsgArgs) },
+	{ "TextBlockConcept.MakeText", ID_TextBlockConcept_MakeText, 0x73a47798, kMessageRoutingDirect, sizeof(struct TextBlockConcept_MakeTextMsgArgs) },
 };
 static struct PropertyType const TextBlockConceptProperties[kTextBlockConceptNumProperties] = {
 	DECL(0x43c114fb, TextBlockConcept, TextResourceID, TextResourceID, kDataTypeString), // TextBlockConcept.TextResourceID
@@ -841,9 +841,9 @@ static struct TextBlockConcept TextBlockConceptDefaults = {
 };
 LRESULT TextBlockConceptProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case (ID_Object_Create & MSG_DATA_MASK): return TextBlockConcept_Create(object, cmp, wparm, lparm); // Object.Create
-		case (ID_Object_Destroy & MSG_DATA_MASK): return TextBlockConcept_Destroy(object, cmp, wparm, lparm); // Object.Destroy
-		case (ID_TextBlockConcept_MakeText & MSG_DATA_MASK): return TextBlockConcept_MakeText(object, cmp, wparm, lparm); // TextBlockConcept.MakeText
+		case ID_Object_Create: return TextBlockConcept_Create(object, cmp, wparm, lparm); // Object.Create
+		case ID_Object_Destroy: return TextBlockConcept_Destroy(object, cmp, wparm, lparm); // Object.Destroy
+		case ID_TextBlockConcept_MakeText: return TextBlockConcept_MakeText(object, cmp, wparm, lparm); // TextBlockConcept.MakeText
 	}
 	return FALSE;
 }
@@ -869,14 +869,14 @@ HANDLER(Node2D, Node2D, MeasureOverride);
 HANDLER(Node2D, Node2D, ArrangeOverride);
 HANDLER(Node2D, Node2D, SetScrollTop);
 static struct MessageType Node2DMessageTypes[kNode2DNumMessageTypes] = {	
-		{ "Node2D.DrawBrush", ID_Node2D_DrawBrush, 0x0875c1d1, kMessageRoutingDirect, sizeof(struct Node2D_DrawBrushMsgArgs) },
-		{ "Node2D.Measure", ID_Node2D_Measure, 0x97619c7f, kMessageRoutingDirect, sizeof(struct Node2D_MeasureMsgArgs) },
-		{ "Node2D.Arrange", ID_Node2D_Arrange, 0xc4cf2187, kMessageRoutingDirect, sizeof(struct Node2D_ArrangeMsgArgs) },
-		{ "Node2D.MeasureOverride", ID_Node2D_MeasureOverride, 0xff95a02f, kMessageRoutingDirect, sizeof(struct Node2D_MeasureMsgArgs) },
-		{ "Node2D.ArrangeOverride", ID_Node2D_ArrangeOverride, 0x66d9e437, kMessageRoutingDirect, sizeof(struct Node2D_ArrangeMsgArgs) },
-		{ "Node2D.ForegroundContent", ID_Node2D_ForegroundContent, 0x9a7735e5, kMessageRoutingDirect, sizeof(struct Node2D_ForegroundContentMsgArgs) },
-		{ "Node2D.UpdateGeometry", ID_Node2D_UpdateGeometry, 0x12c1a314, kMessageRoutingDirect, sizeof(struct Node2D_UpdateGeometryMsgArgs) },
-		{ "Node2D.SetScrollTop", ID_Node2D_SetScrollTop, 0xd7e7999d, kMessageRoutingDirect, sizeof(struct Node2D_SetScrollTopMsgArgs) },
+	{ "Node2D.DrawBrush", ID_Node2D_DrawBrush, 0x0875c1d1, kMessageRoutingDirect, sizeof(struct Node2D_DrawBrushMsgArgs) },
+	{ "Node2D.Measure", ID_Node2D_Measure, 0x97619c7f, kMessageRoutingDirect, sizeof(struct Node2D_MeasureMsgArgs) },
+	{ "Node2D.Arrange", ID_Node2D_Arrange, 0xc4cf2187, kMessageRoutingDirect, sizeof(struct Node2D_ArrangeMsgArgs) },
+	{ "Node2D.MeasureOverride", ID_Node2D_MeasureOverride, 0xff95a02f, kMessageRoutingDirect, sizeof(struct Node2D_MeasureMsgArgs) },
+	{ "Node2D.ArrangeOverride", ID_Node2D_ArrangeOverride, 0x66d9e437, kMessageRoutingDirect, sizeof(struct Node2D_ArrangeMsgArgs) },
+	{ "Node2D.ForegroundContent", ID_Node2D_ForegroundContent, 0x9a7735e5, kMessageRoutingDirect, sizeof(struct Node2D_ForegroundContentMsgArgs) },
+	{ "Node2D.UpdateGeometry", ID_Node2D_UpdateGeometry, 0x12c1a314, kMessageRoutingDirect, sizeof(struct Node2D_UpdateGeometryMsgArgs) },
+	{ "Node2D.SetScrollTop", ID_Node2D_SetScrollTop, 0xd7e7999d, kMessageRoutingDirect, sizeof(struct Node2D_SetScrollTopMsgArgs) },
 };
 static struct PropertyType const Node2DProperties[kNode2DNumProperties] = {
 	DECL(0x3f19bf01, Node2D, LayoutTransform, LayoutTransform, kDataTypeStruct, .TypeString = "Transform2D"), // Node2D.LayoutTransform
@@ -932,19 +932,19 @@ static struct Node2D Node2DDefaults = {
 };
 LRESULT Node2DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case (ID_Node_UpdateMatrix & MSG_DATA_MASK): return Node2D_UpdateMatrix(object, cmp, wparm, lparm); // Node.UpdateMatrix
-		case (ID_Object_Create & MSG_DATA_MASK): return Node2D_Create(object, cmp, wparm, lparm); // Object.Create
-		case (ID_Object_Destroy & MSG_DATA_MASK): return Node2D_Destroy(object, cmp, wparm, lparm); // Object.Destroy
-		case (ID_Node2D_UpdateGeometry & MSG_DATA_MASK): return Node2D_UpdateGeometry(object, cmp, wparm, lparm); // Node2D.UpdateGeometry
-		case (ID_Node2D_DrawBrush & MSG_DATA_MASK): return Node2D_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
-		case (ID_Mouse_ScrollWheel & MSG_DATA_MASK): return Node2D_ScrollWheel(object, cmp, wparm, lparm); // Mouse.ScrollWheel
-		case (ID_Mouse_MouseMoved & MSG_DATA_MASK): return Node2D_MouseMoved(object, cmp, wparm, lparm); // Mouse.MouseMoved
-		case (ID_Node_HitTest & MSG_DATA_MASK): return Node2D_HitTest(object, cmp, wparm, lparm); // Node.HitTest
-		case (ID_Node2D_Measure & MSG_DATA_MASK): return Node2D_Measure(object, cmp, wparm, lparm); // Node2D.Measure
-		case (ID_Node2D_Arrange & MSG_DATA_MASK): return Node2D_Arrange(object, cmp, wparm, lparm); // Node2D.Arrange
-		case (ID_Node2D_MeasureOverride & MSG_DATA_MASK): return Node2D_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
-		case (ID_Node2D_ArrangeOverride & MSG_DATA_MASK): return Node2D_ArrangeOverride(object, cmp, wparm, lparm); // Node2D.ArrangeOverride
-		case (ID_Node2D_SetScrollTop & MSG_DATA_MASK): return Node2D_SetScrollTop(object, cmp, wparm, lparm); // Node2D.SetScrollTop
+		case ID_Node_UpdateMatrix: return Node2D_UpdateMatrix(object, cmp, wparm, lparm); // Node.UpdateMatrix
+		case ID_Object_Create: return Node2D_Create(object, cmp, wparm, lparm); // Object.Create
+		case ID_Object_Destroy: return Node2D_Destroy(object, cmp, wparm, lparm); // Object.Destroy
+		case ID_Node2D_UpdateGeometry: return Node2D_UpdateGeometry(object, cmp, wparm, lparm); // Node2D.UpdateGeometry
+		case ID_Node2D_DrawBrush: return Node2D_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
+		case ID_Mouse_ScrollWheel: return Node2D_ScrollWheel(object, cmp, wparm, lparm); // Mouse.ScrollWheel
+		case ID_Mouse_MouseMoved: return Node2D_MouseMoved(object, cmp, wparm, lparm); // Mouse.MouseMoved
+		case ID_Node_HitTest: return Node2D_HitTest(object, cmp, wparm, lparm); // Node.HitTest
+		case ID_Node2D_Measure: return Node2D_Measure(object, cmp, wparm, lparm); // Node2D.Measure
+		case ID_Node2D_Arrange: return Node2D_Arrange(object, cmp, wparm, lparm); // Node2D.Arrange
+		case ID_Node2D_MeasureOverride: return Node2D_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
+		case ID_Node2D_ArrangeOverride: return Node2D_ArrangeOverride(object, cmp, wparm, lparm); // Node2D.ArrangeOverride
+		case ID_Node2D_SetScrollTop: return Node2D_SetScrollTop(object, cmp, wparm, lparm); // Node2D.SetScrollTop
 	}
 	return FALSE;
 }
@@ -967,7 +967,7 @@ static struct PrefabView2D PrefabView2DDefaults = {
 };
 LRESULT PrefabView2DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case (ID_Node_LoadView & MSG_DATA_MASK): return PrefabView2D_LoadView(object, cmp, wparm, lparm); // Node.LoadView
+		case ID_Node_LoadView: return PrefabView2D_LoadView(object, cmp, wparm, lparm); // Node.LoadView
 	}
 	return FALSE;
 }
@@ -992,11 +992,11 @@ static struct TextBlock TextBlockDefaults = {
 };
 LRESULT TextBlockProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case (ID_Node2D_MeasureOverride & MSG_DATA_MASK): return TextBlock_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
-		case (ID_Node2D_ForegroundContent & MSG_DATA_MASK): return TextBlock_ForegroundContent(object, cmp, wparm, lparm); // Node2D.ForegroundContent
-		case (ID_Node2D_UpdateGeometry & MSG_DATA_MASK): return TextBlock_UpdateGeometry(object, cmp, wparm, lparm); // Node2D.UpdateGeometry
-		case (ID_Object_Create & MSG_DATA_MASK): return TextBlock_Create(object, cmp, wparm, lparm); // Object.Create
-		case (ID_Node2D_DrawBrush & MSG_DATA_MASK): return TextBlock_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
+		case ID_Node2D_MeasureOverride: return TextBlock_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
+		case ID_Node2D_ForegroundContent: return TextBlock_ForegroundContent(object, cmp, wparm, lparm); // Node2D.ForegroundContent
+		case ID_Node2D_UpdateGeometry: return TextBlock_UpdateGeometry(object, cmp, wparm, lparm); // Node2D.UpdateGeometry
+		case ID_Object_Create: return TextBlock_Create(object, cmp, wparm, lparm); // Object.Create
+		case ID_Node2D_DrawBrush: return TextBlock_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
 	}
 	return FALSE;
 }
@@ -1029,13 +1029,13 @@ static struct Input InputDefaults = {
 };
 LRESULT InputProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case (ID_Object_Create & MSG_DATA_MASK): return Input_Create(object, cmp, wparm, lparm); // Object.Create
-		case (ID_Node2D_DrawBrush & MSG_DATA_MASK): return Input_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
-		case (ID_TextBlockConcept_MakeText & MSG_DATA_MASK): return Input_MakeText(object, cmp, wparm, lparm); // TextBlockConcept.MakeText
-		case (ID_Keyboard_KeyDown & MSG_DATA_MASK): return Input_KeyDown(object, cmp, wparm, lparm); // Keyboard.KeyDown
-		case (ID_Node_KillFocus & MSG_DATA_MASK): return Input_KillFocus(object, cmp, wparm, lparm); // Node.KillFocus
-		case (ID_Mouse_LeftMouseUp & MSG_DATA_MASK): return Input_LeftMouseUp(object, cmp, wparm, lparm); // Mouse.LeftMouseUp
-		case (ID_Node2D_MeasureOverride & MSG_DATA_MASK): return Input_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
+		case ID_Object_Create: return Input_Create(object, cmp, wparm, lparm); // Object.Create
+		case ID_Node2D_DrawBrush: return Input_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
+		case ID_TextBlockConcept_MakeText: return Input_MakeText(object, cmp, wparm, lparm); // TextBlockConcept.MakeText
+		case ID_Keyboard_KeyDown: return Input_KeyDown(object, cmp, wparm, lparm); // Keyboard.KeyDown
+		case ID_Node_KillFocus: return Input_KillFocus(object, cmp, wparm, lparm); // Node.KillFocus
+		case ID_Mouse_LeftMouseUp: return Input_LeftMouseUp(object, cmp, wparm, lparm); // Mouse.LeftMouseUp
+		case ID_Node2D_MeasureOverride: return Input_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
 	}
 	return FALSE;
 }
@@ -1060,10 +1060,10 @@ static struct Button ButtonDefaults = {
 };
 LRESULT ButtonProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case (ID_Object_Create & MSG_DATA_MASK): return Button_Create(object, cmp, wparm, lparm); // Object.Create
-		case (ID_Mouse_LeftMouseUp & MSG_DATA_MASK): return Button_LeftMouseUp(object, cmp, wparm, lparm); // Mouse.LeftMouseUp
-		case (ID_Keyboard_KeyDown & MSG_DATA_MASK): return Button_KeyDown(object, cmp, wparm, lparm); // Keyboard.KeyDown
-		case (ID_Node2D_DrawBrush & MSG_DATA_MASK): return Button_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
+		case ID_Object_Create: return Button_Create(object, cmp, wparm, lparm); // Object.Create
+		case ID_Mouse_LeftMouseUp: return Button_LeftMouseUp(object, cmp, wparm, lparm); // Mouse.LeftMouseUp
+		case ID_Keyboard_KeyDown: return Button_KeyDown(object, cmp, wparm, lparm); // Keyboard.KeyDown
+		case ID_Node2D_DrawBrush: return Button_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
 	}
 	return FALSE;
 }
@@ -1085,7 +1085,7 @@ static struct Label LabelDefaults = {
 };
 LRESULT LabelProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case (ID_Mouse_LeftMouseUp & MSG_DATA_MASK): return Label_LeftMouseUp(object, cmp, wparm, lparm); // Mouse.LeftMouseUp
+		case ID_Mouse_LeftMouseUp: return Label_LeftMouseUp(object, cmp, wparm, lparm); // Mouse.LeftMouseUp
 	}
 	return FALSE;
 }
@@ -1112,8 +1112,8 @@ static struct StackView StackViewDefaults = {
 };
 LRESULT StackViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case (ID_Node2D_MeasureOverride & MSG_DATA_MASK): return StackView_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
-		case (ID_Node2D_ArrangeOverride & MSG_DATA_MASK): return StackView_ArrangeOverride(object, cmp, wparm, lparm); // Node2D.ArrangeOverride
+		case ID_Node2D_MeasureOverride: return StackView_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
+		case ID_Node2D_ArrangeOverride: return StackView_ArrangeOverride(object, cmp, wparm, lparm); // Node2D.ArrangeOverride
 	}
 	return FALSE;
 }
@@ -1128,7 +1128,7 @@ REGISTER_CLASS(StackView, ID_Node2D, 0);
 HANDLER(Form, Object, Create);
 HANDLER(Form, Form, Submit);
 static struct MessageType FormMessageTypes[kFormNumMessageTypes] = {	
-		{ "Form.Submit", ID_Form_Submit, 0x4078e545, kMessageRoutingBubbling, sizeof(struct Form_SubmitMsgArgs) },
+	{ "Form.Submit", ID_Form_Submit, 0x4078e545, kMessageRoutingBubbling, sizeof(struct Form_SubmitMsgArgs) },
 };
 static struct PropertyType const FormProperties[kFormNumProperties] = {
 };
@@ -1136,8 +1136,8 @@ static struct Form FormDefaults = {
 };
 LRESULT FormProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case (ID_Object_Create & MSG_DATA_MASK): return Form_Create(object, cmp, wparm, lparm); // Object.Create
-		case (ID_Form_Submit & MSG_DATA_MASK): return Form_Submit(object, cmp, wparm, lparm); // Form.Submit
+		case ID_Object_Create: return Form_Create(object, cmp, wparm, lparm); // Object.Create
+		case ID_Form_Submit: return Form_Submit(object, cmp, wparm, lparm); // Form.Submit
 	}
 	return FALSE;
 }
@@ -1182,8 +1182,8 @@ HANDLER(Screen, Object, Destroy);
 HANDLER(Screen, Window, Resized);
 HANDLER(Screen, Window, Paint);
 static struct MessageType ScreenMessageTypes[kScreenNumMessageTypes] = {	
-		{ "Screen.UpdateLayout", ID_Screen_UpdateLayout, 0x928c657a, kMessageRoutingDirect, sizeof(struct Screen_UpdateLayoutMsgArgs) },
-		{ "Screen.RenderScreen", ID_Screen_RenderScreen, 0xd15bdf29, kMessageRoutingDirect, sizeof(struct Screen_RenderScreenMsgArgs) },
+	{ "Screen.UpdateLayout", ID_Screen_UpdateLayout, 0x928c657a, kMessageRoutingDirect, sizeof(struct Screen_UpdateLayoutMsgArgs) },
+	{ "Screen.RenderScreen", ID_Screen_RenderScreen, 0xd15bdf29, kMessageRoutingDirect, sizeof(struct Screen_RenderScreenMsgArgs) },
 };
 static struct PropertyType const ScreenProperties[kScreenNumProperties] = {
 	DECL(0xeb16b675, Screen, ClearColor, ClearColor, kDataTypeColor), // Screen.ClearColor
@@ -1196,13 +1196,13 @@ static struct Screen ScreenDefaults = {
 };
 LRESULT ScreenProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case (ID_Screen_UpdateLayout & MSG_DATA_MASK): return Screen_UpdateLayout(object, cmp, wparm, lparm); // Screen.UpdateLayout
-		case (ID_Screen_RenderScreen & MSG_DATA_MASK): return Screen_RenderScreen(object, cmp, wparm, lparm); // Screen.RenderScreen
-		case (ID_Node2D_MeasureOverride & MSG_DATA_MASK): return Screen_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
-		case (ID_Object_Create & MSG_DATA_MASK): return Screen_Create(object, cmp, wparm, lparm); // Object.Create
-		case (ID_Object_Destroy & MSG_DATA_MASK): return Screen_Destroy(object, cmp, wparm, lparm); // Object.Destroy
-		case (ID_Window_Resized & MSG_DATA_MASK): return Screen_Resized(object, cmp, wparm, lparm); // Window.Resized
-		case (ID_Window_Paint & MSG_DATA_MASK): return Screen_Paint(object, cmp, wparm, lparm); // Window.Paint
+		case ID_Screen_UpdateLayout: return Screen_UpdateLayout(object, cmp, wparm, lparm); // Screen.UpdateLayout
+		case ID_Screen_RenderScreen: return Screen_RenderScreen(object, cmp, wparm, lparm); // Screen.RenderScreen
+		case ID_Node2D_MeasureOverride: return Screen_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
+		case ID_Object_Create: return Screen_Create(object, cmp, wparm, lparm); // Object.Create
+		case ID_Object_Destroy: return Screen_Destroy(object, cmp, wparm, lparm); // Object.Destroy
+		case ID_Window_Resized: return Screen_Resized(object, cmp, wparm, lparm); // Window.Resized
+		case ID_Window_Paint: return Screen_Paint(object, cmp, wparm, lparm); // Window.Paint
 	}
 	return FALSE;
 }
@@ -1227,7 +1227,7 @@ static struct Cinematic CinematicDefaults = {
 };
 LRESULT CinematicProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case (ID_Node2D_DrawBrush & MSG_DATA_MASK): return Cinematic_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
+		case ID_Node2D_DrawBrush: return Cinematic_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
 	}
 	return FALSE;
 }
@@ -1255,8 +1255,8 @@ static struct Grid GridDefaults = {
 };
 LRESULT GridProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case (ID_Node2D_MeasureOverride & MSG_DATA_MASK): return Grid_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
-		case (ID_Node2D_ArrangeOverride & MSG_DATA_MASK): return Grid_ArrangeOverride(object, cmp, wparm, lparm); // Node2D.ArrangeOverride
+		case ID_Node2D_MeasureOverride: return Grid_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
+		case ID_Node2D_ArrangeOverride: return Grid_ArrangeOverride(object, cmp, wparm, lparm); // Node2D.ArrangeOverride
 	}
 	return FALSE;
 }
@@ -1289,11 +1289,11 @@ static struct ImageView ImageViewDefaults = {
 };
 LRESULT ImageViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case (ID_Node2D_MeasureOverride & MSG_DATA_MASK): return ImageView_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
-		case (ID_Node2D_ArrangeOverride & MSG_DATA_MASK): return ImageView_ArrangeOverride(object, cmp, wparm, lparm); // Node2D.ArrangeOverride
-		case (ID_Node2D_ForegroundContent & MSG_DATA_MASK): return ImageView_ForegroundContent(object, cmp, wparm, lparm); // Node2D.ForegroundContent
-		case (ID_Node2D_DrawBrush & MSG_DATA_MASK): return ImageView_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
-		case (ID_Node_LoadView & MSG_DATA_MASK): return ImageView_LoadView(object, cmp, wparm, lparm); // Node.LoadView
+		case ID_Node2D_MeasureOverride: return ImageView_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
+		case ID_Node2D_ArrangeOverride: return ImageView_ArrangeOverride(object, cmp, wparm, lparm); // Node2D.ArrangeOverride
+		case ID_Node2D_ForegroundContent: return ImageView_ForegroundContent(object, cmp, wparm, lparm); // Node2D.ForegroundContent
+		case ID_Node2D_DrawBrush: return ImageView_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
+		case ID_Node_LoadView: return ImageView_LoadView(object, cmp, wparm, lparm); // Node.LoadView
 	}
 	return FALSE;
 }
@@ -1330,9 +1330,9 @@ static struct NinePatchImage NinePatchImageDefaults = {
 };
 LRESULT NinePatchImageProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case (ID_Node2D_MeasureOverride & MSG_DATA_MASK): return NinePatchImage_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
-		case (ID_Node2D_ForegroundContent & MSG_DATA_MASK): return NinePatchImage_ForegroundContent(object, cmp, wparm, lparm); // Node2D.ForegroundContent
-		case (ID_Node2D_DrawBrush & MSG_DATA_MASK): return NinePatchImage_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
+		case ID_Node2D_MeasureOverride: return NinePatchImage_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
+		case ID_Node2D_ForegroundContent: return NinePatchImage_ForegroundContent(object, cmp, wparm, lparm); // Node2D.ForegroundContent
+		case ID_Node2D_DrawBrush: return NinePatchImage_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
 	}
 	return FALSE;
 }
@@ -1365,10 +1365,10 @@ static struct TerminalView TerminalViewDefaults = {
 };
 LRESULT TerminalViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case (ID_Object_Create & MSG_DATA_MASK): return TerminalView_Create(object, cmp, wparm, lparm); // Object.Create
-		case (ID_Node2D_DrawBrush & MSG_DATA_MASK): return TerminalView_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
-		case (ID_Node_PushProperty & MSG_DATA_MASK): return TerminalView_PushProperty(object, cmp, wparm, lparm); // Node.PushProperty
-		case (ID_Mouse_ScrollWheel & MSG_DATA_MASK): return TerminalView_ScrollWheel(object, cmp, wparm, lparm); // Mouse.ScrollWheel
+		case ID_Object_Create: return TerminalView_Create(object, cmp, wparm, lparm); // Object.Create
+		case ID_Node2D_DrawBrush: return TerminalView_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
+		case ID_Node_PushProperty: return TerminalView_PushProperty(object, cmp, wparm, lparm); // Node.PushProperty
+		case ID_Mouse_ScrollWheel: return TerminalView_ScrollWheel(object, cmp, wparm, lparm); // Mouse.ScrollWheel
 	}
 	return FALSE;
 }
@@ -1392,7 +1392,7 @@ static struct Page PageDefaults = {
 };
 LRESULT PageProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case (ID_Object_Create & MSG_DATA_MASK): return Page_Create(object, cmp, wparm, lparm); // Object.Create
+		case ID_Object_Create: return Page_Create(object, cmp, wparm, lparm); // Object.Create
 	}
 	return FALSE;
 }
@@ -1408,8 +1408,8 @@ HANDLER(PageHost, Node, ViewDidLoad);
 HANDLER(PageHost, PageHost, NavigateToPage);
 HANDLER(PageHost, PageHost, NavigateBack);
 static struct MessageType PageHostMessageTypes[kPageHostNumMessageTypes] = {	
-		{ "PageHost.NavigateToPage", ID_PageHost_NavigateToPage, 0x6475c790, kMessageRoutingDirect, sizeof(struct PageHost_NavigateToPageMsgArgs) },
-		{ "PageHost.NavigateBack", ID_PageHost_NavigateBack, 0x36bc88b5, kMessageRoutingDirect, sizeof(struct PageHost_NavigateBackMsgArgs) },
+	{ "PageHost.NavigateToPage", ID_PageHost_NavigateToPage, 0x6475c790, kMessageRoutingDirect, sizeof(struct PageHost_NavigateToPageMsgArgs) },
+	{ "PageHost.NavigateBack", ID_PageHost_NavigateBack, 0x36bc88b5, kMessageRoutingDirect, sizeof(struct PageHost_NavigateBackMsgArgs) },
 };
 static struct PropertyType const PageHostProperties[kPageHostNumProperties] = {
 	DECL(0x2e149db4, PageHost, ActivePage, ActivePage, kDataTypeObject, .TypeString = "Page"), // PageHost.ActivePage
@@ -1418,9 +1418,9 @@ static struct PageHost PageHostDefaults = {
 };
 LRESULT PageHostProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case (ID_Node_ViewDidLoad & MSG_DATA_MASK): return PageHost_ViewDidLoad(object, cmp, wparm, lparm); // Node.ViewDidLoad
-		case (ID_PageHost_NavigateToPage & MSG_DATA_MASK): return PageHost_NavigateToPage(object, cmp, wparm, lparm); // PageHost.NavigateToPage
-		case (ID_PageHost_NavigateBack & MSG_DATA_MASK): return PageHost_NavigateBack(object, cmp, wparm, lparm); // PageHost.NavigateBack
+		case ID_Node_ViewDidLoad: return PageHost_ViewDidLoad(object, cmp, wparm, lparm); // Node.ViewDidLoad
+		case ID_PageHost_NavigateToPage: return PageHost_NavigateToPage(object, cmp, wparm, lparm); // PageHost.NavigateToPage
+		case ID_PageHost_NavigateBack: return PageHost_NavigateBack(object, cmp, wparm, lparm); // PageHost.NavigateBack
 	}
 	return FALSE;
 }
