@@ -3,13 +3,6 @@
 #ifndef __SPRITEKIT_PROPERTIES_H__
 #define __SPRITEKIT_PROPERTIES_H__
 
-#ifndef kRoutingBubble
-#define kRoutingBubble           0u
-#define kRoutingTunnelingBubbling 1u
-#define kRoutingTunneling        2u
-#define kRoutingDirect           3u
-#endif
-
 // SpriteAnimation
 #define ID_SpriteAnimation 0x261d60ba
 #define GetSpriteAnimation(_P) ((struct SpriteAnimation*)((_P)?OBJ_GetComponent(_P,ID_SpriteAnimation):NULL))
@@ -39,7 +32,7 @@ enum SpriteAnimationProperties {
 enum SKNodeMessages {
 	kSKNodeRender,
 };
-#define ID_SKNode_Render ((0x450c46e3&~0x3)|kRoutingTunnelingBubbling) // SKNode.Render
+#define ID_SKNode_Render ((0x450c46e3&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // SKNode.Render
 #define kSKNodeNumProperties 3
 enum SKNodeProperties {
 	kSKNodePosition,

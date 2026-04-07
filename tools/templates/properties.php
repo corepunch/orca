@@ -1,17 +1,10 @@
 <?php require "model/module.php"; ?>
 <?php $model = new Model($argv[1]); ?>
-<?php $_routing_const = ['Bubbling'=>'kRoutingBubble','TunnelingBubbling'=>'kRoutingTunnelingBubbling','Tunneling'=>'kRoutingTunneling','Direct'=>'kRoutingDirect']; ?>
+<?php $_routing_const = ['Bubbling'=>'ROUTING_BUBBLE','TunnelingBubbling'=>'ROUTING_TUNNELING_BUBBLING','Tunneling'=>'ROUTING_TUNNELING','Direct'=>'ROUTING_DIRECT']; ?>
 // Auto-generated from <?= basename($argv[1]) ?> by tools/templates/properties.php
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __<?= strtoupper($model->getModuleName()) ?>_PROPERTIES_H__
 #define __<?= strtoupper($model->getModuleName()) ?>_PROPERTIES_H__
-
-#ifndef kRoutingBubble
-#define kRoutingBubble           0u
-#define kRoutingTunnelingBubbling 1u
-#define kRoutingTunneling        2u
-#define kRoutingDirect           3u
-#endif
 
 <?php foreach ($model->getComponents() as $classname => $class):?>
 // <?= $classname ?>
@@ -35,7 +28,7 @@ enum <?= $classname ?>Messages {
 <?php foreach ($class->getMessages() as $event) {
 	$_h = hash('fnv1a32', $classname . "." . $event->name);
 	$_rc = $_routing_const[strval($event->routing)];
-	echo "#define ID_{$classname}_{$event->name} ((0x{$_h}&~0x3)|{$_rc}) // {$classname}.{$event->name}\n";
+	echo "#define ID_{$classname}_{$event->name} ((0x{$_h}&MSG_ROUTING_MASK)|{$_rc}) // {$classname}.{$event->name}\n";
 } ?>
 #define k<?= $classname ?>NumProperties <?= count($class->getProperties()) ?>
 <?php if (count($class->getProperties()) > 0): ?>
@@ -51,7 +44,7 @@ enum <?= $classname ?>Properties {
 <?php foreach ($interface->getMessages() as $event) {
 	$_h = hash('fnv1a32', $intname . "." . $event->name);
 	$_rc = $_routing_const[strval($event->routing)];
-	echo "#define ID_{$intname}_{$event->name} ((0x{$_h}&~0x3)|{$_rc}) // {$intname}.{$event->name}\n";
+	echo "#define ID_{$intname}_{$event->name} ((0x{$_h}&MSG_ROUTING_MASK)|{$_rc}) // {$intname}.{$event->name}\n";
 } ?>
 <?php endforeach ?>
 

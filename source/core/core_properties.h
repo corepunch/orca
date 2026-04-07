@@ -3,44 +3,37 @@
 #ifndef __CORE_PROPERTIES_H__
 #define __CORE_PROPERTIES_H__
 
-#ifndef kRoutingBubble
-#define kRoutingBubble           0u
-#define kRoutingTunnelingBubbling 1u
-#define kRoutingTunneling        2u
-#define kRoutingDirect           3u
-#endif
 
-
-#define ID_Mouse_MouseMessage ((0x53714584&~0x3)|kRoutingTunnelingBubbling) // Mouse.MouseMessage
-#define ID_Mouse_LeftMouseDown ((0x60e51396&~0x3)|kRoutingTunnelingBubbling) // Mouse.LeftMouseDown
-#define ID_Mouse_RightMouseDown ((0x5c38f0c3&~0x3)|kRoutingTunnelingBubbling) // Mouse.RightMouseDown
-#define ID_Mouse_OtherMouseDown ((0x2d4e60db&~0x3)|kRoutingTunnelingBubbling) // Mouse.OtherMouseDown
-#define ID_Mouse_LeftMouseUp ((0x881f7603&~0x3)|kRoutingTunnelingBubbling) // Mouse.LeftMouseUp
-#define ID_Mouse_RightMouseUp ((0x73d6a202&~0x3)|kRoutingTunnelingBubbling) // Mouse.RightMouseUp
-#define ID_Mouse_OtherMouseUp ((0x8cbeee1a&~0x3)|kRoutingTunnelingBubbling) // Mouse.OtherMouseUp
-#define ID_Mouse_LeftMouseDragged ((0x2038c104&~0x3)|kRoutingTunnelingBubbling) // Mouse.LeftMouseDragged
-#define ID_Mouse_RightMouseDragged ((0xf50c8da7&~0x3)|kRoutingTunnelingBubbling) // Mouse.RightMouseDragged
-#define ID_Mouse_OtherMouseDragged ((0x4ef7ddef&~0x3)|kRoutingTunnelingBubbling) // Mouse.OtherMouseDragged
-#define ID_Mouse_LeftDoubleClick ((0x7d07e8a6&~0x3)|kRoutingTunnelingBubbling) // Mouse.LeftDoubleClick
-#define ID_Mouse_RightDoubleClick ((0x79513d33&~0x3)|kRoutingTunnelingBubbling) // Mouse.RightDoubleClick
-#define ID_Mouse_OtherDoubleClick ((0x3b99045b&~0x3)|kRoutingTunnelingBubbling) // Mouse.OtherDoubleClick
-#define ID_Mouse_MouseMoved ((0x815027f0&~0x3)|kRoutingTunnelingBubbling) // Mouse.MouseMoved
-#define ID_Mouse_ScrollWheel ((0x891771b6&~0x3)|kRoutingTunnelingBubbling) // Mouse.ScrollWheel
-#define ID_Mouse_DragDrop ((0x932873b5&~0x3)|kRoutingTunnelingBubbling) // Mouse.DragDrop
-#define ID_Mouse_DragEnter ((0xbf9f315e&~0x3)|kRoutingTunnelingBubbling) // Mouse.DragEnter
-#define ID_Keyboard_KeyMessage ((0x5d9509b4&~0x3)|kRoutingTunnelingBubbling) // Keyboard.KeyMessage
-#define ID_Keyboard_KeyDown ((0x105540a5&~0x3)|kRoutingTunnelingBubbling) // Keyboard.KeyDown
-#define ID_Keyboard_KeyUp ((0x911e6410&~0x3)|kRoutingTunnelingBubbling) // Keyboard.KeyUp
-#define ID_Keyboard_TextInput ((0xd398f313&~0x3)|kRoutingTunnelingBubbling) // Keyboard.TextInput
-#define ID_Object_Create ((0x5ad07ee8&~0x3)|kRoutingDirect) // Object.Create
-#define ID_Object_Start ((0x01629a90&~0x3)|kRoutingDirect) // Object.Start
-#define ID_Object_Awake ((0x51130967&~0x3)|kRoutingDirect) // Object.Awake
-#define ID_Object_ThemeChanged ((0x6d440f67&~0x3)|kRoutingDirect) // Object.ThemeChanged
-#define ID_Object_PropertyChanged ((0x00d8cdf3&~0x3)|kRoutingDirect) // Object.PropertyChanged
-#define ID_Object_Attached ((0xc920ef48&~0x3)|kRoutingDirect) // Object.Attached
-#define ID_Object_Release ((0x10360cb1&~0x3)|kRoutingDirect) // Object.Release
-#define ID_Object_Destroy ((0x8ef01bbe&~0x3)|kRoutingDirect) // Object.Destroy
-#define ID_Object_Timer ((0x6e6ade9d&~0x3)|kRoutingTunnelingBubbling) // Object.Timer
+#define ID_Mouse_MouseMessage ((0x53714584&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Mouse.MouseMessage
+#define ID_Mouse_LeftMouseDown ((0x60e51396&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Mouse.LeftMouseDown
+#define ID_Mouse_RightMouseDown ((0x5c38f0c3&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Mouse.RightMouseDown
+#define ID_Mouse_OtherMouseDown ((0x2d4e60db&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Mouse.OtherMouseDown
+#define ID_Mouse_LeftMouseUp ((0x881f7603&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Mouse.LeftMouseUp
+#define ID_Mouse_RightMouseUp ((0x73d6a202&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Mouse.RightMouseUp
+#define ID_Mouse_OtherMouseUp ((0x8cbeee1a&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Mouse.OtherMouseUp
+#define ID_Mouse_LeftMouseDragged ((0x2038c104&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Mouse.LeftMouseDragged
+#define ID_Mouse_RightMouseDragged ((0xf50c8da7&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Mouse.RightMouseDragged
+#define ID_Mouse_OtherMouseDragged ((0x4ef7ddef&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Mouse.OtherMouseDragged
+#define ID_Mouse_LeftDoubleClick ((0x7d07e8a6&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Mouse.LeftDoubleClick
+#define ID_Mouse_RightDoubleClick ((0x79513d33&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Mouse.RightDoubleClick
+#define ID_Mouse_OtherDoubleClick ((0x3b99045b&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Mouse.OtherDoubleClick
+#define ID_Mouse_MouseMoved ((0x815027f0&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Mouse.MouseMoved
+#define ID_Mouse_ScrollWheel ((0x891771b6&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Mouse.ScrollWheel
+#define ID_Mouse_DragDrop ((0x932873b5&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Mouse.DragDrop
+#define ID_Mouse_DragEnter ((0xbf9f315e&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Mouse.DragEnter
+#define ID_Keyboard_KeyMessage ((0x5d9509b4&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Keyboard.KeyMessage
+#define ID_Keyboard_KeyDown ((0x105540a5&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Keyboard.KeyDown
+#define ID_Keyboard_KeyUp ((0x911e6410&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Keyboard.KeyUp
+#define ID_Keyboard_TextInput ((0xd398f313&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Keyboard.TextInput
+#define ID_Object_Create ((0x5ad07ee8&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Object.Create
+#define ID_Object_Start ((0x01629a90&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Object.Start
+#define ID_Object_Awake ((0x51130967&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Object.Awake
+#define ID_Object_ThemeChanged ((0x6d440f67&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Object.ThemeChanged
+#define ID_Object_PropertyChanged ((0x00d8cdf3&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Object.PropertyChanged
+#define ID_Object_Attached ((0xc920ef48&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Object.Attached
+#define ID_Object_Release ((0x10360cb1&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Object.Release
+#define ID_Object_Destroy ((0x8ef01bbe&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Object.Destroy
+#define ID_Object_Timer ((0x6e6ade9d&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Object.Timer
 
 #define ID_MessageType 0x5afb49ac
 #define ID_MessageType_Name 0xada0c3e5 // MessageType.Name

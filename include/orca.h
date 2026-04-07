@@ -378,15 +378,8 @@ ORCA_API bool_t UI_EnumObjectAliases(lpObject_t object, EnumAliasProc, void* arg
 
 typedef LRESULT (*objectProc_t)(lpObject_t, void*, uint32_t, wParam_t, lParam_t);
 
-#ifndef kRoutingBubble
-#define kRoutingBubble           0u
-#define kRoutingTunnelingBubbling 1u
-#define kRoutingTunneling        2u
-#define kRoutingDirect           3u
-#endif
-
 #ifndef ID_Node_IsVisible
-#define ID_Node_IsVisible ((0xa03cfb85&~0x3)|kRoutingDirect) // Node.IsVisible
+#define ID_Node_IsVisible ((0xa03cfb85&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Node.IsVisible
 #endif
 #define OBJ_IsHidden(OBJECT) (OBJ_SendMessageW(OBJECT, ID_Node_IsVisible, 0, NULL) == FALSE)
 

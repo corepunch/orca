@@ -3,13 +3,6 @@
 #ifndef __FILESYSTEM_PROPERTIES_H__
 #define __FILESYSTEM_PROPERTIES_H__
 
-#ifndef kRoutingBubble
-#define kRoutingBubble           0u
-#define kRoutingTunnelingBubbling 1u
-#define kRoutingTunneling        2u
-#define kRoutingDirect           3u
-#endif
-
 // Workspace
 #define ID_Workspace 0x27419f56
 #define GetWorkspace(_P) ((struct Workspace*)((_P)?OBJ_GetComponent(_P,ID_Workspace):NULL))
@@ -19,7 +12,7 @@
 enum WorkspaceMessages {
 	kWorkspaceReadCommands,
 };
-#define ID_Workspace_ReadCommands ((0xea5a6972&~0x3)|kRoutingTunnelingBubbling) // Workspace.ReadCommands
+#define ID_Workspace_ReadCommands ((0xea5a6972&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Workspace.ReadCommands
 #define kWorkspaceNumProperties 0
 // Library
 #define ID_Library 0xa8532270
@@ -117,10 +110,10 @@ enum ProjectMessages {
 	kProjectHasChangedFiles,
 	kProjectLoadProject,
 };
-#define ID_Project_OpenFile ((0xa96ca9ee&~0x3)|kRoutingTunnelingBubbling) // Project.OpenFile
-#define ID_Project_FileExists ((0x1f1e5ece&~0x3)|kRoutingTunnelingBubbling) // Project.FileExists
-#define ID_Project_HasChangedFiles ((0x8e1eef4b&~0x3)|kRoutingTunnelingBubbling) // Project.HasChangedFiles
-#define ID_Project_LoadProject ((0x68eebf01&~0x3)|kRoutingTunnelingBubbling) // Project.LoadProject
+#define ID_Project_OpenFile ((0xa96ca9ee&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Project.OpenFile
+#define ID_Project_FileExists ((0x1f1e5ece&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Project.FileExists
+#define ID_Project_HasChangedFiles ((0x8e1eef4b&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Project.HasChangedFiles
+#define ID_Project_LoadProject ((0x68eebf01&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Project.LoadProject
 #define kProjectNumProperties 73
 enum ProjectProperties {
 	kProjectHalfFloatTextureFormat,

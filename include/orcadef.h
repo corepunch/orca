@@ -61,6 +61,13 @@ OBJ_SendMessageW(OBJECT, ID_##CLASS##_##MESSAGE, 0, &(CLASS##_##MESSAGE##Msg_t) 
 #define LOG_FILENAME "/tmp/orca.log"
 #define bounds_size(bounds) ((bounds).max - (bounds).min)
 
+// Message routing bits (lower 2 bits of every message ID)
+#define MSG_ROUTING_MASK           (~0x3u)
+#define ROUTING_BUBBLE             0u
+#define ROUTING_TUNNELING_BUBBLING 1u
+#define ROUTING_TUNNELING          2u
+#define ROUTING_DIRECT             3u
+
 #define XML_FLAGS XML_PARSE_NOBLANKS | XML_PARSE_COMPACT
 #define SV_CMD(CMD, NAME) \
 lpcString_t CMD##_##NAME(lua_State* L, xmlNodePtr response, lpcString_t endpoint, reqArg_t const *rargs, uint32_t nargs)
