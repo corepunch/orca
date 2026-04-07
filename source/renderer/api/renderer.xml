@@ -185,15 +185,15 @@
         <p>The event loop for windows is cooperative and integrated with the core runtime. Events are dispatched and processed in a manner similar to how native windowing systems propagate events, while remaining script-driven and cross-platform within the engine.</p>
       </details>
       <messages>
-        <message name="Paint">
+        <message name="Paint" routing="Direct">
           <fields>
             <field name="WindowWidth" type="uint"/>
             <field name="WindowHeight" type="uint"/>
           </fields>
         </message>
-        <message name="Resized" same-as="Paint"/>
-        <message name="Closed"/>
-        <message name="ChangedScreen"/>
+        <message name="Resized" routing="Direct" same-as="Paint"/>
+        <message name="Closed" routing="Direct"/>
+        <message name="ChangedScreen" routing="Direct"/>
       </messages>
     </interface>
   </interfaces>

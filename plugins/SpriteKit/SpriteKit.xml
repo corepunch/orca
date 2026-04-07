@@ -41,7 +41,7 @@
         <field name="_opacity" type="float"/>
       </fields>
       <messages>
-        <message name="Render">
+        <message name="Render" routing="Direct">
           <fields>
             <field name="ViewDef" type="ViewDef" pointer="true">The view definition for rendering</field>
           </fields>
