@@ -1,9 +1,17 @@
 <?php require "model/module.php"; ?>
 <?php $model = new Model($argv[1]); ?>
+<?php $_routing_const = ['Bubbling'=>'kRoutingBubble','TunnelingBubbling'=>'kRoutingTunnelingBubbling','Tunneling'=>'kRoutingTunneling','Direct'=>'kRoutingDirect']; ?>
 // Auto-generated from <?= basename($argv[1]) ?> by tools/templates/properties.php
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __<?= strtoupper($model->getModuleName()) ?>_PROPERTIES_H__
 #define __<?= strtoupper($model->getModuleName()) ?>_PROPERTIES_H__
+
+#ifndef kRoutingBubble
+#define kRoutingBubble           0u
+#define kRoutingTunnelingBubbling 1u
+#define kRoutingTunneling        2u
+#define kRoutingDirect           3u
+#endif
 
 <?php foreach ($model->getComponents() as $classname => $class):?>
 // <?= $classname ?>
@@ -24,9 +32,11 @@ enum <?= $classname ?>Messages {
 		echo("\tk{$classname}{$name},\n");
 	}?>};
 <?php endif ?>
-<?php foreach ($class->getMessages() as $event) ?>
-#define ID_<?= $classname ?>_<?= $event->name ?> 0x<?= hash('fnv1a32', "$classname.{$event->name}") ?> // <?= $classname ?>.<?= $event->name ?>
-<?php endforeach ?>
+<?php foreach ($class->getMessages() as $event) {
+	$_h = hash('fnv1a32', $classname . "." . $event->name);
+	$_rc = $_routing_const[strval($event->routing)];
+	echo "#define ID_{$classname}_{$event->name} ((0x{$_h}&~0x3)|{$_rc}) // {$classname}.{$event->name}\n";
+} ?>
 #define k<?= $classname ?>NumProperties <?= count($class->getProperties()) ?>
 <?php if (count($class->getProperties()) > 0): ?>
 enum <?= $classname ?>Properties {
@@ -38,9 +48,11 @@ enum <?= $classname ?>Properties {
 <?php endforeach ?>
 
 <?php foreach ($model->getInterfaces() as $intname => $interface):?>
-<?php foreach ($interface->getMessages() as $event) ?>
-#define ID_<?= $intname ?>_<?= $event->name ?> 0x<?= hash('fnv1a32', "$intname.{$event->name}") ?> // <?= $intname ?>.<?= $event->name ?>
-<?php endforeach ?>
+<?php foreach ($interface->getMessages() as $event) {
+	$_h = hash('fnv1a32', $intname . "." . $event->name);
+	$_rc = $_routing_const[strval($event->routing)];
+	echo "#define ID_{$intname}_{$event->name} ((0x{$_h}&~0x3)|{$_rc}) // {$intname}.{$event->name}\n";
+} ?>
 <?php endforeach ?>
 
 <?php foreach ($model->getStructs() as $name => $struct):?>

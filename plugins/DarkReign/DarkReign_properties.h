@@ -3,6 +3,13 @@
 #ifndef __DARKREIGN_PROPERTIES_H__
 #define __DARKREIGN_PROPERTIES_H__
 
+#ifndef kRoutingBubble
+#define kRoutingBubble           0u
+#define kRoutingTunnelingBubbling 1u
+#define kRoutingTunneling        2u
+#define kRoutingDirect           3u
+#endif
+
 // FtgPackage
 #define ID_FtgPackage 0xcea32f40
 #define GetFtgPackage(_P) ((struct FtgPackage*)((_P)?OBJ_GetComponent(_P,ID_FtgPackage):NULL))

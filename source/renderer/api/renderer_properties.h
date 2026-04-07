@@ -3,6 +3,13 @@
 #ifndef __RENDERER_PROPERTIES_H__
 #define __RENDERER_PROPERTIES_H__
 
+#ifndef kRoutingBubble
+#define kRoutingBubble           0u
+#define kRoutingTunnelingBubbling 1u
+#define kRoutingTunneling        2u
+#define kRoutingDirect           3u
+#endif
+
 // Texture
 #define ID_Texture 0x994c5594
 #define GetTexture(_P) ((struct Texture*)((_P)?OBJ_GetComponent(_P,ID_Texture):NULL))
@@ -269,10 +276,10 @@ enum FontFamilyProperties {
 #define kTimelineNumMessageTypes 0
 #define kTimelineNumProperties 0
 
-#define ID_Window_Paint 0x08548b5f // Window.Paint
-#define ID_Window_Resized 0xfdfbd653 // Window.Resized
-#define ID_Window_Closed 0x8a68ef39 // Window.Closed
-#define ID_Window_ChangedScreen 0x8d5b1dbb // Window.ChangedScreen
+#define ID_Window_Paint ((0x08548b5f&~0x3)|kRoutingTunnelingBubbling) // Window.Paint
+#define ID_Window_Resized ((0xfdfbd653&~0x3)|kRoutingTunnelingBubbling) // Window.Resized
+#define ID_Window_Closed ((0x8a68ef39&~0x3)|kRoutingTunnelingBubbling) // Window.Closed
+#define ID_Window_ChangedScreen ((0x8d5b1dbb&~0x3)|kRoutingTunnelingBubbling) // Window.ChangedScreen
 
 	
 

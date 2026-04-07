@@ -350,9 +350,6 @@ ORCA_API bool_t UI_EnumObjectAliases(lpObject_t object, EnumAliasProc, void* arg
 
 #define OBJ_GetScriptHandle(OBJECT) (*(uint32_t *)OBJ_GetPointer(OBJECT, GNP_SCRIPTHANLDE, 0))
 
-#define ID_Node_IsVisible 0xa03cfb85 // Node.IsVisible
-#define OBJ_IsHidden(OBJECT) (OBJ_SendMessageW(OBJECT, ID_Node_IsVisible, 0, NULL) == FALSE)
-
 // clang-format on
 
 //#define KANZI_SUPPORT
@@ -380,6 +377,18 @@ ORCA_API bool_t UI_EnumObjectAliases(lpObject_t object, EnumAliasProc, void* arg
   FOR_EACH_OBJECT(child, object) func(child, ##__VA_ARGS__)
 
 typedef LRESULT (*objectProc_t)(lpObject_t, void*, uint32_t, wParam_t, lParam_t);
+
+#ifndef kRoutingBubble
+#define kRoutingBubble           0u
+#define kRoutingTunnelingBubbling 1u
+#define kRoutingTunneling        2u
+#define kRoutingDirect           3u
+#endif
+
+#ifndef ID_Node_IsVisible
+#define ID_Node_IsVisible ((0xa03cfb85&~0x3)|kRoutingDirect) // Node.IsVisible
+#endif
+#define OBJ_IsHidden(OBJECT) (OBJ_SendMessageW(OBJECT, ID_Node_IsVisible, 0, NULL) == FALSE)
 
 #define kMsgAwake 0x7f460f7c
 #define kEventResumeCoroutine 0x3cc3febc

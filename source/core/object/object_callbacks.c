@@ -41,7 +41,7 @@ OBJ_FindCallbackForID(lpObject_t object, uint32_t id)
 {
   FOR_EACH_LIST(struct script_callback, cb, _GetCallbacks(object))
   {
-    if (cb->value == id) {
+    if ((cb->value & ~0x3u) == (id & ~0x3u)) {
       return cb->name;
     }
   }

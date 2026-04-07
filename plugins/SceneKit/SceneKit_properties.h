@@ -3,6 +3,13 @@
 #ifndef __SCENEKIT_PROPERTIES_H__
 #define __SCENEKIT_PROPERTIES_H__
 
+#ifndef kRoutingBubble
+#define kRoutingBubble           0u
+#define kRoutingTunnelingBubbling 1u
+#define kRoutingTunneling        2u
+#define kRoutingDirect           3u
+#endif
+
 // Node3D
 #define ID_Node3D 0xce61fe5a
 #define GetNode3D(_P) ((struct Node3D*)((_P)?OBJ_GetComponent(_P,ID_Node3D):NULL))
@@ -24,7 +31,7 @@
 enum Node3DMessages {
 	kNode3DRender,
 };
-#define ID_Node3D_Render 0x74fae2ac // Node3D.Render
+#define ID_Node3D_Render ((0x74fae2ac&~0x3)|kRoutingTunnelingBubbling) // Node3D.Render
 #define kNode3DNumProperties 12
 enum Node3DProperties {
 	kNode3DLayoutTransform,

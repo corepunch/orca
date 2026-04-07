@@ -3,6 +3,13 @@
 #ifndef __GEOMETRY_PROPERTIES_H__
 #define __GEOMETRY_PROPERTIES_H__
 
+#ifndef kRoutingBubble
+#define kRoutingBubble           0u
+#define kRoutingTunnelingBubbling 1u
+#define kRoutingTunneling        2u
+#define kRoutingDirect           3u
+#endif
+
 
 
 #define ID_vec2 0x2c0f4275
