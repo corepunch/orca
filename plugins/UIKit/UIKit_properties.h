@@ -44,7 +44,7 @@ enum AnimationPlayerProperties {
 enum TriggerMessages {
 	kTriggerTriggered,
 };
-#define ID_Trigger_Triggered ((0x729dabf0&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Trigger.Triggered
+#define ID_Trigger_Triggered ((0x729dabf0&MSG_ROUTING_MASK)|ROUTING_BUBBLE) // Trigger.Triggered
 #define kTriggerNumProperties 2
 enum TriggerProperties {
 	kTriggerProperty,
@@ -216,14 +216,14 @@ enum NodeMessages {
 };
 #define ID_Node_UpdateMatrix ((0x35cdb821&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Node.UpdateMatrix
 #define ID_Node_PushProperty ((0xaca786d4&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Node.PushProperty
-#define ID_Node_LoadView ((0xe3c6ed08&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Node.LoadView
+#define ID_Node_LoadView ((0xe3c6ed08&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Node.LoadView
 #define ID_Node_HitTest ((0xbc0e5546&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Node.HitTest
-#define ID_Node_HandleMessage ((0x22afe0b6&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Node.HandleMessage
+#define ID_Node_HandleMessage ((0x22afe0b6&MSG_ROUTING_MASK)|ROUTING_BUBBLE) // Node.HandleMessage
 #define ID_Node_IsVisible ((0xa03cfb85&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Node.IsVisible
 #define ID_Node_ViewDidLoad ((0x71bab7e1&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Node.ViewDidLoad
-#define ID_Node_KillFocus ((0x2bdb09fb&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Node.KillFocus
-#define ID_Node_SetFocus ((0x5f1c2071&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Node.SetFocus
-#define ID_Node_GetSize ((0x2282f1da&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Node.GetSize
+#define ID_Node_KillFocus ((0x2bdb09fb&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Node.KillFocus
+#define ID_Node_SetFocus ((0x5f1c2071&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Node.SetFocus
+#define ID_Node_GetSize ((0x2282f1da&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Node.GetSize
 #define kNodeNumProperties 67
 enum NodeProperties {
 	kNodeSize,
@@ -356,7 +356,7 @@ enum TextRunProperties {
 enum TextBlockConceptMessages {
 	kTextBlockConceptMakeText,
 };
-#define ID_TextBlockConcept_MakeText ((0x66218f84&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // TextBlockConcept.MakeText
+#define ID_TextBlockConcept_MakeText ((0x66218f84&MSG_ROUTING_MASK)|ROUTING_DIRECT) // TextBlockConcept.MakeText
 #define kTextBlockConceptNumProperties 14
 enum TextBlockConceptProperties {
 	kTextBlockConceptTextResourceID,
@@ -434,14 +434,14 @@ enum Node2DMessages {
 	kNode2DUpdateGeometry,
 	kNode2DSetScrollTop,
 };
-#define ID_Node2D_DrawBrush ((0x8272196b&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Node2D.DrawBrush
-#define ID_Node2D_Measure ((0x5ea52a4d&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Node2D.Measure
-#define ID_Node2D_Arrange ((0x211d274d&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Node2D.Arrange
-#define ID_Node2D_MeasureOverride ((0x6e565d45&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Node2D.MeasureOverride
-#define ID_Node2D_ArrangeOverride ((0xe3b0fa45&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Node2D.ArrangeOverride
-#define ID_Node2D_ForegroundContent ((0x61bfb2f7&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Node2D.ForegroundContent
-#define ID_Node2D_UpdateGeometry ((0x0cc412c2&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Node2D.UpdateGeometry
-#define ID_Node2D_SetScrollTop ((0xa3d79fef&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Node2D.SetScrollTop
+#define ID_Node2D_DrawBrush ((0x8272196b&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Node2D.DrawBrush
+#define ID_Node2D_Measure ((0x5ea52a4d&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Node2D.Measure
+#define ID_Node2D_Arrange ((0x211d274d&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Node2D.Arrange
+#define ID_Node2D_MeasureOverride ((0x6e565d45&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Node2D.MeasureOverride
+#define ID_Node2D_ArrangeOverride ((0xe3b0fa45&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Node2D.ArrangeOverride
+#define ID_Node2D_ForegroundContent ((0x61bfb2f7&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Node2D.ForegroundContent
+#define ID_Node2D_UpdateGeometry ((0x0cc412c2&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Node2D.UpdateGeometry
+#define ID_Node2D_SetScrollTop ((0xa3d79fef&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Node2D.SetScrollTop
 #define kNode2DNumProperties 44
 enum Node2DProperties {
 	kNode2DLayoutTransform,
@@ -578,7 +578,7 @@ enum StackViewProperties {
 enum FormMessages {
 	kFormSubmit,
 };
-#define ID_Form_Submit ((0xef0f357b&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Form.Submit
+#define ID_Form_Submit ((0xef0f357b&MSG_ROUTING_MASK)|ROUTING_BUBBLE) // Form.Submit
 #define kFormNumProperties 0
 // Control
 #define ID_Control 0x8347bf3e
@@ -614,8 +614,8 @@ enum ScreenMessages {
 	kScreenUpdateLayout,
 	kScreenRenderScreen,
 };
-#define ID_Screen_UpdateLayout ((0x7d9d5a12&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Screen.UpdateLayout
-#define ID_Screen_RenderScreen ((0xd1601cf1&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // Screen.RenderScreen
+#define ID_Screen_UpdateLayout ((0x7d9d5a12&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Screen.UpdateLayout
+#define ID_Screen_RenderScreen ((0xd1601cf1&MSG_ROUTING_MASK)|ROUTING_DIRECT) // Screen.RenderScreen
 #define kScreenNumProperties 3
 enum ScreenProperties {
 	kScreenClearColor,
@@ -763,8 +763,8 @@ enum PageHostMessages {
 	kPageHostNavigateToPage,
 	kPageHostNavigateBack,
 };
-#define ID_PageHost_NavigateToPage ((0x3e8b196b&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // PageHost.NavigateToPage
-#define ID_PageHost_NavigateBack ((0x94f6fcce&MSG_ROUTING_MASK)|ROUTING_TUNNELING_BUBBLING) // PageHost.NavigateBack
+#define ID_PageHost_NavigateToPage ((0x3e8b196b&MSG_ROUTING_MASK)|ROUTING_DIRECT) // PageHost.NavigateToPage
+#define ID_PageHost_NavigateBack ((0x94f6fcce&MSG_ROUTING_MASK)|ROUTING_DIRECT) // PageHost.NavigateBack
 #define kPageHostNumProperties 1
 enum PageHostProperties {
 	kPageHostActivePage,

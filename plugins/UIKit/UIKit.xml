@@ -324,7 +324,7 @@
         <property name="Value" type="int">Associated value for the trigger condition </property>
       </properties>
       <messages>
-        <message name="Triggered">
+        <message name="Triggered" routing="Bubbling">
           <fields>
             <field name="Trigger" type="Trigger" pointer="true"/>
           </fields>
@@ -432,12 +432,12 @@
             <field name="force" type="bool">Indicates if the update is forced</field>
           </fields>
         </message>
-        <message name="PushProperty">
+        <message name="PushProperty" routing="TunnelingBubbling">
           <fields>
             <field name="Placeholder" type="int"/>
           </fields>
         </message>
-        <message name="LoadView">
+        <message name="LoadView" routing="Direct">
           <summary>Initializes the component's Lua view state.</summary>
           <fields>
             <field name="lua_state" type="lua_State" pointer="true"/>
@@ -449,7 +449,7 @@
             <field name="y" type="int">Y coordinate of the hit test point</field>
           </fields>
         </message>
-        <message name="HandleMessage">
+        <message name="HandleMessage" routing="Bubbling">
           <summary>Dispatches a named message with arguments to the component.</summary>
           <fields>
             <field name="EventName" type="string"/>
@@ -461,9 +461,9 @@
         <message name="ViewDidLoad" routing="Direct">
           <summary>Notifies the component that its view has finished loading.</summary>
         </message>
-        <message name="KillFocus"/>
-        <message name="SetFocus"/>
-        <message name="GetSize"/>
+        <message name="KillFocus" routing="Direct"/>
+        <message name="SetFocus" routing="Direct"/>
+        <message name="GetSize" routing="Direct"/>
       </messages>
     </class>
     <class name="TextRun">
@@ -513,7 +513,7 @@
         <field name="_text" type="ViewText" pointer="true">Internal view representation of the text.</field>
       </fields>
       <messages>
-        <message name="MakeText">
+        <message name="MakeText" routing="Direct">
           <summary>Requests the component to lay out and render its text content.</summary>
           <fields>
             <field name="text" type="ViewText" pointer="true">Text view to render</field>
@@ -617,7 +617,7 @@
         </method>
       </methods>
       <messages>
-        <message name="DrawBrush">
+        <message name="DrawBrush" routing="Direct">
           <summary>Requests rendering of a brush into the component's visual output.</summary>
           <fields>
             <field name="projection" type="mat4">Projection matrix for 3D to 2D transformation</field>
@@ -629,13 +629,13 @@
             <field name="viewdef" type="ViewDef" pointer="true">View definition context for rendering</field>
           </fields>
         </message>
-        <message name="Measure">
+        <message name="Measure" routing="Direct">
           <fields>
             <field name="Width" type="float"/>
             <field name="Height" type="float"/>
           </fields>
         </message>
-        <message name="Arrange">
+        <message name="Arrange" routing="Direct">
           <fields>
             <field name="X" type="float"/>
             <field name="Y" type="float"/>
@@ -643,11 +643,11 @@
             <field name="Height" type="float"/>
           </fields>
         </message>
-        <message name="MeasureOverride" same-as="Measure"/>
-        <message name="ArrangeOverride" same-as="Arrange"/>
-        <message name="ForegroundContent"/>
-        <message name="UpdateGeometry"/>
-        <message name="SetScrollTop">
+        <message name="MeasureOverride" routing="Direct" same-as="Measure"/>
+        <message name="ArrangeOverride" routing="Direct" same-as="Arrange"/>
+        <message name="ForegroundContent" routing="Direct"/>
+        <message name="UpdateGeometry" routing="Direct"/>
+        <message name="SetScrollTop" routing="Direct">
           <fields>
             <field name="Value" type="float"/>
           </fields>
@@ -759,7 +759,7 @@
         <handle message="Form.Submit"/>
       </handles>
       <messages>
-        <message name="Submit"/>
+        <message name="Submit" routing="Bubbling"/>
       </messages>
     </class>
     <class name="Control" parent="Node2D">
@@ -798,13 +798,13 @@
         <field name="_size" type="uint">Currently set size (to resize window when changed).</field>
       </fields>
       <messages>
-        <message name="UpdateLayout">
+        <message name="UpdateLayout" routing="Direct">
           <fields>
             <field name="Width" type="float"/>
             <field name="Height" type="float"/>
           </fields>
         </message>
-        <message name="RenderScreen">
+        <message name="RenderScreen" routing="Direct">
           <fields>
             <field name="width" type="uint">The width of the render screen</field>
             <field name="height" type="uint">The height of the render screen</field>
@@ -956,14 +956,14 @@
         <field name="_historySize" type="int">Number of entries in the navigation history stack.</field>
       </fields>
       <messages>
-        <message name="NavigateToPage">
+        <message name="NavigateToPage" routing="Direct">
           <summary>Navigates to a new page URL with an optional transition animation.</summary>
           <fields>
             <field name="URL" type="string">The URL of the page to navigate to.</field>
             <field name="TransitionType" type="TransitionType">The type of transition animation to use during navigation.</field>
           </fields>
         </message>
-        <message name="NavigateBack">
+        <message name="NavigateBack" routing="Direct">
           <summary>Navigates back to the previous page with an optional transition animation.</summary>
           <fields>
             <field name="TransitionType" type="TransitionType">The type of transition animation to use during navigation.</field>
