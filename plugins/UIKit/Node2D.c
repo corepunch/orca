@@ -399,3 +399,11 @@ HANDLER(Node2D, Node2D, ArrangeOverride)
                  .Height = pArrangeOverride->Height);
   return MAKEDWORD(pArrangeOverride->Width, pArrangeOverride->Height);
 }
+
+HANDLER(Node2D, Node2D, SetScrollTop)
+{
+  vec2_t offset = pNode2D->ContentOffset;
+  offset.y = fmin(0, Node2D_GetFrame(pNode2D, kBox3FieldHeight) - pSetScrollTop->Value);
+  pNode2D->ContentOffset = offset;
+  return TRUE;
+}

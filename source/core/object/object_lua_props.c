@@ -125,6 +125,15 @@ static int HACK_Start(lua_State* L) {
   return 0;
 }
 
+static int f_msgSend(lua_State *L) {
+  struct Object* this_ = luaX_checkObject(L, 1);
+  const char* message = lua_tostring(L, lua_upvalueindex(1));
+  lua_pushstring(L, message);
+  lua_insert(L, 2);
+  OBJ_MsgSend(L, this_, message); // your function handles the args internally
+  return 0;
+}
+
 int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
 {
   uint32_t ident = fnv1a32(name);
@@ -181,7 +190,6 @@ int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
       break;
   }
   
-  
   if (!strcmp(name, "ActualX") && GetNode2D(self)) {
     lua_pushnumber(L, GetNode2D(self)->_actual_pos[0]);
     return 1;
@@ -202,13 +210,19 @@ int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
     return (int)found;
   }
   
-  lpProperty_t property = NULL;
+  lpcProperty_t property = NULL;
+  lpcMessageType_t message = NULL;
   bool_t OBJ_PushClassProperty(lua_State *, lpObject_t, uint32_t);
+  lpcMessageType_t MSG_FindByShortID(lpObject_t, uint32_t);
   
   if (OBJ_PushClassProperty(L, self, ident)) {
     return 1;
   } else if ((property = PROP_FindByShortID(OBJ_GetProperties(self), ident))) {
     luaX_pushProperty(L, property);
+    return 1;
+  } else if ((message = MSG_FindByShortID(self, ident))) {
+    lua_pushstring(L, message->Name);
+    lua_pushcclosure(L, f_msgSend, 1);
     return 1;
   } else {
     lua_pushnil(L);

@@ -57,10 +57,11 @@
   <structs>
     <struct name="MessageType">
       <fields>
-        <field name="name" type="string">The name of the message</field>
-        <field name="id" type="uint">The unique identifier of the message</field>
-        <field name="routing" type="MessageRouting">The routing strategy for this message</field>
-        <field name="size" type="uint">The size of the message</field>
+        <field name="Name" type="string">The name of the message</field>
+        <field name="FullIdentifier" type="uint">The full identifier of the message</field>
+        <field name="ShortIdentifier" type="uint">The short identifier of the message</field>
+        <field name="Routing" type="MessageRouting">The routing strategy for this message</field>
+        <field name="Size" type="uint">The size of the message</field>
       </fields>
     </struct>
   </structs>

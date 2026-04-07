@@ -538,6 +538,7 @@
         <handle message="Node2D.Arrange"/>
         <handle message="Node2D.MeasureOverride"/>
         <handle message="Node2D.ArrangeOverride"/>
+        <handle message="Node2D.SetScrollTop"/>
       </handles>
       <messages>
         <message name="DrawBrush">
@@ -570,6 +571,11 @@
         <message name="ArrangeOverride" same-as="Arrange"/>
         <message name="ForegroundContent"/>
         <message name="UpdateGeometry"/>
+        <message name="SetScrollTop">
+          <fields>
+            <field name="Value" type="float"/>
+          </fields>
+        </message>
       </messages>
       <properties>
         <property name="LayoutTransform" type="transform2" default=".scale={1,1}">Transformation applied during layout calculations. Affects size and positioning but does not influence local rendering.</property>

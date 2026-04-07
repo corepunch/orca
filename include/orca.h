@@ -22,6 +22,10 @@ struct token;
 struct _xmlDoc;
 struct _xmlNode;
 
+typedef uint32_t propertyID_t;
+typedef uint32_t messageID_t;
+typedef uint32_t classID_t;
+
 FWD_STRUCT(Property);
 FWD_STRUCT(Object);
 FWD_STRUCT(ClassDesc);

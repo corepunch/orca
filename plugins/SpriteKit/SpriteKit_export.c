@@ -169,7 +169,7 @@ struct SpriteAnimation* luaX_checkSpriteAnimation(lua_State *L, int idx) {
 REGISTER_CLASS(SpriteAnimation, 0);
 HANDLER(SKNode, Node, UpdateMatrix);
 static struct MessageType SKNodeMessageTypes[kSKNodeNumMessageTypes] = {	
-		{ "SKNode.Render", ID_SKNode_Render, kMessageRoutingTunnelingBubbling, sizeof(struct SKNode_RenderMsgArgs) },
+		{ "SKNode.Render", ID_SKNode_Render, 0x350cf42d, kMessageRoutingTunnelingBubbling, sizeof(struct SKNode_RenderMsgArgs) },
 };
 static struct PropertyType const SKNodeProperties[kSKNodeNumProperties] = {
 	DECL(0xe27f342a, SKNode, Position, Position, kDataTypeStruct, .TypeString = "Vector2D"), // SKNode.Position

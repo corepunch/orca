@@ -423,7 +423,7 @@ enum TextBlockConceptProperties {
 #define ID_Node2D_Hovered 0x982d5e3e // Node2D.Hovered
 #define ID_Node2D_IgnoreHitTest 0x0943bf6a // Node2D.IgnoreHitTest
 #define ID_Node2D_ForegroundHint 0x1a0ea5e3 // Node2D.ForegroundHint
-#define kNode2DNumMessageTypes 7
+#define kNode2DNumMessageTypes 8
 enum Node2DMessages {
 	kNode2DDrawBrush,
 	kNode2DMeasure,
@@ -432,6 +432,7 @@ enum Node2DMessages {
 	kNode2DArrangeOverride,
 	kNode2DForegroundContent,
 	kNode2DUpdateGeometry,
+	kNode2DSetScrollTop,
 };
 #define ID_Node2D_DrawBrush 0x8272196b // Node2D.DrawBrush
 #define ID_Node2D_Measure 0x5ea52a4d // Node2D.Measure
@@ -440,6 +441,7 @@ enum Node2DMessages {
 #define ID_Node2D_ArrangeOverride 0xe3b0fa45 // Node2D.ArrangeOverride
 #define ID_Node2D_ForegroundContent 0x61bfb2f7 // Node2D.ForegroundContent
 #define ID_Node2D_UpdateGeometry 0x0cc412c2 // Node2D.UpdateGeometry
+#define ID_Node2D_SetScrollTop 0xa3d79fef // Node2D.SetScrollTop
 #define kNode2DNumProperties 44
 enum Node2DProperties {
 	kNode2DLayoutTransform,
@@ -951,6 +953,9 @@ enum StyleProperties {
 
 #define ID_Node2D_UpdateGeometryMsgArgs 0xb9a3b927
 
+#define ID_Node2D_SetScrollTopMsgArgs 0xd1331b64
+
+#define ID_Node2D_SetScrollTopMsgArgs_Value 0xa4474e9f // Node2D_SetScrollTopMsgArgs.Value
 #define ID_Form_SubmitMsgArgs 0x6d531060
 
 #define ID_Screen_UpdateLayoutMsgArgs 0xa55e3957

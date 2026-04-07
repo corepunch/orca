@@ -23,7 +23,7 @@ HANDLER(<?= $name ?>, <?= $ident ?>);
 	<?php endforeach ?>
 static struct MessageType <?= $name ?>MessageTypes[k<?= $name ?>NumMessageTypes] = {	
 	<?php foreach ($component->getMessages() as $event): ?>
-		{ "<?= $name ?>.<?= $event->name ?>", ID_<?= $name ?>_<?= $event->name ?>, kMessageRouting<?= $event->routing ?>, sizeof(<?= $event->getEffectiveTypeDecl() ?>) },
+		{ "<?= $name ?>.<?= $event->name ?>", ID_<?= $name ?>_<?= $event->name ?>, 0x<?= hash('fnv1a32', $event->name) ?>, kMessageRouting<?= $event->routing ?>, sizeof(<?= $event->getEffectiveTypeDecl() ?>) },
 	<?php endforeach ?>
 };
 static struct PropertyType const <?= $name ?>Properties[k<?= $name ?>NumProperties] = {

@@ -41,6 +41,7 @@ ORCA_API extern struct MessageType MeasureOverrideMessage;
 ORCA_API extern struct MessageType ArrangeOverrideMessage;
 ORCA_API extern struct MessageType ForegroundContentMessage;
 ORCA_API extern struct MessageType UpdateGeometryMessage;
+ORCA_API extern struct MessageType SetScrollTopMessage;
 ORCA_API extern struct MessageType SubmitMessage;
 ORCA_API extern struct MessageType UpdateLayoutMessage;
 ORCA_API extern struct MessageType RenderScreenMessage;
@@ -66,6 +67,7 @@ typedef struct Node2D_MeasureMsgArgs Node2D_MeasureOverrideMsg_t,* Node2D_Measur
 typedef struct Node2D_ArrangeMsgArgs Node2D_ArrangeOverrideMsg_t,* Node2D_ArrangeOverrideMsgPtr;
 typedef struct Node2D_ForegroundContentMsgArgs Node2D_ForegroundContentMsg_t,* Node2D_ForegroundContentMsgPtr;
 typedef struct Node2D_UpdateGeometryMsgArgs Node2D_UpdateGeometryMsg_t,* Node2D_UpdateGeometryMsgPtr;
+typedef struct Node2D_SetScrollTopMsgArgs Node2D_SetScrollTopMsg_t,* Node2D_SetScrollTopMsgPtr;
 typedef struct Form_SubmitMsgArgs Form_SubmitMsg_t,* Form_SubmitMsgPtr;
 typedef struct Screen_UpdateLayoutMsgArgs Screen_UpdateLayoutMsg_t,* Screen_UpdateLayoutMsgPtr;
 typedef struct Screen_RenderScreenMsgArgs Screen_RenderScreenMsg_t,* Screen_RenderScreenMsgPtr;
@@ -635,6 +637,12 @@ struct Node2D_UpdateGeometryMsgArgs {
 };
 ORCA_API void luaX_pushNode2D_UpdateGeometryMsgArgs(lua_State *L, struct Node2D_UpdateGeometryMsgArgs const* data);
 ORCA_API struct Node2D_UpdateGeometryMsgArgs* luaX_checkNode2D_UpdateGeometryMsgArgs(lua_State *L, int idx);
+/** Node2D_SetScrollTopMsgArgs struct */
+struct Node2D_SetScrollTopMsgArgs {
+	float Value;
+};
+ORCA_API void luaX_pushNode2D_SetScrollTopMsgArgs(lua_State *L, struct Node2D_SetScrollTopMsgArgs const* data);
+ORCA_API struct Node2D_SetScrollTopMsgArgs* luaX_checkNode2D_SetScrollTopMsgArgs(lua_State *L, int idx);
 /** Form_SubmitMsgArgs struct */
 struct Form_SubmitMsgArgs {
 };

@@ -139,7 +139,7 @@ ORCA_API struct ClassDesc _##NAME = { \
 };
 HANDLER(Node3D, Node, UpdateMatrix);
 static struct MessageType Node3DMessageTypes[kNode3DNumMessageTypes] = {	
-		{ "Node3D.Render", ID_Node3D_Render, kMessageRoutingTunnelingBubbling, sizeof(struct Node3D_RenderMsgArgs) },
+		{ "Node3D.Render", ID_Node3D_Render, 0x350cf42d, kMessageRoutingTunnelingBubbling, sizeof(struct Node3D_RenderMsgArgs) },
 };
 static struct PropertyType const Node3DProperties[kNode3DNumProperties] = {
 	DECL(0x3f19bf01, Node3D, LayoutTransform, LayoutTransform, kDataTypeStruct, .TypeString = "Transform3D"), // Node3D.LayoutTransform

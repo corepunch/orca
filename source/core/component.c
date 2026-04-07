@@ -163,20 +163,20 @@ OBJ_RaiseEvent(lpObject_t pobj, struct MessageType const *type, void* param)
 {
   LRESULT result;
   if (!pobj) return 0;
-  switch (type->routing) {
+  switch (type->Routing) {
     case kMessageRoutingDirect:
-      return OBJ_SendMessageW(pobj, type->id, 0, param);
+      return OBJ_SendMessageW(pobj, type->FullIdentifier, 0, param);
     case kMessageRoutingBubbling:
-      result = OBJ_SendMessageW(pobj, type->id, 0, param);
+      result = OBJ_SendMessageW(pobj, type->FullIdentifier, 0, param);
       return result ? result : OBJ_RaiseEvent(OBJ_GetParent(pobj), type, param);
     case kMessageRoutingTunneling:
       result = OBJ_RaiseEvent(OBJ_GetParent(pobj), type, param);
-      return result ? result : OBJ_SendMessageW(pobj, type->id, 0, param);
+      return result ? result : OBJ_SendMessageW(pobj, type->FullIdentifier, 0, param);
     case kMessageRoutingTunnelingBubbling: {
       struct MessageType tmp = *type;
-      tmp.routing = kMessageRoutingTunneling;
+      tmp.Routing = kMessageRoutingTunneling;
       result = OBJ_RaiseEvent(pobj, &tmp, param);
-      tmp.routing = kMessageRoutingBubbling;
+      tmp.Routing = kMessageRoutingBubbling;
       return result ? result : OBJ_RaiseEvent(pobj, &tmp, param);
     }
   }
@@ -275,5 +275,19 @@ OBJ_PushClassProperty(lua_State *L, lpObject_t object, uint32_t id)
   return FALSE;
 }
 
+
+lpcMessageType_t
+MSG_FindByShortID(lpObject_t obj, uint32_t ident)
+{
+  FOR_EACH_LIST(struct component, cmp, _GetComponents(obj)) {
+    FOR_LOOP(i, cmp->pcls->NumMessageTypes) {
+      lpcMessageType_t msg = &cmp->pcls->MessageTypes[i];
+      if (msg->ShortIdentifier == ident) {
+        return msg;
+      }
+    }
+  }
+  return 0;
+}
 
 #include <source/editor/ed_stab_component.h>

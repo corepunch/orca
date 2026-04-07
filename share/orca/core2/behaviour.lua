@@ -72,12 +72,6 @@ function Behaviour:findParentOfType(class)
   end
 end
 
-function Behaviour:setScrollTop(value)
-  local offset = self.ContentOffset
-  offset.y = math.min(0, self.ActualHeight - value)
-  self.ContentOffset = offset
-end
-
 -- class definition in line with how MoonScript generates classes
 
 function Behaviour:extend(_base_0)

@@ -483,10 +483,11 @@ OBJ_AssignAliases(struct Object*, const char*);
 
 /** MessageType struct */
 struct MessageType {
-	const char* name; ///< The name of the message
-	uint32_t id; ///< The unique identifier of the message
-	enum MessageRouting routing; ///< The routing strategy for this message
-	uint32_t size; ///< The size of the message
+	const char* Name; ///< The name of the message
+	uint32_t FullIdentifier; ///< The full identifier of the message
+	uint32_t ShortIdentifier; ///< The short identifier of the message
+	enum MessageRouting Routing; ///< The routing strategy for this message
+	uint32_t Size; ///< The size of the message
 };
 ORCA_API void luaX_pushMessageType(lua_State *L, struct MessageType const* MessageType);
 ORCA_API struct MessageType* luaX_checkMessageType(lua_State *L, int idx);

@@ -201,7 +201,7 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.NumMessageTypes = k##NAME##NumMessageTypes, \
 };
 static struct MessageType WorkspaceMessageTypes[kWorkspaceNumMessageTypes] = {	
-		{ "Workspace.ReadCommands", ID_Workspace_ReadCommands, kMessageRoutingTunnelingBubbling, sizeof(struct Workspace_ReadCommandsMsgArgs) },
+		{ "Workspace.ReadCommands", ID_Workspace_ReadCommands, 0x23d83fd3, kMessageRoutingTunnelingBubbling, sizeof(struct Workspace_ReadCommandsMsgArgs) },
 };
 static struct PropertyType const WorkspaceProperties[kWorkspaceNumProperties] = {
 };
@@ -240,10 +240,10 @@ struct Library* luaX_checkLibrary(lua_State *L, int idx) {
 REGISTER_CLASS(Library, 0);
 HANDLER(Project, Object, Start);
 static struct MessageType ProjectMessageTypes[kProjectNumMessageTypes] = {	
-		{ "Project.OpenFile", ID_Project_OpenFile, kMessageRoutingTunnelingBubbling, sizeof(struct Project_OpenFileMsgArgs) },
-		{ "Project.FileExists", ID_Project_FileExists, kMessageRoutingTunnelingBubbling, sizeof(struct Project_FileExistsMsgArgs) },
-		{ "Project.HasChangedFiles", ID_Project_HasChangedFiles, kMessageRoutingTunnelingBubbling, sizeof(struct Project_HasChangedFilesMsgArgs) },
-		{ "Project.LoadProject", ID_Project_LoadProject, kMessageRoutingTunnelingBubbling, sizeof(struct Project_LoadProjectMsgArgs) },
+		{ "Project.OpenFile", ID_Project_OpenFile, 0xa2c038cf, kMessageRoutingTunnelingBubbling, sizeof(struct Project_OpenFileMsgArgs) },
+		{ "Project.FileExists", ID_Project_FileExists, 0x38dfc973, kMessageRoutingTunnelingBubbling, sizeof(struct Project_FileExistsMsgArgs) },
+		{ "Project.HasChangedFiles", ID_Project_HasChangedFiles, 0x5390a564, kMessageRoutingTunnelingBubbling, sizeof(struct Project_HasChangedFilesMsgArgs) },
+		{ "Project.LoadProject", ID_Project_LoadProject, 0x31b9fee2, kMessageRoutingTunnelingBubbling, sizeof(struct Project_LoadProjectMsgArgs) },
 };
 static struct PropertyType const ProjectProperties[kProjectNumProperties] = {
 	DECL(0xbcd19216, Project, HalfFloatTextureFormat, HalfFloatTextureFormat, kDataTypeBool), // Project.HalfFloatTextureFormat

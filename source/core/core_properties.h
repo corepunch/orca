@@ -37,7 +37,8 @@
 
 #define ID_MessageType 0x5afb49ac
 #define ID_MessageType_Name 0xada0c3e5 // MessageType.Name
-#define ID_MessageType_Id 0xd585831b // MessageType.Id
+#define ID_MessageType_FullIdentifier 0x64cf7054 // MessageType.FullIdentifier
+#define ID_MessageType_ShortIdentifier 0x7be8e9c3 // MessageType.ShortIdentifier
 #define ID_MessageType_Routing 0x9083ce48 // MessageType.Routing
 #define ID_MessageType_Size 0x0c31f887 // MessageType.Size
 	

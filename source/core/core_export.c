@@ -654,10 +654,11 @@ int luaopen_orca_##NAME(lua_State *L) { \
 	return 1; \
 }
 static struct PropertyType _MessageType[] = {
-	DECL(0x0fe07306, MessageType, Name, name, kDataTypeString), // MessageType.Name
-	DECL(0x36e8b900, MessageType, Id, id, kDataTypeInt), // MessageType.Id
-	DECL(0xce213309, MessageType, Routing, routing, kDataTypeEnum, .EnumValues = _MessageRouting), // MessageType.Routing
-	DECL(0xa6478e7c, MessageType, Size, size, kDataTypeInt), // MessageType.Size
+	DECL(0x0fe07306, MessageType, Name, Name, kDataTypeString), // MessageType.Name
+	DECL(0x429417cf, MessageType, FullIdentifier, FullIdentifier, kDataTypeInt), // MessageType.FullIdentifier
+	DECL(0x0f76864e, MessageType, ShortIdentifier, ShortIdentifier, kDataTypeInt), // MessageType.ShortIdentifier
+	DECL(0xce213309, MessageType, Routing, Routing, kDataTypeEnum, .EnumValues = _MessageRouting), // MessageType.Routing
+	DECL(0xa6478e7c, MessageType, Size, Size, kDataTypeInt), // MessageType.Size
 };
 static luaL_Reg _MessageType_Methods[] = {
 	{ NULL, NULL }
