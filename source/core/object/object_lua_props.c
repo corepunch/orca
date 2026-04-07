@@ -119,12 +119,6 @@ OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name)
   }
 }
 
-static int HACK_Start(lua_State* L) {
-  struct Object* hobj = luaX_checkObject(L, 1);
-  OBJ_SendMessageW(hobj, ID_Object_Start, 0, NULL);
-  return 0;
-}
-
 static int f_msgSend(lua_State *L) {
   struct Object* this_ = luaX_checkObject(L, 1);
   const char* message = lua_tostring(L, lua_upvalueindex(1));
@@ -196,11 +190,6 @@ int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
   }
   if (!strcmp(name, "ActualY") && GetNode2D(self)) {
     lua_pushnumber(L, GetNode2D(self)->_actual_pos[1]);
-    return 1;
-  }
-
-  if (!strcmp(name, "start")) {
-    lua_pushcfunction(L, HACK_Start);
     return 1;
   }
 
