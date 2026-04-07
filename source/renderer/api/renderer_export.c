@@ -150,31 +150,7 @@ int luaopen_orca_##NAME(lua_State *L) { \
 	return 1; \
 }
 
-//struct MessageType PaintMessage = {
-//	.name = "Paint",
-//	.id = kMsgPaint,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Window_PaintMsgArgs),
-//};
 #define Window_ResizedMsgArgs Window_PaintMsgArgs
-//struct MessageType ResizedMessage = {
-//	.name = "Resized",
-//	.id = kMsgResized,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Window_PaintMsgArgs),
-//};
-//struct MessageType ClosedMessage = {
-//	.name = "Closed",
-//	.id = kMsgClosed,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Window_ClosedMsgArgs),
-//};
-//struct MessageType ChangedScreenMessage = {
-//	.name = "ChangedScreen",
-//	.id = kMsgChangedScreen,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Window_ChangedScreenMsgArgs),
-//};
 
 static luaL_Reg _Window_PaintMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Window_PaintMsgArgs[] = {
@@ -273,7 +249,7 @@ static struct Image ImageDefaults = {
 };
 LRESULT ImageProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case ID_Object_Start: return Image_Start(object, cmp, wparm, lparm); // Object.Start
+		case (ID_Object_Start & MSG_DATA_MASK): return Image_Start(object, cmp, wparm, lparm); // Object.Start
 	}
 	return FALSE;
 }
@@ -301,7 +277,7 @@ static struct RenderTargetTexture RenderTargetTextureDefaults = {
 };
 LRESULT RenderTargetTextureProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case ID_Object_Start: return RenderTargetTexture_Start(object, cmp, wparm, lparm); // Object.Start
+		case (ID_Object_Start & MSG_DATA_MASK): return RenderTargetTexture_Start(object, cmp, wparm, lparm); // Object.Start
 	}
 	return FALSE;
 }
@@ -328,7 +304,7 @@ static struct CubeMapTexture CubeMapTextureDefaults = {
 };
 LRESULT CubeMapTextureProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case ID_Object_Start: return CubeMapTexture_Start(object, cmp, wparm, lparm); // Object.Start
+		case (ID_Object_Start & MSG_DATA_MASK): return CubeMapTexture_Start(object, cmp, wparm, lparm); // Object.Start
 	}
 	return FALSE;
 }
@@ -350,7 +326,7 @@ static struct IOSurfaceTexture IOSurfaceTextureDefaults = {
 };
 LRESULT IOSurfaceTextureProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case ID_Object_Start: return IOSurfaceTexture_Start(object, cmp, wparm, lparm); // Object.Start
+		case (ID_Object_Start & MSG_DATA_MASK): return IOSurfaceTexture_Start(object, cmp, wparm, lparm); // Object.Start
 	}
 	return FALSE;
 }
@@ -419,8 +395,8 @@ static struct Shader ShaderDefaults = {
 };
 LRESULT ShaderProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case ID_Object_Start: return Shader_Start(object, cmp, wparm, lparm); // Object.Start
-		case ID_Object_Destroy: return Shader_Destroy(object, cmp, wparm, lparm); // Object.Destroy
+		case (ID_Object_Start & MSG_DATA_MASK): return Shader_Start(object, cmp, wparm, lparm); // Object.Start
+		case (ID_Object_Destroy & MSG_DATA_MASK): return Shader_Destroy(object, cmp, wparm, lparm); // Object.Destroy
 	}
 	return FALSE;
 }
@@ -477,8 +453,8 @@ static struct Mesh MeshDefaults = {
 };
 LRESULT MeshProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case ID_Object_Start: return Mesh_Start(object, cmp, wparm, lparm); // Object.Start
-		case ID_Object_Destroy: return Mesh_Destroy(object, cmp, wparm, lparm); // Object.Destroy
+		case (ID_Object_Start & MSG_DATA_MASK): return Mesh_Start(object, cmp, wparm, lparm); // Object.Start
+		case (ID_Object_Destroy & MSG_DATA_MASK): return Mesh_Destroy(object, cmp, wparm, lparm); // Object.Destroy
 	}
 	return FALSE;
 }
@@ -503,8 +479,8 @@ static struct FontFamily FontFamilyDefaults = {
 };
 LRESULT FontFamilyProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case ID_Object_Start: return FontFamily_Start(object, cmp, wparm, lparm); // Object.Start
-		case ID_Object_Destroy: return FontFamily_Destroy(object, cmp, wparm, lparm); // Object.Destroy
+		case (ID_Object_Start & MSG_DATA_MASK): return FontFamily_Start(object, cmp, wparm, lparm); // Object.Start
+		case (ID_Object_Destroy & MSG_DATA_MASK): return FontFamily_Destroy(object, cmp, wparm, lparm); // Object.Destroy
 	}
 	return FALSE;
 }

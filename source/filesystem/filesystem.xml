@@ -34,7 +34,7 @@
   <classes>
     <class name="Workspace">
       <messages>
-        <message name="ReadCommands"/>
+        <message name="ReadCommands" routing="Direct"/>
       </messages>
     </class>
     <class name="Library">
@@ -121,19 +121,19 @@
         <field name="isPackage" type="bool"/>
       </fields>
       <messages>
-        <message name="OpenFile">
+        <message name="OpenFile" routing="Direct">
           <fields>
             <field name="FileName" type="string"/>
           </fields>
         </message>
-        <message name="FileExists">
+        <message name="FileExists" routing="Direct">
           <summary>Checks whether the specified file exists.</summary>
           <fields>
             <field name="FileName" type="string">The file path to check for existence</field>
           </fields>
         </message>
-        <message name="HasChangedFiles"/>
-        <message name="LoadProject">
+        <message name="HasChangedFiles" routing="Direct"/>
+        <message name="LoadProject" routing="Direct">
           <summary>Loads a project bundle from the given directory.</summary>
           <fields>
             <field name="Path" type="string">Directory name to load the bundle</field>

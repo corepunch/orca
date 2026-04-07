@@ -174,7 +174,7 @@ void OBJ_Play(lpObject_t self, lpcString_t animation)
 //  OBJ_SetAnimation(self, string_2);
 }
 
-#define ID_Node_ViewDidLoad 0x71bab7e1 // Node.ViewDidLoad
+#define ID_Node_ViewDidLoad ((0x71bab7e1&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.ViewDidLoad
 static int f_rebuild_finalize(lua_State *L, int status, lua_KContext ctx) {
   lpObject_t self = (lpObject_t)ctx;
   if (status != LUA_OK) {

@@ -665,205 +665,25 @@ static luaL_Reg _MessageType_Methods[] = {
 };
 
 STRUCT(MessageType, MessageType);
-//struct MessageType MouseMessageMessage = {
-//	.name = "MouseMessage",
-//	.id = kMsgMouseMessage,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
-//};
 #define Mouse_LeftMouseDownMsgArgs Mouse_MouseMessageMsgArgs
-//struct MessageType LeftMouseDownMessage = {
-//	.name = "LeftMouseDown",
-//	.id = kMsgLeftMouseDown,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
-//};
 #define Mouse_RightMouseDownMsgArgs Mouse_MouseMessageMsgArgs
-//struct MessageType RightMouseDownMessage = {
-//	.name = "RightMouseDown",
-//	.id = kMsgRightMouseDown,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
-//};
 #define Mouse_OtherMouseDownMsgArgs Mouse_MouseMessageMsgArgs
-//struct MessageType OtherMouseDownMessage = {
-//	.name = "OtherMouseDown",
-//	.id = kMsgOtherMouseDown,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
-//};
 #define Mouse_LeftMouseUpMsgArgs Mouse_MouseMessageMsgArgs
-//struct MessageType LeftMouseUpMessage = {
-//	.name = "LeftMouseUp",
-//	.id = kMsgLeftMouseUp,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
-//};
 #define Mouse_RightMouseUpMsgArgs Mouse_MouseMessageMsgArgs
-//struct MessageType RightMouseUpMessage = {
-//	.name = "RightMouseUp",
-//	.id = kMsgRightMouseUp,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
-//};
 #define Mouse_OtherMouseUpMsgArgs Mouse_MouseMessageMsgArgs
-//struct MessageType OtherMouseUpMessage = {
-//	.name = "OtherMouseUp",
-//	.id = kMsgOtherMouseUp,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
-//};
 #define Mouse_LeftMouseDraggedMsgArgs Mouse_MouseMessageMsgArgs
-//struct MessageType LeftMouseDraggedMessage = {
-//	.name = "LeftMouseDragged",
-//	.id = kMsgLeftMouseDragged,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
-//};
 #define Mouse_RightMouseDraggedMsgArgs Mouse_MouseMessageMsgArgs
-//struct MessageType RightMouseDraggedMessage = {
-//	.name = "RightMouseDragged",
-//	.id = kMsgRightMouseDragged,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
-//};
 #define Mouse_OtherMouseDraggedMsgArgs Mouse_MouseMessageMsgArgs
-//struct MessageType OtherMouseDraggedMessage = {
-//	.name = "OtherMouseDragged",
-//	.id = kMsgOtherMouseDragged,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
-//};
 #define Mouse_LeftDoubleClickMsgArgs Mouse_MouseMessageMsgArgs
-//struct MessageType LeftDoubleClickMessage = {
-//	.name = "LeftDoubleClick",
-//	.id = kMsgLeftDoubleClick,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
-//};
 #define Mouse_RightDoubleClickMsgArgs Mouse_MouseMessageMsgArgs
-//struct MessageType RightDoubleClickMessage = {
-//	.name = "RightDoubleClick",
-//	.id = kMsgRightDoubleClick,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
-//};
 #define Mouse_OtherDoubleClickMsgArgs Mouse_MouseMessageMsgArgs
-//struct MessageType OtherDoubleClickMessage = {
-//	.name = "OtherDoubleClick",
-//	.id = kMsgOtherDoubleClick,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
-//};
 #define Mouse_MouseMovedMsgArgs Mouse_MouseMessageMsgArgs
-//struct MessageType MouseMovedMessage = {
-//	.name = "MouseMoved",
-//	.id = kMsgMouseMoved,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
-//};
 #define Mouse_ScrollWheelMsgArgs Mouse_MouseMessageMsgArgs
-//struct MessageType ScrollWheelMessage = {
-//	.name = "ScrollWheel",
-//	.id = kMsgScrollWheel,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
-//};
 #define Mouse_DragDropMsgArgs Mouse_MouseMessageMsgArgs
-//struct MessageType DragDropMessage = {
-//	.name = "DragDrop",
-//	.id = kMsgDragDrop,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
-//};
 #define Mouse_DragEnterMsgArgs Mouse_MouseMessageMsgArgs
-//struct MessageType DragEnterMessage = {
-//	.name = "DragEnter",
-//	.id = kMsgDragEnter,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Mouse_MouseMessageMsgArgs),
-//};
-//struct MessageType KeyMessageMessage = {
-//	.name = "KeyMessage",
-//	.id = kMsgKeyMessage,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Keyboard_KeyMessageMsgArgs),
-//};
 #define Keyboard_KeyDownMsgArgs Keyboard_KeyMessageMsgArgs
-//struct MessageType KeyDownMessage = {
-//	.name = "KeyDown",
-//	.id = kMsgKeyDown,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Keyboard_KeyMessageMsgArgs),
-//};
 #define Keyboard_KeyUpMsgArgs Keyboard_KeyMessageMsgArgs
-//struct MessageType KeyUpMessage = {
-//	.name = "KeyUp",
-//	.id = kMsgKeyUp,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Keyboard_KeyMessageMsgArgs),
-//};
 #define Keyboard_TextInputMsgArgs Keyboard_KeyMessageMsgArgs
-//struct MessageType TextInputMessage = {
-//	.name = "TextInput",
-//	.id = kMsgTextInput,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Keyboard_KeyMessageMsgArgs),
-//};
-//struct MessageType CreateMessage = {
-//	.name = "Create",
-//	.id = kMsgCreate,
-//	.routing = kMessageRoutingDirect,
-//	.size = sizeof(struct Object_CreateMsgArgs),
-//};
-//struct MessageType StartMessage = {
-//	.name = "Start",
-//	.id = kMsgStart,
-//	.routing = kMessageRoutingDirect,
-//	.size = sizeof(struct Object_StartMsgArgs),
-//};
-//struct MessageType AwakeMessage = {
-//	.name = "Awake",
-//	.id = kMsgAwake,
-//	.routing = kMessageRoutingDirect,
-//	.size = sizeof(struct Object_AwakeMsgArgs),
-//};
-//struct MessageType ThemeChangedMessage = {
-//	.name = "ThemeChanged",
-//	.id = kMsgThemeChanged,
-//	.routing = kMessageRoutingDirect,
-//	.size = sizeof(struct Object_ThemeChangedMsgArgs),
-//};
-//struct MessageType PropertyChangedMessage = {
-//	.name = "PropertyChanged",
-//	.id = kMsgPropertyChanged,
-//	.routing = kMessageRoutingDirect,
-//	.size = sizeof(struct Object_PropertyChangedMsgArgs),
-//};
-//struct MessageType AttachedMessage = {
-//	.name = "Attached",
-//	.id = kMsgAttached,
-//	.routing = kMessageRoutingDirect,
-//	.size = sizeof(struct Object_AttachedMsgArgs),
-//};
-//struct MessageType ReleaseMessage = {
-//	.name = "Release",
-//	.id = kMsgRelease,
-//	.routing = kMessageRoutingDirect,
-//	.size = sizeof(struct Object_ReleaseMsgArgs),
-//};
-//struct MessageType DestroyMessage = {
-//	.name = "Destroy",
-//	.id = kMsgDestroy,
-//	.routing = kMessageRoutingDirect,
-//	.size = sizeof(struct Object_DestroyMsgArgs),
-//};
-//struct MessageType TimerMessage = {
-//	.name = "Timer",
-//	.id = kMsgTimer,
-//	.routing = kMessageRoutingTunnelingBubbling,
-//	.size = sizeof(struct Object_TimerMsgArgs),
-//};
 
 static luaL_Reg _Mouse_MouseMessageMsgArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Mouse_MouseMessageMsgArgs[] = {

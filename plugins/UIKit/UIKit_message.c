@@ -33,9 +33,8 @@ CORE_HandleObjectMessage(lua_State *L, struct WI_Message* msg)
     }
     if (OBJ_SendMessageW(hobj, msg->message, msg->wParam, msg->lParam))
       return TRUE;
-    switch (msg->message) {
-      case 0x71bab7e1: // ID_Node_ViewDidLoad
-        return TRUE;
+    if ((msg->message & MSG_ROUTING_MASK) == ROUTING_DIRECT) {
+      return TRUE;
     }
   }
   return FALSE;

@@ -20,11 +20,6 @@ struct lua_State;
 #include "renderer_properties.h"
 #include "../../geometry/geometry.h"
 
-ORCA_API extern struct MessageType PaintMessage;
-ORCA_API extern struct MessageType ResizedMessage;
-ORCA_API extern struct MessageType ClosedMessage;
-ORCA_API extern struct MessageType ChangedScreenMessage;
-
 typedef struct Window_PaintMsgArgs Window_PaintMsg_t,* Window_PaintMsgPtr;
 typedef struct Window_PaintMsgArgs Window_ResizedMsg_t,* Window_ResizedMsgPtr;
 typedef struct Window_ClosedMsgArgs Window_ClosedMsg_t,* Window_ClosedMsgPtr;

@@ -15,7 +15,6 @@ typedef struct lua_State lua_State;
 
 
 
-
 /// @brief Euler angle rotation order enumeration
 /** RotationOrder enum */
 typedef enum RotationOrder {

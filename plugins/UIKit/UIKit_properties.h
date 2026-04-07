@@ -44,7 +44,7 @@ enum AnimationPlayerProperties {
 enum TriggerMessages {
 	kTriggerTriggered,
 };
-#define ID_Trigger_Triggered 0x729dabf0 // Trigger.Triggered
+#define ID_Trigger_Triggered ((0x729dabf0&MSG_DATA_MASK)|ROUTING_BUBBLE) // Trigger.Triggered
 #define kTriggerNumProperties 2
 enum TriggerProperties {
 	kTriggerProperty,
@@ -201,29 +201,27 @@ enum ColorBrushProperties {
 #define ID_Node_Opacity 0xb6882472 // Node.Opacity
 #define ID_Node_Tags 0xec56af24 // Node.Tags
 #define ID_Node_DataContext 0x80b43db0 // Node.DataContext
-#define kNodeNumMessageTypes 10
+#define kNodeNumMessageTypes 9
 enum NodeMessages {
 	kNodeUpdateMatrix,
 	kNodePushProperty,
 	kNodeLoadView,
 	kNodeHitTest,
-	kNodeHandleMessage,
 	kNodeIsVisible,
 	kNodeViewDidLoad,
 	kNodeKillFocus,
 	kNodeSetFocus,
 	kNodeGetSize,
 };
-#define ID_Node_UpdateMatrix 0x35cdb821 // Node.UpdateMatrix
-#define ID_Node_PushProperty 0xaca786d4 // Node.PushProperty
-#define ID_Node_LoadView 0xe3c6ed08 // Node.LoadView
-#define ID_Node_HitTest 0xbc0e5546 // Node.HitTest
-#define ID_Node_HandleMessage 0x22afe0b6 // Node.HandleMessage
-#define ID_Node_IsVisible 0xa03cfb85 // Node.IsVisible
-#define ID_Node_ViewDidLoad 0x71bab7e1 // Node.ViewDidLoad
-#define ID_Node_KillFocus 0x2bdb09fb // Node.KillFocus
-#define ID_Node_SetFocus 0x5f1c2071 // Node.SetFocus
-#define ID_Node_GetSize 0x2282f1da // Node.GetSize
+#define ID_Node_UpdateMatrix ((0x35cdb821&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.UpdateMatrix
+#define ID_Node_PushProperty ((0xaca786d4&MSG_DATA_MASK)|ROUTING_TUNNELING_BUBBLING) // Node.PushProperty
+#define ID_Node_LoadView ((0xe3c6ed08&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.LoadView
+#define ID_Node_HitTest ((0xbc0e5546&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.HitTest
+#define ID_Node_IsVisible ((0xa03cfb85&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.IsVisible
+#define ID_Node_ViewDidLoad ((0x71bab7e1&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.ViewDidLoad
+#define ID_Node_KillFocus ((0x2bdb09fb&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.KillFocus
+#define ID_Node_SetFocus ((0x5f1c2071&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.SetFocus
+#define ID_Node_GetSize ((0x2282f1da&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.GetSize
 #define kNodeNumProperties 67
 enum NodeProperties {
 	kNodeSize,
@@ -356,7 +354,7 @@ enum TextRunProperties {
 enum TextBlockConceptMessages {
 	kTextBlockConceptMakeText,
 };
-#define ID_TextBlockConcept_MakeText 0x66218f84 // TextBlockConcept.MakeText
+#define ID_TextBlockConcept_MakeText ((0x66218f84&MSG_DATA_MASK)|ROUTING_DIRECT) // TextBlockConcept.MakeText
 #define kTextBlockConceptNumProperties 14
 enum TextBlockConceptProperties {
 	kTextBlockConceptTextResourceID,
@@ -434,14 +432,14 @@ enum Node2DMessages {
 	kNode2DUpdateGeometry,
 	kNode2DSetScrollTop,
 };
-#define ID_Node2D_DrawBrush 0x8272196b // Node2D.DrawBrush
-#define ID_Node2D_Measure 0x5ea52a4d // Node2D.Measure
-#define ID_Node2D_Arrange 0x211d274d // Node2D.Arrange
-#define ID_Node2D_MeasureOverride 0x6e565d45 // Node2D.MeasureOverride
-#define ID_Node2D_ArrangeOverride 0xe3b0fa45 // Node2D.ArrangeOverride
-#define ID_Node2D_ForegroundContent 0x61bfb2f7 // Node2D.ForegroundContent
-#define ID_Node2D_UpdateGeometry 0x0cc412c2 // Node2D.UpdateGeometry
-#define ID_Node2D_SetScrollTop 0xa3d79fef // Node2D.SetScrollTop
+#define ID_Node2D_DrawBrush ((0x8272196b&MSG_DATA_MASK)|ROUTING_DIRECT) // Node2D.DrawBrush
+#define ID_Node2D_Measure ((0x5ea52a4d&MSG_DATA_MASK)|ROUTING_DIRECT) // Node2D.Measure
+#define ID_Node2D_Arrange ((0x211d274d&MSG_DATA_MASK)|ROUTING_DIRECT) // Node2D.Arrange
+#define ID_Node2D_MeasureOverride ((0x6e565d45&MSG_DATA_MASK)|ROUTING_DIRECT) // Node2D.MeasureOverride
+#define ID_Node2D_ArrangeOverride ((0xe3b0fa45&MSG_DATA_MASK)|ROUTING_DIRECT) // Node2D.ArrangeOverride
+#define ID_Node2D_ForegroundContent ((0x61bfb2f7&MSG_DATA_MASK)|ROUTING_DIRECT) // Node2D.ForegroundContent
+#define ID_Node2D_UpdateGeometry ((0x0cc412c2&MSG_DATA_MASK)|ROUTING_DIRECT) // Node2D.UpdateGeometry
+#define ID_Node2D_SetScrollTop ((0xa3d79fef&MSG_DATA_MASK)|ROUTING_DIRECT) // Node2D.SetScrollTop
 #define kNode2DNumProperties 44
 enum Node2DProperties {
 	kNode2DLayoutTransform,
@@ -578,7 +576,7 @@ enum StackViewProperties {
 enum FormMessages {
 	kFormSubmit,
 };
-#define ID_Form_Submit 0xef0f357b // Form.Submit
+#define ID_Form_Submit ((0xef0f357b&MSG_DATA_MASK)|ROUTING_BUBBLE) // Form.Submit
 #define kFormNumProperties 0
 // Control
 #define ID_Control 0x8347bf3e
@@ -614,8 +612,8 @@ enum ScreenMessages {
 	kScreenUpdateLayout,
 	kScreenRenderScreen,
 };
-#define ID_Screen_UpdateLayout 0x7d9d5a12 // Screen.UpdateLayout
-#define ID_Screen_RenderScreen 0xd1601cf1 // Screen.RenderScreen
+#define ID_Screen_UpdateLayout ((0x7d9d5a12&MSG_DATA_MASK)|ROUTING_DIRECT) // Screen.UpdateLayout
+#define ID_Screen_RenderScreen ((0xd1601cf1&MSG_DATA_MASK)|ROUTING_DIRECT) // Screen.RenderScreen
 #define kScreenNumProperties 3
 enum ScreenProperties {
 	kScreenClearColor,
@@ -763,8 +761,8 @@ enum PageHostMessages {
 	kPageHostNavigateToPage,
 	kPageHostNavigateBack,
 };
-#define ID_PageHost_NavigateToPage 0x3e8b196b // PageHost.NavigateToPage
-#define ID_PageHost_NavigateBack 0x94f6fcce // PageHost.NavigateBack
+#define ID_PageHost_NavigateToPage ((0x3e8b196b&MSG_DATA_MASK)|ROUTING_DIRECT) // PageHost.NavigateToPage
+#define ID_PageHost_NavigateBack ((0x94f6fcce&MSG_DATA_MASK)|ROUTING_DIRECT) // PageHost.NavigateBack
 #define kPageHostNumProperties 1
 enum PageHostProperties {
 	kPageHostActivePage,
@@ -901,11 +899,6 @@ enum StyleProperties {
 
 #define ID_Node_HitTestMsgArgs_x 0x12a98037 // Node_HitTestMsgArgs.x
 #define ID_Node_HitTestMsgArgs_y 0x11a97ea4 // Node_HitTestMsgArgs.y
-#define ID_Node_HandleMessageMsgArgs 0x5824aacd
-
-#define ID_Node_HandleMessageMsgArgs_EventName 0x6bbd6e18 // Node_HandleMessageMsgArgs.EventName
-#define ID_Node_HandleMessageMsgArgs_FirstArg 0xe0470a5f // Node_HandleMessageMsgArgs.FirstArg
-#define ID_Node_HandleMessageMsgArgs_NumArgs 0x16c86032 // Node_HandleMessageMsgArgs.NumArgs
 #define ID_Node_IsVisibleMsgArgs 0xe9b990cc
 
 #define ID_Node_ViewDidLoadMsgArgs 0xf85c5ec0

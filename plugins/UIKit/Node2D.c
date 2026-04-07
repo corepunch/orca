@@ -208,27 +208,6 @@ HANDLER(Node2D, Object, Destroy)
   return FALSE;
 }
 
-HANDLER(Node2D, Node, HandleMessage)
-{
-  if (!OBJ_GetLuaObject(hObject))
-    return FALSE;
-  lua_State* L = OBJ_GetDomain(hObject);
-  shortStr_t pszHandler;
-  sprintf(pszHandler, "on%s", pHandleMessage->EventName);
-  lua_geti(L, LUA_REGISTRYINDEX, OBJ_GetLuaObject(hObject));
-  lua_getfield(L, -1, pszHandler);
-  if (lua_type(L, -1) == LUA_TFUNCTION) {
-    lua_pop(L, 2);
-    for (uint32_t i = 0; i < pHandleMessage->NumArgs; i++) {
-      lua_pushvalue(L, pHandleMessage->FirstArg + i);
-    }
-    return luaX_executecallback(L, hObject, pszHandler, pHandleMessage->NumArgs);
-  } else {
-    lua_pop(L, 2);
-  }
-  return FALSE;
-}
-
 HANDLER(Node2D, Mouse, ScrollWheel)
 {
   NodePtr node = pNode2D->_node;

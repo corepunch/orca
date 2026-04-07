@@ -69,7 +69,7 @@
     <interface name="Mouse" export="Input" no-check="true">
       <!-- Base event for all pointer/mouse input events -->
       <messages>
-        <message name="MouseMessage">
+        <message name="MouseMessage" routing="Bubbling">
           <summary>Base mouse event providing pointer position.</summary>
           <fields>
             <field name="x" type="float">Horizontal pointer position in local space</field>
@@ -80,28 +80,28 @@
             <field name="clickCount" type="int">Number of consecutive clicks (1 for single click, 2 for double click)</field>
           </fields>
         </message>
-        <message name="LeftMouseDown" same-as="MouseMessage"/>
-        <message name="RightMouseDown" same-as="MouseMessage"/>
-        <message name="OtherMouseDown" same-as="MouseMessage"/>
-        <message name="LeftMouseUp" same-as="MouseMessage"/>
-        <message name="RightMouseUp" same-as="MouseMessage"/>
-        <message name="OtherMouseUp" same-as="MouseMessage"/>
-        <message name="LeftMouseDragged" same-as="MouseMessage"/>
-        <message name="RightMouseDragged" same-as="MouseMessage"/>
-        <message name="OtherMouseDragged" same-as="MouseMessage"/>
-        <message name="LeftDoubleClick" same-as="MouseMessage"/>
-        <message name="RightDoubleClick" same-as="MouseMessage"/>
-        <message name="OtherDoubleClick" same-as="MouseMessage"/>
-        <message name="MouseMoved" same-as="MouseMessage"/>
-        <message name="ScrollWheel" same-as="MouseMessage"/>
-        <message name="DragDrop" same-as="MouseMessage"/>
-        <message name="DragEnter" same-as="MouseMessage"/>
+        <message name="LeftMouseDown" routing="Bubbling" same-as="MouseMessage"/>
+        <message name="RightMouseDown" routing="Bubbling" same-as="MouseMessage"/>
+        <message name="OtherMouseDown" routing="Bubbling" same-as="MouseMessage"/>
+        <message name="LeftMouseUp" routing="Bubbling" same-as="MouseMessage"/>
+        <message name="RightMouseUp" routing="Bubbling" same-as="MouseMessage"/>
+        <message name="OtherMouseUp" routing="Bubbling" same-as="MouseMessage"/>
+        <message name="LeftMouseDragged" routing="Bubbling" same-as="MouseMessage"/>
+        <message name="RightMouseDragged" routing="Bubbling" same-as="MouseMessage"/>
+        <message name="OtherMouseDragged" routing="Bubbling" same-as="MouseMessage"/>
+        <message name="LeftDoubleClick" routing="Bubbling" same-as="MouseMessage"/>
+        <message name="RightDoubleClick" routing="Bubbling" same-as="MouseMessage"/>
+        <message name="OtherDoubleClick" routing="Bubbling" same-as="MouseMessage"/>
+        <message name="MouseMoved" routing="Bubbling" same-as="MouseMessage"/>
+        <message name="ScrollWheel" routing="Bubbling" same-as="MouseMessage"/>
+        <message name="DragDrop" routing="Bubbling" same-as="MouseMessage"/>
+        <message name="DragEnter" routing="Bubbling" same-as="MouseMessage"/>
       </messages>
     </interface>
     <interface name="Keyboard" export="Input" no-check="true">
       <!-- Base event for all keyboard input events -->
       <messages>
-        <message name="KeyMessage">
+        <message name="KeyMessage" routing="Bubbling">
           <summary>Base keyboard event providing key information.</summary>
           <fields>
             <field name="keyCode" type="int">The key involved in this event</field>
@@ -112,9 +112,9 @@
             <field name="hotKey" type="string">Combined modifier+key string for hotkey matching (e.g. "ctrl+alt+w")</field>
           </fields>
         </message>
-        <message name="KeyDown" same-as="KeyMessage"/>
-        <message name="KeyUp" same-as="KeyMessage"/>
-        <message name="TextInput" same-as="KeyMessage"/>
+        <message name="KeyDown" routing="Bubbling" same-as="KeyMessage"/>
+        <message name="KeyUp" routing="Bubbling" same-as="KeyMessage"/>
+        <message name="TextInput" routing="Bubbling" same-as="KeyMessage"/>
       </messages>
     </interface>
     <interface name="Object" prefix="OBJ_" export="Object" no-check="true">
@@ -514,7 +514,7 @@
         <message name="Attached" routing="Direct"/>
         <message name="Release" routing="Direct"/>
         <message name="Destroy" routing="Direct"/>
-        <message name="Timer"/>
+        <message name="Timer" routing="Direct"/>
       </messages>
     </interface>
   </interfaces>

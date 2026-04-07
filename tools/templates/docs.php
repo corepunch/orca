@@ -64,6 +64,31 @@ function getDetails($elem) {
     return "";
 }
 
+function messageSection($messages) {
+    $md = "";
+    foreach ($messages as $event) {
+        $md .= "### `" . $event->name . "`\n\n";
+        $routing = $event->routing;
+        $md .= "**Routing:** `" . $routing . "`\n\n";
+        if ($event->doc) {
+            $md .= strval($event->doc) . "\n\n";
+        }
+        $hasFields = false;
+        $fieldsTable = "| Field | Type | Description |\n|-------|------|-------------|\n";
+        foreach ($event->getAllFields() as $field) {
+            $hasFields = true;
+            $fname = strval($field->name);
+            $ftype = strval($field->type->type);
+            $fdoc = $field->doc;
+            $fieldsTable .= "| `" . $fname . "` | `" . $ftype . "` | " . mdEscape($fdoc) . " |\n";
+        }
+        if ($hasFields) {
+            $md .= $fieldsTable . "\n";
+        }
+    }
+    return $md;
+}
+
 function methodSection($methods, $ownerName) {
     $md = "";
     foreach ($methods as $mname => $method) {
@@ -217,6 +242,10 @@ foreach ($model->getInterfaces() as $iname => $interface) {
             $md .= "## Methods\n\n" . $methodsMd;
         }
     }
+    $messagesMd = messageSection($interface->getMessages());
+    if ($messagesMd) {
+        $md .= "## Messages\n\n" . $messagesMd;
+    }
     file_put_contents($outDir . "/" . $iname . ".md", $md);
 }
 
@@ -257,6 +286,10 @@ foreach ($model->getComponents() as $cname => $comp) {
     $methodsMd = methodSection($comp->getMethods(), $cname);
     if ($methodsMd) {
         $md .= "## Methods\n\n" . $methodsMd;
+    }
+    $messagesMd = messageSection($comp->getMessages());
+    if ($messagesMd) {
+        $md .= "## Messages\n\n" . $messagesMd;
     }
     file_put_contents($outDir . "/" . $cname . ".md", $md);
 }

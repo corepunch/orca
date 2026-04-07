@@ -22,38 +22,11 @@ struct lua_State;
 #include "UIKit_properties.h"
 #include "../../source/renderer/api/renderer.h"
 
-ORCA_API extern struct MessageType TriggeredMessage;
-ORCA_API extern struct MessageType UpdateMatrixMessage;
-ORCA_API extern struct MessageType PushPropertyMessage;
-ORCA_API extern struct MessageType LoadViewMessage;
-ORCA_API extern struct MessageType HitTestMessage;
-ORCA_API extern struct MessageType HandleMessageMessage;
-ORCA_API extern struct MessageType IsVisibleMessage;
-ORCA_API extern struct MessageType ViewDidLoadMessage;
-ORCA_API extern struct MessageType KillFocusMessage;
-ORCA_API extern struct MessageType SetFocusMessage;
-ORCA_API extern struct MessageType GetSizeMessage;
-ORCA_API extern struct MessageType MakeTextMessage;
-ORCA_API extern struct MessageType DrawBrushMessage;
-ORCA_API extern struct MessageType MeasureMessage;
-ORCA_API extern struct MessageType ArrangeMessage;
-ORCA_API extern struct MessageType MeasureOverrideMessage;
-ORCA_API extern struct MessageType ArrangeOverrideMessage;
-ORCA_API extern struct MessageType ForegroundContentMessage;
-ORCA_API extern struct MessageType UpdateGeometryMessage;
-ORCA_API extern struct MessageType SetScrollTopMessage;
-ORCA_API extern struct MessageType SubmitMessage;
-ORCA_API extern struct MessageType UpdateLayoutMessage;
-ORCA_API extern struct MessageType RenderScreenMessage;
-ORCA_API extern struct MessageType NavigateToPageMessage;
-ORCA_API extern struct MessageType NavigateBackMessage;
-
 typedef struct Trigger_TriggeredMsgArgs Trigger_TriggeredMsg_t,* Trigger_TriggeredMsgPtr;
 typedef struct Node_UpdateMatrixMsgArgs Node_UpdateMatrixMsg_t,* Node_UpdateMatrixMsgPtr;
 typedef struct Node_PushPropertyMsgArgs Node_PushPropertyMsg_t,* Node_PushPropertyMsgPtr;
 typedef struct Node_LoadViewMsgArgs Node_LoadViewMsg_t,* Node_LoadViewMsgPtr;
 typedef struct Node_HitTestMsgArgs Node_HitTestMsg_t,* Node_HitTestMsgPtr;
-typedef struct Node_HandleMessageMsgArgs Node_HandleMessageMsg_t,* Node_HandleMessageMsgPtr;
 typedef struct Node_IsVisibleMsgArgs Node_IsVisibleMsg_t,* Node_IsVisibleMsgPtr;
 typedef struct Node_ViewDidLoadMsgArgs Node_ViewDidLoadMsg_t,* Node_ViewDidLoadMsgPtr;
 typedef struct Node_KillFocusMsgArgs Node_KillFocusMsg_t,* Node_KillFocusMsgPtr;
@@ -559,14 +532,6 @@ struct Node_HitTestMsgArgs {
 };
 ORCA_API void luaX_pushNode_HitTestMsgArgs(lua_State *L, struct Node_HitTestMsgArgs const* data);
 ORCA_API struct Node_HitTestMsgArgs* luaX_checkNode_HitTestMsgArgs(lua_State *L, int idx);
-/** Node_HandleMessageMsgArgs struct */
-struct Node_HandleMessageMsgArgs {
-	const char* EventName;
-	uint32_t FirstArg;
-	uint32_t NumArgs;
-};
-ORCA_API void luaX_pushNode_HandleMessageMsgArgs(lua_State *L, struct Node_HandleMessageMsgArgs const* data);
-ORCA_API struct Node_HandleMessageMsgArgs* luaX_checkNode_HandleMessageMsgArgs(lua_State *L, int idx);
 /** Node_IsVisibleMsgArgs struct */
 struct Node_IsVisibleMsgArgs {
 };
