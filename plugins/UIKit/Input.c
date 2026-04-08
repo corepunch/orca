@@ -102,7 +102,7 @@ _NextTabStop(lpObject_t hObject)
   return NULL;
 }
 
-HANDLER(Input, Keyboard, KeyDown)
+HANDLER(Input, Node, KeyDown)
 {
   char szText[MAX_PROPERTY_STRING];
   const char* currentText = GetTextRun(hObject)->Text;
@@ -190,7 +190,7 @@ HANDLER(Input, Node, KillFocus)
   return FALSE;
 }
 
-HANDLER(Input, Mouse, LeftMouseUp)
+HANDLER(Input, Node, LeftMouseUp)
 {
   OBJ_SetFocus(hObject);
   if (pInput->Type == kInputTypeCheckbox) {

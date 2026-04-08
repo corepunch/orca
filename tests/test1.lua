@@ -122,7 +122,7 @@ end
 
 local function test_button_interaction()
 	local clicked = false
-	local button = screen + ui.Button { Width = 100, Height = 100, ["onMouse.LeftMouseDown"] = function () clicked = true end }
+	local button = screen + ui.Button { Width = 100, Height = 100, ["onNode.LeftMouseDown"] = function () clicked = true end }
 	screen:UpdateLayout(screen.Width, screen.Height)
 	-- Simulate a left mouse down event on the button
 	orca.system.dispatchMessage {

@@ -19,27 +19,6 @@ struct lua_State;
 #include "core_properties.h"
 #include "../geometry/geometry.h"
 
-typedef struct Mouse_MouseMessageMsgArgs Mouse_MouseMessageMsg_t,* Mouse_MouseMessageMsgPtr;
-typedef struct Mouse_MouseMessageMsgArgs Mouse_LeftMouseDownMsg_t,* Mouse_LeftMouseDownMsgPtr;
-typedef struct Mouse_MouseMessageMsgArgs Mouse_RightMouseDownMsg_t,* Mouse_RightMouseDownMsgPtr;
-typedef struct Mouse_MouseMessageMsgArgs Mouse_OtherMouseDownMsg_t,* Mouse_OtherMouseDownMsgPtr;
-typedef struct Mouse_MouseMessageMsgArgs Mouse_LeftMouseUpMsg_t,* Mouse_LeftMouseUpMsgPtr;
-typedef struct Mouse_MouseMessageMsgArgs Mouse_RightMouseUpMsg_t,* Mouse_RightMouseUpMsgPtr;
-typedef struct Mouse_MouseMessageMsgArgs Mouse_OtherMouseUpMsg_t,* Mouse_OtherMouseUpMsgPtr;
-typedef struct Mouse_MouseMessageMsgArgs Mouse_LeftMouseDraggedMsg_t,* Mouse_LeftMouseDraggedMsgPtr;
-typedef struct Mouse_MouseMessageMsgArgs Mouse_RightMouseDraggedMsg_t,* Mouse_RightMouseDraggedMsgPtr;
-typedef struct Mouse_MouseMessageMsgArgs Mouse_OtherMouseDraggedMsg_t,* Mouse_OtherMouseDraggedMsgPtr;
-typedef struct Mouse_MouseMessageMsgArgs Mouse_LeftDoubleClickMsg_t,* Mouse_LeftDoubleClickMsgPtr;
-typedef struct Mouse_MouseMessageMsgArgs Mouse_RightDoubleClickMsg_t,* Mouse_RightDoubleClickMsgPtr;
-typedef struct Mouse_MouseMessageMsgArgs Mouse_OtherDoubleClickMsg_t,* Mouse_OtherDoubleClickMsgPtr;
-typedef struct Mouse_MouseMessageMsgArgs Mouse_MouseMovedMsg_t,* Mouse_MouseMovedMsgPtr;
-typedef struct Mouse_MouseMessageMsgArgs Mouse_ScrollWheelMsg_t,* Mouse_ScrollWheelMsgPtr;
-typedef struct Mouse_MouseMessageMsgArgs Mouse_DragDropMsg_t,* Mouse_DragDropMsgPtr;
-typedef struct Mouse_MouseMessageMsgArgs Mouse_DragEnterMsg_t,* Mouse_DragEnterMsgPtr;
-typedef struct Keyboard_KeyMessageMsgArgs Keyboard_KeyMessageMsg_t,* Keyboard_KeyMessageMsgPtr;
-typedef struct Keyboard_KeyMessageMsgArgs Keyboard_KeyDownMsg_t,* Keyboard_KeyDownMsgPtr;
-typedef struct Keyboard_KeyMessageMsgArgs Keyboard_KeyUpMsg_t,* Keyboard_KeyUpMsgPtr;
-typedef struct Keyboard_KeyMessageMsgArgs Keyboard_TextInputMsg_t,* Keyboard_TextInputMsgPtr;
 typedef struct Object_CreateMsgArgs Object_CreateMsg_t,* Object_CreateMsgPtr;
 typedef struct Object_StartMsgArgs Object_StartMsg_t,* Object_StartMsgPtr;
 typedef struct Object_AwakeMsgArgs Object_AwakeMsg_t,* Object_AwakeMsgPtr;
@@ -109,19 +88,6 @@ typedef enum PropertyAttribute {
 ORCA_API const char *PropertyAttributeToString(enum PropertyAttribute value);
 ORCA_API enum PropertyAttribute luaX_checkPropertyAttribute(lua_State *L, int idx);
 ORCA_API void luaX_pushPropertyAttribute(lua_State *L, enum PropertyAttribute value);
-
-/// @brief Identifies which mouse button was involved in a mouse button event.
-/** MouseButton enum */
-typedef enum MouseButton {
-	kMouseButtonNone, ///< No mouse button used for mouse move and scroll events
-	kMouseButtonLeft, ///< The left (primary) mouse button
-	kMouseButtonRight, ///< The right (secondary) mouse button
-	kMouseButtonMiddle, ///< The middle mouse button
-} eMouseButton_t;
-#define MouseButton_Count 4
-ORCA_API const char *MouseButtonToString(enum MouseButton value);
-ORCA_API enum MouseButton luaX_checkMouseButton(lua_State *L, int idx);
-ORCA_API void luaX_pushMouseButton(lua_State *L, enum MouseButton value);
 
 typedef struct MessageType MessageType_t, *lpMessageType_t;
 typedef struct MessageType const cMessageType_t, *lpcMessageType_t;
@@ -461,28 +427,6 @@ struct MessageType {
 ORCA_API void luaX_pushMessageType(lua_State *L, struct MessageType const* MessageType);
 ORCA_API struct MessageType* luaX_checkMessageType(lua_State *L, int idx);
 
-/** Mouse_MouseMessageMsgArgs struct */
-struct Mouse_MouseMessageMsgArgs {
-	float x; ///< Horizontal pointer position in local space
-	float y; ///< Vertical pointer position in local space
-	int32_t deltaX; ///< Scroll wheel rotation amount along the X axis; positive values scroll right/forward
-	int32_t deltaY; ///< Scroll wheel rotation amount along the Y axis; positive values scroll up/forward
-	enum MouseButton button; ///< The mouse button involved in this event
-	int32_t clickCount; ///< Number of consecutive clicks (1 for single click, 2 for double click)
-};
-ORCA_API void luaX_pushMouse_MouseMessageMsgArgs(lua_State *L, struct Mouse_MouseMessageMsgArgs const* data);
-ORCA_API struct Mouse_MouseMessageMsgArgs* luaX_checkMouse_MouseMessageMsgArgs(lua_State *L, int idx);
-/** Keyboard_KeyMessageMsgArgs struct */
-struct Keyboard_KeyMessageMsgArgs {
-	int32_t keyCode; ///< The key involved in this event
-	int32_t character; ///< The character produced by this key event
-	int32_t modifiers; ///< Active modifier keys during the event (bitmask of WI_MOD_* flags)
-	const char* text; ///< The text produced by this key event as a UTF-8 string (empty for non-printable keys)
-	const char* modifiersString; ///< Active modifier keys as a human-readable prefix string (e.g. "ctrl+shift+")
-	const char* hotKey; ///< Combined modifier+key string for hotkey matching (e.g. "ctrl+alt+w")
-};
-ORCA_API void luaX_pushKeyboard_KeyMessageMsgArgs(lua_State *L, struct Keyboard_KeyMessageMsgArgs const* data);
-ORCA_API struct Keyboard_KeyMessageMsgArgs* luaX_checkKeyboard_KeyMessageMsgArgs(lua_State *L, int idx);
 /** Object_CreateMsgArgs struct */
 struct Object_CreateMsgArgs {
 };

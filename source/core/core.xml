@@ -46,13 +46,6 @@
       <value name="VectorZ">Bind to the Z component of a vector property</value>
       <value name="VectorW">Bind to the W component of a vector property</value>
     </enum>
-    <enum name="MouseButton">
-      <summary>Identifies which mouse button was involved in a mouse button event.</summary>
-      <value name="None">No mouse button used for mouse move and scroll events</value>
-      <value name="Left">The left (primary) mouse button</value>
-      <value name="Right">The right (secondary) mouse button</value>
-      <value name="Middle">The middle mouse button</value>
-    </enum>
   </enums>
   <structs>
     <struct name="MessageType">
@@ -66,57 +59,6 @@
     </struct>
   </structs>
   <interfaces>
-    <interface name="Mouse" export="Input" no-check="true">
-      <!-- Base event for all pointer/mouse input events -->
-      <messages>
-        <message name="MouseMessage" routing="Bubbling">
-          <summary>Base mouse event providing pointer position.</summary>
-          <fields>
-            <field name="x" type="float">Horizontal pointer position in local space</field>
-            <field name="y" type="float">Vertical pointer position in local space</field>
-            <field name="deltaX" type="int">Scroll wheel rotation amount along the X axis; positive values scroll right/forward</field>
-            <field name="deltaY" type="int">Scroll wheel rotation amount along the Y axis; positive values scroll up/forward</field>
-            <field name="button" type="MouseButton">The mouse button involved in this event</field>
-            <field name="clickCount" type="int">Number of consecutive clicks (1 for single click, 2 for double click)</field>
-          </fields>
-        </message>
-        <message name="LeftMouseDown" routing="Bubbling" same-as="MouseMessage"/>
-        <message name="RightMouseDown" routing="Bubbling" same-as="MouseMessage"/>
-        <message name="OtherMouseDown" routing="Bubbling" same-as="MouseMessage"/>
-        <message name="LeftMouseUp" routing="Bubbling" same-as="MouseMessage"/>
-        <message name="RightMouseUp" routing="Bubbling" same-as="MouseMessage"/>
-        <message name="OtherMouseUp" routing="Bubbling" same-as="MouseMessage"/>
-        <message name="LeftMouseDragged" routing="Bubbling" same-as="MouseMessage"/>
-        <message name="RightMouseDragged" routing="Bubbling" same-as="MouseMessage"/>
-        <message name="OtherMouseDragged" routing="Bubbling" same-as="MouseMessage"/>
-        <message name="LeftDoubleClick" routing="Bubbling" same-as="MouseMessage"/>
-        <message name="RightDoubleClick" routing="Bubbling" same-as="MouseMessage"/>
-        <message name="OtherDoubleClick" routing="Bubbling" same-as="MouseMessage"/>
-        <message name="MouseMoved" routing="Bubbling" same-as="MouseMessage"/>
-        <message name="ScrollWheel" routing="Bubbling" same-as="MouseMessage"/>
-        <message name="DragDrop" routing="Bubbling" same-as="MouseMessage"/>
-        <message name="DragEnter" routing="Bubbling" same-as="MouseMessage"/>
-      </messages>
-    </interface>
-    <interface name="Keyboard" export="Input" no-check="true">
-      <!-- Base event for all keyboard input events -->
-      <messages>
-        <message name="KeyMessage" routing="Bubbling">
-          <summary>Base keyboard event providing key information.</summary>
-          <fields>
-            <field name="keyCode" type="int">The key involved in this event</field>
-            <field name="character" type="int">The character produced by this key event</field>
-            <field name="modifiers" type="int">Active modifier keys during the event (bitmask of WI_MOD_* flags)</field>
-            <field name="text" type="string">The text produced by this key event as a UTF-8 string (empty for non-printable keys)</field>
-            <field name="modifiersString" type="string">Active modifier keys as a human-readable prefix string (e.g. "ctrl+shift+")</field>
-            <field name="hotKey" type="string">Combined modifier+key string for hotkey matching (e.g. "ctrl+alt+w")</field>
-          </fields>
-        </message>
-        <message name="KeyDown" routing="Bubbling" same-as="KeyMessage"/>
-        <message name="KeyUp" routing="Bubbling" same-as="KeyMessage"/>
-        <message name="TextInput" routing="Bubbling" same-as="KeyMessage"/>
-      </messages>
-    </interface>
     <interface name="Object" prefix="OBJ_" export="Object" no-check="true">
       <summary>Core engine host object.</summary>
       <details>

@@ -51,9 +51,9 @@ f_beginDraggingSession(lua_State *L)
 }
 
 static bool
-convert_mouse_message(struct WI_Message* e, uint32_t* out_msg, Mouse_MouseMessageMsg_t* out_mouse)
+convert_mouse_message(struct WI_Message* e, uint32_t* out_msg, Node_MouseMessageMsg_t* out_mouse)
 {
-  *out_mouse = (Mouse_MouseMessageMsg_t){
+  *out_mouse = (Node_MouseMessageMsg_t){
     .x = e->x,
     .y = e->y,
     .deltaX = e->dx,
@@ -62,20 +62,20 @@ convert_mouse_message(struct WI_Message* e, uint32_t* out_msg, Mouse_MouseMessag
     .clickCount = 0,
   };
   switch (e->message) {
-    case kEventLeftMouseUp:        *out_msg = ID_Mouse_LeftMouseUp;        out_mouse->button = kMouseButtonLeft; out_mouse->clickCount = 1; break;
-    case kEventRightMouseUp:       *out_msg = ID_Mouse_RightMouseUp;       out_mouse->button = kMouseButtonRight; out_mouse->clickCount = 1; break;
-    case kEventOtherMouseUp:       *out_msg = ID_Mouse_OtherMouseUp;       out_mouse->button = kMouseButtonMiddle; out_mouse->clickCount = 1; break;
-    case kEventLeftMouseDown:      *out_msg = ID_Mouse_LeftMouseDown;      out_mouse->button = kMouseButtonLeft; break;
-    case kEventRightMouseDown:     *out_msg = ID_Mouse_RightMouseDown;     out_mouse->button = kMouseButtonRight;  break;
-    case kEventOtherMouseDown:     *out_msg = ID_Mouse_OtherMouseDown;     out_mouse->button = kMouseButtonMiddle; break;
-    case kEventLeftMouseDragged:   *out_msg = ID_Mouse_LeftMouseDragged;   out_mouse->button = kMouseButtonLeft; break;
-    case kEventRightMouseDragged:  *out_msg = ID_Mouse_RightMouseDragged;  out_mouse->button = kMouseButtonRight;  break;
-    case kEventOtherMouseDragged:  *out_msg = ID_Mouse_OtherMouseDragged;  out_mouse->button = kMouseButtonMiddle; break;
-    case kEventLeftDoubleClick:    *out_msg = ID_Mouse_LeftDoubleClick;    out_mouse->button = kMouseButtonLeft; out_mouse->clickCount = 2; break;
-    case kEventRightDoubleClick:   *out_msg = ID_Mouse_RightDoubleClick;   out_mouse->button = kMouseButtonRight;  out_mouse->clickCount = 2; break;
-    case kEventOtherDoubleClick:   *out_msg = ID_Mouse_OtherDoubleClick;   out_mouse->button = kMouseButtonMiddle; out_mouse->clickCount = 2; break;
-    case kEventMouseMoved:         *out_msg = ID_Mouse_MouseMoved;         out_mouse->button = kMouseButtonNone; break;
-    case kEventScrollWheel:        *out_msg = ID_Mouse_ScrollWheel;        out_mouse->button = kMouseButtonNone; break;
+    case kEventLeftMouseUp:        *out_msg = ID_Node_LeftMouseUp;        out_mouse->button = kMouseButtonLeft; out_mouse->clickCount = 1; break;
+    case kEventRightMouseUp:       *out_msg = ID_Node_RightMouseUp;       out_mouse->button = kMouseButtonRight; out_mouse->clickCount = 1; break;
+    case kEventOtherMouseUp:       *out_msg = ID_Node_OtherMouseUp;       out_mouse->button = kMouseButtonMiddle; out_mouse->clickCount = 1; break;
+    case kEventLeftMouseDown:      *out_msg = ID_Node_LeftMouseDown;      out_mouse->button = kMouseButtonLeft; break;
+    case kEventRightMouseDown:     *out_msg = ID_Node_RightMouseDown;     out_mouse->button = kMouseButtonRight;  break;
+    case kEventOtherMouseDown:     *out_msg = ID_Node_OtherMouseDown;     out_mouse->button = kMouseButtonMiddle; break;
+    case kEventLeftMouseDragged:   *out_msg = ID_Node_LeftMouseDragged;   out_mouse->button = kMouseButtonLeft; break;
+    case kEventRightMouseDragged:  *out_msg = ID_Node_RightMouseDragged;  out_mouse->button = kMouseButtonRight;  break;
+    case kEventOtherMouseDragged:  *out_msg = ID_Node_OtherMouseDragged;  out_mouse->button = kMouseButtonMiddle; break;
+    case kEventLeftDoubleClick:    *out_msg = ID_Node_LeftDoubleClick;    out_mouse->button = kMouseButtonLeft; out_mouse->clickCount = 2; break;
+    case kEventRightDoubleClick:   *out_msg = ID_Node_RightDoubleClick;   out_mouse->button = kMouseButtonRight;  out_mouse->clickCount = 2; break;
+    case kEventOtherDoubleClick:   *out_msg = ID_Node_OtherDoubleClick;   out_mouse->button = kMouseButtonMiddle; out_mouse->clickCount = 2; break;
+    case kEventMouseMoved:         *out_msg = ID_Node_MouseMoved;         out_mouse->button = kMouseButtonNone; break;
+    case kEventScrollWheel:        *out_msg = ID_Node_ScrollWheel;        out_mouse->button = kMouseButtonNone; break;
     default:
       return false;
   }
@@ -93,7 +93,7 @@ lua_pushmousevent(lua_State* L, lpObject_t obj, struct WI_Message* e)
   }
 #endif
   uint32_t msg;
-  Mouse_MouseMessageMsg_t mouse;
+  Node_MouseMessageMsg_t mouse;
   if (!convert_mouse_message(e, &msg, &mouse)) {
     return 0;
   }
@@ -149,7 +149,7 @@ process_dragndrop(lua_State *L, struct WI_Message *e, lpObject_t sender)
           if (GetNode(view)) {
             GetNode(view)->Visible = FALSE;
           }
-          e->message = ID_Mouse_DragDrop;
+          e->message = ID_Node_DragDrop;
         }
       }
       lua_pop(L, 1);
@@ -169,7 +169,7 @@ process_dragndrop(lua_State *L, struct WI_Message *e, lpObject_t sender)
           active = TRUE;
         }
         if (active) {
-          e->message = ID_Mouse_DragEnter;
+          e->message = ID_Node_DragEnter;
           if (view && GetNode(view)) {
             GetNode(view)->Visible = TRUE;
           }
@@ -187,15 +187,15 @@ void WI_BuildModifiersString(wParam_t wParam, char* buf, size_t size);
 void WI_KeyEventToText(struct WI_Message const* e, char* buf, size_t size);
 
 static bool
-build_key_msg(struct WI_Message const* e, Keyboard_KeyMessageMsg_t* key, uint32_t *msg)
+build_key_msg(struct WI_Message const* e, Node_KeyMessageMsg_t* key, uint32_t *msg)
 {
   static char modifiersString[MAX_PROPERTY_STRING];
   static char hotKey[MAX_PROPERTY_STRING];
   static char text[MAX_PROPERTY_STRING];
   switch (e->message) {
-    case kEventKeyDown: *msg = ID_Keyboard_KeyDown; break;
-    case kEventKeyUp:   *msg = ID_Keyboard_KeyUp; break;
-    case kEventChar:    *msg = ID_Keyboard_TextInput; break;
+    case kEventKeyDown: *msg = ID_Node_KeyDown; break;
+    case kEventKeyUp:   *msg = ID_Node_KeyUp; break;
+    case kEventChar:    *msg = ID_Node_TextInput; break;
     default:
       return false;
   }
@@ -257,7 +257,7 @@ handle:
   process_dragndrop(L, e, sender);
   
   uint32_t msg;
-  Mouse_MouseMessageMsg_t mouse;
+  Node_MouseMessageMsg_t mouse;
   convert_mouse_message(e, &msg, &mouse);
 
   // Route the event up the parent chain until it's handled.
@@ -312,14 +312,14 @@ handle:
       lua_setfield(L, LUA_REGISTRYINDEX, DRAG_SESSION);
       break;
   }
-  return success || e->message == ID_Mouse_DragEnter;
+  return success || e->message == ID_Node_DragEnter;
 }
 
 bool_t
 UI_HandleKeyEvent(lua_State *L, struct WI_Message* e)
 {
   uint32_t msg;
-  struct Keyboard_KeyMessageMsgArgs key = {0};
+  struct Node_KeyMessageMsgArgs key = {0};
   build_key_msg(e, &key, &msg);
   return core_GetFocus() && CORE_HandleObjectMessage(L, &(struct WI_Message) {
     .target = core_GetFocus(),

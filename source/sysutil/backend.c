@@ -14,7 +14,7 @@ int f_event_is(lua_State* L)
 {
   struct WI_Message const* msg = luaL_checkudata(L, 1, "Event");
   lpcString_t name = luaL_checkstring(L, 2);
-  lua_pushboolean(L, msg->message == fnv1a32(name));
+  lua_pushboolean(L, (msg->message&MSG_DATA_MASK) == (fnv1a32(name)&MSG_DATA_MASK));
   return 1;
 }
 

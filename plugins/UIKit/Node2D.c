@@ -208,7 +208,7 @@ HANDLER(Node2D, Object, Destroy)
   return FALSE;
 }
 
-HANDLER(Node2D, Mouse, ScrollWheel)
+HANDLER(Node2D, Node, ScrollWheel)
 {
   NodePtr node = pNode2D->_node;
   if (pNode2D->Overflow.y == kOverflowScroll) {
@@ -222,7 +222,7 @@ HANDLER(Node2D, Mouse, ScrollWheel)
   return FALSE;
 }
 
-HANDLER(Node2D, Mouse, MouseMoved)
+HANDLER(Node2D, Node, MouseMoved)
 {
   if (OBJ_GetFlags(hObject) & OF_HOVERABLE) {
     OBJ_SetHover(hObject);

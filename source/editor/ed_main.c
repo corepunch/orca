@@ -707,7 +707,7 @@ LRESULT ED_DispatchMessage(DWORD msg, wParam_t wparam, lParam_t lparam) {
       } else {
         return FALSE;
       }
-    case ID_Window_Resized:
+    case kEventWindowResized:
       ED_SetWindowRect(editor.root, &(RECT){0,0,LOWORD(wparam),HIWORD(wparam)});
       ED_Draw();
       return TRUE;

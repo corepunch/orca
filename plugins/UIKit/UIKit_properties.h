@@ -201,7 +201,7 @@ enum ColorBrushProperties {
 #define ID_Node_Opacity 0xb6882472 // Node.Opacity
 #define ID_Node_Tags 0xec56af24 // Node.Tags
 #define ID_Node_DataContext 0x80b43db0 // Node.DataContext
-#define kNodeNumMessageTypes 9
+#define kNodeNumMessageTypes 30
 enum NodeMessages {
 	kNodeUpdateMatrix,
 	kNodePushProperty,
@@ -212,6 +212,27 @@ enum NodeMessages {
 	kNodeKillFocus,
 	kNodeSetFocus,
 	kNodeGetSize,
+	kNodeMouseMessage,
+	kNodeLeftMouseDown,
+	kNodeRightMouseDown,
+	kNodeOtherMouseDown,
+	kNodeLeftMouseUp,
+	kNodeRightMouseUp,
+	kNodeOtherMouseUp,
+	kNodeLeftMouseDragged,
+	kNodeRightMouseDragged,
+	kNodeOtherMouseDragged,
+	kNodeLeftDoubleClick,
+	kNodeRightDoubleClick,
+	kNodeOtherDoubleClick,
+	kNodeMouseMoved,
+	kNodeScrollWheel,
+	kNodeDragDrop,
+	kNodeDragEnter,
+	kNodeKeyMessage,
+	kNodeKeyDown,
+	kNodeKeyUp,
+	kNodeTextInput,
 };
 #define ID_Node_UpdateMatrix ((0x35cdb821&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.UpdateMatrix
 #define ID_Node_PushProperty ((0xaca786d4&MSG_DATA_MASK)|ROUTING_TUNNELING_BUBBLING) // Node.PushProperty
@@ -222,6 +243,27 @@ enum NodeMessages {
 #define ID_Node_KillFocus ((0x2bdb09fb&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.KillFocus
 #define ID_Node_SetFocus ((0x5f1c2071&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.SetFocus
 #define ID_Node_GetSize ((0x2282f1da&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.GetSize
+#define ID_Node_MouseMessage ((0x8633bad7&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.MouseMessage
+#define ID_Node_LeftMouseDown ((0x34ecec23&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.LeftMouseDown
+#define ID_Node_RightMouseDown ((0x379ed064&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.RightMouseDown
+#define ID_Node_OtherMouseDown ((0x5b61ba9c&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.OtherMouseDown
+#define ID_Node_LeftMouseUp ((0x87d20362&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.LeftMouseUp
+#define ID_Node_RightMouseUp ((0xf135e605&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.RightMouseUp
+#define ID_Node_OtherMouseUp ((0x51ca895d&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.OtherMouseUp
+#define ID_Node_LeftMouseDragged ((0x845ee787&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.LeftMouseDragged
+#define ID_Node_RightMouseDragged ((0xc2e805f6&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.RightMouseDragged
+#define ID_Node_OtherMouseDragged ((0xbab6f63e&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.OtherMouseDragged
+#define ID_Node_LeftDoubleClick ((0x4de79e13&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.LeftDoubleClick
+#define ID_Node_RightDoubleClick ((0x9104b1b4&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.RightDoubleClick
+#define ID_Node_OtherDoubleClick ((0x4a967bfc&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.OtherDoubleClick
+#define ID_Node_MouseMoved ((0x9922448b&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.MouseMoved
+#define ID_Node_ScrollWheel ((0x54e1d1f7&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.ScrollWheel
+#define ID_Node_DragDrop ((0xc40ddaee&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.DragDrop
+#define ID_Node_DragEnter ((0xadc27c43&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.DragEnter
+#define ID_Node_KeyMessage ((0x8c3d8ec7&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.KeyMessage
+#define ID_Node_KeyDown ((0xfc8dc15c&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.KeyDown
+#define ID_Node_KeyUp ((0x9282bc1d&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.KeyUp
+#define ID_Node_TextInput ((0xaf29a9ae&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.TextInput
 #define kNodeNumProperties 67
 enum NodeProperties {
 	kNodeSize,
@@ -909,6 +951,174 @@ enum StyleProperties {
 
 #define ID_Node_GetSizeMsgArgs 0x5dc43561
 
+#define ID_Node_MouseMessageMsgArgs 0x5e806e7c
+
+#define ID_Node_MouseMessageMsgArgs_x 0x57e4de2a // Node_MouseMessageMsgArgs.x
+#define ID_Node_MouseMessageMsgArgs_y 0x58e4dfbd // Node_MouseMessageMsgArgs.y
+#define ID_Node_MouseMessageMsgArgs_deltaX 0xaf2752f8 // Node_MouseMessageMsgArgs.deltaX
+#define ID_Node_MouseMessageMsgArgs_deltaY 0xb027548b // Node_MouseMessageMsgArgs.deltaY
+#define ID_Node_MouseMessageMsgArgs_button 0x9b1e3776 // Node_MouseMessageMsgArgs.button
+#define ID_Node_MouseMessageMsgArgs_clickCount 0xf6ccedf5 // Node_MouseMessageMsgArgs.clickCount
+#define ID_Node_LeftMouseDownMsgArgs 0x34927b0e
+
+#define ID_Node_LeftMouseDownMsgArgs_x 0xcd014ec8 // Node_LeftMouseDownMsgArgs.x
+#define ID_Node_LeftMouseDownMsgArgs_y 0xce01505b // Node_LeftMouseDownMsgArgs.y
+#define ID_Node_LeftMouseDownMsgArgs_deltaX 0xcc32f43a // Node_LeftMouseDownMsgArgs.deltaX
+#define ID_Node_LeftMouseDownMsgArgs_deltaY 0xcd32f5cd // Node_LeftMouseDownMsgArgs.deltaY
+#define ID_Node_LeftMouseDownMsgArgs_button 0xf1a8e514 // Node_LeftMouseDownMsgArgs.button
+#define ID_Node_LeftMouseDownMsgArgs_clickCount 0x94cc98d7 // Node_LeftMouseDownMsgArgs.clickCount
+#define ID_Node_RightMouseDownMsgArgs 0xb4c614c1
+
+#define ID_Node_RightMouseDownMsgArgs_x 0x3716889f // Node_RightMouseDownMsgArgs.x
+#define ID_Node_RightMouseDownMsgArgs_y 0x3616870c // Node_RightMouseDownMsgArgs.y
+#define ID_Node_RightMouseDownMsgArgs_deltaX 0xa13315d3 // Node_RightMouseDownMsgArgs.deltaX
+#define ID_Node_RightMouseDownMsgArgs_deltaY 0xa0331440 // Node_RightMouseDownMsgArgs.deltaY
+#define ID_Node_RightMouseDownMsgArgs_button 0xa83c1049 // Node_RightMouseDownMsgArgs.button
+#define ID_Node_RightMouseDownMsgArgs_clickCount 0x9fa96c3e // Node_RightMouseDownMsgArgs.clickCount
+#define ID_Node_OtherMouseDownMsgArgs 0x90945b79
+
+#define ID_Node_OtherMouseDownMsgArgs_x 0x390e48f7 // Node_OtherMouseDownMsgArgs.x
+#define ID_Node_OtherMouseDownMsgArgs_y 0x380e4764 // Node_OtherMouseDownMsgArgs.y
+#define ID_Node_OtherMouseDownMsgArgs_deltaX 0xfe33daeb // Node_OtherMouseDownMsgArgs.deltaX
+#define ID_Node_OtherMouseDownMsgArgs_deltaY 0xfd33d958 // Node_OtherMouseDownMsgArgs.deltaY
+#define ID_Node_OtherMouseDownMsgArgs_button 0xa9eb5441 // Node_OtherMouseDownMsgArgs.button
+#define ID_Node_OtherMouseDownMsgArgs_clickCount 0xa20ea026 // Node_OtherMouseDownMsgArgs.clickCount
+#define ID_Node_LeftMouseUpMsgArgs 0x618e43e1
+
+#define ID_Node_LeftMouseUpMsgArgs_x 0xd9481dbf // Node_LeftMouseUpMsgArgs.x
+#define ID_Node_LeftMouseUpMsgArgs_y 0xd8481c2c // Node_LeftMouseUpMsgArgs.y
+#define ID_Node_LeftMouseUpMsgArgs_deltaX 0x06066b33 // Node_LeftMouseUpMsgArgs.deltaX
+#define ID_Node_LeftMouseUpMsgArgs_deltaY 0x050669a0 // Node_LeftMouseUpMsgArgs.deltaY
+#define ID_Node_LeftMouseUpMsgArgs_button 0xf94e11e9 // Node_LeftMouseUpMsgArgs.button
+#define ID_Node_LeftMouseUpMsgArgs_clickCount 0xd0a5581e // Node_LeftMouseUpMsgArgs.clickCount
+#define ID_Node_RightMouseUpMsgArgs 0x4311b98a
+
+#define ID_Node_RightMouseUpMsgArgs_x 0xe8058b3c // Node_RightMouseUpMsgArgs.x
+#define ID_Node_RightMouseUpMsgArgs_y 0xe9058ccf // Node_RightMouseUpMsgArgs.y
+#define ID_Node_RightMouseUpMsgArgs_deltaX 0x43f1f7e6 // Node_RightMouseUpMsgArgs.deltaX
+#define ID_Node_RightMouseUpMsgArgs_deltaY 0x44f1f979 // Node_RightMouseUpMsgArgs.deltaY
+#define ID_Node_RightMouseUpMsgArgs_button 0x7a491de8 // Node_RightMouseUpMsgArgs.button
+#define ID_Node_RightMouseUpMsgArgs_clickCount 0x07b0661b // Node_RightMouseUpMsgArgs.clickCount
+#define ID_Node_OtherMouseUpMsgArgs 0xce14a5c2
+
+#define ID_Node_OtherMouseUpMsgArgs_x 0x296342b4 // Node_OtherMouseUpMsgArgs.x
+#define ID_Node_OtherMouseUpMsgArgs_y 0x2a634447 // Node_OtherMouseUpMsgArgs.y
+#define ID_Node_OtherMouseUpMsgArgs_deltaX 0x0709b1be // Node_OtherMouseUpMsgArgs.deltaX
+#define ID_Node_OtherMouseUpMsgArgs_deltaY 0x0809b351 // Node_OtherMouseUpMsgArgs.deltaY
+#define ID_Node_OtherMouseUpMsgArgs_button 0xa79022e0 // Node_OtherMouseUpMsgArgs.button
+#define ID_Node_OtherMouseUpMsgArgs_clickCount 0xffee0943 // Node_OtherMouseUpMsgArgs.clickCount
+#define ID_Node_LeftMouseDraggedMsgArgs 0x0d51857c
+
+#define ID_Node_LeftMouseDraggedMsgArgs_x 0xde9d4d2a // Node_LeftMouseDraggedMsgArgs.x
+#define ID_Node_LeftMouseDraggedMsgArgs_y 0xdf9d4ebd // Node_LeftMouseDraggedMsgArgs.y
+#define ID_Node_LeftMouseDraggedMsgArgs_deltaX 0xdd6cdff8 // Node_LeftMouseDraggedMsgArgs.deltaX
+#define ID_Node_LeftMouseDraggedMsgArgs_deltaY 0xde6ce18b // Node_LeftMouseDraggedMsgArgs.deltaY
+#define ID_Node_LeftMouseDraggedMsgArgs_button 0xc963c476 // Node_LeftMouseDraggedMsgArgs.button
+#define ID_Node_LeftMouseDraggedMsgArgs_clickCount 0x631e4af5 // Node_LeftMouseDraggedMsgArgs.clickCount
+#define ID_Node_RightMouseDraggedMsgArgs 0xdac441f5
+
+#define ID_Node_RightMouseDraggedMsgArgs_x 0x3f97543b // Node_RightMouseDraggedMsgArgs.x
+#define ID_Node_RightMouseDraggedMsgArgs_y 0x3e9752a8 // Node_RightMouseDraggedMsgArgs.y
+#define ID_Node_RightMouseDraggedMsgArgs_deltaX 0x77815637 // Node_RightMouseDraggedMsgArgs.deltaX
+#define ID_Node_RightMouseDraggedMsgArgs_deltaY 0x768154a4 // Node_RightMouseDraggedMsgArgs.deltaY
+#define ID_Node_RightMouseDraggedMsgArgs_button 0xc133aa35 // Node_RightMouseDraggedMsgArgs.button
+#define ID_Node_RightMouseDraggedMsgArgs_clickCount 0xdff0659a // Node_RightMouseDraggedMsgArgs.clickCount
+#define ID_Node_OtherMouseDraggedMsgArgs 0x5700855d
+
+#define ID_Node_OtherMouseDraggedMsgArgs_x 0x73b62de3 // Node_OtherMouseDraggedMsgArgs.x
+#define ID_Node_OtherMouseDraggedMsgArgs_y 0x72b62c50 // Node_OtherMouseDraggedMsgArgs.y
+#define ID_Node_OtherMouseDraggedMsgArgs_deltaX 0x712dde9f // Node_OtherMouseDraggedMsgArgs.deltaX
+#define ID_Node_OtherMouseDraggedMsgArgs_deltaY 0x702ddd0c // Node_OtherMouseDraggedMsgArgs.deltaY
+#define ID_Node_OtherMouseDraggedMsgArgs_button 0x277f939d // Node_OtherMouseDraggedMsgArgs.button
+#define ID_Node_OtherMouseDraggedMsgArgs_clickCount 0x7f7363f2 // Node_OtherMouseDraggedMsgArgs.clickCount
+#define ID_Node_LeftDoubleClickMsgArgs 0xbc0e2b2e
+
+#define ID_Node_LeftDoubleClickMsgArgs_x 0xb04e5fe8 // Node_LeftDoubleClickMsgArgs.x
+#define ID_Node_LeftDoubleClickMsgArgs_y 0xb14e617b // Node_LeftDoubleClickMsgArgs.y
+#define ID_Node_LeftDoubleClickMsgArgs_deltaX 0x4c59bd9a // Node_LeftDoubleClickMsgArgs.deltaX
+#define ID_Node_LeftDoubleClickMsgArgs_deltaY 0x4d59bf2d // Node_LeftDoubleClickMsgArgs.deltaY
+#define ID_Node_LeftDoubleClickMsgArgs_button 0x1afe90b4 // Node_LeftDoubleClickMsgArgs.button
+#define ID_Node_LeftDoubleClickMsgArgs_clickCount 0x9610b437 // Node_LeftDoubleClickMsgArgs.clickCount
+#define ID_Node_RightDoubleClickMsgArgs 0x8ee4d2c1
+
+#define ID_Node_RightDoubleClickMsgArgs_x 0xd03e769f // Node_RightDoubleClickMsgArgs.x
+#define ID_Node_RightDoubleClickMsgArgs_y 0xcf3e750c // Node_RightDoubleClickMsgArgs.y
+#define ID_Node_RightDoubleClickMsgArgs_deltaX 0x9f9f5fd3 // Node_RightDoubleClickMsgArgs.deltaX
+#define ID_Node_RightDoubleClickMsgArgs_deltaY 0x9e9f5e40 // Node_RightDoubleClickMsgArgs.deltaY
+#define ID_Node_RightDoubleClickMsgArgs_button 0xa6a85a49 // Node_RightDoubleClickMsgArgs.button
+#define ID_Node_RightDoubleClickMsgArgs_clickCount 0xe310563e // Node_RightDoubleClickMsgArgs.clickCount
+#define ID_Node_OtherDoubleClickMsgArgs 0xd56582a9
+
+#define ID_Node_OtherDoubleClickMsgArgs_x 0x6de59c47 // Node_OtherDoubleClickMsgArgs.x
+#define ID_Node_OtherDoubleClickMsgArgs_y 0x6ce59ab4 // Node_OtherDoubleClickMsgArgs.y
+#define ID_Node_OtherDoubleClickMsgArgs_deltaX 0x3fbde63b // Node_OtherDoubleClickMsgArgs.deltaX
+#define ID_Node_OtherDoubleClickMsgArgs_deltaY 0x3ebde4a8 // Node_OtherDoubleClickMsgArgs.deltaY
+#define ID_Node_OtherDoubleClickMsgArgs_button 0xb2e08631 // Node_OtherDoubleClickMsgArgs.button
+#define ID_Node_OtherDoubleClickMsgArgs_clickCount 0x67b31bf6 // Node_OtherDoubleClickMsgArgs.clickCount
+#define ID_Node_MouseMovedMsgArgs 0xe90a3508
+
+#define ID_Node_MouseMovedMsgArgs_x 0x58cfa99e // Node_MouseMovedMsgArgs.x
+#define ID_Node_MouseMovedMsgArgs_y 0x59cfab31 // Node_MouseMovedMsgArgs.y
+#define ID_Node_MouseMovedMsgArgs_deltaX 0x57bb9294 // Node_MouseMovedMsgArgs.deltaX
+#define ID_Node_MouseMovedMsgArgs_deltaY 0x58bb9427 // Node_MouseMovedMsgArgs.deltaY
+#define ID_Node_MouseMovedMsgArgs_button 0x884fe43a // Node_MouseMovedMsgArgs.button
+#define ID_Node_MouseMovedMsgArgs_clickCount 0x4c3b9519 // Node_MouseMovedMsgArgs.clickCount
+#define ID_Node_ScrollWheelMsgArgs 0x8ebd224e
+
+#define ID_Node_ScrollWheelMsgArgs_x 0x6ab53188 // Node_ScrollWheelMsgArgs.x
+#define ID_Node_ScrollWheelMsgArgs_y 0x6bb5331b // Node_ScrollWheelMsgArgs.y
+#define ID_Node_ScrollWheelMsgArgs_deltaX 0x844a34fa // Node_ScrollWheelMsgArgs.deltaX
+#define ID_Node_ScrollWheelMsgArgs_deltaY 0x854a368d // Node_ScrollWheelMsgArgs.deltaY
+#define ID_Node_ScrollWheelMsgArgs_button 0xeba616d4 // Node_ScrollWheelMsgArgs.button
+#define ID_Node_ScrollWheelMsgArgs_clickCount 0x0b8cb597 // Node_ScrollWheelMsgArgs.clickCount
+#define ID_Node_DragDropMsgArgs 0xd8df62fb
+
+#define ID_Node_DragDropMsgArgs_x 0xb462e595 // Node_DragDropMsgArgs.x
+#define ID_Node_DragDropMsgArgs_y 0xb362e402 // Node_DragDropMsgArgs.y
+#define ID_Node_DragDropMsgArgs_deltaX 0x03df691d // Node_DragDropMsgArgs.deltaX
+#define ID_Node_DragDropMsgArgs_deltaY 0x02df678a // Node_DragDropMsgArgs.deltaY
+#define ID_Node_DragDropMsgArgs_button 0xf9ae215f // Node_DragDropMsgArgs.button
+#define ID_Node_DragDropMsgArgs_clickCount 0xf35caa08 // Node_DragDropMsgArgs.clickCount
+#define ID_Node_DragEnterMsgArgs 0xd0d02fb6
+
+#define ID_Node_DragEnterMsgArgs_x 0xb341cf90 // Node_DragEnterMsgArgs.x
+#define ID_Node_DragEnterMsgArgs_y 0xb441d123 // Node_DragEnterMsgArgs.y
+#define ID_Node_DragEnterMsgArgs_deltaX 0xa22debc2 // Node_DragEnterMsgArgs.deltaX
+#define ID_Node_DragEnterMsgArgs_deltaY 0xa32ded55 // Node_DragEnterMsgArgs.deltaY
+#define ID_Node_DragEnterMsgArgs_button 0x97d6adfc // Node_DragEnterMsgArgs.button
+#define ID_Node_DragEnterMsgArgs_clickCount 0xf32b71cf // Node_DragEnterMsgArgs.clickCount
+#define ID_Node_KeyMessageMsgArgs 0x03efcb5c
+
+#define ID_Node_KeyMessageMsgArgs_keyCode 0xfcc075ec // Node_KeyMessageMsgArgs.keyCode
+#define ID_Node_KeyMessageMsgArgs_character 0x80d7a721 // Node_KeyMessageMsgArgs.character
+#define ID_Node_KeyMessageMsgArgs_modifiers 0xf2f7cd98 // Node_KeyMessageMsgArgs.modifiers
+#define ID_Node_KeyMessageMsgArgs_text 0xb35f74a5 // Node_KeyMessageMsgArgs.text
+#define ID_Node_KeyMessageMsgArgs_modifiersString 0x2b38c841 // Node_KeyMessageMsgArgs.modifiersString
+#define ID_Node_KeyMessageMsgArgs_hotKey 0xb30c2108 // Node_KeyMessageMsgArgs.hotKey
+#define ID_Node_KeyDownMsgArgs 0x6257c4db
+
+#define ID_Node_KeyDownMsgArgs_keyCode 0xce1239eb // Node_KeyDownMsgArgs.keyCode
+#define ID_Node_KeyDownMsgArgs_character 0xe5ee2e96 // Node_KeyDownMsgArgs.character
+#define ID_Node_KeyDownMsgArgs_modifiers 0x6abc4d5f // Node_KeyDownMsgArgs.modifiers
+#define ID_Node_KeyDownMsgArgs_text 0x5e29b458 // Node_KeyDownMsgArgs.text
+#define ID_Node_KeyDownMsgArgs_modifiersString 0x222137aa // Node_KeyDownMsgArgs.modifiersString
+#define ID_Node_KeyDownMsgArgs_hotKey 0x7dd49b65 // Node_KeyDownMsgArgs.hotKey
+#define ID_Node_KeyUpMsgArgs 0xde83ac28
+
+#define ID_Node_KeyUpMsgArgs_keyCode 0x77382d90 // Node_KeyUpMsgArgs.keyCode
+#define ID_Node_KeyUpMsgArgs_character 0x074c95a5 // Node_KeyUpMsgArgs.character
+#define ID_Node_KeyUpMsgArgs_modifiers 0xcba163b4 // Node_KeyUpMsgArgs.modifiers
+#define ID_Node_KeyUpMsgArgs_text 0x4c7ae879 // Node_KeyUpMsgArgs.text
+#define ID_Node_KeyUpMsgArgs_modifiersString 0x63cc35b5 // Node_KeyUpMsgArgs.modifiersString
+#define ID_Node_KeyUpMsgArgs_hotKey 0x83cc2fac // Node_KeyUpMsgArgs.hotKey
+#define ID_Node_TextInputMsgArgs 0x2fd35721
+
+#define ID_Node_TextInputMsgArgs_keyCode 0x59bfa1c1 // Node_TextInputMsgArgs.keyCode
+#define ID_Node_TextInputMsgArgs_character 0xff3ffac8 // Node_TextInputMsgArgs.character
+#define ID_Node_TextInputMsgArgs_modifiers 0xe8801621 // Node_TextInputMsgArgs.modifiers
+#define ID_Node_TextInputMsgArgs_text 0x580f7d06 // Node_TextInputMsgArgs.text
+#define ID_Node_TextInputMsgArgs_modifiersString 0xbb53917c // Node_TextInputMsgArgs.modifiersString
+#define ID_Node_TextInputMsgArgs_hotKey 0x1f24c02b // Node_TextInputMsgArgs.hotKey
 #define ID_TextBlockConcept_MakeTextMsgArgs 0x9ac28551
 
 #define ID_TextBlockConcept_MakeTextMsgArgs_text 0xd31635b6 // TextBlockConcept_MakeTextMsgArgs.text

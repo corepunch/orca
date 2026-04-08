@@ -32,6 +32,27 @@ typedef struct Node_ViewDidLoadMsgArgs Node_ViewDidLoadMsg_t,* Node_ViewDidLoadM
 typedef struct Node_KillFocusMsgArgs Node_KillFocusMsg_t,* Node_KillFocusMsgPtr;
 typedef struct Node_SetFocusMsgArgs Node_SetFocusMsg_t,* Node_SetFocusMsgPtr;
 typedef struct Node_GetSizeMsgArgs Node_GetSizeMsg_t,* Node_GetSizeMsgPtr;
+typedef struct Node_MouseMessageMsgArgs Node_MouseMessageMsg_t,* Node_MouseMessageMsgPtr;
+typedef struct Node_MouseMessageMsgArgs Node_LeftMouseDownMsg_t,* Node_LeftMouseDownMsgPtr;
+typedef struct Node_MouseMessageMsgArgs Node_RightMouseDownMsg_t,* Node_RightMouseDownMsgPtr;
+typedef struct Node_MouseMessageMsgArgs Node_OtherMouseDownMsg_t,* Node_OtherMouseDownMsgPtr;
+typedef struct Node_MouseMessageMsgArgs Node_LeftMouseUpMsg_t,* Node_LeftMouseUpMsgPtr;
+typedef struct Node_MouseMessageMsgArgs Node_RightMouseUpMsg_t,* Node_RightMouseUpMsgPtr;
+typedef struct Node_MouseMessageMsgArgs Node_OtherMouseUpMsg_t,* Node_OtherMouseUpMsgPtr;
+typedef struct Node_MouseMessageMsgArgs Node_LeftMouseDraggedMsg_t,* Node_LeftMouseDraggedMsgPtr;
+typedef struct Node_MouseMessageMsgArgs Node_RightMouseDraggedMsg_t,* Node_RightMouseDraggedMsgPtr;
+typedef struct Node_MouseMessageMsgArgs Node_OtherMouseDraggedMsg_t,* Node_OtherMouseDraggedMsgPtr;
+typedef struct Node_MouseMessageMsgArgs Node_LeftDoubleClickMsg_t,* Node_LeftDoubleClickMsgPtr;
+typedef struct Node_MouseMessageMsgArgs Node_RightDoubleClickMsg_t,* Node_RightDoubleClickMsgPtr;
+typedef struct Node_MouseMessageMsgArgs Node_OtherDoubleClickMsg_t,* Node_OtherDoubleClickMsgPtr;
+typedef struct Node_MouseMessageMsgArgs Node_MouseMovedMsg_t,* Node_MouseMovedMsgPtr;
+typedef struct Node_MouseMessageMsgArgs Node_ScrollWheelMsg_t,* Node_ScrollWheelMsgPtr;
+typedef struct Node_MouseMessageMsgArgs Node_DragDropMsg_t,* Node_DragDropMsgPtr;
+typedef struct Node_MouseMessageMsgArgs Node_DragEnterMsg_t,* Node_DragEnterMsgPtr;
+typedef struct Node_KeyMessageMsgArgs Node_KeyMessageMsg_t,* Node_KeyMessageMsgPtr;
+typedef struct Node_KeyMessageMsgArgs Node_KeyDownMsg_t,* Node_KeyDownMsgPtr;
+typedef struct Node_KeyMessageMsgArgs Node_KeyUpMsg_t,* Node_KeyUpMsgPtr;
+typedef struct Node_KeyMessageMsgArgs Node_TextInputMsg_t,* Node_TextInputMsgPtr;
 typedef struct TextBlockConcept_MakeTextMsgArgs TextBlockConcept_MakeTextMsg_t,* TextBlockConcept_MakeTextMsgPtr;
 typedef struct Node2D_DrawBrushMsgArgs Node2D_DrawBrushMsg_t,* Node2D_DrawBrushMsgPtr;
 typedef struct Node2D_MeasureMsgArgs Node2D_MeasureMsg_t,* Node2D_MeasureMsgPtr;
@@ -354,6 +375,19 @@ ORCA_API const char *StyleTypeToString(enum StyleType value);
 ORCA_API enum StyleType luaX_checkStyleType(lua_State *L, int idx);
 ORCA_API void luaX_pushStyleType(lua_State *L, enum StyleType value);
 
+/// @brief Identifies which mouse button was involved in a mouse button event.
+/** MouseButton enum */
+typedef enum MouseButton {
+	kMouseButtonNone, ///< No mouse button used for mouse move and scroll events
+	kMouseButtonLeft, ///< The left (primary) mouse button
+	kMouseButtonRight, ///< The right (secondary) mouse button
+	kMouseButtonMiddle, ///< The middle mouse button
+} eMouseButton_t;
+#define MouseButton_Count 4
+ORCA_API const char *MouseButtonToString(enum MouseButton value);
+ORCA_API enum MouseButton luaX_checkMouseButton(lua_State *L, int idx);
+ORCA_API void luaX_pushMouseButton(lua_State *L, enum MouseButton value);
+
 typedef struct CornerRadius CornerRadius_t, *lpCornerRadius_t;
 typedef struct CornerRadius const cCornerRadius_t, *lpcCornerRadius_t;
 typedef struct EdgeShorthand EdgeShorthand_t, *lpEdgeShorthand_t;
@@ -557,6 +591,28 @@ struct Node_GetSizeMsgArgs {
 };
 ORCA_API void luaX_pushNode_GetSizeMsgArgs(lua_State *L, struct Node_GetSizeMsgArgs const* data);
 ORCA_API struct Node_GetSizeMsgArgs* luaX_checkNode_GetSizeMsgArgs(lua_State *L, int idx);
+/** Node_MouseMessageMsgArgs struct */
+struct Node_MouseMessageMsgArgs {
+	float x; ///< Horizontal pointer position in local space
+	float y; ///< Vertical pointer position in local space
+	int32_t deltaX; ///< Scroll wheel rotation amount along the X axis; positive values scroll right/forward
+	int32_t deltaY; ///< Scroll wheel rotation amount along the Y axis; positive values scroll up/forward
+	enum MouseButton button; ///< The mouse button involved in this event
+	int32_t clickCount; ///< Number of consecutive clicks (1 for single click, 2 for double click)
+};
+ORCA_API void luaX_pushNode_MouseMessageMsgArgs(lua_State *L, struct Node_MouseMessageMsgArgs const* data);
+ORCA_API struct Node_MouseMessageMsgArgs* luaX_checkNode_MouseMessageMsgArgs(lua_State *L, int idx);
+/** Node_KeyMessageMsgArgs struct */
+struct Node_KeyMessageMsgArgs {
+	int32_t keyCode; ///< The key involved in this event
+	int32_t character; ///< The character produced by this key event
+	int32_t modifiers; ///< Active modifier keys during the event (bitmask of WI_MOD_* flags)
+	const char* text; ///< The text produced by this key event as a UTF-8 string (empty for non-printable keys)
+	const char* modifiersString; ///< Active modifier keys as a human-readable prefix string (e.g. "ctrl+shift+")
+	const char* hotKey; ///< Combined modifier+key string for hotkey matching (e.g. "ctrl+alt+w")
+};
+ORCA_API void luaX_pushNode_KeyMessageMsgArgs(lua_State *L, struct Node_KeyMessageMsgArgs const* data);
+ORCA_API struct Node_KeyMessageMsgArgs* luaX_checkNode_KeyMessageMsgArgs(lua_State *L, int idx);
 /** TextBlockConcept_MakeTextMsgArgs struct */
 struct TextBlockConcept_MakeTextMsgArgs {
 	struct ViewText* text; ///< Text view to render

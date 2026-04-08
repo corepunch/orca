@@ -241,7 +241,7 @@ HANDLER(TerminalView, Node2D, DrawBrush) {
   return TRUE;
 }
 
-HANDLER(TerminalView, Mouse, ScrollWheel) {
+HANDLER(TerminalView, Node, ScrollWheel) {
   int const h = (pTerminalView->_contentHeight) * CONSOLE_CHAR_HEIGHT;
   float const space = GetNode(hObject)->Size.Axis[1].Actual - h;
   pTerminalView->_scroll.y += pScrollWheel->deltaY / SCROLL_SENSIVITY;

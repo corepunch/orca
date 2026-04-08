@@ -52,7 +52,7 @@ HANDLER(Button, Node2D, DrawBrush) {
 #endif
 }
 
-HANDLER(Button, Mouse, LeftMouseUp)
+HANDLER(Button, Node, LeftMouseUp)
 {
   SV_PostMessage(hObject, "Click", 0, hObject);
   if (pButton->Type == kButtonTypeSubmit) {
@@ -67,7 +67,7 @@ HANDLER(Button, Object, Create)
   return FALSE;
 }
 
-HANDLER(Button, Keyboard, KeyDown)
+HANDLER(Button, Node, KeyDown)
 {
   if (pKeyDown->keyCode == WI_KEY_TAB) {
     _NextTabStop(hObject);
