@@ -11,4 +11,4 @@ class Footer extends Node2D
 				color = selected and ".text-foreground" or ".text-muted-foreground"
 				img ".align-middle-center#{color}" 
 					Image: "#{item.imgURL}?width=#{footer.iconSize}&type=mask"
-					onLeftMouseUp: -> routing.navigate item.route
+					LeftMouseUp: -> routing.navigate item.route
