@@ -4,29 +4,21 @@
 #define DRAG_SESSION "__DRAG_SESSION__"
 #define DRAG_THRESHOLD 4
 
+extern int
+luaX_getobjectcallback(lua_State* L, lpObject_t object, uint32_t id);
+
 bool_t
 CORE_HandleObjectMessage(lua_State *L, struct WI_Message* msg)
 {
   for (lpObject_t hobj = msg->target; hobj; hobj = OBJ_GetParent(hobj))
   {
-    lpcString_t szCallback = OBJ_FindCallbackForID(hobj, msg->message);
-    if (szCallback)
-    {
+    if (luaX_getobjectcallback(L, hobj, msg->message)) {
       luaX_import(L, "orca", "async");
-      luaX_pushObject(L, hobj);
-      assert(!lua_isnil(L, -1));
-      // lua_getfield(L, -1, "handleEvent");
-      // lua_insert(L, -2); // Move callback before obj
-      lua_getfield(L, -1, szCallback);
-      lua_insert(L, -2); // Move callback before obj
-      luaX_pushObject(L, hobj);
-      uint32_t numargs = 3;
-      if (msg->message == ID_Object_Timer && msg->lParam) {
-        lua_pushstring(L, msg->lParam);
-        numargs++;
-      }
-      if (lua_pcall(L, numargs, 0, 0) != LUA_OK) {
-        Con_Error("%s(): %s", szCallback, luaL_checkstring(L, -1));
+      lua_insert(L, -2);
+      luaX_pushObject(L, hobj); // self
+      luaX_pushObject(L, msg->target); // sender
+      if (lua_pcall(L, 3, 0, 0) != LUA_OK) {
+        Con_Error("Message handler 0x%08x: %s", msg->message, luaL_checkstring(L, -1));
         lua_pop(L, 1);
       }
       return TRUE;

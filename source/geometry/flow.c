@@ -125,6 +125,17 @@ read_property(lua_State *L,
         luaL_error(L, "Unsupported input type %d for property %s of type object", lua_type(L, idx), prop->Name);
         break;
       }
+    case kDataTypeEvent:
+      if (*(event_t *)valueptr) {
+        luaL_unref(L, LUA_REGISTRYINDEX, *(event_t *)valueptr);
+        *(event_t *)valueptr = 0;
+      }
+      if (lua_type(L, idx) == LUA_TFUNCTION) {
+        *(event_t *)valueptr = luaL_ref(L, LUA_REGISTRYINDEX);
+      } else {
+        luaL_error(L, "Unsupported input type %d for property %s of type event", lua_type(L, idx), prop->Name);
+      }
+      break;
     default:
       luaL_error(L, "Unsupported property type");
       break;

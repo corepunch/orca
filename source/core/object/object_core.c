@@ -99,6 +99,9 @@ OBJ_Release(lua_State* L, lpObject_t pobj)
   OBJ_RemoveFromParent(L, pobj);
 
   for (lpProperty_t p = pobj->properties; p; p = PROP_GetNext(p)) {
+    if (PROP_GetType(p) == kDataTypeEvent && *(event_t*)PROP_GetValue(p)) {
+      luaL_unref(L, LUA_REGISTRYINDEX, *(event_t*)PROP_GetValue(p));
+    }
     PROP_Clear(p);
   }
   

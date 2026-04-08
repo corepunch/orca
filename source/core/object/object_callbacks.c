@@ -48,3 +48,21 @@ OBJ_FindCallbackForID(lpObject_t object, uint32_t id)
   return NULL;
 }
 
+ORCA_API int
+luaX_getobjectcallback(lua_State* L, lpObject_t object, uint32_t id)
+{
+  FOR_EACH_LIST(struct script_callback, cb, _GetCallbacks(object)) {
+    if ((cb->value & MSG_DATA_MASK) == (id & MSG_DATA_MASK)) {
+      luaX_pushObject(L, object);
+      lua_getfield(L, -1, cb->name);
+      lua_remove(L, -2);
+      return LUA_TFUNCTION;
+    }
+  }
+  lpProperty_t event = PROP_FindByLongID(OBJ_GetProperties(object), id);
+  if (event && PROP_GetType(event) == kDataTypeEvent) {
+    lua_geti(L, LUA_REGISTRYINDEX, *(event_t*)PROP_GetValue(event));
+    return LUA_TFUNCTION;
+  }
+  return LUA_TNIL;
+}
