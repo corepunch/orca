@@ -26,11 +26,11 @@ void OBJ_PostMessage(lua_State* L, lpObject_t self, lpcString_t message)
 {
   const int nargs = MAX(lua_gettop(L) - 2, 0);
   fixedString_t argtype={0};
-  // Support qualified message names like "Object.Create" -> "Object_CreateMsgArgs"
+  // Support qualified message names like "Object.Create" -> "Object_CreateEventArgs"
   fixedString_t qualified={0};
   strncpy(qualified, message, sizeof(qualified) - 1);
   for (char *p = qualified; *p; p++) if (*p == '.') *p = '_';
-  snprintf(argtype, sizeof(argtype), "%sMsgArgs", qualified);
+  snprintf(argtype, sizeof(argtype), "%sEventArgs", qualified);
   
   if (luaL_testudata(L, 3, argtype)) {
     SV_PostMessage(self, message, 0, write_event_data(L, lua_rawlen(L, 3), lua_touserdata(L, 3)));
@@ -50,11 +50,11 @@ void OBJ_MsgSend(lua_State* L, lpObject_t self, lpcString_t message)
 {
   const int nargs = MAX(lua_gettop(L) - 2, 0);
   fixedString_t argtype={0};
-  // Support qualified message names like "Object.Create" -> "Object_CreateMsgArgs"
+  // Support qualified message names like "Object.Create" -> "Object_CreateEventArgs"
   fixedString_t qualified={0};
   strncpy(qualified, message, sizeof(qualified) - 1);
   for (char *p = qualified; *p; p++) if (*p == '.') *p = '_';
-  snprintf(argtype, sizeof(argtype), "%sMsgArgs", qualified);
+  snprintf(argtype, sizeof(argtype), "%sEventArgs", qualified);
   
   if (luaL_testudata(L, 3, argtype)) {
     OBJ_SendMessage(self, message, 0, lua_touserdata(L, 3));

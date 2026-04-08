@@ -150,29 +150,29 @@ int luaopen_orca_##NAME(lua_State *L) { \
 	return 1; \
 }
 
-#define Window_ResizedMsgArgs Window_PaintMsgArgs
+#define Window_ResizedEventArgs Window_PaintEventArgs
 
-static luaL_Reg _Window_PaintMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Window_PaintMsgArgs[] = {
-	DECL(0xdc5503a7, Window_PaintMsgArgs, WindowWidth, WindowWidth, kDataTypeInt), // Window_PaintMsgArgs.WindowWidth
-	DECL(0xbd75892a, Window_PaintMsgArgs, WindowHeight, WindowHeight, kDataTypeInt), // Window_PaintMsgArgs.WindowHeight
+static luaL_Reg _Window_PaintEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Window_PaintEventArgs[] = {
+	DECL(0xdc5503a7, Window_PaintEventArgs, WindowWidth, WindowWidth, kDataTypeInt), // Window_PaintEventArgs.WindowWidth
+	DECL(0xbd75892a, Window_PaintEventArgs, WindowHeight, WindowHeight, kDataTypeInt), // Window_PaintEventArgs.WindowHeight
 };
-static luaL_Reg _Window_ResizedMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Window_ResizedMsgArgs[] = {
-	DECL(0xdc5503a7, Window_ResizedMsgArgs, WindowWidth, WindowWidth, kDataTypeInt), // Window_ResizedMsgArgs.WindowWidth
-	DECL(0xbd75892a, Window_ResizedMsgArgs, WindowHeight, WindowHeight, kDataTypeInt), // Window_ResizedMsgArgs.WindowHeight
+static luaL_Reg _Window_ResizedEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Window_ResizedEventArgs[] = {
+	DECL(0xdc5503a7, Window_ResizedEventArgs, WindowWidth, WindowWidth, kDataTypeInt), // Window_ResizedEventArgs.WindowWidth
+	DECL(0xbd75892a, Window_ResizedEventArgs, WindowHeight, WindowHeight, kDataTypeInt), // Window_ResizedEventArgs.WindowHeight
 };
-static luaL_Reg _Window_ClosedMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Window_ClosedMsgArgs[] = {
+static luaL_Reg _Window_ClosedEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Window_ClosedEventArgs[] = {
 };
-static luaL_Reg _Window_ChangedScreenMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Window_ChangedScreenMsgArgs[] = {
+static luaL_Reg _Window_ChangedScreenEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Window_ChangedScreenEventArgs[] = {
 };
 
-STRUCT(Window_PaintMsgArgs, Window_PaintMsgArgs);
-STRUCT(Window_ResizedMsgArgs, Window_ResizedMsgArgs);
-STRUCT(Window_ClosedMsgArgs, Window_ClosedMsgArgs);
-STRUCT(Window_ChangedScreenMsgArgs, Window_ChangedScreenMsgArgs);
+STRUCT(Window_PaintEventArgs, Window_PaintEventArgs);
+STRUCT(Window_ResizedEventArgs, Window_ResizedEventArgs);
+STRUCT(Window_ClosedEventArgs, Window_ClosedEventArgs);
+STRUCT(Window_ChangedScreenEventArgs, Window_ChangedScreenEventArgs);
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -183,13 +183,9 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.ClassID = ID_##NAME, \
 	.ClassSize = sizeof(struct NAME), \
 	.Properties = NAME##Properties, \
-	.MessageTypes = NAME##MessageTypes, \
 	.ObjProc = NAME##Proc, \
 	.Defaults = &NAME##Defaults, \
 	.NumProperties = k##NAME##NumProperties, \
-	.NumMessageTypes = k##NAME##NumMessageTypes, \
-};
-static struct MessageType TextureMessageTypes[kTextureNumMessageTypes] = {	
 };
 static struct PropertyType const TextureProperties[kTextureNumProperties] = {
 	DECL(0x47bdcfab, Texture, MinificationFilter, MinificationFilter, kDataTypeEnum, .EnumValues = _TextureFilter), // Texture.MinificationFilter
@@ -217,8 +213,6 @@ struct Texture* luaX_checkTexture(lua_State *L, int idx) {
 }
 REGISTER_CLASS(Texture, 0);
 HANDLER(Image, Object, Start);
-static struct MessageType ImageMessageTypes[kImageNumMessageTypes] = {	
-};
 static struct PropertyType const ImageProperties[kImageNumProperties] = {
 	DECL(0x61e2a3f8, Image, Source, Source, kDataTypeString), // Image.Source
 	DECL(0xa3c8af46, Image, PremultiplyAlpha, PremultiplyAlpha, kDataTypeBool), // Image.PremultiplyAlpha
@@ -262,8 +256,6 @@ struct Image* luaX_checkImage(lua_State *L, int idx) {
 #define ID_Texture 0x994c5594
 REGISTER_CLASS(Image, ID_Texture, 0);
 HANDLER(RenderTargetTexture, Object, Start);
-static struct MessageType RenderTargetTextureMessageTypes[kRenderTargetTextureNumMessageTypes] = {	
-};
 static struct PropertyType const RenderTargetTextureProperties[kRenderTargetTextureNumProperties] = {
 	DECL(0x3b42dfbf, RenderTargetTexture, Width, Width, kDataTypeInt), // RenderTargetTexture.Width
 	DECL(0x1bd13562, RenderTargetTexture, Height, Height, kDataTypeInt), // RenderTargetTexture.Height
@@ -290,8 +282,6 @@ struct RenderTargetTexture* luaX_checkRenderTargetTexture(lua_State *L, int idx)
 #define ID_Texture 0x994c5594
 REGISTER_CLASS(RenderTargetTexture, ID_Texture, 0);
 HANDLER(CubeMapTexture, Object, Start);
-static struct MessageType CubeMapTextureMessageTypes[kCubeMapTextureNumMessageTypes] = {	
-};
 static struct PropertyType const CubeMapTextureProperties[kCubeMapTextureNumProperties] = {
 	DECL(0x59f82b67, CubeMapTexture, BackImage, BackImage, kDataTypeString), // CubeMapTexture.BackImage
 	DECL(0xe5328805, CubeMapTexture, FrontImage, FrontImage, kDataTypeString), // CubeMapTexture.FrontImage
@@ -317,8 +307,6 @@ struct CubeMapTexture* luaX_checkCubeMapTexture(lua_State *L, int idx) {
 #define ID_Texture 0x994c5594
 REGISTER_CLASS(CubeMapTexture, ID_Texture, 0);
 HANDLER(IOSurfaceTexture, Object, Start);
-static struct MessageType IOSurfaceTextureMessageTypes[kIOSurfaceTextureNumMessageTypes] = {	
-};
 static struct PropertyType const IOSurfaceTextureProperties[kIOSurfaceTextureNumProperties] = {
 	DECL(0xb5fc4968, IOSurfaceTexture, IOSurface, IOSurface, kDataTypeInt), // IOSurfaceTexture.IOSurface
 };
@@ -338,8 +326,6 @@ struct IOSurfaceTexture* luaX_checkIOSurfaceTexture(lua_State *L, int idx) {
 }
 #define ID_Texture 0x994c5594
 REGISTER_CLASS(IOSurfaceTexture, ID_Texture, 0);
-static struct MessageType VertexShaderMessageTypes[kVertexShaderNumMessageTypes] = {	
-};
 static struct PropertyType const VertexShaderProperties[kVertexShaderNumProperties] = {
 	DECL(0x5dcdd537, VertexShader, Version, Version, kDataTypeInt), // VertexShader.Version
 	DECL(0x1ecae757, VertexShader, FloatPrecision, FloatPrecision, kDataTypeEnum, .EnumValues = _FloatPrecision), // VertexShader.FloatPrecision
@@ -359,8 +345,6 @@ struct VertexShader* luaX_checkVertexShader(lua_State *L, int idx) {
 	return GetVertexShader(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(VertexShader, 0);
-static struct MessageType FragmentShaderMessageTypes[kFragmentShaderNumMessageTypes] = {	
-};
 static struct PropertyType const FragmentShaderProperties[kFragmentShaderNumProperties] = {
 	DECL(0x5dcdd537, FragmentShader, Version, Version, kDataTypeInt), // FragmentShader.Version
 	DECL(0x1ecae757, FragmentShader, FloatPrecision, FloatPrecision, kDataTypeEnum, .EnumValues = _FloatPrecision), // FragmentShader.FloatPrecision
@@ -382,8 +366,6 @@ struct FragmentShader* luaX_checkFragmentShader(lua_State *L, int idx) {
 REGISTER_CLASS(FragmentShader, 0);
 HANDLER(Shader, Object, Start);
 HANDLER(Shader, Object, Destroy);
-static struct MessageType ShaderMessageTypes[kShaderNumMessageTypes] = {	
-};
 static struct PropertyType const ShaderProperties[kShaderNumProperties] = {
 	DECL(0x0038792b, Shader, BlendMode, BlendMode, kDataTypeEnum, .EnumValues = _BlendMode), // Shader.BlendMode
 	DECL(0xb7e582be, Shader, DepthTestFunction, DepthTestFunction, kDataTypeEnum, .EnumValues = _CompareFunc), // Shader.DepthTestFunction
@@ -407,8 +389,6 @@ struct Shader* luaX_checkShader(lua_State *L, int idx) {
 	return GetShader(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(Shader, 0);
-static struct MessageType MaterialMessageTypes[kMaterialNumMessageTypes] = {	
-};
 static struct PropertyType const MaterialProperties[kMaterialNumProperties] = {
 	DECL(0x7deb3888, Material, Shader, Shader, kDataTypeObject, .TypeString = "Shader"), // Material.Shader
 	DECL(0x63792322, Material, GlobalAmbient, GlobalAmbient, kDataTypeColor), // Material.GlobalAmbient
@@ -442,8 +422,6 @@ struct Material* luaX_checkMaterial(lua_State *L, int idx) {
 REGISTER_CLASS(Material, 0);
 HANDLER(Mesh, Object, Start);
 HANDLER(Mesh, Object, Destroy);
-static struct MessageType MeshMessageTypes[kMeshNumMessageTypes] = {	
-};
 static struct PropertyType const MeshProperties[kMeshNumProperties] = {
 	DECL(0x61e2a3f8, Mesh, Source, Source, kDataTypeString), // Mesh.Source
 	DECL(0xcbd54f80, Mesh, Material, Material, kDataTypeObject, .TypeString = "Material"), // Mesh.Material
@@ -467,8 +445,6 @@ struct Mesh* luaX_checkMesh(lua_State *L, int idx) {
 REGISTER_CLASS(Mesh, 0);
 HANDLER(FontFamily, Object, Start);
 HANDLER(FontFamily, Object, Destroy);
-static struct MessageType FontFamilyMessageTypes[kFontFamilyNumMessageTypes] = {	
-};
 static struct PropertyType const FontFamilyProperties[kFontFamilyNumProperties] = {
 	DECL(0xe750f2b7, FontFamily, Regular, Regular, kDataTypeString), // FontFamily.Regular
 	DECL(0x45768d96, FontFamily, Bold, Bold, kDataTypeString), // FontFamily.Bold
@@ -491,8 +467,6 @@ struct FontFamily* luaX_checkFontFamily(lua_State *L, int idx) {
 	return GetFontFamily(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(FontFamily, 0);
-static struct MessageType TrajectoryMessageTypes[kTrajectoryNumMessageTypes] = {	
-};
 static struct PropertyType const TrajectoryProperties[kTrajectoryNumProperties] = {
 };
 static struct Trajectory TrajectoryDefaults = {
@@ -509,8 +483,6 @@ struct Trajectory* luaX_checkTrajectory(lua_State *L, int idx) {
 	return GetTrajectory(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(Trajectory, 0);
-static struct MessageType TimelineMessageTypes[kTimelineNumMessageTypes] = {	
-};
 static struct PropertyType const TimelineProperties[kTimelineNumProperties] = {
 };
 static struct Timeline TimelineDefaults = {
@@ -564,10 +536,10 @@ ORCA_API int luaopen_orca_renderer(lua_State *L) {
 		{ "drawImage", f_renderer_DrawImage },
 		{ NULL, NULL } 
 	}));
-	lua_setfield(L, ((void)luaopen_orca_Window_PaintMsgArgs(L), -2), "Window_PaintMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_Window_ResizedMsgArgs(L), -2), "Window_ResizedMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_Window_ClosedMsgArgs(L), -2), "Window_ClosedMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_Window_ChangedScreenMsgArgs(L), -2), "Window_ChangedScreenMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Window_PaintEventArgs(L), -2), "Window_PaintEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_Window_ResizedEventArgs(L), -2), "Window_ResizedEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_Window_ClosedEventArgs(L), -2), "Window_ClosedEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_Window_ChangedScreenEventArgs(L), -2), "Window_ChangedScreenEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Window(L), -2), "Window");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Texture), -2), "Texture");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Image), -2), "Image");

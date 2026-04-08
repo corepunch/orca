@@ -9,9 +9,9 @@ static struct vec2
 _GetImageSize(lpObject_t hObject, ImageViewPtr imageView)
 {
   struct vec2 size = { 0 };
-  if (imageView->Image) {
+  if (imageView->Source) {
     struct image_info img;
-    if (SUCCEEDED(Image_GetInfo(imageView->Image, &img))) {
+    if (SUCCEEDED(Image_GetInfo(imageView->Source, &img))) {
       size.x = img.bmWidth * imageView->Viewbox.z;
       size.y = img.bmHeight * imageView->Viewbox.w;
     }
@@ -21,7 +21,7 @@ _GetImageSize(lpObject_t hObject, ImageViewPtr imageView)
 
 HANDLER(ImageView, Node2D, MeasureOverride)
 {
-  if (pImageView->Image) {
+  if (pImageView->Source) {
     vec2_t size = _GetImageSize(hObject, pImageView);
     lpcedges_t e = (struct edges const*)&pImageView->Insets;
 //    vec2_t calcsize = {
@@ -85,7 +85,7 @@ HANDLER(ImageView, Node2D, DrawBrush)
 		return FALSE;
 
 #if 0
-  if (!pImageView->Image) {
+  if (!pImageView->Source) {
     checkimg hasImages = {
       .value = FALSE,
       .prop = OBJ_GetProperties(hObject),
@@ -103,7 +103,7 @@ HANDLER(ImageView, Node2D, DrawBrush)
   }
 #endif
 
-  lpTexture_t img = pDrawBrush->foreground ? pImageView->Image : NULL;
+  lpTexture_t img = pDrawBrush->foreground ? pImageView->Source : NULL;
   Node2D_GetViewEntity(pNode2D, &entity, img, &pDrawBrush->brush);
   
   calculate_ninepatch(&(vec2_t){ width, height },
@@ -149,7 +149,7 @@ HANDLER(ImageView, Node2D, DrawBrush)
 
 HANDLER(ImageView, Node2D, ForegroundContent)
 {
-  return (intptr_t)pImageView->Image;
+  return (intptr_t)pImageView->Source;
 }
 
 HANDLER(ImageView, Node, LoadView)

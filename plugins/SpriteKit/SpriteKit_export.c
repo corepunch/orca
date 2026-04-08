@@ -117,12 +117,12 @@ static luaL_Reg _SpriteFrame_Methods[] = {
 
 STRUCT(SpriteFrame, SpriteFrame);
 
-static luaL_Reg _SKNode_RenderMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _SKNode_RenderMsgArgs[] = {
-	DECL(0xce9ab61f, SKNode_RenderMsgArgs, ViewDef, ViewDef, kDataTypeStruct, .TypeString = "ViewDef"), // SKNode_RenderMsgArgs.ViewDef
+static luaL_Reg _SKNode_RenderEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _SKNode_RenderEventArgs[] = {
+	DECL(0xce9ab61f, SKNode_RenderEventArgs, ViewDef, ViewDef, kDataTypeStruct, .TypeString = "ViewDef"), // SKNode_RenderEventArgs.ViewDef
 };
 
-STRUCT(SKNode_RenderMsgArgs, SKNode_RenderMsgArgs);
+STRUCT(SKNode_RenderEventArgs, SKNode_RenderEventArgs);
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -133,13 +133,9 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.ClassID = ID_##NAME, \
 	.ClassSize = sizeof(struct NAME), \
 	.Properties = NAME##Properties, \
-	.MessageTypes = NAME##MessageTypes, \
 	.ObjProc = NAME##Proc, \
 	.Defaults = &NAME##Defaults, \
 	.NumProperties = k##NAME##NumProperties, \
-	.NumMessageTypes = k##NAME##NumMessageTypes, \
-};
-static struct MessageType SpriteAnimationMessageTypes[kSpriteAnimationNumMessageTypes] = {	
 };
 static struct PropertyType const SpriteAnimationProperties[kSpriteAnimationNumProperties] = {
 	DECL(0x590ca79a, SpriteAnimation, Image, Image, kDataTypeObject, .TypeString = "Texture"), // SpriteAnimation.Image
@@ -162,13 +158,11 @@ struct SpriteAnimation* luaX_checkSpriteAnimation(lua_State *L, int idx) {
 }
 REGISTER_CLASS(SpriteAnimation, 0);
 HANDLER(SKNode, Node, UpdateMatrix);
-static struct MessageType SKNodeMessageTypes[kSKNodeNumMessageTypes] = {	
-	{ "SKNode.Render", ID_SKNode_Render, 0x350cf42d, kMessageRoutingDirect, sizeof(struct SKNode_RenderMsgArgs) },
-};
 static struct PropertyType const SKNodeProperties[kSKNodeNumProperties] = {
 	DECL(0xe27f342a, SKNode, Position, Position, kDataTypeStruct, .TypeString = "Vector2D"), // SKNode.Position
 	DECL(0xa6478e7c, SKNode, Size, Size, kDataTypeStruct, .TypeString = "Vector2D"), // SKNode.Size
 	DECL(0xb54055d4, SKNode, Anchor, Anchor, kDataTypeStruct, .TypeString = "Vector2D"), // SKNode.Anchor
+	DECL(0x350cf42d, SKNode, Render, Render, kDataTypeEvent, .TypeString = "SKNode_RenderEventArgs"), // SKNode.Render
 };
 static struct SKNode SKNodeDefaults = {
 };
@@ -187,8 +181,6 @@ struct SKNode* luaX_checkSKNode(lua_State *L, int idx) {
 #define ID_Node 0x3468032d
 REGISTER_CLASS(SKNode, ID_Node, 0);
 HANDLER(SKScene, Node, UpdateMatrix);
-static struct MessageType SKSceneMessageTypes[kSKSceneNumMessageTypes] = {	
-};
 static struct PropertyType const SKSceneProperties[kSKSceneNumProperties] = {
 };
 static struct SKScene SKSceneDefaults = {
@@ -208,8 +200,6 @@ struct SKScene* luaX_checkSKScene(lua_State *L, int idx) {
 #define ID_SKNode 0x819821fb
 REGISTER_CLASS(SKScene, ID_SKNode, 0);
 HANDLER(SKSpriteNode, SKNode, Render);
-static struct MessageType SKSpriteNodeMessageTypes[kSKSpriteNodeNumMessageTypes] = {	
-};
 static struct PropertyType const SKSpriteNodeProperties[kSKSpriteNodeNumProperties] = {
 	DECL(0x41e389fd, SKSpriteNode, Animation, Animation, kDataTypeObject, .TypeString = "SpriteAnimation"), // SKSpriteNode.Animation
 	DECL(0x8831f0dd, SKSpriteNode, Animation2, Animation2, kDataTypeObject, .TypeString = "SpriteAnimation"), // SKSpriteNode.Animation2
@@ -244,8 +234,6 @@ struct SKSpriteNode* luaX_checkSKSpriteNode(lua_State *L, int idx) {
 REGISTER_CLASS(SKSpriteNode, ID_SKNode, 0);
 HANDLER(SKLabelNode, SKNode, Render);
 HANDLER(SKLabelNode, Object, Create);
-static struct MessageType SKLabelNodeMessageTypes[kSKLabelNodeNumMessageTypes] = {	
-};
 static struct PropertyType const SKLabelNodeProperties[kSKLabelNodeNumProperties] = {
 	DECL(0xe5b43cf8, SKLabelNode, Color, Color, kDataTypeColor), // SKLabelNode.Color
 };
@@ -268,8 +256,6 @@ struct SKLabelNode* luaX_checkSKLabelNode(lua_State *L, int idx) {
 #define ID_TextBlockConcept 0x4903089d
 REGISTER_CLASS(SKLabelNode, ID_SKNode, ID_TextBlockConcept, 0);
 HANDLER(SKView, Node2D, ForegroundContent);
-static struct MessageType SKViewMessageTypes[kSKViewNumMessageTypes] = {	
-};
 static struct PropertyType const SKViewProperties[kSKViewNumProperties] = {
 	DECL(0x499d2ae6, SKView, ReferenceWidth, ReferenceWidth, kDataTypeFloat), // SKView.ReferenceWidth
 	DECL(0xf011cff9, SKView, ReferenceHeight, ReferenceHeight, kDataTypeFloat), // SKView.ReferenceHeight
@@ -298,7 +284,7 @@ ORCA_API int luaopen_orca_SpriteKit(lua_State *L) {
 		{ NULL, NULL } 
 	}));
 	lua_setfield(L, ((void)luaopen_orca_SpriteFrame(L), -2), "SpriteFrame");
-	lua_setfield(L, ((void)luaopen_orca_SKNode_RenderMsgArgs(L), -2), "SKNode_RenderMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_SKNode_RenderEventArgs(L), -2), "SKNode_RenderEventArgs");
 	lua_setfield(L, ((void)lua_pushclass(L, &_SpriteAnimation), -2), "SpriteAnimation");
 	lua_setfield(L, ((void)lua_pushclass(L, &_SKNode), -2), "SKNode");
 	lua_setfield(L, ((void)lua_pushclass(L, &_SKScene), -2), "SKScene");

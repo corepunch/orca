@@ -106,12 +106,12 @@ ORCA_API <?= $method->getReturnType() ?>
 
 <?php foreach ($model->getEvents() as $name => $event):?>
 <?php if ($event->getParentEvent()) continue; ?>
-/** <?= $event->msgns ?>_<?= $name ?>MsgArgs struct */
-struct <?= $event->msgns ?>_<?= $name ?>MsgArgs {
+/** <?= $event->msgns ?>_<?= $name ?>EventArgs struct */
+struct <?= $event->msgns ?>_<?= $name ?>EventArgs {
 <?php include_template("struct_contents", ['list' => $event->getAllFields()]) ?>
 };
-ORCA_API void luaX_push<?= $event->msgns ?>_<?= $name ?>MsgArgs(lua_State *L, struct <?= $event->msgns ?>_<?= $name ?>MsgArgs const* data);
-ORCA_API struct <?= $event->msgns ?>_<?= $name ?>MsgArgs* luaX_check<?= $event->msgns ?>_<?= $name ?>MsgArgs(lua_State *L, int idx);
+ORCA_API void luaX_push<?= $event->msgns ?>_<?= $name ?>EventArgs(lua_State *L, struct <?= $event->msgns ?>_<?= $name ?>EventArgs const* data);
+ORCA_API struct <?= $event->msgns ?>_<?= $name ?>EventArgs* luaX_check<?= $event->msgns ?>_<?= $name ?>EventArgs(lua_State *L, int idx);
 <?php endforeach ?>
 
 <?php foreach ($model->getComponents() as $name => $component): ?>
@@ -125,6 +125,7 @@ typedef struct <?= $name ?> const *<?= $name ?>CPtr, *lpc<?= $name ?>_t;
 struct <?= $name ?> {
 <?php include_template("struct_contents", ['list' => $component->getProperties(false)]) ?>
 <?php include_template("struct_contents", ['list' => $component->getFields()]) ?>
+<?php foreach ($component->getMessages() as $e) echo "\tevent_t {$e->name};\n"; ?>
 };
 ORCA_API void luaX_push<?= $name ?>(lua_State *L, struct <?= $name ?> const* <?= $name ?>);
 ORCA_API struct <?= $name ?>* luaX_check<?= $name ?>(lua_State *L, int idx);

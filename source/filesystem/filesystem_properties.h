@@ -7,20 +7,13 @@
 #define ID_Workspace 0x27419f56
 #define GetWorkspace(_P) ((struct Workspace*)((_P)?OBJ_GetComponent(_P,ID_Workspace):NULL))
 #define Workspace_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Workspace,sizeof(struct Workspace),_N)
-#define Workspace_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Workspace,_N)
-#define kWorkspaceNumMessageTypes 1
-enum WorkspaceMessages {
-	kWorkspaceReadCommands,
-};
 #define ID_Workspace_ReadCommands ((0xea5a6972&MSG_DATA_MASK)|ROUTING_DIRECT) // Workspace.ReadCommands
-#define kWorkspaceNumProperties 0
+#define kWorkspaceNumProperties 1
 // Library
 #define ID_Library 0xa8532270
 #define GetLibrary(_P) ((struct Library*)((_P)?OBJ_GetComponent(_P,ID_Library):NULL))
 #define Library_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Library,sizeof(struct Library),_N)
-#define Library_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Library,_N)
 #define ID_Library_IsExternal 0x9363c61d // Library.IsExternal
-#define kLibraryNumMessageTypes 0
 #define kLibraryNumProperties 1
 enum LibraryProperties {
 	kLibraryIsExternal,
@@ -29,7 +22,6 @@ enum LibraryProperties {
 #define ID_Project 0x7b5fea5e
 #define GetProject(_P) ((struct Project*)((_P)?OBJ_GetComponent(_P,ID_Project):NULL))
 #define Project_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Project,sizeof(struct Project),_N)
-#define Project_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Project,_N)
 #define ID_Project_HalfFloatTextureFormat 0xf064c913 // Project.HalfFloatTextureFormat
 #define ID_Project_HalfFloatTextureFormatLinear 0xec96a44e // Project.HalfFloatTextureFormatLinear
 #define ID_Project_HalfFloatColorAttachment 0xd0c866f1 // Project.HalfFloatColorAttachment
@@ -103,18 +95,11 @@ enum LibraryProperties {
 #define ID_Project_SpriteAnimationLibrary 0x664d619c // Project.SpriteAnimationLibrary
 #define ID_Project_ImageLibrary 0x07fed878 // Project.ImageLibrary
 #define ID_Project_FontLibrary 0x8f87dd48 // Project.FontLibrary
-#define kProjectNumMessageTypes 4
-enum ProjectMessages {
-	kProjectOpenFile,
-	kProjectFileExists,
-	kProjectHasChangedFiles,
-	kProjectLoadProject,
-};
 #define ID_Project_OpenFile ((0xa96ca9ee&MSG_DATA_MASK)|ROUTING_DIRECT) // Project.OpenFile
 #define ID_Project_FileExists ((0x1f1e5ece&MSG_DATA_MASK)|ROUTING_DIRECT) // Project.FileExists
 #define ID_Project_HasChangedFiles ((0x8e1eef4b&MSG_DATA_MASK)|ROUTING_DIRECT) // Project.HasChangedFiles
 #define ID_Project_LoadProject ((0x68eebf01&MSG_DATA_MASK)|ROUTING_DIRECT) // Project.LoadProject
-#define kProjectNumProperties 73
+#define kProjectNumProperties 77
 enum ProjectProperties {
 	kProjectHalfFloatTextureFormat,
 	kProjectHalfFloatTextureFormatLinear,
@@ -189,14 +174,16 @@ enum ProjectProperties {
 	kProjectSpriteAnimationLibrary,
 	kProjectImageLibrary,
 	kProjectFontLibrary,
+	kProjectOpenFile,
+	kProjectFileExists,
+	kProjectHasChangedFiles,
+	kProjectLoadProject,
 };
 // Directory
 #define ID_Directory 0x94226a28
 #define GetDirectory(_P) ((struct Directory*)((_P)?OBJ_GetComponent(_P,ID_Directory):NULL))
 #define Directory_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Directory,sizeof(struct Directory),_N)
-#define Directory_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Directory,_N)
 #define ID_Directory_Path 0xe78c5471 // Directory.Path
-#define kDirectoryNumMessageTypes 0
 #define kDirectoryNumProperties 1
 enum DirectoryProperties {
 	kDirectoryPath,
@@ -205,9 +192,7 @@ enum DirectoryProperties {
 #define ID_Package 0xfe8f4b9b
 #define GetPackage(_P) ((struct Package*)((_P)?OBJ_GetComponent(_P,ID_Package):NULL))
 #define Package_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Package,sizeof(struct Package),_N)
-#define Package_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Package,_N)
 #define ID_Package_FileName 0x389d60fa // Package.FileName
-#define kPackageNumMessageTypes 0
 #define kPackageNumProperties 1
 enum PackageProperties {
 	kPackageFileName,
@@ -216,16 +201,12 @@ enum PackageProperties {
 #define ID_LocaleReferenceItem 0xe30b821b
 #define GetLocaleReferenceItem(_P) ((struct LocaleReferenceItem*)((_P)?OBJ_GetComponent(_P,ID_LocaleReferenceItem):NULL))
 #define LocaleReferenceItem_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_LocaleReferenceItem,sizeof(struct LocaleReferenceItem),_N)
-#define LocaleReferenceItem_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_LocaleReferenceItem,_N)
-#define kLocaleReferenceItemNumMessageTypes 0
 #define kLocaleReferenceItemNumProperties 0
 // Tag
 #define ID_Tag 0xf8835433
 #define GetTag(_P) ((struct Tag*)((_P)?OBJ_GetComponent(_P,ID_Tag):NULL))
 #define Tag_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Tag,sizeof(struct Tag),_N)
-#define Tag_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Tag,_N)
 #define ID_Tag_TagIsInherited 0x66bab379 // Tag.TagIsInherited
-#define kTagNumMessageTypes 0
 #define kTagNumProperties 1
 enum TagProperties {
 	kTagTagIsInherited,
@@ -234,10 +215,8 @@ enum TagProperties {
 #define ID_ThemeGroup 0xa8bfcd45
 #define GetThemeGroup(_P) ((struct ThemeGroup*)((_P)?OBJ_GetComponent(_P,ID_ThemeGroup):NULL))
 #define ThemeGroup_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_ThemeGroup,sizeof(struct ThemeGroup),_N)
-#define ThemeGroup_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_ThemeGroup,_N)
 #define ID_ThemeGroup_SelectedTheme 0xfdc31565 // ThemeGroup.SelectedTheme
 #define ID_ThemeGroup_SelectedDictionary 0x6de33964 // ThemeGroup.SelectedDictionary
-#define kThemeGroupNumMessageTypes 0
 #define kThemeGroupNumProperties 2
 enum ThemeGroupProperties {
 	kThemeGroupSelectedTheme,
@@ -247,9 +226,7 @@ enum ThemeGroupProperties {
 #define ID_Theme 0x4eaf7c92
 #define GetTheme(_P) ((struct Theme*)((_P)?OBJ_GetComponent(_P,ID_Theme):NULL))
 #define Theme_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Theme,sizeof(struct Theme),_N)
-#define Theme_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Theme,_N)
 #define ID_Theme_IsThemeVisible 0x17736be5 // Theme.IsThemeVisible
-#define kThemeNumMessageTypes 0
 #define kThemeNumProperties 1
 enum ThemeProperties {
 	kThemeIsThemeVisible,
@@ -258,15 +235,11 @@ enum ThemeProperties {
 #define ID_Entry 0x9cbfed33
 #define GetEntry(_P) ((struct Entry*)((_P)?OBJ_GetComponent(_P,ID_Entry):NULL))
 #define Entry_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Entry,sizeof(struct Entry),_N)
-#define Entry_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Entry,_N)
-#define kEntryNumMessageTypes 0
 #define kEntryNumProperties 0
 // ThemeDefaultValuesDictionary
 #define ID_ThemeDefaultValuesDictionary 0x8f7890b5
 #define GetThemeDefaultValuesDictionary(_P) ((struct ThemeDefaultValuesDictionary*)((_P)?OBJ_GetComponent(_P,ID_ThemeDefaultValuesDictionary):NULL))
 #define ThemeDefaultValuesDictionary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_ThemeDefaultValuesDictionary,sizeof(struct ThemeDefaultValuesDictionary),_N)
-#define ThemeDefaultValuesDictionary_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_ThemeDefaultValuesDictionary,_N)
-#define kThemeDefaultValuesDictionaryNumMessageTypes 0
 #define kThemeDefaultValuesDictionaryNumProperties 0
 
 
@@ -281,19 +254,19 @@ enum ThemeProperties {
 #define ID_SystemMessage_Command 0x40e61c0c // SystemMessage.Command
 	
 
-#define ID_Workspace_ReadCommandsMsgArgs 0x5bb5151b
+#define ID_Workspace_ReadCommandsEventArgs 0x57c885b2
 
-#define ID_Project_OpenFileMsgArgs 0x62c57ebf
+#define ID_Project_OpenFileEventArgs 0x18974c9e
 
-#define ID_Project_OpenFileMsgArgs_FileName 0xbd0f69fe // Project_OpenFileMsgArgs.FileName
-#define ID_Project_FileExistsMsgArgs 0x8ee8a8e3
+#define ID_Project_OpenFileEventArgs_FileName 0xc9b6efc5 // Project_OpenFileEventArgs.FileName
+#define ID_Project_FileExistsEventArgs 0x623d523a
 
-#define ID_Project_FileExistsMsgArgs_FileName 0xb426ac82 // Project_FileExistsMsgArgs.FileName
-#define ID_Project_HasChangedFilesMsgArgs 0xb4af7c4e
+#define ID_Project_FileExistsEventArgs_FileName 0xd9f0e0b1 // Project_FileExistsEventArgs.FileName
+#define ID_Project_HasChangedFilesEventArgs 0xc3fafc3b
 
-#define ID_Project_LoadProjectMsgArgs 0xe72bbdf0
+#define ID_Project_LoadProjectEventArgs 0x96fb4935
 
-#define ID_Project_LoadProjectMsgArgs_Path 0xee9202c9 // Project_LoadProjectMsgArgs.Path
+#define ID_Project_LoadProjectEventArgs_Path 0x5a8b197a // Project_LoadProjectEventArgs.Path
 	
 
 #endif

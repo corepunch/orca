@@ -116,7 +116,7 @@ lua_pushmousevent(lua_State* L, lpObject_t obj, struct WI_Message* e)
         lua_pushlightuserdata(L, &mouse);
         lua_call(L, 1, 1);
       }
-      // luaX_pushMouse_MouseMessageMsgArgs(L, &mouse);
+      // luaX_pushMouse_MouseMessageEventArgs(L, &mouse);
       return 1;
     case kEventDragDrop:
     case kEventDragEnter:
@@ -319,7 +319,7 @@ bool_t
 UI_HandleKeyEvent(lua_State *L, struct WI_Message* e)
 {
   uint32_t msg;
-  struct Node_KeyMessageMsgArgs key = {0};
+  struct Node_KeyMessageEventArgs key = {0};
   build_key_msg(e, &key, &msg);
   return core_GetFocus() && CORE_HandleObjectMessage(L, &(struct WI_Message) {
     .target = core_GetFocus(),
@@ -339,7 +339,7 @@ UI_HandleKeyEvent(lua_State *L, struct WI_Message* e)
   //     luaX_pushObject(L, core_GetFocus());
   //     Keyboard_KeyMessageMsg_t key = {0};
   //     build_key_msg(e, &key);
-  //     luaX_pushKeyboard_KeyMessageMsgArgs(L, &key);
+  //     luaX_pushKeyboard_KeyMessageEventArgs(L, &key);
   //     /* Stack: [orca.async, obj.handleEvent, obj, szCallback, focusedObj, keyMsg]
   //      * Calls: obj.handleEvent(obj, szCallback, focusedObj, keyMsg) */
   //     if (lua_pcall(L, 5, 1, 0) != LUA_OK) {

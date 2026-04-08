@@ -109,12 +109,12 @@ int luaopen_orca_##NAME(lua_State *L) { \
 }
 
 
-static luaL_Reg _Node3D_RenderMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node3D_RenderMsgArgs[] = {
-	DECL(0xce9ab61f, Node3D_RenderMsgArgs, ViewDef, ViewDef, kDataTypeStruct, .TypeString = "ViewDef"), // Node3D_RenderMsgArgs.ViewDef
+static luaL_Reg _Node3D_RenderEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Node3D_RenderEventArgs[] = {
+	DECL(0xce9ab61f, Node3D_RenderEventArgs, ViewDef, ViewDef, kDataTypeStruct, .TypeString = "ViewDef"), // Node3D_RenderEventArgs.ViewDef
 };
 
-STRUCT(Node3D_RenderMsgArgs, Node3D_RenderMsgArgs);
+STRUCT(Node3D_RenderEventArgs, Node3D_RenderEventArgs);
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -125,16 +125,11 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.ClassID = ID_##NAME, \
 	.ClassSize = sizeof(struct NAME), \
 	.Properties = NAME##Properties, \
-	.MessageTypes = NAME##MessageTypes, \
 	.ObjProc = NAME##Proc, \
 	.Defaults = &NAME##Defaults, \
 	.NumProperties = k##NAME##NumProperties, \
-	.NumMessageTypes = k##NAME##NumMessageTypes, \
 };
 HANDLER(Node3D, Node, UpdateMatrix);
-static struct MessageType Node3DMessageTypes[kNode3DNumMessageTypes] = {	
-	{ "Node3D.Render", ID_Node3D_Render, 0x350cf42d, kMessageRoutingDirect, sizeof(struct Node3D_RenderMsgArgs) },
-};
 static struct PropertyType const Node3DProperties[kNode3DNumProperties] = {
 	DECL(0x3f19bf01, Node3D, LayoutTransform, LayoutTransform, kDataTypeStruct, .TypeString = "Transform3D"), // Node3D.LayoutTransform
 	DECL(0xfc7e27e0, Node3D, LayoutTransformTranslation, LayoutTransform.translation, kDataTypeStruct, .TypeString = "Vector3D"), // Node3D.LayoutTransformTranslation
@@ -148,6 +143,7 @@ static struct PropertyType const Node3DProperties[kNode3DNumProperties] = {
 	DECL(0x35a57c45, Node3D, ContentOffset, ContentOffset, kDataTypeStruct, .TypeString = "Vector3D"), // Node3D.ContentOffset
 	DECL(0xe9d1810c, Node3D, Matrix, Matrix, kDataTypeStruct, .TypeString = "Matrix3D"), // Node3D.Matrix
 	DECL(0xd5710b2e, Node3D, CalculatedOffset, CalculatedOffset, kDataTypeFloat), // Node3D.CalculatedOffset
+	DECL(0x350cf42d, Node3D, Render, Render, kDataTypeEvent, .TypeString = "Node3D_RenderEventArgs"), // Node3D.Render
 };
 static struct Node3D Node3DDefaults = {
 		
@@ -170,8 +166,6 @@ struct Node3D* luaX_checkNode3D(lua_State *L, int idx) {
 #define ID_Node 0x3468032d
 REGISTER_CLASS(Node3D, ID_Node, 0);
 HANDLER(Scene, Node, UpdateMatrix);
-static struct MessageType SceneMessageTypes[kSceneNumMessageTypes] = {	
-};
 static struct PropertyType const SceneProperties[kSceneNumProperties] = {
 	DECL(0xe74c7b6e, Scene, Camera, Camera, kDataTypeString), // Scene.Camera
 	DECL(0x14a89218, Scene, PreviewCamera, PreviewCamera, kDataTypeString), // Scene.PreviewCamera
@@ -198,8 +192,6 @@ struct Scene* luaX_checkScene(lua_State *L, int idx) {
 #define ID_Node3D 0xce61fe5a
 REGISTER_CLASS(Scene, ID_Node3D, 0);
 HANDLER(Model3D, Node3D, Render);
-static struct MessageType Model3DMessageTypes[kModel3DNumMessageTypes] = {	
-};
 static struct PropertyType const Model3DProperties[kModel3DNumProperties] = {
 	DECL(0x07e055dc, Model3D, Mesh, Mesh, kDataTypeObject, .TypeString = "Mesh"), // Model3D.Mesh
 	DECL(0xcbd54f80, Model3D, Material, Material, kDataTypeObject, .TypeString = "Material"), // Model3D.Material
@@ -221,8 +213,6 @@ struct Model3D* luaX_checkModel3D(lua_State *L, int idx) {
 #define ID_Node3D 0xce61fe5a
 REGISTER_CLASS(Model3D, ID_Node3D, 0);
 HANDLER(PlaneMeshNode, Node3D, Render);
-static struct MessageType PlaneMeshNodeMessageTypes[kPlaneMeshNodeNumMessageTypes] = {	
-};
 static struct PropertyType const PlaneMeshNodeProperties[kPlaneMeshNodeNumProperties] = {
 	DECL(0x8f8d39cf, PlaneMeshNode, PlaneWidth, PlaneWidth, kDataTypeFloat), // PlaneMeshNode.PlaneWidth
 	DECL(0x2d44a1f2, PlaneMeshNode, PlaneHeight, PlaneHeight, kDataTypeFloat), // PlaneMeshNode.PlaneHeight
@@ -248,8 +238,6 @@ struct PlaneMeshNode* luaX_checkPlaneMeshNode(lua_State *L, int idx) {
 }
 #define ID_Model3D 0xc56de5fd
 REGISTER_CLASS(PlaneMeshNode, ID_Model3D, 0);
-static struct MessageType CameraMessageTypes[kCameraNumMessageTypes] = {	
-};
 static struct PropertyType const CameraProperties[kCameraNumProperties] = {
 	DECL(0x137e217c, Camera, Fov, Fov, kDataTypeFloat), // Camera.Fov
 	DECL(0x0ef1c6f4, Camera, FovType, FovType, kDataTypeEnum, .EnumValues = _FovType), // Camera.FovType
@@ -277,8 +265,6 @@ struct Camera* luaX_checkCamera(lua_State *L, int idx) {
 #define ID_Node3D 0xce61fe5a
 REGISTER_CLASS(Camera, ID_Node3D, 0);
 HANDLER(TrajectoryList3D, Node, UpdateMatrix);
-static struct MessageType TrajectoryList3DMessageTypes[kTrajectoryList3DNumMessageTypes] = {	
-};
 static struct PropertyType const TrajectoryList3DProperties[kTrajectoryList3DNumProperties] = {
 	DECL(0x4cf7cbf8, TrajectoryList3D, Trajectory, Trajectory, kDataTypeObject, .TypeString = "Trajectory"), // TrajectoryList3D.Trajectory
 	DECL(0xeea06ebd, TrajectoryList3D, ScrollAxis, ScrollAxis, kDataTypeStruct, .TypeString = "Vector2D"), // TrajectoryList3D.ScrollAxis
@@ -304,8 +290,6 @@ struct TrajectoryList3D* luaX_checkTrajectoryList3D(lua_State *L, int idx) {
 #define ID_Node3D 0xce61fe5a
 REGISTER_CLASS(TrajectoryList3D, ID_Node3D, 0);
 HANDLER(Viewport3D, Node2D, ForegroundContent);
-static struct MessageType Viewport3DMessageTypes[kViewport3DNumMessageTypes] = {	
-};
 static struct PropertyType const Viewport3DProperties[kViewport3DNumProperties] = {
 	DECL(0xe74c7b6e, Viewport3D, Camera, Camera, kDataTypeString), // Viewport3D.Camera
 	DECL(0x14a89218, Viewport3D, PreviewCamera, PreviewCamera, kDataTypeString), // Viewport3D.PreviewCamera
@@ -330,8 +314,6 @@ struct Viewport3D* luaX_checkViewport3D(lua_State *L, int idx) {
 #define ID_Node2D 0x6c63a2ab
 REGISTER_CLASS(Viewport3D, ID_Node2D, 0);
 HANDLER(PrefabView3D, Node, LoadView);
-static struct MessageType PrefabView3DMessageTypes[kPrefabView3DNumMessageTypes] = {	
-};
 static struct PropertyType const PrefabView3DProperties[kPrefabView3DNumProperties] = {
 	DECL(0x57f28ff6, PrefabView3D, SCA, SCA, kDataTypeString), // PrefabView3D.SCA
 	DECL(0xd6415ba3, PrefabView3D, Prefab, Prefab, kDataTypeString), // PrefabView3D.Prefab
@@ -352,8 +334,6 @@ struct PrefabView3D* luaX_checkPrefabView3D(lua_State *L, int idx) {
 }
 #define ID_Node3D 0xce61fe5a
 REGISTER_CLASS(PrefabView3D, ID_Node3D, 0);
-static struct MessageType RenderPassMessageTypes[kRenderPassNumMessageTypes] = {	
-};
 static struct PropertyType const RenderPassProperties[kRenderPassNumProperties] = {
 };
 static struct RenderPass RenderPassDefaults = {
@@ -371,8 +351,6 @@ struct RenderPass* luaX_checkRenderPass(lua_State *L, int idx) {
 }
 #define ID_Node 0x3468032d
 REGISTER_CLASS(RenderPass, ID_Node, 0);
-static struct MessageType CompositionTargetRenderPassMessageTypes[kCompositionTargetRenderPassNumMessageTypes] = {	
-};
 static struct PropertyType const CompositionTargetRenderPassProperties[kCompositionTargetRenderPassNumProperties] = {
 };
 static struct CompositionTargetRenderPass CompositionTargetRenderPassDefaults = {
@@ -390,8 +368,6 @@ struct CompositionTargetRenderPass* luaX_checkCompositionTargetRenderPass(lua_St
 }
 #define ID_RenderPass 0xf64bbf80
 REGISTER_CLASS(CompositionTargetRenderPass, ID_RenderPass, 0);
-static struct MessageType BlitRenderPassMessageTypes[kBlitRenderPassNumMessageTypes] = {	
-};
 static struct PropertyType const BlitRenderPassProperties[kBlitRenderPassNumProperties] = {
 };
 static struct BlitRenderPass BlitRenderPassDefaults = {
@@ -409,8 +385,6 @@ struct BlitRenderPass* luaX_checkBlitRenderPass(lua_State *L, int idx) {
 }
 #define ID_RenderPass 0xf64bbf80
 REGISTER_CLASS(BlitRenderPass, ID_RenderPass, 0);
-static struct MessageType ClearRenderPassMessageTypes[kClearRenderPassNumMessageTypes] = {	
-};
 static struct PropertyType const ClearRenderPassProperties[kClearRenderPassNumProperties] = {
 	DECL(0xeb16b675, ClearRenderPass, ClearColor, ClearColor, kDataTypeColor), // ClearRenderPass.ClearColor
 	DECL(0xa444e35b, ClearRenderPass, ClearDepth, ClearDepth, kDataTypeFloat), // ClearRenderPass.ClearDepth
@@ -431,8 +405,6 @@ struct ClearRenderPass* luaX_checkClearRenderPass(lua_State *L, int idx) {
 }
 #define ID_RenderPass 0xf64bbf80
 REGISTER_CLASS(ClearRenderPass, ID_RenderPass, 0);
-static struct MessageType DrawObjectsRenderPassMessageTypes[kDrawObjectsRenderPassNumMessageTypes] = {	
-};
 static struct PropertyType const DrawObjectsRenderPassProperties[kDrawObjectsRenderPassNumProperties] = {
 	DECL(0xe74c7b6e, DrawObjectsRenderPass, Camera, Camera, kDataTypeString), // DrawObjectsRenderPass.Camera
 	DECL(0x785c377a, DrawObjectsRenderPass, IncludeTags, IncludeTags, kDataTypeString), // DrawObjectsRenderPass.IncludeTags
@@ -453,8 +425,6 @@ struct DrawObjectsRenderPass* luaX_checkDrawObjectsRenderPass(lua_State *L, int 
 }
 #define ID_RenderPass 0xf64bbf80
 REGISTER_CLASS(DrawObjectsRenderPass, ID_RenderPass, 0);
-static struct MessageType PipelineStateRenderPassMessageTypes[kPipelineStateRenderPassNumMessageTypes] = {	
-};
 static struct PropertyType const PipelineStateRenderPassProperties[kPipelineStateRenderPassNumProperties] = {
 	DECL(0x0038792b, PipelineStateRenderPass, BlendMode, BlendMode, kDataTypeEnum, .EnumValues = _BlendMode), // PipelineStateRenderPass.BlendMode
 	DECL(0x9d0d3c20, PipelineStateRenderPass, ColorWriteMode, ColorWriteMode, kDataTypeEnum, .EnumValues = _ColorWriteMode), // PipelineStateRenderPass.ColorWriteMode
@@ -494,8 +464,6 @@ struct PipelineStateRenderPass* luaX_checkPipelineStateRenderPass(lua_State *L, 
 REGISTER_CLASS(PipelineStateRenderPass, ID_RenderPass, 0);
 HANDLER(TextBlock3D, Node3D, Render);
 HANDLER(TextBlock3D, Object, Create);
-static struct MessageType TextBlock3DMessageTypes[kTextBlock3DNumMessageTypes] = {	
-};
 static struct PropertyType const TextBlock3DProperties[kTextBlock3DNumProperties] = {
 };
 static struct TextBlock3D TextBlock3DDefaults = {
@@ -517,8 +485,6 @@ struct TextBlock3D* luaX_checkTextBlock3D(lua_State *L, int idx) {
 #define ID_TextBlockConcept 0x4903089d
 REGISTER_CLASS(TextBlock3D, ID_Node3D, ID_TextBlockConcept, 0);
 HANDLER(Light3D, Node3D, Render);
-static struct MessageType Light3DMessageTypes[kLight3DNumMessageTypes] = {	
-};
 static struct PropertyType const Light3DProperties[kLight3DNumProperties] = {
 	DECL(0xe5b43cf8, Light3D, Color, Color, kDataTypeColor), // Light3D.Color
 	DECL(0xe2c2c340, Light3D, SpotAngle, SpotAngle, kDataTypeStruct, .TypeString = "Vector2D"), // Light3D.SpotAngle
@@ -547,8 +513,6 @@ struct Light3D* luaX_checkLight3D(lua_State *L, int idx) {
 #define ID_Node3D 0xce61fe5a
 REGISTER_CLASS(Light3D, ID_Node3D, 0);
 HANDLER(SpriteView, Node3D, Render);
-static struct MessageType SpriteViewMessageTypes[kSpriteViewNumMessageTypes] = {	
-};
 static struct PropertyType const SpriteViewProperties[kSpriteViewNumProperties] = {
 	DECL(0x590ca79a, SpriteView, Image, Image, kDataTypeObject, .TypeString = "Texture"), // SpriteView.Image
 	DECL(0x2d2c5028, SpriteView, Bounds, Bounds, kDataTypeStruct, .TypeString = "Vector4D"), // SpriteView.Bounds
@@ -575,7 +539,7 @@ ORCA_API int luaopen_orca_SceneKit(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
 		{ NULL, NULL } 
 	}));
-	lua_setfield(L, ((void)luaopen_orca_Node3D_RenderMsgArgs(L), -2), "Node3D_RenderMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Node3D_RenderEventArgs(L), -2), "Node3D_RenderEventArgs");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Node3D), -2), "Node3D");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Scene), -2), "Scene");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Model3D), -2), "Model3D");

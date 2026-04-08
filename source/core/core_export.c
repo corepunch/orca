@@ -7,9 +7,6 @@
 #define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
 #define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
 
-// WI_Message
-extern void luaX_pushWI_Message(lua_State *L, struct WI_Message const* value);
-extern struct WI_Message* luaX_checkWI_Message(lua_State *L, int index);
 // localization
 extern void luaX_pushlocalization(lua_State *L, struct localization const* value);
 extern struct localization* luaX_checklocalization(lua_State *L, int index);
@@ -643,44 +640,44 @@ static luaL_Reg _MessageType_Methods[] = {
 
 STRUCT(MessageType, MessageType);
 
-static luaL_Reg _Object_CreateMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Object_CreateMsgArgs[] = {
+static luaL_Reg _Object_CreateEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Object_CreateEventArgs[] = {
 };
-static luaL_Reg _Object_StartMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Object_StartMsgArgs[] = {
+static luaL_Reg _Object_StartEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Object_StartEventArgs[] = {
 };
-static luaL_Reg _Object_AwakeMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Object_AwakeMsgArgs[] = {
+static luaL_Reg _Object_AwakeEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Object_AwakeEventArgs[] = {
 };
-static luaL_Reg _Object_ThemeChangedMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Object_ThemeChangedMsgArgs[] = {
+static luaL_Reg _Object_ThemeChangedEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Object_ThemeChangedEventArgs[] = {
 };
-static luaL_Reg _Object_PropertyChangedMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Object_PropertyChangedMsgArgs[] = {
-	DECL(0x5221f9e8, Object_PropertyChangedMsgArgs, Property, Property, kDataTypeStruct, .TypeString = "Property"), // Object_PropertyChangedMsgArgs.Property
+static luaL_Reg _Object_PropertyChangedEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Object_PropertyChangedEventArgs[] = {
+	DECL(0x5221f9e8, Object_PropertyChangedEventArgs, Property, Property, kDataTypeStruct, .TypeString = "Property"), // Object_PropertyChangedEventArgs.Property
 };
-static luaL_Reg _Object_AttachedMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Object_AttachedMsgArgs[] = {
+static luaL_Reg _Object_AttachedEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Object_AttachedEventArgs[] = {
 };
-static luaL_Reg _Object_ReleaseMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Object_ReleaseMsgArgs[] = {
+static luaL_Reg _Object_ReleaseEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Object_ReleaseEventArgs[] = {
 };
-static luaL_Reg _Object_DestroyMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Object_DestroyMsgArgs[] = {
+static luaL_Reg _Object_DestroyEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Object_DestroyEventArgs[] = {
 };
-static luaL_Reg _Object_TimerMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Object_TimerMsgArgs[] = {
+static luaL_Reg _Object_TimerEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Object_TimerEventArgs[] = {
 };
 
-STRUCT(Object_CreateMsgArgs, Object_CreateMsgArgs);
-STRUCT(Object_StartMsgArgs, Object_StartMsgArgs);
-STRUCT(Object_AwakeMsgArgs, Object_AwakeMsgArgs);
-STRUCT(Object_ThemeChangedMsgArgs, Object_ThemeChangedMsgArgs);
-STRUCT(Object_PropertyChangedMsgArgs, Object_PropertyChangedMsgArgs);
-STRUCT(Object_AttachedMsgArgs, Object_AttachedMsgArgs);
-STRUCT(Object_ReleaseMsgArgs, Object_ReleaseMsgArgs);
-STRUCT(Object_DestroyMsgArgs, Object_DestroyMsgArgs);
-STRUCT(Object_TimerMsgArgs, Object_TimerMsgArgs);
+STRUCT(Object_CreateEventArgs, Object_CreateEventArgs);
+STRUCT(Object_StartEventArgs, Object_StartEventArgs);
+STRUCT(Object_AwakeEventArgs, Object_AwakeEventArgs);
+STRUCT(Object_ThemeChangedEventArgs, Object_ThemeChangedEventArgs);
+STRUCT(Object_PropertyChangedEventArgs, Object_PropertyChangedEventArgs);
+STRUCT(Object_AttachedEventArgs, Object_AttachedEventArgs);
+STRUCT(Object_ReleaseEventArgs, Object_ReleaseEventArgs);
+STRUCT(Object_DestroyEventArgs, Object_DestroyEventArgs);
+STRUCT(Object_TimerEventArgs, Object_TimerEventArgs);
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -691,11 +688,9 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.ClassID = ID_##NAME, \
 	.ClassSize = sizeof(struct NAME), \
 	.Properties = NAME##Properties, \
-	.MessageTypes = NAME##MessageTypes, \
 	.ObjProc = NAME##Proc, \
 	.Defaults = &NAME##Defaults, \
 	.NumProperties = k##NAME##NumProperties, \
-	.NumMessageTypes = k##NAME##NumMessageTypes, \
 };
 
 int f_core_GetFocus(lua_State *L) {
@@ -716,15 +711,15 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 		{ NULL, NULL } 
 	}));
 	lua_setfield(L, ((void)luaopen_orca_MessageType(L), -2), "MessageType");
-	lua_setfield(L, ((void)luaopen_orca_Object_CreateMsgArgs(L), -2), "Object_CreateMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_Object_StartMsgArgs(L), -2), "Object_StartMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_Object_AwakeMsgArgs(L), -2), "Object_AwakeMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_Object_ThemeChangedMsgArgs(L), -2), "Object_ThemeChangedMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_Object_PropertyChangedMsgArgs(L), -2), "Object_PropertyChangedMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_Object_AttachedMsgArgs(L), -2), "Object_AttachedMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_Object_ReleaseMsgArgs(L), -2), "Object_ReleaseMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_Object_DestroyMsgArgs(L), -2), "Object_DestroyMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_Object_TimerMsgArgs(L), -2), "Object_TimerMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Object_CreateEventArgs(L), -2), "Object_CreateEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_Object_StartEventArgs(L), -2), "Object_StartEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_Object_AwakeEventArgs(L), -2), "Object_AwakeEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_Object_ThemeChangedEventArgs(L), -2), "Object_ThemeChangedEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_Object_PropertyChangedEventArgs(L), -2), "Object_PropertyChangedEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_Object_AttachedEventArgs(L), -2), "Object_AttachedEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_Object_ReleaseEventArgs(L), -2), "Object_ReleaseEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_Object_DestroyEventArgs(L), -2), "Object_DestroyEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_Object_TimerEventArgs(L), -2), "Object_TimerEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object(L), -2), "Object");
 	void on_core_module_registered(lua_State *L);
 	on_core_module_registered(L);

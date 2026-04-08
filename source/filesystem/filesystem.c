@@ -341,7 +341,7 @@ _TryLoadBundle(lpcClassDesc_t c, void* args)
   if (!it->project) {
     it->project =
     (struct Object*)c->ObjProc(NULL, it->L, ID_Project_LoadProject, 0,
-                               &(struct Project_LoadProjectMsgArgs) {
+                               &(struct Project_LoadProjectEventArgs) {
       .Path = (void*)it->directory
     });
   }

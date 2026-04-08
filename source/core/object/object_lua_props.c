@@ -40,17 +40,6 @@ static int f_object_lineage(lua_State* L)
   return 1;
 }
 
-static lpcString_t PascalCase(lpcString_t pname) {
-  // convert to PascalCase
-  static shortStr_t tmp;
-  if (islower(*pname)) {
-    strncpy(tmp, pname, sizeof(tmp));
-    *tmp = toupper(*tmp);
-    pname = tmp;
-  }
-  return pname;
-}
-
 #include <plugins/UIKit/UIKit.h>
 #include <source/filesystem/filesystem.h>
 bool_t
@@ -108,13 +97,14 @@ OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name)
       lua_rawset(L, 1);
     }
   }
-  if (SUCCEEDED(OBJ_FindShortProperty(self, PascalCase(name), &property))) {
+  if (SUCCEEDED(OBJ_FindShortProperty(self, name, &property))) {
     luaX_readProperty(L, 3, property);
     return TRUE;
   } else if (lua_type(L, 3) == LUA_TFUNCTION) {
     OBJ_RegisterCallback(self, name);
     return FALSE;
   } else {
+//    fprintf(stderr, "Can't find property %s\n", name);
     return FALSE;
   }
 }
@@ -200,18 +190,18 @@ int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
   }
   
   lpcProperty_t property = NULL;
-  lpcMessageType_t message = NULL;
+  lpcPropertyType_t message = NULL;
   bool_t OBJ_PushClassProperty(lua_State *, lpObject_t, uint32_t);
-  lpcMessageType_t MSG_FindByShortID(lpObject_t, uint32_t);
+  lpcPropertyType_t MSG_FindByShortID(lpObject_t, uint32_t);
   
   if (OBJ_PushClassProperty(L, self, ident)) {
-    return 1;
-  } else if ((property = PROP_FindByShortID(OBJ_GetProperties(self), ident))) {
-    luaX_pushProperty(L, property);
     return 1;
   } else if ((message = MSG_FindByShortID(self, ident))) {
     lua_pushstring(L, message->Name);
     lua_pushcclosure(L, f_msgSend, 1);
+    return 1;
+  } else if ((property = PROP_FindByShortID(OBJ_GetProperties(self), ident))) {
+    luaX_pushProperty(L, property);
     return 1;
   } else {
     lua_pushnil(L);

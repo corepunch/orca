@@ -22,51 +22,51 @@ struct lua_State;
 #include "UIKit_properties.h"
 #include "../../source/renderer/api/renderer.h"
 
-typedef struct Trigger_TriggeredMsgArgs Trigger_TriggeredMsg_t,* Trigger_TriggeredMsgPtr;
-typedef struct Node_UpdateMatrixMsgArgs Node_UpdateMatrixMsg_t,* Node_UpdateMatrixMsgPtr;
-typedef struct Node_PushPropertyMsgArgs Node_PushPropertyMsg_t,* Node_PushPropertyMsgPtr;
-typedef struct Node_LoadViewMsgArgs Node_LoadViewMsg_t,* Node_LoadViewMsgPtr;
-typedef struct Node_HitTestMsgArgs Node_HitTestMsg_t,* Node_HitTestMsgPtr;
-typedef struct Node_IsVisibleMsgArgs Node_IsVisibleMsg_t,* Node_IsVisibleMsgPtr;
-typedef struct Node_ViewDidLoadMsgArgs Node_ViewDidLoadMsg_t,* Node_ViewDidLoadMsgPtr;
-typedef struct Node_KillFocusMsgArgs Node_KillFocusMsg_t,* Node_KillFocusMsgPtr;
-typedef struct Node_SetFocusMsgArgs Node_SetFocusMsg_t,* Node_SetFocusMsgPtr;
-typedef struct Node_GetSizeMsgArgs Node_GetSizeMsg_t,* Node_GetSizeMsgPtr;
-typedef struct Node_MouseMessageMsgArgs Node_MouseMessageMsg_t,* Node_MouseMessageMsgPtr;
-typedef struct Node_MouseMessageMsgArgs Node_LeftMouseDownMsg_t,* Node_LeftMouseDownMsgPtr;
-typedef struct Node_MouseMessageMsgArgs Node_RightMouseDownMsg_t,* Node_RightMouseDownMsgPtr;
-typedef struct Node_MouseMessageMsgArgs Node_OtherMouseDownMsg_t,* Node_OtherMouseDownMsgPtr;
-typedef struct Node_MouseMessageMsgArgs Node_LeftMouseUpMsg_t,* Node_LeftMouseUpMsgPtr;
-typedef struct Node_MouseMessageMsgArgs Node_RightMouseUpMsg_t,* Node_RightMouseUpMsgPtr;
-typedef struct Node_MouseMessageMsgArgs Node_OtherMouseUpMsg_t,* Node_OtherMouseUpMsgPtr;
-typedef struct Node_MouseMessageMsgArgs Node_LeftMouseDraggedMsg_t,* Node_LeftMouseDraggedMsgPtr;
-typedef struct Node_MouseMessageMsgArgs Node_RightMouseDraggedMsg_t,* Node_RightMouseDraggedMsgPtr;
-typedef struct Node_MouseMessageMsgArgs Node_OtherMouseDraggedMsg_t,* Node_OtherMouseDraggedMsgPtr;
-typedef struct Node_MouseMessageMsgArgs Node_LeftDoubleClickMsg_t,* Node_LeftDoubleClickMsgPtr;
-typedef struct Node_MouseMessageMsgArgs Node_RightDoubleClickMsg_t,* Node_RightDoubleClickMsgPtr;
-typedef struct Node_MouseMessageMsgArgs Node_OtherDoubleClickMsg_t,* Node_OtherDoubleClickMsgPtr;
-typedef struct Node_MouseMessageMsgArgs Node_MouseMovedMsg_t,* Node_MouseMovedMsgPtr;
-typedef struct Node_MouseMessageMsgArgs Node_ScrollWheelMsg_t,* Node_ScrollWheelMsgPtr;
-typedef struct Node_MouseMessageMsgArgs Node_DragDropMsg_t,* Node_DragDropMsgPtr;
-typedef struct Node_MouseMessageMsgArgs Node_DragEnterMsg_t,* Node_DragEnterMsgPtr;
-typedef struct Node_KeyMessageMsgArgs Node_KeyMessageMsg_t,* Node_KeyMessageMsgPtr;
-typedef struct Node_KeyMessageMsgArgs Node_KeyDownMsg_t,* Node_KeyDownMsgPtr;
-typedef struct Node_KeyMessageMsgArgs Node_KeyUpMsg_t,* Node_KeyUpMsgPtr;
-typedef struct Node_KeyMessageMsgArgs Node_TextInputMsg_t,* Node_TextInputMsgPtr;
-typedef struct TextBlockConcept_MakeTextMsgArgs TextBlockConcept_MakeTextMsg_t,* TextBlockConcept_MakeTextMsgPtr;
-typedef struct Node2D_DrawBrushMsgArgs Node2D_DrawBrushMsg_t,* Node2D_DrawBrushMsgPtr;
-typedef struct Node2D_MeasureMsgArgs Node2D_MeasureMsg_t,* Node2D_MeasureMsgPtr;
-typedef struct Node2D_ArrangeMsgArgs Node2D_ArrangeMsg_t,* Node2D_ArrangeMsgPtr;
-typedef struct Node2D_MeasureMsgArgs Node2D_MeasureOverrideMsg_t,* Node2D_MeasureOverrideMsgPtr;
-typedef struct Node2D_ArrangeMsgArgs Node2D_ArrangeOverrideMsg_t,* Node2D_ArrangeOverrideMsgPtr;
-typedef struct Node2D_ForegroundContentMsgArgs Node2D_ForegroundContentMsg_t,* Node2D_ForegroundContentMsgPtr;
-typedef struct Node2D_UpdateGeometryMsgArgs Node2D_UpdateGeometryMsg_t,* Node2D_UpdateGeometryMsgPtr;
-typedef struct Node2D_SetScrollTopMsgArgs Node2D_SetScrollTopMsg_t,* Node2D_SetScrollTopMsgPtr;
-typedef struct Form_SubmitMsgArgs Form_SubmitMsg_t,* Form_SubmitMsgPtr;
-typedef struct Screen_UpdateLayoutMsgArgs Screen_UpdateLayoutMsg_t,* Screen_UpdateLayoutMsgPtr;
-typedef struct Screen_RenderScreenMsgArgs Screen_RenderScreenMsg_t,* Screen_RenderScreenMsgPtr;
-typedef struct PageHost_NavigateToPageMsgArgs PageHost_NavigateToPageMsg_t,* PageHost_NavigateToPageMsgPtr;
-typedef struct PageHost_NavigateBackMsgArgs PageHost_NavigateBackMsg_t,* PageHost_NavigateBackMsgPtr;
+typedef struct Trigger_TriggeredEventArgs Trigger_TriggeredMsg_t,* Trigger_TriggeredMsgPtr;
+typedef struct Node_UpdateMatrixEventArgs Node_UpdateMatrixMsg_t,* Node_UpdateMatrixMsgPtr;
+typedef struct Node_PushPropertyEventArgs Node_PushPropertyMsg_t,* Node_PushPropertyMsgPtr;
+typedef struct Node_LoadViewEventArgs Node_LoadViewMsg_t,* Node_LoadViewMsgPtr;
+typedef struct Node_HitTestEventArgs Node_HitTestMsg_t,* Node_HitTestMsgPtr;
+typedef struct Node_IsVisibleEventArgs Node_IsVisibleMsg_t,* Node_IsVisibleMsgPtr;
+typedef struct Node_ViewDidLoadEventArgs Node_ViewDidLoadMsg_t,* Node_ViewDidLoadMsgPtr;
+typedef struct Node_KillFocusEventArgs Node_KillFocusMsg_t,* Node_KillFocusMsgPtr;
+typedef struct Node_SetFocusEventArgs Node_SetFocusMsg_t,* Node_SetFocusMsgPtr;
+typedef struct Node_GetSizeEventArgs Node_GetSizeMsg_t,* Node_GetSizeMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_MouseMessageMsg_t,* Node_MouseMessageMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_LeftMouseDownMsg_t,* Node_LeftMouseDownMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_RightMouseDownMsg_t,* Node_RightMouseDownMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_OtherMouseDownMsg_t,* Node_OtherMouseDownMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_LeftMouseUpMsg_t,* Node_LeftMouseUpMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_RightMouseUpMsg_t,* Node_RightMouseUpMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_OtherMouseUpMsg_t,* Node_OtherMouseUpMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_LeftMouseDraggedMsg_t,* Node_LeftMouseDraggedMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_RightMouseDraggedMsg_t,* Node_RightMouseDraggedMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_OtherMouseDraggedMsg_t,* Node_OtherMouseDraggedMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_LeftDoubleClickMsg_t,* Node_LeftDoubleClickMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_RightDoubleClickMsg_t,* Node_RightDoubleClickMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_OtherDoubleClickMsg_t,* Node_OtherDoubleClickMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_MouseMovedMsg_t,* Node_MouseMovedMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_ScrollWheelMsg_t,* Node_ScrollWheelMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_DragDropMsg_t,* Node_DragDropMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_DragEnterMsg_t,* Node_DragEnterMsgPtr;
+typedef struct Node_KeyMessageEventArgs Node_KeyMessageMsg_t,* Node_KeyMessageMsgPtr;
+typedef struct Node_KeyMessageEventArgs Node_KeyDownMsg_t,* Node_KeyDownMsgPtr;
+typedef struct Node_KeyMessageEventArgs Node_KeyUpMsg_t,* Node_KeyUpMsgPtr;
+typedef struct Node_KeyMessageEventArgs Node_TextInputMsg_t,* Node_TextInputMsgPtr;
+typedef struct TextBlockConcept_MakeTextEventArgs TextBlockConcept_MakeTextMsg_t,* TextBlockConcept_MakeTextMsgPtr;
+typedef struct Node2D_DrawBrushEventArgs Node2D_DrawBrushMsg_t,* Node2D_DrawBrushMsgPtr;
+typedef struct Node2D_MeasureEventArgs Node2D_MeasureMsg_t,* Node2D_MeasureMsgPtr;
+typedef struct Node2D_ArrangeEventArgs Node2D_ArrangeMsg_t,* Node2D_ArrangeMsgPtr;
+typedef struct Node2D_MeasureEventArgs Node2D_MeasureOverrideMsg_t,* Node2D_MeasureOverrideMsgPtr;
+typedef struct Node2D_ArrangeEventArgs Node2D_ArrangeOverrideMsg_t,* Node2D_ArrangeOverrideMsgPtr;
+typedef struct Node2D_ForegroundContentEventArgs Node2D_ForegroundContentMsg_t,* Node2D_ForegroundContentMsgPtr;
+typedef struct Node2D_UpdateGeometryEventArgs Node2D_UpdateGeometryMsg_t,* Node2D_UpdateGeometryMsgPtr;
+typedef struct Node2D_SetScrollTopEventArgs Node2D_SetScrollTopMsg_t,* Node2D_SetScrollTopMsgPtr;
+typedef struct Form_SubmitEventArgs Form_SubmitMsg_t,* Form_SubmitMsgPtr;
+typedef struct Screen_UpdateLayoutEventArgs Screen_UpdateLayoutMsg_t,* Screen_UpdateLayoutMsgPtr;
+typedef struct Screen_RenderScreenEventArgs Screen_RenderScreenMsg_t,* Screen_RenderScreenMsgPtr;
+typedef struct PageHost_NavigateToPageEventArgs PageHost_NavigateToPageMsg_t,* PageHost_NavigateToPageMsgPtr;
+typedef struct PageHost_NavigateBackEventArgs PageHost_NavigateBackMsg_t,* PageHost_NavigateBackMsgPtr;
 
 
 /// @brief Defines the primary axis for layout operations
@@ -533,66 +533,66 @@ struct SizeShorthand {
 ORCA_API void luaX_pushSizeShorthand(lua_State *L, struct SizeShorthand const* SizeShorthand);
 ORCA_API struct SizeShorthand* luaX_checkSizeShorthand(lua_State *L, int idx);
 
-/** Trigger_TriggeredMsgArgs struct */
-struct Trigger_TriggeredMsgArgs {
+/** Trigger_TriggeredEventArgs struct */
+struct Trigger_TriggeredEventArgs {
 	struct Trigger* Trigger;
 };
-ORCA_API void luaX_pushTrigger_TriggeredMsgArgs(lua_State *L, struct Trigger_TriggeredMsgArgs const* data);
-ORCA_API struct Trigger_TriggeredMsgArgs* luaX_checkTrigger_TriggeredMsgArgs(lua_State *L, int idx);
-/** Node_UpdateMatrixMsgArgs struct */
-struct Node_UpdateMatrixMsgArgs {
+ORCA_API void luaX_pushTrigger_TriggeredEventArgs(lua_State *L, struct Trigger_TriggeredEventArgs const* data);
+ORCA_API struct Trigger_TriggeredEventArgs* luaX_checkTrigger_TriggeredEventArgs(lua_State *L, int idx);
+/** Node_UpdateMatrixEventArgs struct */
+struct Node_UpdateMatrixEventArgs {
 	struct mat4 parent; ///< The parent matrix
 	float opacity; ///< The opacity value
 	bool_t force; ///< Indicates if the update is forced
 };
-ORCA_API void luaX_pushNode_UpdateMatrixMsgArgs(lua_State *L, struct Node_UpdateMatrixMsgArgs const* data);
-ORCA_API struct Node_UpdateMatrixMsgArgs* luaX_checkNode_UpdateMatrixMsgArgs(lua_State *L, int idx);
-/** Node_PushPropertyMsgArgs struct */
-struct Node_PushPropertyMsgArgs {
+ORCA_API void luaX_pushNode_UpdateMatrixEventArgs(lua_State *L, struct Node_UpdateMatrixEventArgs const* data);
+ORCA_API struct Node_UpdateMatrixEventArgs* luaX_checkNode_UpdateMatrixEventArgs(lua_State *L, int idx);
+/** Node_PushPropertyEventArgs struct */
+struct Node_PushPropertyEventArgs {
 	int32_t Placeholder;
 };
-ORCA_API void luaX_pushNode_PushPropertyMsgArgs(lua_State *L, struct Node_PushPropertyMsgArgs const* data);
-ORCA_API struct Node_PushPropertyMsgArgs* luaX_checkNode_PushPropertyMsgArgs(lua_State *L, int idx);
-/** Node_LoadViewMsgArgs struct */
-struct Node_LoadViewMsgArgs {
+ORCA_API void luaX_pushNode_PushPropertyEventArgs(lua_State *L, struct Node_PushPropertyEventArgs const* data);
+ORCA_API struct Node_PushPropertyEventArgs* luaX_checkNode_PushPropertyEventArgs(lua_State *L, int idx);
+/** Node_LoadViewEventArgs struct */
+struct Node_LoadViewEventArgs {
 	struct lua_State* lua_state;
 };
-ORCA_API void luaX_pushNode_LoadViewMsgArgs(lua_State *L, struct Node_LoadViewMsgArgs const* data);
-ORCA_API struct Node_LoadViewMsgArgs* luaX_checkNode_LoadViewMsgArgs(lua_State *L, int idx);
-/** Node_HitTestMsgArgs struct */
-struct Node_HitTestMsgArgs {
+ORCA_API void luaX_pushNode_LoadViewEventArgs(lua_State *L, struct Node_LoadViewEventArgs const* data);
+ORCA_API struct Node_LoadViewEventArgs* luaX_checkNode_LoadViewEventArgs(lua_State *L, int idx);
+/** Node_HitTestEventArgs struct */
+struct Node_HitTestEventArgs {
 	int32_t x; ///< X coordinate of the hit test point
 	int32_t y; ///< Y coordinate of the hit test point
 };
-ORCA_API void luaX_pushNode_HitTestMsgArgs(lua_State *L, struct Node_HitTestMsgArgs const* data);
-ORCA_API struct Node_HitTestMsgArgs* luaX_checkNode_HitTestMsgArgs(lua_State *L, int idx);
-/** Node_IsVisibleMsgArgs struct */
-struct Node_IsVisibleMsgArgs {
+ORCA_API void luaX_pushNode_HitTestEventArgs(lua_State *L, struct Node_HitTestEventArgs const* data);
+ORCA_API struct Node_HitTestEventArgs* luaX_checkNode_HitTestEventArgs(lua_State *L, int idx);
+/** Node_IsVisibleEventArgs struct */
+struct Node_IsVisibleEventArgs {
 };
-ORCA_API void luaX_pushNode_IsVisibleMsgArgs(lua_State *L, struct Node_IsVisibleMsgArgs const* data);
-ORCA_API struct Node_IsVisibleMsgArgs* luaX_checkNode_IsVisibleMsgArgs(lua_State *L, int idx);
-/** Node_ViewDidLoadMsgArgs struct */
-struct Node_ViewDidLoadMsgArgs {
+ORCA_API void luaX_pushNode_IsVisibleEventArgs(lua_State *L, struct Node_IsVisibleEventArgs const* data);
+ORCA_API struct Node_IsVisibleEventArgs* luaX_checkNode_IsVisibleEventArgs(lua_State *L, int idx);
+/** Node_ViewDidLoadEventArgs struct */
+struct Node_ViewDidLoadEventArgs {
 };
-ORCA_API void luaX_pushNode_ViewDidLoadMsgArgs(lua_State *L, struct Node_ViewDidLoadMsgArgs const* data);
-ORCA_API struct Node_ViewDidLoadMsgArgs* luaX_checkNode_ViewDidLoadMsgArgs(lua_State *L, int idx);
-/** Node_KillFocusMsgArgs struct */
-struct Node_KillFocusMsgArgs {
+ORCA_API void luaX_pushNode_ViewDidLoadEventArgs(lua_State *L, struct Node_ViewDidLoadEventArgs const* data);
+ORCA_API struct Node_ViewDidLoadEventArgs* luaX_checkNode_ViewDidLoadEventArgs(lua_State *L, int idx);
+/** Node_KillFocusEventArgs struct */
+struct Node_KillFocusEventArgs {
 };
-ORCA_API void luaX_pushNode_KillFocusMsgArgs(lua_State *L, struct Node_KillFocusMsgArgs const* data);
-ORCA_API struct Node_KillFocusMsgArgs* luaX_checkNode_KillFocusMsgArgs(lua_State *L, int idx);
-/** Node_SetFocusMsgArgs struct */
-struct Node_SetFocusMsgArgs {
+ORCA_API void luaX_pushNode_KillFocusEventArgs(lua_State *L, struct Node_KillFocusEventArgs const* data);
+ORCA_API struct Node_KillFocusEventArgs* luaX_checkNode_KillFocusEventArgs(lua_State *L, int idx);
+/** Node_SetFocusEventArgs struct */
+struct Node_SetFocusEventArgs {
 };
-ORCA_API void luaX_pushNode_SetFocusMsgArgs(lua_State *L, struct Node_SetFocusMsgArgs const* data);
-ORCA_API struct Node_SetFocusMsgArgs* luaX_checkNode_SetFocusMsgArgs(lua_State *L, int idx);
-/** Node_GetSizeMsgArgs struct */
-struct Node_GetSizeMsgArgs {
+ORCA_API void luaX_pushNode_SetFocusEventArgs(lua_State *L, struct Node_SetFocusEventArgs const* data);
+ORCA_API struct Node_SetFocusEventArgs* luaX_checkNode_SetFocusEventArgs(lua_State *L, int idx);
+/** Node_GetSizeEventArgs struct */
+struct Node_GetSizeEventArgs {
 };
-ORCA_API void luaX_pushNode_GetSizeMsgArgs(lua_State *L, struct Node_GetSizeMsgArgs const* data);
-ORCA_API struct Node_GetSizeMsgArgs* luaX_checkNode_GetSizeMsgArgs(lua_State *L, int idx);
-/** Node_MouseMessageMsgArgs struct */
-struct Node_MouseMessageMsgArgs {
+ORCA_API void luaX_pushNode_GetSizeEventArgs(lua_State *L, struct Node_GetSizeEventArgs const* data);
+ORCA_API struct Node_GetSizeEventArgs* luaX_checkNode_GetSizeEventArgs(lua_State *L, int idx);
+/** Node_MouseMessageEventArgs struct */
+struct Node_MouseMessageEventArgs {
 	float x; ///< Horizontal pointer position in local space
 	float y; ///< Vertical pointer position in local space
 	int32_t deltaX; ///< Scroll wheel rotation amount along the X axis; positive values scroll right/forward
@@ -600,10 +600,10 @@ struct Node_MouseMessageMsgArgs {
 	enum MouseButton button; ///< The mouse button involved in this event
 	int32_t clickCount; ///< Number of consecutive clicks (1 for single click, 2 for double click)
 };
-ORCA_API void luaX_pushNode_MouseMessageMsgArgs(lua_State *L, struct Node_MouseMessageMsgArgs const* data);
-ORCA_API struct Node_MouseMessageMsgArgs* luaX_checkNode_MouseMessageMsgArgs(lua_State *L, int idx);
-/** Node_KeyMessageMsgArgs struct */
-struct Node_KeyMessageMsgArgs {
+ORCA_API void luaX_pushNode_MouseMessageEventArgs(lua_State *L, struct Node_MouseMessageEventArgs const* data);
+ORCA_API struct Node_MouseMessageEventArgs* luaX_checkNode_MouseMessageEventArgs(lua_State *L, int idx);
+/** Node_KeyMessageEventArgs struct */
+struct Node_KeyMessageEventArgs {
 	int32_t keyCode; ///< The key involved in this event
 	int32_t character; ///< The character produced by this key event
 	int32_t modifiers; ///< Active modifier keys during the event (bitmask of WI_MOD_* flags)
@@ -611,17 +611,17 @@ struct Node_KeyMessageMsgArgs {
 	const char* modifiersString; ///< Active modifier keys as a human-readable prefix string (e.g. "ctrl+shift+")
 	const char* hotKey; ///< Combined modifier+key string for hotkey matching (e.g. "ctrl+alt+w")
 };
-ORCA_API void luaX_pushNode_KeyMessageMsgArgs(lua_State *L, struct Node_KeyMessageMsgArgs const* data);
-ORCA_API struct Node_KeyMessageMsgArgs* luaX_checkNode_KeyMessageMsgArgs(lua_State *L, int idx);
-/** TextBlockConcept_MakeTextMsgArgs struct */
-struct TextBlockConcept_MakeTextMsgArgs {
+ORCA_API void luaX_pushNode_KeyMessageEventArgs(lua_State *L, struct Node_KeyMessageEventArgs const* data);
+ORCA_API struct Node_KeyMessageEventArgs* luaX_checkNode_KeyMessageEventArgs(lua_State *L, int idx);
+/** TextBlockConcept_MakeTextEventArgs struct */
+struct TextBlockConcept_MakeTextEventArgs {
 	struct ViewText* text; ///< Text view to render
 	uint32_t availableSpace; ///< Available space for text layout
 };
-ORCA_API void luaX_pushTextBlockConcept_MakeTextMsgArgs(lua_State *L, struct TextBlockConcept_MakeTextMsgArgs const* data);
-ORCA_API struct TextBlockConcept_MakeTextMsgArgs* luaX_checkTextBlockConcept_MakeTextMsgArgs(lua_State *L, int idx);
-/** Node2D_DrawBrushMsgArgs struct */
-struct Node2D_DrawBrushMsgArgs {
+ORCA_API void luaX_pushTextBlockConcept_MakeTextEventArgs(lua_State *L, struct TextBlockConcept_MakeTextEventArgs const* data);
+ORCA_API struct TextBlockConcept_MakeTextEventArgs* luaX_checkTextBlockConcept_MakeTextEventArgs(lua_State *L, int idx);
+/** Node2D_DrawBrushEventArgs struct */
+struct Node2D_DrawBrushEventArgs {
 	struct mat4 projection; ///< Projection matrix for 3D to 2D transformation
 	struct Texture* image; ///< Target image handle for rendering
 	struct BrushShorthand brush; ///< Brush configuration to draw with
@@ -630,75 +630,75 @@ struct Node2D_DrawBrushMsgArgs {
 	bool_t foreground; ///< True if drawing foreground, false for background
 	struct ViewDef* viewdef; ///< View definition context for rendering
 };
-ORCA_API void luaX_pushNode2D_DrawBrushMsgArgs(lua_State *L, struct Node2D_DrawBrushMsgArgs const* data);
-ORCA_API struct Node2D_DrawBrushMsgArgs* luaX_checkNode2D_DrawBrushMsgArgs(lua_State *L, int idx);
-/** Node2D_MeasureMsgArgs struct */
-struct Node2D_MeasureMsgArgs {
+ORCA_API void luaX_pushNode2D_DrawBrushEventArgs(lua_State *L, struct Node2D_DrawBrushEventArgs const* data);
+ORCA_API struct Node2D_DrawBrushEventArgs* luaX_checkNode2D_DrawBrushEventArgs(lua_State *L, int idx);
+/** Node2D_MeasureEventArgs struct */
+struct Node2D_MeasureEventArgs {
 	float Width;
 	float Height;
 };
-ORCA_API void luaX_pushNode2D_MeasureMsgArgs(lua_State *L, struct Node2D_MeasureMsgArgs const* data);
-ORCA_API struct Node2D_MeasureMsgArgs* luaX_checkNode2D_MeasureMsgArgs(lua_State *L, int idx);
-/** Node2D_ArrangeMsgArgs struct */
-struct Node2D_ArrangeMsgArgs {
+ORCA_API void luaX_pushNode2D_MeasureEventArgs(lua_State *L, struct Node2D_MeasureEventArgs const* data);
+ORCA_API struct Node2D_MeasureEventArgs* luaX_checkNode2D_MeasureEventArgs(lua_State *L, int idx);
+/** Node2D_ArrangeEventArgs struct */
+struct Node2D_ArrangeEventArgs {
 	float X;
 	float Y;
 	float Width;
 	float Height;
 };
-ORCA_API void luaX_pushNode2D_ArrangeMsgArgs(lua_State *L, struct Node2D_ArrangeMsgArgs const* data);
-ORCA_API struct Node2D_ArrangeMsgArgs* luaX_checkNode2D_ArrangeMsgArgs(lua_State *L, int idx);
-/** Node2D_ForegroundContentMsgArgs struct */
-struct Node2D_ForegroundContentMsgArgs {
+ORCA_API void luaX_pushNode2D_ArrangeEventArgs(lua_State *L, struct Node2D_ArrangeEventArgs const* data);
+ORCA_API struct Node2D_ArrangeEventArgs* luaX_checkNode2D_ArrangeEventArgs(lua_State *L, int idx);
+/** Node2D_ForegroundContentEventArgs struct */
+struct Node2D_ForegroundContentEventArgs {
 };
-ORCA_API void luaX_pushNode2D_ForegroundContentMsgArgs(lua_State *L, struct Node2D_ForegroundContentMsgArgs const* data);
-ORCA_API struct Node2D_ForegroundContentMsgArgs* luaX_checkNode2D_ForegroundContentMsgArgs(lua_State *L, int idx);
-/** Node2D_UpdateGeometryMsgArgs struct */
-struct Node2D_UpdateGeometryMsgArgs {
+ORCA_API void luaX_pushNode2D_ForegroundContentEventArgs(lua_State *L, struct Node2D_ForegroundContentEventArgs const* data);
+ORCA_API struct Node2D_ForegroundContentEventArgs* luaX_checkNode2D_ForegroundContentEventArgs(lua_State *L, int idx);
+/** Node2D_UpdateGeometryEventArgs struct */
+struct Node2D_UpdateGeometryEventArgs {
 };
-ORCA_API void luaX_pushNode2D_UpdateGeometryMsgArgs(lua_State *L, struct Node2D_UpdateGeometryMsgArgs const* data);
-ORCA_API struct Node2D_UpdateGeometryMsgArgs* luaX_checkNode2D_UpdateGeometryMsgArgs(lua_State *L, int idx);
-/** Node2D_SetScrollTopMsgArgs struct */
-struct Node2D_SetScrollTopMsgArgs {
+ORCA_API void luaX_pushNode2D_UpdateGeometryEventArgs(lua_State *L, struct Node2D_UpdateGeometryEventArgs const* data);
+ORCA_API struct Node2D_UpdateGeometryEventArgs* luaX_checkNode2D_UpdateGeometryEventArgs(lua_State *L, int idx);
+/** Node2D_SetScrollTopEventArgs struct */
+struct Node2D_SetScrollTopEventArgs {
 	float Value;
 };
-ORCA_API void luaX_pushNode2D_SetScrollTopMsgArgs(lua_State *L, struct Node2D_SetScrollTopMsgArgs const* data);
-ORCA_API struct Node2D_SetScrollTopMsgArgs* luaX_checkNode2D_SetScrollTopMsgArgs(lua_State *L, int idx);
-/** Form_SubmitMsgArgs struct */
-struct Form_SubmitMsgArgs {
+ORCA_API void luaX_pushNode2D_SetScrollTopEventArgs(lua_State *L, struct Node2D_SetScrollTopEventArgs const* data);
+ORCA_API struct Node2D_SetScrollTopEventArgs* luaX_checkNode2D_SetScrollTopEventArgs(lua_State *L, int idx);
+/** Form_SubmitEventArgs struct */
+struct Form_SubmitEventArgs {
 };
-ORCA_API void luaX_pushForm_SubmitMsgArgs(lua_State *L, struct Form_SubmitMsgArgs const* data);
-ORCA_API struct Form_SubmitMsgArgs* luaX_checkForm_SubmitMsgArgs(lua_State *L, int idx);
-/** Screen_UpdateLayoutMsgArgs struct */
-struct Screen_UpdateLayoutMsgArgs {
+ORCA_API void luaX_pushForm_SubmitEventArgs(lua_State *L, struct Form_SubmitEventArgs const* data);
+ORCA_API struct Form_SubmitEventArgs* luaX_checkForm_SubmitEventArgs(lua_State *L, int idx);
+/** Screen_UpdateLayoutEventArgs struct */
+struct Screen_UpdateLayoutEventArgs {
 	float Width;
 	float Height;
 };
-ORCA_API void luaX_pushScreen_UpdateLayoutMsgArgs(lua_State *L, struct Screen_UpdateLayoutMsgArgs const* data);
-ORCA_API struct Screen_UpdateLayoutMsgArgs* luaX_checkScreen_UpdateLayoutMsgArgs(lua_State *L, int idx);
-/** Screen_RenderScreenMsgArgs struct */
-struct Screen_RenderScreenMsgArgs {
+ORCA_API void luaX_pushScreen_UpdateLayoutEventArgs(lua_State *L, struct Screen_UpdateLayoutEventArgs const* data);
+ORCA_API struct Screen_UpdateLayoutEventArgs* luaX_checkScreen_UpdateLayoutEventArgs(lua_State *L, int idx);
+/** Screen_RenderScreenEventArgs struct */
+struct Screen_RenderScreenEventArgs {
 	uint32_t width; ///< The width of the render screen
 	uint32_t height; ///< The height of the render screen
 	float stereo; ///< The stereo value of the render screen
 	float angle; ///< The angle of the render screen
 	struct Texture* target; ///< The target handle of the render screen
 };
-ORCA_API void luaX_pushScreen_RenderScreenMsgArgs(lua_State *L, struct Screen_RenderScreenMsgArgs const* data);
-ORCA_API struct Screen_RenderScreenMsgArgs* luaX_checkScreen_RenderScreenMsgArgs(lua_State *L, int idx);
-/** PageHost_NavigateToPageMsgArgs struct */
-struct PageHost_NavigateToPageMsgArgs {
+ORCA_API void luaX_pushScreen_RenderScreenEventArgs(lua_State *L, struct Screen_RenderScreenEventArgs const* data);
+ORCA_API struct Screen_RenderScreenEventArgs* luaX_checkScreen_RenderScreenEventArgs(lua_State *L, int idx);
+/** PageHost_NavigateToPageEventArgs struct */
+struct PageHost_NavigateToPageEventArgs {
 	const char* URL; ///< The URL of the page to navigate to.
 	enum TransitionType TransitionType; ///< The type of transition animation to use during navigation.
 };
-ORCA_API void luaX_pushPageHost_NavigateToPageMsgArgs(lua_State *L, struct PageHost_NavigateToPageMsgArgs const* data);
-ORCA_API struct PageHost_NavigateToPageMsgArgs* luaX_checkPageHost_NavigateToPageMsgArgs(lua_State *L, int idx);
-/** PageHost_NavigateBackMsgArgs struct */
-struct PageHost_NavigateBackMsgArgs {
+ORCA_API void luaX_pushPageHost_NavigateToPageEventArgs(lua_State *L, struct PageHost_NavigateToPageEventArgs const* data);
+ORCA_API struct PageHost_NavigateToPageEventArgs* luaX_checkPageHost_NavigateToPageEventArgs(lua_State *L, int idx);
+/** PageHost_NavigateBackEventArgs struct */
+struct PageHost_NavigateBackEventArgs {
 	enum TransitionType TransitionType; ///< The type of transition animation to use during navigation.
 };
-ORCA_API void luaX_pushPageHost_NavigateBackMsgArgs(lua_State *L, struct PageHost_NavigateBackMsgArgs const* data);
-ORCA_API struct PageHost_NavigateBackMsgArgs* luaX_checkPageHost_NavigateBackMsgArgs(lua_State *L, int idx);
+ORCA_API void luaX_pushPageHost_NavigateBackEventArgs(lua_State *L, struct PageHost_NavigateBackEventArgs const* data);
+ORCA_API struct PageHost_NavigateBackEventArgs* luaX_checkPageHost_NavigateBackEventArgs(lua_State *L, int idx);
 
 
 /// @brief Base class for data-holding objects within the framework
@@ -733,6 +733,7 @@ typedef struct Trigger const *TriggerCPtr, *lpcTrigger_t;
 struct Trigger {
 	const char* Property; ///< Target property name to monitor or modify
 	int32_t Value; ///< Associated value for the trigger condition
+	event_t Triggered;
 };
 ORCA_API void luaX_pushTrigger(lua_State *L, struct Trigger const* Trigger);
 ORCA_API struct Trigger* luaX_checkTrigger(lua_State *L, int idx);
@@ -827,6 +828,36 @@ struct Node {
 	const char* Tags; ///< Tag collection for categorizing or querying nodes.
 	struct DataObject* DataContext; ///< Data context (used for data binding, similar to XAML's DataContext).
 	long _tags; ///< Calculated tags value
+	event_t UpdateMatrix;
+	event_t PushProperty;
+	event_t LoadView;
+	event_t HitTest;
+	event_t IsVisible;
+	event_t ViewDidLoad;
+	event_t KillFocus;
+	event_t SetFocus;
+	event_t GetSize;
+	event_t MouseMessage;
+	event_t LeftMouseDown;
+	event_t RightMouseDown;
+	event_t OtherMouseDown;
+	event_t LeftMouseUp;
+	event_t RightMouseUp;
+	event_t OtherMouseUp;
+	event_t LeftMouseDragged;
+	event_t RightMouseDragged;
+	event_t OtherMouseDragged;
+	event_t LeftDoubleClick;
+	event_t RightDoubleClick;
+	event_t OtherDoubleClick;
+	event_t MouseMoved;
+	event_t ScrollWheel;
+	event_t DragDrop;
+	event_t DragEnter;
+	event_t KeyMessage;
+	event_t KeyDown;
+	event_t KeyUp;
+	event_t TextInput;
 };
 ORCA_API void luaX_pushNode(lua_State *L, struct Node const* Node);
 ORCA_API struct Node* luaX_checkNode(lua_State *L, int idx);
@@ -869,6 +900,7 @@ struct TextBlockConcept {
 	uiLabelSteps_t _steps; ///< Internal step-based rendering parameters.
 	struct Node* _node; ///< Reference to the owning node using this concept.
 	struct ViewText* _text; ///< Internal view representation of the text.
+	event_t MakeText;
 };
 ORCA_API void luaX_pushTextBlockConcept(lua_State *L, struct TextBlockConcept const* TextBlockConcept);
 ORCA_API struct TextBlockConcept* luaX_checkTextBlockConcept(lua_State *L, int idx);
@@ -908,6 +940,14 @@ struct Node2D {
 	actualPos_t _actual_pos; ///< Internal computed position
 	float _opacity; ///< Internal opacity value
 	int32_t _bbox_flags; ///< Internal bounding box flags
+	event_t DrawBrush;
+	event_t Measure;
+	event_t Arrange;
+	event_t MeasureOverride;
+	event_t ArrangeOverride;
+	event_t ForegroundContent;
+	event_t UpdateGeometry;
+	event_t SetScrollTop;
 };
 ORCA_API void luaX_pushNode2D(lua_State *L, struct Node2D const* Node2D);
 ORCA_API struct Node2D* luaX_checkNode2D(lua_State *L, int idx);
@@ -1017,6 +1057,7 @@ ORCA_API struct StackView* luaX_checkStackView(lua_State *L, int idx);
 typedef struct Form Form_t, *FormPtr, *lpForm_t;
 typedef struct Form const *FormCPtr, *lpcForm_t;
 struct Form {
+	event_t Submit;
 };
 ORCA_API void luaX_pushForm(lua_State *L, struct Form const* Form);
 ORCA_API struct Form* luaX_checkForm(lua_State *L, int idx);
@@ -1046,6 +1087,8 @@ struct Screen {
 	float DialogResult; ///< Result value for dialog interactions
 	struct Texture* _rt; ///< Internal render target for the screen
 	uint32_t _size; ///< Currently set size (to resize window when changed).
+	event_t UpdateLayout;
+	event_t RenderScreen;
 };
 ORCA_API void luaX_pushScreen(lua_State *L, struct Screen const* Screen);
 ORCA_API struct Screen* luaX_checkScreen(lua_State *L, int idx);
@@ -1087,7 +1130,7 @@ typedef struct ImageView ImageView_t, *ImageViewPtr, *lpImageView_t;
 typedef struct ImageView const *ImageViewCPtr, *lpcImageView_t;
 struct ImageView {
 	const char* Src; ///< Image source path or resource identifier
-	struct Texture* Image; ///< Direct reference to loaded image
+	struct Texture* Source; ///< Direct reference to loaded image
 	struct vec4 Edges; ///< Edge inset values for nine-patch rendering
 	struct vec4 Insets; ///< Content inset values for image positioning
 	struct vec4 Viewbox; ///< Viewport rectangle for image cropping/scaling
@@ -1158,6 +1201,8 @@ struct PageHost {
 	struct Page* ActivePage; ///< The currently active page.
 	struct Page* _historyStack[32]; ///< Navigation history stack.
 	int32_t _historySize; ///< Number of entries in the navigation history stack.
+	event_t NavigateToPage;
+	event_t NavigateBack;
 };
 ORCA_API void luaX_pushPageHost(lua_State *L, struct PageHost const* PageHost);
 ORCA_API struct PageHost* luaX_checkPageHost(lua_State *L, int idx);

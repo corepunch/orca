@@ -214,21 +214,6 @@ OBJ_GetComponent(lpObject_t pobj, uint32_t id)
   return NULL;
 }
 
-struct MessageType const*
-OBJ_GetMessageTypeAtIndex(lpObject_t pobj, uint32_t classid, uint32_t index)
-{
-  FOR_EACH_LIST(struct component, cmp, _GetComponents(pobj)) {
-    if (cmp->pcls->ClassID == classid) {
-      if (cmp->pcls->NumMessageTypes > index) {
-        return &cmp->pcls->MessageTypes[index];
-      } else {
-        Con_Error("Message index out of range: %u (class %s has %u messages)\n", index, cmp->pcls->ClassName, cmp->pcls->NumMessageTypes);
-      }
-    }
-  }
-  return NULL;
-}
-
 void
 OBJ_ReleaseComponents(lpObject_t pobj)
 {
@@ -276,13 +261,13 @@ OBJ_PushClassProperty(lua_State *L, lpObject_t object, uint32_t id)
 }
 
 
-lpcMessageType_t
+lpcPropertyType_t
 MSG_FindByShortID(lpObject_t obj, uint32_t ident)
 {
   FOR_EACH_LIST(struct component, cmp, _GetComponents(obj)) {
-    FOR_LOOP(i, cmp->pcls->NumMessageTypes) {
-      lpcMessageType_t msg = &cmp->pcls->MessageTypes[i];
-      if (msg->ShortIdentifier == ident) {
+    FOR_LOOP(i, cmp->pcls->NumProperties) {
+      lpcPropertyType_t msg = &cmp->pcls->Properties[i];
+      if (msg->DataType == kDataTypeEvent && msg->ShortIdentifier == ident) {
         return msg;
       }
     }

@@ -114,19 +114,15 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.ClassID = ID_##NAME, \
 	.ClassSize = sizeof(struct NAME), \
 	.Properties = NAME##Properties, \
-	.MessageTypes = NAME##MessageTypes, \
 	.ObjProc = NAME##Proc, \
 	.Defaults = &NAME##Defaults, \
 	.NumProperties = k##NAME##NumProperties, \
-	.NumMessageTypes = k##NAME##NumMessageTypes, \
 };
 HANDLER(FtgPackage, Project, LoadProject);
 HANDLER(FtgPackage, Project, OpenFile);
 HANDLER(FtgPackage, Project, FileExists);
 HANDLER(FtgPackage, Project, HasChangedFiles);
 HANDLER(FtgPackage, Object, Destroy);
-static struct MessageType FtgPackageMessageTypes[kFtgPackageNumMessageTypes] = {	
-};
 static struct PropertyType const FtgPackageProperties[kFtgPackageNumProperties] = {
 	DECL(0x5ffdd888, FtgPackage, FileName, FileName, kDataTypeString), // FtgPackage.FileName
 };

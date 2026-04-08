@@ -16,7 +16,7 @@ typedef struct lua_State lua_State;
 #include "SpriteKit_properties.h"
 #include "../../source/renderer/api/renderer.h"
 
-typedef struct SKNode_RenderMsgArgs SKNode_RenderMsg_t,* SKNode_RenderMsgPtr;
+typedef struct SKNode_RenderEventArgs SKNode_RenderMsg_t,* SKNode_RenderMsgPtr;
 
 
 typedef struct SpriteFrame SpriteFrame_t, *lpSpriteFrame_t;
@@ -32,12 +32,12 @@ struct SpriteFrame {
 ORCA_API void luaX_pushSpriteFrame(lua_State *L, struct SpriteFrame const* SpriteFrame);
 ORCA_API struct SpriteFrame* luaX_checkSpriteFrame(lua_State *L, int idx);
 
-/** SKNode_RenderMsgArgs struct */
-struct SKNode_RenderMsgArgs {
+/** SKNode_RenderEventArgs struct */
+struct SKNode_RenderEventArgs {
 	struct ViewDef* ViewDef; ///< The view definition for rendering
 };
-ORCA_API void luaX_pushSKNode_RenderMsgArgs(lua_State *L, struct SKNode_RenderMsgArgs const* data);
-ORCA_API struct SKNode_RenderMsgArgs* luaX_checkSKNode_RenderMsgArgs(lua_State *L, int idx);
+ORCA_API void luaX_pushSKNode_RenderEventArgs(lua_State *L, struct SKNode_RenderEventArgs const* data);
+ORCA_API struct SKNode_RenderEventArgs* luaX_checkSKNode_RenderEventArgs(lua_State *L, int idx);
 
 /** SpriteAnimation component */
 typedef struct SpriteAnimation SpriteAnimation_t, *SpriteAnimationPtr, *lpSpriteAnimation_t;
@@ -62,6 +62,7 @@ struct SKNode {
 	struct vec2 Anchor; ///< Anchor point for positioning
 	struct mat4 Matrix; ///< Final combined transformation matrix (computed automatically)
 	float _opacity;
+	event_t Render;
 };
 ORCA_API void luaX_pushSKNode(lua_State *L, struct SKNode const* SKNode);
 ORCA_API struct SKNode* luaX_checkSKNode(lua_State *L, int idx);

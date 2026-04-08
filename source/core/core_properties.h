@@ -22,24 +22,24 @@
 #define ID_MessageType_Size 0x0c31f887 // MessageType.Size
 	
 
-#define ID_Object_CreateMsgArgs 0xeeeab9ad
+#define ID_Object_CreateEventArgs 0xd370143c
 
-#define ID_Object_StartMsgArgs 0xf646bef3
+#define ID_Object_StartEventArgs 0x23dcf2aa
 
-#define ID_Object_AwakeMsgArgs 0x510f9a9a
+#define ID_Object_AwakeEventArgs 0xa641bb5f
 
-#define ID_Object_ThemeChangedMsgArgs 0xc24cddd4
+#define ID_Object_ThemeChangedEventArgs 0x22275cf1
 
-#define ID_Object_PropertyChangedMsgArgs 0xea347aca
+#define ID_Object_PropertyChangedEventArgs 0x530ec22f
 
-#define ID_Object_PropertyChangedMsgArgs_Property 0x42f14cfd // Object_PropertyChangedMsgArgs.Property
-#define ID_Object_AttachedMsgArgs 0xd415dce1
+#define ID_Object_PropertyChangedEventArgs_Property 0xc7308dfa // Object_PropertyChangedEventArgs.Property
+#define ID_Object_AttachedEventArgs 0x421be758
 
-#define ID_Object_ReleaseMsgArgs 0x70222484
+#define ID_Object_ReleaseEventArgs 0x7710fc41
 
-#define ID_Object_DestroyMsgArgs 0x66bc6055
+#define ID_Object_DestroyEventArgs 0x3eec8a44
 
-#define ID_Object_TimerMsgArgs 0xd0054be4
+#define ID_Object_TimerEventArgs 0x75284ba1
 
 	
 

@@ -15,11 +15,11 @@ struct _PACK;
 #include "filesystem_properties.h"
 #include "../core/core.h"
 
-typedef struct Workspace_ReadCommandsMsgArgs Workspace_ReadCommandsMsg_t,* Workspace_ReadCommandsMsgPtr;
-typedef struct Project_OpenFileMsgArgs Project_OpenFileMsg_t,* Project_OpenFileMsgPtr;
-typedef struct Project_FileExistsMsgArgs Project_FileExistsMsg_t,* Project_FileExistsMsgPtr;
-typedef struct Project_HasChangedFilesMsgArgs Project_HasChangedFilesMsg_t,* Project_HasChangedFilesMsgPtr;
-typedef struct Project_LoadProjectMsgArgs Project_LoadProjectMsg_t,* Project_LoadProjectMsgPtr;
+typedef struct Workspace_ReadCommandsEventArgs Workspace_ReadCommandsMsg_t,* Workspace_ReadCommandsMsgPtr;
+typedef struct Project_OpenFileEventArgs Project_OpenFileMsg_t,* Project_OpenFileMsgPtr;
+typedef struct Project_FileExistsEventArgs Project_FileExistsMsg_t,* Project_FileExistsMsgPtr;
+typedef struct Project_HasChangedFilesEventArgs Project_HasChangedFilesMsg_t,* Project_HasChangedFilesMsgPtr;
+typedef struct Project_LoadProjectEventArgs Project_LoadProjectMsg_t,* Project_LoadProjectMsgPtr;
 
 
 typedef struct ProjectReference ProjectReference_t, *lpProjectReference_t;
@@ -100,39 +100,40 @@ struct SystemMessage {
 ORCA_API void luaX_pushSystemMessage(lua_State *L, struct SystemMessage const* SystemMessage);
 ORCA_API struct SystemMessage* luaX_checkSystemMessage(lua_State *L, int idx);
 
-/** Workspace_ReadCommandsMsgArgs struct */
-struct Workspace_ReadCommandsMsgArgs {
+/** Workspace_ReadCommandsEventArgs struct */
+struct Workspace_ReadCommandsEventArgs {
 };
-ORCA_API void luaX_pushWorkspace_ReadCommandsMsgArgs(lua_State *L, struct Workspace_ReadCommandsMsgArgs const* data);
-ORCA_API struct Workspace_ReadCommandsMsgArgs* luaX_checkWorkspace_ReadCommandsMsgArgs(lua_State *L, int idx);
-/** Project_OpenFileMsgArgs struct */
-struct Project_OpenFileMsgArgs {
+ORCA_API void luaX_pushWorkspace_ReadCommandsEventArgs(lua_State *L, struct Workspace_ReadCommandsEventArgs const* data);
+ORCA_API struct Workspace_ReadCommandsEventArgs* luaX_checkWorkspace_ReadCommandsEventArgs(lua_State *L, int idx);
+/** Project_OpenFileEventArgs struct */
+struct Project_OpenFileEventArgs {
 	const char* FileName;
 };
-ORCA_API void luaX_pushProject_OpenFileMsgArgs(lua_State *L, struct Project_OpenFileMsgArgs const* data);
-ORCA_API struct Project_OpenFileMsgArgs* luaX_checkProject_OpenFileMsgArgs(lua_State *L, int idx);
-/** Project_FileExistsMsgArgs struct */
-struct Project_FileExistsMsgArgs {
+ORCA_API void luaX_pushProject_OpenFileEventArgs(lua_State *L, struct Project_OpenFileEventArgs const* data);
+ORCA_API struct Project_OpenFileEventArgs* luaX_checkProject_OpenFileEventArgs(lua_State *L, int idx);
+/** Project_FileExistsEventArgs struct */
+struct Project_FileExistsEventArgs {
 	const char* FileName; ///< The file path to check for existence
 };
-ORCA_API void luaX_pushProject_FileExistsMsgArgs(lua_State *L, struct Project_FileExistsMsgArgs const* data);
-ORCA_API struct Project_FileExistsMsgArgs* luaX_checkProject_FileExistsMsgArgs(lua_State *L, int idx);
-/** Project_HasChangedFilesMsgArgs struct */
-struct Project_HasChangedFilesMsgArgs {
+ORCA_API void luaX_pushProject_FileExistsEventArgs(lua_State *L, struct Project_FileExistsEventArgs const* data);
+ORCA_API struct Project_FileExistsEventArgs* luaX_checkProject_FileExistsEventArgs(lua_State *L, int idx);
+/** Project_HasChangedFilesEventArgs struct */
+struct Project_HasChangedFilesEventArgs {
 };
-ORCA_API void luaX_pushProject_HasChangedFilesMsgArgs(lua_State *L, struct Project_HasChangedFilesMsgArgs const* data);
-ORCA_API struct Project_HasChangedFilesMsgArgs* luaX_checkProject_HasChangedFilesMsgArgs(lua_State *L, int idx);
-/** Project_LoadProjectMsgArgs struct */
-struct Project_LoadProjectMsgArgs {
+ORCA_API void luaX_pushProject_HasChangedFilesEventArgs(lua_State *L, struct Project_HasChangedFilesEventArgs const* data);
+ORCA_API struct Project_HasChangedFilesEventArgs* luaX_checkProject_HasChangedFilesEventArgs(lua_State *L, int idx);
+/** Project_LoadProjectEventArgs struct */
+struct Project_LoadProjectEventArgs {
 	const char* Path; ///< Directory name to load the bundle
 };
-ORCA_API void luaX_pushProject_LoadProjectMsgArgs(lua_State *L, struct Project_LoadProjectMsgArgs const* data);
-ORCA_API struct Project_LoadProjectMsgArgs* luaX_checkProject_LoadProjectMsgArgs(lua_State *L, int idx);
+ORCA_API void luaX_pushProject_LoadProjectEventArgs(lua_State *L, struct Project_LoadProjectEventArgs const* data);
+ORCA_API struct Project_LoadProjectEventArgs* luaX_checkProject_LoadProjectEventArgs(lua_State *L, int idx);
 
 /** Workspace component */
 typedef struct Workspace Workspace_t, *WorkspacePtr, *lpWorkspace_t;
 typedef struct Workspace const *WorkspaceCPtr, *lpcWorkspace_t;
 struct Workspace {
+	event_t ReadCommands;
 };
 ORCA_API void luaX_pushWorkspace(lua_State *L, struct Workspace const* Workspace);
 ORCA_API struct Workspace* luaX_checkWorkspace(lua_State *L, int idx);
@@ -222,6 +223,10 @@ struct Project {
 	struct Library* ImageLibrary;
 	struct Library* FontLibrary;
 	bool_t isPackage;
+	event_t OpenFile;
+	event_t FileExists;
+	event_t HasChangedFiles;
+	event_t LoadProject;
 };
 ORCA_API void luaX_pushProject(lua_State *L, struct Project const* Project);
 ORCA_API struct Project* luaX_checkProject(lua_State *L, int idx);

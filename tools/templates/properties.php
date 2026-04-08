@@ -11,33 +11,23 @@
 #define ID_<?= $classname ?> 0x<?= hash('fnv1a32', $classname) ?>
 #define Get<?= $classname ?>(_P) ((struct <?= $classname ?>*)((_P)?OBJ_GetComponent(_P,ID_<?= $classname ?>):NULL))
 #define <?= $classname ?>_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_<?= $classname ?>,sizeof(struct <?= $classname ?>),_N)
-#define <?= $classname ?>_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_<?= $classname ?>,_N)
 <?php foreach ($class->getProperties() as $prop) {
 	$name = $prop->name;
 	$hashed_property = hash('fnv1a32', "$classname.$name");
 	echo("#define ID_{$classname}_{$name} 0x$hashed_property // {$classname}.{$name}\n");
 }?>
-#define k<?= $classname ?>NumMessageTypes <?= count($class->getMessages()) ?>
-<?php if (count($class->getMessages()) > 0): ?>
-enum <?= $classname ?>Messages {
-	<?php foreach ($class->getMessages() as $event) {
-		$name = $event->name;
-		echo("\tk{$classname}{$name},\n");
-	}?>};
-<?php endif ?>
 <?php foreach ($class->getMessages() as $event) {
 	$_h = hash('fnv1a32', $classname . "." . $event->name);
 	$_rk = strval($event->routing);
 	$_rc = isset($_routing_const[$_rk]) ? $_routing_const[$_rk] : 'ROUTING_BUBBLE';
 	echo "#define ID_{$classname}_{$event->name} ((0x{$_h}&MSG_DATA_MASK)|{$_rc}) // {$classname}.{$event->name}\n";
 } ?>
-#define k<?= $classname ?>NumProperties <?= count($class->getProperties()) ?>
+#define k<?= $classname ?>NumProperties <?= count($class->getProperties())+count($class->getMessages()) ?>
 <?php if (count($class->getProperties()) > 0): ?>
 enum <?= $classname ?>Properties {
-	<?php foreach ($class->getProperties() as $prop) {
-		$name = $prop->name;
-		echo("\tk{$classname}{$name},\n");
-	}?>};
+	<?php foreach ($class->getProperties() as $prop) echo("\tk{$classname}{$prop->name},\n");?>
+	<?php foreach ($class->getMessages() as $event) echo("\tk{$classname}{$event->name},\n");?>
+};
 <?php endif ?>
 <?php endforeach ?>
 
@@ -59,7 +49,7 @@ enum <?= $classname ?>Properties {
 <?php endforeach ?>	
 
 <?php foreach ($model->getEvents() as $name => $event):?>
-<?php $struct_id_name = $event->msgns . "_" . $name . "MsgArgs"; ?>
+<?php $struct_id_name = $event->msgns . "_" . $name . "EventArgs"; ?>
 #define ID_<?= $struct_id_name ?> 0x<?= hash('fnv1a32', $struct_id_name) ?>
 
 <?php foreach ($event->getAllFields() as $field) {
