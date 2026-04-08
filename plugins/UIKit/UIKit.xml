@@ -332,6 +332,7 @@
       </properties>
       <messages>
         <message name="Triggered" routing="Bubbling">
+          <summary>Fired when the trigger condition is met, carrying a reference to the trigger that activated.</summary>
           <fields>
             <field name="Trigger" type="Trigger" pointer="true"/>
           </fields>
@@ -433,6 +434,7 @@
       </fields>
       <messages>
         <message name="UpdateMatrix" routing="Direct">
+          <summary>Requests the node to recompute its transformation matrix from current transform properties.</summary>
           <fields>
             <field name="parent" type="mat4">The parent matrix</field>
             <field name="opacity" type="float">The opacity value</field>
@@ -440,6 +442,7 @@
           </fields>
         </message>
         <message name="PushProperty" routing="TunnelingBubbling">
+          <summary>Propagates an inherited property value down or up the node hierarchy.</summary>
           <fields>
             <field name="Placeholder" type="int"/>
           </fields>
@@ -451,18 +454,27 @@
           </fields>
         </message>
         <message name="HitTest" routing="Direct">
+          <summary>Queries whether a screen-space point falls within the bounds of this node.</summary>
           <fields>
             <field name="x" type="int">X coordinate of the hit test point</field>
             <field name="y" type="int">Y coordinate of the hit test point</field>
           </fields>
         </message>
-        <message name="IsVisible" routing="Direct"/>
+        <message name="IsVisible" routing="Direct">
+          <summary>Queries whether the node is currently visible in the scene.</summary>
+        </message>
         <message name="ViewDidLoad" routing="Direct">
           <summary>Notifies the component that its view has finished loading.</summary>
         </message>
-        <message name="KillFocus" routing="Direct"/>
-        <message name="SetFocus" routing="Direct"/>
-        <message name="GetSize" routing="Direct"/>
+        <message name="KillFocus" routing="Direct">
+          <summary>Removes keyboard focus from this node.</summary>
+        </message>
+        <message name="SetFocus" routing="Direct">
+          <summary>Gives keyboard focus to this node.</summary>
+        </message>
+        <message name="GetSize" routing="Direct">
+          <summary>Queries the current layout size of this node.</summary>
+        </message>
         <message name="MouseMessage" routing="Bubbling">
           <summary>Base mouse event providing pointer position.</summary>
           <fields>
@@ -474,22 +486,54 @@
             <field name="clickCount" type="int">Number of consecutive clicks (1 for single click, 2 for double click)</field>
           </fields>
         </message>
-        <message name="LeftMouseDown" routing="Bubbling" same-as="MouseMessage"/>
-        <message name="RightMouseDown" routing="Bubbling" same-as="MouseMessage"/>
-        <message name="OtherMouseDown" routing="Bubbling" same-as="MouseMessage"/>
-        <message name="LeftMouseUp" routing="Bubbling" same-as="MouseMessage"/>
-        <message name="RightMouseUp" routing="Bubbling" same-as="MouseMessage"/>
-        <message name="OtherMouseUp" routing="Bubbling" same-as="MouseMessage"/>
-        <message name="LeftMouseDragged" routing="Bubbling" same-as="MouseMessage"/>
-        <message name="RightMouseDragged" routing="Bubbling" same-as="MouseMessage"/>
-        <message name="OtherMouseDragged" routing="Bubbling" same-as="MouseMessage"/>
-        <message name="LeftDoubleClick" routing="Bubbling" same-as="MouseMessage"/>
-        <message name="RightDoubleClick" routing="Bubbling" same-as="MouseMessage"/>
-        <message name="OtherDoubleClick" routing="Bubbling" same-as="MouseMessage"/>
-        <message name="MouseMoved" routing="Bubbling" same-as="MouseMessage"/>
-        <message name="ScrollWheel" routing="Bubbling" same-as="MouseMessage"/>
-        <message name="DragDrop" routing="Bubbling" same-as="MouseMessage"/>
-        <message name="DragEnter" routing="Bubbling" same-as="MouseMessage"/>
+        <message name="LeftMouseDown" routing="Bubbling" same-as="MouseMessage">
+          <summary>Fired when the left mouse button is pressed down over an object.</summary>
+        </message>
+        <message name="RightMouseDown" routing="Bubbling" same-as="MouseMessage">
+          <summary>Fired when the right mouse button is pressed down over an object.</summary>
+        </message>
+        <message name="OtherMouseDown" routing="Bubbling" same-as="MouseMessage">
+          <summary>Fired when a non-primary, non-secondary mouse button is pressed down over an object.</summary>
+        </message>
+        <message name="LeftMouseUp" routing="Bubbling" same-as="MouseMessage">
+          <summary>Fired when the left mouse button is released over an object.</summary>
+        </message>
+        <message name="RightMouseUp" routing="Bubbling" same-as="MouseMessage">
+          <summary>Fired when the right mouse button is released over an object.</summary>
+        </message>
+        <message name="OtherMouseUp" routing="Bubbling" same-as="MouseMessage">
+          <summary>Fired when a non-primary, non-secondary mouse button is released over an object.</summary>
+        </message>
+        <message name="LeftMouseDragged" routing="Bubbling" same-as="MouseMessage">
+          <summary>Fired continuously while the mouse moves with the left button held down.</summary>
+        </message>
+        <message name="RightMouseDragged" routing="Bubbling" same-as="MouseMessage">
+          <summary>Fired continuously while the mouse moves with the right button held down.</summary>
+        </message>
+        <message name="OtherMouseDragged" routing="Bubbling" same-as="MouseMessage">
+          <summary>Fired continuously while the mouse moves with a non-primary, non-secondary button held down.</summary>
+        </message>
+        <message name="LeftDoubleClick" routing="Bubbling" same-as="MouseMessage">
+          <summary>Fired when the left mouse button is double-clicked over an object.</summary>
+        </message>
+        <message name="RightDoubleClick" routing="Bubbling" same-as="MouseMessage">
+          <summary>Fired when the right mouse button is double-clicked over an object.</summary>
+        </message>
+        <message name="OtherDoubleClick" routing="Bubbling" same-as="MouseMessage">
+          <summary>Fired when a non-primary, non-secondary mouse button is double-clicked over an object.</summary>
+        </message>
+        <message name="MouseMoved" routing="Bubbling" same-as="MouseMessage">
+          <summary>Fired when the mouse pointer moves over an object without any button held down.</summary>
+        </message>
+        <message name="ScrollWheel" routing="Bubbling" same-as="MouseMessage">
+          <summary>Fired when the scroll wheel is rotated while the pointer is over an object.</summary>
+        </message>
+        <message name="DragDrop" routing="Bubbling" same-as="MouseMessage">
+          <summary>Fired when a drag operation is completed and the dragged item is dropped onto an object.</summary>
+        </message>
+        <message name="DragEnter" routing="Bubbling" same-as="MouseMessage">
+          <summary>Fired when a dragged item enters the bounds of an object.</summary>
+        </message>
         <message name="KeyMessage" routing="Bubbling">
           <summary>Base keyboard event providing key information.</summary>
           <fields>
@@ -501,9 +545,15 @@
             <field name="hotKey" type="string">Combined modifier+key string for hotkey matching (e.g. "ctrl+alt+w")</field>
           </fields>
         </message>
-        <message name="KeyDown" routing="Bubbling" same-as="KeyMessage"/>
-        <message name="KeyUp" routing="Bubbling" same-as="KeyMessage"/>
-        <message name="TextInput" routing="Bubbling" same-as="KeyMessage"/>
+        <message name="KeyDown" routing="Bubbling" same-as="KeyMessage">
+          <summary>Fired when a keyboard key is pressed down.</summary>
+        </message>
+        <message name="KeyUp" routing="Bubbling" same-as="KeyMessage">
+          <summary>Fired when a keyboard key is released.</summary>
+        </message>
+        <message name="TextInput" routing="Bubbling" same-as="KeyMessage">
+          <summary>Fired when a printable character is entered via the keyboard, providing the resulting text.</summary>
+        </message>
       </messages>
     </class>
     <class name="TextRun">
@@ -669,12 +719,14 @@
           </fields>
         </message>
         <message name="Measure" routing="Direct">
+          <summary>Asks the node to compute its desired size given the available space.</summary>
           <fields>
             <field name="Width" type="float"/>
             <field name="Height" type="float"/>
           </fields>
         </message>
         <message name="Arrange" routing="Direct">
+          <summary>Instructs the node to position and size itself within the given bounding rectangle.</summary>
           <fields>
             <field name="X" type="float"/>
             <field name="Y" type="float"/>
@@ -682,11 +734,20 @@
             <field name="Height" type="float"/>
           </fields>
         </message>
-        <message name="MeasureOverride" routing="Direct" same-as="Measure"/>
-        <message name="ArrangeOverride" routing="Direct" same-as="Arrange"/>
-        <message name="ForegroundContent" routing="Direct"/>
-        <message name="UpdateGeometry" routing="Direct"/>
+        <message name="MeasureOverride" routing="Direct" same-as="Measure">
+          <summary>Override hook called during the measure pass, allowing subclasses to customise size calculation.</summary>
+        </message>
+        <message name="ArrangeOverride" routing="Direct" same-as="Arrange">
+          <summary>Override hook called during the arrange pass, allowing subclasses to customise child positioning.</summary>
+        </message>
+        <message name="ForegroundContent" routing="Direct">
+          <summary>Requests the node to draw its foreground content layer on top of background and children.</summary>
+        </message>
+        <message name="UpdateGeometry" routing="Direct">
+          <summary>Notifies the node that its geometry (bounds or shape) has changed and rendering caches should be invalidated.</summary>
+        </message>
         <message name="SetScrollTop" routing="Direct">
+          <summary>Sets the vertical scroll offset of the node's scrollable content.</summary>
           <fields>
             <field name="Value" type="float"/>
           </fields>
@@ -798,7 +859,9 @@
         <handle message="Form.Submit"/>
       </handles>
       <messages>
-        <message name="Submit" routing="Bubbling"/>
+        <message name="Submit" routing="Bubbling">
+          <summary>Fired when the form is submitted, typically triggered by an action within the form.</summary>
+        </message>
       </messages>
     </class>
     <class name="Control" parent="Node2D">
@@ -838,12 +901,14 @@
       </fields>
       <messages>
         <message name="UpdateLayout" routing="Direct">
+          <summary>Requests the screen to recompute its layout for the given dimensions.</summary>
           <fields>
             <field name="Width" type="float"/>
             <field name="Height" type="float"/>
           </fields>
         </message>
         <message name="RenderScreen" routing="Direct">
+          <summary>Requests the screen to render a frame to the specified render target.</summary>
           <fields>
             <field name="width" type="uint">The width of the render screen</field>
             <field name="height" type="uint">The height of the render screen</field>

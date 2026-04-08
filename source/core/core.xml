@@ -444,19 +444,36 @@
         </method>
       </methods>
       <messages>
-        <message name="Create" routing="Direct"/>
-        <message name="Start" routing="Direct"/>
-        <message name="Awake" routing="Direct"/>
-        <message name="ThemeChanged" routing="Direct"/>
+        <message name="Create" routing="Direct">
+          <summary>Sent once when the component is first created and attached to an object.</summary>
+        </message>
+        <message name="Start" routing="Direct">
+          <summary>Sent after the entire object hierarchy has been loaded, signalling that the scene is ready for logic execution.</summary>
+        </message>
+        <message name="Awake" routing="Direct">
+          <summary>Sent when the object is activated in the scene, before the first update cycle.</summary>
+        </message>
+        <message name="ThemeChanged" routing="Direct">
+          <summary>Sent when the active theme is changed, allowing components to refresh their styled resources.</summary>
+        </message>
         <message name="PropertyChanged" routing="Direct">
+          <summary>Sent when a property value on the object changes.</summary>
           <fields>
             <field name="Property" type="Property" pointer="true">The property that changed</field>
           </fields>
         </message>
-        <message name="Attached" routing="Direct"/>
-        <message name="Release" routing="Direct"/>
-        <message name="Destroy" routing="Direct"/>
-        <message name="Timer" routing="Direct"/>
+        <message name="Attached" routing="Direct">
+          <summary>Sent when the object is attached to a parent object in the hierarchy.</summary>
+        </message>
+        <message name="Release" routing="Direct">
+          <summary>Sent when the object is being released and its resources should be freed.</summary>
+        </message>
+        <message name="Destroy" routing="Direct">
+          <summary>Sent just before the object is destroyed and removed from the scene.</summary>
+        </message>
+        <message name="Timer" routing="Direct">
+          <summary>Sent on each timer tick registered for this object.</summary>
+        </message>
       </messages>
     </interface>
   </interfaces>
