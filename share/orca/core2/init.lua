@@ -77,7 +77,7 @@ function core.run()
 	while true do
 		for msg in system.getMessage(core.screen) do
     	if filesystem.hasChangedFiles() then return DATADIR end
-			if msg:is "Window.Closed" then print('closing') return
+			if msg:is "Window.Closed" then return
 			elseif msg:is "Node.KeyDown" and msg.key == "q" then return
 			elseif msg:is "RequestReload" then return DATADIR
 			else
