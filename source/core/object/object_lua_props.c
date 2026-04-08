@@ -100,9 +100,6 @@ OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name)
   if (SUCCEEDED(OBJ_FindShortProperty(self, name, &property))) {
     luaX_readProperty(L, 3, property);
     return TRUE;
-  } else if (lua_type(L, 3) == LUA_TFUNCTION) {
-    OBJ_RegisterCallback(self, name);
-    return FALSE;
   } else {
 //    fprintf(stderr, "Can't find property %s\n", name);
     return FALSE;

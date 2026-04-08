@@ -178,6 +178,7 @@ enum ColorBrushProperties {
 #define ID_Node_Opacity 0xb6882472 // Node.Opacity
 #define ID_Node_Tags 0xec56af24 // Node.Tags
 #define ID_Node_DataContext 0x80b43db0 // Node.DataContext
+#define ID_Node_Awake ((0x2facb9c8&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.Awake
 #define ID_Node_UpdateMatrix ((0x35cdb821&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.UpdateMatrix
 #define ID_Node_PushProperty ((0xaca786d4&MSG_DATA_MASK)|ROUTING_TUNNELING_BUBBLING) // Node.PushProperty
 #define ID_Node_LoadView ((0xe3c6ed08&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.LoadView
@@ -208,7 +209,7 @@ enum ColorBrushProperties {
 #define ID_Node_KeyDown ((0xfc8dc15c&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.KeyDown
 #define ID_Node_KeyUp ((0x9282bc1d&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.KeyUp
 #define ID_Node_TextInput ((0xaf29a9ae&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.TextInput
-#define kNodeNumProperties 97
+#define kNodeNumProperties 98
 enum NodeProperties {
 	kNodeSize,
 	kNodeHorizontalSize,
@@ -277,6 +278,7 @@ enum NodeProperties {
 	kNodeOpacity,
 	kNodeTags,
 	kNodeDataContext,
+	kNodeAwake,
 	kNodeUpdateMatrix,
 	kNodePushProperty,
 	kNodeLoadView,
@@ -847,6 +849,8 @@ enum StyleProperties {
 #define ID_Trigger_TriggeredEventArgs 0x86976046
 
 #define ID_Trigger_TriggeredEventArgs_Trigger 0xa8841074 // Trigger_TriggeredEventArgs.Trigger
+#define ID_Node_AwakeEventArgs 0x53009d32
+
 #define ID_Node_UpdateMatrixEventArgs 0xb9c33fb7
 
 #define ID_Node_UpdateMatrixEventArgs_parent 0xe966f5d3 // Node_UpdateMatrixEventArgs.parent

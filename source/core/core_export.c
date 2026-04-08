@@ -166,13 +166,6 @@ int f_OBJ_MsgSend(lua_State *L) {
 	OBJ_MsgSend(L, this_, message );
 	return 0;
 }
-int f_OBJ_FindCallbackForID(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	uint32_t event = (uint32_t)luaL_checkinteger(L, 2);
-	const char* result_ = OBJ_FindCallbackForID(this_, event);
-	lua_pushstring(L, result_);
-	return 1;
-}
 int f_OBJ_SetProperty(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	const char* Property = luaL_checkstring(L, 2);
@@ -492,7 +485,6 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "findParentOfClass", f_OBJ_FindParentOfClass },
 		{ "postMessage", f_OBJ_PostMessage },
 		{ "msgSend", f_OBJ_MsgSend },
-		{ "findCallbackForID", f_OBJ_FindCallbackForID },
 		{ "__setproperty", f_OBJ_SetProperty },
 		{ "__getproperty", f_OBJ_GetProperty },
 		{ "updateProperties", f_OBJ_UpdateProperties },
@@ -616,10 +608,6 @@ int luaopen_orca_##NAME(lua_State *L) { \
 		{ NULL, NULL }, \
 	}), 0); \
 	luaL_setfuncs(L, _##NAME##_Methods, 0); \
-	/* Register the struct in the Lua registry */ \
-	lua_pushlightuserdata(L, (void*)(intptr_t)ID_##NAME); \
-	lua_pushvalue(L, -2); \
-	lua_settable(L, LUA_REGISTRYINDEX); \
 	/* Make struct creatable via constructor-like syntax */ \
 	lua_newtable(L); \
 	lua_pushcfunction(L, f_##NAME##___call); \
@@ -627,27 +615,13 @@ int luaopen_orca_##NAME(lua_State *L) { \
 	lua_setmetatable(L, -2); \
 	return 1; \
 }
-static struct PropertyType _MessageType[] = {
-	DECL(0x0fe07306, MessageType, Name, Name, kDataTypeString), // MessageType.Name
-	DECL(0x429417cf, MessageType, FullIdentifier, FullIdentifier, kDataTypeInt), // MessageType.FullIdentifier
-	DECL(0x0f76864e, MessageType, ShortIdentifier, ShortIdentifier, kDataTypeInt), // MessageType.ShortIdentifier
-	DECL(0xce213309, MessageType, Routing, Routing, kDataTypeEnum, .EnumValues = _MessageRouting), // MessageType.Routing
-	DECL(0xa6478e7c, MessageType, Size, Size, kDataTypeInt), // MessageType.Size
-};
-static luaL_Reg _MessageType_Methods[] = {
-	{ NULL, NULL }
-};
 
-STRUCT(MessageType, MessageType);
 
 static luaL_Reg _Object_CreateEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Object_CreateEventArgs[] = {
 };
 static luaL_Reg _Object_StartEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Object_StartEventArgs[] = {
-};
-static luaL_Reg _Object_AwakeEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Object_AwakeEventArgs[] = {
 };
 static luaL_Reg _Object_ThemeChangedEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Object_ThemeChangedEventArgs[] = {
@@ -671,7 +645,6 @@ static struct PropertyType _Object_TimerEventArgs[] = {
 
 STRUCT(Object_CreateEventArgs, Object_CreateEventArgs);
 STRUCT(Object_StartEventArgs, Object_StartEventArgs);
-STRUCT(Object_AwakeEventArgs, Object_AwakeEventArgs);
 STRUCT(Object_ThemeChangedEventArgs, Object_ThemeChangedEventArgs);
 STRUCT(Object_PropertyChangedEventArgs, Object_PropertyChangedEventArgs);
 STRUCT(Object_AttachedEventArgs, Object_AttachedEventArgs);
@@ -710,10 +683,8 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 		{ "getHover", f_core_GetHover },
 		{ NULL, NULL } 
 	}));
-	lua_setfield(L, ((void)luaopen_orca_MessageType(L), -2), "MessageType");
 	lua_setfield(L, ((void)luaopen_orca_Object_CreateEventArgs(L), -2), "Object_CreateEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object_StartEventArgs(L), -2), "Object_StartEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Object_AwakeEventArgs(L), -2), "Object_AwakeEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object_ThemeChangedEventArgs(L), -2), "Object_ThemeChangedEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object_PropertyChangedEventArgs(L), -2), "Object_PropertyChangedEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object_AttachedEventArgs(L), -2), "Object_AttachedEventArgs");

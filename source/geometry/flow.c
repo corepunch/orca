@@ -58,6 +58,9 @@ parse_property(lua_State* L,
         // *(void**)valueptr = object;
 //      }
       return TRUE;
+    case kDataTypeEvent:
+      
+      return TRUE;
     default:
       return luaL_error(L, "parse_property(%s): Unsupported property type %d for parsing\n", prop->Name, prop->DataType);
   }
@@ -132,6 +135,9 @@ read_property(lua_State *L,
       }
       if (lua_type(L, idx) == LUA_TFUNCTION) {
         *(event_t *)valueptr = luaL_ref(L, LUA_REGISTRYINDEX);
+      } else if (lua_type(L, idx) == LUA_TSTRING) {
+        parse_property(L, luaL_checkstring(L, idx), prop, valueptr);
+        break;
       } else {
         luaL_error(L, "Unsupported input type %d for property %s of type event", lua_type(L, idx), prop->Name);
       }

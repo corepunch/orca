@@ -130,10 +130,6 @@ int luaopen_orca_##NAME(lua_State *L) { \
 		{ NULL, NULL }, \
 	}), 0); \
 	luaL_setfuncs(L, _##NAME##_Methods, 0); \
-	/* Register the struct in the Lua registry */ \
-	lua_pushlightuserdata(L, (void*)(intptr_t)ID_##NAME); \
-	lua_pushvalue(L, -2); \
-	lua_settable(L, LUA_REGISTRYINDEX); \
 	/* Make struct creatable via constructor-like syntax */ \
 	lua_newtable(L); \
 	lua_pushcfunction(L, f_##NAME##___call); \
@@ -322,6 +318,9 @@ STRUCT(SizeShorthand, SizeShorthand);
 static luaL_Reg _Trigger_TriggeredEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Trigger_TriggeredEventArgs[] = {
 	DECL(0xa5ea0da3, Trigger_TriggeredEventArgs, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // Trigger_TriggeredEventArgs.Trigger
+};
+static luaL_Reg _Node_AwakeEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Node_AwakeEventArgs[] = {
 };
 static luaL_Reg _Node_UpdateMatrixEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_UpdateMatrixEventArgs[] = {
@@ -622,6 +621,7 @@ static struct PropertyType _PageHost_NavigateBackEventArgs[] = {
 };
 
 STRUCT(Trigger_TriggeredEventArgs, Trigger_TriggeredEventArgs);
+STRUCT(Node_AwakeEventArgs, Node_AwakeEventArgs);
 STRUCT(Node_UpdateMatrixEventArgs, Node_UpdateMatrixEventArgs);
 STRUCT(Node_PushPropertyEventArgs, Node_PushPropertyEventArgs);
 STRUCT(Node_LoadViewEventArgs, Node_LoadViewEventArgs);
@@ -947,6 +947,7 @@ static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	DECL(0xde1f0406, Node, Opacity, Opacity, kDataTypeFloat), // Node.Opacity
 	DECL(0x76bda0c0, Node, Tags, Tags, kDataTypeString), // Node.Tags
 	DECL(0xa310331c, Node, DataContext, DataContext, kDataTypeObject, .TypeString = "DataObject"), // Node.DataContext
+	DECL(0x7f460f7c, Node, Awake, Awake, kDataTypeEvent, .TypeString = "Node_AwakeEventArgs"), // Node.Awake
 	DECL(0x5dbe404d, Node, UpdateMatrix, UpdateMatrix, kDataTypeEvent, .TypeString = "Node_UpdateMatrixEventArgs"), // Node.UpdateMatrix
 	DECL(0xc5ebaf40, Node, PushProperty, PushProperty, kDataTypeEvent, .TypeString = "Node_PushPropertyEventArgs"), // Node.PushProperty
 	DECL(0xa3650e54, Node, LoadView, LoadView, kDataTypeEvent, .TypeString = "Node_LoadViewEventArgs"), // Node.LoadView
@@ -1676,6 +1677,7 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_SizeAxisShorthand(L), -2), "SizeAxisShorthand");
 	lua_setfield(L, ((void)luaopen_orca_SizeShorthand(L), -2), "SizeShorthand");
 	lua_setfield(L, ((void)luaopen_orca_Trigger_TriggeredEventArgs(L), -2), "Trigger_TriggeredEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_Node_AwakeEventArgs(L), -2), "Node_AwakeEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Node_UpdateMatrixEventArgs(L), -2), "Node_UpdateMatrixEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Node_PushPropertyEventArgs(L), -2), "Node_PushPropertyEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Node_LoadViewEventArgs(L), -2), "Node_LoadViewEventArgs");

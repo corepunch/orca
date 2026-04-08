@@ -4,7 +4,7 @@
 #define DRAG_SESSION "__DRAG_SESSION__"
 #define DRAG_THRESHOLD 4
 
-extern int
+extern lpProperty_t
 luaX_getobjectcallback(lua_State* L, lpObject_t object, uint32_t id);
 
 bool_t
@@ -12,12 +12,20 @@ CORE_HandleObjectMessage(lua_State *L, struct WI_Message* msg)
 {
   for (lpObject_t hobj = msg->target; hobj; hobj = OBJ_GetParent(hobj))
   {
-    if (luaX_getobjectcallback(L, hobj, msg->message)) {
+    lpProperty_t handler = luaX_getobjectcallback(L, hobj, msg->message);
+    if (handler) {
       luaX_import(L, "orca", "async");
       lua_insert(L, -2);
       luaX_pushObject(L, hobj); // self
       luaX_pushObject(L, msg->target); // sender
-      if (lua_pcall(L, 3, 0, 0) != LUA_OK) {
+
+      // push event data
+      luaL_getmetatable(L, PROP_GetDesc(handler)->TypeString);
+      lua_pushlightuserdata(L, msg->lParam);
+      lua_call(L, 1, 1);
+
+      // call orca.async
+      if (lua_pcall(L, 4, 0, 0) != LUA_OK) {
         Con_Error("Message handler 0x%08x: %s", msg->message, luaL_checkstring(L, -1));
         lua_pop(L, 1);
       }
@@ -73,55 +81,55 @@ convert_mouse_message(struct WI_Message* e, uint32_t* out_msg, Node_MouseMessage
   }
   return true;
 }
-
-static int
-lua_pushmousevent(lua_State* L, lpObject_t obj, struct WI_Message* e)
-{
-  struct vec3 point = {LOWORD(e->wParam),HIWORD(e->wParam)};
-#ifdef MOUSE_EVENTS_USE_LOCAL_SPACE
-  if (GetNode2D(obj)) {
-    struct mat4 inv = MAT4_Inverse(&GetNode2D(obj)->Matrix);
-    point = MAT4_MultiplyVector3D(&inv, &point);
-  }
-#endif
-  uint32_t msg;
-  Node_MouseMessageMsg_t mouse;
-  if (!convert_mouse_message(e, &msg, &mouse)) {
-    return 0;
-  }
-  switch (e->message) {
-    case kEventMouseMoved:
-    case kEventLeftMouseDown:
-    case kEventRightMouseDown:
-    case kEventOtherMouseDown:
-    case kEventLeftMouseUp:
-    case kEventRightMouseUp:
-    case kEventOtherMouseUp:
-    case kEventScrollWheel:
-    case kEventLeftMouseDragged:
-    case kEventRightMouseDragged:
-    case kEventOtherMouseDragged:
-      {
-        lua_pushlightuserdata(L, (void*)(intptr_t)msg);
-        lua_gettable(L, LUA_REGISTRYINDEX);
-        // luaL_checktype(L, -1, LUA_TTABLE);
-        lua_pushlightuserdata(L, &mouse);
-        lua_call(L, 1, 1);
-      }
-      // luaX_pushMouse_MouseMessageEventArgs(L, &mouse);
-      return 1;
-    case kEventDragDrop:
-    case kEventDragEnter:
-      lua_getfield(L, LUA_REGISTRYINDEX, DRAG_SESSION);
-      // lua_pushnumber(L, LOWORD(e->wParam));
-      // lua_pushnumber(L, HIWORD(e->wParam));
-      lua_pushnumber(L, point.x);
-      lua_pushnumber(L, point.y);
-      return 3;
-    default:
-      return 0;
-  }
-}
+//
+//static int
+//lua_pushmousevent(lua_State* L, lpObject_t obj, struct WI_Message* e)
+//{
+//  struct vec3 point = {LOWORD(e->wParam),HIWORD(e->wParam)};
+//#ifdef MOUSE_EVENTS_USE_LOCAL_SPACE
+//  if (GetNode2D(obj)) {
+//    struct mat4 inv = MAT4_Inverse(&GetNode2D(obj)->Matrix);
+//    point = MAT4_MultiplyVector3D(&inv, &point);
+//  }
+//#endif
+//  uint32_t msg;
+//  Node_MouseMessageMsg_t mouse;
+//  if (!convert_mouse_message(e, &msg, &mouse)) {
+//    return 0;
+//  }
+//  switch (e->message) {
+//    case kEventMouseMoved:
+//    case kEventLeftMouseDown:
+//    case kEventRightMouseDown:
+//    case kEventOtherMouseDown:
+//    case kEventLeftMouseUp:
+//    case kEventRightMouseUp:
+//    case kEventOtherMouseUp:
+//    case kEventScrollWheel:
+//    case kEventLeftMouseDragged:
+//    case kEventRightMouseDragged:
+//    case kEventOtherMouseDragged:
+//      {
+//        lua_pushlightuserdata(L, (void*)(intptr_t)msg);
+//        lua_gettable(L, LUA_REGISTRYINDEX);
+//        // luaL_checktype(L, -1, LUA_TTABLE);
+//        lua_pushlightuserdata(L, &mouse);
+//        lua_call(L, 1, 1);
+//      }
+//      // luaX_pushMouse_MouseMessageEventArgs(L, &mouse);
+//      return 1;
+//    case kEventDragDrop:
+//    case kEventDragEnter:
+//      lua_getfield(L, LUA_REGISTRYINDEX, DRAG_SESSION);
+//      // lua_pushnumber(L, LOWORD(e->wParam));
+//      // lua_pushnumber(L, HIWORD(e->wParam));
+//      lua_pushnumber(L, point.x);
+//      lua_pushnumber(L, point.y);
+//      return 3;
+//    default:
+//      return 0;
+//  }
+//}
 
 static void
 process_dragndrop(lua_State *L, struct WI_Message *e, lpObject_t sender)

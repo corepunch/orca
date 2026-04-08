@@ -23,6 +23,7 @@ struct lua_State;
 #include "../../source/renderer/api/renderer.h"
 
 typedef struct Trigger_TriggeredEventArgs Trigger_TriggeredMsg_t,* Trigger_TriggeredMsgPtr;
+typedef struct Node_AwakeEventArgs Node_AwakeMsg_t,* Node_AwakeMsgPtr;
 typedef struct Node_UpdateMatrixEventArgs Node_UpdateMatrixMsg_t,* Node_UpdateMatrixMsgPtr;
 typedef struct Node_PushPropertyEventArgs Node_PushPropertyMsg_t,* Node_PushPropertyMsgPtr;
 typedef struct Node_LoadViewEventArgs Node_LoadViewMsg_t,* Node_LoadViewMsgPtr;
@@ -539,6 +540,11 @@ struct Trigger_TriggeredEventArgs {
 };
 ORCA_API void luaX_pushTrigger_TriggeredEventArgs(lua_State *L, struct Trigger_TriggeredEventArgs const* data);
 ORCA_API struct Trigger_TriggeredEventArgs* luaX_checkTrigger_TriggeredEventArgs(lua_State *L, int idx);
+/** Node_AwakeEventArgs struct */
+struct Node_AwakeEventArgs {
+};
+ORCA_API void luaX_pushNode_AwakeEventArgs(lua_State *L, struct Node_AwakeEventArgs const* data);
+ORCA_API struct Node_AwakeEventArgs* luaX_checkNode_AwakeEventArgs(lua_State *L, int idx);
 /** Node_UpdateMatrixEventArgs struct */
 struct Node_UpdateMatrixEventArgs {
 	struct mat4 parent; ///< The parent matrix
@@ -828,6 +834,7 @@ struct Node {
 	const char* Tags; ///< Tag collection for categorizing or querying nodes.
 	struct DataObject* DataContext; ///< Data context (used for data binding, similar to XAML's DataContext).
 	long _tags; ///< Calculated tags value
+	event_t Awake;
 	event_t UpdateMatrix;
 	event_t PushProperty;
 	event_t LoadView;

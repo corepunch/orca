@@ -384,7 +384,6 @@ typedef LRESULT (*objectProc_t)(lpObject_t, void*, uint32_t, wParam_t, lParam_t)
 #endif
 #define OBJ_IsHidden(OBJECT) (OBJ_SendMessageW(OBJECT, ID_Node_IsVisible, 0, NULL) == FALSE)
 
-#define kMsgAwake 0x7f460f7c
 #define kEventResumeCoroutine 0x3cc3febc
 #define kEventStopCoroutine 0xf13ac065
 #define kEventReadCommands 0x23d83fd3

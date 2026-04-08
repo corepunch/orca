@@ -433,6 +433,9 @@
         <field name="_tags" type="long">Calculated tags value</field>
       </fields>
       <messages>
+        <message name="Awake" routing="Direct">
+          <summary>Sent when the object is activated in the scene, before the first update cycle.</summary>
+        </message>
         <message name="UpdateMatrix" routing="Direct">
           <summary>Requests the node to recompute its transformation matrix from current transform properties.</summary>
           <fields>
