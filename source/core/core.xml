@@ -3,7 +3,6 @@
 <module name="core" namespace="orca" on-luaopen="on_core_module_registered">
   <require file="../geometry/geometry.xml"/>
   <externals>
-    <external struct="WI_Message"/>
     <external struct="localization"/>
     <external struct="game"/>
     <external struct="Property"/>
