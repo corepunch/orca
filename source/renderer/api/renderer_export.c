@@ -197,7 +197,7 @@ static struct PropertyType const TextureProperties[kTextureNumProperties] = {
 static struct Texture TextureDefaults = {
 };
 LRESULT TextureProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
+	switch (message&MSG_DATA_MASK) {
 	}
 	return FALSE;
 }
@@ -238,8 +238,8 @@ static struct PropertyType const ImageProperties[kImageNumProperties] = {
 static struct Image ImageDefaults = {
 };
 LRESULT ImageProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Start: return Image_Start(object, cmp, wparm, lparm); // Object.Start
+	switch (message&MSG_DATA_MASK) {
+		case ID_Object_Start&MSG_DATA_MASK: return Image_Start(object, cmp, wparm, lparm); // Object.Start
 	}
 	return FALSE;
 }
@@ -264,8 +264,8 @@ static struct PropertyType const RenderTargetTextureProperties[kRenderTargetText
 static struct RenderTargetTexture RenderTargetTextureDefaults = {
 };
 LRESULT RenderTargetTextureProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Start: return RenderTargetTexture_Start(object, cmp, wparm, lparm); // Object.Start
+	switch (message&MSG_DATA_MASK) {
+		case ID_Object_Start&MSG_DATA_MASK: return RenderTargetTexture_Start(object, cmp, wparm, lparm); // Object.Start
 	}
 	return FALSE;
 }
@@ -289,8 +289,8 @@ static struct PropertyType const CubeMapTextureProperties[kCubeMapTextureNumProp
 static struct CubeMapTexture CubeMapTextureDefaults = {
 };
 LRESULT CubeMapTextureProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Start: return CubeMapTexture_Start(object, cmp, wparm, lparm); // Object.Start
+	switch (message&MSG_DATA_MASK) {
+		case ID_Object_Start&MSG_DATA_MASK: return CubeMapTexture_Start(object, cmp, wparm, lparm); // Object.Start
 	}
 	return FALSE;
 }
@@ -309,8 +309,8 @@ static struct PropertyType const IOSurfaceTextureProperties[kIOSurfaceTextureNum
 static struct IOSurfaceTexture IOSurfaceTextureDefaults = {
 };
 LRESULT IOSurfaceTextureProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Start: return IOSurfaceTexture_Start(object, cmp, wparm, lparm); // Object.Start
+	switch (message&MSG_DATA_MASK) {
+		case ID_Object_Start&MSG_DATA_MASK: return IOSurfaceTexture_Start(object, cmp, wparm, lparm); // Object.Start
 	}
 	return FALSE;
 }
@@ -330,7 +330,7 @@ static struct PropertyType const VertexShaderProperties[kVertexShaderNumProperti
 static struct VertexShader VertexShaderDefaults = {
 };
 LRESULT VertexShaderProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
+	switch (message&MSG_DATA_MASK) {
 	}
 	return FALSE;
 }
@@ -349,7 +349,7 @@ static struct PropertyType const FragmentShaderProperties[kFragmentShaderNumProp
 static struct FragmentShader FragmentShaderDefaults = {
 };
 LRESULT FragmentShaderProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
+	switch (message&MSG_DATA_MASK) {
 	}
 	return FALSE;
 }
@@ -372,9 +372,9 @@ static struct Shader ShaderDefaults = {
   .BlendMode = kBlendModeMixedAlpha,
 };
 LRESULT ShaderProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Start: return Shader_Start(object, cmp, wparm, lparm); // Object.Start
-		case ID_Object_Destroy: return Shader_Destroy(object, cmp, wparm, lparm); // Object.Destroy
+	switch (message&MSG_DATA_MASK) {
+		case ID_Object_Start&MSG_DATA_MASK: return Shader_Start(object, cmp, wparm, lparm); // Object.Start
+		case ID_Object_Destroy&MSG_DATA_MASK: return Shader_Destroy(object, cmp, wparm, lparm); // Object.Destroy
 	}
 	return FALSE;
 }
@@ -405,7 +405,7 @@ static struct Material MaterialDefaults = {
   .BlendMode = kBlendModeAlphaAutomatic,
 };
 LRESULT MaterialProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
+	switch (message&MSG_DATA_MASK) {
 	}
 	return FALSE;
 }
@@ -426,9 +426,9 @@ static struct PropertyType const MeshProperties[kMeshNumProperties] = {
 static struct Mesh MeshDefaults = {
 };
 LRESULT MeshProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Start: return Mesh_Start(object, cmp, wparm, lparm); // Object.Start
-		case ID_Object_Destroy: return Mesh_Destroy(object, cmp, wparm, lparm); // Object.Destroy
+	switch (message&MSG_DATA_MASK) {
+		case ID_Object_Start&MSG_DATA_MASK: return Mesh_Start(object, cmp, wparm, lparm); // Object.Start
+		case ID_Object_Destroy&MSG_DATA_MASK: return Mesh_Destroy(object, cmp, wparm, lparm); // Object.Destroy
 	}
 	return FALSE;
 }
@@ -450,9 +450,9 @@ static struct PropertyType const FontFamilyProperties[kFontFamilyNumProperties] 
 static struct FontFamily FontFamilyDefaults = {
 };
 LRESULT FontFamilyProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Start: return FontFamily_Start(object, cmp, wparm, lparm); // Object.Start
-		case ID_Object_Destroy: return FontFamily_Destroy(object, cmp, wparm, lparm); // Object.Destroy
+	switch (message&MSG_DATA_MASK) {
+		case ID_Object_Start&MSG_DATA_MASK: return FontFamily_Start(object, cmp, wparm, lparm); // Object.Start
+		case ID_Object_Destroy&MSG_DATA_MASK: return FontFamily_Destroy(object, cmp, wparm, lparm); // Object.Destroy
 	}
 	return FALSE;
 }
@@ -468,7 +468,7 @@ static struct PropertyType const TrajectoryProperties[kTrajectoryNumProperties] 
 static struct Trajectory TrajectoryDefaults = {
 };
 LRESULT TrajectoryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
+	switch (message&MSG_DATA_MASK) {
 	}
 	return FALSE;
 }
@@ -484,7 +484,7 @@ static struct PropertyType const TimelineProperties[kTimelineNumProperties] = {
 static struct Timeline TimelineDefaults = {
 };
 LRESULT TimelineProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
+	switch (message&MSG_DATA_MASK) {
 	}
 	return FALSE;
 }

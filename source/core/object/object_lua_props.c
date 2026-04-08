@@ -106,7 +106,7 @@ OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name)
   }
 }
 
-static int f_msgSend(lua_State *L) {
+int f_msgSend(lua_State *L) {
   struct Object* this_ = luaX_checkObject(L, 1);
   const char* message = lua_tostring(L, lua_upvalueindex(1));
   lua_pushstring(L, message);
@@ -187,15 +187,8 @@ int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
   }
   
   lpcProperty_t property = NULL;
-  lpcPropertyType_t message = NULL;
-  bool_t OBJ_PushClassProperty(lua_State *, lpObject_t, uint32_t);
-  lpcPropertyType_t MSG_FindByShortID(lpObject_t, uint32_t);
-  
+  bool_t OBJ_PushClassProperty(lua_State *, lpObject_t, uint32_t);  
   if (OBJ_PushClassProperty(L, self, ident)) {
-    return 1;
-  } else if ((message = MSG_FindByShortID(self, ident))) {
-    lua_pushstring(L, message->Name);
-    lua_pushcclosure(L, f_msgSend, 1);
     return 1;
   } else if ((property = PROP_FindByShortID(OBJ_GetProperties(self), ident))) {
     luaX_pushProperty(L, property);

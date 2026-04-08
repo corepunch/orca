@@ -142,7 +142,7 @@ static struct PropertyType const SpriteAnimationProperties[kSpriteAnimationNumPr
 static struct SpriteAnimation SpriteAnimationDefaults = {
 };
 LRESULT SpriteAnimationProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
+	switch (message&MSG_DATA_MASK) {
 	}
 	return FALSE;
 }
@@ -163,8 +163,8 @@ static struct PropertyType const SKNodeProperties[kSKNodeNumProperties] = {
 static struct SKNode SKNodeDefaults = {
 };
 LRESULT SKNodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Node_UpdateMatrix: return SKNode_UpdateMatrix(object, cmp, wparm, lparm); // Node.UpdateMatrix
+	switch (message&MSG_DATA_MASK) {
+		case ID_Node_UpdateMatrix&MSG_DATA_MASK: return SKNode_UpdateMatrix(object, cmp, wparm, lparm); // Node.UpdateMatrix
 	}
 	return FALSE;
 }
@@ -182,8 +182,8 @@ static struct PropertyType const SKSceneProperties[kSKSceneNumProperties] = {
 static struct SKScene SKSceneDefaults = {
 };
 LRESULT SKSceneProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Node_UpdateMatrix: return SKScene_UpdateMatrix(object, cmp, wparm, lparm); // Node.UpdateMatrix
+	switch (message&MSG_DATA_MASK) {
+		case ID_Node_UpdateMatrix&MSG_DATA_MASK: return SKScene_UpdateMatrix(object, cmp, wparm, lparm); // Node.UpdateMatrix
 	}
 	return FALSE;
 }
@@ -215,8 +215,8 @@ static struct SKSpriteNode SKSpriteNodeDefaults = {
   .BlendMode = kBlendModeAlphaAutomatic,
 };
 LRESULT SKSpriteNodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_SKNode_Render: return SKSpriteNode_Render(object, cmp, wparm, lparm); // SKNode.Render
+	switch (message&MSG_DATA_MASK) {
+		case ID_SKNode_Render&MSG_DATA_MASK: return SKSpriteNode_Render(object, cmp, wparm, lparm); // SKNode.Render
 	}
 	return FALSE;
 }
@@ -236,9 +236,9 @@ static struct PropertyType const SKLabelNodeProperties[kSKLabelNodeNumProperties
 static struct SKLabelNode SKLabelNodeDefaults = {
 };
 LRESULT SKLabelNodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_SKNode_Render: return SKLabelNode_Render(object, cmp, wparm, lparm); // SKNode.Render
-		case ID_Object_Create: return SKLabelNode_Create(object, cmp, wparm, lparm); // Object.Create
+	switch (message&MSG_DATA_MASK) {
+		case ID_SKNode_Render&MSG_DATA_MASK: return SKLabelNode_Render(object, cmp, wparm, lparm); // SKNode.Render
+		case ID_Object_Create&MSG_DATA_MASK: return SKLabelNode_Create(object, cmp, wparm, lparm); // Object.Create
 	}
 	return FALSE;
 }
@@ -260,8 +260,8 @@ static struct PropertyType const SKViewProperties[kSKViewNumProperties] = {
 static struct SKView SKViewDefaults = {
 };
 LRESULT SKViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Node2D_ForegroundContent: return SKView_ForegroundContent(object, cmp, wparm, lparm); // Node2D.ForegroundContent
+	switch (message&MSG_DATA_MASK) {
+		case ID_Node2D_ForegroundContent&MSG_DATA_MASK: return SKView_ForegroundContent(object, cmp, wparm, lparm); // Node2D.ForegroundContent
 	}
 	return FALSE;
 }

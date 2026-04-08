@@ -189,6 +189,11 @@ write_property(lua_State *L,
         memcpy(lua_newuserdata(L, prop->DataSize), valueptr, prop->DataSize);
         luaL_setmetatable(L, prop->TypeString);
         break;
+      case kDataTypeEvent:
+        assert(!"Not implemented due to OBJ_MsgSend dependency");
+//        lua_pushfstring(L, "%s.%s", prop->Category, prop->Name);
+//        lua_pushcclosure(L, f_msgSend, 1);
+        break;
       case kDataTypeObject:
         if (*(char**)valueptr) {
           lua_geti(L, LUA_REGISTRYINDEX, *(int*)(*(char**)valueptr+LUASTATE_IN_OBJECT));
