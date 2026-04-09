@@ -129,60 +129,6 @@ struct token
   char text[4];
 };
 
-enum keyframe_mode {
-  Key_Free,
-  Key_Auto,
-  Key_Linear,
-  Key_Constant,
-  Key_ClampedAuto,
-};
-
-struct keyframe
-{
-  float value[4];
-  float inSlope[4];
-  float outSlope[4];
-  float inWeight[4];
-  float outWeight[4];
-  float time;
-  int tangentMode;
-  int weightedMode;
-};
-
-struct curve
-{
-  shortStr_t path;
-  shortStr_t property;
-  uint32_t num_keyframes;
-  struct curve *next;
-  struct keyframe keyframes[];
-};
-
-enum animation_mode {
-  kAnimationPlayOnce,
-  kAnimationLoop,
-  kAnimationPingPong,
-};
-
-FWD_STRUCT(KeyframeAnim);
-
-struct KeyframeAnim
-{
-  longTime_t timer;
-  float start_time;
-  float stop_time;
-  enum animation_mode mode;
-  LPSTR name;
-  LPSTR filename;
-  struct curve *curves;
-  lpKeyframeAnim_t next;
-};
-
-ORCA_API lpKeyframeAnim_t
-ANIM_Load(struct _xmlDoc*);
-
-void
-ANIM_Release(lpKeyframeAnim_t);
 
 #define SV_PostMessage(OBJ, MSG, _W, _L) \
 WI_PostMessageW(OBJ, fnv1a32(MSG), _W, _L);

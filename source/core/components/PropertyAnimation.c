@@ -1,5 +1,6 @@
 #include <source/core/core_local.h>
-#include <source/core/animation.h>
+
+float anim_interpolate(enum ipo_type, enum easing, float);
 
 extern struct game core;
 

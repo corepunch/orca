@@ -78,8 +78,7 @@
 		781CA7602E15571400FFCFD9 /* TextBlock.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C7375B2B8F60C600FD598E /* TextBlock.c */; };
 		781CA7612E15571400FFCFD9 /* Trigger.c in Sources */ = {isa = PBXBuildFile; fileRef = 78CDFED42CC13EE200D247E4 /* Trigger.c */; };
 		781CA76A2E1557A900FFCFD9 /* alias.c in Sources */ = {isa = PBXBuildFile; fileRef = 78FD532B2D90746900122823 /* alias.c */; };
-		781CA76B2E1557A900FFCFD9 /* animation.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C737672B8F60C600FD598E /* animation.c */; };
-		781CA76C2E1557A900FFCFD9 /* animation2.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C737AB2B8F616A00FD598E /* animation2.c */; };
+
 		781CA76E2E1557A900FFCFD9 /* component.c in Sources */ = {isa = PBXBuildFile; fileRef = 78FD53242D8F405600122823 /* component.c */; };
 		781CA76F2E1557A900FFCFD9 /* easing.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C737AA2B8F616A00FD598E /* easing.c */; };
 		781CA7712E1557A900FFCFD9 /* object_tween.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C737AC2B8F616A00FD598E /* object_tween.c */; };
@@ -690,16 +689,16 @@
 		78C737562B8F60C600FD598E /* Node2D.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Node2D.c; sourceTree = "<group>"; };
 		78C737582B8F60C600FD598E /* StackView.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = StackView.c; sourceTree = "<group>"; };
 		78C7375B2B8F60C600FD598E /* TextBlock.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = TextBlock.c; sourceTree = "<group>"; };
-		78C7375C2B8F60C600FD598E /* animation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = animation.h; sourceTree = "<group>"; };
+
 		78C737652B8F60C600FD598E /* core_local.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = core_local.h; sourceTree = "<group>"; };
-		78C737672B8F60C600FD598E /* animation.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = animation.c; sourceTree = "<group>"; };
+
 		78C737692B8F60C600FD598E /* object_lua.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = object_lua.c; sourceTree = "<group>"; };
 		78C7376B2B8F60C600FD598E /* Model3D.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Model3D.c; sourceTree = "<group>"; };
 		78C7376E2B8F60C600FD598E /* Viewport3D.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Viewport3D.c; sourceTree = "<group>"; };
 		78C737742B8F60C600FD598E /* PlaneMeshNode.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PlaneMeshNode.c; sourceTree = "<group>"; };
 		78C737752B8F60C600FD598E /* TrajectoryList3D.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = TrajectoryList3D.c; sourceTree = "<group>"; };
 		78C737AA2B8F616A00FD598E /* easing.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = easing.c; sourceTree = "<group>"; };
-		78C737AB2B8F616A00FD598E /* animation2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = animation2.c; sourceTree = "<group>"; };
+
 		78C737AC2B8F616A00FD598E /* object_tween.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = object_tween.c; sourceTree = "<group>"; };
 		78C737C42B8F620100FD598E /* core_main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = core_main.c; sourceTree = "<group>"; };
 		78CDFED42CC13EE200D247E4 /* Trigger.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Trigger.c; sourceTree = "<group>"; };
@@ -1311,8 +1310,6 @@
 				787040532F6F1A3200A84406 /* object */,
 				787040522F6F199900A84406 /* property */,
 				78FD532B2D90746900122823 /* alias.c */,
-				78C737672B8F60C600FD598E /* animation.c */,
-				78C737AB2B8F616A00FD598E /* animation2.c */,
 				78FD53242D8F405600122823 /* component.c */,
 				7839770D2E60A5AB00DCFC0F /* core_export.c */,
 				78C737C42B8F620100FD598E /* core_main.c */,
@@ -1322,7 +1319,6 @@
 				78FD53262D90344E00122823 /* state_manager.c */,
 				78688D2A2D89DD69008DE67B /* style.c */,
 				78FD53292D90719800122823 /* timer.c */,
-				78C7375C2B8F60C600FD598E /* animation.h */,
 				78C737652B8F60C600FD598E /* core_local.h */,
 				787040442F6F197000A84406 /* core_properties.h */,
 				783976FE2E54B25900DCFC0F /* core.h */,
@@ -2176,8 +2172,6 @@
 				78A442BE2F87FA8200AF52A4 /* AnimationClip.c in Sources */,
 				781CA7D22E15783F00FFCFD9 /* debug.c in Sources */,
 				781CA76A2E1557A900FFCFD9 /* alias.c in Sources */,
-				781CA76B2E1557A900FFCFD9 /* animation.c in Sources */,
-				781CA76C2E1557A900FFCFD9 /* animation2.c in Sources */,
 				781CA76E2E1557A900FFCFD9 /* component.c in Sources */,
 				781CA76F2E1557A900FFCFD9 /* easing.c in Sources */,
 				78E4A9A22E93DD4C00E3A503 /* known_prefabs.c in Sources */,

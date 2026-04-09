@@ -1,7 +1,5 @@
 #include <include/api.h>
 
-#include <source/core/animation.h>
-
 #include <source/core/core_local.h>
 
 void

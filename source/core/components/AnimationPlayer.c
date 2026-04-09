@@ -1,5 +1,4 @@
 #include <source/core/core_local.h>
-#include <source/core/animation.h>
 
 extern struct game core;
 
@@ -9,10 +8,7 @@ extern struct game core;
 // Small time delta (seconds) used to detect rising/falling edge for bool properties.
 #define BOOL_EDGE_DELTA 0.001f
 
-// ---------------------------------------------------------------------------
 // Internal: evaluate one component of a Keyframe array at the given time.
-// Mirrors animation_evaluate() but works with the new struct Keyframe layout.
-// ---------------------------------------------------------------------------
 
 static float vec4_get(struct vec4 const *v, int i) {
     switch (i) {
