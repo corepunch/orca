@@ -146,8 +146,8 @@ local function animation_curve_child(node, element)
 			xpcall(Property.construct, print, curve, curve:findExplicitProperty(sub.tag), sub)
 		end
 	end
-	curve:msgSend("Object.Start")
 	node:addChild(curve)
+	curve:msgSend("Object.Start")
 end
 
 specials.AnimationPlayer = attach_only_component

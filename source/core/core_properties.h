@@ -127,9 +127,17 @@ enum PropertyAnimationProperties {
 
 #define ID_AnimationPlayer_PlayEventArgs 0x1e984720
 
+#define ID_AnimationPlayer_ResumeEventArgs 0xf37671df
+
 #define ID_AnimationPlayer_StopEventArgs 0xa977f29a
 
 #define ID_AnimationPlayer_PauseEventArgs 0x68215542
+
+#define ID_AnimationPlayer_StartedEventArgs 0x9649588b
+
+#define ID_AnimationPlayer_StoppedEventArgs 0x272b2fdb
+
+#define ID_AnimationPlayer_CompletedEventArgs 0xacaaf6c7
 
 	
 

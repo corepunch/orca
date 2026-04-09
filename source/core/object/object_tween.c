@@ -2,12 +2,6 @@
 
 #include <source/core/core_local.h>
 
-static void
-float_LERP(float const* a, float const* b, float t, float* out)
-{
-  *out = LERP(*a, *b, t);
-}
-
 static lpcString_t ipo_text[] = {"linear","const","back","bounce","circ","cubic","elastic","expo","quad","quart","quint","sine",NULL};
 static lpcString_t easing_text[] = {"in_out","in","out",NULL};
 

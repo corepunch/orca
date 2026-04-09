@@ -723,7 +723,7 @@ void luaX_pushAnimationCurve(lua_State *L, struct AnimationCurve const* Animatio
 struct AnimationCurve* luaX_checkAnimationCurve(lua_State *L, int idx) {
 	return GetAnimationCurve(luaX_checkObject(L, idx));
 }
-REGISTER_ATTACH_ONLY_CLASS(AnimationCurve, 0);
+REGISTER_CLASS(AnimationCurve, 0);
 HANDLER(AnimationClip, Object, Start);
 static struct PropertyType const AnimationClipProperties[kAnimationClipNumProperties] = {
 	DECL(0x534e7732, AnimationClip, Mode, Mode, kDataTypeEnum, .EnumValues = _AnimationMode), // AnimationClip.Mode
