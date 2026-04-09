@@ -598,11 +598,18 @@
       <handles>
         <handle message="Object.Create"/>
         <handle message="Object.Release"/>
+        <handle message="StyleController.ApplyStyles"/>
       </handles>
       <fields>
         <field name="classes" type="style_class" pointer="true">Linked list of parsed style classes with flags (hover, focus, dark mode, etc.)</field>
         <field name="stylesheet" type="style_sheet" pointer="true">Linked list of style rules (selector to property to value mappings)</field>
       </fields>
+      <messages>
+        <message name="ApplyStyles" routing="Direct">
+          <summary>Recalculates and applies all active style rules to this object.</summary>
+          <details>Clears any specialised property flags, then applies each matching stylesheet rule based on the current pseudo-state (hover, focus, dark, selected). Pass wParam=TRUE to recursively apply styles to child objects.</details>
+        </message>
+      </messages>
     </class>
   </classes>
   <functions>

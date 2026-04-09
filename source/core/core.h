@@ -35,6 +35,7 @@ typedef struct AnimationPlayer_PauseEventArgs AnimationPlayer_PauseMsg_t,* Anima
 typedef struct AnimationPlayer_StartedEventArgs AnimationPlayer_StartedMsg_t,* AnimationPlayer_StartedMsgPtr;
 typedef struct AnimationPlayer_StoppedEventArgs AnimationPlayer_StoppedMsg_t,* AnimationPlayer_StoppedMsgPtr;
 typedef struct AnimationPlayer_CompletedEventArgs AnimationPlayer_CompletedMsg_t,* AnimationPlayer_CompletedMsgPtr;
+typedef struct StyleController_ApplyStylesEventArgs StyleController_ApplyStylesMsg_t,* StyleController_ApplyStylesMsgPtr;
 
 
 /// @brief Defines the routing strategy for messages sent to objects. This determines how messages propagate through the object hierarchy and which handlers are invoked.
@@ -559,6 +560,11 @@ struct AnimationPlayer_CompletedEventArgs {
 };
 ORCA_API void luaX_pushAnimationPlayer_CompletedEventArgs(lua_State *L, struct AnimationPlayer_CompletedEventArgs const* data);
 ORCA_API struct AnimationPlayer_CompletedEventArgs* luaX_checkAnimationPlayer_CompletedEventArgs(lua_State *L, int idx);
+/** StyleController_ApplyStylesEventArgs struct */
+struct StyleController_ApplyStylesEventArgs {
+};
+ORCA_API void luaX_pushStyleController_ApplyStylesEventArgs(lua_State *L, struct StyleController_ApplyStylesEventArgs const* data);
+ORCA_API struct StyleController_ApplyStylesEventArgs* luaX_checkStyleController_ApplyStylesEventArgs(lua_State *L, int idx);
 
 
 /// @brief A single animated property curve, consisting of keyframes for one property on one target object.
@@ -638,6 +644,7 @@ typedef struct StyleController const *StyleControllerCPtr, *lpcStyleController_t
 struct StyleController {
 	struct style_class* classes; ///< Linked list of parsed style classes with flags (hover, focus, dark mode, etc.)
 	struct style_sheet* stylesheet; ///< Linked list of style rules (selector to property to value mappings)
+	event_t ApplyStyles;
 };
 ORCA_API void luaX_pushStyleController(lua_State *L, struct StyleController const* StyleController);
 ORCA_API struct StyleController* luaX_checkStyleController(lua_State *L, int idx);

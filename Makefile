@@ -48,7 +48,7 @@ INST_LIBDIR ?= $(INST_PREFIX)/lib/lua/5.4
 INST_LUADIR ?= $(INST_PREFIX)/share/lua/5.4
 INST_SHAREDIR ?= $(INST_PREFIX)/share/orca
 
-.PHONY: default all CLEAN directories unite buildlib buildplugins app platform example install test test-headless test-properties
+.PHONY: default all CLEAN directories unite buildlib buildplugins app platform example install test test-headless test-properties test-styles
 
 default: directories modules unite
 all: default
@@ -188,17 +188,22 @@ install: all
 	cp -r $(RESOURCEDIR)/* $(INST_SHAREDIR)/
 
 TEST_PROPERTIES_BIN = $(BINDIR)/test_properties
+TEST_STYLES_BIN = $(BINDIR)/test_styles
 TEST_LDFLAGS = $(LDFLAGS) -lorca -ldl -lpthread
 
 test-properties: platform $(SOURCEMODULES2) buildlib
 	$(CC) $(CFLAGS) -DTEST_MEMORY -Wall tests/test_properties.c -o $(TEST_PROPERTIES_BIN) $(TEST_LDFLAGS)
 	$(TEST_PROPERTIES_BIN)
 
-test: test-headless test-properties
+test-styles: platform $(SOURCEMODULES2) buildlib
+	$(CC) $(CFLAGS) -DTEST_MEMORY -Wall tests/test_styles.c -o $(TEST_STYLES_BIN) $(TEST_LDFLAGS)
+	$(TEST_STYLES_BIN)
+
+test: test-headless test-properties test-styles
 	$(TARGET) -test=tests/test1.lua
 	$(TARGET) -test=tests/test.xml
 
-test-headless: test-properties copyshare
+test-headless: test-properties test-styles copyshare
 	$(TARGET) -test=tests/test_layout.lua
 
 include Makefile.webgl
