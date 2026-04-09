@@ -16,17 +16,16 @@ local TerminalView = ui.ConsoleView:extend {
   end,
 
   println = function(self, item, ...)
-    local items = self.__items or {}
-    self.__items = items
-    local len = #items
     if item ~= nil then
-      len = len + 1
+      local items = self.__items or {}
+      self.__items = items
+      local len = #items + 1
       items[len] = item
+      return ui.ConsoleView.println(self, len, ...)
     else
-      len = 0
       self.__items = {}
+      return ui.ConsoleView.println(self, 0, ...)
     end
-    return ui.ConsoleView.println(self, len, ...)
   end,
 
   erase = function(self)

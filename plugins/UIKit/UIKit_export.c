@@ -1561,7 +1561,6 @@ void luaX_pushConsoleView(lua_State *L, struct ConsoleView const* ConsoleView) {
 struct ConsoleView* luaX_checkConsoleView(lua_State *L, int idx) {
 	return GetConsoleView(luaX_checkObject(L, idx));
 }
-#define ID_ConsoleView 0x2ad7c563
 #define ID_Node2D 0x6c63a2ab
 REGISTER_CLASS(ConsoleView, ID_Node2D, 0);
 HANDLER(Page, Object, Create);

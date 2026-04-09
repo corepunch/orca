@@ -19,7 +19,7 @@ PointToData(ConsoleViewCPtr t, int mx, int my, uint32_t *cursor)
   uint32_t x = scrolled.x / CONSOLE_CHAR_WIDTH;
   uint32_t y = scrolled.y / CONSOLE_CHAR_HEIGHT;
   if (x < t->BufferWidth && y < t->BufferHeight) {
-    if (cursor) *cursor = y * x < t->BufferWidth + x;
+    if (cursor) *cursor = y * t->BufferWidth + x;
     return t->_buffer[x + y * t->BufferWidth];
   }
   return -1;
