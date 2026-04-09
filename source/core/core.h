@@ -19,12 +19,16 @@ struct lua_State;
 
 typedef struct Object_CreateEventArgs Object_CreateMsg_t,* Object_CreateMsgPtr;
 typedef struct Object_StartEventArgs Object_StartMsg_t,* Object_StartMsgPtr;
+typedef struct Object_AnimateEventArgs Object_AnimateMsg_t,* Object_AnimateMsgPtr;
 typedef struct Object_ThemeChangedEventArgs Object_ThemeChangedMsg_t,* Object_ThemeChangedMsgPtr;
 typedef struct Object_PropertyChangedEventArgs Object_PropertyChangedMsg_t,* Object_PropertyChangedMsgPtr;
 typedef struct Object_AttachedEventArgs Object_AttachedMsg_t,* Object_AttachedMsgPtr;
 typedef struct Object_ReleaseEventArgs Object_ReleaseMsg_t,* Object_ReleaseMsgPtr;
 typedef struct Object_DestroyEventArgs Object_DestroyMsg_t,* Object_DestroyMsgPtr;
 typedef struct Object_TimerEventArgs Object_TimerMsg_t,* Object_TimerMsgPtr;
+typedef struct AnimationPlayer_PlayEventArgs AnimationPlayer_PlayMsg_t,* AnimationPlayer_PlayMsgPtr;
+typedef struct AnimationPlayer_StopEventArgs AnimationPlayer_StopMsg_t,* AnimationPlayer_StopMsgPtr;
+typedef struct AnimationPlayer_PauseEventArgs AnimationPlayer_PauseMsg_t,* AnimationPlayer_PauseMsgPtr;
 
 
 /// @brief Defines the routing strategy for messages sent to objects. This determines how messages propagate through the object hierarchy and which handlers are invoked.
@@ -86,6 +90,8 @@ ORCA_API const char *PropertyAttributeToString(enum PropertyAttribute value);
 ORCA_API enum PropertyAttribute luaX_checkPropertyAttribute(lua_State *L, int idx);
 ORCA_API void luaX_pushPropertyAttribute(lua_State *L, enum PropertyAttribute value);
 
+/// @brief Defines how an animation clip repeats after reaching its end.
+/** AnimationMode enum */
 typedef enum AnimationMode {
 	kAnimationModePlayOnce, ///< Play the animation once and stop at the last frame
 	kAnimationModeLoop, ///< Restart from the beginning when the animation reaches the end
@@ -96,6 +102,8 @@ ORCA_API const char *AnimationModeToString(enum AnimationMode value);
 ORCA_API enum AnimationMode luaX_checkAnimationMode(lua_State *L, int idx);
 ORCA_API void luaX_pushAnimationMode(lua_State *L, enum AnimationMode value);
 
+typedef struct Keyframe Keyframe_t, *lpKeyframe_t;
+typedef struct Keyframe const cKeyframe_t, *lpcKeyframe_t;
 
 
 /// @brief Retrieves currently active object.
@@ -282,7 +290,7 @@ OBJ_DoTween(struct lua_State*, struct Object*);
 
 /// @brief Attaches a component class to this object.
 ORCA_API void
-OBJ_AddComponent_ByName(struct lua_State*, struct Object*, const char*);
+OBJ_AddComponent(struct lua_State*, struct Object*, const char*);
 
 /// @name Focus and Input
 /// Controls focus state, hover, modal presentation, and timers.
@@ -405,6 +413,20 @@ OBJ_AddAlias(struct Object*, const char*, const char*);
 ORCA_API void
 OBJ_AssignAliases(struct Object*, const char*);
 
+/// @brief A single keyframe in an animation curve.
+/** Keyframe struct */
+struct Keyframe {
+	float time; ///< Time position of this keyframe in seconds
+	struct vec4 value; ///< Animated value (up to 4 components for vectors/colors)
+	struct vec4 inSlope; ///< Incoming tangent slope for bezier interpolation
+	struct vec4 outSlope; ///< Outgoing tangent slope for bezier interpolation
+	struct vec4 inWeight; ///< Incoming tangent weight for weighted bezier interpolation
+	struct vec4 outWeight; ///< Outgoing tangent weight for weighted bezier interpolation
+	int32_t tangentMode; ///< Interpolation mode for this keyframe (free, auto, linear, constant)
+	int32_t weightedMode; ///< Whether tangent weights are used for this keyframe
+};
+ORCA_API void luaX_pushKeyframe(lua_State *L, struct Keyframe const* Keyframe);
+ORCA_API struct Keyframe* luaX_checkKeyframe(lua_State *L, int idx);
 
 /** Object_CreateEventArgs struct */
 struct Object_CreateEventArgs {
@@ -416,6 +438,11 @@ struct Object_StartEventArgs {
 };
 ORCA_API void luaX_pushObject_StartEventArgs(lua_State *L, struct Object_StartEventArgs const* data);
 ORCA_API struct Object_StartEventArgs* luaX_checkObject_StartEventArgs(lua_State *L, int idx);
+/** Object_AnimateEventArgs struct */
+struct Object_AnimateEventArgs {
+};
+ORCA_API void luaX_pushObject_AnimateEventArgs(lua_State *L, struct Object_AnimateEventArgs const* data);
+ORCA_API struct Object_AnimateEventArgs* luaX_checkObject_AnimateEventArgs(lua_State *L, int idx);
 /** Object_ThemeChangedEventArgs struct */
 struct Object_ThemeChangedEventArgs {
 };
@@ -447,63 +474,63 @@ struct Object_TimerEventArgs {
 };
 ORCA_API void luaX_pushObject_TimerEventArgs(lua_State *L, struct Object_TimerEventArgs const* data);
 ORCA_API struct Object_TimerEventArgs* luaX_checkObject_TimerEventArgs(lua_State *L, int idx);
-
-/** Keyframe struct */
-struct Keyframe {
-	float time; ///< Time position of this keyframe in seconds
-	float value[4]; ///< Animated value (up to 4 components for vectors/colors)
-	struct vec4 inSlope; ///< Incoming tangent slope for bezier interpolation
-	struct vec4 outSlope; ///< Outgoing tangent slope for bezier interpolation
-	struct vec4 inWeight; ///< Incoming tangent weight for weighted bezier interpolation
-	struct vec4 outWeight; ///< Outgoing tangent weight for weighted bezier interpolation
-	int tangentMode; ///< Interpolation mode for this keyframe (free, auto, linear, constant)
-	int weightedMode; ///< Whether tangent weights are used for this keyframe
-};
-ORCA_API void luaX_pushKeyframe(lua_State *L, struct Keyframe const* data);
-ORCA_API struct Keyframe* luaX_checkKeyframe(lua_State *L, int idx);
-
-/** AnimationCurve component */
-struct AnimationCurve {
-	const char* Path; ///< Relative path from the AnimationClip's host object to the target object
-	const char* Property; ///< Short name of the property to animate
-	struct Keyframe* Keyframes; ///< Array of keyframes that define this curve
-	int32_t NumKeyframes;
-};
-#define GetAnimationCurve(obj) ((struct AnimationCurve*)OBJ_GetComponent(obj, ID_AnimationCurve))
-ORCA_API void luaX_pushAnimationCurve(lua_State *L, struct AnimationCurve const* data);
-ORCA_API struct AnimationCurve* luaX_checkAnimationCurve(lua_State *L, int idx);
-
-/** AnimationClip component */
-struct AnimationClip {
-	enum AnimationMode Mode; ///< Playback mode
-	float StartTime; ///< Start time of the active region in seconds
-	float StopTime; ///< End time of the active region in seconds
-};
-#define GetAnimationClip(obj) ((struct AnimationClip*)OBJ_GetComponent(obj, ID_AnimationClip))
-ORCA_API void luaX_pushAnimationClip(lua_State *L, struct AnimationClip const* data);
-ORCA_API struct AnimationClip* luaX_checkAnimationClip(lua_State *L, int idx);
-
 /** AnimationPlayer_PlayEventArgs struct */
 struct AnimationPlayer_PlayEventArgs {
 };
+ORCA_API void luaX_pushAnimationPlayer_PlayEventArgs(lua_State *L, struct AnimationPlayer_PlayEventArgs const* data);
+ORCA_API struct AnimationPlayer_PlayEventArgs* luaX_checkAnimationPlayer_PlayEventArgs(lua_State *L, int idx);
 /** AnimationPlayer_StopEventArgs struct */
 struct AnimationPlayer_StopEventArgs {
 };
+ORCA_API void luaX_pushAnimationPlayer_StopEventArgs(lua_State *L, struct AnimationPlayer_StopEventArgs const* data);
+ORCA_API struct AnimationPlayer_StopEventArgs* luaX_checkAnimationPlayer_StopEventArgs(lua_State *L, int idx);
 /** AnimationPlayer_PauseEventArgs struct */
 struct AnimationPlayer_PauseEventArgs {
 };
+ORCA_API void luaX_pushAnimationPlayer_PauseEventArgs(lua_State *L, struct AnimationPlayer_PauseEventArgs const* data);
+ORCA_API struct AnimationPlayer_PauseEventArgs* luaX_checkAnimationPlayer_PauseEventArgs(lua_State *L, int idx);
 
-/** AnimationPlayer component */
-struct AnimationPlayer {
-	struct Object* Clip; ///< The AnimationClip object that supplies the curves to animate
-	bool_t Playing; ///< Whether the animation is currently advancing each frame
-	bool_t Looping; ///< If true, the animation restarts when it reaches StopTime
-	float Speed; ///< Playback speed multiplier
-	float CurrentTime; ///< Current playback position in seconds
+
+/// @brief A single animated property curve, consisting of keyframes for one property on one target object.
+/** AnimationCurve component */
+typedef struct AnimationCurve AnimationCurve_t, *AnimationCurvePtr, *lpAnimationCurve_t;
+typedef struct AnimationCurve const *AnimationCurveCPtr, *lpcAnimationCurve_t;
+struct AnimationCurve {
+	const char* Path; ///< Relative path from the AnimationClip's host object to the target object (empty string means the host object itself)
+	const char* Property; ///< Short name of the property to animate (e.g. "Opacity", "Position")
+	struct Keyframe* Keyframes; ///< Array of keyframes that define this curve
+	int32_t NumKeyframes;
 };
-#define GetAnimationPlayer(obj) ((struct AnimationPlayer*)OBJ_GetComponent(obj, ID_AnimationPlayer))
-ORCA_API void luaX_pushAnimationPlayer(lua_State *L, struct AnimationPlayer const* data);
-ORCA_API struct AnimationPlayer* luaX_checkAnimationPlayer(lua_State *L, int idx);
+ORCA_API void luaX_pushAnimationCurve(lua_State *L, struct AnimationCurve const* AnimationCurve);
+ORCA_API struct AnimationCurve* luaX_checkAnimationCurve(lua_State *L, int idx);
 
+/// @brief A reusable, self-loading animation asset containing one or more AnimationCurve components.
+/** AnimationClip component */
+typedef struct AnimationClip AnimationClip_t, *AnimationClipPtr, *lpAnimationClip_t;
+typedef struct AnimationClip const *AnimationClipCPtr, *lpcAnimationClip_t;
+struct AnimationClip {
+	enum AnimationMode Mode; ///< Playback mode: PlayOnce stops at end, Loop restarts, PingPong alternates direction
+	float StartTime; ///< Start time of the active region in seconds (default 0)
+	float StopTime; ///< End time of the active region in seconds
+};
+ORCA_API void luaX_pushAnimationClip(lua_State *L, struct AnimationClip const* AnimationClip);
+ORCA_API struct AnimationClip* luaX_checkAnimationClip(lua_State *L, int idx);
+
+/// @brief Component for managing and playing animations on UI elements.
+/** AnimationPlayer component */
+typedef struct AnimationPlayer AnimationPlayer_t, *AnimationPlayerPtr, *lpAnimationPlayer_t;
+typedef struct AnimationPlayer const *AnimationPlayerCPtr, *lpcAnimationPlayer_t;
+struct AnimationPlayer {
+	struct AnimationClip* Clip; ///< The AnimationClip object that supplies the curves to animate
+	bool_t Playing; ///< Whether the animation is currently advancing each frame
+	bool_t Looping; ///< If true, the animation restarts from StartTime when it reaches StopTime
+	float Speed; ///< Playback speed multiplier (1.0 = normal speed)
+	float CurrentTime; ///< Current playback position within the animation in seconds
+	event_t Play;
+	event_t Stop;
+	event_t Pause;
+};
+ORCA_API void luaX_pushAnimationPlayer(lua_State *L, struct AnimationPlayer const* AnimationPlayer);
+ORCA_API struct AnimationPlayer* luaX_checkAnimationPlayer(lua_State *L, int idx);
 
 #endif

@@ -183,6 +183,21 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.Defaults = &NAME##Defaults, \
 	.NumProperties = k##NAME##NumProperties, \
 };
+#define REGISTER_ATTACH_ONLY_CLASS(NAME, ...) \
+ORCA_API struct ClassDesc _##NAME = { \
+	.ClassName = #NAME, \
+	.DefaultName = #NAME, \
+	.ContentType = #NAME, \
+	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation", \
+	.ParentClasses = { __VA_ARGS__ }, \
+	.ClassID = ID_##NAME, \
+	.ClassSize = sizeof(struct NAME), \
+	.Properties = NAME##Properties, \
+	.ObjProc = NAME##Proc, \
+	.Defaults = &NAME##Defaults, \
+	.NumProperties = k##NAME##NumProperties, \
+	.IsAttachOnly = TRUE, \
+};
 static struct PropertyType const TextureProperties[kTextureNumProperties] = {
 	DECL(0x47bdcfab, Texture, MinificationFilter, MinificationFilter, kDataTypeEnum, .EnumValues = _TextureFilter), // Texture.MinificationFilter
 	DECL(0xf5ff802c, Texture, MagnificationFilter, MagnificationFilter, kDataTypeEnum, .EnumValues = _TextureFilter), // Texture.MagnificationFilter
@@ -495,7 +510,6 @@ struct Timeline* luaX_checkTimeline(lua_State *L, int idx) {
 	return GetTimeline(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(Timeline, 0);
-
 int f_renderer_Init(lua_State *L) {
 	uint32_t Width = (uint32_t)luaL_checkinteger(L, 1);
 	uint32_t Height = (uint32_t)luaL_checkinteger(L, 2);

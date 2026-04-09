@@ -56,7 +56,7 @@
       <summary>A single keyframe in an animation curve.</summary>
       <fields>
         <field name="time" type="float">Time position of this keyframe in seconds</field>
-        <field name="value" type="float" fixed-array="4">Animated value (up to 4 components for vectors/colors)</field>
+        <field name="value" type="vec4">Animated value (up to 4 components for vectors/colors)</field>
         <field name="inSlope" type="vec4">Incoming tangent slope for bezier interpolation</field>
         <field name="outSlope" type="vec4">Outgoing tangent slope for bezier interpolation</field>
         <field name="inWeight" type="vec4">Incoming tangent weight for weighted bezier interpolation</field>
@@ -437,6 +437,9 @@
         <message name="Start" routing="Direct">
           <summary>Sent after the entire object hierarchy has been loaded, signalling that the scene is ready for logic execution.</summary>
         </message>
+        <message name="Animate" routing="Direct">
+          <summary>Requested when an animation update is needed.</summary>
+        </message>
         <message name="ThemeChanged" routing="Direct">
           <summary>Sent when the active theme is changed, allowing components to refresh their styled resources.</summary>
         </message>
@@ -491,7 +494,7 @@
         <handle message="Object.Animate"/>
       </handles>
       <properties>
-        <property name="Clip" type="Object" pointer="true">The AnimationClip object that supplies the curves to animate</property>
+        <property name="Clip" type="AnimationClip" pointer="true">The AnimationClip object that supplies the curves to animate</property>
         <property name="Playing" type="bool">Whether the animation is currently advancing each frame</property>
         <property name="Looping" type="bool">If true, the animation restarts from StartTime when it reaches StopTime</property>
         <property name="Speed" type="float" default="1.0">Playback speed multiplier (1.0 = normal speed)</property>
