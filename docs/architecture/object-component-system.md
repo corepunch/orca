@@ -30,35 +30,29 @@ struct Object {
     LPSTR TextContent;
     LPSTR ClassName;
 
-    // ── Legacy fields being migrated to components ──────────────────────
-    lpcKeyframeAnim_t animation; // → AnimationPlayer component
-    lpKeyframeAnim_t  animlib;   // → AnimationPlayer component
-
     union {
         struct {
-            struct component*          components;   // component chain
-            struct property_animation* animations;   // → PropertyAnimation component
-            struct Property*           properties;
-            struct state_manager*      stateManager; // → StateManager component
-            struct style_class*        classes;      // → StyleClass component
-            struct style_sheet*        stylesheet;   // → StyleSheet component
-            struct timer*              timers;        // → Timer component
-            struct alias*              aliases;       // → Alias component
+            struct component*     components;   // component chain
+            struct Property*      properties;
+            struct state_manager* stateManager; // → StateManager component (planned)
+            struct style_class*   classes;      // → StyleClass component (planned)
+            struct style_sheet*   stylesheet;   // → StyleSheet component (planned)
+            struct timer*         timers;       // → Timer component (planned)
+            struct alias*         aliases;      // → Alias component (planned)
         };
         void* comps[kCompCount]; // indexed access by enum component_type
     };
-    // ────────────────────────────────────────────────────────────────────
 
     uint32_t alias, unique, userdata, luaObject, flags, rdflags, datasize;
     objectTags_t tags;
     longTime_t dirty;
     lua_State *domain;
 
-    byte_t data[MAX_OBJECT_DATA]; // property values are stored here
+    byte_t data[MAX_OBJECT_DATA]; // extra property values stored here
 };
 ```
 
-The `comps[kCompCount]` array allows O(1) access to the most common sub-systems by index (`kCompComponents`, `kCompAnimations`, etc.). New functionality should be implemented as proper components and accessed via `OBJ_GetComponent(obj, ID_ClassName)` instead of adding new fields to this struct.
+The `comps[kCompCount]` array allows O(1) access to the most common sub-systems by index (`kCompComponents`, `kCompTimers`, etc.). New functionality should be implemented as proper components and accessed via `OBJ_GetComponent(obj, ID_ClassName)` instead of adding new fields to this struct.
 
 ---
 
@@ -99,8 +93,8 @@ typedef LRESULT (*objectProc_t)(lpObject_t obj,
 | Parameter | Description |
 |---|---|
 | `obj` | The owning Object |
-| `cmp` | Component user-data block (`cmp->pUserData`) — cast implicitly to `struct ClassName*` |
-| `message` | Message ID already masked with `MSG_DATA_MASK` |
+| `cmp` | Pointer directly to the component instance data (passed from the component header's `pUserData` field) — cast to `struct ClassName*` |
+| `message` | Message ID as forwarded by `OBJ_SendMessageW` — may include routing bits; generated `*Proc` switches mask with `MSG_DATA_MASK` |
 | `wParam` | Integer parameter |
 | `lParam` | Pointer to message arguments struct |
 
@@ -133,10 +127,10 @@ The engine allocates `sizeof(struct component) + ClassSize` bytes, copies `Defau
 
 | Kind | XML attribute | Macro | Use |
 |---|---|---|---|
-| Standalone | *(default)* | `REGISTER_CLASS` | Can be created as a root object (e.g. `AnimationClip`) |
-| Attach-only | `attach-only="true"` | `REGISTER_ATTACH_ONLY_CLASS` | Can only be added to an existing object (e.g. `AnimationPlayer`, `AnimationCurve`) |
+| Standalone | *(default)* | `REGISTER_CLASS` | May be created as a root object or attached as a component (e.g. `AnimationClip`) |
+| Attach-only | `attach-only="true"` | `REGISTER_ATTACH_ONLY_CLASS` | Intended to be attached to an existing object via `addComponent` (e.g. `AnimationPlayer`, `AnimationCurve`) |
 
-Attach-only components set `IsAttachOnly = TRUE` in their `ClassDesc`. `lua_pushclass` uses this flag to suppress standalone constructor generation.
+Attach-only components set `IsAttachOnly = TRUE` in their `ClassDesc`. This is currently an architectural convention: `OBJ_AddComponentByName` (the Lua bridge) checks `IsAttachOnly` and raises an error if a non-attach-only class is passed; however, direct C callers of `OBJ_AddComponent(pobj, class_id)` are not restricted.
 
 ### Inheritance
 
@@ -166,7 +160,7 @@ struct PropertyType {
 
 The `DECL` and `ARRAY_DECL` macros in `*_export.c` build these entries. See [Macros Reference](macros-reference.md) for details.
 
-Property values are stored inside the Object's flat `data[]` buffer. Each component property's `Offset` is relative to the component's user-data block, which itself sits inside `data[]`.
+Property values for component-defined properties are stored in the component's user-data block (heap-allocated alongside the `struct component` header). The `Offset` field is relative to the component's `pUserData` start. The object's `data[]` flat buffer provides overflow storage for dynamic/extra properties not tied to a specific component.
 
 ---
 
@@ -176,7 +170,7 @@ Messages are `uint32_t` constants with routing bits in the lower 2 bits. Core me
 
 | Message | When sent |
 |---|---|
-| `ID_Object_Create` | Component just attached |
+| `ID_Object_Create` | Object has been created (sent once to all initially attached components) |
 | `ID_Object_Start` | All children loaded / object fully initialised |
 | `ID_Object_Animate` | Per-frame animation tick |
 | `ID_Object_Destroy` | Object being destroyed |
@@ -198,26 +192,24 @@ See [Macros Reference](macros-reference.md) for full documentation of `HANDLER`,
 
 ## Object Struct Refactoring Direction
 
-The current `struct Object` contains a number of embedded subsystem fields — `timers`, `animations`, `stateManager`, `stylesheet`, `classes`, `aliases` — that predate the component architecture. These are **legacy fields** that violate the principle that functionality belongs in components.
+The current `struct Object` contains a number of embedded subsystem fields — `timers`, `stateManager`, `stylesheet`, `classes`, `aliases` — that predate the component architecture. These are **legacy fields** that violate the principle that functionality belongs in components.
 
 **The goal:** every subsystem moves into a proper `attach-only` component:
 
-| Legacy field | Target component |
-|---|---|
-| `animation` / `animlib` | `AnimationPlayer` / `AnimationClip` |
-| `animations` (property tweens) | `PropertyAnimation` |
-| `timers` | `Timer` |
-| `stateManager` | `StateManager` |
-| `stylesheet` / `classes` | `StyleSheet` / `StyleClass` |
-| `aliases` | `Alias` |
+| Legacy field | Target component | Status |
+|---|---|---|
+| `animation` / `animlib` | `AnimationPlayer` / `AnimationClip` | **Done** — fields removed |
+| `animations` (property tweens) | `PropertyAnimation` | **Done** — field removed |
+| `timers` | `Timer` | Planned |
+| `stateManager` | `StateManager` | Planned |
+| `stylesheet` / `classes` | `StyleSheet` / `StyleClass` | Planned |
+| `aliases` | `Alias` | Planned |
 
 Migration rules:
 1. Implement the component with `<handles>` for the messages it needs.
 2. Register it as `attach-only` via `REGISTER_ATTACH_ONLY_CLASS`.
 3. Remove the corresponding field from `struct Object`.
 4. Remove the `_GetXxx(obj)` macro and the manual release call from `OBJ_Release`.
-
-The `AnimationPlayer` / `AnimationClip` / `AnimationCurve` set is the first completed migration of this kind.
 
 ---
 

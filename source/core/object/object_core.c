@@ -141,11 +141,11 @@ OBJ_AddComponentByName(lua_State* L, lpObject_t pobj, lpcString_t className)
 {
   lpcClassDesc_t cls = OBJ_FindClass(className);
   if (!cls) {
-    Con_Error("Class '%s' not found", className);
+    luaL_error(L, "addComponent: class '%s' not found", className);
     return;
   }
   if (!cls->IsAttachOnly) {
-    Con_Error("Class '%s' is not attach-only; use it as a standalone object instead", className);
+    luaL_error(L, "addComponent: class '%s' is not attach-only; use it as a standalone object instead", className);
     return;
   }
   OBJ_AddComponent(pobj, cls->ClassID);

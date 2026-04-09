@@ -4,6 +4,12 @@
 
 extern struct game core;
 
+// tangentMode == 0 means cubic bezier (Unity default); any other value uses linear.
+#define TANGENT_MODE_BEZIER 0
+
+// Small time delta (seconds) used to detect rising/falling edge for bool properties.
+#define BOOL_EDGE_DELTA 0.001f
+
 // ---------------------------------------------------------------------------
 // Internal: evaluate one component of a Keyframe array at the given time.
 // Mirrors animation_evaluate() but works with the new struct Keyframe layout.
@@ -54,11 +60,6 @@ static float keyframe_evaluate(struct Keyframe const *kf, int n, float time, int
 }
 
 // tangentMode == 0 means cubic bezier (Unity default); any other value uses linear.
-#define TANGENT_MODE_BEZIER 0
-
-// Small time delta (seconds) used to detect rising/falling edge for bool properties.
-#define BOOL_EDGE_DELTA 0.001f
-
 HANDLER(AnimationPlayer, Object, Start) {
     struct AnimationClip *clip = pAnimationPlayer->Clip;
     if (clip) {

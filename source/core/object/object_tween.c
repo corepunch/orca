@@ -58,7 +58,7 @@ OBJ_Animate(lua_State* L, lpObject_t object)
 {
   if (OBJ_IsHidden(object))
     return;
-  OBJ_SendMessageW(object, ID_Object_Animate, 0, L);
+  OBJ_SendMessageW(object, ID_Object_Animate, 0, NULL);
   FOR_EACH_OBJECT(it, object) OBJ_Animate(L, it);
 }
 

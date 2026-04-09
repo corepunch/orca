@@ -212,17 +212,16 @@ FOR_EACH_CHILD(root, OBJ_ClearDirtyFlags);
 Iterates a singly-linked list whose nodes are of type `TYPE` and have a `next` pointer. Caches `next` before the body so nodes may be freed inline:
 
 ```c
-#define FOR_EACH_LIST(TYPE, var, head)         \
-    for (TYPE *var = (head), *_next_##var;     \
-         var && (_next_##var = var->next, 1);  \
-         var = _next_##var)
+#define FOR_EACH_LIST(type, property, list)                                    \
+  for (type* property = list, *next = list ? (list)->next : NULL; property;    \
+       property = next, next = next ? next->next : NULL)
 ```
 
 ```c
-FOR_EACH_LIST(struct property_animation, tween, _GetAnimations(object)) {
-    if (done) {
-        free(tween);
-        REMOVE_FROM_LIST(struct property_animation, tween, _GetAnimations(object));
+FOR_EACH_LIST(struct timer, t, _GetTimers(object)) {
+    if (t->expired) {
+        REMOVE_FROM_LIST(struct timer, t, _GetTimers(object));
+        free(t);
     }
 }
 ```
@@ -316,7 +315,7 @@ lpProperty_t p = AnimationPlayer_GetProperty(object, kAnimationPlayerSpeed);
 
 ## Message ID Routing Bits
 
-Every message ID embeds its routing strategy in the **lower 2 bits**. This allows `OBJ_SendMessageW` to strip the bits before dispatching, while `OBJ_RaiseEvent` uses them for bubbling/tunneling:
+Every message ID embeds its routing strategy in the **lower 2 bits**. `OBJ_RaiseEvent` uses these bits for bubbling/tunneling; `OBJ_SendMessageW` forwards the ID as-is to each component's Proc. Generated `*Proc` switch statements always mask with `MSG_DATA_MASK` when comparing message IDs:
 
 ```c
 #define MSG_ROUTING_MASK           3u
@@ -327,13 +326,13 @@ Every message ID embeds its routing strategy in the **lower 2 bits**. This allow
 #define ROUTING_DIRECT             3u
 ```
 
-Switch cases in `Proc` functions always mask with `MSG_DATA_MASK`:
+Switch cases in generated `*Proc` functions always mask the incoming message ID:
 
 ```c
-case ID_Object_Start & MSG_DATA_MASK:  // strips routing bits
+case ID_Object_Start & MSG_DATA_MASK:  // strips routing bits for comparison
 ```
 
-The `routing=` attribute on `<message>` elements in XML sets the lower bits at code-generation time.
+The `routing=` attribute on `<message>` elements in XML sets the lower bits at code-generation time. Call sites that send a message directly (e.g. `OBJ_SendMessage`) may strip routing bits before calling, but handlers must always mask defensively.
 
 ---
 
@@ -351,7 +350,7 @@ Parameters:
 |---|---|---|
 | 1 | `lpObject_t` | The owning Object |
 | 2 | `void*` | Component user data (`cmp->pUserData`) — cast to `struct ClassName*` |
-| 3 | `uint32_t` | Message ID (already masked to `MSG_DATA_MASK`) |
+| 3 | `uint32_t` | Message ID as forwarded from `OBJ_SendMessageW` (routing bits may be present; generated Procs mask with `MSG_DATA_MASK` in their switch) |
 | 4 | `wParam_t` | Integer parameter |
 | 5 | `lParam_t` | Pointer parameter (cast to the message args struct) |
 
@@ -361,7 +360,7 @@ Parameters:
 FOR_EACH_LIST(struct component, cmp, _GetComponents(pobj)) {
     if (cmp->pcls->ObjProc) {
         LRESULT res = cmp->pcls->ObjProc(pobj, cmp->pUserData,
-                                          MsgID & MSG_DATA_MASK, wParam, lParam);
+                                          MsgID, wParam, lParam);
         if (res) return res;
     }
 }

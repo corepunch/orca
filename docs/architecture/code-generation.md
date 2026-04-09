@@ -117,10 +117,10 @@ Every module XML file follows this skeleton:
     <properties>
       <property name="Speed" type="float" default="1.0">Movement speed</property>
     </properties>
+    <messages>
+      <message name="OnValueChanged" routing="Direct"/>
+    </messages>
   </class>
-
-  <!-- Declare a custom message -->
-  <message name="OnValueChanged" routing="Direct"/>
 
 </module>
 ```

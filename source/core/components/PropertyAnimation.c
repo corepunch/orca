@@ -12,8 +12,8 @@ HANDLER(PropertyAnimation, Object, Animate) {
         return FALSE;
     }
 
-    uint32_t duration = (uint32_t)pPropertyAnimation->duration;
-    float t = (duration == 0)
+    int duration = pPropertyAnimation->duration;
+    float t = (duration <= 0)
         ? 1.0f
         : (float)(core.realtime - pPropertyAnimation->start) / (float)duration;
     if (t > 1.0f) t = 1.0f;
@@ -24,10 +24,11 @@ HANDLER(PropertyAnimation, Object, Animate) {
     enum data_type type = PROP_GetType(pPropertyAnimation->target);
 
     if (type == kDataTypeFloat) {
-        float value = float_lerp(
-            *(float*)pPropertyAnimation->from,
-            *(float*)pPropertyAnimation->to,
-            interp_t);
+        // Use memcpy to avoid undefined behaviour from unaligned reads on byte_t[].
+        float from_val, to_val;
+        memcpy(&from_val, pPropertyAnimation->from, sizeof(float));
+        memcpy(&to_val,   pPropertyAnimation->to,   sizeof(float));
+        float value = float_lerp(from_val, to_val, interp_t);
         PROP_SetValue(pPropertyAnimation->target, &value);
     } else if (type == kDataTypeStruct) {
         // For structured types (Transform2D, Transform3D) we interpolate
@@ -36,10 +37,11 @@ HANDLER(PropertyAnimation, Object, Animate) {
         size_t size = PROP_GetSize(pPropertyAnimation->target);
         uint32_t n = (uint32_t)(size / sizeof(float));
         float result[MAX_PROPERTY_STRING / sizeof(float)];
-        float const *from = (float const*)pPropertyAnimation->from;
-        float const *to   = (float const*)pPropertyAnimation->to;
         for (uint32_t i = 0; i < n; i++) {
-            result[i] = float_lerp(from[i], to[i], interp_t);
+            float fv, tv;
+            memcpy(&fv, pPropertyAnimation->from + i * sizeof(float), sizeof(float));
+            memcpy(&tv, pPropertyAnimation->to   + i * sizeof(float), sizeof(float));
+            result[i] = float_lerp(fv, tv, interp_t);
         }
         PROP_SetValue(pPropertyAnimation->target, result);
     }

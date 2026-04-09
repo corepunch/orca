@@ -144,7 +144,6 @@ The subsystem union provides **indexed O(1) access** via `comps[kCompCount]` and
 union {
     struct {
         struct component*          components;   // attached component chain
-        struct property_animation* animations;   // tween queue (legacy)
         struct Property*           properties;
         struct state_manager*      stateManager;
         struct style_class*        classes;
@@ -156,7 +155,7 @@ union {
 };
 ```
 
-Fields marked **legacy** are being progressively replaced by proper components (see "Object Struct Refactoring" below).
+Fields marked as planned replacements are being progressively replaced by proper components (see "Object Struct Refactoring" below).
 
 ### Components (`source/core/component.c`)
 
@@ -185,7 +184,7 @@ struct ClassDesc {
 ```c
 typedef LRESULT (*objectProc_t)(lpObject_t obj,   // owning Object
                                 void*       cmp,   // component data block
-                                uint32_t    msg,   // message ID (masked)
+                                uint32_t    msg,   // message ID (passed through; generated Procs mask with MSG_DATA_MASK)
                                 wParam_t    wParam,
                                 lParam_t    lParam);
 ```
@@ -194,12 +193,12 @@ typedef LRESULT (*objectProc_t)(lpObject_t obj,   // owning Object
 
 **Standalone vs. attach-only:**
 
-| XML attribute | Macro in `*_export.c` | Can create standalone? |
+| XML attribute | Macro in `*_export.c` | Intended usage |
 |---|---|---|
-| *(none)* | `REGISTER_CLASS` | Yes |
-| `attach-only="true"` | `REGISTER_ATTACH_ONLY_CLASS` | No — must use `addComponent` |
+| *(none)* | `REGISTER_CLASS` | May be created standalone or attached as a component |
+| `attach-only="true"` | `REGISTER_ATTACH_ONLY_CLASS` | Intended to be attached to an existing object via `addComponent` |
 
-Call `OBJ_RegisterClass(&_ClassName)` at module init. Call `OBJ_AddComponent(obj, ID_ClassName)` (C) or `obj:addComponent("ClassName")` (Lua) to attach at runtime.
+`attach-only="true"` should be treated as an architectural convention. `OBJ_AddComponentByName` (the Lua bridge) enforces it with a `luaL_error`; direct C callers of `OBJ_AddComponent(pobj, class_id)` are unrestricted. Call `OBJ_RegisterClass(&_ClassName)` at module init. Call `OBJ_AddComponent(obj, ID_ClassName)` (C) or `obj:addComponent("ClassName")` (Lua) to attach at runtime.
 
 ### HANDLER macro — the message-handler pattern
 
@@ -283,14 +282,14 @@ LRESULT CLASS##_##EVENT(struct Object* hObject,
 
 ## Object Struct Refactoring
 
-The `struct Object` currently has a number of **legacy embedded fields** — timers, tweens, state managers, style sheets, class lists, and animation data — that predate the component architecture and create tight coupling in `OBJ_Release`.
+The `struct Object` currently has a number of **legacy embedded fields** — timers, state managers, style sheets, class lists — that predate the component architecture and create tight coupling in `OBJ_Release`.
 
 **Architectural goal: zero subsystem fields in Object.** Every subsystem moves into a proper `attach-only` component:
 
 | Legacy field | Target component | Status |
 |---|---|---|
-| `animation` / `animlib` | `AnimationPlayer` / `AnimationClip` | In progress |
-| `animations` (tweens) | `PropertyAnimation` | Planned |
+| `animation` / `animlib` | `AnimationPlayer` / `AnimationClip` | **Done** |
+| `animations` (tweens) | `PropertyAnimation` | **Done** |
 | `timers` | `Timer` | Planned |
 | `stateManager` | `StateManager` | Planned |
 | `stylesheet` / `classes` | `StyleSheet` / `StyleClass` | Planned |
