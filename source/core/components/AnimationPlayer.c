@@ -39,8 +39,8 @@ static float keyframe_evaluate(struct Keyframe const *kf, int n, float time, int
             float w1 = vec4_get(&b->inWeight,  xyzw);
             float h0 = v0 + m0 * w0 * dt;
             float h1 = v1 - m1 * w1 * dt;
-            // Use linear interpolation for constant/non-bezier tangents
-            if (a->tangentMode == 0) {
+            // Use cubic bezier for the default tangent mode; linear otherwise.
+            if (a->tangentMode == TANGENT_MODE_BEZIER) {
                 float u  = 1.0f - t;
                 float tt = t * t;
                 float uu = u * u;
@@ -53,9 +53,11 @@ static float keyframe_evaluate(struct Keyframe const *kf, int n, float time, int
     return vec4_get(&kf[0].value, xyzw);
 }
 
-// ---------------------------------------------------------------------------
-// AnimationPlayer handlers
-// ---------------------------------------------------------------------------
+// tangentMode == 0 means cubic bezier (Unity default); any other value uses linear.
+#define TANGENT_MODE_BEZIER 0
+
+// Small time delta (seconds) used to detect rising/falling edge for bool properties.
+#define BOOL_EDGE_DELTA 0.001f
 
 HANDLER(AnimationPlayer, Object, Start) {
     struct AnimationClip *clip = pAnimationPlayer->Clip;
@@ -110,9 +112,13 @@ HANDLER(AnimationPlayer, Object, Animate) {
             if (PROP_GetType(property) == kDataTypeBool) {
                 float prev = keyframe_evaluate(
                     curve->Keyframes, curve->NumKeyframes,
-                    pAnimationPlayer->CurrentTime - 0.001f, 0);
-                value[0] = (prev < value[0]) ? (value[0] >= 1.0f ? 1.0f : 0.0f)
-                                             : (value[0] > 0.0f  ? 1.0f : 0.0f);
+                    pAnimationPlayer->CurrentTime - BOOL_EDGE_DELTA, 0);
+                // Treat a rising edge (prev < current) differently from steady/falling.
+                if (prev < value[0]) {
+                    value[0] = (value[0] >= 1.0f) ? 1.0f : 0.0f;
+                } else {
+                    value[0] = (value[0] > 0.0f) ? 1.0f : 0.0f;
+                }
             }
             PROP_SetValue(property, value);
         }

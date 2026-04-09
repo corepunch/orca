@@ -41,11 +41,11 @@ void OBJ_DoTween(lua_State* L, lpObject_t self) {
   } else if (PROP_GetType(hprop) == kDataTypeStruct &&
              !strcmp("Transform2D", PROP_GetUserData(hprop))) {
     luaX_parsefield(struct transform2*, to, 2, luaL_checkudata, PROP_GetUserData(hprop));
-    memcpy(anim->to, to, sizeof(struct transform2));
+    memcpy(anim->to, to, sizeof(*to));
   } else if (PROP_GetType(hprop) == kDataTypeStruct &&
              !strcmp("Transform3D", PROP_GetUserData(hprop))) {
     luaX_parsefield(struct transform3*, to, 2, luaL_checkudata, PROP_GetUserData(hprop));
-    memcpy(anim->to, to, sizeof(struct transform3));
+    memcpy(anim->to, to, sizeof(*to));
   } else {
     CMP_Detach(anim);
     luaL_error(L, "Unknown property type for tween");

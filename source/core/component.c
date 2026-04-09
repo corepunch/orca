@@ -220,6 +220,8 @@ void
 CMP_Detach(void* userdata)
 {
   if (!userdata) return;
+  // pUserData is a flexible array member at the end of struct component.
+  // Subtract its offset to recover the containing struct component pointer.
   struct component *self = (struct component*)((char*)userdata - offsetof(struct component, pUserData));
   lpObject_t pobj = self->pobj;
   REMOVE_FROM_LIST(struct component, self, _GetComponents(pobj));
